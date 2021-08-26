@@ -125,15 +125,16 @@ class AccountConsistencyService::AccountConsistencyHandler
       web::PageLoadCompletionStatus load_completion_status) override;
 
   // web::WebStatePolicyDecider override.
-  WebStatePolicyDecider::PolicyDecision ShouldAllowRequest(
+  void ShouldAllowRequest(
       NSURLRequest* request,
-      const web::WebStatePolicyDecider::RequestInfo& request_info) override;
+      const web::WebStatePolicyDecider::RequestInfo& request_info,
+      web::WebStatePolicyDecider::PolicyDecisionCallback callback) override;
   // Decides on navigation corresponding to |response| whether the navigation
   // should continue and updates authentication cookies on Google domains.
   void ShouldAllowResponse(
       NSURLResponse* response,
       bool for_main_frame,
-      base::OnceCallback<void(PolicyDecision)> callback) override;
+      web::WebStatePolicyDecider::PolicyDecisionCallback callback) override;
   void WebStateDestroyed() override;
 
   // Handles the AddAccount request depending on |has_cookie_changed|.
@@ -164,10 +165,10 @@ AccountConsistencyService::AccountConsistencyHandler::AccountConsistencyHandler(
   web_state->AddObserver(this);
 }
 
-web::WebStatePolicyDecider::PolicyDecision
-AccountConsistencyService::AccountConsistencyHandler::ShouldAllowRequest(
+void AccountConsistencyService::AccountConsistencyHandler::ShouldAllowRequest(
     NSURLRequest* request,
-    const web::WebStatePolicyDecider::RequestInfo& request_info) {
+    const web::WebStatePolicyDecider::RequestInfo& request_info,
+    web::WebStatePolicyDecider::PolicyDecisionCallback callback) {
   GURL url = net::GURLWithNSURL(request.URL);
   if (base::FeatureList::IsEnabled(signin::kRestoreGaiaCookiesOnUserAction) &&
       signin::IsUrlEligibleForMirrorCookie(url) &&
@@ -179,13 +180,13 @@ AccountConsistencyService::AccountConsistencyHandler::ShouldAllowRequest(
     // necessary.
     account_consistency_service_->AddChromeConnectedCookies();
   }
-  return PolicyDecision::Allow();
+  std::move(callback).Run(PolicyDecision::Allow());
 }
 
 void AccountConsistencyService::AccountConsistencyHandler::ShouldAllowResponse(
     NSURLResponse* response,
     bool for_main_frame,
-    base::OnceCallback<void(PolicyDecision)> callback) {
+    web::WebStatePolicyDecider::PolicyDecisionCallback callback) {
   NSHTTPURLResponse* http_response =
       base::mac::ObjCCast<NSHTTPURLResponse>(response);
   if (!http_response) {
@@ -500,7 +501,8 @@ void AccountConsistencyService::SetChromeConnectedCookieWithUrl(
           /*last_access_time=*/base::Time(),
           /*secure=*/true,
           /*httponly=*/false, net::CookieSameSite::LAX_MODE,
-          net::COOKIE_PRIORITY_DEFAULT, /*same_party=*/false);
+          net::COOKIE_PRIORITY_DEFAULT, /*same_party=*/false,
+          /*partition_key=*/absl::nullopt);
   net::CookieOptions options;
   options.set_include_httponly();
   options.set_same_site_cookie_context(

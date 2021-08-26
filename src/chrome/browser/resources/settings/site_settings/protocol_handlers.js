@@ -8,7 +8,7 @@
  * protocol handlers category under Site Settings.
  */
 
-import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.m.js';
+import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/cr_radio_group/cr_radio_group.m.js';
 import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
@@ -22,6 +22,7 @@ import '../privacy_page/collapse_radio_button.js';
 import '../settings_shared_css.js';
 import '../site_favicon.js';
 
+import {CrActionMenuElement} from '//resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 

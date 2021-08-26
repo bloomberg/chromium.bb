@@ -30,8 +30,8 @@
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
 #include "chrome/browser/safe_browsing/download_protection/download_reporter.h"
 #include "chrome/browser/safe_browsing/services_delegate.h"
-#include "chrome/browser/safe_browsing/ui_manager.h"
 #include "components/safe_browsing/content/browser/safe_browsing_navigation_observer_manager.h"
+#include "components/safe_browsing/content/browser/ui_manager.h"
 #include "components/safe_browsing/core/browser/db/database_manager.h"
 #include "components/sessions/core/session_id.h"
 #include "url/gurl.h"
@@ -184,6 +184,13 @@ class DownloadProtectionService {
       const download::DownloadItem* item,
       bool show_download_in_folder);
 
+  // Called to trigger a bypass event report for |download|. This is used when
+  // the async scan verdict is received for a file that was already opened by
+  // the user while it was being processed, and the verdict ended up being
+  // "dangerous" or "sensitive".
+  void ReportDelayedBypassEvent(download::DownloadItem* download,
+                                download::DownloadDangerType danger_type);
+
   // Uploads |item| to Safe Browsing for deep scanning, using the upload
   // service attached to the profile |item| was downloaded in. This is
   // non-blocking, and the result we be provided through |callback|. |source| is
@@ -195,6 +202,9 @@ class DownloadProtectionService {
       CheckDownloadRepeatingCallback callback,
       DeepScanningRequest::DeepScanTrigger trigger,
       enterprise_connectors::AnalysisSettings analysis_settings);
+
+  // Returns all the currently active deep scanning requests.
+  std::vector<DeepScanningRequest*> GetDeepScanningRequests();
 
   virtual scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory(
       content::BrowserContext* browser_context);

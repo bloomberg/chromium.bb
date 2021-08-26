@@ -82,6 +82,7 @@
 #include "content/renderer/categorized_worker_pool.h"
 #include "content/renderer/effective_connection_type_helper.h"
 #include "content/renderer/media/gpu/gpu_video_accelerator_factories_impl.h"
+#include "content/renderer/media/media_factory.h"
 #include "content/renderer/media/media_interface_factory.h"
 #include "content/renderer/media/render_media_client.h"
 #include "content/renderer/net_info_helper.h"
@@ -169,6 +170,7 @@
 #if defined(OS_WIN)
 #include <objbase.h>
 #include <windows.h>
+#include "content/renderer/media/win/dcomp_texture_factory.h"
 #endif
 
 #ifdef ENABLE_VTUNE_JIT_INTERFACE
@@ -961,6 +963,12 @@ void RenderThreadImpl::RegisterSchemes() {
   WebSecurityPolicy::RegisterURLSchemeAsAllowingWasmEvalCSP(
       chrome_untrusted_scheme);
 
+  if (base::FeatureList::IsEnabled(features::kWebUICodeCache)) {
+    WebSecurityPolicy::RegisterURLSchemeAsCodeCacheWithHashing(chrome_scheme);
+    WebSecurityPolicy::RegisterURLSchemeAsCodeCacheWithHashing(
+        chrome_untrusted_scheme);
+  }
+
   // devtools:
   WebString devtools_scheme(WebString::FromASCII(kChromeDevToolsScheme));
   WebSecurityPolicy::RegisterURLSchemeAsDisplayIsolated(devtools_scheme);
@@ -1198,7 +1206,6 @@ RenderThreadImpl::SharedMainThreadContextProvider() {
 }
 
 #if defined(OS_ANDROID)
-
 scoped_refptr<StreamTextureFactory> RenderThreadImpl::GetStreamTexureFactory() {
   DCHECK(IsMainThread());
   if (!stream_texture_factory_ || stream_texture_factory_->IsLost()) {
@@ -1215,8 +1222,23 @@ scoped_refptr<StreamTextureFactory> RenderThreadImpl::GetStreamTexureFactory() {
 bool RenderThreadImpl::EnableStreamTextureCopy() {
   return GetContentClient()->UsingSynchronousCompositing();
 }
+#endif  // defined(OS_ANDROID)
 
-#endif
+#if defined(OS_WIN)
+scoped_refptr<DCOMPTextureFactory> RenderThreadImpl::GetDCOMPTextureFactory() {
+  DCHECK(IsMainThread());
+  if (!dcomp_texture_factory_.get() || dcomp_texture_factory_->IsLost()) {
+    scoped_refptr<gpu::GpuChannelHost> channel = EstablishGpuChannelSync();
+    if (!channel) {
+      dcomp_texture_factory_ = nullptr;
+      return nullptr;
+    }
+    dcomp_texture_factory_ = DCOMPTextureFactory::Create(
+        std::move(channel), GetMediaThreadTaskRunner());
+  }
+  return dcomp_texture_factory_;
+}
+#endif  // defined(OS_WIN)
 
 base::WaitableEvent* RenderThreadImpl::GetShutdownEvent() {
   return ChildProcess::current()->GetShutDownEvent();
@@ -1233,7 +1255,14 @@ void RenderThreadImpl::SetRendererProcessType(
 
 blink::WebString RenderThreadImpl::GetUserAgent() {
   DCHECK(!user_agent_.IsNull());
+
   return user_agent_;
+}
+
+blink::WebString RenderThreadImpl::GetReducedUserAgent() {
+  DCHECK(!reduced_user_agent_.IsNull());
+
+  return reduced_user_agent_;
 }
 
 const blink::UserAgentMetadata& RenderThreadImpl::GetUserAgentMetadata() {
@@ -1641,6 +1670,11 @@ void RenderThreadImpl::SetUserAgent(const std::string& user_agent) {
   DCHECK(user_agent_.IsNull());
   user_agent_ = WebString::FromUTF8(user_agent);
   GetContentClient()->renderer()->DidSetUserAgent(user_agent);
+}
+
+void RenderThreadImpl::SetReducedUserAgent(const std::string& user_agent) {
+  DCHECK(reduced_user_agent_.IsNull());
+  reduced_user_agent_ = WebString::FromUTF8(user_agent);
 }
 
 void RenderThreadImpl::SetUserAgentMetadata(

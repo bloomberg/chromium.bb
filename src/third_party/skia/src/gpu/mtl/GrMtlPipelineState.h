@@ -12,13 +12,16 @@
 #include "src/gpu/GrStencilSettings.h"
 #include "src/gpu/glsl/GrGLSLProgramBuilder.h"
 #include "src/gpu/mtl/GrMtlBuffer.h"
+#include "src/gpu/mtl/GrMtlPipeline.h"
 #include "src/gpu/mtl/GrMtlPipelineStateDataManager.h"
 
 #import <Metal/Metal.h>
 
+class GrMtlFramebuffer;
 class GrMtlGpu;
 class GrMtlPipelineStateDataManager;
 class GrMtlRenderCommandEncoder;
+class GrMtlRenderPipeline;
 class GrMtlSampler;
 class GrMtlTexture;
 class GrPipeline;
@@ -32,21 +35,20 @@ public:
     using UniformInfoArray = GrMtlPipelineStateDataManager::UniformInfoArray;
     using UniformHandle = GrGLSLProgramDataManager::UniformHandle;
 
-    GrMtlPipelineState(
-            GrMtlGpu*,
-            id<MTLRenderPipelineState>,
-            MTLPixelFormat,
-            const GrGLSLBuiltinUniformHandles& builtinUniformHandles,
-            const UniformInfoArray& uniforms,
-            uint32_t uniformBufferSize,
-            uint32_t numSamplers,
-            std::unique_ptr<GrGLSLGeometryProcessor>,
-            std::unique_ptr<GrGLSLXferProcessor>,
-            std::vector<std::unique_ptr<GrGLSLFragmentProcessor>> fpImpls);
+    GrMtlPipelineState(GrMtlGpu*,
+                       sk_sp<GrMtlRenderPipeline> pipeline,
+                       MTLPixelFormat,
+                       const GrGLSLBuiltinUniformHandles& builtinUniformHandles,
+                       const UniformInfoArray& uniforms,
+                       uint32_t uniformBufferSize,
+                       uint32_t numSamplers,
+                       std::unique_ptr<GrGeometryProcessor::ProgramImpl>,
+                       std::unique_ptr<GrXferProcessor::ProgramImpl>,
+                       std::vector<std::unique_ptr<GrFragmentProcessor::ProgramImpl>> fpImpls);
 
-    id<MTLRenderPipelineState> mtlPipelineState() { return fPipelineState; }
+    const sk_sp<GrMtlRenderPipeline>& pipeline() const { return fPipeline; }
 
-    void setData(const GrRenderTarget*, const GrProgramInfo&);
+    void setData(GrMtlFramebuffer*, const GrProgramInfo&);
 
     void setTextures(const GrGeometryProcessor&,
                      const GrPipeline&,
@@ -58,7 +60,7 @@ public:
                       const GrXferProcessor&);
 
     static void SetDynamicScissorRectState(GrMtlRenderCommandEncoder* renderCmdEncoder,
-                                           const GrRenderTarget* renderTarget,
+                                           SkISize colorAttachmentDimensions,
                                            GrSurfaceOrigin rtOrigin,
                                            SkIRect scissorRect);
 
@@ -82,7 +84,7 @@ private:
         }
     };
 
-    void setRenderTargetState(const GrRenderTarget*, GrSurfaceOrigin);
+    void setRenderTargetState(SkISize colorAttachmentDimensions, GrSurfaceOrigin);
 
     void bindUniforms(GrMtlRenderCommandEncoder*);
 
@@ -98,7 +100,7 @@ private:
     };
 
     GrMtlGpu* fGpu;
-    id<MTLRenderPipelineState> fPipelineState;
+    sk_sp<GrMtlRenderPipeline> fPipeline;
     MTLPixelFormat             fPixelFormat;
 
     RenderTargetState fRenderTargetState;
@@ -109,9 +111,9 @@ private:
     int fNumSamplers;
     SkTArray<SamplerBindings> fSamplerBindings;
 
-    std::unique_ptr<GrGLSLGeometryProcessor> fGeometryProcessor;
-    std::unique_ptr<GrGLSLXferProcessor> fXferProcessor;
-    std::vector<std::unique_ptr<GrGLSLFragmentProcessor>> fFPImpls;
+    std::unique_ptr<GrGeometryProcessor::ProgramImpl>              fGPImpl;
+    std::unique_ptr<GrXferProcessor::ProgramImpl>                  fXPImpl;
+    std::vector<std::unique_ptr<GrFragmentProcessor::ProgramImpl>> fFPImpls;
 
     GrMtlPipelineStateDataManager fDataManager;
 };

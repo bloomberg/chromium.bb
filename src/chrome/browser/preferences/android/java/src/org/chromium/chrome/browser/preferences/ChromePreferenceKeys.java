@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.preferences;
 
+import static org.chromium.components.browser_ui.share.ClipboardConstants.CLIPBOARD_SHARED_URI;
+import static org.chromium.components.browser_ui.share.ClipboardConstants.CLIPBOARD_SHARED_URI_TIMESTAMP;
+
 import org.chromium.base.annotations.CheckDiscard;
 
 import java.util.Arrays;
@@ -137,13 +140,6 @@ public final class ChromePreferenceKeys {
      */
     public static final KeyPrefix CHROME_SURVEY_PROMPT_DISPLAYED_TIMESTAMP =
             new KeyPrefix("Chrome.Survey.PromptDisplayedTimestamp.*");
-
-    /** The URI of Chrome shared URI to Android system clibpoard. */
-    public static final String CLIPBOARD_SHARED_URI = "Chrome.Clipboard.SharedUri";
-
-    /** The timestamp of Chrome shared URI to Android system clibpoard. */
-    public static final String CLIPBOARD_SHARED_URI_TIMESTAMP =
-            "Chrome.Clipboard.SharedUriTimestamp";
 
     /**
      * The ID generated to represent the current browser installation in the DM Server for Cloud
@@ -601,6 +597,24 @@ public final class ChromePreferenceKeys {
     public static final String METRICS_MAIN_INTENT_LAUNCH_COUNT = "MainIntent.LaunchCount";
     public static final String METRICS_MAIN_INTENT_LAUNCH_TIMESTAMP = "MainIntent.LaunchTimestamp";
 
+    // {Instance:Task} ID mapping for multi-instance support.
+    public static final KeyPrefix MULTI_INSTANCE_TASK_MAP =
+            new KeyPrefix("Chrome.MultiInstance.TaskMap.*");
+    public static final String MULTI_WINDOW_START_TIME = "Chrome.MultiWindow.StartTime";
+
+    // Information on each instance.
+    public static final KeyPrefix MULTI_INSTANCE_INCOGNITO_TAB_COUNT =
+            new KeyPrefix("Chrome.MultiInstance.IncognitoTabCount.*");
+    public static final KeyPrefix MULTI_INSTANCE_IS_INCOGNITO_SELECTED =
+            new KeyPrefix("Chrome.MultiInstance.IsIncognitoSelected.*");
+    public static final KeyPrefix MULTI_INSTANCE_TAB_COUNT =
+            new KeyPrefix("Chrome.MultiInstance.TabCount.*"); // Normal tab count
+    public static final KeyPrefix MULTI_INSTANCE_TITLE =
+            new KeyPrefix("Chrome.MultiInstance.Title.*");
+    public static final KeyPrefix MULTI_INSTANCE_LAST_ACCESSED_TIME =
+            new KeyPrefix("Chrome.MultiInstance.LastAccessedTime.*");
+    public static final KeyPrefix MULTI_INSTANCE_URL = new KeyPrefix("Chrome.MultiInstance.Url.*");
+
     public static final String NOTIFICATIONS_CHANNELS_VERSION = "channels_version_key";
     public static final String NOTIFICATIONS_LAST_SHOWN_NOTIFICATION_TYPE =
             "NotificationUmaTracker.LastShownNotificationType";
@@ -866,8 +880,7 @@ public final class ChromePreferenceKeys {
     /**
      * Personalized signin promo preference.
      */
-    public static final String SIGNIN_PROMO_PERSONALIZED_DECLINED =
-            "signin_promo_bookmarks_declined";
+    public static final String SIGNIN_PROMO_BOOKMARKS_DECLINED = "signin_promo_bookmarks_declined";
     /**
      * Whether the user dismissed the personalized sign in promo from the Settings.
      * Default value is false.
@@ -1070,6 +1083,14 @@ public final class ChromePreferenceKeys {
                 ISOLATED_SPLITS_DEX_COMPILE_VERSION,
                 LAST_SESSION_BROWSER_PID,
                 LAST_SESSION_APPLICATION_STATE,
+                MULTI_WINDOW_START_TIME,
+                MULTI_INSTANCE_IS_INCOGNITO_SELECTED.pattern(),
+                MULTI_INSTANCE_INCOGNITO_TAB_COUNT.pattern(),
+                MULTI_INSTANCE_LAST_ACCESSED_TIME.pattern(),
+                MULTI_INSTANCE_TAB_COUNT.pattern(),
+                MULTI_INSTANCE_TASK_MAP.pattern(),
+                MULTI_INSTANCE_TITLE.pattern(),
+                MULTI_INSTANCE_URL.pattern(),
                 OFFLINE_INDICATOR_V2_WALL_TIME_SHOWN_MS,
                 OFFLINE_INDICATOR_V2_LAST_UPDATE_WALL_TIME_MS,
                 OFFLINE_INDICATOR_V2_TIME_IN_FOREGROUND_MS,

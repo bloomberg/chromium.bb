@@ -361,7 +361,9 @@ void AutofillExternalDelegate::RegisterDeletionCallback(
 }
 
 void AutofillExternalDelegate::Reset() {
-  manager_->client()->HideAutofillPopup(PopupHidingReason::kNavigation);
+  // We should not affect UI on the active page due to a prerendered page.
+  if (!manager_->driver()->IsPrerendering())
+    manager_->client()->HideAutofillPopup(PopupHidingReason::kNavigation);
 }
 
 base::WeakPtr<AutofillExternalDelegate> AutofillExternalDelegate::GetWeakPtr() {
@@ -379,9 +381,9 @@ void AutofillExternalDelegate::FillAutofillFormData(int unique_id,
   if (IsAutofillWarningEntry(unique_id))
     return;
 
-  AutofillDriver::RendererFormDataAction renderer_action =
-      is_preview ? AutofillDriver::FORM_DATA_ACTION_PREVIEW
-                 : AutofillDriver::FORM_DATA_ACTION_FILL;
+  mojom::RendererFormDataAction renderer_action =
+      is_preview ? mojom::RendererFormDataAction::kPreview
+                 : mojom::RendererFormDataAction::kFill;
 
   DCHECK(driver_->RendererIsAvailable());
   // Fill the values for the whole form.

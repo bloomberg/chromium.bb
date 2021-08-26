@@ -45,8 +45,10 @@ class SkStageUpdater {
 public:
     virtual ~SkStageUpdater() {}
 
-    virtual bool SK_WARN_UNUSED_RESULT update(const SkMatrix& ctm, const SkMatrix* localM) = 0;
+    virtual bool SK_WARN_UNUSED_RESULT update(const SkMatrix& ctm) = 0;
 };
+
+class SkUpdatableShader;
 
 class SkShaderBase : public SkShader {
 public:
@@ -195,7 +197,7 @@ public:
 
     virtual SkRuntimeEffect* asRuntimeEffect() const { return nullptr; }
 
-    static Type GetFlattenableType() { return kSkShaderBase_Type; }
+    static Type GetFlattenableType() { return kSkShader_Type; }
     Type getFlattenableType() const override { return GetFlattenableType(); }
 
     static sk_sp<SkShaderBase> Deserialize(const void* data, size_t size,
@@ -210,6 +212,9 @@ public:
      *  the localMatrix. If not, return nullptr and ignore the localMatrix parameter.
      */
     virtual sk_sp<SkShader> makeAsALocalMatrixShader(SkMatrix* localMatrix) const;
+
+    SkUpdatableShader* updatableShader(SkArenaAlloc* alloc) const;
+    virtual SkUpdatableShader* onUpdatableShader(SkArenaAlloc* alloc) const;
 
     SkStageUpdater* appendUpdatableStages(const SkStageRec& rec) const {
         return this->onAppendUpdatableStages(rec);
@@ -257,6 +262,16 @@ private:
                                   const SkColorInfo& dst, skvm::Uniforms*, SkArenaAlloc*) const = 0;
 
     using INHERITED = SkShader;
+};
+
+class SkUpdatableShader : public SkShaderBase {
+public:
+    virtual bool update(const SkMatrix& ctm) const = 0;
+
+private:
+    // For serialization.  This will never be called.
+    Factory getFactory() const override { return nullptr; }
+    const char* getTypeName() const override { return nullptr; }
 };
 
 inline SkShaderBase* as_SB(SkShader* shader) {

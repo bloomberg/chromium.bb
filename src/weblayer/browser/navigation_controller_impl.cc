@@ -197,8 +197,9 @@ void NavigationControllerImpl::OnPageDestroyed(Page* page) {
     observer.OnPageDestroyed(page);
 }
 
-void NavigationControllerImpl::OnPageLanguageDetermined(Page* page,
-                                                        std::string language) {
+void NavigationControllerImpl::OnPageLanguageDetermined(
+    Page* page,
+    const std::string& language) {
 #if defined(OS_ANDROID)
   JNIEnv* env = AttachCurrentThread();
   Java_NavigationControllerImpl_onPageLanguageDetermined(
@@ -402,7 +403,10 @@ bool NavigationControllerImpl::IsNavigationEntrySkippable(int index) {
 
 void NavigationControllerImpl::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame())
+  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+  // frames. This caller was converted automatically to the primary main frame
+  // to preserve its semantics. Follow up to confirm correctness.
+  if (!navigation_handle->IsInPrimaryMainFrame())
     return;
 
   // This function should not be called reentrantly.
@@ -470,7 +474,10 @@ void NavigationControllerImpl::DidRedirectNavigation(
 void NavigationControllerImpl::ReadyToCommitNavigation(
     content::NavigationHandle* navigation_handle) {
 #if defined(OS_ANDROID)
-  if (!navigation_handle->IsInMainFrame())
+  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+  // frames. This caller was converted automatically to the primary main frame
+  // to preserve its semantics. Follow up to confirm correctness.
+  if (!navigation_handle->IsInPrimaryMainFrame())
     return;
 
   DCHECK(navigation_map_.find(navigation_handle) != navigation_map_.end());
@@ -486,7 +493,10 @@ void NavigationControllerImpl::ReadyToCommitNavigation(
 
 void NavigationControllerImpl::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame())
+  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+  // frames. This caller was converted automatically to the primary main frame
+  // to preserve its semantics. Follow up to confirm correctness.
+  if (!navigation_handle->IsInPrimaryMainFrame())
     return;
 
   DelayDeletionHelper deletion_helper(this);

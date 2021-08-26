@@ -3,6 +3,12 @@
 // found in the LICENSE file.
 
 package org.chromium.chrome.browser.signin.ui.account_picker;
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.isRoot;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
+
+import static org.hamcrest.core.AllOf.allOf;
 
 import android.view.View;
 
@@ -35,13 +41,13 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
-import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.base.GoogleServiceAuthError;
 import org.chromium.components.signin.base.GoogleServiceAuthError.State;
 import org.chromium.components.signin.test.util.FakeAccountInfoService;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.NightModeTestUtils;
 import org.chromium.ui.test.util.RenderTestRule;
+import org.chromium.ui.test.util.ViewUtils;
 
 import java.io.IOException;
 
@@ -78,8 +84,8 @@ public class AccountPickerBottomSheetRenderTest {
         public void onDismiss() {}
 
         @Override
-        public void signIn(CoreAccountInfo coreAccountInfo,
-                Callback<GoogleServiceAuthError> onSignInErrorCallback) {
+        public void signIn(
+                String accountEmail, Callback<GoogleServiceAuthError> onSignInErrorCallback) {
             if (mError != null) {
                 onSignInErrorCallback.onResult(mError);
             }
@@ -145,6 +151,8 @@ public class AccountPickerBottomSheetRenderTest {
     public void testCollapsedSheetWithAccountView(boolean nightModeEnabled) throws IOException {
         mAccountManagerTestRule.addAccount(TEST_EMAIL1, FULL_NAME1, GIVEN_NAME1, null);
         buildAndShowCollapsedBottomSheet();
+        onView(isRoot()).check(ViewUtils.waitForView(allOf(withText(TEST_EMAIL1), isDisplayed())));
+        onView(isRoot()).check(ViewUtils.waitForView(allOf(withText(FULL_NAME1), isDisplayed())));
         mRenderTestRule.render(
                 mCoordinator.getBottomSheetViewForTesting(), "collapsed_sheet_with_account");
     }

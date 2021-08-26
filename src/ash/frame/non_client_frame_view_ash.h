@@ -14,7 +14,6 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/widget/widget.h"
@@ -88,6 +87,7 @@ class ASH_EXPORT NonClientFrameViewAsh
   void UpdateWindowIcon() override;
   void UpdateWindowTitle() override;
   void SizeConstraintsChanged() override;
+  views::View::Views GetChildrenInZOrder() override;
 
   // views::View:
   gfx::Size CalculatePreferredSize() const override;

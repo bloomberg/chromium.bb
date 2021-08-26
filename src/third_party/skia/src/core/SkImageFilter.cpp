@@ -25,9 +25,9 @@
 #include "src/gpu/GrColorSpaceXform.h"
 #include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/GrTextureProxy.h"
 #include "src/gpu/SkGr.h"
+#include "src/gpu/SurfaceFillContext.h"
 #endif
 #include <atomic>
 
@@ -82,7 +82,7 @@ SkIRect SkImageFilter::filterBounds(const SkIRect& src, const SkMatrix& ctm,
         // Manually apply the crop rect for now, until cropping is performed by a dedicated SkIF.
         SkIRect dst;
         as_IFB(this)->getCropRect().applyTo(
-                SkIRect(output), ctm, as_IFB(this)->affectsTransparentBlack(), &dst);
+                SkIRect(output), ctm, as_IFB(this)->onAffectsTransparentBlack(), &dst);
         return dst;
     }
 }
@@ -104,16 +104,20 @@ SkRect SkImageFilter::computeFastBounds(const SkRect& src) const {
 }
 
 bool SkImageFilter::canComputeFastBounds() const {
-    if (as_IFB(this)->affectsTransparentBlack()) {
-        return false;
+    return !as_IFB(this)->affectsTransparentBlack();
+}
+
+bool SkImageFilter_Base::affectsTransparentBlack() const {
+    if (this->onAffectsTransparentBlack()) {
+        return true;
     }
     for (int i = 0; i < this->countInputs(); i++) {
         const SkImageFilter* input = this->getInput(i);
-        if (input && !input->canComputeFastBounds()) {
-            return false;
+        if (input && as_IFB(input)->affectsTransparentBlack()) {
+            return true;
         }
     }
-    return true;
+    return false;
 }
 
 bool SkImageFilter::asAColorFilter(SkColorFilter** filterPtr) const {
@@ -280,7 +284,7 @@ skif::LayerSpace<SkIRect> SkImageFilter_Base::getInputBounds(
             mapping, desiredBounds, contentBounds);
     // If we know what's actually going to be drawn into the layer, and we don't change transparent
     // black, then we can further restrict the layer to what the known content is
-    if (knownContentBounds && this->canComputeFastBounds()) {
+    if (knownContentBounds && !this->affectsTransparentBlack()) {
         if (!requiredInput.intersect(contentBounds)) {
             // Nothing would be output by the filter, so return empty rect
             return skif::LayerSpace<SkIRect>(SkIRect::MakeEmpty());
@@ -301,7 +305,7 @@ skif::DeviceSpace<SkIRect> SkImageFilter_Base::getOutputBounds(
     SkIRect dst;
     as_IFB(this)->getCropRect().applyTo(
             SkIRect(filterOutput), mapping.layerMatrix(),
-            as_IFB(this)->affectsTransparentBlack(), &dst);
+            as_IFB(this)->onAffectsTransparentBlack(), &dst);
 
     // Map all the way to device space
     return mapping.layerToDevice(skif::LayerSpace<SkIRect>(dst));
@@ -371,7 +375,7 @@ void SkImageFilter_Base::CropRect::applyTo(const SkIRect& imageBounds, const SkM
 bool SkImageFilter_Base::applyCropRect(const Context& ctx, const SkIRect& srcBounds,
                                        SkIRect* dstBounds) const {
     SkIRect tmpDst = this->onFilterNodeBounds(srcBounds, ctx.ctm(), kForward_MapDirection, nullptr);
-    fCropRect.applyTo(tmpDst, ctx.ctm(), this->affectsTransparentBlack(), dstBounds);
+    fCropRect.applyTo(tmpDst, ctx.ctm(), this->onAffectsTransparentBlack(), dstBounds);
     // Intersect against the clip bounds, in case the crop rect has
     // grown the bounds beyond the original clip. This can happen for
     // example in tiling, where the clip is much smaller than the filtered
@@ -581,7 +585,7 @@ SkImageFilter_Base::Context SkImageFilter_Base::mapContext(const Context& ctx) c
 }
 
 #if SK_SUPPORT_GPU
-sk_sp<SkSpecialImage> SkImageFilter_Base::DrawWithFP(GrRecordingContext* context,
+sk_sp<SkSpecialImage> SkImageFilter_Base::DrawWithFP(GrRecordingContext* rContext,
                                                      std::unique_ptr<GrFragmentProcessor> fp,
                                                      const SkIRect& bounds,
                                                      SkColorType colorType,
@@ -593,27 +597,26 @@ sk_sp<SkSpecialImage> SkImageFilter_Base::DrawWithFP(GrRecordingContext* context
                      sk_ref_sp(colorSpace),
                      bounds.size());
 
-    auto surfaceFillContext = GrSurfaceFillContext::Make(context,
-                                                         info,
-                                                         SkBackingFit::kApprox,
-                                                         1,
-                                                         GrMipmapped::kNo,
-                                                         isProtected,
-                                                         kBottomLeft_GrSurfaceOrigin);
-    if (!surfaceFillContext) {
+    auto sfc = rContext->priv().makeSFC(info,
+                                        SkBackingFit::kApprox,
+                                        1,
+                                        GrMipmapped::kNo,
+                                        isProtected,
+                                        kBottomLeft_GrSurfaceOrigin);
+    if (!sfc) {
         return nullptr;
     }
 
     SkIRect dstIRect = SkIRect::MakeWH(bounds.width(), bounds.height());
     SkRect srcRect = SkRect::Make(bounds);
-    surfaceFillContext->fillRectToRectWithFP(srcRect, dstIRect, std::move(fp));
+    sfc->fillRectToRectWithFP(srcRect, dstIRect, std::move(fp));
 
-    return SkSpecialImage::MakeDeferredFromGpu(context,
+    return SkSpecialImage::MakeDeferredFromGpu(rContext,
                                                dstIRect,
                                                kNeedNewImageUniqueID_SpecialImage,
-                                               surfaceFillContext->readSurfaceView(),
-                                               surfaceFillContext->colorInfo().colorType(),
-                                               surfaceFillContext->colorInfo().refColorSpace(),
+                                               sfc->readSurfaceView(),
+                                               sfc->colorInfo().colorType(),
+                                               sfc->colorInfo().refColorSpace(),
                                                surfaceProps);
 }
 

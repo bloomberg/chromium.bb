@@ -24,7 +24,6 @@ class GrAppliedHardClip;
 struct GrGLSLBuiltinUniformHandles;
 class GrGLSLProgramDataManager;
 class GrOp;
-class GrSurfaceDrawContext;
 class GrTextureEffect;
 
 /**
@@ -106,9 +105,10 @@ public:
     bool isColorFragmentProcessor(int idx) const { return idx < fNumColorProcessors; }
     bool isCoverageFragmentProcessor(int idx) const { return idx >= fNumColorProcessors; }
 
-    bool usesVaryingCoords() const {
+    bool usesLocalCoords() const {
+        // The sample coords for the top level FPs are implicitly the GP's local coords.
         for (const auto& fp : fFragmentProcessors) {
-            if (fp->usesVaryingCoords()) {
+            if (fp->usesSampleCoords()) {
                 return true;
             }
         }

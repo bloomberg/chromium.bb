@@ -10,6 +10,7 @@
 #include "base/observer_list_types.h"
 #include "base/types/pass_key.h"
 #include "content/browser/renderer_host/back_forward_cache_impl.h"
+#include "content/browser/renderer_host/stored_page.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/render_frame_host.h"
@@ -73,7 +74,13 @@ class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
     kNavigationRequestNetworkError = 20,
     kMaxNumOfRunningPrerendersExceeded = 21,
     kCancelAllHostsForTesting = 22,
-    kMaxValue = kCancelAllHostsForTesting
+    kDidFailLoad = 23,
+    kStop = 24,
+    kSslCertificateError = 25,
+    kLoginAuthRequested = 26,
+    kUaChangeRequiresReload = 27,
+    kBlockedByClient = 28,
+    kMaxValue = kBlockedByClient,
   };
 
   PrerenderHost(blink::mojom::PrerenderAttributesPtr attributes,
@@ -90,16 +97,14 @@ class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
 
   // WebContentsObserver implementation:
   void DidFinishNavigation(NavigationHandle* navigation_handle) override;
+  void ResourceLoadComplete(
+      RenderFrameHost* render_frame_host,
+      const GlobalRequestID& request_id,
+      const blink::mojom::ResourceLoadInfo& resource_load_info) override;
 
-  // Activates the prerendered page and returns BackForwardCacheImpl::Entry
-  // containing the page. This must be called after this host gets ready for
-  // activation.
-  //
-  // TODO(https://crbug.com/1181263): Refactor BackForwardCacheImpl::Entry into
-  // a generic "page" object to make clear that the same logic is also used for
-  // prerendering.
-  std::unique_ptr<BackForwardCacheImpl::Entry> Activate(
-      NavigationRequest& navigation_request);
+  // Activates the prerendered page and returns StoredPage containing the page.
+  // This must be called after this host gets ready for activation.
+  std::unique_ptr<StoredPage> Activate(NavigationRequest& navigation_request);
 
   // Returns true if the navigation params that were used in the initial
   // prerender navigation (i.e., in StartPrerendering()) match the navigation
@@ -108,6 +113,8 @@ class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
   // PrerenderHost.
   bool AreInitialPrerenderNavigationParamsCompatibleWithNavigation(
       NavigationRequest& navigation_request);
+
+  bool IsFramePolicyCompatibleWithPrimaryFrameTree();
 
   // Returns the main RenderFrameHost of the prerendered page.
   // This must be called after StartPrerendering() and before Activate().
@@ -118,25 +125,35 @@ class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
   void RecordFinalStatus(base::PassKey<PrerenderHostRegistry>,
                          FinalStatus status);
 
-  // Waits until the page load finishes.
-  void WaitForLoadStopForTesting();
+  enum class LoadingOutcome {
+    kLoadingCompleted,
+    kPrerenderingCancelled,
+  };
+
+  // Waits until the page load finishes. Returns the loading status indicating
+  // how the operation was finished.
+  LoadingOutcome WaitForLoadStopForTesting();
 
   const GURL& GetInitialUrl() const;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  // The initial navigation id is set by the PrerenderNavigationThrottle
+  // The initial navigation is set by the PrerenderNavigationThrottle
   // when the PrerenderHost is first navigated, which happens immediately
   // after creation.
+  void SetInitialNavigation(NavigationRequest* navigation);
   absl::optional<int64_t> GetInitialNavigationId() const;
-  void SetInitialNavigationId(int64_t navigation_id);
 
   url::Origin initiator_origin() const { return initiator_origin_; }
 
   int frame_tree_node_id() const { return frame_tree_node_id_; }
 
   bool is_ready_for_activation() const { return is_ready_for_activation_; }
+
+  const absl::optional<FinalStatus>& final_status() const {
+    return final_status_;
+  }
 
  private:
   class PageHolder;

@@ -15,12 +15,6 @@
 #include <limits>
 #include <set>
 #include <string>
-#include <vector>
-
-#if defined(OS_POSIX) || defined(OS_FUCHSIA)
-#include <sys/stat.h>
-#include <unistd.h>
-#endif
 
 #include "base/base_export.h"
 #include "base/callback_forward.h"
@@ -33,6 +27,8 @@
 #if defined(OS_WIN)
 #include "base/win/windows_types.h"
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+#include <sys/stat.h>
+#include <unistd.h>
 #include "base/file_descriptor_posix.h"
 #include "base/posix/eintr_wrapper.h"
 #endif

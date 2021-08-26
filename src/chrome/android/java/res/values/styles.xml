@@ -309,9 +309,12 @@
     </style>
 
     <style name="NtpHeaderTabLayoutStyle" parent="TabLayoutStyle">
+        <item name="tabIndicatorColor">@color/default_icon_color_blue</item>
         <item name="tabTextAppearance">@style/TextAppearance.TextAccentMediumThick</item>
         <item name="tabGravity">center</item>
         <item name="android:background">@android:color/transparent</item>
+        <item name="tabPaddingEnd">7dp</item>
+        <item name="tabPaddingStart">7dp</item>
     </style>
 
     <style name="TextAppearance.TabLayout" parent="TextAppearance.TextAccentMediumThick">
@@ -328,7 +331,7 @@
     <style name="TabBarLineShadow">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">1dp</item>
-        <item name="android:src">@color/hairline_stroke_color</item>
+        <item name="android:src">@color/divider_line_bg_color</item>
         <item name="android:scaleType">fitXY</item>
     </style>
     <style name="TextAppearance.UpdateMenuItem">

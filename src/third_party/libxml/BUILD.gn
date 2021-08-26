@@ -137,12 +137,13 @@ static_library("libxml") {
     ":libxml_utils",
     ":xml_reader",
     ":xml_writer",
+    "//cef:*",
     "//chromecast/internal",
     "//testing/libfuzzer/*",
     "//third_party/blink/renderer/*",
     "//third_party/fontconfig",
     "//third_party/libxslt",
-    "//cef:*",
+    "//third_party/maldoca/*",
   ]
   if (is_ios) {
     foreach(tgt, ios_libxml_visibility_additions) {

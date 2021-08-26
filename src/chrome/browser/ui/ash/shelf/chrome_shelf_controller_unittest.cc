@@ -121,7 +121,8 @@
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "components/sync/driver/test_sync_service.h"
-#include "components/sync/protocol/sync.pb.h"
+#include "components/sync/protocol/app_list_specifics.pb.h"
+#include "components/sync/protocol/entity_specifics.pb.h"
 #include "components/sync/test/model/fake_sync_change_processor.h"
 #include "components/sync/test/model/sync_error_factory_mock.h"
 #include "components/sync_preferences/pref_model_associator.h"
@@ -2155,7 +2156,7 @@ TEST_F(ChromeShelfControllerWithArcTest, ArcDeferredLaunchForActiveApp) {
 
   // Play Store app is ARC app that might be represented by native Chrome
   // platform app.
-  model_->SetShelfItemDelegate(
+  model_->ReplaceShelfItemDelegate(
       shelf_id,
       std::make_unique<AppServiceAppWindowShelfItemController>(
           shelf_id, shelf_controller_->app_service_app_window_controller()));

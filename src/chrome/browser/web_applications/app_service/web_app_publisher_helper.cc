@@ -9,7 +9,6 @@
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
-#include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/intent_util.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -20,13 +19,13 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_manager.h"
 #include "chrome/browser/web_applications/components/app_registry_controller.h"
-#include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/chrome_features.h"
@@ -486,13 +485,15 @@ content::WebContents* WebAppPublisherHelper::Launch(
 
 content::WebContents* WebAppPublisherHelper::LaunchAppWithFiles(
     const std::string& app_id,
-    apps::mojom::LaunchContainer container,
     int32_t event_flags,
     apps::mojom::LaunchSource launch_source,
     apps::mojom::FilePathsPtr file_paths) {
-  apps::AppLaunchParams params(
-      app_id, container, ui::DispositionFromEventFlags(event_flags),
-      apps::GetAppLaunchSource(launch_source), display::kDefaultDisplayId);
+  DisplayMode display_mode = registrar().GetAppEffectiveDisplayMode(app_id);
+  apps::AppLaunchParams params = apps::CreateAppIdLaunchParamsWithEventFlags(
+      app_id, event_flags, apps::GetAppLaunchSource(launch_source),
+      display::kDefaultDisplayId,
+      /*fallback_container=*/
+      ConvertDisplayModeToAppLaunchContainer(display_mode));
   if (file_paths) {
     for (const auto& file_path : file_paths->file_paths) {
       params.launch_files.push_back(file_path);
@@ -710,7 +711,7 @@ content::WebContents* WebAppPublisherHelper::ExecuteContextMenuCommand(
 }
 
 WebAppRegistrar& WebAppPublisherHelper::registrar() const {
-  return *provider_->registrar().AsWebAppRegistrar();
+  return provider_->registrar();
 }
 
 void WebAppPublisherHelper::OnWebAppInstalled(const AppId& app_id) {
@@ -956,8 +957,7 @@ void WebAppPublisherHelper::OnContentSettingChanged(
 
 void WebAppPublisherHelper::Init(bool observe_media_requests) {
   // Allow for web app migration tests.
-  if (!AreWebAppsEnabled(profile_) ||
-      !provider_->registrar().AsWebAppRegistrar()) {
+  if (!AreWebAppsEnabled(profile_)) {
     return;
   }
 
@@ -994,13 +994,8 @@ IconEffects WebAppPublisherHelper::GetIconEffects(const WebApp* web_app) {
   }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
-  if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
-    icon_effects |= web_app->is_generated_icon()
-                        ? IconEffects::kCrOsStandardMask
-                        : IconEffects::kCrOsStandardIcon;
-  } else {
-    icon_effects |= IconEffects::kResizeAndPad;
-  }
+  icon_effects |= web_app->is_generated_icon() ? IconEffects::kCrOsStandardMask
+                                               : IconEffects::kCrOsStandardIcon;
 #endif
 
   if (IsPaused(web_app->app_id())) {

@@ -13,11 +13,8 @@
 #include "components/media_router/common/mojom/media_status.mojom.h"
 #include "services/media_session/public/cpp/media_metadata.h"
 
+class MediaItemsManager;
 class Profile;
-
-namespace media_message_center {
-class MediaNotificationController;
-}  // namespace media_message_center
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -38,8 +35,7 @@ class CastMediaNotificationItem
 
   CastMediaNotificationItem(
       const media_router::MediaRoute& route,
-      media_message_center::MediaNotificationController*
-          notification_controller,
+      MediaItemsManager* items_manager,
       std::unique_ptr<CastMediaSessionController> session_controller,
       Profile* profile);
   CastMediaNotificationItem(const CastMediaNotificationItem&) = delete;
@@ -54,6 +50,8 @@ class CastMediaNotificationItem
   void SeekTo(base::TimeDelta time) override;
   void Dismiss() override;
   media_message_center::SourceType SourceType() override;
+  void SetVolume(float volume) override;
+  void SetMute(bool mute) override;
 
   // media_router::mojom::MediaStatusObserver:
   void OnMediaStatusUpdated(
@@ -125,8 +123,7 @@ class CastMediaNotificationItem
   // The notification is shown when active.
   bool is_active_ = true;
 
-  media_message_center::MediaNotificationController* const
-      notification_controller_;
+  MediaItemsManager* const items_manager_;
   media_message_center::MediaNotificationView* view_ = nullptr;
   Profile* const profile_;
 
@@ -137,6 +134,8 @@ class CastMediaNotificationItem
   std::vector<media_session::mojom::MediaSessionAction> actions_;
   media_session::mojom::MediaSessionInfoPtr session_info_;
   media_session::MediaPosition media_position_;
+  bool is_muted_ = false;
+  float volume_ = 0.0;
   mojo::Receiver<media_router::mojom::MediaStatusObserver> observer_receiver_{
       this};
   base::WeakPtrFactory<CastMediaNotificationItem> weak_ptr_factory_{this};

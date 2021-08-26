@@ -135,6 +135,8 @@ extern const base::Feature kAutofillServerCommunication;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillShowTypePredictions;
 COMPONENT_EXPORT(AUTOFILL)
+extern const base::Feature kAutofillSilentProfileUpdateForInsufficientImport;
+COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillSkipComparingInferredLabels;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillStrictContextualCardNameConditions;
@@ -147,6 +149,8 @@ COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillUseImprovedLabelDisambiguation;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillUseNewSectioningMethod;
+COMPONENT_EXPORT(AUTOFILL)
+extern const base::Feature kAutofillUseNewFormExtraction;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature
     kAutofillUseOnlyFormRendererIDForOldDuplicateFormRemoval;

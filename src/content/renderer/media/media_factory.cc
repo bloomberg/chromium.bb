@@ -18,6 +18,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
+#include "build/chromecast_buildflags.h"
+#include "build/os_buildflags.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
@@ -117,10 +119,11 @@
 #include "media/remoting/remoting_renderer_factory.h"  // nogncheck
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
+#include "content/renderer/media/win/dcomp_texture_wrapper_impl.h"
 #include "media/cdm/win/media_foundation_cdm.h"
 #include "media/mojo/clients/win/media_foundation_renderer_client_factory.h"
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 namespace {
 
@@ -287,6 +290,7 @@ std::unique_ptr<blink::WebVideoFrameSubmitter> CreateSubmitter(
         main_thread_compositor_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner>*
         video_frame_compositor_task_runner,
+    const viz::FrameSinkId& parent_frame_sink_id,
     const cc::LayerTreeSettings& settings,
     media::MediaLog* media_log,
     content::RenderFrame* render_frame,
@@ -327,7 +331,7 @@ std::unique_ptr<blink::WebVideoFrameSubmitter> CreateSubmitter(
       &PostContextProviderToCallback, main_thread_compositor_task_runner);
   return blink::WebVideoFrameSubmitter::Create(
       std::move(post_to_context_provider_cb), std::move(log_roughness_cb),
-      settings, use_sync_primitives);
+      parent_frame_sink_id, settings, use_sync_primitives);
 }
 
 }  // namespace
@@ -521,7 +525,8 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
   const auto surface_layer_mode = GetSurfaceLayerMode(MediaPlayerType::kNormal);
   std::unique_ptr<blink::WebVideoFrameSubmitter> submitter = CreateSubmitter(
       main_thread_compositor_task_runner, &video_frame_compositor_task_runner,
-      settings, media_log.get(), render_frame_, surface_layer_mode);
+      parent_frame_sink_id, settings, media_log.get(), render_frame_,
+      surface_layer_mode);
 
   scoped_refptr<base::SingleThreadTaskRunner> media_task_runner =
       render_thread->GetMediaThreadTaskRunner();
@@ -714,16 +719,21 @@ MediaFactory::CreateRendererFactorySelector(
       RendererType::kCourier, std::move(courier_factory), is_remoting_cb);
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // Only use MediaFoundationRenderer when MediaFoundationCdm is available.
   if (media::MediaFoundationCdm::IsAvailable()) {
+    auto dcomp_texture_creation_cb =
+        base::BindRepeating(&DCOMPTextureWrapperImpl::Create,
+                            render_thread->GetDCOMPTextureFactory(),
+                            render_thread->GetMediaThreadTaskRunner());
+
     factory_selector->AddFactory(
         RendererType::kMediaFoundation,
         std::make_unique<media::MediaFoundationRendererClientFactory>(
-            render_thread->compositor_task_runner(),
+            std::move(dcomp_texture_creation_cb),
             CreateMojoRendererFactory()));
   }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 #if BUILDFLAG(IS_CHROMECAST)
   if (renderer_media_playback_options.is_remoting_renderer_enabled()) {
@@ -808,7 +818,8 @@ blink::WebMediaPlayer* MediaFactory::CreateWebMediaPlayerForMediaStream(
       GetSurfaceLayerMode(MediaPlayerType::kMediaStream);
   std::unique_ptr<blink::WebVideoFrameSubmitter> submitter = CreateSubmitter(
       main_thread_compositor_task_runner, &video_frame_compositor_task_runner,
-      settings, media_log.get(), render_frame_, surface_layer_mode);
+      parent_frame_sink_id, settings, media_log.get(), render_frame_,
+      surface_layer_mode);
 
   return new blink::WebMediaPlayerMS(
       frame, client, GetWebMediaPlayerDelegate(), std::move(media_log),

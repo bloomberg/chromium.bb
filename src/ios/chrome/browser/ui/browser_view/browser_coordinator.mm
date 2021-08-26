@@ -61,7 +61,6 @@
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_mediator.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
-#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/ui/main/default_browser_scene_agent.h"
 #import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
 #import "ios/chrome/browser/ui/open_in/open_in_coordinator.h"
@@ -82,7 +81,6 @@
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
-#import "ios/chrome/browser/web/features.h"
 #import "ios/chrome/browser/web/font_size/font_size_tab_helper.h"
 #import "ios/chrome/browser/web/print/print_tab_helper.h"
 #import "ios/chrome/browser/web/repost_form_tab_helper.h"
@@ -90,6 +88,7 @@
 #import "ios/chrome/browser/web/web_navigation_browser_agent.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
+#import "ios/public/provider/chrome/browser/text_zoom/text_zoom_api.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -401,6 +400,7 @@
                          browser:self.browser];
   self.formInputAccessoryCoordinator.navigator = self;
   [self.formInputAccessoryCoordinator start];
+  self.viewController.inputViewProvider = self.formInputAccessoryCoordinator;
 
   if (base::FeatureList::IsEnabled(kDownloadMobileConfigFile)) {
     self.mobileConfigCoordinator = [[MobileConfigCoordinator alloc]
@@ -441,7 +441,6 @@
       initWithBaseViewController:self.viewController
                          browser:self.browser];
 
-  if (base::FeatureList::IsEnabled(kInfobarOverlayUI)) {
     self.infobarBannerOverlayContainerCoordinator =
         [[OverlayContainerCoordinator alloc]
             initWithBaseViewController:self.viewController
@@ -459,7 +458,6 @@
     [self.infobarModalOverlayContainerCoordinator start];
     self.viewController.infobarModalOverlayContainerViewController =
         self.infobarModalOverlayContainerCoordinator.viewController;
-  }
 }
 
 // Stops child coordinators.
@@ -646,7 +644,6 @@
 }
 
 - (void)showAddCreditCard {
-  [self.formInputAccessoryCoordinator reset];
   [self.addCreditCardCoordinator start];
 }
 
@@ -879,7 +876,7 @@
 }
 
 - (void)closeTextZoom {
-  if (!base::FeatureList::IsEnabled(web::kWebPageTextAccessibility)) {
+  if (!ios::provider::IsTextZoomEnabled()) {
     return;
   }
 

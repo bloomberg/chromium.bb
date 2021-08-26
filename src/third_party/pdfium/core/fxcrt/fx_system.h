@@ -83,10 +83,7 @@ extern "C" {
 #endif  // __cplusplus
 
 #if defined(OS_WIN)
-#define FXSYS_GetACP GetACP
 #define FXSYS_itoa _itoa
-#define FXSYS_WideCharToMultiByte WideCharToMultiByte
-#define FXSYS_MultiByteToWideChar MultiByteToWideChar
 #define FXSYS_strlwr _strlwr
 #define FXSYS_strupr _strupr
 #define FXSYS_stricmp _stricmp
@@ -100,22 +97,7 @@ size_t FXSYS_wcsftime(wchar_t* strDest,
 #define FXSYS_SetLastError SetLastError
 #define FXSYS_GetLastError GetLastError
 #else  // defined(OS_WIN)
-int FXSYS_GetACP();
 char* FXSYS_itoa(int value, char* str, int radix);
-int FXSYS_WideCharToMultiByte(uint32_t codepage,
-                              uint32_t dwFlags,
-                              const wchar_t* wstr,
-                              int wlen,
-                              char* buf,
-                              int buflen,
-                              const char* default_str,
-                              int* pUseDefault);
-int FXSYS_MultiByteToWideChar(uint32_t codepage,
-                              uint32_t dwFlags,
-                              const char* bstr,
-                              int blen,
-                              wchar_t* buf,
-                              int buflen);
 char* FXSYS_strlwr(char* str);
 char* FXSYS_strupr(char* str);
 int FXSYS_stricmp(const char* str1, const char* str2);
@@ -127,18 +109,21 @@ void FXSYS_SetLastError(uint32_t err);
 uint32_t FXSYS_GetLastError();
 #endif  // defined(OS_WIN)
 
-#define FXSYS_WORD_GET_LSBFIRST(p)                            \
-  (static_cast<uint16_t>((static_cast<uint16_t>(p[1]) << 8) | \
-                         (static_cast<uint16_t>(p[0]))))
-#define FXSYS_WORD_GET_MSBFIRST(p)                            \
-  (static_cast<uint16_t>((static_cast<uint16_t>(p[0]) << 8) | \
-                         (static_cast<uint16_t>(p[1]))))
-#define FXSYS_DWORD_GET_LSBFIRST(p)                                            \
-  ((static_cast<uint32_t>(p[3]) << 24) | (static_cast<uint32_t>(p[2]) << 16) | \
-   (static_cast<uint32_t>(p[1]) << 8) | (static_cast<uint32_t>(p[0])))
-#define FXSYS_DWORD_GET_MSBFIRST(p)                                            \
-  ((static_cast<uint32_t>(p[0]) << 24) | (static_cast<uint32_t>(p[1]) << 16) | \
-   (static_cast<uint32_t>(p[2]) << 8) | (static_cast<uint32_t>(p[3])))
+#define FXSYS_UINT16_GET_LSBFIRST(p)                            \
+  (static_cast<uint16_t>((static_cast<uint32_t>((p)[1]) << 8) | \
+                         (static_cast<uint32_t>((p)[0]))))
+#define FXSYS_UINT16_GET_MSBFIRST(p)                            \
+  (static_cast<uint16_t>((static_cast<uint32_t>((p)[0]) << 8) | \
+                         (static_cast<uint32_t>((p)[1]))))
+#define FXSYS_UINT32_GET_LSBFIRST(p)       \
+  ((static_cast<uint32_t>((p)[3]) << 24) | \
+   (static_cast<uint32_t>((p)[2]) << 16) | \
+   (static_cast<uint32_t>((p)[1]) << 8) | (static_cast<uint32_t>((p)[0])))
+#define FXSYS_UINT32_GET_MSBFIRST(p)       \
+  ((static_cast<uint32_t>((p)[0]) << 24) | \
+   (static_cast<uint32_t>((p)[1]) << 16) | \
+   (static_cast<uint32_t>((p)[2]) << 8) | (static_cast<uint32_t>((p)[3])))
+
 int32_t FXSYS_atoi(const char* str);
 uint32_t FXSYS_atoui(const char* str);
 int32_t FXSYS_wtoi(const wchar_t* str);
@@ -147,6 +132,7 @@ const char* FXSYS_i64toa(int64_t value, char* str, int radix);
 int FXSYS_roundf(float f);
 int FXSYS_round(double d);
 float FXSYS_sqrt2(float a, float b);
+
 #ifdef __cplusplus
 }  // extern C
 #endif  // __cplusplus

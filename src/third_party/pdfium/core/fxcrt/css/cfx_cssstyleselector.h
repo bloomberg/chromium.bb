@@ -7,13 +7,15 @@
 #ifndef CORE_FXCRT_CSS_CFX_CSSSTYLESELECTOR_H_
 #define CORE_FXCRT_CSS_CFX_CSSSTYLESELECTOR_H_
 
+#include <stdint.h>
+
 #include <memory>
 #include <vector>
 
 #include "core/fxcrt/css/cfx_css.h"
 #include "core/fxcrt/css/cfx_cssrulecollection.h"
 #include "core/fxcrt/css/cfx_cssvalue.h"
-#include "core/fxcrt/fx_system.h"
+#include "core/fxcrt/mask.h"
 #include "core/fxcrt/retain_ptr.h"
 
 class CFX_CSSComputedStyle;
@@ -73,7 +75,8 @@ class CFX_CSSStyleSelector {
   uint16_t ToFontWeight(CFX_CSSPropertyValue eValue);
   CFX_CSSFontStyle ToFontStyle(CFX_CSSPropertyValue eValue);
   CFX_CSSVerticalAlign ToVerticalAlign(CFX_CSSPropertyValue eValue);
-  uint32_t ToTextDecoration(const RetainPtr<CFX_CSSValueList>& pList);
+  Mask<CFX_CSSTEXTDECORATION> ToTextDecoration(
+      const RetainPtr<CFX_CSSValueList>& pList);
   CFX_CSSFontVariant ToFontVariant(CFX_CSSPropertyValue eValue);
 
   float m_fDefaultFontSize = 12.0f;

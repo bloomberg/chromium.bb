@@ -16,7 +16,14 @@
 
 #include <atomic>
 #include <memory>
+#include <string>
+#include <utility>
 
+#include "gmock/gmock.h"
+#include "gtest/gtest.h"
+#include "absl/synchronization/mutex.h"
+#include "absl/time/clock.h"
+#include "absl/time/time.h"
 #include "core/internal/client_proxy.h"
 #include "core/internal/endpoint_channel_manager.h"
 #include "core/internal/offline_frames.h"
@@ -27,11 +34,6 @@
 #include "platform/public/logging.h"
 #include "platform/public/pipe.h"
 #include "proto/connections_enums.pb.h"
-#include "gmock/gmock.h"
-#include "gtest/gtest.h"
-#include "absl/synchronization/mutex.h"
-#include "absl/time/clock.h"
-#include "absl/time/time.h"
 
 namespace location {
 namespace nearby {
@@ -113,7 +115,10 @@ class EndpointManagerTest : public ::testing::Test {
   }
 
   ClientProxy client_;
-  ConnectionOptions options_;
+  ConnectionOptions options_{
+      .keep_alive_interval_millis = 5000,
+      .keep_alive_timeout_millis = 30000,
+  };
   std::vector<std::unique_ptr<EndpointManager::FrameProcessor>> processors_;
   EndpointChannelManager ecm_;
   EndpointManager em_{&ecm_};

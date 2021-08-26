@@ -21,8 +21,11 @@ export const EventType = {
   SEND_IMAGES: 'send_images',
   SEND_LOCAL_IMAGE_DATA: 'send_local_image_data',
   SEND_LOCAL_IMAGES: 'send_local_images',
+  SEND_CURRENT_WALLPAPER_ASSET_ID: 'send_current_wallpaper_asset_id',
+  SEND_PENDING_WALLPAPER_ASSET_ID: 'send_pending_wallpaper_asset_id',
   SELECT_IMAGE: 'select_image',
   SELECT_LOCAL_IMAGE: 'select_local_image',
+  SEND_VISIBLE: 'send_visible',
 };
 
 /**
@@ -66,16 +69,37 @@ export let SendImagesEvent;
 export let SendLocalImagesEvent;
 
 /**
+ * Sends local image data keyed by stringified local image id.
  * @typedef {{
  *   type: EventType,
- *   id: !mojoBase.mojom.UnguessableToken,
- *   data: string,
+ *   data: !Object<string, string>,
  * }}
  */
 export let SendLocalImageDataEvent;
 
+/**
+ * @typedef {{
+ *   type: EventType,
+ *   assetId: ?bigint,
+ * }}
+ */
+export let SendCurrentWallpaperAssetIdEvent;
+
+/**
+ * @typedef {{
+ *  type: EventType,
+ *  assetId: ?bigint,
+ * }}
+ */
+export let SendPendingWallpaperAssetIdEvent;
 
 /**
  * @typedef {{ type: EventType, assetId: bigint }}
  */
 export let SelectImageEvent;
+
+/**
+ * Notify an iframe if its visible state changes.
+ * @typedef {{ type: EventType, visible: boolean }}
+ */
+export let SendVisibleEvent;

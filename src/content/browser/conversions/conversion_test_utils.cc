@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/task_runner_util.h"
 #include "base/test/bind.h"
+#include "content/browser/conversions/storable_conversion.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -89,31 +90,48 @@ base::Time ConfigurableStorageDelegate::GetReportTime(
   return report.impression.impression_time() +
          base::TimeDelta::FromMilliseconds(report_time_ms_);
 }
+
 int ConfigurableStorageDelegate::GetMaxConversionsPerImpression(
     StorableImpression::SourceType source_type) const {
   return max_conversions_per_impression_;
 }
+
 int ConfigurableStorageDelegate::GetMaxImpressionsPerOrigin() const {
   return max_impressions_per_origin_;
 }
+
 int ConfigurableStorageDelegate::GetMaxConversionsPerOrigin() const {
   return max_conversions_per_origin_;
 }
+
 int ConfigurableStorageDelegate::GetMaxAttributionDestinationsPerEventSource()
     const {
   return max_attribution_destinations_per_event_source_;
 }
+
 ConversionStorage::Delegate::RateLimitConfig
 ConfigurableStorageDelegate::GetRateLimits() const {
   return rate_limits_;
 }
+
 StorableImpression::AttributionLogic
 ConfigurableStorageDelegate::SelectAttributionLogic(
     const StorableImpression& impression) const {
   return attribution_logic_;
 }
+
 uint64_t ConfigurableStorageDelegate::GetFakeEventSourceTriggerData() const {
   return fake_event_source_trigger_data_;
+}
+
+base::TimeDelta
+ConfigurableStorageDelegate::GetDeleteExpiredImpressionsFrequency() const {
+  return delete_expired_impressions_frequency_;
+}
+
+base::TimeDelta
+ConfigurableStorageDelegate::GetDeleteExpiredRateLimitsFrequency() const {
+  return delete_expired_rate_limits_frequency_;
 }
 
 ConversionManager* TestManagerProvider::GetManager(
@@ -252,12 +270,20 @@ ImpressionBuilder& ImpressionBuilder::SetImpressionId(
   return *this;
 }
 
+ImpressionBuilder& ImpressionBuilder::SetDedupKeys(
+    std::vector<int64_t> dedup_keys) {
+  dedup_keys_ = std::move(dedup_keys);
+  return *this;
+}
+
 StorableImpression ImpressionBuilder::Build() const {
-  return StorableImpression(impression_data_, impression_origin_,
-                            conversion_origin_, reporting_origin_,
-                            impression_time_,
-                            /*expiry_time=*/impression_time_ + expiry_,
-                            source_type_, priority_, impression_id_);
+  StorableImpression impression(impression_data_, impression_origin_,
+                                conversion_origin_, reporting_origin_,
+                                impression_time_,
+                                /*expiry_time=*/impression_time_ + expiry_,
+                                source_type_, priority_, impression_id_);
+  impression.SetDedupKeys(dedup_keys_);
+  return impression;
 }
 
 StorableConversion DefaultConversion() {
@@ -268,6 +294,8 @@ ConversionBuilder::ConversionBuilder()
     : conversion_destination_(
           net::SchemefulSite(GURL(kDefaultConversionDestination))),
       reporting_origin_(url::Origin::Create(GURL(kDefaultReportOrigin))) {}
+
+ConversionBuilder::~ConversionBuilder() = default;
 
 ConversionBuilder& ConversionBuilder::SetConversionData(
     uint64_t conversion_data) {
@@ -298,14 +326,20 @@ ConversionBuilder& ConversionBuilder::SetPriority(int64_t priority) {
   return *this;
 }
 
+ConversionBuilder& ConversionBuilder::SetDedupKey(
+    absl::optional<int64_t> dedup_key) {
+  dedup_key_ = dedup_key;
+  return *this;
+}
+
 StorableConversion ConversionBuilder::Build() const {
   return StorableConversion(conversion_data_, conversion_destination_,
                             reporting_origin_, event_source_trigger_data_,
-                            priority_);
+                            priority_, dedup_key_);
 }
 
 // Custom comparator for StorableImpressions that does not take impression IDs
-// into account.
+// or dedup keys into account.
 bool operator==(const StorableImpression& a, const StorableImpression& b) {
   const auto tie = [](const StorableImpression& impression) {
     return std::make_tuple(
@@ -324,7 +358,7 @@ bool operator==(const ConversionReport& a, const ConversionReport& b) {
   const auto tie = [](const ConversionReport& conversion) {
     return std::make_tuple(conversion.impression, conversion.conversion_data,
                            conversion.conversion_time, conversion.report_time,
-                           conversion.extra_delay);
+                           conversion.original_report_time);
   };
   return tie(a) == tie(b);
 }
@@ -332,7 +366,8 @@ bool operator==(const ConversionReport& a, const ConversionReport& b) {
 bool operator==(const SentReportInfo& a, const SentReportInfo& b) {
   const auto tie = [](const SentReportInfo& info) {
     return std::make_tuple(info.report_url, info.report_body,
-                           info.http_response_code);
+                           info.http_response_code, info.original_report_time,
+                           info.conversion_id);
   };
   return tie(a) == tie(b);
 }
@@ -352,6 +387,15 @@ std::vector<ConversionReport> GetConversionsToReportForTesting(
           })));
   run_loop.Run();
   return conversion_reports;
+}
+
+SentReportInfo GetBlankSentReportInfo() {
+  return SentReportInfo(/*conversion_id=*/0,
+                        /*original_report_time=*/base::Time(),
+                        /*report_url=*/GURL(),
+                        /*report_body=*/"",
+                        /*http_response_code=*/0,
+                        /*should_retry*/ false);
 }
 
 }  // namespace content

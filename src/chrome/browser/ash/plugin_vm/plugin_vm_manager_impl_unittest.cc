@@ -28,9 +28,9 @@
 #include "chromeos/dbus/concierge/fake_concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/dlcservice/fake_dlcservice_client.h"
-#include "chromeos/dbus/fake_vm_plugin_dispatcher_client.h"
 #include "chromeos/dbus/seneschal/fake_seneschal_client.h"
 #include "chromeos/dbus/seneschal/seneschal_client.h"
+#include "chromeos/dbus/vm_plugin_dispatcher/fake_vm_plugin_dispatcher_client.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -124,6 +124,14 @@ class PluginVmManagerImplTest : public testing::Test {
     state_changed_signal.set_vm_name(kPluginVmName);
     state_changed_signal.set_vm_state(state);
     VmPluginDispatcherClient().NotifyVmStateChanged(state_changed_signal);
+  }
+
+  void NotifyVmStarted() {
+    vm_tools::concierge::VmStartedSignal signal;
+    signal.set_name(kPluginVmName);
+    signal.set_owner_id(
+        ash::ProfileHelper::GetUserIdHashFromProfile(testing_profile_.get()));
+    ConciergeClient().NotifyVmStarted(signal);
   }
 
   content::BrowserTaskEnvironment task_environment_;
@@ -245,6 +253,7 @@ TEST_F(PluginVmManagerImplTest, OnStateChangedRunningStoppedSuspended) {
   EXPECT_TRUE(
       chrome_shelf_controller_->IsOpen(ash::ShelfID(kPluginVmShelfAppId)));
 
+  NotifyVmStarted();
   NotifyVmStateChanged(vm_tools::plugin_dispatcher::VmState::VM_STATE_RUNNING);
   task_environment_.RunUntilIdle();
   EXPECT_GE(ConciergeClient().get_vm_info_call_count(), 1);

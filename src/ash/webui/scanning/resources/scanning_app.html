@@ -150,15 +150,6 @@
     text-decoration: none;
   }
 
-  cr-dialog::part(dialog) {
-    width: 340px;
-  }
-
-  cr-dialog [slot=title] {
-    font-weight: 500;
-    padding-bottom: 12px;
-  }
-
   #dialogInfoIcon {
     display: block;
     fill: var(--google-red-600);
@@ -196,8 +187,10 @@
           <file-type-select id="fileTypeSelect"
               disabled="[[settingsDisabled_]]"
               selected-file-type="{{selectedFileType}}"></file-type-select>
-          <multi-page-checkbox id="multiPageCheckbox" hidden="[[!showMultiPageCheckbox_]]"
-              multi-page-scan-checked="{{multiPageScanChecked}}">
+          <multi-page-checkbox id="multiPageCheckbox"
+              hidden="[[!showMultiPageCheckbox_]]"
+              multi-page-scan-checked="{{multiPageScanChecked}}"
+              disabled="[[settingsDisabled_]]">
           </multi-page-checkbox>
           <div id="more-settings-line-separator"></div>
           <cr-button id="moreSettingsButton" on-click="toggleClicked_"
@@ -245,7 +238,10 @@
         </scan-done-section>
       </template>
       <template is="dom-if" if="[[showMultiPageScan_]]">
-        <multi-page-scan page-number="[[pageNumber_]]"></multi-page-scan>
+        <multi-page-scan page-number="[[pageNumber_]]"
+            on-scan-next-page="onScanNextPage_"
+            on-complete-multi-page-scan="onCompleteMultiPageScan_">
+        </multi-page-scan>
       </template>
     </div>
   </div>
@@ -262,7 +258,7 @@
       </div>
     </div>
   </cr-toast>
-  <cr-dialog id="scanFailedDialog">
+  <cr-dialog id="scanFailedDialog" on-cancel="onScanFailedDialogOkClick_">
     <div slot="title">
       <iron-icon id="dialogInfoIcon" icon="cr:info-outline" aria-hidden="true">
       </iron-icon>
@@ -272,11 +268,12 @@
       [[i18n(scanFailedDialogTextKey_)]]
     </div>
     <div slot="button-container">
-      <cr-button class="cancel-button" on-click="onDialogGetHelpClick_">
+      <cr-button class="cancel-button"
+          on-click="onScanFailedDialogGetHelpClick_">
         [[i18n('getHelpLinkText')]]
       </cr-button>
       <cr-button id="okButton" class="action-button"
-          on-click="onDialogOkClick_">
+          on-click="onScanFailedDialogOkClick_">
         [[i18n('okButtonLabel')]]
       </cr-button>
     </div>

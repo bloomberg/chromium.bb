@@ -80,6 +80,8 @@ source_set("channel_info") {
     deps += [ "//chromeos/crosapi/cpp" ]
   } else if (is_posix) {
     sources += [ "channel_info_posix.cc" ]
+  } else if (is_fuchsia) {
+    sources += [ "channel_info_fuchsia.cc" ]
   }
 }
 
@@ -158,7 +160,6 @@ static_library("common") {
     "//base",
     "//base:base_static",
     "//base:i18n",
-    "//base/util/values:values_util",
     "//build:branding_buildflags",
     "//chrome:resources",
     "//chrome:strings",
@@ -241,7 +242,6 @@ static_library("common") {
 
   deps = [
     "//build:chromeos_buildflags",
-    "//components/crash/core/app",
     "//components/google/core/common",
     "//components/live_caption:constants",
     "//components/metrics:call_stack_profile_builder",
@@ -331,6 +331,10 @@ static_library("common") {
       "//media/cast:net",
       "//services/device/public/cpp/usb",
     ]
+  }
+
+  if (!is_fuchsia) {
+    deps += [ "//components/crash/core/app" ]
   }
 
   if (is_mac) {
@@ -426,6 +430,8 @@ static_library("common") {
       "conflicts/remote_module_watcher_win.cc",
       "conflicts/remote_module_watcher_win.h",
       "multi_process_lock_win.cc",
+      "protobuf_init.cc",
+      "protobuf_init.h",
     ]
     deps += [
       "//chrome/chrome_elf:chrome_elf_main_include",
@@ -645,6 +651,9 @@ static_library("constants") {
     sources += [ "chrome_paths_win.cc" ]
     deps += [ "//chrome/install_static:install_static_util" ]
   }
+  if (is_fuchsia) {
+    sources += [ "chrome_paths_fuchsia.cc" ]
+  }
 
   if (enable_widevine && enable_library_cdms) {
     deps += [
@@ -672,8 +681,6 @@ static_library("test_support") {
     "//testing/gmock",
     "//testing/gtest",
   ]
-
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   if (enable_extensions) {
     sources += [

@@ -13,10 +13,8 @@
 
 namespace {
 
-constexpr int16_t kFilterDeviceFoundThreshold = -80;
 constexpr base::TimeDelta kFilterDeviceFoundTimeout =
     base::TimeDelta::FromSeconds(1);
-constexpr int16_t kFilterDeviceLostThreshold = -100;
 constexpr base::TimeDelta kFilterDeviceLostTimeout =
     base::TimeDelta::FromSeconds(5);
 constexpr uint8_t kFilterPatternStartPosition = 0;
@@ -54,8 +52,13 @@ void FastPairScannerImpl::OnGetAdapter(
       device::BluetoothLowEnergyScanFilter::AdvertisementDataType::kServiceData,
       kFastPairFilterPatternValue);
   auto filter = device::BluetoothLowEnergyScanFilter::Create(
-      kFilterDeviceFoundThreshold, kFilterDeviceLostThreshold,
+      device::BluetoothLowEnergyScanFilter::Range::kNear,
       kFilterDeviceFoundTimeout, kFilterDeviceLostTimeout, {pattern});
+  if (!filter) {
+    QP_LOG(ERROR) << "Bluetooth Low Energy Scan Session failed to start due to "
+                     "failure to create filter.";
+    return;
+  }
 
   background_scan_session_ = adapter_->StartLowEnergyScanSession(
       std::move(filter), weak_ptr_factory_.GetWeakPtr());

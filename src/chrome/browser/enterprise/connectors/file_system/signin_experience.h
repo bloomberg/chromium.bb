@@ -14,6 +14,9 @@ class WebContents;
 
 namespace enterprise_connectors {
 
+class FileSystemRenameHandler;
+class SigninExperienceTestObserver;
+
 // Retrieve FileSystemSettings for |profile|; null if connector is disabled.
 absl::optional<FileSystemSettings> GetFileSystemSettings(Profile* profile);
 
@@ -29,10 +32,54 @@ using AuthorizationCompletedCallback =
 void StartFileSystemConnectorSigninExperienceForDownloadItem(
     content::WebContents* web_contents,
     const FileSystemSettings& settings,
-    AuthorizationCompletedCallback callback);
+    AuthorizationCompletedCallback callback,
+    SigninExperienceTestObserver* test_observer = nullptr);
+
+// If `enable_link` is true, start the sign in experience as triggered by
+// settings page; else, unlink the existing account.
+void SetFileSystemConnectorAccountLinkForSettingsPage(
+    bool enable_link,
+    Profile* profile,
+    base::OnceCallback<void(bool)> callback,
+    SigninExperienceTestObserver* test_observer = nullptr);
+
+struct AccountInfo {
+  std::string account_name;
+  std::string account_login;
+  std::string folder_link;
+  std::string folder_name;
+
+  AccountInfo();
+  ~AccountInfo();
+  AccountInfo(const AccountInfo& other);
+};
+
+// Prefs for the settings page to observe to refresh the connection section.
+std::vector<std::string> GetFileSystemConnectorPrefsForSettingsPage(
+    Profile* profile);
+
+absl::optional<AccountInfo> GetFileSystemConnectorLinkedAccountInfo(
+    const FileSystemSettings& settings,
+    PrefService* prefs);
 
 // Run |callback| with a GoogleServiceAuthError that indicates cancellation.
 void ReturnCancellation(AuthorizationCompletedCallback callback);
+
+// Helper function/classes for testing.
+class SigninExperienceTestObserver {
+ public:
+  SigninExperienceTestObserver();
+  virtual ~SigninExperienceTestObserver();
+
+  virtual void InitForTesting(FileSystemRenameHandler* rename_handler);
+  virtual void OnConfirmationDialogCreated(
+      views::DialogDelegate* dialog_delegate) {}
+  virtual void OnSignInDialogCreated(content::WebContents* dialog_web_content,
+                                     views::Widget* dialog_widget) {}
+
+ private:
+  base::WeakPtr<FileSystemRenameHandler> rename_handler_;
+};
 
 }  // namespace enterprise_connectors
 

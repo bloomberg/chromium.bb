@@ -7,6 +7,8 @@
 #include <memory>
 #include <string>
 
+#include "ash/components/security_token_pin/constants.h"
+#include "ash/components/security_token_pin/error_generator.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/constants/devicetype.h"
@@ -51,7 +53,7 @@
 #include "chrome/browser/ash/login/users/chrome_user_manager.h"
 #include "chrome/browser/ash/login/users/chrome_user_manager_util.h"
 #include "chrome/browser/ash/login/wizard_context.h"
-#include "chrome/browser/ash/policy/core/browser_policy_connector_chromeos.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/policy/networking/device_network_configuration_updater.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
@@ -72,8 +74,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/installer/util/google_update_settings.h"
-#include "chromeos/components/security_token_pin/constants.h"
-#include "chromeos/components/security_token_pin/error_generator.h"
 #include "chromeos/dbus/util/version_loader.h"
 #include "chromeos/login/auth/challenge_response/cert_utils.h"
 #include "chromeos/login/auth/cryptohome_key_constants.h"
@@ -181,32 +181,32 @@ GaiaScreenHandler::GaiaScreenMode GetGaiaScreenMode(const std::string& email) {
 }
 
 std::string GetEnterpriseDomainManager() {
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  policy::BrowserPolicyConnectorAsh* connector =
+      g_browser_process->platform_part()->browser_policy_connector_ash();
   return connector->GetEnterpriseDomainManager();
 }
 
 std::string GetEnterpriseDisplayDomain() {
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  policy::BrowserPolicyConnectorAsh* connector =
+      g_browser_process->platform_part()->browser_policy_connector_ash();
   return connector->GetEnterpriseDisplayDomain();
 }
 
 std::string GetEnterpriseEnrollmentDomain() {
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  policy::BrowserPolicyConnectorAsh* connector =
+      g_browser_process->platform_part()->browser_policy_connector_ash();
   return connector->GetEnterpriseEnrollmentDomain();
 }
 
 std::string GetSSOProfile() {
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  policy::BrowserPolicyConnectorAsh* connector =
+      g_browser_process->platform_part()->browser_policy_connector_ash();
   return connector->GetSSOProfile();
 }
 
 std::string GetRealm() {
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  policy::BrowserPolicyConnectorAsh* connector =
+      g_browser_process->platform_part()->browser_policy_connector_ash();
   return connector->GetRealm();
 }
 
@@ -349,7 +349,7 @@ void GaiaScreenHandler::LoadGaia(const login::GaiaContext& context) {
     if (user && user->using_saml() &&
         user->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT) {
       public_saml_url_fetcher_ =
-          std::make_unique<chromeos::PublicSamlUrlFetcher>(account_id);
+          std::make_unique<PublicSamlUrlFetcher>(account_id);
       public_saml_url_fetcher_->Fetch(std::move(partition_call));
       return;
     }
@@ -444,7 +444,7 @@ void GaiaScreenHandler::LoadGaiaWithPartitionAndVersionAndConsent(
   }
   params.SetBoolean("enterpriseManagedDevice",
                     g_browser_process->platform_part()
-                        ->browser_policy_connector_chromeos()
+                        ->browser_policy_connector_ash()
                         ->IsDeviceEnterpriseManaged());
   const AccountId& owner_account_id =
       user_manager::UserManager::Get()->GetOwnerAccountId();
@@ -1296,7 +1296,7 @@ void GaiaScreenHandler::ShowGaiaScreenIfReady() {
     untrusted_authority_certs_cache_ =
         std::make_unique<network::NSSTempCertsCacheChromeOS>(
             g_browser_process->platform_part()
-                ->browser_policy_connector_chromeos()
+                ->browser_policy_connector_ash()
                 ->GetDeviceNetworkConfigurationUpdater()
                 ->GetAllAuthorityCertificates(
                     chromeos::onc::CertificateScope::Default()));
@@ -1324,10 +1324,9 @@ void GaiaScreenHandler::ShowGaiaScreenIfReady() {
 
 void GaiaScreenHandler::ShowAllowlistCheckFailedError() {
   base::DictionaryValue params;
-  params.SetBoolean("enterpriseManaged",
-                    g_browser_process->platform_part()
-                        ->browser_policy_connector_chromeos()
-                        ->IsDeviceEnterpriseManaged());
+  params.SetBoolean("enterpriseManaged", g_browser_process->platform_part()
+                                             ->browser_policy_connector_ash()
+                                             ->IsDeviceEnterpriseManaged());
 
   bool family_link_allowed = false;
   CrosSettings::Get()->GetBoolean(kAccountsPrefFamilyLinkAccountsAllowed,

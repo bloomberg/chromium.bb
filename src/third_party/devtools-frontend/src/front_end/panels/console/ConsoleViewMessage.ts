@@ -52,6 +52,7 @@ import * as TextEditor from '../../ui/legacy/components/text_editor/text_editor.
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
+import type {Chrome} from '../../../extension-api/ExtensionAPI.js'; // eslint-disable-line rulesdir/es_modules_import
 
 import type {ConsoleViewportElement} from './ConsoleViewport.js';
 
@@ -224,7 +225,6 @@ export class ConsoleViewMessage implements ConsoleViewportElement {
   _repeatCountElement: UI.UIUtils.DevToolsSmallBubble|null;
   private requestResolver: Logs.RequestResolver.RequestResolver;
   private issueResolver: IssuesManager.IssueResolver.IssueResolver;
-
 
   constructor(
       consoleMessage: SDK.ConsoleModel.ConsoleMessage, linkifier: Components.Linkifier.Linkifier,
@@ -1466,7 +1466,7 @@ export class ConsoleViewMessage implements ConsoleViewportElement {
 
   async _getInlineFrames(
       debuggerModel: SDK.DebuggerModel.DebuggerModel, url: string, lineNumber: number|undefined,
-      columnNumber: number|undefined): Promise<{frames: Bindings.DebuggerLanguagePlugins.FunctionInfo[]}> {
+      columnNumber: number|undefined): Promise<{frames: Chrome.DevTools.FunctionInfo[]}> {
     const debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance();
     if (debuggerWorkspaceBinding.pluginManager) {
       const projects = Workspace.Workspace.WorkspaceImpl.instance().projects();
@@ -1681,9 +1681,18 @@ export class ConsoleViewMessage implements ConsoleViewportElement {
     }
     const container = document.createDocumentFragment();
     const tokens = ConsoleViewMessage._tokenizeMessageText(string);
+    let isBlob = false;
     for (const token of tokens) {
       if (!token.text) {
         continue;
+      }
+      if (isBlob) {
+        token.text = `blob:${token.text}`;
+        isBlob = !isBlob;
+      }
+      if (token.text === '\'blob:' && token === tokens[0]) {
+        isBlob = true;
+        token.text = '\'';
       }
       switch (token.type) {
         case 'url': {

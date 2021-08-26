@@ -23,14 +23,14 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 project('dav1d', ['c'],
-    version: '0.9.0',
+    version: '0.9.1',
     default_options: ['c_std=c99',
                       'warning_level=2',
                       'buildtype=release',
                       'b_ndebug=if-release'],
     meson_version: '>= 0.49.0')
 
-dav1d_soname_version       = '5.1.0'
+dav1d_soname_version       = '5.1.1'
 dav1d_api_version_array    = dav1d_soname_version.split('.')
 dav1d_api_version_major    = dav1d_api_version_array[0]
 dav1d_api_version_minor    = dav1d_api_version_array[1]
@@ -173,21 +173,26 @@ libm_dependency = cc.find_library('m', required: false)
 
 # Header checks
 
-stdatomic_dependency = []
+stdatomic_dependencies = []
 if not cc.check_header('stdatomic.h')
     if cc.get_id() == 'msvc'
         # we have a custom replacement for MSVC
-        stdatomic_dependency = declare_dependency(
+        stdatomic_dependencies += declare_dependency(
             include_directories : include_directories('include/compat/msvc'),
         )
     elif cc.compiles('''int main() { int v = 0; return __atomic_fetch_add(&v, 1, __ATOMIC_SEQ_CST); }''',
                      name : 'GCC-style atomics', args : test_args)
-        stdatomic_dependency = declare_dependency(
+        stdatomic_dependencies += declare_dependency(
             include_directories : include_directories('include/compat/gcc'),
         )
     else
         error('Atomics not supported')
     endif
+endif
+
+if host_machine.cpu_family().startswith('wasm')
+    # enable atomics + bulk-memory features
+    stdatomic_dependencies += thread_dependency.partial_dependency(compile_args: true)
 endif
 
 if cc.check_header('unistd.h')

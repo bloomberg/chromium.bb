@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
 #include "chrome/browser/ash/file_manager/app_id.h"
 #include "chrome/browser/ash/file_manager/filesystem_api_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -24,12 +25,13 @@
 #include "content/public/common/url_utils.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/common/extension.h"
-#include "google_apis/drive/task_util.h"
+#include "google_apis/common/task_util.h"
 #include "net/base/escape.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/file_system/isolated_context.h"
 #include "storage/browser/file_system/open_file_system_mode.h"
 #include "storage/common/file_system/file_system_util.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 #include "url/gurl.h"
@@ -147,7 +149,8 @@ void FileDefinitionListConverter::ConvertNextIterator(
   }
 
   storage::FileSystemURL url = file_system_context_->CreateCrackedFileSystemURL(
-      origin_, storage::kFileSystemTypeExternal, iterator->virtual_path);
+      blink::StorageKey(origin_), storage::kFileSystemTypeExternal,
+      iterator->virtual_path);
 
   if (!url.is_valid()) {
     OnIteratorConverted(
@@ -197,7 +200,8 @@ void FileDefinitionListConverter::OnResolvedURL(
 
   // Construct a target Entry.fullPath value from the virtual path and the
   // root URL. Eg. Downloads/A/b.txt -> A/b.txt.
-  storage::FileSystemURL fs_url = file_system_context_->CrackURL(info.root_url);
+  storage::FileSystemURL fs_url =
+      file_system_context_->CrackURLInFirstPartyContext(info.root_url);
   if (!fs_url.is_valid()) {
     OnIteratorConverted(
         std::move(self_deleter), iterator,
@@ -239,7 +243,7 @@ bool IsUnderNonNativeLocalPath(const storage::FileSystemContext& context,
     return false;
 
   const storage::FileSystemURL url = context.CreateCrackedFileSystemURL(
-      url::Origin(), storage::kFileSystemTypeExternal, virtual_path);
+      blink::StorageKey(), storage::kFileSystemTypeExternal, virtual_path);
   if (!url.is_valid())
     return false;
 
@@ -337,7 +341,7 @@ class ConvertSelectedFileInfoListToFileChooserFileInfoListImpl {
     for (const auto& info : chooser_info_list_) {
       if (info && info->is_file_system()) {
         storage::IsolatedContext::GetInstance()->RevokeFileSystem(
-            context_->CrackURL(info->get_file_system()->url)
+            context_->CrackURLInFirstPartyContext(info->get_file_system()->url)
                 .mount_filesystem_id());
       }
     }
@@ -365,7 +369,7 @@ class ConvertSelectedFileInfoListToFileChooserFileInfoListImpl {
     }
 
     context_->operation_runner()->GetMetadata(
-        context_->CrackURL((*it)->get_file_system()->url),
+        context_->CrackURLInFirstPartyContext((*it)->get_file_system()->url),
         storage::FileSystemOperation::GET_METADATA_FIELD_IS_DIRECTORY |
             storage::FileSystemOperation::GET_METADATA_FIELD_SIZE |
             storage::FileSystemOperation::GET_METADATA_FIELD_LAST_MODIFIED,
@@ -604,9 +608,9 @@ FileSystemURLAndHandle CreateIsolatedURLFromVirtualPath(
     const GURL& origin,
     const base::FilePath& virtual_path) {
   const storage::FileSystemURL original_url =
-      context.CreateCrackedFileSystemURL(url::Origin::Create(origin),
-                                         storage::kFileSystemTypeExternal,
-                                         virtual_path);
+      context.CreateCrackedFileSystemURL(
+          blink::StorageKey(url::Origin::Create(origin)),
+          storage::kFileSystemTypeExternal, virtual_path);
 
   std::string register_name;
   storage::IsolatedContext::ScopedFSHandle file_system =
@@ -614,7 +618,8 @@ FileSystemURLAndHandle CreateIsolatedURLFromVirtualPath(
           original_url.type(), original_url.filesystem_id(),
           original_url.path(), &register_name);
   storage::FileSystemURL isolated_url = context.CreateCrackedFileSystemURL(
-      url::Origin::Create(origin), storage::kFileSystemTypeIsolated,
+      blink::StorageKey(url::Origin::Create(origin)),
+      storage::kFileSystemTypeIsolated,
       base::FilePath(file_system.id()).Append(register_name));
   return {isolated_url, file_system};
 }

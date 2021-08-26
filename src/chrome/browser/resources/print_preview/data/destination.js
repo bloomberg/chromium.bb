@@ -12,7 +12,6 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {NativeLayerCrosImpl} from '../native_layer_cros.js';
 
 import {Cdd} from './cdd.js';
-import {ColorModeRestriction, DestinationPolicies, DuplexModeRestriction, PinModeRestriction} from './destination_policies.js';
 import {getStatusReasonFromPrinterStatus, PrinterStatus, PrinterStatusReason} from './printer_status_cros.js';
 // </if>
 
@@ -37,6 +36,9 @@ export const DestinationOrigin = {
   // <if expr="chromeos or lacros">
   DEVICE: 'device',
   // </if>
+  // Note: Privet is deprecated, but used to filter any legacy entries in the
+  // recent destinations, since we can't guarantee all recent privet printers
+  // have been overridden.
   PRIVET: 'privet',
   EXTENSION: 'extension',
   CROS: 'chrome_os',
@@ -182,7 +184,6 @@ export class Destination {
    *          description: (string|undefined),
    *          certificateStatus:
    *              (DestinationCertificateStatus|undefined),
-   *          policies: (DestinationPolicies|undefined),
    *         }=} opt_params Optional
    *     parameters for the destination.
    */
@@ -222,12 +223,6 @@ export class Destination {
      * @private {?Cdd}
      */
     this.capabilities_ = null;
-
-    /**
-     * Policies affecting the destination.
-     * @private {?DestinationPolicies}
-     */
-    this.policies_ = (opt_params && opt_params.policies) || null;
 
     /**
      * Whether the destination is owned by the user.
@@ -405,13 +400,7 @@ export class Destination {
   get isLocal() {
     return this.origin_ === DestinationOrigin.LOCAL ||
         this.origin_ === DestinationOrigin.EXTENSION ||
-        this.origin_ === DestinationOrigin.CROS ||
-        this.origin_ === DestinationOrigin.PRIVET;
-  }
-
-  /** @return {boolean} Whether the destination is a Privet local printer */
-  get isPrivet() {
-    return this.origin_ === DestinationOrigin.PRIVET;
+        this.origin_ === DestinationOrigin.CROS;
   }
 
   /**
@@ -502,21 +491,6 @@ export class Destination {
   }
 
   // <if expr="chromeos or lacros">
-  /**
-   * @return {?DestinationPolicies} Print policies affecting the destination.
-   */
-  get policies() {
-    return this.policies_;
-  }
-
-  /**
-   * @param {?DestinationPolicies} policies Print policies affecting the
-   *     destination.
-   */
-  set policies(policies) {
-    this.policies_ = policies;
-  }
-
   /** @return {string} The EULA URL for a the destination */
   get eulaUrl() {
     return this.eulaUrl_;
@@ -811,37 +785,6 @@ export class Destination {
         null;
   }
 
-  // <if expr="chromeos or lacros">
-  /**
-   * @return {?ColorModeRestriction} Color mode set by policy.
-   */
-  get colorPolicy() {
-    return this.policies && this.policies.allowedColorModes ?
-        this.policies.allowedColorModes :
-        null;
-  }
-
-  /**
-   * @return {?DuplexModeRestriction} Duplex modes allowed by
-   *     policy.
-   */
-  get duplexPolicy() {
-    return this.policies && this.policies.allowedDuplexModes ?
-        this.policies.allowedDuplexModes :
-        null;
-  }
-
-  /**
-   * @return {?PinModeRestriction} Pin mode allowed by policy.
-   */
-  get pinPolicy() {
-    return this.policies && this.policies.allowedPinModes ?
-        this.policies.allowedPinModes :
-        null;
-  }
-
-  // </if>
-
   /** @return {boolean} Whether the printer supports copies. */
   get hasCopiesCapability() {
     const capability = this.copiesCapability_();
@@ -870,32 +813,6 @@ export class Destination {
     });
     return hasColor && hasMonochrome;
   }
-
-  // <if expr="chromeos or lacros">
-  /**
-   * @return {?ColorModeRestriction} Value of default color
-   *     setting given by policy.
-   */
-  get defaultColorPolicy() {
-    return this.policies && this.policies.defaultColorMode;
-  }
-
-  /**
-   * @return {?DuplexModeRestriction} Value of default duplex
-   *     setting given by policy.
-   */
-  get defaultDuplexPolicy() {
-    return this.policies && this.policies.defaultDuplexMode;
-  }
-
-  /**
-   * @return {?PinModeRestriction} Value of default pin setting
-   *     given by policy.
-   */
-  get defaultPinPolicy() {
-    return this.policies && this.policies.defaultPinMode;
-  }
-  // </if>
 
   /**
    * @param {boolean} isColor Whether to use a color printing mode.

@@ -18,29 +18,23 @@
 #include "av1/encoder/encoder.h"
 
 void av1_intra_mode_cnn_partition(const AV1_COMMON *const cm, MACROBLOCK *x,
-                                  int bsize, int label_idx,
-                                  int *partition_none_allowed,
-                                  int *partition_horz_allowed,
-                                  int *partition_vert_allowed,
-                                  int *do_rectangular_split,
-                                  int *do_square_split);
+                                  int label_idx,
+                                  int intra_cnn_based_part_prune_level,
+                                  PartitionSearchState *part_state);
 
 // Performs a simple_motion_search with a single reference frame and extract
 // the variance of residues. Then use the features to determine whether we want
 // to go straight to splitting without trying PARTITION_NONE
-void av1_simple_motion_search_based_split(
-    AV1_COMP *const cpi, MACROBLOCK *x, SIMPLE_MOTION_DATA_TREE *sms_tree,
-    int mi_row, int mi_col, BLOCK_SIZE bsize, int *partition_none_allowed,
-    int *partition_horz_allowed, int *partition_vert_allowed,
-    int *do_rectangular_split, int *do_square_split);
+void av1_simple_motion_search_based_split(AV1_COMP *const cpi, MACROBLOCK *x,
+                                          SIMPLE_MOTION_DATA_TREE *sms_tree,
+                                          PartitionSearchState *part_state);
 
 // Performs a simple_motion_search with two reference frames and extract
 // the variance of residues. Then use the features to determine whether we want
 // to prune some partitions.
-void av1_simple_motion_search_prune_rect(
-    AV1_COMP *const cpi, MACROBLOCK *x, SIMPLE_MOTION_DATA_TREE *sms_tree,
-    int mi_row, int mi_col, BLOCK_SIZE bsize, int partition_horz_allowed,
-    int partition_vert_allowed, int *prune_horz, int *prune_vert);
+void av1_simple_motion_search_prune_rect(AV1_COMP *const cpi, MACROBLOCK *x,
+                                         SIMPLE_MOTION_DATA_TREE *sms_tree,
+                                         PartitionSearchState *part_state);
 
 #if !CONFIG_REALTIME_ONLY
 // Early terminates PARTITION_NONE using simple_motion_search features and the
@@ -49,10 +43,11 @@ void av1_simple_motion_search_prune_rect(
 //  - The frame is not intra only
 //  - The current bsize is > BLOCK_8X8
 //  - blk_row + blk_height/2 < total_rows and blk_col + blk_width/2 < total_cols
-void av1_simple_motion_search_early_term_none(
-    AV1_COMP *const cpi, MACROBLOCK *x, SIMPLE_MOTION_DATA_TREE *sms_tree,
-    int mi_row, int mi_col, BLOCK_SIZE bsize, const RD_STATS *none_rdc,
-    int *early_terminate);
+void av1_simple_motion_search_early_term_none(AV1_COMP *const cpi,
+                                              MACROBLOCK *x,
+                                              SIMPLE_MOTION_DATA_TREE *sms_tree,
+                                              const RD_STATS *none_rdc,
+                                              PartitionSearchState *part_state);
 
 // Get the features for selecting the max and min partition size. Currently this
 // performs simple_motion_search on 16X16 subblocks of the current superblock,
@@ -69,11 +64,10 @@ BLOCK_SIZE av1_predict_max_partition(const AV1_COMP *const cpi,
 // Attempts an early termination after PARTITION_SPLIT.
 void av1_ml_early_term_after_split(AV1_COMP *const cpi, MACROBLOCK *const x,
                                    SIMPLE_MOTION_DATA_TREE *const sms_tree,
-                                   BLOCK_SIZE bsize, int64_t best_rd,
-                                   int64_t part_none_rd, int64_t part_split_rd,
-                                   int64_t *split_block_rd, int mi_row,
-                                   int mi_col,
-                                   int *const terminate_partition_search);
+                                   int64_t best_rd, int64_t part_none_rd,
+                                   int64_t part_split_rd,
+                                   int64_t *split_block_rd,
+                                   PartitionSearchState *part_state);
 
 // Use the rdcost ratio and source var ratio to prune PARTITION_HORZ and
 // PARTITION_VERT.
@@ -82,47 +76,37 @@ void av1_ml_early_term_after_split(AV1_COMP *const cpi, MACROBLOCK *const x,
 // that we can get better performance by adding in q_index and rectangular
 // sse/var from SMS. We should retrain and tune this model later.
 void av1_ml_prune_rect_partition(AV1_COMP *const cpi, const MACROBLOCK *const x,
-                                 BLOCK_SIZE bsize, const int mi_row,
-                                 const int mi_col, int64_t best_rd,
-                                 int64_t none_rd, int64_t *split_rd,
-                                 int *const dst_prune_horz,
-                                 int *const dst_prune_vert);
+                                 int64_t best_rd, int64_t none_rd,
+                                 const int64_t *split_rd,
+                                 PartitionSearchState *part_state);
 
 // Use a ML model to predict if horz_a, horz_b, vert_a, and vert_b should be
 // considered.
-void av1_ml_prune_ab_partition(
-    AV1_COMP *const cpi, BLOCK_SIZE bsize, const int mi_row, const int mi_col,
-    int part_ctx, int var_ctx, int64_t best_rd,
-    int64_t horz_rd[SUB_PARTITIONS_RECT], int64_t vert_rd[SUB_PARTITIONS_RECT],
-    int64_t split_rd[SUB_PARTITIONS_SPLIT], int *const horza_partition_allowed,
-    int *const horzb_partition_allowed, int *const verta_partition_allowed,
-    int *const vertb_partition_allowed);
+void av1_ml_prune_ab_partition(AV1_COMP *const cpi, int part_ctx, int var_ctx,
+                               int64_t best_rd,
+                               PartitionSearchState *part_state,
+                               int *ab_partitions_allowed);
 
 // Use a ML model to predict if horz4 and vert4 should be considered.
-void av1_ml_prune_4_partition(
-    AV1_COMP *const cpi, MACROBLOCK *const x, BLOCK_SIZE bsize, int part_ctx,
-    int64_t best_rd, int64_t rect_part_rd[NUM_RECT_PARTS][SUB_PARTITIONS_RECT],
-    int64_t split_rd[SUB_PARTITIONS_SPLIT], int *const partition_horz4_allowed,
-    int *const partition_vert4_allowed, unsigned int pb_source_variance,
-    int mi_row, int mi_col);
+void av1_ml_prune_4_partition(AV1_COMP *const cpi, MACROBLOCK *const x,
+                              int part_ctx, int64_t best_rd,
+                              PartitionSearchState *part_state,
+                              int *part4_allowed,
+                              unsigned int pb_source_variance);
 
 // ML-based partition search breakout after PARTITION_NONE.
-void av1_ml_predict_breakout(AV1_COMP *const cpi, BLOCK_SIZE bsize,
-                             const MACROBLOCK *const x,
+void av1_ml_predict_breakout(AV1_COMP *const cpi, const MACROBLOCK *const x,
                              const RD_STATS *const rd_stats,
-                             const PartitionBlkParams blk_params,
                              unsigned int pb_source_variance, int bit_depth,
-                             int *do_square_split, int *do_rectangular_split);
+                             PartitionSearchState *part_state);
 
 // The first round of partition pruning determined before any partition
 // has been tested. The decisions will be updated and passed back
 // to the partition search function.
-void av1_prune_partitions_before_search(
-    AV1_COMP *const cpi, MACROBLOCK *const x, int mi_row, int mi_col,
-    BLOCK_SIZE bsize, SIMPLE_MOTION_DATA_TREE *const sms_tree,
-    int *partition_none_allowed, int *partition_horz_allowed,
-    int *partition_vert_allowed, int *do_rectangular_split,
-    int *do_square_split, int *prune_horz, int *prune_vert);
+void av1_prune_partitions_before_search(AV1_COMP *const cpi,
+                                        MACROBLOCK *const x,
+                                        SIMPLE_MOTION_DATA_TREE *const sms_tree,
+                                        PartitionSearchState *part_state);
 
 // Prune out partitions that lead to coding block sizes outside the min and max
 // bsizes set by the encoder. Max and min square partition levels are defined as
@@ -130,27 +114,23 @@ void av1_prune_partitions_before_search(
 // reach. To implement this: only PARTITION_NONE is allowed if the current node
 // equals max_partition_size, only PARTITION_SPLIT is allowed if the current
 // node exceeds max_partition_size.
-void av1_prune_partitions_by_max_min_bsize(
-    SuperBlockEnc *sb_enc, BLOCK_SIZE bsize, int is_not_edge_block,
-    int *partition_none_allowed, int *partition_horz_allowed,
-    int *partition_vert_allowed, int *do_square_split);
+void av1_prune_partitions_by_max_min_bsize(SuperBlockEnc *sb_enc,
+                                           PartitionSearchState *part_state);
 
 // Prune out AB partitions based on rd decisions made from testing the
 // basic partitions.
-void av1_prune_ab_partitions(
-    AV1_COMP *cpi, const MACROBLOCK *x, const PC_TREE *pc_tree,
-    BLOCK_SIZE bsize, const int mi_row, const int mi_col,
-    int pb_source_variance, int64_t best_rdcost,
-    int64_t rect_part_rd[NUM_RECT_PARTS][SUB_PARTITIONS_RECT],
-    int64_t split_rd[SUB_PARTITIONS_SPLIT],
-    const RD_RECT_PART_WIN_INFO *rect_part_win_info, int ext_partition_allowed,
-    int partition_horz_allowed, int partition_vert_allowed,
-    int *horza_partition_allowed, int *horzb_partition_allowed,
-    int *verta_partition_allowed, int *vertb_partition_allowed);
+void av1_prune_ab_partitions(AV1_COMP *cpi, const MACROBLOCK *x,
+                             const PC_TREE *pc_tree, int pb_source_variance,
+                             int64_t best_rdcost,
+                             const RD_RECT_PART_WIN_INFO *rect_part_win_info,
+                             bool ext_partition_allowed,
+                             PartitionSearchState *part_state,
+                             int *ab_partitions_allowed);
 
 void av1_collect_motion_search_features_sb(AV1_COMP *const cpi, ThreadData *td,
                                            const int mi_row, const int mi_col,
-                                           const BLOCK_SIZE bsize);
+                                           const BLOCK_SIZE bsize,
+                                           aom_partition_features_t *features);
 #endif  // !CONFIG_REALTIME_ONLY
 
 // A simplified version of set_offsets meant to be used for
@@ -196,21 +176,11 @@ static INLINE void set_offsets_for_motion_search(const AV1_COMP *const cpi,
   av1_setup_src_planes(x, cpi->source, mi_row, mi_col, num_planes, bsize);
 }
 
-static INLINE void init_simple_motion_search_mvs(
-    SIMPLE_MOTION_DATA_TREE *sms_tree) {
-  av1_zero(sms_tree->start_mvs);
-  av1_zero(sms_tree->sms_none_feat);
-  av1_zero(sms_tree->sms_rect_feat);
-  av1_zero(sms_tree->sms_none_valid);
-  av1_zero(sms_tree->sms_rect_valid);
-
-  if (sms_tree->block_size >= BLOCK_8X8) {
-    init_simple_motion_search_mvs(sms_tree->split[0]);
-    init_simple_motion_search_mvs(sms_tree->split[1]);
-    init_simple_motion_search_mvs(sms_tree->split[2]);
-    init_simple_motion_search_mvs(sms_tree->split[3]);
-  }
-}
+void av1_init_simple_motion_search_mvs_for_sb(const AV1_COMP *cpi,
+                                              const TileInfo *tile_info,
+                                              MACROBLOCK *x,
+                                              SIMPLE_MOTION_DATA_TREE *sms_root,
+                                              int mi_row, int mi_col);
 
 static INLINE int is_full_sb(const CommonModeInfoParams *const mi_params,
                              int mi_row, int mi_col, BLOCK_SIZE sb_size) {

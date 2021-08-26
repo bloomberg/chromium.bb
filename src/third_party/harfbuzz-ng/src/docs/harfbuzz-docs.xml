@@ -49,7 +49,7 @@
         <ulink role="online-location" url="http://[SERVER]/libharfbuzz/index.html">http://[SERVER]/libharfbuzz/</ulink>.-->
       </releaseinfo>
     </partinfo>
-      
+
     <title>Reference manual</title>
       <chapter id="core-api">
         <title>Core API</title>
@@ -97,6 +97,12 @@
         <xi:include href="xml/hb-directwrite.xml"/>
       </chapter>
 
+      <chapter id="subset-api">
+        <title>Subset API</title>
+        <xi:include href="xml/hb-subset.xml"/>
+      </chapter>
+
+
       <!--chapter id="object-tree">
         <title>Object Hierarchy</title>
          <xi:include href="xml/tree_index.sgml"/>
@@ -105,6 +111,7 @@
       <index id="api-index-full"><title>API Index</title><xi:include href="xml/api-index-full.xml"><xi:fallback /></xi:include></index>
       <index id="deprecated-api-index" role="deprecated"><title>Index of deprecated API</title><xi:include href="xml/api-index-deprecated.xml"><xi:fallback /></xi:include></index>
 
+      <index id="api-index-2-8-2" role="2.8.2"><title>Index of new symbols in 2.8.2</title><xi:include href="xml/api-index-2.8.2.xml"><xi:fallback /></xi:include></index>
       <index id="api-index-2-7-3" role="2.7.3"><title>Index of new symbols in 2.7.3</title><xi:include href="xml/api-index-2.7.3.xml"><xi:fallback /></xi:include></index>
       <index id="api-index-2-6-8" role="2.6.8"><title>Index of new symbols in 2.6.8</title><xi:include href="xml/api-index-2.6.8.xml"><xi:fallback /></xi:include></index>
       <index id="api-index-2-6-5" role="2.6.5"><title>Index of new symbols in 2.6.5</title><xi:include href="xml/api-index-2.6.5.xml"><xi:fallback /></xi:include></index>

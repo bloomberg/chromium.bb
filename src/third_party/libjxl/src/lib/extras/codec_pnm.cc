@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #include "lib/extras/codec_pnm.h"
 
@@ -27,6 +18,7 @@
 #include "lib/jxl/base/byte_order.h"
 #include "lib/jxl/base/compiler_specific.h"
 #include "lib/jxl/base/file_io.h"
+#include "lib/jxl/base/status.h"
 #include "lib/jxl/color_management.h"
 #include "lib/jxl/dec_external_image.h"
 #include "lib/jxl/enc_external_image.h"
@@ -44,6 +36,7 @@ struct HeaderPNM {
   size_t ysize;
   bool is_bit;   // PBM
   bool is_gray;  // PGM
+  int is_yuv;    // Y4M: where 1 = 444, 2 = 422, 3 = 420
   size_t bits_per_sample;
   bool floating_point;
   bool big_endian;
@@ -57,11 +50,13 @@ class Parser {
   // Sets "pos" to the first non-header byte/pixel on success.
   Status ParseHeader(HeaderPNM* header, const uint8_t** pos) {
     // codec.cc ensures we have at least two bytes => no range check here.
+    if (pos_[0] == 'Y' && pos_[1] == 'U') return ParseHeaderY4M(header, pos);
     if (pos_[0] != 'P') return false;
     const uint8_t type = pos_[1];
     pos_ += 2;
 
     header->is_bit = false;
+    header->is_yuv = 0;
 
     switch (type) {
       case '4':
@@ -77,6 +72,8 @@ class Parser {
       case '6':
         header->is_gray = false;
         return ParseHeaderPNM(header, pos);
+
+        // TODO(jon): P7 (PAM)
 
       case 'F':
         header->is_gray = false;
@@ -186,6 +183,112 @@ class Parser {
       ++pos_;
     }
     return true;
+  }
+
+  Status ExpectString(const char* str, size_t len) {
+    // Unlikely to happen.
+    if (pos_ + len < pos_) return JXL_FAILURE("Y4M: overflow");
+
+    if (pos_ + len > end_ || strncmp(str, (const char*)pos_, len) != 0) {
+      return JXL_FAILURE("Y4M: expected %s", str);
+    }
+    pos_ += len;
+    return true;
+  }
+
+  Status ReadChar(char* out) {
+    // Unlikely to happen.
+    if (pos_ + 1 < pos_) return JXL_FAILURE("Y4M: overflow");
+
+    if (pos_ >= end_) {
+      return JXL_FAILURE("Y4M: unexpected end of input");
+    }
+    *out = *pos_;
+    pos_++;
+    return true;
+  }
+
+  // TODO(jon): support multi-frame y4m
+  Status ParseHeaderY4M(HeaderPNM* header, const uint8_t** pos) {
+    JXL_RETURN_IF_ERROR(ExpectString("YUV4MPEG2", 9));
+    header->is_gray = false;
+    header->is_yuv = 3;
+    // TODO(jon): check if 4:2:0 is indeed the default
+    header->bits_per_sample = 8;
+    // TODO(jon): check if there's a y4m convention for higher bit depths
+    while (pos_ < end_) {
+      char next = 0;
+      JXL_RETURN_IF_ERROR(ReadChar(&next));
+      if (next == 0x0A) break;
+      if (next != ' ') continue;
+      char field = 0;
+      JXL_RETURN_IF_ERROR(ReadChar(&field));
+      switch (field) {
+        case 'W':
+          JXL_RETURN_IF_ERROR(ParseUnsigned(&header->xsize));
+          break;
+        case 'H':
+          JXL_RETURN_IF_ERROR(ParseUnsigned(&header->ysize));
+          break;
+        case 'I':
+          JXL_RETURN_IF_ERROR(ReadChar(&next));
+          if (next != 'p') {
+            return JXL_FAILURE(
+                "Y4M: only progressive (no frame interlacing) allowed");
+          }
+          break;
+        case 'C': {
+          char c1 = 0;
+          JXL_RETURN_IF_ERROR(ReadChar(&c1));
+          char c2 = 0;
+          JXL_RETURN_IF_ERROR(ReadChar(&c2));
+          char c3 = 0;
+          JXL_RETURN_IF_ERROR(ReadChar(&c3));
+          if (c1 != '4') return JXL_FAILURE("Y4M: invalid C param");
+          if (c2 == '4') {
+            if (c3 != '4') return JXL_FAILURE("Y4M: invalid C param");
+            header->is_yuv = 1;  // 444
+          } else if (c2 == '2') {
+            if (c3 == '2') {
+              header->is_yuv = 2;  // 422
+            } else if (c3 == '0') {
+              header->is_yuv = 3;  // 420
+            } else {
+              return JXL_FAILURE("Y4M: invalid C param");
+            }
+          } else {
+            return JXL_FAILURE("Y4M: invalid C param");
+          }
+        }
+          [[fallthrough]];
+          // no break: fallthrough because this field can have values like
+          // "C420jpeg" (we are ignoring the chroma sample location and treat
+          // everything like C420jpeg)
+        case 'F':  // Framerate in fps as numerator:denominator
+                   // TODO(jon): actually read this and set corresponding jxl
+                   // metadata
+        case 'A':  // Pixel aspect ratio (ignoring it, could perhaps adjust
+                   // intrinsic dimensions based on this?)
+        case 'X':  // Comment, ignore
+          // ignore the field value and go to next one
+          while (pos_ < end_) {
+            if (pos_[0] == ' ' || pos_[0] == 0x0A) break;
+            pos_++;
+          }
+          break;
+        default:
+          return JXL_FAILURE("Y4M: parse error");
+      }
+    }
+    JXL_RETURN_IF_ERROR(ExpectString("FRAME", 5));
+    while (true) {
+      char next = 0;
+      JXL_RETURN_IF_ERROR(ReadChar(&next));
+      if (next == 0x0A) {
+        *pos = pos_;
+        return true;
+      }
+    }
   }
 
   Status ParseHeaderPNM(HeaderPNM* header, const uint8_t** pos) {
@@ -351,14 +454,52 @@ Status DecodeImagePNM(const Span<const uint8_t> bytes, ThreadPool* pool,
   io->metadata.m.SetAlphaBits(0);
   io->dec_pixels = header.xsize * header.ysize;
 
-  const bool flipped_y = header.bits_per_sample == 32;  // PFMs are flipped
-  const Span<const uint8_t> span(pos, bytes.data() + bytes.size() - pos);
-  JXL_RETURN_IF_ERROR(ConvertFromExternal(
-      span, header.xsize, header.ysize, io->metadata.m.color_encoding,
-      /*has_alpha=*/false, /*alpha_is_premultiplied=*/false,
-      io->metadata.m.bit_depth.bits_per_sample,
-      header.big_endian ? JXL_BIG_ENDIAN : JXL_LITTLE_ENDIAN, flipped_y, pool,
-      &io->Main()));
+  if (header.is_yuv > 0) {
+    Image3F yuvdata(header.xsize, header.ysize);
+    ImageBundle bundle(&io->metadata.m);
+    const int hshift[3][3] = {{0, 0, 0}, {0, 1, 1}, {0, 1, 1}};
+    const int vshift[3][3] = {{0, 0, 0}, {0, 0, 0}, {0, 1, 1}};
+
+    for (size_t c = 0; c < 3; c++) {
+      for (size_t y = 0; y < header.ysize >> vshift[header.is_yuv - 1][c];
+           ++y) {
+        float* const JXL_RESTRICT row =
+            yuvdata.PlaneRow((c == 2 ? 2 : 1 - c), y);
+        if (pos + (header.xsize >> hshift[header.is_yuv - 1][c]) >
+            bytes.data() + bytes.size())
+          return JXL_FAILURE("Not enough image data");
+        for (size_t x = 0; x < header.xsize >> hshift[header.is_yuv - 1][c];
+             ++x) {
+          row[x] = (1.f / 255.f) * ((*pos++) - 128.f);
+        }
+      }
+    }
+    bundle.SetFromImage(std::move(yuvdata), io->metadata.m.color_encoding);
+    bundle.color_transform = ColorTransform::kYCbCr;
+
+    YCbCrChromaSubsampling subsampling;
+    uint8_t cssh[3] = {
+        2, static_cast<uint8_t>(hshift[header.is_yuv - 1][1] ? 1 : 2),
+        static_cast<uint8_t>(hshift[header.is_yuv - 1][2] ? 1 : 2)};
+    uint8_t cssv[3] = {
+        2, static_cast<uint8_t>(vshift[header.is_yuv - 1][1] ? 1 : 2),
+        static_cast<uint8_t>(vshift[header.is_yuv - 1][2] ? 1 : 2)};
+
+    JXL_RETURN_IF_ERROR(subsampling.Set(cssh, cssv));
+
+    bundle.chroma_subsampling = subsampling;
+
+    io->Main() = std::move(bundle);
+  } else {
+    const bool flipped_y = header.bits_per_sample == 32;  // PFMs are flipped
+    const Span<const uint8_t> span(pos, bytes.data() + bytes.size() - pos);
+    JXL_RETURN_IF_ERROR(ConvertFromExternal(
+        span, header.xsize, header.ysize, io->metadata.m.color_encoding,
+        /*has_alpha=*/false, /*alpha_is_premultiplied=*/false,
+        io->metadata.m.bit_depth.bits_per_sample,
+        header.big_endian ? JXL_BIG_ENDIAN : JXL_LITTLE_ENDIAN, flipped_y, pool,
+        &io->Main()));
+  }
   if (!header.floating_point) {
     io->metadata.m.bit_depth.bits_per_sample = io->Main().DetectRealBitdepth();
   }

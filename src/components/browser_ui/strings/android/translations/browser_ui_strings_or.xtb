@@ -6,7 +6,6 @@
 <translation id="1124090076051167250">ଆପଣଙ୍କ ମୂଳ ସ୍କ୍ରିନରେ ସାଇଟ୍ କିମ୍ବା ଆପଗୁଡ଼ିକ ଦ୍ୱାରା ଷ୍ଟୋର୍ କରାଯାଇଥିବା <ph name="DATASIZE" /> ଡାଟା ଏବଂ କୁକୀଗୁଡ଼ିକୁ ଏହା ଖାଲି କରିଦେବ।</translation>
 <translation id="1178581264944972037">ବିରତି</translation>
 <translation id="1181037720776840403">କାଢ଼ି ଦିଅନ୍ତୁ</translation>
-<translation id="1195941046451948919">ଏହି ୱେବସାଇଟ୍ ପାଇଁ ଆପଣ ସମସ୍ତ ଅନୁମତି ରିସେଟ୍ କରିବାକୁ ଚାହୁଁଥିବା ନିଶ୍ଚିତ କି?</translation>
 <translation id="1201402288615127009">ପରବର୍ତ୍ତୀ</translation>
 <translation id="1242008676835033345"><ph name="WEBSITE_URL" />ରେ ଏମ୍ବେଡ୍ କରାଯାଇଛି</translation>
 <translation id="1272079795634619415">ବନ୍ଦ କରନ୍ତୁ</translation>
@@ -70,6 +69,7 @@
 <translation id="2687403674020088961">ସମସ୍ତ କୁକୀ ବ୍ଲକ୍ କରନ୍ତୁ (ସୁପାରିଶ କରାଯାଇ ନାହିଁ)</translation>
 <translation id="2704606927547763573">କପି କରାଯାଇଛି</translation>
 <translation id="2717722538473713889">ଇମେଲ୍ ଠିକଣାଗୁଡ଼ିକ</translation>
+<translation id="2785051990912111074">ଏହି ବିକଳ୍ପକୁ ପସନ୍ଦ କଲେ ଏହା<ph name="WEBSITE" /> ପାଇଁ କୁକୀଗୁଡ଼ିକୁ ଖାଲି କରିଦେବ</translation>
 <translation id="2822354292072154809">ଆପଣ କ’ଣ ନିଶ୍ଚିତ ଯେ ଆପଣ <ph name="CHOSEN_OBJECT_NAME" /> ପାଇଁ ସମସ୍ତ ସାଇଟ୍ ଅନୁମତିଗୁଡ଼ିକ ଚାହୁଁଛନ୍ତି?</translation>
 <translation id="2870560284913253234">ସାଇଟ୍</translation>
 <translation id="2874939134665556319">ପୂର୍ବବର୍ତ୍ତୀ ଟ୍ରାକ୍‌</translation>
@@ -130,7 +130,6 @@
 <translation id="4570913071927164677">ବିବରଣୀ</translation>
 <translation id="4645575059429386691">ଆପଣଙ୍କର ଅଭିବାବକଙ୍କ ଦ୍ୱାରା ପରିଚାଳିତ</translation>
 <translation id="4670064810192446073">ଭର୍ଚୁଆଲ୍ ରିଆଲିଟୀ</translation>
-<translation id="4708011789095599544">ଆପଣ ଏହି ୱେବସାଇଟର କୁକୀଗୁଡ଼ିକୁ ଏବଂ ଅନ୍ୟ ସାଇଟ୍‍ ଡାଟା ଖାଲି କରିବାକୁ ଚାହୁଁଥିବା ସୁନିଶ୍ଚିତ କି?</translation>
 <translation id="4751476147751820511">ମୋସନ୍ କିମ୍ବା ଲାଇଟ୍ ସେନ୍ସର୍</translation>
 <translation id="4836046166855586901">ଆପଣ କେତେବେଳେ ଏହି ଡିଭାଇସକୁ ସକ୍ରିୟ ଭାବରେ ବ୍ୟବହାର କରୁଛନ୍ତି ତାହା କୌଣସି ସାଇଟ୍ ଜାଣିବାକୁ ଚାହିଁଲେ ପଚାରନ୍ତୁ</translation>
 <translation id="4883854917563148705">ପରିଚାଳିତ ସେଟିଂଗୁଡ଼ିକୁ ରିସେଟ୍ କରାଯାଇପାରିବ ନାହିଁ</translation>
@@ -140,6 +139,7 @@
 <translation id="4976702386844183910">ଗତ ଥର <ph name="DATE" />ରେ ଭିଜିଟ୍ କରାଯାଇଛି</translation>
 <translation id="4994033804516042629">କୌଣସି ଯୋଗାଯୋଗ ମିଳିଲା ନାହିଁ</translation>
 <translation id="4996978546172906250">ଏହା ମାଧ୍ୟମରେ ସେୟାର୍ କରନ୍ତୁ</translation>
+<translation id="5014906230196386306">କୁକୀଗୁଡ଼ିକୁ ଖାଲି କରିବେ?</translation>
 <translation id="5039804452771397117">ଅନୁମତି</translation>
 <translation id="5048398596102334565">ମୋସନ୍ ସେନ୍‌ସର୍ ଆକ୍ସେସ୍ କରିବାକୁ ସାଇଟ୍‌ଗୁଡ଼ିକୁ ଅନୁମତି ଦିଅନ୍ତୁ (ସୁପାରିଶ କରାଯାଇଛି)</translation>
 <translation id="5050380848339752099">ଇନକଗ୍ନିଟୋ ମୋଡ୍ ବାହାରେ କୌଣସି ଏକ ଆପ୍ ସହ ଏହି ସାଇଟ୍ ସୂଚନା ସେୟାର୍ କରିବାକୁ ଯାଉଛି।</translation>
@@ -157,9 +157,9 @@
 <translation id="5335288049665977812">ସାଇଟ୍‌ଗୁଡ଼ିକୁ JavaScript ଚଲାଇବା ପାଇଁ ଅନୁମତି ଦିଅନ୍ତୁ (ସୁପାରିଶ କରାଯାଇଛି)</translation>
 <translation id="534295439873310000">NFC ଡିଭାଇସ୍‌ଗୁଡ଼ିକ</translation>
 <translation id="5354152178998424783">ଏହା ସାଇଟଗୁଡ଼ିକ ଦ୍ୱାରା ଷ୍ଟୋର୍ କରାଯାଇଥିବା <ph name="DATASIZE" /> ଡାଟା ଏବଂ କୁକୀଗୁଡ଼ିକୁ ଖାଲି କରିଦେବ।</translation>
-<translation id="5391532827096253100">ଏହି ସାଇଟ୍‌କୁ ଆପଣଙ୍କର ସଂଯୋଗ ସୁରକ୍ଷିତ ନୁହେଁ ସାଇଟ୍ ସୂଚନା</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1ଟି ଅଧିକ)}other{(+ #ଟି ଅଧିକ)}}</translation>
 <translation id="5403592356182871684">ନାମଗୁଡ଼ିକ</translation>
+<translation id="5438097262470833822">ଏହି ବିକଳ୍ପକୁ ପସନ୍ଦ କଲେ ଏହା <ph name="WEBSITE" /> ପାଇଁ ଅନୁମତିଗୁଡ଼ିକୁ ରିସେଟ୍ କରିଦେବ</translation>
 <translation id="5489227211564503167"><ph name="TOTAL_TIME" />ର <ph name="ELAPSED_TIME" /> ବିତିଯାଇଥିବା ସମୟ।</translation>
 <translation id="5494752089476963479">ଅନଧିକାର ପ୍ରବେଶ କରିଥିବା କିମ୍ବା ବିଭ୍ରାନ୍ତିକର ବିଜ୍ଞାପନ ଦେଖାଉଥିବା ସାଇଟ୍ ବ୍ଲକ୍ କରନ୍ତୁ</translation>
 <translation id="5502860503640766021"><ph name="PERMISSION_1" />ର ଅନୁମତି ଦିଆଯାଇଛି, <ph name="PERMISSION_2" /> ବ୍ଲକ୍ କରାଯାଇଛି</translation>
@@ -190,10 +190,10 @@
 <translation id="6064125863973209585">ସମ୍ପୂର୍ଣ୍ଣ କରାଯାଇଥିବା ଡାଉନ୍‌ଲୋଡ୍</translation>
 <translation id="6165508094623778733">ଅଧିକ ଜାଣନ୍ତୁ</translation>
 <translation id="6177111841848151710">ସାମ୍ପ୍ରତିକ ସନ୍ଧାନ ଇଞ୍ଜିନ୍ ପାଇଁ ବ୍ଲକ୍ କରାଯାଇଛି</translation>
+<translation id="6177128806592000436">ଏହି ସାଇଟ୍‌ରେ ଆପଣଙ୍କର ସଂଯୋଗ ସୁରକ୍ଷିତ ନୁହେଁ</translation>
 <translation id="6181444274883918285">ସାଇଟ୍‍ ବ୍ୟତିକ୍ରମ ଯୋଗ କରନ୍ତୁ</translation>
 <translation id="6192792657125177640">ବ୍ୟତିକ୍ରମଣଗୁଡିକ</translation>
 <translation id="6196640612572343990">ତୃତୀୟ ପକ୍ଷ କୁକୀଗୁଡ଼ିକୁ ବ୍ଲକ୍ କରନ୍ତୁ</translation>
-<translation id="6206551242102657620">ସଂଯୋଗ ସୁରକ୍ଷିତ ଅଟେ। ସାଇଟ୍ ସୂଚନା</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> ବିକଳ୍ପ</translation>
 <translation id="6231752747840485235">'<ph name="APP_NAME" />' କୁ ଅନଇନଷ୍ଟଲ୍ କରିବେ?</translation>
 <translation id="6262279340360821358"><ph name="PERMISSION_1" /> ଏବଂ <ph name="PERMISSION_2" />କୁ ବ୍ଲକ୍ କରାଯାଇଛି</translation>
@@ -202,7 +202,6 @@
 <translation id="6320088164292336938">କମ୍ପନ</translation>
 <translation id="6388207532828177975">ଖାଲି ଏବଂ ରିସେଟ୍ କରନ୍ତୁ</translation>
 <translation id="6398765197997659313">ପୂର୍ଣ୍ଣ ସ୍କ୍ରିନ୍‌ରୁ ପ୍ରସ୍ଥାନ କରନ୍ତୁ</translation>
-<translation id="6423924377271166037">କୁକୀଗୁଡ଼ିକୁ ଖାଲି କରନ୍ତୁ</translation>
 <translation id="6439114592976064011">ଆପଣଙ୍କର ଭର୍ଚୁଆଲ୍ ରିଆଲିଟୀ ଡିଭାଇସ୍ ଏବଂ ଡାଟା ବ୍ୟବହାର କରିବାରୁ ସାଇଟଗୁଡ଼ିକୁ ବ୍ଲକ୍ କରନ୍ତୁ</translation>
 <translation id="6447842834002726250">କୁକୀଗୁଡିକ</translation>
 <translation id="6527303717912515753">ସେୟାର୍ କରନ୍ତୁ</translation>
@@ -217,6 +216,7 @@
 <translation id="6689172468748959065">ପ୍ରୋଫାଇଲ୍ ଫଟୋ</translation>
 <translation id="6697925417670533197">ସକ୍ରିୟ ଡାଉନଲୋଡଗୁଡ଼ିକ</translation>
 <translation id="6746124502594467657">ତଳକୁ ଚାଳନ କରନ୍ତୁ</translation>
+<translation id="6749077623962119521">ଅନୁମତିଗୁଡ଼ିକୁ ରିସେଟ୍ କରିବେ?</translation>
 <translation id="6766622839693428701">ବନ୍ଦ କରିବା ପାଇଁ ତଳକୁ ସ୍ଵାଇପ୍ କରନ୍ତୁ</translation>
 <translation id="6790428901817661496">ଚଲାନ୍ତୁ</translation>
 <translation id="6818926723028410516">ଆଇଟମ୍ ଚୟନ କରନ୍ତୁ</translation>
@@ -224,7 +224,6 @@
 <translation id="6910211073230771657">ଡିଲିଟ୍ କରାଗଲା</translation>
 <translation id="6912998170423641340">ସାଇଟ୍‍ ଏବଂ କ୍ଲିପ୍‌ବୋର୍ଡରୁ ଲେଖା ପଢ଼ିବା ଏବଂ ଛବି ଅବରୋଧ କରନ୍ତୁ</translation>
 <translation id="6945221475159498467">ଚୟନ କରନ୍ତୁ</translation>
-<translation id="6963642900430330478">ଏହି ପୃଷ୍ଠା ବିପଜ୍ଜନକ ଅଟେ। ସାଇଟ୍ ବିଷୟରେ ସୂଚନା</translation>
 <translation id="6965382102122355670">ଓକେ ବଟନ୍</translation>
 <translation id="6992289844737586249">ଆପଣଙ୍କର ମାଇକ୍ରୋଫୋନ୍‍ ବ୍ୟବହାର କରିବାକୁ ସାଇଟ୍‌ଗୁଡ଼ିକୁ ଅନୁମତି ଦେବା ପୂର୍ବରୁ, ପ୍ରଥମେ ପଚାରନ୍ତୁ(ସୁପାରିଶ୍‌ କରାଯାଇଛି)</translation>
 <translation id="7000754031042624318">Android ସେଟିଂସରେ ବନ୍ଦ କରାଯାଇଛି</translation>
@@ -232,7 +231,6 @@
 <translation id="7053983685419859001">ଅବରୋଧ କରନ୍ତୁ</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1ଟି ଚୟନ କରାଯାଇଛି}other{#ଟି ଚୟନ କରାଯାଇଛି}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" />ଟି ଚୟନ କରାଯାଇଛି।  ସ୍କ୍ରିନ୍‌ର ଶୀର୍ଷଭାଗରେ ବିକଳ୍ପଗୁଡ଼ିକ ଉପଲବ୍ଧ ଅଛି</translation>
-<translation id="7128222689758636196">ସାମ୍ପ୍ରତିକ ସନ୍ଧାନ ଇଞ୍ଜିନ୍ ପାଇଁ ଅନୁମତି ଦିଅନ୍ତୁ</translation>
 <translation id="7141896414559753902">ସାଇଟ୍‌ଗୁଡ଼ିକର ପପ୍‌-ଅପ୍‌ ଏବଂ ରିଡାଇରେକ୍ଟ ଦେଖାଇବାକୁ ଅବରୋଧ କରନ୍ତୁ (ସୁପାରିଶ୍ କରାଯାଇଛି)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="723171743924126238">ଛବିଗୁଡ଼ିକ ଚୟନ କରନ୍ତୁ</translation>
@@ -247,7 +245,6 @@
 <translation id="7561196759112975576">ସର୍ବଦା</translation>
 <translation id="7572498721684305250">ଆପଣ NFC ଡିଭାଇସ୍‍ଗୁଡ଼ିକରେ ଟାପ୍ କଲେ ସାଇଟ୍‍ଗୁଡ଼ିକୁ ସୂଚନା ପଠାଇବା ଏବଂ ପ୍ରାପ୍ତ କରିବାରୁ ବ୍ଲକ୍ କରନ୍ତୁ</translation>
 <translation id="757524316907819857">ସୁରକ୍ଷିତ ଥିବା ବିଷୟବସ୍ତୁ ଚଲାଇବାରୁ ସାଇଟ୍‌ଗୁଡ଼ିକୁ ବ୍ଲକ୍ କରନ୍ତୁ</translation>
-<translation id="7589445247086920869">ସାମ୍ପ୍ରତିକ ସନ୍ଧାନ ଇଞ୍ଜିନ୍ ପାଇଁ ବ୍ଲକ୍ କରନ୍ତୁ</translation>
 <translation id="7649070708921625228">ସହାୟତା</translation>
 <translation id="7658239707568436148">ବାତିଲ୍</translation>
 <translation id="7781829728241885113">ଗତକଲି</translation>
@@ -270,10 +267,12 @@
 <translation id="8068648041423924542">ସାର୍ଟିଫିକେଟ୍ ଚୟନ କରିବାକୁ ଅକ୍ଷମ।</translation>
 <translation id="8087000398470557479">ଏହି ବିଷୟବସ୍ତୁ Google ଦ୍ଵାରା ବିତରଣ କରାଯାଇଥିବା <ph name="DOMAIN_NAME" />ରୁ ଆସିଛି।</translation>
 <translation id="8116925261070264013">ମ୍ୟୁଟ୍‍ କରାଗଲା</translation>
+<translation id="813082847718468539">ସାଇଟ୍‍ର ସୂଚନା ଦେଖନ୍ତୁ</translation>
 <translation id="8131740175452115882">ନିଶ୍ଚିତ କରନ୍ତୁ</translation>
 <translation id="8197286292360124385">ଅନୁମତି ଦିଆଯାଇଛି (<ph name="PERMISSION_1" />)</translation>
 <translation id="8200772114523450471">ସାରାଶଂ</translation>
 <translation id="8206354486702514201">ଏହି ସେଟିଂସ୍ ଆପଣଙ୍କର ବ୍ୟବସ୍ଥାପକଙ୍କ ଦ୍ୱାରା ଲାଗୁ କରାଯାଇଛି।</translation>
+<translation id="8211406090763984747">ସଂଯୋଗ ସୁରକ୍ଷିତ ଅଛି</translation>
 <translation id="8249310407154411074">ଉପରକୁ ଘୁଞ୍ଚାନ୍ତୁ</translation>
 <translation id="8261506727792406068">ବିଲୋପ</translation>
 <translation id="8300705686683892304">ଆପ୍ ଦ୍ୱାରା ପରିଚାଳିତ</translation>
@@ -315,7 +314,7 @@
 <translation id="9074739597929991885">ବ୍ଲୁଟୁଥ୍</translation>
 <translation id="9109747640384633967">{PERMISSIONS_SUMMARY_MIXED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> ଓ ଅଧିକ <ph name="NUM_MORE" />ଟି}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> ଓ ଅଧିକ <ph name="NUM_MORE" />ଟି}}</translation>
 <translation id="913657688200966289"><ph name="BEGIN_LINK" />Android ସେଟିଂସ<ph name="END_LINK" />ରେ <ph name="APP_NAME" /> ପାଇଁ ଅନୁମତି ଚାଲୁ କରନ୍ତୁ।</translation>
+<translation id="9162462602695099906">ଏହି ପୃଷ୍ଠାଟି ବିପଦଜନକ ଅଟେ</translation>
 <translation id="930525582205581608">ଏହି ସାଇଟ୍ ସମ୍ବନ୍ଧିତ ଡାଟା ଖାଲି କରିବେ କି?</translation>
-<translation id="965817943346481315">ଯଦି ସାଇଟ୍ ଅନଧିକାର ପ୍ରବେଶ କରିଥିବା କିମ୍ବା ବିଭ୍ରାନ୍ତିକର ବିଜ୍ଞାପନ ଦେଖାଉଛି, ତେବେ ବ୍ଲକ୍ କରନ୍ତୁ(ସୁପାରିଶ୍ କରାଯାଇଛି)</translation>
 <translation id="967624055006145463">ଡାଟା ଷ୍ଟୋର୍ କରାଯାଇଛି</translation>
 </translationbundle>

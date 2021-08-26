@@ -217,8 +217,10 @@ int ff_mjpeg_decode_dqt(MJpegDecodeContext *s)
         for (i = 0; i < 64; i++) {
             s->quant_matrixes[index][i] = get_bits(&s->gb, pr ? 16 : 8);
             if (s->quant_matrixes[index][i] == 0) {
-                av_log(s->avctx, AV_LOG_ERROR, "dqt: 0 quant value\n");
-                return AVERROR_INVALIDDATA;
+                int log_level = s->avctx->err_recognition & AV_EF_EXPLODE ? AV_LOG_ERROR : AV_LOG_WARNING;
+                av_log(s->avctx, log_level, "dqt: 0 quant value\n");
+                if (s->avctx->err_recognition & AV_EF_EXPLODE)
+                    return AVERROR_INVALIDDATA;
             }
         }
 
@@ -681,7 +683,7 @@ int ff_mjpeg_decode_sof(MJpegDecodeContext *s)
             } else if (s->nb_components != 1) {
                 av_log(s->avctx, AV_LOG_ERROR, "Unsupported number of components %d\n", s->nb_components);
                 return AVERROR_PATCHWELCOME;
-            } else if (s->palette_index && s->bits <= 8 || s->force_pal8)
+            } else if ((s->palette_index || s->force_pal8) && s->bits <= 8)
                 s->avctx->pix_fmt = AV_PIX_FMT_PAL8;
             else if (s->bits <= 8)
                 s->avctx->pix_fmt = AV_PIX_FMT_GRAY8;

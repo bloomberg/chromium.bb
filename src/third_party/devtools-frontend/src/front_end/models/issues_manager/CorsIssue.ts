@@ -9,7 +9,6 @@ import * as Protocol from '../../generated/protocol.js';
 import {Issue, IssueCategory, IssueKind} from './Issue.js';
 import type {MarkdownIssueDescription} from './MarkdownIssueDescription.js';
 
-
 const UIStrings = {
   /**
   *@description Label for the link for CORS private network issues
@@ -96,7 +95,7 @@ export class CorsIssue extends Issue<IssueCode> {
 
   constructor(
       issueDetails: Protocol.Audits.CorsIssueDetails, issuesModel: SDK.IssuesModel.IssuesModel,
-      issueId: string|undefined) {
+      issueId: Protocol.Audits.IssueId|undefined) {
     super(getIssueCode(issueDetails), issuesModel, issueId);
     this.issueDetails = issueDetails;
   }

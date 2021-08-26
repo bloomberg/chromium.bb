@@ -16,7 +16,6 @@
 #include "config/aom_scale_rtcd.h"
 
 #include "aom/aom_integer.h"
-#include "aom_ports/system_state.h"
 #include "av1/common/av1_common_int.h"
 #include "av1/common/reconinter.h"
 #include "av1/encoder/encoder.h"
@@ -511,7 +510,6 @@ static void pick_cdef_from_qp(AV1_COMMON *const cm, int skip_cdef,
   int predicted_y_f2 = 0;
   int predicted_uv_f1 = 0;
   int predicted_uv_f2 = 0;
-  aom_clear_system_state();
   if (!frame_is_intra_only(cm)) {
     predicted_y_f1 = clamp((int)roundf(q * q * -0.0000023593946f +
                                        q * 0.0068615186f + 0.02709886f),

@@ -653,31 +653,6 @@ bool WebLocalFrameImpl::ConsumeTransientUserActivation(
   return LocalFrame::ConsumeTransientUserActivation(GetFrame(), update_source);
 }
 
-void WebLocalFrameImpl::SetOptimizationGuideHints(
-    const WebOptimizationGuideHints& web_hints) {
-  if (!GetFrame())
-    return;
-  // Re-build the optimization hints.
-  // TODO(https://crbug.com/1113980): Onion-soupify the optimization guide for
-  // Blink so that we can directly pass the hints without mojom variant
-  // conversion.
-  auto hints = mojom::blink::BlinkOptimizationGuideHints::New();
-  if (web_hints.delay_async_script_execution_delay_type) {
-    hints->delay_async_script_execution_hints =
-        mojom::blink::DelayAsyncScriptExecutionHints::New(
-            *web_hints.delay_async_script_execution_delay_type);
-  }
-  if (web_hints.delay_competing_low_priority_requests_delay_type &&
-      web_hints.delay_competing_low_priority_requests_priority_threshold) {
-    hints->delay_competing_low_priority_requests_hints =
-        mojom::blink::DelayCompetingLowPriorityRequestsHints::New(
-            *web_hints.delay_competing_low_priority_requests_delay_type,
-            *web_hints
-                 .delay_competing_low_priority_requests_priority_threshold);
-  }
-  GetFrame()->SetOptimizationGuideHints(std::move(hints));
-}
-
 WebLocalFrame* WebLocalFrame::FrameForContext(v8::Local<v8::Context> context) {
   return WebLocalFrameImpl::FromFrame(ToLocalFrameIfNotDetached(context));
 }
@@ -2354,6 +2329,10 @@ void WebLocalFrameImpl::CommitNavigation(
     std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
   DCHECK(GetFrame());
   DCHECK(!navigation_params->url.ProtocolIs("javascript"));
+  if (navigation_params->is_synchronous_commit_for_bug_778318) {
+    DCHECK(WebDocumentLoader::WillLoadUrlAsEmpty(navigation_params->url));
+    navigation_params->storage_key = GetFrame()->DomWindow()->GetStorageKey();
+  }
   if (GetTextFinder())
     GetTextFinder()->ClearActiveFindMatch();
   GetFrame()->Loader().CommitNavigation(std::move(navigation_params),
@@ -2844,6 +2823,14 @@ void WebLocalFrameImpl::ScrollFocusedEditableElementIntoRect(
 
 void WebLocalFrameImpl::ResetHasScrolledFocusedEditableIntoView() {
   has_scrolled_focused_editable_node_into_rect_ = false;
+}
+
+bool WebLocalFrameImpl::ServiceWorkerSubresourceFilterEnabled() {
+  if (GetFrame() && GetFrame()->GetDocument()) {
+    return RuntimeEnabledFeatures::ServiceWorkerSubresourceFilterEnabled(
+        GetFrame()->GetDocument()->GetExecutionContext());
+  }
+  return false;
 }
 
 }  // namespace blink

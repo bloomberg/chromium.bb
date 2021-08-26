@@ -40,7 +40,7 @@ import * as UI from '../../ui/legacy/legacy.js';
 import * as Snippets from '../snippets/snippets.js';
 
 import type {NavigatorUISourceCodeTreeNode} from './NavigatorView.js';
-import {NavigatorView} from './NavigatorView.js';  // eslint-disable-line no-unused-vars
+import {NavigatorView} from './NavigatorView.js';
 
 const UIStrings = {
   /**
@@ -130,7 +130,7 @@ export class NetworkNavigatorView extends NavigatorView {
     return project.type() === Workspace.Workspace.projectTypes.Network;
   }
 
-  _inspectedURLChanged(event: Common.EventTarget.EventTargetEvent): void {
+  _inspectedURLChanged(event: Common.EventTarget.EventTargetEvent<SDK.Target.Target>): void {
     const mainTarget = SDK.TargetManager.TargetManager.instance().mainTarget();
     if (event.data !== mainTarget) {
       return;

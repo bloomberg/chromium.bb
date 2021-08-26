@@ -21,8 +21,8 @@
 #include "chrome/browser/ash/arc/arc_optin_uma.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
-#include "chrome/browser/chromeos/full_restore/arc_window_handler.h"
-#include "chrome/browser/chromeos/full_restore/full_restore_arc_task_handler.h"
+#include "chrome/browser/ash/full_restore/arc_window_handler.h"
+#include "chrome/browser/ash/full_restore/full_restore_arc_task_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
@@ -33,7 +33,6 @@
 #include "chrome/browser/ui/ash/shelf/arc_app_window.h"
 #include "chrome/browser/ui/ash/shelf/arc_app_window_info.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
-#include "chrome/common/chrome_features.h"
 #include "components/full_restore/full_restore_utils.h"
 #include "extensions/common/constants.h"
 #include "ui/aura/client/aura_constants.h"
@@ -42,6 +41,10 @@
 
 namespace {
 constexpr int kArcAppWindowIconSize = extension_misc::EXTENSION_ICON_MEDIUM;
+constexpr char kArcPaymentAppPackage[] = "org.chromium.arc.payment_app";
+constexpr char kArcPaymentAppInvokePaymentAppActivity[] =
+    "org.chromium.arc.payment_app.InvokePaymentAppActivity";
+
 }  // namespace
 
 AppServiceAppWindowArcTracker::AppServiceAppWindowArcTracker(
@@ -61,7 +64,7 @@ AppServiceAppWindowArcTracker::AppServiceAppWindowArcTracker(
     arc_session_manager->AddObserver(this);
 
   auto* arc_handler =
-      chromeos::full_restore::FullRestoreArcTaskHandler::GetForProfile(
+      ash::full_restore::FullRestoreArcTaskHandler::GetForProfile(
           observed_profile_);
   if (arc_handler)
     arc_handler->OnShelfReady();
@@ -196,7 +199,15 @@ void AppServiceAppWindowArcTracker::OnTaskCreated(
 
   // Hide from shelf if there already is some task representing the window.
   if (GetTaskIdSharingLogicalWindow(task_id) != arc::kNoTaskId)
-    task_id_to_arc_app_window_info_[task_id]->set_hidden_from_shelf(true);
+    task_id_to_arc_app_window_info_[task_id]->set_window_hidden_from_shelf(
+        true);
+
+  // Hide any activities created from the ARC Payment activitity from the shelf
+  // (they become overlays of TWA apps already on the shelf)
+  if ((package_name == kArcPaymentAppPackage) &&
+      (activity_name == kArcPaymentAppInvokePaymentAppActivity)) {
+    task_id_to_arc_app_window_info_[task_id]->set_task_hidden_from_shelf();
+  }
 
   CheckAndAttachControllers();
 
@@ -215,12 +226,13 @@ void AppServiceAppWindowArcTracker::OnTaskCreated(
   // Update |state|. The app must be started, and running state. If visible,
   // set it as |kVisible|, otherwise, clear the visible bit.
   auto* proxy = apps::AppServiceProxyFactory::GetForProfile(observed_profile_);
-  apps::InstanceState state =
-      proxy->InstanceRegistry().GetState(apps::Instance::InstanceKey(window));
+  apps::Instance::InstanceKey instance_key(window);
+  apps::InstanceState state = proxy->InstanceRegistry().GetState(instance_key);
   state = static_cast<apps::InstanceState>(
       state | apps::InstanceState::kStarted | apps::InstanceState::kRunning);
   app_service_controller_->app_service_instance_helper()->OnInstances(
-      task_id_to_arc_app_window_info_[task_id]->app_shelf_id().app_id(), window,
+      instance_key,
+      task_id_to_arc_app_window_info_[task_id]->app_shelf_id().app_id(),
       std::string(), state);
   arc_window_candidates_.erase(window);
 }
@@ -235,21 +247,18 @@ void AppServiceAppWindowArcTracker::OnTaskDescriptionChanged(
   if (it == task_id_to_arc_app_window_info_.end())
     return;
 
-  if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon) ||
-      icon.icon_png_data.has_value()) {
-    // If |icon| is empty, and non-adaptive icon as the default value, don't
-    // call ArcRawIconPngDataToImageSkia, because it might return the default
-    // play store icon to replace the app icon.
-    if (!icon.is_adaptive_icon && (!icon.icon_png_data.has_value() ||
-                                   icon.icon_png_data.value().empty())) {
-      return;
-    }
-
-    apps::ArcRawIconPngDataToImageSkia(
-        icon.Clone(), kArcAppWindowIconSize,
-        base::BindOnce(&AppServiceAppWindowArcTracker::OnIconLoaded,
-                       weak_ptr_factory_.GetWeakPtr(), task_id, label));
+  // If |icon| is empty, and non-adaptive icon as the default value, don't
+  // call ArcRawIconPngDataToImageSkia, because it might return the default
+  // play store icon to replace the app icon.
+  if (!icon.is_adaptive_icon &&
+      (!icon.icon_png_data.has_value() || icon.icon_png_data.value().empty())) {
+    return;
   }
+
+  apps::ArcRawIconPngDataToImageSkia(
+      icon.Clone(), kArcAppWindowIconSize,
+      base::BindOnce(&AppServiceAppWindowArcTracker::OnIconLoaded,
+                     weak_ptr_factory_.GetWeakPtr(), task_id, label));
 }
 
 void AppServiceAppWindowArcTracker::OnTaskDestroyed(int32_t task_id) {
@@ -260,7 +269,8 @@ void AppServiceAppWindowArcTracker::OnTaskDestroyed(int32_t task_id) {
   if (!it->second->logical_window_id().empty()) {
     const int other_id = GetTaskIdSharingLogicalWindow(task_id);
     if (other_id != arc::kNoTaskId)
-      task_id_to_arc_app_window_info_[other_id]->set_hidden_from_shelf(false);
+      task_id_to_arc_app_window_info_[other_id]->set_window_hidden_from_shelf(
+          false);
   }
 
   aura::Window* const window = it->second.get()->window();
@@ -273,7 +283,8 @@ void AppServiceAppWindowArcTracker::OnTaskDestroyed(int32_t task_id) {
     // instance though the window has been closed, and the task has been
     // destroyed.
     app_service_controller_->app_service_instance_helper()->OnInstances(
-        it->second.get()->app_shelf_id().app_id(), window, std::string(),
+        apps::Instance::InstanceKey(window),
+        it->second.get()->app_shelf_id().app_id(), std::string(),
         apps::InstanceState::kDestroyed);
     app_service_controller_->UnregisterWindow(window);
   }
@@ -319,13 +330,14 @@ void AppServiceAppWindowArcTracker::OnTaskSetActive(int32_t task_id) {
               : ArcAppWindow::FullScreenMode::kNonActive);
     }
     if (previous_arc_app_window_info->window()) {
+      apps::Instance::InstanceKey instance_key(
+          previous_arc_app_window_info->window());
       apps::InstanceState state =
           app_service_controller_->app_service_instance_helper()
-              ->CalculateActivatedState(previous_arc_app_window_info->window(),
-                                        false /* active */);
+              ->CalculateActivatedState(instance_key, false /* active */);
       app_service_controller_->app_service_instance_helper()->OnInstances(
-          previous_arc_app_window_info->app_shelf_id().app_id(),
-          previous_arc_app_window_info->window(), std::string(), state);
+          instance_key, previous_arc_app_window_info->app_shelf_id().app_id(),
+          std::string(), state);
     }
   }
 
@@ -347,11 +359,12 @@ void AppServiceAppWindowArcTracker::OnTaskSetActive(int32_t task_id) {
   app_service_controller_->owner()->SetItemStatus(
       current_arc_app_window_info->shelf_id(), ash::STATUS_RUNNING);
 
+  apps::Instance::InstanceKey instance_key(window);
   apps::InstanceState state =
       app_service_controller_->app_service_instance_helper()
-          ->CalculateActivatedState(window, true /* active */);
+          ->CalculateActivatedState(instance_key, true /* active */);
   app_service_controller_->app_service_instance_helper()->OnInstances(
-      current_arc_app_window_info->app_shelf_id().app_id(), window,
+      instance_key, current_arc_app_window_info->app_shelf_id().app_id(),
       std::string(), state);
 }
 
@@ -390,7 +403,8 @@ void AppServiceAppWindowArcTracker::AttachControllerToWindow(
   else if (session_id.has_value())
     AttachControllerToSession(*session_id);
 
-  app_service_controller_->AddWindowToShelf(window, shelf_id);
+  if (!info->task_hidden_from_shelf())
+    app_service_controller_->AddWindowToShelf(window, shelf_id);
   AppWindowBase* app_window = app_service_controller_->GetAppWindow(window);
   if (app_window)
     app_window->SetDescription(info->title(), info->icon());
@@ -445,6 +459,9 @@ void AppServiceAppWindowArcTracker::CheckAndAttachControllers() {
 void AppServiceAppWindowArcTracker::AttachControllerToTask(int task_id) {
   ArcAppWindowInfo* const app_window_info =
       task_id_to_arc_app_window_info_[task_id].get();
+  if (app_window_info->task_hidden_from_shelf())
+    return;
+
   const arc::ArcAppShelfId& app_shelf_id = app_window_info->app_shelf_id();
   if (base::Contains(app_shelf_group_to_controller_map_, app_shelf_id)) {
     app_shelf_group_to_controller_map_[app_shelf_id]->AddTaskId(task_id);
@@ -461,7 +478,7 @@ void AppServiceAppWindowArcTracker::AttachControllerToTask(int task_id) {
     app_service_controller_->owner()->CreateAppItem(std::move(controller),
                                                     ash::STATUS_RUNNING);
   } else {
-    app_service_controller_->owner()->shelf_model()->SetShelfItemDelegate(
+    app_service_controller_->owner()->shelf_model()->ReplaceShelfItemDelegate(
         shelf_id, std::move(controller));
     app_service_controller_->owner()->SetItemStatus(shelf_id,
                                                     ash::STATUS_RUNNING);
@@ -489,7 +506,7 @@ void AppServiceAppWindowArcTracker::AttachControllerToSession(int session_id) {
     app_service_controller_->owner()->CreateAppItem(std::move(controller),
                                                     ash::STATUS_RUNNING);
   } else {
-    app_service_controller_->owner()->shelf_model()->SetShelfItemDelegate(
+    app_service_controller_->owner()->shelf_model()->ReplaceShelfItemDelegate(
         shelf_id, std::move(controller));
     app_service_controller_->owner()->SetItemStatus(shelf_id,
                                                     ash::STATUS_RUNNING);
@@ -597,9 +614,9 @@ std::vector<int> AppServiceAppWindowArcTracker::GetSessionIdsForApp(
   return session_ids;
 }
 
-void AppServiceAppWindowArcTracker::SetDescription(int32_t task_id,
-                                                   const std::string& title,
-                                                   gfx::ImageSkia icon) {
+void AppServiceAppWindowArcTracker::OnIconLoaded(int32_t task_id,
+                                                 const std::string& title,
+                                                 const gfx::ImageSkia& icon) {
   auto it = task_id_to_arc_app_window_info_.find(task_id);
   if (it == task_id_to_arc_app_window_info_.end())
     return;
@@ -611,13 +628,6 @@ void AppServiceAppWindowArcTracker::SetDescription(int32_t task_id,
       app_service_controller_->GetAppWindow(it->second->window());
   if (app_window)
     app_window->SetDescription(title, icon);
-}
-
-void AppServiceAppWindowArcTracker::OnIconLoaded(int32_t task_id,
-                                                 const std::string& title,
-                                                 const gfx::ImageSkia& icon) {
-  gfx::ImageSkia image = icon;
-  SetDescription(task_id, title, image);
 }
 
 ArcAppWindowInfo* AppServiceAppWindowArcTracker::GetArcAppWindowInfo(
@@ -660,7 +670,8 @@ void AppServiceAppWindowArcTracker::OnSessionDestroyed(int32_t session_id) {
   aura::Window* const window = it->second.get()->window();
   if (window) {
     app_service_controller_->app_service_instance_helper()->OnInstances(
-        it->second.get()->app_shelf_id().app_id(), window, std::string(),
+        apps::Instance::InstanceKey(window),
+        it->second.get()->app_shelf_id().app_id(), std::string(),
         apps::InstanceState::kDestroyed);
     app_service_controller_->UnregisterWindow(window);
   }
@@ -682,7 +693,7 @@ void AppServiceAppWindowArcTracker::OnSessionDestroyed(int32_t session_id) {
 
   // Close the ghost window.
   auto* arc_handler =
-      chromeos::full_restore::FullRestoreArcTaskHandler::GetForProfile(
+      ash::full_restore::FullRestoreArcTaskHandler::GetForProfile(
           observed_profile_);
   if (arc_handler && arc_handler->window_handler())
     arc_handler->window_handler()->CloseWindow(session_id);

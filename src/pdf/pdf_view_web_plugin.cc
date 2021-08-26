@@ -14,8 +14,6 @@
 
 #include "base/check_op.h"
 #include "base/i18n/string_search.h"
-#include "base/metrics/user_metrics.h"
-#include "base/metrics/user_metrics_action.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/thread_annotations.h"
@@ -31,6 +29,7 @@
 #include "pdf/accessibility_structs.h"
 #include "pdf/mojom/pdf.mojom.h"
 #include "pdf/parsed_params.h"
+#include "pdf/pdf_accessibility_data_handler.h"
 #include "pdf/pdf_engine.h"
 #include "pdf/pdf_init.h"
 #include "pdf/pdfium/pdfium_engine.h"
@@ -44,6 +43,7 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/input/web_coalesced_input_event.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/common/input/web_keyboard_event.h"
 #include "third_party/blink/public/common/metrics/document_update_reason.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-shared.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
@@ -62,11 +62,15 @@
 #include "third_party/blink/public/web/web_plugin_container.h"
 #include "third_party/blink/public/web/web_plugin_params.h"
 #include "third_party/blink/public/web/web_print_preset_options.h"
+#include "third_party/blink/public/web/web_view.h"
+#include "third_party/blink/public/web/web_widget.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
+#include "ui/display/screen_info.h"
 #include "ui/events/blink/blink_event_util.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/scroll_offset.h"
@@ -147,8 +151,13 @@ class BlinkContainerWrapper final : public PdfViewWebPlugin::ContainerWrapper {
     container_->ReportFindInPageSelection(identifier, index);
   }
 
-  float DeviceScaleFactor() const override {
-    return container_->DeviceScaleFactor();
+  float DeviceScaleFactor() override {
+    // Do not reply on the device scale returned by
+    // `container_->DeviceScaleFactor()`, since it doesn't always reflect the
+    // real screen's device scale. Instead, get the real device scale from the
+    // top-level `blink::WebLocalFrame`'s screen info.
+    blink::WebWidget* widget = GetFrame()->LocalRoot()->FrameWidget();
+    return widget->GetOriginalScreenInfo().device_scale_factor;
   }
 
   void SetReferrerForRequest(blink::WebURLRequest& request,
@@ -172,7 +181,14 @@ class BlinkContainerWrapper final : public PdfViewWebPlugin::ContainerWrapper {
   void TextSelectionChanged(const blink::WebString& selection_text,
                             uint32_t offset,
                             const gfx::Range& range) override {
-    GetFrame()->TextSelectionChanged(selection_text, offset, range);
+    // Focus the plugin's containing frame before changing the text selection.
+    // TODO(crbug.com/1234559): Would it make more sense not to change the text
+    // selection at all in this case? Maybe we only have this problem because we
+    // support a "selectAll" message.
+    blink::WebLocalFrame* frame = GetFrame();
+    frame->View()->SetFocusedFrame(frame);
+
+    frame->TextSelectionChanged(selection_text, offset, range);
   }
 
   std::unique_ptr<blink::WebAssociatedURLLoader> CreateAssociatedURLLoader(
@@ -185,6 +201,13 @@ class BlinkContainerWrapper final : public PdfViewWebPlugin::ContainerWrapper {
     auto* widget = GetFrame()->FrameWidget();
     if (widget)
       widget->UpdateTextInputState();
+  }
+
+  void UpdateSelectionBounds() override {
+    // `widget` is null in Print Preview.
+    auto* widget = GetFrame()->FrameWidget();
+    if (widget)
+      widget->UpdateSelectionBounds();
   }
 
   blink::WebLocalFrame* GetFrame() override {
@@ -203,13 +226,25 @@ class BlinkContainerWrapper final : public PdfViewWebPlugin::ContainerWrapper {
 
 }  // namespace
 
+std::unique_ptr<PdfAccessibilityDataHandler>
+PdfViewWebPlugin::Client::CreateAccessibilityDataHandler(
+    PdfAccessibilityActionHandler* action_handler) {
+  return nullptr;
+}
+
+bool PdfViewWebPlugin::Client::IsUseZoomForDSFEnabled() const {
+  return false;
+}
+
 PdfViewWebPlugin::PdfViewWebPlugin(
+    std::unique_ptr<Client> client,
     mojo::AssociatedRemote<pdf::mojom::PdfService> pdf_service_remote,
-    std::unique_ptr<PrintClient> print_client,
     const blink::WebPluginParams& params)
-    : pdf_service_remote_(std::move(pdf_service_remote)),
-      print_client_(std::move(print_client)),
-      initial_params_(params) {}
+    : client_(std::move(client)),
+      pdf_service_remote_(std::move(pdf_service_remote)),
+      initial_params_(params),
+      pdf_accessibility_data_handler_(
+          client_->CreateAccessibilityDataHandler(this)) {}
 
 PdfViewWebPlugin::~PdfViewWebPlugin() = default;
 
@@ -301,19 +336,27 @@ v8::Local<v8::Object> PdfViewWebPlugin::V8ScriptableObject(
   return scriptable_receiver_.Get(isolate);
 }
 
+bool PdfViewWebPlugin::SupportsKeyboardFocus() const {
+  return !IsPrintPreview();
+}
+
 void PdfViewWebPlugin::UpdateAllLifecyclePhases(
     blink::DocumentUpdateReason reason) {}
 
 void PdfViewWebPlugin::Paint(cc::PaintCanvas* canvas, const gfx::Rect& rect) {
-  const float inverse_scale = 1.0f / device_scale();
+  // The scale level used to convert DIPs to CSS pixels.
+  float inverse_scale = 1.0f / (device_scale() * viewport_to_dip_scale_);
+
+  // `rect` is in CSS pixels, and the plugin rect is in DIPs. The plugin rect
+  // needs to be converted into CSS pixels before calculating the rect area to
+  // be invalidated.
+  gfx::Rect plugin_rect_in_css_pixels =
+      gfx::ScaleToEnclosingRectSafe(plugin_rect(), inverse_scale);
 
   // Clip the intersection of the paint rect and the plugin rect, so that
   // painting outside the plugin or the paint rect area can be avoided.
-  // Note: `invalidate_rect` and `rect` are in CSS pixels. The plugin rect (with
-  // the device scale applied) must be converted to CSS pixels as well before
-  // calculating `invalidate_rect`.
-  SkRect invalidate_rect = gfx::RectToSkRect(gfx::IntersectRects(
-      gfx::ScaleToEnclosingRectSafe(plugin_rect(), inverse_scale), rect));
+  SkRect invalidate_rect =
+      gfx::RectToSkRect(gfx::IntersectRects(plugin_rect_in_css_pixels, rect));
   cc::PaintCanvasAutoRestore auto_restore(canvas, /*save=*/true);
   canvas->clipRect(invalidate_rect);
 
@@ -336,11 +379,44 @@ void PdfViewWebPlugin::UpdateGeometry(const gfx::Rect& window_rect,
                                       const gfx::Rect& clip_rect,
                                       const gfx::Rect& unobscured_rect,
                                       bool is_visible) {
-  OnViewportChanged(window_rect, container_wrapper_->DeviceScaleFactor());
+  float device_scale = container_wrapper_->DeviceScaleFactor();
+  viewport_to_dip_scale_ =
+      client_->IsUseZoomForDSFEnabled() ? 1.0f / device_scale : 1.0f;
+
+  // Note that `window_rect` is in viewport coordinates. It needs to be
+  // converted to DIPs before getting passed into
+  // PdfViewPluginBase::UpdateGeometryOnViewChanged().
+  OnViewportChanged(
+      gfx::ScaleToEnclosingRectSafe(window_rect, viewport_to_dip_scale_),
+      device_scale);
 }
 
 void PdfViewWebPlugin::UpdateFocus(bool focused,
-                                   blink::mojom::FocusType focus_type) {}
+                                   blink::mojom::FocusType focus_type) {
+  if (has_focus_ != focused) {
+    engine()->UpdateFocus(focused);
+    container_wrapper_->UpdateTextInputState();
+    container_wrapper_->UpdateSelectionBounds();
+  }
+  has_focus_ = focused;
+
+  if (!has_focus_ || !SupportsKeyboardFocus())
+    return;
+
+  if (focus_type != blink::mojom::FocusType::kBackward &&
+      focus_type != blink::mojom::FocusType::kForward) {
+    return;
+  }
+
+  const int modifiers = focus_type == blink::mojom::FocusType::kForward
+                            ? blink::WebInputEvent::kNoModifiers
+                            : blink::WebInputEvent::kShiftKey;
+
+  blink::WebKeyboardEvent simulated_event(blink::WebInputEvent::Type::kKeyDown,
+                                          modifiers, base::TimeTicks());
+  simulated_event.windows_key_code = ui::KeyboardCode::VKEY_TAB;
+  PdfViewPluginBase::HandleInputEvent(simulated_event);
+}
 
 void PdfViewWebPlugin::UpdateVisibility(bool visibility) {}
 
@@ -654,6 +730,11 @@ void PdfViewWebPlugin::UpdateSnapshot(sk_sp<SkImage> snapshot) {
     InvalidatePluginContainer();
 }
 
+void PdfViewWebPlugin::HandleAccessibilityAction(
+    const AccessibilityActionData& action_data) {
+  PdfViewPluginBase::HandleAccessibilityAction(action_data);
+}
+
 base::WeakPtr<PdfViewPluginBase> PdfViewWebPlugin::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
@@ -668,7 +749,7 @@ std::unique_ptr<UrlLoader> PdfViewWebPlugin::CreateUrlLoaderInternal() {
 void PdfViewWebPlugin::DidOpen(std::unique_ptr<UrlLoader> loader,
                                int32_t result) {
   if (result == Result::kSuccess) {
-    if (!engine()->HandleDocumentLoad(std::move(loader)))
+    if (!engine()->HandleDocumentLoad(std::move(loader), GetURL()))
       DocumentLoadFailed();
   } else {
     NOTIMPLEMENTED();
@@ -698,28 +779,29 @@ void PdfViewWebPlugin::SetFormFieldInFocus(bool in_focus) {
   container_wrapper_->UpdateTextInputState();
 }
 
-// TODO(https://crbug.com/1144444): Add a Pepper-free implementation to set
-// accessibility document information.
 void PdfViewWebPlugin::SetAccessibilityDocInfo(
     const AccessibilityDocInfo& doc_info) {
-  NOTIMPLEMENTED();
+  if (!pdf_accessibility_data_handler_)
+    return;
+  pdf_accessibility_data_handler_->SetAccessibilityDocInfo(doc_info);
 }
 
-// TODO(https://crbug.com/1144444): Add a Pepper-free implementation to set
-// accessibility page information.
 void PdfViewWebPlugin::SetAccessibilityPageInfo(
     AccessibilityPageInfo page_info,
     std::vector<AccessibilityTextRunInfo> text_runs,
     std::vector<AccessibilityCharInfo> chars,
     AccessibilityPageObjects page_objects) {
-  NOTIMPLEMENTED();
+  if (!pdf_accessibility_data_handler_)
+    return;
+  pdf_accessibility_data_handler_->SetAccessibilityPageInfo(
+      page_info, text_runs, chars, page_objects);
 }
 
-// TODO(https://crbug.com/1144444): Add a Pepper-free implementation to set
-// accessibility viewport information.
 void PdfViewWebPlugin::SetAccessibilityViewportInfo(
     const AccessibilityViewportInfo& viewport_info) {
-  NOTIMPLEMENTED();
+  if (!pdf_accessibility_data_handler_)
+    return;
+  pdf_accessibility_data_handler_->SetAccessibilityViewportInfo(viewport_info);
 }
 
 void PdfViewWebPlugin::SetContentRestrictions(int content_restrictions) {
@@ -779,7 +861,7 @@ void PdfViewWebPlugin::NotifyUnsupportedFeature() {
 }
 
 void PdfViewWebPlugin::UserMetricsRecordAction(const std::string& action) {
-  base::RecordAction(base::UserMetricsAction(action.c_str()));
+  client_->RecordComputedAction(action);
 }
 
 void PdfViewWebPlugin::OnViewportChanged(const gfx::Rect& view_rect,
@@ -844,10 +926,7 @@ bool PdfViewWebPlugin::Redo() {
 }
 
 void PdfViewWebPlugin::OnInvokePrintDialog(int32_t /*result*/) {
-  if (!print_client_)
-    return;
-
-  print_client_->Print(Container()->GetElement());
+  client_->Print(Container()->GetElement());
 }
 
 pdf::mojom::PdfService* PdfViewWebPlugin::GetPdfService() {

@@ -31,7 +31,7 @@
 /* eslint-disable rulesdir/no_underscored_properties */
 
 import * as i18n from '../../core/i18n/i18n.js';
-import type * as SDK from '../../core/sdk/sdk.js'; // eslint-disable-line no-unused-vars
+import type * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -73,7 +73,7 @@ export class RequestPreviewView extends RequestResponseView {
   async _htmlPreview(): Promise<UI.Widget.Widget|null> {
     const contentData = await this.request.contentData();
     if (contentData.error) {
-      return new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.failedToLoadResponseData));
+      return new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.failedToLoadResponseData) + ': ' + contentData.error);
     }
 
     const allowlist = new Set<string>(['text/html', 'text/plain', 'application/xhtml+xml']);

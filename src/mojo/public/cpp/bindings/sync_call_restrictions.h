@@ -8,6 +8,7 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 
 #if (!defined(NDEBUG) || defined(DCHECK_ALWAYS_ON))
 #define ENABLE_SYNC_CALL_RESTRICTIONS 1
@@ -23,6 +24,9 @@ namespace content {
 class AndroidOverlaySyncHelper;
 class DesktopCapturerLacros;
 class StreamTextureFactory;
+#if defined(OS_WIN)
+class DCOMPTextureFactory;
+#endif
 }  // namespace content
 
 namespace crosapi {
@@ -43,7 +47,7 @@ class GpuDisplayProvider;
 class GpuHostImpl;
 class HostFrameSinkManager;
 class HostGpuMemoryBufferManager;
-}
+}  // namespace viz
 
 namespace mojo {
 class ScopedAllowSyncCallForTesting;
@@ -112,6 +116,9 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) SyncCallRestrictions {
   friend class gpu::GpuChannelHost;
   friend class gpu::CommandBufferProxyImpl;
   friend class content::StreamTextureFactory;
+#if defined(OS_WIN)
+  friend class content::DCOMPTextureFactory;
+#endif
   // END ALLOWED USAGE.
 
 #if ENABLE_SYNC_CALL_RESTRICTIONS

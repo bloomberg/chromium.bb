@@ -24,8 +24,8 @@
 #include "components/sync/engine/events/protocol_event.h"
 #include "components/sync/invalidations/sync_invalidations_service.h"
 #include "components/sync/model/type_entities_count.h"
-#include "components/sync/protocol/sync.pb.h"
 #include "components/sync/protocol/sync_invalidations_payload.pb.h"
+#include "components/sync/protocol/user_event_specifics.pb.h"
 #include "components/sync_user_events/user_event_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
@@ -303,10 +303,7 @@ void SyncInternalsMessageHandler::HandleTriggerRefresh(
   if (!service)
     return;
 
-  // Only allowed to trigger refresh/schedule nudges for protocol types, things
-  // like PROXY_TABS are not allowed.
-  service->TriggerRefresh(base::util::Intersection(
-      service->GetActiveDataTypes(), syncer::ProtocolTypes()));
+  service->TriggerRefresh(syncer::ModelTypeSet::All());
 }
 
 void SyncInternalsMessageHandler::OnReceivedAllNodes(

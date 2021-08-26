@@ -7,13 +7,39 @@
  * information for ChromeOS.
  */
 
+import '//resources/cr_elements/cr_button/cr_button.m.js';
+import '//resources/cr_elements/policy/cr_policy_indicator.m.js';
+import '//resources/cr_elements/policy/cr_tooltip_icon.m.js';
+import '../../settings_shared_css.js';
+import '../localized_link/localized_link.js';
+import './channel_switcher_dialog.js';
+import './edit_hostname_dialog.js';
+
+import {CrPolicyIndicatorType} from '//resources/cr_elements/policy/cr_policy_indicator_behavior.m.js';
+import {assert, assertNotReached} from '//resources/js/assert.m.js';
+import {focusWithoutInk} from '//resources/js/cr/ui/focus_without_ink.m.js';
+import {I18nBehavior} from '//resources/js/i18n_behavior.m.js';
+import {WebUIListenerBehavior} from '//resources/js/web_ui_listener_behavior.m.js';
+import {afterNextRender, flush, html, Polymer, TemplateInstanceBase, Templatizer} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {loadTimeData} from '../../i18n_setup.js';
+import {Route, RouteObserverBehavior, Router} from '../../router.js';
+import {DeepLinkingBehavior} from '../deep_linking_behavior.m.js';
+import {routes} from '../os_route.m.js';
+
+import {AboutPageBrowserProxy, AboutPageBrowserProxyImpl, AboutPageUpdateInfo, BrowserChannel, browserChannelToI18nId, ChannelInfo, isTargetChannelMoreStable, RegulatoryInfo, TPMFirmwareUpdateStatusChangedEvent, UpdateStatus, UpdateStatusChangedEvent, VersionInfo} from './about_page_browser_proxy.js';
+import {DeviceNameBrowserProxy, DeviceNameBrowserProxyImpl, DeviceNameMetadata} from './device_name_browser_proxy.js';
+import {DeviceNameState} from './device_name_util.js';
+
 Polymer({
+  _template: html`{__html_template__}`,
   is: 'settings-detailed-build-info',
 
   behaviors: [
     DeepLinkingBehavior,
+    WebUIListenerBehavior,
     I18nBehavior,
-    settings.RouteObserverBehavior,
+    RouteObserverBehavior,
   ],
 
   properties: {
@@ -23,11 +49,11 @@ Polymer({
     /** @private {!ChannelInfo} */
     channelInfo_: Object,
 
-    /** @private */
-    currentlyOnChannelText_: String,
+    /** @private {!DeviceNameMetadata} */
+    deviceNameMetadata_: Object,
 
     /** @private */
-    deviceNameText_: String,
+    currentlyOnChannelText_: String,
 
     /** @private */
     showChannelSwitcherDialog_: Boolean,
@@ -86,7 +112,7 @@ Polymer({
 
   /** @override */
   ready() {
-    const browserProxy = settings.AboutPageBrowserProxyImpl.getInstance();
+    const browserProxy = AboutPageBrowserProxyImpl.getInstance();
     browserProxy.pageReady();
 
     browserProxy.getVersionInfo().then(versionInfo => {
@@ -96,17 +122,20 @@ Polymer({
     this.updateChannelInfo_();
 
     if (this.isHostnameSettingEnabled_) {
-      this.updateDeviceName_();
+      this.addWebUIListener(
+          'settings.updateDeviceNameMetadata',
+          this.updateDeviceNameMetadata_.bind(this));
+      DeviceNameBrowserProxyImpl.getInstance().notifyReadyForDeviceName();
     }
   },
 
   /**
-   * @param {!settings.Route} route
-   * @param {!settings.Route} oldRoute
+   * @param {!Route} route
+   * @param {!Route} oldRoute
    */
   currentRouteChanged(route, oldRoute) {
     // Does not apply to this page.
-    if (route !== settings.routes.DETAILED_BUILD_INFO) {
+    if (route !== routes.DETAILED_BUILD_INFO) {
       return;
     }
 
@@ -123,7 +152,7 @@ Polymer({
 
   /** @private */
   updateChannelInfo_() {
-    const browserProxy = settings.AboutPageBrowserProxyImpl.getInstance();
+    const browserProxy = AboutPageBrowserProxyImpl.getInstance();
 
     // canChangeChannel() call is expected to be low-latency, so fetch this
     // value by itself to ensure UI consistency (see https://crbug.com/848750).
@@ -138,17 +167,41 @@ Polymer({
       // Display the target channel for the 'Currently on' message.
       this.currentlyOnChannelText_ = this.i18n(
           'aboutCurrentlyOnChannel',
-          this.i18n(
-              settings.browserChannelToI18nId(info.targetChannel, info.isLts)));
+          this.i18n(browserChannelToI18nId(info.targetChannel, info.isLts)));
     });
   },
 
-  /** @private */
-  updateDeviceName_() {
-    const browserProxy = DeviceNameBrowserProxyImpl.getInstance();
-    browserProxy.getDeviceNameMetadata().then(data => {
-      this.deviceNameText_ = data.deviceName;
-    });
+  /**
+   * @param {!DeviceNameMetadata} data
+   * @private
+   */
+  updateDeviceNameMetadata_(data) {
+    this.deviceNameMetadata_ = data;
+  },
+
+  /**
+   * @return {string}
+   * @private
+   */
+  getDeviceNameText_() {
+    if (!this.deviceNameMetadata_) {
+      return '';
+    }
+
+    return this.deviceNameMetadata_.deviceName;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  canEditDeviceName_() {
+    if (!this.deviceNameMetadata_) {
+      return false;
+    }
+
+    return this.deviceNameMetadata_.deviceNameState ===
+        DeviceNameState.CAN_BE_MODIFIED;
   },
 
   /**
@@ -238,14 +291,14 @@ Polymer({
   /** @private */
   onChannelSwitcherDialogClosed_() {
     this.showChannelSwitcherDialog_ = false;
-    cr.ui.focusWithoutInk(assert(this.$$('cr-button')));
+    focusWithoutInk(assert(this.$$('cr-button')));
     this.updateChannelInfo_();
   },
 
   /** @private */
   onEditHostnameDialogClosed_() {
     this.showEditHostnameDialog_ = false;
-    cr.ui.focusWithoutInk(assert(this.$$('cr-button')));
+    focusWithoutInk(assert(this.$$('cr-button')));
     // TODO(jhawkins): Verify hostname property updated at this point.
   },
 });

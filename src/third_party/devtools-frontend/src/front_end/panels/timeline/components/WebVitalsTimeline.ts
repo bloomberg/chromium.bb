@@ -243,7 +243,6 @@ export class WebVitalsTimeline extends HTMLElement {
     this.layoutShiftsLane.handlePointerMove(this.hoverLane === 3 ? x : null);
     this.longTasksLane.handlePointerMove(this.hoverLane === 4 ? x : null);
 
-
     this.scheduleRender();
   }
 
@@ -362,7 +361,7 @@ export class WebVitalsTimeline extends HTMLElement {
             <td><span class="good"></span></td>
             <td>${i18nString(UIStrings.good)}</td>
             <td>
-              ≤ ${i18n.i18n.millisToString(FCP_GOOD_TIMING)}</td>
+              ≤ ${i18n.TimeUtilities.millisToString(FCP_GOOD_TIMING)}</td>
           </tr>
           <tr>
             <td><span class="medium"></span></td>
@@ -372,7 +371,7 @@ export class WebVitalsTimeline extends HTMLElement {
           <tr>
             <td><span class="bad"></span></td>
             <td>${i18nString(UIStrings.poor)}</td>
-            <td>> ${i18n.i18n.millisToString(FCP_MEDIUM_TIMING)}</td>
+            <td>> ${i18n.TimeUtilities.millisToString(FCP_MEDIUM_TIMING)}</td>
           </tr>
         </tbody>
       </table>
@@ -390,7 +389,7 @@ export class WebVitalsTimeline extends HTMLElement {
             <td><span class="good"></span></td>
             <td>${i18nString(UIStrings.good)}</td>
             <td>
-            ≤ ${i18n.i18n.millisToString(LCP_GOOD_TIMING)}</td>
+            ≤ ${i18n.TimeUtilities.millisToString(LCP_GOOD_TIMING)}</td>
           </tr>
           <tr>
             <td><span class="medium"></span></td>
@@ -400,7 +399,7 @@ export class WebVitalsTimeline extends HTMLElement {
           <tr>
             <td><span class="bad"></span></td>
             <td>${i18nString(UIStrings.poor)}</td>
-            <td>> ${i18n.i18n.millisToString(LCP_MEDIUM_TIMING)}</td>
+            <td>> ${i18n.TimeUtilities.millisToString(LCP_MEDIUM_TIMING)}</td>
           </tr>
         </tbody>
       </table>
@@ -414,7 +413,7 @@ export class WebVitalsTimeline extends HTMLElement {
             <td colspan="3" class="title">
               ${i18nString(UIStrings.longTask)}
               <span class="small">
-                ${i18n.i18n.millisToString(timebox.duration)}
+                ${i18n.TimeUtilities.millisToString(timebox.duration)}
               </span>
             </td>
           </thead>
@@ -422,12 +421,12 @@ export class WebVitalsTimeline extends HTMLElement {
             <tr>
               <td><span class="good"></span></td>
               <td>${i18nString(UIStrings.good)}</td>
-              <td>≤ ${i18n.i18n.millisToString(LONG_TASK_THRESHOLD)}</td>
+              <td>≤ ${i18n.TimeUtilities.millisToString(LONG_TASK_THRESHOLD)}</td>
             </tr>
             <tr>
               <td><span class="bad"></span></td>
               <td>${i18nString(UIStrings.poor)}</td>
-              <td>> ${i18n.i18n.millisToString(LONG_TASK_THRESHOLD)}</td>
+              <td>> ${i18n.TimeUtilities.millisToString(LONG_TASK_THRESHOLD)}</td>
             </tr>
           </tbody>
         </table>

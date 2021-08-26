@@ -109,6 +109,9 @@ namespace dawn_native { namespace vulkan {
         if (!mDeviceInfo.features.independentBlend) {
             return DAWN_INTERNAL_ERROR("Vulkan independentBlend feature required.");
         }
+        if (!mDeviceInfo.features.sampleRateShading) {
+            return DAWN_INTERNAL_ERROR("Vulkan sampleRateShading feature required.");
+        }
 
         // Check base WebGPU limits are supported.
         const VkPhysicalDeviceLimits& limits = mDeviceInfo.properties.limits;
@@ -220,6 +223,16 @@ namespace dawn_native { namespace vulkan {
         if (limits.maxColorAttachments < kMaxColorAttachments) {
             return DAWN_INTERNAL_ERROR("Insufficient Vulkan limits for maxColorAttachments");
         }
+        if (!IsSubset(VkSampleCountFlags(VK_SAMPLE_COUNT_1_BIT | VK_SAMPLE_COUNT_4_BIT),
+                      limits.framebufferColorSampleCounts)) {
+            return DAWN_INTERNAL_ERROR(
+                "Insufficient Vulkan limits for framebufferColorSampleCounts");
+        }
+        if (!IsSubset(VkSampleCountFlags(VK_SAMPLE_COUNT_1_BIT | VK_SAMPLE_COUNT_4_BIT),
+                      limits.framebufferDepthSampleCounts)) {
+            return DAWN_INTERNAL_ERROR(
+                "Insufficient Vulkan limits for framebufferDepthSampleCounts");
+        }
 
         // Only check maxFragmentCombinedOutputResources on mobile GPUs. Desktop GPUs drivers seem
         // to put incorrect values for this limit with things like 8 or 16 when they can do bindless
@@ -236,6 +249,13 @@ namespace dawn_native { namespace vulkan {
         }
 
         return {};
+    }
+
+    bool Adapter::SupportsExternalImages() const {
+        // Via dawn_native::vulkan::WrapVulkanImage
+        return external_memory::Service::CheckSupport(mDeviceInfo) &&
+               external_semaphore::Service::CheckSupport(mDeviceInfo, mPhysicalDevice,
+                                                         mBackend->GetFunctions());
     }
 
     void Adapter::InitializeSupportedExtensions() {

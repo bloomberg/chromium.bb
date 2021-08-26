@@ -1,17 +1,8 @@
 #!/usr/bin/python
-# Copyright (c) the JPEG XL Project
+# Copyright (c) the JPEG XL Project Authors. All rights reserved.
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
 
 """Implementation of simplex search for an external process.
 
@@ -69,19 +60,19 @@ def EvalCacheForget():
 
 def RandomizedJxlCodecs():
   retval = []
-  minval = 0.6
-  maxval = 12.5
+  minval = 0.5
+  maxval = 24.0
   rangeval = maxval/minval
-  steps = 19
+  steps = 6
   for i in range(steps):
     mul = minval * rangeval**(float(i)/(steps - 1))
     mul *= 0.99 + 0.05 * random.random()
-    retval.append("jxl:d%.3f" % mul)
-  steps = 0
+    retval.append("jxl:epf2:d%.3f" % mul)
+  steps = 6
   for i in range(steps):
-    mul = minval * rangeval**(float(i)/(steps - 1))
+    mul = minval * rangeval**(float(i+0.5)/(steps - 1))
     mul *= 0.99 + 0.05 * random.random()
-    retval.append("jxl:d%.3f" % mul)
+    retval.append("jxl:epf0:d%.3f" % mul)
   return ",".join(retval)
 
 g_codecs = RandomizedJxlCodecs()
@@ -111,7 +102,7 @@ def Eval(vec, binary_name, cached=True):
       (binary_name,
        '--input',
        '/usr/local/google/home/jyrki/newcorpus/split/*.png',
-       '--error_pnorm=1.9',
+       '--error_pnorm=3',
        '--more_columns',
        '--codec', g_codecs),
       stdout=subprocess.PIPE,
@@ -129,7 +120,7 @@ def Eval(vec, binary_name, cached=True):
   for line in process.communicate(input=None)[0].splitlines():
     print("BE", line)
     sys.stdout.flush()
-    if line[0:3] == "jxl":
+    if line[0:3] == b'jxl':
       bpp = line.split()[3]
       dist_max = line.split()[7]
       dist_pnorm = line.split()[8]
@@ -149,7 +140,7 @@ def Eval(vec, binary_name, cached=True):
       dct32 += float(dct32str)
       n += 1
       found_score = True
-      distance = float(line.split()[0].split('d')[-1])
+      distance = float(line.split()[0].split(b'd')[-1])
       #faultybpp = 1.0 + 0.43 * ((float(bpp) * distance ** 0.74) - 1.57) ** 2
       #vec[0] *= faultybpp
 

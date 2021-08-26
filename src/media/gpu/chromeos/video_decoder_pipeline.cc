@@ -13,6 +13,7 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
+#include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "media/base/async_destroy_video_decoder.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/limits.h"
@@ -24,6 +25,14 @@
 #include "media/gpu/macros.h"
 #include "media/media_buildflags.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+
+#if BUILDFLAG(USE_VAAPI)
+#include "media/gpu/vaapi/vaapi_video_decoder.h"
+#elif BUILDFLAG(USE_V4L2_CODEC)
+#include "media/gpu/v4l2/v4l2_video_decoder.h"
+#else
+#error Either VA-API or V4L2 must be used for decode acceleration on Chrome OS.
+#endif
 
 namespace media {
 namespace {
@@ -51,14 +60,16 @@ absl::optional<Fourcc> PickRenderableFourcc(
 
 }  //  namespace
 
-DecoderInterface::DecoderInterface(
+VideoDecoderMixin::VideoDecoderMixin(
+    std::unique_ptr<MediaLog> media_log,
     scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
-    base::WeakPtr<DecoderInterface::Client> client)
+    base::WeakPtr<VideoDecoderMixin::Client> client)
     : decoder_task_runner_(std::move(decoder_task_runner)),
       client_(std::move(client)) {}
-DecoderInterface::~DecoderInterface() = default;
 
-bool DecoderInterface::NeedsTranscryption() {
+VideoDecoderMixin::~VideoDecoderMixin() = default;
+
+bool VideoDecoderMixin::NeedsTranscryption() {
   return false;
 }
 
@@ -67,23 +78,69 @@ std::unique_ptr<VideoDecoder> VideoDecoderPipeline::Create(
     scoped_refptr<base::SequencedTaskRunner> client_task_runner,
     std::unique_ptr<DmabufVideoFramePool> frame_pool,
     std::unique_ptr<VideoFrameConverter> frame_converter,
-    std::unique_ptr<MediaLog> /*media_log*/,
-    CreateDecoderFunctionCB create_decoder_function_cb) {
+    std::unique_ptr<MediaLog> media_log) {
   DCHECK(client_task_runner);
   DCHECK(frame_pool);
   DCHECK(frame_converter);
 
+  CreateDecoderFunctionCB create_decoder_function_cb =
+#if BUILDFLAG(USE_VAAPI)
+      base::BindOnce(&VaapiVideoDecoder::Create);
+#elif BUILDFLAG(USE_V4L2_CODEC)
+      base::BindOnce(&V4L2VideoDecoder::Create);
+#endif
+
   auto* pipeline = new VideoDecoderPipeline(
       std::move(client_task_runner), std::move(frame_pool),
-      std::move(frame_converter), std::move(create_decoder_function_cb));
+      std::move(frame_converter), std::move(media_log),
+      std::move(create_decoder_function_cb));
   return std::make_unique<AsyncDestroyVideoDecoder<VideoDecoderPipeline>>(
       base::WrapUnique(pipeline));
+}
+
+// static
+absl::optional<SupportedVideoDecoderConfigs>
+VideoDecoderPipeline::GetSupportedConfigs(
+    const gpu::GpuDriverBugWorkarounds& workarounds) {
+  absl::optional<SupportedVideoDecoderConfigs> configs =
+#if BUILDFLAG(USE_VAAPI)
+      VaapiVideoDecoder::GetSupportedConfigs();
+#elif BUILDFLAG(USE_V4L2_CODEC)
+      V4L2VideoDecoder::GetSupportedConfigs();
+#endif
+
+  if (!configs)
+    return absl::nullopt;
+
+  if (workarounds.disable_accelerated_vp8_decode) {
+    base::EraseIf(configs.value(), [](const auto& config) {
+      return config.profile_min >= VP8PROFILE_MIN &&
+             config.profile_max <= VP8PROFILE_MAX;
+    });
+  }
+
+  if (workarounds.disable_accelerated_vp9_decode) {
+    base::EraseIf(configs.value(), [](const auto& config) {
+      return config.profile_min >= VP9PROFILE_PROFILE0 &&
+             config.profile_max <= VP9PROFILE_PROFILE0;
+    });
+  }
+
+  if (workarounds.disable_accelerated_vp9_profile2_decode) {
+    base::EraseIf(configs.value(), [](const auto& config) {
+      return config.profile_min >= VP9PROFILE_PROFILE2 &&
+             config.profile_max <= VP9PROFILE_PROFILE2;
+    });
+  }
+
+  return configs;
 }
 
 VideoDecoderPipeline::VideoDecoderPipeline(
     scoped_refptr<base::SequencedTaskRunner> client_task_runner,
     std::unique_ptr<DmabufVideoFramePool> frame_pool,
     std::unique_ptr<VideoFrameConverter> frame_converter,
+    std::unique_ptr<MediaLog> media_log,
     CreateDecoderFunctionCB create_decoder_function_cb)
     : client_task_runner_(std::move(client_task_runner)),
       decoder_task_runner_(base::ThreadPool::CreateSingleThreadTaskRunner(
@@ -91,6 +148,7 @@ VideoDecoderPipeline::VideoDecoderPipeline(
           base::SingleThreadTaskRunnerThreadMode::DEDICATED)),
       main_frame_pool_(std::move(frame_pool)),
       frame_converter_(std::move(frame_converter)),
+      media_log_(std::move(media_log)),
       create_decoder_function_cb_(std::move(create_decoder_function_cb)) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
   DETACH_FROM_SEQUENCE(decoder_sequence_checker_);
@@ -138,12 +196,14 @@ void VideoDecoderPipeline::DestroyAsync(
 
 VideoDecoderType VideoDecoderPipeline::GetDecoderType() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
+  // TODO(mcasas): query |decoder_| instead.
 #if BUILDFLAG(USE_VAAPI)
   return VideoDecoderType::kVaapi;
 #elif BUILDFLAG(USE_V4L2_CODEC)
   return VideoDecoderType::kV4L2;
-#endif
+#else
   return VideoDecoderType::kUnknown;
+#endif
 }
 
 bool VideoDecoderPipeline::IsPlatformDecoder() const {
@@ -155,18 +215,21 @@ bool VideoDecoderPipeline::IsPlatformDecoder() const {
 int VideoDecoderPipeline::GetMaxDecodeRequests() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
 
+  // TODO(mcasas): query |decoder_| instead.
   return 4;
 }
 
 bool VideoDecoderPipeline::NeedsBitstreamConversion() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
 
+  // TODO(mcasas): also query |decoder_|.
   return needs_bitstream_conversion_;
 }
 
 bool VideoDecoderPipeline::CanReadWithoutStalling() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
 
+  // TODO(mcasas): also query |decoder_|.
   return main_frame_pool_ && !main_frame_pool_->IsExhausted();
 }
 
@@ -181,6 +244,11 @@ void VideoDecoderPipeline::Initialize(const VideoDecoderConfig& config,
 
   if (!config.IsValidConfig()) {
     VLOGF(1) << "config is not valid";
+    std::move(init_cb).Run(StatusCode::kDecoderUnsupportedConfig);
+    return;
+  }
+  if (config.profile() == VIDEO_CODEC_PROFILE_UNKNOWN) {
+    VLOGF(1) << "VideoCodecProfile is VIDEO_CODEC_PROFILE_UNKNOWN.";
     std::move(init_cb).Run(StatusCode::kDecoderUnsupportedConfig);
     return;
   }
@@ -227,8 +295,9 @@ void VideoDecoderPipeline::InitializeTask(const VideoDecoderConfig& config,
   // |decoder_| may be Initialize()d multiple times (e.g. on |config| changes)
   // but can only be created once.
   if (!decoder_ && !create_decoder_function_cb_.is_null()) {
-    decoder_ = std::move(create_decoder_function_cb_)
-                   .Run(decoder_task_runner_, decoder_weak_this_);
+    decoder_ =
+        std::move(create_decoder_function_cb_)
+            .Run(media_log_->Clone(), decoder_task_runner_, decoder_weak_this_);
   }
   // Note: |decoder_| might fail to be created, e.g. on V4L2 platforms.
   if (!decoder_) {
@@ -240,7 +309,7 @@ void VideoDecoderPipeline::InitializeTask(const VideoDecoderConfig& config,
   }
 
   decoder_->Initialize(
-      config, cdm_context,
+      config, /* low_delay=*/false, cdm_context,
       base::BindOnce(&VideoDecoderPipeline::OnInitializeDone,
                      decoder_weak_this_, std::move(init_cb), cdm_context),
       base::BindRepeating(&VideoDecoderPipeline::OnFrameDecoded,
@@ -255,8 +324,14 @@ void VideoDecoderPipeline::OnInitializeDone(InitCB init_cb,
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(4) << "Initialization status = " << status.code();
 
-  if (!status.is_ok())
+  if (!status.is_ok()) {
+    MEDIA_LOG(ERROR, media_log_)
+        << "VideoDecoderPipeline |decoder_| Initialize() failed, status: "
+        << status.code();
     decoder_ = nullptr;
+  }
+  MEDIA_LOG(INFO, media_log_)
+      << "VideoDecoderPipeline |decoder_| Initialize() successful";
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (decoder_ && decoder_->NeedsTranscryption()) {
@@ -448,6 +523,7 @@ bool VideoDecoderPipeline::HasPendingFrames() const {
 void VideoDecoderPipeline::OnError(const std::string& msg) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   VLOGF(1) << msg;
+  MEDIA_LOG(ERROR, media_log_) << "VideoDecoderPipeline " << msg;
 
   has_error_ = true;
 #if BUILDFLAG(IS_CHROMEOS_ASH)

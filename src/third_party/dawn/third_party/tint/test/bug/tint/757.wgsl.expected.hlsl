@@ -9,16 +9,19 @@ struct tint_symbol_1 {
   uint3 GlobalInvocationID : SV_DispatchThreadID;
 };
 
-[numthreads(1, 1, 1)]
-void main(tint_symbol_1 tint_symbol) {
-  const uint3 GlobalInvocationID = tint_symbol.GlobalInvocationID;
+void main_inner(uint3 GlobalInvocationID) {
   uint flatIndex = ((((2u * 2u) * GlobalInvocationID.z) + (2u * GlobalInvocationID.y)) + GlobalInvocationID.x);
   flatIndex = (flatIndex * 1u);
-  float4 texel = myTexture.Load(int4(GlobalInvocationID.xy, 0, 0));
+  float4 texel = myTexture.Load(int4(int3(int2(GlobalInvocationID.xy), 0), 0));
   {
     for(uint i = 0u; (i < 1u); i = (i + 1u)) {
       result.Store((4u * (flatIndex + i)), asuint(texel.r));
     }
   }
+}
+
+[numthreads(1, 1, 1)]
+void main(tint_symbol_1 tint_symbol) {
+  main_inner(tint_symbol.GlobalInvocationID);
   return;
 }

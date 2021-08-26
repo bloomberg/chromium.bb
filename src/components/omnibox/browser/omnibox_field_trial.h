@@ -18,7 +18,6 @@
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 
 namespace base {
@@ -382,9 +381,6 @@ bool IsKeywordSearchButtonEnabled();
 // Simply a convenient wrapper for testing a flag. Used downstream for an
 // assortment of keyword mode experiments.
 bool IsExperimentalKeywordModeEnabled();
-
-// Returns true if the new focus UI is enabled.
-bool IsRefinedFocusStateEnabled();
 
 // On Device Head Suggestions feature and its helper functions.
 bool IsOnDeviceHeadSuggestEnabledForIncognito();

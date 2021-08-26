@@ -36,6 +36,7 @@
 #include "content/public/common/page_type.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/prerender_test_util.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
@@ -126,7 +127,10 @@ void InnerWebContentsAttachedWaiter::WaitForInnerWebContentsAttached() {
 class SupervisedUserNavigationThrottleTest
     : public MixinBasedInProcessBrowserTest {
  protected:
-  SupervisedUserNavigationThrottleTest() = default;
+  SupervisedUserNavigationThrottleTest()
+      : prerender_helper_(base::BindRepeating(
+            &SupervisedUserNavigationThrottleTest::web_contents,
+            base::Unretained(this))) {}
   ~SupervisedUserNavigationThrottleTest() override = default;
 
   void SetUp() override;
@@ -146,6 +150,14 @@ class SupervisedUserNavigationThrottleTest
     return chromeos::LoggedInUserMixin::LogInType::kChild;
   }
 
+  content::test::PrerenderTestHelper& prerender_helper() {
+    return prerender_helper_;
+  }
+
+  content::WebContents* web_contents() {
+    return browser()->tab_strip_model()->GetActiveWebContents();
+  }
+
  private:
   void SetManualFilterForHost(const std::string& host, bool allowlist) {
     Profile* profile = browser()->profile();
@@ -153,23 +165,17 @@ class SupervisedUserNavigationThrottleTest
         SupervisedUserSettingsServiceFactory::GetForKey(
             profile->GetProfileKey());
 
-    const base::DictionaryValue* local_settings =
+    const base::Value& local_settings =
         settings_service->LocalSettingsForTest();
-    std::unique_ptr<base::DictionaryValue> dict_to_insert;
+    std::unique_ptr<base::Value> dict_to_insert;
 
-    if (local_settings->HasKey(
-            supervised_users::kContentPackManualBehaviorHosts)) {
-      const base::DictionaryValue* dict_value;
-
-      local_settings->GetDictionary(
-          supervised_users::kContentPackManualBehaviorHosts, &dict_value);
-
-      std::unique_ptr<base::Value> clone =
-          std::make_unique<base::Value>(dict_value->Clone());
-
-      dict_to_insert = base::DictionaryValue::From(std::move(clone));
+    const base::Value* dict_value = local_settings.FindKey(
+        supervised_users::kContentPackManualBehaviorHosts);
+    if (dict_value) {
+      dict_to_insert = std::make_unique<base::Value>(dict_value->Clone());
     } else {
-      dict_to_insert = std::make_unique<base::DictionaryValue>();
+      dict_to_insert =
+          std::make_unique<base::Value>(base::Value::Type::DICTIONARY);
     }
 
     dict_to_insert->SetKey(host, base::Value(allowlist));
@@ -179,6 +185,7 @@ class SupervisedUserNavigationThrottleTest
   }
 
   std::unique_ptr<chromeos::LoggedInUserMixin> logged_in_user_mixin_;
+  content::test::PrerenderTestHelper prerender_helper_;
 };
 
 bool SupervisedUserNavigationThrottleTest::IsInterstitialBeingShownInMainFrame(
@@ -192,6 +199,7 @@ bool SupervisedUserNavigationThrottleTest::IsInterstitialBeingShownInMainFrame(
 }
 
 void SupervisedUserNavigationThrottleTest::SetUp() {
+  prerender_helper_.SetUp(embedded_test_server());
   // Polymorphically initiate logged_in_user_mixin_.
   logged_in_user_mixin_ = std::make_unique<chromeos::LoggedInUserMixin>(
       &mixin_host_, GetLogInType(), embedded_test_server(), this);
@@ -204,6 +212,35 @@ void SupervisedUserNavigationThrottleTest::SetUpOnMainThread() {
   ASSERT_TRUE(embedded_test_server()->Started());
 
   logged_in_user_mixin_->LogInUser();
+}
+
+// Tests that prerendering fails in supervised user mode.
+IN_PROC_BROWSER_TEST_F(SupervisedUserNavigationThrottleTest,
+                       DisallowPrerendering) {
+  base::HistogramTester histogram_tester;
+  const GURL initial_url = embedded_test_server()->GetURL("/simple.html");
+  const GURL allowed_url =
+      embedded_test_server()->GetURL("/supervised_user/simple.html");
+
+  prerender_helper().NavigatePrimaryPage(initial_url);
+
+  // If throttled, the prerendered navigation should not have started and we
+  // should not be requesting corresponding resources.
+  content::TestNavigationObserver observer(
+      web_contents(), content::MessageLoopRunner::QuitMode::IMMEDIATE,
+      /*ignore_uncommitted_navigations*/ false);
+  prerender_helper().AddPrerenderAsync(allowed_url);
+  observer.WaitForNavigationFinished();
+  EXPECT_FALSE(observer.last_navigation_succeeded());
+  EXPECT_EQ(allowed_url, observer.last_navigation_url());
+  EXPECT_EQ(0, prerender_helper().GetRequestCount(allowed_url));
+
+  // Regular navigation should proceed, however.
+  prerender_helper().NavigatePrimaryPage(allowed_url);
+  observer.WaitForNavigationFinished();
+  EXPECT_TRUE(observer.last_navigation_succeeded());
+  EXPECT_EQ(allowed_url, observer.last_navigation_url());
+  EXPECT_EQ(1, prerender_helper().GetRequestCount(allowed_url));
 }
 
 // Tests that navigating to a blocked page simply fails if there is no

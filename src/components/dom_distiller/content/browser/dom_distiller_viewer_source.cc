@@ -7,7 +7,6 @@
 #include <memory>
 #include <string>
 #include <utility>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -117,7 +116,11 @@ void DomDistillerViewerSource::RequestViewerHandle::SendJavaScript(
 
 void DomDistillerViewerSource::RequestViewerHandle::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame() || !navigation_handle->HasCommitted())
+  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+  // frames. This caller was converted automatically to the primary main frame
+  // to preserve its semantics. Follow up to confirm correctness.
+  if (!navigation_handle->IsInPrimaryMainFrame() ||
+      !navigation_handle->HasCommitted())
     return;
 
   const GURL& navigation = navigation_handle->GetURL();

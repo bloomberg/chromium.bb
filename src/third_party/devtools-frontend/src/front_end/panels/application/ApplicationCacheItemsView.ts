@@ -39,7 +39,6 @@ import type * as Protocol from '../../generated/protocol.js';
 import type {ApplicationCacheModel} from './ApplicationCacheModel.js';
 import {CHECKING, DOWNLOADING, IDLE, OBSOLETE, UNCACHED, UPDATEREADY} from './ApplicationCacheModel.js';
 
-
 const UIStrings = {
   /**
   *@description Text in Application Cache Items View of the Application panel
@@ -332,6 +331,6 @@ export class ApplicationCacheItemsView extends UI.View.SimpleView {
   _deleteCallback(_node: DataGrid.DataGrid.DataGridNode<unknown>): void {
     // FIXME: Should we delete a single (selected) resource or all resources?
     // ProtocolClient.inspectorBackend.deleteCachedResource(...)
-    // this._update();
+    // this.update();
   }
 }

@@ -19,7 +19,7 @@
 #include "ash/system/accessibility/unified_accessibility_detailed_view_controller.h"
 #include "ash/system/audio/unified_audio_detailed_view_controller.h"
 #include "ash/system/audio/unified_volume_slider_controller.h"
-#include "ash/system/bluetooth/bluetooth_feature_pod_controller.h"
+#include "ash/system/bluetooth/bluetooth_feature_pod_controller_legacy.h"
 #include "ash/system/bluetooth/unified_bluetooth_detailed_view_controller.h"
 #include "ash/system/brightness/unified_brightness_slider_controller.h"
 #include "ash/system/cast/cast_feature_pod_controller.h"
@@ -43,6 +43,7 @@
 #include "ash/system/night_light/night_light_feature_pod_controller.h"
 #include "ash/system/privacy_screen/privacy_screen_feature_pod_controller.h"
 #include "ash/system/rotation/rotation_lock_feature_pod_controller.h"
+#include "ash/system/time/unified_calendar_view_controller.h"
 #include "ash/system/tray/system_tray_item_uma_type.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/detailed_view_controller.h"
@@ -58,9 +59,9 @@
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/bind.h"
+#include "base/cxx17_backports.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
-#include "base/numerics/ranges.h"
 #include "media/base/media_switches.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/compositor/compositor.h"
@@ -369,6 +370,11 @@ void UnifiedSystemTrayController::ShowNotifierSettingsView() {
   ShowDetailedView(std::make_unique<UnifiedNotifierSettingsController>(this));
 }
 
+void UnifiedSystemTrayController::ShowCalendarView() {
+  if (features::IsCalendarViewEnabled())
+    ShowDetailedView(std::make_unique<UnifiedCalendarViewController>(this));
+}
+
 void UnifiedSystemTrayController::ShowMediaControlsDetailedView() {
   ShowDetailedView(
       std::make_unique<UnifiedMediaControlsDetailedViewController>(this));
@@ -444,13 +450,13 @@ void UnifiedSystemTrayController::OnMediaControlsViewClicked() {
 
 void UnifiedSystemTrayController::InitFeaturePods() {
   AddFeaturePodItem(std::make_unique<NetworkFeaturePodController>(this));
-  AddFeaturePodItem(std::make_unique<BluetoothFeaturePodController>(this));
+  AddFeaturePodItem(
+      std::make_unique<BluetoothFeaturePodControllerLegacy>(this));
   AddFeaturePodItem(std::make_unique<AccessibilityFeaturePodController>(this));
   AddFeaturePodItem(std::make_unique<QuietModeFeaturePodController>(this));
   AddFeaturePodItem(std::make_unique<RotationLockFeaturePodController>());
   AddFeaturePodItem(std::make_unique<PrivacyScreenFeaturePodController>());
-  if (features::IsCaptureModeEnabled())
-    AddFeaturePodItem(std::make_unique<CaptureModeFeaturePodController>(this));
+  AddFeaturePodItem(std::make_unique<CaptureModeFeaturePodController>(this));
   if (chromeos::features::IsProjectorFeaturePodEnabled() &&
       Shell::Get()->projector_controller()->IsEligible()) {
     AddFeaturePodItem(std::make_unique<ProjectorFeaturePodController>(this));
@@ -554,11 +560,9 @@ double UnifiedSystemTrayController::GetDragExpandedAmount(
   // If already expanded, only consider swiping down. Otherwise, only consider
   // swiping up.
   if (was_expanded_) {
-    return base::ClampToRange(1.0 - std::max(0.0, y_diff) / drag_threshold_,
-                              0.0, 1.0);
+    return base::clamp(1.0 - std::max(0.0, y_diff) / drag_threshold_, 0.0, 1.0);
   } else {
-    return base::ClampToRange(std::max(0.0, -y_diff) / drag_threshold_, 0.0,
-                              1.0);
+    return base::clamp(std::max(0.0, -y_diff) / drag_threshold_, 0.0, 1.0);
   }
 }
 

@@ -22,9 +22,6 @@
 extern "C" {
 #endif
 
-#define EOB_FACTOR 325
-#define SKIP_EOB_FACTOR_ADJUST 200
-
 typedef struct QUANT_PARAM {
   int log_scale;
   TX_SIZE tx_size;
@@ -159,6 +156,29 @@ void av1_quantize_dc_facade(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                             tran_low_t *dqcoeff_ptr, uint16_t *eob_ptr,
                             const SCAN_ORDER *sc, const QUANT_PARAM *qparam);
 
+/*!\brief Update quantize parameters in MACROBLOCK
+ *
+ * \param[in]  enc_quant_dequant_params This parameter cached the quantize and
+ *                                      dequantize parameters for all q
+ *                                      indices.
+ * \param[in]  qindex                   Quantize index used for the current
+ *                                      superblock.
+ * \param[out] x                        A superblock data structure for
+ *                                      encoder.
+ */
+void av1_set_q_index(const EncQuantDequantParams *enc_quant_dequant_params,
+                     int qindex, MACROBLOCK *x);
+
+/*!\brief Update quantize matrix in MACROBLOCKD based on segment id
+ *
+ * \param[in]  quant_params  Quantize parameters used by encoder and decoder
+ * \param[in]  segment_id    Segment id.
+ * \param[out] xd            A superblock data structure used by encoder and
+ * decoder.
+ */
+void av1_set_qmatrix(const CommonQuantParams *quant_params, int segment_id,
+                     MACROBLOCKD *xd);
+
 #if CONFIG_AV1_HIGHBITDEPTH
 void av1_highbd_quantize_fp_facade(const tran_low_t *coeff_ptr,
                                    intptr_t n_coeffs, const MACROBLOCK_PLANE *p,
@@ -180,6 +200,7 @@ void av1_highbd_quantize_dc_facade(const tran_low_t *coeff_ptr,
                                    tran_low_t *dqcoeff_ptr, uint16_t *eob_ptr,
                                    const SCAN_ORDER *sc,
                                    const QUANT_PARAM *qparam);
+
 #endif
 
 #ifdef __cplusplus

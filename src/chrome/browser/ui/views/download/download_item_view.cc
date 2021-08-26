@@ -151,6 +151,7 @@ class TransparentButton : public views::Button {
       : Button(Button::PressedCallback()) {
     views::InstallRectHighlightPathGenerator(this);
     views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::ON);
+    SetHasInkDropActionOnClick(true);
     set_context_menu_controller(parent);
     // Button subclasses need to provide this because the default color is
     // kPlaceholderColor. In theory we could statically compute it in the
@@ -249,6 +250,39 @@ float GetDPIScaleForView(views::View* view) {
 }
 }  // namespace
 
+class DownloadItemView::ContextMenuButton : public views::ImageButton {
+ public:
+  METADATA_HEADER(ContextMenuButton);
+
+  explicit ContextMenuButton(DownloadItemView* owner)
+      : views::ImageButton(
+            base::BindRepeating(&DownloadItemView::DropdownButtonPressed,
+                                base::Unretained(owner))),
+        owner_(owner) {
+    views::ConfigureVectorImageButton(this);
+    SetAccessibleName(l10n_util::GetStringUTF16(
+        IDS_DOWNLOAD_ITEM_DROPDOWN_BUTTON_ACCESSIBLE_TEXT));
+    SetBorder(views::CreateEmptyBorder(gfx::Insets(10)));
+    SetHasInkDropActionOnClick(false);
+  }
+
+  bool OnMousePressed(const ui::MouseEvent& event) override {
+    suppress_button_release_ = owner_->GetDropdownPressed();
+    return ImageButton::OnMousePressed(event);
+  }
+
+  bool IsTriggerableEvent(const ui::Event& event) override {
+    return !event.IsMouseEvent() || !suppress_button_release_;
+  }
+
+ private:
+  DownloadItemView* const owner_;
+  bool suppress_button_release_ = false;
+};
+
+BEGIN_METADATA(DownloadItemView, ContextMenuButton, views::ImageButton)
+END_METADATA
+
 DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr model,
                                    DownloadShelfView* shelf,
                                    views::View* accessible_alert)
@@ -326,14 +360,7 @@ DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr model,
                           base::Unretained(this)),
       l10n_util::GetStringUTF16(IDS_REVIEW_DOWNLOAD)));
 
-  dropdown_button_ =
-      AddChildView(views::CreateVectorImageButton(base::BindRepeating(
-          &DownloadItemView::DropdownButtonPressed, base::Unretained(this))));
-  dropdown_button_->SetAccessibleName(l10n_util::GetStringUTF16(
-      IDS_DOWNLOAD_ITEM_DROPDOWN_BUTTON_ACCESSIBLE_TEXT));
-  dropdown_button_->SetBorder(views::CreateEmptyBorder(gfx::Insets(10)));
-  dropdown_button_->SetHasInkDropActionOnClick(false);
-  dropdown_button_->SizeToPreferredSize();
+  dropdown_button_ = AddChildView(std::make_unique<ContextMenuButton>(this));
 
   complete_animation_.SetSlideDuration(base::TimeDelta::FromMilliseconds(2500));
   complete_animation_.SetTweenType(gfx::Tween::LINEAR);
@@ -783,6 +810,9 @@ void DownloadItemView::StartLoadIcons() {
 }
 
 void DownloadItemView::UpdateLabels() {
+  if (GetEnabled()) {
+    file_name_label_->SetText(ElidedFilename(*file_name_label_));
+  }
   file_name_label_->SetVisible(mode_ == download::DownloadItemMode::kNormal);
 
   status_label_->SetVisible(mode_ == download::DownloadItemMode::kNormal);
@@ -882,8 +912,15 @@ void DownloadItemView::UpdateButtons() {
 void DownloadItemView::UpdateAccessibleAlertAndAnimationsForNormalMode() {
   using State = download::DownloadItem::DownloadState;
   const State state = model_->GetState();
+  const std::u16string web_drive = model_->GetWebDriveName();
   if ((state == State::IN_PROGRESS) && !model_->IsPaused()) {
-    UpdateAccessibleAlert(GetInProgressAccessibleAlertText());
+    if (web_drive.empty()) {
+      UpdateAccessibleAlert(GetInProgressAccessibleAlertText());
+    } else {
+      announce_accessible_alert_soon_ = true;
+      UpdateAccessibleAlert(
+          l10n_util::GetStringFUTF16(IDS_DOWNLOAD_STATUS_UPLOADING, web_drive));
+    }
 
     if (!indeterminate_progress_timer_.IsRunning()) {
       indeterminate_progress_start_time_ = base::TimeTicks::Now();
@@ -914,8 +951,17 @@ void DownloadItemView::UpdateAccessibleAlertAndAnimationsForNormalMode() {
         {State::COMPLETE, IDS_DOWNLOAD_COMPLETE_ACCESSIBLE_ALERT},
         {State::CANCELLED, IDS_DOWNLOAD_CANCELLED_ACCESSIBLE_ALERT},
     });
-    const std::u16string alert_text = l10n_util::GetStringFUTF16(
-        kMap.at(state), model_->GetFileNameToReportUser().LossyDisplayName());
+    const std::u16string alert_text =
+        (web_drive.empty() || state == State::CANCELLED)
+            ? l10n_util::GetStringFUTF16(
+                  kMap.at(state),
+                  model_->GetFileNameToReportUser().LossyDisplayName())
+            // When the file is rereouted to web drive and not cancelled, use
+            // regular string formulated in DownloadUIModel.
+            // TODO(https://crbug.com/1240372) Update with accessibility
+            // specific localized strings.
+            : model_->GetStatusText();
+
     announce_accessible_alert_soon_ = true;
     UpdateAccessibleAlert(alert_text);
   }
@@ -1221,6 +1267,7 @@ void DownloadItemView::UpdateDropdownButtonImage() {
       dropdown_pressed_ ? vector_icons::kCaretDownIcon
                         : vector_icons::kCaretUpIcon,
       GetThemeProvider()->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT));
+  dropdown_button_->SizeToPreferredSize();
 }
 
 void DownloadItemView::OpenButtonPressed() {
@@ -1340,15 +1387,22 @@ void DownloadItemView::ShowContextMenuImpl(const gfx::Rect& rect,
   static_cast<views::internal::RootView*>(GetWidget()->GetRootView())
       ->SetMouseAndGestureHandler(nullptr);
 
-  const auto release_dropdown = [](DownloadItemView* view) {
-    view->SetDropdownPressed(false);
+  const auto release_dropdown = [](base::WeakPtr<DownloadItemView> view) {
     // Make sure any new status from activating a context menu option is read.
     view->announce_accessible_alert_soon_ = true;
+
+    // The context menu is destroyed before the button's MousePressed()
+    // function (which wants to know if the button was already pressed) is
+    // reached -- so delay marking the button as "released" until the callstack
+    // unwinds.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&DownloadItemView::SetDropdownPressed,
+                                  std::move(view), false));
   };
 
-  context_menu_.Run(
-      GetWidget()->GetTopLevelWidget(), rect, source_type,
-      base::BindRepeating(std::move(release_dropdown), base::Unretained(this)));
+  context_menu_.Run(GetWidget()->GetTopLevelWidget(), rect, source_type,
+                    base::BindRepeating(std::move(release_dropdown),
+                                        weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DownloadItemView::OpenDownloadDuringAsyncScanning() {
@@ -1377,6 +1431,14 @@ bool DownloadItemView::SubmitDownloadToFeedbackService(
 
 void DownloadItemView::ExecuteCommand(DownloadCommands::Command command) {
   commands_.ExecuteCommand(command);
+}
+
+std::u16string DownloadItemView::GetStatusTextForTesting() const {
+  return GetStatusTextAndStyle().first;
+}
+
+void DownloadItemView::OpenItemForTesting() {
+  OpenButtonPressed();
 }
 
 DEFINE_ENUM_CONVERTERS(download::DownloadItemMode,

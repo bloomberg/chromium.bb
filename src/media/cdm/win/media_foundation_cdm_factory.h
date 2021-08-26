@@ -24,14 +24,14 @@
 
 namespace media {
 
-class MEDIA_EXPORT MediaFoundationCdmFactory : public CdmFactory {
+class MEDIA_EXPORT MediaFoundationCdmFactory final : public CdmFactory {
  public:
   MediaFoundationCdmFactory(std::unique_ptr<CdmAuxiliaryHelper> helper,
                             const base::FilePath& user_data_dir);
   MediaFoundationCdmFactory(const MediaFoundationCdmFactory&) = delete;
   MediaFoundationCdmFactory& operator=(const MediaFoundationCdmFactory&) =
       delete;
-  ~MediaFoundationCdmFactory() final;
+  ~MediaFoundationCdmFactory() override;
 
   // Provides a way to customize IMFContentDecryptionModuleFactory creation to
   // support different key systems and for testing.
@@ -48,7 +48,7 @@ class MEDIA_EXPORT MediaFoundationCdmFactory : public CdmFactory {
               const SessionClosedCB& session_closed_cb,
               const SessionKeysChangeCB& session_keys_change_cb,
               const SessionExpirationUpdateCB& session_expiration_update_cb,
-              CdmCreatedCB cdm_created_cb) final;
+              CdmCreatedCB cdm_created_cb) override;
 
  private:
   // Callback to MediaFoundationCDM to resolve the promise.
@@ -62,7 +62,7 @@ class MEDIA_EXPORT MediaFoundationCdmFactory : public CdmFactory {
       const SessionKeysChangeCB& session_keys_change_cb,
       const SessionExpirationUpdateCB& session_expiration_update_cb,
       CdmCreatedCB cdm_created_cb,
-      const base::UnguessableToken& cdm_origin_id);
+      const std::unique_ptr<CdmPreferenceData> cdm_preference_data);
 
   HRESULT GetCdmFactory(
       const std::string& key_system,
@@ -72,10 +72,13 @@ class MEDIA_EXPORT MediaFoundationCdmFactory : public CdmFactory {
                        const std::string& content_type,
                        IsTypeSupportedResultCB is_type_supported_result_cb);
 
+  void StoreClientToken(const std::vector<uint8_t>& client_token);
+
   HRESULT CreateMfCdmInternal(
       const std::string& key_system,
       const CdmConfig& cdm_config,
       const base::UnguessableToken& cdm_origin_id,
+      const absl::optional<std::vector<uint8_t>>& cdm_client_token,
       Microsoft::WRL::ComPtr<IMFContentDecryptionModule>& mf_cdm);
 
   // Same as `CreateMfCdmInternal()`, but returns the HRESULT in out parameter
@@ -83,6 +86,7 @@ class MEDIA_EXPORT MediaFoundationCdmFactory : public CdmFactory {
   void CreateMfCdm(const std::string& key_system,
                    const CdmConfig& cdm_config,
                    const base::UnguessableToken& cdm_origin_id,
+                   const absl::optional<std::vector<uint8_t>>& cdm_client_token,
                    HRESULT& hresult,
                    Microsoft::WRL::ComPtr<IMFContentDecryptionModule>& mf_cdm);
 

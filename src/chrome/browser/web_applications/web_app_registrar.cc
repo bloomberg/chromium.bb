@@ -12,20 +12,37 @@
 #include "base/check_op.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
+#include "base/feature_list.h"
 #include "base/strings/string_util.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/web_applications/components/app_registrar_observer.h"
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/install_bounce_metric.h"
-#include "chrome/browser/web_applications/components/os_integration_manager.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_prefs_utils.h"
+#include "chrome/browser/web_applications/os_integration_manager.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_features.h"
 #include "content/public/common/content_features.h"
 
 namespace web_app {
+
+namespace {
+
+// With Lacros, web apps are not loaded using the Ash browser.
+bool Accepts(const WebApp& web_app) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (base::FeatureList::IsEnabled(features::kWebAppsCrosapi) &&
+      !web_app.IsSystemApp()) {
+    return false;
+  }
+#endif
+  return true;
+}
+
+}  // namespace
 
 WebAppRegistrar::WebAppRegistrar(Profile* profile) : profile_(profile) {}
 
@@ -371,7 +388,9 @@ const WebApp* WebAppRegistrar::GetAppById(const AppId& app_id) const {
     return nullptr;
 
   auto it = registry_.find(app_id);
-  return it == registry_.end() ? nullptr : it->second.get();
+  if (it != registry_.end() && Accepts(*it->second))
+    return it->second.get();
+  return nullptr;
 }
 
 const WebApp* WebAppRegistrar::GetAppByStartUrl(const GURL& start_url) const {
@@ -379,15 +398,16 @@ const WebApp* WebAppRegistrar::GetAppByStartUrl(const GURL& start_url) const {
     return nullptr;
 
   for (auto const& it : registry_) {
-    if (it.second->start_url() == start_url)
+    if (Accepts(*it.second) && it.second->start_url() == start_url)
       return it.second.get();
   }
   return nullptr;
 }
 
-std::vector<AppId> WebAppRegistrar::GetAppsInSyncInstall() {
-  AppSet apps_in_sync_install = AppSet(
-      this, [](const WebApp& web_app) { return web_app.is_in_sync_install(); });
+std::vector<AppId> WebAppRegistrar::GetAppsFromSyncAndPendingInstallation() {
+  AppSet apps_in_sync_install = AppSet(this, [](const WebApp& web_app) {
+    return web_app.is_from_sync_and_pending_installation();
+  });
 
   std::vector<AppId> app_ids;
   for (const WebApp& app : apps_in_sync_install)
@@ -414,7 +434,7 @@ void WebAppRegistrar::Shutdown() {
 
 bool WebAppRegistrar::IsInstalled(const AppId& app_id) const {
   const WebApp* web_app = GetAppById(app_id);
-  return web_app && !web_app->is_in_sync_install();
+  return web_app && !web_app->is_from_sync_and_pending_installation();
 }
 
 bool WebAppRegistrar::IsUninstalling(const AppId& app_id) const {
@@ -636,14 +656,6 @@ bool WebAppRegistrar::GetWindowControlsOverlayEnabled(
   return web_app ? web_app->window_controls_overlay_enabled() : false;
 }
 
-WebAppRegistrar* WebAppRegistrar::AsWebAppRegistrar() {
-  return this;
-}
-
-const WebAppRegistrar* WebAppRegistrar::AsWebAppRegistrar() const {
-  return this;
-}
-
 void WebAppRegistrar::OnProfileMarkedForPermanentDeletion(
     Profile* profile_to_be_deleted) {
   if (profile() != profile_to_be_deleted)
@@ -702,7 +714,7 @@ const WebAppRegistrar::AppSet WebAppRegistrar::GetAppsIncludingStubs() const {
 
 const WebAppRegistrar::AppSet WebAppRegistrar::GetApps() const {
   return AppSet(this, [](const WebApp& web_app) {
-    return !web_app.is_in_sync_install();
+    return Accepts(web_app) && !web_app.is_from_sync_and_pending_installation();
   });
 }
 
@@ -745,7 +757,7 @@ WebAppRegistrar::AppSet WebAppRegistrarMutable::GetAppsIncludingStubsMutable() {
 
 WebAppRegistrar::AppSet WebAppRegistrarMutable::GetAppsMutable() {
   return AppSet(this, [](const WebApp& web_app) {
-    return !web_app.is_in_sync_install();
+    return Accepts(web_app) && !web_app.is_from_sync_and_pending_installation();
   });
 }
 

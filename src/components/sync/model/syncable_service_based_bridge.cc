@@ -19,6 +19,7 @@
 #include "components/sync/model/sync_change.h"
 #include "components/sync/model/sync_error_factory.h"
 #include "components/sync/model/syncable_service.h"
+#include "components/sync/protocol/entity_specifics.pb.h"
 #include "components/sync/protocol/persisted_entity_data.pb.h"
 #include "components/sync/protocol/proto_memory_estimations.h"
 
@@ -191,13 +192,6 @@ class LocalChangeProcessor : public SyncChangeProcessor {
     store_->CommitWriteBatch(std::move(batch), error_callback_);
 
     return absl::nullopt;
-  }
-
-  SyncDataList GetAllSyncData(ModelType type) const override {
-    // This function is not supported and not exercised by the relevant
-    // datatypes (that are integrated with this bridge).
-    NOTREACHED();
-    return SyncDataList();
   }
 
  private:

@@ -590,8 +590,8 @@ void DesktopNativeWidgetAura::InitNativeWidget(Widget::InitParams params) {
   if (params.type != Widget::InitParams::TYPE_TOOLTIP) {
     tooltip_manager_ = std::make_unique<TooltipManagerAura>(GetWidget());
     tooltip_controller_ = std::make_unique<corewm::TooltipController>(
-
-        desktop_window_tree_host_->CreateTooltip());
+        desktop_window_tree_host_->CreateTooltip(),
+        wm::GetActivationClient(host_->window()));
     wm::SetTooltipClient(host_->window(), tooltip_controller_.get());
     host_->window()->AddPreTargetHandler(tooltip_controller_.get());
   }
@@ -1293,9 +1293,12 @@ ui::mojom::DragOperation DesktopNativeWidgetAura::OnPerformDrop(
 
 aura::client::DragDropDelegate::DropCallback
 DesktopNativeWidgetAura::GetDropCallback(const ui::DropTargetEvent& event) {
-  // TODO(crbug.com/1197505): Return drop callback.
-  NOTREACHED();
-  return base::NullCallback();
+  DCHECK(drop_helper_);
+  if (ShouldActivate())
+    Activate();
+
+  return drop_helper_->GetDropCallback(event.data(), event.location(),
+                                       last_drop_operation_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -46,7 +46,7 @@ absl::optional<VAProfile> ConvertToVAProfile(VideoCodecProfile profile) {
     {VP9PROFILE_PROFILE0, VAProfileVP9Profile0},
     {VP9PROFILE_PROFILE2, VAProfileVP9Profile2},
     {AV1PROFILE_PROFILE_MAIN, VAProfileAV1Profile0},
-#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC_DECODING)
     {HEVCPROFILE_MAIN, VAProfileHEVCMain},
     {HEVCPROFILE_MAIN10, VAProfileHEVCMain10},
 #endif
@@ -71,7 +71,7 @@ absl::optional<VAProfile> StringToVAProfile(const std::string& va_profile) {
     {"VAProfileVP9Profile0", VAProfileVP9Profile0},
     {"VAProfileVP9Profile2", VAProfileVP9Profile2},
     {"VAProfileAV1Profile0", VAProfileAV1Profile0},
-#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC_DECODING)
     {"VAProfileHEVCMain", VAProfileHEVCMain},
     {"VAProfileHEVCMain10", VAProfileHEVCMain10},
 #endif
@@ -305,10 +305,10 @@ TEST_F(VaapiTest, LowQualityEncodingSetting) {
 
   std::map<VAProfile, std::vector<VAEntrypoint>> configurations =
       VaapiWrapper::GetSupportedConfigurationsForCodecModeForTesting(
-          VaapiWrapper::kEncode);
+          VaapiWrapper::kEncodeConstantBitrate);
 
   for (const auto& codec_mode :
-       {VaapiWrapper::kEncode,
+       {VaapiWrapper::kEncodeConstantBitrate,
         VaapiWrapper::kEncodeConstantQuantizationParameter}) {
     std::map<VAProfile, std::vector<VAEntrypoint>> configurations =
         VaapiWrapper::GetSupportedConfigurationsForCodecModeForTesting(
@@ -317,8 +317,8 @@ TEST_F(VaapiTest, LowQualityEncodingSetting) {
     for (const auto& profile_and_entrypoints : configurations) {
       const VAProfile va_profile = profile_and_entrypoints.first;
       scoped_refptr<VaapiWrapper> wrapper = VaapiWrapper::Create(
-          VaapiWrapper::kEncode, va_profile, EncryptionScheme::kUnencrypted,
-          base::DoNothing());
+          VaapiWrapper::kEncodeConstantBitrate, va_profile,
+          EncryptionScheme::kUnencrypted, base::DoNothing());
 
       // Depending on the GPU Gen, flags and policies, we may or may not utilize
       // all entrypoints (e.g. we might always want VAEntrypointEncSliceLP if
@@ -419,17 +419,19 @@ TEST_P(VaapiVppTest, BlitWithVAAllocatedSurfaces) {
   const unsigned int va_rt_format_out = ToVaRTFormat(va_fourcc_out);
   ASSERT_NE(va_rt_format_out, kInvalidVaRtFormat);
 
+  auto scoped_surfaces = wrapper->CreateScopedVASurfaces(
+      va_rt_format_in, kInputSize, {VaapiWrapper::SurfaceUsageHint::kGeneric},
+      1u, /*visible_size=*/absl::nullopt, /*va_fourcc=*/absl::nullopt);
+  ASSERT_FALSE(scoped_surfaces.empty());
   std::unique_ptr<ScopedVASurface> scoped_surface_in =
-      wrapper->CreateScopedVASurface(
-          va_rt_format_in, kInputSize,
-          {VaapiWrapper::SurfaceUsageHint::kGeneric});
-  ASSERT_TRUE(!!scoped_surface_in);
+      std::move(scoped_surfaces[0]);
 
+  scoped_surfaces = wrapper->CreateScopedVASurfaces(
+      va_rt_format_out, kOutputSize, {VaapiWrapper::SurfaceUsageHint::kGeneric},
+      1u, /*visible_size=*/absl::nullopt, /*va_fourcc=*/absl::nullopt);
+  ASSERT_FALSE(scoped_surfaces.empty());
   std::unique_ptr<ScopedVASurface> scoped_surface_out =
-      wrapper->CreateScopedVASurface(
-          va_rt_format_out, kOutputSize,
-          {VaapiWrapper::SurfaceUsageHint::kGeneric});
-  ASSERT_TRUE(!!scoped_surface_out);
+      std::move(scoped_surfaces[0]);
 
   scoped_refptr<VASurface> surface_in = base::MakeRefCounted<VASurface>(
       scoped_surface_in->id(), kInputSize, va_rt_format_in, base::DoNothing());

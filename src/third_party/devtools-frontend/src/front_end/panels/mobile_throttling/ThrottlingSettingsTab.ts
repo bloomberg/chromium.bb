@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
+
+import throttlingSettingsTabStyles from './throttlingSettingsTab.css.js';
+
 import type * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 
@@ -83,28 +84,27 @@ let throttlingSettingsTabInstance: ThrottlingSettingsTab;
 
 export class ThrottlingSettingsTab extends UI.Widget.VBox implements
     UI.ListWidget.Delegate<SDK.NetworkManager.Conditions> {
-  _list: UI.ListWidget.ListWidget<SDK.NetworkManager.Conditions>;
-  _customSetting: Common.Settings.Setting<SDK.NetworkManager.Conditions[]>;
-  _editor?: UI.ListWidget.Editor<SDK.NetworkManager.Conditions>;
+  private readonly list: UI.ListWidget.ListWidget<SDK.NetworkManager.Conditions>;
+  private readonly customSetting: Common.Settings.Setting<SDK.NetworkManager.Conditions[]>;
+  private editor?: UI.ListWidget.Editor<SDK.NetworkManager.Conditions>;
   constructor() {
     super(true);
-    this.registerRequiredCSS('panels/mobile_throttling/throttlingSettingsTab.css');
 
     const header = this.contentElement.createChild('div', 'header');
     header.textContent = i18nString(UIStrings.networkThrottlingProfiles);
     UI.ARIAUtils.markAsHeading(header, 1);
 
     const addButton = UI.UIUtils.createTextButton(
-        i18nString(UIStrings.addCustomProfile), this._addButtonClicked.bind(this), 'add-conditions-button');
+        i18nString(UIStrings.addCustomProfile), this.addButtonClicked.bind(this), 'add-conditions-button');
     this.contentElement.appendChild(addButton);
 
-    this._list = new UI.ListWidget.ListWidget(this);
-    this._list.element.classList.add('conditions-list');
-    this._list.registerRequiredCSS('panels/mobile_throttling/throttlingSettingsTab.css');
-    this._list.show(this.contentElement);
+    this.list = new UI.ListWidget.ListWidget(this);
+    this.list.element.classList.add('conditions-list');
 
-    this._customSetting = Common.Settings.Settings.instance().moduleSetting('customNetworkConditions');
-    this._customSetting.addChangeListener(this._conditionsUpdated, this);
+    this.list.show(this.contentElement);
+
+    this.customSetting = Common.Settings.Settings.instance().moduleSetting('customNetworkConditions');
+    this.customSetting.addChangeListener(this.conditionsUpdated, this);
 
     this.setDefaultFocusedElement(addButton);
   }
@@ -120,22 +120,24 @@ export class ThrottlingSettingsTab extends UI.Widget.VBox implements
 
   wasShown(): void {
     super.wasShown();
-    this._conditionsUpdated();
+    this.list.registerCSSFiles([throttlingSettingsTabStyles]);
+    this.registerCSSFiles([throttlingSettingsTabStyles]);
+    this.conditionsUpdated();
   }
 
-  _conditionsUpdated(): void {
-    this._list.clear();
+  private conditionsUpdated(): void {
+    this.list.clear();
 
-    const conditions = this._customSetting.get();
+    const conditions = this.customSetting.get();
     for (let i = 0; i < conditions.length; ++i) {
-      this._list.appendItem(conditions[i], true);
+      this.list.appendItem(conditions[i], true);
     }
 
-    this._list.appendSeparator();
+    this.list.appendSeparator();
   }
 
-  _addButtonClicked(): void {
-    this._list.addNewItem(this._customSetting.get().length, {title: () => '', download: -1, upload: -1, latency: 0});
+  private addButtonClicked(): void {
+    this.list.addNewItem(this.customSetting.get().length, {title: () => '', download: -1, upload: -1, latency: 0});
   }
 
   renderItem(conditions: SDK.NetworkManager.Conditions, _editable: boolean): Element {
@@ -157,9 +159,9 @@ export class ThrottlingSettingsTab extends UI.Widget.VBox implements
   }
 
   removeItemRequested(_item: SDK.NetworkManager.Conditions, index: number): void {
-    const list = this._customSetting.get();
+    const list = this.customSetting.get();
     list.splice(index, 1);
-    this._customSetting.set(list);
+    this.customSetting.set(list);
   }
 
   retrieveOptionsTitle(conditions: SDK.NetworkManager.Conditions): string {
@@ -179,16 +181,16 @@ export class ThrottlingSettingsTab extends UI.Widget.VBox implements
     const latency = editor.control('latency').value.trim();
     conditions.latency = latency ? parseInt(latency, 10) : 0;
 
-    const list = this._customSetting.get();
+    const list = this.customSetting.get();
     if (isNew) {
       list.push(conditions);
     }
 
-    this._customSetting.set(list);
+    this.customSetting.set(list);
   }
 
   beginEdit(conditions: SDK.NetworkManager.Conditions): UI.ListWidget.Editor<SDK.NetworkManager.Conditions> {
-    const editor = this._createEditor();
+    const editor = this.createEditor();
     editor.control('title').value = this.retrieveOptionsTitle(conditions);
     editor.control('download').value = conditions.download <= 0 ? '' : String(conditions.download / (1000 / 8));
     editor.control('upload').value = conditions.upload <= 0 ? '' : String(conditions.upload / (1000 / 8));
@@ -196,13 +198,13 @@ export class ThrottlingSettingsTab extends UI.Widget.VBox implements
     return editor;
   }
 
-  _createEditor(): UI.ListWidget.Editor<SDK.NetworkManager.Conditions> {
-    if (this._editor) {
-      return this._editor;
+  private createEditor(): UI.ListWidget.Editor<SDK.NetworkManager.Conditions> {
+    if (this.editor) {
+      return this.editor;
     }
 
     const editor = new UI.ListWidget.Editor<SDK.NetworkManager.Conditions>();
-    this._editor = editor;
+    this.editor = editor;
     const content = editor.contentElement();
 
     const titles = content.createChild('div', 'conditions-edit-row');

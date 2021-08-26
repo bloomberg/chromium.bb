@@ -427,11 +427,11 @@ g.test('vertex_attributes,basic')
     }
 
     // Create an array of shader locations [0, 1, 2, 3, ...] for easy iteration.
-    const shaderLocations = new Array(shaderLocation).fill(0).map((_, i) => i);
+    const vertexInputShaderLocations = new Array(shaderLocation).fill(0).map((_, i) => i);
 
     // Create the expected data buffer.
     const expectedData = new ExpectedDataConstructor(
-      vertexCount * instanceCount * shaderLocations.length
+      vertexCount * instanceCount * vertexInputShaderLocations.length
     );
 
     // Populate the expected data. This is a CPU-side version of what we expect the shader
@@ -441,7 +441,8 @@ g.test('vertex_attributes,basic')
         bufferLayouts.forEach((bufferLayout, b) => {
           for (const attribute of bufferLayout.attributes) {
             const primitiveId = vertexCount * instanceIndex + vertexIndex;
-            const outputIndex = primitiveId * shaderLocations.length + attribute.shaderLocation;
+            const outputIndex =
+              primitiveId * vertexInputShaderLocations.length + attribute.shaderLocation;
 
             let vertexOrInstanceIndex: number;
             switch (bufferLayout.stepMode) {
@@ -475,6 +476,38 @@ g.test('vertex_attributes,basic')
         break;
     }
 
+    // Maximum inter-stage shader location is 14, and we need to consume one for primitiveId, 12 for
+    // location 0 to 11,  and combine the remaining vertex inputs into one location (one
+    // vec4<wgslFormat> when vertex_attribute_count === 16).
+    const interStageScalarShaderLocation = Math.min(shaderLocation, 12);
+    const interStageScalarShaderLocations = new Array(interStageScalarShaderLocation)
+      .fill(0)
+      .map((_, i) => i);
+
+    let accumulateVariableDeclarationsInVertexShader = '';
+    let accumulateVariableAssignmentsInVertexShader = '';
+    let accumulateVariableDeclarationsInFragmentShader = '';
+    let accumulateVariableAssignmentsInFragmentShader = '';
+    // The remaining 3 vertex attributes
+    if (t.params.vertex_attribute_count === 16) {
+      accumulateVariableDeclarationsInVertexShader = `
+        [[location(13)]] outAttrib13 : vec4<${wgslFormat}>;
+      `;
+      accumulateVariableAssignmentsInVertexShader = `
+      output.outAttrib13 =
+          vec4<${wgslFormat}>(input.attrib12, input.attrib13, input.attrib14, input.attrib15);
+      `;
+      accumulateVariableDeclarationsInFragmentShader = `
+      [[location(13)]] attrib13 : vec4<${wgslFormat}>;
+      `;
+      accumulateVariableAssignmentsInFragmentShader = `
+      outBuffer.primitives[input.primitiveId].attrib12 = input.attrib13.x;
+      outBuffer.primitives[input.primitiveId].attrib13 = input.attrib13.y;
+      outBuffer.primitives[input.primitiveId].attrib14 = input.attrib13.z;
+      outBuffer.primitives[input.primitiveId].attrib15 = input.attrib13.w;
+      `;
+    }
+
     const pipeline = t.device.createRenderPipeline({
       vertex: {
         module: t.device.createShaderModule({
@@ -482,18 +515,25 @@ g.test('vertex_attributes,basic')
 struct Inputs {
   [[builtin(vertex_index)]] vertexIndex : u32;
   [[builtin(instance_index)]] instanceIndex : u32;
-${shaderLocations.map(i => `  [[location(${i})]] attrib${i} : ${wgslFormat};`).join('\n')}
+${vertexInputShaderLocations
+  .map(i => `  [[location(${i})]] attrib${i} : ${wgslFormat};`)
+  .join('\n')}
 };
 
 struct Outputs {
   [[builtin(position)]] Position : vec4<f32>;
-${shaderLocations.map(i => `  [[location(${i})]] outAttrib${i} : ${wgslFormat};`).join('\n')}
-  [[location(${shaderLocations.length})]] primitiveId : u32;
+${interStageScalarShaderLocations
+  .map(i => `  [[location(${i})]] outAttrib${i} : ${wgslFormat};`)
+  .join('\n')}
+  [[location(${interStageScalarShaderLocations.length})]] primitiveId : u32;
+${accumulateVariableDeclarationsInVertexShader}
 };
 
 [[stage(vertex)]] fn main(input : Inputs) -> Outputs {
   var output : Outputs;
-${shaderLocations.map(i => `  output.outAttrib${i} = input.attrib${i};`).join('\n')}
+${interStageScalarShaderLocations.map(i => `  output.outAttrib${i} = input.attrib${i};`).join('\n')}
+${accumulateVariableAssignmentsInVertexShader}
+
   output.primitiveId = input.instanceIndex * ${instanceCount}u + input.vertexIndex;
   output.Position = vec4<f32>(0.0, 0.0, 0.5, 1.0);
   return output;
@@ -507,22 +547,26 @@ ${shaderLocations.map(i => `  output.outAttrib${i} = input.attrib${i};`).join('\
         module: t.device.createShaderModule({
           code: `
 struct Inputs {
-${shaderLocations.map(i => `  [[location(${i})]] attrib${i} : ${wgslFormat};`).join('\n')}
-  [[location(${shaderLocations.length})]] primitiveId : u32;
+${interStageScalarShaderLocations
+  .map(i => `  [[location(${i})]] attrib${i} : ${wgslFormat};`)
+  .join('\n')}
+  [[location(${interStageScalarShaderLocations.length})]] primitiveId : u32;
+${accumulateVariableDeclarationsInFragmentShader}
 };
 
 struct OutPrimitive {
-${shaderLocations.map(i => `  attrib${i} : ${wgslFormat};`).join('\n')}
+${vertexInputShaderLocations.map(i => `  attrib${i} : ${wgslFormat};`).join('\n')}
 };
 [[block]] struct OutBuffer {
-  primitives : [[stride(${shaderLocations.length * 4})]] array<OutPrimitive>;
+  primitives : [[stride(${vertexInputShaderLocations.length * 4})]] array<OutPrimitive>;
 };
 [[group(0), binding(0)]] var<storage, read_write> outBuffer : OutBuffer;
 
 [[stage(fragment)]] fn main(input : Inputs) {
-${shaderLocations
+${interStageScalarShaderLocations
   .map(i => `  outBuffer.primitives[input.primitiveId].attrib${i} = input.attrib${i};`)
   .join('\n')}
+${accumulateVariableAssignmentsInFragmentShader}
 }
           `,
         }),
@@ -530,6 +574,7 @@ ${shaderLocations
         targets: [
           {
             format: 'rgba8unorm',
+            writeMask: 0,
           },
         ],
       },
@@ -540,7 +585,7 @@ ${shaderLocations
 
     const resultBuffer = t.device.createBuffer({
       usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC,
-      size: vertexCount * instanceCount * shaderLocations.length * 4,
+      size: vertexCount * instanceCount * vertexInputShaderLocations.length * 4,
     });
 
     const resultBindGroup = t.device.createBindGroup({
@@ -559,7 +604,8 @@ ${shaderLocations
     const renderPass = commandEncoder.beginRenderPass({
       colorAttachments: [
         {
-          // Dummy render attachment - not used.
+          // Dummy render attachment - not used (WebGPU doesn't allow using a render pass with no
+          // attachments)
           view: t.device
             .createTexture({
               usage: GPUTextureUsage.RENDER_ATTACHMENT,

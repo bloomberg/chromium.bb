@@ -14,6 +14,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_split.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/browser/media/cdm_registry_impl.h"
 #include "content/public/browser/cdm_registry.h"
 #include "content/public/browser/content_browser_client.h"
@@ -31,10 +32,6 @@
 #include "content/browser/media/key_system_support_win.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #endif
-
-#if BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA)
-#include "ash/constants/ash_features.h"
-#endif  // BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA)
 
 namespace content {
 
@@ -127,17 +124,17 @@ absl::optional<media::CdmCapability> GetHardwareSecureCapability(
     bool* lazy_initialize) {
   *lazy_initialize = false;
 
-#if BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA)
-  if (!base::FeatureList::IsEnabled(chromeos::features::kCdmFactoryDaemon)) {
-    DVLOG(1) << "Hardware secure decryption disabled";
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kLacrosUseChromeosProtectedMedia)) {
     return absl::nullopt;
   }
-#else
+#elif !BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA)
   if (!base::FeatureList::IsEnabled(media::kHardwareSecureDecryption)) {
     DVLOG(1) << "Hardware secure decryption disabled";
     return absl::nullopt;
   }
-#endif  // BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA)
+#endif  // !BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA)
 
   // Secure codecs override takes precedence over other checks.
   auto overridden_capability =

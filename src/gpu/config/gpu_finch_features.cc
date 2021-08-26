@@ -201,6 +201,11 @@ const base::Feature kVulkan {
 const base::Feature kEnableDrDc{"EnableDrDc",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable WebGPU on gpu service side only. This is used with origin trial
+// before gpu service is enabled by default.
+const base::Feature kWebGPUService{"WebGPUService",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if defined(OS_ANDROID)
 
 const base::FeatureParam<std::string> kVulkanBlockListByBrand{
@@ -308,6 +313,11 @@ bool IsDrDcEnabled() {
   if (IsUsingVulkan())
     return false;
 
+  // DrDc is supported on android MediaPlayer and MCVD path only when
+  // AImageReader is enabled.
+  if (!IsAImageReaderEnabled())
+    return false;
+
   return base::FeatureList::IsEnabled(kEnableDrDc);
 #else
   return false;
@@ -315,22 +325,11 @@ bool IsDrDcEnabled() {
 }
 
 bool IsANGLEValidationEnabled() {
-  if (!base::FeatureList::IsEnabled(kDefaultEnableANGLEValidation)) {
-    return false;
-  }
-
   if (!UsePassthroughCommandDecoder()) {
     return false;
   }
 
-  // Enable ANGLE validation when OOP canvas is enabled on Windows
-#if defined(OS_WIN)
-  if (!base::FeatureList::IsEnabled(kCanvasOopRasterization)) {
-    return false;
-  }
-#endif
-
-  return true;
+  return base::FeatureList::IsEnabled(kDefaultEnableANGLEValidation);
 }
 
 #if defined(OS_ANDROID)

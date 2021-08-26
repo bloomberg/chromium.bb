@@ -4,7 +4,7 @@
 
 #include "google_apis/calendar/calendar_api_url_generator.h"
 
-#include "google_apis/drive/time_util.h"
+#include "google_apis/common/time_util.h"
 #include "net/base/url_util.h"
 
 namespace google_apis {
@@ -30,11 +30,6 @@ CalendarApiUrlGenerator& CalendarApiUrlGenerator::operator=(
     const CalendarApiUrlGenerator& src) = default;
 
 CalendarApiUrlGenerator::~CalendarApiUrlGenerator() = default;
-
-// TODO(https://crbug.com/1222483): get this from GaiaUrls class instead.
-// The same for the DriveApiUrlGenerator.
-const char CalendarApiUrlGenerator::kBaseUrlForProduction[] =
-    "https://www.googleapis.com";
 
 GURL CalendarApiUrlGenerator::GetCalendarEventListUrl(
     const base::Time& start_time,

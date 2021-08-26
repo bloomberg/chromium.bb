@@ -25,6 +25,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -565,7 +566,6 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
   // InProcessBrowserTest:
   void SetUpOnMainThread() override;
   void TearDownOnMainThread() override;
-  void SetUpCommandLine(base::CommandLine* command_line) override;
 
   // Called by |url_loader_interceptor_|.
   // It emulates captive portal behavior.
@@ -574,8 +574,7 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
   // behind a captive portal.
   bool OnIntercept(content::URLLoaderInterceptor::RequestParams* params);
 
-  // Sets the captive portal checking preference.  Does not affect the command
-  // line flag, which is set in SetUpCommandLine.
+  // Sets the captive portal checking preference.
   void EnableCaptivePortalDetection(Profile* profile, bool enabled);
 
   // Enables or disables actual captive portal probes. Should only be called
@@ -924,6 +923,7 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
   }
 
  protected:
+  base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<content::URLLoaderInterceptor> url_loader_interceptor_;
   std::unique_ptr<base::RunLoop> run_loop_;
   // Only accessed on the UI thread.
@@ -949,6 +949,7 @@ CaptivePortalBrowserTest::CaptivePortalBrowserTest()
       scoped_domain_(false),
 #endif
       browser_list_(BrowserList::GetInstance()) {
+  feature_list_.InitAndEnableFeature(kCaptivePortalInterstitial);
 }
 
 CaptivePortalBrowserTest::~CaptivePortalBrowserTest() = default;
@@ -1096,13 +1097,6 @@ void CaptivePortalBrowserTest::TearDownOnMainThread() {
   // No test should have a captive portal check pending on quit.
   EXPECT_FALSE(CheckPending(browser()));
   url_loader_interceptor_.reset();
-}
-
-void CaptivePortalBrowserTest::SetUpCommandLine(
-    base::CommandLine* command_line) {
-  // Enable finch experiment for captive portal interstitials.
-  command_line->AppendSwitchASCII(
-      switches::kForceFieldTrials, "CaptivePortalInterstitial/Enabled/");
 }
 
 void CaptivePortalBrowserTest::EnableCaptivePortalDetection(
@@ -2061,8 +2055,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
   CaptivePortalObserver portal_observer(browser()->profile());
   captive_portal::CaptivePortalService* captive_portal_service =
       CaptivePortalServiceFactory::GetForProfile(browser()->profile());
-  captive_portal_service->DetectCaptivePortal(
-      captive_portal::CaptivePortalProbeReason::kCertificateError);
+  captive_portal_service->DetectCaptivePortal();
   portal_observer.WaitForResults(1);
   EXPECT_EQ(SSLBlockingPage::kTypeForTesting,
             GetInterstitialType(broken_tab_contents));
@@ -2071,8 +2064,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
   // captive portal interstitial should still not get recreated.
   SetBehindCaptivePortal(true);
   CaptivePortalObserver final_portal_observer(browser()->profile());
-  captive_portal_service->DetectCaptivePortal(
-      captive_portal::CaptivePortalProbeReason::kCertificateError);
+  captive_portal_service->DetectCaptivePortal();
   final_portal_observer.WaitForResults(1);
   EXPECT_EQ(SSLBlockingPage::kTypeForTesting,
             GetInterstitialType(broken_tab_contents));
@@ -2122,8 +2114,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
   CaptivePortalObserver portal_observer2(browser()->profile());
   captive_portal::CaptivePortalService* captive_portal_service =
       CaptivePortalServiceFactory::GetForProfile(browser()->profile());
-  captive_portal_service->DetectCaptivePortal(
-      captive_portal::CaptivePortalProbeReason::kCertificateError);
+  captive_portal_service->DetectCaptivePortal();
   portal_observer2.WaitForResults(1);
 
   EXPECT_FALSE(IsShowingInterstitial(broken_tab_contents));
@@ -2178,8 +2169,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
   CaptivePortalObserver portal_observer2(browser()->profile());
   captive_portal::CaptivePortalService* captive_portal_service =
       CaptivePortalServiceFactory::GetForProfile(browser()->profile());
-  captive_portal_service->DetectCaptivePortal(
-      captive_portal::CaptivePortalProbeReason::kCertificateError);
+  captive_portal_service->DetectCaptivePortal();
   portal_observer2.WaitForResults(1);
 
   EXPECT_FALSE(IsShowingInterstitial(broken_tab_contents));
@@ -2239,8 +2229,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
   CaptivePortalObserver portal_observer2(browser()->profile());
   captive_portal::CaptivePortalService* captive_portal_service =
       CaptivePortalServiceFactory::GetForProfile(browser()->profile());
-  captive_portal_service->DetectCaptivePortal(
-      captive_portal::CaptivePortalProbeReason::kCertificateError);
+  captive_portal_service->DetectCaptivePortal();
   portal_observer2.WaitForResults(1);
 
   EXPECT_FALSE(IsShowingInterstitial(broken_tab_contents));
@@ -3044,9 +3033,13 @@ class CaptivePortalForPrerenderingTest : public CaptivePortalBrowserTest {
             base::Unretained(this))) {}
   ~CaptivePortalForPrerenderingTest() override = default;
 
+  void SetUp() override {
+    prerender_helper_.SetUp(embedded_test_server());
+    CaptivePortalBrowserTest::SetUp();
+  }
+
   void SetUpOnMainThread() override {
     CaptivePortalBrowserTest::SetUpOnMainThread();
-    prerender_helper_.SetUpOnMainThread(embedded_test_server());
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(embedded_test_server()->Start());
   }
@@ -3102,30 +3095,15 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalForPrerenderingTest,
 
 // Test that CaptivePortalTabHelper does not support the redirect navigation on
 // non-primary trees.
-// Flaky. See https://crbug.com/1224288.
 IN_PROC_BROWSER_TEST_F(CaptivePortalForPrerenderingTest,
-                       DISABLED_DontFireOnRedirectDuringPrerendering) {
+                       DontFireOnRedirectDuringPrerendering) {
   GURL initial_url = embedded_test_server()->GetURL("/empty.html");
-  GURL prerender_url = embedded_test_server()->GetURL("/title1.html");
+  GURL redirect_url =
+      embedded_test_server()->GetURL(CreateServerRedirect(initial_url.spec()));
   ASSERT_NE(ui_test_utils::NavigateToURL(browser(), initial_url), nullptr);
 
-  // Use an HTTPS server for the top level page.
-  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_server.AddDefaultHandlers(GetChromeTestDataDir());
-  ASSERT_TRUE(https_server.Start());
-
-  int host_id = prerender_helper().AddPrerender(prerender_url);
-  content::RenderFrameHost* prerender_render_frame_host =
-      prerender_helper().GetPrerenderedMainFrameHost(host_id);
-  EXPECT_NE(prerender_render_frame_host, nullptr);
-  prerender_helper().NavigatePrerenderedPage(
-      host_id, https_server.GetURL(CreateServerRedirect(prerender_url.spec())));
-  EXPECT_EQ(prerender_url, prerender_render_frame_host->GetLastCommittedURL());
-
-  // Only the primary main frame supports the redirect navigation. So, Crash
-  // should not occur when navigating the prerendered page with the redirect
-  // URL because CaptivePortalTabHelper::DidRedirectNavigation should not be
-  // called during prerendering.
+  // The redirect navigation on prerendering should not generate an assert.
+  prerender_helper().AddPrerender(redirect_url);
 
   // Set CaptivePortalTabReloader's state to STATE_TIMER_RUNNING to check if
   // the state is changed after activating the prerendered page. The state
@@ -3133,8 +3111,11 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalForPrerenderingTest,
   // after activating.
   SetState(captive_portal::CaptivePortalTabReloader::STATE_TIMER_RUNNING);
   // Activate the prerendered page.
-  prerender_helper().NavigatePrimaryPage(
-      https_server.GetURL(CreateServerRedirect(prerender_url.spec())));
+  prerender_helper().NavigatePrimaryPage(redirect_url);
+
+  // Only the primary main frame supports the redirect navigation. So, Crash
+  // should not occur after navigating the primary page with the redirect URL.
+
   captive_portal::CaptivePortalTabReloader::State new_state =
       GetStateOfTabReloader(GetWebContents());
   EXPECT_EQ(captive_portal::CaptivePortalTabReloader::STATE_NONE, new_state);

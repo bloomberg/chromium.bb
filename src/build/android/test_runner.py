@@ -413,6 +413,12 @@ def AddGTestOptions(parser):
       '--coverage-dir',
       type=os.path.realpath,
       help='Directory in which to place all generated coverage files.')
+  parser.add_argument(
+      '--use-existing-test-data',
+      action='store_true',
+      help='Do not push new files to the device, instead using existing APK '
+      'and test data. Only use when running the same test for multiple '
+      'iterations.')
 
 
 def AddInstrumentationTestOptions(parser):
@@ -935,10 +941,13 @@ def RunTestsInPlatformMode(args, result_sink_client=None):
                   match.group(1)) if match else None
               # Some tests put in non utf-8 char as part of the test
               # which breaks uploads, so need to decode and re-encode.
-              result_sink_client.Post(
-                  r.GetName(), r.GetType(), r.GetDuration(),
-                  r.GetLog().decode('utf-8', 'replace').encode('utf-8'),
-                  test_file_name)
+              result_sink_client.Post(r.GetName(),
+                                      r.GetType(),
+                                      r.GetDuration(),
+                                      r.GetLog().decode(
+                                          'utf-8', 'replace').encode('utf-8'),
+                                      test_file_name,
+                                      failure_reason=r.GetFailureReason())
 
   @contextlib.contextmanager
   def upload_logcats_file():

@@ -22,6 +22,7 @@
 #include "components/language/core/common/language_experiments.h"
 #include "components/translate/core/common/translate_errors.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "ui/base/interaction/element_identifier.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -51,6 +52,29 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
     CHANGE_TARGET_LANGUAGE,
     CHANGE_SOURCE_LANGUAGE
   };
+
+  // Element IDs for ui::ElementTracker
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(TranslateBubbleView, kIdentifier);
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(TranslateBubbleView,
+                                         kSourceLanguageTab);
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(TranslateBubbleView,
+                                         kTargetLanguageTab);
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(TranslateBubbleView, kCloseButton);
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(TranslateBubbleView,
+                                         kOptionsMenuButton);
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(TranslateBubbleView,
+                                         kChangeTargetLanguage);
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(TranslateBubbleView,
+                                         kTargetLanguageCombobox);
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(TranslateBubbleView,
+                                         kTargetLanguageDoneButton);
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(TranslateBubbleView,
+                                         kChangeSourceLanguage);
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(TranslateBubbleView,
+                                         kSourceLanguageCombobox);
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(TranslateBubbleView,
+                                         kSourceLanguageDoneButton);
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(TranslateBubbleView, kErrorMessage);
 
   ~TranslateBubbleView() override;
 
@@ -122,6 +146,8 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
                            AlwaysTranslateCheckboxAndCloseButton);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest,
                            AlwaysTranslateCheckboxAndDoneButton);
+  FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest, SourceResetButton);
+  FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest, TargetResetButton);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest, SourceDoneButton);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest, TargetDoneButton);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest,
@@ -140,6 +166,8 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
                            TabSelectedAfterTranslation);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest,
                            AlwaysTranslateTriggerTranslation);
+  FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest,
+                           AlwaysTranslateWithNeverTranslateSite);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest,
                            ShowOriginalUpdatesViewState);
 
@@ -195,7 +223,8 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   std::unique_ptr<views::View> CreateViewAdvanced(
       std::unique_ptr<views::Combobox> combobox,
       std::unique_ptr<views::Label> language_title_label,
-      std::unique_ptr<views::Button> advance_done_button,
+      std::unique_ptr<views::Button> advanced_reset_button,
+      std::unique_ptr<views::Button> advanced_done_button,
       std::unique_ptr<views::Checkbox> advanced_always_translate_checkbox);
 
   // Creates a translate icon for when the bottom branding isn't showing. This
@@ -236,6 +265,10 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   void ShowOriginal();
   void ConfirmAdvancedOptions();
 
+  // Returns whether or not the current language selection is different from the
+  // initial language selection in an advanced view.
+  bool DidLanguageSelectionChange(TranslateBubbleModel::ViewState view_state);
+
   // Handles the reset button in advanced view under Tab UI.
   void ResetLanguage();
 
@@ -267,6 +300,8 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   views::Checkbox* advanced_always_translate_checkbox_ = nullptr;
   views::TabbedPane* tabbed_pane_ = nullptr;
 
+  views::LabelButton* advanced_reset_button_source_ = nullptr;
+  views::LabelButton* advanced_reset_button_target_ = nullptr;
   views::LabelButton* advanced_done_button_source_ = nullptr;
   views::LabelButton* advanced_done_button_target_ = nullptr;
 

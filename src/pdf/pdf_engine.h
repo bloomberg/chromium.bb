@@ -82,6 +82,13 @@ enum class FontMappingMode {
   kPepper,
 };
 
+enum class DocumentPermission {
+  kCopy,
+  kCopyAccessible,
+  kPrintLowQuality,
+  kPrintHighQuality,
+};
+
 // Do one time initialization of the SDK.
 // If `enable_v8` is false, then the PDFEngine will not be able to run
 // JavaScript.
@@ -92,13 +99,6 @@ void ShutdownSDK();
 // This class encapsulates a PDF rendering engine.
 class PDFEngine {
  public:
-  enum DocumentPermission {
-    PERMISSION_COPY,
-    PERMISSION_COPY_ACCESSIBLE,
-    PERMISSION_PRINT_LOW_QUALITY,
-    PERMISSION_PRINT_HIGH_QUALITY,
-  };
-
   // Maximum number of parameters a nameddest view can contain.
   static constexpr size_t kMaxViewParams = 4;
 
@@ -258,7 +258,7 @@ class PDFEngine {
     virtual void FormTextFieldFocusChange(bool in_focus) {}
 
     // Returns true if the plugin has been opened within print preview.
-    virtual bool IsPrintPreview() = 0;
+    virtual bool IsPrintPreview() const = 0;
 
     // Get the background color of the PDF.
     virtual SkColor GetBackgroundColor() = 0;
@@ -268,6 +268,9 @@ class PDFEngine {
 
     virtual void SelectionChanged(const gfx::Rect& left,
                                   const gfx::Rect& right) {}
+
+    // The caret position in the editable form (if applicable) changed.
+    virtual void CaretChanged(const gfx::Rect& caret_rect) {}
 
     // Notifies the client that the PDF has been edited.
     virtual void EnteredEditMode() {}
@@ -303,7 +306,6 @@ class PDFEngine {
 
   // Most of these functions are similar to the Pepper functions of the same
   // name, so not repeating the description here unless it's different.
-  virtual bool New(const char* url, const char* headers) = 0;
   virtual void PageOffsetUpdated(const gfx::Vector2d& page_offset) = 0;
   virtual void PluginSizeUpdated(const gfx::Size& size) = 0;
   virtual void ScrolledToXPosition(int position) = 0;
@@ -316,7 +318,6 @@ class PDFEngine {
                      std::vector<gfx::Rect>& ready,
                      std::vector<gfx::Rect>& pending) = 0;
   virtual void PostPaint() = 0;
-  virtual bool HandleDocumentLoad(std::unique_ptr<UrlLoader> loader) = 0;
   virtual bool HandleInputEvent(const blink::WebInputEvent& event) = 0;
   virtual void PrintBegin() = 0;
   virtual std::vector<uint8_t> PrintPages(

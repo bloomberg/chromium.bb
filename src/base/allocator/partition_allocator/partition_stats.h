@@ -37,7 +37,6 @@ struct ThreadCacheStats {
   uint64_t metadata_overhead;
 
 #if defined(PA_THREAD_CACHE_ALLOC_STATS)
-  uint64_t bucket_size_[kNumBuckets + 1];
   uint64_t allocs_per_bucket_[kNumBuckets + 1];
 #endif  // defined(PA_THREAD_CACHE_ALLOC_STATS)
 };
@@ -47,6 +46,9 @@ struct ThreadCacheStats {
 struct PartitionMemoryStats {
   size_t total_mmapped_bytes;    // Total bytes mmap()-ed from the system.
   size_t total_committed_bytes;  // Total size of committed pages.
+  size_t max_committed_bytes;    // Max size of committed pages.
+  size_t total_allocated_bytes;  // Total size of allcoations.
+  size_t max_allocated_bytes;    // Max size of allocations.
   size_t total_resident_bytes;   // Total bytes provisioned by the partition.
   size_t total_active_bytes;     // Total active bytes in the partition.
   size_t total_decommittable_bytes;  // Total bytes that could be decommitted.

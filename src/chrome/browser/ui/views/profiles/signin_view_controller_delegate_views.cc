@@ -89,7 +89,7 @@ SigninViewControllerDelegateViews::CreateReauthConfirmationWebView(
 std::unique_ptr<views::WebView>
 SigninViewControllerDelegateViews::CreateEnterpriseConfirmationWebView(
     Browser* browser,
-    const std::string& domain_name,
+    const AccountInfo& account_info,
     SkColor profile_color,
     base::OnceCallback<void(bool)> callback) {
   std::unique_ptr<views::WebView> web_view = CreateDialogWebView(
@@ -105,7 +105,7 @@ SigninViewControllerDelegateViews::CreateEnterpriseConfirmationWebView(
   web_dialog_ui->Initialize(
       browser,
       EnterpriseProfileWelcomeUI::ScreenType::kEnterpriseAccountCreation,
-      domain_name, profile_color, std::move(callback));
+      account_info, profile_color, std::move(callback));
 
   return web_view;
 }
@@ -129,13 +129,18 @@ bool SigninViewControllerDelegateViews::ShouldShowCloseButton() const {
 
 void SigninViewControllerDelegateViews::CloseModalSignin() {
   NotifyModalSigninClosed();
-  if (modal_signin_widget_)
+  // Either `modal_signin_widget_` or `owned_content_view_` is nullptr.
+  if (modal_signin_widget_) {
+    DCHECK(!owned_content_view_);
     modal_signin_widget_->Close();
+  } else {
+    DCHECK(owned_content_view_);
+    delete this;
+  }
 }
 
 void SigninViewControllerDelegateViews::ResizeNativeView(int height) {
-  int max_height = browser()
-                       ->window()
+  int max_height = browser_->window()
                        ->GetWebContentsModalDialogHost()
                        ->GetMaximumDialogSize()
                        .height();
@@ -195,7 +200,7 @@ void SigninViewControllerDelegateViews::AddNewContents(
 
 web_modal::WebContentsModalDialogHost*
 SigninViewControllerDelegateViews::GetWebContentsModalDialogHost() {
-  return browser()->window()->GetWebContentsModalDialogHost();
+  return browser_->window()->GetWebContentsModalDialogHost();
 }
 
 SigninViewControllerDelegateViews::SigninViewControllerDelegateViews(
@@ -204,15 +209,17 @@ SigninViewControllerDelegateViews::SigninViewControllerDelegateViews(
     ui::ModalType dialog_modal_type,
     bool wait_for_size,
     bool should_show_close_button)
-    : web_contents_(content_view->GetWebContents()),
+    : owned_content_view_(std::move(content_view)),
+      web_contents_(owned_content_view_->GetWebContents()),
       browser_(browser),
-      content_view_(content_view.release()),
-      modal_signin_widget_(nullptr),
+      content_view_(owned_content_view_.get()),
       should_show_close_button_(should_show_close_button) {
   DCHECK(web_contents_);
   DCHECK(browser_);
   DCHECK(browser_->tab_strip_model()->GetActiveWebContents())
       << "A tab must be active to present the sign-in modal dialog.";
+  DCHECK(owned_content_view_);
+  DCHECK(content_view_);
 
   SetButtons(ui::DIALOG_BUTTON_NONE);
 
@@ -263,15 +270,18 @@ SigninViewControllerDelegateViews::CreateDialogWebView(
 
 void SigninViewControllerDelegateViews::DisplayModal() {
   DCHECK(!modal_signin_widget_);
-
   content::WebContents* host_web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
+      browser_->tab_strip_model()->GetActiveWebContents();
 
   // Avoid displaying the sign-in modal view if there are no active web
   // contents. This happens if the user closes the browser window before this
   // dialog has a chance to be displayed.
   if (!host_web_contents)
     return;
+
+  // Ownership of this and the content view is transferred to the view
+  // hierarchy, through `modal_signin_widget_`.
+  owned_content_view_.release();
 
   gfx::NativeWindow window = host_web_contents->GetTopLevelNativeWindow();
   switch (GetModalType()) {
@@ -296,6 +306,7 @@ void SigninViewControllerDelegateViews::DisplayModal() {
       NOTREACHED() << "Unsupported dialog modal type " << GetModalType();
   }
 
+  DCHECK(modal_signin_widget_);
   content_view_->RequestFocus();
 }
 
@@ -340,12 +351,12 @@ SigninViewControllerDelegate::CreateReauthConfirmationDelegate(
 SigninViewControllerDelegate*
 SigninViewControllerDelegate::CreateEnterpriseConfirmationDelegate(
     Browser* browser,
-    const std::string& domain_name,
+    const AccountInfo& account_info,
     SkColor profile_color,
     base::OnceCallback<void(bool)> callback) {
   return new SigninViewControllerDelegateViews(
       SigninViewControllerDelegateViews::CreateEnterpriseConfirmationWebView(
-          browser, domain_name, profile_color, std::move(callback)),
+          browser, account_info, profile_color, std::move(callback)),
       browser, ui::MODAL_TYPE_WINDOW, true, false);
 }
 #endif

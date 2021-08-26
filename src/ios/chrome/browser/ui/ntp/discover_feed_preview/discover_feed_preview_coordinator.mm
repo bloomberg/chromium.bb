@@ -4,9 +4,13 @@
 
 #import "ios/chrome/browser/ui/ntp/discover_feed_preview/discover_feed_preview_coordinator.h"
 
+#include "base/metrics/field_trial_params.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/tabs/tab_helper_util.h"
+#import "ios/chrome/browser/ui/ntp/discover_feed_constants.h"
 #import "ios/chrome/browser/ui/ntp/discover_feed_preview/discover_feed_preview_view_controller.h"
+#import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/web_state.h"
@@ -74,11 +78,26 @@
   web::WebState::CreateParams createParams(browserState);
   _feedPreviewWebState = web::WebState::CreateWithStorageSession(
       createParams, currentWebState->BuildSessionStorage());
-  _feedPreviewWebState->SetKeepRenderProcessAlive(true);
+  // Attach tab helpers to use _feedPreviewWebState as a browser tab. It ensures
+  // _feedPreviewWebState has all the expected tab helpers, including the
+  // history tab helper which adding the history entry of the preview.
+  AttachTabHelpers(_feedPreviewWebState.get(), /*for_prerender=*/false);
   _feedPreviewWebState->SetWebUsageEnabled(true);
+
+  std::string referrerURL = base::GetFieldTrialParamValueByFeature(
+      kEnableDiscoverFeedPreview, kDiscoverReferrerParameter);
+  if (referrerURL.empty()) {
+    referrerURL = kDefaultDiscoverReferrer;
+  }
+  web::Referrer referrer =
+      web::Referrer(GURL(referrerURL), web::ReferrerPolicyDefault);
 
   // Load the preview page using the copied web state.
   web::NavigationManager::WebLoadParams loadParams(self.URL);
+  loadParams.referrer = referrer;
+  // Attempt to prevent the WebProcess from suspending. Set this before
+  // triggering the preview page loads.
+  _feedPreviewWebState->SetKeepRenderProcessAlive(true);
   _feedPreviewWebState->GetNavigationManager()->LoadURLWithParams(loadParams);
   _feedPreviewWebState->GetNavigationManager()->LoadIfNecessary();
 }

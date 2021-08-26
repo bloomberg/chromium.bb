@@ -84,20 +84,20 @@ class JsepTransportController : public sigslot::has_slots<> {
    public:
     virtual ~Observer() {}
 
-    // Returns true if media associated with |mid| was successfully set up to be
-    // demultiplexed on |rtp_transport|. Could return false if two bundled m=
+    // Returns true if media associated with `mid` was successfully set up to be
+    // demultiplexed on `rtp_transport`. Could return false if two bundled m=
     // sections use the same SSRC, for example.
     //
-    // If a data channel transport must be negotiated, |data_channel_transport|
-    // and |negotiation_state| indicate negotiation status.  If
-    // |data_channel_transport| is null, the data channel transport should not
+    // If a data channel transport must be negotiated, `data_channel_transport`
+    // and `negotiation_state` indicate negotiation status.  If
+    // `data_channel_transport` is null, the data channel transport should not
     // be used.  Otherwise, the value is a pointer to the transport to be used
-    // for data channels on |mid|, if any.
+    // for data channels on `mid`, if any.
     //
-    // The observer should not send data on |data_channel_transport| until
-    // |negotiation_state| is provisional or final.  It should not delete
-    // |data_channel_transport| or any fallback transport until
-    // |negotiation_state| is final.
+    // The observer should not send data on `data_channel_transport` until
+    // `negotiation_state` is provisional or final.  It should not delete
+    // `data_channel_transport` or any fallback transport until
+    // `negotiation_state` is final.
     virtual bool OnTransportChanged(
         const std::string& mid,
         RtpTransportInternal* rtp_transport,
@@ -106,12 +106,12 @@ class JsepTransportController : public sigslot::has_slots<> {
   };
 
   struct Config {
-    // If |redetermine_role_on_ice_restart| is true, ICE role is redetermined
+    // If `redetermine_role_on_ice_restart` is true, ICE role is redetermined
     // upon setting a local transport description that indicates an ICE
     // restart.
     bool redetermine_role_on_ice_restart = true;
     rtc::SSLProtocolVersion ssl_max_version = rtc::SSL_PROTOCOL_DTLS_12;
-    // |crypto_options| is used to determine if created DTLS transports
+    // `crypto_options` is used to determine if created DTLS transports
     // negotiate GCM crypto suites or not.
     webrtc::CryptoOptions crypto_options;
     PeerConnectionInterface::BundlePolicy bundle_policy =
@@ -139,10 +139,10 @@ class JsepTransportController : public sigslot::has_slots<> {
     std::function<void(const rtc::SSLHandshakeError)> on_dtls_handshake_error_;
   };
 
-  // The ICE related events are fired on the |network_thread|.
-  // All the transport related methods are called on the |network_thread|
+  // The ICE related events are fired on the `network_thread`.
+  // All the transport related methods are called on the `network_thread`
   // and destruction of the JsepTransportController must occur on the
-  // |network_thread|.
+  // `network_thread`.
   JsepTransportController(
       rtc::Thread* network_thread,
       cricket::PortAllocator* port_allocator,
@@ -160,7 +160,7 @@ class JsepTransportController : public sigslot::has_slots<> {
   RTCError SetRemoteDescription(SdpType type,
                                 const cricket::SessionDescription* description);
 
-  // Get transports to be used for the provided |mid|. If bundling is enabled,
+  // Get transports to be used for the provided `mid`. If bundling is enabled,
   // calling GetRtpTransport for multiple MIDs may yield the same object.
   RtpTransportInternal* GetRtpTransport(const std::string& mid) const;
   cricket::DtlsTransportInternal* GetDtlsTransport(const std::string& mid);
@@ -224,9 +224,7 @@ class JsepTransportController : public sigslot::has_slots<> {
 
   void SetActiveResetSrtpParams(bool active_reset_srtp_params);
 
-  // For now the rollback only removes mid to transport mappings
-  // and deletes unused transports, but doesn't consider anything more complex.
-  void RollbackTransports();
+  RTCError RollbackTransports();
 
   // F: void(const std::string&, const std::vector<cricket::Candidate>&)
   template <typename F>
@@ -342,9 +340,6 @@ class JsepTransportController : public sigslot::has_slots<> {
       const std::vector<int>& encrypted_extension_ids,
       int rtp_abs_sendtime_extn_id);
 
-  bool ShouldUpdateBundleGroup(SdpType type,
-                               const cricket::SessionDescription* description);
-
   std::map<const cricket::ContentGroup*, std::vector<int>>
   MergeEncryptedHeaderExtensionIdsForBundles(
       const cricket::SessionDescription* description);
@@ -371,8 +366,8 @@ class JsepTransportController : public sigslot::has_slots<> {
       const std::string& transport_name) RTC_RUN_ON(network_thread_);
 
   // Creates jsep transport. Noop if transport is already created.
-  // Transport is created either during SetLocalDescription (|local| == true) or
-  // during SetRemoteDescription (|local| == false). Passing |local| helps to
+  // Transport is created either during SetLocalDescription (`local` == true) or
+  // during SetRemoteDescription (`local` == false). Passing `local` helps to
   // differentiate initiator (caller) from answerer (callee).
   RTCError MaybeCreateJsepTransport(
       bool local,
@@ -411,9 +406,13 @@ class JsepTransportController : public sigslot::has_slots<> {
       cricket::DtlsTransportInternal* rtcp_dtls_transport);
 
   // Collect all the DtlsTransports, including RTP and RTCP, from the
-  // JsepTransports. JsepTransportController can iterate all the DtlsTransports
-  // and update the aggregate states.
+  // JsepTransports, including those not mapped to a MID because they are being
+  // kept alive in case of rollback.
   std::vector<cricket::DtlsTransportInternal*> GetDtlsTransports();
+  // Same as the above, but doesn't include rollback transports.
+  // JsepTransportController can iterate all the DtlsTransports and update the
+  // aggregate states.
+  std::vector<cricket::DtlsTransportInternal*> GetActiveDtlsTransports();
 
   // Handlers for signals from Transport.
   void OnTransportWritableState_n(rtc::PacketTransportInternal* transport)

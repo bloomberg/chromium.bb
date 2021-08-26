@@ -282,7 +282,7 @@ class SimpleRandom : public QuicRandom {
 
  private:
   uint8_t buffer_[4096];
-  size_t buffer_offset_;
+  size_t buffer_offset_ = 0;
   uint8_t key_[32];
 
   void FillBuffer();
@@ -902,14 +902,10 @@ class MockQuicSession : public QuicSession {
               CreateIncomingStream,
               (PendingStream*),
               (override));
-  MOCK_METHOD(QuicConsumedData,
-              WritevData,
-              (QuicStreamId id,
-               size_t write_length,
-               QuicStreamOffset offset,
-               StreamSendingState state,
-               TransmissionType type,
-               absl::optional<EncryptionLevel> level),
+  MOCK_METHOD(QuicConsumedData, WritevData,
+              (QuicStreamId id, size_t write_length, QuicStreamOffset offset,
+               StreamSendingState state, TransmissionType type,
+               EncryptionLevel level),
               (override));
   MOCK_METHOD(bool,
               WriteControlFrame,
@@ -1040,14 +1036,10 @@ class MockQuicSpdySession : public QuicSpdySession {
   MOCK_METHOD(bool, ShouldCreateIncomingStream, (QuicStreamId id), (override));
   MOCK_METHOD(bool, ShouldCreateOutgoingBidirectionalStream, (), (override));
   MOCK_METHOD(bool, ShouldCreateOutgoingUnidirectionalStream, (), (override));
-  MOCK_METHOD(QuicConsumedData,
-              WritevData,
-              (QuicStreamId id,
-               size_t write_length,
-               QuicStreamOffset offset,
-               StreamSendingState state,
-               TransmissionType type,
-               absl::optional<EncryptionLevel> level),
+  MOCK_METHOD(QuicConsumedData, WritevData,
+              (QuicStreamId id, size_t write_length, QuicStreamOffset offset,
+               StreamSendingState state, TransmissionType type,
+               EncryptionLevel level),
               (override));
   MOCK_METHOD(void,
               MaybeSendRstStreamFrame,

@@ -10,8 +10,6 @@
 #include <string.h>
 
 #include <algorithm>
-#include <cctype>
-#include <cwctype>
 
 #include "core/fxcrt/fx_codepage.h"
 #include "core/fxcrt/fx_extension.h"
@@ -20,7 +18,7 @@
 #include "core/fxcrt/string_pool_template.h"
 #include "third_party/base/check.h"
 #include "third_party/base/check_op.h"
-#include "third_party/base/numerics/ranges.h"
+#include "third_party/base/cxx17_backports.h"
 #include "third_party/base/numerics/safe_math.h"
 
 template class fxcrt::StringDataTemplate<wchar_t>;
@@ -657,9 +655,8 @@ ByteString WideString::ToLatin1() const {
 }
 
 ByteString WideString::ToDefANSI() const {
-  int src_len = GetLength();
-  int dest_len = FXSYS_WideCharToMultiByte(
-      FX_CODEPAGE_DefANSI, 0, c_str(), src_len, nullptr, 0, nullptr, nullptr);
+  size_t dest_len =
+      FX_WideCharToMultiByte(FX_CodePage::kDefANSI, AsStringView(), {});
   if (!dest_len)
     return ByteString();
 
@@ -667,8 +664,7 @@ ByteString WideString::ToDefANSI() const {
   {
     // Span's lifetime must end before ReleaseBuffer() below.
     pdfium::span<char> dest_buf = bstr.GetBuffer(dest_len);
-    FXSYS_WideCharToMultiByte(FX_CODEPAGE_DefANSI, 0, c_str(), src_len,
-                              dest_buf.data(), dest_len, nullptr, nullptr);
+    FX_WideCharToMultiByte(FX_CodePage::kDefANSI, AsStringView(), dest_buf);
   }
   bstr.ReleaseBuffer(dest_len);
   return bstr;
@@ -920,9 +916,7 @@ WideString WideString::FromLatin1(ByteStringView bstr) {
 
 // static
 WideString WideString::FromDefANSI(ByteStringView bstr) {
-  int src_len = bstr.GetLength();
-  int dest_len = FXSYS_MultiByteToWideChar(
-      FX_CODEPAGE_DefANSI, 0, bstr.unterminated_c_str(), src_len, nullptr, 0);
+  size_t dest_len = FX_MultiByteToWideChar(FX_CodePage::kDefANSI, bstr, {});
   if (!dest_len)
     return WideString();
 
@@ -930,8 +924,7 @@ WideString WideString::FromDefANSI(ByteStringView bstr) {
   {
     // Span's lifetime must end before ReleaseBuffer() below.
     pdfium::span<wchar_t> dest_buf = wstr.GetBuffer(dest_len);
-    FXSYS_MultiByteToWideChar(FX_CODEPAGE_DefANSI, 0, bstr.unterminated_c_str(),
-                              src_len, dest_buf.data(), dest_len);
+    FX_MultiByteToWideChar(FX_CodePage::kDefANSI, bstr, dest_buf);
   }
   wstr.ReleaseBuffer(dest_len);
   return wstr;

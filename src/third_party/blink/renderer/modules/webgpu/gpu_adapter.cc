@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_request_adapter_options.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/modules/webgpu/gpu.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_supported_features.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_supported_limits.h"
@@ -48,6 +49,7 @@ WGPUDeviceProperties AsDawnType(const GPUDeviceDescriptor* descriptor) {
 }  // anonymous namespace
 
 GPUAdapter::GPUAdapter(
+    GPU* gpu,
     const String& name,
     uint32_t adapter_service_id,
     const WGPUDeviceProperties& properties,
@@ -56,6 +58,7 @@ GPUAdapter::GPUAdapter(
       name_(name),
       adapter_service_id_(adapter_service_id),
       adapter_properties_(properties),
+      gpu_(gpu),
       limits_(MakeGarbageCollected<GPUSupportedLimits>()) {
   InitializeFeatureNameList();
 }
@@ -88,11 +91,12 @@ GPUSupportedFeatures* GPUAdapter::features() const {
   return features_;
 }
 
-void GPUAdapter::OnRequestDeviceCallback(ScriptPromiseResolver* resolver,
+void GPUAdapter::OnRequestDeviceCallback(ScriptState* script_state,
+                                         ScriptPromiseResolver* resolver,
                                          const GPUDeviceDescriptor* descriptor,
                                          WGPUDevice dawn_device) {
   if (dawn_device) {
-    ExecutionContext* execution_context = resolver->GetExecutionContext();
+    ExecutionContext* execution_context = ExecutionContext::From(script_state);
     auto* device = MakeGarbageCollected<GPUDevice>(execution_context,
                                                    GetDawnControlClient(), this,
                                                    dawn_device, descriptor);
@@ -174,15 +178,22 @@ ScriptPromise GPUAdapter::requestDevice(ScriptState* script_state,
 
   WGPUDeviceProperties requested_device_properties = AsDawnType(descriptor);
 
-  GetInterface()->RequestDeviceAsync(
-      adapter_service_id_, requested_device_properties,
-      WTF::Bind(&GPUAdapter::OnRequestDeviceCallback, WrapPersistent(this),
-                WrapPersistent(resolver), WrapPersistent(descriptor)));
+  if (auto context_provider = GetContextProviderWeakPtr()) {
+    context_provider->ContextProvider()->WebGPUInterface()->RequestDeviceAsync(
+        adapter_service_id_, requested_device_properties,
+        WTF::Bind(&GPUAdapter::OnRequestDeviceCallback, WrapPersistent(this),
+                  WrapPersistent(script_state), WrapPersistent(resolver),
+                  WrapPersistent(descriptor)));
+  } else {
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kOperationError, "WebGPU context lost"));
+  }
 
   return promise;
 }
 
 void GPUAdapter::Trace(Visitor* visitor) const {
+  visitor->Trace(gpu_);
   visitor->Trace(features_);
   visitor->Trace(limits_);
   ScriptWrappable::Trace(visitor);

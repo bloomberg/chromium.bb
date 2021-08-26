@@ -15,6 +15,7 @@
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/web_app.h"
 #include "components/crx_file/id_util.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 
@@ -25,7 +26,8 @@ AppId TestInstallFinalizer::GetAppIdForUrl(const GURL& url) {
   return GenerateAppId(/*manifest_id=*/absl::nullopt, url);
 }
 
-TestInstallFinalizer::TestInstallFinalizer() = default;
+TestInstallFinalizer::TestInstallFinalizer()
+    : WebAppInstallFinalizer(nullptr, nullptr, nullptr) {}
 
 TestInstallFinalizer::~TestInstallFinalizer() = default;
 
@@ -44,12 +46,6 @@ void TestInstallFinalizer::FinalizeUpdate(
     InstallFinalizedCallback callback) {
   Finalize(web_app_info, InstallResultCode::kSuccessAlreadyInstalled,
            std::move(callback));
-}
-
-void TestInstallFinalizer::FinalizeUninstallAfterSync(
-    const AppId& app_id,
-    UninstallWebAppCallback callback) {
-  NOTREACHED();
 }
 
 void TestInstallFinalizer::UninstallExternalWebApp(
@@ -78,6 +74,16 @@ void TestInstallFinalizer::UninstallExternalWebAppByUrl(
                      }));
 }
 
+void TestInstallFinalizer::UninstallFromSyncBeforeRegistryUpdate(
+    std::vector<AppId> web_apps) {
+  NOTREACHED();
+}
+void TestInstallFinalizer::UninstallFromSyncAfterRegistryUpdate(
+    std::vector<std::unique_ptr<WebApp>> web_apps,
+    RepeatingUninstallCallback callback) {
+  NOTREACHED();
+}
+
 bool TestInstallFinalizer::CanUserUninstallWebApp(const AppId& app_id) const {
   NOTIMPLEMENTED();
   return false;
@@ -104,6 +110,10 @@ void TestInstallFinalizer::ReparentTab(const AppId& app_id,
                                        bool shortcut_created,
                                        content::WebContents* web_contents) {
   ++num_reparent_tab_calls_;
+}
+void TestInstallFinalizer::SetRemoveSourceCallbackForTesting(
+    base::RepeatingCallback<void(const AppId&)>) {
+  NOTIMPLEMENTED();
 }
 
 void TestInstallFinalizer::SetNextFinalizeInstallResult(

@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_arraybuffer_arraybufferview.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_payment_credential_instrument.h"
 #include "third_party/blink/renderer/modules/credentialmanager/credential_manager_type_converters.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -37,27 +38,16 @@ TypeConverter<payments::mojom::blink::SecurePaymentConfirmationRequestPtr,
   auto output = payments::mojom::blink::SecurePaymentConfirmationRequest::New();
   output->credential_ids =
       mojo::ConvertTo<Vector<Vector<uint8_t>>>(input->credentialIds());
-
-  // `challenge` is a renaming of `networkData` used when the
-  // SecurePaymentConfirmationAPIV2 flag is enabled.
-  if (blink::RuntimeEnabledFeatures::SecurePaymentConfirmationAPIV2Enabled()) {
-    output->challenge = mojo::ConvertTo<Vector<uint8_t>>(input->challenge());
-  } else {
-    output->challenge = mojo::ConvertTo<Vector<uint8_t>>(input->networkData());
-  }
+  output->challenge = mojo::ConvertTo<Vector<uint8_t>>(input->challenge());
 
   // If a timeout was not specified in JavaScript, then pass a null `timeout`
   // through mojo IPC, so the browser can set a default (e.g., 3 minutes).
   if (input->hasTimeout())
     output->timeout = base::TimeDelta::FromMilliseconds(input->timeout());
 
-  output->instrument =
-      blink::RuntimeEnabledFeatures::SecurePaymentConfirmationAPIV2Enabled()
-          ? payments::mojom::blink::PaymentCredentialInstrument::New(
-                input->instrument()->displayName(),
-                blink::KURL(input->instrument()->icon()))
-          : payments::mojom::blink::PaymentCredentialInstrument::New(
-                "", blink::KURL());
+  output->instrument = payments::mojom::blink::PaymentCredentialInstrument::New(
+      input->instrument()->displayName(),
+      blink::KURL(input->instrument()->icon()));
 
   return output;
 }

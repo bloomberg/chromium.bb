@@ -7,9 +7,8 @@
  * for language and input method settings.
  */
 
-// TODO(crbug.com/1097328): Remove all chromeos references here.
 import 'chrome://resources/cr_components/managed_dialog/managed_dialog.js';
-import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.m.js';
+import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.m.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
@@ -29,8 +28,9 @@ import '../icons.js';
 import '../settings_shared_css.js';
 import '../settings_vars_css.js';
 
+import {CrActionMenuElement} from '//resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
-import {isChromeOS, isWindows} from 'chrome://resources/js/cr.m.js';
+import {isWindows} from 'chrome://resources/js/cr.m.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import {flush, html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -38,10 +38,6 @@ import {flush, html, mixinBehaviors, PolymerElement} from 'chrome://resources/po
 import {loadTimeData} from '../i18n_setup.js';
 import {LifetimeBrowserProxyImpl} from '../lifetime_browser_proxy.js';
 import {PrefsBehavior, PrefsBehaviorInterface} from '../prefs/prefs_behavior.js';
-
-// <if expr="chromeos">
-import {LanguagesMetricsProxy, LanguagesMetricsProxyImpl, LanguagesPageInteraction} from './languages_metrics_proxy.js';
-// </if>
 
 import {LanguageSettingsActionType, LanguageSettingsMetricsProxy, LanguageSettingsMetricsProxyImpl, LanguageSettingsPageImpressionType} from './languages_settings_metrics_proxy.js';
 
@@ -122,25 +118,6 @@ export class SettingsLanguagesSubpageElement extends
         },
       },
 
-      // <if expr="chromeos">
-      /** @private */
-      isGuest_: {
-        type: Boolean,
-        value() {
-          return loadTimeData.getBoolean('isGuest');
-        },
-      },
-
-      // TODO(crbug.com/1097328): Delete this.
-      /** @private */
-      isChromeOSLanguagesSettingsUpdate_: {
-        type: Boolean,
-        value() {
-          return true;
-        },
-      },
-      // </if>
-
       /** @private */
       showManagedLanguageDialog_: {
         type: Boolean,
@@ -152,7 +129,7 @@ export class SettingsLanguagesSubpageElement extends
         type: Boolean,
         value() {
           let enabled = false;
-          // <if expr="not chromeos and not lacros">
+          // <if expr="not lacros">
           enabled =
               loadTimeData.getBoolean('enableDesktopDetailedLanguageSettings');
           // </if>
@@ -166,29 +143,15 @@ export class SettingsLanguagesSubpageElement extends
   constructor() {
     super();
 
-    // <if expr="chromeos">
-    /** @private {!LanguagesMetricsProxy} */
-    this.languagesMetricsProxy_ = LanguagesMetricsProxyImpl.getInstance();
-    // </if>
     /** @private {!LanguageSettingsMetricsProxy} */
     this.languageSettingsMetricsProxy_ =
         LanguageSettingsMetricsProxyImpl.getInstance();
 
-    // <if expr="chromeos or is_win">
+    // <if expr="is_win">
     /** @private {boolean} */
     this.isChangeInProgress_ = false;
     // </if>
   }
-
-  // <if expr="chromeos">
-  /** @private */
-  onOpenChromeOSLanguagesSettingsClick_() {
-    const chromeOSLanguagesSettingsPath =
-        loadTimeData.getString('chromeOSLanguagesSettingsPath');
-    window.location.href =
-        `chrome://os-settings/${chromeOSLanguagesSettingsPath}`;
-  }
-  // </if>
 
   /**
    * Stamps and opens the Add Languages dialog, registering a listener to
@@ -198,9 +161,6 @@ export class SettingsLanguagesSubpageElement extends
    */
   onAddLanguagesTap_(e) {
     e.preventDefault();
-    // <if expr="chromeos">
-    this.languagesMetricsProxy_.recordAddLanguages();
-    // </if>
     this.languageSettingsMetricsProxy_.recordPageImpressionMetric(
         LanguageSettingsPageImpressionType.ADD_LANGUAGE);
 
@@ -339,11 +299,6 @@ export class SettingsLanguagesSubpageElement extends
    * @private
    */
   shouldShowDialogSeparator_() {
-    // <if expr="chromeos">
-    if (this.isGuest_) {
-      return false;
-    }
-    // </if>
     return this.languages !== undefined && this.languages.enabled.length > 1;
   }
 
@@ -412,51 +367,18 @@ export class SettingsLanguagesSubpageElement extends
     }
   }
 
-  // <if expr="chromeos">
-  /**
-   * Applies Chrome OS session tweaks to the menu.
-   * @param {!CrActionMenuElement} menu
-   * @private
-   */
-  tweakMenuForCrOS_(menu) {
-    // In a CrOS multi-user session, the primary user controls the UI
-    // language.
-    // TODO(michaelpg): The language selection should not be hidden, but
-    // should show a policy indicator. crbug.com/648498
-    if (this.isSecondaryUser_()) {
-      menu.querySelector('#uiLanguageItem').hidden = true;
-    }
-
-    // The UI language choice doesn't persist for guests.
-    if (this.isGuest_) {
-      menu.querySelector('#uiLanguageItem').hidden = true;
-    }
-  }
-  // </if>
-
   /**
    * @param {!Event} e
    * @private
    */
   onTranslateToggleChange_(e) {
-    // <if expr="chromeos">
-    this.languagesMetricsProxy_.recordToggleTranslate(e.target.checked);
-    // </if>
     this.languageSettingsMetricsProxy_.recordSettingsMetric(
         e.target.checked ?
             LanguageSettingsActionType.ENABLE_TRANSLATE_GLOBALLY :
             LanguageSettingsActionType.DISABLE_TRANSLATE_GLOBALLY);
   }
 
-  // <if expr="chromeos or is_win">
-  /**
-   * @return {boolean} True for a secondary user in a multi-profile session.
-   * @private
-   */
-  isSecondaryUser_() {
-    return isChromeOS && loadTimeData.getBoolean('isSecondaryUser');
-  }
-
+  // <if expr="is_win">
   /**
    * @param {string} languageCode The language code identifying a language.
    * @param {string} prospectiveUILanguage The prospective UI language.
@@ -495,11 +417,6 @@ export class SettingsLanguagesSubpageElement extends
       return true;
     }
 
-    // UI language setting belongs to the primary user.
-    if (this.isSecondaryUser_()) {
-      return true;
-    }
-
     // If the language cannot be a UI language, we can't set it as the
     // prospective UI language.
     if (!languageState.language.supportsUI) {
@@ -530,10 +447,6 @@ export class SettingsLanguagesSubpageElement extends
     // We don't support unchecking this checkbox. TODO(michaelpg): Ask for a
     // simpler widget.
     assert(e.target.checked);
-    // <if expr="chromeos">
-    this.languagesMetricsProxy_.recordInteraction(
-        LanguagesPageInteraction.SWITCH_SYSTEM_LANGUAGE);
-    // </if>
     this.isChangeInProgress_ = true;
     this.languageHelper.setProspectiveUILanguage(
         this.detailLanguage_.language.code);
@@ -562,11 +475,6 @@ export class SettingsLanguagesSubpageElement extends
    * @private
    */
   onRestartTap_() {
-    // <if expr="chromeos">
-    this.languagesMetricsProxy_.recordInteraction(
-        LanguagesPageInteraction.RESTART);
-    LifetimeBrowserProxyImpl.getInstance().signOutAndRestart();
-    // </if>
     // <if expr="is_win">
     LifetimeBrowserProxyImpl.getInstance().restart();
     // </if>
@@ -613,10 +521,6 @@ export class SettingsLanguagesSubpageElement extends
       this.languageSettingsMetricsProxy_.recordSettingsMetric(
           LanguageSettingsActionType.DISABLE_TRANSLATE_FOR_SINGLE_LANGUAGE);
     }
-    // <if expr="chromeos">
-    this.languagesMetricsProxy_.recordTranslateCheckboxChanged(
-        e.target.checked);
-    // </if>
     this.closeMenuSoon_();
   }
 
@@ -627,7 +531,7 @@ export class SettingsLanguagesSubpageElement extends
    * @return {string}
    */
   getMenuClass_(translateEnabled) {
-    if (translateEnabled || isChromeOS || isWindows) {
+    if (translateEnabled || isWindows) {
       return 'complex';
     }
     return '';
@@ -717,7 +621,7 @@ export class SettingsLanguagesSubpageElement extends
    * @private
    */
   getLanguageItemClass_(languageCode, prospectiveUILanguage) {
-    if ((isChromeOS || isWindows) && languageCode === prospectiveUILanguage) {
+    if (isWindows && languageCode === prospectiveUILanguage) {
       return 'selected';
     }
     return '';
@@ -741,9 +645,6 @@ export class SettingsLanguagesSubpageElement extends
     if (!menu) {
       menu = /** @type {!CrActionMenuElement} */ (
           this.shadowRoot.querySelector('#menu').get());
-      // <if expr="chromeos">
-      this.tweakMenuForCrOS_(menu);
-      // </if>
     }
 
     menu.showAt(/** @type {!Element} */ (e.target));

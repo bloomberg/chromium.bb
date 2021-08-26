@@ -35,6 +35,7 @@
 #include "base/posix/global_descriptors.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/crash/core/common/crash_key.h"
@@ -62,6 +63,7 @@
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
 #include "services/network/public/cpp/features.h"
+#include "third_party/blink/public/common/features.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
@@ -265,7 +267,7 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
 
     // TODO(crbug.com/921655): Add support for User Agent Client hints on
     // WebView.
-    features.DisableIfNotSet(::features::kUserAgentClientHint);
+    features.DisableIfNotSet(blink::features::kUserAgentClientHint);
 
     // Disabled until viz scheduling can be improved.
     features.DisableIfNotSet(::features::kUseSurfaceLayerForVideoDefault);
@@ -287,6 +289,7 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
       base::BindRepeating(&IsTraceEventArgsAllowlisted));
   base::trace_event::TraceLog::GetInstance()->SetMetadataFilterPredicate(
       base::BindRepeating(&IsTraceMetadataAllowlisted));
+  base::trace_event::TraceLog::GetInstance()->SetRecordHostAppPackageName(true);
 
   // The TLS slot used by the memlog allocator shim needs to be initialized
   // early to ensure that it gets assigned a low slot number. If it gets

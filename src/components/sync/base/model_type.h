@@ -11,7 +11,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/util/enum_set/enum_set.h"
+#include "base/containers/enum_set.h"
 
 namespace base {
 class ListValue;
@@ -158,9 +158,9 @@ enum ModelType {
 };
 
 using ModelTypeSet =
-    base::util::EnumSet<ModelType, FIRST_REAL_MODEL_TYPE, LAST_REAL_MODEL_TYPE>;
+    base::EnumSet<ModelType, FIRST_REAL_MODEL_TYPE, LAST_REAL_MODEL_TYPE>;
 using FullModelTypeSet =
-    base::util::EnumSet<ModelType, UNSPECIFIED, LAST_REAL_MODEL_TYPE>;
+    base::EnumSet<ModelType, UNSPECIFIED, LAST_REAL_MODEL_TYPE>;
 using ModelTypeNameMap = std::map<ModelType, const char*>;
 
 constexpr int GetNumModelTypes() {
@@ -448,12 +448,6 @@ bool IsTypeWithServerGeneratedRoot(ModelType model_type);
 // Returns true if root folder for |model_type| is created on the client when
 // that type is initially synced.
 bool IsTypeWithClientGeneratedRoot(ModelType model_type);
-
-// Returns true if |model_type| supports parent-child hierarchy or entries.
-bool TypeSupportsHierarchy(ModelType model_type);
-
-// Returns true if |model_type| supports ordering of sibling entries.
-bool TypeSupportsOrdering(ModelType model_type);
 
 }  // namespace syncer
 

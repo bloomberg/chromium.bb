@@ -4,7 +4,6 @@
 
 #include "chromeos/services/network_config/cros_network_config.h"
 
-#include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
@@ -13,7 +12,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "chromeos/dbus/shill/fake_shill_device_client.h"
 #include "chromeos/login/login_state/login_state.h"
@@ -112,8 +110,6 @@ void CompareTrafficCounters(
 class CrosNetworkConfigTest : public testing::Test {
  public:
   CrosNetworkConfigTest() {
-    feature_list.InitAndEnableFeature(
-        ash::features::kUpdatedCellularActivationUi);
     LoginState::Initialize();
     SystemTokenCertDbStorage::Initialize();
     NetworkCertLoader::Initialize();
@@ -652,7 +648,6 @@ class CrosNetworkConfigTest : public testing::Test {
 
  private:
   base::test::SingleThreadTaskEnvironment task_environment_;
-  base::test::ScopedFeatureList feature_list;
   std::unique_ptr<NetworkHandlerTestHelper> helper_;
   TestingPrefServiceSimple local_state_;
   std::unique_ptr<CrosNetworkConfig> cros_network_config_;
@@ -890,24 +885,6 @@ TEST_F(CrosNetworkConfigTest, ESimNetworkNameComesFromHermes) {
   // The network's name should be the profile name (from Hermes), not the name
   // from Shill.
   EXPECT_EQ(kTestProfileName, network->name);
-}
-
-TEST_F(CrosNetworkConfigTest, SimAbsentMeansCellularIsDisabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(
-      ash::features::kUpdatedCellularActivationUi);
-
-  mojom::DeviceStatePropertiesPtr cellular =
-      GetDeviceStateFromList(mojom::NetworkType::kCellular);
-  EXPECT_EQ(mojom::DeviceStateType::kEnabled, cellular->device_state);
-
-  helper()->device_test()->SetDeviceProperty(
-      kCellularDevicePath, shill::kSIMPresentProperty, base::Value(false),
-      /*notify_changed=*/true);
-  base::RunLoop().RunUntilIdle();
-
-  cellular = GetDeviceStateFromList(mojom::NetworkType::kCellular);
-  EXPECT_EQ(mojom::DeviceStateType::kDisabled, cellular->device_state);
 }
 
 TEST_F(CrosNetworkConfigTest, GetDeviceStateList) {
@@ -1274,6 +1251,33 @@ TEST_F(CrosNetworkConfigTest, UnrecognizedAttachApnValue) {
                                                ->attach);
 }
 
+TEST_F(CrosNetworkConfigTest, AllowRoaming) {
+  const char* kGUID = "cellular_guid";
+  mojom::ManagedPropertiesPtr properties = GetManagedProperties(kGUID);
+
+  ASSERT_TRUE(properties->type_properties->get_cellular()->allow_roaming);
+  ASSERT_FALSE(
+      properties->type_properties->get_cellular()->allow_roaming->active_value);
+
+  auto config = mojom::ConfigProperties::New();
+  auto cellular_config = mojom::CellularConfigProperties::New();
+  auto new_roaming = mojom::RoamingProperties::New();
+
+  new_roaming->allow_roaming = true;
+  cellular_config->roaming = std::move(new_roaming);
+  config->type_config = mojom::NetworkTypeConfigProperties::NewCellular(
+      std::move(cellular_config));
+  ASSERT_TRUE(SetProperties(kGUID, std::move(config)));
+
+  properties = GetManagedProperties(kGUID);
+
+  ASSERT_TRUE(properties);
+  ASSERT_EQ(kGUID, properties->guid);
+  ASSERT_TRUE(properties->type_properties->is_cellular());
+  ASSERT_TRUE(
+      properties->type_properties->get_cellular()->allow_roaming->active_value);
+}
+
 TEST_F(CrosNetworkConfigTest, ConfigureNetwork) {
   // Note: shared = false requires a UserManager instance.
   bool shared = true;
@@ -1603,7 +1607,7 @@ TEST_F(CrosNetworkConfigTest, GetGlobalPolicy) {
       ::onc::global_network_config::kAllowOnlyPolicyNetworksToAutoconnect,
       true);
   global_config.SetBoolKey(
-      ::onc::global_network_config::kAllowOnlyPolicyNetworksToConnect, false);
+      ::onc::global_network_config::kAllowOnlyPolicyWiFiToConnect, false);
   base::Value blocked(base::Value::Type::LIST);
   blocked.Append(base::Value("blocked_ssid1"));
   blocked.Append(base::Value("blocked_ssid2"));
@@ -1615,9 +1619,11 @@ TEST_F(CrosNetworkConfigTest, GetGlobalPolicy) {
   base::RunLoop().RunUntilIdle();
   mojom::GlobalPolicyPtr policy = GetGlobalPolicy();
   ASSERT_TRUE(policy);
+  EXPECT_EQ(false, policy->allow_only_policy_cellular_networks);
   EXPECT_EQ(true, policy->allow_only_policy_networks_to_autoconnect);
-  EXPECT_EQ(false, policy->allow_only_policy_networks_to_connect);
-  EXPECT_EQ(false, policy->allow_only_policy_networks_to_connect_if_available);
+  EXPECT_EQ(false, policy->allow_only_policy_wifi_networks_to_connect);
+  EXPECT_EQ(false,
+            policy->allow_only_policy_wifi_networks_to_connect_if_available);
   ASSERT_EQ(2u, policy->blocked_hex_ssids.size());
   EXPECT_EQ("blocked_ssid1", policy->blocked_hex_ssids[0]);
   EXPECT_EQ("blocked_ssid2", policy->blocked_hex_ssids[1]);

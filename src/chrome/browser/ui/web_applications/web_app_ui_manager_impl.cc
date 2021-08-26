@@ -55,8 +55,9 @@ namespace web_app {
 
 namespace {
 
-bool IsAppInstalled(apps::AppServiceProxyBase* proxy, const AppId& app_id) {
+bool IsAppInstalled(Profile* profile, const AppId& app_id) {
   bool installed = false;
+  auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile);
   proxy->AppRegistryCache().ForOneApp(
       app_id, [&installed](const apps::AppUpdate& update) {
         installed = apps_util::IsInstalled(update.Readiness());
@@ -69,8 +70,8 @@ bool IsAppInstalled(apps::AppServiceProxyBase* proxy, const AppId& app_id) {
 // UninstallWebAppWithDialogFromStartupSwitch handles WebApp uninstallation from
 // the Windows Settings.
 void UninstallWebAppWithDialogFromStartupSwitch(const AppId& app_id,
-                                                Profile* profile) {
-  auto* provider = WebAppProvider::Get(profile);
+                                                Profile* profile,
+                                                WebAppProvider* provider) {
   if (!provider->registrar().IsLocallyInstalled(app_id)) {
     // App does not exist and controller is destroyed.
     return;
@@ -79,7 +80,7 @@ void UninstallWebAppWithDialogFromStartupSwitch(const AppId& app_id,
   // Note: WebAppInstallFinalizer::UninstallWebApp creates a ScopedKeepAlive
   // object which ensures the browser stays alive during the WebApp
   // uninstall.
-  WebAppUiManagerImpl::Get(profile)->dialog_manager().UninstallWebApp(
+  WebAppUiManagerImpl::Get(provider)->dialog_manager().UninstallWebApp(
       app_id, webapps::WebappUninstallSource::kOsSettings,
       gfx::kNullNativeWindow, base::DoNothing());
 }
@@ -94,8 +95,8 @@ std::unique_ptr<WebAppUiManager> WebAppUiManager::Create(Profile* profile) {
 }
 
 // static
-WebAppUiManagerImpl* WebAppUiManagerImpl::Get(Profile* profile) {
-  auto* provider = WebAppProvider::Get(profile);
+WebAppUiManagerImpl* WebAppUiManagerImpl::Get(
+    web_app::WebAppProvider* provider) {
   return provider ? provider->ui_manager().AsImpl() : nullptr;
 }
 
@@ -178,9 +179,7 @@ bool WebAppUiManagerImpl::UninstallAndReplaceIfExists(
   bool has_migrated = false;
   bool uninstall_triggered = false;
   for (const AppId& from_app : from_apps) {
-    apps::AppServiceProxyBase* proxy =
-        apps::AppServiceProxyFactory::GetForProfile(profile_);
-    if (!IsAppInstalled(proxy, from_app))
+    if (!IsAppInstalled(profile_, from_app))
       continue;
 
     if (!has_migrated) {
@@ -245,6 +244,7 @@ bool WebAppUiManagerImpl::UninstallAndReplaceIfExists(
       continue;
     }
 
+    auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile_);
     proxy->UninstallSilently(from_app,
                              apps::mojom::UninstallSource::kMigration);
     uninstall_triggered = true;
@@ -265,8 +265,7 @@ void WebAppUiManagerImpl::OnShortcutInfoReceivedSearchShortcutLocations(
     std::unique_ptr<ShortcutInfo> shortcut_info) {
   if (!shortcut_info) {
     // The shortcut info couldn't be found, simply uninstall.
-    apps::AppServiceProxyBase* proxy =
-        apps::AppServiceProxyFactory::GetForProfile(profile_);
+    auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile_);
     proxy->UninstallSilently(from_app,
                              apps::mojom::UninstallSource::kMigration);
     return;
@@ -282,8 +281,7 @@ void WebAppUiManagerImpl::OnShortcutLocationGathered(
     const AppId& from_app,
     const AppId& app_id,
     ShortcutLocations locations) {
-  apps::AppServiceProxyBase* proxy =
-      apps::AppServiceProxyFactory::GetForProfile(profile_);
+  auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile_);
 
   const bool is_extension = proxy->AppRegistryCache().GetAppType(from_app) ==
                             apps::mojom::AppType::kExtension;
@@ -438,9 +436,10 @@ void WebAppUiManagerImpl::OnBrowserRemoved(Browser* browser) {
 #if defined(OS_WIN)
 void WebAppUiManagerImpl::UninstallWebAppFromStartupSwitch(
     const AppId& app_id) {
-  WebAppProvider::Get(profile_)->on_registry_ready().Post(
+  WebAppProvider* provider = WebAppProvider::GetForWebApps(profile_);
+  provider->on_registry_ready().Post(
       FROM_HERE, base::BindOnce(&UninstallWebAppWithDialogFromStartupSwitch,
-                                app_id, profile_));
+                                app_id, profile_, provider));
 }
 #endif  //  defined(OS_WIN)
 
@@ -451,14 +450,11 @@ bool WebAppUiManagerImpl::IsBrowserForInstalledApp(Browser* browser) {
   if (!browser->app_controller())
     return false;
 
-  if (!browser->app_controller()->HasAppId())
-    return false;
-
   return true;
 }
 
 const AppId WebAppUiManagerImpl::GetAppIdForBrowser(Browser* browser) {
-  return browser->app_controller()->GetAppId();
+  return browser->app_controller()->app_id();
 }
 
 }  // namespace web_app

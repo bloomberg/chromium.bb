@@ -57,6 +57,7 @@ import sys
 import time
 import tempfile
 import traceback
+import six
 
 import common
 from collections import OrderedDict
@@ -414,6 +415,7 @@ class TelemetryCommandGenerator(object):
             # passthrough args must be before reference args and repeat args:
             # crbug.com/928928, crbug.com/894254#c78
             self._get_passthrough_args() +
+            self._generate_syslog_args() +
             self._generate_repeat_args() +
             self._generate_reference_build_args()
            )
@@ -468,6 +470,16 @@ class TelemetryCommandGenerator(object):
       if self._story_selection_config.get('abridged', True):
         selection_args.append('--run-abridged-story-set')
     return selection_args
+
+  def _generate_syslog_args(self):
+    if self._options.system_log_template:
+      isolated_out_dir = os.path.dirname(
+          self._options.isolated_script_test_output)
+      return ['--system-log-file', os.path.join(
+          isolated_out_dir,
+          self.benchmark,
+          self._options.system_log_template)]
+    return []
 
 
   def _generate_story_index_ranges(self, sections):
@@ -607,6 +619,10 @@ def parse_arguments(args):
                       help='Comma separated list of benchmark names'
                       ' to run in lieu of indexing into our benchmark bot maps',
                       required=False)
+  # crbug.com/1236245: This allows for per-benchmark device logs.
+  parser.add_argument('--system-log-template',
+                      help='File name template for system logs for each '
+                      'benchmark', required=False)
   # Some executions may have a different sharding scheme and/or set of tests.
   # These files must live in src/tools/perf/core/shard_maps
   parser.add_argument('--test-shard-map-filename', type=str, required=False)
@@ -650,9 +666,18 @@ def main(sys_args):
         'lines is the name of the subfolder to find results in.\n')
 
   if options.non_telemetry:
-    command_generator = GtestCommandGenerator(
-        options, additional_flags=options.passthrough_args)
     benchmark_name = options.gtest_benchmark_name
+    passthrough_args = options.passthrough_args
+    # crbug/1146949#c15
+    # In the case that pinpoint passes all arguments to swarming through http
+    # request, the passthrough_args are converted into a comma-separated string.
+    if passthrough_args and isinstance(passthrough_args, six.text_type):
+      passthrough_args = passthrough_args.split(',')
+    # With --non-telemetry, the gtest executable file path will be passed in as
+    # options.executable, which is different from running on shard map. Thus,
+    # we don't override executable as we do in running on shard map.
+    command_generator = GtestCommandGenerator(
+        options, additional_flags=passthrough_args, ignore_shard_env_vars=True)
     # Fallback to use the name of the executable if flag isn't set.
     # TODO(crbug.com/870899): remove fallback logic and raise parser error if
     # --non-telemetry is set but --gtest-benchmark-name is not set once pinpoint
@@ -810,4 +835,5 @@ if __name__ == '__main__':
       'compile_targets': main_compile_targets,
     }
     sys.exit(common.run_script(sys.argv[1:], funcs))
+
   sys.exit(main(sys.argv))

@@ -10,10 +10,6 @@
 namespace web {
 namespace features {
 
-// Reduces the size of the session to persist when enabled. Specific size is
-// obtained from "session-size" Finch parameter.
-extern const base::Feature kReduceSessionSize;
-
 // Used to crash the browser if unexpected URL change is detected.
 // https://crbug.com/841105.
 extern const base::Feature kCrashOnUnexpectedURLChange;
@@ -37,9 +33,6 @@ extern const base::Feature kClearOldNavigationRecordsWorkaround;
 // Feature flag enabling persistent downloads.
 extern const base::Feature kEnablePersistentDownloads;
 
-// Feature flag for the new error page workflow, using JavaScript.
-extern const base::Feature kUseJSForErrorPage;
-
 // When enabled, for each navigation, the default user agent is chosen by the
 // WebClient GetDefaultUserAgent() method. If it is disabled, the mobile version
 // is requested by default.
@@ -59,17 +52,20 @@ extern const base::Feature kIOSLegacyTLSInterstitial;
 // generate PDF when Page Snapshot is taken just to record PDF size.
 extern const base::Feature kRecordSnapshotSize;
 
-// When enabled, use the native context menu in web content, for the iOS version
-// that supports it.
+// When enabled, use the native context menu in web content.
 extern const base::Feature kWebViewNativeContextMenu;
+
+// When enabled, display non-live preview for context menus in web content.
+extern const base::Feature kWebViewNativeContextMenuPhase2;
+
+// When enabled, display previews for native context menu in web content.
+extern const base::Feature kWebViewNativeContextMenuPhase3;
+
+// When enabled, the default context menu from WKWebView is used.
+extern const base::Feature kDefaultWebViewContextMenu;
 
 // Disables the screenshots of non-HTML pages on iOS15.
 extern const base::Feature kDisableNonHTMLScreenshotOnIOS15;
-
-// Parameter name and values for the native context menu.
-extern const char kWebViewNativeContextMenuName[];
-extern const char kWebViewNativeContextMenuParameterSystem[];
-extern const char kWebViewNativeContextMenuParameterWeb[];
 
 // When true, for each navigation, the default user agent is chosen by the
 // WebClient GetDefaultUserAgent() method. If it is false, the mobile version

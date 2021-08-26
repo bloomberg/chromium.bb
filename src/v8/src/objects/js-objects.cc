@@ -303,6 +303,8 @@ V8_WARN_UNUSED_RESULT Maybe<bool> FastAssign(
           descriptors.PatchValue(map->instance_descriptors(isolate));
         }
       } else {
+        // No element indexes should get here or the exclusion check may
+        // yield false negatives for type mismatch.
         if (excluded_properties != nullptr &&
             HasExcludedProperty(excluded_properties, next_key)) {
           continue;
@@ -381,6 +383,11 @@ Maybe<bool> JSReceiver::SetOrCopyDataProperties(
   // 4. Repeat for each element nextKey of keys in List order,
   for (int i = 0; i < keys->length(); ++i) {
     Handle<Object> next_key(keys->get(i), isolate);
+    if (excluded_properties != nullptr &&
+        HasExcludedProperty(excluded_properties, next_key)) {
+      continue;
+    }
+
     // 4a i. Let desc be ? from.[[GetOwnProperty]](nextKey).
     PropertyDescriptor desc;
     Maybe<bool> found =
@@ -404,11 +411,6 @@ Maybe<bool> JSReceiver::SetOrCopyDataProperties(
                                        Just(ShouldThrow::kThrowOnError)),
             Nothing<bool>());
       } else {
-        if (excluded_properties != nullptr &&
-            HasExcludedProperty(excluded_properties, next_key)) {
-          continue;
-        }
-
         // 4a ii 2. Perform ! CreateDataProperty(target, nextKey, propValue).
         PropertyKey key(isolate, next_key);
         LookupIterator it(isolate, target, key, LookupIterator::OWN);
@@ -2334,10 +2336,15 @@ int JSObject::GetHeaderSize(InstanceType type,
       return WasmTableObject::kHeaderSize;
     case WASM_VALUE_OBJECT_TYPE:
       return WasmValueObject::kHeaderSize;
-    case WASM_EXCEPTION_OBJECT_TYPE:
-      return WasmExceptionObject::kHeaderSize;
+    case WASM_TAG_OBJECT_TYPE:
+      return WasmTagObject::kHeaderSize;
 #endif  // V8_ENABLE_WEBASSEMBLY
     default: {
+      // Special type check for API Objects because they are in a large variable
+      // instance type range.
+      if (InstanceTypeChecker::IsJSApiObject(type)) {
+        return JSObject::kHeaderSize;
+      }
       std::stringstream ss;
       ss << type;
       FATAL("unexpected instance type: %s\n", ss.str().c_str());
@@ -3954,6 +3961,17 @@ bool JSObject::IsExtensible(Handle<JSObject> object) {
   return object->map().is_extensible();
 }
 
+// static
+MaybeHandle<Object> JSObject::ReadFromOptionsBag(Handle<Object> options,
+                                                 Handle<String> option_name,
+                                                 Isolate* isolate) {
+  if (options->IsJSReceiver()) {
+    Handle<JSReceiver> js_options = Handle<JSReceiver>::cast(options);
+    return JSObject::GetProperty(isolate, js_options, option_name);
+  }
+  return MaybeHandle<Object>(isolate->factory()->undefined_value());
+}
+
 template <typename Dictionary>
 void JSObject::ApplyAttributesToDictionary(
     Isolate* isolate, ReadOnlyRoots roots, Handle<Dictionary> dictionary,
@@ -5132,18 +5150,18 @@ bool JSObject::IsApiWrapper() {
   // *_API_* types are generated through templates which can have embedder
   // fields. The other types have their embedder fields added at compile time.
   auto instance_type = map().instance_type();
-  return instance_type == JS_API_OBJECT_TYPE ||
-         instance_type == JS_ARRAY_BUFFER_TYPE ||
+  return instance_type == JS_ARRAY_BUFFER_TYPE ||
          instance_type == JS_DATA_VIEW_TYPE ||
          instance_type == JS_GLOBAL_OBJECT_TYPE ||
          instance_type == JS_GLOBAL_PROXY_TYPE ||
          instance_type == JS_SPECIAL_API_OBJECT_TYPE ||
-         instance_type == JS_TYPED_ARRAY_TYPE;
+         instance_type == JS_TYPED_ARRAY_TYPE ||
+         InstanceTypeChecker::IsJSApiObject(instance_type);
 }
 
 bool JSObject::IsDroppableApiWrapper() {
   auto instance_type = map().instance_type();
-  return instance_type == JS_API_OBJECT_TYPE ||
+  return InstanceTypeChecker::IsJSApiObject(instance_type) ||
          instance_type == JS_SPECIAL_API_OBJECT_TYPE;
 }
 

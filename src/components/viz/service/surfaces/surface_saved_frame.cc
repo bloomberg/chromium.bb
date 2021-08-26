@@ -4,6 +4,7 @@
 
 #include "components/viz/service/surfaces/surface_saved_frame.h"
 
+#include <algorithm>
 #include <iterator>
 #include <utility>
 
@@ -59,15 +60,14 @@ bool SurfaceSavedFrame::IsValid() const {
 void SurfaceSavedFrame::RequestCopyOfOutput(Surface* surface) {
   DCHECK(surface->HasActiveFrame());
 
-  // RGBA_TEXTURE will become RGBA_BITMAP with SoftwareCompositing path.
-  // TODO(kylechar): Add RGBA_NATIVE that returns either RGBA_TEXTURE or
-  // RGBA_BITMAP depending on what is native.
-  constexpr auto result_format = CopyOutputRequest::ResultFormat::RGBA_TEXTURE;
+  constexpr auto result_format = CopyOutputRequest::ResultFormat::RGBA;
+  constexpr auto result_destination =
+      CopyOutputRequest::ResultDestination::kNativeTextures;
 
   const auto& root_draw_data = GetRootRenderPassDrawData(surface);
   // Bind kRoot and root geometry information to the callback.
   auto root_request = std::make_unique<CopyOutputRequest>(
-      result_format,
+      result_format, result_destination,
       base::BindOnce(&SurfaceSavedFrame::NotifyCopyOfOutputComplete,
                      weak_factory_.GetWeakPtr(), ResultType::kRoot, 0,
                      root_draw_data));
@@ -152,7 +152,7 @@ void SurfaceSavedFrame::RequestCopyOfOutput(Surface* surface) {
               active_frame.render_pass_list, original_render_pass_id));
       int index = std::distance(shared_pass_ids.begin(), shared_pass_it);
       auto request = std::make_unique<CopyOutputRequest>(
-          result_format,
+          result_format, result_destination,
           base::BindOnce(&SurfaceSavedFrame::NotifyCopyOfOutputComplete,
                          weak_factory_.GetWeakPtr(), ResultType::kShared, index,
                          draw_data));
@@ -277,14 +277,22 @@ void SurfaceSavedFrame::NotifyCopyOfOutputComplete(
 
   DCHECK(slot);
   DCHECK_EQ(output_copy->size(), data.size);
-  if (output_copy->format() == CopyOutputResult::Format::RGBA_BITMAP) {
+  DCHECK_EQ(output_copy->format(), CopyOutputResult::Format::RGBA);
+  if (output_copy->destination() ==
+      CopyOutputResult::Destination::kSystemMemory) {
     slot->bitmap = output_copy->ScopedAccessSkBitmap().GetOutScopedBitmap();
     slot->is_software = true;
   } else {
     auto output_copy_texture = *output_copy->GetTextureResult();
-    slot->mailbox = output_copy_texture.mailbox;
-    slot->sync_token = output_copy_texture.sync_token;
-    slot->release_callback = output_copy->TakeTextureOwnership();
+    slot->mailbox = output_copy_texture.planes[0].mailbox;
+    slot->sync_token = output_copy_texture.planes[0].sync_token;
+
+    CopyOutputResult::ReleaseCallbacks release_callbacks =
+        output_copy->TakeTextureOwnership();
+    // CopyOutputResults carrying RGBA format contain a single texture, there
+    // should be only one release callback:
+    DCHECK_EQ(1u, release_callbacks.size());
+    slot->release_callback = std::move(release_callbacks[0]);
     slot->is_software = false;
   }
   slot->draw_data = data;

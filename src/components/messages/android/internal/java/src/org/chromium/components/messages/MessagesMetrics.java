@@ -81,6 +81,18 @@ public class MessagesMetrics {
                 return "SendTabToSelf";
             case MessageIdentifier.READER_MODE:
                 return "ReaderMode";
+            case MessageIdentifier.SAVE_CARD:
+                return "SaveCard";
+            case MessageIdentifier.CHROME_SURVEY:
+                return "ChromeSurvey";
+            case MessageIdentifier.NOTIFICATION_BLOCKED:
+                return "NotificationBlocked";
+            case MessageIdentifier.PERMISSION_UPDATE:
+                return "PermissionUpdate";
+            case MessageIdentifier.ADS_BLOCKED:
+                return "AdsBlocked";
+            case MessageIdentifier.DOWNLOAD_PROGRESS:
+                return "DownloadProgress";
             default:
                 return "Unknown";
         }

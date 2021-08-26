@@ -45,6 +45,9 @@ RtpPayloadType GetPayloadType(VideoCodec codec, bool use_android_rtp_hack) {
     case VideoCodec::kH264:
       return RtpPayloadType::kVideoH264;
 
+    case VideoCodec::kAv1:
+      return RtpPayloadType::kVideoAv1;
+
     case VideoCodec::kNotSpecified:
       return RtpPayloadType::kVideoVarious;
 

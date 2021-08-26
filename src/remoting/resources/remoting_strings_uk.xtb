@@ -11,6 +11,7 @@
 <translation id="1546934824884762070">Сталася неочікувана помилка. Повідомте розробникам про цю проблему.</translation>
 <translation id="1697532407822776718">Готово!</translation>
 <translation id="1742469581923031760">З’єднання…</translation>
+<translation id="177040763384871009">Щоб посилання, натиснуті на віддаленому пристрої, відкривались у веб-переглядачі клієнта, змініть системний веб-переглядач на <ph name="URL_FORWARDER_NAME" />.</translation>
 <translation id="177096447311351977">IP-адреса каналу клієнта: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1897488610212723051">Видалити</translation>
 <translation id="2009755455353575666">Немає з’єднання</translation>
@@ -129,6 +130,7 @@
 <translation id="6963936880795878952">З’єднання з віддаленим комп’ютером тимчасово заблоковано, оскільки хтось намагався під’єднатися до нього, використовуючи недійсний PIN-код. Повторіть спробу пізніше.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Дійсно вимкнути віддалені з’єднання з хостом <ph name="HOSTNAME" />? Якщо ви передумаєте, потрібно буде знову ввімкнути з’єднання на відповідному комп’ютері.</translation>
+<translation id="6998890551706945177"><ph name="CLIENT_USERNAME" /> просить дозвіл переглядати дані вашого комп’ютера та керувати ними. Натисніть "<ph name="IDS_SHARE_CONFIRM_DIALOG_DECLINE" />", якщо не знаєте цього користувача або хочете внести зміни, перш ніж надати доступ.  Щоб дозволити з’єднання, натисніть "<ph name="IDS_SHARE_CONFIRM_DIALOG_CONFIRM" />".</translation>
 <translation id="7019153418965365059">Невідома помилка хосту: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Віддалена допомога</translation>
 <translation id="7026930240735156896">Виконайте вказівки, щоб налаштувати комп’ютер для віддаленого доступу</translation>
@@ -142,6 +144,7 @@
 <translation id="7434397035092923453">Відмовлено в доступі клієнту <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">Під’єднано клієнт <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7526139040829362392">Змінити обліковий запис</translation>
+<translation id="7535110896613603182">Відкрити налаштування додатків за умовчанням</translation>
 <translation id="7628469622942688817">Запам’ятати PIN-код на цьому пристрої.</translation>
 <translation id="7649070708921625228">Довідка</translation>
 <translation id="7658239707568436148">Скасувати</translation>

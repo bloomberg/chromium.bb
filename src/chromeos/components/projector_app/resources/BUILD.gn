@@ -1,0 +1,33 @@
+# Copyright 2021 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//chrome/common/features.gni")
+import("//third_party/closure_compiler/compile_js.gni")
+import("//ui/webui/resources/tools/generate_grd.gni")
+
+assert(is_chromeos_ash, "Projector is ChromeOS only")
+
+generate_grd("build_untrusted_grd") {
+  input_files = [ "annotator/annotator.html" ]
+  input_files_base_dir = rebase_path(".", "//")
+  grd_prefix = "chromeos_projector_app_untrusted"
+  out_grd = "$target_gen_dir/${grd_prefix}_resources.grd"
+}
+
+generate_grd("build_trusted_grd") {
+  input_files = [
+    "annotator/annotator_embedder.html",
+    "annotator/annotator_embedder.css",
+    "annotator/annotator_embedder_impl.js",
+    "player_app/player_app.html",
+    "player_app/player_app.js",
+    "player_app/player_app.css",
+    "selfie_cam/selfie_cam.html",
+    "selfie_cam/selfie_cam.js",
+    "selfie_cam/selfie_cam.css",
+  ]
+  input_files_base_dir = rebase_path(".", "//")
+  grd_prefix = "chromeos_projector_app_trusted"
+  out_grd = "$target_gen_dir/${grd_prefix}_resources.grd"
+}

@@ -670,6 +670,12 @@ See your search engine’s instructions for deleting your search history, if app
       <message name="IDS_IOS_CONTENT_CONTEXT_SAVEIMAGE" desc="The name of the Save Image As command in the content area context menu">
         Save Image
       </message>
+      <message name="IDS_IOS_CONTENT_CONTEXT_CLOSEALLTABS" desc="The iOS context menu item for closing all the tabs in the grid. [iOS only]">
+        Close All Tabs
+      </message>
+      <message name="IDS_IOS_CONTENT_CONTEXT_SELECTTABS" desc="The iOS context menu item for entering into the selection mode, where users can select tabs to perform bulk actions on them.[iOS only]">
+        Select Tabs
+      </message>
       <message name="IDS_IOS_CONTENT_SUGGESTIONS_ACCESSIBILITY_LABEL_SUGGESTION" desc="The accessibility label of a suggestion. Summarizes fields in the reading list entry (title, publisher informations, status and informations). Read by Text-to-Speech.">
         <ph name="TITLE"><ex>Learn about the new Chromium Projects</ex>$1</ph>, <ph name="PUBLISHER_INFORMATION"><ex>The Chromium organization</ex>$2</ph>, <ph name="PUBLICATION_DATE"><ex>January 1 2017</ex>$3</ph>
       </message>
@@ -888,6 +894,18 @@ Because your account is managed by <ph name="HOSTED_DOMAIN">$1<ex>google.com</ex
       <message name="IDS_IOS_PHONE_CALL_BUTTON" desc="Text in the confirmation dialog button that will initiate a phone call for the presented number. [Length: 10em] [iOS only]">
         Call
       </message>
+      <message name="IDS_IOS_FIRST_RUN_DEFAULT_BROWSER_SCREEN_FIRST_STEP" desc="Text of the row indicating the first step of setting the default browser [iOS only]">
+        Open <ph name="BEGIN_BOLD">BEGIN_BOLD</ph>Settings<ph name="END_BOLD">END_BOLD</ph>
+      </message>
+      <message name="IDS_IOS_FIRST_RUN_DEFAULT_BROWSER_SCREEN_PRIMARY_ACTION" desc="The primary action string on the default browser screen presented to the user on First Run [iOS only]">
+        Make Default in Settings…
+      </message>
+      <message name="IDS_IOS_FIRST_RUN_DEFAULT_BROWSER_SCREEN_SECOND_STEP" desc="Text of the row indicating the second step of setting the default browser [iOS only]">
+        Tap <ph name="BEGIN_BOLD">BEGIN_BOLD</ph>Default Browser App<ph name="END_BOLD">END_BOLD</ph>
+      </message>
+      <message name="IDS_IOS_FIRST_RUN_DEFAULT_BROWSER_SCREEN_SECONDARY_ACTION" desc="The secondary action string on the default browser screen presented to the user on First Run [iOS only]">
+        No, Thanks
+      </message>
       <message name="IDS_IOS_FIRST_RUN_SCREEN_READ_MORE" desc="The label on the primary button of some screens in the first run experience if the content requires scrolling to the end [iOS only]">
         Read More
       </message>
@@ -925,10 +943,10 @@ Because your account is managed by <ph name="HOSTED_DOMAIN">$1<ex>google.com</ex
         By continuing, you agree to the <ph name="BEGIN_LINK">BEGIN_LINK</ph>Terms of Service<ph name="END_LINK">END_LINK</ph>
       </message>
       <message name="IDS_IOS_FIRST_RUN_WELCOME_SCREEN_TITLE_IPAD" desc="The title of the welcome screen presented to the user on First Run when on iPad [iOS only]">
-        Built for your iPad
+        Built for Your iPad
       </message>
       <message name="IDS_IOS_FIRST_RUN_WELCOME_SCREEN_TITLE_IPHONE" desc="The title of the welcome screen presented to the user on First Run when on iPhone [iOS only]">
-        Built for your iPhone
+        Built for Your iPhone
       </message>
       <message name="IDS_IOS_FIRST_RUN_WELCOME_SCREEN_MANAGED" desc="The disclaimer that the browser is managed on the welcome screen presented to the user on First Run when the browser is managed [iOS only]">
         Your administrator has control over Chrome and can access its data
@@ -1605,10 +1623,10 @@ While in Incognito, sites can't use cookies to see your browsing activity across
         Try again
       </message>
       <message name="IDS_IOS_PRIVACY_POLICY" desc="The label to access the privacy policy, displayed in the application settings, with no product name. [Length: 30em] [iOS only]">
-        Privacy Notice
+        Google Privacy Policy
       </message>
       <message name="IDS_IOS_PRIVACY_POLICY_URL" translateable="false">
-        http://www.google.com/intl/[GRITLANGCODE]/chrome/browser/privacy/
+        https://policies.google.com/privacy
       </message>
       <message name="IDS_IOS_PROGRESS_BAR_ACCESSIBILITY" desc="Text read by voice over to inform the user about the progress of the page load. [Read by Text To Speech].">
         Page load progress bar, <ph name="EMAIL">$1<ex>20%</ex></ph> loaded.
@@ -2289,9 +2307,6 @@ Try to use a unique password for every site.
       <message name="IDS_IOS_SIGNED_IN_ACCOUNTS_VIEW_TITLE" desc="The title of the Signed In Accounts view [iOS only] [30em]">
         You're signed in
       </message>
-      <message name="IDS_IOS_NOT_SIGNED_IN_SETTING_TITLE" desc="The title shown when the user has disabled Chrome sign-in [iOS only]">
-        Sign-in Is Disabled
-      </message>
       <message name="IDS_IOS_SIGN_IN_AGAIN" desc="Title displayed when there is an authentication failure in sign-in and the user needs to attempt to sign in again. [Length: 20em] [iOS only]">
         Sign In Again
       </message>
@@ -2399,13 +2414,13 @@ To change this setting, <ph name="BEGIN_LINK">BEGIN_LINK</ph>reset sync<ph name=
       <message name="IDS_IOS_SYNC_ENCRYPTION_PASSPHRASE_INFO" desc="The information text for encrypting sync using a passphrase, shown on the passphrase screen [iOS only]">
         Passphrase encryption doesn’t include payment methods and addresses from Google Pay. Only someone with your passphrase can read your encrypted data. The passphrase is not sent to or stored by Google. If you forget your passphrase or want to change this setting, you will need to reset sync. <ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more<ph name="END_LINK">END_LINK</ph>
       </message>
-      <message name="IDS_IOS_SYNC_ENCRYPTION_FIX_NOW" desc="Title displayed when the signed in user needs to reauthenticate. Syncing of encrypted types (e.g. passwords) is blocked until the user completes the reauth flow.">
+      <message name="IDS_IOS_SYNC_VERIFY_ITS_YOU_BUTTON" desc="Button title displayed when the signed in user needs to reauthenticate. Syncing of encrypted types (e.g. passwords) is blocked until the user completes the reauth flow.">
         Verify It's You
       </message>
       <message name="IDS_IOS_SYNC_ENCRYPTION_TITLE" desc="The title for the Sync Encryption item [iOS only]">
         Encryption
       </message>
-      <message name="IDS_IOS_SYNC_ENTER_PASSPHRASE" desc="Title displayed when the signed in user needs to enter its sync passphrase. [Length: 20em] [iOS only]">
+      <message name="IDS_IOS_SYNC_ENTER_PASSPHRASE_BUTTON" desc="Button title displayed when the signed in user needs to enter its sync passphrase. [Length: 20em] [iOS only]">
         Enter Passphrase
       </message>
       <message name="IDS_IOS_SYNC_ENTER_PASSPHRASE_BODY_WITH_EMAIL" desc="Instructions for the dialog where the user enters the passphrase.">
@@ -2469,7 +2484,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       <message name="IDS_IOS_SYNC_SETTINGS_NOT_CONFIRMED" desc="The error message to display when sign-in was interrupted and the user didn't review the sync settings.">
         Initial sync setup was not finished. Sync is off.
       </message>
-      <message name="IDS_IOS_SYNC_SETTINGS_NOT_CONFIRMED_ACTION" desc="Button title to invite the user to review sync settings. The sign-in flow has been interrupted and the user never confirmed Sync.">
+      <message name="IDS_IOS_SYNC_SETTINGS_NOT_CONFIRMED_BUTTON" desc="Button title to invite the user to review sync settings. The sign-in flow has been interrupted and the user never confirmed Sync.">
         Open Settings
       </message>
       <message name="IDS_IOS_SYNC_SETTINGS_NOT_CONFIRMED_DESCRIPTION" desc="The error message to display when sign-in was interrupted and the user didn't review the sync settings.">
@@ -2481,13 +2496,13 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       <message name="IDS_IOS_SYNC_SETUP_NOT_CONFIRMED_TITLE" desc="Title of the error message shown for sync errors. [Length: 60em] [iOS only]">
         Initial Sync Setup Not Finished
       </message>
-      <message name="IDS_IOS_SYNC_SIGN_IN_AGAIN" desc="Title displayed when the signed in user needs sign in again. [Length: 20em] [iOS only]">
+      <message name="IDS_IOS_SYNC_SIGN_IN_AGAIN_BUTTON" desc="Button title displayed when the signed in user needs sign in again. [Length: 20em] [iOS only]">
         Sign in again
       </message>
       <message name="IDS_IOS_SYNC_STATUS_UNRECOVERABLE_ERROR" desc="Message shown throughout the sync settings screens when there is an unrecoverable error. [Length: 80em, can be multiple lines] [iOS only]">
         Sync has stopped working.
       </message>
-      <message name="IDS_IOS_SYNC_UPDATE_CREDENTIALS" desc="Title displayed when the signed in user needs to update its credentials. [Length: 20em] [iOS only]">
+      <message name="IDS_IOS_SYNC_UPDATE_CREDENTIALS_BUTTON" desc="Button title displayed when the signed in user needs to update its credentials. [Length: 20em] [iOS only]">
         Update
       </message>
       <message name="IDS_IOS_TAB_GRID_DONE_BUTTON" desc="Title of the Done button in the tab grid UI. [iOS only]">
@@ -2504,6 +2519,9 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       <message name="IDS_IOS_TAB_GRID_UNDO_CLOSE_ALL_BUTTON" desc="Title of the button in the tab grid UI that revert the close all action recently taken by the user. [iOS only]">
         Undo
       </message>
+      <message name="IDS_IOS_TAB_GRID_EDIT_BUTTON" desc="Title of the button in the tab grid UI that triggers a context menu with options to select tabs for bulk actions or to close all tabs. [iOS only]">
+        Edit
+      </message>
       <message name="IDS_IOS_TAB_GRID_CLOSE_TABS_BUTTON" desc="Title of the button in the tab grid UI that the closes selected tabs. count refers to the number of tabs selected. According to its value, the string goes from signular to plural. [iOS only]">
         {count, plural,
           =1 {Close Tab}
@@ -2512,6 +2530,15 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       <message name="IDS_IOS_TAB_GRID_ADD_TO_BUTTON" desc="Title of the button in the tab grid UI that when tapped, will provide the user with a menu to add selected tabs to bookmarks or to the reading list. [iOS only]">
         Add To...
       </message>
+      <message name="IDS_IOS_TAB_GRID_CELL_DESELECTED" desc="Accessibility value of a tab grid cell while the tab grid is in edit mode. This string is read by VoiceOver to describe the state of a tab grid cell which is not currently selected.">
+          Not Selected
+      </message>
+      <message name="IDS_IOS_TAB_GRID_CELL_SELECTED" desc="Accessibility value of a tab grid cell while the tab grid is in edit mode. This string is read by VoiceOver to describe the state of a tab grid cell which is currently selected.">
+          Selected
+      </message>
+      <message name="IDS_IOS_TAB_GRID_DESELECT_ALL_BUTTON" desc="Title of the button in the tab grid UI selection mode, when tapped it will mark all tabs deselected.">
+          Deselect All
+          </message>
       <message name="IDS_IOS_TAB_GRID_SELECT_ALL_BUTTON" desc="Title of the button in the tab grid UI selection mode, when tapped it will mark all tabs selected.">
           Select All
           </message>

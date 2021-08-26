@@ -9,9 +9,11 @@ EXTRA_DIST += \
 	$(TESTS) \
 	expected/basics \
 	expected/full-font \
+	expected/glyf_bug_3131 \
 	expected/cff-full-font \
 	expected/japanese \
 	expected/cff-japanese \
+	expected/cff.notoserifmyanmar \
 	expected/layout \
 	expected/layout.gpos \
 	expected/layout.gpos2 \
@@ -37,12 +39,15 @@ EXTRA_DIST += \
 	expected/sbix \
 	expected/colr \
 	expected/colr_with_components \
-	expected/colrv1.notoemoji \
 	expected/cbdt \
 	expected/variable \
 	fonts \
 	profiles \
 	$(NULL)
+
+# TODO: re-able once colrv1 subsetting is stabilized.
+#      	expected/colrv1
+#   	expected/colrv1.notoemoji
 
 # Convenience targets:
 lib:

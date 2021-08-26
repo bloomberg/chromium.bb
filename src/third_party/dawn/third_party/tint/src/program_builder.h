@@ -25,12 +25,15 @@
 #include "src/ast/assignment_statement.h"
 #include "src/ast/atomic.h"
 #include "src/ast/binary_expression.h"
+#include "src/ast/binding_decoration.h"
 #include "src/ast/bitcast_expression.h"
 #include "src/ast/bool.h"
 #include "src/ast/bool_literal.h"
+#include "src/ast/break_statement.h"
 #include "src/ast/call_expression.h"
 #include "src/ast/call_statement.h"
 #include "src/ast/case_statement.h"
+#include "src/ast/depth_multisampled_texture.h"
 #include "src/ast/depth_texture.h"
 #include "src/ast/external_texture.h"
 #include "src/ast/f32.h"
@@ -49,11 +52,13 @@
 #include "src/ast/pointer.h"
 #include "src/ast/return_statement.h"
 #include "src/ast/sampled_texture.h"
+#include "src/ast/sampler.h"
 #include "src/ast/scalar_constructor_expression.h"
 #include "src/ast/sint_literal.h"
 #include "src/ast/stage_decoration.h"
 #include "src/ast/storage_texture.h"
 #include "src/ast/stride_decoration.h"
+#include "src/ast/struct_block_decoration.h"
 #include "src/ast/struct_member_align_decoration.h"
 #include "src/ast/struct_member_offset_decoration.h"
 #include "src/ast/struct_member_size_decoration.h"
@@ -103,6 +108,14 @@ class CloneContext;
 /// To construct a Program, populate the builder and then `std::move` it to a
 /// Program.
 class ProgramBuilder {
+  /// A helper used to disable overloads if the first type in `TYPES` is a
+  /// Source. Used to avoid ambiguities in overloads that take a Source as the
+  /// first parameter and those that perfectly-forward the first argument.
+  template <typename... TYPES>
+  using DisableIfSource = traits::EnableIfIsNotType<
+      traits::Decay<traits::NthTypeOf<0, TYPES..., void>>,
+      Source>;
+
   /// VarOptionals is a helper for accepting a number of optional, extra
   /// arguments for Var() and Global().
   struct VarOptionals {
@@ -791,6 +804,22 @@ class ProgramBuilder {
     }
 
     /// @param dims the dimensionality of the texture
+    /// @returns the multisampled depth texture
+    ast::DepthMultisampledTexture* depth_multisampled_texture(
+        ast::TextureDimension dims) const {
+      return builder->create<ast::DepthMultisampledTexture>(dims);
+    }
+
+    /// @param source the Source of the node
+    /// @param dims the dimensionality of the texture
+    /// @returns the multisampled depth texture
+    ast::DepthMultisampledTexture* depth_multisampled_texture(
+        const Source& source,
+        ast::TextureDimension dims) const {
+      return builder->create<ast::DepthMultisampledTexture>(source, dims);
+    }
+
+    /// @param dims the dimensionality of the texture
     /// @param subtype the texture subtype.
     /// @returns the sampled texture
     ast::SampledTexture* sampled_texture(ast::TextureDimension dims,
@@ -1379,7 +1408,9 @@ class ProgramBuilder {
   /// value.
   /// @returns a new `ast::Variable`, which is automatically registered as a
   /// global variable with the ast::Module.
-  template <typename NAME, typename... OPTIONAL>
+  template <typename NAME,
+            typename... OPTIONAL,
+            typename = DisableIfSource<NAME>>
   ast::Variable* Global(NAME&& name,
                         const ast::Type* type,
                         OPTIONAL&&... optional) {
@@ -1500,9 +1531,7 @@ class ProgramBuilder {
   /// @param args the function call arguments
   /// @returns a `ast::CallExpression` to the function `func`, with the
   /// arguments of `args` converted to `ast::Expression`s using `Expr()`.
-  template <typename NAME,
-            typename... ARGS,
-            traits::EnableIfIsNotType<traits::Decay<NAME>, Source>* = nullptr>
+  template <typename NAME, typename... ARGS, typename = DisableIfSource<NAME>>
   ast::CallExpression* Call(NAME&& func, ARGS&&... args) {
     return create<ast::CallExpression>(Expr(func),
                                        ExprList(std::forward<ARGS>(args)...));
@@ -1676,6 +1705,35 @@ class ProgramBuilder {
     return create<ast::StructMemberAlignDecoration>(source_, val);
   }
 
+  /// Creates a ast::StructBlockDecoration
+  /// @returns the struct block decoration pointer
+  ast::StructBlockDecoration* StructBlock() {
+    return create<ast::StructBlockDecoration>();
+  }
+
+  /// Creates the ast::GroupDecoration
+  /// @param value group decoration index
+  /// @returns the group decoration pointer
+  ast::GroupDecoration* Group(uint32_t value) {
+    return create<ast::GroupDecoration>(value);
+  }
+
+  /// Creates the ast::BindingDecoration
+  /// @param value the binding index
+  /// @returns the binding deocration pointer
+  ast::BindingDecoration* Binding(uint32_t value) {
+    return create<ast::BindingDecoration>(value);
+  }
+
+  /// Convenience function to create both a ast::GroupDecoration and
+  /// ast::BindingDecoration
+  /// @param group the group index
+  /// @param binding the binding index
+  /// @returns a decoration list with both the group and binding decorations
+  ast::DecorationList GroupAndBinding(uint32_t group, uint32_t binding) {
+    return {Group(group), Binding(binding)};
+  }
+
   /// Creates an ast::Function and registers it with the ast::Module.
   /// @param source the source information
   /// @param name the function name
@@ -1725,6 +1783,17 @@ class ProgramBuilder {
     return func;
   }
 
+  /// Creates an ast::BreakStatement
+  /// @param source the source information
+  /// @returns the break statement pointer
+  ast::BreakStatement* Break(const Source& source) {
+    return create<ast::BreakStatement>(source);
+  }
+
+  /// Creates an ast::BreakStatement
+  /// @returns the break statement pointer
+  ast::BreakStatement* Break() { return create<ast::BreakStatement>(); }
+
   /// Creates an ast::ReturnStatement with no return value
   /// @param source the source information
   /// @returns the return statement pointer
@@ -1748,7 +1817,7 @@ class ProgramBuilder {
   /// Creates an ast::ReturnStatement with the given return value
   /// @param val the return value
   /// @returns the return statement pointer
-  template <typename EXPR>
+  template <typename EXPR, typename = DisableIfSource<EXPR>>
   ast::ReturnStatement* Return(EXPR&& val) {
     return create<ast::ReturnStatement>(Expr(std::forward<EXPR>(val)));
   }
@@ -1853,12 +1922,22 @@ class ProgramBuilder {
   }
 
   /// Creates a ast::BlockStatement with input statements
+  /// @param source the source information for the block
   /// @param statements statements of block
   /// @returns the block statement pointer
   template <typename... Statements>
-  ast::BlockStatement* Block(Statements&&... statements) {
+  ast::BlockStatement* Block(const Source& source, Statements&&... statements) {
     return create<ast::BlockStatement>(
-        ast::StatementList{std::forward<Statements>(statements)...});
+        source, ast::StatementList{std::forward<Statements>(statements)...});
+  }
+
+  /// Creates a ast::BlockStatement with input statements
+  /// @param statements statements of block
+  /// @returns the block statement pointer
+  template <typename... STATEMENTS, typename = DisableIfSource<STATEMENTS...>>
+  ast::BlockStatement* Block(STATEMENTS&&... statements) {
+    return create<ast::BlockStatement>(
+        ast::StatementList{std::forward<STATEMENTS>(statements)...});
   }
 
   /// Creates a ast::ElseStatement with input condition and body

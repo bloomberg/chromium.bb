@@ -36,13 +36,12 @@ if (angle_has_build) {
     import("//build/config/win/visual_studio_version.gni")
   }
 
-  if (is_chromecast) {
+  if (is_chromecast || ozone_platform_headless) {
     angle_vulkan_display_mode = "headless"
   }
 
   angle_use_x11 = use_x11 && !is_ggp
-  angle_use_vulkan_display =
-      is_linux && !use_x11 && !is_ggp && (!use_ozone || is_chromecast)
+  angle_use_vulkan_display = is_linux && !is_ggp
 } else {
   declare_args() {
     is_ubsan = false
@@ -54,13 +53,14 @@ if (angle_has_build) {
     angle_use_x11 = (is_linux || is_chromeos) && !is_ggp
     use_ozone = false
     ozone_platform_gbm = false
+    ozone_platform_headless = false
     use_fuzzing_engine = false
     use_xcode_clang = false
     is_apple = is_mac || is_ios
   }
 
   declare_args() {
-    angle_use_vulkan_display = is_linux && !angle_use_x11 && !is_ggp
+    angle_use_vulkan_display = is_linux && !is_ggp
   }
 }
 
@@ -68,6 +68,8 @@ if (angle_has_build) {
 angle_data_dir = "angledata"
 
 declare_args() {
+  angle_assert_always_on = dcheck_always_on
+
   if (current_cpu == "arm64" || current_cpu == "x64" ||
       current_cpu == "mips64el" || current_cpu == "s390x" ||
       current_cpu == "ppc64") {
@@ -82,6 +84,13 @@ declare_args() {
 }
 
 declare_args() {
+  # By default we enable debug layers when asserts are turned on.
+  angle_debug_layers_enabled = is_debug || angle_assert_always_on
+
+  # Enable direct SPIR-V generation conditionally to avoid increasing binary size of ANGLE on
+  # official builds until that's the only path.
+  angle_enable_direct_spirv_gen = is_debug || angle_assert_always_on
+
   if (!is_android) {
     ndk_api_level_at_least_26 = false
   } else {
@@ -173,7 +182,7 @@ declare_args() {
   # Vulkan Validation Layers compatibility issues, see http://crrev/c/1405714.
   angle_enable_vulkan_validation_layers =
       angle_enable_vulkan && !is_ubsan && !is_tsan && !is_asan &&
-      (is_debug || dcheck_always_on) && !is_mac &&
+      angle_debug_layers_enabled && !is_mac &&
       (!is_android || ndk_api_level_at_least_26)
 
   # ISpriteVisual windows cannot be validated and can lead to crashes if an invalid window is
@@ -206,6 +215,10 @@ declare_args() {
   # TODO(jdarpinian): Support enabling CGL and EAGL at the same time using the soft linking code. Also support disabling both for Metal-only builds.
   angle_enable_cgl = angle_enable_gl && !angle_enable_eagl && is_apple
 
+  angle_enable_apple_translator_workarounds =
+      is_apple &&
+      (angle_enable_glsl || angle_enable_metal || use_fuzzing_engine)
+
   angle_has_histograms = angle_has_build
 }
 
@@ -214,7 +227,7 @@ if (!defined(angle_zlib_compression_utils_dir)) {
 }
 
 angle_common_configs = [
-  angle_root + ":angle_release_asserts_config",
+  angle_root + ":angle_asserts_config",
   angle_root + ":constructor_and_destructor_warnings",
   angle_root + ":extra_warnings",
   angle_root + ":internal_config",

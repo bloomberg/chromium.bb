@@ -26,6 +26,44 @@
 
 #include "../dnn_interface.h"
 
+#define DNN_BACKEND_COMMON_OPTIONS \
+    { "nireq",           "number of request",             OFFSET(options.nireq),           AV_OPT_TYPE_INT,    { .i64 = 0 },     0, INT_MAX, FLAGS },
+
+// one task for one function call from dnn interface
+typedef struct TaskItem {
+    void *model; // model for the backend
+    AVFrame *in_frame;
+    AVFrame *out_frame;
+    const char *input_name;
+    const char **output_names;
+    uint8_t async;
+    uint8_t do_ioproc;
+    uint32_t nb_output;
+    uint32_t inference_todo;
+    uint32_t inference_done;
+} TaskItem;
+
+// one task might have multiple inferences
+typedef struct InferenceItem {
+    TaskItem *task;
+    uint32_t bbox_index;
+} InferenceItem;
+
 int ff_check_exec_params(void *ctx, DNNBackendType backend, DNNFunctionType func_type, DNNExecBaseParams *exec_params);
+
+/**
+ * Fill the Task for Backend Execution. It should be called after
+ * checking execution parameters using ff_check_exec_params.
+ *
+ * @param task pointer to the allocated task
+ * @param exec_param pointer to execution parameters
+ * @param backend_model void pointer to the backend model
+ * @param async flag for async execution. Must be 0 or 1
+ * @param do_ioproc flag for IO processing. Must be 0 or 1
+ *
+ * @retval DNN_SUCCESS if successful
+ * @retval DNN_ERROR if flags are invalid or any parameter is NULL
+ */
+DNNReturnType ff_dnn_fill_task(TaskItem *task, DNNExecBaseParams *exec_params, void *backend_model, int async, int do_ioproc);
 
 #endif

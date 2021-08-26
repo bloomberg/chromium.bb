@@ -14,7 +14,8 @@
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chromeos {
+namespace ash {
+namespace quick_unlock {
 namespace {
 
 class PinStoragePrefsUnitTest : public testing::Test {
@@ -23,12 +24,12 @@ class PinStoragePrefsUnitTest : public testing::Test {
   ~PinStoragePrefsUnitTest() override = default;
 
   // testing::Test:
-  void SetUp() override { quick_unlock::EnabledForTesting(true); }
+  void SetUp() override { EnabledForTesting(true); }
 
-  void TearDown() override { quick_unlock::EnabledForTesting(false); }
+  void TearDown() override { EnabledForTesting(false); }
 
-  quick_unlock::PinStoragePrefs* PinStoragePrefs() const {
-    return quick_unlock::QuickUnlockFactory::GetForProfile(profile_.get())
+  PinStoragePrefs* PinStoragePrefs() const {
+    return QuickUnlockFactory::GetForProfile(profile_.get())
         ->pin_storage_prefs();
   }
 
@@ -44,7 +45,7 @@ class PinStoragePrefsUnitTest : public testing::Test {
 class PinStoragePrefsTestApi {
  public:
   // Does *not* take ownership over `pin_storage`.
-  explicit PinStoragePrefsTestApi(quick_unlock::PinStoragePrefs* pin_storage)
+  explicit PinStoragePrefsTestApi(PinStoragePrefs* pin_storage)
       : pin_storage_(pin_storage) {}
 
   std::string PinSalt() const { return pin_storage_->PinSalt(); }
@@ -59,7 +60,7 @@ class PinStoragePrefsTestApi {
   }
 
  private:
-  quick_unlock::PinStoragePrefs* pin_storage_;
+  PinStoragePrefs* pin_storage_;
 
   DISALLOW_COPY_AND_ASSIGN(PinStoragePrefsTestApi);
 };
@@ -71,7 +72,7 @@ class PinStoragePrefsTestApi {
 TEST_F(PinStoragePrefsUnitTest, PinStorageWritesToPrefs) {
   PrefService* prefs = profile_->GetPrefs();
 
-  EXPECT_EQ("", prefs->GetString(ash::prefs::kQuickUnlockPinSalt));
+  EXPECT_EQ("", prefs->GetString(prefs::kQuickUnlockPinSalt));
   EXPECT_EQ("", prefs->GetString(prefs::kQuickUnlockPinSecret));
 
   PinStoragePrefsTestApi pin_storage_test(PinStoragePrefs());
@@ -79,7 +80,7 @@ TEST_F(PinStoragePrefsUnitTest, PinStorageWritesToPrefs) {
   PinStoragePrefs()->SetPin("1111");
   EXPECT_TRUE(PinStoragePrefs()->IsPinSet());
   EXPECT_EQ(pin_storage_test.PinSalt(),
-            prefs->GetString(ash::prefs::kQuickUnlockPinSalt));
+            prefs->GetString(prefs::kQuickUnlockPinSalt));
   EXPECT_EQ(pin_storage_test.PinSecret(),
             prefs->GetString(prefs::kQuickUnlockPinSecret));
   EXPECT_NE("", pin_storage_test.PinSalt());
@@ -87,7 +88,7 @@ TEST_F(PinStoragePrefsUnitTest, PinStorageWritesToPrefs) {
 
   PinStoragePrefs()->RemovePin();
   EXPECT_FALSE(PinStoragePrefs()->IsPinSet());
-  EXPECT_EQ("", prefs->GetString(ash::prefs::kQuickUnlockPinSalt));
+  EXPECT_EQ("", prefs->GetString(prefs::kQuickUnlockPinSalt));
   EXPECT_EQ("", prefs->GetString(prefs::kQuickUnlockPinSecret));
 }
 
@@ -126,8 +127,7 @@ TEST_F(PinStoragePrefsUnitTest, AuthenticationFailsFromTooManyAttempts) {
 
   // Use up all of the authentication attempts so authentication fails.
   EXPECT_TRUE(pin_storage_test.IsPinAuthenticationAvailable());
-  for (int i = 0; i < quick_unlock::PinStoragePrefs::kMaximumUnlockAttempts;
-       ++i) {
+  for (int i = 0; i < PinStoragePrefs::kMaximumUnlockAttempts; ++i) {
     EXPECT_FALSE(pin_storage_test.TryAuthenticatePin(
         "foobar", Key::KEY_TYPE_PASSWORD_PLAIN));
   }
@@ -140,12 +140,9 @@ TEST_F(PinStoragePrefsUnitTest, AuthenticationFailsFromTooManyAttempts) {
 
 // Verifies that hashed pin can be used to authenticate.
 TEST_F(PinStoragePrefsUnitTest, AuthenticationWithHashedPin) {
-  quick_unlock::PinStoragePrefs* pin_storage =
-      quick_unlock::QuickUnlockFactory::GetForProfile(profile_.get())
-          ->pin_storage_prefs();
-  PinStoragePrefsTestApi pin_storage_test(pin_storage);
+  PinStoragePrefsTestApi pin_storage_test(PinStoragePrefs());
 
-  pin_storage->SetPin("1111");
+  PinStoragePrefs()->SetPin("1111");
   std::string hashed_pin = pin_storage_test.PinSecret();
 
   // Verify that hashed pin can be used to authenticate.
@@ -158,4 +155,5 @@ TEST_F(PinStoragePrefsUnitTest, AuthenticationWithHashedPin) {
       hashed_pin, Key::KEY_TYPE_PASSWORD_PLAIN));
 }
 
-}  // namespace chromeos
+}  // namespace quick_unlock
+}  // namespace ash

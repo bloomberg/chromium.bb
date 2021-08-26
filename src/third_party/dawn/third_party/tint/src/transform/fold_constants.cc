@@ -56,7 +56,7 @@ void FoldConstants::Run(CloneContext& ctx, const DataMap&, DataMap&) {
     }
 
     if (auto* vec = ty->As<sem::Vector>()) {
-      uint32_t vec_size = static_cast<uint32_t>(vec->size());
+      uint32_t vec_size = static_cast<uint32_t>(vec->Width());
 
       // We'd like to construct the new vector with the same number of
       // constructor args that the original node had, but after folding
@@ -76,7 +76,7 @@ void FoldConstants::Run(CloneContext& ctx, const DataMap&, DataMap&) {
             i, [&](auto&& s) { ctors.emplace_back(ctx.dst->Expr(s)); });
       }
 
-      auto* el_ty = CreateASTTypeFor(&ctx, vec->type());
+      auto* el_ty = CreateASTTypeFor(ctx, vec->type());
       return ctx.dst->vec(el_ty, vec_size, ctors);
     }
 

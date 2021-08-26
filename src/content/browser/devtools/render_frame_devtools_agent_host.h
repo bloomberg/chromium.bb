@@ -35,6 +35,7 @@ namespace content {
 class BrowserContext;
 class DevToolsFrameTraceRecorder;
 class FrameTreeNode;
+class FrameAutoAttacher;
 class NavigationRequest;
 class RenderFrameHostImpl;
 
@@ -82,6 +83,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 
   void OnNavigationRequestWillBeSent(
       const NavigationRequest& navigation_request);
+  void UpdatePortals();
 
   // DevToolsAgentHost overrides.
   void DisconnectWebContents() override;
@@ -162,6 +164,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   mojo::Remote<device::mojom::WakeLock> wake_lock_;
 #endif
 
+  std::unique_ptr<FrameAutoAttacher> auto_attacher_;
   // The active host we are talking to.
   RenderFrameHostImpl* frame_host_ = nullptr;
   base::flat_set<NavigationRequest*> navigation_requests_;

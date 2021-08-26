@@ -22,6 +22,7 @@
 #include "content/browser/devtools/devtools_manager.h"
 #include "content/browser/devtools/devtools_renderer_channel.h"
 #include "content/browser/devtools/devtools_session.h"
+#include "content/browser/devtools/frame_auto_attacher.h"
 #include "content/browser/devtools/protocol/audits_handler.h"
 #include "content/browser/devtools/protocol/background_service_handler.h"
 #include "content/browser/devtools/protocol/browser_handler.h"
@@ -241,6 +242,7 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(
     FrameTreeNode* frame_tree_node,
     RenderFrameHostImpl* frame_host)
     : DevToolsAgentHostImpl(frame_tree_node->devtools_frame_token().ToString()),
+      auto_attacher_(std::make_unique<FrameAutoAttacher>(GetRendererChannel())),
       frame_tree_node_(nullptr) {
   SetFrameTreeNode(frame_tree_node);
   ChangeFrameHostAndObservedProcess(frame_host);
@@ -301,7 +303,8 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session,
   session->AddHandler(std::make_unique<protocol::DOMHandler>(
       session->GetClient()->MayReadLocalFiles()));
   session->AddHandler(std::move(emulation_handler));
-  auto input_handler = std::make_unique<protocol::InputHandler>();
+  auto input_handler = std::make_unique<protocol::InputHandler>(
+      session->GetClient()->MayReadLocalFiles());
   input_handler->OnPageScaleFactorChanged(page_scale_factor_);
   session->AddHandler(std::move(input_handler));
   session->AddHandler(std::make_unique<protocol::InspectorHandler>());
@@ -337,9 +340,7 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session,
       may_attach_to_brower
           ? protocol::TargetHandler::AccessMode::kRegular
           : protocol::TargetHandler::AccessMode::kAutoAttachOnly,
-      GetId(),
-      protocol::TargetAutoAttacher::CreateForFrame(GetRendererChannel()),
-      session->GetRootSession()));
+      GetId(), auto_attacher_.get(), session->GetRootSession()));
   session->AddHandler(std::make_unique<protocol::PageHandler>(
       emulation_handler_ptr, browser_handler_ptr,
       session->GetClient()->MayReadLocalFiles()));
@@ -456,8 +457,8 @@ void RenderFrameDevToolsAgentHost::DidFinishNavigation(
         session->ResumeSendingMessagesToAgent();
     }
   }
-  for (auto* target : protocol::TargetHandler::ForAgentHost(this))
-    target->DidFinishNavigation(navigation_handle);
+  auto_attacher_->DidFinishNavigation(
+      NavigationRequest::From(navigation_handle));
 }
 
 void RenderFrameDevToolsAgentHost::UpdateFrameHost(
@@ -643,6 +644,10 @@ void RenderFrameDevToolsAgentHost::OnNavigationRequestWillBeSent(
   }
   if (!restricted_sessions.empty())
     ForceDetachRestrictedSessions(restricted_sessions);
+}
+
+void RenderFrameDevToolsAgentHost::UpdatePortals() {
+  auto_attacher_->UpdatePortals();
 }
 
 void RenderFrameDevToolsAgentHost::DisconnectWebContents() {
@@ -840,6 +845,7 @@ void RenderFrameDevToolsAgentHost::UpdateRendererChannel(bool force) {
   GetRendererChannel()->SetRendererAssociated(std::move(agent_remote),
                                               std::move(host_receiver),
                                               process_id, frame_host_);
+  auto_attacher_->SetRenderFrameHost(frame_host_);
 }
 
 bool RenderFrameDevToolsAgentHost::IsChildFrame() {

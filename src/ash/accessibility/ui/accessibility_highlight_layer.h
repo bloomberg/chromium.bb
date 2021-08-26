@@ -25,14 +25,16 @@ class ASH_EXPORT AccessibilityHighlightLayer : public AccessibilityLayer {
   void Set(const std::vector<gfx::Rect>& rects, SkColor color);
 
   // AccessibilityLayer overrides:
-  bool NeedToAnimate() const override;
   int GetInset() const override;
+
+  std::vector<gfx::Rect> rects_for_test() { return rects_; }
 
  private:
   // ui::LayerDelegate overrides:
   void OnPaintLayer(const ui::PaintContext& context) override;
 
-  // The current rects to be highlighted.
+  // The current rects to be highlighted, relative to the
+  // AccessibilityPanelContainer window.
   std::vector<gfx::Rect> rects_;
 
   // The highlight color.

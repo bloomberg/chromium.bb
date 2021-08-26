@@ -135,7 +135,7 @@ import java.lang.annotation.RetentionPolicy;
 
     // Implement BottomSheetObserver:
     @Override
-    public void onSheetStateChanged(@SheetState int newState) {
+    public void onSheetStateChanged(@SheetState int newState, int reason) {
         switch (newState) {
             case BottomSheetController.SheetState.HIDDEN:
                 mCloseReason = CloseReason.USER;
@@ -189,10 +189,6 @@ import java.lang.annotation.RetentionPolicy;
         // This is invoked when the sheet returns to the peek state, but Payment Handler doesn't
         // have a peek state.
     }
-
-    // Implement BottomSheetObserver:
-    @Override
-    public void onSheetFullyPeeked() {}
 
     // Implement BottomSheetObserver:
     @Override

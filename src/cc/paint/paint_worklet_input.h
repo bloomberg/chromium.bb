@@ -29,6 +29,7 @@ class CC_PAINT_EXPORT PaintWorkletInput
  public:
   enum class NativePropertyType {
     kBackgroundColor,
+    kClipPath,
     kInvalid,
   };
   // Uniquely identifies a property from the animation system, so that a
@@ -87,6 +88,8 @@ class CC_PAINT_EXPORT PaintWorkletInput
   // job for this input.
   using PropertyKeys = std::vector<PropertyKey>;
   virtual const PropertyKeys& GetPropertyKeys() const = 0;
+
+  virtual bool IsCSSPaintWorkletInput() const = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<PaintWorkletInput>;

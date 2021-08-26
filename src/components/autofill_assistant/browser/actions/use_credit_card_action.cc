@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
@@ -22,6 +21,8 @@
 #include "components/autofill_assistant/browser/client_status.h"
 #include "components/autofill_assistant/browser/field_formatter.h"
 #include "components/autofill_assistant/browser/user_model.h"
+#include "components/autofill_assistant/browser/web/element_action_util.h"
+#include "components/autofill_assistant/browser/web/web_controller.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace autofill_assistant {
@@ -166,9 +167,14 @@ void UseCreditCardAction::OnGetFullCard(
   }
 
   DCHECK(!selector_.empty());
-  delegate_->FillCardForm(std::move(card), cvc, selector_,
-                          base::BindOnce(&UseCreditCardAction::ExecuteFallback,
-                                         weak_ptr_factory_.GetWeakPtr()));
+  delegate_->FindElement(
+      selector_,
+      base::BindOnce(&element_action_util::TakeElementAndPerform,
+                     base::BindOnce(&WebController::FillCardForm,
+                                    delegate_->GetWebController()->GetWeakPtr(),
+                                    std::move(card), cvc),
+                     base::BindOnce(&UseCreditCardAction::ExecuteFallback,
+                                    weak_ptr_factory_.GetWeakPtr())));
 }
 
 void UseCreditCardAction::InitFallbackHandler(const autofill::CreditCard& card,
@@ -185,22 +191,20 @@ void UseCreditCardAction::InitFallbackHandler(const autofill::CreditCard& card,
     required_fields.emplace_back(required_field);
   }
 
-  std::map<std::string, std::string> fallback_values =
+  auto fallback_values =
       field_formatter::CreateAutofillMappings(card,
                                               /* locale= */ "en-US");
 
   if (is_resolved) {
     fallback_values.emplace(
-        base::NumberToString(static_cast<int>(
-            AutofillFormatProto::CREDIT_CARD_VERIFICATION_CODE)),
+        field_formatter::Key(
+            AutofillFormatProto::CREDIT_CARD_VERIFICATION_CODE),
         base::UTF16ToUTF8(cvc));
     fallback_values.emplace(
-        base::NumberToString(
-            static_cast<int>(AutofillFormatProto::CREDIT_CARD_RAW_NUMBER)),
+        field_formatter::Key(AutofillFormatProto::CREDIT_CARD_RAW_NUMBER),
         base::UTF16ToUTF8(card.GetRawInfo(autofill::CREDIT_CARD_NUMBER)));
   } else {
-    fallback_values.erase(
-        base::NumberToString(static_cast<int>(autofill::CREDIT_CARD_NUMBER)));
+    fallback_values.erase(field_formatter::Key(autofill::CREDIT_CARD_NUMBER));
   }
 
   DCHECK(fallback_handler_ == nullptr);

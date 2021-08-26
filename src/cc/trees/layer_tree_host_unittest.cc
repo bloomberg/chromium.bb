@@ -3579,10 +3579,10 @@ class ViewportDeltasAppliedDuringPinch : public LayerTreeHostTest,
   void AfterTest() override { EXPECT_TRUE(sent_gesture_); }
 
   // ScrollCallbacks
-  void DidScroll(ElementId element_id,
-                 const gfx::ScrollOffset& scroll_offset,
-                 const absl::optional<TargetSnapAreaElementIds>&
-                     snap_target_ids) override {
+  void DidCompositorScroll(ElementId element_id,
+                           const gfx::ScrollOffset& scroll_offset,
+                           const absl::optional<TargetSnapAreaElementIds>&
+                               snap_target_ids) override {
     last_scrolled_element_id_ = element_id;
     last_scrolled_offset_ = scroll_offset;
   }
@@ -8254,8 +8254,8 @@ class LayerTreeHostTestQueueImageDecode : public LayerTreeHostTest {
 
     image_ =
         DrawImage(CreateDiscardablePaintImage(gfx::Size(400, 400)), false,
-                  SkIRect::MakeWH(400, 400), kNone_SkFilterQuality, SkM44(),
-                  PaintImage::kDefaultFrameIndex, gfx::ColorSpace());
+                  SkIRect::MakeWH(400, 400), PaintFlags::FilterQuality::kNone,
+                  SkM44(), PaintImage::kDefaultFrameIndex, gfx::ColorSpace());
     auto callback = base::BindRepeating(
         &LayerTreeHostTestQueueImageDecode::ImageDecodeFinished,
         base::Unretained(this));
@@ -8605,8 +8605,9 @@ class LayerTreeHostTestImageAnimationSynchronousSchedulingSoftwareDraw
   }
 };
 
-MULTI_THREAD_TEST_F(
-    LayerTreeHostTestImageAnimationSynchronousSchedulingSoftwareDraw);
+// TODO(crbug.com/1092110): Flaky on TSan bot.
+// MULTI_THREAD_TEST_F(
+//     LayerTreeHostTestImageAnimationSynchronousSchedulingSoftwareDraw);
 
 class LayerTreeHostTestImageDecodingHints : public LayerTreeHostTest {
  public:

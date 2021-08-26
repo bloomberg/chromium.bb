@@ -11,6 +11,7 @@
 #include <string>
 #include <utility>
 
+#include "base/compiler_specific.h"
 #include "base/guid.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -98,6 +99,24 @@ class MetricsStateMetricsProvider : public MetricsProvider {
     std::string client_id = ReadClientId(local_state_);
     system_profile->set_client_id_was_used_for_trial_assignment(
         !client_id.empty() && client_id == initial_client_id_);
+
+    ClonedInstallInfo cloned =
+        ClonedInstallDetector::ReadClonedInstallInfo(local_state_);
+    if (cloned.reset_count == 0)
+      return;
+    auto* cloned_install_info = system_profile->mutable_cloned_install_info();
+    if (metrics_ids_were_reset_) {
+      // Only report the cloned from client_id in the resetting session.
+      if (!previous_client_id_.empty()) {
+        cloned_install_info->set_cloned_from_client_id(
+            MetricsLog::Hash(previous_client_id_));
+      }
+    }
+    cloned_install_info->set_last_timestamp(
+        RoundSecondsToHour(cloned.last_reset_timestamp));
+    cloned_install_info->set_first_timestamp(
+        RoundSecondsToHour(cloned.first_reset_timestamp));
+    cloned_install_info->set_count(cloned.reset_count);
   }
 
   void ProvidePreviousSessionData(
@@ -143,13 +162,14 @@ MetricsStateManager::MetricsStateManager(
     PrefService* local_state,
     EnabledStateProvider* enabled_state_provider,
     const std::wstring& backup_registry_key,
+    const base::FilePath& user_data_dir,
     StoreClientInfoCallback store_client_info,
     LoadClientInfoCallback retrieve_client_info)
     : local_state_(local_state),
       enabled_state_provider_(enabled_state_provider),
       store_client_info_(std::move(store_client_info)),
       load_client_info_(std::move(retrieve_client_info)),
-      clean_exit_beacon_(backup_registry_key, local_state),
+      clean_exit_beacon_(backup_registry_key, user_data_dir, local_state),
       entropy_state_(local_state),
       entropy_source_returned_(ENTROPY_SOURCE_NONE),
       metrics_ids_were_reset_(false) {
@@ -167,7 +187,9 @@ MetricsStateManager::MetricsStateManager(
   if (enabled_state_provider_->IsConsentGiven())
     ForceClientIdCreation();
 
-#if !defined(OS_WIN)
+#if defined(OS_WIN)
+  ALLOW_UNUSED_LOCAL(is_first_run);
+#else
   if (is_first_run) {
     // If this is a first run (no install date) and there's no client id, then
     // generate a provisional client id now. This id will be used for field
@@ -222,8 +244,11 @@ int MetricsStateManager::GetLowEntropySource() {
 }
 
 void MetricsStateManager::LogHasSessionShutdownCleanly(
-    bool has_session_shutdown_cleanly) {
-  clean_exit_beacon_.WriteBeaconValue(has_session_shutdown_cleanly);
+    bool has_session_shutdown_cleanly,
+    bool write_synchronously,
+    bool update_beacon) {
+  clean_exit_beacon_.WriteBeaconValue(has_session_shutdown_cleanly,
+                                      write_synchronously, update_beacon);
 }
 
 void MetricsStateManager::ForceClientIdCreation() {
@@ -347,13 +372,14 @@ std::unique_ptr<MetricsStateManager> MetricsStateManager::Create(
     PrefService* local_state,
     EnabledStateProvider* enabled_state_provider,
     const std::wstring& backup_registry_key,
+    const base::FilePath& user_data_dir,
     StoreClientInfoCallback store_client_info,
     LoadClientInfoCallback retrieve_client_info) {
   std::unique_ptr<MetricsStateManager> result;
   // Note: |instance_exists_| is updated in the constructor and destructor.
   if (!instance_exists_) {
     result.reset(new MetricsStateManager(
-        local_state, enabled_state_provider, backup_registry_key,
+        local_state, enabled_state_provider, backup_registry_key, user_data_dir,
         std::move(store_client_info), std::move(retrieve_client_info)));
   }
   return result;
@@ -429,6 +455,8 @@ void MetricsStateManager::ResetMetricsIDsIfNecessary() {
 
   local_state_->ClearPref(prefs::kMetricsClientID);
   EntropyState::ClearPrefs(local_state_);
+
+  ClonedInstallDetector::RecordClonedInstallInfo(local_state_);
 
   // Also clear the backed up client info. This is asynchronus; any reads
   // shortly after may retrieve the old ClientInfo from the backup.

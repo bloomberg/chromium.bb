@@ -19,6 +19,10 @@ extern const char kAutofillCreditCardUploadDescription[];
 extern const char kAutofillEnableOffersInDownstreamName[];
 extern const char kAutofillEnableOffersInDownstreamDescription[];
 
+// Title and description for the flag to fill promo code fields with Autofill.
+extern const char kAutofillFillMerchantPromoCodeFieldsName[];
+extern const char kAutofillFillMerchantPromoCodeFieldsDescription[];
+
 // Title and description for the flag to control the autofill delay.
 extern const char kAutofillIOSDelayBetweenFieldsName[];
 extern const char kAutofillIOSDelayBetweenFieldsDescription[];
@@ -84,17 +88,6 @@ extern const char kDcheckIsFatalName[];
 extern const char kDcheckIsFatalDescription[];
 #endif  // defined(DCHECK_IS_CONFIGURABLE)
 
-// Title and description for the flag to show a modified fullscreen modal promo
-// with a button that would send the users in the Settings.app to update the
-// default browser. Different from kDefaultBrowserFullscreenPromoExperimentName.
-extern const char kDefaultBrowserFullscreenPromoCTAExperimentName[];
-extern const char kDefaultBrowserFullscreenPromoCTAExperimentDescription[];
-
-// Title and description for the flag to add the button in the settings to send
-// the users in the Settings.app to update the default browser.
-extern const char kDefaultBrowserSettingsName[];
-extern const char kDefaultBrowserSettingsDescription[];
-
 // Title and description for the flag to show tailored fullscreen default
 // browser promos.
 extern const char kDefaultPromoTailoredName[];
@@ -108,6 +101,11 @@ extern const char kDefaultPromoNonModalDescription[];
 // by default on iPad
 extern const char kDefaultToDesktopOnIPadName[];
 extern const char kDefaultToDesktopOnIPadDescription[];
+
+// Title and description for the flag to use default WebKit context menu in web
+// content.
+extern const char kDefaultWebViewContextMenuName[];
+extern const char kDefaultWebViewContextMenuDescription[];
 
 // Title and description for the flag to control the delay (in minutes) for
 // polling for the existence of Gaia cookies for google.com.
@@ -176,6 +174,10 @@ extern const char kEnableDiscoverFeedPreviewDescription[];
 extern const char kEnableExtendedSyncPromosCapabilityName[];
 extern const char kEnableExtendedSyncPromosCapabilityDescription[];
 
+// Title and description for the flag to enable FRE default browser screen.
+extern const char kEnableFREDefaultBrowserScreenName[];
+extern const char kEnableFREDefaultBrowserScreenDescription[];
+
 // Title and description for the flag to enable FRE UI module.
 extern const char kEnableFREUIModuleIOSName[];
 extern const char kEnableFREUIModuleIOSDescription[];
@@ -183,11 +185,6 @@ extern const char kEnableFREUIModuleIOSDescription[];
 // Title and description for the flag to enable fullpage screenshots.
 extern const char kEnableFullPageScreenshotName[];
 extern const char kEnableFullPageScreenshotDescription[];
-
-// Title and description for the flag to enable to show a different UI when the
-// setting is managed by an enterprise policy.
-extern const char kEnableIOSManagedSettingsUIName[];
-extern const char kEnableIOSManagedSettingsUIDescription[];
 
 // Title and description for the flag to enable UI that allows the user to
 // create a strong password even if the field wasn't parsed as a new password
@@ -443,9 +440,10 @@ extern const char kUpdateHistoryEntryPointsInIncognitoDescription[];
 extern const char kURLBlocklistIOSName[];
 extern const char kURLBlocklistIOSDescription[];
 
-// Title and description for the flag to enable the new error page workflow.
-extern const char kUseJSForErrorPageName[];
-extern const char kUseJSForErrorPageDescription[];
+// Title and description for the flag to control the maximum wait time (in
+// seconds) for a response from the Account Capabilities API.
+extern const char kWaitThresholdMillisecondsForCapabilitiesApiName[];
+extern const char kWaitThresholdMillisecondsForCapabilitiesApiDescription[];
 
 // Title and description for the flag to control if Google Payments API calls
 // should use the sandbox servers.
@@ -470,6 +468,16 @@ extern const char kWebPageAlternativeTextZoomDescription[];
 // WebView.
 extern const char kWebViewNativeContextMenuName[];
 extern const char kWebViewNativeContextMenuDescription[];
+
+// Title and description for the flag to enable the phase 2 of context menus in
+// the WebView.
+extern const char kWebViewNativeContextMenuPhase2Name[];
+extern const char kWebViewNativeContextMenuPhase2Description[];
+
+// Title and description for the flag to enable the phase 3 of context menus in
+// the WebView.
+extern const char kWebViewNativeContextMenuPhase3Name[];
+extern const char kWebViewNativeContextMenuPhase3Description[];
 
 // Title and description for the flag to restore Gaia cookies when the user
 // explicitly requests to be signed in to a Google service.

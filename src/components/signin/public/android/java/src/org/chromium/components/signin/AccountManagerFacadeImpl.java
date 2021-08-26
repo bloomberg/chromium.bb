@@ -58,7 +58,6 @@ public class AccountManagerFacadeImpl implements AccountManagerFacade {
     static final String CAN_OFFER_EXTENDED_CHROME_SYNC_PROMOS = "gi2tklldmfya";
 
     private final AccountManagerDelegate mDelegate;
-    private final AccountRestrictionPatternReceiver mAccountRestrictionPatternReceiver;
 
     private final ObserverList<AccountsChangeObserver> mObservers = new ObserverList<>();
 
@@ -79,14 +78,13 @@ public class AccountManagerFacadeImpl implements AccountManagerFacade {
         ThreadUtils.assertOnUiThread();
         mDelegate = delegate;
         mDelegate.attachAccountsChangeObserver(this::onAccountsUpdated);
-        mAccountRestrictionPatternReceiver =
-                new AccountRestrictionPatternReceiver(this::onAccountRestrictionPatternsUpdated);
+        new AccountRestrictionPatternReceiver(this::onAccountRestrictionPatternsUpdated);
 
         getAccounts().then(accounts -> {
             RecordHistogram.recordExactLinearHistogram(
                     "Signin.AndroidNumberOfDeviceAccounts", accounts.size(), 50);
         });
-        new InitializeTask().executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        onAccountsUpdated();
     }
 
     /**
@@ -208,15 +206,6 @@ public class AccountManagerFacadeImpl implements AccountManagerFacade {
     }
 
     /**
-     * Gets profile data source.
-     * @return {@link ProfileDataSource} if it is supported by implementation, null otherwise.
-     */
-    @Override
-    public ProfileDataSource getProfileDataSource() {
-        return mDelegate.getProfileDataSource();
-    }
-
-    /**
      * Returns the Gaia id for the account associated with the given email address.
      * If an account with the given email address is not installed on the device
      * then null is returned.
@@ -244,7 +233,18 @@ public class AccountManagerFacadeImpl implements AccountManagerFacade {
 
     private void onAccountsUpdated() {
         ThreadUtils.assertOnUiThread();
-        new UpdateAccountsTask().executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        new AsyncTask<List<Account>>() {
+            @Override
+            protected List<Account> doInBackground() {
+                return Collections.unmodifiableList(Arrays.asList(mDelegate.getAccounts()));
+            }
+
+            @Override
+            protected void onPostExecute(List<Account> allAccounts) {
+                mAllAccounts.set(allAccounts);
+                updateAccounts();
+            }
+        }.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 
     private void onAccountRestrictionPatternsUpdated(List<PatternMatcher> patternMatchers) {
@@ -254,6 +254,9 @@ public class AccountManagerFacadeImpl implements AccountManagerFacade {
 
     @MainThread
     private void updateAccounts() {
+        if (mAllAccounts.get() == null || mAccountRestrictionPatterns.get() == null) {
+            return;
+        }
         final List<Account> newAccounts = getFilteredAccounts();
         updateCanOfferExtendedSyncPromos(newAccounts);
         if (mAccountsPromise.isFulfilled()) {
@@ -280,37 +283,5 @@ public class AccountManagerFacadeImpl implements AccountManagerFacade {
             }
         }
         return Collections.unmodifiableList(filteredAccounts);
-    }
-
-    private List<Account> getAllAccounts() {
-        return Collections.unmodifiableList(Arrays.asList(mDelegate.getAccounts()));
-    }
-
-    private class InitializeTask extends AsyncTask<Void> {
-        @Override
-        protected Void doInBackground() {
-            mAccountRestrictionPatterns.set(
-                    mAccountRestrictionPatternReceiver.getRestrictionPatterns());
-            mAllAccounts.set(getAllAccounts());
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void v) {
-            updateAccounts();
-        }
-    }
-
-    private class UpdateAccountsTask extends AsyncTask<List<Account>> {
-        @Override
-        protected List<Account> doInBackground() {
-            return getAllAccounts();
-        }
-
-        @Override
-        protected void onPostExecute(List<Account> allAccounts) {
-            mAllAccounts.set(allAccounts);
-            updateAccounts();
-        }
     }
 }

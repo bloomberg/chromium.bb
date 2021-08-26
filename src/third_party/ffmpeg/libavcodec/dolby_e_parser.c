@@ -18,6 +18,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "libavutil/channel_layout.h"
+#include "avcodec.h"
 #include "dolby_e.h"
 #include "get_bits.h"
 #include "put_bits.h"

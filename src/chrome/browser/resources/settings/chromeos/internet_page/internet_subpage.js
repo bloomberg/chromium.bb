@@ -179,14 +179,6 @@ Polymer({
     },
 
     /** @private */
-    isUpdatedCellularUiEnabled_: {
-      type: Boolean,
-      value() {
-        return loadTimeData.getBoolean('updatedCellularActivationUi');
-      }
-    },
-
-    /** @private */
     hasCompletedScanSinceLastEnabled_: {
       type: Boolean,
       value: false,
@@ -653,7 +645,7 @@ Polymer({
    * @private
    */
   isDeviceInhibited_() {
-    if (!this.deviceState || !this.isUpdatedCellularUiEnabled_) {
+    if (!this.deviceState) {
       return false;
     }
     return OncMojo.deviceIsInhibited(this.deviceState);
@@ -698,7 +690,7 @@ Polymer({
     if (!this.deviceIsEnabled_(deviceState)) {
       return false;
     }
-    return globalPolicy && !globalPolicy.allowOnlyPolicyNetworksToConnect;
+    return globalPolicy && !globalPolicy.allowOnlyPolicyWifiNetworksToConnect;
   },
 
   /**
@@ -820,8 +812,8 @@ Polymer({
         this.isPolicySource(state.source) || !this.globalPolicy) {
       return false;
     }
-    return !!this.globalPolicy.allowOnlyPolicyNetworksToConnect ||
-        (!!this.globalPolicy.allowOnlyPolicyNetworksToConnectIfAvailable &&
+    return !!this.globalPolicy.allowOnlyPolicyWifiNetworksToConnect ||
+        (!!this.globalPolicy.allowOnlyPolicyWifiNetworksToConnectIfAvailable &&
          !!this.deviceState && !!this.deviceState.managedNetworkAvailable) ||
         (!!this.globalPolicy.blockedHexSsids &&
          this.globalPolicy.blockedHexSsids.includes(
@@ -860,48 +852,6 @@ Polymer({
     }
 
     return true;
-  },
-
-  /**
-   * @param {!OncMojo.DeviceStateProperties|undefined} deviceState
-   * @param {!OncMojo.DeviceStateProperties|undefined} tetherDeviceState
-   * @return {boolean}
-   * @private
-   */
-  tetherToggleIsVisible_(deviceState, tetherDeviceState) {
-    // Do not show instant tether toggle if Updated Cellular UI is enabled.
-    // This toggle will be removed from the mobile data subpage.
-    if (this.isUpdatedCellularUiEnabled_) {
-      return false;
-    }
-
-    return !!deviceState && deviceState.type === mojom.NetworkType.kCellular &&
-        !!tetherDeviceState;
-  },
-
-  /**
-   * @param {!OncMojo.DeviceStateProperties|undefined} deviceState
-   * @param {!OncMojo.DeviceStateProperties|undefined} tetherDeviceState
-   * @return {boolean}
-   * @private
-   */
-  tetherToggleIsEnabled_(deviceState, tetherDeviceState) {
-    return this.tetherToggleIsVisible_(deviceState, tetherDeviceState) &&
-        this.enableToggleIsEnabled_(tetherDeviceState) &&
-        tetherDeviceState.deviceState !==
-        chromeos.networkConfig.mojom.DeviceStateType.kUninitialized;
-  },
-
-  /**
-   * @param {!Event} event
-   * @private
-   */
-  onTetherEnabledChange_(event) {
-    this.fire('device-enabled-toggled', {
-      enabled: !this.deviceIsEnabled_(this.tetherDeviceState),
-      type: mojom.NetworkType.kTether,
-    });
-    event.stopPropagation();
   },
 
   /**
@@ -947,10 +897,6 @@ Polymer({
    * @private
    */
   shouldShowCellularNetworkList_() {
-    if (!this.isUpdatedCellularUiEnabled_) {
-      return false;
-    }
-
     // Only shown if the currently-active subpage is for Cellular networks.
     return !!this.deviceState &&
         this.deviceState.type === mojom.NetworkType.kCellular;

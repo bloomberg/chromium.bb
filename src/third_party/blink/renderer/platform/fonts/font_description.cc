@@ -38,7 +38,7 @@
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hasher.h"
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #endif
 
@@ -247,8 +247,7 @@ FontDescription FontDescription::SizeAdjustedFontDescription(
 
 FontCacheKey FontDescription::CacheKey(
     const FontFaceCreationParams& creation_params,
-    bool is_unique_match,
-    const FontSelectionRequest& font_selection_request) const {
+    bool is_unique_match) const {
   unsigned options =
       static_cast<unsigned>(fields_.font_optical_sizing_) << 7 |  // bit 8
       static_cast<unsigned>(fields_.synthetic_italic_) << 6 |     // bit 7
@@ -266,6 +265,12 @@ FontCacheKey FontDescription::CacheKey(
                          options | font_selection_request_.GetHash() << 9,
                          device_scale_factor_for_key, variation_settings_,
                          is_unique_match);
+#if defined(OS_ANDROID)
+  if (const LayoutLocale* locale = Locale()) {
+    if (FontCache::GetLocaleSpecificFamilyName(creation_params.Family()))
+      cache_key.SetLocale(locale->LocaleForSkFontMgr());
+  }
+#endif  // defined(OS_ANDROID)
   return cache_key;
 }
 
@@ -383,7 +388,7 @@ unsigned FontDescription::GetHash() const {
   unsigned hash = StyleHashWithoutFamilyList();
   for (const FontFamily* family = &family_list_; family;
        family = family->Next()) {
-    if (!family->Family().length())
+    if (family->Family().IsEmpty())
       continue;
     WTF::AddIntToHash(hash, WTF::AtomicStringHash::GetHash(family->Family()));
   }
@@ -581,6 +586,26 @@ String FontDescription::ToString(FontVariantCaps variant) {
       return "Unicase";
     case FontVariantCaps::kTitlingCaps:
       return "TitlingCaps";
+  }
+  return "Unknown";
+}
+
+String FontDescription::ToStringForIdl(FontVariantCaps variant) {
+  switch (variant) {
+    case FontVariantCaps::kCapsNormal:
+      return "normal";
+    case FontVariantCaps::kSmallCaps:
+      return "small-caps";
+    case FontVariantCaps::kAllSmallCaps:
+      return "all-small-caps";
+    case FontVariantCaps::kPetiteCaps:
+      return "petite-caps";
+    case FontVariantCaps::kAllPetiteCaps:
+      return "all-petite-caps";
+    case FontVariantCaps::kUnicase:
+      return "unicase";
+    case FontVariantCaps::kTitlingCaps:
+      return "titling-caps";
   }
   return "Unknown";
 }

@@ -14,7 +14,6 @@
 #include "components/sync/base/data_type_histogram.h"
 #include "components/sync/driver/configure_context.h"
 #include "components/sync/engine/data_type_activation_response.h"
-#include "components/sync/engine/model_type_configurer.h"
 #include "components/sync/model/data_type_activation_request.h"
 #include "components/sync/model/data_type_error_handler_impl.h"
 #include "components/sync/model/type_entities_count.h"
@@ -77,16 +76,6 @@ void ModelTypeController::InitModelTypeController(
   }
 }
 
-std::unique_ptr<DataTypeActivationResponse>
-ModelTypeController::ActivateManuallyForNigori() {
-  // To avoid abuse of this temporary API, we restrict it to NIGORI.
-  DCHECK_EQ(NIGORI, type());
-  DCHECK_EQ(MODEL_LOADED, state_);
-  DCHECK(activation_response_);
-  state_ = RUNNING;
-  return std::move(activation_response_);
-}
-
 void ModelTypeController::LoadModels(
     const ConfigureContext& configure_context,
     const ModelLoadCallback& model_load_callback) {
@@ -122,47 +111,29 @@ void ModelTypeController::LoadModels(
                               base::AsWeakPtr(this)));
 }
 
-DataTypeController::ActivateDataTypeResult
-ModelTypeController::ActivateDataType(ModelTypeConfigurer* configurer) {
+std::unique_ptr<DataTypeActivationResponse> ModelTypeController::Connect() {
   DCHECK(CalledOnValidThread());
-  DCHECK(configurer);
   DCHECK(activation_response_);
   DCHECK_EQ(MODEL_LOADED, state_);
-
-  bool initial_sync_done =
-      activation_response_->model_type_state.initial_sync_done();
-  // Pass activation context to ModelTypeRegistry, where ModelTypeWorker gets
-  // created and connected with the delegate (processor).
-  configurer->ActivateDataType(type(), std::move(activation_response_));
 
   state_ = RUNNING;
   DVLOG(1) << "Sync running for " << ModelTypeToString(type());
 
-  return initial_sync_done ? TYPE_ALREADY_DOWNLOADED : TYPE_NOT_YET_DOWNLOADED;
+  return std::move(activation_response_);
 }
 
-void ModelTypeController::DeactivateDataType(ModelTypeConfigurer* configurer) {
-  DCHECK(CalledOnValidThread());
-  DCHECK(configurer);
-  if (state_ == RUNNING) {
-    configurer->DeactivateDataType(type());
-    state_ = MODEL_LOADED;
-  }
-}
-
-void ModelTypeController::Stop(ShutdownReason shutdown_reason,
-                               StopCallback callback) {
+void ModelTypeController::Stop(ShutdownReason reason, StopCallback callback) {
   DCHECK(CalledOnValidThread());
 
   // Leave metadata if we do not disable sync completely.
   SyncStopMetadataFate metadata_fate = KEEP_METADATA;
-  switch (shutdown_reason) {
-    case STOP_SYNC:
+  switch (reason) {
+    case ShutdownReason::STOP_SYNC_AND_KEEP_DATA:
       break;
-    case DISABLE_SYNC:
+    case ShutdownReason::DISABLE_SYNC_AND_CLEAR_DATA:
       metadata_fate = CLEAR_METADATA;
       break;
-    case BROWSER_SHUTDOWN:
+    case ShutdownReason::BROWSER_SHUTDOWN_AND_KEEP_DATA:
       break;
   }
 
@@ -311,7 +282,7 @@ void ModelTypeController::OnDelegateStarted(
       break;
     case MODEL_STARTING:
       DCHECK(model_stop_callbacks_.empty());
-      // Hold on to the activation context until ActivateDataType is called.
+      // Hold on to the activation context until Connect is called.
       activation_response_ = std::move(activation_response);
       state_ = MODEL_LOADED;
       DVLOG(1) << "Sync start completed for " << ModelTypeToString(type());

@@ -25,6 +25,7 @@
 #include "dawn_native/Forward.h"
 #include "dawn_native/IntegerTypes.h"
 #include "dawn_native/PerStage.h"
+#include "dawn_native/VertexFormat.h"
 #include "dawn_native/dawn_platform.h"
 
 #include <bitset>
@@ -44,13 +45,29 @@ namespace tint {
 
 }  // namespace tint
 
-namespace spirv_cross {
-    class Compiler;
-}
-
 namespace dawn_native {
 
     struct EntryPointMetadata;
+
+    // Base component type of an inter-stage variable
+    enum class InterStageComponentType {
+        Sint,
+        Uint,
+        Float,
+    };
+
+    enum class InterpolationType {
+        Perspective,
+        Linear,
+        Flat,
+    };
+
+    enum class InterpolationSampling {
+        None,
+        Center,
+        Centroid,
+        Sample,
+    };
 
     using PipelineLayoutEntryPointPair = std::pair<PipelineLayoutBase*, std::string>;
     struct PipelineLayoutEntryPointPairHashFunc {
@@ -74,7 +91,6 @@ namespace dawn_native {
 
         std::unique_ptr<tint::Program> tintProgram;
         std::unique_ptr<TintSource> tintSource;
-        std::vector<uint32_t> spirv;
     };
 
     MaybeError ValidateShaderModuleDescriptor(DeviceBase* device,
@@ -147,12 +163,29 @@ namespace dawn_native {
         std::vector<SamplerTexturePair> samplerTexturePairs;
 
         // The set of vertex attributes this entryPoint uses.
-        std::bitset<kMaxVertexAttributes> usedVertexAttributes;
+        ityp::array<VertexAttributeLocation, VertexFormatBaseType, kMaxVertexAttributes>
+            vertexInputBaseTypes;
+        ityp::bitset<VertexAttributeLocation, kMaxVertexAttributes> usedVertexInputs;
 
         // An array to record the basic types (float, int and uint) of the fragment shader outputs.
-        ityp::array<ColorAttachmentIndex, wgpu::TextureComponentType, kMaxColorAttachments>
-            fragmentOutputFormatBaseTypes;
+        struct FragmentOutputVariableInfo {
+            wgpu::TextureComponentType baseType;
+            uint8_t componentCount;
+        };
+        ityp::array<ColorAttachmentIndex, FragmentOutputVariableInfo, kMaxColorAttachments>
+            fragmentOutputVariables;
         ityp::bitset<ColorAttachmentIndex, kMaxColorAttachments> fragmentOutputsWritten;
+
+        struct InterStageVariableInfo {
+            InterStageComponentType baseType;
+            uint32_t componentCount;
+            InterpolationType interpolationType;
+            InterpolationSampling interpolationSampling;
+        };
+        // Now that we only support vertex and fragment stages, there can't be both inter-stage
+        // inputs and outputs in one shader stage.
+        std::bitset<kMaxInterStageShaderVariables> usedInterStageVariables;
+        std::array<InterStageVariableInfo, kMaxInterStageShaderVariables> interStageVariables;
 
         // The local workgroup size declared for a compute entry point (or 0s otehrwise).
         Origin3D localWorkgroupSize;
@@ -166,7 +199,7 @@ namespace dawn_native {
         ShaderModuleBase(DeviceBase* device, const ShaderModuleDescriptor* descriptor);
         ~ShaderModuleBase() override;
 
-        static ShaderModuleBase* MakeError(DeviceBase* device);
+        static Ref<ShaderModuleBase> MakeError(DeviceBase* device);
 
         // Return true iff the program has an entrypoint called `entryPoint`.
         bool HasEntryPoint(const std::string& entryPoint) const;
@@ -182,7 +215,6 @@ namespace dawn_native {
             bool operator()(const ShaderModuleBase* a, const ShaderModuleBase* b) const;
         };
 
-        const std::vector<uint32_t>& GetSpirv() const;
         const tint::Program* GetTintProgram() const;
 
         void APIGetCompilationInfo(wgpu::CompilationInfoCallback callback, void* userdata);
@@ -192,23 +224,8 @@ namespace dawn_native {
 
         OwnedCompilationMessages* GetCompilationMessages() const;
 
-        ResultOrError<std::vector<uint32_t>> GeneratePullingSpirv(
-            const std::vector<uint32_t>& spirv,
-            const VertexState& vertexState,
-            const std::string& entryPoint,
-            BindGroupIndex pullingBufferBindingSet) const;
-
-        ResultOrError<std::vector<uint32_t>> GeneratePullingSpirv(
-            const tint::Program* program,
-            const VertexState& vertexState,
-            const std::string& entryPoint,
-            BindGroupIndex pullingBufferBindingSet) const;
-
       protected:
         MaybeError InitializeBase(ShaderModuleParseResult* parseResult);
-        static ResultOrError<EntryPointMetadataTable> ReflectShaderUsingSPIRVCross(
-            DeviceBase* device,
-            const std::vector<uint32_t>& spirv);
 
       private:
         ShaderModuleBase(DeviceBase* device, ObjectBase::ErrorTag tag);
@@ -219,10 +236,7 @@ namespace dawn_native {
         std::vector<uint32_t> mOriginalSpirv;
         std::string mWgsl;
 
-        // Data computed from what is in the descriptor. mSpirv is set iff !UseTintGenerator while
-        // mTintProgram is set iff UseTintGenerator.
         EntryPointMetadataTable mEntryPoints;
-        std::vector<uint32_t> mSpirv;
         std::unique_ptr<tint::Program> mTintProgram;
         std::unique_ptr<TintSource> mTintSource;  // Keep the tint::Source::File alive
 

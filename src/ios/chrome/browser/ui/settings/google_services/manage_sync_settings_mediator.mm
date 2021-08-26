@@ -9,7 +9,6 @@
 #include "base/mac/foundation_util.h"
 #include "base/notreached.h"
 #include "components/autofill/core/common/autofill_prefs.h"
-#import "components/signin/ios/browser/features.h"
 #import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"
@@ -45,9 +44,9 @@ using l10n_util::GetNSString;
 namespace {
 
 // Enterprise icon.
-NSString* kGoogleServicesEnterpriseImage = @"google_services_enterprise";
+NSString* const kGoogleServicesEnterpriseImage = @"google_services_enterprise";
 // Sync error icon.
-NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
+NSString* const kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 }  // namespace
 
 @interface ManageSyncSettingsMediator () <
@@ -142,7 +141,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
   BOOL shouldSyncEverythingBeEditable =
       (self.syncSetupService->CanSyncFeatureStart() ||
        base::FeatureList::IsEnabled(signin::kMobileIdentityConsistency)) &&
-      (!self.disabledBecauseOfSyncError || self.syncSettingsNotConfirmed);
+      (!self.disabledBecauseOfSyncError);
   BOOL shouldSyncEverythingItemBeOn =
       self.syncSetupService->CanSyncFeatureStart() &&
       self.syncSetupService->IsSyncingAllDataTypes();
@@ -248,18 +247,15 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
       toSectionWithIdentifier:AdvancedSettingsSectionIdentifier];
 
   // GoogleActivityControlsItemType.
-  if (signin::IsSSOEditingEnabled()) {
-    TableViewImageItem* googleActivityControlsItem = [[TableViewImageItem alloc]
-        initWithType:GoogleActivityControlsItemType];
-    googleActivityControlsItem.title =
-        GetNSString(IDS_IOS_MANAGE_SYNC_GOOGLE_ACTIVITY_CONTROLS_TITLE);
-    googleActivityControlsItem.detailText =
-        GetNSString(IDS_IOS_MANAGE_SYNC_GOOGLE_ACTIVITY_CONTROLS_DESCRIPTION);
-    googleActivityControlsItem.accessibilityTraits |=
-        UIAccessibilityTraitButton;
-    [model addItem:googleActivityControlsItem
-        toSectionWithIdentifier:AdvancedSettingsSectionIdentifier];
-  }
+  TableViewImageItem* googleActivityControlsItem =
+      [[TableViewImageItem alloc] initWithType:GoogleActivityControlsItemType];
+  googleActivityControlsItem.title =
+      GetNSString(IDS_IOS_MANAGE_SYNC_GOOGLE_ACTIVITY_CONTROLS_TITLE);
+  googleActivityControlsItem.detailText =
+      GetNSString(IDS_IOS_MANAGE_SYNC_GOOGLE_ACTIVITY_CONTROLS_DESCRIPTION);
+  googleActivityControlsItem.accessibilityTraits |= UIAccessibilityTraitButton;
+  [model addItem:googleActivityControlsItem
+      toSectionWithIdentifier:AdvancedSettingsSectionIdentifier];
 
   // AdvancedSettingsSectionIdentifier.
   TableViewImageItem* dataFromChromeSyncItem =
@@ -281,29 +277,6 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
   BOOL needsUpdate =
       self.shouldEncryptionItemBeEnabled &&
       (self.encryptionItem.enabled != self.shouldEncryptionItemBeEnabled);
-  if (self.shouldEncryptionItemBeEnabled &&
-      self.syncSetupService->GetSyncServiceState() ==
-          SyncSetupService::kSyncServiceNeedsPassphrase) {
-    needsUpdate = needsUpdate || self.encryptionItem.image == nil;
-    self.encryptionItem.image =
-        [UIImage imageNamed:kGoogleServicesSyncErrorImage];
-    self.encryptionItem.detailText = GetNSString(
-        IDS_IOS_GOOGLE_SERVICES_SETTINGS_ENTER_PASSPHRASE_TO_START_SYNC);
-  } else if (self.shouldEncryptionItemBeEnabled &&
-             self.syncSetupService->GetSyncServiceState() ==
-                 SyncSetupService::kSyncServiceNeedsTrustedVaultKey) {
-    needsUpdate = needsUpdate || self.encryptionItem.image == nil;
-    self.encryptionItem.image =
-        [UIImage imageNamed:kGoogleServicesSyncErrorImage];
-    self.encryptionItem.detailText =
-        GetNSString(self.syncSetupService->IsEncryptEverythingEnabled()
-                        ? IDS_IOS_SYNC_ERROR_DESCRIPTION
-                        : IDS_IOS_SYNC_PASSWORDS_ERROR_DESCRIPTION);
-  } else {
-    needsUpdate = needsUpdate || self.encryptionItem.image != nil;
-    self.encryptionItem.image = nil;
-    self.encryptionItem.detailText = nil;
-  }
   self.encryptionItem.enabled = self.shouldEncryptionItemBeEnabled;
   if (self.shouldEncryptionItemBeEnabled) {
     self.encryptionItem.textColor = nil;
@@ -417,23 +390,17 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 
 #pragma mark - Properties
 
-- (BOOL)syncSettingsNotConfirmed {
-  SyncSetupService::SyncServiceState state =
-      self.syncSetupService->GetSyncServiceState();
-  return state == SyncSetupService::kSyncSettingsNotConfirmed;
-}
-
 - (BOOL)disabledBecauseOfSyncError {
   switch (self.syncSetupService->GetSyncServiceState()) {
     case SyncSetupService::kSyncServiceUnrecoverableError:
     case SyncSetupService::kSyncServiceSignInNeedsUpdate:
-    case SyncSetupService::kSyncSettingsNotConfirmed:
     case SyncSetupService::kSyncServiceCouldNotConnect:
     case SyncSetupService::kSyncServiceServiceUnavailable:
       return YES;
     case SyncSetupService::kNoSyncServiceError:
     case SyncSetupService::kSyncServiceNeedsPassphrase:
     case SyncSetupService::kSyncServiceNeedsTrustedVaultKey:
+    case SyncSetupService::kSyncSettingsNotConfirmed:
     case SyncSetupService::kSyncServiceTrustedVaultRecoverabilityDegraded:
       return NO;
   }
@@ -444,17 +411,20 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
   if (base::FeatureList::IsEnabled(signin::kMobileIdentityConsistency)) {
     return (!self.syncSetupService->IsSyncingAllDataTypes() ||
             !self.syncSetupService->IsSyncRequested()) &&
-           (!self.disabledBecauseOfSyncError || self.syncSettingsNotConfirmed);
+           (!self.disabledBecauseOfSyncError);
   }
   return (!self.syncSetupService->IsSyncingAllDataTypes() &&
           self.syncSetupService->CanSyncFeatureStart() &&
-          (!self.disabledBecauseOfSyncError || self.syncSettingsNotConfirmed));
+          (!self.disabledBecauseOfSyncError));
 }
 
+// Only requires Sync-the-feature to not have any disable reasons and for the
+// user to be signed-in. Sync-the-transport may still be initializing.
 - (BOOL)shouldEncryptionItemBeEnabled {
-  return self.syncService->IsEngineInitialized() &&
-         self.syncSetupService->CanSyncFeatureStart() &&
-         !self.disabledBecauseOfSyncError;
+  return self.syncSetupService->CanSyncFeatureStart() &&
+         !self.disabledBecauseOfSyncError &&
+         self.syncSetupService->GetSyncServiceState() !=
+             SyncSetupService::kSyncServiceNeedsTrustedVaultKey;
 }
 
 - (BOOL)shouldDisplaySignoutSection {
@@ -643,6 +613,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
   syncErrorItem.text = GetNSString(IDS_IOS_SYNC_ERROR_TITLE);
   syncErrorItem.detailText =
       GetSyncErrorDescriptionForSyncSetupService(self.syncSetupService);
+  syncErrorItem.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
   switch (itemType) {
     case ShowPassphraseDialogErrorItemType:
       // Special case only for the sync passphrase error message. The regular

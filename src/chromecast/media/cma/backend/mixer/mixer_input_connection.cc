@@ -13,9 +13,9 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/cxx17_backports.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/numerics/ranges.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -871,9 +871,12 @@ double MixerInputConnection::ExtraDelayFrames() {
   //   * Data in the rate shifter.
   //   * Data buffered in the fader.
   //   * Queued data in |queue_|.
+  // Note that the delay for data that will be pushed into the rate shifter
+  // (ie, fader and queue_) needs to be adjusted for the current playback rate.
   return mixer_read_size_ + audio_clock_simulator_.DelayFrames() +
-         rate_shifter_.BufferedFrames() + timestamped_fader_->BufferedFrames() +
-         (queued_frames_ / playback_rate_);
+         rate_shifter_.BufferedFrames() +
+         ((timestamped_fader_->BufferedFrames() + queued_frames_) /
+          playback_rate_);
 }
 
 void MixerInputConnection::InitializeAudioPlayback(
@@ -1177,8 +1180,8 @@ int MixerInputConnection::FillTimestampedAudio(int num_frames,
                               input_samples_per_second_);
 
     const int64_t error =
-        base::ClampToRange(playout_time - desired_playout_time,
-                           -kTimestampErrorLimit, kTimestampErrorLimit);
+        base::clamp(playout_time - desired_playout_time, -kTimestampErrorLimit,
+                    kTimestampErrorLimit);
     if (error < -max_timestamp_error_ ||
         (after_silence &&
          error < -1e6 / (input_samples_per_second_ * playback_rate_))) {
@@ -1218,7 +1221,7 @@ int MixerInputConnection::FillTimestampedAudio(int num_frames,
         queued_frames_ -= frames_to_crop;
       }
 
-      if (!after_silence) {
+      if (!after_silence && !never_crop_) {
         timestamped_fader_->AddSilence(0);
         return filled;  // Fade out.
       }

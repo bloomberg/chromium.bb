@@ -50,6 +50,10 @@ enum { kCVPixelFormatType_420YpCbCr10BiPlanarFullRange = 'xf20' };
 enum { kCVPixelFormatType_420YpCbCr10BiPlanarVideoRange = 'x420' };
 #endif
 
+#ifndef TARGET_CPU_ARM64
+#   define TARGET_CPU_ARM64 0
+#endif
+
 typedef OSStatus (*getParameterSetAtIndex)(CMFormatDescriptionRef videoDesc,
                                            size_t parameterSetIndex,
                                            const uint8_t **parameterSetPointerOut,
@@ -1034,7 +1038,7 @@ static int get_cv_ycbcr_matrix(AVCodecContext *avctx, CFStringRef *matrix) {
 // constant quality only on Macs with Apple Silicon
 static bool vtenc_qscale_enabled(void)
 {
-    return TARGET_OS_OSX && TARGET_CPU_ARM64;
+    return !TARGET_OS_IPHONE && TARGET_CPU_ARM64;
 }
 
 static int vtenc_create_encoder(AVCodecContext   *avctx,

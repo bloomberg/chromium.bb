@@ -150,7 +150,7 @@ class NET_EXPORT URLRequestContextBuilder {
   // associated HttpNetworkSession are consistent.
   static void SetHttpNetworkSessionComponents(
       const URLRequestContext* request_context,
-      HttpNetworkSession::Context* session_context);
+      HttpNetworkSessionContext* session_context);
 
   // These functions are mutually exclusive.  The ProxyConfigService, if
   // set, will be used to construct a ConfiguredProxyResolutionService.
@@ -252,15 +252,16 @@ class NET_EXPORT URLRequestContextBuilder {
   void EnableHttpCache(const HttpCacheParams& params);
   void DisableHttpCache();
 
-  // Override default HttpNetworkSession::Params settings.
+  // Override default HttpNetworkSessionParams settings.
   void set_http_network_session_params(
-      const HttpNetworkSession::Params& http_network_session_params) {
+      const HttpNetworkSessionParams& http_network_session_params) {
     http_network_session_params_ = http_network_session_params;
   }
 
-  void set_transport_security_persister_path(
-      const base::FilePath& transport_security_persister_path) {
-    transport_security_persister_path_ = transport_security_persister_path;
+  void set_transport_security_persister_file_path(
+      const base::FilePath& transport_security_persister_file_path) {
+    transport_security_persister_file_path_ =
+        transport_security_persister_file_path;
   }
 
   void set_hsts_policy_bypass_list(
@@ -354,9 +355,9 @@ class NET_EXPORT URLRequestContextBuilder {
   bool cookie_store_set_by_client_ = false;
 
   HttpCacheParams http_cache_params_;
-  HttpNetworkSession::Params http_network_session_params_;
+  HttpNetworkSessionParams http_network_session_params_;
   CreateHttpTransactionFactoryCallback create_http_network_transaction_factory_;
-  base::FilePath transport_security_persister_path_;
+  base::FilePath transport_security_persister_file_path_;
   std::vector<std::string> hsts_policy_bypass_list_;
   NetLog* net_log_ = nullptr;
   std::unique_ptr<HostResolver> host_resolver_;

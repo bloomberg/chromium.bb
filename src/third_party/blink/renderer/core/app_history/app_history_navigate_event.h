@@ -18,6 +18,7 @@
 
 namespace blink {
 
+class AbortSignal;
 class AppHistoryDestination;
 class AppHistoryNavigateEventInit;
 class ExceptionState;
@@ -41,10 +42,12 @@ class AppHistoryNavigateEvent final : public Event,
 
   void SetUrl(const KURL& url) { url_ = url; }
 
+  String navigationType() { return navigation_type_; }
+  AppHistoryDestination* destination() { return destination_; }
   bool canRespond() const { return can_respond_; }
   bool userInitiated() const { return user_initiated_; }
   bool hashChange() const { return hash_change_; }
-  AppHistoryDestination* destination() { return destination_; }
+  AbortSignal* signal() { return signal_; }
   FormData* formData() const { return form_data_; }
   ScriptValue info() const { return info_; }
 
@@ -52,24 +55,25 @@ class AppHistoryNavigateEvent final : public Event,
                    ScriptPromise newNavigationAction,
                    ExceptionState&);
 
-  ScriptPromise GetNavigationActionPromise() {
-    return navigation_action_promise_;
+  const HeapVector<ScriptPromise>& GetNavigationActionPromisesList() {
+    return navigation_action_promises_list_;
   }
-  void ClearNavigationActionPromise();
 
   const AtomicString& InterfaceName() const final;
   void Trace(Visitor*) const final;
 
  private:
+  String navigation_type_;
+  Member<AppHistoryDestination> destination_;
   bool can_respond_;
   bool user_initiated_;
   bool hash_change_;
-  Member<AppHistoryDestination> destination_;
+  Member<AbortSignal> signal_;
   Member<FormData> form_data_;
   ScriptValue info_;
 
   KURL url_;
-  ScriptPromise navigation_action_promise_;
+  HeapVector<ScriptPromise> navigation_action_promises_list_;
 };
 
 }  // namespace blink

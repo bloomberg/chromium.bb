@@ -6,6 +6,7 @@ const {assert} = chai;
 
 import * as SDK from '../../../../../front_end/core/sdk/sdk.js';
 import * as Common from '../../../../../front_end/core/common/common.js';
+import type * as Protocol from '../../../../../front_end/generated/protocol.js';
 
 class MockResourceTreeModel extends Common.ObjectWrapper.ObjectWrapper {
   private targetId: string;
@@ -62,9 +63,10 @@ describe('FrameManager', () => {
     return mockModel;
   }
 
-  function addMockFrame(model: ResourceTreeModel, frameId: string): MockResourceTreeFrame {
+  function addMockFrame(model: ResourceTreeModel, frameId: string): SDK.ResourceTreeModel.ResourceTreeFrame {
     const targetId = model.target().id();
-    const mockFrame = new MockResourceTreeFrame(frameId, targetId);
+    const mockFrame =
+        new MockResourceTreeFrame(frameId, targetId) as unknown as SDK.ResourceTreeModel.ResourceTreeFrame;
     model.dispatchEventToListeners(SDK.ResourceTreeModel.Events.FrameAdded, mockFrame);
     return mockFrame;
   }
@@ -116,7 +118,7 @@ describe('FrameManager', () => {
     assert.deepEqual(dispatchedEvents[2].data, {frameId: 'child-frame-id'});
     let frameFromId = frameManager.getFrame('parent-frame-id');
     assert.strictEqual(frameFromId?.id, 'parent-frame-id');
-    assert.strictEqual(frameFromId?.resourceTreeModel().target().id(), 'target-id');
+    assert.strictEqual(frameFromId?.resourceTreeModel().target().id(), 'target-id' as Protocol.Target.TargetID);
     frameFromId = frameManager.getFrame('child-frame-id');
     assert.strictEqual(frameFromId, null);
   });
@@ -181,10 +183,10 @@ describe('FrameManager', () => {
     });
     let frameFromId = frameManager.getFrame('parent-frame-id');
     assert.strictEqual(frameFromId?.id, 'parent-frame-id');
-    assert.strictEqual(frameFromId?.resourceTreeModel().target().id(), 'parent-target-id');
+    assert.strictEqual(frameFromId?.resourceTreeModel().target().id(), 'parent-target-id' as Protocol.Target.TargetID);
     frameFromId = frameManager.getFrame('child-frame-id');
     assert.strictEqual(frameFromId?.id, 'child-frame-id');
-    assert.strictEqual(frameFromId?.resourceTreeModel().target().id(), 'child-target-id');
+    assert.strictEqual(frameFromId?.resourceTreeModel().target().id(), 'child-target-id' as Protocol.Target.TargetID);
   });
 
   it('transfers frame creation stack traces during OOPIF transfer (case 1)', () => {

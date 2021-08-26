@@ -31,6 +31,7 @@
 #include "chrome/updater/win/setup/setup_util.h"
 #include "chrome/updater/win/task_scheduler.h"
 #include "chrome/updater/win/win_constants.h"
+#include "chrome/updater/win/win_util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace updater {
@@ -57,9 +58,13 @@ void DeleteComService() {
                                    WorkItem::kWow64Default);
   }
 
-  if (!installer::InstallServiceWorkItem::DeleteService(
-          kWindowsServiceName, base::ASCIIToWide(UPDATER_KEY), {}, {}))
-    LOG(WARNING) << "DeleteService failed.";
+  for (const bool is_internal_service : {true, false}) {
+    const std::wstring service_name = GetServiceName(is_internal_service);
+    if (!installer::InstallServiceWorkItem::DeleteService(
+            service_name.c_str(), base::ASCIIToWide(UPDATER_KEY), {}, {})) {
+      LOG(WARNING) << "DeleteService [" << service_name << "] failed.";
+    }
+  }
 }
 
 void DeleteComInterfaces(HKEY root) {

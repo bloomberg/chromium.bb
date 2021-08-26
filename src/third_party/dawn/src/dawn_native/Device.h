@@ -193,7 +193,6 @@ namespace dawn_native {
         RenderBundleEncoder* APICreateRenderBundleEncoder(
             const RenderBundleEncoderDescriptor* descriptor);
         RenderPipelineBase* APICreateRenderPipeline(const RenderPipelineDescriptor* descriptor);
-        RenderPipelineBase* APICreateRenderPipeline2(const RenderPipelineDescriptor* descriptor);
         ExternalTextureBase* APICreateExternalTexture(const ExternalTextureDescriptor* descriptor);
         SamplerBase* APICreateSampler(const SamplerDescriptor* descriptor);
         ShaderModuleBase* APICreateShaderModule(const ShaderModuleDescriptor* descriptor);
@@ -342,6 +341,7 @@ namespace dawn_native {
             const TextureViewDescriptor* descriptor) = 0;
 
         virtual MaybeError TickImpl() = 0;
+        void FlushCallbackTaskQueue();
 
         ResultOrError<Ref<BindGroupLayoutBase>> CreateEmptyBindGroupLayout();
 

@@ -4,6 +4,7 @@
 
 import {assert, assertNotReached} from '../chrome_util.js';
 import {reportError} from '../error.js';
+import {Point} from '../geometry.js';
 import {
   ErrorLevel,
   ErrorType,
@@ -15,8 +16,11 @@ import {
 } from '../type.js';
 import {WaitableEvent} from '../waitable_event.js';
 
-import {MockDocumentScanner} from './mock_document_scanner.js';
-import {wrapEndpoint} from './util.js';
+import {
+  closeEndpoint,
+  MojoEndpoint,  // eslint-disable-line no-unused-vars
+  wrapEndpoint,
+} from './util.js';
 
 /**
  * Parse the entry data according to its type.
@@ -477,8 +481,7 @@ export class DeviceOperator {
    *     handles the metadata.
    * @param {!cros.mojom.StreamType} streamType Stream type which the observer
    *     gets the metadata from.
-   * @return {!Promise<number>} id for the added observer. Can be used later to
-   *     identify and remove the inserted observer.
+   * @return {!Promise<!MojoEndpoint>} Added observer endpoint.
    * @throws {!Error} if fails to construct device connection.
    */
   async addMetadataObserver(deviceId, callback, streamType) {
@@ -487,24 +490,9 @@ export class DeviceOperator {
     observerCallbackRouter.onMetadataAvailable.addListener(callback);
 
     const device = await this.getDevice_(deviceId);
-    const {id} = await device.addResultMetadataObserver(
+    await device.addResultMetadataObserver(
         observerCallbackRouter.$.bindNewPipeAndPassRemote(), streamType);
-    return id;
-  }
-
-  /**
-   * Remove a metadata observer from Camera App Device. A metadata observer
-   * is recognized by its id returned by addMetadataObserver upon insertion.
-   * @param {string} deviceId The id for target camera device.
-   * @param {number} observerId The id for the metadata observer to be removed.
-   * @return {!Promise<boolean>} Promise for the result. It will be resolved
-   *     with a boolean indicating whether the removal is successful or not.
-   * @throws {!Error} if fails to construct device connection.
-   */
-  async removeMetadataObserver(deviceId, observerId) {
-    const device = await this.getDevice_(deviceId);
-    const {isSuccess} = await device.removeResultMetadataObserver(observerId);
-    return isSuccess;
+    return observerCallbackRouter;
   }
 
   /**
@@ -516,7 +504,7 @@ export class DeviceOperator {
    *
    * @param {string} deviceId The id for target camera device.
    * @param {function(): void} callback Callback to trigger on shutter done.
-   * @return {!Promise<number>} Id for the added observer.
+   * @return {!Promise<!MojoEndpoint>} Added observer endpoint.
    * @throws {!Error} if fails to construct device connection.
    */
   async addShutterObserver(deviceId, callback) {
@@ -525,22 +513,9 @@ export class DeviceOperator {
     observerCallbackRouter.onShutterDone.addListener(callback);
 
     const device = await this.getDevice_(deviceId);
-    const {id} = await device.addCameraEventObserver(
+    await device.addCameraEventObserver(
         observerCallbackRouter.$.bindNewPipeAndPassRemote());
-    return id;
-  }
-
-  /**
-   * Removes a shutter observer from Camera App Device.
-   * @param {string} deviceId The id of target camera device.
-   * @param {number} observerId The id of the observer to be removed.
-   * @return {!Promise<boolean>} True when the observer is successfully removed.
-   * @throws {!Error} if fails to construct device connection.
-   */
-  async removeShutterObserver(deviceId, observerId) {
-    const device = await this.getDevice_(deviceId);
-    const {isSuccess} = await device.removeCameraEventObserver(observerId);
-    return isSuccess;
+    return observerCallbackRouter;
   }
 
   /**
@@ -596,7 +571,11 @@ export class DeviceOperator {
    * @param {string} deviceId Id of the target device.
    */
   dropConnection(deviceId) {
-    this.devices_.delete(deviceId);
+    const device = this.devices_.get(deviceId);
+    if (device !== undefined) {
+      closeEndpoint(device);
+      this.devices_.delete(deviceId);
+    }
   }
 
   /**
@@ -613,32 +592,24 @@ export class DeviceOperator {
   }
 
   /**
-   * Registers a document corners detector and triggers |callback| if the
+   * Registers a document corners observer and triggers |callback| if the
    * detected corners are updated.
    * @param {string} deviceId The id of target camera device.
-   * @param {function(!Array<gfx.mojom.PointF>): void} callback Callback to
+   * @param {function(!Array<Point>): void} callback Callback to
    *     trigger when the detected corners are updated.
-   * @return {!Promise<number>} Id for the added detector.
+   * @return {!Promise<!MojoEndpoint>} Added observer endpoint.
    */
-  async registerDocumentCornersDetector(deviceId, callback) {
-    // TODO(b/180564352): Switch to the actual implementation once it is ready.
-    const {id} =
-        await MockDocumentScanner.getInstance().registerDocumentCornersDetector(
-            callback);
-    return id;
-  }
+  async registerDocumentCornersObserver(deviceId, callback) {
+    const observerCallbackRouter =
+        wrapEndpoint(new cros.mojom.DocumentCornersObserverCallbackRouter());
+    observerCallbackRouter.onDocumentCornersUpdated.addListener((corners) => {
+      callback(corners.map((c) => new Point(c.x, c.y)));
+    });
 
-  /**
-   * Unregisters the document corners detector given by its id.
-   * @param {string} deviceId The id of target camera device.
-   * @param {number} detectorId The id of the detector.
-   * @return {!Promise<boolean>} True if it succeed.
-   */
-  async unregisterDocumentCornersDetector(deviceId, detectorId) {
-    // TODO(b/180564352): Switch to the actual implementation once it is ready.
-    const {isSuccess} = await MockDocumentScanner.getInstance()
-                            .unregisterDocumentCornersDetector(detectorId);
-    return isSuccess;
+    const device = await this.getDevice_(deviceId);
+    await device.registerDocumentCornersObserver(
+        observerCallbackRouter.$.bindNewPipeAndPassRemote());
+    return observerCallbackRouter;
   }
 
   /**

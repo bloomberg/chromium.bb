@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/location.h"
@@ -154,10 +155,9 @@ void PDFiumFormFiller::Form_OutputSelectedRect(FPDF_FORMFILLINFO* param,
                                                double bottom) {
   PDFiumEngine* engine = GetEngine(param);
   int page_index = engine->GetVisiblePageIndex(page);
-  if (page_index == -1) {
-    NOTREACHED();
+  if (page_index == -1)
     return;
-  }
+
   gfx::Rect rect = engine->pages_[page_index]->PageToScreen(
       engine->GetVisibleRect().origin(), engine->current_zoom_, left, top,
       right, bottom, engine->layout_.options().default_page_orientation());
@@ -230,12 +230,11 @@ FPDF_PAGE PDFiumFormFiller::Form_GetCurrentPage(FPDF_FORMFILLINFO* param,
   int index = engine->last_focused_page_;
   if (index == -1) {
     index = engine->GetMostVisiblePage();
-    if (index == -1) {
-      NOTREACHED();
+    if (index == -1)
       return nullptr;
-    }
   }
 
+  DCHECK_NE(index, -1);
   return engine->pages_[index]->GetPage();
 }
 
@@ -425,18 +424,18 @@ void PDFiumFormFiller::Form_GetPageViewRect(FPDF_FORMFILLINFO* param,
   float screen_top_in_page_coords =
       page_height * (0 - page_view_rect.y()) / page_view_rect.height();
   // The bottom-most y position that is visible on the screen is the bottom of
-  // the plugin area, which is y = engine->plugin_size_.height().
+  // the plugin area, which is y = engine->plugin_size().height().
   float screen_bottom_in_page_coords =
-      page_height * (engine->plugin_size_.height() - page_view_rect.y()) /
+      page_height * (engine->plugin_size().height() - page_view_rect.y()) /
       page_view_rect.height();
   // The left-most x position that is visible on the screen is the left of the
   // plugin area, which is x = 0.
   float screen_left_in_page_coords =
       page_width * (0 - page_view_rect.x()) / page_view_rect.width();
   // The right-most x position that is visible on the screen is the right of the
-  // plugin area, which is x = engine->plugin_size_.width().
+  // plugin area, which is x = engine->plugin_size().width().
   float screen_right_in_page_coords =
-      page_width * (engine->plugin_size_.width() - page_view_rect.x()) /
+      page_width * (engine->plugin_size().width() - page_view_rect.x()) /
       page_view_rect.width();
 
   // Return the edge of the screen or of the page, since we're restricted to

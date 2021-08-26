@@ -233,7 +233,8 @@ namespace skvm {
              z = inst.z,
              w = inst.w;
         int immA = inst.immA,
-            immB = inst.immB;
+            immB = inst.immB,
+            immC = inst.immC;
         switch (op) {
             case Op::assert_true: write(o, op, V{x}, V{y}); break;
 
@@ -256,6 +257,7 @@ namespace skvm {
             case Op::gather32: write(o, V{id}, "=", op, Ptr{immA}, Hex{immB}, V{x}); break;
 
             case Op::uniform32: write(o, V{id}, "=", op, Ptr{immA}, Hex{immB}); break;
+            case Op::array32:   write(o, V{id}, "=", op, Ptr{immA}, Hex{immB}, Hex{immC}); break;
 
             case Op::splat: write(o, V{id}, "=", op, Splat{immA}); break;
 
@@ -346,7 +348,8 @@ namespace skvm {
                   z = inst.z,
                   w = inst.w;
             int immA = inst.immA,
-                immB = inst.immB;
+                immB = inst.immB,
+                immC = inst.immC;
             switch (op) {
                 case Op::assert_true: write(o, op, R{x}, R{y}); break;
 
@@ -369,6 +372,7 @@ namespace skvm {
                 case Op::gather32: write(o, R{d}, "=", op, Ptr{immA}, Hex{immB}, R{x}); break;
 
                 case Op::uniform32: write(o, R{d}, "=", op, Ptr{immA}, Hex{immB}); break;
+                case Op::array32:   write(o, R{d}, "=", op, Ptr{immA}, Hex{immB}, Hex{immC}); break;
 
                 case Op::splat:     write(o, R{d}, "=", op, Splat{immA}); break;
 
@@ -467,7 +471,8 @@ namespace skvm {
         std::vector<OptimizedInstruction> optimized(program.size());
         for (Val id = 0; id < (Val)program.size(); id++) {
             Instruction inst = program[id];
-            optimized[id] = {inst.op, inst.x,inst.y,inst.z,inst.w, inst.immA,inst.immB,
+            optimized[id] = {inst.op, inst.x,inst.y,inst.z,inst.w,
+                             inst.immA,inst.immB,inst.immC,
                              /*death=*/id, /*can_hoist=*/true};
         }
 
@@ -540,7 +545,8 @@ namespace skvm {
             && a.z    == b.z
             && a.w    == b.w
             && a.immA == b.immA
-            && a.immB == b.immB;
+            && a.immB == b.immB
+            && a.immC == b.immC;
     }
 
     uint32_t InstructionHash::operator()(const Instruction& inst, uint32_t seed) const {
@@ -604,18 +610,23 @@ namespace skvm {
         return {this, push(Op::load128, NA,NA,NA,NA, ptr.ix,lane) };
     }
 
-    I32 Builder::gather8 (Ptr ptr, int offset, I32 index) {
+    I32 Builder::gather8 (UPtr ptr, int offset, I32 index) {
         return {this, push(Op::gather8 , index.id,NA,NA,NA, ptr.ix,offset)};
     }
-    I32 Builder::gather16(Ptr ptr, int offset, I32 index) {
+    I32 Builder::gather16(UPtr ptr, int offset, I32 index) {
         return {this, push(Op::gather16, index.id,NA,NA,NA, ptr.ix,offset)};
     }
-    I32 Builder::gather32(Ptr ptr, int offset, I32 index) {
+    I32 Builder::gather32(UPtr ptr, int offset, I32 index) {
         return {this, push(Op::gather32, index.id,NA,NA,NA, ptr.ix,offset)};
     }
 
-    I32 Builder::uniform32(Ptr ptr, int offset) {
+    I32 Builder::uniform32(UPtr ptr, int offset) {
         return {this, push(Op::uniform32, NA,NA,NA,NA, ptr.ix, offset)};
+    }
+
+    // Note: this converts the array index into a byte offset for the op.
+    I32 Builder::array32  (UPtr ptr, int offset, int index) {
+        return {this, push(Op::array32, NA,NA,NA,NA, ptr.ix, offset, index * sizeof(int))};
     }
 
     I32 Builder::splat(int n) { return {this, push(Op::splat, NA,NA,NA,NA, n) }; }
@@ -1167,7 +1178,7 @@ namespace skvm {
         return {};
     }
 
-    Color Builder::gather(PixelFormat f, Ptr ptr, int offset, I32 index) {
+    Color Builder::gather(PixelFormat f, UPtr ptr, int offset, I32 index) {
         switch (byte_size(f)) {
             case 1: return unpack(f, gather8 (ptr, offset, index));
             case 2: return unpack(f, gather16(ptr, offset, index));
@@ -2363,7 +2374,6 @@ namespace skvm {
                     // Put it all back together, preserving the high 8 bits and low 5.
                     inst = ((disp << 5) &  (19_mask << 5))
                          | ((inst     ) & ~(19_mask << 5));
-
                     memcpy(fCode + ref, &inst, 4);
                 }
             }
@@ -2481,7 +2491,7 @@ namespace skvm {
         std::vector<llvm::Value*> vals(instructions.size());
 
         auto emit = [&](size_t i, bool scalar, IRBuilder* b) {
-            auto [op, x,y,z,w, immA,immB, death,can_hoist] = instructions[i];
+            auto [op, x,y,z,w, immA,immB,immC, death,can_hoist] = instructions[i];
 
             llvm::Type *i1    = llvm::Type::getInt1Ty (*ctx),
                        *i8    = llvm::Type::getInt8Ty (*ctx),
@@ -2985,6 +2995,7 @@ namespace skvm {
                 lookup_register(inst.w),
                 inst.immA,
                 inst.immB,
+                inst.immC,
             };
             fImpl->instructions.push_back(pinst);
         };
@@ -3209,7 +3220,8 @@ namespace skvm {
                       z = inst.z,
                       w = inst.w;
             const int immA = inst.immA,
-                      immB = inst.immB;
+                      immB = inst.immB,
+                      immC = inst.immC;
 
             // alloc_tmp() returns the first of N adjacent temporary registers,
             // each freed manually with free_tmp() or noted as our result with mark_tmp_as_dst().
@@ -3613,6 +3625,10 @@ namespace skvm {
                 case Op::uniform32: a->vbroadcastss(dst(), A::Mem{arg[immA], immB});
                                     break;
 
+                case Op::array32: a->mov(GP0, A::Mem{arg[immA], immB});
+                                  a->vbroadcastss(dst(), A::Mem{GP0, immC});
+                                  break;
+
                 case Op::index: a->vmovd((A::Xmm)dst(), N);
                                 a->vbroadcastss(dst(), dst());
                                 a->vpsubd(dst(), dst(), &iota);
@@ -3884,6 +3900,12 @@ namespace skvm {
                 case Op::uniform32: a->add(GP0, arg[immA], immB);
                                     a->ld1r4s(dst(), GP0);
                                     break;
+
+                case Op::array32: a->add(GP0, arg[immA], immB);
+                                  a->ldrd(GP0, GP0);
+                                  a->add(GP0, GP0, immC);
+                                  a->ld1r4s(dst(), GP0);
+                                  break;
 
                 case Op::gather8: {
                     // As usual, the gather base pointer is immB bytes off of uniform immA.

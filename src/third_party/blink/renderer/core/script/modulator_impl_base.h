@@ -6,8 +6,10 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_MODULATOR_IMPL_BASE_H_
 
 #include "base/single_thread_task_runner.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/module_record.h"
+#include "third_party/blink/renderer/core/script/import_map_error.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
@@ -76,14 +78,12 @@ class ModulatorImplBase : public Modulator {
                               const KURL& base_url,
                               String* failure_reason) final;
   void ResolveDynamically(const ModuleRequest& module_request,
-                          const KURL&,
                           const ReferrerScriptInfo&,
                           ScriptPromiseResolver*) override;
   const ImportMap* GetImportMapForTest() const final { return import_map_; }
 
-  ScriptValue CreateTypeError(const String& message) const override;
-  ScriptValue CreateSyntaxError(const String& message) const override;
-  void RegisterImportMap(const ImportMap*, ScriptValue error_to_rethrow) final;
+  void RegisterImportMap(const ImportMap*,
+                         absl::optional<ImportMapError> error_to_rethrow) final;
   AcquiringImportMapsState GetAcquiringImportMapsState() const final {
     return acquiring_import_maps_;
   }

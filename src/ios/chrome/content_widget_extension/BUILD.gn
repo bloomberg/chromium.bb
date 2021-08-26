@@ -11,6 +11,9 @@ import("//ios/build/config.gni")
 import("//ios/chrome/tools/strings/generate_localizable_strings.gni")
 import("//tools/grit/repack.gni")
 
+assert(ios_deployment_target == "13.0",
+       "content_widget_extension must target iOS 13.0")
+
 assert(
     ios_enable_content_widget_extension,
     "ios_enable_content_widget_extension must be true to depend on //ios/chrome/content_widget_extension")
@@ -79,16 +82,6 @@ source_set("content_widget") {
 
   assert_no_deps = [ "//ios/chrome/browser" ]
 
-  configs += [ "//build/config/compiler:enable_arc" ]
-}
-
-source_set("unit_tests") {
-  testonly = true
-  sources = [ "content_widget_view_controller_unittest.mm" ]
-  deps = [
-    ":content_widget",
-    "//testing/gtest",
-  ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 

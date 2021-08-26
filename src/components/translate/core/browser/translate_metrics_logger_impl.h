@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "components/translate/core/browser/translate_metrics_logger.h"
+#include "components/translate/core/browser/translate_prefs.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
@@ -49,6 +50,13 @@ extern const char kTranslatePageLoadRankerTimerShouldOfferTranslation[];
 extern const char kTranslatePageLoadRankerVersion[];
 extern const char kTranslatePageLoadTriggerDecision[];
 
+// Session frequency UMA histograms.
+extern const char kTranslateApplicationStartAlwaysTranslateLanguage[];
+extern const char kTranslateApplicationStartAlwaysTranslateLanguageCount[];
+extern const char kTranslateApplicationStartNeverTranslateLanguage[];
+extern const char kTranslateApplicationStartNeverTranslateLanguageCount[];
+extern const char kTranslateApplicationStartNeverTranslateSiteCount[];
+
 class NullTranslateMetricsLogger : public TranslateMetricsLogger {
  public:
   NullTranslateMetricsLogger() = default;
@@ -84,7 +92,8 @@ class NullTranslateMetricsLogger : public TranslateMetricsLogger {
   void LogDetectionReliabilityScore(
       const float& model_detection_reliability_score) override {}
   void LogUIInteraction(UIInteraction ui_interaction) override {}
-  TranslationType GetNextManualTranslationType() override;
+  TranslationType GetNextManualTranslationType(
+      bool is_context_menu_initiated_translation) override;
   void SetHasHrefTranslateTarget(bool has_href_translate_target) override {}
   void LogWasContentEmpty(bool was_content_empty) override {}
 };
@@ -106,6 +115,9 @@ class TranslateMetricsLoggerImpl : public TranslateMetricsLogger {
   TranslateMetricsLoggerImpl(const TranslateMetricsLoggerImpl&) = delete;
   TranslateMetricsLoggerImpl& operator=(const TranslateMetricsLoggerImpl&) =
       delete;
+
+  static void LogApplicationStartMetrics(
+      std::unique_ptr<TranslatePrefs> translate_prefs);
 
   // Overrides the clock used to track the time of certain actions. Should only
   // be used for testing purposes.
@@ -142,7 +154,8 @@ class TranslateMetricsLoggerImpl : public TranslateMetricsLogger {
   void LogDetectionReliabilityScore(
       const float& model_detection_reliability_score) override;
   void LogUIInteraction(UIInteraction ui_interaction) override;
-  TranslationType GetNextManualTranslationType() override;
+  TranslationType GetNextManualTranslationType(
+      bool is_context_menu_initiated_translation) override;
   void SetHasHrefTranslateTarget(bool has_href_translate_target) override;
   void LogWasContentEmpty(bool was_content_empty) override;
 

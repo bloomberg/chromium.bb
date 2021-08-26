@@ -125,7 +125,7 @@ class TextureViewSamplingTest : public DawnTest {
         const uint32_t textureWidthLevel0 = 1 << mipLevelCount;
         const uint32_t textureHeightLevel0 = 1 << mipLevelCount;
         constexpr wgpu::TextureUsage kUsage =
-            wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::Sampled;
+            wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::TextureBinding;
         mTexture = Create2DTexture(device, textureWidthLevel0, textureHeightLevel0, arrayLayerCount,
                                    mipLevelCount, kUsage);
 
@@ -498,7 +498,8 @@ class TextureViewRenderingTest : public DawnTest {
         renderPassInfo.cColorAttachments[0].clearColor = {1.0f, 0.0f, 0.0f, 1.0f};
 
         const char* oneColorFragmentShader = R"(
-            [[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
+            [[stage(fragment)]] fn main([[location(0)]] texCoord : vec2<f32>) ->
+                [[location(0)]] vec4<f32> {
                 return vec4<f32>(0.0, 1.0, 0.0, 1.0);
             }
         )";
@@ -678,6 +679,23 @@ TEST_P(TextureViewTest, OnlyCopySrcDst) {
     wgpu::TextureView view = texture.CreateView();
 }
 
+// Test that a texture view can be created from a destroyed texture without
+// backend errors.
+TEST_P(TextureViewTest, DestroyedTexture) {
+    wgpu::TextureDescriptor descriptor;
+    descriptor.size = {4, 4, 2};
+    descriptor.usage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopyDst;
+    descriptor.format = wgpu::TextureFormat::RGBA8Unorm;
+
+    wgpu::Texture texture = device.CreateTexture(&descriptor);
+    texture.Destroy();
+
+    wgpu::TextureViewDescriptor viewDesc = {};
+    viewDesc.baseArrayLayer = 1;
+    viewDesc.arrayLayerCount = 1;
+    wgpu::TextureView view = texture.CreateView(&viewDesc);
+}
+
 DAWN_INSTANTIATE_TEST(TextureViewTest,
                       D3D12Backend(),
                       MetalBackend(),
@@ -689,7 +707,8 @@ class TextureView3DTest : public DawnTest {};
 
 // Test that 3D textures and 3D texture views can be created successfully
 TEST_P(TextureView3DTest, BasicTest) {
-    wgpu::Texture texture = Create3DTexture(device, {4, 4, 4}, 3, wgpu::TextureUsage::Sampled);
+    wgpu::Texture texture =
+        Create3DTexture(device, {4, 4, 4}, 3, wgpu::TextureUsage::TextureBinding);
     wgpu::TextureView view = texture.CreateView();
 }
 

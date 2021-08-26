@@ -15,7 +15,6 @@
 #include "src/gpu/GrProgramInfo.h"
 #include "src/gpu/GrVertexWriter.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
-#include "src/gpu/glsl/GrGLSLGeometryProcessor.h"
 #include "src/gpu/glsl/GrGLSLVarying.h"
 #include "src/gpu/glsl/GrGLSLVertexGeoBuilder.h"
 #include "src/gpu/ops/GrSimpleMeshDrawOpHelper.h"
@@ -32,58 +31,54 @@ public:
 
     const char* name() const override { return "TestRectOp::GP"; }
 
-    GrGLSLGeometryProcessor* createGLSLInstance(const GrShaderCaps& caps) const override {
-        return new GLSLGP();
+    std::unique_ptr<ProgramImpl> makeProgramImpl(const GrShaderCaps&) const override {
+        class Impl : public ProgramImpl {
+        public:
+            void setData(const GrGLSLProgramDataManager& pdman,
+                         const GrShaderCaps& shaderCaps,
+                         const GrGeometryProcessor& geomProc) override {
+                const auto& gp = geomProc.cast<GP>();
+                SetTransform(pdman, shaderCaps, fLocalMatrixUni, gp.fLocalMatrix);
+            }
+
+        private:
+            void onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) override {
+                const auto& gp = args.fGeomProc.cast<GP>();
+                args.fVaryingHandler->emitAttributes(gp);
+                GrGLSLVarying colorVarying(kHalf4_GrSLType);
+                args.fVaryingHandler->addVarying("color", &colorVarying,
+                                                 GrGLSLVaryingHandler::Interpolation::kCanBeFlat);
+                args.fVertBuilder->codeAppendf("%s = %s;", colorVarying.vsOut(), gp.fInColor.name());
+                args.fFragBuilder->codeAppendf("half4 %s = %s;",
+                                               args.fOutputColor, colorVarying.fsIn());
+                args.fFragBuilder->codeAppendf("const half4 %s = half4(1);", args.fOutputCoverage);
+                WriteOutputPosition(args.fVertBuilder, gpArgs, gp.fInPosition.name());
+                WriteLocalCoord(args.fVertBuilder,
+                                args.fUniformHandler,
+                                *args.fShaderCaps,
+                                gpArgs,
+                                gp.fInLocalCoords.asShaderVar(),
+                                gp.fLocalMatrix,
+                                &fLocalMatrixUni);
+            }
+
+            UniformHandle fLocalMatrixUni;
+        };
+
+        return std::make_unique<Impl>();
     }
 
-    void getGLSLProcessorKey(const GrShaderCaps& shaderCaps,
-                             GrProcessorKeyBuilder* b) const override {
-        GLSLGP::GenKey(*this, shaderCaps, b);
+    void addToKey(const GrShaderCaps& shaderCaps, GrProcessorKeyBuilder* b) const override {
+        b->add32(ProgramImpl::ComputeMatrixKey(shaderCaps, fLocalMatrix));
     }
 
     bool wideColor() const { return fInColor.cpuType() != kUByte4_norm_GrVertexAttribType; }
 
 private:
-    class GLSLGP : public GrGLSLGeometryProcessor {
-    public:
-        void setData(const GrGLSLProgramDataManager& pdman,
-                     const GrShaderCaps& shaderCaps,
-                     const GrGeometryProcessor& geomProc) override {
-            const auto& gp = geomProc.cast<GP>();
-            SetTransform(pdman, shaderCaps, fLocalMatrixUni, gp.fLocalMatrix);
-        }
-
-        static void GenKey(const GP& gp, const GrShaderCaps& shaderCaps, GrProcessorKeyBuilder* b) {
-            b->add32(ComputeMatrixKey(shaderCaps, gp.fLocalMatrix));
-        }
-
-    private:
-        void onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) override {
-            const auto& gp = args.fGeomProc.cast<GP>();
-            args.fVaryingHandler->emitAttributes(gp);
-            GrGLSLVarying colorVarying(kHalf4_GrSLType);
-            args.fVaryingHandler->addVarying("color", &colorVarying,
-                                             GrGLSLVaryingHandler::Interpolation::kCanBeFlat);
-            args.fVertBuilder->codeAppendf("%s = %s;", colorVarying.vsOut(), gp.fInColor.name());
-            args.fFragBuilder->codeAppendf("half4 %s = %s;",
-                                           args.fOutputColor, colorVarying.fsIn());
-            args.fFragBuilder->codeAppendf("const half4 %s = half4(1);", args.fOutputCoverage);
-            WriteOutputPosition(args.fVertBuilder, gpArgs, gp.fInPosition.name());
-            WriteLocalCoord(args.fVertBuilder,
-                            args.fUniformHandler,
-                            *args.fShaderCaps,
-                            gpArgs,
-                            gp.fInLocalCoords.asShaderVar(),
-                            gp.fLocalMatrix,
-                            &fLocalMatrixUni);
-        }
-
-        UniformHandle fLocalMatrixUni;
-    };
-
-    Attribute fInPosition = {"inPosition", kFloat2_GrVertexAttribType, kFloat2_GrSLType};
+    Attribute fInPosition    = {   "inPosition", kFloat2_GrVertexAttribType, kFloat2_GrSLType};
     Attribute fInLocalCoords = {"inLocalCoords", kFloat2_GrVertexAttribType, kFloat2_GrSLType};
     Attribute fInColor;
+
     SkMatrix fLocalMatrix;
 };
 

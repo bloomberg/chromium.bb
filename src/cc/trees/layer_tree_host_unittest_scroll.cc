@@ -87,10 +87,10 @@ class LayerTreeHostScrollTest : public LayerTreeTest, public ScrollCallbacks {
   }
 
   // ScrollCallbacks
-  void DidScroll(ElementId element_id,
-                 const gfx::ScrollOffset& scroll_offset,
-                 const absl::optional<TargetSnapAreaElementIds>&
-                     snap_target_ids) override {
+  void DidCompositorScroll(ElementId element_id,
+                           const gfx::ScrollOffset& scroll_offset,
+                           const absl::optional<TargetSnapAreaElementIds>&
+                               snap_target_ids) override {
     // Simulates cc client (e.g Blink) behavior when handling impl-side scrolls.
     SetScrollOffsetFromImplSide(layer_tree_host()->LayerByElementId(element_id),
                                 scroll_offset);
@@ -621,11 +621,12 @@ class LayerTreeHostScrollTestCaseWithChild : public LayerTreeHostScrollTest {
     }
   }
 
-  void DidScroll(ElementId element_id,
-                 const gfx::ScrollOffset& offset,
-                 const absl::optional<TargetSnapAreaElementIds>&
-                     snap_target_ids) override {
-    LayerTreeHostScrollTest::DidScroll(element_id, offset, snap_target_ids);
+  void DidCompositorScroll(ElementId element_id,
+                           const gfx::ScrollOffset& offset,
+                           const absl::optional<TargetSnapAreaElementIds>&
+                               snap_target_ids) override {
+    LayerTreeHostScrollTest::DidCompositorScroll(element_id, offset,
+                                                 snap_target_ids);
     if (element_id == expected_scroll_layer_->element_id()) {
       final_scroll_offset_ = CurrentScrollOffset(expected_scroll_layer_);
       EXPECT_EQ(offset, final_scroll_offset_);
@@ -1094,7 +1095,6 @@ class SmoothScrollAnimationEndNotification : public LayerTreeHostScrollTest {
     child_layer_ = Layer::Create();
     child_layer_->SetElementId(
         LayerIdToElementIdForTesting(child_layer_->id()));
-    child_layer_->SetBounds(gfx::Size(110, 110));
 
     child_layer_->SetIsDrawable(true);
     child_layer_->SetHitTestable(true);
@@ -1111,11 +1111,11 @@ class SmoothScrollAnimationEndNotification : public LayerTreeHostScrollTest {
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void WillCommit() override {
+    if (TestEnded())
+      return;
     // Keep the test committing (otherwise the early out for no update
     // will stall the test).
-    if (layer_tree_host()->SourceFrameNumber() < 2) {
-      layer_tree_host()->SetNeedsCommit();
-    }
+    layer_tree_host()->SetNeedsCommit();
   }
 
   void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
@@ -1767,6 +1767,8 @@ class ThreadCheckingInputHandlerClient : public InputHandlerClient {
     }
   }
 
+  void SetPrefersReducedMotion(bool prefers_reduced_motion) override {}
+
   void UpdateRootLayerStateForSynchronousInputHandler(
       const gfx::ScrollOffset& total_scroll_offset,
       const gfx::ScrollOffset& max_scroll_offset,
@@ -1840,9 +1842,10 @@ class LayerTreeHostScrollTestLayerStructureChange
     }
   }
 
-  void DidScroll(ElementId element_id,
-                 const gfx::ScrollOffset&,
-                 const absl::optional<TargetSnapAreaElementIds>&) override {
+  void DidCompositorScroll(
+      ElementId element_id,
+      const gfx::ScrollOffset&,
+      const absl::optional<TargetSnapAreaElementIds>&) override {
     if (scroll_destroy_whole_tree_) {
       layer_tree_host()->SetRootLayer(nullptr);
       layer_tree_host()->property_trees()->clear();
@@ -2235,6 +2238,7 @@ class MockInputHandlerClient : public InputHandlerClient {
 
   void WillShutdown() override {}
   void Animate(base::TimeTicks) override {}
+  void SetPrefersReducedMotion(bool prefers_reduced_motion) override {}
   void UpdateRootLayerStateForSynchronousInputHandler(
       const gfx::ScrollOffset& total_scroll_offset,
       const gfx::ScrollOffset& max_scroll_offset,

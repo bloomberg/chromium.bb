@@ -59,6 +59,7 @@ import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeApplicationTestUtils;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.network.mojom.ReferrerPolicy;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 import org.chromium.url.GURL;
@@ -106,7 +107,7 @@ public final class TabbedActivityLaunchCauseMetricsTest {
             Criteria.checkThat(
                     histogramCountForValue(LaunchCauseMetrics.LaunchCause.MAIN_LAUNCHER_ICON),
                     Matchers.is(count + 1));
-        });
+        }, CHROME_LAUNCH_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
         ChromeApplicationTestUtils.fireHomeScreenIntent(mActivityTestRule.getActivity());
         mActivityTestRule.resumeMainActivityFromLauncher();
         CriteriaHelper.pollInstrumentationThread(() -> {
@@ -135,7 +136,8 @@ public final class TabbedActivityLaunchCauseMetricsTest {
                         }
                     };
                 };
-        ApplicationStatus.registerStateListenerForAllActivities(listener);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> ApplicationStatus.registerStateListenerForAllActivities(listener));
 
         final int mainCount =
                 histogramCountForValue(LaunchCauseMetrics.LaunchCause.MAIN_LAUNCHER_ICON);
@@ -145,10 +147,11 @@ public final class TabbedActivityLaunchCauseMetricsTest {
         CriteriaHelper.pollInstrumentationThread(() -> {
             Criteria.checkThat(histogramCountForValue(LaunchCauseMetrics.LaunchCause.RECENTS),
                     Matchers.is(recentsCount + 1));
-        });
+        }, CHROME_LAUNCH_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
         Assert.assertEquals(mainCount,
                 histogramCountForValue(LaunchCauseMetrics.LaunchCause.MAIN_LAUNCHER_ICON));
-        ApplicationStatus.unregisterActivityStateListener(listener);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> ApplicationStatus.unregisterActivityStateListener(listener));
     }
 
     @Test
@@ -164,7 +167,7 @@ public final class TabbedActivityLaunchCauseMetricsTest {
             Criteria.checkThat(histogramCountForValue(
                                        LaunchCauseMetrics.LaunchCause.MAIN_LAUNCHER_ICON_SHORTCUT),
                     Matchers.is(count));
-        });
+        }, CHROME_LAUNCH_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }
 
     @Test

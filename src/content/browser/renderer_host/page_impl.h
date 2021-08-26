@@ -6,8 +6,11 @@
 #define CONTENT_BROWSER_RENDERER_HOST_PAGE_IMPL_H_
 
 #include <memory>
+#include <set>
 #include <vector>
 
+#include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "content/browser/fenced_frame/fenced_frame_url_mapping.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/page.h"
@@ -22,6 +25,7 @@ namespace content {
 
 class PageDelegate;
 class RenderFrameHostImpl;
+class RenderViewHostImpl;
 
 // This implements the Page interface that is exposed to embedders of content,
 // and adds things only visible to content.
@@ -88,7 +92,36 @@ class CONTENT_EXPORT PageImpl : public Page {
     return last_main_document_source_id_;
   }
 
+  const base::UnguessableToken& anonymous_iframes_nonce() const {
+    return anonymous_iframes_nonce_;
+  }
+
+  // Sets the start time of the prerender activation navigation for this page.
+  // TODO(falken): Plumb NavigationRequest to
+  // RenderFrameHostManager::CommitPending and remove this.
+  void SetActivationStartTime(base::TimeTicks activation_start);
+
+  // Called during the prerender activation navigation. Sends an IPC to the
+  // RenderViews in the renderers, instructing them to transition their
+  // documents from prerendered to activated. Tells the corresponding
+  // RenderFrameHostImpls that the renderer will be activating their documents.
+  void ActivateForPrerendering(
+      std::set<RenderViewHostImpl*>& render_view_hosts_to_activate);
+
+  // Prerender2:
+  // Dispatches load events that were deferred to be dispatched after
+  // activation. Please note that this should only be called on prerender
+  // activation.
+  void MaybeDispatchLoadEventsOnPrerenderActivation();
+
+  void set_load_progress(double load_progress) {
+    load_progress_ = load_progress;
+  }
+  double load_progress() const { return load_progress_; }
+
  private:
+  void DidActivateAllRenderViewsForPrerendering();
+
   // This method is needed to ensure that PageImpl can both implement a Page's
   // method and define a new GetMainDocument(). Please refer to page.h for more
   // details.
@@ -97,6 +130,10 @@ class CONTENT_EXPORT PageImpl : public Page {
   // True if we've received a notification that the onload() handler has
   // run for the main document.
   bool is_on_load_completed_in_main_document_ = false;
+
+  // Overall load progress of this Page. Initial load progress value is 0.0
+  // before the load has begun.
+  double load_progress_ = 0.0;
 
   // Web application manifest URL for this page.
   // See https://w3c.github.io/manifest/#web-application-manifest.
@@ -146,6 +183,21 @@ class CONTENT_EXPORT PageImpl : public Page {
   // This page is owned by the RenderFrameHostImpl, which in turn does not
   // outlive the delegate (the contents).
   PageDelegate& delegate_;
+
+  // Nonce to be used for initializing the storage key and the network isolation
+  // key of anonymous iframes which are children of this page's document.
+  const base::UnguessableToken anonymous_iframes_nonce_ =
+      base::UnguessableToken::Create();
+
+  // Prerender2: The start time of the activation navigation for prerendering,
+  // which is passed to the renderer process, and will be accessible in the
+  // prerendered page as PerformanceNavigationTiming.activationStart. Set after
+  // navigation commit.
+  // TODO(falken): Plumb NavigationRequest to
+  // RenderFrameHostManager::CommitPending and remove this.
+  absl::optional<base::TimeTicks> activation_start_time_for_prerendering_;
+
+  base::WeakPtrFactory<PageImpl> weak_factory_{this};
 };
 
 }  // namespace content

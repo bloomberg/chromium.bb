@@ -11,8 +11,7 @@ namespace chromecast {
 
 class CastFeatureListCreator;
 
-class CastRuntimeContentBrowserClient final
-    : public shell::CastContentBrowserClient {
+class CastRuntimeContentBrowserClient : public shell::CastContentBrowserClient {
  public:
   static std::unique_ptr<CastRuntimeContentBrowserClient> Create(
       CastFeatureListCreator* feature_list_creator);
@@ -28,6 +27,10 @@ class CastRuntimeContentBrowserClient final
       PrefService* pref_service,
       media::VideoPlaneController* video_plane_controller,
       CastWindowManager* window_manager) final;
+  void OverrideWebkitPrefs(content::WebContents* web_contents,
+                           blink::web_pref::WebPreferences* prefs) override;
+  std::unique_ptr<::media::CdmFactory> CreateCdmFactory(
+      ::media::mojom::FrameInterfaceFactory* frame_interfaces) override;
 };
 
 }  // namespace chromecast

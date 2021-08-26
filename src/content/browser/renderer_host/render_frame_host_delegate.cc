@@ -42,10 +42,6 @@ bool RenderFrameHostDelegate::DidAddMessageToConsole(
   return false;
 }
 
-WebContents* RenderFrameHostDelegate::GetAsWebContents() {
-  return nullptr;
-}
-
 void RenderFrameHostDelegate::RequestMediaAccessPermission(
     const MediaStreamRequest& request,
     MediaResponseCallback callback) {
@@ -139,17 +135,8 @@ RenderFrameHostDelegate::GetJavaRenderFrameHostDelegate() {
 }
 #endif
 
-bool RenderFrameHostDelegate::IsBeingDestroyed() {
-  return false;
-}
-
 Visibility RenderFrameHostDelegate::GetVisibility() {
   return Visibility::HIDDEN;
-}
-
-RenderFrameHostImpl* RenderFrameHostDelegate::GetMainFrameForInnerDelegate(
-    FrameTreeNode* frame_tree_node) {
-  return nullptr;
 }
 
 std::vector<FrameTreeNode*> RenderFrameHostDelegate::GetUnattachedOwnedNodes(

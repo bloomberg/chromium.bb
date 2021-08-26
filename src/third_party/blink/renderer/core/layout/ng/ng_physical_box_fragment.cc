@@ -52,24 +52,16 @@ bool HasControlClip(const NGPhysicalBoxFragment& self) {
 
 bool ShouldUsePositionForPointInBlockFlowDirection(
     const LayoutObject& layout_object) {
-  const LayoutBlock* const layout_block = DynamicTo<LayoutBlock>(layout_object);
-  if (!layout_block)
-    return false;
-  if (layout_block->IsTableRow()) {
-    // See editing/selection/click-before-and-after-table.html
+  const LayoutBlockFlow* const layout_block_flow =
+      DynamicTo<LayoutBlockFlow>(layout_object);
+  if (!layout_block_flow) {
+    // For <tr>, see editing/selection/click-before-and-after-table.html
     return false;
   }
-  if (layout_block->StyleRef().SpecifiesColumns()) {
+  if (layout_block_flow->StyleRef().SpecifiesColumns()) {
     // Columns are laid out in inline direction.
     return false;
   }
-  if (layout_block->IsTable())
-    return false;
-  // Note: For legacy layout compatibility, we find child by using
-  // |PositionForPointInBlockFlowDirection()| for flex and grid.
-  // TODO(yosin): We should have specific functions for flex and grid instead
-  // of using |PositionForPointInBlockFlowDirection()|,
-  // e.g. "flex-direction:row" layouts children horizontally.
   return true;
 }
 
@@ -1244,8 +1236,16 @@ void NGPhysicalBoxFragment::AddOutlineRects(
   DCHECK(IsOutlineOwner());
 
   // For anonymous blocks, the children add outline rects.
-  if (!IsAnonymousBlock())
-    outline_rects->emplace_back(additional_offset, Size().ToLayoutSize());
+  if (!IsAnonymousBlock()) {
+    if (IsSvgText()) {
+      if (const NGFragmentItems* items = Items()) {
+        outline_rects->emplace_back(PhysicalRect::EnclosingRect(
+            GetLayoutObject()->ObjectBoundingBox()));
+      }
+    } else {
+      outline_rects->emplace_back(additional_offset, Size().ToLayoutSize());
+    }
+  }
 
   if (outline_type == NGOutlineType::kIncludeBlockVisualOverflow &&
       !HasNonVisibleOverflow() && !HasControlClip(*this)) {
@@ -1307,7 +1307,7 @@ void NGPhysicalBoxFragment::AddOutlineRectsForInlineBox(
 #if DCHECK_IS_ON()
     has_this_fragment = has_this_fragment || current.BoxFragment() == this;
 #endif
-    if (!current.Size().IsZero())
+    if (!current.Size().IsZero() && !current.GetLayoutObject()->IsSVG())
       rects->push_back(current.RectInContainerFragment());
 
     // Add descendants if any, in the container-relative coordinate.

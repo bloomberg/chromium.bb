@@ -35,20 +35,23 @@ int Tile::GetPaletteCache(const Block& block, PlaneType plane_type,
                           uint16_t* const cache) {
   const int top_size =
       (block.top_available[kPlaneY] && Mod64(MultiplyBy4(block.row4x4)) != 0)
-          ? block.bp_top->palette_mode_info.size[plane_type]
+          ? block.top_context->palette_size[plane_type][block.top_context_index]
           : 0;
-  const int left_size = block.left_available[kPlaneY]
-                            ? block.bp_left->palette_mode_info.size[plane_type]
-                            : 0;
+  const int left_size =
+      block.left_available[kPlaneY]
+          ? left_context_.palette_size[plane_type][block.left_context_index]
+          : 0;
   if (left_size == 0 && top_size == 0) return 0;
   // Merge the left and top colors in sorted order and store them in |cache|.
   uint16_t dummy[1];
-  const uint16_t* top = (top_size > 0)
-                            ? block.bp_top->palette_mode_info.color[plane_type]
-                            : dummy;
+  const uint16_t* top =
+      (top_size > 0) ? block.top_context
+                           ->palette_color[block.top_context_index][plane_type]
+                     : dummy;
   const uint16_t* left =
-      (left_size > 0) ? block.bp_left->palette_mode_info.color[plane_type]
-                      : dummy;
+      (left_size > 0)
+          ? left_context_.palette_color[block.left_context_index][plane_type]
+          : dummy;
   std::merge(top, top + top_size, left, left + left_size, cache);
   // Deduplicate the entries in |cache| and return the number of unique
   // entries.
@@ -61,8 +64,10 @@ void Tile::ReadPaletteColors(const Block& block, Plane plane) {
   uint16_t cache[2 * kMaxPaletteSize];
   const int n = GetPaletteCache(block, plane_type, cache);
   BlockParameters& bp = *block.bp;
-  const uint8_t palette_size = bp.palette_mode_info.size[plane_type];
-  uint16_t* const palette_color = bp.palette_mode_info.color[plane];
+  const uint8_t palette_size =
+      bp.prediction_parameters->palette_mode_info.size[plane_type];
+  uint16_t* const palette_color =
+      bp.prediction_parameters->palette_mode_info.color[plane];
   const int8_t bitdepth = sequence_header_.color_config.bitdepth;
   int index = 0;
   for (int i = 0; i < n && index < palette_size; ++i) {
@@ -101,7 +106,8 @@ void Tile::ReadPaletteColors(const Block& block, Plane plane) {
   std::inplace_merge(palette_color, palette_color + merge_pivot,
                      palette_color + palette_size);
   if (plane_type == kPlaneTypeUV) {
-    uint16_t* const palette_color_v = bp.palette_mode_info.color[kPlaneV];
+    uint16_t* const palette_color_v =
+        bp.prediction_parameters->palette_mode_info.color[kPlaneV];
     if (reader_.ReadBit() != 0) {  // delta_encode_palette_colors_v.
       const int bits = bitdepth - 4 + static_cast<int>(reader_.ReadLiteral(2));
       palette_color_v[0] = reader_.ReadLiteral(bitdepth);
@@ -130,8 +136,8 @@ void Tile::ReadPaletteColors(const Block& block, Plane plane) {
 
 void Tile::ReadPaletteModeInfo(const Block& block) {
   BlockParameters& bp = *block.bp;
-  bp.palette_mode_info.size[kPlaneTypeY] = 0;
-  bp.palette_mode_info.size[kPlaneTypeUV] = 0;
+  bp.prediction_parameters->palette_mode_info.size[kPlaneTypeY] = 0;
+  bp.prediction_parameters->palette_mode_info.size[kPlaneTypeUV] = 0;
   if (IsBlockSmallerThan8x8(block.size) || block.size > kBlock64x64 ||
       !frame_header_.allow_screen_content_tools) {
     return;
@@ -140,29 +146,32 @@ void Tile::ReadPaletteModeInfo(const Block& block) {
       k4x4WidthLog2[block.size] + k4x4HeightLog2[block.size] - 2;
   if (bp.y_mode == kPredictionModeDc) {
     const int context =
-        static_cast<int>(block.top_available[kPlaneY] &&
-                         block.bp_top->palette_mode_info.size[kPlaneTypeY] >
-                             0) +
-        static_cast<int>(block.left_available[kPlaneY] &&
-                         block.bp_left->palette_mode_info.size[kPlaneTypeY] >
-                             0);
+        static_cast<int>(
+            block.top_available[kPlaneY] &&
+            block.top_context
+                    ->palette_size[kPlaneTypeY][block.top_context_index] > 0) +
+        static_cast<int>(
+            block.left_available[kPlaneY] &&
+            left_context_.palette_size[kPlaneTypeY][block.left_context_index] >
+                0);
     const bool has_palette_y = reader_.ReadSymbol(
         symbol_decoder_context_.has_palette_y_cdf[block_size_context][context]);
     if (has_palette_y) {
-      bp.palette_mode_info.size[kPlaneTypeY] =
+      bp.prediction_parameters->palette_mode_info.size[kPlaneTypeY] =
           kMinPaletteSize +
           reader_.ReadSymbol<kPaletteSizeSymbolCount>(
               symbol_decoder_context_.palette_y_size_cdf[block_size_context]);
       ReadPaletteColors(block, kPlaneY);
     }
   }
-  if (block.HasChroma() && bp.uv_mode == kPredictionModeDc) {
-    const int context =
-        static_cast<int>(bp.palette_mode_info.size[kPlaneTypeY] > 0);
+  if (block.HasChroma() &&
+      bp.prediction_parameters->uv_mode == kPredictionModeDc) {
+    const int context = static_cast<int>(
+        bp.prediction_parameters->palette_mode_info.size[kPlaneTypeY] > 0);
     const bool has_palette_uv =
         reader_.ReadSymbol(symbol_decoder_context_.has_palette_uv_cdf[context]);
     if (has_palette_uv) {
-      bp.palette_mode_info.size[kPlaneTypeUV] =
+      bp.prediction_parameters->palette_mode_info.size[kPlaneTypeUV] =
           kMinPaletteSize +
           reader_.ReadSymbol<kPaletteSizeSymbolCount>(
               symbol_decoder_context_.palette_uv_size_cdf[block_size_context]);
@@ -244,7 +253,8 @@ void Tile::PopulatePaletteColorContexts(
 }
 
 bool Tile::ReadPaletteTokens(const Block& block) {
-  const PaletteModeInfo& palette_mode_info = block.bp->palette_mode_info;
+  const PaletteModeInfo& palette_mode_info =
+      block.bp->prediction_parameters->palette_mode_info;
   PredictionParameters& prediction_parameters =
       *block.bp->prediction_parameters;
   for (int plane_type = kPlaneTypeY;

@@ -103,18 +103,18 @@ CastDeviceCertPolicy GetAudioPolicy(const std::vector<X509*>& path) {
     int pos = X509_get_ext_by_NID(cert, NID_certificate_policies, -1);
     if (pos != -1) {
       X509_EXTENSION* policies_extension = X509_get_ext(cert, pos);
-      const uint8_t* in = policies_extension->value->data;
-      CERTIFICATEPOLICIES* policies = d2i_CERTIFICATEPOLICIES(
-          nullptr, &in, policies_extension->value->length);
+      const ASN1_STRING* value = X509_EXTENSION_get_data(policies_extension);
+      const uint8_t* in = ASN1_STRING_get0_data(value);
+      CERTIFICATEPOLICIES* policies =
+          d2i_CERTIFICATEPOLICIES(nullptr, &in, ASN1_STRING_length(value));
 
       if (policies) {
         // Check for |audio_only_policy_oid| in the set of policies.
         uint32_t policy_count = sk_POLICYINFO_num(policies);
         for (uint32_t i = 0; i < policy_count; ++i) {
           POLICYINFO* info = sk_POLICYINFO_value(policies, i);
-          if (info->policyid->length ==
-                  static_cast<int>(audio_only_policy_oid.length) &&
-              memcmp(info->policyid->data, audio_only_policy_oid.data,
+          if (OBJ_length(info->policyid) == audio_only_policy_oid.length &&
+              memcmp(OBJ_get0_data(info->policyid), audio_only_policy_oid.data,
                      audio_only_policy_oid.length) == 0) {
             policy = CastDeviceCertPolicy::kAudioOnly;
             break;
@@ -162,10 +162,17 @@ Error VerifyDeviceCert(const std::vector<std::string>& der_certs,
   // CertVerificationContextImpl.
   X509_NAME* target_subject =
       X509_get_subject_name(result_path.target_cert.get());
-  std::string common_name(target_subject->canon_enclen, 0);
-  int len = X509_NAME_get_text_by_NID(target_subject, NID_commonName,
-                                      &common_name[0], common_name.size());
-  if (len == 0) {
+  int len =
+      X509_NAME_get_text_by_NID(target_subject, NID_commonName, nullptr, 0);
+  if (len <= 0) {
+    return Error::Code::kErrCertsRestrictions;
+  }
+  // X509_NAME_get_text_by_NID writes one more byte than it reports, for a
+  // trailing NUL.
+  std::string common_name(len + 1, 0);
+  len = X509_NAME_get_text_by_NID(target_subject, NID_commonName,
+                                  &common_name[0], common_name.size());
+  if (len <= 0) {
     return Error::Code::kErrCertsRestrictions;
   }
   common_name.resize(len);

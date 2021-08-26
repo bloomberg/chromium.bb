@@ -42,11 +42,10 @@
 #include "third_party/base/containers/contains.h"
 #include "third_party/base/cxx17_backports.h"
 #include "third_party/base/notreached.h"
-#include "third_party/base/numerics/ranges.h"
 
 namespace {
 
-const uint8_t g_sRGBSamples1[] = {
+constexpr uint8_t kSRGBSamples1[] = {
     0,   3,   6,   10,  13,  15,  18,  20,  22,  23,  25,  27,  28,  30,  31,
     32,  34,  35,  36,  37,  38,  39,  40,  41,  42,  43,  44,  45,  46,  47,
     48,  49,  49,  50,  51,  52,  53,  53,  54,  55,  56,  56,  57,  58,  58,
@@ -62,7 +61,7 @@ const uint8_t g_sRGBSamples1[] = {
     116, 117, 117, 117, 118, 118, 118, 118, 119, 119, 119, 120,
 };
 
-const uint8_t g_sRGBSamples2[] = {
+constexpr uint8_t kSRGBSamples2[] = {
     120, 121, 122, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135,
     136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 148, 149,
     150, 151, 152, 153, 154, 155, 155, 156, 157, 158, 159, 159, 160, 161, 162,
@@ -405,8 +404,8 @@ float RGB_Conversion(float colorComponent) {
   colorComponent = pdfium::clamp(colorComponent, 0.0f, 1.0f);
   int scale = std::max(static_cast<int>(colorComponent * 1023), 0);
   if (scale < 192)
-    return g_sRGBSamples1[scale] / 255.0f;
-  return g_sRGBSamples2[scale / 4 - 48] / 255.0f;
+    return kSRGBSamples1[scale] / 255.0f;
+  return kSRGBSamples2[scale / 4 - 48] / 255.0f;
 }
 
 void XYZ_to_sRGB(float X, float Y, float Z, float* R, float* G, float* B) {
@@ -830,17 +829,22 @@ void CPDF_LabCS::GetDefaultValue(int iComponent,
                                  float* value,
                                  float* min,
                                  float* max) const {
-  DCHECK(iComponent < 3);
-  if (iComponent == 0) {
-    *min = 0.0f;
-    *max = 100 * 1.0f;
-    *value = 0.0f;
-    return;
+  DCHECK_LT(iComponent, 3);
+
+  if (iComponent > 0) {
+    float range_min = m_Ranges[iComponent * 2 - 2];
+    float range_max = m_Ranges[iComponent * 2 - 1];
+    if (range_min <= range_max) {
+      *min = range_min;
+      *max = range_max;
+      *value = pdfium::clamp(0.0f, *min, *max);
+      return;
+    }
   }
 
-  *min = m_Ranges[iComponent * 2 - 2];
-  *max = m_Ranges[iComponent * 2 - 1];
-  *value = pdfium::clamp(0.0f, *min, *max);
+  *min = 0.0f;
+  *max = 100.0f;
+  *value = 0.0f;
 }
 
 uint32_t CPDF_LabCS::v_Load(CPDF_Document* pDoc,

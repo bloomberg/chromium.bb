@@ -93,6 +93,7 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="1615402009686901181">Pravilnik skrbnika onemogoča zajem zaslona, če je vidna zaupna vsebina.</translation>
 <translation id="1632985212731562677">Stikalni dostop lahko onemogočite v »Nastavitve &gt; Dostopnost«.</translation>
 <translation id="1654477262762802994">Začetek glasovne poizvedbe</translation>
+<translation id="1655967159878494613"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; Pritisnite tipko za iskanje in preslednico, če si želite rezultat ogledati v Pomočniku.</translation>
 <translation id="1667964833127753507">Nevtralni barvni način ne uporablja barv, pridobljenih iz zaslonskega ozadja, temveč jih nadomesti s kompletom nevtralnih svetlih ali temnih odtenkov.</translation>
 <translation id="1677472565718498478">Še <ph name="TIME" /></translation>
 <translation id="1677507110654891115">Povezava s funkcijo <ph name="FEATURE_NAME" /> ni vzpostavljena.</translation>
@@ -137,7 +138,6 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="1990046457226896323">Datoteke za govor so bile prenesene.</translation>
 <translation id="1993072747612765854">Več informacij o najnovejši posodobitvi za <ph name="SYSTEM_APP_NAME" /></translation>
 <translation id="1998100899771863792">Trenutno namizje</translation>
-<translation id="1999628559811343244">Začel se je zajem omrežnih paketov</translation>
 <translation id="2016340657076538683">Vnesite sporočilo</translation>
 <translation id="2018630726571919839">Povej mi šalo</translation>
 <translation id="2021864487439853900">Kliknite za odklepanje</translation>
@@ -172,12 +172,12 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="229397294990920565">Prenos podatkov v mobilnem omrežju se izklaplja …</translation>
 <translation id="2295777434187870477">Mikrofon je vklopljen; če ga preklopite, bo izklopljen vhodni zvok.</translation>
 <translation id="2298170939937364391">Celozaslonska lupa je omogočena. Če jo želite izklopiti, znova pritisnite Ctrl + tipko za iskanje + M.</translation>
-<translation id="2301480084224169662"><ph name="DESC_TEXT" />; Kliknite pogovorno okno za ogled rezultatov v Pomočniku.</translation>
 <translation id="2302092602801625023">Ta račun upravlja Family Link</translation>
 <translation id="2303600792989757991">Preklop pregleda okna</translation>
 <translation id="2322173485024759474">Nazaj po črki</translation>
 <translation id="2339073806695260576">Dotaknite se gumba pisala na polici, če želite ustvariti zapisek, posneti posnetek zaslona ali uporabiti laserski kazalnik oziroma povečevalno steklo.</translation>
 <translation id="2341729377289034582">Zaklenjeno na pokončno</translation>
+<translation id="2350794187831162545">Govor v jeziku <ph name="LANGUAGE" /> se zdaj obdela lokalno in deluje brez povezave. Jezik nareka lahko spremenite v Settings (Nastavitve) &gt; Accessibility (Dostopnost).</translation>
 <translation id="2352467521400612932">Nastavitve pisala</translation>
 <translation id="2354174487190027830">Aktiviranje omrežja <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Naprej</translation>
@@ -208,7 +208,6 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="2595239820337756193">5 km v miljah</translation>
 <translation id="2596078834055697711">Ustvarjanje posnetka okna</translation>
 <translation id="2607678425161541573">Obvezna je spletna prijava</translation>
-<translation id="2617342710774726426">Kartica SIM je zaklenjena</translation>
 <translation id="2621713457727696555">Varno</translation>
 <translation id="2653019840645008922">Zajem okna</translation>
 <translation id="2653659639078652383">Pošlji</translation>
@@ -245,6 +244,7 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="2946119680249604491">Dodaj povezavo</translation>
 <translation id="2961963223658824723">Prišlo je do napake. Poskusite znova čez nekaj sekund.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="296762781903199866">Ni bilo mogoče prenesti datotek za govor za jezik <ph name="LANGUAGE" /></translation>
 <translation id="2970920913501714344">nameščanje aplikacij, razširitev in tem;</translation>
 <translation id="2977598380246111477">Naslednja številka</translation>
 <translation id="2992327365391326550">Gumb naprave za mikrofon je izklopljen.</translation>
@@ -325,6 +325,7 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="3571734092741541777">Nastavi</translation>
 <translation id="3573179567135747900">Spremeni nazaj v jezik »<ph name="FROM_LOCALE" />« (potreben vnovični zagon)</translation>
 <translation id="3576141592585647168">Spreminjanje časovnega pasu</translation>
+<translation id="3580650856351781466">Prenos datotek za govor</translation>
 <translation id="3593039967545720377">Dostopajte do zgodovine odložišča, tako da pritisnete <ph name="SHORTCUT_KEY_NAME" /> + V za ogled odložišča. Kopirajte element, če želite začeti.</translation>
 <translation id="3593646411856133110">Povlecite navzgor in pridržite, če si želite ogledati odprte aplikacije</translation>
 <translation id="3595596368722241419">Baterija je polna</translation>
@@ -346,7 +347,6 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="3702846122927433391">Število prebivalcev v Nigeriji</translation>
 <translation id="3705722231355495246">–</translation>
 <translation id="370665806235115550">Nalaganje ...</translation>
-<translation id="3712407551474845318">Zajem območja</translation>
 <translation id="371370241367527062">Sprednji mikrofon</translation>
 <translation id="3713734891607377840">Odpri ob dokončanju</translation>
 <translation id="3742055079367172538">Posnetek zaslona je narejen</translation>
@@ -419,6 +419,7 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="4274537685965975248">Bližnjica na tipkovnici ctrl + alt + puščica dol je spremenjena. Če želite uporabiti tipko End, pritisnite tipko za <ph name="LAUNCHER_KEY_NAME" /> in puščico desno.</translation>
 <translation id="4279490309300973883">Zrcaljenje</translation>
 <translation id="4285498937028063278">Odpni</translation>
+<translation id="4292904812939562398">Nedavno uporabljene aplikacije</translation>
 <translation id="429402653707266969">Vklop/izklop mesta orodne vrstice</translation>
 <translation id="4294319844246081198">Dobro jutro, <ph name="GIVEN_NAME" />,</translation>
 <translation id="4296136865091727875">Izbris vseh <ph name="COUNT" /> obvestil</translation>
@@ -438,6 +439,7 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="4379531060876907730">To so vaša orodja pisala</translation>
 <translation id="4389184120735010762">Pritisnili ste bližnjično tipko za zasidrano lupo. Ali jo želite vklopiti?</translation>
 <translation id="439598569299422042">Začasno zaustavljeno, <ph name="SIZE_INFO" /></translation>
+<translation id="4405151984121254935">Vrsta povezane zunanje naprave ni podprta.</translation>
 <translation id="4412944820643904175">Funkcija <ph name="FEATURE_NAME" /> je izklopljena.</translation>
 <translation id="4421231901400348175">Deljenje nadzora nad zaslonom z osebo <ph name="HELPER_NAME" /> prek pomoči na daljavo.</translation>
 <translation id="4424159417645388645">Namizje 5</translation>
@@ -484,7 +486,7 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="4696813013609194136">Odklepanje naprave s kodo starša</translation>
 <translation id="4702647871202761252">Zaslon za zasebnost je izklopljen</translation>
 <translation id="4705716602320768426">Pošiljanje povratnih informacij</translation>
-<translation id="4730258224256997107">Pomagajte nam izboljšati to!</translation>
+<translation id="4706121060329443414">Poskus prenosa bo izveden pozneje. Za zdaj bo govor poslan Googlu v obdelavo.</translation>
 <translation id="4731797938093519117">Starševski dostop</translation>
 <translation id="4734965478015604180">Vodoravno</translation>
 <translation id="4735498845456076464">Bližnjica na tipkovnici <ph name="LAUNCHER_KEY_NAME" /> + številka je spremenjena. Če želite uporabljati funkcijske tipke, pritisnite tipko za <ph name="LAUNCHER_KEY_NAME" /> in tipko v vrhnji vrstici.</translation>
@@ -541,6 +543,7 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="5083553833479578423">Odklenite več funkcij Pomočnika.</translation>
 <translation id="5136175204352732067">Priklopljena je druga tipkovnica</translation>
 <translation id="5155897006997040331">Hitrost branja</translation>
+<translation id="5166918508782100047">Nastavitve hitrih odgovorov</translation>
 <translation id="5168181903108465623">Naprave za predvajanje so na voljo</translation>
 <translation id="5170568018924773124">Prikaži v mapi</translation>
 <translation id="5176318573511391780">Snemanje delnega zaslona</translation>
@@ -590,8 +593,10 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="5600837773213129531">Če želite onemogočiti glasovni odziv, pritisnite Ctrl + Alt + Z.</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5619862035903135339">Pravilnik skrbnika onemogoča zajem zaslonske slike.</translation>
+<translation id="5620281292257375798">Samo za interno rabo</translation>
 <translation id="5625955975703555628">LTE+</translation>
 <translation id="5648021990716966815">Vtič za mikrofon</translation>
+<translation id="5649768706273821470">Poslušajte</translation>
 <translation id="5662709761327382534">Snemanje mikrofona <ph name="CURRENT_STATE" />. Pritisnite Enter, če želite vklopiti mikrofon: <ph name="NEW_STATE" />.</translation>
 <translation id="5669267381087807207">Aktiviranje</translation>
 <translation id="5673434351075758678">Iz jezika »<ph name="FROM_LOCALE" />« v jezik »<ph name="TO_LOCALE" />« po sinhronizaciji nastavitev.</translation>
@@ -619,6 +624,7 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="5837036133683224804">Ustavi zavihek <ph name="ROUTE_TITLE" /> v sprejemniku <ph name="RECEIVER_NAME" /></translation>
 <translation id="5860033963881614850">Izklopljeno</translation>
 <translation id="5860491529813859533">Vklopi</translation>
+<translation id="5867217927013474703">Zbiranje podatkov o omrežju</translation>
 <translation id="5876666360658629066">Vnos kode starša</translation>
 <translation id="5881540930187678962">Nastavitve telefonsko središče pozneje</translation>
 <translation id="5895138241574237353">Znova zaženi</translation>
@@ -656,6 +662,7 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="6073451960410192870">Ustavi snemanje</translation>
 <translation id="607652042414456612">Vaš računalnik je viden bližnjim napravam Bluetooth in bo videti kot »<ph name="NAME" />« z naslovom <ph name="ADDRESS" /></translation>
 <translation id="6094290315941448991">Pravilnik skrbnika onemogoča snemanje zaslona, če je vidna zaupna vsebina.</translation>
+<translation id="6114505516289286752">Datoteke za govor v jeziku <ph name="LANGUAGE" /> so bile prenesene</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" />.</translation>
 <translation id="612734058257491180">Pomočnik Google ni na voljo v gostujoči seji.</translation>
 <translation id="6137566720514957455">Odpri pogovorno okno za odstranjevanje za <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -674,7 +681,6 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="6284232397434400372">Ločljivost je bila spremenjena</translation>
 <translation id="6288235558961782912"><ph name="USER_EMAIL_ADDRESS" /> lahko dodate pozneje z dovoljenjem starša.</translation>
 <translation id="6291221004442998378">Se ne polni</translation>
-<translation id="6297287540776456956">S pisalom izberite območje</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> – zasuk na <ph name="ROTATION" /></translation>
 <translation id="6315170314923504164">Glasovne nastavitve</translation>
 <translation id="6330012934079202188">Prikaz oken z vseh namizij, pritisnite tipko s puščico gor, če želite prikazati okna s trenutnega namizja</translation>
@@ -700,12 +706,12 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="652139407789908527">Zaslon bo imel med to posodobitvijo prazen zaslon dlje kot običajno (največ eno minuto). Med posodabljanjem ne pritisnite gumba za vklop.</translation>
 <translation id="6528179044667508675">Ne moti</translation>
 <translation id="65320610082834431">Emodžiji</translation>
-<translation id="6537270692134705506">Zajem zaslona</translation>
 <translation id="6537924328260219877">Moč signala je <ph name="SIGNAL_STRENGTH" />, stanje baterije telefona je <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771">Predvajanje v napravi <ph name="RECEIVER_NAME" /></translation>
 <translation id="6559976592393364813">Vprašajte skrbnika</translation>
 <translation id="6570902864550063460">Polnjenje prek USB-ja</translation>
 <translation id="6585808820553845416">Seja se konča čez <ph name="SESSION_TIME_REMAINING" />.</translation>
+<translation id="6593850935013518327"><ph name="PRIMARY_TEXT" />, <ph name="SECONDARY_TEXT" /></translation>
 <translation id="661203523074512333"><ph name="SECURITY_STATUS" />, moč signala je <ph name="SIGNAL_STRENGTH" />, upravlja ga vaš skrbnik</translation>
 <translation id="6612802754306526077">Način snemanja zaslona je izbran</translation>
 <translation id="6614169507485700968">Zaslon za zasebnost je vklopljen</translation>
@@ -732,18 +738,17 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="6751826523481687655">Sledenje učinkovitosti delovanja je vklopljeno</translation>
 <translation id="6752912906630585008">Namizje <ph name="REMOVED_DESK" /> je bilo odstranjeno in združeno z namizjem <ph name="RECEIVE_DESK" /></translation>
 <translation id="6757237461819837179">Predstavnost se ne predvaja</translation>
-<translation id="6773040085467426602">Kliknite za ustavitev, če želite ustaviti trenutni postopek zajema paketov.</translation>
 <translation id="6777216307882431711">Napajanje povezanih naprav USB-C</translation>
 <translation id="6790428901817661496">Predvajanje</translation>
 <translation id="6803622936009808957">Zaslonov ni bilo mogoče zrcaliti, ker ni bilo najdene nobene podprte ločljivosti. Uporabljeno je razširjeno namizje.</translation>
 <translation id="6816797338148849397">Podatki, ki so na voljo v zvezi z vašim izborom. Za dostop uporabite tipko s puščico gor.</translation>
 <translation id="6818242057446442178">Nazaj po besedo</translation>
 <translation id="6820676911989879663">Čas za odmor!</translation>
+<translation id="6836499262298959512">Nevarna datoteka</translation>
 <translation id="6837064795450991317">Skrij namizno vrstico</translation>
 <translation id="6850010208275816200">Trenutna aplikacija je v celozaslonskem načinu. Če aplikacija zahteva geslo, najprej zaprite celozaslonski način.</translation>
 <translation id="6852052252232534364">Klik. za akt.</translation>
 <translation id="6857725247182211756"><ph name="SECONDS" /> s</translation>
-<translation id="6857811139397017780">Aktiviraj <ph name="NETWORKSERVICE" /></translation>
 <translation id="685782768769951078">{NUM_DIGITS,plural, =1{Še ena števka}one{Še # števka}two{Še # števki}few{Še # števke}other{Še # števk}}</translation>
 <translation id="6878400149835617132">Bližnjica je izklopljena</translation>
 <translation id="6886172995547742638">Naprava <ph name="DEVICE_TYPE" /> morda deluje slabše. Uporabite potrjen napajalnik USB-C z močjo <ph name="PREFERRED_MINIMUM_POWER" /> W ali več.</translation>
@@ -793,6 +798,7 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="7302889331339392448">Samodejni podnapisi so izklopljeni.</translation>
 <translation id="7303365578352795231">Odgovor v drugi napravi.</translation>
 <translation id="7305884605064981971">EDGE</translation>
+<translation id="7343581795491695942"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; Pritisnite tipko za iskanje in preslednico, če si želite rezultat ogledati v Iskanju Google.</translation>
 <translation id="7346909386216857016">V redu, razumem</translation>
 <translation id="7348093485538360975">Zaslonska tipkovnica</translation>
 <translation id="735745346212279324">Povezava z navideznim zasebnim omrežjem je prekinjena</translation>
@@ -880,6 +886,7 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="7901405293566323524">Središče za telefone</translation>
 <translation id="7902625623987030061">Dotaknite se tipala prstnih odtisov.</translation>
 <translation id="7904094684485781019">Skrbnik tega računa je onemogočil prijavo z več računi.</translation>
+<translation id="7930731167419639574">Govor se zdaj obdela lokalno in narek deluje brez povezave.</translation>
 <translation id="7933084174919150729">Pomočnik Google je na voljo samo za primarni profil.</translation>
 <translation id="79341161159229895">Račun upravljata <ph name="FIRST_PARENT_EMAIL" /> in <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="793716872548410480">Pritisnite <ph name="SHORTCUT_KEY_NAME" /> + V, če si želite ogledati odložišče. Zadnjih pet kopiranih elementov je shranjenih v odložišču.</translation>
@@ -940,12 +947,10 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="8413272770729657668">Snemanje se začne čez 3, 2, 1</translation>
 <translation id="8425213833346101688">Spremeni</translation>
 <translation id="8426708595819210923">Dober večer, <ph name="GIVEN_NAME" />,</translation>
-<translation id="8427213022735114808">Narekovanje pošlje vaš glas v Google zaradi omogočanja glasovnega tipkanja v poljubnem besedilnem polju.</translation>
 <translation id="8428213095426709021">Nastavitve</translation>
 <translation id="8433186206711564395">Omrežne nastavitve</translation>
 <translation id="8433977262951327081">Bližnjica za prikaz oblačka menija z možnostmi vnosa na polici se je spremenila. Namesto <ph name="OLD_SHORTCUT" /> uporabite <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="8444246603146515890">Namizje <ph name="DESK_TITILE" /> je bilo aktivirano</translation>
-<translation id="8452135315243592079">Ni kartice SIM</translation>
 <translation id="8456543082656546101"><ph name="SHORTCUT_KEY_NAME" /> + V</translation>
 <translation id="8462305545768648477">Zapri »Izberite in poslušajte«</translation>
 <translation id="847056008324733326">Nastavitve zaslonskega razmerja</translation>
@@ -994,6 +999,7 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="8818320199597151042">Odstranjevanje profila. Počakajte nekaj minut.</translation>
 <translation id="8825863694328519386">Povlecite z leve, če se želite vrniti</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8832757911363938552">Zajem omrežnih paketov lahko kadar koli ustavite.</translation>
 <translation id="8841375032071747811">Gumb za nazaj</translation>
 <translation id="8843682306134542540">Preklop zaklepanja zasuka. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Iskanje + Esc</translation>

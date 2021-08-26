@@ -471,8 +471,8 @@ static bool in_shard() {
     return N++ % FLAGS_shards == FLAGS_shard;
 }
 
-static void push_src(const char* tag, ImplicitString options, Src* s) {
-    std::unique_ptr<Src> src(s);
+static void push_src(const char* tag, ImplicitString options, Src* inSrc) {
+    std::unique_ptr<Src> src(inSrc);
     if (in_shard() && FLAGS_src.contains(tag) &&
         !CommandLineFlags::ShouldSkip(FLAGS_match, src->name().c_str())) {
         TaggedSrc& s = gSrcs->push_back();
@@ -1032,6 +1032,7 @@ static Sink* create_via(const SkString& tag, Sink* wrapped) {
 #endif
     VIA("serialize", ViaSerialization,     wrapped);
     VIA("pic",       ViaPicture,           wrapped);
+    VIA("rtblend",   ViaRuntimeBlend,      wrapped);
 
     if (FLAGS_matrix.count() == 4) {
         SkMatrix m;
@@ -1045,6 +1046,29 @@ static Sink* create_via(const SkString& tag, Sink* wrapped) {
     }
 
 #undef VIA
+
+    // Color space overrides don't actually create 'Via' instances, they mutate the original sink's
+    // color space used for rasterization. They're parsed from the config string the same way,
+    // though - so they flow through here.
+
+#define CS(t, cs)                       \
+    do {                                \
+        if (tag.equals(t)) {            \
+            wrapped->setColorSpace(cs); \
+            return wrapped;             \
+        }                               \
+    } while (false)
+
+    // 'narrow' has a gamut narrower than sRGB, and different transfer function.
+    CS("narrow",  SkColorSpace::MakeRGB(SkNamedTransferFn::k2Dot2, gNarrow_toXYZD50));
+    CS("srgb",    SkColorSpace::MakeSRGB());
+    CS("linear",  SkColorSpace::MakeSRGBLinear());
+    CS("p3",      SkColorSpace::MakeRGB(SkNamedTransferFn::kSRGB, SkNamedGamut::kDisplayP3));
+    CS("spin",    rgb_to_gbr());
+    CS("rec2020", rec2020());
+
+#undef CS
+
     return nullptr;
 }
 

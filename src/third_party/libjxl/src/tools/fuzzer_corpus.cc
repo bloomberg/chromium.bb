@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #include <stdint.h>
 #include <stdio.h>
@@ -72,8 +63,8 @@ struct ImageSpec {
     if (num_frames == 0) return false;
     // JPEG doesn't support all formats, so reconstructible JPEG isn't always
     // valid.
-    if (is_reconstructible_jpeg &&
-        (bit_depth != 8 || num_channels != 3 || alpha_bit_depth != 0 || num_frames != 1))
+    if (is_reconstructible_jpeg && (bit_depth != 8 || num_channels != 3 ||
+                                    alpha_bit_depth != 0 || num_frames != 1))
       return false;
     return true;
   }
@@ -89,22 +80,18 @@ struct ImageSpec {
       << ", butteraugli=" << spec.params.butteraugli_distance
       << ", modular_mode=" << spec.params.modular_mode
       << ", lossy_palette=" << spec.params.lossy_palette
-      << ", noise=" << spec.params.noise
+      << ", noise=" << spec.params.noise << ", preview=" << spec.params.preview
       << ", fuzzer_friendly=" << spec.fuzzer_friendly
       << ", is_reconstructible_jpeg=" << spec.is_reconstructible_jpeg
-      << ", orientation=" << spec.orientation
-      << ">";
+      << ", orientation=" << static_cast<int>(spec.orientation) << ">";
     return o;
   }
 
   void SpecHash(uint8_t hash[16]) const {
-    memset(hash, 0, 16);
-    const uint8_t* buf = reinterpret_cast<const uint8_t*>(this);
-    uint64_t state = 0;
-    for (size_t i = 0; i < sizeof(*this); ++i) {
-      state = state * 113 + buf[i];
-      hash[i % 16] ^= state;
-    }
+    const uint8_t* from = reinterpret_cast<const uint8_t*>(this);
+    std::seed_seq hasher(from, from + sizeof(*this));
+    uint32_t* to = reinterpret_cast<uint32_t*>(hash);
+    hasher.generate(to, to + 4);
   }
 
   uint64_t width = 256;
@@ -135,21 +122,24 @@ struct ImageSpec {
     bool modular_mode = false;
     bool lossy_palette = false;
     bool noise = false;
-    uint8_t padding_[1] = {};
+    bool preview = false;
+    // CjxlParams is packed; re-add padding when sum of sizes of members is not
+    // multiple of 4.
+    // uint8_t padding_[0] = {};
   } params;
 
   uint32_t is_reconstructible_jpeg = false;
-  // Use 0xFF if any random spec is good; otherwise set the desired value.
-  uint8_t override_decoder_spec = 0xFF;
+  // Use 0xFFFFFFFF if any random spec is good; otherwise set the desired value.
+  uint32_t override_decoder_spec = 0xFFFFFFFF;
   // Orientation.
   uint8_t orientation = 0;
-  uint8_t padding_[2] = {};
+  uint8_t padding_[3] = {};
 };
 #pragma pack(pop)
 static_assert(sizeof(ImageSpec) % 4 == 0, "Add padding to ImageSpec.");
 
 bool GenerateFile(const char* output_dir, const ImageSpec& spec,
-                  bool regenerate) {
+                  bool regenerate, bool quiet) {
   // Compute a checksum of the ImageSpec to name the file. This is just to keep
   // the output of this program repeatable.
   uint8_t checksum[16];
@@ -169,7 +159,7 @@ bool GenerateFile(const char* output_dir, const ImageSpec& spec,
     return true;
   }
 
-  {
+  if (!quiet) {
     std::unique_lock<std::mutex> lock(stderr_mutex);
     std::cerr << "Generating " << spec << " as " << hash_str << std::endl;
   }
@@ -193,7 +183,13 @@ bool GenerateFile(const char* output_dir, const ImageSpec& spec,
     c = jxl::ColorEncoding::SRGB();
   }
 
+  uint8_t hash[16];
+  spec.SpecHash(hash);
   std::mt19937 mt(spec.seed);
+
+  // Compress the image.
+  jxl::PaddedBytes compressed;
+
   std::uniform_int_distribution<> dis(1, 6);
   PixelGenerator gen = [&]() -> uint8_t { return dis(mt); };
 
@@ -223,9 +219,6 @@ bool GenerateFile(const char* output_dir, const ImageSpec& spec,
         false /* flipped_y */, nullptr, &ib));
     io.frames.push_back(std::move(ib));
   }
-
-  // Compress the image.
-  jxl::PaddedBytes compressed;
 
   if (spec.is_reconstructible_jpeg) {
     // If this image is supposed to be a reconstructible JPEG, collect the JPEG
@@ -257,6 +250,7 @@ bool GenerateFile(const char* output_dir, const ImageSpec& spec,
   params.butteraugli_distance = spec.params.butteraugli_distance;
   params.options.predictor = {spec.params.modular_predictor};
   params.lossy_palette = spec.params.lossy_palette;
+  if (spec.params.preview) params.preview = jxl::Override::kOn;
   if (spec.params.noise) params.noise = jxl::Override::kOn;
   params.quality_pair = {100., 100.};
 
@@ -269,17 +263,19 @@ bool GenerateFile(const char* output_dir, const ImageSpec& spec,
   if (!ok) return false;
   compressed.append(compressed_image);
 
-  // Append one byte with the flags used by djxl_fuzzer to select the decoding
+  // Append 4 bytes with the flags used by djxl_fuzzer to select the decoding
   // output.
   std::uniform_int_distribution<> dis256(0, 255);
-  if (spec.override_decoder_spec == 0xFF) {
-    compressed.push_back(dis256(mt));
+  if (spec.override_decoder_spec == 0xFFFFFFFF) {
+    for (size_t i = 0; i < 4; ++i) compressed.push_back(dis256(mt));
   } else {
-    compressed.push_back(spec.override_decoder_spec);
+    for (size_t i = 0; i < 4; ++i) {
+      compressed.push_back(spec.override_decoder_spec >> (8 * i));
+    }
   }
 
   if (!jxl::WriteFile(compressed, output_fn)) return 1;
-  {
+  if (!quiet) {
     std::unique_lock<std::mutex> lock(stderr_mutex);
     std::cerr << "Stored " << output_fn << " size: " << compressed.size()
               << std::endl;
@@ -311,9 +307,10 @@ std::vector<ImageSpec::CjxlParams> CompressParamsList() {
 
 void Usage() {
   fprintf(stderr,
-          "Use: fuzzer_corpus [-r] [-j THREADS] [output_dir]\n"
+          "Use: fuzzer_corpus [-r] [-q] [-j THREADS] [output_dir]\n"
           "\n"
           "  -r Regenerate files if already exist.\n"
+          "  -q Be quiet.\n"
           "  -j THREADS Number of parallel jobs to run.\n");
 }
 
@@ -322,10 +319,14 @@ void Usage() {
 int main(int argc, const char** argv) {
   const char* dest_dir = nullptr;
   bool regenerate = false;
+  bool quiet = false;
   int num_threads = std::thread::hardware_concurrency();
   for (int optind = 1; optind < argc;) {
     if (!strcmp(argv[optind], "-r")) {
       regenerate = true;
+      optind++;
+    } else if (!strcmp(argv[optind], "-q")) {
+      quiet = true;
       optind++;
     } else if (!strcmp(argv[optind], "-j")) {
       optind++;
@@ -396,36 +397,40 @@ int main(int argc, const char** argv) {
             }
             for (uint32_t num_frames : {1, 3}) {
               spec.num_frames = num_frames;
-
+              for (uint32_t preview : {0, 1}) {
 #if JPEGXL_ENABLE_JPEG
-              for (bool reconstructible_jpeg : {false, true}) {
-                spec.is_reconstructible_jpeg = reconstructible_jpeg;
+                for (bool reconstructible_jpeg : {false, true}) {
+                  spec.is_reconstructible_jpeg = reconstructible_jpeg;
 #else   // JPEGXL_ENABLE_JPEG
-              spec.is_reconstructible_jpeg = false;
+                spec.is_reconstructible_jpeg = false;
 #endif  // JPEGXL_ENABLE_JPEG
-                for (const auto& params : params_list) {
-                  spec.params = params;
+                  for (const auto& params : params_list) {
+                    spec.params = params;
 
-                  if (alpha_bit_depth) {
-                    spec.alpha_is_premultiplied = mt() % 2;
+                    spec.params.preview = preview;
+                    if (alpha_bit_depth) {
+                      spec.alpha_is_premultiplied = mt() % 2;
+                    }
+                    if (spec.width * spec.height > 1000) {
+                      // Increase the encoder speed for larger images.
+                      spec.params.speed_tier = jxl::SpeedTier::kWombat;
+                    }
+                    spec.seed = mt() % 777777;
+                    // Pick the orientation at random. It is orthogonal to all
+                    // other features. Valid values are 1 to 8.
+                    spec.orientation = 1 + (mt() % 8);
+                    if (!spec.Validate()) {
+                      if (!quiet) {
+                        std::cerr << "Skipping " << spec << std::endl;
+                      }
+                    } else {
+                      specs.push_back(spec);
+                    }
                   }
-                  if (spec.width * spec.height > 1000) {
-                    // Increase the encoder speed for larger images.
-                    spec.params.speed_tier = jxl::SpeedTier::kWombat;
-                  }
-                  spec.seed = mt() % 777777;
-                  // Pick the orientation at random. It is orthogonal to all
-                  // other features. Valid values are 1 to 8.
-                  spec.orientation = 1 + (mt() % 8);
-                  if (!spec.Validate()) {
-                    std::cerr << "Skipping " << spec << std::endl;
-                  } else {
-                    specs.push_back(spec);
-                  }
-                }
 #if JPEGXL_ENABLE_JPEG
-              }
+                }
 #endif  // JPEGXL_ENABLE_JPEG
+              }
             }
           }
         }
@@ -441,12 +446,12 @@ int main(int argc, const char** argv) {
     specs.back().override_decoder_spec = 0;
 
     jxl::ThreadPoolInternal pool{num_threads};
-    pool.Run(
-        0, specs.size(), jxl::ThreadPool::SkipInit(),
-        [&specs, dest_dir, regenerate](const int task, const int /* thread */) {
-          const ImageSpec& spec = specs[task];
-          GenerateFile(dest_dir, spec, regenerate);
-        });
+    pool.Run(0, specs.size(), jxl::ThreadPool::SkipInit(),
+             [&specs, dest_dir, regenerate, quiet](const int task,
+                                                   const int /* thread */) {
+               const ImageSpec& spec = specs[task];
+               GenerateFile(dest_dir, spec, regenerate, quiet);
+             });
   }
   std::cerr << "Finished generating fuzzer corpus" << std::endl;
   return 0;

@@ -12,12 +12,6 @@ const base::Feature kBootCompletedBroadcastFeature {
     "ArcBootCompletedBroadcast", base::FEATURE_ENABLED_BY_DEFAULT
 };
 
-// Controls whether we should delete all ARC data before transitioning a user
-// from regular to child account.
-const base::Feature kCleanArcDataOnRegularToChildTransitionFeature{
-    "ArcCleanDataOnRegularToChildTransition",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Controls experimental Custom Tabs feature for ARC.
 const base::Feature kCustomTabsExperimentFeature{
     "ArcCustomTabsExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -25,14 +19,6 @@ const base::Feature kCustomTabsExperimentFeature{
 // Controls whether to handle files with unknown size.
 const base::Feature kDocumentsProviderUnknownSizeFeature{
     "ArcDocumentsProviderUnknownSize", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Controls whether ARC handles child->regular account transition.
-const base::Feature kEnableChildToRegularTransitionFeature{
-    "ArcEnableChildToRegularTransition", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Controls whether ARC handles regular->child account transition.
-const base::Feature kEnableRegularToChildTransitionFeature{
-    "ArcEnableRegularToChildTransition", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether to pass throttling notifications to Android side.
 const base::Feature kEnableThrottlingNotification{
@@ -54,8 +40,8 @@ const base::Feature kEnableUsap{"ArcEnableUsap",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether ARC apps can share to Web Apps through WebAPKs and TWAs.
-const base::Feature kEnableWebAppShareFeature{
-    "ArcEnableWebAppShare", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kEnableWebAppShareFeature{"ArcEnableWebAppShare",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls experimental file picker feature for ARC.
 const base::Feature kFilePickerExperimentFeature{
@@ -63,7 +49,7 @@ const base::Feature kFilePickerExperimentFeature{
 
 // Controls image copy & paste app compat feature in ARC.
 const base::Feature kImageCopyPasteCompatFeature{
-    "ArcImageCopyPasteCompat", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ArcImageCopyPasteCompat", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls keyboard shortcut helper integration feature in ARC.
 const base::Feature kKeyboardShortcutHelperIntegrationFeature{
@@ -93,7 +79,7 @@ const base::Feature kSaveRawFilesOnTracing{"ArcSaveRawFilesOnTracing",
 // Controls ARCVM real time vcpu feature on a device with 2 logical cores
 // online.
 const base::Feature kRtVcpuDualCore{"ArcRtVcpuDualCore",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls ARCVM real time vcpu feature on a device with 3+ logical cores
 // online.

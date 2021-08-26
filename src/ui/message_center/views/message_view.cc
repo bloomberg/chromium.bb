@@ -29,7 +29,6 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/focus/focus_manager.h"
-#include "ui/views/style/platform_style.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_WIN)
@@ -117,10 +116,6 @@ MessageView::~MessageView() {
   RemovedFromWidget();
 }
 
-void MessageView::AddGroupedNotification(const Notification& notification) {
-  // Stub
-}
-
 void MessageView::UpdateWithNotification(const Notification& notification) {
   pinned_ = notification.pinned();
   std::u16string new_accessible_name = CreateAccessibleName(notification);
@@ -194,7 +189,7 @@ SkPath MessageView::GetHighlightPath() const {
   // them on top of the notifications. We need to do this because TrayBubbleView
   // has a layer that masks to bounds due to which the focus ring can not extend
   // outside the view.
-  int inset = -views::PlatformStyle::kFocusHaloInset;
+  int inset = -views::FocusRing::kHaloInset;
   rect.Inset(gfx::Insets(inset));
 
   SkScalar top_radius = std::max(0, top_radius_ - inset);
@@ -508,6 +503,20 @@ void MessageView::UpdateControlButtonsVisibility() {
 void MessageView::SetDrawBackgroundAsActive(bool active) {
   is_active_ = active;
   UpdateBackgroundPainter();
+}
+
+void MessageView::UpdateControlButtonsVisibilityWithNotification(
+    const Notification& notification) {
+  auto* control_buttons_view = GetControlButtonsView();
+  if (control_buttons_view) {
+    control_buttons_view->ShowButtons(ShouldShowControlButtons());
+    control_buttons_view->ShowSettingsButton(
+        notification.should_show_settings_button());
+    control_buttons_view->ShowSnoozeButton(
+        notification.should_show_snooze_button());
+    control_buttons_view->ShowCloseButton(GetMode() != Mode::PINNED);
+  }
+  UpdateControlButtonsVisibility();
 }
 
 }  // namespace message_center

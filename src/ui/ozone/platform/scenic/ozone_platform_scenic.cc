@@ -96,7 +96,7 @@ class OzonePlatformScenic : public OzonePlatform,
     BindInMainProcessIfNecessary();
 
     // Allow tests to create a view themselves.
-    if (!properties.view_token.value) {
+    if (!properties.view_token) {
       CHECK(properties.allow_null_view_token_for_test);
       ui::fuchsia::InitializeViewTokenAndPresentView(&properties);
     }
@@ -127,6 +127,8 @@ class OzonePlatformScenic : public OzonePlatform,
   std::unique_ptr<PlatformScreen> CreateScreen() override {
     return window_manager_->CreateScreen();
   }
+
+  void InitScreen(PlatformScreen* screen) override {}
 
   std::unique_ptr<InputMethod> CreateInputMethod(
       internal::InputMethodDelegate* delegate,

@@ -12,11 +12,13 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/time/time.h"
+#include "net/base/features.h"
 #include "net/base/net_export.h"
 #include "net/cookies/cookie_access_result.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_inclusion_status.h"
 #include "net/cookies/cookie_options.h"
+#include "net/cookies/cookie_partition_key.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/third_party/mozilla/url_parse.h"
 
@@ -55,7 +57,10 @@ struct NET_EXPORT CookieAccessParams {
 
 class NET_EXPORT CanonicalCookie {
  public:
-  using UniqueCookieKey = std::tuple<std::string, std::string, std::string>;
+  using UniqueCookieKey = std::tuple<absl::optional<CookiePartitionKey>,
+                                     std::string,
+                                     std::string,
+                                     std::string>;
 
   CanonicalCookie();
   CanonicalCookie(const CanonicalCookie& other);
@@ -79,12 +84,22 @@ class NET_EXPORT CanonicalCookie {
   // HttpOnly related parameters should be checked when setting the cookie in
   // the CookieStore.
   //
+  // The partition_key argument only needs to be present if the cookie line
+  // contains the Partitioned attribute. If the cookie line will never contain
+  // that attribute, you should use absl::nullopt to indicate you intend to
+  // always create an unpartitioned cookie. If partition_key has a value but the
+  // cookie line does not contain the Partitioned attribute, the resulting
+  // cookie will be unpartitioned. If the partition_key is null, then the cookie
+  // will be unpartitioned even when the cookie line has the Partitioned
+  // attribute.
+  //
   // If a cookie is returned, |cookie->IsCanonical()| will be true.
   static std::unique_ptr<CanonicalCookie> Create(
       const GURL& url,
       const std::string& cookie_line,
       const base::Time& creation_time,
       absl::optional<base::Time> server_time,
+      absl::optional<CookiePartitionKey> cookie_partition_key,
       CookieInclusionStatus* status = nullptr);
 
   // Create a canonical cookie based on sanitizing the passed inputs in the
@@ -106,6 +121,7 @@ class NET_EXPORT CanonicalCookie {
       CookieSameSite same_site,
       CookiePriority priority,
       bool same_party,
+      absl::optional<CookiePartitionKey> partition_key,
       CookieInclusionStatus* status = nullptr);
 
   // FromStorage is a factory method which is meant for creating a new
@@ -128,6 +144,7 @@ class NET_EXPORT CanonicalCookie {
       CookieSameSite same_site,
       CookiePriority priority,
       bool same_party,
+      absl::optional<CookiePartitionKey> partition_key,
       CookieSourceScheme source_scheme,
       int source_port);
 
@@ -146,6 +163,7 @@ class NET_EXPORT CanonicalCookie {
       CookieSameSite same_site,
       CookiePriority priority,
       bool same_party,
+      absl::optional<CookiePartitionKey> partition_key = absl::nullopt,
       CookieSourceScheme scheme_secure = CookieSourceScheme::kUnset,
       int source_port = url::PORT_UNSPECIFIED);
 
@@ -166,6 +184,28 @@ class NET_EXPORT CanonicalCookie {
   CookieSameSite SameSite() const { return same_site_; }
   CookiePriority Priority() const { return priority_; }
   bool IsSameParty() const { return same_party_; }
+  bool IsPartitioned() const { return partition_key_.has_value(); }
+  const absl::optional<CookiePartitionKey>& PartitionKey() const {
+    return partition_key_;
+  }
+
+  // Methods for serializing and deserializing a partition key to/from a string.
+  // This will be used for Android, storing persistent partitioned cookies, and
+  // loading partitioned cookies into Java code.
+  //
+  // This function returns if the partition key is not opaque. We do not want
+  // to serialize cookies with opaque origins in their partition key to disk,
+  // because if the browser session ends we will not be able to attach the
+  // saved cookie to any future requests. This is because opaque origins' nonces
+  // are only stored in volatile memory.
+  bool SerializePartitionKey(std::string& out) const WARN_UNUSED_RESULT;
+  // Deserializes the result of the method above.
+  // If the result is abls::nullopt, the resulting cookie is not partitioned.
+  //
+  // Returns if the resulting partition key is valid.
+  static bool DeserializePartitionKey(const std::string& in,
+                                      absl::optional<SchemefulSite>& out)
+      WARN_UNUSED_RESULT;
 
   // Returns an enum indicating the scheme of the origin that
   // set this cookie. This is not part of the cookie spec but is being used to
@@ -194,18 +234,21 @@ class NET_EXPORT CanonicalCookie {
   // For the case insensitive domain compare, we rely on the domain
   // having been canonicalized (in
   // GetCookieDomainWithString->CanonicalizeHost).
+  // If partitioned cookies are enabled, then we check the cookies have the same
+  // partition key in addition to the checks in RFC 2965.
   bool IsEquivalent(const CanonicalCookie& ecc) const {
     // It seems like it would make sense to take secure, httponly, and samesite
     // into account, but the RFC doesn't specify this.
     // NOTE: Keep this logic in-sync with TrimDuplicateCookiesForKey().
-    return (name_ == ecc.Name() && domain_ == ecc.Domain()
-            && path_ == ecc.Path());
+    return UniqueKey() == ecc.UniqueKey();
   }
 
   // Returns a key such that two cookies with the same UniqueKey() are
   // guaranteed to be equivalent in the sense of IsEquivalent().
   UniqueCookieKey UniqueKey() const {
-    return std::make_tuple(name_, domain_, path_);
+    if (base::FeatureList::IsEnabled(features::kPartitionedCookies))
+      return std::make_tuple(partition_key_, name_, domain_, path_);
+    return std::make_tuple(absl::nullopt, name_, domain_, path_);
   }
 
   // Checks a looser set of equivalency rules than 'IsEquivalent()' in order
@@ -370,6 +413,7 @@ class NET_EXPORT CanonicalCookie {
                   CookieSameSite same_site,
                   CookiePriority priority,
                   bool same_party,
+                  absl::optional<CookiePartitionKey> partition_key,
                   CookieSourceScheme scheme_secure = CookieSourceScheme::kUnset,
                   int source_port = url::PORT_UNSPECIFIED);
 
@@ -403,9 +447,8 @@ class NET_EXPORT CanonicalCookie {
                                   const std::string& path);
 
   // Returns the effective SameSite mode to apply to this cookie. Depends on the
-  // value of the given SameSite attribute and whether the
-  // SameSiteByDefaultCookies feature is enabled, as well as the access
-  // semantics of the cookie.
+  // value of the given SameSite attribute and the access semantics of the
+  // cookie.
   // Note: If you are converting to a different representation of a cookie, you
   // probably want to use SameSite() instead of this method. Otherwise, if you
   // are considering using this method, consider whether you should use
@@ -425,6 +468,15 @@ class NET_EXPORT CanonicalCookie {
                                      bool is_secure,
                                      CookieSameSite same_site);
 
+  // Returns false iff the cookie is a partitioned cookie that violates the
+  // semantics of the Partitioned attribute:
+  // - Cannot be SameParty
+  // - Must have a __Host- prefix
+  static bool IsCookiePartitionedValid(const ParsedCookie& parsed_cookie);
+  static bool IsCookiePartitionedValid(bool is_partitioned,
+                                       CookiePrefix prefix,
+                                       bool is_same_party);
+
   // Keep defaults here in sync with
   // services/network/public/interfaces/cookie_manager.mojom.
   std::string name_;
@@ -439,6 +491,12 @@ class NET_EXPORT CanonicalCookie {
   CookieSameSite same_site_{CookieSameSite::NO_RESTRICTION};
   CookiePriority priority_{COOKIE_PRIORITY_MEDIUM};
   bool same_party_{false};
+  // This will be absl::nullopt for all cookies not set with the Partitioned
+  // attribute. If the value is non-null, then the cookie will only be delivered
+  // when the top-frame site matches the partition key.
+  // If the partition key is non-null and opaque, this means the Partitioned
+  // cookie was created on an opaque origin.
+  absl::optional<CookiePartitionKey> partition_key_;
   CookieSourceScheme source_scheme_{CookieSourceScheme::kUnset};
   // This can be [0,65535], PORT_UNSPECIFIED, or PORT_INVALID.
   // PORT_UNSPECIFIED is used for cookies which already existed in the cookie

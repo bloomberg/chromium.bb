@@ -40,11 +40,7 @@ namespace dawn_native {
     bool IsValidSampleCount(uint32_t sampleCount);
 
     static constexpr wgpu::TextureUsage kReadOnlyTextureUsages =
-        wgpu::TextureUsage::CopySrc | wgpu::TextureUsage::Sampled | kReadOnlyStorageTexture;
-
-    static constexpr wgpu::TextureUsage kWritableTextureUsages =
-        wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::Storage |
-        wgpu::TextureUsage::RenderAttachment;
+        wgpu::TextureUsage::CopySrc | wgpu::TextureUsage::TextureBinding | kReadOnlyStorageTexture;
 
     class TextureBase : public ObjectBase {
       public:
@@ -65,7 +61,13 @@ namespace dawn_native {
         SubresourceRange GetAllSubresources() const;
         uint32_t GetSampleCount() const;
         uint32_t GetSubresourceCount() const;
+
+        // |GetUsage| returns the usage with which the texture was created using the base WebGPU
+        // API. The dawn-internal-usages extension may add additional usages. |GetInternalUsage|
+        // returns the union of base usage and the usages added by the extension.
         wgpu::TextureUsage GetUsage() const;
+        wgpu::TextureUsage GetInternalUsage() const;
+
         TextureState GetTextureState() const;
         uint32_t GetSubresourceIndex(uint32_t mipLevel, uint32_t arraySlice, Aspect aspect) const;
         bool IsSubresourceContentInitialized(const SubresourceRange& range) const;
@@ -104,6 +106,7 @@ namespace dawn_native {
         uint32_t mMipLevelCount;
         uint32_t mSampleCount;
         wgpu::TextureUsage mUsage = wgpu::TextureUsage::None;
+        wgpu::TextureUsage mInternalUsage = wgpu::TextureUsage::None;
         TextureState mState;
 
         // TODO(crbug.com/dawn/845): Use a more optimized data structure to save space

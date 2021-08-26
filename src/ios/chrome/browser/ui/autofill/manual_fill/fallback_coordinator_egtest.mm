@@ -11,7 +11,6 @@
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
-#import "ios/testing/earl_grey/keyboard_app_interface.h"
 #include "ios/web/public/test/element_selector.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
@@ -31,11 +30,6 @@ using chrome_test_util::ManualFallbackProfileTableViewWindowMatcher;
 
 namespace {
 
-// Using |isKeyboardDocked| requires to inject a UITextField in the window and
-// wait for it to be shown. For performance reasons, only try to dock the
-// keyboard in |tearDown| if it was undocked during the test.
-bool gKeyboardUndockAttempted = false;
-
 constexpr char kFormElementName[] = "name";
 constexpr char kFormElementCity[] = "city";
 
@@ -46,64 +40,6 @@ constexpr char kFormHTMLFile[] = "/profile_form.html";
 id<GREYMatcher> ProfileTableViewButtonMatcher() {
   // The company name for autofill::test::GetFullProfile() is "Underworld".
   return grey_buttonTitle(@"Underworld");
-}
-
-// Undocks and split the keyboard by swiping it up. Does nothing if already
-// undocked. Some devices, like iPhone or iPad Pro, do not allow undocking or
-// splitting, this returns NO if it is the case.
-BOOL UndockAndSplitKeyboard() {
-  if (![ChromeEarlGrey isIPadIdiom]) {
-    return NO;
-  }
-  UITextField* textField = [KeyboardAppInterface showKeyboard];
-
-  // Return if already undocked.
-  if (![KeyboardAppInterface isKeyboardDocked]) {
-    // If a dummy textfield was created for this, remove it.
-    [textField removeFromSuperview];
-    return YES;
-  }
-
-  [[EarlGrey
-      selectElementWithMatcher:[KeyboardAppInterface keyboardWindowMatcher]]
-      performAction:[KeyboardAppInterface keyboardUndockAction]];
-  gKeyboardUndockAttempted = YES;
-
-  // If a dummy textfield was created for this, remove it.
-  [textField removeFromSuperview];
-  return ![KeyboardAppInterface isKeyboardDocked];
-}
-
-// Docks the keyboard by swiping it down. Does nothing if already docked.
-void DockKeyboard() {
-  if (![ChromeEarlGrey isIPadIdiom]) {
-    return;
-  }
-
-  UITextField* textField = [KeyboardAppInterface showKeyboard];
-
-  // Return if already docked.
-  if ([KeyboardAppInterface isKeyboardDocked]) {
-    // If we created a dummy textfield for this, remove it.
-    [textField removeFromSuperview];
-    return;
-  }
-
-  [[EarlGrey
-      selectElementWithMatcher:[KeyboardAppInterface keyboardWindowMatcher]]
-      performAction:[KeyboardAppInterface keyboardDockAction]];
-
-  // If we created a dummy textfield for this, remove it.
-  [textField removeFromSuperview];
-
-  GREYCondition* waitForDockedKeyboard = [GREYCondition
-      conditionWithName:@"Wait For Docked Keyboard Animations"
-                  block:^BOOL {
-                    return [KeyboardAppInterface isKeyboardDocked];
-                  }];
-
-  GREYAssertTrue([waitForDockedKeyboard waitWithTimeout:kWaitForActionTimeout],
-                 @"Keyboard animations still present.");
 }
 
 }  // namespace
@@ -127,11 +63,6 @@ void DockKeyboard() {
 }
 
 - (void)tearDown {
-  if (gKeyboardUndockAttempted) {
-    gKeyboardUndockAttempted = NO;
-    DockKeyboard();
-  }
-
   [AutofillAppInterface clearProfilesStore];
 
   // Leaving a picker on iPads causes problems with the docking logic. This
@@ -226,29 +157,11 @@ void DockKeyboard() {
   [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesTableViewMatcher()]
       assertWithMatcher:grey_notVisible()];
 
-  // TODO(crbug.com/1220724): iOS 15 phones seem to act more like iPads now,
-  // dismissing the keyboard when tapping on the option above. Confirm that this
-  // is expected and either fix, or remove this comment.
-  BOOL isIOS15 = NO;
-  if (@available(iOS 15, *)) {
-    isIOS15 = YES;
-  }
-
-  // Verify the status of the icons.
-  if ([ChromeEarlGrey isIPadIdiom] || isIOS15) {
-    // Hidden on iPad.
-    [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
-        assertWithMatcher:grey_notVisible()];
-    [[EarlGrey selectElementWithMatcher:ManualFallbackKeyboardIconMatcher()]
-        assertWithMatcher:grey_not(grey_sufficientlyVisible())];
-  } else {
-    [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
-        assertWithMatcher:grey_sufficientlyVisible()];
-    [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
-        assertWithMatcher:grey_userInteractionEnabled()];
-    [[EarlGrey selectElementWithMatcher:ManualFallbackKeyboardIconMatcher()]
-        assertWithMatcher:grey_not(grey_sufficientlyVisible())];
-  }
+  // Verify icons are not present now that the selected field is a picker.
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
+      assertWithMatcher:grey_notVisible()];
+  [[EarlGrey selectElementWithMatcher:ManualFallbackKeyboardIconMatcher()]
+      assertWithMatcher:grey_not(grey_sufficientlyVisible())];
 }
 
 // Tests that the input accessory view continues working after a picker is
@@ -280,17 +193,9 @@ void DockKeyboard() {
   [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesTableViewMatcher()]
       assertWithMatcher:grey_notVisible()];
 
-  // TODO(crbug.com/1220724): iOS 15 phones seem to act more like iPads now,
-  // dismissing the keyboard when tapping on the option above. Confirm that this
-  // is expected and either fix, or remove this comment.
-  BOOL isIOS15 = NO;
-  if (@available(iOS 15, *)) {
-    isIOS15 = YES;
-  }
-
-  // On iPad the picker is a table view in a popover, we need to dismiss that
-  // first.
-  if ([ChromeEarlGrey isIPadIdiom] || isIOS15) {
+  // On iPad and iOS 15 the picker is a table view in a popover, we need to
+  // dismiss that first.
+  if ([ChromeEarlGrey isIPadIdiom] || base::ios::IsRunningOnIOS15OrLater()) {
     // Tap in the web view so the popover dismisses.
     [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
         performAction:grey_tapAtPoint(CGPointMake(0, 0))];
@@ -301,6 +206,14 @@ void DockKeyboard() {
                                      grey_kindOfClass([UITableView class]),
                                      grey_not(grey_notVisible()), nil)]
         assertWithMatcher:grey_nil()];
+
+    // Dismissing the popover by tapping on the webView, then tapping on the
+    // form element below in quick succession seems to end up dismissing the
+    // keyboard on iOS15. This may be because the state element is still
+    // focused. Instead, wait a moment for the focus to be dismissed.
+    if (base::ios::IsRunningOnIOS15OrLater()) {
+      base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSeconds(1));
+    }
   }
 
   // Bring up the regular keyboard again.
@@ -315,133 +228,6 @@ void DockKeyboard() {
   [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
 
-  // TODO(crbug.com/1227392): This doesn't appear to work on iOS15 phone. It
-  // appears the profiles icon is visible and selected (so interaction
-  // disabled), but the keyboard itself is visible. As a workaround, tap the
-  // keyboard icon and continue the test.
-  if (![ChromeEarlGrey isIPadIdiom] && isIOS15) {
-    [[EarlGrey selectElementWithMatcher:ManualFallbackKeyboardIconMatcher()]
-        performAction:grey_tap()];
-  }
-
-  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
-      assertWithMatcher:grey_userInteractionEnabled()];
-  [[EarlGrey selectElementWithMatcher:ManualFallbackKeyboardIconMatcher()]
-      assertWithMatcher:grey_not(grey_sufficientlyVisible())];
-}
-
-// Same as before but with the keyboard undocked the re-docked.
-- (void)testRedockedInputAccessoryBarIsPresentAfterPickers {
-  // No need to run if not iPad.
-  if (![ChromeEarlGrey isIPadIdiom]) {
-    EARL_GREY_TEST_SKIPPED(@"Test not applicable for iPhone.");
-  }
-
-  // Add the profile to be used.
-  [AutofillAppInterface saveExampleProfile];
-
-  // Bring up the keyboard by tapping the city, which is the element before the
-  // picker.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
-
-  if (!UndockAndSplitKeyboard()) {
-    EARL_GREY_TEST_DISABLED(
-        @"Undocking the keyboard does not work on iPhone or iPad Pro");
-  }
-
-  // Give the iPad 2 seconds to settle the split animation.
-  [[NSRunLoop currentRunLoop]
-      runUntilDate:[[NSDate date] dateByAddingTimeInterval:2]];
-
-  // When keyboard is split, icons are not visible, so we rely on timeout before
-  // docking again, because EarlGrey synchronization isn't working properly with
-  // the keyboard.
-  [ChromeEarlGrey waitForMatcher:ManualFallbackProfilesIconMatcher()];
-
-  DockKeyboard();
-
-  // Tap on the profiles icon.
-  [[EarlGrey selectElementWithMatcher:ManualFallbackFormSuggestionViewMatcher()]
-      performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
-  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
-      performAction:grey_tap()];
-
-  // Verify the profiles controller table view is visible.
-  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesTableViewMatcher()]
-      assertWithMatcher:grey_sufficientlyVisible()];
-
-  // Tap any option.
-  [[EarlGrey selectElementWithMatcher:ProfileTableViewButtonMatcher()]
-      performAction:grey_tap()];
-
-  // Verify the profiles controller table view is not visible.
-  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesTableViewMatcher()]
-      assertWithMatcher:grey_notVisible()];
-
-  // On iPad the picker is a table view in a popover, we need to dismiss that
-  // first. Tap in the previous field, so the popover dismisses.
-  [[EarlGrey selectElementWithMatcher:grey_keyWindow()]
-      performAction:grey_tapAtPoint(CGPointMake(0, 0))];
-
-  // Verify the table view is not visible.
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(grey_kindOfClass([UITableView class]),
-                                          grey_not(grey_notVisible()), nil)]
-      assertWithMatcher:grey_nil()];
-
-  // Bring up the regular keyboard again.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElementWithId(kFormElementName)];
-
-  // Verify the profiles icon is visible, and therefore also the input accessory
-  // bar.
-  [[EarlGrey selectElementWithMatcher:ManualFallbackFormSuggestionViewMatcher()]
-      performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
-  // Verify the status of the icons.
-  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
-      assertWithMatcher:grey_sufficientlyVisible()];
-  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
-      assertWithMatcher:grey_userInteractionEnabled()];
-  [[EarlGrey selectElementWithMatcher:ManualFallbackKeyboardIconMatcher()]
-      assertWithMatcher:grey_not(grey_sufficientlyVisible())];
-}
-
-// Test the input accessory bar is present when undocking then docking the
-// keyboard.
-// TODO(crbug.com/1218869): Re-enable this test.
-- (void)DISABLED_testInputAccessoryBarIsPresentAfterUndockingKeyboard {
-  if (![ChromeEarlGrey isIPadIdiom]) {
-    EARL_GREY_TEST_SKIPPED(@"Test not applicable for iPhone.");
-  }
-
-  // Add the profile to use for verification.
-  [AutofillAppInterface saveExampleProfile];
-
-  // Bring up the keyboard by tapping the city, which is the element before the
-  // picker.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
-
-  if (!UndockAndSplitKeyboard()) {
-    EARL_GREY_TEST_DISABLED(
-        @"Undocking the keyboard does not work on iPhone or iPad Pro");
-  }
-
-  // When keyboard is split, icons are not visible, so we rely on timeout before
-  // docking again, because EarlGrey synchronization isn't working properly with
-  // the keyboard.
-  [ChromeEarlGrey waitForMatcher:ManualFallbackProfilesIconMatcher()];
-
-  DockKeyboard();
-
-  // Verify the profiles icon is visible, and therefore also the input accessory
-  // bar.
-  [[EarlGrey selectElementWithMatcher:ManualFallbackFormSuggestionViewMatcher()]
-      performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
-  // Verify the status of the icons.
-  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
-      assertWithMatcher:grey_sufficientlyVisible()];
   [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
       assertWithMatcher:grey_userInteractionEnabled()];
   [[EarlGrey selectElementWithMatcher:ManualFallbackKeyboardIconMatcher()]
@@ -449,21 +235,9 @@ void DockKeyboard() {
 }
 
 // Tests that the manual fallback view is present in incognito.
-// Disabled due to flakiness. See crbug.com/1115321.
-- (void)DISABLED_testIncognitoManualFallbackMenu {
+- (void)testIncognitoManualFallbackMenu {
   // Add the profile to use for verification.
   [AutofillAppInterface saveExampleProfile];
-
-  // Bring up the keyboard by tapping the city, which is the element before the
-  // picker.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
-
-  // Verify the profiles icon is visible.
-  [[EarlGrey selectElementWithMatcher:ManualFallbackFormSuggestionViewMatcher()]
-      performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
-  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
-      assertWithMatcher:grey_sufficientlyVisible()];
 
   // Open a tab in incognito.
   [ChromeEarlGrey openNewIncognitoTab];
@@ -473,7 +247,8 @@ void DockKeyboard() {
 
   // Bring up the keyboard by tapping the city, which is the element before the
   // picker.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:grey_kindOfClass(
+                                          NSClassFromString(@"WKWebView"))]
       performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
 
   // Verify the profiles icon is visible.

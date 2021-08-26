@@ -5,22 +5,18 @@
 #ifndef CHROME_BROWSER_ASH_POLICY_ENROLLMENT_DEVICE_CLOUD_POLICY_INITIALIZER_H_
 #define CHROME_BROWSER_ASH_POLICY_ENROLLMENT_DEVICE_CLOUD_POLICY_INITIALIZER_H_
 
-#include <map>
 #include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
-#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/chromeos/policy/server_backed_state/server_backed_state_keys_broker.h"
-#include "chromeos/dbus/attestation/interface.pb.h"
+#include "chrome/browser/ash/policy/server_backed_state/server_backed_state_keys_broker.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/core/common/cloud/dm_auth.h"
-#include "components/policy/core/common/cloud/signing_service.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 class PrefService;
@@ -43,17 +39,18 @@ class StatisticsProvider;
 
 namespace policy {
 class ActiveDirectoryJoinDelegate;
-class DeviceCloudPolicyManagerChromeOS;
-class DeviceCloudPolicyStoreChromeOS;
+class DeviceCloudPolicyManagerAsh;
+class DeviceCloudPolicyStoreAsh;
 class DeviceManagementService;
 struct EnrollmentConfig;
-class EnrollmentHandlerChromeOS;
+class EnrollmentHandler;
 class EnrollmentStatus;
+class SigningService;
 
 // The |DeviceCloudPolicyInitializer| is a helper class which calls
 // `DeviceCloudPolicyManager::StartConnection` with a new `CloudPolicyClient`
 // for a given |DeviceManagementService|. It does so, once
-// - the `DeviceCloudPolicyStoreChromeOS` is initialized and has policy,
+// - the `DeviceCloudPolicyStoreAsh` is initialized and has policy,
 // - the `ServerBackedStateKeysBroker` is available,
 // - `chromeos::InstallAttributes::IsActiveDirectoryManaged() == false`
 //
@@ -81,9 +78,9 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
       const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
       chromeos::InstallAttributes* install_attributes,
       ServerBackedStateKeysBroker* state_keys_broker,
-      DeviceCloudPolicyStoreChromeOS* policy_store,
-      DeviceCloudPolicyManagerChromeOS* policy_manager,
-      std::unique_ptr<chromeos::attestation::AttestationFlow> attestation_flow,
+      DeviceCloudPolicyStoreAsh* policy_store,
+      DeviceCloudPolicyManagerAsh* policy_manager,
+      chromeos::attestation::AttestationFlow* attestation_flow,
       chromeos::system::StatisticsProvider* statistics_provider);
 
   ~DeviceCloudPolicyInitializer() override;
@@ -126,31 +123,13 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
   void SetSystemURLLoaderFactoryForTesting(
       scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory);
   void SetAttestationFlowForTesting(
-      std::unique_ptr<chromeos::attestation::AttestationFlow> attestation_flow);
+      chromeos::attestation::AttestationFlow* attestation_flow);
 
  private:
-  // Signing class implementing the policy::SigningService interface to
-  // sign data using the enrollment certificate's TPM-bound key.
-  class TpmEnrollmentKeySigningService : public policy::SigningService {
-   public:
-    TpmEnrollmentKeySigningService();
-    ~TpmEnrollmentKeySigningService() override;
-
-    void SignData(const std::string& data, SigningCallback callback) override;
-
-   private:
-    void OnDataSigned(const std::string& data,
-                      SigningCallback callback,
-                      const ::attestation::SignSimpleChallengeReply& reply);
-
-    // Used to create tasks which run delayed on the UI thread.
-    base::WeakPtrFactory<TpmEnrollmentKeySigningService> weak_ptr_factory_{
-        this};
-  };
 
   // TODO(crbug.com/705758) When DeviceCloudPolicyInitializer starts connection,
   // that means it will be deleted soon by
-  // |BrowserPolicyConnectorChromeOS::OnDeviceCloudPolicyManagerConnected|.
+  // |BrowserPolicyConnectorAsh::OnDeviceCloudPolicyManagerConnected|.
   // Sometimes this happens before |EnterpriseEnrollmentHelperImpl::DoEnroll|
   // initiates |StartConnection| and leads to a crash. Track the reason of
   // |StartConnection| call to find who initiates removal. Remove once the crash
@@ -165,13 +144,6 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
     // |StartConnection| succeeds after call from |StartEnrollment|.
     kEnrollmentCompleted = 3,
   };
-
-  FRIEND_TEST_ALL_PREFIXES(
-      DeviceCloudPolicyInitializerTpmEnrollmentKeySigningServiceTest,
-      SigningSuccess);
-  FRIEND_TEST_ALL_PREFIXES(
-      DeviceCloudPolicyInitializerTpmEnrollmentKeySigningServiceTest,
-      SigningFailure);
 
   // Handles completion signaled by |enrollment_handler_|.
   void EnrollmentCompleted(EnrollmentCallback enrollment_callback,
@@ -194,14 +166,14 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
   chromeos::InstallAttributes* install_attributes_;
   ServerBackedStateKeysBroker* state_keys_broker_;
-  DeviceCloudPolicyStoreChromeOS* policy_store_;
-  DeviceCloudPolicyManagerChromeOS* policy_manager_;
-  std::unique_ptr<chromeos::attestation::AttestationFlow> attestation_flow_;
+  DeviceCloudPolicyStoreAsh* policy_store_;
+  DeviceCloudPolicyManagerAsh* policy_manager_;
+  chromeos::attestation::AttestationFlow* attestation_flow_;
   chromeos::system::StatisticsProvider* statistics_provider_;
   bool is_initialized_ = false;
 
   // Non-NULL if there is an enrollment operation pending.
-  std::unique_ptr<EnrollmentHandlerChromeOS> enrollment_handler_;
+  std::unique_ptr<EnrollmentHandler> enrollment_handler_;
 
   base::CallbackListSubscription state_keys_update_subscription_;
 

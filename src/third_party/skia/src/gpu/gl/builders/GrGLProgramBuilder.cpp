@@ -15,21 +15,21 @@
 #include "src/core/SkWriteBuffer.h"
 #include "src/gpu/GrAutoLocaleSetter.h"
 #include "src/gpu/GrDirectContextPriv.h"
+#include "src/gpu/GrFragmentProcessor.h"
+#include "src/gpu/GrGeometryProcessor.h"
 #include "src/gpu/GrPersistentCacheUtils.h"
 #include "src/gpu/GrProgramDesc.h"
 #include "src/gpu/GrShaderCaps.h"
 #include "src/gpu/GrShaderUtils.h"
 #include "src/gpu/GrSwizzle.h"
+#include "src/gpu/GrXferProcessor.h"
 #include "src/gpu/gl/GrGLGpu.h"
 #include "src/gpu/gl/GrGLProgram.h"
 #include "src/gpu/gl/builders/GrGLProgramBuilder.h"
 
 #include <memory>
 #include "src/gpu/gl/builders/GrGLShaderStringBuilder.h"
-#include "src/gpu/glsl/GrGLSLFragmentProcessor.h"
-#include "src/gpu/glsl/GrGLSLGeometryProcessor.h"
 #include "src/gpu/glsl/GrGLSLProgramDataManager.h"
-#include "src/gpu/glsl/GrGLSLXferProcessor.h"
 
 #define GL_CALL(X) GR_GL_CALL(this->gpu()->glInterface(), X)
 #define GL_CALL_RET(R, X) GR_GL_CALL_RET(this->gpu()->glInterface(), R, X)
@@ -388,9 +388,11 @@ sk_sp<GrGLProgram> GrGLProgramBuilder::finalize(const GrGLPrecompiledProgram* pr
                 versionAndExtensionDecls.appendf("#extension %s : require\n", extensionString);
             }
 
-            SkString tessControlShader = fGeometryProcessor->getTessControlShaderGLSL(
-                    geomProc, versionAndExtensionDecls.c_str(), fUniformHandler,
-                    *this->shaderCaps());
+            SkString tessControlShader =
+                    fGPImpl->getTessControlShaderGLSL(geomProc,
+                                                      versionAndExtensionDecls.c_str(),
+                                                      fUniformHandler,
+                                                      *this->shaderCaps());
             if (!this->compileAndAttachShaders(tessControlShader.c_str(), programID,
                                                GR_GL_TESS_CONTROL_SHADER, &shadersToDelete,
                                                errorHandler)) {
@@ -398,9 +400,11 @@ sk_sp<GrGLProgram> GrGLProgramBuilder::finalize(const GrGLPrecompiledProgram* pr
                 return nullptr;
             }
 
-            SkString tessEvaluationShader = fGeometryProcessor->getTessEvaluationShaderGLSL(
-                    geomProc, versionAndExtensionDecls.c_str(), fUniformHandler,
-                    *this->shaderCaps());
+            SkString tessEvaluationShader =
+                    fGPImpl->getTessEvaluationShaderGLSL(geomProc,
+                                                         versionAndExtensionDecls.c_str(),
+                                                         fUniformHandler,
+                                                         *this->shaderCaps());
             if (!this->compileAndAttachShaders(tessEvaluationShader.c_str(), programID,
                                                GR_GL_TESS_EVALUATION_SHADER, &shadersToDelete,
                                                errorHandler)) {
@@ -458,7 +462,7 @@ sk_sp<GrGLProgram> GrGLProgramBuilder::finalize(const GrGLPrecompiledProgram* pr
     if (!cached && !geomProc.willUseTessellationShaders() && !precompiledProgram) {
         // FIXME: Remove the check for tessellation shaders in the above 'if' once the back door
         // GLSL mechanism is removed.
-        (void)&GrGLSLGeometryProcessor::getTessControlShaderGLSL;
+        (void)&GrGeometryProcessor::ProgramImpl::getTessControlShaderGLSL;
         bool isSkSL = false;
         if (fGpu->getContext()->priv().options().fShaderCacheStrategy ==
                 GrContextOptions::ShaderCacheStrategy::kSkSL) {
@@ -531,8 +535,8 @@ sk_sp<GrGLProgram> GrGLProgramBuilder::createProgram(GrGLuint programID) {
                              programID,
                              fUniformHandler.fUniforms,
                              fUniformHandler.fSamplers,
-                             std::move(fGeometryProcessor),
-                             std::move(fXferProcessor),
+                             std::move(fGPImpl),
+                             std::move(fXPImpl),
                              std::move(fFPImpls),
                              std::move(fAttributes),
                              fVertexAttributeCnt,

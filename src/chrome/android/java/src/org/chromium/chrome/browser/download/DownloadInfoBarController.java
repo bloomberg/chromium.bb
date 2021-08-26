@@ -68,7 +68,7 @@ import java.util.Set;
  * This class is responsible for tracking various updates for download items, offline items, android
  * downloads and computing the the state of the {@link DownloadProgressInfoBar} .
  */
-public class DownloadInfoBarController implements OfflineContentProvider.Observer {
+public class DownloadInfoBarController implements DownloadMessageUiController {
     private static final String SPEEDING_UP_MESSAGE_ENABLED = "speeding_up_message_enabled";
     private static final long DURATION_ACCELERATED_INFOBAR_IN_MS = 3000;
     private static final long DURATION_SHOW_RESULT_IN_MS = 6000;
@@ -317,16 +317,12 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
         mHandler.post(() -> getOfflineContentProvider().addObserver(this));
     }
 
-    /**
-     * Shows the message that download has started. Unlike other methods in this class, this
-     * method doesn't require an {@link OfflineItem} and is invoked by the backend to provide a
-     * responsive feedback to the users even before the download has actually started.
-     */
+    @Override
     public void onDownloadStarted() {
         computeNextStepForUpdate(null, true, false, false);
     }
 
-    /** Updates the InfoBar when new information about a download comes in. */
+    @Override
     public void onDownloadItemUpdated(DownloadItem downloadItem) {
         if (mUseNewDownloadPath) return;
 
@@ -346,14 +342,13 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
         computeNextStepForUpdate(offlineItem);
     }
 
-    /** Updates the InfoBar after a download has been removed. */
+    @Override
     public void onDownloadItemRemoved(ContentId contentId) {
         if (mUseNewDownloadPath) return;
         onItemRemoved(contentId);
     }
 
-    /** Associates a notification ID with the tracked download for future usage. */
-    // TODO(shaktisahu): Find an alternative way after moving to offline content provider.
+    @Override
     public void onNotificationShown(ContentId id, int notificationId) {
         mNotificationIds.put(id, notificationId);
     }
@@ -374,7 +369,6 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
                 });
     }
 
-    // OfflineContentProvider.Observer implementation.
     @Override
     public void onItemsAdded(List<OfflineItem> items) {
         for (OfflineItem item : items) {
@@ -409,7 +403,7 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
         computeNextStepForUpdate(item);
     }
 
-    /** @return Whether the infobar is currently showing. */
+    @Override
     public boolean isShowing() {
         return mCurrentInfoBar != null;
     }
@@ -835,6 +829,7 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
     @VisibleForTesting
     protected void showInfoBar(@DownloadInfoBarState int state, DownloadProgressInfoBarData info) {
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_PROGRESS_INFOBAR)) return;
+        assert !ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_PROGRESS_MESSAGE);
 
         mCurrentInfo = info;
 
@@ -1141,11 +1136,11 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
         assert shownState != -1 : "Invalid state " + state;
 
         RecordHistogram.recordEnumeratedHistogram(
-                "Android.Download.InfoBar.Shown", shownState, UmaInfobarShown.NUM_ENTRIES);
-        RecordHistogram.recordEnumeratedHistogram("Android.Download.InfoBar.Shown",
+                "Download.Progress.InfoBar.Shown", shownState, UmaInfobarShown.NUM_ENTRIES);
+        RecordHistogram.recordEnumeratedHistogram("Download.Progress.InfoBar.Shown",
                 UmaInfobarShown.ANY_STATE, UmaInfobarShown.NUM_ENTRIES);
         if (multipleDownloadState != -1) {
-            RecordHistogram.recordEnumeratedHistogram("Android.Download.InfoBar.Shown",
+            RecordHistogram.recordEnumeratedHistogram("Download.Progress.InfoBar.Shown",
                     multipleDownloadState, UmaInfobarShown.NUM_ENTRIES);
         }
     }
@@ -1156,7 +1151,7 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
 
     private void recordCloseButtonClicked() {
         RecordUserAction.record("Android.Download.InfoBar.CloseButtonClicked");
-        RecordHistogram.recordEnumeratedHistogram("Android.Download.InfoBar.CloseButtonClicked",
+        RecordHistogram.recordEnumeratedHistogram("Download.Progress.InfoBar.CloseButtonClicked",
                 mState, DownloadInfoBarState.NUM_ENTRIES);
     }
 

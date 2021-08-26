@@ -301,6 +301,11 @@ _DUMPSYS_PACKAGE_RE_STR =\
 PS_COLUMNS = ('name', 'pid', 'ppid')
 ProcessInfo = collections.namedtuple('ProcessInfo', PS_COLUMNS)
 
+# The list of Rock960 device family.
+ROCK960_DEVICE_LIST = [
+    'rk3399', 'rk3399-all', 'rk3399-box'
+]
+
 
 @decorators.WithExplicitTimeoutAndRetries(_DEFAULT_TIMEOUT, _DEFAULT_RETRIES)
 def GetAVDs():
@@ -1021,6 +1026,35 @@ class DeviceUtils(object):
       DeviceUnreachableError if the device becomes unresponsive.
     """
 
+    def is_device_connection_ready():
+      # Rock960 devices re-connect during boot process, presumably
+      # due to change in USB protocol configuration, which causes restart of adb
+      # daemon running on device and "re-connection" seen from adb client side.
+      # Since device is unreachable after disconnecting and before re-connecting
+      # for the second time, we must wait for re-connection and give control
+      # back to devil code only when sys.usb.config property, which allows us to
+      # differentiate between these states, switches to the right value. This
+      # way we avoid "device unreachable" errors occuring when re-connections
+      # happens.
+      try:
+        if self.GetProp('ro.product.model') not in ROCK960_DEVICE_LIST:
+          return True
+      except device_errors.CommandFailedError as e:
+        logging.warn('Failed to get product_model: %s', e)
+        return False
+      except device_errors.DeviceUnreachableError:
+        logging.warn('Failed to get product_model: device unreachable')
+        return False
+
+      try:
+        return self.GetProp('sys.usb.config') == 'adb'
+      except device_errors.CommandFailedError as e:
+        logging.warn('Failed to get prop "sys.usb.config": %s', e)
+        return False
+      except device_errors.DeviceUnreachableError:
+        logging.warn('Failed to get prop "sys.usb.config": device unreachable')
+        return False
+
     def sd_card_ready():
       try:
         self.RunShellCommand(
@@ -1060,6 +1094,8 @@ class DeviceUtils(object):
         return False
 
     self.adb.WaitForDevice()
+    # Rock960 devices connected twice. Wait for device ready.
+    timeout_retry.WaitFor(is_device_connection_ready)
     timeout_retry.WaitFor(sd_card_ready)
     timeout_retry.WaitFor(pm_ready)
     timeout_retry.WaitFor(boot_completed)
@@ -1115,6 +1151,8 @@ class DeviceUtils(object):
 
   INSTALL_DEFAULT_TIMEOUT = 8 * _DEFAULT_TIMEOUT
   MODULES_SRC_DIRECTORY_PATH = '/data/local/tmp/modules'
+  MODULES_LOCAL_TESTING_PATH_TEMPLATE = (
+      '/sdcard/Android/data/{}/files/local_testing')
 
   @decorators.WithTimeoutAndRetriesFromInstance(
       min_default_timeout=INSTALL_DEFAULT_TIMEOUT)
@@ -1195,10 +1233,16 @@ class DeviceUtils(object):
   def _FakeInstall(self, fake_apk_paths, fake_modules, package_name):
     with tempfile_ext.NamedTemporaryDirectory() as modules_dir:
       device_dir = posixpath.join(self.MODULES_SRC_DIRECTORY_PATH, package_name)
+      dest_dir = self.MODULES_LOCAL_TESTING_PATH_TEMPLATE.format(package_name)
       if not fake_modules:
+        # Temporarily support both options until upstream switches to using
+        # local testing path only. Then support for src directory path can be
+        # removed.
+        # TODO(crbug.com/1220662): Remove push empty dir and just use rm -rf.
         # Push empty module dir to clear device dir and update the cache.
         self.PushChangedFiles([(modules_dir, device_dir)],
                               delete_device_stale=True)
+        self.RunShellCommand(['rm', '-rf', dest_dir], as_root=True)
         return
 
       still_need_master = set(fake_modules)
@@ -1221,6 +1265,14 @@ class DeviceUtils(object):
           'Missing master apk file for %s' % still_need_master)
       self.PushChangedFiles([(modules_dir, device_dir)],
                             delete_device_stale=True)
+      # Create new directories until the parent of our destination since we
+      # want to copy that directory over from the temporary location. This
+      # indirection is necessary on Android 11 emulator as there is a permission
+      # issue for the files under /sdcard/Android/data.
+      self.RunShellCommand(
+          ['mkdir', '-p', posixpath.dirname(dest_dir)], as_root=True)
+      # TODO(crbug.com/1220662): Use mv when compatibility is no longer needed.
+      self.RunShellCommand(['cp', '-a', device_dir, dest_dir], as_root=True)
 
   @decorators.WithTimeoutAndRetriesFromInstance(
       min_default_timeout=INSTALL_DEFAULT_TIMEOUT)

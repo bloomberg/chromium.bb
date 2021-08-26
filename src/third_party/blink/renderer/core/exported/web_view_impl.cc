@@ -1006,9 +1006,6 @@ WebPagePopupImpl* WebViewImpl::OpenPagePopup(PagePopupClient* client) {
                                       opener_widget->GetOriginalScreenInfos(),
                                       /*settings=*/nullptr);
 
-  // CreatePopup returns nullptr if this renderer process is about to die.
-  if (!popup_widget)
-    return nullptr;
   page_popup_ = To<WebPagePopupImpl>(popup_widget);
   page_popup_->Initialize(this, client);
   EnablePopupMouseWheelEventListener(web_opener_frame->LocalRoot());
@@ -1967,6 +1964,8 @@ void WebViewImpl::DidAttachLocalMainFrame() {
   if (does_composite_) {
     // When attaching a local main frame, set up any state on the compositor.
     MainFrameImpl()->FrameWidgetImpl()->SetBackgroundColor(BackgroundColor());
+    MainFrameImpl()->FrameWidgetImpl()->SetPrefersReducedMotion(
+        web_preferences_.prefers_reduced_motion);
     auto& viewport = GetPage()->GetVisualViewport();
     MainFrameImpl()->FrameWidgetImpl()->SetPageScaleStateAndLimits(
         viewport.Scale(), viewport.IsPinchGestureActive(),
@@ -3150,8 +3149,39 @@ void WebViewImpl::UpdateFontRenderingFromRendererPrefs() {
 #endif  // !defined(OS_MAC)
 }
 
-void WebViewImpl::ActivatePrerenderedPage() {
+void WebViewImpl::ActivatePrerenderedPage(
+    base::TimeTicks activation_start,
+    ActivatePrerenderedPageCallback callback) {
+  DCHECK(features::IsPrerender2Enabled());
+
+  // From here all new documents will have prerendering false.
   GetPage()->SetIsPrerendering(false);
+
+  // Collect local documents. This is because we are about to run the
+  // prerenderchange event and post-prerendering activation steps on each
+  // document, which could mutate the frame tree and make iteration over it
+  // complicated.
+  HeapVector<Member<Document>> documents;
+  for (Frame* frame = GetPage()->MainFrame(); frame;
+       frame = frame->Tree().TraverseNext()) {
+    if (auto* local_frame = DynamicTo<LocalFrame>(frame))
+      documents.push_back(local_frame->GetDocument());
+  }
+
+  // A null `activation_start` is sent to the WebViewImpl that does not host the
+  // main frame, in which case we expect that it does not have any documents
+  // since cross-origin documents are not loaded during prerendering.
+  DCHECK(documents.size() == 0 || !activation_start.is_null());
+
+  // While the spec says to post a task on the networking task source for each
+  // document, we don't post a task here for simplicity. This allows dispatching
+  // the event on all documents without a chance for other IPCs from the browser
+  // to arrive in the intervening time, resulting in an unclear state.
+  for (auto& document : documents) {
+    document->ActivateForPrerendering(activation_start);
+  }
+
+  std::move(callback).Run();
 }
 
 void WebViewImpl::SetInsidePortal(bool inside_portal) {
@@ -3276,6 +3306,12 @@ const web_pref::WebPreferences& WebViewImpl::GetWebPreferences() {
 void WebViewImpl::UpdateWebPreferences(
     const blink::web_pref::WebPreferences& preferences) {
   web_preferences_ = preferences;
+
+  if (MainFrameImpl()) {
+    MainFrameImpl()->FrameWidgetImpl()->SetPrefersReducedMotion(
+        web_preferences_.prefers_reduced_motion);
+  }
+
   ApplyWebPreferences(preferences, this);
   ApplyCommandLineToSettings(SettingsImpl());
 }

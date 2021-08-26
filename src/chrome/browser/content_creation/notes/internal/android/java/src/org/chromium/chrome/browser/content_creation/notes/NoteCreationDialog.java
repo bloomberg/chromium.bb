@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.MarginLayoutParams;
+import android.view.accessibility.AccessibilityEvent;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -118,7 +119,14 @@ public class NoteCreationDialog extends DialogFragment {
     public void createRecyclerViews(ModelList carouselItems) {
         RecyclerView noteCarousel = mContentView.findViewById(R.id.note_carousel);
 
-        SimpleRecyclerViewAdapter adapter = new SimpleRecyclerViewAdapter(carouselItems);
+        SimpleRecyclerViewAdapter adapter = new SimpleRecyclerViewAdapter(carouselItems) {
+            @Override
+            public void onBindViewHolder(
+                    SimpleRecyclerViewAdapter.ViewHolder holder, int position) {
+                holder.itemView.setTag(position);
+                super.onBindViewHolder(holder, position);
+            }
+        };
         adapter.registerType(NoteProperties.NOTE_VIEW_TYPE,
                 new LayoutViewBuilder(R.layout.carousel_item), this::bindCarouselItem);
         noteCarousel.setAdapter(adapter);
@@ -206,6 +214,21 @@ public class NoteCreationDialog extends DialogFragment {
 
         setPadding(model.get(NoteProperties.IS_FIRST), model.get(NoteProperties.IS_LAST),
                 parent.findViewById(R.id.item));
+
+        carouselItemView.setAccessibilityDelegate(new View.AccessibilityDelegate() {
+            @Override
+            public void onPopulateAccessibilityEvent(View host, AccessibilityEvent event) {
+                int position;
+                switch (event.getEventType()) {
+                    case AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED:
+                        mSelectedItemIndex = (Integer) host.getTag();
+                        centerCurrentNote();
+                        break;
+                }
+
+                super.onPopulateAccessibilityEvent(host, event);
+            }
+        });
     }
 
     // Adjust the padding for carousel items so that:
@@ -216,11 +239,16 @@ public class NoteCreationDialog extends DialogFragment {
     // For that, set left padding exactly what is needed to push the first item to the center, but
     // set a smaller padding for the following items (except the last item which has more padding on
     // the right).
+    //
+    // NOTE: When reading template and padding dimentions don't use |getDimensionPixelSize| as it
+    // rounds up the pixel size which brings the sum of template width and right/left paddings 1px
+    // larger than the screensize. Because of this the scrolling doesn't work as expected and the
+    // selected template doesn't update correctly. See crbug.com/1240537.
     private void setPadding(boolean isFirst, boolean isLast, View itemView) {
         int dialogWidth = getActivity().getResources().getDisplayMetrics().widthPixels;
-        int templateWidth = getActivity().getResources().getDimensionPixelSize(R.dimen.note_width);
+        int templateWidth = (int) getActivity().getResources().getDimension(R.dimen.note_width);
         int defaultPadding =
-                getActivity().getResources().getDimensionPixelSize(R.dimen.note_side_padding);
+                (int) getActivity().getResources().getDimension(R.dimen.note_side_padding);
         int paddingLeft = defaultPadding;
         if (isFirst) {
             paddingLeft =

@@ -121,6 +121,10 @@
     "META": {"sizes": {"includes": [10],}},
     "includes": [1355],
   },
+    "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/enterprise_casting/resources.grd": {
+    "META": {"sizes": {"includes": [50]}},
+    "includes": [1364],
+  },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/emoji_picker/resources.grd": {
     "META": {"sizes": {"includes": [20]}},
     "includes": [1365],
@@ -163,7 +167,7 @@
     "includes": [1540],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/history/history_resources.grd": {
-    "META": {"sizes": {"includes": [30]}},
+    "META": {"sizes": {"includes": [40]}},
     "includes": [1580],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/internals/resources.grd": {
@@ -193,10 +197,6 @@
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/media_router/media_router_feedback_resources.grd": {
     "META": {"sizes": {"includes": [10],}},
     "includes": [1650],
-  },
-  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/memories/resources.grd": {
-    "META": {"sizes": {"includes": [40]}},
-    "includes": [1660],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/new_tab_page/resources.grd": {
     "META": {"sizes": {"includes": [200]}},
@@ -237,6 +237,10 @@
     "META": {"sizes": {"includes": [50],}},
     "includes": [1850],
   },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/signin/resources.grd": {
+    "META": {"sizes": {"includes": [50],}},
+    "includes": [1860],
+  },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/tab_search/tab_search_resources.grd": {
     "META": {"sizes": {"includes": [20]}},
     "includes": [1880],
@@ -274,9 +278,17 @@
     "META": {"sizes": {"includes": [30],}},
     "includes": [2020],
   },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/audio/resources.grd": {
+    "META": {"sizes": {"includes": [30]}},
+    "includes": [2025],
+  },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/bluetooth_pairing_dialog/bluetooth_pairing_dialog_resources.grd": {
     "META": {"sizes": {"includes": [10],}},
     "includes": [2030],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/chromebox_for_meetings/resources.grd": {
+    "META": {"sizes": {"includes": [5]}},
+    "includes": [2035],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/internet_config_dialog/internet_config_dialog_resources.grd": {
     "META": {"sizes": {"includes": [10],}},
@@ -287,14 +299,10 @@
     "includes": [2050],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/network_ui/network_ui_resources.grd": {
-    "META": {"sizes": {"includes": [5]}},
-    "includes": [2060],
-  },
-  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/projector/resources.grd": {
-    "META": {"sizes": {"includes": [5]}},
+    "META": {"sizes": {"includes": [10]}},
     "includes": [2065],
   },
-  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/download_internals/resources.grd": {
+  "<(SHARED_INTERMEDIATE_DIR)/components/download/resources/download_internals/resources.grd": {
     "META": {"sizes": {"includes": [10]}},
     "includes": [2070],
   },
@@ -363,6 +371,10 @@
     # Big alignment at start of section.
     "META": {"align": 100},
     "includes": [2320],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/common/chromeos/extensions/chromeos_system_extensions_resources.grd": {
+    "META": {"sizes": {"includes": [10],}},
+    "includes": [2330],
   },
   "chrome/credential_provider/gaiacp/gaia_resources.grd": {
     "includes": [2340],
@@ -451,11 +463,11 @@
     "includes": [2600],
     "structures": [2620],
   },
-  "<(SHARED_INTERMEDIATE_DIR)/chromeos/components/sample_system_web_app_ui/chromeos_sample_system_web_app_resources.grd": {
+  "<(SHARED_INTERMEDIATE_DIR)/ash/webui/sample_system_web_app_ui/ash_sample_system_web_app_resources.grd": {
     "META": {"sizes": {"includes": [50],}},
     "includes": [2640],
   },
-  "<(SHARED_INTERMEDIATE_DIR)/chromeos/components/sample_system_web_app_ui/chromeos_sample_system_web_app_untrusted_resources.grd": {
+  "<(SHARED_INTERMEDIATE_DIR)/ash/webui/sample_system_web_app_ui/ash_sample_system_web_app_untrusted_resources.grd": {
     "META": {"sizes": {"includes": [50],}},
     "includes": [2645],
   },
@@ -491,6 +503,14 @@
   "<(SHARED_INTERMEDIATE_DIR)/chromeos/components/demo_mode_app_ui/chromeos_demo_mode_app_resources.grd": {
     "META": {"sizes": {"includes": [50],}},
    "includes": [2700],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/chromeos/components/projector_app/resources/chromeos_projector_app_untrusted_resources.grd": {
+    "META": {"sizes": {"includes": [50],}},
+    "includes": [2705],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/chromeos/components/projector_app/resources/chromeos_projector_app_trusted_resources.grd": {
+    "META": {"sizes": {"includes": [50],}},
+    "includes": [2710],
   },
   # END chromeos/ section.
 

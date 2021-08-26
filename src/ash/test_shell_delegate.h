@@ -33,7 +33,6 @@ class TestShellDelegate : public ShellDelegate {
   bool CanShowWindowForUser(const aura::Window* window) const override;
   std::unique_ptr<CaptureModeDelegate> CreateCaptureModeDelegate()
       const override;
-  std::unique_ptr<ScreenshotDelegate> CreateScreenshotDelegate() override;
   AccessibilityDelegate* CreateAccessibilityDelegate() override;
   std::unique_ptr<BackGestureContextualNudgeDelegate>
   CreateBackGestureContextualNudgeDelegate(
@@ -56,8 +55,8 @@ class TestShellDelegate : public ShellDelegate {
   bool IsLoggingRedirectDisabled() const override;
   base::FilePath GetPrimaryUserDownloadsFolder() const override;
   void OpenFeedbackPageForPersistentDesksBar() override {}
-  std::unique_ptr<full_restore::AppLaunchInfo> GetAppLaunchDataForDeskTemplate(
-      aura::Window* window) const override;
+  std::unique_ptr<::full_restore::AppLaunchInfo>
+  GetAppLaunchDataForDeskTemplate(aura::Window* window) const override;
 
  private:
   // True if the current top window can go back.

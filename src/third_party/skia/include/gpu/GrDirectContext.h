@@ -29,7 +29,6 @@ struct GrMockOptions;
 class GrPath;
 class GrResourceCache;
 class GrSmallPathAtlasMgr;
-class GrSurfaceDrawContext;
 class GrResourceProvider;
 class GrStrikeCache;
 class GrSurfaceProxy;
@@ -656,6 +655,7 @@ public:
      * Retrieve the GrBackendFormat for a given SkImage::CompressionType. This is
      * guaranteed to match the backend format used by the following
      * createCompressedBackendTexture methods that take a CompressionType.
+     *
      * The caller should check that the returned format is valid.
      */
     using GrRecordingContext::compressedBackendFormat;
@@ -864,7 +864,6 @@ private:
     bool                                    fPMUPMConversionsRoundTrip;
 
     GrContextOptions::PersistentCache*      fPersistentCache;
-    GrContextOptions::ShaderErrorHandler*   fShaderErrorHandler;
 
     std::unique_ptr<GrClientMappedBufferManager> fMappedBufferManager;
     std::unique_ptr<GrAtlasManager> fAtlasManager;

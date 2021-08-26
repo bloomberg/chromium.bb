@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/check.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -30,6 +31,8 @@
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/crosapi/crosapi_ash.h"
+#include "chrome/browser/ash/crosapi/crosapi_manager.h"
 #include "chrome/browser/ash/crosapi/local_printer_ash.h"
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chromeos/lacros/lacros_service.h"
@@ -59,7 +62,9 @@ LocalPrinterHandlerChromeos::Create(
   auto handler =
       std::make_unique<LocalPrinterHandlerChromeos>(preview_web_contents);
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  handler->local_printer_ = std::make_unique<crosapi::LocalPrinterAsh>();
+  DCHECK(crosapi::CrosapiManager::IsInitialized());
+  handler->local_printer_ =
+      crosapi::CrosapiManager::Get()->crosapi_ash()->local_printer_ash();
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
   chromeos::LacrosService* service = chromeos::LacrosService::Get();
   if (!service->IsAvailable<crosapi::mojom::LocalPrinter>()) {
@@ -113,17 +118,24 @@ base::Value LocalPrinterHandlerChromeos::CapabilityToValue(
                                            : kValueFalse}}),
       PrinterSemanticCapsAndDefaults::Papers(), caps->has_secure_protocol,
       base::OptionalOrNullptr(caps->capabilities));
+
+  // TODO(b/195001379, jkopanski): This block of code should be removed once
+  // Ash Chrome M94 is on stable channel.
   base::Value policies(base::Value::Type::DICTIONARY);
-  policies.SetIntKey(kAllowedColorModes, caps->allowed_color_modes);
-  policies.SetIntKey(kAllowedDuplexModes, caps->allowed_duplex_modes);
-  policies.SetIntKey(kAllowedPinModes,
-                     static_cast<int>(caps->allowed_pin_modes));
+  policies.SetIntKey(kAllowedColorModes, caps->allowed_color_modes_deprecated);
+  policies.SetIntKey(kAllowedDuplexModes,
+                     caps->allowed_duplex_modes_deprecated);
+  policies.SetIntKey(
+      kAllowedPinModes,
+      static_cast<int>(caps->allowed_pin_modes_deprecated_version_1));
   policies.SetIntKey(kDefaultColorMode,
-                     static_cast<int>(caps->default_color_mode));
+                     static_cast<int>(caps->default_color_mode_deprecated));
   policies.SetIntKey(kDefaultDuplexMode,
-                     static_cast<int>(caps->default_duplex_mode));
-  policies.SetIntKey(kDefaultPinMode, static_cast<int>(caps->default_pin_mode));
+                     static_cast<int>(caps->default_duplex_mode_deprecated));
+  policies.SetIntKey(kDefaultPinMode,
+                     static_cast<int>(caps->default_pin_mode_deprecated));
   dict.FindKey(kPrinter)->SetKey(kSettingPolicies, std::move(policies));
+
   return dict;
 }
 

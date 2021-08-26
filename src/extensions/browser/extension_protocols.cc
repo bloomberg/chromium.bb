@@ -62,11 +62,9 @@
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/browser/info_map.h"
-#include "extensions/browser/media_router_extension_access_logger.h"
 #include "extensions/browser/process_map.h"
 #include "extensions/browser/process_map_factory.h"
 #include "extensions/browser/url_request_util.h"
-#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_resource.h"
 #include "extensions/common/file_util.h"
@@ -91,6 +89,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/self_deleting_url_loader_factory.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/early_hints.mojom.h"
@@ -672,20 +671,6 @@ class ExtensionURLLoaderFactory : public network::SelfDeletingURLLoaderFactory {
                                BackgroundInfo::GetBackgroundServiceWorkerScript(
                                    extension.get()));
       }
-    }
-
-    // If the extension is the Media Router Component Extension used to support
-    // Casting scenarios, log metrics needed to track migration away from this
-    // extension.
-    // TODO(crbug.com/1097594): Remove this metric logging once migration away
-    // from the Media Router Component Extension completes.
-    const MediaRouterExtensionAccessLogger* media_router_access_logger =
-        ExtensionsBrowserClient::Get()->GetMediaRouterAccessLogger();
-    if (media_router_access_logger && request.request_initiator.has_value() &&
-        (extension.get()->id() == extension_misc::kCastExtensionIdRelease ||
-         extension.get()->id() == extension_misc::kCastExtensionIdDev)) {
-      media_router_access_logger->LogMediaRouterComponentExtensionUse(
-          request.request_initiator.value(), browser_context_);
     }
 
     if (IsBackgroundPageURL(request.url)) {

@@ -97,7 +97,7 @@ static const std::unordered_map<std::string, uint32_t> device_extension_map = {
     {"VK_AMD_shader_trinary_minmax", 1},
     {"VK_AMD_shader_explicit_vertex_parameter", 1},
     {"VK_EXT_debug_marker", 4},
-    {"VK_KHR_video_queue", 1},
+    {"VK_KHR_video_queue", 2},
     {"VK_KHR_video_decode_queue", 1},
     {"VK_AMD_gcn_shader", 1},
     {"VK_NV_dedicated_allocation", 1},
@@ -108,8 +108,8 @@ static const std::unordered_map<std::string, uint32_t> device_extension_map = {
     {"VK_AMD_negative_viewport_height", 1},
     {"VK_AMD_gpu_shader_half_float", 2},
     {"VK_AMD_shader_ballot", 1},
-    {"VK_EXT_video_encode_h264", 1},
-    {"VK_EXT_video_decode_h264", 1},
+    {"VK_EXT_video_encode_h264", 2},
+    {"VK_EXT_video_decode_h264", 3},
     {"VK_AMD_texture_gather_bias_lod", 1},
     {"VK_AMD_shader_info", 1},
     {"VK_AMD_shader_image_load_store_lod", 1},
@@ -177,7 +177,7 @@ static const std::unordered_map<std::string, uint32_t> device_extension_map = {
     {"VK_KHR_image_format_list", 1},
     {"VK_EXT_blend_operation_advanced", 2},
     {"VK_NV_fragment_coverage_to_color", 1},
-    {"VK_KHR_acceleration_structure", 11},
+    {"VK_KHR_acceleration_structure", 12},
     {"VK_KHR_ray_tracing_pipeline", 1},
     {"VK_KHR_ray_query", 1},
     {"VK_NV_framebuffer_mixed_samples", 1},
@@ -246,6 +246,7 @@ static const std::unordered_map<std::string, uint32_t> device_extension_map = {
     {"VK_EXT_buffer_device_address", 2},
     {"VK_EXT_tooling_info", 1},
     {"VK_EXT_separate_stencil_usage", 1},
+    {"VK_KHR_present_wait", 1},
     {"VK_NV_cooperative_matrix", 1},
     {"VK_NV_coverage_reduction_mode", 1},
     {"VK_EXT_fragment_shader_interlock", 1},
@@ -261,6 +262,7 @@ static const std::unordered_map<std::string, uint32_t> device_extension_map = {
     {"VK_EXT_extended_dynamic_state", 1},
     {"VK_KHR_deferred_host_operations", 4},
     {"VK_KHR_pipeline_executable_properties", 1},
+    {"VK_EXT_shader_atomic_float2", 1},
     {"VK_EXT_shader_demote_to_helper_invocation", 1},
     {"VK_NV_device_generated_commands", 3},
     {"VK_NV_inherited_viewport_scissor", 1},
@@ -272,6 +274,7 @@ static const std::unordered_map<std::string, uint32_t> device_extension_map = {
     {"VK_GOOGLE_user_type", 1},
     {"VK_KHR_pipeline_library", 1},
     {"VK_KHR_shader_non_semantic_info", 1},
+    {"VK_KHR_present_id", 1},
     {"VK_EXT_private_data", 1},
     {"VK_EXT_pipeline_creation_cache_control", 3},
     {"VK_KHR_video_encode_queue", 2},
@@ -296,11 +299,13 @@ static const std::unordered_map<std::string, uint32_t> device_extension_map = {
     {"VK_FUCHSIA_external_memory", 1},
     {"VK_FUCHSIA_external_semaphore", 1},
     {"VK_HUAWEI_subpass_shading", 2},
+    {"VK_HUAWEI_invocation_mask", 1},
     {"VK_NV_external_memory_rdma", 1},
     {"VK_EXT_extended_dynamic_state2", 1},
     {"VK_EXT_color_write_enable", 1},
     {"VK_EXT_global_priority_query", 1},
     {"VK_EXT_multi_draw", 1},
+    {"VK_EXT_load_store_op_none", 1},
 };
 
 
@@ -1981,6 +1986,13 @@ static VKAPI_ATTR void VKAPI_CALL CmdSetFragmentShadingRateKHR(
 
 
 
+static VKAPI_ATTR VkResult VKAPI_CALL WaitForPresentKHR(
+    VkDevice                                    device,
+    VkSwapchainKHR                              swapchain,
+    uint64_t                                    presentId,
+    uint64_t                                    timeout);
+
+
 
 static VKAPI_ATTR VkDeviceAddress VKAPI_CALL GetBufferDeviceAddressKHR(
     VkDevice                                    device,
@@ -2035,6 +2047,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL GetPipelineExecutableInternalRepresentatio
     const VkPipelineExecutableInfoKHR*          pExecutableInfo,
     uint32_t*                                   pInternalRepresentationCount,
     VkPipelineExecutableInternalRepresentationKHR* pInternalRepresentations);
+
 
 
 
@@ -2984,6 +2997,7 @@ static VKAPI_ATTR void VKAPI_CALL CmdSetStencilOpEXT(
 
 
 
+
 static VKAPI_ATTR void VKAPI_CALL GetGeneratedCommandsMemoryRequirementsNV(
     VkDevice                                    device,
     const VkGeneratedCommandsMemoryRequirementsInfoNV* pInfo,
@@ -3138,9 +3152,24 @@ static VKAPI_ATTR VkResult VKAPI_CALL GetSemaphoreZirconHandleFUCHSIA(
 #endif /* VK_USE_PLATFORM_FUCHSIA */
 
 
+static VKAPI_ATTR VkResult VKAPI_CALL GetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI(
+    VkDevice                                    device,
+    VkRenderPass                                renderpass,
+    VkExtent2D*                                 pMaxWorkgroupSize);
+
+static VKAPI_ATTR void VKAPI_CALL CmdSubpassShadingHUAWEI(
+    VkCommandBuffer                             commandBuffer);
+
+
+static VKAPI_ATTR void VKAPI_CALL CmdBindInvocationMaskHUAWEI(
+    VkCommandBuffer                             commandBuffer,
+    VkImageView                                 imageView,
+    VkImageLayout                               imageLayout);
+
+
 static VKAPI_ATTR VkResult VKAPI_CALL GetMemoryRemoteAddressNV(
     VkDevice                                    device,
-    const VkMemoryGetRemoteAddressInfoNV*       getMemoryRemoteAddressInfo,
+    const VkMemoryGetRemoteAddressInfoNV*       pMemoryGetRemoteAddressInfo,
     VkRemoteAddressNV*                          pAddress);
 
 
@@ -3202,6 +3231,7 @@ static VKAPI_ATTR void VKAPI_CALL CmdDrawMultiIndexedEXT(
     uint32_t                                    firstInstance,
     uint32_t                                    stride,
     const int32_t*                              pVertexOffset);
+
 
 
 static VKAPI_ATTR VkResult VKAPI_CALL CreateAccelerationStructureKHR(
@@ -3685,6 +3715,7 @@ static const std::unordered_map<std::string, void*> name_to_funcptr_map = {
     {"vkSignalSemaphoreKHR", (void*)SignalSemaphoreKHR},
     {"vkGetPhysicalDeviceFragmentShadingRatesKHR", (void*)GetPhysicalDeviceFragmentShadingRatesKHR},
     {"vkCmdSetFragmentShadingRateKHR", (void*)CmdSetFragmentShadingRateKHR},
+    {"vkWaitForPresentKHR", (void*)WaitForPresentKHR},
     {"vkGetBufferDeviceAddressKHR", (void*)GetBufferDeviceAddressKHR},
     {"vkGetBufferOpaqueCaptureAddressKHR", (void*)GetBufferOpaqueCaptureAddressKHR},
     {"vkGetDeviceMemoryOpaqueCaptureAddressKHR", (void*)GetDeviceMemoryOpaqueCaptureAddressKHR},
@@ -3907,6 +3938,9 @@ static const std::unordered_map<std::string, void*> name_to_funcptr_map = {
 #ifdef VK_USE_PLATFORM_FUCHSIA
     {"vkGetSemaphoreZirconHandleFUCHSIA", (void*)GetSemaphoreZirconHandleFUCHSIA},
 #endif
+    {"vkGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI", (void*)GetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI},
+    {"vkCmdSubpassShadingHUAWEI", (void*)CmdSubpassShadingHUAWEI},
+    {"vkCmdBindInvocationMaskHUAWEI", (void*)CmdBindInvocationMaskHUAWEI},
     {"vkGetMemoryRemoteAddressNV", (void*)GetMemoryRemoteAddressNV},
     {"vkCmdSetPatchControlPointsEXT", (void*)CmdSetPatchControlPointsEXT},
     {"vkCmdSetRasterizerDiscardEnableEXT", (void*)CmdSetRasterizerDiscardEnableEXT},

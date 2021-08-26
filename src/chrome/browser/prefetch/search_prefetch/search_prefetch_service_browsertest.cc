@@ -62,9 +62,11 @@
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration_options.mojom.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace {
 constexpr char kSuggestDomain[] = "suggest.com";
@@ -916,24 +918,6 @@ class HeaderObserverContentBrowserClient : public ChromeContentBrowserClient {
   bool had_raw_request_info_ = false;
 };
 
-// A delegate to cancel prefetch requests by setting |defer| to true.
-class HeaderObserverThrottle : public blink::URLLoaderThrottle {
- public:
-  explicit HeaderObserverThrottle(HeaderObserverContentBrowserClient* client)
-      : client_(client) {}
-  ~HeaderObserverThrottle() override = default;
-
-  void WillProcessResponse(const GURL& response_url,
-                           network::mojom::URLResponseHead* response_head,
-                           bool* defer) override {
-    client_->set_had_raw_request_info(
-        !!response_head->raw_request_response_info);
-  }
-
- private:
-  HeaderObserverContentBrowserClient* client_;
-};
-
 std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
 HeaderObserverContentBrowserClient::CreateURLLoaderThrottles(
     const network::ResourceRequest& request,
@@ -945,7 +929,6 @@ HeaderObserverContentBrowserClient::CreateURLLoaderThrottles(
       ChromeContentBrowserClient::CreateURLLoaderThrottles(
           request, browser_context, wc_getter, navigation_ui_data,
           frame_tree_node_id);
-  throttles.push_back(std::make_unique<HeaderObserverThrottle>(this));
   return throttles;
 }
 
@@ -974,37 +957,6 @@ IN_PROC_BROWSER_TEST_P(SearchPrefetchServiceEnabledBrowserTest,
   ui_test_utils::NavigateToURL(browser(), prefetch_url);
 
   EXPECT_FALSE(browser_client.had_raw_request_info());
-  content::SetBrowserClientForTesting(old_client);
-}
-
-IN_PROC_BROWSER_TEST_P(SearchPrefetchServiceEnabledBrowserTest,
-                       HeadersReportedFromNetworkWithDevTools) {
-  auto* search_prefetch_service =
-      SearchPrefetchServiceFactory::GetForProfile(browser()->profile());
-  EXPECT_NE(nullptr, search_prefetch_service);
-
-  std::string search_terms = "prefetch_content";
-
-  GURL prefetch_url = GetSearchServerQueryURL(search_terms);
-
-  EXPECT_TRUE(search_prefetch_service->MaybePrefetchURL(prefetch_url));
-  auto prefetch_status =
-      search_prefetch_service->GetSearchPrefetchStatusForTesting(
-          base::ASCIIToUTF16(search_terms));
-  ASSERT_TRUE(prefetch_status.has_value());
-  EXPECT_EQ(SearchPrefetchStatus::kInFlight, prefetch_status.value());
-
-  WaitUntilStatusChangesTo(base::ASCIIToUTF16(search_terms),
-                           SearchPrefetchStatus::kComplete);
-
-  OpenDevToolsWindow(browser()->tab_strip_model()->GetActiveWebContents());
-
-  HeaderObserverContentBrowserClient browser_client;
-  auto* old_client = content::SetBrowserClientForTesting(&browser_client);
-  ui_test_utils::NavigateToURL(browser(), prefetch_url);
-
-  EXPECT_TRUE(browser_client.had_raw_request_info());
-  CloseDevToolsWindow();
   content::SetBrowserClientForTesting(old_client);
 }
 
@@ -2358,8 +2310,9 @@ IN_PROC_BROWSER_TEST_P(SearchPrefetchServiceEnabledBrowserTest,
       GetSearchServerQueryURLWithNoQuery("/"),
       blink::mojom::ScriptType::kClassic,
       blink::mojom::ServiceWorkerUpdateViaCache::kImports);
+  blink::StorageKey key(url::Origin::Create(options.scope));
   service_worker_context->RegisterServiceWorker(
-      worker_url, options,
+      worker_url, key, options,
       base::BindOnce(&RunFirstParam, run_loop.QuitClosure()));
   run_loop.Run();
 

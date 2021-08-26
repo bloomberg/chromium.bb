@@ -19,11 +19,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "encode.h"
 #include "opusenc.h"
 #include "opus_pvq.h"
 #include "opusenc_psy.h"
 #include "opustab.h"
 
+#include "libavutil/channel_layout.h"
 #include "libavutil/float_dsp.h"
 #include "libavutil/mem_internal.h"
 #include "libavutil/opt.h"
@@ -577,7 +579,7 @@ static int opus_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
     /* Worst case toc + the frame lengths if needed */
     alloc_size += 2 + s->packet.frames*2;
 
-    if ((ret = ff_alloc_packet2(avctx, avpkt, alloc_size, 0)) < 0)
+    if ((ret = ff_alloc_packet(avctx, avpkt, alloc_size)) < 0)
         return ret;
 
     /* Assemble packet */

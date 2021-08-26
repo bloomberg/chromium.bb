@@ -548,11 +548,13 @@ bool FrameImpl::MaybeHandleCastStreamingMessage(
     std::string* origin,
     fuchsia::web::WebMessage* message,
     PostMessageCallback* callback) {
-  if (!context_->has_cast_streaming_enabled())
+  if (!context_->has_cast_streaming_enabled()) {
     return false;
+  }
 
-  if (!IsCastStreamingAppOrigin(*origin))
+  if (!IsCastStreamingAppOrigin(*origin)) {
     return false;
+  }
 
   fuchsia::web::Frame_PostMessage_Result result;
   if (receiver_session_client_ || !IsValidCastStreamingMessage(*message)) {
@@ -564,7 +566,8 @@ bool FrameImpl::MaybeHandleCastStreamingMessage(
   }
 
   receiver_session_client_ = std::make_unique<ReceiverSessionClient>(
-      std::move((*message->mutable_outgoing_transfer())[0].message_port()));
+      std::move((*message->mutable_outgoing_transfer())[0].message_port()),
+      IsCastStreamingVideoOnlyAppOrigin(*origin));
   result.set_response(fuchsia::web::Frame_PostMessage_Response());
   (*callback)(std::move(result));
   return true;
@@ -1157,7 +1160,10 @@ bool FrameImpl::CanOverscrollContent() {
 
 void FrameImpl::ReadyToCommitNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame() ||
+  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+  // frames. This caller was converted automatically to the primary main frame
+  // to preserve its semantics. Follow up to confirm correctness.
+  if (!navigation_handle->IsInPrimaryMainFrame() ||
       navigation_handle->IsSameDocument() || navigation_handle->IsErrorPage()) {
     return;
   }

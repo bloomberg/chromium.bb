@@ -1044,7 +1044,9 @@ static void handle_p_frame_png(PNGDecContext *s, AVFrame *p)
     int i, j;
     uint8_t *pd      = p->data[0];
     uint8_t *pd_last = s->last_picture.f->data[0];
-    int ls = FFMIN(av_image_get_linesize(p->format, s->width, 0), s->width * s->bpp);
+    int ls = av_image_get_linesize(p->format, s->width, 0);
+
+    ls = FFMIN(ls, s->width * s->bpp);
 
     ff_thread_await_progress(&s->last_picture, INT_MAX, 0);
     for (j = 0; j < s->height; j++) {
@@ -1622,7 +1624,7 @@ static int decode_frame_apng(AVCodecContext *avctx,
     if (!(avctx->active_thread_type & FF_THREAD_FRAME)) {
         if (s->dispose_op == APNG_DISPOSE_OP_PREVIOUS) {
             ff_thread_release_buffer(avctx, &s->picture);
-        } else if (s->dispose_op == APNG_DISPOSE_OP_NONE) {
+        } else {
             ff_thread_release_buffer(avctx, &s->last_picture);
             FFSWAP(ThreadFrame, s->picture, s->last_picture);
         }
@@ -1671,8 +1673,8 @@ static int update_thread_context(AVCodecContext *dst, const AVCodecContext *src)
         pdst->hdr_state |= psrc->hdr_state;
     }
 
-    src_frame = psrc->dispose_op == APNG_DISPOSE_OP_NONE ?
-                &psrc->picture : &psrc->last_picture;
+    src_frame = psrc->dispose_op == APNG_DISPOSE_OP_PREVIOUS ?
+                &psrc->last_picture : &psrc->picture;
 
     ff_thread_release_buffer(dst, &pdst->last_picture);
     if (src_frame && src_frame->f->data[0]) {

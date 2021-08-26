@@ -8,7 +8,7 @@
 
 #include "base/guid.h"
 #include "chrome/browser/ash/login/test/fake_gaia_mixin.h"
-#include "chrome/browser/ash/policy/core/browser_policy_connector_chromeos.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/policy/enrollment/device_cloud_policy_initializer.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -67,16 +67,6 @@ void LocalPolicyTestServerMixin::SetUpCommandLine(
   // Specify device management server URL.
   command_line->AppendSwitchASCII(policy::switches::kDeviceManagementUrl,
                                   policy_test_server_->GetServiceURL().spec());
-}
-
-void LocalPolicyTestServerMixin::ExpectTokenEnrollment(
-    const std::string& enrollment_token,
-    const std::string& token_creator) {
-  base::Value token_enrollment(base::Value::Type::DICTIONARY);
-  token_enrollment.SetKey("token", base::Value(enrollment_token));
-  token_enrollment.SetKey("username", base::Value(token_creator));
-  server_config_.SetKey("token_enrollment", std::move(token_enrollment));
-  policy_test_server_->SetConfig(server_config_);
 }
 
 void LocalPolicyTestServerMixin::SetUpdateDeviceAttributesPermission(
@@ -156,8 +146,7 @@ bool LocalPolicyTestServerMixin::UpdateUserPolicy(
 
 void LocalPolicyTestServerMixin::SetFakeAttestationFlow() {
   g_browser_process->platform_part()
-      ->browser_policy_connector_chromeos()
-      ->GetDeviceCloudPolicyInitializer()
+      ->browser_policy_connector_ash()
       ->SetAttestationFlowForTesting(
           std::make_unique<chromeos::attestation::FakeAttestationFlow>());
 }

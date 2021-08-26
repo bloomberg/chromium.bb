@@ -18,7 +18,6 @@
 
 #include <float.h>
 
-#include "libavutil/avassert.h"
 #include "libavutil/common.h"
 #include "libavutil/imgutils.h"
 #include "libavutil/opt.h"
@@ -161,7 +160,7 @@ static void export_row8(FFTComplex *src, uint8_t *dst, int rw, float scale, int 
     int j;
 
     for (j = 0; j < rw; j++)
-        dst[j] = av_clip_uint8(src[j].re * scale + 0.5f);
+        dst[j] = av_clip_uint8(lrintf(src[j].re * scale));
 }
 
 static void import_row16(FFTComplex *dst, uint8_t *srcp, int rw)

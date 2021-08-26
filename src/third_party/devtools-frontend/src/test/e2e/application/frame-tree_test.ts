@@ -33,6 +33,12 @@ const ensureApplicationPanel = async () => {
   }
 };
 
+declare global {
+  interface Window {
+    iFrameWindow: Window|null|undefined;
+  }
+}
+
 describe('The Application Tab', async () => {
   afterEach(async () => {
     const {target} = getBrowserAndPages();
@@ -83,7 +89,6 @@ describe('The Application Tab', async () => {
     assert.deepEqual(fieldValuesTextContent, expected);
   });
 
-
   it('shows stack traces for OOPIF', async () => {
     await goToResource('application/js-oopif.html');
     await ensureApplicationPanel();
@@ -117,7 +122,7 @@ describe('The Application Tab', async () => {
     await doubleClickSourceTreeItem(TOP_FRAME_SELECTOR);
 
     await target.evaluate(() => {
-      window.open('iframe.html');
+      window.iFrameWindow = window.open('iframe.html');
     });
 
     await doubleClickSourceTreeItem(OPENED_WINDOWS_SELECTOR);
@@ -138,6 +143,9 @@ describe('The Application Tab', async () => {
       'Yes',
     ];
     assert.deepEqual(fieldValuesTextContent, expected);
+    await target.evaluate(() => {
+      window.iFrameWindow?.close();
+    });
   });
 
   it('shows dedicated workers in the frame tree', async () => {
@@ -168,7 +176,8 @@ describe('The Application Tab', async () => {
     assert.deepEqual(fieldValuesTextContent, expected);
   });
 
-  it('shows service workers in the frame tree', async () => {
+  // Flaky test
+  it.skipOnPlatforms(['win32'], '[crbug.com/1231056]: shows service workers in the frame tree', async () => {
     await goToResource('application/service-worker-network.html');
     await click('#tab-resources');
     await doubleClickSourceTreeItem(TOP_FRAME_SELECTOR);

@@ -8,6 +8,7 @@ BookmarkBubbleViewBrowserTest.*
 BookmarkEditorViewBrowserTest.*
 ChromeLabsUiTest.*
 ContentSettingBubbleDialogTest.*
+CookieControlsBubbleViewTest.*
 ExtensionInstallDialogViewInteractiveBrowserTest.*
 ExtensionUninstallDialogViewInteractiveBrowserTest.*
 FeaturePromoDialogTest.*
@@ -20,7 +21,7 @@ OneTimePermissionPromptBubbleViewBrowserTest.*
 OutdatedUpgradeBubbleTest.*
 All/PageInfoBubbleViewDialogBrowserTest.*
 PasswordReuseModalWarningTest.*
-PermissionChipBrowserTest.*
+PermissionRequestChipBrowserTest.*
 All/PermissionPromptBubbleViewBrowserTest.*
 ProfileSigninConfirmationDialogTest.*
 RelaunchRecommendedBubbleViewDialogTest.*
@@ -42,3 +43,6 @@ ZoomBubbleDialogTest.*
 # TODO(crbug.com/2666206): Flaky
 -ContentSettingBubbleDialogTest.InvokeUi_mediastream_camera
 -ContentSettingBubbleDialogTest.InvokeUi_mediastream_mic_and_camera
+
+# TODO(crbug.com/1164574): Flaky
+-ContentSettingBubbleDialogTest.InvokeUi_mediastream_mic

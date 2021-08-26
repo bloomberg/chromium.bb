@@ -374,10 +374,8 @@ class FullscreenButton : public ImageButton {
   // Overridden from ImageButton.
   gfx::Size CalculatePreferredSize() const override {
     gfx::Size pref = ImageButton::CalculatePreferredSize();
-    if (border()) {
-      gfx::Insets insets = border()->GetInsets();
-      pref.Enlarge(insets.width(), insets.height());
-    }
+    const gfx::Insets insets = GetInsets();
+    pref.Enlarge(insets.width(), insets.height());
     return pref;
   }
 
@@ -637,9 +635,7 @@ class AppMenu::ZoomView : public AppMenuView {
   int GetZoomLabelMaxWidth() const {
     if (!zoom_label_max_width_valid_) {
       const gfx::FontList& font_list = zoom_label_->font_list();
-      int border_width = zoom_label_->border()
-                             ? zoom_label_->border()->GetInsets().width()
-                             : 0;
+      const int border_width = zoom_label_->GetInsets().width();
 
       int max_w = 0;
 
@@ -856,20 +852,27 @@ bool AppMenu::IsShowing() const {
   return menu_runner_.get() && menu_runner_->IsRunning();
 }
 
-void AppMenu::GetLabelStyle(int command_id, LabelStyle* style) const {
-  if (IsRecentTabsCommand(command_id)) {
-    const gfx::FontList* font_list =
-        recent_tabs_menu_model_delegate_->GetLabelFontListForCommandId(
-            command_id);
-    // Only fill in |*color| if there's a font list - otherwise this method will
-    // override the color for every recent tab item, not just the header.
-    if (font_list) {
-      // TODO(ellyjones): Use CONTEXT_MENU instead of CONTEXT_LABEL.
-      style->foreground = views::style::GetColor(
-          *root_, views::style::CONTEXT_LABEL, views::style::STYLE_PRIMARY);
-      style->font_list = *font_list;
-    }
-  }
+const gfx::FontList* AppMenu::GetLabelFontList(int command_id) const {
+  return IsRecentTabsCommand(command_id)
+             ? recent_tabs_menu_model_delegate_->GetLabelFontListForCommandId(
+                   command_id)
+             : nullptr;
+}
+
+absl::optional<SkColor> AppMenu::GetLabelColor(int command_id) const {
+  // Only return a color if there's a font list - otherwise this method will
+  // return a color for every recent tab item, not just the header.
+  // Ensure that we call GetColor() using the `root_`'s SubmenuView as this is
+  // the content view for the menu's widget. The root MenuItemView itself is not
+  // a member of a Widget hierarchy and thus does not have the necessary context
+  // to correctly determine the label color as this requires querying the View's
+  // hosting widget (crbug.com/1233392).
+  // TODO(ellyjones): Use CONTEXT_MENU instead of CONTEXT_LABEL.
+  return GetLabelFontList(command_id)
+             ? absl::optional<SkColor>(views::style::GetColor(
+                   *root_->GetSubmenu(), views::style::CONTEXT_LABEL,
+                   views::style::STYLE_PRIMARY))
+             : absl::nullopt;
 }
 
 std::u16string AppMenu::GetTooltipText(int command_id,

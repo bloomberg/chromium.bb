@@ -54,7 +54,9 @@ class SyncCycleContext {
 
   ServerConnectionManager* connection_manager() { return connection_manager_; }
 
-  ModelTypeSet GetEnabledTypes() const;
+  ModelTypeSet GetConnectedTypes() const;
+
+  bool proxy_tabs_datatype_enabled() const;
 
   ExtensionsActivity* extensions_activity() {
     return extensions_activity_.get();

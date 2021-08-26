@@ -27,7 +27,7 @@ endif()
 # Note: aom.pc generation uses GNUInstallDirs:
 # https://cmake.org/cmake/help/latest/module/GNUInstallDirs.html
 macro(setup_aom_install_targets)
-  if(NOT (MSVC OR XCODE))
+  if(NOT XCODE)
     include("GNUInstallDirs")
     set(AOM_PKG_CONFIG_FILE "${AOM_CONFIG_DIR}/aom.pc")
 
@@ -82,19 +82,15 @@ macro(setup_aom_install_targets)
       set(AOM_INSTALL_LIBS aom)
     endif()
 
-    # Setup the install rules.
-    install(
-      FILES ${AOM_INSTALL_INCS}
-      DESTINATION "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/aom")
-    install(
-      FILES "${AOM_PKG_CONFIG_FILE}"
-      DESTINATION "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/pkgconfig")
-    install(TARGETS ${AOM_INSTALL_LIBS} DESTINATION
-                    "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
-
-    if(ENABLE_EXAMPLES)
-      install(TARGETS ${AOM_INSTALL_BINS} DESTINATION
-                      "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}")
-    endif()
+    # Setup the install rules. install() will automatically prepend
+    # CMAKE_INSTALL_PREFIX to relative paths
+    install(FILES ${AOM_INSTALL_INCS}
+            DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/aom")
+    install(FILES "${AOM_PKG_CONFIG_FILE}"
+            DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+    install(TARGETS ${AOM_INSTALL_LIBS};${AOM_INSTALL_BINS}
+            RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+            LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+            ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}")
   endif()
 endmacro()

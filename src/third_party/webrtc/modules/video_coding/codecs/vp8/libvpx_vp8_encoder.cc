@@ -10,7 +10,6 @@
 
 #include "modules/video_coding/codecs/vp8/libvpx_vp8_encoder.h"
 
-#include <assert.h>
 #include <string.h>
 
 #include <algorithm>
@@ -108,10 +107,10 @@ bool MaybeSetNewValue(const absl::optional<T>& new_value,
   }
 }
 
-// Adds configuration from |new_config| to |base_config|. Both configs consist
-// of optionals, and only optionals which are set in |new_config| can have
-// an effect. (That is, set values in |base_config| cannot be unset.)
-// Returns |true| iff any changes were made to |base_config|.
+// Adds configuration from `new_config` to `base_config`. Both configs consist
+// of optionals, and only optionals which are set in `new_config` can have
+// an effect. (That is, set values in `base_config` cannot be unset.)
+// Returns `true` iff any changes were made to `base_config`.
 bool MaybeExtendVp8EncoderConfig(const Vp8EncoderConfig& new_config,
                                  Vp8EncoderConfig* base_config) {
   bool changes_made = false;
@@ -712,7 +711,7 @@ int LibvpxVp8Encoder::GetCpuSpeed(int width, int height) {
 #else
   // For non-ARM, increase encoding complexity (i.e., use lower speed setting)
   // if resolution is below CIF. Otherwise, keep the default/user setting
-  // (|cpu_speed_default_|) set on InitEncode via VP8().complexity.
+  // (`cpu_speed_default_`) set on InitEncode via VP8().complexity.
   if (width * height < 352 * 288)
     return (cpu_speed_default_ < -4) ? -4 : cpu_speed_default_;
   else
@@ -977,8 +976,8 @@ int LibvpxVp8Encoder::Encode(const VideoFrame& frame,
     flags[i] = send_key_frame ? VPX_EFLAG_FORCE_KF : EncodeFlags(tl_configs[i]);
   }
 
-  // Scale and map buffers and set |raw_images_| to hold pointers to the result.
-  // Because |raw_images_| are set to hold pointers to the prepared buffers, we
+  // Scale and map buffers and set `raw_images_` to hold pointers to the result.
+  // Because `raw_images_` are set to hold pointers to the prepared buffers, we
   // need to keep these buffers alive through reference counting until after
   // encoding is complete.
   std::vector<rtc::scoped_refptr<VideoFrameBuffer>> prepared_buffers =
@@ -1018,7 +1017,7 @@ int LibvpxVp8Encoder::Encode(const VideoFrame& frame,
   // Set the encoder frame flags and temporal layer_id for each spatial stream.
   // Note that streams are defined starting from lowest resolution at
   // position 0 to highest resolution at position |encoders_.size() - 1|,
-  // whereas |encoder_| is from highest to lowest resolution.
+  // whereas `encoder_` is from highest to lowest resolution.
   for (size_t i = 0; i < encoders_.size(); ++i) {
     const size_t stream_idx = encoders_.size() - 1 - i;
 
@@ -1049,8 +1048,8 @@ int LibvpxVp8Encoder::Encode(const VideoFrame& frame,
          (num_tries == 1 &&
           error == WEBRTC_VIDEO_CODEC_TARGET_BITRATE_OVERSHOOT)) {
     ++num_tries;
-    // Note we must pass 0 for |flags| field in encode call below since they are
-    // set above in |libvpx_interface_->vpx_codec_control_| function for each
+    // Note we must pass 0 for `flags` field in encode call below since they are
+    // set above in `libvpx_interface_->vpx_codec_control_` function for each
     // encoder/spatial layer.
     error = libvpx_->codec_encode(&encoders_[0], &raw_images_[0], timestamp_,
                                   duration, 0, VPX_DL_REALTIME);
@@ -1238,8 +1237,8 @@ VideoEncoder::EncoderInfo LibvpxVp8Encoder::GetEncoderInfo() const {
                                   VideoFrameBuffer::Type::kNV12};
 
   if (inited_) {
-    // |encoder_idx| is libvpx index where 0 is highest resolution.
-    // |si| is simulcast index, where 0 is lowest resolution.
+    // `encoder_idx` is libvpx index where 0 is highest resolution.
+    // `si` is simulcast index, where 0 is lowest resolution.
     for (size_t si = 0, encoder_idx = encoders_.size() - 1;
          si < encoders_.size(); ++si, --encoder_idx) {
       info.fps_allocation[si].clear();
@@ -1309,7 +1308,7 @@ LibvpxVp8Encoder::PrepareBuffers(rtc::scoped_refptr<VideoFrameBuffer> buffer) {
 
   rtc::scoped_refptr<VideoFrameBuffer> mapped_buffer;
   if (buffer->type() != VideoFrameBuffer::Type::kNative) {
-    // |buffer| is already mapped.
+    // `buffer` is already mapped.
     mapped_buffer = buffer;
   } else {
     // Attempt to map to one of the supported formats.
@@ -1328,25 +1327,10 @@ LibvpxVp8Encoder::PrepareBuffers(rtc::scoped_refptr<VideoFrameBuffer> buffer) {
                         << " image to I420. Can't encode frame.";
       return {};
     }
-    // The buffer should now be a mapped I420 or I420A format, but some buffer
-    // implementations incorrectly return the wrong buffer format, such as
-    // kNative. As a workaround to this, we perform ToI420() a second time.
-    // TODO(https://crbug.com/webrtc/12602): When Android buffers have a correct
-    // ToI420() implementaion, remove his workaround.
-    if (converted_buffer->type() != VideoFrameBuffer::Type::kI420 &&
-        converted_buffer->type() != VideoFrameBuffer::Type::kI420A) {
-      converted_buffer = converted_buffer->ToI420();
-      if (!converted_buffer) {
-        RTC_LOG(LS_ERROR) << "Failed to convert "
-                          << VideoFrameBufferTypeToString(
-                                 converted_buffer->type())
-                          << " image to I420. Can't encode frame.";
-        return {};
-      }
-      RTC_CHECK(converted_buffer->type() == VideoFrameBuffer::Type::kI420 ||
-                converted_buffer->type() == VideoFrameBuffer::Type::kI420A);
-    }
-    // Because |buffer| had to be converted, use |converted_buffer| instead...
+    RTC_CHECK(converted_buffer->type() == VideoFrameBuffer::Type::kI420 ||
+              converted_buffer->type() == VideoFrameBuffer::Type::kI420A);
+
+    // Because `buffer` had to be converted, use `converted_buffer` instead...
     buffer = mapped_buffer = converted_buffer;
   }
 
@@ -1365,15 +1349,15 @@ LibvpxVp8Encoder::PrepareBuffers(rtc::scoped_refptr<VideoFrameBuffer> buffer) {
       RTC_NOTREACHED();
   }
 
-  // Prepare |raw_images_| from |mapped_buffer| and, if simulcast, scaled
-  // versions of |buffer|.
+  // Prepare `raw_images_` from `mapped_buffer` and, if simulcast, scaled
+  // versions of `buffer`.
   std::vector<rtc::scoped_refptr<VideoFrameBuffer>> prepared_buffers;
   SetRawImagePlanes(&raw_images_[0], mapped_buffer);
   prepared_buffers.push_back(mapped_buffer);
   for (size_t i = 1; i < encoders_.size(); ++i) {
     // Native buffers should implement optimized scaling and is the preferred
     // buffer to scale. But if the buffer isn't native, it should be cheaper to
-    // scale from the previously prepared buffer which is smaller than |buffer|.
+    // scale from the previously prepared buffer which is smaller than `buffer`.
     VideoFrameBuffer* buffer_to_scale =
         buffer->type() == VideoFrameBuffer::Type::kNative
             ? buffer.get()

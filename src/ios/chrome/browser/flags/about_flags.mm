@@ -116,6 +116,14 @@ const FeatureEntry::Choice kDelayThresholdMinutesToUpdateGaiaCookieChoices[] = {
     {"60", signin::kDelayThresholdMinutesToUpdateGaiaCookie, "60"},
 };
 
+const FeatureEntry::Choice
+    kWaitThresholdMillisecondsForCapabilitiesApiChoices[] = {
+        {flags_ui::kGenericExperimentChoiceDefault, "", ""},
+        {"200", signin::kWaitThresholdMillisecondsForCapabilitiesApi, "200"},
+        {"500", signin::kWaitThresholdMillisecondsForCapabilitiesApi, "500"},
+        {"5000", signin::kWaitThresholdMillisecondsForCapabilitiesApi, "5000"},
+};
+
 const FeatureEntry::FeatureVariation
     kOmniboxOnDeviceHeadSuggestNonIncognitoExperimentVariations[] = {
         {
@@ -190,22 +198,6 @@ const FeatureEntry::FeatureVariation
          base::size(kAutofillUseMobileLabelDisambiguationShowAll), nullptr},
         {"(show one)", kAutofillUseMobileLabelDisambiguationShowOne,
          base::size(kAutofillUseMobileLabelDisambiguationShowOne), nullptr}};
-
-const FeatureEntry::FeatureParam
-    kDefaultBrowserFullscreenPromoCTAExperimentSwitch[] = {
-        {kDefaultBrowserFullscreenPromoCTAExperimentSwitchParam, "true"}};
-const FeatureEntry::FeatureParam
-    kDefaultBrowserFullscreenPromoCTAExperimentOpenLinks[] = {
-        {kDefaultBrowserFullscreenPromoCTAExperimentOpenLinksParam, "true"}};
-const FeatureEntry::FeatureVariation
-    kDefaultBrowserFullscreenPromoCTAExperimentVariations[] = {
-        {"Switch to Chrome", kDefaultBrowserFullscreenPromoCTAExperimentSwitch,
-         base::size(kDefaultBrowserFullscreenPromoCTAExperimentSwitch),
-         nullptr},
-        {"Open Links in Chrome",
-         kDefaultBrowserFullscreenPromoCTAExperimentOpenLinks,
-         base::size(kDefaultBrowserFullscreenPromoCTAExperimentOpenLinks),
-         nullptr}};
 
 const FeatureEntry::FeatureParam
     kDefaultBrowserFullscreenPromoExperimentRemindMeLater[] = {
@@ -340,19 +332,6 @@ const FeatureEntry::FeatureVariation kStartSurfaceVariations[] = {
      kStartSurfaceOneHourHideShortcutsReturnToRecentTab,
      base::size(kStartSurfaceOneHourHideShortcutsReturnToRecentTab), nullptr},
 };
-
-const FeatureEntry::FeatureParam kWebViewNativeContextMenuWeb[] = {
-    {web::features::kWebViewNativeContextMenuName,
-     web::features::kWebViewNativeContextMenuParameterWeb}};
-const FeatureEntry::FeatureParam kWebViewNativeContextMenuSystem[] = {
-    {web::features::kWebViewNativeContextMenuName,
-     web::features::kWebViewNativeContextMenuParameterSystem}};
-
-const FeatureEntry::FeatureVariation kWebViewNativeContextMenuVariations[] = {
-    {"Web", kWebViewNativeContextMenuWeb,
-     base::size(kWebViewNativeContextMenuWeb), nullptr},
-    {"System", kWebViewNativeContextMenuSystem,
-     base::size(kWebViewNativeContextMenuSystem), nullptr}};
 
 // To add a new entry, add to the end of kFeatureEntries. There are four
 // distinct types of entries:
@@ -511,9 +490,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"force-unstacked-tabstrip", flag_descriptions::kForceUnstackedTabstripName,
      flag_descriptions::kForceUnstackedTabstripDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kForceUnstackedTabstrip)},
-    {"use-js-error-page", flag_descriptions::kUseJSForErrorPageName,
-     flag_descriptions::kUseJSForErrorPageDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(web::features::kUseJSForErrorPage)},
     {"desktop-version-default", flag_descriptions::kDefaultToDesktopOnIPadName,
      flag_descriptions::kDefaultToDesktopOnIPadDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kUseDefaultUserAgentInWebClient)},
@@ -526,10 +502,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"url-blocklist-ios", flag_descriptions::kURLBlocklistIOSName,
      flag_descriptions::kURLBlocklistIOSDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kURLBlocklistIOS)},
-    {"enable-ios-managed-settings-ui",
-     flag_descriptions::kEnableIOSManagedSettingsUIName,
-     flag_descriptions::kEnableIOSManagedSettingsUIDescription,
-     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kEnableIOSManagedSettingsUI)},
     {"new-content-suggestions-feed", flag_descriptions::kDiscoverFeedInNtpName,
      flag_descriptions::kDiscoverFeedInNtpDescription, flags_ui::kOsIos,
      FEATURE_WITH_PARAMS_VALUE_TYPE(kDiscoverFeedInNtp,
@@ -551,6 +523,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"shared-highlighting-ios", flag_descriptions::kSharedHighlightingIOSName,
      flag_descriptions::kSharedHighlightingIOSDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kSharedHighlightingIOS)},
+    {"enable-fre-default-browser-screen",
+     flag_descriptions::kEnableFREDefaultBrowserScreenName,
+     flag_descriptions::kEnableFREDefaultBrowserScreenDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kEnableFREDefaultBrowserScreen)},
     {"enable-fre-ui-module-ios", flag_descriptions::kEnableFREUIModuleIOSName,
      flag_descriptions::kEnableFREUIModuleIOSDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kEnableFREUIModuleIOS)},
@@ -582,9 +558,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"simplify-sign-out-ios", flag_descriptions::kSimplifySignOutIOSName,
      flag_descriptions::kSimplifySignOutIOSDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(signin::kSimplifySignOutIOS)},
-    {"default-browser-setting", flag_descriptions::kDefaultBrowserSettingsName,
-     flag_descriptions::kDefaultBrowserSettingsDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kDefaultBrowserSettings)},
     {"modern-tab-strip", flag_descriptions::kModernTabStripName,
      flag_descriptions::kModernTabStripDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kModernTabStrip)},
@@ -619,9 +592,7 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"web-view-native-context-menu",
      flag_descriptions::kWebViewNativeContextMenuName,
      flag_descriptions::kWebViewNativeContextMenuDescription, flags_ui::kOsIos,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(web::features::kWebViewNativeContextMenu,
-                                    kWebViewNativeContextMenuVariations,
-                                    "WebViewNativeContextMenu")},
+     FEATURE_VALUE_TYPE(web::features::kWebViewNativeContextMenu)},
     {"location-permissions-prompt",
      flag_descriptions::kLocationPermissionsPromptName,
      flag_descriptions::kLocationPermissionsPromptDescription, flags_ui::kOsIos,
@@ -669,14 +640,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          password_manager::features::kDetectFormSubmissionOnFormClear)},
-    {"default-browser-fullscreen-promo-cta-experiment",
-     flag_descriptions::kDefaultBrowserFullscreenPromoCTAExperimentName,
-     flag_descriptions::kDefaultBrowserFullscreenPromoCTAExperimentDescription,
-     flags_ui::kOsIos,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         kDefaultBrowserFullscreenPromoCTAExperiment,
-         kDefaultBrowserFullscreenPromoCTAExperimentVariations,
-         "DefaultBrowserFullscreenPromoCTAExperiment")},
     {"password-reuse-detection", flag_descriptions::kPasswordReuseDetectionName,
      flag_descriptions::kPasswordReuseDetectionDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
@@ -804,6 +767,31 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          autofill::features::
              kAutofillEnableSaveCardInfoBarAccountIndicationFooter)},
+    {"wait-threshold-seconds-for-capabilities-api",
+     flag_descriptions::kWaitThresholdMillisecondsForCapabilitiesApiName,
+     flag_descriptions::kWaitThresholdMillisecondsForCapabilitiesApiDescription,
+     flags_ui::kOsIos,
+     MULTI_VALUE_TYPE(kWaitThresholdMillisecondsForCapabilitiesApiChoices)},
+    {"autofill-fill-merchant-promo-code-fields",
+     flag_descriptions::kAutofillFillMerchantPromoCodeFieldsName,
+     flag_descriptions::kAutofillFillMerchantPromoCodeFieldsDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillFillMerchantPromoCodeFields)},
+    {"context-menu-phase2",
+     flag_descriptions::kWebViewNativeContextMenuPhase2Name,
+     flag_descriptions::kWebViewNativeContextMenuPhase2Description,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(web::features::kWebViewNativeContextMenuPhase2)},
+    {"context-menu-phase3",
+     flag_descriptions::kWebViewNativeContextMenuPhase3Name,
+     flag_descriptions::kWebViewNativeContextMenuPhase3Description,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(web::features::kWebViewNativeContextMenuPhase3)},
+    {"default-wkwebview-context-menu",
+     flag_descriptions::kDefaultWebViewContextMenuName,
+     flag_descriptions::kDefaultWebViewContextMenuDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(web::features::kDefaultWebViewContextMenu)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {
@@ -917,6 +905,15 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
   if ([token length] > 0) {
     command_line->AppendSwitch(switches::kEnableChromeBrowserCloudManagement);
     [testing_policies setValue:token forKey:token_key];
+  }
+
+  NSString* restriction_pattern =
+      [defaults stringForKey:@"RestrictAccountsToPatterns"];
+  if ([restriction_pattern length] > 0) {
+    [testing_policies addEntriesFromDictionary:@{
+      base::SysUTF8ToNSString(policy::key::kRestrictAccountsToPatterns) :
+          @[ restriction_pattern ]
+    }];
   }
 
   // If any experimental policy was allowed, set the EnableExperimentalPolicies

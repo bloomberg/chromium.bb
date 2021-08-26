@@ -87,12 +87,8 @@ if (is_win || is_mac) {
       "enum_traits.h",
       "external_constants.cc",
       "external_constants.h",
-      "external_constants_builder.cc",
-      "external_constants_builder.h",
       "external_constants_default.cc",
       "external_constants_default.h",
-      "external_constants_override.cc",
-      "external_constants_override.h",
       "installer.cc",
       "installer.h",
       "lib_util.h",
@@ -136,6 +132,7 @@ if (is_win || is_mac) {
 
     deps = [
       ":branding_header",
+      ":constants_header",
       ":version_header",
       "//base",
       "//base:i18n",
@@ -174,8 +171,8 @@ if (is_win || is_mac) {
         "launchd_util.cc",
         "launchd_util.h",
         "lib_util_mac.mm",
-        "mac/installer_dmg.h",
-        "mac/installer_dmg.mm",
+        "mac/install_from_archive.h",
+        "mac/install_from_archive.mm",
         "mac/mac_util.h",
         "mac/mac_util.mm",
         "mac/net/network.h",
@@ -196,6 +193,7 @@ if (is_win || is_mac) {
         "prefs_mac.mm",
         "service_factory_mac.mm",
         "setup_mac.mm",
+        "util_mac.mm",
       ]
 
       deps += [
@@ -302,22 +300,45 @@ if (is_win || is_mac) {
     }
   }
 
-  source_set("version_header") {
-    sources = [ "updater_version.h" ]
+  source_set("constants_header") {
+    sources = [ "constants.h" ]
+
+    deps = [ "//components/update_client" ]
   }
 
-  process_version("updater_version_cc") {
-    sources = [ "//chrome/VERSION" ]
-    deps = [ ":version_header" ]
-    template_file = "updater_version.cc.in"
-    output = "$target_gen_dir/updater_version.cc"
+  source_set("constants_prod") {
+    sources = [
+      "constants_prod.cc",
+      "external_constants_prod.cc",
+    ]
+
+    deps = [
+      ":base",
+      ":constants_header",
+    ]
   }
 
-  process_version("updater_version_cc_offset") {
+  source_set("constants_test") {
+    sources = [
+      "constants_test.cc",
+      "external_constants_override.cc",
+      "external_constants_override.h",
+    ]
+
+    deps = [
+      ":base",
+      ":branding_header",
+      ":constants_header",
+      ":version_header",
+      "//base",
+      "//url",
+    ]
+  }
+
+  process_version("version_header") {
     sources = [ "//chrome/VERSION" ]
-    deps = [ ":version_header" ]
-    template_file = "updater_version_offset.cc.in"
-    output = "$target_gen_dir/updater_version_offset.cc"
+    template_file = "updater_version.h.in"
+    output = "$target_gen_dir/updater_version.h"
   }
 
   process_version("branding_header") {
@@ -391,10 +412,7 @@ if (is_win || is_mac) {
         "//chrome/updater/mac/xpc_service_names.mm",
       ]
 
-      deps += [
-        ":updater_version_cc",
-        ":version_header",
-      ]
+      deps += [ ":version_header" ]
     }
 
     visibility = [
@@ -414,6 +432,8 @@ if (is_win || is_mac) {
       "device_management/dm_response_validator_unittest.cc",
       "device_management/dm_storage_unittest.cc",
       "enum_traits_unittest.cc",
+      "external_constants_builder.cc",
+      "external_constants_builder.h",
       "external_constants_builder_unittest.cc",
       "external_constants_override_unittest.cc",
       "lib_util_unittest.cc",
@@ -440,9 +460,8 @@ if (is_win || is_mac) {
     deps = [
       ":base",
       ":branding_header",
-      ":updater",
+      ":constants_test",
       ":updater_tests_support",
-      ":updater_version_cc",
       ":version_header",
       "//base",
       "//base/test:test_support",
@@ -485,8 +504,8 @@ if (is_win || is_mac) {
       ]
 
       data_deps = [
-        "//chrome/updater/win:updater",
-        "//chrome/updater/win/installer",
+        "//chrome/updater/win:updater_test",
+        "//chrome/updater/win/installer:installer_test",
         "//chrome/updater/win/installer:installer_unittest",
       ]
 
@@ -528,9 +547,20 @@ if (is_win || is_mac) {
       ]
 
       data_deps = [
-        "//chrome/updater/mac:updater_bundle",
+        "//chrome/updater/mac:updater_bundle_test",
         "//chrome/updater/test/test_app",
       ]
+    }
+  }
+
+  if (is_win) {
+    copy("test_service_files") {
+      testonly = true
+      sources = [
+        "test/service/win/updater_test_service.py",
+        "test/service/win/updater_test_service_control.py",
+      ]
+      outputs = [ "$root_build_dir/test_service/{{source_file_part}}" ]
     }
   }
 
@@ -549,10 +579,16 @@ if (is_win || is_mac) {
       "//chrome/common:constants",
       "//testing/gtest",
     ]
+    if (is_win) {
+      deps += [ ":base" ]
+    }
 
     data_deps = [ "//chrome/updater/test/test_app" ]
     if (is_mac) {
-      data_deps += [ "//chrome/updater/mac:updater_bundle" ]
+      data_deps += [ "//chrome/updater/mac:updater_bundle_test" ]
+    }
+    if (is_win) {
+      data_deps += [ ":test_service_files" ]
     }
   }
 
@@ -570,11 +606,14 @@ if (is_win || is_mac) {
       "//chrome/common:constants",
       "//testing/gtest",
     ]
+    if (is_win) {
+      deps += [ ":base" ]
+    }
 
     data_deps = [ ":updater_integration_tests_helper" ]
     if (is_mac) {
       data_deps += [
-        "//chrome/updater/mac:updater_bundle",
+        "//chrome/updater/mac:updater_bundle_test",
         "//chrome/updater/test/test_app",
       ]
     }

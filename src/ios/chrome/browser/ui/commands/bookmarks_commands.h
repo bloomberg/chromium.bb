@@ -8,15 +8,21 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/commands/bookmark_page_command.h"
+#import "ios/chrome/browser/ui/commands/bookmark_add_command.h"
 
 @class ReadingListAddCommand;
 
 // Protocol for commands arounds Bookmarks manipulation.
 @protocol BookmarksCommands <NSObject>
 
-// Bookmarks the page detailed in |command|'s data.
-- (void)bookmarkPage:(BookmarkPageCommand*)command;
+// Adds bookmarks for the given list of URLs in |command|.
+// If |command.presentFolderChooser| is true:
+// - the user will be prompted to choose a location to store the bookmarks.
+// Otherwise, only a single URL must be provided:
+// - If it is already bookmarked, the "edit bookmark" flow will begin.
+// - If it is not already bookmarked, it will be bookmarked automatically and an
+//   "Edit" button will be provided in the displayed snackbar message.
+- (void)bookmark:(BookmarkAddCommand*)command;
 
 @end
 

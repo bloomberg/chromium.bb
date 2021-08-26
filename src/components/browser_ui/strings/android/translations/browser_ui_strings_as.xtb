@@ -6,7 +6,6 @@
 <translation id="1124090076051167250">এইটোৱে আপোনাৰ গৃহ স্ক্রীনত ছাইট অথবা এপ্‌সমূহে ষ্ট’ৰ কৰা <ph name="DATASIZE" /> ডেটা আৰু কুকি মচিব।</translation>
 <translation id="1178581264944972037">পজ কৰক</translation>
 <translation id="1181037720776840403">আঁতৰাওক</translation>
-<translation id="1195941046451948919">আপুনি এই ৱেবছাইটটোৰ বাবে আটাইবোৰ অনুমতি ৰিছেট কৰিব বিচাৰে বুলি নিশ্চিতনে?</translation>
 <translation id="1201402288615127009">পৰৱৰ্তী</translation>
 <translation id="1242008676835033345"><ph name="WEBSITE_URL" />ত এম্বেড কৰা হৈছে</translation>
 <translation id="1272079795634619415">বন্ধ কৰক</translation>
@@ -70,6 +69,7 @@
 <translation id="2687403674020088961">সকলো কুকি অৱৰোধ কৰক (চুপাৰিছ কৰা নহয়)</translation>
 <translation id="2704606927547763573">প্ৰতিলিপি কৰা হ'ল</translation>
 <translation id="2717722538473713889">ইমেইল ঠিকনাবোৰ</translation>
+<translation id="2785051990912111074">এই বাছনিটোৱে <ph name="WEBSITE" />ৰ কুকি মচিব</translation>
 <translation id="2822354292072154809">আপুনি <ph name="CHOSEN_OBJECT_NAME" />ৰ বাবে ছাইটৰ সকলো অনুমতি ৰিছেট কৰিবলৈ বিচাৰে বুলি নিশ্চিতনে?</translation>
 <translation id="2870560284913253234">ছাইট</translation>
 <translation id="2874939134665556319">পূৰ্বৱৰ্তী ট্ৰেক</translation>
@@ -130,7 +130,6 @@
 <translation id="4570913071927164677">সবিশেষ</translation>
 <translation id="4645575059429386691">আপোনাৰ অভিভাৱকৰ দ্বাৰা পৰিচালিত</translation>
 <translation id="4670064810192446073">ভাৰ্চুৱেল ৰিয়েলিটি</translation>
-<translation id="4708011789095599544">আপুনি এই ৱেবছাইটটোৰ বাবে কুকি আৰু ছাইটৰ অন্য ডেটা মচিবলৈ বিচাৰে বুলি নিশ্চিতনে?</translation>
 <translation id="4751476147751820511">গতি বা পোহৰ ধৰা পেলাব পৰা ছেন্সৰ</translation>
 <translation id="4836046166855586901">আপুনি এই ডিভাইচটো সক্ৰিয়ভাৱে ব্যৱহাৰ কৰি থকাৰ বিষয়ে কোনো ছাইটে সেয়া জানিব বিচাৰিলে সোধক</translation>
 <translation id="4883854917563148705">পৰিচালিত ছেটিংসমূহ ৰিছেট কৰিব নোৱাৰি</translation>
@@ -140,6 +139,7 @@
 <translation id="4976702386844183910">শেষবাৰে <ph name="DATE" /> তাৰিখে চাইছে</translation>
 <translation id="4994033804516042629">কোনো সম্পৰ্ক বিচাৰি পোৱা নগ’ল</translation>
 <translation id="4996978546172906250">ইয়াৰ জৰিয়তে শ্বেয়াৰ কৰক</translation>
+<translation id="5014906230196386306">কুকি মচিবনে?</translation>
 <translation id="5039804452771397117">অনুমতি দিয়ক</translation>
 <translation id="5048398596102334565">ম'শ্বন ছেন্সৰসমূহলৈ এক্সেছ পাবলৈ ছাইটসমূহক অনুমতি দিয়ক (চুপাৰিছ কৰা)</translation>
 <translation id="5050380848339752099">এই ছাইটটোৱে ইনক’গনিট’ ম’ডৰ বাহিৰৰ এটা এপৰ সৈতে তথ্য শ্বেয়াৰ কৰিবলৈ লৈছে।</translation>
@@ -157,9 +157,9 @@
 <translation id="5335288049665977812">JavaScript চলাবলৈ ছাইটক অনুমতি দিয়ক (চুপাৰিছ কৰা)</translation>
 <translation id="534295439873310000">NFC ডিভাইচসমূহ</translation>
 <translation id="5354152178998424783">এইটোৱে ছাইটসমূহে ষ্ট’ৰ কৰা <ph name="DATASIZE" /> ডেটা আৰু কুকি মচিব।</translation>
-<translation id="5391532827096253100">এই ছাইটলৈ থকা আপোনাৰ সংযোগ সুৰক্ষিত নহয়। ছাইটৰ তথ্য</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(আৰু ১টা)}one{(আৰু #টা)}other{(আৰু #টা)}}</translation>
 <translation id="5403592356182871684">নামসমূহ</translation>
+<translation id="5438097262470833822">এই বাছনিটোৱে <ph name="WEBSITE" />ৰ বাবে অনুমতি ৰিছেট কৰিব</translation>
 <translation id="5489227211564503167"><ph name="TOTAL_TIME" />ৰ ভিতৰত <ph name="ELAPSED_TIME" /> সময় পাৰ হৈছে।</translation>
 <translation id="5494752089476963479">অননুমোদিত বা বিভ্ৰান্তিকৰ বিজ্ঞাপন দেখুওৱা ছাইটসমূহত বিজ্ঞাপন অৱৰোধ কৰক</translation>
 <translation id="5502860503640766021"><ph name="PERMISSION_1" />ৰ অনুমতি দিয়া আছে, <ph name="PERMISSION_2" />ক অৱৰোধ কৰা আছে</translation>
@@ -190,10 +190,10 @@
 <translation id="6064125863973209585">সম্পূৰ্ণ হোৱা ডাউনল’ডসমূহ</translation>
 <translation id="6165508094623778733">অধিক জানক</translation>
 <translation id="6177111841848151710">বর্তমান ব্যৱহাৰ কৰি থকা সন্ধানৰ ইঞ্জিনৰ বাবে অৱৰোধ কৰা হৈছে</translation>
+<translation id="6177128806592000436">এই ছাইটলৈ থকা আপোনাৰ সংযোগটো সুৰক্ষিত নহয়</translation>
 <translation id="6181444274883918285">ব্যতিক্ৰম ছাইট যোগ কৰক</translation>
 <translation id="6192792657125177640">ব্যতিক্রমসমূহ</translation>
 <translation id="6196640612572343990">তৃতীয়-পক্ষৰ কুকিসমূহ অৱৰোধ কৰক</translation>
-<translation id="6206551242102657620">সংযোগটো নিৰাপদ। ছাইটৰ তথ্য</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> বিকল্প</translation>
 <translation id="6231752747840485235">'<ph name="APP_NAME" />' আনইনষ্টল কৰিবনে?</translation>
 <translation id="6262279340360821358"><ph name="PERMISSION_1" /> আৰু <ph name="PERMISSION_2" />ক অৱৰোধ কৰা আছে</translation>
@@ -202,7 +202,6 @@
 <translation id="6320088164292336938">কম্পন</translation>
 <translation id="6388207532828177975">মচক আৰু ৰিছেট কৰক</translation>
 <translation id="6398765197997659313">সম্পূর্ণ স্ক্ৰীণ ম’ডৰ পৰা বাহিৰ হওক</translation>
-<translation id="6423924377271166037">কুকিসমূহ মচক</translation>
 <translation id="6439114592976064011">ছাইটসমূহে আপোনাৰ ভাৰ্চুৱেল ৰিয়েলিটি ডিভাইচ আৰু ডেটা এক্সেছ কৰাটো অৱৰোধ কৰক</translation>
 <translation id="6447842834002726250">কুকীসমূহ</translation>
 <translation id="6527303717912515753">শ্বেয়াৰ কৰক</translation>
@@ -217,6 +216,7 @@
 <translation id="6689172468748959065">প্র’ফাইল ফট’সমূহ</translation>
 <translation id="6697925417670533197">সক্রিয় ডাউনল’ডসমূহ</translation>
 <translation id="6746124502594467657">তললৈ নিয়ক</translation>
+<translation id="6749077623962119521">অনুমতি ৰিছেট কৰিবনে?</translation>
 <translation id="6766622839693428701">বন্ধ কৰিবলৈ তললৈ ছোৱাইপ কৰক।</translation>
 <translation id="6790428901817661496">প্লে’ কৰক</translation>
 <translation id="6818926723028410516">বস্তু বাছনি কৰক</translation>
@@ -224,7 +224,6 @@
 <translation id="6910211073230771657">মচা হ’ল</translation>
 <translation id="6912998170423641340">ছাইটসমূহৰ ক্লিপব’ৰ্ডৰ পাঠ আৰু ছবি পঢ়াৰ সুবিধা অৱৰোধ কৰক</translation>
 <translation id="6945221475159498467">বাছনি কৰক</translation>
-<translation id="6963642900430330478">এই পৃষ্ঠাটো বিপজ্জনক। ছাইটৰ তথ্য</translation>
 <translation id="6965382102122355670">ঠিক আছে</translation>
 <translation id="6992289844737586249">ছাইটসমূহে আপোনাৰ ডিভাইচৰ মাইক্ৰফ'ন ব্যৱহাৰ কৰাৰ পূর্বে অনুমতি ল'বলৈ দিয়ক (এয়া চুপাৰিছ কৰা হয়)</translation>
 <translation id="7000754031042624318">Androidৰ ছেটিংসমূহত অফ কৰা আছে</translation>
@@ -232,7 +231,6 @@
 <translation id="7053983685419859001">অৱৰোধ কৰক</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{১টা বস্তু বাছনি কৰা হ’ল}one{#টা বস্তু বাছনি কৰা হ’ল}other{#টা বস্তু বাছনি কৰা হ’ল}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" />টা বাছনি কৰা হ’ল।  স্ক্ৰীণৰ ওপৰৰ অংশত কাষত থকা বিকল্পসমূহ</translation>
-<translation id="7128222689758636196">বর্তমানৰ সন্ধানৰ ইঞ্জিনৰ বাবে অনুমতি দিয়ক</translation>
 <translation id="7141896414559753902">ছাইটসমূহে পপ্‌-আপ দেখুওৱাটো আৰু বেলেগ লিংকলৈ লৈ যোৱাটো অৱৰোধ কৰক (আমি চুপাৰিছ কৰোঁ)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> কে.বি.</translation>
 <translation id="723171743924126238">ছবি বাছনি কৰক</translation>
@@ -246,7 +244,6 @@
 <translation id="7554752735887601236">এটা ছাইটে আপোনাৰ মাইক্ৰ’ফ’ন ব্যৱহাৰ কৰি আছে</translation>
 <translation id="7572498721684305250">আপুনি NFC ডিভাইচসমূহত টিপিলে ছাইটসমূহে তথ্য পঠিয়াব আৰু লাভ কৰিব নোৱৰাকৈ অৱৰোধ কৰক</translation>
 <translation id="757524316907819857">সুৰক্ষিত সমল প্লে’ কৰাৰ পৰা ছাইটসমূহক অৱৰোধ কৰক</translation>
-<translation id="7589445247086920869">বৰ্তমানৰ সন্ধান ইঞ্জিনটোৰ বাবে অৱৰোধ কৰক</translation>
 <translation id="7649070708921625228">সহায়</translation>
 <translation id="7658239707568436148">বাতিল কৰক</translation>
 <translation id="7781829728241885113">কালি</translation>
@@ -269,10 +266,12 @@
 <translation id="8068648041423924542">প্ৰমাণপত্ৰ বাছনি কৰিব পৰা নগ'ল।</translation>
 <translation id="8087000398470557479">এই সমল Googleএ যোগান ধৰা <ph name="DOMAIN_NAME" />ৰ।</translation>
 <translation id="8116925261070264013">মিউট আছে</translation>
+<translation id="813082847718468539">ছাইটৰ তথ্য চাওক</translation>
 <translation id="8131740175452115882">নিশ্চিত কৰক</translation>
 <translation id="8197286292360124385"><ph name="PERMISSION_1" />ৰ অনুমতি দিয়া আছে</translation>
 <translation id="8200772114523450471">পুনৰ আৰম্ভ কৰক</translation>
 <translation id="8206354486702514201">আপোনাৰ প্ৰশাসকে এই ছেটিংটো বলৱৎ কৰিছে।</translation>
+<translation id="8211406090763984747">সংযোগটো নিৰাপদ</translation>
 <translation id="8249310407154411074">শীৰ্ষলৈ নিয়ক</translation>
 <translation id="8261506727792406068">মচক</translation>
 <translation id="8300705686683892304">এপৰ দ্বাৰা পৰিচালিত</translation>
@@ -314,7 +313,7 @@
 <translation id="9074739597929991885">ব্লুটুথ</translation>
 <translation id="9109747640384633967">{PERMISSIONS_SUMMARY_MIXED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> আৰু <ph name="NUM_MORE" /> টা}one{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> আৰু <ph name="NUM_MORE" /> টা}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> আৰু <ph name="NUM_MORE" /> টা}}</translation>
 <translation id="913657688200966289"><ph name="BEGIN_LINK" />Android ছেটিংসমূহ<ph name="END_LINK" />ত <ph name="APP_NAME" />ৰ বাবে অনুমতিসমূহ অন কৰক।</translation>
+<translation id="9162462602695099906">এই পৃষ্ঠাখন বিপজ্জনক</translation>
 <translation id="930525582205581608">এই ছাইটটো পাহৰি যাব নেকি?</translation>
-<translation id="965817943346481315">কোনো ছাইটে অননুমোদিত বা বিভ্ৰান্তিকৰ বিজ্ঞাপন দেখুৱালে সেয়া অৱৰোধ কৰক ( চুপাৰিছ কৰা)</translation>
 <translation id="967624055006145463">ডেটা সঞ্চয় কৰা হ’ল</translation>
 </translationbundle>

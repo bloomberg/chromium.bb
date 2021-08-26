@@ -22,7 +22,7 @@
 #include "test/gmock.h"
 
 // This is a copy of
-// https://source.chromium.org/chromium/chromium/src/+/master:base/types/strong_alias_unittest.cc
+// https://source.chromium.org/chromium/chromium/src/+/main:base/types/strong_alias_unittest.cc
 // but adapted to use WebRTC's includes, remove unit tests that test the ostream
 // operator (it's removed in this port) and other adaptations to pass lint.
 
@@ -30,7 +30,7 @@ namespace dcsctp {
 namespace {
 
 // For test correctnenss, it's important that these getters return lexically
-// incrementing values as |index| grows.
+// incrementing values as `index` grows.
 template <typename T>
 T GetExampleValue(int index);
 

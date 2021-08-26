@@ -58,7 +58,7 @@ import {StyleEditorWidget} from './StyleEditorWidget.js';
 import {StylePropertyHighlighter} from './StylePropertyHighlighter.js';
 
 import type {Context} from './StylePropertyTreeElement.js';
-import {StylePropertyTreeElement} from './StylePropertyTreeElement.js';  // eslint-disable-line no-unused-vars
+import {StylePropertyTreeElement} from './StylePropertyTreeElement.js';
 
 const UIStrings = {
   /**
@@ -372,7 +372,7 @@ export class StylesSidebarPane extends ElementsSidebarPane {
 
     function keydownHandler(event: Event): void {
       const keyboardEvent = (event as KeyboardEvent);
-      if (keyboardEvent.key !== 'Escape' || !input.value) {
+      if (keyboardEvent.key !== Platform.KeyboardUtilities.ESCAPE_KEY || !input.value) {
         return;
       }
       keyboardEvent.consume(true);
@@ -896,7 +896,7 @@ export class StylesSidebarPane extends ElementsSidebarPane {
   }
 
   _addBlankSection(
-      insertAfterSection: StylePropertiesSection, styleSheetId: string,
+      insertAfterSection: StylePropertiesSection, styleSheetId: Protocol.CSS.StyleSheetId,
       ruleLocation: TextUtils.TextRange.TextRange): void {
     const node = this.node();
     const blankSection = new BlankStylePropertiesSection(
@@ -1059,7 +1059,6 @@ export const enum Events {
   InitialUpdateCompleted = 'InitialUpdateCompleted',
   StylesUpdateCompleted = 'StylesUpdateCompleted',
 }
-
 
 // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -1442,14 +1441,14 @@ export class StylePropertiesSection {
   }
 
   static _linkifyRuleLocation(
-      cssModel: SDK.CSSModel.CSSModel, linkifier: Components.Linkifier.Linkifier, styleSheetId: string,
-      ruleLocation: TextUtils.TextRange.TextRange): Node {
+      cssModel: SDK.CSSModel.CSSModel, linkifier: Components.Linkifier.Linkifier,
+      styleSheetId: Protocol.CSS.StyleSheetId, ruleLocation: TextUtils.TextRange.TextRange): Node {
     const matchingSelectorLocation = this._getCSSSelectorLocation(cssModel, styleSheetId, ruleLocation);
     return linkifier.linkifyCSSLocation(matchingSelectorLocation);
   }
 
   static _getCSSSelectorLocation(
-      cssModel: SDK.CSSModel.CSSModel, styleSheetId: string,
+      cssModel: SDK.CSSModel.CSSModel, styleSheetId: Protocol.CSS.StyleSheetId,
       ruleLocation: TextUtils.TextRange.TextRange): SDK.CSSModel.CSSLocation {
     const styleSheetHeader =
         (cssModel.styleSheetHeaderForId(styleSheetId) as SDK.CSSStyleSheetHeader.CSSStyleSheetHeader);
@@ -1704,12 +1703,12 @@ export class StylePropertiesSection {
   _onNewRuleClick(event: Common.EventTarget.EventTargetEvent): void {
     event.data.consume();
     const rule = this._style.parentRule;
-    if (!rule || !rule.style.range) {
+    if (!rule || !rule.style.range || rule.styleSheetId === undefined) {
       return;
     }
     const range =
         TextUtils.TextRange.TextRange.createFromLocation(rule.style.range.endLine, rule.style.range.endColumn + 1);
-    this._parentPane._addBlankSection(this, (rule.styleSheetId as string), range);
+    this._parentPane._addBlankSection(this, rule.styleSheetId, range);
   }
 
   _styleSheetEdited(edit: SDK.CSSModel.Edit): void {
@@ -2241,10 +2240,10 @@ export class StylePropertiesSection {
       return;
     }
     const rule = (this._style.parentRule as SDK.CSSRule.CSSStyleRule | null);
-    if (!rule) {
+    if (!rule || rule.styleSheetId === undefined) {
       return;
     }
-    const header = cssModel.styleSheetHeaderForId((rule.styleSheetId as string));
+    const header = cssModel.styleSheetHeaderForId(rule.styleSheetId);
     if (!header) {
       return;
     }
@@ -2427,11 +2426,11 @@ export class StylePropertiesSection {
 export class BlankStylePropertiesSection extends StylePropertiesSection {
   _normal: boolean;
   _ruleLocation: TextUtils.TextRange.TextRange;
-  _styleSheetId: string;
+  _styleSheetId: Protocol.CSS.StyleSheetId;
 
   constructor(
       stylesPane: StylesSidebarPane, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, defaultSelectorText: string,
-      styleSheetId: string, ruleLocation: TextUtils.TextRange.TextRange,
+      styleSheetId: Protocol.CSS.StyleSheetId, ruleLocation: TextUtils.TextRange.TextRange,
       insertAfterStyle: SDK.CSSStyleDeclaration.CSSStyleDeclaration) {
     const cssModel = (stylesPane.cssModel() as SDK.CSSModel.CSSModel);
     const rule = SDK.CSSRule.CSSStyleRule.createDummyRule(cssModel, defaultSelectorText);

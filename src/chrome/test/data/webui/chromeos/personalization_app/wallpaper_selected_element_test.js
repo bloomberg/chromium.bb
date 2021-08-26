@@ -6,8 +6,9 @@
 
 import {ActionName} from 'chrome://personalization/trusted/personalization_actions.js';
 import {emptyState} from 'chrome://personalization/trusted/personalization_reducers.js';
+import {Paths} from 'chrome://personalization/trusted/personalization_router_element.js';
 import {WallpaperSelected} from 'chrome://personalization/trusted/wallpaper_selected_element.js';
-import {assertDeepEquals, assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
+import {assertDeepEquals, assertEquals, assertFalse, assertNotEquals, assertTrue} from '../../chai_assert.js';
 import {flushTasks, waitAfterNextRender} from '../../test_util.m.js';
 import {baseSetup, initElement} from './personalization_app_test_utils.js';
 import {TestWallpaperProvider} from './test_mojo_interface_provider.js';
@@ -37,21 +38,54 @@ export function WallpaperSelectedTest() {
     await flushTasks();
   });
 
-  test('shows loading spinner at startup', async () => {
-    wallpaperSelectedElement = initElement(WallpaperSelected.is);
+  test(
+      'shows loading placeholder when there are in-flight requests',
+      async () => {
+        personalizationStore.data.loading = {
+          ...personalizationStore.data.loading,
+          selected: 1,
+          setImage: 0,
+        };
+        wallpaperSelectedElement = initElement(WallpaperSelected.is);
 
-    assertEquals(
-        null, wallpaperSelectedElement.shadowRoot.querySelector('img'));
+        assertEquals(
+            null, wallpaperSelectedElement.shadowRoot.querySelector('img'));
 
-    assertEquals(
-        null,
-        wallpaperSelectedElement.shadowRoot.getElementById('textContainer'));
+        assertEquals(
+            null,
+            wallpaperSelectedElement.shadowRoot.getElementById(
+                'textContainer'));
 
-    const spinner =
-        wallpaperSelectedElement.shadowRoot.querySelector('paper-spinner-lite');
+        const placeholder = wallpaperSelectedElement.shadowRoot.getElementById(
+            'imagePlaceholder');
 
-    assertTrue(spinner.active);
-  });
+        assertTrue(!!placeholder);
+
+        // Loading placeholder should be hidden.
+        personalizationStore.data.loading = {
+          ...personalizationStore.data.loading,
+          selected: 0,
+          setImage: 0,
+        };
+        personalizationStore.data.currentSelected =
+            wallpaperProvider.currentWallpaper;
+        personalizationStore.notifyObservers();
+        await waitAfterNextRender(wallpaperSelectedElement);
+
+        assertEquals('none', placeholder.style.display);
+
+        // Sent a request to update user wallpaper. Loading placeholder should
+        // come back.
+        personalizationStore.data.loading = {
+          ...personalizationStore.data.loading,
+          selected: 0,
+          setImage: 1,
+        };
+        personalizationStore.notifyObservers();
+        await waitAfterNextRender(wallpaperSelectedElement);
+
+        assertEquals('', placeholder.style.display);
+      });
 
   test('sets wallpaper image in store on first load', async () => {
     personalizationStore.expectAction(ActionName.SET_SELECTED_IMAGE);
@@ -62,18 +96,11 @@ export function WallpaperSelectedTest() {
   });
 
   test('shows wallpaper image and attribution when loaded', async () => {
+    personalizationStore.data.currentSelected =
+        wallpaperProvider.currentWallpaper;
+
     wallpaperSelectedElement = initElement(WallpaperSelected.is);
-
-    const spinner =
-        wallpaperSelectedElement.shadowRoot.querySelector('paper-spinner-lite');
-    assertTrue(spinner.active);
-
-    personalizationStore.data.loading.selected = false;
-    personalizationStore.data.selected = wallpaperProvider.currentWallpaper;
-    personalizationStore.notifyObservers();
     await waitAfterNextRender(wallpaperSelectedElement);
-
-    assertFalse(spinner.active);
 
     const img = wallpaperSelectedElement.shadowRoot.querySelector('img');
     assertEquals(
@@ -82,9 +109,9 @@ export function WallpaperSelectedTest() {
 
     const textContainerElements =
         wallpaperSelectedElement.shadowRoot.querySelectorAll(
-            '#textContainer p');
+            '#textContainer span');
 
-    // First p tag is 'Currently Set' text.
+    // First span tag is 'Currently Set' text.
     assertEquals('currentlySet', textContainerElements[0].id);
     assertEquals(
         wallpaperSelectedElement.i18n('currentlySet'),
@@ -101,8 +128,25 @@ export function WallpaperSelectedTest() {
     });
   });
 
+  test('shows unknown for empty attribution', async () => {
+    personalizationStore.data.currentSelected = {
+      url: {url: 'data:image/png;base64,abc='},
+      attribution: [],
+      assetId: BigInt(100),
+    };
+    personalizationStore.data.loading.selected = false;
+    wallpaperSelectedElement = initElement(WallpaperSelected.is);
+    await waitAfterNextRender(wallpaperSelectedElement);
+
+    const title =
+        wallpaperSelectedElement.shadowRoot.getElementById('imageTitle');
+    assertEquals(
+        wallpaperSelectedElement.i18n('unknownImageAttribution'),
+        title.textContent.trim());
+  });
+
   test('removes high resolution suffix from image url', async () => {
-    personalizationStore.data.selected = {
+    personalizationStore.data.currentSelected = {
       url: {url: 'https://images.googleusercontent.com/abc12=w456'},
       attribution: [],
       assetId: BigInt(100),
@@ -117,7 +161,8 @@ export function WallpaperSelectedTest() {
   });
 
   test('updates image when store is updated', async () => {
-    personalizationStore.data.selected = wallpaperProvider.currentWallpaper;
+    personalizationStore.data.currentSelected =
+        wallpaperProvider.currentWallpaper;
     personalizationStore.data.loading.selected = false;
 
     wallpaperSelectedElement = initElement(WallpaperSelected.is);
@@ -128,7 +173,7 @@ export function WallpaperSelectedTest() {
         `chrome://image/?${wallpaperProvider.currentWallpaper.url.url}`,
         img.src);
 
-    personalizationStore.data.selected = {
+    personalizationStore.data.currentSelected = {
       url: {url: 'https://testing'},
       attribution: ['New attribution'],
       assetId: BigInt(100),
@@ -139,56 +184,56 @@ export function WallpaperSelectedTest() {
     assertEquals('chrome://image/?https://testing', img.src);
   });
 
-  test('shows error text when image fails to load', async () => {
+  test('shows placeholders when image fails to load', async () => {
     wallpaperSelectedElement = initElement(WallpaperSelected.is);
     await waitAfterNextRender(wallpaperSelectedElement);
 
     // Still loading.
     personalizationStore.data.loading.selected = true;
-    personalizationStore.data.selected = null;
+    personalizationStore.data.currentSelected = null;
     personalizationStore.notifyObservers();
     await waitAfterNextRender(wallpaperSelectedElement);
 
-    const spinner =
-        wallpaperSelectedElement.shadowRoot.querySelector('paper-spinner-lite');
-    assertTrue(spinner.active);
+    const placeholder =
+        wallpaperSelectedElement.shadowRoot.getElementById('imagePlaceholder');
+    assertTrue(!!placeholder);
 
     // Loading finished and still no current wallpaper.
     personalizationStore.data.loading.selected = false;
     personalizationStore.notifyObservers();
     await waitAfterNextRender(wallpaperSelectedElement);
 
-    assertFalse(spinner.active);
-
+    // Dom-if will set display: none if the element is hidden. Make sure it is
+    // not hidden.
+    assertNotEquals('none', placeholder.style.display);
     assertEquals(
         null, wallpaperSelectedElement.shadowRoot.querySelector('img'));
-
-    assertEquals(
-        'There was an error',
-        wallpaperSelectedElement.shadowRoot.getElementById('error').innerText);
   });
 
   test('sets selected wallpaper data in store', async () => {
     // Make sure state starts as expected.
     assertDeepEquals(emptyState(), personalizationStore.data);
-    assertTrue(personalizationStore.data.loading.selected);
     // Run the actual reducers.
     personalizationStore.setReducersEnabled(true);
 
     wallpaperSelectedElement = initElement(WallpaperSelected.is);
 
+    // In-flight request to get current wallpaper.
+    assertEquals(1, personalizationStore.data.loading.selected);
+
     // Wait for api call to complete.
     await wallpaperProvider.whenCalled('getCurrentWallpaper');
 
     // Should be done loading now.
-    assertFalse(personalizationStore.data.loading.selected);
+    assertEquals(0, personalizationStore.data.loading.selected);
     // Shallow equals - they should be the same object.
     assertEquals(
-        wallpaperProvider.currentWallpaper, personalizationStore.data.selected);
+        wallpaperProvider.currentWallpaper,
+        personalizationStore.data.currentSelected);
   });
 
   test('shows image url with data scheme', async () => {
-    personalizationStore.data.selected = {
+    personalizationStore.data.currentSelected = {
       url: {url: 'data:image/png;base64,abc='},
       attribution: [],
       assetId: BigInt(100),
@@ -200,4 +245,52 @@ export function WallpaperSelectedTest() {
     const img = wallpaperSelectedElement.shadowRoot.querySelector('img');
     assertEquals('data:image/png;base64,abc=', img.src);
   });
+
+  test('shows daily refresh option on the collection view', async () => {
+    personalizationStore.data.currentSelected = {
+      url: {url: 'data:image/png;base64,abc='},
+      attribution: [],
+      assetId: BigInt(100),
+    };
+    personalizationStore.data.loading.selected = false;
+
+    wallpaperSelectedElement =
+        initElement(WallpaperSelected.is, {'path': Paths.CollectionImages});
+    await waitAfterNextRender(wallpaperSelectedElement);
+
+    const dailyRefresh =
+        wallpaperSelectedElement.shadowRoot.getElementById('dailyRefresh');
+    assertTrue(!!dailyRefresh);
+
+    const refreshWallpaper =
+        wallpaperSelectedElement.shadowRoot.getElementById('refreshWallpaper');
+    assertTrue(refreshWallpaper.hidden);
+  });
+
+  test(
+      'shows refresh button only on collection with daily refresh enabled',
+      async () => {
+        personalizationStore.data.currentSelected = {
+          url: {url: 'data:image/png;base64,abc='},
+          attribution: [],
+          assetId: BigInt(100),
+        };
+        personalizationStore.data.loading.selected = false;
+        const collection_id = wallpaperProvider.collections[0].id;
+        personalizationStore.data.dailyRefresh = {
+          collectionId: collection_id,
+        };
+
+        wallpaperSelectedElement = initElement(
+            WallpaperSelected.is,
+            {'path': Paths.CollectionImages, 'collectionId': collection_id});
+        personalizationStore.notifyObservers();
+
+        await waitAfterNextRender(wallpaperSelectedElement);
+
+        const newRefreshWallpaper =
+            wallpaperSelectedElement.shadowRoot.getElementById(
+                'refreshWallpaper');
+        assertFalse(newRefreshWallpaper.hidden);
+      });
 }

@@ -16,6 +16,7 @@ extern const char kFileSystemBoxFindFolderUrl[];
 extern const char kFileSystemBoxCreateFolderUrl[];
 extern const char kFileSystemBoxPreflightCheckUrl[];
 extern const char kFileSystemBoxDirectUploadUrl[];
+extern const char kFileSystemBoxGetUserUrl[];
 
 // Generic expected responses for calls to Box endpoints.
 // Empty response body.
@@ -41,6 +42,7 @@ extern const char kFileSystemBoxFindFolderResponseFolderId[];
 extern const char kFileSystemBoxFindFolderResponseEmptyEntriesList[];
 // Expected response from kFileSystemBoxCreateFolderUrl.
 extern const char kFileSystemBoxCreateFolderResponseBody[];
+extern const char kFileSystemBoxCreateFolderConflictResponseBody[];
 // Expected folder id extracted from above.
 extern const char kFileSystemBoxCreateFolderResponseFolderId[];
 

@@ -100,6 +100,7 @@ public:
             sk_sp<SkRuntimeEffect> effect,
             const char* name,
             std::unique_ptr<GrFragmentProcessor> inputFP,
+            std::unique_ptr<GrFragmentProcessor> destColorFP,
             sk_sp<SkData> uniforms,
             SkSpan<std::unique_ptr<GrFragmentProcessor>> childFPs);
 
@@ -159,15 +160,18 @@ public:
     std::unique_ptr<GrFragmentProcessor> clone() const override;
 
 private:
+    class Impl;
+
     GrSkSLFP(sk_sp<SkRuntimeEffect> effect, const char* name, OptFlags optFlags);
     GrSkSLFP(const GrSkSLFP& other);
 
     void addChild(std::unique_ptr<GrFragmentProcessor> child, bool mergeOptFlags);
     void setInput(std::unique_ptr<GrFragmentProcessor> input);
+    void setDestColorFP(std::unique_ptr<GrFragmentProcessor> destColorFP);
 
-    std::unique_ptr<GrGLSLFragmentProcessor> onMakeProgramImpl() const override;
+    std::unique_ptr<ProgramImpl> onMakeProgramImpl() const override;
 
-    void onGetGLSLProcessorKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const override;
+    void onAddToKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const override;
 
     bool onIsEqual(const GrFragmentProcessor&) const override;
 
@@ -365,12 +369,11 @@ private:
     const char*            fName;
     uint32_t               fUniformSize;
     int                    fInputChildIndex = -1;
+    int                    fDestColorChildIndex = -1;
 
     GR_DECLARE_FRAGMENT_PROCESSOR_TEST
 
     using INHERITED = GrFragmentProcessor;
-
-    friend class GrGLSLSkSLFP;
 
     friend class GrSkSLFPFactory;
 };

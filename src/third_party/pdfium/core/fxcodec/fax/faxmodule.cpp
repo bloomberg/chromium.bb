@@ -19,7 +19,7 @@
 #include "core/fxcrt/stl_util.h"
 #include "third_party/base/check.h"
 #include "third_party/base/check_op.h"
-#include "third_party/base/numerics/ranges.h"
+#include "third_party/base/cxx17_backports.h"
 
 namespace fxcodec {
 
@@ -497,7 +497,7 @@ FaxDecoder::FaxDecoder(pdfium::span<const uint8_t> src_span,
                       height,
                       kFaxComps,
                       kFaxBpc,
-                      CalculatePitch32(kFaxBpc, width).ValueOrDie()),
+                      CalculatePitch32OrDie(kFaxBpc, width)),
       m_Encoding(K),
       m_bByteAlign(EncodedByteAlign),
       m_bEndOfLine(EndOfLine),

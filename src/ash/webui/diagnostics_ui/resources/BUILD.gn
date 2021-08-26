@@ -34,6 +34,7 @@ js_type_check("closure_compile_module") {
     ":network_card",
     ":network_info",
     ":network_list",
+    ":network_troubleshooting",
     ":overview_card",
     ":percent_bar_chart",
     ":realtime_cpu_chart",
@@ -70,9 +71,11 @@ js_library("cellular_info") {
 
 js_library("connectivity_card") {
   deps = [
+    ":ip_config_info_drawer",
     ":network_info",
     ":routine_section",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:i18n_behavior.m",
   ]
 }
 
@@ -97,6 +100,7 @@ js_library("diagnostics_app") {
     ":network_list",
     ":system_page",
     "//ash/webui/common/resources:navigation_view_panel",
+    "//ash/webui/common/resources:page_toolbar",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:i18n_behavior.m",
     "//ui/webui/resources/js:load_time_data.m",
@@ -118,12 +122,14 @@ js_library("diagnostics_types") {
 }
 
 js_library("diagnostics_utils") {
+  deps = [ "//ui/webui/resources/js:load_time_data.m" ]
 }
 
 js_library("ethernet_info") {
   deps = [
     ":data_point",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:i18n_behavior.m",
   ]
 }
 
@@ -174,8 +180,14 @@ js_library("input_list") {
 
 js_library("ip_config_info_drawer") {
   deps = [
+    ":data_point",
+    ":diagnostics_browser_proxy",
     ":diagnostics_types",
+    ":diagnostics_utils",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_button:cr_button.m",
+    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/js:load_time_data.m",
   ]
 }
 
@@ -209,7 +221,9 @@ js_library("network_card") {
   deps = [
     ":diagnostics_card",
     ":diagnostics_types",
+    ":ip_config_info_drawer",
     ":network_info",
+    ":network_troubleshooting",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:i18n_behavior.m",
   ]
@@ -233,6 +247,15 @@ js_library("network_list") {
     ":mojo_interface_provider",
     ":network_card",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
+}
+
+js_library("network_troubleshooting") {
+  deps = [
+    ":diagnostics_types",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/js:load_time_data.m",
   ]
 }
 
@@ -299,7 +322,7 @@ js_library("system_page") {
     ":overview_card",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements/cr_button:cr_button.m",
-    "//ui/webui/resources/cr_elements/cr_toast:cr_toast.m",
+    "//ui/webui/resources/cr_elements/cr_toast:cr_toast",
     "//ui/webui/resources/js:i18n_behavior.m",
     "//ui/webui/resources/js:load_time_data.m",
   ]
@@ -315,6 +338,7 @@ js_library("wifi_info") {
   deps = [
     ":data_point",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:i18n_behavior.m",
   ]
 }
 
@@ -337,6 +361,7 @@ html_to_js("web_components") {
     "network_card.js",
     "network_info.js",
     "network_list.js",
+    "network_troubleshooting.js",
     "overview_card.js",
     "percent_bar_chart.js",
     "realtime_cpu_chart.js",

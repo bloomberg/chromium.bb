@@ -553,7 +553,10 @@ void PageSpecificContentSettings::OnDomStorageAccessed(const GURL& url,
                         : allowed_local_shared_objects_;
   browsing_data::CannedLocalStorageHelper* helper =
       local ? container.local_storages() : container.session_storages();
-  helper->Add(url::Origin::Create(url));
+  helper->Add(
+      // TODO(https://crbug.com/1199077): Pass the real StorageKey into this
+      // function directly.
+      blink::StorageKey(url::Origin::Create(url)));
 
   if (blocked_by_policy) {
     OnContentBlocked(ContentSettingsType::COOKIES);
@@ -925,10 +928,12 @@ bool PageSpecificContentSettings::HasContentSettingChangedViaPageInfo(
 }
 
 bool PageSpecificContentSettings::IsPagePrerendering() const {
-  // Page is prerendering iff |updates_queued_during_prerender_| is non null.
-  DCHECK_EQ(!!updates_queued_during_prerender_,
-            main_frame_->GetLifecycleState() ==
-                content::RenderFrameHost::LifecycleState::kPrerendering);
+  // We consider the Page to be prerendering iff
+  // |updates_queued_during_prerender_| is non null. Note, the page already may
+  // already have exited prerendering as |updates_queued_during_prerender_| is
+  // flushed in DidFinishNavigation for the prerender activation but other
+  // observers may come before this and call into here. In that case we'll still
+  // queue their updates.
   return !!updates_queued_during_prerender_;
 }
 

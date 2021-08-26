@@ -5,6 +5,7 @@
 #include "components/exo/shell_surface.h"
 
 #include "ash/accessibility/accessibility_delegate.h"
+#include "ash/constants/ash_constants.h"
 #include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/test/shell_test_api.h"
@@ -958,6 +959,39 @@ TEST_F(ShellSurfaceTest, CycleSnap) {
             shell_surface->GetWidget()->GetWindowBoundsInScreen().width());
 }
 
+TEST_F(ShellSurfaceTest, ShellSurfaceWithMaximumSize) {
+  std::unique_ptr<ShellSurface> shell_surface =
+      test::ShellSurfaceBuilder({256, 256})
+          .SetMaximumSize(gfx::Size(10, 10))
+          .BuildShellSurface();
+
+  auto* window_state =
+      ash::WindowState::Get(shell_surface->GetWidget()->GetNativeWindow());
+  EXPECT_FALSE(window_state->CanMaximize());
+  EXPECT_FALSE(window_state->CanSnap());
+
+  shell_surface->SetMaximumSize(gfx::Size(0, 0));
+  shell_surface->root_surface()->Commit();
+
+  EXPECT_TRUE(window_state->CanMaximize());
+  EXPECT_TRUE(window_state->CanSnap());
+
+  // If the max size is bigger than 16k resolution, allow max/snap state.
+  shell_surface->SetMaximumSize(
+      gfx::Size(ash::kAllowMaximizeThreshold, ash::kAllowMaximizeThreshold));
+  shell_surface->root_surface()->Commit();
+  EXPECT_FALSE(window_state->CanMaximize());
+  EXPECT_FALSE(window_state->CanSnap());
+
+  // If the max size is bigger than 32k resolution, allow max/snap state.
+  shell_surface->SetMaximumSize(gfx::Size(ash::kAllowMaximizeThreshold + 1,
+                                          ash::kAllowMaximizeThreshold + 1));
+  shell_surface->root_surface()->Commit();
+
+  EXPECT_TRUE(window_state->CanMaximize());
+  EXPECT_TRUE(window_state->CanSnap());
+}
+
 TEST_F(ShellSurfaceTest, Transient) {
   gfx::Size buffer_size(256, 256);
 
@@ -1495,25 +1529,22 @@ TEST_F(ShellSurfaceTest, Overlay) {
                                      ->GetWindowBoundsInScreen()
                                      .size());
 
-  ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->PressKey(ui::VKEY_X, 0);
-  generator->ReleaseKey(ui::VKEY_X, 0);
+  PressAndReleaseKey(ui::VKEY_X);
   EXPECT_EQ(textfield_ptr->GetText(), u"");
 
+  ui::test::EventGenerator* generator = GetEventGenerator();
   generator->MoveMouseToCenterOf(shell_surface->GetWidget()->GetNativeWindow());
   generator->ClickLeftButton();
 
   // Test normal key input, which should go through IME.
   EXPECT_EQ(shell_surface->GetWidget()->GetFocusManager()->GetFocusedView(),
             textfield_ptr);
-  generator->PressKey(ui::VKEY_X, 0);
-  generator->ReleaseKey(ui::VKEY_X, 0);
+  PressAndReleaseKey(ui::VKEY_X);
   EXPECT_EQ(textfield_ptr->GetText(), u"x");
   EXPECT_TRUE(textfield_ptr->GetSelectedText().empty());
 
   // Controls (Select all) should work.
-  generator->PressKey(ui::VKEY_A, ui::EF_CONTROL_DOWN);
-  generator->ReleaseKey(ui::VKEY_A, ui::EF_CONTROL_DOWN);
+  PressAndReleaseKey(ui::VKEY_A, ui::EF_CONTROL_DOWN);
 
   EXPECT_EQ(textfield_ptr->GetText(), u"x");
   EXPECT_EQ(textfield_ptr->GetSelectedText(), u"x");
@@ -1523,8 +1554,7 @@ TEST_F(ShellSurfaceTest, Overlay) {
                      .BuildOwnedByNativeWidget();
   ASSERT_TRUE(widget->IsActive());
 
-  generator->PressKey(ui::VKEY_Y, 0);
-  generator->ReleaseKey(ui::VKEY_Y, 0);
+  PressAndReleaseKey(ui::VKEY_Y);
 
   EXPECT_EQ(textfield_ptr->GetText(), u"x");
   EXPECT_EQ(textfield_ptr->GetSelectedText(), u"x");
@@ -1534,8 +1564,7 @@ TEST_F(ShellSurfaceTest, Overlay) {
   shell_surface->GetWidget()->Activate();
   // The current text will be replaced with new character because
   // the text is selected.
-  generator->PressKey(ui::VKEY_Y, 0);
-  generator->ReleaseKey(ui::VKEY_Y, 0);
+  PressAndReleaseKey(ui::VKEY_Y);
   EXPECT_EQ(textfield_ptr->GetText(), u"y");
   EXPECT_TRUE(textfield_ptr->GetSelectedText().empty());
 }

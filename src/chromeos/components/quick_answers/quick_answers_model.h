@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image.h"
+#include "url/gurl.h"
 
 namespace chromeos {
 namespace quick_answers {
@@ -67,6 +68,21 @@ enum class QuickAnswerUiElementType {
   kImage = 2,
 };
 
+// Enumeration of Quick Answers exit points. These values are persisted to logs.
+// Entries should never be renumbered and numeric values should never be reused.
+// Append to this enum is allowed only if the possible exit point grows.
+enum class QuickAnswersExitPoint {
+  // The exit point is unspecified. Might be used by tests, obsolete code or as
+  // placeholders.
+  kUnspecified = 0,
+  KContextMenuDismiss = 1,
+  kContextMenuClick = 2,
+  kQuickAnswersClick = 3,
+  kSettingsButtonClick = 4,
+  kReportQueryButtonClick = 5,
+  kMaxValue = kReportQueryButtonClick,
+};
+
 struct QuickAnswerUiElement {
   explicit QuickAnswerUiElement(QuickAnswerUiElementType type) : type(type) {}
   QuickAnswerUiElement(const QuickAnswerUiElement&) = default;
@@ -108,11 +124,15 @@ struct QuickAnswer {
   QuickAnswer();
   ~QuickAnswer();
 
-  ResultType result_type;
+  ResultType result_type = ResultType::kNoResult;
   std::vector<std::unique_ptr<QuickAnswerUiElement>> title;
   std::vector<std::unique_ptr<QuickAnswerUiElement>> first_answer_row;
   std::vector<std::unique_ptr<QuickAnswerUiElement>> second_answer_row;
   std::unique_ptr<QuickAnswerImage> image;
+
+  // Phonetics audio URL for playing pronunciation of dictionary results.
+  // For other type of results the URL will be empty.
+  GURL phonetics_audio;
 };
 
 // Information of the device that used by the user to send the request.

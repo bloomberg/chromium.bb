@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
+#include "base/files/file_path.h"
 #include "base/strings/string_piece_forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -40,6 +41,22 @@ class FirstPartySetParser {
   static absl::optional<net::SchemefulSite> CanonicalizeRegisteredDomain(
       const base::StringPiece origin_string,
       bool emit_errors);
+
+  // Deserializes a JSON-encoded string obtained from
+  // `SerializeFirstPartySets()` into a map. This function checks the validity
+  // of the domains and the disjointness of the FPSs.
+  //
+  // Returns an empty map when deserialization fails, or the sets are invalid.
+  static base::flat_map<net::SchemefulSite, net::SchemefulSite>
+  DeserializeFirstPartySets(base::StringPiece value);
+
+  // Returns a serialized JSON-encoded string representation of the input. This
+  // function does not check or have any special handling for the content of
+  // `sets`, e.g. opaque origins are just serialized as "null".
+  // The owner -> owner entry is removed from the serialized representation for
+  // brevity.
+  static std::string SerializeFirstPartySets(
+      const base::flat_map<net::SchemefulSite, net::SchemefulSite>& sets);
 };
 
 }  // namespace network

@@ -146,11 +146,9 @@ class CORE_EXPORT PaintTiming final : public GarbageCollected<PaintTiming>,
                               WebSwapResult,
                               base::TimeTicks timestamp);
   void ReportFirstPaintAfterBackForwardCacheRestorePresentationTime(
-      size_t index,
+      wtf_size_t index,
       WebSwapResult,
       base::TimeTicks timestamp);
-
-  void ReportSwapResultHistogram(WebSwapResult);
 
   // The caller owns the |clock| which must outlive the PaintTiming.
   void SetTickClockForTesting(const base::TickClock* clock);
@@ -191,13 +189,13 @@ class CORE_EXPORT PaintTiming final : public GarbageCollected<PaintTiming>,
   // index to avoid confusing the data from different navigations.
   void SetFirstPaintAfterBackForwardCacheRestorePresentation(
       base::TimeTicks stamp,
-      size_t index);
-  void SetRequestAnimationFrameAfterBackForwardCacheRestore(size_t index,
+      wtf_size_t index);
+  void SetRequestAnimationFrameAfterBackForwardCacheRestore(wtf_size_t index,
                                                             size_t count);
 
   void RegisterNotifyPresentationTime(PaintEvent);
   void RegisterNotifyFirstPaintAfterBackForwardCacheRestorePresentationTime(
-      size_t index);
+      wtf_size_t index);
 
   base::TimeTicks FirstPaintRendered() const { return first_paint_; }
 

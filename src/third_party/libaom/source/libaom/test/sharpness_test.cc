@@ -34,7 +34,7 @@ const std::unordered_map<
                        { static_cast<int>(::libaom_test::kAllIntra),
                          { { 3, { { 2, 42.3 }, { 5, 42.4 } } },
                            { 6, { { 2, 41.8 }, { 4, 41.9 }, { 5, 41.9 } } },
-                           { 9, { { 2, 41.4 }, { 5, 41.4 } } } } } };
+                           { 9, { { 2, 41.3 }, { 5, 41.3 } } } } } };
 
 // This class is used to test sharpness parameter configured through control
 // call using AOME_SET_SHARPNESS for different encoder configurations.

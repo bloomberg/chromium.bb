@@ -182,8 +182,22 @@ clang_toolchain("ash_clang_x64") {
     # This turns off all of the LaCrOS-specific flags.
     also_build_ash_chrome = false
     chromeos_is_browser_only = false
-    ozone_platform = "x11"
-    ozone_platform_wayland = false
+    use_clang_coverage = false
+  }
+}
+
+# In an ash build, this toolchain is intended to be used as an alternate
+# toolchain to build lacros-Chrome in a subdirectory.
+clang_toolchain("lacros_clang_x64") {
+  toolchain_args = {
+    # This turns the toolchain into the "Lacros" build
+    current_os = "chromeos"
+    target_os = "chromeos"
+    current_cpu = current_cpu
+
+    # This turns on the LaCrOS-specific flag.
+    also_build_lacros_chrome = false
+    chromeos_is_browser_only = true
     use_clang_coverage = false
   }
 }

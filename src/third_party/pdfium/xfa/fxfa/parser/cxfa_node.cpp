@@ -6,6 +6,8 @@
 
 #include "xfa/fxfa/parser/cxfa_node.h"
 
+#include <math.h>
+
 #include <algorithm>
 #include <map>
 #include <memory>
@@ -371,7 +373,7 @@ namespace {
 
 constexpr uint8_t kMaxExecuteRecursion = 2;
 
-constexpr uint8_t g_inv_base64[128] = {
+constexpr uint8_t kInvBase64[128] = {
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 62,  255,
@@ -384,7 +386,7 @@ constexpr uint8_t g_inv_base64[128] = {
 };
 
 inline uint8_t GetInvBase64(uint8_t x) {
-  return (x & 128) == 0 ? g_inv_base64[x] : 255;
+  return (x & 128) == 0 ? kInvBase64[x] : 255;
 }
 
 std::vector<uint8_t, FxAllocAllocator<uint8_t>> XFA_RemoveBase64Whitespace(
@@ -416,21 +418,21 @@ std::vector<uint8_t, FxAllocAllocator<uint8_t>> XFA_Base64Decode(
         break;
       }
       if (buffer[i + 2] == '=') {
-        dwLimb = ((uint32_t)g_inv_base64[buffer[i]] << 6) |
-                 ((uint32_t)g_inv_base64[buffer[i + 1]]);
+        dwLimb = ((uint32_t)kInvBase64[buffer[i]] << 6) |
+                 ((uint32_t)kInvBase64[buffer[i + 1]]);
         result.push_back((uint8_t)(dwLimb >> 4) & 0xFF);
       } else {
-        dwLimb = ((uint32_t)g_inv_base64[buffer[i]] << 12) |
-                 ((uint32_t)g_inv_base64[buffer[i + 1]] << 6) |
-                 ((uint32_t)g_inv_base64[buffer[i + 2]]);
+        dwLimb = ((uint32_t)kInvBase64[buffer[i]] << 12) |
+                 ((uint32_t)kInvBase64[buffer[i + 1]] << 6) |
+                 ((uint32_t)kInvBase64[buffer[i + 2]]);
         result.push_back((uint8_t)(dwLimb >> 10) & 0xFF);
         result.push_back((uint8_t)(dwLimb >> 2) & 0xFF);
       }
     } else {
-      dwLimb = ((uint32_t)g_inv_base64[buffer[i]] << 18) |
-               ((uint32_t)g_inv_base64[buffer[i + 1]] << 12) |
-               ((uint32_t)g_inv_base64[buffer[i + 2]] << 6) |
-               ((uint32_t)g_inv_base64[buffer[i + 3]]);
+      dwLimb = ((uint32_t)kInvBase64[buffer[i]] << 18) |
+               ((uint32_t)kInvBase64[buffer[i + 1]] << 12) |
+               ((uint32_t)kInvBase64[buffer[i + 2]] << 6) |
+               ((uint32_t)kInvBase64[buffer[i + 3]]);
       result.push_back((uint8_t)(dwLimb >> 16) & 0xff);
       result.push_back((uint8_t)(dwLimb >> 8) & 0xff);
       result.push_back((uint8_t)(dwLimb)&0xff);
@@ -678,24 +680,24 @@ WideString FormatNumStr(const WideString& wsValue, LocaleIface* pLocale) {
 
 CXFA_Node* FindFirstSiblingNamedInList(CXFA_Node* parent,
                                        uint32_t dwNameHash,
-                                       uint32_t dwFilter);
+                                       Mask<XFA_NodeFilter> dwFilter);
 CXFA_Node* FindFirstSiblingOfClassInList(CXFA_Node* parent,
                                          XFA_Element element,
-                                         uint32_t dwFilter);
+                                         Mask<XFA_NodeFilter> dwFilter);
 
 CXFA_Node* FindFirstSiblingNamed(CXFA_Node* parent, uint32_t dwNameHash) {
   CXFA_Node* result = FindFirstSiblingNamedInList(parent, dwNameHash,
-                                                  XFA_NodeFilter_Properties);
+                                                  XFA_NodeFilter::kProperties);
   if (result)
     return result;
 
   return FindFirstSiblingNamedInList(parent, dwNameHash,
-                                     XFA_NodeFilter_Children);
+                                     XFA_NodeFilter::kChildren);
 }
 
 CXFA_Node* FindFirstSiblingNamedInList(CXFA_Node* parent,
                                        uint32_t dwNameHash,
-                                       uint32_t dwFilter) {
+                                       Mask<XFA_NodeFilter> dwFilter) {
   for (CXFA_Node* child : parent->GetNodeListWithFilter(dwFilter)) {
     if (child->GetNameHash() == dwNameHash)
       return child;
@@ -708,18 +710,18 @@ CXFA_Node* FindFirstSiblingNamedInList(CXFA_Node* parent,
 }
 
 CXFA_Node* FindFirstSiblingOfClass(CXFA_Node* parent, XFA_Element element) {
-  CXFA_Node* result =
-      FindFirstSiblingOfClassInList(parent, element, XFA_NodeFilter_Properties);
+  CXFA_Node* result = FindFirstSiblingOfClassInList(
+      parent, element, XFA_NodeFilter::kProperties);
   if (result)
     return result;
 
   return FindFirstSiblingOfClassInList(parent, element,
-                                       XFA_NodeFilter_Children);
+                                       XFA_NodeFilter::kChildren);
 }
 
 CXFA_Node* FindFirstSiblingOfClassInList(CXFA_Node* parent,
                                          XFA_Element element,
-                                         uint32_t dwFilter) {
+                                         Mask<XFA_NodeFilter> dwFilter) {
   for (CXFA_Node* child : parent->GetNodeListWithFilter(dwFilter)) {
     if (child->GetElementType() == element)
       return child;
@@ -758,7 +760,7 @@ void TraverseSiblings(CXFA_Node* parent,
   DCHECK(parent);
   DCHECK(pSiblings);
   for (CXFA_Node* child :
-       parent->GetNodeListWithFilter(XFA_NodeFilter_Children)) {
+       parent->GetNodeListWithFilter(XFA_NodeFilter::kChildren)) {
     if (child->GetElementType() == XFA_Element::Variables)
       continue;
 
@@ -783,7 +785,7 @@ void TraversePropertiesOrSiblings(CXFA_Node* parent,
   DCHECK(parent);
   DCHECK(pSiblings);
   for (CXFA_Node* child :
-       parent->GetNodeListWithFilter(XFA_NodeFilter_Properties)) {
+       parent->GetNodeListWithFilter(XFA_NodeFilter::kProperties)) {
     if (bIsClassName) {
       if (child->GetClassHashCode() == dwNameHash)
         pSiblings->push_back(child);
@@ -1037,7 +1039,7 @@ CXFA_Node* CXFA_Node::Clone(bool bRecursive) {
       pClone->InsertChildAndNotify(pChild->Clone(bRecursive), nullptr);
     }
   }
-  pClone->SetFlagAndNotify(XFA_NodeFlag_Initialized);
+  pClone->SetInitializedFlagAndNotify();
   pClone->SetBindingNode(nullptr);
   return pClone;
 }
@@ -1147,7 +1149,7 @@ CXFA_Node* CXFA_Node::GetOrCreateProperty(int32_t index,
       return nullptr;
 
     InsertChildAndNotify(pNewNode, nullptr);
-    pNewNode->SetFlagAndNotify(XFA_NodeFlag_Initialized);
+    pNewNode->SetInitializedFlagAndNotify();
   }
   return pNewNode;
 }
@@ -1196,21 +1198,24 @@ std::vector<CXFA_Node*> CXFA_Node::GetNodeListForType(XFA_Element eTypeFilter) {
 }
 
 std::vector<CXFA_Node*> CXFA_Node::GetNodeListWithFilter(
-    XFA_NodeFilterMask dwFilter) {
+    Mask<XFA_NodeFilter> dwFilter) {
+  if (!dwFilter)
+    return std::vector<CXFA_Node*>();
+
+  const bool bFilterChildren = !!(dwFilter & XFA_NodeFilter::kChildren);
+  const bool bFilterProperties = !!(dwFilter & XFA_NodeFilter::kProperties);
+  const bool bFilterOneOfProperties =
+      !!(dwFilter & XFA_NodeFilter::kOneOfProperty);
+
   std::vector<CXFA_Node*> nodes;
-  if (dwFilter == (XFA_NodeFilter_Children | XFA_NodeFilter_Properties)) {
+  if (bFilterChildren && bFilterProperties && !bFilterOneOfProperties) {
     for (CXFA_Node* pChild = GetFirstChild(); pChild;
-         pChild = pChild->GetNextSibling())
+         pChild = pChild->GetNextSibling()) {
       nodes.push_back(pChild);
+    }
     return nodes;
   }
 
-  if (dwFilter == 0)
-    return nodes;
-
-  bool bFilterChildren = !!(dwFilter & XFA_NodeFilter_Children);
-  bool bFilterProperties = !!(dwFilter & XFA_NodeFilter_Properties);
-  bool bFilterOneOfProperties = !!(dwFilter & XFA_NodeFilter_OneOfProperty);
   for (CXFA_Node* pChild = GetFirstChild(); pChild;
        pChild = pChild->GetNextSibling()) {
     if (HasProperty(pChild->GetElementType())) {
@@ -1242,7 +1247,7 @@ std::vector<CXFA_Node*> CXFA_Node::GetNodeListWithFilter(
       m_pDocument->CreateNode(GetPacketType(), property.value());
   if (pNewNode) {
     InsertChildAndNotify(pNewNode, nullptr);
-    pNewNode->SetFlagAndNotify(XFA_NodeFlag_Initialized);
+    pNewNode->SetInitializedFlagAndNotify();
     nodes.push_back(pNewNode);
   }
   return nodes;
@@ -1253,7 +1258,7 @@ CXFA_Node* CXFA_Node::CreateSamePacketNode(XFA_Element eType) {
   if (!pNode)
     return nullptr;
 
-  pNode->SetFlagAndNotify(XFA_NodeFlag_Initialized);
+  pNode->SetInitializedFlagAndNotify();
   return pNode;
 }
 
@@ -1274,7 +1279,7 @@ CXFA_Node* CXFA_Node::CloneTemplateToForm(bool bRecursive) {
                                    nullptr);
     }
   }
-  pClone->SetFlagAndNotify(XFA_NodeFlag_Initialized);
+  pClone->SetInitializedFlagAndNotify();
   return pClone;
 }
 
@@ -1315,7 +1320,7 @@ void CXFA_Node::AddBindItem(CXFA_Node* pFormNode) {
   binding_nodes_.clear();
   binding_nodes_.push_back(pOldFormItem);
   binding_nodes_.push_back(pFormNode);
-  m_uNodeFlags |= XFA_NodeFlag_BindFormItems;
+  m_uNodeFlags |= XFA_NodeFlag::kBindFormItems;
 }
 
 bool CXFA_Node::RemoveBindItem(CXFA_Node* pFormNode) {
@@ -1326,7 +1331,7 @@ bool CXFA_Node::RemoveBindItem(CXFA_Node* pFormNode) {
       binding_nodes_.erase(it);
 
     if (binding_nodes_.size() == 1) {
-      m_uNodeFlags &= ~XFA_NodeFlag_BindFormItems;
+      m_uNodeFlags.Clear(XFA_NodeFlag::kBindFormItems);
       return true;
     }
     return !binding_nodes_.empty();
@@ -1585,7 +1590,7 @@ void CXFA_Node::InsertChildAndNotify(int32_t index, CXFA_Node* pNode) {
 void CXFA_Node::InsertChildAndNotify(CXFA_Node* pNode, CXFA_Node* pBeforeNode) {
   CHECK(!pNode->GetParent());
   CHECK(!pBeforeNode || pBeforeNode->GetParent() == this);
-  pNode->ClearFlag(XFA_NodeFlag_HasRemovedChildren);
+  pNode->ClearFlag(XFA_NodeFlag::kHasRemovedChildren);
   InsertBefore(pNode, pBeforeNode);
 
   CXFA_FFNotify* pNotify = m_pDocument->GetNotify();
@@ -1605,7 +1610,7 @@ void CXFA_Node::RemoveChildAndNotify(CXFA_Node* pNode, bool bNotify) {
   if (pNode->GetParent() != this)
     return;
 
-  pNode->SetFlag(XFA_NodeFlag_HasRemovedChildren);
+  pNode->SetFlag(XFA_NodeFlag::kHasRemovedChildren);
   GCedTreeNodeMixin<CXFA_Node>::RemoveChild(pNode);
   OnRemoved(bNotify);
 
@@ -1777,29 +1782,26 @@ CXFA_Occur* CXFA_Node::GetOccurIfExists() {
 bool CXFA_Node::HasFlag(XFA_NodeFlag dwFlag) const {
   if (m_uNodeFlags & dwFlag)
     return true;
-  if (dwFlag == XFA_NodeFlag_HasRemovedChildren)
+  if (dwFlag == XFA_NodeFlag::kHasRemovedChildren)
     return GetParent() && GetParent()->HasFlag(dwFlag);
   return false;
 }
 
-void CXFA_Node::SetFlagAndNotify(uint32_t dwFlag) {
-  DCHECK_EQ(dwFlag, XFA_NodeFlag_Initialized);
-
+void CXFA_Node::SetInitializedFlagAndNotify() {
   if (!IsInitialized()) {
     CXFA_FFNotify* pNotify = m_pDocument->GetNotify();
-    if (pNotify) {
+    if (pNotify)
       pNotify->OnNodeReady(this);
-    }
   }
+  m_uNodeFlags |= XFA_NodeFlag::kInitialized;
+}
+
+void CXFA_Node::SetFlag(XFA_NodeFlag dwFlag) {
   m_uNodeFlags |= dwFlag;
 }
 
-void CXFA_Node::SetFlag(uint32_t dwFlag) {
-  m_uNodeFlags |= dwFlag;
-}
-
-void CXFA_Node::ClearFlag(uint32_t dwFlag) {
-  m_uNodeFlags &= ~dwFlag;
+void CXFA_Node::ClearFlag(XFA_NodeFlag dwFlag) {
+  m_uNodeFlags.Clear(dwFlag);
 }
 
 bool CXFA_Node::IsAttributeInXML() {
@@ -2507,7 +2509,7 @@ void CXFA_Node::ProcessScriptTestValidate(CXFA_FFDocView* pDocView,
                              static_cast<uint32_t>(AlertIcon::kWarning),
                              static_cast<uint32_t>(AlertButton::kYesNo)) ==
         static_cast<uint32_t>(AlertReturn::kYes)) {
-      SetFlag(XFA_NodeFlag_UserInteractive);
+      SetFlag(XFA_NodeFlag::kUserInteractive);
     }
     return;
   }
@@ -2568,7 +2570,7 @@ XFA_EventError CXFA_Node::ProcessFormatTestValidate(CXFA_FFDocView* pDocView,
                            static_cast<uint32_t>(AlertIcon::kWarning),
                            static_cast<uint32_t>(AlertButton::kYesNo)) ==
       static_cast<uint32_t>(AlertReturn::kYes)) {
-    SetFlag(XFA_NodeFlag_UserInteractive);
+    SetFlag(XFA_NodeFlag::kUserInteractive);
   }
 
   return XFA_EventError::kError;
@@ -2635,7 +2637,7 @@ XFA_EventError CXFA_Node::ProcessNullTestValidate(CXFA_FFDocView* pDocView,
                                static_cast<uint32_t>(AlertIcon::kWarning),
                                static_cast<uint32_t>(AlertButton::kYesNo)) ==
           static_cast<uint32_t>(AlertReturn::kYes)) {
-        SetFlag(XFA_NodeFlag_UserInteractive);
+        SetFlag(XFA_NodeFlag::kUserInteractive);
       }
       return XFA_EventError::kError;
     }
@@ -2673,7 +2675,7 @@ XFA_EventError CXFA_Node::ProcessValidate(CXFA_FFDocView* pDocView,
   bool bVersionFlag = version < XFA_VERSION_208;
 
   if (bInitDoc) {
-    validate->ClearFlag(XFA_NodeFlag_NeedsInitApp);
+    validate->ClearFlag(XFA_NodeFlag::kNeedsInitApp);
   } else {
     iFormat = ProcessFormatTestValidate(pDocView, validate, bVersionFlag);
     if (!bVersionFlag)
@@ -5038,7 +5040,7 @@ void CXFA_Node::SetNodeAndDescendantsUnused() {
   CXFA_NodeIterator sIterator(this);
   for (CXFA_Node* pNode = sIterator.GetCurrent(); pNode;
        pNode = sIterator.MoveToNext()) {
-    pNode->SetFlag(XFA_NodeFlag_UnusedNode);
+    pNode->SetFlag(XFA_NodeFlag::kUnusedNode);
   }
 }
 

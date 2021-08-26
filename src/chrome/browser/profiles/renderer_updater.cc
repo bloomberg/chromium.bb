@@ -69,10 +69,11 @@ RendererUpdater::RendererUpdater(Profile* profile) : profile_(profile) {
   }
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   oauth2_login_manager_ =
-      chromeos::OAuth2LoginManagerFactory::GetForProfile(profile_);
+      ash::OAuth2LoginManagerFactory::GetForProfile(profile_);
   oauth2_login_manager_->AddObserver(this);
   merge_session_running_ =
-      merge_session_throttling_utils::ShouldDelayRequestForProfile(profile_);
+      ash::merge_session_throttling_utils::ShouldDelayRequestForProfile(
+          profile_);
 #endif
 
   PrefService* pref_service = profile->GetPrefs();
@@ -192,9 +193,10 @@ RendererUpdater::GetRendererConfiguration(
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 void RendererUpdater::OnSessionRestoreStateChanged(
     Profile* user_profile,
-    chromeos::OAuth2LoginManager::SessionRestoreState state) {
+    ash::OAuth2LoginManager::SessionRestoreState state) {
   merge_session_running_ =
-      merge_session_throttling_utils::ShouldDelayRequestForProfile(profile_);
+      ash::merge_session_throttling_utils::ShouldDelayRequestForProfile(
+          profile_);
   if (merge_session_running_)
     return;
 

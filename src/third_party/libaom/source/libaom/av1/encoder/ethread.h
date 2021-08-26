@@ -22,6 +22,9 @@ struct ThreadData;
 typedef struct EncWorkerData {
   struct AV1_COMP *cpi;
   struct ThreadData *td;
+#if CONFIG_FRAME_PARALLEL_ENCODE
+  struct ThreadData *original_td;
+#endif  // CONFIG_FRAME_PARALLEL_ENCODE
   int start;
   int thread_id;
 } EncWorkerData;
@@ -88,6 +91,9 @@ void av1_init_mt_sync(AV1_COMP *cpi, int is_first_pass);
 
 void av1_init_tile_thread_data(AV1_PRIMARY *ppi, int is_first_pass);
 
+int av1_compute_num_fp_contexts(AV1_PRIMARY *ppi, AV1EncoderConfig *oxcf,
+                                int max_num_enc_workers);
+
 void av1_cdef_mse_calc_frame_mt(AV1_COMMON *cm, MultiThreadInfo *mt_info,
                                 CdefSearchCtx *cdef_search_ctx);
 
@@ -99,6 +105,13 @@ void av1_write_tile_obu_mt(
     const FrameHeaderInfo *fh_info, int *const largest_tile_id,
     unsigned int *max_tile_size, uint32_t *const obu_header_size,
     uint8_t **tile_data_start, const int num_workers);
+
+int av1_compute_num_enc_workers(AV1_COMP *cpi, int max_workers);
+
+#if CONFIG_FRAME_PARALLEL_ENCODE
+int av1_compress_parallel_frames(AV1_PRIMARY *const ppi,
+                                 AV1_COMP_DATA *const first_cpi_data);
+#endif
 
 #ifdef __cplusplus
 }  // extern "C"

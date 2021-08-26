@@ -24,8 +24,7 @@
 
 class AccountId;
 
-namespace chromeos {
-
+namespace ash {
 class LoginFeedback;
 
 // LoginDisplayHostCommon contains code which is not specific to a particular UI
@@ -61,13 +60,15 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
   void CancelPasswordChangedFlow() final;
   void MigrateUserData(const std::string& old_password) final;
   void ResyncUserData() final;
-  bool HandleAccelerator(ash::LoginAcceleratorAction action) final;
+  bool HandleAccelerator(LoginAcceleratorAction action) final;
   SigninUI* GetSigninUI() final;
   void ShowOsInstallScreen() final;
 
   // SigninUI:
   void SetAuthSessionForOnboarding(const UserContext& user_context) final;
+  void ClearOnboardingAuthSession() final;
   void StartUserOnboarding() final;
+  void ResumeUserOnboarding(OobeScreenId screen_id) final;
   void StartManagementTransition() final;
   void ShowTosForExistingUser() final;
   void StartEncryptionMigration(
@@ -92,6 +93,9 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
   virtual void OnFinalize() = 0;
   virtual void OnCancelPasswordChangedFlow() = 0;
   virtual void ShowEnableConsumerKioskScreen() = 0;
+
+  // This function needed to isolate error messages on the Views and WebUI side.
+  virtual bool IsOobeUIDialogVisible() const = 0;
 
   // Marks display host for deletion.
   void ShutdownDisplayHost();
@@ -138,6 +142,6 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
   DISALLOW_COPY_AND_ASSIGN(LoginDisplayHostCommon);
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_UI_LOGIN_DISPLAY_HOST_COMMON_H_

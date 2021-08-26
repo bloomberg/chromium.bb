@@ -19,7 +19,7 @@
 #include "chrome/browser/ash/app_mode/kiosk_mode_idle_app_name_notification.h"
 #include "chrome/browser/ash/app_mode/kiosk_session_plugin_handler.h"
 #include "chrome/browser/ash/app_mode/kiosk_settings_navigation_throttle.h"
-#include "chrome/browser/ash/policy/core/browser_policy_connector_chromeos.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -115,6 +115,8 @@ class AppSession::AppWindowHandler : public AppWindowRegistry::Observer {
  public:
   explicit AppWindowHandler(AppSession* app_session)
       : app_session_(app_session) {}
+  AppWindowHandler(const AppWindowHandler&) = delete;
+  AppWindowHandler& operator=(const AppWindowHandler&) = delete;
   ~AppWindowHandler() override {}
 
   void Init(Profile* profile, const std::string& app_id) {
@@ -149,8 +151,6 @@ class AppSession::AppWindowHandler : public AppWindowRegistry::Observer {
   AppWindowRegistry* window_registry_ = nullptr;
   std::string app_id_;
   bool app_window_created_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(AppWindowHandler);
 };
 
 class AppSession::BrowserWindowHandler : public BrowserListObserver {
@@ -159,6 +159,8 @@ class AppSession::BrowserWindowHandler : public BrowserListObserver {
       : app_session_(app_session), browser_(browser) {
     BrowserList::AddObserver(this);
   }
+  BrowserWindowHandler(const BrowserWindowHandler&) = delete;
+  BrowserWindowHandler& operator=(const BrowserWindowHandler&) = delete;
   ~BrowserWindowHandler() override { BrowserList::RemoveObserver(this); }
 
  private:
@@ -233,7 +235,6 @@ class AppSession::BrowserWindowHandler : public BrowserListObserver {
 
   AppSession* const app_session_;
   Browser* const browser_;
-  DISALLOW_COPY_AND_ASSIGN(BrowserWindowHandler);
 };
 
 AppSession::AppSession()
@@ -265,8 +266,8 @@ void AppSession::Init(Profile* profile, const std::string& app_id) {
   // If the device is not enterprise managed, set prefs to reboot after update
   // and create a user security message which shows the user the application
   // name and author after some idle timeout.
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  policy::BrowserPolicyConnectorAsh* connector =
+      g_browser_process->platform_part()->browser_policy_connector_ash();
   if (!connector->IsDeviceEnterpriseManaged()) {
     PrefService* local_state = g_browser_process->local_state();
     local_state->SetBoolean(prefs::kRebootAfterUpdate, true);

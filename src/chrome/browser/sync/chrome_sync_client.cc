@@ -66,7 +66,7 @@
 #include "components/invalidation/impl/invalidation_switches.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/metrics/demographics/user_demographics.h"
-#include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/browser/password_store_interface.h"
 #include "components/prefs/pref_service.h"
 #include "components/reading_list/core/reading_list_model.h"
 #include "components/reading_list/features/reading_list_switches.h"
@@ -210,9 +210,9 @@ ChromeSyncClient::ChromeSyncClient(Profile* profile) : profile_(profile) {
   DCHECK(!account_web_data_service_ ||
          web_data_service_thread_ ==
              account_web_data_service_->GetDBTaskRunner());
-  profile_password_store_ = PasswordStoreFactory::GetForProfile(
+  profile_password_store_ = PasswordStoreFactory::GetInterfaceForProfile(
       profile_, ServiceAccessType::IMPLICIT_ACCESS);
-  account_password_store_ = AccountPasswordStoreFactory::GetForProfile(
+  account_password_store_ = AccountPasswordStoreFactory::GetInterfaceForProfile(
       profile_, ServiceAccessType::IMPLICIT_ACCESS);
 
   component_factory_ = std::make_unique<ProfileSyncComponentsFactoryImpl>(
@@ -413,13 +413,8 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
     controllers.push_back(CreateAppSettingsModelTypeController(sync_service));
   }
 
-  if (web_app::WebAppProvider::Get(profile_)) {
+  if (web_app::WebAppProvider::GetForWebApps(profile_)) {
     bool enable_web_apps_sync = !disabled_types.Has(syncer::WEB_APPS);
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-    if (base::FeatureList::IsEnabled(features::kWebAppsCrosapi)) {
-      enable_web_apps_sync = false;
-    }
-#endif
 
     if (enable_web_apps_sync) {
       controllers.push_back(CreateWebAppsModelTypeController(sync_service));

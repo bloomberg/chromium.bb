@@ -76,6 +76,7 @@ message AudioDecoderConfig {
     kSampleFormatAc3 = 9;
     kSampleFormatEac3 = 10;
     kSampleFormatMpegHAudio = 11;
+    kSampleFormatPlanarU8 = 12;
   };
 
   // Proto version of Chrome's media::ChannelLayout.

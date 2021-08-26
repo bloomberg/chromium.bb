@@ -27,7 +27,7 @@
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@[@@@",
       "@@@STEP_LOG_LINE@json.output@  {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"branch\": \"master\", @@@",
+      "@@@STEP_LOG_LINE@json.output@    \"branch\": \"main\", @@@",
       "@@@STEP_LOG_LINE@json.output@    \"owner\": {@@@",
       "@@@STEP_LOG_LINE@json.output@      \"name\": \"John Doe\"@@@",
       "@@@STEP_LOG_LINE@json.output@    }, @@@",
@@ -60,9 +60,11 @@
       "--output_json",
       "/path/to/tmp/json",
       "--patch_ref",
-      "https://chromium.googlesource.com/chromium/src@refs/heads/master:refs/changes/56/123456/7",
+      "https://chromium.googlesource.com/chromium/src@refs/heads/main:refs/changes/56/123456/7",
       "--revision",
-      "src@HEAD",
+      "src@refs/heads/main",
+      "--refs",
+      "refs/heads/main",
       "--disable-syntax-validation"
     ],
     "env": {

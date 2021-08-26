@@ -37,7 +37,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/naming-convention */
 
-
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
@@ -53,7 +52,7 @@ import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 
-import type {NetworkTimeCalculator} from './NetworkTimeCalculator.js'; // eslint-disable-line no-unused-vars
+import type {NetworkTimeCalculator} from './NetworkTimeCalculator.js';
 
 import {imageNameForResourceType} from './utils/utils.js';
 
@@ -248,10 +247,6 @@ export enum Events {
 }
 
 export abstract class NetworkLogViewInterface {
-  static HTTPRequestsFilter(request: SDK.NetworkRequest.NetworkRequest): boolean {
-    throw new Error('not implemented');
-  }
-
   async onLoadFromFile(file: File): Promise<void> {
   }
 
@@ -334,14 +329,6 @@ export abstract class NetworkLogViewInterface {
   }
 
   removeAllNodeHighlights(): void {
-  }
-
-  static getDCLEventColor(): string {
-    throw new Error('not implemented');
-  }
-
-  static getLoadEventColor(): string {
-    throw new Error('not implemented');
   }
 
   modelAdded(model: SDK.NetworkManager.NetworkManager): void {
@@ -1054,6 +1041,9 @@ export class NetworkRequestNode extends NetworkNode {
     if (this._request.webBundleInfo()?.errorMessage || this._request.webBundleInnerRequestInfo()?.errorMessage) {
       return true;
     }
+    if (this._request.corsErrorStatus()) {
+      return true;
+    }
     return false;
   }
 
@@ -1140,13 +1130,13 @@ export class NetworkRequestNode extends NetworkNode {
       } else {
         this._setTextAndTitle(cell, failText);
       }
-    } else if (this._request.statusCode) {
+    } else if (this._request.statusCode && this._request.statusCode >= 400) {
       UI.UIUtils.createTextChild(cell, String(this._request.statusCode));
       this._appendSubtitle(cell, this._request.statusText);
       UI.Tooltip.Tooltip.install(cell, this._request.statusCode + ' ' + this._request.statusText);
-    } else if (this._request.parsedURL.isDataURL()) {
+    } else if (!this._request.statusCode && this._request.parsedURL.isDataURL()) {
       this._setTextAndTitle(cell, i18nString(UIStrings.data));
-    } else if (this._request.canceled) {
+    } else if (!this._request.statusCode && this._request.canceled) {
       this._setTextAndTitle(cell, i18nString(UIStrings.canceled));
     } else if (this._request.wasBlocked()) {
       let reason = i18nString(UIStrings.other);
@@ -1211,6 +1201,10 @@ export class NetworkRequestNode extends NetworkNode {
       this._setTextAndTitle(
           cell, i18nString(UIStrings.corsError),
           i18nString(UIStrings.crossoriginResourceSharingErrorS, {PH1: corsErrorStatus.corsError}));
+    } else if (this._request.statusCode) {
+      UI.UIUtils.createTextChild(cell, String(this._request.statusCode));
+      this._appendSubtitle(cell, this._request.statusText);
+      UI.Tooltip.Tooltip.install(cell, this._request.statusCode + ' ' + this._request.statusText);
     } else if (this._request.finished) {
       this._setTextAndTitle(cell, i18nString(UIStrings.finished));
     } else if (this._request.preserved) {
@@ -1356,8 +1350,8 @@ export class NetworkRequestNode extends NetworkNode {
 
   _renderTimeCell(cell: HTMLElement): void {
     if (this._request.duration > 0) {
-      this._setTextAndTitle(cell, i18n.i18n.secondsToString(this._request.duration));
-      this._appendSubtitle(cell, i18n.i18n.secondsToString(this._request.latency));
+      this._setTextAndTitle(cell, i18n.TimeUtilities.secondsToString(this._request.duration));
+      this._appendSubtitle(cell, i18n.TimeUtilities.secondsToString(this._request.latency));
     } else if (this._request.preserved) {
       this._setTextAndTitle(cell, i18nString(UIStrings.unknown), i18nString(UIStrings.unknownExplanation));
     } else {

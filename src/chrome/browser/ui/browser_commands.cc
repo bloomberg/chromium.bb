@@ -65,6 +65,7 @@
 #include "chrome/browser/ui/read_later/reading_list_model_factory.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_bubble_controller.h"
+#include "chrome/browser/ui/sharing_hub/screenshot/screenshot_captured_bubble_controller.h"
 #include "chrome/browser/ui/sharing_hub/sharing_hub_bubble_controller.h"
 #include "chrome/browser/ui/status_bubble.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
@@ -206,7 +207,8 @@ void CreateAndShowNewWindowWithContents(
     std::unique_ptr<content::WebContents> contents,
     const Browser* original_browser) {
   Browser* new_browser = nullptr;
-  if (original_browser->deprecated_is_app()) {
+  DCHECK(!original_browser->is_type_app_popup());
+  if (original_browser->is_type_app()) {
     new_browser = Browser::Create(Browser::CreateParams::CreateForApp(
         original_browser->app_name(), original_browser->is_trusted_source(),
         gfx::Rect(), original_browser->profile(), true));
@@ -435,7 +437,7 @@ int GetContentRestrictions(const Browser* browser) {
   return content_restrictions;
 }
 
-void NewEmptyWindow(Profile* profile) {
+void NewEmptyWindow(Profile* profile, bool should_trigger_session_restore) {
   bool off_the_record = profile->IsOffTheRecord();
   PrefService* prefs = profile->GetPrefs();
   if (off_the_record) {
@@ -458,7 +460,12 @@ void NewEmptyWindow(Profile* profile) {
       base::RecordAction(UserMetricsAction("NewGuestWindow"));
     else
       base::RecordAction(UserMetricsAction("NewIncognitoWindow2"));
-    OpenEmptyWindow(profile->GetPrimaryOTRProfile(/*create_if_needed=*/true));
+    OpenEmptyWindow(profile->GetPrimaryOTRProfile(/*create_if_needed=*/true),
+                    should_trigger_session_restore);
+  } else if (!should_trigger_session_restore) {
+    base::RecordAction(UserMetricsAction("NewWindow"));
+    OpenEmptyWindow(profile->GetOriginalProfile(),
+                    /*should_trigger_session_restore=*/false);
   } else {
     base::RecordAction(UserMetricsAction("NewWindow"));
     SessionService* session_service =
@@ -472,13 +479,16 @@ void NewEmptyWindow(Profile* profile) {
   }
 }
 
-Browser* OpenEmptyWindow(Profile* profile) {
+Browser* OpenEmptyWindow(Profile* profile,
+                         bool should_trigger_session_restore) {
   if (Browser::GetCreationStatusForProfile(profile) !=
       Browser::CreationStatus::kOk) {
     return nullptr;
   }
-  Browser* browser = Browser::Create(
-      Browser::CreateParams(Browser::TYPE_NORMAL, profile, true));
+  Browser::CreateParams params =
+      Browser::CreateParams(Browser::TYPE_NORMAL, profile, true);
+  params.should_trigger_session_restore = should_trigger_session_restore;
+  Browser* browser = Browser::Create(params);
   AddTabAt(browser, GURL(), -1, true);
   browser->window()->Show();
   return browser;
@@ -550,7 +560,7 @@ void ReloadBypassingCache(Browser* browser, WindowOpenDisposition disposition) {
 }
 
 bool CanReload(const Browser* browser) {
-  return !browser->is_type_devtools();
+  return browser && !browser->is_type_devtools();
 }
 
 void Home(Browser* browser, WindowOpenDisposition disposition) {
@@ -574,7 +584,7 @@ void Home(Browser* browser, WindowOpenDisposition disposition) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // With bookmark apps enabled, hosted apps should return to their launch page
   // when the home button is pressed.
-  if (browser->deprecated_is_app()) {
+  if (browser->is_type_app() || browser->is_type_app_popup()) {
     const extensions::Extension* extension = GetExtensionForBrowser(browser);
     if (!extension)
       return;
@@ -656,15 +666,15 @@ void NewWindow(Browser* browser) {
   Profile* const profile = browser->profile();
 #if BUILDFLAG(ENABLE_EXTENSIONS) && defined(OS_MAC)
   // Web apps should open a window to their launch page.
-  if (browser->app_controller() && browser->app_controller()->HasAppId()) {
-    const web_app::AppId app_id = browser->app_controller()->GetAppId();
+  if (browser->app_controller()) {
+    const web_app::AppId app_id = browser->app_controller()->app_id();
 
     auto launch_container =
         apps::mojom::LaunchContainer::kLaunchContainerWindow;
-    if (web_app::WebAppProvider::Get(profile)
-            ->registrar()
-            .GetAppEffectiveDisplayMode(app_id) ==
-        blink::mojom::DisplayMode::kBrowser) {
+
+    auto* provider = web_app::WebAppProvider::GetForWebApps(profile);
+    if (provider && provider->registrar().GetAppEffectiveDisplayMode(app_id) ==
+                        blink::mojom::DisplayMode::kBrowser) {
       launch_container = apps::mojom::LaunchContainer::kLaunchContainerTab;
     }
     apps::AppLaunchParams params = apps::AppLaunchParams(
@@ -1295,6 +1305,14 @@ void SharingHubFromPageAction(Browser* browser) {
   controller->ShowBubble();
 }
 
+void ScreenshotCaptureFromPageAction(Browser* browser) {
+  WebContents* web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  sharing_hub::ScreenshotCapturedBubbleController* controller =
+      sharing_hub::ScreenshotCapturedBubbleController::Get(web_contents);
+  controller->Capture(browser);
+}
+
 void SavePage(Browser* browser) {
   base::RecordAction(UserMetricsAction("SavePage"));
   WebContents* current_tab = browser->tab_strip_model()->GetActiveWebContents();
@@ -1754,24 +1772,43 @@ void ShowIncognitoClearBrowsingDataDialog(Browser* browser) {
   browser->window()->ShowIncognitoClearBrowsingDataDialog();
 }
 
+void ShowIncognitoHistoryDisclaimerDialog(Browser* browser) {
+  browser->window()->ShowIncognitoHistoryDisclaimerDialog();
+}
+
 bool ShouldInterceptChromeURLNavigationInIncognito(Browser* browser,
                                                    const GURL& url) {
   if (!browser || !browser->profile()->IsIncognitoProfile())
     return false;
 
-  return url == GURL(chrome::kChromeUISettingsURL)
-                    .Resolve(chrome::kClearBrowserDataSubPage) &&
-         base::FeatureList::IsEnabled(
-             features::kIncognitoClearBrowsingDataDialogForDesktop);
+  bool show_clear_browsing_data_dialog =
+      url == GURL(chrome::kChromeUISettingsURL)
+                 .Resolve(chrome::kClearBrowserDataSubPage) &&
+      base::FeatureList::IsEnabled(
+          features::kIncognitoClearBrowsingDataDialogForDesktop);
+
+  bool show_history_disclaimer_dialog =
+      url == GURL(chrome::kChromeUIHistoryURL) &&
+      base::FeatureList::IsEnabled(
+          features::kUpdateHistoryEntryPointsInIncognito);
+
+  return show_clear_browsing_data_dialog || show_history_disclaimer_dialog;
 }
 
 void ProcessInterceptedChromeURLNavigationInIncognito(Browser* browser,
                                                       const GURL& url) {
-  DCHECK(url == GURL(chrome::kChromeUISettingsURL)
-                    .Resolve(chrome::kClearBrowserDataSubPage));
-  DCHECK(base::FeatureList::IsEnabled(
-      features::kIncognitoClearBrowsingDataDialogForDesktop));
-  ShowIncognitoClearBrowsingDataDialog(browser);
+  if (url == GURL(chrome::kChromeUISettingsURL)
+                 .Resolve(chrome::kClearBrowserDataSubPage)) {
+    DCHECK(base::FeatureList::IsEnabled(
+        features::kIncognitoClearBrowsingDataDialogForDesktop));
+    ShowIncognitoClearBrowsingDataDialog(browser);
+  } else if (url == GURL(chrome::kChromeUIHistoryURL)) {
+    DCHECK(base::FeatureList::IsEnabled(
+        features::kUpdateHistoryEntryPointsInIncognito));
+    ShowIncognitoHistoryDisclaimerDialog(browser);
+  } else {
+    NOTREACHED();
+  }
 }
 
 }  // namespace chrome

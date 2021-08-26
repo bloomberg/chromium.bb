@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/cr_elements/mwb_element_shared_style.js';
 import 'chrome://resources/cr_elements/mwb_shared_style.js';
 import 'chrome://resources/cr_elements/mwb_shared_vars.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
@@ -11,6 +13,7 @@ import './infinite_list.js';
 import './tab_search_group_item.js';
 import './tab_search_item.js';
 import './tab_search_search_field.js';
+import './title_item.js';
 import './strings.m.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
@@ -23,7 +26,7 @@ import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/poly
 import {fuzzySearch} from './fuzzy_search.js';
 import {InfiniteList, NO_SELECTION, selectorNavigationKeys} from './infinite_list.js';
 import {ariaLabel, ItemData, TabData, TabGroupData, TabItemType, tokenEquals, tokenToString} from './tab_data.js';
-import {ProfileData, RecentlyClosedTab, RecentlyClosedTabGroup, Tab, TabGroup, Window} from './tab_search.mojom-webui.js';
+import {ProfileData, RecentlyClosedTab, RecentlyClosedTabGroup, Tab, TabGroup, TabUpdateInfo, Window} from './tab_search.mojom-webui.js';
 import {TabSearchApiProxy, TabSearchApiProxyImpl} from './tab_search_api_proxy.js';
 import {TitleItem} from './title_item.js';
 
@@ -141,8 +144,9 @@ export class TabSearchAppElement extends PolymerElement {
     this.openTabsTitleItem_ = new TitleItem(loadTimeData.getString('openTabs'));
 
     /** @private {!TitleItem} */
-    this.recentlyClosedTitleItem_ =
-        new TitleItem(loadTimeData.getString('recentlyClosed'));
+    this.recentlyClosedTitleItem_ = new TitleItem(
+        loadTimeData.getString('recentlyClosed'), true /*expandable*/,
+        true /*expanded*/);
   }
 
   /** @override */
@@ -182,7 +186,8 @@ export class TabSearchAppElement extends PolymerElement {
     this.listenerIds_.push(
         callbackRouter.tabsChanged.addListener(
             profileData => this.tabsChanged_(profileData)),
-        callbackRouter.tabUpdated.addListener(tab => this.onTabUpdated_(tab)),
+        callbackRouter.tabUpdated.addListener(
+            tabUpdateInfo => this.onTabUpdated_(tabUpdateInfo)),
         callbackRouter.tabsRemoved.addListener(
             tabIds => this.onTabsRemoved_(tabIds)));
 
@@ -232,8 +237,7 @@ export class TabSearchAppElement extends PolymerElement {
 
   /** @private */
   onDocumentHidden_() {
-    this.$.tabsList.scrollTop = 0;
-    this.$.tabsList.selected = NO_SELECTION;
+    this.filteredItems_ = [];
 
     this.$.searchField.setValue('');
     this.$.searchField.getSearchInput().focus();
@@ -261,22 +265,26 @@ export class TabSearchAppElement extends PolymerElement {
   }
 
   /**
-   * TODO(crbug.com/1222365): updatedTab should be added to the `openTabs_` if
-   * its tabId is not found in the existing list.
-   * @param {!Tab} updatedTab
+   * @param {!TabUpdateInfo} tabUpdateInfo
    * @private
    */
-  onTabUpdated_(updatedTab) {
+  onTabUpdated_(tabUpdateInfo) {
+    const {tab, inActiveWindow} = tabUpdateInfo;
+    const tabData = this.tabData_(
+        tab, inActiveWindow, TabItemType.OPEN_TAB, this.tabGroupsMap_);
     // Replace the tab with the same tabId and trigger rerender.
     for (let i = 0; i < this.openTabs_.length; ++i) {
-      if (this.openTabs_[i].tab.tabId === updatedTab.tabId) {
-        this.openTabs_[i] = this.tabData_(
-            updatedTab, this.openTabs_[i].inActiveWindow, TabItemType.OPEN_TAB,
-            this.tabGroupsMap_);
+      if (this.openTabs_[i].tab.tabId === tab.tabId) {
+        this.openTabs_[i] = tabData;
         this.updateFilteredTabs_();
         return;
       }
     }
+
+    // If the updated tab's id is not found in the existing open tabs, add it
+    // to the list.
+    this.openTabs_.push(tabData);
+    this.updateFilteredTabs_();
   }
 
   /**
@@ -451,6 +459,8 @@ export class TabSearchAppElement extends PolymerElement {
               loadTimeData.getString('a11yRecentlyClosedTabGroup');
           return tabGroupData;
         });
+    this.recentlyClosedTitleItem_.expanded =
+        profileData.recentlyClosedSectionExpanded;
 
     this.updateFilteredTabs_();
 
@@ -472,6 +482,25 @@ export class TabSearchAppElement extends PolymerElement {
     // item in the list.
     /** @type {!InfiniteList} */ (this.$.tabsList).selected =
         /** @type {number} */ (e.model.index);
+  }
+
+  /**
+   * @param {CustomEvent} e
+   * @private
+   */
+  onTitleExpandChanged_(e) {
+    // Instead of relying on two-way binding to update the `expanded` property,
+    // we update the value directly as the `expanded-changed` event takes place
+    // before a two way bound property update and we need the TitleItem
+    // instance to reflect the updated state prior to calling the
+    // updateFilteredTabs_ function.
+    const expanded = e.detail.value;
+    const titleItem = /** @type {TitleItem} */ (e.model.item);
+    titleItem.expanded = expanded;
+    this.apiProxy_.saveRecentlyClosedExpandedPref(expanded);
+
+    this.updateFilteredTabs_();
+    e.stopPropagation();
   }
 
   /** @private */
@@ -552,13 +581,7 @@ export class TabSearchAppElement extends PolymerElement {
    */
   tabData_(tab, inActiveWindow, type, tabGroupsMap) {
     const tabData = new TabData(tab, type);
-    try {
-      tabData.hostname = new URL(tab.url).hostname;
-    } catch (e) {
-      // TODO(crbug.com/1186409): Remove this after we root cause the issue
-      console.error(`Error parsing URL on Tab Search: url=${tab.url}`);
-      tabData.hostname = '';
-    }
+    tabData.hostname = new URL(tab.url.url).hostname;
 
     if (tab.groupId) {
       tabData.tabGroup = tabGroupsMap.get(tokenToString(tab.groupId));
@@ -655,7 +678,11 @@ export class TabSearchAppElement extends PolymerElement {
       [this.recentlyClosedTitleItem_, filteredRecentlyClosedItems],
     ].reduce((acc, [sectionTitle, sectionItems]) => {
       if (sectionItems.length !== 0) {
-        acc.push(sectionTitle, ...sectionItems);
+        acc.push(sectionTitle);
+        if (!sectionTitle.expandable ||
+            sectionTitle.expandable && sectionTitle.expanded) {
+          acc.push(...sectionItems);
+        }
       }
       return acc;
     }, []);

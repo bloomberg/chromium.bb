@@ -10,15 +10,14 @@
 #include "src/gpu/GrFragmentProcessor.h"
 #include "src/gpu/SkGr.h"
 #include "src/gpu/glsl/GrGLSLBlend.h"
-#include "src/gpu/glsl/GrGLSLFragmentProcessor.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
 
-// Some of the cpu implementations of blend modes differ too much from the GPU enough that
-// we can't use the cpu implementation to implement constantOutputForConstantInput.
+// Some of the CPU implementations of blend modes differ from the GPU enough that
+// we can't use the CPU implementation to implement constantOutputForConstantInput.
 static inline bool does_cpu_blend_impl_match_gpu(SkBlendMode mode) {
-    // The non-seperable modes differ too much. So does SoftLight. ColorBurn differs too much on our
-    // test iOS device (but we just disable it across the aboard since it may happen on untested
-    // GPUs).
+    // The non-separable modes differ too much. So does SoftLight. ColorBurn differs too much on our
+    // test iOS device, but we just disable it across the board since it might differ on untested
+    // GPUs.
     return mode <= SkBlendMode::kLastSeparableMode && mode != SkBlendMode::kSoftLight &&
            mode != SkBlendMode::kColorBurn;
 }
@@ -38,23 +37,20 @@ public:
 
     std::unique_ptr<GrFragmentProcessor> clone() const override;
 
-    SkBlendMode getMode() const { return fMode; }
-
 private:
     BlendFragmentProcessor(std::unique_ptr<GrFragmentProcessor> src,
                            std::unique_ptr<GrFragmentProcessor> dst,
                            SkBlendMode mode)
             : INHERITED(kBlendFragmentProcessor_ClassID, OptFlags(src.get(), dst.get(), mode))
             , fMode(mode) {
+        this->setIsBlendFunction();
         this->registerChild(std::move(src));
         this->registerChild(std::move(dst));
     }
 
     BlendFragmentProcessor(const BlendFragmentProcessor& that)
-            : INHERITED(kBlendFragmentProcessor_ClassID, ProcessorOptimizationFlags(&that))
-            , fMode(that.fMode) {
-        this->cloneAndRegisterAllChildProcessors(that);
-    }
+            : INHERITED(that)
+            , fMode(that.fMode) {}
 
 #if GR_TEST_UTILS
     SkString onDumpInfo() const override {
@@ -69,7 +65,7 @@ private:
             case SkBlendMode::kClear:
             case SkBlendMode::kSrc:
             case SkBlendMode::kDst:
-                SK_ABORT("Shouldn't have created a Blend FP as 'clear', 'src', or 'dst'.");
+                SkDEBUGFAIL("Shouldn't have created a Blend FP as 'clear', 'src', or 'dst'.");
                 flags = kNone_OptimizationFlags;
                 break;
 
@@ -135,14 +131,14 @@ private:
                 break;
         }
         if (does_cpu_blend_impl_match_gpu(mode) &&
-            (src ? src->hasConstantOutputForConstantInput() : true) &&
-            (dst ? dst->hasConstantOutputForConstantInput() : true)) {
+            (!src || src->hasConstantOutputForConstantInput()) &&
+            (!dst || dst->hasConstantOutputForConstantInput())) {
             flags |= kConstantOutputForConstantInput_OptimizationFlag;
         }
         return flags;
     }
 
-    void onGetGLSLProcessorKey(const GrShaderCaps& caps, GrProcessorKeyBuilder* b) const override {
+    void onAddToKey(const GrShaderCaps&, GrProcessorKeyBuilder* b) const override {
         b->add32((int)fMode);
     }
 
@@ -161,7 +157,7 @@ private:
         return SkBlendMode_Apply(fMode, srcColor, dstColor);
     }
 
-    std::unique_ptr<GrGLSLFragmentProcessor> onMakeProgramImpl() const override;
+    std::unique_ptr<ProgramImpl> onMakeProgramImpl() const override;
 
     SkBlendMode fMode;
 
@@ -172,15 +168,6 @@ private:
 
 /////////////////////////////////////////////////////////////////////
 
-class GLBlendFragmentProcessor : public GrGLSLFragmentProcessor {
-public:
-    void emitCode(EmitArgs&) override;
-
-private:
-    using INHERITED = GrGLSLFragmentProcessor;
-};
-
-/////////////////////////////////////////////////////////////////////
 
 GR_DEFINE_FRAGMENT_PROCESSOR_TEST(BlendFragmentProcessor);
 
@@ -206,29 +193,29 @@ std::unique_ptr<GrFragmentProcessor> BlendFragmentProcessor::clone() const {
     return std::unique_ptr<GrFragmentProcessor>(new BlendFragmentProcessor(*this));
 }
 
-std::unique_ptr<GrGLSLFragmentProcessor> BlendFragmentProcessor::onMakeProgramImpl() const {
-    return std::make_unique<GLBlendFragmentProcessor>();
-}
+std::unique_ptr<GrFragmentProcessor::ProgramImpl> BlendFragmentProcessor::onMakeProgramImpl() const {
+    class Impl : public ProgramImpl {
+    public:
+        void emitCode(EmitArgs& args) override {
+            GrGLSLFPFragmentBuilder* fragBuilder = args.fFragBuilder;
+            const BlendFragmentProcessor& bfp = args.fFp.cast<BlendFragmentProcessor>();
+            SkBlendMode mode = bfp.fMode;
 
-/////////////////////////////////////////////////////////////////////
+            fragBuilder->codeAppendf("// Blend mode: %s\n", SkBlendMode_Name(mode));
 
-void GLBlendFragmentProcessor::emitCode(EmitArgs& args) {
-    GrGLSLFPFragmentBuilder* fragBuilder = args.fFragBuilder;
-    const BlendFragmentProcessor& cs = args.fFp.cast<BlendFragmentProcessor>();
-    SkBlendMode mode = cs.getMode();
+            // Invoke src/dst with our input color (or substitute input color if no child FP)
+            SkString srcColor = this->invokeChild(0, args);
+            SkString dstColor = this->invokeChild(1, args);
 
-    // Load the input color and make an opaque copy if needed.
-    fragBuilder->codeAppendf("// Blend mode: %s\n", SkBlendMode_Name(mode));
+            // Blend src and dst colors together.
+            fragBuilder->codeAppendf("return %s(%s, %s);",
+                                     GrGLSLBlend::BlendFuncName(mode),
+                                     srcColor.c_str(),
+                                     dstColor.c_str());
+        }
+    };
 
-    // Invoke src/dst with our input color (or substitute input color if no child FP)
-    SkString srcColor = this->invokeChild(0, args.fInputColor, args);
-    SkString dstColor = this->invokeChild(1, args.fInputColor, args);
-
-    // Blend src and dst colors together.
-    fragBuilder->codeAppendf("return %s(%s, %s)", GrGLSLBlend::BlendFuncName(mode),
-                             srcColor.c_str(), dstColor.c_str());
-
-    fragBuilder->codeAppendf(";\n");
+    return std::make_unique<Impl>();
 }
 
 //////////////////////////////////////////////////////////////////////////////

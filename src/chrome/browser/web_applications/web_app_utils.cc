@@ -69,8 +69,11 @@ bool AreWebAppsUserInstallable(Profile* profile) {
 content::BrowserContext* GetBrowserContextForWebApps(
     content::BrowserContext* context) {
   // Use original profile to create only one KeyedService instance.
-  Profile* original_profile =
-      Profile::FromBrowserContext(context)->GetOriginalProfile();
+  Profile* profile = Profile::FromBrowserContext(context);
+  if (!profile) {
+    return nullptr;
+  }
+  Profile* original_profile = profile->GetOriginalProfile();
   return AreWebAppsEnabled(original_profile) ? original_profile : nullptr;
 }
 
@@ -152,10 +155,9 @@ bool AreAppsLocallyInstalledBySync() {
 #endif
 }
 
-bool AreFileHandlersAlreadyRegistered(
-    Profile* profile,
-    const GURL& url,
-    const std::vector<blink::Manifest::FileHandler>& new_handlers) {
+bool AreFileHandlersAlreadyRegistered(Profile* profile,
+                                      const GURL& url,
+                                      const apps::FileHandlers& new_handlers) {
   if (new_handlers.empty())
     return true;
 
@@ -166,15 +168,14 @@ bool AreFileHandlersAlreadyRegistered(
   const std::set<std::string> extensions_set =
       apps::GetFileExtensionsFromFileHandlers(old_handlers);
 
-  for (const blink::Manifest::FileHandler& new_handler : new_handlers) {
+  for (const apps::FileHandler& new_handler : new_handlers) {
     for (const auto& new_handler_accept : new_handler.accept) {
-      if (!base::Contains(mime_types_set,
-                          base::UTF16ToUTF8(new_handler_accept.first))) {
+      if (!base::Contains(mime_types_set, new_handler_accept.mime_type)) {
         return false;
       }
 
-      for (const auto& new_extension : new_handler_accept.second) {
-        if (!base::Contains(extensions_set, base::UTF16ToUTF8(new_extension)))
+      for (const auto& new_extension : new_handler_accept.file_extensions) {
+        if (!base::Contains(extensions_set, new_extension))
           return false;
       }
     }

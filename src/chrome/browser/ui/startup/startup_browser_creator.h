@@ -27,7 +27,8 @@ class CommandLine;
 
 namespace web_app {
 FORWARD_DECLARE_TEST(WebAppEngagementBrowserTest, CommandLineTab);
-FORWARD_DECLARE_TEST(WebAppEngagementBrowserTest, CommandLineWindow);
+FORWARD_DECLARE_TEST(WebAppEngagementBrowserTest, CommandLineWindowByUrl);
+FORWARD_DECLARE_TEST(WebAppEngagementBrowserTest, CommandLineWindowByAppId);
 }  // namespace web_app
 
 // Indicates how Chrome should start up the first profile.
@@ -190,17 +191,23 @@ class StartupBrowserCreator {
                            ValidNotificationLaunchId);
   FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorTest,
                            InvalidNotificationLaunchId);
-  FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorTest, OpenAppShortcutNoPref);
-  FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorTest, OpenAppShortcutTabPref);
-  FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorTest,
+  FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorChromeAppShortcutTest,
+                           OpenAppShortcutNoPref);
+  FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorChromeAppShortcutTest,
+                           OpenAppShortcutTabPref);
+  FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorChromeAppShortcutTest,
                            OpenAppShortcutWindowPref);
+  FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorChromeAppShortcutTest,
+                           OpenPolicyForcedAppShortcut);
   FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorTest, OpenAppUrlShortcut);
   FRIEND_TEST_ALL_PREFIXES(StartupBrowserWithRealWebAppTest,
                            LastUsedProfilesWithRealWebApp);
   FRIEND_TEST_ALL_PREFIXES(web_app::WebAppEngagementBrowserTest,
                            CommandLineTab);
   FRIEND_TEST_ALL_PREFIXES(web_app::WebAppEngagementBrowserTest,
-                           CommandLineWindow);
+                           CommandLineWindowByUrl);
+  FRIEND_TEST_ALL_PREFIXES(web_app::WebAppEngagementBrowserTest,
+                           CommandLineWindowByAppId);
   FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorTest,
                            LastUsedProfilesWithWebApp);
 
@@ -277,6 +284,9 @@ std::vector<GURL> GetURLsFromCommandLine(const base::CommandLine& command_line,
 // Returns true if |profile| has exited uncleanly and has not been launched
 // after the unclean exit.
 bool HasPendingUncleanExit(Profile* profile);
+
+// Adds launched |profile| to ProfileLaunchObserver.
+void AddLaunchedProfile(Profile* profile);
 
 // Returns the path that contains the profile that should be loaded on process
 // startup.

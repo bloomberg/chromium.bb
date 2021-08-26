@@ -2,8 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import division
+
 import itertools
 import re
+
+# TODO(crbug.com/1227140): Clean up when py2 is no longer supported.
+try:
+  _INTEGER_TYPES = (int, long)
+except NameError:  # pragma: no cover
+  _INTEGER_TYPES = (int,)
 
 from recipe_engine import recipe_api
 
@@ -59,7 +67,8 @@ class GitApi(recipe_api.RecipeApi):
     """
     if previous_result:
       assert isinstance(previous_result, dict)
-      assert all(isinstance(v, long) for v in previous_result.values())
+      assert all(
+          isinstance(v, _INTEGER_TYPES) for v in previous_result.values())
       assert 'size' in previous_result
       assert 'size-pack' in previous_result
 
@@ -75,7 +84,7 @@ class GitApi(recipe_api.RecipeApi):
       result = {}
       for line in step_result.stdout.splitlines():
         name, value = line.split(':', 1)
-        result[name] = long(value.strip())
+        result[name] = int(value.strip())
 
       def results_to_text(results):
         return ['  %s: %s' % (k, v) for k, v in results.items()]
@@ -211,16 +220,16 @@ class GitApi(recipe_api.RecipeApi):
 
       # There are five kinds of refs we can be handed:
       # 0) None. In this case, we default to api.buildbucket.gitiles_commit.ref.
-      # 1) A fully qualified branch name, e.g. 'refs/heads/master'.
+      # 1) A fully qualified branch name, e.g. 'refs/heads/main'.
       #    Chop off 'refs/heads/' and now it matches case (4).
       # 2) A 40-character SHA1 hash.
       # 3) A fully-qualifed arbitrary ref, e.g. 'refs/foo/bar/baz'.
-      # 4) A branch name, e.g. 'master'.
+      # 4) A branch name, e.g. 'main'.
       # Note that 'FETCH_HEAD' can be many things (and therefore not a valid
       # checkout target) if many refs are fetched, but we only explicitly fetch
       # one ref here, so this is safe.
       if not ref:                                  # Case 0.
-        ref = self.m.buildbucket.gitiles_commit.ref or 'master'
+        ref = self.m.buildbucket.gitiles_commit.ref or 'main'
 
       # If it's a fully-qualified branch name, trim the 'refs/heads/' prefix.
       if ref.startswith('refs/heads/'):            # Case 1.
@@ -338,7 +347,7 @@ class GitApi(recipe_api.RecipeApi):
     remote_name = remote_name or 'origin'
     with self.m.context(cwd=dir_path):
       try:
-        self('rebase', '%s/master' % remote_name,
+        self('rebase', '%s/main' % remote_name,
              name="%s rebase" % name_prefix, **kwargs)
       except self.m.step.StepFailure:
         self('rebase', '--abort', name='%s rebase abort' % name_prefix,
@@ -396,7 +405,7 @@ class GitApi(recipe_api.RecipeApi):
     Args:
       * branch (str): new branch name, which must not yet exist.
       * name (str): step name.
-      * upstream (str): to origin/master.
+      * upstream (str): to origin/main.
       * kwargs: Forwarded to '__call__'.
     """
     env = self.m.context.env

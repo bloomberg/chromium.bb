@@ -38,7 +38,6 @@ class Size;
 namespace content {
 
 class BrowserAccessibilityManager;
-class FrameTree;
 class RenderWidgetHostImpl;
 class RenderWidgetHostInputEventRouter;
 class RenderViewHostDelegateView;
@@ -154,10 +153,6 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
 
   virtual RenderWidgetHostInputEventRouter* GetInputEventRouter();
 
-  // Send page-level focus state to all SiteInstances involved in rendering the
-  // current FrameTree, not including the main frame's SiteInstance.
-  virtual void ReplicatePageFocus(bool is_focused) {}
-
   // Get the focused RenderWidgetHost associated with |receiving_widget|. A
   // RenderWidgetHostView, upon receiving a keyboard event, will pass its
   // RenderWidgetHost to this function to determine who should ultimately
@@ -181,12 +176,6 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // responsive again. The delegate can use this notification to end the
   // warning shown to the user.
   virtual void RendererResponsive(RenderWidgetHostImpl* render_widget_host) {}
-
-  // Notification that a cross-process subframe on this page has crashed, and a
-  // sad frame is shown if the subframe was visible.  |frame_visibility|
-  // specifies whether the subframe is visible, scrolled out of view, or hidden
-  // (e.g., with "display: none").
-  virtual void SubframeCrashed(blink::mojom::FrameVisibility visibility) {}
 
   // Requests to lock the mouse. Once the request is approved or rejected,
   // GotResponseToLockMouseRequest() will be called on the requesting render

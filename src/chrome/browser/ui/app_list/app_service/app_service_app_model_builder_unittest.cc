@@ -41,10 +41,10 @@
 #include "chrome/browser/ui/app_list/md_icon_normalizer.h"
 #include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
-#include "chrome/browser/web_applications/components/app_icon_manager.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/test/test_web_app_provider.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
+#include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
@@ -278,15 +278,7 @@ class ExtensionAppTest : public AppServiceAppModelBuilderTest {
             &output_image_skia, run_loop.QuitClosure()));
     run_loop.Run();
 
-    if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
-      output_image_skia = apps::CreateStandardIconImage(output_image_skia);
-    } else {
-      extensions::ChromeAppIcon::ApplyEffects(
-          size_in_dip,
-          base::BindRepeating(&app_list::MaybeResizeAndPadIconForMd),
-          true /* app_launchable */, false /* from_bookmark */,
-          extensions::ChromeAppIcon::Badge::kNone, &output_image_skia);
-    }
+    output_image_skia = apps::CreateStandardIconImage(output_image_skia);
   }
 
   void GenerateExtensionAppCompressedIcon(const std::string app_id,
@@ -374,10 +366,8 @@ class WebAppBuilderTest : public AppServiceAppModelBuilderTest {
             &output_image_skia, scale_to_size_in_px, run_loop.QuitClosure()));
     run_loop.Run();
 
-    if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
-      output_image_skia = gfx::ImageSkiaOperations::CreateMaskedImage(
-          output_image_skia, apps::LoadMaskImage(scale_to_size_in_px));
-    }
+    output_image_skia = gfx::ImageSkiaOperations::CreateMaskedImage(
+        output_image_skia, apps::LoadMaskImage(scale_to_size_in_px));
 
     extensions::ChromeAppIcon::ApplyEffects(
         size_in_dip, extensions::ChromeAppIcon::ResizeFunction(),
@@ -589,6 +579,7 @@ TEST_F(ExtensionAppTest, LoadIcon) {
   GenerateExtensionAppIcon(kPackagedApp1Id, src_image_skia);
 
   auto* item = model_updater_->FindItem(kPackagedApp1Id);
+  item->LoadIcon();
   WaitForIconUpdates(item);
 
   VerifyIcon(src_image_skia, item->icon());
@@ -599,10 +590,7 @@ TEST_F(ExtensionAppTest, LoadCompressedIcon) {
   std::vector<uint8_t> src_data;
   GenerateExtensionAppCompressedIcon(kPackagedApp1Id, src_data);
 
-  apps::IconEffects icon_effects =
-      (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon))
-          ? apps::IconEffects::kCrOsStandardIcon
-          : apps::IconEffects::kResizeAndPad;
+  apps::IconEffects icon_effects = apps::IconEffects::kCrOsStandardIcon;
 
   base::RunLoop run_loop;
   apps::mojom::IconValuePtr dst_icon;
@@ -652,6 +640,7 @@ TEST_F(WebAppBuilderTest, LoadGeneratedIcon) {
   GenerateWebAppIcon(app_id, src_image_skia);
 
   auto* item = model_updater_->FindItem(app_id);
+  item->LoadIcon();
   WaitForIconUpdates(item);
 
   VerifyIcon(src_image_skia, item->icon());

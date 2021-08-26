@@ -17,6 +17,7 @@
 #include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/json/values_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
@@ -24,7 +25,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/thread_pool.h"
-#include "base/util/values/values_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -55,6 +55,7 @@
 #include "storage/browser/file_system/isolated_context.h"
 #include "storage/common/file_system/file_system_types.h"
 #include "storage/common/file_system/file_system_util.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "url/origin.h"
@@ -240,7 +241,7 @@ void SetLastChooseEntryDirectory(ExtensionPrefs* prefs,
                                  const base::FilePath& path) {
   prefs->UpdateExtensionPref(
       extension_id, kLastChooseEntryDirectory,
-      base::Value::ToUniquePtrValue(::util::FilePathToValue(path)));
+      base::Value::ToUniquePtrValue(::base::FilePathToValue(path)));
 }
 
 }  // namespace file_system_api
@@ -834,7 +835,7 @@ ExtensionFunction::ResponseAction FileSystemRetainEntryFunction::Run() {
             ->GetFileSystemContext();
 
     const storage::FileSystemURL url = context->CreateCrackedFileSystemURL(
-        url::Origin::Create(extension()->url()),
+        blink::StorageKey(url::Origin::Create(extension()->url())),
         storage::kFileSystemTypeIsolated,
         storage::IsolatedContext::GetInstance()
             ->CreateVirtualRootPath(filesystem_id)

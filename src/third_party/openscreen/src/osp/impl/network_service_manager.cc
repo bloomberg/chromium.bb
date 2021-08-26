@@ -17,14 +17,14 @@ namespace osp {
 // static
 NetworkServiceManager* NetworkServiceManager::Create(
     std::unique_ptr<ServiceListener> mdns_listener,
-    std::unique_ptr<ServicePublisher> mdns_publisher,
+    std::unique_ptr<ServicePublisher> service_publisher,
     std::unique_ptr<ProtocolConnectionClient> connection_client,
     std::unique_ptr<ProtocolConnectionServer> connection_server) {
   // TODO(mfoltz): Convert to assertion failure
   if (g_network_service_manager_instance)
     return nullptr;
   g_network_service_manager_instance = new NetworkServiceManager(
-      std::move(mdns_listener), std::move(mdns_publisher),
+      std::move(mdns_listener), std::move(service_publisher),
       std::move(connection_client), std::move(connection_server));
   return g_network_service_manager_instance;
 }
@@ -50,8 +50,8 @@ ServiceListener* NetworkServiceManager::GetMdnsServiceListener() {
   return mdns_listener_.get();
 }
 
-ServicePublisher* NetworkServiceManager::GetMdnsServicePublisher() {
-  return mdns_publisher_.get();
+ServicePublisher* NetworkServiceManager::GetServicePublisher() {
+  return service_publisher_.get();
 }
 
 ProtocolConnectionClient* NetworkServiceManager::GetProtocolConnectionClient() {
@@ -64,11 +64,11 @@ ProtocolConnectionServer* NetworkServiceManager::GetProtocolConnectionServer() {
 
 NetworkServiceManager::NetworkServiceManager(
     std::unique_ptr<ServiceListener> mdns_listener,
-    std::unique_ptr<ServicePublisher> mdns_publisher,
+    std::unique_ptr<ServicePublisher> service_publisher,
     std::unique_ptr<ProtocolConnectionClient> connection_client,
     std::unique_ptr<ProtocolConnectionServer> connection_server)
     : mdns_listener_(std::move(mdns_listener)),
-      mdns_publisher_(std::move(mdns_publisher)),
+      service_publisher_(std::move(service_publisher)),
       connection_client_(std::move(connection_client)),
       connection_server_(std::move(connection_server)) {}
 

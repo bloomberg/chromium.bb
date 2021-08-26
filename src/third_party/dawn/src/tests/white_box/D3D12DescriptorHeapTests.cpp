@@ -183,7 +183,7 @@ TEST_P(D3D12DescriptorHeapTests, NoSwitchOverSamplerHeap) {
     renderPipelineDescriptor.cFragment.module = utils::CreateShaderModule(device, R"(
             [[group(0), binding(0)]] var sampler0 : sampler;
             [[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
-                let referenceSampler : sampler = sampler0;
+                ignore(sampler0);
                 return vec4<f32>(0.0, 0.0, 0.0, 0.0);
             })");
 
@@ -438,7 +438,7 @@ TEST_P(D3D12DescriptorHeapTests, EncodeManyUBO) {
         dawn_native::Toggle::UseD3D12SmallShaderVisibleHeapForTesting));
 
     utils::BasicRenderPass renderPass =
-        MakeRenderPass(kRTSize, kRTSize, wgpu::TextureFormat::R32Float);
+        MakeRenderPass(kRTSize, kRTSize, wgpu::TextureFormat::R16Float);
 
     utils::ComboRenderPipelineDescriptor pipelineDescriptor;
     pipelineDescriptor.vertex.module = mSimpleVSModule;
@@ -449,8 +449,8 @@ TEST_P(D3D12DescriptorHeapTests, EncodeManyUBO) {
         };
         [[group(0), binding(0)]] var<uniform> buffer0 : U;
 
-        [[stage(fragment)]] fn main() -> [[location(0)]] f32 {
-            return buffer0.heapSize;
+        [[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
+            return vec4<f32>(buffer0.heapSize, 0.0, 0.0, 1.0);
         })");
 
     wgpu::BlendState blend;
@@ -461,7 +461,7 @@ TEST_P(D3D12DescriptorHeapTests, EncodeManyUBO) {
     blend.alpha.srcFactor = wgpu::BlendFactor::One;
     blend.alpha.dstFactor = wgpu::BlendFactor::One;
 
-    pipelineDescriptor.cTargets[0].format = wgpu::TextureFormat::R32Float;
+    pipelineDescriptor.cTargets[0].format = wgpu::TextureFormat::R16Float;
     pipelineDescriptor.cTargets[0].blend = &blend;
 
     wgpu::RenderPipeline renderPipeline = device.CreateRenderPipeline(&pipelineDescriptor);
@@ -500,7 +500,7 @@ TEST_P(D3D12DescriptorHeapTests, EncodeManyUBO) {
     queue.Submit(1, &commands);
 
     float colorSum = numOfEncodedBindGroups * (numOfEncodedBindGroups + 1) / 2;
-    EXPECT_PIXEL_FLOAT_EQ(colorSum, renderPass.color, 0, 0);
+    EXPECT_PIXEL_FLOAT16_EQ(colorSum, renderPass.color, 0, 0);
 }
 
 // Verify encoding one bindgroup then a heaps worth in different submits.
@@ -752,7 +752,7 @@ TEST_P(D3D12DescriptorHeapTests, EncodeManyUBOAndSamplers) {
     descriptor.sampleCount = 1;
     descriptor.format = wgpu::TextureFormat::RGBA8Unorm;
     descriptor.mipLevelCount = 1;
-    descriptor.usage = wgpu::TextureUsage::Sampled | wgpu::TextureUsage::RenderAttachment |
+    descriptor.usage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::RenderAttachment |
                        wgpu::TextureUsage::CopySrc;
     wgpu::Texture texture = device.CreateTexture(&descriptor);
     wgpu::TextureView textureView = texture.CreateView();

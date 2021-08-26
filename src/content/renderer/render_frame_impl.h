@@ -73,7 +73,6 @@
 #include "third_party/blink/public/common/permissions_policy/document_policy.h"
 #include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/blink/public/common/renderer_preferences/renderer_preferences.h"
-#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/common/unique_name/unique_name_helper.h"
 #include "third_party/blink/public/mojom/autoplay/autoplay.mojom.h"
@@ -551,10 +550,11 @@ class CONTENT_EXPORT RenderFrameImpl
   void RunScriptsAtDocumentIdle() override;
   void DidHandleOnloadEvents() override;
   void DidFinishLoad() override;
-  void DidFinishSameDocumentNavigation(blink::WebHistoryCommitType commit_type,
-                                       bool is_synchronously_committed,
-                                       bool is_history_api_navigation,
-                                       bool is_client_redirect) override;
+  void DidFinishSameDocumentNavigation(
+      blink::WebHistoryCommitType commit_type,
+      bool is_synchronously_committed,
+      blink::mojom::SameDocumentNavigationType same_document_navigation_type,
+      bool is_client_redirect) override;
   void WillFreezePage() override;
   void DidOpenDocumentInputStream(const blink::WebURL& url) override;
   void DidSetPageLifecycleState() override;
@@ -1354,6 +1354,8 @@ class CONTENT_EXPORT RenderFrameImpl
   mojo::PendingRemote<blink::mojom::CodeCacheHost> pending_code_cache_host_;
   mojom::CookieManagerInfoPtr pending_cookie_manager_info_;
   mojom::StorageInfoPtr pending_storage_info_;
+  // The storage key which |pending_storage_info_| is associated with.
+  blink::StorageKey original_storage_key_;
 
   scoped_refptr<blink::WebFrameRequestBlocker> frame_request_blocker_;
 

@@ -203,6 +203,7 @@ apps::mojom::IntentPtr ConvertLaunchIntent(
   intent->share_text = launch_intent->extra_text;
 
   if (launch_intent->files.has_value() && launch_intent->files->size() > 0) {
+    std::vector<std::string> mime_types;
     intent->files = std::vector<apps::mojom::IntentFilePtr>();
     for (const auto& file_info : *launch_intent->files) {
       auto file = apps::mojom::IntentFile::New();
@@ -212,7 +213,11 @@ apps::mojom::IntentPtr ConvertLaunchIntent(
       file->file_name = StripPathComponents(file_info->name);
       file->file_size = file_info->size;
       intent->files->push_back(std::move(file));
+      mime_types.push_back(file_info->type);
     }
+
+    // Override the given MIME type based on the files that we're sharing.
+    intent->mime_type = apps_util::CalculateCommonMimeType(mime_types);
   }
 
   return intent;
@@ -320,7 +325,8 @@ void ChromeNewWindowClient::NewTabWithUrl(const GURL& url,
   OpenUrlImpl(url, from_user_interaction);
 }
 
-void ChromeNewWindowClient::NewWindow(bool is_incognito) {
+void ChromeNewWindowClient::NewWindow(bool is_incognito,
+                                      bool should_trigger_session_restore) {
   if (is_incognito && !IsIncognitoAllowed())
     return;
 
@@ -330,7 +336,8 @@ void ChromeNewWindowClient::NewWindow(bool is_incognito) {
                          : ProfileManager::GetActiveUserProfile();
   chrome::NewEmptyWindow(
       is_incognito ? profile->GetPrimaryOTRProfile(/*create_if_needed=*/true)
-                   : profile);
+                   : profile,
+      should_trigger_session_restore);
 }
 
 void ChromeNewWindowClient::OpenCalculator() {
@@ -404,7 +411,7 @@ void ChromeNewWindowClient::OpenDownloadsFolder() {
     launch_files->file_paths.push_back(downloads_path);
 
     proxy->LaunchAppWithFiles(
-        update.AppId(), apps::mojom::LaunchContainer::kLaunchContainerNone,
+        update.AppId(),
         apps::GetEventFlags(apps::mojom::LaunchContainer::kLaunchContainerNone,
                             WindowOpenDisposition::NEW_FOREGROUND_TAB,
                             /*preferred_containner=*/true),

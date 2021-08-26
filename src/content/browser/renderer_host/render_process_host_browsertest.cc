@@ -37,6 +37,7 @@
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_browser_main_parts.h"
 #include "content/shell/browser/shell_content_browser_client.h"
+#include "content/test/storage_partition_test_helpers.h"
 #include "content/test/test_content_browser_client.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/media_switches.h"
@@ -486,44 +487,6 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, SpareRendererDuringClosing) {
   // tear down.
 }
 
-// Class that simulates the fact that some //content embedders (e.g. by
-// overriding ChromeContentBrowserClient::GetStoragePartitionConfigForSite) can
-// cause `browser_context->GetDefaultStoragePartition()` to differ from
-// `browser_context->GetStoragePartition(site_instance)` even if `site_instance`
-// is not for guests.
-class CustomStoragePartitionForSomeSites : public TestContentBrowserClient {
- public:
-  explicit CustomStoragePartitionForSomeSites(const GURL& site_to_isolate)
-      : site_to_isolate_(site_to_isolate) {}
-
-  StoragePartitionConfig GetStoragePartitionConfigForSite(
-      BrowserContext* browser_context,
-      const GURL& site) override {
-    // Override for |site_to_isolate_|.
-    if (site == site_to_isolate_) {
-      return StoragePartitionConfig::Create(
-          browser_context, "blah_isolated_storage", "blah_isolated_storage",
-          false /* in_memory */);
-    }
-
-    return StoragePartitionConfig::CreateDefault(browser_context);
-  }
-
-  StoragePartitionId GetStoragePartitionIdForSite(
-      BrowserContext* browser_context,
-      const GURL& site) override {
-    if (site == site_to_isolate_)
-      return StoragePartitionId(
-          site.spec(), GetStoragePartitionConfigForSite(browser_context, site));
-    return StoragePartitionId(browser_context);
-  }
-
- private:
-  GURL site_to_isolate_;
-
-  DISALLOW_COPY_AND_ASSIGN(CustomStoragePartitionForSomeSites);
-};
-
 // This test verifies that SpareRenderProcessHostManager correctly accounts
 // for StoragePartition differences when handing out the spare process.
 IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
@@ -531,15 +494,15 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Provide custom storage partition for test sites.
-  GURL test_url = embedded_test_server()->GetURL("/simple_page.html");
+  GURL test_url = embedded_test_server()->GetURL("a.com", "/simple_page.html");
+  CustomStoragePartitionForSomeSites modified_client(GURL("http://a.com/"));
+  ContentBrowserClient* old_client =
+      SetBrowserClientForTesting(&modified_client);
+
   BrowserContext* browser_context =
       ShellContentBrowserClient::Get()->browser_context();
   scoped_refptr<SiteInstance> test_site_instance =
-      SiteInstance::Create(browser_context)->GetRelatedSiteInstance(test_url);
-  GURL test_site = test_site_instance->GetSiteURL();
-  CustomStoragePartitionForSomeSites modified_client(test_site);
-  ContentBrowserClient* old_client =
-      SetBrowserClientForTesting(&modified_client);
+      SiteInstance::CreateForURL(browser_context, test_url);
   StoragePartition* default_storage =
       browser_context->GetDefaultStoragePartition();
   StoragePartition* custom_storage =
@@ -1144,7 +1107,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
 }
 
 // Test is flaky on Android builders: https://crbug.com/875179
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_WIN)
 #define MAYBE_KeepAliveRendererProcess_Hung \
   DISABLED_KeepAliveRendererProcess_Hung
 #else
@@ -1170,6 +1133,10 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
   RenderProcessHostImpl* rph =
       static_cast<RenderProcessHostImpl*>(rfh->GetProcess());
 
+  // Disable the BackForwardCache to ensure the old process is going to be
+  // released.
+  DisableBackForwardCacheForTesting(shell()->web_contents(),
+                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
   host_destructions_ = 0;
   process_exits_ = 0;
   Observe(rph);
@@ -1184,7 +1151,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
 }
 
 // Test is flaky on Android builders: https://crbug.com/875179
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_WIN)
 #define MAYBE_FetchKeepAliveRendererProcess_Hung \
   DISABLED_FetchKeepAliveRendererProcess_Hung
 #else
@@ -1211,6 +1178,11 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
       shell()->web_contents()->GetMainFrame());
   RenderProcessHostImpl* rph =
       static_cast<RenderProcessHostImpl*>(rfh->GetProcess());
+
+  // Disable the BackForwardCache to ensure the old process is going to be
+  // released.
+  DisableBackForwardCacheForTesting(shell()->web_contents(),
+                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
 
   host_destructions_ = 0;
   process_exits_ = 0;

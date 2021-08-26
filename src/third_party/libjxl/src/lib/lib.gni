@@ -1,24 +1,29 @@
-# Copyright (c) the JPEG XL Project
+# Copyright (c) the JPEG XL Project Authors. All rights reserved.
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
 
 # Source files definitions for GN-based build systems.
 
 # Library version macros
 libjxl_version_defines = [
     "JPEGXL_MAJOR_VERSION=0",
-    "JPEGXL_MINOR_VERSION=3",
-    "JPEGXL_PATCH_VERSION=7",
+    "JPEGXL_MINOR_VERSION=5",
+    "JPEGXL_PATCH_VERSION=0",
+]
+
+libjxl_public_headers = [
+    "include/jxl/butteraugli.h",
+    "include/jxl/butteraugli_cxx.h",
+    "include/jxl/codestream_header.h",
+    "include/jxl/color_encoding.h",
+    "include/jxl/decode.h",
+    "include/jxl/decode_cxx.h",
+    "include/jxl/encode.h",
+    "include/jxl/encode_cxx.h",
+    "include/jxl/memory_manager.h",
+    "include/jxl/parallel_runner.h",
+    "include/jxl/types.h",
 ]
 
 libjxl_dec_sources = [
@@ -55,8 +60,6 @@ libjxl_dec_sources = [
     "jxl/base/status.cc",
     "jxl/base/status.h",
     "jxl/base/thread_pool_internal.h",
-    "jxl/base/time.cc",
-    "jxl/base/time.h",
     "jxl/blending.cc",
     "jxl/blending.h",
     "jxl/chroma_from_luma.cc",
@@ -83,6 +86,7 @@ libjxl_dec_sources = [
     "jxl/dec_ans.cc",
     "jxl/dec_ans.h",
     "jxl/dec_bit_reader.h",
+    "jxl/dec_cache.cc",
     "jxl/dec_cache.h",
     "jxl/dec_context_map.cc",
     "jxl/dec_context_map.h",
@@ -105,6 +109,7 @@ libjxl_dec_sources = [
     "jxl/dec_patch_dictionary.h",
     "jxl/dec_reconstruct.cc",
     "jxl/dec_reconstruct.h",
+    "jxl/dec_render_pipeline.h",
     "jxl/dec_transforms-inl.h",
     "jxl/dec_upsample.cc",
     "jxl/dec_upsample.h",
@@ -172,10 +177,10 @@ libjxl_dec_sources = [
     "jxl/modular/modular_image.cc",
     "jxl/modular/modular_image.h",
     "jxl/modular/options.h",
-    "jxl/modular/transform/near-lossless.h",
     "jxl/modular/transform/palette.h",
+    "jxl/modular/transform/rct.h",
+    "jxl/modular/transform/squeeze.cc",
     "jxl/modular/transform/squeeze.h",
-    "jxl/modular/transform/subtractgreen.h",
     "jxl/modular/transform/transform.cc",
     "jxl/modular/transform/transform.h",
     "jxl/noise.h",
@@ -191,6 +196,7 @@ libjxl_dec_sources = [
     "jxl/quantizer.cc",
     "jxl/quantizer.h",
     "jxl/rational_polynomial-inl.h",
+    "jxl/sanitizers.h",
     "jxl/splines.cc",
     "jxl/splines.h",
     "jxl/toc.cc",
@@ -264,6 +270,8 @@ libjxl_enc_sources = [
     "jxl/enc_params.h",
     "jxl/enc_patch_dictionary.cc",
     "jxl/enc_patch_dictionary.h",
+    "jxl/enc_photon_noise.cc",
+    "jxl/enc_photon_noise.h",
     "jxl/enc_quant_weights.cc",
     "jxl/enc_quant_weights.h",
     "jxl/enc_splines.cc",
@@ -292,6 +300,14 @@ libjxl_enc_sources = [
     "jxl/modular/encoding/enc_encoding.h",
     "jxl/modular/encoding/enc_ma.cc",
     "jxl/modular/encoding/enc_ma.h",
+    "jxl/modular/transform/enc_palette.cc",
+    "jxl/modular/transform/enc_palette.h",
+    "jxl/modular/transform/enc_rct.cc",
+    "jxl/modular/transform/enc_rct.h",
+    "jxl/modular/transform/enc_squeeze.cc",
+    "jxl/modular/transform/enc_squeeze.h",
+    "jxl/modular/transform/enc_transform.cc",
+    "jxl/modular/transform/enc_transform.h",
     "jxl/optimize.cc",
     "jxl/optimize.h",
     "jxl/progressive_split.cc",
@@ -327,6 +343,7 @@ libjxl_tests_sources = [
     "jxl/decode_test.cc",
     "jxl/descriptive_statistics_test.cc",
     "jxl/enc_external_image_test.cc",
+    "jxl/enc_photon_noise_test.cc",
     "jxl/encode_test.cc",
     "jxl/entropy_coder_test.cc",
     "jxl/fast_math_test.cc",
@@ -373,9 +390,17 @@ libjxl_testlib_sources = [
 ]
 
 libjxl_threads_sources = [
+    "threads/resizable_parallel_runner.cc",
     "threads/thread_parallel_runner.cc",
     "threads/thread_parallel_runner_internal.cc",
     "threads/thread_parallel_runner_internal.h",
+]
+
+libjxl_threads_public_headers = [
+    "include/jxl/resizable_parallel_runner.h",
+    "include/jxl/resizable_parallel_runner_cxx.h",
+    "include/jxl/thread_parallel_runner.h",
+    "include/jxl/thread_parallel_runner_cxx.h",
 ]
 
 libjxl_profiler_sources = [

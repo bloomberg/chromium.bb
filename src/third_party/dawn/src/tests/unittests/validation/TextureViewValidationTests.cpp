@@ -39,7 +39,7 @@ namespace {
         descriptor.sampleCount = sampleCount;
         descriptor.format = kDefaultTextureFormat;
         descriptor.mipLevelCount = mipLevelCount;
-        descriptor.usage = wgpu::TextureUsage::Sampled;
+        descriptor.usage = wgpu::TextureUsage::TextureBinding;
         return device.CreateTexture(&descriptor);
     }
 
@@ -50,7 +50,7 @@ namespace {
         descriptor.sampleCount = 1;
         descriptor.format = kDefaultTextureFormat;
         descriptor.mipLevelCount = kDefaultMipLevels;
-        descriptor.usage = wgpu::TextureUsage::Sampled;
+        descriptor.usage = wgpu::TextureUsage::TextureBinding;
         return device.CreateTexture(&descriptor);
     }
 
@@ -510,20 +510,21 @@ namespace {
         }
     }
 
-    // Test that it's invalid to create a texture view from a destroyed texture
+    // Test that it's valid to create a texture view from a destroyed texture
     TEST_F(TextureViewValidationTest, DestroyCreateTextureView) {
         wgpu::Texture texture = Create2DArrayTexture(device, 1);
         wgpu::TextureViewDescriptor descriptor =
             CreateDefaultViewDescriptor(wgpu::TextureViewDimension::e2D);
         texture.Destroy();
-        ASSERT_DEVICE_ERROR(texture.CreateView(&descriptor));
+        texture.CreateView(&descriptor);
     }
 
     // Test that the selected TextureAspects must exist in the texture format
     TEST_F(TextureViewValidationTest, AspectMustExist) {
         wgpu::TextureDescriptor descriptor = {};
         descriptor.size = {1, 1, 1};
-        descriptor.usage = wgpu::TextureUsage::Sampled | wgpu::TextureUsage::RenderAttachment;
+        descriptor.usage =
+            wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::RenderAttachment;
 
         // Can select: All and DepthOnly from Depth32Float, but not StencilOnly
         {

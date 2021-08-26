@@ -19,6 +19,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="1774152462503052664">Laisser Chromium s'exécuter en arrière-plan</translation>
 <translation id="1779356040007214683">Afin de rendre Chrome plus sûr, nous avons désactivé certaines extensions qui ne sont pas répertoriées sur le <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> et qui ont pu être ajoutées à votre insu.</translation>
 <translation id="1808667845054772817">Réinstaller Chromium</translation>
+<translation id="185970820835152459">Vous pouvez gérer les comptes Google auxquels vous êtes connecté. Ils vous permettent d'accéder au navigateur Chromium, au Play Store, à Gmail, etc. Pour ajouter le compte d'une autre personne, comme un membre de votre famille, ajoutez un nouvel utilisateur à votre <ph name="DEVICE_TYPE" /> à la place. <ph name="LINK_BEGIN" />En savoir plus<ph name="LINK_END" /></translation>
 <translation id="1881322772814446296">Vous vous connectez avec un compte géré et donnez le contrôle de votre profil Chromium à son administrateur. Vos données Chromium, telles que les applications, les favoris, l'historique, les mots de passe et les autres paramètres, vont être définitivement associées à <ph name="USER_NAME" />. Vous pouvez supprimer ces données via le tableau de bord des comptes Google, mais vous ne pouvez pas les associer à un autre compte. Vous pouvez éventuellement créer un nouveau profil pour maintenir vos données Chromium séparées. <ph name="LEARN_MORE" /></translation>
 <translation id="1911763535808217981">Désactiver cette option vous permet de vous connecter à des sites Google tels que Gmail sans vous connecter à Chromium</translation>
 <translation id="1929939181775079593">Chromium ne répond pas. Voulez-vous le relancer maintenant ?</translation>
@@ -108,7 +109,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="4407044323746248786">Quitter Chromium quand même ?</translation>
 <translation id="4415566066719264597">Laisser Chromium s'exécuter en arrière-plan</translation>
 <translation id="4423735387467980091">Personnaliser et contrôler Chromium</translation>
-<translation id="4491398312037323794">Cette page vous permet de gérer les comptes Google auxquels vous êtes connecté. Ils seront accessibles depuis le navigateur Chromium et l'appli Play Store, et vous pourrez les utiliser avec des services comme Gmail, Drive et YouTube. <ph name="LINK_BEGIN" />En savoir plus<ph name="LINK_END" /></translation>
 <translation id="452711251841752011">Bienvenue dans Chromium, une nouvelle fenêtre du navigateur a été ouverte</translation>
 <translation id="4544142686420020088">Échec de la mise à jour de Chromium en raison d'une erreur. <ph name="BEGIN_LINK" />Découvrez comment résoudre ce type de problème.<ph name="END_LINK" /></translation>
 <translation id="454579500955453258">Continuer avec un nouveau profil Chromium ?</translation>
@@ -256,6 +256,7 @@ Chromium ne peut pas récupérer vos paramètres.</translation>
 <translation id="7937630085815544518">Vous étiez connecté à Chromium en tant que <ph name="USER_EMAIL_ADDRESS" />. Veuillez utiliser le même compte pour vous reconnecter.</translation>
 <translation id="7975919845073681630">Ceci est une installation secondaire de Chromium. Vous ne pouvez pas le définir comme navigateur par défaut.</translation>
 <translation id="8013436988911883588">Une fois l'accès à une ressource accordé à Chromium, les sites Web sont également en mesure de vous demander l'accès.</translation>
+<translation id="8045118833343856403">Les comptes suivants ne sont connectés à aucun profil Chromium. Si vous souhaitez utiliser un compte pour un autre profil, supprimez d'abord le profil.</translation>
 <translation id="81770708095080097">Chromium a bloqué ce fichier, car ce dernier est dangereux.</translation>
 <translation id="8248265253516264921">Si une image n'est pas accompagnée d'une description utile, Chromium essaiera de vous en proposer une. Pour nous permettre de créer des descriptions, les images sont envoyées à Google. Vous pouvez désactiver à tout moment cette option dans les paramètres.</translation>
 <translation id="8266560134891435528">Chromium ne peut pas vérifier vos mots de passe, car vous n'êtes pas connecté</translation>

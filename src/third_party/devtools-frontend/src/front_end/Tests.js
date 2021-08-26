@@ -29,7 +29,6 @@
  */
 /* eslint-disable indent */
 
-
 /**
  * @fileoverview This file contains small testing framework along with the
  * test suite for the frontend. These tests are a part of the continues build
@@ -403,7 +402,7 @@
       test.releaseControl();
     }
 
-    this.addSniffer(SDK.NetworkDispatcher.prototype, '_finishNetworkRequest', finishRequest);
+    this.addSniffer(SDK.NetworkDispatcher.prototype, 'finishNetworkRequest', finishRequest);
 
     // Reload inspected page to sniff network events
     test.evaluateInConsole_('window.location.reload(true);', function(resultText) {});
@@ -422,7 +421,7 @@
       test.releaseControl();
     }
 
-    this.addSniffer(SDK.NetworkDispatcher.prototype, '_finishNetworkRequest', finishRequest);
+    this.addSniffer(SDK.NetworkDispatcher.prototype, 'finishNetworkRequest', finishRequest);
 
     // Send synchronous XHR to sniff network events
     test.evaluateInConsole_(
@@ -447,7 +446,7 @@
       test.releaseControl();
     }
 
-    this.addSniffer(SDK.NetworkDispatcher.prototype, '_finishNetworkRequest', finishRequest);
+    this.addSniffer(SDK.NetworkDispatcher.prototype, 'finishNetworkRequest', finishRequest);
 
     // Reload inspected page to sniff network events
     test.evaluateInConsole_('window.location.reload(true);', function(resultText) {});
@@ -482,7 +481,7 @@
       test.releaseControl();
     }
 
-    this.addSniffer(SDK.NetworkDispatcher.prototype, '_finishNetworkRequest', finishRequest);
+    this.addSniffer(SDK.NetworkDispatcher.prototype, 'finishNetworkRequest', finishRequest);
 
     // Reload inspected page to sniff network events
     test.evaluateInConsole_('window.location.reload(true);', function(resultText) {});
@@ -515,7 +514,7 @@
       }
     }
 
-    this.addSniffer(SDK.NetworkDispatcher.prototype, '_finishNetworkRequest', finishRequest, true);
+    this.addSniffer(SDK.NetworkDispatcher.prototype, 'finishNetworkRequest', finishRequest, true);
 
     test.evaluateInConsole_('addImage(\'' + url + '\')', function(resultText) {});
     test.evaluateInConsole_('addImage(\'' + url + '?pushUseNullEndTime\')', function(resultText) {});
@@ -533,7 +532,6 @@
     } else {
       self.SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.MessageAdded, firstConsoleMessageReceived, this);
     }
-
 
     function firstConsoleMessageReceived(event) {
       if (event && event.data.source === Protocol.Log.LogEntrySource.Violation) {
@@ -888,7 +886,7 @@
       test.releaseControl();
     }
 
-    this.addSniffer(SDK.NetworkDispatcher.prototype, '_finishNetworkRequest', finishRequest);
+    this.addSniffer(SDK.NetworkDispatcher.prototype, 'finishNetworkRequest', finishRequest);
 
     // Allow more time for this test as it needs to reload the inspected page.
     test.takeControl({slownessFactor: 10});
@@ -1054,7 +1052,7 @@
     }
 
     function gotPreferences(prefs) {
-      Main.Main._instanceForTest._createSettings(prefs);
+      Main.Main.instanceForTest.createSettings(prefs);
 
       const localSetting = self.Common.settings.createLocalSetting('local', undefined);
       test.assertEquals('object', typeof localSetting.get());
@@ -1421,7 +1419,6 @@
     childFrameOutput = 'Event type: mousedown button: 0 x: 30 y: 40 Event type: mouseup button: 0 x: 30 y: 50';
     this.assertEquals(childFrameOutput, await takeLogs(self.SDK.targetManager.targets()[1]));
 
-
     await inputAgent.invoke_dispatchKeyEvent({type: 'keyDown', key: 'a'});
     await runtimeAgent.invoke_evaluate({expression: "document.querySelector('iframe').focus()"});
     await inputAgent.invoke_dispatchKeyEvent({type: 'keyDown', key: 'a'});
@@ -1609,7 +1606,7 @@
    * @param {function():void} callback
    */
   TestSuite.prototype._waitForScriptPause = function(callback) {
-    this.addSniffer(SDK.DebuggerModel.prototype, '_pausedScript', callback);
+    this.addSniffer(SDK.DebuggerModel.prototype, 'pausedScript', callback);
   };
 
   /**
@@ -1653,7 +1650,6 @@
       }
     }
   };
-
 
   window.uiTests = new TestSuite(window.domAutomationController);
 })(window);

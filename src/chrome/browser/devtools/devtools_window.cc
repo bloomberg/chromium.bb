@@ -33,7 +33,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/color_chooser.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -1281,10 +1280,8 @@ void DevToolsWindow::WebContentsCreated(WebContents* source_contents,
                                         const GURL& target_url,
                                         WebContents* new_contents) {
   if (target_url.SchemeIs(content::kChromeDevToolsScheme) &&
-      (target_url.path().rfind("device_mode_emulation_frame.html") !=
-           std::string::npos
-       // TODO(crbug.com/1228264): Remove toolbox.html allowance
-       || target_url.path().rfind("toolbox.html") != std::string::npos)) {
+      target_url.path().rfind("device_mode_emulation_frame.html") !=
+          std::string::npos) {
     CHECK(can_dock_);
 
     // Ownership will be passed in DevToolsWindow::AddNewContents.
@@ -1374,13 +1371,6 @@ bool DevToolsWindow::HandleKeyboardEvent(
 content::JavaScriptDialogManager* DevToolsWindow::GetJavaScriptDialogManager(
     WebContents* source) {
   return javascript_dialogs::AppModalDialogManager::GetInstance();
-}
-
-std::unique_ptr<content::ColorChooser> DevToolsWindow::OpenColorChooser(
-    WebContents* web_contents,
-    SkColor initial_color,
-    const std::vector<blink::mojom::ColorSuggestionPtr>& suggestions) {
-  return chrome::ShowColorChooser(web_contents, initial_color);
 }
 
 void DevToolsWindow::RunFileChooser(

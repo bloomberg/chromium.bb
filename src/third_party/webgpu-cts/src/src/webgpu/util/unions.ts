@@ -1,12 +1,15 @@
 /**
  * Reifies a `GPUExtent3D` into a `Required<GPUExtent3DDict>`.
  */
-export function standardizeExtent3D(
-  v: Readonly<GPUExtent3DDict> | readonly number[]
+export function reifyExtent3D(
+  val: Readonly<GPUExtent3DDict> | Iterable<number>
 ): Required<GPUExtent3DDict> {
-  if (v instanceof Array) {
+  // TypeScript doesn't seem to want to narrow the types here properly, so hack around it.
+  if (typeof (val as Iterable<number>)[Symbol.iterator] === 'function') {
+    const v = Array.from(val as Iterable<number>);
     return { width: v[0] ?? 1, height: v[1] ?? 1, depthOrArrayLayers: v[2] ?? 1 };
   } else {
+    const v = val as Readonly<GPUExtent3DDict>;
     return {
       width: v.width ?? 1,
       height: v.height ?? 1,

@@ -8,14 +8,13 @@ import * as SDK from '../../core/sdk/sdk.js';
 
 let contrastCheckTriggerInstance: ContrastCheckTrigger|null = null;
 
-export class ContrastCheckTrigger extends Common.ObjectWrapper.ObjectWrapper {
+export class ContrastCheckTrigger {
   private pageLoadListeners: WeakMap<SDK.ResourceTreeModel.ResourceTreeModel, Common.EventTarget.EventDescriptor> =
       new WeakMap();
   private frameAddedListeners: WeakMap<SDK.ResourceTreeModel.ResourceTreeModel, Common.EventTarget.EventDescriptor> =
       new WeakMap();
 
   constructor() {
-    super();
     SDK.TargetManager.TargetManager.instance().observeModels(SDK.ResourceTreeModel.ResourceTreeModel, this);
   }
 
@@ -54,16 +53,19 @@ export class ContrastCheckTrigger extends Common.ObjectWrapper.ObjectWrapper {
     resourceTreeModel.target().auditsAgent().invoke_checkContrast({});
   }
 
-  private pageLoaded(event: Common.EventTarget.EventTargetEvent): void {
-    const {resourceTreeModel} = event.data as {resourceTreeModel: SDK.ResourceTreeModel.ResourceTreeModel};
+  private pageLoaded(
+      event: Common.EventTarget
+          .EventTargetEvent<{resourceTreeModel: SDK.ResourceTreeModel.ResourceTreeModel, loadTime: number}>): void {
+    const {resourceTreeModel} = event.data;
     this.checkContrast(resourceTreeModel);
   }
 
-  private async frameAdded(event: Common.EventTarget.EventTargetEvent): Promise<void> {
+  private async frameAdded(event: Common.EventTarget.EventTargetEvent<SDK.ResourceTreeModel.ResourceTreeFrame>):
+      Promise<void> {
     if (!Root.Runtime.experiments.isEnabled('contrastIssues')) {
       return;
     }
-    const frame = event.data as SDK.ResourceTreeModel.ResourceTreeFrame;
+    const frame = event.data;
     if (!frame.isMainFrame()) {
       return;
     }

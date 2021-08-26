@@ -37,14 +37,14 @@ executable("updater") {
     ":version_resources",
     "//build/win:default_exe_manifest",
     "//chrome/updater:base",
-    "//chrome/updater:updater_version_cc",
+    "//chrome/updater:constants_prod",
     "//chrome/updater/win/ui:ui_resources",
   ]
 
   data_deps = [ ":uninstall.cmd" ]
 }
 
-executable("updater_exe_test_v2") {
+executable("updater_test") {
   sources = [
     "main.cc",
     "updater.rc",
@@ -57,7 +57,7 @@ executable("updater_exe_test_v2") {
     ":version_resources",
     "//build/win:default_exe_manifest",
     "//chrome/updater:base",
-    "//chrome/updater:updater_version_cc_offset",
+    "//chrome/updater:constants_test",
     "//chrome/updater/win/ui:ui_resources",
   ]
 

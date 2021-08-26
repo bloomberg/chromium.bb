@@ -142,9 +142,6 @@ bool MockCryptoClientStream::CryptoConnect() {
               std::make_unique<MockDecrypter>(Perspective::IS_CLIENT));
         }
         session()->connection()->SetEncrypter(
-            ENCRYPTION_FORWARD_SECURE,
-            std::make_unique<MockEncrypter>(Perspective::IS_CLIENT));
-        session()->connection()->SetEncrypter(
             ENCRYPTION_ZERO_RTT,
             std::make_unique<MockEncrypter>(Perspective::IS_CLIENT));
       } else {
@@ -160,12 +157,12 @@ bool MockCryptoClientStream::CryptoConnect() {
         if (session()->version().UsesHttp3()) {
           SetConfigNegotiated();
         }
-        session()->connection()->SetEncrypter(
-            ENCRYPTION_FORWARD_SECURE,
-            std::make_unique<NullEncrypter>(Perspective::IS_CLIENT));
         session()->OnNewEncryptionKeyAvailable(
             ENCRYPTION_ZERO_RTT,
             std::make_unique<NullEncrypter>(Perspective::IS_CLIENT));
+      }
+      if (!session()->connection()->connected()) {
+        break;
       }
       if (session()->version().UsesQuicCrypto()) {
         session()->SetDefaultEncryptionLevel(ENCRYPTION_ZERO_RTT);
@@ -223,6 +220,9 @@ bool MockCryptoClientStream::CryptoConnect() {
       session()->OnNewEncryptionKeyAvailable(
           ENCRYPTION_FORWARD_SECURE,
           std::make_unique<NullEncrypter>(Perspective::IS_CLIENT));
+      if (!session()->connection()->connected()) {
+        break;
+      }
       if (session()->version().UsesTls()) {
         session()->OnTlsHandshakeComplete();
       } else {

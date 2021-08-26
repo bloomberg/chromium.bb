@@ -271,7 +271,6 @@ source_set("ios_web_navigation_unittests") {
     "navigation/crw_navigation_item_holder_unittest.mm",
     "navigation/crw_session_storage_unittest.mm",
     "navigation/crw_wk_navigation_states_unittest.mm",
-    "navigation/error_retry_state_machine_unittest.mm",
     "navigation/navigation_context_impl_unittest.mm",
     "navigation/navigation_item_impl_unittest.mm",
     "navigation/navigation_item_storage_builder_unittest.mm",
@@ -621,15 +620,9 @@ js_compile_bundle("main_frame_web_bundle") {
   visibility = [ ":js_resources" ]
   closure_entry_point = "__crWeb.mainFrameWebBundle"
 
-  # Silence warning when compiling text-fragment-utils.js until the code
-  # has been rolled (see https://crbug.com/1129390).
-  suppressed_warnings = [ "uselessCode" ]
-
   sources = [
-    "//third_party/text-fragments-polyfill/src/src/text-fragment-utils.js",
     "web_state/js/resources/main_frame_web_bundle.js",
     "web_state/js/resources/navigation.js",
-    "web_state/js/resources/text_fragments.js",
   ]
 }
 

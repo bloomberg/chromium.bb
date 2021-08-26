@@ -32,8 +32,24 @@ public:
                                         const SkPMColor4f&, DrawInnerFan, int numPathVerbs,
                                         const GrPipeline&, const GrCaps&);
 
-    void prepare(GrMeshDrawTarget*, const SkRect& cullBounds, const SkPath&,
-                 const BreadcrumbTriangleList*) override;
+    void prepare(GrMeshDrawTarget* target,
+                 const SkRect& cullBounds,
+                 const PathDrawList& pathDrawList,
+                 int totalCombinedPathVerbCnt) override {
+        this->prepare(target, cullBounds, pathDrawList, totalCombinedPathVerbCnt, nullptr);
+    }
+
+    // Implements GrPathTessellator::prepare(), also sending an additional list of breadcrumb
+    // triangles to the GPU. The breadcrumb triangles are implemented as conics with w=Infinity.
+    //
+    // ALSO NOTE: The breadcrumb triangles do not have a matrix. These need to be pre-transformed by
+    // the caller if a CPU-side transformation is desired.
+    void prepare(GrMeshDrawTarget*,
+                 const SkRect& cullBounds,
+                 const PathDrawList&,
+                 int totalCombinedPathVerbCnt,
+                 const BreadcrumbTriangleList*);
+
     void draw(GrOpFlushState*) const override;
 
     // Draws a 4-point instance for each curve. This method is used for drawing convex hulls over

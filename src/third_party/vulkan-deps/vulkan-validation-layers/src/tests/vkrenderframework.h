@@ -248,11 +248,13 @@ class VkRenderFramework : public VkTestFramework {
     void InitViewport();
     bool InitSurface();
     bool InitSurface(float width, float height);
+    bool InitSurface(float width, float height, VkSurfaceKHR &surface);
     void InitSwapchainInfo();
     bool InitSwapchain(VkSurfaceKHR &surface, VkImageUsageFlags imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
                        VkSurfaceTransformFlagBitsKHR preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR);
     bool InitSwapchain(VkImageUsageFlags imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
                        VkSurfaceTransformFlagBitsKHR preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR);
+    bool InitSwapchain(VkSurfaceKHR &surface, VkImageUsageFlags imageUsage,  VkSurfaceTransformFlagBitsKHR preTransform, VkSwapchainKHR &swapchain, VkSwapchainKHR oldSwapchain = 0);
     void DestroySwapchain();
     void InitRenderTarget();
     void InitRenderTarget(uint32_t targets);
@@ -315,6 +317,7 @@ class VkRenderFramework : public VkTestFramework {
     VkSurfaceCapabilitiesKHR m_surface_capabilities;
     std::vector<VkSurfaceFormatKHR> m_surface_formats;
     std::vector<VkPresentModeKHR> m_surface_present_modes;
+    VkPresentModeKHR m_surface_non_shared_present_mode;
     VkCompositeAlphaFlagBitsKHR m_surface_composite_alpha;
 
     std::vector<VkViewport> m_viewports;

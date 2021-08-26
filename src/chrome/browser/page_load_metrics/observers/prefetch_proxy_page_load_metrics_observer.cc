@@ -106,8 +106,8 @@ PrefetchProxyPageLoadMetricsObserver::OnCommit(
     return CONTINUE_OBSERVING;
 
   for (const GURL& url : navigation_handle->GetRedirectChain()) {
-    history_service->GetLastVisitToHost(
-        url.GetOrigin(), base::Time() /* before_time */,
+    history_service->GetLastVisitToOrigin(
+        url::Origin::Create(url), base::Time() /* before_time */,
         navigation_start_ /* end_time */,
         base::BindOnce(
             &PrefetchProxyPageLoadMetricsObserver::OnOriginLastVisitResult,
@@ -138,11 +138,8 @@ void PrefetchProxyPageLoadMetricsObserver::OnDidInternalNavigationAbort(
   RecordAfterSRPEvent();
 }
 
-void PrefetchProxyPageLoadMetricsObserver::OnEventOccurred(
-    page_load_metrics::PageLoadMetricsEvent event) {
-  if (event == page_load_metrics::PageLoadMetricsEvent::PREFETCH_LIKELY) {
-    GetPrefetchMetrics();
-  }
+void PrefetchProxyPageLoadMetricsObserver::OnPrefetchLikely() {
+  GetPrefetchMetrics();
 }
 
 void PrefetchProxyPageLoadMetricsObserver::GetPrefetchMetrics() {

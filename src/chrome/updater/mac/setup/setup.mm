@@ -47,20 +47,6 @@ constexpr char kLoggingModuleSwitchValue[] =
     "*/updater/*=2,*/update_client/*=2";
 
 #pragma mark Helpers
-const base::FilePath GetUpdaterAppName() {
-  return base::FilePath(PRODUCT_FULLNAME_STRING ".app");
-}
-
-const base::FilePath GetUpdaterAppExecutablePath() {
-  return base::FilePath("Contents/MacOS").AppendASCII(PRODUCT_FULLNAME_STRING);
-}
-
-const base::FilePath GetUpdaterExecutablePath(
-    const base::FilePath& updater_folder_path) {
-  return updater_folder_path.Append(GetUpdaterAppName())
-      .Append(GetUpdaterAppExecutablePath());
-}
-
 Launchd::Domain LaunchdDomain(UpdaterScope scope) {
   switch (scope) {
     case UpdaterScope::kSystem:
@@ -98,12 +84,32 @@ NSString* NSStringSessionType(UpdaterScope scope) {
 }
 
 #pragma mark Setup
-bool CopyBundle(const base::FilePath& dest_path) {
+bool CopyBundle(const base::FilePath& dest_path, UpdaterScope scope) {
   if (!base::PathExists(dest_path)) {
     base::File::Error error;
     if (!base::CreateDirectoryAndGetError(dest_path, &error)) {
       LOG(ERROR) << "Failed to create '" << dest_path.value().c_str()
                  << "' directory: " << base::File::ErrorToString(error);
+      return false;
+    }
+  }
+
+  // For system installs, set file permissions to be drwxr-xr-x
+  if (scope == UpdaterScope::kSystem) {
+    constexpr int kPermissionsMask = base::FILE_PERMISSION_USER_MASK |
+                                     base::FILE_PERMISSION_READ_BY_GROUP |
+                                     base::FILE_PERMISSION_EXECUTE_BY_GROUP |
+                                     base::FILE_PERMISSION_READ_BY_OTHERS |
+                                     base::FILE_PERMISSION_EXECUTE_BY_OTHERS;
+    if (!base::SetPosixFilePermissions(
+            GetLibraryFolderPath(scope)->Append(COMPANY_SHORTNAME_STRING),
+            kPermissionsMask) ||
+        !base::SetPosixFilePermissions(*GetUpdaterFolderPath(scope),
+                                       kPermissionsMask) ||
+        !base::SetPosixFilePermissions(*GetVersionedUpdaterFolderPath(scope),
+                                       kPermissionsMask)) {
+      LOG(ERROR) << "Failed to set permissions to drwxr-xr-x at "
+                 << dest_path.value().c_str();
       return false;
     }
   }
@@ -353,17 +359,18 @@ int DoSetup(UpdaterScope scope) {
 
   if (!dest_path)
     return setup_exit_codes::kFailedToGetVersionedUpdaterFolderPath;
-  if (!CopyBundle(*dest_path))
+  if (!CopyBundle(*dest_path, scope))
     return setup_exit_codes::kFailedToCopyBundle;
 
   const base::FilePath updater_executable_path =
-      dest_path->Append(GetUpdaterAppName())
-          .Append(GetUpdaterAppExecutablePath());
+      dest_path->Append(GetExecutableRelativePath());
 
   // Quarantine attribute needs to be removed here as the copied bundle might be
   // given com.apple.quarantine attribute, and the server is attempted to be
   // launched below, Gatekeeper could prompt the user.
-  if (!RemoveQuarantineAttributes(*dest_path, updater_executable_path)) {
+  if (!RemoveQuarantineAttributes(
+          dest_path->Append(base::StrCat({PRODUCT_FULLNAME_STRING, ".app"})),
+          updater_executable_path)) {
     VLOG(1) << "Couldn't remove quarantine bits for updater. This will likely "
                "cause Gatekeeper to show a prompt to the user.";
   }
@@ -400,8 +407,7 @@ int PromoteCandidate(UpdaterScope scope) {
   if (!dest_path)
     return setup_exit_codes::kFailedToGetVersionedUpdaterFolderPath;
   const base::FilePath updater_executable_path =
-      dest_path->Append(GetUpdaterAppName())
-          .Append(GetUpdaterAppExecutablePath());
+      dest_path->Append(GetExecutableRelativePath());
 
   if (!CreateUpdateServiceLaunchdJobPlist(scope, updater_executable_path))
     return setup_exit_codes::kFailedToCreateUpdateServiceLaunchdJobPlist;
@@ -447,7 +453,7 @@ void UninstallOtherVersions(UpdaterScope scope) {
        version_folder_path != GetVersionedUpdaterFolderPath(scope);
        version_folder_path = file_enumerator.Next()) {
     const base::FilePath version_executable_path =
-        GetUpdaterExecutablePath(version_folder_path);
+        version_folder_path.Append(GetExecutableRelativePath());
 
     if (base::PathExists(version_executable_path)) {
       base::CommandLine command_line(version_executable_path);

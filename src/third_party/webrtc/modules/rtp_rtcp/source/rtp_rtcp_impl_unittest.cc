@@ -24,7 +24,6 @@
 #include "test/gmock.h"
 #include "test/gtest.h"
 #include "test/rtcp_packet_parser.h"
-#include "test/rtp_header_parser.h"
 
 using ::testing::ElementsAre;
 using ::testing::Eq;
@@ -567,6 +566,7 @@ TEST_F(RtpRtcpImplTest, StoresPacketInfoForSentPackets) {
   const uint32_t kStartTimestamp = 1u;
   SetUp();
   sender_.impl_->SetStartTimestamp(kStartTimestamp);
+  sender_.impl_->SetSequenceNumber(1);
 
   PacedPacketInfo pacing_info;
   RtpPacketToSend packet(nullptr);
@@ -575,7 +575,6 @@ TEST_F(RtpRtcpImplTest, StoresPacketInfoForSentPackets) {
 
   // Single-packet frame.
   packet.SetTimestamp(1);
-  packet.SetSequenceNumber(1);
   packet.set_first_packet_of_frame(true);
   packet.SetMarker(true);
   sender_.impl_->TrySendPacket(&packet, pacing_info);
@@ -590,16 +589,13 @@ TEST_F(RtpRtcpImplTest, StoresPacketInfoForSentPackets) {
 
   // Three-packet frame.
   packet.SetTimestamp(2);
-  packet.SetSequenceNumber(2);
   packet.set_first_packet_of_frame(true);
   packet.SetMarker(false);
   sender_.impl_->TrySendPacket(&packet, pacing_info);
 
-  packet.SetSequenceNumber(3);
   packet.set_first_packet_of_frame(false);
   sender_.impl_->TrySendPacket(&packet, pacing_info);
 
-  packet.SetSequenceNumber(4);
   packet.SetMarker(true);
   sender_.impl_->TrySendPacket(&packet, pacing_info);
 

@@ -9,8 +9,8 @@
 #define GrGLSLFragmentShaderBuilder_DEFINED
 
 #include "src/gpu/GrBlend.h"
+#include "src/gpu/GrFragmentProcessor.h"
 #include "src/gpu/GrProcessor.h"
-#include "src/gpu/glsl/GrGLSLFragmentProcessor.h"
 #include "src/gpu/glsl/GrGLSLShaderBuilder.h"
 
 class GrRenderTarget;
@@ -38,7 +38,8 @@ public:
         kInsideLoop = (1 << 2)
     };
 
-    SkString writeProcessorFunction(GrGLSLFragmentProcessor*, GrGLSLFragmentProcessor::EmitArgs&);
+    void writeProcessorFunction(GrFragmentProcessor::ProgramImpl*,
+                                GrFragmentProcessor::ProgramImpl::EmitArgs&);
 
     virtual void forceHighPrecision() = 0;
 

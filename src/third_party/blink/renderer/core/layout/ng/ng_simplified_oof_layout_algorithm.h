@@ -26,7 +26,8 @@ class CORE_EXPORT NGSimplifiedOOFLayoutAlgorithm
  public:
   NGSimplifiedOOFLayoutAlgorithm(const NGLayoutAlgorithmParams&,
                                  const NGPhysicalBoxFragment&,
-                                 bool is_new_fragment);
+                                 bool is_new_fragment,
+                                 bool should_break_for_oof = false);
 
   scoped_refptr<const NGLayoutResult> Layout() override;
   MinMaxSizesResult ComputeMinMaxSizes(
@@ -47,6 +48,7 @@ class CORE_EXPORT NGSimplifiedOOFLayoutAlgorithm
   base::span<const NGLink> children_;
   base::span<const NGLink>::iterator child_iterator_;
   const NGBlockBreakToken* incoming_break_token_;
+  const NGBlockBreakToken* old_fragment_break_token_;
   base::span<const NGBreakToken* const>::iterator break_token_iterator_;
 };
 

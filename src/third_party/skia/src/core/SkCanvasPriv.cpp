@@ -16,9 +16,8 @@
 
 SkAutoCanvasMatrixPaint::SkAutoCanvasMatrixPaint(SkCanvas* canvas, const SkMatrix* matrix,
                                                  const SkPaint* paint, const SkRect& bounds)
-: fCanvas(canvas)
-, fSaveCount(canvas->getSaveCount())
-{
+        : fCanvas(canvas)
+        , fSaveCount(canvas->getSaveCount()) {
     if (paint) {
         SkRect newBounds = bounds;
         if (matrix) {
@@ -118,3 +117,61 @@ bool SkCanvasPriv::ValidateMarker(const char* name) {
     }
     return true;
 }
+
+#if GR_TEST_UTILS
+
+#if SK_SUPPORT_GPU
+#include "src/gpu/BaseDevice.h"
+
+#if SK_GPU_V1
+skgpu::v1::SurfaceDrawContext* SkCanvasPriv::TopDeviceSurfaceDrawContext(SkCanvas* canvas) {
+    if (auto gpuDevice = canvas->topDevice()->asGpuDevice()) {
+        return gpuDevice->surfaceDrawContext();
+    }
+
+    return nullptr;
+}
+#endif // SK_GPU_V1
+
+skgpu::SurfaceFillContext* SkCanvasPriv::TopDeviceSurfaceFillContext(SkCanvas* canvas) {
+    if (auto gpuDevice = canvas->topDevice()->asGpuDevice()) {
+        return gpuDevice->surfaceFillContext();
+    }
+
+    return nullptr;
+}
+
+#else // SK_SUPPORT_GPU
+
+#if SK_GPU_V1
+skgpu::v1::SurfaceDrawContext* SkCanvasPriv::TopDeviceSurfaceDrawContext(SkCanvas* canvas) {
+    return nullptr;
+}
+#endif // SK_GPU_V1
+
+skgpu::SurfaceFillContext* SkCanvasPriv::TopDeviceSurfaceFillContext(SkCanvas* canvas) {
+    return nullptr;
+}
+
+#endif // SK_SUPPORT_GPU
+
+#endif // GR_TEST_UTILS
+
+#if SK_SUPPORT_GPU
+#include "src/gpu/BaseDevice.h"
+
+GrRenderTargetProxy* SkCanvasPriv::TopDeviceTargetProxy(SkCanvas* canvas) {
+    if (auto gpuDevice = canvas->topDevice()->asGpuDevice()) {
+        return gpuDevice->targetProxy();
+    }
+
+    return nullptr;
+}
+
+#else // SK_SUPPORT_GPU
+
+GrRenderTargetProxy* SkCanvasPriv::TopDeviceTargetProxy(SkCanvas* canvas) {
+    return nullptr;
+}
+
+#endif // SK_SUPPORT_GPU

@@ -37,21 +37,23 @@ class CPWL_Edit final : public CPWL_Wnd {
   CFX_FloatRect GetClientRect() const override;
   void DrawThisAppearance(CFX_RenderDevice* pDevice,
                           const CFX_Matrix& mtUser2Device) override;
-  bool OnMouseWheel(uint32_t nFlag,
+  bool OnMouseWheel(Mask<FWL_EVENTFLAG> nFlag,
                     const CFX_PointF& point,
                     const CFX_Vector& delta) override;
-  bool OnKeyDown(uint16_t nChar, uint32_t nFlag) override;
-  bool OnChar(uint16_t nChar, uint32_t nFlag) override;
+  bool OnKeyDown(FWL_VKEYCODE nChar, Mask<FWL_EVENTFLAG> nFlag) override;
+  bool OnChar(uint16_t nChar, Mask<FWL_EVENTFLAG> nFlag) override;
   CFX_FloatRect GetFocusRect() const override;
   void OnSetFocus() override;
   void OnKillFocus() override;
   void OnCreated() override;
   void OnDestroy() override;
-  bool OnLButtonDown(uint32_t nFlag, const CFX_PointF& point) override;
-  bool OnLButtonUp(uint32_t nFlag, const CFX_PointF& point) override;
-  bool OnLButtonDblClk(uint32_t nFlag, const CFX_PointF& point) override;
-  bool OnRButtonUp(uint32_t nFlag, const CFX_PointF& point) override;
-  bool OnMouseMove(uint32_t nFlag, const CFX_PointF& point) override;
+  bool OnLButtonDown(Mask<FWL_EVENTFLAG> nFlag,
+                     const CFX_PointF& point) override;
+  bool OnLButtonUp(Mask<FWL_EVENTFLAG> nFlag, const CFX_PointF& point) override;
+  bool OnLButtonDblClk(Mask<FWL_EVENTFLAG> nFlag,
+                       const CFX_PointF& point) override;
+  bool OnRButtonUp(Mask<FWL_EVENTFLAG> nFlag, const CFX_PointF& point) override;
+  bool OnMouseMove(Mask<FWL_EVENTFLAG> nFlag, const CFX_PointF& point) override;
   void SetScrollInfo(const PWL_SCROLL_INFO& info) override;
   void SetScrollPosition(float pos) override;
   void ScrollWindowVertically(float pos) override;
@@ -75,8 +77,8 @@ class CPWL_Edit final : public CPWL_Wnd {
   CFX_PointF GetScrollPos() const;
   void SetScrollPos(const CFX_PointF& point);
 
-  void SetCharSet(uint8_t nCharSet) { m_nCharSet = nCharSet; }
-  uint8_t GetCharSet() const { return m_nCharSet; }
+  void SetCharSet(FX_Charset nCharSet) { m_nCharSet = nCharSet; }
+  FX_Charset GetCharSet() const { return m_nCharSet; }
 
   void SetReadyToInput();
   void SetAlignFormatVerticalCenter();
@@ -107,14 +109,15 @@ class CPWL_Edit final : public CPWL_Wnd {
   // In case of implementation swallow the OnKeyDown event. If the event is
   // swallowed, implementation may do other unexpected things, which is not the
   // control means to do.
-  static bool IsProceedtoOnChar(uint16_t nKeyCode, uint32_t nFlag);
+  static bool IsProceedtoOnChar(FWL_VKEYCODE nKeyCode,
+                                Mask<FWL_EVENTFLAG> nFlag);
 
-  bool OnKeyDownInternal(uint16_t nChar, uint32_t nFlag);
-  bool OnCharInternal(uint16_t nChar, uint32_t nFlag);
+  bool OnKeyDownInternal(FWL_VKEYCODE nKeyCode, Mask<FWL_EVENTFLAG> nFlag);
+  bool OnCharInternal(uint16_t nChar, Mask<FWL_EVENTFLAG> nFlag);
 
   void CopyText();
   void PasteText();
-  void InsertWord(uint16_t word, int32_t nCharset);
+  void InsertWord(uint16_t word, FX_Charset nCharset);
   void InsertReturn();
   bool IsWndHorV() const;
   void Delete();
@@ -130,7 +133,7 @@ class CPWL_Edit final : public CPWL_Wnd {
 
   bool m_bMouseDown = false;
   bool m_bFocus = false;
-  uint8_t m_nCharSet = FX_CHARSET_Default;
+  FX_Charset m_nCharSet = FX_Charset::kDefault;
   CFX_FloatRect m_rcOldWindow;
   std::unique_ptr<CPWL_EditImpl> const m_pEditImpl;
   UnownedPtr<CPWL_Caret> m_pCaret;

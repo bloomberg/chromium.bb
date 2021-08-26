@@ -21,12 +21,10 @@ namespace {
 class MockWebGPUInterface : public gpu::webgpu::WebGPUInterfaceStub {
  public:
   MockWebGPUInterface() {
-    procs_ = {};
-
     // WebGPU functions the tests will call. No-op them since we don't have a
     // real WebGPU device.
-    procs_.deviceReference = [](WGPUDevice) {};
-    procs_.deviceRelease = [](WGPUDevice) {};
+    procs()->deviceReference = [](WGPUDevice) {};
+    procs()->deviceRelease = [](WGPUDevice) {};
   }
 
   MOCK_METHOD1(ReserveTexture, gpu::webgpu::ReservedTexture(WGPUDevice device));
@@ -51,26 +49,28 @@ class MockWebGPUInterface : public gpu::webgpu::WebGPUInterfaceStub {
     memcpy(&most_recent_waited_token, sync_token_data, sizeof(gpu::SyncToken));
   }
 
-  const DawnProcTable& GetProcs() const override { return procs_; }
-
   gpu::SyncToken most_recent_generated_token;
   gpu::SyncToken most_recent_waited_token;
 
  private:
-  DawnProcTable procs_;
   uint64_t token_id_ = 42;
 };
 
 class FakeProviderClient : public WebGPUSwapBufferProvider::Client {
  public:
-  void OnTextureTransferred() override {}
+  void OnTextureTransferred() override {
+    DCHECK(texture);
+    texture = nullptr;
+  }
+
+  WGPUTexture texture;
 };
 
 class WebGPUSwapBufferProviderForTests : public WebGPUSwapBufferProvider {
  public:
   WebGPUSwapBufferProviderForTests(
       bool* alive,
-      Client* client,
+      FakeProviderClient* client,
       WGPUDevice device,
       scoped_refptr<DawnControlClientHolder> dawn_control_client,
       WGPUTextureUsage usage,
@@ -80,11 +80,18 @@ class WebGPUSwapBufferProviderForTests : public WebGPUSwapBufferProvider {
                                  device,
                                  usage,
                                  format),
-        alive_(alive) {}
+        alive_(alive),
+        client_(client) {}
   ~WebGPUSwapBufferProviderForTests() override { *alive_ = false; }
+
+  WGPUTexture GetNewTexture(const IntSize& size) {
+    client_->texture = WebGPUSwapBufferProvider::GetNewTexture(size);
+    return client_->texture;
+  }
 
  private:
   bool* alive_;
+  FakeProviderClient* client_;
 };
 
 }  // anonymous namespace
@@ -367,6 +374,30 @@ TEST_F(WebGPUSwapBufferProviderTest, ReuseSwapBufferResize) {
 
   EXPECT_TRUE(provider_->PrepareTransferableResource(nullptr, &resource,
                                                      &release_callback_4));
+}
+
+// Regression test for crbug.com/1236418 where calling
+// PrepareTransferableResource twice after the context is destroyed would hit a
+// DCHECK.
+TEST_F(WebGPUSwapBufferProviderTest,
+       PrepareTransferableResourceTwiceAfterDestroy) {
+  viz::TransferableResource resource;
+  gpu::webgpu::ReservedTexture reservation = {
+      reinterpret_cast<WGPUTexture>(&resource), 1, 1};
+
+  EXPECT_CALL(*webgpu_, ReserveTexture(fake_device_))
+      .WillOnce(Return(reservation));
+  provider_->GetNewTexture(IntSize(10, 10));
+
+  dawn_control_client_->Destroy();
+
+  viz::ReleaseCallback release_callback_1;
+  EXPECT_FALSE(provider_->PrepareTransferableResource(nullptr, &resource,
+                                                      &release_callback_1));
+
+  viz::ReleaseCallback release_callback_2;
+  EXPECT_FALSE(provider_->PrepareTransferableResource(nullptr, &resource,
+                                                      &release_callback_2));
 }
 
 }  // namespace blink

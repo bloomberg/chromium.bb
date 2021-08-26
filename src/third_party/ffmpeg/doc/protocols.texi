@@ -215,6 +215,38 @@ ffplay concat:split1.mpeg\|split2.mpeg\|split3.mpeg
 Note that you may need to escape the character "|" which is special for
 many shells.
 
+@section concatf
+
+Physical concatenation protocol using a line break delimited list of
+resources.
+
+Read and seek from many resources in sequence as if they were
+a unique resource.
+
+A URL accepted by this protocol has the syntax:
+@example
+concatf:@var{URL}
+@end example
+
+where @var{URL} is the url containing a line break delimited list of
+resources to be concatenated, each one possibly specifying a distinct
+protocol. Special characters must be escaped with backslash or single
+quotes. See @ref{quoting_and_escaping,,the "Quoting and escaping"
+section in the ffmpeg-utils(1) manual,ffmpeg-utils}.
+
+For example to read a sequence of files @file{split1.mpeg},
+@file{split2.mpeg}, @file{split3.mpeg} listed in separate lines within
+a file @file{split.txt} with @command{ffplay} use the command:
+@example
+ffplay concatf:split.txt
+@end example
+Where @file{split.txt} contains the lines:
+@example
+split1.mpeg
+split2.mpeg
+split3.mpeg
+@end example
+
 @section crypto
 
 AES-encrypted stream reading protocol.
@@ -842,6 +874,11 @@ URL to player swf file, compute hash/size automatically.
 
 @item rtmp_tcurl
 URL of the target stream. Defaults to proto://host[:port]/app.
+
+@item tcp_nodelay=@var{1|0}
+Set TCP_NODELAY to disable Nagle's algorithm. Default value is 0.
+
+@emph{Remark: Writing to the socket is currently not optimized to minimize system calls and reduces the efficiency / effect of TCP_NODELAY.}
 
 @end table
 
@@ -1558,6 +1595,9 @@ This option doesn’t make sense in Rendezvous connection; the result
 might be that simply one side will override the value from the other
 side and it’s the matter of luck which one would win
 
+@item srt_streamid=@var{string}
+Alias for @samp{streamid} to avoid conflict with ffmpeg command line option.
+
 @item smoother=@var{live|file}
 The type of Smoother used for the transmission for that socket, which
 is responsible for the transmission and congestion control. The Smoother
@@ -1606,6 +1646,11 @@ The number of seconds that the socket waits for unsent data when closing.
 Default is -1. -1 means auto (off with 0 seconds in live mode, on with 180
 seconds in file mode). The range for this option is integers in the
 0 - @code{INT_MAX}.
+
+@item tsbpd=@var{1|0}
+When true, use Timestamp-based Packet Delivery mode. The default behavior
+depends on the transmission type: enabled in live mode, disabled in file
+mode.
 
 @end table
 
@@ -1714,6 +1759,8 @@ Set send buffer size, expressed bytes.
 
 @item tcp_nodelay=@var{1|0}
 Set TCP_NODELAY to disable Nagle's algorithm. Default value is 0.
+
+@emph{Remark: Writing to the socket is currently not optimized to minimize system calls and reduces the efficiency / effect of TCP_NODELAY.}
 
 @item tcp_mss=@var{bytes}
 Set maximum segment size for outgoing TCP packets, expressed in bytes.

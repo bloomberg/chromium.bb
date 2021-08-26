@@ -7,7 +7,7 @@
  * 'site-list' shows a list of Allowed and Blocked sites for a given
  * category.
  */
-import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.m.js';
+import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/policy/cr_policy_pref_indicator.m.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
@@ -20,6 +20,7 @@ import './add_site_dialog.js';
 import './edit_exception_dialog.js';
 import './site_list_entry.js';
 
+import {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
 import {ListPropertyUpdateBehavior, ListPropertyUpdateBehaviorInterface} from 'chrome://resources/js/list_property_update_behavior.m.js';

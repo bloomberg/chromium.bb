@@ -15,6 +15,7 @@ const char kAuthServiceWithToken[] = "authServiceWithToken";
 const char kLocalJid[] = "localJid";
 const char kDirectoryBotJidValue[] = "remoting@bot.talk.google.com";
 const char kSuppressUserDialogs[] = "suppressUserDialogs";
+const char kIsEnterpriseAdminUser[] = "isEnterpriseAdminUser";
 const char kSuppressNotifications[] = "suppressNotifications";
 const char kTerminateUponInput[] = "terminateUponInput";
 const char kUseElevatedHost[] = "useElevatedHost";
@@ -35,6 +36,7 @@ const char kHostStateConnected[] = "CONNECTED";
 const char kAccessCode[] = "accessCode";
 const char kAccessCodeLifetime[] = "accessCodeLifetime";
 const char kClient[] = "client";
+const char kDisconnectReason[] = "disconnectReason";
 
 const char kDisconnectMessage[] = "disconnect";
 const char kDisconnectResponse[] = "disconnectResponse";

@@ -38,8 +38,7 @@
 #include "ios/chrome/browser/widget_kit/features.h"
 #include "ios/chrome/common/app_group/app_group_metrics.h"
 #include "ios/chrome/common/app_group/app_group_metrics_mainapp.h"
-#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#include "ios/public/provider/chrome/browser/distribution/app_distribution_provider.h"
+#include "ios/public/provider/chrome/browser/app_distribution/app_distribution_api.h"
 #include "ios/web/public/thread/web_task_traits.h"
 #include "ios/web/public/thread/web_thread.h"
 #import "ios/web/public/web_state.h"
@@ -105,6 +104,10 @@ void RecordWidgetUsage() {
         @"IOS.CredentialExtension.FetchPasswordFailure",
     app_group::kCredentialExtensionFetchPasswordNilArgumentCount :
         @"IOS.CredentialExtension.FetchPasswordNilArgument",
+    app_group::kCredentialExtensionKeychainSavePasswordFailureCount :
+        @"IOS.CredentialExtension.KeychainSavePasswordFailureCount",
+    app_group::kCredentialExtensionSaveCredentialFailureCount :
+        @"IOS.CredentialExtension.SaveCredentialFailureCount",
   };
 
   NSUserDefaults* shared_defaults = app_group::GetGroupUserDefaults();
@@ -348,9 +351,7 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
   if (enabled) {
     PrefService* prefs = GetApplicationContext()->GetLocalState();
     NSString* brandCode =
-        base::SysUTF8ToNSString(ios::GetChromeBrowserProvider()
-                                    .GetAppDistributionProvider()
-                                    ->GetDistributionBrandCode());
+        base::SysUTF8ToNSString(ios::provider::GetBrandCode());
 
     app_group::main_app::EnableMetrics(
         base::SysUTF8ToNSString(

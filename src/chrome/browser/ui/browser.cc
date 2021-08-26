@@ -109,13 +109,13 @@
 #include "chrome/browser/ui/browser_location_bar_model_delegate.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
+#include "chrome/browser/ui/browser_tab_menu_model_delegate.h"
 #include "chrome/browser/ui/browser_tab_strip_model_delegate.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_ui_prefs.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
-#include "chrome/browser/ui/color_chooser.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/exclusive_access/mouse_lock_controller.h"
@@ -380,6 +380,9 @@ Browser::CreateParams::CreateParams(Type type,
 
 Browser::CreateParams::CreateParams(const CreateParams& other) = default;
 
+Browser::CreateParams& Browser::CreateParams::operator=(
+    const CreateParams& other) = default;
+
 // static
 Browser::CreateParams Browser::CreateParams::CreateForAppBase(
     bool is_popup,
@@ -467,10 +470,13 @@ Browser::Browser(const CreateParams& params)
       tab_strip_model_(
           std::make_unique<TabStripModel>(tab_strip_model_delegate_.get(),
                                           params.profile)),
+      tab_menu_model_delegate_(
+          std::make_unique<chrome::BrowserTabMenuModelDelegate>(this)),
       app_name_(params.app_name),
       is_trusted_source_(params.trusted_source),
       session_id_(SessionID::NewUnique()),
       omit_from_session_restore_(params.omit_from_session_restore),
+      should_trigger_session_restore_(params.should_trigger_session_restore),
       cancel_download_confirmation_state_(NOT_PROMPTED),
       override_bounds_(params.initial_bounds),
       initial_show_state_(params.initial_show_state),
@@ -1074,10 +1080,6 @@ void Browser::OpenFile() {
 void Browser::UpdateDownloadShelfVisibility(bool visible) {
   if (GetStatusBubble())
     GetStatusBubble()->UpdateDownloadShelfVisibility(visible);
-}
-
-bool Browser::CanReloadContents(content::WebContents* web_contents) const {
-  return chrome::CanReload(this);
 }
 
 bool Browser::CanSaveContents(content::WebContents* web_contents) const {
@@ -1933,11 +1935,11 @@ void Browser::RendererResponsive(
       render_widget_host);
 }
 
-void Browser::DidNavigateMainFramePostCommit(WebContents* web_contents) {
+void Browser::DidNavigatePrimaryMainFramePostCommit(WebContents* web_contents) {
   if (web_contents == tab_strip_model_->GetActiveWebContents())
     UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_STATE);
 
-  CALL_CEF_DELEGATE(DidNavigateMainFramePostCommit, web_contents);
+  CALL_CEF_DELEGATE(DidNavigatePrimaryMainFramePostCommit, web_contents);
 }
 
 content::JavaScriptDialogManager* Browser::GetJavaScriptDialogManager(
@@ -1949,13 +1951,6 @@ bool Browser::GuestSaveFrame(content::WebContents* guest_web_contents) {
   auto* guest_view =
       extensions::MimeHandlerViewGuest::FromWebContents(guest_web_contents);
   return guest_view && guest_view->PluginDoSave();
-}
-
-std::unique_ptr<content::ColorChooser> Browser::OpenColorChooser(
-    WebContents* web_contents,
-    SkColor initial_color,
-    const std::vector<blink::mojom::ColorSuggestionPtr>& suggestions) {
-  return chrome::ShowColorChooser(web_contents, initial_color);
 }
 
 std::unique_ptr<content::EyeDropper> Browser::OpenEyeDropper(
@@ -2923,8 +2918,7 @@ bool Browser::AppPopupBrowserSupportsWindowFeature(
     case FEATURE_TITLEBAR:
       return check_can_support || !fullscreen;
     case FEATURE_LOCATIONBAR:
-      return app_controller_ && app_controller_->HasAppId() &&
-             (check_can_support || !fullscreen);
+      return app_controller_ && (check_can_support || !fullscreen);
     default:
       return PopupBrowserSupportsWindowFeature(feature, check_can_support);
   }

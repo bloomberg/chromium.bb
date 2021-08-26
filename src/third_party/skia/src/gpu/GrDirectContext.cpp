@@ -12,6 +12,7 @@
 #include "include/gpu/GrContextThreadSafeProxy.h"
 #include "src/core/SkAutoMalloc.h"
 #include "src/core/SkTaskGroup.h"
+#include "src/core/SkTraceEvent.h"
 #include "src/gpu/GrBackendUtils.h"
 #include "src/gpu/GrClientMappedBufferManager.h"
 #include "src/gpu/GrContextThreadSafeProxyPriv.h"
@@ -20,7 +21,7 @@
 #include "src/gpu/GrGpu.h"
 #include "src/gpu/GrResourceProvider.h"
 #include "src/gpu/GrShaderUtils.h"
-#include "src/gpu/GrSurfaceContext.h"
+#include "src/gpu/SurfaceContext.h"
 #include "src/gpu/effects/GrSkSLFP.h"
 #include "src/gpu/gl/GrGLGpu.h"
 #include "src/gpu/mock/GrMockGpu.h"
@@ -233,10 +234,6 @@ bool GrDirectContext::init() {
     }
 
     fPersistentCache = this->options().fPersistentCache;
-    fShaderErrorHandler = this->options().fShaderErrorHandler;
-    if (!fShaderErrorHandler) {
-        fShaderErrorHandler = GrShaderUtils::DefaultShaderErrorHandler();
-    }
 
     GrDrawOpAtlas::AllowMultitexturing allowMultitexturing;
     if (GrContextOptions::Enable::kNo == this->options().fAllowMultipleGlyphCacheTextures ||
@@ -527,7 +524,7 @@ static bool update_texture_with_pixmaps(GrDirectContext* context,
 
     GrSwizzle swizzle = context->priv().caps()->getReadSwizzle(format, ct);
     GrSurfaceProxyView view(std::move(proxy), textureOrigin, swizzle);
-    GrSurfaceContext surfaceContext(context, std::move(view), src[0].info().colorInfo());
+    skgpu::SurfaceContext surfaceContext(context, std::move(view), src[0].info().colorInfo());
     SkAutoSTArray<15, GrCPixmap> tmpSrc(numLevels);
     for (int i = 0; i < numLevels; ++i) {
         tmpSrc[i] = src[i];

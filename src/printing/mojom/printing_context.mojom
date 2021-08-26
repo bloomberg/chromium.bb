@@ -1,0 +1,42 @@
+// Copyright 2021 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module printing.mojom;
+
+import "ui/gfx/geometry/mojom/geometry.mojom";
+
+// Corresponds to `printing::PageMargins` in printing/page_setup.h.
+struct PageMargins {
+  int32 header;
+  int32 footer;
+  int32 left;
+  int32 right;
+  int32 top;
+  int32 bottom;
+};
+
+// Corresponds to `printing::PageSetup` in printing/page_setup.h.
+struct PageSetup {
+  gfx.mojom.Size physical_size;
+  gfx.mojom.Rect printable_area;
+  gfx.mojom.Rect overlay_area;
+  gfx.mojom.Rect content_area;
+  PageMargins effective_margins;
+  PageMargins requested_margins;
+  bool forced_margins;
+  int32 text_height;
+};
+
+// Corresponds to `printing::PageRange` in printing/page_range.h.
+struct PageRange {
+  uint32 from;
+  uint32 to;
+};
+
+// Corresponds to `printing::PrintSettings::RequestedMedia` in
+// printing/print_settings.h.
+struct RequestedMedia {
+  gfx.mojom.Size size_microns;
+  string vendor_id;
+};

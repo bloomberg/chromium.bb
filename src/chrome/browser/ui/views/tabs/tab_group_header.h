@@ -46,6 +46,7 @@ class TabGroupHeader : public TabSlotView,
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   TabSlotView::ViewType GetTabSlotViewType() const override;
   TabSizeInfo GetTabSizeInfo() const override;
+  std::u16string GetTooltipText(const gfx::Point& p) const override;
 
   // views::ContextMenuController:
   void ShowContextMenuForViewImpl(views::View* source,

@@ -18,8 +18,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
-#include "third_party/blink/renderer/core/layout/layout_object.h"
-#include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/graphics/color_space_gamut.h"
@@ -53,6 +51,22 @@ mojom::blink::PreferredColorScheme CSSValueIDToPreferredColorScheme(
     default:
       NOTREACHED();
       return mojom::blink::PreferredColorScheme::kLight;
+  }
+}
+
+mojom::blink::PreferredContrast CSSValueIDToPreferredContrast(CSSValueID id) {
+  switch (id) {
+    case CSSValueID::kMore:
+      return mojom::blink::PreferredContrast::kMore;
+    case CSSValueID::kLess:
+      return mojom::blink::PreferredContrast::kLess;
+    case CSSValueID::kNoPreference:
+      return mojom::blink::PreferredContrast::kNoPreference;
+    case CSSValueID::kCustom:
+      return mojom::blink::PreferredContrast::kCustom;
+    default:
+      NOTREACHED();
+      return mojom::blink::PreferredContrast::kNoPreference;
   }
 }
 
@@ -108,6 +122,15 @@ bool MediaValues::CalculateStrictMode(LocalFrame* frame) {
 
 float MediaValues::CalculateDevicePixelRatio(LocalFrame* frame) {
   return frame->DevicePixelRatio();
+}
+
+bool MediaValues::CalculateDeviceSupportsHDR(LocalFrame* frame) {
+  DCHECK(frame);
+  DCHECK(frame->GetPage());
+  return frame->GetPage()
+      ->GetChromeClient()
+      .GetScreenInfo(*frame)
+      .display_color_spaces.SupportsHDR();
 }
 
 int MediaValues::CalculateColorBitsPerComponent(LocalFrame* frame) {
@@ -230,6 +253,12 @@ mojom::blink::PreferredContrast MediaValues::CalculatePreferredContrast(
     LocalFrame* frame) {
   DCHECK(frame);
   DCHECK(frame->GetSettings());
+  DCHECK(frame->GetPage());
+  if (const auto* overrides = frame->GetPage()->GetMediaFeatureOverrides()) {
+    MediaQueryExpValue value = overrides->GetOverride("prefers-contrast");
+    if (value.IsValid())
+      return CSSValueIDToPreferredContrast(value.id);
+  }
   return frame->GetSettings()->GetPreferredContrast();
 }
 
@@ -299,9 +328,9 @@ ScreenSpanning MediaValues::CalculateScreenSpanning(LocalFrame* frame) {
   return ScreenSpanning::kNone;
 }
 
-DevicePosture MediaValues::CalculateDevicePosture(LocalFrame* frame) {
-  // TODO(darktears): Retrieve information from the host.
-  return DevicePosture::kNoFold;
+device::mojom::blink::DevicePostureType MediaValues::CalculateDevicePosture(
+    LocalFrame* frame) {
+  return frame->GetDevicePosture();
 }
 
 bool MediaValues::ComputeLengthImpl(double value,

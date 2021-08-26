@@ -44,6 +44,10 @@
 #include "components/favicon_base/favicon_util.h"
 #include "components/sync/base/unique_position.h"
 #include "components/sync/driver/sync_service_impl.h"
+#include "components/sync/protocol/bookmark_specifics.pb.h"
+#include "components/sync/protocol/entity_specifics.pb.h"
+#include "components/sync/protocol/sync_entity.pb.h"
+#include "components/sync/protocol/unique_position.pb.h"
 #include "components/sync/test/fake_server/entity_builder_factory.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -1305,7 +1309,9 @@ bool BookmarkModelMatchesFakeServerChecker::IsExitConditionSatisfied(
       return false;
     }
 
-    if (node->is_folder() != server_entity.folder()) {
+    if (node->is_folder() != server_entity.folder() ||
+        node->is_folder() != (server_entity.specifics().bookmark().type() ==
+                              sync_pb::BookmarkSpecifics::FOLDER)) {
       *os << " Node type mismatch for node: " << node->GetTitle();
       return false;
     }
@@ -1372,6 +1378,12 @@ bool BookmarkModelMatchesFakeServerChecker::CheckParentNode(
   const sync_pb::SyncEntity& server_entity = iter->second;
 
   const BookmarkNode* parent_node = node->parent();
+  if (server_entity.specifics().bookmark().parent_guid() !=
+      parent_node->guid().AsLowercaseString()) {
+    *os << " Parent node's GUID in specifics does not match";
+    return false;
+  }
+
   if (parent_node->is_permanent_node()) {
     return CheckPermanentParentNode(node, server_entity, os);
   }

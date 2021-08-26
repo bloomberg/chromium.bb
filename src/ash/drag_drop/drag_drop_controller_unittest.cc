@@ -729,7 +729,7 @@ TEST_F(DragDropControllerTest, DragLeavesClipboardAloneTest) {
     ui::ScopedClipboardWriter scw(ui::ClipboardBuffer::kCopyPaste);
     scw.WriteText(base::ASCIIToUTF16(clip_str));
   }
-  EXPECT_TRUE(cb->IsFormatAvailable(ui::ClipboardFormatType::GetPlainTextType(),
+  EXPECT_TRUE(cb->IsFormatAvailable(ui::ClipboardFormatType::PlainTextType(),
                                     ui::ClipboardBuffer::kCopyPaste,
                                     /* data_dst = */ nullptr));
 
@@ -747,7 +747,7 @@ TEST_F(DragDropControllerTest, DragLeavesClipboardAloneTest) {
 
   // Verify the clipboard contents haven't changed
   std::string result;
-  EXPECT_TRUE(cb->IsFormatAvailable(ui::ClipboardFormatType::GetPlainTextType(),
+  EXPECT_TRUE(cb->IsFormatAvailable(ui::ClipboardFormatType::PlainTextType(),
                                     ui::ClipboardBuffer::kCopyPaste,
                                     /* data_dst = */ nullptr));
   cb->ReadAsciiText(ui::ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr,
@@ -1503,6 +1503,71 @@ TEST_F(DragDropControllerTest, ToplevelWindowDragDelegate) {
   }
 }
 
+TEST_F(DragDropControllerTest, ToplevelWindowDragDelegateWithTouch) {
+  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithDelegate(
+      aura::test::TestWindowDelegate::CreateSelfDestroyingDelegate(), -1,
+      gfx::Rect(0, 0, 100, 100)));
+
+  // Emulate a full drag and drop flow and verify that toplevel window drag
+  // delegate gets notified about the events as expected.
+  TestToplevelWindowDragDelegate delegate;
+  drag_drop_controller_->set_toplevel_window_drag_delegate(&delegate);
+
+  auto data(std::make_unique<ui::OSExchangeData>());
+  drag_drop_controller_->StartDragAndDrop(
+      std::move(data), window->GetRootWindow(), window.get(), gfx::Point(5, 5),
+      ui::DragDropTypes::DRAG_MOVE, ui::mojom::DragEventSource::kTouch);
+
+  EXPECT_EQ(TestToplevelWindowDragDelegate::State::kDragStartedInvoked,
+            delegate.state());
+  EXPECT_EQ(ui::mojom::DragEventSource::kTouch, delegate.source());
+  EXPECT_TRUE(delegate.current_location().has_value());
+  EXPECT_EQ(gfx::PointF(5, 5), *delegate.current_location());
+  EXPECT_EQ(0, delegate.events_forwarded());
+}
+
+TEST_F(DragDropControllerTest, ToplevelWindowDragDelegateWithTouch2) {
+  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithDelegate(
+      aura::test::TestWindowDelegate::CreateSelfDestroyingDelegate(), -1,
+      gfx::Rect(0, 0, 100, 100)));
+
+  // Emulate a full drag and drop flow with touch and verify that toplevel
+  // window drag delegate gets notified about the events as expected.
+  TestToplevelWindowDragDelegate delegate;
+  drag_drop_controller_->set_toplevel_window_drag_delegate(&delegate);
+
+  ui::test::EventGenerator generator(window->GetRootWindow(), window.get());
+  generator.PressTouch();
+  auto point = gfx::Point(5, 5);
+
+  auto data(std::make_unique<ui::OSExchangeData>());
+  drag_drop_controller_->StartDragAndDrop(
+      std::move(data), window->GetRootWindow(), window.get(), point,
+      ui::DragDropTypes::DRAG_MOVE, ui::mojom::DragEventSource::kTouch);
+
+  EXPECT_EQ(TestToplevelWindowDragDelegate::State::kDragStartedInvoked,
+            delegate.state());
+  EXPECT_EQ(ui::mojom::DragEventSource::kTouch, delegate.source());
+  EXPECT_TRUE(delegate.current_location().has_value());
+  EXPECT_EQ(gfx::PointF(point), *delegate.current_location());
+  EXPECT_EQ(0, delegate.events_forwarded());
+
+  gfx::Point gesture_location = point;
+  int num_drags = 5;
+  for (int i = 0; i < num_drags; ++i) {
+    gesture_location.Offset(1, 1);
+    DispatchGesture(ui::ET_GESTURE_SCROLL_UPDATE, gesture_location);
+    EXPECT_EQ(i + 1, delegate.events_forwarded());
+  }
+
+  DispatchGesture(ui::ET_GESTURE_SCROLL_END, gesture_location);
+  EXPECT_EQ(TestToplevelWindowDragDelegate::State::kDragDroppedInvoked,
+            delegate.state());
+  EXPECT_TRUE(delegate.current_location().has_value());
+  EXPECT_EQ(gfx::PointF(10, 10), *delegate.current_location());
+  EXPECT_EQ(6, delegate.events_forwarded());
+}
+
 namespace {
 
 class MockDataTransferPolicyController
@@ -1516,7 +1581,7 @@ class MockDataTransferPolicyController
                void((const ui::DataTransferEndpoint* const data_src,
                      const ui::DataTransferEndpoint* const data_dst,
                      const absl::optional<size_t> size,
-                     content::WebContents* web_contents,
+                     content::RenderFrameHost* rfh,
                      base::OnceCallback<void(bool)> callback)));
   MOCK_METHOD3(IsDragDropAllowed,
                bool(const ui::DataTransferEndpoint* const data_src,

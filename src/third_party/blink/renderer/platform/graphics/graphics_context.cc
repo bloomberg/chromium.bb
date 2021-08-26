@@ -320,7 +320,7 @@ void GraphicsContext::CompositeRecord(sk_sp<PaintRecord> record,
   flags.setBlendMode(op);
 
   SkSamplingOptions sampling(cc::PaintFlags::FilterQualityToSkSamplingOptions(
-      static_cast<SkFilterQuality>(ImageInterpolationQuality())));
+      static_cast<cc::PaintFlags::FilterQuality>(ImageInterpolationQuality())));
   canvas_->save();
   canvas_->concat(SkMatrix::RectToRect(src, dest));
   canvas_->drawImage(PaintImageBuilder::WithDefault()
@@ -332,107 +332,25 @@ void GraphicsContext::CompositeRecord(sk_sp<PaintRecord> record,
   canvas_->restore();
 }
 
-int GraphicsContext::FocusRingOutsetExtent(int offset, int width) {
-  // Unlike normal outlines (whole width is outside of the offset), focus
-  // rings can be drawn with the center of the path aligned with the offset, so
-  // only 2/3 of the width is outside of the offset.
-  return offset + std::ceil(width / 3.f) * 2;
-}
-
 void GraphicsContext::DrawFocusRingPath(const SkPath& path,
                                         const Color& color,
                                         float width,
-                                        float border_radius) {
+                                        float corner_radius) {
   DrawPlatformFocusRing(
       path, canvas_,
       DarkModeFilterHelper::ApplyToColorIfNeeded(
           this, color.Rgb(), DarkModeFilter::ElementRole::kBackground),
-      width, border_radius);
+      width, corner_radius);
 }
 
-void GraphicsContext::DrawFocusRingRect(const SkRect& rect,
+void GraphicsContext::DrawFocusRingRect(const SkRRect& rrect,
                                         const Color& color,
-                                        float width,
-                                        float border_radius) {
+                                        float width) {
   DrawPlatformFocusRing(
-      rect, canvas_,
+      rrect, canvas_,
       DarkModeFilterHelper::ApplyToColorIfNeeded(
           this, color.Rgb(), DarkModeFilter::ElementRole::kBackground),
-      width, border_radius);
-}
-
-void GraphicsContext::DrawFocusRing(const Path& focus_ring_path,
-                                    float width,
-                                    int offset,
-                                    const Color& color) {
-  // FIXME: Implement support for offset.
-  DrawFocusRingPath(focus_ring_path.GetSkPath(), color, /*width=*/width,
-                    /*radius=*/width);
-}
-
-void GraphicsContext::DrawFocusRingInternal(const Vector<IntRect>& rects,
-                                            float width,
-                                            int offset,
-                                            float border_radius,
-                                            const Color& color) {
-  unsigned rect_count = rects.size();
-  if (!rect_count)
-    return;
-
-  SkRegion focus_ring_region;
-  for (unsigned i = 0; i < rect_count; i++) {
-    SkIRect r = rects[i];
-    if (r.isEmpty())
-      continue;
-    r.outset(offset, offset);
-    focus_ring_region.op(r, SkRegion::kUnion_Op);
-  }
-
-  if (focus_ring_region.isEmpty())
-    return;
-
-  if (focus_ring_region.isRect()) {
-    DrawFocusRingRect(SkRect::Make(focus_ring_region.getBounds()), color, width,
-                      border_radius);
-  } else {
-    SkPath path;
-    if (focus_ring_region.getBoundaryPath(&path))
-      DrawFocusRingPath(path, color, width, border_radius);
-  }
-}
-
-void GraphicsContext::DrawFocusRing(const Vector<IntRect>& rects,
-                                    float width,
-                                    int offset,
-                                    float border_radius,
-                                    float min_border_width,
-                                    const Color& color,
-                                    mojom::blink::ColorScheme color_scheme) {
-#if defined(OS_MAC)
-  const Color& inner_color = color;
-#else
-  const Color& inner_color =
-      color_scheme == mojom::blink::ColorScheme::kDark ? SK_ColorWHITE : color;
-#endif
-  // The focus ring is made of two borders which have a 2:1 ratio.
-  const float first_border_width = (width / 3) * 2;
-  const float second_border_width = width - first_border_width;
-
-  // How much space the focus ring would like to take from the actual border.
-  const float inside_border_width = 1;
-  if (min_border_width >= inside_border_width) {
-    offset -= inside_border_width;
-  }
-  const Color& outer_color = color_scheme == mojom::blink::ColorScheme::kDark
-                                 ? SkColorSetRGB(0x10, 0x10, 0x10)
-                                 : SK_ColorWHITE;
-  // The outer ring is drawn first, and we overdraw to ensure no gaps or AA
-  // artifacts.
-  DrawFocusRingInternal(rects, first_border_width,
-                        offset + std::ceil(second_border_width), border_radius,
-                        outer_color);
-  DrawFocusRingInternal(rects, first_border_width, offset, border_radius,
-                        inner_color);
+      width);
 }
 
 static void EnforceDotsAtEndpoints(GraphicsContext& context,
@@ -801,11 +719,13 @@ void GraphicsContext::DrawImage(
     DarkModeFilterHelper::ApplyToImageIfNeeded(this, image, &image_flags, src,
                                                dest);
   }
-
-  image->Draw(canvas_, image_flags, dest, src,
-              ComputeSamplingOptions(image, dest, src),
-              should_respect_image_orientation, Image::kClampImageToSourceRect,
-              decode_mode);
+  ImageDrawOptions draw_options;
+  draw_options.sampling_options = ComputeSamplingOptions(image, dest, src);
+  draw_options.respect_image_orientation = should_respect_image_orientation;
+  draw_options.apply_dark_mode =
+      !has_disable_dark_mode_style && IsDarkModeEnabled();
+  image->Draw(canvas_, image_flags, dest, src, draw_options,
+              Image::kClampImageToSourceRect, decode_mode);
   paint_controller_.SetImagePainted();
 }
 
@@ -863,15 +783,18 @@ void GraphicsContext::DrawImageRRect(
     // Clip-based fallback.
     PaintCanvasAutoRestore auto_restore(canvas_, true);
     canvas_->clipRRect(dest, image_flags.isAntiAlias());
-    image->Draw(canvas_, image_flags, dest.Rect(), src_rect, sampling,
-                respect_orientation, Image::kClampImageToSourceRect,
-                decode_mode);
+    ImageDrawOptions draw_options;
+    draw_options.sampling_options = sampling;
+    draw_options.respect_image_orientation = respect_orientation;
+    draw_options.apply_dark_mode = IsDarkModeEnabled();
+    image->Draw(canvas_, image_flags, dest.Rect(), src_rect, draw_options,
+                Image::kClampImageToSourceRect, decode_mode);
   }
 
   paint_controller_.SetImagePainted();
 }
 
-SkFilterQuality GraphicsContext::ComputeFilterQuality(
+cc::PaintFlags::FilterQuality GraphicsContext::ComputeFilterQuality(
     Image* image,
     const FloatRect& dest,
     const FloatRect& src) const {
@@ -893,7 +816,7 @@ SkFilterQuality GraphicsContext::ComputeFilterQuality(
       resampling = kInterpolationLow;
     }
   }
-  return static_cast<SkFilterQuality>(
+  return static_cast<cc::PaintFlags::FilterQuality>(
       std::min(resampling, ImageInterpolationQuality()));
 }
 
@@ -915,8 +838,12 @@ void GraphicsContext::DrawImageTiled(
         this, image, &image_flags, tiling_info.image_rect, dest_rect);
   }
 
-  image->DrawPattern(*this, image_flags, dest_rect, tiling_info,
-                     respect_orientation);
+  ImageDrawOptions draw_options;
+  draw_options.sampling_options = ImageSamplingOptions();
+  draw_options.respect_image_orientation = respect_orientation;
+  draw_options.apply_dark_mode =
+      !has_disable_dark_mode_style && IsDarkModeEnabled();
+  image->DrawPattern(*this, image_flags, dest_rect, tiling_info, draw_options);
   paint_controller_.SetImagePainted();
 }
 

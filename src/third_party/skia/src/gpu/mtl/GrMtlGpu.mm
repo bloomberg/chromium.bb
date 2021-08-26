@@ -208,13 +208,30 @@ void GrMtlGpu::destroyResources() {
 }
 
 GrOpsRenderPass* GrMtlGpu::onGetOpsRenderPass(
-            GrRenderTarget* renderTarget, bool /*useMSAASurface*/, GrAttachment*,
+            GrRenderTarget* renderTarget, bool useMSAASurface, GrAttachment* stencil,
             GrSurfaceOrigin origin, const SkIRect& bounds,
             const GrOpsRenderPass::LoadAndStoreInfo& colorInfo,
             const GrOpsRenderPass::StencilLoadAndStoreInfo& stencilInfo,
             const SkTArray<GrSurfaceProxy*, true>& sampledProxies,
             GrXferBarrierFlags renderPassXferBarriers) {
-    return new GrMtlOpsRenderPass(this, renderTarget, origin, colorInfo, stencilInfo);
+    // For the given render target and requested render pass features we need to find a compatible
+    // framebuffer to use.
+    GrMtlRenderTarget* mtlRT = static_cast<GrMtlRenderTarget*>(renderTarget);
+
+    SkASSERT(!useMSAASurface ||
+             (renderTarget->numSamples() > 1));
+
+    // TODO: Make use of discardable MSAA
+    bool withResolve = false;
+
+    sk_sp<GrMtlFramebuffer> framebuffer =
+            sk_ref_sp(mtlRT->getFramebuffer(withResolve, SkToBool(stencil)));
+    if (!framebuffer) {
+        return nullptr;
+    }
+
+    return new GrMtlOpsRenderPass(this, renderTarget, std::move(framebuffer), origin, colorInfo,
+                                  stencilInfo);
 }
 
 GrMtlCommandBuffer* GrMtlGpu::commandBuffer() {
@@ -563,6 +580,19 @@ sk_sp<GrAttachment> GrMtlGpu::makeStencilAttachment(const GrBackendFormat& /*col
     return GrMtlAttachment::GrMtlAttachment::MakeStencil(this, dimensions, numStencilSamples, sFmt);
 }
 
+sk_sp<GrAttachment> GrMtlGpu::makeMSAAAttachment(SkISize dimensions,
+                                                 const GrBackendFormat& format,
+                                                 int numSamples,
+                                                 GrProtected /*isProtected*/) {
+    MTLPixelFormat pixelFormat = (MTLPixelFormat) format.asMtlFormat();
+    SkASSERT(pixelFormat != MTLPixelFormatInvalid);
+    SkASSERT(!GrMtlFormatIsCompressed(pixelFormat));
+    SkASSERT(this->mtlCaps().isFormatRenderable(pixelFormat, numSamples));
+
+    fStats.incMSAAAttachmentCreates();
+    return GrMtlAttachment::MakeMSAA(this, dimensions, numSamples, pixelFormat);
+}
+
 sk_sp<GrTexture> GrMtlGpu::onCreateTexture(SkISize dimensions,
                                            const GrBackendFormat& format,
                                            GrRenderable renderable,
@@ -820,6 +850,7 @@ bool GrMtlGpu::onRegenerateMipMapLevels(GrTexture* texture) {
     auto cmdBuffer = this->commandBuffer();
     id<MTLBlitCommandEncoder> GR_NORETAIN blitCmdEncoder = cmdBuffer->getBlitCommandEncoder();
     [blitCmdEncoder generateMipmapsForTexture: mtlTexture];
+    this->commandBuffer()->addGrSurface(sk_ref_sp<const GrSurface>(grMtlTexture->attachment()));
 
     return true;
 }
@@ -1207,16 +1238,16 @@ void GrMtlGpu::copySurfaceAsResolve(GrSurface* dst, GrSurface* src) {
     // TODO: Add support for subrectangles
     GrMtlRenderTarget* srcRT = static_cast<GrMtlRenderTarget*>(src->asRenderTarget());
     GrRenderTarget* dstRT = dst->asRenderTarget();
-    id<MTLTexture> dstTexture;
+    GrMtlAttachment* dstAttachment;
     if (dstRT) {
         GrMtlRenderTarget* mtlRT = static_cast<GrMtlRenderTarget*>(dstRT);
-        dstTexture = mtlRT->colorMTLTexture();
+        dstAttachment = mtlRT->colorAttachment();
     } else {
         SkASSERT(dst->asTexture());
-        dstTexture = static_cast<GrMtlTexture*>(dst->asTexture())->mtlTexture();
+        dstAttachment = static_cast<GrMtlTexture*>(dst->asTexture())->attachment();
     }
 
-    this->resolveTexture(dstTexture, srcRT->colorMTLTexture());
+    this->resolve(dstAttachment, srcRT->colorAttachment());
 }
 
 void GrMtlGpu::copySurfaceAsBlit(GrSurface* dst, GrSurface* src, const SkIRect& srcRect,
@@ -1244,6 +1275,8 @@ void GrMtlGpu::copySurfaceAsBlit(GrSurface* dst, GrSurface* src, const SkIRect& 
 #ifdef SK_ENABLE_MTL_DEBUG_INFO
     [blitCmdEncoder popDebugGroup];
 #endif
+    cmdBuffer->addGrSurface(sk_ref_sp<const GrSurface>(dst));
+    cmdBuffer->addGrSurface(sk_ref_sp<const GrSurface>(src));
 }
 
 bool GrMtlGpu::onCopySurface(GrSurface* dst, GrSurface* src, const SkIRect& srcRect,
@@ -1306,16 +1339,6 @@ bool GrMtlGpu::onReadPixels(GrSurface* surface,
     int bpp = GrColorTypeBytesPerPixel(dstColorType);
     size_t transBufferRowBytes = bpp*rect.width();
     size_t transBufferImageBytes = transBufferRowBytes*rect.height();
-
-    // TODO: implement some way of reusing buffers instead of making a new one every time.
-    NSUInteger options = 0;
-    if (@available(macOS 10.11, iOS 9.0, *)) {
-#ifdef SK_BUILD_FOR_MAC
-        options |= MTLResourceStorageModeManaged;
-#else
-        options |= MTLResourceStorageModeShared;
-#endif
-    }
 
     GrResourceProvider* resourceProvider = this->getContext()->priv().resourceProvider();
     sk_sp<GrGpuBuffer> transferBuffer = resourceProvider->createBuffer(
@@ -1387,7 +1410,7 @@ bool GrMtlGpu::onTransferPixelsTo(GrTexture* texture,
     [blitCmdEncoder pushDebugGroup:@"onTransferPixelsTo"];
 #endif
     [blitCmdEncoder copyFromBuffer: mtlBuffer
-                      sourceOffset: offset + grMtlBuffer->offset()
+                      sourceOffset: offset
                  sourceBytesPerRow: rowBytes
                sourceBytesPerImage: rowBytes*rect.height()
                         sourceSize: MTLSizeMake(rect.width(), rect.height(), 1)
@@ -1433,7 +1456,7 @@ bool GrMtlGpu::onTransferPixelsFrom(GrSurface* surface,
                                       rect,
                                       bufferColorType,
                                       grMtlBuffer->mtlBuffer(),
-                                      offset + grMtlBuffer->offset(),
+                                      offset,
                                       transBufferImageBytes,
                                       transBufferRowBytes);
 }
@@ -1549,15 +1572,16 @@ void GrMtlGpu::waitSemaphore(GrSemaphore* semaphore) {
 }
 
 void GrMtlGpu::onResolveRenderTarget(GrRenderTarget* target, const SkIRect&) {
-    this->resolveTexture(static_cast<GrMtlRenderTarget*>(target)->resolveMTLTexture(),
-                         static_cast<GrMtlRenderTarget*>(target)->colorMTLTexture());
+    this->resolve(static_cast<GrMtlRenderTarget*>(target)->resolveAttachment(),
+                  static_cast<GrMtlRenderTarget*>(target)->colorAttachment());
 }
 
-void GrMtlGpu::resolveTexture(id<MTLTexture> resolveTexture, id<MTLTexture> colorTexture) {
+void GrMtlGpu::resolve(GrMtlAttachment* resolveAttachment,
+                       GrMtlAttachment* msaaAttachment) {
     auto renderPassDesc = [[MTLRenderPassDescriptor alloc] init];
     auto colorAttachment = renderPassDesc.colorAttachments[0];
-    colorAttachment.texture = colorTexture;
-    colorAttachment.resolveTexture = resolveTexture;
+    colorAttachment.texture = msaaAttachment->mtlTexture();
+    colorAttachment.resolveTexture = resolveAttachment->mtlTexture();
     colorAttachment.loadAction = MTLLoadActionLoad;
     colorAttachment.storeAction = MTLStoreActionMultisampleResolve;
 
@@ -1565,6 +1589,8 @@ void GrMtlGpu::resolveTexture(id<MTLTexture> resolveTexture, id<MTLTexture> colo
             this->commandBuffer()->getRenderCommandEncoder(renderPassDesc, nullptr, nullptr);
     SkASSERT(nil != cmdEncoder);
     cmdEncoder->setLabel(@"resolveTexture");
+    this->commandBuffer()->addGrSurface(sk_ref_sp<const GrSurface>(resolveAttachment));
+    this->commandBuffer()->addGrSurface(sk_ref_sp<const GrSurface>(msaaAttachment));
 }
 
 #if GR_TEST_UTILS

@@ -13,15 +13,15 @@ UrlForwarderConfigurator::UrlForwarderConfigurator() = default;
 
 UrlForwarderConfigurator::~UrlForwarderConfigurator() = default;
 
-#if !defined(OS_LINUX)
+#if !defined(OS_LINUX) && !defined(OS_WIN)
 
 // static
-UrlForwarderConfigurator* UrlForwarderConfigurator::GetInstance() {
+std::unique_ptr<UrlForwarderConfigurator> UrlForwarderConfigurator::Create() {
   // Unsupported platforms.
   NOTREACHED();
   return nullptr;
 }
 
-#endif  // !defined(OS_LINUX)
+#endif  // !defined(OS_LINUX) && !defined(OS_WIN)
 
 }  // namespace remoting

@@ -390,8 +390,8 @@ rx::DisplayImpl *CreateDisplayFromAttribs(EGLAttrib displayType,
                 impl = rx::CreateVulkanXcbDisplay(state);
                 break;
             }
-            break;
-#        elif defined(ANGLE_USE_VULKAN_DISPLAY)
+#        endif
+#        if defined(ANGLE_USE_VULKAN_DISPLAY)
             if (platformType == EGL_PLATFORM_VULKAN_DISPLAY_MODE_SIMPLE_ANGLE &&
                 rx::IsVulkanSimpleDisplayAvailable())
             {
@@ -407,8 +407,8 @@ rx::DisplayImpl *CreateDisplayFromAttribs(EGLAttrib displayType,
                 // Not supported creation type on vulkan display, fail display creation.
                 impl = nullptr;
             }
-            break;
 #        endif
+            break;
 #    elif defined(ANGLE_PLATFORM_ANDROID)
             if (rx::IsVulkanAndroidDisplayAvailable())
             {
@@ -1756,7 +1756,6 @@ static ClientExtensions GenerateClientExtensions()
 
     extensions.clientGetAllProcAddresses = true;
     extensions.debug                     = true;
-    extensions.explicitContext           = true;
     extensions.featureControlANGLE       = true;
     extensions.deviceQueryEXT            = true;
 
@@ -1820,6 +1819,10 @@ void Display::initDisplayExtensions()
 
     // All backends support specific context versions
     mDisplayExtensions.createContextBackwardsCompatible = true;
+
+    // Note: we don't notify the back-end of a change to the renderbuffer right now. This extension
+    // is implemented only in the front-end. A full implementation involves notifying the back-end.
+    mDisplayExtensions.mutableRenderBufferKHR = true;
 
     mDisplayExtensionString = GenerateExtensionsString(mDisplayExtensions);
 }

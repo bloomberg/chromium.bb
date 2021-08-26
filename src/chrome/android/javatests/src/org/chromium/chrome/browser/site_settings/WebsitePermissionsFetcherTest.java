@@ -41,7 +41,7 @@ import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridge;
 import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridgeJni;
 import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsType;
-import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
+import org.chromium.content_public.browser.BrowserContextHandle;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.ArrayList;
@@ -493,7 +493,7 @@ public class WebsitePermissionsFetcherTest {
         // If the ContentSettingsType.NUM_TYPES value changes *and* a new value has been exposed on
         // Android, then please update this code block to include a test for your new type.
         // Otherwise, just update count in the assert.
-        Assert.assertEquals(71, ContentSettingsType.NUM_TYPES);
+        Assert.assertEquals(72, ContentSettingsType.NUM_TYPES);
         websitePreferenceBridge.addContentSettingException(
                 new ContentSettingException(ContentSettingsType.COOKIES, googleOrigin,
                         ContentSettingValues.DEFAULT, preferenceSource));

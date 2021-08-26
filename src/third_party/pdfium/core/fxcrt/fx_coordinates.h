@@ -7,7 +7,6 @@
 #ifndef CORE_FXCRT_FX_COORDINATES_H_
 #define CORE_FXCRT_FX_COORDINATES_H_
 
-#include <math.h>
 #include <stdint.h>
 
 #include <algorithm>
@@ -149,29 +148,8 @@ class CFX_VTemplate final : public CFX_PTemplate<BaseType> {
                 const CFX_PTemplate<BaseType>& point2)
       : CFX_PTemplate<BaseType>(point2.x - point1.x, point2.y - point1.y) {}
 
-  float Length() const { return sqrt(x * x + y * y); }
-  void Normalize() {
-    float fLen = Length();
-    if (fLen < 0.0001f)
-      return;
-
-    x /= fLen;
-    y /= fLen;
-  }
-  void Translate(BaseType dx, BaseType dy) {
-    x += dx;
-    y += dy;
-  }
-  void Scale(BaseType sx, BaseType sy) {
-    x *= sx;
-    y *= sy;
-  }
-  void Rotate(float fRadian) {
-    float cosValue = cos(fRadian);
-    float sinValue = sin(fRadian);
-    x = x * cosValue - y * sinValue;
-    y = x * sinValue + y * cosValue;
-  }
+  float Length() const;
+  void Normalize();
 };
 using CFX_Vector = CFX_VTemplate<int32_t>;
 using CFX_VectorF = CFX_VTemplate<float>;
@@ -194,6 +172,7 @@ struct FX_RECT {
   void Normalize();
   void Intersect(const FX_RECT& src);
   void Intersect(int l, int t, int r, int b) { Intersect(FX_RECT(l, t, r, b)); }
+  FX_RECT SwappedClipBox(int width, int height, bool bFlipX, bool bFlipY) const;
 
   void Offset(int dx, int dy) {
     left += dx;

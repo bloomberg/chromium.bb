@@ -75,18 +75,13 @@ class DisplayItemListTest : public testing::Test {
   }
 };
 
-#define EXPECT_TRACED_RECT(x, y, width, height, rect_list) \
-  do {                                                     \
-    ASSERT_EQ(4u, rect_list->GetSize());                   \
-    double d;                                              \
-    EXPECT_TRUE((rect_list)->GetDouble(0, &d));            \
-    EXPECT_EQ(x, d);                                       \
-    EXPECT_TRUE((rect_list)->GetDouble(1, &d));            \
-    EXPECT_EQ(y, d);                                       \
-    EXPECT_TRUE((rect_list)->GetDouble(2, &d));            \
-    EXPECT_EQ(width, d);                                   \
-    EXPECT_TRUE((rect_list)->GetDouble(3, &d));            \
-    EXPECT_EQ(height, d);                                  \
+#define EXPECT_TRACED_RECT(x, y, width, height, rect_list)    \
+  do {                                                        \
+    ASSERT_EQ(4u, rect_list->GetList().size());               \
+    EXPECT_EQ(x, rect_list->GetList()[0].GetIfDouble());      \
+    EXPECT_EQ(y, rect_list->GetList()[1].GetIfDouble());      \
+    EXPECT_EQ(width, rect_list->GetList()[2].GetIfDouble());  \
+    EXPECT_EQ(height, rect_list->GetList()[3].GetIfDouble()); \
   } while (false)
 
 // AddToValue should not crash if there are different numbers of visual_rect
@@ -372,7 +367,7 @@ TEST_F(DisplayItemListTest, FilterPairedRange) {
   // below.
   SkRect rect = SkRect::MakeWH(source_image.width(), source_image.height());
   sk_sp<PaintFilter> image_filter = sk_make_sp<ImagePaintFilter>(
-      source_image, rect, rect, kHigh_SkFilterQuality);
+      source_image, rect, rect, PaintFlags::FilterQuality::kHigh);
   filters.Append(FilterOperation::CreateReferenceFilter(image_filter));
   filters.Append(FilterOperation::CreateBrightnessFilter(0.5f));
   gfx::RectF filter_bounds(10.f, 10.f, 50.f, 50.f);

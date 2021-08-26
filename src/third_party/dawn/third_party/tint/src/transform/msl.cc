@@ -55,27 +55,32 @@ Output Msl::Run(const Program* in, const DataMap& inputs) {
   // Build the configs for the internal transforms.
   uint32_t buffer_size_ubo_index = kDefaultBufferSizeUniformIndex;
   uint32_t fixed_sample_mask = 0xFFFFFFFF;
+  bool emit_point_size = false;
   if (cfg) {
     buffer_size_ubo_index = cfg->buffer_size_ubo_index;
     fixed_sample_mask = cfg->fixed_sample_mask;
+    emit_point_size = cfg->emit_vertex_point_size;
   }
   auto array_length_from_uniform_cfg = ArrayLengthFromUniform::Config(
       sem::BindingPoint{0, buffer_size_ubo_index});
   auto entry_point_io_cfg = CanonicalizeEntryPointIO::Config(
-      CanonicalizeEntryPointIO::BuiltinStyle::kParameter, fixed_sample_mask);
+      CanonicalizeEntryPointIO::ShaderStyle::kMsl, fixed_sample_mask,
+      emit_point_size);
 
   // Use the SSBO binding numbers as the indices for the buffer size lookups.
   for (auto* var : in->AST().GlobalVariables()) {
-    auto* sem_var = in->Sem().Get(var);
-    if (sem_var->StorageClass() == ast::StorageClass::kStorage) {
+    auto* global = in->Sem().Get<sem::GlobalVariable>(var);
+    if (global && global->StorageClass() == ast::StorageClass::kStorage) {
       array_length_from_uniform_cfg.bindpoint_to_size_index.emplace(
-          sem_var->BindingPoint(), sem_var->BindingPoint().binding);
+          global->BindingPoint(), global->BindingPoint().binding);
     }
   }
 
-  // ZeroInitWorkgroupMemory must come before CanonicalizeEntryPointIO as
-  // ZeroInitWorkgroupMemory may inject new builtin parameters.
-  manager.Add<ZeroInitWorkgroupMemory>();
+  if (!cfg || !cfg->disable_workgroup_init) {
+    // ZeroInitWorkgroupMemory must come before CanonicalizeEntryPointIO as
+    // ZeroInitWorkgroupMemory may inject new builtin parameters.
+    manager.Add<ZeroInitWorkgroupMemory>();
+  }
   manager.Add<CanonicalizeEntryPointIO>();
   manager.Add<ExternalTextureTransform>();
   manager.Add<PromoteInitializersToConstVar>();
@@ -179,6 +184,23 @@ void Msl::HandleModuleScopeVariables(CloneContext& ctx) const {
     }
   }
 
+  // Build a list of `&ident` expressions. We'll use this later to avoid
+  // generating expressions of the form `&*ident`, which break WGSL validation
+  // rules when this expression is passed to a function.
+  // TODO(jrprice): We should add support for bidirectional SEM tree traversal
+  // so that we can do this on the fly instead.
+  std::unordered_map<ast::IdentifierExpression*, ast::UnaryOpExpression*>
+      ident_to_address_of;
+  for (auto* node : ctx.src->ASTNodes().Objects()) {
+    auto* address_of = node->As<ast::UnaryOpExpression>();
+    if (!address_of || address_of->op() != ast::UnaryOp::kAddressOf) {
+      continue;
+    }
+    if (auto* ident = address_of->expr()->As<ast::IdentifierExpression>()) {
+      ident_to_address_of[ident] = address_of;
+    }
+  }
+
   for (auto* func_ast : functions_to_process) {
     auto* func_sem = ctx.src->Sem().Get(func_ast);
     bool is_entry_point = func_ast->IsEntryPoint();
@@ -196,7 +218,7 @@ void Msl::HandleModuleScopeVariables(CloneContext& ctx) const {
       // This is the symbol for the variable that replaces the module-scope var.
       auto new_var_symbol = ctx.dst->Sym();
 
-      auto* store_type = CreateASTTypeFor(&ctx, var->Type()->UnwrapRef());
+      auto* store_type = CreateASTTypeFor(ctx, var->Type()->UnwrapRef());
 
       if (is_entry_point) {
         if (store_type->is_handle()) {
@@ -239,6 +261,15 @@ void Msl::HandleModuleScopeVariables(CloneContext& ctx) const {
         if (user->Stmt()->Function() == func_ast) {
           ast::Expression* expr = ctx.dst->Expr(new_var_symbol);
           if (!is_entry_point && !store_type->is_handle()) {
+            // If this identifier is used by an address-of operator, just remove
+            // the address-of instead of adding a deref, since we already have a
+            // pointer.
+            auto* ident = user->Declaration()->As<ast::IdentifierExpression>();
+            if (ident_to_address_of.count(ident)) {
+              ctx.Replace(ident_to_address_of[ident], expr);
+              continue;
+            }
+
             expr = ctx.dst->Deref(expr);
           }
           ctx.Replace(user->Declaration(), expr);
@@ -280,9 +311,14 @@ void Msl::HandleModuleScopeVariables(CloneContext& ctx) const {
   }
 }
 
-Msl::Config::Config(uint32_t buffer_size_ubo_idx, uint32_t sample_mask)
+Msl::Config::Config(uint32_t buffer_size_ubo_idx,
+                    uint32_t sample_mask,
+                    bool emit_point_size,
+                    bool disable_wi)
     : buffer_size_ubo_index(buffer_size_ubo_idx),
-      fixed_sample_mask(sample_mask) {}
+      fixed_sample_mask(sample_mask),
+      emit_vertex_point_size(emit_point_size),
+      disable_workgroup_init(disable_wi) {}
 Msl::Config::Config(const Config&) = default;
 Msl::Config::~Config() = default;
 

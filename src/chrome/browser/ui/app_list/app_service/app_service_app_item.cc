@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_service/app_service_context_menu.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
-#include "chrome/common/chrome_features.h"
 
 // static
 const char AppServiceAppItem::kItemType[] = "AppServiceAppItem";
@@ -74,8 +73,8 @@ void AppServiceAppItem::OnAppUpdate(const apps::AppUpdate& app_update,
   }
 
   if (in_constructor || app_update.IconKeyChanged()) {
-    constexpr bool allow_placeholder_icon = true;
-    CallLoadIcon(allow_placeholder_icon);
+    // Increment icon version to indicate icon needs to be updated.
+    IncrementIconVersion();
   }
 
   if (in_constructor || app_update.IsPlatformAppChanged()) {
@@ -95,6 +94,11 @@ void AppServiceAppItem::OnAppUpdate(const apps::AppUpdate& app_update,
   }
 }
 
+void AppServiceAppItem::LoadIcon() {
+  constexpr bool allow_placeholder_icon = true;
+  CallLoadIcon(allow_placeholder_icon);
+}
+
 void AppServiceAppItem::Activate(int event_flags) {
   // For Crostini apps, non-platform Chrome apps, Web apps, it could be
   // selecting an existing delegate for the app, so call
@@ -110,6 +114,7 @@ void AppServiceAppItem::Activate(int event_flags) {
       .ForOneApp(id(), [&is_active_app](const apps::AppUpdate& update) {
         if (update.AppType() == apps::mojom::AppType::kCrostini ||
             ((update.AppType() == apps::mojom::AppType::kExtension ||
+              update.AppType() == apps::mojom::AppType::kSystemWeb ||
               update.AppType() == apps::mojom::AppType::kWeb) &&
              update.IsPlatformApp() == apps::mojom::OptionalBool::kFalse)) {
           is_active_app = true;
@@ -158,10 +163,7 @@ void AppServiceAppItem::Launch(int event_flags,
 }
 
 void AppServiceAppItem::CallLoadIcon(bool allow_placeholder_icon) {
-  auto icon_type =
-      (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon))
-          ? apps::mojom::IconType::kStandard
-          : apps::mojom::IconType::kUncompressed;
+  auto icon_type = apps::mojom::IconType::kStandard;
   apps::AppServiceProxyFactory::GetForProfile(profile())->LoadIcon(
       app_type_, id(), icon_type,
       ash::SharedAppListConfig::instance().default_grid_icon_dimension(),
@@ -171,10 +173,7 @@ void AppServiceAppItem::CallLoadIcon(bool allow_placeholder_icon) {
 }
 
 void AppServiceAppItem::OnLoadIcon(apps::mojom::IconValuePtr icon_value) {
-  auto icon_type =
-      (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon))
-          ? apps::mojom::IconType::kStandard
-          : apps::mojom::IconType::kUncompressed;
+  auto icon_type = apps::mojom::IconType::kStandard;
   if (icon_value->icon_type != icon_type) {
     return;
   }

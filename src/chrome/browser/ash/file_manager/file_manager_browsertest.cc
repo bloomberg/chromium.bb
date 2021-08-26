@@ -289,13 +289,27 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("fileDisplayPartitionFileTable"),
         TestCase("fileSearch"),
         TestCase("fileDisplayWithoutDownloadsVolume").DontMountVolumes(),
+        TestCase("fileDisplayWithoutDownloadsVolume")
+            .DontMountVolumes()
+            .FilesSwa(),
         TestCase("fileDisplayWithoutVolumes").DontMountVolumes(),
+        TestCase("fileDisplayWithoutVolumes").DontMountVolumes().FilesSwa(),
         TestCase("fileDisplayWithoutVolumesThenMountDownloads")
             .DontMountVolumes(),
+        TestCase("fileDisplayWithoutVolumesThenMountDownloads")
+            .DontMountVolumes()
+            .FilesSwa(),
         TestCase("fileDisplayWithoutVolumesThenMountDrive").DontMountVolumes(),
+        TestCase("fileDisplayWithoutVolumesThenMountDrive")
+            .DontMountVolumes()
+            .FilesSwa(),
         TestCase("fileDisplayWithoutDrive").DontMountVolumes(),
+        TestCase("fileDisplayWithoutDrive").DontMountVolumes().FilesSwa(),
         // Test is failing (crbug.com/1097013)
         // TestCase("fileDisplayWithoutDriveThenDisable").DontMountVolumes(),
+        // TestCase("fileDisplayWithoutDriveThenDisable")
+        //     .DontMountVolumes()
+        //     .FilesSwa(),
         TestCase("fileDisplayMountWithFakeItemSelected"),
         TestCase("fileDisplayUnmountDriveWithSharedWithMeSelected"),
         TestCase("fileDisplayUnmountRemovableRoot"),
@@ -402,10 +416,13 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("keyboardCopyDownloads"),
         TestCase("keyboardCopyDownloads").EnableTrash(),
         TestCase("keyboardCopyDrive"),
+// TODO(crbug.com/1236842): Remove flakiness and enable this test.
+#if !defined(ADDRESS_SANITIZER) && defined(NDEBUG)
         TestCase("keyboardFocusOutlineVisible"),
         TestCase("keyboardFocusOutlineVisible").EnableTrash(),
         TestCase("keyboardFocusOutlineVisibleMouse"),
         TestCase("keyboardFocusOutlineVisibleMouse").EnableTrash(),
+#endif
         TestCase("keyboardSelectDriveDirectoryTree"),
         TestCase("keyboardDisableCopyWhenDialogDisplayed"),
         TestCase("keyboardOpenNewWindow"),
@@ -459,12 +476,24 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("checkLinuxFilesContextMenu"),
         TestCase("checkDeleteDisabledInDocProvider")
             .EnableGenericDocumentsProvider(),
+        TestCase("checkDeleteDisabledInDocProvider")
+            .EnableGenericDocumentsProvider()
+            .FilesSwa(),
         TestCase("checkDeleteEnabledInDocProvider")
             .EnableGenericDocumentsProvider(),
+        TestCase("checkDeleteEnabledInDocProvider")
+            .EnableGenericDocumentsProvider()
+            .FilesSwa(),
         TestCase("checkRenameDisabledInDocProvider")
             .EnableGenericDocumentsProvider(),
+        TestCase("checkRenameDisabledInDocProvider")
+            .EnableGenericDocumentsProvider()
+            .FilesSwa(),
         TestCase("checkRenameEnabledInDocProvider")
             .EnableGenericDocumentsProvider(),
+        TestCase("checkRenameEnabledInDocProvider")
+            .EnableGenericDocumentsProvider()
+            .FilesSwa(),
         TestCase("checkContextMenuFocus"),
         TestCase("checkContextMenusForInputElements"),
         TestCase("checkDeleteDisabledInRecents"),
@@ -607,7 +636,10 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("dirRenameWithoutChangingCurrent"),
         TestCase("dirRenameToEmptyString").InGuestMode(),
         TestCase("dirRenameToEmptyString"),
+#if !defined(ADDRESS_SANITIZER) || !defined(NDEBUG)
+        // TODO(http://crbug.com/1230054): Flaky on ASan non-DEBUG.
         TestCase("dirRenameToExisting").InGuestMode(),
+#endif
         TestCase("dirRenameToExisting"),
         TestCase("dirRenameRemovableWithKeyboard"),
         TestCase("dirRenameRemovableWithKeyboard").InGuestMode(),
@@ -664,6 +696,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("driveClickFirstSearchResult"),
         TestCase("drivePressEnterToSearch"),
         TestCase("drivePressClearSearch"),
+        TestCase("drivePressClearSearch").FilesSwa(),
         TestCase("drivePressCtrlAFromSearch"),
         TestCase("driveBackupPhotos"),
         TestCase("driveBackupPhotos").EnableSinglePartitionFormat(),
@@ -698,50 +731,54 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FilesAppBrowserTest,
     ::testing::Values(
         TestCase("transferFromDriveToDownloads"),
-        // TODO: uncomment all FilesSwa() tests once copy/paste is fixed.
-        // TestCase("transferFromDriveToDownloads").FilesSwa(),
+        TestCase("transferFromDriveToDownloads").FilesSwa(),
         TestCase("transferFromDownloadsToMyFiles"),
-        // TestCase("transferFromDownloadsToMyFiles").FilesSwa(),
+        TestCase("transferFromDownloadsToMyFiles").FilesSwa(),
         TestCase("transferFromDownloadsToMyFilesMove"),
-        // TestCase("transferFromDownloadsToMyFilesMove").FilesSwa(),
+        TestCase("transferFromDownloadsToMyFilesMove").FilesSwa(),
         TestCase("transferFromDownloadsToDrive"),
-        // TestCase("transferFromDownloadsToDrive").FilesSwa(),
+        TestCase("transferFromDownloadsToDrive").FilesSwa(),
         TestCase("transferFromSharedWithMeToDownloads"),
-        // TestCase("transferFromSharedWithMeToDownloads").FilesSwa(),
+        TestCase("transferFromSharedWithMeToDownloads").FilesSwa(),
         TestCase("transferFromSharedWithMeToDrive"),
-        // TestCase("transferFromSharedWithMeToDrive").FilesSwa(),
+        TestCase("transferFromSharedWithMeToDrive").FilesSwa(),
         TestCase("transferFromDownloadsToSharedFolder"),
-        // TestCase("transferFromDownloadsToSharedFolder").FilesSwa(),
+        TestCase("transferFromDownloadsToSharedFolder").FilesSwa(),
         TestCase("transferFromDownloadsToSharedFolderMove"),
-        // TestCase("transferFromDownloadsToSharedFolderMove").FilesSwa(),
+        TestCase("transferFromDownloadsToSharedFolderMove").FilesSwa(),
         TestCase("transferFromSharedFolderToDownloads"),
-        // TestCase("transferFromSharedFolderToDownloads").FilesSwa(),
+        TestCase("transferFromSharedFolderToDownloads").FilesSwa(),
         TestCase("transferFromOfflineToDownloads"),
-        // TestCase("transferFromOfflineToDownloads").FilesSwa(),
+        TestCase("transferFromOfflineToDownloads").FilesSwa(),
         TestCase("transferFromOfflineToDrive"),
-        // TestCase("transferFromOfflineToDrive").FilesSwa(),
+        TestCase("transferFromOfflineToDrive").FilesSwa(),
         TestCase("transferFromTeamDriveToDrive"),
-        // TestCase("transferFromTeamDriveToDrive").FilesSwa(),
+        TestCase("transferFromTeamDriveToDrive").FilesSwa(),
         TestCase("transferFromDriveToTeamDrive"),
-        // TestCase("transferFromDriveToTeamDrive").FilesSwa(),
+        TestCase("transferFromDriveToTeamDrive").FilesSwa(),
         TestCase("transferFromTeamDriveToDownloads"),
-        // TestCase("transferFromTeamDriveToDownloads").FilesSwa(),
+        TestCase("transferFromTeamDriveToDownloads").FilesSwa(),
         TestCase("transferHostedFileFromTeamDriveToDownloads"),
         TestCase("transferHostedFileFromTeamDriveToDownloads").FilesSwa(),
         TestCase("transferFromDownloadsToTeamDrive"),
-        // TestCase("transferFromDownloadsToTeamDrive").FilesSwa(),
+        TestCase("transferFromDownloadsToTeamDrive").FilesSwa(),
         TestCase("transferBetweenTeamDrives"),
-        // TestCase("transferBetweenTeamDrives").FilesSwa(),
+        TestCase("transferBetweenTeamDrives").FilesSwa(),
         TestCase("transferDragDropActiveLeave"),
         TestCase("transferDragDropActiveLeave").FilesSwa(),
         TestCase("transferDragDropActiveDrop"),
         TestCase("transferDragDropActiveDrop").FilesSwa(),
         TestCase("transferDragDropTreeItemAccepts"),
         TestCase("transferDragDropTreeItemAccepts").FilesSwa(),
+// TODO(crbug.com/1236842): Remove flakiness and enable this test.
+#if !defined(ADDRESS_SANITIZER) && defined(NDEBUG)
         TestCase("transferDragDropTreeItemDenies"),
         TestCase("transferDragDropTreeItemDenies").FilesSwa(),
+#endif
         TestCase("transferDragAndHoverTreeItemEntryList"),
         TestCase("transferDragAndHoverTreeItemEntryList").FilesSwa(),
+// TODO(crbug.com/1236842): Remove flakiness and enable this test.
+#if !defined(ADDRESS_SANITIZER) && defined(NDEBUG)
         TestCase("transferDragAndHoverTreeItemFakeEntry"),
         TestCase("transferDragAndHoverTreeItemFakeEntry").FilesSwa(),
         TestCase("transferDragAndHoverTreeItemFakeEntry")
@@ -749,6 +786,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("transferDragAndHoverTreeItemFakeEntry")
             .EnableSinglePartitionFormat()
             .FilesSwa(),
+#endif
         TestCase("transferDragFileListItemSelects"),
         TestCase("transferDragFileListItemSelects").FilesSwa(),
         TestCase("transferDragAndDrop"),
@@ -758,20 +796,21 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("transferFromDownloadsToDownloads"),
         TestCase("transferFromDownloadsToDownloads").FilesSwa(),
         TestCase("transferDeletedFile"),
-        // TestCase("transferDeletedFile").FilesSwa(),
+        TestCase("transferDeletedFile").FilesSwa(),
         TestCase("transferDeletedFile").EnableTrash(),
-        // TestCase("transferDeletedFile").FilesSwa().EnableTrash(),
+        TestCase("transferDeletedFile").FilesSwa().EnableTrash(),
         TestCase("transferInfoIsRemembered"),
         // TestCase("transferInfoIsRemembered").FilesSwa(),
         TestCase("transferToUsbHasDestinationText"),
-        // TestCase("transferToUsbHasDestinationText").FilesSwa(),
+        TestCase("transferToUsbHasDestinationText").FilesSwa(),
         TestCase("transferDismissedErrorIsRemembered"),
-        // TestCase("transferDismissedErrorIsRemembered").FilesSwa(),
+        TestCase("transferDismissedErrorIsRemembered").FilesSwa(),
         TestCase("transferNotSupportedOperationHasNoRemainingTimeText"),
-        // TestCase("transferNotSupportedOperationHasNoRemainingTimeText").FilesSwa(),
+        TestCase("transferNotSupportedOperationHasNoRemainingTimeText")
+            .FilesSwa(),
         TestCase("transferUpdateSamePanelItem"),
-        // TestCase("transferUpdateSamePanelItem").FilesSwa(),
-        // TestCase("transferShowPendingMessageForZeroRemainingTime").FilesSwa()));
+        TestCase("transferUpdateSamePanelItem").FilesSwa(),
+        TestCase("transferShowPendingMessageForZeroRemainingTime").FilesSwa(),
         TestCase("transferShowPendingMessageForZeroRemainingTime")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
@@ -854,12 +893,13 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("tabindexFocusDirectorySelectedSharesheetEnabled")
             .EnableSharesheet(),
         TestCase("tabindexOpenDialogDownloads").WithBrowser(),
-        TestCase("tabindexOpenDialogDownloads").WithBrowser().InGuestMode(),
-        TestCase("tabindexSaveFileDialogDrive").WithBrowser(),
-        TestCase("tabindexSaveFileDialogDownloads").WithBrowser(),
-        TestCase("tabindexSaveFileDialogDownloads")
-            .WithBrowser()
-            .InGuestMode()));
+        TestCase("tabindexOpenDialogDownloads").WithBrowser().InGuestMode()
+// TODO(crbug.com/1236842): Remove flakiness and enable this test.
+//      ,
+//      TestCase("tabindexSaveFileDialogDrive").WithBrowser(),
+//      TestCase("tabindexSaveFileDialogDownloads").WithBrowser(),
+//      TestCase("tabindexSaveFileDialogDownloads").WithBrowser().InGuestMode()
+            ));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FileDialog, /* file_dialog.js */
@@ -875,7 +915,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("saveFileDialogDownloads").WithBrowser(),
         TestCase("saveFileDialogDownloads").WithBrowser().InGuestMode(),
         TestCase("saveFileDialogDownloads").WithBrowser().InIncognito(),
-        TestCase("saveFileDialogDownloadsNewFolderButton").WithBrowser(),
+// TODO(crbug.com/1236842): Remove flakiness and enable this test.
+//        TestCase("saveFileDialogDownloadsNewFolderButton").WithBrowser(),
         TestCase("saveFileDialogPanelsDisabled").WithBrowser(),
         TestCase("openFileDialogCancelDownloads").WithBrowser(),
         TestCase("openFileDialogEscapeDownloads").WithBrowser(),
@@ -921,11 +962,16 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
                       TestCase("showGridViewDownloads"),
                       TestCase("showGridViewDrive"),
                       TestCase("showGridViewButtonSwitches"),
+                      TestCase("showGridViewButtonSwitches").FilesSwa(),
                       TestCase("showGridViewKeyboardSelectionA11y"),
                       TestCase("showGridViewTitles"),
+                      TestCase("showGridViewTitles").FilesSwa(),
                       TestCase("showGridViewMouseSelectionA11y"),
                       TestCase("showGridViewDocumentsProvider")
-                          .EnableGenericDocumentsProvider()));
+                          .EnableGenericDocumentsProvider(),
+                      TestCase("showGridViewDocumentsProvider")
+                          .EnableGenericDocumentsProvider()
+                          .FilesSwa()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Providers, /* providers.js */
@@ -962,7 +1008,10 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         // TestCase("showAvailableStorageDrive"),
         TestCase("showAvailableStorageSmbfs"),
         TestCase("showAvailableStorageDocProvider")
-            .EnableGenericDocumentsProvider()));
+            .EnableGenericDocumentsProvider(),
+        TestCase("showAvailableStorageDocProvider")
+            .EnableGenericDocumentsProvider()
+            .FilesSwa()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FilesTooltip, /* files_tooltip.js */
@@ -1007,6 +1056,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("myFilesDisplaysAndOpensEntries"),
         TestCase("myFilesFolderRename"),
         TestCase("myFilesUpdatesWhenAndroidVolumeMounts").DontMountVolumes(),
+        TestCase("myFilesUpdatesWhenAndroidVolumeMounts")
+            .DontMountVolumes()
+            .FilesSwa(),
         TestCase("myFilesUpdatesChildren"),
         TestCase("myFilesAutoExpandOnce"),
         TestCase("myFilesToolbarDelete")));
@@ -1038,6 +1090,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FilesAppBrowserTest,
     ::testing::Values(
         TestCase("metadataDocumentsProvider").EnableGenericDocumentsProvider(),
+        TestCase("metadataDocumentsProvider")
+            .EnableGenericDocumentsProvider()
+            .FilesSwa(),
         TestCase("metadataDownloads"),
         TestCase("metadataDrive"),
         TestCase("metadataTeamDrives"),
@@ -1049,7 +1104,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(TestCase("searchDownloadsWithResults"),
                       TestCase("searchDownloadsWithNoResults"),
                       TestCase("searchDownloadsClearSearchKeyDown"),
+                      TestCase("searchDownloadsClearSearchKeyDown").FilesSwa(),
                       TestCase("searchDownloadsClearSearch"),
+                      TestCase("searchDownloadsClearSearch").FilesSwa(),
                       TestCase("searchHidingViaTab"),
                       TestCase("searchHidingTextEntryField"),
                       TestCase("searchButtonToggles"),
@@ -1059,6 +1116,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Metrics, /* metrics.js */
     FilesAppBrowserTest,
     ::testing::Values(TestCase("metricsRecordEnum"),
+                      TestCase("metricsRecordEnum").FilesSwa(),
                       TestCase("metricsOpenSwa").FilesSwa()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(

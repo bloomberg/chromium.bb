@@ -2,11 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-export interface EventDescriptor {
-  eventTarget: EventTarget;
-  eventType: string|symbol;
+import type * as Platform from '../platform/platform.js';
+
+// TODO(crbug.com/1228674) Remove defaults for generic type parameters once
+//                         all event emitters and sinks have been migrated.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export interface EventDescriptor<Events = any, T extends EventType<Events> = any> {
+  eventTarget: EventTarget<Events>;
+  eventType: T;
   thisObject?: Object;
-  listener: (arg0: EventTargetEvent) => void;
+  listener: (arg0: EventTargetEvent<EventPayload<Events, T>>) => void;
 }
 
 export function removeEventListeners(eventList: EventDescriptor[]): void {
@@ -17,13 +22,28 @@ export function removeEventListeners(eventList: EventDescriptor[]): void {
   eventList.splice(0);
 }
 
-export interface EventTarget {
-  addEventListener(eventType: string|symbol, listener: (arg0: EventTargetEvent) => void, thisObject?: Object):
-      EventDescriptor;
-  once(eventType: string|symbol): Promise<unknown>;
-  removeEventListener(eventType: string|symbol, listener: (arg0: EventTargetEvent) => void, thisObject?: Object): void;
-  hasEventListeners(eventType: string|symbol): boolean;
-  dispatchEventToListeners(eventType: string|symbol, eventData?: unknown): void;
+// TODO(crbug.com/1228674): Once all event emitters and sinks have been migrated
+// we can use:
+//    export type EventType<Events> = keyof Events;
+//    export type EventPayload<Events, T> = Events[T];
+export type EventType<Events> = Events extends Object ? keyof Events : Events extends void ? never : string|symbol;
+export type EventPayload<Events, T> = T extends keyof Events ? Events[T] : unknown;
+export type EventPayloadToRestParameters<T> = T extends void ? [] : [T];
+
+// TODO(crbug.com/1228674) Remove defaults for generic type parameters once
+//                         all event emitters and sinks have been migrated.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export interface EventTarget<Events = any> {
+  addEventListener<T extends EventType<Events>>(
+      eventType: T, listener: (arg0: EventTargetEvent<EventPayload<Events, T>>) => void,
+      thisObject?: Object): EventDescriptor<Events, T>;
+  once<T extends EventType<Events>>(eventType: T): Promise<EventPayload<Events, T>>;
+  removeEventListener<T extends EventType<Events>>(
+      eventType: T, listener: (arg0: EventTargetEvent<EventPayload<Events, T>>) => void, thisObject?: Object): void;
+  hasEventListeners(eventType: EventType<Events>): boolean;
+  dispatchEventToListeners<T extends EventType<Events>>(
+      eventType: Platform.TypeScriptUtilities.NoUnion<T>,
+      ...[eventData]: EventPayloadToRestParameters<EventPayload<Events, T>>): void;
 }
 
 export function fireEvent(name: string, detail: unknown = {}, target: HTMLElement|Window = window): void {

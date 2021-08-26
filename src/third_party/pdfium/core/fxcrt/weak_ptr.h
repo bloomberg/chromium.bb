@@ -9,11 +9,9 @@
 
 #include <stdint.h>
 
-#include <cstddef>
 #include <memory>
 #include <utility>
 
-#include "core/fxcrt/fx_system.h"
 #include "core/fxcrt/retain_ptr.h"
 
 namespace fxcrt {

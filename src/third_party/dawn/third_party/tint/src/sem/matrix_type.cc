@@ -25,7 +25,7 @@ namespace sem {
 Matrix::Matrix(Vector* column_type, uint32_t columns)
     : subtype_(column_type->type()),
       column_type_(column_type),
-      rows_(column_type->size()),
+      rows_(column_type->Width()),
       columns_(columns) {
   TINT_ASSERT(AST, rows_ > 1);
   TINT_ASSERT(AST, rows_ < 5);
@@ -47,6 +47,22 @@ std::string Matrix::FriendlyName(const SymbolTable& symbols) const {
   out << "mat" << columns_ << "x" << rows_ << "<"
       << subtype_->FriendlyName(symbols) << ">";
   return out.str();
+}
+
+bool Matrix::IsConstructible() const {
+  return true;
+}
+
+uint32_t Matrix::Size() const {
+  return column_type_->Align() * columns();
+}
+
+uint32_t Matrix::Align() const {
+  return column_type_->Align();
+}
+
+uint32_t Matrix::ColumnStride() const {
+  return column_type_->Align();
 }
 
 }  // namespace sem

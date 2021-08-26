@@ -266,6 +266,26 @@ bool checkMandatoryFeatures(const vkt::Context& context)
 		nextPtr  = &physicalDevicePipelineExecutablePropertiesFeaturesKHR.pNext;
 	}
 
+	vk::VkPhysicalDevicePresentIdFeaturesKHR physicalDevicePresentIdFeaturesKHR;
+	deMemset(&physicalDevicePresentIdFeaturesKHR, 0, sizeof(physicalDevicePresentIdFeaturesKHR));
+
+	if ( isExtensionSupported(deviceExtensions, RequiredExtension("VK_KHR_present_id")) )
+	{
+		physicalDevicePresentIdFeaturesKHR.sType = getStructureType<VkPhysicalDevicePresentIdFeaturesKHR>();
+		*nextPtr = &physicalDevicePresentIdFeaturesKHR;
+		nextPtr  = &physicalDevicePresentIdFeaturesKHR.pNext;
+	}
+
+	vk::VkPhysicalDevicePresentWaitFeaturesKHR physicalDevicePresentWaitFeaturesKHR;
+	deMemset(&physicalDevicePresentWaitFeaturesKHR, 0, sizeof(physicalDevicePresentWaitFeaturesKHR));
+
+	if ( isExtensionSupported(deviceExtensions, RequiredExtension("VK_KHR_present_wait")) )
+	{
+		physicalDevicePresentWaitFeaturesKHR.sType = getStructureType<VkPhysicalDevicePresentWaitFeaturesKHR>();
+		*nextPtr = &physicalDevicePresentWaitFeaturesKHR;
+		nextPtr  = &physicalDevicePresentWaitFeaturesKHR.pNext;
+	}
+
 	vk::VkPhysicalDeviceRayQueryFeaturesKHR physicalDeviceRayQueryFeaturesKHR;
 	deMemset(&physicalDeviceRayQueryFeaturesKHR, 0, sizeof(physicalDeviceRayQueryFeaturesKHR));
 
@@ -314,6 +334,16 @@ bool checkMandatoryFeatures(const vkt::Context& context)
 		physicalDeviceSeparateDepthStencilLayoutsFeaturesKHR.sType = getStructureType<VkPhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR>();
 		*nextPtr = &physicalDeviceSeparateDepthStencilLayoutsFeaturesKHR;
 		nextPtr  = &physicalDeviceSeparateDepthStencilLayoutsFeaturesKHR.pNext;
+	}
+
+	vk::VkPhysicalDeviceShaderAtomicFloat2FeaturesEXT physicalDeviceShaderAtomicFloat2FeaturesEXT;
+	deMemset(&physicalDeviceShaderAtomicFloat2FeaturesEXT, 0, sizeof(physicalDeviceShaderAtomicFloat2FeaturesEXT));
+
+	if ( isExtensionSupported(deviceExtensions, RequiredExtension("VK_EXT_shader_atomic_float2")) )
+	{
+		physicalDeviceShaderAtomicFloat2FeaturesEXT.sType = getStructureType<VkPhysicalDeviceShaderAtomicFloat2FeaturesEXT>();
+		*nextPtr = &physicalDeviceShaderAtomicFloat2FeaturesEXT;
+		nextPtr  = &physicalDeviceShaderAtomicFloat2FeaturesEXT.pNext;
 	}
 
 	vk::VkPhysicalDeviceShaderAtomicFloatFeaturesEXT physicalDeviceShaderAtomicFloatFeaturesEXT;
@@ -1834,6 +1864,33 @@ bool checkMandatoryFeatures(const vkt::Context& context)
 		if ( physicalDeviceShaderSubgroupUniformControlFlowFeaturesKHR.shaderSubgroupUniformControlFlow == VK_FALSE )
 		{
 			log << tcu::TestLog::Message << "Mandatory feature shaderSubgroupUniformControlFlow not supported" << tcu::TestLog::EndMessage;
+			result = false;
+		}
+	}
+
+	if ( isExtensionSupported(deviceExtensions, RequiredExtension("VK_KHR_present_id")) )
+	{
+		if ( physicalDevicePresentIdFeaturesKHR.presentId == VK_FALSE )
+		{
+			log << tcu::TestLog::Message << "Mandatory feature presentId not supported" << tcu::TestLog::EndMessage;
+			result = false;
+		}
+	}
+
+	if ( isExtensionSupported(deviceExtensions, RequiredExtension("VK_KHR_present_wait")) )
+	{
+		if ( physicalDevicePresentWaitFeaturesKHR.presentWait == VK_FALSE )
+		{
+			log << tcu::TestLog::Message << "Mandatory feature presentWait not supported" << tcu::TestLog::EndMessage;
+			result = false;
+		}
+	}
+
+	if ( isExtensionSupported(deviceExtensions, RequiredExtension("VK_EXT_shader_atomic_float2")) && physicalDeviceShaderAtomicFloat2FeaturesEXT.sparseImageFloat32AtomicMinMax )
+	{
+		if ( physicalDeviceShaderAtomicFloat2FeaturesEXT.shaderImageFloat32AtomicMinMax == VK_FALSE )
+		{
+			log << tcu::TestLog::Message << "Mandatory feature shaderImageFloat32AtomicMinMax not supported" << tcu::TestLog::EndMessage;
 			result = false;
 		}
 	}

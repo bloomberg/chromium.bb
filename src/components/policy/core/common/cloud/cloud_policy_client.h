@@ -15,7 +15,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
@@ -135,6 +134,16 @@ class POLICY_EXPORT CloudPolicyClient {
         enterprise_management::DeviceRegisterRequest::Flavor flavor);
     ~RegistrationParameters();
 
+    // A setter for |psm_execution_result| field.
+    void SetPsmExecutionResult(
+        absl::optional<
+            enterprise_management::DeviceRegisterRequest::PsmExecutionResult>
+            new_psm_result);
+
+    // A setter for |psm_determination_timestamp| field.
+    void SetPsmDeterminationTimestamp(
+        absl::optional<int64_t> new_psm_timestamp);
+
     enterprise_management::DeviceRegisterRequest::Type registration_type;
     enterprise_management::DeviceRegisterRequest::Flavor flavor;
 
@@ -148,16 +157,30 @@ class POLICY_EXPORT CloudPolicyClient {
 
     // Server-backed state keys (used for forced enrollment check).
     std::string current_state_key;
+
+    // The following field is relevant only to Chrome OS.
+    // PSM protocol execution result. Its value will exist if the device
+    // undergoes enrollment and a PSM server-backed state determination was
+    // performed before (on Chrome OS, as encoded in the
+    // `prefs::kEnrollmentPsmResult` pref).
+    absl::optional<
+        enterprise_management::DeviceRegisterRequest::PsmExecutionResult>
+        psm_execution_result;
+
+    // The following field is relevant only to Chrome OS.
+    // PSM protocol determination timestamp. Its value will exist if the device
+    // undergoes enrollment and PSM got executed successfully (on ChromeOS, as
+    // encoded in `prefs::kEnrollmentPsmDeterminationTime` pref).
+    absl::optional<int64_t> psm_determination_timestamp;
   };
 
   // If non-empty, |machine_id|, |machine_model|, |brand_code|,
   // |attested_device_id|, |ethernet_mac_address|, |dock_mac_address| and
   // |manufacture_date| are passed to the server verbatim. As these reveal
   // machine identity, they must only be used where this is appropriate (i.e.
-  // device policy, but not user policy). |service| and |signing_service| are
-  // weak pointers and it's the caller's responsibility to keep them valid for
-  // the lifetime of CloudPolicyClient. The |signing_service| is used to sign
-  // sensitive requests. |device_dm_token_callback| is used to retrieve device
+  // device policy, but not user policy). |service| is weak pointer and it's
+  // the caller's responsibility to keep it valid for the lifetime of
+  // CloudPolicyClient. |device_dm_token_callback| is used to retrieve device
   // DMToken for affiliated users. Could be null if it's not possible to use
   // device DMToken for user policy fetches.
   CloudPolicyClient(
@@ -168,16 +191,17 @@ class POLICY_EXPORT CloudPolicyClient {
       const std::string& ethernet_mac_address,
       const std::string& dock_mac_address,
       const std::string& manufacture_date,
-      SigningService* signing_service,
       DeviceManagementService* service,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       DeviceDMTokenCallback device_dm_token_callback);
   // A simpler constructor for those that do not need any of the identification
-  // strings of the full constructor or the signing service.
+  // strings of the full constructor.
   CloudPolicyClient(
       DeviceManagementService* service,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       DeviceDMTokenCallback device_dm_token_callback);
+  CloudPolicyClient(const CloudPolicyClient&) = delete;
+  CloudPolicyClient& operator=(const CloudPolicyClient&) = delete;
 
   virtual ~CloudPolicyClient();
 
@@ -198,12 +222,17 @@ class POLICY_EXPORT CloudPolicyClient {
 
   // Attempts to register with the device management service using a
   // registration certificate. Results in a registration change or
-  // error notification.
+  // error notification. The |signing_service| is used to sign the request and
+  // is expected to be available until caller receives
+  // |OnRegistrationStateChanged| or |OnClientError|.
+  // TODO(crbug.com/1236148): Remove SigningService from CloudPolicyClient and
+  // make callees sign their data themselves.
   virtual void RegisterWithCertificate(const RegistrationParameters& parameters,
                                        const std::string& client_id,
                                        DMAuth auth,
                                        const std::string& pem_certificate_chain,
-                                       const std::string& sub_organization);
+                                       const std::string& sub_organization,
+                                       SigningService* signing_service);
 
   // Attempts to enroll with the device management service using an enrollment
   // token. Results in a registration change or error notification.
@@ -759,9 +788,6 @@ class POLICY_EXPORT CloudPolicyClient {
   // The invalidation version used for the most recent fetch operation.
   int64_t fetched_invalidation_version_ = 0;
 
-  // Used for signing requests.
-  SigningService* signing_service_ = nullptr;
-
   // Used for issuing requests to the cloud.
   DeviceManagementService* service_ = nullptr;
 
@@ -841,8 +867,6 @@ class POLICY_EXPORT CloudPolicyClient {
 
   // Used to create tasks which run delayed on the UI thread.
   base::WeakPtrFactory<CloudPolicyClient> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(CloudPolicyClient);
 };
 
 }  // namespace policy

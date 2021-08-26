@@ -31,6 +31,7 @@
 #include "content/public/test/fake_service_worker_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
+#include "url/origin.h"
 
 namespace performance_manager {
 
@@ -411,8 +412,9 @@ void TestServiceWorkerContext::StartServiceWorker(int64_t version_id,
   for (auto& observer : observer_list_) {
     observer.OnVersionStartedRunning(
         version_id, content::ServiceWorkerRunningInfo(
-                        worker_url, scope_url, worker_process_id,
-                        blink::ServiceWorkerToken()));
+                        worker_url, scope_url,
+                        blink::StorageKey(url::Origin::Create(scope_url)),
+                        worker_process_id, blink::ServiceWorkerToken()));
   }
 }
 
@@ -637,8 +639,9 @@ content::GlobalRenderFrameHostId TestFrameNodeSource::CreateFrameNode(
   content::GlobalRenderFrameHostId render_frame_host_id(render_process_id,
                                                         frame_id);
   auto frame_node = PerformanceManagerImpl::CreateFrameNode(
-      process_node, page_node_.get(), nullptr, 0, frame_id,
-      blink::LocalFrameToken(), 0, 0);
+      process_node, page_node_.get(), nullptr, frame_id,
+      blink::LocalFrameToken(), content::BrowsingInstanceId(0),
+      content::SiteInstanceId(0));
 
   bool inserted =
       frame_node_map_.insert({render_frame_host_id, std::move(frame_node)})

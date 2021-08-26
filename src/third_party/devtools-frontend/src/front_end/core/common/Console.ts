@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import {ObjectWrapper} from './Object.js';
 import {reveal} from './Revealer.js';
 
@@ -66,7 +64,6 @@ export enum Events {
   MessageAdded = 'messageAdded',
 }
 
-
 // TODO(crbug.com/1167717): Make this a const enum again
 // eslint-disable-next-line rulesdir/const_enum
 export enum MessageLevel {
@@ -74,7 +71,6 @@ export enum MessageLevel {
   Warning = 'warning',
   Error = 'error',
 }
-
 
 export class Message {
   text: string;

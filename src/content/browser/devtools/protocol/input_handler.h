@@ -35,7 +35,7 @@ namespace protocol {
 
 class InputHandler : public DevToolsDomainHandler, public Input::Backend {
  public:
-  InputHandler();
+  explicit InputHandler(bool allow_file_access);
   ~InputHandler() override;
 
   static std::vector<InputHandler*> ForAgentHost(DevToolsAgentHostImpl* host);
@@ -71,6 +71,14 @@ class InputHandler : public DevToolsDomainHandler, public Input::Backend {
 
   void InsertText(const std::string& text,
                   std::unique_ptr<InsertTextCallback> callback) override;
+
+  void ImeSetComposition(
+      const std::string& text,
+      int selection_start,
+      int selection_end,
+      Maybe<int> replacement_start,
+      Maybe<int> replacement_end,
+      std::unique_ptr<ImeSetCompositionCallback> callback) override;
 
   void DispatchMouseEvent(
       const std::string& event_type,
@@ -234,6 +242,7 @@ class InputHandler : public DevToolsDomainHandler, public Input::Backend {
   int last_id_;
   bool ignore_input_events_ = false;
   bool intercept_drags_ = false;
+  const bool allow_file_access_;
   std::set<int> pointer_ids_;
   std::unique_ptr<SyntheticPointerDriver> synthetic_pointer_driver_;
   base::flat_map<int, blink::WebTouchPoint> touch_points_;

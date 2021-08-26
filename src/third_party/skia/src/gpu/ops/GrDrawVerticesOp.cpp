@@ -5,22 +5,23 @@
  * found in the LICENSE file.
  */
 
+#include "src/gpu/ops/GrDrawVerticesOp.h"
+
 #include "include/core/SkM44.h"
 #include "include/effects/SkRuntimeEffect.h"
 #include "src/core/SkArenaAlloc.h"
 #include "src/core/SkDevice.h"
 #include "src/core/SkMatrixPriv.h"
 #include "src/core/SkVerticesPriv.h"
+#include "src/gpu/GrGeometryProcessor.h"
 #include "src/gpu/GrOpFlushState.h"
 #include "src/gpu/GrProgramInfo.h"
 #include "src/gpu/GrVertexWriter.h"
 #include "src/gpu/SkGr.h"
 #include "src/gpu/glsl/GrGLSLColorSpaceXformHelper.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
-#include "src/gpu/glsl/GrGLSLGeometryProcessor.h"
 #include "src/gpu/glsl/GrGLSLVarying.h"
 #include "src/gpu/glsl/GrGLSLVertexGeoBuilder.h"
-#include "src/gpu/ops/GrDrawVerticesOp.h"
 #include "src/gpu/ops/GrSimpleMeshDrawOpHelper.h"
 
 namespace {
@@ -53,19 +54,41 @@ public:
 
     const char* name() const override { return "VerticesGP"; }
 
-    const SkPMColor4f& color() const { return fColor; }
-    const SkMatrix& viewMatrix() const { return fViewMatrix; }
-
     const Attribute& positionAttr() const { return fAttributes[kPositionIndex]; }
     const Attribute& colorAttr() const { return fAttributes[kColorIndex]; }
     const Attribute& localCoordsAttr() const { return fAttributes[kLocalCoordsIndex]; }
 
-    class GLSLProcessor : public GrGLSLGeometryProcessor {
-    public:
-        GLSLProcessor()
-            : fViewMatrix(SkMatrix::InvalidMatrix())
-            , fColor(SK_PMColor4fILLEGAL) {}
+    void addToKey(const GrShaderCaps& caps, GrProcessorKeyBuilder* b) const override {
+        uint32_t key = 0;
+        key |= (fColorArrayType == ColorArrayType::kSkColor) ? 0x1 : 0;
+        key |= ProgramImpl::ComputeMatrixKey(caps, fViewMatrix) << 20;
+        b->add32(key);
+        b->add32(GrColorSpaceXform::XformKey(fColorSpaceXform.get()));
+    }
 
+    std::unique_ptr<ProgramImpl> makeProgramImpl(const GrShaderCaps&) const override {
+        return std::make_unique<Impl>();
+    }
+
+private:
+    class Impl : public ProgramImpl {
+    public:
+        void setData(const GrGLSLProgramDataManager& pdman,
+                     const GrShaderCaps& shaderCaps,
+                     const GrGeometryProcessor& geomProc) override {
+            const VerticesGP& vgp = geomProc.cast<VerticesGP>();
+
+            SetTransform(pdman, shaderCaps, fViewMatrixUniform, vgp.fViewMatrix, &fViewMatrix);
+
+            if (!vgp.colorAttr().isInitialized() && vgp.fColor != fColor) {
+                pdman.set4fv(fColorUniform, 1, vgp.fColor.vec());
+                fColor = vgp.fColor;
+            }
+
+            fColorSpaceHelper.setData(pdman, vgp.fColorSpaceXform.get());
+        }
+
+    private:
         void onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) override {
             const VerticesGP& gp = args.fGeomProc.cast<VerticesGP>();
             GrGLSLVertexBuilder* vertBuilder = args.fVertBuilder;
@@ -110,7 +133,7 @@ public:
                                 *args.fShaderCaps,
                                 gpArgs,
                                 gp.positionAttr().name(),
-                                gp.viewMatrix(),
+                                gp.fViewMatrix,
                                 &fViewMatrixUniform);
 
             // emit transforms using either explicit local coords or positions
@@ -121,51 +144,16 @@ public:
             fragBuilder->codeAppendf("const half4 %s = half4(1);", args.fOutputCoverage);
         }
 
-        static inline void GenKey(const GrGeometryProcessor& gp,
-                                  const GrShaderCaps& shaderCaps,
-                                  GrProcessorKeyBuilder* b) {
-            const VerticesGP& vgp = gp.cast<VerticesGP>();
-            uint32_t key = 0;
-            key |= (vgp.fColorArrayType == ColorArrayType::kSkColor) ? 0x1 : 0;
-            key |= ComputeMatrixKey(shaderCaps, vgp.viewMatrix()) << 20;
-            b->add32(key);
-            b->add32(GrColorSpaceXform::XformKey(vgp.fColorSpaceXform.get()));
-        }
-
-        void setData(const GrGLSLProgramDataManager& pdman,
-                     const GrShaderCaps& shaderCaps,
-                     const GrGeometryProcessor& geomProc) override {
-            const VerticesGP& vgp = geomProc.cast<VerticesGP>();
-
-            SetTransform(pdman, shaderCaps, fViewMatrixUniform, vgp.viewMatrix(), &fViewMatrix);
-
-            if (!vgp.colorAttr().isInitialized() && vgp.color() != fColor) {
-                pdman.set4fv(fColorUniform, 1, vgp.color().vec());
-                fColor = vgp.color();
-            }
-
-            fColorSpaceHelper.setData(pdman, vgp.fColorSpaceXform.get());
-        }
-
     private:
-        SkMatrix fViewMatrix;
-        SkPMColor4f fColor;
+        SkMatrix fViewMatrix = SkMatrix::InvalidMatrix();
+        SkPMColor4f fColor   = SK_PMColor4fILLEGAL;
+
         UniformHandle fViewMatrixUniform;
         UniformHandle fColorUniform;
-        GrGLSLColorSpaceXformHelper fColorSpaceHelper;
 
-        using INHERITED = GrGLSLGeometryProcessor;
+        GrGLSLColorSpaceXformHelper fColorSpaceHelper;
     };
 
-    void getGLSLProcessorKey(const GrShaderCaps& caps, GrProcessorKeyBuilder* b) const override {
-        GLSLProcessor::GenKey(*this, caps, b);
-    }
-
-    GrGLSLGeometryProcessor* createGLSLInstance(const GrShaderCaps&) const override {
-        return new GLSLProcessor();
-    }
-
-private:
     VerticesGP(LocalCoordsType localCoordsType,
                ColorArrayType colorArrayType,
                const SkPMColor4f& color,

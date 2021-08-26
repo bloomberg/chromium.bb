@@ -407,7 +407,7 @@ export class TextureZeroInitTest extends GPUTest {
             colorAttachments: [
               {
                 view: texture.createView(desc),
-                storeOp: 'clear',
+                storeOp: 'discard',
                 loadValue: 'load',
               },
             ],
@@ -419,9 +419,9 @@ export class TextureZeroInitTest extends GPUTest {
             colorAttachments: [],
             depthStencilAttachment: {
               view: texture.createView(desc),
-              depthStoreOp: 'clear',
+              depthStoreOp: 'discard',
               depthLoadValue: 'load',
-              stencilStoreOp: 'clear',
+              stencilStoreOp: 'discard',
               stencilLoadValue: 'load',
             },
           })

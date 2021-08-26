@@ -69,7 +69,7 @@ source_set("unit_tests") {
     "//ios/chrome/test:test_support",
     "//ios/public/provider/chrome/browser:browser",
     "//ios/public/provider/chrome/browser:test_support",
-    "//ios/public/provider/chrome/browser/distribution",
+    "//ios/public/provider/chrome/browser/app_distribution:app_distribution_api",
     "//ios/testing:block_swizzler",
     "//ios/third_party/material_components_ios",
     "//ios/web/public/test:test",
@@ -150,10 +150,28 @@ source_set("content_suggestions_scheduler_app_state_agent") {
   deps = [
     "//components/ntp_snippets",
     "//components/previous_session_info",
-    "//ios/chrome/app/application_delegate:app_state_header",
+    "//ios/chrome/app/application_delegate:observing_app_state_agent",
     "//ios/chrome/browser/metrics",
     "//ios/chrome/browser/ntp_snippets",
+  ]
+}
+
+source_set("credential_provider_migrator_app_agent") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "credential_provider_migrator_app_agent.h",
+    "credential_provider_migrator_app_agent.mm",
+  ]
+  deps = [
+    "//components/keyed_service/core",
+    "//ios/chrome/app/application_delegate:app_state_header",
+    "//ios/chrome/app/application_delegate:observing_app_state_agent",
+    "//ios/chrome/browser/credential_provider",
+    "//ios/chrome/browser/passwords:store_factory",
+    "//ios/chrome/browser/ui/main:browser_interface_provider",
     "//ios/chrome/browser/ui/main:scene_state_header",
+    "//ios/chrome/common/app_group",
+    "//ios/chrome/common/credential_provider",
   ]
 }
 
@@ -165,11 +183,10 @@ source_set("app_metrics_app_state_agent") {
   ]
   deps = [
     "//base",
-    "//ios/chrome/app/application_delegate:app_state_header",
     "//ios/chrome/app/application_delegate:application_delegate_internal",
+    "//ios/chrome/app/application_delegate:observing_app_state_agent",
     "//ios/chrome/browser/metrics",
     "//ios/chrome/browser/ui/main:scene",
-    "//ios/chrome/browser/ui/main:scene_state_header",
   ]
 }
 
@@ -267,6 +284,7 @@ source_set("app_internal") {
     ":app_metrics_app_state_agent",
     ":blocking_scene_commands",
     ":content_suggestions_scheduler_app_state_agent",
+    ":credential_provider_migrator_app_agent",
     ":enterprise_app_agent",
     ":first_run_app_state_agent",
     ":mode",
@@ -372,7 +390,7 @@ source_set("app_internal") {
     "//ios/chrome/common/app_group:main_app",
     "//ios/net",
     "//ios/public/provider/chrome/browser",
-    "//ios/public/provider/chrome/browser/distribution",
+    "//ios/public/provider/chrome/browser/app_distribution:app_distribution_api",
     "//ios/public/provider/chrome/browser/mailto",
     "//ios/public/provider/chrome/browser/signin",
     "//ios/public/provider/chrome/browser/user_feedback",
@@ -546,16 +564,22 @@ ios_app_bundle("chrome") {
 if (current_toolchain == default_toolchain) {
   if (ios_enable_content_widget_extension) {
     bundle_data("content_widget_extension_bundle") {
-      public_deps = [ "//ios/chrome/content_widget_extension" ]
-      sources = [ "$root_out_dir/content_widget_extension.appex" ]
+      _content_extension_target =
+          "//ios/chrome/content_widget_extension(${current_toolchain}_13_0)"
+      public_deps = [ _content_extension_target ]
+      sources = [ get_label_info(_content_extension_target, "root_out_dir") +
+                  "/content_widget_extension.appex" ]
       outputs = [ "{{bundle_contents_dir}}/PlugIns/{{source_file_part}}" ]
     }
   }
 
   if (ios_enable_search_widget_extension) {
     bundle_data("search_widget_extension_bundle") {
-      public_deps = [ "//ios/chrome/search_widget_extension" ]
-      sources = [ "$root_out_dir/search_widget_extension.appex" ]
+      _search_extension_target =
+          "//ios/chrome/search_widget_extension(${current_toolchain}_13_0)"
+      public_deps = [ _search_extension_target ]
+      sources = [ get_label_info(_search_extension_target, "root_out_dir") +
+                  "/search_widget_extension.appex" ]
       outputs = [ "{{bundle_contents_dir}}/PlugIns/{{source_file_part}}" ]
     }
   }

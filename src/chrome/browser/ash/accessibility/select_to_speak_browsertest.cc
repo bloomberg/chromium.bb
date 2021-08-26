@@ -82,6 +82,13 @@ class SelectToSpeakTest : public InProcessBrowserTest {
     ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
   }
 
+  void SetUpInProcessBrowserTestFixture() override {
+    // TODO (leileilei@google.com): Provide a way to disable the pop up dialog.
+    // Disable kEnhancedNetworkVoices To avoid its pop up dialog.
+    scoped_feature_list_.InitAndDisableFeature(
+        ::features::kEnhancedNetworkVoices);
+  }
+
   test::SpeechMonitor sm_;
   std::unique_ptr<ui::test::EventGenerator> generator_;
   std::unique_ptr<SystemTrayTestApi> tray_test_api_;
@@ -155,6 +162,7 @@ class SelectToSpeakTest : public InProcessBrowserTest {
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
   scoped_refptr<content::MessageLoopRunner> loop_runner_;
   scoped_refptr<content::MessageLoopRunner> tray_loop_runner_;
   base::WeakPtrFactory<SelectToSpeakTest> weak_ptr_factory_{this};
@@ -565,7 +573,13 @@ IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, MAYBE_ContinuesReadingDuringResize) {
   sm_.Replay();
 }
 
-IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, WorksWithStickyKeys) {
+// Flaky on ChromeOS MSAN bots: https://crbug.com/1227368
+#if defined(OS_CHROMEOS) && defined(MEMORY_SANITIZER)
+#define MAYBE_WorksWithStickyKeys DISABLED_WorksWithStickyKeys
+#else
+#define MAYBE_WorksWithStickyKeys WorksWithStickyKeys
+#endif
+IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, MAYBE_WorksWithStickyKeys) {
   AccessibilityManager::Get()->EnableStickyKeys(true);
 
   ui_test_utils::NavigateToURL(
@@ -592,19 +606,7 @@ IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, WorksWithStickyKeys) {
   sm_.Replay();
 }
 
-/* Test fixture enabling navigation control */
-class SelectToSpeakTestWithNavigationControl : public SelectToSpeakTest {
- public:
-  void SetUpInProcessBrowserTestFixture() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        ::features::kSelectToSpeakNavigationControl);
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_F(SelectToSpeakTestWithNavigationControl,
+IN_PROC_BROWSER_TEST_F(SelectToSpeakTest,
                        SelectToSpeakDoesNotDismissTrayBubble) {
   // Open tray bubble menu.
   tray_test_api_->ShowBubble();

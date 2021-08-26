@@ -277,6 +277,8 @@ class Token {
     kTextureDepthCube,
     /// A 'texture_depth_cube_array'
     kTextureDepthCubeArray,
+    /// A 'texture_depth_multisampled_2d'
+    kTextureDepthMultisampled2d,
     /// A 'texture_external'
     kTextureExternal,
     /// A 'texture_multisampled_2d'
@@ -370,9 +372,16 @@ class Token {
   bool IsUninitialized() const { return type_ == Type::kUninitialized; }
   /// @returns true if the token is EOF
   bool IsEof() const { return type_ == Type::kEOF; }
+  /// @returns true if the token is Error
+  bool IsError() const { return type_ == Type::kError; }
   /// @returns true if the token is an identifier
   bool IsIdentifier() const { return type_ == Type::kIdentifier; }
-
+  /// @returns true if the token is a literal
+  bool IsLiteral() const {
+    return type_ == Type::kSintLiteral || type_ == Type::kFalse ||
+           type_ == Type::kUintLiteral || type_ == Type::kTrue ||
+           type_ == Type::kFloatLiteral;
+  }
   /// @returns true if token is a 'matNxM'
   bool IsMatrix() const {
     return type_ == Type::kMat2x2 || type_ == Type::kMat2x3 ||

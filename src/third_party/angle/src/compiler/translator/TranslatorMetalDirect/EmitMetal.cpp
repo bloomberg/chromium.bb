@@ -1721,10 +1721,11 @@ void GenMetalTraverser::emitFunctionSignature(const TFunction &func)
         const TVariable &param = *func.getParam(i);
         emitFunctionParameter(func, param);
     }
-    if (isTraversingVertexMain)
-    {
-        mOut << " @@XFB-Bindings@@ ";
-    }
+    // TODO(anglebug.com/5505): reimplement transform feedback support.
+    //    if (isTraversingVertexMain)
+    //    {
+    //        mOut << " @@XFB-Bindings@@ ";
+    //    }
 
     mOut << ")";
 }
@@ -2012,16 +2013,14 @@ bool GenMetalTraverser::visitAggregate(Visit, TIntermAggregate *aggregateNode)
                             {
                                 mOut << opName;
                                 groupedTraverse(operandNode);
-                                return false;
                             }
                             else
                             {
                                 groupedTraverse(operandNode);
                                 mOut << opName;
-                                return false;
                             }
+                            return false;
                         }
-                        break;
 
                         case 2:
                         {
@@ -2032,7 +2031,6 @@ bool GenMetalTraverser::visitAggregate(Visit, TIntermAggregate *aggregateNode)
                             groupedTraverse(rightNode);
                             return false;
                         }
-                        break;
 
                         default:
                             UNREACHABLE();

@@ -52,14 +52,6 @@ typedef NS_ENUM(NSInteger, SignOutConfirmationChoice) {
 // This method should be used only if SimplifySignOutIOS is turned on.
 + (void)signOutWithConfirmationChoice:(SignOutConfirmationChoice)confirmation;
 
-// Selects an identity when the identity chooser dialog is presented. The dialog
-// is confirmed, but it doesn't validated the user consent page.
-+ (void)selectIdentityWithEmail:(NSString*)userEmail;
-
-// Taps on the settings link in the sign-in view. The sign-in view has to be
-// opened before calling this method.
-+ (void)tapSettingsLink;
-
 // Taps the sign in confirmation page, scrolls first to make the OK button
 // visible on short devices (e.g. iPhone 5s).
 + (void)tapSigninConfirmationDialog;
@@ -103,6 +95,9 @@ typedef NS_ENUM(NSInteger, SignOutConfirmationChoice) {
 
 // Checks that the web sign-in consistency sheet visibility matches |isVisible|.
 + (void)verifyWebSigninIsVisible:(BOOL)isVisible;
+
+// Submits encryption passphrase, if the user is on the Encryption page.
++ (void)submitSyncPassphrase:(NSString*)passphrase;
 
 @end
 

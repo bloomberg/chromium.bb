@@ -2,7 +2,20 @@ Skia Graphics Release Notes
 
 This file includes a list of high level updates for each milestone release.
 
-  * Removed SkMatrix44
+* * *
+
+Milestone 94
+------------
+  * Metal backend has been changed to track command buffer resources manually
+    rather than using retained resources.
+    https://review.skia.org/432878
+
+  * Added virtual onResetClip() to SkCanvas for Android Framework, to emulate the soon-to-be-removed
+    expanding clip ops guarded by SK_SUPPORT_DEPRECATED_CLIPOPS.
+    https://review.skia.org/430897
+
+  * Removed SK_SUPPORT_DEPRECATED_CLIPOPS build flag. Clips can only be intersect and difference.
+    https://review.skia.org/436565
 
 * * *
 
@@ -16,6 +29,8 @@ Milestone 93
 
   * The default value of GrContextOptions::fReduceOpsTaskSplitting is now enabled.
     https://review.skia.org/419836
+
+  * Removed SkMatrix44
 
 * * *
 

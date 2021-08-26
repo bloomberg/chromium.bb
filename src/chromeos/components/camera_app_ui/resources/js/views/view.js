@@ -12,7 +12,7 @@ import {WaitableEvent} from '../waitable_event.js';
  * message for message of the dialog view, cancellable for whether the dialog
  * view is cancellable.
  * @typedef {{
- *   message: string,
+ *   message: (string|undefined),
  *   cancellable: (boolean|undefined),
  * }}
  */
@@ -54,11 +54,11 @@ export class PTZPanelOptions {
 }
 
 /**
- * @typedef {
+ * @typedef {(
  *   !DialogEnterOptions|
  *   !WarningEnterOptions|
  *   !PTZPanelOptions
- * }
+ * )}
  */
 let EnterOptions;
 

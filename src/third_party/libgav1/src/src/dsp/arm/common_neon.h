@@ -23,6 +23,7 @@
 
 #include <arm_neon.h>
 
+#include <cstddef>
 #include <cstdint>
 #include <cstring>
 
@@ -85,10 +86,10 @@ inline void PrintVectQ(const DebugRegisterQ r, const char* const name,
 
 inline void PrintReg(const int32x4x2_t val, const std::string& name) {
   DebugRegisterQ r;
-  vst1q_u32(r.u32, val.val[0]);
+  vst1q_s32(r.i32, val.val[0]);
   const std::string name0 = name + std::string(".val[0]");
   PrintVectQ(r, name0.c_str(), 32);
-  vst1q_u32(r.u32, val.val[1]);
+  vst1q_s32(r.i32, val.val[1]);
   const std::string name1 = name + std::string(".val[1]");
   PrintVectQ(r, name1.c_str(), 32);
 }
@@ -210,6 +211,14 @@ inline uint8x8_t Load2(const void* const buf, uint8x8_t val) {
       vld1_lane_u16(&temp, vreinterpret_u16_u8(val), lane));
 }
 
+template <int lane>
+inline uint16x4_t Load2(const void* const buf, uint16x4_t val) {
+  uint32_t temp;
+  memcpy(&temp, buf, 4);
+  return vreinterpret_u16_u32(
+      vld1_lane_u32(&temp, vreinterpret_u32_u16(val), lane));
+}
+
 // Load 4 uint8_t values into the low half of a uint8x8_t register. Zeros the
 // register before loading the values. Use caution when using this in loops
 // because it will re-zero the register before loading on every iteration.
@@ -227,6 +236,15 @@ inline uint8x8_t Load4(const void* const buf, uint8x8_t val) {
   memcpy(&temp, buf, 4);
   return vreinterpret_u8_u32(
       vld1_lane_u32(&temp, vreinterpret_u32_u8(val), lane));
+}
+
+// Convenience functions for 16-bit loads from a uint8_t* source.
+inline uint16x4_t Load4U16(const void* const buf) {
+  return vld1_u16(static_cast<const uint16_t*>(buf));
+}
+
+inline uint16x8_t Load8U16(const void* const buf) {
+  return vld1q_u16(static_cast<const uint16_t*>(buf));
 }
 
 //------------------------------------------------------------------------------
@@ -272,8 +290,116 @@ inline void Store2(void* const buf, const uint16x8_t val) {
 // Store 2 uint16_t values from |lane| * 2 and |lane| * 2 + 1 of a uint16x4_t
 // register.
 template <int lane>
-inline void Store2(uint16_t* const buf, const uint16x4_t val) {
+inline void Store2(void* const buf, const uint16x4_t val) {
   ValueToMem<uint32_t>(buf, vget_lane_u32(vreinterpret_u32_u16(val), lane));
+}
+
+// Simplify code when caller has |buf| cast as uint8_t*.
+inline void Store4(void* const buf, const uint16x4_t val) {
+  vst1_u16(static_cast<uint16_t*>(buf), val);
+}
+
+// Simplify code when caller has |buf| cast as uint8_t*.
+inline void Store8(void* const buf, const uint16x8_t val) {
+  vst1q_u16(static_cast<uint16_t*>(buf), val);
+}
+
+//------------------------------------------------------------------------------
+// Pointer helpers.
+
+// This function adds |stride|, given as a number of bytes, to a pointer to a
+// larger type, using native pointer arithmetic.
+template <typename T>
+inline T* AddByteStride(T* ptr, const ptrdiff_t stride) {
+  return reinterpret_cast<T*>(
+      const_cast<uint8_t*>(reinterpret_cast<const uint8_t*>(ptr) + stride));
+}
+
+//------------------------------------------------------------------------------
+// Multiply.
+
+// Shim vmull_high_u16 for armv7.
+inline uint32x4_t VMullHighU16(const uint16x8_t a, const uint16x8_t b) {
+#if defined(__aarch64__)
+  return vmull_high_u16(a, b);
+#else
+  return vmull_u16(vget_high_u16(a), vget_high_u16(b));
+#endif
+}
+
+// Shim vmull_high_s16 for armv7.
+inline int32x4_t VMullHighS16(const int16x8_t a, const int16x8_t b) {
+#if defined(__aarch64__)
+  return vmull_high_s16(a, b);
+#else
+  return vmull_s16(vget_high_s16(a), vget_high_s16(b));
+#endif
+}
+
+// Shim vmlal_high_u16 for armv7.
+inline uint32x4_t VMlalHighU16(const uint32x4_t a, const uint16x8_t b,
+                               const uint16x8_t c) {
+#if defined(__aarch64__)
+  return vmlal_high_u16(a, b, c);
+#else
+  return vmlal_u16(a, vget_high_u16(b), vget_high_u16(c));
+#endif
+}
+
+// Shim vmlal_high_s16 for armv7.
+inline int32x4_t VMlalHighS16(const int32x4_t a, const int16x8_t b,
+                              const int16x8_t c) {
+#if defined(__aarch64__)
+  return vmlal_high_s16(a, b, c);
+#else
+  return vmlal_s16(a, vget_high_s16(b), vget_high_s16(c));
+#endif
+}
+
+// Shim vmul_laneq_u16 for armv7.
+template <int lane>
+inline uint16x4_t VMulLaneQU16(const uint16x4_t a, const uint16x8_t b) {
+#if defined(__aarch64__)
+  return vmul_laneq_u16(a, b, lane);
+#else
+  if (lane < 4) return vmul_lane_u16(a, vget_low_u16(b), lane & 0x3);
+  return vmul_lane_u16(a, vget_high_u16(b), (lane - 4) & 0x3);
+#endif
+}
+
+// Shim vmulq_laneq_u16 for armv7.
+template <int lane>
+inline uint16x8_t VMulQLaneQU16(const uint16x8_t a, const uint16x8_t b) {
+#if defined(__aarch64__)
+  return vmulq_laneq_u16(a, b, lane);
+#else
+  if (lane < 4) return vmulq_lane_u16(a, vget_low_u16(b), lane & 0x3);
+  return vmulq_lane_u16(a, vget_high_u16(b), (lane - 4) & 0x3);
+#endif
+}
+
+// Shim vmla_laneq_u16 for armv7.
+template <int lane>
+inline uint16x4_t VMlaLaneQU16(const uint16x4_t a, const uint16x4_t b,
+                               const uint16x8_t c) {
+#if defined(__aarch64__)
+  return vmla_laneq_u16(a, b, c, lane);
+#else
+  if (lane < 4) return vmla_lane_u16(a, b, vget_low_u16(c), lane & 0x3);
+  return vmla_lane_u16(a, b, vget_high_u16(c), (lane - 4) & 0x3);
+#endif
+}
+
+// Shim vmlaq_laneq_u16 for armv7.
+template <int lane>
+inline uint16x8_t VMlaQLaneQU16(const uint16x8_t a, const uint16x8_t b,
+                                const uint16x8_t c) {
+#if defined(__aarch64__)
+  return vmlaq_laneq_u16(a, b, c, lane);
+#else
+  if (lane < 4) return vmlaq_lane_u16(a, b, vget_low_u16(c), lane & 0x3);
+  return vmlaq_lane_u16(a, b, vget_high_u16(c), (lane - 4) & 0x3);
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -305,6 +431,51 @@ inline uint8x8_t VQTbl1U8(const uint8x16_t a, const uint8x8_t index) {
 #endif
 }
 
+// Shim vqtbl2_u8 for armv7.
+inline uint8x8_t VQTbl2U8(const uint8x16x2_t a, const uint8x8_t index) {
+#if defined(__aarch64__)
+  return vqtbl2_u8(a, index);
+#else
+  const uint8x8x4_t b = {vget_low_u8(a.val[0]), vget_high_u8(a.val[0]),
+                         vget_low_u8(a.val[1]), vget_high_u8(a.val[1])};
+  return vtbl4_u8(b, index);
+#endif
+}
+
+// Shim vqtbl2q_u8 for armv7.
+inline uint8x16_t VQTbl2QU8(const uint8x16x2_t a, const uint8x16_t index) {
+#if defined(__aarch64__)
+  return vqtbl2q_u8(a, index);
+#else
+  return vcombine_u8(VQTbl2U8(a, vget_low_u8(index)),
+                     VQTbl2U8(a, vget_high_u8(index)));
+#endif
+}
+
+// Shim vqtbl3q_u8 for armv7.
+inline uint8x8_t VQTbl3U8(const uint8x16x3_t a, const uint8x8_t index) {
+#if defined(__aarch64__)
+  return vqtbl3_u8(a, index);
+#else
+  const uint8x8x4_t b = {vget_low_u8(a.val[0]), vget_high_u8(a.val[0]),
+                         vget_low_u8(a.val[1]), vget_high_u8(a.val[1])};
+  const uint8x8x2_t c = {vget_low_u8(a.val[2]), vget_high_u8(a.val[2])};
+  const uint8x8_t index_ext = vsub_u8(index, vdup_n_u8(32));
+  const uint8x8_t partial_lookup = vtbl4_u8(b, index);
+  return vtbx2_u8(partial_lookup, c, index_ext);
+#endif
+}
+
+// Shim vqtbl3q_u8 for armv7.
+inline uint8x16_t VQTbl3QU8(const uint8x16x3_t a, const uint8x16_t index) {
+#if defined(__aarch64__)
+  return vqtbl3q_u8(a, index);
+#else
+  return vcombine_u8(VQTbl3U8(a, vget_low_u8(index)),
+                     VQTbl3U8(a, vget_high_u8(index)));
+#endif
+}
+
 // Shim vqtbl1_s8 for armv7.
 inline int8x8_t VQTbl1S8(const int8x16_t a, const uint8x8_t index) {
 #if defined(__aarch64__)
@@ -313,6 +484,25 @@ inline int8x8_t VQTbl1S8(const int8x16_t a, const uint8x8_t index) {
   const int8x8x2_t b = {vget_low_s8(a), vget_high_s8(a)};
   return vtbl2_s8(b, vreinterpret_s8_u8(index));
 #endif
+}
+
+//------------------------------------------------------------------------------
+// Saturation helpers.
+
+inline int16x4_t Clip3S16(int16x4_t val, int16x4_t low, int16x4_t high) {
+  return vmin_s16(vmax_s16(val, low), high);
+}
+
+inline int16x8_t Clip3S16(const int16x8_t val, const int16x8_t low,
+                          const int16x8_t high) {
+  return vminq_s16(vmaxq_s16(val, low), high);
+}
+
+inline uint16x8_t ConvertToUnsignedPixelU16(int16x8_t val, int bitdepth) {
+  const int16x8_t low = vdupq_n_s16(0);
+  const uint16x8_t high = vdupq_n_u16((1 << bitdepth) - 1);
+
+  return vminq_u16(vreinterpretq_u16_s16(vmaxq_s16(val, low)), high);
 }
 
 //------------------------------------------------------------------------------
@@ -429,6 +619,9 @@ inline uint8x8_t Transpose32(const uint8x8_t a) {
   return vreinterpret_u8_u32(b);
 }
 
+// Swap high and low halves.
+inline uint16x8_t Transpose64(const uint16x8_t a) { return vextq_u16(a, a, 4); }
+
 // Implement vtrnq_s64().
 // Input:
 // a0: 00 01 02 03 04 05 06 07
@@ -455,6 +648,36 @@ inline uint16x8x2_t VtrnqU64(uint32x4_t a0, uint32x4_t a1) {
 }
 
 // Input:
+// 00 01 02 03
+// 10 11 12 13
+// 20 21 22 23
+// 30 31 32 33
+inline void Transpose4x4(uint16x4_t a[4]) {
+  // b:
+  // 00 10 02 12
+  // 01 11 03 13
+  const uint16x4x2_t b = vtrn_u16(a[0], a[1]);
+  // c:
+  // 20 30 22 32
+  // 21 31 23 33
+  const uint16x4x2_t c = vtrn_u16(a[2], a[3]);
+  // d:
+  // 00 10 20 30
+  // 02 12 22 32
+  const uint32x2x2_t d =
+      vtrn_u32(vreinterpret_u32_u16(b.val[0]), vreinterpret_u32_u16(c.val[0]));
+  // e:
+  // 01 11 21 31
+  // 03 13 23 33
+  const uint32x2x2_t e =
+      vtrn_u32(vreinterpret_u32_u16(b.val[1]), vreinterpret_u32_u16(c.val[1]));
+  a[0] = vreinterpret_u16_u32(d.val[0]);
+  a[1] = vreinterpret_u16_u32(e.val[0]);
+  a[2] = vreinterpret_u16_u32(d.val[1]);
+  a[3] = vreinterpret_u16_u32(e.val[1]);
+}
+
+// Input:
 // a: 00 01 02 03 10 11 12 13
 // b: 20 21 22 23 30 31 32 33
 // Output:
@@ -470,6 +693,108 @@ inline void Transpose4x4(uint8x8_t* a, uint8x8_t* b) {
       vtrn_u8(vreinterpret_u8_u32(d.val[0]), vreinterpret_u8_u32(d.val[1]));
   *a = e.val[0];
   *b = e.val[1];
+}
+
+// 4x8 Input:
+// a[0]: 00 01 02 03 04 05 06 07
+// a[1]: 10 11 12 13 14 15 16 17
+// a[2]: 20 21 22 23 24 25 26 27
+// a[3]: 30 31 32 33 34 35 36 37
+// 8x4 Output:
+// a[0]: 00 10 20 30 04 14 24 34
+// a[1]: 01 11 21 31 05 15 25 35
+// a[2]: 02 12 22 32 06 16 26 36
+// a[3]: 03 13 23 33 07 17 27 37
+inline void Transpose4x8(uint16x8_t a[4]) {
+  // b0.val[0]: 00 10 02 12 04 14 06 16
+  // b0.val[1]: 01 11 03 13 05 15 07 17
+  // b1.val[0]: 20 30 22 32 24 34 26 36
+  // b1.val[1]: 21 31 23 33 25 35 27 37
+  const uint16x8x2_t b0 = vtrnq_u16(a[0], a[1]);
+  const uint16x8x2_t b1 = vtrnq_u16(a[2], a[3]);
+
+  // c0.val[0]: 00 10 20 30 04 14 24 34
+  // c0.val[1]: 02 12 22 32 06 16 26 36
+  // c1.val[0]: 01 11 21 31 05 15 25 35
+  // c1.val[1]: 03 13 23 33 07 17 27 37
+  const uint32x4x2_t c0 = vtrnq_u32(vreinterpretq_u32_u16(b0.val[0]),
+                                    vreinterpretq_u32_u16(b1.val[0]));
+  const uint32x4x2_t c1 = vtrnq_u32(vreinterpretq_u32_u16(b0.val[1]),
+                                    vreinterpretq_u32_u16(b1.val[1]));
+
+  a[0] = vreinterpretq_u16_u32(c0.val[0]);
+  a[1] = vreinterpretq_u16_u32(c1.val[0]);
+  a[2] = vreinterpretq_u16_u32(c0.val[1]);
+  a[3] = vreinterpretq_u16_u32(c1.val[1]);
+}
+
+// Special transpose for loop filter.
+// 4x8 Input:
+// p_q:  p3 p2 p1 p0 q0 q1 q2 q3
+// a[0]: 00 01 02 03 04 05 06 07
+// a[1]: 10 11 12 13 14 15 16 17
+// a[2]: 20 21 22 23 24 25 26 27
+// a[3]: 30 31 32 33 34 35 36 37
+// 8x4 Output:
+// a[0]: 03 13 23 33 04 14 24 34  p0q0
+// a[1]: 02 12 22 32 05 15 25 35  p1q1
+// a[2]: 01 11 21 31 06 16 26 36  p2q2
+// a[3]: 00 10 20 30 07 17 27 37  p3q3
+// Direct reapplication of the function will reset the high halves, but
+// reverse the low halves:
+// p_q:  p0 p1 p2 p3 q0 q1 q2 q3
+// a[0]: 33 32 31 30 04 05 06 07
+// a[1]: 23 22 21 20 14 15 16 17
+// a[2]: 13 12 11 10 24 25 26 27
+// a[3]: 03 02 01 00 34 35 36 37
+// Simply reordering the inputs (3, 2, 1, 0) will reset the low halves, but
+// reverse the high halves.
+// The standard Transpose4x8 will produce the same reversals, but with the
+// order of the low halves also restored relative to the high halves. This is
+// preferable because it puts all values from the same source row back together,
+// but some post-processing is inevitable.
+inline void LoopFilterTranspose4x8(uint16x8_t a[4]) {
+  // b0.val[0]: 00 10 02 12 04 14 06 16
+  // b0.val[1]: 01 11 03 13 05 15 07 17
+  // b1.val[0]: 20 30 22 32 24 34 26 36
+  // b1.val[1]: 21 31 23 33 25 35 27 37
+  const uint16x8x2_t b0 = vtrnq_u16(a[0], a[1]);
+  const uint16x8x2_t b1 = vtrnq_u16(a[2], a[3]);
+
+  // Reverse odd vectors to bring the appropriate items to the front of zips.
+  // b0.val[0]: 00 10 02 12 04 14 06 16
+  // r0       : 03 13 01 11 07 17 05 15
+  // b1.val[0]: 20 30 22 32 24 34 26 36
+  // r1       : 23 33 21 31 27 37 25 35
+  const uint32x4_t r0 = vrev64q_u32(vreinterpretq_u32_u16(b0.val[1]));
+  const uint32x4_t r1 = vrev64q_u32(vreinterpretq_u32_u16(b1.val[1]));
+
+  // Zip to complete the halves.
+  // c0.val[0]: 00 10 20 30 02 12 22 32  p3p1
+  // c0.val[1]: 04 14 24 34 06 16 26 36  q0q2
+  // c1.val[0]: 03 13 23 33 01 11 21 31  p0p2
+  // c1.val[1]: 07 17 27 37 05 15 25 35  q3q1
+  const uint32x4x2_t c0 = vzipq_u32(vreinterpretq_u32_u16(b0.val[0]),
+                                    vreinterpretq_u32_u16(b1.val[0]));
+  const uint32x4x2_t c1 = vzipq_u32(r0, r1);
+
+  // d0.val[0]: 00 10 20 30 07 17 27 37  p3q3
+  // d0.val[1]: 02 12 22 32 05 15 25 35  p1q1
+  // d1.val[0]: 03 13 23 33 04 14 24 34  p0q0
+  // d1.val[1]: 01 11 21 31 06 16 26 36  p2q2
+  const uint16x8x2_t d0 = VtrnqU64(c0.val[0], c1.val[1]);
+  // The third row of c comes first here to swap p2 with q0.
+  const uint16x8x2_t d1 = VtrnqU64(c1.val[0], c0.val[1]);
+
+  // 8x4 Output:
+  // a[0]: 03 13 23 33 04 14 24 34  p0q0
+  // a[1]: 02 12 22 32 05 15 25 35  p1q1
+  // a[2]: 01 11 21 31 06 16 26 36  p2q2
+  // a[3]: 00 10 20 30 07 17 27 37  p3q3
+  a[0] = d1.val[0];  // p0q0
+  a[1] = d0.val[1];  // p1q1
+  a[2] = d1.val[1];  // p2q2
+  a[3] = d0.val[0];  // p3q3
 }
 
 // Reversible if the x4 values are packed next to each other.

@@ -52,8 +52,9 @@ const UIStrings = {
   */
   networkRequests: 'Network requests',
   /**
-  *@description Text in Service Workers View of the Application panel
-  */
+   * @description Label for a button in the Service Workers View of the Application panel.
+   * Imperative noun. Clicking the button will refresh the list of service worker registrations.
+   */
   update: 'Update',
   /**
   *@description Text in Service Workers View of the Application panel
@@ -167,6 +168,10 @@ const UIStrings = {
   * the focus is moved to the service worker's client page.
   */
   focus: 'focus',
+  /**
+  *@description Link to view all the Service Workers that have been registered.
+  */
+  seeAllRegistrations: 'See all registrations',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/application/ServiceWorkersView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -215,7 +220,8 @@ export class ServiceWorkersView extends UI.Widget.VBox implements
     const othersSectionRow = othersSection.appendRow();
     const seeOthers =
         UI.Fragment
-            .html`<a class="devtools-link" role="link" tabindex="0" href="chrome://serviceworker-internals" target="_blank" style="display: inline; cursor: pointer;">See all registrations</a>`;
+            .html`<a class="devtools-link" role="link" tabindex="0" href="chrome://serviceworker-internals" target="_blank" style="display: inline; cursor: pointer;">${
+                i18nString(UIStrings.seeAllRegistrations)}</a>`;
     self.onInvokeElement(seeOthers, event => {
       const mainTarget = SDK.TargetManager.TargetManager.instance().mainTarget();
       mainTarget && mainTarget.targetAgent().invoke_createTarget({url: 'chrome://serviceworker-internals?devtools'});
@@ -576,8 +582,9 @@ export class Section {
     this._section.setFieldVisible(i18nString(UIStrings.clients), Boolean(version.controlledClients.length));
     for (const client of version.controlledClients) {
       const clientLabelText = this._clientsField.createChild('div', 'service-worker-client');
-      if (this._clientInfoCache.has(client)) {
-        this._updateClientInfo(clientLabelText, (this._clientInfoCache.get(client) as Protocol.Target.TargetInfo));
+      const info = this._clientInfoCache.get(client);
+      if (info) {
+        this._updateClientInfo(clientLabelText, info);
       }
       this._manager.target()
           .targetAgent()
@@ -676,7 +683,7 @@ export class Section {
           versionsStack, 'service-worker-installing-circle',
           i18nString(UIStrings.sTryingToInstall, {PH1: installing.id}));
       if (installing.scriptResponseTime !== undefined) {
-        installingEntry.createChild('div', 'service-worker-subtitle').textContent = i18nString('Received %s', {
+        installingEntry.createChild('div', 'service-worker-subtitle').textContent = i18nString(UIStrings.receivedS, {
           PH1: new Date(installing.scriptResponseTime * 1000).toLocaleString(),
         });
       }
@@ -793,7 +800,7 @@ export class Section {
         'service-worker-client-focus-link');
   }
 
-  _activateTarget(targetId: string): void {
+  _activateTarget(targetId: Protocol.Target.TargetID): void {
     this._manager.target().targetAgent().invoke_activateTarget({targetId});
   }
 

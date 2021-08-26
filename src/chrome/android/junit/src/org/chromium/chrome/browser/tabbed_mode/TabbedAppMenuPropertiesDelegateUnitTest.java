@@ -10,6 +10,7 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
@@ -45,9 +46,12 @@ import org.chromium.chrome.browser.enterprise.util.ManagedBrowserUtilsJni;
 import org.chromium.chrome.browser.feed.webfeed.WebFeedSnackbarController;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcher;
+import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettingsJni;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileJni;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
@@ -210,6 +214,10 @@ public class TabbedAppMenuPropertiesDelegateUnitTest {
                         mActivityTabProvider, mMultiWindowModeStateDispatcher, mTabModelSelector,
                         mToolbarManager, mDecorView, mAppMenuDelegate, mOverviewModeSupplier,
                         mBookmarkBridgeSupplier, mFeedLauncher, mDialogManager, mSnackbarManager));
+        SharedPreferencesManager.getInstance().removeKeysWithPrefix(
+                ChromePreferenceKeys.MULTI_INSTANCE_URL);
+        SharedPreferencesManager.getInstance().removeKeysWithPrefix(
+                ChromePreferenceKeys.MULTI_INSTANCE_TAB_COUNT);
     }
 
     @Test
@@ -288,6 +296,77 @@ public class TabbedAppMenuPropertiesDelegateUnitTest {
     }
 
     @Test
+    public void testPageMenuItems_instanceSwitcher_newWindow() {
+        setUpMocksForPageMenu();
+        mIsNewWindowMenuFeatureEnabled = true;
+        doReturn(true).when(mTabbedAppMenuPropertiesDelegate).instanceSwitcherEnabled();
+
+        createInstance(0, "https://url0");
+
+        // On phone, we do not show 'New Window'.
+        mIsTabletScreen = false;
+        Menu menu = createMenuForMultiWindow();
+        assertFalse(isMenuVisible(menu, R.id.new_window_menu_id));
+
+        // Multi-window mode, with a single instance (no adjacent instance running) makes
+        // the menu visible.
+        doReturn(false).when(mMultiWindowModeStateDispatcher).isChromeRunningInAdjacentWindow();
+        mIsMultiWindow = true;
+
+        menu = createMenuForMultiWindow();
+        assertTrue(isMenuVisible(menu, R.id.new_window_menu_id));
+
+        // On tablet, we show 'New Window' by default.
+        mIsTabletScreen = true;
+        mIsMultiWindow = false;
+        menu = createMenuForMultiWindow();
+        assertTrue(isMenuVisible(menu, R.id.new_window_menu_id));
+
+        for (int i = 0; i < MultiWindowUtils.getMaxInstances(); ++i) {
+            createInstance(i, "https://url" + i);
+        }
+
+        Menu menu2 = createMenuForMultiWindow();
+        assertFalse(isMenuVisible(menu2, R.id.new_window_menu_id));
+    }
+
+    @Test
+    public void testPageMenuItems_instanceSwitcher_moveTabToOtherWindow() {
+        setUpMocksForPageMenu();
+        mIsNewWindowMenuFeatureEnabled = true;
+        doReturn(true).when(mTabbedAppMenuPropertiesDelegate).instanceSwitcherEnabled();
+
+        createInstance(0, "https://url0");
+
+        Menu menu = createMenuForMultiWindow();
+        assertEquals(1, mMultiWindowModeStateDispatcher.getInstanceCount());
+        assertFalse(isMenuVisible(menu, R.id.move_to_other_window_menu_id));
+
+        createInstance(1, "https://url1");
+
+        Menu menu2 = createMenuForMultiWindow();
+        assertEquals(2, mMultiWindowModeStateDispatcher.getInstanceCount());
+        assertTrue(isMenuVisible(menu2, R.id.move_to_other_window_menu_id));
+    }
+
+    @Test
+    public void testPageMenuItems_instanceSwitcher_manageAllWindow() {
+        setUpMocksForPageMenu();
+        mIsNewWindowMenuFeatureEnabled = true;
+        doReturn(true).when(mTabbedAppMenuPropertiesDelegate).instanceSwitcherEnabled();
+
+        createInstance(0, "https://url0");
+
+        Menu menu = createMenuForMultiWindow();
+        assertFalse(isMenuVisible(menu, R.id.manage_all_windows_menu_id));
+
+        createInstance(1, "https://url1");
+
+        Menu menu2 = createMenuForMultiWindow();
+        assertTrue(isMenuVisible(menu2, R.id.manage_all_windows_menu_id));
+    }
+
+    @Test
     public void getFooterResourceId_incognito_doesNotReturnWebFeedMenuItem() {
         setUpMocksForWebFeedFooter();
         when(mTab.isIncognito()).thenReturn(true);
@@ -320,7 +399,7 @@ public class TabbedAppMenuPropertiesDelegateUnitTest {
     @Test
     public void getFooterResourceId_signedOutUser_doesNotReturnWebFeedMenuItem() {
         setUpMocksForWebFeedFooter();
-        when(mIdentityManager.hasPrimaryAccount()).thenReturn(false);
+        when(mIdentityManager.hasPrimaryAccount(anyInt())).thenReturn(false);
 
         assertNotEquals("Footer Resource ID should not be web_feed_main_menu_item.",
                 R.layout.web_feed_main_menu_item,
@@ -341,7 +420,7 @@ public class TabbedAppMenuPropertiesDelegateUnitTest {
         when(mTab.isIncognito()).thenReturn(false);
         when(mTab.getOriginalUrl()).thenReturn(JUnitTestGURLs.getGURL(JUnitTestGURLs.EXAMPLE_URL));
         when(mOfflinePageUtils.isOfflinePage(mTab)).thenReturn(false);
-        when(mIdentityManager.hasPrimaryAccount()).thenReturn(true);
+        when(mIdentityManager.hasPrimaryAccount(anyInt())).thenReturn(true);
     }
 
     private void setUpMocksForPageMenu() {
@@ -417,6 +496,9 @@ public class TabbedAppMenuPropertiesDelegateUnitTest {
         doReturn(mIsNewWindowMenuFeatureEnabled)
                 .when(mTabbedAppMenuPropertiesDelegate)
                 .isNewWindowMenuFeatureEnabled();
+        doReturn(MultiWindowUtils.getInstanceCount())
+                .when(mMultiWindowModeStateDispatcher)
+                .getInstanceCount();
         Menu menu = createTestMenu();
         mTabbedAppMenuPropertiesDelegate.prepareMenu(menu, null);
         return menu;
@@ -544,5 +626,16 @@ public class TabbedAppMenuPropertiesDelegateUnitTest {
             }
         }
         return items.toString();
+    }
+
+    private static void createInstance(int index, String url) {
+        String urlKey = ChromePreferenceKeys.MULTI_INSTANCE_URL.createKey(String.valueOf(index));
+        SharedPreferencesManager.getInstance().writeString(urlKey, url);
+        String tabCountKey =
+                ChromePreferenceKeys.MULTI_INSTANCE_TAB_COUNT.createKey(String.valueOf(index));
+        SharedPreferencesManager.getInstance().writeInt(tabCountKey, 1);
+        String accessTimeKey = ChromePreferenceKeys.MULTI_INSTANCE_LAST_ACCESSED_TIME.createKey(
+                String.valueOf(index));
+        SharedPreferencesManager.getInstance().writeLong(accessTimeKey, System.currentTimeMillis());
     }
 }

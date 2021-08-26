@@ -998,6 +998,8 @@ void AddFileManagerFeatureStrings(const std::string& locale,
                    crostini::CrostiniFeatures::Get()->IsEnabled(profile));
   dict->SetBoolKey("PLUGIN_VM_ENABLED",
                    plugin_vm::PluginVmFeatures::Get()->IsEnabled(profile));
+  dict->SetBoolKey("FILES_SWA",
+                   base::FeatureList::IsEnabled(chromeos::features::kFilesSWA));
   dict->SetBoolKey("FILES_TRASH_ENABLED", base::FeatureList::IsEnabled(
                                               chromeos::features::kFilesTrash));
   dict->SetBoolKey("ZIP_MOUNT", base::FeatureList::IsEnabled(
@@ -1018,6 +1020,9 @@ void AddFileManagerFeatureStrings(const std::string& locale,
   dict->SetBoolKey("FILES_SINGLE_PARTITION_FORMAT_ENABLED",
                    base::FeatureList::IsEnabled(
                        chromeos::features::kFilesSinglePartitionFormat));
+  dict->SetBoolKey(
+      "FILES_BANNER_FRAMEWORK",
+      base::FeatureList::IsEnabled(chromeos::features::kFilesBannerFramework));
 
   dict->SetStringKey("UI_LOCALE", locale);
 }

@@ -629,7 +629,8 @@ void NGInlineLayoutStateStack::BoxData::UpdateFragmentEdges(
 
 LayoutUnit NGInlineLayoutStateStack::ComputeInlinePositions(
     NGLogicalLineItems* line_box,
-    LayoutUnit position) {
+    LayoutUnit position,
+    bool ignore_box_margin_border_padding) {
   // At this point, children are in the visual order, and they have their
   // origins at (0, 0). Accumulate inline offset from left to right.
   for (NGLogicalLineItem& child : *line_box) {
@@ -645,22 +646,24 @@ LayoutUnit NGInlineLayoutStateStack::ComputeInlinePositions(
   if (box_data_list_.IsEmpty())
     return position;
 
-  // Adjust child offsets for margin/border/padding of inline boxes.
-  for (BoxData& box_data : box_data_list_) {
-    unsigned start = box_data.fragment_start;
-    unsigned end = box_data.fragment_end;
-    DCHECK_GT(end, start);
+  if (!ignore_box_margin_border_padding) {
+    // Adjust child offsets for margin/border/padding of inline boxes.
+    for (BoxData& box_data : box_data_list_) {
+      unsigned start = box_data.fragment_start;
+      unsigned end = box_data.fragment_end;
+      DCHECK_GT(end, start);
 
-    if (box_data.margin_border_padding_line_left) {
-      line_box->MoveInInlineDirection(box_data.margin_border_padding_line_left,
-                                      start, line_box->size());
-      position += box_data.margin_border_padding_line_left;
-    }
+      if (box_data.margin_border_padding_line_left) {
+        line_box->MoveInInlineDirection(
+            box_data.margin_border_padding_line_left, start, line_box->size());
+        position += box_data.margin_border_padding_line_left;
+      }
 
-    if (box_data.margin_border_padding_line_right) {
-      line_box->MoveInInlineDirection(box_data.margin_border_padding_line_right,
-                                      end, line_box->size());
-      position += box_data.margin_border_padding_line_right;
+      if (box_data.margin_border_padding_line_right) {
+        line_box->MoveInInlineDirection(
+            box_data.margin_border_padding_line_right, end, line_box->size());
+        position += box_data.margin_border_padding_line_right;
+      }
     }
   }
 
@@ -682,8 +685,6 @@ LayoutUnit NGInlineLayoutStateStack::ComputeInlinePositions(
     LayoutUnit line_left_offset =
         start_child.rect.offset.inline_offset - start_child.margin_line_left;
     LinePadding& start_padding = accumulated_padding[start];
-    start_padding.line_left += box_data.margin_border_padding_line_left;
-    line_left_offset -= start_padding.line_left - box_data.margin_line_left;
 
     DCHECK_GT(box_data.fragment_end, start);
     unsigned last = box_data.fragment_end - 1;
@@ -692,8 +693,16 @@ LayoutUnit NGInlineLayoutStateStack::ComputeInlinePositions(
                                    last_child.margin_line_left +
                                    last_child.inline_size;
     LinePadding& last_padding = accumulated_padding[last];
-    last_padding.line_right += box_data.margin_border_padding_line_right;
-    line_right_offset += last_padding.line_right - box_data.margin_line_right;
+
+    if (!ignore_box_margin_border_padding) {
+      start_padding.line_left += box_data.margin_border_padding_line_left;
+      last_padding.line_right += box_data.margin_border_padding_line_right;
+      line_left_offset += box_data.margin_line_left;
+      line_right_offset -= box_data.margin_line_right;
+    }
+
+    line_left_offset -= start_padding.line_left;
+    line_right_offset += last_padding.line_right;
 
     box_data.rect.offset.inline_offset = line_left_offset;
     box_data.rect.size.inline_size = line_right_offset - line_left_offset;
@@ -704,48 +713,66 @@ LayoutUnit NGInlineLayoutStateStack::ComputeInlinePositions(
 
 void NGInlineLayoutStateStack::ApplyRelativePositioning(
     const NGConstraintSpace& space,
-    NGLogicalLineItems* line_box) {
+    NGLogicalLineItems* line_box,
+    Vector<LogicalOffset, 32>* oof_relative_offsets) {
   if (box_data_list_.IsEmpty())
     return;
+
+  DCHECK(oof_relative_offsets);
+  DCHECK_EQ(oof_relative_offsets->size(), box_data_list_.size());
 
   // The final position of any inline boxes, (<span>, etc) are stored on
   // |BoxData::rect|. As we don't have a mapping from |NGLogicalLineItem| to
   // |BoxData| we store the accumulated relative offsets, and then apply the
   // final adjustment at the end of this function.
   Vector<LogicalOffset, 32> accumulated_offsets(line_box->size());
+  Vector<LogicalOffset, 32> oof_accumulated_offsets(line_box->size());
 
   for (BoxData& box_data : box_data_list_) {
     unsigned start = box_data.fragment_start;
     unsigned end = box_data.fragment_end;
     const LogicalOffset relative_offset =
         ComputeRelativeOffsetForInline(space, *box_data.item->Style());
+    const LogicalOffset relative_offset_for_oof =
+        ComputeRelativeOffsetForOOFInInline(space, *box_data.item->Style());
 
     // Move all children for this box.
     for (unsigned index = start; index < end; index++) {
       auto& child = (*line_box)[index];
       child.rect.offset += relative_offset;
       accumulated_offsets[index] += relative_offset;
+      oof_accumulated_offsets[index] += relative_offset_for_oof;
     }
   }
 
   // Apply the final accumulated relative position offset for each box.
-  for (BoxData& box_data : box_data_list_)
+  for (wtf_size_t i = 0; i < box_data_list_.size(); i++) {
+    BoxData& box_data = box_data_list_[i];
     box_data.rect.offset += accumulated_offsets[box_data.fragment_start];
+    (*oof_relative_offsets)[i] =
+        oof_accumulated_offsets[box_data.fragment_start];
+  }
 }
 
 void NGInlineLayoutStateStack::CreateBoxFragments(
     const NGConstraintSpace& space,
-    NGLogicalLineItems* line_box) {
+    NGLogicalLineItems* line_box,
+    bool is_opaque,
+    Vector<LogicalOffset, 32>* oof_relative_offsets) {
   DCHECK(!box_data_list_.IsEmpty());
+  DCHECK(oof_relative_offsets);
+  DCHECK_EQ(oof_relative_offsets->size(), box_data_list_.size());
 
-  for (BoxData& box_data : box_data_list_) {
+  for (wtf_size_t i = 0; i < box_data_list_.size(); i++) {
+    BoxData& box_data = box_data_list_[i];
     unsigned start = box_data.fragment_start;
     unsigned end = box_data.fragment_end;
     DCHECK_GT(end, start);
     NGLogicalLineItem* child = &(*line_box)[start];
     DCHECK(box_data.item->ShouldCreateBoxFragment());
     scoped_refptr<const NGLayoutResult> box_fragment =
-        box_data.CreateBoxFragment(space, line_box);
+        box_data.CreateBoxFragment(space, line_box, is_opaque,
+                                   (*oof_relative_offsets)[i]);
     if (child->IsPlaceholder()) {
       child->layout_result = std::move(box_fragment);
       child->rect = box_data.rect;
@@ -766,7 +793,9 @@ void NGInlineLayoutStateStack::CreateBoxFragments(
 scoped_refptr<const NGLayoutResult>
 NGInlineLayoutStateStack::BoxData::CreateBoxFragment(
     const NGConstraintSpace& space,
-    NGLogicalLineItems* line_box) {
+    NGLogicalLineItems* line_box,
+    bool is_opaque,
+    LogicalOffset oof_relative_offset) {
   DCHECK(item);
   DCHECK(item->Style());
   const ComputedStyle& style = *item->Style();
@@ -785,15 +814,16 @@ NGInlineLayoutStateStack::BoxData::CreateBoxFragment(
   box.SetBoxType(NGPhysicalFragment::kInlineBox);
   box.SetStyleVariant(item->StyleVariant());
 
-  // Inline boxes have block start/end borders, even when its containing block
-  // was fragmented. Fragmenting a line box in block direction is not
-  // supported today.
-  box.SetSidesToInclude({true, has_line_right_edge, true, has_line_left_edge});
-
-  // We don't use ComputeRelativeOffsetForInline() when storing the relative
-  // offset for OOF descendants to avoid any line-logical conversions.
-  const LogicalOffset relative_offset = ComputeRelativeOffset(
-      style, space.GetWritingDirection(), space.AvailableSize());
+  if (UNLIKELY(is_opaque)) {
+    box.SetIsOpaque();
+    box.SetSidesToInclude({false, false, false, false});
+  } else {
+    // Inline boxes have block start/end borders, even when its containing block
+    // was fragmented. Fragmenting a line box in block direction is not
+    // supported today.
+    box.SetSidesToInclude(
+        {true, has_line_right_edge, true, has_line_left_edge});
+  }
 
   for (unsigned i = fragment_start; i < fragment_end; i++) {
     NGLogicalLineItem& child = (*line_box)[i];
@@ -811,6 +841,7 @@ NGInlineLayoutStateStack::BoxData::CreateBoxFragment(
       // this as a child of an inline level fragment, we adjust the static
       // position to be relative to this fragment.
       LogicalOffset static_offset = child.rect.offset - rect.offset;
+      static_offset += oof_relative_offset;
 
       box.AddOutOfFlowInlineChildCandidate(oof_box, static_offset,
                                            child.container_direction);
@@ -820,8 +851,14 @@ NGInlineLayoutStateStack::BoxData::CreateBoxFragment(
 
     // Propagate any OOF-positioned descendants from any atomic-inlines, etc.
     if (child.layout_result) {
+      // An accumulated relative offset is applied to an OOF once it reaches its
+      // inline container. Subtract out the relative offset to avoid adding it
+      // twice.
       box.PropagateChildData(child.layout_result->PhysicalFragment(),
-                             child.rect.offset - rect.offset, relative_offset);
+                             child.rect.offset - rect.offset -
+                                 ComputeRelativeOffsetForInline(
+                                     space, child.PhysicalFragment()->Style()),
+                             /* relative_offset */ LogicalOffset());
     }
 
     // |NGFragmentItems| has a flat list of all descendants, except
@@ -833,7 +870,7 @@ NGInlineLayoutStateStack::BoxData::CreateBoxFragment(
   // invalidations.
   item->GetLayoutObject()->SetShouldDoFullPaintInvalidation();
 
-  box.MoveOutOfFlowDescendantCandidatesToDescendants(relative_offset);
+  box.MoveOutOfFlowDescendantCandidatesToDescendants(oof_relative_offset);
   return box.ToInlineBoxFragment();
 }
 

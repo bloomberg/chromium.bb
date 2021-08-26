@@ -60,6 +60,9 @@ bool PaintLayerPainter::PaintedOutputInvisible(const ComputedStyle& style) {
   if (style.HasWillChangeOpacityHint())
     return false;
 
+  if (style.HasCurrentOpacityAnimation())
+    return false;
+
   // 0.0004f < 1/2048. With 10-bit color channels (only available on the
   // newest Macs; otherwise it's 8-bit), we see that an alpha of 1/2048 or
   // less leads to a color output of less than 0.5 in all channels, hence
@@ -95,8 +98,20 @@ PaintResult PaintLayerPainter::Paint(
     return kFullyPainted;
   }
 
-  // If the transform can't be inverted, then don't paint anything.
-  if (paint_layer_.PaintsWithTransform(painting_info.GetGlobalPaintFlags()) &&
+  // If the transform can't be inverted, don't paint anything. We still need
+  // to paint with CompositeAfterPaint if there are animations to ensure the
+  // animation can be setup to run on the compositor.
+  bool paint_non_invertible_transforms = false;
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    const auto* properties =
+        paint_layer_.GetLayoutObject().FirstFragment().PaintProperties();
+    if (properties && properties->Transform() &&
+        properties->Transform()->HasActiveTransformAnimation()) {
+      paint_non_invertible_transforms = true;
+    }
+  }
+  if (!paint_non_invertible_transforms &&
+      paint_layer_.PaintsWithTransform(painting_info.GetGlobalPaintFlags()) &&
       !paint_layer_.RenderableTransform(painting_info.GetGlobalPaintFlags())
            .IsInvertible()) {
     return kFullyPainted;
@@ -210,15 +225,37 @@ bool PaintLayerPainter::ShouldUseInfiniteCullRectInternal(
 
   if (const auto* properties =
           paint_layer_.GetLayoutObject().FirstFragment().PaintProperties()) {
+    // Cull rect mapping doesn't work under perspective in some cases.
+    // See http://crbug.com/887558 for details.
     if (properties->Perspective())
       return true;
     if (for_cull_rect_update) {
-      // A CSS transform can also have perspective like
-      // "transform: perspective(100px) rotateY(45deg)".
       if (const auto* transform = properties->Transform()) {
+        // A CSS transform can also have perspective like
+        // "transform: perspective(100px) rotateY(45deg)". In these cases, we
+        // also want to skip cull rect mapping. See http://crbug.com/887558 for
+        // details.
         if (!transform->IsIdentityOr2DTranslation() &&
-            transform->Matrix().HasPerspective())
+            transform->Matrix().HasPerspective()) {
           return true;
+        }
+
+        // Ensure content under animating transforms is not culled out, even if
+        // the initial matrix is non-invertible.
+        if (transform->HasActiveTransformAnimation() &&
+            !transform->IsIdentityOr2DTranslation() &&
+            !transform->Matrix().IsInvertible()) {
+          return true;
+        }
+
+        // As an optimization, skip cull rect updating for non-composited
+        // transforms which have already been painted. This is because the cull
+        // rect update, which needs to do complex mapping of the cull rect, can
+        // be more expensive than over-painting.
+        if (!transform->HasDirectCompositingReasons() &&
+            paint_layer_.PreviousPaintResult() == kFullyPainted) {
+          return true;
+        }
       }
     }
   }
@@ -435,8 +472,14 @@ PaintResult PaintLayerPainter::PaintLayerContents(
         cull_rect_intersects_contents = cull_rect_intersects_self;
       }
 
-      if (!cull_rect_intersects_self && !cull_rect_intersects_contents)
+      if (!cull_rect_intersects_self && !cull_rect_intersects_contents) {
+        if (!is_painting_overflow_contents &&
+            paint_layer_.KnownToClipSubtree()) {
+          paint_layer_.SetPreviousPaintResult(kMayBeClippedByCullRect);
+          return kMayBeClippedByCullRect;
+        }
         should_paint_content = false;
+      }
 
       // The above doesn't consider clips on non-self-painting contents.
       // Will update in ScopedBoxContentsPaintState.

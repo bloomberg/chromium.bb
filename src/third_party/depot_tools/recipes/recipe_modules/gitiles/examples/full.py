@@ -68,16 +68,16 @@ def GenTests(api):
           ])
       )
       + api.step_data(
-          'fetch master:OWNERS',
+          'fetch main:OWNERS',
           api.gitiles.make_encoded_file('foobar')
       )
       + api.step_data(
-          'fetch master:NONEXISTENT',
+          'fetch main:NONEXISTENT',
           api.json.output({'value': None})
       )
       + api.step_data(
           ('download https://chromium.googlesource.com/chromium/src @ '
-           'refs/heads/master (2)'),
+           'refs/heads/main (2)'),
         api.json.output({
           'extracted': {
             'filecount': 10,

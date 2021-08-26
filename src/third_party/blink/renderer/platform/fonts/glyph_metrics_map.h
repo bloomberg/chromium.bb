@@ -37,7 +37,6 @@
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
-#include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 
 namespace blink {
 
@@ -120,7 +119,7 @@ GlyphMetricsMap<T>::LocatePageSlowCase(unsigned page_number) {
     filled_primary_page_ = true;
   } else {
     if (pages_) {
-      page = pages_->at(page_number);
+      page = pages_->DeprecatedAtOrEmptyValue(page_number);
       if (page)
         return page;
     } else {

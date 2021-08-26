@@ -14,7 +14,12 @@
 #include "services/network/public/cpp/http_request_headers_mojom_traits.h"
 #include "services/network/public/cpp/network_ipc_param_traits.h"
 #include "services/network/public/cpp/optional_trust_token_params.h"
+#include "services/network/public/mojom/chunked_data_pipe_getter.mojom.h"
+#include "services/network/public/mojom/cookie_access_observer.mojom.h"
+#include "services/network/public/mojom/data_pipe_getter.mojom.h"
+#include "services/network/public/mojom/devtools_observer.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "services/network/public/mojom/url_request.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/mojom/origin_mojom_traits.h"
@@ -79,7 +84,6 @@ TEST(URLRequestMojomTraitsTest, Roundtrips_ResourceRequest) {
   original.do_not_prompt_for_login = true;
   original.is_main_frame = true;
   original.transition_type = 0;
-  original.report_raw_headers = true;
   original.previews_state = 0;
   original.upgrade_if_insecure = true;
   original.is_revalidating = false;

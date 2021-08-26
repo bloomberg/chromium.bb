@@ -75,6 +75,7 @@ namespace {
 // this array may either refer to features defined in the header of this file or
 // in other locations in the code base (e.g. chrome/, components/, etc).
 const base::Feature* const kFeaturesExposedToJava[] = {
+    &autofill::features::kAutofillAddressProfileSavePromptNicknameSupport,
     &autofill::features::kAutofillCreditCardAuthentication,
     &autofill::features::kAutofillEnablePasswordInfoBarAccountIndicationFooter,
     &autofill::features::kAutofillEnableSaveCardInfoBarAccountIndicationFooter,
@@ -106,6 +107,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &features::kContinuousSearch,
     &features::kEarlyLibraryLoad,
     &features::kGenericSensorExtraClasses,
+    &features::kHttpsOnlyMode,
     &features::kLinkDoctorDeprecationAndroid,
     &features::kMetricsSettingsAndroid,
     &features::kNetworkServiceInProcess,
@@ -114,6 +116,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &shared_highlighting::kSharedHighlightingV2,
     &shared_highlighting::kSharedHighlightingAmp,
     &features::kElasticOverscroll,
+    &features::kPrivacyReview,
     &features::kPrivacySandboxSettings,
     &features::kPrivacySandboxSettings2,
     &features::kPrioritizeBootstrapTasks,
@@ -125,8 +128,10 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &features::kToolbarUseHardwareBitmapDraw,
     &features::kUseNotificationCompatBuilder,
     &features::kWebNfc,
+    &features::kIncognitoNtpRevamp,
     &feature_engagement::kIPHHomepagePromoCardFeature,
     &feature_engagement::kIPHNewTabPageHomeButtonFeature,
+    &feature_engagement::kIPHSnooze,
     &feature_engagement::kIPHTabSwitcherButtonFeature,
     &feed::kFeedInteractiveRefresh,
     &feed::kInterestFeedContentSuggestions,
@@ -168,9 +173,11 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kCCTRedirectPreconnect,
     &kCCTRemoveRemoteViewIds,
     &kCCTReportParallelRequestStatus,
+    &kCCTResizableForFirstParties,
     &kCCTResizableForThirdParties,
     &kCCTResourcePrefetch,
     &kDarkenWebsitesCheckboxInThemesSetting,
+    &kQuickActionSearchWidgetAndroidDinoVariant,
     &kDontAutoHideBrowserControls,
     &kChromeShareHighlightsAndroid,
     &kChromeShareLongScreenshot,
@@ -200,6 +207,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kDownloadFileProvider,
     &kDownloadNotificationBadge,
     &kDownloadProgressInfoBar,
+    &kDownloadProgressMessage,
     &kDownloadRename,
     &kDuetTabStripIntegrationAndroid,
     &kDynamicColorAndroid,
@@ -211,6 +219,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kHandleMediaIntents,
     &kHomepagePromoCard,
     &kImmersiveUiMode,
+    &kIncognitoNtpRealBox,
     &kIncognitoScreenshot,
     &kInlineUpdateFlow,
     &kInstanceSwitcher,
@@ -285,6 +294,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &language::kForceAppLanguagePrompt,
     &language::kTranslateAssistContent,
     &language::kTranslateIntent,
+    &messages::kMessagesForAndroidChromeSurvey,
     &messages::kMessagesForAndroidInfrastructure,
     &messages::kMessagesForAndroidReaderMode,
     &offline_pages::kOfflineIndicatorFeature,
@@ -305,8 +315,8 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &password_manager::features::kEditPasswordsInSettings,
     &password_manager::features::kPasswordScriptsFetching,
     &password_manager::features::kRecoverFromNeverSaveAndroid,
-    &password_manager::features::kUseNewHeaderForLegacySavePasswordBubble,
     &performance_hints::features::kContextMenuPerformanceInfo,
+    &permissions::features::kRevertDSEAutomaticPermissions,
     &query_tiles::features::kQueryTilesGeoFilter,
     &query_tiles::features::kQueryTiles,
     &query_tiles::features::kQueryTilesInNTP,
@@ -316,7 +326,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &query_tiles::features::kQueryTilesSegmentation,
     &reading_list::switches::kReadLater,
     &send_tab_to_self::kSendTabToSelfV2,
-    &signin::kMobileIdentityConsistencyVar,
     &signin::kMobileIdentityConsistencyFRE,
     &signin::kMobileIdentityConsistencyPromos,
     &switches::kDeprecateMenagerieAPI,
@@ -367,7 +376,7 @@ const base::Feature kFocusOmniboxInIncognitoTabIntents{
     "FocusOmniboxInIncognitoTabIntents", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kAllowRemoteContextForNotifications{
-    "AllowRemoteContextForNotifications", base::FEATURE_ENABLED_BY_DEFAULT};
+    "AllowRemoteContextForNotifications", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kAndroidPartnerCustomizationPhenotype{
     "AndroidPartnerCustomizationPhenotype", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -444,6 +453,9 @@ const base::Feature kCCTRemoveRemoteViewIds{"CCTRemoveRemoteViewIds",
 
 const base::Feature kCCTReportParallelRequestStatus{
     "CCTReportParallelRequestStatus", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kCCTResizableForFirstParties{
+    "CCTResizableForThirdParties", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kCCTResizableForThirdParties{
     "CCTResizableForThirdParties", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -535,6 +547,10 @@ const base::Feature kContextualSearchTranslations{
 const base::Feature kDarkenWebsitesCheckboxInThemesSetting{
     "DarkenWebsitesCheckboxInThemesSetting", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kQuickActionSearchWidgetAndroidDinoVariant{
+    "QuickActionSearchWidgetAndroidDinoVariant",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kDirectActions{"DirectActions",
                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -543,6 +559,9 @@ const base::Feature kDownloadAutoResumptionThrottling{
 
 const base::Feature kDownloadProgressInfoBar{"DownloadProgressInfoBar",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kDownloadProgressMessage{"DownloadProgressMessage",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kDownloadFileProvider{"DownloadFileProvider",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
@@ -558,6 +577,9 @@ const base::Feature kDuetTabStripIntegrationAndroid{
 
 const base::Feature kDynamicColorAndroid{"DynamicColorAndroid",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kEnableDangerousDownloadDialog{
+    "EnableDangerousDownloadDialog", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kEnhancedProtectionPromoCard{
     "EnhancedProtectionPromoCard", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -576,6 +598,9 @@ const base::Feature kHomepagePromoCard{"HomepagePromoCard",
 
 const base::Feature kImmersiveUiMode{"ImmersiveUiMode",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kIncognitoNtpRealBox{"IncognitoNtpRealBox",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kIncognitoScreenshot{"IncognitoScreenshot",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
@@ -599,7 +624,7 @@ const base::Feature kNewWindowAppMenu{"NewWindowAppMenu",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kInstanceSwitcher{"InstanceSwitcher",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
 // TODO(knollr): This is a temporary kill switch, it can be removed once we feel
 // okay about leaving it on.

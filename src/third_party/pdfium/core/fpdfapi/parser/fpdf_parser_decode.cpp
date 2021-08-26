@@ -6,6 +6,7 @@
 
 #include "core/fpdfapi/parser/fpdf_parser_decode.h"
 
+#include <ctype.h>
 #include <limits.h>
 
 #include <algorithm>
@@ -58,7 +59,7 @@ uint8_t GetA85Result(uint32_t res, size_t i) {
 
 }  // namespace
 
-const uint16_t PDFDocEncoding[256] = {
+const uint16_t kPDFDocEncoding[256] = {
     0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007, 0x0008,
     0x0009, 0x000a, 0x000b, 0x000c, 0x000d, 0x000e, 0x000f, 0x0010, 0x0011,
     0x0012, 0x0013, 0x0014, 0x0015, 0x0016, 0x0017, 0x02d8, 0x02c7, 0x02c6,
@@ -220,7 +221,7 @@ uint32_t HexDecode(pdfium::span<const uint8_t> src_span,
       ++i;
       break;
     }
-    if (!std::isxdigit(ch))
+    if (!isxdigit(ch))
       continue;
 
     int digit = FXSYS_HexCharToInt(ch);
@@ -509,7 +510,7 @@ WideString PDF_DecodeText(pdfium::span<const uint8_t> span) {
   } else {
     pdfium::span<wchar_t> dest_buf = result.GetBuffer(span.size());
     for (size_t i = 0; i < span.size(); ++i)
-      dest_buf[i] = PDFDocEncoding[span[i]];
+      dest_buf[i] = kPDFDocEncoding[span[i]];
     dest_pos = span.size();
   }
   result.ReleaseBuffer(dest_pos);
@@ -525,7 +526,7 @@ ByteString PDF_EncodeText(const WideString& str) {
     for (i = 0; i < len; ++i) {
       int code;
       for (code = 0; code < 256; ++code) {
-        if (PDFDocEncoding[code] == str[i])
+        if (kPDFDocEncoding[code] == str[i])
           break;
       }
       if (code == 256)

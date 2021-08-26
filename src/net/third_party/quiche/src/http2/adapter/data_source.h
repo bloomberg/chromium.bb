@@ -5,17 +5,17 @@
 #include <utility>
 
 #include "absl/strings/string_view.h"
+#include "common/platform/api/quiche_export.h"
 
 namespace http2 {
 namespace adapter {
 
 // Represents a source of DATA frames for transmission to the peer.
-class DataFrameSource {
+class QUICHE_EXPORT_PRIVATE DataFrameSource {
  public:
   virtual ~DataFrameSource() {}
 
-  static constexpr ssize_t kBlocked = 0;
-  static constexpr ssize_t kError = -1;
+  enum : ssize_t { kBlocked = 0, kError = -1 };
 
   // Returns the number of bytes to send in the next DATA frame, and whether
   // this frame indicates the end of the data. Returns {kBlocked, false} if
@@ -32,43 +32,16 @@ class DataFrameSource {
   virtual bool send_fin() const = 0;
 };
 
-// Represents a HTTP message body.
-class DataSource {
+// Represents a source of metadata frames for transmission to the peer.
+class QUICHE_EXPORT_PRIVATE MetadataSource {
  public:
-  virtual ~DataSource() {}
+  virtual ~MetadataSource() {}
 
-  enum State {
-    // The source is not done, but cannot currently provide more data.
-    NOT_READY,
-    // The source can provide more data.
-    READY,
-    // The source is done.
-    DONE,
-  };
-
-  State state() const { return state_; }
-
-  // The next range of data provided by this data source.
-  virtual absl::string_view NextData() const = 0;
-
-  // Indicates that |bytes| bytes have been consumed by the caller.
-  virtual void Consume(size_t bytes) = 0;
-
- protected:
-  State state_ = NOT_READY;
-};
-
-// A simple implementation constructible from a string_view or std::string.
-class StringDataSource : public DataSource {
- public:
-  explicit StringDataSource(std::string data);
-
-  absl::string_view NextData() const override;
-  void Consume(size_t bytes) override;
-
- private:
-  const std::string data_;
-  absl::string_view remaining_;
+  // This method is called with a destination buffer and length. It should
+  // return the number of payload bytes copied to |dest|, or a negative integer
+  // to indicate an error, as well as a boolean indicating whether the metadata
+  // has been completely copied.
+  virtual std::pair<ssize_t, bool> Pack(uint8_t* dest, size_t dest_len) = 0;
 };
 
 }  // namespace adapter

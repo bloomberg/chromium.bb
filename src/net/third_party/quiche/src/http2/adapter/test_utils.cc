@@ -1,7 +1,10 @@
 #include "http2/adapter/test_utils.h"
 
-#include "http2/adapter/nghttp2_util.h"
+#include <ostream>
+
+#include "absl/strings/str_format.h"
 #include "common/quiche_endian.h"
+#include "spdy/core/hpack/hpack_encoder.h"
 #include "spdy/core/spdy_frame_reader.h"
 
 namespace http2 {
@@ -9,41 +12,26 @@ namespace adapter {
 namespace test {
 
 TestDataFrameSource::TestDataFrameSource(Http2VisitorInterface& visitor,
-                                         absl::string_view data_payload,
                                          bool has_fin)
-    : visitor_(visitor), has_fin_(has_fin) {
-  if (!data_payload.empty()) {
-    payload_fragments_.push_back(std::string(data_payload));
+    : visitor_(visitor), has_fin_(has_fin) {}
+
+void TestDataFrameSource::AppendPayload(absl::string_view payload) {
+  QUICHE_CHECK(!end_data_);
+  if (!payload.empty()) {
+    payload_fragments_.push_back(std::string(payload));
     current_fragment_ = payload_fragments_.front();
   }
 }
 
-TestDataFrameSource::TestDataFrameSource(
-    Http2VisitorInterface& visitor,
-    absl::Span<absl::string_view> payload_fragments,
-    bool has_fin)
-    : visitor_(visitor), has_fin_(has_fin) {
-  payload_fragments_.reserve(payload_fragments.size());
-  for (absl::string_view fragment : payload_fragments) {
-    if (!fragment.empty()) {
-      payload_fragments_.push_back(std::string(fragment));
-    }
-  }
-  if (!payload_fragments_.empty()) {
-    current_fragment_ = payload_fragments_.front();
-  }
-}
+void TestDataFrameSource::EndData() { end_data_ = true; }
 
 std::pair<ssize_t, bool> TestDataFrameSource::SelectPayloadLength(
     size_t max_length) {
-  if (!is_data_available_) {
-    return {kBlocked, false};
-  }
   // The stream is done if there's no more data, or if |max_length| is at least
   // as large as the remaining data.
-  const bool end_data =
-      current_fragment_.empty() || (payload_fragments_.size() == 1 &&
-                                    max_length >= current_fragment_.size());
+  const bool end_data = end_data_ && (current_fragment_.empty() ||
+                                      (payload_fragments_.size() == 1 &&
+                                       max_length >= current_fragment_.size()));
   const ssize_t length = std::min(max_length, current_fragment_.size());
   return {length, end_data};
 }
@@ -65,7 +53,7 @@ bool TestDataFrameSource::Send(absl::string_view frame_header,
   } else if (result == 0) {
     // Write blocked.
     return false;
-  } else if (result < concatenated.size()) {
+  } else if (static_cast<const size_t>(result) < concatenated.size()) {
     // Probably need to handle this better within this test class.
     QUICHE_LOG(DFATAL)
         << "DATA frame not fully flushed. Connection will be corrupt!";
@@ -74,8 +62,10 @@ bool TestDataFrameSource::Send(absl::string_view frame_header,
     payload_fragments_.clear();
     return false;
   }
-  current_fragment_.remove_prefix(payload_length);
-  if (current_fragment_.empty()) {
+  if (payload_length > 0) {
+    current_fragment_.remove_prefix(payload_length);
+  }
+  if (current_fragment_.empty() && !payload_fragments_.empty()) {
     payload_fragments_.erase(payload_fragments_.begin());
     if (!payload_fragments_.empty()) {
       current_fragment_ = payload_fragments_.front();
@@ -84,22 +74,50 @@ bool TestDataFrameSource::Send(absl::string_view frame_header,
   return true;
 }
 
+std::string EncodeHeaders(const spdy::SpdyHeaderBlock& entries) {
+  spdy::HpackEncoder encoder;
+  encoder.DisableCompression();
+  std::string result;
+  QUICHE_CHECK(encoder.EncodeHeaderSet(entries, &result));
+  return result;
+}
+
+TestMetadataSource::TestMetadataSource(const spdy::SpdyHeaderBlock& entries)
+    : encoded_entries_(EncodeHeaders(entries)) {
+  remaining_ = encoded_entries_;
+}
+
+std::pair<ssize_t, bool> TestMetadataSource::Pack(uint8_t* dest,
+                                                  size_t dest_len) {
+  const size_t copied = std::min(dest_len, remaining_.size());
+  std::memcpy(dest, remaining_.data(), copied);
+  remaining_.remove_prefix(copied);
+  return std::make_pair(copied, remaining_.empty());
+}
+
 namespace {
 
 using TypeAndOptionalLength =
     std::pair<spdy::SpdyFrameType, absl::optional<size_t>>;
 
-std::vector<std::pair<const char*, std::string>> LogFriendly(
+std::ostream& operator<<(
+    std::ostream& os,
     const std::vector<TypeAndOptionalLength>& types_and_lengths) {
-  std::vector<std::pair<const char*, std::string>> out;
-  out.reserve(types_and_lengths.size());
-  for (const auto type_and_length : types_and_lengths) {
-    out.push_back({spdy::FrameTypeToString(type_and_length.first),
-                   type_and_length.second
-                       ? absl::StrCat(type_and_length.second.value())
-                       : "<unspecified>"});
+  for (const auto& type_and_length : types_and_lengths) {
+    os << "(" << spdy::FrameTypeToString(type_and_length.first) << ", "
+       << (type_and_length.second ? absl::StrCat(type_and_length.second.value())
+                                  : "<unspecified>")
+       << ") ";
   }
-  return out;
+  return os;
+}
+
+std::string FrameTypeToString(uint8_t frame_type) {
+  if (spdy::IsDefinedFrameType(frame_type)) {
+    return spdy::FrameTypeToString(spdy::ParseFrameType(frame_type));
+  } else {
+    return absl::StrFormat("0x%x", static_cast<int>(frame_type));
+  }
 }
 
 // Custom gMock matcher, used to implement EqualsFrames().
@@ -152,16 +170,8 @@ class SpdyControlFrameMatcher
       return false;
     }
 
-    if (!spdy::IsDefinedFrameType(raw_type)) {
-      *listener << "; expected type " << FrameTypeToString(expected_type)
-                << " but raw type " << static_cast<int>(raw_type)
-                << " is not a defined frame type!";
-      return false;
-    }
-
-    spdy::SpdyFrameType actual_type = spdy::ParseFrameType(raw_type);
-    if (actual_type != expected_type) {
-      *listener << "; actual type: " << FrameTypeToString(actual_type)
+    if (raw_type != static_cast<uint8_t>(expected_type)) {
+      *listener << "; actual type: " << FrameTypeToString(raw_type)
                 << " but expected type: " << FrameTypeToString(expected_type);
       return false;
     }
@@ -173,356 +183,16 @@ class SpdyControlFrameMatcher
 
   void DescribeTo(std::ostream* os) const override {
     *os << "Data contains frames of types in sequence "
-        << LogFriendly(expected_types_and_lengths_);
+        << expected_types_and_lengths_;
   }
 
   void DescribeNegationTo(std::ostream* os) const override {
     *os << "Data does not contain frames of types in sequence "
-        << LogFriendly(expected_types_and_lengths_);
+        << expected_types_and_lengths_;
   }
 
  private:
   const std::vector<TypeAndOptionalLength> expected_types_and_lengths_;
-};
-
-// Custom gMock matcher, used to implement HasFrameHeader().
-class FrameHeaderMatcher
-    : public testing::MatcherInterface<const nghttp2_frame_hd*> {
- public:
-  FrameHeaderMatcher(int32_t streamid,
-                     uint8_t type,
-                     const testing::Matcher<int> flags)
-      : stream_id_(streamid), type_(type), flags_(flags) {}
-
-  bool MatchAndExplain(const nghttp2_frame_hd* frame,
-                       testing::MatchResultListener* listener) const override {
-    bool matched = true;
-    if (stream_id_ != frame->stream_id) {
-      *listener << "; expected stream " << stream_id_ << ", saw "
-                << frame->stream_id;
-      matched = false;
-    }
-    if (type_ != frame->type) {
-      *listener << "; expected frame type " << type_ << ", saw "
-                << static_cast<int>(frame->type);
-      matched = false;
-    }
-    if (!flags_.MatchAndExplain(frame->flags, listener)) {
-      matched = false;
-    }
-    return matched;
-  }
-
-  void DescribeTo(std::ostream* os) const override {
-    *os << "contains a frame header with stream " << stream_id_ << ", type "
-        << type_ << ", ";
-    flags_.DescribeTo(os);
-  }
-
-  void DescribeNegationTo(std::ostream* os) const override {
-    *os << "does not contain a frame header with stream " << stream_id_
-        << ", type " << type_ << ", ";
-    flags_.DescribeNegationTo(os);
-  }
-
- private:
-  const int32_t stream_id_;
-  const int type_;
-  const testing::Matcher<int> flags_;
-};
-
-class DataMatcher : public testing::MatcherInterface<const nghttp2_frame*> {
- public:
-  DataMatcher(const testing::Matcher<uint32_t> stream_id,
-              const testing::Matcher<size_t> length,
-              const testing::Matcher<int> flags)
-      : stream_id_(stream_id), length_(length), flags_(flags) {}
-
-  bool MatchAndExplain(const nghttp2_frame* frame,
-                       testing::MatchResultListener* listener) const override {
-    if (frame->hd.type != NGHTTP2_DATA) {
-      *listener << "; expected DATA frame, saw frame of type "
-                << static_cast<int>(frame->hd.type);
-      return false;
-    }
-    bool matched = true;
-    if (!stream_id_.MatchAndExplain(frame->hd.stream_id, listener)) {
-      matched = false;
-    }
-    if (!length_.MatchAndExplain(frame->hd.length, listener)) {
-      matched = false;
-    }
-    if (!flags_.MatchAndExplain(frame->hd.flags, listener)) {
-      matched = false;
-    }
-    return matched;
-  }
-
-  void DescribeTo(std::ostream* os) const override {
-    *os << "contains a DATA frame, ";
-    stream_id_.DescribeTo(os);
-    length_.DescribeTo(os);
-    flags_.DescribeTo(os);
-  }
-
-  void DescribeNegationTo(std::ostream* os) const override {
-    *os << "does not contain a DATA frame, ";
-    stream_id_.DescribeNegationTo(os);
-    length_.DescribeNegationTo(os);
-    flags_.DescribeNegationTo(os);
-  }
-
- private:
-  const testing::Matcher<uint32_t> stream_id_;
-  const testing::Matcher<size_t> length_;
-  const testing::Matcher<int> flags_;
-};
-
-class HeadersMatcher : public testing::MatcherInterface<const nghttp2_frame*> {
- public:
-  HeadersMatcher(const testing::Matcher<uint32_t> stream_id,
-                 const testing::Matcher<int> flags,
-                 const testing::Matcher<int> category)
-      : stream_id_(stream_id), flags_(flags), category_(category) {}
-
-  bool MatchAndExplain(const nghttp2_frame* frame,
-                       testing::MatchResultListener* listener) const override {
-    if (frame->hd.type != NGHTTP2_HEADERS) {
-      *listener << "; expected HEADERS frame, saw frame of type "
-                << static_cast<int>(frame->hd.type);
-      return false;
-    }
-    bool matched = true;
-    if (!stream_id_.MatchAndExplain(frame->hd.stream_id, listener)) {
-      matched = false;
-    }
-    if (!flags_.MatchAndExplain(frame->hd.flags, listener)) {
-      matched = false;
-    }
-    if (!category_.MatchAndExplain(frame->headers.cat, listener)) {
-      matched = false;
-    }
-    return matched;
-  }
-
-  void DescribeTo(std::ostream* os) const override {
-    *os << "contains a HEADERS frame, ";
-    stream_id_.DescribeTo(os);
-    flags_.DescribeTo(os);
-    category_.DescribeTo(os);
-  }
-
-  void DescribeNegationTo(std::ostream* os) const override {
-    *os << "does not contain a HEADERS frame, ";
-    stream_id_.DescribeNegationTo(os);
-    flags_.DescribeNegationTo(os);
-    category_.DescribeNegationTo(os);
-  }
-
- private:
-  const testing::Matcher<uint32_t> stream_id_;
-  const testing::Matcher<int> flags_;
-  const testing::Matcher<int> category_;
-};
-
-class RstStreamMatcher
-    : public testing::MatcherInterface<const nghttp2_frame*> {
- public:
-  RstStreamMatcher(const testing::Matcher<uint32_t> stream_id,
-                   const testing::Matcher<uint32_t> error_code)
-      : stream_id_(stream_id), error_code_(error_code) {}
-
-  bool MatchAndExplain(const nghttp2_frame* frame,
-                       testing::MatchResultListener* listener) const override {
-    if (frame->hd.type != NGHTTP2_RST_STREAM) {
-      *listener << "; expected RST_STREAM frame, saw frame of type "
-                << static_cast<int>(frame->hd.type);
-      return false;
-    }
-    bool matched = true;
-    if (!stream_id_.MatchAndExplain(frame->hd.stream_id, listener)) {
-      matched = false;
-    }
-    if (!error_code_.MatchAndExplain(frame->rst_stream.error_code, listener)) {
-      matched = false;
-    }
-    return matched;
-  }
-
-  void DescribeTo(std::ostream* os) const override {
-    *os << "contains a RST_STREAM frame, ";
-    stream_id_.DescribeTo(os);
-    error_code_.DescribeTo(os);
-  }
-
-  void DescribeNegationTo(std::ostream* os) const override {
-    *os << "does not contain a RST_STREAM frame, ";
-    stream_id_.DescribeNegationTo(os);
-    error_code_.DescribeNegationTo(os);
-  }
-
- private:
-  const testing::Matcher<uint32_t> stream_id_;
-  const testing::Matcher<uint32_t> error_code_;
-};
-
-class SettingsMatcher : public testing::MatcherInterface<const nghttp2_frame*> {
- public:
-  SettingsMatcher(const testing::Matcher<std::vector<Http2Setting>> values)
-      : values_(values) {}
-
-  bool MatchAndExplain(const nghttp2_frame* frame,
-                       testing::MatchResultListener* listener) const override {
-    if (frame->hd.type != NGHTTP2_SETTINGS) {
-      *listener << "; expected SETTINGS frame, saw frame of type "
-                << static_cast<int>(frame->hd.type);
-      return false;
-    }
-    std::vector<Http2Setting> settings;
-    settings.reserve(frame->settings.niv);
-    for (int i = 0; i < frame->settings.niv; ++i) {
-      const auto& p = frame->settings.iv[i];
-      settings.push_back({static_cast<uint16_t>(p.settings_id), p.value});
-    }
-    return values_.MatchAndExplain(settings, listener);
-  }
-
-  void DescribeTo(std::ostream* os) const override {
-    *os << "contains a SETTINGS frame, ";
-    values_.DescribeTo(os);
-  }
-
-  void DescribeNegationTo(std::ostream* os) const override {
-    *os << "does not contain a SETTINGS frame, ";
-    values_.DescribeNegationTo(os);
-  }
-
- private:
-  const testing::Matcher<std::vector<Http2Setting>> values_;
-};
-
-class PingMatcher : public testing::MatcherInterface<const nghttp2_frame*> {
- public:
-  PingMatcher(const testing::Matcher<uint64_t> id, bool is_ack)
-      : id_(id), is_ack_(is_ack) {}
-
-  bool MatchAndExplain(const nghttp2_frame* frame,
-                       testing::MatchResultListener* listener) const override {
-    if (frame->hd.type != NGHTTP2_PING) {
-      *listener << "; expected PING frame, saw frame of type "
-                << static_cast<int>(frame->hd.type);
-      return false;
-    }
-    bool matched = true;
-    bool frame_ack = frame->hd.flags & NGHTTP2_FLAG_ACK;
-    if (is_ack_ != frame_ack) {
-      *listener << "; expected is_ack=" << is_ack_ << ", saw " << frame_ack;
-      matched = false;
-    }
-    uint64_t data;
-    std::memcpy(&data, frame->ping.opaque_data, sizeof(data));
-    data = quiche::QuicheEndian::HostToNet64(data);
-    if (!id_.MatchAndExplain(data, listener)) {
-      matched = false;
-    }
-    return matched;
-  }
-
-  void DescribeTo(std::ostream* os) const override {
-    *os << "contains a PING frame, ";
-    id_.DescribeTo(os);
-  }
-
-  void DescribeNegationTo(std::ostream* os) const override {
-    *os << "does not contain a PING frame, ";
-    id_.DescribeNegationTo(os);
-  }
-
- private:
-  const testing::Matcher<uint64_t> id_;
-  const bool is_ack_;
-};
-
-class GoAwayMatcher : public testing::MatcherInterface<const nghttp2_frame*> {
- public:
-  GoAwayMatcher(const testing::Matcher<uint32_t> last_stream_id,
-                const testing::Matcher<uint32_t> error_code,
-                const testing::Matcher<absl::string_view> opaque_data)
-      : last_stream_id_(last_stream_id),
-        error_code_(error_code),
-        opaque_data_(opaque_data) {}
-
-  bool MatchAndExplain(const nghttp2_frame* frame,
-                       testing::MatchResultListener* listener) const override {
-    if (frame->hd.type != NGHTTP2_GOAWAY) {
-      *listener << "; expected GOAWAY frame, saw frame of type "
-                << static_cast<int>(frame->hd.type);
-      return false;
-    }
-    bool matched = true;
-    if (!last_stream_id_.MatchAndExplain(frame->goaway.last_stream_id,
-                                         listener)) {
-      matched = false;
-    }
-    if (!error_code_.MatchAndExplain(frame->goaway.error_code, listener)) {
-      matched = false;
-    }
-    auto opaque_data =
-        ToStringView(frame->goaway.opaque_data, frame->goaway.opaque_data_len);
-    if (!opaque_data_.MatchAndExplain(opaque_data, listener)) {
-      matched = false;
-    }
-    return matched;
-  }
-
-  void DescribeTo(std::ostream* os) const override {
-    *os << "contains a GOAWAY frame, ";
-    last_stream_id_.DescribeTo(os);
-    error_code_.DescribeTo(os);
-    opaque_data_.DescribeTo(os);
-  }
-
-  void DescribeNegationTo(std::ostream* os) const override {
-    *os << "does not contain a GOAWAY frame, ";
-    last_stream_id_.DescribeNegationTo(os);
-    error_code_.DescribeNegationTo(os);
-    opaque_data_.DescribeNegationTo(os);
-  }
-
- private:
-  const testing::Matcher<uint32_t> last_stream_id_;
-  const testing::Matcher<uint32_t> error_code_;
-  const testing::Matcher<absl::string_view> opaque_data_;
-};
-
-class WindowUpdateMatcher
-    : public testing::MatcherInterface<const nghttp2_frame*> {
- public:
-  WindowUpdateMatcher(const testing::Matcher<uint32_t> delta) : delta_(delta) {}
-
-  bool MatchAndExplain(const nghttp2_frame* frame,
-                       testing::MatchResultListener* listener) const override {
-    if (frame->hd.type != NGHTTP2_WINDOW_UPDATE) {
-      *listener << "; expected WINDOW_UPDATE frame, saw frame of type "
-                << static_cast<int>(frame->hd.type);
-      return false;
-    }
-    return delta_.MatchAndExplain(frame->window_update.window_size_increment,
-                                  listener);
-  }
-
-  void DescribeTo(std::ostream* os) const override {
-    *os << "contains a WINDOW_UPDATE frame, ";
-    delta_.DescribeTo(os);
-  }
-
-  void DescribeNegationTo(std::ostream* os) const override {
-    *os << "does not contain a WINDOW_UPDATE frame, ";
-    delta_.DescribeNegationTo(os);
-  }
-
- private:
-  const testing::Matcher<uint32_t> delta_;
 };
 
 }  // namespace
@@ -542,61 +212,6 @@ testing::Matcher<absl::string_view> EqualsFrames(
     types_and_lengths.push_back({type, absl::nullopt});
   }
   return MakeMatcher(new SpdyControlFrameMatcher(std::move(types_and_lengths)));
-}
-
-testing::Matcher<const nghttp2_frame_hd*> HasFrameHeader(
-    uint32_t streamid,
-    uint8_t type,
-    const testing::Matcher<int> flags) {
-  return MakeMatcher(new FrameHeaderMatcher(streamid, type, flags));
-}
-
-testing::Matcher<const nghttp2_frame*> IsData(
-    const testing::Matcher<uint32_t> stream_id,
-    const testing::Matcher<size_t> length,
-    const testing::Matcher<int> flags) {
-  return MakeMatcher(new DataMatcher(stream_id, length, flags));
-}
-
-testing::Matcher<const nghttp2_frame*> IsHeaders(
-    const testing::Matcher<uint32_t> stream_id,
-    const testing::Matcher<int> flags,
-    const testing::Matcher<int> category) {
-  return MakeMatcher(new HeadersMatcher(stream_id, flags, category));
-}
-
-testing::Matcher<const nghttp2_frame*> IsRstStream(
-    const testing::Matcher<uint32_t> stream_id,
-    const testing::Matcher<uint32_t> error_code) {
-  return MakeMatcher(new RstStreamMatcher(stream_id, error_code));
-}
-
-testing::Matcher<const nghttp2_frame*> IsSettings(
-    const testing::Matcher<std::vector<Http2Setting>> values) {
-  return MakeMatcher(new SettingsMatcher(values));
-}
-
-testing::Matcher<const nghttp2_frame*> IsPing(
-    const testing::Matcher<uint64_t> id) {
-  return MakeMatcher(new PingMatcher(id, false));
-}
-
-testing::Matcher<const nghttp2_frame*> IsPingAck(
-    const testing::Matcher<uint64_t> id) {
-  return MakeMatcher(new PingMatcher(id, true));
-}
-
-testing::Matcher<const nghttp2_frame*> IsGoAway(
-    const testing::Matcher<uint32_t> last_stream_id,
-    const testing::Matcher<uint32_t> error_code,
-    const testing::Matcher<absl::string_view> opaque_data) {
-  return MakeMatcher(
-      new GoAwayMatcher(last_stream_id, error_code, opaque_data));
-}
-
-testing::Matcher<const nghttp2_frame*> IsWindowUpdate(
-    const testing::Matcher<uint32_t> delta) {
-  return MakeMatcher(new WindowUpdateMatcher(delta));
 }
 
 }  // namespace test

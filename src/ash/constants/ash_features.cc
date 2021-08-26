@@ -215,25 +215,19 @@ const base::Feature kManagedTermsOfService{"ManagedTermsOfService",
 const base::Feature kButtonARCNetworkDiagnostics{
     "ButtonARCNetworkDiagnostics", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable or disable calendar view from the system tray.
+const base::Feature kCalendarView{"CalendarView",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether the camera privacy switch toasts and notification should be
 // displayed.
 const base::Feature kCameraPrivacySwitchNotifications{
     "CameraPrivacySwitchNotifications", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables the Capture Mode feature which is an enhanced screenshot and screen
-// capture user experience.
-const base::Feature kCaptureMode{"CaptureMode",
-                                 base::FEATURE_ENABLED_BY_DEFAULT};
-
-// If enabled, will use the CDM in the Chrome OS daemon rather than loading the
-// CDM using the library CDM interface.
-const base::Feature kCdmFactoryDaemon{"CdmFactoryDaemon",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
-
 // If enabled, allow per-network roaming configuration when cellular roaming is
 // not disabled for the device through enterprise policy.
 const base::Feature kCellularAllowPerNetworkRoaming{
-    "CellularAllowPerNetworkRoaming", base::FEATURE_DISABLED_BY_DEFAULT};
+    "CellularAllowPerNetworkRoaming", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, the value of |kCellularUseAttachApn| should have no effect and
 // and the LTE attach APN configuration will not be sent to the modem. This
@@ -297,9 +291,6 @@ const base::Feature kCrostiniGpuSupport{"CrostiniGpuSupport",
 const base::Feature kCrostiniResetLxdDb{"CrostiniResetLxdDb",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables or disables Crostini using Buster container images.
-const base::Feature kCrostiniUseBusterImage{"CrostiniUseBusterImage",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
 // Use DLC instead of component updater for managing the Termina image if set
 // (and component updater instead of DLC if not).
 const base::Feature kCrostiniUseDlc{"CrostiniUseDlc",
@@ -361,6 +352,10 @@ const base::Feature kDisableIdleSocketsCloseOnMemoryPressure{
 // testing.
 const base::Feature kDisableOfficeEditingComponentApp{
     "DisableOfficeEditingComponentApp", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Disables translation services of the Quick Answers V2.
+const base::Feature kDisableQuickAnswersV2Translation{
+    "DisableQuickAnswersV2Translation", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables indicators to hint where displays are connected.
 const base::Feature kDisplayAlignAssist{"DisplayAlignAssist",
@@ -459,6 +454,11 @@ const base::Feature kEnableSamlReauthenticationOnLockscreen{
 const base::Feature kEolWarningNotifications{"EolWarningNotifications",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables or disables enterprise policy control for eSIM cellular networks.
+// See https://crbug.com/1231305.
+const base::Feature kESimPolicy{"ESimPolicy",
+                                base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable or disable bubble showing when an application gains any UI lock.
 const base::Feature kExoLockNotification{"ExoLockNotification",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
@@ -524,6 +524,9 @@ const base::Feature kFiltersInRecents{"FiltersInRecents",
 const base::Feature kFullscreenAlertBubble{"EnableFullscreenBubble",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable ChromeOS FuseBox service.
+const base::Feature kFuseBox{"FuseBox", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables handle of `closeView` message from Gaia. The message is
 // supposed to end the flow.
 const base::Feature kGaiaCloseViewMessage{"GaiaCloseViewMessage",
@@ -544,6 +547,10 @@ const base::Feature kGesturePropertiesDBusService{
 // Enables editing with handwriting gestures within the virtual keyboard.
 const base::Feature kHandwritingGestureEditing{
     "HandwritingGestureEditing", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables new on-device recognition for legacy handwriting input.
+const base::Feature kHandwritingLegacyRecognition{
+    "HandwritingLegacyRecognition", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables the Background Page in the help app.
 const base::Feature kHelpAppBackgroundPage{"HelpAppBackgroundPage",
@@ -598,6 +605,13 @@ const base::Feature kHoldingSpaceInProgressDownloadsIntegration{
     "HoldingSpaceInProgressDownloadsIntegration",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables incognito profile integration with the productivity feature that
+// aims to reduce context switching by enabling users to collect content and
+// transfer or access it later.
+const base::Feature kHoldingSpaceIncognitoProfileIntegration{
+    "HoldingSpaceIncognitoProfileIntegration",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable or disable IME decoder via Mojo connection on Chrome OS.
 const base::Feature kImeMojoDecoder{"ImeMojoDecoder",
                                     base::FEATURE_ENABLED_BY_DEFAULT};
@@ -618,6 +632,10 @@ const base::Feature kImeSystemEmojiPicker{"SystemEmojiPicker",
 // Enable or disable system emoji picker falling back to clipboard.
 const base::Feature kImeSystemEmojiPickerClipboard{
     "SystemEmojiPickerClipboard", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enable or disable a new UI for stylus writing on the virtual keyboard
+const base::Feature kImeStylusHandwriting{"StylusHandwriting",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables Instant Tethering on Chrome OS.
 const base::Feature kInstantTethering{"InstantTethering",
@@ -646,6 +664,12 @@ const base::Feature kLacrosPrimary{"LacrosPrimary",
 const base::Feature kLacrosSupport{"LacrosSupport",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables or disables Language Packs for Handwriting Recognition.
+// This feature turns on the download of language-specific Handwriting models
+// via DLC.
+const base::Feature kLanguagePacksHandwriting{
+    "LanguagePacksHandwriting", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables the second language settings update.
 const base::Feature kLanguageSettingsUpdate2{"LanguageSettingsUpdate2",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
@@ -654,14 +678,14 @@ const base::Feature kLanguageSettingsUpdate2{"LanguageSettingsUpdate2",
 const base::Feature kLauncherAppSort{"LauncherAppSort",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables or disables the flag to remove empty spaces on launcher pages. If the
+// flag is enabled, all of pages expect for the last one should be filled.
+const base::Feature kLauncherRemoveEmptySpace{
+    "LauncherRemoveEmptySpace", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables new flow for license packaged devices with enterprise license.
 const base::Feature kLicensePackagedOobeFlow{"LicensePackagedOobeFlow",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Limits the windows listed in Alt-Tab to the ones in the currently active
-// desk.
-const base::Feature kLimitAltTabToActiveDesk{"LimitAltTabToActiveDesk",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Supports the feature to hide sensitive content in notifications on the lock
 // screen. This option is effective when |kLockScreenNotification| is enabled.
@@ -687,21 +711,13 @@ const base::Feature kLockScreenMediaControls{"LockScreenMediaControls",
 const base::Feature kManagedDeviceUIRedesign{"ManagedDeviceUIRedesign",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Whether image annotation is enabled in the ChromeOS media app.
-const base::Feature kMediaAppAnnotation{"MediaAppAnnotation",
-                                        base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Whether EXIF metadata is displayed in the ChromeOS media app.
-const base::Feature kMediaAppDisplayExif{"MediaAppDisplayExif",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Whether PDF files are opened by default in the ChromeOS media app.
 const base::Feature kMediaAppHandlesPdf{"MediaAppHandlesPdf",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Whether to show the new Video controls UI in the ChromeOS media app.
-const base::Feature kMediaAppVideoControls{"MediaAppVideoControls",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
+// Whether to allow the ChromeOS media app to open with multiple windows.
+const base::Feature kMediaAppMultiWindow{"MediaAppMultiWindow",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables notification of when a microphone-using app is launched while the
 // microphone is muted.
@@ -719,7 +735,7 @@ const base::Feature kMinimumChromeVersion{"MinimumChromeVersion",
 // minor mode(e.g. under the age of 18) to provide unnecessary consents to share
 // personal data.
 const base::Feature kMinorModeRestriction{"MinorModeRestriction",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the use of Mojo by Chrome-process code to communicate with Power
 // Manager. In order to use mojo, this feature must be turned on and a callsite
@@ -739,10 +755,6 @@ const base::Feature kNearbyKeepAliveFix{"NearbyKeepAliveFix",
 // Controls whether new Lockscreen reauth layout is shown or not.
 const base::Feature kNewLockScreenReauthLayout{
     "NewLockScreenReauthLayout", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Controls whether new OOBE layout is shown or not.
-const base::Feature kNewOobeLayout{"NewOobeLayout",
-                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the Night Light feature.
 const base::Feature kNightLight{"NightLight", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -839,10 +851,10 @@ const base::Feature kPluginVmFullscreen{"PluginVmFullscreen",
 const base::Feature kPreferConstantFrameRate{"PreferConstantFrameRate",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls whether to enable projector.
+// Controls whether to enable Projector.
 const base::Feature kProjector{"Projector", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls whether to enable projector in status tray.
+// Controls whether to enable Projector in status tray.
 const base::Feature kProjectorFeaturePod{"ProjectorFeaturePod",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -891,10 +903,6 @@ const base::Feature kQuickUnlockPinAutosubmitBackfill{
 // Enables suppression of Displays notifications other than resolution change.
 const base::Feature kReduceDisplayNotifications{
     "ReduceDisplayNotifications", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables or disables Release Notes notifications on Chrome OS.
-const base::Feature kReleaseNotesNotification{"ReleaseNotesNotification",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables Release Notes notifications on non-stable Chrome OS
 // channels. Used for testing.
@@ -1036,10 +1044,6 @@ const base::Feature kTelemetryExtension{"TelemetryExtension",
 const base::Feature kTrilinearFiltering{"TrilinearFiltering",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables the updated cellular activation UI; see go/cros-cellular-design.
-const base::Feature kUpdatedCellularActivationUi{
-    "UpdatedCellularActivationUi", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables using the BluetoothSystem Mojo interface for Bluetooth operations.
 const base::Feature kUseBluetoothSystemInAsh{"UseBluetoothSystemInAsh",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
@@ -1083,10 +1087,9 @@ const base::Feature kUserActivityPrediction{"UserActivityPrediction",
 const base::Feature kVerticalSplitScreen{"VerticalSplitScreen",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enable or disable using the floating virtual keyboard as the default option
-// on Chrome OS.
-const base::Feature kVirtualKeyboardFloatingDefault{
-    "VirtualKeyboardFloatingDefault", base::FEATURE_DISABLED_BY_DEFAULT};
+// Enable the Virtual Keyboard API.
+const base::Feature kVirtualKeyboardApi{"VirtualKeyboardApi",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable or disable bordered key for virtual keyboard on Chrome OS.
 const base::Feature kVirtualKeyboardBorderedKey{
@@ -1095,6 +1098,11 @@ const base::Feature kVirtualKeyboardBorderedKey{
 // Enable or disable multipaste feature for virtual keyboard on Chrome OS.
 const base::Feature kVirtualKeyboardMultipaste{
     "VirtualKeyboardMultipaste", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enable or disable showing multipaste suggestions in virtual keyboard on
+// Chrome OS.
+const base::Feature kVirtualKeyboardMultipasteSuggestion{
+    "VirtualKeyboardMultipasteSuggestion", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable or disable the chrome://vm page
 const base::Feature kVmStatusPage{"VmStatusPage",
@@ -1110,7 +1118,7 @@ const base::Feature kWallpaperWebUI{"WallpaperWebUI",
 
 // Generates WebAPKs representing installed PWAs and installs them inside ARC.
 const base::Feature kWebApkGenerator{"WebApkGenerator",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables special handling of Chrome tab drags from a WebUI tab strip.
 // These will be treated similarly to a window drag, showing split view
@@ -1157,10 +1165,6 @@ bool IsAccountManagementFlowsV2Enabled() {
 
 bool IsAllowAmbientEQEnabled() {
   return base::FeatureList::IsEnabled(kAllowAmbientEQ);
-}
-
-bool IsAltTabLimitedToActiveDesk() {
-  return base::FeatureList::IsEnabled(kLimitAltTabToActiveDesk);
 }
 
 bool IsAmbientModeDevUseProdEnabled() {
@@ -1223,12 +1227,8 @@ bool IsBluetoothRevampEnabled() {
   return base::FeatureList::IsEnabled(kBluetoothRevamp);
 }
 
-bool IsCaptureModeEnabled() {
-  return base::FeatureList::IsEnabled(kCaptureMode);
-}
-
-bool IsCellularActivationUiEnabled() {
-  return base::FeatureList::IsEnabled(kUpdatedCellularActivationUi);
+bool IsCalendarViewEnabled() {
+  return base::FeatureList::IsEnabled(kCalendarView);
 }
 
 bool IsClipboardHistoryContextMenuNudgeEnabled() {
@@ -1287,6 +1287,10 @@ bool IsEcheSWAResizingEnabled() {
   return base::FeatureList::IsEnabled(kEcheSWAResizing);
 }
 
+bool IsESimPolicyEnabled() {
+  return base::FeatureList::IsEnabled(kESimPolicy);
+}
+
 bool IsFamilyLinkOnSchoolDeviceEnabled() {
   return base::FeatureList::IsEnabled(kFamilyLinkOnSchoolDevice);
 }
@@ -1328,6 +1332,10 @@ bool IsHoldingSpaceInProgressDownloadsIntegrationEnabled() {
       kHoldingSpaceInProgressDownloadsIntegration);
 }
 
+bool IsHoldingSpaceIncognitoProfileIntegrationEnabled() {
+  return base::FeatureList::IsEnabled(kHoldingSpaceIncognitoProfileIntegration);
+}
+
 bool IsHostnameSettingEnabled() {
   return base::FeatureList::IsEnabled(kEnableHostnameSetting);
 }
@@ -1351,7 +1359,12 @@ bool IsKeyboardBasedDisplayArrangementInSettingsEnabled() {
 }
 
 bool IsLauncherAppSortEnabled() {
-  return base::FeatureList::IsEnabled(kLauncherAppSort);
+  return IsLauncherRemoveEmptySpaceEnabled() &&
+         base::FeatureList::IsEnabled(kLauncherAppSort);
+}
+
+bool IsLauncherRemoveEmptySpaceEnabled() {
+  return base::FeatureList::IsEnabled(kLauncherRemoveEmptySpace);
 }
 
 bool IsLicensePackagedOobeFlowEnabled() {
@@ -1406,10 +1419,6 @@ bool IsOAuthIppEnabled() {
 
 bool IsNewLockScreenReauthLayoutEnabled() {
   return base::FeatureList::IsEnabled(kNewLockScreenReauthLayout);
-}
-
-bool IsNewOobeLayoutEnabled() {
-  return base::FeatureList::IsEnabled(kNewOobeLayout);
 }
 
 bool IsNotificationExpansionAnimationEnabled() {
@@ -1507,6 +1516,10 @@ bool IsQuickAnswersTranslationEnabled() {
 
 bool IsQuickAnswersV2Enabled() {
   return base::FeatureList::IsEnabled(kQuickAnswersV2);
+}
+
+bool IsQuickAnswersV2TranslationDisabled() {
+  return base::FeatureList::IsEnabled(kDisableQuickAnswersV2Translation);
 }
 
 bool IsReduceDisplayNotificationsEnabled() {

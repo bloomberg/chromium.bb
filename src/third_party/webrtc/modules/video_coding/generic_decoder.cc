@@ -214,7 +214,7 @@ void VCMDecodedFrameCallback::Map(uint32_t timestamp,
     MutexLock lock(&lock_);
     int initial_size = _timestampMap.Size();
     _timestampMap.Add(timestamp, frameInfo);
-    // If no frame is dropped, the new size should be |initial_size| + 1
+    // If no frame is dropped, the new size should be `initial_size` + 1
     dropped_frames = (initial_size + 1) - _timestampMap.Size();
   }
   if (dropped_frames > 0) {
@@ -234,29 +234,20 @@ void VCMDecodedFrameCallback::ClearTimestampMap() {
   }
 }
 
-VCMGenericDecoder::VCMGenericDecoder(std::unique_ptr<VideoDecoder> decoder)
-    : VCMGenericDecoder(decoder.release(), false /* isExternal */) {}
-
-VCMGenericDecoder::VCMGenericDecoder(VideoDecoder* decoder, bool isExternal)
+VCMGenericDecoder::VCMGenericDecoder(VideoDecoder* decoder)
     : _callback(NULL),
       decoder_(decoder),
-      _codecType(kVideoCodecGeneric),
-      _isExternal(isExternal),
       _last_keyframe_content_type(VideoContentType::UNSPECIFIED) {
   RTC_DCHECK(decoder_);
 }
 
 VCMGenericDecoder::~VCMGenericDecoder() {
   decoder_->Release();
-  if (_isExternal)
-    decoder_.release();
-  RTC_DCHECK(_isExternal || decoder_);
 }
 
 int32_t VCMGenericDecoder::InitDecode(const VideoCodec* settings,
                                       int32_t numberOfCores) {
   TRACE_EVENT0("webrtc", "VCMGenericDecoder::InitDecode");
-  _codecType = settings->codecType;
 
   int err = decoder_->InitDecode(settings, numberOfCores);
   decoder_info_ = decoder_->GetDecoderInfo();

@@ -43,9 +43,9 @@ class Inspector {
   ~Inspector();
 
   /// @returns error messages from the Inspector
-  const std::string& error() { return error_; }
+  std::string error() { return diagnostics_.str(); }
   /// @returns true if an error was encountered
-  bool has_error() const { return !error_.empty(); }
+  bool has_error() const { return diagnostics_.contains_errors(); }
 
   /// @returns vector of entry point information
   std::vector<EntryPoint> GetEntryPoints();
@@ -122,6 +122,11 @@ class Inspector {
       const std::string& entry_point);
 
   /// @param entry_point name of the entry point to get information about.
+  /// @returns vector of all of the bindings for depth textures.
+  std::vector<ResourceBinding> GetDepthMultisampledTextureResourceBindings(
+      const std::string& entry_point);
+
+  /// @param entry_point name of the entry point to get information about.
   /// @returns vector of all of the bindings for external textures.
   std::vector<ResourceBinding> GetExternalTextureResourceBindings(
       const std::string& entry_point);
@@ -132,9 +137,14 @@ class Inspector {
   std::vector<SamplerTexturePair> GetSamplerTextureUses(
       const std::string& entry_point);
 
+  /// @param entry_point name of the entry point to get information about.
+  /// @returns the total size in bytes of all Workgroup storage-class storage
+  /// referenced transitively by the entry point.
+  uint32_t GetWorkgroupStorageSize(const std::string& entry_point);
+
  private:
   const Program* program_;
-  std::string error_;
+  diag::List diagnostics_;
   std::unique_ptr<
       std::unordered_map<std::string, UniqueVector<SamplerTexturePair>>>
       sampler_targets_;
@@ -156,11 +166,24 @@ class Inspector {
                                    const ast::DecorationList& decorations,
                                    std::vector<StageVariable>& variables) const;
 
-  /// Recursively determine if the type contains [[builtin(sample_mask)]]
+  /// Recursively determine if the type contains builtin.
   /// If `type` is a struct, recurse into members to check for the decoration.
   /// Otherwise, check `decorations` for the decoration.
-  bool ContainsSampleMaskBuiltin(sem::Type* type,
-                                 const ast::DecorationList& decorations) const;
+  bool ContainsBuiltin(ast::Builtin builtin,
+                       sem::Type* type,
+                       const ast::DecorationList& decorations) const;
+
+  /// Gathers all the texture resource bindings of the given type for the given
+  /// entry point.
+  /// @param entry_point name of the entry point to get information about.
+  /// @param texture_type the type of the textures to gather.
+  /// @param resource_type the ResourceBinding::ResourceType for the given
+  /// texture type.
+  /// @returns vector of all of the bindings for depth textures.
+  std::vector<ResourceBinding> GetTextureResourceBindings(
+      const std::string& entry_point,
+      const tint::TypeInfo& texture_type,
+      ResourceBinding::ResourceType resource_type);
 
   /// @param entry_point name of the entry point to get information about.
   /// @param read_only if true get only read-only bindings, if false get
@@ -188,6 +211,21 @@ class Inspector {
 
   /// Constructes |sampler_targets_| if it hasn't already been instantiated.
   void GenerateSamplerTargets();
+
+  /// For a N-uple of expressions, resolve to the appropriate global resources
+  /// and call 'cb'.
+  /// 'cb' may be called multiple times.
+  /// Assumes that not being able to resolve the resources is an error, so will
+  /// invoke TINT_ICE when that occurs.
+  /// @tparam N number of expressions in the n-uple
+  /// @tparam F type of the callback provided.
+  /// @param exprs N-uple of expressions to resolve.
+  /// @param cb is a callback function with the signature:
+  /// `void(std::array<const sem::GlobalVariable*, N>)`, which is invoked
+  /// whenever a set of expressions are resolved to globals.
+  template <size_t N, typename F>
+  void GetOriginatingResources(std::array<const ast::Expression*, N> exprs,
+                               F&& cb);
 };
 
 }  // namespace inspector

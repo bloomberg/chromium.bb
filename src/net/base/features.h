@@ -236,22 +236,6 @@ NET_EXPORT extern const base::FeatureParam<std::string>
 // Changes the timeout after which unused sockets idle sockets are cleaned up.
 NET_EXPORT extern const base::Feature kNetUnusedIdleSocketTimeout;
 
-// When enabled, makes cookies without a SameSite attribute behave like
-// SameSite=Lax cookies by default, and requires SameSite=None to be specified
-// in order to make cookies available in a third-party context. When disabled,
-// the default behavior for cookies without a SameSite attribute specified is no
-// restriction, i.e., available in a third-party context.
-// The "Lax-allow-unsafe" mitigation allows these cookies to be sent on
-// top-level cross-site requests with an unsafe (e.g. POST) HTTP method, if the
-// cookie is no more than 2 minutes old.
-NET_EXPORT extern const base::Feature kSameSiteByDefaultCookies;
-
-// When enabled, cookies without SameSite restrictions that don't specify the
-// Secure attribute will be rejected if set from an insecure context, or treated
-// as secure if set from a secure context. This ONLY has an effect if
-// SameSiteByDefaultCookies is also enabled.
-NET_EXPORT extern const base::Feature kCookiesWithoutSameSiteMustBeSecure;
-
 // When enabled, the time threshold for Lax-allow-unsafe cookies will be lowered
 // from 2 minutes to 10 seconds. This time threshold refers to the age cutoff
 // for which cookies that default into SameSite=Lax, which are newer than the
@@ -284,7 +268,12 @@ NET_EXPORT extern const base::FeatureParam<int> kCertDualVerificationTrialImpl;
 NET_EXPORT extern const base::FeatureParam<int>
     kCertDualVerificationTrialCacheSize;
 #endif /* defined(OS_MAC) */
-#endif /* BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED) */
+#endif /* BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED) */
+
+#if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
+// When enabled, use the Chrome Root Store instead of the system root store
+NET_EXPORT extern const base::Feature kChromeRootStoreUsed;
+#endif /* BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED) */
 
 // Turns off streaming media caching to disk when on battery power.
 NET_EXPORT extern const base::Feature kTurnOffStreamingMediaCachingOnBattery;
@@ -361,20 +350,6 @@ NET_EXPORT extern const base::Feature kFirstPartySets;
 // feature.
 NET_EXPORT extern const base::FeatureParam<bool> kFirstPartySetsIsDogfooder;
 
-// Controls whether the fix for crbug.com/1166211 is enabled. When this is
-// enabled, SameSite=Lax cookies may only be accessed for cross-site requests if
-// they are top-level navigations. When it is disabled, the (incorrect) previous
-// behavior that allows SameSite=Lax cookies on cross-site, non-top-level
-// requests if all frame ancestors are same-site with the request URL is used
-// instead. This fix is implemented behind a flag (kill switch) due to potential
-// compatibility risk.
-NET_EXPORT extern const base::Feature kSameSiteCookiesBugfix1166211;
-
-// When this feature is enabled, no CookieChangeDispatcher notifications will be
-// sent when loading cookies from the persistent store. All other change
-// notifications are still dispatched as usual.
-NET_EXPORT extern const base::Feature kNoCookieChangeNotificationOnLoad;
-
 #if BUILDFLAG(ENABLE_REPORTING)
 // When enabled this feature will allow a new Reporting-Endpoints header to
 // configure reporting endpoints for report delivery. This is used to support
@@ -405,6 +380,12 @@ NET_EXPORT extern const base::Feature kCookieSameSiteConsidersRedirectChain;
 // while others are allowed on a cross-site, same-party request. Additionally,
 // privacy mode is disabled in same-party contexts.)
 NET_EXPORT extern const base::Feature kSamePartyCookiesConsideredFirstParty;
+
+// When enabled, sites can opt-in to having their cookies partitioned by
+// top-level site with the Partitioned attribute. Partitioned cookies will only
+// be sent when the browser is on the same top-level site that it was on when
+// the cookie was set.
+NET_EXPORT extern const base::Feature kPartitionedCookies;
 
 }  // namespace features
 }  // namespace net

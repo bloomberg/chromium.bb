@@ -12,7 +12,6 @@
 #include "chrome/browser/media/webrtc/desktop_media_picker.h"
 #include "chrome/browser/media/webrtc/desktop_media_picker_factory.h"
 #include "content/public/browser/desktop_media_id.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class FakeDesktopMediaPicker;
 
@@ -46,7 +45,9 @@ class FakeDesktopMediaPickerFactory : public DesktopMediaPickerFactory {
       const content::MediaStreamRequest* request) override;
   std::vector<std::unique_ptr<DesktopMediaList>> CreateMediaList(
       const std::vector<DesktopMediaList::Type>& types,
-      content::WebContents* web_contents) override;
+      content::WebContents* web_contents,
+      DesktopMediaList::WebContentsFilter includable_web_contents_filter)
+      override;
 
  private:
   FakeDesktopMediaPicker* picker_;

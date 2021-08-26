@@ -91,8 +91,7 @@ class TestQuietNotificationPermissionUiSelector
 class ContentSettingImageModelTest : public BrowserWithTestWindowTest {
  public:
   ContentSettingImageModelTest()
-      : request_(u"test1",
-                 permissions::RequestType::kNotifications,
+      : request_(permissions::RequestType::kNotifications,
                  permissions::PermissionRequestGestureType::GESTURE) {}
   ~ContentSettingImageModelTest() override {}
 
@@ -197,7 +196,8 @@ TEST_F(ContentSettingImageModelTest, CookieAccessed) {
 
   GURL origin("http://google.com");
   std::unique_ptr<net::CanonicalCookie> cookie(net::CanonicalCookie::Create(
-      origin, "A=B", base::Time::Now(), absl::nullopt /* server_time */));
+      origin, "A=B", base::Time::Now(), absl::nullopt /* server_time */,
+      absl::nullopt /* cookie_partition_key */));
   ASSERT_TRUE(cookie);
   PageSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame())
       ->OnCookiesAccessed({content::CookieAccessDetails::Type::kChange,
@@ -287,7 +287,6 @@ TEST_F(ContentSettingImageModelTest, SensorAccessed) {
 // and system level Geolocation permissions
 TEST_F(ContentSettingImageModelTest, GeolocationAccessPermissionsChanged) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kMacCoreLocationImplementation);
   auto test_geolocation_manager =
       std::make_unique<device::FakeGeolocationManager>();
   device::FakeGeolocationManager* geolocation_manager =
@@ -345,7 +344,6 @@ TEST_F(ContentSettingImageModelTest, GeolocationAccessPermissionsChanged) {
 
 TEST_F(ContentSettingImageModelTest, GeolocationAccessPermissionsUndetermined) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kMacCoreLocationImplementation);
   auto test_geolocation_manager =
       std::make_unique<device::FakeGeolocationManager>();
   test_geolocation_manager->SetSystemPermission(
@@ -393,9 +391,7 @@ TEST_F(ContentSettingImageModelTest, GeolocationAccessPermissionsUndetermined) {
 
 TEST_F(ContentSettingImageModelTest, GeolocationAccessDeniedExperiment) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures({features::kMacCoreLocationImplementation,
-                                 features::kLocationPermissionsExperiment},
-                                {});
+  feature_list.InitWithFeatures({features::kLocationPermissionsExperiment}, {});
   auto test_geolocation_manager =
       std::make_unique<device::FakeGeolocationManager>();
   device::FakeGeolocationManager* geolocation_manager =

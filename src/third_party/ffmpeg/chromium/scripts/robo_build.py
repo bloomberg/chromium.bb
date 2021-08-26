@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Copyright 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -8,6 +8,26 @@
 
 import os
 from robo_lib import shell
+
+def ObliterateOldBuildOutputIfNeeded(robo_configuration):
+  """Erase any build.*.* directories from build_ffmpeg if we haven't started
+     the merge yet.
+  Args:
+    robo_configuration: RoboConfiguration.
+  """
+
+  # We have a sushi branch name if and only if we're on a sushi branch.  If
+  # we're not, then we haven't done the initial merge from upstream yet, and
+  # should clear the build directories.  Really, the idea is that any time we
+  # merge from upstream, we should erase all of this.
+  if robo_configuration.sushi_branch_name():
+    shell.log(f"Skipping erase of build output - Already on sushi branch")
+    return
+
+  shell.log("Removing all build output from build_ffmpeg.py")
+  robo_configuration.chdir_to_ffmpeg_home();
+  command = ["rm", "-rf", "build.*.*"]
+  robo_configuration.Call(command)
 
 def ConfigureAndBuildFFmpeg(robo_configuration, platform, architecture):
   """Run FFmpeg's configure script, and build ffmpeg.
@@ -23,7 +43,10 @@ def ConfigureAndBuildFFmpeg(robo_configuration, platform, architecture):
 
   shell.log("Starting FFmpeg build for %s %s" % (platform, architecture))
   robo_configuration.chdir_to_ffmpeg_home();
-  command = ["python2", "./chromium/scripts/build_ffmpeg.py", platform]
+  # Include --fast so that we don't rebuild the same directory once we get it
+  # right.  This saves time when only one platform is failing.
+  command = ["python2", "./chromium/scripts/build_ffmpeg.py", "--fast",
+             platform]
   if architecture:
     command.append(architecture)
   if robo_configuration.Call(command, stdout=None, stderr=None):

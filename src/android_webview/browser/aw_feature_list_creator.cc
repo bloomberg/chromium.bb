@@ -12,6 +12,7 @@
 
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_browser_process.h"
+#include "android_webview/browser/aw_feature_entries.h"
 #include "android_webview/browser/aw_metrics_service_client_delegate.h"
 #include "android_webview/browser/metrics/aw_metrics_service_client.h"
 #include "android_webview/browser/variations/variations_seed_loader.h"
@@ -22,6 +23,7 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/strings/string_split.h"
 #include "base/time/time.h"
@@ -221,18 +223,26 @@ void AwFeatureListCreator::SetUpFieldTrials() {
   // able to break seed downloads. See https://crbug.com/801771 for more info.
   variations::SafeSeedManager ignored_safe_seed_manager(local_state_.get());
 
+  auto feature_list = std::make_unique<base::FeatureList>();
+  std::vector<std::string> variation_ids =
+      aw_feature_entries::RegisterEnabledFeatureEntries(feature_list.get());
+
   // Populate FieldTrialList. Since |low_entropy_provider| is null, it will fall
   // back to the provider we previously gave to FieldTrialList, which is a low
   // entropy provider. The X-Client-Data header is not reported on WebView, so
-  // we pass an empty object as the |low_entropy_source_value|.
+  // we pass an empty object as the |low_entropy_source_value|. Because WebView
+  // does not use the same Variations Safe Mode mechanism as most other
+  // platforms, pass false for |extend_variations_safe_mode| to opt out of the
+  // Extended Variations Safe Mode experiment. See crbug/1220131 for more info.
   variations_field_trial_creator_->SetupFieldTrials(
       cc::switches::kEnableGpuBenchmarking, switches::kEnableFeatures,
-      switches::kDisableFeatures, std::vector<std::string>(),
+      switches::kDisableFeatures, variation_ids,
       GetSwitchDependentFeatureOverrides(
           *base::CommandLine::ForCurrentProcess()),
-      /*low_entropy_provider=*/nullptr, std::make_unique<base::FeatureList>(),
+      /*low_entropy_provider=*/nullptr, std::move(feature_list),
       metrics_client->metrics_state_manager(), aw_field_trials_.get(),
-      &ignored_safe_seed_manager, /*low_entropy_source_value=*/absl::nullopt);
+      &ignored_safe_seed_manager, /*low_entropy_source_value=*/absl::nullopt,
+      /*extend_variations_safe_mode=*/false);
 }
 
 void AwFeatureListCreator::CreateLocalState() {

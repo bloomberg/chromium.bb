@@ -7,12 +7,16 @@
 
 #include <memory>
 
+// TODO(https://crbug.com/1164001): remove and use forward declaration.
+#include "ash/components/power/dark_resume_controller.h"
 #include "base/macros.h"
 #include "base/task/cancelable_task_tracker.h"
 // TODO(https://crbug.com/1164001): remove and use forward declaration.
 #include "chrome/browser/ash/app_mode/arc/arc_kiosk_app_manager.h"
 // TODO(https://crbug.com/1164001): remove and use forward declaration.
 #include "chrome/browser/ash/app_mode/web_app/web_kiosk_app_manager.h"
+// TODO(https://crbug.com/1164001): remove and use forward declaration.
+#include "chrome/browser/ash/events/event_rewriter_delegate_impl.h"
 // TODO(https://crbug.com/1164001): remove and use forward declaration.
 #include "chrome/browser/ash/login/demo_mode/demo_mode_resources_remover.h"
 // TODO(https://crbug.com/1164001): remove and use forward declaration.
@@ -38,6 +42,7 @@
 // TODO(https://crbug.com/1164001): remove and use forward declaration.
 #include "chrome/browser/ash/usb/cros_usb_detector.h"
 // TODO(https://crbug.com/1164001): remove and use forward declaration.
+#include "chrome/browser/ash/pcie_peripheral/ash_usb_detector.h"
 #include "chrome/browser/ash/wilco_dtc_supportd/wilco_dtc_supportd_manager.h"
 #include "chrome/browser/chrome_browser_main_linux.h"
 #include "chrome/browser/chromeos/external_metrics.h"
@@ -58,7 +63,10 @@ class ArcServiceLauncher;
 
 namespace ash {
 class AccessibilityEventRewriterDelegateImpl;
-}
+namespace quick_pair {
+class QuickPairBrowserDelegateImpl;
+}  // namespace quick_pair
+}  // namespace ash
 
 namespace crosapi {
 class BrowserManager;
@@ -82,7 +90,6 @@ namespace chromeos {
 
 class BulkPrintersCalculatorFactory;
 class DebugdNotificationHandler;
-class EventRewriterDelegateImpl;
 class FastTransitionObserver;
 class LoginScreenExtensionsLifetimeManager;
 class LoginScreenExtensionsStorageCleaner;
@@ -104,10 +111,6 @@ class DBusServices;
 namespace platform_keys {
 class KeyPermissionsManager;
 }
-
-namespace system {
-class DarkResumeController;
-}  // namespace system
 
 // ChromeBrowserMainParts implementation for chromeos specific code.
 // NOTE: Chromeos UI (Ash) support should be added to
@@ -191,6 +194,7 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   std::unique_ptr<DemoModeResourcesRemover> demo_mode_resources_remover_;
   std::unique_ptr<crostini::CrosvmMetrics> crosvm_metrics_;
 
+  std::unique_ptr<ash::AshUsbDetector> ash_usb_detector_;
   std::unique_ptr<CrosUsbDetector> cros_usb_detector_;
 
   std::unique_ptr<crostini::CrostiniUnsupportedActionNotifier>
@@ -225,6 +229,9 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   std::unique_ptr<platform_keys::KeyPermissionsManager>
       system_token_key_permissions_manager_;
   std::unique_ptr<MemoryAblationStudy> memory_ablation_study_;
+
+  std::unique_ptr<ash::quick_pair::QuickPairBrowserDelegateImpl>
+      quick_pair_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsChromeos);
 };

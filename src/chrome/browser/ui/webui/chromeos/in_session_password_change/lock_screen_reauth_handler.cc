@@ -10,7 +10,7 @@
 #include "chrome/browser/ash/login/saml/in_session_password_sync_manager_factory.h"
 #include "chrome/browser/ash/login/signin_partition_manager.h"
 #include "chrome/browser/ash/login/ui/login_display_host_webui.h"
-#include "chrome/browser/ash/policy/core/browser_policy_connector_chromeos.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/common/chrome_features.h"
@@ -62,12 +62,12 @@ bool ShouldDoSamlRedirect(const std::string& email) {
   return user && user->using_saml();
 }
 
-chromeos::InSessionPasswordSyncManager* GetInSessionPasswordSyncManager() {
+InSessionPasswordSyncManager* GetInSessionPasswordSyncManager() {
   const user_manager::User* user =
       user_manager::UserManager::Get()->GetActiveUser();
   Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(user);
 
-  return chromeos::InSessionPasswordSyncManagerFactory::GetForProfile(profile);
+  return InSessionPasswordSyncManagerFactory::GetForProfile(profile);
 }
 
 const char kMainElement[] = "$(\'main-element\').";
@@ -178,7 +178,7 @@ void LockScreenReauthHandler::OnSetCookieForLoadGaiaWithPartition(
 
   std::string enterprise_enrollment_domain(
       g_browser_process->platform_part()
-          ->browser_policy_connector_chromeos()
+          ->browser_policy_connector_ash()
           ->GetEnterpriseEnrollmentDomain());
 
   if (enterprise_enrollment_domain.empty()) {
@@ -210,8 +210,7 @@ void LockScreenReauthHandler::UpdateOrientationAndWidth() {
   bool is_horizontal = display.width() >= display.height();
   CallJavascript("setOrientation", base::Value(is_horizontal));
 
-  chromeos::InSessionPasswordSyncManager* password_sync_manager =
-      GetInSessionPasswordSyncManager();
+  auto* password_sync_manager = GetInSessionPasswordSyncManager();
   int width = password_sync_manager->GetDialogWidth();
   CallJavascript("setWidth", base::Value(width));
 }
@@ -277,8 +276,7 @@ void LockScreenReauthHandler::HandleCompleteAuthentication(
 
 void LockScreenReauthHandler::OnCookieWaitTimeout() {
   NOTREACHED() << "Cookie has timed out while attempting to login in.";
-  chromeos::InSessionPasswordSyncManager* password_sync_manager =
-      GetInSessionPasswordSyncManager();
+  auto* password_sync_manager = GetInSessionPasswordSyncManager();
   password_sync_manager->DismissDialog();
 }
 
@@ -300,7 +298,7 @@ void LockScreenReauthHandler::CheckCredentials(
       base::BindRepeating(&LockScreenReauthHandler::ShowPasswordChangedScreen,
                           weak_factory_.GetWeakPtr());
   password_sync_manager_ =
-      chromeos::InSessionPasswordSyncManagerFactory::GetForProfile(profile);
+      InSessionPasswordSyncManagerFactory::GetForProfile(profile);
   password_sync_manager_->CheckCredentials(user_context,
                                            password_changed_callback);
 }

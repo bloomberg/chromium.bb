@@ -162,6 +162,7 @@ class TestPixmap : public gfx::NativePixmap {
       const gfx::Rect& display_bounds,
       const gfx::RectF& crop_rect,
       bool enable_blend,
+      const gfx::Rect& damage_rect,
       std::vector<gfx::GpuFence> acquire_fences,
       std::vector<gfx::GpuFence> release_fences) override {
     return true;
@@ -224,9 +225,11 @@ HeadlessSurfaceFactory::HeadlessSurfaceFactory(base::FilePath base_path)
 
 HeadlessSurfaceFactory::~HeadlessSurfaceFactory() = default;
 
-std::vector<gl::GLImplementation>
+std::vector<gl::GLImplementationParts>
 HeadlessSurfaceFactory::GetAllowedGLImplementations() {
-  return std::vector<gl::GLImplementation>{gl::kGLImplementationSwiftShaderGL};
+  return std::vector<gl::GLImplementationParts>{
+      gl::GLImplementationParts(gl::kGLImplementationSwiftShaderGL),
+      gl::GLImplementationParts(gl::ANGLEImplementation::kSwiftShader)};
 }
 
 GLOzone* HeadlessSurfaceFactory::GetGLOzone(
@@ -234,7 +237,9 @@ GLOzone* HeadlessSurfaceFactory::GetGLOzone(
   switch (implementation.gl) {
     case gl::kGLImplementationEGLGLES2:
     case gl::kGLImplementationSwiftShaderGL:
+    case gl::kGLImplementationEGLANGLE:
       return swiftshader_implementation_.get();
+
     default:
       return nullptr;
   }

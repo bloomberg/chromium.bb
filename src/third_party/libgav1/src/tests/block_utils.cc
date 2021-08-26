@@ -23,6 +23,7 @@ namespace libgav1 {
 namespace test_utils {
 namespace {
 
+#define LIBGAV1_DEBUG_FORMAT_CODE "x"
 template <typename Pixel>
 void PrintBlockDiff(const Pixel* block1, const Pixel* block2, int width,
                     int height, int stride1, int stride2,
@@ -35,15 +36,17 @@ void PrintBlockDiff(const Pixel* block1, const Pixel* block2, int width,
     for (int x = 0; x < print_width; ++x) {
       if (x >= width) {
         if (block1[x] == block2[x]) {
-          printf("[%*d] ", field_width, block1[x]);
+          printf("[%*" LIBGAV1_DEBUG_FORMAT_CODE "] ", field_width, block1[x]);
         } else {
-          printf("[*%*d] ", field_width - 1, block1[x]);
+          printf("[*%*" LIBGAV1_DEBUG_FORMAT_CODE "] ", field_width - 1,
+                 block1[x]);
         }
       } else {
         if (block1[x] == block2[x]) {
-          printf("%*d ", field_width, block1[x]);
+          printf("%*" LIBGAV1_DEBUG_FORMAT_CODE " ", field_width, block1[x]);
         } else {
-          printf("*%*d ", field_width - 1, block1[x]);
+          printf("*%*" LIBGAV1_DEBUG_FORMAT_CODE " ", field_width - 1,
+                 block1[x]);
         }
       }
     }
@@ -52,6 +55,7 @@ void PrintBlockDiff(const Pixel* block1, const Pixel* block2, int width,
     block2 += stride2;
   }
 }
+#undef LIBGAV1_DEBUG_FORMAT_CODE
 
 }  // namespace
 

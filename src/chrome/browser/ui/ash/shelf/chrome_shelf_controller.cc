@@ -19,6 +19,7 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_animation_types.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
@@ -61,6 +62,7 @@
 #include "chrome/browser/ui/ash/shelf/app_shortcut_shelf_item_controller.h"
 #include "chrome/browser/ui/ash/shelf/app_window_shelf_controller.h"
 #include "chrome/browser/ui/ash/shelf/app_window_shelf_item_controller.h"
+#include "chrome/browser/ui/ash/shelf/browser_apps_tracker.h"
 #include "chrome/browser/ui/ash/shelf/browser_shortcut_shelf_item_controller.h"
 #include "chrome/browser/ui/ash/shelf/browser_status_monitor.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller_util.h"
@@ -253,6 +255,12 @@ ChromeShelfController::ChromeShelfController(Profile* profile,
   app_window_controllers_.emplace_back(std::move(app_service_controller));
   // Create the browser monitor which will inform the shelf of status changes.
   browser_status_monitor_ = std::make_unique<BrowserStatusMonitor>(this);
+  if (base::FeatureList::IsEnabled(BrowserAppsTracker::kEnabled)) {
+    apps::AppServiceProxyChromeOs* proxy =
+        apps::AppServiceProxyFactory::GetForProfile(profile);
+    browser_apps_tracker_ =
+        std::make_unique<BrowserAppsTracker>(proxy->AppRegistryCache());
+  }
 }
 
 ChromeShelfController::~ChromeShelfController() {
@@ -299,6 +307,9 @@ void ChromeShelfController::Init() {
 
   UpdatePinnedAppsFromSync();
   browser_status_monitor_->Initialize();
+  if (base::FeatureList::IsEnabled(BrowserAppsTracker::kEnabled)) {
+    browser_apps_tracker_->Initialize();
+  }
 }
 
 ash::ShelfID ChromeShelfController::CreateAppItem(
@@ -349,8 +360,8 @@ void ChromeShelfController::CloseItem(const ash::ShelfID& id) {
   if (IsPinned(id)) {
     // Create a new shortcut delegate.
     SetItemStatus(id, ash::STATUS_CLOSED);
-    model_->SetShelfItemDelegate(id,
-                                 AppShortcutShelfItemController::Create(id));
+    model_->ReplaceShelfItemDelegate(
+        id, AppShortcutShelfItemController::Create(id));
   } else {
     RemoveShelfItem(id);
   }
@@ -489,7 +500,7 @@ void ChromeShelfController::UpdateAppState(content::WebContents* contents,
 
 void ChromeShelfController::UpdateV1AppState(const std::string& app_id) {
   for (Browser* browser : *BrowserList::GetInstance()) {
-    if (browser->deprecated_is_app() || !browser->is_type_normal() ||
+    if (!browser->is_type_normal() ||
         !multi_user_util::IsProfileFromActiveUser(browser->profile())) {
       continue;
     }
@@ -802,7 +813,7 @@ void ChromeShelfController::ReplacePinnedItem(const std::string& old_app_id,
 
   // Remove old_app at index and replace with new app.
   model_->RemoveItemAt(index);
-  model_->AddAt(index, item);
+  model_->AddAt(index, item, AppShortcutShelfItemController::Create(item.id));
 }
 
 void ChromeShelfController::PinAppAtIndex(const std::string& app_id,
@@ -815,7 +826,8 @@ void ChromeShelfController::PinAppAtIndex(const std::string& app_id,
   item.type = ash::TYPE_PINNED_APP;
   item.id = new_shelf_id;
 
-  model_->AddAt(target_index, item);
+  model_->AddAt(target_index, item,
+                AppShortcutShelfItemController::Create(item.id));
 }
 
 int ChromeShelfController::PinnedItemIndexByAppID(const std::string& app_id) {
@@ -1299,9 +1311,7 @@ ash::ShelfID ChromeShelfController::InsertAppItem(
   item.title = title;
   item.app_status = ShelfControllerHelper::GetAppStatus(
       latest_active_profile_, item_delegate->shelf_id().app_id);
-  // Set the delegate first to avoid constructing one in ShelfItemAdded.
-  model_->SetShelfItemDelegate(item.id, std::move(item_delegate));
-  model_->AddAt(index, item);
+  model_->AddAt(index, item, std::move(item_delegate));
   return item.id;
 }
 
@@ -1321,17 +1331,16 @@ void ChromeShelfController::CreateBrowserShortcutItem(bool pinned) {
       ash::NotificationBadgeColorCache::GetInstance().GetBadgeColorForApp(
           kChromeAppId, browser_shortcut.image);
   browser_shortcut.title = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
-  // Set the delegate first to avoid constructing another one in ShelfItemAdded.
-  model_->SetShelfItemDelegate(
-      browser_shortcut.id,
-      std::make_unique<BrowserShortcutShelfItemController>(model_));
 
   // If pinned, add the item towards the start of the shelf, it will be ordered
   // by weight. Otherwise put at the end as usual.
-  if (pinned)
-    model_->AddAt(0, browser_shortcut);
-  else
-    model_->Add(browser_shortcut);
+  if (pinned) {
+    model_->AddAt(0, browser_shortcut,
+                  std::make_unique<BrowserShortcutShelfItemController>(model_));
+  } else {
+    model_->Add(browser_shortcut,
+                std::make_unique<BrowserShortcutShelfItemController>(model_));
+  }
 }
 
 int ChromeShelfController::FindInsertionPoint() {
@@ -1350,10 +1359,10 @@ void ChromeShelfController::CloseWindowedAppsFromRemovedExtension(
   const BrowserList* browser_list = BrowserList::GetInstance();
   std::vector<Browser*> browser_to_close;
   for (BrowserList::const_reverse_iterator it =
-           browser_list->begin_last_active();
-       it != browser_list->end_last_active(); ++it) {
+           browser_list->begin_browsers_ordered_by_activation();
+       it != browser_list->end_browsers_ordered_by_activation(); ++it) {
     Browser* browser = *it;
-    if (browser->deprecated_is_app() &&
+    if ((browser->is_type_app() || browser->is_type_app_popup()) &&
         app_id == web_app::GetAppIdFromApplicationName(browser->app_name()) &&
         profile == browser->profile()) {
       browser_to_close.push_back(browser);
@@ -1467,8 +1476,8 @@ void ChromeShelfController::ShelfItemAdded(int index) {
   // The delegate must be set before FetchImage() so that shelf item icon is
   // set properly when FetchImage() calls OnAppImageUpdated() synchronously.
   if (!model_->GetShelfItemDelegate(id)) {
-    model_->SetShelfItemDelegate(id,
-                                 AppShortcutShelfItemController::Create(id));
+    model_->ReplaceShelfItemDelegate(
+        id, AppShortcutShelfItemController::Create(id));
   }
 
   // Fetch the app icon, this may synchronously update the item's image.

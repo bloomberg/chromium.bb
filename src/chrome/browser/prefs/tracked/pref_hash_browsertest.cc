@@ -543,7 +543,7 @@ class PrefHashBrowserTestClearedAtomic : public PrefHashBrowserTestBase {
     // |selected_prefs| should never be NULL under the protection level picking
     // it.
     EXPECT_TRUE(selected_prefs);
-    EXPECT_TRUE(selected_prefs->Remove(prefs::kHomePage, NULL));
+    EXPECT_TRUE(selected_prefs->RemoveKey(prefs::kHomePage));
   }
 
   void VerifyReactionToPrefAttack() override {
@@ -630,9 +630,9 @@ class PrefHashBrowserTestUntrustedInitialized : public PrefHashBrowserTestBase {
   void AttackPreferencesOnDisk(
       base::DictionaryValue* unprotected_preferences,
       base::DictionaryValue* protected_preferences) override {
-    unprotected_preferences->Remove("protection.macs", NULL);
+    unprotected_preferences->RemovePath("protection.macs");
     if (protected_preferences)
-      protected_preferences->Remove("protection.macs", NULL);
+      protected_preferences->RemovePath("protection.macs");
   }
 
   void VerifyReactionToPrefAttack() override {
@@ -864,9 +864,9 @@ class PrefHashBrowserTestChangedSplitPref : public PrefHashBrowserTestBase {
 
     // Drop a fake extension (for the purpose of this test, dropped settings
     // don't need to be valid extension settings).
-    auto fake_extension = std::make_unique<base::DictionaryValue>();
-    fake_extension->SetString("name", "foo");
-    extensions_dict->Set(std::string(32, 'a'), std::move(fake_extension));
+    base::DictionaryValue fake_extension;
+    fake_extension.SetString("name", "foo");
+    extensions_dict->SetKey(std::string(32, 'a'), std::move(fake_extension));
   }
 
   void VerifyReactionToPrefAttack() override {
@@ -1035,7 +1035,7 @@ class PrefHashBrowserTestUntrustedAdditionToPrefsAfterWipe
     unprotected_preferences->SetString(prefs::kHomePage, "http://example.net");
     // Clear the value in Secure Preferences, if any.
     if (protected_preferences)
-      protected_preferences->Remove(prefs::kHomePage, NULL);
+      protected_preferences->RemoveKey(prefs::kHomePage);
   }
 
   void VerifyReactionToPrefAttack() override {

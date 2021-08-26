@@ -9,10 +9,10 @@
 #include <memory>
 #include <utility>
 
+#include "base/json/values_util.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
-#include "base/util/values/values_util.h"
 #include "base/values.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -100,6 +100,12 @@ const char kPinAutosubmitBackfillNeeded[] = "pin_autosubmit_backfill_needed";
 // Sync token for SAML password multi-device sync
 const char kPasswordSyncToken[] = "password_sync_token";
 
+// Major version in which the user completed the onboarding flow.
+const char kOnboardingCompletedVersion[] = "onboarding_completed_version";
+
+// Last screen shown in the onboarding flow.
+const char kPendingOnboardingScreen[] = "onboarding_screen_pending";
+
 // List containing all the known user preferences keys.
 const char* kReservedKeys[] = {kCanonicalEmail,
                                kGAIAIdKey,
@@ -121,7 +127,9 @@ const char* kReservedKeys[] = {kCanonicalEmail,
                                kLastInputMethod,
                                kPinAutosubmitLength,
                                kPinAutosubmitBackfillNeeded,
-                               kPasswordSyncToken};
+                               kPasswordSyncToken,
+                               kOnboardingCompletedVersion,
+                               kPendingOnboardingScreen};
 
 // List containing all known user preference keys that used to be reserved and
 // are now obsolete.
@@ -612,14 +620,14 @@ base::Value KnownUser::GetChallengeResponseKeys(const AccountId& account_id) {
 
 void KnownUser::SetLastOnlineSignin(const AccountId& account_id,
                                     base::Time time) {
-  SetPref(account_id, kLastOnlineSignin, util::TimeToValue(time));
+  SetPref(account_id, kLastOnlineSignin, base::TimeToValue(time));
 }
 
 base::Time KnownUser::GetLastOnlineSignin(const AccountId& account_id) {
   const base::Value* value = nullptr;
   if (!GetPref(account_id, kLastOnlineSignin, &value))
     return base::Time();
-  absl::optional<base::Time> time = util::ValueToTime(value);
+  absl::optional<base::Time> time = base::ValueToTime(value);
   if (!time)
     return base::Time();
   return *time;
@@ -632,7 +640,7 @@ void KnownUser::SetOfflineSigninLimit(
     ClearPref(account_id, kOfflineSigninLimit);
   } else {
     SetPref(account_id, kOfflineSigninLimit,
-            util::TimeDeltaToValue(time_delta.value()));
+            base::TimeDeltaToValue(time_delta.value()));
   }
 }
 
@@ -641,7 +649,7 @@ absl::optional<base::TimeDelta> KnownUser::GetOfflineSigninLimit(
   const base::Value* value = nullptr;
   if (!GetPref(account_id, kOfflineSigninLimit, &value))
     return absl::nullopt;
-  absl::optional<base::TimeDelta> time_delta = util::ValueToTimeDelta(value);
+  absl::optional<base::TimeDelta> time_delta = base::ValueToTimeDelta(value);
   return time_delta;
 }
 
@@ -719,6 +727,51 @@ std::string KnownUser::GetPasswordSyncToken(const AccountId& account_id) {
   return std::string();
 }
 
+void KnownUser::SetOnboardingCompletedVersion(
+    const AccountId& account_id,
+    const absl::optional<base::Version> version) {
+  if (!version) {
+    ClearPref(account_id, kOnboardingCompletedVersion);
+  } else {
+    SetStringPref(account_id, kOnboardingCompletedVersion,
+                  version.value().GetString());
+  }
+}
+
+absl::optional<base::Version> KnownUser::GetOnboardingCompletedVersion(
+    const AccountId& account_id) {
+  std::string str_version;
+  if (!GetStringPref(account_id, kOnboardingCompletedVersion, &str_version))
+    return absl::nullopt;
+
+  base::Version version = base::Version(str_version);
+  if (!version.IsValid())
+    return absl::nullopt;
+  return version;
+}
+
+void KnownUser::RemoveOnboardingCompletedVersionForTests(
+    const AccountId& account_id) {
+  ClearPref(account_id, kOnboardingCompletedVersion);
+}
+
+void KnownUser::SetPendingOnboardingScreen(const AccountId& account_id,
+                                           const std::string& screen) {
+  SetStringPref(account_id, kPendingOnboardingScreen, screen);
+}
+
+void KnownUser::RemovePendingOnboardingScreen(const AccountId& account_id) {
+  ClearPref(account_id, kPendingOnboardingScreen);
+}
+
+std::string KnownUser::GetPendingOnboardingScreen(const AccountId& account_id) {
+  std::string screen;
+  if (GetStringPref(account_id, kPendingOnboardingScreen, &screen))
+    return screen;
+  // Return empty string if no screen is pending.
+  return std::string();
+}
+
 void KnownUser::ClearPref(const AccountId& account_id,
                           const std::string& path) {
   const base::DictionaryValue* user_pref_dict = nullptr;
@@ -774,11 +827,11 @@ void KnownUser::CleanObsoletePrefs() {
     // is not set because 0 is a legit value.
     const base::Value* value =
         user_entry.FindKey(kOfflineSigninLimitDeprecated);
-    absl::optional<base::TimeDelta> new_value = util::ValueToTimeDelta(value);
+    absl::optional<base::TimeDelta> new_value = base::ValueToTimeDelta(value);
     user_entry.RemoveKey(kOfflineSigninLimitDeprecated);
     if (new_value.has_value() && !new_value->is_zero()) {
       user_entry.SetKey(kOfflineSigninLimit,
-                        util::TimeDeltaToValue(*new_value));
+                        base::TimeDeltaToValue(*new_value));
     }
 
     if (new_value.has_value() && new_value->is_zero()) {

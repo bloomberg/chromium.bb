@@ -85,7 +85,7 @@ void CXFA_FFTextEdit::UpdateWidgetProperty() {
   if (m_pNode->IsMultiLine()) {
     dwExtendedStyle |= FWL_STYLEEXT_EDT_MultiLine | FWL_STYLEEXT_EDT_WantReturn;
     if (!m_pNode->IsVerticalScrollPolicyOff()) {
-      dwStyle |= FWL_WGTSTYLE_VScroll;
+      dwStyle |= FWL_STYLE_WGT_VScroll;
       dwExtendedStyle |= FWL_STYLEEXT_EDT_AutoVScroll;
     }
   } else if (!m_pNode->IsHorizontalScrollPolicyOff()) {
@@ -115,47 +115,55 @@ void CXFA_FFTextEdit::UpdateWidgetProperty() {
 
   dwExtendedStyle |= GetAlignment();
   GetNormalWidget()->ModifyStyles(dwStyle, 0xFFFFFFFF);
-  GetNormalWidget()->ModifyStylesEx(dwExtendedStyle, 0xFFFFFFFF);
+  GetNormalWidget()->ModifyStyleExts(dwExtendedStyle, 0xFFFFFFFF);
 }
 
-bool CXFA_FFTextEdit::AcceptsFocusOnButtonDown(uint32_t dwFlags,
-                                               const CFX_PointF& point,
-                                               FWL_MouseCommand command) {
-  if (command == FWL_MouseCommand::RightButtonDown && !m_pNode->IsOpenAccess())
+bool CXFA_FFTextEdit::AcceptsFocusOnButtonDown(
+    Mask<XFA_FWL_KeyFlag> dwFlags,
+    const CFX_PointF& point,
+    CFWL_MessageMouse::MouseCommand command) {
+  if (command == CFWL_MessageMouse::MouseCommand::kRightButtonDown &&
+      !m_pNode->IsOpenAccess()) {
     return false;
+  }
   if (!PtInActiveRect(point))
     return false;
 
   return true;
 }
 
-bool CXFA_FFTextEdit::OnLButtonDown(uint32_t dwFlags, const CFX_PointF& point) {
+bool CXFA_FFTextEdit::OnLButtonDown(Mask<XFA_FWL_KeyFlag> dwFlags,
+                                    const CFX_PointF& point) {
   if (!IsFocused()) {
-    GetLayoutItem()->SetStatusBits(XFA_WidgetStatus_Focused);
+    GetLayoutItem()->SetStatusBits(XFA_WidgetStatus::kFocused);
     UpdateFWLData();
     InvalidateRect();
   }
   SetButtonDown(true);
-  CFWL_MessageMouse msg(GetNormalWidget(), FWL_MouseCommand::LeftButtonDown,
+  CFWL_MessageMouse msg(GetNormalWidget(),
+                        CFWL_MessageMouse::MouseCommand::kLeftButtonDown,
                         dwFlags, FWLToClient(point));
   SendMessageToFWLWidget(&msg);
   return true;
 }
 
-bool CXFA_FFTextEdit::OnRButtonDown(uint32_t dwFlags, const CFX_PointF& point) {
+bool CXFA_FFTextEdit::OnRButtonDown(Mask<XFA_FWL_KeyFlag> dwFlags,
+                                    const CFX_PointF& point) {
   if (!IsFocused()) {
-    GetLayoutItem()->SetStatusBits(XFA_WidgetStatus_Focused);
+    GetLayoutItem()->SetStatusBits(XFA_WidgetStatus::kFocused);
     UpdateFWLData();
     InvalidateRect();
   }
   SetButtonDown(true);
-  CFWL_MessageMouse msg(nullptr, FWL_MouseCommand::RightButtonDown, dwFlags,
-                        FWLToClient(point));
+  CFWL_MessageMouse msg(nullptr,
+                        CFWL_MessageMouse::MouseCommand::kRightButtonDown,
+                        dwFlags, FWLToClient(point));
   SendMessageToFWLWidget(&msg);
   return true;
 }
 
-bool CXFA_FFTextEdit::OnRButtonUp(uint32_t dwFlags, const CFX_PointF& point) {
+bool CXFA_FFTextEdit::OnRButtonUp(Mask<XFA_FWL_KeyFlag> dwFlags,
+                                  const CFX_PointF& point) {
   if (!CXFA_FFField::OnRButtonUp(dwFlags, point))
     return false;
 
@@ -164,9 +172,9 @@ bool CXFA_FFTextEdit::OnRButtonUp(uint32_t dwFlags, const CFX_PointF& point) {
 }
 
 bool CXFA_FFTextEdit::OnSetFocus(CXFA_FFWidget* pOldWidget) {
-  GetLayoutItem()->ClearStatusBits(XFA_WidgetStatus_TextEditValueChanged);
+  GetLayoutItem()->ClearStatusBits(XFA_WidgetStatus::kTextEditValueChanged);
   if (!IsFocused()) {
-    GetLayoutItem()->SetStatusBits(XFA_WidgetStatus_Focused);
+    GetLayoutItem()->SetStatusBits(XFA_WidgetStatus::kFocused);
     UpdateFWLData();
     InvalidateRect();
   }
@@ -182,7 +190,7 @@ bool CXFA_FFTextEdit::OnKillFocus(CXFA_FFWidget* pNewWidget) {
   CFWL_MessageKillFocus msg(nullptr, GetNormalWidget());
   SendMessageToFWLWidget(&msg);
 
-  GetLayoutItem()->ClearStatusBits(XFA_WidgetStatus_Focused);
+  GetLayoutItem()->ClearStatusBits(XFA_WidgetStatus::kFocused);
   SetEditScrollOffset();
   ProcessCommittedData();
   UpdateFWLData();
@@ -191,7 +199,7 @@ bool CXFA_FFTextEdit::OnKillFocus(CXFA_FFWidget* pNewWidget) {
   if (!CXFA_FFWidget::OnKillFocus(pNewWidget))
     return false;
 
-  GetLayoutItem()->ClearStatusBits(XFA_WidgetStatus_TextEditValueChanged);
+  GetLayoutItem()->ClearStatusBits(XFA_WidgetStatus::kTextEditValueChanged);
   return true;
 }
 
@@ -221,7 +229,8 @@ void CXFA_FFTextEdit::ValidateNumberField(const WideString& wsText) {
 }
 
 bool CXFA_FFTextEdit::IsDataChanged() {
-  return GetLayoutItem()->TestStatusBits(XFA_WidgetStatus_TextEditValueChanged);
+  return GetLayoutItem()->TestStatusBits(
+      XFA_WidgetStatus::kTextEditValueChanged);
 }
 
 uint32_t CXFA_FFTextEdit::GetAlignment() {
@@ -308,7 +317,7 @@ bool CXFA_FFTextEdit::UpdateFWLData() {
 
 void CXFA_FFTextEdit::OnTextWillChange(CFWL_Widget* pWidget,
                                        CFWL_EventTextWillChange* event) {
-  GetLayoutItem()->SetStatusBits(XFA_WidgetStatus_TextEditValueChanged);
+  GetLayoutItem()->SetStatusBits(XFA_WidgetStatus::kTextEditValueChanged);
 
   CXFA_EventParam eParam;
   eParam.m_eType = XFA_EVENT_Change;
@@ -372,13 +381,13 @@ bool CXFA_FFTextEdit::CanCopy() {
 }
 
 bool CXFA_FFTextEdit::CanCut() {
-  if (ToEdit(GetNormalWidget())->GetStylesEx() & FWL_STYLEEXT_EDT_ReadOnly)
+  if (ToEdit(GetNormalWidget())->GetStyleExts() & FWL_STYLEEXT_EDT_ReadOnly)
     return false;
   return ToEdit(GetNormalWidget())->HasSelection();
 }
 
 bool CXFA_FFTextEdit::CanPaste() {
-  return !(ToEdit(GetNormalWidget())->GetStylesEx() &
+  return !(ToEdit(GetNormalWidget())->GetStyleExts() &
            FWL_STYLEEXT_EDT_ReadOnly);
 }
 

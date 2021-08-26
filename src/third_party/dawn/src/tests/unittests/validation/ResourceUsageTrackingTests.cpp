@@ -57,6 +57,7 @@ namespace {
             utils::ComboRenderPipelineDescriptor pipelineDescriptor;
             pipelineDescriptor.vertex.module = vsModule;
             pipelineDescriptor.cFragment.module = fsModule;
+            pipelineDescriptor.cTargets[0].writeMask = wgpu::ColorWriteMask::None;
             pipelineDescriptor.layout = utils::MakeBasicPipelineLayout(device, nullptr);
             return device.CreateRenderPipeline(&pipelineDescriptor);
         }
@@ -768,6 +769,7 @@ namespace {
             utils::ComboRenderPipelineDescriptor pipelineDescriptor;
             pipelineDescriptor.vertex.module = vsModule;
             pipelineDescriptor.cFragment.module = fsModule;
+            pipelineDescriptor.cTargets[0].writeMask = wgpu::ColorWriteMask::None;
             pipelineDescriptor.layout = utils::MakeBasicPipelineLayout(device, &bgl0);
             wgpu::RenderPipeline rp = device.CreateRenderPipeline(&pipelineDescriptor);
 
@@ -816,15 +818,19 @@ namespace {
     TEST_F(ResourceUsageTrackingTest, TextureWithMultipleReadUsages) {
         // Create a texture that will be used as both sampled and readonly storage texture
         wgpu::Texture texture =
-            CreateTexture(wgpu::TextureUsage::Sampled | wgpu::TextureUsage::Storage);
+            CreateTexture(wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::StorageBinding);
         wgpu::TextureView view = texture.CreateView();
 
         // Create a bind group to use the texture as sampled and readonly storage bindings
-        wgpu::BindGroupLayout bgl = utils::MakeBindGroupLayout(
-            device, {{0, wgpu::ShaderStage::Fragment | wgpu::ShaderStage::Compute,
-                      wgpu::TextureSampleType::Float},
-                     {1, wgpu::ShaderStage::Fragment | wgpu::ShaderStage::Compute,
-                      wgpu::StorageTextureAccess::ReadOnly, kFormat}});
+        wgpu::BindGroupLayout bgl;
+        // TODO(crbug.com/dawn/1025): Remove once ReadOnly storage texture deprecation period is
+        // passed.
+        EXPECT_DEPRECATION_WARNING(
+            bgl = utils::MakeBindGroupLayout(
+                device, {{0, wgpu::ShaderStage::Fragment | wgpu::ShaderStage::Compute,
+                          wgpu::TextureSampleType::Float},
+                         {1, wgpu::ShaderStage::Fragment | wgpu::ShaderStage::Compute,
+                          wgpu::StorageTextureAccess::ReadOnly, kFormat}}));
         wgpu::BindGroup bg = utils::MakeBindGroup(device, bgl, {{0, view}, {1, view}});
 
         // Test render pass
@@ -859,8 +865,8 @@ namespace {
         // Test render pass
         {
             // Create a texture
-            wgpu::Texture texture =
-                CreateTexture(wgpu::TextureUsage::Sampled | wgpu::TextureUsage::RenderAttachment);
+            wgpu::Texture texture = CreateTexture(wgpu::TextureUsage::TextureBinding |
+                                                  wgpu::TextureUsage::RenderAttachment);
             wgpu::TextureView view = texture.CreateView();
 
             // Create a bind group to use the texture as sampled binding
@@ -882,8 +888,8 @@ namespace {
         // Test compute pass
         {
             // Create a texture
-            wgpu::Texture texture =
-                CreateTexture(wgpu::TextureUsage::Sampled | wgpu::TextureUsage::Storage);
+            wgpu::Texture texture = CreateTexture(wgpu::TextureUsage::TextureBinding |
+                                                  wgpu::TextureUsage::StorageBinding);
             wgpu::TextureView view = texture.CreateView();
 
             // Create a bind group to use the texture as sampled and writeonly bindings
@@ -925,8 +931,8 @@ namespace {
         // Test render pass
         {
             // Create a texture
-            wgpu::Texture texture =
-                CreateTexture(wgpu::TextureUsage::Storage | wgpu::TextureUsage::RenderAttachment);
+            wgpu::Texture texture = CreateTexture(wgpu::TextureUsage::StorageBinding |
+                                                  wgpu::TextureUsage::RenderAttachment);
             wgpu::TextureView view = texture.CreateView();
 
             // Create a bind group to use the texture as writeonly storage binding
@@ -965,7 +971,7 @@ namespace {
         // Test compute pass
         {
             // Create a texture
-            wgpu::Texture texture = CreateTexture(wgpu::TextureUsage::Storage);
+            wgpu::Texture texture = CreateTexture(wgpu::TextureUsage::StorageBinding);
             wgpu::TextureView view = texture.CreateView();
 
             // Create a bind group to use the texture as sampled and writeonly bindings
@@ -990,17 +996,81 @@ namespace {
         }
     }
 
+    // Test that a single subresource of a texture cannot be used as a render attachment more than
+    // once in the same pass.
+    TEST_F(ResourceUsageTrackingTest, TextureWithMultipleRenderAttachmentUsage) {
+        // Create a texture with two array layers
+        wgpu::TextureDescriptor descriptor;
+        descriptor.dimension = wgpu::TextureDimension::e2D;
+        descriptor.size = {1, 1, 2};
+        descriptor.usage = wgpu::TextureUsage::RenderAttachment;
+        descriptor.format = kFormat;
+
+        wgpu::Texture texture = device.CreateTexture(&descriptor);
+
+        wgpu::TextureViewDescriptor viewDesc = {};
+        viewDesc.arrayLayerCount = 1;
+
+        wgpu::TextureView viewLayer0 = texture.CreateView(&viewDesc);
+
+        viewDesc.baseArrayLayer = 1;
+        wgpu::TextureView viewLayer1 = texture.CreateView(&viewDesc);
+
+        // Control: It is valid to use layer0 as a render target for one attachment, and
+        // layer1 as the second attachment in the same pass
+        {
+            utils::ComboRenderPassDescriptor renderPass({viewLayer0, viewLayer1});
+
+            wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+            wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass);
+            pass.EndPass();
+            encoder.Finish();
+        }
+
+        // Control: It is valid to use layer0 as a render target in separate passes.
+        {
+            utils::ComboRenderPassDescriptor renderPass({viewLayer0});
+
+            wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+            wgpu::RenderPassEncoder pass0 = encoder.BeginRenderPass(&renderPass);
+            pass0.EndPass();
+            wgpu::RenderPassEncoder pass1 = encoder.BeginRenderPass(&renderPass);
+            pass1.EndPass();
+            encoder.Finish();
+        }
+
+        // It is invalid to use layer0 as a render target for both attachments in the same pass
+        {
+            utils::ComboRenderPassDescriptor renderPass({viewLayer0, viewLayer0});
+
+            wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+            wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass);
+            pass.EndPass();
+            ASSERT_DEVICE_ERROR(encoder.Finish());
+        }
+
+        // It is invalid to use layer1 as a render target for both attachments in the same pass
+        {
+            utils::ComboRenderPassDescriptor renderPass({viewLayer1, viewLayer1});
+
+            wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+            wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass);
+            pass.EndPass();
+            ASSERT_DEVICE_ERROR(encoder.Finish());
+        }
+    }
+
     // Test that using the same texture as both readable and writable in different passes is
     // allowed
     TEST_F(ResourceUsageTrackingTest, TextureWithReadAndWriteUsageInDifferentPasses) {
         // Test render pass
         {
             // Create textures that will be used as both a sampled texture and a render target
-            wgpu::Texture t0 =
-                CreateTexture(wgpu::TextureUsage::Sampled | wgpu::TextureUsage::RenderAttachment);
+            wgpu::Texture t0 = CreateTexture(wgpu::TextureUsage::TextureBinding |
+                                             wgpu::TextureUsage::RenderAttachment);
             wgpu::TextureView v0 = t0.CreateView();
-            wgpu::Texture t1 =
-                CreateTexture(wgpu::TextureUsage::Sampled | wgpu::TextureUsage::RenderAttachment);
+            wgpu::Texture t1 = CreateTexture(wgpu::TextureUsage::TextureBinding |
+                                             wgpu::TextureUsage::RenderAttachment);
             wgpu::TextureView v1 = t1.CreateView();
 
             // Create bind groups to use the texture as sampled
@@ -1030,13 +1100,17 @@ namespace {
         // Test compute pass
         {
             // Create a texture that will be used storage texture
-            wgpu::Texture texture = CreateTexture(wgpu::TextureUsage::Storage);
+            wgpu::Texture texture = CreateTexture(wgpu::TextureUsage::StorageBinding);
             wgpu::TextureView view = texture.CreateView();
 
             // Create bind groups to use the texture as readonly and writeonly bindings
-            wgpu::BindGroupLayout readBGL = utils::MakeBindGroupLayout(
-                device,
-                {{0, wgpu::ShaderStage::Compute, wgpu::StorageTextureAccess::ReadOnly, kFormat}});
+            wgpu::BindGroupLayout readBGL;
+            // TODO(crbug.com/dawn/1025): Remove once ReadOnly storage texture deprecation period is
+            // passed.
+            EXPECT_DEPRECATION_WARNING(
+                readBGL = utils::MakeBindGroupLayout(
+                    device, {{0, wgpu::ShaderStage::Compute, wgpu::StorageTextureAccess::ReadOnly,
+                              kFormat}}));
             wgpu::BindGroupLayout writeBGL = utils::MakeBindGroupLayout(
                 device,
                 {{0, wgpu::ShaderStage::Compute, wgpu::StorageTextureAccess::WriteOnly, kFormat}});
@@ -1060,16 +1134,20 @@ namespace {
         // Test compute pass and render pass mixed together with resource dependency
         {
             // Create a texture that will be used a storage texture
-            wgpu::Texture texture = CreateTexture(wgpu::TextureUsage::Storage);
+            wgpu::Texture texture = CreateTexture(wgpu::TextureUsage::StorageBinding);
             wgpu::TextureView view = texture.CreateView();
 
             // Create bind groups to use the texture as readonly and writeonly bindings
             wgpu::BindGroupLayout writeBGL = utils::MakeBindGroupLayout(
                 device,
                 {{0, wgpu::ShaderStage::Compute, wgpu::StorageTextureAccess::WriteOnly, kFormat}});
-            wgpu::BindGroupLayout readBGL = utils::MakeBindGroupLayout(
-                device,
-                {{0, wgpu::ShaderStage::Fragment, wgpu::StorageTextureAccess::ReadOnly, kFormat}});
+            wgpu::BindGroupLayout readBGL;
+            // TODO(crbug.com/dawn/1025): Remove once ReadOnly storage texture deprecation period is
+            // passed.
+            EXPECT_DEPRECATION_WARNING(
+                readBGL = utils::MakeBindGroupLayout(
+                    device, {{0, wgpu::ShaderStage::Fragment, wgpu::StorageTextureAccess::ReadOnly,
+                              kFormat}}));
             wgpu::BindGroup writeBG = utils::MakeBindGroup(device, writeBGL, {{0, view}});
             wgpu::BindGroup readBG = utils::MakeBindGroup(device, readBGL, {{0, view}});
 
@@ -1096,7 +1174,7 @@ namespace {
     TEST_F(ResourceUsageTrackingTest, TextureWithReadAndWriteUsageOnDifferentDrawsOrDispatches) {
         // Create a texture that will be used both as a sampled texture and a storage texture
         wgpu::Texture texture =
-            CreateTexture(wgpu::TextureUsage::Sampled | wgpu::TextureUsage::Storage);
+            CreateTexture(wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::StorageBinding);
         wgpu::TextureView view = texture.CreateView();
 
         // Test render pass
@@ -1133,9 +1211,13 @@ namespace {
         // Test compute pass
         {
             // Create bind groups to use the texture as readonly and writeonly storage bindings
-            wgpu::BindGroupLayout readBGL = utils::MakeBindGroupLayout(
-                device,
-                {{0, wgpu::ShaderStage::Compute, wgpu::StorageTextureAccess::ReadOnly, kFormat}});
+            wgpu::BindGroupLayout readBGL;
+            // TODO(crbug.com/dawn/1025): Remove once ReadOnly storage texture deprecation period is
+            // passed.
+            EXPECT_DEPRECATION_WARNING(
+                readBGL = utils::MakeBindGroupLayout(
+                    device, {{0, wgpu::ShaderStage::Compute, wgpu::StorageTextureAccess::ReadOnly,
+                              kFormat}}));
             wgpu::BindGroupLayout writeBGL = utils::MakeBindGroupLayout(
                 device,
                 {{0, wgpu::ShaderStage::Compute, wgpu::StorageTextureAccess::WriteOnly, kFormat}});
@@ -1169,7 +1251,7 @@ namespace {
     TEST_F(ResourceUsageTrackingTest, TextureWithReadAndWriteUsageInSingleDrawOrDispatch) {
         // Create a texture that will be used both as a sampled texture and a storage texture
         wgpu::Texture texture =
-            CreateTexture(wgpu::TextureUsage::Sampled | wgpu::TextureUsage::Storage);
+            CreateTexture(wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::StorageBinding);
         wgpu::TextureView view = texture.CreateView();
 
         // Test render pass
@@ -1204,9 +1286,13 @@ namespace {
         // Test compute pass
         {
             // Create the bind group to use the texture as readonly and writeonly storage bindings
-            wgpu::BindGroupLayout readBGL = utils::MakeBindGroupLayout(
-                device,
-                {{0, wgpu::ShaderStage::Compute, wgpu::StorageTextureAccess::ReadOnly, kFormat}});
+            wgpu::BindGroupLayout readBGL;
+            // TODO(crbug.com/dawn/1025): Remove once ReadOnly storage texture deprecation period is
+            // passed.
+            EXPECT_DEPRECATION_WARNING(
+                readBGL = utils::MakeBindGroupLayout(
+                    device, {{0, wgpu::ShaderStage::Compute, wgpu::StorageTextureAccess::ReadOnly,
+                              kFormat}}));
             wgpu::BindGroupLayout writeBGL = utils::MakeBindGroupLayout(
                 device,
                 {{0, wgpu::ShaderStage::Compute, wgpu::StorageTextureAccess::WriteOnly, kFormat}});
@@ -1237,7 +1323,7 @@ namespace {
         // Create textures that will be used as both a sampled texture and a render target
         wgpu::Texture texture0 = CreateTexture(wgpu::TextureUsage::CopySrc);
         wgpu::Texture texture1 =
-            CreateTexture(wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::Sampled |
+            CreateTexture(wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::TextureBinding |
                           wgpu::TextureUsage::RenderAttachment);
         wgpu::TextureView view0 = texture0.CreateView();
         wgpu::TextureView view1 = texture1.CreateView();
@@ -1282,11 +1368,11 @@ namespace {
         // Test render pass
         {
             // Create textures that will be used as both a sampled texture and a render target
-            wgpu::Texture texture0 =
-                CreateTexture(wgpu::TextureUsage::Sampled | wgpu::TextureUsage::RenderAttachment);
+            wgpu::Texture texture0 = CreateTexture(wgpu::TextureUsage::TextureBinding |
+                                                   wgpu::TextureUsage::RenderAttachment);
             wgpu::TextureView view0 = texture0.CreateView();
-            wgpu::Texture texture1 =
-                CreateTexture(wgpu::TextureUsage::Sampled | wgpu::TextureUsage::RenderAttachment);
+            wgpu::Texture texture1 = CreateTexture(wgpu::TextureUsage::TextureBinding |
+                                                   wgpu::TextureUsage::RenderAttachment);
             wgpu::TextureView view1 = texture1.CreateView();
 
             // Create the bind group to use the texture as sampled
@@ -1325,9 +1411,9 @@ namespace {
         // Test compute pass
         {
             // Create a texture that will be used both as storage texture
-            wgpu::Texture texture0 = CreateTexture(wgpu::TextureUsage::Storage);
+            wgpu::Texture texture0 = CreateTexture(wgpu::TextureUsage::StorageBinding);
             wgpu::TextureView view0 = texture0.CreateView();
-            wgpu::Texture texture1 = CreateTexture(wgpu::TextureUsage::Storage);
+            wgpu::Texture texture1 = CreateTexture(wgpu::TextureUsage::StorageBinding);
             wgpu::TextureView view1 = texture1.CreateView();
 
             // Create the bind group to use the texture as readonly and writeonly bindings
@@ -1335,9 +1421,13 @@ namespace {
                 device,
                 {{0, wgpu::ShaderStage::Compute, wgpu::StorageTextureAccess::WriteOnly, kFormat}});
 
-            wgpu::BindGroupLayout readBGL = utils::MakeBindGroupLayout(
-                device,
-                {{0, wgpu::ShaderStage::Compute, wgpu::StorageTextureAccess::ReadOnly, kFormat}});
+            wgpu::BindGroupLayout readBGL;
+            // TODO(crbug.com/dawn/1025): Remove once ReadOnly storage texture deprecation period is
+            // passed.
+            EXPECT_DEPRECATION_WARNING(
+                readBGL = utils::MakeBindGroupLayout(
+                    device, {{0, wgpu::ShaderStage::Compute, wgpu::StorageTextureAccess::ReadOnly,
+                              kFormat}}));
 
             wgpu::BindGroup writeBG0 = utils::MakeBindGroup(device, writeBGL, {{0, view0}});
             wgpu::BindGroup readBG0 = utils::MakeBindGroup(device, readBGL, {{0, view0}});
@@ -1382,17 +1472,22 @@ namespace {
     // visible to the programmable pass where it is used.
     TEST_F(ResourceUsageTrackingTest, TextureUsageConflictBetweenInvisibleStagesInBindGroup) {
         // Create texture and texture view
-        wgpu::Texture texture = CreateTexture(wgpu::TextureUsage::Storage);
+        wgpu::Texture texture = CreateTexture(wgpu::TextureUsage::StorageBinding);
         wgpu::TextureView view = texture.CreateView();
 
         // Test render pass for bind group. The conflict of readonly storage and writeonly storage
         // usage doesn't reside in render related stages at all
         {
             // Create a bind group whose bindings are not visible in render pass
-            wgpu::BindGroupLayout bgl = utils::MakeBindGroupLayout(
-                device,
-                {{0, wgpu::ShaderStage::Compute, wgpu::StorageTextureAccess::ReadOnly, kFormat},
-                 {1, wgpu::ShaderStage::None, wgpu::StorageTextureAccess::WriteOnly, kFormat}});
+            wgpu::BindGroupLayout bgl;
+            // TODO(crbug.com/dawn/1025): Remove once ReadOnly storage texture deprecation period is
+            // passed.
+            EXPECT_DEPRECATION_WARNING(
+                bgl = utils::MakeBindGroupLayout(
+                    device,
+                    {{0, wgpu::ShaderStage::Compute, wgpu::StorageTextureAccess::ReadOnly, kFormat},
+                     {1, wgpu::ShaderStage::None, wgpu::StorageTextureAccess::WriteOnly,
+                      kFormat}}));
             wgpu::BindGroup bg = utils::MakeBindGroup(device, bgl, {{0, view}, {1, view}});
 
             // These two bindings are invisible in render pass. But we still track these bindings.
@@ -1408,10 +1503,15 @@ namespace {
         // usage doesn't reside in compute related stage at all
         {
             // Create a bind group whose bindings are not visible in compute pass
-            wgpu::BindGroupLayout bgl = utils::MakeBindGroupLayout(
-                device,
-                {{0, wgpu::ShaderStage::Fragment, wgpu::StorageTextureAccess::ReadOnly, kFormat},
-                 {1, wgpu::ShaderStage::None, wgpu::StorageTextureAccess::WriteOnly, kFormat}});
+            wgpu::BindGroupLayout bgl;
+            // TODO(crbug.com/dawn/1025): Remove once ReadOnly storage texture deprecation period is
+            // passed.
+            EXPECT_DEPRECATION_WARNING(
+                bgl = utils::MakeBindGroupLayout(
+                    device, {{0, wgpu::ShaderStage::Fragment, wgpu::StorageTextureAccess::ReadOnly,
+                              kFormat},
+                             {1, wgpu::ShaderStage::None, wgpu::StorageTextureAccess::WriteOnly,
+                              kFormat}}));
             wgpu::BindGroup bg = utils::MakeBindGroup(device, bgl, {{0, view}, {1, view}});
 
             // Create a no-op compute pipeline.
@@ -1432,8 +1532,8 @@ namespace {
     // visible to the programmable pass where it is used.
     TEST_F(ResourceUsageTrackingTest, TextureUsageConflictWithInvisibleStageInBindGroup) {
         // Create texture and texture view
-        wgpu::Texture texture =
-            CreateTexture(wgpu::TextureUsage::Storage | wgpu::TextureUsage::RenderAttachment);
+        wgpu::Texture texture = CreateTexture(wgpu::TextureUsage::StorageBinding |
+                                              wgpu::TextureUsage::RenderAttachment);
         wgpu::TextureView view = texture.CreateView();
 
         // Test render pass
@@ -1442,9 +1542,13 @@ namespace {
             utils::ComboRenderPassDescriptor renderPass({view});
 
             // Create a bind group which use the texture as readonly storage in compute stage
-            wgpu::BindGroupLayout bgl = utils::MakeBindGroupLayout(
-                device,
-                {{0, wgpu::ShaderStage::Compute, wgpu::StorageTextureAccess::ReadOnly, kFormat}});
+            wgpu::BindGroupLayout bgl;
+            // TODO(crbug.com/dawn/1025): Remove once ReadOnly storage texture deprecation period is
+            // passed.
+            EXPECT_DEPRECATION_WARNING(
+                bgl = utils::MakeBindGroupLayout(
+                    device, {{0, wgpu::ShaderStage::Compute, wgpu::StorageTextureAccess::ReadOnly,
+                              kFormat}}));
             wgpu::BindGroup bg = utils::MakeBindGroup(device, bgl, {{0, view}});
 
             // Texture usage in compute stage in bind group conflicts with render target. And
@@ -1460,10 +1564,15 @@ namespace {
         // Test compute pass
         {
             // Create a bind group which contains both fragment and compute stages
-            wgpu::BindGroupLayout bgl = utils::MakeBindGroupLayout(
-                device,
-                {{0, wgpu::ShaderStage::Fragment, wgpu::StorageTextureAccess::ReadOnly, kFormat},
-                 {1, wgpu::ShaderStage::Compute, wgpu::StorageTextureAccess::WriteOnly, kFormat}});
+            wgpu::BindGroupLayout bgl;
+            // TODO(crbug.com/dawn/1025): Remove once ReadOnly storage texture deprecation period is
+            // passed.
+            EXPECT_DEPRECATION_WARNING(
+                bgl = utils::MakeBindGroupLayout(
+                    device, {{0, wgpu::ShaderStage::Fragment, wgpu::StorageTextureAccess::ReadOnly,
+                              kFormat},
+                             {1, wgpu::ShaderStage::Compute, wgpu::StorageTextureAccess::WriteOnly,
+                              kFormat}}));
             wgpu::BindGroup bg = utils::MakeBindGroup(device, bgl, {{0, view}, {1, view}});
 
             // Create a no-op compute pipeline.
@@ -1486,13 +1595,17 @@ namespace {
     // used in the pipeline.
     TEST_F(ResourceUsageTrackingTest, TextureUsageConflictWithUnusedPipelineBindings) {
         // Create texture and texture view
-        wgpu::Texture texture = CreateTexture(wgpu::TextureUsage::Storage);
+        wgpu::Texture texture = CreateTexture(wgpu::TextureUsage::StorageBinding);
         wgpu::TextureView view = texture.CreateView();
 
         // Create bind groups.
-        wgpu::BindGroupLayout readBGL = utils::MakeBindGroupLayout(
-            device, {{0, wgpu::ShaderStage::Fragment | wgpu::ShaderStage::Compute,
-                      wgpu::StorageTextureAccess::ReadOnly, kFormat}});
+        wgpu::BindGroupLayout readBGL;
+        // TODO(crbug.com/dawn/1025): Remove once ReadOnly storage texture deprecation period is
+        // passed.
+        EXPECT_DEPRECATION_WARNING(
+            readBGL = utils::MakeBindGroupLayout(
+                device, {{0, wgpu::ShaderStage::Fragment | wgpu::ShaderStage::Compute,
+                          wgpu::StorageTextureAccess::ReadOnly, kFormat}}));
         wgpu::BindGroupLayout writeBGL = utils::MakeBindGroupLayout(
             device, {{0, wgpu::ShaderStage::Fragment | wgpu::ShaderStage::Compute,
                       wgpu::StorageTextureAccess::WriteOnly, kFormat}});
@@ -1514,6 +1627,7 @@ namespace {
             utils::ComboRenderPipelineDescriptor pipelineDescriptor;
             pipelineDescriptor.vertex.module = vsModule;
             pipelineDescriptor.cFragment.module = fsModule;
+            pipelineDescriptor.cTargets[0].writeMask = wgpu::ColorWriteMask::None;
             pipelineDescriptor.layout = utils::MakeBasicPipelineLayout(device, &readBGL);
             wgpu::RenderPipeline rp = device.CreateRenderPipeline(&pipelineDescriptor);
 

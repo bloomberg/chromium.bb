@@ -6,7 +6,6 @@
 <translation id="1124090076051167250">Dadurch werden <ph name="DATASIZE" /> an von Websites oder Apps auf dem Startbildschirm gespeicherten Daten und Cookies gelöscht.</translation>
 <translation id="1178581264944972037">Pause</translation>
 <translation id="1181037720776840403">Entfernen</translation>
-<translation id="1195941046451948919">Möchten Sie wirklich alle Berechtigungen für diese Website zurücksetzen?</translation>
 <translation id="1201402288615127009">Weiter</translation>
 <translation id="1242008676835033345">Auf <ph name="WEBSITE_URL" /> eingebettet</translation>
 <translation id="1272079795634619415">Stoppen</translation>
@@ -70,6 +69,7 @@
 <translation id="2687403674020088961">Alle Cookies blockieren (nicht empfohlen)</translation>
 <translation id="2704606927547763573">Kopiert</translation>
 <translation id="2717722538473713889">E-Mail-Adressen</translation>
+<translation id="2785051990912111074">Mit dieser Option werden Cookies für <ph name="WEBSITE" /> gelöscht</translation>
 <translation id="2822354292072154809">Möchten Sie wirklich alle Websiteberechtigungen für <ph name="CHOSEN_OBJECT_NAME" /> zurücksetzen?</translation>
 <translation id="2870560284913253234">Website</translation>
 <translation id="2874939134665556319">Vorheriger Titel</translation>
@@ -130,7 +130,6 @@
 <translation id="4570913071927164677">Details</translation>
 <translation id="4645575059429386691">Von deinen Eltern verwaltet</translation>
 <translation id="4670064810192446073">Virtual Reality</translation>
-<translation id="4708011789095599544">Möchten Sie Cookies und andere Daten für diese Website wirklich löschen?</translation>
 <translation id="4751476147751820511">Bewegungs- oder Lichtsensoren</translation>
 <translation id="4836046166855586901">Nachfragen, wenn eine Website Informationen zu Ihrer aktiven Nutzung dieses Geräts abrufen möchte</translation>
 <translation id="4883854917563148705">Verwaltete Einstellungen können nicht zurückgesetzt werden</translation>
@@ -140,6 +139,7 @@
 <translation id="4976702386844183910">Zuletzt besucht am <ph name="DATE" /></translation>
 <translation id="4994033804516042629">Keine Kontakte gefunden</translation>
 <translation id="4996978546172906250">Teilen über</translation>
+<translation id="5014906230196386306">Cookies löschen?</translation>
 <translation id="5039804452771397117">Zulassen</translation>
 <translation id="5048398596102334565">Websites den Zugriff auf Bewegungssensoren erlauben (empfohlen)</translation>
 <translation id="5050380848339752099">Diese Website ist im Begriff, Informationen mit einer Anwendung außerhalb des Inkognitomodus zu teilen.</translation>
@@ -157,9 +157,9 @@
 <translation id="5335288049665977812">Ausführung von JavaScript durch Websites zulassen (empfohlen)</translation>
 <translation id="534295439873310000">NFC-Geräte</translation>
 <translation id="5354152178998424783">Dadurch werden <ph name="DATASIZE" /> an von Websites gespeicherten Daten und Cookies gelöscht.</translation>
-<translation id="5391532827096253100">Die Verbindung zu dieser Website ist nicht sicher. Websiteinformationen</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1 weitere)}other{(+ # weitere)}}</translation>
 <translation id="5403592356182871684">Namen</translation>
+<translation id="5438097262470833822">Mit dieser Option werden die Berechtigungen für <ph name="WEBSITE" /> zurückgesetzt</translation>
 <translation id="5489227211564503167">Verstrichene Zeit: <ph name="ELAPSED_TIME" /> von <ph name="TOTAL_TIME" />.</translation>
 <translation id="5494752089476963479">Werbung auf Websites blockieren, auf denen aufdringliche oder irreführende Werbung angezeigt wird</translation>
 <translation id="5502860503640766021"><ph name="PERMISSION_1" /> zugelassen, <ph name="PERMISSION_2" /> blockiert</translation>
@@ -190,10 +190,10 @@
 <translation id="6064125863973209585">Abgeschlossene Downloads</translation>
 <translation id="6165508094623778733">Weitere Informationen</translation>
 <translation id="6177111841848151710">Für die aktuelle Suchmaschine blockiert</translation>
+<translation id="6177128806592000436">Die Verbindung zu dieser Website ist nicht sicher</translation>
 <translation id="6181444274883918285">Ausnahme für Website hinzufügen</translation>
 <translation id="6192792657125177640">Ausnahmen</translation>
 <translation id="6196640612572343990">Drittanbieter-Cookies blockieren</translation>
-<translation id="6206551242102657620">Die Verbindung ist sicher. Websiteinformationen</translation>
 <translation id="6216432067784365534">Optionen für <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6231752747840485235">„<ph name="APP_NAME" />“ deinstallieren?</translation>
 <translation id="6262279340360821358"><ph name="PERMISSION_1" /> und <ph name="PERMISSION_2" /> blockiert</translation>
@@ -202,7 +202,6 @@
 <translation id="6320088164292336938">Vibrieren</translation>
 <translation id="6388207532828177975">Löschen &amp; zurücksetzen</translation>
 <translation id="6398765197997659313">Vollbildmodus beenden</translation>
-<translation id="6423924377271166037">Cookies löschen</translation>
 <translation id="6439114592976064011">Websites daran hindern, mein Virtual-Reality-Gerät und meine Virtual-Reality-Daten zu verwenden</translation>
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6527303717912515753">Teilen</translation>
@@ -217,6 +216,7 @@
 <translation id="6689172468748959065">Profilfotos</translation>
 <translation id="6697925417670533197">Aktive Downloads</translation>
 <translation id="6746124502594467657">Nach unten</translation>
+<translation id="6749077623962119521">Berechtigungen zurücksetzen?</translation>
 <translation id="6766622839693428701">Zum Schließen nach unten wischen.</translation>
 <translation id="6790428901817661496">Wiedergabe</translation>
 <translation id="6818926723028410516">Einträge auswählen</translation>
@@ -224,7 +224,6 @@
 <translation id="6910211073230771657">Gelöscht</translation>
 <translation id="6912998170423641340">Websites dürfen keine Texte oder Bilder aus der Zwischenablage abrufen</translation>
 <translation id="6945221475159498467">Auswählen</translation>
-<translation id="6963642900430330478">Diese Seite ist gefährlich. Websiteinformationen</translation>
 <translation id="6965382102122355670">Ok</translation>
 <translation id="6992289844737586249">Nachfragen, bevor Websites auf mein Mikrofon zugreifen dürfen (empfohlen)</translation>
 <translation id="7000754031042624318">In den Android-Einstellungen deaktiviert</translation>
@@ -232,7 +231,6 @@
 <translation id="7053983685419859001">Blockieren</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 ausgewählt}other{# ausgewählt}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> ausgewählt. Optionen sind oben auf dem Bildschirm verfügbar</translation>
-<translation id="7128222689758636196">Für die aktuelle Suchmaschine zulassen</translation>
 <translation id="7141896414559753902">Anzeige von Pop-ups und Weiterleitungen für Websites blockieren (empfohlen)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="723171743924126238">Bilder auswählen</translation>
@@ -247,7 +245,6 @@
 <translation id="7561196759112975576">Immer</translation>
 <translation id="7572498721684305250">Websites daran hindern, Informationen zu senden und zu empfangen, wenn das Smartphone an NFC-Geräte gehalten wird</translation>
 <translation id="757524316907819857">Wiedergabe von geschützten Inhalten für Websites blockieren</translation>
-<translation id="7589445247086920869">Für die aktuelle Suchmaschine blockieren</translation>
 <translation id="7649070708921625228">Hilfe</translation>
 <translation id="7658239707568436148">Abbrechen</translation>
 <translation id="7781829728241885113">Gestern</translation>
@@ -270,10 +267,12 @@
 <translation id="8068648041423924542">Zertifikat kann nicht ausgewählt werden.</translation>
 <translation id="8087000398470557479">Dieser Inhalt ist von <ph name="DOMAIN_NAME" /> und wurde von Google bereitgestellt.</translation>
 <translation id="8116925261070264013">Stummgeschaltet</translation>
+<translation id="813082847718468539">Website-Informationen anzeigen</translation>
 <translation id="8131740175452115882">Bestätigen</translation>
 <translation id="8197286292360124385"><ph name="PERMISSION_1" /> zugelassen</translation>
 <translation id="8200772114523450471">Fortsetzen</translation>
 <translation id="8206354486702514201">Diese Einstellung wird von Ihrem Administrator erzwungen.</translation>
+<translation id="8211406090763984747">Verbindung ist sicher</translation>
 <translation id="8249310407154411074">Ganz nach oben</translation>
 <translation id="8261506727792406068">Löschen</translation>
 <translation id="8300705686683892304">Von App verwaltet</translation>
@@ -315,7 +314,7 @@
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9109747640384633967">{PERMISSIONS_SUMMARY_MIXED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> und <ph name="NUM_MORE" /> weitere}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> und <ph name="NUM_MORE" /> weitere}}</translation>
 <translation id="913657688200966289">Die Berechtigungen für <ph name="APP_NAME" /> können in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" /> aktiviert werden.</translation>
+<translation id="9162462602695099906">Diese Seite ist gefährlich</translation>
 <translation id="930525582205581608">Informationen auf dieser Website löschen?</translation>
-<translation id="965817943346481315">Blockieren, wenn Website aufdringliche oder irreführende Werbung anzeigt (empfohlen)</translation>
 <translation id="967624055006145463">Gespeicherte Daten</translation>
 </translationbundle>

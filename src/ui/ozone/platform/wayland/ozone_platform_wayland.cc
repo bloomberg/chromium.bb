@@ -27,6 +27,7 @@
 #include "ui/ozone/platform/wayland/common/wayland_util.h"
 #include "ui/ozone/platform/wayland/gpu/drm_render_node_path_finder.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_buffer_manager_gpu.h"
+#include "ui/ozone/platform/wayland/gpu/wayland_gl_egl_utility.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_overlay_manager.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_surface_factory.h"
 #include "ui/ozone/platform/wayland/host/wayland_buffer_manager_connector.h"
@@ -134,9 +135,23 @@ class OzonePlatformWayland : public OzonePlatform {
     return connection_->wayland_output_manager()->CreateWaylandScreen();
   }
 
+  void InitScreen(PlatformScreen* screen) override {
+    DCHECK(connection_ && connection_->wayland_output_manager());
+    // InitScreen is always called with the same screen that CreateScreen
+    // hands back, so it is safe to cast here.
+    connection_->wayland_output_manager()->InitWaylandScreen(
+        static_cast<WaylandScreen*>(screen));
+  }
+
   PlatformClipboard* GetPlatformClipboard() override {
     DCHECK(connection_);
     return connection_->clipboard();
+  }
+
+  PlatformGLEGLUtility* GetPlatformGLEGLUtility() override {
+    if (!gl_egl_utility_)
+      gl_egl_utility_ = std::make_unique<WaylandGLEGLUtility>();
+    return gl_egl_utility_.get();
   }
 
   std::unique_ptr<InputMethod> CreateInputMethod(
@@ -343,6 +358,7 @@ class OzonePlatformWayland : public OzonePlatform {
   // Objects, which solely live in the GPU process.
   std::unique_ptr<WaylandBufferManagerGpu> buffer_manager_;
   std::unique_ptr<WaylandOverlayManager> overlay_manager_;
+  std::unique_ptr<WaylandGLEGLUtility> gl_egl_utility_;
 
   // Provides supported buffer formats for native gpu memory buffers
   // framework.

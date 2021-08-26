@@ -17,6 +17,9 @@ function addPrivacyChildRoutes(r) {
   r.CLEAR_BROWSER_DATA = r.PRIVACY.createChild('/clearBrowserData');
   r.CLEAR_BROWSER_DATA.isNavigableDialog = true;
 
+  if (loadTimeData.getBoolean('privacyReviewEnabled')) {
+    r.PRIVACY_REVIEW = r.PRIVACY.createChild('review');
+  }
   r.SITE_SETTINGS = r.PRIVACY.createChild('/content');
   r.COOKIES = r.PRIVACY.createChild('/cookies');
   r.SECURITY = r.PRIVACY.createChild('/security');
@@ -80,9 +83,9 @@ function addPrivacyChildRoutes(r) {
   if (loadTimeData.getBoolean('enableExperimentalWebPlatformFeatures')) {
     r.SITE_SETTINGS_BLUETOOTH_SCANNING =
         r.SITE_SETTINGS.createChild('bluetoothScanning');
-    r.SITE_SETTINGS_WINDOW_PLACEMENT =
-        r.SITE_SETTINGS.createChild('windowPlacement');
   }
+  r.SITE_SETTINGS_WINDOW_PLACEMENT =
+      r.SITE_SETTINGS.createChild('windowPlacement');
   r.SITE_SETTINGS_FILE_SYSTEM_WRITE = r.SITE_SETTINGS.createChild('filesystem');
   r.SITE_SETTINGS_FONT_ACCESS = r.SITE_SETTINGS.createChild('fontAccess');
   r.SITE_SETTINGS_FILE_HANDLING = r.SITE_SETTINGS.createChild('fileHandlers');
@@ -131,9 +134,7 @@ function createBrowserSettingsRoutes() {
     r.PASSWORDS = r.AUTOFILL.createChild('/passwords');
     r.CHECK_PASSWORDS = r.PASSWORDS.createChild('check');
 
-    if (loadTimeData.getBoolean('enableAccountStorage')) {
-      r.DEVICE_PASSWORDS = r.PASSWORDS.createChild('device');
-    }
+    r.DEVICE_PASSWORDS = r.PASSWORDS.createChild('device');
 
     r.PAYMENTS = r.AUTOFILL.createChild('/payments');
     r.ADDRESSES = r.AUTOFILL.createChild('/addresses');
@@ -169,7 +170,7 @@ function createBrowserSettingsRoutes() {
     r.ADVANCED = new Route('/advanced');
 
     r.LANGUAGES = r.ADVANCED.createSection('/languages', 'languages');
-    // <if expr="not is_macosx">
+    // <if expr="not chromeos and not is_macosx">
     r.EDIT_DICTIONARY = r.LANGUAGES.createChild('/editDictionary');
     // </if>
     // <if expr="not chromeos and not lacros">

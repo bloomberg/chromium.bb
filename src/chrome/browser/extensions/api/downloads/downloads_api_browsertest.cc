@@ -509,7 +509,8 @@ class DownloadExtensionTest : public ExtensionApiTest {
                : download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED),
           false,    // opened
           current,  // last_access_time
-          false, std::vector<DownloadItem::ReceivedSlice>());
+          false, std::vector<DownloadItem::ReceivedSlice>(),
+          download::DownloadItemRerouteInfo());
       items->push_back(item);
     }
 
@@ -1037,12 +1038,11 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   EXPECT_EQ(0UL, items.size());
   ASSERT_TRUE(result);
   download_item = NULL;
-  base::ListValue* result_list = NULL;
-  ASSERT_TRUE(result->GetAsList(&result_list));
-  ASSERT_EQ(1UL, result_list->GetSize());
-  int element = -1;
-  ASSERT_TRUE(result_list->GetInteger(0, &element));
-  EXPECT_EQ(id, element);
+  ASSERT_TRUE(result->is_list());
+  base::Value::ListView result_list = result->GetList();
+  ASSERT_EQ(1UL, result_list.size());
+  ASSERT_TRUE(result_list[0].is_int());
+  EXPECT_EQ(id, result_list[0].GetInt());
 }
 
 scoped_refptr<ExtensionFunction> MockedGetFileIconFunction(
@@ -1997,20 +1997,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
       download_url.c_str())).c_str());
 }
 
-class DownloadExtensionTestWithFtp : public DownloadExtensionTest {
- public:
-  DownloadExtensionTestWithFtp() {
-    // DownloadExtensionTest_Download_InvalidURLs2 requires FTP support.
-    // TODO(https://crbug.com/333943): Remove FTP tests and FTP feature flags.
-    scoped_feature_list_.InitAndEnableFeature(network::features::kFtpProtocol);
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
 // Test that downloading invalid URLs immediately returns kInvalidURLError.
-IN_PROC_BROWSER_TEST_F(DownloadExtensionTestWithFtp,
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                        DownloadExtensionTest_Download_InvalidURLs1) {
   static constexpr const char* kInvalidURLs[] = {
       "foo bar", "../hello",          "/hello",      "http://",
@@ -2028,7 +2016,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTestWithFtp,
 }
 
 // Test various failure modes for downloading invalid URLs.
-IN_PROC_BROWSER_TEST_F(DownloadExtensionTestWithFtp,
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                        DownloadExtensionTest_Download_InvalidURLs2) {
   LoadExtension("downloads_split");
   GoOnTheRecord();
@@ -2059,23 +2047,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTestWithFtp,
       item, download::DOWNLOAD_INTERRUPT_REASON_NETWORK_INVALID_REQUEST,
       "[{\"state\": \"in_progress\","
       "  \"url\": \"javascript:return false;\"}]"));
-
-  result.reset(RunFunctionAndReturnResult(
-      new DownloadsDownloadFunction(),
-      "[{\"url\": \"ftp://example.com/example.txt\"}]"));
-  ASSERT_TRUE(result.get());
-  ASSERT_TRUE(result->is_int());
-  result_id = result->GetInt();
-  item = GetCurrentManager()->GetDownload(result_id);
-  ASSERT_TRUE(item);
-  ASSERT_TRUE(WaitForInterruption(
-      item, download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED,
-      "[{\"state\": \"in_progress\","
-      "  \"url\": \"ftp://example.com/example.txt\"}]"));
 }
-
-// TODO(benjhayden): Set up a test ftp server, add ftp://localhost* to
-// permissions, test downloading from ftp.
 
 // Valid URLs plus fragments are still valid URLs.
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,

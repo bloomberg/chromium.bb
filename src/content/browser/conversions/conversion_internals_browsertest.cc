@@ -188,6 +188,7 @@ IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
        ImpressionBuilder(base::Time::Now())
            .SetSourceType(StorableImpression::SourceType::kEvent)
            .SetPriority(std::numeric_limits<int64_t>::max())
+           .SetDedupKeys({13, 17})
            .Build()});
   OverrideWebUIConversionManager(&manager);
 
@@ -199,7 +200,9 @@ IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
           table.children[0].children[6].innerText === "Navigation" &&
           table.children[1].children[6].innerText === "Event" &&
           table.children[0].children[7].innerText === "0" &&
-          table.children[1].children[7].innerText === $2) {
+          table.children[1].children[7].innerText === $2 &&
+          table.children[0].children[8].innerText === "" &&
+          table.children[1].children[8].innerText === "13,17") {
         document.title = $3;
       }
     });
@@ -254,14 +257,19 @@ IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), GURL(kConversionInternalsUrl)));
 
   TestConversionManager manager;
-  manager.SetSentReportsForWebUI({
-      {.report_url = GURL("https://example.com/1"),
-       .report_body = "a",
-       .http_response_code = 200},
-      {.report_url = GURL("https://example.com/2"),
-       .report_body = "b",
-       .http_response_code = 404},
-  });
+  manager.SetSentReportsForWebUI(
+      {SentReportInfo(/*conversion_id=*/0,
+                      /*original_report_time=*/base::Time(),
+                      /*report_url=*/GURL("https://example.com/1"),
+                      /*report_body=*/"a",
+                      /*http_response_code=*/200,
+                      /*should_retry*/ false),
+       SentReportInfo(/*conversion_id=*/0,
+                      /*original_report_time=*/base::Time(),
+                      /*report_url=*/GURL("https://example.com/2"),
+                      /*report_body=*/"b",
+                      /*http_response_code=*/404,
+                      /*should_retry*/ false)});
   OverrideWebUIConversionManager(&manager);
 
   std::string wait_script = R"(

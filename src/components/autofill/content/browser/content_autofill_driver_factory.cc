@@ -6,7 +6,6 @@
 
 #include <memory>
 #include <utility>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/feature_list.h"
@@ -147,14 +146,20 @@ void ContentAutofillDriverFactory::RenderFrameDeleted(
   ContentAutofillDriver* driver =
       static_cast<ContentAutofillDriver*>(DriverForKey(render_frame_host));
   if (driver) {
-    driver->MaybeReportAutofillWebOTPMetrics();
-    // If the popup menu has been triggered from within an iframe and that frame
-    // is deleted, hide the popup. This is necessary because the popup may
-    // actually be shown by the AutofillExternalDelegate of an ancestor frame,
-    // which is not notified about |render_frame_host|'s destruction and
-    // therefore won't close the popup.
+    if (render_frame_host->GetLifecycleState() !=
+        content::RenderFrameHost::LifecycleState::kPrerendering) {
+      driver->MaybeReportAutofillWebOTPMetrics();
+    }
+
+    // If the popup menu has been triggered from within an iframe and that
+    // frame is deleted, hide the popup. This is necessary because the popup
+    // may actually be shown by the AutofillExternalDelegate of an ancestor
+    // frame, which is not notified about |render_frame_host|'s destruction
+    // and therefore won't close the popup.
     if (render_frame_host->GetParent() &&
         router_.last_queried_source() == driver) {
+      DCHECK_NE(content::RenderFrameHost::LifecycleState::kPrerendering,
+                render_frame_host->GetLifecycleState());
       router_.HidePopup(driver);
     }
     if (!render_frame_host->GetParent()) {
@@ -171,11 +176,14 @@ void ContentAutofillDriverFactory::RenderFrameDeleted(
 void ContentAutofillDriverFactory::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
   // TODO(crbug/1117451): Clean up experiment code.
+  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+  // frames. This caller was converted automatically to the primary main frame
+  // to preserve its semantics. Follow up to confirm correctness.
   if (base::FeatureList::IsEnabled(
           features::kAutofillProbableFormSubmissionInBrowser) &&
       navigation_handle->IsRendererInitiated() &&
       !navigation_handle->WasInitiatedByLinkClick() &&
-      navigation_handle->IsInMainFrame()) {
+      navigation_handle->IsInPrimaryMainFrame()) {
     content::GlobalRenderFrameHostId id =
         navigation_handle->GetPreviousRenderFrameHostId();
     content::RenderFrameHost* render_frame_host =
@@ -203,7 +211,8 @@ void ContentAutofillDriverFactory::DidFinishNavigation(
         router_.UnregisterDriver(driver);
       }
     }
-    NavigationFinished();
+    NavigationFinished(AutofillDriverFactory::HideUi(
+        !navigation_handle->IsInPrerenderedMainFrame()));
     driver->DidNavigateFrame(navigation_handle);
   }
 }
@@ -227,6 +236,11 @@ void ContentAutofillDriverFactory::ReadyToCommitNavigation(
   // everywhere.
   if (render_frame_host_id !=
       navigation_handle->GetPreviousRenderFrameHostId()) {
+    return;
+  }
+  // Do not report metrics if prerendering.
+  if (render_frame_host->GetLifecycleState() ==
+      content::RenderFrameHost::LifecycleState::kPrerendering) {
     return;
   }
   AutofillDriver* driver = DriverForFrame(render_frame_host);

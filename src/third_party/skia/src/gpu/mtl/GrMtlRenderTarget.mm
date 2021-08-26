@@ -7,6 +7,9 @@
 
 #include "src/gpu/mtl/GrMtlRenderTarget.h"
 
+#include "src/gpu/GrDirectContextPriv.h"
+#include "src/gpu/GrResourceProvider.h"
+#include "src/gpu/mtl/GrMtlFramebuffer.h"
 #include "src/gpu/mtl/GrMtlGpu.h"
 #include "src/gpu/mtl/GrMtlUtil.h"
 
@@ -62,13 +65,14 @@ sk_sp<GrMtlRenderTarget> GrMtlRenderTarget::MakeWrappedRenderTarget(GrMtlGpu* gp
             if (!gpu->mtlCaps().isFormatRenderable(format, sampleCnt)) {
                 return nullptr;
             }
-            sk_sp<GrMtlAttachment> colorAttachment = GrMtlAttachment::MakeMSAA(gpu,
-                                                                               dimensions,
-                                                                               sampleCnt,
-                                                                               format);
-            if (!colorAttachment) {
+            auto rp = gpu->getContext()->priv().resourceProvider();
+            sk_sp<GrAttachment> msaaAttachment = rp->makeMSAAAttachment(
+                    dimensions, GrBackendFormat::MakeMtl(format), sampleCnt, GrProtected::kNo);
+            if (!msaaAttachment) {
                 return nullptr;
             }
+            sk_sp<GrMtlAttachment> colorAttachment =
+                    sk_sp<GrMtlAttachment>(static_cast<GrMtlAttachment*>(msaaAttachment.release()));
             mtlRT = new GrMtlRenderTarget(
                     gpu, dimensions, std::move(colorAttachment), std::move(textureAttachment),
                     kWrapped);
@@ -99,6 +103,39 @@ GrBackendRenderTarget GrMtlRenderTarget::getBackendRenderTarget() const {
 
 GrBackendFormat GrMtlRenderTarget::backendFormat() const {
     return GrBackendFormat::MakeMtl(fColorAttachment->mtlFormat());
+}
+
+static int renderpass_features_to_index(bool hasResolve, bool hasStencil) {
+    int index = 0;
+    if (hasResolve) {
+        index += 1;
+    }
+    if (hasStencil) {
+        index += 2;
+    }
+    return index;
+}
+
+const GrMtlFramebuffer* GrMtlRenderTarget::getFramebuffer(bool withResolve,
+                                                          bool withStencil) {
+    int cacheIndex =
+            renderpass_features_to_index(withResolve, withStencil);
+    SkASSERT(cacheIndex < GrMtlRenderTarget::kNumCachedFramebuffers);
+
+    if (fCachedFramebuffers[cacheIndex]) {
+        return fCachedFramebuffers[cacheIndex].get();
+    }
+
+    GrMtlAttachment* resolve = withResolve ? this->resolveAttachment() : nullptr;
+    GrMtlAttachment* colorAttachment = this->colorAttachment();
+
+    // Stencil attachment view is stored in the base RT stencil attachment
+    GrMtlAttachment* stencil =
+            withStencil ? static_cast<GrMtlAttachment*>(this->getStencilAttachment())
+                        : nullptr;
+    fCachedFramebuffers[cacheIndex] =
+            GrMtlFramebuffer::Make(colorAttachment, resolve, stencil);
+    return fCachedFramebuffers[cacheIndex].get();
 }
 
 GrMtlGpu* GrMtlRenderTarget::getMtlGpu() const {

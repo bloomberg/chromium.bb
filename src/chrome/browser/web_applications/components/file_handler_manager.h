@@ -8,8 +8,8 @@
 #include <set>
 #include <vector>
 
-#include "chrome/browser/web_applications/components/app_shortcut_manager.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
+#include "chrome/browser/web_applications/web_app_shortcut_manager.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -72,7 +72,6 @@ class FileHandlerManager {
   // separately but they are still enabled and disabled here.
   void DisableAndUnregisterOsFileHandlers(
       const AppId& app_id,
-      std::unique_ptr<ShortcutInfo> info,
       base::OnceCallback<void(bool)> callback);
 
   // Updates the file handling origin trial expiry timer based on a currently

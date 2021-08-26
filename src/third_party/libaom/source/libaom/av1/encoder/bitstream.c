@@ -20,7 +20,6 @@
 #include "aom_mem/aom_mem.h"
 #include "aom_ports/bitops.h"
 #include "aom_ports/mem_ops.h"
-#include "aom_ports/system_state.h"
 #if CONFIG_BITSTREAM_DEBUG
 #include "aom_util/debug_util.h"
 #endif  // CONFIG_BITSTREAM_DEBUG
@@ -2499,7 +2498,7 @@ static AOM_INLINE void write_film_grain_params(
       assert(ref_idx != INVALID_IDX);
       const RefCntBuffer *const buf = cm->ref_frame_map[ref_idx];
       if (buf->film_grain_params_present &&
-          av1_check_grain_params_equiv(pars, &buf->film_grain_params)) {
+          aom_check_grain_params_equiv(pars, &buf->film_grain_params)) {
         break;
       }
     }
@@ -3932,7 +3931,6 @@ int calc_pack_bs_mt_workers(const TileDataEnc *tile_data, int num_tiles,
   for (int idx = 0; idx < num_tiles; idx++)
     frame_abs_sum_level += tile_data[idx].abs_sum_level;
 
-  aom_clear_system_state();
   int ideal_num_workers = 1;
   const float job_disp_time_const = (float)num_tiles * JOB_DISP_TIME_OH_CONST;
   float max_sum = 0.0;

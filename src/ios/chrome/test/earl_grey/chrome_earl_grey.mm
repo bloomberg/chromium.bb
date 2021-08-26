@@ -244,8 +244,8 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   return [ChromeEarlGreyAppInterface evictedMainTabCount];
 }
 
-- (void)evictOtherTabModelTabs {
-  [ChromeEarlGreyAppInterface evictOtherTabModelTabs];
+- (void)evictOtherBrowserTabs {
+  [ChromeEarlGreyAppInterface evictOtherBrowserTabs];
 }
 
 - (void)simulateTabsBackgrounding {
@@ -355,6 +355,7 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   NSString* spec = base::SysUTF8ToNSString(URL.spec());
   [ChromeEarlGreyAppInterface startLoadingURL:spec];
   if (wait) {
+    [self waitForWebStateVisible];
     [self waitForPageToFinishLoading];
     EG_TEST_HELPER_ASSERT_TRUE(
         [ChromeEarlGreyAppInterface waitForWindowIDInjectionIfNeeded],
@@ -392,6 +393,12 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
 }
 
 - (void)waitForUIElementToAppearWithMatcher:(id<GREYMatcher>)matcher {
+  [self waitForUIElementToAppearWithMatcher:matcher
+                                    timeout:kWaitForUIElementTimeout];
+}
+
+- (void)waitForUIElementToAppearWithMatcher:(id<GREYMatcher>)matcher
+                                    timeout:(NSTimeInterval)timeout {
   NSString* errorDescription = [NSString
       stringWithFormat:@"Failed waiting for element with matcher %@ to appear",
                        matcher];
@@ -403,12 +410,17 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
     return error == nil;
   };
 
-  bool matched =
-      WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, condition);
+  bool matched = WaitUntilConditionOrTimeout(timeout, condition);
   GREYAssert(matched, errorDescription);
 }
 
 - (void)waitForUIElementToDisappearWithMatcher:(id<GREYMatcher>)matcher {
+  [self waitForUIElementToDisappearWithMatcher:matcher
+                                       timeout:kWaitForUIElementTimeout];
+}
+
+- (void)waitForUIElementToDisappearWithMatcher:(id<GREYMatcher>)matcher
+                                       timeout:(NSTimeInterval)timeout {
   NSString* errorDescription = [NSString
       stringWithFormat:
           @"Failed waiting for element with matcher %@ to disappear", matcher];
@@ -420,8 +432,7 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
     return error == nil;
   };
 
-  bool matched =
-      WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, condition);
+  bool matched = WaitUntilConditionOrTimeout(timeout, condition);
   GREYAssert(matched, errorDescription);
 }
 
@@ -577,6 +588,24 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   NSString* formID = base::SysUTF8ToNSString(UTF8FormID);
   EG_TEST_HELPER_ASSERT_NO_ERROR(
       [ChromeEarlGreyAppInterface submitWebStateFormWithID:formID]);
+}
+
+- (void)waitForWebStateVisible {
+  NSString* errorString =
+      [NSString stringWithFormat:@"Failed waiting for web state to be visible"];
+  GREYCondition* waitForWebState = [GREYCondition
+      conditionWithName:errorString
+                  block:^{
+                    NSError* error;
+                    [[EarlGrey selectElementWithMatcher:chrome_test_util::
+                                                            WebViewMatcher()]
+                        assertWithMatcher:grey_notNil()
+                                    error:&error];
+                    return error == nil;
+                  }];
+  bool containsWebState =
+      [waitForWebState waitWithTimeout:kWaitForUIElementTimeout];
+  EG_TEST_HELPER_ASSERT_TRUE(containsWebState, errorString);
 }
 
 - (void)waitForWebStateContainingText:(const std::string&)UTF8Text {
@@ -1086,6 +1115,12 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   EG_TEST_HELPER_ASSERT_TRUE([condition waitWithTimeout:timeout], errorString);
 }
 
+- (void)waitUntilReadyWindowWithNumber:(int)windowNumber {
+  [ChromeEarlGrey waitForUIElementToAppearWithMatcher:
+                      chrome_test_util::MatchInWindowWithNumber(
+                          windowNumber, chrome_test_util::FakeOmnibox())];
+}
+
 #pragma mark - SignIn Utilities (EG2)
 
 - (void)signOutAndClearIdentities {
@@ -1275,6 +1310,13 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
 - (void)setBoolValue:(BOOL)value forUserPref:(const std::string&)UTF8PrefName {
   NSString* prefName = base::SysUTF8ToNSString(UTF8PrefName);
   return [ChromeEarlGreyAppInterface setBoolValue:value forUserPref:prefName];
+}
+
+- (void)setIntegerValue:(int)value
+            forUserPref:(const std::string&)UTF8PrefName {
+  NSString* prefName = base::SysUTF8ToNSString(UTF8PrefName);
+  return [ChromeEarlGreyAppInterface setIntegerValue:value
+                                         forUserPref:prefName];
 }
 
 - (void)resetBrowsingDataPrefs {

@@ -436,6 +436,7 @@ consoles.console_view(
     short_name = short_name,
 ) for name, category, short_name in (
     ("fuchsia-fyi-arm64-size", "fyi", "a64-size"),
+    ("fuchsia-fyi-astro", "fyi", "astro"),
     ("fuchsia-builder-perf-fyi", "fyi", "builder-perf"),
     ("fuchsia-perf-fyi", "fyi", "perf"),
     ("fuchsia-x64", "ci", "x64-chrome"),
@@ -618,8 +619,10 @@ ci.android_builder(
         category = "builder|det",
         short_name = "rel",
     ),
+    cores = 32,
     executable = "recipe:swarming/deterministic_build",
     execution_timeout = 7 * time.hour,
+    goma_jobs = goma.jobs.MANY_JOBS_FOR_CI,
     notifies = ["Deterministic Android"],
     tree_closing = True,
 )
@@ -855,6 +858,16 @@ ci.android_builder(
 )
 
 ci.android_builder(
+    name = "android-cronet-x86-dbg-10-tests",
+    console_view_entry = consoles.console_view_entry(
+        category = "cronet|test",
+        short_name = "10",
+    ),
+    notifies = ["cronet"],
+    triggered_by = ["android-cronet-x86-dbg"],
+)
+
+ci.android_builder(
     name = "android-cronet-x86-rel",
     console_view_entry = consoles.console_view_entry(
         category = "cronet|x86",
@@ -961,6 +974,15 @@ ci.android_builder(
     cq_mirrors_console_view = "mirrors",
     main_console_view = main_console_if_on_branch(),
     tree_closing = True,
+    os = os.LINUX_BIONIC_REMOVE,
+)
+
+ci.android_builder(
+    name = "android-11-x86-rel",
+    console_view_entry = consoles.console_view_entry(
+        category = "builder_tester|x86",
+        short_name = "11",
+    ),
     os = os.LINUX_BIONIC_REMOVE,
 )
 
@@ -1127,7 +1149,8 @@ ci.android_fyi_builder(
     ),
 )
 
-# TODO(hypan): remove this once there is no associated disabled tests
+# TODO(crbug.com/1022533#c40): Remove this builder once there are no associated
+# disabled tests.
 ci.android_fyi_builder(
     name = "android-pie-x86-fyi-rel",
     console_view_entry = consoles.console_view_entry(
@@ -1135,9 +1158,14 @@ ci.android_fyi_builder(
         short_name = "rel",
     ),
     goma_jobs = goma.jobs.J150,
-    schedule = "triggered",  # triggered manually via Scheduler UI
+    # Set to an empty list to avoid chromium-gitiles-trigger triggering new
+    # builds. Also we don't set any `schedule` since this builder is for
+    # reference only and should not run any new builds.
+    triggered_by = [],
 )
 
+# TODO(crbug.com/1137474): Remove this builder once there are no associated
+# disabled tests.
 ci.android_fyi_builder(
     name = "android-11-x86-fyi-rel",
     console_view_entry = consoles.console_view_entry(
@@ -1145,6 +1173,10 @@ ci.android_fyi_builder(
         short_name = "rel",
     ),
     os = os.LINUX_BIONIC_REMOVE,
+    # Set to an empty list to avoid chromium-gitiles-trigger triggering new
+    # builds. Also we don't set any `schedule` since this builder is for
+    # reference only and should not run any new builds.
+    triggered_by = [],
 )
 
 ci.android_fyi_builder(
@@ -1153,6 +1185,11 @@ ci.android_fyi_builder(
         category = "emulator|12|x64",
         short_name = "rel",
     ),
+    # Bump to 6h for now since compile on x64 seems slower than x86. It could
+    # take 3h on Android-12 (For example ci.chromium.org/b/8841892751541698720)
+    # vs 1h on Android-11 (For example ci.chromium.org/b/8841899947736889024)
+    # TODO(crbug.com/1229245): Look into ways to improve the compile time.
+    execution_timeout = 6 * time.hour,
     os = os.LINUX_BIONIC_REMOVE,
 )
 
@@ -1478,6 +1515,7 @@ ci.chromium_builder(
 ci.chromium_builder(
     name = "fuchsia-official",
     branch_selector = branches.STANDARD_MILESTONE,
+    builderless = False,
     main_console_view = "main",
     console_view_entry = [
         consoles.console_view_entry(
@@ -1707,7 +1745,8 @@ ci.chromiumos_builder(
                     "tags": {
                         "version": "{%chromium_version%}",
                     },
-                    "only_set_refs_on_tests_success": True,
+                    # Because we don't run any tests.
+                    "only_set_refs_on_tests_success": False,
                 },
             ],
         },
@@ -1823,7 +1862,7 @@ ci.chromiumos_builder(
                         "chrome",
                         "chrome_100_percent.pak",
                         "chrome_200_percent.pak",
-                        "crashpad_handler",
+                        "chrome_crashpad_handler",
                         "headless_lib.pak",
                         "icudtl.dat",
                         "nacl_helper",
@@ -1913,6 +1952,18 @@ ci.chromiumos_builder(
     os = os.LINUX_BIONIC_REMOVE,
 )
 
+ci.chromiumos_builder(
+    name = "linux-lacros-dbg",
+    branch_selector = branches.STANDARD_MILESTONE,
+    console_view_entry = consoles.console_view_entry(
+        category = "debug",
+        short_name = "lcr",
+    ),
+    cq_mirrors_console_view = "mirrors",
+    main_console_view = "main",
+    os = os.LINUX_BIONIC_REMOVE,
+)
+
 # For Chromebox for meetings(CfM)
 ci.chromiumos_builder(
     name = "linux-cfm-rel",
@@ -1981,11 +2032,11 @@ ci.cipd_builder(
             "tools/android/avd/proto/creation/generic_android28.textpb",
             "tools/android/avd/proto/creation/generic_android29.textpb",
             "tools/android/avd/proto/creation/generic_android30.textpb",
-            "tools/android/avd/proto/creation/generic_androidS.textpb",
+            "tools/android/avd/proto/creation/generic_android31.textpb",
             "tools/android/avd/proto/creation/generic_playstore_android27.textpb",
             "tools/android/avd/proto/creation/generic_playstore_android28.textpb",
             "tools/android/avd/proto/creation/generic_playstore_android30.textpb",
-            "tools/android/avd/proto/creation/generic_playstore_androidS.textpb",
+            "tools/android/avd/proto/creation/generic_playstore_android31.textpb",
         ],
     },
 )
@@ -2426,7 +2477,7 @@ ci.clang_builder(
     cores = None,
     os = os.MAC_11,
     ssd = True,
-    xcode = xcode.x12d4e,
+    xcode = xcode.x13main,
 )
 
 ci.clang_builder(
@@ -2439,7 +2490,7 @@ ci.clang_builder(
     cores = None,
     os = os.MAC_11,
     ssd = True,
-    xcode = xcode.x12d4e,
+    xcode = xcode.x13main,
 )
 
 ci.clang_mac_builder(
@@ -3272,7 +3323,7 @@ ci.fyi_builder(
                         "chrome",
                         "chrome_100_percent.pak",
                         "chrome_200_percent.pak",
-                        "crashpad_handler",
+                        "chrome_crashpad_handler",
                         "headless_lib.pak",
                         "icudtl.dat",
                         "libminigbm.so",
@@ -3386,6 +3437,21 @@ ci.fyi_builder(
         category = "linux",
     ),
     triggered_by = ["linux-lacros-builder-fyi-rel"],
+)
+
+ci.fyi_builder(
+    name = "linux-lacros-dbg-fyi",
+    console_view_entry = consoles.console_view_entry(
+        category = "linux",
+    ),
+)
+
+ci.fyi_builder(
+    name = "linux-lacros-dbg-tests-fyi",
+    console_view_entry = consoles.console_view_entry(
+        category = "linux",
+    ),
+    triggered_by = ["linux-lacros-dbg-fyi"],
 )
 
 ci.fyi_builder(
@@ -3708,6 +3774,16 @@ ci.updater_builder(
 )
 
 ci.updater_builder(
+    name = "win10-updater-tester-dbg-uac",
+    console_view_entry = consoles.console_view_entry(
+        category = "debug|win (64)",
+        short_name = "UAC",
+    ),
+    tree_closing = False,
+    triggered_by = ["win-updater-builder-dbg"],
+)
+
+ci.updater_builder(
     name = "win10-updater-tester-rel",
     console_view_entry = consoles.console_view_entry(
         category = "release|win (64)",
@@ -3753,6 +3829,24 @@ ci.fyi_builder(
     ),
     os = os.LINUX_BIONIC_REMOVE,
     triggered_by = ["win-pixel-builder-rel"],
+)
+
+ci.fyi_builder(
+    name = "arm-upload-perfetto",
+    console_view_entry = consoles.console_view_entry(
+        category = "perfetto",
+        short_name = "arm",
+    ),
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+)
+
+ci.fyi_builder(
+    name = "arm64-upload-perfetto",
+    console_view_entry = consoles.console_view_entry(
+        category = "perfetto",
+        short_name = "arm64",
+    ),
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
 )
 
 ci.fyi_builder(
@@ -4144,6 +4238,7 @@ ci.fyi_windows_builder(
     goma_backend = None,
     reclient_instance = rbe_instance.DEFAULT,
     reclient_profiler_service = "reclient-win",
+    reclient_publish_trace = True,
     configure_kitchen = True,
     kitchen_emulate_gce = True,
     os = os.WINDOWS_DEFAULT,
@@ -4168,6 +4263,67 @@ ci.fyi_builder(
     configure_kitchen = True,
     kitchen_emulate_gce = True,
     os = os.LINUX_BIONIC_REMOVE,
+    reclient_rewrapper_env = {"RBE_cache_silo": "chromeos-amd64-generic-rel (reclient)"},
+)
+
+# TODO(crbug.com/1235218): remove after the migration.
+ci.fyi_builder(
+    name = "chromeos-amd64-generic-rel (reclient compare)",
+    console_view_entry = consoles.console_view_entry(
+        category = "cros x64",
+        short_name = "cmp",
+    ),
+    goma_backend = None,
+    reclient_instance = rbe_instance.DEFAULT,
+    configure_kitchen = True,
+    kitchen_emulate_gce = True,
+    os = os.LINUX_BIONIC_REMOVE,
+    reclient_rewrapper_env = {"RBE_compare": "true"},
+    description_html = "verify artifacts. removed after the migration. crbug.com/1235218",
+)
+
+ci.fyi_builder(
+    name = "lacros-amd64-generic-rel (goma cache silo)",
+    console_view_entry = consoles.console_view_entry(
+        category = "lacros x64",
+        short_name = "cgc",
+    ),
+    os = os.LINUX_BIONIC_REMOVE,
+)
+
+ci.fyi_builder(
+    name = "lacros-amd64-generic-rel (reclient)",
+    console_view_entry = consoles.console_view_entry(
+        category = "lacros x64",
+    ),
+    goma_backend = None,
+    reclient_instance = rbe_instance.DEFAULT,
+    configure_kitchen = True,
+    kitchen_emulate_gce = True,
+    os = os.LINUX_BIONIC_REMOVE,
+    reclient_rewrapper_env = {"RBE_cache_silo": "lacros-amd64-generic-rel (reclient)"},
+)
+
+ci.fyi_builder(
+    name = "linux-lacros-builder-rel (goma cache silo)",
+    console_view_entry = consoles.console_view_entry(
+        category = "lacros rel",
+        short_name = "cgc",
+    ),
+    os = os.LINUX_BIONIC_REMOVE,
+)
+
+ci.fyi_builder(
+    name = "linux-lacros-builder-rel (reclient)",
+    console_view_entry = consoles.console_view_entry(
+        category = "lacros rel",
+    ),
+    goma_backend = None,
+    reclient_instance = rbe_instance.DEFAULT,
+    configure_kitchen = True,
+    kitchen_emulate_gce = True,
+    os = os.LINUX_BIONIC_REMOVE,
+    reclient_rewrapper_env = {"RBE_cache_silo": "linux-lacros-builder-rel (reclient)"},
 )
 
 ci.fyi_celab_builder(
@@ -4194,6 +4350,7 @@ ci.fyi_coverage_builder(
         short_name = "and",
     ),
     use_java_coverage = True,
+    coverage_test_types = ["overall", "unit"],
     schedule = "triggered",
     triggered_by = [],
 )
@@ -4205,6 +4362,7 @@ ci.fyi_coverage_builder(
         short_name = "ann",
     ),
     use_clang_coverage = True,
+    coverage_test_types = ["overall", "unit"],
 )
 
 ci.fyi_coverage_builder(
@@ -4237,7 +4395,7 @@ ci.fyi_coverage_builder(
     use_clang_coverage = True,
     coverage_exclude_sources = "ios_test_files_and_test_utils",
     coverage_test_types = ["overall", "unit"],
-    xcode = xcode.x12d4e,
+    xcode = xcode.x13main,
 )
 
 ci.fyi_coverage_builder(
@@ -5949,7 +6107,7 @@ ci.mac_ios_builder(
     # We don't have necessary capacity to run this configuration in CQ, but it
     # is part of the main waterfall
     main_console_view = "main",
-    xcode = xcode.x13latestbeta,
+    xcode = xcode.x13main,
 )
 
 ci.memory_builder(
@@ -6090,20 +6248,6 @@ ci.memory_builder(
     triggering_policy = scheduler.greedy_batching(
         max_concurrent_invocations = 2,
     ),
-)
-
-# TODO(https://crbug.com/1200904): Remove this after migration
-ci.memory_builder(
-    name = "Linux TSan (bionic)",
-    branch_selector = branches.STANDARD_MILESTONE,
-    console_view_entry = consoles.console_view_entry(
-        category = "linux|TSan v2",
-        short_name = "tst",
-    ),
-    cq_mirrors_console_view = "mirrors",
-    main_console_view = "main",
-    tree_closing = False,
-    os = os.LINUX_BIONIC,
 )
 
 ci.memory_builder(
@@ -6382,15 +6526,13 @@ ci.win_builder(
     tree_closing = False,
 )
 
-ci.win_builder(
+ci.win_thin_tester(
     name = "Win7 (32) Tests",
-    builderless = True,
     console_view_entry = consoles.console_view_entry(
         category = "release|tester",
         short_name = "32",
     ),
     main_console_view = "main",
-    os = os.WINDOWS_10,
     triggered_by = ["Win Builder"],
 )
 

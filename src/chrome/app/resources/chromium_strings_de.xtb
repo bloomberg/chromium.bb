@@ -18,6 +18,7 @@
 <translation id="1774152462503052664">Chromium im Hintergrund ausführen</translation>
 <translation id="1779356040007214683">Um Chromium sicherer zu machen, haben wir einige Erweiterungen deaktiviert, die nicht im <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> aufgeführt sind und möglicherweise ohne Ihr Wissen hinzugefügt wurden.</translation>
 <translation id="1808667845054772817">Chromium neu installieren</translation>
+<translation id="185970820835152459">Sie können Ihre angemeldeten Google-Konten verwalten. Ihre Google-Konten werden für den Chromium-Browser, den Play Store, Gmail und mehr verwendet. Wenn Sie ein Konto für jemand anderen hinzufügen möchten, z. B. ein Familienmitglied, ordnen Sie bitte stattdessen Ihrem Gerät (<ph name="DEVICE_TYPE" />) eine neue Person zu. <ph name="LINK_BEGIN" />Weitere Informationen<ph name="LINK_END" /></translation>
 <translation id="1881322772814446296">Sie melden sich mit einem verwalteten Konto an und ermöglichen dessen Administrator Zugriff auf Ihr Chromium-Profil. Ihre Chromium-Daten, wie Apps, Lesezeichen, Verlauf, Passwörter und andere Einstellungen, werden dauerhaft mit <ph name="USER_NAME" /> verknüpft. Sie können diese Daten über das Google Konten-Dashboard löschen, aber nicht mit einem anderen Konto verknüpfen. Wenn Sie Ihre bestehenden Chromium-Daten getrennt verwenden möchten, können Sie ein neues Profil erstellen. <ph name="LEARN_MORE" /></translation>
 <translation id="1911763535808217981">Wenn Sie diese Einstellung deaktivieren, können Sie sich auf Websites von Google wie beispielsweise Gmail anmelden, ohne sich auch in Chromium anmelden zu müssen</translation>
 <translation id="1929939181775079593">Chromium reagiert nicht. Jetzt neu starten?</translation>
@@ -107,7 +108,6 @@
 <translation id="4407044323746248786">Chromium trotzdem beenden?</translation>
 <translation id="4415566066719264597">Chromium im Hintergrund ausführen</translation>
 <translation id="4423735387467980091">Chromium anpassen und einstellen</translation>
-<translation id="4491398312037323794">Auf dieser Seite können Sie Ihre angemeldeten Google-Konten verwalten. Diese Konten sind im Chromium-Browser, in Play Store-Apps und in Diensten wie Gmail, Google Drive und YouTube verfügbar. <ph name="LINK_BEGIN" />Weitere Informationen<ph name="LINK_END" /></translation>
 <translation id="452711251841752011">Willkommen bei Chromium; neues Browserfenster geöffnet</translation>
 <translation id="4544142686420020088">Chrome wurde aufgrund eines Fehlers nicht aktualisiert. Wie Sie Updateprobleme und Fehler bei der Aktualisierung von Chromium beheben, <ph name="BEGIN_LINK" />erfahren Sie hier<ph name="END_LINK" />.</translation>
 <translation id="454579500955453258">Mit einem neuen Chromium-Profil fortfahren?</translation>
@@ -254,6 +254,7 @@ Chromium kann Ihre Einstellungen nicht wiederherstellen.</translation>
 <translation id="7937630085815544518">Sie waren in Chromium als <ph name="USER_EMAIL_ADDRESS" /> angemeldet. Melden Sie sich bitte wieder mit demselben Konto an.</translation>
 <translation id="7975919845073681630">Dies ist eine Zweitinstallation, daher kann Chromium nicht als Standardbrowser festgelegt werden.</translation>
 <translation id="8013436988911883588">Sobald Chromium Zugriff hat, können Websites Sie um Zugriff bitten.</translation>
+<translation id="8045118833343856403">Folgende Konten sind nicht in einem Chromium-Profil angemeldet. Wenn Sie ein Konto in einem anderen Profil verwenden möchten, entfernen Sie zuerst dieses Profil.</translation>
 <translation id="81770708095080097">Diese Datei ist schädlich und wurde von Chromium blockiert.</translation>
 <translation id="8248265253516264921">Wenn ein Bild keine brauchbare Beschreibung hat, versucht Chromium, eine für Sie zu finden. Damit entsprechende Beschreibungen erstellt werden können, werden die Bilder an Google gesendet. Sie können dies jederzeit in den Einstellungen deaktivieren.</translation>
 <translation id="8266560134891435528">Chromium kann Ihre Passwörter nicht prüfen, da Sie nicht angemeldet sind</translation>

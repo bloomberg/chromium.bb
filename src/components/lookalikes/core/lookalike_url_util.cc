@@ -114,14 +114,16 @@ std::string GetMatchingSiteEngagementDomain(
   return std::string();
 }
 
-// Returns the first matching top domain with an edit distance of at most one
-// to |domain_and_registry|. This search is done in lexicographic order on the
-// top 500 suitable domains, instead of in order by popularity. This means that
-// the resulting "similar" domain may not be the most popular domain that
-// matches.
-std::string GetSimilarDomainFromTop500(
+// Scans the top sites list and returns true if it finds a domain with an edit
+// distance or character swap of one to |domain_and_registry|. This search is
+// done in lexicographic order on the top 500 suitable domains, instead of in
+// order by popularity. This means that the resulting "similar" domain may not
+// be the most popular domain that matches.
+bool GetSimilarDomainFromTop500(
     const DomainInfo& navigated_domain,
-    const LookalikeTargetAllowlistChecker& target_allowlisted) {
+    const LookalikeTargetAllowlistChecker& target_allowlisted,
+    std::string* matched_domain,
+    LookalikeUrlMatchType* match_type) {
   for (const std::string& navigated_skeleton : navigated_domain.skeletons) {
     for (const char* const top_domain_skeleton :
          top500_domains::kTop500EditDistanceSkeletons) {
@@ -129,66 +131,94 @@ std::string GetSimilarDomainFromTop500(
       if (strlen(top_domain_skeleton) == 0) {
         continue;
       }
+      // Check edit distance on skeletons.
+      if (IsEditDistanceAtMostOne(base::UTF8ToUTF16(navigated_skeleton),
+                                  base::UTF8ToUTF16(top_domain_skeleton))) {
+        const std::string top_domain =
+            url_formatter::LookupSkeletonInTopDomains(
+                top_domain_skeleton, url_formatter::SkeletonType::kFull)
+                .domain;
+        DCHECK(!top_domain.empty());
 
-      if (!IsEditDistanceAtMostOne(base::UTF8ToUTF16(navigated_skeleton),
-                                   base::UTF8ToUTF16(top_domain_skeleton))) {
-        continue;
+        if (!IsLikelyEditDistanceFalsePositive(navigated_domain,
+                                               GetDomainInfo(top_domain)) &&
+            !target_allowlisted.Run(top_domain)) {
+          *matched_domain = top_domain;
+          *match_type = LookalikeUrlMatchType::kEditDistance;
+          return true;
+        }
       }
 
-      const std::string top_domain =
-          url_formatter::LookupSkeletonInTopDomains(
-              top_domain_skeleton, url_formatter::SkeletonType::kFull)
-              .domain;
-      DCHECK(!top_domain.empty());
-
-      if (IsLikelyEditDistanceFalsePositive(navigated_domain,
-                                            GetDomainInfo(top_domain))) {
-        continue;
+      // Check character swap on skeletons.
+      // TODO(crbug/1109056): Also check character swap on actual hostnames
+      // with diacritics etc removed. This is because some characters have two
+      // character skeletons such as m -> rn, and this prevents us from
+      // detecting character swaps between example.com and exapmle.com.
+      if (HasOneCharacterSwap(base::UTF8ToUTF16(navigated_skeleton),
+                              base::UTF8ToUTF16(top_domain_skeleton))) {
+        const std::string top_domain =
+            url_formatter::LookupSkeletonInTopDomains(
+                top_domain_skeleton, url_formatter::SkeletonType::kFull)
+                .domain;
+        DCHECK(!top_domain.empty());
+        if (!target_allowlisted.Run(top_domain)) {
+          *matched_domain = top_domain;
+          *match_type = LookalikeUrlMatchType::kCharacterSwapTop500;
+          return true;
+        }
       }
-
-      // Skip past domains that are allowed to be spoofed.
-      if (target_allowlisted.Run(top_domain)) {
-        continue;
-      }
-
-      return top_domain;
     }
   }
-  return std::string();
+  return false;
 }
 
-// Returns the first matching engaged domain with an edit distance of at most
-// one to |domain_and_registry|.
-std::string GetSimilarDomainFromEngagedSites(
+// Scans the engaged site list for edit distance and character swap matches.
+// Returns true if there is a match and fills |matched_domain| with the first
+// matching engaged domain and |match_type| with the matching heuristic type.
+bool GetSimilarDomainFromEngagedSites(
     const DomainInfo& navigated_domain,
     const std::vector<DomainInfo>& engaged_sites,
-    const LookalikeTargetAllowlistChecker& target_allowlisted) {
+    const LookalikeTargetAllowlistChecker& target_allowlisted,
+    std::string* matched_domain,
+    LookalikeUrlMatchType* match_type) {
   for (const std::string& navigated_skeleton : navigated_domain.skeletons) {
     for (const DomainInfo& engaged_site : engaged_sites) {
+      DCHECK_NE(navigated_domain.domain_and_registry,
+                engaged_site.domain_and_registry);
+
       if (!url_formatter::top_domains::IsEditDistanceCandidate(
               engaged_site.domain_and_registry)) {
         continue;
       }
+      // Skip past domains that are allowed to be spoofed.
+      if (target_allowlisted.Run(engaged_site.domain_and_registry)) {
+        continue;
+      }
       for (const std::string& engaged_skeleton : engaged_site.skeletons) {
-        if (!IsEditDistanceAtMostOne(base::UTF8ToUTF16(navigated_skeleton),
-                                     base::UTF8ToUTF16(engaged_skeleton))) {
-          continue;
+        // Check edit distance on skeletons.
+        if (IsEditDistanceAtMostOne(base::UTF8ToUTF16(navigated_skeleton),
+                                    base::UTF8ToUTF16(engaged_skeleton)) &&
+            !IsLikelyEditDistanceFalsePositive(navigated_domain,
+                                               engaged_site)) {
+          *matched_domain = engaged_site.domain_and_registry;
+          *match_type = LookalikeUrlMatchType::kEditDistanceSiteEngagement;
+          return true;
         }
-
-        if (IsLikelyEditDistanceFalsePositive(navigated_domain, engaged_site)) {
-          continue;
+        // Check character swap on skeletons.
+        // TODO(crbug/1109056): Also check character swap on actual hostnames
+        // with diacritics etc removed. This is because some characters have two
+        // character skeletons such as m -> rn, and this prevents us from
+        // detecting character swaps between example.com and exapmle.com.
+        if (HasOneCharacterSwap(base::UTF8ToUTF16(navigated_skeleton),
+                                base::UTF8ToUTF16(engaged_skeleton))) {
+          *matched_domain = engaged_site.domain_and_registry;
+          *match_type = LookalikeUrlMatchType::kCharacterSwapSiteEngagement;
+          return true;
         }
-
-        // Skip past domains that are allowed to be spoofed.
-        if (target_allowlisted.Run(engaged_site.domain_and_registry)) {
-          continue;
-        }
-
-        return engaged_site.domain_and_registry;
       }
     }
   }
-  return std::string();
+  return false;
 }
 
 void RecordEvent(NavigationSuggestionEvent event) {
@@ -345,14 +375,53 @@ bool IsEmbeddingItself(const base::span<const base::StringPiece>& domain_labels,
   return false;
 }
 
+// Identical to url_formatter::top_domains::HostnameWithoutRegistry(), but
+// respects de-facto public registries like .com.de using similar logic to
+// GetETLDPlusOne. See kPrivateRegistriesTreatedAsPublic definition for more
+// details. e.g. "google.com.de" returns "google". Call with an eTLD+1, not a
+// full hostname.
+std::string GetE2LDWithDeFactoPublicRegistries(
+    const std::string& domain_and_registry) {
+  if (domain_and_registry.empty()) {
+    return std::string();
+  }
+
+  size_t registry_size =
+      net::registry_controlled_domains::PermissiveGetHostRegistryLength(
+          domain_and_registry.c_str(),
+          net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
+          net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
+  const size_t private_registry_size =
+      net::registry_controlled_domains::PermissiveGetHostRegistryLength(
+          domain_and_registry.c_str(),
+          net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
+          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+
+  // If the registry lengths are the same using public and private registries,
+  // than this is just a public registry domain. Otherwise, we need to check if
+  // the registry ends with one of our anointed registries.
+  if (registry_size != private_registry_size) {
+    for (const auto* private_registry : kPrivateRegistriesTreatedAsPublic) {
+      if (base::EndsWith(domain_and_registry, private_registry)) {
+        registry_size = private_registry_size;
+      }
+    }
+  }
+
+  std::string out =
+      domain_and_registry.substr(0, domain_and_registry.size() - registry_size);
+  base::TrimString(out, ".", &out);
+  return out;
+}
+
 // Returns whether |embedded_target| and |embedding_domain| share the same e2LD,
 // (as in, e.g., google.com and google.org, or airbnb.com.br and airbnb.com).
-// Assumes |embedding_domain| is an eTLD+1.
+// Assumes |embedding_domain| is an eTLD+1. Respects de-facto public eTLDs.
 bool IsCrossTLDMatch(const DomainInfo& embedded_target,
                      const std::string& embedding_domain) {
   return (
-      embedded_target.domain_without_registry ==
-      url_formatter::top_domains::HostnameWithoutRegistry(embedding_domain));
+      GetE2LDWithDeFactoPublicRegistries(embedded_target.domain_and_registry) ==
+      GetE2LDWithDeFactoPublicRegistries(embedding_domain));
 }
 
 // Returns whether |embedded_target| is one of kDomainsPermittedInEndEmbeddings
@@ -662,23 +731,20 @@ bool GetMatchingDomain(
   if (url_formatter::top_domains::IsEditDistanceCandidate(
           navigated_domain.domain_and_registry)) {
     // If we can't find an exact top domain or an engaged site, try to find an
-    // engaged domain within an edit distance of one.
-    const std::string similar_engaged_domain = GetSimilarDomainFromEngagedSites(
-        navigated_domain, engaged_sites, in_target_allowlist);
-    if (!similar_engaged_domain.empty() &&
-        navigated_domain.domain_and_registry != similar_engaged_domain) {
-      *matched_domain = similar_engaged_domain;
-      *match_type = LookalikeUrlMatchType::kEditDistanceSiteEngagement;
+    // engaged domain within an edit distance of one or a single character swap.
+    if (GetSimilarDomainFromEngagedSites(navigated_domain, engaged_sites,
+                                         in_target_allowlist, matched_domain,
+                                         match_type)) {
+      DCHECK_NE(navigated_domain.domain_and_registry, *matched_domain);
       return true;
     }
 
-    // Finally, try to find a top domain within an edit distance of one.
-    const std::string similar_top_domain =
-        GetSimilarDomainFromTop500(navigated_domain, in_target_allowlist);
-    if (!similar_top_domain.empty() &&
-        navigated_domain.domain_and_registry != similar_top_domain) {
-      *matched_domain = similar_top_domain;
-      *match_type = LookalikeUrlMatchType::kEditDistance;
+    // Finally, try to find a top domain within an edit distance or character
+    // swap of one.
+    if (GetSimilarDomainFromTop500(navigated_domain, in_target_allowlist,
+                                   matched_domain, match_type)) {
+      DCHECK_NE(navigated_domain.domain_and_registry, *matched_domain);
+      DCHECK(!matched_domain->empty());
       return true;
     }
   }
@@ -724,6 +790,12 @@ void RecordUMAFromMatchType(LookalikeUrlMatchType match_type) {
       break;
     case LookalikeUrlMatchType::kFailedSpoofChecks:
       RecordEvent(NavigationSuggestionEvent::kFailedSpoofChecks);
+      break;
+    case LookalikeUrlMatchType::kCharacterSwapSiteEngagement:
+      RecordEvent(NavigationSuggestionEvent::kMatchCharacterSwapSiteEngagement);
+      break;
+    case LookalikeUrlMatchType::kCharacterSwapTop500:
+      RecordEvent(NavigationSuggestionEvent::kMatchCharacterSwapTop500);
       break;
     case LookalikeUrlMatchType::kNone:
       break;
@@ -953,4 +1025,39 @@ void SetEnterpriseAllowlistForTesting(PrefService* pref_service,
     list.Append(host);
   }
   pref_service->Set(prefs::kLookalikeWarningAllowlistDomains, std::move(list));
+}
+
+bool HasOneCharacterSwap(const std::u16string& str1,
+                         const std::u16string& str2) {
+  if (str1.size() != str2.size()) {
+    return false;
+  }
+  if (str1 == str2) {
+    return false;
+  }
+  bool has_swap = false;
+  std::u16string::const_iterator i = str1.begin();
+  std::u16string::const_iterator j = str2.begin();
+  while (i != str1.end()) {
+    DCHECK(j < str2.end());
+    wchar_t left1 = *i;
+    wchar_t right1 = *j;
+    i++;
+    j++;
+    if (left1 == right1) {
+      continue;
+    }
+    wchar_t left2 = *i;
+    wchar_t right2 = *j;
+    if (!has_swap && (left1 == right2 && right1 == left2)) {
+      has_swap = true;
+      i++;
+      j++;
+      continue;
+    }
+    // Either there are multiple swaps, or strings have completely different
+    // characters.
+    return false;
+  }
+  return has_swap;
 }

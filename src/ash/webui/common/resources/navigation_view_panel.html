@@ -1,14 +1,21 @@
 <style include="cr-shared-style">
+  ::slotted([slot=bottom-nav-content]) {
+    bottom: 24px;
+    inset-inline-start: 16px;
+    position: fixed;
+  }
+
   #container {
     align-items: flex-start;
     display: flex;
     flex: 1;
-    overflow: overlay;
     position: relative;
   }
 
   .left-aligned {
+    height: 100%;
     position: sticky;
+    top: 75px;
   }
 </style>
 

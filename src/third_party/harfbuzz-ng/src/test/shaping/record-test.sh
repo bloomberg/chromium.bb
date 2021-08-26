@@ -65,16 +65,18 @@ echo fonttools subset \
 	--glyph-names \
 	--no-hinting \
 	--layout-features='*' \
-	"$dir/font.ttf" \
 	--gids="$glyph_ids" \
-	--text="$text"
+	--text="$text" \
+	--output-file="$dir/font.subset.ttf" \
+	"$dir/font.ttf"
 fonttools subset \
 	--glyph-names \
 	--no-hinting \
 	--layout-features='*' \
-	"$dir/font.ttf" \
 	--gids="$glyph_ids" \
-	--text="$text"
+	--text="$text" \
+	--output-file="$dir/font.subset.ttf" \
+	"$dir/font.ttf"
 if ! test -s "$dir/font.subset.ttf"; then
 	echo "Subsetter didn't produce nonempty subset font in $dir/font.subset.ttf" >&2
 	exit 2
@@ -118,7 +120,7 @@ if test "$out" != "/dev/stdout"; then
 	relative_subset="$(/usr/bin/env python3 -c 'import os, sys; print (os.path.relpath (sys.argv[1], sys.argv[2]))' "$subset" "$(dirname "$out")")"
 fi
 while read uline <&3 && read gline <&4; do
-	echo "$relative_subset:$options:$uline:$gline" >> "$out"
+	echo "$relative_subset;$options;$uline;$gline" >> "$out"
 done
 
 

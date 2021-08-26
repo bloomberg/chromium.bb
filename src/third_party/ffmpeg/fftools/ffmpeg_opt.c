@@ -27,6 +27,7 @@
 #include "libavformat/avformat.h"
 
 #include "libavcodec/avcodec.h"
+#include "libavcodec/bsf.h"
 
 #include "libavfilter/avfilter.h"
 
@@ -186,6 +187,7 @@ static int input_sync;
 static int input_stream_potentially_available = 0;
 static int ignore_unknown_streams = 0;
 static int copy_unknown_streams = 0;
+static int recast_media = 0;
 static int find_stream_info = 1;
 
 static void uninit_options(OptionsContext *o)
@@ -759,7 +761,7 @@ static const AVCodec *find_codec_or_die(const char *name, enum AVMediaType type,
         av_log(NULL, AV_LOG_FATAL, "Unknown %s '%s'\n", codec_string, name);
         exit_program(1);
     }
-    if (codec->type != type) {
+    if (codec->type != type && !recast_media) {
         av_log(NULL, AV_LOG_FATAL, "Invalid %s type '%s'\n", codec_string, name);
         exit_program(1);
     }
@@ -774,6 +776,8 @@ static const AVCodec *choose_decoder(OptionsContext *o, AVFormatContext *s, AVSt
     if (codec_name) {
         const AVCodec *codec = find_codec_or_die(codec_name, st->codecpar->codec_type, 0);
         st->codecpar->codec_id = codec->id;
+        if (recast_media && st->codecpar->codec_type != codec->type)
+            st->codecpar->codec_type = codec->type;
         return codec;
     } else
         return avcodec_find_decoder(st->codecpar->codec_id);
@@ -809,6 +813,7 @@ static void add_input_streams(OptionsContext *o, AVFormatContext *ic)
         ist->discard = 1;
         st->discard  = AVDISCARD_ALL;
         ist->nb_samples = 0;
+        ist->first_dts = AV_NOPTS_VALUE;
         ist->min_pts = INT64_MAX;
         ist->max_pts = INT64_MIN;
 
@@ -1282,6 +1287,17 @@ static int open_input_file(OptionsContext *o, const char *filename)
     f->loop = o->loop;
     f->duration = 0;
     f->time_base = (AVRational){ 1, 1 };
+
+    f->readrate = o->readrate ? o->readrate : 0.0;
+    if (f->readrate < 0.0f) {
+        av_log(NULL, AV_LOG_ERROR, "Option -readrate for Input #%d is %0.3f; it must be non-negative.\n", nb_input_files, f->readrate);
+        exit_program(1);
+    }
+    if (f->readrate && f->rate_emu) {
+        av_log(NULL, AV_LOG_WARNING, "Both -readrate and -re set for Input #%d. Using -readrate %0.3f.\n", nb_input_files, f->readrate);
+        f->rate_emu = 0;
+    }
+
     f->pkt = av_packet_alloc();
     if (!f->pkt)
         exit_program(1);
@@ -3428,6 +3444,8 @@ const OptionDef options[] = {
         "Ignore unknown stream types" },
     { "copy_unknown",   OPT_BOOL | OPT_EXPERT,                       {              &copy_unknown_streams },
         "Copy unknown stream types" },
+    { "recast_media",   OPT_BOOL | OPT_EXPERT,                       {              &recast_media },
+        "allow recasting stream type in order to force a decoder of different media type" },
     { "c",              HAS_ARG | OPT_STRING | OPT_SPEC |
                         OPT_INPUT | OPT_OUTPUT,                      { .off       = OFFSET(codec_names) },
         "codec name", "codec" },
@@ -3501,7 +3519,10 @@ const OptionDef options[] = {
         "when dumping packets, also dump the payload" },
     { "re",             OPT_BOOL | OPT_EXPERT | OPT_OFFSET |
                         OPT_INPUT,                                   { .off = OFFSET(rate_emu) },
-        "read input at native frame rate", "" },
+        "read input at native frame rate; equivalent to -readrate 1", "" },
+    { "readrate",       HAS_ARG | OPT_FLOAT | OPT_OFFSET |
+                        OPT_EXPERT | OPT_INPUT,                      { .off = OFFSET(readrate) },
+        "read input at specified rate", "speed" },
     { "target",         HAS_ARG | OPT_PERFILE | OPT_OUTPUT,          { .func_arg = opt_target },
         "specify target file type (\"vcd\", \"svcd\", \"dvd\", \"dv\" or \"dv50\" "
         "with optional prefixes \"pal-\", \"ntsc-\" or \"film-\")", "type" },

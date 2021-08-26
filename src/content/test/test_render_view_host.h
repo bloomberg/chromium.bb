@@ -50,6 +50,7 @@ namespace content {
 class FrameTree;
 class SiteInstance;
 class TestRenderFrameHost;
+class TestPageBroadcast;
 class TestWebContents;
 
 // TestRenderWidgetHostView ----------------------------------------------------
@@ -260,6 +261,8 @@ class TestRenderViewHost
   // See opener_frame_token() above.
   absl::optional<blink::FrameToken> opener_frame_token_;
 
+  std::unique_ptr<TestPageBroadcast> page_broadcast_;
+
   DISALLOW_COPY_AND_ASSIGN(TestRenderViewHost);
 };
 
@@ -288,7 +291,7 @@ class RenderViewHostImplTestHarness : public RenderViewHostTestHarness {
   TestRenderFrameHost* main_test_rfh();
 
  private:
-  typedef std::unique_ptr<ui::test::ScopedSetSupportedScaleFactors>
+  typedef std::unique_ptr<ui::test::ScopedSetSupportedResourceScaleFactors>
       ScopedSetSupportedScaleFactors;
   ScopedSetSupportedScaleFactors scoped_set_supported_scale_factors_;
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostImplTestHarness);

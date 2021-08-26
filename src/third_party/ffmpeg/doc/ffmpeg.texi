@@ -449,6 +449,11 @@ output file already exists.
 Set number of times input stream shall be looped. Loop 0 means no loop,
 loop -1 means infinite loop.
 
+@item -recast_media (@emph{global})
+Allow forcing a decoder of a different media type than the one
+detected or designated by the demuxer. Useful for decoding media
+data muxed as data streams.
+
 @item -c[:@var{stream_specifier}] @var{codec} (@emph{input/output,per-stream})
 @itemx -codec[:@var{stream_specifier}] @var{codec} (@emph{input/output,per-stream})
 Select an encoder (when used before an output file) or a decoder (when used
@@ -759,6 +764,16 @@ This option is similar to @option{-filter}, the only difference is that its
 argument is the name of the file from which a filtergraph description is to be
 read.
 
+@item -reinit_filter[:@var{stream_specifier}] @var{integer} (@emph{input,per-stream})
+This boolean option determines if the filtergraph(s) to which this stream is fed gets
+reinitialized when input frame parameters change mid-stream. This option is enabled by
+default as most video and all audio filters cannot handle deviation in input frame properties.
+Upon reinitialization, existing filter state is lost, like e.g. the frame count @code{n}
+reference available in some filters. Any frames buffered at time of reinitialization are lost.
+The properties where a change triggers reinitialization are,
+for video, frame resolution or pixel format;
+for audio, sample format, sample rate, channel count or channel layout.
+
 @item -filter_threads @var{nb_threads} (@emph{global})
 Defines how many threads are used to process a filter pipeline. Each pipeline
 will produce a thread pool with this many threads available for parallel processing.
@@ -996,6 +1011,7 @@ Deprecated see -bsf
 @item -force_key_frames[:@var{stream_specifier}] @var{time}[,@var{time}...] (@emph{output,per-stream})
 @item -force_key_frames[:@var{stream_specifier}] expr:@var{expr} (@emph{output,per-stream})
 @item -force_key_frames[:@var{stream_specifier}] source (@emph{output,per-stream})
+@item -force_key_frames[:@var{stream_specifier}] source_no_drop (@emph{output,per-stream})
 
 @var{force_key_frames} can take arguments of the following form:
 
@@ -1056,6 +1072,12 @@ starting from second 13:
 @item source
 If the argument is @code{source}, ffmpeg will force a key frame if
 the current frame being encoded is marked as a key frame in its source.
+
+@item source_no_drop
+If the argument is @code{source_no_drop}, ffmpeg will force a key frame if
+the current frame being encoded is marked as a key frame in its source.
+In cases where this particular source frame has to be dropped,
+enforce the next available frame to become a key frame instead.
 
 @end table
 
@@ -1553,14 +1575,21 @@ Exit after ffmpeg has been running for @var{duration} seconds in CPU user time.
 Dump each input packet to stderr.
 @item -hex (@emph{global})
 When dumping packets, also dump the payload.
+@item -readrate @var{speed} (@emph{input})
+Limit input read speed.
+
+Its value is a floating-point positive number which represents the maximum duration of
+media, in seconds, that should be ingested in one second of wallclock time.
+Default value is zero and represents no imposed limitation on speed of ingestion.
+Value @code{1} represents real-time speed and is equivalent to @code{-re}.
+
+Mainly used to simulate a capture device or live input stream (e.g. when reading from a file).
+Should not be used with a low value when input is an actual capture device or live stream as
+it may cause packet loss.
+
+It is useful for when flow speed of output packets is important, such as live streaming.
 @item -re (@emph{input})
-Read input at native frame rate. Mainly used to simulate a grab device,
-or live input stream (e.g. when reading from a file). Should not be used
-with actual grab devices or live input streams (where it can cause packet
-loss).
-By default @command{ffmpeg} attempts to read the input(s) as fast as possible.
-This option will slow down the reading of the input(s) to the native frame rate
-of the input(s). It is useful for real-time output (e.g. live streaming).
+Read input at native frame rate. This is equivalent to setting @code{-readrate 1}.
 @item -vsync @var{parameter}
 Video sync method.
 For compatibility reasons old values can be specified as numbers.

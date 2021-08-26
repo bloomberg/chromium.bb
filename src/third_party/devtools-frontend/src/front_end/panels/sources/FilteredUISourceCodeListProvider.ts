@@ -4,7 +4,7 @@
 
 /* eslint-disable rulesdir/no_underscored_properties */
 
-import type * as Common from '../../core/common/common.js'; // eslint-disable-line no-unused-vars
+import type * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Persistence from '../../models/persistence/persistence.js';
 import * as Workspace from '../../models/workspace/workspace.js';
@@ -124,7 +124,7 @@ export class FilteredUISourceCodeListProvider extends QuickOpen.FilteredListWidg
     subtitleElement.classList.add('monospace');
     titleElement.textContent = uiSourceCode.displayName() + (this._queryLineNumberAndColumnNumber || '');
     this._renderSubtitleElement(subtitleElement, fullDisplayName);
-    /** @type {!HTMLElement} */ UI.Tooltip.Tooltip.install((subtitleElement), fullDisplayName);
+    /** @type {!HTMLElement} */ UI.Tooltip.Tooltip.install((subtitleElement as HTMLElement), fullDisplayName);
     const ranges = [];
     for (let i = 0; i < indexes.length; ++i) {
       ranges.push({offset: indexes[i], length: 1});
@@ -151,7 +151,7 @@ export class FilteredUISourceCodeListProvider extends QuickOpen.FilteredListWidg
     first.textContent = text.substring(0, splitPosition);
     const second = element.createChild('div', 'second-part');
     second.textContent = text.substring(splitPosition);
-    /** @type {!HTMLElement} */ UI.Tooltip.Tooltip.install((element), text);
+    /** @type {!HTMLElement} */ UI.Tooltip.Tooltip.install((element as HTMLElement), text);
   }
 
   selectItem(itemIndex: number|null, promptValue: string): void {

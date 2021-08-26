@@ -468,25 +468,31 @@ void ChunkDemuxer::Initialize(DemuxerHost* host,
   DVLOG(1) << "Initialize()";
   TRACE_EVENT_ASYNC_BEGIN0("media", "ChunkDemuxer::Initialize", this);
 
-  base::AutoLock auto_lock(lock_);
-  if (state_ == SHUTDOWN) {
-    // Init cb must only be run after this method returns, so post.
-    init_cb_ = BindToCurrentLoop(std::move(init_cb));
-    RunInitCB_Locked(DEMUXER_ERROR_COULD_NOT_OPEN);
-    return;
+  base::OnceClosure open_cb;
+
+  // Locked scope
+  {
+    base::AutoLock auto_lock(lock_);
+    if (state_ == SHUTDOWN) {
+      // Init cb must only be run after this method returns, so post.
+      init_cb_ = BindToCurrentLoop(std::move(init_cb));
+      RunInitCB_Locked(DEMUXER_ERROR_COULD_NOT_OPEN);
+      return;
+    }
+
+    DCHECK_EQ(state_, WAITING_FOR_INIT);
+    host_ = host;
+    // Do not post init_cb once this function returns because if there is an
+    // error after initialization, the error might be reported before init_cb
+    // has a chance to run. This is because ChunkDemuxer::ReportError_Locked
+    // directly calls DemuxerHost::OnDemuxerError: crbug.com/633016.
+    init_cb_ = std::move(init_cb);
+
+    ChangeState_Locked(INITIALIZING);
+    open_cb = std::move(open_cb_);
   }
 
-  DCHECK_EQ(state_, WAITING_FOR_INIT);
-  host_ = host;
-  // Do not post init_cb once this function returns because if there is an
-  // error after initialization, the error might be reported before init_cb
-  // has a chance to run. This is because ChunkDemuxer::ReportError_Locked
-  // directly calls DemuxerHost::OnDemuxerError: crbug.com/633016.
-  init_cb_ = std::move(init_cb);
-
-  ChangeState_Locked(INITIALIZING);
-
-  std::move(open_cb_).Run();
+  std::move(open_cb).Run();
 }
 
 void ChunkDemuxer::Stop() {
@@ -745,12 +751,11 @@ ChunkDemuxer::Status ChunkDemuxer::AddIdInternal(
   return kOk;
 }
 
-void ChunkDemuxer::SetTracksWatcher(
-    const std::string& id,
-    const MediaTracksUpdatedCB& tracks_updated_cb) {
+void ChunkDemuxer::SetTracksWatcher(const std::string& id,
+                                    MediaTracksUpdatedCB tracks_updated_cb) {
   base::AutoLock auto_lock(lock_);
   CHECK(IsValidId(id));
-  source_state_map_[id]->SetTracksWatcher(tracks_updated_cb);
+  source_state_map_[id]->SetTracksWatcher(std::move(tracks_updated_cb));
 }
 
 void ChunkDemuxer::SetParseWarningCallback(
@@ -758,7 +763,7 @@ void ChunkDemuxer::SetParseWarningCallback(
     SourceBufferParseWarningCB parse_warning_cb) {
   base::AutoLock auto_lock(lock_);
   CHECK(IsValidId(id));
-  source_state_map_[id]->SetParseWarningCallback(parse_warning_cb);
+  source_state_map_[id]->SetParseWarningCallback(std::move(parse_warning_cb));
 }
 
 void ChunkDemuxer::RemoveId(const std::string& id) {

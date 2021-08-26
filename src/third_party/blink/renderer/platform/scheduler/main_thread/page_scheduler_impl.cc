@@ -19,7 +19,9 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/common/features.h"
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/budget_pool.h"
+#include "third_party/blink/renderer/platform/scheduler/common/throttling/cpu_time_budget_pool.h"
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/task_queue_throttler.h"
+#include "third_party/blink/renderer/platform/scheduler/common/throttling/wake_up_budget_pool.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/auto_advancing_virtual_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
@@ -41,11 +43,6 @@ constexpr double kDefaultBackgroundBudgetAsCPUFraction = .01;
 constexpr double kDefaultMaxBackgroundBudgetLevelInSeconds = 3;
 constexpr double kDefaultInitialBackgroundBudgetInSeconds = 1;
 constexpr double kDefaultMaxBackgroundThrottlingDelayInSeconds = 0;
-
-// Given that we already align timers to 1Hz, do not report throttling if
-// it is under 3s.
-constexpr base::TimeDelta kMinimalBackgroundThrottlingDurationToReport =
-    base::TimeDelta::FromSeconds(3);
 
 // Delay for fully throttling the page after backgrounding.
 constexpr base::TimeDelta kThrottlingDelayAfterBackgrounding =
@@ -186,7 +183,6 @@ PageSchedulerImpl::PageSchedulerImpl(
           main_thread_scheduler_->GetTickClock()->NowTicks()),
       audio_state_(AudioState::kSilent),
       is_frozen_(false),
-      reported_background_throttling_since_navigation_(false),
       opted_out_from_aggressive_throttling_(false),
       nested_runloop_(false),
       is_main_frame_local_(false),
@@ -229,15 +225,6 @@ PageSchedulerImpl::~PageSchedulerImpl() {
     frame_scheduler->DetachFromPageScheduler();
   }
   main_thread_scheduler_->RemovePageScheduler(this);
-
-  if (cpu_time_budget_pool_)
-    cpu_time_budget_pool_->Close();
-  if (HasWakeUpBudgetPools()) {
-    for (WakeUpBudgetPool* pool : AllWakeUpBudgetPools()) {
-      DCHECK(pool);
-      pool->Close();
-    }
-  }
 }
 
 // static
@@ -454,10 +441,6 @@ void PageSchedulerImpl::Unregister(FrameSchedulerImpl* frame_scheduler) {
   frame_schedulers_.erase(frame_scheduler);
 }
 
-void PageSchedulerImpl::OnNavigation() {
-  reported_background_throttling_since_navigation_ = false;
-}
-
 void PageSchedulerImpl::ReportIntervention(const String& message) {
   delegate_->ReportIntervention(message);
 }
@@ -627,14 +610,30 @@ bool PageSchedulerImpl::IsWaitingForMainFrameMeaningfulPaint() const {
                      });
 }
 
-void PageSchedulerImpl::WriteIntoTrace(perfetto::TracedValue context) const {
+void PageSchedulerImpl::WriteIntoTrace(perfetto::TracedValue context,
+                                       base::TimeTicks now) const {
   auto dict = std::move(context).WriteDictionary();
   dict.Add("page_visible", page_visibility_ == PageVisibilityState::kVisible);
   dict.Add("is_audio_playing", IsAudioPlaying());
   dict.Add("is_frozen", is_frozen_);
-  dict.Add("reported_background_throttling_since_navigation",
-           reported_background_throttling_since_navigation_);
   dict.Add("is_page_freezable", IsBackgrounded());
+
+  dict.Add("cpu_time_budget_pool", [&](perfetto::TracedValue context) {
+    cpu_time_budget_pool_->WriteIntoTrace(std::move(context), now);
+  });
+  dict.Add("normal_wake_up_budget_pool", [&](perfetto::TracedValue context) {
+    normal_wake_up_budget_pool_->WriteIntoTrace(std::move(context), now);
+  });
+  dict.Add("same_origin_intensive_wake_up_budget_pool",
+           [&](perfetto::TracedValue context) {
+             same_origin_intensive_wake_up_budget_pool_->WriteIntoTrace(
+                 std::move(context), now);
+           });
+  dict.Add("cross_origin_intensive_wake_up_budget_pool",
+           [&](perfetto::TracedValue context) {
+             cross_origin_intensive_wake_up_budget_pool_->WriteIntoTrace(
+                 std::move(context), now);
+           });
 
   dict.Add("frame_schedulers", frame_schedulers_);
 }
@@ -674,21 +673,21 @@ WakeUpBudgetPool* PageSchedulerImpl::GetWakeUpBudgetPool(
   if (IsBackgrounded()) {
     if (can_be_intensively_throttled) {
       if (is_same_origin)
-        return same_origin_intensive_wake_up_budget_pool_;
+        return same_origin_intensive_wake_up_budget_pool_.get();
       else
-        return cross_origin_intensive_wake_up_budget_pool_;
+        return cross_origin_intensive_wake_up_budget_pool_.get();
     }
-    return normal_wake_up_budget_pool_;
+    return normal_wake_up_budget_pool_.get();
   }
 
   if (!is_same_origin && !frame_visible)
-    return cross_origin_hidden_normal_wake_up_budget_pool_;
+    return cross_origin_hidden_normal_wake_up_budget_pool_.get();
 
-  return normal_wake_up_budget_pool_;
+  return normal_wake_up_budget_pool_.get();
 }
 
 CPUTimeBudgetPool* PageSchedulerImpl::background_cpu_time_budget_pool() {
-  return cpu_time_budget_pool_;
+  return cpu_time_budget_pool_.get();
 }
 
 void PageSchedulerImpl::MaybeInitializeBackgroundCPUTimeBudgetPool(
@@ -696,12 +695,8 @@ void PageSchedulerImpl::MaybeInitializeBackgroundCPUTimeBudgetPool(
   if (cpu_time_budget_pool_)
     return;
 
-  if (!RuntimeEnabledFeatures::ExpensiveBackgroundTimerThrottlingEnabled())
-    return;
-
-  cpu_time_budget_pool_ =
-      main_thread_scheduler_->task_queue_throttler()->CreateCPUTimeBudgetPool(
-          "background");
+  cpu_time_budget_pool_ = std::make_unique<CPUTimeBudgetPool>(
+      "background", &tracing_controller_, lazy_now->Now());
 
   BackgroundThrottlingSettings settings = GetBackgroundThrottlingSettings();
 
@@ -727,17 +722,16 @@ void PageSchedulerImpl::MaybeInitializeWakeUpBudgetPools(
     return;
 
   normal_wake_up_budget_pool_ =
-      main_thread_scheduler_->task_queue_throttler()->CreateWakeUpBudgetPool(
-          "Page - Normal Wake Up Throttling");
+      std::make_unique<WakeUpBudgetPool>("Page - Normal Wake Up Throttling");
   cross_origin_hidden_normal_wake_up_budget_pool_ =
-      main_thread_scheduler_->task_queue_throttler()->CreateWakeUpBudgetPool(
+      std::make_unique<WakeUpBudgetPool>(
           "Page - Normal Wake Up Throttling - Hidden & Crosss-Origin to Main "
           "Frame");
   same_origin_intensive_wake_up_budget_pool_ =
-      main_thread_scheduler_->task_queue_throttler()->CreateWakeUpBudgetPool(
+      std::make_unique<WakeUpBudgetPool>(
           "Page - Intensive Wake Up Throttling - Same-Origin as Main Frame");
   cross_origin_intensive_wake_up_budget_pool_ =
-      main_thread_scheduler_->task_queue_throttler()->CreateWakeUpBudgetPool(
+      std::make_unique<WakeUpBudgetPool>(
           "Page - Intensive Wake Up Throttling - Cross-Origin to Main Frame");
 
   // The Wake Up Duration and Unaligned Wake Ups Allowance are constant and set
@@ -750,26 +744,6 @@ void PageSchedulerImpl::MaybeInitializeWakeUpBudgetPools(
       ->AllowLowerAlignmentIfNoRecentWakeUp(kDefaultThrottledWakeUpInterval);
 
   UpdateWakeUpBudgetPools(lazy_now);
-}
-
-void PageSchedulerImpl::OnThrottlingReported(
-    base::TimeDelta throttling_duration) {
-  if (throttling_duration < kMinimalBackgroundThrottlingDurationToReport)
-    return;
-
-  if (reported_background_throttling_since_navigation_)
-    return;
-  reported_background_throttling_since_navigation_ = true;
-
-  String message = String::Format(
-      "Timer tasks have taken too much time while the page was in the "
-      "background. "
-      "As a result, they have been deferred for %.3f seconds. "
-      "See https://www.chromestatus.com/feature/6172836527865856 "
-      "for more details",
-      throttling_duration.InSecondsF());
-
-  delegate_->ReportIntervention(message);
 }
 
 void PageSchedulerImpl::UpdatePolicyOnVisibilityChange(
@@ -833,7 +807,6 @@ void PageSchedulerImpl::UpdateCPUTimeBudgetPool(
 void PageSchedulerImpl::OnTitleOrFaviconUpdated() {
   if (!HasWakeUpBudgetPools())
     return;
-
   if (are_wake_ups_intensively_throttled_ &&
       !opted_out_from_aggressive_throttling_) {
     // When the title of favicon is updated, intensive throttling is inhibited
@@ -844,7 +817,6 @@ void PageSchedulerImpl::OnTitleOrFaviconUpdated() {
     base::sequence_manager::LazyNow lazy_now(
         main_thread_scheduler_->tick_clock());
     UpdateWakeUpBudgetPools(&lazy_now);
-
     // Re-enable intensive throttling from a delayed task.
     reset_had_recent_title_or_favicon_update_.Cancel();
     main_thread_scheduler_->ControlTaskRunner()->PostDelayedTask(
@@ -1101,10 +1073,10 @@ void PageSchedulerImpl::MoveTaskQueuesToCorrectWakeUpBudgetPoolAndUpdate() {
 
 std::array<WakeUpBudgetPool*, PageSchedulerImpl::kNumWakeUpBudgetPools>
 PageSchedulerImpl::AllWakeUpBudgetPools() {
-  return {normal_wake_up_budget_pool_,
-          cross_origin_hidden_normal_wake_up_budget_pool_,
-          same_origin_intensive_wake_up_budget_pool_,
-          cross_origin_intensive_wake_up_budget_pool_};
+  return {normal_wake_up_budget_pool_.get(),
+          cross_origin_hidden_normal_wake_up_budget_pool_.get(),
+          same_origin_intensive_wake_up_budget_pool_.get(),
+          cross_origin_intensive_wake_up_budget_pool_.get()};
 }
 
 // static

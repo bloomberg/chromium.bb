@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
@@ -37,6 +38,7 @@
 #include "storage/browser/file_system/file_system_operation_runner.h"
 #include "storage/browser/file_system/file_system_options.h"
 #include "storage/browser/file_system/file_system_quota_client.h"
+#include "storage/browser/file_system/file_system_util.h"
 #include "storage/browser/file_system/isolated_context.h"
 #include "storage/browser/file_system/isolated_file_system_backend.h"
 #include "storage/browser/file_system/mount_points.h"
@@ -50,6 +52,8 @@
 #include "third_party/blink/public/mojom/quota/quota_types.mojom-shared.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace storage {
 
@@ -99,7 +103,6 @@ int FileSystemContext::GetPermissionPolicy(FileSystemType type) {
 
     case kFileSystemTypeLocalForPlatformApp:
     case kFileSystemTypeLocal:
-    case kFileSystemTypeCloudDevice:
     case kFileSystemTypeProvided:
     case kFileSystemTypeDeviceMediaAsFileStorage:
     case kFileSystemTypeDriveFs:
@@ -150,11 +153,20 @@ scoped_refptr<FileSystemContext> FileSystemContext::Create(
     const std::vector<URLRequestAutoMountHandler>& auto_mount_handlers,
     const base::FilePath& partition_path,
     const FileSystemOptions& options) {
+  bool force_override_incognito = base::FeatureList::IsEnabled(
+      features::kIncognitoFileSystemContextForTesting);
+  FileSystemOptions maybe_overridden_options =
+      force_override_incognito
+          ? FileSystemOptions(FileSystemOptions::PROFILE_MODE_INCOGNITO,
+                              /*force_in_memory=*/true,
+                              options.additional_allowed_schemes())
+          : options;
+
   auto context = base::MakeRefCounted<FileSystemContext>(
       std::move(io_task_runner), std::move(file_task_runner),
       std::move(external_mount_points), std::move(special_storage_policy),
       std::move(quota_manager_proxy), std::move(additional_backends),
-      auto_mount_handlers, partition_path, options,
+      auto_mount_handlers, partition_path, maybe_overridden_options,
       base::PassKey<FileSystemContext>());
   context->Initialize();
   return context;
@@ -397,7 +409,7 @@ ExternalFileSystemBackend* FileSystemContext::external_backend() const {
       GetFileSystemBackend(kFileSystemTypeExternal));
 }
 
-void FileSystemContext::OpenFileSystem(const url::Origin& origin,
+void FileSystemContext::OpenFileSystem(const blink::StorageKey& storage_key,
                                        FileSystemType type,
                                        OpenFileSystemMode mode,
                                        OpenFileSystemCallback callback) {
@@ -419,7 +431,7 @@ void FileSystemContext::OpenFileSystem(const url::Origin& origin,
   }
 
   backend->ResolveURL(
-      CreateCrackedFileSystemURL(origin, type, base::FilePath()), mode,
+      CreateCrackedFileSystemURL(storage_key, type, base::FilePath()), mode,
       std::move(callback));
 }
 
@@ -455,7 +467,11 @@ void FileSystemContext::ResolveURL(const FileSystemURL& url,
 void FileSystemContext::AttemptAutoMountForURLRequest(
     const FileSystemRequestInfo& request_info,
     StatusCallback callback) {
-  const FileSystemURL filesystem_url(request_info.url);
+  // TODO(https://crbug.com/1221308): function will use StorageKey for the
+  // receiver frame/worker in future CL
+  const FileSystemURL filesystem_url(
+      request_info.url,
+      blink::StorageKey(url::Origin::Create(request_info.url)));
   if (filesystem_url.type() == kFileSystemTypeExternal) {
     for (auto& handler : auto_mount_handlers_) {
       auto split_callback = base::SplitOnceCallback(std::move(callback));
@@ -536,18 +552,23 @@ FileSystemContext::CreateSequenceBoundFileSystemOperationRunner() {
       base::WrapRefCounted(this));
 }
 
-FileSystemURL FileSystemContext::CrackURL(const GURL& url) const {
-  return CrackFileSystemURL(FileSystemURL(url));
+FileSystemURL FileSystemContext::CrackURL(
+    const GURL& url,
+    const blink::StorageKey& storage_key) const {
+  return CrackFileSystemURL(FileSystemURL(url, storage_key));
+}
+
+FileSystemURL FileSystemContext::CrackURLInFirstPartyContext(
+    const GURL& url) const {
+  return CrackFileSystemURL(
+      FileSystemURL(url, blink::StorageKey(url::Origin::Create(url))));
 }
 
 FileSystemURL FileSystemContext::CreateCrackedFileSystemURL(
-    const url::Origin& origin,
+    const blink::StorageKey& storage_key,
     FileSystemType type,
     const base::FilePath& path) const {
-  // TODO(https://crbug.com/1221308): function will have StorageKey param in
-  // future CL; conversion from url::Origin is temporary
-  return CrackFileSystemURL(
-      FileSystemURL(blink::StorageKey(origin), type, path));
+  return CrackFileSystemURL(FileSystemURL(storage_key, type, path));
 }
 
 bool FileSystemContext::CanServeURLRequest(const FileSystemURL& url) const {
@@ -699,7 +720,8 @@ void FileSystemContext::DidOpenFileSystemForResolveURL(
   FileSystemInfo info(filesystem_name, filesystem_root, url.mount_type());
 
   // Extract the virtual path not containing a filesystem type part from |url|.
-  base::FilePath parent = CrackURL(filesystem_root).virtual_path();
+  base::FilePath parent =
+      CrackURLInFirstPartyContext(filesystem_root).virtual_path();
   base::FilePath child = url.virtual_path();
   base::FilePath path;
 

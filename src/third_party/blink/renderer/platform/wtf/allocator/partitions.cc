@@ -34,8 +34,10 @@
 #include "base/allocator/partition_allocator/memory_reclaimer.h"
 #include "base/allocator/partition_allocator/oom.h"
 #include "base/allocator/partition_allocator/page_allocator.h"
+#include "base/allocator/partition_allocator/partition_alloc.h"
 #include "base/allocator/partition_allocator/partition_alloc_config.h"
 #include "base/allocator/partition_allocator/partition_alloc_features.h"
+#include "base/allocator/partition_allocator/partition_root.h"
 #include "base/debug/alias.h"
 #include "base/feature_list.h"
 #include "base/no_destructor.h"
@@ -119,7 +121,7 @@ bool Partitions::InitializeOnce() {
         base::PartitionOptions::RefCount::kDisallowed
 #endif
   });
-  // RefCount disallowed because layout code will be excluded from CheckedPtr
+  // RefCount disallowed because layout code will be excluded from raw_ptr<T>
   // rewrite due to performance.
   layout_allocator->init({
     base::PartitionOptions::AlignedAlloc::kDisallowed,

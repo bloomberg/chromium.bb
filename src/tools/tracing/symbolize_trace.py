@@ -10,6 +10,7 @@ import sys
 import shutil
 import tempfile
 import logging
+import subprocess
 
 sys.path.insert(
     0,
@@ -19,58 +20,148 @@ sys.path.insert(
 from systrace import util
 import metadata_extractor
 import symbol_fetcher
+import breakpad_file_extractor
+import rename_breakpad
 
 
-def SymbolizeTrace(trace_file,
-                   cloud_storage_bucket='chrome-unsigned',
-                   trace_processor_path=None,
-                   breakpad_output_dir=None):
+def SymbolizeTrace(trace_file, options):
   """Symbolizes a perfetto trace file.
 
   Args:
     trace_file: path to proto trace file to symbolize.
-    cloud_storage_bucket: bucket in cloud storage where symbols reside.
-    trace_processor_path: path to the trace_processor executable. If not
-      specified, trace processor binary will be automatically downloaded.
-    breakpad_output_dir: empty local base directory of where to save
-      breakpad symbols.
+    options: The options set by the command line args.
 
   Raises:
-    Exception: if breakpad_output_dir is not empty.
+    Exception: if breakpad_output_dir is not empty or if path to local breakpad
+      directory is invalid.
   """
-  # Ensure valid |breakpad_output_dir|
+  print('Symbolizing file')
+
   need_cleanup = False
-  if breakpad_output_dir is None:
-    # Create a temp dir if output dir is not provided.
-    # Temp dir must be cleaned up later.
-    breakpad_output_dir = tempfile.mkdtemp()
-    need_cleanup = True
-    logging.debug('Created temporary directory to hold symbol files.')
-  else:
-    if not os.path.isdir(breakpad_output_dir):
-      os.makedirs(breakpad_output_dir)
-      logging.debug('Created directory to hold symbol files.')
+  if options.local_breakpad_dir is None:
+    # Ensure valid |breakpad_output_dir|
+    if options.breakpad_output_dir is None:
+      # Create a temp dir if output dir is not provided.
+      # Temp dir must be cleaned up later.
+      options.breakpad_output_dir = tempfile.mkdtemp()
+      need_cleanup = True
+      logging.debug('Created temporary directory to hold symbol files.')
     else:
-      # Assert breakpad_output_dir is empty
-      if os.listdir(breakpad_output_dir):
-        raise Exception('Breakpad output directory is not empty: ' +
-                        breakpad_output_dir)
+      if os.path.isdir(options.breakpad_output_dir):
+        if os.listdir(options.breakpad_output_dir):
+          raise Exception('Breakpad output directory is not empty: ' +
+                          options.breakpad_output_dir)
+      else:
+        os.makedirs(options.breakpad_output_dir)
+        logging.debug('Created directory to hold symbol files.')
+  else:
+    if not os.path.isdir(options.local_breakpad_dir):
+      raise Exception('Local breakpad directory is not valid.')
+    options.breakpad_output_dir = options.local_breakpad_dir
+
+  _EnsureBreakpadSymbols(trace_file, options)
+
+  # Set output file to write trace data and symbols to.
+  if options.output_file is None:
+    options.output_file = os.path.join(
+        os.path.dirname(trace_file),
+        os.path.basename(trace_file) + '_symbolized_trace')
+
+  _Symbolize(trace_file, options.symbolizer_path, options.breakpad_output_dir,
+             options.output_file)
+
+  print('Symbolized trace saved to: ' + os.path.abspath(options.output_file))
+
+  # Cleanup
+  if need_cleanup:
+    logging.debug('Cleaning up symbol files.')
+    shutil.rmtree(options.breakpad_output_dir)
+
+
+def _EnsureBreakpadSymbols(trace_file, options):
+  """Ensures that there are breakpad symbols to symbolize with.
+
+  Args:
+    trace_file: The trace file to be symbolized.
+    options: The options set by the command line args. This is used to check if
+      symbols need to be fetched, extracted, or if they are already present.
+
+  Raises:
+    Exception: if no breakpad files could be extracted.
+  """
+  # If |options.local_breakpad_dir| is not None, then this can be skipped and
+  # |trace_file| can be symbolized using those symbols.
+  if options.local_breakpad_dir is not None:
+    return
+  if options.local_build_dir is not None:
+    # Extract breakpad symbol files from binaries in |options.local_build_dir|.
+    if not breakpad_file_extractor.ExtractBreakpadFiles(
+        options.dump_syms_path,
+        options.local_build_dir,
+        options.breakpad_output_dir,
+        search_unstripped=True):
+      raise Exception(
+          'No breakpad symbols could be extracted from files in: %s xor %s' %
+          (options.local_build_dir,
+           os.path.join(options.local_build_dir, 'lib.unstripped')))
+
+    rename_breakpad.RenameBreakpadFiles(options.breakpad_output_dir,
+                                        options.breakpad_output_dir)
+    return
 
   # Extract Metadata
   logging.info('Extracting proto trace metadata.')
-  trace_metadata = metadata_extractor.MetadataExtractor(trace_processor_path,
-                                                        trace_file)
+  trace_metadata = metadata_extractor.MetadataExtractor(
+      options.trace_processor_path, trace_file)
   trace_metadata.Initialize()
   logging.info(trace_metadata)
 
   # Fetch trace breakpad symbols from GCS
   logging.info('Fetching and extracting trace breakpad symbols.')
-  symbol_fetcher.GetTraceBreakpadSymbols(cloud_storage_bucket, trace_metadata,
-                                         breakpad_output_dir)
+  symbol_fetcher.GetTraceBreakpadSymbols(options.cloud_storage_bucket,
+                                         trace_metadata,
+                                         options.breakpad_output_dir,
+                                         options.dump_syms_path)
 
-  # TODO(rhuckleberry): use Perfetto's traceconv to symbolize.
 
-  # Cleanup
-  if need_cleanup:
-    logging.debug('Cleaning up symbol files.')
-    shutil.rmtree(breakpad_output_dir)
+def _Symbolize(trace_file, symbolizer_path, breakpad_output_dir, output_file):
+  """"Symbolizes a trace.
+
+  Args:
+    trace_file: The trace file to be symbolized.
+    symbolizer_path: The path to the trace_to_text tool to use.
+    breakpad_output_dir: Contains the breakpad symbols to use for symbolization.
+    output_file: The path to the file to output symbols to.
+
+  Raises:
+    RuntimeError: If _RunSymbolizer() fails to execute the given command.
+  """
+  # Set environment variable as location of stored breakpad files.
+  symbolize_env = os.environ.copy()
+  symbolize_env['BREAKPAD_SYMBOL_DIR'] = os.path.join(breakpad_output_dir, '')
+  cmd = [symbolizer_path, 'symbolize', trace_file]
+
+  # Open temporary file where symbols can be stored.
+  with tempfile.TemporaryFile(mode='w+') as temp_symbol_file:
+    _RunSymbolizer(cmd, symbolize_env, temp_symbol_file)
+
+    # Write trace data and symbol data to the same file.
+    temp_symbol_file.seek(0)
+    symbol_data = temp_symbol_file.read()
+    with open(trace_file, 'r') as f:
+      trace_data = f.read()
+    with open(output_file, 'w') as f:
+      f.write(trace_data)
+      f.write(symbol_data)
+      logging.info('Symbolized %s(%d bytes) with %d bytes of symbol data',
+                   os.path.abspath(trace_file), len(trace_data),
+                   len(symbol_data))
+
+
+def _RunSymbolizer(cmd, env, stdout):
+  proc = subprocess.Popen(cmd, env=env, stdout=stdout, stderr=subprocess.PIPE)
+  out, stderr = proc.communicate()
+  logging.debug('STDOUT:%s', str(out))
+  logging.debug('STDERR:%s', str(stderr))
+  if proc.returncode != 0:
+    raise RuntimeError(str(stderr))

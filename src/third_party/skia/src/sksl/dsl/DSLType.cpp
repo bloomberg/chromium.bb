@@ -15,21 +15,37 @@ namespace SkSL {
 
 namespace dsl {
 
-DSLType::DSLType(skstd::string_view name) {
-    const SkSL::Symbol* symbol = (*DSLWriter::SymbolTable())[name];
-    if (symbol) {
-        if (symbol->is<SkSL::Type>()) {
-            fSkSLType = &symbol->as<SkSL::Type>();
-        } else {
-            DSLWriter::ReportError(String::printf("symbol '%.*s' is not a type",
-                                                  (int) name.length(),
-                                                  name.data()).c_str());
-        }
-    } else {
-        DSLWriter::ReportError(String::printf("no symbol named '%.*s'", (int) name.length(),
-                                              name.data()).c_str());
+static const Type* find_type(skstd::string_view name) {
+    const Symbol* symbol = (*DSLWriter::SymbolTable())[name];
+    if (!symbol) {
+        DSLWriter::ReportError(String::printf("no symbol named '%.*s'",
+                                              (int)name.length(), name.data()).c_str());
+        return nullptr;
     }
+    if (!symbol->is<Type>()) {
+        DSLWriter::ReportError(String::printf("symbol '%.*s' is not a type",
+                                              (int)name.length(), name.data()).c_str());
+        return nullptr;
+    }
+    return &symbol->as<Type>();
 }
+
+static const Type* find_type(skstd::string_view name, const Modifiers& modifiers) {
+    const Type* type = find_type(name);
+    if (!type) {
+        return nullptr;
+    }
+    return type->applyPrecisionQualifiers(DSLWriter::Context(),
+                                          modifiers,
+                                          DSLWriter::SymbolTable().get(),
+                                          /*offset=*/-1);
+}
+
+DSLType::DSLType(skstd::string_view name)
+        : fSkSLType(find_type(name)) {}
+
+DSLType::DSLType(skstd::string_view name, const DSLModifiers& modifiers)
+        : fSkSLType(find_type(name, modifiers.fModifiers)) {}
 
 bool DSLType::isBoolean() const {
     return this->skslType().isBoolean();
@@ -182,23 +198,29 @@ const SkSL::Type& DSLType::skslType() const {
     }
 }
 
-DSLExpression DSLType::Construct(DSLType type, SkTArray<DSLExpression> argArray) {
+DSLExpression DSLType::Construct(DSLType type, SkSpan<DSLExpression> argArray) {
     return DSLWriter::Construct(type.skslType(), std::move(argArray));
 }
 
 DSLType Array(const DSLType& base, int count) {
-    SkASSERT(count >= 1);
+    if (count <= 0) {
+        DSLWriter::ReportError("error: array size must be positive\n");
+    }
+    if (base.isArray()) {
+        DSLWriter::ReportError("error: multidimensional arrays are not permitted\n");
+        return base;
+    }
     return DSLWriter::SymbolTable()->addArrayDimension(&base.skslType(), count);
 }
 
-DSLType Struct(skstd::string_view name, SkTArray<DSLField> fields) {
+DSLType Struct(skstd::string_view name, SkSpan<DSLField> fields) {
     std::vector<SkSL::Type::Field> skslFields;
-    skslFields.reserve(fields.count());
+    skslFields.reserve(fields.size());
     for (const DSLField& field : fields) {
         skslFields.emplace_back(field.fModifiers.fModifiers, field.fName, &field.fType.skslType());
     }
     const SkSL::Type* result = DSLWriter::SymbolTable()->add(Type::MakeStructType(/*offset=*/-1,
-                                                                                  String(name),
+                                                                                  name,
                                                                                   skslFields));
     DSLWriter::ProgramElements().push_back(std::make_unique<SkSL::StructDefinition>(/*offset=*/-1,
                                                                                     *result));

@@ -746,6 +746,24 @@ void main()
     EXPECT_PIXEL_COLOR_EQ(3, 3, GLColor::green);
 }
 
+// Tests a null crash bug caused by copying from null back-end buffer pointer
+// when calling bufferData again after drawing without calling bufferData in D3D11.
+TEST_P(BufferDataTestES3, DrawWithNotCallingBufferData)
+{
+    ANGLE_GL_PROGRAM(drawRed, essl3_shaders::vs::Simple(), essl3_shaders::fs::Red());
+    glUseProgram(drawRed);
+
+    GLint mem = 0;
+    GLBuffer buffer;
+    glBindBuffer(GL_ARRAY_BUFFER, buffer);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glBindBuffer(GL_COPY_WRITE_BUFFER, buffer);
+    glBufferData(GL_COPY_WRITE_BUFFER, 1, &mem, GL_STREAM_DRAW);
+    ASSERT_GL_NO_ERROR();
+}
+
 // Tests a bug where copying buffer data immediately after creation hit a nullptr in D3D11.
 TEST_P(BufferDataTestES3, NoBufferInitDataCopyBug)
 {
@@ -783,10 +801,9 @@ TEST_P(BufferDataTestES3, BufferDataUnmap)
     glBufferData(GL_ARRAY_BUFFER, data1.size(), data1.data(), GL_STATIC_DRAW);
 
     // Map the buffer once
-    void *mappedBuffer =
-        glMapBufferRange(GL_ARRAY_BUFFER, 0, data1.size(),
-                         GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT |
-                             GL_MAP_FLUSH_EXPLICIT_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
+    glMapBufferRange(GL_ARRAY_BUFFER, 0, data1.size(),
+                     GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_FLUSH_EXPLICIT_BIT |
+                         GL_MAP_UNSYNCHRONIZED_BIT);
 
     // Then repopulate the buffer. This should cause the buffer to become unmapped.
     glBufferData(GL_ARRAY_BUFFER, data2.size(), data2.data(), GL_STATIC_DRAW);
@@ -798,9 +815,9 @@ TEST_P(BufferDataTestES3, BufferDataUnmap)
     EXPECT_GL_ERROR(GL_INVALID_OPERATION);
 
     // Try to map the buffer again, which should succeed
-    mappedBuffer = glMapBufferRange(GL_ARRAY_BUFFER, 0, data2.size(),
-                                    GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT |
-                                        GL_MAP_FLUSH_EXPLICIT_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
+    glMapBufferRange(GL_ARRAY_BUFFER, 0, data2.size(),
+                     GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_FLUSH_EXPLICIT_BIT |
+                         GL_MAP_UNSYNCHRONIZED_BIT);
     ASSERT_GL_NO_ERROR();
 }
 
@@ -1028,6 +1045,86 @@ TEST_P(BufferStorageTestES3, StorageBufferMapBufferOES)
     glUnmapBufferOES(GL_ARRAY_BUFFER);
 
     EXPECT_EQ(data, actualData);
+}
+
+// Verify persistently mapped buffers can use glCopyBufferSubData
+// Tests a pattern used by Fortnite's GLES backend
+TEST_P(BufferStorageTestES3, StorageCopyBufferSubDataMapped)
+{
+    ANGLE_SKIP_TEST_IF(getClientMajorVersion() < 3 ||
+                       !IsGLExtensionEnabled("GL_EXT_buffer_storage") ||
+                       !IsGLExtensionEnabled("GL_EXT_map_buffer_range"));
+
+    const std::array<GLColor, 4> kInitialData = {GLColor::red, GLColor::green, GLColor::blue,
+                                                 GLColor::yellow};
+
+    // Set up the read buffer
+    GLBuffer readBuffer;
+    glBindBuffer(GL_ARRAY_BUFFER, readBuffer.get());
+    glBufferData(GL_ARRAY_BUFFER, sizeof(kInitialData), kInitialData.data(), GL_DYNAMIC_DRAW);
+
+    // Set up the write buffer to be persistently mapped
+    GLBuffer writeBuffer;
+    glBindBuffer(GL_COPY_WRITE_BUFFER, writeBuffer.get());
+    glBufferStorageEXT(GL_COPY_WRITE_BUFFER, 16, nullptr,
+                       GL_MAP_READ_BIT | GL_MAP_PERSISTENT_BIT_EXT | GL_MAP_COHERENT_BIT_EXT);
+    void *readMapPtr =
+        glMapBufferRange(GL_COPY_WRITE_BUFFER, 0, 16,
+                         GL_MAP_READ_BIT | GL_MAP_PERSISTENT_BIT_EXT | GL_MAP_COHERENT_BIT_EXT);
+    ASSERT_NE(nullptr, readMapPtr);
+    ASSERT_GL_NO_ERROR();
+
+    // Verify we can copy into the write buffer
+    glBindBuffer(GL_COPY_READ_BUFFER, readBuffer.get());
+    glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, 16);
+    ASSERT_GL_NO_ERROR();
+
+    // Flush the buffer.
+    glFinish();
+
+    // Check the contents
+    std::array<GLColor, 4> resultingData;
+    memcpy(resultingData.data(), readMapPtr, resultingData.size() * sizeof(GLColor));
+    glUnmapBuffer(GL_COPY_WRITE_BUFFER);
+    EXPECT_EQ(kInitialData, resultingData);
+    ASSERT_GL_NO_ERROR();
+}
+
+// Verify persistently mapped buffers can use glBufferSubData
+TEST_P(BufferStorageTestES3, StorageBufferSubDataMapped)
+{
+    ANGLE_SKIP_TEST_IF(getClientMajorVersion() < 3 ||
+                       !IsGLExtensionEnabled("GL_EXT_buffer_storage") ||
+                       !IsGLExtensionEnabled("GL_EXT_map_buffer_range"));
+
+    const std::array<GLColor, 4> kUpdateData1 = {GLColor::red, GLColor::green, GLColor::blue,
+                                                 GLColor::yellow};
+
+    // Set up the buffer to be persistently mapped and dynamic
+    GLBuffer buffer;
+    glBindBuffer(GL_ARRAY_BUFFER, buffer.get());
+    glBufferStorageEXT(GL_ARRAY_BUFFER, 16, nullptr,
+                       GL_MAP_READ_BIT | GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT_EXT |
+                           GL_MAP_COHERENT_BIT_EXT | GL_DYNAMIC_STORAGE_BIT_EXT);
+    void *readMapPtr = glMapBufferRange(
+        GL_ARRAY_BUFFER, 0, 16,
+        GL_MAP_READ_BIT | GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT_EXT | GL_MAP_COHERENT_BIT_EXT);
+    ASSERT_NE(nullptr, readMapPtr);
+    ASSERT_GL_NO_ERROR();
+
+    // Verify we can push new data into the buffer
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(GLColor) * kUpdateData1.size(), kUpdateData1.data());
+    ASSERT_GL_NO_ERROR();
+
+    // Flush the buffer.
+    glFinish();
+
+    // Check the contents
+    std::array<GLColor, 4> persistentData1;
+    memcpy(persistentData1.data(), readMapPtr, persistentData1.size() * sizeof(GLColor));
+    EXPECT_EQ(kUpdateData1, persistentData1);
+    glUnmapBuffer(GL_ARRAY_BUFFER);
+    ASSERT_GL_NO_ERROR();
 }
 
 ANGLE_INSTANTIATE_TEST_ES2(BufferDataTest);

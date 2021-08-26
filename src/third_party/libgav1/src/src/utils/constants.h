@@ -523,6 +523,10 @@ enum ObuType : int8_t {
   kObuPadding = 15,
 };
 
+constexpr BitMaskSet kPredictionModeSmoothMask(kPredictionModeSmooth,
+                                               kPredictionModeSmoothHorizontal,
+                                               kPredictionModeSmoothVertical);
+
 //------------------------------------------------------------------------------
 // ToString()
 //

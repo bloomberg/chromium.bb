@@ -236,7 +236,11 @@
 #  define SK_SUPPORT_GPU 1
 #endif
 
-#if !SK_SUPPORT_GPU
+#if SK_SUPPORT_GPU
+#  if !defined(SK_ENABLE_SKSL)
+#    define SK_ENABLE_SKSL
+#  endif
+#else
 #  undef SK_GL
 #  undef SK_VULKAN
 #  undef SK_METAL
@@ -453,12 +457,7 @@
 [[noreturn]] SK_API extern void sk_abort_no_print(void);
 
 #ifndef SkDebugf
-    #if SKIA_IMPLEMENTATION
-        SK_API void SkDebugf(const char format[], ...) SK_PRINTF_LIKE(1, 2);
-    #else
-        // TODO(johnstiles): fix external code which misuses format specifiers
-        SK_API void SkDebugf(const char format[], ...);
-    #endif
+    SK_API void SkDebugf(const char format[], ...) SK_PRINTF_LIKE(1, 2);
 #endif
 #if defined(SK_BUILD_FOR_LIBFUZZER)
     SK_API SK_PRINTF_LIKE(1, 2) inline void SkDebugf(const char format[], ...) {}

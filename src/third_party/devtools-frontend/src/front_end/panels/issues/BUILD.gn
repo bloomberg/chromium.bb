@@ -24,6 +24,7 @@ devtools_module("issues") {
     "CSPViolationsView.ts",
     "ComboBoxOfCheckBoxes.ts",
     "CorsIssueDetailsView.ts",
+    "HiddenIssuesRow.ts",
     "IssueAggregator.ts",
     "IssueRevealer.ts",
     "IssueView.ts",
@@ -48,6 +49,7 @@ devtools_module("issues") {
     "../../ui/legacy:bundle",
     "../../ui/legacy/components/utils:bundle",
     "../../ui/lit-html:bundle",
+    "./components:bundle",
   ]
 
   visibility = [ "../../../test/unittests/front_end/issues" ]

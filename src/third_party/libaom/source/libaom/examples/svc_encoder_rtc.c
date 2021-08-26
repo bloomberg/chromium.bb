@@ -571,6 +571,7 @@ static void set_layer_pattern(int layering_mode, int superframe_cnt,
   layer_id->spatial_layer_id = spatial_layer_id;
   int lag_index = 0;
   int base_count = superframe_cnt >> 2;
+  ref_frame_config->use_comp_pred = 0;
   // Set the reference map buffer idx for the 7 references:
   // LAST_FRAME (0), LAST2_FRAME(1), LAST3_FRAME(2), GOLDEN_FRAME(3),
   // BWDREF_FRAME(4), ALTREF2_FRAME(5), ALTREF_FRAME(6).

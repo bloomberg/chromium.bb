@@ -11,6 +11,7 @@
 #include "base/types/pass_key.h"
 #include "content/common/agent_scheduling_group.mojom.h"
 #include "content/public/common/content_features.h"
+#include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
@@ -210,8 +211,7 @@ void AgentSchedulingGroup::CreateView(mojom::CreateViewParamsPtr params) {
                          agent_group_scheduler_->DefaultTaskRunner());
 }
 
-void AgentSchedulingGroup::DestroyView(int32_t view_id,
-                                       DestroyViewCallback callback) {
+void AgentSchedulingGroup::DestroyView(int32_t view_id) {
   RenderViewImpl* view = RenderViewImpl::FromRoutingID(view_id);
   DCHECK(view);
 
@@ -222,8 +222,7 @@ void AgentSchedulingGroup::DestroyView(int32_t view_id,
   // RenderViewImpl instance. https://crbug.com/1000035.
   agent_group_scheduler_->DefaultTaskRunner()->PostNonNestableTask(
       FROM_HERE,
-      base::BindOnce(&RenderViewImpl::Destroy, base::Unretained(view))
-          .Then(std::move(callback)));
+      base::BindOnce(&RenderViewImpl::Destroy, base::Unretained(view)));
 }
 
 void AgentSchedulingGroup::CreateFrame(mojom::CreateFrameParamsPtr params) {

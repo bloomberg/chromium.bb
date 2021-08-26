@@ -15,6 +15,8 @@
 #include "src/resolver/resolver.h"
 
 #include <algorithm>
+#include <cmath>
+#include <iomanip>
 #include <utility>
 
 #include "src/ast/alias.h"
@@ -50,6 +52,7 @@
 #include "src/sem/array.h"
 #include "src/sem/atomic_type.h"
 #include "src/sem/call.h"
+#include "src/sem/depth_multisampled_texture_type.h"
 #include "src/sem/depth_texture_type.h"
 #include "src/sem/for_loop_statement.h"
 #include "src/sem/function.h"
@@ -198,36 +201,6 @@ bool Resolver::IsPlain(const sem::Type* type) const {
          type->Is<sem::Array>() || type->Is<sem::Struct>();
 }
 
-// https://gpuweb.github.io/gpuweb/wgsl/#constructible-types
-bool Resolver::IsConstructible(const sem::Type* type) const {
-  if (type->Is<sem::Atomic>()) {
-    return false;
-  }
-
-  if (type->is_scalar() || type->Is<sem::Vector>() || type->Is<sem::Matrix>()) {
-    return true;
-  }
-
-  if (auto* arr = type->As<sem::Array>()) {
-    if (arr->IsRuntimeSized()) {
-      return false;
-    }
-
-    return IsConstructible(arr->ElemType());
-  }
-
-  if (auto* str = type->As<sem::Struct>()) {
-    for (auto* m : str->Members()) {
-      if (!IsConstructible(m->Type())) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  return false;
-}
-
 // https://gpuweb.github.io/gpuweb/wgsl.html#storable-types
 bool Resolver::IsStorable(const sem::Type* type) const {
   return IsPlain(type) || type->Is<sem::Texture>() || type->Is<sem::Sampler>();
@@ -292,12 +265,8 @@ bool Resolver::ResolveInternal() {
   if (!ValidatePipelineStages()) {
     return false;
   }
-  if (!ValidateAtomicUses()) {
-    return false;
-  }
 
   bool result = true;
-
   for (auto* node : builder_->ASTNodes().Objects()) {
     if (marked_.count(node) == 0) {
       TINT_ICE(Resolver, diagnostics_)
@@ -400,6 +369,9 @@ sem::Type* Resolver::Type(const ast::Type* ty) {
     if (auto* t = ty->As<ast::DepthTexture>()) {
       return builder_->create<sem::DepthTexture>(t->dim());
     }
+    if (auto* t = ty->As<ast::DepthMultisampledTexture>()) {
+      return builder_->create<sem::DepthMultisampledTexture>(t->dim());
+    }
     if (auto* t = ty->As<ast::StorageTexture>()) {
       if (auto* el = Type(t->type())) {
         if (!ValidateStorageTexture(t)) {
@@ -439,36 +411,9 @@ bool Resolver::ValidateAtomic(const ast::Atomic* a, const sem::Atomic* s) {
   // https://gpuweb.github.io/gpuweb/wgsl/#atomic-types
   // T must be either u32 or i32.
   if (!s->Type()->IsAnyOf<sem::U32, sem::I32>()) {
-    AddError("atomic only supports i32 or u32 types", a->type()->source());
+    AddError("atomic only supports i32 or u32 types",
+             a->type() ? a->type()->source() : a->source());
     return false;
-  }
-  return true;
-}
-
-bool Resolver::ValidateAtomicUses() {
-  // https://gpuweb.github.io/gpuweb/wgsl/#atomic-types
-  // Atomic types may only be instantiated by variables in the workgroup storage
-  // class or by storage buffer variables with a read_write access mode.
-  for (auto sm : atomic_members_) {
-    auto* structure = sm.structure;
-    for (auto usage : structure->StorageClassUsage()) {
-      if (usage == ast::StorageClass::kWorkgroup) {
-        continue;
-      }
-      if (usage != ast::StorageClass::kStorage) {
-        // TODO(crbug.com/tint/901): Validate that the access mode is
-        // read_write.
-        auto* member = structure->Members()[sm.index];
-        AddError(
-            "atomic types can only be used in storage classes workgroup or "
-            "storage, but was used by storage class " +
-                std::string(ast::str(usage)),
-            member->Declaration()->type()->source());
-        // TODO(crbug.com/tint/901): Add note pointing at where the usage came
-        // from.
-        return false;
-      }
-    }
   }
   return true;
 }
@@ -505,7 +450,8 @@ bool Resolver::ValidateStorageTexture(const ast::StorageTexture* t) {
 }
 
 Resolver::VariableInfo* Resolver::Variable(ast::Variable* var,
-                                           VariableKind kind) {
+                                           VariableKind kind,
+                                           uint32_t index /* = 0 */) {
   if (variable_to_info_.count(var)) {
     TINT_ICE(Resolver, diagnostics_)
         << "Variable " << builder_->Symbols().NameFor(var->symbol())
@@ -554,7 +500,14 @@ Resolver::VariableInfo* Resolver::Variable(ast::Variable* var,
     }
   } else if (var->is_const() && kind != VariableKind::kParameter &&
              !ast::HasDecoration<ast::OverrideDecoration>(var->decorations())) {
-    AddError("let declarations must have initializers", var->source());
+    AddError("let declaration must have an initializer", var->source());
+    return nullptr;
+  } else if (!var->type()) {
+    AddError(
+        (kind == VariableKind::kGlobal)
+            ? "module scope var declaration requires a type and initializer"
+            : "function scope var declaration requires a type or initializer",
+        var->source());
     return nullptr;
   }
 
@@ -597,8 +550,9 @@ Resolver::VariableInfo* Resolver::Variable(ast::Variable* var,
     return nullptr;
   }
 
-  auto* info = variable_infos_.Create(var, const_cast<sem::Type*>(type),
-                                      type_name, storage_class, access, kind);
+  auto* info =
+      variable_infos_.Create(var, const_cast<sem::Type*>(type), type_name,
+                             storage_class, access, kind, index);
   variable_to_info_.emplace(var, info);
 
   return info;
@@ -689,6 +643,226 @@ bool Resolver::GlobalVariable(ast::Variable* var) {
     return false;
   }
 
+  // TODO(bclayton): Call this at the end of resolve on all uniform and storage
+  // referenced structs
+  if (!ValidateStorageClassLayout(info)) {
+    return false;
+  }
+
+  return true;
+}
+
+bool Resolver::ValidateStorageClassLayout(const sem::Struct* str,
+                                          ast::StorageClass sc) {
+  // https://gpuweb.github.io/gpuweb/wgsl/#storage-class-layout-constraints
+
+  auto is_uniform_struct_or_array = [sc](const sem::Type* ty) {
+    return sc == ast::StorageClass::kUniform &&
+           ty->IsAnyOf<sem::Array, sem::Struct>();
+  };
+
+  auto is_uniform_struct = [sc](const sem::Type* ty) {
+    return sc == ast::StorageClass::kUniform && ty->Is<sem::Struct>();
+  };
+
+  auto required_alignment_of = [&](const sem::Type* ty) {
+    uint32_t actual_align = ty->Align();
+    uint32_t required_align = actual_align;
+    if (is_uniform_struct_or_array(ty)) {
+      required_align = utils::RoundUp(16u, actual_align);
+    }
+    return required_align;
+  };
+
+  auto member_name_of = [this](const sem::StructMember* sm) {
+    return builder_->Symbols().NameFor(sm->Declaration()->symbol());
+  };
+
+  auto type_name_of = [this](const sem::StructMember* sm) {
+    return sm->Declaration()->type()->FriendlyName(builder_->Symbols());
+  };
+
+  // TODO(amaiorano): Output struct and member decorations so that this output
+  // can be copied verbatim back into source
+  auto get_struct_layout_string = [&](const sem::Struct* st) -> std::string {
+    std::stringstream ss;
+
+    if (st->Members().empty()) {
+      TINT_ICE(Resolver, diagnostics_) << "Validation should have ensured that "
+                                          "structs have at least one member";
+      return {};
+    }
+    const auto* const last_member = st->Members().back();
+    const uint32_t last_member_struct_padding_offset =
+        last_member->Offset() + last_member->Size();
+
+    // Compute max widths to align output
+    const auto offset_w =
+        static_cast<int>(::log10(last_member_struct_padding_offset)) + 1;
+    const auto size_w = static_cast<int>(::log10(st->Size())) + 1;
+    const auto align_w = static_cast<int>(::log10(st->Align())) + 1;
+
+    auto print_struct_begin_line = [&](size_t align, size_t size,
+                                       std::string struct_name) {
+      ss << "/*          " << std::setw(offset_w) << " "
+         << "align(" << std::setw(align_w) << align << ") size("
+         << std::setw(size_w) << size << ") */ struct " << struct_name
+         << " {\n";
+    };
+
+    auto print_struct_end_line = [&]() {
+      ss << "/*                         "
+         << std::setw(offset_w + size_w + align_w) << " "
+         << "*/ };";
+    };
+
+    auto print_member_line = [&](size_t offset, size_t align, size_t size,
+                                 std::string s) {
+      ss << "/* offset(" << std::setw(offset_w) << offset << ") align("
+         << std::setw(align_w) << align << ") size(" << std::setw(size_w)
+         << size << ") */   " << s << ";\n";
+    };
+
+    print_struct_begin_line(st->Align(), st->Size(),
+                            st->FriendlyName(builder_->Symbols()));
+
+    for (size_t i = 0; i < st->Members().size(); ++i) {
+      auto* const m = st->Members()[i];
+
+      // Output field alignment padding, if any
+      auto* const prev_member = (i == 0) ? nullptr : str->Members()[i - 1];
+      if (prev_member) {
+        uint32_t padding =
+            m->Offset() - (prev_member->Offset() + prev_member->Size());
+        if (padding > 0) {
+          size_t padding_offset = m->Offset() - padding;
+          print_member_line(padding_offset, 1, padding,
+                            "// -- implicit field alignment padding --");
+        }
+      }
+
+      // Output member
+      std::string member_name = member_name_of(m);
+      print_member_line(m->Offset(), m->Align(), m->Size(),
+                        member_name_of(m) + " : " + type_name_of(m));
+    }
+
+    // Output struct size padding, if any
+    uint32_t struct_padding = st->Size() - last_member_struct_padding_offset;
+    if (struct_padding > 0) {
+      print_member_line(last_member_struct_padding_offset, 1, struct_padding,
+                        "// -- implicit struct size padding --");
+    }
+
+    print_struct_end_line();
+
+    return ss.str();
+  };
+
+  if (!ast::IsHostShareable(sc)) {
+    return true;
+  }
+
+  for (size_t i = 0; i < str->Members().size(); ++i) {
+    auto* const m = str->Members()[i];
+    uint32_t required_align = required_alignment_of(m->Type());
+
+    // Validate that member is at a valid byte offset
+    if (m->Offset() % required_align != 0) {
+      AddError("the offset of a struct member of type '" + type_name_of(m) +
+                   "' in storage class '" + ast::str(sc) +
+                   "' must be a multiple of " + std::to_string(required_align) +
+                   " bytes, but '" + member_name_of(m) +
+                   "' is currently at offset " + std::to_string(m->Offset()) +
+                   ". Consider setting [[align(" +
+                   std::to_string(required_align) + ")]] on this member",
+               m->Declaration()->source());
+
+      AddNote("see layout of struct:\n" + get_struct_layout_string(str),
+              str->Declaration()->source());
+
+      if (auto* member_str = m->Type()->As<sem::Struct>()) {
+        AddNote("and layout of struct member:\n" +
+                    get_struct_layout_string(member_str),
+                member_str->Declaration()->source());
+      }
+
+      return false;
+    }
+
+    // For uniform buffers, validate that the number of bytes between the
+    // previous member of type struct and the current is a multiple of 16 bytes.
+    auto* const prev_member = (i == 0) ? nullptr : str->Members()[i - 1];
+    if (prev_member && is_uniform_struct(prev_member->Type())) {
+      const uint32_t prev_to_curr_offset = m->Offset() - prev_member->Offset();
+      if (prev_to_curr_offset % 16 != 0) {
+        AddError(
+            "uniform storage requires that the number of bytes between the "
+            "start of the previous member of type struct and the current "
+            "member be a multiple of 16 bytes, but there are currently " +
+                std::to_string(prev_to_curr_offset) + " bytes between '" +
+                member_name_of(prev_member) + "' and '" + member_name_of(m) +
+                "'. Consider setting [[align(16)]] on this member",
+            m->Declaration()->source());
+
+        AddNote("see layout of struct:\n" + get_struct_layout_string(str),
+                str->Declaration()->source());
+
+        auto* prev_member_str = prev_member->Type()->As<sem::Struct>();
+        AddNote("and layout of previous member struct:\n" +
+                    get_struct_layout_string(prev_member_str),
+                prev_member_str->Declaration()->source());
+        return false;
+      }
+    }
+
+    // For uniform buffer array members, validate that array elements are
+    // aligned to 16 bytes
+    if (auto* arr = m->Type()->As<sem::Array>()) {
+      if (sc == ast::StorageClass::kUniform) {
+        // We already validated that this array member is itself aligned to 16
+        // bytes above, so we only need to validate that stride is a multiple of
+        // 16 bytes.
+        if (arr->Stride() % 16 != 0) {
+          AddError(
+              "uniform storage requires that array elements be aligned to 16 "
+              "bytes, but array stride of '" +
+                  member_name_of(m) + "' is currently " +
+                  std::to_string(arr->Stride()) +
+                  ". Consider setting [[stride(" +
+                  std::to_string(
+                      utils::RoundUp(required_align, arr->Stride())) +
+                  ")]] on the array type",
+              m->Declaration()->type()->source());
+          AddNote("see layout of struct:\n" + get_struct_layout_string(str),
+                  str->Declaration()->source());
+          return false;
+        }
+      }
+    }
+
+    // If member is struct, recurse
+    if (auto* str_member = m->Type()->As<sem::Struct>()) {
+      // Cache result of struct + storage class pair
+      if (valid_struct_storage_layouts_.emplace(str_member, sc).second) {
+        if (!ValidateStorageClassLayout(str_member, sc)) {
+          return false;
+        }
+      }
+    }
+  }
+
+  return true;
+}
+
+bool Resolver::ValidateStorageClassLayout(const VariableInfo* info) {
+  if (auto* str = info->type->UnwrapRef()->As<sem::Struct>()) {
+    if (!ValidateStorageClassLayout(str, info->storage_class)) {
+      AddNote("see declaration of variable", info->declaration->source());
+      return false;
+    }
+  }
+
   return true;
 }
 
@@ -774,8 +948,7 @@ bool Resolver::ValidateGlobalVariable(const VariableInfo* info) {
   if (info->storage_class != ast::StorageClass::kStorage &&
       info->declaration->declared_access() != ast::Access::kUndefined) {
     AddError(
-        "variables declared not declared in the <storage> storage class must "
-        "not declare an access control",
+        "only variables in <storage> storage class may declare an access mode",
         info->declaration->source());
     return false;
   }
@@ -855,7 +1028,61 @@ bool Resolver::ValidateGlobalVariable(const VariableInfo* info) {
       break;
   }
 
+  if (!info->declaration->is_const()) {
+    if (!ValidateAtomicVariable(info)) {
+      return false;
+    }
+  }
+
   return ValidateVariable(info);
+}
+
+// https://gpuweb.github.io/gpuweb/wgsl/#atomic-types
+// Atomic types may only be instantiated by variables in the workgroup storage
+// class or by storage buffer variables with a read_write access mode.
+bool Resolver::ValidateAtomicVariable(const VariableInfo* info) {
+  auto sc = info->storage_class;
+  auto access = info->access;
+  auto* type = info->type->UnwrapRef();
+  auto source = info->declaration->type() ? info->declaration->type()->source()
+                                          : info->declaration->source();
+
+  if (type->Is<sem::Atomic>()) {
+    if (sc != ast::StorageClass::kWorkgroup) {
+      AddError(
+          "atomic variables must have <storage> or <workgroup> storage class",
+          source);
+      return false;
+    }
+  } else if (type->IsAnyOf<sem::Struct, sem::Array>()) {
+    auto found = atomic_composite_info_.find(type);
+    if (found != atomic_composite_info_.end()) {
+      if (sc != ast::StorageClass::kStorage &&
+          sc != ast::StorageClass::kWorkgroup) {
+        AddError(
+            "atomic variables must have <storage> or <workgroup> storage class",
+            source);
+        AddNote("atomic sub-type of '" +
+                    type->FriendlyName(builder_->Symbols()) +
+                    "' is declared here",
+                found->second);
+        return false;
+      } else if (sc == ast::StorageClass::kStorage &&
+                 access != ast::Access::kReadWrite) {
+        AddError(
+            "atomic variables in <storage> storage class must have read_write "
+            "access mode",
+            source);
+        AddNote("atomic sub-type of '" +
+                    type->FriendlyName(builder_->Symbols()) +
+                    "' is declared here",
+                found->second);
+        return false;
+      }
+    }
+  }
+
+  return true;
 }
 
 bool Resolver::ValidateVariable(const VariableInfo* info) {
@@ -865,6 +1092,14 @@ bool Resolver::ValidateVariable(const VariableInfo* info) {
   if (!var->is_const() && !IsStorable(storage_type)) {
     AddError(storage_type->FriendlyName(builder_->Symbols()) +
                  " cannot be used as the type of a var",
+             var->source());
+    return false;
+  }
+
+  if (var->is_const() && info->kind != VariableKind::kParameter &&
+      !(storage_type->IsConstructible() || storage_type->Is<sem::Pointer>())) {
+    AddError(storage_type->FriendlyName(builder_->Symbols()) +
+                 " cannot be used as the type of a let",
              var->source());
     return false;
   }
@@ -909,19 +1144,6 @@ bool Resolver::ValidateVariable(const VariableInfo* info) {
     AddError("invalid use of input/output storage class", var->source());
     return false;
   }
-
-  // https://gpuweb.github.io/gpuweb/wgsl/#atomic-types
-  // Atomic types may only be instantiated by variables in the workgroup storage
-  // class or by storage buffer variables with a read_write access mode.
-  if (info->type->UnwrapRef()->Is<sem::Atomic>() &&
-      info->storage_class != ast::StorageClass::kWorkgroup) {
-    // Storage buffers require a structure, so just check for workgroup
-    // storage here.
-    AddError("atomic var requires workgroup storage",
-             info->declaration->type()->source());
-    return false;
-  }
-
   return true;
 }
 
@@ -937,11 +1159,9 @@ bool Resolver::ValidateFunctionParameter(const ast::Function* func,
           "decoration is not valid for non-entry point function parameters",
           deco->source());
       return false;
-    } else if (auto* interpolate = deco->As<ast::InterpolateDecoration>()) {
-      if (!ValidateInterpolateDecoration(interpolate, info->type)) {
-        return false;
-      }
-    } else if (!deco->IsAnyOf<ast::LocationDecoration, ast::BuiltinDecoration,
+    } else if (!deco->IsAnyOf<ast::BuiltinDecoration, ast::InvariantDecoration,
+                              ast::LocationDecoration,
+                              ast::InterpolateDecoration,
                               ast::InternalDecoration>() &&
                (IsValidationEnabled(
                     info->declaration->decorations(),
@@ -970,7 +1190,7 @@ bool Resolver::ValidateFunctionParameter(const ast::Function* func,
   }
 
   if (IsPlain(info->type)) {
-    if (!IsConstructible(info->type) &&
+    if (!info->type->IsConstructible() &&
         IsValidationEnabled(
             info->declaration->decorations(),
             ast::DisabledValidation::kIgnoreConstructibleFunctionParameter)) {
@@ -990,7 +1210,8 @@ bool Resolver::ValidateFunctionParameter(const ast::Function* func,
 
 bool Resolver::ValidateBuiltinDecoration(const ast::BuiltinDecoration* deco,
                                          const sem::Type* storage_type,
-                                         const bool is_input) {
+                                         const bool is_input,
+                                         const bool is_struct_member) {
   auto* type = storage_type->UnwrapRef();
   const auto stage = current_function_
                          ? current_function_->declaration->pipeline_stage()
@@ -998,17 +1219,15 @@ bool Resolver::ValidateBuiltinDecoration(const ast::BuiltinDecoration* deco,
   std::stringstream stage_name;
   stage_name << stage;
   bool is_stage_mismatch = false;
+  bool is_output = !is_input;
   switch (deco->value()) {
     case ast::Builtin::kPosition:
       if (stage != ast::PipelineStage::kNone &&
-          !(stage == ast::PipelineStage::kFragment && is_input) &&
-          !(stage == ast::PipelineStage::kVertex && !is_input)) {
-        AddError(deco_to_str(deco) + " cannot be used in " +
-                     (is_input ? "input of " : "output of ") +
-                     stage_name.str() + " pipeline stage",
-                 deco->source());
+          !((is_input && stage == ast::PipelineStage::kFragment) ||
+            (is_output && stage == ast::PipelineStage::kVertex))) {
+        is_stage_mismatch = true;
       }
-      if (!(type->is_float_vector() && type->As<sem::Vector>()->size() == 4)) {
+      if (!(type->is_float_vector() && type->As<sem::Vector>()->Width() == 4)) {
         AddError("store type of " + deco_to_str(deco) + " must be 'vec4<f32>'",
                  deco->source());
         return false;
@@ -1022,7 +1241,7 @@ bool Resolver::ValidateBuiltinDecoration(const ast::BuiltinDecoration* deco,
         is_stage_mismatch = true;
       }
       if (!(type->is_unsigned_integer_vector() &&
-            type->As<sem::Vector>()->size() == 3)) {
+            type->As<sem::Vector>()->Width() == 3)) {
         AddError("store type of " + deco_to_str(deco) + " must be 'vec3<u32>'",
                  deco->source());
         return false;
@@ -1095,16 +1314,24 @@ bool Resolver::ValidateBuiltinDecoration(const ast::BuiltinDecoration* deco,
         return false;
       }
       break;
+    case ast::Builtin::kNumWorkgroups:
+      // TODO(crbug.com/tint/752): Backend support (needs extra work for HLSL).
+      AddError("num_workgroups builtin is not yet implemented", deco->source());
+      return false;
     default:
       break;
   }
 
-  if (is_stage_mismatch) {
-    AddError(deco_to_str(deco) + " cannot be used in " +
-                 (is_input ? "input of " : "output of ") + stage_name.str() +
-                 " pipeline stage",
-             deco->source());
-    return false;
+  // ignore builtin attribute on struct members to facillate data movement
+  // between stages
+  if (!is_struct_member) {
+    if (is_stage_mismatch) {
+      AddError(deco_to_str(deco) + " cannot be used in " +
+                   (is_input ? "input of " : "output of ") + stage_name.str() +
+                   " pipeline stage",
+               deco->source());
+      return false;
+    }
   }
 
   return true;
@@ -1157,6 +1384,11 @@ bool Resolver::ValidateFunction(const ast::Function* func,
     }
   }
 
+  if (func->params().size() > 255) {
+    AddError("functions may declare at most 255 parameters", func->source());
+    return false;
+  }
+
   for (auto* param : func->params()) {
     if (!ValidateFunctionParameter(func, variable_to_info_.at(param))) {
       return false;
@@ -1164,7 +1396,7 @@ bool Resolver::ValidateFunction(const ast::Function* func,
   }
 
   if (!info->return_type->Is<sem::Void>()) {
-    if (!IsConstructible(info->return_type)) {
+    if (!info->return_type->IsConstructible()) {
       AddError("function return type must be a constructible type",
                func->return_type()->source());
       return false;
@@ -1192,21 +1424,14 @@ bool Resolver::ValidateFunction(const ast::Function* func,
             deco->source());
         return false;
       }
-
-      if (auto* interpolate = deco->As<ast::InterpolateDecoration>()) {
-        if (!ValidateInterpolateDecoration(interpolate, info->return_type)) {
-          return false;
-        }
-      } else if (!deco->IsAnyOf<ast::LocationDecoration, ast::BuiltinDecoration,
-                                ast::InvariantDecoration,
-                                ast::InternalDecoration>() &&
-                 (IsValidationEnabled(
-                      info->declaration->decorations(),
-                      ast::DisabledValidation::kEntryPointParameter) &&
-                  IsValidationEnabled(
-                      info->declaration->decorations(),
-                      ast::DisabledValidation::
-                          kIgnoreConstructibleFunctionParameter))) {
+      if (!deco->IsAnyOf<ast::BuiltinDecoration, ast::InternalDecoration,
+                         ast::LocationDecoration, ast::InterpolateDecoration,
+                         ast::InvariantDecoration>() &&
+          (IsValidationEnabled(info->declaration->decorations(),
+                               ast::DisabledValidation::kEntryPointParameter) &&
+           IsValidationEnabled(info->declaration->decorations(),
+                               ast::DisabledValidation::
+                                   kIgnoreConstructibleFunctionParameter))) {
         AddError("decoration is not valid for entry point return types",
                  deco->source());
         return false;
@@ -1238,153 +1463,131 @@ bool Resolver::ValidateEntryPoint(const ast::Function* func,
   };
 
   // Inner lambda that is applied to a type and all of its members.
-  auto validate_entry_point_decorations_inner = [&](const ast::DecorationList&
-                                                        decos,
-                                                    sem::Type* ty,
-                                                    Source source,
-                                                    ParamOrRetType param_or_ret,
-                                                    bool is_struct_member) {
-    // Scan decorations for pipeline IO attributes.
-    // Check for overlap with attributes that have been seen previously.
-    ast::Decoration* pipeline_io_attribute = nullptr;
-    ast::InvariantDecoration* invariant_attribute = nullptr;
-    for (auto* deco : decos) {
-      if (auto* builtin = deco->As<ast::BuiltinDecoration>()) {
-        if (pipeline_io_attribute) {
-          AddError("multiple entry point IO attributes", deco->source());
-          AddNote("previously consumed " + deco_to_str(pipeline_io_attribute),
+  auto validate_entry_point_decorations_inner =
+      [&](const ast::DecorationList& decos, sem::Type* ty, Source source,
+          ParamOrRetType param_or_ret, bool is_struct_member) {
+        // Scan decorations for pipeline IO attributes.
+        // Check for overlap with attributes that have been seen previously.
+        ast::Decoration* pipeline_io_attribute = nullptr;
+        ast::InvariantDecoration* invariant_attribute = nullptr;
+        for (auto* deco : decos) {
+          auto is_invalid_compute_shader_decoration = false;
+          if (auto* builtin = deco->As<ast::BuiltinDecoration>()) {
+            if (pipeline_io_attribute) {
+              AddError("multiple entry point IO attributes", deco->source());
+              AddNote(
+                  "previously consumed " + deco_to_str(pipeline_io_attribute),
                   pipeline_io_attribute->source());
-          return false;
-        }
-        pipeline_io_attribute = deco;
+              return false;
+            }
+            pipeline_io_attribute = deco;
 
-        if (builtins.count(builtin->value())) {
-          AddError(deco_to_str(builtin) +
-                       " attribute appears multiple times as pipeline " +
-                       (param_or_ret == ParamOrRetType::kParameter ? "input"
-                                                                   : "output"),
-                   func->source());
-          return false;
-        }
-        builtins.emplace(builtin->value());
+            if (builtins.count(builtin->value())) {
+              AddError(
+                  deco_to_str(builtin) +
+                      " attribute appears multiple times as pipeline " +
+                      (param_or_ret == ParamOrRetType::kParameter ? "input"
+                                                                  : "output"),
+                  func->source());
+              return false;
+            }
 
-        if (!ValidateBuiltinDecoration(
-                builtin, ty,
-                /* is_input */ param_or_ret == ParamOrRetType::kParameter)) {
-          return false;
-        }
-
-      } else if (auto* location = deco->As<ast::LocationDecoration>()) {
-        if (pipeline_io_attribute) {
-          AddError("multiple entry point IO attributes", deco->source());
-          AddNote("previously consumed " + deco_to_str(pipeline_io_attribute),
+            if (!ValidateBuiltinDecoration(
+                    builtin, ty,
+                    /* is_input */ param_or_ret == ParamOrRetType::kParameter,
+                    /* is_struct_member */ is_struct_member)) {
+              return false;
+            }
+            builtins.emplace(builtin->value());
+          } else if (auto* location = deco->As<ast::LocationDecoration>()) {
+            if (pipeline_io_attribute) {
+              AddError("multiple entry point IO attributes", deco->source());
+              AddNote(
+                  "previously consumed " + deco_to_str(pipeline_io_attribute),
                   pipeline_io_attribute->source());
-          return false;
+              return false;
+            }
+            pipeline_io_attribute = deco;
+
+            bool is_input = param_or_ret == ParamOrRetType::kParameter;
+            if (!ValidateLocationDecoration(location, ty, locations, source,
+                                            is_input)) {
+              return false;
+            }
+          } else if (auto* interpolate =
+                         deco->As<ast::InterpolateDecoration>()) {
+            if (func->pipeline_stage() == ast::PipelineStage::kCompute) {
+              is_invalid_compute_shader_decoration = true;
+            } else if (!ValidateInterpolateDecoration(interpolate, ty)) {
+              return false;
+            }
+          } else if (auto* invariant = deco->As<ast::InvariantDecoration>()) {
+            if (func->pipeline_stage() == ast::PipelineStage::kCompute) {
+              is_invalid_compute_shader_decoration = true;
+            }
+            invariant_attribute = invariant;
+          }
+          if (is_invalid_compute_shader_decoration) {
+            std::string input_or_output =
+                param_or_ret == ParamOrRetType::kParameter ? "inputs"
+                                                           : "output";
+            AddError(
+                "decoration is not valid for compute shader " + input_or_output,
+                deco->source());
+            return false;
+          }
         }
-        pipeline_io_attribute = deco;
 
-        if (locations.count(location->value())) {
-          AddError(deco_to_str(location) +
-                       " attribute appears multiple times as pipeline " +
-                       (param_or_ret == ParamOrRetType::kParameter ? "input"
-                                                                   : "output"),
-                   func->source());
-          return false;
+        if (IsValidationEnabled(
+                decos, ast::DisabledValidation::kEntryPointParameter)) {
+          if (!ty->Is<sem::Struct>() && !pipeline_io_attribute) {
+            std::string err = "missing entry point IO attribute";
+            if (!is_struct_member) {
+              err += (param_or_ret == ParamOrRetType::kParameter
+                          ? " on parameter"
+                          : " on return type");
+            }
+            AddError(err, source);
+            return false;
+          }
+
+          if (invariant_attribute) {
+            bool has_position = false;
+            if (pipeline_io_attribute) {
+              if (auto* builtin =
+                      pipeline_io_attribute->As<ast::BuiltinDecoration>()) {
+                has_position = (builtin->value() == ast::Builtin::kPosition);
+              }
+            }
+            if (!has_position) {
+              AddError(
+                  "invariant attribute must only be applied to a position "
+                  "builtin",
+                  invariant_attribute->source());
+              return false;
+            }
+          }
         }
-        locations.emplace(location->value());
-      } else if (auto* invariant = deco->As<ast::InvariantDecoration>()) {
-        invariant_attribute = invariant;
-      }
-    }
-
-    // Check that we saw a pipeline IO attribute iff we need one.
-    if (ty->Is<sem::Struct>()) {
-      if (pipeline_io_attribute) {
-        AddError("entry point IO attributes must not be used on structure " +
-                     std::string(param_or_ret == ParamOrRetType::kParameter
-                                     ? "parameters"
-                                     : "return types"),
-                 pipeline_io_attribute->source());
-        return false;
-      }
-    } else if (IsValidationEnabled(
-                   decos, ast::DisabledValidation::kEntryPointParameter)) {
-      if (!pipeline_io_attribute) {
-        std::string err = "missing entry point IO attribute";
-        if (!is_struct_member) {
-          err +=
-              (param_or_ret == ParamOrRetType::kParameter ? " on parameter"
-                                                          : " on return type");
-        }
-        AddError(err, source);
-        return false;
-      }
-
-      auto* builtin = pipeline_io_attribute->As<ast::BuiltinDecoration>();
-      if (invariant_attribute &&
-          !(builtin && builtin->value() == ast::Builtin::kPosition)) {
-        AddError(
-            "invariant attribute must only be applied to a position builtin",
-            invariant_attribute->source());
-        return false;
-      }
-
-      // Check that all user defined attributes are numeric scalars, vectors
-      // of numeric scalars.
-      // Testing for being a struct is handled by the if portion above.
-      if (!builtin) {
-        if (!ty->is_numeric_scalar_or_vector()) {
-          AddError(
-              "User defined entry point IO types must be a numeric scalar, "
-              "a numeric vector, or a structure",
-              source);
-          return false;
-        }
-      }
-    }
-
-    return true;
-  };
+        return true;
+      };
 
   // Outer lambda for validating the entry point decorations for a type.
   auto validate_entry_point_decorations = [&](const ast::DecorationList& decos,
                                               sem::Type* ty, Source source,
                                               ParamOrRetType param_or_ret) {
-    // Validate the decorations for the type.
     if (!validate_entry_point_decorations_inner(decos, ty, source, param_or_ret,
-                                                false)) {
+                                                /*is_struct_member*/ false)) {
       return false;
     }
 
     if (auto* str = ty->As<sem::Struct>()) {
-      // Validate the decorations for each struct members, and also check for
-      // invalid member types.
       for (auto* member : str->Members()) {
-        if (member->Type()->Is<sem::Struct>()) {
-          AddError("entry point IO types cannot contain nested structures",
-                   member->Declaration()->source());
-          AddNote("while analysing entry point " +
-                      builder_->Symbols().NameFor(func->symbol()),
-                  func->source());
-          return false;
-        }
-
-        if (auto* arr = member->Type()->As<sem::Array>()) {
-          if (arr->IsRuntimeSized()) {
-            AddError("entry point IO types cannot contain runtime sized arrays",
-                     member->Declaration()->source());
-            AddNote("while analysing entry point " +
-                        builder_->Symbols().NameFor(func->symbol()),
-                    func->source());
-            return false;
-          }
-        }
-
         if (!validate_entry_point_decorations_inner(
                 member->Declaration()->decorations(), member->Type(),
-                member->Declaration()->source(), param_or_ret, true)) {
-          AddNote("while analysing entry point " +
-                      builder_->Symbols().NameFor(func->symbol()),
+                member->Declaration()->source(), param_or_ret,
+                /*is_struct_member*/ true)) {
+          AddNote("while analysing entry point '" +
+                      builder_->Symbols().NameFor(func->symbol()) + "'",
                   func->source());
           return false;
         }
@@ -1492,9 +1695,16 @@ bool Resolver::Function(ast::Function* func) {
   TINT_SCOPED_ASSIGNMENT(current_function_, info);
 
   variable_stack_.push_scope();
+  uint32_t parameter_index = 0;
   for (auto* param : func->params()) {
     Mark(param);
-    auto* param_info = Variable(param, VariableKind::kParameter);
+
+    if (!ValidateNoDuplicateDefinition(param->symbol(), param->source())) {
+      return false;
+    }
+
+    auto* param_info =
+        Variable(param, VariableKind::kParameter, parameter_index++);
     if (!param_info) {
       return false;
     }
@@ -1608,33 +1818,51 @@ bool Resolver::Function(ast::Function* func) {
   if (auto* workgroup =
           ast::GetDecoration<ast::WorkgroupDecoration>(func->decorations())) {
     auto values = workgroup->values();
-    auto is_i32 = false;
-    auto is_less_than_one = true;
+    auto any_i32 = false;
+    auto any_u32 = false;
     for (int i = 0; i < 3; i++) {
       // Each argument to this decoration can either be a literal, an
       // identifier for a module-scope constants, or nullptr if not specified.
 
-      if (!values[i]) {
+      auto* expr = values[i];
+      if (!expr) {
         // Not specified, just use the default.
         continue;
       }
 
-      Mark(values[i]);
+      Mark(expr);
+      if (!Expression(expr)) {
+        return false;
+      }
 
-      uint32_t value = 0;
-      if (auto* ident = values[i]->As<ast::IdentifierExpression>()) {
+      constexpr const char* kErrBadType =
+          "workgroup_size parameter must be either literal or module-scope "
+          "constant of type i32 or u32";
+      constexpr const char* kErrInconsistentType =
+          "workgroup_size parameters must be of the same type, either i32 "
+          "or u32";
+
+      auto* ty = TypeOf(expr);
+      bool is_i32 = ty->UnwrapRef()->Is<sem::I32>();
+      bool is_u32 = ty->UnwrapRef()->Is<sem::U32>();
+      if (!is_i32 && !is_u32) {
+        AddError(kErrBadType, expr->source());
+        return false;
+      }
+
+      any_i32 = any_i32 || is_i32;
+      any_u32 = any_u32 || is_u32;
+      if (any_i32 && any_u32) {
+        AddError(kErrInconsistentType, expr->source());
+        return false;
+      }
+
+      if (auto* ident = expr->As<ast::IdentifierExpression>()) {
         // We have an identifier of a module-scope constant.
-        if (!Identifier(ident)) {
-          return false;
-        }
-
-        VariableInfo* var;
+        VariableInfo* var = nullptr;
         if (!variable_stack_.get(ident->symbol(), &var) ||
-            !(var->declaration->is_const() && var->type->is_integer_scalar())) {
-          AddError(
-              "workgroup_size parameter must be either literal or module-scope "
-              "constant of type i32 or u32",
-              values[i]->source());
+            !(var->declaration->is_const())) {
+          AddError(kErrBadType, expr->source());
           return false;
         }
 
@@ -1644,75 +1872,30 @@ bool Resolver::Function(ast::Function* func) {
           info->workgroup_size[i].overridable_const = var->declaration;
         }
 
-        auto* constructor = var->declaration->constructor();
-        if (constructor) {
-          // Resolve the constructor expression to use as the default value.
-          auto val = ConstantValueOf(constructor);
-          if (!val.IsValid() || !val.Type()->is_integer_scalar()) {
-            TINT_ICE(Resolver, diagnostics_)
-                << "failed to resolve workgroup_size constant value";
-            return false;
-          }
-
-          if (i == 0) {
-            is_i32 = val.Type()->Is<sem::I32>();
-          } else {
-            if (is_i32 != val.Type()->Is<sem::I32>()) {
-              AddError(
-                  "workgroup_size parameters must be of the same type, "
-                  "either i32 or u32",
-                  values[i]->source());
-              return false;
-            }
-          }
-          is_less_than_one =
-              is_i32 ? val.Elements()[0].i32 < 1 : val.Elements()[0].u32 < 1;
-
-          value = is_i32 ? static_cast<uint32_t>(val.Elements()[0].i32)
-                         : val.Elements()[0].u32;
-        } else {
+        expr = var->declaration->constructor();
+        if (!expr) {
           // No constructor means this value must be overriden by the user.
           info->workgroup_size[i].value = 0;
           continue;
         }
-      } else if (auto* scalar =
-                     values[i]->As<ast::ScalarConstructorExpression>()) {
-        // We have a literal.
-        Mark(scalar->literal());
-        auto* literal = scalar->literal()->As<ast::IntLiteral>();
-        if (!literal) {
-          AddError(
-              "workgroup_size parameter must be either literal or module-scope "
-              "constant of type i32 or u32",
-              values[i]->source());
-          return false;
-        }
-
-        if (i == 0) {
-          is_i32 = literal->Is<ast::SintLiteral>();
-        } else {
-          if (literal->Is<ast::SintLiteral>() != is_i32) {
-            AddError(
-                "workgroup_size parameters must be of the same type, "
-                "either i32 or u32",
-                values[i]->source());
-            return false;
-          }
-        }
-
-        is_less_than_one =
-            is_i32 ? literal->value_as_i32() < 1 : literal->value_as_u32() < 1;
-        value = is_i32 ? static_cast<uint32_t>(literal->value_as_i32())
-                       : literal->value_as_u32();
       }
 
+      auto val = ConstantValueOf(expr);
+      if (!val) {
+        TINT_ICE(Resolver, diagnostics_)
+            << "could not resolve constant workgroup_size constant value";
+        continue;
+      }
       // Validate and set the default value for this dimension.
-      if (is_less_than_one) {
+      if (is_i32 ? val.Elements()[0].i32 < 1 : val.Elements()[0].u32 < 1) {
         AddError("workgroup_size parameter must be at least 1",
                  values[i]->source());
         return false;
       }
-      info->workgroup_size[i].value = value;
+
+      info->workgroup_size[i].value =
+          is_i32 ? static_cast<uint32_t>(val.Elements()[0].i32)
+                 : val.Elements()[0].u32;
     }
   }
 
@@ -1819,11 +2002,18 @@ bool Resolver::Statement(ast::Statement* stmt) {
   }
   if (stmt->Is<ast::ContinueStatement>()) {
     // Set if we've hit the first continue statement in our parent loop
-    if (auto* loop_block =
-            current_block_->FindFirstParent<sem::LoopBlockStatement>()) {
-      if (loop_block->FirstContinue() == size_t(~0)) {
-        const_cast<sem::LoopBlockStatement*>(loop_block)
-            ->SetFirstContinue(loop_block->Decls().size());
+    if (auto* block =
+            current_block_->FindFirstParent<
+                sem::LoopBlockStatement, sem::LoopContinuingBlockStatement>()) {
+      if (auto* loop_block = block->As<sem::LoopBlockStatement>()) {
+        if (loop_block->FirstContinue() == size_t(~0)) {
+          const_cast<sem::LoopBlockStatement*>(loop_block)
+              ->SetFirstContinue(loop_block->Decls().size());
+        }
+      } else {
+        AddError("continuing blocks must not contain a continue statement",
+                 stmt->source());
+        return false;
       }
     } else {
       AddError("continue statement must be in a loop", stmt->source());
@@ -1833,6 +2023,17 @@ bool Resolver::Statement(ast::Statement* stmt) {
     return true;
   }
   if (stmt->Is<ast::DiscardStatement>()) {
+    if (auto* continuing =
+            sem_statement
+                ->FindFirstParent<sem::LoopContinuingBlockStatement>()) {
+      AddError("continuing blocks must not contain a discard statement",
+               stmt->source());
+      if (continuing != sem_statement->Parent()) {
+        AddNote("see continuing block here",
+                continuing->Declaration()->source());
+      }
+      return false;
+    }
     return true;
   }
   if (stmt->Is<ast::FallthroughStatement>()) {
@@ -1983,7 +2184,7 @@ bool Resolver::ForLoopStatement(ast::ForLoopStatement* stmt) {
         return false;
       }
 
-      if (!TypeOf(condition)->Is<sem::Bool>()) {
+      if (!TypeOf(condition)->UnwrapRef()->Is<sem::Bool>()) {
         AddError(
             "for-loop condition must be bool, got " + TypeNameOf(condition),
             condition->source());
@@ -2044,13 +2245,6 @@ bool Resolver::Expression(ast::Expression* expr) {
   }
 
   if (!ok) {
-    return false;
-  }
-
-  auto* ty = TypeOf(expr);
-  if (ty->Is<sem::Atomic>()) {
-    AddError("an expression must not evaluate to an atomic type",
-             expr->source());
     return false;
   }
 
@@ -2151,28 +2345,42 @@ bool Resolver::Call(ast::CallExpression* call) {
     }
   }
 
+  return ValidateCall(call);
+}
+
+bool Resolver::ValidateCall(ast::CallExpression* call) {
+  if (TypeOf(call)->Is<sem::Void>()) {
+    bool is_call_statement = false;
+    if (current_statement_) {
+      if (auto* call_stmt =
+              As<ast::CallStatement>(current_statement_->Declaration())) {
+        if (call_stmt->expr() == call) {
+          is_call_statement = true;
+        }
+      }
+    }
+    if (!is_call_statement) {
+      // https://gpuweb.github.io/gpuweb/wgsl/#function-call-expr
+      // If the called function does not return a value, a function call
+      // statement should be used instead.
+      auto* ident = call->func();
+      auto name = builder_->Symbols().NameFor(ident->symbol());
+      // A function call is made to either a user declared function or an
+      // intrinsic. function_calls_ only maps CallExpression to user declared
+      // functions
+      bool is_function = function_calls_.count(call) != 0;
+      AddError((is_function ? "function" : "intrinsic") + std::string(" '") +
+                   name + "' does not return a value",
+               call->source());
+      return false;
+    }
+  }
+
   return true;
 }
 
 bool Resolver::ValidateCallStatement(ast::CallStatement* stmt) {
-  const sem::Type* return_type = nullptr;
-  // A function call is made to either a user declared function or an intrinsic.
-  // function_calls_ only maps CallExpression to user declared functions
-  auto it = function_calls_.find(stmt->expr());
-  if (it != function_calls_.end()) {
-    return_type = it->second.function->return_type;
-  } else {
-    // Must be an intrinsic call
-    auto* target = builder_->Sem().Get(stmt->expr())->Target();
-    if (auto* intrinsic = target->As<sem::Intrinsic>()) {
-      return_type = intrinsic->ReturnType();
-    } else {
-      TINT_ICE(Resolver, diagnostics_)
-          << "call target was not an intrinsic, but a "
-          << intrinsic->TypeInfo().name;
-    }
-  }
-
+  const sem::Type* return_type = TypeOf(stmt->expr());
   if (!return_type->Is<sem::Void>()) {
     // https://gpuweb.github.io/gpuweb/wgsl/#function-call-statement
     // A function call statement executes a function call where the called
@@ -2207,13 +2415,65 @@ bool Resolver::IntrinsicCall(ast::CallExpression* call,
     AddWarning("use of deprecated intrinsic", call->source());
   }
 
-  builder_->Sem().Add(
-      call, builder_->create<sem::Call>(call, result, current_statement_));
+  auto* out = builder_->create<sem::Call>(call, result, current_statement_);
+  builder_->Sem().Add(call, out);
   SetExprInfo(call, result->ReturnType());
 
   current_function_->intrinsic_calls.emplace_back(
       IntrinsicCallInfo{call, result});
 
+  if (IsTextureIntrinsic(intrinsic_type) &&
+      !ValidateTextureIntrinsicFunction(call, out)) {
+    return false;
+  }
+
+  return true;
+}
+
+bool Resolver::ValidateTextureIntrinsicFunction(
+    const ast::CallExpression* ast_call,
+    const sem::Call* sem_call) {
+  auto* intrinsic = sem_call->Target()->As<sem::Intrinsic>();
+  if (!intrinsic) {
+    return false;
+  }
+  std::string func_name = intrinsic->str();
+  auto index =
+      sem::IndexOf(intrinsic->Parameters(), sem::ParameterUsage::kOffset);
+  if (index > -1) {
+    auto* param = ast_call->params()[index];
+    if (param->Is<ast::TypeConstructorExpression>()) {
+      auto values = ConstantValueOf(param);
+      if (!values.IsValid()) {
+        AddError(
+            "'" + func_name + "' offset parameter must be a const_expression",
+            param->source());
+        return false;
+      }
+      if (!values.Type()->Is<sem::Vector>() ||
+          !values.ElementType()->Is<sem::I32>()) {
+        TINT_ICE(Resolver, diagnostics_)
+            << "failed to resolve '" + func_name + "' offset parameter type";
+        return false;
+      }
+      for (auto offset : values.Elements()) {
+        auto offset_value = offset.i32;
+        if (offset_value < -8 || offset_value > 7) {
+          AddError("each offset component of '" + func_name +
+                       "' must be at least -8 and at most 7. "
+                       "found: '" +
+                       std::to_string(offset_value) + "'",
+                   param->source());
+          return false;
+        }
+      }
+    } else {
+      AddError(
+          "'" + func_name + "' offset parameter must be a const_expression",
+          param->source());
+      return false;
+    }
+  }
   return true;
 }
 
@@ -2252,7 +2512,21 @@ bool Resolver::FunctionCall(const ast::CallExpression* call) {
     }
   }
 
-  // Validate number of arguments match number of parameters
+  function_calls_.emplace(call,
+                          FunctionCallInfo{callee_func, current_statement_});
+  SetExprInfo(call, callee_func->return_type, callee_func->return_type_name);
+
+  if (!ValidateFunctionCall(call, callee_func)) {
+    return false;
+  }
+  return true;
+}
+
+bool Resolver::ValidateFunctionCall(const ast::CallExpression* call,
+                                    const FunctionInfo* callee_func) {
+  auto* ident = call->func();
+  auto name = builder_->Symbols().NameFor(ident->symbol());
+
   if (call->params().size() != callee_func->parameters.size()) {
     bool more = call->params().size() > callee_func->parameters.size();
     AddError("too " + (more ? std::string("many") : std::string("few")) +
@@ -2263,7 +2537,6 @@ bool Resolver::FunctionCall(const ast::CallExpression* call) {
     return false;
   }
 
-  // Validate arguments match parameter types
   for (size_t i = 0; i < call->params().size(); ++i) {
     const VariableInfo* param = callee_func->parameters[i];
     const ast::Expression* arg_expr = call->params()[i];
@@ -2277,12 +2550,48 @@ bool Resolver::FunctionCall(const ast::CallExpression* call) {
                arg_expr->source());
       return false;
     }
+
+    if (param->declaration->type()->Is<ast::Pointer>()) {
+      auto is_valid = false;
+      if (auto* ident_expr = arg_expr->As<ast::IdentifierExpression>()) {
+        VariableInfo* var;
+        if (!variable_stack_.get(ident_expr->symbol(), &var)) {
+          TINT_ICE(Resolver, diagnostics_) << "failed to resolve identifier";
+          return false;
+        }
+        if (var->kind == VariableKind::kParameter) {
+          is_valid = true;
+        }
+      } else if (auto* unary = arg_expr->As<ast::UnaryOpExpression>()) {
+        if (unary->op() == ast::UnaryOp::kAddressOf) {
+          if (auto* ident_unary =
+                  unary->expr()->As<ast::IdentifierExpression>()) {
+            VariableInfo* var;
+            if (!variable_stack_.get(ident_unary->symbol(), &var)) {
+              TINT_ICE(Resolver, diagnostics_)
+                  << "failed to resolve identifier";
+              return false;
+            }
+            if (var->declaration->is_const()) {
+              TINT_ICE(Resolver, diagnostics_)
+                  << "Resolver::FunctionCall() encountered an address-of "
+                     "expression of a constant identifier expression";
+              return false;
+            }
+            is_valid = true;
+          }
+        }
+      }
+
+      if (!is_valid) {
+        AddError(
+            "expected an address-of expression of a variable identifier "
+            "expression or a function parameter",
+            arg_expr->source());
+        return false;
+      }
+    }
   }
-
-  function_calls_.emplace(call,
-                          FunctionCallInfo{callee_func, current_statement_});
-  SetExprInfo(call, callee_func->return_type, callee_func->return_type_name);
-
   return true;
 }
 
@@ -2305,11 +2614,6 @@ bool Resolver::Constructor(ast::ConstructorExpression* expr) {
     // Now that the argument types have been determined, make sure that they
     // obey the constructor type rules laid out in
     // https://gpuweb.github.io/gpuweb/wgsl.html#type-constructor-expr.
-    if (type->Is<sem::Pointer>()) {
-      AddError("cannot cast to a pointer", expr->source());
-      return false;
-    }
-
     bool ok = true;
     if (auto* vec_type = type->As<sem::Vector>()) {
       ok = ValidateVectorConstructor(type_ctor, vec_type, type_name);
@@ -2321,6 +2625,9 @@ bool Resolver::Constructor(ast::ConstructorExpression* expr) {
       ok = ValidateArrayConstructor(type_ctor, arr_type);
     } else if (auto* struct_type = type->As<sem::Struct>()) {
       ok = ValidateStructureConstructor(type_ctor, struct_type);
+    } else {
+      AddError("type is not constructible", type_ctor->source());
+      return false;
     }
     if (!ok) {
       return false;
@@ -2346,6 +2653,11 @@ bool Resolver::Constructor(ast::ConstructorExpression* expr) {
 bool Resolver::ValidateStructureConstructor(
     const ast::TypeConstructorExpression* ctor,
     const sem::Struct* struct_type) {
+  if (!struct_type->IsConstructible()) {
+    AddError("struct constructor has non-constructible type", ctor->source());
+    return false;
+  }
+
   if (ctor->values().size() > 0) {
     if (ctor->values().size() != struct_type->Members().size()) {
       std::string fm = ctor->values().size() < struct_type->Members().size()
@@ -2394,6 +2706,10 @@ bool Resolver::ValidateArrayConstructor(
   if (array_type->IsRuntimeSized()) {
     AddError("cannot init a runtime-sized array", ctor->source());
     return false;
+  } else if (!elem_type->IsConstructible()) {
+    AddError("array constructor has non-constructible element type",
+             ctor->type()->As<ast::Array>()->type()->source());
+    return false;
   } else if (!values.empty() && (values.size() != array_type->Count())) {
     std::string fm = values.size() < array_type->Count() ? "few" : "many";
     AddError("array constructor has too " + fm + " elements: expected " +
@@ -2437,11 +2753,7 @@ bool Resolver::ValidateVectorConstructor(
       // A mismatch of vector type parameter T is only an error if multiple
       // arguments are present. A single argument constructor constitutes a
       // type conversion expression.
-      // NOTE: A conversion expression from a vec<bool> to any other vecN<T>
-      // is disallowed (see
-      // https://gpuweb.github.io/gpuweb/wgsl.html#conversion-expr).
-      if (elem_type != value_elem_type &&
-          (values.size() > 1u || value_vec->is_bool_vector())) {
+      if (elem_type != value_elem_type && values.size() > 1u) {
         AddError(
             "type in vector constructor does not match vector type: "
             "expected '" +
@@ -2451,7 +2763,7 @@ bool Resolver::ValidateVectorConstructor(
         return false;
       }
 
-      value_cardinality_sum += value_vec->size();
+      value_cardinality_sum += value_vec->Width();
     } else {
       // A vector constructor can only accept vectors and scalars.
       AddError("expected vector or scalar type in vector constructor; found: " +
@@ -2464,7 +2776,7 @@ bool Resolver::ValidateVectorConstructor(
   // A correct vector constructor must either be a zero-value expression,
   // a single-value initializer (splat) expression, or the number of components
   // of all constructor arguments must add up to the vector cardinality.
-  if (value_cardinality_sum > 1 && value_cardinality_sum != vec_type->size()) {
+  if (value_cardinality_sum > 1 && value_cardinality_sum != vec_type->Width()) {
     if (values.empty()) {
       TINT_ICE(Resolver, diagnostics_)
           << "constructor arguments expected to be non-empty!";
@@ -2526,7 +2838,7 @@ bool Resolver::ValidateMatrixConstructor(
     auto* value_type = TypeOf(value)->UnwrapRef();
     auto* value_vec = value_type->As<sem::Vector>();
 
-    if (!value_vec || value_vec->size() != matrix_type->rows() ||
+    if (!value_vec || value_vec->Width() != matrix_type->rows() ||
         elem_type != value_vec->type()) {
       AddError("expected argument type '" +
                    VectorPretty(matrix_type->rows(), elem_type) + "' in '" +
@@ -2563,11 +2875,10 @@ bool Resolver::ValidateScalarConstructor(
   using U32 = sem::U32;
   using F32 = sem::F32;
 
-  const bool is_valid =
-      (type->Is<Bool>() && value_type->IsAnyOf<Bool, I32, U32, F32>()) ||
-      (type->Is<I32>() && value_type->IsAnyOf<I32, U32, F32>()) ||
-      (type->Is<U32>() && value_type->IsAnyOf<I32, U32, F32>()) ||
-      (type->Is<F32>() && value_type->IsAnyOf<I32, U32, F32>());
+  const bool is_valid = (type->Is<Bool>() && value_type->is_scalar()) ||
+                        (type->Is<I32>() && value_type->is_scalar()) ||
+                        (type->Is<U32>() && value_type->is_scalar()) ||
+                        (type->Is<F32>() && value_type->is_scalar());
   if (!is_valid) {
     AddError("cannot construct '" + type_name + "' with a value of type '" +
                  TypeNameOf(value) + "'",
@@ -2656,7 +2967,7 @@ bool Resolver::MemberAccessor(ast::MemberAccessorExpression* expr) {
 
     const sem::StructMember* member = nullptr;
     for (auto* m : str->Members()) {
-      if (m->Declaration()->symbol() == symbol) {
+      if (m->Name() == symbol) {
         ret = m->Type();
         member = m;
         break;
@@ -2708,7 +3019,7 @@ bool Resolver::MemberAccessor(ast::MemberAccessorExpression* expr) {
           return false;
       }
 
-      if (swizzle.back() >= vec->size()) {
+      if (swizzle.back() >= vec->Width()) {
         AddError("invalid vector swizzle member", expr->member()->source());
         return false;
       }
@@ -2788,7 +3099,7 @@ bool Resolver::Binary(ast::BinaryExpression* expr) {
   const bool matching_vec_elem_types =
       lhs_vec_elem_type && rhs_vec_elem_type &&
       (lhs_vec_elem_type == rhs_vec_elem_type) &&
-      (lhs_vec->size() == rhs_vec->size());
+      (lhs_vec->Width() == rhs_vec->Width());
 
   const bool matching_types = matching_vec_elem_types || (lhs_type == rhs_type);
 
@@ -2880,7 +3191,7 @@ bool Resolver::Binary(ast::BinaryExpression* expr) {
     // Vector times matrix
     if (lhs_vec_elem_type && lhs_vec_elem_type->Is<F32>() &&
         rhs_mat_elem_type && rhs_mat_elem_type->Is<F32>() &&
-        (lhs_vec->size() == rhs_mat->rows())) {
+        (lhs_vec->Width() == rhs_mat->rows())) {
       SetExprInfo(expr, builder_->create<sem::Vector>(lhs_vec->type(),
                                                       rhs_mat->columns()));
       return true;
@@ -2889,7 +3200,7 @@ bool Resolver::Binary(ast::BinaryExpression* expr) {
     // Matrix times vector
     if (lhs_mat_elem_type && lhs_mat_elem_type->Is<F32>() &&
         rhs_vec_elem_type && rhs_vec_elem_type->Is<F32>() &&
-        (lhs_mat->columns() == rhs_vec->size())) {
+        (lhs_mat->columns() == rhs_vec->Width())) {
       SetExprInfo(expr, builder_->create<sem::Vector>(rhs_vec->type(),
                                                       lhs_mat->rows()));
       return true;
@@ -2928,13 +3239,13 @@ bool Resolver::Binary(ast::BinaryExpression* expr) {
       if (lhs_vec_elem_type->Is<Bool>() &&
           (expr->IsEqual() || expr->IsNotEqual())) {
         SetExprInfo(expr, builder_->create<sem::Vector>(
-                              builder_->create<sem::Bool>(), lhs_vec->size()));
+                              builder_->create<sem::Bool>(), lhs_vec->Width()));
         return true;
       }
 
       if (lhs_vec_elem_type->is_numeric_scalar()) {
         SetExprInfo(expr, builder_->create<sem::Vector>(
-                              builder_->create<sem::Bool>(), lhs_vec->size()));
+                              builder_->create<sem::Bool>(), lhs_vec->Width()));
         return true;
       }
     }
@@ -3030,6 +3341,12 @@ bool Resolver::UnaryOp(ast::UnaryOpExpression* unary) {
 
     case ast::UnaryOp::kAddressOf:
       if (auto* ref = expr_type->As<sem::Reference>()) {
+        if (ref->StoreType()->UnwrapRef()->is_handle()) {
+          AddError(
+              "cannot take the address of expression in handle storage class",
+              unary->expr()->source());
+          return false;
+        }
         type = builder_->create<sem::Pointer>(
             ref->StoreType(), ref->StorageClass(), ref->Access());
       } else {
@@ -3083,10 +3400,15 @@ bool Resolver::VariableDeclStatement(const ast::VariableDeclStatement* stmt) {
     return false;
   }
 
-  if (!var->is_const()) {
-    if (info->storage_class != ast::StorageClass::kFunction &&
-        IsValidationEnabled(var->decorations(),
-                            ast::DisabledValidation::kIgnoreStorageClass)) {
+  if (!var->is_const() &&
+      IsValidationEnabled(var->decorations(),
+                          ast::DisabledValidation::kIgnoreStorageClass)) {
+    if (!info->type->UnwrapRef()->IsConstructible()) {
+      AddError("function variable must have a constructible type",
+               var->type() ? var->type()->source() : var->source());
+      return false;
+    }
+    if (info->storage_class != ast::StorageClass::kFunction) {
       if (info->storage_class != ast::StorageClass::kNone) {
         AddError("function variable has a non-function storage class",
                  stmt->source());
@@ -3329,6 +3651,7 @@ void Resolver::CreateSemanticNodes() const {
   uint16_t next_constant_id = 0;
 
   // Create semantic nodes for all ast::Variables
+  std::unordered_map<const tint::ast::Variable*, sem::Parameter*> sem_params;
   for (auto it : variable_to_info_) {
     auto* var = it.first;
     auto* info = it.second;
@@ -3355,11 +3678,27 @@ void Resolver::CreateSemanticNodes() const {
         next_constant_id = constant_id + 1;
       }
 
-      sem_var = builder_->create<sem::Variable>(var, info->type, constant_id);
-    } else {
       sem_var =
-          builder_->create<sem::Variable>(var, info->type, info->storage_class,
-                                          info->access, info->binding_point);
+          builder_->create<sem::GlobalVariable>(var, info->type, constant_id);
+    } else {
+      switch (info->kind) {
+        case VariableKind::kGlobal:
+          sem_var = builder_->create<sem::GlobalVariable>(
+              var, info->type, info->storage_class, info->access,
+              info->binding_point);
+          break;
+        case VariableKind::kLocal:
+          sem_var = builder_->create<sem::LocalVariable>(
+              var, info->type, info->storage_class, info->access);
+          break;
+        case VariableKind::kParameter: {
+          auto* param = builder_->create<sem::Parameter>(
+              var, info->index, info->type, info->storage_class, info->access);
+          sem_var = param;
+          sem_params.emplace(var, param);
+          break;
+        }
+      }
     }
 
     std::vector<const sem::VariableUser*> users;
@@ -3401,9 +3740,15 @@ void Resolver::CreateSemanticNodes() const {
     auto* func = it.first;
     auto* info = it.second;
 
+    std::vector<sem::Parameter*> parameters;
+    parameters.reserve(info->parameters.size());
+    for (auto* p : info->parameters) {
+      parameters.emplace_back(sem_params.at(p->declaration));
+    }
+
     auto* sem_func = builder_->create<sem::Function>(
         info->declaration, const_cast<sem::Type*>(info->return_type),
-        remap_vars(info->parameters), remap_vars(info->referenced_module_vars),
+        parameters, remap_vars(info->referenced_module_vars),
         remap_vars(info->local_referenced_module_vars), info->return_statements,
         info->callsites, ancestor_entry_points[func->symbol()],
         info->workgroup_size);
@@ -3433,89 +3778,23 @@ void Resolver::CreateSemanticNodes() const {
   }
 }
 
-bool Resolver::DefaultAlignAndSize(const sem::Type* ty,
-                                   uint32_t& align,
-                                   uint32_t& size) {
-  static constexpr uint32_t vector_size[] = {
-      /* padding */ 0,
-      /* padding */ 0,
-      /*vec2*/ 8,
-      /*vec3*/ 12,
-      /*vec4*/ 16,
-  };
-  static constexpr uint32_t vector_align[] = {
-      /* padding */ 0,
-      /* padding */ 0,
-      /*vec2*/ 8,
-      /*vec3*/ 16,
-      /*vec4*/ 16,
-  };
-
-  if (ty->is_scalar()) {
-    // Note: Also captures booleans, but these are not host-shareable.
-    align = 4;
-    size = 4;
-    return true;
-  }
-  if (auto* vec = ty->As<sem::Vector>()) {
-    if (vec->size() < 2 || vec->size() > 4) {
-      TINT_UNREACHABLE(Resolver, diagnostics_)
-          << "Invalid vector size: vec" << vec->size();
-      return false;
-    }
-    align = vector_align[vec->size()];
-    size = vector_size[vec->size()];
-    return true;
-  }
-  if (auto* mat = ty->As<sem::Matrix>()) {
-    if (mat->columns() < 2 || mat->columns() > 4 || mat->rows() < 2 ||
-        mat->rows() > 4) {
-      TINT_UNREACHABLE(Resolver, diagnostics_)
-          << "Invalid matrix size: mat" << mat->columns() << "x" << mat->rows();
-      return false;
-    }
-    align = vector_align[mat->rows()];
-    size = vector_align[mat->rows()] * mat->columns();
-    return true;
-  }
-  if (auto* s = ty->As<sem::Struct>()) {
-    align = s->Align();
-    size = s->Size();
-    return true;
-  }
-  if (auto* a = ty->As<sem::Array>()) {
-    align = a->Align();
-    size = a->SizeInBytes();
-    return true;
-  }
-  if (auto* a = ty->As<sem::Atomic>()) {
-    return DefaultAlignAndSize(a->Type(), align, size);
-  }
-  TINT_UNREACHABLE(Resolver, diagnostics_)
-      << "invalid type " << ty->TypeInfo().name;
-  return false;
-}
-
 sem::Array* Resolver::Array(const ast::Array* arr) {
   auto source = arr->source();
 
-  auto* el_ty = Type(arr->type());
-  if (!el_ty) {
+  auto* elem_type = Type(arr->type());
+  if (!elem_type) {
     return nullptr;
   }
 
-  if (!IsPlain(el_ty)) {  // Check must come before DefaultAlignAndSize()
-    AddError(el_ty->FriendlyName(builder_->Symbols()) +
+  if (!IsPlain(elem_type)) {  // Check must come before GetDefaultAlignAndSize()
+    AddError(elem_type->FriendlyName(builder_->Symbols()) +
                  " cannot be used as an element type of an array",
              source);
     return nullptr;
   }
 
-  uint32_t el_align = 0;
-  uint32_t el_size = 0;
-  if (!DefaultAlignAndSize(el_ty, el_align, el_size)) {
-    return nullptr;
-  }
+  uint32_t el_align = elem_type->Align();
+  uint32_t el_size = elem_type->Size();
 
   if (!ValidateNoDuplicateDecorations(arr->decorations())) {
     return nullptr;
@@ -3545,14 +3824,23 @@ sem::Array* Resolver::Array(const ast::Array* arr) {
   // WebGPU requires runtime arrays have at least one element, but the AST
   // records an element count of 0 for it.
   auto size = std::max<uint32_t>(arr->size(), 1) * stride;
-  auto* sem = builder_->create<sem::Array>(el_ty, arr->size(), el_align, size,
-                                           stride, implicit_stride);
+  auto* out = builder_->create<sem::Array>(elem_type, arr->size(), el_align,
+                                           size, stride, implicit_stride);
 
-  if (!ValidateArray(sem, source)) {
+  if (!ValidateArray(out, source)) {
     return nullptr;
   }
 
-  return sem;
+  if (elem_type->Is<sem::Atomic>()) {
+    atomic_composite_info_.emplace(out, arr->type()->source());
+  } else {
+    auto found = atomic_composite_info_.find(elem_type);
+    if (found != atomic_composite_info_.end()) {
+      atomic_composite_info_.emplace(out, found->second);
+    }
+  }
+
+  return out;
 }
 
 bool Resolver::ValidateArray(const sem::Array* arr, const Source& source) {
@@ -3603,6 +3891,7 @@ bool Resolver::ValidateStructure(const sem::Struct* str) {
     return false;
   }
 
+  std::unordered_set<uint32_t> locations;
   for (auto* member : str->Members()) {
     if (auto* r = member->Type()->As<sem::Array>()) {
       if (r->IsRuntimeSized()) {
@@ -3623,27 +3912,55 @@ bool Resolver::ValidateStructure(const sem::Struct* str) {
       }
     }
 
+    auto has_position = false;
+    ast::InvariantDecoration* invariant_attribute = nullptr;
     for (auto* deco : member->Declaration()->decorations()) {
-      if (!(deco->Is<ast::BuiltinDecoration>() ||
-            deco->Is<ast::InterpolateDecoration>() ||
-            deco->Is<ast::InvariantDecoration>() ||
-            deco->Is<ast::LocationDecoration>() ||
-            deco->Is<ast::StructMemberOffsetDecoration>() ||
-            deco->Is<ast::StructMemberSizeDecoration>() ||
-            deco->Is<ast::StructMemberAlignDecoration>())) {
+      if (!deco->IsAnyOf<ast::BuiltinDecoration,             //
+                         ast::InternalDecoration,            //
+                         ast::InterpolateDecoration,         //
+                         ast::InvariantDecoration,           //
+                         ast::LocationDecoration,            //
+                         ast::StructMemberOffsetDecoration,  //
+                         ast::StructMemberSizeDecoration,    //
+                         ast::StructMemberAlignDecoration>()) {
+        if (deco->Is<ast::StrideDecoration>() &&
+            IsValidationDisabled(
+                member->Declaration()->decorations(),
+                ast::DisabledValidation::kIgnoreStrideDecoration)) {
+          continue;
+        }
         AddError("decoration is not valid for structure members",
                  deco->source());
         return false;
       }
-      if (auto* builtin = deco->As<ast::BuiltinDecoration>()) {
-        if (!ValidateBuiltinDecoration(builtin, member->Type())) {
+
+      if (auto* invariant = deco->As<ast::InvariantDecoration>()) {
+        invariant_attribute = invariant;
+      } else if (auto* location = deco->As<ast::LocationDecoration>()) {
+        if (!ValidateLocationDecoration(location, member->Type(), locations,
+                                        member->Declaration()->source())) {
           return false;
+        }
+      } else if (auto* builtin = deco->As<ast::BuiltinDecoration>()) {
+        if (!ValidateBuiltinDecoration(builtin, member->Type(),
+                                       /* is_input */ false,
+                                       /* is_struct_member */ true)) {
+          return false;
+        }
+        if (builtin->value() == ast::Builtin::kPosition) {
+          has_position = true;
         }
       } else if (auto* interpolate = deco->As<ast::InterpolateDecoration>()) {
         if (!ValidateInterpolateDecoration(interpolate, member->Type())) {
           return false;
         }
       }
+    }
+
+    if (invariant_attribute && !has_position) {
+      AddError("invariant attribute must only be applied to a position builtin",
+               invariant_attribute->source());
+      return false;
     }
 
     if (auto* member_struct_type = member->Type()->As<sem::Struct>()) {
@@ -3670,6 +3987,42 @@ bool Resolver::ValidateStructure(const sem::Struct* str) {
   return true;
 }
 
+bool Resolver::ValidateLocationDecoration(
+    const ast::LocationDecoration* location,
+    const sem::Type* type,
+    std::unordered_set<uint32_t>& locations,
+    const Source& source,
+    const bool is_input) {
+  std::string inputs_or_output = is_input ? "inputs" : "output";
+  if (current_function_ && current_function_->declaration->pipeline_stage() ==
+                               ast::PipelineStage::kCompute) {
+    AddError("decoration is not valid for compute shader " + inputs_or_output,
+             location->source());
+    return false;
+  }
+
+  if (!type->is_numeric_scalar_or_vector()) {
+    std::string invalid_type = type->FriendlyName(builder_->Symbols());
+    AddError("cannot apply 'location' attribute to declaration of type '" +
+                 invalid_type + "'",
+             source);
+    AddNote(
+        "'location' attribute must only be applied to declarations of "
+        "numeric scalar or numeric vector type",
+        location->source());
+    return false;
+  }
+
+  if (locations.count(location->value())) {
+    AddError(deco_to_str(location) + " attribute appears multiple times",
+             location->source());
+    return false;
+  }
+  locations.emplace(location->value());
+
+  return true;
+}
+
 sem::Struct* Resolver::Structure(const ast::Struct* str) {
   if (!ValidateNoDuplicateDecorations(str->decorations())) {
     return nullptr;
@@ -3691,12 +4044,20 @@ sem::Struct* Resolver::Structure(const ast::Struct* str) {
   // Validation of storage-class rules requires analysing the actual variable
   // usage of the structure, and so is performed as part of the variable
   // validation.
-  // TODO(crbug.com/tint/628): Actually implement storage-class validation.
   uint32_t struct_size = 0;
   uint32_t struct_align = 1;
+  std::unordered_map<Symbol, ast::StructMember*> member_map;
 
   for (auto* member : str->members()) {
     Mark(member);
+    auto result = member_map.emplace(member->symbol(), member);
+    if (!result.second) {
+      AddError("redefinition of '" +
+                   builder_->Symbols().NameFor(member->symbol()) + "'",
+               member->source());
+      AddNote("previous definition is here", result.first->second->source());
+      return nullptr;
+    }
 
     // Resolve member type
     auto* type = Type(member->type());
@@ -3713,11 +4074,8 @@ sem::Struct* Resolver::Structure(const ast::Struct* str) {
     }
 
     uint32_t offset = struct_size;
-    uint32_t align = 0;
-    uint32_t size = 0;
-    if (!DefaultAlignAndSize(type, align, size)) {
-      return nullptr;
-    }
+    uint32_t align = type->Align();
+    uint32_t size = type->Size();
 
     if (!ValidateNoDuplicateDecorations(member->decorations())) {
       return nullptr;
@@ -3768,7 +4126,7 @@ sem::Struct* Resolver::Structure(const ast::Struct* str) {
     offset = utils::RoundUp(align, offset);
 
     auto* sem_member = builder_->create<sem::StructMember>(
-        member, const_cast<sem::Type*>(type),
+        member, member->symbol(), const_cast<sem::Type*>(type),
         static_cast<uint32_t>(sem_members.size()), offset, align, size);
     builder_->Sem().Add(member, sem_member);
     sem_members.emplace_back(sem_member);
@@ -3780,14 +4138,22 @@ sem::Struct* Resolver::Structure(const ast::Struct* str) {
   auto size_no_padding = struct_size;
   struct_size = utils::RoundUp(struct_align, struct_size);
 
-  auto* out = builder_->create<sem::Struct>(str, sem_members, struct_align,
-                                            struct_size, size_no_padding);
+  auto* out =
+      builder_->create<sem::Struct>(str, str->name(), sem_members, struct_align,
+                                    struct_size, size_no_padding);
 
-  // Keep track of atomic members for validation after all usages have been
-  // determined.
   for (size_t i = 0; i < sem_members.size(); i++) {
-    if (sem_members[i]->Type()->Is<sem::Atomic>()) {
-      atomic_members_.emplace_back(StructMember{out, i});
+    auto* mem_type = sem_members[i]->Type();
+    if (mem_type->Is<sem::Atomic>()) {
+      atomic_composite_info_.emplace(out,
+                                     sem_members[i]->Declaration()->source());
+      break;
+    } else {
+      auto found = atomic_composite_info_.find(mem_type);
+      if (found != atomic_composite_info_.end()) {
+        atomic_composite_info_.emplace(out, found->second);
+        break;
+      }
     }
   }
 
@@ -3811,6 +4177,17 @@ bool Resolver::ValidateReturn(const ast::ReturnStatement* ret) {
             ret_type->FriendlyName(builder_->Symbols()) + "', expected '" +
             current_function_->return_type_name + "'",
         ret->source());
+    return false;
+  }
+
+  auto* sem = builder_->Sem().Get(ret);
+  if (auto* continuing =
+          sem->FindFirstParent<sem::LoopContinuingBlockStatement>()) {
+    AddError("continuing blocks must not contain a return statement",
+             ret->source());
+    if (continuing != sem->Parent()) {
+      AddNote("see continuing block here", continuing->Declaration()->source());
+    }
     return false;
   }
 
@@ -3974,6 +4351,10 @@ bool Resolver::ValidateAssignment(const ast::AssignmentStatement* a) {
              a->source());
     return false;
   }
+  if (!storage_type->IsConstructible()) {
+    AddError("storage type of assignment must be constructible", a->source());
+    return false;
+  }
   if (lhs_ref->Access() == ast::Access::kRead) {
     AddError(
         "cannot store into a read-only type '" + TypeNameOf(a->lhs()) + "'",
@@ -4130,13 +4511,15 @@ Resolver::VariableInfo::VariableInfo(const ast::Variable* decl,
                                      const std::string& tn,
                                      ast::StorageClass sc,
                                      ast::Access ac,
-                                     VariableKind k)
+                                     VariableKind k,
+                                     uint32_t idx)
     : declaration(decl),
       type(ty),
       type_name(tn),
       storage_class(sc),
       access(ac),
-      kind(k) {}
+      kind(k),
+      index(idx) {}
 
 Resolver::VariableInfo::~VariableInfo() = default;
 

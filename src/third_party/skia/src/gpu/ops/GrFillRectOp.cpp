@@ -11,6 +11,7 @@
 #include "include/core/SkRect.h"
 #include "src/gpu/GrCaps.h"
 #include "src/gpu/GrGeometryProcessor.h"
+#include "src/gpu/GrOpsTypes.h"
 #include "src/gpu/GrPaint.h"
 #include "src/gpu/GrProgramInfo.h"
 #include "src/gpu/SkGr.h"
@@ -18,11 +19,13 @@
 #include "src/gpu/geometry/GrQuadBuffer.h"
 #include "src/gpu/geometry/GrQuadUtils.h"
 #include "src/gpu/glsl/GrGLSLColorSpaceXformHelper.h"
-#include "src/gpu/glsl/GrGLSLGeometryProcessor.h"
 #include "src/gpu/glsl/GrGLSLVarying.h"
 #include "src/gpu/ops/GrMeshDrawOp.h"
 #include "src/gpu/ops/GrQuadPerEdgeAA.h"
 #include "src/gpu/ops/GrSimpleMeshDrawOpHelperWithStencil.h"
+#if SK_GPU_V1
+#include "src/gpu/v1/SurfaceDrawContext_v1.h"
+#endif
 
 namespace {
 
@@ -479,7 +482,7 @@ GrOp::Owner GrFillRectOp::MakeOp(GrRecordingContext* context,
                                  GrPaint&& paint,
                                  GrAAType aaType,
                                  const SkMatrix& viewMatrix,
-                                 const GrSurfaceDrawContext::QuadSetEntry quads[],
+                                 const GrQuadSetEntry quads[],
                                  int cnt,
                                  const GrUserStencilSettings* stencilSettings,
                                  int* numConsumed) {
@@ -515,13 +518,14 @@ GrOp::Owner GrFillRectOp::MakeOp(GrRecordingContext* context,
     return op;
 }
 
-void GrFillRectOp::AddFillRectOps(GrSurfaceDrawContext* rtc,
+#if SK_GPU_V1
+void GrFillRectOp::AddFillRectOps(skgpu::v1::SurfaceDrawContext* sdc,
                                   const GrClip* clip,
                                   GrRecordingContext* context,
                                   GrPaint&& paint,
                                   GrAAType aaType,
                                   const SkMatrix& viewMatrix,
-                                  const GrSurfaceDrawContext::QuadSetEntry quads[],
+                                  const GrQuadSetEntry quads[],
                                   int cnt,
                                   const GrUserStencilSettings* stencilSettings) {
 
@@ -537,11 +541,12 @@ void GrFillRectOp::AddFillRectOps(GrSurfaceDrawContext* rtc,
         offset += numConsumed;
         numLeft -= numConsumed;
 
-        rtc->addDrawOp(clip, std::move(op));
+        sdc->addDrawOp(clip, std::move(op));
     }
 
     SkASSERT(offset == cnt);
 }
+#endif
 
 #if GR_TEST_UTILS
 

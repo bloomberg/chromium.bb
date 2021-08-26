@@ -19,6 +19,7 @@
 #include "av1/encoder/block.h"
 #include "av1/encoder/context_tree.h"
 #include "av1/encoder/cost.h"
+#include "av1/encoder/ratectrl.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -191,7 +192,17 @@ struct TileDataEnc;
 struct AV1_COMP;
 struct macroblock;
 
-int av1_compute_rd_mult_based_on_qindex(const struct AV1_COMP *cpi, int qindex);
+/*!\brief Compute rdmult based on q index and frame update type
+ *
+ * \param[in]       bit_depth       bit depth
+ * \param[in]       update_type     frame update type
+ * \param[in]       qindex          q index
+ *
+ * \return rdmult
+ */
+int av1_compute_rd_mult_based_on_qindex(aom_bit_depth_t bit_depth,
+                                        FRAME_UPDATE_TYPE update_type,
+                                        int qindex);
 
 int av1_compute_rd_mult(const struct AV1_COMP *cpi, int qindex);
 
@@ -347,6 +358,17 @@ void av1_fill_dv_costs(const nmv_context *ndvc, IntraBCMVCosts *dv_costs);
 int av1_get_adaptive_rdmult(const struct AV1_COMP *cpi, double beta);
 
 int av1_get_deltaq_offset(aom_bit_depth_t bit_depth, int qindex, double beta);
+
+/*!\brief Adjust current superblock's q_index based on delta q resolution
+ *
+ * \param[in]       delta_q_res       delta q resolution
+ * \param[in]       prev_qindex       previous superblock's q index
+ * \param[in]       curr_qindex       current superblock's q index
+ *
+ * \return the current superblock's adjusted q_index
+ */
+int av1_adjust_q_from_delta_q_res(int delta_q_res, int prev_qindex,
+                                  int curr_qindex);
 
 #ifdef __cplusplus
 }  // extern "C"

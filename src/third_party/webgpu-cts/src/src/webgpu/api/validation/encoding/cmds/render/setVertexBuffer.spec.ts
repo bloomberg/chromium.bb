@@ -4,13 +4,9 @@ Validation tests for setVertexBuffer on render pass and render bundle.
 
 import { makeTestGroup } from '../../../../../../common/framework/test_group.js';
 import { GPUConst, DefaultLimits } from '../../../../../constants.js';
-import { ValidationTest } from '../../../validation_test.js';
+import { kResourceStates, ValidationTest } from '../../../validation_test.js';
 
-import {
-  kRenderEncodeTypeParams,
-  kBufferStates,
-  buildBufferOffsetAndSizeOOBTestParams,
-} from './render.js';
+import { kRenderEncodeTypeParams, buildBufferOffsetAndSizeOOBTestParams } from './render.js';
 
 export const g = makeTestGroup(ValidationTest);
 
@@ -34,12 +30,9 @@ Tests slot must be less than the maxVertexBuffers in device limits.
       usage: GPUBufferUsage.VERTEX,
     });
 
-    const { encoder, finish } = t.createEncoder(encoderType);
+    const { encoder, validateFinish } = t.createEncoder(encoderType);
     encoder.setVertexBuffer(slot, vertexBuffer);
-
-    t.expectValidationError(() => {
-      finish();
-    }, slot >= DefaultLimits.maxVertexBuffers);
+    validateFinish(slot < DefaultLimits.maxVertexBuffers);
   });
 
 g.test('vertex_buffer')
@@ -48,7 +41,7 @@ g.test('vertex_buffer')
 Tests vertex buffer must be valid.
   `
   )
-  .paramsSubcasesOnly(kRenderEncodeTypeParams.combine('state', kBufferStates))
+  .paramsSubcasesOnly(kRenderEncodeTypeParams.combine('state', kResourceStates))
   .fn(t => {
     const { encoderType, state } = t.params;
     const vertexBuffer = t.createBufferWithState(state, {
@@ -56,17 +49,15 @@ Tests vertex buffer must be valid.
       usage: GPUBufferUsage.VERTEX,
     });
 
-    const { encoder, finish } = t.createEncoder(encoderType);
+    const { encoder, validateFinishAndSubmitGivenState } = t.createEncoder(encoderType);
     encoder.setVertexBuffer(0, vertexBuffer);
-
-    t.expectValidationError(() => {
-      if (state === 'destroyed') {
-        t.queue.submit([finish()]);
-      } else {
-        finish();
-      }
-    }, state !== 'valid');
+    validateFinishAndSubmitGivenState(state);
   });
+
+g.test('vertex_buffer,device_mismatch')
+  .desc('Tests setVertexBuffer cannot be called with a vertex buffer created from another device')
+  .paramsSubcasesOnly(kRenderEncodeTypeParams.combine('mismatched', [true, false]))
+  .unimplemented();
 
 g.test('vertex_buffer_usage')
   .desc(
@@ -88,12 +79,9 @@ Tests vertex buffer must have 'Vertex' usage.
       usage,
     });
 
-    const { encoder, finish } = t.createEncoder(encoderType);
+    const { encoder, validateFinish } = t.createEncoder(encoderType);
     encoder.setVertexBuffer(0, vertexBuffer);
-
-    t.expectValidationError(() => {
-      finish();
-    }, (usage | GPUConst.BufferUsage.VERTEX) !== usage);
+    validateFinish((usage & GPUBufferUsage.VERTEX) !== 0);
   });
 
 g.test('offset_alignment')
@@ -110,12 +98,9 @@ Tests offset must be a multiple of 4.
       usage: GPUBufferUsage.VERTEX,
     });
 
-    const { encoder, finish } = t.createEncoder(encoderType);
+    const { encoder, validateFinish: finish } = t.createEncoder(encoderType);
     encoder.setVertexBuffer(0, vertexBuffer, offset);
-
-    t.expectValidationError(() => {
-      finish();
-    }, offset % 4 !== 0);
+    finish(offset % 4 === 0);
   });
 
 g.test('offset_and_size_oob')
@@ -132,10 +117,7 @@ Tests offset and size cannot be larger than vertex buffer size.
       usage: GPUBufferUsage.VERTEX,
     });
 
-    const { encoder, finish } = t.createEncoder(encoderType);
+    const { encoder, validateFinish } = t.createEncoder(encoderType);
     encoder.setVertexBuffer(0, vertexBuffer, offset, size);
-
-    t.expectValidationError(() => {
-      finish();
-    }, !_valid);
+    validateFinish(_valid);
   });

@@ -20,6 +20,7 @@ Bəzi funksiyalar əlçatmaz ola bilər ki, nəticədə tərcihlərə edilən d�
 <translation id="1774152462503052664">Chromium'a fonda işləməyə icazə verin</translation>
 <translation id="1779356040007214683">Chromium'u güvənli etmək üçün,  <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> siyahısında olmayan və xəbəriniz olmadan əlavə edilən bəzi artırmaları deaktiv etdik.</translation>
 <translation id="1808667845054772817">Chromium'u yenidən quraşdırın</translation>
+<translation id="185970820835152459">Daxil olunmuş Google Hesablarını idarə edə bilərsiniz. Google Hesablarınız Chromium brauzeri, Play Market, Gmail və digər xidmətlər üçün istifadə olunur. Ailə üzvü kimi başqası üçün bir hesab əlavə etmək istəyirsinizsə, əvəzində <ph name="DEVICE_TYPE" /> cihazınıza yeni bir şəxs əlavə edin. <ph name="LINK_BEGIN" />Ətraflı məlumat<ph name="LINK_END" /></translation>
 <translation id="1881322772814446296">Nəzarət olunan hesabla daxil olursunuz və hesabın administratoruna Chromium profiliniz üzərində nəzarət etmək imkanı verirsiniz. Tətbiqləriniz, əlfəcinləriniz, tarixçəniz, parollarınız və digər ayarlarınız <ph name="USER_NAME" /> adına həmişəlik bağlı qalacaq. Bu datanı Google Hesab İdarə Paneli vasitəsilə silə biləcəksiniz, lakin bu datanı digər hesabla əlaqələndirə bilməyəcəksiniz. Mövcud Chromium datanızı ayrı saxlamaq üçün yeni profil yarada bilərsiniz. <ph name="LEARN_MORE" /></translation>
 <translation id="1911763535808217981">Bunu deaktiv etməklə Chromium'a giriş etmədən Gmail kimi Google saytlarına daxil ola bilərsiniz</translation>
 <translation id="1929939181775079593">Chromium cavab vermir. İndi yenidən başladılsın?</translation>
@@ -107,7 +108,6 @@ Bəzi funksiyalar əlçatmaz ola bilər ki, nəticədə tərcihlərə edilən d�
 <translation id="4407044323746248786">Chromium'dan istənilən halda çıxılsın?</translation>
 <translation id="4415566066719264597">Chromium'a Arxa Fonda İşləmək İcazəsi Verin</translation>
 <translation id="4423735387467980091">Fərdiləşdirin və Chromium'u kontrol edin</translation>
-<translation id="4491398312037323794">Bu səhifə daxil olduğunuz Google Hesablarını idarə etmənizə imkan verir. Bu hesablar Chromium brauzerində və Play Market tətbiqlərində, eləcə də Gmail, Disk və YouTube kimi xidmətlərdə əlçatan olacaq. <ph name="LINK_BEGIN" />Ətraflı məlumat<ph name="LINK_END" /></translation>
 <translation id="452711251841752011">Chromium'a xoş gəlmisiniz; yeni brauzer pəncərəsi açılıb</translation>
 <translation id="4544142686420020088">Chromium güncəllənmədi, xəta baş verdi. <ph name="BEGIN_LINK" />Chrome'un güncəllənmə problemlərini və alınmayan güncəllənmələri həll edin.<ph name="END_LINK" /></translation>
 <translation id="454579500955453258">Yeni Chromium profilində davam edilsin?</translation>
@@ -253,6 +253,7 @@ Bəzi funksiyalar əlçatmaz ola bilər. Xüsusi profil direktoriyası göstəri
 <translation id="7937630085815544518">Chromium'a <ph name="USER_EMAIL_ADDRESS" /> kimi daxil olmuşdunuz. Lütfən, yenidən daxil olmaq üçün eyni hesabdan istifadə edin.</translation>
 <translation id="7975919845073681630">Bu Chromium'un ikinci quraşdırmasıdır və defolt brauzer kimi ayarlana bilmir.</translation>
 <translation id="8013436988911883588">Chromium'un giriş imkanı olduqda veb saytlar giriş üçün Sizdən icazə istəyəcək.</translation>
+<translation id="8045118833343856403">Aşağıdakı hesablar heç bir Chromium profilinə daxil olmayıb. Başqa bir profildə hesab istifadə etmək istəyirsinizsə, əvvəlcə həmin profili silin.</translation>
 <translation id="81770708095080097">Bu fayl təklükəlidir, bu səbəbdən Chromium onu blok etdi.</translation>
 <translation id="8248265253516264921">Şəklin təsviri faydalı deyilsə, Chromium Sizin üçün təsviri təmin etməyə çalışacaq. Təsvir yaratmaq üçün şəkillər Google'a göndərilir. Bunu istənilən vaxt ayarlardan deaktiv edə bilərsiniz.</translation>
 <translation id="8266560134891435528">Hesaba daxil olmadığınız üçün Chromium parollarınızı yoxlaya bilmir</translation>

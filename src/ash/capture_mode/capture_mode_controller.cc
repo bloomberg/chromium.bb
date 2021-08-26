@@ -21,6 +21,7 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/message_center/message_view_factory.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/bind.h"
@@ -52,7 +53,6 @@
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_delegate.h"
-#include "ui/message_center/views/message_view_factory.h"
 #include "ui/snapshot/snapshot.h"
 
 namespace ash {
@@ -345,14 +345,14 @@ CaptureModeController::CaptureModeController(
           &CaptureModeController::RecordAndResetScreenshotsTakenInLastWeek,
           weak_ptr_factory_.GetWeakPtr()));
 
-  DCHECK(!message_center::MessageViewFactory::HasCustomNotificationViewFactory(
+  DCHECK(!MessageViewFactory::HasCustomNotificationViewFactory(
       kScreenShotNotificationType));
-  DCHECK(!message_center::MessageViewFactory::HasCustomNotificationViewFactory(
+  DCHECK(!MessageViewFactory::HasCustomNotificationViewFactory(
       kScreenRecordingNotificationType));
-  message_center::MessageViewFactory::SetCustomNotificationViewFactory(
+  MessageViewFactory::SetCustomNotificationViewFactory(
       kScreenShotNotificationType,
       base::BindRepeating(&CaptureModeNotificationView::CreateForImage));
-  message_center::MessageViewFactory::SetCustomNotificationViewFactory(
+  MessageViewFactory::SetCustomNotificationViewFactory(
       kScreenRecordingNotificationType,
       base::BindRepeating(&CaptureModeNotificationView::CreateForVideo));
 
@@ -364,9 +364,9 @@ CaptureModeController::~CaptureModeController() {
   chromeos::PowerManagerClient::Get()->RemoveObserver(this);
   Shell::Get()->session_controller()->RemoveObserver(this);
   // Remove the custom notification view factories.
-  message_center::MessageViewFactory::ClearCustomNotificationViewFactory(
+  MessageViewFactory::ClearCustomNotificationViewFactory(
       kScreenShotNotificationType);
-  message_center::MessageViewFactory::ClearCustomNotificationViewFactory(
+  MessageViewFactory::ClearCustomNotificationViewFactory(
       kScreenRecordingNotificationType);
 
   DCHECK_EQ(g_instance, this);
@@ -600,12 +600,14 @@ void CaptureModeController::StartVideoRecordingImmediatelyForTesting() {
 }
 
 void CaptureModeController::PushNewRootSizeToRecordingService(
-    const gfx::Size& root_size) {
+    const gfx::Size& root_size,
+    float device_scale_factor) {
   DCHECK(is_recording_in_progress_);
   DCHECK(video_recording_watcher_);
   DCHECK(recording_service_remote_);
 
-  recording_service_remote_->OnFrameSinkSizeChanged(root_size);
+  recording_service_remote_->OnFrameSinkSizeChanged(root_size,
+                                                    device_scale_factor);
 }
 
 void CaptureModeController::OnRecordedWindowChangingRoot(
@@ -625,7 +627,8 @@ void CaptureModeController::OnRecordedWindowChangingRoot(
   capture_mode_util::SetStopRecordingButtonVisibility(new_root, true);
 
   recording_service_remote_->OnRecordedWindowChangingRoot(
-      new_root->GetFrameSinkId(), new_root->GetBoundsInRootWindow().size());
+      new_root->GetFrameSinkId(), new_root->GetBoundsInRootWindow().size(),
+      new_root->GetHost()->device_scale_factor());
 }
 
 void CaptureModeController::OnRecordedWindowSizeChanged(
@@ -768,8 +771,12 @@ void CaptureModeController::LaunchRecordingServiceAndStartRecording(
         audio_stream_factory.InitWithNewPipeAndPassReceiver());
   }
 
-  const auto frame_sink_id =
-      capture_params.window->GetRootWindow()->GetFrameSinkId();
+  auto* root_window = capture_params.window->GetRootWindow();
+  const auto frame_sink_id = root_window->GetFrameSinkId();
+  DCHECK(frame_sink_id.is_valid());
+  const float device_scale_factor =
+      root_window->GetHost()->device_scale_factor();
+  const gfx::Size frame_sink_size_dip = root_window->bounds().size();
 
   const auto bounds = capture_params.bounds;
   switch (source_) {
@@ -777,7 +784,7 @@ void CaptureModeController::LaunchRecordingServiceAndStartRecording(
       recording_service_remote_->RecordFullscreen(
           std::move(client), video_capturer_remote.Unbind(),
           std::move(audio_stream_factory), current_video_file_path_,
-          frame_sink_id, bounds.size());
+          frame_sink_id, frame_sink_size_dip, device_scale_factor);
       break;
 
     case CaptureModeSource::kWindow:
@@ -792,10 +799,7 @@ void CaptureModeController::LaunchRecordingServiceAndStartRecording(
       recording_service_remote_->RecordWindow(
           std::move(client), video_capturer_remote.Unbind(),
           std::move(audio_stream_factory), current_video_file_path_,
-          frame_sink_id,
-          capture_params.window->GetRootWindow()
-              ->GetBoundsInRootWindow()
-              .size(),
+          frame_sink_id, frame_sink_size_dip, device_scale_factor,
           capture_params.window->subtree_capture_id(), bounds.size());
       break;
 
@@ -803,11 +807,7 @@ void CaptureModeController::LaunchRecordingServiceAndStartRecording(
       recording_service_remote_->RecordRegion(
           std::move(client), video_capturer_remote.Unbind(),
           std::move(audio_stream_factory), current_video_file_path_,
-          frame_sink_id,
-          capture_params.window->GetRootWindow()
-              ->GetBoundsInRootWindow()
-              .size(),
-          bounds);
+          frame_sink_id, frame_sink_size_dip, device_scale_factor, bounds);
       break;
   }
 }

@@ -13,6 +13,7 @@
 #include "base/cxx17_backports.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram_base.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/metrics/user_metrics.h"
 #include "base/notreached.h"
@@ -20,10 +21,12 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/feedback/content/content_tracing_manager.h"
+#include "components/feedback/feedback_common.h"
 #include "components/feedback/feedback_report.h"
 #include "components/feedback/system_logs/system_logs_fetcher.h"
 #include "extensions/browser/api/extensions_api_client.h"
@@ -93,12 +96,15 @@ bool IsGoogleInternalAccountEmail(content::BrowserContext* context) {
 
 void SendFeedback(content::BrowserContext* browser_context,
                   const FeedbackInfo& feedback_info,
+                  const bool load_system_info,
                   base::OnceCallback<void(feedback_private::LandingPageType,
                                           bool)> callback) {
   // Populate feedback_params
   FeedbackParams feedback_params;
+  feedback_params.form_submit_time = base::TimeTicks::Now();
   feedback_params.is_internal_email =
       IsGoogleInternalAccountEmail(browser_context);
+  feedback_params.load_system_info = load_system_info;
   feedback_params.send_histograms =
       feedback_info.send_histograms && *feedback_info.send_histograms;
   feedback_params.send_bluetooth_logs =
@@ -319,12 +325,12 @@ FeedbackPrivateGetSystemInformationFunction::Run() {
   send_all_crash_report_ids_ = IsGoogleInternalAccountEmail(browser_context());
 
   // Self-deleting object.
-  system_logs::SystemLogsFetcher* fetcher =
-      ExtensionsAPIClient::Get()
-          ->GetFeedbackPrivateDelegate()
-          ->CreateSystemLogsFetcher(browser_context());
-  fetcher->Fetch(base::BindOnce(
-      &FeedbackPrivateGetSystemInformationFunction::OnCompleted, this));
+  ExtensionsAPIClient::Get()
+      ->GetFeedbackPrivateDelegate()
+      ->FetchSystemInformation(
+          browser_context(),
+          base::BindOnce(
+              &FeedbackPrivateGetSystemInformationFunction::OnCompleted, this));
 
   return RespondLater();
 }
@@ -340,15 +346,13 @@ void FeedbackPrivateGetSystemInformationFunction::OnCompleted(
       // view properly reflects what we will be uploading to the server. It is
       // also stripped later on in the feedback processing for other code paths
       // that don't go through this.
-      if (itr.first == feedback::FeedbackReport::kAllCrashReportIdsKey &&
-          !send_all_crash_report_ids_) {
-        continue;
+      if (FeedbackCommon::IncludeInSystemLogs(itr.first,
+                                              send_all_crash_report_ids_)) {
+        SystemInformation sys_info_entry;
+        sys_info_entry.key = std::move(itr.first);
+        sys_info_entry.value = std::move(itr.second);
+        sys_info_list.emplace_back(std::move(sys_info_entry));
       }
-
-      SystemInformation sys_info_entry;
-      sys_info_entry.key = std::move(itr.first);
-      sys_info_entry.value = std::move(itr.second);
-      sys_info_list.emplace_back(std::move(sys_info_entry));
     }
   }
 
@@ -395,8 +399,18 @@ ExtensionFunction::ResponseAction FeedbackPrivateSendFeedbackFunction::Run() {
       feedback_private::SendFeedback::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
+  bool load_system_info =
+      (params->load_system_info && *params->load_system_info);
+  if (params->form_open_time) {
+    const auto form_open_time =
+        base::TimeTicks::UnixEpoch() +
+        base::TimeDelta::FromMilliseconds(*params->form_open_time);
+    base::UmaHistogramLongTimes("Feedback.Duration.FormOpenToSubmit",
+                                base::TimeTicks::Now() - form_open_time);
+  }
+
   SendFeedback(
-      browser_context(), params->feedback,
+      browser_context(), params->feedback, load_system_info,
       base::BindOnce(&FeedbackPrivateSendFeedbackFunction::OnCompleted, this));
 
   return RespondLater();

@@ -84,9 +84,9 @@ js_library("people_page") {
     "..:router",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements/chromeos/cr_picture:png.m",
-    "//ui/webui/resources/cr_elements/cr_toast:cr_toast.m",
+    "//ui/webui/resources/cr_elements/cr_toast:cr_toast",
     "//ui/webui/resources/js:cr.m",
-    "//ui/webui/resources/js:icon.m",
+    "//ui/webui/resources/js:icon",
     "//ui/webui/resources/js:web_ui_listener_behavior.m",
   ]
 }
@@ -113,7 +113,7 @@ js_library("sync_account_control") {
     "..:router",
     "../prefs:prefs_behavior",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu.m",
+    "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu",
     "//ui/webui/resources/js:assert.m",
   ]
 }

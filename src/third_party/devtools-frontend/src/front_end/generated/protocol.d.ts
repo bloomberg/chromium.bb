@@ -747,6 +747,7 @@ declare namespace Protocol {
       ExcludeSameSiteLax = 'ExcludeSameSiteLax',
       ExcludeSameSiteStrict = 'ExcludeSameSiteStrict',
       ExcludeInvalidSameParty = 'ExcludeInvalidSameParty',
+      ExcludeSamePartyCrossPartyContext = 'ExcludeSamePartyCrossPartyContext',
     }
 
     export const enum SameSiteCookieWarningReason {
@@ -1096,7 +1097,7 @@ declare namespace Protocol {
      * A unique id for a DevTools inspector issue. Allows other entities (e.g.
      * exceptions, CDP message, console messages, etc.) to reference an issue.
      */
-    export type IssueId = string;
+    export type IssueId = OpaqueIdentifier<string, 'Protocol.Audits.IssueId'>;
 
     /**
      * An inspector issue reported from the back-end.
@@ -1260,9 +1261,9 @@ declare namespace Protocol {
    */
   export namespace Browser {
 
-    export type BrowserContextID = string;
+    export type BrowserContextID = OpaqueIdentifier<string, 'Protocol.Browser.BrowserContextID'>;
 
-    export type WindowID = integer;
+    export type WindowID = OpaqueIdentifier<integer, 'Protocol.Browser.WindowID'>;
 
     /**
      * The state of the browser window.
@@ -1674,7 +1675,7 @@ declare namespace Protocol {
    */
   export namespace CSS {
 
-    export type StyleSheetId = string;
+    export type StyleSheetId = OpaqueIdentifier<string, 'Protocol.CSS.StyleSheetId'>;
 
     /**
      * Stylesheet type: "injected" for stylesheets injected via extension, "user-agent" for user-agent
@@ -3782,6 +3783,20 @@ declare namespace Protocol {
       nodeId?: NodeId;
     }
 
+    export interface GetQueryingDescendantsForContainerRequest {
+      /**
+       * Id of the container node to find querying descendants from.
+       */
+      nodeId: NodeId;
+    }
+
+    export interface GetQueryingDescendantsForContainerResponse extends ProtocolResponseWithError {
+      /**
+       * Descendant nodes with container queries against the given container.
+       */
+      nodeIds: NodeId[];
+    }
+
     /**
      * Fired when `Element`'s attribute is modified.
      */
@@ -4458,6 +4473,10 @@ declare namespace Protocol {
        * `Node`'s nodeType.
        */
       nodeType?: integer[];
+      /**
+       * Type of the shadow root the `Node` is in. String values are equal to the `ShadowRootType` enum.
+       */
+      shadowRootType?: RareStringData;
       /**
        * `Node`'s nodeName.
        */
@@ -5735,6 +5754,10 @@ declare namespace Protocol {
     export interface DragData {
       items: DragDataItem[];
       /**
+       * List of filenames that should be included when dropping
+       */
+      files?: string[];
+      /**
        * Bit field representing allowed drag operations. Copy = 1, Link = 2, Move = 16
        */
       dragOperationsMask: integer;
@@ -5851,6 +5874,29 @@ declare namespace Protocol {
        * The text to insert.
        */
       text: string;
+    }
+
+    export interface ImeSetCompositionRequest {
+      /**
+       * The text to insert
+       */
+      text: string;
+      /**
+       * selection start
+       */
+      selectionStart: integer;
+      /**
+       * selection end
+       */
+      selectionEnd: integer;
+      /**
+       * replacement start
+       */
+      replacementStart?: integer;
+      /**
+       * replacement end
+       */
+      replacementEnd?: integer;
     }
 
     export const enum DispatchMouseEventRequestType {
@@ -6152,7 +6198,7 @@ declare namespace Protocol {
     /**
      * Unique Layer identifier.
      */
-    export type LayerId = string;
+    export type LayerId = OpaqueIdentifier<string, 'Protocol.LayerTree.LayerId'>;
 
     /**
      * Unique snapshot identifier.
@@ -6684,7 +6730,7 @@ declare namespace Protocol {
     /**
      * Unique loader identifier.
      */
-    export type LoaderId = string;
+    export type LoaderId = OpaqueIdentifier<string, 'Protocol.Network.LoaderId'>;
 
     /**
      * Unique request identifier.
@@ -6694,7 +6740,7 @@ declare namespace Protocol {
     /**
      * Unique intercepted request identifier.
      */
-    export type InterceptionId = string;
+    export type InterceptionId = OpaqueIdentifier<string, 'Protocol.Network.InterceptionId'>;
 
     /**
      * Network level fetch failure reason.
@@ -7168,7 +7214,7 @@ declare namespace Protocol {
        */
       headers: Headers;
       /**
-       * HTTP response headers text.
+       * HTTP response headers text. This has been replaced by the headers in Network.responseReceivedExtraInfo.
        */
       headersText?: string;
       /**
@@ -7180,7 +7226,7 @@ declare namespace Protocol {
        */
       requestHeaders?: Headers;
       /**
-       * HTTP request headers text.
+       * HTTP request headers text. This has been replaced by the headers in Network.requestWillBeSentExtraInfo.
        */
       requestHeadersText?: string;
       /**
@@ -8261,9 +8307,10 @@ declare namespace Protocol {
 
     export interface LoadNetworkResourceRequest {
       /**
-       * Frame id to get the resource for.
+       * Frame id to get the resource for. Mandatory for frame targets, and
+       * should be omitted for worker targets.
        */
-      frameId: Page.FrameId;
+      frameId?: Page.FrameId;
       /**
        * URL of the resource to get content for.
        */
@@ -8794,6 +8841,12 @@ declare namespace Protocol {
        */
       resourceIPAddressSpace: IPAddressSpace;
       /**
+       * The status code of the response. This is useful in cases the request failed and no responseReceived
+       * event is triggered, which is the case for, e.g., CORS errors. This is also the correct status code
+       * for cached requests, where the status in responseReceived is a 200 and this will be 304.
+       */
+      statusCode: integer;
+      /**
        * Raw response header text as it was received over the wire. The raw text may not always be
        * available, such as in the case of HTTP/2 or QUIC.
        */
@@ -9292,9 +9345,13 @@ declare namespace Protocol {
 
     export interface ContainerQueryContainerHighlightConfig {
       /**
-       * The style of the container border
+       * The style of the container border.
        */
       containerBorder?: LineStyle;
+      /**
+       * The style of the descendants' borders.
+       */
+      descendantBorder?: LineStyle;
     }
 
     export const enum InspectMode {
@@ -9689,6 +9746,7 @@ declare namespace Protocol {
       ChUaMobile = 'ch-ua-mobile',
       ChUaFullVersion = 'ch-ua-full-version',
       ChUaPlatformVersion = 'ch-ua-platform-version',
+      ChUaReduced = 'ch-ua-reduced',
       ChViewportWidth = 'ch-viewport-width',
       ChWidth = 'ch-width',
       ClipboardRead = 'clipboard-read',
@@ -9817,7 +9875,7 @@ declare namespace Protocol {
       /**
        * Parent frame identifier.
        */
-      parentId?: string;
+      parentId?: FrameId;
       /**
        * Identifier of the loader associated with this frame.
        */
@@ -10331,6 +10389,10 @@ declare namespace Protocol {
       OptInUnloadHeaderNotPresent = 'OptInUnloadHeaderNotPresent',
       UnloadHandlerExistsInSubFrame = 'UnloadHandlerExistsInSubFrame',
       ServiceWorkerUnregistration = 'ServiceWorkerUnregistration',
+      CacheControlNoStore = 'CacheControlNoStore',
+      CacheControlNoStoreCookieModified = 'CacheControlNoStoreCookieModified',
+      CacheControlNoStoreHTTPOnlyCookieModified = 'CacheControlNoStoreHTTPOnlyCookieModified',
+      NoResponseHead = 'NoResponseHead',
       WebSocket = 'WebSocket',
       WebRTC = 'WebRTC',
       MainResourceHasCacheControlNoStore = 'MainResourceHasCacheControlNoStore',
@@ -10342,7 +10404,6 @@ declare namespace Protocol {
       DedicatedWorkerOrWorklet = 'DedicatedWorkerOrWorklet',
       OutstandingNetworkRequestOthers = 'OutstandingNetworkRequestOthers',
       OutstandingIndexedDBTransaction = 'OutstandingIndexedDBTransaction',
-      RequestedGeolocationPermission = 'RequestedGeolocationPermission',
       RequestedNotificationsPermission = 'RequestedNotificationsPermission',
       RequestedMIDIPermission = 'RequestedMIDIPermission',
       RequestedAudioCapturePermission = 'RequestedAudioCapturePermission',
@@ -10853,6 +10914,14 @@ declare namespace Protocol {
 
     export interface GetPermissionsPolicyStateResponse extends ProtocolResponseWithError {
       states: PermissionsPolicyFeatureState[];
+    }
+
+    export interface GetOriginTrialsRequest {
+      frameId: FrameId;
+    }
+
+    export interface GetOriginTrialsResponse extends ProtocolResponseWithError {
+      originTrials: OriginTrial[];
     }
 
     export interface SetDeviceMetricsOverrideRequest {
@@ -11608,7 +11677,7 @@ declare namespace Protocol {
     /**
      * An internal certificate ID value.
      */
-    export type CertificateId = integer;
+    export type CertificateId = OpaqueIdentifier<integer, 'Protocol.Security.CertificateId'>;
 
     /**
      * A description of mixed content (HTTP resources on HTTPS pages), as defined by
@@ -11911,7 +11980,7 @@ declare namespace Protocol {
 
   export namespace ServiceWorker {
 
-    export type RegistrationID = string;
+    export type RegistrationID = OpaqueIdentifier<string, 'Protocol.ServiceWorker.RegistrationID'>;
 
     /**
      * ServiceWorker registration.
@@ -12483,12 +12552,12 @@ declare namespace Protocol {
    */
   export namespace Target {
 
-    export type TargetID = string;
+    export type TargetID = OpaqueIdentifier<string, 'Protocol.Target.TargetID'>;
 
     /**
      * Unique identifier of attached debugging session.
      */
-    export type SessionID = string;
+    export type SessionID = OpaqueIdentifier<string, 'Protocol.Target.SessionID'>;
 
     export interface TargetInfo {
       targetId: TargetID;
@@ -13224,6 +13293,10 @@ declare namespace Protocol {
        * If set, overrides the request headers.
        */
       headers?: HeaderEntry[];
+      /**
+       * If set, overrides response interception behavior for this request.
+       */
+      interceptResponse?: boolean;
     }
 
     export interface ContinueWithAuthRequest {
@@ -13346,7 +13419,7 @@ declare namespace Protocol {
     /**
      * An unique ID for a graph object (AudioContext, AudioNode, AudioParam) in Web Audio API
      */
-    export type GraphObjectId = string;
+    export type GraphObjectId = OpaqueIdentifier<string, 'Protocol.WebAudio.GraphObjectId'>;
 
     /**
      * Enum of BaseAudioContext types
@@ -13606,7 +13679,7 @@ declare namespace Protocol {
    */
   export namespace WebAuthn {
 
-    export type AuthenticatorId = string;
+    export type AuthenticatorId = OpaqueIdentifier<string, 'Protocol.WebAuthn.AuthenticatorId'>;
 
     export const enum AuthenticatorProtocol {
       U2f = 'u2f',
@@ -13757,7 +13830,7 @@ declare namespace Protocol {
     /**
      * Players will get an ID that is unique within the agent context.
      */
-    export type PlayerId = string;
+    export type PlayerId = OpaqueIdentifier<string, 'Protocol.Media.PlayerId'>;
 
     export type Timestamp = number;
 
@@ -16268,6 +16341,10 @@ declare namespace Protocol {
     export interface InspectRequestedEvent {
       object: RemoteObject;
       hints: any;
+      /**
+       * Identifier of the context where the call was made.
+       */
+      executionContextId?: ExecutionContextId;
     }
   }
 

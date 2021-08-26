@@ -11,6 +11,7 @@
 <translation id="1546934824884762070">予期しないエラーが発生しました。この問題をデベロッパーに報告してください。</translation>
 <translation id="1697532407822776718">設定が完了しました。</translation>
 <translation id="1742469581923031760">接続しています...</translation>
+<translation id="177040763384871009">リモート デバイスでクリックしたリンクをクライアント ブラウザで開くことを許可するには、システムのウェブブラウザを「<ph name="URL_FORWARDER_NAME" />」に変更する必要があります。</translation>
 <translation id="177096447311351977">クライアントのチャンネル IP: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'</translation>
 <translation id="1897488610212723051">削除</translation>
 <translation id="2009755455353575666">接続失敗</translation>
@@ -129,6 +130,7 @@
 <translation id="6963936880795878952">無効な PIN を使用した接続が試みられたため、リモートのパソコンへの接続が一時的にブロックされています。しばらくしてからもう一度お試しください。</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942"><ph name="HOSTNAME" /> へのリモート接続を無効にしてもよろしいですか？元に戻す場合は、該当のパソコンにアクセスして接続を再び有効にする必要があります。</translation>
+<translation id="6998890551706945177"><ph name="CLIENT_USERNAME" /> さんがあなたのパソコンを参照および操作する権限をリクエストしています。このユーザーを知らない場合、または共有する前に変更を加える必要がある場合は、[<ph name="IDS_SHARE_CONFIRM_DIALOG_DECLINE" />] を押してください。それ以外の場合は、[<ph name="IDS_SHARE_CONFIRM_DIALOG_CONFIRM" />] を選択して接続を許可してください。</translation>
 <translation id="7019153418965365059">不明なホストエラー: <ph name="HOST_OFFLINE_REASON" />。</translation>
 <translation id="701976023053394610">リモート サポート</translation>
 <translation id="7026930240735156896">画面の説明に沿ってパソコンをリモート アクセス用に設定します</translation>
@@ -142,6 +144,7 @@
 <translation id="7434397035092923453">次のクライアントのアクセスを拒否しました: <ph name="CLIENT_USERNAME" />。</translation>
 <translation id="7444276978508498879">次のクライアントが接続しました: <ph name="CLIENT_USERNAME" />。</translation>
 <translation id="7526139040829362392">アカウントを変更</translation>
+<translation id="7535110896613603182">デフォルトのアプリ設定を開く</translation>
 <translation id="7628469622942688817">このデバイスに PIN を保存する。</translation>
 <translation id="7649070708921625228">ヘルプ</translation>
 <translation id="7658239707568436148">キャンセル</translation>

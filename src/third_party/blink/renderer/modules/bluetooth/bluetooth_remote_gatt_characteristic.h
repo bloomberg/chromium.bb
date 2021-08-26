@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/modules/bluetooth/bluetooth_remote_gatt_service.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_associated_receiver_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -103,6 +104,20 @@ class BluetoothRemoteGATTCharacteristic final
  private:
   friend class BluetoothRemoteGATTDescriptor;
 
+  struct DeferredValueChange : public GarbageCollected<DeferredValueChange> {
+    DeferredValueChange(Member<Event> event,
+                        Member<DOMDataView> dom_data_view,
+                        Member<ScriptPromiseResolver> resolver)
+        : event(event), dom_data_view(dom_data_view), resolver(resolver) {}
+
+    // GarbageCollectedMixin:
+    void Trace(Visitor*) const;
+
+    Member<Event> event;  // Event to dispatch before resolving promise.
+    Member<DOMDataView> dom_data_view;
+    Member<ScriptPromiseResolver> resolver;  // Possibly null.
+  };
+
   BluetoothRemoteGATTServer* GetGatt() { return service_->device()->gatt(); }
 
   void ReadValueCallback(ScriptPromiseResolver*,
@@ -111,7 +126,12 @@ class BluetoothRemoteGATTCharacteristic final
   void WriteValueCallback(ScriptPromiseResolver*,
                           const Vector<uint8_t>& value,
                           mojom::blink::WebBluetoothResult);
+
+  // Callback for startNotifictions/stopNotifications.
+  // |started| is true if called as a result of startNotifictions() and
+  // false if called as a result of stopNotifications().
   void NotificationsCallback(ScriptPromiseResolver*,
+                             bool started,
                              mojom::blink::WebBluetoothResult);
 
   ScriptPromise WriteCharacteristicValue(ScriptState*,
@@ -135,6 +155,11 @@ class BluetoothRemoteGATTCharacteristic final
 
   String CreateInvalidCharacteristicErrorMessage();
 
+  // Still waiting for acknowledgement from device of request for notifications?
+  bool notification_registration_in_progress() const {
+    return num_in_flight_notification_registrations_ > 0;
+  }
+
   mojom::blink::WebBluetoothRemoteGATTCharacteristicPtr characteristic_;
   Member<BluetoothRemoteGATTService> service_;
   Member<BluetoothCharacteristicProperties> properties_;
@@ -143,6 +168,12 @@ class BluetoothRemoteGATTCharacteristic final
   HeapMojoAssociatedReceiverSet<mojom::blink::WebBluetoothCharacteristicClient,
                                 BluetoothRemoteGATTCharacteristic>
       receivers_;
+
+  uint32_t num_in_flight_notification_registrations_ = 0;
+
+  // Queue of characteristicvaluechanged events created if a value changes
+  // while startNotificications() is in the process of registering a listener.
+  HeapVector<Member<DeferredValueChange>> deferred_value_change_data_;
 };
 
 }  // namespace blink

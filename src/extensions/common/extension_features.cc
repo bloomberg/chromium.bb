@@ -7,10 +7,6 @@
 
 namespace extensions_features {
 
-// Controls whether we disable extensions for malware.
-const base::Feature kDisableMalwareExtensionsRemotely{
-    "DisableMalwareExtensionsRemotely", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Controls whether we disable extensions that are marked as policy violation
 // by the Omaha attribute.
 const base::Feature kDisablePolicyViolationExtensionsRemotely{
@@ -28,7 +24,7 @@ const base::Feature kDisablePotentiallyUwsExtensionsRemotely{
 // Safe Browsing CRX allowlist. This feature also controls if we show a warning
 // in 'chrome://extensions' for extensions not included in the allowlist.
 const base::Feature kSafeBrowsingCrxAllowlistShowWarnings{
-    "SafeBrowsingCrxAllowlistShowWarnings", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SafeBrowsingCrxAllowlistShowWarnings", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Automatically disable extensions not included in the Safe Browsing CRX
 // allowlist if the user has turned on Enhanced Safe Browsing (ESB). The
@@ -64,5 +60,11 @@ const base::Feature kReportKeepaliveUkm{"ReportKeepaliveUkm",
 // process sharing between extensions. See https://crbug.com/1209417.
 const base::Feature kStrictExtensionIsolation{
     "StrictExtensionIsolation", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Whether extension contexts can use SharedArrayBuffers unconditionally (i.e.
+// without requiring cross origin isolation).
+// TODO(crbug.com/1184892): Flip this in M95.
+const base::Feature kAllowSharedArrayBuffersUnconditionally{
+    "AllowSharedArrayBuffersUnconditionally", base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace extensions_features

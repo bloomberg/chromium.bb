@@ -2,11 +2,10 @@
 #include "experimental/sktext/include/Text.h"
 #include "experimental/sktext/src/Line.h"
 #include "experimental/sktext/src/TextRun.h"
-#include "modules/skshaper/src/SkUnicode.h"
 
 namespace skia {
 namespace text {
-Line::Line(const Stretch& stretch, const Stretch& spaces, SkSTArray<1, size_t, true> visualOrder)
+Line::Line(const Stretch& stretch, const Stretch& spaces, SkSTArray<1, size_t, true> visualOrder, SkScalar verticalOffset, bool hardLineBreak)
     : fTextStart(stretch.glyphStart())
     , fTextEnd(stretch.glyphEnd())
     , fWhitespacesEnd (spaces.glyphEnd())
@@ -14,7 +13,10 @@ Line::Line(const Stretch& stretch, const Stretch& spaces, SkSTArray<1, size_t, t
     , fWhitespaces(spaces.textRange())
     , fTextWidth(stretch.width())
     , fSpacesWidth(spaces.width())
-    , fRunsInVisualOrder(std::move(visualOrder)) {
+    , fRunsInVisualOrder(std::move(visualOrder))
+    , fHorizontalOffset(0.0f)
+    , fVerticalOffset(verticalOffset)
+    , fHardLineBreak(hardLineBreak){
 
     SkASSERT(stretch.isEmpty() ||
                     spaces.isEmpty() ||

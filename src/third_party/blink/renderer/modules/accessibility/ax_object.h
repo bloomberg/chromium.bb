@@ -475,7 +475,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   bool ComputeAccessibilityIsIgnoredButIncludedInTree() const;
   const AXObject* GetAtomicTextFieldAncestor(int max_levels_to_check = 3) const;
   const AXObject* DatetimeAncestor(int max_levels_to_check = 3) const;
-  const AXObject* DisabledAncestor() const;
+  bool ComputeIsDescendantOfDisabledNode() const;
   bool LastKnownIsIgnoredValue() const;
   bool LastKnownIsIgnoredButIncludedInTreeValue() const;
   bool LastKnownIsIncludedInTreeValue() const;
@@ -626,8 +626,8 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
 
   // Load inline text boxes for just this node, even if
   // settings->inlineTextBoxAccessibilityEnabled() is false.
-  void LoadInlineTextBoxes();
-  virtual void LoadInlineTextBoxesRecursive();
+  virtual void LoadInlineTextBoxes();
+  virtual void ForceAddInlineTextBoxChildren();
 
   // Walk the AXObjects on the same line.
   virtual AXObject* NextOnLine() const;
@@ -1424,8 +1424,6 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
       ax::mojom::blink::StringAttribute attribute,
       const std::string& value,
       uint32_t max_len = kMaxStringAttributeLength) const;
-
-  static bool is_loading_inline_boxes_;
 
   static unsigned number_of_live_ax_objects_;
 

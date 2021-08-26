@@ -28,11 +28,18 @@ class BrowsingHistoryBridge : public ProfileBasedBrowsingHistoryDriver {
   void QueryHistory(JNIEnv* env,
                     const JavaParamRef<jobject>& obj,
                     const JavaParamRef<jobject>& j_result_obj,
-                    jstring j_query);
+                    jstring j_query,
+                    jboolean j_host_only);
 
   void QueryHistoryContinuation(JNIEnv* env,
                                 const JavaParamRef<jobject>& obj,
                                 const JavaParamRef<jobject>& j_result_obj);
+
+  void GetLastVisitToHostBeforeRecentNavigations(
+      JNIEnv* env,
+      const JavaParamRef<jobject>& obj,
+      jstring j_host_name,
+      const JavaParamRef<jobject>& jcallback_);
 
   // Adds a HistoryEntry with the |j_url| and |j_native_timestamps| to the list
   // of items being removed. The removal will not be committed until

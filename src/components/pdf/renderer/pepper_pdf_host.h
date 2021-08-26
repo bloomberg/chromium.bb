@@ -18,6 +18,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "pdf/buildflags.h"
 #include "pdf/mojom/pdf.mojom.h"
+#include "pdf/pdf_accessibility_action_handler.h"
 #include "ppapi/c/ppb_image_data.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/host/resource_host.h"
@@ -48,7 +49,8 @@ namespace pdf {
 class PdfAccessibilityTree;
 
 class PepperPDFHost : public ppapi::host::ResourceHost,
-                      public mojom::PdfListener {
+                      public mojom::PdfListener,
+                      public chrome_pdf::PdfAccessibilityActionHandler {
  public:
   class PrintClient {
    public:
@@ -89,6 +91,10 @@ class PepperPDFHost : public ppapi::host::ResourceHost,
   void SetSelectionBounds(const gfx::PointF& base,
                           const gfx::PointF& extent) override;
 
+  // chrome_pdf::PdfAccessibilityActionHandler:
+  void HandleAccessibilityAction(
+      const chrome_pdf::AccessibilityActionData& action_data) override;
+
  private:
   int32_t OnHostMsgDidStartLoading(ppapi::host::HostMessageContext* context);
   int32_t OnHostMsgDidStopLoading(ppapi::host::HostMessageContext* context);
@@ -121,10 +127,10 @@ class PepperPDFHost : public ppapi::host::ResourceHost,
       const PP_PrivateAccessibilityDocInfo& pp_doc_info);
   int32_t OnHostMsgSetAccessibilityPageInfo(
       ppapi::host::HostMessageContext* context,
-      const PP_PrivateAccessibilityPageInfo& page_info,
-      const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs,
-      const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
-      const ppapi::PdfAccessibilityPageObjects& page_objects);
+      const PP_PrivateAccessibilityPageInfo& pp_page_info,
+      const std::vector<ppapi::PdfAccessibilityTextRunInfo>& pp_text_run_infos,
+      const std::vector<PP_PrivateAccessibilityCharInfo>& pp_chars,
+      const ppapi::PdfAccessibilityPageObjects& pp_page_objects);
   int32_t OnHostMsgSelectionChanged(ppapi::host::HostMessageContext* context,
                                     const PP_FloatPoint& left,
                                     int32_t left_height,

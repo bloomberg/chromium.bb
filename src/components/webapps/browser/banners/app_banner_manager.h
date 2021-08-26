@@ -23,6 +23,7 @@
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/blink/public/mojom/app_banner/app_banner.mojom.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom-forward.h"
+#include "third_party/blink/public/mojom/manifest/manifest.mojom-forward.h"
 #include "url/gurl.h"
 
 class SkBitmap;
@@ -105,9 +106,9 @@ class AppBannerManager : public content::WebContentsObserver,
   enum class InstallableWebAppCheckResult {
     kUnknown,
     kNo,
-    kNoAlreadyInstalled,
-    kByUserRequest,
-    kPromotable,
+    kNo_AlreadyInstalled,
+    kYes_ByUserRequest,
+    kYes_Promotable,
   };
 
   // Retrieves the platform specific instance of AppBannerManager from
@@ -186,7 +187,7 @@ class AppBannerManager : public content::WebContentsObserver,
   virtual std::u16string GetAppName() const;
 
   // Simple accessors:
-  const blink::Manifest& manifest() { return manifest_; }
+  const blink::mojom::Manifest& manifest() const;
   const SkBitmap& primary_icon() { return primary_icon_; }
   bool has_maskable_primary_icon() { return has_maskable_primary_icon_; }
   const GURL& validated_url() { return validated_url_; }
@@ -345,15 +346,13 @@ class AppBannerManager : public content::WebContentsObserver,
   bool IsRunning() const;
 
   void SetInstallableWebAppCheckResult(InstallableWebAppCheckResult result);
+  void RecheckInstallabilityForLoadedPage(const GURL& url, bool uninstalled);
 
   // The URL for which the banner check is being conducted.
   GURL validated_url_;
 
   // The URL of the manifest.
   GURL manifest_url_;
-
-  // The manifest object.
-  blink::Manifest manifest_;
 
   // The URL of the primary icon.
   GURL primary_icon_url_;
@@ -401,6 +400,10 @@ class AppBannerManager : public content::WebContentsObserver,
 
   // Fetches the data required to display a banner for the current page.
   InstallableManager* manager_;
+
+  // The manifest object. This is never null, it will instead be an empty
+  // manifest so callers don't have to worry about null checks.
+  blink::mojom::ManifestPtr manifest_;
 
   // We do not want to trigger a banner when the manager is attached to
   // a WebContents that is playing video. Banners triggering on a site in the

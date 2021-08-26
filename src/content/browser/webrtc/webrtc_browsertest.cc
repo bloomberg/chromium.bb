@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -24,18 +25,12 @@
 
 namespace content {
 
-#if defined(OS_ANDROID)
-#if defined(ADDRESS_SANITIZER)
+#if defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
 // Renderer crashes under Android ASAN: https://crbug.com/408496.
 #define MAYBE_WebRtcBrowserTest DISABLED_WebRtcBrowserTest
 #else
-// WebRtcBrowserTest.CanSetupVideoCallWith16To9AspectRatio fails consistently
-// on android
-#define MAYBE_WebRtcBrowserTest DISABLED_WebRtcBrowserTest
-#endif  // defined(ADDRESS_SANITIZER)
-#else
 #define MAYBE_WebRtcBrowserTest WebRtcBrowserTest
-#endif  // defined(OS_ANDROID)
+#endif
 
 // This class tests the scenario when permission to access mic or camera is
 // granted.
@@ -107,15 +102,29 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
                        CanSetupVideoCallWith16To9AspectRatio) {
-  const std::string javascript =
+#if defined(OS_ANDROID)
+  // Android requires 16x16 alignment for hardware encoding.
+  constexpr int kExpectedAlignment = 16;
+#else
+  constexpr int kExpectedAlignment = 1;
+#endif
+  const std::string javascript = base::StringPrintf(
       "callAndExpectResolution({video: {mandatory: {minWidth: 640,"
-      " maxWidth: 640, minAspectRatio: 1.777}}}, 640, 360);";
+      " maxWidth: 640, minAspectRatio: 1.777}}}, 640, 360, %d);",
+      kExpectedAlignment);
   MakeTypicalPeerConnectionCall(javascript);
 }
 
-
+#if defined(OS_MAC)
+// TODO(https://crbug.com/1235254): This test is flakey on macOS.
+#define MAYBE_CanSetupVideoCallWith4To3AspectRatio \
+  DISABLED_CanSetupVideoCallWith4To3AspectRatio
+#else
+#define MAYBE_CanSetupVideoCallWith4To3AspectRatio \
+  CanSetupVideoCallWith4To3AspectRatio
+#endif
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
-                       CanSetupVideoCallWith4To3AspectRatio) {
+                       MAYBE_CanSetupVideoCallWith4To3AspectRatio) {
   const std::string javascript =
       "callAndExpectResolution({video: {mandatory: { minWidth: 320,"
       "maxWidth: 320, minAspectRatio: 1.333, maxAspectRatio: 1.333}}}, 320,"

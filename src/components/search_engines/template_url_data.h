@@ -45,6 +45,7 @@ struct TemplateURLData {
                   base::StringPiece favicon_url,
                   base::StringPiece encoding,
                   const base::ListValue& alternate_urls_list,
+                  bool preconnect_to_search_url,
                   int prepopulate_id);
 
   ~TemplateURLData();
@@ -152,6 +153,21 @@ struct TemplateURLData {
   // A list of URL patterns that can be used, in addition to |url_|, to extract
   // search terms from a URL.
   std::vector<std::string> alternate_urls;
+
+  // Whether a connection to |url_| should regularly be established when this is
+  // set as the "default search engine".
+  bool preconnect_to_search_url = false;
+
+  enum class ActiveStatus {
+    kUnspecified = 0,  // The default value when a search engine is auto-added.
+    kTrue,             // Search engine is active.
+    kFalse,            // SE has been manually deactivated by a user.
+  };
+
+  // Whether this entry is "active". Active entries can be invoked by keyword
+  // via the omnibox.  Inactive search engines do nothing until they have been
+  // activated.  A search engine is inactive if it's unspecified or false.
+  ActiveStatus is_active{ActiveStatus::kUnspecified};
 
  private:
   // Private so we can enforce using the setters and thus enforce that these

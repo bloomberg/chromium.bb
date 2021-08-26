@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #include "jxl/encode.h"
 
@@ -71,19 +62,6 @@ TEST(EncodeTest, AddJPEGAfterCloseTest) {
 
   JxlEncoderOptions* options = JxlEncoderOptionsCreate(enc.get(), NULL);
 
-  JxlBasicInfo basic_info;
-  basic_info.exponent_bits_per_sample = 0;
-  basic_info.bits_per_sample = 8;
-  basic_info.alpha_bits = 0;
-  basic_info.alpha_exponent_bits = 0;
-  basic_info.xsize = orig_io.xsize();
-  basic_info.ysize = orig_io.ysize();
-  basic_info.uses_original_profile = true;
-  EXPECT_EQ(JXL_ENC_SUCCESS, JxlEncoderSetBasicInfo(enc.get(), &basic_info));
-  JxlColorEncoding color_encoding;
-  JxlColorEncodingSetToSRGB(&color_encoding, /*is_gray=*/false);
-  EXPECT_EQ(JXL_ENC_SUCCESS,
-            JxlEncoderSetColorEncoding(enc.get(), &color_encoding));
   EXPECT_EQ(JXL_ENC_ERROR,
             JxlEncoderAddJPEGFrame(options, orig.data(), orig.size()));
 }
@@ -339,7 +317,7 @@ struct Box {
   // serialized.
   bool data_size_given = true;
 
-  // If successfull, returns true and sets `in` to be the rest data (if any).
+  // If successful, returns true and sets `in` to be the rest data (if any).
   // If `in` contains a box with a size larger than `in.size()`, will not
   // modify `in`, and will return true but the data `Span<uint8_t>` will
   // remain set to nullptr.
@@ -499,19 +477,6 @@ TEST(EncodeTest, JXL_TRANSCODE_JPEG_TEST(JPEGReconstructionTest)) {
   JxlEncoderPtr enc = JxlEncoderMake(nullptr);
   JxlEncoderOptions* options = JxlEncoderOptionsCreate(enc.get(), NULL);
 
-  JxlBasicInfo basic_info;
-  basic_info.exponent_bits_per_sample = 0;
-  basic_info.bits_per_sample = 8;
-  basic_info.alpha_bits = 0;
-  basic_info.alpha_exponent_bits = 0;
-  basic_info.xsize = orig_io.xsize();
-  basic_info.ysize = orig_io.ysize();
-  basic_info.uses_original_profile = true;
-  EXPECT_EQ(JXL_ENC_SUCCESS, JxlEncoderSetBasicInfo(enc.get(), &basic_info));
-  JxlColorEncoding color_encoding;
-  JxlColorEncodingSetToSRGB(&color_encoding, /*is_gray=*/false);
-  EXPECT_EQ(JXL_ENC_SUCCESS,
-            JxlEncoderSetColorEncoding(enc.get(), &color_encoding));
   EXPECT_EQ(JXL_ENC_SUCCESS, JxlEncoderUseContainer(enc.get(), JXL_TRUE));
   EXPECT_EQ(JXL_ENC_SUCCESS, JxlEncoderStoreJPEGMetadata(enc.get(), JXL_TRUE));
   EXPECT_EQ(JXL_ENC_SUCCESS,
@@ -564,57 +529,69 @@ TEST(EncodeTest, JXL_TRANSCODE_JPEG_TEST(JPEGReconstructionTest)) {
 }
 
 TEST(EncodeTest, JXL_TRANSCODE_JPEG_TEST(JPEGFrameTest)) {
-  const std::string jpeg_path =
-      "imagecompression.info/flower_foveon.png.im_q85_420.jpg";
-  const jxl::PaddedBytes orig = jxl::ReadTestData(jpeg_path);
-  jxl::CodecInOut orig_io;
-  ASSERT_TRUE(
-      SetFromBytes(jxl::Span<const uint8_t>(orig), &orig_io, /*pool=*/nullptr));
+  for (int skip_basic_info = 0; skip_basic_info < 2; skip_basic_info++) {
+    for (int skip_color_encoding = 0; skip_color_encoding < 2;
+         skip_color_encoding++) {
+      const std::string jpeg_path =
+          "imagecompression.info/flower_foveon.png.im_q85_420.jpg";
+      const jxl::PaddedBytes orig = jxl::ReadTestData(jpeg_path);
+      jxl::CodecInOut orig_io;
+      ASSERT_TRUE(SetFromBytes(jxl::Span<const uint8_t>(orig), &orig_io,
+                               /*pool=*/nullptr));
 
-  JxlEncoderPtr enc = JxlEncoderMake(nullptr);
-  JxlEncoderOptions* options = JxlEncoderOptionsCreate(enc.get(), NULL);
+      JxlEncoderPtr enc = JxlEncoderMake(nullptr);
+      JxlEncoderOptions* options = JxlEncoderOptionsCreate(enc.get(), NULL);
 
-  JxlBasicInfo basic_info;
-  basic_info.exponent_bits_per_sample = 0;
-  basic_info.bits_per_sample = 8;
-  basic_info.alpha_bits = 0;
-  basic_info.alpha_exponent_bits = 0;
-  basic_info.xsize = orig_io.xsize();
-  basic_info.ysize = orig_io.ysize();
-  basic_info.uses_original_profile = true;
-  EXPECT_EQ(JXL_ENC_SUCCESS, JxlEncoderSetBasicInfo(enc.get(), &basic_info));
-  JxlColorEncoding color_encoding;
-  JxlColorEncodingSetToSRGB(&color_encoding, /*is_gray=*/false);
-  EXPECT_EQ(JXL_ENC_SUCCESS,
-            JxlEncoderSetColorEncoding(enc.get(), &color_encoding));
-  EXPECT_EQ(JXL_ENC_SUCCESS,
-            JxlEncoderAddJPEGFrame(options, orig.data(), orig.size()));
-  JxlEncoderCloseInput(enc.get());
+      if (!skip_basic_info) {
+        JxlBasicInfo basic_info;
+        basic_info.exponent_bits_per_sample = 0;
+        basic_info.bits_per_sample = 8;
+        basic_info.alpha_bits = 0;
+        basic_info.alpha_exponent_bits = 0;
+        basic_info.xsize = orig_io.xsize();
+        basic_info.ysize = orig_io.ysize();
+        basic_info.uses_original_profile = true;
+        EXPECT_EQ(JXL_ENC_SUCCESS,
+                  JxlEncoderSetBasicInfo(enc.get(), &basic_info));
+      }
+      if (!skip_color_encoding) {
+        JxlColorEncoding color_encoding;
+        JxlColorEncodingSetToSRGB(&color_encoding, /*is_gray=*/false);
+        EXPECT_EQ(JXL_ENC_SUCCESS,
+                  JxlEncoderSetColorEncoding(enc.get(), &color_encoding));
+      }
+      EXPECT_EQ(JXL_ENC_SUCCESS,
+                JxlEncoderAddJPEGFrame(options, orig.data(), orig.size()));
+      JxlEncoderCloseInput(enc.get());
 
-  std::vector<uint8_t> compressed = std::vector<uint8_t>(64);
-  uint8_t* next_out = compressed.data();
-  size_t avail_out = compressed.size() - (next_out - compressed.data());
-  JxlEncoderStatus process_result = JXL_ENC_NEED_MORE_OUTPUT;
-  while (process_result == JXL_ENC_NEED_MORE_OUTPUT) {
-    process_result = JxlEncoderProcessOutput(enc.get(), &next_out, &avail_out);
-    if (process_result == JXL_ENC_NEED_MORE_OUTPUT) {
-      size_t offset = next_out - compressed.data();
-      compressed.resize(compressed.size() * 2);
-      next_out = compressed.data() + offset;
-      avail_out = compressed.size() - offset;
+      std::vector<uint8_t> compressed = std::vector<uint8_t>(64);
+      uint8_t* next_out = compressed.data();
+      size_t avail_out = compressed.size() - (next_out - compressed.data());
+      JxlEncoderStatus process_result = JXL_ENC_NEED_MORE_OUTPUT;
+      while (process_result == JXL_ENC_NEED_MORE_OUTPUT) {
+        process_result =
+            JxlEncoderProcessOutput(enc.get(), &next_out, &avail_out);
+        if (process_result == JXL_ENC_NEED_MORE_OUTPUT) {
+          size_t offset = next_out - compressed.data();
+          compressed.resize(compressed.size() * 2);
+          next_out = compressed.data() + offset;
+          avail_out = compressed.size() - offset;
+        }
+      }
+      compressed.resize(next_out - compressed.data());
+      EXPECT_EQ(JXL_ENC_SUCCESS, process_result);
+
+      jxl::DecompressParams dparams;
+      jxl::CodecInOut decoded_io;
+      EXPECT_TRUE(jxl::DecodeFile(
+          dparams,
+          jxl::Span<const uint8_t>(compressed.data(), compressed.size()),
+          &decoded_io, /*pool=*/nullptr));
+
+      jxl::ButteraugliParams ba;
+      EXPECT_LE(ButteraugliDistance(orig_io, decoded_io, ba,
+                                    /*distmap=*/nullptr, nullptr),
+                2.5f);
     }
   }
-  compressed.resize(next_out - compressed.data());
-  EXPECT_EQ(JXL_ENC_SUCCESS, process_result);
-
-  jxl::DecompressParams dparams;
-  jxl::CodecInOut decoded_io;
-  EXPECT_TRUE(jxl::DecodeFile(
-      dparams, jxl::Span<const uint8_t>(compressed.data(), compressed.size()),
-      &decoded_io, /*pool=*/nullptr));
-
-  jxl::ButteraugliParams ba;
-  EXPECT_LE(ButteraugliDistance(orig_io, decoded_io, ba,
-                                /*distmap=*/nullptr, nullptr),
-            2.5f);
 }

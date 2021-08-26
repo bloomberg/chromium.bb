@@ -17,7 +17,7 @@
 #include "chrome/browser/web_applications/components/web_app_callback_app_identity.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/common/buildflags.h"
-#include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/login_delegate.h"
 #include "extensions/buildflags/buildflags.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -44,6 +44,7 @@ class FilePath;
 
 namespace content {
 class BrowserContext;
+class RenderFrameHost;
 class WebContents;
 }  // namespace content
 
@@ -225,7 +226,7 @@ void ShowPWAInstallBubble(
 // user interaction.
 void SetAutoAcceptPWAInstallConfirmationForTesting(bool auto_accept);
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
 
 // Shows the print job confirmation dialog bubble anchored to the toolbar icon
 // for the extension.
@@ -240,7 +241,7 @@ void ShowPrintJobConfirmationDialog(gfx::NativeWindow parent,
                                     const std::u16string& printer_name,
                                     base::OnceCallback<void(bool)> callback);
 
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_MAC)
 
@@ -256,7 +257,7 @@ void HideTaskManagerViews();
 std::unique_ptr<LoginHandler> CreateLoginHandlerViews(
     const net::AuthChallengeInfo& auth_info,
     content::WebContents* web_contents,
-    LoginAuthRequiredCallback auth_required_callback);
+    content::LoginDelegate::LoginAuthRequiredCallback auth_required_callback);
 
 #endif  // TOOLKIT_VIEWS
 
@@ -414,6 +415,7 @@ void ShowChromeCleanerRebootPrompt(
 // blocked due to policy. It also show additional information from administrator
 // if it exists.
 void ShowExtensionInstallBlockedDialog(
+    const std::string& extension_id,
     const std::string& extension_name,
     const std::u16string& custom_error_message,
     const gfx::ImageSkia& icon,

@@ -5,12 +5,12 @@
 import 'chrome://diagnostics/connectivity_card.js';
 
 import {Network, RoutineType, StandardRoutineResult} from 'chrome://diagnostics/diagnostics_types.js';
-import {fakeEthernetNetwork, fakeNetworkGuidInfoList, fakePowerRoutineResults, fakeRoutineResults} from 'chrome://diagnostics/fake_data.js';
+import {fakeCellularNetwork, fakeEthernetNetwork, fakeNetworkGuidInfoList, fakePowerRoutineResults, fakeRoutineResults, fakeWifiNetwork} from 'chrome://diagnostics/fake_data.js';
 import {FakeNetworkHealthProvider} from 'chrome://diagnostics/fake_network_health_provider.js';
 import {FakeSystemRoutineController} from 'chrome://diagnostics/fake_system_routine_controller.js';
 import {setNetworkHealthProviderForTesting, setSystemRoutineControllerForTesting} from 'chrome://diagnostics/mojo_interface_provider.js';
 
-import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
+import {assertDeepEquals, assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
 import {flushTasks, isVisible} from '../../test_util.m.js';
 
 import * as dx_utils from './diagnostics_test_utils.js';
@@ -25,6 +25,9 @@ export function connectivityCardTestSuite() {
   /** @type {!FakeSystemRoutineController} */
   let routineController;
 
+  /** @type {!Array<!RoutineType>} */
+  const defaultRoutineOverride = [RoutineType.kCaptivePortal];
+
   suiteSetup(() => {
     provider = new FakeNetworkHealthProvider();
     setNetworkHealthProviderForTesting(provider);
@@ -33,9 +36,16 @@ export function connectivityCardTestSuite() {
     routineController = new FakeSystemRoutineController();
     routineController.setDelayTimeInMillisecondsForTesting(-1);
 
+    /** @type {!Array<!RoutineType>} */
+    const supportedRoutines =
+        [...fakeRoutineResults.keys(), ...fakePowerRoutineResults.keys()];
     // Enable all routines by default.
-    routineController.setFakeSupportedRoutines(
-        [...fakeRoutineResults.keys(), ...fakePowerRoutineResults.keys()]);
+    routineController.setFakeSupportedRoutines(supportedRoutines);
+    // Configure default routine results. Results can also be set in individual
+    // tests as needed.
+    supportedRoutines.forEach(
+        routine => routineController.setFakeStandardRoutineResult(
+            routine, StandardRoutineResult.kTestPassed));
 
     setSystemRoutineControllerForTesting(routineController);
   });
@@ -51,16 +61,39 @@ export function connectivityCardTestSuite() {
   });
 
   /**
+   * Configures provider based on active guid.
    * @param {string} activeGuid
-   * @param {!Array<!Network>} networkStateList
+   */
+  function configureProviderForGuid(activeGuid) {
+    /**
+     * @type {{cellularGuid: !Array<!Network>, ethernetGuid: !Array<!Network>,
+     *     wifiGuid: !Array<!Network>}}
+     */
+    const networkStates = {
+      cellularGuid: [fakeCellularNetwork],
+      ethernetGuid: [fakeEthernetNetwork],
+      wifiGuid: [fakeWifiNetwork],
+    };
+    provider.setFakeNetworkGuidInfo(fakeNetworkGuidInfoList);
+    provider.setFakeNetworkState(activeGuid, networkStates[activeGuid]);
+  }
+
+  /**
+   * @suppress {visibility} // access private member
+   * return {!Array<!RoutineType>>}
+   */
+  function getRoutines() {
+    assertTrue(!!connectivityCardElement);
+    return connectivityCardElement.routines_;
+  }
+
+  /**
+   * @param {string} activeGuid
    * @param {boolean=} isActive
    */
-  function initializeConnectivityCard(
-      activeGuid, networkStateList, isActive = false) {
+  function initializeConnectivityCard(activeGuid, isActive = false) {
     assertFalse(!!connectivityCardElement);
-    provider.setFakeNetworkGuidInfo(fakeNetworkGuidInfoList);
-    provider.setFakeNetworkState(activeGuid, networkStateList);
-
+    configureProviderForGuid(activeGuid);
     // Add the connectivity card to the DOM.
     connectivityCardElement = /** @type {!ConnectivityCardElement} */ (
         document.createElement('connectivity-card'));
@@ -68,28 +101,41 @@ export function connectivityCardTestSuite() {
     connectivityCardElement.activeGuid = activeGuid;
     connectivityCardElement.isActive = isActive;
     document.body.appendChild(connectivityCardElement);
+    // Override routines in routine-section with reduced set.
+    setRoutineSectionRoutines(defaultRoutineOverride);
 
-    /** @type {!Array<!RoutineType>} */
-    const routines = [RoutineType.kCpuCache];
-    routineController.setFakeStandardRoutineResult(
-        RoutineType.kCpuCache, StandardRoutineResult.kTestPassed);
-    const routineSection = dx_utils.getRoutineSection(connectivityCardElement);
-    routineSection.routines = routines;
-    routineSection.runTestsAutomatically = true;
     return flushTasks();
   }
 
+  /**
+   * Override routines in routine-section with provided set.
+   * @param {!Array<!RoutineType>} routines
+   */
+  function setRoutineSectionRoutines(routines) {
+    assertTrue(!!connectivityCardElement);
+    const routineSection = dx_utils.getRoutineSection(connectivityCardElement);
+    routineSection.routines = routines;
+    routineSection.runTestsAutomatically = true;
+  }
+
   test('CardTitleEthernetOnlineInitializedCorrectly', () => {
-    return initializeConnectivityCard('ethernetGuid', [fakeEthernetNetwork])
-        .then(() => {
-          dx_utils.assertElementContainsText(
-              connectivityCardElement.$$('#cardTitle'), 'Ethernet (Online)');
-        });
+    return initializeConnectivityCard('ethernetGuid').then(() => {
+      dx_utils.assertElementContainsText(
+          connectivityCardElement.$$('#cardTitle'), 'Ethernet (Online)');
+    });
   });
 
-  test('ConnectivityCardPopulated', () => {
-    return initializeConnectivityCard('ethernetGuid', [fakeEthernetNetwork])
-        .then(() => {
+  test('CardConnectionChipInitializedCorrectly', () => {
+    return initializeConnectivityCard('ethernetGuid').then(() => {
+      dx_utils.assertElementContainsText(
+          connectivityCardElement.$$('#defaultConnectionChip'),
+          connectivityCardElement.i18n('networkDefaultConnectionLabel'));
+    });
+  });
+
+  test(
+      'ConnectivityCardPopulated', () => {
+        return initializeConnectivityCard('ethernetGuid').then(() => {
           const ethernetInfoElement = dx_utils.getEthernetInfoElement(
               connectivityCardElement.$$('network-info'));
           const linkSpeedDataPoint =
@@ -101,11 +147,39 @@ export function connectivityCardTestSuite() {
               dx_utils.getDataPointValue(ethernetInfoElement, '#linkSpeed'),
               '');
         });
-  });
+      });
 
   test('TestsRunAutomaticallyWhenPageIsActive', () => {
-    return initializeConnectivityCard(
-               'ethernetGuid', [fakeEthernetNetwork], true)
+    return initializeConnectivityCard('ethernetGuid', true)
         .then(() => assertTrue(connectivityCardElement.isTestRunning));
+  });
+
+  test(
+      'CardIpConfigurationDrawerInitializedCorrectly', () => {
+        return initializeConnectivityCard('ethernetGuid').then(() => {
+          const ipConfigInfoDrawerElement =
+              /** @type IpConfigInfoDrawerElement */ (
+                  connectivityCardElement.$$('#ipConfigInfoDrawer'));
+          assertTrue(isVisible(
+              /** @type {!HTMLElement} */ (ipConfigInfoDrawerElement)));
+          assertDeepEquals(
+              fakeEthernetNetwork, ipConfigInfoDrawerElement.network);
+        });
+      });
+
+  test('RoutinesForWiFiIncludedWhenNetworkIsWifi', () => {
+    return initializeConnectivityCard('wifiGuid').then(() => {
+      const routines = getRoutines();
+      assertTrue(routines.includes(RoutineType.kSignalStrength));
+      assertTrue(routines.includes(RoutineType.kHasSecureWiFiConnection));
+    });
+  });
+
+  test('RoutinesForWiFiExcludedWhenNetworkIsNotWifi', () => {
+    return initializeConnectivityCard('ethernetGuid').then(() => {
+      const routines = getRoutines();
+      assertFalse(routines.includes(RoutineType.kSignalStrength));
+      assertFalse(routines.includes(RoutineType.kHasSecureWiFiConnection));
+    });
   });
 }

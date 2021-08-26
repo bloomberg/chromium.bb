@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 // Main codestream header bundles, the metadata that applies to all frames.
 
@@ -227,6 +218,12 @@ struct ImageMetadata : public Fields {
     bit_depth.bits_per_sample = bits;
     bit_depth.exponent_bits_per_sample = 0;
     bit_depth.floating_point_sample = false;
+    // RCT / Squeeze may add one bit each, and this is about int16_t,
+    // so uint13 should still be OK but limiting it to 12 seems safer.
+    // TODO(jon): figure out a better way to set this header field.
+    // (in particular, if modular mode is not used it doesn't matter,
+    // and if transforms are restricted, up to 15-bit could be done)
+    if (bits > 12) modular_16_bit_buffer_sufficient = false;
   }
   // Sets the original bit depth fields to indicate single precision floating
   // point.
@@ -235,12 +232,14 @@ struct ImageMetadata : public Fields {
     bit_depth.bits_per_sample = 32;
     bit_depth.exponent_bits_per_sample = 8;
     bit_depth.floating_point_sample = true;
+    modular_16_bit_buffer_sufficient = false;
   }
 
   void SetFloat16Samples() {
     bit_depth.bits_per_sample = 16;
     bit_depth.exponent_bits_per_sample = 5;
     bit_depth.floating_point_sample = true;
+    modular_16_bit_buffer_sufficient = false;
   }
 
   void SetIntensityTarget(float intensity_target) {
@@ -341,8 +340,6 @@ struct ImageMetadata : public Fields {
   uint32_t num_extra_channels;
   std::vector<ExtraChannelInfo> extra_channel_info;
 
-  CustomTransformData transform_data;  // often default
-
   // Only present if m.have_preview.
   PreviewHeader preview_size;
   // Only present if m.have_animation.
@@ -378,6 +375,34 @@ struct CodecMetadata {
 
   size_t xsize() const { return size.xsize(); }
   size_t ysize() const { return size.ysize(); }
+  size_t oriented_xsize(bool keep_orientation) const {
+    if (static_cast<uint32_t>(m.GetOrientation()) > 4 && !keep_orientation) {
+      return ysize();
+    } else {
+      return xsize();
+    }
+  }
+  size_t oriented_preview_xsize(bool keep_orientation) const {
+    if (static_cast<uint32_t>(m.GetOrientation()) > 4 && !keep_orientation) {
+      return m.preview_size.ysize();
+    } else {
+      return m.preview_size.xsize();
+    }
+  }
+  size_t oriented_ysize(bool keep_orientation) const {
+    if (static_cast<uint32_t>(m.GetOrientation()) > 4 && !keep_orientation) {
+      return xsize();
+    } else {
+      return ysize();
+    }
+  }
+  size_t oriented_preview_ysize(bool keep_orientation) const {
+    if (static_cast<uint32_t>(m.GetOrientation()) > 4 && !keep_orientation) {
+      return m.preview_size.xsize();
+    } else {
+      return m.preview_size.ysize();
+    }
+  }
 };
 
 }  // namespace jxl

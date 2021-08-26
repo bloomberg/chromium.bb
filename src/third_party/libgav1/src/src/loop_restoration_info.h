@@ -58,16 +58,16 @@ class LoopRestorationInfo {
                                      uint8_t superres_scale_denominator,
                                      int row4x4, int column4x4,
                                      LoopRestorationUnitInfo* unit_info) const;
-  void ReadUnitCoefficients(DaalaBitReader* reader,
+  void ReadUnitCoefficients(EntropyDecoder* reader,
                             SymbolDecoderContext* symbol_decoder_context,
                             Plane plane, int unit_id,
                             std::array<RestorationUnitInfo, kMaxPlanes>*
                                 reference_unit_info);  // 5.11.58.
   void ReadWienerInfo(
-      DaalaBitReader* reader, Plane plane, int unit_id,
+      EntropyDecoder* reader, Plane plane, int unit_id,
       std::array<RestorationUnitInfo, kMaxPlanes>* reference_unit_info);
   void ReadSgrProjInfo(
-      DaalaBitReader* reader, Plane plane, int unit_id,
+      EntropyDecoder* reader, Plane plane, int unit_id,
       std::array<RestorationUnitInfo, kMaxPlanes>* reference_unit_info);
 
   // Getters.

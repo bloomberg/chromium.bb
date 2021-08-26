@@ -72,7 +72,6 @@ COLD void bitfn(dav1d_intra_pred_dsp_init_x86)(Dav1dIntraPredDSPContext *const c
 
     if (!(flags & DAV1D_X86_CPU_FLAG_SSSE3)) return;
 
-#if BITDEPTH == 8
     init_angular_ipred_fn(DC_PRED,       ipred_dc,       ssse3);
     init_angular_ipred_fn(DC_128_PRED,   ipred_dc_128,   ssse3);
     init_angular_ipred_fn(TOP_DC_PRED,   ipred_dc_top,   ssse3);
@@ -95,7 +94,6 @@ COLD void bitfn(dav1d_intra_pred_dsp_init_x86)(Dav1dIntraPredDSPContext *const c
     init_cfl_ac_fn(DAV1D_PIXEL_LAYOUT_I444 - 1, ipred_cfl_ac_444, ssse3);
 
     c->pal_pred = BF(dav1d_pal_pred, ssse3);
-#endif
 
 #if ARCH_X86_64
     if (!(flags & DAV1D_X86_CPU_FLAG_AVX2)) return;

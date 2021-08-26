@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/callback_forward.h"
+#include "base/cancelable_callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/waitable_event_watcher.h"
@@ -25,7 +26,6 @@
 #include "media/media_buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/mojom/network_context.mojom.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class Profile;
 class ScopedProfileKeepAlive;
@@ -129,7 +129,8 @@ class ChromeBrowsingDataRemoverDelegate
     kAccountPasswordsSynced = 38,
     kAccountCompromisedCredentials = 39,
     kFaviconCacheExpiration = 40,
-    kMaxValue = kFaviconCacheExpiration,
+    kSecurePaymentConfirmationInstruments = 41,
+    kMaxValue = kSecurePaymentConfirmationInstruments,
   };
 
   // Called by CreateTaskCompletionClosure().

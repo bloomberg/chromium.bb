@@ -1,5 +1,4 @@
 import { GPUTest } from '../../../../gpu_test.js';
-import { CommandBufferMaker } from '../../validation_test.js';
 
 export function createQuerySetWithType(
   t: GPUTest,
@@ -36,19 +35,4 @@ export function beginRenderPassWithQuerySet(
     ],
     occlusionQuerySet: querySet,
   });
-}
-
-export function createRenderEncoderWithQuerySet(
-  t: GPUTest,
-  querySet?: GPUQuerySet
-): CommandBufferMaker<'render pass'> {
-  const commandEncoder = t.device.createCommandEncoder();
-  const encoder = beginRenderPassWithQuerySet(t, commandEncoder, querySet);
-  return {
-    encoder,
-    finish: () => {
-      encoder.endPass();
-      return commandEncoder.finish();
-    },
-  } as const;
 }

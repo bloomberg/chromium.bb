@@ -9,19 +9,22 @@
 
 #include "libANGLE/renderer/metal/CompilerMtl.h"
 
+#include <stdio.h>
+
 #include "common/debug.h"
-#include "common/system_utils.h"
 
 namespace rx
 {
 
-CompilerMtl::CompilerMtl() : CompilerImpl() {}
+CompilerMtl::CompilerMtl(ShShaderOutput translatorOutputType)
+    : CompilerImpl(), mTranslatorOutputType(translatorOutputType)
+{}
 
 CompilerMtl::~CompilerMtl() {}
 
 ShShaderOutput CompilerMtl::getTranslatorOutputType() const
 {
-    return SH_SPIRV_METAL_OUTPUT;
+    return mTranslatorOutputType;
 }
 
 }  // namespace rx

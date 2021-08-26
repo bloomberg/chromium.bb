@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <memory>
 #include <vector>
 
 #include "base/time/time.h"
@@ -32,6 +33,20 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyScanFilter {
     kManufacturerSpecificData = 0xFF
   };
 
+  // Used as an alternative to specifying RSSI threshold values directly. Since
+  // measured signal strength will vary with different combinations of devices
+  // and environmental conditions, distances are provided as rough guidelines.
+  // However the goal is that there will be no false negatives at the listed
+  // distance.
+  enum class Range {
+    // Roughly 1.5 ft.
+    kImmediate,
+    // Roughly 6 ft.
+    kNear,
+    // Roughly 20 ft.
+    kFar
+  };
+
   class Pattern {
    public:
     explicit Pattern(uint8_t start_position,
@@ -39,6 +54,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyScanFilter {
                      const std::vector<uint8_t>& value);
     Pattern(const Pattern&);
     ~Pattern();
+
+    bool IsValid() const;
 
     uint8_t start_position() const { return start_position_; }
     AdvertisementDataType data_type() const { return data_type_; }
@@ -49,6 +66,14 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyScanFilter {
     AdvertisementDataType data_type_;
     std::vector<uint8_t> value_;
   };
+
+  // Returns nullptr if the provided parameters fail validation. See
+  // documentation on instance variables for details.
+  static std::unique_ptr<BluetoothLowEnergyScanFilter> Create(
+      Range device_range,
+      base::TimeDelta device_found_timeout,
+      base::TimeDelta device_lost_timeout,
+      const std::vector<Pattern>& patterns);
 
   static std::unique_ptr<BluetoothLowEnergyScanFilter> Create(
       int16_t device_found_rssi_threshold,
@@ -79,10 +104,27 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyScanFilter {
                                base::TimeDelta device_lost_timeout,
                                std::vector<Pattern> patterns);
 
+  bool IsValid() const;
+
+  // Must be between -127 and 20, inclusive, and must be greater than to
+  // |device_lost_rssi_threshold_|.
   int16_t device_found_rssi_threshold_;
+
+  // Must be between -127 and 20, inclusive, and must be less than
+  // |device_found_rssi_threshold_|.
   int16_t device_lost_rssi_threshold_;
+
+  // Must be between 1 and 300 seconds, inclusive. A device must be above
+  // |device_found_rssi_threshold_| for |device_found_timeout_| seconds before
+  // it is reported as found.
   base::TimeDelta device_found_timeout_;
+
+  // Must be between 1 and 300 seconds, inclusive. A device must be below
+  // |device_lost_rssi_threshold_| for |device_lost_timeout_| seconds before it
+  // is reported as lost.
   base::TimeDelta device_lost_timeout_;
+
+  // Must not be empty. For each pattern, Pattern::IsValid() must also pass.
   std::vector<Pattern> patterns_;
 };
 

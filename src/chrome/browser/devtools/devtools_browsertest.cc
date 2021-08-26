@@ -1287,14 +1287,14 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
 
   RenderFrameHost* devtools_extension_a_devtools_rfh =
       content::FrameMatchingPredicate(
-          main_web_contents(),
+          main_web_contents()->GetPrimaryPage(),
           base::BindRepeating(&content::FrameHasSourceUrl,
                               devtools_a_extension->GetResourceURL(
                                   "/panel_devtools_page.html")));
   EXPECT_TRUE(devtools_extension_a_devtools_rfh);
   RenderFrameHost* devtools_extension_b_devtools_rfh =
       content::FrameMatchingPredicate(
-          main_web_contents(),
+          main_web_contents()->GetPrimaryPage(),
           base::BindRepeating(&content::FrameHasSourceUrl,
                               devtools_b_extension->GetResourceURL(
                                   "/simple_devtools_page.html")));
@@ -2564,10 +2564,9 @@ IN_PROC_BROWSER_TEST_F(KeepAliveDevToolsTest, KeepsAliveUntilBrowserClose) {
 class DevToolsPolicyTest : public InProcessBrowserTest {
  protected:
   DevToolsPolicyTest() {
-    ON_CALL(provider_, IsInitializationComplete(testing::_))
-        .WillByDefault(testing::Return(true));
-    ON_CALL(provider_, IsFirstPolicyLoadComplete(testing::_))
-        .WillByDefault(testing::Return(true));
+    provider_.SetDefaultReturns(
+        /*is_initialization_complete_return=*/true,
+        /*is_first_policy_load_complete_return=*/true);
   }
 
   void SetUpInProcessBrowserTestFixture() override {
@@ -2745,7 +2744,9 @@ IN_PROC_BROWSER_TEST_F(DevToolsFetchTest, DevToolsFetchFromHttpDisallowed) {
   OpenDevToolsWindow("about:blank", true);
 
   const auto result = FetchFromDevToolsWindow("http://www.google.com");
-  EXPECT_EQ("a JavaScript error:\nTypeError: Failed to fetch\n", result.error);
+  EXPECT_THAT(result.error,
+              ::testing::StartsWith(
+                  "a JavaScript error:\nTypeError: Failed to fetch\n"));
 
   CloseDevToolsWindow();
 }
@@ -2755,5 +2756,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsFetchTest, FetchFromDevToolsSchemeIsProhibited) {
 
   const auto result = Fetch(GetInspectedTab(),
                             "devtools://devtools/bundled/Images/whatsnew.avif");
-  EXPECT_EQ("a JavaScript error:\nTypeError: Failed to fetch\n", result.error);
+  EXPECT_THAT(result.error,
+              ::testing::StartsWith(
+                  "a JavaScript error:\nTypeError: Failed to fetch\n"));
 }

@@ -34,6 +34,7 @@
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/parsed_headers.h"
 #include "services/network/public/mojom/cors.mojom.h"
+#include "services/network/public/mojom/devtools_observer.mojom.h"
 #include "services/network/public/mojom/early_hints.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -77,7 +78,8 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
       response_headers->SetHeader(header.first, header.second);
     auto hints = mojom::EarlyHints::New(
         PopulateParsedHeaders(response_headers.get(), GetRequestedURL()),
-        mojom::IPAddressSpace::kPublic);
+        mojom::IPAddressSpace::kPublic,
+        /*origin_trial_tokens=*/std::vector<std::string>());
     client_remote_->OnReceiveEarlyHints(std::move(hints));
   }
 

@@ -756,11 +756,8 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_DICTATION" desc="The label used in the accessibility menu of the system tray to toggle on/off the speak to type feature.">
         Dictation
       </message>
-      <message name="IDS_ASH_DICTATION_CONFIRMATION_TITLE" desc="The title for the modal dialog shown the first time the user enables dictation">
-        Dictation
-      </message>
-      <message name="IDS_ASH_DICTATION_CONFIRMATION_BODY" desc="The message shown the first time the user enables Dictation, explaining that the audio data will be sent to Google for transcription">
-        Dictation sends your voice to Google to allow voice typing in any text field.
+      <message name="IDS_ASH_DICTATION_LANGUAGE_SUPPORTED_OFFLINE_NUDGE" desc="The message shown for existing Dictation users when their Dictation language has been upgraded in the background to work offline.">
+        <ph name="language">$1<ex>English</ex></ph> speech is now processed locally and works offline. You can change your Dictation language in Settings > Accessibility.
       </message>
       <message name="IDS_ASH_SWITCH_ACCESS_DISABLE_CONFIRMATION_TEXT" desc="The text for the modal dialog shown when the user disables Switch Access, to confirm they meant to disable the feature.">
         Are you sure you want to turn off Switch Access?
@@ -1071,6 +1068,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_HOLDING_SPACE_SCREEN_CAPTURES_TITLE" desc="Title of the screen captures area in the holding space bubble.">
         Screen captures
       </message>
+      <message name="IDS_ASH_HOLDING_SPACE_CHIP_A11Y_NAME_AND_TOOLTIP" desc="The accessible name and tooltip for a chip representing a holding space item. The first placeholder, the PRIMARY_TEXT, is the filename of the holding space item's backing file. The second placeholder, the SECONDARY_TEXT, is the backing file's in-progress state. The in-progress state indicates if progress is paused as well as the number of received bytes and total bytes expected for the backing file.">
+        <ph name="PRIMARY_TEXT">$1<ex>filename.txt</ex></ph>, <ph name="SECONDARY_TEXT">$2<ex>Paused, 10/100 MB</ex></ph>
+      </message>
       <message name="IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_CANCEL" desc="Title of the cancel option in the holding space item context menu.">
         Cancel
       </message>
@@ -1100,6 +1100,9 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_UNPIN" desc="Title of the unpin option in the holding space item context menu.">
         Unpin
+      </message>
+      <message name="IDS_ASH_HOLDING_SPACE_IN_PROGRESS_DOWNLOAD_DANGEROUS_FILE" desc="Text displayed in a holding space download chip to indicate the underlying download is a dangerous file.">
+        Dangerous file
       </message>
       <message name="IDS_ASH_HOLDING_SPACE_IN_PROGRESS_DOWNLOAD_PAUSED_WITH_SIZE_INFO" desc="Text displayed in a holding space download chip to indicate the underlying download is paused and has accompanying size info (see IDS_ASH_HOLDING_SPACE_IN_PROGRESS_DOWNLOAD_SIZE_INFO).">
         Paused, <ph name="SIZE_INFO">$1<ex>10/100 MB</ex></ph>
@@ -1199,6 +1202,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_PHONE_HUB_ONBOARDING_DIALOG_TITLE" desc="The title of the onboarding dialog that pops up for existing multidevice users to ask for permission when the user enables this feature.">
         Turn on Phone Hub
       </message>
+      <message name="IDS_ASH_PHONE_HUB_RECENT_APPS_TITLE" desc="Title of the recently used apps section (where users relaunch it directly after an app is launched from a notification) in phone hub bubble.">
+        Recently used apps
+      </message>
       <message name="IDS_ASH_PHONE_HUB_ONBOARDING_DIALOG_DESCRIPTION" desc="The description of the onboarding dialog that pops up for existing multidevice users to ask for permission when the user enables this feature.">
         Connect to your phone’s hotspot, silence and locate your device, and view recent Chrome tabs open on your phone
       </message>
@@ -1294,15 +1300,6 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_STYLUS_BATTERY_STATUS_STALE_TOOLTIP" desc="Tooltip message that indicates to the user that the stylus has not been used in over a week">
         Stylus has not been used in over a week
-      </message>
-      <message name="IDS_ASH_STYLUS_TOOLS_CAPTURE_REGION_ACTION" desc="Title of the capture region action in the stylus tools (a pop-up panel next to the status tray). This causes a partial screenshot to be taken (the user selects an area of the screen to take a screenshot of).">
-        Capture region
-      </message>
-      <message name="IDS_ASH_STYLUS_TOOLS_CAPTURE_REGION_TOAST" desc="Message content on the toast that appears when the user activates the capture region action in the stylus tools.">
-        Use the stylus to select a region
-      </message>
-      <message name="IDS_ASH_STYLUS_TOOLS_CAPTURE_SCREEN_ACTION" desc="Title of the capture screen action in the stylus tools (a pop-up panel next to the status tray). Clicking this button takes a screenshot of the entire screen.">
-        Capture screen
       </message>
       <message name="IDS_ASH_STYLUS_TOOLS_CREATE_NOTE_ACTION" desc="Title of the capture screen action in the stylus tools (a pop-up panel next to the status tray). Clicking this opens up an application that the user can quickly jot a note down in.">
         Create note
@@ -2133,15 +2130,6 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_INITIALIZING_CELLULAR" desc="Message for the status area when initializing the cellular device.">
         Initializing...
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_SIM_CARD_MISSING" desc="Message for the status area when a SIM card is missing.">
-        Missing SIM card
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_SIM_CARD_LOCKED" desc="Message for the status area when a SIM card is locked.">
-        SIM card is locked
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_NETWORK_LIST_ACTIVATE" desc="Message for the network list to activate the network.">
-        Activate <ph name="NETWORKSERVICE">$1<ex>YBH Cellular</ex></ph>
-      </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_LIST_ACTIVATING" desc="Message for the network list when activating a network.">
         <ph name="NAME">$1<ex>YBH Cellular</ex></ph>: Activating...
       </message>
@@ -2921,6 +2909,10 @@ This file contains the strings for ash.
         No media playing
       </message>
 
+      <!-- Calendar  -->
+      <message name="IDS_ASH_CALENDAR_BUBBLE_ACCESSIBLE_DESCRIPTION" desc="The accessible description of the calendar bubble and the information in it.">
+      </message>
+
       <!-- Power off menu  -->
       <message name="IDS_ASH_POWER_BUTTON_MENU_POWER_OFF_BUTTON" desc="Text shown on power off button in power button menu.">
         Shut down
@@ -3172,7 +3164,10 @@ Here are some things you can try to get started.
         File feedback
       </message>
       <message name="IDS_ASH_QUICK_ANSWERS_SETTINGS_BUTTON_TOOLTIP_TEXT" desc="Tootip text for the settings-button in Quick-Answers related views.">
-        Settings
+        Quick answers settings
+      </message>
+      <message name="IDS_ASH_QUICK_ANSWERS_PHONETICS_BUTTON_TOOLTIP_TEXT" desc="Tootip text for the phonetics-button in Quick-Answers related views.">
+        Listen
       </message>
       <message name="IDS_ASH_QUICK_ANSWERS_DEFINITION_INTENT" desc="Display text of definition intent. This is used in the title of Quick Answers user consent dialog.">
         definition
@@ -3241,7 +3236,10 @@ Here are some things you can try to get started.
         Info related to your selection available. Use Up arrow key to access.
       </message>
       <message name="IDS_ASH_QUICK_ANSWERS_VIEW_A11Y_INFO_DESC_TEMPLATE" desc="A11y description template for the Quick Answers view.">
-        <ph name="DESC_TEXT">$1<ex>Query texts</ex></ph>; Click the dialog to see result in Assistant.
+        <ph name="QUERY_TEXT">$1<ex>interested</ex></ph>; <ph name="RESULT_TEXT">$2<ex>showing curiosity or concern about something or someone; having a feeling of interest.</ex></ph>; Press Search plus Space to see result in Assistant.
+      </message>
+      <message name="IDS_ASH_QUICK_ANSWERS_VIEW_A11Y_INFO_DESC_TEMPLATE_V2" desc="A11y description template for the Quick Answers view (V2 version).">
+        <ph name="QUERY_TEXT">$1<ex>interested</ex></ph>; <ph name="RESULT_TEXT">$2<ex>showing curiosity or concern about something or someone; having a feeling of interest.</ex></ph>; Press Search plus Space to see result in Google Search.
       </message>
       <message name="IDS_ASH_QUICK_ANSWERS_VIEW_A11Y_NAME_TEXT" desc="A11y name text for the Quick Answers view.">
         Info related to your selection
@@ -3252,8 +3250,8 @@ Here are some things you can try to get started.
       <message name="IDS_ASH_QUICK_ANSWERS_VIEW_A11Y_RETRY_LABEL_NAME_TEMPLATE" desc="A11y retry label name template for the Quick Answers view.">
         <ph name="DESC_TEXT">$1<ex>Cannot connect to the internet. Click to try again.</ex></ph>: Retry
       </message>
-      <message name="IDS_ASH_QUICK_ANSWERS_VIEW_REPORT_QUERY_IMPROVE_LABEL" desc="Description text of the report query button for the Quick Answers view.">
-        Help us improve this!
+      <message name="IDS_ASH_QUICK_ANSWERS_VIEW_REPORT_QUERY_INTERNAL_LABEL" desc="Description text of the report query button for the Quick Answers view.">
+        Internal only
       </message>
       <message name="IDS_ASH_QUICK_ANSWERS_VIEW_REPORT_QUERY_REPORT_LABEL" desc="Description text of the report query button for the Quick Answers view.">
         Report this query
@@ -3679,6 +3677,9 @@ Here are some things you can try to get started.
       <message name="IDS_ASH_PCIE_PERIPHERAL_NOTIFICATION_DEVICE_BLOCKED_BODY" desc="Notification body text that explains to the user that their peripheral is not supported because it is not part of the approved peripherals list.">
         Only approved Thunderbolt devices are compatible with your Chromebook
       </message>
+      <message name="IDS_ASH_PCIE_PERIPHERAL_NOTIFICATION_BILLBOARD_DEVICE" desc="Notification body text that explains to the user that the connected peripheral type (e.g. Thunderbolt peripheral) is not supported.">
+        The connected peripheral type is not supported
+      </message>
 
       <!-- Shortcut Customization App -->
       <message name="IDS_ASH_SHORTCUT_CUSTOMIZATION_APP_TITLE" translateable="false" desc="The title of the shortcut customization system web app. Shortcut customization lets users to customize their system shortcuts.">
@@ -3792,6 +3793,21 @@ Here are some things you can try to get started.
       <message name="IDS_ASH_ACCESSIBILITY_DICTATION_SETTING_SUBTITLE_SODA_DOWNLOAD_ERROR" desc="Description explaining that there was an error with the speech recognition library download.">
         Can't download speech files. Try again later.
       </message>
+      <message name="IDS_ASH_ACCESSIBILITY_DICTATION_BUTTON_TOOLTIP_SODA_DOWNLOADING" desc="A tooltip explaining that speech recognition files are downloading." >
+        Downloading speech files
+      </message>
+      <message name="IDS_ASH_A11Y_DICTATION_NOTIFICATION_SODA_DOWNLOAD_SUCCEEDED_TITLE" desc="The title for a notification that is shown when speech recognition files download successfully.">
+        <ph name="Language">$1<ex>English</ex></ph> speech files downloaded
+      </message>
+      <message name="IDS_ASH_A11Y_DICTATION_NOTIFICATION_SODA_DOWNLOAD_SUCCEEDED_DESC" desc="The text for a notification that is shown when speech recognition files download successfully.">
+        Speech is now processed locally and Dictation works offline
+      </message>
+      <message name="IDS_ASH_A11Y_DICTATION_NOTIFICATION_SODA_DOWNLOAD_FAILED_TITLE" desc="The title for a notification that is shown when speech recognition files fail to download.">
+        Couldn't download <ph name="Language">$1<ex>English</ex></ph> speech files
+      </message>
+      <message name="IDS_ASH_A11Y_DICTATION_NOTIFICATION_SODA_DOWNLOAD_FAILED_DESC" desc="The text for a notification that is shown when speech recognition files fail to download.">
+        Download will be attempted later. Speech will be sent to Google for processing for now.
+      </message>
 
       <!-- Strings for persistent desks bar-->
       <message name="IDS_ASH_PERSISTENT_DESKS_BAR_CONTEXT_MENU_FEEDBACK" desc="Title of the menu item in the context menu to send feedback.">
@@ -3805,11 +3821,11 @@ Here are some things you can try to get started.
       </message>
 
       <!-- Debugd notification strings -->
-      <message name="IDS_ASH_DEBUG_PACKET_CAPTURE_STARTED" desc="The label used for the notification to indicate network packet capture operation has started on the device.">
-        Network packet capture started
+      <message name="IDS_ASH_DEBUG_PACKET_CAPTURE_STARTED" desc="The label used for the notification to indicate network packet capture operation has started and network information is being collected on the device.">
+        Collecting network information
       </message>
       <message name="IDS_ASH_DEBUG_PACKET_CAPTURE_DESCRIPTION" desc="The message shown on notification bubble about ongoing network packet capture operation and the description of how to stop by clicking the button.">
-        Click stop to stop ongoing packet capture operations.
+        You can stop packet capture at any time.
       </message>
       <message name="IDS_ASH_DEBUG_STOP_PACKET_CAPTURE_BUTTON" desc="The label on notification button for user to stop the ongoing packet capture operation.">
         Stop

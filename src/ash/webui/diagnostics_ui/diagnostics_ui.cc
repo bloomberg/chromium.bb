@@ -10,6 +10,7 @@
 #include "ash/constants/ash_features.h"
 #include "ash/grit/ash_diagnostics_app_resources.h"
 #include "ash/grit/ash_diagnostics_app_resources_map.h"
+#include "ash/webui/common/backend/plural_string_handler.h"
 #include "ash/webui/diagnostics_ui/backend/diagnostics_manager.h"
 #include "ash/webui/diagnostics_ui/backend/histogram_util.h"
 #include "ash/webui/diagnostics_ui/backend/input_data_provider.h"
@@ -71,6 +72,7 @@ void AddDiagnosticsStrings(content::WebUIDataSource* html_source) {
       {"batteryTitle", IDS_DIAGNOSTICS_BATTERY_TITLE},
       {"boardAndVersionInfo", IDS_DIAGNOSTICS_DEVICE_INFO_TEXT},
       {"captivePortalRoutineText", IDS_NETWORK_DIAGNOSTICS_CAPTIVE_PORTAL},
+      {"cellularLabel", IDS_NETWORK_TYPE_CELLULAR},
       {"chargeTestResultText", IDS_CHARGE_TEST_RESULT},
       {"connectivityText", IDS_DIAGNOSTICS_CONNECTIVITY},
       {"cpuBannerMessage", IDS_DIAGNOSTICS_CPU_BANNER_MESSAGE},
@@ -102,6 +104,7 @@ void AddDiagnosticsStrings(content::WebUIDataSource* html_source) {
       {"dnsResolutionRoutineText", IDS_NETWORK_DIAGNOSTICS_DNS_RESOLUTION},
       {"dnsResolverPresentRoutineText",
        IDS_NETWORK_DIAGNOSTICS_DNS_RESOLVER_PRESENT},
+      {"ethernetLabel", IDS_NETWORK_TYPE_ETHERNET},
       {"gatewayCanBePingedRoutineText",
        IDS_NETWORK_DIAGNOSTICS_GATEWAY_CAN_BE_PINGED},
       {"hasSecureWiFiConnectionRoutineText",
@@ -110,6 +113,14 @@ void AddDiagnosticsStrings(content::WebUIDataSource* html_source) {
       {"httpFirewallRoutineText", IDS_NETWORK_DIAGNOSTICS_HTTP_FIREWALL},
       {"httpsFirewallRoutineText", IDS_NETWORK_DIAGNOSTICS_HTTPS_FIREWALL},
       {"httpsLatencyRoutineText", IDS_NETWORK_DIAGNOSTICS_HTTPS_LATENCY},
+      {"ipConfigInfoDrawerGateway",
+       IDS_NETWORK_DIAGNOSTICS_IP_CONFIG_INFO_DRAWER_GATEWAY},
+      {"ipConfigInfoDrawerMacAddress",
+       IDS_NETWORK_DIAGNOSTICS_IP_CONFIG_INFO_DRAWER_MAC_ADDRESS},
+      {"ipConfigInfoDrawerSubnetMask",
+       IDS_NETWORK_DIAGNOSTICS_IP_CONFIG_INFO_DRAWER_SUBNET_MASK},
+      {"ipConfigInfoDrawerTitle",
+       IDS_NETWORK_DIAGNOSTICS_IP_CONFIG_INFO_DRAWER_TITLE},
       {"lanConnectivityRoutineText", IDS_NETWORK_DIAGNOSTICS_LAN_CONNECTIVITY},
       {"learnMore", IDS_DIANOSTICS_LEARN_MORE_LABEL},
       {"learnMoreShort", IDS_DIAGNOSTICS_LEARN_MORE_LABEL_SHORT},
@@ -117,7 +128,22 @@ void AddDiagnosticsStrings(content::WebUIDataSource* html_source) {
       {"memoryBannerMessage", IDS_DIAGNOSTICS_MEMORY_BANNER_MESSAGE},
       {"memoryRoutineText", IDS_DIAGNOSTICS_MEMORY_ROUTINE_TEXT},
       {"memoryTitle", IDS_DIAGNOSTICS_MEMORY_TITLE},
-      {"noEthernet", IDS_DIAGNOSTICS_NO_ETHERNET},
+      {"networkAuthenticationLabel", IDS_NETWORK_DIAGNOSTICS_AUTHENTICATION},
+      {"networkBssidLabel", IDS_ONC_WIFI_BSSID},
+      {"networkChannelLabel", IDS_NETWORK_DIAGNOSTICS_CHANNEL},
+      {"networkDefaultConnectionLabel",
+       IDS_NETWORK_DIAGNOSTICS_DEFAULT_CONNECTION},
+      {"networkDnsNotConfigured", IDS_NETWORK_DIAGNOSTICS_DNS_NOT_CONFIGURED},
+      {"networkIpAddressLabel", IDS_NETWORK_DIAGNOSTICS_IP_ADDRESS},
+      {"networkLinkSpeedLabel", IDS_NETWORK_DIAGNOSTICS_LINK_SPEED},
+      {"networkSignalStrengthLabel", IDS_ONC_WIFI_SIGNAL_STRENGTH},
+      {"networkSsidLabel", IDS_ONC_WIFI_SSID},
+      {"networkStateConnectedText", IDS_NETWORK_HEALTH_STATE_CONNECTED},
+      {"networkStateConnectingText", IDS_NETWORK_HEALTH_STATE_CONNECTING},
+      {"networkStateNotConnectedText", IDS_NETWORK_HEALTH_STATE_NOT_CONNECTED},
+      {"networkStateOnlineText", IDS_NETWORK_HEALTH_STATE_ONLINE},
+      {"networkStatePortalText", IDS_NETWORK_HEALTH_STATE_PORTAL},
+      {"networkSecurityLabel", IDS_NETWORK_DIAGNOSTICS_SECURITY},
       {"notEnoughAvailableMemoryMessage",
        IDS_DIAGNOSTICS_NOT_ENOUGH_AVAILABLE_MEMORY},
       {"overviewText", IDS_DIAGNOSTICS_OVERVIEW},
@@ -154,12 +180,24 @@ void AddDiagnosticsStrings(content::WebUIDataSource* html_source) {
       {"testSuccess", IDS_DIAGNOSTICS_TEST_SUCCESS_TEXT},
       {"testSucceededBadgeText", IDS_DIAGNOSTICS_TEST_SUCCESS_BADGE_TEXT},
       {"troubleConnecting", IDS_DIAGNOSTICS_TROUBLE_CONNECTING},
+      {"troubleshootingText", IDS_DIAGNOSTICS_TROUBLESHOOTING_TEXT},
       {"versionInfo", IDS_DIAGNOSTICS_VERSION_INFO_TEXT},
+      {"wifiLabel", IDS_NETWORK_TYPE_WIFI},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
   html_source->AddLocalizedStrings(*GetDataSourceUpdate());
   html_source->UseStringsJs();
 }
+
+void AddDiagnosticsAppPluralStrings(ash::PluralStringHandler* handler) {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
+      {"nameServersText", IDS_DIAGNOSTICS_NAME_SERVERS}};
+
+  for (const auto& str : kLocalizedStrings) {
+    handler->AddStringToPluralMap(str.name, str.id);
+  }
+}
+
 // TODO(jimmyxgong): Replace with webui::SetUpWebUIDataSource() once it no
 // longer requires a dependency on //chrome/browser.
 void SetUpWebUIDataSource(content::WebUIDataSource* source,
@@ -176,6 +214,12 @@ void SetUpWebUIDataSource(content::WebUIDataSource* source,
                      features::IsInputInDiagnosticsAppEnabled());
   source->AddBoolean("isNetworkingEnabled",
                      features::IsNetworkingInDiagnosticsAppEnabled());
+}
+
+void SetUpPluralStringHandler(content::WebUI* web_ui) {
+  auto plural_string_handler = std::make_unique<ash::PluralStringHandler>();
+  AddDiagnosticsAppPluralStrings(plural_string_handler.get());
+  web_ui->AddMessageHandler(std::move(plural_string_handler));
 }
 
 }  // namespace
@@ -204,11 +248,13 @@ DiagnosticsDialogUI::DiagnosticsDialogUI(
   SetUpWebUIDataSource(html_source.get(), resources,
                        IDR_DIAGNOSTICS_APP_INDEX_HTML);
 
-  auto handler = std::make_unique<diagnostics::SessionLogHandler>(
+  SetUpPluralStringHandler(web_ui);
+
+  auto session_log_handler = std::make_unique<diagnostics::SessionLogHandler>(
       select_file_policy_creator, holding_space_client);
-  diagnostics_manager_ =
-      std::make_unique<diagnostics::DiagnosticsManager>(handler.get());
-  web_ui->AddMessageHandler(std::move(handler));
+  diagnostics_manager_ = std::make_unique<diagnostics::DiagnosticsManager>(
+      session_log_handler.get());
+  web_ui->AddMessageHandler(std::move(session_log_handler));
 
   AddDiagnosticsStrings(html_source.get());
   content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),

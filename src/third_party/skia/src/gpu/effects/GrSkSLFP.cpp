@@ -15,31 +15,21 @@
 #include "src/gpu/GrBaseContextPriv.h"
 #include "src/gpu/GrColorInfo.h"
 #include "src/gpu/GrTexture.h"
+#include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
+#include "src/gpu/glsl/GrGLSLProgramBuilder.h"
 #include "src/sksl/SkSLUtil.h"
 #include "src/sksl/codegen/SkSLPipelineStageCodeGenerator.h"
 #include "src/sksl/ir/SkSLVarDeclarations.h"
 
-#include "src/gpu/glsl/GrGLSLFragmentProcessor.h"
-#include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
-#include "src/gpu/glsl/GrGLSLProgramBuilder.h"
-
-class GrGLSLSkSLFP : public GrGLSLFragmentProcessor {
+class GrSkSLFP::Impl : public ProgramImpl {
 public:
     void emitCode(EmitArgs& args) override {
         const GrSkSLFP& fp            = args.fFp.cast<GrSkSLFP>();
         const SkSL::Program& program  = *fp.fEffect->fBaseProgram;
 
-        // We need to ensure that we emit each child's helper function at least once.
-        // Any child FP that isn't sampled won't trigger a call otherwise, leading to asserts later.
-        for (int i = 0; i < this->numChildProcessors(); ++i) {
-            if (this->childProcessor(i)) {
-                this->emitChildFunction(i, args);
-            }
-        }
-
         class FPCallbacks : public SkSL::PipelineStage::Callbacks {
         public:
-            FPCallbacks(GrGLSLSkSLFP* self,
+            FPCallbacks(Impl* self,
                         EmitArgs& args,
                         const char* inputColor,
                         const SkSL::Context& context,
@@ -126,7 +116,7 @@ public:
                 fArgs.fFragBuilder->definitionAppend(declaration);
             }
 
-            String sampleChild(int index, String coords, String color) override {
+            String sampleShader(int index, String coords) override {
                 // If the child was sampled using the coords passed to main (and they are never
                 // modified), then we will have marked the child as PassThrough. The code generator
                 // doesn't know that, and still supplies coords. Inside invokeChild, we assert that
@@ -143,14 +133,24 @@ public:
                 if (child && child->sampleUsage().isPassThrough()) {
                     coords.clear();
                 }
+                return String(fSelf->invokeChild(index, fInputColor, fArgs, coords).c_str());
+            }
+
+            String sampleColorFilter(int index, String color) override {
                 return String(fSelf->invokeChild(index,
                                                  color.empty() ? fInputColor : color.c_str(),
-                                                 fArgs,
-                                                 coords)
+                                                 fArgs)
                                       .c_str());
             }
 
-            GrGLSLSkSLFP*                 fSelf;
+            String sampleBlender(int index, String src, String dst) override {
+                if (!fSelf->childProcessor(index)) {
+                    return String::printf("blend_src_over(%s, %s)", src.c_str(), dst.c_str());
+                }
+                return String(fSelf->invokeChild(index, src.c_str(), dst.c_str(), fArgs).c_str());
+            }
+
+            Impl*                         fSelf;
             EmitArgs&                     fArgs;
             const char*                   fInputColor;
             const SkSL::Context&          fContext;
@@ -165,6 +165,20 @@ public:
             args.fFragBuilder->codeAppendf("%s = %s;\n",
                                            args.fInputColor,
                                            this->invokeChild(fp.fInputChildIndex, args).c_str());
+        }
+
+        if (fp.fEffect->allowBlender()) {
+            // If we have an dest-color child, we invoke it now, and make the result of that be the
+            // "dest color" for all other purposes later.
+            if (fp.fDestColorChildIndex >= 0) {
+                args.fFragBuilder->codeAppendf(
+                        "%s = %s;\n",
+                        args.fDestColor,
+                        this->invokeChild(fp.fDestColorChildIndex, args.fDestColor, args).c_str());
+            }
+        } else {
+            // We're not making a blender, so we don't expect a dest-color child FP to exist.
+            SkASSERT(fp.fDestColorChildIndex < 0);
         }
 
         // Snap off a global copy of the input color at the start of main. We need this when
@@ -188,20 +202,10 @@ public:
         // parameter. fSampleCoord could be a varying, so writes to it would be illegal.
         const char* coords = "float2(0)";
         SkString coordsVarName;
-        if (fp.referencesSampleCoords()) {
+        if (fp.usesSampleCoordsDirectly()) {
             coordsVarName = args.fFragBuilder->newTmpVarName("coords");
             coords = coordsVarName.c_str();
             args.fFragBuilder->codeAppendf("float2 %s = %s;\n", coords, args.fSampleCoord);
-        }
-
-        // For blend effects, we need to copy the dest-color to a local variable as well.
-        const char* destColor = "half4(1)";
-        SkString destColorVarName;
-        if (fp.willReadDstColor()) {
-            destColorVarName = args.fFragBuilder->newTmpVarName("destColor");
-            destColor = destColorVarName.c_str();
-            args.fFragBuilder->codeAppendf(
-                    "half4 %s = %s;\n", destColor, args.fFragBuilder->dstColor());
         }
 
         FPCallbacks callbacks(this,
@@ -211,9 +215,10 @@ public:
                               fp.uniformData(),
                               fp.uniformFlags());
         SkSL::PipelineStage::ConvertProgram(
-                program, coords, args.fInputColor, destColor, &callbacks);
+                program, coords, args.fInputColor, args.fDestColor, &callbacks);
     }
 
+private:
     void onSetData(const GrGLSLProgramDataManager& pdman,
                    const GrFragmentProcessor& _proc) override {
         using Type = SkRuntimeEffect::Uniform::Type;
@@ -257,6 +262,7 @@ std::unique_ptr<GrSkSLFP> GrSkSLFP::MakeWithData(
         sk_sp<SkRuntimeEffect> effect,
         const char* name,
         std::unique_ptr<GrFragmentProcessor> inputFP,
+        std::unique_ptr<GrFragmentProcessor> destColorFP,
         sk_sp<SkData> uniforms,
         SkSpan<std::unique_ptr<GrFragmentProcessor>> childFPs) {
     if (uniforms->size() != effect->uniformSize()) {
@@ -272,6 +278,9 @@ std::unique_ptr<GrSkSLFP> GrSkSLFP::MakeWithData(
     }
     if (inputFP) {
         fp->setInput(std::move(inputFP));
+    }
+    if (destColorFP) {
+        fp->setDestColorFP(std::move(destColorFP));
     }
     return fp;
 }
@@ -289,14 +298,13 @@ GrSkSLFP::GrSkSLFP(sk_sp<SkRuntimeEffect> effect, const char* name, OptFlags opt
     if (fEffect->usesSampleCoords()) {
         this->setUsesSampleCoordsDirectly();
     }
-
     if (fEffect->allowBlender()) {
-        this->setWillReadDstColor();
+        this->setIsBlendFunction();
     }
 }
 
 GrSkSLFP::GrSkSLFP(const GrSkSLFP& other)
-        : INHERITED(kGrSkSLFP_ClassID, other.optimizationFlags())
+        : INHERITED(other)
         , fEffect(other.fEffect)
         , fName(other.fName)
         , fUniformSize(other.fUniformSize)
@@ -305,20 +313,11 @@ GrSkSLFP::GrSkSLFP(const GrSkSLFP& other)
                       other.uniformFlags(),
                       fEffect->uniforms().count() * sizeof(UniformFlags));
     sk_careful_memcpy(this->uniformData(), other.uniformData(), fUniformSize);
-
-    if (fEffect->usesSampleCoords()) {
-        this->setUsesSampleCoordsDirectly();
-    }
-
-    if (fEffect->allowBlender()) {
-        this->setWillReadDstColor();
-    }
-
-    this->cloneAndRegisterAllChildProcessors(other);
 }
 
 void GrSkSLFP::addChild(std::unique_ptr<GrFragmentProcessor> child, bool mergeOptFlags) {
     SkASSERTF(fInputChildIndex == -1, "all addChild calls must happen before setInput");
+    SkASSERTF(fDestColorChildIndex == -1, "all addChild calls must happen before setDestColorFP");
     int childIndex = this->numChildProcessors();
     SkASSERT((size_t)childIndex < fEffect->fSampleUsages.size());
     if (mergeOptFlags) {
@@ -330,16 +329,25 @@ void GrSkSLFP::addChild(std::unique_ptr<GrFragmentProcessor> child, bool mergeOp
 void GrSkSLFP::setInput(std::unique_ptr<GrFragmentProcessor> input) {
     SkASSERTF(fInputChildIndex == -1, "setInput should not be called more than once");
     fInputChildIndex = this->numChildProcessors();
-    SkASSERT((size_t)fInputChildIndex == fEffect->fSampleUsages.size());
+    SkASSERT((size_t)fInputChildIndex >= fEffect->fSampleUsages.size());
     this->mergeOptimizationFlags(ProcessorOptimizationFlags(input.get()));
     this->registerChild(std::move(input), SkSL::SampleUsage::PassThrough());
 }
 
-std::unique_ptr<GrGLSLFragmentProcessor> GrSkSLFP::onMakeProgramImpl() const {
-    return std::make_unique<GrGLSLSkSLFP>();
+void GrSkSLFP::setDestColorFP(std::unique_ptr<GrFragmentProcessor> destColorFP) {
+    SkASSERTF(fEffect->allowBlender(), "dest colors are only used by blend effects");
+    SkASSERTF(fDestColorChildIndex == -1, "setDestColorFP should not be called more than once");
+    fDestColorChildIndex = this->numChildProcessors();
+    SkASSERT((size_t)fDestColorChildIndex >= fEffect->fSampleUsages.size());
+    this->mergeOptimizationFlags(ProcessorOptimizationFlags(destColorFP.get()));
+    this->registerChild(std::move(destColorFP), SkSL::SampleUsage::PassThrough());
 }
 
-void GrSkSLFP::onGetGLSLProcessorKey(const GrShaderCaps& caps, GrProcessorKeyBuilder* b) const {
+std::unique_ptr<GrFragmentProcessor::ProgramImpl> GrSkSLFP::onMakeProgramImpl() const {
+    return std::make_unique<Impl>();
+}
+
+void GrSkSLFP::onAddToKey(const GrShaderCaps& caps, GrProcessorKeyBuilder* b) const {
     // In the unlikely event of a hash collision, we also include the uniform size in the key.
     // That ensures that we will (at worst) use the wrong program, but one that expects the same
     // amount of uniform data.

@@ -165,7 +165,7 @@ void CastComponent::StartComponent() {
     cast_api_bindings::CreatePlatformMessagePortPair(
         &message_port_for_agent, &message_port_for_web_engine);
     frame()->PostMessage(
-        kCastStreamingMessagePortOrigin,
+        GetMessagePortOriginForAppId(application_config_.id()),
         CreateWebMessage("", std::move(message_port_for_web_engine)),
         [this](fuchsia::web::Frame_PostMessage_Result result) {
           if (result.is_err()) {
@@ -184,7 +184,7 @@ void CastComponent::StartComponent() {
                      fuchsia::sys::TerminationReason::INTERNAL_ERROR));
 
   // Get the theme from the system service.
-  frame()->SetPreferredTheme(fuchsia::settings::ThemeType::AUTO);
+  frame()->SetPreferredTheme(fuchsia::settings::ThemeType::DEFAULT);
 
   // Media loading has to be unblocked by the agent via the
   // ApplicationController.

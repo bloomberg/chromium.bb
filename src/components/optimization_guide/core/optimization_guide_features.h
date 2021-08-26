@@ -10,6 +10,7 @@
 
 #include "base/containers/flat_set.h"
 #include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/time/time.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/proto/models.pb.h"
@@ -87,12 +88,6 @@ bool IsPushNotificationsEnabled();
 // a client-side safety limit for RAM use in case server sends too large of
 // a bloom filter.
 int MaxServerBloomFilterByteSize();
-
-// Maximum effective connection type at which hints can be fetched for
-// navigations in real-time. Returns null if the hints fetching for navigations
-// is disabled.
-absl::optional<net::EffectiveConnectionType>
-GetMaxEffectiveConnectionTypeForNavigationHintsFetch();
 
 // Returns the duration of the time window before hints expiration during which
 // the hosts should be refreshed. Example: If the hints for a host expire at
@@ -194,6 +189,23 @@ uint64_t MaxSizeForPageContentTextDump();
 
 // Whether we should write content annotations to History Service.
 bool ShouldWriteContentAnnotationsToHistoryService();
+
+// Returns the max size of the MRU Cache of content that has been requested
+// for annotation.
+size_t MaxContentAnnotationRequestsCached();
+
+// Returns whether or not related searches should be extracted from Google SRP
+// as part of page content annotations.
+bool ShouldExtractRelatedSearches();
+
+// Returns an ordered vector of models to execute on the page content for each
+// page load. It is guaranteed that an optimization target will only be present
+// at most once in the returned vector. However, it is not guaranteed that it
+// will only contain models that the current PageContentAnnotationsService
+// supports, so it is up to the caller to ensure that it can execute the
+// specified models.
+std::vector<optimization_guide::proto::OptimizationTarget>
+GetPageContentModelsToExecute();
 
 // Whether the model files that use |OptimizationTargetModelExecutor| should be
 // loaded for each execution, and then unloaded once complete.

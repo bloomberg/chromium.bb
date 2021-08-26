@@ -3,6 +3,8 @@
 <translationbundle lang="sr-Latn">
 <translation id="1175958423215084756">Link je otkriven. <ph name="HOSTNAME" /></translation>
 <translation id="1276998909102132017">Slike u galeriji</translation>
+<translation id="1300209025925956156">Skenirajte dokument</translation>
+<translation id="137991641490787891"><ph name="ASPECT_RATIO_WIDTH" />. Taster za pretragu + strelica nalevo da biste pristupili.</translation>
 <translation id="1430915738399379752">Štampaj</translation>
 <translation id="1467231725790366244">Kamera <ph name="CAMERA" /> je isključena.</translation>
 <translation id="1473110567575736769">Tajmer za 3 sekunde</translation>
@@ -31,7 +33,6 @@
 <translation id="2549985041256363841">Započni snimanje</translation>
 <translation id="2599796128805996109">Zadnja kamera</translation>
 <translation id="2879583609344924966">Kamera <ph name="CAMERA" /> je priključena.</translation>
-<translation id="2912439424121107408">Režim za stručnjake nije podržan na ovom uređaju</translation>
 <translation id="2968794441791257519">Slike i video snimci koji su snimljeni pomoću kamere će se premestiti u direktorijum Preuzimanja. Možete da im pristupite u Datotekama.
 
         Aplikacije sa dozvolama za pristup memorijskom prostoru će imati pristup slikama i video snimcima.</translation>
@@ -42,15 +43,16 @@
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3240426699337459095">Link je kopiran</translation>
 <translation id="3259149966178251584">Rezolucija kamere</translation>
+<translation id="3260401663013584785">Otkrivanje dokumenta nije uspelo</translation>
 <translation id="3448774564454087943">Video nije sačuvan jer je prekratak</translation>
 <translation id="3517926952904427380">Snimanje uspravne slike nije uspelo</translation>
 <translation id="3569311554794739032">Želite li stvarno da uklonite datoteku <ph name="FILE" />?</translation>
-<translation id="3733597664308256288">Dostupne su dodatne kontrole za kameru. Ako želite da im pristupite, koristite taster za pretragu + strelicu nadesno.</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3838931309141338733">Skeniraj bar-kod</translation>
 <translation id="3892148308691398805">Kopiraj tekst</translation>
 <translation id="4000398125663085899">Nove slike i video snimci će sada biti sačuvani u folderu u aplikaciji Fajlovi: Moji fajlovi &gt; Kamera</translation>
 <translation id="4118525110028899586">Pauziraj snimanje</translation>
+<translation id="4121305183798804752">Dokument je otkriven</translation>
 <translation id="4269820728363426813">Kopiraj adresu linka</translation>
 <translation id="4279490309300973883">Preslikavanje</translation>
 <translation id="4329152592498422850">Pređi na režim za snimanje slika u obliku kvadrata</translation>
@@ -65,10 +67,13 @@
 <translation id="5057360777601936059">Kamera trenutno nije dostupna.
         Proverite da li je kamera ispravno povezana.</translation>
 <translation id="5152121255775685072">Idi u galeriju</translation>
+<translation id="520537883758714667">Sada je dostupno skeniranje dokumenata</translation>
 <translation id="5268823927180092501">Omogući režim dokumenta na svim kamerama</translation>
 <translation id="5422455049771430511">Slike i video snimci su sada na novom mestu</translation>
+<translation id="5444515100983837161">Postavite sve ivice dokumenta u okvir. Skeniranje je najuspešnije ako su dokument i pozadina različite boje.</translation>
 <translation id="5671277269877808209">Kvadrat</translation>
 <translation id="5753488212459587150">Omogući režim za stručnjake</translation>
+<translation id="5759254179196327752">Skeniranje dokumenata</translation>
 <translation id="5775960006311140197">Režim za stručnjake</translation>
 <translation id="5869546221129391014">Mreža</translation>
 <translation id="5975083100439434680">Umanjivanje</translation>
@@ -82,6 +87,7 @@
 
 Ako su povratne informacije u vezi sa kvalitetom slike ili videa, priložite uzorak slike ili videa i opišite šta nije u redu. (Na primer, slika je previše tamna ili subjekat nije u fokusu.)</translation>
 <translation id="6420689864531458495">Megapikseli: <ph name="MEGAPIXEL" /> (<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" /> – <ph name="WIDTH" />x<ph name="HEIGHT" />)</translation>
+<translation id="667999046851023355">Dokument</translation>
 <translation id="6681668084120808868">Snimite fotografiju</translation>
 <translation id="6778482348691154169">Snimanje slike nije uspelo</translation>
 <translation id="695140971690006676">Resetuj sve</translation>
@@ -108,11 +114,13 @@ Ako su povratne informacije u vezi sa kvalitetom slike ili videa, priložite uzo
 <translation id="8425673304802773841">Naginjanje nadole</translation>
 <translation id="8428213095426709021">Podešavanja</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" /> piksela (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
+<translation id="8712637175834984815">Važi</translation>
 <translation id="8732462232047530626">Prikaži metapodatke</translation>
 <translation id="8815966864175525708">Pređi na režim za snimanje uspravnih slika</translation>
 <translation id="8828441885228359828">Nastavi snimanje</translation>
 <translation id="8870695351537079478">Snimanje nije moglo da počne</translation>
 <translation id="8903921497873541725">Uvećavanje</translation>
+<translation id="9045010116236796332">Postavite sve ivice dokumenta u okvir</translation>
 <translation id="9045155556724273246">10 sekundi</translation>
 <translation id="945522503751344254">Pošalji povratne informacije</translation>
 </translationbundle>

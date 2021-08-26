@@ -47,7 +47,6 @@
 #include "base/metrics/statistics_recorder.h"
 #include "base/metrics/user_metrics.h"
 #include "base/no_destructor.h"
-#include "base/numerics/ranges.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/process/process_handle.h"
 #include "base/rand_util.h"
@@ -77,6 +76,7 @@
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"
 #include "components/metrics/single_sample_metrics.h"
 #include "components/services/storage/public/mojom/cache_storage_control.mojom.h"
+#include "components/services/storage/public/mojom/indexed_db_control.mojom.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "components/viz/common/switches.h"
 #include "components/viz/host/gpu_client.h"
@@ -87,6 +87,7 @@
 #include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/browser_main.h"
 #include "content/browser/browser_main_loop.h"
+#include "content/browser/buckets/bucket_context.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/code_cache/generated_code_cache.h"
 #include "content/browser/code_cache/generated_code_cache_context.h"
@@ -110,6 +111,7 @@
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "content/browser/network_service_instance_impl.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
+#include "content/browser/payments/payment_app_context_impl.h"
 #include "content/browser/payments/payment_manager.h"
 #include "content/browser/permissions/permission_service_context.h"
 #include "content/browser/permissions/permission_service_impl.h"
@@ -524,37 +526,6 @@ class RendererSandboxedProcessLauncherDelegateWin
   bool dynamic_code_can_be_disabled_ = false;
 };
 #endif  // defined(OS_WIN)
-
-const char kSessionStorageHolderKey[] = "kSessionStorageHolderKey";
-
-class SessionStorageHolder : public base::SupportsUserData::Data {
- public:
-  SessionStorageHolder()
-      : session_storage_namespaces_awaiting_close_(
-            new std::map<int, SessionStorageNamespaceMap>) {}
-
-  ~SessionStorageHolder() override {
-    // Its important to delete the map on the IO thread to avoid deleting
-    // the underlying namespaces prior to processing ipcs referring to them.
-    GetIOThreadTaskRunner({})->DeleteSoon(
-        FROM_HERE, session_storage_namespaces_awaiting_close_.release());
-  }
-
-  SessionStorageHolder(const SessionStorageHolder& other) = delete;
-  SessionStorageHolder& operator=(const SessionStorageHolder& other) = delete;
-
-  void Hold(const SessionStorageNamespaceMap& sessions, int widget_route_id) {
-    (*session_storage_namespaces_awaiting_close_)[widget_route_id] = sessions;
-  }
-
-  void Release(int old_route_id) {
-    session_storage_namespaces_awaiting_close_->erase(old_route_id);
-  }
-
- private:
-  std::unique_ptr<std::map<int, SessionStorageNamespaceMap>>
-      session_storage_namespaces_awaiting_close_;
-};
 
 // This class manages spare RenderProcessHosts.
 //
@@ -1140,9 +1111,8 @@ bool ShouldFindReusableProcessHostForSite(BrowserContext* browser_context,
     return false;
 
   return ShouldUseSiteProcessTracking(
-      browser_context,
-      browser_context->GetStoragePartition(
-          site_info.GetStoragePartitionConfig(browser_context)));
+      browser_context, browser_context->GetStoragePartition(
+                           site_info.storage_partition_config()));
 }
 
 std::string GetCurrentHostMapDebugString(
@@ -1253,14 +1223,14 @@ class UnmatchedServiceWorkerProcessTracker
 
   RenderProcessHost* TakeFreshestProcessForSite(
       SiteInstanceImpl* site_instance) {
-    SiteProcessIDPair site_process_pair =
+    absl::optional<SiteProcessIDPair> site_process_pair =
         FindFreshestProcessForSite(site_instance);
 
-    if (site_process_pair.first.is_empty())
+    if (!site_process_pair)
       return nullptr;
 
     RenderProcessHost* host =
-        RenderProcessHost::FromID(site_process_pair.second);
+        RenderProcessHost::FromID(site_process_pair->second);
 
     if (!host)
       return nullptr;
@@ -1272,13 +1242,13 @@ class UnmatchedServiceWorkerProcessTracker
     if (!RenderProcessHostImpl::MayReuseAndIsSuitable(host, site_instance))
       return nullptr;
 
-    site_process_set_.erase(site_process_pair);
+    site_process_set_.erase(site_process_pair.value());
     if (!HasProcess(host))
       host->RemoveObserver(this);
     return host;
   }
 
-  SiteProcessIDPair FindFreshestProcessForSite(
+  absl::optional<SiteProcessIDPair> FindFreshestProcessForSite(
       SiteInstanceImpl* site_instance) const {
     const auto reversed_site_process_set = base::Reversed(site_process_set_);
     if (site_instance->IsDefaultSiteInstance()) {
@@ -1296,7 +1266,7 @@ class UnmatchedServiceWorkerProcessTracker
           return site_process_pair;
       }
     }
-    return SiteProcessIDPair();
+    return absl::nullopt;
   }
 
   // Returns true if this tracker contains the process ID |host->GetID()|.
@@ -1332,13 +1302,6 @@ RenderProcessHostImpl::BroadcastChannelProviderReceiverHandler&
 GetBroadcastChannelProviderReceiverHandler() {
   static base::NoDestructor<
       RenderProcessHostImpl::BroadcastChannelProviderReceiverHandler>
-      instance;
-  return *instance;
-}
-
-RenderProcessHostImpl::CodeCacheHostReceiverHandler&
-GetCodeCacheHostReceiverHandler() {
-  static base::NoDestructor<RenderProcessHostImpl::CodeCacheHostReceiverHandler>
       instance;
   return *instance;
 }
@@ -1650,8 +1613,8 @@ size_t RenderProcessHost::GetMaxRendererProcessCount() {
         RenderProcessHostImpl::GetPlatformMaxRendererProcessCount();
     DCHECK_LE(kMinRendererProcessCount, kMaxRendererProcessCount);
 
-    max_count = base::ClampToRange(max_count, kMinRendererProcessCount,
-                                   kMaxRendererProcessCount);
+    max_count = base::clamp(max_count, kMinRendererProcessCount,
+                            kMaxRendererProcessCount);
     MAYBEVLOG(1) << __func__ << ": Calculated max " << max_count;
   }
   return max_count;
@@ -1884,11 +1847,6 @@ void RenderProcessHostImpl::
     SetBroadcastChannelProviderReceiverHandlerForTesting(
         BroadcastChannelProviderReceiverHandler handler) {
   GetBroadcastChannelProviderReceiverHandler() = handler;
-}
-
-void RenderProcessHostImpl::SetCodeCacheHostReceiverHandlerForTesting(
-    CodeCacheHostReceiverHandler handler) {
-  GetCodeCacheHostReceiverHandler() = handler;
 }
 
 void RenderProcessHostImpl::SetForGuestsOnlyForTesting() {
@@ -2750,8 +2708,10 @@ void RenderProcessHostImpl::CreateCodeCacheHost(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Create a new CodeCacheHostImpl and bind it to the given receiver.
-  code_cache_host_receivers_.Add(GetID(), std::move(receiver),
-                                 GetCodeCacheHostReceiverHandler());
+  // TODO(crbug/1213818): This interface is used by worklets. Once worklets
+  // are fixed to uuse context specific code cache interface remove this code.
+  code_cache_host_receivers_.Add(GetID(), net::NetworkIsolationKey(),
+                                 std::move(receiver));
 }
 
 void RenderProcessHostImpl::BindMediaInterfaceProxy(
@@ -3610,6 +3570,11 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
     switches::kSchedulerBoostUrgent,
 #endif
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    switches::kLacrosEnablePlatformEncryptedHevc,
+    switches::kLacrosEnablePlatformHevc,
+    switches::kLacrosUseChromeosProtectedMedia,
+#endif
   };
   renderer_cmd->CopySwitchesFrom(browser_cmd, kSwitchNames,
                                  base::size(kSwitchNames));
@@ -4011,12 +3976,6 @@ void RenderProcessHostImpl::Cleanup() {
   // object, to avoid method invocations that trigger usages of profile.
   ResetIPC();
 
-  // Its important to remove the kSessionStorageHolder after the channel
-  // has been reset to avoid deleting the underlying namespaces prior
-  // to processing ipcs referring to them.
-  DCHECK(!channel_);
-  RemoveUserData(kSessionStorageHolderKey);
-
   // Remove ourself from the list of renderer processes so that we can't be
   // reused in between now and when the Delete task runs.
   UnregisterHost(GetID());
@@ -4246,7 +4205,7 @@ bool RenderProcessHostImpl::IsSuitableHost(
   // same StoragePartition, since a RenderProcessHost can only support a
   // single StoragePartition.  This is relevant for packaged apps.
   StoragePartition* dest_partition = browser_context->GetStoragePartition(
-      site_info.GetStoragePartitionConfig(browser_context));
+      site_info.storage_partition_config());
   if (!host->InSameStoragePartition(dest_partition))
     return false;
 
@@ -4807,8 +4766,6 @@ void RenderProcessHostImpl::ProcessDied(
       Details<ChildProcessTerminationInfo>(&info));
   within_process_died_observer_ = false;
 
-  RemoveUserData(kSessionStorageHolderKey);
-
   // Initialize a new ChannelProxy in case this host is re-used for a new
   // process. This ensures that new messages can be sent on the host ASAP
   // (even before Init()) and they'll eventually reach the new process.
@@ -4889,35 +4846,6 @@ void RenderProcessHost::PostTaskWhenProcessIsReady(base::OnceClosure task) {
 void RenderProcessHost::SetHungRendererAnalysisFunction(
     AnalyzeHungRendererFunction analyze_hung_renderer) {
   g_analyze_hung_renderer = analyze_hung_renderer;
-}
-
-void RenderProcessHostImpl::DidDestroyRenderView(int process_id,
-                                                 int closed_view_route_id) {
-  RenderProcessHost* host = RenderProcessHost::FromID(process_id);
-  if (!host)
-    return;
-  SessionStorageHolder* holder = static_cast<SessionStorageHolder*>(
-      host->GetUserData(kSessionStorageHolderKey));
-  if (!holder)
-    return;
-  holder->Release(closed_view_route_id);
-}
-
-void RenderProcessHostImpl::WillDestroyRenderView(
-    RenderProcessHost* host,
-    const SessionStorageNamespaceMap& sessions,
-    int view_route_id) {
-  DCHECK(host);
-  if (sessions.empty())
-    return;
-  SessionStorageHolder* holder = static_cast<SessionStorageHolder*>(
-      host->GetUserData(kSessionStorageHolderKey));
-  if (!holder) {
-    auto empty_holder = std::make_unique<SessionStorageHolder>();
-    holder = empty_holder.get();
-    host->SetUserData(kSessionStorageHolderKey, std::move(empty_holder));
-  }
-  holder->Hold(sessions, view_route_id);
 }
 
 void RenderProcessHostImpl::SuddenTerminationChanged(bool enabled) {
@@ -5128,6 +5056,8 @@ void RenderProcessHostImpl::OnProcessLaunched() {
   // Pass bits of global renderer state to the renderer.
   GetRendererInterface()->SetUserAgent(
       GetContentClient()->browser()->GetUserAgent());
+  GetRendererInterface()->SetReducedUserAgent(
+      GetContentClient()->browser()->GetReducedUserAgent());
   GetRendererInterface()->SetUserAgentMetadata(
       GetContentClient()->browser()->GetUserAgentMetadata());
   GetRendererInterface()->SetCorsExemptHeaderList(

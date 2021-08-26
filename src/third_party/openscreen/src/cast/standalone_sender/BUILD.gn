@@ -18,13 +18,18 @@ if (!build_with_chromium) {
     if (have_external_libs) {
       defines += [ "CAST_STANDALONE_SENDER_HAVE_EXTERNAL_LIBS" ]
     }
+    if (have_libaom) {
+      defines += [ "CAST_STANDALONE_SENDER_HAVE_LIBAOM" ]
+    }
   }
 
   executable("cast_sender") {
     deps = [
+      "../../discovery:dnssd",
       "../../discovery:public",
       "../../platform",
       "../../platform:standalone_impl",
+      "../../third_party/aomedia",
       "../../third_party/jsoncpp",
       "../../util",
       "../common:public",
@@ -38,7 +43,7 @@ if (!build_with_chromium) {
     include_dirs = []
     lib_dirs = []
     libs = []
-    if (have_ffmpeg && have_libopus && have_libvpx) {
+    if (have_external_libs) {
       sources += [
         "connection_settings.h",
         "ffmpeg_glue.cc",
@@ -53,15 +58,33 @@ if (!build_with_chromium) {
         "remoting_sender.h",
         "simulated_capturer.cc",
         "simulated_capturer.h",
+        "streaming_encoder_util.cc",
+        "streaming_encoder_util.h",
         "streaming_opus_encoder.cc",
         "streaming_opus_encoder.h",
-        "streaming_vp8_encoder.cc",
-        "streaming_vp8_encoder.h",
+        "streaming_video_encoder.cc",
+        "streaming_video_encoder.h",
+        "streaming_vpx_encoder.cc",
+        "streaming_vpx_encoder.h",
       ]
+
       include_dirs +=
           ffmpeg_include_dirs + libopus_include_dirs + libvpx_include_dirs
       lib_dirs += ffmpeg_lib_dirs + libopus_lib_dirs + libvpx_lib_dirs
       libs += ffmpeg_libs + libopus_libs + libvpx_libs
+
+      # LibAOM support currently recommends building from source, so is included
+      # separately here.
+      if (have_libaom) {
+        sources += [
+          "streaming_av1_encoder.cc",
+          "streaming_av1_encoder.h",
+        ]
+
+        include_dirs += libaom_include_dirs
+        lib_dirs += libaom_lib_dirs
+        libs += libaom_libs
+      }
     }
 
     configs += [ "../common:certificate_config" ]

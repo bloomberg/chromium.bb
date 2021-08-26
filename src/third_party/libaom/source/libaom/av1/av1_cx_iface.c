@@ -17,7 +17,6 @@
 
 #include "aom_ports/aom_once.h"
 #include "aom_ports/mem_ops.h"
-#include "aom_ports/system_state.h"
 
 #include "aom/aom_encoder.h"
 #include "aom/internal/aom_codec_internal.h"
@@ -165,6 +164,8 @@ struct av1_extracfg {
   // 2 (passes = 1 if pass == AOM_RC_ONE_PASS and passes = 2 otherwise).
   int passes;
   int fwd_kf_dist;
+  // the name of the second pass output file when passes > 2
+  const char *two_pass_output;
 };
 
 #if CONFIG_REALTIME_ONLY
@@ -180,7 +181,7 @@ struct av1_extracfg {
 // coeff_cost_upd_freq: COST_UPD_OFF
 // mode_cost_upd_freq: COST_UPD_OFF
 // mv_cost_upd_freq: COST_UPD_OFF
-static struct av1_extracfg default_extra_cfg = {
+static const struct av1_extracfg default_extra_cfg = {
   7,              // cpu_used
   1,              // enable_auto_alt_ref
   0,              // enable_auto_bwd_ref
@@ -241,7 +242,7 @@ static struct av1_extracfg default_extra_cfg = {
   0,                            // error_resilient_mode off by default.
   0,                            // s_frame_mode off by default.
   0,                            // film_grain_test_vector
-  0,                            // film_grain_table_filename
+  NULL,                         // film_grain_table_filename
   0,                            // motion_vector_unit_test
   1,                            // CDF update mode
   1,                            // enable rectangular partitions
@@ -313,9 +314,10 @@ static struct av1_extracfg default_extra_cfg = {
   0,             // sb_multipass_unit_test
   -1,            // passes
   -1,            // fwd_kf_dist
+  NULL,          // two_pass_output
 };
 #else
-static struct av1_extracfg default_extra_cfg = {
+static const struct av1_extracfg default_extra_cfg = {
   0,              // cpu_used
   1,              // enable_auto_alt_ref
   0,              // enable_auto_bwd_ref
@@ -376,7 +378,7 @@ static struct av1_extracfg default_extra_cfg = {
   0,                            // error_resilient_mode off by default.
   0,                            // s_frame_mode off by default.
   0,                            // film_grain_test_vector
-  0,                            // film_grain_table_filename
+  NULL,                         // film_grain_table_filename
   0,                            // motion_vector_unit_test
   1,                            // CDF update mode
   1,                            // enable rectangular partitions
@@ -448,6 +450,7 @@ static struct av1_extracfg default_extra_cfg = {
   0,            // sb_multipass_unit_test
   -1,           // passes
   -1,           // fwd_kf_dist
+  NULL,         // two_pass_output
 };
 #endif
 
@@ -503,6 +506,41 @@ static aom_codec_err_t update_error_state(
     ctx->base.err_detail = error->has_detail ? error->detail : NULL;
 
   return res;
+}
+
+// This function deep copies a string src to *dst. For default string we will
+// use a string literal, and otherwise we will allocate memory for the string.
+static aom_codec_err_t allocate_and_set_string(const char *src,
+                                               const char *default_src,
+                                               const char **dst,
+                                               char *err_detail) {
+  if (!src) {
+    snprintf(err_detail, ARG_ERR_MSG_MAX_LEN,
+             "Null pointer given to a string parameter.");
+    return AOM_CODEC_INVALID_PARAM;
+  }
+  if (*dst && strcmp(src, *dst) == 0) return AOM_CODEC_OK;
+  // If the input is exactly the same as default, we will use the string
+  // literal, so do not free here.
+  if (*dst != default_src) {
+    aom_free((void *)*dst);
+  }
+
+  if (default_src && strcmp(src, default_src) == 0) {
+    // default_src should be a string literal
+    *dst = default_src;
+  } else {
+    size_t len = strlen(src) + 1;
+    char *tmp = aom_malloc(len * sizeof(*tmp));
+    if (!tmp) {
+      snprintf(err_detail, ARG_ERR_MSG_MAX_LEN,
+               "Failed to allocate memory for copying parameters.");
+      return AOM_CODEC_MEM_ERROR;
+    }
+    memcpy(tmp, src, len);
+    *dst = tmp;
+  }
+  return 0;
 }
 
 #undef ERROR
@@ -1118,6 +1156,9 @@ static aom_codec_err_t set_encoder_config(AV1EncoderConfig *oxcf,
   // Set two-pass stats configuration.
   oxcf->twopass_stats_in = cfg->rc_twopass_stats_in;
 
+  if (extra_cfg->two_pass_output)
+    oxcf->two_pass_output = extra_cfg->two_pass_output;
+
   // Set Key frame configuration.
   kf_cfg->fwd_kf_enabled = cfg->fwd_kf_enabled;
   kf_cfg->auto_key =
@@ -1145,7 +1186,10 @@ static aom_codec_err_t set_encoder_config(AV1EncoderConfig *oxcf,
   color_cfg->chroma_sample_position = extra_cfg->chroma_sample_position;
 
   // Set Group of frames configuration.
-  gf_cfg->lag_in_frames = clamp(cfg->g_lag_in_frames, 0, MAX_LAG_BUFFERS);
+  // Force lag_in_frames to 0 for REALTIME mode
+  gf_cfg->lag_in_frames = (oxcf->mode == REALTIME)
+                              ? 0
+                              : clamp(cfg->g_lag_in_frames, 0, MAX_LAG_BUFFERS);
   gf_cfg->enable_auto_arf = extra_cfg->enable_auto_alt_ref;
   gf_cfg->enable_auto_brf = extra_cfg->enable_auto_bwd_ref;
   gf_cfg->min_gf_interval = extra_cfg->min_gf_interval;
@@ -1221,10 +1265,15 @@ static aom_codec_err_t set_encoder_config(AV1EncoderConfig *oxcf,
   // Set motion mode related configuration.
   oxcf->motion_mode_cfg.enable_obmc = extra_cfg->enable_obmc;
   oxcf->motion_mode_cfg.enable_warped_motion = extra_cfg->enable_warped_motion;
+#if !CONFIG_REALTIME_ONLY
+  oxcf->motion_mode_cfg.allow_warped_motion =
+      (extra_cfg->allow_warped_motion & extra_cfg->enable_warped_motion);
+#else
   oxcf->motion_mode_cfg.allow_warped_motion =
       (cfg->g_usage == AOM_USAGE_REALTIME && oxcf->speed >= 7)
           ? false
           : (extra_cfg->allow_warped_motion & extra_cfg->enable_warped_motion);
+#endif
 
   // Set partition related configuration.
   part_cfg->enable_rect_partitions = extra_cfg->enable_rect_partitions;
@@ -2083,14 +2132,22 @@ static aom_codec_err_t ctrl_set_dv_cost_upd_freq(aom_codec_alg_priv_t *ctx,
 static aom_codec_err_t ctrl_set_vmaf_model_path(aom_codec_alg_priv_t *ctx,
                                                 va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
-  extra_cfg.vmaf_model_path = CAST(AV1E_SET_VMAF_MODEL_PATH, args);
+  const char *str = CAST(AV1E_SET_VMAF_MODEL_PATH, args);
+  const aom_codec_err_t ret = allocate_and_set_string(
+      str, default_extra_cfg.vmaf_model_path, &extra_cfg.vmaf_model_path,
+      ctx->ppi->error.detail);
+  if (ret != AOM_CODEC_OK) return ret;
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
 static aom_codec_err_t ctrl_set_partition_info_path(aom_codec_alg_priv_t *ctx,
                                                     va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
-  extra_cfg.partition_info_path = CAST(AV1E_SET_PARTITION_INFO_PATH, args);
+  const char *str = CAST(AV1E_SET_PARTITION_INFO_PATH, args);
+  const aom_codec_err_t ret = allocate_and_set_string(
+      str, default_extra_cfg.partition_info_path,
+      &extra_cfg.partition_info_path, ctx->ppi->error.detail);
+  if (ret != AOM_CODEC_OK) return ret;
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
@@ -2105,7 +2162,16 @@ static aom_codec_err_t ctrl_set_film_grain_test_vector(
 static aom_codec_err_t ctrl_set_film_grain_table(aom_codec_alg_priv_t *ctx,
                                                  va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
-  extra_cfg.film_grain_table_filename = CAST(AV1E_SET_FILM_GRAIN_TABLE, args);
+  const char *str = CAST(AV1E_SET_FILM_GRAIN_TABLE, args);
+  if (str == NULL) {
+    // this parameter allows NULL as its value
+    extra_cfg.film_grain_table_filename = str;
+  } else {
+    const aom_codec_err_t ret = allocate_and_set_string(
+        str, default_extra_cfg.film_grain_table_filename,
+        &extra_cfg.film_grain_table_filename, ctx->ppi->error.detail);
+    if (ret != AOM_CODEC_OK) return ret;
+  }
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
@@ -2374,8 +2440,6 @@ static aom_codec_err_t encoder_init(aom_codec_ctx_t *ctx) {
         priv->ppi->twopass.frame_stats_arr[i] = &priv->frame_stats_buffer[i];
 
       priv->ppi->twopass.stats_buf_ctx = &priv->stats_buf_context;
-      priv->ppi->twopass.stats_in =
-          priv->ppi->twopass.stats_buf_ctx->stats_in_start;
 #endif
 
 #if CONFIG_FRAME_PARALLEL_ENCODE
@@ -2388,12 +2452,29 @@ static aom_codec_err_t encoder_init(aom_codec_ctx_t *ctx) {
         if (res != AOM_CODEC_OK) {
           return res;
         }
+        if (i == 0) {
+          // Calculate the maximum number of frames that can be encoded in
+          // parallel
+          priv->ppi->num_fp_contexts = av1_compute_num_fp_contexts(
+              priv->ppi, &priv->ppi->parallel_cpi[i]->oxcf,
+              av1_compute_num_enc_workers(
+                  priv->ppi->parallel_cpi[i],
+                  priv->ppi->parallel_cpi[i]->oxcf.max_threads));
+        }
+#if !CONFIG_REALTIME_ONLY
+        priv->ppi->parallel_cpi[i]->twopass_frame.stats_in =
+            priv->ppi->twopass.stats_buf_ctx->stats_in_start;
+#endif
       }
       priv->ppi->cpi = priv->ppi->parallel_cpi[0];
 #else
       res = create_context_and_bufferpool(priv->ppi, &priv->ppi->cpi,
                                           &priv->buffer_pool, &priv->oxcf,
                                           ENCODE_STAGE, -1);
+#if !CONFIG_REALTIME_ONLY
+      priv->ppi->cpi->twopass_frame.stats_in =
+          priv->ppi->twopass.stats_buf_ctx->stats_in_start;
+#endif
 #endif  // CONFIG_FRAME_PARALLEL_ENCODE
 
       // Create another compressor if look ahead is enabled
@@ -2428,15 +2509,38 @@ static void destroy_stats_buffer(STATS_BUFFER_CTX *stats_buf_context,
   aom_free(frame_stats_buffer);
 }
 
+static void check_and_free_string(const char *default_str, const char **ptr) {
+  if (*ptr == default_str) {
+    // Default should be a literal. Do not free.
+    return;
+  }
+  aom_free((void *)*ptr);
+  *ptr = NULL;
+}
+
+static void destroy_extra_config(struct av1_extracfg *extra_cfg) {
+#if CONFIG_TUNE_VMAF
+  check_and_free_string(default_extra_cfg.vmaf_model_path,
+                        &extra_cfg->vmaf_model_path);
+#endif
+  check_and_free_string(default_extra_cfg.two_pass_output,
+                        &extra_cfg->two_pass_output);
+  check_and_free_string(default_extra_cfg.partition_info_path,
+                        &extra_cfg->partition_info_path);
+  check_and_free_string(default_extra_cfg.film_grain_table_filename,
+                        &extra_cfg->film_grain_table_filename);
+}
+
 static aom_codec_err_t encoder_destroy(aom_codec_alg_priv_t *ctx) {
   free(ctx->cx_data);
+  destroy_extra_config(&ctx->extra_cfg);
 
   if (ctx->ppi) {
     AV1_PRIMARY *ppi = ctx->ppi;
 #if CONFIG_FRAME_PARALLEL_ENCODE
     for (int i = 0; i < ppi->num_fp_contexts - 1; i++) {
-      if (ppi->parallel_frames_data[i].cx_data_frame) {
-        free(ppi->parallel_frames_data[i].cx_data_frame);
+      if (ppi->parallel_frames_data[i].cx_data) {
+        free(ppi->parallel_frames_data[i].cx_data);
       }
     }
 #endif
@@ -2461,7 +2565,6 @@ static aom_codec_err_t encoder_destroy(aom_codec_alg_priv_t *ctx) {
     av1_remove_primary_compressor(ppi);
   }
   destroy_stats_buffer(&ctx->stats_buf_context, ctx->frame_stats_buffer);
-
   aom_free(ctx);
   return AOM_CODEC_OK;
 }
@@ -2496,9 +2599,12 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
   const size_t kMinCompressedSize = 8192;
   volatile aom_codec_err_t res = AOM_CODEC_OK;
   AV1_PRIMARY *const ppi = ctx->ppi;
-  AV1_COMP *const cpi = ppi->cpi;
-  const aom_rational64_t *const timestamp_ratio = &ctx->timestamp_ratio;
+  AV1_COMP *cpi = ppi->cpi;
   volatile aom_codec_pts_t ptsvol = pts;
+  AV1_COMP_DATA cpi_data = { 0 };
+
+  cpi_data.timestamp_ratio = &ctx->timestamp_ratio;
+  cpi_data.flush = !img;
   // LAP context
   AV1_COMP *cpi_lap = ppi->cpi_lap;
   if (cpi == NULL) return AOM_CODEC_INVALID_PARAM;
@@ -2540,14 +2646,13 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
       }
 #if CONFIG_FRAME_PARALLEL_ENCODE
       for (int i = 0; i < cpi->ppi->num_fp_contexts - 1; i++) {
-        if (cpi->ppi->parallel_frames_data[i].cx_data_frame == NULL) {
+        if (cpi->ppi->parallel_frames_data[i].cx_data == NULL) {
           cpi->ppi->parallel_frames_data[i].cx_data_sz = uncompressed_frame_sz;
           cpi->ppi->parallel_frames_data[i].frame_display_order_hint = -1;
           cpi->ppi->parallel_frames_data[i].frame_size = 0;
-          cpi->ppi->parallel_frames_data[i].cx_data_frame =
-              (unsigned char *)malloc(
-                  cpi->ppi->parallel_frames_data[i].cx_data_sz);
-          if (cpi->ppi->parallel_frames_data[i].cx_data_frame == NULL) {
+          cpi->ppi->parallel_frames_data[i].cx_data = (unsigned char *)malloc(
+              cpi->ppi->parallel_frames_data[i].cx_data_sz);
+          if (cpi->ppi->parallel_frames_data[i].cx_data == NULL) {
             cpi->ppi->parallel_frames_data[i].cx_data_sz = 0;
             return AOM_CODEC_MEM_ERROR;
           }
@@ -2567,7 +2672,6 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
   if (setjmp(ppi->error.jmp)) {
     ppi->error.setjmp = 0;
     res = update_error_state(ctx, &ppi->error);
-    aom_clear_system_state();
     return res;
   }
   ppi->error.setjmp = 1;
@@ -2614,9 +2718,10 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
         ctx->pts_offset_initialized = 1;
       }
       ptsvol -= ctx->pts_offset;
-      int64_t src_time_stamp = timebase_units_to_ticks(timestamp_ratio, ptsvol);
+      int64_t src_time_stamp =
+          timebase_units_to_ticks(cpi_data.timestamp_ratio, ptsvol);
       int64_t src_end_time_stamp =
-          timebase_units_to_ticks(timestamp_ratio, ptsvol + duration);
+          timebase_units_to_ticks(cpi_data.timestamp_ratio, ptsvol + duration);
 
       YV12_BUFFER_CONFIG sd;
       res = image2yuvconfig(img, &sd);
@@ -2668,29 +2773,26 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
       ctx->next_frame_flags = 0;
     }
 
-    unsigned char *cx_data = ctx->cx_data;
-    size_t cx_data_sz = ctx->cx_data_sz;
+    cpi_data.cx_data = ctx->cx_data;
+    cpi_data.cx_data_sz = ctx->cx_data_sz;
 
     /* Any pending invisible frames? */
     if (ctx->pending_cx_data_sz) {
-      cx_data += ctx->pending_cx_data_sz;
-      cx_data_sz -= ctx->pending_cx_data_sz;
+      cpi_data.cx_data += ctx->pending_cx_data_sz;
+      cpi_data.cx_data_sz -= ctx->pending_cx_data_sz;
 
       /* TODO: this is a minimal check, the underlying codec doesn't respect
        * the buffer size anyway.
        */
-      if (cx_data_sz < ctx->cx_data_sz / 2) {
+      if (cpi_data.cx_data_sz < ctx->cx_data_sz / 2) {
         aom_internal_error(&ppi->error, AOM_CODEC_ERROR,
                            "Compressed data buffer too small");
       }
     }
 
-    size_t frame_size = 0;
-    unsigned int lib_flags = 0;
     int is_frame_visible = 0;
     int has_no_show_keyframe = 0;
     int num_workers = 0;
-    int pop_lookahead = 0;
 
     if (cpi->oxcf.pass == AOM_RC_FIRST_PASS) {
 #if !CONFIG_REALTIME_ONLY
@@ -2701,74 +2803,82 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
       av1_compute_num_workers_for_mt(cpi);
       num_workers = av1_get_max_num_workers(cpi);
     }
-    if ((num_workers > 1) && (cpi->mt_info.num_workers == 0)) {
+    if ((num_workers > 1) && (ppi->p_mt_info.num_workers == 0)) {
       av1_create_workers(ppi, num_workers);
       av1_init_tile_thread_data(ppi, cpi->oxcf.pass == AOM_RC_FIRST_PASS);
+#if CONFIG_MULTITHREAD
 #if CONFIG_FRAME_PARALLEL_ENCODE
       for (int i = 0; i < ppi->num_fp_contexts; i++) {
-        av1_init_frame_mt(ppi, ppi->parallel_cpi[i]);
-#if CONFIG_MULTITHREAD
         av1_init_mt_sync(ppi->parallel_cpi[i],
                          ppi->parallel_cpi[i]->oxcf.pass == AOM_RC_FIRST_PASS);
-#endif  // CONFIG_MULTITHREAD
       }
 #else
-      av1_init_frame_mt(ppi, cpi);
-#if CONFIG_MULTITHREAD
       av1_init_mt_sync(cpi, cpi->oxcf.pass == 1);
-#endif  // CONFIG_MULTITHREAD
-#endif
+#endif  // CONFIG_FRAME_PARALLEL_ENCODE
       if (cpi_lap != NULL) {
-        av1_init_frame_mt(ppi, cpi_lap);
-#if CONFIG_MULTITHREAD
         av1_init_mt_sync(cpi_lap, 1);
-#endif  // CONFIG_MULTITHREAD
       }
+#endif  // CONFIG_MULTITHREAD
+    }
+#if CONFIG_FRAME_PARALLEL_ENCODE
+    for (int i = 0; i < ppi->num_fp_contexts; i++) {
+      av1_init_frame_mt(ppi, ppi->parallel_cpi[i]);
+    }
+#else
+    av1_init_frame_mt(ppi, cpi);
+#endif  // CONFIG_FRAME_PARALLEL_ENCODE
+    if (cpi_lap != NULL) {
+      av1_init_frame_mt(ppi, cpi_lap);
     }
 
     // Call for LAP stage
     if (cpi_lap != NULL) {
-      int64_t dst_time_stamp_la;
-      int64_t dst_end_time_stamp_la;
-      const int status = av1_get_compressed_data(
-          cpi_lap, &lib_flags, &frame_size, cx_data_sz, NULL,
-          &dst_time_stamp_la, &dst_end_time_stamp_la, !img, timestamp_ratio,
-          &pop_lookahead);
+      AV1_COMP_DATA cpi_lap_data = { 0 };
+      cpi_lap_data.flush = !img;
+      cpi_lap_data.timestamp_ratio = &ctx->timestamp_ratio;
+      const int status = av1_get_compressed_data(cpi_lap, &cpi_lap_data);
       if (status != -1) {
         if (status != AOM_CODEC_OK) {
           aom_internal_error(&ppi->error, AOM_CODEC_ERROR, NULL);
         }
       }
-      av1_post_encode_updates(cpi_lap, frame_size, dst_time_stamp_la,
-                              dst_end_time_stamp_la, pop_lookahead, !img);
-      lib_flags = 0;
-      frame_size = 0;
-      pop_lookahead = 0;
+      av1_post_encode_updates(cpi_lap, &cpi_lap_data);
     }
 
     // Get the next visible frame. Invisible frames get packed with the next
     // visible frame.
-    int64_t dst_time_stamp;
-    int64_t dst_end_time_stamp;
-    while (cx_data_sz >= ctx->cx_data_sz / 2 && !is_frame_visible) {
+    while (cpi_data.cx_data_sz >= ctx->cx_data_sz / 2 && !is_frame_visible) {
 #if CONFIG_FRAME_PARALLEL_ENCODE
+      int status = -1;
       cpi->do_frame_data_update = true;
-      if (ppi->num_fp_contexts > 1 && ppi->gf_group.size > 1) {
-        if (cpi->gf_frame_index < ppi->gf_group.size) {
-          calc_frame_data_update_flag(&ppi->gf_group, cpi->gf_frame_index,
-                                      &cpi->do_frame_data_update);
-        }
+#if CONFIG_FRAME_PARALLEL_ENCODE_2
+      cpi->ref_idx_to_skip = INVALID_IDX;
+      cpi->ref_refresh_index = INVALID_IDX;
+      cpi->refresh_idx_available = false;
+#endif  // CONFIG_FRAME_PARALLEL_ENCODE_2
+      if (ppi->gf_group.frame_parallel_level[cpi->gf_frame_index] == 0) {
+        status = av1_get_compressed_data(cpi, &cpi_data);
+      } else if (ppi->gf_group.frame_parallel_level[cpi->gf_frame_index] == 1) {
+        status = av1_compress_parallel_frames(ppi, &cpi_data);
+      } else {
+        cpi = av1_get_parallel_frame_enc_data(ppi, &cpi_data);
+        status = AOM_CODEC_OK;
       }
-#endif
-      const int status = av1_get_compressed_data(
-          cpi, &lib_flags, &frame_size, cx_data_sz, cx_data, &dst_time_stamp,
-          &dst_end_time_stamp, !img, timestamp_ratio, &pop_lookahead);
+#else
+      const int status = av1_get_compressed_data(cpi, &cpi_data);
+#endif  // CONFIG_FRAME_PARALLEL_ENCODE
       if (status == -1) break;
       if (status != AOM_CODEC_OK) {
         aom_internal_error(&ppi->error, AOM_CODEC_ERROR, NULL);
       }
-      av1_post_encode_updates(cpi, frame_size, dst_time_stamp,
-                              dst_end_time_stamp, pop_lookahead, !img);
+#if CONFIG_FRAME_PARALLEL_ENCODE
+      if (ppi->num_fp_contexts > 0 && frame_is_intra_only(&cpi->common)) {
+        av1_init_sc_decisions(ppi);
+      }
+#endif
+
+      cpi->ppi->seq_params_locked = 1;
+      av1_post_encode_updates(cpi, &cpi_data);
 
 #if CONFIG_ENTROPY_STATS
       if (ppi->cpi->oxcf.pass != 1 && !cpi->common.show_existing_frame)
@@ -2785,9 +2895,8 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
       }
 #endif  // CONFIG_INTERNAL_STATS
 
-      cpi->ppi->seq_params_locked = 1;
-      if (!frame_size) continue;
-      assert(cx_data != NULL && cx_data_sz != 0);
+      if (!cpi_data.frame_size) continue;
+      assert(cpi_data.cx_data != NULL && cpi_data.cx_data_sz != 0);
       const int write_temporal_delimiter =
           !cpi->common.spatial_layer_id && !ctx->pending_cx_data_sz;
 
@@ -2798,7 +2907,7 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
             aom_uleb_size_in_bytes(obu_payload_size);
 
         const size_t move_offset = obu_header_size + length_field_size;
-        memmove(ctx->cx_data + move_offset, ctx->cx_data, frame_size);
+        memmove(ctx->cx_data + move_offset, ctx->cx_data, cpi_data.frame_size);
         obu_header_size = av1_write_obu_header(
             &cpi->ppi->level_params, &cpi->frame_header_count,
             OBU_TEMPORAL_DELIMITER, 0, ctx->cx_data);
@@ -2809,31 +2918,34 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
           aom_internal_error(&ppi->error, AOM_CODEC_ERROR, NULL);
         }
 
-        frame_size += obu_header_size + obu_payload_size + length_field_size;
+        cpi_data.frame_size +=
+            obu_header_size + obu_payload_size + length_field_size;
       }
 
       if (ctx->oxcf.save_as_annexb) {
-        size_t curr_frame_size = frame_size;
-        if (av1_convert_sect5obus_to_annexb(cx_data, &curr_frame_size) !=
-            AOM_CODEC_OK) {
+        size_t curr_frame_size = cpi_data.frame_size;
+        if (av1_convert_sect5obus_to_annexb(cpi_data.cx_data,
+                                            &curr_frame_size) != AOM_CODEC_OK) {
           aom_internal_error(&ppi->error, AOM_CODEC_ERROR, NULL);
         }
-        frame_size = curr_frame_size;
+        cpi_data.frame_size = curr_frame_size;
 
         // B_PRIME (add frame size)
-        const size_t length_field_size = aom_uleb_size_in_bytes(frame_size);
-        memmove(cx_data + length_field_size, cx_data, frame_size);
-        if (av1_write_uleb_obu_size(0, (uint32_t)frame_size, cx_data) !=
-            AOM_CODEC_OK) {
+        const size_t length_field_size =
+            aom_uleb_size_in_bytes(cpi_data.frame_size);
+        memmove(cpi_data.cx_data + length_field_size, cpi_data.cx_data,
+                cpi_data.frame_size);
+        if (av1_write_uleb_obu_size(0, (uint32_t)cpi_data.frame_size,
+                                    cpi_data.cx_data) != AOM_CODEC_OK) {
           aom_internal_error(&ppi->error, AOM_CODEC_ERROR, NULL);
         }
-        frame_size += length_field_size;
+        cpi_data.frame_size += length_field_size;
       }
 
-      ctx->pending_cx_data_sz += frame_size;
+      ctx->pending_cx_data_sz += cpi_data.frame_size;
 
-      cx_data += frame_size;
-      cx_data_sz -= frame_size;
+      cpi_data.cx_data += cpi_data.frame_size;
+      cpi_data.cx_data_sz -= cpi_data.frame_size;
 
       is_frame_visible = cpi->common.show_frame;
 
@@ -2864,19 +2976,20 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
       pkt.data.frame.buf = ctx->cx_data;
       pkt.data.frame.sz = ctx->pending_cx_data_sz;
       pkt.data.frame.partition_id = -1;
-      pkt.data.frame.vis_frame_size = frame_size;
+      pkt.data.frame.vis_frame_size = cpi_data.frame_size;
 
-      pkt.data.frame.pts =
-          ticks_to_timebase_units(timestamp_ratio, dst_time_stamp) +
-          ctx->pts_offset;
-      pkt.data.frame.flags = get_frame_pkt_flags(cpi, lib_flags);
+      pkt.data.frame.pts = ticks_to_timebase_units(cpi_data.timestamp_ratio,
+                                                   cpi_data.ts_frame_start) +
+                           ctx->pts_offset;
+      pkt.data.frame.flags = get_frame_pkt_flags(cpi, cpi_data.lib_flags);
       if (has_no_show_keyframe) {
         // If one of the invisible frames in the packet is a keyframe, set
         // the delayed random access point flag.
         pkt.data.frame.flags |= AOM_FRAME_IS_DELAYED_RANDOM_ACCESS_POINT;
       }
       pkt.data.frame.duration = (uint32_t)ticks_to_timebase_units(
-          timestamp_ratio, dst_end_time_stamp - dst_time_stamp);
+          cpi_data.timestamp_ratio,
+          cpi_data.ts_frame_end - cpi_data.ts_frame_start);
 
       aom_codec_pkt_list_add(&ctx->pkt_list.head, &pkt);
 
@@ -3128,6 +3241,7 @@ static aom_codec_err_t ctrl_set_svc_ref_frame_config(aom_codec_alg_priv_t *ctx,
   }
   for (unsigned int i = 0; i < REF_FRAMES; ++i)
     cpi->svc.refresh[i] = data->refresh[i];
+  cpi->svc.use_comp_pred = data->use_comp_pred;
   cpi->svc.use_flexible_mode = 1;
   cpi->svc.ksvc_fixed_mode = 0;
   return AOM_CODEC_OK;
@@ -3222,7 +3336,7 @@ static aom_codec_err_t encoder_set_option(aom_codec_alg_priv_t *ctx,
   // Used to mock the argv with just one string "--{name}={value}"
   char *argv[2] = { NULL, "" };
   size_t len = strlen(name) + strlen(value) + 4;
-  char *err_string = ctx->ppi->error.detail;
+  char *const err_string = ctx->ppi->error.detail;
 
 #if __STDC_VERSION__ >= 201112L
   // We use the keyword _Static_assert because clang-cl does not allow the
@@ -3238,6 +3352,7 @@ static aom_codec_err_t encoder_set_option(aom_codec_alg_priv_t *ctx,
   argv[0] = aom_malloc(len * sizeof(argv[1][0]));
   snprintf(argv[0], len, "--%s=%s", name, value);
   struct arg arg;
+  aom_codec_err_t err = AOM_CODEC_OK;
 
   int match = 1;
   if (arg_match_helper(&arg, &g_av1_codec_arg_defs.enable_keyframe_filtering,
@@ -3296,12 +3411,14 @@ static aom_codec_err_t encoder_set_option(aom_codec_alg_priv_t *ctx,
 #if CONFIG_TUNE_VMAF
   else if (arg_match_helper(&arg, &g_av1_codec_arg_defs.vmaf_model_path, argv,
                             err_string)) {
-    extra_cfg.vmaf_model_path = value;
+    err = allocate_and_set_string(value, default_extra_cfg.vmaf_model_path,
+                                  &extra_cfg.vmaf_model_path, err_string);
   }
 #endif
   else if (arg_match_helper(&arg, &g_av1_codec_arg_defs.partition_info_path,
                             argv, err_string)) {
-    extra_cfg.partition_info_path = value;
+    err = allocate_and_set_string(value, default_extra_cfg.partition_info_path,
+                                  &extra_cfg.partition_info_path, err_string);
   } else if (arg_match_helper(&arg, &g_av1_codec_arg_defs.cq_level, argv,
                               err_string)) {
     extra_cfg.cq_level = arg_parse_uint_helper(&arg, err_string);
@@ -3408,7 +3525,14 @@ static aom_codec_err_t encoder_set_option(aom_codec_alg_priv_t *ctx,
     extra_cfg.film_grain_test_vector = arg_parse_int_helper(&arg, err_string);
   } else if (arg_match_helper(&arg, &g_av1_codec_arg_defs.film_grain_table,
                               argv, err_string)) {
-    extra_cfg.film_grain_table_filename = value;
+    if (value == NULL) {
+      // this parameter allows NULL as its value
+      extra_cfg.film_grain_table_filename = value;
+    } else {
+      err = allocate_and_set_string(
+          value, default_extra_cfg.film_grain_table_filename,
+          &extra_cfg.film_grain_table_filename, err_string);
+    }
   } else if (arg_match_helper(&arg, &g_av1_codec_arg_defs.cdf_update_mode, argv,
                               err_string)) {
     extra_cfg.cdf_update_mode = arg_parse_int_helper(&arg, err_string);
@@ -3598,12 +3722,21 @@ static aom_codec_err_t encoder_set_option(aom_codec_alg_priv_t *ctx,
   } else if (arg_match_helper(&arg, &g_av1_codec_arg_defs.fwd_kf_dist, argv,
                               err_string)) {
     extra_cfg.fwd_kf_dist = arg_parse_int_helper(&arg, err_string);
+  } else if (arg_match_helper(&arg, &g_av1_codec_arg_defs.two_pass_output, argv,
+                              err_string)) {
+    err = allocate_and_set_string(value, default_extra_cfg.two_pass_output,
+                                  &extra_cfg.two_pass_output, err_string);
   } else {
     match = 0;
     snprintf(err_string, ARG_ERR_MSG_MAX_LEN, "Cannot find aom option %s",
              name);
   }
   aom_free(argv[0]);
+
+  if (err != AOM_CODEC_OK) {
+    ctx->base.err_detail = err_string;
+    return err;
+  }
 
   if (strlen(err_string) != 0) {
     ctx->base.err_detail = err_string;
@@ -3795,7 +3928,7 @@ static const aom_codec_enc_cfg_t encoder_usage_cfg[] = {
 
       AOM_RC_ONE_PASS,  // g_pass
 
-      19,  // g_lag_in_frames
+      35,  // g_lag_in_frames
 
       0,                // rc_dropframe_thresh
       RESIZE_NONE,      // rc_resize_mode

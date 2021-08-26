@@ -36,6 +36,7 @@
 #include "libavutil/pixdesc.h"
 
 #include "avcodec.h"
+#include "encode.h"
 #include "idctdsp.h"
 #include "internal.h"
 #include "jpegtables.h"
@@ -232,7 +233,7 @@ static int ljpeg_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
                         * s->hsample[0] * s->vsample[0];
     }
 
-    if ((ret = ff_alloc_packet2(avctx, pkt, max_pkt_size, 0)) < 0)
+    if ((ret = ff_alloc_packet(avctx, pkt, max_pkt_size)) < 0)
         return ret;
 
     init_put_bits(&pb, pkt->data, pkt->size);
@@ -337,4 +338,5 @@ const AVCodec ff_ljpeg_encoder = {
         AV_PIX_FMT_YUVJ420P, AV_PIX_FMT_YUVJ444P, AV_PIX_FMT_YUVJ422P,
         AV_PIX_FMT_YUV420P , AV_PIX_FMT_YUV444P , AV_PIX_FMT_YUV422P,
         AV_PIX_FMT_NONE},
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

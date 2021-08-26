@@ -90,15 +90,6 @@ void av1_loop_filter_init(struct AV1Common *cm);
 void av1_loop_filter_frame_init(struct AV1Common *cm, int plane_start,
                                 int plane_end);
 
-/*!\brief Apply AV1 loop filter
- *
- * \ingroup in_loop_filter
- * \callgraph
- */
-void av1_loop_filter_frame(YV12_BUFFER_CONFIG *frame, struct AV1Common *cm,
-                           struct macroblockd *xd, int plane_start,
-                           int plane_end, int partial_frame, int is_realtime);
-
 void av1_filter_block_plane_vert(const struct AV1Common *const cm,
                                  const MACROBLOCKD *const xd, const int plane,
                                  const MACROBLOCKD_PLANE *const plane_ptr,

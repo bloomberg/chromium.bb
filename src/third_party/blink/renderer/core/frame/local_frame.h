@@ -36,6 +36,7 @@
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "services/device/public/mojom/device_posture_provider.mojom-blink-forward.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink-forward.h"
 #include "third_party/blink/public/common/frame/frame_ad_evidence.h"
 #include "third_party/blink/public/common/frame/payment_request_token.h"
@@ -43,7 +44,7 @@
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink-forward.h"
-#include "third_party/blink/public/mojom/frame/back_forward_cache_controller.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame/back_forward_cache_controller.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink-forward.h"
@@ -54,8 +55,7 @@
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/link_to_text/link_to_text.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom-blink-forward.h"
-#include "third_party/blink/public/mojom/optimization_guide/optimization_guide.mojom-blink.h"
-#include "third_party/blink/public/mojom/reporting/reporting.mojom-blink.h"
+#include "third_party/blink/public/mojom/reporting/reporting.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/web/web_script_execution_callback.h"
@@ -77,9 +77,6 @@
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
-#if defined(OS_MAC)
-#include "third_party/blink/public/mojom/input/text_input_host.mojom-blink.h"
-#endif
 #include "ui/gfx/transform.h"
 
 namespace base {
@@ -89,7 +86,7 @@ class SingleThreadTaskRunner;
 namespace gfx {
 class Point;
 class Range;
-}
+}  // namespace gfx
 
 namespace blink {
 
@@ -128,7 +125,6 @@ class NodeTraversal;
 class PerformanceMonitor;
 class PolicyContainer;
 class PluginData;
-class RawSystemClipboard;
 class SystemClipboard;
 class SmoothScrollSequencer;
 class SpellChecker;
@@ -363,6 +359,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void WindowSegmentsChanged(const WebVector<gfx::Rect>& window_segments);
   void UpdateCSSFoldEnvironmentVariables(
       const WebVector<gfx::Rect>& window_segments);
+
+  device::mojom::blink::DevicePostureType GetDevicePosture();
 
   String SelectedText() const;
   String SelectedTextForClipboard() const;
@@ -653,7 +651,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void UpdateWindowControlsOverlay(const gfx::Rect& bounding_rect_in_dips);
 
   SystemClipboard* GetSystemClipboard();
-  RawSystemClipboard* GetRawSystemClipboard();
 
   // Indicate that this frame was attached as a MainFrame.
   void WasAttachedAsLocalMainFrame();
@@ -671,12 +668,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   // Consumes the |PaymentRequestToken| of the current |Frame| if it was active.
   bool ConsumePaymentRequestToken();
-
-  void SetOptimizationGuideHints(
-      mojom::blink::BlinkOptimizationGuideHintsPtr hints);
-  mojom::blink::BlinkOptimizationGuideHints* GetOptimizationGuideHints() {
-    return optimization_guide_hints_.get();
-  }
 
   LocalFrameToken GetLocalFrameToken() const;
 
@@ -700,10 +691,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
     return window_controls_overlay_rect_;
   }
 
-  // Called after the document in this frame dispatched the prerenderingchange
-  // event.
-  void DidActivateForPrerendering();
-
   void LoadJavaScriptURL(const KURL& url);
 
   void SetEvictCachedSessionStorageOnFreezeOrUnload();
@@ -717,6 +704,11 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   void BindTextFragmentReceiver(
       mojo::PendingReceiver<mojom::blink::TextFragmentReceiver> receiver);
+
+#if defined(OS_MAC)
+  void ResetTextInputHostForTesting();
+  void RebindTextInputHostForTesting();
+#endif
 
  private:
   friend class FrameNavigationDisabler;
@@ -784,10 +776,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
       const IntPoint& pos_in_viewport);
 
   bool ShouldThrottleDownload();
-
-#if defined(OS_MAC)
-  mojom::blink::TextInputHost& GetTextInputHost();
-#endif
 
   // Returns the `Frame` for which `provisional_frame_ == this`. May only be
   // called on a provisional frame.
@@ -871,17 +859,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
   Member<ContentCaptureManager> content_capture_manager_;
 
   InterfaceRegistry* const interface_registry_;
-  // This is declared mutable so that the service endpoint can be cached by
-  // const methods.
-  //
-  // LocalFrame can be reused by multiple ExecutionContext.
-  mutable HeapMojoRemote<mojom::blink::ReportingServiceProxy>
-      reporting_service_{nullptr};
-
-#if defined(OS_MAC)
-  // LocalFrame can be reused by multiple ExecutionContext.
-  HeapMojoRemote<mojom::blink::TextInputHost> text_input_host_{nullptr};
-#endif
 
   mojom::blink::ViewportIntersectionState intersection_state_;
 
@@ -910,9 +887,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   std::unique_ptr<WebPrescientNetworking> prescient_networking_;
 
-  // LocalFrame can be reused by multiple ExecutionContext.
-  HeapMojoAssociatedRemote<mojom::blink::BackForwardCacheControllerHost>
-      back_forward_cache_controller_host_remote_{nullptr};
   Member<LocalFrameMojoHandler> mojo_handler_;
 
   // Variable to control burst of download requests.
@@ -921,8 +895,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   // Access to the global sanitized system clipboard.
   Member<SystemClipboard> system_clipboard_;
-  // Access to the global raw/unsanitized system clipboard
-  Member<RawSystemClipboard> raw_system_clipboard_;
 
   // Access to background-color paint image generator. Initialized per local
   // root and reused among sub frames.
@@ -935,8 +907,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   using SavedScrollOffsets = HeapHashMap<Member<Node>, ScrollOffset>;
   Member<SavedScrollOffsets> saved_scroll_offsets_;
-
-  mojom::blink::BlinkOptimizationGuideHintsPtr optimization_guide_hints_;
 
   // Always non-null for the main frame; null otherwise.
   Member<TextFragmentHandler> text_fragment_handler_;

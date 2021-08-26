@@ -270,6 +270,10 @@ class PageLoadTimingMerger {
     MergeBackForwardCacheTiming(navigation_start_offset,
                                 new_page_load_timing.back_forward_cache_timings,
                                 is_main_frame);
+    if (is_main_frame) {
+      MaybeUpdateTimeDelta(&target_->activation_start, navigation_start_offset,
+                           new_page_load_timing.activation_start);
+    }
   }
 
   // Whether we merged a new value.
@@ -444,7 +448,9 @@ PageLoadMetricsUpdateDispatcher::PageLoadMetricsUpdateDispatcher(
       main_frame_metadata_(mojom::FrameMetadata::New()),
       subframe_metadata_(mojom::FrameMetadata::New()),
       page_input_timing_(mojom::InputTiming()),
-      mobile_friendliness_(blink::MobileFriendliness()) {}
+      mobile_friendliness_(blink::MobileFriendliness()),
+      is_prerendered_page_load_(navigation_handle->IsInPrerenderedMainFrame()) {
+}
 
 PageLoadMetricsUpdateDispatcher::~PageLoadMetricsUpdateDispatcher() {
   ShutDown();
@@ -570,7 +576,8 @@ void PageLoadMetricsUpdateDispatcher::DidFinishSubFrameNavigation(
       navigation_handle->GetFrameTreeNodeId(), navigation_delta));
 }
 
-void PageLoadMetricsUpdateDispatcher::OnFrameDeleted(int frame_tree_node_id) {
+void PageLoadMetricsUpdateDispatcher::OnSubFrameDeleted(
+    int frame_tree_node_id) {
   subframe_navigation_start_offset_.erase(frame_tree_node_id);
 }
 
@@ -839,6 +846,13 @@ void PageLoadMetricsUpdateDispatcher::DispatchTimingUpdates() {
       // received all expected events (e.g. wait to receive a parse event before
       // dispatching a paint event), so observers can make assumptions about
       // ordering of these events in their callbacks.
+      return;
+    }
+    if (is_prerendered_page_load_ &&
+        !pending_merged_page_timing_->activation_start) {
+      // Similarly, in a prerendered page load we may receive a first paint in a
+      // child frame before we've received a notification for activation start
+      // in the main frame.
       return;
     }
   }

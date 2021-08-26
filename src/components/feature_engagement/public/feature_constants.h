@@ -13,11 +13,14 @@ namespace feature_engagement {
 // A feature for enabling a demonstration mode for In-Product Help (IPH).
 extern const base::Feature kIPHDemoMode;
 
+// A feature for enabling a snooze mode for In-Product Help (IPH).
+extern const base::Feature kIPHSnooze;
+
 // A feature to ensure all arrays can contain at least one feature.
 extern const base::Feature kIPHDummyFeature;
 
 #if defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX) || \
-    defined(OS_CHROMEOS)
+    defined(OS_CHROMEOS) || defined(OS_FUCHSIA)
 extern const base::Feature kIPHDesktopTabGroupsNewGroupFeature;
 extern const base::Feature kIPHFocusModeFeature;
 extern const base::Feature kIPHGlobalMediaControlsFeature;
@@ -33,7 +36,7 @@ extern const base::Feature kIPHDesktopPwaInstallFeature;
 extern const base::Feature kIPHProfileSwitchFeature;
 extern const base::Feature kIPHUpdatedConnectionSecurityIndicatorsFeature;
 #endif  // defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX) ||
-        // defined(OS_CHROMEOS)
+        // defined(OS_CHROMEOS) || defined(OS_FUCHSIA)
 
 // All the features declared for Android below that are also used in Java,
 // should also be declared in:
@@ -124,7 +127,7 @@ extern const base::Feature kIPHDiscoverFeedHeaderFeature;
 #endif  // defined(OS_IOS)
 
 #if defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX) || \
-    defined(OS_CHROMEOS) || defined(OS_ANDROID)
+    defined(OS_CHROMEOS) || defined(OS_ANDROID) || defined(OS_FUCHSIA)
 extern const base::Feature kIPHUpdatedConnectionSecurityIndicatorsFeature;
 #endif
 

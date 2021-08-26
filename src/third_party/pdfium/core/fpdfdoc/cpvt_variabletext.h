@@ -7,6 +7,8 @@
 #ifndef CORE_FPDFDOC_CPVT_VARIABLETEXT_H_
 #define CORE_FPDFDOC_CPVT_VARIABLETEXT_H_
 
+#include <stdint.h>
+
 #include <memory>
 #include <vector>
 
@@ -15,9 +17,9 @@
 #include "core/fpdfdoc/cpvt_lineinfo.h"
 #include "core/fpdfdoc/cpvt_wordplace.h"
 #include "core/fpdfdoc/cpvt_wordrange.h"
+#include "core/fxcrt/fx_codepage_forward.h"
 #include "core/fxcrt/fx_coordinates.h"
 #include "core/fxcrt/fx_string.h"
-#include "core/fxcrt/fx_system.h"
 #include "core/fxcrt/unowned_ptr.h"
 
 class CPVT_Section;
@@ -54,7 +56,7 @@ class CPVT_VariableText {
     virtual int32_t GetTypeAscent(int32_t nFontIndex);
     virtual int32_t GetTypeDescent(int32_t nFontIndex);
     virtual int32_t GetWordFontIndex(uint16_t word,
-                                     int32_t charset,
+                                     FX_Charset charset,
                                      int32_t nFontIndex);
     virtual int32_t GetDefaultFontIndex();
 
@@ -92,7 +94,7 @@ class CPVT_VariableText {
   void SetText(const WideString& text);
   CPVT_WordPlace InsertWord(const CPVT_WordPlace& place,
                             uint16_t word,
-                            int32_t charset);
+                            FX_Charset charset);
   CPVT_WordPlace InsertSection(const CPVT_WordPlace& place);
   CPVT_WordPlace DeleteWords(const CPVT_WordRange& PlaceRange);
   CPVT_WordPlace DeleteWord(const CPVT_WordPlace& place);
@@ -143,7 +145,6 @@ class CPVT_VariableText {
   float GetFontDescent(int32_t nFontIndex, float fFontSize) const;
   int32_t GetDefaultFontIndex();
   float GetLineLeading();
-  int32_t GetAlignment();
   float GetWordWidth(const CPVT_WordInfo& WordInfo) const;
   float GetWordWidth(int32_t nFontIndex,
                      uint16_t Word,
@@ -161,7 +162,9 @@ class CPVT_VariableText {
 
  private:
   int GetCharWidth(int32_t nFontIndex, uint16_t Word, uint16_t SubWord) const;
-  int32_t GetWordFontIndex(uint16_t word, int32_t charset, int32_t nFontIndex);
+  int32_t GetWordFontIndex(uint16_t word,
+                           FX_Charset charset,
+                           int32_t nFontIndex);
 
   CPVT_WordPlace AddSection(const CPVT_WordPlace& place);
   CPVT_WordPlace AddLine(const CPVT_WordPlace& place,

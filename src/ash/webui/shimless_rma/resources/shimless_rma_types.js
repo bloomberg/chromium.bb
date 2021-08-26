@@ -31,24 +31,25 @@ export let RmaState = ash.shimlessRma.mojom.RmaState;
  */
 export let RmadErrorCode = ash.shimlessRma.mojom.RmadErrorCode;
 
+/**
+ * @typedef {ash.shimlessRma.mojom.QrCode}
+ */
+export let QrCode = ash.shimlessRma.mojom.QrCode;
 
 /**
  * @typedef {ash.shimlessRma.mojom.ComponentType}
  */
 export let ComponentType = ash.shimlessRma.mojom.ComponentType;
 
-
 /**
- * @typedef {ash.shimlessRma.mojom.ComponentRepairState}
+ * @typedef {ash.shimlessRma.mojom.ComponentRepairStatus}
  */
-export let ComponentRepairState = ash.shimlessRma.mojom.ComponentRepairState;
-
+export let ComponentRepairStatus = ash.shimlessRma.mojom.ComponentRepairStatus;
 
 /**
  * @typedef {ash.shimlessRma.mojom.CalibrationComponent}
  */
 export let CalibrationComponent = ash.shimlessRma.mojom.CalibrationComponent;
-
 
 /**
  * @typedef {ash.shimlessRma.mojom.ProvisioningStep}
@@ -72,6 +73,20 @@ export let ErrorObserverRemote = ash.shimlessRma.mojom.ErrorObserverRemote;
  */
 export let CalibrationObserverRemote =
     ash.shimlessRma.mojom.CalibrationObserverRemote;
+
+/**
+ * Type alias for CalibrationObserverReceiver.
+ * @typedef {ash.shimlessRma.mojom.CalibrationObserverReceiver}
+ */
+export let CalibrationObserverReceiver =
+    ash.shimlessRma.mojom.CalibrationObserverReceiver;
+
+/**
+ * Type alias for CalibrationObserverInterface.
+ * @typedef {ash.shimlessRma.mojom.CalibrationObserverInterface}
+ */
+export let CalibrationObserverInterface =
+    ash.shimlessRma.mojom.CalibrationObserverInterface;
 
 /**
  * Type alias for ProvisioningObserverRemote.
@@ -123,6 +138,13 @@ export let HardwareWriteProtectionStateObserverInterface =
  */
 export let PowerCableStateObserverRemote =
     ash.shimlessRma.mojom.PowerCableStateObserverRemote;
+
+/**
+ * Type alias for the ShimlessRmaService.
+ * @typedef {ash.shimlessRma.mojom.ShimlessRmaService}
+ */
+export let ShimlessRmaService =
+    ash.shimlessRma.mojom.ShimlessRmaService;
 
 /**
  * Type alias for the ShimlessRmaServiceInterface.

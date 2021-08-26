@@ -33,7 +33,7 @@
     // shipped stable can have its runtime flag removed soon after.
     status: {
       valid_values: ["stable", "experimental", "test"],
-      valid_keys: ["Android", "Win", "ChromeOS", "Mac"]
+      valid_keys: ["Android", "Win", "ChromeOS", "Mac", "Lacros"]
     },
 
     // "implied_by" or "depends_on" specifies relationship to other features:
@@ -177,6 +177,7 @@
     },
     {
       name: "AnonymousIframe",
+      status: "test",
     },
     {
       name: "AOMAriaProperties",
@@ -212,6 +213,9 @@
     {
       name: "AudioVideoTracks",
       status: "experimental",
+    },
+    {
+      name: "AutoExpandDetailsElement",
     },
     {
       name: "AutofillShadowDOM",
@@ -460,10 +464,6 @@
       status: "test",
     },
     {
-      name: "CookiesWithoutSameSiteMustBeSecure",
-      status: "test",
-    },
-    {
       name: "CooperativeScheduling"
     },
     {
@@ -490,6 +490,9 @@
       status: "experimental",
     },
     {
+      name: "CrossOriginWebAssemblyModuleSharingAllowed",
+    },
+    {
       name: "CSS3Text",
       status: "experimental",
     },
@@ -508,12 +511,20 @@
       status: "test",
     },
     {
+      // https://drafts.csswg.org/css-counter-styles/#counter-style-speak-as
+      name: "CSSAtRuleCounterStyleSpeakAsDescriptor"
+    },
+    {
       name: "CSSCalcAsInt",
       status: "test",
     },
     {
       // https://github.com/DevSDK/calc-infinity-and-NaN/blob/master/explainer.md
       name: "CSSCalcInfinityAndNaN",
+    },
+    {
+      // https://drafts.csswg.org/css-cascade-5/#layering
+      name: "CSSCascadeLayers"
     },
     {
       // Support case-sensitive attribute selector modifier
@@ -564,6 +575,10 @@
       // https://wicg.github.io/display-locking/
       name: "CSSContentVisibilityHiddenMatchable",
       origin_trial_feature_name: "BeforeMatchEvent",
+      status: "experimental"
+    },
+    {
+      name: "CSSDynamicRangeMediaQueries",
       status: "experimental"
     },
     {
@@ -681,6 +696,11 @@
       status: "test",
     },
     {
+      name: "CSSPseudoHasInSnapshotProfile",
+      status: "experimental",
+      implied_by: ["CSSPseudoHas"],
+    },
+    {
       // When an audio, video, or similar resource is "playing"
       // or "paused".
       // https://www.w3.org/TR/selectors-4/#video-state
@@ -769,18 +789,18 @@
       status: "stable",
     },
     {
-      name: "DelayAsyncScriptExecutionUntilFinishedParsing",
-    },
-    {
-      name: "DelayAsyncScriptExecutionUntilFirstPaintOrFinishedParsing",
-    },
-    {
       name: "DelegatedInkTrails",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "DesktopCaptureDisableLocalEchoControl",
       status: "experimental",
+    },
+    {
+      name: "DesktopPWAsSubApps",
+      // No status because this blink runtime feature doesn't work by itself.
+      // It's controlled by the corresponding Chromium feature which needs to
+      // be enabled to make the whole feature work.
     },
     {
       name: "DeviceAttributes",
@@ -830,11 +850,12 @@
       name: "DisableLayerSquashing",
     },
     {
-      name: "DisplayCapturePermissionPolicy",
-      origin_trial_feature_name: "GetCurrentBrowsingContextMedia",
-      // TODO(crbug.com/1150788): Implement for Android when this is applied
-      // to getDisplayMedia.
-      status: {"Android": "", "default": "experimental"},
+      // When on, the display-capture permissions-policy is enforced.
+      // When off, enforcement of this permissions-policy is skipped.
+      // This is driven from the browser process by the Enterprise policy
+      // called "DisplayCapturePermissionsPolicyEnabled".
+      // TODO(crbug.com/1233969): Remove this around m100.
+      name: "DisplayCapturePermissionsPolicy",
     },
     {
       name: "DisplayCutoutAPI",
@@ -861,7 +882,7 @@
       name: "DocumentPolicyNegotiation",
       origin_trial_feature_name: "DocumentPolicyNegotiation",
       status: "experimental",
-      depends_on: ['DocumentPolicy']
+      depends_on: ["DocumentPolicy"],
     },
     // Enables the ability to use Document Policy header to control feature
     // SyncXHR.
@@ -874,10 +895,15 @@
       // Document transitions, including shared element transitions.
       // See https://github.com/WICG/shared-element-transitions
       name: "DocumentTransition",
-      origin_trial_feature_name: "DocumentTransition"
+      origin_trial_feature_name: "DocumentTransition",
     },
     {
       name: "DocumentWrite",
+    },
+    {
+      name: "EarlyHintsPreloadForNavigationOptIn",
+      origin_trial_feature_name: "EarlyHintsPreloadForNavigation",
+      status: "experimental",
     },
     {
       name: "EditContext",
@@ -891,14 +917,10 @@
     },
     {
       name: "EncryptedMediaSessionClosedReason",
-      status: "test",
+      status: "experimental",
     },
     {
       name: "EnterKeyHintAttribute",
-      status: "stable",
-    },
-    {
-      name: "EventTiming",
       status: "stable",
     },
     {
@@ -908,10 +930,6 @@
     {
       name: "ExecCommandInJavaScript",
       status: "test",
-    },
-    {
-      name: "ExpensiveBackgroundTimerThrottling",
-      status: "stable",
     },
     {
       name: "ExperimentalContentSecurityPolicyFeatures",
@@ -935,7 +953,7 @@
     {
       name: "ExperimentalJSProfiler",
       origin_trial_feature_name: "ExperimentalJSProfiler",
-      status: "experimental"
+      status: "stable"
     },
     {
       name: "ExperimentalPolicies",
@@ -1067,6 +1085,10 @@
       status: {"ChromeOS": "stable"},
     },
     {
+      name: "FractionalLineHeight",
+      status: "stable",
+    },
+    {
       name: "FractionalScrollOffsets",
       status: "experimental",
     },
@@ -1077,12 +1099,6 @@
     {
       name: "GamepadButtonAxisEvents",
       status: "experimental",
-    },
-    {
-      name: "GetCurrentBrowsingContextMedia",
-      origin_trial_feature_name: "GetCurrentBrowsingContextMedia",
-      depends_on: ["GetDisplayMedia"],
-      status: {"Android": "", "default": "experimental"},
     },
     {
       name: "GetDisplayMedia",
@@ -1137,10 +1153,6 @@
       name: "IdleDetection",
       origin_trial_feature_name: "IdleDetection",
       status: "experimental",
-    },
-    {
-      name: "IgnoreCrossOriginWindowWhenNamedAccessOnWindow",
-      status: "stable",
     },
     {
       name: "ImplicitRootScroller",
@@ -1238,11 +1250,6 @@
     },
     {
       name: "LayoutNGPrinting",
-    },
-    {
-      name: "LayoutNGReplaced",
-      depends_on: ["LayoutNG"],
-      status: "stable",
     },
     {
       name: "LayoutNGTable",
@@ -1401,7 +1408,7 @@
     },
     {
       name: "MediaStreamInsertableStreams",
-      status: "experimental",
+      status: "stable",
       origin_trial_feature_name: "WebCodecs"
     },
     // This is enabled by default on Windows only. The only part that's
@@ -1453,6 +1460,10 @@
       name: "NavigatorLanguageInInsecureContext",
       settable_from_internals: true,
       status: "stable",
+    },
+    {
+      // Controlled by blink::features::kNavigatorPluginsFixed.
+      name: "NavigatorPluginsFixed",
     },
     {
       name: "NetInfoDownlinkMax",
@@ -1710,7 +1721,7 @@
     {
       name: "PointerLockOptions",
       origin_trial_feature_name: "PointerLockOptions",
-      status: 'stable',
+      status: "stable",
     },
     {
       name: "PointerRawUpdate",
@@ -1747,8 +1758,8 @@
       depends_on: ["ForcedColors"],
     },
     {
-      name: 'PrefersReducedData',
-      status: 'experimental',
+      name: "PrefersReducedData",
+      status: "experimental",
     },
     // This feature is deprecated and we are evangelizing affected sites.
     // See https://crbug.com/346236 for current status.
@@ -1788,10 +1799,6 @@
     {
       name: "QuotaChange",
       status: "experimental",
-    },
-    {
-      // Enabled when blink::features::kRawClipboard is enabled.
-      name: "RawClipboard",
     },
     {
       name: "RemotePlayback",
@@ -1897,10 +1904,6 @@
       name: "RTCUnifiedPlanByDefault",
     },
     {
-      name: "SameSiteByDefaultCookies",
-      status: "test",
-    },
-    {
       name: "SanitizerAPI",
       status: "experimental",
     },
@@ -1920,7 +1923,7 @@
     },
     {
       name: "ScrollbarGutter",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "ScrollbarWidth",
@@ -1936,7 +1939,7 @@
     {
       name: "ScrollTimeline",
       status: "experimental",
-      implied_by: ['AnimationWorklet', 'CSSScrollTimeline']
+      implied_by: ["AnimationWorklet", "CSSScrollTimeline"]
     },
     // Implements documentElement.scrollTop/Left and bodyElement.scrollTop/Left
     // as per the spec, matching other Web engines.
@@ -1954,7 +1957,7 @@
       status: "experimental",
     },
     {
-      name: "SecurePaymentConfirmationAPIV2",
+      name: "SecurePaymentConfirmationAPIV3",
     },
     {
       name: "SecurePaymentConfirmationDebug",
@@ -1984,6 +1987,11 @@
       status: "experimental",
     },
     {
+      name: "ServiceWorkerSubresourceFilter",
+      origin_trial_feature_name: "ServiceWorkerSubresourceFilter",
+      status: "experimental",
+    },
+    {
       name: "SharedArrayBuffer",
     },
     {
@@ -1995,6 +2003,10 @@
     {
       name: "SharedAutofill",
       status: "experimental",
+    },
+    {
+      name: "SharedStorageAPI",
+      status: "test",
     },
     {
       name: "SharedWorker",
@@ -2153,7 +2165,7 @@
     // See crbug.com/1008483.
     {
       name: "TransformInterop",
-      status: "experimental",
+      status: "stable",
     },
     // This is conditionally set if the platform supports translation.
     {
@@ -2205,11 +2217,19 @@
       status: "experimental",
     },
     {
+      name: "URLPatternCompareComponent",
+      status: "experimental",
+    },
+    {
       name: "UserActivationSameOriginVisibility",
     },
     {
       name: "UserAgentClientHint",
       status: "stable",
+    },
+    {
+      name: "UserAgentReduction",
+      origin_trial_feature_name: "UserAgentReduction",
     },
     {
       name: "UUID",
@@ -2240,7 +2260,7 @@
     },
     {
       name: "VirtualKeyboard",
-      status: "test",
+      status: "stable",
     },
     {
       name: "VisibilityCollapseColumn",
@@ -2256,15 +2276,19 @@
       // should work with both screen and system wake locks.
       name: "WakeLock",
       status: "stable",
-      implied_by: ['SystemWakeLock'],
+      implied_by: ["SystemWakeLock"],
     },
     {
       name: "WebAnimationsAPI",
       status: "stable",
-      implied_by: ['AnimationWorklet']
+      implied_by: ["AnimationWorklet"],
     },
     {
       name: "WebAnimationsSVG",
+      status: "experimental",
+    },
+    {
+      name: "WebAppLaunchHandler",
       status: "experimental",
     },
     {
@@ -2308,11 +2332,6 @@
     {
       name: "WebAssemblyExceptions",
       origin_trial_feature_name: "WebAssemblyExceptions",
-      status: "test",
-    },
-    {
-      name: "WebAssemblySimd",
-      origin_trial_feature_name: "WebAssemblySimd",
       status: "test",
     },
     // WebAuth is disabled on Android versions prior to N (7.0) due to lack of
@@ -2381,7 +2400,7 @@
     },
     {
       name: "WebCodecs",
-      status: "experimental",
+      status: "stable",
       origin_trial_feature_name: "WebCodecs"
     },
     {
@@ -2435,8 +2454,7 @@
     },
     {
       name: "WebScheduler",
-      origin_trial_feature_name: "WebScheduler",
-      status: "experimental",
+      status: "stable",
     },
     // WebShare is enabled by default on Android.
     {

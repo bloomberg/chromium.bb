@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/modules/xr/xr_view.h"
 
-#include "base/numerics/ranges.h"
+#include "base/cxx17_backports.h"
 #include "third_party/blink/renderer/modules/xr/xr_camera.h"
 #include "third_party/blink/renderer/modules/xr/xr_frame.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
@@ -190,6 +190,9 @@ XRCamera* XRView::camera() const {
       frame_->session()->mode() ==
       device::mojom::blink::XRSessionMode::kImmersiveAr;
 
+  DVLOG(3) << __func__ << ": camera_access_enabled=" << camera_access_enabled
+           << ", is_immersive_ar_session=" << is_immersive_ar_session;
+
   if (camera_access_enabled && is_immersive_ar_session) {
     // The feature is enabled and we're in immersive-ar session, so let's return
     // a camera object if the camera image was received in the current frame.
@@ -223,8 +226,7 @@ void XRViewData::requestViewportScale(absl::optional<double> scale) {
   if (!scale)
     return;
 
-  requested_viewport_scale_ =
-      base::ClampToRange(*scale, kMinViewportScale, 1.0);
+  requested_viewport_scale_ = base::clamp(*scale, kMinViewportScale, 1.0);
 }
 
 }  // namespace blink

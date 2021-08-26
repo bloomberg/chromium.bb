@@ -14,7 +14,6 @@
 #include "av1/encoder/tune_butteraugli.h"
 
 #include "aom_dsp/butteraugli.h"
-#include "aom_ports/system_state.h"
 #include "av1/encoder/encodeframe.h"
 #include "av1/encoder/encoder_utils.h"
 #include "av1/encoder/extend.h"
@@ -148,7 +147,6 @@ void av1_set_butteraugli_rdmult(const AV1_COMP *cpi, MACROBLOCK *x,
   double num_of_mi = 0.0;
   double geom_mean_of_scale = 0.0;
 
-  aom_clear_system_state();
   for (int row = mi_row / num_mi_w;
        row < num_rows && row < mi_row / num_mi_w + num_brows; ++row) {
     for (int col = mi_col / num_mi_h;
@@ -164,7 +162,6 @@ void av1_set_butteraugli_rdmult(const AV1_COMP *cpi, MACROBLOCK *x,
   *rdmult = (int)((double)(*rdmult) * geom_mean_of_scale + 0.5);
   *rdmult = AOMMAX(*rdmult, 0);
   av1_set_error_per_bit(&x->errorperbit, *rdmult);
-  aom_clear_system_state();
 }
 
 static void copy_plane(const uint8_t *src, int src_stride, uint8_t *dst,
@@ -202,7 +199,6 @@ static void zero_img(YV12_BUFFER_CONFIG *dst) {
 }
 
 void av1_setup_butteraugli_source(AV1_COMP *cpi) {
-  aom_clear_system_state();
   YV12_BUFFER_CONFIG *const dst = &cpi->butteraugli_info.source;
   AV1_COMMON *const cm = &cpi->common;
   const int width = cpi->source->y_crop_width;
@@ -230,11 +226,9 @@ void av1_setup_butteraugli_source(AV1_COMP *cpi) {
   zero_img(cpi->source);
   copy_img(resized_dst, cpi->source, width / resize_factor,
            height / resize_factor);
-  aom_clear_system_state();
 }
 
 void av1_setup_butteraugli_rdmult_and_restore_source(AV1_COMP *cpi, double K) {
-  aom_clear_system_state();
   av1_copy_and_extend_frame(&cpi->butteraugli_info.source, cpi->source);
   AV1_COMMON *const cm = &cpi->common;
   const int width = cpi->source->y_crop_width;
@@ -255,7 +249,6 @@ void av1_setup_butteraugli_rdmult_and_restore_source(AV1_COMP *cpi, double K) {
                                     &resized_recon, K);
   cpi->butteraugli_info.recon_set = true;
   aom_free_frame_buffer(&resized_recon);
-  aom_clear_system_state();
 }
 
 void av1_setup_butteraugli_rdmult(AV1_COMP *cpi) {
@@ -263,7 +256,6 @@ void av1_setup_butteraugli_rdmult(AV1_COMP *cpi) {
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
   const QuantizationCfg *const q_cfg = &oxcf->q_cfg;
   const int q_index = 96;
-  aom_clear_system_state();
 
   // Setup necessary params for encoding, including frame source, etc.
   if (cm->current_frame.frame_type == KEY_FRAME) copy_frame_prob_info(cpi);

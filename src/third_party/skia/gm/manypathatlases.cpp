@@ -13,7 +13,6 @@
 #include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/GrDrawingManager.h"
 #include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/GrSurfaceDrawContext.h"
 #include "tools/ToolUtils.h"
 
 namespace skiagm {
@@ -34,8 +33,7 @@ private:
         ctxOptions->fMaxTextureAtlasSize = fMaxAtlasSize;
     }
 
-    DrawResult onDraw(GrRecordingContext* rContext, GrSurfaceDrawContext*, SkCanvas* canvas,
-                      SkString* errorMsg) override {
+    DrawResult onDraw(GrRecordingContext* rContext, SkCanvas* canvas, SkString* errorMsg) override {
         canvas->clear({1,1,0,1});
 
         // Flush the context to make the DAG empty. This will test the case where we try to add an

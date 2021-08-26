@@ -1,5 +1,7 @@
 #include "http2/adapter/oghttp2_session.h"
 
+#include <tuple>
+
 #include "absl/strings/escaping.h"
 #include "http2/adapter/oghttp2_util.h"
 
@@ -7,6 +9,8 @@ namespace http2 {
 namespace adapter {
 
 namespace {
+
+const size_t kMaxMetadataFrameSize = 16384;
 
 // TODO(birenroy): Consider incorporating spdy::FlagsSerializionVisitor here.
 class FrameAttributeCollector : public spdy::SpdyFrameVisitor {
@@ -78,10 +82,16 @@ class FrameAttributeCollector : public spdy::SpdyFrameVisitor {
     flags_ = continuation.end_headers() ? 0x4 : 0;
     length_ = continuation.size() - spdy::kFrameHeaderSize;
   }
-  void VisitAltSvc(const spdy::SpdyAltSvcIR& altsvc) override {}
+  void VisitUnknown(const spdy::SpdyUnknownIR& unknown) override {
+    frame_type_ = static_cast<uint8_t>(unknown.frame_type());
+    stream_id_ = unknown.stream_id();
+    flags_ = unknown.flags();
+    length_ = unknown.size() - spdy::kFrameHeaderSize;
+  }
+  void VisitAltSvc(const spdy::SpdyAltSvcIR& /*altsvc*/) override {}
   void VisitPriorityUpdate(
-      const spdy::SpdyPriorityUpdateIR& priority_update) override {}
-  void VisitAcceptCh(const spdy::SpdyAcceptChIR& accept_ch) override {}
+      const spdy::SpdyPriorityUpdateIR& /*priority_update*/) override {}
+  void VisitAcceptCh(const spdy::SpdyAcceptChIR& /*accept_ch*/) override {}
 
   uint32_t stream_id() { return stream_id_; }
   uint32_t length() { return length_; }
@@ -100,7 +110,10 @@ class FrameAttributeCollector : public spdy::SpdyFrameVisitor {
 }  // namespace
 
 void OgHttp2Session::PassthroughHeadersHandler::OnHeaderBlockStart() {
-  visitor_.OnBeginHeadersForStream(stream_id_);
+  const bool status = visitor_.OnBeginHeadersForStream(stream_id_);
+  if (!status) {
+    result_ = Http2VisitorInterface::HEADER_CONNECTION_ERROR;
+  }
 }
 
 void OgHttp2Session::PassthroughHeadersHandler::OnHeader(
@@ -131,6 +144,7 @@ OgHttp2Session::OgHttp2Session(Http2VisitorInterface& visitor, Options options)
                                  }),
       options_(options) {
   decoder_.set_visitor(this);
+  decoder_.set_extension_visitor(this);
   if (options_.perspective == Perspective::kServer) {
     remaining_preface_ = {spdy::kHttp2ConnectionHeaderPrefix,
                           spdy::kHttp2ConnectionHeaderPrefixSize};
@@ -156,8 +170,8 @@ void* OgHttp2Session::GetStreamUserData(Http2StreamId stream_id) {
 }
 
 bool OgHttp2Session::ResumeStream(Http2StreamId stream_id) {
-  if (auto it = stream_map_.find(stream_id);
-      it->second.outbound_body == nullptr ||
+  auto it = stream_map_.find(stream_id);
+  if (it->second.outbound_body == nullptr ||
       !write_scheduler_.StreamRegistered(stream_id)) {
     return false;
   }
@@ -282,6 +296,9 @@ int OgHttp2Session::Send() {
     return result < 0 ? result : 0;
   }
   bool continue_writing = SendQueuedFrames();
+  while (continue_writing && !connection_metadata_.empty()) {
+    continue_writing = SendMetadata(0, connection_metadata_);
+  }
   // Wake streams for writes.
   while (continue_writing && write_scheduler_.HasReadyStreams() &&
          connection_send_window_ > 0) {
@@ -323,7 +340,7 @@ bool OgHttp2Session::SendQueuedFrames() {
       }
 
       frames_.pop_front();
-      if (result < frame.size()) {
+      if (static_cast<size_t>(result) < frame.size()) {
         // The frame was partially written, so the rest must be buffered.
         serialized_prefix_.assign(frame.data() + result, frame.size() - result);
         return false;
@@ -341,6 +358,11 @@ bool OgHttp2Session::WriteForStream(Http2StreamId stream_id) {
     return true;
   }
   StreamState& state = it->second;
+  bool connection_can_write = true;
+  if (!state.outbound_metadata.empty()) {
+    connection_can_write = SendMetadata(stream_id, state.outbound_metadata);
+  }
+
   if (state.outbound_body == nullptr) {
     // No data to send, but there might be trailers.
     if (state.trailers != nullptr) {
@@ -355,13 +377,15 @@ bool OgHttp2Session::WriteForStream(Http2StreamId stream_id) {
     return true;
   }
   bool source_can_produce = true;
-  bool connection_can_write = true;
   int32_t available_window = std::min(
       std::min(connection_send_window_, state.send_window), max_frame_payload_);
-  while (available_window > 0 && state.outbound_body != nullptr) {
-    auto [length, end_data] =
+  while (connection_can_write && available_window > 0 &&
+         state.outbound_body != nullptr) {
+    ssize_t length;
+    bool end_data;
+    std::tie(length, end_data) =
         state.outbound_body->SelectPayloadLength(available_window);
-    if (length == DataFrameSource::kBlocked) {
+    if (length == 0 && !end_data) {
       source_can_produce = false;
       break;
     } else if (length == DataFrameSource::kError) {
@@ -370,23 +394,27 @@ bool OgHttp2Session::WriteForStream(Http2StreamId stream_id) {
       break;
     }
     const bool fin = end_data ? state.outbound_body->send_fin() : false;
-    spdy::SpdyDataIR data(stream_id);
-    data.set_fin(fin);
-    data.SetDataShallow(length);
-    spdy::SpdySerializedFrame header =
-        spdy::SpdyFramer::SerializeDataFrameHeaderWithPaddingLengthField(data);
-    const bool success =
-        state.outbound_body->Send(absl::string_view(header), length);
-    if (!success) {
-      connection_can_write = false;
-      break;
+    if (length > 0 || fin) {
+      spdy::SpdyDataIR data(stream_id);
+      data.set_fin(fin);
+      data.SetDataShallow(length);
+      spdy::SpdySerializedFrame header =
+          spdy::SpdyFramer::SerializeDataFrameHeaderWithPaddingLengthField(
+              data);
+      QUICHE_DCHECK(serialized_prefix_.empty() && frames_.empty());
+      const bool success =
+          state.outbound_body->Send(absl::string_view(header), length);
+      if (!success) {
+        connection_can_write = false;
+        break;
+      }
+      visitor_.OnFrameSent(/* DATA */ 0, stream_id, length, fin ? 0x1 : 0x0, 0);
+      connection_send_window_ -= length;
+      state.send_window -= length;
+      available_window =
+          std::min(std::min(connection_send_window_, state.send_window),
+                   max_frame_payload_);
     }
-    visitor_.OnFrameSent(/* DATA */ 0, stream_id, length, fin ? 0x1 : 0x0, 0);
-    connection_send_window_ -= length;
-    state.send_window -= length;
-    available_window =
-        std::min(std::min(connection_send_window_, state.send_window),
-                 max_frame_payload_);
     if (end_data) {
       bool sent_trailers = false;
       if (state.trailers != nullptr) {
@@ -415,6 +443,33 @@ bool OgHttp2Session::WriteForStream(Http2StreamId stream_id) {
   return connection_can_write && available_window > 0;
 }
 
+bool OgHttp2Session::SendMetadata(Http2StreamId stream_id,
+                                  OgHttp2Session::MetadataSequence& sequence) {
+  auto payload_buffer = absl::make_unique<uint8_t[]>(kMaxMetadataFrameSize);
+  while (!sequence.empty()) {
+    MetadataSource& source = *sequence.front();
+
+    ssize_t written;
+    bool end_metadata;
+    std::tie(written, end_metadata) =
+        source.Pack(payload_buffer.get(), kMaxMetadataFrameSize);
+    if (written < 0) {
+      // Did not touch the connection, so perhaps writes are still possible.
+      return true;
+    }
+    QUICHE_DCHECK_LE(static_cast<size_t>(written), kMaxMetadataFrameSize);
+    auto payload = absl::string_view(
+        reinterpret_cast<const char*>(payload_buffer.get()), written);
+    EnqueueFrame(absl::make_unique<spdy::SpdyUnknownIR>(
+        stream_id, kMetadataFrameType, end_metadata ? kMetadataEndFlag : 0u,
+        std::string(payload)));
+    if (end_metadata) {
+      sequence.erase(sequence.begin());
+    }
+  }
+  return SendQueuedFrames();
+}
+
 int32_t OgHttp2Session::SubmitRequest(
     absl::Span<const Header> headers,
     std::unique_ptr<DataFrameSource> data_source, void* user_data) {
@@ -425,17 +480,8 @@ int32_t OgHttp2Session::SubmitRequest(
   auto frame =
       absl::make_unique<spdy::SpdyHeadersIR>(stream_id, ToHeaderBlock(headers));
   // Add data source and user data to stream state
-  WindowManager::WindowUpdateListener listener =
-      [this, stream_id](size_t window_update_delta) {
-        SendWindowUpdate(stream_id, window_update_delta);
-      };
-  auto [iter, inserted] = stream_map_.try_emplace(
-      stream_id,
-      StreamState(stream_receive_window_limit_, std::move(listener)));
-  if (!inserted) {
-    QUICHE_LOG(DFATAL) << "Stream " << stream_id << " already exists!";
-    return -501;  // NGHTTP2_ERR_INVALID_ARGUMENT
-  }
+  auto iter = CreateStream(stream_id);
+  write_scheduler_.MarkStreamReady(stream_id, false);
   if (data_source == nullptr) {
     frame->set_fin(true);
     iter->second.half_closed_local = true;
@@ -443,10 +489,6 @@ int32_t OgHttp2Session::SubmitRequest(
     iter->second.outbound_body = std::move(data_source);
   }
   iter->second.user_data = user_data;
-  // Add the stream to the write scheduler.
-  const WriteScheduler::StreamPrecedenceType precedence(3);
-  write_scheduler_.RegisterStream(stream_id, precedence);
-  write_scheduler_.MarkStreamReady(stream_id, false);
   // Enqueue headers frame
   EnqueueFrame(std::move(frame));
   return stream_id;
@@ -513,6 +555,17 @@ int OgHttp2Session::SubmitTrailer(Http2StreamId stream_id,
   return 0;
 }
 
+void OgHttp2Session::SubmitMetadata(Http2StreamId stream_id,
+                                    std::unique_ptr<MetadataSource> source) {
+  if (stream_id == 0) {
+    connection_metadata_.push_back(std::move(source));
+  } else {
+    auto iter = CreateStream(stream_id);
+    iter->second.outbound_metadata.push_back(std::move(source));
+    write_scheduler_.MarkStreamReady(stream_id, false);
+  }
+}
+
 void OgHttp2Session::OnError(http2::Http2DecoderAdapter::SpdyFramerError error,
                              std::string detailed_error) {
   QUICHE_VLOG(1) << "Error: "
@@ -531,8 +584,7 @@ void OgHttp2Session::OnCommonHeader(spdy::SpdyStreamId stream_id,
 }
 
 void OgHttp2Session::OnDataFrameHeader(spdy::SpdyStreamId stream_id,
-                                       size_t length,
-                                       bool fin) {
+                                       size_t length, bool /*fin*/) {
   visitor_.OnBeginDataForStream(stream_id, length);
 }
 
@@ -563,7 +615,8 @@ void OgHttp2Session::OnStreamPadLength(spdy::SpdyStreamId stream_id,
   // TODO(181586191): Pass padding to the visitor?
 }
 
-void OgHttp2Session::OnStreamPadding(spdy::SpdyStreamId stream_id, size_t len) {
+void OgHttp2Session::OnStreamPadding(spdy::SpdyStreamId /*stream_id*/, size_t
+                                     /*len*/) {
   // Flow control was accounted for in OnStreamPadLength().
   // TODO(181586191): Pass padding to the visitor?
 }
@@ -574,7 +627,7 @@ spdy::SpdyHeadersHandlerInterface* OgHttp2Session::OnHeaderFrameStart(
   return &headers_handler_;
 }
 
-void OgHttp2Session::OnHeaderFrameEnd(spdy::SpdyStreamId stream_id) {
+void OgHttp2Session::OnHeaderFrameEnd(spdy::SpdyStreamId /*stream_id*/) {
   headers_handler_.set_stream_id(0);
 }
 
@@ -598,6 +651,9 @@ void OgHttp2Session::OnSettings() {
 
 void OgHttp2Session::OnSetting(spdy::SpdySettingsId id, uint32_t value) {
   visitor_.OnSetting({id, value});
+  if (id == kMetadataExtensionId) {
+    peer_supports_metadata_ = (value != 0);
+  }
 }
 
 void OgHttp2Session::OnSettingsEnd() {
@@ -622,30 +678,18 @@ void OgHttp2Session::OnGoAway(spdy::SpdyStreamId last_accepted_stream_id,
                     "");
 }
 
-bool OgHttp2Session::OnGoAwayFrameData(const char* goaway_data, size_t len) {
+bool OgHttp2Session::OnGoAwayFrameData(const char* /*goaway_data*/, size_t
+                                       /*len*/) {
   // Opaque data is currently ignored.
   return true;
 }
 
 void OgHttp2Session::OnHeaders(spdy::SpdyStreamId stream_id,
-                               bool has_priority,
-                               int weight,
-                               spdy::SpdyStreamId parent_stream_id,
-                               bool exclusive,
-                               bool fin,
-                               bool end) {
+                               bool /*has_priority*/, int /*weight*/,
+                               spdy::SpdyStreamId /*parent_stream_id*/,
+                               bool /*exclusive*/, bool /*fin*/, bool /*end*/) {
   if (options_.perspective == Perspective::kServer) {
-    WindowManager::WindowUpdateListener listener =
-        [this, stream_id](size_t window_update_delta) {
-          SendWindowUpdate(stream_id, window_update_delta);
-        };
-    // TODO(birenroy): Factor out a CreateStream() method from here and
-    // SubmitRequest().
-    stream_map_.try_emplace(stream_id, StreamState(stream_receive_window_limit_,
-                                                   std::move(listener)));
-    // Add the stream to the write scheduler.
-    const WriteScheduler::StreamPrecedenceType precedence(3);
-    write_scheduler_.RegisterStream(stream_id, precedence);
+    CreateStream(stream_id);
   }
 }
 
@@ -668,11 +712,12 @@ void OgHttp2Session::OnWindowUpdate(spdy::SpdyStreamId stream_id,
   visitor_.OnWindowUpdate(stream_id, delta_window_size);
 }
 
-void OgHttp2Session::OnPushPromise(spdy::SpdyStreamId stream_id,
-                                   spdy::SpdyStreamId promised_stream_id,
-                                   bool end) {}
+void OgHttp2Session::OnPushPromise(spdy::SpdyStreamId /*stream_id*/,
+                                   spdy::SpdyStreamId /*promised_stream_id*/,
+                                   bool /*end*/) {}
 
-void OgHttp2Session::OnContinuation(spdy::SpdyStreamId stream_id, bool end) {}
+void OgHttp2Session::OnContinuation(spdy::SpdyStreamId /*stream_id*/, bool
+                                    /*end*/) {}
 
 void OgHttp2Session::OnAltSvc(spdy::SpdyStreamId /*stream_id*/,
                               absl::string_view /*origin*/,
@@ -680,16 +725,16 @@ void OgHttp2Session::OnAltSvc(spdy::SpdyStreamId /*stream_id*/,
                                   AlternativeServiceVector& /*altsvc_vector*/) {
 }
 
-void OgHttp2Session::OnPriority(spdy::SpdyStreamId stream_id,
-                                spdy::SpdyStreamId parent_stream_id,
-                                int weight,
-                                bool exclusive) {}
+void OgHttp2Session::OnPriority(spdy::SpdyStreamId /*stream_id*/,
+                                spdy::SpdyStreamId /*parent_stream_id*/,
+                                int /*weight*/, bool /*exclusive*/) {}
 
-void OgHttp2Session::OnPriorityUpdate(spdy::SpdyStreamId prioritized_stream_id,
-                                      absl::string_view priority_field_value) {}
+void OgHttp2Session::OnPriorityUpdate(
+    spdy::SpdyStreamId /*prioritized_stream_id*/,
+    absl::string_view /*priority_field_value*/) {}
 
-bool OgHttp2Session::OnUnknownFrame(spdy::SpdyStreamId stream_id,
-                                    uint8_t frame_type) {
+bool OgHttp2Session::OnUnknownFrame(spdy::SpdyStreamId /*stream_id*/,
+                                    uint8_t /*frame_type*/) {
   return true;
 }
 
@@ -704,6 +749,39 @@ void OgHttp2Session::OnHeaderStatus(
     }
   } else if (result == Http2VisitorInterface::HEADER_CONNECTION_ERROR) {
     visitor_.OnConnectionError();
+  }
+}
+
+bool OgHttp2Session::OnFrameHeader(spdy::SpdyStreamId stream_id, size_t length,
+                                   uint8_t type, uint8_t flags) {
+  if (type == kMetadataFrameType) {
+    QUICHE_DCHECK_EQ(metadata_length_, 0u);
+    visitor_.OnBeginMetadataForStream(stream_id, length);
+    metadata_stream_id_ = stream_id;
+    metadata_length_ = length;
+    end_metadata_ = flags & kMetadataEndFlag;
+    return true;
+  } else {
+    QUICHE_DLOG(INFO) << "Unexpected frame type " << static_cast<int>(type)
+                      << " received by the extension visitor.";
+    return false;
+  }
+}
+
+void OgHttp2Session::OnFramePayload(const char* data, size_t len) {
+  if (metadata_length_ > 0) {
+    QUICHE_DCHECK_LE(len, metadata_length_);
+    visitor_.OnMetadataForStream(metadata_stream_id_,
+                                 absl::string_view(data, len));
+    metadata_length_ -= len;
+    if (metadata_length_ == 0 && end_metadata_) {
+      visitor_.OnMetadataEndForStream(metadata_stream_id_);
+      metadata_stream_id_ = 0;
+      end_metadata_ = false;
+    }
+  } else {
+    QUICHE_DLOG(INFO) << "Unexpected metadata payload for stream "
+                      << metadata_stream_id_;
   }
 }
 
@@ -758,9 +836,29 @@ void OgHttp2Session::MaybeCloseWithRstStream(Http2StreamId stream_id,
 
 void OgHttp2Session::MarkDataBuffered(Http2StreamId stream_id, size_t bytes) {
   connection_window_manager_.MarkDataBuffered(bytes);
-  if (auto it = stream_map_.find(stream_id); it != stream_map_.end()) {
+  auto it = stream_map_.find(stream_id);
+  if (it != stream_map_.end()) {
     it->second.window_manager.MarkDataBuffered(bytes);
   }
+}
+
+OgHttp2Session::StreamStateMap::iterator OgHttp2Session::CreateStream(
+    Http2StreamId stream_id) {
+  WindowManager::WindowUpdateListener listener =
+      [this, stream_id](size_t window_update_delta) {
+        SendWindowUpdate(stream_id, window_update_delta);
+      };
+  absl::flat_hash_map<Http2StreamId, StreamState>::iterator iter;
+  bool inserted;
+  std::tie(iter, inserted) = stream_map_.try_emplace(
+      stream_id,
+      StreamState(stream_receive_window_limit_, std::move(listener)));
+  if (inserted) {
+    // Add the stream to the write scheduler.
+    const WriteScheduler::StreamPrecedenceType precedence(3);
+    write_scheduler_.RegisterStream(stream_id, precedence);
+  }
+  return iter;
 }
 
 }  // namespace adapter

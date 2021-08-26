@@ -197,8 +197,8 @@ class GitReadOnlyFunctionsTest(git_test_utils.GitRepoReadOnlyTestBase,
   def testHashes(self):
     ret = self.repo.run(
       self.gc.hash_multi, *[
-        'master',
-        'master~3',
+        'main',
+        'main~3',
         self.repo['E']+'~',
         self.repo['D']+'^2',
         'tag_C^{}',
@@ -259,7 +259,7 @@ class GitReadOnlyFunctionsTest(git_test_utils.GitRepoReadOnlyTestBase,
   def testBranches(self):
     # This check fails with git 2.4 (see crbug.com/487172)
     self.assertEqual(self.repo.run(set, self.gc.branches()),
-                     {'master', 'branch_D', 'root_A'})
+                     {'main', 'branch_D', 'root_A'})
 
   def testDiff(self):
     # Get the names of the blobs being compared (to avoid hard-coding).
@@ -279,9 +279,9 @@ class GitReadOnlyFunctionsTest(git_test_utils.GitRepoReadOnlyTestBase,
                      self.repo.run(self.gc.diff, 'tag_C', 'tag_D').split('\n'))
 
   def testDormant(self):
-    self.assertFalse(self.repo.run(self.gc.is_dormant, 'master'))
-    self.repo.git('config', 'branch.master.dormant', 'true')
-    self.assertTrue(self.repo.run(self.gc.is_dormant, 'master'))
+    self.assertFalse(self.repo.run(self.gc.is_dormant, 'main'))
+    self.repo.git('config', 'branch.main.dormant', 'true')
+    self.assertTrue(self.repo.run(self.gc.is_dormant, 'main'))
 
   def testBlame(self):
     def get_porcelain_for_commit(commit_name, lines):
@@ -321,8 +321,8 @@ class GitReadOnlyFunctionsTest(git_test_utils.GitRepoReadOnlyTestBase,
   def testParseCommitrefs(self):
     ret = self.repo.run(
       self.gc.parse_commitrefs, *[
-        'master',
-        'master~3',
+        'main',
+        'main~3',
         self.repo['E']+'~',
         self.repo['D']+'^2',
         'tag_C^{}',
@@ -337,9 +337,9 @@ class GitReadOnlyFunctionsTest(git_test_utils.GitRepoReadOnlyTestBase,
     ]
     self.assertEqual(ret, [binascii.unhexlify(h) for h in hashes])
 
-    expected_re = r"one of \(u?'master', u?'bananas'\)"
+    expected_re = r"one of \(u?'main', u?'bananas'\)"
     with self.assertRaisesRegexp(Exception, expected_re):
-      self.repo.run(self.gc.parse_commitrefs, 'master', 'bananas')
+      self.repo.run(self.gc.parse_commitrefs, 'main', 'bananas')
 
   def testRepoRoot(self):
     def cd_and_repo_root(path):
@@ -356,7 +356,7 @@ class GitReadOnlyFunctionsTest(git_test_utils.GitRepoReadOnlyTestBase,
                      {'tag_'+l for l in 'ABCDE'})
 
   def testTree(self):
-    tree = self.repo.run(self.gc.tree, 'master:some/files')
+    tree = self.repo.run(self.gc.tree, 'main:some/files')
     file1 = self.COMMIT_A['some/files/file1']['data']
     file2 = self.COMMIT_D['some/files/file2']['data']
     file3 = self.COMMIT_A['some/files/file3']['data']
@@ -370,16 +370,16 @@ class GitReadOnlyFunctionsTest(git_test_utils.GitRepoReadOnlyTestBase,
         tree['file3'],
         ('100644', 'blob', git_test_utils.git_hash_data(file3)))
 
-    tree = self.repo.run(self.gc.tree, 'master:some')
+    tree = self.repo.run(self.gc.tree, 'main:some')
     self.assertEqual(len(tree), 2)
     # Don't check the tree hash because we're lazy :)
     self.assertEqual(tree['files'][:2], ('040000', 'tree'))
 
-    tree = self.repo.run(self.gc.tree, 'master:wat')
+    tree = self.repo.run(self.gc.tree, 'main:wat')
     self.assertEqual(tree, None)
 
   def testTreeRecursive(self):
-    tree = self.repo.run(self.gc.tree, 'master:some', recurse=True)
+    tree = self.repo.run(self.gc.tree, 'main:some', recurse=True)
     file1 = self.COMMIT_A['some/files/file1']['data']
     file2 = self.COMMIT_D['some/files/file2']['data']
     file3 = self.COMMIT_A['some/files/file3']['data']
@@ -448,7 +448,7 @@ class GitMutableFunctionsTest(git_test_utils.GitRepoReadWriteTestBase,
     self.assertEqual(
         'cat', self.repo.run(self.gc.get_config, 'dude.bob', 'cat'))
 
-    self.assertEqual('origin/master', self.repo.run(self.gc.root))
+    self.assertEqual('origin/main', self.repo.run(self.gc.root))
 
     self.repo.git('config', 'depot-tools.upstream', 'catfood')
 
@@ -460,7 +460,7 @@ class GitMutableFunctionsTest(git_test_utils.GitRepoReadWriteTestBase,
       B D
     """, self.getRepoContent)
     origin = origin_schema.reify()
-    # Set the default branch to branch_D instead of master.
+    # Set the default branch to branch_D instead of main.
     origin.git('checkout', 'branch_D')
 
     self.repo.git('remote', 'add', 'origin', origin.repo_path)
@@ -471,10 +471,10 @@ class GitMutableFunctionsTest(git_test_utils.GitRepoReadWriteTestBase,
   def testUpstream(self):
     self.repo.git('commit', '--allow-empty', '-am', 'foooooo')
     self.assertEqual(self.repo.run(self.gc.upstream, 'bobly'), None)
-    self.assertEqual(self.repo.run(self.gc.upstream, 'master'), None)
-    self.repo.git('checkout', '-tb', 'happybranch', 'master')
+    self.assertEqual(self.repo.run(self.gc.upstream, 'main'), None)
+    self.repo.git('checkout', '-tb', 'happybranch', 'main')
     self.assertEqual(self.repo.run(self.gc.upstream, 'happybranch'),
-                     'master')
+                     'main')
 
   def testNormalizedVersion(self):
     self.assertTrue(all(
@@ -482,11 +482,11 @@ class GitMutableFunctionsTest(git_test_utils.GitRepoReadWriteTestBase,
 
   def testGetBranchesInfo(self):
     self.repo.git('commit', '--allow-empty', '-am', 'foooooo')
-    self.repo.git('checkout', '-tb', 'happybranch', 'master')
+    self.repo.git('checkout', '-tb', 'happybranch', 'main')
     self.repo.git('commit', '--allow-empty', '-am', 'foooooo')
     self.repo.git('checkout', '-tb', 'child', 'happybranch')
 
-    self.repo.git('checkout', '-tb', 'to_delete', 'master')
+    self.repo.git('checkout', '-tb', 'to_delete', 'main')
     self.repo.git('checkout', '-tb', 'parent_gone', 'to_delete')
     self.repo.git('branch', '-D', 'to_delete')
 
@@ -498,7 +498,7 @@ class GitMutableFunctionsTest(git_test_utils.GitRepoReadWriteTestBase,
     expected = {
         'happybranch': (
             self.repo.run(self.gc.hash_one, 'happybranch', short=True),
-            'master',
+            'main',
             1 if supports_track else None,
             None
         ),
@@ -508,8 +508,8 @@ class GitMutableFunctionsTest(git_test_utils.GitRepoReadWriteTestBase,
             None,
             None
         ),
-        'master': (
-            self.repo.run(self.gc.hash_one, 'master', short=True),
+        'main': (
+            self.repo.run(self.gc.hash_one, 'main', short=True),
             '',
             None,
             None
@@ -527,10 +527,10 @@ class GitMutableFunctionsTest(git_test_utils.GitRepoReadWriteTestBase,
 
   def testGetBranchesInfoWithReset(self):
     self.repo.git('commit', '--allow-empty', '-am', 'foooooo')
-    self.repo.git('checkout','-tb', 'foobarA', 'master')
+    self.repo.git('checkout','-tb', 'foobarA', 'main')
     self.repo.git('config', 'branch.foobarA.base',
-      self.repo.run(self.gc.hash_one, 'master'))
-    self.repo.git('config', 'branch.foobarA.base-upstream', 'master')
+      self.repo.run(self.gc.hash_one, 'main'))
+    self.repo.git('config', 'branch.foobarA.base-upstream', 'main')
 
     with self.repo.open('foobar1', 'w') as f:
       f.write('hello')
@@ -558,7 +558,7 @@ class GitMutableFunctionsTest(git_test_utils.GitRepoReadWriteTestBase,
     expected = {
         'foobarA': (
             self.repo.run(self.gc.hash_one, 'foobarA', short=True),
-            'master',
+            'main',
             2,
             None
         ),
@@ -568,8 +568,8 @@ class GitMutableFunctionsTest(git_test_utils.GitRepoReadWriteTestBase,
             None,
             1
         ),
-        'master': (
-            self.repo.run(self.gc.hash_one, 'master', short=True),
+        'main': (
+            self.repo.run(self.gc.hash_one, 'main', short=True),
             '',
             None,
             None
@@ -693,40 +693,10 @@ class GitMutableStructuredTest(git_test_utils.GitRepoReadWriteTestBase,
     self.assertIsNone(
       self.repo.run(self.gc.get_or_create_merge_base, 'branch_DOG'))
 
-  def testMergeBaseWithForkPoint(self):
-    self.repo.git('commit', '--allow-empty', '-am', 'foooooo')
-    self.repo.git('checkout','-tb', 'foobarA', 'master')
-    foobarA = self.repo.run(self.gc.hash_one, 'foobarA', short=True)
-
-    self.repo.git('checkout','-tb', 'foobarB', 'foobarA')
-    with self.repo.open('cl1', 'w') as f:
-        f.write('cl1')
-    self.repo.git('add', 'cl1')
-    self.repo.git_commit('cl1')
-    foobarB_old = self.repo.run(self.gc.hash_one, 'foobarB', short=True)
-
-    self.repo.git('checkout','-tb', 'foobarC', 'foobarB')
-    with self.repo.open('cl2', 'w') as f:
-        f.write('cl2')
-    self.repo.git('add', 'cl2')
-    self.repo.git_commit('cl2')
-    foobarC = self.repo.run(self.gc.hash_one, 'foobarC', short=True)
-
-    self.repo.git('checkout', 'foobarB')
-    with self.repo.open('cl1', 'w') as f:
-      f.write('amend cl1')
-    self.repo.git('add', 'cl1')
-    self.repo.git('commit', '--amend', '-m', 'amend cl1')
-
-    self.assertIn(foobarA,
-      self.repo.run(self.gc.get_or_create_merge_base, 'foobarB', foobarB_old))
-    self.assertIn(foobarB_old,
-      self.repo.run(self.gc.get_or_create_merge_base, foobarC, 'foobarB'))
-
   def testGetBranchTree(self):
     skipped, tree = self.repo.run(self.gc.get_branch_tree)
     # This check fails with git 2.4 (see crbug.com/487172)
-    self.assertEqual(skipped, {'master', 'root_X', 'branch_DOG', 'root_CAT'})
+    self.assertEqual(skipped, {'main', 'root_X', 'branch_DOG', 'root_CAT'})
     self.assertEqual(tree, {
       'branch_G': 'root_A',
       'root_A': 'root_X',

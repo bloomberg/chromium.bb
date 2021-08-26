@@ -34,6 +34,8 @@ void DistanceWeightedBlendInit_NEON();
 #if LIBGAV1_ENABLE_NEON
 #define LIBGAV1_Dsp8bpp_DistanceWeightedBlend LIBGAV1_CPU_NEON
 
+#define LIBGAV1_Dsp10bpp_DistanceWeightedBlend LIBGAV1_CPU_NEON
+
 #endif  // LIBGAV1_ENABLE_NEON
 
 #endif  // LIBGAV1_SRC_DSP_ARM_DISTANCE_WEIGHTED_BLEND_NEON_H_

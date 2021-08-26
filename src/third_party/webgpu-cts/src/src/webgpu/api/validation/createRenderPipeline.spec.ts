@@ -24,17 +24,73 @@ TODO: review existing tests, write descriptions, and make sure tests are complet
 `;
 
 import { makeTestGroup } from '../../../common/framework/test_group.js';
-import { kTextureFormats, kTextureFormatInfo } from '../../capability_info.js';
+import { unreachable } from '../../../common/util/util.js';
+import {
+  kTextureFormats,
+  kRenderableColorTextureFormats,
+  kTextureFormatInfo,
+} from '../../capability_info.js';
+import { kTexelRepresentationInfo } from '../../util/texture/texel_data.js';
 
 import { ValidationTest } from './validation_test.js';
 
 class F extends ValidationTest {
+  getFragmentShaderCode(sampleType: GPUTextureSampleType, componentCount: number): string {
+    const v = ['0', '1', '0', '1'];
+
+    let fragColorType;
+    let suffix;
+    switch (sampleType) {
+      case 'sint':
+        fragColorType = 'i32';
+        suffix = '';
+        break;
+      case 'uint':
+        fragColorType = 'u32';
+        suffix = 'u';
+        break;
+      default:
+        fragColorType = 'f32';
+        suffix = '.0';
+        break;
+    }
+
+    let outputType;
+    let result;
+    switch (componentCount) {
+      case 1:
+        outputType = fragColorType;
+        result = `${v[0]}${suffix}`;
+        break;
+      case 2:
+        outputType = `vec2<${fragColorType}>`;
+        result = `${outputType}(${v[0]}${suffix}, ${v[1]}${suffix})`;
+        break;
+      case 3:
+        outputType = `vec3<${fragColorType}>`;
+        result = `${outputType}(${v[0]}${suffix}, ${v[1]}${suffix}, ${v[2]}${suffix})`;
+        break;
+      case 4:
+        outputType = `vec4<${fragColorType}>`;
+        result = `${outputType}(${v[0]}${suffix}, ${v[1]}${suffix}, ${v[2]}${suffix}, ${v[3]}${suffix})`;
+        break;
+      default:
+        unreachable();
+    }
+
+    return `
+    [[stage(fragment)]] fn main() -> [[location(0)]] ${outputType} {
+      return ${result};
+    }`;
+  }
+
   getDescriptor(
     options: {
       topology?: GPUPrimitiveTopology;
       targets?: GPUColorTargetState[];
       sampleCount?: number;
       depthStencil?: GPUDepthStencilState;
+      fragmentShaderCode?: string;
     } = {}
   ): GPURenderPipelineDescriptor {
     const defaultTargets: GPUColorTargetState[] = [{ format: 'rgba8unorm' }];
@@ -43,22 +99,11 @@ class F extends ValidationTest {
       targets = defaultTargets,
       sampleCount = 1,
       depthStencil,
+      fragmentShaderCode = this.getFragmentShaderCode(
+        kTextureFormatInfo[targets[0] ? targets[0].format : 'rgba8unorm'].sampleType,
+        4
+      ),
     } = options;
-
-    const format = targets.length ? targets[0].format : 'rgba8unorm';
-
-    let fragColorType;
-    let suffix;
-    if (format.endsWith('sint')) {
-      fragColorType = 'i32';
-      suffix = '';
-    } else if (format.endsWith('uint')) {
-      fragColorType = 'u32';
-      suffix = 'u';
-    } else {
-      fragColorType = 'f32';
-      suffix = '.0';
-    }
 
     return {
       vertex: {
@@ -72,10 +117,7 @@ class F extends ValidationTest {
       },
       fragment: {
         module: this.device.createShaderModule({
-          code: `
-            [[stage(fragment)]] fn main() -> [[location(0)]] vec4<${fragColorType}> {
-              return vec4<${fragColorType}>(0${suffix}, 1${suffix}, 0${suffix}, 1${suffix});
-            }`,
+          code: fragmentShaderCode,
         }),
         entryPoint: 'main',
         targets,
@@ -187,3 +229,162 @@ g.test('sample_count_must_be_valid')
 
     t.doCreateRenderPipelineTest(isAsync, _success, descriptor);
   });
+
+g.test('pipeline_output_targets')
+  .desc(
+    `Pipeline fragment output types must be compatible with target color state format
+  - The scalar type (f32, i32, or u32) must match the sample type of the format.
+  - The componentCount of the fragment output (e.g. f32, vec2, vec3, vec4) must not have fewer
+    channels than that of the color attachment texture formats. Extra components are allowed and are discarded.
+  `
+  )
+  .params(u =>
+    u
+      .combine('isAsync', [false, true])
+      .combine('format', kRenderableColorTextureFormats)
+      .beginSubcases()
+      .combine('sampleType', ['float', 'uint', 'sint'] as const)
+      .combine('componentCount', [1, 2, 3, 4])
+  )
+  .fn(async t => {
+    const { isAsync, format, sampleType, componentCount } = t.params;
+    const info = kTextureFormatInfo[format];
+    await t.selectDeviceOrSkipTestCase(info.feature);
+
+    const descriptor = t.getDescriptor({
+      targets: [{ format }],
+      fragmentShaderCode: t.getFragmentShaderCode(sampleType, componentCount),
+    });
+
+    const _success =
+      info.sampleType === sampleType &&
+      componentCount >= kTexelRepresentationInfo[format].componentOrder.length;
+    t.doCreateRenderPipelineTest(isAsync, _success, descriptor);
+  });
+
+g.test('pipeline_output_targets,blend')
+  .desc(
+    `On top of requirements from pipeline_output_targets, when blending is enabled and alpha channel is read indicated by any blend factor, an extra requirement is added:
+  - fragment output must be vec4.
+  `
+  )
+  .params(u =>
+    u
+      .combine('isAsync', [false, true])
+      .combine('format', ['r8unorm', 'rg8unorm', 'rgba8unorm', 'bgra8unorm'] as const)
+      .beginSubcases()
+      .combine('componentCount', [1, 2, 3, 4])
+      .combineWithParams([
+        // extra requirement does not apply
+        {
+          colorSrcFactor: 'one',
+          colorDstFactor: 'zero',
+          alphaSrcFactor: 'zero',
+          alphaDstFactor: 'zero',
+        },
+        {
+          colorSrcFactor: 'dst-alpha',
+          colorDstFactor: 'zero',
+          alphaSrcFactor: 'zero',
+          alphaDstFactor: 'zero',
+        },
+        // extra requirement applies, fragment output must be vec4 (contain alpha channel)
+        {
+          colorSrcFactor: 'src-alpha',
+          colorDstFactor: 'one',
+          alphaSrcFactor: 'zero',
+          alphaDstFactor: 'zero',
+        },
+        {
+          colorSrcFactor: 'one',
+          colorDstFactor: 'one-minus-src-alpha',
+          alphaSrcFactor: 'zero',
+          alphaDstFactor: 'zero',
+        },
+        {
+          colorSrcFactor: 'src-alpha-saturated',
+          colorDstFactor: 'one',
+          alphaSrcFactor: 'zero',
+          alphaDstFactor: 'zero',
+        },
+        {
+          colorSrcFactor: 'one',
+          colorDstFactor: 'zero',
+          alphaSrcFactor: 'one',
+          alphaDstFactor: 'zero',
+        },
+        {
+          colorSrcFactor: 'one',
+          colorDstFactor: 'zero',
+          alphaSrcFactor: 'zero',
+          alphaDstFactor: 'src',
+        },
+        {
+          colorSrcFactor: 'one',
+          colorDstFactor: 'zero',
+          alphaSrcFactor: 'zero',
+          alphaDstFactor: 'src-alpha',
+        },
+      ] as const)
+  )
+  .fn(async t => {
+    const sampleType = 'float';
+    const {
+      isAsync,
+      format,
+      componentCount,
+      colorSrcFactor,
+      colorDstFactor,
+      alphaSrcFactor,
+      alphaDstFactor,
+    } = t.params;
+    const info = kTextureFormatInfo[format];
+    await t.selectDeviceOrSkipTestCase(info.feature);
+
+    const descriptor = t.getDescriptor({
+      targets: [
+        {
+          format,
+          blend: {
+            color: {
+              srcFactor: colorSrcFactor,
+              dstFactor: colorDstFactor,
+              operation: 'add',
+            },
+            alpha: {
+              srcFactor: alphaSrcFactor,
+              dstFactor: alphaDstFactor,
+              operation: 'add',
+            },
+          },
+        },
+      ],
+      fragmentShaderCode: t.getFragmentShaderCode(sampleType, componentCount),
+    });
+
+    const blendingReadSrcAlpha =
+      colorSrcFactor.includes('src-alpha') ||
+      colorDstFactor.includes('src-alpha') ||
+      alphaSrcFactor !== 'zero' ||
+      alphaDstFactor.includes('src');
+    const meetsExtraBlendingRequirement = !blendingReadSrcAlpha || componentCount === 4;
+    const _success =
+      info.sampleType === sampleType &&
+      componentCount >= kTexelRepresentationInfo[format].componentOrder.length &&
+      meetsExtraBlendingRequirement;
+    t.doCreateRenderPipelineTest(isAsync, _success, descriptor);
+  });
+
+g.test('pipeline_layout,device_mismatch')
+  .desc(
+    'Tests createRenderPipeline(Async) cannot be called with a pipeline layout created from another device'
+  )
+  .paramsSubcasesOnly(u => u.combine('isAsync', [true, false]).combine('mismatched', [true, false]))
+  .unimplemented();
+
+g.test('shader_module,device_mismatch')
+  .desc(
+    'Tests createRenderPipeline(Async) cannot be called with a shader module created from another device'
+  )
+  .paramsSubcasesOnly(u => u.combine('isAsync', [true, false]).combine('mismatched', [true, false]))
+  .unimplemented();

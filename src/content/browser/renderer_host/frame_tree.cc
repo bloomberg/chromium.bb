@@ -23,6 +23,7 @@
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/navigator.h"
 #include "content/browser/renderer_host/navigator_delegate.h"
+#include "content/browser/renderer_host/page_impl.h"
 #include "content/browser/renderer_host/render_frame_host_delegate.h"
 #include "content/browser/renderer_host/render_frame_host_factory.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
@@ -33,6 +34,7 @@
 #include "content/common/content_switches_internal.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
+#include "third_party/blink/public/common/loader/loader_constants.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
 
 namespace content {
@@ -52,12 +54,12 @@ std::set<SiteInstance*> CollectSiteInstances(FrameTree* tree) {
 // If |node| is the placeholder FrameTreeNode for an embedded frame tree,
 // returns the inner tree's main frame's FrameTreeNode. Otherwise, returns null.
 FrameTreeNode* GetInnerTreeMainFrameNode(FrameTreeNode* node) {
-  // TODO(1196715): Currently, inner frame trees are only implemented using
-  // multiple WebContents. Once pages can be embedded with MPArch, traverse
-  // them here as well.
+  FrameTreeNode* inner_main_frame_tree_node = FrameTreeNode::GloballyFindByID(
+      node->current_frame_host()->inner_tree_main_frame_tree_node_id());
   RenderFrameHostImpl* inner_tree_main_frame =
-      node->frame_tree()->render_frame_delegate()->GetMainFrameForInnerDelegate(
-          node);
+      inner_main_frame_tree_node
+          ? inner_main_frame_tree_node->current_frame_host()
+          : nullptr;
 
   if (inner_tree_main_frame) {
     DCHECK_NE(node->frame_tree(), inner_tree_main_frame->frame_tree());
@@ -201,6 +203,7 @@ FrameTree::FrameTree(
       type_(type) {}
 
 FrameTree::~FrameTree() {
+  is_being_destroyed_ = true;
 #if DCHECK_IS_ON()
   DCHECK(was_shut_down_);
 #endif
@@ -529,7 +532,7 @@ FrameTree::RenderViewHostMapId FrameTree::GetRenderViewHostMapId(
   // TODO(acolwell): Change this to use a SiteInstanceGroup ID once
   // SiteInstanceGroups are implemented so that all SiteInstances within a
   // group can use the same RenderViewHost.
-  return RenderViewHostMapId::FromUnsafeValue(site_instance->GetId());
+  return RenderViewHostMapId::FromUnsafeValue(site_instance->GetId().value());
 }
 
 void FrameTree::RegisterRenderViewHost(RenderViewHostMapId id,
@@ -560,8 +563,11 @@ void FrameTree::FrameRemoved(FrameTreeNode* frame) {
     focused_frame_tree_node_id_ = FrameTreeNode::kFrameTreeNodeInvalidId;
 }
 
-void FrameTree::ResetLoadProgress() {
-  load_progress_ = 0.0;
+double FrameTree::GetLoadProgress() {
+  if (root_->HasNavigation())
+    return blink::kInitialLoadProgress;
+
+  return root_->current_frame_host()->GetPage().load_progress();
 }
 
 bool FrameTree::IsLoading() const {
@@ -573,6 +579,11 @@ bool FrameTree::IsLoading() const {
 }
 
 void FrameTree::ReplicatePageFocus(bool is_focused) {
+  // Focus loss may occur while this FrameTree is being destroyed.  Don't
+  // send the message in this case, as the main frame's RenderFrameHost and
+  // other state has already been cleared.
+  if (is_being_destroyed_)
+    return;
   std::set<SiteInstance*> frame_tree_site_instances =
       CollectSiteInstances(this);
 
@@ -603,6 +614,9 @@ void FrameTree::SetPageFocus(SiteInstance* instance, bool is_focused) {
 void FrameTree::RegisterExistingOriginToPreventOptInIsolation(
     const url::Origin& previously_visited_origin,
     NavigationRequest* navigation_request_to_exclude) {
+  controller().RegisterExistingOriginToPreventOptInIsolation(
+      previously_visited_origin);
+
   std::unordered_set<SiteInstance*> matching_site_instances;
 
   // Be sure to visit all RenderFrameHosts associated with this frame that might
@@ -663,12 +677,6 @@ void FrameTree::DidAccessInitialMainDocument() {
 void FrameTree::DidStartLoadingNode(FrameTreeNode& node,
                                     bool to_different_document,
                                     bool was_previously_loading) {
-  // Any main frame load to a new document should reset the load progress since
-  // it will replace the current page and any frames. The WebContents will
-  // be notified when DidChangeLoadProgress is called.
-  if (to_different_document && node.IsMainFrame())
-    ResetLoadProgress();
-
   if (was_previously_loading)
     return;
 
@@ -684,18 +692,6 @@ void FrameTree::DidStopLoadingNode(FrameTreeNode& node) {
   delegate_->DidStopLoading();
 }
 
-void FrameTree::DidChangeLoadProgressForNode(FrameTreeNode& node,
-                                             double load_progress) {
-  if (!node.IsMainFrame())
-    return;
-  if (load_progress <= load_progress_)
-    return;
-  load_progress_ = load_progress;
-
-  // Notify the WebContents.
-  delegate_->DidChangeLoadProgress();
-}
-
 void FrameTree::DidCancelLoading() {
   OPTIONAL_TRACE_EVENT0("content", "FrameTree::DidCancelLoading");
   navigator_.controller().DiscardNonCommittedEntries();
@@ -707,6 +703,7 @@ void FrameTree::StopLoading() {
 }
 
 void FrameTree::Shutdown() {
+  is_being_destroyed_ = true;
 #if DCHECK_IS_ON()
   DCHECK(!was_shut_down_);
   was_shut_down_ = true;

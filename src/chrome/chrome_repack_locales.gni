@@ -89,6 +89,11 @@ template("chrome_repack_locales") {
       ]
       compress = true
     }
+    if (is_chromeos_lacros) {
+      source_patterns +=
+          [ "${root_gen_dir}/chromeos/strings/chromeos_strings_" ]
+      deps += [ "//chromeos/strings" ]
+    }
     if (enable_cef) {
       source_patterns += [ "${root_gen_dir}/cef/cef_strings_" ]
       deps += [ "//cef:cef_strings" ]

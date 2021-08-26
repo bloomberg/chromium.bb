@@ -21,7 +21,9 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_positioned_float.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_space_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_unpositioned_float.h"
+#include "third_party/blink/renderer/core/layout/ng/svg/resolved_text_layout_attributes_iterator.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/svg/svg_text_content_element.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shaping_line_breaker.h"
 #include "third_party/blink/renderer/platform/text/character.h"
@@ -244,6 +246,11 @@ NGLineBreaker::NGLineBreaker(NGInlineNode node,
       base_direction_(node_.BaseDirection()) {
   available_width_ = ComputeAvailableWidth();
   break_iterator_.SetBreakSpace(BreakSpaceType::kAfterSpaceRun);
+  if (is_svg_text_) {
+    svg_resolved_iterator_ =
+        std::make_unique<ResolvedTextLayoutAttributesIterator>(
+            node_.SvgCharacterDataList());
+  }
 
   if (!break_token)
     return;
@@ -362,7 +369,8 @@ void NGLineBreaker::RecalcClonedBoxDecorations() {
       has_cloned_box_decorations_ = true;
       ++cloned_box_decorations_count_;
       NGInlineItemResult item_result;
-      ComputeOpenTagResult(*item, constraint_space_, &item_result);
+      if (!is_svg_text_)
+        ComputeOpenTagResult(*item, constraint_space_, &item_result);
       cloned_box_decorations_initial_size_ += item_result.inline_size;
       cloned_box_decorations_end_size_ += item_result.margins.inline_end +
                                           item_result.borders.inline_end +
@@ -412,8 +420,10 @@ LayoutUnit NGLineBreaker::AddHyphen(NGInlineItemResults* item_results,
 
 LayoutUnit NGLineBreaker::AddHyphen(NGInlineItemResults* item_results,
                                     NGInlineItemResult* item_result) {
-  return AddHyphen(item_results, item_result - item_results->begin(),
-                   item_result);
+  return AddHyphen(
+      item_results,
+      base::checked_cast<wtf_size_t>(item_result - item_results->begin()),
+      item_result);
 }
 
 // Remove the hyphen string from the |NGInlineItemResult|.
@@ -611,6 +621,10 @@ void NGLineBreaker::BreakLine(
     }
     if (item.Type() == NGInlineItem::kBidiControl) {
       HandleBidiControlItem(item, line_info);
+      continue;
+    }
+    if (item.Type() == NGInlineItem::kBlockInInline) {
+      HandleBlockInInline(item, line_info);
       continue;
     }
 
@@ -909,7 +923,8 @@ void NGLineBreaker::HandleText(const NGInlineItem& item,
       state_ = LineBreakState::kTrailing;
       if (item_result->item->Style()->WhiteSpace() == EWhiteSpace::kPreWrap &&
           IsBreakableSpace(Text()[item_result->EndOffset() - 1])) {
-        unsigned end_index = item_result - line_info->Results().begin();
+        unsigned end_index = base::checked_cast<unsigned>(
+            item_result - line_info->Results().begin());
         Rewind(end_index, line_info);
       }
       return;
@@ -933,7 +948,7 @@ void NGLineBreaker::HandleText(const NGInlineItem& item,
   }
 
   if (is_svg_text_) {
-    SplitTextByGlyphs(item, line_info);
+    SplitTextIntoSegements(item, line_info);
     return;
   }
 
@@ -962,15 +977,14 @@ void NGLineBreaker::HandleText(const NGInlineItem& item,
   MoveToNextOf(item);
 }
 
-// In SVG <text>, we produce NGInlineItemResult split by glyphs for simplicity.
+// In SVG <text>, we produce NGInlineItemResult split into segments partitioned
+// by x/y/dx/dy/rotate attributes.
+//
 // Split in PrepareLayout() or after producing NGFragmentItem would need
 // additional memory overhead. So we split in NGLineBreaker while it converts
 // NGInlineItems to NGInlineItemResults.
-//
-// TODO(crbug.com/1179585): Ideally we should split the text by segments
-// partitioned by x/y/dx/dy/rotate attributes.
-void NGLineBreaker::SplitTextByGlyphs(const NGInlineItem& item,
-                                      NGLineInfo* line_info) {
+void NGLineBreaker::SplitTextIntoSegements(const NGInlineItem& item,
+                                           NGLineInfo* line_info) {
   DCHECK(RuntimeEnabledFeatures::SVGTextNGEnabled());
   DCHECK(is_svg_text_);
   DCHECK_EQ(offset_, item.StartOffset());
@@ -982,9 +996,19 @@ void NGLineBreaker::SplitTextByGlyphs(const NGInlineItem& item,
   if (shape.IsRtl())
     index_list.Reverse();
   wtf_size_t size = index_list.size();
+  unsigned glyph_start = offset_;
   for (wtf_size_t i = 0; i < size; ++i) {
-    DCHECK_EQ(offset_, index_list[i]);
+    DCHECK_EQ(glyph_start, index_list[i]);
     unsigned glyph_end = i + 1 < size ? index_list[i + 1] : shape.EndIndex();
+    StringView text_view(Text());
+    bool should_split = i == size - 1;
+    for (; glyph_start < glyph_end;
+         glyph_start = text_view.NextCodePointOffset(glyph_start)) {
+      ++svg_addressable_offset_;
+      should_split = should_split || ShouldCreateNewSvgSegment();
+    }
+    if (!should_split)
+      continue;
     NGInlineItemResult* result = AddItem(item, glyph_end, line_info);
     result->should_create_line_box = true;
     auto shape_result_view =
@@ -1007,6 +1031,28 @@ void NGLineBreaker::SplitTextByGlyphs(const NGInlineItem& item,
   }
   trailing_whitespace_ = WhitespaceState::kUnknown;
   MoveToNextOf(item);
+}
+
+bool NGLineBreaker::ShouldCreateNewSvgSegment() const {
+  DCHECK(is_svg_text_);
+  for (const auto& range : node_.SvgTextPathRangeList()) {
+    if (range.start_index <= svg_addressable_offset_ &&
+        svg_addressable_offset_ <= range.end_index)
+      return true;
+  }
+  for (const auto& range : node_.SvgTextLengthRangeList()) {
+    if (To<SVGTextContentElement>(range.layout_object->GetNode())
+            ->lengthAdjust()
+            ->CurrentEnumValue() == kSVGLengthAdjustSpacingAndGlyphs)
+      continue;
+    if (range.start_index <= svg_addressable_offset_ &&
+        svg_addressable_offset_ <= range.end_index)
+      return true;
+  }
+  const NGSvgCharacterData& char_data =
+      svg_resolved_iterator_->AdvanceTo(svg_addressable_offset_);
+  return char_data.HasRotate() || char_data.HasX() || char_data.HasY() ||
+         char_data.HasDx() || char_data.HasDy();
 }
 
 NGLineBreaker::BreakResult NGLineBreaker::BreakText(
@@ -1361,7 +1407,7 @@ scoped_refptr<ShapeResult> NGLineBreaker::ShapeText(const NGInlineItem& item,
   } else {
     shape_result = items_data_.segments->ShapeText(
         &shaper_, &item.Style()->GetFont(), item.Direction(), start, end,
-        &item - items_data_.items.begin());
+        base::checked_cast<unsigned>(&item - items_data_.items.begin()));
   }
   if (UNLIKELY(spacing_.HasSpacing()))
     shape_result->ApplySpacing(spacing_);
@@ -1520,7 +1566,7 @@ void NGLineBreaker::HandleTrailingSpaces(const NGInlineItem& item,
   state_ = LineBreakState::kTrailing;
 }
 
-void NGLineBreaker::RemoveTrailingOpenTags(NGLineInfo* line_info) {
+void NGLineBreaker::RewindTrailingOpenTags(NGLineInfo* line_info) {
   // Remove trailing open tags. Open tags are included as trailable items
   // because they are ambiguous. When the line ends, and if the end of line has
   // open tags, they are not trailable.
@@ -1531,7 +1577,8 @@ void NGLineBreaker::RemoveTrailingOpenTags(NGLineInfo* line_info) {
   for (const NGInlineItemResult& item_result : base::Reversed(item_results)) {
     DCHECK(item_result.item);
     if (item_result.item->Type() != NGInlineItem::kOpenTag) {
-      unsigned end_index = &item_result - item_results.begin() + 1;
+      unsigned end_index =
+          base::checked_cast<unsigned>(&item_result - item_results.begin() + 1);
       if (end_index < item_results.size()) {
         const NGInlineItemResult& end_item_result = item_results[end_index];
         unsigned end_item_index = end_item_result.item_index;
@@ -1550,7 +1597,10 @@ void NGLineBreaker::RemoveTrailingOpenTags(NGLineInfo* line_info) {
 // Remove trailing collapsible spaces in |line_info|.
 // https://drafts.csswg.org/css-text-3/#white-space-phase-2
 void NGLineBreaker::RemoveTrailingCollapsibleSpace(NGLineInfo* line_info) {
-  RemoveTrailingOpenTags(line_info);
+  // Rewind trailing open-tags to wrap before them, except when this line ends
+  // with a forced break, including the one implied by block-in-inline.
+  if (!is_after_forced_break_)
+    RewindTrailingOpenTags(line_info);
 
   ComputeTrailingCollapsibleSpace(line_info);
   if (!trailing_collapsible_space_.has_value()) {
@@ -1653,43 +1703,47 @@ void NGLineBreaker::ComputeTrailingCollapsibleSpace(NGLineInfo* line_info) {
   trailing_collapsible_space_.reset();
 }
 
-void NGLineBreaker::HandleForcedLineBreak(const NGInlineItem& item,
+// |item| is |nullptr| if this is an implicit forced break.
+void NGLineBreaker::HandleForcedLineBreak(const NGInlineItem* item,
                                           NGLineInfo* line_info) {
-  DCHECK_EQ(item.TextType(), NGTextType::kForcedLineBreak);
-  DCHECK_EQ(Text()[item.StartOffset()], kNewlineCharacter);
-
   // Check overflow, because the last item may have overflowed.
   if (HandleOverflowIfNeeded(line_info))
     return;
 
-  NGInlineItemResult* item_result = AddItem(item, line_info);
-  item_result->should_create_line_box = true;
-  item_result->has_only_trailing_spaces = true;
-  MoveToNextOf(item);
+  if (item) {
+    DCHECK_EQ(item->TextType(), NGTextType::kForcedLineBreak);
+    DCHECK_EQ(Text()[item->StartOffset()], kNewlineCharacter);
 
-  // Include following close tags. The difference is visible when they have
-  // margin/border/padding.
-  //
-  // This is not a defined behavior, but legacy/WebKit do this for preserved
-  // newlines and <br>s. Gecko does this only for preserved newlines (but
-  // not for <br>s).
-  const Vector<NGInlineItem>& items = Items();
-  while (item_index_ < items.size()) {
-    const NGInlineItem& next_item = items[item_index_];
-    if (next_item.Type() == NGInlineItem::kCloseTag) {
-      HandleCloseTag(next_item, line_info);
-      continue;
+    NGInlineItemResult* item_result = AddItem(*item, line_info);
+    item_result->should_create_line_box = true;
+    item_result->has_only_trailing_spaces = true;
+    MoveToNextOf(*item);
+
+    // Include following close tags. The difference is visible when they have
+    // margin/border/padding.
+    //
+    // This is not a defined behavior, but legacy/WebKit do this for preserved
+    // newlines and <br>s. Gecko does this only for preserved newlines (but
+    // not for <br>s).
+    const Vector<NGInlineItem>& items = Items();
+    while (item_index_ < items.size()) {
+      const NGInlineItem& next_item = items[item_index_];
+      if (next_item.Type() == NGInlineItem::kCloseTag) {
+        HandleCloseTag(next_item, line_info);
+        continue;
+      }
+      if (next_item.Type() == NGInlineItem::kText && !next_item.Length()) {
+        HandleEmptyText(next_item, line_info);
+        continue;
+      }
+      break;
     }
-    if (next_item.Type() == NGInlineItem::kText && !next_item.Length()) {
-      HandleEmptyText(next_item, line_info);
-      continue;
-    }
-    break;
   }
 
   if (UNLIKELY(HasHyphen()))
     position_ -= RemoveHyphen(line_info->MutableResults());
   is_after_forced_break_ = true;
+  line_info->SetHasForcedBreak();
   line_info->SetIsLastLine(true);
   state_ = LineBreakState::kDone;
 }
@@ -1700,7 +1754,7 @@ void NGLineBreaker::HandleControlItem(const NGInlineItem& item,
                                       NGLineInfo* line_info) {
   DCHECK_GE(item.Length(), 1u);
   if (item.TextType() == NGTextType::kForcedLineBreak) {
-    HandleForcedLineBreak(item, line_info);
+    HandleForcedLineBreak(&item, line_info);
     return;
   }
 
@@ -1850,39 +1904,10 @@ void NGLineBreaker::HandleAtomicInline(
                    item_result->layout_result->PhysicalFragment())
             .InlineSize();
     item_result->inline_size += inline_margins;
-  } else if (mode_ == NGLineBreakerMode::kMaxContent && max_size_cache_) {
-    unsigned item_index = &item - Items().begin();
-    item_result->inline_size = (*max_size_cache_)[item_index];
   } else {
-    DCHECK(mode_ == NGLineBreakerMode::kMinContent || !max_size_cache_);
-    NGBlockNode child(To<LayoutBox>(item.GetLayoutObject()));
-
-    NGMinMaxConstraintSpaceBuilder builder(constraint_space_, node_.Style(),
-                                           child, /* is_new_fc */ true);
-    builder.SetAvailableBlockSize(constraint_space_.AvailableSize().block_size);
-    builder.SetPercentageResolutionBlockSize(
-        constraint_space_.PercentageResolutionBlockSize());
-    builder.SetReplacedPercentageResolutionBlockSize(
-        constraint_space_.ReplacedPercentageResolutionBlockSize());
-    const auto space = builder.ToConstraintSpace();
-
-    MinMaxSizesResult result =
-        ComputeMinAndMaxContentContribution(node_.Style(), child, space);
-    if (mode_ == NGLineBreakerMode::kMinContent) {
-      item_result->inline_size = result.sizes.min_size + inline_margins;
-      if (depends_on_block_constraints_out_) {
-        *depends_on_block_constraints_out_ |=
-            result.depends_on_block_constraints;
-      }
-      if (max_size_cache_) {
-        if (max_size_cache_->IsEmpty())
-          max_size_cache_->resize(Items().size());
-        unsigned item_index = &item - Items().begin();
-        (*max_size_cache_)[item_index] = result.sizes.max_size + inline_margins;
-      }
-    } else {
-      item_result->inline_size = result.sizes.max_size + inline_margins;
-    }
+    DCHECK(mode_ == NGLineBreakerMode::kMaxContent ||
+           mode_ == NGLineBreakerMode::kMinContent);
+    ComputeMinMaxContentSizeForBlockChild(item, item_result);
   }
 
   item_result->should_create_line_box = true;
@@ -1907,6 +1932,100 @@ void NGLineBreaker::HandleAtomicInline(
 
   trailing_whitespace_ = WhitespaceState::kNone;
   MoveToNextOf(item);
+}
+
+void NGLineBreaker::ComputeMinMaxContentSizeForBlockChild(
+    const NGInlineItem& item,
+    NGInlineItemResult* item_result) {
+  DCHECK(mode_ == NGLineBreakerMode::kMaxContent ||
+         mode_ == NGLineBreakerMode::kMinContent);
+  if (mode_ == NGLineBreakerMode::kMaxContent && max_size_cache_) {
+    const unsigned item_index =
+        base::checked_cast<unsigned>(&item - Items().begin());
+    item_result->inline_size = (*max_size_cache_)[item_index];
+    return;
+  }
+
+  DCHECK(mode_ == NGLineBreakerMode::kMinContent || !max_size_cache_);
+  NGBlockNode child(To<LayoutBox>(item.GetLayoutObject()));
+
+  NGMinMaxConstraintSpaceBuilder builder(constraint_space_, node_.Style(),
+                                         child, /* is_new_fc */ true);
+  builder.SetAvailableBlockSize(constraint_space_.AvailableSize().block_size);
+  builder.SetPercentageResolutionBlockSize(
+      constraint_space_.PercentageResolutionBlockSize());
+  builder.SetReplacedPercentageResolutionBlockSize(
+      constraint_space_.ReplacedPercentageResolutionBlockSize());
+  const auto space = builder.ToConstraintSpace();
+
+  const MinMaxSizesResult result =
+      ComputeMinAndMaxContentContribution(node_.Style(), child, space);
+  const LayoutUnit inline_margins = item_result->margins.InlineSum();
+  if (mode_ == NGLineBreakerMode::kMinContent) {
+    item_result->inline_size = result.sizes.min_size + inline_margins;
+    if (depends_on_block_constraints_out_)
+      *depends_on_block_constraints_out_ |= result.depends_on_block_constraints;
+    if (max_size_cache_) {
+      if (max_size_cache_->IsEmpty())
+        max_size_cache_->resize(Items().size());
+      const unsigned item_index =
+          base::checked_cast<unsigned>(&item - Items().begin());
+      (*max_size_cache_)[item_index] = result.sizes.max_size + inline_margins;
+    }
+    return;
+  }
+
+  DCHECK(mode_ == NGLineBreakerMode::kMaxContent && !max_size_cache_);
+  item_result->inline_size = result.sizes.max_size + inline_margins;
+}
+
+void NGLineBreaker::HandleBlockInInline(const NGInlineItem& item,
+                                        NGLineInfo* line_info) {
+  DCHECK_EQ(item.Type(), NGInlineItem::kBlockInInline);
+
+  if (!line_info->Results().IsEmpty()) {
+    // If there were any items, force a line break before this item.
+    HandleForcedLineBreak(nullptr, line_info);
+    return;
+  }
+
+  NGInlineItemResult* item_result = AddItem(item, line_info);
+  if (mode_ == NGLineBreakerMode::kContent) {
+    const NGBlockBreakToken* block_break_token =
+        break_token_ ? break_token_->BlockInInlineBreakToken() : nullptr;
+    scoped_refptr<const NGLayoutResult> layout_result =
+        NGBlockNode(To<LayoutBox>(item.GetLayoutObject()))
+            .Layout(constraint_space_, block_break_token);
+    if (layout_result->Status() != NGLayoutResult::kSuccess) {
+      line_info->SetAbortedLayoutResult(std::move(layout_result));
+      state_ = LineBreakState::kDone;
+      return;
+    }
+    const NGPhysicalFragment& fragment = layout_result->PhysicalFragment();
+    item_result->inline_size =
+        NGFragment(constraint_space_.GetWritingDirection(), fragment)
+            .InlineSize();
+
+    item_result->should_create_line_box = !layout_result->IsSelfCollapsing();
+    item_result->layout_result = std::move(layout_result);
+
+    DCHECK(!line_info->BlockInInlineBreakToken());
+    line_info->SetBlockInInlineBreakToken(
+        To<NGBlockBreakToken>(fragment.BreakToken()));
+  } else {
+    DCHECK(mode_ == NGLineBreakerMode::kMaxContent ||
+           mode_ == NGLineBreakerMode::kMinContent);
+    ComputeMinMaxContentSizeForBlockChild(item, item_result);
+  }
+
+  position_ += item_result->inline_size;
+  line_info->SetIsBlockInInline();
+  line_info->SetHasForcedBreak();
+  is_after_forced_break_ = true;
+  trailing_whitespace_ = WhitespaceState::kNone;
+  if (!line_info->BlockInInlineBreakToken())
+    MoveToNextOf(item);
+  state_ = LineBreakState::kDone;
 }
 
 // Performs layout and positions a float.
@@ -2084,7 +2203,8 @@ void NGLineBreaker::HandleOpenTag(const NGInlineItem& item,
   NGInlineItemResult* item_result = AddItem(item, line_info);
   DCHECK(item.Style());
   const ComputedStyle& style = *item.Style();
-  if (ComputeOpenTagResult(item, constraint_space_, item_result)) {
+  if (!is_svg_text_ &&
+      ComputeOpenTagResult(item, constraint_space_, item_result)) {
     // Negative margins on open tags may bring the position back. Update
     // |state_| if that happens.
     if (UNLIKELY(item_result->inline_size < 0 &&
@@ -2132,7 +2252,7 @@ void NGLineBreaker::HandleCloseTag(const NGInlineItem& item,
   NGInlineItemResult* item_result = AddItem(item, line_info);
 
   item_result->has_edge = item.HasEndEdge();
-  if (item_result->has_edge) {
+  if (item_result->has_edge && !is_svg_text_) {
     DCHECK(item.Style());
     const ComputedStyle& style = *item.Style();
     item_result->inline_size = ComputeInlineEndSize(constraint_space_, &style);
@@ -2661,6 +2781,7 @@ scoped_refptr<NGInlineBreakToken> NGLineBreaker::CreateBreakToken(
   DCHECK_LE(item_index_, items.size());
   if (item_index_ >= items.size())
     return nullptr;
+  DCHECK_EQ(line_info.HasForcedBreak(), is_after_forced_break_);
   return NGInlineBreakToken::Create(
       node_, current_style_.get(), item_index_, offset_,
       (is_after_forced_break_ ? NGInlineBreakToken::kIsForcedBreak : 0) |
@@ -2669,7 +2790,8 @@ scoped_refptr<NGInlineBreakToken> NGLineBreaker::CreateBreakToken(
                : 0) |
           (cloned_box_decorations_count_
                ? NGInlineBreakToken::kHasClonedBoxDecorations
-               : 0));
+               : 0),
+      line_info.BlockInInlineBreakToken());
 }
 
 void NGLineBreaker::PropagateBreakToken(

@@ -20,8 +20,6 @@
 #include "chrome/browser/search/chrome_colors/chrome_colors_factory.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
-#include "chrome/browser/search/promos/promo_service.h"
-#include "chrome/browser/search/promos/promo_service_factory.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search/search_suggest/search_suggest_service.h"
 #include "chrome/browser/search/search_suggest/search_suggest_service_factory.h"
@@ -144,6 +142,19 @@ SearchTabHelper::~SearchTabHelper() {
     helper->RemoveObserver(this);
   if (select_file_dialog_)
     select_file_dialog_->ListenerDestroyed();
+}
+
+void SearchTabHelper::BindEmbeddedSearchConnecter(
+    mojo::PendingAssociatedReceiver<search::mojom::EmbeddedSearchConnector>
+        receiver,
+    content::RenderFrameHost* rfh) {
+  auto* web_contents = content::WebContents::FromRenderFrameHost(rfh);
+  if (!web_contents)
+    return;
+  auto* tab_helper = SearchTabHelper::FromWebContents(web_contents);
+  if (!tab_helper)
+    return;
+  tab_helper->ipc_router_.BindEmbeddedSearchConnecter(std::move(receiver), rfh);
 }
 
 void SearchTabHelper::OnTabActivated() {
@@ -440,16 +451,6 @@ void SearchTabHelper::OnConfirmThemeChanges() {
       search::DefaultSearchProviderIsGoogle(profile())) {
     chrome_colors_service_->ConfirmThemeChanges();
   }
-}
-
-void SearchTabHelper::BlocklistPromo(const std::string& promo_id) {
-  auto* promo_service = PromoServiceFactory::GetForProfile(profile());
-  if (!promo_service) {
-    NOTREACHED();
-    return;
-  }
-
-  promo_service->BlocklistPromo(promo_id);
 }
 
 Profile* SearchTabHelper::profile() const {

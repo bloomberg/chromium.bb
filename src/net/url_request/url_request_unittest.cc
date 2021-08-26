@@ -437,9 +437,10 @@ class BlockingNetworkDelegate : public TestNetworkDelegate {
                          CompletionOnceCallback callback,
                          GURL* new_url) override;
 
-  int OnBeforeStartTransaction(URLRequest* request,
-                               CompletionOnceCallback callback,
-                               HttpRequestHeaders* headers) override;
+  int OnBeforeStartTransaction(
+      URLRequest* request,
+      const HttpRequestHeaders& headers,
+      OnBeforeStartTransactionCallback callback) override;
 
   int OnHeadersReceived(
       URLRequest* request,
@@ -538,13 +539,19 @@ int BlockingNetworkDelegate::OnBeforeURLRequest(URLRequest* request,
 
 int BlockingNetworkDelegate::OnBeforeStartTransaction(
     URLRequest* request,
-    CompletionOnceCallback callback,
-    HttpRequestHeaders* headers) {
+    const HttpRequestHeaders& headers,
+    OnBeforeStartTransactionCallback callback) {
   // TestNetworkDelegate always completes synchronously.
   CHECK_NE(ERR_IO_PENDING, TestNetworkDelegate::OnBeforeStartTransaction(
-                               request, base::NullCallback(), headers));
+                               request, headers, base::NullCallback()));
 
-  return MaybeBlockStage(ON_BEFORE_SEND_HEADERS, std::move(callback));
+  return MaybeBlockStage(
+      ON_BEFORE_SEND_HEADERS,
+      base::BindOnce(
+          [](OnBeforeStartTransactionCallback callback, int result) {
+            std::move(callback).Run(result, absl::nullopt);
+          },
+          std::move(callback)));
 }
 
 int BlockingNetworkDelegate::OnHeadersReceived(
@@ -1629,15 +1636,17 @@ TEST_F(URLRequestTest, DelayedCookieCallbackAsync) {
   replace_scheme.SetSchemeStr("https");
   GURL url = test_server.base_url().ReplaceComponents(replace_scheme);
 
-  auto cookie1 = CanonicalCookie::Create(url, "AlreadySetCookie=1;Secure",
-                                         base::Time::Now(),
-                                         absl::nullopt /* server_time */);
+  auto cookie1 = CanonicalCookie::Create(
+      url, "AlreadySetCookie=1;Secure", base::Time::Now(),
+      absl::nullopt /* server_time */,
+      absl::nullopt /* cookie_partition_key */);
   delayed_cm->SetCanonicalCookieAsync(std::move(cookie1), url,
                                       net::CookieOptions::MakeAllInclusive(),
                                       CookieStore::SetCookiesCallback());
-  auto cookie2 = CanonicalCookie::Create(url, "AlreadySetCookie=1;Secure",
-                                         base::Time::Now(),
-                                         absl::nullopt /* server_time */);
+  auto cookie2 = CanonicalCookie::Create(
+      url, "AlreadySetCookie=1;Secure", base::Time::Now(),
+      absl::nullopt /* server_time */,
+      absl::nullopt /* cookie_partition_key */);
   cm->SetCanonicalCookieAsync(std::move(cookie2), url,
                               net::CookieOptions::MakeAllInclusive(),
                               CookieStore::SetCookiesCallback());
@@ -2315,8 +2324,7 @@ TEST_P(URLRequestSameSiteCookiesTest, SameSiteCookies) {
     CookieInclusionStatus expected_lax_status =
         CookieInclusionStatus::MakeFromReasonsForTesting(
             {CookieInclusionStatus::EXCLUDE_SAMESITE_LAX},
-            {CookieInclusionStatus::
-                 WARN_SAMESITE_LAX_EXCLUDED_AFTER_BUGFIX_1166211});
+            {} /* warning_reasons */);
     EXPECT_EQ(expected_strict_status,
               req->maybe_sent_cookies()[0].access_result.status);
     EXPECT_EQ(expected_lax_status,
@@ -2793,8 +2801,7 @@ TEST_P(URLRequestSameSiteCookiesTest, SettingSameSiteCookies) {
     CookieInclusionStatus expected_lax_status =
         CookieInclusionStatus::MakeFromReasonsForTesting(
             {CookieInclusionStatus::EXCLUDE_SAMESITE_LAX},
-            {CookieInclusionStatus::
-                 WARN_SAMESITE_LAX_EXCLUDED_AFTER_BUGFIX_1166211});
+            {} /* warning_reasons */);
     EXPECT_EQ(expected_strict_status,
               req->maybe_stored_cookies()[0].access_result.status);
     EXPECT_EQ(expected_lax_status,
@@ -4793,13 +4800,19 @@ class AsyncLoggingNetworkDelegate : public TestNetworkDelegate {
     return RunCallbackAsynchronously(request, std::move(callback));
   }
 
-  int OnBeforeStartTransaction(URLRequest* request,
-                               CompletionOnceCallback callback,
-                               HttpRequestHeaders* headers) override {
+  int OnBeforeStartTransaction(
+      URLRequest* request,
+      const HttpRequestHeaders& headers,
+      OnBeforeStartTransactionCallback callback) override {
     // TestNetworkDelegate always completes synchronously.
     CHECK_NE(ERR_IO_PENDING, TestNetworkDelegate::OnBeforeStartTransaction(
-                                 request, base::NullCallback(), headers));
-    return RunCallbackAsynchronously(request, std::move(callback));
+                                 request, headers, base::NullCallback()));
+    return RunCallbackAsynchronously(
+        request, base::BindOnce(
+                     [](OnBeforeStartTransactionCallback callback, int result) {
+                       std::move(callback).Run(result, absl::nullopt);
+                     },
+                     std::move(callback)));
   }
 
   int OnHeadersReceived(
@@ -7404,8 +7417,8 @@ TEST_F(URLRequestTestHTTP, AuthWithNetworkIsolationKey) {
 
   for (bool key_auth_cache_by_network_isolation_key : {false, true}) {
     TestURLRequestContext url_request_context(true /* delay_initialization */);
-    std::unique_ptr<HttpNetworkSession::Params> http_network_session_params =
-        std::make_unique<HttpNetworkSession::Params>();
+    auto http_network_session_params =
+        std::make_unique<HttpNetworkSessionParams>();
     http_network_session_params
         ->key_auth_cache_server_entries_by_network_isolation_key =
         key_auth_cache_by_network_isolation_key;
@@ -7703,8 +7716,9 @@ TEST_F(URLRequestTest, NoCookieInclusionStatusWarningIfWouldBeExcludedAnyway) {
   network_delegate.set_block_annotate_cookies();
   {
     GURL url = test_server.GetURL("/");
-    auto cookie1 = CanonicalCookie::Create(url, "cookienosamesite=1",
-                                           base::Time::Now(), absl::nullopt);
+    auto cookie1 = CanonicalCookie::Create(
+        url, "cookienosamesite=1", base::Time::Now(), absl::nullopt,
+        absl::nullopt /* cookie_partition_key */);
     base::RunLoop run_loop;
     CookieAccessResult access_result;
     cm.SetCanonicalCookieAsync(
@@ -7745,8 +7759,9 @@ TEST_F(URLRequestTest, NoCookieInclusionStatusWarningIfWouldBeExcludedAnyway) {
   // Get cookies
   {
     GURL url = test_server.GetURL("/");
-    auto cookie2 = CanonicalCookie::Create(url, "cookiewithpath=1;path=/foo",
-                                           base::Time::Now(), absl::nullopt);
+    auto cookie2 = CanonicalCookie::Create(
+        url, "cookiewithpath=1;path=/foo", base::Time::Now(), absl::nullopt,
+        absl::nullopt /* cookie_partition_key */);
     base::RunLoop run_loop;
     // Note: cookie1 from the previous testcase is still in the cookie store.
     CookieAccessResult access_result;
@@ -7891,7 +7906,8 @@ TEST_F(URLRequestTestHTTP, AuthChallengeWithFilteredCookies) {
         std::make_unique<CookieMonster>(nullptr, nullptr);
     auto another_cookie = CanonicalCookie::Create(
         url_requiring_auth_wo_cookies, "another_cookie=true", base::Time::Now(),
-        absl::nullopt /* server_time */);
+        absl::nullopt /* server_time */,
+        absl::nullopt /* cookie_partition_key */);
     cm->SetCanonicalCookieAsync(std::move(another_cookie),
                                 url_requiring_auth_wo_cookies,
                                 net::CookieOptions::MakeAllInclusive(),
@@ -7923,7 +7939,8 @@ TEST_F(URLRequestTestHTTP, AuthChallengeWithFilteredCookies) {
     cm->DeleteAllAsync(CookieStore::DeleteCallback());
     auto one_more_cookie = CanonicalCookie::Create(
         url_requiring_auth_wo_cookies, "one_more_cookie=true",
-        base::Time::Now(), absl::nullopt /* server_time */);
+        base::Time::Now(), absl::nullopt /* server_time */,
+        absl::nullopt /* cookie_partition_key */);
     cm->SetCanonicalCookieAsync(std::move(one_more_cookie),
                                 url_requiring_auth_wo_cookies,
                                 net::CookieOptions::MakeAllInclusive(),
@@ -8302,7 +8319,8 @@ TEST_F(URLRequestTestHTTP, RedirectWithFilteredCookies) {
         std::make_unique<CookieMonster>(nullptr, nullptr);
     auto another_cookie = CanonicalCookie::Create(
         original_url, "another_cookie=true", base::Time::Now(),
-        absl::nullopt /* server_time */);
+        absl::nullopt /* server_time */,
+        absl::nullopt /* cookie_partition_key */);
     cm->SetCanonicalCookieAsync(std::move(another_cookie), original_url,
                                 net::CookieOptions::MakeAllInclusive(),
                                 CookieStore::SetCookiesCallback());
@@ -8331,7 +8349,8 @@ TEST_F(URLRequestTestHTTP, RedirectWithFilteredCookies) {
     cm->DeleteAllAsync(CookieStore::DeleteCallback());
     auto one_more_cookie = CanonicalCookie::Create(
         original_url_wo_cookie, "one_more_cookie=true", base::Time::Now(),
-        absl::nullopt /* server_time */);
+        absl::nullopt /* server_time */,
+        absl::nullopt /* cookie_partition_key */);
     cm->SetCanonicalCookieAsync(std::move(one_more_cookie),
                                 original_url_wo_cookie,
                                 net::CookieOptions::MakeAllInclusive(),
@@ -10052,7 +10071,7 @@ TEST_F(HTTPSRequestTest, SSLSessionCacheShardTest) {
   }
 
   // Now create a new HttpCache with a different ssl_session_cache_shard value.
-  HttpNetworkSession::Context session_context;
+  HttpNetworkSessionContext session_context;
   session_context.host_resolver = default_context_.host_resolver();
   session_context.cert_verifier = default_context_.cert_verifier();
   session_context.transport_security_state =
@@ -10067,7 +10086,7 @@ TEST_F(HTTPSRequestTest, SSLSessionCacheShardTest) {
       default_context_.http_server_properties();
   session_context.quic_context = default_context_.quic_context();
 
-  HttpNetworkSession network_session(HttpNetworkSession::Params(),
+  HttpNetworkSession network_session(HttpNetworkSessionParams(),
                                      session_context);
   std::unique_ptr<HttpCache> cache(
       new HttpCache(&network_session, HttpCache::DefaultBackend::InMemory(0),
@@ -10428,11 +10447,13 @@ class HTTPSOCSPTest : public HTTPSCertNetFetchingTest {
 static bool UsingBuiltinCertVerifier() {
 #if defined(OS_FUCHSIA) || defined(OS_LINUX) || defined(OS_CHROMEOS)
   return true;
-#elif BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
+#else
+#if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
   if (base::FeatureList::IsEnabled(features::kCertVerifierBuiltinFeature))
     return true;
 #endif
   return false;
+#endif
 }
 
 // SystemSupportsHardFailRevocationChecking returns true iff the current
@@ -12503,7 +12524,7 @@ class HTTPSEarlyDataTest : public TestWithTaskEnvironment {
  public:
   HTTPSEarlyDataTest()
       : context_(true), test_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
-    auto params = std::make_unique<HttpNetworkSession::Params>();
+    auto params = std::make_unique<HttpNetworkSessionParams>();
     params->enable_early_data = true;
     context_.set_http_network_session_params(std::move(params));
 

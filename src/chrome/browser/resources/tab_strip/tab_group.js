@@ -5,8 +5,8 @@
 import {CustomElement} from 'chrome://resources/js/custom_element.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 
-import {TabStripEmbedderProxy, TabStripEmbedderProxyImpl} from './tab_strip_embedder_proxy.js';
-import {TabGroupVisualData} from './tabs_api_proxy.js';
+import {TabGroupVisualData} from './tab_strip.mojom-webui.js';
+import {TabsApiProxy, TabsApiProxyImpl} from './tabs_api_proxy.js';
 
 export class TabGroupElement extends CustomElement {
   static get template() {
@@ -16,8 +16,8 @@ export class TabGroupElement extends CustomElement {
   constructor() {
     super();
 
-    /** @private @const {!TabStripEmbedderProxy} */
-    this.embedderApi_ = TabStripEmbedderProxyImpl.getInstance();
+    /** @private @const {!TabsApiProxy} */
+    this.tabsApi_ = TabsApiProxyImpl.getInstance();
 
     /** @private @const {!HTMLElement} */
     this.chip_ = /** @type {!HTMLElement} */ (this.$('#chip'));
@@ -50,9 +50,9 @@ export class TabGroupElement extends CustomElement {
 
   /** @return {!HTMLElement} */
   getDragImageCenter() {
-    // Since the drag handle is #chip, the drag image should be centered
-    // relatively to it.
-    return /** @type {!HTMLElement} */ (this.$('#chip'));
+    // Since the drag handle is #dragHandle, the drag image should be
+    // centered relatively to it.
+    return /** @type {!HTMLElement} */ (this.$('#dragHandle'));
   }
 
   /** @private */
@@ -62,7 +62,7 @@ export class TabGroupElement extends CustomElement {
     }
 
     const boundingBox = this.$('#chip').getBoundingClientRect();
-    this.embedderApi_.showEditDialogForGroup(
+    this.tabsApi_.showEditDialogForGroup(
         this.dataset.groupId, boundingBox.left, boundingBox.top,
         boundingBox.width, boundingBox.height);
   }
@@ -102,6 +102,11 @@ export class TabGroupElement extends CustomElement {
     return this.hasAttribute('dragged-out_');
   }
 
+  /** @param {boolean} isTouchPressed */
+  setTouchPressed(isTouchPressed) {
+    this.toggleAttribute('touch_pressed_', isTouchPressed);
+  }
+
   /**
    * @param {!TabGroupVisualData} visualData
    */
@@ -132,4 +137,12 @@ customElements.define('tabstrip-tab-group', TabGroupElement);
  */
 export function isTabGroupElement(element) {
   return element.tagName === 'TABSTRIP-TAB-GROUP';
+}
+
+/**
+ * @param {!Element} element
+ * @return {boolean}
+ */
+export function isDragHandle(element) {
+  return element.id === 'dragHandle';
 }

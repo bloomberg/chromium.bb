@@ -6,11 +6,14 @@
 
 #include "core/fxge/dib/cfx_dibbase.h"
 
+#include <string.h>
+
 #include <algorithm>
 #include <memory>
 #include <utility>
 #include <vector>
 
+#include "core/fxcrt/fx_coordinates.h"
 #include "core/fxcrt/fx_memory.h"
 #include "core/fxcrt/fx_safe_types.h"
 #include "core/fxge/cfx_cliprgn.h"

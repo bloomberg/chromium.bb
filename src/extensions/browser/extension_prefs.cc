@@ -12,6 +12,7 @@
 
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
+#include "base/json/values_util.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -21,7 +22,6 @@
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "base/trace_event/trace_event.h"
-#include "base/util/values/values_util.h"
 #include "build/build_config.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/crx_file/id_util.h"
@@ -29,6 +29,7 @@
 #include "components/prefs/pref_service.h"
 #include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/browser/app_sorting.h"
+#include "extensions/browser/blocklist_extension_prefs.h"
 #include "extensions/browser/blocklist_state.h"
 #include "extensions/browser/disable_reason.h"
 #include "extensions/browser/event_router.h"
@@ -80,9 +81,6 @@ constexpr const char kPrefManifestVersion[] = "manifest.version";
 
 // Indicates whether an extension is blocklisted.
 constexpr const char kPrefBlocklist[] = "blacklist";
-
-// If extension is greylisted.
-constexpr const char kPrefBlocklistState[] = "blacklist_state";
 
 // The count of how many times we prompted the user to acknowledge an
 // extension.
@@ -312,14 +310,6 @@ std::string JoinPrefs(const std::vector<base::StringPiece>& parts) {
   return base::JoinString(parts, ".");
 }
 
-// Checks if kPrefBlocklist is set to true in the base::DictionaryValue.
-// Return false if the value is false or kPrefBlocklist does not exist.
-// This is used to decide if an extension is blocklisted.
-bool IsBlocklistBitSet(const base::DictionaryValue* ext) {
-  bool bool_value;
-  return ext->GetBoolean(kPrefBlocklist, &bool_value) && bool_value;
-}
-
 // Whether SetAlertSystemFirstRun() should always return true, so that alerts
 // are triggered, even in first run.
 bool g_run_alerts_in_first_run_for_testing = false;
@@ -545,7 +535,7 @@ void ExtensionPrefs::SetTimePref(const std::string& id,
                                  const base::Time value) {
   DCHECK_EQ(pref.type, PrefType::kTime);
   UpdateExtensionPref(
-      id, pref, std::make_unique<base::Value>(::util::TimeToValue(value)));
+      id, pref, std::make_unique<base::Value>(::base::TimeToValue(value)));
 }
 
 void ExtensionPrefs::UpdateExtensionPref(
@@ -580,6 +570,13 @@ void ExtensionPrefs::DeleteExtensionPrefs(const std::string& extension_id) {
     observer.OnExtensionPrefsDeleted(extension_id);
   prefs::ScopedDictionaryPrefUpdate update(prefs_, pref_names::kExtensions);
   update->Remove(extension_id);
+}
+
+void ExtensionPrefs::DeleteExtensionPrefsIfPrefEmpty(
+    const std::string& extension_id) {
+  const base::DictionaryValue* dict = GetExtensionPref(extension_id);
+  if (dict && dict->DictEmpty())
+    DeleteExtensionPrefs(extension_id);
 }
 
 bool ExtensionPrefs::ReadPrefAsBoolean(const std::string& extension_id,
@@ -652,7 +649,7 @@ base::Time ExtensionPrefs::ReadPrefAsTime(const std::string& extension_id,
   const base::Value* value;
   if (!ext || !ext->Get(pref.name, &value))
     return base::Time();
-  absl::optional<base::Time> time = ::util::ValueToTime(value);
+  absl::optional<base::Time> time = ::base::ValueToTime(value);
   DCHECK(time);
   return time.value_or(base::Time());
 }
@@ -822,7 +819,7 @@ static std::unique_ptr<base::ListValue> CreatePermissionList(
                   base::Value::FromUniquePtrValue(std::move(detail)));
       values->Append(std::move(tmp));
     } else {
-      values->AppendString(i->name());
+      values->Append(i->name());
     }
   }
   return values;
@@ -979,7 +976,7 @@ void ExtensionPrefs::AddDisableReason(
 void ExtensionPrefs::AddDisableReasons(const std::string& extension_id,
                                        int disable_reasons) {
   DCHECK(!DoesExtensionHaveState(extension_id, Extension::ENABLED) ||
-         IsExtensionBlocklisted(extension_id));
+         blocklist_prefs::IsExtensionBlocklisted(extension_id, this));
   ModifyDisableReasons(extension_id, disable_reasons, BIT_MAP_PREF_ADD);
 }
 
@@ -1073,32 +1070,12 @@ void ExtensionPrefs::ModifyBitMapPrefBits(const std::string& extension_id,
   }
 }
 
-std::set<std::string> ExtensionPrefs::GetBlocklistedExtensions() const {
-  std::set<std::string> ids;
-
-  const base::DictionaryValue* extensions =
-      prefs_->GetDictionary(pref_names::kExtensions);
-  if (!extensions)
-    return ids;
-
-  for (base::DictionaryValue::Iterator it(*extensions);
-       !it.IsAtEnd(); it.Advance()) {
-    if (!it.value().is_dict()) {
-      NOTREACHED() << "Invalid pref for extension " << it.key();
-      continue;
-    }
-    if (IsBlocklistBitSet(
-            static_cast<const base::DictionaryValue*>(&it.value()))) {
-      ids.insert(it.key());
-    }
-  }
-
-  return ids;
+base::StringPiece ExtensionPrefs::GetPrefBlocklistAcknowledgedKey() {
+  return kPrefBlocklistAcknowledged;
 }
 
-bool ExtensionPrefs::IsExtensionBlocklisted(const std::string& id) const {
-  const base::DictionaryValue* ext_prefs = GetExtensionPref(id);
-  return ext_prefs && IsBlocklistBitSet(ext_prefs);
+base::StringPiece ExtensionPrefs::GetPrefBlocklistKey() {
+  return kPrefBlocklist;
 }
 
 namespace {
@@ -1446,42 +1423,6 @@ void ExtensionPrefs::SetExtensionDisabled(const std::string& extension_id,
                       std::make_unique<base::Value>(disable_reasons));
   for (auto& observer : observer_list_)
     observer.OnExtensionStateChanged(extension_id, false);
-}
-
-void ExtensionPrefs::SetExtensionBlocklistState(const std::string& extension_id,
-                                                BlocklistState state) {
-  bool currently_blocklisted = IsExtensionBlocklisted(extension_id);
-  bool is_blocklisted = state == BLOCKLISTED_MALWARE;
-  if (is_blocklisted != currently_blocklisted) {
-    // Always make sure the "acknowledged" bit is cleared since the blocklist
-    // bit is changing.
-    UpdateExtensionPref(extension_id, kPrefBlocklistAcknowledged, nullptr);
-
-    if (is_blocklisted) {
-      UpdateExtensionPref(extension_id, kPrefBlocklist,
-                          std::make_unique<base::Value>(true));
-    } else {
-      UpdateExtensionPref(extension_id, kPrefBlocklist, nullptr);
-      const base::DictionaryValue* dict = GetExtensionPref(extension_id);
-      if (dict && dict->DictEmpty())
-        DeleteExtensionPrefs(extension_id);
-    }
-  }
-
-  UpdateExtensionPref(extension_id, kPrefBlocklistState,
-                      std::make_unique<base::Value>(state));
-}
-
-BlocklistState ExtensionPrefs::GetExtensionBlocklistState(
-    const std::string& extension_id) const {
-  if (IsExtensionBlocklisted(extension_id))
-    return BLOCKLISTED_MALWARE;
-  const base::DictionaryValue* ext_prefs = GetExtensionPref(extension_id);
-  int int_value = 0;
-  if (ext_prefs && ext_prefs->GetInteger(kPrefBlocklistState, &int_value))
-    return static_cast<BlocklistState>(int_value);
-
-  return NOT_BLOCKLISTED;
 }
 
 std::string ExtensionPrefs::GetVersionString(
@@ -2372,10 +2313,10 @@ void ExtensionPrefs::SetExtensionPrefFromContainer(
     const char* pref,
     const ExtensionIdContainer& strings) {
   ListPrefUpdate update(prefs_, pref);
-  base::ListValue* list_of_values = update.Get();
+  base::Value* list_of_values = update.Get();
   list_of_values->ClearList();
   for (auto iter = strings.cbegin(); iter != strings.cend(); ++iter) {
-    list_of_values->AppendString(*iter);
+    list_of_values->Append(*iter);
   }
 }
 

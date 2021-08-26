@@ -83,7 +83,8 @@ class MESSAGE_CENTER_EXPORT MessageView
   // Updates this view with an additional grouped notification. If the view
   // wasn't previously grouped it also takes care of converting the view to
   // the grouped notification state.
-  virtual void AddGroupedNotification(const Notification& notification);
+  virtual void AddGroupNotification(const Notification& notification) {}
+  virtual void RemoveGroupNotification(const std::string& notification_id) {}
 
   // Updates this view with the new data contained in the notification.
   virtual void UpdateWithNotification(const Notification& notification);
@@ -180,6 +181,9 @@ class MESSAGE_CENTER_EXPORT MessageView
 
   // Changes the background color and schedules a paint.
   virtual void SetDrawBackgroundAsActive(bool active);
+
+  void UpdateControlButtonsVisibilityWithNotification(
+      const Notification& notification);
 
   void SetCornerRadius(int top_radius, int bottom_radius);
 

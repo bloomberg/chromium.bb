@@ -293,8 +293,8 @@ struct DefInfo {
   /// This is required to carry a storage class override from a storage
   /// buffer expressed in the old style (with Uniform storage class)
   /// that needs to be remapped to StorageBuffer storage class.
-  /// This is kNone for non-pointers.
-  ast::StorageClass storage_class = ast::StorageClass::kNone;
+  /// This is kInvalid for non-pointers.
+  ast::StorageClass storage_class = ast::StorageClass::kInvalid;
 
   /// The reason, if any, that this value should be ignored.
   /// Normally no values are ignored.  This field can be updated while
@@ -473,15 +473,10 @@ class FunctionEmitter {
   /// @param decos the decoration list to modify
   void IncrementLocation(ast::DecorationList* decos);
 
-  /// Updates the decoration list, placing a non-null location decoration into
-  /// the list, replacing an existing one if it exists. Does nothing if the
-  /// replacement is nullptr.
-  /// Assumes the list contains at most one Location decoration.
-  /// @param decos the decoration list to modify
-  /// @param replacement the location decoration to place into the list
-  /// @returns the location decoration that was replaced, if one was replaced.
-  ast::Decoration* SetLocation(ast::DecorationList* decos,
-                               ast::Decoration* replacement);
+  /// Returns the Location dcoration, if it exists.
+  /// @param decos the list of decorations to search
+  /// @returns the Location decoration, or nullptr if it doesn't exist
+  ast::Decoration* GetLocation(const ast::DecorationList& decos);
 
   /// Create an ast::BlockStatement representing the body of the function.
   /// This creates the statement stack, which is non-empty for the lifetime
@@ -767,7 +762,8 @@ class FunctionEmitter {
   /// Makes an expression from a SPIR-V ID.
   /// if the SPIR-V result type is a pointer.
   /// @param id the SPIR-V ID of the value
-  /// @returns true if emission has not yet failed.
+  /// @returns an AST expression for the instruction, or an invalid
+  /// TypedExpression on error.
   TypedExpression MakeExpression(uint32_t id);
 
   /// Creates an expression and supporting statements for a combinatorial
@@ -970,6 +966,11 @@ class FunctionEmitter {
   /// @param expr a typed expression
   /// @results a copy of the expression, with possibly updated type
   TypedExpression InferFunctionStorageClass(TypedExpression expr);
+
+  /// Returns an expression for a SPIR-V OpFMod instruction.
+  /// @param inst the SPIR-V instruction
+  /// @returns an expression
+  TypedExpression MakeFMod(const spvtools::opt::Instruction& inst);
 
   /// Returns an expression for a SPIR-V OpAccessChain or OpInBoundsAccessChain
   /// instruction.

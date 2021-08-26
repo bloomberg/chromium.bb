@@ -1,0 +1,26 @@
+# Copyright 2021 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+assert(is_chromeos, "Projector App is Chrome OS only")
+
+static_library("projector_app") {
+  sources = [
+    "projector_app_constants.cc",
+    "projector_app_constants.h",
+    "trusted_projector_ui.cc",
+    "trusted_projector_ui.h",
+    "untrusted_projector_ui_config.cc",
+    "untrusted_projector_ui_config.h",
+  ]
+
+  deps = [
+    "//ash/constants:constants",
+    "//ash/public/cpp:cpp",
+    "//chromeos/resources:projector_app_trusted_resources",
+    "//chromeos/resources:projector_app_untrusted_resources",
+    "//chromeos/strings",
+    "//content/public/browser",
+    "//ui/webui",
+  ]
+}

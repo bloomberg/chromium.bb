@@ -34,6 +34,8 @@ list(APPEND AOM_DSP_COMMON_SOURCES
             "${AOM_ROOT}/aom_dsp/intrapred.c"
             "${AOM_ROOT}/aom_dsp/intrapred_common.h"
             "${AOM_ROOT}/aom_dsp/loopfilter.c"
+            "${AOM_ROOT}/aom_dsp/odintrin.c"
+            "${AOM_ROOT}/aom_dsp/odintrin.h"
             "${AOM_ROOT}/aom_dsp/prob.h"
             "${AOM_ROOT}/aom_dsp/recenter.h"
             "${AOM_ROOT}/aom_dsp/simd/v128_intrinsics.h"

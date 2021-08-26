@@ -12,6 +12,10 @@
 
 namespace enterprise_connectors {
 
+extern const char kBoxEnterpriseIdFieldName[];
+extern const char kBoxLoginFieldName[];
+extern const char kBoxNameFieldName[];
+
 struct BoxApiCallResponse;
 
 // Helper for making Box API calls.
@@ -47,9 +51,10 @@ class BoxApiCallFlow : public OAuth2ApiCallFlow {
   using ParseResult = data_decoder::DataDecoder::ValueOrError;
 
  protected:
+  void OnFailureJsonParsed(int http_error, ParseResult result);
+  // Called in OnFailureJsonParsed() to send the failure back.
   virtual void ProcessFailure(Response response) = 0;
 
-  void OnFailureJsonParsed(int http_error, ParseResult result);
   base::WeakPtrFactory<BoxApiCallFlow> weak_factory_{this};
 };
 
@@ -125,11 +130,35 @@ class BoxCreateUpstreamFolderApiCallFlow : public BoxApiCallFlow {
 
  private:
   // Callback for JsonParser that extracts folder id in ProcessApiCallSuccess().
-  void OnSuccessJsonParsed(ParseResult result);
+  void OnSuccessJsonParsed(int network_response_code, ParseResult result);
 
   // Callback from the uploader to report success, http_code, folder_id.
   TaskCallback callback_;
   base::WeakPtrFactory<BoxCreateUpstreamFolderApiCallFlow> weak_factory_{this};
+};
+
+// Helper for performing preflight checks before uploading a file.
+class BoxGetCurrentUserApiCallFlow : public BoxApiCallFlow {
+ public:
+  explicit BoxGetCurrentUserApiCallFlow(
+      base::OnceCallback<void(Response, base::Value)> callback);
+  ~BoxGetCurrentUserApiCallFlow() override;
+
+  // BoxApiCallFlow interface.
+  GURL CreateApiCallUrl() override;
+  bool IsExpectedSuccessCode(int code) const override;
+  void ProcessApiCallSuccess(const network::mojom::URLResponseHead* head,
+                             std::unique_ptr<std::string> body) override;
+  void ProcessFailure(Response response) override;
+
+ private:
+  // Callback for JsonParser that extracts enterprise_id in
+  // ProcessApiCallSuccess().
+  void OnJsonParsed(ParseResult result);
+
+  // Callback from the controller to report success, http_code, folder_id.
+  base::OnceCallback<void(Response, base::Value)> callback_;
+  base::WeakPtrFactory<BoxGetCurrentUserApiCallFlow> weak_factory_{this};
 };
 
 // Helper for performing preflight checks before uploading a file.

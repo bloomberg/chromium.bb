@@ -13,6 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/hash/hash.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -43,7 +44,7 @@ namespace dnr_api = api::declarative_net_request;
 // url_pattern_index.fbs. Whenever an extension with an indexed ruleset format
 // version different from the one currently used by Chrome is loaded, the
 // extension ruleset will be reindexed.
-constexpr int kIndexedRulesetFormatVersion = 22;
+constexpr int kIndexedRulesetFormatVersion = 23;
 
 // This static assert is meant to catch cases where
 // url_pattern_index::kUrlPatternIndexFormatVersion is incremented without
@@ -123,12 +124,24 @@ void OverrideGetChecksumForTest(int checksum) {
   g_override_checksum_for_test = checksum;
 }
 
+std::string GetIndexedRulesetData(base::span<const uint8_t> data) {
+  return base::StrCat(
+      {GetVersionHeader(),
+       base::StringPiece(reinterpret_cast<const char*>(data.data()),
+                         data.size())});
+}
+
 bool PersistIndexedRuleset(const base::FilePath& path,
                            base::span<const uint8_t> data) {
   // Create the directory corresponding to |path| if it does not exist.
   if (!base::CreateDirectory(path.DirName()))
     return false;
 
+  // Unlike for dynamic rules, we don't use `ImportantFileWriter` here since it
+  // can be quite slow (and this will be called for the extension's indexed
+  // static rulesets). Also the file persisting logic here is simpler than for
+  // dynamic rules where we need to persist both the JSON and indexed rulesets
+  // and keep them in sync.
   base::File ruleset_file(
       path, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
   if (!ruleset_file.IsValid())

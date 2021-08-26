@@ -25,6 +25,7 @@
 #include "modules/rtp_rtcp/include/flexfec_receiver.h"
 #include "modules/rtp_rtcp/source/source_tracker.h"
 #include "modules/video_coding/frame_buffer2.h"
+#include "modules/video_coding/nack_requester.h"
 #include "modules/video_coding/video_receiver2.h"
 #include "rtc_base/system/no_unique_address.h"
 #include "rtc_base/task_queue.h"
@@ -97,7 +98,8 @@ class VideoReceiveStream2
                       VideoReceiveStream::Config config,
                       CallStats* call_stats,
                       Clock* clock,
-                      VCMTiming* timing);
+                      VCMTiming* timing,
+                      NackPeriodicProcessor* nack_periodic_processor);
   // Destruction happens on the worker thread. Prior to destruction the caller
   // must ensure that a registration with the transport has been cleared. See
   // `RegisterWithTransport` for details.
@@ -261,9 +263,9 @@ class VideoReceiveStream2
   const int max_wait_for_keyframe_ms_;
   const int max_wait_for_frame_ms_;
 
-  // All of them tries to change current min_playout_delay on |timing_| but
+  // All of them tries to change current min_playout_delay on `timing_` but
   // source of the change request is different in each case. Among them the
-  // biggest delay is used. -1 means use default value from the |timing_|.
+  // biggest delay is used. -1 means use default value from the `timing_`.
   //
   // Minimum delay as decided by the RTP playout delay extension.
   int frame_minimum_playout_delay_ms_ RTC_GUARDED_BY(worker_sequence_checker_) =
@@ -296,17 +298,17 @@ class VideoReceiveStream2
   std::vector<std::unique_ptr<EncodedFrame>> buffered_encoded_frames_
       RTC_GUARDED_BY(decode_queue_);
 
-  // Set by the field trial WebRTC-LowLatencyRenderer. The parameter |enabled|
+  // Set by the field trial WebRTC-LowLatencyRenderer. The parameter `enabled`
   // determines if the low-latency renderer algorithm should be used for the
   // case min playout delay=0 and max playout delay>0.
   FieldTrialParameter<bool> low_latency_renderer_enabled_;
   // Set by the field trial WebRTC-LowLatencyRenderer. The parameter
-  // |include_predecode_buffer| determines if the predecode buffer should be
+  // `include_predecode_buffer` determines if the predecode buffer should be
   // taken into account when calculating maximum number of frames in composition
   // queue.
   FieldTrialParameter<bool> low_latency_renderer_include_predecode_buffer_;
 
-  // Set by the field trial WebRTC-PreStreamDecoders. The parameter |max|
+  // Set by the field trial WebRTC-PreStreamDecoders. The parameter `max`
   // determines the maximum number of decoders that are created up front before
   // any video frame has been received.
   FieldTrialParameter<int> maximum_pre_stream_decoders_;

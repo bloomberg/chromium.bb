@@ -32,6 +32,14 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, Breadcrumb) {
   RunTestURL("foreground/js/ui/breadcrumb_unittest.m_gen.html");
 }
 
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, BannerController) {
+  RunTestURL("foreground/js/banner_controller_unittest.m_gen.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, BannerUtil) {
+  RunTestURL("foreground/js/banner_util_unittest.m_gen.html");
+}
+
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ContentMetadataProvider) {
   RunTestURL(
       "foreground/js/metadata/content_metadata_provider_unittest.m_gen.html");
@@ -220,6 +228,10 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, MultiMetadataProvider) {
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, NavigationListModelTest) {
   RunTestURL("foreground/js/navigation_list_model_unittest.m_gen.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, PathComponent) {
+  RunTestURL("foreground/js/path_component_unittest.m_gen.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ProvidersModel) {

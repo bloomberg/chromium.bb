@@ -7,16 +7,19 @@
 #ifndef CORE_FXGE_WIN32_CFX_PSRENDERER_H_
 #define CORE_FXGE_WIN32_CFX_PSRENDERER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <memory>
 #include <vector>
 
 #include "core/fxcrt/fx_coordinates.h"
 #include "core/fxcrt/fx_memory_wrappers.h"
 #include "core/fxcrt/fx_stream.h"
-#include "core/fxcrt/fx_system.h"
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxcrt/unowned_ptr.h"
 #include "core/fxge/cfx_graphstatedata.h"
+#include "third_party/base/span.h"
 
 class CFX_DIBBase;
 class CFX_GlyphCache;
@@ -59,7 +62,7 @@ class CFX_PSRenderer {
             int pslevel,
             int width,
             int height);
-  bool StartRendering();
+  void StartRendering();
   void EndRendering();
   void SaveState();
   void RestoreState(bool bKeepSaved);
@@ -117,8 +120,9 @@ class CFX_PSRenderer {
                       uint8_t** output_buf,
                       uint32_t* output_size,
                       const char** filter) const;
-  void WritePSBinary(const uint8_t* data, int len);
-  void WriteToStream(std::ostringstream* stringStream);
+  void WritePSBinary(pdfium::span<const uint8_t> data);
+  void WriteStream(std::ostringstream& stream);
+  void WriteString(ByteStringView str);
 
   bool m_bInited = false;
   bool m_bGraphStateSet = false;

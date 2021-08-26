@@ -21,10 +21,12 @@ namespace tint {
 namespace transform {
 
 /// CanonicalizeEntryPointIO is a transform used to rewrite shader entry point
-/// interfaces into a form that the generators can handle. After the transform,
-/// an entry point's parameters will be aggregated into a single struct, and its
-/// return type will either be a struct or void. All structs in the module that
-/// have entry point IO decorations will have exactly one pipeline stage usage.
+/// interfaces into a form that the generators can handle. Each entry point
+/// function is stripped of all shader IO attributes and wrapped in a function
+/// that provides the shader interface.
+/// The transform config determines whether to use global variables, structures,
+/// or parameters for the shader inputs and outputs, and optionally adds
+/// additional builtins to the shader interface.
 ///
 /// Before:
 /// ```
@@ -36,12 +38,15 @@ namespace transform {
 /// [[stage(fragment)]]
 /// fn frag_main([[builtin(position)]] coord : vec4<f32>,
 ///              locations : Locations) -> [[location(0)]] f32 {
+///   if (coord.w > 1.0) {
+///     return 0.0;
+///   }
 ///   var col : f32 = (coord.x * locations.loc1);
 ///   return col;
 /// }
 /// ```
 ///
-/// After:
+/// After (using structures for all parameters):
 /// ```
 /// struct Locations{
 ///   loc1 : f32;
@@ -58,33 +63,45 @@ namespace transform {
 ///   [[location(0)]] loc0 : f32;
 /// };
 ///
+/// fn frag_main_inner(coord : vec4<f32>,
+///                    locations : Locations) -> f32 {
+///   if (coord.w > 1.0) {
+///     return 0.0;
+///   }
+///   var col : f32 = (coord.x * locations.loc1);
+///   return col;
+/// }
+///
 /// [[stage(fragment)]]
 /// fn frag_main(in : frag_main_in) -> frag_main_out {
-///   const coord = in.coord;
-///   const locations = Locations(in.loc1, in.loc2);
-///   var col : f32 = (coord.x * locations.loc1);
-///   var retval : frag_main_out;
-///   retval.loc0 = col;
-///   return retval;
+///   let inner_retval = frag_main_inner(in.coord, Locations(in.loc1, in.loc2));
+///   var wrapper_result : frag_main_out;
+///   wrapper_result.loc0 = inner_retval;
+///   return wrapper_result;
 /// }
 /// ```
 class CanonicalizeEntryPointIO
     : public Castable<CanonicalizeEntryPointIO, Transform> {
  public:
-  /// BuiltinStyle is an enumerator of different ways to emit builtins.
-  enum class BuiltinStyle {
-    /// Use non-struct function parameters for all builtins.
-    kParameter,
-    /// Use struct members for all builtins.
-    kStructMember,
+  /// ShaderStyle is an enumerator of different ways to emit shader IO.
+  enum class ShaderStyle {
+    /// Target SPIR-V (using global variables).
+    kSpirv,
+    /// Target MSL (using non-struct function parameters for builtins).
+    kMsl,
+    /// Target HLSL (using structures for all IO).
+    kHlsl,
   };
 
   /// Configuration options for the transform.
   struct Config : public Castable<Config, Data> {
     /// Constructor
-    /// @param builtins the approach to use for emitting builtins.
+    /// @param style the approach to use for emitting shader IO.
     /// @param sample_mask an optional sample mask to combine with shader masks
-    explicit Config(BuiltinStyle builtins, uint32_t sample_mask = 0xFFFFFFFF);
+    /// @param emit_vertex_point_size `true` to generate a pointsize builtin
+    explicit Config(ShaderStyle style,
+                    uint32_t sample_mask = 0xFFFFFFFF,
+                    bool emit_vertex_point_size = false);
 
     /// Copy constructor
     Config(const Config&);
@@ -92,11 +109,15 @@ class CanonicalizeEntryPointIO
     /// Destructor
     ~Config() override;
 
-    /// The approach to use for emitting builtins.
-    BuiltinStyle const builtin_style;
+    /// The approach to use for emitting shader IO.
+    ShaderStyle const shader_style;
 
     /// A fixed sample mask to combine into masks produced by fragment shaders.
     uint32_t const fixed_sample_mask;
+
+    /// Set to `true` to generate a pointsize builtin and have it set to 1.0
+    /// from all vertex shaders in the module.
+    bool const emit_vertex_point_size;
   };
 
   /// Constructor
@@ -111,6 +132,8 @@ class CanonicalizeEntryPointIO
   /// @param inputs optional extra transform-specific input data
   /// @param outputs optional extra transform-specific output data
   void Run(CloneContext& ctx, const DataMap& inputs, DataMap& outputs) override;
+
+  struct State;
 };
 
 }  // namespace transform

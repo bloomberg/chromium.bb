@@ -330,9 +330,10 @@ bool VkRenderFramework::InstanceLayerSupported(const char *const layer_name, con
 // Return true if extension name is found and spec value is >= requested spec value
 // WARNING: for simplicity, does not cover layers' extensions
 bool VkRenderFramework::InstanceExtensionSupported(const char *const extension_name, const uint32_t spec_version) {
-    // WARNING: assume debug extensions are always supported, which are usually provided by layers
+    // WARNING: assume debug and validation feature extensions are always supported, which are usually provided by layers
     if (0 == strncmp(extension_name, VK_EXT_DEBUG_UTILS_EXTENSION_NAME, VK_MAX_EXTENSION_NAME_SIZE)) return true;
     if (0 == strncmp(extension_name, VK_EXT_DEBUG_REPORT_EXTENSION_NAME, VK_MAX_EXTENSION_NAME_SIZE)) return true;
+    if (0 == strncmp(extension_name, VK_EXT_VALIDATION_FEATURES_EXTENSION_NAME, VK_MAX_EXTENSION_NAME_SIZE)) return true;
 
     const auto extensions = vk_testing::GetGlobalExtensions();
 
@@ -443,6 +444,13 @@ void VkRenderFramework::InitFramework(void * /*unused compatibility parameter*/,
         }
     };
 
+    static bool driver_printed = false;
+    static bool print_driver_info = GetEnvironment("VK_LAYER_TESTS_PRINT_DRIVER") != "";
+    if (print_driver_info && !driver_printed &&
+        InstanceExtensionSupported(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
+        instance_extensions_.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+    }
+
     RemoveIf(instance_layers_, LayerNotSupportedWithReporting);
     RemoveIf(instance_extensions_, ExtensionNotSupportedWithReporting);
 
@@ -504,15 +512,13 @@ void VkRenderFramework::InitFramework(void * /*unused compatibility parameter*/,
 
     debug_reporter_.Create(instance_);
 
-    static bool driver_printed = false;
-    if (GetEnvironment("VK_LAYER_TESTS_PRINT_DRIVER") != "" && !driver_printed) {
-        if (InstanceExtensionSupported(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
-            auto driver_properties = LvlInitStruct<VkPhysicalDeviceDriverProperties>();
-            auto physical_device_properties2 = LvlInitStruct<VkPhysicalDeviceProperties2>(&driver_properties);
-            vk::GetPhysicalDeviceProperties2(gpu_, &physical_device_properties2);
-            printf("Driver Name = %s\n", driver_properties.driverName);
-            printf("Driver Info = %s\n", driver_properties.driverInfo);
-        }
+    if (print_driver_info && !driver_printed) {
+        auto driver_properties = LvlInitStruct<VkPhysicalDeviceDriverProperties>();
+        auto physical_device_properties2 = LvlInitStruct<VkPhysicalDeviceProperties2>(&driver_properties);
+        vk::GetPhysicalDeviceProperties2(gpu_, &physical_device_properties2);
+        printf("Driver Name = %s\n", driver_properties.driverName);
+        printf("Driver Info = %s\n", driver_properties.driverInfo);
+
         driver_printed = true;
     }
 }
@@ -640,7 +646,9 @@ void VkRenderFramework::InitViewport(float width, float height) {
 
 void VkRenderFramework::InitViewport() { InitViewport(m_width, m_height); }
 
-bool VkRenderFramework::InitSurface() { return InitSurface(m_width, m_height); }
+bool VkRenderFramework::InitSurface() { return InitSurface(m_width, m_height, m_surface); }
+
+bool VkRenderFramework::InitSurface(float width, float height) { return InitSurface(width, height, m_surface); }
 
 #ifdef VK_USE_PLATFORM_WIN32_KHR
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
@@ -648,7 +656,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 }
 #endif  // VK_USE_PLATFORM_WIN32_KHR
 
-bool VkRenderFramework::InitSurface(float width, float height) {
+bool VkRenderFramework::InitSurface(float width, float height, VkSurfaceKHR &surface) {
 #if defined(VK_USE_PLATFORM_WIN32_KHR)
     HINSTANCE window_instance = GetModuleHandle(nullptr);
     const char class_name[] = "test";
@@ -664,7 +672,7 @@ bool VkRenderFramework::InitSurface(float width, float height) {
     surface_create_info.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
     surface_create_info.hinstance = window_instance;
     surface_create_info.hwnd = window;
-    VkResult err = vk::CreateWin32SurfaceKHR(instance(), &surface_create_info, nullptr, &m_surface);
+    VkResult err = vk::CreateWin32SurfaceKHR(instance(), &surface_create_info, nullptr, &surface);
     if (err != VK_SUCCESS) return false;
 #endif
 
@@ -727,6 +735,17 @@ void VkRenderFramework::InitSwapchainInfo() {
     if (present_mode_count != 0) {
         m_surface_present_modes.resize(present_mode_count);
         vk::GetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, m_surface, &present_mode_count, m_surface_present_modes.data());
+
+        // Shared Present mode has different requirements most tests won't actually want
+        // Implementation required to support a non-shared present mode
+        for (size_t i = 0; i < m_surface_present_modes.size(); i++) {
+            const VkPresentModeKHR present_mode = m_surface_present_modes[i];
+            if ((present_mode != VK_PRESENT_MODE_SHARED_DEMAND_REFRESH_KHR) &&
+                (present_mode != VK_PRESENT_MODE_SHARED_CONTINUOUS_REFRESH_KHR)) {
+                m_surface_non_shared_present_mode = present_mode;
+                break;
+            }
+        }
     }
 
 #ifdef VK_USE_PLATFORM_ANDROID_KHR
@@ -745,6 +764,12 @@ bool VkRenderFramework::InitSwapchain(VkImageUsageFlags imageUsage, VkSurfaceTra
 
 bool VkRenderFramework::InitSwapchain(VkSurfaceKHR &surface, VkImageUsageFlags imageUsage,
                                       VkSurfaceTransformFlagBitsKHR preTransform) {
+    return InitSwapchain(surface, imageUsage, preTransform, m_swapchain);
+}
+
+bool VkRenderFramework::InitSwapchain(VkSurfaceKHR &surface, VkImageUsageFlags imageUsage,
+                                      VkSurfaceTransformFlagBitsKHR preTransform, VkSwapchainKHR &swapchain,
+                                      VkSwapchainKHR oldSwapchain) {
     InitSwapchainInfo();
 
     VkBool32 supported;
@@ -767,19 +792,19 @@ bool VkRenderFramework::InitSwapchain(VkSurfaceKHR &surface, VkImageUsageFlags i
     swapchain_create_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
     swapchain_create_info.preTransform = preTransform;
     swapchain_create_info.compositeAlpha = m_surface_composite_alpha;
-    swapchain_create_info.presentMode = m_surface_present_modes[0];
+    swapchain_create_info.presentMode = m_surface_non_shared_present_mode;
     swapchain_create_info.clipped = VK_FALSE;
-    swapchain_create_info.oldSwapchain = 0;
+    swapchain_create_info.oldSwapchain = oldSwapchain;
 
-    VkResult err = vk::CreateSwapchainKHR(device(), &swapchain_create_info, nullptr, &m_swapchain);
+    VkResult err = vk::CreateSwapchainKHR(device(), &swapchain_create_info, nullptr, &swapchain);
     if (err != VK_SUCCESS) {
         return false;
     }
     uint32_t imageCount = 0;
-    vk::GetSwapchainImagesKHR(device(), m_swapchain, &imageCount, nullptr);
+    vk::GetSwapchainImagesKHR(device(), swapchain, &imageCount, nullptr);
     vector<VkImage> swapchainImages;
     swapchainImages.resize(imageCount);
-    vk::GetSwapchainImagesKHR(device(), m_swapchain, &imageCount, swapchainImages.data());
+    vk::GetSwapchainImagesKHR(device(), swapchain, &imageCount, swapchainImages.data());
     return true;
 }
 

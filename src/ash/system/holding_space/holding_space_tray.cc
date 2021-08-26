@@ -19,6 +19,7 @@
 #include "ash/shell.h"
 #include "ash/shell_observer.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/holding_space/holding_space_animation_registry.h"
 #include "ash/system/holding_space/holding_space_progress_ring.h"
 #include "ash/system/holding_space/holding_space_tray_bubble.h"
 #include "ash/system/holding_space/holding_space_tray_icon.h"
@@ -99,7 +100,7 @@ std::vector<base::FilePath> ExtractFilePathsFromFilenames(
 std::vector<base::FilePath> ExtractFilePathsFromFileSystemSources(
     const ui::OSExchangeData& data) {
   base::Pickle pickle;
-  if (!data.GetPickledData(ui::ClipboardFormatType::GetWebCustomDataType(),
+  if (!data.GetPickledData(ui::ClipboardFormatType::WebCustomDataType(),
                            &pickle)) {
     return {};
   }
@@ -243,6 +244,9 @@ class ScopedDragDropObserver : public aura::client::DragDropClientObserver,
 // HoldingSpaceTray ------------------------------------------------------------
 
 HoldingSpaceTray::HoldingSpaceTray(Shelf* shelf) : TrayBackgroundView(shelf) {
+  // Ensure the existence of the singleton animation registry.
+  HoldingSpaceAnimationRegistry::GetInstance();
+
   controller_observer_.Observe(HoldingSpaceController::Get());
   session_observer_.Observe(Shell::Get()->session_controller());
   SetVisible(false);
@@ -394,7 +398,7 @@ bool HoldingSpaceTray::GetDropFormats(
   // Support custom web data so that file system sources can be retrieved from
   // pickled data. That is the storage location at which the Files app stores
   // both file paths *and* directory paths.
-  format_types->insert(ui::ClipboardFormatType::GetWebCustomDataType());
+  format_types->insert(ui::ClipboardFormatType::WebCustomDataType());
   return true;
 }
 

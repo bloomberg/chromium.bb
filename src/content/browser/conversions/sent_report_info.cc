@@ -6,11 +6,25 @@
 
 namespace content {
 
-std::ostream& operator<<(std::ostream& out, const SentReportInfo& info) {
-  out << "report_url: " << info.report_url
-      << ", report_body: " << info.report_body
-      << ", http_response_code: " << info.http_response_code;
-  return out;
-}
+SentReportInfo::SentReportInfo(int64_t conversion_id,
+                               base::Time original_report_time,
+                               GURL report_url,
+                               std::string report_body,
+                               int http_response_code,
+                               bool should_retry)
+    : conversion_id(conversion_id),
+      original_report_time(original_report_time),
+      report_url(report_url),
+      report_body(std::move(report_body)),
+      http_response_code(http_response_code),
+      should_retry(should_retry) {}
+
+SentReportInfo::SentReportInfo(const SentReportInfo& other) = default;
+SentReportInfo& SentReportInfo::operator=(const SentReportInfo& other) =
+    default;
+SentReportInfo::SentReportInfo(SentReportInfo&& other) = default;
+SentReportInfo& SentReportInfo::operator=(SentReportInfo&& other) = default;
+
+SentReportInfo::~SentReportInfo() = default;
 
 }  // namespace content

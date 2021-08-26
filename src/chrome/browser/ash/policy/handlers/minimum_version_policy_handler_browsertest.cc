@@ -21,6 +21,7 @@
 #include "chrome/browser/ash/login/login_wizard.h"
 #include "chrome/browser/ash/login/test/device_state_mixin.h"
 #include "chrome/browser/ash/login/test/fake_gaia_mixin.h"
+#include "chrome/browser/ash/login/test/kiosk_apps_mixin.h"
 #include "chrome/browser/ash/login/test/login_manager_mixin.h"
 #include "chrome/browser/ash/login/test/oobe_base_test.h"
 #include "chrome/browser/ash/login/test/oobe_screen_exit_waiter.h"
@@ -28,7 +29,7 @@
 #include "chrome/browser/ash/login/test/user_policy_mixin.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
-#include "chrome/browser/ash/policy/core/browser_policy_connector_chromeos.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/policy/core/device_policy_builder.h"
 #include "chrome/browser/ash/policy/core/device_policy_cros_browser_test.h"
 #include "chrome/browser/ash/policy/handlers/minimum_version_policy_handler.h"
@@ -45,14 +46,15 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_required_screen_handler.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_update_engine_client.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
+#include "chromeos/dbus/update_engine/fake_update_engine_client.h"
 #include "chromeos/network/network_state_test_helper.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
@@ -97,7 +99,7 @@ const int kAutoLoginLoginDelayMilliseconds = 500000;
 
 policy::MinimumVersionPolicyHandler* GetMinimumVersionPolicyHandler() {
   return g_browser_process->platform_part()
-      ->browser_policy_connector_chromeos()
+      ->browser_policy_connector_ash()
       ->GetMinimumVersionPolicyHandler();
 }
 
@@ -671,13 +673,17 @@ IN_PROC_BROWSER_TEST_F(MinimumVersionPolicyTest, RelaunchNotificationOverride) {
   UpgradeDetector* upgrade_detector = UpgradeDetector::GetInstance();
   EXPECT_EQ(upgrade_detector->upgrade_notification_stage(),
             UpgradeDetector::UPGRADE_ANNOYANCE_ELEVATED);
-  EXPECT_EQ(upgrade_detector->GetHighAnnoyanceDeadline(), deadline);
+  EXPECT_EQ(upgrade_detector->GetAnnoyanceLevelDeadline(
+                UpgradeDetector::UPGRADE_ANNOYANCE_HIGH),
+            deadline);
 
   // Revoking update required should reset the overridden the relaunch
   // notifications.
   SetDevicePolicyAndWaitForSettingChange(
       base::Value(base::Value::Type::DICTIONARY));
-  EXPECT_NE(upgrade_detector->GetHighAnnoyanceDeadline(), deadline);
+  EXPECT_NE(upgrade_detector->GetAnnoyanceLevelDeadline(
+                UpgradeDetector::UPGRADE_ANNOYANCE_HIGH),
+            deadline);
 }
 
 class MinimumVersionNoUsersLoginTest : public MinimumVersionPolicyTestBase {
@@ -823,6 +829,40 @@ IN_PROC_BROWSER_TEST_F(MinimumVersionPublicSessionAutoLoginTest,
                    ->IsSigninInProgress());
   EXPECT_FALSE(chromeos::ExistingUserController::current_controller()
                    ->IsAutoLoginTimerRunningForTesting());
+}
+
+class MinimumVersionKioskAutoLoginTest : public MinimumVersionExistingUserTest {
+ public:
+  MinimumVersionKioskAutoLoginTest() = default;
+  ~MinimumVersionKioskAutoLoginTest() override = default;
+
+  void SetUpInProcessBrowserTestFixture() override {
+    MinimumVersionExistingUserTest::SetUpInProcessBrowserTestFixture();
+
+    // Set up kiosk auto-launch mode.
+    em::ChromeDeviceSettingsProto& proto(helper_.device_policy()->payload());
+    ash::KioskAppsMixin::AppendAutoLaunchKioskAccount(&proto);
+    helper_.RefreshDevicePolicy();
+  }
+};
+
+// Checks kiosk auto launch is not blocked even if immediate update is required
+// by DeviceMinimumVersion policy.
+IN_PROC_BROWSER_TEST_F(MinimumVersionKioskAutoLoginTest, AllowAutoLaunch) {
+  EXPECT_EQ(session_manager::SessionManager::Get()->session_state(),
+            session_manager::SessionState::LOGIN_PRIMARY);
+  chromeos::OobeScreenWaiter(chromeos::AppLaunchSplashScreenView::kScreenId)
+      .Wait();
+  // Policy handler returns early when device is setup in auto launch kiosk
+  // mode.
+  PrefService* prefs = g_browser_process->local_state();
+  const base::Time timer_start_time =
+      prefs->GetTime(prefs::kUpdateRequiredTimerStartTime);
+  const base::TimeDelta warning_time =
+      prefs->GetTimeDelta(prefs::kUpdateRequiredWarningPeriod);
+  EXPECT_TRUE(timer_start_time.is_null());
+  EXPECT_TRUE(warning_time.is_zero());
+  EXPECT_FALSE(GetMinimumVersionPolicyHandler()->DeadlineReached());
 }
 
 class MinimumVersionTimerExpiredOnLogin

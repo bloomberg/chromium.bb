@@ -40,7 +40,7 @@ void SystemWebAppIntegrationTest::ExpectSystemWebAppValid(
   Browser* app_browser;
   LaunchAppWithoutWaiting(app_type, &app_browser);
 
-  web_app::AppId app_id = app_browser->app_controller()->GetAppId();
+  web_app::AppId app_id = app_browser->app_controller()->app_id();
   EXPECT_EQ(GetManager().GetAppIdForSystemApp(app_type), app_id);
   EXPECT_TRUE(GetManager().IsSystemWebApp(app_id));
 
@@ -62,7 +62,7 @@ void SystemWebAppIntegrationTest::ExpectSystemWebAppValid(
   observer.WaitForNavigationFinished();
   EXPECT_EQ(url, web_contents->GetLastCommittedURL());
 
-  content::WebUI* web_ui = web_contents->GetCommittedWebUI();
+  content::WebUI* web_ui = web_contents->GetWebUI();
   ASSERT_TRUE(web_ui);
   EXPECT_TRUE(web_ui->GetController());
 

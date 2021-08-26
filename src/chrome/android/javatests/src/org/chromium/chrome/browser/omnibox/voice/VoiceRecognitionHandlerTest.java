@@ -612,6 +612,7 @@ public class VoiceRecognitionHandlerTest {
         doReturn(new GURL("https://www.google.com/search?q=abc")).when(mMatch).getUrl();
         doReturn(true).when(mMatch).isSearchSuggestion();
         mActivityTestRule.startMainActivityOnBlankPage();
+        mActivityTestRule.waitForActivityNativeInitializationComplete();
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mWindowAndroid = new TestWindowAndroid(mActivityTestRule.getActivity());
@@ -648,7 +649,6 @@ public class VoiceRecognitionHandlerTest {
 
     @After
     public void tearDown() {
-        mHandler.removeObserver(mObserver);
         SysUtils.resetForTesting();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mHandler.removeObserver(mObserver);
@@ -1429,6 +1429,10 @@ public class VoiceRecognitionHandlerTest {
     public void testParseResults_VoiceResponseURLConversion() {
         doReturn(false).when(mMatch).isSearchSuggestion();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
+            // Needed to interact with classifier.
+            // AutocompleteCoordinator#classify() requires a valid profile.
+            mProfileSupplier.set(Profile.getLastUsedRegularProfile());
+
             String[] texts =
                     new String[] {"a", "www. b .co .uk", "engadget .com", "www.google.com"};
             float[] confidences = new float[] {1.0f, 1.0f, 1.0f, 1.0f};

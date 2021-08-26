@@ -194,7 +194,7 @@
     "cmd": [
       "git",
       "rebase",
-      "origin/master"
+      "origin/main"
     ],
     "cwd": "[START_DIR]/src",
     "infra_step": true,

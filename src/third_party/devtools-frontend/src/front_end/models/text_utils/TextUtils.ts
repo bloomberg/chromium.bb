@@ -28,8 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as Platform from '../../core/platform/platform.js';
 import type * as CodeMirrorModule from '../../third_party/codemirror/codemirror-legacy.js'; // eslint-disable-line @typescript-eslint/no-unused-vars
 
@@ -191,9 +189,9 @@ export const Utils = {
 };
 
 export class FilterParser {
-  _keys: string[];
+  private readonly keys: string[];
   constructor(keys: string[]) {
-    this._keys = keys;
+    this.keys = keys;
   }
 
   static cloneFilter(filter: ParsedFilter): ParsedFilter {
@@ -201,107 +199,131 @@ export class FilterParser {
   }
 
   parse(query: string): ParsedFilter[] {
-    const splitResult = Utils.splitStringByRegexes(
+    const splitFilters = Utils.splitStringByRegexes(
         query, [Utils._keyValueFilterRegex, Utils._regexFilterRegex, Utils._textFilterRegex]);
-    const filters: ParsedFilter[] = [];
-    for (let i = 0; i < splitResult.length; i++) {
-      const regexIndex = splitResult[i].regexIndex;
+    const parsedFilters: ParsedFilter[] = [];
+    for (const {regexIndex, captureGroups} of splitFilters) {
       if (regexIndex === -1) {
         continue;
       }
-      const result = splitResult[i].captureGroups;
       if (regexIndex === 0) {
-        if (this._keys.indexOf((result[1] as string)) !== -1) {
-          filters.push({key: result[1], regex: undefined, text: result[2], negative: Boolean(result[0])});
+        const startsWithMinus = captureGroups[0];
+        const parsedKey = captureGroups[1];
+        const parsedValue = captureGroups[2];
+        if (this.keys.indexOf((parsedKey as string)) !== -1) {
+          parsedFilters.push({
+            key: parsedKey,
+            regex: undefined,
+            text: parsedValue,
+            negative: Boolean(startsWithMinus),
+          });
         } else {
-          filters.push(
-              {key: undefined, regex: undefined, text: result[1] + ':' + result[2], negative: Boolean(result[0])});
+          parsedFilters.push({
+            key: undefined,
+            regex: undefined,
+            text: `${parsedKey}:${parsedValue}`,
+            negative: Boolean(startsWithMinus),
+          });
         }
       } else if (regexIndex === 1) {
+        const startsWithMinus = captureGroups[0];
+        const parsedRegex = captureGroups[1];
         try {
-          filters.push({
+          parsedFilters.push({
             key: undefined,
-            regex: new RegExp((result[1] as string), 'i'),
+            regex: new RegExp((parsedRegex as string), 'i'),
             text: undefined,
-            negative: Boolean(result[0]),
+            negative: Boolean(startsWithMinus),
           });
         } catch (e) {
-          filters.push({key: undefined, regex: undefined, text: '/' + result[1] + '/', negative: Boolean(result[0])});
+          parsedFilters.push({
+            key: undefined,
+            regex: undefined,
+            text: `/${parsedRegex}/`,
+            negative: Boolean(startsWithMinus),
+          });
         }
       } else if (regexIndex === 2) {
-        filters.push({key: undefined, regex: undefined, text: result[1], negative: Boolean(result[0])});
+        const startsWithMinus = captureGroups[0];
+        const parsedText = captureGroups[1];
+        parsedFilters.push({
+          key: undefined,
+          regex: undefined,
+          text: parsedText,
+          negative: Boolean(startsWithMinus),
+        });
       }
     }
-    return filters;
+    return parsedFilters;
   }
 }
 
 export class BalancedJSONTokenizer {
-  _callback: (arg0: string) => void;
-  _index: number;
-  _balance: number;
-  _buffer: string;
-  _findMultiple: boolean;
-  _closingDoubleQuoteRegex: RegExp;
-  _lastBalancedIndex?: number;
+  private readonly callback: (arg0: string) => void;
+  private index: number;
+  private balance: number;
+  private buffer: string;
+  private findMultiple: boolean;
+  private closingDoubleQuoteRegex: RegExp;
+  private lastBalancedIndex?: number;
   constructor(callback: (arg0: string) => void, findMultiple?: boolean) {
-    this._callback = callback;
-    this._index = 0;
-    this._balance = 0;
-    this._buffer = '';
-    this._findMultiple = findMultiple || false;
-    this._closingDoubleQuoteRegex = /[^\\](?:\\\\)*"/g;
+    this.callback = callback;
+    this.index = 0;
+    this.balance = 0;
+    this.buffer = '';
+    this.findMultiple = findMultiple || false;
+    this.closingDoubleQuoteRegex = /[^\\](?:\\\\)*"/g;
   }
 
   write(chunk: string): boolean {
-    this._buffer += chunk;
-    const lastIndex = this._buffer.length;
-    const buffer = this._buffer;
+    this.buffer += chunk;
+    const lastIndex = this.buffer.length;
+    const buffer = this.buffer;
     let index;
-    for (index = this._index; index < lastIndex; ++index) {
+    for (index = this.index; index < lastIndex; ++index) {
       const character = buffer[index];
       if (character === '"') {
-        this._closingDoubleQuoteRegex.lastIndex = index;
-        if (!this._closingDoubleQuoteRegex.test(buffer)) {
+        this.closingDoubleQuoteRegex.lastIndex = index;
+        if (!this.closingDoubleQuoteRegex.test(buffer)) {
           break;
         }
-        index = this._closingDoubleQuoteRegex.lastIndex - 1;
+        index = this.closingDoubleQuoteRegex.lastIndex - 1;
       } else if (character === '{') {
-        ++this._balance;
+        ++this.balance;
       } else if (character === '}') {
-        --this._balance;
-        if (this._balance < 0) {
-          this._reportBalanced();
+        --this.balance;
+        if (this.balance < 0) {
+          this.reportBalanced();
           return false;
         }
-        if (!this._balance) {
-          this._lastBalancedIndex = index + 1;
-          if (!this._findMultiple) {
+        if (!this.balance) {
+          this.lastBalancedIndex = index + 1;
+          if (!this.findMultiple) {
             break;
           }
         }
-      } else if (character === ']' && !this._balance) {
-        this._reportBalanced();
+      } else if (character === ']' && !this.balance) {
+        this.reportBalanced();
         return false;
       }
     }
-    this._index = index;
-    this._reportBalanced();
+    this.index = index;
+    this.reportBalanced();
     return true;
   }
 
-  _reportBalanced(): void {
-    if (!this._lastBalancedIndex) {
+  private reportBalanced(): void {
+    if (!this.lastBalancedIndex) {
       return;
     }
-    this._callback(this._buffer.slice(0, this._lastBalancedIndex));
-    this._buffer = this._buffer.slice(this._lastBalancedIndex);
-    this._index -= this._lastBalancedIndex;
-    this._lastBalancedIndex = 0;
+    this.callback(this.buffer.slice(0, this.lastBalancedIndex));
+    this.buffer = this.buffer.slice(this.lastBalancedIndex);
+    this.index -= this.lastBalancedIndex;
+    this.lastBalancedIndex = 0;
   }
 
   remainder(): string {
-    return this._buffer;
+    return this.buffer;
   }
 }
 

@@ -39,7 +39,7 @@
     "@types/node": "^14.11.10",
     "@types/offscreencanvas": "^2019.6.2",
     "@typescript-eslint/parser": "^4.22.0",
-    "@webgpu/types": "^0.1.4",
+    "@webgpu/types": "^0.1.6",
     "babel-plugin-add-header-comment": "^1.0.3",
     "babel-plugin-const-enum": "^1.0.1",
     "chokidar": "^3.4.3",

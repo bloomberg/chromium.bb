@@ -65,7 +65,6 @@
                           injectionHandler:injectionHandler];
   if (self) {
     _cardViewController = [[CardViewController alloc] init];
-    _cardViewController.contentInsetsAlwaysEqualToSafeArea = YES;
 
     // Service must use regular browser state, even if the Browser has an
     // OTR browser state.
@@ -81,11 +80,7 @@
     std::vector<autofill::CreditCard*> cards =
         _personalDataManager->GetCreditCards();
 
-    CommandDispatcher* dispatcher = super.browser->GetCommandDispatcher();
-    id<BrowserCoordinatorCommands> handler =
-        HandlerForProtocol(dispatcher, BrowserCoordinatorCommands);
-    _cardMediator = [[ManualFillCardMediator alloc] initWithCards:cards
-                                                          handler:handler];
+    _cardMediator = [[ManualFillCardMediator alloc] initWithCards:cards];
     _cardMediator.navigationDelegate = self;
     _cardMediator.contentInjector = super.injectionHandler;
     _cardMediator.consumer = _cardViewController;
@@ -115,23 +110,35 @@
 
 - (void)openCardSettings {
   __weak id<CardCoordinatorDelegate> delegate = self.delegate;
+  __weak __typeof(self) weakSelf = self;
   [self dismissIfNecessaryThenDoCompletion:^{
     [delegate openCardSettings];
     if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
       // Settings close the popover but don't send a message to reopen it.
-      [delegate fallbackCoordinatorDidDismissPopover:self];
+      [delegate fallbackCoordinatorDidDismissPopover:weakSelf];
+    }
+  }];
+}
+
+- (void)openAddCreditCard {
+  __weak id<CardCoordinatorDelegate> delegate = self.delegate;
+  __weak __typeof(self) weakSelf = self;
+  [self dismissIfNecessaryThenDoCompletion:^{
+    [delegate openAddCreditCard];
+    if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
+      // Settings close the popover but don't send a message to reopen it.
+      [delegate fallbackCoordinatorDidDismissPopover:weakSelf];
     }
   }];
 }
 
 - (void)requestFullCreditCard:(ManualFillCreditCard*)card {
   __weak __typeof(self) weakSelf = self;
-  __weak ManualFillCreditCard* weakCard = card;
   [self dismissIfNecessaryThenDoCompletion:^{
     if (!weakSelf)
       return;
     const autofill::CreditCard* autofillCreditCard =
-        [weakSelf.cardMediator findCreditCardfromGUID:weakCard.GUID];
+        [weakSelf.cardMediator findCreditCardfromGUID:card.GUID];
     if (!autofillCreditCard)
       return;
     [weakSelf.cardRequester requestFullCreditCard:*autofillCreditCard

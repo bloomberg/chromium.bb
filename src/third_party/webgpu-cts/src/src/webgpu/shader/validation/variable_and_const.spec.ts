@@ -8,60 +8,38 @@ import { ShaderValidationTest } from './shader_validation_test.js';
 
 export const g = makeTestGroup(ShaderValidationTest);
 
-const kScalarType = ['i32', 'f32', 'u32', 'bool'] as const;
-type ScalarType = 'i32' | 'f32' | 'u32' | 'bool';
-
-const kContainerTypes = [
-  undefined,
-  'vec2',
-  'vec3',
-  'vec4',
-  'mat2x2',
-  'mat2x3',
-  'mat2x4',
-  'mat3x2',
-  'mat3x3',
-  'mat3x4',
-  'mat4x2',
-  'mat4x3',
-  'mat4x4',
-  'array',
+const kTestTypes = [
+  'f32',
+  'i32',
+  'u32',
+  'bool',
+  'vec2<f32>',
+  'vec2<i32>',
+  'vec2<u32>',
+  'vec2<bool>',
+  'vec3<f32>',
+  'vec3<i32>',
+  'vec3<u32>',
+  'vec3<bool>',
+  'vec4<f32>',
+  'vec4<i32>',
+  'vec4<u32>',
+  'vec4<bool>',
+  'mat2x2<f32>',
+  'mat2x3<f32>',
+  'mat2x4<f32>',
+  'mat3x2<f32>',
+  'mat3x3<f32>',
+  'mat3x4<f32>',
+  'mat4x2<f32>',
+  'mat4x3<f32>',
+  'mat4x4<f32>',
+  // TODO(sarahM0): 12 is a random number here. find a solution to replace it.
+  'array<f32, 12>',
+  'array<i32, 12>',
+  'array<u32, 12>',
+  'array<bool, 12>',
 ] as const;
-type ContainerType =
-  | undefined
-  | 'vec2'
-  | 'vec3'
-  | 'vec4'
-  | 'mat2x2'
-  | 'mat2x3'
-  | 'mat2x4'
-  | 'mat3x2'
-  | 'mat3x3'
-  | 'mat3x4'
-  | 'mat4x2'
-  | 'mat4x3'
-  | 'mat4x4'
-  | 'array';
-
-function getType(scalarType: ScalarType, containerType: ContainerType) {
-  let type = '';
-  switch (containerType) {
-    case undefined: {
-      type = scalarType;
-      break;
-    }
-    case 'array': {
-      // TODO(sarahM0): 12 is a random number here. find a solution to replace it.
-      type = `array<${scalarType}, 12>`;
-      break;
-    }
-    default: {
-      type = `${containerType}<${scalarType}>`;
-      break;
-    }
-  }
-  return type;
-}
 
 g.test('initializer_type')
   .desc(
@@ -73,23 +51,13 @@ g.test('initializer_type')
   )
   .params(u =>
     u
-      .combine('variableOrConstant', ['var', 'const'])
-      .combine('lhsContainerType', kContainerTypes)
-      .combine('lhsScalarType', kScalarType)
-      .combine('rhsContainerType', kContainerTypes)
-      .combine('rhsScalarType', kScalarType)
+      .combine('variableOrConstant', ['var', 'let'])
+      .beginSubcases()
+      .combine('lhsType', kTestTypes)
+      .combine('rhsType', kTestTypes)
   )
   .fn(t => {
-    const {
-      variableOrConstant,
-      lhsContainerType,
-      lhsScalarType,
-      rhsContainerType,
-      rhsScalarType,
-    } = t.params;
-
-    const lhsType = getType(lhsScalarType, lhsContainerType);
-    const rhsType = getType(rhsScalarType, rhsContainerType);
+    const { variableOrConstant, lhsType, rhsType } = t.params;
 
     const code = `
       [[stage(fragment)]]
@@ -98,7 +66,7 @@ g.test('initializer_type')
       }
     `;
 
-    const expectation = lhsScalarType === rhsScalarType && lhsContainerType === rhsContainerType;
+    const expectation = lhsType === rhsType;
     t.expectCompileResult(expectation, code);
   });
 
@@ -123,17 +91,13 @@ g.test('io_shareable_type')
 
   Control case: 'private' is used to make sure when only the storage class changes, the shader
   becomes invalid and nothing else is wrong.
-  TODO: add test for: struct - struct with bool component - struct with runtime array`
+  TODO: add test for structs:
+  - struct with bool component
+  - struct with runtime array`
   )
-  .params(u =>
-    u
-      .combine('storageClass', ['in', 'out', 'private'])
-      .combine('containerType', kContainerTypes)
-      .combine('scalarType', kScalarType)
-  )
+  .params(u => u.combine('storageClass', ['in', 'out', 'private']).combine('type', kTestTypes))
   .fn(t => {
-    const { storageClass, containerType, scalarType } = t.params;
-    const type = containerType ? `${containerType}<${scalarType}>` : scalarType;
+    const { storageClass, type } = t.params;
 
     let code;
     if (`${storageClass}` === 'in') {
@@ -167,6 +131,8 @@ g.test('io_shareable_type')
       `;
     }
 
-    const expectation = storageClass === 'private' || scalarType !== 'bool';
+    const expectation =
+      storageClass === 'private' ||
+      (type.indexOf('bool') === -1 && !type.startsWith('mat') && !type.startsWith('array'));
     t.expectCompileResult(expectation, code);
   });

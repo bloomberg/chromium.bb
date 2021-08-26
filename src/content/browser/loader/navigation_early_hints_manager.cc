@@ -6,6 +6,7 @@
 
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/url_loader_throttles.h"
@@ -19,11 +20,14 @@
 #include "net/url_request/url_request_job.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/loader/throttling_url_loader.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
+#include "third_party/blink/public/common/origin_trials/trial_token.h"
+#include "third_party/blink/public/common/origin_trials/trial_token_result.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "url/origin.h"
 
@@ -70,6 +74,14 @@ const net::NetworkTrafficAnnotationTag kEarlyHintsPreloadTrafficAnnotation =
       "disabled. Using either URLBlocklist or URLAllowlist (or a combination "
       "of both) limits the scope of these requests."
 )");
+
+constexpr char kEarlyHintsPreloadForNavigationOriginTrialName[] =
+    "EarlyHintsPreloadForNavigation";
+
+bool IsDisabledEarlyHintsPreloadForcibly() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+      features::kEarlyHintsPreloadForNavigation, "force_disable", false);
+}
 
 network::mojom::RequestDestination LinkAsAttributeToRequestDestination(
     const network::mojom::LinkHeaderPtr& link) {
@@ -120,6 +132,7 @@ network::mojom::RequestMode CalculateRequestMode(
     const network::mojom::LinkHeaderPtr& link) {
   if (link->rel == network::mojom::LinkRelAttribute::kModulePreload) {
     // When fetching a module script, mode is always "cors".
+    // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-single-module-script
     return network::mojom::RequestMode::kCors;
   }
 
@@ -225,6 +238,7 @@ class NavigationEarlyHintsManager::PreloadURLLoaderClient
       return;
     }
     result_.error_code = status.error_code;
+    result_.cors_error_status = status.cors_error_status;
     MaybeCompletePreload();
   }
 
@@ -260,12 +274,16 @@ class NavigationEarlyHintsManager::PreloadURLLoaderClient
 
 NavigationEarlyHintsManager::NavigationEarlyHintsManager(
     BrowserContext& browser_context,
-    scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
+    mojo::Remote<network::mojom::URLLoaderFactory> loader_factory,
+    url::Origin origin,
     int frame_tree_node_id)
     : browser_context_(browser_context),
       loader_factory_(std::move(loader_factory)),
+      origin_(origin),
       frame_tree_node_id_(frame_tree_node_id) {
-  DCHECK(loader_factory_);
+  shared_loader_factory_ =
+      base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+          loader_factory_.get());
 }
 
 NavigationEarlyHintsManager::~NavigationEarlyHintsManager() = default;
@@ -273,17 +291,30 @@ NavigationEarlyHintsManager::~NavigationEarlyHintsManager() = default;
 void NavigationEarlyHintsManager::HandleEarlyHints(
     network::mojom::EarlyHintsPtr early_hints,
     const network::ResourceRequest& navigation_request) {
+  bool enabled_by_origin_trial = IsPreloadForNavigationEnabledByOriginTrial(
+      early_hints->origin_trial_tokens);
+
   for (const auto& link : early_hints->headers->link_headers) {
     // TODO(crbug.com/671310): Support other `rel` attributes.
     if (link->rel == network::mojom::LinkRelAttribute::kPreload ||
         link->rel == network::mojom::LinkRelAttribute::kModulePreload) {
-      MaybePreloadHintedResource(link, navigation_request);
+      MaybePreloadHintedResource(link, navigation_request,
+                                 enabled_by_origin_trial);
     }
   }
 }
 
 bool NavigationEarlyHintsManager::WasPreloadLinkHeaderReceived() const {
-  return was_preload_link_header_received_;
+  // The field trial for Early Hints preload uses this method to determine
+  // whether custom page metrics for the trial should be recorded. Returns false
+  // when Early Hints preloads are triggered by the origin trial but the field
+  // trial is disabled so that we can avoid skewing the custom page metrics for
+  // the field trial.
+  // TODO(crbug.com/1197989): Consider renaming this method.
+  if (base::FeatureList::IsEnabled(features::kEarlyHintsPreloadForNavigation))
+    return was_preload_link_header_received_;
+  return was_preload_link_header_received_ &&
+         !was_preload_triggered_by_origin_trial_;
 }
 
 std::vector<GURL> NavigationEarlyHintsManager::TakePreloadedResourceURLs() {
@@ -303,37 +334,53 @@ void NavigationEarlyHintsManager::WaitForPreloadsFinishedForTesting(
     preloads_completion_callback_for_testing_ = std::move(callback);
 }
 
+bool NavigationEarlyHintsManager::IsPreloadForNavigationEnabledByOriginTrial(
+    const std::vector<std::string>& raw_tokens) {
+  if (!blink::TrialTokenValidator::IsTrialPossibleOnOrigin(origin_.GetURL()))
+    return false;
+
+  auto current_time = base::Time::Now();
+  for (auto& raw_token : raw_tokens) {
+    blink::TrialTokenResult result =
+        trial_token_validator_.ValidateToken(raw_token, origin_, current_time);
+    if (result.Status() != blink::OriginTrialTokenStatus::kSuccess)
+      continue;
+
+    const blink::TrialToken* token = result.ParsedToken();
+    DCHECK(token);
+    DCHECK_EQ(token->IsValid(origin_, current_time),
+              blink::OriginTrialTokenStatus::kSuccess);
+    if (token->feature_name() != kEarlyHintsPreloadForNavigationOriginTrialName)
+      continue;
+
+    return true;
+  }
+  return false;
+}
+
 void NavigationEarlyHintsManager::MaybePreloadHintedResource(
     const network::mojom::LinkHeaderPtr& link,
-    const network::ResourceRequest& navigation_request) {
+    const network::ResourceRequest& navigation_request,
+    bool enabled_by_origin_trial) {
   DCHECK(navigation_request.is_main_frame);
 
   was_preload_link_header_received_ = true;
 
-  if (!base::FeatureList::IsEnabled(features::kEarlyHintsPreloadForNavigation))
+  if (!ShouldPreload(link, enabled_by_origin_trial))
     return;
-
-  if (!link->href.SchemeIsHTTPOrHTTPS())
-    return;
-
-  if (inflight_preloads_.contains(link->href) ||
-      preloaded_resources_.contains(link->href)) {
-    return;
-  }
 
   DCHECK(navigation_request.url.SchemeIsHTTPOrHTTPS());
-  auto top_frame_origin = url::Origin::Create(navigation_request.url);
   auto preload_origin = url::Origin::Create(link->href);
 
   net::SiteForCookies site_for_cookies =
-      net::SiteForCookies(net::SchemefulSite(top_frame_origin));
+      net::SiteForCookies::FromOrigin(origin_);
   network::ResourceRequest request;
   request.method = net::HttpRequestHeaders::kGetMethod;
   request.priority = CalculateRequestPriority(link);
   request.destination = LinkAsAttributeToRequestDestination(link);
   request.url = link->href;
   request.site_for_cookies = site_for_cookies;
-  request.request_initiator = top_frame_origin;
+  request.request_initiator = origin_;
   request.referrer = net::URLRequestJob::ComputeReferrerForPolicy(
       navigation_request.referrer_policy, navigation_request.url, request.url);
   request.referrer_policy = navigation_request.referrer_policy;
@@ -342,17 +389,6 @@ void NavigationEarlyHintsManager::MaybePreloadHintedResource(
       static_cast<int>(blink::mojom::ResourceType::kSubResource);
   request.mode = CalculateRequestMode(link);
   request.credentials_mode = CalculateCredentialsMode(link);
-
-  request.trusted_params = network::ResourceRequest::TrustedParams();
-  // Ideally, IsolationInfo for preloading subresources should be created by
-  // RenderFrameHostImpl::ComputeIsolationInfoForSubresourcesForPendingCommit()
-  // but RenderFrameHostImpl isn't available at this point because the final
-  // response is needed to determine the host. Using `top_frame_origin`
-  // should create the same IsolationInfo as RenderFrameHostImpl creates for
-  // top-level frames with HTTP/HTTPS URLs.
-  request.trusted_params->isolation_info = net::IsolationInfo::Create(
-      net::IsolationInfo::RequestType::kOther, top_frame_origin,
-      /*frame_origin=*/top_frame_origin, site_for_cookies);
 
   std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles =
       CreateContentBrowserURLLoaderThrottles(
@@ -364,7 +400,7 @@ void NavigationEarlyHintsManager::MaybePreloadHintedResource(
   auto loader_client =
       std::make_unique<PreloadURLLoaderClient>(*this, request.url);
   auto loader = blink::ThrottlingURLLoader::CreateLoaderAndStart(
-      loader_factory_, std::move(throttles),
+      shared_loader_factory_, std::move(throttles),
       content::GlobalRequestID::MakeBrowserInitiated().request_id,
       network::mojom::kURLLoadOptionNone, &request, loader_client.get(),
       kEarlyHintsPreloadTrafficAnnotation, base::ThreadTaskRunnerHandle::Get());
@@ -373,6 +409,32 @@ void NavigationEarlyHintsManager::MaybePreloadHintedResource(
       std::move(loader), std::move(loader_client));
 
   preloaded_urls_.push_back(request.url);
+
+  if (enabled_by_origin_trial)
+    was_preload_triggered_by_origin_trial_ = true;
+}
+
+bool NavigationEarlyHintsManager::ShouldPreload(
+    const network::mojom::LinkHeaderPtr& link,
+    bool enabled_by_origin_trial) {
+  if (IsDisabledEarlyHintsPreloadForcibly())
+    return false;
+
+  if (!base::FeatureList::IsEnabled(
+          features::kEarlyHintsPreloadForNavigation) &&
+      !enabled_by_origin_trial) {
+    return false;
+  }
+
+  if (!link->href.SchemeIsHTTPOrHTTPS())
+    return false;
+
+  if (inflight_preloads_.contains(link->href) ||
+      preloaded_resources_.contains(link->href)) {
+    return false;
+  }
+
+  return true;
 }
 
 void NavigationEarlyHintsManager::OnPreloadComplete(

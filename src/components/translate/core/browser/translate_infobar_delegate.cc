@@ -194,11 +194,6 @@ void TranslateInfoBarDelegate::RevertWithoutClosingInfobar() {
   step_ = TRANSLATE_STEP_BEFORE_TRANSLATE;
 }
 
-void TranslateInfoBarDelegate::ReportLanguageDetectionError() {
-  if (translate_manager_)
-    translate_manager_->ReportLanguageDetectionError();
-}
-
 void TranslateInfoBarDelegate::TranslationDeclined() {
   ui_delegate_.TranslationDeclined(true);
 }
@@ -220,8 +215,12 @@ bool TranslateInfoBarDelegate::IsSiteOnNeverPromptList() const {
   return ui_delegate_.IsSiteOnNeverPromptList();
 }
 
-void TranslateInfoBarDelegate::ToggleNeverPrompt() {
-  ui_delegate_.SetNeverPrompt(!ui_delegate_.IsSiteOnNeverPromptList());
+void TranslateInfoBarDelegate::ToggleNeverPromptSite() {
+  ui_delegate_.SetNeverPromptSite(!ui_delegate_.IsSiteOnNeverPromptList());
+}
+
+bool TranslateInfoBarDelegate::ShouldNeverTranslateLanguage() const {
+  return ui_delegate_.IsLanguageBlocked();
 }
 
 bool TranslateInfoBarDelegate::ShouldAlwaysTranslate() const {
@@ -268,7 +267,8 @@ void TranslateInfoBarDelegate::MessageInfoBarButtonPressed() {
   translate_manager_->TranslatePage(
       source_language_code(), target_language_code(), false,
       translate_manager_->GetActiveTranslateMetricsLogger()
-          ->GetNextManualTranslationType());
+          ->GetNextManualTranslationType(
+              /*is_context_menu_initiated_translation=*/false));
 }
 
 bool TranslateInfoBarDelegate::ShouldShowMessageInfoBarButton() {

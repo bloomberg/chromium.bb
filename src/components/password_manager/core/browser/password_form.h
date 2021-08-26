@@ -260,16 +260,17 @@ struct PasswordForm {
   // When parsing an HTML form, this is not used.
   base::Time date_last_used;
 
+  // When the password value was last changed. The date can be unset on the old
+  // credentials because the passwords wasn't modified yet. The code must keep
+  // it in mind and fallback to 'date_last_used' or 'date_created'.
+  //
+  // When parsing an HTML form, this is not used.
+  base::Time date_password_modified;
+
   // When the login was saved (by chrome).
   //
   // When parsing an HTML form, this is not used.
   base::Time date_created;
-
-  // When the login was downloaded from the sync server. For local passwords is
-  // not used.
-  //
-  // When parsing an HTML form, this is not used.
-  base::Time date_synced;
 
   // Tracks if the user opted to never remember passwords for this form. Default
   // to false.
@@ -368,10 +369,7 @@ struct PasswordForm {
 
   // A mapping from the credential insecurity type (e.g. leaked, phished),
   // to its metadata (e.g. time it was discovered, whether alerts are muted).
-  // Forms retrieved for the store always have a `password_issues` value.
-  // NOTE: If it is known that there are no issues, this should be an empty map.
-  absl::optional<base::flat_map<InsecureType, InsecurityMetadata>>
-      password_issues;
+  base::flat_map<InsecureType, InsecurityMetadata> password_issues;
 
   // Return true if we consider this form to be a change password form and not
   // a signup form. It's based on local heuristics and may be inaccurate.
@@ -404,7 +402,7 @@ struct PasswordForm {
 
   // Utility method to check whether the form represents an insecure credential
   // of insecure type `type`.
-  bool IsInsecureCredential(InsecureType type);
+  bool IsInsecureCredential(InsecureType type) const;
 
   PasswordForm();
   PasswordForm(const PasswordForm& other);

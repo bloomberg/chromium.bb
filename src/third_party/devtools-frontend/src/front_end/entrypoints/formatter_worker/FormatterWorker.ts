@@ -28,8 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import type * as Formatter from '../../models/formatter/formatter.js';
@@ -44,7 +42,6 @@ import {HTMLFormatter} from './HTMLFormatter.js';
 import {IdentityFormatter} from './IdentityFormatter.js';
 import {JavaScriptFormatter} from './JavaScriptFormatter.js';
 import {JSONFormatter} from './JSONFormatter.js';
-
 
 export interface Chunk {
   // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
@@ -186,7 +183,6 @@ export function format(
     mimeType: string, text: string, indentString?: string): Formatter.FormatterWorkerPool.FormatResult {
   // Default to a 4-space indent.
   indentString = indentString || '    ';
-  mimeType === 'application/json' ? indentString = '  ' : null;
 
   let result: Formatter.FormatterWorkerPool.FormatResult;
   const builder = new FormattedContentBuilder(indentString);

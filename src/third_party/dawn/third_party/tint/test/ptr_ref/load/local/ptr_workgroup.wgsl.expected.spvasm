@@ -5,40 +5,41 @@
 ; Schema: 0
                OpCapability Shader
                OpMemoryModel Logical GLSL450
-               OpEntryPoint GLCompute %main "main" %tint_symbol
+               OpEntryPoint GLCompute %main "main" %local_invocation_index_1
                OpExecutionMode %main LocalSize 1 1 1
+               OpName %local_invocation_index_1 "local_invocation_index_1"
                OpName %i "i"
-               OpName %tint_symbol "tint_symbol"
+               OpName %main_inner "main_inner"
+               OpName %local_invocation_index "local_invocation_index"
                OpName %main "main"
-               OpDecorate %tint_symbol BuiltIn LocalInvocationIndex
+               OpDecorate %local_invocation_index_1 BuiltIn LocalInvocationIndex
+       %uint = OpTypeInt 32 0
+%_ptr_Input_uint = OpTypePointer Input %uint
+%local_invocation_index_1 = OpVariable %_ptr_Input_uint Input
         %int = OpTypeInt 32 1
 %_ptr_Workgroup_int = OpTypePointer Workgroup %int
           %i = OpVariable %_ptr_Workgroup_int Workgroup
-       %uint = OpTypeInt 32 0
-%_ptr_Input_uint = OpTypePointer Input %uint
-%tint_symbol = OpVariable %_ptr_Input_uint Input
        %void = OpTypeVoid
-          %7 = OpTypeFunction %void
-     %uint_0 = OpConstant %uint 0
-       %bool = OpTypeBool
-         %17 = OpConstantNull %int
+          %7 = OpTypeFunction %void %uint
+         %12 = OpConstantNull %int
      %uint_2 = OpConstant %uint 2
    %uint_264 = OpConstant %uint 264
     %int_123 = OpConstant %int 123
       %int_1 = OpConstant %int 1
-       %main = OpFunction %void None %7
-         %10 = OpLabel
-         %11 = OpLoad %uint %tint_symbol
-         %13 = OpIEqual %bool %11 %uint_0
-               OpSelectionMerge %15 None
-               OpBranchConditional %13 %16 %15
-         %16 = OpLabel
-               OpStore %i %17
-               OpBranch %15
-         %15 = OpLabel
+         %20 = OpTypeFunction %void
+ %main_inner = OpFunction %void None %7
+%local_invocation_index = OpFunctionParameter %uint
+         %11 = OpLabel
+               OpStore %i %12
                OpControlBarrier %uint_2 %uint_2 %uint_264
                OpStore %i %int_123
-         %22 = OpLoad %int %i
-         %24 = OpIAdd %int %22 %int_1
+         %17 = OpLoad %int %i
+         %19 = OpIAdd %int %17 %int_1
+               OpReturn
+               OpFunctionEnd
+       %main = OpFunction %void None %20
+         %22 = OpLabel
+         %24 = OpLoad %uint %local_invocation_index_1
+         %23 = OpFunctionCall %void %main_inner %24
                OpReturn
                OpFunctionEnd

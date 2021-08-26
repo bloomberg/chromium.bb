@@ -13,20 +13,21 @@
 #include "base/feature_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_features.h"
-#include "chrome/browser/web_applications/components/app_icon_manager.h"
-#include "chrome/browser/web_applications/components/install_manager.h"
-#include "chrome/browser/web_applications/components/os_integration_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/os_integration_manager.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_icon_manager.h"
+#include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_installation_utils.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/chrome_features.h"
 #include "components/webapps/browser/installable/installable_manager.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/manifest/manifest_util.h"
 #include "ui/gfx/skia_util.h"
 
 namespace web_app {
@@ -94,7 +95,7 @@ IconDiff HaveIconBitmapsChanged(const IconBitmaps& disk_icon_bitmaps,
 // considered safe and permitted to update their names.
 bool AllowUnpromptedNameUpdate(const AppId& app_id,
                                const WebAppRegistrar& registrar) {
-  const WebApp* web_app = registrar.AsWebAppRegistrar()->GetAppById(app_id);
+  const WebApp* web_app = registrar.GetAppById(app_id);
   if (!web_app)
     return false;
   return CanWebAppUpdateIdentity(web_app);
@@ -105,7 +106,7 @@ bool AllowUnpromptedNameUpdate(const AppId& app_id,
 // flag needs to be on.
 bool AllowUnpromptedIconUpdate(const AppId& app_id,
                                const WebAppRegistrar& registrar) {
-  const WebApp* web_app = registrar.AsWebAppRegistrar()->GetAppById(app_id);
+  const WebApp* web_app = registrar.GetAppById(app_id);
   if (!web_app)
     return false;
   return CanWebAppUpdateIdentity(web_app) ||
@@ -114,80 +115,6 @@ bool AllowUnpromptedIconUpdate(const AppId& app_id,
 
 }  // namespace
 
-bool HaveFileHandlersChanged(
-    const apps::FileHandlers* old_handlers,
-    const std::vector<blink::Manifest::FileHandler>& new_handlers) {
-  if (!old_handlers)
-    return true;
-
-  if (old_handlers->size() != new_handlers.size())
-    return true;
-
-  for (size_t i = 0; i < old_handlers->size(); ++i) {
-    // Compare apps::FileHandler and blink::Manifest::FileHandler.
-    const apps::FileHandler& old_handler = (*old_handlers)[i];
-    const blink::Manifest::FileHandler& new_handler = new_handlers[i];
-
-    if (old_handler.action != new_handler.action)
-      return true;
-
-    // Note: While blink::Manifest::FileHandler contains a `name` field, the
-    // corresponding apps::FileHandler doesn't store this field.  As a result,
-    // we don't compare the incoming blink::Manifest::FileHandler `name` field
-    // anywhere and so it has no effect on the comparison result.
-
-    // Check `accept` maps for equality.
-    if (old_handler.accept.size() != new_handler.accept.size())
-      return true;
-
-    for (const auto& old_accept_entry : old_handler.accept) {
-      auto new_accept_it = new_handler.accept.find(
-          base::UTF8ToUTF16(old_accept_entry.mime_type));
-      if (new_accept_it == new_handler.accept.end())
-        return true;
-
-      // Check `file_extensions` for equality.
-      const base::flat_set<std::string>& old_extensions_set =
-          old_accept_entry.file_extensions;
-      const std::vector<std::u16string>& new_extensions_list =
-          new_accept_it->second;
-
-      if (old_extensions_set.size() != new_extensions_list.size())
-        return true;
-      for (const std::u16string& new_extension : new_extensions_list) {
-        if (!base::Contains(old_extensions_set,
-                            base::UTF16ToUTF8(new_extension))) {
-          return true;
-        }
-      }
-    }
-  }
-  return false;
-}
-
-bool HaveProtocolHandlersChanged(
-    const apps::ProtocolHandlers* old_handlers,
-    const std::vector<blink::Manifest::ProtocolHandler>& new_handlers) {
-  if (!old_handlers)
-    return true;
-
-  if (old_handlers->size() != new_handlers.size())
-    return true;
-
-  for (size_t i = 0; i < old_handlers->size(); ++i) {
-    // Compare apps::ProtocolHandlerInfo and blink::Manifest::ProtocolHandler.
-    const apps::ProtocolHandlerInfo& old_handler = (*old_handlers)[i];
-    const blink::Manifest::ProtocolHandler& new_handler = new_handlers[i];
-
-    if (old_handler.protocol != base::UTF16ToUTF8(new_handler.protocol))
-      return true;
-
-    if (old_handler.url != new_handler.url)
-      return true;
-  }
-  return false;
-}
-
 ManifestUpdateTask::ManifestUpdateTask(
     const GURL& url,
     const AppId& app_id,
@@ -195,9 +122,9 @@ ManifestUpdateTask::ManifestUpdateTask(
     StoppedCallback stopped_callback,
     bool hang_for_testing,
     const WebAppRegistrar& registrar,
-    const AppIconManager& icon_manager,
+    const WebAppIconManager& icon_manager,
     WebAppUiManager* ui_manager,
-    InstallManager* install_manager,
+    WebAppInstallManager* install_manager,
     OsIntegrationManager& os_integration_manager)
     : content::WebContentsObserver(web_contents),
       registrar_(registrar),
@@ -258,7 +185,7 @@ void ManifestUpdateTask::WebContentsDestroyed() {
     case Stage::kPendingInstallation:
     case Stage::kPendingAssociationsUpdate:
       // These stages should have stopped listening to the web contents.
-      NOTREACHED();
+      NOTREACHED() << static_cast<int>(stage_);
       Observe(nullptr);
       break;
   }
@@ -300,109 +227,78 @@ void ManifestUpdateTask::OnDidGetInstallableData(
 
 bool ManifestUpdateTask::IsUpdateNeededForManifest() const {
   DCHECK(web_application_info_.has_value());
-  const WebApp* app = registrar_.AsWebAppRegistrar()->GetAppById(app_id_);
+  const WebApp* app = registrar_.GetAppById(app_id_);
   DCHECK(app);
 
   // Allows updating start_url and manifest_id when kWebAppEnableManifestId is
   // enabled. Both fields are allowed to change as long as the app_id generated
   // from them doesn't change.
   if (base::FeatureList::IsEnabled(blink::features::kWebAppEnableManifestId)) {
-    if (web_application_info_->manifest_id !=
-        registrar_.GetAppManifestId(app_id_)) {
+    if (web_application_info_->manifest_id != app->manifest_id())
       return true;
-    }
-    if (web_application_info_->start_url !=
-        registrar_.GetAppStartUrl(app_id_)) {
+    if (web_application_info_->start_url != app->start_url())
       return true;
-    }
   }
 
-  if (web_application_info_->theme_color !=
-      registrar_.GetAppThemeColor(app_id_))
+  if (web_application_info_->theme_color != app->theme_color())
     return true;
 
-  if (web_application_info_->scope != registrar_.GetAppScopeInternal(app_id_))
+  if (web_application_info_->scope != app->scope())
     return true;
 
-  if (web_application_info_->display_mode !=
-      registrar_.GetAppDisplayMode(app_id_)) {
+  if (web_application_info_->display_mode != app->display_mode())
     return true;
-  }
 
-  if (web_application_info_->display_override !=
-      registrar_.GetAppDisplayModeOverride(app_id_)) {
+  if (web_application_info_->display_override != app->display_mode_override())
     return true;
-  }
 
   // Allow app icon updating for certain apps, or if the existing icons are
   // empty - this means the app icon download during install failed.
   if (AllowUnpromptedIconUpdate(app_id_, registrar_) &&
-      web_application_info_->icon_infos !=
-          registrar_.GetAppIconInfos(app_id_)) {
+      web_application_info_->icon_infos != app->icon_infos()) {
     return true;
   }
 
-  if (base::FeatureList::IsEnabled(
-          features::kDesktopPWAsAppIconShortcutsMenu) &&
-      web_application_info_->shortcuts_menu_item_infos !=
-          registrar_.GetAppShortcutsMenuItemInfos(app_id_)) {
+  if (web_application_info_->shortcuts_menu_item_infos !=
+      app->shortcuts_menu_item_infos()) {
     return true;
   }
 
-  const apps::ShareTarget* app_share_target =
-      registrar_.GetAppShareTarget(app_id_);
-  if (app_share_target) {
-    if (!web_application_info_->share_target ||
-        *web_application_info_->share_target != *app_share_target) {
-      return true;
-    }
-  } else if (web_application_info_->share_target) {
+  if (web_application_info_->share_target != app->share_target())
     return true;
-  }
 
-  if (HaveProtocolHandlersChanged(
-          /*old_handlers=*/registrar_.GetAppProtocolHandlers(app_id_),
-          /*new_handlers=*/web_application_info_->protocol_handlers)) {
+  if (web_application_info_->protocol_handlers != app->protocol_handlers())
     return true;
-  }
 
-  if (web_application_info_->url_handlers !=
-      registrar_.GetAppUrlHandlers(app_id_)) {
+  if (web_application_info_->url_handlers != app->url_handlers())
     return true;
-  }
 
   if (web_application_info_->note_taking_new_note_url !=
       app->note_taking_new_note_url()) {
     return true;
   }
 
-  if (web_application_info_->capture_links !=
-      registrar_.GetAppCaptureLinks(app_id_)) {
+  if (web_application_info_->capture_links != app->capture_links())
     return true;
-  }
 
   if (os_integration_manager_.IsFileHandlingAPIAvailable(app_id_) &&
-      HaveFileHandlersChanged(
-          /*old_handlers=*/registrar_.GetAppFileHandlers(app_id_),
-          /*new_handlers=*/web_application_info_->file_handlers)) {
+      app->file_handlers() != web_application_info_->file_handlers) {
     return true;
   }
 
-  if (web_application_info_->background_color !=
-      registrar_.GetAppBackgroundColor(app_id_)) {
+  if (web_application_info_->background_color != app->background_color())
     return true;
-  }
 
-  if (web_application_info_->manifest_url !=
-      registrar_.GetAppManifestUrl(app_id_)) {
+  if (web_application_info_->manifest_url != app->manifest_url())
     return true;
-  }
 
   if (AllowUnpromptedNameUpdate(app_id_, registrar_) &&
-      web_application_info_->title !=
-          base::UTF8ToUTF16(registrar_.GetAppShortName(app_id_))) {
+      web_application_info_->title != base::UTF8ToUTF16(app->name())) {
     return true;
   }
+
+  if (web_application_info_->launch_handler != app->launch_handler())
+    return true;
 
   // TODO(crbug.com/1212849): Handle changes to is_storage_isolated.
 
@@ -465,6 +361,9 @@ void ManifestUpdateTask::OnAllIconsRead(IconsMap downloaded_icons_map,
   stage_ = Stage::kPendingAppIdentityCheck;
   Observe(nullptr);
 
+  PopulateShortcutItemIcons(&web_application_info_.value(),
+                            downloaded_icons_map);
+
   if (!AllowUnpromptedNameUpdate(app_id_, registrar_) &&
       !AllowUnpromptedIconUpdate(app_id_, registrar_) &&
       base::FeatureList::IsEnabled(features::kPwaUpdateDialogForNameAndIcon)) {
@@ -474,8 +373,7 @@ void ManifestUpdateTask::OnAllIconsRead(IconsMap downloaded_icons_map,
     // is necessary.
     // TODO(https://crbug.com/1184911): Reuse this data in the web app install
     // task.
-    FilterAndResizeIconsGenerateMissing(&web_application_info_.value(),
-                                        &downloaded_icons_map);
+    PopulateProductIcons(&web_application_info_.value(), &downloaded_icons_map);
     IconDiff icon_diff = IsUpdateNeededForIconContents(disk_icon_bitmaps);
     std::u16string old_title =
         base::UTF8ToUTF16(registrar_.GetAppShortName(app_id_));
@@ -538,8 +436,8 @@ void ManifestUpdateTask::OnPostAppIdentityUpdateCheck(
       // update is necessary.
       // TODO(https://crbug.com/1184911): Reuse this data in the web app install
       // task.
-      FilterAndResizeIconsGenerateMissing(&web_application_info_.value(),
-                                          &downloaded_icons_map);
+      PopulateProductIcons(&web_application_info_.value(),
+                           &downloaded_icons_map);
     }
 
     // TODO: compare in a BEST_EFFORT blocking PostTaskAndReply.
@@ -547,28 +445,11 @@ void ManifestUpdateTask::OnPostAppIdentityUpdateCheck(
       UpdateAfterWindowsClose();
       return;
     }
-  } else if (base::FeatureList::IsEnabled(
-                 features::kDesktopPWAsAppIconShortcutsMenu)) {
-    // FilterAndResizeIconsGenerateMissing calls PopulateShortcutItemIcons. We
-    // need that call to happen still if redownloading app icons is disabled, so
-    // manually call that here.
-    // This call allows us to compare the shortcut icons on disk with the ones
-    // that would be generated after an update.
-    // TODO(https://crbug.com/1184911): Reuse this data in the web app install
-    // task.
-    PopulateShortcutItemIcons(&web_application_info_.value(),
-                              &downloaded_icons_map);
   }
 
-  if (base::FeatureList::IsEnabled(
-          features::kDesktopPWAsAppIconShortcutsMenu)) {
-    icon_manager_.ReadAllShortcutsMenuIcons(
-        app_id_,
-        base::BindOnce(&ManifestUpdateTask::OnAllShortcutsMenuIconsRead,
-                       AsWeakPtr()));
-  } else {
-    NoManifestUpdateRequired();
-  }
+  icon_manager_.ReadAllShortcutsMenuIcons(
+      app_id_, base::BindOnce(&ManifestUpdateTask::OnAllShortcutsMenuIconsRead,
+                              AsWeakPtr()));
 }
 
 IconDiff ManifestUpdateTask::IsUpdateNeededForIconContents(

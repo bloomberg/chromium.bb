@@ -81,22 +81,18 @@ Stream &operator<<(Stream &out, CommaSeparatedListItemPrefixGenerator &gen)
 
 }  // namespace
 
-TOutputGLSLBase::TOutputGLSLBase(TInfoSinkBase &objSink,
-                                 ShHashFunction64 hashFunction,
-                                 NameMap &nameMap,
-                                 TSymbolTable *symbolTable,
-                                 sh::GLenum shaderType,
-                                 int shaderVersion,
-                                 ShShaderOutput output,
+TOutputGLSLBase::TOutputGLSLBase(TCompiler *compiler,
+                                 TInfoSinkBase &objSink,
                                  ShCompileOptions compileOptions)
-    : TIntermTraverser(true, true, true, symbolTable),
+    : TIntermTraverser(true, true, true, &compiler->getSymbolTable()),
       mObjSink(objSink),
       mDeclaringVariable(false),
-      mHashFunction(hashFunction),
-      mNameMap(nameMap),
-      mShaderType(shaderType),
-      mShaderVersion(shaderVersion),
-      mOutput(output),
+      mHashFunction(compiler->getHashFunction()),
+      mNameMap(compiler->getNameMap()),
+      mShaderType(compiler->getShaderType()),
+      mShaderVersion(compiler->getShaderVersion()),
+      mOutput(compiler->getOutputType()),
+      mHighPrecisionSupported(compiler->isHighPrecisionSupported()),
       mCompileOptions(compileOptions)
 {}
 
@@ -364,6 +360,17 @@ const char *TOutputGLSLBase::mapQualifierToString(TQualifier qualifier)
                 break;
         }
     }
+
+    // Handle qualifiers that produce different output based on shader type.
+    switch (qualifier)
+    {
+        case EvqClipDistance:
+        case EvqCullDistance:
+            return mShaderType == GL_FRAGMENT_SHADER ? "in" : "out";
+        default:
+            break;
+    }
+
     return sh::getQualifierString(qualifier);
 }
 
@@ -422,9 +429,13 @@ void TOutputGLSLBase::writeFunctionParameters(const TFunction *func)
         writeVariableType(type, param, true);
 
         if (param->symbolType() != SymbolType::Empty)
+        {
             out << " " << hashName(param);
+        }
         if (type.isArray())
+        {
             out << ArrayString(type);
+        }
 
         // Put a comma if this is not the last argument.
         if (i != paramCount - 1)
@@ -887,8 +898,10 @@ bool TOutputGLSLBase::visitAggregate(Visit visit, TIntermAggregate *node)
         ImmutableString functionName = node->getFunction()->name();
         if (visit == PreVisit)
         {
-            if (node->getOp() == EOpCallFunctionInAST ||
-                node->getOp() == EOpCallInternalRawFunction)
+            // No raw function is expected.
+            ASSERT(node->getOp() != EOpCallInternalRawFunction);
+
+            if (node->getOp() == EOpCallFunctionInAST)
             {
                 functionName = hashFunctionNameIfNeeded(node->getFunction());
             }
@@ -1128,12 +1141,21 @@ void TOutputGLSLBase::declareStruct(const TStructure *structure)
     const TFieldList &fields = structure->fields();
     for (size_t i = 0; i < fields.size(); ++i)
     {
-        const TField *field = fields[i];
-        if (writeVariablePrecision(field->type()->getPrecision()))
+        const TField *field    = fields[i];
+        const TType &fieldType = *field->type();
+        if (writeVariablePrecision(fieldType.getPrecision()))
+        {
             out << " ";
-        out << getTypeName(*field->type()) << " " << hashFieldName(field);
-        if (field->type()->isArray())
-            out << ArrayString(*field->type());
+        }
+        if (fieldType.isPrecise())
+        {
+            writePreciseQualifier(fieldType);
+        }
+        out << getTypeName(fieldType) << " " << hashFieldName(field);
+        if (fieldType.isArray())
+        {
+            out << ArrayString(fieldType);
+        }
         out << ";\n";
     }
     out << "}";
@@ -1237,6 +1259,10 @@ void TOutputGLSLBase::declareInterfaceBlock(const TType &type)
         if (fieldType.isInvariant())
         {
             writeInvariantQualifier(fieldType);
+        }
+        if (fieldType.isPrecise())
+        {
+            writePreciseQualifier(fieldType);
         }
 
         const char *qualifier = getVariableInterpolation(fieldType.getQualifier());

@@ -1,7 +1,0 @@
-*.exe
-*.out
-*~
-/gen
-/hello-wuffs-c/parse.c
-Cargo.lock
-target

@@ -237,18 +237,11 @@ class LoginPromptBrowserTest
     // TODO(https://crbug.com/333943): Remove kFtpProtocol feature and FTP
     // credential tests when FTP support is removed.
     if (GetParam() == SplitAuthCacheByNetworkIsolationKey::kFalse) {
-      scoped_feature_list_.InitWithFeatures(
-          // enabled_features
-          {network::features::kFtpProtocol},
-          // disabled_features
-          {network::features::kSplitAuthCacheByNetworkIsolationKey});
+      scoped_feature_list_.InitAndDisableFeature(
+          network::features::kSplitAuthCacheByNetworkIsolationKey);
     } else {
-      scoped_feature_list_.InitWithFeatures(
-          // enabled_features
-          {network::features::kSplitAuthCacheByNetworkIsolationKey,
-           network::features::kFtpProtocol},
-          // disabled_features
-          {});
+      scoped_feature_list_.InitAndEnableFeature(
+          network::features::kSplitAuthCacheByNetworkIsolationKey);
     }
   }
 
@@ -2050,77 +2043,6 @@ IN_PROC_BROWSER_TEST_P(LoginPromptBrowserTest, PromptFromSubframe) {
   EXPECT_FALSE(notification_fired);
 }
 
-// Tests that FTP auth challenges appear over a blank committed interstitial.
-IN_PROC_BROWSER_TEST_P(LoginPromptBrowserTest, FtpAuth) {
-  net::SpawnedTestServer ftp_server(
-      net::SpawnedTestServer::TYPE_FTP,
-      base::FilePath(FILE_PATH_LITERAL("chrome/test/data/ftp")));
-  ftp_server.set_no_anonymous_ftp_user(true);
-  ASSERT_TRUE(ftp_server.Start());
-
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  NavigationController* controller = &contents->GetController();
-  LoginPromptBrowserTestObserver observer;
-  observer.Register(content::Source<NavigationController>(controller));
-
-  // Navigate to an FTP server and wait for the auth prompt to appear.
-  WindowedAuthNeededObserver auth_needed_waiter(controller);
-  ui_test_utils::NavigateToURL(browser(), ftp_server.GetURL(""));
-  auth_needed_waiter.Wait();
-  ASSERT_EQ(1u, observer.handlers().size());
-  EXPECT_EQ("<head></head><body></body>",
-            content::EvalJs(contents, "document.documentElement.innerHTML"));
-
-  // Supply credentials and wait for the page to successfully load.
-  LoginHandler* handler = *observer.handlers().begin();
-  WindowedAuthSuppliedObserver auth_supplied_waiter(controller);
-  handler->SetAuth(u"chrome", u"chrome");
-  auth_supplied_waiter.Wait();
-  const std::u16string kExpectedTitle = u"Index of /";
-  content::TitleWatcher title_watcher(contents, kExpectedTitle);
-  EXPECT_EQ(kExpectedTitle, title_watcher.WaitAndGetTitle());
-}
-
-// Tests that FTP auth prompts do not appear when credentials have been
-// previously entered and cached.
-IN_PROC_BROWSER_TEST_P(LoginPromptBrowserTest, FtpAuthWithCache) {
-  net::SpawnedTestServer ftp_server(
-      net::SpawnedTestServer::TYPE_FTP,
-      base::FilePath(FILE_PATH_LITERAL("chrome/test/data/ftp")));
-  ftp_server.set_no_anonymous_ftp_user(true);
-  ASSERT_TRUE(ftp_server.Start());
-
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  NavigationController* controller = &contents->GetController();
-  LoginPromptBrowserTestObserver observer;
-  observer.Register(content::Source<NavigationController>(controller));
-
-  // Navigate to an FTP server and wait for the auth prompt to appear.
-  WindowedAuthNeededObserver auth_needed_waiter(controller);
-  ui_test_utils::NavigateToURL(browser(), ftp_server.GetURL(""));
-  auth_needed_waiter.Wait();
-  ASSERT_EQ(1u, observer.handlers().size());
-
-  // Supply credentials and wait for the page to successfully load.
-  LoginHandler* handler = *observer.handlers().begin();
-  WindowedAuthSuppliedObserver auth_supplied_waiter(controller);
-  handler->SetAuth(u"chrome", u"chrome");
-  auth_supplied_waiter.Wait();
-  const std::u16string kExpectedTitle = u"Index of /";
-  content::TitleWatcher title_watcher(contents, kExpectedTitle);
-  EXPECT_EQ(kExpectedTitle, title_watcher.WaitAndGetTitle());
-
-  // Navigate away and then back to the FTP server. There should be no auth
-  // prompt because the credentials are cached.
-  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
-  content::TitleWatcher revisit_title_watcher(contents, kExpectedTitle);
-  ui_test_utils::NavigateToURL(browser(), ftp_server.GetURL(""));
-  EXPECT_EQ(kExpectedTitle, revisit_title_watcher.WaitAndGetTitle());
-  EXPECT_EQ(0u, observer.handlers().size());
-}
-
 namespace {
 
 // A request handler that returns a 401 Unauthorized response on the
@@ -2450,20 +2372,115 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(SplitAuthCacheByNetworkIsolationKey::kFalse,
                       SplitAuthCacheByNetworkIsolationKey::kTrue));
 
-IN_PROC_BROWSER_TEST_P(LoginPromptPrerenderBrowserTest,
-                       TestBasicAuthDisabledOnPrerendering) {
-  GURL initial_url = embedded_test_server()->GetURL("/title1.html");
-  ui_test_utils::NavigateToURL(browser(), initial_url);
+IN_PROC_BROWSER_TEST_P(LoginPromptPrerenderBrowserTest, CancelOnAuthRequested) {
+  base::HistogramTester histogram_tester;
 
+  // Navigate to an initial page.
+  const GURL kInitialUrl = embedded_test_server()->GetURL("/title1.html");
+  ui_test_utils::NavigateToURL(browser(), kInitialUrl);
+
+  // Keep an observer for auth requests.
   NavigationController* controller = &GetWebContents()->GetController();
   LoginPromptBrowserTestObserver observer;
   observer.Register(content::Source<NavigationController>(controller));
 
-  GURL prerender_url = embedded_test_server()->GetURL(kAuthBasicPage);
-  prerender_helper().AddPrerenderAsync(prerender_url);
-  prerender_helper().WaitForPrerenderLoadCompletion(prerender_url);
-  int host_id = prerender_helper().GetHostForUrl(prerender_url);
-  EXPECT_EQ(host_id, content::RenderFrameHost::kNoFrameTreeNodeId);
+  // Start prerendering `kPrerenderingUrl`.
+  const GURL kPrerenderingUrl = embedded_test_server()->GetURL(kAuthBasicPage);
+  prerender_helper().AddPrerenderAsync(kPrerenderingUrl);
+  content::test::PrerenderHostRegistryObserver registry_observer(
+      *GetWebContents());
+  registry_observer.WaitForTrigger(kPrerenderingUrl);
+  int host_id = prerender_helper().GetHostForUrl(kPrerenderingUrl);
+  content::test::PrerenderHostObserver host_observer(*GetWebContents(),
+                                                     host_id);
+
+  // The prerender should be destroyed.
+  host_observer.WaitForDestroyed();
+  EXPECT_EQ(prerender_helper().GetHostForUrl(kPrerenderingUrl),
+            content::RenderFrameHost::kNoFrameTreeNodeId);
+
+  // No authentication request has been prompted to the user.
+  EXPECT_EQ(0, observer.auth_needed_count());
+}
+
+IN_PROC_BROWSER_TEST_P(LoginPromptPrerenderBrowserTest,
+                       CancelOnAuthRequestedSubFrame) {
+  base::HistogramTester histogram_tester;
+
+  // Navigate to an initial page.
+  const GURL kInitialUrl = embedded_test_server()->GetURL("/title1.html");
+  ui_test_utils::NavigateToURL(browser(), kInitialUrl);
+
+  // Keep an observer for auth requests.
+  NavigationController* controller = &GetWebContents()->GetController();
+  LoginPromptBrowserTestObserver observer;
+  observer.Register(content::Source<NavigationController>(controller));
+
+  // Start prerendering `kPrerenderingUrl`.
+  const GURL kPrerenderingUrl = embedded_test_server()->GetURL("/title1.html");
+  int host_id = prerender_helper().AddPrerender(kPrerenderingUrl);
+  content::test::PrerenderHostObserver host_observer(*GetWebContents(),
+                                                     host_id);
+  prerender_helper().WaitForPrerenderLoadCompletion(kPrerenderingUrl);
+
+  // Fetch a subframe that requires authentication.
+  const GURL kAuthIFrameUrl = embedded_test_server()->GetURL(kAuthBasicPage);
+  content::RenderFrameHost* prerender_rfh =
+      prerender_helper().GetPrerenderedMainFrameHost(host_id);
+  ignore_result(ExecJs(prerender_rfh,
+                       "var i = document.createElement('iframe'); i.src = '" +
+                           kAuthIFrameUrl.spec() +
+                           "'; document.body.appendChild(i);"));
+
+  // The prerender should be destroyed.
+  host_observer.WaitForDestroyed();
+  EXPECT_EQ(prerender_helper().GetHostForUrl(kPrerenderingUrl),
+            content::RenderFrameHost::kNoFrameTreeNodeId);
+
+  // No authentication request has been prompted to the user.
+  EXPECT_EQ(0, observer.auth_needed_count());
+}
+
+IN_PROC_BROWSER_TEST_P(LoginPromptPrerenderBrowserTest,
+                       CancelOnAuthRequestedSubResource) {
+  base::HistogramTester histogram_tester;
+
+  // Navigate to an initial page.
+  const GURL kInitialUrl = embedded_test_server()->GetURL("/empty.html");
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), kInitialUrl));
+  content::test::PrerenderHostRegistryObserver registry_observer(
+      *GetWebContents());
+
+  // Keep an observer for auth requests.
+  NavigationController* controller = &GetWebContents()->GetController();
+  LoginPromptBrowserTestObserver observer;
+  observer.Register(content::Source<NavigationController>(controller));
+
+  // Start prerendering `kPrerenderingUrl`.
+  const GURL kPrerenderingUrl = embedded_test_server()->GetURL("/title1.html");
+  int host_id = prerender_helper().AddPrerender(kPrerenderingUrl);
+  content::test::PrerenderHostObserver host_observer(*GetWebContents(),
+                                                     host_id);
+  prerender_helper().WaitForPrerenderLoadCompletion(kPrerenderingUrl);
+
+  ASSERT_NE(prerender_helper().GetHostForUrl(kPrerenderingUrl),
+            content::RenderFrameHost::kNoFrameTreeNodeId);
+
+  // Fetch a subresrouce.
+  std::string fetch_subresource_script = R"(
+        const imgElement = document.createElement('img');
+        imgElement.src = '/auth-basic/favicon.gif';
+        document.body.appendChild(imgElement);
+  )";
+  ignore_result(ExecJs(prerender_helper().GetPrerenderedMainFrameHost(host_id),
+                       fetch_subresource_script));
+
+  // The prerender should be destroyed.
+  host_observer.WaitForDestroyed();
+  EXPECT_EQ(prerender_helper().GetHostForUrl(kPrerenderingUrl),
+            content::RenderFrameHost::kNoFrameTreeNodeId);
+
+  // No authentication request has been prompted to the user.
   EXPECT_EQ(0, observer.auth_needed_count());
 }
 }  // namespace

@@ -27,11 +27,13 @@
 #include "libavutil/avassert.h"
 #include "libavutil/avstring.h"
 #include "libavutil/bprint.h"
+#include "libavutil/channel_layout.h"
 #include "libavutil/imgutils.h"
 #include "libavutil/mem.h"
 #include "libavutil/opt.h"
 #include "libavutil/thread.h"
 #include "avcodec.h"
+#include "bsf.h"
 #include "decode.h"
 #include "encode.h"
 #include "frame_thread_encoder.h"
@@ -135,7 +137,6 @@ static int64_t get_bit_rate(AVCodecContext *ctx)
 int attribute_align_arg avcodec_open2(AVCodecContext *avctx, const AVCodec *codec, AVDictionary **options)
 {
     int ret = 0;
-    AVDictionary *tmp = NULL;
     AVCodecInternal *avci;
 
     if (avcodec_is_open(avctx))
@@ -167,9 +168,6 @@ int attribute_align_arg avcodec_open2(AVCodecContext *avctx, const AVCodec *code
 
     if (avctx->extradata_size < 0 || avctx->extradata_size >= FF_MAX_EXTRADATA_SIZE)
         return AVERROR(EINVAL);
-
-    if (options)
-        av_dict_copy(&tmp, *options, 0);
 
     lock_avcodec(codec);
 
@@ -207,12 +205,12 @@ int attribute_align_arg avcodec_open2(AVCodecContext *avctx, const AVCodec *code
                 av_opt_set_defaults(avctx->priv_data);
             }
         }
-        if (codec->priv_class && (ret = av_opt_set_dict(avctx->priv_data, &tmp)) < 0)
+        if (codec->priv_class && (ret = av_opt_set_dict(avctx->priv_data, options)) < 0)
             goto free_and_end;
     } else {
         avctx->priv_data = NULL;
     }
-    if ((ret = av_opt_set_dict(avctx, &tmp)) < 0)
+    if ((ret = av_opt_set_dict(avctx, options)) < 0)
         goto free_and_end;
 
     if (avctx->codec_whitelist && av_match_list(codec->name, avctx->codec_whitelist, ',') <= 0) {
@@ -303,7 +301,7 @@ int attribute_align_arg avcodec_open2(AVCodecContext *avctx, const AVCodec *code
 
     if (CONFIG_FRAME_THREAD_ENCODER && av_codec_is_encoder(avctx->codec)) {
         unlock_avcodec(codec); //we will instantiate a few encoders thus kick the counter to prevent false detection of a problem
-        ret = ff_frame_thread_encoder_init(avctx, options ? *options : NULL);
+        ret = ff_frame_thread_encoder_init(avctx);
         lock_avcodec(codec);
         if (ret < 0)
             goto free_and_end;
@@ -372,15 +370,10 @@ int attribute_align_arg avcodec_open2(AVCodecContext *avctx, const AVCodec *code
 
 end:
     unlock_avcodec(codec);
-    if (options) {
-        av_dict_free(options);
-        *options = tmp;
-    }
 
     return ret;
 free_and_end:
     avcodec_close(avctx);
-    av_dict_free(&tmp);
     goto end;
 }
 

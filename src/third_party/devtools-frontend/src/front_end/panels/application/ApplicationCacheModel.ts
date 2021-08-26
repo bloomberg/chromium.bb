@@ -32,7 +32,7 @@
 
 /* eslint-disable rulesdir/no_underscored_properties */
 
-import type * as Common from '../../core/common/common.js'; // eslint-disable-line no-unused-vars
+import type * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
 import type * as Protocol from '../../generated/protocol.js';
@@ -63,12 +63,13 @@ export class ApplicationCacheModel extends SDK.SDKModel.SDKModel {
     this._onLine = true;
   }
 
-  _frameNavigatedCallback(event: Common.EventTarget.EventTargetEvent): void {
+  _frameNavigatedCallback(event: Common.EventTarget.EventTargetEvent<SDK.ResourceTreeModel.ResourceTreeFrame>): void {
     this._frameNavigated(event);
   }
 
-  async _frameNavigated(event: Common.EventTarget.EventTargetEvent): Promise<void> {
-    const frame = (event.data as SDK.ResourceTreeModel.ResourceTreeFrame);
+  async _frameNavigated(event: Common.EventTarget.EventTargetEvent<SDK.ResourceTreeModel.ResourceTreeFrame>):
+      Promise<void> {
+    const frame = event.data;
     if (frame.isMainFrame()) {
       this._mainFrameNavigated();
       return;
@@ -81,9 +82,9 @@ export class ApplicationCacheModel extends SDK.SDKModel.SDKModel {
     }
   }
 
-  _frameDetached(event: Common.EventTarget.EventTargetEvent): void {
-    const frame = (event.data.frame as SDK.ResourceTreeModel.ResourceTreeFrame);
-    this._frameManifestRemoved(frame.id);
+  _frameDetached(event: Common.EventTarget
+                     .EventTargetEvent<{frame: SDK.ResourceTreeModel.ResourceTreeFrame, isSwap: boolean}>): void {
+    this._frameManifestRemoved(event.data.frame.id);
   }
 
   reset(): void {

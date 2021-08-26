@@ -160,6 +160,7 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {ContentSettingsType::FEDERATED_IDENTITY_SHARING, nullptr},
     {ContentSettingsType::FEDERATED_IDENTITY_REQUEST, nullptr},
     {ContentSettingsType::JAVASCRIPT_JIT, nullptr},
+    {ContentSettingsType::HTTP_ALLOWED, nullptr},
 };
 
 static_assert(base::size(kContentSettingsTypeGroupNames) ==
@@ -438,6 +439,7 @@ const std::vector<ContentSettingsType>& GetVisiblePermissionCategories() {
       ContentSettingsType::SOUND,
       ContentSettingsType::USB_GUARD,
       ContentSettingsType::VR,
+      ContentSettingsType::WINDOW_PLACEMENT,
   }};
   static bool initialized = false;
   if (!initialized) {
@@ -446,7 +448,6 @@ const std::vector<ContentSettingsType>& GetVisiblePermissionCategories() {
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             ::switches::kEnableExperimentalWebPlatformFeatures)) {
       base_types->push_back(ContentSettingsType::BLUETOOTH_SCANNING);
-      base_types->push_back(ContentSettingsType::WINDOW_PLACEMENT);
     }
 
     if (base::FeatureList::IsEnabled(::features::kServiceWorkerPaymentApps))

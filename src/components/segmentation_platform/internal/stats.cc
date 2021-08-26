@@ -86,7 +86,6 @@ AdaptiveToolbarSegmentSwitch GetSegmentSwitch(
           NOTREACHED();
           return AdaptiveToolbarSegmentSwitch::kUnknown;
       }
-      break;
 
     case OptimizationTarget::OPTIMIZATION_TARGET_SEGMENTATION_NEW_TAB:
       switch (new_selection) {
@@ -100,7 +99,6 @@ AdaptiveToolbarSegmentSwitch GetSegmentSwitch(
           NOTREACHED();
           return AdaptiveToolbarSegmentSwitch::kUnknown;
       }
-      break;
 
     case OptimizationTarget::OPTIMIZATION_TARGET_SEGMENTATION_SHARE:
       switch (new_selection) {
@@ -114,7 +112,6 @@ AdaptiveToolbarSegmentSwitch GetSegmentSwitch(
           NOTREACHED();
           return AdaptiveToolbarSegmentSwitch::kUnknown;
       }
-      break;
 
     case OptimizationTarget::OPTIMIZATION_TARGET_SEGMENTATION_VOICE:
       switch (new_selection) {
@@ -128,7 +125,6 @@ AdaptiveToolbarSegmentSwitch GetSegmentSwitch(
           NOTREACHED();
           return AdaptiveToolbarSegmentSwitch::kUnknown;
       }
-      break;
 
     default:
       NOTREACHED();

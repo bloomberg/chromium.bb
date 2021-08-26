@@ -38,9 +38,9 @@ static wgpu::BlendFactor to_dawn_blend_factor(GrBlendCoeff coeff) {
         case kIDA_GrBlendCoeff:
             return wgpu::BlendFactor::OneMinusDstAlpha;
         case kConstC_GrBlendCoeff:
-            return wgpu::BlendFactor::BlendColor;
+            return wgpu::BlendFactor::Constant;
         case kIConstC_GrBlendCoeff:
-            return wgpu::BlendFactor::OneMinusBlendColor;
+            return wgpu::BlendFactor::OneMinusConstant;
         case kS2C_GrBlendCoeff:
         case kIS2C_GrBlendCoeff:
         case kS2A_GrBlendCoeff:
@@ -279,8 +279,8 @@ sk_sp<GrDawnProgram> GrDawnProgramBuilder::Build(GrDawnGpu* gpu,
     GrSPIRVUniformHandler::UniformInfoArray& uniforms = builder.fUniformHandler.fUniforms;
     uint32_t uniformBufferSize = builder.fUniformHandler.fCurrentUBOOffset;
     sk_sp<GrDawnProgram> result(new GrDawnProgram(uniforms, uniformBufferSize));
-    result->fGeometryProcessor = std::move(builder.fGeometryProcessor);
-    result->fXferProcessor = std::move(builder.fXferProcessor);
+    result->fGPImpl = std::move(builder.fGPImpl);
+    result->fXPImpl = std::move(builder.fXPImpl);
     result->fFPImpls = std::move(builder.fFPImpls);
     std::vector<wgpu::BindGroupLayoutEntry> uniformLayoutEntries;
     if (0 != uniformBufferSize) {
@@ -401,7 +401,7 @@ sk_sp<GrDawnProgram> GrDawnProgramBuilder::Build(GrDawnGpu* gpu,
     fragmentState.targetCount = 1;
     fragmentState.targets = &colorTargetState;
 
-    wgpu::RenderPipelineDescriptor2 rpDesc;
+    wgpu::RenderPipelineDescriptor rpDesc;
     rpDesc.layout = pipelineLayout;
     rpDesc.vertex = vertexState;
     rpDesc.primitive.topology = to_dawn_primitive_topology(programInfo.primitiveType());
@@ -414,7 +414,7 @@ sk_sp<GrDawnProgram> GrDawnProgramBuilder::Build(GrDawnGpu* gpu,
         rpDesc.depthStencil = &depthStencilState;
     }
     rpDesc.fragment = &fragmentState;
-    result->fRenderPipeline = gpu->device().CreateRenderPipeline2(&rpDesc);
+    result->fRenderPipeline = gpu->device().CreateRenderPipeline(&rpDesc);
     return result;
 }
 
@@ -502,17 +502,18 @@ wgpu::BindGroup GrDawnProgram::setUniformData(GrDawnGpu* gpu, const GrRenderTarg
     this->setRenderTargetState(renderTarget, programInfo.origin());
     const GrPipeline& pipeline = programInfo.pipeline();
     const GrGeometryProcessor& geomProc = programInfo.geomProc();
-    fGeometryProcessor->setData(fDataManager, *gpu->caps()->shaderCaps(), geomProc);
+    fGPImpl->setData(fDataManager, *gpu->caps()->shaderCaps(), geomProc);
 
     for (int i = 0; i < programInfo.pipeline().numFragmentProcessors(); ++i) {
-        auto& fp = programInfo.pipeline().getFragmentProcessor(i);
-        for (auto [fp, impl] : GrGLSLFragmentProcessor::ParallelRange(fp, *fFPImpls[i])) {
+        const auto& fp = programInfo.pipeline().getFragmentProcessor(i);
+        fp.visitWithImpls([&](const GrFragmentProcessor& fp,
+                              GrFragmentProcessor::ProgramImpl& impl) {
             impl.setData(fDataManager, fp);
-        }
+        }, *fFPImpls[i]);
     }
 
     programInfo.pipeline().setDstTextureUniforms(fDataManager, &fBuiltinUniformHandles);
-    fXferProcessor->setData(fDataManager, pipeline.getXferProcessor());
+    fXPImpl->setData(fDataManager, pipeline.getXferProcessor());
 
     return fDataManager.uploadUniformBuffers(gpu, fBindGroupLayouts[0]);
 }

@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "components/feed/core/proto/v2/wire/reliability_logging_enums.pb.h"
 #include "components/feed/core/v2/enums.h"
+#include "components/feed/core/v2/public/common_enums.h"
 #include "components/feed/core/v2/public/types.h"
 
 namespace feed {
@@ -48,6 +49,7 @@ struct RequestMetadata {
   std::string client_instance_id;
   std::string session_id;
   DisplayMetrics display_metrics;
+  ContentOrder content_order = ContentOrder::kUnspecified;
   bool notice_card_acknowledged = false;
   bool autoplay_enabled = false;
 };
@@ -120,6 +122,12 @@ class ContentIdSet {
   // Note, we only store the `id` field of ContentId, with the assumption that
   // `id` is unique enough given these are only `feedstore::Content` ids.
   base::flat_set<int64_t> content_ids_;
+};
+
+struct ContentStats {
+  int card_count = 0;
+  int total_content_frame_size_bytes = 0;
+  int shared_state_size = 0;
 };
 
 struct LaunchResult {

@@ -128,8 +128,13 @@ namespace dawn_native { namespace metal {
         InitTogglesFromDriver();
 
         mCommandQueue.Acquire([*mMtlDevice newCommandQueue]);
+        if (mCommandQueue == nil) {
+            return DAWN_INTERNAL_ERROR("Failed to allocate MTLCommandQueue.");
+        }
 
-        if (GetAdapter()->GetSupportedExtensions().IsEnabled(Extension::TimestampQuery)) {
+        DAWN_TRY(mCommandContext.PrepareNextCommandBuffer(*mCommandQueue));
+
+        if (IsExtensionEnabled(Extension::TimestampQuery)) {
             // Make a best guess of timestamp period based on device vendor info, and converge it to
             // an accurate value by the following calculations.
             mTimestampPeriod =
@@ -187,7 +192,7 @@ namespace dawn_native { namespace metal {
 
         // Vertex buffer robustness is implemented by using programmable vertex pulling. Enable
         // that code path if it isn't explicitly disabled.
-        if (IsToggleEnabled(Toggle::UseTintGenerator) && IsRobustnessEnabled()) {
+        if (IsRobustnessEnabled()) {
             SetToggle(Toggle::MetalEnableVertexPulling, true);
         }
 
@@ -281,12 +286,10 @@ namespace dawn_native { namespace metal {
     }
 
     MaybeError Device::TickImpl() {
-        if (mCommandContext.GetCommands() != nullptr) {
-            SubmitPendingCommandBuffer();
-        }
+        DAWN_TRY(SubmitPendingCommandBuffer());
 
         // Just run timestamp period calculation when timestamp extension is enabled.
-        if (GetAdapter()->GetSupportedExtensions().IsEnabled(Extension::TimestampQuery)) {
+        if (IsExtensionEnabled(Extension::TimestampQuery)) {
             if (@available(macos 10.15, iOS 14.0, *)) {
                 UpdateTimestampPeriod(GetMTLDevice(), mKalmanInfo.get(), &mCpuTimestamp,
                                       &mGpuTimestamp, &mTimestampPeriod);
@@ -305,20 +308,13 @@ namespace dawn_native { namespace metal {
     }
 
     CommandRecordingContext* Device::GetPendingCommandContext() {
-        if (mCommandContext.GetCommands() == nullptr) {
-            TRACE_EVENT0(GetPlatform(), General, "[MTLCommandQueue commandBuffer]");
-            // The MTLCommandBuffer will be autoreleased by default.
-            // The autorelease pool may drain before the command buffer is submitted. Retain so it
-            // stays alive.
-            mCommandContext =
-                CommandRecordingContext(AcquireNSPRef([[*mCommandQueue commandBuffer] retain]));
-        }
+        mCommandContext.MarkUsed();
         return &mCommandContext;
     }
 
-    void Device::SubmitPendingCommandBuffer() {
-        if (mCommandContext.GetCommands() == nullptr) {
-            return;
+    MaybeError Device::SubmitPendingCommandBuffer() {
+        if (!mCommandContext.WasUsed()) {
+            return {};
         }
 
         IncrementLastSubmittedCommandSerial();
@@ -359,6 +355,8 @@ namespace dawn_native { namespace metal {
         TRACE_EVENT_ASYNC_BEGIN0(GetPlatform(), GPUWork, "DeviceMTL::SubmitPendingCommandBuffer",
                                  uint64_t(pendingSerial));
         [*pendingCommands commit];
+
+        return mCommandContext.PrepareNextCommandBuffer(*mCommandQueue);
     }
 
     ResultOrError<std::unique_ptr<StagingBufferBase>> Device::CreateStagingBuffer(size_t size) {
@@ -409,7 +407,7 @@ namespace dawn_native { namespace metal {
         return {};
     }
 
-    TextureBase* Device::CreateTextureWrappingIOSurface(const ExternalImageDescriptor* descriptor,
+    Ref<Texture> Device::CreateTextureWrappingIOSurface(const ExternalImageDescriptor* descriptor,
                                                         IOSurfaceRef ioSurface,
                                                         uint32_t plane) {
         const TextureDescriptor* textureDescriptor =
@@ -423,11 +421,18 @@ namespace dawn_native { namespace metal {
             return nullptr;
         }
 
-        return new Texture(this, descriptor, ioSurface, plane);
+        Ref<Texture> result;
+        if (ConsumedError(Texture::CreateFromIOSurface(this, descriptor, ioSurface, plane),
+                          &result)) {
+            return nullptr;
+        }
+        return result;
     }
 
     void Device::WaitForCommandsToBeScheduled() {
-        SubmitPendingCommandBuffer();
+        if (ConsumedError(SubmitPendingCommandBuffer())) {
+            return;
+        }
 
         // Only lock the object while we take a reference to it, otherwise we could block further
         // progress if the driver calls the scheduled handler (which also acquires the lock) before

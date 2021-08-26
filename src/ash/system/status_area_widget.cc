@@ -126,12 +126,10 @@ void StatusAreaWidget::Initialize() {
   virtual_keyboard_tray_ = virtual_keyboard_tray.get();
   AddTrayButton(std::move(virtual_keyboard_tray));
 
-  if (features::IsCaptureModeEnabled()) {
-    auto stop_recording_button_tray =
-        std::make_unique<StopRecordingButtonTray>(shelf_);
-    stop_recording_button_tray_ = stop_recording_button_tray.get();
-    AddTrayButton(std::move(stop_recording_button_tray));
-  }
+  auto stop_recording_button_tray =
+      std::make_unique<StopRecordingButtonTray>(shelf_);
+  stop_recording_button_tray_ = stop_recording_button_tray.get();
+  AddTrayButton(std::move(stop_recording_button_tray));
 
   auto palette_tray = std::make_unique<PaletteTray>(shelf_);
   palette_tray_ = palette_tray.get();
@@ -332,7 +330,7 @@ void StatusAreaWidget::UpdateTargetBoundsForGesture(int shelf_position) {
 void StatusAreaWidget::HandleLocaleChange() {
   // Here we force the layer's bounds to be updated for text direction (if
   // needed).
-  status_area_widget_delegate_->RemoveAllChildViews(/*delete_children=*/false);
+  status_area_widget_delegate_->RemoveAllChildViewsWithoutDeleting();
 
   // The layout manager will be updated when shelf layout gets updated, which is
   // done by the shelf layout manager after `HandleLocaleChange()` gets called.
@@ -416,10 +414,8 @@ void StatusAreaWidget::CalculateButtonVisibilityForCollapsedState() {
 }
 
 void StatusAreaWidget::EnsureTrayOrder() {
-  if (features::IsCaptureModeEnabled()) {
-    status_area_widget_delegate_->ReorderChildView(stop_recording_button_tray_,
-                                                   1);
-  }
+  status_area_widget_delegate_->ReorderChildView(stop_recording_button_tray_,
+                                                 1);
 }
 
 StatusAreaWidget::CollapseState StatusAreaWidget::CalculateCollapseState()

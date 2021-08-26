@@ -36,7 +36,10 @@
 #include "components/sync/engine/cycle/entity_change_metric_recording.h"
 #include "components/sync/engine/model_type_processor.h"
 #include "components/sync/engine/sync_engine_switches.h"
+#include "components/sync/protocol/data_type_progress_marker.pb.h"
+#include "components/sync/protocol/entity_specifics.pb.h"
 #include "components/sync/protocol/proto_memory_estimations.h"
+#include "components/sync/protocol/sync_entity.pb.h"
 
 namespace syncer {
 
@@ -436,7 +439,6 @@ ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
   data.creation_time = ProtoTimeToTime(update_entity.ctime());
   data.modification_time = ProtoTimeToTime(update_entity.mtime());
   data.name = update_entity.name();
-  data.is_folder = update_entity.folder();
   data.parent_id = update_entity.parent_id_string();
   data.server_defined_unique_tag = update_entity.server_defined_unique_tag();
 
@@ -447,11 +449,12 @@ ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
 
   // Adapt the update for compatibility.
   if (model_type == BOOKMARKS) {
-    AdaptUniquePositionForBookmark(update_entity, &data);
+    data.is_bookmark_unique_position_in_specifics_preprocessed =
+        AdaptUniquePositionForBookmark(update_entity, &data.specifics);
+    AdaptTypeForBookmark(update_entity, &data.specifics);
     AdaptTitleForBookmark(update_entity, &data.specifics,
                           specifics_were_encrypted);
-    data.is_bookmark_guid_in_specifics_preprocessed =
-        AdaptGuidForBookmark(update_entity, &data.specifics);
+    AdaptGuidForBookmark(update_entity, &data.specifics);
   } else if (model_type == AUTOFILL_WALLET_DATA ||
              model_type == AUTOFILL_WALLET_OFFER) {
     AdaptClientTagForFullUpdateData(model_type, &data);

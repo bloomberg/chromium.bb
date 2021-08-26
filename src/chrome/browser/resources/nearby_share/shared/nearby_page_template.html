@@ -16,6 +16,12 @@
         height: 100%;
       }
 
+      /* pageContainer has tabindex="-1" but is focused with JS for ChromeVox
+      accessibility */
+      #pageContainer:focus {
+        outline: none;
+      }
+
       #header {
         margin-inline-end:  var(--nearby-page-space-inline);
         margin-inline-start: var(--nearby-page-space-inline);
@@ -74,7 +80,8 @@
       }
     </style>
     <div id="pageContainer" role="dialog" aria-modal="true"
-        aria-labelledby="[[getDialogAriaLabelledBy_(a11yAnnouncedSubTitle)]]">
+        aria-labelledby$="[[getDialogAriaLabelledBy_(a11yAnnouncedSubTitle)]]"
+        tabindex="-1">
       <div id="header">
         <h1 id="pageTitle">[[title]]</h1>
         <h2 id="pageSubTitle"

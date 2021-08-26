@@ -9,21 +9,21 @@
 #include <string>
 
 #include "base/callback.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace cr_fuchsia {
 
 // Observes navigation events and enables test code to block until a desired
 // navigational state is observed.
-class TestNavigationListener : public fuchsia::web::NavigationEventListener {
+class TestNavigationListener final
+    : public fuchsia::web::NavigationEventListener {
  public:
   using BeforeAckCallback =
       base::RepeatingCallback<void(const fuchsia::web::NavigationState& change,
                                    OnNavigationStateChangedCallback)>;
 
   TestNavigationListener();
-  ~TestNavigationListener() final;
+  ~TestNavigationListener() override;
 
   TestNavigationListener(const TestNavigationListener&) = delete;
   TestNavigationListener& operator=(const TestNavigationListener&) = delete;
@@ -82,7 +82,7 @@ class TestNavigationListener : public fuchsia::web::NavigationEventListener {
   // fuchsia::web::NavigationEventListener implementation.
   void OnNavigationStateChanged(
       fuchsia::web::NavigationState change,
-      OnNavigationStateChangedCallback callback) final;
+      OnNavigationStateChangedCallback callback) override;
 
   // Compare the current state with all fields of |expected| that have been set.
   bool AllFieldsMatch(const fuchsia::web::NavigationState& expected);

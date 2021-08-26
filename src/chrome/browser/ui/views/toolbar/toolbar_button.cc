@@ -41,7 +41,6 @@
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_mask.h"
-#include "ui/views/animation/installable_ink_drop.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/label_button_border.h"
@@ -163,21 +162,6 @@ ToolbarButton::ToolbarButton(PressedCallback callback,
 
   set_context_menu_controller(this);
 
-  if (base::FeatureList::IsEnabled(views::kInstallableInkDropFeature)) {
-    installable_ink_drop_ = std::make_unique<views::InstallableInkDrop>(this);
-    installable_ink_drop_->SetConfig(GetToolbarInstallableInkDropConfig(this));
-    views::InkDrop::Get(this)->SetCreateInkDropCallback(base::BindRepeating(
-        [](Button* host) -> std::unique_ptr<views::InkDrop> {
-          // Ensure this doesn't get called when InstallableInkDrops are
-          // enabled.
-          DCHECK(
-              !base::FeatureList::IsEnabled(views::kInstallableInkDropFeature));
-          return views::InkDrop::CreateInkDropForFloodFillRipple(
-              views::InkDrop::Get(host));
-        },
-        this));
-  }
-
   views::InkDrop::Get(this)->SetCreateMaskCallback(base::BindRepeating(
       [](ToolbarButton* host) -> std::unique_ptr<views::InkDropMask> {
         if (host->has_in_product_help_promo_) {
@@ -199,9 +183,6 @@ ToolbarButton::ToolbarButton(PressedCallback callback,
       this));
   views::InkDrop::Get(this)->SetBaseColorCallback(base::BindRepeating(
       [](ToolbarButton* host) {
-        // Ensure this doesn't get called when InstallableInkDrops are enabled.
-        DCHECK(
-            !base::FeatureList::IsEnabled(views::kInstallableInkDropFeature));
         if (host->has_in_product_help_promo_)
           return GetFeaturePromoHighlightColorForToolbar(
               host->GetThemeProvider());
@@ -303,7 +284,7 @@ void ToolbarButton::UpdateColorsAndInsets() {
 
   absl::optional<SkColor> border_color =
       highlight_color_animation_.GetBorderColor();
-  if (!border() || target_insets != current_insets ||
+  if (!GetBorder() || target_insets != current_insets ||
       last_border_color_ != border_color ||
       last_paint_insets_ != paint_insets) {
     if (border_color) {
@@ -406,7 +387,8 @@ void ToolbarButton::SetLabelSideSpacing(int spacing) {
             ? gfx::Insets(0, spacing, 0, 0)
             : gfx::Insets(0, 0, 0, spacing);
   }
-  if (!label()->border() || label_insets != label()->border()->GetInsets()) {
+  if (!label()->GetBorder() ||
+      label_insets != label()->GetBorder()->GetInsets()) {
     label()->SetBorder(views::CreateEmptyBorder(label_insets));
     // Forces LabelButton to dump the cached preferred size and recompute it.
     PreferredSizeChanged();
@@ -463,9 +445,6 @@ void ToolbarButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 
 void ToolbarButton::OnThemeChanged() {
   UpdateColorsAndInsets();
-
-  if (installable_ink_drop_)
-    installable_ink_drop_->SetConfig(GetToolbarInstallableInkDropConfig(this));
   UpdateIcon();
 
   // Call this after UpdateIcon() to properly reset images.

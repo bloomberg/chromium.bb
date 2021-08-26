@@ -8,7 +8,6 @@ import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//components/nacl/features.gni")
 import("//components/safe_browsing/buildflags.gni")
-import("//components/ui_devtools/devtools.gni")
 import("//extensions/buildflags/buildflags.gni")
 import("//media/media_options.gni")
 import("//pdf/features.gni")
@@ -49,8 +48,15 @@ if (is_ios) {
 test("components_unittests") {
   use_xvfb = use_xvfb_in_this_config
 
-  if (is_android || is_linux || is_chromeos || is_mac || is_win) {
+  if (is_android || is_linux || is_chromeos || is_mac || is_win || is_fuchsia) {
     data = [ "test/data/" ]
+  }
+
+  if (is_fuchsia) {
+    additional_manifest_fragments = [
+      # TODO(crbug.com/1185811): Figure out why jit_capabilities is needed.
+      "//build/config/fuchsia/test/jit_capabilities.test-cmx",
+    ]
   }
 
   # Add only ":unit_tests" dependencies here.If your tests have dependencies
@@ -107,6 +113,7 @@ test("components_unittests") {
     "//components/keyed_service/core:unit_tests",
     "//components/language/core/browser:unit_tests",
     "//components/language/core/common:unit_tests",
+    "//components/language/core/language_model:unit_tests",
     "//components/lens:unit_tests",
     "//components/leveldb_proto:unit_tests",
     "//components/lookalikes/core:unit_tests",
@@ -204,10 +211,6 @@ test("components_unittests") {
     deps += [ "//components/ui_devtools/views:unit_tests" ]
   }
 
-  if (use_viz_devtools) {
-    deps += [ "//components/ui_devtools/viz:unit_tests" ]
-  }
-
   if (enable_nacl) {
     deps += [ "//components/nacl/browser:unit_tests" ]
   }
@@ -226,7 +229,6 @@ test("components_unittests") {
     deps += [
       "//components/autofill/ios/browser:unit_tests",
       "//components/autofill/ios/form_util:unit_tests",
-      "//components/breadcrumbs/ios:unit_tests",
       "//components/feed/core/v2/public/ios:feed_ios_unit_tests",
       "//components/image_fetcher/ios:unit_tests",
       "//components/language/ios/browser:unit_tests",
@@ -438,6 +440,7 @@ test("components_unittests") {
       # See comment in components / guest_view / browser / BUILD.gn for why
       # guest_view is currently non - mobile.
       "//components/guest_view/browser:unit_tests",
+      "//components/soda:unit_tests",
       "//components/storage_monitor:unit_tests",
       "//components/web_modal:unit_tests",
       "//components/zoom:unit_tests",
@@ -735,7 +738,7 @@ if (!is_ios) {
       deps += [
         "//components/pdf/browser",
         "//components/pdf/renderer",
-        "//pdf:accessibility_structs",
+        "//pdf:accessibility",
         "//pdf:features",
       ]
     }

@@ -41,8 +41,12 @@ SyncCycleContext::SyncCycleContext(
 
 SyncCycleContext::~SyncCycleContext() = default;
 
-ModelTypeSet SyncCycleContext::GetEnabledTypes() const {
-  return model_type_registry_->GetEnabledTypes();
+ModelTypeSet SyncCycleContext::GetConnectedTypes() const {
+  return model_type_registry_->GetConnectedTypes();
+}
+
+bool SyncCycleContext::proxy_tabs_datatype_enabled() const {
+  return model_type_registry_->proxy_tabs_datatype_enabled();
 }
 
 void SyncCycleContext::set_birthday(const std::string& birthday) {

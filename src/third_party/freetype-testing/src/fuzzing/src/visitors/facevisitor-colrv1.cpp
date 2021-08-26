@@ -403,6 +403,23 @@ namespace {
                                    root_transform,
                                    &opaque_paint ) )
     {
+      FT_ClipBox colr_glyph_clip_box;
+      FT_Get_Color_Glyph_ClipBox( ft_face, glyph_id, &colr_glyph_clip_box );
+      LOG( INFO ) << "ClipBox,"
+                  << " glyph_id " << glyph_id
+                  << " bottom_left ("
+                  << colr_glyph_clip_box.bottom_left.x << ", "
+                  << colr_glyph_clip_box.bottom_left.y << ")"
+                  << " top_left ("
+                  << colr_glyph_clip_box.top_left.x << ", "
+                  << colr_glyph_clip_box.top_left.y << ")"
+                  << " top_right ("
+                  << colr_glyph_clip_box.top_right.x << ", "
+                  << colr_glyph_clip_box.top_right.y << ")"
+                  << " bottom_right ("
+                  << colr_glyph_clip_box.bottom_right.x << ", "
+                  << colr_glyph_clip_box.bottom_right.y << ")";
+
       VisitedSet visited_set;
       has_colrv1_layers = true;
       colrv1_traverse_paint( ft_face, opaque_paint, visited_set );

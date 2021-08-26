@@ -302,7 +302,7 @@ class Mirror(object):
     try:
       # create new temporary directory locally
       tempdir = tempfile.mkdtemp(prefix='_cache_tmp', dir=self.GetCachePath())
-      self.RunGit(['init', '--bare'], cwd=tempdir)
+      self.RunGit(['init', '--bare', '-b', 'main'], cwd=tempdir)
       self.print('Downloading files in %s/* into %s.' %
                  (latest_dir, tempdir))
       with self.print_duration_of('download'):
@@ -410,7 +410,7 @@ class Mirror(object):
         # 1. No previous cache.
         # 2. Project doesn't have a bootstrap folder.
         # Start with a bare git dir.
-        self.RunGit(['init', '--bare'], cwd=self.mirror_path)
+        self.RunGit(['init', '--bare', '-b', 'main'], cwd=self.mirror_path)
       else:
         # Bootstrap failed, previous cache exists; warn and continue.
         logging.warning(
@@ -487,7 +487,7 @@ class Mirror(object):
         self._fetch(self.mirror_path, verbose, depth, no_fetch_tags,
                     reset_fetch_config)
 
-  def update_bootstrap(self, prune=False, gc_aggressive=False, branch='master'):
+  def update_bootstrap(self, prune=False, gc_aggressive=False, branch='main'):
     # The folder is <git number>
     gen_number = subprocess.check_output(
         [self.git_exe, 'number', branch],
@@ -612,8 +612,8 @@ def CMDupdate_bootstrap(parser, args):
                     help='Run aggressive repacking of the repo.')
   parser.add_option('--prune', action='store_true',
                     help='Prune all other cached bundles of the same repo.')
-  parser.add_option('--branch', default='master',
-                    help='Branch to use for bootstrap. (Default \'master\')')
+  parser.add_option('--branch', default='main',
+                    help='Branch to use for bootstrap. (Default \'main\')')
 
   populate_args = args[:]
   options, args = parser.parse_args(args)

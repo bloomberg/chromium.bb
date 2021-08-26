@@ -14,6 +14,7 @@
 #include "base/rand_util.h"
 #include "base/time/default_tick_clock.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/net/network_diagnostics/network_diagnostics_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/storage_partition.h"
@@ -36,9 +37,9 @@ constexpr int kTotalHostsToQuery = 3;
 // |kPossibleChars|.
 constexpr int kHostPrefixLength = 8;
 constexpr base::TimeDelta kBadLatencyMs =
-    base::TimeDelta::FromMilliseconds(400);
+    base::TimeDelta::FromMilliseconds(util::kDnsPotentialProblemLatencyMs);
 constexpr base::TimeDelta kVeryBadLatencyMs =
-    base::TimeDelta::FromMilliseconds(500);
+    base::TimeDelta::FromMilliseconds(util::kDnsProblemLatencyMs);
 constexpr char kHostSuffix[] = "-ccd-testing-v4.metric.gstatic.com";
 
 const std::string GetRandomString(int length) {
@@ -92,12 +93,11 @@ DnsLatencyRoutine::DnsLatencyRoutine()
 
 DnsLatencyRoutine::~DnsLatencyRoutine() = default;
 
-void DnsLatencyRoutine::RunRoutine(DnsLatencyRoutineCallback callback) {
-  if (!CanRun()) {
-    std::move(callback).Run(verdict(), std::move(problems_));
-    return;
-  }
-  routine_completed_callback_ = std::move(callback);
+mojom::RoutineType DnsLatencyRoutine::Type() {
+  return mojom::RoutineType::kDnsLatency;
+}
+
+void DnsLatencyRoutine::Run() {
   CreateHostResolver();
   hostnames_to_query_ = GetRandomHostnamesToQuery();
   AttemptNextResolution();
@@ -119,7 +119,9 @@ void DnsLatencyRoutine::AnalyzeResultsAndExecuteCallback() {
   } else {
     set_verdict(mojom::RoutineVerdict::kNoProblem);
   }
-  std::move(routine_completed_callback_).Run(verdict(), std::move(problems_));
+
+  set_problems(mojom::RoutineProblems::NewDnsLatencyProblems(problems_));
+  ExecuteCallback();
 }
 
 void DnsLatencyRoutine::CreateHostResolver() {

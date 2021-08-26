@@ -16,6 +16,8 @@
 
 #include <cassert>
 
+#include "absl/strings/escaping.h"
+#include "absl/strings/str_cat.h"
 #include "core/internal/offline_frames.h"
 #include "platform/base/byte_array.h"
 #include "platform/base/exception.h"
@@ -23,8 +25,6 @@
 #include "platform/public/mutex.h"
 #include "platform/public/mutex_lock.h"
 #include "proto/connections_enums.pb.h"
-#include "absl/strings/escaping.h"
-#include "absl/strings/str_cat.h"
 
 namespace location {
 namespace nearby {
@@ -266,23 +266,14 @@ void BaseEndpointChannel::Close(
 std::string BaseEndpointChannel::GetType() const {
   MutexLock crypto_lock(&crypto_mutex_);
   std::string subtype = IsEncryptionEnabledLocked() ? "ENCRYPTED_" : "";
+  std::string medium = proto::connections::Medium_Name(
+      proto::connections::Medium::UNKNOWN_MEDIUM);
 
-  switch (GetMedium()) {
-    case proto::connections::Medium::BLUETOOTH:
-      return absl::StrCat(subtype, "BLUETOOTH");
-    case proto::connections::Medium::BLE:
-      return absl::StrCat(subtype, "BLE");
-    case proto::connections::Medium::MDNS:
-      return absl::StrCat(subtype, "MDNS");
-    case proto::connections::Medium::WIFI_HOTSPOT:
-      return absl::StrCat(subtype, "WIFI_HOTSPOT");
-    case proto::connections::Medium::WIFI_LAN:
-      return absl::StrCat(subtype, "WIFI_LAN");
-    case proto::connections::Medium::WEB_RTC:
-      return absl::StrCat(subtype, "WEB_RTC");
-    default:
-      return "UNKNOWN";
+  if (GetMedium() != proto::connections::Medium::UNKNOWN_MEDIUM) {
+    medium =
+        absl::StrCat(subtype, proto::connections::Medium_Name(GetMedium()));
   }
+  return medium;
 }
 
 std::string BaseEndpointChannel::GetName() const { return channel_name_; }

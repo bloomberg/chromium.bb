@@ -132,6 +132,7 @@
 #include "components/full_restore/full_restore_utils.h"
 #include "components/policy/core/browser/policy_conversions.h"
 #include "components/policy/core/common/policy_service.h"
+#include "components/services/app_service/public/cpp/types_util.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "components/user_manager/user_manager.h"
 #include "components/webapps/browser/banners/app_banner_manager.h"
@@ -801,6 +802,7 @@ bool GetDisplayIdFromOptionalArg(const std::unique_ptr<std::string>& arg,
 struct SmoothnessTrackerInfo {
   absl::optional<ui::ThroughputTracker> tracker;
   ui::ThroughputTrackerHost::ReportCallback callback;
+  bool stopping = false;
 };
 using DisplaySmoothnessTrackerInfos = std::map<int64_t, SmoothnessTrackerInfo>;
 DisplaySmoothnessTrackerInfos* GetDisplaySmoothnessTrackerInfos() {
@@ -3216,6 +3218,9 @@ AutotestPrivateGetAllInstalledAppsFunction::Run() {
   std::vector<api::autotest_private::App> installed_apps;
   proxy->AppRegistryCache().ForEachApp([&installed_apps](
                                            const apps::AppUpdate& update) {
+    if (!apps_util::IsInstalled(update.Readiness()))
+      return;
+
     api::autotest_private::App app;
     app.app_id = update.AppId();
     app.name = update.Name();
@@ -3831,25 +3836,29 @@ AutotestPrivateGetAppWindowListFunction::Run() {
             std::make_unique<std::string>(*app_id);
       }
     }
-
+    auto* widget = views::Widget::GetWidgetForNativeWindow(window);
     // Frame information
-    auto* immersive_controller = chromeos::ImmersiveFullscreenController::Get(
-        views::Widget::GetWidgetForNativeWindow(window));
-    if (immersive_controller) {
-      // The widget that hosts the immersive frame can be different from the
-      // application's widget itself. Use the widget from the immersive
-      // controller to obtain the FrameHeader.
-      auto* widget = immersive_controller->widget();
-      if (immersive_controller->IsEnabled()) {
-        window_info.frame_mode =
-            api::autotest_private::FrameMode::FRAME_MODE_IMMERSIVE;
-        window_info.is_frame_visible = immersive_controller->IsRevealed();
-      } else {
-        window_info.frame_mode =
-            api::autotest_private::FrameMode::FRAME_MODE_NORMAL;
-        window_info.is_frame_visible = IsFrameVisible(widget);
-      }
-      auto* frame_header = chromeos::FrameHeader::Get(widget);
+    auto* immersive_controller =
+        chromeos::ImmersiveFullscreenController::Get(widget);
+
+    // The widget that hosts the immersive frame can be different from the
+    // application's widget itself. Use the widget from the immersive
+    // controller to obtain the FrameHeader.
+    if (immersive_controller)
+      widget = immersive_controller->widget();
+
+    if (immersive_controller && immersive_controller->IsEnabled()) {
+      window_info.frame_mode =
+          api::autotest_private::FrameMode::FRAME_MODE_IMMERSIVE;
+      window_info.is_frame_visible = immersive_controller->IsRevealed();
+    } else {
+      window_info.frame_mode =
+          api::autotest_private::FrameMode::FRAME_MODE_NORMAL;
+      window_info.is_frame_visible = IsFrameVisible(widget);
+    }
+
+    auto* frame_header = chromeos::FrameHeader::Get(widget);
+    if (frame_header) {
       window_info.caption_height = frame_header->GetHeaderHeight();
 
       const chromeos::CaptionButtonModel* button_model =
@@ -3878,9 +3887,8 @@ AutotestPrivateGetAppWindowListFunction::Run() {
       window_info.caption_button_visible_status = caption_button_visible_status;
     } else {
       auto* widget = views::Widget::GetWidgetForNativeWindow(window);
-      // All widgets for app windows in chromeos should have a frame with
-      // immersive controller. Non app windows may not have a frame and
-      // frame mode will be NONE.
+      // All widgets for app windows in chromeos should have a frame. Non app
+      // windows may not have a frame and frame mode will be NONE.
       DCHECK(!widget || widget->GetNativeWindow()->GetType() !=
                             aura::client::WINDOW_TYPE_NORMAL);
       window_info.frame_mode =
@@ -3941,27 +3949,23 @@ AutotestPrivateSetAppWindowStateFunction::Run() {
     }
   }
 
-  window_state_observer_ = std::make_unique<WindowStateChangeObserver>(
-      window, expected_state,
-      base::BindOnce(
-          &AutotestPrivateSetAppWindowStateFunction::WindowStateChanged, this,
-          expected_state));
+  const bool wait = params->wait && *params->wait;
 
-  // TODO(crbug.com/990713): Make WMEvent trigger split view in tablet mode.
-  if (ash::TabletMode::Get()->InTabletMode()) {
-    if (expected_state == chromeos::WindowStateType::kPrimarySnapped) {
-      ash::SplitViewTestApi().SnapWindow(
-          window, ash::SplitViewTestApi::SnapPosition::LEFT);
-      return RespondLater();
-    } else if (expected_state == chromeos::WindowStateType::kSecondarySnapped) {
-      ash::SplitViewTestApi().SnapWindow(
-          window, ash::SplitViewTestApi::SnapPosition::RIGHT);
-      return RespondLater();
-    }
+  if (wait) {
+    window_state_observer_ = std::make_unique<WindowStateChangeObserver>(
+        window, expected_state,
+        base::BindOnce(
+            &AutotestPrivateSetAppWindowStateFunction::WindowStateChanged, this,
+            expected_state));
   }
 
   const ash::WMEvent event(ToWMEventType(params->change.event_type));
   ash::WindowState::Get(window)->OnWMEvent(&event);
+
+  if (!wait) {
+    return RespondNow(OneArgument(base::Value(
+        api::autotest_private::ToString(ToWindowStateType(expected_state)))));
+  }
 
   return RespondLater();
 }
@@ -4042,8 +4046,8 @@ class AutotestPrivateInstallPWAForCurrentURLFunction::PWABannerObserver
     // If PWA is already loaded, call callback immediately.
     Installable installable =
         app_banner_manager_->GetInstallableWebAppCheckResultForTesting();
-    if (installable == Installable::kPromotable ||
-        installable == Installable::kByUserRequest) {
+    if (installable == Installable::kYes_Promotable ||
+        installable == Installable::kYes_ByUserRequest) {
       observation_.Reset();
       std::move(callback_).Run();
     }
@@ -4056,16 +4060,16 @@ class AutotestPrivateInstallPWAForCurrentURLFunction::PWABannerObserver
     switch (installable) {
       case Installable::kNo:
         FALLTHROUGH;
-      case Installable::kNoAlreadyInstalled:
+      case Installable::kNo_AlreadyInstalled:
         FALLTHROUGH;
       case Installable::kUnknown:
         DCHECK(false) << "Unexpected AppBannerManager::Installable value (kNo "
                          "or kNoAlreadyInstalled or kUnknown)";
         break;
 
-      case Installable::kPromotable:
+      case Installable::kYes_Promotable:
         FALLTHROUGH;
-      case Installable::kByUserRequest:
+      case Installable::kYes_ByUserRequest:
         observation_.Reset();
         std::move(callback_).Run();
         break;
@@ -4849,6 +4853,7 @@ AutotestPrivateGetShelfUIInfoForStateFunction::Run() {
     hotseat_ui_info.swipe_up = std::move(swipe_up_descriptor);
     hotseat_ui_info.is_animating = hotseat_info.is_animating;
     hotseat_ui_info.state = GetHotseatState(hotseat_info.hotseat_state);
+    hotseat_ui_info.is_auto_hidden = hotseat_info.is_auto_hidden;
 
     shelf_ui_info.hotseat_info = std::move(hotseat_ui_info);
   }
@@ -5016,8 +5021,15 @@ AutotestPrivateStopSmoothnessTrackingFunction::Run() {
                             base::NumberToString(display_id)})));
   }
 
+  if (it->second.stopping) {
+    return RespondNow(Error(
+        base::StrCat({"stopSmoothnessTracking already called for display: ",
+                      base::NumberToString(display_id)})));
+  }
+
   it->second.callback = base::BindOnce(
       &AutotestPrivateStopSmoothnessTrackingFunction::OnReportData, this);
+  it->second.stopping = true;
   it->second.tracker->Stop();
 
   return did_respond() ? AlreadyResponded() : RespondLater();

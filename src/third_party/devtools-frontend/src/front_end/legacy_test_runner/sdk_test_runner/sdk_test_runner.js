@@ -47,10 +47,10 @@ SDKTestRunner.PageMock = class {
   }
 
   connectAsMainTarget(targetName) {
-    self.Bindings.debuggerWorkspaceBinding._resetForTest(TestRunner.mainTarget);
-    self.Bindings.resourceMapping._resetForTest(TestRunner.mainTarget);
+    self.Bindings.debuggerWorkspaceBinding.resetForTest(TestRunner.mainTarget);
+    self.Bindings.resourceMapping.resetForTest(TestRunner.mainTarget);
     this._enabledDomains.clear();
-    self.SDK.targetManager._targets.clear();
+    self.SDK.targetManager.targetsInternal.clear();
 
     const oldFactory = ProtocolClient.Connection.getFactory();
     ProtocolClient.Connection.setFactory(() => {
@@ -139,7 +139,6 @@ SDKTestRunner.PageMock = class {
       this._fireEvent('Runtime.executionContextDestroyed', {executionContextId: context.id});
     }
 
-
     this._scripts = [];
     this._scriptContents.clear();
     this._executionContexts = [];
@@ -149,7 +148,6 @@ SDKTestRunner.PageMock = class {
     for (const context of this._executionContexts) {
       this._fireEvent('Runtime.executionContextCreated', {context: context});
     }
-
 
     this._fireEvent('Page.frameNavigated', {frame: this._mainFrame});
 

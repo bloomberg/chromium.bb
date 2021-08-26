@@ -21,12 +21,16 @@
 
 #include "src/program_builder.h"
 #include "src/sem/atomic_type.h"
+#include "src/sem/depth_multisampled_texture_type.h"
 #include "src/sem/depth_texture_type.h"
 #include "src/sem/external_texture_type.h"
 #include "src/sem/multisampled_texture_type.h"
 #include "src/sem/pipeline_stage_set.h"
 #include "src/sem/sampled_texture_type.h"
 #include "src/sem/storage_texture_type.h"
+#include "src/utils/get_or_create.h"
+#include "src/utils/hash.h"
+#include "src/utils/math.h"
 #include "src/utils/scoped_assignment.h"
 
 namespace tint {
@@ -333,7 +337,7 @@ bool match_vec(const sem::Type* ty, Number& N, const sem::Type*& T) {
   }
 
   if (auto* v = ty->As<sem::Vector>()) {
-    N = v->size();
+    N = v->Width();
     T = v->type();
     return true;
   }
@@ -352,7 +356,7 @@ bool match_vec(const sem::Type* ty, const sem::Type*& T) {
   }
 
   if (auto* v = ty->As<sem::Vector>()) {
-    if (v->size() == N) {
+    if (v->Width() == N) {
       T = v->type();
       return true;
     }
@@ -393,7 +397,7 @@ bool match_mat(const sem::Type* ty, Number& M, Number& N, const sem::Type*& T) {
   }
   if (auto* m = ty->As<sem::Matrix>()) {
     M = m->columns();
-    N = m->ColumnType()->size();
+    N = m->ColumnType()->Width();
     T = m->type();
     return true;
   }
@@ -589,6 +593,20 @@ DECLARE_DEPTH_TEXTURE(cube, ast::TextureDimension::kCube)
 DECLARE_DEPTH_TEXTURE(cube_array, ast::TextureDimension::kCubeArray)
 #undef DECLARE_DEPTH_TEXTURE
 
+bool match_texture_depth_multisampled_2d(const sem::Type* ty) {
+  if (ty->Is<Any>()) {
+    return true;
+  }
+  return ty->Is<sem::DepthMultisampledTexture>(
+      [&](auto t) { return t->dim() == ast::TextureDimension::k2d; });
+}
+
+sem::DepthMultisampledTexture* build_texture_depth_multisampled_2d(
+    MatchState& state) {
+  return state.builder.create<sem::DepthMultisampledTexture>(
+      ast::TextureDimension::k2d);
+}
+
 bool match_texture_storage(const sem::Type* ty,
                            ast::TextureDimension dim,
                            Number& F,
@@ -633,6 +651,91 @@ bool match_texture_external(const sem::Type* ty) {
 
 const sem::ExternalTexture* build_texture_external(MatchState& state) {
   return state.builder.create<sem::ExternalTexture>();
+}
+
+// Builtin types starting with a _ prefix cannot be declared in WGSL, so they
+// can only be used as return types. Because of this, they must only match Any,
+// which is used as the return type matcher.
+bool match_modf_result(const sem::Type* ty) {
+  return ty->Is<Any>();
+}
+bool match_modf_result_vec(const sem::Type* ty, Number& N) {
+  if (!ty->Is<Any>()) {
+    return false;
+  }
+  N = Number::any;
+  return true;
+}
+bool match_frexp_result(const sem::Type* ty) {
+  return ty->Is<Any>();
+}
+bool match_frexp_result_vec(const sem::Type* ty, Number& N) {
+  if (!ty->Is<Any>()) {
+    return false;
+  }
+  N = Number::any;
+  return true;
+}
+
+struct NameAndType {
+  std::string name;
+  sem::Type* type;
+};
+const sem::Struct* build_struct(
+    MatchState& state,
+    std::string name,
+    std::initializer_list<NameAndType> member_names_and_types) {
+  uint32_t offset = 0;
+  uint32_t max_align = 0;
+  sem::StructMemberList members;
+  for (auto& m : member_names_and_types) {
+    uint32_t align = m.type->Align();
+    uint32_t size = m.type->Size();
+    offset = utils::RoundUp(align, offset);
+    max_align = std::max(max_align, align);
+    members.emplace_back(state.builder.create<sem::StructMember>(
+        /* declaration */ nullptr,
+        /* name */ state.builder.Sym(m.name),
+        /* type */ m.type,
+        /* index */ static_cast<uint32_t>(members.size()),
+        /* offset */ offset,
+        /* align */ align,
+        /* size */ size));
+    offset += size;
+  }
+  uint32_t size_without_padding = offset;
+  uint32_t size_with_padding = utils::RoundUp(max_align, offset);
+  return state.builder.create<sem::Struct>(
+      /* declaration */ nullptr,
+      /* name */ state.builder.Sym(name),
+      /* members */ members,
+      /* align */ max_align,
+      /* size */ size_with_padding,
+      /* size_no_padding */ size_without_padding);
+}
+
+const sem::Struct* build_modf_result(MatchState& state) {
+  auto* f32 = state.builder.create<sem::F32>();
+  return build_struct(state, "_modf_result", {{"fract", f32}, {"whole", f32}});
+}
+const sem::Struct* build_modf_result_vec(MatchState& state, Number& n) {
+  auto* vec_f32 = state.builder.create<sem::Vector>(
+      state.builder.create<sem::F32>(), n.Value());
+  return build_struct(state, "_modf_result_vec" + std::to_string(n.Value()),
+                      {{"fract", vec_f32}, {"whole", vec_f32}});
+}
+const sem::Struct* build_frexp_result(MatchState& state) {
+  auto* f32 = state.builder.create<sem::F32>();
+  auto* i32 = state.builder.create<sem::I32>();
+  return build_struct(state, "_frexp_result", {{"sig", f32}, {"exp", i32}});
+}
+const sem::Struct* build_frexp_result_vec(MatchState& state, Number& n) {
+  auto* vec_f32 = state.builder.create<sem::Vector>(
+      state.builder.create<sem::F32>(), n.Value());
+  auto* vec_i32 = state.builder.create<sem::Vector>(
+      state.builder.create<sem::I32>(), n.Value());
+  return build_struct(state, "_frexp_result_vec" + std::to_string(n.Value()),
+                      {{"sig", vec_f32}, {"exp", vec_i32}});
 }
 
 /// ParameterInfo describes a parameter
@@ -699,6 +802,55 @@ struct IntrinsicInfo {
 
 #include "intrinsic_table.inl"
 
+/// IntrinsicPrototype describes a fully matched intrinsic function, which is
+/// used as a lookup for building unique sem::Intrinsic instances.
+struct IntrinsicPrototype {
+  /// Parameter describes a single parameter
+  struct Parameter {
+    /// Parameter type
+    sem::Type* const type;
+    /// Parameter usage
+    ParameterUsage const usage = ParameterUsage::kNone;
+  };
+
+  /// Hasher provides a hash function for the IntrinsicPrototype
+  struct Hasher {
+    /// @param i the IntrinsicPrototype to create a hash for
+    /// @return the hash value
+    inline std::size_t operator()(const IntrinsicPrototype& i) const {
+      size_t hash = utils::Hash(i.parameters.size());
+      for (auto& p : i.parameters) {
+        utils::HashCombine(&hash, p.type, p.usage);
+      }
+      return utils::Hash(hash, i.type, i.return_type, i.supported_stages,
+                         i.is_deprecated);
+    }
+  };
+
+  sem::IntrinsicType type = sem::IntrinsicType::kNone;
+  std::vector<Parameter> parameters;
+  sem::Type const* return_type = nullptr;
+  PipelineStageSet supported_stages;
+  bool is_deprecated = false;
+};
+
+/// Equality operator for IntrinsicPrototype
+bool operator==(const IntrinsicPrototype& a, const IntrinsicPrototype& b) {
+  if (a.type != b.type || a.supported_stages != b.supported_stages ||
+      a.return_type != b.return_type || a.is_deprecated != b.is_deprecated ||
+      a.parameters.size() != b.parameters.size()) {
+    return false;
+  }
+  for (size_t i = 0; i < a.parameters.size(); i++) {
+    auto& pa = a.parameters[i];
+    auto& pb = b.parameters[i];
+    if (pa.type != pb.type || pa.usage != pb.usage) {
+      return false;
+    }
+  }
+  return true;
+}
+
 /// Impl is the private implementation of the IntrinsicTable interface.
 class Impl : public IntrinsicTable {
  public:
@@ -706,13 +858,13 @@ class Impl : public IntrinsicTable {
 
   const sem::Intrinsic* Lookup(sem::IntrinsicType intrinsic_type,
                                const std::vector<const sem::Type*>& args,
-                               const Source& source) const override;
+                               const Source& source) override;
 
  private:
   const sem::Intrinsic* Match(sem::IntrinsicType intrinsic_type,
                               const OverloadInfo& overload,
                               const std::vector<const sem::Type*>& args,
-                              int& match_score) const;
+                              int& match_score);
 
   MatchState Match(ClosedState& closed,
                    const OverloadInfo& overload,
@@ -724,6 +876,10 @@ class Impl : public IntrinsicTable {
 
   ProgramBuilder& builder;
   Matchers matchers;
+  std::unordered_map<IntrinsicPrototype,
+                     sem::Intrinsic*,
+                     IntrinsicPrototype::Hasher>
+      intrinsics;
 };
 
 /// @return a string representing a call to an intrinsic with the given argument
@@ -760,7 +916,7 @@ Impl::Impl(ProgramBuilder& b) : builder(b) {}
 
 const sem::Intrinsic* Impl::Lookup(sem::IntrinsicType intrinsic_type,
                                    const std::vector<const sem::Type*>& args,
-                                   const Source& source) const {
+                                   const Source& source) {
   // Candidate holds information about a mismatched overload that could be what
   // the user intended to call.
   struct Candidate {
@@ -809,7 +965,7 @@ const sem::Intrinsic* Impl::Lookup(sem::IntrinsicType intrinsic_type,
 const sem::Intrinsic* Impl::Match(sem::IntrinsicType intrinsic_type,
                                   const OverloadInfo& overload,
                                   const std::vector<const sem::Type*>& args,
-                                  int& match_score) const {
+                                  int& match_score) {
   // Score wait for argument <-> parameter count matches / mismatches
   constexpr int kScorePerParamArgMismatch = -1;
   constexpr int kScorePerMatchedParam = 2;
@@ -830,7 +986,7 @@ const sem::Intrinsic* Impl::Match(sem::IntrinsicType intrinsic_type,
 
   ClosedState closed(builder);
 
-  sem::ParameterList parameters;
+  std::vector<IntrinsicPrototype::Parameter> parameters;
 
   auto num_params = std::min(num_parameters, num_arguments);
   for (uint32_t p = 0; p < num_params; p++) {
@@ -838,8 +994,8 @@ const sem::Intrinsic* Impl::Match(sem::IntrinsicType intrinsic_type,
     auto* indices = parameter.matcher_indices;
     auto* type = Match(closed, overload, indices).Type(args[p]->UnwrapRef());
     if (type) {
-      parameters.emplace_back(
-          sem::Parameter{const_cast<sem::Type*>(type), parameter.usage});
+      parameters.emplace_back(IntrinsicPrototype::Parameter{
+          const_cast<sem::Type*>(type), parameter.usage});
       match_score += kScorePerMatchedParam;
     } else {
       overload_matched = false;
@@ -896,9 +1052,26 @@ const sem::Intrinsic* Impl::Match(sem::IntrinsicType intrinsic_type,
     return_type = builder.create<sem::Void>();
   }
 
-  return builder.create<sem::Intrinsic>(
-      intrinsic_type, const_cast<sem::Type*>(return_type),
-      std::move(parameters), overload.supported_stages, overload.is_deprecated);
+  IntrinsicPrototype intrinsic;
+  intrinsic.type = intrinsic_type;
+  intrinsic.return_type = return_type;
+  intrinsic.parameters = std::move(parameters);
+  intrinsic.supported_stages = overload.supported_stages;
+  intrinsic.is_deprecated = overload.is_deprecated;
+
+  // De-duplicate intrinsics that are identical.
+  return utils::GetOrCreate(intrinsics, intrinsic, [&] {
+    std::vector<sem::Parameter*> params;
+    params.reserve(intrinsic.parameters.size());
+    for (auto& p : intrinsic.parameters) {
+      params.emplace_back(builder.create<sem::Parameter>(
+          nullptr, static_cast<uint32_t>(params.size()), p.type,
+          ast::StorageClass::kNone, ast::Access::kUndefined, p.usage));
+    }
+    return builder.create<sem::Intrinsic>(
+        intrinsic.type, const_cast<sem::Type*>(intrinsic.return_type),
+        std::move(params), intrinsic.supported_stages, intrinsic.is_deprecated);
+  });
 }
 
 MatchState Impl::Match(ClosedState& closed,

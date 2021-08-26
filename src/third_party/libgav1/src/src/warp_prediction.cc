@@ -153,10 +153,8 @@ bool WarpEstimation(const int num_samples, const int block_width4x4,
   const int mid_x = MultiplyBy4(column4x4) + MultiplyBy2(block_width4x4) - 1;
   const int subpixel_mid_y = MultiplyBy8(mid_y);
   const int subpixel_mid_x = MultiplyBy8(mid_x);
-  const int reference_subpixel_mid_y =
-      subpixel_mid_y + mv.mv[MotionVector::kRow];
-  const int reference_subpixel_mid_x =
-      subpixel_mid_x + mv.mv[MotionVector::kColumn];
+  const int reference_subpixel_mid_y = subpixel_mid_y + mv.mv[0];
+  const int reference_subpixel_mid_x = subpixel_mid_x + mv.mv[1];
 
   for (int i = 0; i < num_samples; ++i) {
     // candidates[][0] and candidates[][1] are the row/column coordinates of the
@@ -223,14 +221,12 @@ bool WarpEstimation(const int num_samples, const int block_width4x4,
   params[4] = NonDiagonalClamp(params[4]);
   params[5] = DiagonalClamp(params[5]);
 
-  const int vx =
-      mv.mv[MotionVector::kColumn] * (1 << (kWarpedModelPrecisionBits - 3)) -
-      (mid_x * (params[2] - (1 << kWarpedModelPrecisionBits)) +
-       mid_y * params[3]);
-  const int vy =
-      mv.mv[MotionVector::kRow] * (1 << (kWarpedModelPrecisionBits - 3)) -
-      (mid_x * params[4] +
-       mid_y * (params[5] - (1 << kWarpedModelPrecisionBits)));
+  const int vx = mv.mv[1] * (1 << (kWarpedModelPrecisionBits - 3)) -
+                 (mid_x * (params[2] - (1 << kWarpedModelPrecisionBits)) +
+                  mid_y * params[3]);
+  const int vy = mv.mv[0] * (1 << (kWarpedModelPrecisionBits - 3)) -
+                 (mid_x * params[4] +
+                  mid_y * (params[5] - (1 << kWarpedModelPrecisionBits)));
   params[0] =
       Clip3(vx, -kWarpModelTranslationClamp, kWarpModelTranslationClamp - 1);
   params[1] =

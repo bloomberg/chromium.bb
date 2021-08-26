@@ -22,6 +22,7 @@
 #include "src/core/SkMaskFilterBase.h"
 #include "src/core/SkPaintPriv.h"
 #include "src/core/SkPicturePriv.h"
+#include "src/core/SkSamplingPriv.h"
 #include "src/core/SkWriteBuffer.h"
 #include "src/shaders/SkShaderBase.h"
 
@@ -107,8 +108,8 @@ public:
 
     void readPath(SkPath* path);
 
-    SkReadPaintResult readPaint(SkPaint* paint, SkFont* font) {
-        return SkPaintPriv::Unflatten(paint, *this, font);
+    SkPaint readPaint() {
+        return SkPaintPriv::Unflatten(*this);
     }
 
     SkFlattenable* readFlattenable(SkFlattenable::Type);
@@ -203,7 +204,7 @@ public:
                                              static_cast<int32_t>(max)));
     }
 
-    SkFilterQuality checkFilterQuality();
+    SkLegacyFQ checkFilterQuality();
 
     SkSamplingOptions readSampling();
 
@@ -213,8 +214,6 @@ private:
     void setInvalid();
     bool readArray(void* value, size_t size, size_t elementSize);
     bool isAvailable(size_t size) const { return size <= this->available(); }
-
-    sk_sp<SkImage> readImage_preV78();
 
     // These are always 4-byte aligned
     const char* fCurr = nullptr;  // current position within buffer

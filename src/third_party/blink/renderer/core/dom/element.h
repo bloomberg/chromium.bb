@@ -55,6 +55,7 @@ class AccessibleNode;
 class Attr;
 class Attribute;
 class ContainerQueryEvaluator;
+class CSSPropertyName;
 class CSSPropertyValueSet;
 class CSSStyleDeclaration;
 class CustomElementDefinition;
@@ -201,11 +202,11 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   bool HasExplicitlySetAttrAssociatedElements(const QualifiedName& name);
   Element* GetElementAttribute(const QualifiedName& name);
   void SetElementAttribute(const QualifiedName&, Element*);
-  absl::optional<HeapVector<Member<Element>>> GetElementArrayAttribute(
+  HeapVector<Member<Element>>* GetElementArrayAttribute(
       const QualifiedName& name);
   void SetElementArrayAttribute(
-      const QualifiedName&,
-      const absl::optional<HeapVector<Member<Element>>>&);
+      const QualifiedName& name,
+      const HeapVector<Member<Element>>* given_elements);
 
   // Call this to get the value of an attribute that is known not to be the
   // style attribute or one of the SVG animatable attributes.
@@ -383,6 +384,9 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   bool HasTagName(const HTMLQualifiedName& tag_name) const {
     return ContainerNode::HasTagName(tag_name);
   }
+  bool HasTagName(const MathMLQualifiedName& tag_name) const {
+    return ContainerNode::HasTagName(tag_name);
+  }
   bool HasTagName(const SVGQualifiedName& tag_name) const {
     return ContainerNode::HasTagName(tag_name);
   }
@@ -406,7 +410,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   String nodeName() const override;
 
-  Element& CloneWithChildren(Document* = nullptr) const;
+  Element& CloneWithChildren(CloneChildrenFlag flag, Document* = nullptr) const;
   Element& CloneWithoutChildren(Document* = nullptr) const;
 
   void SetBooleanAttribute(const QualifiedName&, bool);
@@ -432,6 +436,9 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
                               bool important = false);
   bool SetInlineStyleProperty(CSSPropertyID,
                               const String& value,
+                              bool important = false);
+  void SetInlineStyleProperty(const CSSPropertyName&,
+                              const CSSValue&,
                               bool important = false);
 
   bool RemoveInlineStyleProperty(CSSPropertyID);

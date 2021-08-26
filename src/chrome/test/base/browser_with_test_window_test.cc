@@ -35,6 +35,11 @@
 #endif
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/crosapi/crosapi_manager.h"
+#include "chrome/browser/ash/crosapi/idle_service_ash.h"
+#endif
+
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chromeos/lacros/lacros_test_helper.h"
 #include "chromeos/ui/base/tablet_state.h"
@@ -54,7 +59,7 @@ void BrowserWithTestWindowTest::SetUp() {
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-  if (!chromeos::LacrosChromeServiceImpl::Get()) {
+  if (!chromeos::LacrosService::Get()) {
     lacros_service_test_helper_ =
         std::make_unique<chromeos::ScopedLacrosServiceTestHelper>();
   }
@@ -72,6 +77,11 @@ void BrowserWithTestWindowTest::SetUp() {
   profile_manager_ = std::make_unique<TestingProfileManager>(
       TestingBrowserProcess::GetGlobal());
   ASSERT_TRUE(profile_manager_->SetUp());
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  crosapi::IdleServiceAsh::DisableForTesting();
+  manager_ = std::make_unique<crosapi::CrosapiManager>();
+#endif
 
   // Subclasses can provide their own Profile.
   profile_ = CreateProfile();
@@ -106,6 +116,10 @@ void BrowserWithTestWindowTest::TearDown() {
   if (SystemNetworkContextManager::GetInstance()) {
     SystemNetworkContextManager::DeleteInstance();
   }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  manager_.reset();
+#endif
 
   profile_manager_.reset();
 

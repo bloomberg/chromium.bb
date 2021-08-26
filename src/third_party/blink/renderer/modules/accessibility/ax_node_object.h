@@ -269,7 +269,8 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
       HeapVector<Member<AXObject>>& owned_children) const;
 
   // Inline text boxes.
-  void LoadInlineTextBoxesRecursive() override;
+  void LoadInlineTextBoxes() override;
+  void ForceAddInlineTextBoxChildren() override;
 
   //
   // Layout object specific methods.
@@ -314,6 +315,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   void CheckValidChild(AXObject* child);
 #endif
 
+  ax::mojom::blink::TextPosition GetTextPositionFromAria() const;
   ax::mojom::blink::Dropeffect ParseDropeffect(String& dropeffect) const;
 
   static bool IsNameFromLabelElement(HTMLElement* control);

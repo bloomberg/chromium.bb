@@ -8,55 +8,58 @@
 #include "src/gpu/d3d/GrD3DPipelineState.h"
 
 #include "include/private/SkTemplates.h"
+#include "src/gpu/GrFragmentProcessor.h"
+#include "src/gpu/GrGeometryProcessor.h"
 #include "src/gpu/GrProgramInfo.h"
 #include "src/gpu/GrStencilSettings.h"
+#include "src/gpu/GrXferProcessor.h"
 #include "src/gpu/d3d/GrD3DBuffer.h"
 #include "src/gpu/d3d/GrD3DGpu.h"
 #include "src/gpu/d3d/GrD3DPipeline.h"
 #include "src/gpu/d3d/GrD3DRootSignature.h"
 #include "src/gpu/d3d/GrD3DTexture.h"
 #include "src/gpu/effects/GrTextureEffect.h"
-#include "src/gpu/glsl/GrGLSLFragmentProcessor.h"
-#include "src/gpu/glsl/GrGLSLGeometryProcessor.h"
-#include "src/gpu/glsl/GrGLSLXferProcessor.h"
 
 GrD3DPipelineState::GrD3DPipelineState(
         sk_sp<GrD3DPipeline> pipeline,
         sk_sp<GrD3DRootSignature> rootSignature,
         const GrGLSLBuiltinUniformHandles& builtinUniformHandles,
-        const UniformInfoArray& uniforms, uint32_t uniformSize,
+        const UniformInfoArray& uniforms,
+        uint32_t uniformSize,
         uint32_t numSamplers,
-        std::unique_ptr<GrGLSLGeometryProcessor> geometryProcessor,
-        std::unique_ptr<GrGLSLXferProcessor> xferProcessor,
-        std::vector<std::unique_ptr<GrGLSLFragmentProcessor>> fpImpls,
+        std::unique_ptr<GrGeometryProcessor::ProgramImpl> gpImpl,
+        std::unique_ptr<GrXferProcessor::ProgramImpl> xpImpl,
+        std::vector<std::unique_ptr<GrFragmentProcessor::ProgramImpl>> fpImpls,
         size_t vertexStride,
         size_t instanceStride)
-    : fPipeline(std::move(pipeline))
-    , fRootSignature(std::move(rootSignature))
-    , fBuiltinUniformHandles(builtinUniformHandles)
-    , fGeometryProcessor(std::move(geometryProcessor))
-    , fXferProcessor(std::move(xferProcessor))
-    , fFPImpls(std::move(fpImpls))
-    , fDataManager(uniforms, uniformSize)
-    , fNumSamplers(numSamplers)
-    , fVertexStride(vertexStride)
-    , fInstanceStride(instanceStride) {}
+        : fPipeline(std::move(pipeline))
+        , fRootSignature(std::move(rootSignature))
+        , fBuiltinUniformHandles(builtinUniformHandles)
+        , fGPImpl(std::move(gpImpl))
+        , fXPImpl(std::move(xpImpl))
+        , fFPImpls(std::move(fpImpls))
+        , fDataManager(uniforms, uniformSize)
+        , fNumSamplers(numSamplers)
+        , fVertexStride(vertexStride)
+        , fInstanceStride(instanceStride) {}
 
 void GrD3DPipelineState::setAndBindConstants(GrD3DGpu* gpu,
                                              const GrRenderTarget* renderTarget,
                                              const GrProgramInfo& programInfo) {
     this->setRenderTargetState(renderTarget, programInfo.origin());
 
-    fGeometryProcessor->setData(fDataManager, *gpu->caps()->shaderCaps(), programInfo.geomProc());
+    fGPImpl->setData(fDataManager, *gpu->caps()->shaderCaps(), programInfo.geomProc());
+
     for (int i = 0; i < programInfo.pipeline().numFragmentProcessors(); ++i) {
-        auto& fp = programInfo.pipeline().getFragmentProcessor(i);
-        for (auto [fp, impl] : GrGLSLFragmentProcessor::ParallelRange(fp, *fFPImpls[i])) {
+        const auto& fp = programInfo.pipeline().getFragmentProcessor(i);
+        fp.visitWithImpls([&](const GrFragmentProcessor& fp,
+                              GrFragmentProcessor::ProgramImpl& impl) {
             impl.setData(fDataManager, fp);
-        }
+        }, *fFPImpls[i]);
     }
 
     programInfo.pipeline().setDstTextureUniforms(fDataManager, &fBuiltinUniformHandles);
-    fXferProcessor->setData(fDataManager, programInfo.pipeline().getXferProcessor());
+    fXPImpl->setData(fDataManager, programInfo.pipeline().getXferProcessor());
 
     D3D12_GPU_VIRTUAL_ADDRESS constantsAddress = fDataManager.uploadConstants(gpu);
     gpu->currentCommandList()->setGraphicsRootConstantBufferView(

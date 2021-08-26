@@ -91,6 +91,9 @@ preprocess_if_expr("preprocess_src") {
   out_folder = "$preprocess_folder"
   out_manifest = "$target_gen_dir/$preprocess_src_manifest"
   in_files = [
+    "chromeos/bluetooth/bluetooth_utils.js",
+    "chromeos/bluetooth/bluetooth_metrics_utils.js",
+    "chromeos/bluetooth/cros_bluetooth_config.js",
     "most_visited/browser_proxy.js",
     "most_visited/window_proxy.js",
   ]
@@ -119,7 +122,7 @@ preprocess_if_expr("preprocess_generated") {
 
   if (is_chromeos_ash) {
     in_files += [
-      "chromeos/bluetooth/bluetooth_dialog.m.js",
+      "chromeos/bluetooth/bluetooth_dialog.js",
       "chromeos/cellular_setup/activation_code_page.m.js",
       "chromeos/cellular_setup/activation_verification_page.m.js",
       "chromeos/cellular_setup/base_page.m.js",
@@ -210,8 +213,6 @@ if (is_chromeos_ash) {
     in_files = []
     if (!optimize_webui) {
       in_files += [
-        "chromeos/bluetooth/bluetooth_dialog.html",
-        "chromeos/bluetooth/bluetooth_dialog.js",
         "chromeos/network/network_apnlist.html",
         "chromeos/network/network_apnlist.js",
         "chromeos/network/network_choose_mobile.html",

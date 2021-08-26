@@ -27,9 +27,9 @@
 #include <memory>
 #include <utility>
 
+#include "base/cxx17_backports.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/numerics/clamped_math.h"
-#include "base/numerics/ranges.h"
 #include "build/build_config.h"
 #include "cc/input/overscroll_behavior.h"
 #include "third_party/blink/renderer/core/animation/css/css_animation_data.h"
@@ -102,11 +102,13 @@ ASSERT_SIZE(BorderValue, SameSizeAsBorderValue);
 struct SameSizeAsComputedStyleBase {
   SameSizeAsComputedStyleBase() {
     base::debug::Alias(&data_refs);
+    base::debug::Alias(&pointers);
     base::debug::Alias(&bitfields);
   }
 
  private:
   void* data_refs[8];
+  void* pointers[1];
   unsigned bitfields[5];
 };
 
@@ -592,6 +594,18 @@ const ComputedStyle* ComputedStyle::AddCachedPseudoElementStyle(
 void ComputedStyle::ClearCachedPseudoElementStyles() const {
   if (cached_data_ && cached_data_->pseudo_element_styles_)
     cached_data_->pseudo_element_styles_->clear();
+}
+
+const ComputedStyle* ComputedStyle::GetBaseComputedStyle() const {
+  if (auto* base_data = BaseData().get())
+    return base_data->GetBaseComputedStyle();
+  return nullptr;
+}
+
+const CSSBitset* ComputedStyle::GetBaseImportantSet() const {
+  if (auto* base_data = BaseData().get())
+    return base_data->GetBaseImportantSet();
+  return nullptr;
 }
 
 bool ComputedStyle::InheritedEqual(const ComputedStyle& other) const {
@@ -1401,7 +1415,7 @@ bool ComputedStyle::SetEffectiveZoom(float f) {
   // real cost to our understanding of the zooms in use.
   base::UmaHistogramSparse(
       "Blink.EffectiveZoom",
-      base::ClampToRange<float>(clamped_effective_zoom * 100, 0, 400));
+      base::clamp<float>(clamped_effective_zoom * 100, 0, 400));
   return true;
 }
 
@@ -1427,8 +1441,11 @@ CounterDirectiveMap& ComputedStyle::AccessCounterDirectives() {
 
 const CounterDirectives ComputedStyle::GetCounterDirectives(
     const AtomicString& identifier) const {
-  if (const CounterDirectiveMap* directives = GetCounterDirectives())
-    return directives->at(identifier);
+  if (GetCounterDirectives()) {
+    auto it = GetCounterDirectives()->find(identifier);
+    if (it != GetCounterDirectives()->end())
+      return it->value;
+  }
   return CounterDirectives();
 }
 
@@ -1869,7 +1886,7 @@ bool ComputedStyle::HasVariables() const {
          HasInitialVariables(InitialDataInternal().get());
 }
 
-size_t ComputedStyle::GetVariableNamesCount() const {
+wtf_size_t ComputedStyle::GetVariableNamesCount() const {
   if (!HasVariables())
     return 0;
   return GetVariableNames().size();
@@ -2077,12 +2094,20 @@ LayoutUnit ComputedStyle::ComputedLineHeightAsFixed(const Font& font) const {
   if (lh.IsNegative() && font.PrimaryFont())
     return font.PrimaryFont()->GetFontMetrics().FixedLineSpacing();
 
-  if (lh.IsPercentOrCalc()) {
-    return LayoutUnit(
-        MinimumValueForLength(lh, ComputedFontSizeAsFixed(font)).ToInt());
-  }
+  if (RuntimeEnabledFeatures::FractionalLineHeightEnabled()) {
+    if (lh.IsPercentOrCalc()) {
+      return MinimumValueForLength(lh, ComputedFontSizeAsFixed(font));
+    }
 
-  return LayoutUnit(floorf(lh.Value()));
+    return LayoutUnit::FromFloatFloor(lh.Value());
+  } else {
+    if (lh.IsPercentOrCalc()) {
+      return LayoutUnit(
+          MinimumValueForLength(lh, ComputedFontSizeAsFixed(font)).ToInt());
+    }
+
+    return LayoutUnit(floorf(lh.Value()));
+  }
 }
 
 LayoutUnit ComputedStyle::ComputedLineHeightAsFixed() const {
@@ -2102,6 +2127,9 @@ void ComputedStyle::SetLetterSpacing(float letter_spacing) {
 }
 
 void ComputedStyle::SetTextAutosizingMultiplier(float multiplier) {
+  if (TextAutosizingMultiplier() == multiplier)
+    return;
+
   SetTextAutosizingMultiplierInternal(multiplier);
 
   float size = SpecifiedFontSize();
@@ -2321,24 +2349,41 @@ int ComputedStyle::OutlineOutsetExtent() const {
   if (!HasOutline())
     return 0;
   if (OutlineStyleIsAuto()) {
-    return GraphicsContext::FocusRingOutsetExtent(
-        OutlineOffsetInt(), std::ceil(GetOutlineStrokeWidthForFocusRing()));
+    // Unlike normal outlines (whole width is outside of the offset), focus
+    // rings are drawn with only part of it outside of the offset.
+    return FocusRingOffset() + std::ceil(FocusRingStrokeWidth() / 3.f) * 2;
   }
   return base::ClampAdd(OutlineWidthInt(), OutlineOffsetInt()).Max(0);
 }
 
-float ComputedStyle::GetOutlineStrokeWidthForFocusRing() const {
-  if (OutlineStyleIsAuto()) {
-    return std::max(EffectiveZoom(), 3.f);
-  }
+float ComputedStyle::FocusRingOuterStrokeWidth() const {
+  // The focus ring is made of two rings which have a 2:1 ratio.
+  return FocusRingStrokeWidth() / 3.f * 2;
+}
 
-#if defined(OS_MAC)
-  return OutlineWidthInt();
-#else
-  // Draw an outline with thickness in proportion to the zoom level, but never
+float ComputedStyle::FocusRingInnerStrokeWidth() const {
+  return FocusRingStrokeWidth() / 3.f;
+}
+
+float ComputedStyle::FocusRingStrokeWidth() const {
+  DCHECK(OutlineStyleIsAuto());
+  // Draw focus ring with thickness in proportion to the zoom level, but never
   // so narrow that it becomes invisible.
-  return std::max(EffectiveZoom(), 1.f);
-#endif
+  return std::max(EffectiveZoom(), 3.f);
+}
+
+int ComputedStyle::FocusRingOffset() const {
+  DCHECK(OutlineStyleIsAuto());
+  // How much space the focus ring would like to take from the actual border.
+  constexpr float kMaxInsideBorderWidth = 1;
+  int offset = OutlineOffsetInt();
+  // Focus ring is dependent on whether the border is large enough to have an
+  // inset outline. Use the smallest border edge for that test.
+  float min_border_width = std::min({BorderTopWidth(), BorderBottomWidth(),
+                                     BorderLeftWidth(), BorderRightWidth()});
+  if (min_border_width >= kMaxInsideBorderWidth)
+    offset -= kMaxInsideBorderWidth;
+  return offset;
 }
 
 bool ComputedStyle::StrokeDashArrayDataEquivalent(

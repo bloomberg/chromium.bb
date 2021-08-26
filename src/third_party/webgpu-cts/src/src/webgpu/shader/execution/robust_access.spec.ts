@@ -162,12 +162,25 @@ function* generateIndexableTypes({
     layout: scalarInfo.layout
       ? {
           alignment: scalarInfo.layout.alignment,
-          size: kArrayLength * arrayStride(scalarInfo.layout),
+          size:
+            storageClass === 'uniform'
+              ? // Uniform storage class must have array elements aligned to 16.
+                kArrayLength *
+                arrayStride({
+                  ...scalarInfo.layout,
+                  alignment: 16,
+                })
+              : kArrayLength * arrayStride(scalarInfo.layout),
         }
       : undefined,
   };
+
   // Sized array
-  yield { type: `array<${scalarType},${kArrayLength}>`, _typeInfo: arrayTypeInfo };
+  if (storageClass === 'uniform') {
+    yield { type: `[[stride(16)]] array<${scalarType},${kArrayLength}>`, _typeInfo: arrayTypeInfo };
+  } else {
+    yield { type: `array<${scalarType},${kArrayLength}>`, _typeInfo: arrayTypeInfo };
+  }
   // Unsized array
   if (storageClass === 'storage') {
     yield { type: `array<${scalarType}>`, _typeInfo: arrayTypeInfo };
@@ -434,8 +447,6 @@ g.test('linear_memory')
         expectedBytes.subarray(bufferBindingEnd, testBufferSize),
         bufferBindingEnd
       );
-
-      testBuffer.destroy();
     } else {
       runShaderTest(t, GPUShaderStage.COMPUTE, testSource, []);
     }

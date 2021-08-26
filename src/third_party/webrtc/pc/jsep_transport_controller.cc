@@ -55,8 +55,9 @@ JsepTransportController::JsepTransportController(
             UpdateAggregateStates_n();
           }),
       config_(config),
-      active_reset_srtp_params_(config.active_reset_srtp_params) {
-  // The |transport_observer| is assumed to be non-null.
+      active_reset_srtp_params_(config.active_reset_srtp_params),
+      bundles_(config.bundle_policy) {
+  // The `transport_observer` is assumed to be non-null.
   RTC_DCHECK(config_.transport_observer);
   RTC_DCHECK(config_.rtcp_handler);
   RTC_DCHECK(config_.ice_transport_factory);
@@ -374,13 +375,18 @@ void JsepTransportController::SetActiveResetSrtpParams(
   }
 }
 
-void JsepTransportController::RollbackTransports() {
+RTCError JsepTransportController::RollbackTransports() {
   if (!network_thread_->IsCurrent()) {
-    network_thread_->Invoke<void>(RTC_FROM_HERE, [=] { RollbackTransports(); });
-    return;
+    return network_thread_->Invoke<RTCError>(
+        RTC_FROM_HERE, [=] { return RollbackTransports(); });
   }
   RTC_DCHECK_RUN_ON(network_thread_);
-  transports_.RollbackTransports();
+  bundles_.Rollback();
+  if (!transports_.RollbackTransports()) {
+    LOG_AND_RETURN_ERROR(RTCErrorType::INTERNAL_ERROR,
+                         "Failed to roll back transport state.");
+  }
+  return RTCError::OK();
 }
 
 rtc::scoped_refptr<webrtc::IceTransportInterface>
@@ -525,6 +531,23 @@ JsepTransportController::GetDtlsTransports() {
   return dtls_transports;
 }
 
+std::vector<cricket::DtlsTransportInternal*>
+JsepTransportController::GetActiveDtlsTransports() {
+  RTC_DCHECK_RUN_ON(network_thread_);
+  std::vector<cricket::DtlsTransportInternal*> dtls_transports;
+  for (auto jsep_transport : transports_.ActiveTransports()) {
+    RTC_DCHECK(jsep_transport);
+    if (jsep_transport->rtp_dtls_transport()) {
+      dtls_transports.push_back(jsep_transport->rtp_dtls_transport());
+    }
+
+    if (jsep_transport->rtcp_dtls_transport()) {
+      dtls_transports.push_back(jsep_transport->rtcp_dtls_transport());
+    }
+  }
+  return dtls_transports;
+}
+
 RTCError JsepTransportController::ApplyDescription_n(
     bool local,
     SdpType type,
@@ -569,6 +592,7 @@ RTCError JsepTransportController::ApplyDescription_n(
     const cricket::ContentInfo& content_info = description->contents()[i];
     const cricket::TransportInfo& transport_info =
         description->transport_infos()[i];
+
     if (content_info.rejected) {
       // This may cause groups to be removed from |bundles_.bundle_groups()|.
       HandleRejectedContent(content_info);
@@ -637,6 +661,7 @@ RTCError JsepTransportController::ApplyDescription_n(
   }
   if (type == SdpType::kAnswer) {
     transports_.CommitTransports();
+    bundles_.Commit();
   }
   return RTCError::OK();
 }
@@ -649,7 +674,7 @@ RTCError JsepTransportController::ValidateAndMaybeUpdateBundleGroups(
 
   std::vector<const cricket::ContentGroup*> new_bundle_groups =
       description->GetGroupsByName(cricket::GROUP_TYPE_BUNDLE);
-  // Verify |new_bundle_groups|.
+  // Verify `new_bundle_groups`.
   std::map<std::string, const cricket::ContentGroup*> new_bundle_groups_by_mid;
   for (const cricket::ContentGroup* new_bundle_group : new_bundle_groups) {
     for (const std::string& content_name : new_bundle_group->content_names()) {
@@ -672,7 +697,44 @@ RTCError JsepTransportController::ValidateAndMaybeUpdateBundleGroups(
     }
   }
 
-  if (type == SdpType::kAnswer) {
+  if (type == SdpType::kOffer) {
+    // For an offer, we need to verify that there is not a conflicting mapping
+    // between existing and new bundle groups. For example, if the existing
+    // groups are [[1,2],[3,4]] and new are [[1,3],[2,4]] or [[1,2,3,4]], or
+    // vice versa. Switching things around like this requires a separate offer
+    // that removes the relevant sections from their group, as per RFC 8843,
+    // section 7.5.2.
+    std::map<const cricket::ContentGroup*, const cricket::ContentGroup*>
+        new_bundle_groups_by_existing_bundle_groups;
+    std::map<const cricket::ContentGroup*, const cricket::ContentGroup*>
+        existing_bundle_groups_by_new_bundle_groups;
+    for (const cricket::ContentGroup* new_bundle_group : new_bundle_groups) {
+      for (const std::string& mid : new_bundle_group->content_names()) {
+        cricket::ContentGroup* existing_bundle_group =
+            bundles_.LookupGroupByMid(mid);
+        if (!existing_bundle_group) {
+          continue;
+        }
+        auto it = new_bundle_groups_by_existing_bundle_groups.find(
+            existing_bundle_group);
+        if (it != new_bundle_groups_by_existing_bundle_groups.end() &&
+            it->second != new_bundle_group) {
+          return RTCError(RTCErrorType::INVALID_PARAMETER,
+                          "MID " + mid + " in the offer has changed group.");
+        }
+        new_bundle_groups_by_existing_bundle_groups.insert(
+            std::make_pair(existing_bundle_group, new_bundle_group));
+        it = existing_bundle_groups_by_new_bundle_groups.find(new_bundle_group);
+        if (it != existing_bundle_groups_by_new_bundle_groups.end() &&
+            it->second != existing_bundle_group) {
+          return RTCError(RTCErrorType::INVALID_PARAMETER,
+                          "MID " + mid + " in the offer has changed group.");
+        }
+        existing_bundle_groups_by_new_bundle_groups.insert(
+            std::make_pair(new_bundle_group, existing_bundle_group));
+      }
+    }
+  } else if (type == SdpType::kAnswer) {
     std::vector<const cricket::ContentGroup*> offered_bundle_groups =
         local ? remote_desc_->GetGroupsByName(cricket::GROUP_TYPE_BUNDLE)
               : local_desc_->GetGroupsByName(cricket::GROUP_TYPE_BUNDLE);
@@ -752,9 +814,7 @@ RTCError JsepTransportController::ValidateAndMaybeUpdateBundleGroups(
                     "max-bundle is used but no bundle group found.");
   }
 
-  if (ShouldUpdateBundleGroup(type, description)) {
-    bundles_.Update(description);
-  }
+  bundles_.Update(description, type);
 
   for (const auto& bundle_group : bundles_.bundle_groups()) {
     if (!bundle_group->FirstContentName())
@@ -769,7 +829,7 @@ RTCError JsepTransportController::ValidateAndMaybeUpdateBundleGroups(
           "An m= section associated with the BUNDLE-tag doesn't exist.");
     }
 
-    // If the |bundled_content| is rejected, other contents in the bundle group
+    // If the `bundled_content` is rejected, other contents in the bundle group
     // must also be rejected.
     if (bundled_content->rejected) {
       for (const auto& content_name : bundle_group->content_names()) {
@@ -818,7 +878,7 @@ void JsepTransportController::HandleRejectedContent(
   } else {
     transports_.RemoveTransportForMid(content_info.name);
     if (bundle_group) {
-      // Remove the rejected content from the |bundle_group|.
+      // Remove the rejected content from the `bundle_group`.
       bundles_.DeleteMid(bundle_group, content_info.name);
     }
   }
@@ -860,26 +920,6 @@ JsepTransportController::CreateJsepTransportDescription(
   return cricket::JsepTransportDescription(
       rtcp_mux_enabled, content_desc->cryptos(), encrypted_extension_ids,
       rtp_abs_sendtime_extn_id, transport_info.description);
-}
-
-bool JsepTransportController::ShouldUpdateBundleGroup(
-    SdpType type,
-    const cricket::SessionDescription* description) {
-  if (config_.bundle_policy ==
-      PeerConnectionInterface::kBundlePolicyMaxBundle) {
-    return true;
-  }
-
-  if (type != SdpType::kAnswer) {
-    return false;
-  }
-
-  RTC_DCHECK(local_desc_ && remote_desc_);
-  std::vector<const cricket::ContentGroup*> local_bundles =
-      local_desc_->GetGroupsByName(cricket::GROUP_TYPE_BUNDLE);
-  std::vector<const cricket::ContentGroup*> remote_bundles =
-      remote_desc_->GetGroupsByName(cricket::GROUP_TYPE_BUNDLE);
-  return !local_bundles.empty() && !remote_bundles.empty();
 }
 
 std::vector<int> JsepTransportController::GetEncryptedHeaderExtensionIds(
@@ -977,7 +1017,6 @@ RTCError JsepTransportController::MaybeCreateJsepTransport(
   if (transport) {
     return RTCError::OK();
   }
-
   const cricket::MediaContentDescription* content_desc =
       content_info.media_description();
   if (certificate_ && !content_desc->cryptos().empty()) {
@@ -1032,13 +1071,14 @@ RTCError JsepTransportController::MaybeCreateJsepTransport(
           content_info.name, certificate_, std::move(ice), std::move(rtcp_ice),
           std::move(unencrypted_rtp_transport), std::move(sdes_transport),
           std::move(dtls_srtp_transport), std::move(rtp_dtls_transport),
-          std::move(rtcp_dtls_transport), std::move(sctp_transport));
+          std::move(rtcp_dtls_transport), std::move(sctp_transport), [&]() {
+            RTC_DCHECK_RUN_ON(network_thread_);
+            UpdateAggregateStates_n();
+          });
 
   jsep_transport->rtp_transport()->SignalRtcpPacketReceived.connect(
       this, &JsepTransportController::OnRtcpPacketReceived_n);
 
-  jsep_transport->SignalRtcpMuxActive.connect(
-      this, &JsepTransportController::UpdateAggregateStates_n);
   transports_.RegisterTransport(content_info.name, std::move(jsep_transport));
   UpdateAggregateStates_n();
   return RTCError::OK();
@@ -1176,7 +1216,7 @@ void JsepTransportController::OnTransportStateChanged_n(
 
 void JsepTransportController::UpdateAggregateStates_n() {
   TRACE_EVENT0("webrtc", "JsepTransportController::UpdateAggregateStates_n");
-  auto dtls_transports = GetDtlsTransports();
+  auto dtls_transports = GetActiveDtlsTransports();
   cricket::IceConnectionState new_connection_state =
       cricket::kIceConnectionConnecting;
   PeerConnectionInterface::IceConnectionState new_ice_connection_state =

@@ -34,6 +34,7 @@ RenderbufferState::RenderbufferState()
       mFormat(GL_RGBA4),
       mSamples(0),
       mMultisamplingMode(MultisamplingMode::Regular),
+      mHasProtectedContent(false),
       mInitState(InitState::Initialized)
 {}
 
@@ -76,12 +77,18 @@ void RenderbufferState::update(GLsizei width,
                                MultisamplingMode multisamplingMode,
                                InitState initState)
 {
-    mWidth             = width;
-    mHeight            = height;
-    mFormat            = format;
-    mSamples           = samples;
-    mMultisamplingMode = multisamplingMode;
-    mInitState         = InitState::MayNeedInit;
+    mWidth               = width;
+    mHeight              = height;
+    mFormat              = format;
+    mSamples             = samples;
+    mMultisamplingMode   = multisamplingMode;
+    mInitState           = InitState::MayNeedInit;
+    mHasProtectedContent = false;
+}
+
+void RenderbufferState::setProtectedContent(bool hasProtectedContent)
+{
+    mHasProtectedContent = hasProtectedContent;
 }
 
 // Renderbuffer implementation.
@@ -133,7 +140,7 @@ angle::Result Renderbuffer::setStorage(const Context *context,
 }
 
 angle::Result Renderbuffer::setStorageMultisample(const Context *context,
-                                                  GLsizei samples,
+                                                  GLsizei samplesIn,
                                                   GLenum internalformat,
                                                   GLsizei width,
                                                   GLsizei height,
@@ -141,9 +148,9 @@ angle::Result Renderbuffer::setStorageMultisample(const Context *context,
 {
     ANGLE_TRY(orphanImages(context));
 
-    // Potentially adjust "samples" to a supported value
+    // Potentially adjust "samplesIn" to a supported value
     const TextureCaps &formatCaps = context->getTextureCaps().get(internalformat);
-    samples                       = formatCaps.getNearestSamples(samples);
+    GLsizei samples               = formatCaps.getNearestSamples(samplesIn);
 
     ANGLE_TRY(mImplementation->setStorageMultisample(context, samples, internalformat, width,
                                                      height, mode));
@@ -164,6 +171,8 @@ angle::Result Renderbuffer::setStorageEGLImageTarget(const Context *context, egl
     mState.update(static_cast<GLsizei>(image->getWidth()), static_cast<GLsizei>(image->getHeight()),
                   Format(image->getFormat()), 0, MultisamplingMode::Regular,
                   image->sourceInitState());
+    mState.setProtectedContent(image->hasProtectedContent());
+
     onStateChange(angle::SubjectMessage::SubjectChanged);
 
     return angle::Result::Continue;

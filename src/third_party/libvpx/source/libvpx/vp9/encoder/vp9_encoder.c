@@ -2304,6 +2304,7 @@ VP9_COMP *vp9_create_compressor(const VP9EncoderConfig *oxcf,
       cm, cm->frame_contexts,
       (FRAME_CONTEXT *)vpx_calloc(FRAME_CONTEXTS, sizeof(*cm->frame_contexts)));
 
+  cpi->compute_frame_low_motion_onepass = 1;
   cpi->use_svc = 0;
   cpi->resize_state = ORIG;
   cpi->external_resize = 0;
@@ -2322,7 +2323,6 @@ VP9_COMP *vp9_create_compressor(const VP9EncoderConfig *oxcf,
   vp9_init_rd_parameters(cpi);
 
   init_frame_indexes(cm);
-  cpi->partition_search_skippable_frame = 0;
   cpi->tile_data = NULL;
 
   realloc_segmentation_maps(cpi);
@@ -2362,17 +2362,6 @@ VP9_COMP *vp9_create_compressor(const VP9EncoderConfig *oxcf,
         cm, cpi->mbgraph_stats[i].mb_stats,
         vpx_calloc(cm->MBs * sizeof(*cpi->mbgraph_stats[i].mb_stats), 1));
   }
-
-#if CONFIG_FP_MB_STATS
-  cpi->use_fp_mb_stats = 0;
-  if (cpi->use_fp_mb_stats) {
-    // a place holder used to store the first pass mb stats in the first pass
-    CHECK_MEM_ERROR(cm, cpi->twopass.frame_mb_stats_buf,
-                    vpx_calloc(cm->MBs * sizeof(uint8_t), 1));
-  } else {
-    cpi->twopass.frame_mb_stats_buf = NULL;
-  }
-#endif
 
   cpi->refresh_alt_ref_frame = 0;
   cpi->b_calculate_psnr = CONFIG_INTERNAL_STATS;
@@ -2526,18 +2515,6 @@ VP9_COMP *vp9_create_compressor(const VP9EncoderConfig *oxcf,
       vp9_init_second_pass_spatial_svc(cpi);
     } else {
       int num_frames;
-#if CONFIG_FP_MB_STATS
-      if (cpi->use_fp_mb_stats) {
-        const size_t psz = cpi->common.MBs * sizeof(uint8_t);
-        const int ps = (int)(oxcf->firstpass_mb_stats_in.sz / psz);
-
-        cpi->twopass.firstpass_mb_stats.mb_stats_start =
-            oxcf->firstpass_mb_stats_in.buf;
-        cpi->twopass.firstpass_mb_stats.mb_stats_end =
-            cpi->twopass.firstpass_mb_stats.mb_stats_start +
-            (ps - 1) * cpi->common.MBs * sizeof(uint8_t);
-      }
-#endif
 
       cpi->twopass.stats_in_start = oxcf->two_pass_stats_in.buf;
       cpi->twopass.stats_in = cpi->twopass.stats_in_start;
@@ -2840,13 +2817,6 @@ void vp9_remove_compressor(VP9_COMP *cpi) {
        ++i) {
     vpx_free(cpi->mbgraph_stats[i].mb_stats);
   }
-
-#if CONFIG_FP_MB_STATS
-  if (cpi->use_fp_mb_stats) {
-    vpx_free(cpi->twopass.frame_mb_stats_buf);
-    cpi->twopass.frame_mb_stats_buf = NULL;
-  }
-#endif
 
   vp9_extrc_delete(&cpi->ext_ratectrl);
 
@@ -3708,6 +3678,10 @@ static void set_size_dependent_vars(VP9_COMP *cpi, int *q, int *bottom_index,
     cpi->rc.force_max_q = 0;
   }
 
+  if (cpi->use_svc) {
+    cpi->svc.base_qindex[cpi->svc.spatial_layer_id] = *q;
+  }
+
   if (!frame_is_intra_only(cm)) {
     vp9_set_high_precision_mv(cpi, (*q) < HIGH_PRECISION_MV_QTHRESH);
   }
@@ -4208,7 +4182,7 @@ static int encode_without_recode_loop(VP9_COMP *cpi, size_t *size,
 
   // Update some stats from cyclic refresh, and check for golden frame update.
   if (cpi->oxcf.aq_mode == CYCLIC_REFRESH_AQ && cm->seg.enabled &&
-      !frame_is_intra_only(cm))
+      !frame_is_intra_only(cm) && cpi->cyclic_refresh->content_mode)
     vp9_cyclic_refresh_postencode(cpi);
 
   // Update the skip mb flag probabilities based on the distribution
@@ -5747,7 +5721,8 @@ static void encode_frame_to_data_rate(
 
   vp9_rc_postencode_update(cpi, *size);
 
-  if (oxcf->pass == 0 && !frame_is_intra_only(cm) &&
+  if (cpi->compute_frame_low_motion_onepass && oxcf->pass == 0 &&
+      !frame_is_intra_only(cm) &&
       (!cpi->use_svc ||
        (cpi->use_svc &&
         !cpi->svc.layer_context[cpi->svc.temporal_layer_id].is_key_frame &&

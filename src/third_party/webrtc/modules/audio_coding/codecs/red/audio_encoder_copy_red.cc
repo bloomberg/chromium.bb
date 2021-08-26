@@ -32,7 +32,7 @@ static constexpr size_t kRedLastHeaderLength =
     1;  // reduced size for last RED header.
 
 static constexpr size_t kRedNumberOfRedundantEncodings =
-    2;  // The level of redundancy we support.
+    1;  // The level of redundancy we support.
 
 AudioEncoderCopyRed::Config::Config() = default;
 AudioEncoderCopyRed::Config::Config(Config&&) = default;
@@ -122,12 +122,7 @@ AudioEncoder::EncodedInfo AudioEncoderCopyRed::EncodeImpl(
     header_length_bytes += kRedHeaderLength;
   }
 
-  // Allocate room for RFC 2198 header if there is redundant data.
-  // Otherwise this will send the primary payload type without
-  // wrapping in RED.
-  if (header_length_bytes == kRedLastHeaderLength) {
-    header_length_bytes = 0;
-  }
+  // Allocate room for RFC 2198 header.
   encoded->SetSize(header_length_bytes);
 
   // Iterate backwards and append the data.
@@ -145,36 +140,32 @@ AudioEncoder::EncodedInfo AudioEncoderCopyRed::EncodeImpl(
     info.redundant.push_back(it->first);
   }
 
-  // |info| will be implicitly cast to an EncodedInfoLeaf struct, effectively
+  // `info` will be implicitly cast to an EncodedInfoLeaf struct, effectively
   // discarding the (empty) vector of redundant information. This is
   // intentional.
-  if (header_length_bytes > 0) {
+  if (header_length_bytes > kRedHeaderLength) {
     info.redundant.push_back(info);
     RTC_DCHECK_EQ(info.speech,
                   info.redundant[info.redundant.size() - 1].speech);
   }
 
   encoded->AppendData(primary_encoded_);
-  if (header_length_bytes > 0) {
-    RTC_DCHECK_EQ(header_offset, header_length_bytes - 1);
-    encoded->data()[header_offset] = info.payload_type;
-  }
+  RTC_DCHECK_EQ(header_offset, header_length_bytes - 1);
+  encoded->data()[header_offset] = info.payload_type;
 
   // Shift the redundant encodings.
-  it = redundant_encodings_.begin();
-  for (auto next = std::next(it); next != redundant_encodings_.end();
-       it++, next = std::next(it)) {
-    next->first = it->first;
-    next->second.SetData(it->second);
+  auto rit = redundant_encodings_.rbegin();
+  for (auto next = std::next(rit); next != redundant_encodings_.rend();
+       rit++, next = std::next(rit)) {
+    rit->first = next->first;
+    rit->second.SetData(next->second);
   }
   it = redundant_encodings_.begin();
   it->first = info;
   it->second.SetData(primary_encoded_);
 
   // Update main EncodedInfo.
-  if (header_length_bytes > 0) {
-    info.payload_type = red_payload_type_;
-  }
+  info.payload_type = red_payload_type_;
   info.encoded_bytes = encoded->size();
   return info;
 }

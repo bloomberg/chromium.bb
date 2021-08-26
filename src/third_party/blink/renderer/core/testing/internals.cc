@@ -196,6 +196,7 @@
 #include "third_party/blink/renderer/platform/wtf/dtoa.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding_registry.h"
+#include "third_party/blink/renderer/platform/wtf/threading.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-blink.h"
 #include "ui/base/ui_base_features.h"
@@ -752,6 +753,18 @@ unsigned Internals::needsLayoutCount(ExceptionState& exception_state) const {
   context_frame->View()->CountObjectsNeedingLayout(needs_layout_objects,
                                                    total_objects, is_partial);
   return needs_layout_objects;
+}
+
+unsigned Internals::layoutCountForTesting(
+    ExceptionState& exception_state) const {
+  LocalFrame* context_frame = GetFrame();
+  if (!context_frame) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidAccessError,
+                                      "No context frame is available.");
+    return 0;
+  }
+
+  return context_frame->View()->LayoutCountForTesting();
 }
 
 unsigned Internals::hitTestCount(Document* doc,
@@ -2771,6 +2784,9 @@ void Internals::setMediaControlsTestMode(HTMLMediaElement* media_element,
 
 void Internals::registerURLSchemeAsBypassingContentSecurityPolicy(
     const String& scheme) {
+#if DCHECK_IS_ON()
+  WTF::SetIsBeforeThreadCreatedForTest();  // Required for next operation:
+#endif
   SchemeRegistry::RegisterURLSchemeAsBypassingContentSecurityPolicy(scheme);
 }
 
@@ -2784,12 +2800,18 @@ void Internals::registerURLSchemeAsBypassingContentSecurityPolicy(
     else if (policy_area == "style")
       policy_areas_enum |= SchemeRegistry::kPolicyAreaStyle;
   }
+#if DCHECK_IS_ON()
+  WTF::SetIsBeforeThreadCreatedForTest();  // Required for next operation:
+#endif
   SchemeRegistry::RegisterURLSchemeAsBypassingContentSecurityPolicy(
       scheme, static_cast<SchemeRegistry::PolicyAreas>(policy_areas_enum));
 }
 
 void Internals::removeURLSchemeRegisteredAsBypassingContentSecurityPolicy(
     const String& scheme) {
+#if DCHECK_IS_ON()
+  WTF::SetIsBeforeThreadCreatedForTest();  // Required for next operation:
+#endif
   SchemeRegistry::RemoveURLSchemeRegisteredAsBypassingContentSecurityPolicy(
       scheme);
 }

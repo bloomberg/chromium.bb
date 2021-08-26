@@ -3327,7 +3327,7 @@ yyreduce:
 
         {
             (yyval.interm.param) = (yyvsp[0].interm.param);
-            (yyval.interm.param).type->setQualifier(EvqIn);
+            (yyval.interm.param).type->setQualifier(EvqParamIn);
         }
 
         break;
@@ -3346,7 +3346,7 @@ yyreduce:
 
         {
             (yyval.interm.param) = (yyvsp[0].interm.param);
-            (yyval.interm.param).type->setQualifier(EvqIn);
+            (yyval.interm.param).type->setQualifier(EvqParamIn);
         }
 
         break;
@@ -3547,7 +3547,7 @@ yyreduce:
         case 128:
 
         {
-            // empty
+            context->markShaderHasPrecise();
         }
 
         break;

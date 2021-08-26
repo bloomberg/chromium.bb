@@ -6,8 +6,6 @@
 #define CONTENT_BROWSER_CONVERSIONS_CONVERSION_REPORT_H_
 
 #include <stdint.h>
-#include <string>
-#include <vector>
 
 #include "base/time/time.h"
 #include "content/browser/conversions/storable_impression.h"
@@ -45,9 +43,10 @@ struct CONTENT_EXPORT ConversionReport {
   // The time this conversion report should be sent.
   base::Time report_time;
 
-  // Tracks ephemeral increases to |report_time| for this conversion report, for
-  // the purposes of logging metrics.
-  base::TimeDelta extra_delay;
+  // The original report time assigned to this report when it was created,
+  // ignoring any ephemeral increases to |report_time| for this conversion
+  // report.
+  base::Time original_report_time;
 
   // Id assigned by storage to uniquely identify a completed conversion. If
   // null, an ID has not been assigned yet.
@@ -56,11 +55,6 @@ struct CONTENT_EXPORT ConversionReport {
   // When adding new members, the corresponding `operator==()` definition in
   // `conversion_test_utils.h` should also be updated.
 };
-
-// Only used for logging.
-CONTENT_EXPORT std::ostream& operator<<(
-    std::ostream& out,
-    const ConversionReport& ConversionReport);
 
 }  // namespace content
 

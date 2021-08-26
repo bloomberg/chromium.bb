@@ -1,11 +1,11 @@
-import { assert } from '../../../common/util/util.js';
+import { assert, memcpy } from '../../../common/util/util.js';
 import {
   EncodableTextureFormat,
   kTextureFormatInfo,
   SizedTextureFormat,
 } from '../../capability_info.js';
 import { align } from '../math.js';
-import { standardizeExtent3D } from '../unions.js';
+import { reifyExtent3D } from '../unions.js';
 
 import { virtualMipSize } from './base.js';
 
@@ -128,14 +128,13 @@ export function fillTextureDataWithTexelValue(
 
   const mipSize = virtualMipSize(dimension, size, options.mipLevel);
 
-  const texelValueBytes = new Uint8Array(texelValue);
   const outputTexelValueBytes = new Uint8Array(outputBuffer);
   for (let slice = 0; slice < mipSize[2]; ++slice) {
     for (let row = 0; row < mipSize[1]; row += blockHeight) {
       for (let col = 0; col < mipSize[0]; col += blockWidth) {
         const byteOffset =
           slice * rowsPerImage * bytesPerRow + row * bytesPerRow + col * texelValue.byteLength;
-        outputTexelValueBytes.set(texelValueBytes, byteOffset);
+        memcpy({ src: texelValue }, { dst: outputTexelValueBytes, start: byteOffset });
       }
     }
   }
@@ -268,7 +267,7 @@ export function dataBytesForCopyOrOverestimate({
   copySize: copySize_,
   method,
 }: DataBytesForCopyArgs): { minDataSizeOrOverestimate: number; copyValid: boolean } {
-  const copyExtent = standardizeExtent3D(copySize_);
+  const copyExtent = reifyExtent3D(copySize_);
 
   const info = kTextureFormatInfo[format];
   assert(copyExtent.width % info.blockWidth === 0);

@@ -24,7 +24,7 @@ const wchar_t kGreaterEqual[] = L" >= ";
 const wchar_t kPlusEqual[] = L" += ";
 const wchar_t kMinusEqual[] = L" -= ";
 
-const wchar_t* const g_BuiltInFuncs[] = {
+const wchar_t* const kBuiltInFuncs[] = {
     L"Abs",          L"Apr",       L"At",       L"Avg",
     L"Ceil",         L"Choose",    L"Concat",   L"Count",
     L"Cterm",        L"Date",      L"Date2Num", L"DateFmt",
@@ -44,14 +44,14 @@ const wchar_t* const g_BuiltInFuncs[] = {
     L"Within",       L"WordNum",
 };
 
-const size_t g_BuiltInFuncsMaxLen = 12;
+const size_t kBuiltInFuncsMaxLen = 12;
 
 struct XFA_FMSOMMethod {
   const wchar_t* m_wsSomMethodName;  // Ok, POD struct.
   uint32_t m_dParameters;
 };
 
-const XFA_FMSOMMethod gs_FMSomMethods[] = {
+const XFA_FMSOMMethod kFMSomMethods[] = {
     {L"absPage", 0x01},
     {L"absPageInBatch", 0x01},
     {L"absPageSpan", 0x01},
@@ -424,16 +424,16 @@ void CXFA_FMCallExpression::Trace(cppgc::Visitor* visitor) const {
 }
 
 bool CXFA_FMCallExpression::IsBuiltInFunc(CFX_WideTextBuf* funcName) const {
-  if (funcName->GetLength() > g_BuiltInFuncsMaxLen)
+  if (funcName->GetLength() > kBuiltInFuncsMaxLen)
     return false;
 
   WideString str = funcName->MakeString();
-  const wchar_t* const* pMatchResult = std::lower_bound(
-      std::begin(g_BuiltInFuncs), std::end(g_BuiltInFuncs), str,
-      [](const wchar_t* iter, const WideString& val) -> bool {
-        return val.CompareNoCase(iter) > 0;
-      });
-  if (pMatchResult != std::end(g_BuiltInFuncs) &&
+  const wchar_t* const* pMatchResult =
+      std::lower_bound(std::begin(kBuiltInFuncs), std::end(kBuiltInFuncs), str,
+                       [](const wchar_t* iter, const WideString& val) -> bool {
+                         return val.CompareNoCase(iter) > 0;
+                       });
+  if (pMatchResult != std::end(kBuiltInFuncs) &&
       !str.CompareNoCase(*pMatchResult)) {
     funcName->Clear();
     *funcName << *pMatchResult;
@@ -445,11 +445,11 @@ bool CXFA_FMCallExpression::IsBuiltInFunc(CFX_WideTextBuf* funcName) const {
 uint32_t CXFA_FMCallExpression::IsMethodWithObjParam(
     const WideString& methodName) const {
   const XFA_FMSOMMethod* result = std::lower_bound(
-      std::begin(gs_FMSomMethods), std::end(gs_FMSomMethods), methodName,
+      std::begin(kFMSomMethods), std::end(kFMSomMethods), methodName,
       [](const XFA_FMSOMMethod iter, const WideString& val) {
         return val.Compare(iter.m_wsSomMethodName) > 0;
       });
-  if (result != std::end(gs_FMSomMethods) &&
+  if (result != std::end(kFMSomMethods) &&
       methodName == result->m_wsSomMethodName) {
     return result->m_dParameters;
   }

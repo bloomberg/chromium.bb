@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #include "lib/jxl/color_encoding_internal.h"
 
@@ -563,8 +554,12 @@ Status CustomTransferFunction::VisitFields(Visitor* JXL_RESTRICT visitor) {
     JXL_QUIET_RETURN_IF_ERROR(visitor->Bool(false, &have_gamma_));
 
     if (visitor->Conditional(have_gamma_)) {
+      // Gamma is represented as a 24-bit int, the exponent used is
+      // gamma_ / 1e7. Valid values are (0, 1]. On the low end side, we also
+      // limit it to kMaxGamma/1e7.
       JXL_QUIET_RETURN_IF_ERROR(visitor->Bits(24, kGammaMul, &gamma_));
-      if (gamma_ > kGammaMul || gamma_ * kMaxGamma < kGammaMul) {
+      if (gamma_ > kGammaMul ||
+          static_cast<uint64_t>(gamma_) * kMaxGamma < kGammaMul) {
         return JXL_FAILURE("Invalid gamma %u", gamma_);
       }
     }
@@ -674,6 +669,42 @@ void ConvertInternalToExternalColorEncoding(const ColorEncoding& internal,
       static_cast<JxlRenderingIntent>(internal.rendering_intent);
 }
 
+Status ConvertExternalToInternalColorEncoding(const JxlColorEncoding& external,
+                                              ColorEncoding* internal) {
+  internal->SetColorSpace(static_cast<ColorSpace>(external.color_space));
+
+  CIExy wp;
+  wp.x = external.white_point_xy[0];
+  wp.y = external.white_point_xy[1];
+  JXL_RETURN_IF_ERROR(internal->SetWhitePoint(wp));
+
+  if (external.color_space == JXL_COLOR_SPACE_RGB ||
+      external.color_space == JXL_COLOR_SPACE_UNKNOWN) {
+    internal->primaries = static_cast<Primaries>(external.primaries);
+    PrimariesCIExy primaries;
+    primaries.r.x = external.primaries_red_xy[0];
+    primaries.r.y = external.primaries_red_xy[1];
+    primaries.g.x = external.primaries_green_xy[0];
+    primaries.g.y = external.primaries_green_xy[1];
+    primaries.b.x = external.primaries_blue_xy[0];
+    primaries.b.y = external.primaries_blue_xy[1];
+    JXL_RETURN_IF_ERROR(internal->SetPrimaries(primaries));
+  }
+  CustomTransferFunction tf;
+  if (external.transfer_function == JXL_TRANSFER_FUNCTION_GAMMA) {
+    JXL_RETURN_IF_ERROR(tf.SetGamma(external.gamma));
+  } else {
+    tf.SetTransferFunction(
+        static_cast<TransferFunction>(external.transfer_function));
+  }
+  internal->tf = tf;
+
+  internal->rendering_intent =
+      static_cast<RenderingIntent>(external.rendering_intent);
+
+  return true;
+}
+
 /* Chromatic adaptation matrices*/
 static const float kBradford[9] = {
     0.8951f, 0.2664f, -0.1614f, -0.7502f, 1.7135f,
@@ -687,11 +718,14 @@ static const float kBradfordInv[9] = {
 
 // Adapts whitepoint x, y to D50
 Status AdaptToXYZD50(float wx, float wy, float matrix[9]) {
-  if (wx < 0 || wx > 1 || wy < 0 || wy > 1) {
-    return JXL_FAILURE("xy color out of range");
+  if (wx < 0 || wx > 1 || wy <= 0 || wy > 1) {
+    // Out of range values can cause division through zero
+    // further down with the bradford adaptation too.
+    return JXL_FAILURE("Invalid white point");
   }
-
   float w[3] = {wx / wy, 1.0f, (1.0f - wx - wy) / wy};
+  // 1 / tiny float can still overflow
+  JXL_RETURN_IF_ERROR(std::isfinite(w[0]) && std::isfinite(w[2]));
   float w50[3] = {0.96422f, 1.0f, 0.82521f};
 
   float lms[3];
@@ -713,12 +747,12 @@ Status AdaptToXYZD50(float wx, float wy, float matrix[9]) {
 
 Status PrimariesToXYZD50(float rx, float ry, float gx, float gy, float bx,
                          float by, float wx, float wy, float matrix[9]) {
-  if (rx < 0 || rx > 1 || ry < 0 || ry > 1 || gx < 0 || gx > 1 || gy < 0 ||
-      gy > 1 || bx < 0 || bx > 1 || by < 0 || by > 1 || wx < 0 || wx > 1 ||
-      wy < 0 || wy > 1) {
-    return JXL_FAILURE("xy color out of range");
+  if (wx < 0 || wx > 1 || wy <= 0 || wy > 1) {
+    return JXL_FAILURE("Invalid white point");
   }
-
+  // TODO(lode): also require rx, ry, gx, gy, bx, to be in range 0-1? ICC
+  // profiles in theory forbid negative XYZ values, but in practice the ACES P0
+  // color space uses a negative y for the blue primary.
   float primaries[9] = {
       rx, gx, bx, ry, gy, by, 1.0f - rx - ry, 1.0f - gx - gy, 1.0f - bx - by};
   float primaries_inv[9];
@@ -726,6 +760,8 @@ Status PrimariesToXYZD50(float rx, float ry, float gx, float gy, float bx,
   JXL_RETURN_IF_ERROR(Inv3x3Matrix(primaries_inv));
 
   float w[3] = {wx / wy, 1.0f, (1.0f - wx - wy) / wy};
+  // 1 / tiny float can still overflow
+  JXL_RETURN_IF_ERROR(std::isfinite(w[0]) && std::isfinite(w[2]));
   float xyz[3];
   MatMul(primaries_inv, w, 3, 3, 1, xyz);
 

@@ -53,17 +53,20 @@ class StreamingPlaybackController final : public ReceiverSession::Client {
   void Initialize(ReceiverSession::ConfiguredReceivers receivers);
 
 #if defined(CAST_STANDALONE_RECEIVER_HAVE_EXTERNAL_LIBS)
+  void HandleKeyboardEvent(const SDL_KeyboardEvent& event);
+
   // NOTE: member ordering is important, since the sub systems must be
   // first-constructed, last-destroyed. Make sure any new SDL related
   // members are added below the sub systems.
   const ScopedSDLSubSystem<SDL_INIT_AUDIO> sdl_audio_sub_system_;
   const ScopedSDLSubSystem<SDL_INIT_VIDEO> sdl_video_sub_system_;
-  const SDLEventLoopProcessor sdl_event_loop_;
+  SDLEventLoopProcessor sdl_event_loop_;
 
   SDLWindowUniquePtr window_;
   SDLRendererUniquePtr renderer_;
   std::unique_ptr<SDLAudioPlayer> audio_player_;
   std::unique_ptr<SDLVideoPlayer> video_player_;
+  double is_playing_ = true;
 #else
   std::unique_ptr<DummyPlayer> audio_player_;
   std::unique_ptr<DummyPlayer> video_player_;

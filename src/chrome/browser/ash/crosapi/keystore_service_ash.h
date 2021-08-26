@@ -59,8 +59,8 @@ class KeystoreServiceAsh : public mojom::KeystoreService, public KeyedService {
 
   // mojom::KeystoreService:
   void ChallengeAttestationOnlyKeystore(
-      const std::string& challenge,
       mojom::KeystoreType type,
+      const std::vector<uint8_t>& challenge,
       bool migrate,
       ChallengeAttestationOnlyKeystoreCallback callback) override;
   void GetKeyStores(GetKeyStoresCallback callback) override;
@@ -78,16 +78,6 @@ class KeystoreServiceAsh : public mojom::KeystoreService, public KeyedService {
   void GetPublicKey(const std::vector<uint8_t>& certificate,
                     mojom::KeystoreSigningAlgorithmName algorithm_name,
                     GetPublicKeyCallback callback) override;
-  void ExtensionGenerateKey(mojom::KeystoreType keystore,
-                            mojom::KeystoreSigningAlgorithmPtr algorithm,
-                            const absl::optional<std::string>& extension_id,
-                            ExtensionGenerateKeyCallback callback) override;
-  void ExtensionSign(KeystoreType keystore,
-                     const std::vector<uint8_t>& public_key,
-                     SigningScheme scheme,
-                     const std::vector<uint8_t>& data,
-                     const std::string& extension_id,
-                     ExtensionSignCallback callback) override;
   void GenerateKey(mojom::KeystoreType keystore,
                    mojom::KeystoreSigningAlgorithmPtr algorithm,
                    GenerateKeyCallback callback) override;
@@ -109,6 +99,49 @@ class KeystoreServiceAsh : public mojom::KeystoreService, public KeyedService {
       const std::vector<uint8_t>& public_key,
       CanUserGrantPermissionForKeyCallback callback) override;
 
+  // DEPRECATED, use `GenerateKey` instead.
+  void DEPRECATED_ExtensionGenerateKey(
+      mojom::KeystoreType keystore,
+      mojom::KeystoreSigningAlgorithmPtr algorithm,
+      const absl::optional<std::string>& extension_id,
+      DEPRECATED_ExtensionGenerateKeyCallback callback) override;
+  // DEPRECATED, use `Sign` instead.
+  void DEPRECATED_ExtensionSign(
+      KeystoreType keystore,
+      const std::vector<uint8_t>& public_key,
+      SigningScheme scheme,
+      const std::vector<uint8_t>& data,
+      const std::string& extension_id,
+      DEPRECATED_ExtensionSignCallback callback) override;
+  // DEPRECATED, use `GetPublicKey` instead.
+  void DEPRECATED_GetPublicKey(
+      const std::vector<uint8_t>& certificate,
+      mojom::KeystoreSigningAlgorithmName algorithm_name,
+      DEPRECATED_GetPublicKeyCallback callback) override;
+  // DEPRECATED, use `GetKeyStores` instead.
+  void DEPRECATED_GetKeyStores(
+      DEPRECATED_GetKeyStoresCallback callback) override;
+  // DEPRECATED, use `GetCertificates` instead.
+  void DEPRECATED_GetCertificates(
+      mojom::KeystoreType keystore,
+      DEPRECATED_GetCertificatesCallback callback) override;
+  // DEPRECATED, use `AddCertificate` instead.
+  void DEPRECATED_AddCertificate(
+      mojom::KeystoreType keystore,
+      const std::vector<uint8_t>& certificate,
+      DEPRECATED_AddCertificateCallback callback) override;
+  // DEPRECATED, use `RemoveCertificate` instead.
+  void DEPRECATED_RemoveCertificate(
+      mojom::KeystoreType keystore,
+      const std::vector<uint8_t>& certificate,
+      DEPRECATED_RemoveCertificateCallback callback) override;
+  // DEPRECATED, use `ChallengeAttestationOnlyKeystore` instead.
+  void DEPRECATED_ChallengeAttestationOnlyKeystore(
+      const std::string& challenge,
+      mojom::KeystoreType type,
+      bool migrate,
+      DEPRECATED_ChallengeAttestationOnlyKeystoreCallback callback) override;
+
  private:
   // Returns a correct instance of PlatformKeysService to use. If a specific
   // browser context was passed into constructor, the corresponding
@@ -122,11 +155,11 @@ class KeystoreServiceAsh : public mojom::KeystoreService, public KeyedService {
   // Otherwise the class will use an instance for the primary profile.
   chromeos::platform_keys::KeyPermissionsService* GetKeyPermissions();
 
-  // |challenge| is used as a opaque identifier to match against the
+  // |challenge_key_ptr| is used as a opaque identifier to match against the
   // unique_ptr in outstanding_challenges_. It should not be dereferenced.
   void DidChallengeAttestationOnlyKeystore(
       ChallengeAttestationOnlyKeystoreCallback callback,
-      void* challenge,
+      void* challenge_key_ptr,
       const ash::attestation::TpmChallengeKeyResult& result);
   static void DidGetKeyStores(
       GetKeyStoresCallback callback,
@@ -144,13 +177,6 @@ class KeystoreServiceAsh : public mojom::KeystoreService, public KeyedService {
                                    chromeos::platform_keys::Status status);
   static void DidRemoveCertificate(RemoveCertificateCallback callback,
                                    chromeos::platform_keys::Status status);
-  static void DidExtensionGenerateKey(
-      ExtensionGenerateKeyCallback callback,
-      const std::string& public_key,
-      absl::optional<crosapi::mojom::KeystoreError> error);
-  static void DidExtensionSign(ExtensionSignCallback callback,
-                               const std::string& signature,
-                               absl::optional<mojom::KeystoreError> error);
   static void DidGenerateKey(GenerateKeyCallback callback,
                              const std::string& public_key,
                              chromeos::platform_keys::Status status);
@@ -165,6 +191,37 @@ class KeystoreServiceAsh : public mojom::KeystoreService, public KeyedService {
   static void DidAddKeyTags(AddKeyTagsCallback callback,
                             chromeos::platform_keys::Status status);
 
+  // Parts of deprecated methods.
+  static void DEPRECATED_DidExtensionGenerateKey(
+      DEPRECATED_ExtensionGenerateKeyCallback callback,
+      const std::string& public_key,
+      absl::optional<crosapi::mojom::KeystoreError> error);
+  static void DEPRECATED_DidExtensionSign(
+      DEPRECATED_ExtensionSignCallback callback,
+      const std::string& signature,
+      absl::optional<mojom::KeystoreError> error);
+  static void DEPRECATED_DidGetKeyStores(
+      DEPRECATED_GetKeyStoresCallback callback,
+      std::unique_ptr<std::vector<chromeos::platform_keys::TokenId>>
+          platform_keys_token_ids,
+      chromeos::platform_keys::Status status);
+  static void DEPRECATED_DidGetCertificates(
+      DEPRECATED_GetCertificatesCallback callback,
+      std::unique_ptr<net::CertificateList> certs,
+      chromeos::platform_keys::Status status);
+  static void DEPRECATED_DidImportCertificate(
+      DEPRECATED_AddCertificateCallback callback,
+      chromeos::platform_keys::Status status);
+  static void DEPRECATED_DidRemoveCertificate(
+      DEPRECATED_RemoveCertificateCallback callback,
+      chromeos::platform_keys::Status status);
+  // |challenge_key_ptr| is used as a opaque identifier to match against the
+  // unique_ptr in outstanding_challenges_. It should not be dereferenced.
+  void DEPRECATED_DidChallengeAttestationOnlyKeystore(
+      DEPRECATED_ChallengeAttestationOnlyKeystoreCallback callback,
+      void* challenge_key_ptr,
+      const ash::attestation::TpmChallengeKeyResult& result);
+
   // Can be nullptr, should not be used directly, use GetPlatformKeys() instead.
   // Stores a pointer to a specific PlatformKeysService if it was specified in
   // constructor.
@@ -176,7 +233,9 @@ class KeystoreServiceAsh : public mojom::KeystoreService, public KeyedService {
   chromeos::platform_keys::KeyPermissionsService* const
       fixed_key_permissions_service_ = nullptr;
 
-  // Container to keep outstanding challenges alive.
+  // Container to keep outstanding challenges alive. The challenges should be
+  // destroyed together with this service to reduce the chance of them accessing
+  // other services that may be deleted by that point.
   std::vector<std::unique_ptr<ash::attestation::TpmChallengeKey>>
       outstanding_challenges_;
   mojo::ReceiverSet<mojom::KeystoreService> receivers_;

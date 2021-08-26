@@ -80,7 +80,10 @@ class Type : public Castable<Type> {
   /// @returns true if this type is an unsigned scalar or vector
   bool IsUnsignedScalarOrVector() const;
 
-#ifndef NDEBUG
+#ifdef NDEBUG
+  /// @returns "<no-type-info>", for debug purposes only
+  std::string String() const { return "<no-type-info>"; }
+#else
   /// @returns a string representation of the type, for debug purposes only
   virtual std::string String() const = 0;
 #endif  // NDEBUG
@@ -344,6 +347,27 @@ struct DepthTexture : public Castable<DepthTexture, Texture> {
 #endif  // NDEBUG
 };
 
+/// `texture_depth_multisampled_D` type
+struct DepthMultisampledTexture
+    : public Castable<DepthMultisampledTexture, Texture> {
+  /// Constructor
+  /// @param d the texture dimensions
+  explicit DepthMultisampledTexture(ast::TextureDimension d);
+
+  /// Copy constructor
+  /// @param other the other type to copy
+  DepthMultisampledTexture(const DepthMultisampledTexture& other);
+
+  /// @param b the ProgramBuilder used to construct the AST types
+  /// @returns the constructed ast::Type node for the given type
+  ast::Type* Build(ProgramBuilder& b) const override;
+
+#ifndef NDEBUG
+  /// @returns a string representation of the type, for debug purposes only
+  std::string String() const override;
+#endif  // NDEBUG
+};
+
 /// `texture_multisampled_D<T>` type
 struct MultisampledTexture : public Castable<MultisampledTexture, Texture> {
   /// Constructor
@@ -548,6 +572,11 @@ class TypeManager {
   /// @return a DepthTexture type. Repeated calls with the same arguments will
   /// return the same pointer.
   const spirv::DepthTexture* DepthTexture(ast::TextureDimension d);
+  /// @param d the texture dimensions
+  /// @return a DepthMultisampledTexture type. Repeated calls with the same
+  /// arguments will return the same pointer.
+  const spirv::DepthMultisampledTexture* DepthMultisampledTexture(
+      ast::TextureDimension d);
   /// @param d the texture dimensions
   /// @param t the multisampled texture type
   /// @return a MultisampledTexture type. Repeated calls with the same arguments

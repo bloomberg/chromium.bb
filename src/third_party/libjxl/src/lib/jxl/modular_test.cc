@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #include <stdint.h>
 #include <stdio.h>
@@ -135,7 +126,7 @@ TEST(ModularTest, RoundtripLossy16) {
 
 TEST(ModularTest, RoundtripExtraProperties) {
   constexpr size_t kSize = 250;
-  Image image(kSize, kSize, /*maxval=*/255, 3);
+  Image image(kSize, kSize, /*bitdepth=*/8, 3);
   ModularOptions options;
   options.max_properties = 4;
   options.predictor = Predictor::Zero;
@@ -151,7 +142,7 @@ TEST(ModularTest, RoundtripExtraProperties) {
   BitWriter writer;
   ASSERT_TRUE(ModularGenericCompress(image, options, &writer));
   writer.ZeroPadToByte();
-  Image decoded(kSize, kSize, /*maxval=*/255, image.channel.size());
+  Image decoded(kSize, kSize, /*bitdepth=*/8, image.channel.size());
   for (size_t i = 0; i < image.channel.size(); i++) {
     const Channel& ch = image.channel[i];
     decoded.channel[i] = Channel(ch.w, ch.h, ch.hshift, ch.vshift);

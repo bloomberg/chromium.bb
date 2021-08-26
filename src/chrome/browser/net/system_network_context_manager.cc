@@ -75,7 +75,7 @@
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/ash/policy/core/browser_policy_connector_chromeos.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/net/dhcp_wpad_url_client.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -165,8 +165,8 @@ network::mojom::HttpAuthDynamicParamsPtr CreateHttpAuthDynamicParams(
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // TODO: Use KerberosCredentialsManager to determine whether Kerberos is
   // enabled instead of relying directly on the preference.
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  policy::BrowserPolicyConnectorAsh* connector =
+      g_browser_process->platform_part()->browser_policy_connector_ash();
   auth_dynamic_params->allow_gssapi_library_load =
       connector->IsActiveDirectoryManaged() ||
       local_state->GetBoolean(prefs::kKerberosEnabled);
@@ -195,6 +195,18 @@ bool ShouldUseBuiltinCertVerifier(PrefService* local_state) {
   // verifier will be used.
   return base::FeatureList::IsEnabled(
       net::features::kCertVerifierBuiltinFeature);
+}
+#endif
+
+#if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
+// TODO(https://crbug.com/1228958): update function with enterprise policy for
+// Chrome root store usage once this is created.
+bool ShouldUseChromeRootStore(PrefService* local_state) {
+  // Note: intentionally checking the feature state here rather than falling
+  // back to ChromeRootImpl::kRootDefault, as browser-side network context
+  // initializition for TrialComparisonCertVerifier depends on knowing which
+  // verifier will be used.
+  return base::FeatureList::IsEnabled(net::features::kChromeRootStoreUsed);
 }
 #endif
 
@@ -526,8 +538,9 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(
       }
       log_list_mojo.push_back(std::move(log_info));
     }
-    network_service->UpdateCtLogList(std::move(log_list_mojo),
-                                     base::GetBuildTime());
+    network_service->UpdateCtLogList(
+        std::move(log_list_mojo),
+        certificate_transparency::GetLogListTimestamp());
   }
 #endif
 
@@ -692,6 +705,15 @@ void SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(
                 kBuiltin
           : cert_verifier::mojom::CertVerifierCreationParams::CertVerifierImpl::
                 kSystem;
+#endif
+
+#if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
+  cert_verifier_creation_params->use_chrome_root_store =
+      ShouldUseChromeRootStore(local_state_)
+          ? cert_verifier::mojom::CertVerifierCreationParams::ChromeRootImpl::
+                kRootChrome
+          : cert_verifier::mojom::CertVerifierCreationParams::ChromeRootImpl::
+                kRootSystem;
 #endif
 }
 

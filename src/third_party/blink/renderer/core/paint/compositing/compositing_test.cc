@@ -2097,6 +2097,63 @@ TEST_P(CompositingSimTest, ChangingContentsOpaqueForTextRequiresFullUpdate) {
   EXPECT_FALSE(CcLayerByDOMElementId("target")->contents_opaque_for_text());
 }
 
+TEST_P(CompositingSimTest, ContentsOpaqueForTextWithSubpixelSizeSimpleBg) {
+  InitializeWithHTML(R"HTML(
+      <!DOCTYPE html>
+      <div id="target" style="will-change: transform; background: white;
+                              width: 100.6px; height: 10.3px">
+        TEXT
+      </div>
+  )HTML");
+  Compositor().BeginFrame();
+  auto* cc_layer = CcLayerByDOMElementId("target");
+  // In CompositeAfterPaint, we adjust visual rect of the DrawingDisplayItem
+  // with simple painting to the bounds of the painting.
+  EXPECT_EQ(gfx::Size(101, 10), cc_layer->bounds());
+  EXPECT_TRUE(cc_layer->contents_opaque());
+  EXPECT_TRUE(cc_layer->contents_opaque_for_text());
+}
+
+TEST_P(CompositingSimTest, ContentsOpaqueForTextWithSubpixelSizeComplexBg) {
+  InitializeWithHTML(R"HTML(
+      <!DOCTYPE html>
+      <div id="target" style="will-change: transform; background: white;
+                              border: 2px inset blue;
+                              width: 100.6px; height: 10.3px">
+        TEXT
+      </div>
+  )HTML");
+  Compositor().BeginFrame();
+  auto* cc_layer = CcLayerByDOMElementId("target");
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    EXPECT_EQ(gfx::Size(105, 15), cc_layer->bounds());
+    EXPECT_FALSE(cc_layer->contents_opaque());
+  } else {
+    // Pre-CAP always pixel-snaps composited layer bounds, which might be
+    // incorrect in some corner cases where we don't pixel-snap painting.
+    EXPECT_EQ(gfx::Size(105, 14), cc_layer->bounds());
+    EXPECT_TRUE(cc_layer->contents_opaque());
+  }
+  EXPECT_TRUE(cc_layer->contents_opaque_for_text());
+}
+
+TEST_P(CompositingSimTest, ContentsOpaqueForTextWithPartialBackground) {
+  // This test works only with the new text opaque algorithm.
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+
+  InitializeWithHTML(R"HTML(
+      <!DOCTYPE html>
+      <div id="target" style="will-change: transform; padding: 10px">
+        <div style="background: white">TEXT</div>
+      </div>
+  )HTML");
+  Compositor().BeginFrame();
+  auto* cc_layer = CcLayerByDOMElementId("target");
+  EXPECT_FALSE(cc_layer->contents_opaque());
+  EXPECT_TRUE(cc_layer->contents_opaque_for_text());
+}
+
 TEST_P(CompositingSimTest, FullCompositingUpdateReasons) {
   InitializeWithHTML(R"HTML(
       <!DOCTYPE html>
@@ -2393,6 +2450,42 @@ TEST_P(CompositingSimTest, SolidColorLayersWithSnapping) {
   EXPECT_TRUE(snap_up->GetRecordingSourceForTesting()->is_solid_color());
 }
 
+TEST_P(CompositingSimTest, SolidColorLayerWithSubpixelTransform) {
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+
+  InitializeWithHTML(R"HTML(
+      <!DOCTYPE html>
+      <style>
+        #forceCompositing {
+          position: absolute;
+          width: 100px;
+          height: 100px;
+          will-change: transform;
+        }
+        #target {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 60.9px;
+          height: 60.1px;
+          transform: translate(0.4px, 0.6px);
+          background: blue;
+        }
+      </style>
+      <div id="forceCompositing"></div>
+      <div id="target"></div>
+  )HTML");
+
+  Compositor().BeginFrame();
+
+  auto* target =
+      static_cast<const cc::PictureLayer*>(CcLayerByDOMElementId("target"));
+  EXPECT_TRUE(target->GetRecordingSourceForTesting()->is_solid_color());
+  EXPECT_NEAR(0.4, target->offset_to_transform_parent().x(), 0.001);
+  EXPECT_NEAR(0.6, target->offset_to_transform_parent().y(), 0.001);
+}
+
 // While not required for correctness, it is important for performance (e.g.,
 // the MotionMark Focus benchmark) that we do not decomposite effect nodes (see:
 // |PaintArtifactCompositor::DecompositeEffect|) when the author has specified
@@ -2422,6 +2515,57 @@ TEST_P(CompositingSimTest, EffectCompositedWith3DTransform) {
   EXPECT_TRUE(filter_effect);
   EXPECT_EQ(filter_effect->opacity, 1.f);
   EXPECT_FALSE(filter_effect->filters.IsEmpty());
+}
+
+// The main thread will not have a chance to update the painted content of an
+// animation running on the compositor, so ensure the cc::Layer with animating
+// opacity has content when starting the animation, even if the opacity is
+// initially 0.
+TEST_P(CompositingSimTest, CompositorAnimationOfOpacityHasPaintedContent) {
+  InitializeWithHTML(R"HTML(
+      <!DOCTYPE html>
+      <style>
+        @keyframes opacity {
+          0% { opacity: 0; }
+          99% { opacity: 0; }
+          100% { opacity: 0.5; }
+        }
+        #animation {
+          animation-name: opacity;
+          animation-duration: 999s;
+          width: 100px;
+          height: 100px;
+          background: lightblue;
+        }
+      </style>
+      <div id="animation"></div>
+  )HTML");
+  Compositor().BeginFrame();
+  EXPECT_TRUE(CcLayerByDOMElementId("animation")->DrawsContent());
+}
+
+TEST_P(CompositingSimTest, CompositorAnimationOfNonInvertibleTransform) {
+  InitializeWithHTML(R"HTML(
+      <!DOCTYPE html>
+      <style>
+        @keyframes anim {
+          0% { transform: scale(0); }
+          99% { transform: scale(0); }
+          100% { transform: scale(1); }
+        }
+        #animation {
+          animation-name: anim;
+          animation-duration: 999s;
+          width: 100px;
+          height: 100px;
+          background: lightblue;
+        }
+      </style>
+      <div id="animation"></div>
+  )HTML");
+  Compositor().BeginFrame();
+  EXPECT_TRUE(CcLayerByDOMElementId("animation"));
+  EXPECT_TRUE(CcLayerByDOMElementId("animation")->DrawsContent());
 }
 
 }  // namespace blink

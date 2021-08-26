@@ -36,6 +36,7 @@
 #include "quic/core/quic_alarm.h"
 #include "quic/core/quic_alarm_factory.h"
 #include "quic/core/quic_blocked_writer_interface.h"
+#include "quic/core/quic_connection_context.h"
 #include "quic/core/quic_connection_id.h"
 #include "quic/core/quic_connection_id_manager.h"
 #include "quic/core/quic_connection_stats.h"
@@ -1201,10 +1202,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   bool is_processing_packet() const { return framer_.is_processing_packet(); }
 
-  bool use_encryption_level_context() const {
-    return use_encryption_level_context_;
-  }
-
   bool HasPendingPathValidation() const;
 
   QuicPathValidationContext* GetPathValidationContext() const;
@@ -1225,9 +1222,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   void SetSourceAddressTokenToSend(absl::string_view token);
 
   void SendPing() {
-    SendPingAtLevel(use_encryption_level_context_
-                        ? framer().GetEncryptionLevelToSendApplicationData()
-                        : encryption_level_);
+    SendPingAtLevel(framer().GetEncryptionLevelToSendApplicationData());
   }
 
   virtual std::vector<QuicConnectionId> GetActiveServerConnectionIds() const;
@@ -1249,8 +1244,11 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Instantiates connection ID manager.
   void CreateConnectionIdManager();
 
-  bool donot_write_mid_packet_processing() const {
-    return donot_write_mid_packet_processing_;
+  QuicConnectionContext* context() { return &context_; }
+  const QuicConnectionContext* context() const { return &context_; }
+
+  void set_tracer(std::unique_ptr<QuicConnectionTracer> tracer) {
+    context_.tracer.swap(tracer);
   }
 
  protected:
@@ -1849,6 +1847,8 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   bool ShouldSetRetransmissionAlarmOnPacketSent(bool in_flight,
                                                 EncryptionLevel level) const;
 
+  QuicConnectionContext context_;
+
   QuicFramer framer_;
 
   // Contents received in the current packet, especially used to identify
@@ -2235,8 +2235,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // True if we are currently processing OnRetransmissionTimeout.
   bool in_on_retransmission_time_out_ = false;
 
-  const bool use_encryption_level_context_;
-
   QuicPathValidator path_validator_;
 
   // Stores information of a path which maybe used as default path in the
@@ -2261,9 +2259,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   bool validate_client_addresses_ = false;
 
   bool support_multiple_connection_ids_ = false;
-
-  const bool donot_write_mid_packet_processing_ =
-      GetQuicReloadableFlag(quic_donot_write_mid_packet_processing);
 
   // Indicates whether we should proactively validate peer address on a
   // PATH_CHALLENGE received.

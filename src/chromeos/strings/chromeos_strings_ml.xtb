@@ -14,6 +14,7 @@
 <translation id="1204296502688602597">DNS പ്രതികരണ സമയം</translation>
 <translation id="123124571410524056">പോർട്ടൽ ഉണ്ടെന്ന് സംശയിക്കുന്നു</translation>
 <translation id="1238612778414822719">HTTPS പ്രതികരണ സമയം</translation>
+<translation id="1264369926465113395">Chromebook-ന്റെ സ്രഷ്‌ടാക്കൾക്കുള്ള പുതിയ ഡിജിറ്റൽ മാഗസിൻ പരിശോധിക്കുക</translation>
 <translation id="1270369111467284986">ക്യാപ്റ്റീവ് പോർട്ടൽ ആണെന്ന് സംശയിക്കുന്നു</translation>
 <translation id="1290331692326790741">ദുർബലമായ സിഗ്നൽ</translation>
 <translation id="1314565355471455267">Android VPN</translation>
@@ -34,7 +35,9 @@
 <translation id="1510238584712386396">ലോഞ്ചർ</translation>
 <translation id="1600964289716072707">സ്കാനറിൽ മറ്റൊരു പേജ് വയ്‌ക്കുക, പേജ് ചേർക്കാൻ സ്‌കാൻ ചെയ്യുക തിരഞ്ഞെടുക്കുക.</translation>
 <translation id="1621067168122174824">ചാർജ് ടെസ്റ്റ് റൺ ചെയ്യുക</translation>
+<translation id="1639239467298939599">ലോഡുചെയ്യുന്നു</translation>
 <translation id="1641857168437328880">ഡോക്യുമെന്റ് ഫീഡർ (ഒരു വശമുള്ളത്)</translation>
+<translation id="1643449475550628585">വാൾപേപ്പർ ചിത്രം ദിവസേന മാറ്റുക</translation>
 <translation id="1644574205037202324">ചരിത്രം</translation>
 <translation id="1662989795263954667">പ്രിന്റ് ജോലി നിർത്തി - മഷിയില്ല</translation>
 <translation id="1703835215927279855">ലെറ്റർ</translation>
@@ -65,7 +68,6 @@
 <translation id="2224337661447660594">ഇന്റർനെറ്റ് ഇല്ല</translation>
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="225692081236532131">സജീവമാക്കല്‍ സ്റ്റാറ്റസ്</translation>
-<translation id="2294675138977897428">ഇതർനെറ്റ് കണക്ഷനൊന്നും കണ്ടെത്തിയില്ല</translation>
 <translation id="2326139988748364651"><ph name="RESOLUTION_VALUE" /> dpi</translation>
 <translation id="2338501278241028356">സമീപത്തുള്ള ഉപകരണങ്ങൾ കണ്ടെത്താൻ Bluetooth ഓണാക്കുക</translation>
 <translation id="2364498172489649528">വിജയിച്ചു</translation>
@@ -75,9 +77,11 @@
 <translation id="2448312741937722512">തരം</translation>
 <translation id="2461822463642141190">നിലവിൽ</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
+<translation id="2505327257735685095">നിലവിലെ വാൾപേപ്പർ ചിത്രം റീഫ്രഷ് ചെയ്യുക</translation>
 <translation id="2517472476991765520">സ്‌കാൻ ചെയ്യുക</translation>
 <translation id="2570743873672969996"><ph name="TEST_NAME" /> പരീക്ഷണം റൺ ചെയ്യുന്നു...</translation>
 <translation id="2585245331261708204">Chrome OS-ൽ പുതിയത്</translation>
+<translation id="2619761439309613843">ദിവസവുമുള്ള പുതുക്കൽ</translation>
 <translation id="2620436844016719705">സിസ്റ്റം</translation>
 <translation id="2740531572673183784">ശരി</translation>
 <translation id="2751739896257479635">രണ്ടാം ഘട്ട EAP പരിശോധിച്ചുറപ്പിക്കൽ</translation>
@@ -87,7 +91,6 @@
 <translation id="2862104018715411648">നിങ്ങളുടെ ഡോക്യുമെന്റ് സ്‌കാനറിൽ വയ്ക്കുക, ആരംഭിക്കാൻ സ്‌കാൻ ചെയ്യുക തിരഞ്ഞെടുക്കുക</translation>
 <translation id="2872961005593481000">അടയ്ക്കുക</translation>
 <translation id="2878387241690264070"><ph name="NUM_SECONDS" /> സെക്കൻഡിൽ <ph name="RATE" /> ഡിസ്ചാർജ് ചെയ്തു.</translation>
-<translation id="2983662233540284543">ഒരു ഗെയിം സൃഷ്ടാവിൽ നിന്ന് അറിയുകയും ഗെയിം ഡിസൈൻ ആപ്പുകൾ നേടുകയും മറ്റും ചെയ്യുക</translation>
 <translation id="3008341117444806826">പുതുക്കിയെടുക്കുക</translation>
 <translation id="3009958530611748826">സംരക്ഷിക്കാൻ ഒരു ഫോൾഡർ തിരഞ്ഞെടുക്കുക</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" />mA</translation>
@@ -101,6 +104,7 @@
 <translation id="3188257591659621405">എൻ്റെ ഫയലുകൾ</translation>
 <translation id="3199982728237701504">ഡോക്യുമെന്റ് ഫീഡർ (രണ്ട് വശമുള്ളത്)</translation>
 <translation id="3226405216343213872">സ്‌കാനറുകൾ തിരയുന്നു</translation>
+<translation id="3228433892370472777">ഡിഫോൾട്ട് കണക്ഷൻ</translation>
 <translation id="3246869037381808805">1 ദിവസം മുമ്പുള്ള പ്രിന്റ് ജോലികൾ നീക്കം ചെയ്യും</translation>
 <translation id="3268178239013324452">പ്രിന്റ് ചെയ്യാനായില്ല - വാതിൽ തുറന്നിരിക്കുന്നു</translation>
 <translation id="3283504360622356314">{0,plural, =1{ഫയൽ എഡിറ്റ് ചെയ്യുക}other{ഫയലുകൾ എഡിറ്റ് ചെയ്യുക}}</translation>
@@ -117,10 +121,13 @@
 <translation id="3488065109653206955">ഭാഗികമായി പ്രവര്‍ത്തനക്ഷമമാക്കി</translation>
 <translation id="3527036260304016759">പ്രിന്റ് ചെയ്യാനായില്ല - അജ്ഞാതമായ പിശക്</translation>
 <translation id="3532980081107202182">ഏകദേശം <ph name="MIN_REMAINING" /> മിനിറ്റ് ശേഷിക്കുന്നു</translation>
+<translation id="3540383942695635079">MAC വിലാസം</translation>
 <translation id="357889014807611375">മീറ്റർ ചെയ്‌ത വൈഫൈ</translation>
+<translation id="3582041541988388905"><ph name="NETWORK_NAME" /> കണക്ഷനുകളൊന്നും കണ്ടെത്തിയില്ല</translation>
 <translation id="3595596368722241419">ബാറ്ററി നിറഞ്ഞു</translation>
 <translation id="360565022852130722">ദുർബലമായ WEP 802.1x പ്രോട്ടോക്കോൾ ഉപയോഗിച്ചാണ് വെെഫെെ നെറ്റ്‌വർക്ക് സുരക്ഷിതമാക്കിയിരിക്കുന്നത്</translation>
 <translation id="3689839747745352263"><ph name="TEST_NAME" /> പരിശോധന</translation>
+<translation id="3708186454126126312">മുമ്പ് കണക്റ്റ് ചെയ്തവ</translation>
 <translation id="373232531963562220">{PAGE_NUMBER,plural, =0{പേജ് വീണ്ടും സ്‌കാൻ ചെയ്യുക}=1{{PAGE_NUMBER}-ാം പേജ് വീണ്ടും സ്‌കാൻ ചെയ്യുക}other{{PAGE_NUMBER}-ാം പേജ് വീണ്ടും സ്‌കാൻ ചെയ്യുക}}</translation>
 <translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★ (<ph name="AGGREGATED_COUNT" /> റിവ്യൂകൾ)</translation>
 <translation id="3748026146096797577">കണക്റ്റുചെയ്‌തിട്ടില്ല</translation>
@@ -163,6 +170,7 @@
 <translation id="4479639480957787382">എതെര്‍‌നെറ്റ്</translation>
 <translation id="4483049906298469269">നോൺ-ഡിഫോൾട്ട് നെറ്റ്‌വർക്ക് ഗേറ്റ്‍വേ പിംഗ് ചെയ്യാനായില്ല</translation>
 <translation id="4511264077854731334">പോർട്ടൽ</translation>
+<translation id="4536864596629708641">IP കോൺഫിഗറേഷൻ</translation>
 <translation id="4548483925627140043">സിഗ്‌നൽ കണ്ടെത്തിയില്ല</translation>
 <translation id="455835558791489930"><ph name="CHARGE_VALUE" />mAh ബാറ്ററി</translation>
 <translation id="4562494484721939086">സേവനമില്ല</translation>
@@ -171,6 +179,7 @@
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, ആകെയുള്ള <ph name="TOTAL_PAGE_NUMBER" /> എണ്ണത്തിൽ <ph name="PRINTED_PAGE_NUMBER" /> എണ്ണം. പ്രിന്റ് ജോലി റദ്ദാക്കാൻ എന്റർ അമർത്തുക.</translation>
 <translation id="4646949265910132906">സുരക്ഷിതമായ വൈഫൈ കണക്ഷൻ</translation>
 <translation id="4652335678334611408">സെഷൻ ലോഗ് സംരക്ഷിക്കുക</translation>
+<translation id="4654549501020883054">ദിവസേന മാറ്റുക</translation>
 <translation id="4665014895760275686">നിര്‍മ്മാതാവ്</translation>
 <translation id="467510802200863975">പാസ്‌വേഡുകൾ പൊരുത്തപ്പെടുന്നില്ല</translation>
 <translation id="467715984478005772">ഫയർവാൾ ഉണ്ടെന്ന് സംശയിക്കുന്നു</translation>
@@ -194,6 +203,7 @@
 <translation id="4891842000192098784">സമ്മർദ്ദം</translation>
 <translation id="4917385247580444890">ശക്തം</translation>
 <translation id="4917889632206600977">പ്രിന്റ് ജോലി നിർത്തി - പേപ്പറില്ല</translation>
+<translation id="491836528011451486">നിങ്ങളുടെ ഡോക്യുമെന്റ് സ്‌കാനറിൽ വയ്‌ക്കുക, പേജ് <ph name="CURRENT_PAGE" /> സ്കാൻ ചെയ്ത് മാറ്റി പകരം പുതിയത് വെക്കാൻ വീണ്ടും സ്കാൻ ചെയ്യുക തിരഞ്ഞെടുക്കുക.</translation>
 <translation id="4921665434385737356"><ph name="NUM_SECONDS" /> സെക്കന്റിൽ <ph name="RATE" /> ചാർജ് ചെയ്‌തു.</translation>
 <translation id="4932733599132424254">തീയതി</translation>
 <translation id="498186245079027698">സ്കാനർ പരിശോധിച്ച ശേഷം വീണ്ടും ശ്രമിക്കുക. സ്കാൻ ചെയ്ത ഫയലുകൾ സംരക്ഷിക്കാൻ മതിയായ ലോക്കൽ സ്പെയ്‍സ് ഉണ്ടെന്ന് ഉറപ്പാക്കുക.</translation>
@@ -209,9 +219,9 @@
 <translation id="5154917547274118687">മെമ്മറി</translation>
 <translation id="5168185087976003268">ബാറ്ററിയുടെ പ്രവർത്തനക്ഷമത</translation>
 <translation id="5170568018924773124">ഫോള്‍ഡറില്‍ കാണിക്കുക</translation>
-<translation id="519607504553633437">നിങ്ങളുടെ സ്വന്തം ഗെയിമുകൾ ഡിസൈൻ ചെയ്ത് സൃഷ്ടിക്കൂ</translation>
 <translation id="5212543919916444558">എനിക്ക് സഹായിക്കാനാവുന്ന ഒന്നും നിങ്ങളുടെ സ്‌ക്രീനിൽ കണ്ടെത്താനാവുന്നില്ല. എന്നോട് എന്തെങ്കിലും ആവശ്യപ്പെടാൻ മൈക്ക് ടാപ്പ് ചെയ്യുന്നത് പരീക്ഷിക്കൂ.</translation>
 <translation id="5222676887888702881">സൈൻ ഔട്ട് ചെയ്യുക</translation>
+<translation id="5234764350956374838">ഡിസ്മിസ്സ് ചെയ്യുക</translation>
 <translation id="5252456968953390977">റോമിംഗ്</translation>
 <translation id="5264277876637023664">CPU ടെസ്‌റ്റ് റണ്‍ ചെയ്യുക</translation>
 <translation id="5267975978099728568"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="ERROR_STATUS" /></translation>
@@ -242,7 +252,6 @@
 <translation id="5691511426247308406">കുടുംബം</translation>
 <translation id="5701381305118179107">മധ്യഭാഗം</translation>
 <translation id="5707900041990977207"><ph name="TOTAL_PAGES" />-ൽ <ph name="CURRENT_PAGE" /></translation>
-<translation id="5752751666635965375">സ്വന്തം ഗെയിം സൃഷ്ടിക്കൂ</translation>
 <translation id="5760715441271661976">പോര്‍ട്ടല്‍ നില</translation>
 <translation id="5832805196449965646">വ്യക്തിയെ ചേർക്കുക</translation>
 <translation id="583281660410589416">അജ്ഞാതം</translation>
@@ -265,6 +274,7 @@
 <translation id="6106186594183574873">പൂർത്തിയാക്കാൻ നിങ്ങളുടെ പഴയ പാസ്‌വേഡ് നൽകുക</translation>
 <translation id="6108689792487843350">ഗേറ്റ്‌വേയിലേക്ക് എത്താനാകുന്നില്ല</translation>
 <translation id="6122191549521593678">ഓൺലൈൻ</translation>
+<translation id="6125438912510167220">ലിങ്ക് വേഗത</translation>
 <translation id="6137767437444130246">ഉപയോക്തൃ സർട്ടിഫിക്കറ്റ്</translation>
 <translation id="6146993107019042706">പൂർത്തിയാക്കാൻ നിങ്ങളുടെ പുതിയ പാസ്‌വേഡ് നൽകുക</translation>
 <translation id="6147514244879357420">PNG</translation>
@@ -291,6 +301,8 @@
 <translation id="65587193855025101">ഫ്ലാറ്റ്ബെഡ്</translation>
 <translation id="6564646048574748301">പ്രിന്റ് ചെയ്യാനായില്ല - പ്രിന്റർ ലഭ്യമല്ല</translation>
 <translation id="6574762126505704998">ഫിൽ</translation>
+<translation id="6575134580692778371">ക്രമീകരിച്ചിട്ടില്ല</translation>
+<translation id="6596816719288285829">IP വിലാസം</translation>
 <translation id="6603230386432466813">കണക്റ്റ് ചെയ്യാൻ പ്രശ്‌നം നേരിടുന്നുണ്ടോ?</translation>
 <translation id="6618744767048954150">റൺ ചെയ്യുന്നു</translation>
 <translation id="6620487321149975369">നേരിട്ട് നീക്കം ചെയ്തില്ലെങ്കിൽ പ്രിന്റ് ജോലികൾ ചരിത്രത്തിൽ ദൃശ്യമാകും</translation>
@@ -313,13 +325,16 @@
 <translation id="7059230779847288458">ചാർജ് ചെയ്യുന്നു, പൂർത്തിയാകാൻ <ph name="TIME_VALUE" /> ശേഷിക്കുന്നു</translation>
 <translation id="708426984172631313">നിർത്തി</translation>
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
+<translation id="7134436342991564651">{0,plural, =1{നെയിം സെർവർ}other{നെയിം സെർവറുകൾ}}</translation>
 <translation id="7143207342074048698">കണക്റ്റിംഗ്</translation>
 <translation id="7144878232160441200">വീണ്ടും ശ്രമിക്കുക</translation>
 <translation id="714876143603641390">LAN കണക്റ്റിവിറ്റി</translation>
 <translation id="7162487448488904999">ഗാലറി</translation>
 <translation id="7172721935181587524">ഒരു ചിത്രം</translation>
 <translation id="7177485034254901881">ഈ <ph name="DEVICE_TYPE" /> മാനേജ് ചെയ്യുന്നത് <ph name="MANAGER" /> ആണ്. അഡ്മിൻമാർ ഉപകരണം വിദൂരമായി കോൺഫിഗർ ചെയ്‌തേക്കാം.</translation>
+<translation id="7180611975245234373">പുതുക്കുക</translation>
 <translation id="7216409898977639127">സെല്ലുലാര്‍‌ സേവനദാതാവ്</translation>
+<translation id="7257889006063274246">പേജ് <ph name="CURRENT_PAGE" /> നീക്കം ചെയ്യണമെന്ന് നിങ്ങൾക്ക് തീർച്ചയാണോ?</translation>
 <translation id="7271040990581020067">സ്‌കാനർ നിലവിൽ ഉപയോഗത്തിലാണ്. പിന്നീട് വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7287310195820267359">വാൾപേപ്പർ ശേഖരങ്ങൾ</translation>
@@ -353,9 +368,11 @@
 <translation id="7835501727204647447">CloudReady ഇൻസ്‌റ്റാൾ ചെയ്യുക</translation>
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7882358943899516840">പ്രൊവൈഡര്‍ തരം:</translation>
+<translation id="7895471513946376273">ഡ്രോയിംഗ്, ഡിസൈൻ ടൂളുകൾ കണ്ടെത്തുക</translation>
 <translation id="7936303884198020182">നെയിം സെർവറുകളൊന്നും കണ്ടെത്തിയില്ല</translation>
 <translation id="7960831585769876809">താപനില</translation>
 <translation id="7994702968232966508">EAP രീതി</translation>
+<translation id="8020238979854764615">ഒരു പിശകുണ്ടായി. മറ്റ് ചിത്രങ്ങൾ തിരഞ്ഞെടുത്ത് വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="802154636333426148">ഡൗൺലോഡ് പരാജയപ്പെട്ടു</translation>
 <translation id="8041089156583427627">ഫീഡ്ബാക്ക് അയയ്ക്കുക</translation>
 <translation id="8075838845814659848">ശേഷിക്കുന്ന ചാർജ്</translation>
@@ -367,7 +384,9 @@
 <translation id="8214184102975786227">ഒന്നിലധികം പേജുകൾ ഒറ്റ PDF ആയി സ്‌കാൻ ചെയ്യുക</translation>
 <translation id="8230672074305416752">ഡിഫോൾട്ട് നെറ്റ്‌വർക്ക് ഗേറ്റ്‍വേ പിംഗ് ചെയ്യാനായില്ല</translation>
 <translation id="8246209727385807362">അജ്ഞാത കാരിയർ</translation>
+<translation id="8286154143153872371">വാൾപേപ്പർ കാണാൻ ഒരു നെറ്റ്‌വർക്കിലേക്ക് കണക്റ്റ് ചെയ്‌ത് പേജ് റീലോഡ് ചെയ്യുക.</translation>
 <translation id="8291967909914612644">ഹോം പ്രൊവൈഡറിന്റെ രാജ്യം</translation>
+<translation id="829270796093605079">ഡിസൈൻ ടൂളുകൾ കണ്ടെത്തുക</translation>
 <translation id="8294431847097064396">ഉറവിടം</translation>
 <translation id="8297006494302853456">ദുര്‍ബലം</translation>
 <translation id="8302368968391049045">HTTPS ഫയര്‍വാള്‍</translation>
@@ -391,6 +410,7 @@
 <translation id="8575298406870537639">നിങ്ങളുടെ സേവനദാതാവിന് അവരുടെ നെറ്റ്‌വർക്കിലേക്ക് കണക്റ്റ് ചെയ്യാൻ ഈ ഓപ്‌ഷൻ ആവശ്യമായി വന്നേക്കാം. വിശദാംശങ്ങൾക്ക് നിങ്ങളുടെ സേവനദാതാവുമായി ബന്ധപ്പെടുക.</translation>
 <translation id="8576249514688522074">പ്രവർത്തനമാരംഭിച്ചിട്ടില്ല</translation>
 <translation id="8620617069779373398">റോമിംഗ് നില</translation>
+<translation id="8655295600908251630">ചാനല്‍</translation>
 <translation id="8660881923941176839">പൗണ്ട്</translation>
 <translation id="8675354002693747642">മുമ്പേ പങ്കിട്ട കീ</translation>
 <translation id="871560550817059752">പ്രിന്റ് ചെയ്യാനായില്ല - മഷിയില്ല</translation>
@@ -403,6 +423,7 @@
 <translation id="8798441408945964110">പ്രൊവൈഡറിന്റെ പേര്</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8818152010000655963">വാൾപേപ്പർ</translation>
+<translation id="8834539327799336565">നിലവിൽ കണക്റ്റ് ചെയ്‌തവ</translation>
 <translation id="8845001906332463065">സഹായം നേടുക</translation>
 <translation id="8868741746785112895">GUID</translation>
 <translation id="8881098542468797602">ടെസ്റ്റ് പൂർത്തിയായി</translation>

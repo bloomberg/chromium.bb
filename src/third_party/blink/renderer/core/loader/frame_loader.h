@@ -40,7 +40,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink-forward.h"
-#include "third_party/blink/public/mojom/page_state/page_state.mojom-blink.h"
+#include "third_party/blink/public/mojom/page_state/page_state.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/public/web/web_document_loader.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
@@ -53,7 +53,6 @@
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
 #include "third_party/blink/renderer/core/loader/history_item.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object.h"
 #include "third_party/blink/renderer/platform/loader/fetch/loader_freeze_mode.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
@@ -61,8 +60,9 @@
 namespace blink {
 
 class DocumentLoader;
-class LocalFrame;
+class FetchClientSettingsObject;
 class Frame;
+class LocalFrame;
 class LocalFrameClient;
 class ProgressTracker;
 class ResourceRequest;
@@ -140,6 +140,7 @@ class CORE_EXPORT FrameLoader final {
   void DidExplicitOpen();
 
   String UserAgent() const;
+  String ReducedUserAgent() const;
   absl::optional<blink::UserAgentMetadata> UserAgentMetadata() const;
 
   void DispatchDidClearWindowObjectInMainWorld();
@@ -177,7 +178,8 @@ class CORE_EXPORT FrameLoader final {
 
   void DidFinishSameDocumentNavigation(const KURL&,
                                        WebFrameLoadType,
-                                       HistoryItem*);
+                                       HistoryItem*,
+                                       bool may_restore_scroll_offset);
 
   // This will attempt to detach the current document. It will dispatch unload
   // events and abort XHR requests. Returns true if the frame is ready to
@@ -231,7 +233,9 @@ class CORE_EXPORT FrameLoader final {
 
  private:
   bool AllowRequestForThisFrame(const FrameLoadRequest&);
-  WebFrameLoadType DetermineFrameLoadType(const KURL& url, WebFrameLoadType);
+  WebFrameLoadType HandleInitialEmptyDocumentReplacementIfNeeded(
+      const KURL& url,
+      WebFrameLoadType);
 
   bool ShouldPerformFragmentNavigation(bool is_form_submission,
                                        const String& http_method,

@@ -149,16 +149,17 @@ void PostFilter::ApplySuperResThreaded() {
   int num_threads = thread_pool_->num_threads() + 1;
   // The number of rows that will be processed by each thread in the thread pool
   // (other than the current thread).
-  int thread_pool_rows = height_ / num_threads;
+  int thread_pool_rows = frame_header_.height / num_threads;
   thread_pool_rows = std::max(thread_pool_rows, 1);
   // Make rows of Y plane even when there is subsampling for the other planes.
   if ((thread_pool_rows & 1) != 0 && subsampling_y_[kPlaneU] != 0) {
     ++thread_pool_rows;
   }
   // Adjust the number of threads to what we really need.
-  num_threads = Clip3(height_ / thread_pool_rows, 1, num_threads);
+  num_threads = Clip3(frame_header_.height / thread_pool_rows, 1, num_threads);
   // For the current thread, we round up to process all the remaining rows.
-  int current_thread_rows = height_ - thread_pool_rows * (num_threads - 1);
+  int current_thread_rows =
+      frame_header_.height - thread_pool_rows * (num_threads - 1);
   // Make rows of Y plane even when there is subsampling for the other planes.
   if ((current_thread_rows & 1) != 0 && subsampling_y_[kPlaneU] != 0) {
     ++current_thread_rows;

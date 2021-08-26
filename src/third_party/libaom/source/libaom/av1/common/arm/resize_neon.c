@@ -12,10 +12,10 @@
 #include <arm_neon.h>
 #include <assert.h>
 
+#include "aom_dsp/arm/mem_neon.h"
+#include "aom_dsp/arm/transpose_neon.h"
 #include "av1/common/resize.h"
-#include "av1/common/arm/mem_neon.h"
 #include "av1/common/arm/convolve_neon.h"
-#include "av1/common/arm/transpose_neon.h"
 #include "config/av1_rtcd.h"
 #include "config/aom_scale_rtcd.h"
 

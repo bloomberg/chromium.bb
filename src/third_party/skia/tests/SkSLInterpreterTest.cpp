@@ -527,7 +527,7 @@ DEF_TEST(SkSLInterpreterCompound, r) {
 
     auto build = [&](const SkSL::FunctionDefinition* fn) {
         skvm::Builder b;
-        skvm::Ptr uniformPtr = b.uniform();
+        skvm::UPtr uniformPtr = b.uniform();
         skvm::Val uniforms[16];
         for (int i = 0; i < 16; ++i) {
             uniforms[i] = b.uniform32(uniformPtr, i * sizeof(int)).id;
@@ -635,14 +635,6 @@ DEF_TEST(SkSLInterpreterRestrictLoops, r) {
     // while and do-while loops are not allowed
     expect_failure(r, "void main(inout float x) { while (x < 1) { x++; } }");
     expect_failure(r, "void main(inout float x) { do { x++; } while (x < 1); }");
-}
-
-DEF_TEST(SkSLInterpreterRestrictFunctionCalls, r) {
-    // Ensure that simple recursion is not allowed
-    expect_failure(r, "float main() { return main() + 1; }");
-
-    // Ensure that calls to undefined functions are not allowed (to prevent mutual recursion)
-    expect_failure(r, "float foo(); float bar() { return foo(); } float foo() { return bar(); }");
 }
 
 DEF_TEST(SkSLInterpreterReturnThenCall, r) {

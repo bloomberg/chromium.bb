@@ -61,6 +61,8 @@ class DefaultSearchManager {
   static const char kCreatedByPolicy[];
   static const char kDisabledByPolicy[];
   static const char kCreatedFromPlayAPI[];
+  static const char kPreconnectToSearchUrl[];
+  static const char kIsActive[];
 
   enum Source {
     // Default search engine chosen either from prepopulated engines set for

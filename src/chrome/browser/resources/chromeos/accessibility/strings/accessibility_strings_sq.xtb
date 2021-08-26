@@ -424,6 +424,8 @@ Për të hapur menynë e shfletuesit Chrome, shtyp Alt+F.</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3813387282697781382">Korale e çelur</translation>
 <translation id="3816633764618089385">Media tjetër</translation>
+<translation id="3840823741487267909">Shkurtim</translation>
+<translation id="3841319830220785495">Zëri i parazgjedhur natyral</translation>
 <translation id="385383972552776628">Hap faqen e opsioneve</translation>
 <translation id="3856075812838139784">Vetëm për lexim</translation>
 <translation id="3857141338659865495">Gurkali e mesme</translation>
@@ -451,6 +453,7 @@ Për të hapur menynë e shfletuesit Chrome, shtyp Alt+F.</translation>
 <translation id="4021716437419160885">Lëviz poshtë</translation>
 <translation id="4035381225449278841">Pranverë</translation>
 <translation id="4047216625641135770">Shenjë</translation>
+<translation id="4047910800766704982">Mund të përdorësh një zë natyral, të ngjashëm me të njeriut, kur pajisja jote është në linjë. Teksti do të dërgohet te Google për përpunim. Këtë mund ta çaktivizosh në çdo kohë te "Cilësimet".</translation>
 <translation id="4053520724192563562">E gjelbër limoni</translation>
 <translation id="4054936709456751127">sts</translation>
 <translation id="4058278702844053247">Një ngarkim faqeje në vazhdim</translation>
@@ -686,6 +689,7 @@ Për të hapur menynë e shfletuesit Chrome, shtyp Alt+F.</translation>
 <translation id="5748623122140342504">Titulli i mëparshëm i nivelit 5</translation>
 <translation id="5760594853119905566">Shtojcë</translation>
 <translation id="5761219715606611783">Shumë mirë! Ke mësuar bazat e gjesteve të prekjes në ChromeVox. Mund ta shfletosh nga e para udhëzuesin ose dil nga ai duke përdorur butonat më poshtë.</translation>
+<translation id="5776001898637896684">Shtesa e tekstit-në-ligjërim e Google Enhanced Network</translation>
 <translation id="5805940204952508776">Trokit me dy gishta</translation>
 <translation id="5819072574982403430">Artikull pemë</translation>
 <translation id="5822819874379903994">Gurkali e errët</translation>
@@ -908,6 +912,7 @@ Për të hapur menynë e shfletuesit Chrome, shtyp Alt+F.</translation>
 <translation id="743783356331413498">Shembull</translation>
 <translation id="7439060726180460871">Direktoria</translation>
 <translation id="744163271241493234">pwded</translation>
+<translation id="7465123027577412805">Të përdoret zëri natyral?</translation>
 <translation id="7484805699335881122">Ndrysho tonalitetin kur flet lloje elementi dhe tekst të cituar, të fshirë, të trashësuar, me kllapa ose me shkronja të mëdha.</translation>
 <translation id="7491962110804786152">tab</translation>
 <translation id="7492497529767769458">Lëviz te seksioni tjetër. Shembujt përfshijnë "Tabakanë e statusit" dhe "Nisësin".</translation>
@@ -978,6 +983,7 @@ Për të hapur menynë e shfletuesit Chrome, shtyp Alt+F.</translation>
 <translation id="7968340748835037139">E gjelbër e errët</translation>
 <translation id="7972507042926081808">Çokollatë</translation>
 <translation id="7974390230414479278">Artikulli i menysë</translation>
+<translation id="7990863024647916394"><ph name="DISPLAY_NAME" /> Zëri<ph name="COUNT" /></translation>
 <translation id="8004507136466386272">Fjalët</translation>
 <translation id="8004512796067398576">Rritje</translation>
 <translation id="8007540374018858731">h3</translation>

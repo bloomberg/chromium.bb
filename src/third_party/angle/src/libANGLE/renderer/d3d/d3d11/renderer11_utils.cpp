@@ -1239,11 +1239,8 @@ IntelDriverVersion GetIntelDriverVersion(const Optional<LARGE_INTEGER> driverVer
     if (!driverVersion.valid())
         return IntelDriverVersion(0);
 
-    // According to http://www.intel.com/content/www/us/en/support/graphics-drivers/000005654.html,
-    // only the fourth part is necessary since it stands for the driver specific unique version
-    // number.
-    WORD part = LOWORD(driverVersion.value().LowPart);
-    return IntelDriverVersion(part);
+    DWORD lowPart = driverVersion.value().LowPart;
+    return IntelDriverVersion(HIWORD(lowPart) * 10000 + LOWORD(lowPart));
 }
 
 }  // anonymous namespace
@@ -1290,9 +1287,9 @@ unsigned int GetReservedFragmentUniformVectors(D3D_FEATURE_LEVEL featureLevel)
     }
 }
 
-gl::Version GetMaximumClientVersion(D3D_FEATURE_LEVEL featureLevel)
+gl::Version GetMaximumClientVersion(const Renderer11DeviceCaps &caps)
 {
-    switch (featureLevel)
+    switch (caps.featureLevel)
     {
         case D3D_FEATURE_LEVEL_11_1:
         case D3D_FEATURE_LEVEL_11_0:
@@ -1301,6 +1298,14 @@ gl::Version GetMaximumClientVersion(D3D_FEATURE_LEVEL featureLevel)
             return gl::Version(3, 0);
 
         case D3D_FEATURE_LEVEL_10_0:
+            if (caps.allowES3OnFL10_0)
+            {
+                return gl::Version(3, 0);
+            }
+            else
+            {
+                return gl::Version(2, 0);
+            }
         case D3D_FEATURE_LEVEL_9_3:
         case D3D_FEATURE_LEVEL_9_2:
         case D3D_FEATURE_LEVEL_9_1:
@@ -1383,8 +1388,9 @@ void GenerateCaps(ID3D11Device *device,
     const gl::FormatSet &allFormats = gl::GetAllSizedInternalFormats();
     for (GLenum internalFormat : allFormats)
     {
-        gl::TextureCaps textureCaps = GenerateTextureFormatCaps(
-            GetMaximumClientVersion(featureLevel), internalFormat, device, renderer11DeviceCaps);
+        gl::TextureCaps textureCaps =
+            GenerateTextureFormatCaps(GetMaximumClientVersion(renderer11DeviceCaps), internalFormat,
+                                      device, renderer11DeviceCaps);
         textureCapsMap->insert(internalFormat, textureCaps);
 
         if (gl::GetSizedInternalFormatInfo(internalFormat).compressed)
@@ -1599,6 +1605,7 @@ void GenerateCaps(ID3D11Device *device,
     // https://docs.microsoft.com/en-us/windows/desktop/direct3ddxgi/format-support-for-direct3d-11-0-feature-level-hardware
     extensions->floatBlend             = true;
     extensions->framebufferBlitANGLE   = GetFramebufferBlitSupport(featureLevel);
+    extensions->framebufferBlitNV      = extensions->framebufferBlitANGLE;
     extensions->framebufferMultisample = GetFramebufferMultisampleSupport(featureLevel);
     extensions->instancedArraysANGLE   = GetInstancingSupport(featureLevel);
     extensions->instancedArraysEXT     = GetInstancingSupport(featureLevel);
@@ -2426,6 +2433,7 @@ void InitializeFeatures(const Renderer11DeviceCaps &deviceCaps,
     ANGLE_FEATURE_CONDITION(features, mrtPerfWorkaround, true);
     ANGLE_FEATURE_CONDITION(features, zeroMaxLodWorkaround, isFeatureLevel9_3);
     ANGLE_FEATURE_CONDITION(features, useInstancedPointSpriteEmulation, isFeatureLevel9_3);
+    ANGLE_FEATURE_CONDITION(features, allowES3OnFL10_0, false);
 
     // TODO(jmadill): Disable workaround when we have a fixed compiler DLL.
     ANGLE_FEATURE_CONDITION(features, expandIntegerPowExpressions, true);
@@ -2439,22 +2447,28 @@ void InitializeFeatures(const Renderer11DeviceCaps &deviceCaps,
     ANGLE_FEATURE_CONDITION(features, useSystemMemoryForConstantBuffers, isIntel);
 
     ANGLE_FEATURE_CONDITION(features, callClearTwice,
-                            isIntel && isSkylake && capsVersion < IntelDriverVersion(4771));
+                            isIntel && isSkylake && capsVersion >= IntelDriverVersion(160000) &&
+                                capsVersion < IntelDriverVersion(164771));
     ANGLE_FEATURE_CONDITION(features, emulateIsnanFloat,
-                            isIntel && isSkylake && capsVersion < IntelDriverVersion(4542));
-    ANGLE_FEATURE_CONDITION(
-        features, rewriteUnaryMinusOperator,
-        isIntel && (isBroadwell || isHaswell) && capsVersion < IntelDriverVersion(4624));
+                            isIntel && isSkylake && capsVersion >= IntelDriverVersion(160000) &&
+                                capsVersion < IntelDriverVersion(164542));
+    ANGLE_FEATURE_CONDITION(features, rewriteUnaryMinusOperator,
+                            isIntel && (isBroadwell || isHaswell) &&
+                                capsVersion >= IntelDriverVersion(150000) &&
+                                capsVersion < IntelDriverVersion(154624));
 
     ANGLE_FEATURE_CONDITION(features, addMockTextureNoRenderTarget,
-                            isIntel && capsVersion < IntelDriverVersion(4815));
+                            isIntel && capsVersion >= IntelDriverVersion(160000) &&
+                                capsVersion < IntelDriverVersion(164815));
 
     // Haswell/Ivybridge drivers occasionally corrupt (small?) (vertex?) texture data uploads.
     ANGLE_FEATURE_CONDITION(features, setDataFasterThanImageUpload,
                             !(isIvyBridge || isBroadwell || isHaswell));
 
     ANGLE_FEATURE_CONDITION(features, disableB5G6R5Support,
-                            (isIntel && capsVersion < IntelDriverVersion(4539)) || isAMD);
+                            (isIntel && capsVersion >= IntelDriverVersion(150000) &&
+                             capsVersion < IntelDriverVersion(154539)) ||
+                                isAMD);
 
     // TODO(jmadill): Disable when we have a fixed driver version.
     // The tiny stencil texture workaround involves using CopySubresource or UpdateSubresource on a

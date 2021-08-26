@@ -25,11 +25,12 @@ namespace dsp {
 namespace {
 
 template <int bitdepth, typename Pixel>
-void SuperRes_C(const void* /*coefficients*/, void* const source,
+void SuperRes_C(const void* /*coefficients*/,
+                void* LIBGAV1_RESTRICT const source,
                 const ptrdiff_t source_stride, const int height,
                 const int downscaled_width, const int upscaled_width,
-                const int initial_subpixel_x, const int step, void* const dest,
-                ptrdiff_t dest_stride) {
+                const int initial_subpixel_x, const int step,
+                void* LIBGAV1_RESTRICT const dest, ptrdiff_t dest_stride) {
   assert(step <= 1 << kSuperResScaleBits);
   auto* src = static_cast<Pixel*>(source) - DivideBy2(kSuperResFilterTaps);
   auto* dst = static_cast<Pixel*>(dest);

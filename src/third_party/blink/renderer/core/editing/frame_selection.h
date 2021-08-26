@@ -30,7 +30,6 @@
 #include <memory>
 
 #include "base/dcheck_is_on.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/synchronous_mutation_observer.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
@@ -140,7 +139,7 @@ class CORE_EXPORT FrameSelection final
   Document& GetDocument() const;
   LocalFrame* GetFrame() const { return frame_; }
   Element* RootEditableElementOrDocumentElement() const;
-  size_t CharacterIndexForPoint(const IntPoint&) const;
+  wtf_size_t CharacterIndexForPoint(const IntPoint&) const;
 
   // An implementation of |WebFrame::moveCaretSelection()|
   void MoveCaretSelection(const IntPoint&);

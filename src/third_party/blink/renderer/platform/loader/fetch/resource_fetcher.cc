@@ -538,7 +538,8 @@ Resource* ResourceFetcher::CachedResource(const KURL& resource_url) const {
   if (resource_url.IsEmpty())
     return nullptr;
   KURL url = MemoryCache::RemoveFragmentIdentifierIfNeeded(resource_url);
-  const WeakMember<Resource>& resource = cached_resources_map_.at(url);
+  const WeakMember<Resource>& resource =
+      cached_resources_map_.DeprecatedAtOrEmptyValue(url);
   return resource.Get();
 }
 
@@ -1168,14 +1169,6 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
   }
 
   return resource;
-}
-
-void ResourceFetcher::MarkFirstPaint() {
-  scheduler_->MarkFirstPaint();
-}
-
-void ResourceFetcher::MarkFirstContentfulPaint() {
-  scheduler_->MarkFirstContentfulPaint();
 }
 
 void ResourceFetcher::ResourceTimingReportTimerFired(TimerBase* timer) {
@@ -2268,8 +2261,9 @@ void ResourceFetcher::PopulateAndAddResourceTimingInfo(
   if (it != early_hints_preloaded_resources_.end()) {
     early_hints_preloaded_resources_.erase(it);
     const ResourceResponse& response = resource->GetResponse();
-    if (response.WasCached() && (!response.WasFetchedViaServiceWorker() ||
-                                 response.IsServiceWorkerPassThrough())) {
+    if (!response.NetworkAccessed() &&
+        (!response.WasFetchedViaServiceWorker() ||
+         response.IsServiceWorkerPassThrough())) {
       info->SetInitiatorType("early-hints");
     }
   }

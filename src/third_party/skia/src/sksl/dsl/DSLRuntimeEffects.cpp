@@ -21,18 +21,18 @@ namespace dsl {
 
 void StartRuntimeShader(SkSL::Compiler* compiler) {
     Start(compiler, SkSL::ProgramKind::kRuntimeShader);
-    SkSL::ProgramSettings& settings = DSLWriter::IRGenerator().fContext.fConfig->fSettings;
+    SkSL::ProgramSettings& settings = DSLWriter::Settings();
     SkASSERT(settings.fInlineThreshold == SkSL::kDefaultInlineThreshold);
     settings.fInlineThreshold = 0;
     SkASSERT(!settings.fAllowNarrowingConversions);
     settings.fAllowNarrowingConversions = true;
 }
 
-sk_sp<SkRuntimeEffect> EndRuntimeShader() {
+sk_sp<SkRuntimeEffect> EndRuntimeShader(SkRuntimeEffect::Options options) {
     std::unique_ptr<SkSL::Program> program = ReleaseProgram();
     SkRuntimeEffect::Result result;
     if (program) {
-        result = SkRuntimeEffect::MakeForShader(std::move(program));
+        result = SkRuntimeEffect::MakeForShader(std::move(program), options);
         // TODO(skbug.com/11862): propagate errors properly
         SkASSERTF(result.effect, "%s\n", result.errorText.c_str());
     }

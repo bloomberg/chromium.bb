@@ -66,50 +66,54 @@ class RssLinksFetcherUnitTest : public ::testing::Test {
 };
 
 TEST_F(RssLinksFetcherUnitTest, Success) {
-  CallbackReceiver<WebFeedPageInformation> page_info;
+  CallbackReceiver<std::vector<GURL>> rss_links;
   StubRssLinkReader link_reader;
   auto receiver = link_reader.MakeReceiver();
   FetchRssLinks(TestPageUrl(),
                 mojo::Remote<feed::mojom::RssLinkReader>(
                     receiver->BindNewPipeAndPassRemote()),
-                page_info.Bind());
+                rss_links.Bind());
   link_reader.WaitForCall();
-  link_reader.Respond(feed::mojom::RssLinks::New(TestPageUrl(), TestRssUrls()));
-  WebFeedPageInformation result = page_info.RunAndGetResult();
-  EXPECT_EQ(TestPageUrl(), result.url());
-  EXPECT_EQ(TestRssUrls(), result.GetRssUrls());
+
+  {
+    // Have link reader return TestRssUrls as well as some invalid URLs which
+    // are filtered out.
+    std::vector<GURL> returned_urls = TestRssUrls();
+    returned_urls.push_back(GURL());
+    returned_urls.push_back(GURL("chrome://non-http-url-is-ignored"));
+    link_reader.Respond(
+        feed::mojom::RssLinks::New(TestPageUrl(), returned_urls));
+  }
+
+  EXPECT_EQ(TestRssUrls(), rss_links.RunAndGetResult());
 }
 
 TEST_F(RssLinksFetcherUnitTest, Disconnected) {
-  CallbackReceiver<WebFeedPageInformation> page_info;
+  CallbackReceiver<std::vector<GURL>> rss_links;
   StubRssLinkReader link_reader;
   auto receiver = link_reader.MakeReceiver();
   FetchRssLinks(TestPageUrl(),
                 mojo::Remote<feed::mojom::RssLinkReader>(
                     receiver->BindNewPipeAndPassRemote()),
-                page_info.Bind());
+                rss_links.Bind());
   link_reader.WaitForCall();
   receiver.reset();
   link_reader.Respond(feed::mojom::RssLinks::New(TestPageUrl(), TestRssUrls()));
-  WebFeedPageInformation result = page_info.RunAndGetResult();
-  EXPECT_EQ(TestPageUrl(), result.url());
-  EXPECT_EQ(std::vector<GURL>(), result.GetRssUrls());
+  EXPECT_EQ(std::vector<GURL>(), rss_links.RunAndGetResult());
 }
 
 TEST_F(RssLinksFetcherUnitTest, PageUrlMismatch) {
-  CallbackReceiver<WebFeedPageInformation> page_info;
+  CallbackReceiver<std::vector<GURL>> rss_links;
   StubRssLinkReader link_reader;
   auto receiver = link_reader.MakeReceiver();
   FetchRssLinks(TestPageUrl(),
                 mojo::Remote<feed::mojom::RssLinkReader>(
                     receiver->BindNewPipeAndPassRemote()),
-                page_info.Bind());
+                rss_links.Bind());
   link_reader.WaitForCall();
   link_reader.Respond(
       feed::mojom::RssLinks::New(GURL("https://someotherpage"), TestRssUrls()));
-  WebFeedPageInformation result = page_info.RunAndGetResult();
-  EXPECT_EQ(TestPageUrl(), result.url());
-  EXPECT_EQ(std::vector<GURL>(), result.GetRssUrls());
+  EXPECT_EQ(std::vector<GURL>(), rss_links.RunAndGetResult());
 }
 
 }  // namespace

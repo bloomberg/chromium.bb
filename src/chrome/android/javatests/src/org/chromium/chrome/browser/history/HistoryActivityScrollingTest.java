@@ -8,9 +8,11 @@ import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
 
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.test.espresso.intent.Intents;
 import androidx.test.espresso.intent.rule.IntentsTestRule;
 import androidx.test.filters.SmallTest;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -55,6 +57,7 @@ import java.util.List;
 @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
 public class HistoryActivityScrollingTest {
     // clang-format on
+    // TODO(crbug.com/1238144): Migrate to BaseActivityTestRule.
     @Rule
     public IntentsTestRule<HistoryActivity> mActivityTestRule =
             new IntentsTestRule<>(HistoryActivity.class, false, false);
@@ -149,14 +152,25 @@ public class HistoryActivityScrollingTest {
         Assert.assertTrue("At least one item should be loaded to adapter", mOrigItemsCount > 0);
     }
 
+    @After
+    public void tearDown() {
+        if (mActivityTestRule.getActivity() == null) {
+            // IntentsTestRule assumes the Activity was started when tearing down the rule, so we
+            // need to work around that.
+            Intents.init();
+        }
+    }
+
     private void launchHistoryActivity() {
         HistoryActivity activity = mActivityTestRule.launchActivity(null);
-        mHistoryManager = activity.getHistoryManagerForTests();
-        mAdapter = mHistoryManager.getContentManagerForTests().getAdapter();
-        mRecyclerView = mHistoryManager.getContentManagerForTests().getRecyclerView();
-        mTestObserver = new TestObserver();
-        mHistoryManager.getSelectionDelegateForTests().addObserver(mTestObserver);
-        mAdapter.registerAdapterDataObserver(mTestObserver);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mHistoryManager = activity.getHistoryManagerForTests();
+            mAdapter = mHistoryManager.getContentManagerForTests().getAdapter();
+            mRecyclerView = mHistoryManager.getContentManagerForTests().getRecyclerView();
+            mTestObserver = new TestObserver();
+            mHistoryManager.getSelectionDelegateForTests().addObserver(mTestObserver);
+            mAdapter.registerAdapterDataObserver(mTestObserver);
+        });
     }
 
     @Test

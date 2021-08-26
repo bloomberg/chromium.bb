@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/intent_picker_tab_helper.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
@@ -25,6 +26,7 @@
 #include "extensions/common/constants.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
+#include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/arc/arc_util.h"
@@ -144,12 +146,12 @@ bool AppBannerManagerDesktop::IsRelatedNonWebAppInstalled(
 bool AppBannerManagerDesktop::IsWebAppConsideredInstalled() const {
   return web_app::FindInstalledAppWithUrlInScope(
              Profile::FromBrowserContext(web_contents()->GetBrowserContext()),
-             manifest_.start_url)
+             manifest().start_url)
       .has_value();
 }
 
 web_app::WebAppRegistrar& AppBannerManagerDesktop::registrar() {
-  auto* provider = web_app::WebAppProvider::Get(
+  auto* provider = web_app::WebAppProvider::GetForWebApps(
       Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
   DCHECK(provider);
   return provider->registrar();
@@ -157,7 +159,7 @@ web_app::WebAppRegistrar& AppBannerManagerDesktop::registrar() {
 
 bool AppBannerManagerDesktop::ShouldAllowWebAppReplacementInstall() {
   // Only allow replacement install if this specific app is already installed.
-  web_app::AppId app_id = web_app::GenerateAppIdFromManifest(manifest_);
+  web_app::AppId app_id = web_app::GenerateAppIdFromManifest(manifest());
   if (!registrar().IsLocallyInstalled(app_id))
     return false;
 
@@ -202,6 +204,21 @@ void AppBannerManagerDesktop::OnWebAppInstalled(
     OnInstall(registrar().GetEffectiveDisplayModeFromManifest(*app_id));
     SetInstallableWebAppCheckResult(InstallableWebAppCheckResult::kNo);
   }
+}
+
+void AppBannerManagerDesktop::OnWebAppWillBeUninstalled(
+    const web_app::AppId& app_id) {
+  // WebAppTabHelper has a app_id but it is reset during
+  // OnWebAppWillBeUninstalled so using FindAppWithUrlInScope.
+  auto local_app_id = registrar().FindAppWithUrlInScope(validated_url());
+  if (app_id == local_app_id)
+    uninstalling_app_id_ = app_id;
+}
+
+void AppBannerManagerDesktop::OnWebAppUninstalled(
+    const web_app::AppId& app_id) {
+  if (uninstalling_app_id_ == app_id)
+    RecheckInstallabilityForLoadedPage(validated_url(), true);
 }
 
 void AppBannerManagerDesktop::OnAppRegistrarDestroyed() {

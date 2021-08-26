@@ -91,6 +91,10 @@ float MediaValuesDynamic::DevicePixelRatio() const {
   return CalculateDevicePixelRatio(frame_);
 }
 
+bool MediaValuesDynamic::DeviceSupportsHDR() const {
+  return CalculateDeviceSupportsHDR(frame_);
+}
+
 int MediaValuesDynamic::ColorBitsPerComponent() const {
   return CalculateColorBitsPerComponent(frame_);
 }
@@ -169,7 +173,8 @@ ScreenSpanning MediaValuesDynamic::GetScreenSpanning() const {
   return CalculateScreenSpanning(frame_);
 }
 
-DevicePosture MediaValuesDynamic::GetDevicePosture() const {
+device::mojom::blink::DevicePostureType MediaValuesDynamic::GetDevicePosture()
+    const {
   return CalculateDevicePosture(frame_);
 }
 

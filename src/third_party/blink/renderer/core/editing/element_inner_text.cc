@@ -57,7 +57,6 @@ class ElementInnerTextCollector final {
     Result(const Result&) = delete;
     Result& operator=(const Result&) = delete;
 
-    void EmitChar16(UChar code_point);
     void EmitNewline();
     void EmitRequiredLineBreak(int count);
     void EmitTab();
@@ -268,11 +267,8 @@ void ElementInnerTextCollector::ProcessNode(const Node& node) {
 
   // 2. If the node is display locked, then we should not process it or its
   // children, since they are not visible or accessible via innerText.
-  if (auto* element = DynamicTo<Element>(node)) {
-    auto* context = element->GetDisplayLockContext();
-    if (context && context->IsLocked())
-      return;
-  }
+  if (DisplayLockUtilities::NearestLockedInclusiveAncestor(node))
+    return;
 
   // 3. If node's computed value of 'visibility' is not 'visible', then return
   // items.
@@ -405,12 +401,6 @@ void ElementInnerTextCollector::ProcessTextNode(const Text& node) {
 }
 
 // ----
-
-void ElementInnerTextCollector::Result::EmitChar16(UChar code_point) {
-  FlushRequiredLineBreak();
-  DCHECK_EQ(required_line_break_count_, 0);
-  builder_.Append(code_point);
-}
 
 void ElementInnerTextCollector::Result::EmitNewline() {
   FlushRequiredLineBreak();

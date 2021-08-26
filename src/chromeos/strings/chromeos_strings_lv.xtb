@@ -14,6 +14,7 @@
 <translation id="1204296502688602597">DNS latentums</translation>
 <translation id="123124571410524056">Aizdomas par portālu</translation>
 <translation id="1238612778414822719">HTTPS latentums</translation>
+<translation id="1264369926465113395">Skatiet Chromebook jauno digitālo žurnālu satura veidotājiem.</translation>
 <translation id="1270369111467284986">Aizdomas par caurlaides lapu</translation>
 <translation id="1290331692326790741">Vājš signāls</translation>
 <translation id="1314565355471455267">Android VPN</translation>
@@ -34,7 +35,9 @@
 <translation id="1510238584712386396">Lietojumprogrammu palaidējs</translation>
 <translation id="1600964289716072707">Lai pievienotu lapu, novietojiet vēl vienu lapu uz skenera un atlasiet Skenēt.</translation>
 <translation id="1621067168122174824">Veikt uzlādes pārbaudi</translation>
+<translation id="1639239467298939599">Notiek ielāde</translation>
 <translation id="1641857168437328880">Dokumentu padevējs (vienpusēji)</translation>
+<translation id="1643449475550628585">Katru dienu mainīt fona tapetes attēlu</translation>
 <translation id="1644574205037202324">Vēsture</translation>
 <translation id="1662989795263954667">Apturēts — beigusies tinte</translation>
 <translation id="1703835215927279855">Letter</translation>
@@ -65,7 +68,6 @@
 <translation id="2224337661447660594">Nav interneta savienojuma</translation>
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="225692081236532131">Aktivizācijas statuss</translation>
-<translation id="2294675138977897428">Savienojums ar tīklu Ethernet netika atrasts</translation>
 <translation id="2326139988748364651"><ph name="RESOLUTION_VALUE" /> DPI</translation>
 <translation id="2338501278241028356">Ieslēdziet Bluetooth, lai atklātu tuvumā esošas ierīces</translation>
 <translation id="2364498172489649528">Pārbaude izpildīta</translation>
@@ -75,9 +77,11 @@
 <translation id="2448312741937722512">Tips</translation>
 <translation id="2461822463642141190">Šobrīd</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> — <ph name="SOURCE_LANGUAGE_NAME" /></translation>
+<translation id="2505327257735685095">Atsvaidzināt pašreizējo fona tapetes attēlu</translation>
 <translation id="2517472476991765520">Meklēt</translation>
 <translation id="2570743873672969996">Notiek testa “<ph name="TEST_NAME" />” izpilde...</translation>
 <translation id="2585245331261708204">Chrome OS jaunumi</translation>
+<translation id="2619761439309613843">Nomainīt katru dienu</translation>
 <translation id="2620436844016719705">Sistēma</translation>
 <translation id="2740531572673183784">Labi</translation>
 <translation id="2751739896257479635">EAP 2. fāzes autentificēšana</translation>
@@ -87,7 +91,6 @@
 <translation id="2862104018715411648">Lai sāktu darbu, novietojiet dokumentu uz skenera un atlasiet Skenēt.</translation>
 <translation id="2872961005593481000">Beidzēt</translation>
 <translation id="2878387241690264070">Izlādes apjoms <ph name="NUM_SECONDS" /> s laikā: <ph name="RATE" />.</translation>
-<translation id="2983662233540284543">Mācieties no spēļu satura veidotāja, iegūstiet spēļu izstrādes lietotnes un uzziniet daudz ko citu.</translation>
 <translation id="3008341117444806826">ATSVAIDZINĀT</translation>
 <translation id="3009958530611748826">Atlasiet mapi, kurā saglabāt failus</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" /> mA</translation>
@@ -101,6 +104,7 @@
 <translation id="3188257591659621405">Mani faili</translation>
 <translation id="3199982728237701504">Dokumentu padevējs (divpusēji)</translation>
 <translation id="3226405216343213872">Notiek skeneru meklēšana…</translation>
+<translation id="3228433892370472777">Noklusējuma savienojums</translation>
 <translation id="3246869037381808805">Drukas uzdevumi, kas ir vecāki par vienu dienu, tiks noņemti</translation>
 <translation id="3268178239013324452">Neizdevās — durtiņas ir atvērtas</translation>
 <translation id="3283504360622356314">{0,plural, =1{Rediģēt failu}zero{Rediģēt failus}one{Rediģēt failus}other{Rediģēt failus}}</translation>
@@ -117,10 +121,13 @@
 <translation id="3488065109653206955">Daļēji aktivizēts</translation>
 <translation id="3527036260304016759">Neizdevās — nezināma kļūda</translation>
 <translation id="3532980081107202182">Atlikušas aptuveni <ph name="MIN_REMAINING" /> minūtes</translation>
+<translation id="3540383942695635079">MAC adrese</translation>
 <translation id="357889014807611375">Maksas Wi-Fi tīkls</translation>
+<translation id="3582041541988388905">Netika konstatēts savienojums ar tīklu <ph name="NETWORK_NAME" /></translation>
 <translation id="3595596368722241419">Akumulators pilns</translation>
 <translation id="360565022852130722">Wi-Fi tīklu sargā nedrošs protokols WEP 802.1x</translation>
 <translation id="3689839747745352263">Pārbaude: <ph name="TEST_NAME" /></translation>
+<translation id="3708186454126126312">Ierīces, ar kurām iepriekš tika izveidots savienojums</translation>
 <translation id="373232531963562220">{PAGE_NUMBER,plural, =0{Atkārtoti skenēt lapu}=1{Atkārtoti skenēt {PAGE_NUMBER}. lapu}zero{Atkārtoti skenēt {PAGE_NUMBER}. lapu}one{Atkārtoti skenēt {PAGE_NUMBER}. lapu}other{Atkārtoti skenēt {PAGE_NUMBER}. lapu}}</translation>
 <translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★ (atsauksmju skaits: <ph name="AGGREGATED_COUNT" />)</translation>
 <translation id="3748026146096797577">Nav izveidots savienojums</translation>
@@ -163,6 +170,7 @@
 <translation id="4479639480957787382">tīkls Ethernet</translation>
 <translation id="4483049906298469269">Neizdevās ehotestēt tīkla vārteju, kas nav noklusējuma vārteja</translation>
 <translation id="4511264077854731334">Portāls</translation>
+<translation id="4536864596629708641">IP konfigurācija</translation>
 <translation id="4548483925627140043">Signāls nav atrasts</translation>
 <translation id="455835558791489930"><ph name="CHARGE_VALUE" /> mAh akumulators</translation>
 <translation id="4562494484721939086">Nav pakalpojuma</translation>
@@ -171,6 +179,7 @@
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />: <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> no <ph name="TOTAL_PAGE_NUMBER" /> lapas(-ām). Lai atceltu drukas uzdevumu, nospiediet taustiņu Enter.</translation>
 <translation id="4646949265910132906">Drošs Wi-Fi savienojums</translation>
 <translation id="4652335678334611408">Saglabāt sesijas žurnālu</translation>
+<translation id="4654549501020883054">Mainīt katru dienu</translation>
 <translation id="4665014895760275686">Ražotājs</translation>
 <translation id="467510802200863975">Paroles nav vienādas</translation>
 <translation id="467715984478005772">Aizdomas par ugunsmūri</translation>
@@ -194,6 +203,7 @@
 <translation id="4891842000192098784">Izturība</translation>
 <translation id="4917385247580444890">Spēcīgs</translation>
 <translation id="4917889632206600977">Apturēts — beidzies papīrs</translation>
+<translation id="491836528011451486">Novietojiet dokumentu uz skenera un atlasiet “Skenēt vēlreiz”, lai skenētu un aizstātu <ph name="CURRENT_PAGE" />. lapu.</translation>
 <translation id="4921665434385737356">Uzlādes apjoms: <ph name="RATE" /> <ph name="NUM_SECONDS" /> sekundēs.</translation>
 <translation id="4932733599132424254">Datums</translation>
 <translation id="498186245079027698">Pārbaudiet skeneri un mēģiniet vēlreiz. Vietējā krātuvē jābūt pietiekami daudz vietas skenēto failu saglabāšanai.</translation>
@@ -209,10 +219,10 @@
 <translation id="5154917547274118687">Atmiņa</translation>
 <translation id="5168185087976003268">Akumulatora stāvoklis</translation>
 <translation id="5170568018924773124">Rādīt mapē</translation>
-<translation id="519607504553633437">Savu spēļu izstrāde un izveide</translation>
 <translation id="5212543919916444558">Ekrānā neredzu neko, ar ko varētu palīdzēt.
 Pieskarieties mikrofonam, lai uzdotu man jautājumu.</translation>
 <translation id="5222676887888702881">Izrakstīties</translation>
+<translation id="5234764350956374838">Nerādīt</translation>
 <translation id="5252456968953390977">Viesabonēšana</translation>
 <translation id="5264277876637023664">Veikt centrālā procesora pārbaudi</translation>
 <translation id="5267975978099728568"><ph name="DOCUMENT_TITLE" />: <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="ERROR_STATUS" /></translation>
@@ -243,7 +253,6 @@ Pieskarieties mikrofonam, lai uzdotu man jautājumu.</translation>
 <translation id="5691511426247308406">Ģimene</translation>
 <translation id="5701381305118179107">Centrēt</translation>
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" />. no <ph name="TOTAL_PAGES" /></translation>
-<translation id="5752751666635965375">Izveidot savu spēli</translation>
 <translation id="5760715441271661976">Portāla statuss</translation>
 <translation id="5832805196449965646">Pievienot personu</translation>
 <translation id="583281660410589416">Nezināms</translation>
@@ -266,6 +275,7 @@ Pieskarieties mikrofonam, lai uzdotu man jautājumu.</translation>
 <translation id="6106186594183574873">Lai pabeigtu, ievadiet savu iepriekšējo paroli</translation>
 <translation id="6108689792487843350">Vārteja nav sasniedzama</translation>
 <translation id="6122191549521593678">Tiešsaistē</translation>
+<translation id="6125438912510167220">Saites ātrums</translation>
 <translation id="6137767437444130246">Lietotāja sertifikāts</translation>
 <translation id="6146993107019042706">Lai pabeigtu, ievadiet savu jauno paroli</translation>
 <translation id="6147514244879357420">PNG</translation>
@@ -292,6 +302,8 @@ Pieskarieties mikrofonam, lai uzdotu man jautājumu.</translation>
 <translation id="65587193855025101">Plakanvirsma</translation>
 <translation id="6564646048574748301">Neizdevās — printeris nav sasniedzams</translation>
 <translation id="6574762126505704998">Aizpildīt</translation>
+<translation id="6575134580692778371">Nav konfigurēts</translation>
+<translation id="6596816719288285829">IP adrese</translation>
 <translation id="6603230386432466813">Vai neizdodas izveidot savienojumu?</translation>
 <translation id="6618744767048954150">Notiek pārbaude</translation>
 <translation id="6620487321149975369">Drukas uzdevumi būs redzami vēsturē, ja vien tie netiks noņemti manuāli</translation>
@@ -314,13 +326,16 @@ Pieskarieties mikrofonam, lai uzdotu man jautājumu.</translation>
 <translation id="7059230779847288458">Notiek uzlāde. Atlikušais laiks līdz pilnai uzlādei: <ph name="TIME_VALUE" /></translation>
 <translation id="708426984172631313">APTURĒTA</translation>
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
+<translation id="7134436342991564651">{0,plural, =1{Nosaukumu serveris}zero{Nosaukumu serveri}one{Nosaukumu serveri}other{Nosaukumu serveri}}</translation>
 <translation id="7143207342074048698">Notiek savienojuma izveide</translation>
 <translation id="7144878232160441200">Mēģināt vēlreiz</translation>
 <translation id="714876143603641390">LAN savienojamība</translation>
 <translation id="7162487448488904999">Galerija</translation>
 <translation id="7172721935181587524">1 attēls</translation>
 <translation id="7177485034254901881">Šo <ph name="DEVICE_TYPE" /> ierīci pārvalda <ph name="MANAGER" />. Administratori var attālināti konfigurēt ierīci.</translation>
+<translation id="7180611975245234373">Atsvaidzināt</translation>
 <translation id="7216409898977639127">Mobilo sakaru operators</translation>
+<translation id="7257889006063274246">Vai tiešām vēlaties noņemt <ph name="CURRENT_PAGE" />. lapu?</translation>
 <translation id="7271040990581020067">Skeneris pašlaik tiek izmantots. Vēlāk mēģiniet vēlreiz.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7287310195820267359">Fona tapešu kolekcijas</translation>
@@ -354,9 +369,11 @@ Pieskarieties mikrofonam, lai uzdotu man jautājumu.</translation>
 <translation id="7835501727204647447">Instalēt CloudReady</translation>
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7882358943899516840">Pakalpojumu sniedzēja veids</translation>
+<translation id="7895471513946376273">Atklājiet zīmēšanas un dizaina rīkus</translation>
 <translation id="7936303884198020182">Netika atrasts neviens nosaukumu serveris</translation>
 <translation id="7960831585769876809">Temperatūra</translation>
 <translation id="7994702968232966508">EAP metode</translation>
+<translation id="8020238979854764615">Radās kļūda. Lūdzu, mēģiniet vēlreiz, izvēloties citus attēlus.</translation>
 <translation id="802154636333426148">Lejupielāde neizdevās</translation>
 <translation id="8041089156583427627">Sūtīt atsauksmes</translation>
 <translation id="8075838845814659848">Atlikusī akumulatora enerģija</translation>
@@ -368,7 +385,9 @@ Pieskarieties mikrofonam, lai uzdotu man jautājumu.</translation>
 <translation id="8214184102975786227">Skenēt vairākas lapas vienā PDF failā</translation>
 <translation id="8230672074305416752">Neizdevās ehotestēt noklusējuma tīkla vārteju</translation>
 <translation id="8246209727385807362">Nezināms operators</translation>
+<translation id="8286154143153872371">Izveidojiet savienojumu ar tīklu un atkārtoti ielādējiet lapu, lai skatītu fona tapeti.</translation>
 <translation id="8291967909914612644">Mājas pakalpojumu sniedzēja valsts</translation>
+<translation id="829270796093605079">Atklāt dizaina rīkus</translation>
 <translation id="8294431847097064396">Avots</translation>
 <translation id="8297006494302853456">Vājš</translation>
 <translation id="8302368968391049045">HTTPS ugunsmūris</translation>
@@ -392,6 +411,7 @@ Pieskarieties mikrofonam, lai uzdotu man jautājumu.</translation>
 <translation id="8575298406870537639">Jūsu mobilo sakaru operators var pieprasīt šīs opcijas izmantošanu, lai varētu izveidot savienojumu ar attiecīgā operatora tīklu. Lai iegūtu detalizētu informāciju, sazinieties ar savu mobilo sakaru operatoru.</translation>
 <translation id="8576249514688522074">Pārbaude nav sākta</translation>
 <translation id="8620617069779373398">Viesabonēšanas statuss</translation>
+<translation id="8655295600908251630">Kanāls</translation>
 <translation id="8660881923941176839">mārciņas</translation>
 <translation id="8675354002693747642">Iepriekš kopīgota atslēga</translation>
 <translation id="871560550817059752">Neizdevās — beigusies tinte</translation>
@@ -404,6 +424,7 @@ Pieskarieties mikrofonam, lai uzdotu man jautājumu.</translation>
 <translation id="8798441408945964110">Pakalpojumu sniedzēja nosaukums</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8818152010000655963">Fona tapete</translation>
+<translation id="8834539327799336565">Ierīces, ar kurām pašlaik izveidots savienojums</translation>
 <translation id="8845001906332463065">Saņemt palīdzību</translation>
 <translation id="8868741746785112895">GUID</translation>
 <translation id="8881098542468797602">Pārbaude sekmīga</translation>

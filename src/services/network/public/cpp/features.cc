@@ -211,11 +211,6 @@ const base::Feature kWebSocketReassembleShortMessages{
 const base::Feature kAcceptCHFrame{"AcceptCHFrame",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables support for FTP URLs. When disabled FTP URLs will behave the same as
-// any other URL scheme that's unknown to the UA. See https://crbug.com/333943
-const base::Feature kFtpProtocol{"FtpProtocol",
-                                 base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kSCTAuditingRetryAndPersistReports{
     "SCTAuditingRetryAndPersistReports", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -250,6 +245,11 @@ uint32_t GetDataPipeDefaultAllocationSize() {
 uint32_t GetLoaderChunkSize() {
   return base::saturated_cast<uint32_t>(kLoaderChunkSize.Get());
 }
+
+// Enable recording UMAs for network activities which can wake-up radio on
+// Android.
+const base::Feature kRecordRadioWakeupTrigger{
+    "RecordRadioWakeupTrigger", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace network

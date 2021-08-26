@@ -9,8 +9,8 @@
 #include "chrome/common/subresource_redirect_service.mojom.h"
 #include "components/optimization_guide/content/browser/optimization_guide_decider.h"
 #include "content/public/browser/render_document_host_user_data.h"
+#include "content/public/browser/render_frame_host_receiver_set.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/browser/web_contents_receiver_set.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "url/origin.h"
 
@@ -31,11 +31,24 @@ class ImageCompressionAppliedDocument
     : public content::RenderDocumentHostUserData<
           ImageCompressionAppliedDocument> {
  public:
+  enum State {
+    kDisabled,
+    kLoginRobotsRulesFetchingOnly,
+    kLoginRobotsCheckedEnabled,
+    kPublicImageHintsEnabled,
+  };
+
   ~ImageCompressionAppliedDocument() override;
   ImageCompressionAppliedDocument(const ImageCompressionAppliedDocument&) =
       delete;
   ImageCompressionAppliedDocument& operator=(
       const ImageCompressionAppliedDocument&) = delete;
+
+  State state() const { return state_; }
+  void set_state(State state) { state_ = state; }
+
+  static State GetState(content::RenderFrameHost* rfh);
+  static void SetState(content::RenderFrameHost* rfh, State state);
 
   // Gets the robots rules for |origin| from the |rules_cache| and invokes the
   // |callback|.
@@ -51,6 +64,14 @@ class ImageCompressionAppliedDocument
       ImageCompressionAppliedDocument>;
 
   content::RenderFrameHost* render_frame_host_;
+
+  // Maintains whether https image compression was attempted for the last
+  // navigation. Even though image compression was attempted, it doesn't mean at
+  // least one image will get compressed, since that depends on a public image
+  // present in this page. This is not an issue since most pages tend to have at
+  // least one public image even though they are fully private.
+  State state_ = kDisabled;
+
   RENDER_DOCUMENT_HOST_USER_DATA_KEY_DECL();
 };
 
@@ -71,6 +92,11 @@ class SubresourceRedirectObserver
   SubresourceRedirectObserver(const SubresourceRedirectObserver&) = delete;
   SubresourceRedirectObserver& operator=(const SubresourceRedirectObserver&) =
       delete;
+
+  static void BindSubresourceRedirectService(
+      mojo::PendingAssociatedReceiver<mojom::SubresourceRedirectService>
+          receiver,
+      content::RenderFrameHost* rfh);
 
  private:
   friend class content::WebContentsUserData<SubresourceRedirectObserver>;
@@ -107,18 +133,7 @@ class SubresourceRedirectObserver
   bool IsAllowedForCurrentLoginState(
       content::NavigationHandle* navigation_handle);
 
-  // Maintains whether https image compression was attempted for the last
-  // navigation. Even though image compression was attempted, it doesn't mean at
-  // least one image will get compressed, since that depends on a public image
-  // present in this page. This is not an issue since most pages tend to have at
-  // least one public image even though they are fully private.
-  bool is_mainframe_https_image_compression_applied_ = false;
-
-  // Whether login is allowed for the current navigation. Updated when the
-  // navigation is ready to be committed.
-  bool is_allowed_by_login_state_ = false;
-
-  content::WebContentsFrameReceiverSet<mojom::SubresourceRedirectService>
+  content::RenderFrameHostReceiverSet<mojom::SubresourceRedirectService>
       receivers_;
 
   base::WeakPtrFactory<SubresourceRedirectObserver> weak_factory_{this};

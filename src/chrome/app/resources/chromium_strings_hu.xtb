@@ -18,6 +18,7 @@
 <translation id="1774152462503052664">A Chromium fusson a háttérben</translation>
 <translation id="1779356040007214683">A Chromium biztonságosabbá tétele érdekében kikapcsoltunk néhány bővítményt, amelyek nem a(z) <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> szolgáltatásból származnak, és előfordulhat, hogy az Ön tudta nélkül lettek telepítve.</translation>
 <translation id="1808667845054772817">A Chromium újratelepítése</translation>
+<translation id="185970820835152459">Kezelheti a bejelentkezett Google-fiókjait. Google-fiókjait használhatja a Chromium böngészőben, a Play Áruházban, a Gmailben és még sok más helyen. Ha más számára szeretne hozzáadni fiókot (például családtagjának), inkább új személyt adjon hozzá <ph name="DEVICE_TYPE" /> eszközéhez. <ph name="LINK_BEGIN" />További információ<ph name="LINK_END" /></translation>
 <translation id="1881322772814446296">Kezelt fiókkal jelentkezik be, és annak adminisztrátora számára hozzáférést biztosít Chromium-profiljához. Chromium-adatait – például alkalmazásait, könyvjelzőit, előzményeit, jelszavait és más beállításait – a rendszer véglegesen társítja a(z) <ph name="USER_NAME" /> fiókhoz. Ezen adatokat a Google-fiók Irányítópultján törölheti, de más fiókhoz nem társíthatja őket. Létrehozhat egy új profilt is meglévő Chromium-adatainak elkülönített tárolásához. <ph name="LEARN_MORE" /></translation>
 <translation id="1911763535808217981">A beállítás kikapcsolásával anélkül jelentkezhet be a Google-webhelyekre (pl. Gmail), hogy a Chromiumba is bejelentkezne</translation>
 <translation id="1929939181775079593">A Chromium nem válaszol. Újraindítja most?</translation>
@@ -107,7 +108,6 @@
 <translation id="4407044323746248786">Biztosan kilép a Chromiumból?</translation>
 <translation id="4415566066719264597">A Chromium futhat a háttérben</translation>
 <translation id="4423735387467980091">A Chromium személyre szabása és beállításai</translation>
-<translation id="4491398312037323794">Ezen az oldalon kezelheti a bejelentkezett Google-fiókjait. Ezeket a fiókokat használhatja majd a Chromium böngészőben és a Play Áruház alkalmazásaiban, valamint olyan szolgáltatásokban, mint a Gmail, a Drive és a YouTube. <ph name="LINK_BEGIN" />További információ<ph name="LINK_END" />.</translation>
 <translation id="452711251841752011">Üdvözöljük a Chromiumban; új böngészőablak megnyitva</translation>
 <translation id="4544142686420020088">Ismeretlen hiba történt, ezért a Chromium nem frissült. <ph name="BEGIN_LINK" />A Chromium frissítési problémáinak megoldása.<ph name="END_LINK" /></translation>
 <translation id="454579500955453258">Biztosan új Chromium-profilban folytatja?</translation>
@@ -253,6 +253,7 @@ A Chromium nem tudja visszaállítani a beállításait.</translation>
 <translation id="7937630085815544518"><ph name="USER_EMAIL_ADDRESS" /> néven volt bejelentkezve a Chromiumba. Kérjük, ugyanazzal a fiókkal jelentkezzen be újra.</translation>
 <translation id="7975919845073681630">Ez a Chromium második telepítése, amelyet nem állíthat be az alapértelmezett böngészővé.</translation>
 <translation id="8013436988911883588">Miután hozzáférést biztosított a Chromiumnak, a webhelyek is hozzáférést kérhetnek.</translation>
+<translation id="8045118833343856403">A következő fiókok nincsenek egyetlen Chromium-profilba sem bejelentkezve. Ha másik profilban szeretné használni az adott fiókot, előbb távolítsa el a szóban forgó profilt.</translation>
 <translation id="81770708095080097">Ez a fájl veszélyes, ezért a Chromium letiltotta.</translation>
 <translation id="8248265253516264921">Ha valamelyik kép nem rendelkezik hasznos leírással, akkor a Chromium igyekszik leírást adni róla. A Google automatikusan megkapja a leírások létrehozásához szükséges képeket. A funkciót a beállítások között bármikor kikapcsolhatja.</translation>
 <translation id="8266560134891435528">A Chromium nem tudja ellenőrizni az Ön jelszavait, mert nincs bejelentkezve</translation>

@@ -1048,7 +1048,8 @@
                         "ExcludeSameSiteNoneInsecure",
                         "ExcludeSameSiteLax",
                         "ExcludeSameSiteStrict",
-                        "ExcludeInvalidSameParty"
+                        "ExcludeInvalidSameParty",
+                        "ExcludeSamePartyCrossPartyContext"
                     ]
                 },
                 {
@@ -5671,6 +5672,28 @@
                             "$ref": "NodeId"
                         }
                     ]
+                },
+                {
+                    "name": "getQueryingDescendantsForContainer",
+                    "description": "Returns the descendants of a container query container that have\ncontainer queries against this container.",
+                    "experimental": true,
+                    "parameters": [
+                        {
+                            "name": "nodeId",
+                            "description": "Id of the container node to find querying descendants from.",
+                            "$ref": "NodeId"
+                        }
+                    ],
+                    "returns": [
+                        {
+                            "name": "nodeIds",
+                            "description": "Descendant nodes with container queries against the given container.",
+                            "type": "array",
+                            "items": {
+                                "$ref": "NodeId"
+                            }
+                        }
+                    ]
                 }
             ],
             "events": [
@@ -6642,6 +6665,12 @@
                             "items": {
                                 "type": "integer"
                             }
+                        },
+                        {
+                            "name": "shadowRootType",
+                            "description": "Type of the shadow root the `Node` is in. String values are equal to the `ShadowRootType` enum.",
+                            "optional": true,
+                            "$ref": "RareStringData"
                         },
                         {
                             "name": "nodeName",
@@ -8699,6 +8728,15 @@
                             }
                         },
                         {
+                            "name": "files",
+                            "description": "List of filenames that should be included when dropping",
+                            "optional": true,
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        {
                             "name": "dragOperationsMask",
                             "description": "Bit field representing allowed drag operations. Copy = 1, Link = 2, Move = 16",
                             "type": "integer"
@@ -8859,6 +8897,40 @@
                             "name": "text",
                             "description": "The text to insert.",
                             "type": "string"
+                        }
+                    ]
+                },
+                {
+                    "name": "imeSetComposition",
+                    "description": "This method sets the current candidate text for ime.\nUse imeCommitComposition to commit the final text.\nUse imeSetComposition with empty string as text to cancel composition.",
+                    "experimental": true,
+                    "parameters": [
+                        {
+                            "name": "text",
+                            "description": "The text to insert",
+                            "type": "string"
+                        },
+                        {
+                            "name": "selectionStart",
+                            "description": "selection start",
+                            "type": "integer"
+                        },
+                        {
+                            "name": "selectionEnd",
+                            "description": "selection end",
+                            "type": "integer"
+                        },
+                        {
+                            "name": "replacementStart",
+                            "description": "replacement start",
+                            "optional": true,
+                            "type": "integer"
+                        },
+                        {
+                            "name": "replacementEnd",
+                            "description": "replacement end",
+                            "optional": true,
+                            "type": "integer"
                         }
                     ]
                 },
@@ -10704,7 +10776,8 @@
                         },
                         {
                             "name": "headersText",
-                            "description": "HTTP response headers text.",
+                            "description": "HTTP response headers text. This has been replaced by the headers in Network.responseReceivedExtraInfo.",
+                            "deprecated": true,
                             "optional": true,
                             "type": "string"
                         },
@@ -10721,7 +10794,8 @@
                         },
                         {
                             "name": "requestHeadersText",
-                            "description": "HTTP request headers text.",
+                            "description": "HTTP request headers text. This has been replaced by the headers in Network.requestWillBeSentExtraInfo.",
+                            "deprecated": true,
                             "optional": true,
                             "type": "string"
                         },
@@ -12336,7 +12410,8 @@
                     "parameters": [
                         {
                             "name": "frameId",
-                            "description": "Frame id to get the resource for.",
+                            "description": "Frame id to get the resource for. Mandatory for frame targets, and\nshould be omitted for worker targets.",
+                            "optional": true,
                             "$ref": "Page.FrameId"
                         },
                         {
@@ -12978,6 +13053,11 @@
                             "name": "resourceIPAddressSpace",
                             "description": "The IP address space of the resource. The address space can only be determined once the transport\nestablished the connection, so we can't send it in `requestWillBeSentExtraInfo`.",
                             "$ref": "IPAddressSpace"
+                        },
+                        {
+                            "name": "statusCode",
+                            "description": "The status code of the response. This is useful in cases the request failed and no responseReceived\nevent is triggered, which is the case for, e.g., CORS errors. This is also the correct status code\nfor cached requests, where the status in responseReceived is a 200 and this will be 304.",
+                            "type": "integer"
                         },
                         {
                             "name": "headersText",
@@ -13669,7 +13749,13 @@
                     "properties": [
                         {
                             "name": "containerBorder",
-                            "description": "The style of the container border",
+                            "description": "The style of the container border.",
+                            "optional": true,
+                            "$ref": "LineStyle"
+                        },
+                        {
+                            "name": "descendantBorder",
+                            "description": "The style of the descendants' borders.",
                             "optional": true,
                             "$ref": "LineStyle"
                         }
@@ -13783,7 +13869,8 @@
                 },
                 {
                     "name": "highlightFrame",
-                    "description": "Highlights owner element of the frame with given id.",
+                    "description": "Highlights owner element of the frame with given id.\nDeprecated: Doesn't work reliablity and cannot be fixed due to process\nseparatation (the owner node might be in a different process). Determine\nthe owner node in the client and use highlightNode.",
+                    "deprecated": true,
                     "parameters": [
                         {
                             "name": "frameId",
@@ -14277,6 +14364,7 @@
                         "ch-ua-mobile",
                         "ch-ua-full-version",
                         "ch-ua-platform-version",
+                        "ch-ua-reduced",
                         "ch-viewport-width",
                         "ch-width",
                         "clipboard-read",
@@ -14490,7 +14578,7 @@
                             "name": "parentId",
                             "description": "Parent frame identifier.",
                             "optional": true,
-                            "type": "string"
+                            "$ref": "FrameId"
                         },
                         {
                             "name": "loaderId",
@@ -15166,6 +15254,10 @@
                         "OptInUnloadHeaderNotPresent",
                         "UnloadHandlerExistsInSubFrame",
                         "ServiceWorkerUnregistration",
+                        "CacheControlNoStore",
+                        "CacheControlNoStoreCookieModified",
+                        "CacheControlNoStoreHTTPOnlyCookieModified",
+                        "NoResponseHead",
                         "WebSocket",
                         "WebRTC",
                         "MainResourceHasCacheControlNoStore",
@@ -15177,7 +15269,6 @@
                         "DedicatedWorkerOrWorklet",
                         "OutstandingNetworkRequestOthers",
                         "OutstandingIndexedDBTransaction",
-                        "RequestedGeolocationPermission",
                         "RequestedNotificationsPermission",
                         "RequestedMIDIPermission",
                         "RequestedAudioCapturePermission",
@@ -15973,6 +16064,26 @@
                             "type": "array",
                             "items": {
                                 "$ref": "PermissionsPolicyFeatureState"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "getOriginTrials",
+                    "description": "Get Origin Trials on given frame.",
+                    "experimental": true,
+                    "parameters": [
+                        {
+                            "name": "frameId",
+                            "$ref": "FrameId"
+                        }
+                    ],
+                    "returns": [
+                        {
+                            "name": "originTrials",
+                            "type": "array",
+                            "items": {
+                                "$ref": "OriginTrial"
                             }
                         }
                     ]
@@ -19556,6 +19667,13 @@
                             "items": {
                                 "$ref": "HeaderEntry"
                             }
+                        },
+                        {
+                            "name": "interceptResponse",
+                            "description": "If set, overrides response interception behavior for this request.",
+                            "experimental": true,
+                            "optional": true,
+                            "type": "boolean"
                         }
                     ]
                 },
@@ -24180,6 +24298,13 @@
                         {
                             "name": "hints",
                             "type": "object"
+                        },
+                        {
+                            "name": "executionContextId",
+                            "description": "Identifier of the context where the call was made.",
+                            "experimental": true,
+                            "optional": true,
+                            "$ref": "ExecutionContextId"
                         }
                     ]
                 }

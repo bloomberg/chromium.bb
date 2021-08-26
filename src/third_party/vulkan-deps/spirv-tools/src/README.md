@@ -45,6 +45,20 @@ following versions are ordered from oldest to newest:
 Use the `--version` option on each command line tool to see the software
 version.  An API call reports the software version as a C-style string.
 
+## Releases
+
+Some versions of SPIRV-Tools are tagged as stable releases (see
+[tags](https://github.com/KhronosGroup/SPIRV-Tools/tags) on github).
+These versions undergo extra testing.
+Releases are not directly related to releases (or versions) of
+[SPIRV-Headers][spirv-headers].
+Releases of SPIRV-Tools are tested against the version of SPIRV-Headers listed
+in the DEPS file.
+The release generally uses the most recent compatible version of SPIRV-Headers
+available at the time of release.
+No version of SPIRV-Headers other than the one listed in the DEPS file is
+guaranteed to work with the SPIRV-Tools release.
+
 ## Supported features
 
 ### Assembler, binary parser, and disassembler
@@ -348,7 +362,7 @@ option, like so:
 
 ```sh
 # In <spirv-dir> (the SPIRV-Tools repo root):
-git clone --depth=1 --branch v3.13.0 https://github.com/protocolbuffers/protobuf external/protobuf
+git clone --depth=1 --branch v3.13.0.1 https://github.com/protocolbuffers/protobuf external/protobuf
 
 # In your build directory:
 cmake [-G <platform-generator>] <spirv-dir> -DSPIRV_BUILD_FUZZER=ON
@@ -643,8 +657,32 @@ This is experimental.
 
 ### Tests
 
-Tests are only built when googletest is found. Use `ctest` to run all the
-tests.
+Tests are only built when googletest is found.
+
+#### Running test with CMake
+
+Use `ctest -j <num threads>` to run all the tests. To run tests using all threads:
+```shell
+ctest -j$(nproc)
+```
+
+To run a single test target, use `ctest [-j <N>] -R <test regex>`. For example,
+you can run all `opt` tests with:
+```shell
+ctest -R 'spirv-tools-test_opt'
+```
+
+#### Running test with Bazel
+
+Use `bazel test :all` to run all tests. This will run tests in parallel by default.
+
+To run a single test target, specify `:my_test_target` instead of `:all`. Test target
+names get printed when you run `bazel test :all`. For example, you can run
+`opt_def_use_test` with:
+```shell
+bazel test :opt_def_use_test
+```
+
 
 ## Future Work
 <a name="future"></a>

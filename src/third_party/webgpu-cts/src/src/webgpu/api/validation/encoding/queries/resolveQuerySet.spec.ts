@@ -123,3 +123,14 @@ Tests that resolve query set with invalid destinationOffset:
       encoder.finish();
     }, t.params.destinationOffset > 0);
   });
+
+g.test('query_set_buffer,device_mismatch')
+  .desc(
+    'Tests resolveQuerySet cannot be called with a query set or destination buffer created from another device'
+  )
+  .paramsSubcasesOnly([
+    { querySetMismatched: false, bufferMismatched: false }, // control case
+    { querySetMismatched: true, bufferMismatched: false },
+    { querySetMismatched: false, bufferMismatched: true },
+  ] as const)
+  .unimplemented();

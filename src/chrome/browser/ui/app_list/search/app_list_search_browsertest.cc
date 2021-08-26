@@ -11,6 +11,7 @@
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
+#include "base/notreached.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -18,6 +19,9 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/drive/drive_integration_service.h"
 #include "chrome/browser/ash/drive/drivefs_test_support.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
@@ -31,6 +35,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
+#include "chrome/browser/ui/web_applications/web_app_launch_manager.h"
+#include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/components/web_app_id_constants.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/test/with_crosapi_param.h"
@@ -42,9 +48,12 @@
 #include "chromeos/components/help_app_ui/help_app_manager_factory.h"
 #include "chromeos/components/help_app_ui/search/search.mojom.h"
 #include "chromeos/components/help_app_ui/search/search_handler.h"
+#include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/events/event_constants.h"
 
 using web_app::test::CrosapiParam;
 using web_app::test::WithCrosapiParam;
@@ -181,7 +190,8 @@ IN_PROC_BROWSER_TEST_F(AppListSearchBrowserTest,
 
   ChromeSearchResult* result = FindResult("help-app://discover");
   ASSERT_TRUE(result);
-  EXPECT_EQ(base::UTF16ToASCII(result->title()), "Make your own game");
+  EXPECT_EQ(result->title(), l10n_util::GetStringUTF16(
+                                 IDS_HELP_APP_DISCOVER_TAB_SUGGESTION_CHIP));
   EXPECT_EQ(result->metrics_type(), ash::HELP_APP_DISCOVER);
 
   // Open the search result. This should open the help app at the expected url.
@@ -224,7 +234,8 @@ IN_PROC_BROWSER_TEST_F(AppListSearchBrowserTest,
 
   auto* result = FindResult("help-app://updates");
   ASSERT_TRUE(result);
-  EXPECT_EQ(base::UTF16ToASCII(result->title()), "What's new with Chrome OS");
+  EXPECT_EQ(result->title(),
+            l10n_util::GetStringUTF16(IDS_HELP_APP_WHATS_NEW_SUGGESTION_CHIP));
   EXPECT_EQ(result->metrics_type(), ash::HELP_APP_UPDATES);
   // Displayed in first position.
   EXPECT_EQ(result->position_priority(), 1.0f);
@@ -391,6 +402,35 @@ IN_PROC_BROWSER_TEST_P(AppListSearchSystemWebAppBrowserTest,
   // No override url (will open app at default page).
   EXPECT_FALSE(result->query_url().has_value());
   EXPECT_EQ(result->display_type(), DisplayType::kTile);
+}
+
+IN_PROC_BROWSER_TEST_P(AppListSearchSystemWebAppBrowserTest, Launch) {
+  Profile* profile = browser()->profile();
+  auto& system_web_app_manager =
+      web_app::WebAppProvider::Get(profile)->system_web_app_manager();
+  system_web_app_manager.InstallSystemAppsForTesting();
+  const web_app::AppId app_id = web_app::kHelpAppId;
+
+  SearchAndWaitForProviders(
+      "", {ResultType::kInstalledApp, ResultType::kZeroStateFile,
+           ResultType::kHelpApp});
+  auto* result = FindResult(web_app::kHelpAppId);
+  ASSERT_TRUE(result);
+
+  result->Open(ui::EF_NONE);
+
+  // Wait for app service to see the newly launched app.
+  apps::AppServiceProxyFactory::GetForProfile(profile)
+      ->FlushMojoCallsForTesting();
+
+  web_app::WebAppLaunchManager::SetOpenApplicationCallbackForTesting(
+      base::BindLambdaForTesting(
+          [](apps::AppLaunchParams&& params) -> content::WebContents* {
+            NOTREACHED();
+            return nullptr;
+          }));
+
+  result->Open(ui::EF_NONE);
 }
 
 // This class contains additional logic to set up DriveFS and enable testing for

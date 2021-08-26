@@ -12,6 +12,7 @@ Current builders include:
 | linux64_gcc_debug      | x86-64 | Ubuntu Linux 18.04     | gcc-7     | debug   |                        |
 | linux64_tsan           | x86-64 | Ubuntu Linux 18.04     | clang     | release | TSAN enabled           |
 | linux64_coverage_debug | x86-64 | Ubuntu Linux 18.04     | clang     | debug   | used for code coverage |
+| linux64_cast_e2e     | x86-64 | Ubuntu Linux 18.04     | clang     | debug   | Builds cast standalone |
 | mac_debug              | x86-64 | Mac OS X/Xcode         | clang     | debug   |                        |
 | chromium_linux64_debug | x86-64 | Ubuntu Linux 18.04     | clang     | debug   | built with chromium    |
 | chromium_mac_debug     | x86-64 | Mac OS X 10.15         | clang     | debug   | built with chromium    |

@@ -62,6 +62,7 @@
 #include "third_party/blink/public/common/input/web_keyboard_event.h"
 #include "third_party/blink/public/common/loader/referrer_utils.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
+#include "third_party/blink/public/common/navigation/navigation_params.h"
 #include "third_party/blink/public/common/page/launching_process_state.h"
 #include "third_party/blink/public/common/widget/device_emulation_params.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom-blink.h"
@@ -75,6 +76,7 @@
 #include "third_party/blink/public/mojom/page_state/page_state.mojom-blink.h"
 #include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
 #include "third_party/blink/public/mojom/webpreferences/web_preferences.mojom-blink.h"
+#include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_cache.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -161,6 +163,7 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
+#include "third_party/blink/renderer/core/messaging/blink_cloneable_message.h"
 #include "third_party/blink/renderer/core/messaging/blink_transferable_message.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/drag_image.h"
@@ -207,6 +210,7 @@
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/skia/include/core/SkTextBlob.h"
 #include "ui/base/ime/mojom/text_input_state.mojom-blink.h"
 #include "ui/base/mojom/ui_base_types.mojom-shared.h"
 #include "ui/events/keycodes/dom/dom_key.h"
@@ -282,8 +286,7 @@ class WebFrameTest : public testing::Test {
     // Make sure that the RendererScheduler is foregrounded to avoid getting
     // throttled.
     if (kLaunchingProcessIsBackgrounded) {
-      ThreadScheduler::Current()
-          ->GetWebMainThreadSchedulerForTest()
+      blink::scheduler::WebThreadScheduler::MainThreadScheduler()
           ->SetRendererBackgrounded(false);
     }
   }
@@ -1249,23 +1252,25 @@ TEST_F(WebFrameTest, PostMessageEvent) {
   auto* frame =
       To<LocalFrame>(web_view_helper.GetWebView()->GetPage()->MainFrame());
 
-  scoped_refptr<SerializedScriptValue> data = SerializedScriptValue::Create();
-  MessageEvent* message_event = MessageEvent::Create(
-      /*ports=*/nullptr, std::move(data), "http://origin.com");
+  auto make_message = []() {
+    BlinkTransferableMessage message;
+    message.message = SerializedScriptValue::NullValue();
+    message.sender_origin =
+        SecurityOrigin::CreateFromString("https://origin.com");
+    return message;
+  };
 
   // Send a message with the correct origin.
   scoped_refptr<SecurityOrigin> correct_origin =
       SecurityOrigin::Create(ToKURL(base_url_));
-  frame->PostMessageEvent(
-      absl::nullopt, g_empty_string, correct_origin->ToString(),
-      BlinkTransferableMessage::FromMessageEvent(message_event));
+  frame->PostMessageEvent(absl::nullopt, g_empty_string,
+                          correct_origin->ToString(), make_message());
 
   // Send another message with incorrect origin.
   scoped_refptr<SecurityOrigin> incorrect_origin =
       SecurityOrigin::Create(ToKURL(chrome_url_));
-  frame->PostMessageEvent(
-      absl::nullopt, g_empty_string, incorrect_origin->ToString(),
-      BlinkTransferableMessage::FromMessageEvent(message_event));
+  frame->PostMessageEvent(absl::nullopt, g_empty_string,
+                          incorrect_origin->ToString(), make_message());
 
   // Verify that only the first addition is in the body of the page.
   std::string content = TestWebFrameContentDumper::DumpWebViewAsText(
@@ -4570,7 +4575,7 @@ TEST_F(WebFrameTest, ContextNotificationsReload) {
 
   // The two release notifications we got should be exactly the same as the
   // first two create notifications.
-  for (size_t i = 0; i < release_notifications.size(); ++i) {
+  for (wtf_size_t i = 0; i < release_notifications.size(); ++i) {
     EXPECT_TRUE(release_notifications[i]->Equals(
         create_notifications[create_notifications.size() - 3 - i].get()));
   }
@@ -4643,7 +4648,7 @@ TEST_F(WebFrameTest, ContextNotificationsIsolatedWorlds) {
   // And one of them should be exactly the same as the create notification for
   // the isolated context.
   int match_count = 0;
-  for (size_t i = 0; i < release_notifications.size(); ++i) {
+  for (wtf_size_t i = 0; i < release_notifications.size(); ++i) {
     if (release_notifications[i]->Equals(create_notifications[0].get()))
       ++match_count;
   }
@@ -6490,11 +6495,11 @@ INSTANTIATE_TEST_SUITE_P(All,
                          testing::Bool(),
                          CompositedSelectionBoundsTestPassToString());
 
-class TestWillInsertBodyWebFrameClient
+class TestWillInsertBodyWebFrameClient final
     : public frame_test_helpers::TestWebFrameClient {
  public:
   TestWillInsertBodyWebFrameClient() = default;
-  ~TestWillInsertBodyWebFrameClient() final = default;
+  ~TestWillInsertBodyWebFrameClient() override = default;
 
   bool did_load() const { return did_load_; }
 
@@ -6658,7 +6663,7 @@ static void GetSpellingMarkerOffsets(WebVector<unsigned>* offsets,
                                      const Document& document) {
   Vector<unsigned> result;
   const DocumentMarkerVector& document_markers = document.Markers().Markers();
-  for (size_t i = 0; i < document_markers.size(); ++i)
+  for (wtf_size_t i = 0; i < document_markers.size(); ++i)
     result.push_back(document_markers[i]->StartOffset());
   offsets->Assign(result);
 }
@@ -7090,7 +7095,7 @@ TEST_F(WebFrameTest, CompositorScrollIsUserScrollLongPage) {
   auto* scrollable_area = frame_impl->GetFrameView()->LayoutViewport();
 
   // Do a compositor scroll, verify that this is counted as a user scroll.
-  scrollable_area->DidScroll(FloatPoint(0, 1));
+  scrollable_area->DidCompositorScroll(FloatPoint(0, 1));
   web_view_helper.GetWebView()
       ->MainFrameWidget()
       ->ApplyViewportChangesForTesting({gfx::ScrollOffset(), gfx::Vector2dF(),
@@ -7103,7 +7108,7 @@ TEST_F(WebFrameTest, CompositorScrollIsUserScrollLongPage) {
   initial_scroll_state.was_scrolled_by_user = false;
 
   // The page scale 1.0f and scroll.
-  scrollable_area->DidScroll(FloatPoint(0, 2));
+  scrollable_area->DidCompositorScroll(FloatPoint(0, 2));
   web_view_helper.GetWebView()
       ->MainFrameWidget()
       ->ApplyViewportChangesForTesting({gfx::ScrollOffset(), gfx::Vector2dF(),
@@ -7115,7 +7120,7 @@ TEST_F(WebFrameTest, CompositorScrollIsUserScrollLongPage) {
   initial_scroll_state.was_scrolled_by_user = false;
 
   // No scroll event if there is no scroll delta.
-  scrollable_area->DidScroll(FloatPoint(0, 2));
+  scrollable_area->DidCompositorScroll(FloatPoint(0, 2));
   web_view_helper.GetWebView()
       ->MainFrameWidget()
       ->ApplyViewportChangesForTesting({gfx::ScrollOffset(), gfx::Vector2dF(),
@@ -7126,7 +7131,7 @@ TEST_F(WebFrameTest, CompositorScrollIsUserScrollLongPage) {
   client.Reset();
 
   // Non zero page scale and scroll.
-  scrollable_area->DidScroll(FloatPoint(9, 15));
+  scrollable_area->DidCompositorScroll(FloatPoint(9, 15));
   web_view_helper.GetWebView()
       ->MainFrameWidget()
       ->ApplyViewportChangesForTesting({gfx::ScrollOffset(), gfx::Vector2dF(),
@@ -7339,10 +7344,10 @@ class TestCachePolicyWebFrameClient
 
   mojom::FetchCacheMode GetCacheMode() const { return cache_mode_; }
   int BeginNavigationCallCount() const { return begin_navigation_call_count_; }
-  TestCachePolicyWebFrameClient& ChildClient(size_t i) {
+  TestCachePolicyWebFrameClient& ChildClient(wtf_size_t i) {
     return *child_clients_[i].get();
   }
-  size_t ChildFrameCreationCount() const { return child_clients_.size(); }
+  wtf_size_t ChildFrameCreationCount() const { return child_clients_.size(); }
 
   // frame_test_helpers::TestWebFrameClient:
   WebLocalFrame* CreateChildFrame(
@@ -7647,6 +7652,39 @@ TEST_F(WebFrameTest, IPAddressSpace) {
   }
 }
 
+TEST_F(WebFrameTest,
+       CommitSynchronousNavigationForAboutBlankAndCheckStorageKeyNonce) {
+  frame_test_helpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad("data:text/html,<iframe></iframe>");
+
+  StorageKey storage_key = StorageKey::CreateWithNonce(
+      url::Origin(), base::UnguessableToken::Create());
+
+  auto* child_frame =
+      To<WebLocalFrameImpl>(web_view_helper.LocalMainFrame()->FirstChild());
+  child_frame->GetFrame()->DomWindow()->SetStorageKey(storage_key);
+
+  auto params = std::make_unique<WebNavigationParams>();
+  params->url = url_test_helpers::ToKURL("about:blank");
+  params->navigation_timings.navigation_start = base::TimeTicks::Now();
+  params->navigation_timings.fetch_start = base::TimeTicks::Now();
+  params->is_browser_initiated = true;
+  MockPolicyContainerHost mock_policy_container_host;
+  params->policy_container = std::make_unique<WebPolicyContainer>(
+      WebPolicyContainerPolicies(),
+      mock_policy_container_host.BindNewEndpointAndPassDedicatedRemote());
+  params->sandbox_flags = network::mojom::WebSandboxFlags::kNone;
+  params->is_synchronous_commit_for_bug_778318 = true;
+
+  params->sandbox_flags = network::mojom::WebSandboxFlags::kNone;
+  child_frame->CommitNavigation(std::move(params), nullptr);
+  frame_test_helpers::PumpPendingRequestsForFrameToLoad(child_frame);
+
+  // The synchronous commit for bug 778318 should not change the storage key.
+  EXPECT_EQ(storage_key.nonce(),
+            child_frame->GetFrame()->DomWindow()->GetStorageKey().GetNonce());
+}
+
 class TestDidNavigateCommitTypeWebFrameClient
     : public frame_test_helpers::TestWebFrameClient {
  public:
@@ -7657,7 +7695,7 @@ class TestDidNavigateCommitTypeWebFrameClient
   // frame_test_helpers::TestWebFrameClient:
   void DidFinishSameDocumentNavigation(WebHistoryCommitType type,
                                        bool is_synchronously_committed,
-                                       bool is_history_api_navigation,
+                                       mojom::blink::SameDocumentNavigationType,
                                        bool is_client_redirect) override {
     last_commit_type_ = type;
   }
@@ -7687,33 +7725,6 @@ TEST_F(WebFrameTest, SameDocumentHistoryNavigationCommitType) {
       mojom::blink::TriggeringEventInfo::kNotFromEvent,
       nullptr /* extra_data */);
   EXPECT_EQ(kWebBackForwardCommit, client.LastCommitType());
-}
-
-// Tests that the first navigation in an initially blank subframe will result in
-// a history entry being replaced and not a new one being added.
-TEST_F(WebFrameTest, FirstBlankSubframeNavigation) {
-  RegisterMockedHttpURLLoad("history.html");
-  RegisterMockedHttpURLLoad("find.html");
-
-  frame_test_helpers::WebViewHelper web_view_helper;
-  web_view_helper.InitializeAndLoad("about:blank");
-
-  WebLocalFrame* frame = web_view_helper.LocalMainFrame();
-
-  frame->ExecuteScript(WebScriptSource(WebString::FromUTF8(
-      "document.body.appendChild(document.createElement('iframe'))")));
-
-  auto* iframe = To<WebLocalFrameImpl>(frame->FirstChild());
-
-  std::string url1 = base_url_ + "history.html";
-  frame_test_helpers::LoadFrame(iframe, url1);
-  EXPECT_EQ(url1, iframe->GetDocument().Url().GetString().Utf8());
-  EXPECT_TRUE(iframe->GetDocumentLoader()->ReplacesCurrentHistoryItem());
-
-  std::string url2 = base_url_ + "find.html";
-  frame_test_helpers::LoadFrame(iframe, url2);
-  EXPECT_EQ(url2, iframe->GetDocument().Url().GetString().Utf8());
-  EXPECT_FALSE(iframe->GetDocumentLoader()->ReplacesCurrentHistoryItem());
 }
 
 // Tests that a navigation in a frame with a non-blank initial URL will create
@@ -9619,29 +9630,6 @@ class RemoteToLocalSwapWebFrameClient
   absl::optional<WebHistoryCommitType> history_commit_type_;
 };
 
-// The commit type should be Initial if we are swapping a RemoteFrame to a
-// LocalFrame as it is first being created.  This happens when another frame
-// exists in the same process, such that we create the RemoteFrame before the
-// first navigation occurs.
-TEST_F(WebFrameSwapTest, HistoryCommitTypeAfterNewRemoteToLocalSwap) {
-  WebRemoteFrame* remote_frame = frame_test_helpers::CreateRemote();
-  WebFrame* target_frame = MainFrame()->FirstChild();
-  ASSERT_TRUE(target_frame);
-  target_frame->Swap(remote_frame);
-  ASSERT_TRUE(MainFrame()->FirstChild());
-  ASSERT_EQ(MainFrame()->FirstChild(), remote_frame);
-
-  RemoteToLocalSwapWebFrameClient client;
-  WebLocalFrame* local_frame =
-      web_view_helper_.CreateProvisional(*remote_frame, &client);
-  frame_test_helpers::LoadFrame(local_frame, base_url_ + "subframe-hello.html");
-  EXPECT_EQ(kWebHistoryInertCommit, client.HistoryCommitType());
-
-  // Manually reset to break WebViewHelper's dependency on the stack allocated
-  // TestWebFrameClient.
-  Reset();
-}
-
 // The commit type should be Standard if we are swapping a RemoteFrame to a
 // LocalFrame after commits have already happened in the frame.  The browser
 // process will inform us via setCommittedFirstRealLoad.
@@ -9861,10 +9849,11 @@ TEST_F(WebFrameTest, SwapWithOpenerCycle) {
   EXPECT_EQ(local_frame, local_frame->Opener());
 }
 
-class CommitTypeWebFrameClient : public frame_test_helpers::TestWebFrameClient {
+class CommitTypeWebFrameClient final
+    : public frame_test_helpers::TestWebFrameClient {
  public:
   CommitTypeWebFrameClient() = default;
-  ~CommitTypeWebFrameClient() final = default;
+  ~CommitTypeWebFrameClient() override = default;
 
   WebHistoryCommitType HistoryCommitType() const {
     return history_commit_type_;
@@ -9882,24 +9871,6 @@ class CommitTypeWebFrameClient : public frame_test_helpers::TestWebFrameClient {
  private:
   WebHistoryCommitType history_commit_type_ = kWebHistoryInertCommit;
 };
-
-TEST_F(WebFrameTest, RemoteFrameInitialCommitType) {
-  frame_test_helpers::WebViewHelper helper;
-  helper.InitializeRemote(nullptr, SecurityOrigin::CreateFromString(
-                                       WebString::FromUTF8(base_url_)));
-
-  // If an iframe has a remote main frame, ensure the inital commit is correctly
-  // identified as kWebHistoryInertCommit.
-  CommitTypeWebFrameClient child_frame_client;
-  WebLocalFrame* child_frame = helper.CreateLocalChild(
-      *helper.RemoteMainFrame(), "frameName", WebFrameOwnerProperties(),
-      nullptr, &child_frame_client);
-  RegisterMockedHttpURLLoad("foo.html");
-  frame_test_helpers::LoadFrame(child_frame, base_url_ + "foo.html");
-  EXPECT_EQ(kWebHistoryInertCommit, child_frame_client.HistoryCommitType());
-
-  helper.Reset();
-}
 
 TEST_F(WebFrameTest, DetachRemoteFrame) {
   frame_test_helpers::WebViewHelper helper;
@@ -13173,7 +13144,8 @@ TEST_F(WebFrameTest, RecordSameDocumentNavigationToHistogram) {
       SerializeString("message", ToScriptStateForMainWorld(frame));
   tester.ExpectTotalCount(histogramName, 0);
   document_loader.UpdateForSameDocumentNavigation(
-      ToKURL("about:blank"), kSameDocumentNavigationHistoryApi, message,
+      ToKURL("about:blank"),
+      mojom::blink::SameDocumentNavigationType::kHistoryApi, message,
       mojom::blink::ScrollRestorationType::kAuto,
       WebFrameLoadType::kReplaceCurrentItem,
       frame->DomWindow()->GetSecurityOrigin(),
@@ -13183,23 +13155,25 @@ TEST_F(WebFrameTest, RecordSameDocumentNavigationToHistogram) {
   tester.ExpectBucketCount(histogramName,
                            kSPANavTypeHistoryPushStateOrReplaceState, 1);
   document_loader.UpdateForSameDocumentNavigation(
-      ToKURL("about:blank"), kSameDocumentNavigationDefault, message,
+      ToKURL("about:blank"),
+      mojom::blink::SameDocumentNavigationType::kFragment, message,
       mojom::blink::ScrollRestorationType::kManual,
       WebFrameLoadType::kBackForward, frame->DomWindow()->GetSecurityOrigin(),
       /*is_synchronously_committed=*/true);
   tester.ExpectBucketCount(histogramName,
                            kSPANavTypeSameDocumentBackwardOrForward, 1);
   document_loader.UpdateForSameDocumentNavigation(
-      ToKURL("about:blank"), kSameDocumentNavigationDefault, message,
+      ToKURL("about:blank"),
+      mojom::blink::SameDocumentNavigationType::kFragment, message,
       mojom::blink::ScrollRestorationType::kManual,
       WebFrameLoadType::kReplaceCurrentItem,
       frame->DomWindow()->GetSecurityOrigin(),
       /*is_synchronously_committed=*/true);
   tester.ExpectBucketCount(histogramName, kSPANavTypeOtherFragmentNavigation,
                            1);
-  // kSameDocumentNavigationHistoryApi and WebFrameLoadType::kBackForward is an
-  // illegal combination, which has been caught by DCHECK in
-  // UpdateForSameDocumentNavigation().
+  // mojom::blink::SameDocumentNavigationType::kHistoryApi and
+  // WebFrameLoadType::kBackForward is an illegal combination, which has been
+  // caught by DCHECK in UpdateForSameDocumentNavigation().
 
   tester.ExpectTotalCount(histogramName, 3);
 }
@@ -13972,7 +13946,8 @@ TEST_F(WebFrameTest, RemoteFrameCompositingScaleFactor) {
   // The compositing scale factor tells the OOPIF compositor to raster at a
   // lower scale since the frame is scaled down in the parent webview.
   EXPECT_EQ(remote_frame->GetCompositingRect(), gfx::Rect(0, 0, 1600, 1200));
-  EXPECT_EQ(remote_frame->GetCompositingScaleFactor(), 0.5f);
+  EXPECT_EQ(remote_frame->GetFrame()->View()->GetCompositingScaleFactor(),
+            0.5f);
 }
 
 TEST_F(WebFrameTest, RotatedRemoteFrameCompositingScaleFactor) {
@@ -14010,7 +13985,8 @@ TEST_F(WebFrameTest, RotatedRemoteFrameCompositingScaleFactor) {
   // The compositing scale factor tells the OOPIF compositor to raster at a
   // lower scale since the frame is scaled down in the parent webview.
   EXPECT_EQ(remote_frame->GetCompositingRect(), gfx::Rect(0, 0, 1600, 1200));
-  EXPECT_EQ(remote_frame->GetCompositingScaleFactor(), 0.5f);
+  EXPECT_EQ(remote_frame->GetFrame()->View()->GetCompositingScaleFactor(),
+            0.5f);
 }
 
 TEST_F(WebFrameTest, ZeroScaleRemoteFrameCompositingScaleFactor) {
@@ -14047,7 +14023,8 @@ TEST_F(WebFrameTest, ZeroScaleRemoteFrameCompositingScaleFactor) {
 
   // The compositing scale factor tells the OOPIF compositor to raster at a
   // reasonable minimum scale even though the iframe's transform scale is zero.
-  EXPECT_EQ(remote_frame->GetCompositingScaleFactor(), 0.25f);
+  EXPECT_EQ(remote_frame->GetFrame()->View()->GetCompositingScaleFactor(),
+            0.25f);
 }
 
 TEST_F(WebFrameTest, LargeScaleRemoteFrameCompositingScaleFactor) {
@@ -14083,7 +14060,8 @@ TEST_F(WebFrameTest, LargeScaleRemoteFrameCompositingScaleFactor) {
   RunPendingTasks();
 
   // The compositing scale factor is at most 5.0 irrespective of iframe scale.
-  EXPECT_EQ(remote_frame->GetCompositingScaleFactor(), 5.0f);
+  EXPECT_EQ(remote_frame->GetFrame()->View()->GetCompositingScaleFactor(),
+            5.0f);
 }
 
 }  // namespace blink

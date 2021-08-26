@@ -76,8 +76,9 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
       gfx::Rect* bounds,
       ui::WindowShowState* show_state) const override {
     DCHECK(show_state);
-    // Applications are always restored with the same position.
-    if (browser_ && browser_->deprecated_is_app())
+    // Applications and devtools are always restored with the same position.
+    if (browser_ && (browser_->is_type_app() || browser_->is_type_app_popup() ||
+                     browser_->is_type_devtools()))
       return false;
 
     // If a reference browser is set, use its window. Otherwise find last
@@ -89,8 +90,8 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
       window = browser_->window();
     } else {
       const BrowserList* browser_list = BrowserList::GetInstance();
-      for (auto it = browser_list->begin_last_active();
-           it != browser_list->end_last_active(); ++it) {
+      for (auto it = browser_list->begin_browsers_ordered_by_activation();
+           it != browser_list->end_browsers_ordered_by_activation(); ++it) {
         Browser* last_active = *it;
         if (last_active && last_active->is_type_normal()) {
           window = last_active->window();
@@ -311,10 +312,12 @@ void WindowSizer::AdjustBoundsToBeVisibleOnDisplay(
       !work_area.Contains(*bounds)) {
     bounds->set_width(std::min(bounds->width(), work_area.width()));
     bounds->set_height(std::min(bounds->height(), work_area.height()));
-    bounds->set_x(base::ClampToRange(bounds->x(), work_area.x(),
-                                     work_area.right() - bounds->width()));
-    bounds->set_y(base::ClampToRange(bounds->y(), work_area.y(),
-                                     work_area.bottom() - bounds->height()));
+    // TODO(crbug.com/1235666): Make sure these use correct ranges (lo <= hi)
+    // and migrate to base::clamp().
+    bounds->set_x(base::BrokenClampThatShouldNotBeUsed(
+        bounds->x(), work_area.x(), work_area.right() - bounds->width()));
+    bounds->set_y(base::BrokenClampThatShouldNotBeUsed(
+        bounds->y(), work_area.y(), work_area.bottom() - bounds->height()));
   }
 
 #if defined(OS_MAC)
@@ -342,8 +345,12 @@ void WindowSizer::AdjustBoundsToBeVisibleOnDisplay(
   const int min_x = work_area.x() + kMinVisibleWidth - bounds->width();
   const int max_y = work_area.bottom() - kMinVisibleHeight;
   const int max_x = work_area.right() - kMinVisibleWidth;
-  bounds->set_y(base::ClampToRange(bounds->y(), min_y, max_y));
-  bounds->set_x(base::ClampToRange(bounds->x(), min_x, max_x));
+  // TODO(crbug.com/1235666): Make sure these use correct ranges (lo <= hi)
+  // and migrate to base::clamp().
+  bounds->set_y(
+      base::BrokenClampThatShouldNotBeUsed(bounds->y(), min_y, max_y));
+  bounds->set_x(
+      base::BrokenClampThatShouldNotBeUsed(bounds->x(), min_x, max_x));
 #endif  // defined(OS_MAC)
 }
 
@@ -359,7 +366,8 @@ ui::WindowShowState WindowSizer::GetWindowDefaultShowState(
 
 #if defined(USE_AURA)
   // We use the apps save state as well on aura.
-  use_command_line = use_command_line || browser->deprecated_is_app();
+  use_command_line = use_command_line || browser->is_type_app() ||
+                     browser->is_type_app_popup();
 #endif
 
   if (use_command_line && base::CommandLine::ForCurrentProcess()->HasSwitch(

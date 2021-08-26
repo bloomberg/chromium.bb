@@ -11,60 +11,38 @@
 #include <memory>
 #include <string>
 
-#include "base/compiler_specific.h"
 #include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/process/process_handle.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "components/services/storage/public/mojom/cache_storage_control.mojom.h"
-#include "components/services/storage/public/mojom/indexed_db_control.mojom.h"
-#include "components/services/storage/public/mojom/local_storage_control.mojom.h"
 #include "components/services/storage/public/mojom/partition.mojom.h"
-#include "components/services/storage/public/mojom/storage_service.mojom.h"
+#include "components/services/storage/public/mojom/storage_service.mojom-forward.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/background_sync/background_sync_context_impl.h"
-#include "content/browser/bluetooth/bluetooth_allowed_devices_map.h"
-#include "content/browser/broadcast_channel/broadcast_channel_provider.h"
-#include "content/browser/buckets/bucket_context.h"
-#include "content/browser/cache_storage/cache_storage_control_wrapper.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/content_index/content_index_context_impl.h"
 #include "content/browser/devtools/devtools_background_services_context_impl.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
-#include "content/browser/font_access/font_access_manager_impl.h"
-#include "content/browser/indexed_db/indexed_db_control_wrapper.h"
-#include "content/browser/locks/lock_manager.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
-#include "content/browser/payments/payment_app_context_impl.h"
-#include "content/browser/push_messaging/push_messaging_context.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/browser/worker_host/dedicated_worker_service_impl.h"
 #include "content/browser/worker_host/shared_worker_service_impl.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/storage_partition_config.h"
 #include "content/public/common/trust_tokens.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "mojo/public/cpp/bindings/shared_remote.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
-#include "services/network/public/mojom/network_service.mojom.h"
-#include "services/network/public/mojom/trust_tokens.mojom.h"
-#include "storage/browser/quota/special_storage_policy.h"
 #include "third_party/blink/public/mojom/dom_storage/dom_storage.mojom.h"
-
-#if !defined(OS_ANDROID)
-#include "content/browser/host_zoom_level_context.h"
-#endif
 
 namespace leveldb_proto {
 class ProtoDatabaseProvider;
@@ -78,16 +56,26 @@ namespace content {
 
 class BackgroundFetchContext;
 class BlobRegistryWrapper;
-class ConversionManagerImpl;
+class BluetoothAllowedDevicesMap;
+class BroadcastChannelProvider;
+class BucketContext;
+class CacheStorageControlWrapper;
 class ComputePressureManager;
-class CookieStoreContext;
-class FontAccessContext;
-class GeneratedCodeCacheContext;
+class ConversionManagerImpl;
+class CookieStoreManager;
 class FileSystemAccessEntryFactory;
 class FileSystemAccessManagerImpl;
+class FontAccessContext;
+class FontAccessManagerImpl;
+class GeneratedCodeCacheContext;
+class HostZoomLevelContext;
+class IndexedDBControlWrapper;
 class InterestGroupManager;
+class LockManager;
 class NativeIOContextImpl;
+class PaymentAppContextImpl;
 class PrefetchURLLoaderService;
+class PushMessagingContext;
 class QuotaContext;
 
 class CONTENT_EXPORT StoragePartitionImpl
@@ -130,6 +118,9 @@ class CONTENT_EXPORT StoragePartitionImpl
       BackgroundSyncContextImpl* background_sync_context);
   void OverrideSharedWorkerServiceForTesting(
       std::unique_ptr<SharedWorkerServiceImpl> shared_worker_service);
+
+  // Returns the StoragePartitionConfig that represents this StoragePartition.
+  const StoragePartitionConfig& GetConfig();
 
   // StoragePartition interface.
   base::FilePath GetPath() override;
@@ -222,11 +213,13 @@ class CONTENT_EXPORT StoragePartitionImpl
   BluetoothAllowedDevicesMap* GetBluetoothAllowedDevicesMap();
   BlobRegistryWrapper* GetBlobRegistry();
   PrefetchURLLoaderService* GetPrefetchURLLoaderService();
-  CookieStoreContext* GetCookieStoreContext();
+  CookieStoreManager* GetCookieStoreManager();
   FileSystemAccessManagerImpl* GetFileSystemAccessManager();
   BucketContext* GetBucketContext();
   QuotaContext* GetQuotaContext();
   ConversionManagerImpl* GetConversionManager();
+  void SetFontAccessManagerForTesting(
+      std::unique_ptr<FontAccessManagerImpl> font_access_manager);
   FontAccessManagerImpl* GetFontAccessManager();
   InterestGroupManager* GetInterestGroupManager();
   ComputePressureManager* GetComputePressureManager();
@@ -308,7 +301,7 @@ class CONTENT_EXPORT StoragePartitionImpl
     return url_loader_factory_getter_;
   }
 
-  // Can return nullptr while |this| is being destroyed.
+  // Can return nullptr while `this` is being destroyed.
   BrowserContext* browser_context() const;
 
   // Returns the interface used to control the corresponding remote Partition in
@@ -353,7 +346,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   network::mojom::OriginPolicyManager*
   GetOriginPolicyManagerForBrowserProcess();
 
-  // We have to plumb |is_service_worker|, |process_id| and |routing_id| because
+  // We have to plumb `is_service_worker`, `process_id` and `routing_id` because
   // they are plumbed to WebView via WillCreateRestrictedCookieManager, which
   // makes some decision based on that.
   void CreateRestrictedCookieManager(
@@ -381,8 +374,8 @@ class CONTENT_EXPORT StoragePartitionImpl
 
   std::vector<std::string> GetCorsExemptHeaderList();
 
-  // Empties the collection |pending_trust_token_issuance_callbacks_| of
-  // callbacks pending responses from |local_trust_token_fulfiller_|, providing
+  // Empties the collection `pending_trust_token_issuance_callbacks_` of
+  // callbacks pending responses from `local_trust_token_fulfiller_`, providing
   // each callback a suitable error response.
   void OnLocalTrustTokenFulfillerConnectionError();
 
@@ -444,25 +437,23 @@ class CONTENT_EXPORT StoragePartitionImpl
   FRIEND_TEST_ALL_PREFIXES(StoragePartitionImplTest,
                            RemoveLocalStorageForLastWeek);
 
-  // |relative_partition_path| is the relative path under |profile_path| to the
+  // `relative_partition_path` is the relative path under `profile_path` to the
   // StoragePartition's on-disk-storage.
   //
-  // If |in_memory| is true, the |relative_partition_path| is (ab)used as a way
+  // If `in_memory` is true, the `relative_partition_path` is (ab)used as a way
   // of distinguishing different in-memory partitions, but nothing is persisted
   // on to disk.
   //
   // Initialize() must be called on the StoragePartitionImpl before using it.
   static std::unique_ptr<StoragePartitionImpl> Create(
       BrowserContext* context,
-      bool in_memory,
-      const base::FilePath& relative_partition_path,
-      const std::string& partition_domain);
+      const StoragePartitionConfig& config,
+      const base::FilePath& relative_partition_path);
 
   StoragePartitionImpl(BrowserContext* browser_context,
+                       const StoragePartitionConfig& config,
                        const base::FilePath& partition_path,
-                       bool is_in_memory,
                        const base::FilePath& relative_partition_path,
-                       const std::string& partition_domain,
                        storage::SpecialStoragePolicy* special_storage_policy);
 
   // This must be called before calling any members of the StoragePartitionImpl
@@ -498,19 +489,21 @@ class CONTENT_EXPORT StoragePartitionImpl
   // storage configuration info.
   void GetQuotaSettings(storage::OptionalQuotaSettingsCallback callback);
 
-  // Called to initialize |network_context_| when |GetNetworkContext()| is
+  // Called to initialize `network_context_` when `GetNetworkContext()` is
   // first called or there is an error.
   void InitNetworkContext();
+
+  bool is_in_memory() { return config_.in_memory(); }
 
   network::mojom::URLLoaderFactory*
   GetURLLoaderFactoryForBrowserProcessInternal(bool corb_enabled);
 
-  // If |local_trust_token_fulfiller_| is bound, returns immediately.
+  // If `local_trust_token_fulfiller_` is bound, returns immediately.
   //
   // Otherwise, if it's supported by the environment, attempts to bind
-  // |local_trust_token_fulfiller_|. In this case,
+  // `local_trust_token_fulfiller_`. In this case,
   // local_trust_token_fulfiller_.is_bound() will return true after this method
-  // returns. This does NOT guarantee that |local_trust_token_fulfiller_| will
+  // returns. This does NOT guarantee that `local_trust_token_fulfiller_` will
   // ever find an implementation of the interface to talk to. If downstream code
   // rejects the connection, this will be reflected asynchronously by a call to
   // OnLocalTrustTokenFulfillerConnectionError.
@@ -518,17 +511,15 @@ class CONTENT_EXPORT StoragePartitionImpl
 
   // Raw pointer that should always be valid. The BrowserContext owns the
   // StoragePartitionImplMap which then owns StoragePartitionImpl. When the
-  // BrowserContext is destroyed, |this| will be destroyed too.
+  // BrowserContext is destroyed, `this` will be destroyed too.
   BrowserContext* browser_context_;
 
   const base::FilePath partition_path_;
 
-  // |is_in_memory_|, |relative_partition_path_| and |partition_domain_| are
-  // cached from |StoragePartitionImpl::Create()| in order to re-create
-  // |NetworkContext|.
-  const bool is_in_memory_;
+  // `config_` and `relative_partition_path_` are cached from
+  // `StoragePartitionImpl::Create()` in order to re-create `NetworkContext`.
+  const StoragePartitionConfig config_;
   const base::FilePath relative_partition_path_;
-  const std::string partition_domain_;
 
   // Until a StoragePartitionImpl is initialized using Initialize(), only
   // querying its path abd BrowserContext is allowed.
@@ -562,7 +553,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   std::unique_ptr<BluetoothAllowedDevicesMap> bluetooth_allowed_devices_map_;
   scoped_refptr<BlobRegistryWrapper> blob_registry_;
   scoped_refptr<PrefetchURLLoaderService> prefetch_url_loader_service_;
-  scoped_refptr<CookieStoreContext> cookie_store_context_;
+  std::unique_ptr<CookieStoreManager> cookie_store_manager_;
   scoped_refptr<BucketContext> bucket_context_;
   scoped_refptr<GeneratedCodeCacheContext> generated_code_cache_context_;
   scoped_refptr<DevToolsBackgroundServicesContextImpl>
@@ -598,7 +589,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   // enabled, the underlying NetworkContext will be owned by the network
   // service. When it's disabled, the underlying NetworkContext may either be
   // provided by the embedder, or is created by the StoragePartition and owned
-  // by |network_context_owner_|.
+  // by `network_context_owner_`.
   mojo::Remote<network::mojom::NetworkContext> network_context_;
 
   mojo::Receiver<network::mojom::NetworkContextClient>
@@ -624,7 +615,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   mojo::Remote<network::mojom::OriginPolicyManager>
       origin_policy_manager_for_browser_process_;
 
-  // The list of cors exempt headers that are set on |network_context_|.
+  // The list of cors exempt headers that are set on `network_context_`.
   // Initialized in InitNetworkContext() and never updated after then.
   std::vector<std::string> cors_exempt_header_list_;
 
@@ -652,7 +643,7 @@ class CONTENT_EXPORT StoragePartitionImpl
                     URLLoaderNetworkContext>
       url_loader_network_observers_;
 
-  // |local_trust_token_fulfiller_| provides responses to certain Trust Tokens
+  // `local_trust_token_fulfiller_` provides responses to certain Trust Tokens
   // operations, for instance via the content embedder calling into a system
   // service ("platform-provided Trust Tokens operations").
   //

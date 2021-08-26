@@ -11,6 +11,8 @@
 #include "include/core/SkPath.h"
 #include "src/gpu/GrDynamicAtlas.h"
 #include "src/gpu/GrOpsTask.h"
+#include "src/gpu/GrTBlockList.h"
+#include "src/gpu/tessellate/GrPathTessellator.h"
 
 struct SkIPoint16;
 
@@ -32,9 +34,8 @@ public:
     // Allocates a rectangle for, and stages the given path to be rendered into the atlas. Returns
     // false if there was not room in the atlas. On success, writes out the location of the path's
     // upper-left corner to 'locationInAtlas'.
-    bool addPath(const SkMatrix&, const SkPath&, bool antialias, SkIPoint pathDevTopLeft,
-                 int widthInAtlas, int heightInAtlas, bool transposedInAtlas,
-                 SkIPoint16* locationInAtlas);
+    bool addPath(const SkMatrix&, const SkPath&, SkIPoint pathDevTopLeft, int widthInAtlas,
+                 int heightInAtlas, bool transposedInAtlas, SkIPoint16* locationInAtlas);
 
     // Must be called at flush time. The texture proxy is instantiated with 'backingTexture', if
     // provided. See GrDynamicAtlas.
@@ -50,19 +51,40 @@ private:
 
     void stencilAtlasRect(GrRecordingContext*, const SkRect&, const SkPMColor4f&,
                           const GrUserStencilSettings*);
-    void addAtlasDrawOp(GrOp::Owner, bool usesMSAA, const GrCaps&);
+    void addAtlasDrawOp(GrOp::Owner, const GrCaps&);
 
     // Executes the GrOpsTask and resolves msaa if needed.
     bool onExecute(GrOpFlushState* flushState) override;
 
-    SkPath* getUberPath(SkPathFillType fillType, bool antialias) {
-        int idx = (int)antialias << 1;
-        idx |= (int)fillType & 1;
-        return &fUberPaths[idx];
-    }
-
     const std::unique_ptr<GrDynamicAtlas> fDynamicAtlas;
-    SkPath fUberPaths[4];  // 2 fillTypes * 2 antialias modes.
+
+    // Allocate enough inline entries for 16 atlas path draws, then spill to the heap.
+    using PathDrawAllocator = GrTBlockList<GrPathTessellator::PathDrawList, 16>;
+    PathDrawAllocator fPathDrawAllocator{64, GrBlockAllocator::GrowthPolicy::kFibonacci};
+
+    class AtlasPathList : SkNoncopyable {
+    public:
+        void add(PathDrawAllocator* alloc, const SkMatrix& pathMatrix, const SkPath& path) {
+            fPathDrawList = &alloc->emplace_back(pathMatrix, path, fPathDrawList);
+            if (path.isInverseFillType()) {
+                // The atlas never has inverse paths. The inversion happens later.
+                fPathDrawList->fPath.toggleInverseFillType();
+            }
+            fTotalCombinedPathVerbCnt += path.countVerbs();
+            ++fPathCount;
+        }
+        const GrPathTessellator::PathDrawList* pathDrawList() const { return fPathDrawList; }
+        int totalCombinedPathVerbCnt() const { return fTotalCombinedPathVerbCnt; }
+        int pathCount() const { return fPathCount; }
+
+    private:
+        GrPathTessellator::PathDrawList* fPathDrawList = nullptr;
+        int fTotalCombinedPathVerbCnt = 0;
+        int fPathCount = 0;
+    };
+
+    AtlasPathList fWindingPathList;
+    AtlasPathList fEvenOddPathList;
 };
 
 #endif

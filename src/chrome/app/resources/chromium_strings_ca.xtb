@@ -18,6 +18,7 @@
 <translation id="1774152462503052664">Permet que Chromium s'executi en segon pla</translation>
 <translation id="1779356040007214683">Perquè Chromium sigui més segur, hem desactivat algunes de les extensions que no apareixen a <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> i que és possible que s'hagin afegit sense que ho sapigueu.</translation>
 <translation id="1808667845054772817">Torna a instal·lar Chromium</translation>
+<translation id="185970820835152459">Pots gestionar els Comptes de Google en què tens la sessió iniciada. Els Comptes de Google s'utilitzen per al navegador Chromium, Play Store, Gmail i més. Si vols afegir un compte per a algú altre, com ara un membre de la família, afegeix una persona nova al teu dispositiu <ph name="DEVICE_TYPE" />. <ph name="LINK_BEGIN" />Més informació<ph name="LINK_END" /></translation>
 <translation id="1881322772814446296">Esteu a punt d'iniciar la sessió amb un compte gestionat i d'atorgar el control del vostre perfil de Chromium a l'administrador corresponent. Les dades de Chromium, com ara aplicacions, adreces d'interès, historial, contrasenyes i altres configuracions, s'enllaçaran permanentment amb <ph name="USER_NAME" />. Podreu suprimir aquestes dades mitjançant el Tauler de Comptes de Google, però no les podreu associar amb un altre compte. De manera opcional, podeu crear un perfil nou per mantenir les vostres dades de Chromium a part. <ph name="LEARN_MORE" /></translation>
 <translation id="1911763535808217981">En desactivar aquesta opció, pots iniciar la sessió en llocs web de Google, com ara Gmail, sense iniciar la sessió a Chromium</translation>
 <translation id="1929939181775079593">Chromium no respon. Voleu tornar-lo a iniciar ara?</translation>
@@ -107,7 +108,6 @@
 <translation id="4407044323746248786">Vols sortir de Chromium igualment?</translation>
 <translation id="4415566066719264597">Permet que Chromium s'executi en segon pla</translation>
 <translation id="4423735387467980091">Personalitza i controla Chromium</translation>
-<translation id="4491398312037323794">En aquesta pàgina pots gestionar els Comptes de Google en què tinguis la sessió iniciada. Aquests comptes estaran disponibles al navegador Chromium i a les aplicacions de Play Store, i també en serveis com ara Gmail, Drive i YouTube. <ph name="LINK_BEGIN" />Més informació<ph name="LINK_END" /></translation>
 <translation id="452711251841752011">Et donem la benvinguda a Chromium; s'ha obert una altra finestra del navegador</translation>
 <translation id="4544142686420020088">No s'ha actualitzat Chromium. S'ha produït un error. <ph name="BEGIN_LINK" />Soluciona els problemes i errors d'actualització de Chromium<ph name="END_LINK" />.</translation>
 <translation id="454579500955453258">Vols continuar en un perfil de Chromium nou?</translation>
@@ -255,6 +255,7 @@ Chromium no pot recuperar la configuració.</translation>
 <translation id="7937630085815544518">Teníeu la sessió iniciada a Chromium com a <ph name="USER_EMAIL_ADDRESS" />. Utilitzeu el mateix compte per tornar a iniciar-hi la sessió.</translation>
 <translation id="7975919845073681630">Aquesta és una instal·lació secundària de Chromium i no pot definir-se com a navegador predeterminat.</translation>
 <translation id="8013436988911883588">Un cop Chromium tingui accés, els llocs web et podran demanar accés.</translation>
+<translation id="8045118833343856403">Els següents comptes no tenen la sessió iniciada en cap perfil de Chromium. Si vols utilitzar un compte en un altre perfil, primer has de suprimir aquest perfil.</translation>
 <translation id="81770708095080097">Chromium ha bloquejat aquest fitxer perquè és perillós.</translation>
 <translation id="8248265253516264921">Si una imatge no té una descripció útil, Chromium provarà d'oferir-te'n una. Per crear les descripcions, les imatges s'envien a Google. Pots desactivar aquesta funció en qualsevol moment a la configuració.</translation>
 <translation id="8266560134891435528">Chromium no pot comprovar les teves contrasenyes perquè no tens la sessió iniciada</translation>

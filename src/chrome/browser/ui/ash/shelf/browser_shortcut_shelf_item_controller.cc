@@ -11,6 +11,7 @@
 #include "ash/public/cpp/new_window_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/wm/desks/desks_util.h"
+#include "chrome/browser/ash/full_restore/full_restore_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
@@ -91,8 +92,13 @@ void BrowserShortcutShelfItemController::ItemSelected(
     ash::ShelfLaunchSource source,
     ItemSelectedCallback callback,
     const ItemFilterPredicate& filter_predicate) {
+  Profile* profile = ChromeShelfController::instance()->profile();
+  ash::full_restore::FullRestoreService::MaybeCloseNotification(profile);
+
   if (event && (event->flags() & ui::EF_CONTROL_DOWN)) {
-    ash::NewWindowDelegate::GetInstance()->NewWindow(/*incognito=*/false);
+    ash::NewWindowDelegate::GetInstance()->NewWindow(
+        /*incognito=*/false,
+        /*should_trigger_session_restore=*/true);
     std::move(callback).Run(ash::SHELF_ACTION_NEW_WINDOW_CREATED, {});
     return;
   }
@@ -107,7 +113,6 @@ void BrowserShortcutShelfItemController::ItemSelected(
     return;
   }
 
-  Profile* profile = ChromeShelfController::instance()->profile();
   Browser* last_browser = chrome::FindTabbedBrowser(profile, true);
 
   if (last_browser && !filter_predicate.is_null() &&
@@ -116,7 +121,9 @@ void BrowserShortcutShelfItemController::ItemSelected(
   }
 
   if (!last_browser) {
-    ash::NewWindowDelegate::GetInstance()->NewWindow(/*incognito=*/false);
+    ash::NewWindowDelegate::GetInstance()->NewWindow(
+        /*incognito=*/false,
+        /*should_trigger_session_restore=*/true);
     std::move(callback).Run(ash::SHELF_ACTION_NEW_WINDOW_CREATED, {});
     return;
   }
@@ -199,8 +206,7 @@ void BrowserShortcutShelfItemController::ExecuteCommand(bool from_context_menu,
                                                         int64_t command_id,
                                                         int32_t event_flags,
                                                         int64_t display_id) {
-  if (from_context_menu && ExecuteContextMenuCommand(command_id, event_flags))
-    return;
+  DCHECK(!from_context_menu);
 
   // Check that the index is valid and the browser has not been closed.
   // It's unclear why, but the browser's window may be null: crbug.com/937088
@@ -255,7 +261,9 @@ BrowserShortcutShelfItemController::ActivateOrAdvanceToNextBrowser() {
   }
   // If there are no suitable browsers we create a new one.
   if (items.empty()) {
-    ash::NewWindowDelegate::GetInstance()->NewWindow(/*incognito=*/false);
+    ash::NewWindowDelegate::GetInstance()->NewWindow(
+        /*incognito=*/false,
+        /*should_trigger_session_restore=*/true);
     return ash::SHELF_ACTION_NEW_WINDOW_CREATED;
   }
   Browser* browser = BrowserList::GetInstance()->GetLastActive();

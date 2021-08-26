@@ -20,7 +20,7 @@
 #include "chrome/browser/upgrade_detector/build_state.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/update_engine_client.h"
+#include "chromeos/dbus/update_engine/update_engine_client.h"
 #include "chromeos/settings/timezone_settings.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -94,12 +94,27 @@ void UpgradeDetectorChromeos::Shutdown() {
   initialized_ = false;
 }
 
-base::TimeDelta UpgradeDetectorChromeos::GetHighAnnoyanceLevelDelta() {
-  return high_deadline_ - elevated_deadline_;
-}
-
-base::Time UpgradeDetectorChromeos::GetHighAnnoyanceDeadline() {
-  return high_deadline_;
+base::Time UpgradeDetectorChromeos::GetAnnoyanceLevelDeadline(
+    UpgradeNotificationAnnoyanceLevel level) {
+  const base::Time detected_time = upgrade_detected_time();
+  if (detected_time.is_null())
+    return detected_time;
+  switch (level) {
+    case UpgradeDetector::UPGRADE_ANNOYANCE_NONE:
+    case UpgradeDetector::UPGRADE_ANNOYANCE_VERY_LOW:
+    case UpgradeDetector::UPGRADE_ANNOYANCE_LOW:
+      return detected_time;
+    case UpgradeDetector::UPGRADE_ANNOYANCE_ELEVATED:
+      return elevated_deadline_;
+    case UpgradeDetector::UPGRADE_ANNOYANCE_GRACE:
+      return grace_deadline_;
+    case UpgradeDetector::UPGRADE_ANNOYANCE_HIGH:
+      return high_deadline_;
+    case UpgradeDetector::UPGRADE_ANNOYANCE_CRITICAL:
+      return upgrade_notification_stage() == UPGRADE_ANNOYANCE_CRITICAL
+                 ? detected_time
+                 : base::Time();
+  }
 }
 
 void UpgradeDetectorChromeos::OverrideHighAnnoyanceDeadline(
@@ -123,7 +138,14 @@ void UpgradeDetectorChromeos::ResetOverriddenDeadline() {
 }
 
 void UpgradeDetectorChromeos::OnUpdate(const BuildState* build_state) {
-  if (upgrade_detected_time().is_null()) {
+  if (build_state->update_type() == BuildState::UpdateType::kNone) {
+    // If the update state changed to `kNone`, reset the state as there is no
+    // longer a valid update.
+    upgrade_notification_timer_.Stop();
+    set_upgrade_available(UPGRADE_AVAILABLE_NONE);
+    set_upgrade_detected_time(base::Time());
+  } else if (upgrade_detected_time().is_null()) {
+    // Only start the timer if the build state is valid.
     set_upgrade_detected_time(clock()->Now());
     CalculateDeadlines();
   }
@@ -235,6 +257,8 @@ void UpgradeDetectorChromeos::NotifyOnUpgrade() {
   if (update_in_progress_) {
     // Cancel any notification of a previous update (if there was one) while a
     // new update is being downloaded.
+    set_upgrade_notification_stage(UPGRADE_ANNOYANCE_NONE);
+  } else if (upgrade_detected_time().is_null()) {
     set_upgrade_notification_stage(UPGRADE_ANNOYANCE_NONE);
   } else if (current_time >= high_deadline_) {
     set_upgrade_notification_stage(UPGRADE_ANNOYANCE_HIGH);

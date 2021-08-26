@@ -122,16 +122,6 @@ export class TestCaseRecorder {
   private logImpl(level: LogSeverity, name: string, baseException: Error): void {
     const logMessage = new LogMessageWithStack(name, baseException);
 
-    // Deduplicate errors with the exact same stack
-    if (!this.debugging && logMessage.stack) {
-      const seen = this.messagesForPreviouslySeenStacks.get(logMessage.stack);
-      if (seen) {
-        seen.incrementTimesSeen();
-        return;
-      }
-      this.messagesForPreviouslySeenStacks.set(logMessage.stack, logMessage);
-    }
-
     // Final case status should be the "worst" of all log entries.
     if (this.inSubCase) {
       if (level > this.subCaseStatus) this.subCaseStatus = level;
@@ -139,14 +129,14 @@ export class TestCaseRecorder {
       if (level > this.finalCaseStatus) this.finalCaseStatus = level;
     }
 
-    // setStackHidden for all logs except `kMaxLogStacks` stacks at the highest severity
+    // setFirstLineOnly for all logs except `kMaxLogStacks` stacks at the highest severity
     if (level > this.hideStacksBelowSeverity) {
       this.logLinesAtCurrentSeverity = 0;
       this.hideStacksBelowSeverity = level;
 
-      // Go back and setStackHidden for everything of a lower log level
+      // Go back and setFirstLineOnly for everything of a lower log level
       for (const log of this.logs) {
-        log.setStackHidden('stack hidden; lower-severity');
+        log.setStackHidden('below max severity');
       }
     }
     if (level === this.hideStacksBelowSeverity) {
@@ -154,10 +144,10 @@ export class TestCaseRecorder {
     } else if (level < kMinSeverityForStack) {
       logMessage.setStackHidden('');
     } else if (level < this.hideStacksBelowSeverity) {
-      logMessage.setStackHidden('stack hidden; lower-severity');
+      logMessage.setStackHidden('below max severity');
     }
     if (this.logLinesAtCurrentSeverity > kMaxLogStacks) {
-      logMessage.setStackHidden(`only ${kMaxLogStacks} stacks are shown`);
+      logMessage.setStackHidden(`only ${kMaxLogStacks} shown`);
     }
 
     this.logs.push(logMessage);

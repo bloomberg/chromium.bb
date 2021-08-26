@@ -35,6 +35,7 @@
                   android:theme="@style/Theme.Chromium.TabbedMode"
                   android:configChanges="orientation|keyboardHidden|keyboard|screenSize"
                   android:hardwareAccelerated="true"
+                  android:exported="true"
                   android:process=":test_process">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -103,7 +104,21 @@
           </intent-filter>
         </activity>
 
-        <receiver android:name="org.chromium.chrome.browser.quickactionsearchwidget.QuickActionSearchWidgetProvider"
+        <receiver android:name="org.chromium.chrome.browser.quickactionsearchwidget.QuickActionSearchWidgetProvider$QuickActionSearchWidgetProviderSmall"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+        </receiver>
+
+        <receiver android:name="org.chromium.chrome.browser.quickactionsearchwidget.QuickActionSearchWidgetProvider$QuickActionSearchWidgetProviderMedium"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+        </receiver>
+
+        <receiver android:name="org.chromium.chrome.browser.quickactionsearchwidget.QuickActionSearchWidgetProvider$QuickActionSearchWidgetProviderDino"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />

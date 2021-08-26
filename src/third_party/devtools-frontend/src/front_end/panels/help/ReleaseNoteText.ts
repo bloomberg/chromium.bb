@@ -6,8 +6,6 @@
 // be shown in Canary (e.g. make sure the release notes are accurate).
 // https://github.com/ChromeDevTools/devtools-frontend/wiki/Release-Notes
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as Host from '../../core/host/host.js';
 
 import type {ReleaseNote} from './HelpImpl.js';
@@ -17,6 +15,33 @@ const networkSearchShortcut = Host.Platform.isMac() ? 'Command+F' : 'Control+F';
 const commandMenuShortcut = Host.Platform.isMac() ? 'Command+Shift+P' : 'Control+Shift+P';
 
 export const releaseNoteText: ReleaseNote[] = [
+  {
+    version: 36,
+    header: 'Highlights from the Chrome 94 update',
+    highlights: [
+      {
+        title: 'Change the language of your DevTools',
+        subtitle: 'Chrome DevTools now supports multiple languages, allowing you to work in your preferred language.',
+        link: 'https://developer.chrome.com/blog/new-in-devtools-94/#localized',
+      },
+      {
+        title: 'New Nest Hub devices in the Device list',
+        subtitle: 'You can now simulate the dimensions of Nest Hub devices in DevTools.',
+        link: 'https://developer.chrome.com/blog/new-in-devtools-94/#nest-hub',
+      },
+      {
+        title: 'Invert all network filters',
+        subtitle: 'Use the new `invert` checkbox to invert all filters in the Network panel.',
+        link: 'https://developer.chrome.com/blog/new-in-devtools-94/#invert-network-filter',
+      },
+      {
+        title: 'Upcoming deprecation of the Console sidebar',
+        subtitle: 'The Console sidebar will be removed in favor of moving the filter UI to the toolbar.',
+        link: 'https://developer.chrome.com/blog/new-in-devtools-94/#deprecated',
+      },
+    ],
+    link: 'https://developer.chrome.com/blog/new-in-devtools-94/',
+  },
   {
     version: 35,
     header: 'Highlights from the Chrome 93 update',

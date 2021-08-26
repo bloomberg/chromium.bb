@@ -18,7 +18,6 @@
 #include "chrome/browser/ui/global_media_controls/test_helper.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/views/chrome_views_test_base.h"
-#include "components/media_message_center/media_notification_controller.h"
 #include "components/media_router/browser/media_router_factory.h"
 #include "components/media_router/browser/test/mock_media_router.h"
 #include "media/base/media_switches.h"
@@ -85,24 +84,6 @@ class MockSessionController : public CastMediaSessionController {
   MOCK_METHOD1(OnMediaStatusUpdated, void(media_router::mojom::MediaStatusPtr));
 };
 
-class MockMediaNotificationController
-    : public media_message_center::MediaNotificationController {
- public:
-  MockMediaNotificationController() = default;
-  ~MockMediaNotificationController() = default;
-
-  MOCK_METHOD(void, ShowNotification, (const std::string&));
-  MOCK_METHOD(void, HideNotification, (const std::string&));
-  MOCK_METHOD(void, RemoveItem, (const std::string&));
-
-  MOCK_METHOD(scoped_refptr<base::SequencedTaskRunner>,
-              GetTaskRunner,
-              (),
-              (const));
-  MOCK_METHOD(void,
-              LogMediaSessionActionButtonPressed,
-              (const std::string&, MediaSessionAction));
-};
 }  // anonymous namespace
 
 class MediaNotificationContainerImplViewTest : public ChromeViewsTestBase {
@@ -120,7 +101,7 @@ class MediaNotificationContainerImplViewTest : public ChromeViewsTestBase {
     item_ = std::make_unique<NiceMock<MockMediaNotificationItem>>();
     SetUpCommon(std::make_unique<MediaNotificationContainerImplView>(
         kTestNotificationId, item_->GetWeakPtr(), nullptr,
-        GlobalMediaControlsEntryPoint::kToolbarIcon));
+        GlobalMediaControlsEntryPoint::kToolbarIcon, nullptr));
   }
 
   void SetUpCommon(std::unique_ptr<MediaNotificationContainerImplView>
@@ -376,16 +357,16 @@ class MediaNotificationContainerImplViewCastTest
         mojo::Remote<media_router::mojom::MediaController>());
     session_controller_ = session_controller.get();
     item_ = std::make_unique<CastMediaNotificationItem>(
-        CreateMediaRoute(), &notification_controller_,
-        std::move(session_controller), &profile_);
+        CreateMediaRoute(), &items_manager_, std::move(session_controller),
+        &profile_);
 
     SetUpCommon(std::make_unique<MediaNotificationContainerImplView>(
         kTestNotificationId, item_->GetWeakPtr(), nullptr,
-        GlobalMediaControlsEntryPoint::kToolbarIcon));
+        GlobalMediaControlsEntryPoint::kToolbarIcon, profile()));
   }
 
   void TearDown() override {
-    // Delete |item_| before |notification_controller_|.
+    // Delete |item_| before |items_manager_|.
     item_.reset();
     MediaNotificationContainerImplViewTest::TearDown();
   }
@@ -400,15 +381,13 @@ class MediaNotificationContainerImplViewCastTest
 
   CastMediaNotificationItem* item() { return item_.get(); }
   Profile* profile() { return &profile_; }
-  MockMediaNotificationController* notification_controller() {
-    return &notification_controller_;
-  }
+  MockMediaItemsManager* items_manager() { return &items_manager_; }
 
  private:
   base::test::ScopedFeatureList feature_list_;
   TestingProfile profile_;
   std::unique_ptr<CastMediaNotificationItem> item_;
-  NiceMock<MockMediaNotificationController> notification_controller_;
+  NiceMock<MockMediaItemsManager> items_manager_;
   MockSessionController* session_controller_ = nullptr;
 };
 
@@ -508,7 +487,7 @@ TEST_F(MediaNotificationContainerImplViewTest, SendsMetadataUpdates) {
 TEST_F(MediaNotificationContainerImplViewTest, SendsDestroyedUpdates) {
   auto container = std::make_unique<MediaNotificationContainerImplView>(
       kOtherTestNotificationId, notification_item(), nullptr,
-      GlobalMediaControlsEntryPoint::kToolbarIcon);
+      GlobalMediaControlsEntryPoint::kToolbarIcon, nullptr);
   MockMediaNotificationContainerObserver observer;
   container->AddObserver(&observer);
 
@@ -539,7 +518,7 @@ TEST_F(MediaNotificationContainerImplViewTest, SendsSinkUpdates) {
 TEST_F(MediaNotificationContainerImplViewTest, MetadataTest) {
   auto container_view = std::make_unique<MediaNotificationContainerImplView>(
       kOtherTestNotificationId, notification_item(), nullptr,
-      GlobalMediaControlsEntryPoint::kToolbarIcon);
+      GlobalMediaControlsEntryPoint::kToolbarIcon, nullptr);
   views::test::TestViewMetadata(container_view.get());
 }
 

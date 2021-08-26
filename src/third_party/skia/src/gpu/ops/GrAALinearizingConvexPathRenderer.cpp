@@ -5,6 +5,8 @@
  * found in the LICENSE file.
  */
 
+#include "src/gpu/ops/GrAALinearizingConvexPathRenderer.h"
+
 #include "include/core/SkString.h"
 #include "src/core/SkGeometry.h"
 #include "src/core/SkPathPriv.h"
@@ -18,15 +20,13 @@
 #include "src/gpu/GrProcessor.h"
 #include "src/gpu/GrProgramInfo.h"
 #include "src/gpu/GrStyle.h"
-#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/GrVertexWriter.h"
 #include "src/gpu/geometry/GrPathUtils.h"
 #include "src/gpu/geometry/GrStyledShape.h"
-#include "src/gpu/glsl/GrGLSLGeometryProcessor.h"
 #include "src/gpu/ops/GrAAConvexTessellator.h"
-#include "src/gpu/ops/GrAALinearizingConvexPathRenderer.h"
 #include "src/gpu/ops/GrMeshDrawOp.h"
 #include "src/gpu/ops/GrSimpleMeshDrawOpHelperWithStencil.h"
+#include "src/gpu/v1/SurfaceDrawContext_v1.h"
 
 static const int DEFAULT_BUFFER_SIZE = 100;
 

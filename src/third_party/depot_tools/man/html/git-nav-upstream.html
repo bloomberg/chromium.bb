@@ -1,9 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
     "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
 <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
-<meta name="generator" content="AsciiDoc 8.6.9" />
+<meta name="generator" content="AsciiDoc 9.1.0" />
 <title>git-nav-upstream(1)</title>
 <style type="text/css">
 /* Shared CSS for AsciiDoc xhtml11 and html5 backends */
@@ -435,7 +436,7 @@ thead, p.table.header {
 p.table {
   margin-top: 0;
 }
-/* Because the table frame attribute is overriden by CSS in most browsers. */
+/* Because the table frame attribute is overridden by CSS in most browsers. */
 div.tableblock > table[frame="void"] {
   border-style: none;
 }
@@ -771,23 +772,23 @@ checks that out.</p></div>
 <h2 id="_example">EXAMPLE</h2>
 <div class="sectionbody">
 <div class="paragraph"><p></p></div><div class="listingblock"><div class="content"><pre><code><span style="font-weight: bold; color: #ffffff">$ git map-branches</span>
-<span style="color: #e42e16"></span><span style="color: #e42e16">origin/master
+<span style="color: #e42e16"></span><span style="color: #e42e16">origin/main
 </span><span style="color: #19c518"></span><span style="color: #19c518">  cool_feature
 </span><span style="color: #33d6e5"></span><span style="font-weight: bold; color: #33d6e5">    subfeature *
 </span><span style="font-weight: bold; color: #19c518"></span><span style="color: #19c518">  fixit
 </span><span style="color: #19c518"></span><span style="color: #19c518">    frozen_branch
 </span><span style="font-weight: bold; color: #ffffff">$ git nav-upstream</span>
 Switched to branch 'cool_feature'
-Your branch is ahead of 'origin/master' by 4 commits.
+Your branch is ahead of 'origin/main' by 4 commits.
   (use "git push" to publish your local commits)
 <span style="font-weight: bold; color: #ffffff">$ git map-branches</span>
-<span style="color: #e42e16"></span><span style="color: #e42e16">origin/master
+<span style="color: #e42e16"></span><span style="color: #e42e16">origin/main
 </span><span style="color: #33d6e5"></span><span style="font-weight: bold; color: #33d6e5">  cool_feature *
 </span><span style="font-weight: bold; color: #19c518"></span><span style="color: #19c518">    subfeature
 </span><span style="color: #19c518"></span><span style="color: #19c518">  fixit
 </span><span style="color: #19c518"></span><span style="color: #19c518">    frozen_branch
 </span><span style="font-weight: bold; color: #ffffff">$ git nav-upstream</span>
-Note: switching to 'origin/master'.
+Note: switching to 'origin/main'.
 
 You are in 'detached HEAD' state. You can look around, make experimental</span> <b>&lt;1&gt;</b><span>
 changes and commit them, and you can discard any commits you make in this
@@ -806,7 +807,7 @@ Turn off this advice by setting config variable advice.detachedHead to false
 
 HEAD is now at beec6f4 Make ReflectorImpl use mailboxes
 <span style="font-weight: bold; color: #ffffff">$ git map-branches</span>
-<span style="color: #e42e16"></span><span style="font-weight: bold; color: #e42e16">origin/master
+<span style="color: #e42e16"></span><span style="font-weight: bold; color: #e42e16">origin/main
 </span><span style="font-weight: bold; color: #19c518"></span><span style="color: #19c518">  cool_feature
 </span><span style="color: #19c518"></span><span style="color: #19c518">    subfeature
 </span><span style="color: #19c518"></span><span style="color: #19c518">  fixit
@@ -846,7 +847,8 @@ by checking out the <a href="https://chromium.googlesource.com/chromium/tools/de
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2020-08-10 17:51:13 CEST
+Last updated
+ 2021-07-01 07:07:00 PDT
 </div>
 </div>
 </body>

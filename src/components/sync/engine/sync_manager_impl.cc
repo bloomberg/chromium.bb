@@ -30,7 +30,7 @@
 #include "components/sync/engine/nigori/keystore_keys_handler.h"
 #include "components/sync/engine/polling_constants.h"
 #include "components/sync/engine/sync_scheduler.h"
-#include "components/sync/protocol/sync.pb.h"
+#include "components/sync/protocol/sync_enums.pb.h"
 
 namespace syncer {
 namespace {
@@ -98,9 +98,9 @@ ModelTypeSet SyncManagerImpl::InitialSyncEndedTypes() {
   return model_type_registry_->GetInitialSyncEndedTypes();
 }
 
-ModelTypeSet SyncManagerImpl::GetEnabledTypes() {
+ModelTypeSet SyncManagerImpl::GetConnectedTypes() {
   DCHECK(initialized_);
-  return model_type_registry_->GetEnabledDataTypes();
+  return model_type_registry_->GetConnectedTypes();
 }
 
 void SyncManagerImpl::ConfigureSyncer(ConfigureReason reason,
@@ -442,10 +442,12 @@ void SyncManagerImpl::OnIncomingInvalidation(
 
 void SyncManagerImpl::RefreshTypes(ModelTypeSet types) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (types.Empty()) {
-    LOG(WARNING) << "Sync received refresh request with no types specified.";
-  } else {
-    scheduler_->ScheduleLocalRefreshRequest(types);
+
+  const ModelTypeSet types_to_refresh =
+      Intersection(types, model_type_registry_->GetConnectedTypes());
+
+  if (!types.Empty()) {
+    scheduler_->ScheduleLocalRefreshRequest(types_to_refresh);
   }
 }
 

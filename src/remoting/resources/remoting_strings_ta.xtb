@@ -11,6 +11,7 @@
 <translation id="1546934824884762070">எதிர்பாராத பிழை. இந்தச் சிக்கலை டெவலப்பர்களுக்குத் தெரிவிக்கவும்.</translation>
 <translation id="1697532407822776718">எல்லாவற்றையும் அமைத்துவிட்டீர்கள்!</translation>
 <translation id="1742469581923031760">இணைக்கிறது...</translation>
+<translation id="177040763384871009">ரிமோட் சாதனத்தில் கிளிக் செய்த இணைப்புகளை கிளையண்ட் உலாவியில் திறப்பதற்கு அனுமதிக்க, கம்ப்யூட்டரின் இணைய உலாவியை "<ph name="URL_FORWARDER_NAME" />" ஆக மாற்ற வேண்டும்.</translation>
 <translation id="177096447311351977">க்ளையன்ட்டிற்கான சேனல் IP: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1897488610212723051">நீக்கு</translation>
 <translation id="2009755455353575666">இணைப்புத் தோல்வி</translation>
@@ -129,6 +130,7 @@
 <translation id="6963936880795878952">யாரோ ஒருவர் தவறான பின்னைப் பயன்படுத்தித் தொலைநிலையில் இயங்கக்கூடிய கம்ப்யூட்டரை இணைக்க முயன்றதால், அதற்கான இணைப்புகள் தற்காலிகமாகத் தடுக்கப்பட்டுள்ளன. பிறகு முயலவும்.</translation>
 <translation id="6965382102122355670">சரி</translation>
 <translation id="6985691951107243942"><ph name="HOSTNAME" /> க்கான தொலைநிலை இணைப்புகளை நிச்சயமாக முடக்க வேண்டுமா? மனம் மாறிவிட்டால், இணைப்புகளை மீண்டும் செயலாக்க, நீங்கள் அந்தக் கம்ப்யூட்டருக்கு மீண்டும் செல்ல வேண்டியிருக்கும்.</translation>
+<translation id="6998890551706945177">உங்கள் கம்ப்யூட்டரைப் பார்ப்பதற்கும் கட்டுப்படுத்துவதற்கும் <ph name="CLIENT_USERNAME" /> அனுமதி கேட்டுள்ளார். இவரை உங்களுக்குத் தெரியாது என்றாலோ பகிர்வதற்கு முன் ஏதேனும் மாற்றங்கள் செய்ய வேண்டும் என்றாலோ ''<ph name="IDS_SHARE_CONFIRM_DIALOG_DECLINE" />'' பட்டனை அழுத்தவும்.  இல்லையெனில் அனுமதி வழங்க ''<ph name="IDS_SHARE_CONFIRM_DIALOG_CONFIRM" />'' பட்டனைத் தேர்ந்தெடுக்கவும்.</translation>
 <translation id="7019153418965365059">அறியப்படாத ஹோஸ்ட் பிழை: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">தொலைநிலை உதவி</translation>
 <translation id="7026930240735156896">உங்கள் கம்ப்யூட்டரை தொலைநிலையில் அமைக்க, இந்த
@@ -143,6 +145,7 @@
 <translation id="7434397035092923453"><ph name="CLIENT_USERNAME" /> கிளையன்ட்டிற்கு அணுகல் மறுக்கப்பட்டது.</translation>
 <translation id="7444276978508498879">க்ளையன்ட் இணைக்கப்பட்டது: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7526139040829362392">கணக்கை மாற்று</translation>
+<translation id="7535110896613603182">இயல்பான ஆப்ஸ் அமைப்புகளைத் திற</translation>
 <translation id="7628469622942688817">இந்தச் சாதனத்தில் எனது பின்னை நினைவில்கொள்.</translation>
 <translation id="7649070708921625228">உதவி</translation>
 <translation id="7658239707568436148">ரத்து செய்</translation>

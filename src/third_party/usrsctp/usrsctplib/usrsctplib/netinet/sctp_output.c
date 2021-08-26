@@ -13388,9 +13388,6 @@ sctp_sosend(struct socket *so,
 	struct sockaddr_in sin;
 #endif
 
-#if defined(__APPLE__) && !defined(__Userspace__)
-	SCTP_SOCKET_LOCK(so, 1);
-#endif
 	if (control) {
 		/* process cmsg snd/rcv info (maybe a assoc-id) */
 		if (sctp_find_cmsg(SCTP_SNDRCV, (void *)&sndrcvninfo, control,
@@ -13401,15 +13398,24 @@ sctp_sosend(struct socket *so,
 	}
 	addr_to_use = addr;
 #if defined(INET) && defined(INET6)
-	if ((addr) && (addr->sa_family == AF_INET6)) {
+	if ((addr != NULL) && (addr->sa_family == AF_INET6)) {
 		struct sockaddr_in6 *sin6;
 
+#ifdef HAVE_SA_LEN
+		if (addr->sa_len != sizeof(struct sockaddr_in6)) {
+			SCTP_LTRACE_ERR_RET(NULL, NULL, NULL, SCTP_FROM_SCTP_OUTPUT, EINVAL);
+			return (EINVAL);
+		}
+#endif
 		sin6 = (struct sockaddr_in6 *)addr;
 		if (IN6_IS_ADDR_V4MAPPED(&sin6->sin6_addr)) {
 			in6_sin6_2_sin(&sin, sin6);
 			addr_to_use = (struct sockaddr *)&sin;
 		}
 	}
+#endif
+#if defined(__APPLE__) && !defined(__Userspace__)
+	SCTP_SOCKET_LOCK(so, 1);
 #endif
 	error = sctp_lower_sosend(so, addr_to_use, uio, top,
 				  control,
@@ -13449,7 +13455,7 @@ sctp_lower_sosend(struct socket *so,
 	struct epoch_tracker et;
 #endif
 	ssize_t sndlen = 0, max_len, local_add_more;
-	int error, len;
+	int error;
 	struct mbuf *top = NULL;
 	int queue_only = 0, queue_only_for_init = 0;
 	int free_cnt_applied = 0;
@@ -14068,7 +14074,6 @@ sctp_lower_sosend(struct socket *so,
 		 */
 		local_add_more = sndlen;
 	}
-	len = 0;
 	if (non_blocking) {
 		goto skip_preblock;
 	}
@@ -14298,7 +14303,6 @@ skip_preblock:
 				}
 				sctp_snd_sb_alloc(stcb, sndout);
 				atomic_add_int(&sp->length, sndout);
-				len += sndout;
 				if (sinfo_flags & SCTP_SACK_IMMEDIATELY) {
 					sp->sinfo_flags |= SCTP_SACK_IMMEDIATELY;
 				}

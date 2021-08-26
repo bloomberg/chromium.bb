@@ -1229,7 +1229,7 @@ absl::optional<int32_t> AutofillPopupViewNativeViews::GetAxUniqueId() {
 }
 
 void AutofillPopupViewNativeViews::CreateChildViews() {
-  RemoveAllChildViews(true /* delete_children */);
+  RemoveAllChildViews();
   rows_.clear();
   scroll_view_ = nullptr;
   body_container_ = nullptr;
@@ -1432,7 +1432,7 @@ bool AutofillPopupViewNativeViews::DoUpdateBoundsAndRedrawPopup() {
 
   SetSize(preferred_size);
 
-  popup_bounds.Inset(-GetWidget()->GetRootView()->border()->GetInsets());
+  popup_bounds.Inset(-GetWidget()->GetRootView()->GetInsets());
   GetWidget()->SetBounds(popup_bounds);
   UpdateClipPath();
 

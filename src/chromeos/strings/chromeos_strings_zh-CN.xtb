@@ -14,6 +14,7 @@
 <translation id="1204296502688602597">DNS 延迟时间</translation>
 <translation id="123124571410524056">疑似存在门户</translation>
 <translation id="1238612778414822719">HTTPS 延迟</translation>
+<translation id="1264369926465113395">查看 Chromebook 专为创作者提供的全新数字杂志</translation>
 <translation id="1270369111467284986">疑似存在强制门户</translation>
 <translation id="1290331692326790741">信号较弱</translation>
 <translation id="1314565355471455267">Android VPN</translation>
@@ -34,7 +35,9 @@
 <translation id="1510238584712386396">启动器</translation>
 <translation id="1600964289716072707">将另一个网页放置在扫描仪上，然后选择“扫描”即可添加网页。</translation>
 <translation id="1621067168122174824">运行充电测试</translation>
+<translation id="1639239467298939599">正在加载</translation>
 <translation id="1641857168437328880">文件馈送器（单面）</translation>
+<translation id="1643449475550628585">每天更改一次壁纸图片</translation>
 <translation id="1644574205037202324">历史记录</translation>
 <translation id="1662989795263954667">已停止 - 墨水已用完</translation>
 <translation id="1703835215927279855">Letter</translation>
@@ -65,7 +68,6 @@
 <translation id="2224337661447660594">未连接到互联网</translation>
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="225692081236532131">激活状态</translation>
-<translation id="2294675138977897428">未检测到以太网连接</translation>
 <translation id="2326139988748364651"><ph name="RESOLUTION_VALUE" /> dpi</translation>
 <translation id="2338501278241028356">开启蓝牙以发现附近的设备</translation>
 <translation id="2364498172489649528">通过</translation>
@@ -75,9 +77,11 @@
 <translation id="2448312741937722512">类型</translation>
 <translation id="2461822463642141190">电流</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
+<translation id="2505327257735685095">刷新当前壁纸图片</translation>
 <translation id="2517472476991765520">扫描</translation>
 <translation id="2570743873672969996">正在运行<ph name="TEST_NAME" />测试…</translation>
 <translation id="2585245331261708204">Chrome 操作系统的新变化</translation>
+<translation id="2619761439309613843">每日刷新</translation>
 <translation id="2620436844016719705">系统</translation>
 <translation id="2740531572673183784">确定</translation>
 <translation id="2751739896257479635">EAP 阶段 2 身份验证</translation>
@@ -87,7 +91,6 @@
 <translation id="2862104018715411648">将您的文件放置在扫描仪上，然后选择“扫描”即可开始扫描</translation>
 <translation id="2872961005593481000">关机</translation>
 <translation id="2878387241690264070"><ph name="NUM_SECONDS" /> 秒内释放了 <ph name="RATE" /> 的电量。</translation>
-<translation id="2983662233540284543">向游戏创作者学习、获取游戏设计应用，等等</translation>
 <translation id="3008341117444806826">刷新</translation>
 <translation id="3009958530611748826">选择要保存到的文件夹</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" />mA</translation>
@@ -101,6 +104,7 @@
 <translation id="3188257591659621405">我的文件</translation>
 <translation id="3199982728237701504">文件馈送器（双面）</translation>
 <translation id="3226405216343213872">正在搜寻扫描器</translation>
+<translation id="3228433892370472777">默认连接</translation>
 <translation id="3246869037381808805">系统会自动移除存在时长已超过 1 天的打印任务</translation>
 <translation id="3268178239013324452">失败 - 机盖未关</translation>
 <translation id="3283504360622356314">{0,plural, =1{修改文件}other{修改文件}}</translation>
@@ -117,10 +121,13 @@
 <translation id="3488065109653206955">部分激活</translation>
 <translation id="3527036260304016759">失败 - 不明错误</translation>
 <translation id="3532980081107202182">还剩大约 <ph name="MIN_REMAINING" /> 分钟</translation>
+<translation id="3540383942695635079">MAC 地址</translation>
 <translation id="357889014807611375">按流量计费的 Wi-Fi</translation>
+<translation id="3582041541988388905">未检测到<ph name="NETWORK_NAME" />连接</translation>
 <translation id="3595596368722241419">电池已充满</translation>
 <translation id="360565022852130722">Wi-Fi 网络采用了防护能力较弱的 WEP 802.1x 协议</translation>
 <translation id="3689839747745352263"><ph name="TEST_NAME" />测试</translation>
+<translation id="3708186454126126312">曾经连接过</translation>
 <translation id="373232531963562220">{PAGE_NUMBER,plural, =0{重新扫描页面}=1{重新扫描第 {PAGE_NUMBER} 页}other{重新扫描第 {PAGE_NUMBER} 页}}</translation>
 <translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★（<ph name="AGGREGATED_COUNT" /> 条评价）</translation>
 <translation id="3748026146096797577">未建立连接</translation>
@@ -163,6 +170,7 @@
 <translation id="4479639480957787382">以太网</translation>
 <translation id="4483049906298469269">未能对非默认网关执行 ping 操作</translation>
 <translation id="4511264077854731334">门户网站</translation>
+<translation id="4536864596629708641">IP 配置</translation>
 <translation id="4548483925627140043">找不到信号</translation>
 <translation id="455835558791489930"><ph name="CHARGE_VALUE" />mAh 电池</translation>
 <translation id="4562494484721939086">无服务</translation>
@@ -171,6 +179,7 @@
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />，<ph name="PRINTER_NAME" />，<ph name="CREATION_TIME" />，已打印 <ph name="PRINTED_PAGE_NUMBER" /> 页，共 <ph name="TOTAL_PAGE_NUMBER" /> 页。按 Enter 键即可取消这项打印任务。</translation>
 <translation id="4646949265910132906">安全的 Wi-Fi 连接</translation>
 <translation id="4652335678334611408">保存会话日志</translation>
+<translation id="4654549501020883054">每日更换一次</translation>
 <translation id="4665014895760275686">制造商</translation>
 <translation id="467510802200863975">输入的两个密码不相同</translation>
 <translation id="467715984478005772">疑似存在防火墙</translation>
@@ -194,6 +203,7 @@
 <translation id="4891842000192098784">压力</translation>
 <translation id="4917385247580444890">强</translation>
 <translation id="4917889632206600977">已停止 - 纸张已用完</translation>
+<translation id="491836528011451486">将您的文件放置在扫描仪上，然后选择“重新扫描”即可扫描并替换第 <ph name="CURRENT_PAGE" /> 页。</translation>
 <translation id="4921665434385737356"><ph name="NUM_SECONDS" /> 秒内充了 <ph name="RATE" /> 的电量。</translation>
 <translation id="4932733599132424254">日期</translation>
 <translation id="498186245079027698">请检查扫描仪，然后重试。另请确保有足够的本地空间来保存扫描版文件。</translation>
@@ -209,10 +219,10 @@
 <translation id="5154917547274118687">内存</translation>
 <translation id="5168185087976003268">电池寿命</translation>
 <translation id="5170568018924773124">在文件夹中显示</translation>
-<translation id="519607504553633437">设计和构建您自己的游戏</translation>
 <translation id="5212543919916444558">无法提供与您的屏幕上可以找到的任何内容相关的帮助。
 请尝试通过点按麦克风图标向我提问。</translation>
 <translation id="5222676887888702881">退出</translation>
+<translation id="5234764350956374838">关闭</translation>
 <translation id="5252456968953390977">漫游</translation>
 <translation id="5264277876637023664">运行 CPU 测试</translation>
 <translation id="5267975978099728568"><ph name="DOCUMENT_TITLE" />，<ph name="PRINTER_NAME" />，<ph name="CREATION_TIME" />，<ph name="ERROR_STATUS" /></translation>
@@ -243,7 +253,6 @@
 <translation id="5691511426247308406">家用</translation>
 <translation id="5701381305118179107">居中</translation>
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" /> / <ph name="TOTAL_PAGES" /></translation>
-<translation id="5752751666635965375">打造您自己的游戏</translation>
 <translation id="5760715441271661976">门户状态</translation>
 <translation id="5832805196449965646">添加用户</translation>
 <translation id="583281660410589416">未知</translation>
@@ -266,6 +275,7 @@
 <translation id="6106186594183574873">要完成更改，请输入您的旧密码</translation>
 <translation id="6108689792487843350">无法连接至网关</translation>
 <translation id="6122191549521593678">在线</translation>
+<translation id="6125438912510167220">连接速度</translation>
 <translation id="6137767437444130246">用户证书</translation>
 <translation id="6146993107019042706">要完成更改，请输入您的新密码</translation>
 <translation id="6147514244879357420">PNG</translation>
@@ -292,6 +302,8 @@
 <translation id="65587193855025101">平台式</translation>
 <translation id="6564646048574748301">失败 - 无法连接到打印机</translation>
 <translation id="6574762126505704998">填充</translation>
+<translation id="6575134580692778371">未配置</translation>
+<translation id="6596816719288285829">IP 地址</translation>
 <translation id="6603230386432466813">连接时遇到了问题？</translation>
 <translation id="6618744767048954150">正在运行</translation>
 <translation id="6620487321149975369">打印任务如未被手动移除，将会显示在历史记录中，</translation>
@@ -314,13 +326,16 @@
 <translation id="7059230779847288458">正在充电，还需 <ph name="TIME_VALUE" />才能充满</translation>
 <translation id="708426984172631313">已停止</translation>
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
+<translation id="7134436342991564651">{0,plural, =1{域名服务器}other{域名服务器}}</translation>
 <translation id="7143207342074048698">正在连接</translation>
 <translation id="7144878232160441200">重试</translation>
 <translation id="714876143603641390">LAN 连接性</translation>
 <translation id="7162487448488904999">媒体库</translation>
 <translation id="7172721935181587524">1 张图片</translation>
 <translation id="7177485034254901881">此 <ph name="DEVICE_TYPE" /> 由 <ph name="MANAGER" /> 管理。管理员可能会远程配置此设备。</translation>
+<translation id="7180611975245234373">刷新</translation>
 <translation id="7216409898977639127">移动网络服务提供商</translation>
+<translation id="7257889006063274246">确定要移除第 <ph name="CURRENT_PAGE" /> 页吗？</translation>
 <translation id="7271040990581020067">扫描仪正在使用中。请稍后再试。</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7287310195820267359">壁纸集</translation>
@@ -354,9 +369,11 @@
 <translation id="7835501727204647447">安装 CloudReady</translation>
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7882358943899516840">提供商类型</translation>
+<translation id="7895471513946376273">探索绘图和设计工具</translation>
 <translation id="7936303884198020182">找不到任何域名服务器</translation>
 <translation id="7960831585769876809">温度</translation>
 <translation id="7994702968232966508">EAP 方法</translation>
+<translation id="8020238979854764615">出错了。请另选图片以重试。</translation>
 <translation id="802154636333426148">下载失败</translation>
 <translation id="8041089156583427627">发送反馈</translation>
 <translation id="8075838845814659848">剩余电量</translation>
@@ -368,7 +385,9 @@
 <translation id="8214184102975786227">将多个页面扫描成 1 个 PDF 文件</translation>
 <translation id="8230672074305416752">未能对默认网关执行 ping 操作</translation>
 <translation id="8246209727385807362">未知运营商</translation>
+<translation id="8286154143153872371">若要查看壁纸，请连接到网络并重新加载这个页面。</translation>
 <translation id="8291967909914612644">家用移动网络提供商所属国家/地区</translation>
+<translation id="829270796093605079">探索设计工具</translation>
 <translation id="8294431847097064396">来源</translation>
 <translation id="8297006494302853456">弱</translation>
 <translation id="8302368968391049045">HTTPS 防火墙</translation>
@@ -392,6 +411,7 @@
 <translation id="8575298406870537639">您的运营商可能会要求您启用此选项以连接到其网络。如需了解详情，请联系您的运营商。</translation>
 <translation id="8576249514688522074">未初始化</translation>
 <translation id="8620617069779373398">漫游状态</translation>
+<translation id="8655295600908251630">版本</translation>
 <translation id="8660881923941176839">磅</translation>
 <translation id="8675354002693747642">预共享密钥</translation>
 <translation id="871560550817059752">失败 - 墨水已用完</translation>
@@ -404,6 +424,7 @@
 <translation id="8798441408945964110">提供商名称</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8818152010000655963">壁纸</translation>
+<translation id="8834539327799336565">目前已连接</translation>
 <translation id="8845001906332463065">获取帮助</translation>
 <translation id="8868741746785112895">GUID</translation>
 <translation id="8881098542468797602">测试成功</translation>

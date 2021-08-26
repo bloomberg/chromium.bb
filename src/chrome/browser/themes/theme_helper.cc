@@ -54,7 +54,7 @@ const std::array<SkColor, 2> GetTabGroupColors(int color_id) {
     case TP::COLOR_TAB_GROUP_DIALOG_GREEN:
     case TP::COLOR_TAB_GROUP_TABSTRIP_FRAME_ACTIVE_GREEN:
     case TP::COLOR_TAB_GROUP_TABSTRIP_FRAME_INACTIVE_GREEN:
-      return {gfx::kGoogleGreen600, gfx::kGoogleGreen300};
+      return {gfx::kGoogleGreen700, gfx::kGoogleGreen300};
     case TP::COLOR_TAB_GROUP_CONTEXT_MENU_PINK:
     case TP::COLOR_TAB_GROUP_DIALOG_PINK:
     case TP::COLOR_TAB_GROUP_TABSTRIP_FRAME_ACTIVE_PINK:
@@ -200,7 +200,7 @@ int ThemeHelper::GetDisplayProperty(int id,
 base::RefCountedMemory* ThemeHelper::GetRawData(
     int id,
     const CustomThemeSupplier* theme_supplier,
-    ui::ScaleFactor scale_factor) {
+    ui::ResourceScaleFactor scale_factor) {
   // Check to see whether we should substitute some images.
   int ntp_alternate =
       GetDisplayProperty(TP::NTP_LOGO_ALTERNATE, theme_supplier);
@@ -356,7 +356,7 @@ SkColor ThemeHelper::GetDefaultColor(
       // The active color is overridden in GtkUi.
       return SkColorSetA(
           GetColor(TP::COLOR_TOOLBAR_BUTTON_ICON, incognito, theme_supplier),
-          0x6E);
+          gfx::kGoogleGreyAlpha500);
     case TP::COLOR_LOCATION_BAR_BORDER:
       return SkColorSetA(SK_ColorBLACK, 0x4D);
     case TP::COLOR_TOOLBAR_TOP_SEPARATOR:
@@ -383,9 +383,9 @@ SkColor ThemeHelper::GetDefaultColor(
           GetColor(TP::COLOR_TOOLBAR, incognito, theme_supplier));
     }
     case TP::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR:
-      if (IsDefaultTheme(theme_supplier))
-        break;
-      return GetColor(TP::COLOR_LOCATION_BAR_BORDER, incognito, theme_supplier);
+      return SkColorSetA(
+          GetColor(TP::COLOR_TOOLBAR_BUTTON_ICON, incognito, theme_supplier),
+          0x3A);
     case TP::COLOR_NTP_TEXT_LIGHT:
       return IncreaseLightness(
           GetColor(TP::COLOR_NTP_TEXT, incognito, theme_supplier), 0.40);
@@ -636,9 +636,7 @@ absl::optional<ThemeHelper::OmniboxColor> ThemeHelper::GetOmniboxColorImpl(
         {{dark ? gfx::kGoogleBlue050 : gfx::kGoogleBlue900, false}});
   };
   const auto results_bg_selected_color = [&]() {
-    return blend_toward_max_contrast(
-        results_bg_color(),
-        OmniboxFieldTrial::IsRefinedFocusStateEnabled() ? 0x1A : 0x29);
+    return blend_toward_max_contrast(results_bg_color(), 0x1A);
   };
   const auto blend_with_clamped_contrast = [&](OmniboxColor bg) {
     return blend_for_min_contrast(fg, fg, blend_for_min_contrast(bg, bg));
@@ -680,8 +678,6 @@ absl::optional<ThemeHelper::OmniboxColor> ThemeHelper::GetOmniboxColorImpl(
       return url_color(results_bg_hovered_color());
     case TP::COLOR_OMNIBOX_RESULTS_URL_SELECTED:
       return url_color(results_bg_selected_color());
-    case TP::COLOR_OMNIBOX_RESULTS_FOCUS_BAR:
-      return {{dark ? gfx::kGoogleBlue300 : gfx::kGoogleBlue600, false}};
     case TP::COLOR_OMNIBOX_RESULTS_BUTTON_BORDER:
       return blend_toward_max_contrast(bg, gfx::kGoogleGreyAlpha400);
     case TP::COLOR_OMNIBOX_SECURITY_CHIP_DEFAULT:

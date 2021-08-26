@@ -18,11 +18,12 @@
 #include "build/build_config.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliated_match_helper.h"
 #include "components/password_manager/core/browser/android_affiliation/mock_affiliated_match_helper.h"
-#include "components/password_manager/core/browser/mock_password_store.h"
+#include "components/password_manager/core/browser/mock_password_store_interface.h"
+#include "components/password_manager/core/browser/mock_smart_bubble_stats_store.h"
 #include "components/password_manager/core/browser/multi_store_form_fetcher.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
-#include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/browser/password_store_interface.h"
 #include "components/password_manager/core/browser/statistics_table.h"
 #include "components/password_manager/core/browser/stub_credentials_filter.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
@@ -115,7 +116,7 @@ class FakePasswordManagerClient : public StubPasswordManagerClient {
     filter_ = std::move(filter);
   }
 
-  void set_store(PasswordStore* store) { store_ = store; }
+  void set_store(PasswordStoreInterface* store) { store_ = store; }
 
  private:
   const CredentialsFilter* GetStoreResultFilter() const override {
@@ -123,11 +124,15 @@ class FakePasswordManagerClient : public StubPasswordManagerClient {
                    : StubPasswordManagerClient::GetStoreResultFilter();
   }
 
-  PasswordStore* GetProfilePasswordStore() const override { return store_; }
-  PasswordStore* GetAccountPasswordStore() const override { return nullptr; }
+  PasswordStoreInterface* GetProfilePasswordStoreInterface() const override {
+    return store_;
+  }
+  PasswordStoreInterface* GetAccountPasswordStoreInterface() const override {
+    return nullptr;
+  }
 
   std::unique_ptr<CredentialsFilter> filter_;
-  PasswordStore* store_ = nullptr;
+  PasswordStoreInterface* store_ = nullptr;
   mutable FakeNetworkContext network_context_;
 
   DISALLOW_COPY_AND_ASSIGN(FakePasswordManagerClient);
@@ -213,8 +218,7 @@ class FormFetcherImplTest : public testing::Test,
       : form_digest_(PasswordForm::Scheme::kHtml,
                      kTestHttpURL,
                      GURL(kTestHttpURL)) {
-    mock_store_ = new testing::NiceMock<MockPasswordStore>;
-    mock_store_->Init(nullptr);
+    mock_store_ = new testing::NiceMock<MockPasswordStoreInterface>;
     client_.set_store(mock_store_.get());
 
     if (!GetParam()) {
@@ -230,15 +234,16 @@ class FormFetcherImplTest : public testing::Test,
     }
   }
 
-  ~FormFetcherImplTest() override { mock_store_->ShutdownOnUIThread(); }
+  void SetUp() override {
+    ON_CALL(*mock_store_, GetSmartBubbleStatsStore)
+        .WillByDefault(Return(&mock_smart_bubble_stats_store_));
+  }
+
+  ~FormFetcherImplTest() override = default;
 
  protected:
   // A wrapper around form_fetcher_.Fetch(), adding the call expectations.
   void Fetch() {
-#if !defined(OS_IOS) && !defined(OS_ANDROID)
-    EXPECT_CALL(*mock_store_, GetSiteStatsImpl(_))
-        .WillOnce(Return(std::vector<InteractionsStats>()));
-#endif
     EXPECT_CALL(*mock_store_, GetLogins(form_digest_, form_fetcher_.get()));
     form_fetcher_->Fetch();
     task_environment_.RunUntilIdle();
@@ -252,7 +257,8 @@ class FormFetcherImplTest : public testing::Test,
   PasswordFormDigest form_digest_;
   std::unique_ptr<FormFetcherImpl> form_fetcher_;
   MockConsumer consumer_;
-  scoped_refptr<MockPasswordStore> mock_store_;
+  scoped_refptr<MockPasswordStoreInterface> mock_store_;
+  testing::NiceMock<MockSmartBubbleStatsStore> mock_smart_bubble_stats_store_;
   FakePasswordManagerClient client_;
 
  private:
@@ -444,11 +450,15 @@ TEST_P(FormFetcherImplTest, Stats) {
 TEST_P(FormFetcherImplTest, InsecureCredentials) {
   Fetch();
   form_fetcher_->AddConsumer(&consumer_);
-  const std::vector<InsecureCredential> credentials = {InsecureCredential(
-      form_digest_.signon_realm, u"username_value", base::Time::FromTimeT(1),
-      InsecureType::kLeaked, IsMuted(false))};
-  static_cast<InsecureCredentialsConsumer*>(form_fetcher_.get())
-      ->OnGetInsecureCredentials(credentials);
+  PasswordForm form = CreateNonFederated();
+  form.password_issues.insert({InsecureType::kLeaked, InsecurityMetadata()});
+  std::vector<std::unique_ptr<PasswordForm>> results;
+  results.push_back(std::make_unique<PasswordForm>(form));
+  const std::vector<InsecureCredential> credentials = {
+      InsecureCredential(form.signon_realm, form.username_value, base::Time(),
+                         InsecureType::kLeaked, IsMuted(false))};
+  static_cast<PasswordStoreConsumer*>(form_fetcher_.get())
+      ->OnGetPasswordStoreResultsFrom(mock_store_.get(), std::move(results));
   EXPECT_THAT(form_fetcher_->GetInsecureCredentials(),
               UnorderedElementsAreArray(credentials));
 }
@@ -504,60 +514,31 @@ TEST_P(FormFetcherImplTest, FetchStatistics) {
   stats.dismissal_count = 5;
   std::vector<InteractionsStats> db_stats = {stats};
   EXPECT_CALL(*mock_store_, GetLogins(form_digest_, form_fetcher_.get()));
-  EXPECT_CALL(*mock_store_, GetSiteStatsImpl(stats.origin_domain))
-      .WillOnce(Return(db_stats));
+  EXPECT_CALL(mock_smart_bubble_stats_store_,
+              GetSiteStats(stats.origin_domain, _))
+      .WillOnce(
+          testing::WithArg<1>([db_stats](PasswordStoreConsumer* consumer) {
+            base::ThreadTaskRunnerHandle::Get()->PostTask(
+                FROM_HERE, base::BindOnce(
+                               [](PasswordStoreConsumer* con,
+                                  const std::vector<InteractionsStats>& stats) {
+                                 con->OnGetSiteStatistics(
+                                     std::vector<InteractionsStats>(stats));
+                               },
+                               consumer, db_stats));
+          }));
   form_fetcher_->Fetch();
   task_environment_.RunUntilIdle();
 
   EXPECT_THAT(form_fetcher_->GetInteractionsStats(),
               UnorderedElementsAre(stats));
 }
-
-TEST_P(FormFetcherImplTest, FetchInsecure) {
-  std::vector<InsecureCredential> list = {InsecureCredential(
-      form_digest_.signon_realm, u"username_value", base::Time::FromTimeT(1),
-      InsecureType::kLeaked, IsMuted(false))};
-  EXPECT_CALL(*mock_store_,
-              GetMatchingInsecureCredentialsImpl(form_digest_.signon_realm))
-      .WillOnce(Return(list));
-  form_fetcher_->Fetch();
-  task_environment_.RunUntilIdle();
-
-  EXPECT_THAT(form_fetcher_->GetInsecureCredentials(),
-              UnorderedElementsAreArray(list));
-}
 #else
 TEST_P(FormFetcherImplTest, DontFetchStatistics) {
   EXPECT_CALL(*mock_store_, GetLogins(form_digest_, form_fetcher_.get()));
-  EXPECT_CALL(*mock_store_, GetSiteStatsImpl(_)).Times(0);
+  EXPECT_CALL(mock_smart_bubble_stats_store_, GetSiteStats).Times(0);
   form_fetcher_->Fetch();
   task_environment_.RunUntilIdle();
-}
-
-TEST_P(FormFetcherImplTest, DontFetchInsecure) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatureState(features::kMutingCompromisedCredentials,
-                                    false);
-  EXPECT_CALL(*mock_store_, GetMatchingInsecureCredentialsImpl).Times(0);
-  form_fetcher_->Fetch();
-  task_environment_.RunUntilIdle();
-}
-
-TEST_P(FormFetcherImplTest, FetchInsecure) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatureState(features::kMutingCompromisedCredentials,
-                                    true);
-  std::vector<InsecureCredential> list = {InsecureCredential(
-      form_digest_.signon_realm, u"username_value", base::Time::FromTimeT(1),
-      InsecureType::kLeaked, IsMuted(false))};
-  EXPECT_CALL(*mock_store_,
-              GetMatchingInsecureCredentialsImpl(form_digest_.signon_realm))
-      .WillOnce(Return(list));
-  form_fetcher_->Fetch();
-  task_environment_.RunUntilIdle();
-
-  EXPECT_THAT(form_fetcher_->GetInsecureCredentials(),
-              UnorderedElementsAreArray(list));
 }
 #endif
 
@@ -852,13 +833,15 @@ TEST_P(FormFetcherImplTest, Clone_Stats) {
 TEST_P(FormFetcherImplTest, Clone_Insecure) {
   Fetch();
   // Pass empty results to make the state NOT_WAITING.
-  store_consumer()->OnGetPasswordStoreResultsFrom(
-      mock_store_.get(), std::vector<std::unique_ptr<PasswordForm>>());
-  const std::vector<InsecureCredential> credentials = {InsecureCredential(
-      form_digest_.signon_realm, u"username_value", base::Time::FromTimeT(1),
-      InsecureType::kLeaked, IsMuted(false))};
-  static_cast<InsecureCredentialsConsumer*>(form_fetcher_.get())
-      ->OnGetInsecureCredentials(credentials);
+  PasswordForm form = CreateNonFederated();
+  form.password_issues.insert({InsecureType::kLeaked, InsecurityMetadata()});
+  std::vector<std::unique_ptr<PasswordForm>> results;
+  results.push_back(std::make_unique<PasswordForm>(form));
+  const std::vector<InsecureCredential> credentials = {
+      InsecureCredential(form.signon_realm, form.username_value, base::Time(),
+                         InsecureType::kLeaked, IsMuted(false))};
+  static_cast<PasswordStoreConsumer*>(form_fetcher_.get())
+      ->OnGetPasswordStoreResultsFrom(mock_store_.get(), std::move(results));
 
   auto clone = form_fetcher_->Clone();
   EXPECT_THAT(clone->GetInsecureCredentials(),
@@ -897,34 +880,6 @@ TEST_P(FormFetcherImplTest, DestroyFetcherFromConsumer) {
   static_cast<PasswordStoreConsumer*>(form_fetcher)
       ->OnGetPasswordStoreResultsFrom(
           mock_store_.get(), std::vector<std::unique_ptr<PasswordForm>>());
-}
-
-TEST_P(FormFetcherImplTest, BrandingInformationInjected) {
-  Fetch();
-
-  std::vector<MockAffiliatedMatchHelper::AffiliationAndBrandingInformation>
-      affiliation_info_for_results = {
-          {"android://hash@com.example.android/", "Android App Name", GURL()}};
-
-  PasswordForm form = CreateHTMLForm("android://hash@com.example.android/",
-                                     "username_value", "password_value");
-  form.in_store = PasswordForm::Store::kProfileStore;
-  auto mock_helper = std::make_unique<MockAffiliatedMatchHelper>();
-  // Injects expected branding information.
-  mock_helper->ExpectCallToInjectAffiliationAndBrandingInformation(
-      affiliation_info_for_results);
-  // Settings affiliated match helper for the password store.
-  mock_store_->SetAffiliatedMatchHelper(std::move(mock_helper));
-
-  std::vector<std::unique_ptr<PasswordForm>> results;
-  results.push_back(std::make_unique<PasswordForm>(form));
-  form_fetcher_->OnGetPasswordStoreResultsFrom(mock_store_.get(),
-                                               std::move(results));
-  EXPECT_EQ(FormFetcher::State::NOT_WAITING, form_fetcher_->GetState());
-
-  // The results should contain branding information.
-  EXPECT_EQ(form_fetcher_->GetNonFederatedMatches()[0]->app_display_name,
-            "Android App Name");
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

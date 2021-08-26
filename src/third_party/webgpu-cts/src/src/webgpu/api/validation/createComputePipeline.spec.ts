@@ -174,3 +174,17 @@ The entryPoint assigned in descriptor include:
     const _success = shaderModuleEntryPoint === stageEntryPoint;
     t.doCreateComputePipelineTest(isAsync, _success, descriptor);
   });
+
+g.test('pipeline_layout,device_mismatch')
+  .desc(
+    'Tests createComputePipeline(Async) cannot be called with a pipeline layout created from another device'
+  )
+  .paramsSubcasesOnly(u => u.combine('isAsync', [true, false]).combine('mismatched', [true, false]))
+  .unimplemented();
+
+g.test('shader_module,device_mismatch')
+  .desc(
+    'Tests createComputePipeline(Async) cannot be called with a shader module created from another device'
+  )
+  .paramsSubcasesOnly(u => u.combine('isAsync', [true, false]).combine('mismatched', [true, false]))
+  .unimplemented();

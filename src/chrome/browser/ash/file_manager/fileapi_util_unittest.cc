@@ -26,6 +26,8 @@
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "ui/shell_dialogs/selected_file_info.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace file_manager {
 namespace util {
@@ -76,7 +78,7 @@ class TempFileSystem {
   // Creates an external file system URL for the given path.
   storage::FileSystemURL CreateFileSystemURL(const std::string& path) {
     return file_system_context_->CreateCrackedFileSystemURL(
-        origin_, storage::kFileSystemTypeExternal,
+        blink::StorageKey(origin_), storage::kFileSystemTypeExternal,
         base::FilePath().Append(name_).Append(
             base::FilePath::FromUTF8Unsafe(path)));
   }
@@ -255,7 +257,7 @@ TEST_F(FileManagerFileAPIUtilTest,
   EXPECT_TRUE(result[2]->is_file_system());
   EXPECT_TRUE(result[2]->get_file_system()->url.is_valid());
   const storage::FileSystemURL url =
-      context->CrackURL(result[2]->get_file_system()->url);
+      context->CrackURLInFirstPartyContext(result[2]->get_file_system()->url);
   EXPECT_EQ(GURL("http://example.com"), url.origin().GetURL());
   EXPECT_EQ(storage::kFileSystemTypeIsolated, url.mount_type());
   EXPECT_EQ(storage::kFileSystemTypeProvided, url.type());

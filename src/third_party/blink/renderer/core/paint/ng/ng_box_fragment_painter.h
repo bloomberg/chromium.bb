@@ -21,7 +21,6 @@ class BoxDecorationData;
 class FillLayer;
 class HitTestLocation;
 class HitTestResult;
-class LayoutNGTextCombine;
 class NGFragmentItems;
 class NGInlineCursor;
 class NGInlineBackwardCursor;
@@ -83,7 +82,7 @@ class CORE_EXPORT NGBoxFragmentPainter : public BoxPainterBase {
       bool is_painting_scrolling_background) const override;
   bool IsPaintingScrollingBackground(const PaintInfo&) const override;
 
-  void PaintTextClipMask(GraphicsContext&,
+  void PaintTextClipMask(const PaintInfo&,
                          const IntRect& mask_rect,
                          const PhysicalOffset& paint_offset,
                          bool object_has_multiple_boxes) override;
@@ -116,11 +115,20 @@ class CORE_EXPORT NGBoxFragmentPainter : public BoxPainterBase {
                                             const PhysicalRect& paint_rect,
                                             const DisplayItemClient&);
 
+  void PaintBoxDecorationBackgroundForBlockInInline(
+      NGInlineCursor* children,
+      const PaintInfo&,
+      const PhysicalOffset& paint_offset);
+
   void PaintColumnRules(const PaintInfo&, const PhysicalOffset& paint_offset);
 
   void PaintInternal(const PaintInfo&);
   void PaintAllPhasesAtomically(const PaintInfo&);
   void PaintBlockChildren(const PaintInfo&, PhysicalOffset);
+  void PaintBlockChild(const NGLink& child,
+                       const PaintInfo& paint_info,
+                       const PaintInfo& paint_info_for_descendants,
+                       PhysicalOffset paint_offset);
   void PaintInlineItems(const PaintInfo&,
                         const PhysicalOffset& paint_offset,
                         const PhysicalOffset& parent_offset,
@@ -221,10 +229,6 @@ class CORE_EXPORT NGBoxFragmentPainter : public BoxPainterBase {
     // The result is set to this member, but its address does not change during
     // the traversal.
     HitTestResult* result;
-
-    // Non-null when processing a line box in |LayoutNGTextCombine| uses
-    // scaling. This field is populated in |NodeAtPoint()|.
-    const LayoutNGTextCombine* text_combine = nullptr;
   };
 
   // Hit tests the children of a container fragment, which is either
@@ -326,8 +330,6 @@ inline NGBoxFragmentPainter::NGBoxFragmentPainter(
     DCHECK_EQ(inline_box_cursor_->Current().Item(), box_item_);
   if (box_item_)
     DCHECK_EQ(box_item_->BoxFragment(), &box);
-  DCHECK_EQ(box.IsInlineBox(), !!inline_box_cursor_);
-  DCHECK_EQ(box.IsInlineBox(), !!box_item_);
 #endif
 }
 
@@ -347,7 +349,6 @@ inline NGBoxFragmentPainter::NGBoxFragmentPainter(
                            &inline_box_cursor,
                            &item) {
   DCHECK_EQ(item.BoxFragment(), &fragment);
-  DCHECK(fragment.IsInlineBox());
 }
 
 }  // namespace blink

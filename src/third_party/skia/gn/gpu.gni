@@ -138,6 +138,7 @@ skia_gpu_sources = [
   "$_src/gpu/GrOpsRenderPass.h",
   "$_src/gpu/GrOpsTask.cpp",
   "$_src/gpu/GrOpsTask.h",
+  "$_src/gpu/GrOpsTypes.h",
   "$_src/gpu/GrPaint.cpp",
   "$_src/gpu/GrPaint.h",
   "$_src/gpu/GrPersistentCacheUtils.cpp",
@@ -212,12 +213,6 @@ skia_gpu_sources = [
   "$_src/gpu/GrSubRunAllocator.h",
   "$_src/gpu/GrSurface.cpp",
   "$_src/gpu/GrSurface.h",
-  "$_src/gpu/GrSurfaceContext.cpp",
-  "$_src/gpu/GrSurfaceContext.h",
-  "$_src/gpu/GrSurfaceDrawContext.cpp",
-  "$_src/gpu/GrSurfaceDrawContext.h",
-  "$_src/gpu/GrSurfaceFillContext.cpp",
-  "$_src/gpu/GrSurfaceFillContext.h",
   "$_src/gpu/GrSurfaceProxy.cpp",
   "$_src/gpu/GrSurfaceProxy.h",
   "$_src/gpu/GrSurfaceProxyPriv.h",
@@ -268,6 +263,10 @@ skia_gpu_sources = [
   "$_src/gpu/GrYUVABackendTextures.cpp",
   "$_src/gpu/GrYUVATextureProxies.cpp",
   "$_src/gpu/GrYUVATextureProxies.h",
+  "$_src/gpu/SurfaceContext.cpp",
+  "$_src/gpu/SurfaceContext.h",
+  "$_src/gpu/SurfaceFillContext.cpp",
+  "$_src/gpu/SurfaceFillContext.h",
 
   # Ops
   "$_src/gpu/effects/GrBezierEffect.cpp",
@@ -294,6 +293,8 @@ skia_gpu_sources = [
   "$_src/gpu/effects/GrMatrixConvolutionEffect.h",
   "$_src/gpu/effects/GrMatrixEffect.cpp",
   "$_src/gpu/effects/GrMatrixEffect.h",
+  "$_src/gpu/effects/GrModulateAtlasCoverageEffect.cpp",
+  "$_src/gpu/effects/GrModulateAtlasCoverageEffect.h",
   "$_src/gpu/effects/GrOvalEffect.cpp",
   "$_src/gpu/effects/GrOvalEffect.h",
   "$_src/gpu/effects/GrPorterDuffXferProcessor.cpp",
@@ -374,13 +375,9 @@ skia_gpu_sources = [
   "$_src/gpu/gradients/GrGradientShader.h",
 
   # tessellate
-  "$_src/gpu/tessellate/GrAtlasInstancedHelper.cpp",
-  "$_src/gpu/tessellate/GrAtlasInstancedHelper.h",
   "$_src/gpu/tessellate/GrAtlasRenderTask.cpp",
   "$_src/gpu/tessellate/GrAtlasRenderTask.h",
   "$_src/gpu/tessellate/GrCullTest.h",
-  "$_src/gpu/tessellate/GrDrawAtlasPathOp.cpp",
-  "$_src/gpu/tessellate/GrDrawAtlasPathOp.h",
   "$_src/gpu/tessellate/GrMiddleOutPolygonTriangulator.h",
   "$_src/gpu/tessellate/GrPathCurveTessellator.cpp",
   "$_src/gpu/tessellate/GrPathCurveTessellator.h",
@@ -393,6 +390,7 @@ skia_gpu_sources = [
   "$_src/gpu/tessellate/GrPathTessellator.h",
   "$_src/gpu/tessellate/GrPathWedgeTessellator.cpp",
   "$_src/gpu/tessellate/GrPathWedgeTessellator.h",
+  "$_src/gpu/tessellate/GrPathXform.h",
   "$_src/gpu/tessellate/GrStrokeFixedCountTessellator.cpp",
   "$_src/gpu/tessellate/GrStrokeFixedCountTessellator.h",
   "$_src/gpu/tessellate/GrStrokeHardwareTessellator.cpp",
@@ -405,8 +403,6 @@ skia_gpu_sources = [
   "$_src/gpu/tessellate/GrVectorXform.h",
 
   # tessellate/shaders
-  "$_src/gpu/tessellate/shaders/GrModulateAtlasCoverageFP.cpp",
-  "$_src/gpu/tessellate/shaders/GrModulateAtlasCoverageFP.h",
   "$_src/gpu/tessellate/shaders/GrPathTessellationShader.cpp",
   "$_src/gpu/tessellate/shaders/GrPathTessellationShader.h",
   "$_src/gpu/tessellate/shaders/GrPathTessellationShader_Hardware.cpp",
@@ -415,6 +411,7 @@ skia_gpu_sources = [
   "$_src/gpu/tessellate/shaders/GrStrokeTessellationShader.h",
   "$_src/gpu/tessellate/shaders/GrStrokeTessellationShader_HardwareImpl.cpp",
   "$_src/gpu/tessellate/shaders/GrStrokeTessellationShader_InstancedImpl.cpp",
+  "$_src/gpu/tessellate/shaders/GrTessellationShader.cpp",
   "$_src/gpu/tessellate/shaders/GrTessellationShader.h",
 
   # text
@@ -439,12 +436,8 @@ skia_gpu_sources = [
   "$_src/gpu/glsl/GrGLSLBlend.cpp",
   "$_src/gpu/glsl/GrGLSLBlend.h",
   "$_src/gpu/glsl/GrGLSLColorSpaceXformHelper.h",
-  "$_src/gpu/glsl/GrGLSLFragmentProcessor.cpp",
-  "$_src/gpu/glsl/GrGLSLFragmentProcessor.h",
   "$_src/gpu/glsl/GrGLSLFragmentShaderBuilder.cpp",
   "$_src/gpu/glsl/GrGLSLFragmentShaderBuilder.h",
-  "$_src/gpu/glsl/GrGLSLGeometryProcessor.cpp",
-  "$_src/gpu/glsl/GrGLSLGeometryProcessor.h",
   "$_src/gpu/glsl/GrGLSLProgramBuilder.cpp",
   "$_src/gpu/glsl/GrGLSLProgramBuilder.h",
   "$_src/gpu/glsl/GrGLSLProgramDataManager.cpp",
@@ -457,8 +450,6 @@ skia_gpu_sources = [
   "$_src/gpu/glsl/GrGLSLVarying.h",
   "$_src/gpu/glsl/GrGLSLVertexGeoBuilder.cpp",
   "$_src/gpu/glsl/GrGLSLVertexGeoBuilder.h",
-  "$_src/gpu/glsl/GrGLSLXferProcessor.cpp",
-  "$_src/gpu/glsl/GrGLSLXferProcessor.h",
 
   # Mock
   "$_src/gpu/mock/GrMockAttachment.h",
@@ -552,20 +543,20 @@ skia_skgpu_v2_sources = [
   # Sk files
   "$_src/gpu/v2/Device.cpp",
   "$_src/gpu/v2/Device_v2.h",
+  "$_src/gpu/v2/SurfaceDrawContext.cpp",
+  "$_src/gpu/v2/SurfaceDrawContext_v2.h",
+  "$_src/gpu/v2/SurfaceFillContext_v2.cpp",
+  "$_src/gpu/v2/SurfaceFillContext_v2.h",
 ]
 
 skia_skgpu_v1_sources = [
   "$_src/gpu/GrAuditTrail.cpp",
   "$_src/gpu/GrClipStack.cpp",
   "$_src/gpu/GrClipStack.h",
-  "$_src/gpu/GrClipStackClip.cpp",
-  "$_src/gpu/GrClipStackClip.h",
   "$_src/gpu/GrPathRenderer.cpp",
   "$_src/gpu/GrPathRenderer.h",
   "$_src/gpu/GrPathRendererChain.cpp",
   "$_src/gpu/GrPathRendererChain.h",
-  "$_src/gpu/GrReducedClip.cpp",
-  "$_src/gpu/GrReducedClip.h",
   "$_src/gpu/GrSoftwarePathRenderer.cpp",
   "$_src/gpu/GrSoftwarePathRenderer.h",
   "$_src/gpu/GrStencilClip.h",
@@ -579,10 +570,16 @@ skia_skgpu_v1_sources = [
   "$_src/gpu/ops/GrAAHairLinePathRenderer.h",
   "$_src/gpu/ops/GrAALinearizingConvexPathRenderer.cpp",
   "$_src/gpu/ops/GrAALinearizingConvexPathRenderer.h",
+  "$_src/gpu/ops/GrAtlasInstancedHelper.cpp",
+  "$_src/gpu/ops/GrAtlasInstancedHelper.h",
+  "$_src/gpu/ops/GrAtlasPathRenderer.cpp",
+  "$_src/gpu/ops/GrAtlasPathRenderer.h",
   "$_src/gpu/ops/GrDashLinePathRenderer.cpp",
   "$_src/gpu/ops/GrDashLinePathRenderer.h",
   "$_src/gpu/ops/GrDefaultPathRenderer.cpp",
   "$_src/gpu/ops/GrDefaultPathRenderer.h",
+  "$_src/gpu/ops/GrDrawAtlasPathOp.cpp",
+  "$_src/gpu/ops/GrDrawAtlasPathOp.h",
   "$_src/gpu/ops/GrSmallPathRenderer.cpp",
   "$_src/gpu/ops/GrSmallPathRenderer.h",
   "$_src/gpu/ops/GrTriangulatingPathRenderer.cpp",
@@ -591,10 +588,14 @@ skia_skgpu_v1_sources = [
   # tessellate
   "$_src/gpu/tessellate/GrTessellationPathRenderer.cpp",
 
-  # Sk files
+  # v1
   "$_src/gpu/v1/Device.cpp",
   "$_src/gpu/v1/Device_drawTexture.cpp",
   "$_src/gpu/v1/Device_v1.h",
+  "$_src/gpu/v1/SurfaceDrawContext.cpp",
+  "$_src/gpu/v1/SurfaceDrawContext_v1.h",
+  "$_src/gpu/v1/SurfaceFillContext_v1.cpp",
+  "$_src/gpu/v1/SurfaceFillContext_v1.h",
 ]
 
 skia_gpu_sources += skia_skgpu_v1_sources
@@ -775,10 +776,13 @@ skia_metal_sources = [
   "$_src/gpu/mtl/GrMtlCppUtil.h",
   "$_src/gpu/mtl/GrMtlDepthStencil.h",
   "$_src/gpu/mtl/GrMtlDepthStencil.mm",
+  "$_src/gpu/mtl/GrMtlFramebuffer.h",
+  "$_src/gpu/mtl/GrMtlFramebuffer.mm",
   "$_src/gpu/mtl/GrMtlGpu.h",
   "$_src/gpu/mtl/GrMtlGpu.mm",
   "$_src/gpu/mtl/GrMtlOpsRenderPass.h",
   "$_src/gpu/mtl/GrMtlOpsRenderPass.mm",
+  "$_src/gpu/mtl/GrMtlPipeline.h",
   "$_src/gpu/mtl/GrMtlPipelineState.h",
   "$_src/gpu/mtl/GrMtlPipelineState.mm",
   "$_src/gpu/mtl/GrMtlPipelineStateBuilder.h",

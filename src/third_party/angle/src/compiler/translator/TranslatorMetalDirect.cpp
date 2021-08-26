@@ -10,7 +10,7 @@
 #include "common/utilities.h"
 #include "compiler/translator/BuiltinsWorkaroundGLSL.h"
 #include "compiler/translator/ImmutableStringBuilder.h"
-#include "compiler/translator/OutputVulkanGLSL.h"
+#include "compiler/translator/OutputGLSLBase.h"
 #include "compiler/translator/StaticType.h"
 #include "compiler/translator/TranslatorMetalDirect/AddExplicitTypeCasts.h"
 #include "compiler/translator/TranslatorMetalDirect/AstHelpers.h"
@@ -34,14 +34,17 @@
 #include "compiler/translator/TranslatorMetalDirect/TranslatorMetalUtils.h"
 #include "compiler/translator/TranslatorMetalDirect/WrapMain.h"
 #include "compiler/translator/tree_ops/InitializeVariables.h"
+#include "compiler/translator/tree_ops/MonomorphizeUnsupportedFunctions.h"
 #include "compiler/translator/tree_ops/NameNamelessUniformBuffers.h"
 #include "compiler/translator/tree_ops/RemoveAtomicCounterBuiltins.h"
 #include "compiler/translator/tree_ops/RemoveInactiveInterfaceVariables.h"
+#include "compiler/translator/tree_ops/RewriteArrayOfArrayOfOpaqueUniforms.h"
 #include "compiler/translator/tree_ops/RewriteAtomicCounters.h"
 #include "compiler/translator/tree_ops/RewriteCubeMapSamplersAs2DArray.h"
 #include "compiler/translator/tree_ops/RewriteDfdy.h"
-#include "compiler/translator/tree_ops/RewriteRowMajorMatrices.h"
 #include "compiler/translator/tree_ops/RewriteStructSamplers.h"
+#include "compiler/translator/tree_ops/SeparateStructFromUniformDeclarations.h"
+#include "compiler/translator/tree_ops/apple/RewriteRowMajorMatrices.h"
 #include "compiler/translator/tree_util/BuiltIn.h"
 #include "compiler/translator/tree_util/DriverUniform.h"
 #include "compiler/translator/tree_util/FindFunction.h"
@@ -175,7 +178,7 @@ class DeclareDefaultUniformsTraverser : public TIntermTraverser
         if (mInDefaultUniform)
         {
             const ImmutableString &name = symbol->variable().name();
-            ASSERT(!name.beginsWith("gl_"));
+            ASSERT(!gl::IsBuiltInName(name.data()));
             (*mSink) << HashName(&symbol->variable(), mHashFunction, mNameMap)
                      << ArrayString(symbol->getType());
         }
@@ -488,6 +491,12 @@ ANGLE_NO_DISCARD bool TranslatorMetalDirect::insertSampleMaskWritingLogic(
     TIntermBlock &root,
     DriverUniform &driverUniforms)
 {
+    // This transformation leaves the tree in an inconsistent state by using a variable that's
+    // defined in text, outside of the knowledge of the AST.
+    mValidateASTOptions.validateVariableReferences = false;
+    // It also uses a function call (ANGLE_writeSampleMask) that's unknown to the AST.
+    mValidateASTOptions.validateFunctionCall = false;
+
     TSymbolTable *symbolTable = &getSymbolTable();
 
     // Create kCoverageMaskEnabled and kSampleMaskWriteFuncName variable references.
@@ -534,6 +543,10 @@ ANGLE_NO_DISCARD bool TranslatorMetalDirect::insertSampleMaskWritingLogic(
 
 ANGLE_NO_DISCARD bool TranslatorMetalDirect::insertRasterizationDiscardLogic(TIntermBlock &root)
 {
+    // This transformation leaves the tree in an inconsistent state by using a variable that's
+    // defined in text, outside of the knowledge of the AST.
+    mValidateASTOptions.validateVariableReferences = false;
+
     TSymbolTable *symbolTable = &getSymbolTable();
 
     TType *boolType = new TType(EbtBool);
@@ -748,6 +761,21 @@ bool TranslatorMetalDirect::translateImpl(TInfoSinkBase &sink,
         }
     }
 
+    // If there are any function calls that take array-of-array of opaque uniform parameters, or
+    // other opaque uniforms that need special handling in Vulkan, such as atomic counters,
+    // monomorphize the functions by removing said parameters and replacing them in the function
+    // body with the call arguments.
+    //
+    // This has a few benefits:
+    //
+    // - It dramatically simplifies future transformations w.r.t to samplers in structs, array of
+    //   arrays of opaque types, atomic counters etc.
+    // - Avoids the need for shader*ArrayDynamicIndexing Vulkan features.
+    if (!MonomorphizeUnsupportedFunctions(this, root, &getSymbolTable(), compileOptions))
+    {
+        return false;
+    }
+
     if (aggregateTypesUsedForUniforms > 0)
     {
         if (!NameEmbeddedStructUniformsMetal(this, root, &symbolTable))
@@ -755,15 +783,26 @@ bool TranslatorMetalDirect::translateImpl(TInfoSinkBase &sink,
             return false;
         }
 
-        int removedUniformsCount;
-        bool rewriteStructSamplersResult =
-            RewriteStructSamplers(this, root, &symbolTable, &removedUniformsCount);
+        if (!SeparateStructFromUniformDeclarations(this, root, &getSymbolTable()))
+        {
+            return false;
+        }
 
-        if (!rewriteStructSamplersResult)
+        int removedUniformsCount;
+
+        if (!RewriteStructSamplers(this, root, &getSymbolTable(), &removedUniformsCount))
         {
             return false;
         }
         defaultUniformCount -= removedUniformsCount;
+    }
+
+    // Replace array of array of opaque uniforms with a flattened array.  This is run after
+    // MonomorphizeUnsupportedFunctions and RewriteStructSamplers so that it's not possible for an
+    // array of array of opaque type to be partially subscripted and passed to a function.
+    if (!RewriteArrayOfArrayOfOpaqueUniforms(this, root, &getSymbolTable()))
+    {
+        return false;
     }
 
     if (compileOptions & SH_EMULATE_SEAMFUL_CUBE_MAP_SAMPLING)
@@ -1110,6 +1149,15 @@ bool TranslatorMetalDirect::translateImpl(TInfoSinkBase &sink,
         return false;
     }
 
+    // The RewritePipelines phase leaves the tree in an inconsistent state by inserting
+    // references to structures like "ANGLE_TextureEnv<metal::texture2d<float>>" which are
+    // defined in text (in ProgramPrelude), outside of the knowledge of the AST.
+    mValidateASTOptions.validateStructUsage = false;
+    // The RewritePipelines phase also generates incoming arguments to synthesized
+    // functions that use are missing qualifiers - for example, angleUniforms isn't marked
+    // as an incoming argument.
+    mValidateASTOptions.validateQualifiers = false;
+
     PipelineStructs pipelineStructs;
     if (!RewritePipelines(*this, *root, idGen, *driverUniforms, symbolEnv, invariants,
                           pipelineStructs))
@@ -1170,6 +1218,10 @@ bool TranslatorMetalDirect::translate(TIntermBlock *root,
         return false;
     }
 
+    // TODO: refactor the code in TranslatorMetalDirect to not issue raw function calls.
+    // http://anglebug.com/6059#c2
+    mValidateASTOptions.validateNoRawFunctionCalls = false;
+
     TInfoSinkBase &sink = getInfoSink().obj;
 
     if ((compileOptions & SH_REWRITE_ROW_MAJOR_MATRICES) != 0 && getShaderVersion() >= 300)
@@ -1189,14 +1241,8 @@ bool TranslatorMetalDirect::translate(TIntermBlock *root,
         }
     }
 
-    bool precisionEmulation = false;
-    if (!emulatePrecisionIfNeeded(root, sink, &precisionEmulation, SH_SPIRV_VULKAN_OUTPUT))
-    {
-        return false;
-    }
-
     SpecConst specConst(&getSymbolTable(), compileOptions, getShaderType());
-    DriverUniformExtended driverUniforms;
+    DriverUniformExtended driverUniforms(DriverUniformMode::Structure);
     if (!translateImpl(sink, root, compileOptions, perfDiagnostics, &specConst, &driverUniforms))
     {
         return false;

@@ -1,6 +1,7 @@
 {
   "Linux Builder Goma RBE Canary": {
     "gn_args": {
+      "dcheck_always_on": false,
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
       "is_debug": false,
@@ -10,6 +11,7 @@
   },
   "Linux Builder Goma RBE Latest Client": {
     "gn_args": {
+      "dcheck_always_on": false,
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
       "is_debug": false,
@@ -94,6 +96,7 @@
   },
   "Win Builder Goma RBE ATS Canary": {
     "gn_args": {
+      "dcheck_always_on": false,
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
       "is_debug": false,
@@ -105,6 +108,7 @@
   },
   "Win Builder Goma RBE ATS Latest Client": {
     "gn_args": {
+      "dcheck_always_on": false,
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
       "is_debug": false,
@@ -116,6 +120,7 @@
   },
   "Win Builder Goma RBE Canary": {
     "gn_args": {
+      "dcheck_always_on": false,
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
       "is_debug": false,
@@ -127,6 +132,7 @@
   },
   "Win Builder Goma RBE Canary (clobber)": {
     "gn_args": {
+      "dcheck_always_on": false,
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
       "is_debug": false,
@@ -138,6 +144,7 @@
   },
   "Win Builder Goma RBE Latest Client": {
     "gn_args": {
+      "dcheck_always_on": false,
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
       "is_debug": false,
@@ -186,6 +193,7 @@
   "chromeos-amd64-generic-rel-goma-rbe-canary": {
     "args_file": "//build/args/chromeos/amd64-generic.gni",
     "gn_args": {
+      "dcheck_always_on": false,
       "is_chromeos_device": true,
       "ozone_platform_headless": true,
       "use_goma": true
@@ -194,6 +202,7 @@
   "chromeos-amd64-generic-rel-goma-rbe-latest": {
     "args_file": "//build/args/chromeos/amd64-generic.gni",
     "gn_args": {
+      "dcheck_always_on": false,
       "is_chromeos_device": true,
       "ozone_platform_headless": true,
       "use_goma": true
@@ -201,6 +210,7 @@
   },
   "ios-device-goma-rbe-canary-clobber": {
     "gn_args": {
+      "dcheck_always_on": false,
       "ios_code_signing_identity_description": "Apple Development",
       "ios_enable_code_signing": false,
       "ios_set_attributes_for_xcode_project_generation": false,
@@ -215,6 +225,7 @@
   },
   "ios-device-goma-rbe-latest-clobber": {
     "gn_args": {
+      "dcheck_always_on": false,
       "ios_code_signing_identity_description": "Apple Development",
       "ios_enable_code_signing": false,
       "ios_set_attributes_for_xcode_project_generation": false,
@@ -229,6 +240,7 @@
   },
   "linux-archive-rel-goma-rbe-ats-canary": {
     "gn_args": {
+      "dcheck_always_on": false,
       "is_component_build": false,
       "is_debug": false,
       "use_goma": true
@@ -236,6 +248,7 @@
   },
   "linux-archive-rel-goma-rbe-ats-latest": {
     "gn_args": {
+      "dcheck_always_on": false,
       "is_component_build": false,
       "is_debug": false,
       "use_goma": true
@@ -243,6 +256,7 @@
   },
   "linux-archive-rel-goma-rbe-canary": {
     "gn_args": {
+      "dcheck_always_on": false,
       "is_component_build": false,
       "is_debug": false,
       "use_goma": true
@@ -250,6 +264,7 @@
   },
   "linux-archive-rel-goma-rbe-latest": {
     "gn_args": {
+      "dcheck_always_on": false,
       "is_component_build": false,
       "is_debug": false,
       "use_goma": true
@@ -257,6 +272,7 @@
   },
   "mac-archive-rel-goma-rbe-canary": {
     "gn_args": {
+      "dcheck_always_on": false,
       "enable_stripping": true,
       "is_component_build": false,
       "is_debug": false,
@@ -266,6 +282,7 @@
   },
   "mac-archive-rel-goma-rbe-latest": {
     "gn_args": {
+      "dcheck_always_on": false,
       "enable_stripping": true,
       "is_component_build": false,
       "is_debug": false,

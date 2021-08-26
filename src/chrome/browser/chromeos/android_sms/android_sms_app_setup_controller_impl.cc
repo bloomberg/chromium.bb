@@ -15,9 +15,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/external_install_options.h"
-#include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -109,7 +109,7 @@ void AndroidSmsAppSetupControllerImpl::SetUpApp(const GURL& app_url,
       base::Time::Now() /* last_access_time */,
       !net::IsLocalhost(app_url) /* secure */, false /* http_only */,
       net::CookieSameSite::STRICT_MODE, net::COOKIE_PRIORITY_DEFAULT,
-      false /* same_party */);
+      false /* same_party */, absl::nullopt /* partition_key */);
   // TODO(crbug.com/1069974): The cookie source url must be faked here because
   // otherwise, this would fail to set a secure cookie if |app_url| is insecure.
   // Consider instead to use url::Replacements to force the scheme to be https.
@@ -328,7 +328,7 @@ void AndroidSmsAppSetupControllerImpl::SetMigrationCookie(
       base::Time::Now() /* last_access_time */,
       !net::IsLocalhost(app_url) /* secure */, false /* http_only */,
       net::CookieSameSite::STRICT_MODE, net::COOKIE_PRIORITY_DEFAULT,
-      false /* same_party */);
+      false /* same_party */, absl::nullopt /* partition_key */);
   // TODO(crbug.com/1069974): The cookie source url must be faked here because
   // otherwise, this would fail to set a secure cookie if |app_url| is insecure.
   // Consider instead to use url::Replacements to force the scheme to be https.

@@ -4,10 +4,11 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/bluetooth_section.h"
 
+#include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
-#include "chrome/browser/ui/webui/chromeos/bluetooth_dialog_localized_strings_provider.h"
+#include "chrome/browser/ui/webui/chromeos/bluetooth_shared_load_time_data_provider.h"
 #include "chrome/browser/ui/webui/settings/chromeos/bluetooth_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/setting.mojom.h"
@@ -17,11 +18,14 @@
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/strings/grit/chromeos_strings.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/chromeos/bluetooth_utils.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
+#include "device/bluetooth/floss/floss_dbus_manager.h"
+#include "device/bluetooth/floss/floss_features.h"
 #include "device/bluetooth/strings/grit/bluetooth_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -118,13 +122,45 @@ const std::vector<SearchConcept>& GetBluetoothPairedSearchConcepts() {
   return *tags;
 }
 
+std::vector<mojom::Setting> GetBluetoothDevicesSubpageSettings() {
+  std::vector<mojom::Setting> bluetooth_devices_settings{
+      mojom::Setting::kBluetoothOnOff, mojom::Setting::kBluetoothPairDevice};
+
+  if (!chromeos::features::IsBluetoothRevampEnabled()) {
+    bluetooth_devices_settings.insert(
+        bluetooth_devices_settings.end(),
+        {mojom::Setting::kBluetoothConnectToDevice,
+         mojom::Setting::kBluetoothDisconnectFromDevice,
+         mojom::Setting::kBluetoothUnpairDevice});
+  }
+
+  return bluetooth_devices_settings;
+}
+
+std::vector<mojom::Setting> GetBluetoothDeviceDetailSubpageSettings() {
+  if (!chromeos::features::IsBluetoothRevampEnabled())
+    return std::vector<mojom::Setting>{};
+
+  return std::vector<mojom::Setting>{
+      mojom::Setting::kBluetoothConnectToDevice,
+      mojom::Setting::kBluetoothDisconnectFromDevice,
+      mojom::Setting::kBluetoothUnpairDevice};
+}
+
 }  // namespace
 
 BluetoothSection::BluetoothSection(Profile* profile,
                                    SearchTagRegistry* search_tag_registry)
     : OsSettingsSection(profile, search_tag_registry) {
+  bool is_initialized = false;
+  if (base::FeatureList::IsEnabled(floss::features::kFlossEnabled)) {
+    is_initialized = floss::FlossDBusManager::IsInitialized();
+  } else {
+    is_initialized = bluez::BluezDBusManager::IsInitialized();
+  }
+
   // Note: May be uninitialized in tests.
-  if (bluez::BluezDBusManager::IsInitialized()) {
+  if (is_initialized) {
     device::BluetoothAdapterFactory::Get()->GetAdapter(
         base::BindOnce(&BluetoothSection::OnFetchBluetoothAdapter,
                        weak_ptr_factory_.GetWeakPtr()));
@@ -145,6 +181,7 @@ void BluetoothSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       {"bluetoothDeviceListPaired", IDS_SETTINGS_BLUETOOTH_DEVICE_LIST_PAIRED},
       {"bluetoothDeviceListUnpaired",
        IDS_SETTINGS_BLUETOOTH_DEVICE_LIST_UNPAIRED},
+      {"bluetoothPairNewDevice", IDS_SETTINGS_BLUETOOTH_PAIR_NEW_DEVICES},
       {"bluetoothConnect", IDS_SETTINGS_BLUETOOTH_CONNECT},
       {"bluetoothDisconnect", IDS_SETTINGS_BLUETOOTH_DISCONNECT},
       {"bluetoothToggleA11yLabel",
@@ -155,6 +192,18 @@ void BluetoothSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       {"bluetoothNoDevicesFound", IDS_SETTINGS_BLUETOOTH_NO_DEVICES_FOUND},
       {"bluetoothNotConnected", IDS_SETTINGS_BLUETOOTH_NOT_CONNECTED},
       {"bluetoothPageTitle", IDS_SETTINGS_BLUETOOTH},
+      {"bluetoothSummaryPageConnectedA11yOneDevice",
+       IDS_SETTINGS_BLUETOOTH_SUMMARY_PAGE_CONNECTED_A11Y_ONE_DEVICE},
+      {"bluetoothSummaryPageConnectedA11yTwoDevices",
+       IDS_SETTINGS_BLUETOOTH_SUMMARY_PAGE_CONNECTED_A11Y_TWO_DEVICES},
+      {"bluetoothSummaryPageConnectedA11yTwoOrMoreDevices",
+       IDS_SETTINGS_BLUETOOTH_SUMMARY_PAGE_CONNECTED_A11Y_TWO_OR_MORE_DEVICES},
+      {"bluetoothSummaryPageTwoOrMoreDevicesDescription",
+       IDS_SETTINGS_BLUETOOTH_SUMMARY_PAGE_TWO_OR_MORE_DEVICES_DESCRIPTION},
+      {"bluetoothSummaryPageTwoDevicesDescription",
+       IDS_SETTINGS_BLUETOOTH_SUMMARY_PAGE_TWO_DEVICES_DESCRIPTION},
+      {"bluetoothSummaryPageOff", IDS_SETTINGS_BLUETOOTH_SUMMARY_PAGE_OFF},
+      {"bluetoothSummaryPageOn", IDS_SETTINGS_BLUETOOTH_SUMMARY_PAGE_ON},
       {"bluetoothPairDevicePageTitle",
        IDS_SETTINGS_BLUETOOTH_PAIR_DEVICE_TITLE},
       {"bluetoothRemove", IDS_SETTINGS_BLUETOOTH_REMOVE},
@@ -191,9 +240,13 @@ void BluetoothSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
        IDS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_KEYBOARD_MOUSE_COMBO},
       {"bluetoothDeviceType_unknown",
        IDS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_UNKNOWN},
+      {"bluetoothDeviceListCurrentlyConnected",
+       IDS_BLUETOOTH_DEVICE_LIST_CURRENTLY_CONNECTED},
+      {"bluetoothDeviceListPreviouslyConnected",
+       IDS_BLUETOOTH_DEVICE_LIST_PREVIOUSLY_CONNECTED},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
-  chromeos::bluetooth_dialog::AddLocalizedStrings(html_source);
+  chromeos::bluetooth::AddLoadTimeData(html_source);
 }
 
 void BluetoothSection::AddHandlers(content::WebUI* web_ui) {
@@ -235,16 +288,20 @@ void BluetoothSection::RegisterHierarchy(HierarchyGenerator* generator) const {
                                      mojom::SearchResultIcon::kBluetooth,
                                      mojom::SearchResultDefaultRank::kMedium,
                                      mojom::kBluetoothDevicesSubpagePath);
-  static constexpr mojom::Setting kBluetoothDevicesSettings[] = {
-      mojom::Setting::kBluetoothOnOff,
-      mojom::Setting::kBluetoothConnectToDevice,
-      mojom::Setting::kBluetoothDisconnectFromDevice,
-      mojom::Setting::kBluetoothPairDevice,
-      mojom::Setting::kBluetoothUnpairDevice,
-  };
+
   RegisterNestedSettingBulk(mojom::Subpage::kBluetoothDevices,
-                            kBluetoothDevicesSettings, generator);
+                            GetBluetoothDevicesSubpageSettings(), generator);
   generator->RegisterTopLevelAltSetting(mojom::Setting::kBluetoothOnOff);
+
+  generator->RegisterNestedSubpage(IDS_SETTINGS_BLUETOOTH_DEVICE_DETAILS,
+                                   mojom::Subpage::kBluetoothDeviceDetail,
+                                   mojom::Subpage::kBluetoothDevices,
+                                   mojom::SearchResultIcon::kBluetooth,
+                                   mojom::SearchResultDefaultRank::kMedium,
+                                   mojom::kBluetoothDeviceDetailSubpagePath);
+  RegisterNestedSettingBulk(mojom::Subpage::kBluetoothDeviceDetail,
+                            GetBluetoothDeviceDetailSubpageSettings(),
+                            generator);
 }
 
 void BluetoothSection::AdapterPresentChanged(device::BluetoothAdapter* adapter,

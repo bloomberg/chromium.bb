@@ -16,7 +16,6 @@
 
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 #include "test/acm_random.h"
-#include "test/clear_system_state.h"
 #include "test/register_state_check.h"
 #include "test/util.h"
 
@@ -50,7 +49,7 @@ class MaskedSubPixelVarianceTest
     ref_func_ = GET_PARAM(1);
   }
 
-  virtual void TearDown() { libaom_test::ClearSystemState(); }
+  virtual void TearDown() {}
 
  protected:
   MaskedSubPixelVarianceFunc opt_func_;
@@ -94,7 +93,7 @@ TEST_P(MaskedSubPixelVarianceTest, OperationCheck) {
           ref_ret = ref_func_(src_ptr, src_stride, xoffset, yoffset, ref_ptr,
                               ref_stride, second_pred_ptr, msk_ptr, msk_stride,
                               invert_mask, &ref_sse);
-          ASM_REGISTER_STATE_CHECK(
+          API_REGISTER_STATE_CHECK(
               opt_ret = opt_func_(src_ptr, src_stride, xoffset, yoffset,
                                   ref_ptr, ref_stride, second_pred_ptr, msk_ptr,
                                   msk_stride, invert_mask, &opt_sse));
@@ -147,7 +146,7 @@ TEST_P(MaskedSubPixelVarianceTest, ExtremeValues) {
           ref_ret = ref_func_(src_ptr, src_stride, xoffset, yoffset, ref_ptr,
                               ref_stride, second_pred_ptr, msk_ptr, msk_stride,
                               invert_mask, &ref_sse);
-          ASM_REGISTER_STATE_CHECK(
+          API_REGISTER_STATE_CHECK(
               opt_ret = opt_func_(src_ptr, src_stride, xoffset, yoffset,
                                   ref_ptr, ref_stride, second_pred_ptr, msk_ptr,
                                   msk_stride, invert_mask, &opt_sse));
@@ -187,7 +186,7 @@ class HighbdMaskedSubPixelVarianceTest
     bit_depth_ = GET_PARAM(2);
   }
 
-  virtual void TearDown() { libaom_test::ClearSystemState(); }
+  virtual void TearDown() {}
 
  protected:
   MaskedSubPixelVarianceFunc opt_func_;
@@ -230,7 +229,7 @@ TEST_P(HighbdMaskedSubPixelVarianceTest, OperationCheck) {
           ref_ret = ref_func_(src8_ptr, src_stride, xoffset, yoffset, ref8_ptr,
                               ref_stride, second_pred8_ptr, msk_ptr, msk_stride,
                               invert_mask, &ref_sse);
-          ASM_REGISTER_STATE_CHECK(
+          API_REGISTER_STATE_CHECK(
               opt_ret = opt_func_(src8_ptr, src_stride, xoffset, yoffset,
                                   ref8_ptr, ref_stride, second_pred8_ptr,
                                   msk_ptr, msk_stride, invert_mask, &opt_sse));
@@ -291,7 +290,7 @@ TEST_P(HighbdMaskedSubPixelVarianceTest, ExtremeValues) {
           ref_ret = ref_func_(src8_ptr, src_stride, xoffset, yoffset, ref8_ptr,
                               ref_stride, second_pred8_ptr, msk_ptr, msk_stride,
                               invert_mask, &ref_sse);
-          ASM_REGISTER_STATE_CHECK(
+          API_REGISTER_STATE_CHECK(
               opt_ret = opt_func_(src8_ptr, src_stride, xoffset, yoffset,
                                   ref8_ptr, ref_stride, second_pred8_ptr,
                                   msk_ptr, msk_stride, invert_mask, &opt_sse));

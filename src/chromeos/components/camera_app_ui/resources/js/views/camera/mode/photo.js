@@ -2,18 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {assertInstanceof, assertString} from '../../../chrome_util.js';
-import {reportError} from '../../../error.js';
+// eslint-disable-next-line no-unused-vars
+import {StreamConstraints} from '../../../device/stream_constraints.js';
 import {I18nString} from '../../../i18n_string.js';
 import {Filenamer} from '../../../models/file_namer.js';
 import * as filesystem from '../../../models/file_system.js';
 import {DeviceOperator, parseMetadata} from '../../../mojo/device_operator.js';
 import {CrosImageCapture} from '../../../mojo/image_capture.js';
+import {
+  closeEndpoint,
+  MojoEndpoint,  // eslint-disable-line no-unused-vars
+} from '../../../mojo/util.js';
 import * as state from '../../../state.js';
 import * as toast from '../../../toast.js';
 import {
-  ErrorLevel,
-  ErrorType,
+  CanceledError,
   Facing,  // eslint-disable-line no-unused-vars
   PerfEvent,
   Resolution,
@@ -53,13 +56,6 @@ export class PhotoHandler {
   playShutterEffect() {}
 
   /**
-   * Gets frame image blob from current preview.
-   * @return {!Promise<!Blob>}
-   * @abstract
-   */
-  getPreviewFrame() {}
-
-  /**
    * @return {!Promise}
    * @abstract
    */
@@ -95,17 +91,18 @@ export class Photo extends ModeBase {
 
     /**
      * CrosImageCapture object to capture still photos.
-     * @type {?CrosImageCapture}
+     * @type {!CrosImageCapture}
      * @protected
      */
-    this.crosImageCapture_ = null;
+    this.crosImageCapture_ =
+        new CrosImageCapture(this.stream_.getVideoTracks()[0]);
 
     /**
-     * The observer id for saving metadata.
-     * @type {?number}
+     * The observer endpoint for saving metadata.
+     * @type {?MojoEndpoint}
      * @protected
      */
-    this.metadataObserverId_ = null;
+    this.metadataObserver_ = null;
 
     /**
      * Metadata names ready to be saved.
@@ -116,19 +113,22 @@ export class Photo extends ModeBase {
   }
 
   /**
+   * @param {!MediaStream} stream
+   */
+  updatePreview(stream) {
+    this.stream_ = stream;
+    this.crosImageCapture_ =
+        new CrosImageCapture(this.stream_.getVideoTracks()[0]);
+  }
+
+  /**
    * @override
    */
   async start_() {
-    if (this.crosImageCapture_ === null) {
-      this.crosImageCapture_ =
-          new CrosImageCapture(this.stream_.getVideoTracks()[0]);
-    }
-
     const imageName = (new Filenamer()).newImageName();
-    if (this.metadataObserverId_ !== null) {
+    if (this.metadataObserver_ !== null) {
       this.metadataNames_.push(Filenamer.getMetadataName(imageName));
     }
-
 
     state.set(PerfEvent.PHOTO_CAPTURE_SHUTTER, true);
     try {
@@ -147,7 +147,9 @@ export class Photo extends ModeBase {
       state.set(PerfEvent.PHOTO_CAPTURE_SHUTTER, false, {hasError: true});
       state.set(
           PerfEvent.PHOTO_CAPTURE_POST_PROCESSING, false, {hasError: true});
-      toast.show(I18nString.ERROR_MSG_TAKE_PHOTO_FAILED);
+      if (!(e instanceof CanceledError)) {
+        toast.show(I18nString.ERROR_MSG_TAKE_PHOTO_FAILED);
+      }
       throw e;
     }
   }
@@ -159,7 +161,7 @@ export class Photo extends ModeBase {
     if (state.get(state.State.ENABLE_PTZ)) {
       // Workaround for b/184089334 on PTZ camera to use preview frame as
       // photo result.
-      return this.handler_.getPreviewFrame();
+      return this.crosImageCapture_.grabJpegFrame();
     }
     let photoSettings;
     if (this.captureResolution_) {
@@ -222,7 +224,7 @@ export class Photo extends ModeBase {
     };
 
     const deviceId = this.stream_.getVideoTracks()[0].getSettings().deviceId;
-    this.metadataObserverId_ = await deviceOperator.addMetadataObserver(
+    this.metadataObserver_ = await deviceOperator.addMetadataObserver(
         deviceId, callback, cros.mojom.StreamType.JPEG_OUTPUT);
   }
 
@@ -231,7 +233,7 @@ export class Photo extends ModeBase {
    * @return {!Promise} Promise for the operation.
    */
   async removeMetadataObserver() {
-    if (!this.stream_ || this.metadataObserverId_ === null) {
+    if (!this.stream_ || this.metadataObserver_ === null) {
       return;
     }
 
@@ -240,49 +242,23 @@ export class Photo extends ModeBase {
       return;
     }
 
-    const deviceId = this.stream_.getVideoTracks()[0].getSettings().deviceId;
-    const isSuccess = await deviceOperator.removeMetadataObserver(
-        deviceId, this.metadataObserverId_);
-    if (!isSuccess) {
-      reportError(
-          ErrorType.REMOVE_METADATA_OBSERVER_FAILURE, ErrorLevel.ERROR,
-          new Error(`Failed to remove metadata observer with id: ${
-              this.metadataObserverId_}`));
-    }
-    this.metadataObserverId_ = null;
-  }
-}
-
-/**
- * Base factory for photo related modes.
- * @abstract
- */
-export class PhotoBaseFactory extends ModeFactory {
-  /**
-   * @override
-   */
-  async prepareDevice(constraints, resolution) {
-    this.captureResolution_ = resolution;
-    const deviceOperator = await DeviceOperator.getInstance();
-    if (deviceOperator !== null) {
-      const deviceId = assertString(constraints.video.deviceId.exact);
-      await deviceOperator.setCaptureIntent(
-          deviceId, cros.mojom.CaptureIntent.STILL_CAPTURE);
-      await deviceOperator.setStillCaptureResolution(
-          deviceId, assertInstanceof(this.captureResolution_, Resolution));
-    }
+    closeEndpoint(this.metadataObserver_);
+    this.metadataObserver_ = null;
   }
 }
 
 /**
  * Factory for creating photo mode capture object.
  */
-export class PhotoFactory extends PhotoBaseFactory {
+export class PhotoFactory extends ModeFactory {
   /**
+   * @param {!StreamConstraints} constraints Constraints for preview
+   *     stream.
+   * @param {?Resolution} captureResolution
    * @param {!PhotoHandler} handler
    */
-  constructor(handler) {
-    super();
+  constructor(constraints, captureResolution, handler) {
+    super(constraints, captureResolution);
 
     /**
      * @const {!PhotoHandler}
@@ -294,7 +270,7 @@ export class PhotoFactory extends PhotoBaseFactory {
   /**
    * @override
    */
-  produce_() {
+  produce() {
     return new Photo(
         this.previewStream_, this.facing_, this.captureResolution_,
         this.handler_);

@@ -6,7 +6,7 @@
  * @fileoverview 'settings-internet-detail-menu' is a menu that provides
  * additional actions for a network in the network detail page.
  */
-import '//resources/cr_elements/cr_action_menu/cr_action_menu.m.js';
+import '//resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import '//resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import '//resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js';
 import '//resources/cr_elements/shared_vars_css.m.js';
@@ -15,6 +15,7 @@ import '../../settings_shared_css.js';
 import {ESimManagerListenerBehavior} from '//resources/cr_components/chromeos/cellular_setup/esim_manager_listener_behavior.m.js';
 import {MojoInterfaceProvider, MojoInterfaceProviderImpl} from '//resources/cr_components/chromeos/network/mojo_interface_provider.m.js';
 import {OncMojo} from '//resources/cr_components/chromeos/network/onc_mojo.m.js';
+import {CrActionMenuElement} from '//resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import {I18nBehavior} from '//resources/js/i18n_behavior.m.js';
 import {afterNextRender, flush, html, Polymer, TemplateInstanceBase, Templatizer} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -48,14 +49,6 @@ Polymer({
     eSimNetworkState_: {
       type: Object,
       value: null,
-    },
-
-    /** @private */
-    isUpdatedCellularUiEnabled_: {
-      type: Boolean,
-      value() {
-        return loadTimeData.getBoolean('updatedCellularActivationUi');
-      }
     },
 
     /** @private */
@@ -128,7 +121,7 @@ Polymer({
   currentRouteChanged(route, oldRoute) {
     this.eSimNetworkState_ = null;
     this.guid_ = '';
-    if (route !== routes.NETWORK_DETAIL || !this.isUpdatedCellularUiEnabled_) {
+    if (route !== routes.NETWORK_DETAIL) {
       return;
     }
 
@@ -191,11 +184,6 @@ Polymer({
    * @private
    */
   shouldShowDotsMenuButton_() {
-    // Only shown if the flag is enabled.
-    if (!this.isUpdatedCellularUiEnabled_) {
-      return false;
-    }
-
     // Not shown in guest mode.
     if (this.isGuest_) {
       return false;
@@ -211,7 +199,7 @@ Polymer({
    * @private
    */
   isDotsMenuButtonDisabled_() {
-    if (!this.deviceState || !this.isUpdatedCellularUiEnabled_) {
+    if (!this.deviceState) {
       return false;
     }
     return OncMojo.deviceIsInhibited(this.deviceState);

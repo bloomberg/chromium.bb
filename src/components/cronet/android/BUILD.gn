@@ -488,7 +488,6 @@ action("cronet_combine_proguard_flags") {
 
     # Massage the proguard to avoid incompatibilities when building internally.
     "//components/cronet/android/cronet_impl_native_proguard.cfg",
-    "//components/cronet/android/cronet_workaround.patch",
   ]
   outputs = [ "$target_gen_dir/cronet_impl_native_proguard.cfg" ]
   args = [ "--output-file" ] + rebase_path(outputs, root_build_dir) +
@@ -1243,6 +1242,8 @@ if (!is_component_build) {
       "//net/android:net_java",
       "//testing/gtest",
     ]
+
+    allow_cleartext_traffic = true
 
     sources = [ "../run_all_unittests.cc" ]
 

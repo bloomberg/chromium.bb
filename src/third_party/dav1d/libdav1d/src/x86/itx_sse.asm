@@ -590,7 +590,7 @@ cglobal idct_4x8_internal_8bpc, 0, 0, 0, dst, stride, coeff, eob, tx2
     jmp m(iadst_4x8_internal_8bpc).end2
 
 ALIGN function_align
-.main:
+cglobal_label .main
     IDCT8_1D_PACKED
     ret
 
@@ -641,7 +641,7 @@ cglobal iadst_4x8_internal_8bpc, 0, 0, 0, dst, stride, coeff, eob, tx2
     RET
 
 ALIGN function_align
-.main:
+cglobal_label .main
     mova                 m6, [o(pd_2048)]
     punpckhwd            m4, m3, m0                ;unpacked in7 in0
     punpckhwd            m5, m2, m1                ;unpacked in5 in2
@@ -837,7 +837,7 @@ cglobal idct_8x4_internal_8bpc, 0, 0, 0, dst, stride, coeff, eob, tx2
     jmp m(iadst_8x4_internal_8bpc).end
 
 ALIGN function_align
-.main:
+cglobal_label .main
     mova                 m6, [o(pd_2048)]
     IDCT4_1D             0, 1, 2, 3, 4, 5, 6
     ret
@@ -896,7 +896,7 @@ cglobal iadst_8x4_internal_8bpc, 0, 0, 0, dst, stride, coeff, eob, tx2
     RET
 
 ALIGN function_align
-.main:
+cglobal_label .main
     punpckhwd            m6, m0, m2                    ;unpacked in0 in2
     punpcklwd            m0, m2                        ;unpacked in0 in2
     punpckhwd            m7, m1, m3                    ;unpacked in1 in3
@@ -1128,7 +1128,7 @@ cglobal idct_8x8_internal_8bpc, 0, 0, 0, dst, stride, coeff, eob, tx2
     REPX      {pmulhrsw x, m7}, m1, m3, m5
     pmulhrsw                m7, [rsp+gprsize+16*0]
 
-.pass1_end3:
+cglobal_label .pass1_end3
     punpcklwd               m6, m1, m5             ;10 50 11 51 12 52 13 53
     punpckhwd               m1, m5                 ;14 54 15 55 16 56 17 57
     punpckhwd               m5, m0, m4             ;04 44 05 45 06 46 07 47
@@ -1190,7 +1190,7 @@ cglobal idct_8x8_internal_8bpc, 0, 0, 0, dst, stride, coeff, eob, tx2
     ret
 
 ALIGN function_align
-.main:
+cglobal_label .main
     mova  [rsp+gprsize*2+16*0], m7
     mova  [rsp+gprsize*2+16*1], m3
     mova  [rsp+gprsize*2+16*2], m1
@@ -1259,7 +1259,7 @@ ALIGN function_align
     jmp m(idct_8x8_internal_8bpc).end2
 
 ALIGN function_align
-.main:
+cglobal_label .main
     mova  [rsp+gprsize*2+16*0], m7
     mova  [rsp+gprsize*2+16*1], m3
     mova  [rsp+gprsize*2+16*2], m4
@@ -1344,7 +1344,7 @@ ALIGN function_align
     mova                    m6, [rsp+gprsize*2+16*2]
     ret
 ALIGN function_align
-.main_pass2_end:
+cglobal_label .main_pass2_end
     paddsw                  m7, m4, m3                    ;t2 + t3
     psubsw                  m4, m3                        ;t2 - t3
     paddsw                  m3, m5, m2                    ;t6 + t7
@@ -1869,7 +1869,7 @@ cglobal idct_16x4_internal_8bpc, 0, 0, 0, dst, stride, coeff, eob, tx2
     jmp                 tx2q
 
 ALIGN function_align
-.main:
+cglobal_label .main
     punpckhqdq            m7, m0, m1                 ;low:in1  high:in3
     punpcklqdq            m0, m1
     punpcklqdq            m1, m2, m3
@@ -1947,7 +1947,7 @@ cglobal iadst_16x4_internal_8bpc, 0, 0, 0, dst, stride, coeff, eob, tx2
     jmp   m(idct_16x4_internal_8bpc).pass2_end
 
 ALIGN function_align
-.main:
+cglobal_label .main
     mova       [coeffq+16*6], m0
     pshufd                m0, m1, q1032
     pshufd                m2, m2, q1032
@@ -2070,7 +2070,7 @@ ALIGN function_align
     mova                  m3, [coeffq+16*5]
     ret
 ALIGN function_align
-.main_pass2_end:
+cglobal_label .main_pass2_end
     mova                  m7, [o(pw_2896x8)]
     punpckhqdq            m6, m2, m1                 ;low:t11   high:t15a
     punpcklqdq            m2, m1                     ;low:t10   high:t14a
@@ -2482,7 +2482,7 @@ cglobal idct_16x8_internal_8bpc, 0, 0, 0, dst, stride, coeff, eob, tx2
 
 
 ALIGN function_align
-.main:
+cglobal_label .main
     mova [rsp+gprsize*2+16*1], m2
     mova [rsp+gprsize*2+16*2], m6
     mova [rsp+gprsize*2+32*5], m5
@@ -2620,7 +2620,7 @@ cglobal iadst_16x8_internal_8bpc, 0, 0, 0, dst, stride, coeff, eob, tx2
     jmp m(iadst_8x8_internal_8bpc).pass2_main
 
 ALIGN function_align
-.main:
+cglobal_label .main
     mova  [rsp+gprsize*2+16*0], m1
     mova  [rsp+gprsize*2+16*1], m2
     mova  [rsp+gprsize*2+16*2], m6
@@ -2813,7 +2813,7 @@ ALIGN function_align
     mova                    m6, [rsp+gprsize*2+16*15]    ;out14
     ret
 ALIGN function_align
-.main_pass2_end:
+cglobal_label .main_pass2_end
     mova                    m7, [o(pw_2896x8)]
     mova                    m1, [rsp+gprsize*2+16* 9]
     mova                    m2, [rsp+gprsize*2+16*14]

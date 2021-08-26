@@ -765,6 +765,17 @@ NavigationEntryImpl* NavigationControllerImpl::GetEntryWithUniqueID(
   return (index != -1) ? entries_[index].get() : nullptr;
 }
 
+NavigationEntryImpl*
+NavigationControllerImpl::GetEntryWithUniqueIDIncludingPending(
+    int nav_entry_id) const {
+  NavigationEntryImpl* entry = GetEntryWithUniqueID(nav_entry_id);
+  if (entry)
+    return entry;
+  return pending_entry_ && pending_entry_->GetUniqueID() == nav_entry_id
+             ? pending_entry_
+             : nullptr;
+}
+
 void NavigationControllerImpl::RegisterExistingOriginToPreventOptInIsolation(
     const url::Origin& origin) {
   for (int i = 0; i < GetEntryCount(); i++) {
@@ -1106,8 +1117,15 @@ bool NavigationControllerImpl::RendererDidNavigate(
     bool previous_document_was_activated,
     NavigationRequest* navigation_request) {
   DCHECK(navigation_request);
-  if (ShouldMaintainTrivialSessionHistory() && GetLastCommittedEntry())
-    DCHECK(params.should_replace_current_entry);
+  if (ShouldMaintainTrivialSessionHistory() && GetLastCommittedEntry()) {
+    // Ensure that this navigation does not add a navigation entry, since
+    // ShouldMaintainTrivialSessionHistory() means we should not add an entry
+    // beyond the last committed one. Therefore, `should_replace_current_entry`
+    // should be set, which replaces the current entry, or this should be a
+    // reload, which does not create a new entry.
+    DCHECK(params.should_replace_current_entry ||
+           navigation_request->GetReloadType() != ReloadType::NONE);
+  }
   is_initial_navigation_ = false;
 
   // Save the previous state before we clobber it.
@@ -1867,8 +1885,10 @@ void NavigationControllerImpl::RendererDidNavigateToExistingEntry(
     }
   } else {
     // This is renderer-initiated. The only kinds of renderer-initated
-    // navigations that are EXISTING_ENTRY are reloads and history.replaceState,
-    // which land us at the last committed entry.
+    // navigations that are EXISTING_ENTRY are same-document navigations that
+    // result in replacement (e.g. history.replaceState(), location.replace(),
+    // forced replacements for trivial session history contexts). For these
+    // cases, we reuse the last committed entry.
     entry = GetLastCommittedEntry();
 
     // TODO(crbug.com/751023): Set page transition type to PAGE_TRANSITION_LINK
@@ -2277,7 +2297,7 @@ void NavigationControllerImpl::DiscardPendingEntry(bool was_failure) {
   // progress, since this will cause a use-after-free.  (We only allow this
   // when the tab is being destroyed for shutdown, since it won't return to
   // NavigateToEntry in that case.)  http://crbug.com/347742.
-  CHECK(!in_navigate_to_pending_entry_ || delegate_->IsBeingDestroyed());
+  CHECK(!in_navigate_to_pending_entry_ || frame_tree_.IsBeingDestroyed());
 
   if (was_failure && pending_entry_) {
     failed_pending_entry_id_ = pending_entry_->GetUniqueID();
@@ -2584,7 +2604,7 @@ SessionStorageNamespace* NavigationControllerImpl::GetSessionStorageNamespace(
   const StoragePartitionId partition_id =
       site_info.GetStoragePartitionId(browser_context_);
   const StoragePartitionConfig partition_config =
-      site_info.GetStoragePartitionConfig(browser_context_);
+      site_info.storage_partition_config();
 
   StoragePartition* partition =
       browser_context_->GetStoragePartition(partition_config);
@@ -2622,7 +2642,7 @@ SessionStorageNamespace* NavigationControllerImpl::GetSessionStorageNamespace(
 
 SessionStorageNamespace*
 NavigationControllerImpl::GetDefaultSessionStorageNamespace() {
-  return GetSessionStorageNamespace(SiteInfo());
+  return GetSessionStorageNamespace(SiteInfo(GetBrowserContext()));
 }
 
 const SessionStorageNamespaceMap&
@@ -3496,7 +3516,10 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
 
   blink::mojom::CommitNavigationParamsPtr commit_params =
       blink::mojom::CommitNavigationParams::New(
-          frame_entry->committed_origin(), network::mojom::WebSandboxFlags(),
+          frame_entry->committed_origin(),
+          // The correct storage key will be computed before committing the
+          // navigation.
+          blink::StorageKey(), network::mojom::WebSandboxFlags(),
           override_user_agent, params.redirect_chain,
           std::vector<network::mojom::URLResponseHeadPtr>(),
           std::vector<net::RedirectInfo>(),
@@ -3688,7 +3711,7 @@ void NavigationControllerImpl::NotifyNavigationEntryCommitted(
     LoadCommittedDetails* details) {
   details->entry = GetLastCommittedEntry();
 
-  // We need to notify the ssl_manager_ before the web_contents_ so the
+  // We need to notify the ssl_manager_ before the WebContents so the
   // location bar will have up-to-date information about the security style
   // when it wants to draw.  See http://crbug.com/11157
   ssl_manager_.DidCommitProvisionalLoad(*details);

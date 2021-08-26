@@ -202,7 +202,7 @@ class BotUpdateUnittests(unittest.TestCase):
     idx_third_revision = args.index('--revision', idx_second_revision+1)
     self.assertEqual(args[idx_first_revision+1], 'somename@unmanaged')
     self.assertEqual(
-        args[idx_second_revision+1], 'src@refs/remotes/origin/master')
+        args[idx_second_revision+1], 'src@refs/remotes/origin/main')
     self.assertEqual(args[idx_third_revision+1], 'src/v8@deadbeef')
     return self.call.records
 

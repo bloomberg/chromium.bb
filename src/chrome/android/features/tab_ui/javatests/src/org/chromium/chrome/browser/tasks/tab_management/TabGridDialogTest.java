@@ -71,7 +71,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.test.espresso.Espresso;
 import androidx.test.espresso.contrib.RecyclerViewActions;
 import androidx.test.espresso.intent.Intents;
-import androidx.test.espresso.intent.rule.IntentsTestRule;
 import androidx.test.filters.MediumTest;
 
 import org.junit.After;
@@ -93,7 +92,6 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
-import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -144,10 +142,6 @@ public class TabGridDialogTest {
     public ChromeRenderTestRule mRenderTestRule =
             ChromeRenderTestRule.Builder.withPublicCorpus().build();
 
-    @Rule
-    public IntentsTestRule<ChromeActivity> mShareActivityTestRule =
-            new IntentsTestRule<>(ChromeActivity.class, false, false);
-
     @BeforeClass
     public static void setUpBeforeActivityLaunched() {
         ChromeNightModeTestUtils.setUpNightModeBeforeChromeActivityLaunched();
@@ -161,6 +155,7 @@ public class TabGridDialogTest {
 
     @Before
     public void setUp() {
+        Intents.init();
         TabUiFeatureUtilities.setTabManagementModuleSupportedForTesting(true);
         mActivityTestRule.startMainActivityOnBlankPage();
         Layout layout = mActivityTestRule.getActivity().getLayoutManager().getOverviewLayout();
@@ -173,10 +168,12 @@ public class TabGridDialogTest {
     public void tearDown() {
         TabUiFeatureUtilities.setTabManagementModuleSupportedForTesting(null);
         ActivityTestUtils.clearActivityOrientation(mActivityTestRule.getActivity());
+        Intents.release();
     }
 
     @Test
     @MediumTest
+    @DisabledTest(message = "crbug.com/1231024")
     public void testBackPressCloseDialog() {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         createTabs(cta, false, 2);
@@ -211,6 +208,7 @@ public class TabGridDialogTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "crbug.com/1231024")
     public void testClickScrimCloseDialog() throws ExecutionException {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         createTabs(cta, false, 2);
@@ -340,7 +338,7 @@ public class TabGridDialogTest {
 
     @Test
     @MediumTest
-    @DisableIf.Build(supported_abis_includes = "x86", message = "https://crbug.com/1121363")
+    @DisabledTest(message = "crbug.com/1231024 and https://crbug.com/1121363")
     public void testUndoClosureInDialog_DialogUndoBar() throws ExecutionException {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         createTabs(cta, false, 2);
@@ -597,6 +595,7 @@ public class TabGridDialogTest {
     @Test
     @MediumTest
     @Features.EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
+    @DisabledTest(message = "crbug.com/1231024")
     public void testTabGroupNaming() throws ExecutionException {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         createTabs(cta, false, 2);
@@ -635,6 +634,7 @@ public class TabGridDialogTest {
     // clang-format off
     @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID + "<Study"})
     @CommandLineFlags.Add({"force-fieldtrials=Study/Group", TAB_GROUP_LAUNCH_POLISH_PARAMS})
+    @DisabledTest(message = "crbug.com/1231024")
     public void testTabGroupNaming_KeyboardVisibility() throws ExecutionException {
         // clang-format on
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
@@ -979,6 +979,7 @@ public class TabGridDialogTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "crbug.com/1231024")
     public void testCreateTabInDialog() {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         createTabs(cta, false, 2);
@@ -1155,12 +1156,10 @@ public class TabGridDialogTest {
     }
 
     private void triggerShareGroupAndVerify(ChromeTabbedActivity cta) {
-        Intents.init();
         selectTabGridDialogToolbarMenuItem(cta, "Share group");
         intended(allOf(hasAction(equalTo(Intent.ACTION_CHOOSER)),
                 hasExtras(hasEntry(equalTo(Intent.EXTRA_INTENT),
                         allOf(hasAction(equalTo(Intent.ACTION_SEND)), hasType("text/plain"))))));
-        Intents.release();
     }
 
     private void waitForDialogHidingAnimation(ChromeTabbedActivity cta) {

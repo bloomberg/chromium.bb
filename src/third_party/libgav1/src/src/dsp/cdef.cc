@@ -40,8 +40,10 @@ constexpr int16_t kDivisionTable[] = {840, 420, 280, 210, 168, 140, 120, 105};
 int32_t Square(int32_t x) { return x * x; }
 
 template <int bitdepth, typename Pixel>
-void CdefDirection_C(const void* const source, ptrdiff_t stride,
-                     uint8_t* const direction, int* const variance) {
+void CdefDirection_C(const void* LIBGAV1_RESTRICT const source,
+                     ptrdiff_t stride,
+                     uint8_t* LIBGAV1_RESTRICT const direction,
+                     int* LIBGAV1_RESTRICT const variance) {
   assert(direction != nullptr);
   assert(variance != nullptr);
   const auto* src = static_cast<const Pixel*>(source);
@@ -121,10 +123,11 @@ int Constrain(int diff, int threshold, int damping) {
 // constant large value (kCdefLargeValue) if at the boundary.
 template <int block_width, int bitdepth, typename Pixel,
           bool enable_primary = true, bool enable_secondary = true>
-void CdefFilter_C(const uint16_t* src, const ptrdiff_t src_stride,
-                  const int block_height, const int primary_strength,
-                  const int secondary_strength, const int damping,
-                  const int direction, void* const dest,
+void CdefFilter_C(const uint16_t* LIBGAV1_RESTRICT src,
+                  const ptrdiff_t src_stride, const int block_height,
+                  const int primary_strength, const int secondary_strength,
+                  const int damping, const int direction,
+                  void* LIBGAV1_RESTRICT const dest,
                   const ptrdiff_t dest_stride) {
   static_assert(block_width == 4 || block_width == 8, "Invalid CDEF width.");
   static_assert(enable_primary || enable_secondary, "");

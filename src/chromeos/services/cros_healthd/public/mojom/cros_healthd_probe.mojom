@@ -333,7 +333,7 @@ struct LogicalCpuInfo {
   uint64 system_time_user_hz;
   // Idle time since last boot. USER_HZ can be converted to seconds with the
   // conversion factor given by sysconf(_SC_CLK_TCK).
-  uint32 idle_time_user_hz;
+  uint64 idle_time_user_hz;
   // Information about the logical CPU's time in various C-states.
   array<CpuCStateInfo> c_states;
 };
@@ -607,7 +607,7 @@ struct DmiInfo {
   // The product name of the motherboard.
   string? board_name;
   // The vendor of the motherboard.
-  string? board_vender;
+  string? board_vendor;
   // The version of the motherboard.
   string? board_version;
   // The vendor of the chassis.

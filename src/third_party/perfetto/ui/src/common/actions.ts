@@ -30,6 +30,7 @@ import {
 import {PROCESS_SUMMARY_TRACK} from '../tracks/process_summary/common';
 
 import {DEFAULT_VIEWING_OPTION} from './flamegraph_util';
+import {AggregationAttrs, PivotAttrs} from './pivot_table_query_generator';
 import {
   AdbRecordingTarget,
   Area,
@@ -115,6 +116,72 @@ function rankIndex<T>(element: T, array: T[]): number {
   const index = array.indexOf(element);
   if (index === -1) return array.length;
   return index;
+}
+
+function getSelectedPivotTableColumnAttrs(
+    state: StateDraft, args: {pivotTableId: string}):
+    {aggregation?: string, tableName: string, columnName: string} {
+  const availableColumns = state.pivotTableConfig.availableColumns;
+  const columnCount = state.pivotTableConfig.totalColumnsCount;
+  let columnIdx = state.pivotTable[args.pivotTableId].selectedColumnIndex;
+  if (!availableColumns || !columnCount) {
+    throw Error('No columns available');
+  }
+  if (columnIdx === undefined) {
+    throw Error('No column selected');
+  }
+  let tableName, columnName;
+  // Finds column index relative to its table.
+  for (let i = 0; i < availableColumns.length; ++i) {
+    if (columnIdx >= availableColumns[i].columns.length) {
+      columnIdx -= availableColumns[i].columns.length;
+      continue;
+    }
+    tableName = availableColumns[i].tableName;
+    columnName = availableColumns[i].columns[columnIdx];
+    break;
+  }
+  if (tableName === undefined || columnName === undefined) {
+    throw Error('Pivot table requested column does not exist');
+  }
+
+  // Get aggregation if selected column is not a pivot, undefined otherwise.
+  let aggregation;
+  if (state.pivotTable[args.pivotTableId].isPivot === false) {
+    const aggregations = state.pivotTableConfig.availableAggregations;
+    const aggregationIdx =
+        state.pivotTable[args.pivotTableId].selectedAggregationIndex;
+    if (!aggregations) {
+      throw Error('No aggregations available');
+    }
+    if (aggregationIdx === undefined) {
+      throw Error('No aggregation selected');
+    }
+    if (aggregationIdx >= aggregations.length) {
+      throw Error('Pivot table requested aggregation out of bounds');
+    }
+    aggregation = aggregations[aggregationIdx];
+  }
+
+  return {aggregation, tableName, columnName};
+}
+
+function equalTableAttrs(
+    left: PivotAttrs|AggregationAttrs, right: PivotAttrs|AggregationAttrs) {
+  if (left.columnName !== right.columnName) {
+    return false;
+  }
+
+  if (left.tableName !== right.tableName) {
+    return false;
+  }
+
+  if ('aggregation' in left && 'aggregation' in right) {
+    if (left.aggregation !== right.aggregation) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export const StateActions = {
@@ -379,6 +446,8 @@ export const StateActions = {
     }
   },
 
+  // TODO(hjd): engine.ready should be a published thing. If it's part
+  // of the state it interacts badly with permalinks.
   setEngineReady(
       state: StateDraft,
       args: {engineId: string; ready: boolean, mode: EngineMode}): void {
@@ -442,6 +511,12 @@ export const StateActions = {
     for (const key of Object.keys(args.newState)) {
       // tslint:disable-next-line no-any
       (state as any)[key] = (args.newState as any)[key];
+    }
+
+    // If we're loading from a permalink then none of the engines can
+    // possibly be ready:
+    for (const engine of Object.values(state.engines)) {
+      engine.ready = false;
     }
   },
 
@@ -794,6 +869,145 @@ export const StateActions = {
       throw Error('metric selection out of bounds');
     }
     state.metrics.selectedIndex = args.index;
+  },
+
+  togglePerfDebug(state: StateDraft, _: {}): void {
+    state.perfDebug = !state.perfDebug;
+  },
+
+  toggleSidebar(state: StateDraft, _: {}): void {
+    state.sidebarVisible = !state.sidebarVisible;
+  },
+
+  setHoveredUtidAndPid(state: StateDraft, args: {utid: number, pid: number}) {
+    state.hoveredPid = args.pid;
+    state.hoveredUtid = args.utid;
+  },
+
+  setHighlightedSliceId(state: StateDraft, args: {sliceId: number}) {
+    state.highlightedSliceId = args.sliceId;
+  },
+
+  setHighlightedFlowLeftId(state: StateDraft, args: {flowId: number}) {
+    state.focusedFlowIdLeft = args.flowId;
+  },
+
+  setHighlightedFlowRightId(state: StateDraft, args: {flowId: number}) {
+    state.focusedFlowIdRight = args.flowId;
+  },
+
+  setSearchIndex(state: StateDraft, args: {index: number}) {
+    state.searchIndex = args.index;
+  },
+
+  setHoveredLogsTimestamp(state: StateDraft, args: {ts: number}) {
+    state.hoveredLogsTimestamp = args.ts;
+  },
+
+  setHoveredNoteTimestamp(state: StateDraft, args: {ts: number}) {
+    state.hoveredNoteTimestamp = args.ts;
+  },
+
+  setCurrentTab(state: StateDraft, args: {tab: string|undefined}) {
+    state.currentTab = args.tab;
+  },
+
+  addNewPivotTable(state: StateDraft, args: {
+    name: string,
+    pivotTableId: string,
+    selectedPivots: PivotAttrs[],
+    selectedAggregations: AggregationAttrs[]
+  }): void {
+    state.pivotTable[args.pivotTableId] = {
+      id: args.pivotTableId,
+      name: args.name,
+      selectedPivots: args.selectedPivots,
+      selectedAggregations: args.selectedAggregations,
+      isPivot: true,
+    };
+  },
+
+  deletePivotTable(state: StateDraft, args: {pivotTableId: string}): void {
+    delete state.pivotTable[args.pivotTableId];
+  },
+
+  // Adds column to selectedPivots or selectedAggregations if it doesn't
+  // already exist, remove otherwise.
+  toggleRequestedPivotTablePivot(
+      state: StateDraft, args: {pivotTableId: string}): void {
+    const {aggregation, tableName, columnName} =
+        getSelectedPivotTableColumnAttrs(
+            state, {pivotTableId: args.pivotTableId});
+    let storage: Array<PivotAttrs|AggregationAttrs>;
+    let attrs: PivotAttrs|AggregationAttrs;
+    if (state.pivotTable[args.pivotTableId].isPivot) {
+      storage = state.pivotTable[args.pivotTableId].selectedPivots;
+      attrs = {tableName, columnName};
+    } else {
+      storage = state.pivotTable[args.pivotTableId].selectedAggregations;
+      attrs = {tableName, columnName, aggregation, order: 'DESC'};
+    }
+
+    // Gets index of requested column in selectedPivots or selectedAggregations
+    // if exists.
+    const index = storage.findIndex(element => equalTableAttrs(element, attrs));
+
+    if (index === -1) {
+      storage.push(attrs);
+    } else {
+      storage.splice(index, 1);
+    }
+  },
+
+  clearPivotTableColumns(state: StateDraft, args: {pivotTableId: string}):
+      void {
+        state.pivotTable[args.pivotTableId].selectedPivots = [];
+        state.pivotTable[args.pivotTableId].selectedAggregations = [];
+      },
+
+  resetPivotTableRequest(state: StateDraft, args: {pivotTableId: string}):
+      void {
+        state.pivotTable[args.pivotTableId].requestedAction = undefined;
+      },
+
+  setPivotTableRequest(
+      state: StateDraft, args: {pivotTableId: string, action: string}): void {
+    state.pivotTable[args.pivotTableId].requestedAction = args.action;
+  },
+
+  setAvailablePivotTableColumns(state: StateDraft, args: {
+    availableColumns: Array<{tableName: string, columns: string[]}>,
+    totalColumnsCount: number,
+    availableAggregations: string[]
+  }): void {
+    state.pivotTableConfig.availableColumns = args.availableColumns;
+    state.pivotTableConfig.totalColumnsCount = args.totalColumnsCount;
+    state.pivotTableConfig.availableAggregations = args.availableAggregations;
+  },
+
+  // Dictates if the selected indexes refer to a pivot or aggregation.
+  togglePivotSelection(state: StateDraft, args: {pivotTableId: string}): void {
+    state.pivotTable[args.pivotTableId].isPivot =
+        !state.pivotTable[args.pivotTableId].isPivot;
+  },
+
+  setSelectedPivotTableColumnIndex(
+      state: StateDraft, args: {pivotTableId: string, index: number}): void {
+    if (!state.pivotTableConfig.availableColumns ||
+        !state.pivotTableConfig.totalColumnsCount ||
+        args.index >= state.pivotTableConfig.totalColumnsCount) {
+      throw Error('Column selection out of bounds');
+    }
+    state.pivotTable[args.pivotTableId].selectedColumnIndex = args.index;
+  },
+
+  setSelectedPivotTableAggregationIndex(
+      state: StateDraft, args: {pivotTableId: string, index: number}): void {
+    if (!state.pivotTableConfig.availableAggregations ||
+        args.index >= state.pivotTableConfig.availableAggregations.length) {
+      throw Error('Aggregation selection out of bounds');
+    }
+    state.pivotTable[args.pivotTableId].selectedAggregationIndex = args.index;
   },
 };
 

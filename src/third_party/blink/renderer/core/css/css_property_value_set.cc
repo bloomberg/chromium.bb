@@ -122,7 +122,6 @@ static uint16_t GetConvertedCSSPropertyID(AtRuleDescriptorID descriptor_id) {
 }
 
 static bool IsPropertyMatch(const CSSPropertyValueMetadata& metadata,
-                            const CSSValue&,
                             uint16_t id,
                             CSSPropertyID property_id) {
   DCHECK_EQ(id, static_cast<uint16_t>(property_id));
@@ -138,20 +137,16 @@ static bool IsPropertyMatch(const CSSPropertyValueMetadata& metadata,
 }
 
 static bool IsPropertyMatch(const CSSPropertyValueMetadata& metadata,
-                            const CSSValue& value,
                             uint16_t id,
                             const AtomicString& custom_property_name) {
   DCHECK_EQ(id, static_cast<uint16_t>(CSSPropertyID::kVariable));
-  return static_cast<uint16_t>(metadata.PropertyID()) == id &&
-         To<CSSCustomPropertyDeclaration>(value).GetName() ==
-             custom_property_name;
+  return metadata.Name() == CSSPropertyName(custom_property_name);
 }
 
 static bool IsPropertyMatch(const CSSPropertyValueMetadata& metadata,
-                            const CSSValue& css_value,
                             uint16_t id,
                             AtRuleDescriptorID descriptor_id) {
-  return IsPropertyMatch(metadata, css_value, id,
+  return IsPropertyMatch(metadata, id,
                          AtRuleDescriptorIDAsCSSPropertyID(descriptor_id));
 }
 
@@ -159,7 +154,7 @@ template <typename T>
 int ImmutableCSSPropertyValueSet::FindPropertyIndex(T property) const {
   uint16_t id = GetConvertedCSSPropertyID(property);
   for (int n = array_size_ - 1; n >= 0; --n) {
-    if (IsPropertyMatch(MetadataArray()[n], *ValueArray()[n], id, property))
+    if (IsPropertyMatch(MetadataArray()[n], id, property))
       return n;
   }
 
@@ -404,16 +399,11 @@ MutableCSSPropertyValueSet::SetResult MutableCSSPropertyValueSet::SetProperty(
       context_style_sheet, is_animation_tainted);
 }
 
-void MutableCSSPropertyValueSet::SetProperty(CSSPropertyID property_id,
+void MutableCSSPropertyValueSet::SetProperty(const CSSPropertyName& name,
                                              const CSSValue& value,
                                              bool important) {
-  StylePropertyShorthand shorthand = shorthandForProperty(property_id);
+  StylePropertyShorthand shorthand = shorthandForProperty(name.Id());
   if (!shorthand.length()) {
-    // TODO(crbug.com/1112291): Don't use this function for custom properties.
-    CSSPropertyName name =
-        (property_id == CSSPropertyID::kVariable)
-            ? CSSPropertyName(To<CSSCustomPropertyDeclaration>(value).GetName())
-            : CSSPropertyName(property_id);
     SetProperty(CSSPropertyValue(name, value, important));
     return;
   }
@@ -421,9 +411,17 @@ void MutableCSSPropertyValueSet::SetProperty(CSSPropertyID property_id,
   RemovePropertiesInSet(shorthand.properties(), shorthand.length());
 
   for (unsigned i = 0; i < shorthand.length(); ++i) {
-    CSSPropertyName name(shorthand.properties()[i]->PropertyID());
-    property_vector_.push_back(CSSPropertyValue(name, value, important));
+    CSSPropertyName longhand_name(shorthand.properties()[i]->PropertyID());
+    property_vector_.push_back(
+        CSSPropertyValue(longhand_name, value, important));
   }
+}
+
+void MutableCSSPropertyValueSet::SetProperty(CSSPropertyID property_id,
+                                             const CSSValue& value,
+                                             bool important) {
+  DCHECK_NE(property_id, CSSPropertyID::kVariable);
+  SetProperty(CSSPropertyName(property_id), value, important);
 }
 
 bool MutableCSSPropertyValueSet::SetProperty(const CSSPropertyValue& property,
@@ -435,7 +433,8 @@ bool MutableCSSPropertyValueSet::SetProperty(const CSSPropertyValue& property,
       const CSSProperty& prop = CSSProperty::Get(property.Id());
       if (prop.IsInLogicalPropertyGroup()) {
         DCHECK(property_vector_.Contains(*to_replace));
-        int to_replace_index = to_replace - property_vector_.begin();
+        int to_replace_index =
+            static_cast<int>(to_replace - property_vector_.begin());
         for (int n = property_vector_.size() - 1; n > to_replace_index; --n) {
           if (prop.IsInSameLogicalPropertyGroupWithDifferentMappingLogic(
                   PropertyAt(n).Id())) {
@@ -663,8 +662,7 @@ int MutableCSSPropertyValueSet::FindPropertyIndex(T property) const {
 
   const CSSPropertyValue* it = std::find_if(
       begin, end, [property, id](const CSSPropertyValue& css_property) -> bool {
-        return IsPropertyMatch(css_property.Metadata(), *css_property.Value(),
-                               id, property);
+        return IsPropertyMatch(css_property.Metadata(), id, property);
       });
 
   return (it == end) ? -1 : static_cast<int>(it - begin);
@@ -685,8 +683,9 @@ unsigned CSSPropertyValueSet::AverageSizeInBytes() {
   // Please update this if the storage scheme changes so that this longer
   // reflects the actual size.
   return sizeof(ImmutableCSSPropertyValueSet) +
-         AdditionalBytesForImmutableCSSPropertyValueSetWithPropertyCount(4)
-             .value;
+         static_cast<wtf_size_t>(
+             AdditionalBytesForImmutableCSSPropertyValueSetWithPropertyCount(4)
+                 .value);
 }
 
 // See the function above if you need to update this.

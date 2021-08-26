@@ -1,3 +1,19 @@
+2021-07-20 v3.1.2
+  This release includes several bug fixes.
+
+  - Bug fixes:
+    exports.cmake: use APPLE and WIN32 and use def for mingw-w64
+    https://aomedia-review.googlesource.com/c/aom/+/139882
+
+    Issue 2993: Incorrect spatial_id when decoding base layer of
+    multi-layer stream
+
+    Issue 3080: Chroma Resampling by Encoder on Y4M Inputs Files Tagged
+    as C420mpeg2
+
+    Issue 3081: Use of uninitialized value $version_extra in
+    concatenation (.) or string at aom/build/cmake/version.pl line 88.
+
 2021-06-08 v3.1.1
   This release includes several bug fixes.
 

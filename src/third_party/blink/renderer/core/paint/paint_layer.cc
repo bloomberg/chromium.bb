@@ -6,7 +6,7 @@
  *
  * Other contributors:
  *   Robert O'Callahan <roc+@cs.cmu.edu>
- *   David Baron <dbaron@fas.harvard.edu>
+ *   David Baron <dbaron@dbaron.org>
  *   Christian Biesinger <cbiesinger@web.de>
  *   Randall Jesup <rjesup@wgate.com>
  *   Roland Mainz <roland.mainz@informatik.med.uni-giessen.de>
@@ -197,7 +197,7 @@ PaintLayer::PaintLayer(LayoutBoxModelObject& layout_object)
       needs_cull_rect_update_(false),
       forces_children_cull_rect_update_(false),
       descendant_needs_cull_rect_update_(false),
-      previous_paint_result_(kFullyPainted),
+      previous_paint_result_(kMayBeClippedByCullRect),
       needs_paint_phase_descendant_outlines_(false),
       needs_paint_phase_float_(false),
       has_non_isolated_descendant_with_blend_mode_(false),
@@ -208,6 +208,7 @@ PaintLayer::PaintLayer(LayoutBoxModelObject& layout_object)
       self_painting_status_changed_(false),
       filter_on_effect_node_dirty_(false),
       backdrop_filter_on_effect_node_dirty_(false),
+      has_filter_that_moves_pixels_(false),
       is_under_svg_hidden_container_(false),
       descendant_has_direct_or_scrolling_compositing_reason_(false),
       needs_compositing_reasons_update_(
@@ -2898,19 +2899,11 @@ void PaintLayer::ExpandRectForSelfPaintingDescendants(
   if (!HasSelfPaintingLayerDescendant())
     return;
 
-  if (const auto* box = GetLayoutBox()) {
-    // If the layer clips overflow and all descendants are contained, then no
-    // need to expand for children. Not checking kIncludeAncestorClips because
-    // the clip of the current layer is always applied. The doesn't check
-    // whether the non-contained descendants are actual descendants of this
-    // layer in paint order because it's not easy.
-    if (box->ShouldClipOverflowAlongBothAxis() &&
-        !HasNonContainedAbsolutePositionDescendant() &&
-        !(HasFixedPositionDescendant() &&
-          !box->CanContainFixedPositionObjects())) {
-      return;
-    }
-  }
+  // If the layer is known to clip the whole subtree, then we don't need to
+  // expand for children. Not checking kIncludeAncestorClips because the clip of
+  // the current layer is always applied.
+  if (KnownToClipSubtree())
+    return;
 
   PaintLayerPaintOrderIterator iterator(*this, kAllChildren);
   while (PaintLayer* child_layer = iterator.Next()) {
@@ -2925,6 +2918,22 @@ void PaintLayer::ExpandRectForSelfPaintingDescendants(
           composited_layer, this, options));
     }
   }
+}
+
+bool PaintLayer::KnownToClipSubtree() const {
+  if (const auto* box = GetLayoutBox()) {
+    if (!box->ShouldClipOverflowAlongBothAxis())
+      return false;
+    if (HasNonContainedAbsolutePositionDescendant())
+      return false;
+    if (HasFixedPositionDescendant() && !box->CanContainFixedPositionObjects())
+      return false;
+    // The root frame's clip is special at least in Android WebView.
+    if (is_root_layer_ && box->GetFrame()->IsLocalRoot())
+      return false;
+    return true;
+  }
+  return false;
 }
 
 PhysicalRect PaintLayer::BoundingBoxForCompositing() const {
@@ -3447,6 +3456,8 @@ void PaintLayer::StyleDidChange(StyleDifference diff,
                                 const ComputedStyle* old_style) {
   UpdateScrollableArea();
 
+  has_filter_that_moves_pixels_ = ComputeHasFilterThatMovesPixels();
+
   if (AttemptDirectCompositingUpdate(diff, old_style)) {
     if (diff.HasDifference())
       GetLayoutObject().SetNeedsPaintPropertyUpdate();
@@ -3692,7 +3703,7 @@ PhysicalRect PaintLayer::MapRectForFilter(const PhysicalRect& rect) const {
   return PhysicalRect::EnclosingRect(MapRectForFilter(FloatRect(rect)));
 }
 
-bool PaintLayer::HasFilterThatMovesPixels() const {
+bool PaintLayer::ComputeHasFilterThatMovesPixels() const {
   if (!HasFilterInducingProperty())
     return false;
   const ComputedStyle& style = GetLayoutObject().StyleRef();

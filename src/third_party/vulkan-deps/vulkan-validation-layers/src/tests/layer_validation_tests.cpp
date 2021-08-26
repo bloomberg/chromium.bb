@@ -1110,9 +1110,11 @@ bool VkLayerTest::AddSurfaceInstanceExtension() {
         printf("%s %s extension not supported\n", kSkipPrefix, VK_KHR_XLIB_SURFACE_EXTENSION_NAME);
         return false;
     }
-    if (XOpenDisplay(NULL)) {
+    auto temp_dpy = XOpenDisplay(NULL);
+    if (temp_dpy) {
         instance_extensions_.push_back(VK_KHR_XLIB_SURFACE_EXTENSION_NAME);
         bSupport = true;
+        XCloseDisplay(temp_dpy);
     }
 #endif
 
@@ -1121,9 +1123,13 @@ bool VkLayerTest::AddSurfaceInstanceExtension() {
         printf("%s %s extension not supported\n", kSkipPrefix, VK_KHR_XCB_SURFACE_EXTENSION_NAME);
         return false;
     }
-    if (!bSupport && xcb_connect(NULL, NULL)) {
-        instance_extensions_.push_back(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
-        bSupport = true;
+    if (!bSupport) {
+        auto temp_xcb = xcb_connect(NULL, NULL);
+        if (temp_xcb) {
+            instance_extensions_.push_back(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
+            bSupport = true;
+            xcb_disconnect(temp_xcb);
+        }
     }
 #endif
 
@@ -1295,6 +1301,29 @@ VkBufferTest::~VkBufferTest() {
         }
         vk::FreeMemory(VulkanDevice, VulkanMemory, nullptr);
     }
+}
+
+void SetImageLayout(VkDeviceObj *device, VkImageAspectFlags aspect, VkImage image, VkImageLayout image_layout) {
+    VkCommandPoolObj pool(device, device->graphics_queue_node_index_);
+    VkCommandBufferObj cmd_buf(device, &pool);
+
+    cmd_buf.begin();
+    VkImageMemoryBarrier layout_barrier{ VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+                                        nullptr,
+                                        0,
+                                        VK_ACCESS_MEMORY_READ_BIT,
+                                        VK_IMAGE_LAYOUT_UNDEFINED,
+                                        image_layout,
+                                        VK_QUEUE_FAMILY_IGNORED,
+                                        VK_QUEUE_FAMILY_IGNORED,
+                                        image,
+                                        {aspect, 0, 1, 0, 1} };
+
+    cmd_buf.PipelineBarrier(VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr, 0, nullptr, 1,
+        &layout_barrier);
+    cmd_buf.end();
+
+    cmd_buf.QueueCommandBuffer();
 }
 
 std::unique_ptr<VkImageObj> VkArmBestPracticesLayerTest::CreateImage(VkFormat format, const uint32_t width,

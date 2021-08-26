@@ -2596,11 +2596,10 @@ out vec4 color;
 
 uniform int i;
 uniform uint u;
+uniform bool b;
 
 void main()
 {
-    bool b = i > 10;
-
     mat3x2 mi = mat3x2(i);
     mat4 mu = mat4(u);
     mat2x4 mb = mat2x4(b);
@@ -2618,10 +2617,55 @@ void main()
 
     GLint iloc = glGetUniformLocation(program, "i");
     GLint uloc = glGetUniformLocation(program, "u");
+    GLint bloc = glGetUniformLocation(program, "b");
     ASSERT_NE(iloc, -1);
     ASSERT_NE(uloc, -1);
+    ASSERT_NE(bloc, -1);
     glUniform1i(iloc, -123);
     glUniform1ui(uloc, 456);
+    glUniform1ui(bloc, 1);
+
+    drawQuad(program, essl3_shaders::PositionAttrib(), 0.5f);
+    EXPECT_GL_NO_ERROR();
+
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::white);
+}
+
+// Test that constructing vectors from non-float types works.
+TEST_P(GLSLTest_ES3, ConstructVectorFromNonFloat)
+{
+    constexpr char kFS[] = R"(#version 300 es
+precision highp float;
+out vec4 color;
+
+uniform ivec2 i;
+uniform uvec2 u;
+uniform bvec2 b;
+
+void main()
+{
+    vec2 v2 = vec2(i.x, b);
+    vec3 v3 = vec3(b, u);
+    vec4 v4 = vec4(i, u);
+
+    color = vec4(v2.x == float(i.x) && v2.y == float(b.x) ? 1 : 0,
+                 v3.x == float(b.x) && v3.y == float(b.y) && v3.z == float(u.x) ? 1 : 0,
+                 v4.x == float(i.x) && v4.y == float(i.y) && v4.z == float(u.x) && v4.w == float(u.y) ? 1 : 0,
+                 1);
+})";
+
+    ANGLE_GL_PROGRAM(program, essl3_shaders::vs::Simple(), kFS);
+    glUseProgram(program);
+
+    GLint iloc = glGetUniformLocation(program, "i");
+    GLint uloc = glGetUniformLocation(program, "u");
+    GLint bloc = glGetUniformLocation(program, "b");
+    ASSERT_NE(iloc, -1);
+    ASSERT_NE(uloc, -1);
+    ASSERT_NE(bloc, -1);
+    glUniform2i(iloc, -123, -23);
+    glUniform2ui(uloc, 456, 76);
+    glUniform2ui(bloc, 1, 0);
 
     drawQuad(program, essl3_shaders::PositionAttrib(), 0.5f);
     EXPECT_GL_NO_ERROR();
@@ -2644,11 +2688,12 @@ void main()
     ivec3 vi = ivec3(m);
     uvec2 vu = uvec2(m);
     bvec4 vb = bvec4(m);
+    bvec2 vb2 = bvec2(vi.x, m);
 
     color = vec4(vi.x == int(f) ? 1 : 0,
                  vu.x == uint(f) ? 1 : 0,
                  vb.x == bool(f) ? 1 : 0,
-                 1);
+                 vb2.x == bool(f) && vb2.y == bool(f) ? 1 : 0);
 })";
 
     ANGLE_GL_PROGRAM(program, essl3_shaders::vs::Simple(), kFS);
@@ -3091,7 +3136,10 @@ TEST_P(GLSLTest_ES3, AtanVec2)
 TEST_P(GLSLTest_ES3, UnaryMinusOperatorSignedInt)
 {
     // http://anglebug.com/5242
-    ANGLE_SKIP_TEST_IF(IsMetal() && IsIntel());
+    // Test times out on dual-GPU MacBook Pros that don't show up as
+    // IsIntel(); skip on all Metal for now.
+    // See also http://anglebug.com/6174 .
+    ANGLE_SKIP_TEST_IF(IsMetal());
 
     constexpr char kVS[] =
         "#version 300 es\n"
@@ -3141,7 +3189,10 @@ TEST_P(GLSLTest_ES3, UnaryMinusOperatorSignedInt)
 TEST_P(GLSLTest_ES3, UnaryMinusOperatorUnsignedInt)
 {
     // http://anglebug.com/5242
-    ANGLE_SKIP_TEST_IF(IsMetal() && IsIntel());
+    // Test times out on dual-GPU MacBook Pros that don't show up as
+    // IsIntel(); skip on all Metal for now.
+    // See also http://anglebug.com/6174 .
+    ANGLE_SKIP_TEST_IF(IsMetal());
 
     constexpr char kVS[] =
         "#version 300 es\n"
@@ -3207,6 +3258,133 @@ TEST_P(GLSLTest, NestedSequenceOperatorWithTernaryInside)
     ANGLE_GL_PROGRAM(prog, essl1_shaders::vs::Simple(), kFS);
     drawQuad(prog.get(), essl1_shaders::PositionAttrib(), 0.5f);
     EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+}
+
+// Test that nesting ternary and short-circuitting operators work.
+TEST_P(GLSLTest, NestedTernaryAndShortCircuit)
+{
+    // Note that the uniform doesn't need to be set, and will contain the default value of false.
+    constexpr char kFS[] = R"(
+precision mediump float;
+uniform bool u;
+void main()
+{
+    int a = u ? 12345 : 2;      // will be 2
+    int b = u ? 12345 : 4;      // will be 4
+    int c = u ? 12345 : 0;      // will be 0
+
+    if (a == 2                  // true path is taken
+        ? (b == 3               // false path is taken
+            ? (a=0) != 0
+            : b != 0            // true
+          ) && (                // short-circuit evaluates RHS
+            (a=7) == 7          // true, modifies a
+            ||                  // short-circuit doesn't evaluate RHS
+            (b=8) == 8
+          )
+        : (a == 0 && b == 0
+            ? (c += int((a=0) == 0 && (b=0) == 0)) != 0
+            : (c += int((a=0) != 0 && (b=0) != 0)) != 0))
+    {
+        c += 15;                // will execute
+    }
+
+    // Verify that a is 7, b is 4 and c is 15.
+    gl_FragColor = vec4(a == 7, b == 4, c == 15, 1);
+})";
+
+    ANGLE_GL_PROGRAM(prog, essl1_shaders::vs::Simple(), kFS);
+    drawQuad(prog.get(), essl1_shaders::PositionAttrib(), 0.5f);
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::white);
+}
+
+// Test that uniform bvecN passed to functions work.
+TEST_P(GLSLTest_ES3, UniformBoolVectorPassedToFunctions)
+{
+    constexpr char kFS[] = R"(#version 300 es
+precision mediump float;
+uniform bvec4 u;
+out vec4 color;
+
+bool f(bvec4 bv)
+{
+    return all(bv.xz) && !any(bv.yw);
+}
+
+void main() {
+    color = f(u) ? vec4(0, 1, 0, 1) : vec4(1, 0, 0, 1);
+})";
+
+    ANGLE_GL_PROGRAM(prog, essl3_shaders::vs::Simple(), kFS);
+    glUseProgram(prog);
+
+    GLint uloc = glGetUniformLocation(prog, "u");
+    ASSERT_NE(uloc, -1);
+    glUniform4ui(uloc, true, false, true, false);
+
+    drawQuad(prog.get(), essl3_shaders::PositionAttrib(), 0.5f);
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+}
+
+// Test that bvecN in storage buffer passed to functions work.
+TEST_P(GLSLTest_ES31, StorageBufferBoolVectorPassedToFunctions)
+{
+    constexpr char kCS[] = R"(#version 310 es
+layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+layout(binding = 0, std430) buffer Output {
+    bvec4 b;
+    bool valid;
+} outbuf;
+
+bool f_in(bvec4 bv)
+{
+    return all(bv.xz) && !any(bv.yw);
+}
+
+bool f_inout(inout bvec4 bv)
+{
+    bool ok = all(bv.xz) && !any(bv.yw);
+    bv.xw = bvec2(false, true);
+    return ok;
+}
+
+void f_out(out bvec4 bv)
+{
+    bv = bvec4(false, true, false, true);
+}
+
+void main() {
+    bool valid = f_in(outbuf.b);
+    valid = f_inout(outbuf.b) && valid;
+    f_out(outbuf.b);
+    outbuf.valid = valid;
+})";
+
+    ANGLE_GL_COMPUTE_PROGRAM(program, kCS);
+    glUseProgram(program);
+
+    constexpr std::array<GLuint, 5> kOutputInitData = {true, false, true, false, false};
+    GLBuffer outputBuffer;
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, outputBuffer);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(kOutputInitData), kOutputInitData.data(),
+                 GL_STATIC_DRAW);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, outputBuffer);
+    EXPECT_GL_NO_ERROR();
+
+    glDispatchCompute(1, 1, 1);
+    EXPECT_GL_NO_ERROR();
+
+    glMemoryBarrier(GL_BUFFER_UPDATE_BARRIER_BIT);
+
+    const GLuint *ptr = reinterpret_cast<const GLuint *>(
+        glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, sizeof(kOutputInitData), GL_MAP_READ_BIT));
+    fprintf(stderr, "%d %d %d %d %d\n", ptr[0], ptr[1], ptr[2], ptr[3], ptr[4]);
+    EXPECT_FALSE(ptr[0]);
+    EXPECT_TRUE(ptr[1]);
+    EXPECT_FALSE(ptr[2]);
+    EXPECT_TRUE(ptr[3]);
+    EXPECT_TRUE(ptr[4]);
+    glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
 }
 
 // Test that using a sampler2D and samplerExternalOES in the same shader works (anglebug.com/1534)
@@ -6825,6 +7003,33 @@ void main()
     EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
 }
 
+// Test switch/case where default is last.
+TEST_P(GLSLTest_ES3, SwitchWithDefaultAtTheEnd)
+{
+    constexpr char kFS[] = R"(#version 300 es
+
+precision highp float;
+out vec4 my_FragColor;
+
+uniform int u_zero;
+
+void main()
+{
+    switch (u_zero)
+    {
+        case 1:
+            my_FragColor = vec4(1, 0, 0, 1);
+            break;
+        default:
+            my_FragColor = vec4(0, 1, 0, 1);
+    }
+})";
+
+    ANGLE_GL_PROGRAM(program, essl3_shaders::vs::Simple(), kFS);
+    drawQuad(program.get(), essl3_shaders::PositionAttrib(), 0.5f);
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+}
+
 // Test that a switch statement with an empty block inside as a final statement compiles.
 TEST_P(GLSLTest_ES3, SwitchFinalCaseHasEmptyBlock)
 {
@@ -7291,9 +7496,7 @@ void main()
     EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
 }
 
-// Test vector/scalar arithmetic (in this case multiplication and addition). Meant to reproduce a
-// bug that appeared in NVIDIA OpenGL drivers and that is worked around by
-// VectorizeVectorScalarArithmetic AST transform.
+// Test vector/scalar arithmetic (in this case multiplication and addition).
 TEST_P(GLSLTest, VectorScalarMultiplyAndAddInLoop)
 {
     constexpr char kFS[] = R"(precision mediump float;
@@ -7317,9 +7520,7 @@ void main() {
     EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
 }
 
-// Test vector/scalar arithmetic (in this case compound division and addition). Meant to reproduce a
-// bug that appeared in NVIDIA OpenGL drivers and that is worked around by
-// VectorizeVectorScalarArithmetic AST transform.
+// Test vector/scalar arithmetic (in this case compound division and addition).
 TEST_P(GLSLTest, VectorScalarDivideAndAddInLoop)
 {
     constexpr char kFS[] = R"(precision mediump float;
@@ -7999,6 +8200,47 @@ void main()
     EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
 }
 
+// Test that if-else blocks whose contents get pruned due to compile-time constant conditions work.
+TEST_P(GLSLTest, IfElsePrunedBlocks)
+{
+    constexpr char kFS[] = R"(precision mediump float;
+uniform float u;
+void main()
+{
+    // if with only a pruned true block
+    if (u > 0.0)
+        if (false) discard;
+
+    // if with a pruned true block and a false block
+    if (u > 0.0)
+    {
+        if (false) discard;
+    }
+    else
+        ;
+
+    // if with a true block and a pruned false block
+    if (u > 0.0)
+        ;
+    else
+        if (false) discard;
+
+    // if with a pruned true block and a pruned false block
+    if (u > 0.0)
+    {
+        if (false) discard;
+    }
+    else
+        if (false) discard;
+
+    gl_FragColor = vec4(0, 1, 0, 1);
+})";
+
+    ANGLE_GL_PROGRAM(program, essl1_shaders::vs::Simple(), kFS);
+    drawQuad(program.get(), essl1_shaders::PositionAttrib(), 0.5f);
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+}
+
 // Tests that PointCoord behaves the same betweeen a user FBO and the back buffer.
 TEST_P(GLSLTest, PointCoordConsistency)
 {
@@ -8600,11 +8842,12 @@ uint32_t FillBuffer(const std::pair<uint32_t, uint32_t> matrixDims[],
 }
 
 // Initialize and bind the buffer.
+template <typename T>
 void InitBuffer(GLuint program,
                 const char *name,
                 GLuint buffer,
                 uint32_t bindingIndex,
-                float data[],
+                const T data[],
                 uint32_t dataSize,
                 bool isUniform)
 {
@@ -8621,11 +8864,12 @@ void InitBuffer(GLuint program,
 }
 
 // Verify that buffer data is written by the shader as expected.
-bool VerifyBuffer(GLuint buffer, const float data[], uint32_t dataSize)
+template <typename T>
+bool VerifyBuffer(GLuint buffer, const T data[], uint32_t dataSize)
 {
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, buffer);
 
-    const float *ptr = reinterpret_cast<const float *>(
+    const T *ptr = reinterpret_cast<const T *>(
         glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, dataSize, GL_MAP_READ_BIT));
 
     bool isCorrect = memcmp(ptr, data, dataSize * sizeof(*data)) == 0;
@@ -9375,6 +9619,37 @@ void main()
     }
     // dead code
     color = vec4(0, 0, 0, 0.5);
+})";
+
+    ANGLE_GL_PROGRAM(program, essl3_shaders::vs::Simple(), kFS);
+
+    drawQuad(program, essl3_shaders::PositionAttrib(), 0.5f);
+    EXPECT_GL_NO_ERROR();
+
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+}
+
+// Regression test based on fuzzer issue.  If a case has statements that are pruned, and those
+// pruned statements in turn have branches, and another case follows, a prior implementation of
+// dead-code elimination doubly pruned some statements.
+TEST_P(GLSLTest_ES3, DeadCodeBranchInPrunedStatementsInCaseBeforeAnotherCase)
+{
+    constexpr char kFS[] = R"(#version 300 es
+precision mediump float;
+out vec4 color;
+void main()
+{
+    color = vec4(0, 1, 0, 1);
+    switch(0)
+    {
+    case 0:
+        break;
+        break;
+        color = vec4(1, 0, 0, 1);   // The bug was pruning this statement twice
+    default:
+        color = vec4(0, 0, 1, 1);
+        break;
+    }
 })";
 
     ANGLE_GL_PROGRAM(program, essl3_shaders::vs::Simple(), kFS);
@@ -10315,6 +10590,615 @@ void main()
     EXPECT_TRUE(VerifyBuffer(ssbo, data, size));
 }
 
+// Verify that types used differently (in different block storages, differently qualified etc) work
+// when copied around.
+TEST_P(GLSLTest_ES31, TypesUsedInDifferentBlockStorages)
+{
+    constexpr char kCS[] = R"(#version 310 es
+precision highp float;
+layout(local_size_x=1) in;
+
+struct Inner
+{
+    mat3x2 m;
+    float f[3];
+    uvec2 u[2][4];
+    ivec3 i;
+    mat2x3 m2[3][2];
+};
+
+struct Outer
+{
+    Inner i[2];
+};
+
+layout(std140, column_major) uniform Ubo140c
+{
+    mat2 m;
+    layout(row_major) Outer o;
+} ubo140cIn;
+
+layout(std430, row_major, binding = 0) buffer Ubo430r
+{
+    mat2 m;
+    layout(column_major) Outer o;
+} ubo430rIn;
+
+layout(std140, column_major, binding = 1) buffer Ssbo140c
+{
+    layout(row_major) mat2 m[2];
+    Outer o;
+    layout(row_major) Inner i;
+} ssbo140cOut;
+
+layout(std430, row_major, binding = 2) buffer Ssbo430r
+{
+    layout(column_major) mat2 m[2];
+    Outer o;
+    layout(column_major) Inner i;
+} ssbo430rOut;
+
+void writeArgToStd140(uvec2 u[2][4], int innerIndex)
+{
+    ssbo140cOut.o.i[innerIndex].u = u;
+}
+
+void writeBlockArgToStd140(Inner i, int innerIndex)
+{
+    ssbo140cOut.o.i[innerIndex] = i;
+}
+
+mat2x3[3][2] readFromStd140(int innerIndex)
+{
+    return ubo140cIn.o.i[0].m2;
+}
+
+Inner readBlockFromStd430(int innerIndex)
+{
+    return ubo430rIn.o.i[innerIndex];
+}
+
+void copyFromStd140(out Inner i)
+{
+    i = ubo140cIn.o.i[1];
+}
+
+void main(){
+    // Directly copy from one layout to another.
+    ssbo140cOut.m[0] = ubo140cIn.m;
+    ssbo140cOut.m[1] = ubo430rIn.m;
+    ssbo140cOut.o.i[0].m = ubo140cIn.o.i[0].m;
+    ssbo140cOut.o.i[0].f = ubo140cIn.o.i[0].f;
+    ssbo140cOut.o.i[0].i = ubo140cIn.o.i[0].i;
+
+    // Read from block and pass to function.
+    writeArgToStd140(ubo140cIn.o.i[0].u, 0);
+    writeBlockArgToStd140(ubo430rIn.o.i[0], 1);
+
+    // Have function return value read from block.
+    ssbo140cOut.o.i[0].m2 = readFromStd140(0);
+
+    // Have function fill in value as out parameter.
+    copyFromStd140(ssbo140cOut.i);
+
+    // Initialize local variable.
+    mat2 mStd140 = ubo140cIn.m;
+
+    // Copy to variable, through multiple assignments.
+    mat2 mStd430, temp;
+    mStd430 = temp = ubo430rIn.m;
+
+    // Copy from local variable
+    ssbo430rOut.m[0] = mStd140;
+    ssbo430rOut.m[1] = mStd430;
+
+    // Construct from struct.
+    Inner iStd140 = ubo140cIn.o.i[1];
+    Outer oStd140 = Outer(Inner[2](iStd140, ubo430rIn.o.i[1]));
+
+    // Copy struct from local variable.
+    ssbo430rOut.o = oStd140;
+
+    // Construct from arrays
+    Inner iStd430 = Inner(ubo430rIn.o.i[1].m,
+                          ubo430rIn.o.i[1].f,
+                          ubo430rIn.o.i[1].u,
+                          ubo430rIn.o.i[1].i,
+                          ubo430rIn.o.i[1].m2);
+    ssbo430rOut.i = iStd430;
+})";
+
+    ANGLE_GL_COMPUTE_PROGRAM(program, kCS);
+    EXPECT_GL_NO_ERROR();
+
+    // Test data, laid out with padding (0) based on std140/std430 rules.
+    // clang-format off
+    const std::vector<float> ubo140cData = {
+        // m (mat2, column-major)
+        1, 2, 0, 0,     3, 4, 0, 0,
+
+        // o.i[0].m (mat3x2, row-major)
+        5, 7, 9, 0,     6, 8, 10, 0,
+        // o.i[0].f (float[3])
+        12, 0, 0, 0,    13, 0, 0, 0,    14, 0, 0, 0,
+        // o.i[0].u (uvec2[2][4])
+        15, 16, 0, 0,   17, 18, 0, 0,   19, 20, 0, 0,   21, 22, 0, 0,
+        23, 24, 0, 0,   25, 26, 0, 0,   27, 28, 0, 0,   29, 30, 0, 0,
+        // o.i[0].i (ivec3)
+        31, 32, 33, 0,
+        // o.i[0].m2 (mat2x3[3][2], row-major)
+        34, 37, 0, 0,   35, 38, 0, 0,   36, 39, 0, 0,
+        40, 43, 0, 0,   41, 44, 0, 0,   42, 45, 0, 0,
+        46, 49, 0, 0,   47, 50, 0, 0,   48, 51, 0, 0,
+        52, 55, 0, 0,   53, 56, 0, 0,   54, 57, 0, 0,
+        58, 61, 0, 0,   59, 62, 0, 0,   60, 63, 0, 0,
+        64, 67, 0, 0,   65, 68, 0, 0,   66, 69, 0, 0,
+
+        // o.i[1].m (mat3x2, row-major)
+        70, 72, 74, 0,     71, 73, 75, 0,
+        // o.i[1].f (float[3])
+        77, 0, 0, 0,    78, 0, 0, 0,    79, 0, 0, 0,
+        // o.i[1].u (uvec2[2][4])
+        80, 81, 0, 0,   82, 83, 0, 0,   84, 85, 0, 0,   86, 87, 0, 0,
+        88, 89, 0, 0,   90, 91, 0, 0,   92, 93, 0, 0,   94, 95, 0, 0,
+        // o.i[1].i (ivec3)
+        96, 97, 98, 0,
+        // o.i[1].m2 (mat2x3[3][2], row-major)
+         99, 102, 0, 0,  100, 103, 0, 0,   101, 104, 0, 0,
+        105, 108, 0, 0,  106, 109, 0, 0,   107, 110, 0, 0,
+        111, 114, 0, 0,  112, 115, 0, 0,   113, 116, 0, 0,
+        117, 120, 0, 0,  118, 121, 0, 0,   119, 122, 0, 0,
+        123, 126, 0, 0,  124, 127, 0, 0,   125, 128, 0, 0,
+        129, 132, 0, 0,  130, 133, 0, 0,   131, 134, 0, 0,
+    };
+    const std::vector<float> ubo430rData = {
+        // m (mat2, row-major)
+        135, 137,         136, 138,
+
+        // o.i[0].m (mat3x2, column-major)
+        139, 140,         141, 142,         143, 144,
+        // o.i[0].f (float[3])
+        146, 147, 148, 0,
+        // o.i[0].u (uvec2[2][4])
+        149, 150,         151, 152,         153, 154,         155, 156,
+        157, 158,         159, 160,         161, 162,         163, 164, 0, 0,
+        // o.i[0].i (ivec3)
+        165, 166, 167, 0,
+        // o.i[0].m2 (mat2x3[3][2], column-major)
+        168, 169, 170, 0,   171, 172, 173, 0,
+        174, 175, 176, 0,   177, 178, 179, 0,
+        180, 181, 182, 0,   183, 184, 185, 0,
+        186, 187, 188, 0,   189, 190, 191, 0,
+        192, 193, 194, 0,   195, 196, 197, 0,
+        198, 199, 200, 0,   201, 202, 203, 0,
+
+        // o.i[1].m (mat3x2, column-major)
+        204, 205,         206, 207,         208, 209,
+        // o.i[1].f (float[3])
+        211, 212, 213, 0,
+        // o.i[1].u (uvec2[2][4])
+        214, 215,         216, 217,         218, 219,         220, 221,
+        222, 223,         224, 225,         226, 227,         228, 229, 0, 0,
+        // o.i[1].i (ivec3)
+        230, 231, 232, 0,
+        // o.i[1].m2 (mat2x3[3][2], column-major)
+        233, 234, 235, 0,   236, 237, 238, 0,
+        239, 240, 241, 0,   242, 243, 244, 0,
+        245, 246, 247, 0,   248, 249, 250, 0,
+        251, 252, 253, 0,   254, 255, 256, 0,
+        257, 258, 259, 0,   260, 261, 262, 0,
+        263, 264, 265, 0,   266, 267, 268, 0,
+    };
+    const std::vector<float> ssbo140cExpect = {
+        // m (mat2[2], row-major), m[0] copied from ubo140cIn.m, m[1] from ubo430rIn.m
+        1, 3, 0, 0,     2, 4, 0, 0,
+        135, 137, 0, 0, 136, 138, 0, 0,
+
+        // o.i[0].m (mat3x2, column-major), copied from ubo140cIn.o.i[0].m
+        5, 6, 0, 0,     7, 8, 0, 0,     9, 10, 0, 0,
+        // o.i[0].f (float[3]), copied from ubo140cIn.o.i[0].f
+        12, 0, 0, 0,    13, 0, 0, 0,    14, 0, 0, 0,
+        // o.i[0].u (uvec2[2][4]), copied from ubo140cIn.o.i[0].u
+        15, 16, 0, 0,   17, 18, 0, 0,   19, 20, 0, 0,   21, 22, 0, 0,
+        23, 24, 0, 0,   25, 26, 0, 0,   27, 28, 0, 0,   29, 30, 0, 0,
+        // o.i[0].i (ivec3), copied from ubo140cIn.o.i[0].i
+        31, 32, 33, 0,
+        // o.i[0].m2 (mat2x3[3][2], column-major), copied from ubo140cIn.o.i[0].m2
+        34, 35, 36, 0,  37, 38, 39, 0,
+        40, 41, 42, 0,  43, 44, 45, 0,
+        46, 47, 48, 0,  49, 50, 51, 0,
+        52, 53, 54, 0,  55, 56, 57, 0,
+        58, 59, 60, 0,  61, 62, 63, 0,
+        64, 65, 66, 0,  67, 68, 69, 0,
+
+        // o.i[1].m (mat3x2, column-major), copied from ubo430rIn.o.i[0].m
+        139, 140, 0, 0,   141, 142, 0, 0,   143, 144, 0, 0,
+        // o.i[1].f (float[3]), copied from ubo430rIn.o.i[0].f
+        146, 0, 0, 0,     147, 0, 0, 0,     148, 0, 0, 0,
+        // o.i[1].u (uvec2[2][4]), copied from ubo430rIn.o.i[0].u
+        149, 150, 0, 0,   151, 152, 0, 0,   153, 154, 0, 0,   155, 156, 0, 0,
+        157, 158, 0, 0,   159, 160, 0, 0,   161, 162, 0, 0,   163, 164, 0, 0,
+        // o.i[1].i (ivec3), copied from ubo430rIn.o.i[0].i
+        165, 166, 167, 0,
+        // o.i[1].m2 (mat2x3[3][2], column-major), copied from ubo430rIn.o.i[0].m2
+        168, 169, 170, 0,   171, 172, 173, 0,
+        174, 175, 176, 0,   177, 178, 179, 0,
+        180, 181, 182, 0,   183, 184, 185, 0,
+        186, 187, 188, 0,   189, 190, 191, 0,
+        192, 193, 194, 0,   195, 196, 197, 0,
+        198, 199, 200, 0,   201, 202, 203, 0,
+
+        // i.m (mat3x2, row-major), copied from ubo140cIn.o.i[1].m
+        70, 72, 74, 0,     71, 73, 75, 0,
+        // i.f (float[3]), copied from ubo140cIn.o.i[1].f
+        77, 0, 0, 0,    78, 0, 0, 0,    79, 0, 0, 0,
+        // i.u (uvec2[2][4]), copied from ubo430rIn.o.i[1].u
+        80, 81, 0, 0,   82, 83, 0, 0,   84, 85, 0, 0,   86, 87, 0, 0,
+        88, 89, 0, 0,   90, 91, 0, 0,   92, 93, 0, 0,   94, 95, 0, 0,
+        // i.i (ivec3), copied from ubo140cIn.o.i[1].i
+        96, 97, 98, 0,
+        // i.m2 (mat2x3[3][2], row-major), copied from ubo140cIn.o.i[1].m2
+         99, 102, 0, 0,  100, 103, 0, 0,   101, 104, 0, 0,
+        105, 108, 0, 0,  106, 109, 0, 0,   107, 110, 0, 0,
+        111, 114, 0, 0,  112, 115, 0, 0,   113, 116, 0, 0,
+        117, 120, 0, 0,  118, 121, 0, 0,   119, 122, 0, 0,
+        123, 126, 0, 0,  124, 127, 0, 0,   125, 128, 0, 0,
+        129, 132, 0, 0,  130, 133, 0, 0,   131, 134, 0, 0,
+    };
+    const std::vector<float> ssbo430rExpect = {
+        // m (mat2[2], column-major), m[0] copied from ubo140cIn.m, m[1] from ubo430rIn.m
+        1, 2,           3, 4,
+        135, 136,       137, 138,
+
+        // o.i[0].m (mat3x2, row-major), copied from ubo140cIn.o.i[1].m
+        70, 72, 74, 0,  71, 73, 75, 0,
+        // o.i[0].f (float[3]), copied from ubo140cIn.o.i[1].f
+        77, 78, 79, 0,
+        // o.i[0].u (uvec2[2][4]), copied from ubo140cIn.o.i[1].u
+        80, 81,         82, 83,         84, 85,         86, 87,
+        88, 89,         90, 91,         92, 93,         94, 95,
+        // o.i[0].i (ivec3), copied from ubo140cIn.o.i[1].i
+        96, 97, 98, 0,
+        // o.i[0].m2 (mat2x3[3][2], row-major), copied from ubo140cIn.o.i[1].m2
+         99, 102,        100, 103,         101, 104,
+        105, 108,        106, 109,         107, 110,
+        111, 114,        112, 115,         113, 116,
+        117, 120,        118, 121,         119, 122,
+        123, 126,        124, 127,         125, 128,
+        129, 132,        130, 133,         131, 134,
+
+        // o.i[1].m (mat3x2, row-major), copied from ubo430rIn.o.i[1].m
+        204, 206, 208, 0,  205, 207, 209, 0,
+        // o.i[1].f (float[3]), copied from ubo430rIn.o.i[1].f
+        211, 212, 213, 0,
+        // o.i[1].u (uvec2[2][4]), copied from ubo430rIn.o.i[1].u
+        214, 215,         216, 217,         218, 219,         220, 221,
+        222, 223,         224, 225,         226, 227,         228, 229,
+        // o.i[1].i (ivec3), copied from ubo430rIn.o.i[1].i
+        230, 231, 232, 0,
+        // o.i[1].m2 (mat2x3[3][2], row-major), copied from ubo430rIn.o.i[1].m2
+        233, 236,         234, 237,         235, 238,
+        239, 242,         240, 243,         241, 244,
+        245, 248,         246, 249,         247, 250,
+        251, 254,         252, 255,         253, 256,
+        257, 260,         258, 261,         259, 262,
+        263, 266,         264, 267,         265, 268,
+
+        // i.m (mat3x2, column-major), copied from ubo430rIn.o.i[1].m
+        204, 205,          206, 207,         208, 209,
+        // i.f (float[3]), copied from ubo430rIn.o.i[1].f
+        211, 212, 213, 0,
+        // i.u (uvec2[2][4]), copied from ubo430rIn.o.i[1].u
+        214, 215,         216, 217,         218, 219,         220, 221,
+        222, 223,         224, 225,         226, 227,         228, 229, 0, 0,
+        // i.i (ivec3), copied from ubo430rIn.o.i[1].i
+        230, 231, 232, 0,
+        // i.m2 (mat2x3[3][2], column-major), copied from ubo430rIn.o.i[1].m2
+        233, 234, 235, 0,   236, 237, 238, 0,
+        239, 240, 241, 0,   242, 243, 244, 0,
+        245, 246, 247, 0,   248, 249, 250, 0,
+        251, 252, 253, 0,   254, 255, 256, 0,
+        257, 258, 259, 0,   260, 261, 262, 0,
+        263, 264, 265, 0,   266, 267, 268, 0,
+    };
+    const std::vector<float> zeros(std::max(ssbo140cExpect.size(), ssbo430rExpect.size()), 0);
+    // clang-format on
+
+    GLBuffer uboStd140ColMajor, uboStd430RowMajor;
+    GLBuffer ssboStd140ColMajor, ssboStd430RowMajor;
+
+    InitBuffer(program, "Ubo140c", uboStd140ColMajor, 0, ubo140cData.data(),
+               static_cast<uint32_t>(ubo140cData.size()), true);
+    InitBuffer(program, "Ubo430r", uboStd430RowMajor, 0, ubo430rData.data(),
+               static_cast<uint32_t>(ubo430rData.size()), false);
+    InitBuffer(program, "Ssbo140c", ssboStd140ColMajor, 1, zeros.data(),
+               static_cast<uint32_t>(ssbo140cExpect.size()), false);
+    InitBuffer(program, "Ssbo430r", ssboStd430RowMajor, 2, zeros.data(),
+               static_cast<uint32_t>(ssbo430rExpect.size()), false);
+    EXPECT_GL_NO_ERROR();
+
+    glUseProgram(program);
+    glDispatchCompute(1, 1, 1);
+    EXPECT_GL_NO_ERROR();
+
+    EXPECT_TRUE(VerifyBuffer(ssboStd140ColMajor, ssbo140cExpect.data(),
+                             static_cast<uint32_t>(ssbo140cExpect.size())));
+    EXPECT_TRUE(VerifyBuffer(ssboStd430RowMajor, ssbo430rExpect.data(),
+                             static_cast<uint32_t>(ssbo430rExpect.size())));
+}
+
+// Verify that bool in interface blocks work.
+TEST_P(GLSLTest_ES31, BoolInInterfaceBlocks)
+{
+    constexpr char kCS[] = R"(#version 310 es
+precision highp float;
+layout(local_size_x=1) in;
+
+struct Inner
+{
+    bool b;
+    bvec2 b2;
+    bvec3 b3;
+    bvec4 b4;
+    bool ba[5];
+    bvec2 b2a[2][3];
+};
+
+struct Outer
+{
+    Inner i[2];
+};
+
+layout(std140) uniform Ubo140
+{
+    Outer o;
+};
+
+layout(std430, binding = 0) buffer Ubo430
+{
+    Outer o;
+} ubo430In;
+
+layout(std140, binding = 1) buffer Ssbo140
+{
+    bool valid;
+    Inner i;
+} ssbo140Out;
+
+layout(std430, binding = 2) buffer Ssbo430
+{
+    bool valid;
+    Inner i;
+};
+
+void writeArgToStd430(bool ba[5])
+{
+    i.ba = ba;
+}
+
+bool[5] readFromStd430(uint innerIndex)
+{
+    return ubo430In.o.i[innerIndex].ba;
+}
+
+void copyFromStd430(out bvec2 b2a[2][3])
+{
+    b2a = ubo430In.o.i[0].b2a;
+}
+
+bool destroyContent(inout Inner iOut)
+{
+    iOut.b = true;
+    iOut.b2 = bvec2(true);
+    iOut.b3 = bvec3(true);
+    iOut.b4 = bvec4(true);
+    iOut.ba = bool[5](true, true, true, true, true);
+    bvec2 true3[3] = bvec2[3](iOut.b2, iOut.b2, iOut.b2);
+    iOut.b2a = bvec2[2][3](true3, true3);
+    return true;
+}
+
+void main(){
+    // Directly copy from one layout to another.
+    i.b = o.i[0].b;
+    i.b2 = o.i[0].b2;
+    i.b2a = o.i[0].b2a;
+
+    // Copy to temp with swizzle.
+    bvec4 t1 = o.i[0].b3.yxzy;
+    bvec4 t2 = o.i[0].b4.xxyy;
+    bvec4 t3 = o.i[0].b4.zzww;
+
+    // Copy from temp with swizzle.
+    i.b3 = t1.ywz;
+    i.b4.yz = bvec2(t2.z, t3.y);
+    i.b4.wx = bvec2(t3.w, t2.x);
+
+    // Copy by passing argument to function.
+    writeArgToStd430(o.i[0].ba);
+
+    // Copy by return value.
+    ssbo140Out.i.ba = readFromStd430(0u);
+
+    // Copy by out parameter.
+    copyFromStd430(ssbo140Out.i.b2a);
+
+    // Logical operations
+    uvec4 t4 = ubo430In.o.i[0].b ? uvec4(0) : uvec4(1);
+    ssbo140Out.i.b = all(equal(t4, uvec4(1))) && (ubo430In.o.i[0].b ? false : true);
+    ssbo140Out.i.b2 = not(ubo430In.o.i[0].b2);
+    ssbo140Out.i.b3 = bvec3(all(ubo430In.o.i[0].b3), any(ubo430In.o.i[0].b3), any(ubo430In.o.i[0].b3.yx));
+    ssbo140Out.i.b4 = equal(ubo430In.o.i[0].b4, bvec4(true, false, true, false));
+
+    ssbo140Out.valid = true;
+    ssbo140Out.valid = ssbo140Out.valid && all(equal(bvec3(o.i[1].b, o.i[1].b2), o.i[1].b3));
+    ssbo140Out.valid = ssbo140Out.valid &&
+            all(notEqual(o.i[1].b4, bvec4(o.i[1].ba[0], o.i[1].ba[1], o.i[1].ba[2], o.i[1].ba[3])));
+    ssbo140Out.valid = ssbo140Out.valid && uint(o.i[1].ba[4]) == 1u;
+    for (int x = 0; x < o.i[1].b2a.length(); ++x)
+    {
+        for (int y = 0; y < o.i[1].b2a[x].length(); ++y)
+        {
+            ssbo140Out.valid = ssbo140Out.valid && all(equal(uvec2(o.i[1].b2a[x][y]), uvec2(x % 2, y % 2)));
+        }
+    }
+
+    valid = o.i[1] == ubo430In.o.i[1];
+
+    // Make sure short-circuiting behavior is correct.
+    bool falseVar = !valid && destroyContent(i);
+    if (falseVar && destroyContent(ssbo140Out.i))
+    {
+        valid = false;
+    }
+
+    if (valid || o.i[uint((i.ba = bool[5](true, true, true, true, true))[1])].b)
+    {
+    }
+    else
+    {
+        ssbo140Out.valid = false;
+    }
+})";
+
+    ANGLE_GL_COMPUTE_PROGRAM(program, kCS);
+    EXPECT_GL_NO_ERROR();
+
+    // Test data, laid out with padding (0) based on std140/std430 rules.
+    // clang-format off
+    const std::vector<uint32_t> ubo140Data = {
+        // o.i[0].b (bool)
+        true, 0,
+        // o.i[0].b2 (bvec2)
+        true, false,
+        // o.i[0].b3 (bvec3)
+        true, true, false, 0,
+        // o.i[0].b4 (bvec4)
+        false, true, false, true,
+        // o.i[0].ba (bool[5])
+        true, 0, 0, 0,
+        false, 0, 0, 0,
+        false, 0, 0, 0,
+        true, 0, 0, 0,
+        true, 0, 0, 0,
+        // o.i[0].b2a (bool[2][3])
+        false, true, 0, 0,  true, true, 0, 0,    true, false, 0, 0,
+        true, false, 0, 0,  false, false, 0, 0,  true, true, 0, 0,
+
+        // o.i[1].b (bool)
+        false, 0,
+        // o.i[1].b2 (bvec2)
+        true, true,
+        // o.i[1].b3 (bvec3), expected to be equal to (b, b2)
+        false, true, true, 0,
+        // o.i[1].b4 (bvec4)
+        true, false, true, true,
+        // o.i[1].ba (bool[5]), expected to be equal to (not(b4), 1)
+        false, 0, 0, 0,
+        true, 0, 0, 0,
+        false, 0, 0, 0,
+        false, 0, 0, 0,
+        true, 0, 0, 0,
+        // o.i[1].b2a (bvec2[2][3]), [x][y] expected to equal (x%2,y%2)
+        false, false, 0, 0,  false, true, 0, 0,  false, false, 0, 0,
+        true, false, 0, 0,   true, true, 0, 0,   true, false, 0, 0,
+    };
+    const std::vector<uint32_t> ubo430Data = {
+        // o.i[0].b (bool)
+        false, 0,
+        // o.i[0].b2 (bvec2)
+        true, true,
+        // o.i[0].b3 (bvec3)
+        false, false, true, 0,
+        // o.i[0].b4 (bvec4)
+        true, false, true, true,
+        // o.i[0].ba (bool[5])
+        false, false, false, true, false, 0,
+        // o.i[0].b2a (bool[2][3])
+        true, false,  true, false,  true, true,
+        false, true,  true, true,   false, false, 0, 0,
+
+        // o.i[1] expected to be equal to ubo140In.o.i[1]
+        // o.i[1].b (bool)
+        false, 0,
+        // o.i[1].b2 (bvec2)
+        true, true,
+        // o.i[1].b3 (bvec3)
+        false, true, true, 0,
+        // o.i[1].b4 (bvec4)
+        true, false, true, true,
+        // o.i[1].ba (bool[5])
+        false, true, false, false, true, 0,
+        // o.i[1].b2a (bvec2[2][3])
+        false, false,  false, true,  false, false,
+        true, false,   true, true,   true, false,
+    };
+    const std::vector<uint32_t> ssbo140Expect = {
+        // valid, expected to be true
+        true, 0, 0, 0,
+
+        // i.b (bool), ubo430In.o.i[0].b ? false : true
+        true, 0,
+        // i.b2 (bvec2), not(ubo430In.o.i[0].b2)
+        false, false,
+        // i.b3 (bvec3), all(ubo430In.o.i[0].b3), any(...b3), any(...b3.yx)
+        false, true, false, 0,
+        // i.b4 (bvec4), ubo430In.o.i[0].b4 == (true, false, true, false)
+        true, true, true, false,
+        // i.ba (bool[5]), copied from ubo430In.o.i[0].ba
+        false, 0, 0, 0,
+        false, 0, 0, 0,
+        false, 0, 0, 0,
+        true, 0, 0, 0,
+        false, 0, 0, 0,
+        // i.b2a (bool[2][3]), copied from ubo430In.o.i[0].b2a
+        true, false, 0, 0,  true, false, 0, 0,   true, true, 0, 0,
+        false, true, 0, 0,  true, true, 0, 0,    false, false, 0, 0,
+    };
+    const std::vector<uint32_t> ssbo430Expect = {
+        // valid, expected to be true
+        true, 0, 0, 0,
+
+        // o.i[0].b (bool), copied from (Ubo140::)o.i[0].b
+        true, 0,
+        // o.i[0].b2 (bvec2), copied from (Ubo140::)o.i[0].b2
+        true, false,
+        // o.i[0].b3 (bvec3), copied from (Ubo140::)o.i[0].b3
+        true, true, false, 0,
+        // o.i[0].b4 (bvec4), copied from (Ubo140::)o.i[0].b4
+        false, true, false, true,
+        // o.i[0].ba (bool[5]), copied from (Ubo140::)o.i[0].ba
+        true, false, false, true, true, 0,
+        // o.i[0].b2a (bool[2][3]), copied from (Ubo140::)o.i[0].b2a
+        false, true,  true, true,    true, false,
+        true, false,  false, false,  true, true, 0, 0,
+    };
+    const std::vector<uint32_t> zeros(std::max(ssbo140Expect.size(), ssbo430Expect.size()), 0);
+    // clang-format on
+
+    GLBuffer uboStd140, uboStd430;
+    GLBuffer ssboStd140, ssboStd430;
+
+    InitBuffer(program, "Ubo140", uboStd140, 0, ubo140Data.data(),
+               static_cast<uint32_t>(ubo140Data.size()), true);
+    InitBuffer(program, "Ubo430", uboStd430, 0, ubo430Data.data(),
+               static_cast<uint32_t>(ubo430Data.size()), false);
+    InitBuffer(program, "Ssbo140", ssboStd140, 1, zeros.data(),
+               static_cast<uint32_t>(ssbo140Expect.size()), false);
+    InitBuffer(program, "Ssbo430", ssboStd430, 2, zeros.data(),
+               static_cast<uint32_t>(ssbo430Expect.size()), false);
+    EXPECT_GL_NO_ERROR();
+
+    glUseProgram(program);
+    glDispatchCompute(1, 1, 1);
+    EXPECT_GL_NO_ERROR();
+
+    EXPECT_TRUE(VerifyBuffer(ssboStd140, ssbo140Expect.data(),
+                             static_cast<uint32_t>(ssbo140Expect.size())));
+    EXPECT_TRUE(VerifyBuffer(ssboStd430, ssbo430Expect.data(),
+                             static_cast<uint32_t>(ssbo430Expect.size())));
+}
+
 // Test that the precise keyword is not reserved before ES3.1.
 TEST_P(GLSLTest_ES3, PreciseNotReserved)
 {
@@ -10745,6 +11629,85 @@ void main()
     bool passB = isEq(blockIn2.c[0], vec4(0.51, 0.54, 0.57, 0.6)) &&
                  isEq(blockIn2.c[1], vec4(0.63, 0.66, 0.66, 0.69));
     bool passA = isEq(blockIn2.d, vec4(0.72, 0.75, 0.78, 0.81));
+
+    color = vec4(passR, passG, passB, passA);
+})";
+
+    ANGLE_GL_PROGRAM(program, kVS, kFS);
+    EXPECT_GL_NO_ERROR();
+
+    GLTexture color;
+    glBindTexture(GL_TEXTURE_2D, color);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, 1, 1);
+
+    GLFramebuffer fbo;
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, color, 0);
+
+    drawQuad(program, "position", 0);
+
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::white);
+}
+
+// Test varying packing in presence of I/O block arrays
+TEST_P(GLSLTest_ES31, IOBlockArray)
+{
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_shader_io_blocks"));
+
+    constexpr char kVS[] = R"(#version 310 es
+#extension GL_EXT_shader_io_blocks : require
+
+in highp vec4 position;
+
+out VSBlock1
+{
+    vec4 b[2];
+} blockOut1[2];
+
+out VSBlock2
+{
+    vec4 d;
+} blockOut2[3];
+
+void main()
+{
+    blockOut1[0].b[0] = vec4(0.15, 0.18, 0.21, 0.24);
+    blockOut1[0].b[1] = vec4(0.27, 0.30, 0.33, 0.36);
+    blockOut1[1].b[0] = vec4(0.39, 0.42, 0.45, 0.48);
+    blockOut1[1].b[1] = vec4(0.51, 0.54, 0.57, 0.6);
+    blockOut2[0].d = vec4(0.63, 0.66, 0.66, 0.69);
+    blockOut2[1].d = vec4(0.72, 0.75, 0.78, 0.81);
+    blockOut2[2].d = vec4(0.84, 0.87, 0.9, 0.93);
+    gl_Position = position;
+})";
+
+    constexpr char kFS[] = R"(#version 310 es
+#extension GL_EXT_shader_io_blocks : require
+precision mediump float;
+
+layout(location = 0) out mediump vec4 color;
+
+in VSBlock1
+{
+    vec4 b[2];
+} blockIn1[2];
+
+in VSBlock2
+{
+    vec4 d;
+} blockIn2[3];
+
+bool isEq(vec4 a, vec4 b) { return all(lessThan(abs(a-b), vec4(0.001))); }
+
+void main()
+{
+    bool passR = isEq(blockIn1[0].b[0], vec4(0.15, 0.18, 0.21, 0.24)) &&
+                 isEq(blockIn1[0].b[1], vec4(0.27, 0.30, 0.33, 0.36));
+    bool passG = isEq(blockIn1[1].b[0], vec4(0.39, 0.42, 0.45, 0.48)) &&
+                 isEq(blockIn1[1].b[1], vec4(0.51, 0.54, 0.57, 0.6));
+    bool passB = isEq(blockIn2[0].d, vec4(0.63, 0.66, 0.66, 0.69));
+    bool passA = isEq(blockIn2[1].d, vec4(0.72, 0.75, 0.78, 0.81)) &&
+                 isEq(blockIn2[2].d, vec4(0.84, 0.87, 0.9, 0.93));
 
     color = vec4(passR, passG, passB, passA);
 })";
@@ -11202,6 +12165,34 @@ void main()
     glDeleteShader(shader);
 }
 
+// Test that scalar(nonScalar) constructors work.
+TEST_P(GLSLTest_ES3, ScalarConstructor)
+{
+    constexpr char kFS[] = R"(#version 300 es
+precision mediump float;
+uniform vec4 u;
+out vec4 color;
+void main()
+{
+    float f1 = float(u);
+    mat3 m = mat3(u, u, u);
+    int i = int(m);
+    color = vec4(f1, float(i), 0, 1);
+})";
+
+    ANGLE_GL_PROGRAM(program, essl3_shaders::vs::Simple(), kFS);
+    glUseProgram(program);
+
+    GLint uloc = glGetUniformLocation(program, "u");
+    ASSERT_NE(uloc, -1);
+    glUniform4f(uloc, 1.0, 0.4, 0.2, 0.7);
+
+    drawQuad(program, essl3_shaders::PositionAttrib(), 0.5f);
+    EXPECT_GL_NO_ERROR();
+
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::yellow);
+}
+
 // Test that initializing global variables with non-constant values work
 TEST_P(GLSLTest_ES3, InitGlobalNonConstant)
 {
@@ -11290,6 +12281,182 @@ void main()
     EXPECT_GL_NO_ERROR();
 
     EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+}
+
+// Test that built-ins with out parameters work
+TEST_P(GLSLTest_ES31, BuiltInsWithOutParameters)
+{
+    constexpr char kFS[] = R"(#version 310 es
+precision highp float;
+precision highp int;
+
+out vec4 color;
+
+uniform float f;    // = 3.41
+uniform uvec4 u1;   // = 0xFEDCBA98, 0x13579BDF, 0xFEDCBA98, 0x13579BDF
+uniform uvec4 u2;   // = 0xECA86420, 0x12345678, 0x12345678, 0xECA86420
+
+struct S
+{
+    float fvalue;
+    int ivalues[2];
+    uvec4 uvalues[3];
+};
+
+struct T
+{
+    S s[2];
+};
+
+void main()
+{
+    float integer;
+    float fraction = modf(f, integer);
+
+    T t;
+
+    t.s[0].fvalue     = frexp(f, t.s[0].ivalues[0]);
+    float significand = t.s[0].fvalue;
+    int exponent      = t.s[0].ivalues[0];
+
+    t.s[0].uvalues[0] = uaddCarry(u1, u2, t.s[0].uvalues[1].yxwz);
+    uvec4 addResult   = t.s[0].uvalues[0];
+    uvec4 addCarry    = t.s[0].uvalues[1].yxwz;
+
+    t.s[0].uvalues[2].wx = usubBorrow(u1.wx, u2.wx, t.s[1].uvalues[0].wx);
+    uvec2 subResult      = t.s[0].uvalues[2].wx;
+    uvec2 subBorrow      = t.s[1].uvalues[0].wx;
+
+    umulExtended(u1, u2, t.s[1].uvalues[1], t.s[1].uvalues[2]);
+    uvec4 mulMsb = t.s[1].uvalues[1];
+    uvec4 mulLsb = t.s[1].uvalues[2];
+
+    ivec2 imulMsb, imulLsb;
+    imulExtended(ivec2(u1.wz), ivec2(u2.wz), imulMsb.yx, imulLsb.yx);
+
+    bool modfPassed = abs(fraction - 0.41) < 0.0001 && integer == 3.0;
+    bool frexpPassed = abs(significand - 0.8525) < 0.0001 && exponent == 2;
+    bool addPassed =
+        addResult == uvec4(0xEB851EB8, 0x258BF257, 0x11111110, 0xFFFFFFFF) &&
+        addCarry == uvec4(1, 0, 1, 0);
+    bool subPassed = subResult == uvec2(0x26AF37BF, 0x12345678) && subBorrow == uvec2(1, 0);
+    bool mulPassed =
+        mulMsb == uvec4(0xEB9B208C, 0x01601D49, 0x121FA00A, 0x11E17CC0) &&
+        mulLsb == uvec4(0xA83AB300, 0xD6B9FA88, 0x35068740, 0x822E97E0);
+    bool imulPassed =
+        imulMsb == ivec2(0xFFEB4992, 0xFE89E0E1) &&
+        imulLsb == ivec2(0x35068740, 0x822E97E0);
+
+    color = vec4(modfPassed ? 1 : 0,
+                 frexpPassed ? 1 : 0,
+                 (addPassed ? 0.4 : 0.0) + (subPassed ? 0.6 : 0.0),
+                 (mulPassed ? 0.4 : 0.0) + (imulPassed ? 0.6 : 0.0));
+})";
+
+    ANGLE_GL_PROGRAM(program, essl31_shaders::vs::Simple(), kFS);
+    glUseProgram(program);
+
+    GLint floc  = glGetUniformLocation(program, "f");
+    GLint u1loc = glGetUniformLocation(program, "u1");
+    GLint u2loc = glGetUniformLocation(program, "u2");
+    ASSERT_NE(floc, -1);
+    ASSERT_NE(u1loc, -1);
+    ASSERT_NE(u2loc, -1);
+    glUniform1f(floc, 3.41);
+    glUniform4ui(u1loc, 0xFEDCBA98u, 0x13579BDFu, 0xFEDCBA98u, 0x13579BDFu);
+    glUniform4ui(u2loc, 0xECA86420u, 0x12345678u, 0x12345678u, 0xECA86420u);
+
+    drawQuad(program, essl31_shaders::PositionAttrib(), 0.5f);
+    EXPECT_GL_NO_ERROR();
+
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::white);
+}
+
+// Test that interpolateAt* work with swizzle.  This test is disabled as swizzled interpolants are
+// only allowed in desktop GLSL.
+TEST_P(GLSLTest_ES31, InterpolateAtWithSwizzle)
+{
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_OES_shader_multisample_interpolation"));
+
+    constexpr char kVS[] = R"(#version 310 es
+
+out vec4 interpolant;
+
+void main()
+{
+    // The following triangle is being drawn over the framebuffer.
+    //
+    //   (-1,3) |\
+    //          |   \
+    //          |      \
+    //          |         \
+    //          |            \
+    //          +--------------+
+    //          |              | \
+    //          |              |    \
+    //          | Framebuffer  |       \
+    //          |              |          \
+    //          |              |             \
+    //  (-1,-1) +--------------+--------------- (3,-1)
+    //
+    // Interpolant is set such that interpolateAtCentroid would produce the desired value for
+    // position == (0, 0), and interpolateAtOffset(0.5, -0.5) for position == (1,-1)
+    if (gl_VertexID == 0)
+    {
+        gl_Position = vec4(-1, -1, 0, 1);
+        interpolant = vec4(1.5, 0.5, 0, 0);
+    }
+    else if (gl_VertexID == 1)
+    {
+        gl_Position = vec4(3, -1, 0, 1);
+        interpolant = vec4(0, 0, 1, 2);
+    }
+    else
+    {
+        gl_Position = vec4(-1, 3, 0, 1);
+        interpolant = vec4(0, 1, -1, 2);
+    }
+})";
+
+    constexpr char kFS[] = R"(#version 310 es
+#extension GL_OES_shader_multisample_interpolation : require
+precision highp float;
+
+in vec4 interpolant;
+out vec4 color;
+
+void main()
+{
+    // Should result in (0.75, 1.0)
+    vec2 atCentroid = interpolateAtCentroid(interpolant.xw);
+    // Selecting the bottom-right corner, this should result in (0.5, 0.25), but interpolateAtOffset
+    // doesn't make guarantees regarding the range and granularity of the offset.  The interpolant
+    // is given values such that the bottom-left/top-right diagonal is interpolated to a constant
+    // value of (0, 0.5).  The top-left corner has the value (-0.5, 0.75).  We therefore make a
+    // coarse test to make sure that atOffset.x > 0 and atOffset.y < 0.5, thus ensuring at least
+    // that the offset is in the correct half of the pixel.
+    vec2 atOffset = interpolateAtOffset(interpolant.zy, vec2(0.5, -0.5));
+
+    color = vec4(atCentroid, atOffset.x > 0.0 ? 1 : 0, atOffset.y < 0.5 ? 1 : 0);
+})";
+
+    GLRenderbuffer rbo;
+    glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, 1, 1);
+
+    GLFramebuffer fbo;
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, rbo);
+    EXPECT_GL_FRAMEBUFFER_COMPLETE(GL_FRAMEBUFFER);
+
+    ANGLE_GL_PROGRAM(program, kVS, kFS);
+    glUseProgram(program);
+
+    glViewport(0, 0, 1, 1);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+    EXPECT_GL_NO_ERROR();
+
+    EXPECT_PIXEL_NEAR(0, 0, 191, 255, 255, 255, 1);
 }
 
 class GLSLTestLoops : public GLSLTest
@@ -11947,10 +13114,10 @@ ANGLE_INSTANTIATE_TEST_ES3_AND(GLSLTest_ES3, WithDirectSPIRVGeneration(ES3_VULKA
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(GLSLTestLoops);
 ANGLE_INSTANTIATE_TEST_ES3_AND(GLSLTestLoops, WithDirectSPIRVGeneration(ES3_VULKAN()));
 
-ANGLE_INSTANTIATE_TEST_ES2(WebGLGLSLTest);
+ANGLE_INSTANTIATE_TEST_ES2_AND(WebGLGLSLTest, WithDirectSPIRVGeneration(ES2_VULKAN()));
 
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(WebGL2GLSLTest);
-ANGLE_INSTANTIATE_TEST_ES3(WebGL2GLSLTest);
+ANGLE_INSTANTIATE_TEST_ES3_AND(WebGL2GLSLTest, WithDirectSPIRVGeneration(ES3_VULKAN()));
 
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(GLSLTest_ES31);
 ANGLE_INSTANTIATE_TEST_ES31_AND(GLSLTest_ES31, WithDirectSPIRVGeneration(ES31_VULKAN()));

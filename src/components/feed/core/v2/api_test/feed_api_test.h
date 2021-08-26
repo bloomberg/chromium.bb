@@ -86,6 +86,8 @@ class TestReliabilityLoggingBridge : public ReliabilityLoggingBridge {
                            base::TimeTicks timestamp) override;
   void LogActionsUploadRequestStart(NetworkRequestId id,
                                     base::TimeTicks timestamp) override;
+  void LogWebFeedRequestStart(NetworkRequestId id,
+                              base::TimeTicks timestamp) override;
   void LogRequestSent(NetworkRequestId id, base::TimeTicks timestamp) override;
   void LogResponseReceived(NetworkRequestId id,
                            int64_t server_receive_timestamp_ns,
@@ -384,11 +386,13 @@ class TestMetricsReporter : public MetricsReporter {
                     bool is_initial_load,
                     bool loaded_new_content_from_network,
                     base::TimeDelta stored_content_age,
-                    int content_count,
+                    const ContentStats& content_stats,
                     std::unique_ptr<LoadLatencyTimes> latencies) override;
   void OnLoadMoreBegin(const StreamType& stream_type,
                        SurfaceId surface_id) override;
-  void OnLoadMore(LoadStreamStatus final_status) override;
+  void OnLoadMore(const StreamType& stream_type,
+                  LoadStreamStatus final_status,
+                  const ContentStats& content_stats) override;
   void OnBackgroundRefresh(const StreamType& stream_type,
                            LoadStreamStatus final_status) override;
   void OnClearAll(base::TimeDelta time_since_last_clear) override;

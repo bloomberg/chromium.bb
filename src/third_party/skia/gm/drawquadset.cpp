@@ -27,8 +27,8 @@
 #include "src/core/SkCanvasPriv.h"
 #include "src/core/SkMatrixProvider.h"
 #include "src/gpu/GrPaint.h"
-#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/SkGr.h"
+#include "src/gpu/v1/SurfaceDrawContext_v1.h"
 #include "tools/ToolUtils.h"
 
 #include <utility>
@@ -49,9 +49,9 @@ static void draw_gradient_tiles(SkCanvas* canvas, bool alignGradients) {
     static constexpr SkPoint pts[] = { {0.f, 0.f}, {0.25f * kTileWidth, 0.25f * kTileHeight} };
     static constexpr SkColor colors[] = { SK_ColorBLUE, SK_ColorWHITE };
 
-    GrSurfaceDrawContext* sdc = SkCanvasPriv::TopDeviceSurfaceDrawContext(canvas);
+    auto sdc = SkCanvasPriv::TopDeviceSurfaceDrawContext(canvas);
 
-    auto context = canvas->recordingContext();
+    auto rContext = canvas->recordingContext();
 
     auto gradient = SkGradientShader::MakeLinear(pts, colors, nullptr, 2, SkTileMode::kMirror);
     SkPaint paint;
@@ -86,7 +86,7 @@ static void draw_gradient_tiles(SkCanvas* canvas, bool alignGradients) {
                 SkMatrix view = canvas->getTotalMatrix();
                 SkSimpleMatrixProvider matrixProvider(view);
                 GrPaint grPaint;
-                SkPaintToGrPaint(context, sdc->colorInfo(), paint, matrixProvider, &grPaint);
+                SkPaintToGrPaint(rContext, sdc->colorInfo(), paint, matrixProvider, &grPaint);
                 sdc->fillRectWithEdgeAA(nullptr, std::move(grPaint), GrAA::kYes,
                                         static_cast<GrQuadAAFlags>(aa), view, tile);
             } else {

@@ -15,9 +15,9 @@
 #include <utility>
 
 #include "base/containers/contains.h"
+#include "base/cxx17_backports.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
-#include "base/numerics/ranges.h"
 #include "base/system/sys_info.h"
 #include "base/time/time.h"
 #include "base/trace_event/traced_value.h"
@@ -206,11 +206,6 @@ void PictureLayerImpl::AppendQuads(viz::CompositorRenderPass* render_pass,
 
   viz::SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
-
-  // If did_checkerboard_quad_ is set to true, don't set to false until the
-  // scroll is completed.
-  if (!ScrollInteractionInProgress())
-    SetDidCheckerboardQuad(false);
 
   if (raster_source_->IsSolidColor()) {
     // TODO(979672): This is still hard-coded at 1.0. This has some history:
@@ -549,7 +544,6 @@ void PictureLayerImpl::AppendQuads(viz::CompositorRenderPass* render_pass,
       append_quads_data->checkerboarded_no_recording_content_area +=
           visible_geometry_area - checkerboarded_has_recording_area;
 
-      SetDidCheckerboardQuad(true);
       continue;
     }
 
@@ -1013,8 +1007,8 @@ bool PictureLayerImpl::ScrollInteractionInProgress() const {
          ActivelyScrollingType::kNone;
 }
 
-bool PictureLayerImpl::DidCheckerboardQuad() const {
-  return did_checkerboard_quad_;
+bool PictureLayerImpl::CurrentScrollDidCheckerboardLargeArea() const {
+  return layer_tree_impl()->CurrentScrollDidCheckerboardLargeArea();
 }
 
 gfx::Rect PictureLayerImpl::GetEnclosingVisibleRectInTargetSpace() const {
@@ -1185,7 +1179,7 @@ float PictureLayerImpl::CalculateDirectlyCompositedImageRasterScale() const {
   float min_scale = MinimumContentsScale();
 
   float clamped_ideal_source_scale =
-      base::ClampToRange(ideal_source_scale_key(), min_scale, max_scale);
+      base::clamp(ideal_source_scale_key(), min_scale, max_scale);
   while (adjusted_raster_scale < clamped_ideal_source_scale)
     adjusted_raster_scale *= 2.f;
 
@@ -1198,7 +1192,7 @@ float PictureLayerImpl::CalculateDirectlyCompositedImageRasterScale() const {
     adjusted_raster_scale /= 2.f;
 
   adjusted_raster_scale =
-      base::ClampToRange(adjusted_raster_scale, min_scale, max_scale);
+      base::clamp(adjusted_raster_scale, min_scale, max_scale);
   return adjusted_raster_scale;
 }
 

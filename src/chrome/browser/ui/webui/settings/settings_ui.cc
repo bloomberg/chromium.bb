@@ -18,6 +18,7 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/account_manager_facade_factory.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_settings.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_settings_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -105,7 +106,6 @@
 #include "ash/constants/ash_features.h"
 #include "chrome/browser/ash/account_manager/account_manager_util.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_app_manager.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_service_factory.h"
@@ -137,6 +137,12 @@
 #elif defined(OS_WIN) || defined(OS_MAC)
 #include "chrome/browser/ui/webui/settings/native_certificates_handler.h"
 #endif  // defined(USE_NSS_CERTS)
+
+#if defined(OS_WIN) || defined(OS_MAC) || \
+    (defined(OS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS))
+#include "chrome/browser/ui/webui/settings/url_handlers_handler.h"
+#include "chrome/browser/web_applications/components/url_handler_prefs.h"
+#endif
 
 namespace settings {
 
@@ -246,6 +252,13 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   AddSettingsPageUIHandler(std::make_unique<ChromeCleanupHandler>(profile));
 #endif  // defined(OS_WIN)
 
+#if defined(OS_WIN) || defined(OS_MAC) || \
+    (defined(OS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS))
+  AddSettingsPageUIHandler(std::make_unique<UrlHandlersHandler>(
+      g_browser_process->local_state(), profile,
+      &GetRegistrarForProfile(profile)));
+#endif
+
 #if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
   bool has_incompatible_applications =
       IncompatibleApplicationsUpdater::HasCachedApplications();
@@ -281,11 +294,6 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
                               password_manager::features::kPasswordImport));
 
   html_source->AddBoolean(
-      "enableAccountStorage",
-      base::FeatureList::IsEnabled(
-          password_manager::features::kEnablePasswordsAccountStorage));
-
-  html_source->AddBoolean(
       "enableMovingMultiplePasswordsToAccount",
       base::FeatureList::IsEnabled(
           password_manager::features::kEnableMovingMultiplePasswordsToAccount));
@@ -315,8 +323,16 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+  // TODO(https://crbug.com/1227694): Remove this after migrating all JS usages
+  // of splitSettingsSyncEnabled to syncSettingsCategorizationEnabled and
+  // syncConsentOptionalEnabled.
   html_source->AddBoolean("splitSettingsSyncEnabled",
                           chromeos::features::IsSplitSettingsSyncEnabled());
+  html_source->AddBoolean(
+      "syncSettingsCategorizationEnabled",
+      chromeos::features::IsSyncSettingsCategorizationEnabled());
+  html_source->AddBoolean("syncConsentOptionalEnabled",
+                          chromeos::features::IsSyncConsentOptionalEnabled());
   html_source->AddBoolean("useBrowserSyncConsent",
                           chromeos::features::ShouldUseBrowserSyncConsent());
 

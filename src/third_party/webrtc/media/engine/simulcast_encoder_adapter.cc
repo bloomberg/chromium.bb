@@ -287,7 +287,7 @@ int SimulcastEncoderAdapter::Release() {
   RTC_DCHECK_RUN_ON(&encoder_queue_);
 
   while (!stream_contexts_.empty()) {
-    // Move the encoder instances and put it on the |cached_encoder_contexts_|
+    // Move the encoder instances and put it on the `cached_encoder_contexts_`
     // where it may possibly be reused from (ordering does not matter).
     cached_encoder_contexts_.push_front(
         std::move(stream_contexts_.back()).ReleaseEncoderContext());
@@ -415,7 +415,7 @@ int SimulcastEncoderAdapter::InitEncode(
     }
 
     // Intercept frame encode complete callback only for upper streams, where
-    // we need to set a correct stream index. Set |parent| to nullptr for the
+    // we need to set a correct stream index. Set `parent` to nullptr for the
     // lowest stream to bypass the callback.
     SimulcastEncoderAdapter* parent = stream_idx > 0 ? this : nullptr;
 
@@ -699,8 +699,8 @@ SimulcastEncoderAdapter::FetchOrCreateEncoderContext(
                                  is_lowest_quality_stream &&
                                  prefer_temporal_support_on_base_layer_;
 
-  // Toggling of |prefer_temporal_support| requires encoder recreation. Find
-  // and reuse encoder with desired |prefer_temporal_support|. Otherwise, if
+  // Toggling of `prefer_temporal_support` requires encoder recreation. Find
+  // and reuse encoder with desired `prefer_temporal_support`. Otherwise, if
   // there is no such encoder in the cache, create a new instance.
   auto encoder_context_iter =
       std::find_if(cached_encoder_contexts_.begin(),
@@ -769,7 +769,7 @@ webrtc::VideoCodec SimulcastEncoderAdapter::MakeStreamCodec(
     codec_params.VP8()->numberOfTemporalLayers =
         stream_params.numberOfTemporalLayers;
     if (!is_highest_quality_stream) {
-      // For resolutions below CIF, set the codec |complexity| parameter to
+      // For resolutions below CIF, set the codec `complexity` parameter to
       // kComplexityHigher, which maps to cpu_used = -4.
       int pixels_per_frame = codec_params.width * codec_params.height;
       if (pixels_per_frame < 352 * 288) {
@@ -876,6 +876,7 @@ VideoEncoder::EncoderInfo SimulcastEncoderAdapter::GetEncoderInfo() const {
       encoder_info.is_hardware_accelerated =
           encoder_impl_info.is_hardware_accelerated;
       encoder_info.has_internal_source = encoder_impl_info.has_internal_source;
+      encoder_info.is_qp_trusted = encoder_impl_info.is_qp_trusted;
     } else {
       encoder_info.implementation_name += ", ";
       encoder_info.implementation_name += encoder_impl_info.implementation_name;
@@ -897,6 +898,12 @@ VideoEncoder::EncoderInfo SimulcastEncoderAdapter::GetEncoderInfo() const {
 
       // Has internal source only if all encoders have it.
       encoder_info.has_internal_source &= encoder_impl_info.has_internal_source;
+
+      // Treat QP from frame/slice/tile header as average QP only if all
+      // encoders report it as average QP.
+      encoder_info.is_qp_trusted =
+          encoder_info.is_qp_trusted.value_or(true) &
+          encoder_impl_info.is_qp_trusted.value_or(true);
     }
     encoder_info.fps_allocation[i] = encoder_impl_info.fps_allocation[0];
     encoder_info.requested_resolution_alignment = cricket::LeastCommonMultiple(

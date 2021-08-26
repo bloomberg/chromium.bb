@@ -135,6 +135,11 @@ std::string AccessibilityTreeFormatterMac::EvaluateScript(
   std::map<std::string, id> storage;
   AttributeInvoker invoker(&line_indexer, &storage);
   for (size_t index = start_index; index < end_index; index++) {
+    if (instructions[index].IsComment()) {
+      scripts.Append(instructions[index].AsComment());
+      continue;
+    }
+
     DCHECK(instructions[index].IsScript());
     const AXPropertyNode& property_node = instructions[index].AsScript();
     OptionalNSObject value = invoker.Invoke(property_node);
@@ -186,14 +191,15 @@ void AccessibilityTreeFormatterMac::RecursiveBuildTree(
     const LineIndexer* line_indexer,
     base::Value* dict) const {
   BrowserAccessibility* platform_node =
-      [static_cast<BrowserAccessibilityCocoa*>(node) owner];
-  DCHECK(platform_node);
+      IsBrowserAccessibilityCocoa(node)
+          ? [static_cast<BrowserAccessibilityCocoa*>(node) owner]
+          : nullptr;
 
-  if (!ShouldDumpNode(*platform_node))
+  if (platform_node && !ShouldDumpNode(*platform_node))
     return;
 
   AddProperties(node, root_rect, line_indexer, dict);
-  if (!ShouldDumpChildren(*platform_node))
+  if (platform_node && !ShouldDumpChildren(*platform_node))
     return;
 
   NSArray* children = ChildrenOf(node);
@@ -377,8 +383,10 @@ base::Value AccessibilityTreeFormatterMac::PopulateRect(
 base::Value AccessibilityTreeFormatterMac::PopulateRange(
     NSRange node_range) const {
   base::Value range(base::Value::Type::DICTIONARY);
-  range.SetIntPath(kRangeLocDictAttr, static_cast<int>(node_range.location));
-  range.SetIntPath(kRangeLenDictAttr, static_cast<int>(node_range.length));
+  range.SetIntPath(AXMakeOrderedKey(kRangeLocDictAttr, 0),
+                   static_cast<int>(node_range.location));
+  range.SetIntPath(AXMakeOrderedKey(kRangeLenDictAttr, 1),
+                   static_cast<int>(node_range.length));
   return range;
 }
 

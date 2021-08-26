@@ -8,13 +8,13 @@
 #include "src/gpu/vk/GrVkPipelineState.h"
 
 #include "src/core/SkMipmap.h"
+#include "src/gpu/GrFragmentProcessor.h"
+#include "src/gpu/GrGeometryProcessor.h"
 #include "src/gpu/GrPipeline.h"
 #include "src/gpu/GrRenderTarget.h"
 #include "src/gpu/GrTexture.h"
+#include "src/gpu/GrXferProcessor.h"
 #include "src/gpu/effects/GrTextureEffect.h"
-#include "src/gpu/glsl/GrGLSLFragmentProcessor.h"
-#include "src/gpu/glsl/GrGLSLGeometryProcessor.h"
-#include "src/gpu/glsl/GrGLSLXferProcessor.h"
 #include "src/gpu/vk/GrVkBuffer.h"
 #include "src/gpu/vk/GrVkCommandBuffer.h"
 #include "src/gpu/vk/GrVkDescriptorPool.h"
@@ -28,22 +28,22 @@
 #include "src/gpu/vk/GrVkTexture.h"
 
 GrVkPipelineState::GrVkPipelineState(
-            GrVkGpu* gpu,
-            sk_sp<const GrVkPipeline> pipeline,
-            const GrVkDescriptorSetManager::Handle& samplerDSHandle,
-            const GrGLSLBuiltinUniformHandles& builtinUniformHandles,
-            const UniformInfoArray& uniforms,
-            uint32_t uniformSize,
-            bool usePushConstants,
-            const UniformInfoArray& samplers,
-            std::unique_ptr<GrGLSLGeometryProcessor> geometryProcessor,
-            std::unique_ptr<GrGLSLXferProcessor> xferProcessor,
-            std::vector<std::unique_ptr<GrGLSLFragmentProcessor>> fpImpls)
+        GrVkGpu* gpu,
+        sk_sp<const GrVkPipeline> pipeline,
+        const GrVkDescriptorSetManager::Handle& samplerDSHandle,
+        const GrGLSLBuiltinUniformHandles& builtinUniformHandles,
+        const UniformInfoArray& uniforms,
+        uint32_t uniformSize,
+        bool usePushConstants,
+        const UniformInfoArray& samplers,
+        std::unique_ptr<GrGeometryProcessor::ProgramImpl> gpImpl,
+        std::unique_ptr<GrXferProcessor::ProgramImpl> xpImpl,
+        std::vector<std::unique_ptr<GrFragmentProcessor::ProgramImpl>> fpImpls)
         : fPipeline(std::move(pipeline))
         , fSamplerDSHandle(samplerDSHandle)
         , fBuiltinUniformHandles(builtinUniformHandles)
-        , fGeometryProcessor(std::move(geometryProcessor))
-        , fXferProcessor(std::move(xferProcessor))
+        , fGPImpl(std::move(gpImpl))
+        , fXPImpl(std::move(xpImpl))
         , fFPImpls(std::move(fpImpls))
         , fDataManager(uniforms, uniformSize, usePushConstants) {
     fNumSamplers = samplers.count();
@@ -79,16 +79,18 @@ bool GrVkPipelineState::setAndBindUniforms(GrVkGpu* gpu,
                                            GrVkCommandBuffer* commandBuffer) {
     this->setRenderTargetState(colorAttachmentDimensions, programInfo.origin());
 
-    fGeometryProcessor->setData(fDataManager, *gpu->caps()->shaderCaps(), programInfo.geomProc());
+    fGPImpl->setData(fDataManager, *gpu->caps()->shaderCaps(), programInfo.geomProc());
+
     for (int i = 0; i < programInfo.pipeline().numFragmentProcessors(); ++i) {
-        auto& fp = programInfo.pipeline().getFragmentProcessor(i);
-        for (auto [fp, impl] : GrGLSLFragmentProcessor::ParallelRange(fp, *fFPImpls[i])) {
+        const auto& fp = programInfo.pipeline().getFragmentProcessor(i);
+        fp.visitWithImpls([&](const GrFragmentProcessor& fp,
+                              GrFragmentProcessor::ProgramImpl& impl) {
             impl.setData(fDataManager, fp);
-        }
+        }, *fFPImpls[i]);
     }
 
     programInfo.pipeline().setDstTextureUniforms(fDataManager, &fBuiltinUniformHandles);
-    fXferProcessor->setData(fDataManager, programInfo.pipeline().getXferProcessor());
+    fXPImpl->setData(fDataManager, programInfo.pipeline().getXferProcessor());
 
     // Upload uniform data and bind descriptor set.
     auto [uniformBuffer, success] = fDataManager.uploadUniforms(gpu, fPipeline->layout(),

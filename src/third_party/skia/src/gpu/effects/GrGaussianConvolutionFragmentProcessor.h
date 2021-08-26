@@ -52,6 +52,8 @@ public:
     static constexpr int kMaxKernelRadius = 12;
 
 private:
+    class Impl;
+
     GrGaussianConvolutionFragmentProcessor(std::unique_ptr<GrFragmentProcessor>,
                                            Direction,
                                            int halfWidth,
@@ -66,9 +68,9 @@ private:
     }
 #endif
 
-    std::unique_ptr<GrGLSLFragmentProcessor> onMakeProgramImpl() const override;
+    std::unique_ptr<ProgramImpl> onMakeProgramImpl() const override;
 
-    void onGetGLSLProcessorKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const override;
+    void onAddToKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const override;
 
     bool onIsEqual(const GrFragmentProcessor&) const override;
 
@@ -82,8 +84,6 @@ private:
     float                 fOffsets[SkAlign4(kMaxKernelWidth)];
     int                   fRadius;
     Direction             fDirection;
-
-    class Impl;
 
     using INHERITED = GrFragmentProcessor;
 };

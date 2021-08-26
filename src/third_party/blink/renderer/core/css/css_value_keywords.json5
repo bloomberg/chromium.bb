@@ -432,6 +432,10 @@
     // list-style-type
     //
     "disc",
+    "circle",
+    "square",
+    "disclosure-open",
+    "disclosure-closed",
     "decimal",
     //none
     //
@@ -955,7 +959,7 @@
     "filled",
     "open",
     "dot",
-    "circle",
+    // circle
     "double-circle",
     "triangle",
     "sesame",
@@ -1086,7 +1090,7 @@
     // stroke-linecap
     "butt",
     // round
-    "square",
+    // square
 
     // stroke-linejoin
     "miter",
@@ -1390,23 +1394,20 @@
     "single-fold-horizontal",
 
     // (device-posture) media feature
-    "no-fold",
-    "laptop",
-    // flat,
-    "tent",
-    "tablet",
-    "book",
+    "continuous",
+    "folded",
+    "folded-over",
 
     // scrollbar-gutter
     // auto
     "stable",
-    "mirror",
+    "both-edges",
 
     // (prefers-contrast:) media feature
     // no-preference
     "more",
     "less",
-    "forced",
+    "custom",
 
     // @counter-style system
     "cyclic",
@@ -1437,6 +1438,12 @@
     "bullets",
     "numbers",
     "words",
-    // spell-out,
+
+    // ([video]-dynamic-range) media feature
+    "standard",
+    "high",
+
+    // Layered @import rule
+    "layer",
   ],
 }

@@ -100,11 +100,6 @@ id<GREYMatcher> CancelUsingOtherPasswordButton() {
     config.features_enabled.push_back(
         password_manager::features::kEnableManualPasswordGeneration);
   }
-  // TODO(crbug.com/1226894): Uncomment this once the test is fixed.
-  // if ([self isRunningTest:@selector(testPasswordControllerKeepsRightSize)]) {
-  //   config.features_disabled.push_back(
-  //       password_manager::features::kEnableManualPasswordGeneration);
-  // }
   return config;
 }
 
@@ -174,7 +169,8 @@ id<GREYMatcher> CancelUsingOtherPasswordButton() {
 
 // Tests that returning from "Manage Passwords..." leaves the keyboard and the
 // icons in the right state.
-- (void)testPasswordsStateAfterPresentingManagePasswords {
+// TODO(crbug.com/1234759): Re-enable after fixing flake.
+- (void)DISABLED_testPasswordsStateAfterPresentingManagePasswords {
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:TapWebElementWithId(kFormElementUsername)];
@@ -244,8 +240,7 @@ id<GREYMatcher> CancelUsingOtherPasswordButton() {
 }
 
 // Tests that the "Use Other Password..." screen won't open if canceled.
-// TODO(crbug.com/1203415): Disabled due to flakiness.
-- (void)DISABLED_testUseOtherPasswordActionCloses {
+- (void)testUseOtherPasswordActionCloses {
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:TapWebElementWithId(kFormElementUsername)];
@@ -341,75 +336,6 @@ id<GREYMatcher> CancelUsingOtherPasswordButton() {
       performAction:grey_tap()];
 }
 
-// Tests that the Password View Controller is resumed after selecting other
-// password.
-// TODO(crbug.com/981922): Re-enable this test due to failing DB call.
-- (void)DISABLED_testPasswordControllerResumes {
-  // Bring up the keyboard.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:TapWebElementWithId(kFormElementUsername)];
-
-  // Tap on the passwords icon.
-  [[EarlGrey selectElementWithMatcher:ManualFallbackPasswordIconMatcher()]
-      performAction:grey_tap()];
-
-  // Tap the "Other Passwords..." action.
-  [[EarlGrey selectElementWithMatcher:ManualFallbackOtherPasswordsMatcher()]
-      performAction:grey_tap()];
-
-  // Tap the password search.
-  [[EarlGrey selectElementWithMatcher:ManualFallbackPasswordSearchBarMatcher()]
-      performAction:grey_tap()];
-  GREYAssertTrue([EarlGrey isKeyboardShownWithError:nil],
-                 @"Keyboard Should be Shown");
-
-  // Select a username.
-  [[EarlGrey selectElementWithMatcher:UsernameButtonMatcher()]
-      performAction:grey_tap()];
-
-  // Wait for the password list to disappear. Using the search bar, since the
-  // popover doesn't have it.
-  [[EarlGrey selectElementWithMatcher:ManualFallbackPasswordSearchBarMatcher()]
-      assertWithMatcher:grey_notVisible()];
-
-  [[EarlGrey selectElementWithMatcher:ManualFallbackPasswordTableViewMatcher()]
-      assertWithMatcher:grey_sufficientlyVisible()];
-  [[EarlGrey selectElementWithMatcher:ManualFallbackPasswordIconMatcher()]
-      assertWithMatcher:grey_sufficientlyVisible()];
-}
-
-// Tests that the Password View Controller is resumed after dismissing "Other
-// Passwords".
-// TODO(crbug.com/984977): Support this behavior again.
-- (void)DISABLED_testPasswordControllerResumesWhenOtherPasswordsDismiss {
-  // Bring up the keyboard.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:TapWebElementWithId(kFormElementUsername)];
-
-  // Tap on the passwords icon.
-  [[EarlGrey selectElementWithMatcher:ManualFallbackPasswordIconMatcher()]
-      performAction:grey_tap()];
-
-  // Tap the "Other Passwords..." action.
-  [[EarlGrey selectElementWithMatcher:ManualFallbackOtherPasswordsMatcher()]
-      performAction:grey_tap()];
-
-  // Dismiss the Other Passwords view.
-  [[EarlGrey
-      selectElementWithMatcher:ManualFallbackOtherPasswordsDismissMatcher()]
-      performAction:grey_tap()];
-
-  // Wait for the password list to disappear. Using the search bar, since the
-  // popover doesn't have it.
-  [[EarlGrey selectElementWithMatcher:ManualFallbackPasswordSearchBarMatcher()]
-      assertWithMatcher:grey_notVisible()];
-
-  [[EarlGrey selectElementWithMatcher:ManualFallbackPasswordTableViewMatcher()]
-      assertWithMatcher:grey_sufficientlyVisible()];
-  [[EarlGrey selectElementWithMatcher:ManualFallbackPasswordIconMatcher()]
-      assertWithMatcher:grey_sufficientlyVisible()];
-}
-
 // Tests that the Password View Controller is dismissed when tapping the
 // keyboard icon.
 - (void)testKeyboardIconDismissPasswordController {
@@ -443,8 +369,7 @@ id<GREYMatcher> CancelUsingOtherPasswordButton() {
 
 // Tests that the Password View Controller is dismissed when tapping the outside
 // the popover on iPad.
-// TODO(crbug.com/1162296): Re-enable this test after this issue is fixed.
-- (void)DISABLED_testIPadTappingOutsidePopOverDismissPasswordController {
+- (void)testIPadTappingOutsidePopOverDismissPasswordController {
   if (![ChromeEarlGrey isIPadIdiom]) {
     return;
   }
@@ -507,35 +432,6 @@ id<GREYMatcher> CancelUsingOtherPasswordButton() {
       assertWithMatcher:grey_notVisible()];
   [[EarlGrey selectElementWithMatcher:ManualFallbackKeyboardIconMatcher()]
       assertWithMatcher:grey_notVisible()];
-}
-
-// Tests that after switching fields the content size of the table view didn't
-// grow.
-// TODO(crbug.com/1226894): Disabled due to flakiness.
-- (void)DISABLED_testPasswordControllerKeepsRightSize {
-  // Bring up the keyboard.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:TapWebElementWithId(kFormElementUsername)];
-
-  // Tap on the passwords icon.
-  [[EarlGrey selectElementWithMatcher:ManualFallbackPasswordIconMatcher()]
-      performAction:grey_tap()];
-
-  // Verify the "Manage Passwords..." is on screen.
-  [[EarlGrey selectElementWithMatcher:ManualFallbackOtherPasswordsMatcher()]
-      assertWithMatcher:grey_sufficientlyVisible()];
-
-  // Tap the second element.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:TapWebElementWithId(kFormElementPassword)];
-
-  // Try to scroll.
-  [[EarlGrey selectElementWithMatcher:ManualFallbackPasswordTableViewMatcher()]
-      performAction:grey_scrollToContentEdge(kGREYContentEdgeBottom)];
-
-  // Verify the "Manage Passwords..." is on screen.
-  [[EarlGrey selectElementWithMatcher:ManualFallbackOtherPasswordsMatcher()]
-      assertWithMatcher:grey_sufficientlyVisible()];
 }
 
 // Tests that the Password View Controller stays on rotation.

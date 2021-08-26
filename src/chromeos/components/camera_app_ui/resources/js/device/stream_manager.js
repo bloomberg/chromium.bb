@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {assert, assertString} from '../chrome_util.js';
+import {assert} from '../chrome_util.js';
 import {reportError} from '../error.js';
 import {I18nString} from '../i18n_string.js';
 import * as loadTimeData from '../models/load_time_data.js';
@@ -13,6 +13,10 @@ import {ErrorLevel, ErrorType, Facing, VideoConfig} from '../type.js';
 import {WaitableEvent} from '../waitable_event.js';
 
 import {Camera3DeviceInfo} from './camera3_device_info.js';
+import {
+  StreamConstraints,  // eslint-disable-line no-unused-vars
+  toMediaStreamConstraints,
+} from './stream_constraints.js';
 
 /**
  * The singleton instance of StreamManager. Initialized by the first
@@ -47,7 +51,7 @@ export class CaptureStream {
   /**
    * @param {string} deviceId Device id of currently working video device
    * @param {!MediaStream} stream Capture stream
-   * @private
+   * @public
    */
   constructor(deviceId, stream) {
     /**
@@ -172,7 +176,7 @@ export class StreamManager {
   /**
    * Registers listener to be called when state of available real devices
    * changes.
-   * @param {function(!Array<!DeviceInfo>)} listener
+   * @param {function(!Array<!DeviceInfo>): !Promise} listener
    */
   addRealDeviceChangeListener(listener) {
     this.realListeners_.push(listener);
@@ -180,21 +184,22 @@ export class StreamManager {
 
   /**
    * Creates extra stream according to the constraints.
-   * @param {!MediaStreamConstraints} constraints
+   * @param {!StreamConstraints} constraints
    * @return {!Promise<!CaptureStream>}
    */
   async openCaptureStream(constraints) {
-    const realDeviceId = assertString(constraints.video.deviceId.exact);
+    const realDeviceId = constraints.deviceId;
     if (await DeviceOperator.isSupported()) {
       try {
         await this.setMultipleStreamsEnabled(realDeviceId, true);
-        constraints.video.deviceId.exact = this.virtualMap_.virtualId;
+        constraints.deviceId = this.virtualMap_.virtualId;
       } catch (e) {
         reportError(ErrorType.MULTIPLE_STREAMS_FAILURE, ErrorLevel.ERROR, e);
       }
     }
 
-    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+    const stream = await navigator.mediaDevices.getUserMedia(
+        toMediaStreamConstraints(constraints));
     return new CaptureStream(realDeviceId, stream);
   }
 

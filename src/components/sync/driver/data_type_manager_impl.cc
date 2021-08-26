@@ -4,6 +4,7 @@
 
 #include "components/sync/driver/data_type_manager_impl.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -19,6 +20,7 @@
 #include "components/sync/driver/data_type_encryption_handler.h"
 #include "components/sync/driver/data_type_manager_observer.h"
 #include "components/sync/driver/data_type_status_table.h"
+#include "components/sync/engine/data_type_activation_response.h"
 #include "components/sync/engine/data_type_debug_info_listener.h"
 
 namespace syncer {
@@ -122,14 +124,14 @@ void DataTypeManagerImpl::DataTypePreconditionChanged(ModelType type) {
 
     case DataTypeController::PreconditionState::kMustStopAndClearData:
       model_load_manager_.StopDatatype(
-          type, DISABLE_SYNC,
+          type, ShutdownReason::DISABLE_SYNC_AND_CLEAR_DATA,
           SyncError(FROM_HERE, syncer::SyncError::DATATYPE_POLICY_ERROR,
                     "Datatype preconditions not met.", type));
       break;
 
     case DataTypeController::PreconditionState::kMustStopAndKeepData:
       model_load_manager_.StopDatatype(
-          type, STOP_SYNC,
+          type, ShutdownReason::STOP_SYNC_AND_KEEP_DATA,
           SyncError(FROM_HERE, syncer::SyncError::UNREADY_ERROR,
                     "Data type is unready.", type));
       break;
@@ -188,32 +190,36 @@ void DataTypeManagerImpl::ConfigureImpl(ModelTypeSet desired_types,
   Restart();
 }
 
-void DataTypeManagerImpl::ActivateDataTypes() {
+void DataTypeManagerImpl::ConnectDataTypes() {
   for (ModelType type : last_enabled_types_) {
     const auto& dtc_iter = controllers_->find(type);
-    if (dtc_iter == controllers_->end())
+    if (dtc_iter == controllers_->end()) {
       continue;
-    DataTypeController* dtc = dtc_iter->second.get();
-    if (dtc->state() == DataTypeController::MODEL_LOADED) {
-      // Only call ActivateDataType for types that completed LoadModels
-      // successfully. Such types shouldn't be in an error state at the same
-      // time.
-      DCHECK(!data_type_status_table_.GetFailedTypes().Has(dtc->type()));
-      switch (dtc->ActivateDataType(configurer_)) {
-        case DataTypeController::TYPE_ALREADY_DOWNLOADED:
-          // Proxy types (as opposed to protocol types) don't actually have any
-          // data, so keep proxy types out of |downloaded_types_|.
-          if (!IsProxyType(type))
-            downloaded_types_.Put(type);
-          break;
-        case DataTypeController::TYPE_NOT_YET_DOWNLOADED:
-          downloaded_types_.Remove(type);
-          break;
-      }
-      if (force_redownload_types_.Has(type)) {
-        downloaded_types_.Remove(type);
-      }
     }
+    DataTypeController* dtc = dtc_iter->second.get();
+    if (dtc->state() != DataTypeController::MODEL_LOADED) {
+      continue;
+    }
+    // Only call Connect() for types that completed LoadModels()
+    // successfully. Such types shouldn't be in an error state at the same
+    // time.
+    DCHECK(!data_type_status_table_.GetFailedTypes().Has(dtc->type()));
+
+    std::unique_ptr<DataTypeActivationResponse> activation_response =
+        dtc->Connect();
+    DCHECK(activation_response);
+    DCHECK_EQ(dtc->state(), DataTypeController::RUNNING);
+
+    if (activation_response->model_type_state.initial_sync_done()) {
+      downloaded_types_.Put(type);
+    } else {
+      downloaded_types_.Remove(type);
+    }
+    if (force_redownload_types_.Has(type)) {
+      downloaded_types_.Remove(type);
+    }
+
+    configurer_->ConnectDataType(type, std::move(activation_response));
   }
 }
 
@@ -338,7 +344,15 @@ void DataTypeManagerImpl::OnAllDataTypesReadyForConfigure() {
   // TODO(pavely): By now some of datatypes in |configuration_types_queue_|
   // could have failed loading and should be excluded from configuration. I need
   // to adjust |configuration_types_queue_| for such types.
-  ActivateDataTypes();
+  ConnectDataTypes();
+
+  // Propagate the state of PROXY_TABS to the sync engine.
+  const auto& dtc_iter = controllers_->find(PROXY_TABS);
+  if (dtc_iter != controllers_->end()) {
+    configurer_->SetProxyTabsDatatypeEnabled(dtc_iter->second->state() ==
+                                             DataTypeController::RUNNING);
+  }
+
   StartNextConfiguration(/*higher_priority_types_before=*/ModelTypeSet());
 }
 
@@ -618,10 +632,8 @@ void DataTypeManagerImpl::RecordConfigurationStats(
 
 void DataTypeManagerImpl::OnSingleDataTypeWillStop(ModelType type,
                                                    const SyncError& error) {
-  auto c_it = controllers_->find(type);
-  DCHECK(c_it != controllers_->end());
-  // Delegate deactivation to the controller.
-  c_it->second->DeactivateDataType(configurer_);
+  // No-op if the type is not connected.
+  configurer_->DisconnectDataType(type);
 
   if (error.IsSet()) {
     data_type_status_table_.UpdateFailedDataType(type, error);
@@ -629,7 +641,7 @@ void DataTypeManagerImpl::OnSingleDataTypeWillStop(ModelType type,
     last_requested_context_.reason =
         GetReasonForProgrammaticReconfigure(last_requested_context_.reason);
     // Do this asynchronously so the ModelLoadManager has a chance to
-    // finish stopping this type, otherwise DeactivateDataType() and Stop()
+    // finish stopping this type, otherwise Disconnect() and Stop()
     // end up getting called twice on the controller.
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&DataTypeManagerImpl::ProcessReconfigure,

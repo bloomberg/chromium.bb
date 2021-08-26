@@ -4,13 +4,27 @@
 
 #include "components/messages/android/messages_feature.h"
 
+#include "base/metrics/field_trial_params.h"
+
 namespace messages {
+
+const base::Feature kMessagesForAndroidAdsBlocked{
+    "MessagesForAndroidAdsBlocked", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kMessagesForAndroidChromeSurvey{
+    "MessagesForAndroidChromeSurvey", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kMessagesForAndroidNotificationBlocked{
+    "MessagesForAndroidNotificationBlocked", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kMessagesForAndroidInfrastructure{
     "MessagesForAndroidInfrastructure", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kMessagesForAndroidPasswords{
     "MessagesForAndroidPasswords", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kMessagesForAndroidPermissionUpdate{
+    "MessagesForAndroidPermissionUpdate", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kMessagesForAndroidPopupBlocked{
     "MessagesForAndroidPopupBlocked", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -26,6 +40,15 @@ const base::Feature kMessagesForAndroidSaveCard{
 
 const base::Feature kMessagesForAndroidUpdatePassword{
     "MessagesForAndroidUpdatePassword", base::FEATURE_DISABLED_BY_DEFAULT};
+
+constexpr base::FeatureParam<bool>
+    kMessagesForAndroidUpdatePassword_UseFollowupButtonText{
+        &kMessagesForAndroidUpdatePassword, "use_followup_button_text", false};
+
+bool IsAdsBlockedMessagesUiEnabled() {
+  return base::FeatureList::IsEnabled(kMessagesForAndroidInfrastructure) &&
+         base::FeatureList::IsEnabled(kMessagesForAndroidAdsBlocked);
+}
 
 bool IsPasswordMessagesUiEnabled() {
   return base::FeatureList::IsEnabled(kMessagesForAndroidInfrastructure) &&
@@ -50,6 +73,20 @@ bool IsSaveCardMessagesUiEnabled() {
 bool IsUpdatePasswordMessagesUiEnabled() {
   return base::FeatureList::IsEnabled(kMessagesForAndroidInfrastructure) &&
          base::FeatureList::IsEnabled(kMessagesForAndroidUpdatePassword);
+}
+
+bool UseFollowupButtonTextForUpdatePasswordButton() {
+  return kMessagesForAndroidUpdatePassword_UseFollowupButtonText.Get();
+}
+
+bool IsNotificationBlockedMessagesUiEnabled() {
+  return base::FeatureList::IsEnabled(kMessagesForAndroidInfrastructure) &&
+         base::FeatureList::IsEnabled(kMessagesForAndroidNotificationBlocked);
+}
+
+bool IsPermissionUpdateMessagesUiEnabled() {
+  return base::FeatureList::IsEnabled(kMessagesForAndroidInfrastructure) &&
+         base::FeatureList::IsEnabled(kMessagesForAndroidPermissionUpdate);
 }
 
 }  // namespace messages

@@ -32,13 +32,7 @@ g.test('single')
       srcData[i] = i + 1;
     }
 
-    const src = t.device.createBuffer({
-      mappedAtCreation: true,
-      size: srcBufferSize,
-      usage: GPUBufferUsage.COPY_SRC,
-    });
-    new Uint8Array(src.getMappedRange()).set(srcData);
-    src.unmap();
+    const src = t.makeBufferWithContents(srcData, GPUBufferUsage.COPY_SRC);
 
     const dst = t.device.createBuffer({
       size: dstBufferSize,
@@ -66,21 +60,14 @@ g.test('state_transitions')
     const srcData = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]);
     const dstData = new Uint8Array([10, 20, 30, 40, 50, 60, 70, 80]);
 
-    const src = t.device.createBuffer({
-      mappedAtCreation: true,
-      size: srcData.length,
-      usage: GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST,
-    });
-    new Uint8Array(src.getMappedRange()).set(srcData);
-    src.unmap();
-
-    const dst = t.device.createBuffer({
-      mappedAtCreation: true,
-      size: dstData.length,
-      usage: GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST,
-    });
-    new Uint8Array(dst.getMappedRange()).set(dstData);
-    dst.unmap();
+    const src = t.makeBufferWithContents(
+      srcData,
+      GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST
+    );
+    const dst = t.makeBufferWithContents(
+      dstData,
+      GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST
+    );
 
     const encoder = t.device.createCommandEncoder();
     encoder.copyBufferToBuffer(src, 0, dst, 4, 4);
@@ -102,13 +89,7 @@ g.test('copy_order')
   .fn(async t => {
     const srcData = new Uint32Array([1, 2, 3, 4, 5, 6, 7, 8]);
 
-    const src = t.device.createBuffer({
-      mappedAtCreation: true,
-      size: srcData.length * 4,
-      usage: GPUBufferUsage.COPY_SRC,
-    });
-    new Uint32Array(src.getMappedRange()).set(srcData);
-    src.unmap();
+    const src = t.makeBufferWithContents(srcData, GPUBufferUsage.COPY_SRC);
 
     const dst = t.device.createBuffer({
       size: srcData.length * 4,

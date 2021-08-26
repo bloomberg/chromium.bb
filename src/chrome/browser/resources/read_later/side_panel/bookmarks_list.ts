@@ -170,7 +170,7 @@ export class BookmarksListElement extends BookmarksListElementBase {
   private onCreated_(node: chrome.bookmarks.BookmarkTreeNode) {
     const pathToParent = this.findPathToId_(node.parentId as string);
     const pathToParentString = this.getPathString_(pathToParent);
-    this.push(`${pathToParentString}.children`, node);
+    this.splice(`${pathToParentString}.children`, node.index!, 0, node);
   }
 
   private onFolderOpenChanged_(event: CustomEvent) {
@@ -194,6 +194,9 @@ export class BookmarksListElement extends BookmarksListElementBase {
       // not do anything.
       return;
     }
+
+    // Prevent arrow keys from causing scroll.
+    event.preventDefault();
 
     const allFolderElements: BookmarkFolderElement[] =
         Array.from(this.shadowRoot!.querySelectorAll('bookmark-folder'));

@@ -134,9 +134,7 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
 
   // Return true if the translation was triggered by a menu entry instead of
   // via an infobar/bubble or preference.
-  bool triggered_from_menu() const {
-    return triggered_from_menu_;
-  }
+  bool triggered_from_menu() const { return triggered_from_menu_; }
   // Languages supporting translate.
   virtual void GetLanguagesNames(std::vector<std::u16string>* languages) const;
   virtual void GetLanguagesCodes(
@@ -145,7 +143,6 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
   virtual void Translate();
   virtual void RevertTranslation();
   virtual void RevertWithoutClosingInfobar();
-  void ReportLanguageDetectionError();
 
   // Called when the user declines to translate a page, by either closing the
   // infobar or pressing the "Don't translate" button.
@@ -155,7 +152,8 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
   virtual bool IsTranslatableLanguageByPrefs() const;
   virtual void ToggleTranslatableLanguageByPrefs();
   virtual bool IsSiteOnNeverPromptList() const;
-  virtual void ToggleNeverPrompt();
+  virtual bool ShouldNeverTranslateLanguage() const;
+  virtual void ToggleNeverPromptSite();
   virtual bool ShouldAlwaysTranslate() const;
   virtual void ToggleAlwaysTranslate();
 

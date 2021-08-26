@@ -7,6 +7,7 @@
 
 #include "include/core/SkCanvas.h"
 
+#include "include/core/SkBlender.h"
 #include "include/core/SkColorFilter.h"
 #include "include/core/SkImage.h"
 #include "include/core/SkImageFilter.h"
@@ -23,7 +24,6 @@
 #include "src/core/SkArenaAlloc.h"
 #include "src/core/SkBitmapDevice.h"
 #include "src/core/SkCanvasPriv.h"
-#include "src/core/SkClipOpPriv.h"
 #include "src/core/SkClipStack.h"
 #include "src/core/SkColorFilterBase.h"
 #include "src/core/SkDraw.h"
@@ -52,11 +52,11 @@
 
 #if SK_SUPPORT_GPU
 #include "include/gpu/GrDirectContext.h"
+#include "src/gpu/BaseDevice.h"
 #include "src/gpu/SkGr.h"
 #if defined(SK_BUILD_FOR_ANDROID_FRAMEWORK)
 #   include "src/gpu/GrRenderTarget.h"
 #   include "src/gpu/GrRenderTargetProxy.h"
-#   include "src/gpu/GrSurfaceDrawContext.h"
 #endif
 #endif
 
@@ -184,31 +184,6 @@ void SkCanvas::predrawNotify(const SkRect* rect, const SkPaint* paint,
 
 namespace {
 
-// Canvases maintain a sparse stack of layers, where the top-most layer receives the drawing,
-// clip, and matrix commands. There is a layer per call to saveLayer() using the
-// kFullLayer_SaveLayerStrategy.
-struct Layer {
-    sk_sp<SkBaseDevice>  fDevice;
-    sk_sp<SkImageFilter> fImageFilter; // applied to layer *before* being drawn by paint
-    SkPaint              fPaint;
-
-    Layer(sk_sp<SkBaseDevice> device, sk_sp<SkImageFilter> imageFilter, const SkPaint& paint)
-            : fDevice(std::move(device))
-            , fImageFilter(std::move(imageFilter))
-            , fPaint(paint) {
-        SkASSERT(fDevice);
-        // Any image filter should have been pulled out and stored in 'imageFilter' so that 'paint'
-        // can be used as-is to draw the result of the filter to the dst device.
-        SkASSERT(!fPaint.getImageFilter());
-    }
-};
-
-// Encapsulate state needed to restore from saveBehind()
-struct BackImage {
-    sk_sp<SkSpecialImage> fImage;
-    SkIPoint              fLoc;
-};
-
 enum class CheckForOverwrite : bool {
     kNo = false,
     kYes = true
@@ -216,65 +191,43 @@ enum class CheckForOverwrite : bool {
 
 }  // namespace
 
-/*  This is the record we keep for each save/restore level in the stack.
-    Since a level optionally copies the matrix and/or stack, we have pointers
-    for these fields. If the value is copied for this level, the copy is
-    stored in the ...Storage field, and the pointer points to that. If the
-    value is not copied for this level, we ignore ...Storage, and just point
-    at the corresponding value in the previous level in the stack.
-*/
-class SkCanvas::MCRec {
-public:
-    // If not null, this MCRec corresponds with the saveLayer() record that made the layer.
-    // The base "layer" is not stored here, since it is stored inline in SkCanvas and has no
-    // restoration behavior.
-    std::unique_ptr<Layer> fLayer;
+SkCanvas::Layer::Layer(sk_sp<SkBaseDevice> device,
+                       sk_sp<SkImageFilter> imageFilter,
+                       const SkPaint& paint)
+        : fDevice(std::move(device)), fImageFilter(std::move(imageFilter)), fPaint(paint) {
+    SkASSERT(fDevice);
+    // Any image filter should have been pulled out and stored in 'imageFilter' so that 'paint'
+    // can be used as-is to draw the result of the filter to the dst device.
+    SkASSERT(!fPaint.getImageFilter());
+}
 
-    // This points to the device of the top-most layer (which may be lower in the stack), or
-    // to the canvas's fBaseDevice. The MCRec does not own the device.
-    SkBaseDevice* fDevice;
+SkCanvas::MCRec::MCRec(SkBaseDevice* device) : fDevice(device) {
+    SkASSERT(fDevice);
+    inc_rec();
+}
 
-    std::unique_ptr<BackImage> fBackImage;
-    SkM44 fMatrix;
-    int fDeferredSaveCount;
+SkCanvas::MCRec::MCRec(const MCRec* prev) : fDevice(prev->fDevice), fMatrix(prev->fMatrix) {
+    SkASSERT(fDevice);
+    inc_rec();
+}
 
-    MCRec(SkBaseDevice* device)
-            : fLayer(nullptr)
-            , fDevice(device)
-            , fBackImage(nullptr)
-            , fDeferredSaveCount(0) {
-        SkASSERT(fDevice);
-        fMatrix.setIdentity();
-        inc_rec();
-    }
+SkCanvas::MCRec::~MCRec() { dec_rec(); }
 
-    MCRec(const MCRec& prev)
-            : fLayer(nullptr)
-            , fDevice(prev.fDevice)
-            , fMatrix(prev.fMatrix)
-            , fDeferredSaveCount(0) {
-        SkASSERT(fDevice);
-        inc_rec();
-    }
-    ~MCRec() {
-        dec_rec();
-    }
+void SkCanvas::MCRec::newLayer(sk_sp<SkBaseDevice> layerDevice,
+                               sk_sp<SkImageFilter> filter,
+                               const SkPaint& restorePaint) {
+    SkASSERT(!fBackImage);
+    fLayer = std::make_unique<Layer>(std::move(layerDevice), std::move(filter), restorePaint);
+    fDevice = fLayer->fDevice.get();
+}
 
-    void newLayer(sk_sp<SkBaseDevice> layerDevice, sk_sp<SkImageFilter> filter,
-                  const SkPaint& restorePaint) {
-        SkASSERT(!fBackImage);
-        fLayer = std::make_unique<Layer>(std::move(layerDevice), std::move(filter), restorePaint);
-        fDevice = fLayer->fDevice.get();
-    }
-
-    void reset(SkBaseDevice* device) {
-        SkASSERT(!fLayer);
-        SkASSERT(device);
-        SkASSERT(fDeferredSaveCount == 0);
-        fDevice = device;
-        fMatrix.setIdentity();
-    }
-};
+void SkCanvas::MCRec::reset(SkBaseDevice* device) {
+    SkASSERT(!fLayer);
+    SkASSERT(device);
+    SkASSERT(fDeferredSaveCount == 0);
+    fDevice = device;
+    fMatrix.setIdentity();
+}
 
 class SkCanvas::AutoUpdateQRBounds {
 public:
@@ -437,7 +390,6 @@ void SkCanvas::init(sk_sp<SkBaseDevice> device) {
 
     // The root device and the canvas should always have the same pixel geometry
     SkASSERT(fProps.pixelGeometry() == device->surfaceProps().pixelGeometry());
-    device->androidFramework_setDeviceClipRestriction(&fClipRestrictionRect);
     device->setMarkerStack(fMarkerStack.get());
 
     fSurfaceBase = nullptr;
@@ -446,27 +398,21 @@ void SkCanvas::init(sk_sp<SkBaseDevice> device) {
     fQuickRejectBounds = this->computeDeviceClipBounds();
 }
 
-SkCanvas::SkCanvas()
-    : fMCStack(sizeof(MCRec), fMCRecStorage, sizeof(fMCRecStorage))
-    , fProps()
-{
+SkCanvas::SkCanvas() : fMCStack(sizeof(MCRec), fMCRecStorage, sizeof(fMCRecStorage)) {
     inc_canvas();
     this->init(nullptr);
 }
 
 SkCanvas::SkCanvas(int width, int height, const SkSurfaceProps* props)
-    : fMCStack(sizeof(MCRec), fMCRecStorage, sizeof(fMCRecStorage))
-    , fProps(SkSurfacePropsCopyOrDefault(props))
-{
+        : fMCStack(sizeof(MCRec), fMCRecStorage, sizeof(fMCRecStorage))
+        , fProps(SkSurfacePropsCopyOrDefault(props)) {
     inc_canvas();
     this->init(sk_make_sp<SkNoPixelsDevice>(
             SkIRect::MakeWH(std::max(width, 0), std::max(height, 0)), fProps));
 }
 
 SkCanvas::SkCanvas(const SkIRect& bounds)
-    : fMCStack(sizeof(MCRec), fMCRecStorage, sizeof(fMCRecStorage))
-    , fProps()
-{
+        : fMCStack(sizeof(MCRec), fMCRecStorage, sizeof(fMCRecStorage)) {
     inc_canvas();
 
     SkIRect r = bounds.isEmpty() ? SkIRect::MakeEmpty() : bounds;
@@ -474,30 +420,26 @@ SkCanvas::SkCanvas(const SkIRect& bounds)
 }
 
 SkCanvas::SkCanvas(sk_sp<SkBaseDevice> device)
-    : fMCStack(sizeof(MCRec), fMCRecStorage, sizeof(fMCRecStorage))
-    , fProps(device->surfaceProps())
-{
+        : fMCStack(sizeof(MCRec), fMCRecStorage, sizeof(fMCRecStorage))
+        , fProps(device->surfaceProps()) {
     inc_canvas();
 
     this->init(device);
 }
 
 SkCanvas::SkCanvas(const SkBitmap& bitmap, const SkSurfaceProps& props)
-    : fMCStack(sizeof(MCRec), fMCRecStorage, sizeof(fMCRecStorage))
-    , fProps(props)
-{
+        : fMCStack(sizeof(MCRec), fMCRecStorage, sizeof(fMCRecStorage)), fProps(props) {
     inc_canvas();
 
     sk_sp<SkBaseDevice> device(new SkBitmapDevice(bitmap, fProps, nullptr, nullptr));
     this->init(device);
 }
 
-SkCanvas::SkCanvas(const SkBitmap& bitmap, std::unique_ptr<SkRasterHandleAllocator> alloc,
+SkCanvas::SkCanvas(const SkBitmap& bitmap,
+                   std::unique_ptr<SkRasterHandleAllocator> alloc,
                    SkRasterHandleAllocator::Handle hndl)
-    : fMCStack(sizeof(MCRec), fMCRecStorage, sizeof(fMCRecStorage))
-    , fProps()
-    , fAllocator(std::move(alloc))
-{
+        : fMCStack(sizeof(MCRec), fMCRecStorage, sizeof(fMCRecStorage))
+        , fAllocator(std::move(alloc)) {
     inc_canvas();
 
     sk_sp<SkBaseDevice> device(new SkBitmapDevice(bitmap, fProps, hndl, nullptr));
@@ -508,8 +450,7 @@ SkCanvas::SkCanvas(const SkBitmap& bitmap) : SkCanvas(bitmap, nullptr, nullptr) 
 
 #ifdef SK_BUILD_FOR_ANDROID_FRAMEWORK
 SkCanvas::SkCanvas(const SkBitmap& bitmap, ColorBehavior)
-    : fMCStack(sizeof(MCRec), fMCRecStorage, sizeof(fMCRecStorage)), fProps(), fAllocator(nullptr)
-{
+        : fMCStack(sizeof(MCRec), fMCRecStorage, sizeof(fMCRecStorage)) {
     inc_canvas();
 
     SkBitmap tmp(bitmap);
@@ -520,9 +461,7 @@ SkCanvas::SkCanvas(const SkBitmap& bitmap, ColorBehavior)
 #endif
 
 SkCanvas::~SkCanvas() {
-    // free up the contents of our deque
     this->restoreToCount(1);    // restore everything but the last
-
     this->internalRestore();    // restore the last, since we're going away
 
     dec_canvas();
@@ -555,14 +494,6 @@ SkISize SkCanvas::getBaseLayerSize() const {
 SkBaseDevice* SkCanvas::topDevice() const {
     SkASSERT(fMCRec->fDevice);
     return fMCRec->fDevice;
-}
-
-GrSurfaceDrawContext* SkCanvas::topDeviceSurfaceDrawContext() {
-    return this->topDevice()->surfaceDrawContext();
-}
-
-GrRenderTargetProxy* SkCanvas::topDeviceTargetProxy() {
-    return this->topDevice()->targetProxy();
 }
 
 bool SkCanvas::readPixels(const SkPixmap& pm, int x, int y) {
@@ -677,7 +608,7 @@ void SkCanvas::restoreToCount(int count) {
 }
 
 void SkCanvas::internalSave() {
-    fMCRec = new (fMCStack.push_back()) MCRec(*fMCRec);
+    fMCRec = new (fMCStack.push_back()) MCRec(fMCRec);
 
     this->topDevice()->save();
 }
@@ -726,10 +657,10 @@ static void check_drawdevice_colorspaces(SkColorSpace* src, SkColorSpace* dst) {
 
 // Helper function to compute the center reference point used for scale decomposition under
 // non-linear transformations.
-static bool compute_decomposition_center(const SkMatrix& dstToLocal,
-                                         const skif::ParameterSpace<SkRect>* contentBounds,
-                                         const skif::DeviceSpace<SkIRect>& targetOutput,
-                                         skif::ParameterSpace<SkPoint>* out) {
+static skif::ParameterSpace<SkPoint> compute_decomposition_center(
+        const SkMatrix& dstToLocal,
+        const skif::ParameterSpace<SkRect>* contentBounds,
+        const skif::DeviceSpace<SkIRect>& targetOutput) {
     // Will use the inverse and center of the device bounds if the content bounds aren't provided.
     SkRect rect = contentBounds ? SkRect(*contentBounds) : SkRect::Make(SkIRect(targetOutput));
     SkPoint center = {rect.centerX(), rect.centerY()};
@@ -739,8 +670,7 @@ static bool compute_decomposition_center(const SkMatrix& dstToLocal,
         dstToLocal.mapPoints(&center, 1);
     }
 
-    *out = skif::ParameterSpace<SkPoint>(center);
-    return true;
+    return skif::ParameterSpace<SkPoint>(center);
 }
 
 // Compute suitable transformations and layer bounds for a new layer that will be used as the source
@@ -755,13 +685,14 @@ static std::pair<skif::Mapping, skif::LayerSpace<SkIRect>> get_layer_mapping_and
         const skif::DeviceSpace<SkIRect>& targetOutput,
         const skif::ParameterSpace<SkRect>* contentBounds = nullptr,
         bool mustCoverDst = true) {
-    skif::ParameterSpace<SkPoint> center;
     SkMatrix dstToLocal;
     if (!localToDst.isFinite() ||
-        !localToDst.invert(&dstToLocal) ||
-        !compute_decomposition_center(dstToLocal, contentBounds, targetOutput, &center)) {
+        !localToDst.invert(&dstToLocal)) {
         return {{}, skif::LayerSpace<SkIRect>(SkIRect::MakeEmpty())};
     }
+
+    skif::ParameterSpace<SkPoint> center =
+            compute_decomposition_center(dstToLocal, contentBounds, targetOutput);
     // *after* possibly getting a representative point from the provided content bounds, it might
     // be necessary to discard the bounds for subsequent layer calculations.
     if (mustCoverDst) {
@@ -812,7 +743,11 @@ static std::pair<skif::Mapping, skif::LayerSpace<SkIRect>> get_layer_mapping_and
         SkMatrix adjust = SkMatrix::MakeRectToRect(SkRect::Make(SkIRect(layerBounds)),
                                                    SkRect::Make(SkIRect(newLayerBounds)),
                                                    SkMatrix::kFill_ScaleToFit);
-        if (!mapping.adjustLayerSpace(adjust)) {
+        // If the adjust matrix isn't invertible, or if multiplying it into the device transform
+        // causes overflows, then subsequent SkDevice coordinate spaces would be invalid, so
+        // just return the empty bounds and skip the layer.
+        if (!mapping.adjustLayerSpace(adjust) ||
+            !mapping.deviceMatrix().isFinite()) {
             layerBounds = skif::LayerSpace<SkIRect>(SkIRect::MakeEmpty());
         } else {
             layerBounds = newLayerBounds;
@@ -1116,7 +1051,6 @@ void SkCanvas::internalSaveLayer(const SaveLayerRec& rec, SaveLayerStrategy stra
                                          SkM44(newLayerMapping.deviceMatrix()),
                                          SkM44(newLayerMapping.layerMatrix()),
                                          layerBounds.left(), layerBounds.top());
-    newDevice->androidFramework_setDeviceClipRestriction(&fClipRestrictionRect);
 
     if (initBackdrop) {
         SkPaint backdropPaint;
@@ -1188,7 +1122,7 @@ void SkCanvas::internalSaveBehind(const SkRect* localBounds) {
 }
 
 void SkCanvas::internalRestore() {
-    SkASSERT(fMCStack.count() != 0);
+    SkASSERT(!fMCStack.empty());
 
     // now detach these from fMCRec so we can pop(). Gets freed after its drawn
     std::unique_ptr<Layer> layer = std::move(fMCRec->fLayer);
@@ -1242,6 +1176,11 @@ void SkCanvas::internalRestore() {
         }
     }
 
+    // Reset the clip restriction if the restore went past the save point that had added it.
+    if (this->getSaveCount() < fClipRestrictionSaveCount) {
+        fClipRestrictionRect.setEmpty();
+        fClipRestrictionSaveCount = -1;
+    }
     // Update the quick-reject bounds in case the restore changed the top device or the
     // removed save record had included modifications to the clip stack.
     fQuickRejectBounds = this->computeDeviceClipBounds();
@@ -1433,22 +1372,64 @@ void SkCanvas::onClipRect(const SkRect& rect, SkClipOp op, ClipEdgeStyle edgeSty
 }
 
 void SkCanvas::androidFramework_setDeviceClipRestriction(const SkIRect& rect) {
-    fClipRestrictionRect = rect;
-    if (!fClipRestrictionRect.isEmpty()) {
-        // we only resolve deferred saves when we're setting the restriction, not when we're
-        // removing it (i.e. rect is empty).
+    // The device clip restriction is a surface-space rectangular intersection that cannot be
+    // drawn outside of. The rectangle is remembered so that subsequent resetClip calls still
+    // respect the restriction. Other than clip resetting, all clip operations restrict the set
+    // of renderable pixels, so once set, the restriction will be respected until the canvas
+    // save stack is restored past the point this function was invoked. Unfortunately, the current
+    // implementation relies on the clip stack of the underyling SkDevices, which leads to some
+    // awkward behavioral interactions (see skbug.com/12252).
+    //
+    // Namely, a canvas restore() could undo the clip restriction's rect, and if
+    // setDeviceClipRestriction were called at a nested save level, there's no way to undo just the
+    // prior restriction and re-apply the new one. It also only makes sense to apply to the base
+    // device; any other device for a saved layer will be clipped back to the base device during its
+    // matched restore. As such, we:
+    // - Remember the save count that added the clip restriction and reset the rect to empty when
+    //   we've restored past that point to keep our state in sync with the device's clip stack.
+    // - We assert that we're on the base device when this is invoked.
+    // - We assert that setDeviceClipRestriction() is only called when there was no prior
+    //   restriction (cannot re-restrict, and prior state must have been reset by restoring the
+    //   canvas state).
+    // - Historically, the empty rect would reset the clip restriction but it only could do so
+    //   partially since the device's clips wasn't adjusted. Resetting is now handled
+    //   automatically via SkCanvas::restore(), so empty input rects are skipped.
+    SkASSERT(this->topDevice() == this->baseDevice()); // shouldn't be in a nested layer
+    // and shouldn't already have a restriction
+    SkASSERT(fClipRestrictionSaveCount < 0 && fClipRestrictionRect.isEmpty());
+
+    if (fClipRestrictionSaveCount < 0 && !rect.isEmpty()) {
+        fClipRestrictionRect = rect;
+        fClipRestrictionSaveCount = this->getSaveCount();
+
+        // A non-empty clip restriction immediately applies an intersection op (ignoring the ctm).
+        // so we have to resolve the save.
         this->checkForDeferredSave();
+        AutoUpdateQRBounds aqr(this);
+        // Use clipRegion() since that operates in canvas-space, whereas clipRect() would apply the
+        // device's current transform first.
+        this->topDevice()->clipRegion(SkRegion(rect), SkClipOp::kIntersect);
+    }
+}
+
+void SkCanvas::internal_private_resetClip() {
+    this->checkForDeferredSave();
+    this->onResetClip();
+}
+
+void SkCanvas::onResetClip() {
+    SkIRect deviceRestriction = this->topDevice()->imageInfo().bounds();
+    if (fClipRestrictionSaveCount >= 0 && this->topDevice() == this->baseDevice()) {
+        // Respect the device clip restriction when resetting the clip if we're on the base device.
+        // If we're not on the base device, then the "reset" applies to the top device's clip stack,
+        // and the clip restriction will be respected automatically during a restore of the layer.
+        if (!deviceRestriction.intersect(fClipRestrictionRect)) {
+            deviceRestriction = SkIRect::MakeEmpty();
+        }
     }
 
     AutoUpdateQRBounds aqr(this);
-    this->topDevice()->androidFramework_setDeviceClipRestriction(&fClipRestrictionRect);
-}
-
-void SkCanvas::androidFramework_replaceClip(const SkIRect& rect) {
-    this->checkForDeferredSave();
-
-    AutoUpdateQRBounds aqr(this);
-    this->topDevice()->replaceClip(rect);
+    this->topDevice()->replaceClip(deviceRestriction);
 }
 
 void SkCanvas::clipRRect(const SkRRect& rrect, SkClipOp op, bool doAA) {
@@ -1651,16 +1632,12 @@ SkM44 SkCanvas::getLocalToDevice() const {
 
 #if defined(SK_BUILD_FOR_ANDROID_FRAMEWORK) && SK_SUPPORT_GPU
 
-#include "src/gpu/GrRenderTarget.h"
-#include "src/gpu/GrRenderTargetProxy.h"
-#include "src/gpu/GrSurfaceDrawContext.h"
-
 SkIRect SkCanvas::topLayerBounds() const {
     return this->topDevice()->getGlobalBounds();
 }
 
 GrBackendRenderTarget SkCanvas::topLayerBackendRenderTarget() const {
-    const GrRenderTargetProxy* proxy = const_cast<SkCanvas*>(this)->topDeviceTargetProxy();
+    auto proxy = SkCanvasPriv::TopDeviceTargetProxy(const_cast<SkCanvas*>(this));
     if (!proxy) {
         return {};
     }
@@ -1670,7 +1647,13 @@ GrBackendRenderTarget SkCanvas::topLayerBackendRenderTarget() const {
 #endif
 
 GrRecordingContext* SkCanvas::recordingContext() {
-    return this->topDevice()->recordingContext();
+#if SK_SUPPORT_GPU
+    if (auto gpuDevice = this->topDevice()->asGpuDevice()) {
+        return gpuDevice->recordingContext();
+    }
+#endif
+
+    return nullptr;
 }
 
 void SkCanvas::drawDRRect(const SkRRect& outer, const SkRRect& inner,
@@ -2632,12 +2615,8 @@ bool SkNoDrawCanvas::onDoSaveBehind(const SkRect*) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static_assert((int)SkRegion::kDifference_Op         == (int)kDifference_SkClipOp, "");
-static_assert((int)SkRegion::kIntersect_Op          == (int)kIntersect_SkClipOp, "");
-static_assert((int)SkRegion::kUnion_Op              == (int)kUnion_SkClipOp, "");
-static_assert((int)SkRegion::kXOR_Op                == (int)kXOR_SkClipOp, "");
-static_assert((int)SkRegion::kReverseDifference_Op  == (int)kReverseDifference_SkClipOp, "");
-static_assert((int)SkRegion::kReplace_Op            == (int)kReplace_SkClipOp, "");
+static_assert((int)SkRegion::kDifference_Op == (int)SkClipOp::kDifference, "");
+static_assert((int)SkRegion::kIntersect_Op  == (int)SkClipOp::kIntersect, "");
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 

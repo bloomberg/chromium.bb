@@ -6,10 +6,10 @@
 
 #include "core/fxcrt/bytestring.h"
 
+#include <ctype.h>
 #include <stddef.h>
 
 #include <algorithm>
-#include <cctype>
 #include <sstream>
 #include <string>
 #include <utility>
@@ -22,7 +22,7 @@
 #include "core/fxcrt/string_pool_template.h"
 #include "third_party/base/check.h"
 #include "third_party/base/check_op.h"
-#include "third_party/base/numerics/ranges.h"
+#include "third_party/base/cxx17_backports.h"
 #include "third_party/base/numerics/safe_math.h"
 #include "third_party/base/span.h"
 
@@ -65,10 +65,6 @@ namespace fxcrt {
 
 static_assert(sizeof(ByteString) <= sizeof(char*),
               "Strings must not require more space than pointers");
-
-#define FORCE_ANSI 0x10000
-#define FORCE_UNICODE 0x20000
-#define FORCE_INT64 0x40000
 
 // static
 ByteString ByteString::FormatInteger(int i) {

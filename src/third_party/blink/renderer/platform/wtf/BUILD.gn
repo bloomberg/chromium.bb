@@ -118,6 +118,7 @@ component("wtf") {
     "text/atomic_string_table.h",
     "text/base64.cc",
     "text/base64.h",
+    "text/case_folding_hash.h",
     "text/case_map.cc",
     "text/case_map.h",
     "text/character_names.h",
@@ -178,6 +179,7 @@ component("wtf") {
     "text/utf8.h",
     "text/wtf_string.cc",
     "text/wtf_string.h",
+    "text/wtf_uchar.h",
     "thread_restriction_verifier.h",
     "thread_safe_ref_counted.h",
     "thread_specific.h",
@@ -206,9 +208,6 @@ component("wtf") {
 
   public_configs = [
     ":wtf_config",
-
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    "//build/config/compiler:no_size_t_to_int_warning",
     "//third_party/blink/renderer:features",
   ]
 
@@ -343,9 +342,6 @@ source_set("wtf_unittests_sources") {
     "vector_backed_linked_list_test.cc",
     "vector_test.cc",
   ]
-
-  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   if (is_win) {
     cflags = [ "/wd4068" ]  # Unknown pragma.

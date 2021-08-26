@@ -115,15 +115,25 @@ const base::Feature kBackForwardCacheMemoryControls{
 const base::Feature kBlockCredentialedSubresources{
     "BlockCredentialedSubresources", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// When kBlockInsecurePrivateNetworkRequests is enabled, requests initiated
-// from a less-private network may only target a more-private network if the
-// initiating context is secure.
+// When this feature is enabled, private network requests initiated from
+// non-secure contexts in the `public` address space  are blocked.
 //
 // See also:
-//  - https://wicg.github.io/cors-rfc1918/#integration-fetch
+//  - https://wicg.github.io/private-network-access/#integration-fetch
+//  - kBlockInsecurePrivateNetworkRequestsFromPrivate
 //  - kBlockInsecurePrivateNetworkRequestsForNavigations
 const base::Feature kBlockInsecurePrivateNetworkRequests{
-    "BlockInsecurePrivateNetworkRequests", base::FEATURE_DISABLED_BY_DEFAULT};
+    "BlockInsecurePrivateNetworkRequests", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// When this feature is enabled, requests to localhost initiated from non-secure
+// contexts in the `private` IP address space are blocked.
+//
+// See also:
+//  - https://wicg.github.io/private-network-access/#integration-fetch
+//  - kBlockInsecurePrivateNetworkRequests
+const base::Feature kBlockInsecurePrivateNetworkRequestsFromPrivate{
+    "BlockInsecurePrivateNetworkRequestsFromPrivate",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables use of the PrivateNetworkAccessNonSecureContextsAllowed deprecation
 // trial. This is a necessary yet insufficient condition: documents that wish to
@@ -229,6 +239,11 @@ const base::Feature kDesktopCaptureChangeSource{
 const base::Feature kDesktopPWAsTabStrip{"DesktopPWAsTabStrip",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable the device posture API.
+// Tracking bug for enabling device posture API: https://crbug.com/1066842.
+const base::Feature kDevicePosture{"DevicePosture",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable document policy for configuring and restricting feature behavior.
 const base::Feature kDocumentPolicy{"DocumentPolicy",
                                     base::FEATURE_ENABLED_BY_DEFAULT};
@@ -280,11 +295,6 @@ const base::Feature kExperimentalAccessibilityLabels{
 const base::Feature kExperimentalContentSecurityPolicyFeatures{
     "ExperimentalContentSecurityPolicyFeatures",
     base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Throttle tasks in Blink background timer queues based on CPU budgets
-// for the background tab. Bug: https://crbug.com/639852.
-const base::Feature kExpensiveBackgroundTimerThrottling{
-    "ExpensiveBackgroundTimerThrottling", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Extra CORS safelisted headers. See https://crbug.com/999054.
 const base::Feature kExtraSafelistedRequestHeadersForOutOfBlinkCors{
@@ -366,10 +376,6 @@ const base::Feature kInstalledAppsInCbd{"InstalledAppsInCbd",
 const base::Feature kIsolateOrigins{"IsolateOrigins",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 const char kIsolateOriginsFieldTrialParamName[] = "OriginsList";
-
-// Experimental handling of accept-language via client hints.
-const base::Feature kLangClientHintHeader{"LangClientHintHeader",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kLazyFrameLoading{"LazyFrameLoading",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
@@ -532,10 +538,6 @@ const base::Feature kPepper3DImageChromium{"Pepper3DImageChromium",
 const base::Feature kPepperCrossOriginRedirectRestriction{
     "PepperCrossOriginRedirectRestriction", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Handle prefers-color-scheme user preference media feature via client hints.
-const base::Feature kPrefersColorSchemeClientHintHeader{
-    "PrefersColorSchemeClientHintHeader", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // All ProcessHost objects live on UI thread.
 // https://crbug.com/904556
 const base::Feature kProcessHostOnUI{"ProcessHostOnUI",
@@ -647,8 +649,9 @@ const base::Feature kSecurePaymentConfirmation{
     "SecurePaymentConfirmationBrowser", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Used to enable API changes for Secure Payment Confirmation.
-const base::Feature kSecurePaymentConfirmationAPIV2{
-    "SecurePaymentConfirmationAPIV2", base::FEATURE_ENABLED_BY_DEFAULT};
+// TODO(crbug.com/1228924): Enable by default in M94.
+const base::Feature kSecurePaymentConfirmationAPIV3{
+    "SecurePaymentConfirmationAPIV3", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Used to control whether to remove the restriction that PaymentCredential in
 // WebAuthn and secure payment confirmation method in PaymentRequest API must
@@ -853,11 +856,6 @@ const base::Feature kUnrestrictedSharedArrayBuffer{
 const base::Feature kUserActivationSameOriginVisibility{
     "UserActivationSameOriginVisibility", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// An experimental replacement for the `User-Agent` header, defined in
-// https://tools.ietf.org/html/draft-west-ua-client-hints.
-const base::Feature kUserAgentClientHint{"UserAgentClientHint",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables comparing browser and renderer's DidCommitProvisionalLoadParams in
 // RenderFrameHostImpl::VerifyThatBrowserAndRendererCalculatedDidCommitParamsMatch.
 const base::Feature kVerifyDidCommitParams{"VerifyDidCommitParams",
@@ -969,11 +967,6 @@ const base::Feature kWebBundlesFromNetwork{"WebBundlesFromNetwork",
 const base::Feature kWebGLImageChromium{"WebGLImageChromium",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enable WebGPU on gpu serivce side only. This is used with origin trial
-// before gpu service is enabled by default.
-const base::Feature kWebGPUService{"WebGPUService",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enable browser mediation API for federated identity interactions.
 const base::Feature kWebID{"WebID", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -993,6 +986,10 @@ const base::Feature kWebPaymentsMinimalUI{"WebPaymentsMinimalUI",
 // Use GpuMemoryBuffer backed VideoFrames in media streams.
 const base::Feature kWebRtcUseGpuMemoryBufferVideoFrames{
     "WebRTC-UseGpuMemoryBufferVideoFrames", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables code caching for scripts used on WebUI pages.
+const base::Feature kWebUICodeCache{"WebUICodeCache",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables report-only Trusted Types experiment on WebUIs
 const base::Feature kWebUIReportOnlyTrustedTypes{

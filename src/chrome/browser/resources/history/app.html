@@ -69,6 +69,12 @@
             query-result="[[queryResult_]]"
             path="history">
         </history-list>
+        <template is="dom-if" if="[[historyClustersSelected_(selectedPage_)]]">
+          <history-clusters id="history-clusters"
+              query="[[queryState_.searchTerm]]"
+              path="journeys">
+          </history-clusters>
+        </template>
         <template is="dom-if" if="[[syncedTabsSelected_(selectedPage_)]]">
           <history-synced-device-manager id="synced-devices"
               session-list="[[queryResult_.sessionList]]"
@@ -83,7 +89,7 @@
     <cr-lazy-render id="drawer">
       <template>
         <cr-drawer heading="$i18n{title}" align="$i18n{textdirection}">
-          <history-side-bar id="drawer-side-bar" class="drawer-content"
+          <history-side-bar id="drawer-side-bar" slot="body"
               selected-page="{{selectedPage_}}"
               footer-info="[[footerInfo]]">
           </history-side-bar>

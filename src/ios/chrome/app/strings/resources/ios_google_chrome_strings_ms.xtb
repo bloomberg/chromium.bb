@@ -4,7 +4,6 @@
 <translation id="1096883626080133124">Selesaikan lebih banyak tugas dengan Google Chrome yang mudah, selamat dan lebih pantas berbanding dahulu</translation>
 <translation id="1282031177488366470">Bantu Tingkatkan Ciri dan Prestasi Chrome</translation>
 <translation id="1314663809820920746">Anda masih boleh melihat semua penanda halaman, sejarah, kata laluan dan tetapan anda yang lain pada peranti ini. Jika perubahan dibuat, perubahan itu tidak akan disegerakkan ke Akaun Google anda.</translation>
-<translation id="139135165841384604">Selesaikan lebih banyak perkara dengan Chrome</translation>
 <translation id="1479202195792305274">Chrome boleh menyemak kata laluan anda apabila anda log masuk menggunakan Akaun Google anda.</translation>
 <translation id="1493827051843127077">Tetapkan Chrome sebagai penyemak imbas lalai untuk menyegerakkan tab, kata laluan dan maklumat pembayaran anda pada semua peranti anda</translation>
 <translation id="1504372625950710826">Chrome tidak dapat menyemak kemaskinian. Cuba periksa sambungan internet anda.</translation>
@@ -12,22 +11,24 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1812249337131447686">Bantu tingkatkan Chrome dengan menghantar perangkaan penggunaan dan laporan ranap sistem kepada Google</translation>
 <translation id="1917964099031477364">Akaun ini dan sebarang data yang tidak disimpan akan dialih keluar daripada Chrome dan apl Google yang lain pada peranti ini.</translation>
+<translation id="1968388653333775699">Selesaikan Lebih Banyak Perkara dengan Chrome</translation>
 <translation id="2009224836393115614">Chrome tidak dapat menyemak kata laluan anda. Cuba periksa sambungan Internet anda.</translation>
 <translation id="2147651015520127414">Chrome mengesahkan bahawa <ph name="ISSUER" /> telah mengeluarkan sijil tapak web ini.</translation>
 <translation id="2199719347983604670">Data daripada penyegerakan Chrome</translation>
 <translation id="2313070403598893276">Google Chrome mudah, selamat dan lebih pantas berbanding dengan dahulu</translation>
 <translation id="2342919707875585281">Chrome berkongsi lokasi anda dengan laman yang anda benarkan.</translation>
 <translation id="2347208864470321755">Apabila ciri ini dihidupkan, Chrome akan menawarkan halaman yang ditulis dalam bahasa lain diterjemah menggunakan Google Terjemah. <ph name="BEGIN_LINK" />Ketahui lebih lanjut<ph name="END_LINK" /></translation>
-<translation id="2415682770504543561">Jadikan Chrome sebagai Penyemak Imbas Lalai Anda</translation>
+<translation id="2427791862912929107">Chrome mempunyai ciri yang membantu anda mengurus data Internet anda dan kepantasan anda dapat memuatkan halaman web.
+<ph name="BEGIN_LINK" />Ketahui lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="2561231791489583059">Gunakan Chrome sebagai penyemak imbas lalai anda untuk kekal dilindungi daripada laman berbahaya &amp; memastikan kata laluan anda selamat</translation>
 <translation id="2574249610672786438">Untuk melihat tab anda daripada mana-mana tempat anda menggunakan Chrome, log masuk ke semua peranti anda</translation>
 <translation id="2576431527583832481">Chrome telah dipertingkatkan! Versi baharu kini boleh didapati.</translation>
 <translation id="257708665678654955">Adakah anda ingin Google Chrome menawarkan halaman <ph name="LANGUAGE_NAME" /> dari tapak ini diterjemahkan pada masa akan datang?</translation>
 <translation id="2695886661449553974">Chrome tidak dapat menyemak kemaskinian. Cuba lagi nanti.</translation>
 <translation id="2732745070297234559">Chrome tidak dapat menyemak semua kata laluan. Cuba lagi esok.</translation>
-<translation id="2740105938841089077">Gunakan Chrome untuk Membuka Pautan</translation>
 <translation id="2869959624320573933">Log Masuk ke Chrome</translation>
 <translation id="2919738076569633423">Dengan menggunakan Chrome, anda bersetuju untuk menerima <ph name="BEGIN_LINK_TOS" />Syarat Perkhidmatan<ph name="END_LINK_TOS" />.</translation>
+<translation id="2957447865124070833">Pilih <ph name="BEGIN_BOLD" />Chrome<ph name="END_BOLD" /></translation>
 <translation id="3030414234702425231">Oleh sebab anda log keluar daripada akaun yang diurus oleh <ph name="SIGNOUT_MANAGED_DOMAIN" />, data Chrome anda akan dipadamkan daripada peranti ini. Data anda akan kekal dalam Akaun Google anda.</translation>
 <translation id="3167189358072330585">Akaun anda tidak berfungsi pada Google Chrome. Sila hubungi pentadbir domain anda atau gunakan Akaun Google biasa untuk log masuk.</translation>
 <translation id="3173834708294760622">Halaman Google Chrome</translation>
@@ -61,8 +62,7 @@
 <translation id="5716154293141027663">Buka Chrome pada bila-bila masa anda mengetik pautan dalam apl lain</translation>
 <translation id="5854621639439811139">Petua Chrome. Sesetengah butang kini terletak di bahagian bawah skrin anda, seperti Kembali, Ke Hadapan dan Carian.</translation>
 <translation id="5876773482963502140">Jika anda membenarkan Chrome mengetahui lokasi anda, Chrome akan menghantar maklumat itu kepada mana-mana laman yang anda benarkan. Laman mungkin meminta lokasi anda apabila laman itu mempunyai maklumat setempat untuk ditunjukkan kepada anda, seperti kedai atau berita berdekatan.</translation>
-<translation id="6036420186814142909">Google Chrome mempunyai ciri-ciri yang membantu anda mengurus data internet anda dan berapa cepat anda mampu memuatkan halaman web.
-<ph name="BEGIN_LINK" />Ketahui lebih lanjut<ph name="END_LINK" /></translation>
+<translation id="6054613632208573261">Gunakan Chrome secara Lalai</translation>
 <translation id="6063091872902370735">Benarkan Log Masuk Chrome</translation>
 <translation id="6181930887571472871">Beralih kepada Chrome</translation>
 <translation id="6238746320622508509">Biarkan Chrome mengunci tab Inkognito anda.</translation>
@@ -88,6 +88,7 @@
 <translation id="7626032353295482388">Selamat Datang ke Chrome</translation>
 <translation id="7662994914830945754">Untuk melihat tab anda daripada mana-mana tempat anda menggunakan Chrome, log masuk dan hidupkan penyegerakan</translation>
 <translation id="766361182512894255">Kata laluan anda terdedah dalam suatu pelanggaran data. Chrome mengesyorkan supaya kata laluan ditukar sekarang.</translation>
+<translation id="7693590760643069321">Kini anda boleh menggunakan Chrome pada bila-bila masa anda mengetik pautan dalam mesej, dokumen dan apl lain.</translation>
 <translation id="7698568245838009292">Chrome Ingin Mengakses Kamera Anda</translation>
 <translation id="7855730255114109580">Google Chrome adalah yang terkini</translation>
 <translation id="8022947259858476807">Gunakan Chrome secara lalai untuk membuka pautan, mencari daripada widget dan melengkapkan kata laluan secara automatik dalam apl lain</translation>

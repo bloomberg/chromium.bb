@@ -95,12 +95,14 @@ class WebApp {
   // a part of user's app library.
   bool is_locally_installed() const { return is_locally_installed_; }
   // Sync-initiated installation produces a stub app awaiting for full
-  // installation process. The |is_in_sync_install| app has only app_id,
-  // launch_url and sync_fallback_data fields defined, no icons. If online
-  // install succeeds, icons get downloaded and all the fields get their values.
-  // If online install fails, we do the fallback installation to generate icons
-  // using |sync_fallback_data| fields.
-  bool is_in_sync_install() const { return is_in_sync_install_; }
+  // installation process. The |is_from_sync_and_pending_installation| app has
+  // only app_id, launch_url and sync_fallback_data fields defined, no icons. If
+  // online install succeeds, icons get downloaded and all the fields get their
+  // values. If online install fails, we do the fallback installation to
+  // generate icons using |sync_fallback_data| fields.
+  bool is_from_sync_and_pending_installation() const {
+    return is_from_sync_and_pending_installation_;
+  }
 
   // Represents whether the web app is being uninstalled.
   bool is_uninstalling() const { return is_uninstalling_; }
@@ -149,7 +151,6 @@ class WebApp {
 
   // URL within scope to launch for a "new note" action. Valid iff this is
   // considered a note-taking app.
-  // TODO(crbug.com/1185678): Persist this in the database.
   const GURL& note_taking_new_note_url() const {
     return note_taking_new_note_url_;
   }
@@ -209,6 +210,10 @@ class WebApp {
 
   bool IsStorageIsolated() const { return is_storage_isolated_; }
 
+  const absl::optional<LaunchHandler>& launch_handler() const {
+    return launch_handler_;
+  }
+
   // A Web App can be installed from multiple sources simultaneously. Installs
   // add a source to the app. Uninstalls remove a source from the app.
   void AddSource(Source::Type source);
@@ -220,6 +225,7 @@ class WebApp {
   bool IsPreinstalledApp() const;
   bool IsPolicyInstalledApp() const;
   bool IsSystemApp() const;
+  bool IsWebAppStoreInstalledApp() const;
   bool CanUserUninstallWebApp() const;
   bool WasInstalledByUser() const;
   // Returns the highest priority source. AppService assumes that every app has
@@ -240,7 +246,8 @@ class WebApp {
   void SetUserLaunchOrdinal(syncer::StringOrdinal launch_ordinal);
   void SetWebAppChromeOsData(absl::optional<WebAppChromeOsData> chromeos_data);
   void SetIsLocallyInstalled(bool is_locally_installed);
-  void SetIsInSyncInstall(bool is_in_sync_install);
+  void SetIsFromSyncAndPendingInstallation(
+      bool is_from_sync_and_pending_installation);
   void SetIsUninstalling(bool is_uninstalling);
   void SetIconInfos(std::vector<WebApplicationIconInfo> icon_infos);
   // Performs sorting and uniquifying of |sizes| if passed as vector.
@@ -271,6 +278,7 @@ class WebApp {
   void SetFileHandlerPermissionBlocked(bool permission_blocked);
   void SetWindowControlsOverlayEnabled(bool enabled);
   void SetStorageIsolated(bool is_storage_isolated);
+  void SetLaunchHandler(absl::optional<LaunchHandler> launch_handler);
 
   // For logging and debug purposes.
   bool operator==(const WebApp&) const;
@@ -303,7 +311,7 @@ class WebApp {
   syncer::StringOrdinal user_launch_ordinal_;
   absl::optional<WebAppChromeOsData> chromeos_data_;
   bool is_locally_installed_ = true;
-  bool is_in_sync_install_ = false;
+  bool is_from_sync_and_pending_installation_ = false;
   // Note: This field is not persisted in the database.
   // TODO(crbug.com/1162477): Add this field to the protocol buffer file and
   // other places to save it to the database, and then make sure to continue
@@ -336,6 +344,7 @@ class WebApp {
   bool file_handler_permission_blocked_ = false;
   bool window_controls_overlay_enabled_ = false;
   bool is_storage_isolated_ = false;
+  absl::optional<LaunchHandler> launch_handler_;
   // New fields must be added to:
   //  - |operator==|
   //  - AsDebugValue()

@@ -61,6 +61,9 @@ class LocalDeskDataManager : public DeskModel {
 
   // Other helper methods.
 
+  // Gets the number of templates currently saved.
+  std::size_t GetTemplateCount() const;
+
   // Gets the maximum number of templates this storage backend could hold.
   // Adding more templates beyond this limit will result in |kHitMaximumLimit|
   // error.
@@ -112,6 +115,9 @@ class LocalDeskDataManager : public DeskModel {
   // Wrapper method to call DeleteEntryCallback.
   void OnDeleteEntry(std::unique_ptr<DeskModel::DeleteEntryStatus> status_ptr,
                      DeskModel::DeleteEntryCallback callback);
+
+  // Returns true if |templates_| contains a desk template with |name|.
+  bool HasTemplateWithName(const std::u16string& name);
 
   // Task runner used to schedule tasks on the IO thread.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;

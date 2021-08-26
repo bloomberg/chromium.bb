@@ -103,13 +103,19 @@ source_set("common") {
     ]
   }
   if (is_chromeos_ash) {
-    deps += [ "//remoting/host/chromeos:chromeos" ]
+    deps += [
+      "//chromeos/ui/vector_icons",
+      "//remoting/host/chromeos",
+    ]
   }
   if (is_mac) {
     deps += [ "//ui/base:base" ]
   }
   if (is_win) {
-    deps += [ "//remoting/host/win:elevated_native_messaging_host" ]
+    deps += [
+      "//remoting/host/win",
+      "//remoting/host/win:elevated_native_messaging_host",
+    ]
   }
 }
 
@@ -285,6 +291,7 @@ if (!is_chromeos_ash && enable_remoting_host) {
       deps = [
         ":common",
         "//remoting/host",
+        "//remoting/host:host_main_headers",
         "//remoting/host/native_messaging",
         "//remoting/proto",
         "//third_party/webrtc_overrides:webrtc_component",

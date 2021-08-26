@@ -18,6 +18,7 @@
 <translation id="1774152462503052664">Permiteți Chromium să ruleze în fundal</translation>
 <translation id="1779356040007214683">Pentru mai multă siguranță în Chromium, am dezactivat câteva extensii care nu sunt incluse în <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> și care este posibil să fi fost adăugate fără știrea dvs.</translation>
 <translation id="1808667845054772817">Reinstalați Chromium</translation>
+<translation id="185970820835152459">Îți poți gestiona Conturile Google la care te-ai conectat. Conturile tale Google sunt folosite pentru browserul Chromium, pentru Magazinul Play, pentru Gmail și pentru multe altele. Dacă vrei să adaugi un cont pentru altcineva, de exemplu, pentru un membru al familiei, adaugă noua persoană pe <ph name="DEVICE_TYPE" />. <ph name="LINK_BEGIN" />Află mai multe<ph name="LINK_END" /></translation>
 <translation id="1881322772814446296">Vă conectați cu un cont gestionat și îi permiteți administratorului acestuia controlul asupra profilului dvs. Chromium. Datele Chromium, cum ar fi aplicațiile, marcajele, istoricul, parolele și alte setări vor fi asociate definitiv cu <ph name="USER_NAME" />. Veți putea să ștergeți aceste date prin intermediul Tabloului de bord pentru Conturi Google, însă nu veți putea să asociați aceste date cu alt cont. Aveți opțiunea de a crea un profil nou, pentru a păstra separat datele Chromium existente. <ph name="LEARN_MORE" /></translation>
 <translation id="1911763535808217981">Dacă dezactivezi, te poți conecta la site-uri Google ca Gmail fără a te conecta la Chromium</translation>
 <translation id="1929939181775079593">Chromium nu mai răspunde. Îl reporniți acum?</translation>
@@ -107,7 +108,6 @@
 <translation id="4407044323746248786">Ieși din Chromium oricum?</translation>
 <translation id="4415566066719264597">Permite Chromium să ruleze în fundal</translation>
 <translation id="4423735387467980091">Personalizați și controlați Chromium</translation>
-<translation id="4491398312037323794">În această pagină poți să gestionezi conturile Google la care te-ai conectat. Conturile vor fi disponibile în browserul Chromium și în aplicații din Magazinul Play, precum și în servicii cum ar fi Gmail, Drive și YouTube. <ph name="LINK_BEGIN" />Află mai multe<ph name="LINK_END" /></translation>
 <translation id="452711251841752011">Bun venit la Chromium; fereastră de browser nouă deschisă</translation>
 <translation id="4544142686420020088">Chromium nu s-a actualizat. A apărut o eroare. <ph name="BEGIN_LINK" />Remediază problemele de actualizare și actualizările nereușite în Chromium.<ph name="END_LINK" /></translation>
 <translation id="454579500955453258">Continui cu un profil Chromium nou?</translation>
@@ -255,6 +255,7 @@ Chromium nu poate recupera setările.</translation>
 <translation id="7937630085815544518">Ați fost conectat(ă) la Chromium ca <ph name="USER_EMAIL_ADDRESS" />. Utilizați același cont pentru a vă conecta din nou.</translation>
 <translation id="7975919845073681630">Aceasta este o instalare secundară a browserului Chromium și nu poate fi setat ca browser prestabilit.</translation>
 <translation id="8013436988911883588">Odată ce Chromium are acces, site-urile web îți vor putea solicita accesul.</translation>
+<translation id="8045118833343856403">Următoarele conturi nu sunt conectate la niciun profil Chromium. Dacă vrei să folosești un cont într-un alt profil, mai întâi elimină profilul respectiv.</translation>
 <translation id="81770708095080097">Fișierul este periculos, așadar Chromium l-a blocat.</translation>
 <translation id="8248265253516264921">Dacă o imagine nu are o descriere utilă, Chromium va încerca să o completeze. Pentru a crea descrieri, imaginile sunt trimise la Google. Poți dezactiva această opțiune oricând din setări.</translation>
 <translation id="8266560134891435528">Chromium nu îți poate verifica parolele, deoarece nu te-ai conectat</translation>

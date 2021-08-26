@@ -40,6 +40,7 @@
 #include "storage/browser/test/test_file_system_options.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
+#include "url/gurl.h"
 #include "url/origin.h"
 
 using base::File;
@@ -288,7 +289,7 @@ FileSystemURL CannedSyncableFileSystem::URL(const std::string& path) const {
   EXPECT_FALSE(root_url_.is_empty());
 
   GURL url(root_url_.spec() + path);
-  return file_system_context_->CrackURL(url);
+  return file_system_context_->CrackURLInFirstPartyContext(url);
 }
 
 File::Error CannedSyncableFileSystem::OpenFileSystem() {
@@ -524,7 +525,7 @@ void CannedSyncableFileSystem::DoOpenFileSystem(
   EXPECT_TRUE(io_task_runner_->RunsTasksInCurrentSequence());
   EXPECT_FALSE(is_filesystem_opened_);
   file_system_context_->OpenFileSystem(
-      url::Origin::Create(origin_), type_,
+      blink::StorageKey(url::Origin::Create(origin_)), type_,
       storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT, std::move(callback));
 }
 

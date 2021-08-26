@@ -4,6 +4,7 @@
 
 #include "chrome/browser/apps/app_service/webapk/webapk_manager.h"
 
+#include "base/bind.h"
 #include "base/check.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
@@ -12,11 +13,15 @@
 #include "chrome/browser/apps/app_service/webapk/webapk_install_queue.h"
 #include "chrome/browser/apps/app_service/webapk/webapk_prefs.h"
 #include "chrome/browser/ash/apps/apk_web_app_service.h"
+#include "chrome/browser/ash/arc/arc_util.h"
+#include "chrome/browser/ash/arc/session/arc_session_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "components/arc/mojom/app.mojom.h"
 #include "components/arc/session/connection_holder.h"
+#include "components/prefs/pref_change_registrar.h"
+#include "components/prefs/pref_service.h"
 #include "components/services/app_service/public/mojom/types.mojom-shared.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -28,20 +33,64 @@ namespace apps {
 
 WebApkManager::WebApkManager(Profile* profile)
     : profile_(profile),
-      web_app_registrar_(web_app::WebAppProvider::Get(profile)->registrar()),
-      initialized_(false) {
-  proxy_ = AppServiceProxyFactory::GetForProfile(profile);
+      web_app_registrar_(web_app::WebAppProvider::Get(profile_)->registrar()),
+      initialized_(false),
+      install_queue_(std::make_unique<WebApkInstallQueue>(profile_)),
+      pref_change_registrar_(std::make_unique<PrefChangeRegistrar>()) {
+  proxy_ = AppServiceProxyFactory::GetForProfile(profile_);
   apk_service_ = ash::ApkWebAppService::Get(profile_);
   DCHECK(apk_service_);
   app_list_prefs_ = ArcAppListPrefs::Get(profile_);
   DCHECK(app_list_prefs_);
-  install_queue_ = std::make_unique<WebApkInstallQueue>(profile);
 
+  // Always observe AppListPrefs, even when the rest of WebAPKs is not enabled,
+  // so that we can detect WebAPK uninstalls that happen when the feature is
+  // disabled.
   arc_app_list_prefs_observer_.Observe(app_list_prefs_);
-  Observe(&proxy_->AppRegistryCache());
+  arc::ArcSessionManager::Get()->AddObserver(this);
+  pref_change_registrar_->Init(profile_->GetPrefs());
+  pref_change_registrar_->Add(
+      webapk_prefs::kGeneratedWebApksEnabled,
+      base::BindRepeating(&WebApkManager::StartOrStopObserving,
+                          base::Unretained(this)));
+
+  StartOrStopObserving();
 }
 
-WebApkManager::~WebApkManager() = default;
+WebApkManager::~WebApkManager() {
+  auto* arc_session_manager = arc::ArcSessionManager::Get();
+  // ArcSessionManager can be destroyed early in unit tests.
+  if (arc_session_manager) {
+    arc_session_manager->RemoveObserver(this);
+  }
+}
+
+void WebApkManager::StartOrStopObserving() {
+  // WebApkManager is only created when arc::IsArcAllowedForProfile() is true.
+  // We additionally check whether Play Store is enabled through Settings before
+  // enabling anything.
+  bool arc_enabled = arc::IsArcPlayStoreEnabledForProfile(profile_);
+  bool policy_enabled =
+      profile_->GetPrefs()->GetBoolean(webapk_prefs::kGeneratedWebApksEnabled);
+
+  if (arc_enabled && policy_enabled) {
+    Observe(&proxy_->AppRegistryCache());
+  } else {
+    Observe(nullptr);
+
+    if (!policy_enabled) {
+      // Remove any WebAPKs which were installed before the policy was enacted.
+      // Ensures we don't end up in a confusing half-state with apps which can
+      // never update, and allows us to start from scratch if the feature is
+      // re-enabled.
+      base::flat_set<std::string> current_installs =
+          webapk_prefs::GetWebApkAppIds(profile_);
+      for (const std::string& id : current_installs) {
+        QueueUninstall(id);
+      }
+    }
+  }
+}
 
 void WebApkManager::OnAppUpdate(const AppUpdate& update) {
   if (!initialized_) {
@@ -143,7 +192,11 @@ void WebApkManager::OnPackageRemoved(const std::string& package_name,
 
   webapk_prefs::RemoveWebApkByPackageName(profile_, package_name);
   // TODO(crbug.com/1200199): Remove the web app as well, if it is still
-  // installed and eligible.
+  // installed and eligible, and WebAPKs are not disabled by policy.
+}
+
+void WebApkManager::OnArcPlayStoreEnabledChanged(bool enabled) {
+  StartOrStopObserving();
 }
 
 WebApkInstallQueue* WebApkManager::GetInstallQueueForTest() {

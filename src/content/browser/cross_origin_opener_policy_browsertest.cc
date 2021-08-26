@@ -5,7 +5,6 @@
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
-#include "components/network_session_configurator/common/network_switches.h"
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -16,6 +15,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/content_mock_cert_verifier.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
@@ -112,10 +112,7 @@ class CrossOriginOpenerPolicyBrowserTest
       feature_list_for_back_forward_cache_.InitWithFeatures(
           {}, {features::kBackForwardCache});
     }
-
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kIgnoreCertificateErrors);
-    }
+  }
 
   net::EmbeddedTestServer* https_server() { return &https_server_; }
 
@@ -128,7 +125,11 @@ class CrossOriginOpenerPolicyBrowserTest
     return web_contents()->GetMainFrame();
   }
 
+ private:
   void SetUpOnMainThread() override {
+    ContentBrowserTest::SetUpOnMainThread();
+    mock_cert_verifier_.mock_cert_verifier()->set_default_result(net::OK);
+
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -143,12 +144,22 @@ class CrossOriginOpenerPolicyBrowserTest
     ASSERT_TRUE(https_server()->Start());
   }
 
- private:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ContentBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
+    mock_cert_verifier_.SetUpCommandLine(command_line);
   }
 
+  void SetUpInProcessBrowserTestFixture() override {
+    ContentBrowserTest::SetUpInProcessBrowserTestFixture();
+    mock_cert_verifier_.SetUpInProcessBrowserTestFixture();
+  }
+
+  void TearDownInProcessBrowserTestFixture() override {
+    ContentBrowserTest::TearDownInProcessBrowserTestFixture();
+    mock_cert_verifier_.TearDownInProcessBrowserTestFixture();
+  }
+
+  content::ContentMockCertVerifier mock_cert_verifier_;
   base::test::ScopedFeatureList feature_list_;
   base::test::ScopedFeatureList feature_list_for_render_document_;
   base::test::ScopedFeatureList feature_list_for_back_forward_cache_;
@@ -2868,9 +2879,9 @@ class CoopReportingOriginTrialBrowserTest : public ContentBrowserTest {
   net::EmbeddedTestServer* https_server() { return &https_server_; }
 
  private:
-  void SetUpOnMainThread() final {
-    ContentBrowserTest::TearDownOnMainThread();
-
+  void SetUpOnMainThread() override {
+    ContentBrowserTest::SetUpOnMainThread();
+    mock_cert_verifier_.mock_cert_verifier()->set_default_result(net::OK);
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(embedded_test_server()->Start());
     https_server()->ServeFilesFromSourceDirectory(GetTestDataFilePath());
@@ -2878,16 +2889,23 @@ class CoopReportingOriginTrialBrowserTest : public ContentBrowserTest {
     net::test_server::RegisterDefaultHandlers(&https_server_);
     ASSERT_TRUE(https_server()->Start());
   }
-  void TearDownOnMainThread() final {
-    ContentBrowserTest::TearDownOnMainThread();
-  }
 
-  void SetUpCommandLine(base::CommandLine* command_line) final {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     ContentBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
+    mock_cert_verifier_.SetUpCommandLine(command_line);
   }
 
- private:
+  void SetUpInProcessBrowserTestFixture() override {
+    ContentBrowserTest::SetUpInProcessBrowserTestFixture();
+    mock_cert_verifier_.SetUpInProcessBrowserTestFixture();
+  }
+
+  void TearDownInProcessBrowserTestFixture() override {
+    ContentBrowserTest::TearDownInProcessBrowserTestFixture();
+    mock_cert_verifier_.TearDownInProcessBrowserTestFixture();
+  }
+
+  content::ContentMockCertVerifier mock_cert_verifier_;
   base::test::ScopedFeatureList feature_list_;
   net::EmbeddedTestServer https_server_;
 };
@@ -3228,9 +3246,9 @@ class UnrestrictedSharedArrayBufferOriginTrialBrowserTest
   net::EmbeddedTestServer* https_server() { return &https_server_; }
 
  private:
-  void SetUpOnMainThread() final {
-    ContentBrowserTest::TearDownOnMainThread();
-
+  void SetUpOnMainThread() override {
+    ContentBrowserTest::SetUpOnMainThread();
+    mock_cert_verifier_.mock_cert_verifier()->set_default_result(net::OK);
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(embedded_test_server()->Start());
     https_server()->ServeFilesFromSourceDirectory(GetTestDataFilePath());
@@ -3239,12 +3257,22 @@ class UnrestrictedSharedArrayBufferOriginTrialBrowserTest
     ASSERT_TRUE(https_server()->Start());
   }
 
-  void SetUpCommandLine(base::CommandLine* command_line) final {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     ContentBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
+    mock_cert_verifier_.SetUpCommandLine(command_line);
   }
 
- private:
+  void SetUpInProcessBrowserTestFixture() override {
+    ContentBrowserTest::SetUpInProcessBrowserTestFixture();
+    mock_cert_verifier_.SetUpInProcessBrowserTestFixture();
+  }
+
+  void TearDownInProcessBrowserTestFixture() override {
+    ContentBrowserTest::TearDownInProcessBrowserTestFixture();
+    mock_cert_verifier_.TearDownInProcessBrowserTestFixture();
+  }
+
+  content::ContentMockCertVerifier mock_cert_verifier_;
   base::test::ScopedFeatureList feature_list_;
   net::EmbeddedTestServer https_server_;
 };

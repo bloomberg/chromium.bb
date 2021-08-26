@@ -15,9 +15,6 @@ CC_BASE_EXPORT extern const base::Feature kAnimatedImageResume;
 CC_BASE_EXPORT extern const base::Feature kImpulseScrollAnimations;
 CC_BASE_EXPORT extern const base::Feature kSynchronizedScrolling;
 
-CC_BASE_EXPORT bool IsImplLatencyRecoveryEnabled();
-CC_BASE_EXPORT bool IsMainLatencyRecoveryEnabled();
-
 // When enabled, the double tap to zoom will be disabled when the viewport
 // meta tag is properly set for mobile using content=width=device-width
 // or content=initial-scale=1.0
@@ -49,6 +46,12 @@ CC_BASE_EXPORT extern const base::Feature kHudDisplayForPerformanceMetrics;
 
 // When enabled, some jank is injected to the animation/scrolling pipeline.
 CC_BASE_EXPORT extern const base::Feature kJankInjectionAblationFeature;
+
+// When enabled, scheduler tree priority will change to
+// NEW_CONTENT_TAKES_PRIORITY if during a scrollbar scroll, CC has to
+// checkerboard.
+CC_BASE_EXPORT extern const base::Feature
+    kPreferNewContentForCheckerboardedScrolls;
 
 }  // namespace features
 

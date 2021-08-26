@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as UI from '../../ui/legacy/legacy.js';
 
 import {latestReleaseNote, releaseNoteViewId} from './HelpImpl.js';
+import releaseNoteStyles from './releaseNote.css.js';
+
 import type {ReleaseNote} from './HelpImpl.js';
 
 const UIStrings = {
@@ -26,14 +26,14 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 let releaseNoteViewInstance: ReleaseNoteView;
 
 export class ReleaseNoteView extends UI.Widget.VBox {
-  _releaseNoteElement: Element;
+  private readonly releaseNoteElement: Element;
   constructor() {
     super(true);
-    this.registerRequiredCSS('panels/help/releaseNote.css');
-    this._releaseNoteElement = this._createReleaseNoteElement(latestReleaseNote());
+
+    this.releaseNoteElement = this.createReleaseNoteElement(latestReleaseNote());
     const topSection = this.contentElement.createChild('div', 'release-note-top-section');
     topSection.textContent = latestReleaseNote().header;
-    this.contentElement.appendChild(this._releaseNoteElement);
+    this.contentElement.appendChild(this.releaseNoteElement);
   }
 
   static instance(opts: {forceNew: boolean|null} = {forceNew: null}): ReleaseNoteView {
@@ -45,10 +45,10 @@ export class ReleaseNoteView extends UI.Widget.VBox {
   }
 
   elementsToRestoreScrollPositionsFor(): Element[] {
-    return [this._releaseNoteElement];
+    return [this.releaseNoteElement];
   }
 
-  _createReleaseNoteElement(releaseNote: ReleaseNote): Element {
+  private createReleaseNoteElement(releaseNote: ReleaseNote): Element {
     const hbox = document.createElement('div');
     hbox.classList.add('hbox');
     const container = hbox.createChild('div', 'release-note-container');
@@ -89,14 +89,19 @@ export class ReleaseNoteView extends UI.Widget.VBox {
 
     const imageLink = UI.XLink.XLink.create(releaseNote.link, ' ') as HTMLElement;
     imageLink.classList.add('release-note-image');
-    UI.Tooltip.Tooltip.install(imageLink, latestReleaseNote().header);
+    const tooltipText = latestReleaseNote().header;
+    UI.Tooltip.Tooltip.install(imageLink, tooltipText);
 
     hbox.appendChild(imageLink);
     const image = imageLink.createChild('img') as HTMLImageElement;
     image.src = new URL('../../Images/whatsnew.avif', import.meta.url).toString();
-    UI.Tooltip.Tooltip.install(image, UI.Tooltip.Tooltip.getContent(imageLink));
-    image.alt = UI.Tooltip.Tooltip.getContent(image);
+    UI.Tooltip.Tooltip.install(image, tooltipText);
+    image.alt = tooltipText;
 
     return hbox;
+  }
+  wasShown(): void {
+    super.wasShown();
+    this.registerCSSFiles([releaseNoteStyles]);
   }
 }

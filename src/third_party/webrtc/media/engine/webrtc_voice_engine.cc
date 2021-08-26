@@ -35,6 +35,7 @@
 #include "modules/audio_mixer/audio_mixer_impl.h"
 #include "modules/audio_processing/aec_dump/aec_dump_factory.h"
 #include "modules/audio_processing/include/audio_processing.h"
+#include "modules/rtp_rtcp/source/rtp_util.h"
 #include "rtc_base/arraysize.h"
 #include "rtc_base/byte_order.h"
 #include "rtc_base/experiments/field_trial_parser.h"
@@ -65,6 +66,8 @@ RTC_POP_IGNORING_WUNDEF()
 
 namespace cricket {
 namespace {
+
+using ::webrtc::ParseRtpSsrc;
 
 constexpr size_t kMaxUnsignaledRecvStreams = 4;
 
@@ -149,8 +152,8 @@ absl::optional<std::string> GetAudioNetworkAdaptorConfig(
     const AudioOptions& options) {
   if (options.audio_network_adaptor && *options.audio_network_adaptor &&
       options.audio_network_adaptor_config) {
-    // Turn on audio network adaptor only when |options_.audio_network_adaptor|
-    // equals true and |options_.audio_network_adaptor_config| has a value.
+    // Turn on audio network adaptor only when `options_.audio_network_adaptor`
+    // equals true and `options_.audio_network_adaptor_config` has a value.
     return options.audio_network_adaptor_config;
   }
   return absl::nullopt;
@@ -168,8 +171,8 @@ int MinPositive(int a, int b) {
   return std::min(a, b);
 }
 
-// |max_send_bitrate_bps| is the bitrate from "b=" in SDP.
-// |rtp_max_bitrate_bps| is the bitrate from RtpSender::SetParameters.
+// `max_send_bitrate_bps` is the bitrate from "b=" in SDP.
+// `rtp_max_bitrate_bps` is the bitrate from RtpSender::SetParameters.
 absl::optional<int> ComputeSendBitrate(int max_send_bitrate_bps,
                                        absl::optional<int> rtp_max_bitrate_bps,
                                        const webrtc::AudioCodecSpec& spec) {
@@ -183,8 +186,8 @@ absl::optional<int> ComputeSendBitrate(int max_send_bitrate_bps,
   }
 
   if (bps < spec.info.min_bitrate_bps) {
-    // If codec is not multi-rate and |bps| is less than the fixed bitrate then
-    // fail. If codec is not multi-rate and |bps| exceeds or equal the fixed
+    // If codec is not multi-rate and `bps` is less than the fixed bitrate then
+    // fail. If codec is not multi-rate and `bps` exceeds or equal the fixed
     // bitrate then ignore.
     RTC_LOG(LS_ERROR) << "Failed to set codec " << spec.format.name
                       << " to bitrate " << bps
@@ -1000,7 +1003,7 @@ class WebRtcVoiceMediaChannel::WebRtcAudioSendStream
         number_of_frames, sample_rate, audio_frame->speech_type_,
         audio_frame->vad_activity_, number_of_channels);
     // TODO(bugs.webrtc.org/10739): add dcheck that
-    // |absolute_capture_timestamp_ms| always receives a value.
+    // `absolute_capture_timestamp_ms` always receives a value.
     if (absolute_capture_timestamp_ms) {
       audio_frame->set_absolute_capture_timestamp_ms(
           *absolute_capture_timestamp_ms);
@@ -1008,11 +1011,11 @@ class WebRtcVoiceMediaChannel::WebRtcAudioSendStream
     stream_->SendAudioData(std::move(audio_frame));
   }
 
-  // Callback from the |source_| when it is going away. In case Start() has
+  // Callback from the `source_` when it is going away. In case Start() has
   // never been called, this callback won't be triggered.
   void OnClose() override {
     RTC_DCHECK_RUN_ON(&worker_thread_checker_);
-    // Set |source_| to nullptr to make sure no more callback will get into
+    // Set `source_` to nullptr to make sure no more callback will get into
     // the source.
     source_ = nullptr;
     UpdateSendState();
@@ -1492,11 +1495,11 @@ webrtc::RTCError WebRtcVoiceMediaChannel::SetRtpSendParameters(
   }
 
   // TODO(minyue): The following legacy actions go into
-  // |WebRtcAudioSendStream::SetRtpParameters()| which is called at the end,
+  // `WebRtcAudioSendStream::SetRtpParameters()` which is called at the end,
   // though there are two difference:
-  // 1. |WebRtcVoiceMediaChannel::SetChannelSendParameters()| only calls
-  // |SetSendCodec| while |WebRtcAudioSendStream::SetRtpParameters()| calls
-  // |SetSendCodecs|. The outcome should be the same.
+  // 1. `WebRtcVoiceMediaChannel::SetChannelSendParameters()` only calls
+  // `SetSendCodec` while `WebRtcAudioSendStream::SetRtpParameters()` calls
+  // `SetSendCodecs`. The outcome should be the same.
   // 2. AudioSendStream can be recreated.
 
   // Codecs are handled at the WebRtcVoiceMediaChannel level.
@@ -1995,7 +1998,7 @@ void WebRtcVoiceMediaChannel::ResetUnsignaledRecvStream() {
   RTC_DCHECK_RUN_ON(worker_thread_);
   RTC_LOG(LS_INFO) << "ResetUnsignaledRecvStream.";
   unsignaled_stream_params_ = StreamParams();
-  // Create a copy since RemoveRecvStream will modify |unsignaled_recv_ssrcs_|.
+  // Create a copy since RemoveRecvStream will modify `unsignaled_recv_ssrcs_`.
   std::vector<uint32_t> to_remove = unsignaled_recv_ssrcs_;
   for (uint32_t ssrc : to_remove) {
     RemoveRecvStream(ssrc);
@@ -2179,10 +2182,7 @@ void WebRtcVoiceMediaChannel::OnPacketReceived(rtc::CopyOnWriteBuffer packet,
     // Create an unsignaled receive stream for this previously not received
     // ssrc. If there already is N unsignaled receive streams, delete the
     // oldest. See: https://bugs.chromium.org/p/webrtc/issues/detail?id=5208
-    uint32_t ssrc = 0;
-    if (!GetRtpSsrc(packet.cdata(), packet.size(), &ssrc)) {
-      return;
-    }
+    uint32_t ssrc = ParseRtpSsrc(packet);
     RTC_DCHECK(!absl::c_linear_search(unsignaled_recv_ssrcs_, ssrc));
 
     // Add new stream.
@@ -2365,6 +2365,7 @@ bool WebRtcVoiceMediaChannel::GetStats(VoiceMediaInfo* info,
     rinfo.fec_packets_received = stats.fec_packets_received;
     rinfo.fec_packets_discarded = stats.fec_packets_discarded;
     rinfo.packets_lost = stats.packets_lost;
+    rinfo.packets_discarded = stats.packets_discarded;
     rinfo.codec_name = stats.codec_name;
     rinfo.codec_payload_type = stats.codec_payload_type;
     rinfo.jitter_ms = stats.jitter_ms;

@@ -56,7 +56,7 @@ class MockPage : public tab_search::mojom::Page {
   mojo::Receiver<tab_search::mojom::Page> receiver_{this};
 
   MOCK_METHOD1(TabsChanged, void(tab_search::mojom::ProfileDataPtr));
-  MOCK_METHOD1(TabUpdated, void(tab_search::mojom::TabPtr));
+  MOCK_METHOD1(TabUpdated, void(tab_search::mojom::TabUpdateInfoPtr));
   MOCK_METHOD1(TabsRemoved, void(const std::vector<int32_t>& tab_ids));
 };
 
@@ -69,7 +69,7 @@ void ExpectNewTab(const tab_search::mojom::Tab* tab,
   EXPECT_FALSE(tab->group_id.has_value());
   EXPECT_FALSE(tab->pinned);
   EXPECT_EQ(title, tab->title);
-  EXPECT_EQ(url, tab->url);
+  EXPECT_EQ(url, tab->url.spec());
   EXPECT_TRUE(tab->favicon_url.has_value());
   EXPECT_TRUE(tab->is_default_favicon);
   EXPECT_TRUE(tab->show_icon);
@@ -548,7 +548,9 @@ TEST_F(TabSearchPageHandlerTest, TabsNotChanged) {
   ASSERT_FALSE(IsTimerRunning());
 }
 
-bool VerifyTabUpdated(const tab_search::mojom::TabPtr& tab) {
+bool VerifyTabUpdated(
+    const tab_search::mojom::TabUpdateInfoPtr& tab_update_info) {
+  const tab_search::mojom::TabPtr& tab = tab_update_info->tab;
   ExpectNewTab(tab.get(), kTabUrl1, kTabName1, 1);
   return true;
 }
@@ -738,6 +740,42 @@ TEST_F(TabSearchPageHandlerTest, RecentlyClosedTabEntriesFilterOpenTabUrls) {
             ASSERT_EQ(0u, recently_closed_tabs.size());
           });
   handler()->GetProfileData(std::move(callback1));
+}
+
+TEST_F(TabSearchPageHandlerTest, RecentlyClosedSectionExpandedUserPref) {
+  TabRestoreServiceFactory::GetInstance()->SetTestingFactory(
+      profile(),
+      base::BindRepeating(&TabSearchPageHandlerTest::GetTabRestoreService));
+
+  AddTabWithTitle(browser1(), GURL(kTabUrl1), kTabName1);
+  AddTabWithTitle(browser1(), GURL(kTabUrl2), kTabName2);
+
+  int tab_id = extensions::ExtensionTabUtil::GetTabId(
+      browser1()->tab_strip_model()->GetWebContentsAt(0));
+  handler()->CloseTab(tab_id);
+
+  EXPECT_CALL(page_, TabsRemoved(_)).Times(2);
+  EXPECT_CALL(page_, TabUpdated(_)).Times(1);
+
+  tab_search::mojom::PageHandler::GetProfileDataCallback callback1 =
+      base::BindLambdaForTesting(
+          [&](tab_search::mojom::ProfileDataPtr profile_tabs) {
+            auto& tabs = profile_tabs->windows[0]->tabs;
+            ASSERT_EQ(1u, tabs.size());
+            ExpectNewTab(tabs[0].get(), kTabUrl1, kTabName1, 0);
+            auto& recently_closed_tabs = profile_tabs->recently_closed_tabs;
+            ASSERT_EQ(1u, recently_closed_tabs.size());
+            ASSERT_TRUE(profile_tabs->recently_closed_section_expanded);
+          });
+  handler()->GetProfileData(std::move(callback1));
+
+  handler()->SaveRecentlyClosedExpandedPref(false);
+  tab_search::mojom::PageHandler::GetProfileDataCallback callback2 =
+      base::BindLambdaForTesting(
+          [&](tab_search::mojom::ProfileDataPtr profile_tabs) {
+            ASSERT_FALSE(profile_tabs->recently_closed_section_expanded);
+          });
+  handler()->GetProfileData(std::move(callback2));
 }
 
 }  // namespace

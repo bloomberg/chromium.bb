@@ -2024,7 +2024,7 @@ void Document::UpdateStyleAndLayoutTreeForThisDocument() {
     return;
   }
 
-#if DCHECK_IS_ON()
+#if EXPENSIVE_DCHECKS_ARE_ON()
   if (HTMLFrameOwnerElement* owner = LocalOwner()) {
     DCHECK(!owner->GetDocument()
                 .GetSlotAssignmentEngine()
@@ -2032,7 +2032,7 @@ void Document::UpdateStyleAndLayoutTreeForThisDocument() {
     DCHECK(!owner->GetDocument().NeedsLayoutTreeUpdate());
     AssertLayoutTreeUpdated(owner->GetDocument());
   }
-#endif
+#endif  // EXPENSIVE_DCHECKS_ARE_ON()
 
   SCOPED_UMA_AND_UKM_TIMER(View()->EnsureUkmAggregator(),
                            LocalFrameUkmAggregator::kStyle);
@@ -6525,75 +6525,6 @@ void Document::RecordAsyncScriptCount() {
       .Record(recorder);
 }
 
-void Document::MaybeExecuteDelayedAsyncScripts() {
-  if (base::FeatureList::IsEnabled(features::kDelayAsyncScriptExecution) &&
-      features::kDelayAsyncScriptExecutionDelayParam.Get() ==
-          features::DelayAsyncScriptDelayType::kUseOptimizationGuide) {
-    // If the optimization hints aren't available in the first place, then
-    // ScriptRunner won't delay async scripts at all, so we don't need to worry
-    // about notifying it.
-    if (!GetFrame() || !GetFrame()->GetOptimizationGuideHints())
-      return;
-
-    mojom::blink::DelayAsyncScriptExecutionHintsPtr delay_hint =
-        std::move(GetFrame()
-                      ->GetOptimizationGuideHints()
-                      ->delay_async_script_execution_hints);
-
-    if (!delay_hint)
-      return;
-
-    mojom::blink::DelayAsyncScriptExecutionDelayType delay_type =
-        delay_hint->delay_type;
-    switch (delay_type) {
-      case mojom::blink::DelayAsyncScriptExecutionDelayType::kFinishedParsing:
-        if (!Parsing())
-          script_runner_->NotifyDelayedAsyncScriptsMilestoneReached();
-        return;
-      case mojom::blink::DelayAsyncScriptExecutionDelayType::
-          kFirstPaintOrFinishedParsing:
-        if (first_paint_recorded_ || !Parsing())
-          script_runner_->NotifyDelayedAsyncScriptsMilestoneReached();
-        return;
-      case mojom::blink::DelayAsyncScriptExecutionDelayType::kUnknown:
-        // If the delay type is kUnknown, or the optimization guide hints are
-        // unavailable, then ScriptRunner::CanDelayAsyncScripts will always
-        // return false, causing no delay. Therefore in this case, we don't
-        // need to anything here.
-        return;
-    }
-  }
-
-  // Notify the ScriptRunner if the first paint has been recorded and
-  // we're delaying async scripts until first paint or finished parsing
-  // (whichever comes first).
-  if ((first_paint_recorded_ || !Parsing()) &&
-      ((base::FeatureList::IsEnabled(features::kDelayAsyncScriptExecution) &&
-        features::kDelayAsyncScriptExecutionDelayParam.Get() ==
-            features::DelayAsyncScriptDelayType::
-                kFirstPaintOrFinishedParsing) ||
-       RuntimeEnabledFeatures::
-           DelayAsyncScriptExecutionUntilFirstPaintOrFinishedParsingEnabled())) {
-    script_runner_->NotifyDelayedAsyncScriptsMilestoneReached();
-  }
-
-  // Notify the ScriptRunner if we're finished parsing and we're delaying async
-  // scripts until finished parsing occurs.
-  if (!Parsing() &&
-      (base::FeatureList::IsEnabled(features::kDelayAsyncScriptExecution) ||
-       RuntimeEnabledFeatures::
-           DelayAsyncScriptExecutionUntilFinishedParsingEnabled() ||
-       RuntimeEnabledFeatures::
-           DelayAsyncScriptExecutionUntilFirstPaintOrFinishedParsingEnabled())) {
-    script_runner_->NotifyDelayedAsyncScriptsMilestoneReached();
-  }
-}
-
-void Document::MarkFirstPaint() {
-  first_paint_recorded_ = true;
-  MaybeExecuteDelayedAsyncScripts();
-}
-
 using AllowState = blink::Document::DeclarativeShadowRootAllowState;
 AllowState Document::GetDeclarativeShadowRootAllowState() const {
   return declarative_shadow_root_allow_state_;
@@ -6610,8 +6541,6 @@ void Document::FinishedParsing() {
   RecordAsyncScriptCount();
   SetParsingState(kInDOMContentLoaded);
   DocumentParserTiming::From(*this).MarkParserStop();
-
-  MaybeExecuteDelayedAsyncScripts();
 
   // FIXME: DOMContentLoaded is dispatched synchronously, but this should be
   // dispatched in a queued task, see https://crbug.com/425790
@@ -7198,11 +7127,13 @@ void Document::CancelAnimationFrame(int id) {
 }
 
 void Document::ServiceScriptedAnimations(
-    base::TimeTicks monotonic_animation_start_time) {
-  auto start_time = base::TimeTicks::Now();
+    base::TimeTicks monotonic_animation_start_time,
+    bool can_throttle) {
+  base::TimeTicks start_time =
+      can_throttle ? base::TimeTicks() : base::TimeTicks::Now();
   scripted_animation_controller_->ServiceScriptedAnimations(
-      monotonic_animation_start_time);
-  if (GetFrame()) {
+      monotonic_animation_start_time, can_throttle);
+  if (!can_throttle && GetFrame()) {
     GetFrame()->GetFrameScheduler()->AddTaskTime(base::TimeTicks::Now() -
                                                  start_time);
   }
@@ -8118,6 +8049,11 @@ void Document::CountUse(mojom::WebFeature feature) {
     execution_context_->CountUse(feature);
 }
 
+void Document::CountDeprecation(mojom::WebFeature feature) {
+  if (execution_context_)
+    execution_context_->CountDeprecation(feature);
+}
+
 void Document::CountProperty(CSSPropertyID property) const {
   if (DocumentLoader* loader = Loader()) {
     loader->GetUseCounter().Count(
@@ -8215,9 +8151,6 @@ void Document::ActivateForPrerendering(base::TimeTicks activation_start) {
   // Step 8.3.5 "For each steps in doc’s post-prerendering activation steps
   // list:"
   RunPostPrerenderingActivationSteps();
-
-  if (LocalFrame* frame = GetFrame())
-    frame->DidActivateForPrerendering();
 }
 
 void Document::AddWillDispatchPrerenderingchangeCallback(

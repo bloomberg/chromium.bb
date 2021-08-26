@@ -76,7 +76,9 @@ bool MaybeLaunchNewWindow(const std::list<AppWindowBase*>& app_windows) {
     }
   }
 
-  ash::NewWindowDelegate::GetPrimary()->NewWindow(/*incognito=*/false);
+  ash::NewWindowDelegate::GetPrimary()->NewWindow(
+      /*incognito=*/false,
+      /*should_trigger_session_restore=*/true);
   return true;
 }
 
@@ -349,8 +351,7 @@ void AppWindowShelfItemController::ExecuteCommand(bool from_context_menu,
                                                   int64_t command_id,
                                                   int32_t event_flags,
                                                   int64_t display_id) {
-  if (from_context_menu && ExecuteContextMenuCommand(command_id, event_flags))
-    return;
+  DCHECK(!from_context_menu);
 
   ActivateIndexedApp(command_id);
 }

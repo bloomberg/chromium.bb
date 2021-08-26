@@ -11,12 +11,14 @@
 #include <vector>
 
 #include "core/fxcrt/cfx_timer.h"
+#include "core/fxcrt/mask.h"
 #include "core/fxcrt/observed_ptr.h"
 #include "core/fxcrt/unowned_ptr.h"
 #include "core/fxcrt/widestring.h"
 #include "core/fxge/cfx_color.h"
 #include "core/fxge/cfx_renderdevice.h"
 #include "fpdfsdk/pwl/ipwl_systemhandler.h"
+#include "public/fpdf_fwlevent.h"
 
 class CPWL_Edit;
 class CPWL_MsgControl;
@@ -72,13 +74,11 @@ struct CPWL_Dash {
   int32_t nPhase;
 };
 
-#define PWL_SCROLLBAR_WIDTH 12.0f
-#define PWL_SCROLLBAR_TRANSPARENCY 150
-#define PWL_DEFAULT_BLACKCOLOR CFX_Color(CFX_Color::Type::kGray, 0)
-#define PWL_DEFAULT_WHITECOLOR CFX_Color(CFX_Color::Type::kGray, 1)
-
 class CPWL_Wnd : public Observable {
  public:
+  static const CFX_Color kDefaultBlackColor;
+  static const CFX_Color kDefaultWhiteColor;
+
   class ProviderIface : public Observable {
    public:
     virtual ~ProviderIface() = default;
@@ -126,13 +126,13 @@ class CPWL_Wnd : public Observable {
         IPWL_SystemHandler::CursorStyle::kArrow;
   };
 
-  static bool IsSHIFTKeyDown(uint32_t nFlag);
-  static bool IsCTRLKeyDown(uint32_t nFlag);
-  static bool IsALTKeyDown(uint32_t nFlag);
-  static bool IsMETAKeyDown(uint32_t nFlag);
+  static bool IsSHIFTKeyDown(Mask<FWL_EVENTFLAG> nFlag);
+  static bool IsCTRLKeyDown(Mask<FWL_EVENTFLAG> nFlag);
+  static bool IsALTKeyDown(Mask<FWL_EVENTFLAG> nFlag);
+  static bool IsMETAKeyDown(Mask<FWL_EVENTFLAG> nFlag);
 
   // Selects between IsCTRLKeyDown() and IsMETAKeyDown() depending on platform.
-  static bool IsPlatformShortcutKey(uint32_t nFlag);
+  static bool IsPlatformShortcutKey(Mask<FWL_EVENTFLAG> nFlag);
 
   CPWL_Wnd(const CreateParams& cp,
            std::unique_ptr<IPWL_SystemHandler::PerWindowData> pAttachedData);
@@ -141,15 +141,18 @@ class CPWL_Wnd : public Observable {
   // Returns |true| iff this instance is still allocated.
   virtual bool InvalidateRect(const CFX_FloatRect* pRect);
 
-  virtual bool OnKeyDown(uint16_t nChar, uint32_t nFlag);
-  virtual bool OnChar(uint16_t nChar, uint32_t nFlag);
-  virtual bool OnLButtonDblClk(uint32_t nFlag, const CFX_PointF& point);
-  virtual bool OnLButtonDown(uint32_t nFlag, const CFX_PointF& point);
-  virtual bool OnLButtonUp(uint32_t nFlag, const CFX_PointF& point);
-  virtual bool OnRButtonDown(uint32_t nFlag, const CFX_PointF& point);
-  virtual bool OnRButtonUp(uint32_t nFlag, const CFX_PointF& point);
-  virtual bool OnMouseMove(uint32_t nFlag, const CFX_PointF& point);
-  virtual bool OnMouseWheel(uint32_t nFlag,
+  virtual bool OnKeyDown(FWL_VKEYCODE nKeyCode, Mask<FWL_EVENTFLAG> nFlag);
+  virtual bool OnChar(uint16_t nChar, Mask<FWL_EVENTFLAG> nFlag);
+  virtual bool OnLButtonDblClk(Mask<FWL_EVENTFLAG> nFlag,
+                               const CFX_PointF& point);
+  virtual bool OnLButtonDown(Mask<FWL_EVENTFLAG> nFlag,
+                             const CFX_PointF& point);
+  virtual bool OnLButtonUp(Mask<FWL_EVENTFLAG> nFlag, const CFX_PointF& point);
+  virtual bool OnRButtonDown(Mask<FWL_EVENTFLAG> nFlag,
+                             const CFX_PointF& point);
+  virtual bool OnRButtonUp(Mask<FWL_EVENTFLAG> nFlag, const CFX_PointF& point);
+  virtual bool OnMouseMove(Mask<FWL_EVENTFLAG> nFlag, const CFX_PointF& point);
+  virtual bool OnMouseWheel(Mask<FWL_EVENTFLAG> nFlag,
                             const CFX_PointF& point,
                             const CFX_Vector& delta);
   virtual void SetScrollInfo(const PWL_SCROLL_INFO& info);
@@ -275,16 +278,6 @@ class CPWL_Wnd : public Observable {
 
   bool IsWndCaptureMouse(const CPWL_Wnd* pWnd) const;
   bool IsWndCaptureKeyboard(const CPWL_Wnd* pWnd) const;
-
-  static bool IsCTRLpressed(uint32_t nFlag) {
-    return CPWL_Wnd::IsCTRLKeyDown(nFlag);
-  }
-  static bool IsSHIFTpressed(uint32_t nFlag) {
-    return CPWL_Wnd::IsSHIFTKeyDown(nFlag);
-  }
-  static bool IsALTpressed(uint32_t nFlag) {
-    return CPWL_Wnd::IsALTKeyDown(nFlag);
-  }
 
  private:
   void DrawChildAppearance(CFX_RenderDevice* pDevice,

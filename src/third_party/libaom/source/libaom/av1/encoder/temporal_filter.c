@@ -14,9 +14,14 @@
 
 #include "config/aom_config.h"
 
+#include "aom_dsp/aom_dsp_common.h"
+#include "aom_dsp/odintrin.h"
+#include "aom_mem/aom_mem.h"
+#include "aom_ports/aom_timer.h"
+#include "aom_ports/mem.h"
+#include "aom_scale/aom_scale.h"
 #include "av1/common/alloccommon.h"
 #include "av1/common/av1_common_int.h"
-#include "av1/common/odintrin.h"
 #include "av1/common/quant_common.h"
 #include "av1/common/reconinter.h"
 #include "av1/encoder/av1_quantize.h"
@@ -30,12 +35,6 @@
 #include "av1/encoder/reconinter_enc.h"
 #include "av1/encoder/segmentation.h"
 #include "av1/encoder/temporal_filter.h"
-#include "aom_dsp/aom_dsp_common.h"
-#include "aom_mem/aom_mem.h"
-#include "aom_ports/aom_timer.h"
-#include "aom_ports/mem.h"
-#include "aom_ports/system_state.h"
-#include "aom_scale/aom_scale.h"
 
 /*!\cond */
 
@@ -754,17 +753,9 @@ static void tf_normalize_filtered_frame(
 int av1_get_q(const AV1_COMP *cpi) {
   const GF_GROUP *gf_group = &cpi->ppi->gf_group;
   const FRAME_TYPE frame_type = gf_group->frame_type[cpi->gf_frame_index];
-  int avg_frame_qindex;
-#if CONFIG_FRAME_PARALLEL_ENCODE
-  avg_frame_qindex =
-      (cpi->ppi->gf_group.frame_parallel_level[cpi->gf_frame_index] > 0)
-          ? cpi->ppi->temp_avg_frame_qindex[frame_type]
-          : cpi->rc.avg_frame_qindex[frame_type];
-#else
-  avg_frame_qindex = cpi->rc.avg_frame_qindex[frame_type];
-#endif  // CONFIG_FRAME_PARALLEL_ENCODE
-  const int q = (int)av1_convert_qindex_to_q(avg_frame_qindex,
-                                             cpi->common.seq_params->bit_depth);
+  const int q =
+      (int)av1_convert_qindex_to_q(cpi->ppi->p_rc.avg_frame_qindex[frame_type],
+                                   cpi->common.seq_params->bit_depth);
   return q;
 }
 
@@ -834,7 +825,6 @@ void av1_tf_do_filtering_row(AV1_COMP *cpi, ThreadData *td, int mb_row) {
 
         // All variants of av1_apply_temporal_filter() contain floating point
         // operations. Hence, clear the system state.
-        aom_clear_system_state();
 
         // TODO(any): avx2/sse2 version should be changed to align with C
         // function before using. In particular, current avx2/sse2 function
@@ -988,7 +978,7 @@ static void tf_setup_filtering_buffer(AV1_COMP *cpi,
   const int q = av1_get_q(cpi);
   // Get correlation estimates from first-pass;
   const FIRSTPASS_STATS *stats =
-      cpi->ppi->twopass.stats_in - (cpi->rc.frames_since_key == 0);
+      cpi->twopass_frame.stats_in - (cpi->rc.frames_since_key == 0);
   double accu_coeff0 = 1.0, accu_coeff1 = 1.0;
   for (int i = 1; i <= max_after; i++) {
     if (stats + filter_frame_lookahead_idx + i >=
@@ -1022,17 +1012,14 @@ static void tf_setup_filtering_buffer(AV1_COMP *cpi,
   int adjust_num = 6;
   if (num_frames == 1) {  // `arnr_max_frames = 1` is used to disable filtering.
     adjust_num = 0;
-  } else if ((update_type == KF_UPDATE || is_forward_keyframe) && q <= 10) {
+  } else if ((update_type == KF_UPDATE) && q <= 10) {
     adjust_num = 0;
   }
   num_frames = AOMMIN(num_frames + adjust_num, lookahead_depth);
 
-  if (frame_type == KEY_FRAME && !is_forward_keyframe) {
-    num_before = 0;
+  if (frame_type == KEY_FRAME) {
+    num_before = is_forward_keyframe ? num_frames / 2 : 0;
     num_after = AOMMIN(num_frames - 1, max_after);
-  } else if (is_forward_keyframe) {  // Key frame in one-pass mode.
-    num_before = AOMMIN(num_frames - 1, max_before);
-    num_after = 0;
   } else {
     num_frames = AOMMIN(num_frames, cpi->ppi->p_rc.gfu_boost / 150);
     num_frames += !(num_frames & 1);  // Make the number odd.
@@ -1206,9 +1193,9 @@ int av1_temporal_filter(AV1_COMP *cpi, const int filter_frame_lookahead_idx,
   TemporalFilterData *tf_data = &cpi->td.tf_data;
   // Filter one more ARF if the lookahead index is leq 7 (w.r.t. 9-th frame).
   // This frame is ALWAYS a show existing frame.
-  const int is_second_arf =
-      (update_type == INTNL_ARF_UPDATE) && (filter_frame_lookahead_idx >= 7) &&
-      (is_forward_keyframe == 0) && cpi->sf.hl_sf.second_alt_ref_filtering;
+  const int is_second_arf = (update_type == INTNL_ARF_UPDATE) &&
+                            (filter_frame_lookahead_idx >= 7) &&
+                            cpi->sf.hl_sf.second_alt_ref_filtering;
   // TODO(anyone): Currently, we enforce the filtering strength on internal
   // ARFs except the second ARF to be zero. We should investigate in which case
   // it is more beneficial to use non-zero strength filtering.
@@ -1255,7 +1242,6 @@ int av1_temporal_filter(AV1_COMP *cpi, const int filter_frame_lookahead_idx,
     const float mean = (float)diff->sum / num_mbs;
     const float std = (float)sqrt((float)diff->sse / num_mbs - mean * mean);
 
-    aom_clear_system_state();
     // TODO(yunqing): This can be combined with TPL q calculation later.
     cpi->rc.base_frame_target = gf_group->bit_allocation[group_idx];
     av1_set_target_rate(cpi, cpi->common.width, cpi->common.height);

@@ -14,13 +14,13 @@
 
 #include "src/dsp/average_blend.h"
 
+#include <cassert>
 #include <cstdint>
 #include <ostream>
 #include <string>
 #include <type_traits>
 
 #include "absl/strings/match.h"
-#include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/time/clock.h"
 #include "absl/time/time.h"
@@ -55,18 +55,8 @@ constexpr int kCompoundPredictionRange[3][2] = {
     {3974, 61559},
 };
 
-struct TestParam {
-  TestParam(int width, int height) : width(width), height(height) {}
-  int width;
-  int height;
-};
-
-std::ostream& operator<<(std::ostream& os, const TestParam& param) {
-  return os << "BlockSize" << param.width << "x" << param.height;
-}
-
 template <int bitdepth, typename Pixel>
-class AverageBlendTest : public ::testing::TestWithParam<TestParam>,
+class AverageBlendTest : public testing::TestWithParam<BlockSize>,
                          public test_utils::MaxAlignedAllocable {
  public:
   AverageBlendTest() = default;
@@ -79,8 +69,8 @@ class AverageBlendTest : public ::testing::TestWithParam<TestParam>,
     const dsp::Dsp* const dsp = dsp::GetDspTable(bitdepth);
     ASSERT_NE(dsp, nullptr);
     base_func_ = dsp->average_blend;
-    const ::testing::TestInfo* const test_info =
-        ::testing::UnitTest::GetInstance()->current_test_info();
+    const testing::TestInfo* const test_info =
+        testing::UnitTest::GetInstance()->current_test_info();
     const absl::string_view test_case = test_info->test_suite_name();
     if (absl::StartsWith(test_case, "C/")) {
       base_func_ = nullptr;
@@ -105,8 +95,8 @@ class AverageBlendTest : public ::testing::TestWithParam<TestParam>,
   using PredType =
       typename std::conditional<bitdepth == 8, int16_t, uint16_t>::type;
   static constexpr int kDestStride = kMaxSuperBlockSizeInPixels;
-  const int width_ = GetParam().width;
-  const int height_ = GetParam().height;
+  const int width_ = kBlockWidthPixels[GetParam()];
+  const int height_ = kBlockHeightPixels[GetParam()];
   alignas(kMaxAlignment) PredType
       source1_[kMaxSuperBlockSizeInPixels * kMaxSuperBlockSizeInPixels];
   alignas(kMaxAlignment) PredType
@@ -158,69 +148,54 @@ void AverageBlendTest<bitdepth, Pixel>::Test(const char* digest, int num_tests,
                                           kDestStride, kDestStride, false));
   }
 
-  test_utils::CheckMd5Digest(
-      kAverageBlend, absl::StrFormat("%dx%d", width_, height_).c_str(), digest,
-      dest_, sizeof(dest_[0]) * kDestStride * height_, elapsed_time);
+  test_utils::CheckMd5Digest(kAverageBlend, ToString(GetParam()), digest, dest_,
+                             sizeof(dest_[0]) * kDestStride * height_,
+                             elapsed_time);
 }
 
-const TestParam kTestParam[] = {
-    TestParam(4, 4),    TestParam(4, 8),    TestParam(8, 8),
-    TestParam(8, 16),   TestParam(16, 8),   TestParam(16, 16),
-    TestParam(16, 32),  TestParam(32, 16),  TestParam(32, 32),
-    TestParam(32, 64),  TestParam(64, 32),  TestParam(64, 64),
-    TestParam(64, 128), TestParam(128, 64), TestParam(128, 128),
+const BlockSize kTestParam[] = {
+    kBlock4x4,    kBlock4x8,     kBlock4x16,  kBlock8x4,   kBlock8x8,
+    kBlock8x16,   kBlock8x32,    kBlock16x4,  kBlock16x8,  kBlock16x16,
+    kBlock16x32,  kBlock16x64,   kBlock32x8,  kBlock32x16, kBlock32x32,
+    kBlock32x64,  kBlock64x16,   kBlock64x32, kBlock64x64, kBlock64x128,
+    kBlock128x64, kBlock128x128,
 };
 
 using AverageBlendTest8bpp = AverageBlendTest<8, uint8_t>;
 
-const char* GetAverageBlendDigest8bpp(const TestParam block_size) {
-  static const char* const kDigestsWidth4[] = {
+const char* GetAverageBlendDigest8bpp(const BlockSize block_size) {
+  static const char* const kDigests[kMaxBlockSizes] = {
+      // 4xN
       "152bcc35946900b1ed16369b3e7a81b7",
       "c23e9b5698f7384eaae30a3908118b77",
-  };
-  static const char* const kDigestsWidth8[] = {
+      "f2da31d940f62490c368c03d32d3ede8",
+      // 8xN
+      "73c95485ef956e1d9ab914e88e6a202b",
       "d90d3abd368e58c513070a88b34649ba",
       "77f7d53d0edeffb3537afffd9ff33a4a",
-  };
-  static const char* const kDigestsWidth16[] = {
+      "460b9b1e6b83f65f013cfcaf67ec0122",
+      // 16xN
+      "96454a56de940174ff92e9bb686d6d38",
       "a50e268e93b48ae39cc2a47d377410e2",
       "65c8502ff6d78065d466f9911ed6bb3e",
       "bc2c873b9f5d74b396e1df705e87f699",
-  };
-  static const char* const kDigestsWidth32[] = {
+      "b4dae656484b2d255d1e09b7f34e12c1",
+      // 32xN
+      "7e1e5db92b22a96e5226a23de883d766",
       "ca40d46d89773e7f858b15fcecd43cc0",
       "bfdc894707323f4dc43d1326309f8368",
       "f4733417621719b7feba3166ec0da5b9",
-  };
-  static const char* const kDigestsWidth64[] = {
+      // 64xN
+      "378fa0594d22f01c8e8931c2a908d7c4",
       "db38fe2e082bd4a09acb3bb1d52ee11e",
       "3ad44401cc731215c46c9b7d96f7e4ae",
       "6c43267be5ed03d204a05fe36090f870",
-  };
-  static const char* const kDigestsWidth128[] = {
+      // 128xN
       "c8cfe46ebf166c1cbf08e8804206aadb",
       "b0557b5156d2334c8ce4a7ee12f9d6b4",
   };
-  // height < width implies 0.
-  // height == width implies 1.
-  // height > width implies 2.
-  const int height_index = block_size.height / block_size.width;
-  switch (block_size.width) {
-    case 4:
-      return kDigestsWidth4[height_index - 1];
-    case 8:
-      return kDigestsWidth8[height_index - 1];
-    case 16:
-      return kDigestsWidth16[height_index];
-    case 32:
-      return kDigestsWidth32[height_index];
-    case 64:
-      return kDigestsWidth64[height_index];
-    default:
-      EXPECT_EQ(block_size.width, 128)
-          << "Unknown width parameter: " << block_size.width;
-      return kDigestsWidth128[height_index];
-  }
+  assert(block_size < kMaxBlockSizes);
+  return kDigests[block_size];
 }
 
 TEST_P(AverageBlendTest8bpp, Blending) {
@@ -229,71 +204,58 @@ TEST_P(AverageBlendTest8bpp, Blending) {
 
 TEST_P(AverageBlendTest8bpp, DISABLED_Speed) {
   Test(GetAverageBlendDigest8bpp(GetParam()),
-       kNumSpeedTests / (GetParam().height * GetParam().width), false);
+       kNumSpeedTests /
+           (kBlockHeightPixels[GetParam()] * kBlockWidthPixels[GetParam()]),
+       false);
 }
 
 INSTANTIATE_TEST_SUITE_P(C, AverageBlendTest8bpp,
-                         ::testing::ValuesIn(kTestParam));
+                         testing::ValuesIn(kTestParam));
 #if LIBGAV1_ENABLE_SSE4_1
 INSTANTIATE_TEST_SUITE_P(SSE41, AverageBlendTest8bpp,
-                         ::testing::ValuesIn(kTestParam));
+                         testing::ValuesIn(kTestParam));
 #endif
 #if LIBGAV1_ENABLE_NEON
 INSTANTIATE_TEST_SUITE_P(NEON, AverageBlendTest8bpp,
-                         ::testing::ValuesIn(kTestParam));
+                         testing::ValuesIn(kTestParam));
 #endif
 
 #if LIBGAV1_MAX_BITDEPTH >= 10
 using AverageBlendTest10bpp = AverageBlendTest<10, uint16_t>;
 
-const char* GetAverageBlendDigest10bpp(const TestParam block_size) {
-  static const char* const kDigestsWidth4[] = {
+const char* GetAverageBlendDigest10bpp(const BlockSize block_size) {
+  static const char* const kDigests[kMaxBlockSizes] = {
+      // 4xN
       "98c0671c092b4288adcaaa17362cc4a3",
       "7083f3def8bfb63ab3a985ef5616a923",
-  };
-  static const char* const kDigestsWidth8[] = {
+      "a7211ee2eaa6f88e08875b377d17b0f1",
+      // 8xN
+      "11f9ab881700f2ef0f82d8d4662868c6",
       "3bee144b9ea6f4288b860c24f88a22f3",
       "27113bd17bf95034f100e9046c7b59d2",
-  };
-  static const char* const kDigestsWidth16[] = {
+      "c42886a5e16e23a81e43833d34467558",
+      // 16xN
+      "b0ac2eb0a7a6596d6d1339074c7f8771",
       "24c9e079b9a8647a6ee03f5441f2cdd9",
       "dd05777751ccdb4356856c90e1176e53",
       "27b1d69d035b1525c013b7373cfe3875",
-  };
-  static const char* const kDigestsWidth32[] = {
+      "08c46403afe19e6b008ccc8f56633da9",
+      // 32xN
+      "36d434db11298aba76166df06e9b8125",
       "efd24dd7b555786bff1a482e51170ea3",
       "3b37ddac87de443cd18784f02c2d1dd5",
       "80d8070939a743a20689a65bf5dc0a68",
-  };
-  static const char* const kDigestsWidth64[] = {
+      // 64xN
+      "88e747246237c6408d0bd4cc3ecc8396",
       "af1fe8c52487c9f2951c3ea516828abb",
       "ea6f18ff56b053748c18032b7e048e83",
       "af0cb87fe27d24c2e0afd2c90a8533a6",
-  };
-  static const char* const kDigestsWidth128[] = {
+      // 128xN
       "16a83b19911d6dc7278a694b8baa9901",
       "bd22e77ce6fa727267ff63eeb4dcb19c",
   };
-  // (height  < width) -> 0
-  // (height == width) -> 1
-  // (height  > width) -> 2
-  const int height_index = block_size.height / block_size.width;
-  switch (block_size.width) {
-    case 4:
-      return kDigestsWidth4[height_index - 1];
-    case 8:
-      return kDigestsWidth8[height_index - 1];
-    case 16:
-      return kDigestsWidth16[height_index];
-    case 32:
-      return kDigestsWidth32[height_index];
-    case 64:
-      return kDigestsWidth64[height_index];
-    default:
-      EXPECT_EQ(block_size.width, 128)
-          << "Unknown width parameter: " << block_size.width;
-      return kDigestsWidth128[height_index];
-  }
+  assert(block_size < kMaxBlockSizes);
+  return kDigests[block_size];
 }
 
 TEST_P(AverageBlendTest10bpp, Blending) {
@@ -302,21 +264,29 @@ TEST_P(AverageBlendTest10bpp, Blending) {
 
 TEST_P(AverageBlendTest10bpp, DISABLED_Speed) {
   Test(GetAverageBlendDigest10bpp(GetParam()),
-       kNumSpeedTests / (GetParam().height * GetParam().width) / 2, false);
+       kNumSpeedTests /
+           (kBlockHeightPixels[GetParam()] * kBlockHeightPixels[GetParam()]) /
+           2,
+       false);
 }
 
 INSTANTIATE_TEST_SUITE_P(C, AverageBlendTest10bpp,
-                         ::testing::ValuesIn(kTestParam));
+                         testing::ValuesIn(kTestParam));
 #if LIBGAV1_ENABLE_SSE4_1
 INSTANTIATE_TEST_SUITE_P(SSE41, AverageBlendTest10bpp,
-                         ::testing::ValuesIn(kTestParam));
+                         testing::ValuesIn(kTestParam));
 #endif
 #if LIBGAV1_ENABLE_NEON
 INSTANTIATE_TEST_SUITE_P(NEON, AverageBlendTest10bpp,
-                         ::testing::ValuesIn(kTestParam));
+                         testing::ValuesIn(kTestParam));
 #endif
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
 
 }  // namespace
 }  // namespace dsp
+
+static std::ostream& operator<<(std::ostream& os, const BlockSize param) {
+  return os << ToString(param);
+}
+
 }  // namespace libgav1

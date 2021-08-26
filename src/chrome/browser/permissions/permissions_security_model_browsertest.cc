@@ -15,7 +15,10 @@
 #include "components/permissions/features.h"
 #include "components/permissions/test/mock_permission_prompt_factory.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/browser_test_utils.h"
+#include "content/public/test/content_browser_test_utils.h"
 #include "services/device/public/cpp/test/scoped_geolocation_overrider.h"
+#include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "url/gurl.h"
 
 namespace {
@@ -39,7 +42,10 @@ GURL CreateBlobURL(content::RenderFrameHost* rfh) {
   )");
 
   AssertResultIsString(result);
-  return GURL(result.ExtractString());
+  GURL blob_url = GURL(result.ExtractString());
+  EXPECT_TRUE(blob_url.SchemeIsBlob());
+
+  return blob_url;
 }
 
 // Writes some dummy HTML to a file, then returns its `filesystem:` URL.
@@ -75,6 +81,15 @@ GURL CreateFilesystemURL(content::RenderFrameHost* rfh) {
   return fs_url;
 }
 
+GURL CreateFileURL(const base::FilePath::CharType file_name[] =
+                       FILE_PATH_LITERAL("title1.html")) {
+  GURL file_url =
+      ui_test_utils::GetTestUrl(base::FilePath(), base::FilePath(file_name));
+  EXPECT_EQ(url::kFileScheme, file_url.scheme());
+
+  return file_url;
+}
+
 // Adds a child iframe sourced from `url` to the given `parent_rfh` document.
 // `parent_rfh` must not be nullptr.
 content::RenderFrameHost* EmbedIframeFromURL(
@@ -95,10 +110,44 @@ content::RenderFrameHost* EmbedIframeFromURL(
   EXPECT_EQ(true, result);  // For the error message.
 
   content::RenderFrameHost* iframe_rfh = content::FrameMatchingPredicate(
-      content::WebContents::FromRenderFrameHost(parent_rfh),
+      parent_rfh->GetPage(),
       base::BindRepeating(&content::FrameMatchesName, "my_iframe"));
   return iframe_rfh;
 }
+
+constexpr char kCheckNotifications[] = R"((async () => {
+       const PermissionStatus = await navigator.permissions.query({name:
+       'notifications'}); return PermissionStatus.state === 'granted';
+      })();)";
+
+constexpr char kRequestNotifications[] = "Notification.requestPermission()";
+
+constexpr char kCheckGeolocation[] = R"((async () => {
+       const PermissionStatus = await navigator.permissions.query({name:
+       'geolocation'}); return PermissionStatus.state === 'granted';
+      })();)";
+
+constexpr char kRequestGeolocation[] = R"(
+          navigator.geolocation.getCurrentPosition(
+            _ => domAutomationController.send('granted'),
+            _ => domAutomationController.send('denied'));
+        )";
+
+constexpr char kCheckCamera[] = R"((async () => {
+     const PermissionStatus =
+        await navigator.permissions.query({name: 'camera'});
+     return PermissionStatus.state === 'granted';
+    })();)";
+
+constexpr char kRequestCamera[] = R"(
+    var constraints = { video: true };
+    navigator.mediaDevices.getUserMedia(constraints).then(function(stream) {
+        domAutomationController.send('granted');
+    })
+    .catch(function(err) {
+        domAutomationController.send('denied');
+    });
+    )";
 
 // Tests of permissions behavior for an inheritance and embedding of an origin.
 // Test fixtures are run with and without the `PermissionsRevisedOriginHandling`
@@ -141,128 +190,106 @@ class PermissionsSecurityModelBrowserTest
   bool IsRevisedOriginHandlingEnabled() { return GetParam(); }
 
   void VeriftyPermissions(content::WebContents* opener_or_embedder_contents,
-                          content::RenderFrameHost* test_rfh,
-                          std::string& check_permission,
-                          std::string& request_permission,
-                          bool is_notification = false) {
-    ASSERT_FALSE(content::EvalJs(opener_or_embedder_contents, check_permission)
-                     .value.GetBool());
-    ASSERT_FALSE(content::EvalJs(test_rfh, check_permission).value.GetBool());
+                          content::RenderFrameHost* test_rfh) {
+    const struct {
+      std::string check_permission;
+      std::string request_permission;
+    } kTests[] = {
+        {kCheckNotifications, kRequestNotifications},
+        {kCheckCamera, kRequestCamera},
+        {kCheckGeolocation, kRequestGeolocation},
+    };
 
-    const bool is_embedder =
-        test_rfh->IsDescendantOf(opener_or_embedder_contents->GetMainFrame());
+    for (const auto& test : kTests) {
+      bool is_notification = test.request_permission == kRequestNotifications;
+      ASSERT_FALSE(
+          content::EvalJs(opener_or_embedder_contents, test.check_permission)
+              .value.GetBool());
+      ASSERT_FALSE(
+          content::EvalJs(test_rfh, test.check_permission).value.GetBool());
 
-    permissions::PermissionRequestManager* manager =
-        permissions::PermissionRequestManager::FromWebContents(
-            opener_or_embedder_contents);
-    std::unique_ptr<permissions::MockPermissionPromptFactory> bubble_factory =
-        std::make_unique<permissions::MockPermissionPromptFactory>(manager);
+      const bool is_embedder =
+          test_rfh->IsDescendantOf(opener_or_embedder_contents->GetMainFrame());
 
-    // Enable auto-accept of a permission request.
-    bubble_factory->set_response_type(
-        permissions::PermissionRequestManager::AutoResponseType::ACCEPT_ALL);
+      permissions::PermissionRequestManager* manager =
+          permissions::PermissionRequestManager::FromWebContents(
+              opener_or_embedder_contents);
+      std::unique_ptr<permissions::MockPermissionPromptFactory> bubble_factory =
+          std::make_unique<permissions::MockPermissionPromptFactory>(manager);
 
-    // Request permission on the opener or embedder contents.
-    EXPECT_EQ("granted",
-              content::EvalJs(opener_or_embedder_contents, request_permission,
-                              content::EXECUTE_SCRIPT_USE_MANUAL_REPLY)
-                  .ExtractString());
-    EXPECT_EQ(1, bubble_factory->TotalRequestCount());
+      // Enable auto-accept of a permission request.
+      bubble_factory->set_response_type(
+          permissions::PermissionRequestManager::AutoResponseType::ACCEPT_ALL);
 
-    // Disable auto-accept of a permission request.
-    bubble_factory->set_response_type(
-        permissions::PermissionRequestManager::AutoResponseType::NONE);
+      // Request permission on the opener or embedder contents.
+      EXPECT_EQ("granted",
+                content::EvalJs(
+                    opener_or_embedder_contents, test.request_permission,
+                    is_notification ? content::EXECUTE_SCRIPT_DEFAULT_OPTIONS
+                                    : content::EXECUTE_SCRIPT_USE_MANUAL_REPLY)
+                    .ExtractString());
+      EXPECT_EQ(1, bubble_factory->TotalRequestCount());
 
-    EXPECT_TRUE(content::EvalJs(opener_or_embedder_contents, check_permission)
-                    .value.GetBool());
+      // Disable auto-accept of a permission request.
+      bubble_factory->set_response_type(
+          permissions::PermissionRequestManager::AutoResponseType::NONE);
 
-    // Verify permissions on the test RFH.
-    {
-      // If `test_rfh` is not a descendant of `opener_or_embedder_contents`, in
-      // other words if `test_rfh` was created via `Window.open()`, permissions
-      // are propagated from an opener WebContents only if
-      // `RevisedOriginHandlingEnabled` is enabled.
+      EXPECT_TRUE(
+          content::EvalJs(opener_or_embedder_contents, test.check_permission)
+              .value.GetBool());
+
+      // Verify permissions on the test RFH.
+      {
+        // If `test_rfh` is not a descendant of `opener_or_embedder_contents`,
+        // in other words if `test_rfh` was created via `Window.open()`,
+        // permissions are propagated from an opener WebContents only if
+        // `RevisedOriginHandlingEnabled` is enabled.
+        const bool expect_granted =
+            IsRevisedOriginHandlingEnabled() || is_embedder;
+
+        EXPECT_EQ(
+            expect_granted,
+            content::EvalJs(test_rfh, test.check_permission).value.GetBool());
+      }
+
       const bool expect_granted =
           IsRevisedOriginHandlingEnabled() || is_embedder;
 
-      EXPECT_EQ(expect_granted,
-                content::EvalJs(test_rfh, check_permission).value.GetBool());
-    }
-
-    // Request permission on the test RFH.
-    {
-      // If `test_rfh` is not a descendant of `opener_or_embedder_contents`,
-      // permission request is allowed only for Notifications. If
-      // `RevisedOriginHandlingEnabled` is enabled, permission request allowed
-      // for all `ContentSettingsType`.
-      const bool expect_granted =
-          IsRevisedOriginHandlingEnabled() || is_embedder || is_notification;
-
-      EXPECT_EQ(expect_granted ? "granted" : "failure",
-                content::EvalJs(test_rfh, request_permission,
-                                content::EXECUTE_SCRIPT_USE_MANUAL_REPLY)
+      // Request permission on the test RFH.
+      EXPECT_EQ(expect_granted ? "granted" : "denied",
+                content::EvalJs(test_rfh, test.request_permission,
+                                is_notification
+                                    ? content::EXECUTE_SCRIPT_DEFAULT_OPTIONS
+                                    : content::EXECUTE_SCRIPT_USE_MANUAL_REPLY)
                     .ExtractString());
+
+      // There should not be the 2nd prompt.
+      EXPECT_EQ(1, bubble_factory->TotalRequestCount());
     }
-
-    // There should not be the 2nd prompt.
-    EXPECT_EQ(1, bubble_factory->TotalRequestCount());
   }
 
-  void TestNotifications(content::WebContents* opener_or_embedder_contents,
-                         content::RenderFrameHost* test_rfh) {
-    std::string kCheckNotifications = R"((async () => {
-       const PermissionStatus = await navigator.permissions.query({name:
-       'notifications'}); return PermissionStatus.state === 'granted';
-      })();)";
+  void VerifyPermissionsForFile(content::RenderFrameHost* rfh,
+                                bool expect_granted) {
+    const struct {
+      std::string check_permission;
+      std::string request_permission;
+    } kTests[] = {
+        {kCheckNotifications, kRequestNotifications},
+        {kCheckCamera, kRequestCamera},
+        {kCheckGeolocation, kRequestGeolocation},
+    };
 
-    std::string kRequestNotifications = R"(
-        Notification.requestPermission(
-            _ => domAutomationController.send('granted'),
-            _ => domAutomationController.send('failure'));
-        )";
+    for (const auto& test : kTests) {
+      ASSERT_FALSE(content::EvalJs(rfh, test.check_permission).value.GetBool());
+      EXPECT_EQ(expect_granted ? "granted" : "denied",
+                content::EvalJs(rfh, test.request_permission,
+                                test.request_permission == kRequestNotifications
+                                    ? content::EXECUTE_SCRIPT_DEFAULT_OPTIONS
+                                    : content::EXECUTE_SCRIPT_USE_MANUAL_REPLY)
+                    .ExtractString());
 
-    VeriftyPermissions(opener_or_embedder_contents, test_rfh,
-                       kCheckNotifications, kRequestNotifications,
-                       /*is_notification=*/true);
-  }
-
-  void TestGeolocation(content::WebContents* opener_or_embedder_contents,
-                       content::RenderFrameHost* test_rfh) {
-    std::string kCheckGeolocation = R"((async () => {
-       const PermissionStatus = await navigator.permissions.query({name:
-       'geolocation'}); return PermissionStatus.state === 'granted';
-      })();)";
-
-    std::string kRequestGeolocation = R"(
-          navigator.geolocation.getCurrentPosition(
-            _ => domAutomationController.send('granted'),
-            _ => domAutomationController.send('failure'));
-        )";
-
-    VeriftyPermissions(opener_or_embedder_contents, test_rfh, kCheckGeolocation,
-                       kRequestGeolocation);
-  }
-
-  void TestCamera(content::WebContents* opener_or_embedder_contents,
-                  content::RenderFrameHost* test_rfh) {
-    std::string kCheckCamera = R"((async () => {
-     const PermissionStatus =
-        await navigator.permissions.query({name: 'camera'});
-     return PermissionStatus.state === 'granted';
-    })();)";
-
-    std::string kRequestCamera = R"(
-    var constraints = { video: true };
-    navigator.mediaDevices.getUserMedia(constraints).then(function(stream) {
-        domAutomationController.send('granted');
-    })
-    .catch(function(err) {
-        domAutomationController.send('failure');
-    });
-    )";
-
-    VeriftyPermissions(opener_or_embedder_contents, test_rfh, kCheckCamera,
-                       kRequestCamera);
+      ASSERT_FALSE(content::EvalJs(rfh, test.check_permission).value.GetBool());
+    }
   }
 
  private:
@@ -288,13 +315,11 @@ IN_PROC_BROWSER_TEST_P(PermissionsSecurityModelBrowserTest,
 
   content::RenderFrameHost* about_blank_iframe =
       content::FrameMatchingPredicate(
-          embedder_contents, base::BindRepeating(&content::FrameMatchesName,
-                                                 "about_blank_iframe"));
+          main_rfh->GetPage(), base::BindRepeating(&content::FrameMatchesName,
+                                                   "about_blank_iframe"));
   ASSERT_TRUE(about_blank_iframe);
 
-  TestNotifications(embedder_contents, about_blank_iframe);
-  TestGeolocation(embedder_contents, about_blank_iframe);
-  TestCamera(embedder_contents, about_blank_iframe);
+  VeriftyPermissions(embedder_contents, about_blank_iframe);
 }
 
 IN_PROC_BROWSER_TEST_P(PermissionsSecurityModelBrowserTest,
@@ -310,9 +335,7 @@ IN_PROC_BROWSER_TEST_P(PermissionsSecurityModelBrowserTest,
       OpenPopup(browser(), GURL("about:blank"));
   ASSERT_TRUE(popup_contents);
 
-  TestNotifications(opener_contents, popup_contents->GetMainFrame());
-  TestGeolocation(opener_contents, popup_contents->GetMainFrame());
-  TestCamera(opener_contents, popup_contents->GetMainFrame());
+  VeriftyPermissions(opener_contents, popup_contents->GetMainFrame());
 }
 
 // `about:srcdoc` supports only embedder WebContents, hence no test for opener.
@@ -328,13 +351,11 @@ IN_PROC_BROWSER_TEST_P(PermissionsSecurityModelBrowserTest, EmbedIframeSrcDoc) {
       browser()->tab_strip_model()->GetActiveWebContents();
 
   content::RenderFrameHost* srcdoc_iframe = content::FrameMatchingPredicate(
-      embedder_contents,
+      main_rfh->GetPage(),
       base::BindRepeating(&content::FrameMatchesName, "srcdoc_iframe"));
   ASSERT_TRUE(srcdoc_iframe);
 
-  TestNotifications(embedder_contents, srcdoc_iframe);
-  TestGeolocation(embedder_contents, srcdoc_iframe);
-  TestCamera(embedder_contents, srcdoc_iframe);
+  VeriftyPermissions(embedder_contents, srcdoc_iframe);
 }
 
 IN_PROC_BROWSER_TEST_P(PermissionsSecurityModelBrowserTest, EmbedIframeBlob) {
@@ -349,14 +370,12 @@ IN_PROC_BROWSER_TEST_P(PermissionsSecurityModelBrowserTest, EmbedIframeBlob) {
       browser()->tab_strip_model()->GetActiveWebContents();
 
   content::RenderFrameHost* blob_iframe_rfh = content::FrameMatchingPredicate(
-      embedder_contents,
+      main_rfh->GetPage(),
       base::BindRepeating(&content::FrameMatchesName, "blob_iframe"));
   ASSERT_TRUE(blob_iframe_rfh);
   EXPECT_TRUE(blob_iframe_rfh->GetLastCommittedURL().SchemeIsBlob());
 
-  TestNotifications(embedder_contents, blob_iframe_rfh);
-  TestGeolocation(embedder_contents, blob_iframe_rfh);
-  TestCamera(embedder_contents, blob_iframe_rfh);
+  VeriftyPermissions(embedder_contents, blob_iframe_rfh);
 }
 
 IN_PROC_BROWSER_TEST_P(PermissionsSecurityModelBrowserTest, WindowOpenBlob) {
@@ -380,12 +399,9 @@ IN_PROC_BROWSER_TEST_P(PermissionsSecurityModelBrowserTest, WindowOpenBlob) {
   content::WebContents* blob_popup_contents =
       OpenPopup(browser(), CreateBlobURL(main_rfh));
   ASSERT_TRUE(blob_popup_contents);
-
   EXPECT_TRUE(blob_popup_contents->GetLastCommittedURL().SchemeIsBlob());
 
-  TestNotifications(opener_contents, blob_popup_contents->GetMainFrame());
-  TestGeolocation(opener_contents, blob_popup_contents->GetMainFrame());
-  TestCamera(opener_contents, blob_popup_contents->GetMainFrame());
+  VeriftyPermissions(opener_contents, blob_popup_contents->GetMainFrame());
 }
 
 IN_PROC_BROWSER_TEST_P(PermissionsSecurityModelBrowserTest,
@@ -403,12 +419,8 @@ IN_PROC_BROWSER_TEST_P(PermissionsSecurityModelBrowserTest,
   content::RenderFrameHost* embedded_iframe_rfh =
       EmbedIframeFromURL(main_rfh, CreateFilesystemURL(main_rfh));
   ASSERT_TRUE(embedded_iframe_rfh);
-  EXPECT_EQ(url::kFileSystemScheme,
-            embedded_iframe_rfh->GetLastCommittedURL().scheme());
 
-  TestNotifications(embedder_contents, embedded_iframe_rfh);
-  TestGeolocation(embedder_contents, embedded_iframe_rfh);
-  TestCamera(embedder_contents, embedded_iframe_rfh);
+  VeriftyPermissions(embedder_contents, embedded_iframe_rfh);
 }
 
 // Renderer navigation for "filesystem:" is not allowed.
@@ -464,9 +476,197 @@ IN_PROC_BROWSER_TEST_P(PermissionsSecurityModelBrowserTest,
 
   EXPECT_TRUE(popup_rfh->GetLastCommittedURL().SchemeIsFileSystem());
 
-  TestNotifications(opener_contents, popup_rfh);
-  TestGeolocation(opener_contents, popup_rfh);
-  TestCamera(opener_contents, popup_rfh);
+  VeriftyPermissions(opener_contents, popup_rfh);
+}
+
+IN_PROC_BROWSER_TEST_P(PermissionsSecurityModelBrowserTest, TopIframeFile) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL url(embedded_test_server()->GetURL("/empty.html"));
+  content::RenderFrameHost* main_rfh =
+      ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(), url,
+                                                                1);
+  ASSERT_TRUE(main_rfh);
+  content::WebContents* embedder_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(embedder_contents);
+  EXPECT_FALSE(embedder_contents->GetLastCommittedURL().SchemeIsFile());
+
+  main_rfh = ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
+      browser(), CreateFileURL(), 1);
+  EXPECT_TRUE(main_rfh->GetLastCommittedURL().SchemeIsFile());
+  EXPECT_TRUE(main_rfh->GetLastCommittedOrigin().GetURL().SchemeIsFile());
+
+  permissions::PermissionRequestManager* manager =
+      permissions::PermissionRequestManager::FromWebContents(embedder_contents);
+  std::unique_ptr<permissions::MockPermissionPromptFactory> bubble_factory =
+      std::make_unique<permissions::MockPermissionPromptFactory>(manager);
+
+  // Enable auto-accept of a permission request.
+  bubble_factory->set_response_type(
+      permissions::PermissionRequestManager::AutoResponseType::ACCEPT_ALL);
+
+  VerifyPermissionsForFile(main_rfh, /*expect_granted*/ true);
+
+  bubble_factory->set_response_type(
+      permissions::PermissionRequestManager::AutoResponseType::DENY_ALL);
+
+  VerifyPermissionsForFile(main_rfh, /*expect_granted*/ false);
+}
+
+// Permissions granted for a file should not leak to another file.
+IN_PROC_BROWSER_TEST_P(PermissionsSecurityModelBrowserTest,
+                       PermissionDoesNotLeakToAnotherFile) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL url(embedded_test_server()->GetURL("/empty.html"));
+  content::RenderFrameHost* main_rfh =
+      ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(), url,
+                                                                1);
+  ASSERT_TRUE(main_rfh);
+  content::WebContents* embedder_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(embedder_contents);
+  EXPECT_FALSE(embedder_contents->GetLastCommittedURL().SchemeIsFile());
+
+  GURL file1_url = CreateFileURL();
+
+  main_rfh = ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
+      browser(), file1_url, 1);
+  EXPECT_TRUE(main_rfh->GetLastCommittedURL().SchemeIsFile());
+  EXPECT_TRUE(main_rfh->GetLastCommittedOrigin().GetURL().SchemeIsFile());
+
+  permissions::PermissionRequestManager* manager =
+      permissions::PermissionRequestManager::FromWebContents(embedder_contents);
+  std::unique_ptr<permissions::MockPermissionPromptFactory> bubble_factory =
+      std::make_unique<permissions::MockPermissionPromptFactory>(manager);
+
+  // Enable auto-accept of a permission request.
+  bubble_factory->set_response_type(
+      permissions::PermissionRequestManager::AutoResponseType::ACCEPT_ALL);
+
+  VerifyPermissionsForFile(main_rfh, /*expect_granted*/ true);
+
+  GURL file2_url = CreateFileURL(FILE_PATH_LITERAL("title2.html"));
+
+  main_rfh = ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
+      browser(), file2_url, 1);
+  EXPECT_TRUE(main_rfh->GetLastCommittedURL().SchemeIsFile());
+  EXPECT_TRUE(main_rfh->GetLastCommittedOrigin().GetURL().SchemeIsFile());
+  EXPECT_EQ(file2_url.spec(), main_rfh->GetLastCommittedURL().spec());
+  EXPECT_NE(file1_url.spec(), file2_url.spec());
+
+  bubble_factory->set_response_type(
+      permissions::PermissionRequestManager::AutoResponseType::DENY_ALL);
+
+  // Permission is failed because it is another file.
+  VerifyPermissionsForFile(main_rfh, /*expect_granted*/ false);
+}
+
+IN_PROC_BROWSER_TEST_P(PermissionsSecurityModelBrowserTest,
+                       UniversalAccessFromFileUrls) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  content::WebContents* embedder_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(embedder_contents);
+
+  // Activate the preference to allow universal access from file URLs.
+  blink::web_pref::WebPreferences prefs =
+      embedder_contents->GetOrCreateWebPreferences();
+  prefs.allow_universal_access_from_file_urls = true;
+  embedder_contents->SetWebPreferences(prefs);
+
+  const GURL url(embedded_test_server()->GetURL("/empty.html"));
+  content::RenderFrameHost* main_rfh =
+      ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(), url,
+                                                                1);
+  ASSERT_TRUE(main_rfh);
+  EXPECT_FALSE(main_rfh->GetLastCommittedURL().SchemeIsFile());
+
+  main_rfh = ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
+      browser(), CreateFileURL(), 1);
+  EXPECT_TRUE(main_rfh->GetLastCommittedURL().SchemeIsFile());
+  EXPECT_TRUE(main_rfh->GetLastCommittedOrigin().GetURL().SchemeIsFile());
+
+  permissions::PermissionRequestManager* manager =
+      permissions::PermissionRequestManager::FromWebContents(embedder_contents);
+  std::unique_ptr<permissions::MockPermissionPromptFactory> bubble_factory =
+      std::make_unique<permissions::MockPermissionPromptFactory>(manager);
+
+  bubble_factory->set_response_type(
+      permissions::PermissionRequestManager::AutoResponseType::ACCEPT_ALL);
+
+  VerifyPermissionsForFile(main_rfh, /*expect_granted*/ true);
+
+  content::EvalJsResult result = content::EvalJs(
+      embedder_contents, "history.pushState({}, {}, 'https://chromium.org');");
+  EXPECT_EQ(std::string(), result.error);
+  EXPECT_EQ("https://chromium.org/", main_rfh->GetLastCommittedURL().spec());
+  EXPECT_TRUE(main_rfh->GetLastCommittedOrigin().GetURL().SchemeIsFile());
+
+  const struct {
+    std::string check_permission;
+    std::string request_permission;
+  } kTests[] = {
+      {kCheckCamera, kRequestCamera},
+      {kCheckGeolocation, kRequestGeolocation},
+  };
+
+  for (const auto& test : kTests) {
+    ASSERT_FALSE(
+        content::EvalJs(main_rfh, test.check_permission).value.GetBool());
+    EXPECT_EQ("granted",
+              content::EvalJs(main_rfh, test.request_permission,
+                              content::EXECUTE_SCRIPT_USE_MANUAL_REPLY)
+                  .ExtractString());
+    ASSERT_TRUE(
+        content::EvalJs(main_rfh, test.check_permission).value.GetBool());
+  }
+
+  // Notifications is not supported for file:/// with changed URL.
+  ASSERT_FALSE(content::EvalJs(main_rfh, kCheckNotifications).value.GetBool());
+  EXPECT_EQ("denied", content::EvalJs(main_rfh, kRequestNotifications,
+                                      content::EXECUTE_SCRIPT_DEFAULT_OPTIONS)
+                          .ExtractString());
+}
+
+// Verifies that permissions are not supported for file:/// with changed URL to
+// `about:blank`.
+IN_PROC_BROWSER_TEST_P(PermissionsSecurityModelBrowserTest,
+                       UniversalAccessFromFileUrlsAboutBlank) {
+  content::WebContents* embedder_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(embedder_contents);
+
+  // Activate the preference to allow universal access from file URLs.
+  blink::web_pref::WebPreferences prefs =
+      embedder_contents->GetOrCreateWebPreferences();
+  prefs.allow_universal_access_from_file_urls = true;
+  embedder_contents->SetWebPreferences(prefs);
+
+  content::RenderFrameHost* main_rfh =
+      ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
+          browser(), CreateFileURL(), 1);
+  ASSERT_TRUE(main_rfh);
+  EXPECT_TRUE(main_rfh->GetLastCommittedURL().SchemeIsFile());
+  EXPECT_TRUE(main_rfh->GetLastCommittedOrigin().GetURL().SchemeIsFile());
+
+  permissions::PermissionRequestManager* manager =
+      permissions::PermissionRequestManager::FromWebContents(embedder_contents);
+  std::unique_ptr<permissions::MockPermissionPromptFactory> bubble_factory =
+      std::make_unique<permissions::MockPermissionPromptFactory>(manager);
+
+  bubble_factory->set_response_type(
+      permissions::PermissionRequestManager::AutoResponseType::ACCEPT_ALL);
+
+  VerifyPermissionsForFile(main_rfh, /*expect_granted*/ true);
+
+  content::EvalJsResult result = content::EvalJs(
+      embedder_contents, "history.pushState({}, {}, 'about:blank');");
+  EXPECT_EQ(std::string(), result.error);
+  EXPECT_EQ("about:blank", main_rfh->GetLastCommittedURL().spec());
+  EXPECT_TRUE(main_rfh->GetLastCommittedURL().IsAboutBlank());
+
+  VerifyPermissionsForFile(main_rfh, /*expect_granted*/ false);
 }
 
 IN_PROC_BROWSER_TEST_P(PermissionsSecurityModelBrowserTest,

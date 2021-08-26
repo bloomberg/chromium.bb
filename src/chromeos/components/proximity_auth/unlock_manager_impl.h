@@ -16,8 +16,8 @@
 #include "chromeos/components/proximity_auth/remote_device_life_cycle.h"
 #include "chromeos/components/proximity_auth/remote_status_update.h"
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
-#include "chromeos/components/proximity_auth/screenlock_state.h"
 #include "chromeos/components/proximity_auth/smart_lock_metrics_recorder.h"
+#include "chromeos/components/proximity_auth/smartlock_state.h"
 #include "chromeos/components/proximity_auth/unlock_manager.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
@@ -53,6 +53,7 @@ class UnlockManagerImpl : public UnlockManager,
   void SetRemoteDeviceLifeCycle(RemoteDeviceLifeCycle* life_cycle) override;
   void OnAuthAttempted(mojom::AuthType auth_type) override;
   void CancelConnectionAttempt() override;
+  std::string GetLastRemoteStatusUnlockForLogging() override;
 
  protected:
   // Creates a ProximityMonitor instance for the given |connection|.
@@ -70,6 +71,20 @@ class UnlockManagerImpl : public UnlockManager,
     DISABLED,
     LOCKED,
     PRIMARY_USER_ABSENT,
+  };
+
+  // This enum is tied directly to a UMA enum defined in
+  // //tools/metrics/histograms/enums.xml, and should always reflect it (do not
+  // change one without changing the other). Entries should be never modified
+  // or deleted. Only additions possible.
+  enum class GetRemoteStatusResultFailureReason {
+    kCanceledBluetoothDisabled = 0,
+    kDeprecatedTimedOutCouldNotEstablishAuthenticatedChannel = 1,
+    kTimedOutDidNotReceiveRemoteStatusUpdate = 2,
+    kDeprecatedUserEnteredPasswordWhileBluetoothDisabled = 3,
+    kCanceledUserEnteredPassword = 4,
+    kAuthenticatedChannelDropped = 5,
+    kMaxValue = kAuthenticatedChannelDropped
   };
 
   // MessengerObserver:
@@ -140,8 +155,8 @@ class UnlockManagerImpl : public UnlockManager,
   // for decryption.
   void OnGotSignInChallenge(const std::string& challenge);
 
-  // Returns the current state for the screen lock UI.
-  ScreenlockState GetScreenlockState();
+  // Returns the current state for the Smart Lock UI.
+  SmartLockState GetSmartLockState();
 
   // Updates the lock screen based on the manager's current state.
   void UpdateLockScreen();
@@ -188,6 +203,16 @@ class UnlockManagerImpl : public UnlockManager,
 
   void SetBluetoothSuspensionRecoveryTimerForTesting(
       std::unique_ptr<base::OneShotTimer> timer);
+
+  // For recording metrics.
+  void RecordGetRemoteStatusResultSuccess(
+      ProximityAuthSystem::ScreenlockType screenlock_type,
+      bool success = true);
+  void RecordGetRemoteStatusResultFailure(
+      ProximityAuthSystem::ScreenlockType screenlock_type,
+      GetRemoteStatusResultFailureReason failure_reason);
+  std::string GetRemoteStatusResultFailureReasonToString(
+      GetRemoteStatusResultFailureReason reason);
 
   // Whether |this| manager is being used for sign-in or session unlock.
   const ProximityAuthSystem::ScreenlockType screenlock_type_;
@@ -252,7 +277,7 @@ class UnlockManagerImpl : public UnlockManager,
   bool has_user_been_shown_first_status_ = false;
 
   // The state of the current screen lock UI.
-  ScreenlockState screenlock_state_ = ScreenlockState::INACTIVE;
+  SmartLockState smartlock_state_ = SmartLockState::kInactive;
 
   // The timestamp of when the lock or login screen is shown to the user. Begins
   // when the screen is locked, the system is rebooted, the clamshell lid is
@@ -269,6 +294,13 @@ class UnlockManagerImpl : public UnlockManager,
   // connection to the requested remote device of the provided
   // RemoteDeviceLifeCycle, and begins to try to fetch its "remote status".
   base::Time attempt_get_remote_status_start_time_;
+
+  // Stores the last value emitted to the
+  // SmartLock.GetRemoteStatus.Unlock(.Failure) metrics. Should be |nullopt|
+  // until the first time GetRemoteStatus succeeds or fails.
+  absl::optional<bool> get_remote_status_unlock_success_;
+  absl::optional<GetRemoteStatusResultFailureReason>
+      get_remote_status_unlock_failure_reason_;
 
   // Used to track if the "initial scan" has timed out. See
   // |is_performing_initial_scan_| for more.

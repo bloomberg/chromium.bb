@@ -20,6 +20,10 @@
 #include "url/gurl.h"
 
 namespace autofill_assistant {
+class Service;
+class ServiceRequestSender;
+class ClientAndroid;
+
 namespace ui_controller_android_utils {
 
 // Returns a 32-bit Integer representing |color_string| in Java, or null if
@@ -115,6 +119,8 @@ std::unique_ptr<TriggerContext> CreateTriggerContext(
     const base::android::JavaRef<jstring>& jexperiment_ids,
     const base::android::JavaRef<jobjectArray>& jparameter_names,
     const base::android::JavaRef<jobjectArray>& jparameter_values,
+    const base::android::JavaRef<jobjectArray>& jdevice_only_parameter_names,
+    const base::android::JavaRef<jobjectArray>& jdevice_only_parameter_values,
     jboolean onboarding_shown,
     jboolean is_direct_action,
     const base::android::JavaRef<jstring>& jinitial_url);
@@ -122,6 +128,17 @@ std::unique_ptr<TriggerContext> CreateTriggerContext(
 // Returns true if |web_contents| is owned by a custom tab. Assumes that
 // |web_contents| is valid and currently owned by a tab.
 bool IsCustomTab(content::WebContents* web_contents);
+
+// Returns the service to inject, if any, for |client_android|. This is used for
+// integration tests, which provide a test service to communicate with.
+std::unique_ptr<Service> GetServiceToInject(JNIEnv* env,
+                                            ClientAndroid* client_android);
+
+// Returns the service request sender to inject, if any. This is used for
+// integration tests which provide a test service request sender to communicate
+// with.
+std::unique_ptr<ServiceRequestSender> GetServiceRequestSenderToInject(
+    JNIEnv* env);
 
 }  // namespace ui_controller_android_utils
 }  //  namespace autofill_assistant

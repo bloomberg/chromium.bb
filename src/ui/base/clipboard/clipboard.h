@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -25,6 +26,7 @@
 #include "mojo/public/cpp/base/big_buffer.h"
 #include "ui/base/clipboard/clipboard_buffer.h"
 #include "ui/base/clipboard/clipboard_format_type.h"
+#include "ui/base/clipboard/clipboard_sequence_number_token.h"
 #include "ui/base/clipboard/file_info.h"
 #include "ui/base/data_transfer_policy/data_transfer_endpoint.h"
 
@@ -117,14 +119,11 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) Clipboard
   virtual const DataTransferEndpoint* GetSource(
       ClipboardBuffer buffer) const = 0;
 
-  // Returns a sequence number which uniquely identifies clipboard state.
-  // This can be used to version the data on the clipboard and determine
-  // whether it has changed.
-  // TODO(https://crbug.com/1226356): Note that the sequence number uniquely
-  // identifies the clipboard state within this particular ui::Clipboard
-  // instance. It is not guaranteed to be unique across multiple / subsequent
-  // ui::Clipborad instances. Consider changing that.
-  virtual uint64_t GetSequenceNumber(ClipboardBuffer buffer) const = 0;
+  // Returns a token which uniquely identifies clipboard state.
+  // ClipboardSequenceNumberTokens are used since there may be multiple
+  // ui::Clipboard instances that have the same sequence number.
+  virtual const ClipboardSequenceNumberToken& GetSequenceNumber(
+      ClipboardBuffer buffer) const = 0;
 
   // Tests whether the clipboard contains a certain format.
   virtual bool IsFormatAvailable(
@@ -214,7 +213,7 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) Clipboard
   virtual void ReadBookmark(const DataTransferEndpoint* data_dst,
                             ReadBookmarkCallback callback) const;
 
-  // Reads raw data from the clipboard with the given format type. Stores result
+  // Reads data from the clipboard with the given format type. Stores result
   // as a byte vector.
   virtual void ReadData(const ClipboardFormatType& format,
                         const DataTransferEndpoint* data_dst,
@@ -267,13 +266,22 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) Clipboard
   // Resets the clipboard last modified time to Time::Time().
   virtual void ClearLastModifiedTime();
 
+  // Reads the web custom format map (which is in JSON format) from the
+  // clipboard if it's available. Parses the JSON string that has the mapping of
+  // MIME type to custom format name and fetches the list of custom MIME types.
+  // e.g. on Windows, the mapping is represented as "text/html":"Web Custom
+  // Format(0-99)".
+  std::map<std::string, std::string> ExtractCustomPlatformNames(
+      ClipboardBuffer buffer,
+      const DataTransferEndpoint* data_dst) const;
+
  protected:
   // PortableFormat designates the type of data to be stored in the clipboard.
   // This designation is shared across all OSes. The system-specific designation
   // is defined by ClipboardFormatType. A single PortableFormat might be
   // represented by several system-specific ClipboardFormatTypes. For example,
   // on Linux the kText PortableFormat maps to "text/plain", "STRING", and
-  // several other formats. On windows it maps to CF_UNICODETEXT.
+  // several other formats. On Windows it maps to CF_UNICODETEXT.
   //
   // The order below is the order in which data will be written to the
   // clipboard, so more specific types must be listed before less specific
@@ -281,6 +289,8 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) Clipboard
   // clipboard to contain a bitmap, HTML markup representing the image, a URL to
   // the image, and the image's alt text. Having the types follow this order
   // maximizes the amount of data that can be extracted by various programs.
+  // Documentation on motivation for format ordering is also available here:
+  // https://docs.microsoft.com/en-us/windows/win32/dataxchg/clipboard-formats#multiple-clipboard-formats
   enum class PortableFormat {
     kBitmap,  // Bitmap from shared memory.
     kHtml,
@@ -291,6 +301,7 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) Clipboard
     kData,  // Arbitrary block of bytes.
     kSvg,
     kFilenames,
+    kWebCustomFormatMap,
   };
 
   // TODO (https://crbug.com/994928): Rename ObjectMap-related types.
@@ -314,6 +325,7 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) Clipboard
   // kWebkit    none          empty vector
   // kData      format        char array
   //            data          byte array
+  // kWebCustomFormatMap      char array
   using ObjectMapParam = std::vector<char>;
   using ObjectMapParams = std::vector<ObjectMapParam>;
   using ObjectMap = base::flat_map<PortableFormat, ObjectMapParams>;

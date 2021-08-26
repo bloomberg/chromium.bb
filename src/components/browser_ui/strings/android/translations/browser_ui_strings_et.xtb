@@ -6,7 +6,6 @@
 <translation id="1124090076051167250">See kustutab <ph name="DATASIZE" /> andmeid ja küpsisefaile, mille saidid või rakendused on teie avakuvale salvestanud.</translation>
 <translation id="1178581264944972037">Peata</translation>
 <translation id="1181037720776840403">Eemalda</translation>
-<translation id="1195941046451948919">Kas soovite kindlasti kõik selle veebisaidi load lähtestada?</translation>
 <translation id="1201402288615127009">Järgmine</translation>
 <translation id="1242008676835033345">Manustatud aadressil <ph name="WEBSITE_URL" /></translation>
 <translation id="1272079795634619415">Peata</translation>
@@ -70,6 +69,7 @@
 <translation id="2687403674020088961">Blokeeri kõik küpsised (ei ole soovitatav)</translation>
 <translation id="2704606927547763573">Kopeeritud</translation>
 <translation id="2717722538473713889">E-posti aadressid</translation>
+<translation id="2785051990912111074">Jätkamisel kustutatakse kõik veebisaidi <ph name="WEBSITE" /> küpsised</translation>
 <translation id="2822354292072154809">Kas soovite objekti <ph name="CHOSEN_OBJECT_NAME" /> jaoks kindlasti lähtestada kõik saidi load?</translation>
 <translation id="2870560284913253234">Sait</translation>
 <translation id="2874939134665556319">Eelmine lugu</translation>
@@ -130,7 +130,6 @@
 <translation id="4570913071927164677">Üksikasjad</translation>
 <translation id="4645575059429386691">Vanema hallatud</translation>
 <translation id="4670064810192446073">Virtuaalreaalsus</translation>
-<translation id="4708011789095599544">Kas soovite selle veebisaidi puhul kindlasti küpsisefailid ja muud saidi andmed kustutada?</translation>
 <translation id="4751476147751820511">Liikumis- või valgusandurid</translation>
 <translation id="4836046166855586901">Küsi, kui sait soovib teada, millal kasutate aktiivselt seda seadet</translation>
 <translation id="4883854917563148705">Hallatud seadeid ei saa lähtestada</translation>
@@ -140,6 +139,7 @@
 <translation id="4976702386844183910">Viimati külastati <ph name="DATE" /></translation>
 <translation id="4994033804516042629">Kontakte ei leitud</translation>
 <translation id="4996978546172906250">Jagamine:</translation>
+<translation id="5014906230196386306">Kas kustutada küpsisefailid?</translation>
 <translation id="5039804452771397117">Luba</translation>
 <translation id="5048398596102334565">Luba saitide jaoks juurdepääs liikumisanduritele (soovitatav)</translation>
 <translation id="5050380848339752099">See sait jagab teavet väljaspool inkognito režiimi oleva rakendusega.</translation>
@@ -157,9 +157,9 @@
 <translation id="5335288049665977812">Luba saitidel käitada JavaScripti (soovitatav)</translation>
 <translation id="534295439873310000">NFC-seadmed</translation>
 <translation id="5354152178998424783">See kustutab <ph name="DATASIZE" /> andmed ja küpsisefailid, mille saidid on salvestanud.</translation>
-<translation id="5391532827096253100">Teie ühendus selle saidiga ei ole turvaline. Saidi teave</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(ja veel 1)}other{(ja veel #)}}</translation>
 <translation id="5403592356182871684">Nimed</translation>
+<translation id="5438097262470833822">Jätkates lähtestatakse veebisaidi <ph name="WEBSITE" /> load</translation>
 <translation id="5489227211564503167">Kulunud aeg: <ph name="ELAPSED_TIME" />/<ph name="TOTAL_TIME" />.</translation>
 <translation id="5494752089476963479">Blokeeri reklaamid saitidel, mis kuvavad sekkuvaid või eksitavaid reklaame</translation>
 <translation id="5502860503640766021"><ph name="PERMISSION_1" /> on lubatud, <ph name="PERMISSION_2" /> on keelatud</translation>
@@ -190,10 +190,10 @@
 <translation id="6064125863973209585">Lõpetatud allalaadimised</translation>
 <translation id="6165508094623778733">Lisateave</translation>
 <translation id="6177111841848151710">Praeguse otsingumootori puhul blokeeritud</translation>
+<translation id="6177128806592000436">Teie ühendus selle saidiga pole turvaline</translation>
 <translation id="6181444274883918285">Lisa saidi erand</translation>
 <translation id="6192792657125177640">Erandid</translation>
 <translation id="6196640612572343990">Blokeeri kolmanda osapoole küpsisefailid</translation>
-<translation id="6206551242102657620">Ühendus on turvaline. Saidi teave</translation>
 <translation id="6216432067784365534">Üksuse <ph name="NAME_OF_LIST_ITEM" /> valikud</translation>
 <translation id="6231752747840485235">Kas desinstallida rakendus <ph name="APP_NAME" />?</translation>
 <translation id="6262279340360821358"><ph name="PERMISSION_1" /> ja <ph name="PERMISSION_2" /> on keelatud</translation>
@@ -202,7 +202,6 @@
 <translation id="6320088164292336938">Vibreerimine</translation>
 <translation id="6388207532828177975">Kustuta ja lähtesta</translation>
 <translation id="6398765197997659313">Välju täisekraanilt</translation>
-<translation id="6423924377271166037">Kustuta küpsisefailid</translation>
 <translation id="6439114592976064011">Blokeeri saitidel virtuaalreaalsuse seadme ja andmete kasutamine</translation>
 <translation id="6447842834002726250">Küpsised</translation>
 <translation id="6527303717912515753">Jaga</translation>
@@ -217,6 +216,7 @@
 <translation id="6689172468748959065">Profiilifotod</translation>
 <translation id="6697925417670533197">Aktiivsed allalaadimised</translation>
 <translation id="6746124502594467657">Liiguta alla</translation>
+<translation id="6749077623962119521">Kas lähtestada load?</translation>
 <translation id="6766622839693428701">Sulgemiseks pühkige alla.</translation>
 <translation id="6790428901817661496">Esita</translation>
 <translation id="6818926723028410516">Valige üksused</translation>
@@ -224,7 +224,6 @@
 <translation id="6910211073230771657">Kustutatud</translation>
 <translation id="6912998170423641340">Keela saitidel lugeda lõikelaual olevat teksti ja pilte</translation>
 <translation id="6945221475159498467">Vali</translation>
-<translation id="6963642900430330478">See leht on ohtlik. Saidi teave</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6992289844737586249">Küsi enne saitidele minu mikrofoni kasutamiseks juurdepääsu lubamist (soovitatav)</translation>
 <translation id="7000754031042624318">Androidi seadetes välja lülitatud</translation>
@@ -232,7 +231,6 @@
 <translation id="7053983685419859001">Blokeeri</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 on valitud}other{# on valitud}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> on valitud.  Valikud on saadaval ekraanikuva ülaosas</translation>
-<translation id="7128222689758636196">Lubab praeguse otsingumootori puhul</translation>
 <translation id="7141896414559753902">Blokeeri saitidel hüpikakende ja ümbersuunamiste kuvamine (soovitatav)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> kB</translation>
 <translation id="723171743924126238">Kujutiste valimine</translation>
@@ -247,7 +245,6 @@
 <translation id="7561196759112975576">Alati</translation>
 <translation id="7572498721684305250">Saitide jaoks blokeeritakse teabe saatmine ja saamine, kui puudutate NFC-seadmeid</translation>
 <translation id="757524316907819857">Saitidel kaitstud sisu esitamise blokeerimine</translation>
-<translation id="7589445247086920869">Blokeerib praeguse otsingumootori puhul</translation>
 <translation id="7649070708921625228">Abi</translation>
 <translation id="7658239707568436148">Tühista</translation>
 <translation id="7781829728241885113">Eile</translation>
@@ -270,10 +267,12 @@
 <translation id="8068648041423924542">Sertifikaati ei saa valida.</translation>
 <translation id="8087000398470557479">See sisu pärineb domeenilt <ph name="DOMAIN_NAME" /> ja seda pakub Google.</translation>
 <translation id="8116925261070264013">Vaigistatud</translation>
+<translation id="813082847718468539">Kuvab saidi teabe</translation>
 <translation id="8131740175452115882">Kinnita</translation>
 <translation id="8197286292360124385"><ph name="PERMISSION_1" /> on lubatud</translation>
 <translation id="8200772114523450471">Taasta</translation>
 <translation id="8206354486702514201">Selle seade jõustas teie administraator.</translation>
+<translation id="8211406090763984747">Ühendus on turvaline</translation>
 <translation id="8249310407154411074">Teisalda kõige üles</translation>
 <translation id="8261506727792406068">Kustuta</translation>
 <translation id="8300705686683892304">Neid haldab rakendus</translation>
@@ -315,7 +314,7 @@
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9109747640384633967">{PERMISSIONS_SUMMARY_MIXED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> ja veel <ph name="NUM_MORE" />}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> ja veel <ph name="NUM_MORE" />}}</translation>
 <translation id="913657688200966289">Lülitage <ph name="BEGIN_LINK" />Androidi seadetes<ph name="END_LINK" /> sisse load rakendusele <ph name="APP_NAME" />.</translation>
+<translation id="9162462602695099906">See leht on ohtlik</translation>
 <translation id="930525582205581608">Kas unustada see sait?</translation>
-<translation id="965817943346481315">Blokeeri, kui sait kuvab sekkuvaid või eksitavaid reklaame (soovitatav)</translation>
 <translation id="967624055006145463">Salvestatud andmete maht</translation>
 </translationbundle>

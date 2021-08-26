@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/ash/system_tray_client_impl.h"
 
-#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/locale_update_controller.h"
 #include "ash/public/cpp/system_tray.h"
 #include "ash/public/cpp/update_types.h"
@@ -17,9 +16,9 @@
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chrome/browser/ash/login/help_app_launcher.h"
-#include "chrome/browser/ash/policy/core/browser_policy_connector_chromeos.h"
-#include "chrome/browser/ash/policy/core/device_cloud_policy_manager_chromeos.h"
-#include "chrome/browser/ash/policy/core/user_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
+#include "chrome/browser/ash/policy/core/device_cloud_policy_manager_ash.h"
+#include "chrome/browser/ash/policy/core/user_cloud_policy_manager_ash.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/system/system_clock.h"
 #include "chrome/browser/browser_process.h"
@@ -28,7 +27,6 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/lifetime/termination_notification.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
@@ -52,11 +50,6 @@
 #include "chromeos/network/network_util.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "chromeos/network/tether_constants.h"
-#include "components/arc/arc_service_manager.h"
-#include "components/arc/metrics/arc_metrics_constants.h"
-#include "components/arc/mojom/net.mojom.h"
-#include "components/arc/session/arc_bridge_service.h"
-#include "components/arc/session/connection_holder.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/session_manager/core/session_manager_observer.h"
 #include "components/user_manager/user_manager.h"
@@ -114,12 +107,6 @@ const chromeos::NetworkState* GetNetworkState(const std::string& network_id) {
       ->GetNetworkStateFromGuid(network_id);
 }
 
-bool IsArcVpn(const std::string& network_id) {
-  const chromeos::NetworkState* network_state = GetNetworkState(network_id);
-  return network_state && network_state->type() == shill::kTypeVPN &&
-         network_state->GetVpnProviderType() == shill::kProviderArcVpn;
-}
-
 bool ShouldOpenCellularSetupPsimFlowOnClick(const std::string& network_id) {
   // |kActivationStateNotActivated| is only set in physical SIM networks,
   // checking a networks activation state is |kActivationStateNotActivated|
@@ -128,8 +115,7 @@ bool ShouldOpenCellularSetupPsimFlowOnClick(const std::string& network_id) {
   const chromeos::NetworkState* network_state = GetNetworkState(network_id);
   return network_state && network_state->type() == shill::kTypeCellular &&
          network_state->activation_state() ==
-             shill::kActivationStateNotActivated &&
-         chromeos::features::IsCellularActivationUiEnabled();
+             shill::kActivationStateNotActivated;
 }
 
 }  // namespace
@@ -196,8 +182,8 @@ class SystemTrayClientImpl::EnterpriseAccountObserver
 
     profile_ = profile;
     if (profile_) {
-      policy::UserCloudPolicyManagerChromeOS* manager =
-          profile_->GetUserCloudPolicyManagerChromeOS();
+      policy::UserCloudPolicyManagerAsh* manager =
+          profile_->GetUserCloudPolicyManagerAsh();
       if (manager)
         policy_observation_.Observe(manager->core()->store());
     }
@@ -222,9 +208,9 @@ SystemTrayClientImpl::SystemTrayClientImpl()
     HandleUpdateAvailable(ash::UpdateType::kSystem);
 
   // If the device is enterprise managed then send ash the enterprise domain.
-  policy::BrowserPolicyConnectorChromeOS* policy_connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
+  policy::BrowserPolicyConnectorAsh* policy_connector =
+      g_browser_process->platform_part()->browser_policy_connector_ash();
+  policy::DeviceCloudPolicyManagerAsh* policy_manager =
       policy_connector->GetDeviceCloudPolicyManager();
   if (policy_manager)
     policy_manager->core()->store()->AddObserver(this);
@@ -243,9 +229,9 @@ SystemTrayClientImpl::~SystemTrayClientImpl() {
 
   system_tray_->SetClient(nullptr);
 
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
+  policy::BrowserPolicyConnectorAsh* connector =
+      g_browser_process->platform_part()->browser_policy_connector_ash();
+  policy::DeviceCloudPolicyManagerAsh* policy_manager =
       connector->GetDeviceCloudPolicyManager();
   if (policy_manager)
     policy_manager->core()->store()->RemoveObserver(this);
@@ -477,17 +463,7 @@ void SystemTrayClientImpl::ShowNetworkConfigure(const std::string& network_id) {
 
 void SystemTrayClientImpl::ShowNetworkCreate(const std::string& type) {
   if (type == ::onc::network_type::kCellular) {
-    if (chromeos::features::IsCellularActivationUiEnabled()) {
-      ShowSettingsCellularSetup(/*show_psim_flow=*/false);
-      return;
-    }
-    const chromeos::NetworkState* cellular =
-        chromeos::NetworkHandler::Get()
-            ->network_state_handler()
-            ->FirstNetworkByType(
-                chromeos::onc::NetworkTypePatternFromOncType(type));
-    std::string network_id = cellular ? cellular->guid() : "";
-    ShowNetworkSettingsHelper(network_id, false /* show_configure */);
+    ShowSettingsCellularSetup(/*show_psim_flow=*/false);
     return;
   }
   chromeos::InternetConfigDialog::ShowDialogForNetworkType(type);
@@ -551,25 +527,10 @@ void SystemTrayClientImpl::ShowNetworkSettingsHelper(
     return;
   }
 
-  if (IsArcVpn(network_id)) {
-    // Special case: clicking on a connected ARCVPN will ask Android to
-    // show the settings dialog.
-    auto* net_instance = ARC_GET_INSTANCE_FOR_METHOD(
-        arc::ArcServiceManager::Get()->arc_bridge_service()->net(),
-        ConfigureAndroidVpn);
-    if (!net_instance) {
-      LOG(ERROR) << "User requested VPN configuration but API is unavailable";
-      return;
-    }
-    net_instance->ConfigureAndroidVpn();
-    return;
-  }
-
   if (ShouldOpenCellularSetupPsimFlowOnClick(network_id)) {
-    // Special case: Clicking on "click to activate" on a psim network item
-    // should open cellular setup dialogs' psim flow if the device has
-    // |kUpdatedCellularActivationUi| feature enabled and is a non-activated
-    // cellular network
+    // Special case: clicking "click to activate" on a network item should open
+    // the cellular setup dialogs' pSIM flow if the network is a non-activated
+    // cellular network.
     ShowSettingsCellularSetup(/*show_psim_flow=*/true);
     return;
   }
@@ -675,8 +636,8 @@ void SystemTrayClientImpl::OnStoreError(policy::CloudPolicyStore* store) {
 }
 
 void SystemTrayClientImpl::UpdateEnterpriseDomainInfo() {
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  policy::BrowserPolicyConnectorAsh* connector =
+      g_browser_process->platform_part()->browser_policy_connector_ash();
   const std::string enterprise_domain_manager =
       connector->GetEnterpriseDomainManager();
   const bool active_directory_managed = connector->IsActiveDirectoryManaged();

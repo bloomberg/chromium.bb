@@ -336,7 +336,8 @@ static int CUDAAPI cuvid_handle_picture_decode(void *opaque, CUVIDPICPARAMS* pic
 
     av_log(avctx, AV_LOG_TRACE, "pfnDecodePicture\n");
 
-    ctx->key_frame[picparams->CurrPicIdx] = picparams->intra_pic_flag;
+    if(picparams->intra_pic_flag)
+        ctx->key_frame[picparams->CurrPicIdx] = picparams->intra_pic_flag;
 
     ctx->internal_error = CHECK_CU(ctx->cvdl->cuvidDecodePicture(ctx->cudecoder, picparams));
     if (ctx->internal_error < 0)
@@ -593,6 +594,8 @@ static int cuvid_output_frame(AVCodecContext *avctx, AVFrame *frame)
         }
 
         frame->key_frame = ctx->key_frame[parsed_frame.dispinfo.picture_index];
+        ctx->key_frame[parsed_frame.dispinfo.picture_index] = 0;
+
         frame->width = avctx->width;
         frame->height = avctx->height;
         if (avctx->pkt_timebase.num && avctx->pkt_timebase.den)
@@ -641,37 +644,6 @@ error:
         return eret;
     else
         return ret;
-}
-
-static int cuvid_decode_frame(AVCodecContext *avctx, void *data, int *got_frame, AVPacket *avpkt)
-{
-    CuvidContext *ctx = avctx->priv_data;
-    AVFrame *frame = data;
-    int ret = 0;
-
-    av_log(avctx, AV_LOG_TRACE, "cuvid_decode_frame\n");
-
-    if (ctx->deint_mode_current != cudaVideoDeinterlaceMode_Weave) {
-        av_log(avctx, AV_LOG_ERROR, "Deinterlacing is not supported via the old API\n");
-        return AVERROR(EINVAL);
-    }
-
-    if (!ctx->decoder_flushing) {
-        ret = cuvid_decode_packet(avctx, avpkt);
-        if (ret < 0)
-            return ret;
-    }
-
-    ret = cuvid_output_frame(avctx, frame);
-    if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
-        *got_frame = 0;
-    } else if (ret < 0) {
-        return ret;
-    } else {
-        *got_frame = 1;
-    }
-
-    return 0;
 }
 
 static av_cold int cuvid_decode_end(AVCodecContext *avctx)
@@ -1140,11 +1112,11 @@ static const AVCodecHWConfigInternal *const cuvid_hw_configs[] = {
         .priv_class     = &x##_cuvid_class, \
         .init           = cuvid_decode_init, \
         .close          = cuvid_decode_end, \
-        .decode         = cuvid_decode_frame, \
         .receive_frame  = cuvid_output_frame, \
         .flush          = cuvid_flush, \
         .bsfs           = bsf_name, \
         .capabilities   = AV_CODEC_CAP_DELAY | AV_CODEC_CAP_AVOID_PROBING | AV_CODEC_CAP_HARDWARE, \
+        .caps_internal  = FF_CODEC_CAP_SETS_FRAME_PROPS, \
         .pix_fmts       = (const enum AVPixelFormat[]){ AV_PIX_FMT_CUDA, \
                                                         AV_PIX_FMT_NV12, \
                                                         AV_PIX_FMT_P010, \

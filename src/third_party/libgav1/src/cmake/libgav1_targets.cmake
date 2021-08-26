@@ -341,7 +341,9 @@ macro(libgav1_add_library)
   endif()
 
   if(lib_TYPE STREQUAL SHARED AND NOT MSVC)
-    set_target_properties(${lib_NAME} PROPERTIES SOVERSION ${LIBGAV1_SOVERSION})
+    set_target_properties(${lib_NAME}
+                          PROPERTIES VERSION ${LIBGAV1_SOVERSION} SOVERSION
+                                     ${LIBGAV1_SOVERSION_MAJOR})
   endif()
 
   if(BUILD_SHARED_LIBS AND (MSVC OR WIN32))

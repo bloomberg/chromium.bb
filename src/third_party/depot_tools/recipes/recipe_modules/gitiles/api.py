@@ -2,8 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import division
+
 import base64
-import urlparse
+
+try:
+  import urlparse
+except ImportError:  # pragma: no cover
+  import urllib.parse as urlparse
 
 from recipe_engine import recipe_api
 
@@ -127,7 +133,7 @@ class Gitiles(recipe_api.RecipeApi):
                               fmt='json')
     return step_result.json.output
 
-  def download_file(self, repository_url, file_path, branch='master',
+  def download_file(self, repository_url, file_path, branch='main',
                     step_name=None, attempts=None, **kwargs):
     """Downloads raw file content from a Gitiles repository.
 
@@ -154,7 +160,7 @@ class Gitiles(recipe_api.RecipeApi):
     return base64.b64decode(step_result.json.output['value'])
 
   def download_archive(self, repository_url, destination,
-                       revision='refs/heads/master'):
+                       revision='refs/heads/main'):
     """Downloads an archive of the repo and extracts it to `destination`.
 
     If the gitiles server attempts to provide a tarball with paths which escape
@@ -167,7 +173,7 @@ class Gitiles(recipe_api.RecipeApi):
       * destination (Path): Local path to extract the archive to. Must not exist
         prior to this call.
       * revision (str): The ref or revision in the repo to download. Defaults to
-        'refs/heads/master'.
+        'refs/heads/main'.
     """
     step_name = 'download %s @ %s' % (repository_url, revision)
     fetch_url = self.m.url.join(repository_url, '+archive/%s.tgz' % (revision,))

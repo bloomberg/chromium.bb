@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/full_restore/app_launch_handler.h"
+#include "chrome/browser/ash/full_restore/app_launch_handler.h"
 #include "components/full_restore/desk_template_read_handler.h"
 
 class Profile;
@@ -25,7 +25,7 @@ struct WindowInfo;
 // The DeskTemplateAppLaunchHandler class is passed in the desk template restore
 // data and profile, and will launch apps and web pages based on the template.
 class DeskTemplateAppLaunchHandler
-    : public chromeos::AppLaunchHandler,
+    : public ash::AppLaunchHandler,
       public full_restore::DeskTemplateReadHandler::Delegate {
  public:
   explicit DeskTemplateAppLaunchHandler(Profile* profile);
@@ -47,9 +47,9 @@ class DeskTemplateAppLaunchHandler
 
  protected:
   // chromeos::AppLaunchHandler:
+  bool ShouldLaunchSystemWebAppOrChromeApp(const std::string& app_id) override;
   void OnExtensionLaunching(const std::string& app_id) override;
-  base::WeakPtr<chromeos::AppLaunchHandler> GetWeakPtrAppLaunchHandler()
-      override;
+  base::WeakPtr<ash::AppLaunchHandler> GetWeakPtrAppLaunchHandler() override;
 
  private:
   // Go through the restore data launch list and launches the browser windows.

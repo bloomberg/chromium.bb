@@ -80,10 +80,10 @@ using cricket::TransportDescriptionFactory;
 using cricket::TransportInfo;
 using cricket::VideoCodec;
 using cricket::VideoContentDescription;
-using rtc::CS_AEAD_AES_128_GCM;
-using rtc::CS_AEAD_AES_256_GCM;
-using rtc::CS_AES_CM_128_HMAC_SHA1_32;
-using rtc::CS_AES_CM_128_HMAC_SHA1_80;
+using rtc::kCsAeadAes128Gcm;
+using rtc::kCsAeadAes256Gcm;
+using rtc::kCsAesCm128HmacSha1_32;
+using rtc::kCsAesCm128HmacSha1_80;
 using rtc::UniqueRandomIdGenerator;
 using ::testing::Contains;
 using ::testing::Each;
@@ -267,8 +267,8 @@ static const char* kMediaProtocolsDtls[] = {
 
 // SRTP cipher name negotiated by the tests. This must be updated if the
 // default changes.
-static const char* kDefaultSrtpCryptoSuite = CS_AES_CM_128_HMAC_SHA1_80;
-static const char* kDefaultSrtpCryptoSuiteGcm = CS_AEAD_AES_256_GCM;
+static const char* kDefaultSrtpCryptoSuite = kCsAesCm128HmacSha1_80;
+static const char* kDefaultSrtpCryptoSuiteGcm = kCsAeadAes256Gcm;
 
 // These constants are used to make the code using "AddMediaDescriptionOptions"
 // more readable.
@@ -321,7 +321,7 @@ FindFirstMediaDescriptionByMid(const std::string& mid,
       [&mid](const MediaDescriptionOptions& t) { return t.mid == mid; });
 }
 
-// Add a media section to the |session_options|.
+// Add a media section to the `session_options`.
 static void AddMediaDescriptionOptions(MediaType type,
                                        const std::string& mid,
                                        RtpTransceiverDirection direction,
@@ -408,8 +408,8 @@ void PreferGcmCryptoParameters(CryptoParamsVec* cryptos) {
   cryptos->erase(
       std::remove_if(cryptos->begin(), cryptos->end(),
                      [](const cricket::CryptoParams& crypto) {
-                       return crypto.cipher_suite != CS_AEAD_AES_256_GCM &&
-                              crypto.cipher_suite != CS_AEAD_AES_128_GCM;
+                       return crypto.cipher_suite != kCsAeadAes256Gcm &&
+                              crypto.cipher_suite != kCsAeadAes128Gcm;
                      }),
       cryptos->end());
 }
@@ -632,8 +632,8 @@ class MediaSessionDescriptionFactoryTest : public ::testing::Test {
   }
 
   // This test that the audio and video media direction is set to
-  // |expected_direction_in_answer| in an answer if the offer direction is set
-  // to |direction_in_offer| and the answer is willing to both send and receive.
+  // `expected_direction_in_answer` in an answer if the offer direction is set
+  // to `direction_in_offer` and the answer is willing to both send and receive.
   void TestMediaDirectionInAnswer(
       RtpTransceiverDirection direction_in_offer,
       RtpTransceiverDirection expected_direction_in_answer) {
@@ -2716,10 +2716,10 @@ TEST_F(MediaSessionDescriptionFactoryTest,
       f2_.CreateOffer(opts, answer.get()));
 
   // The expected audio codecs are the common audio codecs from the first
-  // offer/answer exchange plus the audio codecs only |f2_| offer, sorted in
+  // offer/answer exchange plus the audio codecs only `f2_` offer, sorted in
   // preference order.
-  // TODO(wu): |updated_offer| should not include the codec
-  // (i.e. |kAudioCodecs2[0]|) the other side doesn't support.
+  // TODO(wu): `updated_offer` should not include the codec
+  // (i.e. `kAudioCodecs2[0]`) the other side doesn't support.
   const AudioCodec kUpdatedAudioCodecOffer[] = {
       kAudioCodecsAnswer[0],
       kAudioCodecsAnswer[1],
@@ -2727,7 +2727,7 @@ TEST_F(MediaSessionDescriptionFactoryTest,
   };
 
   // The expected video codecs are the common video codecs from the first
-  // offer/answer exchange plus the video codecs only |f2_| offer, sorted in
+  // offer/answer exchange plus the video codecs only `f2_` offer, sorted in
   // preference order.
   const VideoCodec kUpdatedVideoCodecOffer[] = {
       kVideoCodecsAnswer[0],
@@ -2803,8 +2803,8 @@ TEST_F(MediaSessionDescriptionFactoryTest,
   f1_.set_video_codecs({}, {});
   f2_.set_video_codecs({}, {});
 
-  // Perform initial offer/answer in reverse (|f2_| as offerer) so that the
-  // second offer/answer is forward (|f1_| as offerer).
+  // Perform initial offer/answer in reverse (`f2_` as offerer) so that the
+  // second offer/answer is forward (`f1_` as offerer).
   MediaSessionOptions opts;
   AddMediaDescriptionOptions(MEDIA_TYPE_AUDIO, "a0",
                              RtpTransceiverDirection::kSendRecv, kActive,
@@ -2834,8 +2834,8 @@ TEST_F(MediaSessionDescriptionFactoryTest,
   f1_.set_audio_codecs({}, {});
   f2_.set_audio_codecs({}, {});
 
-  // Perform initial offer/answer in reverse (|f2_| as offerer) so that the
-  // second offer/answer is forward (|f1_| as offerer).
+  // Perform initial offer/answer in reverse (`f2_` as offerer) so that the
+  // second offer/answer is forward (`f1_` as offerer).
   MediaSessionOptions opts;
   AddMediaDescriptionOptions(MEDIA_TYPE_VIDEO, "v0",
                              RtpTransceiverDirection::kSendRecv, kActive,
@@ -2868,12 +2868,12 @@ TEST_F(MediaSessionDescriptionFactoryTest,
                              RtpTransceiverDirection::kRecvOnly, kActive,
                              &opts);
   std::vector<VideoCodec> f1_codecs = MAKE_VECTOR(kVideoCodecs1);
-  // This creates rtx for H264 with the payload type |f1_| uses.
+  // This creates rtx for H264 with the payload type `f1_` uses.
   AddRtxCodec(VideoCodec::CreateRtxCodec(126, kVideoCodecs1[1].id), &f1_codecs);
   f1_.set_video_codecs(f1_codecs, f1_codecs);
 
   std::vector<VideoCodec> f2_codecs = MAKE_VECTOR(kVideoCodecs2);
-  // This creates rtx for H264 with the payload type |f2_| uses.
+  // This creates rtx for H264 with the payload type `f2_` uses.
   AddRtxCodec(VideoCodec::CreateRtxCodec(125, kVideoCodecs2[0].id), &f2_codecs);
   f2_.set_video_codecs(f2_codecs, f2_codecs);
 
@@ -2891,9 +2891,9 @@ TEST_F(MediaSessionDescriptionFactoryTest,
 
   EXPECT_EQ(expected_codecs, vcd->codecs());
 
-  // Now, make sure we get same result (except for the order) if |f2_| creates
-  // an updated offer even though the default payload types between |f1_| and
-  // |f2_| are different.
+  // Now, make sure we get same result (except for the order) if `f2_` creates
+  // an updated offer even though the default payload types between `f1_` and
+  // `f2_` are different.
   std::unique_ptr<SessionDescription> updated_offer(
       f2_.CreateOffer(opts, answer.get()));
   ASSERT_TRUE(updated_offer);
@@ -2968,7 +2968,7 @@ TEST_F(MediaSessionDescriptionFactoryTest,
 TEST_F(MediaSessionDescriptionFactoryTest,
        RespondentCreatesOfferWithVideoAndRtxAfterCreatingAudioAnswer) {
   std::vector<VideoCodec> f1_codecs = MAKE_VECTOR(kVideoCodecs1);
-  // This creates rtx for H264 with the payload type |f1_| uses.
+  // This creates rtx for H264 with the payload type `f1_` uses.
   AddRtxCodec(VideoCodec::CreateRtxCodec(126, kVideoCodecs1[1].id), &f1_codecs);
   f1_.set_video_codecs(f1_codecs, f1_codecs);
 
@@ -2985,7 +2985,7 @@ TEST_F(MediaSessionDescriptionFactoryTest,
       GetFirstAudioContentDescription(answer.get());
   EXPECT_THAT(acd->codecs(), ElementsAreArray(kAudioCodecsAnswer));
 
-  // Now - let |f2_| add video with RTX and let the payload type the RTX codec
+  // Now - let `f2_` add video with RTX and let the payload type the RTX codec
   // reference  be the same as an audio codec that was negotiated in the
   // first offer/answer exchange.
   opts.media_description_options.clear();
@@ -3029,7 +3029,7 @@ TEST_F(MediaSessionDescriptionFactoryTest,
   AddAudioVideoSections(RtpTransceiverDirection::kRecvOnly, &opts);
 
   std::vector<VideoCodec> f2_codecs = MAKE_VECTOR(kVideoCodecs2);
-  // This creates rtx for H264 with the payload type |f2_| uses.
+  // This creates rtx for H264 with the payload type `f2_` uses.
   AddRtxCodec(VideoCodec::CreateRtxCodec(125, kVideoCodecs2[0].id), &f2_codecs);
   f2_.set_video_codecs(f2_codecs, f2_codecs);
 
@@ -3044,9 +3044,9 @@ TEST_F(MediaSessionDescriptionFactoryTest,
   std::vector<VideoCodec> expected_codecs = MAKE_VECTOR(kVideoCodecsAnswer);
   EXPECT_EQ(expected_codecs, vcd->codecs());
 
-  // Now, ensure that the RTX codec is created correctly when |f2_| creates an
+  // Now, ensure that the RTX codec is created correctly when `f2_` creates an
   // updated offer, even though the default payload types are different from
-  // those of |f1_|.
+  // those of `f1_`.
   std::unique_ptr<SessionDescription> updated_offer(
       f2_.CreateOffer(opts, answer.get()));
   ASSERT_TRUE(updated_offer);
@@ -3073,7 +3073,7 @@ TEST_F(MediaSessionDescriptionFactoryTest, RtxWithoutApt) {
   f1_.set_video_codecs(f1_codecs, f1_codecs);
 
   std::vector<VideoCodec> f2_codecs = MAKE_VECTOR(kVideoCodecs2);
-  // This creates RTX for H264 with the payload type |f2_| uses.
+  // This creates RTX for H264 with the payload type `f2_` uses.
   AddRtxCodec(VideoCodec::CreateRtxCodec(125, kVideoCodecs2[0].id), &f2_codecs);
   f2_.set_video_codecs(f2_codecs, f2_codecs);
 
@@ -3363,17 +3363,17 @@ TEST_F(MediaSessionDescriptionFactoryTest,
 
   // The expected RTP header extensions in the new offer are the resulting
   // extensions from the first offer/answer exchange plus the extensions only
-  // |f2_| offer.
-  // Since the default local extension id |f2_| uses has already been used by
-  // |f1_| for another extensions, it is changed to 13.
+  // `f2_` offer.
+  // Since the default local extension id `f2_` uses has already been used by
+  // `f1_` for another extensions, it is changed to 13.
   const RtpExtension kUpdatedAudioRtpExtensions[] = {
       kAudioRtpExtensionAnswer[0],
       RtpExtension(kAudioRtpExtension2[1].uri, 13),
       kAudioRtpExtension2[2],
   };
 
-  // Since the default local extension id |f2_| uses has already been used by
-  // |f1_| for another extensions, is is changed to 12.
+  // Since the default local extension id `f2_` uses has already been used by
+  // `f1_` for another extensions, is is changed to 12.
   const RtpExtension kUpdatedVideoRtpExtensions[] = {
       kVideoRtpExtensionAnswer[0],
       RtpExtension(kVideoRtpExtension2[1].uri, 12),

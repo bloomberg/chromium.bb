@@ -6,11 +6,15 @@
 
 #include <map>
 
+#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
-#include "chrome/browser/ash/policy/core/browser_policy_connector_chromeos.h"
+#include "base/feature_list.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
+#include "chrome/browser/ash/policy/networking/network_roaming_state_migration_handler_impl.h"
+#include "chrome/browser/ash/policy/networking/roaming_configuration_migration_handler.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -22,6 +26,7 @@
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/settings/cros_settings_provider.h"
 #include "chromeos/system/statistics_provider.h"
+#include "chromeos/tpm/install_attributes.h"
 #include "components/policy/policy_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/cert/x509_certificate.h"
@@ -32,13 +37,14 @@ namespace {
 
 std::string GetDeviceAssetID() {
   return g_browser_process->platform_part()
-      ->browser_policy_connector_chromeos()
+      ->browser_policy_connector_ash()
       ->GetDeviceAssetID();
 }
 
 }  // namespace
 
-DeviceNetworkConfigurationUpdater::~DeviceNetworkConfigurationUpdater() {}
+DeviceNetworkConfigurationUpdater::~DeviceNetworkConfigurationUpdater() =
+    default;
 
 // static
 std::unique_ptr<DeviceNetworkConfigurationUpdater>
@@ -79,20 +85,28 @@ DeviceNetworkConfigurationUpdater::DeviceNetworkConfigurationUpdater(
           base::Unretained(this)));
   if (device_asset_id_fetcher_.is_null())
     device_asset_id_fetcher_ = base::BindRepeating(&GetDeviceAssetID);
+  if (!base::FeatureList::IsEnabled(
+          ash::features::kCellularAllowPerNetworkRoaming)) {
+    network_roaming_state_migration_handler_ =
+        std::make_unique<NetworkRoamingStateMigrationHandlerImpl>();
+    if (!chromeos::InstallAttributes::Get()->IsEnterpriseManaged()) {
+      roaming_configuration_migration_handler_ =
+          std::make_unique<RoamingConfigurationMigrationHandler>(
+              network_roaming_state_migration_handler_.get());
+    }
+  }
 }
 
 void DeviceNetworkConfigurationUpdater::Init() {
   NetworkConfigurationUpdater::Init();
 
-  const policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-
   // The highest authority regarding whether cellular data roaming should be
   // allowed is the Device Policy. If there is no Device Policy, then
   // data roaming should be allowed if this is a Cellular First device.
-  if (!connector->IsDeviceEnterpriseManaged() &&
+  if (!chromeos::InstallAttributes::Get()->IsEnterpriseManaged() &&
       chromeos::switches::IsCellularFirstDevice()) {
-    network_device_handler_->SetCellularAllowRoaming(true);
+    network_device_handler_->SetCellularAllowRoaming(
+        /*allow_roaming=*/true, /*policy_allow_roaming=*/true);
   } else {
     // Apply the roaming setting initially.
     OnDataRoamingSettingChanged();
@@ -101,11 +115,12 @@ void DeviceNetworkConfigurationUpdater::Init() {
   // Set up MAC address randomization if we are not enterprise managed.
 
   network_device_handler_->SetMACAddressRandomizationEnabled(
-      !connector->IsDeviceEnterpriseManaged());
+      !chromeos::InstallAttributes::Get()->IsEnterpriseManaged());
 }
 
 void DeviceNetworkConfigurationUpdater::ImportClientCertificates() {
-  // Importing client certificates from device policy is not implemented.
+  LOG(WARNING)
+      << "Importing client certificates from device policy is not implemented.";
 }
 
 void DeviceNetworkConfigurationUpdater::ApplyNetworkPolicy(
@@ -161,7 +176,15 @@ void DeviceNetworkConfigurationUpdater::OnDataRoamingSettingChanged() {
     // Roaming is disabled as we can't determine the correct setting.
   }
 
-  network_device_handler_->SetCellularAllowRoaming(data_roaming_setting);
+  // Roaming is disabled by policy only when the device is both enterprise
+  // managed and the value of |data_roaming_setting| is |false|.
+  const bool policy_allow_roaming =
+      chromeos::InstallAttributes::Get()->IsEnterpriseManaged()
+          ? data_roaming_setting
+          : true;
+
+  network_device_handler_->SetCellularAllowRoaming(data_roaming_setting,
+                                                   policy_allow_roaming);
 }
 
 }  // namespace policy

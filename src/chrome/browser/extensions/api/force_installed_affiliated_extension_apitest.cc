@@ -8,7 +8,7 @@
 #include "base/json/json_writer.h"
 #include "base/path_service.h"
 #include "chrome/browser/ash/policy/affiliation/affiliation_test_helper.h"
-#include "chrome/browser/ash/policy/core/browser_policy_connector_chromeos.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_paths.h"
@@ -57,10 +57,9 @@ void ForceInstalledAffiliatedExtensionApiTest::
   chromeos::SessionManagerClient::InitializeFakeInMemory();
 
   // Init the user policy provider.
-  EXPECT_CALL(policy_provider_, IsInitializationComplete(testing::_))
-      .WillRepeatedly(testing::Return(true));
-  EXPECT_CALL(policy_provider_, IsFirstPolicyLoadComplete(testing::_))
-      .WillRepeatedly(testing::Return(true));
+  policy_provider_.SetDefaultReturns(
+      /*is_initialization_complete_return=*/true,
+      /*is_first_policy_load_complete_return=*/true);
   policy_provider_.SetAutoRefresh();
   policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
       &policy_provider_);

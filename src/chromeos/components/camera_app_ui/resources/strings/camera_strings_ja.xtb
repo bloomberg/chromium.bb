@@ -3,6 +3,8 @@
 <translationbundle lang="ja">
 <translation id="1175958423215084756">リンクが検出されました。<ph name="HOSTNAME" /></translation>
 <translation id="1276998909102132017">ギャラリー画像</translation>
+<translation id="1300209025925956156">ドキュメントをスキャンします</translation>
+<translation id="137991641490787891"><ph name="ASPECT_RATIO_WIDTH" />。アクセスするには検索+左矢印キーを押します。</translation>
 <translation id="1430915738399379752">印刷</translation>
 <translation id="1467231725790366244"><ph name="CAMERA" /> が外されました。</translation>
 <translation id="1473110567575736769">3 秒タイマー</translation>
@@ -31,7 +33,6 @@
 <translation id="2549985041256363841">撮影を開始</translation>
 <translation id="2599796128805996109">背面カメラ</translation>
 <translation id="2879583609344924966"><ph name="CAMERA" /> が接続されました。</translation>
-<translation id="2912439424121107408">このデバイスではエキスパート モードはサポートされていません</translation>
 <translation id="2968794441791257519">カメラで撮影した写真と動画を [ダウンロード] フォルダに移動します。これらの写真や動画には、[ファイル] からアクセスできます。
 
         また、ストレージへのアクセスが許可されているアプリからも、これらの写真や動画にアクセスできます。</translation>
@@ -42,15 +43,16 @@
 <translation id="3227137524299004712">マイク</translation>
 <translation id="3240426699337459095">リンクをコピーしました</translation>
 <translation id="3259149966178251584">カメラの解像度</translation>
+<translation id="3260401663013584785">ドキュメントを検出できませんでした</translation>
 <translation id="3448774564454087943">短すぎるため動画は保存されません</translation>
 <translation id="3517926952904427380">縦向きの写真を撮影できません</translation>
 <translation id="3569311554794739032"><ph name="FILE" /> を削除してもよろしいですか？</translation>
-<translation id="3733597664308256288">カメラの設定が追加されました。アクセスするには検索+右矢印キーを押します。</translation>
 <translation id="3810838688059735925">動画</translation>
 <translation id="3838931309141338733">バーコード スキャン</translation>
 <translation id="3892148308691398805">テキストをコピー</translation>
 <translation id="4000398125663085899">新しい画像と動画はファイルアプリのフォルダ（[マイファイル] &gt; [カメラ]）に保存されるようになりました</translation>
 <translation id="4118525110028899586">録画を一時停止</translation>
+<translation id="4121305183798804752">ドキュメントを検出しました</translation>
 <translation id="4269820728363426813">リンクアドレスをコピー</translation>
 <translation id="4279490309300973883">ミラーリング</translation>
 <translation id="4329152592498422850">スクエア写真の撮影に切り替え</translation>
@@ -65,10 +67,13 @@
 <translation id="5057360777601936059">カメラを使用できません。
         カメラが正しく接続されているかご確認ください。</translation>
 <translation id="5152121255775685072">ギャラリーに移動</translation>
+<translation id="520537883758714667">ドキュメント スキャンをご利用いただけるようになりました</translation>
 <translation id="5268823927180092501">すべてのカメラでドキュメント モードを有効にする</translation>
 <translation id="5422455049771430511">画像と動画の保存先が変わりました</translation>
+<translation id="5444515100983837161">ドキュメントのすべての端をフレーム内に収めてください。ドキュメントと背景を異なる色にすると、うまくスキャンできます。</translation>
 <translation id="5671277269877808209">スクエア</translation>
 <translation id="5753488212459587150">エキスパート モードを有効にする</translation>
+<translation id="5759254179196327752">ドキュメント スキャン</translation>
 <translation id="5775960006311140197">エキスパート モード</translation>
 <translation id="5869546221129391014">グリッド</translation>
 <translation id="5975083100439434680">縮小する</translation>
@@ -82,6 +87,7 @@
 
 画質に関するフィードバックの場合は、サンプルの写真や動画を添付し、問題の内容を詳しくご説明ください（写真が暗すぎる、ピントが合わないなど）。</translation>
 <translation id="6420689864531458495">（<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" /> - <ph name="WIDTH" />×<ph name="HEIGHT" />）<ph name="MEGAPIXEL" /> メガピクセル</translation>
+<translation id="667999046851023355">ドキュメント</translation>
 <translation id="6681668084120808868">写真を撮る</translation>
 <translation id="6778482348691154169">写真を撮影できません</translation>
 <translation id="695140971690006676">すべてリセット</translation>
@@ -108,11 +114,13 @@
 <translation id="8425673304802773841">下にティルト</translation>
 <translation id="8428213095426709021">設定</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" />p（<ph name="WIDTH" />:<ph name="HEIGHT" />）</translation>
+<translation id="8712637175834984815">閉じる</translation>
 <translation id="8732462232047530626">メタデータのプレビュー</translation>
 <translation id="8815966864175525708">縦向きの写真の撮影に切り替え</translation>
 <translation id="8828441885228359828">録画を再開</translation>
 <translation id="8870695351537079478">録画を開始できません</translation>
 <translation id="8903921497873541725">拡大する</translation>
+<translation id="9045010116236796332">ドキュメントのすべての端をフレーム内に収めてください</translation>
 <translation id="9045155556724273246">10 秒</translation>
 <translation id="945522503751344254">フィードバックを送信</translation>
 </translationbundle>

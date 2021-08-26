@@ -14,7 +14,8 @@ from subprocess import Popen
 import sys
 import signal
 
-ROOT_DIRECTORY = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
+ROOT_DIRECTORY = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..',
+                              '..')
 scripts_path = os.path.join(ROOT_DIRECTORY, 'scripts')
 sys.path.append(scripts_path)
 
@@ -24,7 +25,9 @@ import test_helpers
 
 def parse_options(cli_args):
     parser = argparse.ArgumentParser(description='Run tests')
-    parser.add_argument('--chrome-binary', dest='chrome_binary', help='path to Chromium binary')
+    parser.add_argument('--chrome-binary',
+                        dest='chrome_binary',
+                        help='path to Chromium binary')
     parser.add_argument(
         '--test-suite',
         dest='test_suite',
@@ -36,7 +39,9 @@ def parse_options(cli_args):
         help=
         'path to test suite, starting from the out/TARGET directory. Should use Linux path separators.'
     )
-    parser.add_argument('--test-file', dest='test_file', help='an absolute path for the file to test')
+    parser.add_argument('--test-file',
+                        dest='test_file',
+                        help='an absolute path for the file to test')
     parser.add_argument(
         '--target',
         '-t',
@@ -46,7 +51,9 @@ def parse_options(cli_args):
     parser.add_argument(
         '--chrome-features',
         dest='chrome_features',
-        help='comma separated list of strings passed to --enable-features on the chromium commandline')
+        help=
+        'comma separated list of strings passed to --enable-features on the chromium commandline'
+    )
     parser.add_argument(
         '--jobs',
         default='1',

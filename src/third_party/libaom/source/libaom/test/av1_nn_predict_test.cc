@@ -22,7 +22,6 @@
 #include "test/util.h"
 #include "test/register_state_check.h"
 #include "test/acm_random.h"
-#include "test/clear_system_state.h"
 
 namespace {
 typedef void (*NnPredict_Func)(const float *const input_nodes,
@@ -73,7 +72,6 @@ class NnPredictTest : public ::testing::TestWithParam<NnPredictTestParam> {
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(NnPredictTest);
 
 void NnPredictTest::RunNnPredictTest(const NN_CONFIG *const shape) {
-  libaom_test::ClearSystemState();
   float inputs[NN_MAX_NODES_PER_LAYER] = { 0 };
   float outputs_test[NN_MAX_NODES_PER_LAYER] = { 0 };
   float outputs_ref[NN_MAX_NODES_PER_LAYER] = { 0 };
@@ -120,7 +118,6 @@ void NnPredictTest::RunNnPredictTest(const NN_CONFIG *const shape) {
 
     av1_nn_predict_c(inputs, &nn_config, 0, outputs_ref);
     target_func_(inputs, &nn_config, 0, outputs_test);
-    libaom_test::ClearSystemState();
 
     for (int node = 0; node < shape->num_outputs; node++) {
       if (outputs_ref[node] < epsilon) {
@@ -140,7 +137,6 @@ void NnPredictTest::RunNnPredictTest(const NN_CONFIG *const shape) {
 
 void NnPredictTest::RunNnPredictSpeedTest(const NN_CONFIG *const shape,
                                           const int run_times) {
-  libaom_test::ClearSystemState();
   float inputs[NN_MAX_NODES_PER_LAYER] = { 0 };
   float outputs_test[NN_MAX_NODES_PER_LAYER] = { 0 };
   float outputs_ref[NN_MAX_NODES_PER_LAYER] = { 0 };
@@ -167,7 +163,6 @@ void NnPredictTest::RunNnPredictSpeedTest(const NN_CONFIG *const shape,
     target_func_(inputs, &nn_config, 0, outputs_test);
   }
   aom_usec_timer_mark(&timer);
-  libaom_test::ClearSystemState();
   const double time2 = static_cast<double>(aom_usec_timer_elapsed(&timer));
 
   printf("%d", shape->num_inputs);

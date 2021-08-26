@@ -35,7 +35,9 @@ class SlideOutController;
 class CastMediaNotificationItem;
 class MediaNotificationDeviceSelectorView;
 class MediaNotificationContainerObserver;
+class MediaNotificationFooterView;
 class MediaNotificationService;
+class Profile;
 
 // MediaNotificationContainerImplView holds a media notification for display
 // within the MediaDialogView. The media notification shows metadata for a media
@@ -55,6 +57,7 @@ class MediaNotificationContainerImplView
       base::WeakPtr<media_message_center::MediaNotificationItem> item,
       MediaNotificationService* service,
       GlobalMediaControlsEntryPoint entry_point,
+      Profile* profile,
       absl::optional<media_message_center::NotificationTheme> theme =
           absl::nullopt);
   MediaNotificationContainerImplView(
@@ -128,6 +131,9 @@ class MediaNotificationContainerImplView
     DCHECK(!base::FeatureList::IsEnabled(media::kGlobalMediaControlsModernUI));
     return static_cast<media_message_center::MediaNotificationViewImpl*>(view_);
   }
+  MediaNotificationDeviceSelectorView* device_selector_view_for_testing() {
+    return device_selector_view_;
+  }
 
   bool is_playing_for_testing() { return is_playing_; }
   bool is_expanded_for_testing() { return is_expanded_; }
@@ -140,7 +146,8 @@ class MediaNotificationContainerImplView
   class DismissButton;
 
   void AddStopCastButton(CastMediaNotificationItem* item);
-  void AddDeviceSelectorView(bool is_local_media_session);
+  void AddDeviceSelectorView(bool is_local_media_session,
+                             bool show_expand_button);
   void StopCasting(CastMediaNotificationItem* item);
   void UpdateStopCastButtonIcon();
   void UpdateStopCastButtonBackground();
@@ -174,6 +181,7 @@ class MediaNotificationContainerImplView
   DismissButton* dismiss_button_ = nullptr;
   media_message_center::MediaNotificationView* view_ = nullptr;
   MediaNotificationDeviceSelectorView* device_selector_view_ = nullptr;
+  MediaNotificationFooterView* footer_view_ = nullptr;
 
   // Only shows up for cast notifications.
   views::View* stop_button_strip_ = nullptr;
@@ -221,6 +229,7 @@ class MediaNotificationContainerImplView
 
   const bool is_cros_;
   const GlobalMediaControlsEntryPoint entry_point_;
+  Profile* const profile_;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_GLOBAL_MEDIA_CONTROLS_MEDIA_NOTIFICATION_CONTAINER_IMPL_VIEW_H_

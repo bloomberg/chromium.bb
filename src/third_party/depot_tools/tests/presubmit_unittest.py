@@ -1993,9 +1993,13 @@ class CannedChecksUnittest(PresubmitTestsBase):
 
   def testCannedCheckChangeHasBugField(self):
     self.DescriptionTest(presubmit_canned_checks.CheckChangeHasBugField,
-                         'Foo\nBUG=1234', 'Foo\n',
-                         presubmit.OutputApi.PresubmitNotifyResult,
-                         False)
+                         'Foo\nBUG=b:1234', 'Foo\n',
+                         presubmit.OutputApi.PresubmitNotifyResult, False)
+
+  def testCannedCheckChangeHasBugFieldWithBuganizerSlash(self):
+    self.DescriptionTest(presubmit_canned_checks.CheckChangeHasBugField,
+                         'Foo\nBUG=b:1234', 'Foo\nBUG=b/1234',
+                         presubmit.OutputApi.PresubmitNotifyResult, False)
 
   def testCannedCheckChangeHasNoUnwantedTags(self):
     self.DescriptionTest(presubmit_canned_checks.CheckChangeHasNoUnwantedTags,
@@ -2519,7 +2523,7 @@ the current line as well!
     subprocess.Popen.return_value = process
     presubmit.sigint_handler.wait.return_value = ('', None)
 
-    pylint = os.path.join(_ROOT, 'pylint')
+    pylint = os.path.join(_ROOT, 'pylint-1.5')
     pylintrc = os.path.join(_ROOT, 'pylintrc')
     env = {str('PYTHONPATH'): str('')}
     if sys.platform == 'win32':

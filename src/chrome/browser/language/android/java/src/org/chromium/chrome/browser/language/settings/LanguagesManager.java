@@ -58,7 +58,8 @@ public class LanguagesManager {
             LanguageSettingsActionType.ADD_TO_NEVER_TRANSLATE,
             LanguageSettingsActionType.REMOVE_FROM_ALWAYS_TRANSLATE,
             LanguageSettingsActionType.ADD_TO_ALWAYS_TRANSLATE,
-            LanguageSettingsActionType.REMOVE_SITE_FROM_NEVER_TRANSLATE})
+            LanguageSettingsActionType.REMOVE_SITE_FROM_NEVER_TRANSLATE,
+            LanguageSettingsActionType.RESTART_CHROME})
     @Retention(RetentionPolicy.SOURCE)
     @interface LanguageSettingsActionType {
         // int CLICK_ON_ADD_LANGUAGE = 1; // Removed M89
@@ -76,7 +77,8 @@ public class LanguagesManager {
         int REMOVE_FROM_ALWAYS_TRANSLATE = 13;
         int ADD_TO_ALWAYS_TRANSLATE = 14;
         int REMOVE_SITE_FROM_NEVER_TRANSLATE = 15;
-        int NUM_ENTRIES = 16;
+        int RESTART_CHROME = 16;
+        int NUM_ENTRIES = 17;
     }
 
     // Constants used to log UMA enum histogram, must stay in sync with
@@ -165,9 +167,9 @@ public class LanguagesManager {
     }
 
     /**
-     * Get the list of potential languages to show in the {@link AddLanguageFragment} based on which
-     * list or preference a language will be added to. By default the potential languages for the
-     * Accept-Language list is returned.
+     * Get the list of potential languages to show in the {@link SelectLanguageFragment} based on
+     * which list or preference a language will be added to. By default the potential languages for
+     * the Accept-Language list is returned.
      * @param LanguageListType key to select which languages to get.
      * @return A list of LanguageItems to choose from for the given preference.
      */

@@ -11,57 +11,51 @@
 #include "include/core/SkPaint.h"
 #include "include/gpu/GrRecordingContext.h"
 #include "src/gpu/BaseDevice.h"
+#include "src/gpu/GrImageContextPriv.h"
 #include "src/gpu/text/GrSDFTControl.h"
 
+class GrImageInfo;
+class GrSwizzle;
 class SkDeferredDisplayList;
+namespace skgpu {
+    class SurfaceContext;
+    class SurfaceFillContext;
+}
 
-/** Class that exposes methods to GrRecordingContext that are only intended for use internal to
+/** Class that exposes methods on GrRecordingContext that are only intended for use internal to
     Skia. This class is purely a privileged window into GrRecordingContext. It should never have
     additional data members or virtual methods. */
-class GrRecordingContextPriv {
+class GrRecordingContextPriv : public GrImageContextPriv {
 public:
-    // from GrContext_Base
-    uint32_t contextID() const { return fContext->contextID(); }
-
-    bool matches(GrContext_Base* candidate) const { return fContext->matches(candidate); }
-
-    const GrContextOptions& options() const { return fContext->options(); }
-
-    const GrCaps* caps() const { return fContext->caps(); }
-    sk_sp<const GrCaps> refCaps() const;
-
-    GrImageContext* asImageContext() { return fContext->asImageContext(); }
-    GrRecordingContext* asRecordingContext() { return fContext->asRecordingContext(); }
-
-    // from GrRecordingContext
-    GrProxyProvider* proxyProvider() { return fContext->proxyProvider(); }
-    const GrProxyProvider* proxyProvider() const { return fContext->proxyProvider(); }
-
-    /** This is only useful for debug purposes */
-    SkDEBUGCODE(GrSingleOwner* singleOwner() const { return fContext->singleOwner(); } )
-
-    // from GrRecordingContext
-    GrDrawingManager* drawingManager() { return fContext->drawingManager(); }
-
-    SkArenaAlloc* recordTimeAllocator() { return fContext->arenas().recordTimeAllocator(); }
-    GrSubRunAllocator* recordTimeSubRunAllocator() {
-        return fContext->arenas().recordTimeSubRunAllocator();
+    GrRecordingContext* context() { return static_cast<GrRecordingContext*>(fContext); }
+    const GrRecordingContext* context() const {
+        return static_cast<const GrRecordingContext*>(fContext);
     }
-    GrRecordingContext::Arenas arenas() { return fContext->arenas(); }
 
-    GrRecordingContext::OwnedArenas&& detachArenas() { return fContext->detachArenas(); }
+    GrProxyProvider* proxyProvider() { return this->context()->proxyProvider(); }
+    const GrProxyProvider* proxyProvider() const { return this->context()->proxyProvider(); }
+
+    GrDrawingManager* drawingManager() { return this->context()->drawingManager(); }
+
+    SkArenaAlloc* recordTimeAllocator() { return this->context()->arenas().recordTimeAllocator(); }
+    GrSubRunAllocator* recordTimeSubRunAllocator() {
+        return this->context()->arenas().recordTimeSubRunAllocator();
+    }
+    GrRecordingContext::Arenas arenas() { return this->context()->arenas(); }
+
+    GrRecordingContext::OwnedArenas&& detachArenas() { return this->context()->detachArenas(); }
 
     void recordProgramInfo(const GrProgramInfo* programInfo) {
-        fContext->recordProgramInfo(programInfo);
+        this->context()->recordProgramInfo(programInfo);
     }
 
     void detachProgramData(SkTArray<GrRecordingContext::ProgramData>* dst) {
-        fContext->detachProgramData(dst);
+        this->context()->detachProgramData(dst);
     }
 
-    GrTextBlobCache* getTextBlobCache() { return fContext->getTextBlobCache(); }
+    GrTextBlobCache* getTextBlobCache() { return this->context()->getTextBlobCache(); }
 
-    GrThreadSafeCache* threadSafeCache() { return fContext->threadSafeCache(); }
+    GrThreadSafeCache* threadSafeCache() { return this->context()->threadSafeCache(); }
 
     void moveRenderTasksToDDL(SkDeferredDisplayList*);
 
@@ -73,7 +67,7 @@ public:
      */
     void addOnFlushCallbackObject(GrOnFlushCallbackObject*);
 
-    GrAuditTrail* auditTrail() { return fContext->fAuditTrail.get(); }
+    GrAuditTrail* auditTrail() { return this->context()->fAuditTrail.get(); }
 
 #if GR_TEST_UTILS
     // Used by tests that intentionally exercise codepaths that print warning messages, in order to
@@ -89,13 +83,13 @@ public:
     private:
         GrRecordingContext* fContext;
     };
-    void incrSuppressWarningMessages() { ++fContext->fSuppressWarningMessages; }
-    void decrSuppressWarningMessages() { --fContext->fSuppressWarningMessages; }
+    void incrSuppressWarningMessages() { ++this->context()->fSuppressWarningMessages; }
+    void decrSuppressWarningMessages() { --this->context()->fSuppressWarningMessages; }
 #endif
 
     void printWarningMessage(const char* msg) const {
 #if GR_TEST_UTILS
-        if (fContext->fSuppressWarningMessages > 0) {
+        if (this->context()->fSuppressWarningMessages > 0) {
             return;
         }
 #endif
@@ -103,12 +97,12 @@ public:
     }
 
     GrRecordingContext::Stats* stats() {
-        return &fContext->fStats;
+        return &this->context()->fStats;
     }
 
 #if GR_GPU_STATS && GR_TEST_UTILS
     using DMSAAStats = GrRecordingContext::DMSAAStats;
-    DMSAAStats& dmsaaStats() { return fContext->fDMSAAStats; }
+    DMSAAStats& dmsaaStats() { return this->context()->fDMSAAStats; }
 #endif
 
     GrSDFTControl getSDFTControl(bool useSDFTForSmallText) const;
@@ -134,8 +128,71 @@ public:
                                           const SkSurfaceProps&,
                                           skgpu::BaseDevice::InitContents);
 
+    // If the passed in GrSurfaceProxy is renderable this will return a SurfaceDrawContext,
+    // otherwise it will return a SurfaceContext.
+    std::unique_ptr<skgpu::SurfaceContext> makeSC(GrSurfaceProxyView readView,
+                                                  const GrColorInfo&);
+
+    /**
+     * Uses GrImageInfo's color type to pick the default texture format. Will return a
+     * SurfaceDrawContext if possible.
+     */
+    std::unique_ptr<skgpu::SurfaceFillContext> makeSFC(
+        GrImageInfo,
+        SkBackingFit = SkBackingFit::kExact,
+        int sampleCount = 1,
+        GrMipmapped = GrMipmapped::kNo,
+        GrProtected = GrProtected::kNo,
+        GrSurfaceOrigin = kTopLeft_GrSurfaceOrigin,
+        SkBudgeted = SkBudgeted::kYes);
+
+    /**
+     * Makes a custom configured SurfaceFillContext where the caller specifies the specific
+     * texture format and swizzles. The color type will be kUnknown. Returns a SurfaceDrawContext
+     * if possible.
+     */
+    std::unique_ptr<skgpu::SurfaceFillContext> makeSFC(SkAlphaType,
+                                                       sk_sp<SkColorSpace>,
+                                                       SkISize dimensions,
+                                                       SkBackingFit,
+                                                       const GrBackendFormat&,
+                                                       int sampleCount,
+                                                       GrMipmapped,
+                                                       GrProtected,
+                                                       GrSwizzle readSwizzle,
+                                                       GrSwizzle writeSwizzle,
+                                                       GrSurfaceOrigin,
+                                                       SkBudgeted);
+
+    /**
+     * Like the above but uses GetFallbackColorTypeAndFormat to find a fallback color type (and
+     * compatible format) if the passed GrImageInfo's color type is not renderable.
+     */
+    std::unique_ptr<skgpu::SurfaceFillContext> makeSFCWithFallback(
+            GrImageInfo,
+            SkBackingFit = SkBackingFit::kExact,
+            int sampleCount = 1,
+            GrMipmapped = GrMipmapped::kNo,
+            GrProtected = GrProtected::kNo,
+            GrSurfaceOrigin = kTopLeft_GrSurfaceOrigin,
+            SkBudgeted = SkBudgeted::kYes);
+
+    /**
+     * Creates a SurfaceFillContext from an existing GrBackendTexture. The GrColorInfo's color
+     * type must be compatible with backend texture's format or this will fail. All formats are
+     * considered compatible with kUnknown. Returns a SurfaceDrawContext if possible.
+     */
+    std::unique_ptr<skgpu::SurfaceFillContext> makeSFCFromBackendTexture(
+            GrColorInfo,
+            const GrBackendTexture&,
+            int sampleCount,
+            GrSurfaceOrigin,
+            sk_sp<GrRefCntedCallback> releaseHelper);
+
+protected:
+    explicit GrRecordingContextPriv(GrRecordingContext* rContext) : GrImageContextPriv(rContext) {}
+
 private:
-    explicit GrRecordingContextPriv(GrRecordingContext* context) : fContext(context) {}
     GrRecordingContextPriv(const GrRecordingContextPriv&) = delete;
     GrRecordingContextPriv& operator=(const GrRecordingContextPriv&) = delete;
 
@@ -143,9 +200,9 @@ private:
     const GrRecordingContextPriv* operator&() const;
     GrRecordingContextPriv* operator&();
 
-    GrRecordingContext* fContext;
-
     friend class GrRecordingContext; // to construct/copy this type.
+
+    using INHERITED = GrImageContextPriv;
 };
 
 inline GrRecordingContextPriv GrRecordingContext::priv() { return GrRecordingContextPriv(this); }

@@ -765,8 +765,10 @@ WebInputEventResult EventHandler::HandlePointerEvent(
     const WebPointerEvent& web_pointer_event,
     const Vector<WebPointerEvent>& coalesced_events,
     const Vector<WebPointerEvent>& predicted_events) {
-  return pointer_event_manager_->HandlePointerEvent(
+  WebInputEventResult event_result = pointer_event_manager_->HandlePointerEvent(
       web_pointer_event, coalesced_events, predicted_events);
+  gesture_manager_->NotifyPointerEventHandled(web_pointer_event);
+  return event_result;
 }
 
 WebInputEventResult EventHandler::HandleMousePressEvent(
@@ -1004,6 +1006,12 @@ WebInputEventResult EventHandler::HandleMouseMoveOrLeaveEvent(
     mouse_event_manager_->ClearDragHeuristicState();
     capturing_mouse_events_element_ = nullptr;
     ReleaseMouseCaptureFromLocalRoot();
+
+    // If the scrollbar still thinks it's being dragged, tell it to stop.
+    // Can happen on Win if we lose focus (e.g. from Alt-Tab) mid-drag.
+    if (last_scrollbar_under_mouse_ &&
+        last_scrollbar_under_mouse_->PressedPart() != ScrollbarPart::kNoPart)
+      last_scrollbar_under_mouse_->MouseUp(mouse_event);
   }
 
   if (RuntimeEnabledFeatures::MiddleClickAutoscrollEnabled()) {
@@ -1485,18 +1493,9 @@ void EventHandler::ReleasePointerCapture(PointerId pointer_id,
     // approach for removing mouse subframe capture. It must be re-write
     // before enable the flag.
     if (RuntimeEnabledFeatures::MouseSubframeNoImplicitCaptureEnabled()) {
-      LocalFrame* frame = frame_;
       LocalFrame* parent = DynamicTo<LocalFrame>(frame_->Tree().Parent());
       while (parent) {
-        Element* subframe_element = nullptr;
-        if (frame->OwnerLayoutObject() &&
-            frame->OwnerLayoutObject()->GetNode()) {
-          subframe_element =
-              DynamicTo<Element>(frame->OwnerLayoutObject()->GetNode());
-        }
-
         parent->GetEventHandler().capturing_subframe_element_ = nullptr;
-        frame = parent;
         parent = DynamicTo<LocalFrame>(parent->Tree().Parent());
       }
     }

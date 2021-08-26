@@ -22,7 +22,7 @@ namespace {
 
 using RobustnessTest = TransformTest;
 
-TEST_F(RobustnessTest, Ptrs_Clamp) {
+TEST_F(RobustnessTest, Array_Idx_Clamp) {
   auto* src = R"(
 var<private> a : array<f32, 3>;
 
@@ -39,7 +39,7 @@ var<private> a : array<f32, 3>;
 let c : u32 = 1u;
 
 fn f() {
-  let b : f32 = a[min(u32(c), 2u)];
+  let b : f32 = a[min(c, 2u)];
 }
 )";
 
@@ -69,7 +69,7 @@ var<private> b : array<i32, 5>;
 var<private> i : u32;
 
 fn f() {
-  var c : f32 = a[min(u32(b[min(u32(i), 4u)]), 2u)];
+  var c : f32 = a[min(u32(b[min(i, 4u)]), 2u)];
 }
 )";
 
@@ -162,6 +162,86 @@ var<private> a : array<f32, 3>;
 
 fn f() {
   var b : f32 = a[2];
+}
+)";
+
+  auto got = Run<Robustness>(src);
+
+  EXPECT_EQ(expect, str(got));
+}
+
+TEST_F(RobustnessTest, LargeArrays_Idx) {
+  auto* src = R"(
+[[block]]
+struct S {
+  a : array<f32, 0x7fffffff>;
+  b : array<f32>;
+};
+[[group(0), binding(0)]] var<storage, read> s : S;
+
+fn f() {
+  // Signed
+  var i32_a1 : f32 = s.a[ 0x7ffffffe];
+  var i32_a2 : f32 = s.a[ 1];
+  var i32_a3 : f32 = s.a[ 0];
+  var i32_a4 : f32 = s.a[-1];
+  var i32_a5 : f32 = s.a[-0x7fffffff];
+
+  var i32_b1 : f32 = s.b[ 0x7ffffffe];
+  var i32_b2 : f32 = s.b[ 1];
+  var i32_b3 : f32 = s.b[ 0];
+  var i32_b4 : f32 = s.b[-1];
+  var i32_b5 : f32 = s.b[-0x7fffffff];
+
+  // Unsigned
+  var u32_a1 : f32 = s.a[0u];
+  var u32_a2 : f32 = s.a[1u];
+  var u32_a3 : f32 = s.a[0x7ffffffeu];
+  var u32_a4 : f32 = s.a[0x7fffffffu];
+  var u32_a5 : f32 = s.a[0x80000000u];
+  var u32_a6 : f32 = s.a[0xffffffffu];
+
+  var u32_b1 : f32 = s.b[0u];
+  var u32_b2 : f32 = s.b[1u];
+  var u32_b3 : f32 = s.b[0x7ffffffeu];
+  var u32_b4 : f32 = s.b[0x7fffffffu];
+  var u32_b5 : f32 = s.b[0x80000000u];
+  var u32_b6 : f32 = s.b[0xffffffffu];
+}
+)";
+
+  auto* expect = R"(
+[[block]]
+struct S {
+  a : array<f32, 2147483647>;
+  b : array<f32>;
+};
+
+[[group(0), binding(0)]] var<storage, read> s : S;
+
+fn f() {
+  var i32_a1 : f32 = s.a[2147483646];
+  var i32_a2 : f32 = s.a[1];
+  var i32_a3 : f32 = s.a[0];
+  var i32_a4 : f32 = s.a[0];
+  var i32_a5 : f32 = s.a[0];
+  var i32_b1 : f32 = s.b[min(2147483646u, (arrayLength(&(s.b)) - 1u))];
+  var i32_b2 : f32 = s.b[min(1u, (arrayLength(&(s.b)) - 1u))];
+  var i32_b3 : f32 = s.b[min(0u, (arrayLength(&(s.b)) - 1u))];
+  var i32_b4 : f32 = s.b[min(0u, (arrayLength(&(s.b)) - 1u))];
+  var i32_b5 : f32 = s.b[min(0u, (arrayLength(&(s.b)) - 1u))];
+  var u32_a1 : f32 = s.a[0u];
+  var u32_a2 : f32 = s.a[1u];
+  var u32_a3 : f32 = s.a[2147483646u];
+  var u32_a4 : f32 = s.a[2147483646u];
+  var u32_a5 : f32 = s.a[2147483646u];
+  var u32_a6 : f32 = s.a[2147483646u];
+  var u32_b1 : f32 = s.b[min(0u, (arrayLength(&(s.b)) - 1u))];
+  var u32_b2 : f32 = s.b[min(1u, (arrayLength(&(s.b)) - 1u))];
+  var u32_b3 : f32 = s.b[min(2147483646u, (arrayLength(&(s.b)) - 1u))];
+  var u32_b4 : f32 = s.b[min(2147483647u, (arrayLength(&(s.b)) - 1u))];
+  var u32_b5 : f32 = s.b[min(2147483648u, (arrayLength(&(s.b)) - 1u))];
+  var u32_b6 : f32 = s.b[min(4294967295u, (arrayLength(&(s.b)) - 1u))];
 }
 )";
 
@@ -557,7 +637,7 @@ struct S {
 [[group(0), binding(0)]] var<storage, read> s : S;
 
 fn f() {
-  var d : f32 = s.b[min(u32(25), (arrayLength(&(s.b)) - 1u))];
+  var d : f32 = s.b[min(25u, (arrayLength(&(s.b)) - 1u))];
 }
 )";
 
@@ -571,39 +651,83 @@ TEST_F(RobustnessTest, DISABLED_Atomics_Clamp) {
   FAIL();
 }
 
-// Clamp textureLoad() coord values
-TEST_F(RobustnessTest, TextureLoad_TextureCoord_Clamp) {
+// Clamp textureLoad() coord, array_index and level values
+TEST_F(RobustnessTest, TextureLoad_Clamp) {
   auto* src = R"(
-[[group(0), binding(0)]] var tex1d : texture_1d<f32>;
-
-[[group(0), binding(1)]] var tex2d : texture_2d<f32>;
-
-[[group(0), binding(2)]] var tex3d : texture_3d<f32>;
-
-[[group(0), binding(3)]] var tex2d_arr : texture_storage_2d_array<rgba8sint, read>;
+[[group(0), binding(0)]] var tex_1d : texture_1d<f32>;
+[[group(0), binding(0)]] var tex_2d : texture_2d<f32>;
+[[group(0), binding(0)]] var tex_2d_arr : texture_2d_array<f32>;
+[[group(0), binding(0)]] var tex_3d : texture_3d<f32>;
+[[group(0), binding(0)]] var tex_ms_2d : texture_multisampled_2d<f32>;
+[[group(0), binding(0)]] var tex_depth_2d : texture_depth_2d;
+[[group(0), binding(0)]] var tex_depth_2d_arr : texture_depth_2d_array;
+[[group(0), binding(0)]] var tex_storage_1d : texture_storage_1d<rgba8sint, read>;
+[[group(0), binding(0)]] var tex_storage_2d : texture_storage_2d<rgba8sint, read>;
+[[group(0), binding(0)]] var tex_storage_2d_arr : texture_storage_2d_array<rgba8sint, read>;
+[[group(0), binding(0)]] var tex_storage_3d : texture_storage_3d<rgba8sint, read>;
+[[group(0), binding(0)]] var tex_external : texture_external;
 
 fn f() {
-  ignore(textureLoad(tex1d, 10, 100));
-  ignore(textureLoad(tex2d, vec2<i32>(10, 20), 100));
-  ignore(textureLoad(tex3d, vec3<i32>(10, 20, 30), 100));
-  ignore(textureLoad(tex2d_arr, vec2<i32>(10, 20), 100));
+  var array_idx : i32;
+  var level_idx : i32;
+  var sample_idx : i32;
+
+  ignore(textureLoad(tex_1d, 1, level_idx));
+  ignore(textureLoad(tex_2d, vec2<i32>(1, 2), level_idx));
+  ignore(textureLoad(tex_2d_arr, vec2<i32>(1, 2), array_idx, level_idx));
+  ignore(textureLoad(tex_3d, vec3<i32>(1, 2, 3), level_idx));
+  ignore(textureLoad(tex_ms_2d, vec2<i32>(1, 2), sample_idx));
+  ignore(textureLoad(tex_depth_2d, vec2<i32>(1, 2), level_idx));
+  ignore(textureLoad(tex_depth_2d_arr, vec2<i32>(1, 2), array_idx, level_idx));
+  ignore(textureLoad(tex_storage_1d, 1));
+  ignore(textureLoad(tex_storage_2d, vec2<i32>(1, 2)));
+  ignore(textureLoad(tex_storage_2d_arr, vec2<i32>(1, 2), array_idx));
+  ignore(textureLoad(tex_storage_3d, vec3<i32>(1, 2, 3)));
+  ignore(textureLoad(tex_external, vec2<i32>(1, 2)));
 }
 )";
 
   auto* expect = R"(
-[[group(0), binding(0)]] var tex1d : texture_1d<f32>;
+[[group(0), binding(0)]] var tex_1d : texture_1d<f32>;
 
-[[group(0), binding(1)]] var tex2d : texture_2d<f32>;
+[[group(0), binding(0)]] var tex_2d : texture_2d<f32>;
 
-[[group(0), binding(2)]] var tex3d : texture_3d<f32>;
+[[group(0), binding(0)]] var tex_2d_arr : texture_2d_array<f32>;
 
-[[group(0), binding(3)]] var tex2d_arr : texture_storage_2d_array<rgba8sint, read>;
+[[group(0), binding(0)]] var tex_3d : texture_3d<f32>;
+
+[[group(0), binding(0)]] var tex_ms_2d : texture_multisampled_2d<f32>;
+
+[[group(0), binding(0)]] var tex_depth_2d : texture_depth_2d;
+
+[[group(0), binding(0)]] var tex_depth_2d_arr : texture_depth_2d_array;
+
+[[group(0), binding(0)]] var tex_storage_1d : texture_storage_1d<rgba8sint, read>;
+
+[[group(0), binding(0)]] var tex_storage_2d : texture_storage_2d<rgba8sint, read>;
+
+[[group(0), binding(0)]] var tex_storage_2d_arr : texture_storage_2d_array<rgba8sint, read>;
+
+[[group(0), binding(0)]] var tex_storage_3d : texture_storage_3d<rgba8sint, read>;
+
+[[group(0), binding(0)]] var tex_external : texture_external;
 
 fn f() {
-  ignore(textureLoad(tex1d, clamp(10, i32(), textureDimensions(tex1d)), 100));
-  ignore(textureLoad(tex2d, clamp(vec2<i32>(10, 20), vec2<i32>(), textureDimensions(tex2d)), 100));
-  ignore(textureLoad(tex3d, clamp(vec3<i32>(10, 20, 30), vec3<i32>(), textureDimensions(tex3d)), 100));
-  ignore(textureLoad(tex2d_arr, clamp(vec2<i32>(10, 20), vec2<i32>(), textureDimensions(tex2d_arr)), 100));
+  var array_idx : i32;
+  var level_idx : i32;
+  var sample_idx : i32;
+  ignore(textureLoad(tex_1d, clamp(1, i32(), (textureDimensions(tex_1d, clamp(level_idx, 0, (textureNumLevels(tex_1d) - 1))) - i32(1))), clamp(level_idx, 0, (textureNumLevels(tex_1d) - 1))));
+  ignore(textureLoad(tex_2d, clamp(vec2<i32>(1, 2), vec2<i32>(), (textureDimensions(tex_2d, clamp(level_idx, 0, (textureNumLevels(tex_2d) - 1))) - vec2<i32>(1))), clamp(level_idx, 0, (textureNumLevels(tex_2d) - 1))));
+  ignore(textureLoad(tex_2d_arr, clamp(vec2<i32>(1, 2), vec2<i32>(), (textureDimensions(tex_2d_arr, clamp(level_idx, 0, (textureNumLevels(tex_2d_arr) - 1))) - vec2<i32>(1))), clamp(array_idx, 0, (textureNumLayers(tex_2d_arr) - 1)), clamp(level_idx, 0, (textureNumLevels(tex_2d_arr) - 1))));
+  ignore(textureLoad(tex_3d, clamp(vec3<i32>(1, 2, 3), vec3<i32>(), (textureDimensions(tex_3d, clamp(level_idx, 0, (textureNumLevels(tex_3d) - 1))) - vec3<i32>(1))), clamp(level_idx, 0, (textureNumLevels(tex_3d) - 1))));
+  ignore(textureLoad(tex_ms_2d, clamp(vec2<i32>(1, 2), vec2<i32>(), (textureDimensions(tex_ms_2d) - vec2<i32>(1))), sample_idx));
+  ignore(textureLoad(tex_depth_2d, clamp(vec2<i32>(1, 2), vec2<i32>(), (textureDimensions(tex_depth_2d, clamp(level_idx, 0, (textureNumLevels(tex_depth_2d) - 1))) - vec2<i32>(1))), clamp(level_idx, 0, (textureNumLevels(tex_depth_2d) - 1))));
+  ignore(textureLoad(tex_depth_2d_arr, clamp(vec2<i32>(1, 2), vec2<i32>(), (textureDimensions(tex_depth_2d_arr, clamp(level_idx, 0, (textureNumLevels(tex_depth_2d_arr) - 1))) - vec2<i32>(1))), clamp(array_idx, 0, (textureNumLayers(tex_depth_2d_arr) - 1)), clamp(level_idx, 0, (textureNumLevels(tex_depth_2d_arr) - 1))));
+  ignore(textureLoad(tex_storage_1d, clamp(1, i32(), (textureDimensions(tex_storage_1d) - i32(1)))));
+  ignore(textureLoad(tex_storage_2d, clamp(vec2<i32>(1, 2), vec2<i32>(), (textureDimensions(tex_storage_2d) - vec2<i32>(1)))));
+  ignore(textureLoad(tex_storage_2d_arr, clamp(vec2<i32>(1, 2), vec2<i32>(), (textureDimensions(tex_storage_2d_arr) - vec2<i32>(1))), clamp(array_idx, 0, (textureNumLayers(tex_storage_2d_arr) - 1))));
+  ignore(textureLoad(tex_storage_3d, clamp(vec3<i32>(1, 2, 3), vec3<i32>(), (textureDimensions(tex_storage_3d) - vec3<i32>(1)))));
+  ignore(textureLoad(tex_external, clamp(vec2<i32>(1, 2), vec2<i32>(), (textureDimensions(tex_external) - vec2<i32>(1)))));
 }
 )";
 
@@ -612,22 +736,22 @@ fn f() {
   EXPECT_EQ(expect, str(got));
 }
 
-// Clamp textureStore() coord values
-TEST_F(RobustnessTest, TextureStore_TextureCoord_Clamp) {
+// Clamp textureStore() coord, array_index and level values
+TEST_F(RobustnessTest, TextureStore_Clamp) {
   auto* src = R"(
 [[group(0), binding(0)]] var tex1d : texture_storage_1d<rgba8sint, write>;
 
 [[group(0), binding(1)]] var tex2d : texture_storage_2d<rgba8sint, write>;
 
-[[group(0), binding(2)]] var tex3d : texture_storage_3d<rgba8sint, write>;
+[[group(0), binding(2)]] var tex2d_arr : texture_storage_2d_array<rgba8sint, write>;
 
-[[group(0), binding(3)]] var tex2d_arr : texture_storage_2d_array<rgba8sint, write>;
+[[group(0), binding(3)]] var tex3d : texture_storage_3d<rgba8sint, write>;
 
 fn f() {
   textureStore(tex1d, 10, vec4<i32>());
   textureStore(tex2d, vec2<i32>(10, 20), vec4<i32>());
-  textureStore(tex3d, vec3<i32>(10, 20, 30), vec4<i32>());
   textureStore(tex2d_arr, vec2<i32>(10, 20), 50, vec4<i32>());
+  textureStore(tex3d, vec3<i32>(10, 20, 30), vec4<i32>());
 }
 )";
 
@@ -636,15 +760,15 @@ fn f() {
 
 [[group(0), binding(1)]] var tex2d : texture_storage_2d<rgba8sint, write>;
 
-[[group(0), binding(2)]] var tex3d : texture_storage_3d<rgba8sint, write>;
+[[group(0), binding(2)]] var tex2d_arr : texture_storage_2d_array<rgba8sint, write>;
 
-[[group(0), binding(3)]] var tex2d_arr : texture_storage_2d_array<rgba8sint, write>;
+[[group(0), binding(3)]] var tex3d : texture_storage_3d<rgba8sint, write>;
 
 fn f() {
-  textureStore(tex1d, clamp(10, i32(), textureDimensions(tex1d)), vec4<i32>());
-  textureStore(tex2d, clamp(vec2<i32>(10, 20), vec2<i32>(), textureDimensions(tex2d)), vec4<i32>());
-  textureStore(tex3d, clamp(vec3<i32>(10, 20, 30), vec3<i32>(), textureDimensions(tex3d)), vec4<i32>());
-  textureStore(tex2d_arr, clamp(vec2<i32>(10, 20), vec2<i32>(), textureDimensions(tex2d_arr)), 50, vec4<i32>());
+  textureStore(tex1d, clamp(10, i32(), (textureDimensions(tex1d) - i32(1))), vec4<i32>());
+  textureStore(tex2d, clamp(vec2<i32>(10, 20), vec2<i32>(), (textureDimensions(tex2d) - vec2<i32>(1))), vec4<i32>());
+  textureStore(tex2d_arr, clamp(vec2<i32>(10, 20), vec2<i32>(), (textureDimensions(tex2d_arr) - vec2<i32>(1))), clamp(50, 0, (textureNumLayers(tex2d_arr) - 1)), vec4<i32>());
+  textureStore(tex3d, clamp(vec3<i32>(10, 20, 30), vec3<i32>(), (textureDimensions(tex3d) - vec3<i32>(1))), vec4<i32>());
 }
 )";
 
@@ -700,7 +824,7 @@ struct S {
 let c : u32 = 1u;
 
 fn f() {
-  let b : f32 = s.b[min(u32(c), (arrayLength(&(s.b)) - 1u))];
+  let b : f32 = s.b[min(c, (arrayLength(&(s.b)) - 1u))];
   let x : i32 = min(1, 2);
   let y : u32 = arrayLength(&(s.b));
 }

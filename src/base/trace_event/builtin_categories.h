@@ -82,6 +82,7 @@
   X("evdev")                                                             \
   X("event")                                                             \
   X("exo")                                                               \
+  X("extensions")                                                        \
   X("explore_sites")                                                     \
   X("FileSystem")                                                        \
   X("file_system_provider")                                              \

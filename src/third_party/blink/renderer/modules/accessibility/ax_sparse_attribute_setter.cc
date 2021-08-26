@@ -72,6 +72,10 @@ void SetObjectAttribute(ax::mojom::blink::IntAttribute attribute,
       !ax_target->IsVisible()) {
     return;
   }
+  if (attribute == ax::mojom::blink::IntAttribute::kErrormessageId &&
+      object->GetInvalidState() == ax::mojom::blink::InvalidState::kFalse) {
+    return;
+  }
 
   node_data->AddIntAttribute(attribute, ax_target->AXObjectID());
 }
@@ -84,13 +88,13 @@ void SetIntListAttribute(ax::mojom::blink::IntListAttribute attribute,
   Element* element = object->GetElement();
   if (!element)
     return;
-  absl::optional<HeapVector<Member<Element>>> attr_associated_elements =
+  HeapVector<Member<Element>>* attr_associated_elements =
       element->GetElementArrayAttribute(qualified_name);
-  if (!attr_associated_elements || attr_associated_elements.value().IsEmpty())
+  if (!attr_associated_elements || attr_associated_elements->IsEmpty())
     return;
   std::vector<int32_t> ax_ids;
 
-  for (const auto& associated_element : attr_associated_elements.value()) {
+  for (const auto& associated_element : *attr_associated_elements) {
     AXObject* ax_element =
         object->AXObjectCache().GetOrCreate(associated_element);
     if (!ax_element)

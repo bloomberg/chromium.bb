@@ -35,11 +35,25 @@ class RenderPipelineValidationTest : public ValidationTest {
             [[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
                 return vec4<f32>(0.0, 1.0, 0.0, 1.0);
             })");
+
+        fsModuleUint = utils::CreateShaderModule(device, R"(
+            [[stage(fragment)]] fn main() -> [[location(0)]] vec4<u32> {
+                return vec4<u32>(0u, 255u, 0u, 255u);
+            })");
     }
 
     wgpu::ShaderModule vsModule;
     wgpu::ShaderModule fsModule;
+    wgpu::ShaderModule fsModuleUint;
 };
+
+namespace {
+    bool BlendFactorContainsSrcAlpha(const wgpu::BlendFactor& blendFactor) {
+        return blendFactor == wgpu::BlendFactor::SrcAlpha ||
+               blendFactor == wgpu::BlendFactor::OneMinusSrcAlpha ||
+               blendFactor == wgpu::BlendFactor::SrcAlphaSaturated;
+    }
+}  // namespace
 
 // Test cases where creation should succeed
 TEST_F(RenderPipelineValidationTest, CreationSuccess) {
@@ -148,34 +162,188 @@ TEST_F(RenderPipelineValidationTest, NonRenderableFormat) {
     }
 }
 
+// Tests that the color formats must be blendable when blending is enabled.
+// Those are renderable color formats with "float" capabilities in
+// https://gpuweb.github.io/gpuweb/#plain-color-formats
+TEST_F(RenderPipelineValidationTest, NonBlendableFormat) {
+    {
+        // Succeeds because RGBA8Unorm is blendable
+        utils::ComboRenderPipelineDescriptor descriptor;
+        descriptor.vertex.module = vsModule;
+        descriptor.cFragment.module = fsModule;
+        descriptor.cTargets[0].blend = &descriptor.cBlends[0];
+        descriptor.cTargets[0].format = wgpu::TextureFormat::RGBA8Unorm;
+
+        device.CreateRenderPipeline(&descriptor);
+    }
+
+    {
+        // Fails because RGBA32Float is not blendable
+        utils::ComboRenderPipelineDescriptor descriptor;
+        descriptor.vertex.module = vsModule;
+        descriptor.cFragment.module = fsModule;
+        descriptor.cTargets[0].blend = &descriptor.cBlends[0];
+        descriptor.cTargets[0].format = wgpu::TextureFormat::RGBA32Float;
+
+        ASSERT_DEVICE_ERROR(device.CreateRenderPipeline(&descriptor));
+    }
+
+    {
+        // Succeeds because RGBA32Float is not blendable but blending is disabled
+        utils::ComboRenderPipelineDescriptor descriptor;
+        descriptor.vertex.module = vsModule;
+        descriptor.cFragment.module = fsModule;
+        descriptor.cTargets[0].blend = nullptr;
+        descriptor.cTargets[0].format = wgpu::TextureFormat::RGBA32Float;
+
+        device.CreateRenderPipeline(&descriptor);
+    }
+
+    {
+        // Fails because RGBA8Uint is not blendable
+        utils::ComboRenderPipelineDescriptor descriptor;
+        descriptor.vertex.module = vsModule;
+        descriptor.cFragment.module = fsModuleUint;
+        descriptor.cTargets[0].blend = &descriptor.cBlends[0];
+        descriptor.cTargets[0].format = wgpu::TextureFormat::RGBA8Uint;
+
+        ASSERT_DEVICE_ERROR(device.CreateRenderPipeline(&descriptor));
+    }
+
+    {
+        // Succeeds because RGBA8Uint is not blendable but blending is disabled
+        utils::ComboRenderPipelineDescriptor descriptor;
+        descriptor.vertex.module = vsModule;
+        descriptor.cFragment.module = fsModuleUint;
+        descriptor.cTargets[0].blend = nullptr;
+        descriptor.cTargets[0].format = wgpu::TextureFormat::RGBA8Uint;
+
+        device.CreateRenderPipeline(&descriptor);
+    }
+}
+
 // Tests that the format of the color state descriptor must match the output of the fragment shader.
 TEST_F(RenderPipelineValidationTest, FragmentOutputFormatCompatibility) {
-    constexpr uint32_t kNumTextureFormatBaseType = 3u;
-    std::array<const char*, kNumTextureFormatBaseType> kScalarTypes = {{"f32", "i32", "u32"}};
-    std::array<wgpu::TextureFormat, kNumTextureFormatBaseType> kColorFormats = {
-        {wgpu::TextureFormat::RGBA8Unorm, wgpu::TextureFormat::RGBA8Sint,
-         wgpu::TextureFormat::RGBA8Uint}};
+    std::array<const char*, 3> kScalarTypes = {{"f32", "i32", "u32"}};
+    std::array<wgpu::TextureFormat, 3> kColorFormats = {{wgpu::TextureFormat::RGBA8Unorm,
+                                                         wgpu::TextureFormat::RGBA8Sint,
+                                                         wgpu::TextureFormat::RGBA8Uint}};
 
-    for (size_t i = 0; i < kNumTextureFormatBaseType; ++i) {
-        for (size_t j = 0; j < kNumTextureFormatBaseType; ++j) {
-            utils::ComboRenderPipelineDescriptor descriptor;
-            descriptor.vertex.module = vsModule;
+    for (size_t i = 0; i < kScalarTypes.size(); ++i) {
+        utils::ComboRenderPipelineDescriptor descriptor;
+        descriptor.vertex.module = vsModule;
+        std::ostringstream stream;
+        stream << R"(
+            [[stage(fragment)]] fn main() -> [[location(0)]] vec4<)"
+               << kScalarTypes[i] << R"(> {
+                var result : vec4<)"
+               << kScalarTypes[i] << R"(>;
+                return result;
+            })";
+        descriptor.cFragment.module = utils::CreateShaderModule(device, stream.str().c_str());
+
+        for (size_t j = 0; j < kColorFormats.size(); ++j) {
             descriptor.cTargets[0].format = kColorFormats[j];
-
-            std::ostringstream stream;
-            stream << R"(
-                [[stage(fragment)]] fn main() -> [[location(0)]] vec4<)"
-                   << kScalarTypes[i] << R"(> {
-                    var result : vec4<)"
-                   << kScalarTypes[i] << R"(>;
-                    return result;
-                })";
-            descriptor.cFragment.module = utils::CreateShaderModule(device, stream.str().c_str());
-
             if (i == j) {
                 device.CreateRenderPipeline(&descriptor);
             } else {
                 ASSERT_DEVICE_ERROR(device.CreateRenderPipeline(&descriptor));
+            }
+        }
+    }
+}
+
+// Tests that the component count of the color state target format must be fewer than that of the
+// fragment shader output.
+TEST_F(RenderPipelineValidationTest, FragmentOutputComponentCountCompatibility) {
+    std::array<wgpu::TextureFormat, 3> kColorFormats = {wgpu::TextureFormat::R8Unorm,
+                                                        wgpu::TextureFormat::RG8Unorm,
+                                                        wgpu::TextureFormat::RGBA8Unorm};
+
+    std::array<wgpu::BlendFactor, 8> kBlendFactors = {wgpu::BlendFactor::Zero,
+                                                      wgpu::BlendFactor::One,
+                                                      wgpu::BlendFactor::SrcAlpha,
+                                                      wgpu::BlendFactor::OneMinusSrcAlpha,
+                                                      wgpu::BlendFactor::Src,
+                                                      wgpu::BlendFactor::DstAlpha,
+                                                      wgpu::BlendFactor::OneMinusDstAlpha,
+                                                      wgpu::BlendFactor::Dst};
+
+    for (size_t componentCount = 1; componentCount <= 4; ++componentCount) {
+        utils::ComboRenderPipelineDescriptor descriptor;
+        descriptor.vertex.module = vsModule;
+
+        std::ostringstream stream;
+        stream << R"(
+            [[stage(fragment)]] fn main() -> [[location(0)]] )";
+        switch (componentCount) {
+            case 1:
+                stream << R"(f32 {
+                return 1.0;
+                })";
+                break;
+            case 2:
+                stream << R"(vec2<f32> {
+                return vec2<f32>(1.0, 1.0);
+                })";
+                break;
+            case 3:
+                stream << R"(vec3<f32> {
+                return vec3<f32>(1.0, 1.0, 1.0);
+                })";
+                break;
+            case 4:
+                stream << R"(vec4<f32> {
+                return vec4<f32>(1.0, 1.0, 1.0, 1.0);
+                })";
+                break;
+            default:
+                UNREACHABLE();
+        }
+        descriptor.cFragment.module = utils::CreateShaderModule(device, stream.str().c_str());
+
+        for (auto colorFormat : kColorFormats) {
+            descriptor.cTargets[0].format = colorFormat;
+
+            descriptor.cTargets[0].blend = nullptr;
+            if (componentCount >= utils::GetWGSLRenderableColorTextureComponentCount(colorFormat)) {
+                device.CreateRenderPipeline(&descriptor);
+            } else {
+                ASSERT_DEVICE_ERROR(device.CreateRenderPipeline(&descriptor));
+            }
+
+            descriptor.cTargets[0].blend = &descriptor.cBlends[0];
+
+            for (auto colorSrcFactor : kBlendFactors) {
+                descriptor.cBlends[0].color.srcFactor = colorSrcFactor;
+                for (auto colorDstFactor : kBlendFactors) {
+                    descriptor.cBlends[0].color.dstFactor = colorDstFactor;
+                    for (auto alphaSrcFactor : kBlendFactors) {
+                        descriptor.cBlends[0].alpha.srcFactor = alphaSrcFactor;
+                        for (auto alphaDstFactor : kBlendFactors) {
+                            descriptor.cBlends[0].alpha.dstFactor = alphaDstFactor;
+
+                            bool valid = true;
+                            if (componentCount >=
+                                utils::GetWGSLRenderableColorTextureComponentCount(colorFormat)) {
+                                if (BlendFactorContainsSrcAlpha(
+                                        descriptor.cTargets[0].blend->color.srcFactor) ||
+                                    BlendFactorContainsSrcAlpha(
+                                        descriptor.cTargets[0].blend->color.dstFactor)) {
+                                    valid = componentCount == 4;
+                                }
+                            } else {
+                                valid = false;
+                            }
+
+                            if (valid) {
+                                device.CreateRenderPipeline(&descriptor);
+                            } else {
+                                ASSERT_DEVICE_ERROR(device.CreateRenderPipeline(&descriptor));
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -390,6 +558,7 @@ TEST_F(RenderPipelineValidationTest, TextureComponentTypeCompatibility) {
                     ignore(textureDimensions(myTexture));
                 })";
             descriptor.cFragment.module = utils::CreateShaderModule(device, stream.str().c_str());
+            descriptor.cTargets[0].writeMask = wgpu::ColorWriteMask::None;
 
             wgpu::BindGroupLayout bgl = utils::MakeBindGroupLayout(
                 device, {{0, wgpu::ShaderStage::Fragment, kTextureComponentTypes[j]}});
@@ -438,6 +607,7 @@ TEST_F(RenderPipelineValidationTest, TextureViewDimensionCompatibility) {
                     ignore(textureDimensions(myTexture));
                 })";
             descriptor.cFragment.module = utils::CreateShaderModule(device, stream.str().c_str());
+            descriptor.cTargets[0].writeMask = wgpu::ColorWriteMask::None;
 
             wgpu::BindGroupLayout bgl = utils::MakeBindGroupLayout(
                 device, {{0, wgpu::ShaderStage::Fragment, wgpu::TextureSampleType::Float,
@@ -687,6 +857,138 @@ TEST_F(RenderPipelineValidationTest, FragmentOutputCorrectEntryPoint) {
     ASSERT_DEVICE_ERROR(device.CreateRenderPipeline(&descriptor));
 }
 
+// Test that unwritten fragment outputs must have a write mask of 0.
+TEST_F(RenderPipelineValidationTest, UnwrittenFragmentOutputsMask0) {
+    wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
+        [[stage(vertex)]] fn main() -> [[builtin(position)]] vec4<f32> {
+            return vec4<f32>();
+        }
+    )");
+
+    wgpu::ShaderModule fsModuleWriteNone = utils::CreateShaderModule(device, R"(
+        [[stage(fragment)]] fn main() {}
+    )");
+
+    wgpu::ShaderModule fsModuleWrite0 = utils::CreateShaderModule(device, R"(
+        [[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
+            return vec4<f32>();
+        }
+    )");
+
+    wgpu::ShaderModule fsModuleWrite1 = utils::CreateShaderModule(device, R"(
+        [[stage(fragment)]] fn main() -> [[location(1)]] vec4<f32> {
+            return vec4<f32>();
+        }
+    )");
+
+    wgpu::ShaderModule fsModuleWriteBoth = utils::CreateShaderModule(device, R"(
+        struct FragmentOut {
+            [[location(0)]] target0 : vec4<f32>;
+            [[location(1)]] target1 : vec4<f32>;
+        };
+        [[stage(fragment)]] fn main() -> FragmentOut {
+            var out : FragmentOut;
+            return out;
+        }
+    )");
+
+    // Control case: write to target 0
+    {
+        utils::ComboRenderPipelineDescriptor descriptor;
+        descriptor.vertex.module = vsModule;
+
+        descriptor.cFragment.targetCount = 1;
+        descriptor.cFragment.module = fsModuleWrite0;
+        device.CreateRenderPipeline(&descriptor);
+    }
+
+    // Control case: write to target 0 and target 1
+    {
+        utils::ComboRenderPipelineDescriptor descriptor;
+        descriptor.vertex.module = vsModule;
+
+        descriptor.cFragment.targetCount = 2;
+        descriptor.cFragment.module = fsModuleWriteBoth;
+        device.CreateRenderPipeline(&descriptor);
+    }
+
+    // Write only target 1 (not in pipeline fragment state).
+    // Errors because target 0 does not have a write mask of 0.
+    {
+        utils::ComboRenderPipelineDescriptor descriptor;
+        descriptor.vertex.module = vsModule;
+
+        descriptor.cFragment.targetCount = 1;
+        descriptor.cTargets[0].writeMask = wgpu::ColorWriteMask::All;
+        descriptor.cFragment.module = fsModuleWrite1;
+        ASSERT_DEVICE_ERROR(device.CreateRenderPipeline(&descriptor));
+    }
+
+    // Write only target 1 (not in pipeline fragment state).
+    // OK because target 0 has a write mask of 0.
+    {
+        utils::ComboRenderPipelineDescriptor descriptor;
+        descriptor.vertex.module = vsModule;
+
+        descriptor.cFragment.targetCount = 1;
+        descriptor.cTargets[0].writeMask = wgpu::ColorWriteMask::None;
+        descriptor.cFragment.module = fsModuleWrite1;
+        device.CreateRenderPipeline(&descriptor);
+    }
+
+    // Write only target 0 with two color targets.
+    // Errors because target 1 does not have a write mask of 0.
+    {
+        utils::ComboRenderPipelineDescriptor descriptor;
+        descriptor.vertex.module = vsModule;
+
+        descriptor.cFragment.targetCount = 2;
+        descriptor.cTargets[0].writeMask = wgpu::ColorWriteMask::Red;
+        descriptor.cTargets[1].writeMask = wgpu::ColorWriteMask::Alpha;
+        descriptor.cFragment.module = fsModuleWrite0;
+        ASSERT_DEVICE_ERROR(device.CreateRenderPipeline(&descriptor));
+    }
+
+    // Write only target 0 with two color targets.
+    // OK because target 1 has a write mask of 0.
+    {
+        utils::ComboRenderPipelineDescriptor descriptor;
+        descriptor.vertex.module = vsModule;
+
+        descriptor.cFragment.targetCount = 2;
+        descriptor.cTargets[0].writeMask = wgpu::ColorWriteMask::All;
+        descriptor.cTargets[1].writeMask = wgpu::ColorWriteMask::None;
+        descriptor.cFragment.module = fsModuleWrite0;
+        device.CreateRenderPipeline(&descriptor);
+    }
+
+    // Write nothing with two color targets.
+    // Errors because both target 0 and 1 have nonzero write masks.
+    {
+        utils::ComboRenderPipelineDescriptor descriptor;
+        descriptor.vertex.module = vsModule;
+
+        descriptor.cFragment.targetCount = 2;
+        descriptor.cTargets[0].writeMask = wgpu::ColorWriteMask::Red;
+        descriptor.cTargets[1].writeMask = wgpu::ColorWriteMask::Green;
+        descriptor.cFragment.module = fsModuleWriteNone;
+        ASSERT_DEVICE_ERROR(device.CreateRenderPipeline(&descriptor));
+    }
+
+    // Write nothing with two color targets.
+    // OK because target 0 and 1 have write masks of 0.
+    {
+        utils::ComboRenderPipelineDescriptor descriptor;
+        descriptor.vertex.module = vsModule;
+
+        descriptor.cFragment.targetCount = 2;
+        descriptor.cTargets[0].writeMask = wgpu::ColorWriteMask::None;
+        descriptor.cTargets[1].writeMask = wgpu::ColorWriteMask::None;
+        descriptor.cFragment.module = fsModuleWriteNone;
+        device.CreateRenderPipeline(&descriptor);
+    }
+}
+
 // Test that fragment output validation is for the correct entryPoint
 // TODO(dawn:216): Re-enable when we correctly reflect which bindings are used for an entryPoint.
 TEST_F(RenderPipelineValidationTest, DISABLED_BindingsFromCorrectEntryPoint) {
@@ -764,5 +1066,265 @@ TEST_F(DepthClampingValidationTest, Success) {
         clampingState.clampDepth = false;
         descriptor.primitive.nextInChain = &clampingState;
         device.CreateRenderPipeline(&descriptor);
+    }
+}
+
+class InterStageVariableMatchingValidationTest : public RenderPipelineValidationTest {
+  protected:
+    void CheckCreatingRenderPipeline(wgpu::ShaderModule vertexModule,
+                                     wgpu::ShaderModule fragmentModule,
+                                     bool shouldSucceed) {
+        utils::ComboRenderPipelineDescriptor descriptor;
+        descriptor.vertex.module = vertexModule;
+        descriptor.cFragment.module = fragmentModule;
+        if (shouldSucceed) {
+            device.CreateRenderPipeline(&descriptor);
+        } else {
+            ASSERT_DEVICE_ERROR(device.CreateRenderPipeline(&descriptor));
+        }
+    }
+};
+
+// Tests that creating render pipeline should fail when there is a vertex output that doesn't have
+// its corresponding fragment input at the same location, and there is a fragment input that
+// doesn't have its corresponding vertex output at the same location.
+TEST_F(InterStageVariableMatchingValidationTest, MissingDeclarationAtSameLocation) {
+    wgpu::ShaderModule vertexModuleOutputAtLocation0 = utils::CreateShaderModule(device, R"(
+            struct A {
+                [[location(0)]] vout: f32;
+                [[builtin(position)]] pos: vec4<f32>;
+            };
+            [[stage(vertex)]] fn main() -> A {
+                var vertexOut: A;
+                vertexOut.pos = vec4<f32>(0.0, 0.0, 0.0, 1.0);
+                return vertexOut;
+            })");
+    wgpu::ShaderModule fragmentModuleAtLocation0 = utils::CreateShaderModule(device, R"(
+            struct B {
+                [[location(0)]] fin: f32;
+            };
+            [[stage(fragment)]] fn main(fragmentIn: B) -> [[location(0)]] vec4<f32>  {
+                return vec4<f32>(fragmentIn.fin, 0.0, 0.0, 1.0);
+            })");
+    wgpu::ShaderModule fragmentModuleInputAtLocation1 = utils::CreateShaderModule(device, R"(
+            struct A {
+                [[location(1)]] vout: f32;
+            };
+            [[stage(fragment)]] fn main(vertexOut: A) -> [[location(0)]] vec4<f32>  {
+                return vec4<f32>(vertexOut.vout, 0.0, 0.0, 1.0);
+            })");
+    wgpu::ShaderModule vertexModuleOutputAtLocation1 = utils::CreateShaderModule(device, R"(
+            struct B {
+                [[location(1)]] fin: f32;
+                [[builtin(position)]] pos: vec4<f32>;
+            };
+            [[stage(vertex)]] fn main() -> B {
+                var fragmentIn: B;
+                fragmentIn.pos = vec4<f32>(0.0, 0.0, 0.0, 1.0);
+                return fragmentIn;
+            })");
+
+    {
+        CheckCreatingRenderPipeline(vertexModuleOutputAtLocation0, fsModule, false);
+        CheckCreatingRenderPipeline(vsModule, fragmentModuleAtLocation0, false);
+        CheckCreatingRenderPipeline(vertexModuleOutputAtLocation0, fragmentModuleInputAtLocation1,
+                                    false);
+        CheckCreatingRenderPipeline(vertexModuleOutputAtLocation1, fragmentModuleAtLocation0,
+                                    false);
+    }
+
+    {
+        CheckCreatingRenderPipeline(vertexModuleOutputAtLocation0, fragmentModuleAtLocation0, true);
+        CheckCreatingRenderPipeline(vertexModuleOutputAtLocation1, fragmentModuleInputAtLocation1,
+                                    true);
+    }
+}
+
+// Tests that creating render pipeline should fail when the type of a vertex stage output variable
+// doesn't match the type of the fragment stage input variable at the same location.
+TEST_F(InterStageVariableMatchingValidationTest, DifferentTypeAtSameLocation) {
+    constexpr std::array<const char*, 12> kTypes = {{"f32", "vec2<f32>", "vec3<f32>", "vec4<f32>",
+                                                     "i32", "vec2<i32>", "vec3<i32>", "vec4<i32>",
+                                                     "u32", "vec2<u32>", "vec3<u32>", "vec4<u32>"}};
+
+    std::array<wgpu::ShaderModule, 12> vertexModules;
+    std::array<wgpu::ShaderModule, 12> fragmentModules;
+    for (uint32_t i = 0; i < kTypes.size(); ++i) {
+        std::string interfaceDeclaration;
+        {
+            std::ostringstream sstream;
+            sstream << "struct A { [[location(0)]] a: " << kTypes[i] << ";" << std::endl;
+            interfaceDeclaration = sstream.str();
+        }
+        {
+            std::ostringstream vertexStream;
+            vertexStream << interfaceDeclaration << R"(
+                    [[builtin(position)]] pos: vec4<f32>;
+                };
+                [[stage(vertex)]] fn main() -> A {
+                    var vertexOut: A;
+                    vertexOut.pos = vec4<f32>(0.0, 0.0, 0.0, 1.0);
+                    return vertexOut;
+                })";
+            vertexModules[i] = utils::CreateShaderModule(device, vertexStream.str().c_str());
+        }
+        {
+            std::ostringstream fragmentStream;
+            fragmentStream << interfaceDeclaration << R"(
+                };
+                [[stage(fragment)]] fn main(fragmentIn: A) -> [[location(0)]] vec4<f32> {
+                    return vec4<f32>(0.0, 0.0, 0.0, 1.0);
+                })";
+            fragmentModules[i] = utils::CreateShaderModule(device, fragmentStream.str().c_str());
+        }
+    }
+
+    for (uint32_t vertexModuleIndex = 0; vertexModuleIndex < kTypes.size(); ++vertexModuleIndex) {
+        wgpu::ShaderModule vertexModule = vertexModules[vertexModuleIndex];
+        for (uint32_t fragmentModuleIndex = 0; fragmentModuleIndex < kTypes.size();
+             ++fragmentModuleIndex) {
+            wgpu::ShaderModule fragmentModule = fragmentModules[fragmentModuleIndex];
+            bool shouldSuccess = vertexModuleIndex == fragmentModuleIndex;
+            CheckCreatingRenderPipeline(vertexModule, fragmentModule, shouldSuccess);
+        }
+    }
+}
+
+// Tests that creating render pipeline should fail when the interpolation attribute of a vertex
+// stage output variable doesn't match the type of the fragment stage input variable at the same
+// location.
+TEST_F(InterStageVariableMatchingValidationTest, DifferentInterpolationAttributeAtSameLocation) {
+    enum class InterpolationType : uint8_t {
+        None = 0,
+        Perspective,
+        Linear,
+        Flat,
+        Count,
+    };
+    enum class InterpolationSampling : uint8_t {
+        None = 0,
+        Center,
+        Centroid,
+        Sample,
+        Count,
+    };
+    constexpr std::array<const char*, static_cast<size_t>(InterpolationType::Count)>
+        kInterpolationTypeString = {{"", "perspective", "linear", "flat"}};
+    constexpr std::array<const char*, static_cast<size_t>(InterpolationSampling::Count)>
+        kInterpolationSamplingString = {{"", "center", "centroid", "sample"}};
+
+    struct InterpolationAttribute {
+        InterpolationType interpolationType;
+        InterpolationSampling interpolationSampling;
+    };
+
+    // Interpolation sampling is not used with flat interpolation.
+    constexpr std::array<InterpolationAttribute, 10> validInterpolationAttributes = {{
+        {InterpolationType::None, InterpolationSampling::None},
+        {InterpolationType::Flat, InterpolationSampling::None},
+        {InterpolationType::Linear, InterpolationSampling::None},
+        {InterpolationType::Linear, InterpolationSampling::Center},
+        {InterpolationType::Linear, InterpolationSampling::Centroid},
+        {InterpolationType::Linear, InterpolationSampling::Sample},
+        {InterpolationType::Perspective, InterpolationSampling::None},
+        {InterpolationType::Perspective, InterpolationSampling::Center},
+        {InterpolationType::Perspective, InterpolationSampling::Centroid},
+        {InterpolationType::Perspective, InterpolationSampling::Sample},
+    }};
+
+    std::vector<wgpu::ShaderModule> vertexModules(validInterpolationAttributes.size());
+    std::vector<wgpu::ShaderModule> fragmentModules(validInterpolationAttributes.size());
+    for (uint32_t i = 0; i < validInterpolationAttributes.size(); ++i) {
+        std::string interfaceDeclaration;
+        {
+            const auto& interpolationAttribute = validInterpolationAttributes[i];
+            std::ostringstream sstream;
+            sstream << "struct A { [[location(0)";
+            if (interpolationAttribute.interpolationType != InterpolationType::None) {
+                sstream << ", interpolate("
+                        << kInterpolationTypeString[static_cast<uint8_t>(
+                               interpolationAttribute.interpolationType)];
+                if (interpolationAttribute.interpolationSampling != InterpolationSampling::None) {
+                    sstream << ", "
+                            << kInterpolationSamplingString[static_cast<uint8_t>(
+                                   interpolationAttribute.interpolationSampling)];
+                }
+                sstream << ")";
+            }
+            sstream << " ]] a : vec4<f32>;" << std::endl;
+            interfaceDeclaration = sstream.str();
+        }
+        {
+            std::ostringstream vertexStream;
+            vertexStream << interfaceDeclaration << R"(
+                    [[builtin(position)]] pos: vec4<f32>;
+                };
+                [[stage(vertex)]] fn main() -> A {
+                    var vertexOut: A;
+                    vertexOut.pos = vec4<f32>(0.0, 0.0, 0.0, 1.0);
+                    return vertexOut;
+                })";
+            vertexModules[i] = utils::CreateShaderModule(device, vertexStream.str().c_str());
+        }
+        {
+            std::ostringstream fragmentStream;
+            fragmentStream << interfaceDeclaration << R"(
+                };
+                [[stage(fragment)]] fn main(fragmentIn: A) -> [[location(0)]] vec4<f32> {
+                    return fragmentIn.a;
+                })";
+            fragmentModules[i] = utils::CreateShaderModule(device, fragmentStream.str().c_str());
+        }
+    }
+
+    auto GetAppliedInterpolationAttribute = [](const InterpolationAttribute& attribute) {
+        InterpolationAttribute appliedAttribute = {attribute.interpolationType,
+                                                   attribute.interpolationSampling};
+        switch (attribute.interpolationType) {
+            // If the interpolation attribute is not specified, then
+            // [[interpolate(perspective, center)]] or [[interpolate(perspective)]] is assumed.
+            case InterpolationType::None:
+                appliedAttribute.interpolationType = InterpolationType::Perspective;
+                appliedAttribute.interpolationSampling = InterpolationSampling::Center;
+                break;
+
+            // If the interpolation type is perspective or linear, and the interpolation
+            // sampling is not specified, then 'center' is assumed.
+            case InterpolationType::Perspective:
+            case InterpolationType::Linear:
+                if (appliedAttribute.interpolationSampling == InterpolationSampling::None) {
+                    appliedAttribute.interpolationSampling = InterpolationSampling::Center;
+                }
+                break;
+
+            case InterpolationType::Flat:
+                break;
+            default:
+                UNREACHABLE();
+        }
+        return appliedAttribute;
+    };
+
+    auto InterpolationAttributeMatch = [GetAppliedInterpolationAttribute](
+                                           const InterpolationAttribute& attribute1,
+                                           const InterpolationAttribute& attribute2) {
+        InterpolationAttribute appliedAttribute1 = GetAppliedInterpolationAttribute(attribute1);
+        InterpolationAttribute appliedAttribute2 = GetAppliedInterpolationAttribute(attribute2);
+
+        return appliedAttribute1.interpolationType == appliedAttribute2.interpolationType &&
+               appliedAttribute1.interpolationSampling == appliedAttribute2.interpolationSampling;
+    };
+
+    for (uint32_t vertexModuleIndex = 0; vertexModuleIndex < validInterpolationAttributes.size();
+         ++vertexModuleIndex) {
+        wgpu::ShaderModule vertexModule = vertexModules[vertexModuleIndex];
+        for (uint32_t fragmentModuleIndex = 0;
+             fragmentModuleIndex < validInterpolationAttributes.size(); ++fragmentModuleIndex) {
+            wgpu::ShaderModule fragmentModule = fragmentModules[fragmentModuleIndex];
+            bool shouldSuccess =
+                InterpolationAttributeMatch(validInterpolationAttributes[vertexModuleIndex],
+                                            validInterpolationAttributes[fragmentModuleIndex]);
+            CheckCreatingRenderPipeline(vertexModule, fragmentModule, shouldSuccess);
+        }
     }
 }

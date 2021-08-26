@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 #include "tools/benchmark/benchmark_codec_jxl.h"
 
 #include <cstdint>
@@ -24,12 +15,12 @@
 #include "jxl/decode_cxx.h"
 #include "jxl/thread_parallel_runner_cxx.h"
 #include "lib/extras/codec.h"
+#include "lib/extras/time.h"
 #include "lib/jxl/aux_out.h"
 #include "lib/jxl/base/data_parallel.h"
 #include "lib/jxl/base/override.h"
 #include "lib/jxl/base/padded_bytes.h"
 #include "lib/jxl/base/span.h"
-#include "lib/jxl/base/time.h"
 #include "lib/jxl/codec_in_out.h"
 #include "lib/jxl/dec_file.h"
 #include "lib/jxl/dec_params.h"
@@ -139,11 +130,6 @@ class JxlCodec : public ImageCodec {
                kDownsamplingPrefix) {
       std::istringstream parser(param.substr(kDownsamplingPrefix.size()));
       parser >> dparams_.max_downsampling;
-    } else if (param[0] == 'n' && param[1] == 'l') {
-      cparams_.color_transform = jxl::ColorTransform::kNone;
-      cparams_.near_lossless = strtol(param.substr(2).c_str(), nullptr, 10);
-      if (cparams_.near_lossless == 0) cparams_.near_lossless = 2;
-      cparams_.responsive = 0;
     } else if (ParseSpeedTier(param, &cparams_.speed_tier)) {
       // Nothing to do.
     } else if (param[0] == 'X') {
@@ -156,8 +142,6 @@ class JxlCodec : public ImageCodec {
       cparams_.palette_colors = strtol(param.substr(1).c_str(), nullptr, 10);
     } else if (param == "lp") {
       cparams_.lossy_palette = true;
-    } else if (param[0] == 'N') {
-      cparams_.near_lossless = strtol(param.substr(1).c_str(), nullptr, 10);
     } else if (param[0] == 'C') {
       cparams_.colorspace = strtol(param.substr(1).c_str(), nullptr, 10);
     } else if (param[0] == 'c') {
@@ -303,6 +287,12 @@ class JxlCodec : public ImageCodec {
       PaddedBytes icc_profile;
       auto runner = JxlThreadParallelRunnerMake(nullptr, pool->NumThreads());
       auto dec = JxlDecoderMake(nullptr);
+      // By default, the decoder will undo exif orientation, giving an image
+      // with identity exif rotation as result. However, the benchmark does
+      // not undo exif orientation of the originals, and compares against the
+      // originals, so we must set the option to keep the original orientation
+      // instead.
+      JxlDecoderSetKeepOrientation(dec.get(), JXL_TRUE);
       JXL_RETURN_IF_ERROR(
           JXL_DEC_SUCCESS ==
           JxlDecoderSubscribeEvents(dec.get(), JXL_DEC_BASIC_INFO |

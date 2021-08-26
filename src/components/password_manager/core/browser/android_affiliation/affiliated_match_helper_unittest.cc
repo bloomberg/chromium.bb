@@ -285,23 +285,11 @@ class AffiliatedMatchHelperTest : public testing::Test,
     }
   }
 
-  std::vector<std::string> GetAffiliatedAndroidRealms(
+  std::vector<std::string> GetAffiliatedAndroidAndWebRealms(
       const PasswordFormDigest& observed_form) {
     expecting_result_callback_ = true;
     match_helper()->GetAffiliatedAndroidAndWebRealms(
         observed_form,
-        base::BindOnce(&AffiliatedMatchHelperTest::OnAffiliatedRealmsCallback,
-                       base::Unretained(this)));
-    RunUntilIdle();
-    EXPECT_FALSE(expecting_result_callback_);
-    return last_result_realms_;
-  }
-
-  std::vector<std::string> GetAffiliatedWebRealms(
-      const PasswordFormDigest& android_form) {
-    expecting_result_callback_ = true;
-    match_helper()->GetAffiliatedWebRealms(
-        android_form,
         base::BindOnce(&AffiliatedMatchHelperTest::OnAffiliatedRealmsCallback,
                        base::Unretained(this)));
     RunUntilIdle();
@@ -381,16 +369,17 @@ class AffiliatedMatchHelperTest : public testing::Test,
   MockAndroidAffiliationService* mock_affiliation_service_ = nullptr;
 };
 
-// GetAffiliatedAndroidRealm* tests verify that GetAffiliatedAndroidRealms()
-// returns the realms of affiliated Android applications, but only Android
-// applications, and only if the observed form is a secure HTML login form.
+// GetAffiliatedAndroidRealm* tests verify that
+// GetAffiliatedAndroidAndWebRealms() returns the realms of affiliated Android
+// applications and web sites, but only if the observed form is a secure HTML
+// login form.
 
 TEST_P(AffiliatedMatchHelperTest, GetAffiliatedAndroidRealmsYieldsResults) {
   mock_affiliation_service()
       ->ExpectCallToGetAffiliationsAndBrandingAndSucceedWithResult(
           FacetURI::FromCanonicalSpec(kTestWebFacetURIBeta1),
           StrategyOnCacheMiss::FAIL, GetTestEquivalenceClassBeta());
-  EXPECT_THAT(GetAffiliatedAndroidRealms(
+  EXPECT_THAT(GetAffiliatedAndroidAndWebRealms(
                   GetTestObservedWebForm(kTestWebRealmBeta1, nullptr)),
               testing::UnorderedElementsAre(kTestAndroidRealmBeta2,
                                             kTestAndroidRealmBeta3));
@@ -406,7 +395,7 @@ TEST_P(AffiliatedMatchHelperTest,
           FacetURI::FromCanonicalSpec(kTestWebFacetURIAlpha1),
           StrategyOnCacheMiss::FAIL, GetTestEquivalenceClassAlpha());
   // This verifies that |kTestWebRealmAlpha2| is not returned.
-  EXPECT_THAT(GetAffiliatedAndroidRealms(
+  EXPECT_THAT(GetAffiliatedAndroidAndWebRealms(
                   GetTestObservedWebForm(kTestWebRealmAlpha1, nullptr)),
               testing::UnorderedElementsAre(kTestAndroidRealmAlpha3));
 }
@@ -416,7 +405,7 @@ TEST_P(AffiliatedMatchHelperTest,
   PasswordFormDigest http_auth_observed_form(
       GetTestObservedWebForm(kTestWebRealmAlpha1, nullptr));
   http_auth_observed_form.scheme = PasswordForm::Scheme::kBasic;
-  EXPECT_THAT(GetAffiliatedAndroidRealms(http_auth_observed_form),
+  EXPECT_THAT(GetAffiliatedAndroidAndWebRealms(http_auth_observed_form),
               testing::IsEmpty());
 }
 
@@ -425,7 +414,7 @@ TEST_P(AffiliatedMatchHelperTest,
   PasswordFormDigest http_auth_observed_form(
       GetTestObservedWebForm(kTestWebRealmAlpha1, nullptr));
   http_auth_observed_form.scheme = PasswordForm::Scheme::kDigest;
-  EXPECT_THAT(GetAffiliatedAndroidRealms(http_auth_observed_form),
+  EXPECT_THAT(GetAffiliatedAndroidAndWebRealms(http_auth_observed_form),
               testing::IsEmpty());
 }
 
@@ -433,7 +422,7 @@ TEST_P(AffiliatedMatchHelperTest,
        GetAffiliatedAndroidRealmsYieldsEmptyResultsForAndroidKeyedForms) {
   PasswordFormDigest android_observed_form(
       GetTestAndroidCredentials(kTestAndroidRealmBeta2));
-  EXPECT_THAT(GetAffiliatedAndroidRealms(android_observed_form),
+  EXPECT_THAT(GetAffiliatedAndroidAndWebRealms(android_observed_form),
               testing::IsEmpty());
 }
 
@@ -443,45 +432,8 @@ TEST_P(AffiliatedMatchHelperTest,
       ->ExpectCallToGetAffiliationsAndBrandingAndEmulateFailure(
           FacetURI::FromCanonicalSpec(kTestWebFacetURIAlpha1),
           StrategyOnCacheMiss::FAIL);
-  EXPECT_THAT(GetAffiliatedAndroidRealms(
+  EXPECT_THAT(GetAffiliatedAndroidAndWebRealms(
                   GetTestObservedWebForm(kTestWebRealmAlpha1, nullptr)),
-              testing::IsEmpty());
-}
-
-// GetAffiliatedWebRealms* tests verify that GetAffiliatedWebRealms() returns
-// the realms of web sites affiliated with the given Android application, but
-// only web sites, and only if an Android application is queried.
-
-TEST_P(AffiliatedMatchHelperTest, GetAffiliatedWebRealmsYieldsResults) {
-  mock_affiliation_service()
-      ->ExpectCallToGetAffiliationsAndBrandingAndSucceedWithResult(
-          FacetURI::FromCanonicalSpec(kTestAndroidFacetURIAlpha3),
-          StrategyOnCacheMiss::FETCH_OVER_NETWORK,
-          GetTestEquivalenceClassAlpha());
-  PasswordFormDigest android_form(
-      GetTestAndroidCredentials(kTestAndroidRealmAlpha3));
-  EXPECT_THAT(
-      GetAffiliatedWebRealms(android_form),
-      testing::UnorderedElementsAre(kTestWebRealmAlpha1, kTestWebRealmAlpha2));
-}
-
-TEST_P(AffiliatedMatchHelperTest, GetAffiliatedWebRealmsYieldsOnlyWebsites) {
-  mock_affiliation_service()
-      ->ExpectCallToGetAffiliationsAndBrandingAndSucceedWithResult(
-          FacetURI::FromCanonicalSpec(kTestAndroidFacetURIBeta2),
-          StrategyOnCacheMiss::FETCH_OVER_NETWORK,
-          GetTestEquivalenceClassBeta());
-  PasswordFormDigest android_form(
-      GetTestAndroidCredentials(kTestAndroidRealmBeta2));
-  // This verifies that |kTestAndroidRealmBeta3| is not returned.
-  EXPECT_THAT(GetAffiliatedWebRealms(android_form),
-              testing::UnorderedElementsAre(kTestWebRealmBeta1));
-}
-
-TEST_P(AffiliatedMatchHelperTest,
-       GetAffiliatedWebRealmsYieldsEmptyResultsForWebKeyedForms) {
-  EXPECT_THAT(GetAffiliatedWebRealms(
-                  GetTestObservedWebForm(kTestWebRealmBeta1, nullptr)),
               testing::IsEmpty());
 }
 
@@ -551,8 +503,8 @@ TEST_P(AffiliatedMatchHelperTest, InjectAffiliationAndBrandingInformation) {
   EXPECT_THAT(results[4]->affiliated_web_realm, testing::IsEmpty());
 }
 
-// Note: IsValidWebCredential() is tested as part of GetAffiliatedAndroidRealms
-// tests above.
+// Note: IsValidWebCredential() is tested as part of
+// GetAffiliatedAndroidAndWebRealms tests above.
 TEST_P(AffiliatedMatchHelperTest, IsValidAndroidCredential) {
   EXPECT_FALSE(AffiliatedMatchHelper::IsValidAndroidCredential(
       GetTestObservedWebForm(kTestWebRealmBeta1, nullptr)));
@@ -704,7 +656,7 @@ TEST_P(AffiliatedMatchHelperTest, GetAffiliatedAndroidRealmsAndWebsites) {
           FacetURI::FromCanonicalSpec(kTestWebFacetURIAlpha1),
           StrategyOnCacheMiss::FAIL, GetTestEquivalenceClassAlpha());
   // This verifies that |kTestWebRealmAlpha2| is returned.
-  EXPECT_THAT(GetAffiliatedAndroidRealms(
+  EXPECT_THAT(GetAffiliatedAndroidAndWebRealms(
                   GetTestObservedWebForm(kTestWebRealmAlpha1, nullptr)),
               testing::UnorderedElementsAre(kTestWebRealmAlpha2,
                                             kTestAndroidRealmAlpha3));

@@ -24,7 +24,7 @@
 #include "components/autofill/ios/form_util/form_activity_params.h"
 #import "components/autofill/ios/form_util/form_util_java_script_feature.h"
 #include "components/autofill/ios/form_util/unique_id_data_tab_helper.h"
-#include "components/password_manager/core/browser/mock_password_store.h"
+#include "components/password_manager/core/browser/mock_password_store_interface.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_manager.h"
@@ -72,6 +72,7 @@ using autofill::FormRendererId;
 using autofill::FieldRendererId;
 using password_manager::PasswordForm;
 using autofill::PasswordFormFillData;
+using base::SysUTF16ToNSString;
 using base::SysUTF8ToNSString;
 using FillingAssistance =
     password_manager::PasswordFormMetricsRecorder::FillingAssistance;
@@ -111,7 +112,8 @@ class FakeNetworkContext : public network::TestNetworkContext {
 class MockPasswordManagerClient
     : public password_manager::StubPasswordManagerClient {
  public:
-  explicit MockPasswordManagerClient(password_manager::PasswordStore* store)
+  explicit MockPasswordManagerClient(
+      password_manager::PasswordStoreInterface* store)
       : store_(store) {
     prefs_ = std::make_unique<TestingPrefServiceSimple>();
     prefs_->registry()->RegisterBooleanPref(kPasswordLeakDetectionEnabled,
@@ -128,7 +130,8 @@ class MockPasswordManagerClient
 
   PrefService* GetPrefs() const override { return prefs_.get(); }
 
-  password_manager::PasswordStore* GetProfilePasswordStore() const override {
+  password_manager::PasswordStoreInterface* GetProfilePasswordStoreInterface()
+      const override {
     return store_;
   }
 
@@ -147,7 +150,7 @@ class MockPasswordManagerClient
  private:
   mutable FakeNetworkContext network_context_;
   std::unique_ptr<TestingPrefServiceSimple> prefs_;
-  password_manager::PasswordStore* const store_;
+  password_manager::PasswordStoreInterface* const store_;
 };
 
 ACTION_P(SaveToScopedPtr, scoped) {
@@ -160,7 +163,7 @@ ACTION_P(SaveToScopedPtr, scoped) {
 // returned.
 PasswordController* CreatePasswordController(
     web::WebState* web_state,
-    password_manager::PasswordStore* store,
+    password_manager::PasswordStoreInterface* store,
     MockPasswordManagerClient** weak_client) {
   auto client = std::make_unique<NiceMock<MockPasswordManagerClient>>(store);
   if (weak_client)
@@ -229,6 +232,9 @@ ACTION(InvokeEmptyConsumerWithForms) {
                        generatedPassword:(NSString*)generatedPassword
                        completionHandler:(void (^)())completionHandler;
 
+- (void)didFinishPasswordFormExtraction:(const std::vector<FormData>&)forms
+                        withMaxUniqueID:(uint32_t)maxID;
+
 @end
 
 class PasswordControllerTest : public ChromeWebTest {
@@ -241,7 +247,8 @@ class PasswordControllerTest : public ChromeWebTest {
   void SetUp() override {
     ChromeWebTest::SetUp();
 
-    store_ = new testing::NiceMock<password_manager::MockPasswordStore>();
+    store_ =
+        new testing::NiceMock<password_manager::MockPasswordStoreInterface>();
     ON_CALL(*store_, IsAbleToSavePasswords).WillByDefault(Return(true));
 
     // When waiting for predictions is on, it makes tests more complicated.
@@ -272,7 +279,6 @@ class PasswordControllerTest : public ChromeWebTest {
                                                   webStateList:nullptr
                                            personalDataManager:nullptr
                                                  passwordStore:nullptr
-                                                      appState:nil
                                           securityAlertHandler:nil
                                         reauthenticationModule:nil];
       [accessoryMediator_ injectWebState:web_state()];
@@ -443,7 +449,7 @@ class PasswordControllerTest : public ChromeWebTest {
   // PasswordController for testing.
   PasswordController* passwordController_;
 
-  scoped_refptr<password_manager::MockPasswordStore> store_;
+  scoped_refptr<password_manager::MockPasswordStoreInterface> store_;
 
   MockPasswordManagerClient* weak_client_;
 };
@@ -473,7 +479,7 @@ PasswordForm MakeSimpleForm() {
 
 // TODO(crbug.com/403705) This test is flaky.
 // Check that HTML forms are converted correctly into FormDatas.
-TEST_F(PasswordControllerTest, FLAKY_FindPasswordFormsInView) {
+TEST_F(PasswordControllerTest, DISABLED_FindPasswordFormsInView) {
   // clang-format off
   FindPasswordFormTestData test_data[] = {
      // Normal form: a username and a password element.
@@ -1225,7 +1231,8 @@ class PasswordControllerTestSimple : public PlatformTest {
   ~PasswordControllerTestSimple() override { store_->ShutdownOnUIThread(); }
 
   void SetUp() override {
-    store_ = new testing::NiceMock<password_manager::MockPasswordStore>();
+    store_ =
+        new testing::NiceMock<password_manager::MockPasswordStoreInterface>();
     ON_CALL(*store_, IsAbleToSavePasswords).WillByDefault(Return(true));
 
     std::unique_ptr<TestChromeBrowserState> browser_state(builder.Build());
@@ -1244,7 +1251,7 @@ class PasswordControllerTestSimple : public PlatformTest {
   }
 
   PasswordController* passwordController_;
-  scoped_refptr<password_manager::MockPasswordStore> store_;
+  scoped_refptr<password_manager::MockPasswordStoreInterface> store_;
   MockPasswordManagerClient* weak_client_;
   MockWebState web_state_;
   base::test::TaskEnvironment task_environment;
@@ -2215,6 +2222,9 @@ TEST_F(PasswordControllerTest, PasswordMetricsAutomatic) {
 // is not breaking the password generation flow.
 // Verifies the fix for crbug.com/1077271.
 TEST_F(PasswordControllerTest, PasswordGenerationFieldFocus) {
+  ON_CALL(*store_, GetLogins)
+      .WillByDefault(WithArg<1>(InvokeEmptyConsumerWithForms()));
+
   LoadHtml(@"<html><body>"
             "<form name='login_form' id='signup_form'>"
             "  <input type='text' name='username' id='un'>"
@@ -2522,4 +2532,131 @@ TEST_F(PasswordControllerTest, DetectSubmissionOnFormlessFieldsClearing) {
       static_cast<PasswordFormManager*>(form_manager_to_save.get());
   EXPECT_TRUE(form_manager->is_submitted());
   EXPECT_TRUE(form_manager->IsPasswordUpdate());
+}
+
+// Tests the completion handler for suggestions availability is not called
+// until password manager replies with suggestions.
+TEST_F(PasswordControllerTest,
+       WaitForPasswordmanagerResponseToShowSuggestions) {
+  // Simulate that the form is parsed and sent to PasswordManager.
+  FormData form = test_helpers::MakeSimpleFormData();
+  [passwordController_.sharedPasswordController
+      didFinishPasswordFormExtraction:{form}
+                      withMaxUniqueID:5];
+
+  // Simulate user focusing the field in a form before the password store
+  // response is received.
+  FormSuggestionProviderQuery* form_query = [[FormSuggestionProviderQuery alloc]
+      initWithFormName:SysUTF16ToNSString(form.name)
+          uniqueFormID:form.unique_renderer_id
+       fieldIdentifier:SysUTF16ToNSString(form.fields[0].name)
+         uniqueFieldID:form.fields[0].unique_renderer_id
+             fieldType:@"text"
+                  type:@"focus"
+            typedValue:@""
+               frameID:@"frame-id"];
+
+  __block BOOL completion_was_called = NO;
+  [passwordController_.sharedPasswordController
+      checkIfSuggestionsAvailableForForm:form_query
+                             isMainFrame:YES
+                          hasUserGesture:NO
+                                webState:web_state()
+                       completionHandler:^(BOOL suggestionsAvailable) {
+                         completion_was_called = YES;
+                       }];
+
+  // Check that completion handler wasn't called.
+  EXPECT_FALSE(completion_was_called);
+
+  // Receive suggestions from PasswordManager.
+  PasswordFormFillData form_fill_data;
+  test_helpers::SetPasswordFormFillData(
+      form.url.spec(), "", form.unique_renderer_id.value(), "",
+      form.fields[0].unique_renderer_id.value(), "john.doe@gmail.com", "",
+      form.fields[1].unique_renderer_id.value(), "super!secret", nullptr,
+      nullptr, false, &form_fill_data);
+
+  [passwordController_.sharedPasswordController fillPasswordForm:form_fill_data
+                                               completionHandler:nil];
+  // Check that completion handler was called.
+  EXPECT_TRUE(completion_was_called);
+}
+
+// Tests the completion handler for suggestions availability is not called
+// until password manager replies with suggestions.
+TEST_F(PasswordControllerTest,
+       WaitForPasswordmanagerResponseToShowSuggestionsTwoFields) {
+  // Simulate that the form is parsed and sent to PasswordManager.
+  FormData form = test_helpers::MakeSimpleFormData();
+  [passwordController_.sharedPasswordController
+      didFinishPasswordFormExtraction:{form}
+                      withMaxUniqueID:5];
+
+  // Simulate user focusing the field in a form before the password store
+  // response is received.
+  FormSuggestionProviderQuery* form_query1 =
+      [[FormSuggestionProviderQuery alloc]
+          initWithFormName:SysUTF16ToNSString(form.name)
+              uniqueFormID:form.unique_renderer_id
+           fieldIdentifier:SysUTF16ToNSString(form.fields[0].name)
+             uniqueFieldID:form.fields[0].unique_renderer_id
+                 fieldType:@"text"
+                      type:@"focus"
+                typedValue:@""
+                   frameID:@"frame-id"];
+
+  __block BOOL completion_was_called1 = NO;
+  [passwordController_.sharedPasswordController
+      checkIfSuggestionsAvailableForForm:form_query1
+                             isMainFrame:YES
+                          hasUserGesture:NO
+                                webState:web_state()
+                       completionHandler:^(BOOL suggestionsAvailable) {
+                         completion_was_called1 = YES;
+                       }];
+
+  // Check that completion handler wasn't called.
+  EXPECT_FALSE(completion_was_called1);
+
+  // Simulate user focusing another field in a form before the password store
+  // response is received.
+  FormSuggestionProviderQuery* form_query2 =
+      [[FormSuggestionProviderQuery alloc]
+          initWithFormName:SysUTF16ToNSString(form.name)
+              uniqueFormID:form.unique_renderer_id
+           fieldIdentifier:SysUTF16ToNSString(form.fields[1].name)
+             uniqueFieldID:form.fields[1].unique_renderer_id
+                 fieldType:@"password"
+                      type:@"focus"
+                typedValue:@""
+                   frameID:@"frame-id"];
+
+  __block BOOL completion_was_called2 = NO;
+  [passwordController_.sharedPasswordController
+      checkIfSuggestionsAvailableForForm:form_query2
+                             isMainFrame:YES
+                          hasUserGesture:NO
+                                webState:web_state()
+                       completionHandler:^(BOOL suggestionsAvailable) {
+                         completion_was_called2 = YES;
+                       }];
+
+  // Check that completion handler wasn't called.
+  EXPECT_FALSE(completion_was_called2);
+
+  // Receive suggestions from PasswordManager.
+  PasswordFormFillData form_fill_data;
+  test_helpers::SetPasswordFormFillData(
+      form.url.spec(), "", form.unique_renderer_id.value(), "",
+      form.fields[0].unique_renderer_id.value(), "john.doe@gmail.com", "",
+      form.fields[1].unique_renderer_id.value(), "super!secret", nullptr,
+      nullptr, false, &form_fill_data);
+
+  [passwordController_.sharedPasswordController fillPasswordForm:form_fill_data
+                                               completionHandler:nil];
+
+  // Check that completion handler was called for the second form query.
+  EXPECT_FALSE(completion_was_called1);
+  EXPECT_TRUE(completion_was_called2);
 }

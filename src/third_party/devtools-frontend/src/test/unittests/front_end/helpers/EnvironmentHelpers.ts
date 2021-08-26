@@ -7,6 +7,9 @@ import * as Host from '../../../../front_end/core/host/host.js';
 import * as i18n from '../../../../front_end/core/i18n/i18n.js';
 import * as Root from '../../../../front_end/core/root/root.js';
 import * as SDK from '../../../../front_end/core/sdk/sdk.js';
+import type * as Protocol from '../../../../front_end/generated/protocol.js';
+import * as Bindings from '../../../../front_end/models/bindings/bindings.js';
+import * as Workspace from '../../../../front_end/models/workspace/workspace.js';
 
 import type * as UIModule from '../../../../front_end/ui/legacy/legacy.js';
 
@@ -42,7 +45,9 @@ function initializeTargetManagerIfNecessary() {
   targetManager = targetManager || SDK.TargetManager.TargetManager.instance({forceNew: true});
 }
 
-export function createTarget({id = 'test', name = 'test', type = SDK.Target.Type.Frame} = {}) {
+export function createTarget(
+    {id = 'test' as Protocol.Target.TargetID, name = 'test', type = SDK.Target.Type.Frame}:
+        {id?: Protocol.Target.TargetID, name?: string, type?: SDK.Target.Type} = {}) {
   initializeTargetManagerIfNecessary();
   return targetManager.createTarget(id, name, type, null);
 }
@@ -99,6 +104,7 @@ export async function initializeGlobalVars({reset = true} = {}) {
     createSettingValue(Common.Settings.SettingCategory.RENDERING, 'jpegXlFormatDisabled', false),
     createSettingValue(Common.Settings.SettingCategory.SOURCES, 'cssSourceMapsEnabled', true),
     createSettingValue(Common.Settings.SettingCategory.SOURCES, 'jsSourceMapsEnabled', true),
+    createSettingValue(Common.Settings.SettingCategory.SOURCES, 'textEditorIndent', '    '),
     createSettingValue(
         Common.Settings.SettingCategory.EMULATION, 'emulation.touch', '', Common.Settings.SettingType.ENUM),
     createSettingValue(
@@ -135,6 +141,8 @@ export async function initializeGlobalVars({reset = true} = {}) {
   // Needed for any context menus which may be created - either in a test or via
   // rendering a component in the component docs server.
   UI.GlassPane.GlassPane.setContainer(document.body);
+
+  initializeTargetManagerIfNecessary();
 }
 
 export async function deinitializeGlobalVars() {
@@ -148,6 +156,9 @@ export async function deinitializeGlobalVars() {
   SDK.TargetManager.TargetManager.removeInstance();
   Root.Runtime.Runtime.removeInstance();
   Common.Settings.Settings.removeInstance();
+  Workspace.Workspace.WorkspaceImpl.removeInstance();
+  Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.removeInstance();
+  Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.removeInstance();
   Common.Settings.resetSettings();
 
   // Protect against the dynamic import not having happened.
@@ -173,4 +184,8 @@ export function createFakeSetting<T>(name: string, defaultValue: T): Common.Sett
       {}, (key, value) => storageVals.set(key, value), key => storageVals.delete(key), () => storageVals.clear(),
       'test');
   return new Common.Settings.Setting(name, defaultValue, new Common.ObjectWrapper.ObjectWrapper(), storage);
+}
+
+export function enableFeatureForTest(feature: string): void {
+  Root.Runtime.experiments.enableForTest(feature);
 }

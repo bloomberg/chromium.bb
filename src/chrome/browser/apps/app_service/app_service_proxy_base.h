@@ -100,7 +100,6 @@ class AppServiceProxyBase : public KeyedService,
   // |launch_source| is the possible app launch sources, e.g. from Shelf, from
   // the search box, etc.
   void LaunchAppWithFiles(const std::string& app_id,
-                          apps::mojom::LaunchContainer container,
                           int32_t event_flags,
                           apps::mojom::LaunchSource launch_source,
                           apps::mojom::FilePathsPtr file_paths);
@@ -312,10 +311,17 @@ class AppServiceProxyBase : public KeyedService,
   apps::mojom::IntentFilterPtr FindBestMatchingFilter(
       const apps::mojom::IntentPtr& intent);
 
+  virtual void PerformPostLaunchTasks(apps::mojom::LaunchSource launch_source);
+
   virtual void RecordAppPlatformMetrics(Profile* profile,
                                         const apps::AppUpdate& update,
                                         apps::mojom::LaunchSource launch_source,
                                         apps::mojom::LaunchContainer container);
+
+  virtual void PerformPostUninstallTasks(
+      apps::mojom::AppType app_type,
+      const std::string& app_id,
+      apps::mojom::UninstallSource uninstall_source);
 
   // This proxy privately owns its instance of the App Service. This should not
   // be exposed except through the Mojo interface connected to |app_service_|.

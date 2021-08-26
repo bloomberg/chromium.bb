@@ -106,39 +106,17 @@ static base::TimeDelta ExtractStartTime(AVStream* stream) {
 
   // Next try to use the first DTS value, for codecs where we know PTS == DTS
   // (excludes all H26x codecs). The start time must be returned in PTS.
-  if (stream->first_dts != kNoFFmpegTimestamp &&
+  if (av_stream_get_first_dts(stream) != kNoFFmpegTimestamp &&
       stream->codecpar->codec_id != AV_CODEC_ID_HEVC &&
       stream->codecpar->codec_id != AV_CODEC_ID_H264 &&
       stream->codecpar->codec_id != AV_CODEC_ID_MPEG4) {
     const base::TimeDelta first_pts =
-        ConvertFromTimeBase(stream->time_base, stream->first_dts);
+        ConvertFromTimeBase(stream->time_base, av_stream_get_first_dts(stream));
     if (first_pts < start_time)
       start_time = first_pts;
   }
 
   return start_time;
-}
-
-// Some videos just want to watch the world burn, with a height of 0; cap the
-// "infinite" aspect ratio resulting.
-const int kInfiniteRatio = 99999;
-
-// Common aspect ratios (multiplied by 100 and truncated) used for histogramming
-// video sizes.  These were taken on 20111103 from
-// http://wikipedia.org/wiki/Aspect_ratio_(image)#Previous_and_currently_used_aspect_ratios
-const int kCommonAspectRatios100[] = {
-    100, 115, 133, 137, 143, 150, 155, 160,  166,
-    175, 177, 185, 200, 210, 220, 221, 235,  237,
-    240, 255, 259, 266, 276, 293, 400, 1200, kInfiniteRatio,
-};
-
-template <class T>  // T has int width() & height() methods.
-static void UmaHistogramAspectRatio(const char* name, const T& size) {
-  UMA_HISTOGRAM_CUSTOM_ENUMERATION(
-      name,
-      // Intentionally use integer division to truncate the result.
-      size.height() ? (size.width() * 100) / size.height() : kInfiniteRatio,
-      base::CustomHistogram::ArrayToCustomEnumRanges(kCommonAspectRatios100));
 }
 
 // Record audio decoder config UMA stats corresponding to a src= playback.

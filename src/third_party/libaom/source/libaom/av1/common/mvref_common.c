@@ -982,10 +982,32 @@ static int motion_field_projection(AV1_COMMON *cm,
   return 1;
 }
 
-void av1_setup_motion_field(AV1_COMMON *cm) {
+// cm->ref_frame_side is calculated here, and will be used in av1_copy_frame_
+// mvs() to affect how mvs are copied.
+void av1_calculate_ref_frame_side(AV1_COMMON *cm) {
   const OrderHintInfo *const order_hint_info = &cm->seq_params->order_hint_info;
 
   memset(cm->ref_frame_side, 0, sizeof(cm->ref_frame_side));
+  if (!order_hint_info->enable_order_hint) return;
+
+  const int cur_order_hint = cm->cur_frame->order_hint;
+
+  for (int ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ref_frame++) {
+    const RefCntBuffer *const buf = get_ref_frame_buf(cm, ref_frame);
+    int order_hint = 0;
+
+    if (buf != NULL) order_hint = buf->order_hint;
+
+    if (get_relative_dist(order_hint_info, order_hint, cur_order_hint) > 0)
+      cm->ref_frame_side[ref_frame] = 1;
+    else if (order_hint == cur_order_hint)
+      cm->ref_frame_side[ref_frame] = -1;
+  }
+}
+
+void av1_setup_motion_field(AV1_COMMON *cm) {
+  const OrderHintInfo *const order_hint_info = &cm->seq_params->order_hint_info;
+
   if (!order_hint_info->enable_order_hint) return;
 
   TPL_MV_REF *tpl_mvs_base = cm->tpl_mvs;
@@ -997,7 +1019,6 @@ void av1_setup_motion_field(AV1_COMMON *cm) {
   }
 
   const int cur_order_hint = cm->cur_frame->order_hint;
-
   const RefCntBuffer *ref_buf[INTER_REFS_PER_FRAME];
   int ref_order_hint[INTER_REFS_PER_FRAME];
 
@@ -1010,11 +1031,6 @@ void av1_setup_motion_field(AV1_COMMON *cm) {
 
     ref_buf[ref_idx] = buf;
     ref_order_hint[ref_idx] = order_hint;
-
-    if (get_relative_dist(order_hint_info, order_hint, cur_order_hint) > 0)
-      cm->ref_frame_side[ref_frame] = 1;
-    else if (order_hint == cur_order_hint)
-      cm->ref_frame_side[ref_frame] = -1;
   }
 
   int ref_stamp = MFMV_STACK_SIZE - 1;

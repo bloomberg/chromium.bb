@@ -16,7 +16,7 @@
       "git",
       "fetch",
       "origin",
-      "master",
+      "main",
       "--recurse-submodules",
       "--progress"
     ],
@@ -193,7 +193,7 @@
     "cmd": [
       "git",
       "rebase",
-      "origin/master"
+      "origin/main"
     ],
     "cwd": "[START_DIR]\\src",
     "infra_step": true,

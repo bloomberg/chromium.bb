@@ -425,6 +425,8 @@ Chrome براؤزر مینو کھولنے کیلئے، Alt+F دبائیں۔</tra
 <translation id="3810838688059735925">ویڈیو</translation>
 <translation id="3813387282697781382">ہلکا مرجان</translation>
 <translation id="3816633764618089385">اگلا میڈیا</translation>
+<translation id="3840823741487267909">مخفف</translation>
+<translation id="3841319830220785495">ڈیفالٹ قدرتی آواز</translation>
 <translation id="385383972552776628">اختیارات کا صفحہ کھولیں</translation>
 <translation id="3856075812838139784">صرف پڑھنے کیلئے</translation>
 <translation id="3857141338659865495">میڈیم فیروزی</translation>
@@ -452,6 +454,7 @@ Chrome براؤزر مینو کھولنے کیلئے، Alt+F دبائیں۔</tra
 <translation id="4021716437419160885">نیچے اسکرول کریں</translation>
 <translation id="4035381225449278841">بہار</translation>
 <translation id="4047216625641135770">نشان</translation>
+<translation id="4047910800766704982">‏اپنے آلے کے آن لائن ہونے پر آپ قدرتی، انسان جیسی آواز کا استعمال کر سکتے ہیں۔ پروسیسنگ کے لیے ٹیکسٹ Google کو بھیجا جائے گا۔ آپ اسے ترتیبات میں کسی بھی وقت آف کر سکتے ہیں۔</translation>
 <translation id="4053520724192563562">لیموں نما سبز</translation>
 <translation id="4054936709456751127">sts</translation>
 <translation id="4058278702844053247">صفحہ لوڈ پیشرفت میں ہے</translation>
@@ -687,6 +690,7 @@ Chrome براؤزر مینو کھولنے کیلئے، Alt+F دبائیں۔</tra
 <translation id="5748623122140342504">پچھلی سطح 5 کی سرخی</translation>
 <translation id="5760594853119905566">ضمیمہ</translation>
 <translation id="5761219715606611783">‏بہت خوب! آپ نے ChromeVox ٹچ کی بنیادی باتیں جان لی ہیں۔ آپ دوبارہ ٹیوٹوریل دیکھ سکتے ہیں یا نیچے دیے گئے بٹنز کا استعمال کر کے اس ٹیوٹوریل سے باہر نکل سکتے ہیں۔</translation>
+<translation id="5776001898637896684">‏Google کے بہتر کردہ نیٹ ورک کی ٹیکسٹ ٹو اسپیچ ایکسٹینشن</translation>
 <translation id="5805940204952508776">دو انگلیوں سے تھپتھپائیں</translation>
 <translation id="5819072574982403430">ٹری آئٹم</translation>
 <translation id="5822819874379903994">گہرا فیروزی</translation>
@@ -909,6 +913,7 @@ Chrome براؤزر مینو کھولنے کیلئے، Alt+F دبائیں۔</tra
 <translation id="743783356331413498">مثال</translation>
 <translation id="7439060726180460871">ڈائریکٹری</translation>
 <translation id="744163271241493234">pwded</translation>
+<translation id="7465123027577412805">قدرتی آواز کا استعمال کریں؟</translation>
 <translation id="7484805699335881122">عنصر کی اقسام اور حوالہ شدہ، حذف کردہ، بولڈ کردہ، قوسین یا بڑے حروف والا ٹیکسٹ بولنے پر پِچ کو تبدیل کریں۔</translation>
 <translation id="7491962110804786152">ٹیب</translation>
 <translation id="7492497529767769458">اگلے سیکشن پر جائیں۔ مثالوں میں اسٹیٹس ٹرے اور لانچر شامل ہیں۔</translation>
@@ -979,6 +984,7 @@ Chrome براؤزر مینو کھولنے کیلئے، Alt+F دبائیں۔</tra
 <translation id="7968340748835037139">گہرا سبز</translation>
 <translation id="7972507042926081808">چاکلیٹ</translation>
 <translation id="7974390230414479278">مینو آئٹم</translation>
+<translation id="7990863024647916394"><ph name="DISPLAY_NAME" /> آواز <ph name="COUNT" /></translation>
 <translation id="8004507136466386272">الفاظ</translation>
 <translation id="8004512796067398576">اضافہ</translation>
 <translation id="8007540374018858731">h3</translation>

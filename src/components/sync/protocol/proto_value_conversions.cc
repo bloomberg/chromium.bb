@@ -13,7 +13,40 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "components/sync/base/unique_position.h"
+#include "components/sync/protocol/app_list_specifics.pb.h"
+#include "components/sync/protocol/app_setting_specifics.pb.h"
+#include "components/sync/protocol/app_specifics.pb.h"
+#include "components/sync/protocol/arc_package_specifics.pb.h"
+#include "components/sync/protocol/autofill_offer_specifics.pb.h"
+#include "components/sync/protocol/autofill_specifics.pb.h"
+#include "components/sync/protocol/bookmark_specifics.pb.h"
+#include "components/sync/protocol/dictionary_specifics.pb.h"
+#include "components/sync/protocol/entity_specifics.pb.h"
+#include "components/sync/protocol/extension_setting_specifics.pb.h"
+#include "components/sync/protocol/extension_specifics.pb.h"
+#include "components/sync/protocol/history_delete_directive_specifics.pb.h"
+#include "components/sync/protocol/nigori_specifics.pb.h"
+#include "components/sync/protocol/os_preference_specifics.pb.h"
+#include "components/sync/protocol/os_priority_preference_specifics.pb.h"
+#include "components/sync/protocol/password_specifics.pb.h"
+#include "components/sync/protocol/preference_specifics.pb.h"
+#include "components/sync/protocol/printer_specifics.pb.h"
+#include "components/sync/protocol/priority_preference_specifics.pb.h"
 #include "components/sync/protocol/proto_visitors.h"
+#include "components/sync/protocol/reading_list_specifics.pb.h"
+#include "components/sync/protocol/search_engine_specifics.pb.h"
+#include "components/sync/protocol/send_tab_to_self_specifics.pb.h"
+#include "components/sync/protocol/session_specifics.pb.h"
+#include "components/sync/protocol/sharing_message_specifics.pb.h"
+#include "components/sync/protocol/sync.pb.h"
+#include "components/sync/protocol/sync_entity.pb.h"
+#include "components/sync/protocol/theme_specifics.pb.h"
+#include "components/sync/protocol/typed_url_specifics.pb.h"
+#include "components/sync/protocol/user_consent_specifics.pb.h"
+#include "components/sync/protocol/user_event_specifics.pb.h"
+#include "components/sync/protocol/web_app_specifics.pb.h"
+#include "components/sync/protocol/webauthn_credential_specifics.pb.h"
+#include "components/sync/protocol/workspace_desk_specifics.pb.h"
 
 namespace syncer {
 
@@ -160,17 +193,17 @@ class ToValueVisitor {
       const sync_pb::AutofillWalletSpecifics& proto) const {
     auto value = ToValueImpl(proto);
     if (proto.type() != sync_pb::AutofillWalletSpecifics::POSTAL_ADDRESS) {
-      value->Remove("address", nullptr);
+      value->RemoveKey("address");
     }
     if (proto.type() != sync_pb::AutofillWalletSpecifics::MASKED_CREDIT_CARD) {
-      value->Remove("masked_card", nullptr);
+      value->RemoveKey("masked_card");
     }
     if (proto.type() != sync_pb::AutofillWalletSpecifics::CUSTOMER_DATA) {
-      value->Remove("customer_data", nullptr);
+      value->RemoveKey("customer_data");
     }
     if (proto.type() !=
         sync_pb::AutofillWalletSpecifics::CREDIT_CARD_CLOUD_TOKEN_DATA) {
-      value->Remove("cloud_token_data", nullptr);
+      value->RemoveKey("cloud_token_data");
     }
     return value;
   }

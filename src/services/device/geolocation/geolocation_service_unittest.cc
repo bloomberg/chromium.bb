@@ -23,6 +23,10 @@
 #include "services/device/public/mojom/geolocation_context.mojom.h"
 #include "services/device/public/mojom/geolocation_control.mojom.h"
 
+#if defined(OS_MAC)
+#include "services/device/public/cpp/test/fake_geolocation_manager.h"
+#endif
+
 namespace device {
 
 namespace {
@@ -91,15 +95,25 @@ class GeolocationServiceUnitTest : public DeviceServiceTestBase {
   DISALLOW_COPY_AND_ASSIGN(GeolocationServiceUnitTest);
 };
 
+// GeolocationServiceUnitTest.UrlWithApiKey is flaky on mac
+// https://crbug.com/1235907.
+#if defined(OS_MAC)
+#define MAYBE_UrlWithApiKey DISABLED_UrlWithApiKey
+#else
+#define MAYBE_UrlWithApiKey UrlWithApiKey
+#endif
+
 #if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_ANDROID)
 // ChromeOS fails to perform network geolocation when zero wifi networks are
 // detected in a scan: https://crbug.com/767300.
 #else
-TEST_F(GeolocationServiceUnitTest, UrlWithApiKey) {
-  // With this flag enabled macOS will try to use the system location provider
-  // instead of NetworkLocationProvider.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(features::kMacCoreLocationImplementation);
+TEST_F(GeolocationServiceUnitTest, MAYBE_UrlWithApiKey) {
+// To align with user expectation we do not make Network Location Requests
+// on macOS unless the browser has Location Permission from the OS.
+#if defined(OS_MAC)
+  fake_geolocation_manager_->SetSystemPermission(
+      LocationSystemPermissionStatus::kAllowed);
+#endif
 
   base::RunLoop loop;
   test_url_loader_factory_.SetInterceptor(base::BindLambdaForTesting(

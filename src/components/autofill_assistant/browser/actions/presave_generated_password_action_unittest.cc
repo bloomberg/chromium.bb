@@ -52,8 +52,8 @@ class PresaveGeneratedPasswordActionTest : public testing::Test {
 TEST_F(PresaveGeneratedPasswordActionTest, PresaveGeneratedPassword) {
   user_data_.selected_login_ = absl::make_optional<WebsiteLoginManager::Login>(
       GURL(kFakeUrl), kFakeUsername);
-  user_data_.additional_values_[kMemoryKeyForGeneratedPassword] =
-      SimpleValue(std::string(kGeneratedPassword));
+  user_data_.SetAdditionalValue(kMemoryKeyForGeneratedPassword,
+                                SimpleValue(std::string(kGeneratedPassword)));
   user_data_.password_form_data_ = autofill::FormData();
 
   PresaveGeneratedPasswordProto* presave_password_proto =
@@ -63,15 +63,15 @@ TEST_F(PresaveGeneratedPasswordActionTest, PresaveGeneratedPassword) {
   PresaveGeneratedPasswordAction action(&mock_action_delegate_, proto_);
 
   EXPECT_CALL(mock_website_login_manager_,
-              OnPresaveGeneratedPassword(_, kGeneratedPassword, _, _))
+              PresaveGeneratedPassword(_, kGeneratedPassword, _, _))
       .Times(1);
 
   action.ProcessAction(callback_.Get());
 }
 
 TEST_F(PresaveGeneratedPasswordActionTest, LoginDataMissing) {
-  user_data_.additional_values_[kMemoryKeyForGeneratedPassword] =
-      SimpleValue(std::string(kGeneratedPassword));
+  user_data_.SetAdditionalValue(kMemoryKeyForGeneratedPassword,
+                                SimpleValue(std::string(kGeneratedPassword)));
   user_data_.password_form_data_ = autofill::FormData();
 
   PresaveGeneratedPasswordProto* presave_password_proto =
@@ -106,8 +106,8 @@ TEST_F(PresaveGeneratedPasswordActionTest, GeneratedPasswordMissing) {
 TEST_F(PresaveGeneratedPasswordActionTest, FormDataMissing) {
   user_data_.selected_login_ = absl::make_optional<WebsiteLoginManager::Login>(
       GURL(kFakeUrl), kFakeUsername);
-  user_data_.additional_values_[kMemoryKeyForGeneratedPassword] =
-      SimpleValue(std::string(kGeneratedPassword));
+  user_data_.SetAdditionalValue(kMemoryKeyForGeneratedPassword,
+                                SimpleValue(std::string(kGeneratedPassword)));
 
   PresaveGeneratedPasswordProto* presave_password_proto =
       proto_.mutable_presave_generated_password();

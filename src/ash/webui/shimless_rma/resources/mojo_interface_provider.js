@@ -4,9 +4,9 @@
 
 import {assert} from 'chrome://resources/js/assert.m.js';
 
-import {fakeChromeVersion, fakeComponents, fakeStates} from './fake_data.js';
+import {fakeChromeVersion, fakeComponents, fakeDeviceRegions, fakeDeviceSkus, fakeRsuChallengeQrCode, fakeStates} from './fake_data.js';
 import {FakeShimlessRmaService} from './fake_shimless_rma_service.js'
-import {Component, ComponentRepairState, ComponentType, NetworkConfigServiceInterface, RmadErrorCode, RmaState, ShimlessRmaServiceInterface} from './shimless_rma_types.js';
+import {NetworkConfigServiceInterface, RmadErrorCode, ShimlessRmaService, ShimlessRmaServiceInterface} from './shimless_rma_types.js';
 
 /**
  * @fileoverview
@@ -15,25 +15,10 @@ import {Component, ComponentRepairState, ComponentType, NetworkConfigServiceInte
  */
 
 /**
- * Sets up a FakeShimlessRmaService to be used at runtime.
- * TODO(gavindodd): Remove once mojo bindings are implemented.
+ * If true this will replace ShimlessRmaService with a fake.
+ * @type {boolean}
  */
-function setupFakeShimlessRmaService_() {
-  // Create provider.
-  let service = new FakeShimlessRmaService();
-
-  service.setStates(fakeStates);
-  service.setGetCurrentChromeVersionResult(fakeChromeVersion[0]);
-  service.setCheckForChromeUpdatesResult(false);
-  service.setGetComponentListResult(fakeComponents);
-  service.setReimageRequiredResult(false);
-  service.setCheckForNetworkConnection(fakeStates[2]);
-  service.automaticallyTriggerDisableWriteProtectionObservation();
-  service.automaticallyTriggerProvisioningObservation();
-
-  // Set the fake service.
-  setShimlessRmaServiceForTesting(service);
-}
+let useFakeService = true;
 
 /**
  * @type {?ShimlessRmaServiceInterface}
@@ -44,6 +29,39 @@ let shimlessRmaService = null;
  * @type {?NetworkConfigServiceInterface}
  */
 let networkConfigService = null;
+
+/**
+ * Sets up a FakeShimlessRmaService to be used at runtime.
+ * TODO(gavindodd): Remove once mojo bindings are implemented.
+ */
+function setupFakeShimlessRmaService_() {
+  // Create provider.
+  let service = new FakeShimlessRmaService();
+
+  service.setStates(fakeStates);
+
+  service.setGetCurrentOsVersionResult(fakeChromeVersion[0]);
+  service.setCheckForOsUpdatesResult(false);
+
+  service.setGetComponentListResult(fakeComponents);
+  service.setReimageRequiredResult(false);
+  service.automaticallyTriggerDisableWriteProtectionObservation();
+  service.automaticallyTriggerProvisioningObservation();
+  service.automaticallyTriggerCalibrationObservation();
+
+  service.setGetRsuDisableWriteProtectChallengeResult('##challenge code##')
+  service.setGetRsuDisableWriteProtectChallengeQrCodeResponse(
+      fakeRsuChallengeQrCode);
+
+  service.setGetOriginalSerialNumberResult('serial# 0001')
+  service.setGetRegionListResult(fakeDeviceRegions);
+  service.setGetOriginalRegionResult(1);
+  service.setGetSkuListResult(fakeDeviceSkus);
+  service.setGetOriginalSkuResult(1);
+
+  // Set the fake service.
+  setShimlessRmaServiceForTesting(service);
+}
 
 /**
  * @param {!ShimlessRmaServiceInterface} testService
@@ -57,12 +75,14 @@ export function setShimlessRmaServiceForTesting(testService) {
  */
 export function getShimlessRmaService() {
   if (!shimlessRmaService) {
-    setupFakeShimlessRmaService_();
+    if (useFakeService) {
+      setupFakeShimlessRmaService_();
+    } else {
+      shimlessRmaService = ShimlessRmaService.getRemote();
+    }
   }
 
-  // TODO(gavindodd): Instantiate a real mojo interface here.
   assert(!!shimlessRmaService);
-
   return shimlessRmaService;
 }
 
@@ -84,4 +104,20 @@ export function getNetworkConfigService() {
 
   assert(!!networkConfigService);
   return networkConfigService;
+}
+
+/**
+ * @param {number} error
+ * @return {string}
+ */
+export function rmadErrorString(error) {
+  if (error === RmadErrorCode.kOk) {
+    return '';
+  }
+  for (const [k, v] of Object.entries(RmadErrorCode)) {
+    if (v === error) {
+      return 'Error: ' + k + '(' + error + ')';
+    }
+  }
+  return 'Error: unknown (' + error + ')';
 }

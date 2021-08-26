@@ -141,22 +141,17 @@ class UncompiledDataWithPreparseData
   TQ_OBJECT_CONSTRUCTORS(UncompiledDataWithPreparseData)
 };
 
-class InterpreterData : public Struct {
+class InterpreterData
+    : public TorqueGeneratedInterpreterData<InterpreterData, Struct> {
  public:
-  DECL_ACCESSORS(bytecode_array, BytecodeArray)
   DECL_ACCESSORS(interpreter_trampoline, Code)
 
-  DEFINE_FIELD_OFFSET_CONSTANTS(Struct::kHeaderSize,
-                                TORQUE_GENERATED_INTERPRETER_DATA_FIELDS)
-
-  DECL_CAST(InterpreterData)
   DECL_PRINTER(InterpreterData)
-  DECL_VERIFIER(InterpreterData)
 
  private:
   DECL_ACCESSORS(raw_interpreter_trampoline, CodeT)
 
-  OBJECT_CONSTRUCTORS(InterpreterData, Struct);
+  TQ_OBJECT_CONSTRUCTORS(InterpreterData)
 };
 
 class BaselineData : public TorqueGeneratedBaselineData<BaselineData, Struct> {
@@ -220,6 +215,8 @@ class SharedFunctionInfo
 
   static const int kNotFound = -1;
 
+  DECL_ACQUIRE_GETTER(scope_info, ScopeInfo)
+  // Deprecated, use the ACQUIRE version instead.
   DECL_GETTER(scope_info, ScopeInfo)
 
   // Set scope_info without moving the existing name onto the ScopeInfo.
@@ -534,7 +531,7 @@ class SharedFunctionInfo
   // Returns true if the function has old bytecode that could be flushed. This
   // function shouldn't access any flags as it is used by concurrent marker.
   // Hence it takes the mode as an argument.
-  inline bool ShouldFlushBytecode(BytecodeFlushMode mode);
+  inline bool ShouldFlushCode(base::EnumSet<CodeFlushMode> code_flush_mode);
 
   enum Inlineability {
     kIsInlineable,
@@ -575,6 +572,7 @@ class SharedFunctionInfo
   void SetFunctionTokenPosition(int function_token_position,
                                 int start_position);
 
+  inline bool CanCollectSourcePosition(Isolate* isolate);
   static void EnsureSourcePositionsAvailable(
       Isolate* isolate, Handle<SharedFunctionInfo> shared_info);
 
@@ -696,12 +694,12 @@ class V8_NODISCARD IsCompiledScope {
   inline IsCompiledScope(const SharedFunctionInfo shared, Isolate* isolate);
   inline IsCompiledScope(const SharedFunctionInfo shared,
                          LocalIsolate* isolate);
-  inline IsCompiledScope() : retain_bytecode_(), is_compiled_(false) {}
+  inline IsCompiledScope() : retain_code_(), is_compiled_(false) {}
 
   inline bool is_compiled() const { return is_compiled_; }
 
  private:
-  MaybeHandle<BytecodeArray> retain_bytecode_;
+  MaybeHandle<HeapObject> retain_code_;
   bool is_compiled_;
 };
 

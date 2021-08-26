@@ -7,7 +7,6 @@
  * for language and input method settings.
  */
 
-// TODO(crbug.com/1097328): Remove all chromeos references here.
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.m.js';
 import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
@@ -37,20 +36,14 @@ import './edit_dictionary_page.js';
 // </if>
 
 import {assert} from 'chrome://resources/js/assert.m.js';
-import {isChromeOS, isWindows} from 'chrome://resources/js/cr.m.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
 import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
 import {flush, html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../i18n_setup.js';
-import {LifetimeBrowserProxyImpl} from '../lifetime_browser_proxy.js';
 import {PrefsBehavior, PrefsBehaviorInterface} from '../prefs/prefs_behavior.js';
 import {routes} from '../route.js';
 import {Route, Router} from '../router.js';
-
-// <if expr="chromeos">
-import {LanguagesMetricsProxy, LanguagesMetricsProxyImpl, LanguagesPageInteraction} from './languages_metrics_proxy.js';
-// </if>
 
 import {LanguageSettingsActionType, LanguageSettingsMetricsProxy, LanguageSettingsMetricsProxyImpl, LanguageSettingsPageImpressionType} from './languages_settings_metrics_proxy.js';
 
@@ -118,7 +111,7 @@ class SettingsLanguagesPageElement extends SettingsLanguagesPageElementBase {
         type: Boolean,
         value() {
           let enabled = false;
-          // <if expr="not chromeos and not lacros">
+          // <if expr="not lacros">
           enabled = loadTimeData.getBoolean(
               'enableDesktopRestructuredLanguageSettings');
           // </if>
@@ -154,7 +147,7 @@ class SettingsLanguagesPageElement extends SettingsLanguagesPageElementBase {
             map.set(routes.EDIT_DICTIONARY.path, '#spellCheckSubpageTrigger');
           }
           // </if>
-          // <if expr="not chromeos and not lacros">
+          // <if expr="not lacros">
           if (loadTimeData.getBoolean(
                   'enableDesktopRestructuredLanguageSettings')) {
             if (routes.LANGUAGE_SETTINGS) {
@@ -166,25 +159,6 @@ class SettingsLanguagesPageElement extends SettingsLanguagesPageElementBase {
           return map;
         },
       },
-
-      // <if expr="chromeos">
-      /** @private */
-      isGuest_: {
-        type: Boolean,
-        value() {
-          return loadTimeData.getBoolean('isGuest');
-        },
-      },
-
-      // TODO(crbug.com/1097328): Delete this.
-      /** @private */
-      isChromeOSLanguagesSettingsUpdate_: {
-        type: Boolean,
-        value() {
-          return true;
-        },
-      },
-      // </if>
     };
   }
 
@@ -203,24 +177,10 @@ class SettingsLanguagesPageElement extends SettingsLanguagesPageElementBase {
   constructor() {
     super();
 
-    // <if expr="chromeos">
-    /** @private {!LanguagesMetricsProxy} */
-    this.languagesMetricsProxy_ = LanguagesMetricsProxyImpl.getInstance();
-    // </if>
     /** @private {!LanguageSettingsMetricsProxy} */
     this.languageSettingsMetricsProxy_ =
         LanguageSettingsMetricsProxyImpl.getInstance();
   }
-
-  // <if expr="chromeos">
-  /** @private */
-  onOpenChromeOSLanguagesSettingsClick_() {
-    const chromeOSLanguagesSettingsPath =
-        loadTimeData.getString('chromeOSLanguagesSettingsPath');
-    window.location.href =
-        `chrome://os-settings/${chromeOSLanguagesSettingsPath}`;
-  }
-  // </if>
 
   // <if expr="not is_macosx">
   /**
@@ -337,10 +297,6 @@ class SettingsLanguagesPageElement extends SettingsLanguagesPageElementBase {
    * @private
    */
   onEditDictionaryTap_() {
-    // <if expr="chromeos">
-    this.languagesMetricsProxy_.recordInteraction(
-        LanguagesPageInteraction.OPEN_CUSTOM_SPELL_CHECK);
-    // </if>
     Router.getInstance().navigateTo(
         /** @type {!Route} */ (routes.EDIT_DICTIONARY));
   }
@@ -367,16 +323,6 @@ class SettingsLanguagesPageElement extends SettingsLanguagesPageElementBase {
   getProspectiveUILanguageName_(languageCode) {
     return this.languageHelper.getLanguage(languageCode).displayName;
   }
-
-  // <if expr="chromeos">
-  /**
-   * @param {!Event} e
-   * @private
-   */
-  onSpellcheckToggleChange_(e) {
-    this.languagesMetricsProxy_.recordToggleSpellCheck(e.target.checked);
-  }
-  // </if>
 
   /**
    * Handler to initiate another attempt at downloading the spell check
@@ -438,7 +384,7 @@ class SettingsLanguagesPageElement extends SettingsLanguagesPageElementBase {
     }
   }
 
-  // <if expr="not chromeos and not lacros">
+  // <if expr="not lacros">
   /**
    * Opens the Language Settings page.
    * @private

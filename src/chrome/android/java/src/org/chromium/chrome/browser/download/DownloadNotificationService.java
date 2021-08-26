@@ -27,7 +27,6 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.StrictModeContext;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
@@ -255,12 +254,8 @@ public class DownloadNotificationService {
         updateNotification(notificationId, notification, id,
                 new DownloadSharedPreferenceEntry(id, notificationId, otrProfileID,
                         canDownloadWhileMetered, fileName, true, isTransient));
-        // If the notification is allowed to start foreground service, or if the app is already
-        // foreground, ask the foreground service manager to handle the notification.
-        if (canStartForegroundService() || mDownloadForegroundServiceManager.isServiceBound()) {
-            mDownloadForegroundServiceManager.updateDownloadStatus(
-                    context, DownloadStatus.IN_PROGRESS, notificationId, notification);
-        }
+        mDownloadForegroundServiceManager.updateDownloadStatus(
+                context, DownloadStatus.IN_PROGRESS, notificationId, notification);
 
         startTrackingInProgressDownload(id);
     }
@@ -286,19 +281,31 @@ public class DownloadNotificationService {
     }
 
     /**
+     * Called when a download is canceled given the notification ID.
+     * @param id The {@link ContentId} of the download.
+     * @param notificationId Notification ID of the download.
+     * @param hasUserGesture Whether cancel is triggered by user gesture.
+     */
+    @VisibleForTesting
+    public void notifyDownloadCanceled(ContentId id, int notificationId, boolean hasUserGesture) {
+        mDownloadForegroundServiceManager.updateDownloadStatus(ContextUtils.getApplicationContext(),
+                DownloadStatus.CANCELLED, notificationId, null);
+        cancelNotification(notificationId, id);
+    }
+
+    /**
      * Called when a download is canceled.  This method uses internal tracking to try to find the
      * notification id to cancel.
+     * Called when a download is canceled.
      * @param id The {@link ContentId} of the download.
+     * @param hasUserGesture Whether cancel is triggered by user gesture.
      */
     @VisibleForTesting
     public void notifyDownloadCanceled(ContentId id, boolean hasUserGesture) {
         DownloadSharedPreferenceEntry entry =
                 mDownloadSharedPreferenceHelper.getDownloadSharedPreferenceEntry(id);
         if (entry == null) return;
-
-        mDownloadForegroundServiceManager.updateDownloadStatus(ContextUtils.getApplicationContext(),
-                DownloadStatus.CANCELLED, entry.notificationId, null);
-        cancelNotification(entry.notificationId, id);
+        notifyDownloadCanceled(id, entry.notificationId, hasUserGesture);
     }
 
     /**
@@ -735,10 +742,5 @@ public class DownloadNotificationService {
     private void rescheduleDownloads() {
         if (getResumptionAttemptLeft() <= 0) return;
         DownloadResumptionScheduler.getDownloadResumptionScheduler().scheduleIfNecessary();
-    }
-
-    private boolean canStartForegroundService() {
-        if (AppHooks.get().canStartForegroundServiceWhileInvisible()) return true;
-        return ApplicationStatus.hasVisibleActivities();
     }
 }

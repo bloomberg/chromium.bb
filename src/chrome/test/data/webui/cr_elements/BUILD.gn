@@ -21,6 +21,7 @@ js_type_check("closure_compile") {
     ":cr_card_radio_button_test",
     ":cr_checkbox_test",
     ":cr_container_shadow_behavior_test",
+    ":cr_container_shadow_mixin_test",
     ":cr_dialog_test",
     ":cr_drawer_tests",
     ":cr_expand_button_tests",
@@ -48,6 +49,7 @@ js_type_check("closure_compile") {
     ":cr_toggle_test",
     ":cr_toolbar_focus_tests",
     ":cr_toolbar_search_field_tests",
+    ":cr_toolbar_test",
     ":cr_view_manager_test",
     ":iron_list_focus_test",
   ]
@@ -63,7 +65,7 @@ js_library("cr_action_menu_test") {
     "..:test_util.m",
     "//third_party/polymer/v3_0/components-chromium/iron-test-helpers:mock-interactions",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu.m",
+    "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu",
     "//ui/webui/resources/cr_elements/cr_checkbox:cr_checkbox.m",
     "//ui/webui/resources/js:cr.m",
     "//ui/webui/resources/js:util.m",
@@ -96,6 +98,15 @@ js_library("cr_container_shadow_behavior_test") {
     "..:chai_assert",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements:cr_container_shadow_behavior.m",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
+}
+
+js_library("cr_container_shadow_mixin_test") {
+  deps = [
+    "..:chai_assert",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements:cr_container_shadow_mixin",
   ]
   externs_list = [ "$externs_path/mocha-2.5.js" ]
 }
@@ -334,8 +345,8 @@ js_library("cr_toast_manager_test") {
   deps = [
     "..:chai_assert",
     "..:test_util.m",
-    "//ui/webui/resources/cr_elements/cr_toast:cr_toast.m",
-    "//ui/webui/resources/cr_elements/cr_toast:cr_toast_manager.m",
+    "//ui/webui/resources/cr_elements/cr_toast:cr_toast",
+    "//ui/webui/resources/cr_elements/cr_toast:cr_toast_manager",
   ]
   externs_list = [ "$externs_path/mocha-2.5.js" ]
 }
@@ -344,7 +355,7 @@ js_library("cr_toast_test") {
   deps = [
     "..:chai_assert",
     "..:mock_timer.m",
-    "//ui/webui/resources/cr_elements/cr_toast:cr_toast.m",
+    "//ui/webui/resources/cr_elements/cr_toast:cr_toast",
   ]
   externs_list = [ "$externs_path/mocha-2.5.js" ]
 }
@@ -374,6 +385,15 @@ js_library("cr_toolbar_focus_tests") {
     "..:chai_assert",
     "..:test_util.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_toolbar:cr_toolbar",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
+}
+
+js_library("cr_toolbar_test") {
+  deps = [
+    "..:chai_assert",
+    "..:test_util.m",
     "//ui/webui/resources/cr_elements/cr_toolbar:cr_toolbar",
   ]
   externs_list = [ "$externs_path/mocha-2.5.js" ]

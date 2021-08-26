@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "src/dsp/intrapred.h"
+#include "src/dsp/intrapred_cfl.h"
 #include "src/utils/cpu.h"
 
 #if LIBGAV1_TARGETING_SSE4_1
@@ -88,7 +88,7 @@ inline __m128i CflPredictUnclipped(const __m128i* input, __m128i alpha_q12,
 
 template <int width, int height>
 void CflIntraPredictor_SSE4_1(
-    void* const dest, ptrdiff_t stride,
+    void* LIBGAV1_RESTRICT const dest, ptrdiff_t stride,
     const int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
     const int alpha) {
   auto* dst = static_cast<uint8_t*>(dest);
@@ -127,7 +127,8 @@ void CflIntraPredictor_SSE4_1(
 template <int block_height_log2, bool is_inside>
 void CflSubsampler444_4xH_SSE4_1(
     int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
-    const int max_luma_height, const void* const source, ptrdiff_t stride) {
+    const int max_luma_height, const void* LIBGAV1_RESTRICT const source,
+    ptrdiff_t stride) {
   static_assert(block_height_log2 <= 4, "");
   const int block_height = 1 << block_height_log2;
   const int visible_height = max_luma_height;
@@ -189,7 +190,7 @@ template <int block_height_log2>
 void CflSubsampler444_4xH_SSE4_1(
     int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
     const int max_luma_width, const int max_luma_height,
-    const void* const source, ptrdiff_t stride) {
+    const void* LIBGAV1_RESTRICT const source, ptrdiff_t stride) {
   static_assert(block_height_log2 <= 4, "");
   assert(max_luma_width >= 4);
   assert(max_luma_height >= 4);
@@ -209,7 +210,7 @@ template <int block_height_log2, bool inside>
 void CflSubsampler444_8xH_SSE4_1(
     int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
     const int max_luma_width, const int max_luma_height,
-    const void* const source, ptrdiff_t stride) {
+    const void* LIBGAV1_RESTRICT const source, ptrdiff_t stride) {
   static_assert(block_height_log2 <= 5, "");
   const int block_height = 1 << block_height_log2, block_width = 8;
   const int visible_height = max_luma_height;
@@ -292,7 +293,7 @@ template <int block_height_log2>
 void CflSubsampler444_8xH_SSE4_1(
     int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
     const int max_luma_width, const int max_luma_height,
-    const void* const source, ptrdiff_t stride) {
+    const void* LIBGAV1_RESTRICT const source, ptrdiff_t stride) {
   static_assert(block_height_log2 <= 5, "");
   assert(max_luma_width >= 4);
   assert(max_luma_height >= 4);
@@ -315,7 +316,7 @@ template <int block_width_log2, int block_height_log2, bool inside>
 void CflSubsampler444_SSE4_1(
     int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
     const int max_luma_width, const int max_luma_height,
-    const void* const source, ptrdiff_t stride) {
+    const void* LIBGAV1_RESTRICT const source, ptrdiff_t stride) {
   static_assert(block_width_log2 == 4 || block_width_log2 == 5, "");
   static_assert(block_height_log2 <= 5, "");
   assert(max_luma_width >= 4);
@@ -418,7 +419,7 @@ template <int block_width_log2, int block_height_log2>
 void CflSubsampler444_SSE4_1(
     int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
     const int max_luma_width, const int max_luma_height,
-    const void* const source, ptrdiff_t stride) {
+    const void* LIBGAV1_RESTRICT const source, ptrdiff_t stride) {
   static_assert(block_width_log2 == 4 || block_width_log2 == 5, "");
   static_assert(block_height_log2 <= 5, "");
   assert(max_luma_width >= 4);
@@ -441,7 +442,7 @@ template <int block_height_log2>
 void CflSubsampler420_4xH_SSE4_1(
     int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
     const int /*max_luma_width*/, const int max_luma_height,
-    const void* const source, ptrdiff_t stride) {
+    const void* LIBGAV1_RESTRICT const source, ptrdiff_t stride) {
   const int block_height = 1 << block_height_log2;
   const auto* src = static_cast<const uint8_t*>(source);
   int16_t* luma_ptr = luma[0];
@@ -511,7 +512,7 @@ template <int block_height_log2, int max_luma_width>
 inline void CflSubsampler420Impl_8xH_SSE4_1(
     int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
     const int /*max_luma_width*/, const int max_luma_height,
-    const void* const source, ptrdiff_t stride) {
+    const void* LIBGAV1_RESTRICT const source, ptrdiff_t stride) {
   const int block_height = 1 << block_height_log2;
   const auto* src = static_cast<const uint8_t*>(source);
   const __m128i zero = _mm_setzero_si128();
@@ -620,7 +621,7 @@ template <int block_height_log2>
 void CflSubsampler420_8xH_SSE4_1(
     int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
     const int max_luma_width, const int max_luma_height,
-    const void* const source, ptrdiff_t stride) {
+    const void* LIBGAV1_RESTRICT const source, ptrdiff_t stride) {
   if (max_luma_width == 8) {
     CflSubsampler420Impl_8xH_SSE4_1<block_height_log2, 8>(
         luma, max_luma_width, max_luma_height, source, stride);
@@ -634,7 +635,7 @@ template <int block_width_log2, int block_height_log2, int max_luma_width>
 inline void CflSubsampler420Impl_WxH_SSE4_1(
     int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
     const int /*max_luma_width*/, const int max_luma_height,
-    const void* const source, ptrdiff_t stride) {
+    const void* LIBGAV1_RESTRICT const source, ptrdiff_t stride) {
   const auto* src = static_cast<const uint8_t*>(source);
   const __m128i zero = _mm_setzero_si128();
   __m128i final_sum = zero;
@@ -751,7 +752,7 @@ template <int block_width_log2, int block_height_log2>
 void CflSubsampler420_WxH_SSE4_1(
     int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
     const int max_luma_width, const int max_luma_height,
-    const void* const source, ptrdiff_t stride) {
+    const void* LIBGAV1_RESTRICT const source, ptrdiff_t stride) {
   switch (max_luma_width) {
     case 8:
       CflSubsampler420Impl_WxH_SSE4_1<block_width_log2, block_height_log2, 8>(
@@ -968,7 +969,7 @@ inline __m128i ClipEpi16(__m128i x, __m128i min, __m128i max) {
 
 template <int width, int height>
 void CflIntraPredictor_10bpp_SSE4_1(
-    void* const dest, ptrdiff_t stride,
+    void* LIBGAV1_RESTRICT const dest, ptrdiff_t stride,
     const int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
     const int alpha) {
   constexpr int kCflLumaBufferStrideLog2_16i = 5;
@@ -1018,7 +1019,8 @@ void CflIntraPredictor_10bpp_SSE4_1(
 template <int block_height_log2, bool is_inside>
 void CflSubsampler444_4xH_SSE4_1(
     int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
-    const int max_luma_height, const void* const source, ptrdiff_t stride) {
+    const int max_luma_height, const void* LIBGAV1_RESTRICT const source,
+    ptrdiff_t stride) {
   static_assert(block_height_log2 <= 4, "");
   const int block_height = 1 << block_height_log2;
   const int visible_height = max_luma_height;
@@ -1079,7 +1081,7 @@ template <int block_height_log2>
 void CflSubsampler444_4xH_SSE4_1(
     int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
     const int max_luma_width, const int max_luma_height,
-    const void* const source, ptrdiff_t stride) {
+    const void* LIBGAV1_RESTRICT const source, ptrdiff_t stride) {
   static_cast<void>(max_luma_width);
   static_cast<void>(max_luma_height);
   static_assert(block_height_log2 <= 4, "");
@@ -1099,7 +1101,8 @@ void CflSubsampler444_4xH_SSE4_1(
 template <int block_height_log2, bool is_inside>
 void CflSubsampler444_8xH_SSE4_1(
     int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
-    const int max_luma_height, const void* const source, ptrdiff_t stride) {
+    const int max_luma_height, const void* LIBGAV1_RESTRICT const source,
+    ptrdiff_t stride) {
   const int block_height = 1 << block_height_log2;
   const int visible_height = max_luma_height;
   const __m128i dup16 = _mm_set1_epi32(0x01000100);
@@ -1158,7 +1161,7 @@ template <int block_height_log2>
 void CflSubsampler444_8xH_SSE4_1(
     int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
     const int max_luma_width, const int max_luma_height,
-    const void* const source, ptrdiff_t stride) {
+    const void* LIBGAV1_RESTRICT const source, ptrdiff_t stride) {
   static_cast<void>(max_luma_width);
   static_cast<void>(max_luma_height);
   static_assert(block_height_log2 <= 5, "");
@@ -1182,7 +1185,7 @@ template <int block_width_log2, int block_height_log2, bool is_inside>
 void CflSubsampler444_WxH_SSE4_1(
     int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
     const int max_luma_width, const int max_luma_height,
-    const void* const source, ptrdiff_t stride) {
+    const void* LIBGAV1_RESTRICT const source, ptrdiff_t stride) {
   const int block_height = 1 << block_height_log2;
   const int visible_height = max_luma_height;
   const int block_width = 1 << block_width_log2;
@@ -1278,7 +1281,7 @@ template <int block_width_log2, int block_height_log2>
 void CflSubsampler444_WxH_SSE4_1(
     int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
     const int max_luma_width, const int max_luma_height,
-    const void* const source, ptrdiff_t stride) {
+    const void* LIBGAV1_RESTRICT const source, ptrdiff_t stride) {
   static_assert(block_width_log2 == 4 || block_width_log2 == 5,
                 "This function will only work for block_width 16 and 32.");
   static_assert(block_height_log2 <= 5, "");
@@ -1300,7 +1303,7 @@ template <int block_height_log2>
 void CflSubsampler420_4xH_SSE4_1(
     int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
     const int /*max_luma_width*/, const int max_luma_height,
-    const void* const source, ptrdiff_t stride) {
+    const void* LIBGAV1_RESTRICT const source, ptrdiff_t stride) {
   const int block_height = 1 << block_height_log2;
   const auto* src = static_cast<const uint16_t*>(source);
   const ptrdiff_t src_stride = stride / sizeof(src[0]);
@@ -1371,7 +1374,8 @@ void CflSubsampler420_4xH_SSE4_1(
 template <int block_height_log2, int max_luma_width>
 inline void CflSubsampler420Impl_8xH_SSE4_1(
     int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
-    const int max_luma_height, const void* const source, ptrdiff_t stride) {
+    const int max_luma_height, const void* LIBGAV1_RESTRICT const source,
+    ptrdiff_t stride) {
   const int block_height = 1 << block_height_log2;
   const auto* src = static_cast<const uint16_t*>(source);
   const ptrdiff_t src_stride = stride / sizeof(src[0]);
@@ -1483,7 +1487,7 @@ template <int block_height_log2>
 void CflSubsampler420_8xH_SSE4_1(
     int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
     const int max_luma_width, const int max_luma_height,
-    const void* const source, ptrdiff_t stride) {
+    const void* LIBGAV1_RESTRICT const source, ptrdiff_t stride) {
   if (max_luma_width == 8) {
     CflSubsampler420Impl_8xH_SSE4_1<block_height_log2, 8>(luma, max_luma_height,
                                                           source, stride);
@@ -1496,7 +1500,8 @@ void CflSubsampler420_8xH_SSE4_1(
 template <int block_width_log2, int block_height_log2, int max_luma_width>
 inline void CflSubsampler420Impl_WxH_SSE4_1(
     int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
-    const int max_luma_height, const void* const source, ptrdiff_t stride) {
+    const int max_luma_height, const void* LIBGAV1_RESTRICT const source,
+    ptrdiff_t stride) {
   const auto* src = static_cast<const uint16_t*>(source);
   const ptrdiff_t src_stride = stride / sizeof(src[0]);
   const __m128i zero = _mm_setzero_si128();
@@ -1615,7 +1620,7 @@ template <int block_width_log2, int block_height_log2>
 void CflSubsampler420_WxH_SSE4_1(
     int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
     const int max_luma_width, const int max_luma_height,
-    const void* const source, ptrdiff_t stride) {
+    const void* LIBGAV1_RESTRICT const source, ptrdiff_t stride) {
   switch (max_luma_width) {
     case 8:
       CflSubsampler420Impl_WxH_SSE4_1<block_width_log2, block_height_log2, 8>(

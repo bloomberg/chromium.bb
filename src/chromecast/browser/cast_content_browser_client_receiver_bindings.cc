@@ -18,6 +18,7 @@
 #include "chromecast/browser/cast_browser_main_parts.h"
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/media/media_caps_impl.h"
+#include "chromecast/browser/metrics/metrics_helper_impl.h"
 #include "chromecast/browser/service_connector.h"
 #include "chromecast/chromecast_buildflags.h"
 #include "chromecast/media/cdm/cast_cdm_factory.h"
@@ -94,6 +95,12 @@ void CastContentBrowserClient::ExposeInterfacesToRenderer(
           base::Unretained(cast_browser_main_parts_->media_caps())),
       base::ThreadTaskRunnerHandle::Get());
 
+  registry->AddInterface(
+      base::BindRepeating(
+          &metrics::MetricsHelperImpl::AddReceiver,
+          base::Unretained(cast_browser_main_parts_->metrics_helper())),
+      base::ThreadTaskRunnerHandle::Get());
+
 #if !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
   if (!memory_pressure_controller_) {
     memory_pressure_controller_.reset(new MemoryPressureControllerImpl());
@@ -166,7 +173,7 @@ void CastContentBrowserClient::CreateMediaService(
       GetCmaBackendFactory(),
       base::BindRepeating(&CastContentBrowserClient::CreateCdmFactory,
                           base::Unretained(this)),
-      GetVideoModeSwitcher(), GetVideoResolutionPolicy());
+      GetVideoModeSwitcher(), GetVideoResolutionPolicy(), media_connector());
   mojo_media_client->SetVideoGeometrySetterService(
       video_geometry_setter_service_.get());
 

@@ -11,6 +11,7 @@
 <translation id="1546934824884762070">မမျှော်လင့်ထားသည့် မှားယွင်းမှု ဖြစ်ခဲ့သည်။ ကျေးဇူးပြု၍ ဤပြဿနာများကို ဖွံ့ဖြိုးစေသူများအား အစီရင်ခံပါ။</translation>
 <translation id="1697532407822776718">သင်သည် အားလုံးကို သတ်မှတ်ပြီးသွားပြီ!</translation>
 <translation id="1742469581923031760">ချိတ်ဆက်နေ…</translation>
+<translation id="177040763384871009">ကလိုင်းယင့် ဘရောင်ဇာတွင် ဖွင့်မည့်၊ အဝေးထိန်းစက်ပစ္စည်း၌ ကလစ်နှိပ်ထားသော လင့်ခ်များကို ခွင့်ပြုရန် စနစ်၏ ဝဘ်ဘရောင်ဇာကို "<ph name="URL_FORWARDER_NAME" />" သို့ ပြောင်းရမည်။</translation>
 <translation id="177096447311351977">ဖောက်သည်အတွက် လိုင်း IP: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' လိုင်း='<ph name="CHANNEL_TYPE" />' ချိတ်ဆက်မှု='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1897488610212723051">ဖျက်ရန်</translation>
 <translation id="2009755455353575666">ချိတ်ဆက်မှု မအောင်မြင်ပါ</translation>
@@ -129,6 +130,7 @@
 <translation id="6963936880795878952">တစ်စုံတစ်ယောက်သည် မှားယွင်းသည့်ပင်နံပါတ်ဖြင့် ချိတ်ဆက်ရန်ကြိုးစားနေသောကြောင့် အဝေးထိန်းကွန်ပျူတာသို့ ချိတ်ဆက်မှုများကို ယာယီပိတ်ထားပါသည်။ နောက်မှထပ်လုပ်ကြည့်ပါ။</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">သင်သည် <ph name="HOSTNAME" />ထံသို့ အဝေးမှ ချိတ်ဆက်မှုများကို ပိတ်ထားချင်တာ သေချာသလား? သင်သည် သင် စိတ်ကို ပြောင်းခဲ့လျှင်၊ သင်သည် ချိတ်ဆက်မှုများကို ပြန်ဖွင့်ပေးရန် ထိုကွန်ပျူတာကို ဝင်ကြည့်ရန် လိုပါလိမ့မည်။</translation>
+<translation id="6998890551706945177"><ph name="CLIENT_USERNAME" /> က သင်၏ကွန်ပျူတာကို ကြည့်ရှုထိန်းချုပ်ခွင့် တောင်းဆိုထားပါသည်။ ဤပုဂ္ဂိုလ်ကို သင် မသိပါက သို့မဟုတ် မမျှဝေခင် တစ်စုံတစ်ခု ပြောင်းလဲရန် လိုအပ်ပါက ''<ph name="IDS_SHARE_CONFIRM_DIALOG_DECLINE" />'' ကို နှိပ်ပါ။  သို့မဟုတ် ချိတ်ဆက်ခွင့်ပြုရန် ''<ph name="IDS_SHARE_CONFIRM_DIALOG_CONFIRM" />'' ကို ရွေးပါ။</translation>
 <translation id="7019153418965365059">လက်မခံနိုင်သော ကွန်ယက်ပေါ်ရှိ စက်ချိုံယွင်းချက်: <ph name="HOST_OFFLINE_REASON" /> ။</translation>
 <translation id="701976023053394610">အဝေးထိန်း အကူ</translation>
 <translation id="7026930240735156896">ကွန်ပျူတာသို့ အဝေးထိန်းစနစ်ဖြင့်အသုံးပြုရန်အတွက် စနစ်ထည့်သွင်းရန် လမ်းညွှန်ချက်အတိုင်း လုပ်ဆောင်ပါ</translation>
@@ -142,6 +144,7 @@
 <translation id="7434397035092923453">အသုံးပြုသူ <ph name="CLIENT_USERNAME" /> အား ၐင်ခွင့်မပြု။</translation>
 <translation id="7444276978508498879">သုံးသူ ချိတ်ဆက်ထားပြီ: <ph name="CLIENT_USERNAME" />။</translation>
 <translation id="7526139040829362392">အကောင့် ပြောင်းရန်</translation>
+<translation id="7535110896613603182">မူလအက်ပ်ဆက်တင်များကို ဖွင့်ရန်</translation>
 <translation id="7628469622942688817">ကျွန်ုပ်၏ ပင်နံပါတ်ကို ဤစက်ပစ္စည်းတွင် မှတ်ထားပါ။</translation>
 <translation id="7649070708921625228">အကူအညီ</translation>
 <translation id="7658239707568436148">မလုပ်တော့</translation>

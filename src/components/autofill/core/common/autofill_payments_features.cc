@@ -90,7 +90,7 @@ const base::Feature kAutofillEnableOffersInDownstream{
 // and profile picture will appear at the bottom of SaveCardInfoBar.
 const base::Feature kAutofillEnableSaveCardInfoBarAccountIndicationFooter{
     "AutofillEnableSaveCardInfoBarAccountIndicationFooter",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // When enabled, if the user interacts with the manual fallback bottom sheet
 // on Android, it'll remain sticky until the user dismisses it.
@@ -107,6 +107,11 @@ const base::Feature kAutofillEnableToolbarStatusChip{
 // when all requirements are met.
 const base::Feature kAutofillEnableVirtualCard{
     "AutofillEnableVirtualCard", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// When enabled, Autofill will attempt to fill merchant promo/coupon/gift code
+// fields when data is available.
+const base::Feature kAutofillFillMerchantPromoCodeFields{
+    "AutofillFillMerchantPromoCodeFields", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether to enable the fix for the offer feature in Incognito mode.
 const base::Feature kAutofillFixOfferInIncognito{
@@ -168,11 +173,6 @@ const base::Feature kAutofillUpstream{"AutofillUpstream",
 
 const base::Feature kAutofillUpstreamAllowAllEmailDomains{
     "AutofillUpstreamAllowAllEmailDomains", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Controls whether we should use the new header images for the save card
-// bubble.
-const base::Feature kAutofillUseNewHeaderForSaveCardBubble{
-    "AutofillUseNewHeaderForSaveCardBubble", base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool ShouldShowImprovedUserConsentForCreditCardSave() {
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch

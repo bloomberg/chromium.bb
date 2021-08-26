@@ -14,6 +14,7 @@
 #include "ash/public/cpp/accessibility_controller.h"
 #include "ash/public/cpp/event_rewriter_controller.h"
 #include "ash/public/cpp/screen_backlight.h"
+#include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/root_window_controller.h"
@@ -68,6 +69,17 @@
 
 namespace ash {
 namespace {
+
+class TestShelfItemDelegate : public ShelfItemDelegate {
+ public:
+  explicit TestShelfItemDelegate(const ShelfID& shelf_id)
+      : ShelfItemDelegate(shelf_id) {}
+  void ExecuteCommand(bool from_context_menu,
+                      int64_t command_id,
+                      int32_t event_flags,
+                      int64_t display_id) override {}
+  void Close() override {}
+};
 
 const double kExpectedPhoneticSpeechAndHintDelayMS = 1000;
 
@@ -242,9 +254,11 @@ IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, NavigateNotificationCenter) {
   });
   sm_.ExpectSpeech(
       "Quick Settings, Press search plus left to access the notification "
-      "center., window");
+      "center.");
 
   sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_LEFT); });
+  sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_LEFT); });
+
   // If you are hitting this in the course of changing the UI, please fix. This
   // item needs a label.
   sm_.ExpectSpeech("List item");
@@ -531,7 +545,8 @@ IN_PROC_BROWSER_TEST_P(ShelfNotificationBadgeSpokenFeedbackTest,
   item.id = ShelfID("TestApp");
   item.title = u"TestAppTitle";
   item.type = ShelfItemType::TYPE_APP;
-  ShelfModel::Get()->Add(item);
+  ShelfModel::Get()->Add(item,
+                         std::make_unique<TestShelfItemDelegate>(item.id));
 
   // Set the notification badge to be shown for the test app.
   ShelfModel::Get()->UpdateItemNotification("TestApp", /*has_badge=*/true);
@@ -585,7 +600,8 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest,
   item.title = u"TestAppTitle";
   item.type = ShelfItemType::TYPE_APP;
   item.app_status = AppStatus::kPaused;
-  ShelfModel::Get()->Add(item);
+  ShelfModel::Get()->Add(item,
+                         std::make_unique<TestShelfItemDelegate>(item.id));
 
   // Focus on the shelf.
   sm_.Call(
@@ -635,7 +651,8 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest,
   item.title = u"TestAppTitle";
   item.type = ShelfItemType::TYPE_APP;
   item.app_status = AppStatus::kBlocked;
-  ShelfModel::Get()->Add(item);
+  ShelfModel::Get()->Add(item,
+                         std::make_unique<TestShelfItemDelegate>(item.id));
 
   // Focus on the shelf.
   sm_.Call(
@@ -667,7 +684,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, OpenStatusTray) {
   });
   sm_.ExpectSpeech(
       "Quick Settings, Press search plus left to access the notification "
-      "center., window");
+      "center.");
   sm_.Replay();
 }
 
@@ -682,7 +699,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, NavigateSystemTray) {
   });
   sm_.ExpectSpeech(
       "Quick Settings, Press search plus left to access the notification "
-      "center., window");
+      "center.");
 
   // Avatar button. Disabled for guest account.
   if (GetParam() != kTestAsGuestUser) {
@@ -1506,7 +1523,7 @@ class OobeSpokenFeedbackTest : public OobeBaseTest {
 IN_PROC_BROWSER_TEST_F(OobeSpokenFeedbackTest, SpokenFeedbackInOobe) {
   ui_controls::EnableUIControls();
   ASSERT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
-  AccessibilityManager::Get()->EnableSpokenFeedback(true);
+  AccessibilityManager::Get()->EnableSpokenFeedbackWithTutorial();
 
   // If ChromeVox is started in OOBE, the tutorial is automatically opened.
   sm_.ExpectSpeech("Welcome to ChromeVox!");
@@ -1520,13 +1537,7 @@ IN_PROC_BROWSER_TEST_F(OobeSpokenFeedbackTest, SpokenFeedbackInOobe) {
         nullptr, ui::VKEY_ESCAPE, false, false, false, false));
   });
 
-  if (ash::features::IsNewOobeLayoutEnabled()) {
-    // The Get started button gets initial focus.
-    sm_.ExpectSpeech("Get started");
-  } else {
-    // The Let's go button gets initial focus.
-    sm_.ExpectSpeech("Let's go");
-  }
+  sm_.ExpectSpeech("Get started");
 
   sm_.Call([]() {
     ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
@@ -1602,8 +1613,9 @@ IN_PROC_BROWSER_TEST_F(SigninToUserProfileSwitchTest, DISABLED_LoginAsNewUser) {
         nullptr, ui::VKEY_ESCAPE, false, false, false, false));
   });
 
-  std::string button_title =
-      features::IsSplitSettingsSyncEnabled() ? "Got it" : "Accept and continue";
+  std::string button_title = features::IsSyncConsentOptionalEnabled()
+                                 ? "Got it"
+                                 : "Accept and continue";
   sm_.ExpectSpeech(button_title);
 
   // Check that profile switched to the active user.

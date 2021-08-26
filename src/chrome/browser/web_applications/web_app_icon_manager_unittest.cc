@@ -46,7 +46,7 @@ namespace web_app {
 
 namespace {
 
-using IconSizeAndPurpose = AppIconManager::IconSizeAndPurpose;
+using IconSizeAndPurpose = WebAppIconManager::IconSizeAndPurpose;
 
 }  // namespace
 
@@ -94,12 +94,11 @@ class WebAppIconManagerTest : public WebAppTest {
     }
 
     base::RunLoop run_loop;
-    icon_manager_->WriteShortcutsMenuIconsData(
-        app_id, std::move(shortcuts_menu_icons),
-        base::BindLambdaForTesting([&](bool success) {
-          EXPECT_TRUE(success);
-          run_loop.Quit();
-        }));
+    icon_manager_->WriteData(app_id, {}, std::move(shortcuts_menu_icons), {},
+                             base::BindLambdaForTesting([&](bool success) {
+                               EXPECT_TRUE(success);
+                               run_loop.Quit();
+                             }));
     run_loop.Run();
   }
 
@@ -542,7 +541,7 @@ TEST_F(WebAppIconManagerTest, OverwriteIcons) {
     base::RunLoop run_loop;
 
     // Overwrite red icons with green and blue ones.
-    icon_manager().WriteData(app_id, std::move(icon_bitmaps),
+    icon_manager().WriteData(app_id, std::move(icon_bitmaps), {}, {},
                              base::BindLambdaForTesting([&](bool success) {
                                EXPECT_TRUE(success);
                                run_loop.Quit();
@@ -771,7 +770,7 @@ TEST_F(WebAppIconManagerTest, WriteAndReadAllShortcutsMenuIcons) {
   }
 }
 
-TEST_F(WebAppIconManagerTest, WriteShortcutsMenuIconsEmptyMap) {
+TEST_F(WebAppIconManagerTest, WriteNonProductIconsEmptyMaps) {
   auto web_app = test::CreateMinimalWebApp();
   const AppId app_id = web_app->app_id();
 
@@ -779,20 +778,46 @@ TEST_F(WebAppIconManagerTest, WriteShortcutsMenuIconsEmptyMap) {
 
   controller().RegisterApp(std::move(web_app));
 
-  ShortcutsMenuIconBitmaps shortcuts_menu_icons;
   base::RunLoop run_loop;
-  icon_manager().WriteShortcutsMenuIconsData(
-      app_id, std::move(shortcuts_menu_icons),
-      base::BindLambdaForTesting([&](bool success) {
-        EXPECT_FALSE(success);
-        run_loop.Quit();
-      }));
+  icon_manager().WriteData(app_id, {}, {}, {},
+                           base::BindLambdaForTesting([&](bool success) {
+                             EXPECT_TRUE(success);
+                             run_loop.Quit();
+                           }));
   run_loop.Run();
 
   // Make sure that nothing was written to disk.
   ShortcutsMenuIconBitmaps shortcuts_menu_icons_map =
       ReadAllShortcutsMenuIcons(app_id);
   EXPECT_EQ(0u, shortcuts_menu_icons_map.size());
+
+  EXPECT_FALSE(file_utils().PathExists(GetOtherIconsDir(profile(), app_id)));
+  // TODO(estade): check that WebAppIconManager returns no data when other icons
+  // are read. (When there is a read function.)
+}
+
+TEST_F(WebAppIconManagerTest, WriteOtherIconsToDisk) {
+  auto web_app = test::CreateMinimalWebApp();
+  const AppId app_id = web_app->app_id();
+
+  controller().RegisterApp(std::move(web_app));
+
+  IconsMap other_icons;
+  const GURL example_gurl("https://example.com/image.png");
+  AddIconToIconsMap(example_gurl, 48, SK_ColorBLUE, &other_icons);
+  base::RunLoop run_loop;
+  icon_manager().WriteData(app_id, {}, {}, other_icons,
+                           base::BindLambdaForTesting([&](bool success) {
+                             EXPECT_TRUE(success);
+                             run_loop.Quit();
+                           }));
+  run_loop.Run();
+
+  base::FilePath other_icons_dir = GetOtherIconsDir(profile(), app_id);
+  EXPECT_TRUE(file_utils().DirectoryExists(other_icons_dir));
+  EXPECT_FALSE(file_utils().IsDirectoryEmpty(other_icons_dir));
+  // TODO(estade): check that WebAppIconManager returns correct data when other
+  // icons are read. (When there is a read function.)
 }
 
 TEST_F(WebAppIconManagerTest, ReadIconsFailed) {

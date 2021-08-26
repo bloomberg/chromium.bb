@@ -42,11 +42,12 @@ class CdmDocumentServiceImpl final
                          const std::string& challenge,
                          ChallengePlatformCallback callback) final;
   void GetStorageId(uint32_t version, GetStorageIdCallback callback) final;
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
   void IsVerifiedAccessEnabled(IsVerifiedAccessEnabledCallback callback) final;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #if defined(OS_WIN)
-  void GetCdmOriginId(GetCdmOriginIdCallback callback) final;
+  void GetCdmPreferenceData(GetCdmPreferenceDataCallback callback) final;
+  void SetCdmClientToken(const std::vector<uint8_t>& client_token) final;
 #endif  // defined(OS_WIN)
 
  private:

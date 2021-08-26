@@ -30,6 +30,7 @@
 
 #include <math.h>
 #include <memory>
+#include <queue>
 
 #include <algorithm>
 
@@ -1884,10 +1885,12 @@ AXObject* AXNodeObject::InPageLinkTarget() const {
   DCHECK(ax_target->IsWebArea() || ax_target->GetElement())
       << "The link target is expected to be a document or an element: "
       << ax_target->ToString(true, true) << "\n* URL fragment = " << fragment;
-  DCHECK(!ax_target->AccessibilityIsIgnored())
-      << "The link target cannot be ignored: "
-      << ax_target->ToString(true, true) << "\n* URL fragment = " << fragment;
 #endif
+
+  // Usually won't be ignored, but could be e.g. if aria-hidden.
+  if (ax_target->AccessibilityIsIgnored())
+    return nullptr;
+
   return ax_target;
 }
 
@@ -2013,7 +2016,36 @@ ax::mojom::blink::WritingDirection AXNodeObject::GetTextDirection() const {
   return AXNodeObject::GetTextDirection();
 }
 
+ax::mojom::blink::TextPosition AXNodeObject::GetTextPositionFromAria() const {
+  // Check for role="subscript" or role="superscript" on the element, or if
+  // static text, on the containing element.
+  AXObject* obj = nullptr;
+  if (RoleValue() == ax::mojom::blink::Role::kStaticText)
+    obj = ParentObject();
+  else if (RoleValue() == ax::mojom::blink::Role::kGenericContainer)
+    obj = const_cast<AXNodeObject*>(this);  // May have role=sub/superscript.
+
+  if (obj) {
+    const AtomicString& aria_role =
+        obj->GetAOMPropertyOrARIAAttribute(AOMStringProperty::kRole);
+    if (aria_role == "subscript")
+      return ax::mojom::blink::TextPosition::kSubscript;
+    if (aria_role == "superscript")
+      return ax::mojom::blink::TextPosition::kSuperscript;
+  }
+
+  return ax::mojom::blink::TextPosition::kNone;
+}
+
 ax::mojom::blink::TextPosition AXNodeObject::GetTextPosition() const {
+  if (GetNode()) {
+    // role="subscript" and role="superscript" don't use an internal role, they
+    // just return a TextPosition here.
+    const auto& text_position = GetTextPositionFromAria();
+    if (text_position != ax::mojom::blink::TextPosition::kNone)
+      return text_position;
+  }
+
   if (!GetLayoutObject())
     return AXObject::GetTextPosition();
 
@@ -2467,8 +2499,10 @@ bool AXNodeObject::MaxValueForRange(float* out_value) const {
   }
 
   // In ARIA 1.1, default value of scrollbar, separator and slider
-  // for aria-valuemax were changed to 100.
+  // for aria-valuemax were changed to 100. This change was made for
+  // progressbar in ARIA 1.2.
   switch (AriaRoleAttribute()) {
+    case ax::mojom::blink::Role::kProgressIndicator:
     case ax::mojom::blink::Role::kScrollBar:
     case ax::mojom::blink::Role::kSplitter:
     case ax::mojom::blink::Role::kSlider: {
@@ -2500,8 +2534,10 @@ bool AXNodeObject::MinValueForRange(float* out_value) const {
   }
 
   // In ARIA 1.1, default value of scrollbar, separator and slider
-  // for aria-valuemin were changed to 0.
+  // for aria-valuemin were changed to 0. This change was made for
+  // progressbar in ARIA 1.2.
   switch (AriaRoleAttribute()) {
+    case ax::mojom::blink::Role::kProgressIndicator:
     case ax::mojom::blink::Role::kScrollBar:
     case ax::mojom::blink::Role::kSplitter:
     case ax::mojom::blink::Role::kSlider: {
@@ -3478,32 +3514,35 @@ int AXNodeObject::TextOffsetInFormattingContext(int offset) const {
 // Inline text boxes.
 //
 
-void AXNodeObject::LoadInlineTextBoxesRecursive() {
-  if (ui::CanHaveInlineTextBoxChildren(RoleValue())) {
-    if (children_.IsEmpty()) {
-      // We only need to add inline textbox children if they aren't present.
-      // Although some platforms (e.g. Android), load inline text boxes
-      // on subtrees that may later be stale, once they are stale, the old
-      // inline text boxes are cleared because SetNeedsToUpdateChildren()
-      // calls ClearChildren().
-      AddInlineTextBoxChildren(/*force*/ true);
-      children_dirty_ = false;  // Avoid adding these children twice.
-    }
-    return;
-  }
+void AXNodeObject::LoadInlineTextBoxes() {
+  std::queue<AXID> work_queue;
+  work_queue.push(AXObjectID());
 
-  for (const auto& child : ChildrenIncludingIgnored()) {
-    // TODO(https://crbug.com/1200244) Downgrade these to DCHECKs.
-    CHECK(child) << "Child has been destroyed before attempted use, parent is: "
-                 << ToString(true, true);
-    CHECK(!child->IsDetached())
-        << "Child has been detached before attempted use, parent is: "
-        << ToString(true, true);
-    CHECK(!IsDetached()) << "Parent was detached while attempting to load "
-                            "child text boxes, parent is: "
-                         << ToString(true, true);
-    child->LoadInlineTextBoxesRecursive();
+  while (!work_queue.empty()) {
+    AXObject* work_obj = AXObjectCache().ObjectFromAXID(work_queue.front());
+    work_queue.pop();
+    if (!work_obj || !work_obj->AccessibilityIsIncludedInTree())
+      continue;
+
+    if (ui::CanHaveInlineTextBoxChildren(work_obj->RoleValue())) {
+      if (work_obj->CachedChildrenIncludingIgnored().IsEmpty()) {
+        // We only need to add inline textbox children if they aren't present.
+        // Although some platforms (e.g. Android), load inline text boxes
+        // on subtrees that may later be stale, once they are stale, the old
+        // inline text boxes are cleared because SetNeedsToUpdateChildren()
+        // calls ClearChildren().
+        work_obj->ForceAddInlineTextBoxChildren();
+      }
+    } else {
+      for (const auto& child : work_obj->ChildrenIncludingIgnored())
+        work_queue.push(child->AXObjectID());
+    }
   }
+}
+
+void AXNodeObject::ForceAddInlineTextBoxChildren() {
+  AddInlineTextBoxChildren(true /*force*/);
+  children_dirty_ = false;  // Avoid adding these children twice.
 }
 
 void AXNodeObject::AddInlineTextBoxChildren(bool force) {
@@ -4446,6 +4485,9 @@ void AXNodeObject::HandleActiveDescendantChanged() {
 }
 
 AXObject* AXNodeObject::ErrorMessage() const {
+  if (GetInvalidState() == ax::mojom::blink::InvalidState::kFalse)
+    return nullptr;
+
   // Check for aria-errormessage.
   Element* existing_error_message =
       GetAOMPropertyOrARIAAttribute(AOMRelationProperty::kErrorMessage);

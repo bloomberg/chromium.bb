@@ -13,8 +13,9 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_container_impl.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_device_provider_impl.h"
+#include "chrome/browser/ui/global_media_controls/media_notification_service.h"
 #include "chrome/browser/ui/media_router/media_router_ui.h"
-#include "components/media_message_center/media_session_notification_item.h"
+#include "components/media_router/browser/presentation/start_presentation_context.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/audio_service.h"
 #include "content/public/browser/media_session.h"
@@ -88,7 +89,7 @@ GetPresentationManager(content::WebContents* web_contents) {
 MediaSessionNotificationProducer::Session::Session(
     MediaSessionNotificationProducer* owner,
     const std::string& id,
-    std::unique_ptr<media_message_center::MediaSessionNotificationItem> item,
+    std::unique_ptr<MediaSessionNotificationItem> item,
     content::WebContents* web_contents,
     mojo::Remote<media_session::mojom::MediaController> controller)
     : owner_(owner),
@@ -254,6 +255,12 @@ base::CallbackListSubscription MediaSessionNotificationProducer::Session::
       std::move(callback));
 }
 
+void MediaSessionNotificationProducer::OnStartPresentationContextCreated(
+    std::unique_ptr<media_router::StartPresentationContext> context) {
+  DCHECK(context);
+  context_ = std::move(context);
+}
+
 void MediaSessionNotificationProducer::Session::
     SetPresentationManagerForTesting(
         base::WeakPtr<media_router::WebContentsPresentationManager>
@@ -392,9 +399,8 @@ void MediaSessionNotificationProducer::OnFocusGained(
         std::piecewise_construct, std::forward_as_tuple(id),
         std::forward_as_tuple(
             this, id,
-            std::make_unique<
-                media_message_center::MediaSessionNotificationItem>(
-                service_, id, session->source_name.value_or(std::string()),
+            std::make_unique<MediaSessionNotificationItem>(
+                this, id, session->source_name.value_or(std::string()),
                 std::move(item_controller), std::move(session->session_info)),
             content::MediaSession::GetWebContentsFromRequestId(
                 *session->request_id),
@@ -414,7 +420,7 @@ void MediaSessionNotificationProducer::OnFocusLost(
   if (!base::Contains(active_controllable_session_ids_, id) &&
       !base::Contains(frozen_session_ids_, id) &&
       !base::Contains(dragged_out_session_ids_, id)) {
-    service_->RemoveItem(id);
+    RemoveItem(id);
     return;
   }
 
@@ -521,6 +527,8 @@ void MediaSessionNotificationProducer::HideItem(const std::string& id) {
     overlay_media_notifications_manager_.CloseOverlayNotification(id);
     dragged_out_session_ids_.erase(id);
   }
+
+  service_->HideItem(id);
 }
 
 void MediaSessionNotificationProducer::RemoveItem(const std::string& id) {
@@ -532,17 +540,19 @@ void MediaSessionNotificationProducer::RemoveItem(const std::string& id) {
     overlay_media_notifications_manager_.CloseOverlayNotification(id);
     dragged_out_session_ids_.erase(id);
   }
+
+  service_->HideItem(id);
   sessions_.erase(id);
 }
 
-bool MediaSessionNotificationProducer::ActivateItem(const std::string& id) {
+void MediaSessionNotificationProducer::ActivateItem(const std::string& id) {
   DCHECK(HasSession(id));
   if (base::Contains(dragged_out_session_ids_, id) ||
       base::Contains(inactive_session_ids_, id)) {
-    return false;
+    return;
   }
   active_controllable_session_ids_.insert(id);
-  return true;
+  service_->ShowItem(id);
 }
 
 bool MediaSessionNotificationProducer::HasSession(const std::string& id) const {
@@ -582,13 +592,16 @@ std::unique_ptr<media_router::CastDialogController>
 MediaSessionNotificationProducer::CreateCastDialogControllerForSession(
     const std::string& session_id) {
   auto it = sessions_.find(session_id);
-  if (it != sessions_.end()) {
-    auto ui = std::make_unique<media_router::MediaRouterUI>(
-        it->second.web_contents());
+  if (it == sessions_.end())
+    return nullptr;
+  auto ui =
+      std::make_unique<media_router::MediaRouterUI>(it->second.web_contents());
+  if (context_) {
+    ui->InitWithStartPresentationContext(std::move(context_));
+  } else {
     ui->InitWithDefaultMediaSource();
-    return ui;
   }
-  return nullptr;
+  return ui;
 }
 
 bool MediaSessionNotificationProducer::
@@ -699,7 +712,11 @@ void MediaSessionNotificationProducer::OnSessionBecameInactive(
 
   inactive_session_ids_.insert(id);
 
-  service_->HideNotification(id);
+  // Mark hidden on our end.
+  HideItem(id);
+
+  // Let the service know that the item is hidden.
+  service_->HideItem(id);
 }
 
 void MediaSessionNotificationProducer::HideMediaDialog() {

@@ -1,0 +1,62 @@
+<style include="shortcut-customization-shared">
+  #container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding-bottom: 10px;
+  }
+
+  #acceleratorInfoText {
+    padding-top: 10px
+  }
+
+  #cancelButtonContainer {
+    margin-top: 5px;
+  }
+
+  :host([is-edit-view]) #acceleratorView {
+    border-color: var(--google-blue-600);
+    border-radius: 5px;
+    border-style: solid;
+    border-width: thin;
+    padding: 5px;
+  }
+</style>
+
+<div id="container">
+  <div id="acceleratorContainer">
+    <div id="acceleratorView">
+      <accelerator-view id="acceleratorItem"
+          accelerator-info=[[acceleratorInfo]] is-editable={{isEditView}}>
+      </accelerator-view>
+    </div>
+    <div id="acceleratorInfoText" hidden=[[!isEditView]]>
+      <!-- TODO(jimmyxgong): Localize string -->
+      Press 1-4 modifiers and 1 other key on your keyboard
+    </div>
+  </div>
+  <template id="buttonContainer" is="dom-if" if="[[!acceleratorInfo.locked]]">
+    <div id="editButtonsContainer" hidden=[[isEditView]]>
+      <cr-icon-button id="editButton"
+          iron-icon="shortcut-customization:cancel"
+          aria-hidden="true"
+          on-click="onEditButtonClicked_">
+      </cr-icon-button>
+      <cr-icon-button id="deleteButton"
+          iron-icon="shortcut-customization:delete"
+          aria-hidden="true"
+          on-click="onDeleteButtonClicked_">
+      </cr-icon-button>
+    </div>
+    <div id="cancelButtonContainer" hidden=[[!isEditView]]>
+      <cr-button id="cancelButton" on-click="onCancelButtonClicked_">
+        <!-- TODO(jimmyxgong): Localize string -->
+        cancel
+      </cr-button>
+    </div>
+  </template>
+  <div id="lockContainer" hidden="[[!acceleratorInfo.locked]]">
+    <iron-icon id="lockedIcon" icon="shortcut-customization:lock">
+    </iron-icon>
+  </div>
+</div>

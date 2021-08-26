@@ -7,6 +7,7 @@
 #include <map>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "chrome/browser/ash/arc/accessibility/accessibility_info_data_wrapper.h"
 #include "chrome/browser/ash/arc/accessibility/accessibility_node_info_data_wrapper.h"
@@ -35,7 +36,7 @@ class DrawerLayoutHandlerTest : public testing::Test,
   class TestAXTreeSourceArc : public AXTreeSourceArc {
    public:
     explicit TestAXTreeSourceArc(AXTreeSourceArc::Delegate* delegate)
-        : AXTreeSourceArc(delegate) {}
+        : AXTreeSourceArc(delegate, /*window=*/nullptr) {}
 
     // AXTreeSourceArc overrides.
     AccessibilityInfoDataWrapper* GetFromId(int32_t id) const override {

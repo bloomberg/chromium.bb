@@ -39,9 +39,9 @@ import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 
 import * as ARIAUtils from './ARIAUtils.js';
-import type {Icon} from './Icon.js'; // eslint-disable-line no-unused-vars
+import type {Icon} from './Icon.js';
 import type {Config} from './InplaceEditor.js';
-import {InplaceEditor} from './InplaceEditor.js';  // eslint-disable-line no-unused-vars
+import {InplaceEditor} from './InplaceEditor.js';
 import {Keys} from './KeyboardShortcut.js';
 import {Tooltip} from './Tooltip.js';
 import {deepElementFromPoint, enclosingNodeOrSelfWithNodeNameInArray, isEditing} from './UIUtils.js';
@@ -371,7 +371,6 @@ export enum Events {
   ElementCollapsed = 'ElementCollapsed',
   ElementSelected = 'ElementSelected',
 }
-
 
 export class TreeOutlineInShadow extends TreeOutline {
   element: HTMLElement;

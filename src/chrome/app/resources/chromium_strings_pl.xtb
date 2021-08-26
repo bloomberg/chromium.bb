@@ -18,6 +18,7 @@
 <translation id="1774152462503052664">Zezwól Chromium na działanie w tle</translation>
 <translation id="1779356040007214683">Aby poprawić bezpieczeństwo Chromium, wyłączyliśmy niektóre rozszerzenia niedostępne w <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />, które mogły zostać dodane bez Twojej wiedzy.</translation>
 <translation id="1808667845054772817">Ponownie zainstaluj Chromium</translation>
+<translation id="185970820835152459">Możesz zarządzać kontami Google, na które się logujesz. Kont Google możesz używać w przeglądarce Chromium, Sklepie Play, Gmailu i innych usługach. Jeśli chcesz dodać konto innej osoby, np. kogoś z rodziny, zamiast tego dodaj nową osobę do urządzenia <ph name="DEVICE_TYPE" />. <ph name="LINK_BEGIN" />Więcej informacji<ph name="LINK_END" /></translation>
 <translation id="1881322772814446296">Logujesz się na zarządzane konto i przekazujesz jego administratorowi kontrolę nad swoim profilem Chromium. Twoje dane Chromium, takie jak aplikacje, zakładki, historia, hasła i inne ustawienia, zostaną trwale powiązane z użytkownikiem <ph name="USER_NAME" />. Będzie można je usunąć w Panelu kont Google, ale nie będzie można ich powiązać z innym kontem. Możesz też utworzyć nowy profil, by przechowywać swoje dotychczasowe dane Chromium osobno. <ph name="LEARN_MORE" /></translation>
 <translation id="1911763535808217981">Jeśli wyłączysz tę opcję, możesz logować się na stronach Google takich jak Gmail bez logowania się w Chromium</translation>
 <translation id="1929939181775079593">Chromium nie odpowiada. Uruchomić go teraz ponownie?</translation>
@@ -105,7 +106,6 @@
 <translation id="4407044323746248786">Zamknąć Chromium mimo to?</translation>
 <translation id="4415566066719264597">Zezwalaj Chromium na działanie w tle</translation>
 <translation id="4423735387467980091">Dostosowywanie i kontrolowanie Chromium</translation>
-<translation id="4491398312037323794">Na tej stronie możesz zarządzać kontami Google, na które się logujesz. Będą one dostępne w przeglądarce Chromium, w aplikacji Sklep Play i w usługach Google takich jak Gmail, Dysk czy YouTube. <ph name="LINK_BEGIN" />Więcej informacji<ph name="LINK_END" /></translation>
 <translation id="452711251841752011">Witamy w Chromium. Zostało otwarte nowe okno przeglądarki.</translation>
 <translation id="4544142686420020088">Coś poszło nie tak i nie udało się zaktualizować Chromium. <ph name="BEGIN_LINK" />Napraw nieudane aktualizacje Chromium i rozwiąż inne problemy z aktualizacjami<ph name="END_LINK" /></translation>
 <translation id="454579500955453258">Kontynuować w nowym profilu Chromium?</translation>
@@ -252,6 +252,7 @@ Chromium nie może odzyskać ustawień.</translation>
 <translation id="7937630085815544518">Byłeś zalogowany w Chromium jako <ph name="USER_EMAIL_ADDRESS" />. Zaloguj się ponownie, korzystając z tego samego konta.</translation>
 <translation id="7975919845073681630">To jest druga instalacja Chromium. Nie można ustawić jej jako przeglądarki domyślnej.</translation>
 <translation id="8013436988911883588">Gdy Chromium będzie mieć dostęp, strony będą mogły prosić Cię o dostęp.</translation>
+<translation id="8045118833343856403">Na te konta nie zalogowano się w żadnym profilu Chromium. Jeśli chcesz używać konta w innym profilu, najpierw go usuń.</translation>
 <translation id="81770708095080097">Ten plik jest niebezpieczny, dlatego został zablokowany przez Chromium.</translation>
 <translation id="8248265253516264921">Jeśli obraz nie ma przydatnego opisu, Chromium spróbuje go dla Ciebie stworzyć. W tym celu obrazy zostaną wysłane do Google. W każdej chwili możesz wyłączyć tę funkcję w ustawieniach.</translation>
 <translation id="8266560134891435528">Chromium nie może sprawdzić haseł, jeśli się nie zalogujesz</translation>

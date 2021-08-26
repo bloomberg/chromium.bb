@@ -1212,6 +1212,9 @@ class BBJSONGenerator(object):
                                          mtx_test_suite_config['variants'],
                                          mixins)
           full_suite.update(result)
+        else:
+          suite = basic_suites[test_suite]
+          full_suite.update(suite)
       matrix_compound_suites[test_name] = full_suite
 
   def link_waterfalls_to_test_suites(self):
@@ -1530,8 +1533,6 @@ class BBJSONGenerator(object):
         'Optional Mac Retina Release (NVIDIA)',
         'Optional Win10 x64 Release (Intel HD 630)',
         'Optional Win10 x64 Release (NVIDIA)',
-        # chromium.chromiumos
-        'linux-lacros-rel',
         # chromium.fyi
         'linux-blink-rel-dummy',
         'linux-blink-optional-highdpi-rel-dummy',
@@ -1550,21 +1551,6 @@ class BBJSONGenerator(object):
         'win32-dbg',
         'win-archive-dbg',
         'win32-archive-dbg',
-        # New LTC isn't created when LTC becomes LTS, so these builders can go
-        # away
-        "chromeos-arm-generic-ltc",
-        "chromeos-betty-pi-arc-chrome-ltc",
-        "chromeos-eve-chrome-ltc",
-        "chromeos-kevin-chrome-ltc",
-        "linux-chromeos-ltc",
-        "linux64-ltc",
-        # TODO(https://crbug.com/1127088): remove once LTS version has been set
-        "chromeos-arm-generic-lts",
-        "chromeos-betty-pi-arc-chrome-lts",
-        "chromeos-eve-chrome-lts",
-        "chromeos-kevin-chrome-lts",
-        "linux-chromeos-lts",
-        "linux64-lts",
         # TODO crbug.com/1143924: Remove once experimentation is complete
         'Linux Builder Robocrop',
         'Linux Tests Robocrop',
@@ -1573,7 +1559,10 @@ class BBJSONGenerator(object):
   def get_internal_waterfalls(self):
     # Similar to get_builders_that_do_not_actually_exist above, but for
     # waterfalls defined in internal configs.
-    return ['chrome', 'chrome.pgo', 'internal.chromeos.fyi', 'internal.soda']
+    return [
+        'chrome', 'chrome.pgo', 'internal.chrome.fyi', 'internal.chromeos.fyi',
+        'internal.soda'
+    ]
 
   def check_input_file_consistency(self, verbose=False):
     self.check_input_files_sorting(verbose)

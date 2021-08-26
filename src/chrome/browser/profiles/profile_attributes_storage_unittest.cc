@@ -141,6 +141,8 @@ class ProfileAttributesTestObserver
                void(const base::FilePath& profile_path));
   MOCK_METHOD1(OnProfileHostedDomainChanged,
                void(const base::FilePath& profile_path));
+  MOCK_METHOD1(OnProfileUserManagementAcceptanceChanged,
+               void(const base::FilePath& profile_path));
 };
 
 size_t GetDefaultAvatarIconResourceIDAtIndex(int index) {
@@ -711,6 +713,17 @@ TEST_F(ProfileAttributesStorageTest, EntryAccessors) {
   EXPECT_FALSE(entry->IsUsingDefaultName());
   VerifyAndResetCallExpectations();
 
+  // GaiaIds.
+  EXPECT_TRUE(entry->GetGaiaIds().empty());
+  base::flat_set<std::string> accounts1({"a"});
+  base::flat_set<std::string> accounts2({"b", "c"});
+  entry->SetGaiaIds(accounts1);
+  EXPECT_EQ(accounts1, entry->GetGaiaIds());
+  entry->SetGaiaIds(accounts2);
+  EXPECT_EQ(accounts2, entry->GetGaiaIds());
+  entry->SetGaiaIds({});
+  EXPECT_TRUE(entry->GetGaiaIds().empty());
+
   TEST_STRING16_ACCESSORS(ProfileAttributesEntry, entry, ShortcutName);
   TEST_ACCESSORS(ProfileAttributesEntry, entry, BackgroundStatus, true, false);
 
@@ -743,6 +756,11 @@ TEST_F(ProfileAttributesStorageTest, EntryAccessors) {
   TEST_BOOL_ACCESSORS(ProfileAttributesEntry, entry, IsUsingDefaultAvatar);
   TEST_STRING_ACCESSORS(ProfileAttributesEntry, entry,
                         LastDownloadedGAIAPictureUrlWithSize);
+
+  EXPECT_CALL(observer(), OnProfileUserManagementAcceptanceChanged(_)).Times(2);
+  TEST_BOOL_ACCESSORS(ProfileAttributesEntry, entry,
+                      UserAcceptedAccountManagement);
+  VerifyAndResetCallExpectations();
 }
 
 TEST_F(ProfileAttributesStorageTest, EntryInternalAccessors) {

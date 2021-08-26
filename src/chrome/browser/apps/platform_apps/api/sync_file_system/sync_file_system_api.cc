@@ -27,10 +27,12 @@
 #include "content/public/common/content_client.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/file_system/file_system_url.h"
+#include "storage/browser/file_system/file_system_util.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/common/file_system/file_system_types.h"
 #include "storage/common/file_system/file_system_util.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
+#include "url/gurl.h"
 #include "url/origin.h"
 
 using content::BrowserContext;
@@ -102,7 +104,7 @@ SyncFileSystemDeleteFileSystemFunction::Run() {
           ->GetStoragePartition(render_frame_host()->GetSiteInstance())
           ->GetFileSystemContext();
   storage::FileSystemURL file_system_url(
-      file_system_context->CrackURL(GURL(url)));
+      file_system_context->CrackURLInFirstPartyContext(GURL(url)));
 
   content::GetIOThreadTaskRunner({})->PostTask(
       FROM_HERE,
@@ -153,7 +155,7 @@ SyncFileSystemRequestFileSystemFunction::Run() {
   content::GetIOThreadTaskRunner({})->PostTask(
       FROM_HERE, BindOnce(&storage::FileSystemContext::OpenFileSystem,
                           GetFileSystemContext(),
-                          url::Origin::Create(source_url().GetOrigin()),
+                          blink::StorageKey(url::Origin::Create(source_url())),
                           storage::kFileSystemTypeSyncable,
                           storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
                           base::BindOnce(&self::DidOpenFileSystem, this)));
@@ -204,7 +206,7 @@ ExtensionFunction::ResponseAction SyncFileSystemGetFileStatusFunction::Run() {
           ->GetStoragePartition(render_frame_host()->GetSiteInstance())
           ->GetFileSystemContext();
   storage::FileSystemURL file_system_url(
-      file_system_context->CrackURL(GURL(url)));
+      file_system_context->CrackURLInFirstPartyContext(GURL(url)));
 
   ::sync_file_system::SyncFileSystemService* sync_file_system_service =
       GetSyncFileSystemService(browser_context());
@@ -263,7 +265,7 @@ ExtensionFunction::ResponseAction SyncFileSystemGetFileStatusesFunction::Run() {
     if (file_entry_urls[i].is_string())
       url = file_entry_urls[i].GetString();
     storage::FileSystemURL file_system_url(
-        file_system_context->CrackURL(GURL(url)));
+        file_system_context->CrackURLInFirstPartyContext(GURL(url)));
 
     sync_file_system_service->GetFileSyncStatus(
         file_system_url,
@@ -305,8 +307,10 @@ void SyncFileSystemGetFileStatusesFunction::DidGetFileStatus(
     sync_file_system::FileStatus file_status =
         SyncFileStatusToExtensionEnum(it->second.second);
 
-    dict->Set("entry", CreateDictionaryValueForFileSystemEntry(
-                           url, ::sync_file_system::SYNC_FILE_TYPE_FILE));
+    dict->SetKey(
+        "entry",
+        base::Value::FromUniquePtrValue(CreateDictionaryValueForFileSystemEntry(
+            url, ::sync_file_system::SYNC_FILE_TYPE_FILE)));
     dict->SetString("status", ToString(file_status));
 
     if (file_error == ::sync_file_system::SYNC_STATUS_OK)
@@ -329,7 +333,7 @@ SyncFileSystemGetUsageAndQuotaFunction::Run() {
           ->GetStoragePartition(render_frame_host()->GetSiteInstance())
           ->GetFileSystemContext();
   storage::FileSystemURL file_system_url(
-      file_system_context->CrackURL(GURL(url)));
+      file_system_context->CrackURLInFirstPartyContext(GURL(url)));
 
   scoped_refptr<storage::QuotaManager> quota_manager =
       browser_context()

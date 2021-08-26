@@ -424,6 +424,8 @@
 <translation id="3810838688059735925">فیلم</translation>
 <translation id="3813387282697781382">مرجانی روشن</translation>
 <translation id="3816633764618089385">رسانه بعدی</translation>
+<translation id="3840823741487267909">کوته‌نوشت</translation>
+<translation id="3841319830220785495">صدای طبیعی پیش‌فرض</translation>
 <translation id="385383972552776628">باز کردن صفحه گزینه‌ها</translation>
 <translation id="3856075812838139784">فقط خوانده شده</translation>
 <translation id="3857141338659865495">فیروزه‌ای تیره</translation>
@@ -451,6 +453,7 @@
 <translation id="4021716437419160885">پیمایش به پایین</translation>
 <translation id="4035381225449278841">بهار</translation>
 <translation id="4047216625641135770">علامت</translation>
+<translation id="4047910800766704982">‏وقتی دستگاهتان آنلاین شد، می‌توانید از صدایی طبیعی و شبیه صدای انسان استفاده کنید. نوشتار برای پردازش به Google ارسال خواهد شد. هرزمان خواستید می‌توانید آن را در «تنظیمات» خاموش کنید.</translation>
 <translation id="4053520724192563562">سبز مغزپسته‌ای</translation>
 <translation id="4054936709456751127">sts</translation>
 <translation id="4058278702844053247">صفحه در حال بارگیری</translation>
@@ -686,6 +689,7 @@
 <translation id="5748623122140342504">عنوان قبلی سطح ۵</translation>
 <translation id="5760594853119905566">ضمیمه</translation>
 <translation id="5761219715606611783">‏عالی بود! با اصول اولیه گزینه‌های لمسی ChromeVox آشنا شدید. می‌توانید دوباره آموزش گام‌به‌گام را طی کنید یا بااستفاده از دکمه‌های زیر، از آموزش گام‌به‌گام خارج شوید.</translation>
+<translation id="5776001898637896684">‏افزونه نوشتار به گفتار «شبکه بهبودیافته Google»</translation>
 <translation id="5805940204952508776">ضربه با دو انگشت</translation>
 <translation id="5819072574982403430">مورد درختی</translation>
 <translation id="5822819874379903994">فیروزه‌ای سیر</translation>
@@ -908,6 +912,7 @@
 <translation id="743783356331413498">مثال</translation>
 <translation id="7439060726180460871">فهرست راهنما</translation>
 <translation id="744163271241493234">pwded</translation>
+<translation id="7465123027577412805">از صدای طبیعی استفاده شود؟</translation>
 <translation id="7484805699335881122">هنگام خواندن انواع عناصر و متن نقل‌شده، حذف‌شده، پررنگ‌شده، داخل پرانتز، یا با حروف بزرگ، زیروبمی صدا تغییر داده شود.</translation>
 <translation id="7491962110804786152">برگه</translation>
 <translation id="7492497529767769458">به بخش بعدی بروید. نمونه‌ها شامل «سینی وضعیت» و «راه‌انداز» می‌شود.</translation>
@@ -978,6 +983,7 @@
 <translation id="7968340748835037139">سبز تیره</translation>
 <translation id="7972507042926081808">شکلاتی</translation>
 <translation id="7974390230414479278">مورد منو</translation>
+<translation id="7990863024647916394">صدای <ph name="DISPLAY_NAME" />‏ <ph name="COUNT" /></translation>
 <translation id="8004507136466386272">کلمه‌ها</translation>
 <translation id="8004512796067398576">افزایش</translation>
 <translation id="8007540374018858731">h3</translation>

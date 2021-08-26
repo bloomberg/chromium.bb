@@ -25,10 +25,10 @@
 #include "build/buildflag.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/device_reauth/chrome_biometric_authenticator_factory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/password_manager/account_password_store_factory.h"
-#include "chrome/browser/password_manager/chrome_biometric_authenticator.h"
 #include "chrome/browser/password_manager/field_info_manager_factory.h"
 #include "chrome/browser/password_manager/password_reuse_manager_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
@@ -55,6 +55,7 @@
 #include "components/no_state_prefetch/browser/no_state_prefetch_contents.h"
 #include "components/password_manager/content/browser/bad_message.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
+#include "components/password_manager/content/browser/form_meta_data.h"
 #include "components/password_manager/content/browser/password_manager_log_router_factory.h"
 #include "components/password_manager/content/browser/password_requirements_service_factory.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
@@ -154,7 +155,7 @@
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chromeos/crosapi/cpp/scoped_allow_sync_call.h"
 #include "chromeos/crosapi/mojom/clipboard.mojom.h"
-#include "chromeos/lacros/lacros_chrome_service_impl.h"
+#include "chromeos/lacros/lacros_service.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -257,6 +258,21 @@ void ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
   contents->SetUserData(UserDataKey(),
                         base::WrapUnique(new ChromePasswordManagerClient(
                             contents, autofill_client)));
+}
+
+// static
+void ChromePasswordManagerClient::BindPasswordGenerationDriver(
+    mojo::PendingAssociatedReceiver<autofill::mojom::PasswordGenerationDriver>
+        receiver,
+    content::RenderFrameHost* rfh) {
+  auto* web_contents = content::WebContents::FromRenderFrameHost(rfh);
+  if (!web_contents)
+    return;
+  auto* tab_helper = ChromePasswordManagerClient::FromWebContents(web_contents);
+  if (!tab_helper)
+    return;
+  tab_helper->password_generation_driver_receivers_.Bind(rfh,
+                                                         std::move(receiver));
 }
 
 ChromePasswordManagerClient::~ChromePasswordManagerClient() = default;
@@ -456,15 +472,12 @@ bool ChromePasswordManagerClient::IsAutofillAssistantUIVisible() const {
                                            autofill_assistant::UIState::kShown;
 }
 
-scoped_refptr<password_manager::BiometricAuthenticator>
+scoped_refptr<device_reauth::BiometricAuthenticator>
 ChromePasswordManagerClient::GetBiometricAuthenticator() {
 #if defined(OS_ANDROID)
-  if (!biometric_authenticator_) {
-    biometric_authenticator_ =
-        ChromeBiometricAuthenticator::Create(web_contents());
-  }
+  return ChromeBiometricAuthenticatorFactory::GetBiometricAuthenticator();
 #endif
-  return biometric_authenticator_;
+  return nullptr;
 }
 
 void ChromePasswordManagerClient::GeneratePassword(
@@ -984,11 +997,6 @@ void ChromePasswordManagerClient::ShowPasswordEditingPopup(
     const autofill::FormData& form_data,
     autofill::FieldRendererId field_renderer_id,
     const std::u16string& password_value) {
-  if (!password_manager::bad_message::CheckChildProcessSecurityPolicyForURL(
-          password_generation_driver_receivers_.GetCurrentTargetFrame(),
-          form_data.url,
-          BadMessageReason::CPMD_BAD_ORIGIN_SHOW_PASSWORD_EDITING_POPUP))
-    return;
   auto* driver = driver_factory_->GetDriverForFrame(
       password_generation_driver_receivers_.GetCurrentTargetFrame());
   gfx::RectF element_bounds_in_screen_space =
@@ -998,7 +1006,10 @@ void ChromePasswordManagerClient::ShowPasswordEditingPopup(
   autofill::password_generation::PasswordGenerationUIData ui_data(
       bounds, /*max_length=*/0, /*generation_element=*/std::u16string(),
       field_renderer_id, /*is_generation_element_password_type=*/true,
-      base::i18n::TextDirection(), form_data);
+      base::i18n::TextDirection(),
+      password_manager::GetFormWithFrameAndFormMetaData(
+          password_generation_driver_receivers_.GetCurrentTargetFrame(),
+          form_data));
   popup_controller_ = PasswordGenerationPopupControllerImpl::GetOrCreate(
       popup_controller_, element_bounds_in_screen_space, ui_data,
       driver->AsWeakPtr(), observer_, web_contents(),
@@ -1017,32 +1028,27 @@ void ChromePasswordManagerClient::PasswordGenerationRejectedByTyping() {
 void ChromePasswordManagerClient::PresaveGeneratedPassword(
     const autofill::FormData& form_data,
     const std::u16string& password_value) {
-  if (!password_manager::bad_message::CheckChildProcessSecurityPolicyForURL(
-          password_generation_driver_receivers_.GetCurrentTargetFrame(),
-          form_data.url,
-          BadMessageReason::CPMD_BAD_ORIGIN_PRESAVE_GENERATED_PASSWORD)) {
-    return;
-  }
   if (popup_controller_)
     popup_controller_->UpdatePassword(password_value);
 
   PasswordManagerDriver* driver = driver_factory_->GetDriverForFrame(
       password_generation_driver_receivers_.GetCurrentTargetFrame());
-  password_manager_.OnPresaveGeneratedPassword(driver, form_data,
-                                               password_value);
+  password_manager_.OnPresaveGeneratedPassword(
+      driver,
+      password_manager::GetFormWithFrameAndFormMetaData(
+          password_generation_driver_receivers_.GetCurrentTargetFrame(),
+          form_data),
+      password_value);
 }
 
 void ChromePasswordManagerClient::PasswordNoLongerGenerated(
     const autofill::FormData& form_data) {
-  if (!password_manager::bad_message::CheckChildProcessSecurityPolicyForURL(
-          password_generation_driver_receivers_.GetCurrentTargetFrame(),
-          form_data.url,
-          BadMessageReason::CPMD_BAD_ORIGIN_PASSWORD_NO_LONGER_GENERATED)) {
-    return;
-  }
   PasswordManagerDriver* driver = driver_factory_->GetDriverForFrame(
       password_generation_driver_receivers_.GetCurrentTargetFrame());
-  password_manager_.OnPasswordNoLongerGenerated(driver, form_data);
+  password_manager_.OnPasswordNoLongerGenerated(
+      driver, password_manager::GetFormWithFrameAndFormMetaData(
+                  password_generation_driver_receivers_.GetCurrentTargetFrame(),
+                  form_data));
 
   PasswordGenerationPopupController* controller = popup_controller_.get();
   if (controller &&
@@ -1178,10 +1184,7 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
       password_reuse_detection_manager_(this),
       driver_factory_(nullptr),
       content_credential_manager_(this),
-      password_generation_driver_receivers_(
-          web_contents,
-          this,
-          content::WebContentsFrameReceiverSetPassKey()),
+      password_generation_driver_receivers_(web_contents, this),
       observer_(nullptr),
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
       credentials_filter_(
@@ -1298,7 +1301,7 @@ void ChromePasswordManagerClient::OnPaste() {
   // clipboard text.
   // TODO(https://crbug.com/913422): This logic can be removed once all
   // clipboard APIs are async.
-  auto* service = chromeos::LacrosChromeServiceImpl::Get();
+  auto* service = chromeos::LacrosService::Get();
   if (service->IsAvailable<crosapi::mojom::Clipboard>()) {
     used_crosapi_workaround = true;
     std::string text_utf8;

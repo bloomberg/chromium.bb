@@ -47,8 +47,12 @@
 #include "chrome/browser/ash/crosapi/crosapi_manager.h"
 #include "chrome/browser/ash/crosapi/environment_provider.h"
 #include "chrome/browser/ash/crosapi/test_mojo_connection_manager.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
+#include "chrome/browser/ash/policy/core/device_local_account_policy_service.h"
+#include "chrome/browser/ash/policy/core/user_cloud_policy_manager_ash.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/component_updater/cros_component_manager.h"
 #include "chrome/browser/notifications/system_notification_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -56,8 +60,10 @@
 #include "chrome/common/channel_info.h"
 #include "chromeos/crosapi/cpp/crosapi_constants.h"
 #include "chromeos/startup/startup_switches.h"
+#include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
+#include "components/user_manager/user_type.h"
 #include "components/version_info/version_info.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
@@ -753,6 +759,8 @@ void BrowserManager::OnSessionStateChanged() {
   if (!component_manager_)
     return;
 
+  PrepareLacrosPolicies();
+
   DCHECK(!browser_loader_);
   browser_loader_ = std::make_unique<BrowserLoader>(component_manager_);
 
@@ -767,6 +775,24 @@ void BrowserManager::OnSessionStateChanged() {
   }
 }
 
+void BrowserManager::OnStoreLoaded(policy::CloudPolicyStore* store) {
+  // A new policy got installed for the current user, so we need to pass it to
+  // the Lacros browser.
+  std::string policy_blob;
+  bool success =
+      store->policy_fetch_response()->SerializeToString(&policy_blob);
+  DCHECK(success);
+  SetDeviceAccountPolicy(policy_blob);
+}
+
+void BrowserManager::OnStoreError(policy::CloudPolicyStore* store) {
+  // Policy store failed, Lacros will use stale policy as well as Ash.
+}
+
+void BrowserManager::OnStoreDestruction(policy::CloudPolicyStore* store) {
+  store->RemoveObserver(this);
+}
+
 void BrowserManager::OnLoadComplete(const base::FilePath& path) {
   DCHECK_EQ(state_, State::MOUNTING);
 
@@ -777,8 +803,54 @@ void BrowserManager::OnLoadComplete(const base::FilePath& path) {
     std::move(load_complete_callback_).Run(success);
   }
 
-  if (state_ == State::STOPPED && GetLaunchOnLoginPref())
+  if (state_ == State::STOPPED &&
+      (browser_util::IsLacrosPrimaryBrowser() || GetLaunchOnLoginPref())) {
     Start(mojom::InitialBrowserAction::kUseStartupPreference);
+  }
+}
+
+void BrowserManager::PrepareLacrosPolicies() {
+  policy::CloudPolicyStore* store = GetDeviceAccountPolicyStore();
+  if (!store)
+    return;
+
+  if (!store->policy_fetch_response())
+    return;
+  const std::string policy_blob =
+      store->policy_fetch_response()->SerializeAsString();
+  SetDeviceAccountPolicy(policy_blob);
+  // The lifetime of `BrowserManager` is longer than lifetime of policy store.
+  // That is why `CloudPolicyStore::RemoveObserver()` is called during
+  // `CloudPolicyStore::Observer::OnStoreDestruction()`.
+  store->AddObserver(this);
+}
+
+policy::CloudPolicyStore* BrowserManager::GetDeviceAccountPolicyStore() {
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->GetPrimaryUser();
+  DCHECK(user);
+
+  switch (user->GetType()) {
+    case user_manager::USER_TYPE_REGULAR: {
+      Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(user);
+      DCHECK(profile);
+      policy::CloudPolicyManager* user_cloud_policy_manager =
+          profile->GetUserCloudPolicyManagerAsh();
+      if (!user_cloud_policy_manager)
+        return nullptr;
+      return user_cloud_policy_manager->core()->store();
+    }
+    case user_manager::USER_TYPE_PUBLIC_ACCOUNT: {
+      policy::DeviceLocalAccountPolicyBroker* broker =
+          g_browser_process->platform_part()
+              ->browser_policy_connector_ash()
+              ->GetDeviceLocalAccountPolicyService()
+              ->GetBrokerForUser(user->GetAccountId().GetUserEmail());
+      return broker ? broker->core()->store() : nullptr;
+    }
+    default:
+      return nullptr;
+  }
 }
 
 void BrowserManager::SetDeviceAccountPolicy(const std::string& policy_blob) {

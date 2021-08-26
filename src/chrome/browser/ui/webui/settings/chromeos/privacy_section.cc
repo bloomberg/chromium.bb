@@ -275,6 +275,7 @@ void PrivacySection::AddLoadTimeData(content::WebUIDataSource* html_source) {
                           chromeos::features::IsPciguardUiEnabled());
 
   html_source->AddBoolean("showSecureDnsSetting", IsSecureDnsAvailable());
+  html_source->AddBoolean("showSecureDnsOsSettingLink", false);
 
   ::settings::AddPersonalizationOptionsStrings(html_source);
   ::settings::AddSecureDnsStrings(html_source);
@@ -360,7 +361,7 @@ void PrivacySection::RegisterHierarchy(HierarchyGenerator* generator) const {
 }
 
 bool PrivacySection::AreFingerprintSettingsAllowed() {
-  return chromeos::quick_unlock::IsFingerprintEnabled(profile());
+  return quick_unlock::IsFingerprintEnabled(profile());
 }
 
 void PrivacySection::UpdateRemoveFingerprintSearchTags() {

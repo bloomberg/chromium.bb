@@ -28,6 +28,7 @@
 #include "modules/include/module_fec_types.h"
 #include "modules/remote_bitrate_estimator/include/remote_bitrate_estimator.h"
 #include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"  // RTCPPacketType
+#include "modules/rtp_rtcp/source/packet_sequencer.h"
 #include "modules/rtp_rtcp/source/rtcp_packet/tmmb_item.h"
 #include "modules/rtp_rtcp/source/rtcp_receiver.h"
 #include "modules/rtp_rtcp/source/rtcp_sender.h"
@@ -103,6 +104,8 @@ class ModuleRtpRtcpImpl2 final : public RtpRtcpInterface,
   void SetRtxState(const RtpState& rtp_state) override;
   RtpState GetRtpState() const override;
   RtpState GetRtxState() const override;
+
+  void SetNonSenderRttMeasurement(bool enabled) override;
 
   uint32_t SSRC() const override { return rtcp_sender_.SSRC(); }
 
@@ -263,10 +266,19 @@ class ModuleRtpRtcpImpl2 final : public RtpRtcpInterface,
     void AssignSequenceNumber(RtpPacketToSend* packet) override;
     // Storage of packets, for retransmissions and padding, if applicable.
     RtpPacketHistory packet_history;
+    // If false, sequencing is owned by `packet_generator` and can happen on
+    // several threads. If true, sequencing always happens on the pacer thread.
+    const bool deferred_sequencing_;
+    // TODO(bugs.webrtc.org/11340): Remove lock one we can guarantee that
+    // setting/getting rtp state only happens after removal from packet sending
+    // code path.
+    mutable Mutex mutex_sequencer_;
+    // Handles sequence number assignment and padding timestamp generation.
+    PacketSequencer sequencer_ RTC_GUARDED_BY(mutex_sequencer_);
     // Handles final time timestamping/stats/etc and handover to Transport.
     RtpSenderEgress packet_sender;
     // If no paced sender configured, this class will be used to pass packets
-    // from |packet_generator_| to |packet_sender_|.
+    // from `packet_generator_` to `packet_sender_`.
     RtpSenderEgress::NonPacedPacketSender non_paced_sender;
     // Handles creation of RTP packets to be sent.
     RTPSender packet_generator;
@@ -287,7 +299,7 @@ class ModuleRtpRtcpImpl2 final : public RtpRtcpInterface,
   // Used from RtcpSenderMediator to maybe send rtcp.
   void MaybeSendRtcp() RTC_RUN_ON(worker_queue_);
 
-  // Called when |rtcp_sender_| informs of the next RTCP instant. The method may
+  // Called when `rtcp_sender_` informs of the next RTCP instant. The method may
   // be called on various sequences, and is called under a RTCPSenderLock.
   void ScheduleRtcpSendEvaluation(TimeDelta duration);
 
@@ -297,12 +309,13 @@ class ModuleRtpRtcpImpl2 final : public RtpRtcpInterface,
   void MaybeSendRtcpAtOrAfterTimestamp(Timestamp execution_time)
       RTC_RUN_ON(worker_queue_);
 
-  // Schedules a call to MaybeSendRtcpAtOrAfterTimestamp delayed by |duration|.
+  // Schedules a call to MaybeSendRtcpAtOrAfterTimestamp delayed by `duration`.
   void ScheduleMaybeSendRtcpAtOrAfterTimestamp(Timestamp execution_time,
                                                TimeDelta duration);
 
   TaskQueueBase* const worker_queue_;
   RTC_NO_UNIQUE_ADDRESS SequenceChecker packet_sequence_checker_;
+  RTC_NO_UNIQUE_ADDRESS SequenceChecker pacer_thread_checker_;
 
   std::unique_ptr<RtpSenderContext> rtp_sender_;
   RTCPSender rtcp_sender_;

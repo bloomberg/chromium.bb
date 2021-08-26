@@ -6,6 +6,8 @@
 
 #include "xfa/fxfa/parser/cxfa_stroke.h"
 
+#include <math.h>
+
 #include <utility>
 
 #include "fxjs/xfa/cjx_object.h"
@@ -113,7 +115,7 @@ FX_ARGB CXFA_Stroke::GetColor() {
   if (!pNode)
     return 0xFF000000;
 
-  return StringToFXARGB(
+  return CXFA_Color::StringToFXARGB(
       pNode->JSObject()->GetCData(XFA_Attribute::Value).AsStringView());
 }
 

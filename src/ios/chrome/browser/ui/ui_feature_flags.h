@@ -25,22 +25,18 @@ extern const base::Feature kForceUnstackedTabstrip;
 // features in tests works.
 extern const base::Feature kTestFeature;
 
-// Feature flag to enable showing a different UI when the setting is managed by
-// an enterprise policy.
-extern const base::Feature kEnableIOSManagedSettingsUI;
-
 // Feature flag to enable Shared Highlighting (Link to Text).
 extern const base::Feature kSharedHighlightingIOS;
+
+// Feature flag that enables 'default browser' screen in FRE to suggest the
+// users to update the default browser in the Settings.app.
+extern const base::Feature kEnableFREDefaultBrowserScreen;
 
 // Feature flag that enables using the FRE UI module to show first run screens.
 extern const base::Feature kEnableFREUIModuleIOS;
 
 // Feature flag that enables taking fullpage screenshots of a webpage.
 extern const base::Feature kEnableFullPageScreenshot;
-
-// Feature flag that enables the button in the settings to send the users in the
-// Settings.app to update the default browser.
-extern const base::Feature kDefaultBrowserSettings;
 
 // TODO(crbug.com/1128242): Remove this flag after the refactoring work is
 // finished. Flag to modernize the tabstrip without disturbing the existing one.
@@ -57,9 +53,6 @@ extern const base::Feature kLocationPermissionsPrompt;
 
 // Feature flag that experiments with the default browser fullscreen promo UI.
 extern const base::Feature kDefaultBrowserFullscreenPromoExperiment;
-
-// Feature flag that experiments with the default browser fullscreen promo UI.
-extern const base::Feature kDefaultBrowserFullscreenPromoCTAExperiment;
 
 // Feature flag that enables non-modal default browser promos.
 extern const base::Feature kDefaultPromoNonModal;

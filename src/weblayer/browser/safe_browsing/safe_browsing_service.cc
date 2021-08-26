@@ -13,7 +13,9 @@
 #include "components/safe_browsing/android/safe_browsing_api_handler_bridge.h"
 #include "components/safe_browsing/content/browser/browser_url_loader_throttle.h"
 #include "components/safe_browsing/content/browser/mojo_safe_browsing_impl.h"
+#include "components/safe_browsing/content/browser/safe_browsing_navigation_throttle.h"
 #include "components/safe_browsing/content/browser/safe_browsing_network_context.h"
+#include "components/safe_browsing/core/browser/ping_manager.h"
 #include "components/safe_browsing/core/browser/realtime/url_lookup_service.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "content/public/browser/browser_context.h"
@@ -27,8 +29,9 @@
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "weblayer/browser/browser_context_impl.h"
-#include "weblayer/browser/safe_browsing/safe_browsing_navigation_throttle.h"
 #include "weblayer/browser/safe_browsing/url_checker_delegate_impl.h"
+#include "weblayer/browser/safe_browsing/weblayer_safe_browsing_blocking_page_factory.h"
+#include "weblayer/browser/safe_browsing/weblayer_ui_manager_delegate.h"
 
 namespace weblayer {
 
@@ -42,6 +45,11 @@ network::mojom::NetworkContextParamsPtr CreateDefaultNetworkContextParams(
       cert_verifier::mojom::CertVerifierCreationParams::New());
   network_context_params->user_agent = user_agent;
   return network_context_params;
+}
+
+std::string GetProtocolConfigClientName() {
+  // Return a weblayer specific client name.
+  return "weblayer";
 }
 
 // Helper method that checks the RenderProcessHost is still alive and checks the
@@ -129,7 +137,7 @@ SafeBrowsingService::CreateURLLoaderThrottle(
 std::unique_ptr<content::NavigationThrottle>
 SafeBrowsingService::CreateSafeBrowsingNavigationThrottle(
     content::NavigationHandle* handle) {
-  return std::make_unique<SafeBrowsingNavigationThrottle>(
+  return std::make_unique<safe_browsing::SafeBrowsingNavigationThrottle>(
       handle, GetSafeBrowsingUIManager().get());
 }
 
@@ -153,14 +161,27 @@ SafeBrowsingService::GetSafeBrowsingDBManager() {
   return safe_browsing_db_manager_;
 }
 
-scoped_refptr<SafeBrowsingUIManager>
+safe_browsing::PingManager* SafeBrowsingService::GetPingManager() {
+  if (!ping_manager_) {
+    ping_manager_ =
+        ::safe_browsing::PingManager::Create(safe_browsing::GetV4ProtocolConfig(
+            GetProtocolConfigClientName(), false /* auto_update */));
+  }
+
+  return ping_manager_.get();
+}
+
+scoped_refptr<safe_browsing::SafeBrowsingUIManager>
 SafeBrowsingService::GetSafeBrowsingUIManager() {
   return ui_manager_;
 }
 
 void SafeBrowsingService::CreateSafeBrowsingUIManager() {
   DCHECK(!ui_manager_);
-  ui_manager_ = new SafeBrowsingUIManager(this);
+  ui_manager_ = new safe_browsing::SafeBrowsingUIManager(
+      std::make_unique<WebLayerSafeBrowsingUIManagerDelegate>(),
+      std::make_unique<WebLayerSafeBrowsingBlockingPageFactory>(),
+      GURL(url::kAboutBlankURL));
 }
 
 void SafeBrowsingService::CreateAndStartSafeBrowsingDBManager() {

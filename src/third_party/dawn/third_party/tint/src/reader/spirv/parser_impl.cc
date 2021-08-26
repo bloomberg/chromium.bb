@@ -21,6 +21,7 @@
 
 #include "source/opt/build_module.h"
 #include "src/ast/bitcast_expression.h"
+#include "src/ast/disable_validation_decoration.h"
 #include "src/ast/interpolate_decoration.h"
 #include "src/ast/override_decoration.h"
 #include "src/ast/struct_block_decoration.h"
@@ -233,6 +234,26 @@ bool AssumesResultSignednessMatchesFirstOperand(GLSLstd450 extended_opcode) {
   return false;
 }
 
+// @param a SPIR-V decoration
+// @return true when the given decoration is a pipeline decoration other than a
+// bulitin variable.
+bool IsPipelineDecoration(const Decoration& deco) {
+  if (deco.size() < 1) {
+    return false;
+  }
+  switch (deco[0]) {
+    case SpvDecorationLocation:
+    case SpvDecorationFlat:
+    case SpvDecorationNoPerspective:
+    case SpvDecorationCentroid:
+    case SpvDecorationSample:
+      return true;
+    default:
+      break;
+  }
+  return false;
+}
+
 }  // namespace
 
 TypedExpression::TypedExpression() = default;
@@ -419,13 +440,14 @@ std::string ParserImpl::ShowType(uint32_t type_id) {
   return "SPIR-V type " + std::to_string(type_id);
 }
 
-ast::Decoration* ParserImpl::ConvertMemberDecoration(
+ast::DecorationList ParserImpl::ConvertMemberDecoration(
     uint32_t struct_type_id,
     uint32_t member_index,
+    const Type* member_ty,
     const Decoration& decoration) {
   if (decoration.empty()) {
     Fail() << "malformed SPIR-V decoration: it's empty";
-    return nullptr;
+    return {};
   }
   switch (decoration[0]) {
     case SpvDecorationOffset:
@@ -434,38 +456,60 @@ ast::Decoration* ParserImpl::ConvertMemberDecoration(
             << "malformed Offset decoration: expected 1 literal operand, has "
             << decoration.size() - 1 << ": member " << member_index << " of "
             << ShowType(struct_type_id);
-        return nullptr;
+        return {};
       }
-      return create<ast::StructMemberOffsetDecoration>(Source{}, decoration[1]);
+      return {
+          create<ast::StructMemberOffsetDecoration>(Source{}, decoration[1]),
+      };
     case SpvDecorationNonReadable:
       // WGSL doesn't have a member decoration for this.  Silently drop it.
-      return nullptr;
+      return {};
     case SpvDecorationNonWritable:
       // WGSL doesn't have a member decoration for this.
-      return nullptr;
+      return {};
     case SpvDecorationColMajor:
       // WGSL only supports column major matrices.
-      return nullptr;
+      return {};
     case SpvDecorationRelaxedPrecision:
       // WGSL doesn't support relaxed precision.
-      return nullptr;
+      return {};
     case SpvDecorationRowMajor:
       Fail() << "WGSL does not support row-major matrices: can't "
                 "translate member "
              << member_index << " of " << ShowType(struct_type_id);
-      return nullptr;
+      return {};
     case SpvDecorationMatrixStride: {
       if (decoration.size() != 2) {
         Fail() << "malformed MatrixStride decoration: expected 1 literal "
                   "operand, has "
                << decoration.size() - 1 << ": member " << member_index << " of "
                << ShowType(struct_type_id);
-        return nullptr;
+        return {};
       }
-      // TODO(dneto): Fail if the matrix stride is not allocation size of the
-      // column vector of the underlying matrix.  This would need to unpack
-      // any levels of array-ness.
-      return nullptr;
+      uint32_t stride = decoration[1];
+      auto* ty = member_ty->UnwrapAlias();
+      while (auto* arr = ty->As<Array>()) {
+        ty = arr->type->UnwrapAlias();
+      }
+      auto* mat = ty->As<Matrix>();
+      if (!mat) {
+        Fail() << "MatrixStride cannot be applied to type " << ty->String();
+        return {};
+      }
+      uint32_t natural_stride = (mat->rows == 2) ? 8 : 16;
+      if (stride == natural_stride) {
+        return {};  // Decoration matches the natural stride for the matrix
+      }
+      if (!member_ty->Is<Matrix>()) {
+        Fail() << "custom matrix strides not currently supported on array of "
+                  "matrices";
+        return {};
+      }
+      return {
+          create<ast::StrideDecoration>(Source{}, decoration[1]),
+          builder_.ASTNodes().Create<ast::DisableValidationDecoration>(
+              builder_.ID(), ast::DisabledValidation::kIgnoreStrideDecoration),
+      };
     }
     default:
       // TODO(dneto): Support the remaining member decorations.
@@ -473,7 +517,7 @@ ast::Decoration* ParserImpl::ConvertMemberDecoration(
   }
   Fail() << "unhandled member decoration: " << decoration[0] << " on member "
          << member_index << " of " << ShowType(struct_type_id);
-  return nullptr;
+  return {};
 }
 
 bool ParserImpl::BuildInternalModule() {
@@ -590,6 +634,9 @@ bool ParserImpl::ParseInternalModuleExceptFunctions() {
     return false;
   }
   if (!RegisterTypes()) {
+    return false;
+  }
+  if (!RejectInvalidPointerRoots()) {
     return false;
   }
   if (!EmitScalarSpecConstants()) {
@@ -1094,28 +1141,22 @@ const Type* ParserImpl::ConvertType(
     bool is_non_writable = false;
     ast::DecorationList ast_member_decorations;
     for (auto& decoration : GetDecorationsForMember(type_id, member_index)) {
-      switch (decoration[0]) {
-        case SpvDecorationNonWritable:
-
-          // WGSL doesn't represent individual members as non-writable. Instead,
-          // apply the ReadOnly access control to the containing struct if all
-          // the members are non-writable.
-          is_non_writable = true;
-          break;
-        case SpvDecorationLocation:
-        case SpvDecorationFlat:
-          // IO decorations are handled when emitting the entry point.
-          break;
-        default: {
-          auto* ast_member_decoration =
-              ConvertMemberDecoration(type_id, member_index, decoration);
-          if (!success_) {
-            return nullptr;
-          }
-          if (ast_member_decoration) {
-            ast_member_decorations.push_back(ast_member_decoration);
-          }
-          break;
+      if (IsPipelineDecoration(decoration)) {
+        // IO decorations are handled when emitting the entry point.
+        continue;
+      } else if (decoration[0] == SpvDecorationNonWritable) {
+        // WGSL doesn't represent individual members as non-writable. Instead,
+        // apply the ReadOnly access control to the containing struct if all
+        // the members are non-writable.
+        is_non_writable = true;
+      } else {
+        auto decos = ConvertMemberDecoration(type_id, member_index,
+                                             ast_member_ty, decoration);
+        for (auto* deco : decos) {
+          ast_member_decorations.emplace_back(deco);
+        }
+        if (!success_) {
+          return nullptr;
         }
       }
     }
@@ -1199,7 +1240,7 @@ const Type* ParserImpl::ConvertType(uint32_t type_id,
     remap_buffer_block_type_.insert(type_id);
   }
 
-  // Pipeline intput and output variables map to private variables.
+  // Pipeline input and output variables map to private variables.
   if (ast_storage_class == ast::StorageClass::kInput ||
       ast_storage_class == ast::StorageClass::kOutput) {
     ast_storage_class = ast::StorageClass::kPrivate;
@@ -1265,6 +1306,33 @@ bool ParserImpl::RegisterTypes() {
     ConvertType(builtin_position_.position_member_pointer_type_id);
   }
   return success_;
+}
+
+bool ParserImpl::RejectInvalidPointerRoots() {
+  if (!success_) {
+    return false;
+  }
+  for (auto& inst : module_->types_values()) {
+    if (const auto* result_type = type_mgr_->GetType(inst.type_id())) {
+      if (result_type->AsPointer()) {
+        switch (inst.opcode()) {
+          case SpvOpVariable:
+            // This is the only valid case.
+            break;
+          case SpvOpUndef:
+            return Fail() << "undef pointer is not valid: "
+                          << inst.PrettyPrint();
+          case SpvOpConstantNull:
+            return Fail() << "null pointer is not valid: "
+                          << inst.PrettyPrint();
+          default:
+            return Fail() << "module-scope pointer is not valid: "
+                          << inst.PrettyPrint();
+        }
+      }
+    }
+  }
+  return success();
 }
 
 bool ParserImpl::EmitScalarSpecConstants() {
@@ -1571,6 +1639,7 @@ bool ParserImpl::ConvertDecorationsForVariable(uint32_t id,
                                                const Type** store_type,
                                                ast::DecorationList* decorations,
                                                bool transfer_pipeline_io) {
+  DecorationList non_builtin_pipeline_decorations;
   for (auto& deco : GetDecorationsFor(id)) {
     if (deco.empty()) {
       return Fail() << "malformed decoration on ID " << id << ": it is empty";
@@ -1633,26 +1702,8 @@ bool ParserImpl::ConvertDecorationsForVariable(uint32_t id,
             create<ast::BuiltinDecoration>(Source{}, ast_builtin));
       }
     }
-    if (deco[0] == SpvDecorationLocation) {
-      if (deco.size() != 2) {
-        return Fail() << "malformed Location decoration on ID " << id
-                      << ": requires one literal operand";
-      }
-      if (transfer_pipeline_io) {
-        decorations->emplace_back(
-            create<ast::LocationDecoration>(Source{}, deco[1]));
-      }
-    }
-    if (deco[0] == SpvDecorationFlat) {
-      if (transfer_pipeline_io) {
-        // In WGSL, integral types are always flat, and so the decoration
-        // is never specified.
-        if (!(*store_type)->IsIntegerScalarOrVector()) {
-          decorations->emplace_back(create<ast::InterpolateDecoration>(
-              Source{}, ast::InterpolationType::kFlat,
-              ast::InterpolationSampling::kNone));
-        }
-      }
+    if (transfer_pipeline_io && IsPipelineDecoration(deco)) {
+      non_builtin_pipeline_decorations.push_back(deco);
     }
     if (deco[0] == SpvDecorationDescriptorSet) {
       if (deco.size() == 1) {
@@ -1671,6 +1722,131 @@ bool ParserImpl::ConvertDecorationsForVariable(uint32_t id,
           create<ast::BindingDecoration>(Source{}, deco[1]));
     }
   }
+
+  if (transfer_pipeline_io) {
+    if (!ConvertPipelineDecorations(
+            *store_type, non_builtin_pipeline_decorations, decorations)) {
+      return false;
+    }
+  }
+
+  return success();
+}
+
+DecorationList ParserImpl::GetMemberPipelineDecorations(
+    const Struct& struct_type,
+    int member_index) {
+  // Yes, I could have used std::copy_if or std::copy_if.
+  DecorationList result;
+  for (const auto& deco : GetDecorationsForMember(
+           struct_id_for_symbol_[struct_type.name], member_index)) {
+    if (IsPipelineDecoration(deco)) {
+      result.emplace_back(deco);
+    }
+  }
+  return result;
+}
+
+ast::Decoration* ParserImpl::SetLocation(ast::DecorationList* decos,
+                                         ast::Decoration* replacement) {
+  if (!replacement) {
+    return nullptr;
+  }
+  for (auto*& deco : *decos) {
+    if (deco->Is<ast::LocationDecoration>()) {
+      // Replace this location decoration with the replacement.
+      // The old one doesn't leak because it's kept in the builder's AST node
+      // list.
+      ast::Decoration* result = nullptr;
+      result = deco;
+      deco = replacement;
+      return result;  // Assume there is only one such decoration.
+    }
+  }
+  // The list didn't have a location. Add it.
+  decos->push_back(replacement);
+  return nullptr;
+}
+
+bool ParserImpl::ConvertPipelineDecorations(const Type* store_type,
+                                            const DecorationList& decorations,
+                                            ast::DecorationList* ast_decos) {
+  bool has_interpolate_no_perspective = false;
+  bool has_interpolate_sampling_centroid = false;
+  bool has_interpolate_sampling_sample = false;
+
+  for (const auto& deco : decorations) {
+    TINT_ASSERT(Reader, deco.size() > 0);
+    switch (deco[0]) {
+      case SpvDecorationLocation:
+        if (deco.size() != 2) {
+          return Fail() << "malformed Location decoration on ID requires one "
+                           "literal operand";
+        }
+        SetLocation(ast_decos,
+                    create<ast::LocationDecoration>(Source{}, deco[1]));
+        break;
+      case SpvDecorationFlat:
+        // In WGSL, integral types are always flat, and so the decoration
+        // is never specified.
+        if (!store_type->IsIntegerScalarOrVector()) {
+          ast_decos->emplace_back(create<ast::InterpolateDecoration>(
+              Source{}, ast::InterpolationType::kFlat,
+              ast::InterpolationSampling::kNone));
+          // Only one interpolate attribute is allowed.
+          return true;
+        }
+        break;
+      case SpvDecorationNoPerspective:
+        if (store_type->IsIntegerScalarOrVector()) {
+          // This doesn't capture the array or struct case.
+          return Fail() << "NoPerspective is invalid on integral IO";
+        }
+        has_interpolate_no_perspective = true;
+        break;
+      case SpvDecorationCentroid:
+        if (store_type->IsIntegerScalarOrVector()) {
+          // This doesn't capture the array or struct case.
+          return Fail()
+                 << "Centroid interpolation sampling is invalid on integral IO";
+        }
+        has_interpolate_sampling_centroid = true;
+        break;
+      case SpvDecorationSample:
+        if (store_type->IsIntegerScalarOrVector()) {
+          // This doesn't capture the array or struct case.
+          return Fail()
+                 << "Sample interpolation sampling is invalid on integral IO";
+        }
+        has_interpolate_sampling_sample = true;
+        break;
+      default:
+        break;
+    }
+  }
+
+  // Apply non-integral interpolation.
+  if (has_interpolate_no_perspective || has_interpolate_sampling_centroid ||
+      has_interpolate_sampling_sample) {
+    const ast::InterpolationType type =
+        has_interpolate_no_perspective ? ast::InterpolationType::kLinear
+                                       : ast::InterpolationType::kPerspective;
+    const ast::InterpolationSampling sampling =
+        has_interpolate_sampling_centroid
+            ? ast::InterpolationSampling::kCentroid
+            : (has_interpolate_sampling_sample
+                   ? ast::InterpolationSampling::kSample
+                   : ast::InterpolationSampling::
+                         kNone /* Center is the default */);
+    if (type == ast::InterpolationType::kPerspective &&
+        sampling == ast::InterpolationSampling::kNone) {
+      // This is the default. Don't add a decoration.
+    } else {
+      ast_decos->emplace_back(
+          create<ast::InterpolateDecoration>(type, sampling));
+    }
+  }
+
   return success();
 }
 
@@ -2364,7 +2540,11 @@ const Pointer* ParserImpl::GetTypeForHandleVar(
       // OpImage variable with an OpImage*Dref* instruction.  In WGSL we must
       // treat that as a depth texture.
       if (image_type->depth() || usage.IsDepthTexture()) {
-        ast_store_type = ty_.DepthTexture(dim);
+        if (image_type->is_multisampled()) {
+          ast_store_type = ty_.DepthMultisampledTexture(dim);
+        } else {
+          ast_store_type = ty_.DepthTexture(dim);
+        }
       } else if (image_type->is_multisampled()) {
         if (dim != ast::TextureDimension::k2d) {
           Fail() << "WGSL multisampled textures must be 2d and non-arrayed: "
@@ -2680,22 +2860,6 @@ std::string ParserImpl::GetMemberName(const Struct& struct_type,
     return "";
   }
   return namer_.GetMemberName(where->second, member_index);
-}
-
-ast::Decoration* ParserImpl::GetMemberLocation(const Struct& struct_type,
-                                               int member_index) {
-  auto where = struct_id_for_symbol_.find(struct_type.name);
-  if (where == struct_id_for_symbol_.end()) {
-    Fail() << "no structure type registered for symbol";
-    return nullptr;
-  }
-  const auto type_id = where->second;
-  for (auto& deco : GetDecorationsForMember(type_id, member_index)) {
-    if ((deco.size() == 2) && (deco[0] == SpvDecorationLocation)) {
-      return create<ast::LocationDecoration>(Source{}, deco[1]);
-    }
-  }
-  return nullptr;
 }
 
 WorkgroupSizeInfo::WorkgroupSizeInfo() = default;

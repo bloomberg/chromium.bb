@@ -40,6 +40,8 @@ class SimulatedCapturer {
     virtual ~Observer();
   };
 
+  void SetPlaybackRate(double rate);
+
  protected:
   SimulatedCapturer(Environment* environment,
                     const char* path,
@@ -103,6 +105,10 @@ class SimulatedCapturer {
   // Used to schedule the next task to execute and when it should execute. There
   // is only ever one task scheduled/running at any time.
   Alarm next_task_;
+
+  // Used to determine playback rate. Currently, we only support "playing"
+  // at 1x speed, or "pausing" at 0x speed.
+  bool playback_rate_is_non_zero_ = true;
 };
 
 // Emits the primary audio stream from a file.

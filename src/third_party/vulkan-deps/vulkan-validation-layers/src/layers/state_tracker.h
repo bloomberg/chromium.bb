@@ -66,6 +66,8 @@ class RENDER_PASS_STATE;
 class SAMPLER_STATE;
 class SAMPLER_YCBCR_CONVERSION_STATE;
 class EVENT_STATE;
+class SWAPCHAIN_NODE;
+class SURFACE_STATE;
 
 enum RenderPassCreateVersion { RENDER_PASS_VERSION_1 = 0, RENDER_PASS_VERSION_2 = 1 };
 enum CopyCommandVersion { COPY_COMMAND_VERSION_1 = 0, COPY_COMMAND_VERSION_2 = 1 };
@@ -265,8 +267,6 @@ class ValidationStateTracker : public ValidationObject {
     VALSTATETRACK_MAP_AND_TRAITS(VkAccelerationStructureKHR, ACCELERATION_STRUCTURE_STATE_KHR, accelerationStructureMap_khr)
     VALSTATETRACK_MAP_AND_TRAITS_INSTANCE_SCOPE(VkSurfaceKHR, SURFACE_STATE, surface_map)
     VALSTATETRACK_MAP_AND_TRAITS_INSTANCE_SCOPE(VkDisplayModeKHR, DISPLAY_MODE_STATE, display_mode_map)
-
-    static void RemoveAliasingImages(const layer_data::unordered_set<IMAGE_STATE*>& bound_images);
 
   public:
     template <typename State>
@@ -975,6 +975,25 @@ class ValidationStateTracker : public ValidationObject {
     void PreCallRecordCmdDrawMeshTasksIndirectNV(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset,
                                                  uint32_t drawCount, uint32_t stride) override;
     void PreCallRecordCmdDrawMeshTasksNV(VkCommandBuffer commandBuffer, uint32_t taskCount, uint32_t firstTask) override;
+    void PostCallRecordCmdTraceRaysNV(VkCommandBuffer commandBuffer, VkBuffer raygenShaderBindingTableBuffer,
+                                      VkDeviceSize raygenShaderBindingOffset, VkBuffer missShaderBindingTableBuffer,
+                                      VkDeviceSize missShaderBindingOffset, VkDeviceSize missShaderBindingStride,
+                                      VkBuffer hitShaderBindingTableBuffer, VkDeviceSize hitShaderBindingOffset,
+                                      VkDeviceSize hitShaderBindingStride, VkBuffer callableShaderBindingTableBuffer,
+                                      VkDeviceSize callableShaderBindingOffset, VkDeviceSize callableShaderBindingStride,
+                                      uint32_t width, uint32_t height, uint32_t depth) override;
+    void PostCallRecordCmdTraceRaysKHR(VkCommandBuffer commandBuffer,
+                                       const VkStridedDeviceAddressRegionKHR *pRaygenShaderBindingTable,
+                                       const VkStridedDeviceAddressRegionKHR *pMissShaderBindingTable,
+                                       const VkStridedDeviceAddressRegionKHR *pHitShaderBindingTable,
+                                       const VkStridedDeviceAddressRegionKHR *pCallableShaderBindingTable, uint32_t width,
+                                       uint32_t height, uint32_t depth) override;
+    void PostCallRecordCmdTraceRaysIndirectKHR(VkCommandBuffer commandBuffer,
+                                               const VkStridedDeviceAddressRegionKHR *pRaygenShaderBindingTable,
+                                               const VkStridedDeviceAddressRegionKHR *pMissShaderBindingTable,
+                                               const VkStridedDeviceAddressRegionKHR *pHitShaderBindingTable,
+                                               const VkStridedDeviceAddressRegionKHR *pCallableShaderBindingTable,
+                                               VkDeviceAddress indirectDeviceAddress) override;
     void PostCallRecordCmdEndDebugUtilsLabelEXT(VkCommandBuffer commandBuffer) override;
     void PostCallRecordCmdEndQuery(VkCommandBuffer commandBuffer, VkQueryPool queryPool, uint32_t slot) override;
     void PostCallRecordCmdEndQueryIndexedEXT(VkCommandBuffer commandBuffer, VkQueryPool queryPool, uint32_t query,
@@ -1138,7 +1157,7 @@ class ValidationStateTracker : public ValidationObject {
     virtual std::shared_ptr<SWAPCHAIN_NODE> CreateSwapchainState(const VkSwapchainCreateInfoKHR* create_info,
                                                                  VkSwapchainKHR swapchain);
     void RecordCreateSwapchainState(VkResult result, const VkSwapchainCreateInfoKHR* pCreateInfo, VkSwapchainKHR* pSwapchain,
-                                    SURFACE_STATE* surface_state, SWAPCHAIN_NODE* old_swapchain_state);
+                                    std::shared_ptr<SURFACE_STATE>&& surface_state, SWAPCHAIN_NODE* old_swapchain_state);
     void RecordDestroySamplerYcbcrConversionState(VkSamplerYcbcrConversion ycbcr_conversion);
     void RecordEnumeratePhysicalDeviceGroupsState(uint32_t* pPhysicalDeviceGroupCount,
                                                   VkPhysicalDeviceGroupProperties* pPhysicalDeviceGroupProperties);
@@ -1291,6 +1310,8 @@ class ValidationStateTracker : public ValidationObject {
         VkPhysicalDeviceFragmentShadingRatePropertiesKHR fragment_shading_rate_props;
         VkPhysicalDeviceProvokingVertexPropertiesEXT provoking_vertex_props;
         VkPhysicalDeviceMultiDrawPropertiesEXT multi_draw_props;
+        VkPhysicalDeviceDiscardRectanglePropertiesEXT discard_rectangle_props;
+        VkPhysicalDeviceBlendOperationAdvancedPropertiesEXT blend_operation_advanced_props;
     };
     DeviceExtensionProperties phys_dev_ext_props = {};
     std::vector<VkCooperativeMatrixPropertiesNV> cooperative_matrix_properties;
@@ -1341,7 +1362,7 @@ class ValidationStateTracker : public ValidationObject {
         }
 
       private:
-        VkDeviceSize free_ = 0;
+        VkDeviceSize free_ = 1U << 20; // start at 1mb to leave room for a NULL address
     };
     FakeAllocator fake_memory;
 };

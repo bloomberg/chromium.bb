@@ -14,8 +14,8 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/check_op.h"
+#include "base/cxx17_backports.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/notreached.h"
 #include "base/numerics/math_constants.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/string_number_conversions.h"
@@ -871,7 +871,7 @@ PDFiumPage::Area PDFiumPage::GetDestinationTarget(FPDF_DEST destination,
   if (!target)
     return NONSELECTABLE_AREA;
 
-  int page_index = FPDFDest_GetDestPageIndex(engine_->doc(), destination);
+  const int page_index = FPDFDest_GetDestPageIndex(engine_->doc(), destination);
   if (page_index < 0)
     return NONSELECTABLE_AREA;
 
@@ -881,11 +881,20 @@ PDFiumPage::Area PDFiumPage::GetDestinationTarget(FPDF_DEST destination,
   absl::optional<float> y;
   GetPageDestinationTarget(destination, &x, &y, &target->zoom);
 
+  // The page where a destination exists can be different from the page that it
+  // targets. Calculating the in-page coordinates should be based on the target
+  // page's size.
+  PDFiumPage* target_page = engine_->GetPage(target->page);
+  if (!target_page)
+    return NONSELECTABLE_AREA;
+
   if (x) {
-    target->x_in_pixels = PreProcessAndTransformInPageCoordX(x.value());
+    target->x_in_pixels =
+        target_page->PreProcessAndTransformInPageCoordX(x.value());
   }
   if (y) {
-    target->y_in_pixels = PreProcessAndTransformInPageCoordY(y.value());
+    target->y_in_pixels =
+        target_page->PreProcessAndTransformInPageCoordY(y.value());
   }
 
   return DOCLINK_AREA;
@@ -925,7 +934,7 @@ float PDFiumPage::PreProcessAndTransformInPageCoordX(float x) {
   // If `x` < 0, scroll to the left side of the page.
   // If `x` > page width, scroll to the right side of the page.
   return TransformPageToScreenX(
-      std::max(std::min(x, FPDF_GetPageWidthF(GetPage())), 0.0f));
+      base::clamp(x, 0.0f, FPDF_GetPageWidthF(GetPage())));
 }
 
 float PDFiumPage::PreProcessAndTransformInPageCoordY(float y) {
@@ -1630,8 +1639,9 @@ uint32_t PDFiumPage::CountLinkHighlightOverlaps(
 }
 
 int ToPDFiumRotation(PageOrientation orientation) {
-  // Could static_cast<int>(orientation), but using an exhaustive switch will
-  // trigger an error if we ever change the definition of PageOrientation.
+  // Could use static_cast<int>(orientation), but using an exhaustive switch
+  // will trigger an error if we ever change the definition of
+  // `PageOrientation`.
   switch (orientation) {
     case PageOrientation::kOriginal:
       return 0;
@@ -1642,8 +1652,6 @@ int ToPDFiumRotation(PageOrientation orientation) {
     case PageOrientation::kClockwise270:
       return 3;
   }
-  NOTREACHED();
-  return 0;
 }
 
 }  // namespace chrome_pdf

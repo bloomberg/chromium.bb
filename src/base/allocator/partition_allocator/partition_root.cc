@@ -180,15 +180,16 @@ static size_t PartitionPurgeSlotSpan(
 
 #if defined(PAGE_ALLOCATOR_CONSTANTS_ARE_CONSTEXPR)
   constexpr size_t kMaxSlotCount =
-      (PartitionPageSize() * kMaxPartitionPagesPerSlotSpan) / SystemPageSize();
+      (PartitionPageSize() * kMaxPartitionPagesPerRegularSlotSpan) /
+      SystemPageSize();
 #elif defined(OS_APPLE)
   // It's better for slot_usage to be stack-allocated and fixed-size, which
   // demands that its size be constexpr. On OS_APPLE, PartitionPageSize() is
   // always SystemPageSize() << 2, so regardless of what the run time page size
   // is, kMaxSlotCount can always be simplified to this expression.
-  constexpr size_t kMaxSlotCount = 4 * kMaxPartitionPagesPerSlotSpan;
+  constexpr size_t kMaxSlotCount = 4 * kMaxPartitionPagesPerRegularSlotSpan;
   PA_CHECK(kMaxSlotCount ==
-           (PartitionPageSize() * kMaxPartitionPagesPerSlotSpan) /
+           (PartitionPageSize() * kMaxPartitionPagesPerRegularSlotSpan) /
                SystemPageSize());
 #endif
   PA_DCHECK(bucket_num_slots <= kMaxSlotCount);
@@ -554,7 +555,7 @@ void PartitionRoot<thread_safe>::Init(PartitionOptions opts) {
     // Set up the actual usable buckets first.
     constexpr internal::BucketIndexLookup lookup{};
     size_t bucket_index = 0;
-    while (lookup.bucket_sizes()[bucket_index]) {
+    while (lookup.bucket_sizes()[bucket_index] != kInvalidBucketSize) {
       buckets[bucket_index].Init(lookup.bucket_sizes()[bucket_index]);
       bucket_index++;
     }
@@ -673,8 +674,8 @@ bool PartitionRoot<thread_safe>::TryReallocInPlaceForDirectMap(
   // Make this check before comparing slot sizes, as even with equal or similar
   // slot sizes we can save a lot if the original allocation was heavily padded
   // for alignment.
-  if ((new_reservation_size / SystemPageSize()) * 5 <
-      (current_reservation_size / SystemPageSize()) * 4)
+  if ((new_reservation_size >> SystemPageShift()) * 5 <
+      (current_reservation_size >> SystemPageShift()) * 4)
     return false;
 
   // Note that the new size isn't a bucketed size; this function is called
@@ -930,11 +931,17 @@ void PartitionRoot<thread_safe>::DumpStats(const char* partition_name,
   {
     ScopedGuard guard{lock_};
 
+    PA_DCHECK(total_size_of_allocated_bytes <= max_size_of_allocated_bytes);
+
     stats.total_mmapped_bytes =
         total_size_of_super_pages.load(std::memory_order_relaxed) +
         total_size_of_direct_mapped_pages.load(std::memory_order_relaxed);
     stats.total_committed_bytes =
         total_size_of_committed_pages.load(std::memory_order_relaxed);
+    stats.max_committed_bytes =
+        max_size_of_committed_pages.load(std::memory_order_relaxed);
+    stats.total_allocated_bytes = total_size_of_allocated_bytes;
+    stats.max_allocated_bytes = max_size_of_allocated_bytes;
 
     size_t direct_mapped_allocations_total_size = 0;
     for (size_t i = 0; i < kNumBuckets; ++i) {
@@ -1000,6 +1007,13 @@ void PartitionRoot<thread_safe>::DumpStats(const char* partition_name,
     }
   }
   dumper->PartitionDumpTotals(partition_name, &stats);
+}
+
+template <bool thread_safe>
+void PartitionRoot<thread_safe>::ResetBookkeepingForTesting() {
+  ScopedGuard guard{lock_};
+  max_size_of_allocated_bytes = total_size_of_allocated_bytes;
+  max_size_of_committed_pages.store(total_size_of_committed_pages);
 }
 
 template <>

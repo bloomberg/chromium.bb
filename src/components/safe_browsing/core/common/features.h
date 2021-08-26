@@ -70,6 +70,9 @@ extern const base::FeatureParam<bool> kDelayedWarningsEnableMouseClicks;
 // and implementation are validated experimentally.
 extern const base::Feature kFileAnalysisMimeTypeSniff;
 
+// Enable omitting non-user gesture from referrer chain.
+extern const base::Feature kOmitNonUserGesturesFromReferrerChain;
+
 // Enable GAIA password protection for signed-in users.
 extern const base::Feature kPasswordProtectionForSignedInUsers;
 
@@ -111,6 +114,10 @@ extern const base::Feature kSuspiciousSiteTriggerQuotaFeature;
 
 // Controls whether the referrer chain is attached to real time requests.
 extern const base::Feature kRealTimeUrlLookupReferrerChain;
+
+// Controls whether the referrer chain is attached to real time requests for
+// enterprise.
+extern const base::Feature kRealTimeUrlLookupReferrerChainForEnterprise;
 
 // Status of the SimplifiedUrlDisplay experiments. This does not control the
 // individual experiments, those are controlled by their own feature flags.

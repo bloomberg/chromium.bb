@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #include "lib/jxl/blending.h"
 
@@ -39,27 +30,35 @@ bool ImageBlender::NeedsBlending(PassesDecoderState* dec_state) {
   return true;
 }
 
-Status ImageBlender::PrepareBlending(PassesDecoderState* dec_state,
-                                     FrameOrigin foreground_origin,
-                                     size_t foreground_xsize,
-                                     size_t foreground_ysize,
-                                     const ColorEncoding& frame_color_encoding,
-                                     ImageBundle* output) {
+Status ImageBlender::PrepareBlending(
+    PassesDecoderState* dec_state, FrameOrigin foreground_origin,
+    size_t foreground_xsize, size_t foreground_ysize,
+    const std::vector<ExtraChannelInfo>* extra_channel_info,
+    const ColorEncoding& frame_color_encoding, const Rect& frame_rect,
+    Image3F* output, const Rect& output_rect,
+    std::vector<ImageF>* output_extra_channels,
+    std::vector<Rect> output_extra_channels_rects) {
   const PassesSharedState& state = *dec_state->shared;
   info_ = state.frame_header.blending_info;
-  const std::vector<jxl::ExtraChannelInfo>& extra_channels =
-      state.metadata->m.extra_channel_info;
 
   ec_info_ = &state.frame_header.extra_channel_blending_info;
+
+  extra_channel_info_ = extra_channel_info;
+  output_ = output;
+  output_rect_ = output_rect;
+  output_extra_channels_ = output_extra_channels;
+  output_extra_channels_rects_ = std::move(output_extra_channels_rects);
 
   size_t image_xsize = state.frame_header.nonserialized_metadata->xsize();
   size_t image_ysize = state.frame_header.nonserialized_metadata->ysize();
 
   // the rect in the canvas that needs to be updated
-  cropbox_ = Rect(0, 0, image_xsize, image_ysize);
+  cropbox_ = frame_rect;
   // the rect of this frame that overlaps with the canvas
   overlap_ = cropbox_;
   o_ = foreground_origin;
+  o_.x0 -= frame_rect.x0();
+  o_.y0 -= frame_rect.y0();
   int x0 = (o_.x0 >= 0 ? o_.x0 : 0);
   int y0 = (o_.y0 >= 0 ? o_.y0 : 0);
   int xsize = foreground_xsize;
@@ -81,9 +80,9 @@ Status ImageBlender::PrepareBlending(PassesDecoderState* dec_state,
     Image3F color(image_xsize, image_ysize);
     ZeroFillImage(&color);
     empty.SetFromImage(std::move(color), frame_color_encoding);
-    if (!extra_channels.empty()) {
+    if (!output_extra_channels_->empty()) {
       std::vector<ImageF> ec;
-      for (size_t i = 0; i < extra_channels.size(); ++i) {
+      for (size_t i = 0; i < output_extra_channels_->size(); ++i) {
         ImageF eci(image_xsize, image_ysize);
         ZeroFillImage(&eci);
         ec.push_back(std::move(eci));
@@ -97,7 +96,7 @@ Status ImageBlender::PrepareBlending(PassesDecoderState* dec_state,
         info_.source);
   }
 
-  if (bg.xsize() != image_xsize || bg.ysize() != image_ysize ||
+  if (bg.xsize() < image_xsize || bg.ysize() < image_ysize ||
       bg.origin.x0 != 0 || bg.origin.y0 != 0) {
     return JXL_FAILURE("Trying to use a %zux%zu crop as a background",
                        bg.xsize(), bg.ysize());
@@ -120,24 +119,27 @@ Status ImageBlender::PrepareBlending(PassesDecoderState* dec_state,
         bg.xsize(), bg.ysize());
   }
 
-  dest_ = output;
-  if (state.frame_header.CanBeReferenced() &&
-      &bg == &state.reference_frames[state.frame_header.save_as_reference]
-                  .storage) {
-    *dest_ = std::move(bg);
-  } else {
-    *dest_ = bg.Copy();
-  }
-
+  CopyImageTo(frame_rect, *bg.color(), output_rect, output);
   for (size_t i = 0; i < ec_info_->size(); ++i) {
     const auto& eci = (*ec_info_)[i];
-    if (eci.source != info_.source) {
-      const auto& src = *state.reference_frames[eci.source].frame;
-      if (src.xsize() == 0 && src.ysize() == 0) {
-        ZeroFillImage(&dest_->extra_channels()[i]);
-      } else {
-        CopyImageTo(src.extra_channels()[i], &dest_->extra_channels()[i]);
+    const auto& src = *state.reference_frames[eci.source].frame;
+    if (src.xsize() == 0 && src.ysize() == 0) {
+      ZeroFillPlane(&(*output_extra_channels_)[i],
+                    output_extra_channels_rects_[i]);
+    } else {
+      if (src.extra_channels()[i].xsize() < image_xsize ||
+          src.extra_channels()[i].ysize() < image_ysize || src.origin.x0 != 0 ||
+          src.origin.y0 != 0) {
+        return JXL_FAILURE(
+            "Invalid size %zux%zu or origin %+d%+d for extra channel %zu of "
+            "reference frame %zu, expected at least %zux%zu+0+0",
+            src.extra_channels()[i].xsize(), src.extra_channels()[i].ysize(),
+            static_cast<int>(src.origin.x0), static_cast<int>(src.origin.y0), i,
+            static_cast<size_t>(eci.source), image_xsize, image_ysize);
       }
+      CopyImageTo(frame_rect, src.extra_channels()[i],
+                  output_extra_channels_rects_[i],
+                  &(*output_extra_channels_)[i]);
     }
   }
 
@@ -152,7 +154,7 @@ ImageBlender::RectBlender ImageBlender::PrepareRect(
   JXL_DASSERT(input_rect.IsInside(foreground));
 
   RectBlender blender(false);
-  blender.dest_ = dest_;
+  blender.extra_channel_info_ = extra_channel_info_;
 
   blender.current_overlap_ = rect.Intersection(overlap_);
   if (blender.current_overlap_.xsize() == 0 ||
@@ -161,40 +163,23 @@ ImageBlender::RectBlender ImageBlender::PrepareRect(
     return blender;
   }
 
-  const Rect actual_input_rect(
-      input_rect.x0() + (blender.current_overlap_.x0() - rect.x0()),
-      input_rect.y0() + (blender.current_overlap_.y0() - rect.y0()),
-      blender.current_overlap_.xsize(), blender.current_overlap_.ysize());
-
   blender.current_cropbox_ =
       Rect(o_.x0 + blender.current_overlap_.x0(),
            o_.y0 + blender.current_overlap_.y0(),
            blender.current_overlap_.xsize(), blender.current_overlap_.ysize());
-  Image3F cropped_foreground(actual_input_rect.xsize(),
-                             actual_input_rect.ysize());
-  CopyImageTo(actual_input_rect, foreground, &cropped_foreground);
-  blender.foreground_ = ImageBundle(dest_->metadata());
-  bool is_gray = blender.foreground_.metadata()->color_encoding.IsGray();
-  blender.foreground_.SetFromImage(
-      std::move(cropped_foreground),
-      ColorEncoding::LinearSRGB(
-          is_gray) /* likely incorrect but unused anyway */);
-  if (!extra_channels.empty()) {
-    std::vector<ImageF> ec;
-    for (const auto& extra_channel : extra_channels) {
-      ImageF ec_image(actual_input_rect.xsize(), actual_input_rect.ysize());
-      CopyImageTo(actual_input_rect, extra_channel, &ec_image);
-      ec.push_back(std::move(ec_image));
-    }
-    blender.foreground_.SetExtraChannels(std::move(ec));
-  }
 
   // Turn current_overlap_ from being relative to the full foreground to being
-  // relative to the rect.
+  // relative to the rect or input_rect.
   blender.current_overlap_ =
       Rect(blender.current_overlap_.x0() - rect.x0(),
            blender.current_overlap_.y0() - rect.y0(),
            blender.current_overlap_.xsize(), blender.current_overlap_.ysize());
+
+  // And this one is relative to the `foreground` subimage.
+  const Rect input_overlap(blender.current_overlap_.x0() + input_rect.x0(),
+                           blender.current_overlap_.y0() + input_rect.y0(),
+                           blender.current_overlap_.xsize(),
+                           blender.current_overlap_.ysize());
 
   blender.blending_info_.resize(extra_channels.size() + 1);
   auto make_blending = [&](const BlendingInfo& info, PatchBlending* pb) {
@@ -224,11 +209,37 @@ ImageBlender::RectBlender ImageBlender::PrepareRect(
       default: {
         JXL_ABORT("Invalid blend mode");  // should have failed to decode
       }
-    };
+    }
   };
   make_blending(info_, &blender.blending_info_[0]);
   for (size_t i = 0; i < extra_channels.size(); i++) {
     make_blending((*ec_info_)[i], &blender.blending_info_[1 + i]);
+  }
+
+  Rect cropbox_row = blender.current_cropbox_.Line(0);
+  Rect overlap_row = input_overlap.Line(0);
+  const auto num_ptrs = 3 + extra_channels.size();
+  blender.fg_ptrs_.reserve(num_ptrs);
+  blender.fg_strides_.reserve(num_ptrs);
+  blender.bg_ptrs_.reserve(num_ptrs);
+  blender.bg_strides_.reserve(num_ptrs);
+  for (size_t c = 0; c < 3; c++) {
+    blender.fg_ptrs_.push_back(overlap_row.ConstPlaneRow(foreground, c, 0));
+    blender.fg_strides_.push_back(foreground.PixelsPerRow());
+    blender.bg_ptrs_.push_back(
+        cropbox_row.Translate(output_rect_.x0(), output_rect_.y0())
+            .PlaneRow(output_, c, 0));
+    blender.bg_strides_.push_back(output_->PixelsPerRow());
+  }
+  for (size_t c = 0; c < extra_channels.size(); c++) {
+    blender.fg_ptrs_.push_back(overlap_row.ConstRow(extra_channels[c], 0));
+    blender.fg_strides_.push_back(extra_channels[c].PixelsPerRow());
+    blender.bg_ptrs_.push_back(
+        cropbox_row
+            .Translate(output_extra_channels_rects_[c].x0(),
+                       output_extra_channels_rects_[c].y0())
+            .Row(&(*output_extra_channels_)[c], 0));
+    blender.bg_strides_.push_back((*output_extra_channels_)[c].PixelsPerRow());
   }
 
   return blender;
@@ -357,22 +368,16 @@ Status ImageBlender::RectBlender::DoBlending(size_t y) {
     return true;
   }
   y -= current_overlap_.y0();
-  Rect cropbox_row = current_cropbox_.Line(y);
-  Rect overlap_row = Rect(0, y, current_overlap_.xsize(), 1);
-  fg_ptrs_.resize(3 + foreground_.extra_channels().size());
-  bg_ptrs_.resize(3 + foreground_.extra_channels().size());
-  for (size_t c = 0; c < 3; c++) {
-    fg_ptrs_[c] = overlap_row.ConstPlaneRow(*foreground_.color(), c, 0);
-    bg_ptrs_[c] = cropbox_row.PlaneRow(dest_->color(), c, 0);
+  fg_row_ptrs_.resize(fg_ptrs_.size());
+  bg_row_ptrs_.resize(bg_ptrs_.size());
+  for (size_t c = 0; c < fg_row_ptrs_.size(); c++) {
+    fg_row_ptrs_[c] = fg_ptrs_[c] + y * fg_strides_[c];
+    bg_row_ptrs_[c] = bg_ptrs_[c] + y * bg_strides_[c];
   }
-  for (size_t c = 0; c < foreground_.extra_channels().size(); c++) {
-    fg_ptrs_[c + 3] = overlap_row.ConstRow(foreground_.extra_channels()[c], 0);
-    bg_ptrs_[c + 3] = cropbox_row.Row(&dest_->extra_channels()[c], 0);
-  }
-  return PerformBlending(bg_ptrs_.data(), fg_ptrs_.data(), bg_ptrs_.data(),
-                         current_overlap_.xsize(), blending_info_[0],
-                         blending_info_.data() + 1,
-                         dest_->metadata()->extra_channel_info);
+  return PerformBlending(bg_row_ptrs_.data(), fg_row_ptrs_.data(),
+                         bg_row_ptrs_.data(), current_overlap_.xsize(),
+                         blending_info_[0], blending_info_.data() + 1,
+                         *extra_channel_info_);
 }
 
 }  // namespace jxl

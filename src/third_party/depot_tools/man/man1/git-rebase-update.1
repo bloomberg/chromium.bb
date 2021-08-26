@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: git-rebase-update
-.\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 08/10/2020
+.\"    Author: [FIXME: author] [see http://www.docbook.org/tdg5/en/html/author]
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 07/01/2021
 .\"    Manual: Chromium depot_tools Manual
-.\"    Source: depot_tools 8c3f7227
+.\"    Source: depot_tools 906b5026
 .\"  Language: English
 .\"
-.TH "GIT\-REBASE\-UPDATE" "1" "08/10/2020" "depot_tools 8c3f7227" "Chromium depot_tools Manual"
+.TH "GIT\-REBASE\-UPDATE" "1" "07/01/2021" "depot_tools 906b5026" "Chromium depot_tools Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -50,7 +50,7 @@ for more detail)\&. Additionally, the current branch is recorded for the
 phase later (see
 \fICONFIGURATION VARIABLES\fR
 for details on
-depot\-tools\&.rebase\-update\&.starting\-branch)\&.
+\fBdepot\-tools\&.rebase\-update\&.starting\-branch\fR)\&.
 .RE
 .PP
 Fetching
@@ -58,7 +58,7 @@ Fetching
 All branches are examined to find their upstream references\&. The correct set of git remotes is determined, and fetched accordingly\&. Note that if any branches have a tag as their upstream, we are forced to pull all remotes\&.
 .sp
 Pass
-\-\-no\-fetch
+\fB\-\-no\-fetch\fR
 to skip this phase\&.
 .RE
 .PP
@@ -78,13 +78,13 @@ cause for conflicts is when your branch has been committed to the upstream in sq
 and the
 \fICommit Queue\fR
 will do\&. Because of that,
-git rebase\-update
+\fBgit rebase\-update\fR
 will attempt to squash your conflicted branch to see if the squashed version applies cleanly to its upstream\&.
 .sp
 If it does not apply cleanly, then your original (non\-squashed) branch will be left in mid\-rebase and
-git rebase\-update
+\fBgit rebase\-update\fR
 will exit\&. You can deal with this like any other conflicted rebase\&. When you\(cqre done, just
-git rebase\-update
+\fBgit rebase\-update\fR
 again to pick up where you left off\&.
 .RE
 .sp
@@ -98,17 +98,17 @@ Once all the branches have been rebased, any empty branches (i\&.e\&. branches w
 .PP
 Restoration
 .RS 4
-git rebase\-update
+\fBgit rebase\-update\fR
 checks out the branch that you started on, and
 \fIthaws\fR
 it, if necessary (see
 \fBgit-thaw\fR(1))\&. If the branch you started on got cleaned up,
-git rebase\-update
+\fBgit rebase\-update\fR
 will checkout the
 \fIroot\fR
 ref (defaults to
 \fIorigin\fR\*(Aqs default branch, as configured by
-depot\-tools\&.upstream, see
+\fBdepot\-tools\&.upstream\fR, see
 \fBgit-new-branch\fR(1))\&.
 .RE
 .SH "OPTIONS"
@@ -121,7 +121,7 @@ Keep processing past failed rebases\&.
 \-n, \-\-no\-fetch
 .RS 4
 Skip the
-git fetch
+\fBgit fetch\fR
 phase of rebase\-update\&.
 .RE
 .PP
@@ -137,13 +137,13 @@ Only rebase the current branch\&.
 .SH "CONFIGURATION VARIABLES"
 .SS "depot\-tools\&.rebase\-update\&.starting\-branch"
 .sp
-When git rebase\-update first runs, it will record the current branch here so that when it completes successfully, it will return back to the same branch you started on, even if git rebase\-update is interrupted due to rebase conflicts\&. When git rebase\-update completes successfully, this configuration variable is removed\&.
+When \fBgit rebase\-update\fR first runs, it will record the current branch here so that when it completes successfully, it will return back to the same branch you started on, even if \fBgit rebase\-update\fR is interrupted due to rebase conflicts\&. When \fBgit rebase\-update\fR completes successfully, this configuration variable is removed\&.
 .SS "branch\&.<name>\&.dormant"
 .sp
-If true, will cause rebase\-update to skip all processing on the branch\&. Useful for old/high\-conflict branches which you want to keep for posterity, but don\(cqt want to deal with when running git rebase\-update
+If \fBtrue\fR, will cause rebase\-update to skip all processing on the branch\&. Useful for old/high\-conflict branches which you want to keep for posterity, but don\(cqt want to deal with when running \fBgit rebase\-update\fR
 .SS "branch\&.<name>\&.base"
 .sp
-Holds the \fIbase\fR reference for this branch\&. By default this is equivalent to git merge\-base <name> <name>@{upstream}\&. However, it can diverge if <name>@{upstream} is manually rebased\&. In this case, it correctly preserves the value it had before, where git merge\-base would now report the wrong value\&.
+Holds the \fIbase\fR reference for this branch\&. By default this is equivalent to \fBgit merge\-base <name> <name>@{upstream}\fR\&. However, it can diverge if \fB<name>@{upstream}\fR is manually rebased\&. In this case, it correctly preserves the value it had before, where \fBgit merge\-base\fR would now report the wrong value\&.
 .sp
 All of the tools in the \fBdepot_tools\fR(1) suite collude to keep this value as up\-to\-date as possible, including \fBgit-reparent-branch\fR(1), and \fBgit-new-branch\fR(1)\&. \fBgit-map\fR(1) also shows the location of these marker values in \fBwhite\fR\&.
 .sp

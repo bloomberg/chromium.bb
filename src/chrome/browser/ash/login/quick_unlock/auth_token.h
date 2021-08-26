@@ -14,10 +14,10 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {
-
 class UserContext;
-class QuickUnlockStorageUnitTest;
+}
 
+namespace ash {
 namespace quick_unlock {
 
 // Security token with an identifyier string and a predetermined life time,
@@ -45,7 +45,7 @@ class AuthToken {
   }
 
  private:
-  friend class chromeos::QuickUnlockStorageUnitTest;
+  friend class QuickUnlockStorageUnitTest;
 
   // Expires the token. In particular this makes the identifier string
   // inaccessible from outside the class.
@@ -61,14 +61,14 @@ class AuthToken {
 };
 
 }  // namespace quick_unlock
-}  // namespace chromeos
+}  // namespace ash
 
 // TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
 // source migration is finished.
-namespace ash {
+namespace chromeos {
 namespace quick_unlock {
-using ::chromeos::quick_unlock::AuthToken;
+using ::ash::quick_unlock::AuthToken;
 }
-}  // namespace ash
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_QUICK_UNLOCK_AUTH_TOKEN_H_

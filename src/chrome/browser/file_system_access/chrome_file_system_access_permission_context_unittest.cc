@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
+#include "base/json/values_util.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/test/bind.h"
@@ -18,7 +19,6 @@
 #include "base/test/scoped_path_override.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
-#include "base/util/values/values_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/file_system_access/file_system_access_permission_request_manager.h"
@@ -645,45 +645,6 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
             new_path);
 }
 
-// TODO(https://crbug.com/1177334): Remove test when removing migration logic.
-TEST_F(ChromeFileSystemAccessPermissionContextTest,
-       Migrate_LastPickedDirectory) {
-  EXPECT_EQ(permission_context()
-                ->GetLastPickedDirectory(kTestOrigin, kTestStartingDirectoryId)
-                .path,
-            base::FilePath());
-
-  // Set keys using the old method.
-  const char kDeprecatedLastPickedDirectoryKey[] = "default-path";
-  const char kDeprecatedLastPickedDirectoryTypeKey[] = "default-path-type";
-  const base::FilePath path = base::FilePath(FILE_PATH_LITERAL("/baz/bar"));
-  const auto type = PathType::kExternal;
-  base::Value dict(base::Value::Type::DICTIONARY);
-  dict.SetKey(kDeprecatedLastPickedDirectoryKey, util::FilePathToValue(path));
-  dict.SetIntKey(kDeprecatedLastPickedDirectoryTypeKey, static_cast<int>(type));
-  HostContentSettingsMapFactory::GetForProfile(&profile_)
-      ->SetWebsiteSettingDefaultScope(
-          kTestOrigin.GetURL(), kTestOrigin.GetURL(),
-          ContentSettingsType::FILE_SYSTEM_LAST_PICKED_DIRECTORY,
-          base::Value::ToUniquePtrValue(std::move(dict)));
-
-  // Retrieve key using the new method. Information should have been migrated.
-  auto result = permission_context()->GetLastPickedDirectory(
-      kTestOrigin, /*id=*/std::string());
-  EXPECT_EQ(result.path, path);
-  EXPECT_EQ(result.type, type);
-
-  // Confirm that the old keys have been removed.
-  std::unique_ptr<base::Value> value =
-      HostContentSettingsMapFactory::GetForProfile(&profile_)
-          ->GetWebsiteSetting(
-              kTestOrigin.GetURL(), kTestOrigin.GetURL(),
-              ContentSettingsType::FILE_SYSTEM_LAST_PICKED_DIRECTORY,
-              /*info=*/nullptr);
-  EXPECT_FALSE(value->FindKey(kDeprecatedLastPickedDirectoryKey));
-  EXPECT_FALSE(value->FindIntKey(kDeprecatedLastPickedDirectoryKey));
-}
-
 TEST_F(ChromeFileSystemAccessPermissionContextTest,
        GetWellKnownDirectoryPath_Base_OK) {
   base::ScopedPathOverride user_desktop_override(
@@ -1308,7 +1269,7 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
   auto objects = permission_context()->GetAllGrantedOrExpiredObjects();
   ASSERT_EQ(objects.size(), 1u);
   EXPECT_EQ(objects[0]->origin, kTestOrigin.GetURL());
-  EXPECT_EQ(util::ValueToTime(objects[0]->value.FindKey("time")), advance_once);
+  EXPECT_EQ(base::ValueToTime(objects[0]->value.FindKey("time")), advance_once);
 
   grant.reset();
 
@@ -1321,7 +1282,7 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
   objects = permission_context()->GetAllGrantedOrExpiredObjects();
   ASSERT_EQ(objects.size(), 1u);
   EXPECT_EQ(objects[0]->origin, kTestOrigin.GetURL());
-  EXPECT_EQ(util::ValueToTime(objects[0]->value.FindKey("time")), advance_once);
+  EXPECT_EQ(base::ValueToTime(objects[0]->value.FindKey("time")), advance_once);
 
   // |grant| should now be expired, but not revokable until after grace period.
   Advance(ChromeFileSystemAccessPermissionContext::
@@ -1363,7 +1324,7 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
   auto objects = permission_context()->GetAllGrantedOrExpiredObjects();
   ASSERT_EQ(objects.size(), 1u);
   EXPECT_EQ(objects[0]->origin, kTestOrigin.GetURL());
-  EXPECT_EQ(util::ValueToTime(objects[0]->value.FindKey("time")), advance_once);
+  EXPECT_EQ(base::ValueToTime(objects[0]->value.FindKey("time")), advance_once);
 
   grant.reset();
 
@@ -1376,7 +1337,7 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
   objects = permission_context()->GetAllGrantedOrExpiredObjects();
   ASSERT_EQ(objects.size(), 1u);
   EXPECT_EQ(objects[0]->origin, kTestOrigin.GetURL());
-  EXPECT_EQ(util::ValueToTime(objects[0]->value.FindKey("time")), advance_once);
+  EXPECT_EQ(base::ValueToTime(objects[0]->value.FindKey("time")), advance_once);
 
   // |grant| should now be expired, but not revokable until after grace period.
   Advance(ChromeFileSystemAccessPermissionContext::
@@ -1519,8 +1480,8 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
   ASSERT_EQ(objects.size(), 2u);
   EXPECT_EQ(objects[0]->origin, kTestOrigin.GetURL());
   EXPECT_EQ(objects[1]->origin, kTestOrigin2.GetURL());
-  EXPECT_EQ(util::ValueToTime(objects[0]->value.FindKey("time")), initial_time);
-  EXPECT_EQ(util::ValueToTime(objects[1]->value.FindKey("time")), Now());
+  EXPECT_EQ(base::ValueToTime(objects[0]->value.FindKey("time")), initial_time);
+  EXPECT_EQ(base::ValueToTime(objects[1]->value.FindKey("time")), Now());
 }
 
 TEST_F(ChromeFileSystemAccessPermissionContextTest,
@@ -1549,7 +1510,7 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
   auto objects = permission_context()->GetAllGrantedOrExpiredObjects();
   ASSERT_EQ(objects.size(), 1u);
   EXPECT_EQ(objects[0]->origin, kTestOrigin.GetURL());
-  EXPECT_EQ(util::ValueToTime(objects[0]->value.FindKey("time")), initial_time);
+  EXPECT_EQ(base::ValueToTime(objects[0]->value.FindKey("time")), initial_time);
 
   // Permissions should now be expired and can be revoked.
   Advance(ChromeFileSystemAccessPermissionContext::

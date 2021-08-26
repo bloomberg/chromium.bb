@@ -39,8 +39,7 @@ class VIZ_SERVICE_EXPORT DelegatedInkTrailData {
   void PredictPoints(std::vector<gfx::DelegatedInkPoint>* ink_points_to_draw,
                      gfx::DelegatedInkMetadata* metadata);
   void Reset();
-  bool ContainsAlmostMatchingPoint(gfx::DelegatedInkMetadata* metadata,
-                                   const float epsilon) const;
+  bool ContainsMatchingPoint(gfx::DelegatedInkMetadata* metadata) const;
   void ErasePointsOlderThanMetadata(gfx::DelegatedInkMetadata* metadata);
   void UpdateMetrics(gfx::DelegatedInkMetadata* metadata);
 
@@ -75,6 +74,9 @@ class VIZ_SERVICE_EXPORT DelegatedInkTrailData {
 
   // The pointer id associated with these points.
   int32_t pointer_id_;
+
+  // Id for prediction configuration to draw. No value if disabled.
+  absl::optional<int> should_draw_predicted_ink_points_;
 };
 
 }  // namespace viz

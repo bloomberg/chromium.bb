@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.ntp;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Point;
 import android.graphics.Rect;
@@ -21,7 +20,8 @@ import androidx.annotation.VisibleForTesting;
 import androidx.core.view.ViewCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
-import org.chromium.base.ApiCompatibilityUtils;
+import com.google.android.material.color.MaterialColors;
+
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.TimeUtils;
@@ -110,7 +110,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
 
     private final String mTitle;
     private final JankTracker mJankTracker;
-    private Resources mResources;
+    private Context mContext;
     private final int mBackgroundColor;
     protected final NewTabPageManagerImpl mNewTabPageManager;
     protected final TileGroup.Delegate mTileGroupDelegate;
@@ -154,12 +154,6 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
     public void onBottomControlsHeightChanged(
             int bottomControlsHeight, int bottomControlsMinHeight) {
         updateMargins();
-    }
-
-    @Override
-    public void onAndroidVisibilityChanged(int visibility) {
-        // TODO(crbug/1223069): Remove this workaround for default method desugaring in D8 causing
-        // AbstractMethodErrors in some cases once fixed upstream.
     }
 
     /**
@@ -340,10 +334,9 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
         mTileGroupDelegate = new NewTabPageTileGroupDelegate(
                 activity, profile, navigationDelegate, snackbarManager);
 
-        mResources = activity.getResources();
-        mTitle = activity.getResources().getString(R.string.button_new_tab);
-        mBackgroundColor =
-                ApiCompatibilityUtils.getColor(activity.getResources(), R.color.default_bg_color);
+        mContext = activity;
+        mTitle = activity.getResources().getString(R.string.new_tab_title);
+        mBackgroundColor = MaterialColors.getColor(mContext, R.attr.default_bg_color_dynamic, TAG);
         mIsTablet = isTablet;
         TemplateUrlServiceFactory.get().addObserver(this);
 
@@ -849,9 +842,8 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
     public @ColorInt int getToolbarTextBoxBackgroundColor(@ColorInt int defaultColor) {
         if (isLocationBarShownInNTP()) {
             return isLocationBarScrolledToTopInNtp()
-                    ? ApiCompatibilityUtils.getColor(
-                            mResources, R.color.toolbar_text_box_background)
-                    : ChromeColors.getPrimaryBackgroundColor(mResources, false);
+                    ? ChromeColors.getSurfaceColor(mContext, R.dimen.toolbar_text_box_elevation)
+                    : ChromeColors.getPrimaryBackgroundColor(mContext, false);
         }
         return defaultColor;
     }

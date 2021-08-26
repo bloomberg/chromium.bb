@@ -8,6 +8,8 @@
 #ifndef SKSL_DSLWRITER
 #define SKSL_DSLWRITER
 
+#include "include/core/SkSpan.h"
+#include "include/core/SkStringView.h"
 #include "include/private/SkSLModifiers.h"
 #include "include/private/SkSLStatement.h"
 #include "include/sksl/DSLExpression.h"
@@ -18,7 +20,7 @@
 #include "src/sksl/ir/SkSLExpressionStatement.h"
 #include "src/sksl/ir/SkSLProgram.h"
 #if !defined(SKSL_STANDALONE) && SK_SUPPORT_GPU
-#include "src/gpu/glsl/GrGLSLFragmentProcessor.h"
+#include "src/gpu/GrFragmentProcessor.h"
 #endif // !defined(SKSL_STANDALONE) && SK_SUPPORT_GPU
 #include <list>
 #include <stack>
@@ -69,6 +71,11 @@ public:
      * Returns the Context used by DSL operations in the current thread.
      */
     static const SkSL::Context& Context();
+
+    /**
+     * Returns the Settings used by DSL operations in the current thread.
+     */
+    static SkSL::ProgramSettings& Settings();
 
     /**
      * Returns the collection to which DSL program elements in this thread should be appended.
@@ -144,7 +151,7 @@ public:
      * Returns the fragment processor for which DSL output is being generated for the current
      * thread.
      */
-    static GrGLSLFragmentProcessor* CurrentProcessor() {
+    static GrFragmentProcessor::ProgramImpl* CurrentProcessor() {
         SkASSERTF(!Instance().fStack.empty(), "This feature requires a FragmentProcessor");
         return Instance().fStack.top().fProcessor;
     }
@@ -152,7 +159,7 @@ public:
     /**
      * Returns the EmitArgs for fragment processor output in the current thread.
      */
-    static GrGLSLFragmentProcessor::EmitArgs* CurrentEmitArgs() {
+    static GrFragmentProcessor::ProgramImpl::EmitArgs* CurrentEmitArgs() {
         SkASSERTF(!Instance().fStack.empty(), "This feature requires a FragmentProcessor");
         return Instance().fStack.top().fEmitArgs;
     }
@@ -164,8 +171,8 @@ public:
     /**
      * Pushes a new processor / emitArgs pair for the current thread.
      */
-    static void StartFragmentProcessor(GrGLSLFragmentProcessor* processor,
-                                       GrGLSLFragmentProcessor::EmitArgs* emitArgs);
+    static void StartFragmentProcessor(GrFragmentProcessor::ProgramImpl* processor,
+                                       GrFragmentProcessor::ProgramImpl::EmitArgs* emitArgs);
 
     /**
      * Pops the processor / emitArgs pair associated with the current thread.
@@ -190,8 +197,7 @@ public:
 
     static DSLPossibleExpression Coerce(std::unique_ptr<Expression> expr, const SkSL::Type& type);
 
-    static DSLPossibleExpression Construct(const SkSL::Type& type,
-                                           SkTArray<DSLExpression> rawArgs);
+    static DSLPossibleExpression Construct(const SkSL::Type& type, SkSpan<DSLExpression> rawArgs);
 
     static std::unique_ptr<Expression> ConvertBinary(std::unique_ptr<Expression> left, Operator op,
                                                      std::unique_ptr<Expression> right);
@@ -213,10 +219,14 @@ public:
                                               bool isStatic);
 
     /**
-     * Sets the ErrorHandler associated with the current thread. This object will be notified when
-     * any DSL errors occur. With a null ErrorHandler (the default), any errors will be dumped to
-     * stderr and a fatal exception will be generated.
+     * Returns the ErrorHandler associated with the current thread. This object will be notified
+     * when any DSL errors occur. With a null ErrorHandler (the default), any errors will be dumped
+     * to stderr and a fatal exception will be generated.
      */
+    static ErrorHandler* GetErrorHandler() {
+        return Instance().fErrorHandler;
+    }
+
     static void SetErrorHandler(ErrorHandler* errorHandler) {
         Instance().fErrorHandler = errorHandler;
     }
@@ -225,7 +235,7 @@ public:
      * Notifies the current ErrorHandler that a DSL error has occurred. With a null ErrorHandler
      * (the default), any errors will be dumped to stderr and a fatal exception will be generated.
      */
-    static void ReportError(const char* msg, PositionInfo* info = nullptr);
+    static void ReportError(const char* msg, PositionInfo info = PositionInfo::Capture());
 
     /**
      * Returns whether name mangling is enabled. Mangling is important for the DSL because its
@@ -260,7 +270,7 @@ public:
     /**
      * Forwards any pending Compiler errors to the DSL ErrorHandler.
      */
-    static void ReportErrors(PositionInfo pos = PositionInfo());
+    static void ReportErrors(PositionInfo pos = PositionInfo::Capture());
 
     static DSLWriter& Instance();
 
@@ -282,8 +292,8 @@ private:
     bool fEncounteredErrors = false;
 #if !defined(SKSL_STANDALONE) && SK_SUPPORT_GPU
     struct StackFrame {
-        GrGLSLFragmentProcessor* fProcessor;
-        GrGLSLFragmentProcessor::EmitArgs* fEmitArgs;
+        GrFragmentProcessor::ProgramImpl* fProcessor;
+        GrFragmentProcessor::ProgramImpl::EmitArgs* fEmitArgs;
         SkSL::StatementArray fSavedDeclarations;
     };
     std::stack<StackFrame, std::list<StackFrame>> fStack;

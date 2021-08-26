@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: git-squash-branch
-.\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 08/10/2020
+.\"    Author: [FIXME: author] [see http://www.docbook.org/tdg5/en/html/author]
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 07/01/2021
 .\"    Manual: Chromium depot_tools Manual
-.\"    Source: depot_tools 8c3f7227
+.\"    Source: depot_tools 906b5026
 .\"  Language: English
 .\"
-.TH "GIT\-SQUASH\-BRANCH" "1" "08/10/2020" "depot_tools 8c3f7227" "Chromium depot_tools Manual"
+.TH "GIT\-SQUASH\-BRANCH" "1" "07/01/2021" "depot_tools 906b5026" "Chromium depot_tools Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -37,9 +37,9 @@ git-squash-branch \- Takes all commits in a single branch and replaces them with
 .sp
 .SH "DESCRIPTION"
 .sp
-git squash\-branch is a simple helper command\&. It takes all the commits on the current branch from the \fImerge_base\fR to HEAD, and reduces them to a single commit\&. The new commit will contain a summary of all the commits which were squashed, preceded by a header message indicating that it\(cqs the result of a squash (or the message you pass on the command line\&.)\&.
+\fBgit squash\-branch\fR is a simple helper command\&. It takes all the commits on the current branch from the \fImerge_base\fR to HEAD, and reduces them to a single commit\&. The new commit will contain a summary of all the commits which were squashed, preceded by a header message indicating that it\(cqs the result of a squash (or the message you pass on the command line\&.)\&.
 .sp
-Squashing branches is useful when trying to rebase\-update over branches which were pushed to their upstream (or committed by the \fICommit Queue\fR), and then conflicting changes landed in upstream on top of the push/commit\&. If you know that your branch was committed but \fBgit-rebase-update\fR(1) isn\(cqt able to automatically clean it, you can squash the troublesome branch before git rebase\-update, and then when git rebase\-update presents the conflict, you can verify that the conflict diff is what you expected (and then skip it with git rebase \-\-skip)\&.
+Squashing branches is useful when trying to rebase\-update over branches which were pushed to their upstream (or committed by the \fICommit Queue\fR), and then conflicting changes landed in upstream on top of the push/commit\&. If you know that your branch was committed but \fBgit-rebase-update\fR(1) isn\(cqt able to automatically clean it, you can squash the troublesome branch before \fBgit rebase\-update\fR, and then when \fBgit rebase\-update\fR presents the conflict, you can verify that the conflict diff is what you expected (and then skip it with \fBgit rebase \-\-skip\fR)\&.
 .SH "OPTIONS"
 .PP
 \-m <message>, \-\-message=<message>
@@ -55,46 +55,47 @@ Optional message to use for the first line of the squashed commit\&. If omitted,
 .\}
 .nf
 \fB$ git map\fR
-* \fBd0fb9c7	\fR (HEAD \-> frozen_branch) 2014\-04\-10 ~ FREEZE\&.unindexed
-* \fBf48f415	\fR 2014\-04\-10 ~ modfile
-* \fB4c5b9c0	\fR 2014\-04\-10 ~ a deleted file
-* \fBf7ce1e4	\fR (\fBfixit\fR) 2014\-04\-10 ~ Add neat feature\fB    <(frozen_branch)\fR
-* \fB3726937	\fR 2014\-04\-10 ~ Epic README update
-| * \fB14db2e5	\fR (\fBcool_feature\fR) 2014\-04\-10 ~ Respond to CL comments
-| | * \fBee3f972	\fR (\fBsubfeature\fR) 2014\-04\-10 ~ integrate with CoolService
-| | * \fB4f9f508	\fR 2014\-04\-10 ~ slick commenting action
+* \fBd0fb9c7283\fR	\fB(HEAD \-> frozen_branch\fR\fB) \fR2014\-04\-10 ~ FREEZE\&.unindexed
+* \fBf48f415e0f\fR	2014\-04\-10 ~ modfile
+* \fB4c5b9c0afd\fR	2014\-04\-10 ~ a deleted file
+* \fBf7ce1e4b36\fR	\fB(fixit\fR\fB) \fR2014\-04\-10 ~ Add neat feature
+* \fB3726937ae6\fR	2014\-04\-10 ~ Epic README update
+| * \fB14db2e5a60\fR	\fB(cool_feature\fR\fB) \fR2014\-04\-10 ~ Respond to CL comments
+| | * \fBee3f972810\fR	\fB(subfeature\fR\fB) \fR2014\-04\-10 ~ integrate with CoolService
+| | * \fB4f9f5082c8\fR	2014\-04\-10 ~ slick commenting action
 | |/
-| * \fB7d84f85	\fR 2014\-04\-10 ~ another improvement\fB    <(subfeature)\fR
-| * \fB27abea4	\fR (\fBspleen_tag\fR) 2014\-04\-10 ~ Refactor spleen
-| * \fBd8abe73	\fR 2014\-04\-10 ~ Add widget
+| * \fB7d84f8580a\fR	2014\-04\-10 ~ another improvement    <(\fBsubfeature\fR)
+| * \fB27abea4b40\fR	\fB(spleen_tag\fR\fB) \fR2014\-04\-10 ~ Refactor spleen
+| * \fBd8abe739e3\fR	2014\-04\-10 ~ Add widget
 |/
-* \fBbeec6f4	\fR (origin/master, origin/HEAD) 2014\-04\-10 ~ Make ReflectorImpl use mailboxes\fB    <(cool_feature, fixit)\fR
-* \fB41290e0	\fR 2014\-04\-10 ~ don\*(Aqt use glibc\-specific execinfo\&.h on uclibc builds
-* \fBa76fde7	\fR 2014\-04\-10 ~ [fsp] Add requestUnmount() method together with the request manager\&.
-* \fB9de7a71	\fR 2014\-04\-10 ~ linux_aura: Use system configuration for middle clicking the titlebar\&.
-* \fB073b0c2	\fR 2014\-04\-10 ~ ContentView\->ContentViewCore in ContentViewRenderView
-* \fB2250f53	\fR 2014\-04\-10 ~ ozone: evdev: Filter devices by path
-* \fB33a7a74	\fR 2014\-04\-10 ~ Always output seccomp error messages to stderr
+* \fBbeec6f4746\fR	\fB(origin/main\fR\fB, origin/HEAD\fR\fB) \fR2014\-04\-10 ~ Make ReflectorImpl use mailboxes    <(\fBcool_feature, fixit\fR)
+* \fB41290e02b7\fR	2014\-04\-10 ~ don\*(Aqt use glibc\-specific execinfo\&.h on uclibc builds
+* \fBa76fde7b7b\fR	2014\-04\-10 ~ [fsp] Add requestUnmount() method together with the request manager\&.
+* \fB9de7a713b3\fR	2014\-04\-10 ~ linux_aura: Use system configuration for middle clicking the titlebar\&.
+* \fB073b0c203a\fR	2014\-04\-10 ~ ContentView\->ContentViewCore in ContentViewRenderView
+* \fB2250f532d7\fR	2014\-04\-10 ~ ozone: evdev: Filter devices by path
+* \fB33a7a742b7\fR	2014\-04\-10 ~ Always output seccomp error messages to stderr
+
 \fB$ git squash\-branch \-m \*(Aqcool squash demo\*(Aq\fR
 \fB$ git map\fR
-* \fB98e69e8	\fR (HEAD \-> frozen_branch) 2014\-04\-10 ~ cool squash demo
-* \fBf7ce1e4	\fR (\fBfixit\fR) 2014\-04\-10 ~ Add neat feature\fB    <(frozen_branch)\fR
-* \fB3726937	\fR 2014\-04\-10 ~ Epic README update
-| * \fB14db2e5	\fR (\fBcool_feature\fR) 2014\-04\-10 ~ Respond to CL comments
-| | * \fBee3f972	\fR (\fBsubfeature\fR) 2014\-04\-10 ~ integrate with CoolService
-| | * \fB4f9f508	\fR 2014\-04\-10 ~ slick commenting action
+* \fB98e69e80b9\fR	\fB(HEAD \-> frozen_branch\fR\fB) \fR2014\-04\-10 ~ cool squash demo
+* \fBf7ce1e4b36\fR	\fB(fixit\fR\fB) \fR2014\-04\-10 ~ Add neat feature
+* \fB3726937ae6\fR	2014\-04\-10 ~ Epic README update
+| * \fB14db2e5a60\fR	\fB(cool_feature\fR\fB) \fR2014\-04\-10 ~ Respond to CL comments
+| | * \fBee3f972810\fR	\fB(subfeature\fR\fB) \fR2014\-04\-10 ~ integrate with CoolService
+| | * \fB4f9f5082c8\fR	2014\-04\-10 ~ slick commenting action
 | |/
-| * \fB7d84f85	\fR 2014\-04\-10 ~ another improvement\fB    <(subfeature)\fR
-| * \fB27abea4	\fR (\fBspleen_tag\fR) 2014\-04\-10 ~ Refactor spleen
-| * \fBd8abe73	\fR 2014\-04\-10 ~ Add widget
+| * \fB7d84f8580a\fR	2014\-04\-10 ~ another improvement    <(\fBsubfeature\fR)
+| * \fB27abea4b40\fR	\fB(spleen_tag\fR\fB) \fR2014\-04\-10 ~ Refactor spleen
+| * \fBd8abe739e3\fR	2014\-04\-10 ~ Add widget
 |/
-* \fBbeec6f4	\fR (origin/master, origin/HEAD) 2014\-04\-10 ~ Make ReflectorImpl use mailboxes\fB    <(cool_feature, fixit)\fR
-* \fB41290e0	\fR 2014\-04\-10 ~ don\*(Aqt use glibc\-specific execinfo\&.h on uclibc builds
-* \fBa76fde7	\fR 2014\-04\-10 ~ [fsp] Add requestUnmount() method together with the request manager\&.
-* \fB9de7a71	\fR 2014\-04\-10 ~ linux_aura: Use system configuration for middle clicking the titlebar\&.
-* \fB073b0c2	\fR 2014\-04\-10 ~ ContentView\->ContentViewCore in ContentViewRenderView
-* \fB2250f53	\fR 2014\-04\-10 ~ ozone: evdev: Filter devices by path
-* \fB33a7a74	\fR 2014\-04\-10 ~ Always output seccomp error messages to stderr
+* \fBbeec6f4746\fR	\fB(origin/main\fR\fB, origin/HEAD\fR\fB) \fR2014\-04\-10 ~ Make ReflectorImpl use mailboxes    <(\fBfixit, cool_feature\fR)
+* \fB41290e02b7\fR	2014\-04\-10 ~ don\*(Aqt use glibc\-specific execinfo\&.h on uclibc builds
+* \fBa76fde7b7b\fR	2014\-04\-10 ~ [fsp] Add requestUnmount() method together with the request manager\&.
+* \fB9de7a713b3\fR	2014\-04\-10 ~ linux_aura: Use system configuration for middle clicking the titlebar\&.
+* \fB073b0c203a\fR	2014\-04\-10 ~ ContentView\->ContentViewCore in ContentViewRenderView
+* \fB2250f532d7\fR	2014\-04\-10 ~ ozone: evdev: Filter devices by path
+* \fB33a7a742b7\fR	2014\-04\-10 ~ Always output seccomp error messages to stderr
 .fi
 .if n \{\
 .RE

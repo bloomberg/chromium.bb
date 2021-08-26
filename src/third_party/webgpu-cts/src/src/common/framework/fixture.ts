@@ -12,6 +12,11 @@ export type TestParams = {
   readonly [k: string]: JSONWithUndefined;
 };
 
+type DestroyableObject =
+  | { destroy(): void }
+  | { close(): void }
+  | { getExtension(extensionName: 'WEBGL_lose_context'): WEBGL_lose_context };
+
 /**
  * A Fixture is a class used to instantiate each test sub/case at run time.
  * A new instance of the Fixture is created for every single test subcase
@@ -27,6 +32,7 @@ export class Fixture {
   protected rec: TestCaseRecorder;
   private eventualExpectations: Array<Promise<unknown>> = [];
   private numOutstandingAsyncExpectations = 0;
+  private objectsToCleanUp: DestroyableObject[] = [];
 
   /** @internal */
   constructor(rec: TestCaseRecorder, params: TestParams) {
@@ -68,6 +74,18 @@ export class Fixture {
         this.rec.threw(ex);
       }
     }
+
+    // And clean up any objects now that they're done being used.
+    for (const o of this.objectsToCleanUp) {
+      if ('getExtension' in o) {
+        const WEBGL_lose_context = o.getExtension('WEBGL_lose_context');
+        if (WEBGL_lose_context) WEBGL_lose_context.loseContext();
+      } else if ('destroy' in o) {
+        o.destroy();
+      } else {
+        o.close();
+      }
+    }
   }
 
   /** @internal */
@@ -78,6 +96,31 @@ export class Fixture {
   /** @internal */
   doFinalize(): Promise<void> {
     return this.finalize();
+  }
+
+  /**
+   * Tracks an object to be cleaned up after the test finishes.
+   *
+   * TODO: Use this in more places. (Will be easier once .destroy() is allowed on invalid objects.)
+   */
+  trackForCleanup<T extends DestroyableObject>(o: T): T {
+    this.objectsToCleanUp.push(o);
+    return o;
+  }
+
+  /** Tracks an object, if it's destroyable, to be cleaned up after the test finishes. */
+  tryTrackForCleanup<T>(o: T): T {
+    if (typeof o === 'object' && o !== null) {
+      if (
+        'destroy' in o ||
+        'close' in o ||
+        o instanceof WebGLRenderingContext ||
+        o instanceof WebGL2RenderingContext
+      ) {
+        this.objectsToCleanUp.push((o as unknown) as DestroyableObject);
+      }
+    }
+    return o;
   }
 
   /** Log a debug message. */

@@ -17,6 +17,16 @@
 #include "components/sync/base/model_type.h"
 #include "components/sync/engine/commit_and_get_updates_types.h"
 
+namespace sync_pb {
+class DataTypeProgressMarker;
+class EntitySpecifics;
+class SyncEntity;
+class ClientToServerMessage;
+class ClientToServerResponse;
+class DataTypeProgressMarker;
+class DataTypeContext;
+}  // namespace sync_pb
+
 namespace syncer {
 
 // A mock server used to test of happy-path update and commit logic.

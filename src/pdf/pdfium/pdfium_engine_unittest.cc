@@ -6,8 +6,12 @@
 
 #include <stdint.h>
 
+#include <utility>
+
+#include "base/callback.h"
 #include "base/hash/md5.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/gmock_move_support.h"
 #include "base/test/gtest_util.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
@@ -18,13 +22,17 @@
 #include "pdf/pdf_features.h"
 #include "pdf/pdfium/pdfium_page.h"
 #include "pdf/pdfium/pdfium_test_base.h"
+#include "pdf/ppapi_migration/callback.h"
 #include "pdf/test/test_client.h"
 #include "pdf/test/test_document_loader.h"
 #include "pdf/ui/thumbnail.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/common/input/web_mouse_event.h"
+#include "third_party/blink/public/common/input/web_pointer_properties.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -62,6 +70,13 @@ class MockTestClient : public TestClient {
               (const DocumentLayout& layout),
               (override));
   MOCK_METHOD(void, ScrollToPage, (int page), (override));
+  MOCK_METHOD(void,
+              ScheduleTaskOnMainThread,
+              (const base::Location& from_here,
+               ResultCallback callback,
+               int32_t result,
+               base::TimeDelta delay),
+              (override));
 };
 
 }  // namespace
@@ -95,6 +110,7 @@ class PDFiumEngineTest : public PDFiumTestBase {
     if (engine.GetNumberOfPages() == 0) {
       // This is not necessarily a test failure; it just indicates incremental
       // loading is not occurring.
+      engine.PluginSizeUpdated({});
       loaded_incrementally = false;
     } else {
       // Note: Plugin size chosen so all pages of the document are visible. The
@@ -107,9 +123,7 @@ class PDFiumEngineTest : public PDFiumTestBase {
     }
 
     // Verify that loading can finish.
-    while (initialize_result.document_loader->SimulateLoadData(UINT32_MAX))
-      continue;
-
+    initialize_result.FinishLoading();
     EXPECT_EQ(engine.GetNumberOfPages(), CountAvailablePages(engine));
 
     return loaded_incrementally;
@@ -429,6 +443,83 @@ TEST_F(PDFiumEngineTest, GetBadPdfVersion) {
   EXPECT_EQ(PdfVersion::kUnknown, doc_metadata.version);
 }
 
+TEST_F(PDFiumEngineTest, PluginSizeUpdatedBeforeLoad) {
+  NiceMock<MockTestClient> client;
+  InitializeEngineResult initialize_result = InitializeEngineWithoutLoading(
+      &client, FILE_PATH_LITERAL("rectangles_multi_pages.pdf"));
+  ASSERT_TRUE(initialize_result.engine);
+  PDFiumEngine& engine = *initialize_result.engine;
+
+  engine.PluginSizeUpdated({});
+  initialize_result.FinishLoading();
+
+  EXPECT_EQ(engine.GetNumberOfPages(), CountAvailablePages(engine));
+}
+
+TEST_F(PDFiumEngineTest, PluginSizeUpdatedDuringLoad) {
+  NiceMock<MockTestClient> client;
+  InitializeEngineResult initialize_result = InitializeEngineWithoutLoading(
+      &client, FILE_PATH_LITERAL("rectangles_multi_pages.pdf"));
+  ASSERT_TRUE(initialize_result.engine);
+  PDFiumEngine& engine = *initialize_result.engine;
+
+  EXPECT_TRUE(initialize_result.document_loader->SimulateLoadData(1024));
+  engine.PluginSizeUpdated({});
+  initialize_result.FinishLoading();
+
+  EXPECT_EQ(engine.GetNumberOfPages(), CountAvailablePages(engine));
+}
+
+TEST_F(PDFiumEngineTest, PluginSizeUpdatedAfterLoad) {
+  NiceMock<MockTestClient> client;
+  InitializeEngineResult initialize_result = InitializeEngineWithoutLoading(
+      &client, FILE_PATH_LITERAL("rectangles_multi_pages.pdf"));
+  ASSERT_TRUE(initialize_result.engine);
+  PDFiumEngine& engine = *initialize_result.engine;
+
+  ResultCallback callback;
+  EXPECT_CALL(client, ScheduleTaskOnMainThread).WillOnce(MoveArg<1>(&callback));
+
+  initialize_result.FinishLoading();
+  engine.PluginSizeUpdated({});
+
+  ASSERT_TRUE(callback);
+  std::move(callback).Run(0);
+
+  EXPECT_EQ(engine.GetNumberOfPages(), CountAvailablePages(engine));
+}
+
+TEST_F(PDFiumEngineTest, OnLeftMouseDownBeforePluginSizeUpdated) {
+  NiceMock<MockTestClient> client;
+  InitializeEngineResult initialize_result = InitializeEngineWithoutLoading(
+      &client, FILE_PATH_LITERAL("rectangles_multi_pages.pdf"));
+  ASSERT_TRUE(initialize_result.engine);
+  initialize_result.FinishLoading();
+  PDFiumEngine& engine = *initialize_result.engine;
+
+  EXPECT_TRUE(engine.HandleInputEvent(blink::WebMouseEvent(
+      blink::WebInputEvent::Type::kMouseDown, {0, 0}, {100, 200},
+      blink::WebPointerProperties::Button::kLeft, /*click_count_param=*/1,
+      blink::WebInputEvent::Modifiers::kLeftButtonDown,
+      blink::WebInputEvent::GetStaticTimeStampForTests())));
+}
+
+TEST_F(PDFiumEngineTest, OnLeftMouseDownAfterPluginSizeUpdated) {
+  NiceMock<MockTestClient> client;
+  InitializeEngineResult initialize_result = InitializeEngineWithoutLoading(
+      &client, FILE_PATH_LITERAL("rectangles_multi_pages.pdf"));
+  ASSERT_TRUE(initialize_result.engine);
+  initialize_result.FinishLoading();
+  PDFiumEngine& engine = *initialize_result.engine;
+
+  engine.PluginSizeUpdated({300, 400});
+  EXPECT_TRUE(engine.HandleInputEvent(blink::WebMouseEvent(
+      blink::WebInputEvent::Type::kMouseDown, {0, 0}, {100, 200},
+      blink::WebPointerProperties::Button::kLeft, /*click_count_param=*/1,
+      blink::WebInputEvent::Modifiers::kLeftButtonDown,
+      blink::WebInputEvent::GetStaticTimeStampForTests())));
+}
+
 TEST_F(PDFiumEngineTest, IncrementalLoadingFeatureDefault) {
   EXPECT_FALSE(TryLoadIncrementally());
 }
@@ -503,8 +594,7 @@ TEST_F(PDFiumEngineTest, RequestThumbnailLinearized) {
   // Finish loading the document. `SendThumbnailCallback` should be run for the
   // last page.
   EXPECT_CALL(last_loaded, Run);
-  while (initialize_result.document_loader->SimulateLoadData(UINT32_MAX))
-    continue;
+  initialize_result.FinishLoading();
 }
 
 using PDFiumEngineDeathTest = PDFiumEngineTest;

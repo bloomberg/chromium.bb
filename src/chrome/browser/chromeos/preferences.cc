@@ -29,6 +29,8 @@
 #include "chrome/browser/ash/child_accounts/parent_access_code/parent_access_service.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/drive/file_system_util.h"
+#include "chrome/browser/ash/input_method/input_method_persistence.h"
+#include "chrome/browser/ash/input_method/input_method_syncer.h"
 #include "chrome/browser/ash/login/login_pref_names.h"
 #include "chrome/browser/ash/login/session/user_session_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
@@ -41,8 +43,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/input_method/input_method_persistence.h"
-#include "chrome/browser/chromeos/input_method/input_method_syncer.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/ui/ash/system_tray_client_impl.h"
@@ -153,7 +153,7 @@ void Preferences::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   // Some classes register their own prefs.
   TurnSyncOnHelper::RegisterProfilePrefs(registry);
-  input_method::InputMethodSyncer::RegisterProfilePrefs(registry);
+  ash::input_method::InputMethodSyncer::RegisterProfilePrefs(registry);
   crosapi::browser_util::RegisterProfilePrefs(registry);
 
   std::string hardware_keyboard_id;
@@ -400,19 +400,24 @@ void Preferences::RegisterProfilePrefs(
 
   registry->RegisterBooleanPref(::prefs::kLanguageImeMenuActivated, false);
 
-  registry->RegisterInt64Pref(::prefs::kHatsLastInteractionTimestamp,
-                              base::Time().ToInternalValue());
+  registry->RegisterInt64Pref(::prefs::kHatsLastInteractionTimestamp, 0);
 
-  registry->RegisterInt64Pref(::prefs::kHatsSurveyCycleEndTimestamp,
-                              base::Time().ToInternalValue());
+  registry->RegisterInt64Pref(::prefs::kHatsSurveyCycleEndTimestamp, 0);
 
   registry->RegisterBooleanPref(::prefs::kHatsDeviceIsSelected, false);
 
-  registry->RegisterInt64Pref(::prefs::kHatsOnboardingSurveyCycleEndTs,
-                              base::Time().ToInternalValue());
+  registry->RegisterInt64Pref(::prefs::kHatsOnboardingSurveyCycleEndTs, 0);
 
   registry->RegisterBooleanPref(::prefs::kHatsOnboardingDeviceIsSelected,
                                 false);
+
+  registry->RegisterInt64Pref(::prefs::kHatsSmartLockSurveyCycleEndTs, 0);
+
+  registry->RegisterBooleanPref(::prefs::kHatsSmartLockDeviceIsSelected, false);
+
+  registry->RegisterInt64Pref(::prefs::kHatsUnlockSurveyCycleEndTs, 0);
+
+  registry->RegisterBooleanPref(::prefs::kHatsUnlockDeviceIsSelected, false);
 
   registry->RegisterBooleanPref(::prefs::kPinUnlockFeatureNotificationShown,
                                 false);
@@ -429,13 +434,6 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterBooleanPref(::prefs::kShowArcSettingsOnSessionStart, false);
   registry->RegisterBooleanPref(::prefs::kShowSyncSettingsOnSessionStart,
                                 false);
-
-  // OOBE and login related prefs.
-  registry->RegisterStringPref(chromeos::prefs::kLastLoginInputMethod,
-                               std::string(),
-                               PrefRegistry::NO_REGISTRATION_FLAGS);
-  registry->RegisterTimePref(chromeos::prefs::kOobeOnboardingTime,
-                             base::Time());
 
   // Text-to-speech prefs.
   registry->RegisterDictionaryPref(
@@ -485,6 +483,9 @@ void Preferences::RegisterProfilePrefs(
 
   registry->RegisterDictionaryPref(
       chromeos::prefs::kLauncherSearchNormalizerParameters);
+
+  registry->RegisterListPref(
+      ::prefs::kRestrictedManagedGuestSessionExtensionCleanupExemptList);
 }
 
 void Preferences::InitUserPrefs(sync_preferences::PrefServiceSyncable* prefs) {
@@ -600,7 +601,7 @@ void Preferences::Init(Profile* profile, const user_manager::User* user) {
   if (user_is_primary_ && !login_input_method_used.empty()) {
     // Persist input method when transitioning from Login screen into the
     // session.
-    input_method::InputMethodPersistence::SetUserLastLoginInputMethod(
+    ash::input_method::InputMethodPersistence::SetUserLastLoginInputMethod(
         login_input_method_used, input_method::InputMethodManager::Get(),
         profile);
   }
@@ -616,7 +617,7 @@ void Preferences::Init(Profile* profile, const user_manager::User* user) {
     input_method_manager_->SetState(ime_state_);
 
   input_method_syncer_ =
-      std::make_unique<input_method::InputMethodSyncer>(prefs, ime_state_);
+      std::make_unique<ash::input_method::InputMethodSyncer>(prefs, ime_state_);
   input_method_syncer_->Initialize();
 
   // If a guest is logged in, initialize the prefs as if this is the first
@@ -640,7 +641,7 @@ void Preferences::InitUserPrefsForTesting(
   InitUserPrefs(prefs);
 
   input_method_syncer_ =
-      std::make_unique<input_method::InputMethodSyncer>(prefs, ime_state_);
+      std::make_unique<ash::input_method::InputMethodSyncer>(prefs, ime_state_);
   input_method_syncer_->Initialize();
 }
 
@@ -1069,7 +1070,7 @@ void Preferences::OnIsSyncingChanged() {
 void Preferences::ForceNaturalScrollDefault() {
   DVLOG(1) << "ForceNaturalScrollDefault";
   // Natural scroll is a priority pref.
-  bool is_syncing = chromeos::features::IsSplitSettingsSyncEnabled()
+  bool is_syncing = chromeos::features::IsSyncSettingsCategorizationEnabled()
                         ? prefs_->AreOsPriorityPrefsSyncing()
                         : prefs_->IsPrioritySyncing();
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(

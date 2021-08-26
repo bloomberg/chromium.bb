@@ -208,6 +208,7 @@ extern const char kPreinstalledAppsInstallState[];
 extern const char kHideWebStoreIcon[];
 #if defined(OS_CHROMEOS)
 extern const char kAttestationExtensionAllowlist[];
+extern const char kPrintingAPIExtensionsAllowlist[];
 #endif
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 extern const char kAccountManagerNumTimesMigrationRanSuccessfully[];
@@ -281,6 +282,10 @@ extern const char kHatsSurveyCycleEndTimestamp[];
 extern const char kHatsDeviceIsSelected[];
 extern const char kHatsOnboardingSurveyCycleEndTs[];
 extern const char kHatsOnboardingDeviceIsSelected[];
+extern const char kHatsUnlockDeviceIsSelected[];
+extern const char kHatsUnlockSurveyCycleEndTs[];
+extern const char kHatsSmartLockDeviceIsSelected[];
+extern const char kHatsSmartLockSurveyCycleEndTs[];
 extern const char kEolStatus[];
 extern const char kEndOfLifeDate[];
 extern const char kEolNotificationDismissed[];
@@ -341,6 +346,7 @@ extern const char kUpdateRequiredTimerStartTime[];
 extern const char kUpdateRequiredWarningPeriod[];
 extern const char kSystemProxyUserTrafficHostAndPort[];
 extern const char kEduCoexistenceArcMigrationCompleted[];
+extern const char kRestrictedManagedGuestSessionExtensionCleanupExemptList[];
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #if defined(OS_CHROMEOS)
 extern const char kExternalStorageDisabled[];
@@ -422,13 +428,11 @@ extern const char kProfileName[];
 extern const char kProfileUsingDefaultAvatar[];
 extern const char kProfileUsingGAIAAvatar[];
 extern const char kSupervisedUserId[];
-extern const char kUserAcceptedAccountManagement[];
 
 extern const char kProfileAvatarTutorialShown[];
 
 extern const char kInvertNotificationShown[];
 
-extern const char kForceEnablePrivetPrinting[];
 extern const char kPrinterTypeDenyList[];
 extern const char kPrintingAllowedBackgroundGraphicsModes[];
 extern const char kPrintingBackgroundGraphicsDefault[];
@@ -437,6 +441,14 @@ extern const char kPrintingEnabled[];
 extern const char kPrintHeaderFooter[];
 extern const char kPrintPreviewDisabled[];
 extern const char kPrintPreviewDefaultDestinationSelectionRules[];
+
+#if defined(OS_WIN) || defined(OS_MAC)
+extern const char kPrintPdfAsImageAvailability[];
+#endif
+
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+extern const char kPrintRasterizePdfDpi[];
+#endif
 
 #if defined(OS_WIN) && BUILDFLAG(ENABLE_PRINTING)
 extern const char kPrintRasterizationMode[];
@@ -465,7 +477,6 @@ extern const char kPrintingPinDefault[];
 extern const char kPrintingSendUsernameAndFilenameEnabled[];
 extern const char kPrintingMaxSheetsAllowed[];
 extern const char kPrintJobHistoryExpirationPeriod[];
-extern const char kPrintingAPIExtensionsAllowlist[];
 extern const char kDeletePrintJobHistoryAllowed[];
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -598,9 +609,9 @@ extern const char kShutdownNumProcessesSlow[];
 extern const char kRestartLastSessionOnShutdown[];
 #if !defined(OS_ANDROID)
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
-extern const char kPromotionalTabsEnabled[];
 extern const char kCommandLineFlagSecurityWarningsEnabled[];
 #endif
+extern const char kPromotionalTabsEnabled[];
 extern const char kSuppressUnsupportedOSWarning[];
 extern const char kWasRestarted[];
 #endif  // !defined(OS_ANDROID)
@@ -682,7 +693,7 @@ extern const char kDefaultVideoCaptureDevice[];
 extern const char kMediaDeviceIdSalt[];
 extern const char kMediaStorageIdSalt[];
 #if defined(OS_WIN)
-extern const char kMediaCdmOrigin[];
+extern const char kMediaCdmOriginData[];
 #endif  // defined(OS_WIN)
 
 extern const char kPrintPreviewStickySettings[];
@@ -701,7 +712,6 @@ extern const char kCloudPrintXmppPingTimeout[];
 extern const char kCloudPrintPrinters[];
 extern const char kCloudPrintSubmitEnabled[];
 extern const char kCloudPrintUserSettings[];
-extern const char kCloudPrintDeprecationWarningsSuppressed[];
 
 extern const char kMaxConnectionsPerProxy[];
 
@@ -710,6 +720,10 @@ extern const char kAudioCaptureAllowedUrls[];
 extern const char kVideoCaptureAllowed[];
 extern const char kVideoCaptureAllowedUrls[];
 extern const char kScreenCaptureAllowed[];
+extern const char kScreenCaptureAllowedByOrigins[];
+extern const char kWindowCaptureAllowedByOrigins[];
+extern const char kTabCaptureAllowedByOrigins[];
+extern const char kSameOriginTabCaptureAllowedByOrigins[];
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 extern const char kDemoModeConfig[];
@@ -720,6 +734,8 @@ extern const char kHardwareKeyboardLayout[];
 extern const char kShouldAutoEnroll[];
 extern const char kAutoEnrollmentPowerLimit[];
 extern const char kShouldRetrieveDeviceState[];
+extern const char kEnrollmentPsmResult[];
+extern const char kEnrollmentPsmDeterminationTime[];
 extern const char kDeviceActivityTimes[];
 extern const char kAppActivityTimes[];
 extern const char kUserActivityTimes[];
@@ -806,13 +822,12 @@ extern const char kBasicAuthOverHttpEnabled[];
 extern const char kAuthNegotiateDelegateByKdcPolicy[];
 #endif  // defined(OS_LINUX) || defined(OS_MAC) || defined(OS_CHROMEOS)
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
 extern const char kNtlmV2Enabled[];
-#endif  // defined(OS_POSIX)
+#endif  // defined(OS_POSIX) || defined(OS_FUCHSIA)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 extern const char kKerberosEnabled[];
-extern const char kIntegratedWebAuthenticationAllowed[];
 #endif
 
 extern const char kCertRevocationCheckingEnabled[];
@@ -1034,6 +1049,10 @@ extern const char kUnsafelyTreatInsecureOriginAsSecure[];
 extern const char kIsolateOrigins[];
 extern const char kSitePerProcess[];
 
+extern const char kCrossOriginWebAssemblyModuleSharingEnabled[];
+
+extern const char kDisplayCapturePermissionsPolicyEnabled[];
+
 #if !defined(OS_ANDROID)
 extern const char kSharedArrayBufferUnrestrictedAccessAllowed[];
 extern const char kAutoplayAllowed[];
@@ -1154,6 +1173,14 @@ extern const char kDeviceAttributesAllowedForOrigins[];
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 extern const char kDesktopSharingHubEnabled[];
+#endif
+
+#if !defined(OS_ANDROID)
+extern const char kLastWhatsNewVersion[];
+#endif
+
+#if !defined(OS_ANDROID)
+extern const char kLensRegionSearchEnabled[];
 #endif
 
 }  // namespace prefs

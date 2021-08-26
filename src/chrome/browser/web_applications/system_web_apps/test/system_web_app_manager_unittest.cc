@@ -43,7 +43,6 @@
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
-#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/common/chrome_features.h"
 #include "content/public/browser/navigation_handle.h"
@@ -171,9 +170,6 @@ class SystemWebAppManagerTest : public WebAppTest {
         &externally_managed_app_manager(), &controller().registrar(),
         &controller().sync_bridge(), &ui_manager(),
         &controller().os_integration_manager(), &web_app_policy_manager());
-
-    install_manager().Start();
-    install_finalizer().Start();
   }
 
   void TearDown() override {
@@ -250,6 +246,10 @@ class SystemWebAppManagerTest : public WebAppTest {
   void InitRegistrarWithRegistry(const Registry& registry) {
     controller().database_factory().WriteRegistry(registry);
     controller().Init();
+
+    // Must come after registry controller initialization.
+    install_manager().Start();
+    install_finalizer().Start();
   }
 
   void InitRegistrarWithSystemApps(

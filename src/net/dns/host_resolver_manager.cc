@@ -3,21 +3,6 @@
 // found in the LICENSE file.
 
 #include "net/dns/host_resolver_manager.h"
-#include "base/task/thread_pool.h"
-#include "net/dns/host_cache.h"
-#include "net/dns/public/secure_dns_mode.h"
-#include "net/dns/public/secure_dns_policy.h"
-
-#if defined(OS_WIN)
-#include <Winsock2.h>
-#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
-#include <netdb.h>
-#include <netinet/in.h>
-#include <net/if.h>
-#if !defined(OS_ANDROID)
-#include <ifaddrs.h>
-#endif  // !defined(OS_ANDROID)
-#endif  // defined(OS_WIN)
 
 #include <algorithm>
 #include <cmath>
@@ -48,6 +33,7 @@
 #include "base/no_destructor.h"
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -55,6 +41,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
@@ -90,6 +77,8 @@
 #include "net/dns/public/dns_protocol.h"
 #include "net/dns/public/dns_query_type.h"
 #include "net/dns/public/resolve_error_info.h"
+#include "net/dns/public/secure_dns_mode.h"
+#include "net/dns/public/secure_dns_policy.h"
 #include "net/dns/record_parsed.h"
 #include "net/dns/resolve_context.h"
 #include "net/log/net_log.h"
@@ -103,19 +92,28 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "url/scheme_host_port.h"
+#include "url/url_constants.h"
 
 #if BUILDFLAG(ENABLE_MDNS)
 #include "net/dns/mdns_client_impl.h"
 #endif
 
 #if defined(OS_WIN)
+#include <Winsock2.h>
 #include "net/base/winsock_init.h"
 #endif
 
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
+#include <net/if.h>
+#include <netdb.h>
+#include <netinet/in.h>
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
 #include "net/android/network_library.h"
-#endif
+#else  // !defined(OS_ANDROID)
+#include <ifaddrs.h>
+#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_POSIX) || defined(OS_FUCHSIA)
 
 namespace net {
 
@@ -474,6 +472,15 @@ base::Value ToLogStringValue(
   return base::Value(absl::get<HostPortPair>(host).ToString());
 }
 
+// Returns empty string if `host` has no known scheme.
+base::StringPiece GetScheme(
+    const absl::variant<url::SchemeHostPort, std::string>& host) {
+  if (absl::holds_alternative<url::SchemeHostPort>(host))
+    return absl::get<url::SchemeHostPort>(host).scheme();
+
+  return base::StringPiece();
+}
+
 base::StringPiece GetHostname(
     const absl::variant<url::SchemeHostPort, HostPortPair>& host) {
   if (absl::holds_alternative<url::SchemeHostPort>(host)) {
@@ -510,11 +517,28 @@ uint16_t GetPort(const absl::variant<url::SchemeHostPort, HostPortPair>& host) {
   return absl::get<HostPortPair>(host).port();
 }
 
-// TODO(crbug.com/1206799): Make dependent on status of `kUseDnsHttpsSvcb`
-// Feature.
+// Only use scheme/port in JobKey if `features::kUseDnsHttpsSvcb` is enabled
+// (or the query is explicitly for HTTPS). Otherwise DNS will not give different
+// results for the same hostname.
 absl::variant<url::SchemeHostPort, std::string> CreateHostForJobKey(
-    const absl::variant<url::SchemeHostPort, HostPortPair>& input) {
+    const absl::variant<url::SchemeHostPort, HostPortPair>& input,
+    DnsQueryType query_type) {
+  if ((base::FeatureList::IsEnabled(features::kUseDnsHttpsSvcb) ||
+       query_type == DnsQueryType::HTTPS) &&
+      absl::holds_alternative<url::SchemeHostPort>(input)) {
+    return absl::get<url::SchemeHostPort>(input);
+  }
+
   return std::string(GetHostname(input));
+}
+
+DnsResponse CreateFakeEmptyResponse(base::StringPiece hostname,
+                                    DnsQueryType query_type) {
+  std::string qname;
+  CHECK(DNSDomainFromDot(hostname, &qname));
+  return DnsResponse::CreateEmptyNoDataResponse(
+      /*id=*/0u, /*is_authoritative=*/true, qname,
+      DnsQueryTypeToQtype(query_type));
 }
 
 }  // namespace
@@ -1143,7 +1167,7 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
   class Delegate {
    public:
     virtual void OnDnsTaskComplete(base::TimeTicks start_time,
-                                   const HostCache::Entry& results,
+                                   HostCache::Entry results,
                                    bool secure) = 0;
 
     // Called when a job succeeds and there are more transactions needed.  If
@@ -1192,26 +1216,7 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
     } else {
       transactions_needed_.push(DnsQueryType::A);
       transactions_needed_.push(DnsQueryType::AAAA);
-
-      // Queue up an INTEGRITY/HTTPS query if we are allowed to.
-      const bool is_httpssvc_experiment_domain =
-          httpssvc_domain_cache_.IsExperimental(GetHostname(host_));
-      const bool is_httpssvc_control_domain =
-          httpssvc_domain_cache_.IsControl(GetHostname(host_));
-      const bool can_query_via_insecure =
-          !secure_ && features::kDnsHttpssvcEnableQueryOverInsecure.Get() &&
-          client_->CanQueryAdditionalTypesViaInsecureDns();
-      if (base::FeatureList::IsEnabled(features::kDnsHttpssvc) &&
-          (secure_ || can_query_via_insecure) &&
-          (is_httpssvc_experiment_domain || is_httpssvc_control_domain)) {
-        httpssvc_metrics_.emplace(
-            is_httpssvc_experiment_domain /* expect_intact */);
-
-        if (features::kDnsHttpssvcUseIntegrity.Get())
-          transactions_needed_.push(DnsQueryType::INTEGRITY);
-        if (features::kDnsHttpssvcUseHttpssvc.Get())
-          transactions_needed_.push(DnsQueryType::HTTPS);
-      }
+      MaybeQueueHttpsTransaction();
     }
     num_needed_transactions_ = transactions_needed_.size();
 
@@ -1238,7 +1243,7 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
     DnsQueryType type = transactions_needed_.front();
     transactions_needed_.pop();
 
-    DCHECK(type != DnsQueryType::HTTPS || secure_ ||
+    DCHECK(IsAddressType(type) || secure_ ||
            client_->CanQueryAdditionalTypesViaInsecureDns());
 
     // Record how long this transaction has been waiting to be created.
@@ -1253,13 +1258,93 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
   }
 
  private:
+  void MaybeQueueHttpsTransaction() {
+    // `features::kUseDnsHttpsSvcb` has precedence, so if enabled, ignore any
+    // other related features.
+    if (base::FeatureList::IsEnabled(features::kUseDnsHttpsSvcb)) {
+      base::StringPiece scheme = GetScheme(host_);
+      if (scheme != url::kHttpScheme && scheme != url::kHttpsScheme &&
+          scheme != url::kWsScheme && scheme != url::kWssScheme) {
+        return;
+      }
+
+      if (!secure_ && (!features::kUseDnsHttpsSvcbEnableInsecure.Get() ||
+                       !client_->CanQueryAdditionalTypesViaInsecureDns()))
+        return;
+
+      transactions_needed_.push(DnsQueryType::HTTPS);
+      return;
+    }
+
+    if (base::FeatureList::IsEnabled(features::kDnsHttpssvc)) {
+      const bool is_httpssvc_experiment_domain =
+          httpssvc_domain_cache_.IsExperimental(GetHostname(host_));
+      const bool is_httpssvc_control_domain =
+          httpssvc_domain_cache_.IsControl(GetHostname(host_));
+      const bool can_query_via_insecure =
+          !secure_ && features::kDnsHttpssvcEnableQueryOverInsecure.Get() &&
+          client_->CanQueryAdditionalTypesViaInsecureDns();
+      if (base::FeatureList::IsEnabled(features::kDnsHttpssvc) &&
+          (secure_ || can_query_via_insecure) &&
+          (is_httpssvc_experiment_domain || is_httpssvc_control_domain)) {
+        httpssvc_metrics_.emplace(
+            is_httpssvc_experiment_domain /* expect_intact */);
+
+        if (features::kDnsHttpssvcUseIntegrity.Get())
+          transactions_needed_.push(DnsQueryType::INTEGRITY);
+        if (features::kDnsHttpssvcUseHttpssvc.Get())
+          transactions_needed_.push(DnsQueryType::HTTPS_EXPERIMENTAL);
+      }
+    }
+  }
+
   std::unique_ptr<DnsTransaction> CreateTransaction(
       DnsQueryType dns_query_type) {
     DCHECK_NE(DnsQueryType::UNSPECIFIED, dns_query_type);
 
+    std::string transaction_hostname(GetHostname(host_));
+
+    // For HTTPS, prepend "_<port>._https." for any non-default port.
+    if (dns_query_type == DnsQueryType::HTTPS &&
+        absl::holds_alternative<url::SchemeHostPort>(host_)) {
+      const auto& scheme_host_port = absl::get<url::SchemeHostPort>(host_);
+
+      DCHECK(!scheme_host_port.host().empty() &&
+             scheme_host_port.host().front() != '.');
+
+      // Normalize ws/wss schemes to http/https.
+      base::StringPiece normalized_scheme = scheme_host_port.scheme();
+      if (normalized_scheme == url::kWsScheme) {
+        normalized_scheme = url::kHttpScheme;
+      } else if (normalized_scheme == url::kWssScheme) {
+        normalized_scheme = url::kHttpsScheme;
+      }
+
+      // For http-schemed hosts, request the corresponding upgraded https host
+      // per the rules in draft-ietf-dnsop-svcb-https-06, Section 8.5.
+      uint16_t port = scheme_host_port.port();
+      if (normalized_scheme == url::kHttpScheme) {
+        normalized_scheme = url::kHttpsScheme;
+        if (port == 80)
+          port = 443;
+      }
+
+      // Scheme should always end up normalized to "https" to create HTTPS
+      // transactions.
+      DCHECK_EQ(normalized_scheme, url::kHttpsScheme);
+
+      // Per the rules in draft-ietf-dnsop-svcb-https-06, Section 8.1 and 2.3,
+      // encode scheme and port in the transaction hostname, unless the port is
+      // the default 443.
+      if (port != 443) {
+        transaction_hostname = base::StrCat({"_", base::NumberToString(port),
+                                             "._https.", transaction_hostname});
+      }
+    }
+
     std::unique_ptr<DnsTransaction> trans =
         client_->GetTransactionFactory()->CreateTransaction(
-            std::string(GetHostname(host_)),
+            std::move(transaction_hostname),
             DnsQueryTypeToQtype(dns_query_type),
             base::BindOnce(&DnsTask::OnTransactionComplete,
                            base::Unretained(this), tick_clock_->NowTicks(),
@@ -1334,32 +1419,47 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
       }
     }
 
-    HostCache::Entry results(ERR_FAILED, HostCache::Entry::SOURCE_UNKNOWN);
-    // Parse NOERROR results or NXDOMAIN (signified from DnsTransaction by
-    // ERR_NAME_NOT_RESOLVED) results with a valid response to parse.
-    if (net_error == OK || (net_error == ERR_NAME_NOT_RESOLVED && response &&
-                            response->IsValid())) {
-      DnsResponseResultExtractor extractor(response);
-      DnsResponseResultExtractor::ExtractionError extraction_error =
-          extractor.ExtractDnsResults(dns_query_type, &results);
-      DCHECK_NE(extraction_error,
-                DnsResponseResultExtractor::ExtractionError::kUnexpected);
+    // Handle network errors. Note that for NXDOMAIN, DnsTransaction returns
+    // ERR_NAME_NOT_RESOLVED, so that is not a network error if received with a
+    // valid response.
+    absl::optional<DnsResponse> fake_response;
+    if (net_error != OK && !(net_error == ERR_NAME_NOT_RESOLVED && response &&
+                             response->IsValid())) {
+      if (dns_query_type == DnsQueryType::INTEGRITY ||
+          dns_query_type == DnsQueryType::HTTPS_EXPERIMENTAL ||
+          (dns_query_type == DnsQueryType::HTTPS &&
+           !IsFatalHttpsTransactionFailure(net_error, response))) {
+        // For non-fatal failures, synthesize an empty response.
+        fake_response =
+            CreateFakeEmptyResponse(GetHostname(host_), dns_query_type);
+        response = &fake_response.value();
+      } else {
+        // Fail completely on network failure.
+        OnFailure(net_error, DnsResponseResultExtractor::ExtractionError::kOk,
+                  absl::nullopt);
+        return;
+      }
+    }
 
-      if (results.error() != OK && results.error() != ERR_NAME_NOT_RESOLVED) {
+    HostCache::Entry results(ERR_FAILED, HostCache::Entry::SOURCE_UNKNOWN);
+    DnsResponseResultExtractor extractor(response);
+    DnsResponseResultExtractor::ExtractionError extraction_error =
+        extractor.ExtractDnsResults(dns_query_type, &results);
+    DCHECK_NE(extraction_error,
+              DnsResponseResultExtractor::ExtractionError::kUnexpected);
+
+    if (results.error() != OK && results.error() != ERR_NAME_NOT_RESOLVED) {
+      if (dns_query_type == DnsQueryType::INTEGRITY ||
+          dns_query_type == DnsQueryType::HTTPS ||
+          dns_query_type == DnsQueryType::HTTPS_EXPERIMENTAL) {
+        // Ignore extraction errors of these types. In most cases treating them
+        // as fatal would only result in fallback to resolution without querying
+        // the type. Instead, synthesize empty results.
+        results = DnsResponseResultExtractor::CreateEmptyResult(dns_query_type);
+      } else {
         OnFailure(results.error(), extraction_error, results.GetOptionalTtl());
         return;
       }
-    } else if (dns_query_type == DnsQueryType::INTEGRITY ||
-               dns_query_type == DnsQueryType::HTTPS) {
-      // Do not allow an experimental query to fail the whole DnsTask. Instead
-      // pretend an empty result that can be cleanly merged with address
-      // results.
-      results = DnsResponseResultExtractor::CreateEmptyResult(dns_query_type);
-    } else {
-      // Fail completely on network failure.
-      OnFailure(net_error, DnsResponseResultExtractor::ExtractionError::kOk,
-                absl::nullopt);
-      return;
     }
 
     if (httpssvc_metrics_) {
@@ -1371,7 +1471,8 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
         // experimental query timer runs out (OnExperimentalQueryTimeout).
         httpssvc_metrics_->SaveForIntegrity(doh_provider_id, rcode_for_httpssvc,
                                             *condensed, elapsed_time);
-      } else if (dns_query_type == DnsQueryType::HTTPS) {
+      } else if (dns_query_type == DnsQueryType::HTTPS ||
+                 dns_query_type == DnsQueryType::HTTPS_EXPERIMENTAL) {
         const absl::optional<std::vector<bool>>& condensed =
             results.experimental_results();
         CHECK(condensed.has_value());
@@ -1381,6 +1482,18 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
         httpssvc_metrics_->SaveForAddressQuery(doh_provider_id, elapsed_time,
                                                rcode_for_httpssvc);
       }
+    }
+
+    // Trigger HTTP->HTTPS upgrade if an HTTPS record is received for an "http"
+    // or "ws" request.
+    if (features::kUseDnsHttpsSvcbHttpUpgrade.Get() &&
+        dns_query_type == DnsQueryType::HTTPS && results.error() == OK &&
+        (GetScheme(host_) == url::kHttpScheme ||
+         GetScheme(host_) == url::kWsScheme)) {
+      OnFailure(ERR_DNS_NAME_HTTPS_ONLY,
+                DnsResponseResultExtractor::ExtractionError::kOk,
+                results.GetOptionalTtl());
+      return;
     }
 
     // Merge results with saved results from previous transactions.
@@ -1403,6 +1516,7 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
           break;
         case DnsQueryType::INTEGRITY:
         case DnsQueryType::HTTPS:
+        case DnsQueryType::HTTPS_EXPERIMENTAL:
           // No particular importance to order.
           results = HostCache::Entry::MergeEntries(
               std::move(results), std::move(saved_results_).value());
@@ -1434,6 +1548,30 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
     ProcessResultsOnCompletion();
   }
 
+  bool IsFatalHttpsTransactionFailure(int transaction_error,
+                                      const DnsResponse* response) {
+    // Shouldn't call this method if there wasn't a transaction failure.
+    DCHECK_NE(transaction_error, OK);
+    DCHECK(transaction_error != ERR_NAME_NOT_RESOLVED || !response ||
+           !response->IsValid());
+
+    // HTTPS failures are never fatal via insecure DNS.
+    if (!secure_)
+      return false;
+
+    // Feature must be enabled for HTTPS to be fatal.
+    if (!features::kUseDnsHttpsSvcbEnforceSecureResponse.Get())
+      return false;
+
+    // For server failures, only SERVFAIL is fatal.
+    if (transaction_error == ERR_DNS_SERVER_FAILED && response &&
+        response->rcode() != dns_protocol::kRcodeSERVFAIL) {
+      return false;
+    }
+
+    return true;
+  }
+
   // Postprocesses the transactions' aggregated results after all
   // transactions have completed.
   void ProcessResultsOnCompletion() {
@@ -1460,7 +1598,7 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
       return;
     }
 
-    OnSuccess(results);
+    OnSuccess(std::move(results));
   }
 
   void OnSortComplete(base::TimeTicks sort_start_time,
@@ -1488,9 +1626,12 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
       return;
     }
 
-    OnSuccess(results);
+    OnSuccess(std::move(results));
   }
 
+  // TODO(crbug.com/1225776): Disallow fallback after a fatal HTTPS error.  Also
+  // prevent A/AAAA errors from leading to immediate fallback if an HTTPS query
+  // is still pending that may lead to a fatal HTTPS error.
   void OnFailure(int net_error,
                  DnsResponseResultExtractor::ExtractionError extraction_error,
                  absl::optional<base::TimeDelta> ttl) {
@@ -1505,13 +1646,13 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
                                        static_cast<int>(extraction_error));
     });
 
-    delegate_->OnDnsTaskComplete(task_start_time_, results, secure_);
+    delegate_->OnDnsTaskComplete(task_start_time_, std::move(results), secure_);
   }
 
-  void OnSuccess(const HostCache::Entry& results) {
+  void OnSuccess(HostCache::Entry results) {
     NetLogHostCacheEntry(net_log_, NetLogEventType::HOST_RESOLVER_IMPL_DNS_TASK,
                          NetLogEventPhase::END, results);
-    delegate_->OnDnsTaskComplete(task_start_time_, results, secure_);
+    delegate_->OnDnsTaskComplete(task_start_time_, std::move(results), secure_);
   }
 
   // Returns whether all transactions left to execute are of transaction type
@@ -1540,13 +1681,15 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
       absl::optional<std::string> doh_provider_id) {
     DCHECK(!transactions_started_.empty());
 
-    // Abort if neither HTTPSSVC nor INTEGRITY querying is enabled.
+    // Abort if neither HTTPSSVC nor INTEGRITY experimental querying is enabled.
     if (!base::FeatureList::IsEnabled(features::kDnsHttpssvc) ||
         (!features::kDnsHttpssvcUseIntegrity.Get() &&
          !features::kDnsHttpssvcUseHttpssvc.Get())) {
       return;
     }
 
+    // TODO(crbug.com/1225776): Control based on DnsQueryTypes instead of
+    // transaction qtypes to allow differentiating HTTPS and HTTPS_EXPERIMENTAL.
     if (!experimental_query_cancellation_timer_.IsRunning() &&
         TaskIsCompleteOrOnlyQtypeTransactionsRemain(
             {dns_protocol::kExperimentalTypeIntegrity,
@@ -1637,9 +1780,7 @@ struct HostResolverManager::JobKey {
   ResolveContext* resolve_context;
 
   HostCache::Key ToCacheKey(bool secure) const {
-    // TODO(crbug.com/1206799): Propagate scheme and port to cache key.
-    HostCache::Key key(std::string(GetHostname(host)), query_type, flags,
-                       source, network_isolation_key);
+    HostCache::Key key(host, query_type, flags, source, network_isolation_key);
     key.secure = secure;
     return key;
   }
@@ -2173,9 +2314,17 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
   // HostResolverManager::DnsTask::Delegate implementation:
 
   void OnDnsTaskComplete(base::TimeTicks start_time,
-                         const HostCache::Entry& results,
+                         HostCache::Entry results,
                          bool secure) override {
     DCHECK(dns_task_);
+
+    // `UNSPECIFIED`-type queries are only considered successful overall if they
+    // find address results, but DnsTask may claim success if any transaction,
+    // e.g. a supplemental HTTPS transaction, finds results.
+    if (key_.query_type == DnsQueryType::UNSPECIFIED && results.error() == OK &&
+        (!results.addresses() || results.addresses().value().empty())) {
+      results.set_error(ERR_NAME_NOT_RESOLVED);
+    }
 
     base::TimeDelta duration = tick_clock_->NowTicks() - start_time;
     if (results.error() != OK) {
@@ -2801,7 +2950,8 @@ int HostResolverManager::Resolve(RequestImpl* request) {
 
   const auto& parameters = request->parameters();
   JobKey job_key;
-  job_key.host = CreateHostForJobKey(request->request_host());
+  job_key.host =
+      CreateHostForJobKey(request->request_host(), parameters.dns_query_type);
   job_key.network_isolation_key = request->network_isolation_key();
   job_key.source = parameters.source;
   job_key.resolve_context = request->resolve_context();

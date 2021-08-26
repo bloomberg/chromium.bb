@@ -1,12 +1,10 @@
 import { kUnitCaseParamsBuilder } from '../../../../../../common/framework/params_builder.js';
-import { kRenderEncodeTypes } from '../../../validation_test.js';
+import { kRenderEncodeTypes } from '../../../util/command_buffer_maker.js';
 
 export const kRenderEncodeTypeParams = kUnitCaseParamsBuilder.combine(
   'encoderType',
   kRenderEncodeTypes
 );
-
-export const kBufferStates = ['valid', 'invalid', 'destroyed'] as const;
 
 export function buildBufferOffsetAndSizeOOBTestParams(minAlignment: number, bufferSize: number) {
   return kRenderEncodeTypeParams.combineWithParams([

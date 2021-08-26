@@ -42,16 +42,10 @@
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/time/time.h"
 #include "content/browser/media/cdm_storage_impl.h"
 #include "media/base/key_system_names.h"
 #include "media/mojo/mojom/cdm_service.mojom.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#if BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA)
-#include "ash/constants/ash_features.h"
-#endif  // BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA)
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 #if defined(OS_WIN) || BUILDFLAG(ENABLE_LIBRARY_CDMS)
@@ -61,8 +55,8 @@
 #endif  // defined(OS_WIN) || BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 #if defined(OS_WIN)
-#include "base/threading/sequence_local_storage_slot.h"
-#include "base/time/time.h"
+#include "content/browser/media/dcomp_surface_registry_broker.h"
+#include "media/cdm/win/media_foundation_cdm.h"
 #endif  // defined(OS_WIN)
 
 #if defined(OS_ANDROID)
@@ -85,7 +79,9 @@ bool IsValidCdmDisplayName(const std::string& cdm_name) {
   return cdm_name.size() <= kMaxCdmNameSize && base::IsStringASCII(cdm_name);
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
+
+#if defined(OS_CHROMEOS)
 constexpr char kChromeOsCdmFileSystemId[] =
     "application_chromeos-cdm-factory-daemon";
 
@@ -100,9 +96,7 @@ enum class CrosCdmType {
 void ReportCdmTypeUMA(CrosCdmType cdm_type) {
   UMA_HISTOGRAM_ENUMERATION("Media.EME.CrosCdmType", cdm_type);
 }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
+#endif  // defined(OS_CHROMEOS)
 
 // The amount of time to allow the secondary Media Service instance to idle
 // before tearing it down. Only used if the Content embedder defines how to
@@ -180,6 +174,18 @@ class FrameInterfaceFactoryImpl : public media::mojom::FrameInterfaceFactory,
     site_mute_observers_.Get(remote_id)->OnMuteStateChange(
         WebContents::FromRenderFrameHost(render_frame_host_)->IsAudioMuted());
   }
+
+  void CreateDCOMPSurfaceRegistry(
+      mojo::PendingReceiver<media::mojom::DCOMPSurfaceRegistry> receiver)
+      override {
+    if (base::FeatureList::IsEnabled(media::kHardwareSecureDecryption) &&
+        media::MediaFoundationCdm::IsAvailable()) {
+      // TODO(crbug.com/1233379): Pass IO task runner and remove the PostTask()
+      // in DCOMPSurfaceRegistryBroker after bug fixed.
+      mojo::MakeSelfOwnedReceiver(
+          std::make_unique<DCOMPSurfaceRegistryBroker>(), std::move(receiver));
+    }
+  }
 #endif  // defined(OS_WIN)
 
   void GetCdmOrigin(GetCdmOriginCallback callback) override {
@@ -217,7 +223,7 @@ MediaInterfaceProxy::MediaInterfaceProxy(RenderFrameHost* render_frame_host)
   DCHECK(render_frame_host_);
 
   std::string cdm_file_system_id;
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS) && BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
   // The file system ID passed in here is only used by the CDM obtained through
   // the |media_interface_factory_ptr_|.
   cdm_file_system_id = kChromeOsCdmFileSystemId;
@@ -317,9 +323,7 @@ void MediaInterfaceProxy::CreateMediaPlayerRenderer(
       std::make_unique<MediaPlayerRenderer>(
           render_frame_host_->GetProcess()->GetID(),
           render_frame_host_->GetRoutingID(),
-          static_cast<RenderFrameHostImpl*>(render_frame_host_)
-              ->delegate()
-              ->GetAsWebContents(),
+          WebContents::FromRenderFrameHost(render_frame_host_),
           std::move(renderer_extension_receiver),
           std::move(client_extension_remote)),
       std::move(receiver));
@@ -358,9 +362,15 @@ void MediaInterfaceProxy::CreateCdm(const std::string& key_system,
       "CDM creation failed");
 
   // Handle `use_hw_secure_codecs` cases first.
-#if BUILDFLAG(IS_CHROMEOS_ASH) && BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA)
-  if (base::FeatureList::IsEnabled(chromeos::features::kCdmFactoryDaemon) &&
-      cdm_config.use_hw_secure_codecs &&
+#if BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA)
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  const bool enable_cdm_factory_daemon =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kLacrosUseChromeosProtectedMedia);
+#else   // BUILDFLAG(IS_CHROMEOS_LACROS)
+  const bool enable_cdm_factory_daemon = true;
+#endif  // else BUILDFLAG(IS_CHROMEOS_LACROS)
+  if (enable_cdm_factory_daemon && cdm_config.use_hw_secure_codecs &&
       cdm_config.allow_distinctive_identifier) {
     auto* factory = media_interface_factory_ptr_->Get();
     if (factory) {
@@ -398,7 +408,7 @@ void MediaInterfaceProxy::CreateCdm(const std::string& key_system,
     }
   }
   // Fallback to use library CDM below.
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH) && BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA)
+#endif  // BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA)
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   // Fallback to use CdmFactory even if `use_hw_secure_codecs` is true.
@@ -548,8 +558,9 @@ void MediaInterfaceProxy::OnCdmServiceConnectionError(
   DCHECK(cdm_factory_map_.count(cdm_guid));
   cdm_factory_map_.erase(cdm_guid);
 }
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
 void MediaInterfaceProxy::OnChromeOsCdmCreated(
     const std::string& key_system,
     const media::CdmConfig& cdm_config,
@@ -577,8 +588,7 @@ void MediaInterfaceProxy::OnChromeOsCdmCreated(
   ReportCdmTypeUMA(CrosCdmType::kChromeCdm);
   factory->CreateCdm(key_system, cdm_config, std::move(callback));
 }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
+#endif  // defined(OS_CHROMEOS)
 
 RENDER_DOCUMENT_HOST_USER_DATA_KEY_IMPL(MediaInterfaceProxy)
 

@@ -3,7 +3,10 @@ Validation tests for setPipeline on render pass and render bundle.
 `;
 
 import { makeTestGroup } from '../../../../../../common/framework/test_group.js';
-import { ValidationTest, kRenderEncodeTypes } from '../../../validation_test.js';
+import { kRenderEncodeTypes } from '../../../util/command_buffer_maker.js';
+import { ValidationTest } from '../../../validation_test.js';
+
+import { kRenderEncodeTypeParams } from './render.js';
 
 export const g = makeTestGroup(ValidationTest);
 
@@ -20,10 +23,12 @@ Tests setPipeline should generate an error iff using an 'invalid' pipeline.
     const { encoderType, state } = t.params;
     const pipeline = t.createRenderPipelineWithState(state);
 
-    const { encoder, finish } = t.createEncoder(encoderType);
+    const { encoder, validateFinish } = t.createEncoder(encoderType);
     encoder.setPipeline(pipeline);
-
-    t.expectValidationError(() => {
-      finish();
-    }, state === 'invalid');
+    validateFinish(state !== 'invalid');
   });
+
+g.test('pipeline,device_mismatch')
+  .desc('Tests setPipeline cannot be called with a render pipeline created from another device')
+  .paramsSubcasesOnly(kRenderEncodeTypeParams.combine('mismatched', [true, false]))
+  .unimplemented();

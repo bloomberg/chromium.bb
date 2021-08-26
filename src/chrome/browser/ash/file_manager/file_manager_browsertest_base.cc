@@ -111,8 +111,8 @@
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/api/test.h"
+#include "google_apis/common/test_util.h"
 #include "google_apis/drive/drive_api_parser.h"
-#include "google_apis/drive/test_util.h"
 #include "media/base/media_switches.h"
 #include "net/base/escape.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -2582,6 +2582,12 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
           }
         });
 
+    return;
+  }
+
+  if (name == "getVolumesCount") {
+    file_manager::VolumeManager* volume_manager = VolumeManager::Get(profile());
+    *output = base::NumberToString(volume_manager->GetVolumeList().size());
     return;
   }
 

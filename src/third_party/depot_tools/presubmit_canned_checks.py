@@ -50,7 +50,13 @@ OFF_UNLESS_MANUALLY_ENABLED_LINT_FILTERS = [
 
 def CheckChangeHasBugField(input_api, output_api):
   """Requires that the changelist have a Bug: field."""
-  if input_api.change.BugsFromDescription():
+  bugs = input_api.change.BugsFromDescription()
+  if bugs:
+    if any(b.startswith('b/') for b in bugs):
+      return [
+          output_api.PresubmitNotifyResult(
+              'Buganizer bugs should be prefixed with b:, not b/.')
+      ]
     return []
   else:
     return [output_api.PresubmitNotifyResult(
@@ -137,13 +143,16 @@ def CheckAuthorizedAuthor(input_api, output_api, bot_allowlist=None):
   if not any(input_api.fnmatch.fnmatch(author.lower(), valid)
              for valid in valid_authors):
     input_api.logging.info('Valid authors are %s', ', '.join(valid_authors))
-    return [error_type(
-        ('%s is not in AUTHORS file. If you are a new contributor, please visit'
-        '\n'
-        'https://www.chromium.org/developers/contributing-code and read the '
-        '"Legal" section\n'
-        'If you are a chromite, verify the contributor signed the CLA.') %
-        author)]
+    return [
+      error_type((
+        # pylint: disable=line-too-long
+        '%s is not in AUTHORS file. If you are a new contributor, please visit\n'
+        'https://chromium.googlesource.com/chromium/src/+/refs/heads/main/docs/contributing.md#Legal-stuff\n'
+        # pylint: enable=line-too-long
+        'and read the "Legal stuff" section\n'
+        'If you are a chromite, verify that the contributor signed the CLA.') %
+          author)
+    ]
   return []
 
 
@@ -909,15 +918,21 @@ def GetPylint(input_api,
               files_to_skip=None,
               disabled_warnings=None,
               extra_paths_list=None,
-              pylintrc=None):
+              pylintrc=None,
+              version='1.5'):
   """Run pylint on python files.
 
   The default files_to_check enforces looking only at *.py files.
+
+  Currently only pylint version '1.5' and '2.6' are supported.
   """
 
   files_to_check = tuple(files_to_check or (r'.*\.py$', ))
   files_to_skip = tuple(files_to_skip or input_api.DEFAULT_FILES_TO_SKIP)
   extra_paths_list = extra_paths_list or []
+
+  assert version in ('1.5', '2.6'), 'Unsupported pylint version: ' + version
+  python3 = (version == '2.6')
 
   if input_api.is_committing:
     error_type = output_api.PresubmitError
@@ -969,7 +984,7 @@ def GetPylint(input_api,
     # Windows needs help running python files so we explicitly specify
     # the interpreter to use. It also has limitations on the size of
     # the command-line, so we pass arguments via a pipe.
-    tool = input_api.os_path.join(_HERE, 'pylint')
+    tool = input_api.os_path.join(_HERE, 'pylint-' + version)
     kwargs = {'env': env}
     if input_api.platform == 'win32':
       # On Windows, scripts on the current directory take precedence over PATH.
@@ -1004,7 +1019,8 @@ def GetPylint(input_api,
         name='Pylint (%s)' % description,
         cmd=cmd,
         kwargs=kwargs,
-        message=error_type)
+        message=error_type,
+        python3=python3)
 
   # Always run pylint and pass it all the py files at once.
   # Passing py files one at time is slower and can produce
@@ -1731,12 +1747,15 @@ def CheckLucicfgGenOutput(input_api, output_api, entry_script):
         output_api.PresubmitError)
   ]
 
-def CheckJsonParses(input_api, output_api):
-  """Verifies that all JSON files at least parse as valid JSON."""
+def CheckJsonParses(input_api, output_api, file_filter=None):
+  """Verifies that all JSON files at least parse as valid JSON. By default,
+  file_filter will look for all files that end with .json"""
   import json
+  if file_filter is None:
+    file_filter = lambda x: x.LocalPath().endswith('.json')
   affected_files = input_api.AffectedFiles(
       include_deletes=False,
-      file_filter=lambda x: x.LocalPath().endswith('.json'))
+      file_filter=file_filter)
   warnings = []
   for f in affected_files:
     with open(f.AbsoluteLocalPath()) as j:

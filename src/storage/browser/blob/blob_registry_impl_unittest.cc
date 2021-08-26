@@ -40,6 +40,7 @@
 #include "storage/browser/test/mock_bytes_provider.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/blob/data_element.mojom.h"
 #include "third_party/blink/public/mojom/blob/serialized_blob.mojom.h"
 
@@ -104,12 +105,10 @@ class BlobRegistryImplTest : public testing::Test {
     context_->mutable_memory_controller()->set_limits_for_testing(limits);
 
     // Disallow IO on the main loop.
-    base::ThreadRestrictions::SetIOAllowed(false);
+    disallow_blocking_.emplace();
   }
 
   void TearDown() override {
-    base::ThreadRestrictions::SetIOAllowed(true);
-
     mojo::SetDefaultProcessErrorHandler(base::NullCallback());
   }
 
@@ -191,6 +190,7 @@ class BlobRegistryImplTest : public testing::Test {
  protected:
   base::ScopedTempDir data_dir_;
   base::test::TaskEnvironment task_environment_;
+  absl::optional<base::ScopedDisallowBlocking> disallow_blocking_;
   std::unique_ptr<BlobStorageContext> context_;
   scoped_refptr<FileSystemContext> file_system_context_;
   BlobUrlRegistry url_registry_;
@@ -696,9 +696,9 @@ TEST_F(BlobRegistryImplTest, Register_FileSystemFile_Valid) {
   ASSERT_EQ(BlobStatus::DONE, handle->GetBlobStatus());
 
   BlobDataBuilder expected_blob_data(kId);
-  expected_blob_data.AppendFileSystemFile(file_system_context_->CrackURL(url),
-                                          0, 16, base::Time(),
-                                          file_system_context_);
+  expected_blob_data.AppendFileSystemFile(
+      file_system_context_->CrackURLInFirstPartyContext(url), 0, 16,
+      base::Time(), file_system_context_);
 
   EXPECT_EQ(expected_blob_data, *handle->CreateSnapshot());
   EXPECT_EQ(0u, BlobsUnderConstruction());

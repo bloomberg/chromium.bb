@@ -23,6 +23,10 @@
 #include "src/dsp/film_grain.h"
 #include "src/dsp/intra_edge.h"
 #include "src/dsp/intrapred.h"
+#include "src/dsp/intrapred_cfl.h"
+#include "src/dsp/intrapred_directional.h"
+#include "src/dsp/intrapred_filter.h"
+#include "src/dsp/intrapred_smooth.h"
 #include "src/dsp/inverse_transform.h"
 #include "src/dsp/loop_filter.h"
 #include "src/dsp/loop_restoration.h"
@@ -45,7 +49,11 @@ void DspInit_C() {
   dsp::DistanceWeightedBlendInit_C();
   dsp::FilmGrainInit_C();
   dsp::IntraEdgeInit_C();
+  dsp::IntraPredCflInit_C();
+  dsp::IntraPredDirectionalInit_C();
+  dsp::IntraPredFilterInit_C();
   dsp::IntraPredInit_C();
+  dsp::IntraPredSmoothInit_C();
   dsp::InverseTransformInit_C();
   dsp::LoopFilterInit_C();
   dsp::LoopRestorationInit_C();
@@ -92,6 +100,9 @@ void DspInit() {
       DistanceWeightedBlendInit_SSE4_1();
       FilmGrainInit_SSE4_1();
       IntraEdgeInit_SSE4_1();
+      IntraPredCflInit_SSE4_1();
+      IntraPredDirectionalInit_SSE4_1();
+      IntraPredFilterInit_SSE4_1();
       IntraPredInit_SSE4_1();
       IntraPredCflInit_SSE4_1();
       IntraPredSmoothInit_SSE4_1();
@@ -130,7 +141,7 @@ void DspInit() {
     IntraEdgeInit_NEON();
     IntraPredCflInit_NEON();
     IntraPredDirectionalInit_NEON();
-    IntraPredFilterIntraInit_NEON();
+    IntraPredFilterInit_NEON();
     IntraPredInit_NEON();
     IntraPredSmoothInit_NEON();
     InverseTransformInit_NEON();
@@ -144,7 +155,9 @@ void DspInit() {
     WarpInit_NEON();
     WeightMaskInit_NEON();
 #if LIBGAV1_MAX_BITDEPTH >= 10
+    ConvolveInit10bpp_NEON();
     InverseTransformInit10bpp_NEON();
+    LoopRestorationInit10bpp_NEON();
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
 #endif  // LIBGAV1_ENABLE_NEON
   });

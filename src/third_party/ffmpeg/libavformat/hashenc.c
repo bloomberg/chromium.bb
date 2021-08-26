@@ -19,7 +19,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "libavutil/avassert.h"
 #include "libavutil/avstring.h"
 #include "libavutil/hash.h"
 #include "libavutil/intreadwrite.h"
@@ -46,6 +45,13 @@ struct HashContext {
 static const AVOption hash_streamhash_options[] = {
     HASH_OPT("sha256"),
     { NULL },
+};
+
+static const AVClass hash_streamhashenc_class = {
+    .class_name = "(stream) hash muxer",
+    .item_name  = av_default_item_name,
+    .option     = hash_streamhash_options,
+    .version    = LIBAVUTIL_VERSION_INT,
 };
 #endif
 
@@ -164,13 +170,6 @@ static void hash_free(struct AVFormatContext *s)
 }
 
 #if CONFIG_HASH_MUXER
-static const AVClass hashenc_class = {
-    .class_name = "hash muxer",
-    .item_name  = av_default_item_name,
-    .option     = hash_streamhash_options,
-    .version    = LIBAVUTIL_VERSION_INT,
-};
-
 const AVOutputFormat ff_hash_muxer = {
     .name              = "hash",
     .long_name         = NULL_IF_CONFIG_SMALL("Hash testing"),
@@ -183,7 +182,7 @@ const AVOutputFormat ff_hash_muxer = {
     .deinit            = hash_free,
     .flags             = AVFMT_VARIABLE_FPS | AVFMT_TS_NONSTRICT |
                          AVFMT_TS_NEGATIVE,
-    .priv_class        = &hashenc_class,
+    .priv_class        = &hash_streamhashenc_class,
 };
 #endif
 
@@ -212,13 +211,6 @@ const AVOutputFormat ff_md5_muxer = {
 #endif
 
 #if CONFIG_STREAMHASH_MUXER
-static const AVClass streamhashenc_class = {
-    .class_name = "stream hash muxer",
-    .item_name  = av_default_item_name,
-    .option     = hash_streamhash_options,
-    .version    = LIBAVUTIL_VERSION_INT,
-};
-
 const AVOutputFormat ff_streamhash_muxer = {
     .name              = "streamhash",
     .long_name         = NULL_IF_CONFIG_SMALL("Per-stream hash testing"),
@@ -231,7 +223,7 @@ const AVOutputFormat ff_streamhash_muxer = {
     .deinit            = hash_free,
     .flags             = AVFMT_VARIABLE_FPS | AVFMT_TS_NONSTRICT |
                          AVFMT_TS_NEGATIVE,
-    .priv_class        = &streamhashenc_class,
+    .priv_class        = &hash_streamhashenc_class,
 };
 #endif
 

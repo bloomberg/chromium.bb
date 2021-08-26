@@ -638,9 +638,13 @@ static int bench_init_linux(void)
     }
     return 0;
 }
-#endif
-
-#if !CONFIG_LINUX_PERF
+#elif CONFIG_MACOS_KPERF
+static int bench_init_kperf(void)
+{
+    ff_kperf_init();
+    return 0;
+}
+#else
 static int bench_init_ffmpeg(void)
 {
 #ifdef AV_READ_TIME
@@ -657,6 +661,8 @@ static int bench_init(void)
 {
 #if CONFIG_LINUX_PERF
     int ret = bench_init_linux();
+#elif CONFIG_MACOS_KPERF
+    int ret = bench_init_kperf();
 #else
     int ret = bench_init_ffmpeg();
 #endif

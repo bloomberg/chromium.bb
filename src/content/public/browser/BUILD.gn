@@ -89,6 +89,7 @@ source_set("browser_sources") {
     "browsing_data_filter_builder.h",
     "browsing_data_remover.h",
     "browsing_data_remover_delegate.h",
+    "browsing_instance_id.h",
     "cdm_registry.h",
     "certificate_request_result_type.h",
     "child_process_data.cc",
@@ -102,7 +103,6 @@ source_set("browser_sources") {
     "client_hints.cc",
     "client_hints.h",
     "client_hints_controller_delegate.h",
-    "color_chooser.h",
     "console_message.cc",
     "console_message.h",
     "contacts_picker_properties_requested.h",
@@ -191,7 +191,7 @@ source_set("browser_sources") {
     "histogram_fetcher.h",
     "identity_request_dialog_controller.cc",
     "identity_request_dialog_controller.h",
-    "idle_manager.h",
+    "idle_time_provider.h",
     "installability_error.cc",
     "installability_error.h",
     "installed_payment_apps_finder.h",
@@ -397,8 +397,6 @@ source_set("browser_sources") {
     "web_contents_media_capture_id.h",
     "web_contents_observer.cc",
     "web_contents_observer.h",
-    "web_contents_receiver_set.cc",
-    "web_contents_receiver_set.h",
     "web_contents_user_data.h",
     "web_contents_view_delegate.cc",
     "web_contents_view_delegate.h",
@@ -429,6 +427,10 @@ source_set("browser_sources") {
       "plugin_service.h",
       "plugin_service_filter.h",
     ]
+  }
+
+  if (is_android) {
+    sources += [ "color_chooser.h" ]
   }
 
   if (rtc_use_pipewire) {
@@ -486,6 +488,7 @@ source_set("browser_sources") {
     "//services/device/public/cpp/geolocation",
     "//services/metrics/public/cpp:metrics_cpp",
     "//third_party/blink/public/common:buildflags",
+    "//third_party/blink/public/common:headers",
     "//ui/accessibility",
     "//ui/base",
     "//ui/base/clipboard",
@@ -514,6 +517,7 @@ source_set("browser_sources") {
     sources += [
       "android/android_overlay_provider.h",
       "android/app_web_message_port.h",
+      "android/browser_context_handle.h",
       "android/child_process_importance.h",
       "android/compositor.h",
       "android/compositor_client.h",
@@ -551,6 +555,7 @@ source_set("browser_sources") {
 
   if (use_atk) {
     sources += [ "ax_inspect_factory_auralinux.cc" ]
+    configs += [ "//build/config/linux/atspi2" ]
   }
 
   if (is_linux || is_chromeos) {

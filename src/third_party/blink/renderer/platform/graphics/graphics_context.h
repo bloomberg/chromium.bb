@@ -84,6 +84,13 @@ struct ImageTilingInfo {
   FloatSize spacing;
 };
 
+struct ImageDrawOptions {
+  SkSamplingOptions sampling_options;
+  RespectImageOrientationEnum respect_image_orientation =
+      kRespectImageOrientation;
+  bool apply_dark_mode = false;
+};
+
 class PLATFORM_EXPORT GraphicsContext {
   USING_FAST_MALLOC(GraphicsContext);
 
@@ -178,7 +185,7 @@ class PLATFORM_EXPORT GraphicsContext {
 
   SkSamplingOptions ImageSamplingOptions() const {
     return PaintFlags::FilterQualityToSkSamplingOptions(
-        static_cast<SkFilterQuality>(ImageInterpolationQuality()));
+        static_cast<PaintFlags::FilterQuality>(ImageInterpolationQuality()));
   }
 
   // Specify the device scale factor which may change the way document markers
@@ -381,14 +388,11 @@ class PLATFORM_EXPORT GraphicsContext {
 
   void SetDrawLooper(sk_sp<SkDrawLooper>);
 
-  void DrawFocusRing(const Vector<IntRect>&,
-                     float width,
-                     int offset,
-                     float border_radius,
-                     float min_border_width,
-                     const Color&,
-                     mojom::blink::ColorScheme color_scheme);
-  void DrawFocusRing(const Path&, float width, int offset, const Color&);
+  void DrawFocusRingPath(const SkPath&,
+                         const Color&,
+                         float width,
+                         float corner_radius);
+  void DrawFocusRingRect(const SkRRect&, const Color&, float width);
 
   const PaintFlags& FillFlags() const { return ImmutableState()->FillFlags(); }
   // If the length of the path to be stroked is known, pass it in for correct
@@ -408,9 +412,9 @@ class PLATFORM_EXPORT GraphicsContext {
   void Translate(float x, float y);
   // ---------- End transformation methods -----------------
 
-  SkFilterQuality ComputeFilterQuality(Image*,
-                                       const FloatRect& dest,
-                                       const FloatRect& src) const;
+  PaintFlags::FilterQuality ComputeFilterQuality(Image*,
+                                                 const FloatRect& dest,
+                                                 const FloatRect& src) const;
 
   SkSamplingOptions ComputeSamplingOptions(Image* image,
                                            const FloatRect& dest,
@@ -440,8 +444,6 @@ class PLATFORM_EXPORT GraphicsContext {
                                  float stroke_thickness,
                                  StrokeStyle);
   static bool ShouldUseStrokeForTextLine(StrokeStyle);
-
-  static int FocusRingOutsetExtent(int offset, int width);
 
   void SetInDrawingRecorder(bool);
   bool InDrawingRecorder() const { return in_drawing_recorder_; }
@@ -482,22 +484,6 @@ class PLATFORM_EXPORT GraphicsContext {
 
   void SaveLayer(const SkRect* bounds, const PaintFlags*);
   void RestoreLayer();
-
-  // Helpers for drawing a focus ring (drawFocusRing)
-  void DrawFocusRingPath(const SkPath&,
-                         const Color&,
-                         float width,
-                         float border_radius);
-  void DrawFocusRingRect(const SkRect&,
-                         const Color&,
-                         float width,
-                         float border_radius);
-
-  void DrawFocusRingInternal(const Vector<IntRect>&,
-                             float width,
-                             int offset,
-                             float border_radius,
-                             const Color&);
 
   // SkCanvas wrappers.
   void ClipRRect(const SkRRect&,

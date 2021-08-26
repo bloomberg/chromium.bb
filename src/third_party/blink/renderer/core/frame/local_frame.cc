@@ -75,7 +75,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
-#include "third_party/blink/renderer/core/clipboard/raw_system_clipboard.h"
 #include "third_party/blink/renderer/core/clipboard/system_clipboard.h"
 #include "third_party/blink/renderer/core/content_capture/content_capture_manager.h"
 #include "third_party/blink/renderer/core/core_initializer.h"
@@ -327,9 +326,6 @@ void LocalFrame::Init(Frame* opener,
 
   CoreInitializer::GetInstance().InitLocalFrame(*this);
 
-  GetRemoteNavigationAssociatedInterfaces()->GetInterface(
-      back_forward_cache_controller_host_remote_.BindNewEndpointAndPassReceiver(
-          GetTaskRunner(blink::TaskType::kInternalDefault)));
   GetInterfaceRegistry()->AddInterface(WTF::BindRepeating(
       &LocalFrame::BindTextFragmentReceiver, WrapWeakPersistent(this)));
   DCHECK(!mojo_handler_);
@@ -420,14 +416,8 @@ void LocalFrame::Trace(Visitor* visitor) const {
   visitor->Trace(smooth_scroll_sequencer_);
   visitor->Trace(content_capture_manager_);
   visitor->Trace(system_clipboard_);
-  visitor->Trace(raw_system_clipboard_);
   visitor->Trace(virtual_keyboard_overlay_changed_observers_);
   visitor->Trace(pause_handle_receivers_);
-  visitor->Trace(reporting_service_);
-#if defined(OS_MAC)
-  visitor->Trace(text_input_host_);
-#endif
-  visitor->Trace(back_forward_cache_controller_host_remote_);
   visitor->Trace(mojo_handler_);
   visitor->Trace(text_fragment_handler_);
   visitor->Trace(saved_scroll_offsets_);
@@ -768,17 +758,6 @@ bool LocalFrame::ConsumePaymentRequestToken() {
   return payment_request_token_.ConsumeIfActive();
 }
 
-void LocalFrame::SetOptimizationGuideHints(
-    mojom::blink::BlinkOptimizationGuideHintsPtr hints) {
-  DCHECK(hints);
-  optimization_guide_hints_ = std::move(hints);
-  if (optimization_guide_hints_->delay_competing_low_priority_requests_hints) {
-    GetDocument()->Fetcher()->SetOptimizationGuideHints(
-        std::move(optimization_guide_hints_
-                      ->delay_competing_low_priority_requests_hints));
-  }
-}
-
 void LocalFrame::Reload(WebFrameLoadType load_type) {
   DCHECK(IsReloadLoadType(load_type));
   if (!loader_.GetDocumentLoader()->GetHistoryItem())
@@ -813,13 +792,11 @@ void LocalFrame::SetDOMWindow(LocalDOMWindow* dom_window) {
   DCHECK(dom_window);
   if (DomWindow()) {
     DomWindow()->Reset();
-    // SystemClipboard and RawSystemClipboard uses HeapMojo wrappers. HeapMojo
+    // SystemClipboard uses HeapMojo wrappers. HeapMojo
     // wrappers uses LocalDOMWindow (ExecutionContext) to reset the mojo
     // objects when the ExecutionContext was destroyed. So when new
-    // LocalDOMWindow was set, we need to create new SystemClipboard and
-    // RawSystemClipboard.
+    // LocalDOMWindow was set, we need to create new SystemClipboard.
     system_clipboard_ = nullptr;
-    raw_system_clipboard_ = nullptr;
   }
   GetWindowProxyManager()->ClearForNavigation();
   dom_window_ = dom_window;
@@ -1375,6 +1352,10 @@ void LocalFrame::UpdateCSSFoldEnvironmentVariables(
   }
 }
 
+device::mojom::blink::DevicePostureType LocalFrame::GetDevicePosture() {
+  return mojo_handler_->GetDevicePosture();
+}
+
 double LocalFrame::DevicePixelRatio() const {
   if (!page_)
     return 0;
@@ -1537,13 +1518,6 @@ LocalFrame::LocalFrame(LocalFrameClient* client,
   Initialize();
 
   probe::FrameAttachedToParent(this);
-#if defined(OS_MAC)
-  // It should be bound before accessing TextInputHost which is the interface to
-  // respond to GetCharacterIndexAtPoint.
-  GetBrowserInterfaceBroker().GetInterface(
-      text_input_host_.BindNewPipeAndPassReceiver(
-          GetTaskRunner(blink::TaskType::kInternalDefault)));
-#endif
 }
 
 FrameScheduler* LocalFrame::GetFrameScheduler() {
@@ -2311,12 +2285,7 @@ const base::UnguessableToken& LocalFrame::GetAgentClusterId() const {
 }
 
 mojom::blink::ReportingServiceProxy* LocalFrame::GetReportingService() {
-  if (!reporting_service_.is_bound()) {
-    GetBrowserInterfaceBroker().GetInterface(
-        reporting_service_.BindNewPipeAndPassReceiver(
-            GetTaskRunner(blink::TaskType::kInternalDefault)));
-  }
-  return reporting_service_.get();
+  return mojo_handler_->ReportingService();
 }
 
 // static
@@ -2479,11 +2448,6 @@ void LocalFrame::SetContextPaused(bool is_paused) {
 bool LocalFrame::SwapIn() {
   WebLocalFrameClient* client = Client()->GetWebFrame()->Client();
   return client->SwapIn(WebFrame::FromCoreFrame(GetProvisionalOwnerFrame()));
-}
-
-void LocalFrame::DidActivateForPrerendering() {
-  DCHECK(features::IsPrerender2Enabled());
-  GetLocalFrameHostRemote().DidActivateForPrerendering();
 }
 
 void LocalFrame::LoadJavaScriptURL(const KURL& url) {
@@ -2666,13 +2630,6 @@ SystemClipboard* LocalFrame::GetSystemClipboard() {
   return system_clipboard_.Get();
 }
 
-RawSystemClipboard* LocalFrame::GetRawSystemClipboard() {
-  if (!raw_system_clipboard_)
-    raw_system_clipboard_ = MakeGarbageCollected<RawSystemClipboard>(this);
-
-  return raw_system_clipboard_.Get();
-}
-
 void LocalFrame::WasAttachedAsLocalMainFrame() {
   mojo_handler_->WasAttachedAsLocalMainFrame();
 }
@@ -2723,7 +2680,7 @@ void LocalFrame::GetCharacterIndexAtPoint(const gfx::Point& point) {
       location, HitTestRequest::kReadOnly | HitTestRequest::kActive);
   uint32_t index =
       Selection().CharacterIndexForPoint(result.RoundedPointInInnerNodeFrame());
-  GetTextInputHost().GotCharacterIndexAtPoint(index);
+  mojo_handler_->TextInputHost().GotCharacterIndexAtPoint(index);
 }
 #endif
 
@@ -2845,7 +2802,7 @@ mojom::blink::LocalFrameHost& LocalFrame::GetLocalFrameHostRemote() const {
 
 mojom::blink::BackForwardCacheControllerHost&
 LocalFrame::GetBackForwardCacheControllerHostRemote() {
-  return *back_forward_cache_controller_host_remote_.get();
+  return mojo_handler_->BackForwardCacheControllerHostRemote();
 }
 
 void LocalFrame::NotifyUserActivation(
@@ -2993,6 +2950,7 @@ void LocalFrame::DownloadURL(
     params->suggested_name = *request.GetSuggestedFilename();
   params->cross_origin_redirects = cross_origin_redirect_behavior;
   params->blob_url_token = std::move(blob_url_token);
+  params->has_user_gesture = request.HasUserGesture();
 
   GetLocalFrameHostRemote().DownloadURL(std::move(params));
 }
@@ -3092,9 +3050,12 @@ bool LocalFrame::ShouldThrottleDownload() {
 }
 
 #if defined(OS_MAC)
-mojom::blink::TextInputHost& LocalFrame::GetTextInputHost() {
-  DCHECK(text_input_host_.is_bound());
-  return *text_input_host_.get();
+void LocalFrame::ResetTextInputHostForTesting() {
+  mojo_handler_->ResetTextInputHostForTesting();
+}
+
+void LocalFrame::RebindTextInputHostForTesting() {
+  mojo_handler_->RebindTextInputHostForTesting();
 }
 #endif
 

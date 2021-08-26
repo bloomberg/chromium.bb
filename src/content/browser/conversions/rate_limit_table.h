@@ -7,25 +7,29 @@
 
 #include <vector>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/sequence_checker.h"
 #include "base/thread_annotations.h"
 #include "base/time/time.h"
-#include "content/browser/conversions/conversion_report.h"
 #include "content/browser/conversions/conversion_storage.h"
 #include "content/common/content_export.h"
-#include "sql/database.h"
 
 namespace base {
 class Clock;
 }  // namespace base
+
+namespace sql {
+class Database;
+}  // namespace sql
 
 namespace url {
 class Origin;
 }  // namespace url
 
 namespace content {
+
+struct ConversionReport;
 
 // Manages storage for rate-limiting reports.
 // This class may be constructed on any sequence but must be accessed and
@@ -36,6 +40,8 @@ class CONTENT_EXPORT RateLimitTable {
                  const base::Clock* clock);
   RateLimitTable(const RateLimitTable& other) = delete;
   RateLimitTable& operator=(const RateLimitTable& other) = delete;
+  RateLimitTable(RateLimitTable&& other) = delete;
+  RateLimitTable& operator=(RateLimitTable&& other) = delete;
   ~RateLimitTable();
 
   // Creates the table in |db| if it doesn't exist.

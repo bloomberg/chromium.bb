@@ -516,10 +516,9 @@ static av_cold int dnxhd_encode_init(AVCodecContext *avctx)
     ctx->thread[0] = ctx;
     if (avctx->active_thread_type == FF_THREAD_SLICE) {
         for (i = 1; i < avctx->thread_count; i++) {
-            ctx->thread[i] = av_malloc(sizeof(DNXHDEncContext));
+            ctx->thread[i] = av_memdup(ctx, sizeof(DNXHDEncContext));
             if (!ctx->thread[i])
                 return AVERROR(ENOMEM);
-            memcpy(ctx->thread[i], ctx, sizeof(DNXHDEncContext));
         }
     }
 
@@ -1337,7 +1336,7 @@ static av_cold int dnxhd_encode_end(AVCodecContext *avctx)
     av_freep(&ctx->qmatrix_c16);
     av_freep(&ctx->qmatrix_l16);
 
-    if (avctx->active_thread_type == FF_THREAD_SLICE) {
+    if (ctx->thread[1]) {
         for (i = 1; i < avctx->thread_count; i++)
             av_freep(&ctx->thread[i]);
     }
@@ -1361,7 +1360,6 @@ const AVCodec ff_dnxhd_encoder = {
     .init           = dnxhd_encode_init,
     .encode2        = dnxhd_encode_picture,
     .close          = dnxhd_encode_end,
-    .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP,
     .pix_fmts       = (const enum AVPixelFormat[]) {
         AV_PIX_FMT_YUV422P,
         AV_PIX_FMT_YUV422P10,
@@ -1372,4 +1370,5 @@ const AVCodec ff_dnxhd_encoder = {
     .priv_class     = &dnxhd_class,
     .defaults       = dnxhd_defaults,
     .profiles       = NULL_IF_CONFIG_SMALL(ff_dnxhd_profiles),
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
 };

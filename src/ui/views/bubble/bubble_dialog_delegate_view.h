@@ -176,6 +176,14 @@ class VIEWS_EXPORT BubbleDialogDelegate : public DialogDelegate,
 
   // Whether focus can traverse from the anchor view into the bubble. Only
   // meaningful if there is an anchor view.
+  // TODO(pbos): See if this can be inferred from if the bubble is activatable
+  // or if there's anything focusable within the dialog. This is currently used
+  // for bubbles that should never receive focus and we should be able have
+  // focus go through a bubble if nothing's focusable within it. Without this
+  // set to `false`, the existence of an InfoBubble in the QR reader bubble will
+  // break focus order in the parent dialog. This is a bug for which
+  // set_focus_traversable_from_anchor_view(false) is used as a workaround. See
+  // if fixing that bug removes the need for this for other dialogs.
   void set_focus_traversable_from_anchor_view(bool focusable) {
     focus_traversable_from_anchor_view_ = focusable;
   }
@@ -285,15 +293,21 @@ class VIEWS_EXPORT BubbleDialogDelegate : public DialogDelegate,
   class AnchorViewObserver;
   class AnchorWidgetObserver;
   class BubbleWidgetObserver;
+  class ThemeObserver;
 
   FRIEND_TEST_ALL_PREFIXES(BubbleDialogDelegateViewTest,
                            VisibleWidgetShowsInkDropOnAttaching);
   FRIEND_TEST_ALL_PREFIXES(BubbleDialogDelegateViewTest,
                            AttachedWidgetShowsInkDropWhenVisible);
+  FRIEND_TEST_ALL_PREFIXES(BubbleDialogDelegateViewTest,
+                           MultipleBubbleAnchorHighlightTestInOrder);
+  FRIEND_TEST_ALL_PREFIXES(BubbleDialogDelegateViewTest,
+                           MultipleBubbleAnchorHighlightTestOutOfOrder);
 
   friend class AnchorViewObserver;
   friend class AnchorWidgetObserver;
   friend class BubbleWidgetObserver;
+  friend class ThemeObserver;
 
   friend class BubbleBorderDelegate;
   friend class BubbleWindowTargeter;
@@ -312,6 +326,17 @@ class VIEWS_EXPORT BubbleDialogDelegate : public DialogDelegate,
 
   void OnDeactivate();
 
+  // Update the bubble color from the NativeTheme unless it was explicitly set.
+  void UpdateColorsFromTheme();
+
+  // Notify this bubble that it is now the primary anchored bubble. When a new
+  // bubble becomes the primary anchor, the previous primary silently loses its
+  // primary status. This method is only called when this bubble becomes primary
+  // after losing it.
+  void NotifyAnchoredBubbleIsPrimary();
+
+  void SetAnchoredDialogKey();
+
   gfx::Insets title_margins_;
   BubbleBorder::Arrow arrow_ = BubbleBorder::NONE;
   BubbleBorder::Shadow shadow_;
@@ -321,8 +346,7 @@ class VIEWS_EXPORT BubbleDialogDelegate : public DialogDelegate,
   std::unique_ptr<AnchorViewObserver> anchor_view_observer_;
   std::unique_ptr<AnchorWidgetObserver> anchor_widget_observer_;
   std::unique_ptr<BubbleWidgetObserver> bubble_widget_observer_;
-  base::CallbackListSubscription paint_as_active_subscription_;
-  std::unique_ptr<Widget::PaintAsActiveLock> paint_as_active_lock_;
+  std::unique_ptr<ThemeObserver> theme_observer_;
   bool adjust_if_offscreen_ = true;
   bool focus_traversable_from_anchor_view_ = true;
   ViewTracker highlighted_button_tracker_;
@@ -354,9 +378,10 @@ class VIEWS_EXPORT BubbleDialogDelegate : public DialogDelegate,
 };
 
 // BubbleDialogDelegateView is a BubbleDialogDelegate that is also a View.
-// TODO(pbos): Finish moving functionality from BubbleDialogDelegateView into
-// BubbleDialogDelegate, then document here that it's better to subclass View
-// and construct a BubbleDialogDelegate.
+// Prefer using a BubbleDialogDelegate that sets a separate View as its contents
+// view.
+// TODO(pbos): Migrate existing uses of BubbleDialogDelegateView to directly
+// inherit or use BubbleDialogDelegate.
 class VIEWS_EXPORT BubbleDialogDelegateView : public BubbleDialogDelegate,
                                               public View {
  public:
@@ -385,7 +410,6 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public BubbleDialogDelegate,
   // View:
   Widget* GetWidget() override;
   const Widget* GetWidget() const override;
-  void AddedToWidget() override;
 
  protected:
   // Disallow overrides of GetMinimumSize and GetMaximumSize(). These would only
@@ -396,17 +420,9 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public BubbleDialogDelegate,
   gfx::Size GetMinimumSize() const final;
   gfx::Size GetMaximumSize() const final;
 
-  void OnThemeChanged() override;
-
-  // Perform view initialization on the contents for bubble sizing.
-  void Init() override;
-
  private:
   FRIEND_TEST_ALL_PREFIXES(BubbleDelegateTest, CreateDelegate);
   FRIEND_TEST_ALL_PREFIXES(BubbleDelegateTest, NonClientHitTest);
-
-  // Update the bubble color from the NativeTheme unless it was explicitly set.
-  void UpdateColorsFromTheme();
 };
 
 BEGIN_VIEW_BUILDER(VIEWS_EXPORT, BubbleDialogDelegateView, View)

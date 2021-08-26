@@ -1,17 +1,27 @@
+float4 tint_unpack4x8unorm(uint param_0) {
+  uint j = param_0;
+  uint4 i = uint4(j & 0xff, (j >> 8) & 0xff, (j >> 16) & 0xff, j >> 24);
+  return float4(i) / 255.0;
+}
+
 void unpack4x8unorm_750c74() {
-  uint tint_tmp_1 = 1u;
-  uint4 tint_tmp = uint4(tint_tmp_1 & 0xff, (tint_tmp_1 >> 8) & 0xff, (tint_tmp_1 >> 16) & 0xff, tint_tmp_1 >> 24);
-  float4 res = float4(tint_tmp) / 255.0;
+  float4 res = tint_unpack4x8unorm(1u);
 }
 
 struct tint_symbol {
   float4 value : SV_Position;
 };
 
-tint_symbol vertex_main() {
+float4 vertex_main_inner() {
   unpack4x8unorm_750c74();
-  const tint_symbol tint_symbol_1 = {float4(0.0f, 0.0f, 0.0f, 0.0f)};
-  return tint_symbol_1;
+  return float4(0.0f, 0.0f, 0.0f, 0.0f);
+}
+
+tint_symbol vertex_main() {
+  const float4 inner_result = vertex_main_inner();
+  tint_symbol wrapper_result = (tint_symbol)0;
+  wrapper_result.value = inner_result;
+  return wrapper_result;
 }
 
 void fragment_main() {

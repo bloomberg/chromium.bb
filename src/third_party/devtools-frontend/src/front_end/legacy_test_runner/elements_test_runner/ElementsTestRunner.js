@@ -59,8 +59,8 @@ ElementsTestRunner.findNode = async function(matchFunction, callback) {
         return;
       }
 
-      if (node._childDocumentPromiseForTesting) {
-        await node._childDocumentPromiseForTesting;
+      if (node.childDocumentPromiseForTesting) {
+        await node.childDocumentPromiseForTesting;
       }
 
       const pseudoElementsMap = node.pseudoElements();
@@ -104,7 +104,6 @@ ElementsTestRunner.findNodePromise = function(matchFunction) {
   return new Promise(resolve => ElementsTestRunner.findNode(matchFunction, resolve));
 };
 
-
 /**
  * @param {!UI.TreeOutline.TreeElement} treeElement
  */
@@ -115,7 +114,7 @@ function dumpObjectPropertyTreeElement(treeElement) {
   for (const child of treeElement.children()) {
     const property = /** @type {!ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement} */ (child).property;
     const key = property.name;
-    const value = /** @type {!SDK.RemoteObject.RemoteObjectImpl} */ (property.value)._description;
+    const value = /** @type {!SDK.RemoteObject.RemoteObjectImpl} */ (property.value).description;
     TestRunner.addResult('    ' + key + ': ' + value);
   }
 }
@@ -127,7 +126,7 @@ function dumpObjectPropertyTreeElement(treeElement) {
  */
 ElementsTestRunner.expandAndDumpEventListeners = function(eventListenersView, callback, force) {
   function listenersArrived() {
-    const listenerTypes = eventListenersView._treeOutline.rootElement().children();
+    const listenerTypes = eventListenersView.treeOutline.rootElement().children();
     for (let i = 0; i < listenerTypes.length; ++i) {
       listenerTypes[i].expand();
       const listenerItems = listenerTypes[i].children();
@@ -139,7 +138,7 @@ ElementsTestRunner.expandAndDumpEventListeners = function(eventListenersView, ca
   }
 
   function objectsExpanded() {
-    const listenerTypes = eventListenersView._treeOutline.rootElement().children();
+    const listenerTypes = eventListenersView.treeOutline.rootElement().children();
     for (let i = 0; i < listenerTypes.length; ++i) {
       if (!listenerTypes[i].children().length) {
         continue;
@@ -160,7 +159,7 @@ ElementsTestRunner.expandAndDumpEventListeners = function(eventListenersView, ca
     listenersArrived();
   } else {
     TestRunner.addSniffer(
-        EventListeners.EventListenersView.EventListenersView.prototype, '_eventListenersArrivedForTest',
+        EventListeners.EventListenersView.EventListenersView.prototype, 'eventListenersArrivedForTest',
         listenersArrived);
   }
 };
@@ -749,8 +748,8 @@ ElementsTestRunner.dumpElementsTree = function(rootNode, depth, resultsArray) {
     const node = treeItem._node;
 
     if (node) {
-      markers += dumpMap('markers', node._markers);
-      const dump = (node._subtreeMarkerCount ? 'subtreeMarkerCount:' + node._subtreeMarkerCount : '');
+      markers += dumpMap('markers', node.markers);
+      const dump = (node.subtreeMarkerCount ? 'subtreeMarkerCount:' + node.subtreeMarkerCount : '');
 
       if (dump) {
         if (markers) {
@@ -924,7 +923,7 @@ ElementsTestRunner.expandAndDump = function() {
 };
 
 ElementsTestRunner.dumpDOMAgentTree = function(node) {
-  if (!TestRunner.domModel._document) {
+  if (!TestRunner.domModel.document) {
     return;
   }
 

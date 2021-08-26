@@ -12,9 +12,12 @@
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/enterprise/connectors/connectors_prefs.h"
+#include "chrome/browser/enterprise/connectors/file_system/account_info_utils.h"
 #include "chrome/browser/enterprise/connectors/file_system/box_api_call_flow.h"
 #include "chrome/browser/enterprise/connectors/file_system/box_api_call_response.h"
 #include "chrome/browser/enterprise/connectors/file_system/box_upload_file_chunks_handler.h"
+#include "chrome/browser/enterprise/connectors/file_system/rename_handler.h"
+#include "chrome/browser/enterprise/connectors/file_system/uma_metrics_util.h"
 #include "components/download/public/common/download_interrupt_reasons_utils.h"
 #include "components/prefs/pref_service.h"
 #include "net/http/http_status_code.h"
@@ -40,17 +43,12 @@ using download::ConvertFileErrorToInterruptReason;
 using download::ConvertNetErrorToInterruptReason;
 using download::DownloadInterruptReasonToString;
 
-constexpr auto kSuccess = download::DOWNLOAD_INTERRUPT_REASON_NONE;
-constexpr auto kBoxUnknownError =
-    download::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED;
 const char kBoxErrorMessageFormat[] = "%d %s";         // 404 "not_found"
 const char kBoxMoreMessageFormat[] = "Request ID %s";  // <request_id>
 
 }  // namespace
 
 namespace enterprise_connectors {
-
-const char kUniquifierUmaLabel[] = "Enterprise.FileSystem.Uniquifier";
 
 ////////////////////////////////////////////////////////////////////////////////
 // BoxUploader
@@ -89,7 +87,7 @@ BoxUploader::ConvertToInterruptReasonOrErrorMessage(BoxApiCallResponse response,
       kBoxErrorMessageFormat, code, response.box_error_code.c_str()));
   reroute_info.set_additional_message(base::StringPrintf(
       kBoxMoreMessageFormat, response.box_request_id.c_str()));
-  return kBoxUnknownError;
+  return kServiceProviderUnknownError;
 }
 
 BoxUploader::BoxUploader(download::DownloadItem* download_item)
@@ -115,6 +113,8 @@ BoxUploader::BoxUploader(download::DownloadItem* download_item)
     DCHECK_EQ(is_completed, reroute_info.box().has_file_id());
     reroute_info_ = reroute_info;
     DCHECK_EQ(is_completed, GetUploadedFileUrl().is_valid());
+    DCHECK_EQ(reroute_info.box().has_folder_id(),
+              GetDestinationFolderUrl().is_valid());
     // TODO(https://crbug.com/1213761) If |is_completed| == false, load info to
     // resume upload from where it left off.
   } else {
@@ -128,8 +128,12 @@ BoxUploader::BoxUploader(download::DownloadItem* download_item)
   }
 }
 
-BoxUploader::~BoxUploader() = default;
-// TODO(https://crbug.com/1213761) May need to TerminateTask() to resume later.
+BoxUploader::~BoxUploader() {
+  for (auto& observer : observers_)
+    observer.OnDestruction();
+  // TODO(https://crbug.com/1213761) May need to TerminateTask() to resume
+  // later.
+}
 
 void BoxUploader::Init(
     base::RepeatingCallback<void(void)> authen_retry_callback,
@@ -189,6 +193,8 @@ void BoxUploader::StartUpload() {
   LogUniquifierCountToUma();
   SendProgressUpdate();
   SetCurrentApiCall(MakeFileUploadApiCall());
+  for (auto& observer : observers_)
+    observer.OnUploadStart();
   TryCurrentApiCall();
 }
 
@@ -214,18 +220,70 @@ void BoxUploader::OnApiCallFlowFailure(InterruptReason reason) {
 
 void BoxUploader::OnApiCallFlowDone(InterruptReason reason,
                                     std::string file_id) {
-  if (reason != kSuccess) {
-    LOG(ERROR) << "Upload failed: " << DownloadInterruptReasonToString(reason);
-    // TODO(https://crbug.com/1165972): on upload failure, decide whether to
-    // queue up the file to retry later, or also delete as usual. At this stage,
-    // for trusted testers (TT), deleting as usual for now. Need to determine
-    // how to communicate the failure/error to user.
-  } else {
+  for (auto& observer : observers_)
+    observer.OnUploadDone(reason == kSuccess);
+
+  if (reason == kSuccess) {
     DCHECK(reroute_info().file_id().empty());
     DCHECK(!file_id.empty());
     reroute_info().set_file_id(file_id);
+  } else {
+    LOG(ERROR) << "Upload failed: " << DownloadInterruptReasonToString(reason);
   }
+
+  // UMA Logging.
+  switch (reason) {
+    case kSuccess:
+      UmaLogDownloadsRoutingStatus(
+          EnterpriseFileSystemDownloadsRoutingStatus::ROUTING_SUCCEEDED);
+      break;
+    case kSignInCancellation:
+      UmaLogDownloadsRoutingStatus(
+          EnterpriseFileSystemDownloadsRoutingStatus::ROUTING_CANCELED);
+      break;
+    case kServiceProviderUnknownError:
+    case download::DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE:
+    case download::DOWNLOAD_INTERRUPT_REASON_SERVER_CONTENT_LENGTH_MISMATCH:
+      UmaLogDownloadsRoutingStatus(EnterpriseFileSystemDownloadsRoutingStatus::
+                                       ROUTING_FAILED_SERVICE_PROVIDER_ERROR);
+      break;
+    case kServiceProviderDown:
+      UmaLogDownloadsRoutingStatus(EnterpriseFileSystemDownloadsRoutingStatus::
+                                       ROUTING_FAILED_SERVICE_PROVIDER_OUTAGE);
+      break;
+    case kBrowserFailure:  // Same as `kCredentialUpdateFailure`
+      UmaLogDownloadsRoutingStatus(EnterpriseFileSystemDownloadsRoutingStatus::
+                                       ROUTING_FAILED_BROWSER_ERROR);
+      break;
+    // File errors converted by `ConvertFileErrorToInterruptReason`
+    // Note that ConvertToInterruptReasonOrErrorMessage can also return some of
+    // these codes for network errors caused by underlying file errors.
+    case download::DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED:
+    case download::DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR:
+    case download::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE:
+    case download::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED:
+      UmaLogDownloadsRoutingStatus(EnterpriseFileSystemDownloadsRoutingStatus::
+                                       ROUTING_FAILED_FILE_ERROR);
+      break;
+    // Network errors converted by `ConvertToInterruptReasonOrErrorMessage`
+    case download::DOWNLOAD_INTERRUPT_REASON_NETWORK_TIMEOUT:
+    case download::DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED:
+    case download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED:
+      UmaLogDownloadsRoutingStatus(EnterpriseFileSystemDownloadsRoutingStatus::
+                                       ROUTING_FAILED_NETWORK_ERROR);
+      break;
+    default:
+      // We have covered all possible interrupt reasons above, if we encounter
+      // any others the should be added to the appropriate fork.
+      NOTREACHED() << "Unexpected error: " << reason;
+  }
+
   SendProgressUpdate();
+
+  // TODO(https://crbug.com/1165972): on upload failure, decide whether to
+  // queue up the file to retry later, or also delete as usual. At this stage,
+  // for trusted testers (TT), deleting as usual for now. Need to determine
+  // how to communicate the failure/error to user.
   PostDeleteFileTask(reason);
 }
 
@@ -319,7 +377,7 @@ std::unique_ptr<OAuth2ApiCallFlow> BoxUploader::MakePreflightCheckApiCall() {
   return std::make_unique<BoxPreflightCheckApiCallFlow>(
       base::BindOnce(&BoxUploader::OnPreflightCheckResponse,
                      weak_factory_.GetWeakPtr()),
-      GetUploadFileName(), folder_id_);
+      GetUploadFileName(), GetFolderId());
 }
 
 std::unique_ptr<OAuth2ApiCallFlow>
@@ -391,21 +449,27 @@ const base::FilePath BoxUploader::GetUploadFileName() const {
 }
 
 const std::string BoxUploader::GetFolderId() {
-  if (folder_id_.empty() && prefs_) {
-    folder_id_ = prefs_->GetString(kFileSystemUploadFolderIdPref);
+  if ((!reroute_info().has_folder_id() || reroute_info().folder_id().empty()) &&
+      prefs_) {
+    SetFolderId(
+        GetDefaultFolderId(prefs_, kFileSystemServiceProviderPrefNameBox));
   }
   // TODO(https://crbug.com/1215847) Update to make API call to find folder id
   // if has file id.
-  return folder_id_;
+  return reroute_info().folder_id();
 }
 
 const std::string BoxUploader::GetFolderId() const {
-  return folder_id_;
+  return reroute_info().has_folder_id() ? reroute_info().folder_id()
+                                        : std::string();
 }
 
 void BoxUploader::SetFolderId(std::string folder_id) {
-  folder_id_ = folder_id;
-  prefs_->SetString(kFileSystemUploadFolderIdPref, folder_id);
+  reroute_info().set_folder_id(folder_id);
+  SetDefaultFolder(
+      prefs_, kFileSystemServiceProviderPrefNameBox, folder_id,
+      GetDefaultFolderName(prefs_, kFileSystemServiceProviderPrefNameBox));
+  // TODO(https://crbug.com/1229831): use folder name obtained from api call.
 }
 
 void BoxUploader::SetCurrentApiCall(
@@ -419,6 +483,8 @@ void BoxUploader::PostDeleteFileTask(InterruptReason upload_reason) {
   auto delete_file_task = base::BindOnce(&DeleteIfExists, GetLocalFilePath());
   auto delete_file_reply = base::BindOnce(
       &BoxUploader::OnFileDeleted, weak_factory_.GetWeakPtr(), upload_reason);
+  for (auto& observer : observers_)
+    observer.OnFileDeletionStart();
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
       std::move(delete_file_task), std::move(delete_file_reply));
@@ -435,12 +501,14 @@ void BoxUploader::OnFileDeleted(InterruptReason upload_reason,
                 << base::File::ErrorToString(delete_status);
   }
   NotifyResult(final_reason);
+  for (auto& observer : observers_)
+    observer.OnFileDeletionDone(delete_status == base::File::Error::FILE_OK);
 }
 
 // Helper methods for tests ////////////////////////////////////////////////////
 
 std::string BoxUploader::GetFolderIdForTesting() const {
-  return folder_id_;
+  return GetFolderId();
 }
 
 void BoxUploader::NotifyOAuth2ErrorForTesting() {
@@ -633,6 +701,75 @@ void BoxChunkedUploader::OnApiCallFlowFailure(InterruptReason reason) {
   } else {
     BoxUploader::OnApiCallFlowFailure(reason);
   }
+}
+
+// BoxUploader::TestObserver
+BoxUploader::TestObserver::TestObserver(FileSystemRenameHandler* rename_handler)
+    : uploader_(
+          FileSystemRenameHandler::TestObserver::GetBoxUploader(rename_handler)
+              ->weak_factory_.GetWeakPtr()) {
+  uploader_->observers_.AddObserver(this);
+}
+
+BoxUploader::TestObserver::~TestObserver() {
+  uploader_->observers_.RemoveObserver(this);
+}
+
+void BoxUploader::TestObserver::OnUploadStart() {
+  upload_status_ = Status::kInProgress;
+  if (stop_waiting_for_upload_to_start_)
+    std::move(stop_waiting_for_upload_to_start_).Run();
+}
+
+void BoxUploader::TestObserver::OnUploadDone(bool succeeded) {
+  upload_status_ = succeeded ? Status::kSucceeded : Status::kFailed;
+  if (stop_waiting_for_upload_to_complete_)
+    std::move(stop_waiting_for_upload_to_complete_).Run();
+}
+
+void BoxUploader::TestObserver::OnFileDeletionStart() {
+  tmp_file_deletion_status_ = Status::kInProgress;
+}
+
+void BoxUploader::TestObserver::OnFileDeletionDone(bool succeeded) {
+  tmp_file_deletion_status_ = succeeded ? Status::kSucceeded : Status::kFailed;
+  if (stop_waiting_for_deletion_to_complete_)
+    std::move(stop_waiting_for_deletion_to_complete_).Run();
+}
+
+void BoxUploader::TestObserver::OnDestruction() {
+  uploader_.reset();
+}
+
+void BoxUploader::TestObserver::WaitForUploadStart() {
+  if (upload_status_ == Status::kInProgress)
+    return;
+  base::RunLoop run_loop;
+  stop_waiting_for_upload_to_start_ = run_loop.QuitClosure();
+  run_loop.Run();
+}
+
+bool BoxUploader::TestObserver::WaitForUploadCompletion() {
+  if (upload_status_ == Status::kSucceeded || upload_status_ == Status::kFailed)
+    return true;
+  base::RunLoop run_loop;
+  stop_waiting_for_upload_to_complete_ = run_loop.QuitClosure();
+  run_loop.Run();
+  return upload_status_ == Status::kSucceeded;
+}
+
+bool BoxUploader::TestObserver::WaitForTmpFileDeletion() {
+  if ((tmp_file_deletion_status_ == Status::kSucceeded) ||
+      (tmp_file_deletion_status_ == Status::kFailed))
+    return true;
+  base::RunLoop run_loop;
+  stop_waiting_for_deletion_to_complete_ = run_loop.QuitClosure();
+  run_loop.Run();
+  return tmp_file_deletion_status_ == Status::kSucceeded;
+}
+
+GURL BoxUploader::TestObserver::GetFileUrl() {
+  return uploader_->GetUploadedFileUrl();
 }
 
 }  // namespace enterprise_connectors

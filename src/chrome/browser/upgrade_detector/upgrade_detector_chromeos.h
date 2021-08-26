@@ -13,7 +13,7 @@
 #include "chrome/browser/upgrade_detector/build_state_observer.h"
 #include "chrome/browser/upgrade_detector/installed_version_updater_chromeos.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
-#include "chromeos/dbus/update_engine_client.h"
+#include "chromeos/dbus/update_engine/update_engine_client.h"
 
 class PrefRegistrySimple;
 namespace base {
@@ -35,8 +35,8 @@ class UpgradeDetectorChromeos : public UpgradeDetector,
   // UpgradeDetector:
   void Init() override;
   void Shutdown() override;
-  base::TimeDelta GetHighAnnoyanceLevelDelta() override;
-  base::Time GetHighAnnoyanceDeadline() override;
+  base::Time GetAnnoyanceLevelDeadline(
+      UpgradeNotificationAnnoyanceLevel level) override;
   void OverrideHighAnnoyanceDeadline(base::Time deadline) override;
   void ResetOverriddenDeadline() override;
 

@@ -2,20 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {reportError} from '../error.js';
-import {ErrorLevel, ErrorType} from '../type.js';
+import {bitmapToJpegBlob} from '../util.js';
+import {WaitableEvent} from '../waitable_event.js';
 
 import {DeviceOperator} from './device_operator.js';
+import {closeEndpoint} from './util.js';
 
 /**
  * Extended PhotoCapabilities type used by Chrome OS HAL3 VCD.
  * @extends {PhotoCapabilities}
  * @record
  */
-const CrosPhotoCapabilities = function() {};
-
-/** @type {!Array<string>} */
-CrosPhotoCapabilities.prototype.supportedEffects;
+export class CrosPhotoCapabilities {
+  /**
+   * @public
+   */
+  constructor() {
+    /**
+     * @type {!Array<string>}
+     */
+    this.supportedEffects;
+  }
+}
 
 /**
  * Creates the wrapper of JS image-capture and Mojo image-capture.
@@ -96,25 +104,33 @@ export class CrosImageCapture {
     }
 
     if (deviceOperator !== null) {
-      let onShutterDone;
-      const isShutterDone = new Promise((resolve) => {
-        onShutterDone = resolve;
-      });
-      const observerId = await deviceOperator.addShutterObserver(
-          this.deviceId_, onShutterDone);
+      const onShutterDone = new WaitableEvent();
+      const shutterObserver =
+          await deviceOperator.addShutterObserver(this.deviceId_, () => {
+            onShutterDone.signal();
+          });
       takes.unshift(this.capture_.takePhoto(photoSettings));
-      await isShutterDone;
-      const isSuccess = await deviceOperator.removeShutterObserver(
-          this.deviceId_, observerId);
-      if (!isSuccess) {
-        reportError(
-            ErrorType.REMOVE_SHUTTER_OBSERVER_FAILURE, ErrorLevel.ERROR,
-            new Error('Failed to remove shutter observer'));
-      }
+      await onShutterDone.wait();
+      closeEndpoint(shutterObserver);
       return takes;
     } else {
       takes.unshift(this.capture_.takePhoto(photoSettings));
       return takes;
     }
+  }
+
+  /**
+   * @return {!Promise<!ImageBitmap>}
+   */
+  grabFrame() {
+    return this.capture_.grabFrame();
+  }
+
+  /**
+   * @return {!Promise<!Blob>} Returns jpeg blob of the grabbed frame.
+   */
+  async grabJpegFrame() {
+    const bitmap = await this.capture_.grabFrame();
+    return bitmapToJpegBlob(bitmap);
   }
 }

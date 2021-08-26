@@ -5,6 +5,7 @@
 #include "quic/core/crypto/tls_connection.h"
 
 #include "absl/strings/string_view.h"
+#include "third_party/boringssl/src/include/openssl/ssl.h"
 #include "quic/platform/api/quic_bug_tracker.h"
 
 namespace quic {
@@ -100,6 +101,18 @@ TlsConnection::TlsConnection(SSL_CTX* ssl_ctx,
     const int early_data_enabled = *ssl_config_.early_data_enabled ? 1 : 0;
     SSL_set_early_data_enabled(ssl(), early_data_enabled);
   }
+  if (ssl_config_.signing_algorithm_prefs.has_value()) {
+    SSL_set_signing_algorithm_prefs(
+        ssl(), ssl_config_.signing_algorithm_prefs->data(),
+        ssl_config_.signing_algorithm_prefs->size());
+  }
+}
+
+void TlsConnection::EnableInfoCallback() {
+  SSL_set_info_callback(
+      ssl(), +[](const SSL* ssl, int type, int value) {
+        ConnectionFromSsl(ssl)->delegate_->InfoCallback(type, value);
+      });
 }
 
 // static

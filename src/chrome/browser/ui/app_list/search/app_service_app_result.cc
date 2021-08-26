@@ -24,7 +24,6 @@
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
-#include "chrome/common/chrome_features.h"
 #include "components/favicon/core/large_icon_service.h"
 #include "components/services/app_service/public/cpp/app_update.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
@@ -179,15 +178,18 @@ void AppServiceAppResult::Launch(int event_flags,
       app_id(), [&is_active_app](const apps::AppUpdate& update) {
         if (update.AppType() == apps::mojom::AppType::kCrostini ||
             ((update.AppType() == apps::mojom::AppType::kExtension ||
+              update.AppType() == apps::mojom::AppType::kSystemWeb ||
               update.AppType() == apps::mojom::AppType::kWeb) &&
              update.IsPlatformApp() == apps::mojom::OptionalBool::kFalse)) {
           is_active_app = true;
         }
       });
   if (is_active_app) {
+    ash::ShelfLaunchSource source =
+        is_recommendation() ? ash::LAUNCH_FROM_APP_LIST_RECOMMENDATION
+                            : ash::LAUNCH_FROM_APP_LIST_SEARCH;
     ChromeShelfController::instance()->ActivateApp(
-        app_id(), ash::LAUNCH_FROM_APP_LIST_SEARCH, event_flags,
-        controller()->GetAppListDisplayId());
+        app_id(), source, event_flags, controller()->GetAppListDisplayId());
   } else {
     proxy->Launch(app_id(), event_flags, launch_source,
                   apps::MakeWindowInfo(controller()->GetAppListDisplayId()));
@@ -199,10 +201,7 @@ void AppServiceAppResult::CallLoadIcon(bool chip, bool allow_placeholder_icon) {
     // If |icon_loader_releaser_| is non-null, assigning to it will signal to
     // |icon_loader_| that the previous icon is no longer being used, as a hint
     // that it could be flushed from any caches.
-    auto icon_type =
-        (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon))
-            ? apps::mojom::IconType::kStandard
-            : apps::mojom::IconType::kUncompressed;
+    auto icon_type = apps::mojom::IconType::kStandard;
     icon_loader_releaser_ = icon_loader_->LoadIcon(
         app_type_, app_id(), icon_type,
         chip ? ash::SharedAppListConfig::instance()
@@ -217,10 +216,7 @@ void AppServiceAppResult::CallLoadIcon(bool chip, bool allow_placeholder_icon) {
 
 void AppServiceAppResult::OnLoadIcon(bool chip,
                                      apps::mojom::IconValuePtr icon_value) {
-  auto icon_type =
-      (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon))
-          ? apps::mojom::IconType::kStandard
-          : apps::mojom::IconType::kUncompressed;
+  auto icon_type = apps::mojom::IconType::kStandard;
   if (icon_value->icon_type != icon_type) {
     return;
   }
@@ -228,7 +224,7 @@ void AppServiceAppResult::OnLoadIcon(bool chip,
   if (chip) {
     SetChipIcon(icon_value->uncompressed);
   } else {
-    SetIcon(icon_value->uncompressed);
+    SetIcon(IconInfo(icon_value->uncompressed));
   }
 
   if (icon_value->is_placeholder_icon) {

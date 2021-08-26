@@ -10,6 +10,7 @@
       ". leftspacer .          rightspacer .";
     grid-template-columns: 1fr 16px minmax(568px, 920px) 16px 1fr;
     grid-template-rows: 56px 172px 12px 1fr 12px;
+    position: relative;
     width: 100%;
   }
   #leftspacer {
@@ -27,9 +28,18 @@
   wallpaper-collections, wallpaper-images, local-images {
     grid-area: imagegrid;
   }
+  personalization-toast {
+    position: absolute;
+    bottom: 16px;
+    left: 50%;
+    max-width: 380px;
+    transform: translateX(-50%);
+  }
 </style>
 <div id="container">
-  <iron-location path="{{path_}}" query="{{query_}}">
+  <!-- dwell-time is set to 200ms to populate history state more quickly while
+    still respecting the grace period defined in iron-location.  -->
+  <iron-location path="{{path_}}" query="{{query_}}" dwell-time="200">
   </iron-location>
   <iron-query-params params-object="{{queryParams_}}"
     params-string="{{query_}}">
@@ -38,13 +48,16 @@
   <div id="leftspacer"></div>
   <wallpaper-breadcrumb path=[[path_]] collection-id="[[queryParams_.id]]">
   </wallpaper-breadcrumb>
-  <wallpaper-selected></wallpaper-selected>
-  <wallpaper-collections hidden$="[[!shouldShowCollections_(path_)]]">
+  <wallpaper-selected path=[[path_]] collection-id="[[queryParams_.id]]">
+  </wallpaper-selected>
+  <!-- do not use hidden$ here - need to listen on property change in
+       these elements. -->
+  <wallpaper-collections hidden="[[!shouldShowCollections_(path_)]]">
   </wallpaper-collections>
   <wallpaper-images collection-id="[[queryParams_.id]]"
-    hidden$="[[!shouldShowCollectionImages_(path_)]]"></wallpaper-images>
-  <!-- do not use hidden$ here - need to listen on property change in element. -->
+    hidden="[[!shouldShowCollectionImages_(path_)]]"></wallpaper-images>
   <local-images hidden="[[!shouldShowLocalCollection_(path_)]]"></local-images>
   <!-- Prevent the right margin from collapsing when window gets very narrow -->
   <div id="rightspacer"></div>
+  <personalization-toast></personalization-toast>
 </div>

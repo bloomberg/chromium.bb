@@ -57,7 +57,7 @@ class CIPDTestApi(recipe_test_api.RecipeTestApi):
       # Return one instance by default.
       return self._resultify([self.make_pin(package_name)])
     if isinstance(instances, int):
-      instances = ['instance_id_%i' % (i+1) for i in xrange(instances)]
+      instances = ['instance_id_%i' % (i+1) for i in range(instances)]
     return self._resultify([self.make_pin(package_name, instance)
                             for instance in instances])
 

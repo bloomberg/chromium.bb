@@ -24,7 +24,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
-#include "chrome/browser/sync/test/integration/os_sync_test.h"
+#include "chrome/browser/sync/test/integration/sync_consent_optional_sync_test.h"
 #include "components/browser_sync/browser_sync_switches.h"
 #endif
 
@@ -114,8 +114,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
   // on some other feature flags, not all of the allowed types are necessarily
   // active, and that's okay.
   syncer::ModelTypeSet bad_types =
-      base::util::Difference(GetSyncService(0)->GetActiveDataTypes(),
-                             AllowedTypesInStandaloneTransportMode());
+      base::Difference(GetSyncService(0)->GetActiveDataTypes(),
+                       AllowedTypesInStandaloneTransportMode());
   EXPECT_TRUE(bad_types.Empty()) << syncer::ModelTypeSetToString(bad_types);
 }
 
@@ -148,8 +148,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
   EXPECT_FALSE(GetSyncService(0)->IsSyncFeatureActive());
 
   syncer::ModelTypeSet bad_types =
-      base::util::Difference(GetSyncService(0)->GetActiveDataTypes(),
-                             AllowedTypesInStandaloneTransportMode());
+      base::Difference(GetSyncService(0)->GetActiveDataTypes(),
+                       AllowedTypesInStandaloneTransportMode());
   EXPECT_TRUE(bad_types.Empty()) << syncer::ModelTypeSetToString(bad_types);
 
   // Finally, turn Sync-the-feature on again.
@@ -280,9 +280,11 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-class SingleClientStandaloneTransportOsSyncTest : public OsSyncTest {
+class SingleClientStandaloneTransportOsSyncTest
+    : public SyncConsentOptionalSyncTest {
  public:
-  SingleClientStandaloneTransportOsSyncTest() : OsSyncTest(SINGLE_CLIENT) {
+  SingleClientStandaloneTransportOsSyncTest()
+      : SyncConsentOptionalSyncTest(SINGLE_CLIENT) {
     // Enable in-development types.
     scoped_features_.InitAndEnableFeature(switches::kSyncWifiConfigurations);
   }

@@ -318,10 +318,10 @@ TEST_F(BoxCreateUpstreamFolderApiCallFlowTest, CreateApiCallBody) {
 
 TEST_F(BoxCreateUpstreamFolderApiCallFlowTest, IsExpectedSuccessCode) {
   ASSERT_TRUE(flow_->IsExpectedSuccessCode(201));
+  ASSERT_TRUE(flow_->IsExpectedSuccessCode(409));
   ASSERT_FALSE(flow_->IsExpectedSuccessCode(400));
   ASSERT_FALSE(flow_->IsExpectedSuccessCode(403));
   ASSERT_FALSE(flow_->IsExpectedSuccessCode(404));
-  ASSERT_FALSE(flow_->IsExpectedSuccessCode(409));
 }
 
 TEST_F(BoxCreateUpstreamFolderApiCallFlowTest, ProcessApiCallFailure) {
@@ -349,14 +349,24 @@ class BoxCreateUpstreamFolderApiCallFlowTest_ProcessApiCallSuccess
   network::mojom::URLResponseHeadPtr head_;
 };
 
-TEST_F(BoxCreateUpstreamFolderApiCallFlowTest_ProcessApiCallSuccess, Normal) {
-  auto http_head = network::CreateURLResponseHead(net::HTTP_CREATED);
+TEST_F(BoxCreateUpstreamFolderApiCallFlowTest_ProcessApiCallSuccess, Created) {
   flow_->ProcessApiCallSuccess(
-      http_head.get(),
+      head_.get(),
       std::make_unique<std::string>(kFileSystemBoxCreateFolderResponseBody));
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(processed_success_);
   ASSERT_EQ(response_code_, net::HTTP_CREATED);
+  ASSERT_EQ(processed_folder_id_, kFileSystemBoxCreateFolderResponseFolderId);
+}
+
+TEST_F(BoxCreateUpstreamFolderApiCallFlowTest_ProcessApiCallSuccess, Conflict) {
+  auto http_head = network::CreateURLResponseHead(net::HTTP_CONFLICT);
+  flow_->ProcessApiCallSuccess(
+      http_head.get(), std::make_unique<std::string>(
+                           kFileSystemBoxCreateFolderConflictResponseBody));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(processed_success_);
+  ASSERT_EQ(response_code_, net::HTTP_CONFLICT);
   ASSERT_EQ(processed_folder_id_, kFileSystemBoxCreateFolderResponseFolderId);
 }
 
@@ -1183,4 +1193,108 @@ TEST_F(BoxCommitUploadSessionApiCallFlowTest, ProcessApiCallSuccess_Created) {
             GURL(kFileSystemBoxUploadResponseFileUrl));
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// GetCurrentUser
+////////////////////////////////////////////////////////////////////////////////
+
+class BoxGetCurrentUserApiCallFlowForTest
+    : public BoxGetCurrentUserApiCallFlow {
+ public:
+  using BoxGetCurrentUserApiCallFlow::BoxGetCurrentUserApiCallFlow;
+  using BoxGetCurrentUserApiCallFlow::CreateApiCallBody;
+  using BoxGetCurrentUserApiCallFlow::CreateApiCallBodyContentType;
+  using BoxGetCurrentUserApiCallFlow::CreateApiCallUrl;
+  using BoxGetCurrentUserApiCallFlow::IsExpectedSuccessCode;
+  using BoxGetCurrentUserApiCallFlow::ProcessApiCallSuccess;
+  using BoxGetCurrentUserApiCallFlow::ProcessFailure;
+};
+
+class BoxGetCurrentUserApiCallFlowTest
+    : public BoxApiCallFlowTest<BoxGetCurrentUserApiCallFlowForTest> {
+ protected:
+  void SetUp() override {
+    flow_ = std::make_unique<BoxGetCurrentUserApiCallFlowForTest>(
+        base::BindOnce(&BoxGetCurrentUserApiCallFlowTest::OnResponse,
+                       factory_.GetWeakPtr()));
+  }
+
+  void OnResponse(BoxApiCallResponse response, base::Value json) {
+    OnGenericResponse(response);
+    if (json.FindStringPath("enterprise.id")) {
+      enterprise_id_ =
+          std::make_unique<std::string>(*json.FindStringPath("enterprise.id"));
+    }
+  }
+
+  std::unique_ptr<std::string> enterprise_id_;
+  base::OnceClosure quit_closure_;
+  base::WeakPtrFactory<BoxGetCurrentUserApiCallFlowTest> factory_{this};
+};
+
+TEST_F(BoxGetCurrentUserApiCallFlowTest, CreateApiCallUrl) {
+  GURL url(kFileSystemBoxGetUserUrl);
+  ASSERT_EQ(flow_->CreateApiCallUrl(), url);
+}
+
+TEST_F(BoxGetCurrentUserApiCallFlowTest, IsExpectedSuccessCode) {
+  ASSERT_TRUE(flow_->IsExpectedSuccessCode(200));
+  ASSERT_FALSE(flow_->IsExpectedSuccessCode(400));
+  ASSERT_FALSE(flow_->IsExpectedSuccessCode(403));
+  ASSERT_FALSE(flow_->IsExpectedSuccessCode(404));
+  ASSERT_FALSE(flow_->IsExpectedSuccessCode(409));
+}
+
+TEST_F(BoxGetCurrentUserApiCallFlowTest, ProcessApiCallSuccess) {
+  auto http_head = network::CreateURLResponseHead(net::HTTP_OK);
+  std::string body(R"({
+    "type": "user",
+    "id": "9876",
+    "login": "wile.e.coyote@acme.com",
+    "name": "Wile E. Coyote",
+    "enterprise": {
+      "type": "enterprise",
+      "id": "31415926",
+      "name": "MegaCorp"
+    }
+  })");
+  flow_->ProcessApiCallSuccess(http_head.get(),
+                               std::make_unique<std::string>(body));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(processed_success_);
+  ASSERT_TRUE(enterprise_id_ != nullptr);
+  ASSERT_EQ(*enterprise_id_, "31415926");
+  ASSERT_EQ(response_code_, net::HTTP_OK);
+}
+
+TEST_F(BoxGetCurrentUserApiCallFlowTest,
+       ProcessApiCallSuccess_NonEnterpriseUser) {
+  auto http_head = network::CreateURLResponseHead(net::HTTP_OK);
+  std::string body(R"({
+    "type": "user",
+    "id": "1234",
+    "enterprise": null
+  })");
+  flow_->ProcessApiCallSuccess(http_head.get(),
+                               std::make_unique<std::string>(body));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_FALSE(processed_success_);
+  ASSERT_EQ(enterprise_id_, nullptr);
+  ASSERT_EQ(response_code_, net::HTTP_OK);
+}
+
+TEST_F(BoxGetCurrentUserApiCallFlowTest, ProcessApiCallFailure) {
+  auto http_head = network::CreateURLResponseHead(net::HTTP_TOO_MANY_REQUESTS);
+  std::unique_ptr<std::string> body =
+      std::make_unique<std::string>(CreateFailureResponse(
+          net::HTTP_TOO_MANY_REQUESTS, "rate_limit_exceeded"));
+  flow_->ProcessApiCallFailure(net::OK, http_head.get(), std::move(body));
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_FALSE(processed_success_);
+  ASSERT_EQ(enterprise_id_, nullptr);
+  ASSERT_EQ(response_code_, net::HTTP_TOO_MANY_REQUESTS);
+  ASSERT_EQ(box_error_code_, "rate_limit_exceeded");
+}
+
+// base::Value(base::Value::Type::DICTIONARY);
 }  // namespace enterprise_connectors

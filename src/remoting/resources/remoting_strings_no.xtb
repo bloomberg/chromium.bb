@@ -11,6 +11,7 @@
 <translation id="1546934824884762070">Det oppsto en uventet feil. Rapportér dette problemet til utviklerne.</translation>
 <translation id="1697532407822776718">Da er alt klart!</translation>
 <translation id="1742469581923031760">Kobler til …</translation>
+<translation id="177040763384871009">For å tillate åpning av linker som klikkes på den eksterne enheten, i klientnettleseren, må du endre systemets nettleser til «<ph name="URL_FORWARDER_NAME" />».</translation>
 <translation id="177096447311351977">Kanal-IP for klienten: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1897488610212723051">Slett</translation>
 <translation id="2009755455353575666">Tilkobling mislyktes</translation>
@@ -129,6 +130,7 @@ Hvis det allerede er merket av for «<ph name="SERVICE_SCRIPT_NAME" />», fjerne
 <translation id="6963936880795878952">Tilkoblinger til den eksterne datamaskinen er midlertidig blokkert fordi noen prøvde å koble seg til med en ugyldig PIN-kode. Prøv på nytt senere.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Er du sikker på at du vil deaktivere eksterne tilkoblinger til <ph name="HOSTNAME" />? Hvis du ombestemmer deg, må du tilbake til datamaskinen for å gjenopprette tilkoblingene.</translation>
+<translation id="6998890551706945177"><ph name="CLIENT_USERNAME" /> har bedt om tilgang til å se og styre datamaskinen din. Trykk på «<ph name="IDS_SHARE_CONFIRM_DIALOG_DECLINE" />» hvis du ikke kjenner denne personen, eller hvis du må gjøre endringer før du deler.  Ellers velger du «<ph name="IDS_SHARE_CONFIRM_DIALOG_CONFIRM" />» for å tillate tilkoblingen.</translation>
 <translation id="7019153418965365059">Ukjent vertsfeil: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Fjernhjelp</translation>
 <translation id="7026930240735156896">Følg instruksjonene for å konfigurere datamaskinen din for ekstern tilgang.</translation>
@@ -142,6 +144,7 @@ Hvis det allerede er merket av for «<ph name="SERVICE_SCRIPT_NAME" />», fjerne
 <translation id="7434397035092923453">Klienten ble nektet tilgang: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">Klienten ble tilknyttet: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7526139040829362392">Velg en annen konto</translation>
+<translation id="7535110896613603182">Åpne innstillinger for standardapper</translation>
 <translation id="7628469622942688817">Husk PIN-koden min på denne enheten.</translation>
 <translation id="7649070708921625228">Hjelp</translation>
 <translation id="7658239707568436148">Avbryt</translation>

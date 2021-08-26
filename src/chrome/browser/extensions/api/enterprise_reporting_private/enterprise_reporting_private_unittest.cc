@@ -4,6 +4,7 @@
 
 #include <tuple>
 
+#include "base/files/file_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/enterprise/signals/device_info_fetcher.h"
 #include "chrome/browser/extensions/api/enterprise_reporting_private/enterprise_reporting_private_api.h"
@@ -12,6 +13,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "chrome/browser/enterprise/signals/signals_common.h"
 #include "chrome/browser/extensions/api/enterprise_reporting_private/chrome_desktop_report_request_helper.h"
 #include "chrome/browser/extensions/extension_api_unittest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
@@ -27,6 +29,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_WIN)
+#include <netfw.h>
+#include <windows.h>
+#include <wrl/client.h>
+
 #include "base/test/test_reg_util_win.h"
 #endif
 
@@ -36,6 +42,8 @@
 
 namespace enterprise_reporting_private =
     ::extensions::api::enterprise_reporting_private;
+
+using SettingValue = enterprise_signals::SettingValue;
 
 namespace extensions {
 
@@ -395,11 +403,19 @@ class EnterpriseReportingPrivateGetContextInfoTest
   }
 
   void ExpectDefaultChromeCleanupEnabled(
-      enterprise_reporting_private::ContextInfo& info) {
+      const enterprise_reporting_private::ContextInfo& info) {
 #if defined(OS_WIN)
     EXPECT_TRUE(*info.chrome_cleanup_enabled);
 #else
     EXPECT_EQ(nullptr, info.chrome_cleanup_enabled.get());
+#endif
+  }
+  void ExpectDefaultThirdPartyBlockingEnabled(
+      const enterprise_reporting_private::ContextInfo& info) {
+#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+    EXPECT_TRUE(*info.third_party_blocking_enabled);
+#else
+    EXPECT_EQ(info.third_party_blocking_enabled, nullptr);
 #endif
   }
 };
@@ -427,7 +443,45 @@ TEST_F(EnterpriseReportingPrivateGetContextInfoTest, NoSpecialContext) {
       info.password_protection_warning_trigger);
   ExpectDefaultChromeCleanupEnabled(info);
   EXPECT_FALSE(info.chrome_remote_desktop_app_blocked);
+  ExpectDefaultThirdPartyBlockingEnabled(info);
 }
+
+#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+class EnterpriseReportingPrivateGetContextInfoThirdPartyBlockingTest
+    : public EnterpriseReportingPrivateGetContextInfoTest,
+      public testing::WithParamInterface<bool> {};
+
+TEST_P(EnterpriseReportingPrivateGetContextInfoThirdPartyBlockingTest, Test) {
+  bool policyValue = GetParam();
+
+  g_browser_process->local_state()->SetBoolean(
+      prefs::kThirdPartyBlockingEnabled, policyValue);
+
+  enterprise_reporting_private::ContextInfo info = GetContextInfo();
+
+  EXPECT_TRUE(info.browser_affiliation_ids.empty());
+  EXPECT_TRUE(info.profile_affiliation_ids.empty());
+  EXPECT_TRUE(info.on_file_attached_providers.empty());
+  EXPECT_TRUE(info.on_file_downloaded_providers.empty());
+  EXPECT_TRUE(info.on_bulk_data_entry_providers.empty());
+  EXPECT_EQ(enterprise_reporting_private::REALTIME_URL_CHECK_MODE_DISABLED,
+            info.realtime_url_check_mode);
+  EXPECT_TRUE(info.on_security_event_providers.empty());
+  EXPECT_EQ(version_info::GetVersionNumber(), info.browser_version);
+  EXPECT_EQ(enterprise_reporting_private::SAFE_BROWSING_LEVEL_STANDARD,
+            info.safe_browsing_protection_level);
+  EXPECT_EQ(BuiltInDnsClientPlatformDefault(),
+            info.built_in_dns_client_enabled);
+  ExpectDefaultChromeCleanupEnabled(info);
+  EXPECT_FALSE(info.chrome_remote_desktop_app_blocked);
+  EXPECT_EQ(policyValue, *info.third_party_blocking_enabled);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    EnterpriseReportingPrivateGetContextInfoThirdPartyBlockingTest,
+    testing::Bool());
+#endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 class EnterpriseReportingPrivateGetContextInfoSafeBrowsingTest
     : public EnterpriseReportingPrivateGetContextInfoTest,
@@ -471,6 +525,7 @@ TEST_P(EnterpriseReportingPrivateGetContextInfoSafeBrowsingTest, Test) {
   EXPECT_EQ(
       enterprise_reporting_private::PASSWORD_PROTECTION_TRIGGER_POLICY_UNSET,
       info.password_protection_warning_trigger);
+  ExpectDefaultThirdPartyBlockingEnabled(info);
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -507,6 +562,7 @@ TEST_P(EnterpriseReportingPrivateGetContextInfoBuiltInDnsClientTest, Test) {
   EXPECT_EQ(
       enterprise_reporting_private::PASSWORD_PROTECTION_TRIGGER_POLICY_UNSET,
       info.password_protection_warning_trigger);
+  ExpectDefaultThirdPartyBlockingEnabled(info);
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -561,6 +617,7 @@ TEST_P(EnterpriseReportingPrivateGetContextPasswordProtectionWarningTrigger,
             info.safe_browsing_protection_level);
   EXPECT_EQ(BuiltInDnsClientPlatformDefault(),
             info.built_in_dns_client_enabled);
+  ExpectDefaultThirdPartyBlockingEnabled(info);
   EXPECT_EQ(passwordTriggerValue, info.password_protection_warning_trigger);
 }
 
@@ -574,16 +631,118 @@ INSTANTIATE_TEST_SUITE_P(
                     enterprise_reporting_private::
                         PASSWORD_PROTECTION_TRIGGER_PHISHING_REUSE));
 
+#if defined(OS_LINUX)
+class EnterpriseReportingPrivateGetContextOSFirewallLinuxTest
+    : public EnterpriseReportingPrivateGetContextInfoTest,
+      public testing::WithParamInterface<
+          enterprise_reporting_private::SettingValue> {
+ public:
+  void SetUp() override {
+    ExtensionApiUnittest::SetUp();
+    ASSERT_TRUE(fake_appdata_dir_.CreateUniqueTempDir());
+    file_path_ = fake_appdata_dir_.GetPath().Append("ufw.conf");
+  }
+
+  void ExpectDefaultPolicies(
+      const enterprise_reporting_private::ContextInfo& info) {
+    EXPECT_TRUE(info.browser_affiliation_ids.empty());
+    EXPECT_TRUE(info.profile_affiliation_ids.empty());
+    EXPECT_TRUE(info.on_file_attached_providers.empty());
+    EXPECT_TRUE(info.on_file_downloaded_providers.empty());
+    EXPECT_TRUE(info.on_bulk_data_entry_providers.empty());
+    EXPECT_EQ(enterprise_reporting_private::REALTIME_URL_CHECK_MODE_DISABLED,
+              info.realtime_url_check_mode);
+    EXPECT_TRUE(info.on_security_event_providers.empty());
+    EXPECT_EQ(version_info::GetVersionNumber(), info.browser_version);
+    EXPECT_EQ(enterprise_reporting_private::SAFE_BROWSING_LEVEL_STANDARD,
+              info.safe_browsing_protection_level);
+    EXPECT_EQ(BuiltInDnsClientPlatformDefault(),
+              info.built_in_dns_client_enabled);
+    EXPECT_EQ(
+        enterprise_reporting_private::PASSWORD_PROTECTION_TRIGGER_POLICY_UNSET,
+        info.password_protection_warning_trigger);
+    ExpectDefaultChromeCleanupEnabled(info);
+    EXPECT_FALSE(info.chrome_remote_desktop_app_blocked);
+    ExpectDefaultThirdPartyBlockingEnabled(info);
+  }
+
+ protected:
+  base::ScopedTempDir fake_appdata_dir_;
+  base::FilePath file_path_;
+};
+
+TEST_F(EnterpriseReportingPrivateGetContextOSFirewallLinuxTest,
+       NoFirewallFile) {
+  // Refer to a non existent firewall config file
+  enterprise_signals::ScopedUfwConfigPathForTesting scoped_path(
+      file_path_.value().c_str());
+  enterprise_reporting_private::ContextInfo info = GetContextInfo();
+
+  ExpectDefaultPolicies(info);
+  EXPECT_EQ(info.os_firewall,
+            enterprise_reporting_private::SETTING_VALUE_UNKNOWN);
+}
+
+TEST_F(EnterpriseReportingPrivateGetContextOSFirewallLinuxTest, NoEnabledKey) {
+  // Refer to a config file without the ENABLED=value key-value pair
+  base::WriteFile(file_path_,
+                  "#comment1\n#comment2\nLOGLEVEL=yes\nTESTKEY=yes\n");
+  enterprise_signals::ScopedUfwConfigPathForTesting scoped_path(
+      file_path_.value().c_str());
+  enterprise_reporting_private::ContextInfo info = GetContextInfo();
+
+  ExpectDefaultPolicies(info);
+  EXPECT_EQ(info.os_firewall,
+            enterprise_reporting_private::SETTING_VALUE_UNKNOWN);
+}
+
+TEST_P(EnterpriseReportingPrivateGetContextOSFirewallLinuxTest, Test) {
+  enterprise_reporting_private::SettingValue os_firewall_value = GetParam();
+  switch (os_firewall_value) {
+    case enterprise_reporting_private::SETTING_VALUE_ENABLED:
+      // File format to test if comments, empty lines and strings containing the
+      // key are ignored
+      base::WriteFile(file_path_,
+                      "#ENABLED=no\nrandomtextENABLED=no\n  \nENABLED=yes\n");
+      break;
+    case enterprise_reporting_private::SETTING_VALUE_DISABLED:
+      base::WriteFile(file_path_,
+                      "#ENABLED=yes\nENABLEDrandomtext=yes\n  \nENABLED=no\n");
+      break;
+    case enterprise_reporting_private::SETTING_VALUE_UNKNOWN:
+      // File content to test a value that isn't yes or no
+      base::WriteFile(file_path_,
+                      "#ENABLED=yes\nLOGLEVEL=yes\nENABLED=yesno\n");
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  enterprise_signals::ScopedUfwConfigPathForTesting scoped_path(
+      file_path_.value().c_str());
+  enterprise_reporting_private::ContextInfo info = GetContextInfo();
+  ExpectDefaultPolicies(info);
+  EXPECT_EQ(info.os_firewall, os_firewall_value);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    EnterpriseReportingPrivateGetContextOSFirewallLinuxTest,
+    testing::Values(enterprise_reporting_private::SETTING_VALUE_ENABLED,
+                    enterprise_reporting_private::SETTING_VALUE_DISABLED,
+                    enterprise_reporting_private::SETTING_VALUE_UNKNOWN));
+#endif  // defined(OS_LINUX)
+
 #if defined(OS_WIN)
 class EnterpriseReportingPrivateGetContextInfoChromeCleanupTest
     : public EnterpriseReportingPrivateGetContextInfoTest,
       public testing::WithParamInterface<bool> {};
 
 TEST_P(EnterpriseReportingPrivateGetContextInfoChromeCleanupTest, Test) {
-  bool policyValue = GetParam();
+  bool policy_value = GetParam();
 
   g_browser_process->local_state()->SetBoolean(prefs::kSwReporterEnabled,
-                                               policyValue);
+                                               policy_value);
 
   enterprise_reporting_private::ContextInfo info = GetContextInfo();
 
@@ -603,7 +762,8 @@ TEST_P(EnterpriseReportingPrivateGetContextInfoChromeCleanupTest, Test) {
   EXPECT_EQ(
       enterprise_reporting_private::PASSWORD_PROTECTION_TRIGGER_POLICY_UNSET,
       info.password_protection_warning_trigger);
-  EXPECT_EQ(policyValue, *info.chrome_cleanup_enabled);
+  ExpectDefaultThirdPartyBlockingEnabled(info);
+  EXPECT_EQ(policy_value, *info.chrome_cleanup_enabled);
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -649,6 +809,7 @@ class EnterpriseReportingPrivateGetContextInfoChromeRemoteDesktopAppBlockedTest
         enterprise_reporting_private::PASSWORD_PROTECTION_TRIGGER_POLICY_UNSET,
         info.password_protection_warning_trigger);
     ExpectDefaultChromeCleanupEnabled(info);
+    ExpectDefaultThirdPartyBlockingEnabled(info);
   }
 };
 
@@ -694,6 +855,104 @@ INSTANTIATE_TEST_SUITE_P(
                     "corp.google.com",
                     "google.com",
                     "https://*"));
+
+#if defined(OS_WIN)
+class EnterpriseReportingPrivateGetContextInfoOSFirewallTest
+    : public EnterpriseReportingPrivateGetContextInfoTest,
+      public testing::WithParamInterface<SettingValue> {
+ public:
+  EnterpriseReportingPrivateGetContextInfoOSFirewallTest()
+      : enabled_(VARIANT_TRUE) {}
+
+ protected:
+  void SetUp() override {
+    ExtensionApiUnittest::SetUp();
+    HRESULT hr = CoCreateInstance(CLSID_NetFwPolicy2, nullptr, CLSCTX_ALL,
+                                  IID_PPV_ARGS(&firewall_policy_));
+    EXPECT_FALSE(FAILED(hr));
+
+    long profile_types = 0;
+    hr = firewall_policy_->get_CurrentProfileTypes(&profile_types);
+    EXPECT_FALSE(FAILED(hr));
+
+    // Setting the firewall for each active profile
+    const NET_FW_PROFILE_TYPE2 kProfileTypes[] = {NET_FW_PROFILE2_PUBLIC,
+                                                  NET_FW_PROFILE2_PRIVATE,
+                                                  NET_FW_PROFILE2_DOMAIN};
+    for (size_t i = 0; i < base::size(kProfileTypes); ++i) {
+      if ((profile_types & kProfileTypes[i]) != 0) {
+        hr = firewall_policy_->get_FirewallEnabled(kProfileTypes[i], &enabled_);
+        EXPECT_FALSE(FAILED(hr));
+        active_profile_ = kProfileTypes[i];
+        hr = firewall_policy_->put_FirewallEnabled(
+            kProfileTypes[i], firewall_value_ == SettingValue::ENABLED
+                                  ? VARIANT_TRUE
+                                  : VARIANT_FALSE);
+        EXPECT_FALSE(FAILED(hr));
+        break;
+      }
+    }
+  }
+
+  void TearDown() override {
+    // Resetting the firewall to its initial state
+    HRESULT hr =
+        firewall_policy_->put_FirewallEnabled(active_profile_, enabled_);
+    EXPECT_FALSE(FAILED(hr));
+  }
+
+  extensions::api::enterprise_reporting_private::SettingValue
+  ToInfoSettingValue(enterprise_signals::SettingValue value) {
+    switch (value) {
+      case SettingValue::DISABLED:
+        return extensions::api::enterprise_reporting_private::
+            SETTING_VALUE_DISABLED;
+      case SettingValue::ENABLED:
+        return extensions::api::enterprise_reporting_private::
+            SETTING_VALUE_ENABLED;
+      default:
+        NOTREACHED();
+        return extensions::api::enterprise_reporting_private::
+            SETTING_VALUE_UNKNOWN;
+    }
+  }
+  Microsoft::WRL::ComPtr<INetFwPolicy2> firewall_policy_;
+  SettingValue firewall_value_ = GetParam();
+  VARIANT_BOOL enabled_;
+  NET_FW_PROFILE_TYPE2 active_profile_;
+};
+
+TEST_P(EnterpriseReportingPrivateGetContextInfoOSFirewallTest, Test) {
+  enterprise_reporting_private::ContextInfo info = GetContextInfo();
+
+  EXPECT_TRUE(info.browser_affiliation_ids.empty());
+  EXPECT_TRUE(info.profile_affiliation_ids.empty());
+  EXPECT_TRUE(info.on_file_attached_providers.empty());
+  EXPECT_TRUE(info.on_file_downloaded_providers.empty());
+  EXPECT_TRUE(info.on_bulk_data_entry_providers.empty());
+  EXPECT_EQ(enterprise_reporting_private::REALTIME_URL_CHECK_MODE_DISABLED,
+            info.realtime_url_check_mode);
+  EXPECT_TRUE(info.on_security_event_providers.empty());
+  EXPECT_EQ(version_info::GetVersionNumber(), info.browser_version);
+  EXPECT_EQ(enterprise_reporting_private::SAFE_BROWSING_LEVEL_STANDARD,
+            info.safe_browsing_protection_level);
+  EXPECT_EQ(BuiltInDnsClientPlatformDefault(),
+            info.built_in_dns_client_enabled);
+  EXPECT_EQ(
+      enterprise_reporting_private::PASSWORD_PROTECTION_TRIGGER_POLICY_UNSET,
+      info.password_protection_warning_trigger);
+  ExpectDefaultChromeCleanupEnabled(info);
+  EXPECT_FALSE(info.chrome_remote_desktop_app_blocked);
+  ExpectDefaultThirdPartyBlockingEnabled(info);
+  EXPECT_EQ(ToInfoSettingValue(firewall_value_), info.os_firewall);
+}
+
+INSTANTIATE_TEST_SUITE_P(,
+                         EnterpriseReportingPrivateGetContextInfoOSFirewallTest,
+                         testing::Values(SettingValue::DISABLED,
+                                         SettingValue::ENABLED));
+
+#endif  // defined(OS_WIN)
 
 class EnterpriseReportingPrivateGetContextInfoRealTimeURLCheckTest
     : public EnterpriseReportingPrivateGetContextInfoTest,
@@ -745,6 +1004,7 @@ TEST_P(EnterpriseReportingPrivateGetContextInfoRealTimeURLCheckTest, Test) {
   EXPECT_EQ(
       enterprise_reporting_private::PASSWORD_PROTECTION_TRIGGER_POLICY_UNSET,
       info.password_protection_warning_trigger);
+  ExpectDefaultThirdPartyBlockingEnabled(info);
 }
 
 }  // namespace extensions

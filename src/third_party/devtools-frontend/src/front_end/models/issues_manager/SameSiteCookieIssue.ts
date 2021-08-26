@@ -12,7 +12,6 @@ import {Issue, IssueCategory, IssueKind} from './Issue.js';
 import type {LazyMarkdownIssueDescription, MarkdownIssueDescription} from './MarkdownIssueDescription.js';
 import {resolveLazyDescription} from './MarkdownIssueDescription.js';
 
-
 const UIStrings = {
   /**
   *@description Label for the link for SameSiteCookies Issues
@@ -25,11 +24,15 @@ const UIStrings = {
   /**
   *@description Phrase used to describe the security of a context. Substitued like 'a secure context' or 'a secure origin'.
   */
-  aSecure: 'a secure',
+  aSecure: 'a secure',  // eslint-disable-line rulesdir/l10n_no_unused_message
   /**
-  *@description Phrase used to describe the security of a context. Substitued like 'an insecure context' or 'an insecure origin'.
-  */
-  anInsecure: 'an insecure',
+   * @description Phrase used to describe the security of a context. Substitued like 'an insecure context' or 'an insecure origin'.
+   */
+  anInsecure: 'an insecure',  // eslint-disable-line rulesdir/l10n_no_unused_message
+  /**
+   * @description Label for a link for SameParty Issues.
+   */
+  firstPartySetsExplained: '`First-Party Sets` explained',
 };
 const str_ = i18n.i18n.registerUIStrings('models/issues_manager/SameSiteCookieIssue.ts', UIStrings);
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
@@ -162,6 +165,13 @@ export class SameSiteCookieIssue extends Issue {
   cookies(): Iterable<Protocol.Audits.AffectedCookie> {
     if (this.issueDetails.cookie) {
       return [this.issueDetails.cookie];
+    }
+    return [];
+  }
+
+  rawCookieLines(): Iterable<string> {
+    if (this.issueDetails.rawCookieLine) {
+      return [this.issueDetails.rawCookieLine];
     }
     return [];
   }
@@ -347,77 +357,71 @@ const sameSiteNoneInsecureWarnSet: LazyMarkdownIssueDescription = {
 const schemefulSameSiteArticles =
     [{link: 'https://web.dev/schemeful-samesite/', linkTitle: i18nLazyString(UIStrings.howSchemefulSamesiteWorks)}];
 
-function sameSiteWarnStrictLaxDowngradeStrict(isSecure: boolean): LazyMarkdownIssueDescription {
-  const substitutions = new Map([
-    ['PLACEHOLDER_destination', isSecure ? i18nLazyString(UIStrings.aSecure) : i18nLazyString(UIStrings.anInsecure)],
-    ['PLACEHOLDER_origin', !isSecure ? i18nLazyString(UIStrings.aSecure) : i18nLazyString(UIStrings.anInsecure)],
+function schemefulSameSiteSubstitutions(
+    {isDestinationSecure, isOriginSecure}: {isDestinationSecure: boolean, isOriginSecure: boolean}):
+    Map<string, () => string> {
+  return new Map([
+    // TODO(crbug.com/1168438): Use translated phrases once the issue description is localized.
+    ['PLACEHOLDER_destination', (): string => isDestinationSecure ? 'a secure' : 'an insecure'],
+    ['PLACEHOLDER_origin', (): string => isOriginSecure ? 'a secure' : 'an insecure'],
   ]);
+}
+
+function sameSiteWarnStrictLaxDowngradeStrict(isSecure: boolean): LazyMarkdownIssueDescription {
   return {
     file: 'SameSiteWarnStrictLaxDowngradeStrict.md',
-    substitutions,
+    substitutions: schemefulSameSiteSubstitutions({isDestinationSecure: isSecure, isOriginSecure: !isSecure}),
     links: schemefulSameSiteArticles,
   };
 }
 
 function sameSiteExcludeNavigationContextDowngrade(isSecure: boolean): LazyMarkdownIssueDescription {
-  const substitutions = new Map([
-    ['PLACEHOLDER_destination', isSecure ? i18nLazyString(UIStrings.aSecure) : i18nLazyString(UIStrings.anInsecure)],
-    ['PLACEHOLDER_origin', !isSecure ? i18nLazyString(UIStrings.aSecure) : i18nLazyString(UIStrings.anInsecure)],
-  ]);
   return {
     file: 'SameSiteExcludeNavigationContextDowngrade.md',
-    substitutions,
+    substitutions: schemefulSameSiteSubstitutions({isDestinationSecure: isSecure, isOriginSecure: !isSecure}),
     links: schemefulSameSiteArticles,
   };
 }
 
 function sameSiteWarnCrossDowngradeRead(isSecure: boolean): LazyMarkdownIssueDescription {
-  const substitutions = new Map([
-    ['PLACEHOLDER_destination', isSecure ? i18nLazyString(UIStrings.aSecure) : i18nLazyString(UIStrings.anInsecure)],
-    ['PLACEHOLDER_origin', !isSecure ? i18nLazyString(UIStrings.aSecure) : i18nLazyString(UIStrings.anInsecure)],
-  ]);
   return {
     file: 'SameSiteWarnCrossDowngradeRead.md',
-    substitutions,
+    substitutions: schemefulSameSiteSubstitutions({isDestinationSecure: isSecure, isOriginSecure: !isSecure}),
     links: schemefulSameSiteArticles,
   };
 }
 
 function sameSiteExcludeContextDowngradeRead(isSecure: boolean): LazyMarkdownIssueDescription {
-  const substitutions = new Map([
-    ['PLACEHOLDER_destination', isSecure ? i18nLazyString(UIStrings.aSecure) : i18nLazyString(UIStrings.anInsecure)],
-    ['PLACEHOLDER_origin', !isSecure ? i18nLazyString(UIStrings.aSecure) : i18nLazyString(UIStrings.anInsecure)],
-  ]);
   return {
     file: 'SameSiteExcludeContextDowngradeRead.md',
-    substitutions,
+    substitutions: schemefulSameSiteSubstitutions({isDestinationSecure: isSecure, isOriginSecure: !isSecure}),
     links: schemefulSameSiteArticles,
   };
 }
 
 function sameSiteWarnCrossDowngradeSet(isSecure: boolean): LazyMarkdownIssueDescription {
-  const substitutions = new Map([
-    ['PLACEHOLDER_ORIGIN', isSecure ? i18nLazyString(UIStrings.aSecure) : i18nLazyString(UIStrings.anInsecure)],
-    ['PLACEHOLDER_DESTINATION', !isSecure ? i18nLazyString(UIStrings.aSecure) : i18nLazyString(UIStrings.anInsecure)],
-  ]);
   return {
     file: 'SameSiteWarnCrossDowngradeSet.md',
-    substitutions,
+    substitutions: schemefulSameSiteSubstitutions({isDestinationSecure: !isSecure, isOriginSecure: isSecure}),
     links: schemefulSameSiteArticles,
   };
 }
 
 function sameSiteExcludeContextDowngradeSet(isSecure: boolean): LazyMarkdownIssueDescription {
-  const substitutions = new Map([
-    ['PLACEHOLDER_destination', isSecure ? i18nLazyString(UIStrings.aSecure) : i18nLazyString(UIStrings.anInsecure)],
-    ['PLACEHOLDER_origin', !isSecure ? i18nLazyString(UIStrings.aSecure) : i18nLazyString(UIStrings.anInsecure)],
-  ]);
   return {
     file: 'SameSiteExcludeContextDowngradeSet.md',
-    substitutions,
+    substitutions: schemefulSameSiteSubstitutions({isDestinationSecure: isSecure, isOriginSecure: !isSecure}),
     links: schemefulSameSiteArticles,
   };
 }
+
+const sameSiteInvalidSameParty: LazyMarkdownIssueDescription = {
+  file: 'SameSiteInvalidSameParty.md',
+  links: [{
+    link: 'https://developer.chrome.com/docs/privacy-sandbox/first-party-sets/',
+    linkTitle: i18nLazyString(UIStrings.firstPartySetsExplained),
+  }],
+};
 
 const issueDescriptions: Map<string, LazyMarkdownIssueDescription> = new Map([
   ['SameSiteCookieIssue::ExcludeSameSiteUnspecifiedTreatedAsLax::ReadCookie', sameSiteUnspecifiedErrorRead],
@@ -446,4 +450,5 @@ const issueDescriptions: Map<string, LazyMarkdownIssueDescription> = new Map([
   ['SameSiteCookieIssue::ExcludeContextDowngrade::ReadCookie::Insecure', sameSiteExcludeContextDowngradeRead(false)],
   ['SameSiteCookieIssue::ExcludeContextDowngrade::SetCookie::Secure', sameSiteExcludeContextDowngradeSet(true)],
   ['SameSiteCookieIssue::ExcludeContextDowngrade::SetCookie::Insecure', sameSiteExcludeContextDowngradeSet(false)],
+  ['SameSiteCookieIssue::ExcludeInvalidSameParty::SetCookie', sameSiteInvalidSameParty],
 ]);

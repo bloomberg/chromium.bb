@@ -180,7 +180,7 @@ const std::vector<SearchConcept>& GetRemoveAccountSearchConcepts() {
   return *tags;
 }
 
-const std::vector<SearchConcept>& GetNonSplitSyncSearchConcepts() {
+const std::vector<SearchConcept>& GetNonCategorizedSyncSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
       {IDS_OS_SETTINGS_TAG_SYNC_AND_GOOGLE_SERVICES,
        mojom::kSyncDeprecatedSubpagePath,
@@ -224,7 +224,8 @@ const std::vector<SearchConcept>& GetNonSplitSyncSearchConcepts() {
   return *tags;
 }
 
-const std::vector<SearchConcept>& GetSplitSyncSearchConcepts() {
+const std::vector<SearchConcept>& GetCategorizedSyncSearchConcepts() {
+  DCHECK(chromeos::features::IsSyncSettingsCategorizationEnabled());
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
       {IDS_OS_SETTINGS_TAG_SYNC,
        mojom::kSyncSubpagePath,
@@ -236,7 +237,8 @@ const std::vector<SearchConcept>& GetSplitSyncSearchConcepts() {
   return *tags;
 }
 
-const std::vector<SearchConcept>& GetSplitSyncOnSearchConcepts() {
+const std::vector<SearchConcept>& GetSyncOnSearchConcepts() {
+  DCHECK(chromeos::features::IsSyncConsentOptionalEnabled());
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
       {IDS_OS_SETTINGS_TAG_SYNC_TURN_OFF,
        mojom::kSyncSubpagePath,
@@ -249,7 +251,8 @@ const std::vector<SearchConcept>& GetSplitSyncOnSearchConcepts() {
   return *tags;
 }
 
-const std::vector<SearchConcept>& GetSplitSyncOffSearchConcepts() {
+const std::vector<SearchConcept>& GetSyncOffSearchConcepts() {
+  DCHECK(chromeos::features::IsSyncConsentOptionalEnabled());
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
       {IDS_OS_SETTINGS_TAG_SYNC_TURN_ON,
        mojom::kSyncSubpagePath,
@@ -367,13 +370,15 @@ void AddAccountManagerPageStrings(content::WebUIDataSource* html_source,
         {"accountListHeader", IDS_SETTINGS_ACCOUNT_MANAGER_LIST_HEADER_V2},
         {"accountListHeaderChild",
          IDS_SETTINGS_ACCOUNT_MANAGER_LIST_HEADER_CHILD},
-        {"accountManagerDescription",
-         IDS_SETTINGS_ACCOUNT_MANAGER_DESCRIPTION_V2},
         {"accountManagerChildDescription",
          IDS_SETTINGS_ACCOUNT_MANAGER_CHILD_DESCRIPTION_V2},
         {"accountManagerSecondaryAccountsDisabledText",
          IDS_SETTINGS_ACCOUNT_MANAGER_SECONDARY_ACCOUNTS_DISABLED_TEXT_V2},
     };
+    html_source->AddString(
+        "accountManagerDescription",
+        l10n_util::GetStringFUTF16(IDS_SETTINGS_ACCOUNT_MANAGER_DESCRIPTION_V2,
+                                   ui::GetChromeOSDeviceName()));
     html_source->AddLocalizedStrings(kLocalizedStringsV2);
   } else {
     static constexpr webui::LocalizedString kLocalizedStringsV1[] = {
@@ -438,13 +443,11 @@ void AddLockScreenPageStrings(content::WebUIDataSource* html_source,
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
-  html_source->AddBoolean("quickUnlockEnabled",
-                          chromeos::quick_unlock::IsPinEnabled());
+  html_source->AddBoolean("quickUnlockEnabled", quick_unlock::IsPinEnabled());
   html_source->AddBoolean("quickUnlockPinAutosubmitFeatureEnabled",
                           chromeos::features::IsPinAutosubmitFeatureEnabled());
-  html_source->AddBoolean(
-      "quickUnlockDisabledByPolicy",
-      chromeos::quick_unlock::IsPinDisabledByPolicy(pref_service));
+  html_source->AddBoolean("quickUnlockDisabledByPolicy",
+                          quick_unlock::IsPinDisabledByPolicy(pref_service));
   html_source->AddBoolean("lockScreenNotificationsEnabled",
                           ash::features::IsLockScreenNotificationsEnabled());
   html_source->AddBoolean(
@@ -486,13 +489,13 @@ void AddFingerprintResources(content::WebUIDataSource* html_source,
   html_source->AddBoolean("fingerprintUnlockEnabled",
                           are_fingerprint_settings_allowed);
   if (are_fingerprint_settings_allowed) {
-    chromeos::quick_unlock::AddFingerprintResources(html_source);
+    quick_unlock::AddFingerprintResources(html_source);
   }
 
   int instruction_id, aria_label_id;
   bool aria_label_includes_device = false;
-  using FingerprintLocation = chromeos::quick_unlock::FingerprintLocation;
-  switch (chromeos::quick_unlock::GetFingerprintLocation()) {
+  using FingerprintLocation = quick_unlock::FingerprintLocation;
+  switch (quick_unlock::GetFingerprintLocation()) {
     case FingerprintLocation::TABLET_POWER_BUTTON:
       instruction_id =
           IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_INSTRUCTION_LOCATE_SCANNER_POWER_BUTTON;
@@ -610,8 +613,16 @@ void AddSyncControlsStrings(content::WebUIDataSource* html_source) {
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
+  // TODO(https://crbug.com/1227694): Remove this after migrating all JS usages
+  // of splitSettingsSyncEnabled to syncSettingsCategorizationEnabled and
+  // syncConsentOptionalEnabled.
   html_source->AddBoolean("splitSettingsSyncEnabled",
                           chromeos::features::IsSplitSettingsSyncEnabled());
+  html_source->AddBoolean(
+      "syncSettingsCategorizationEnabled",
+      chromeos::features::IsSyncSettingsCategorizationEnabled());
+  html_source->AddBoolean("syncConsentOptionalEnabled",
+                          chromeos::features::IsSyncConsentOptionalEnabled());
   html_source->AddBoolean("useBrowserSyncConsent",
                           chromeos::features::ShouldUseBrowserSyncConsent());
   html_source->AddString(
@@ -628,6 +639,8 @@ void AddUsersStrings(content::WebUIDataSource* html_source) {
       {"restrictSigninLabel", IDS_SETTINGS_USERS_RESTRICT_SIGNIN_LABEL},
       {"deviceOwnerLabel", IDS_SETTINGS_USERS_DEVICE_OWNER_LABEL},
       {"removeUserTooltip", IDS_SETTINGS_USERS_REMOVE_USER_TOOLTIP},
+      {"userRemovedMessage", IDS_SETTINGS_USERS_USER_REMOVED_MESSAGE},
+      {"userAddedMessage", IDS_SETTINGS_USERS_USER_ADDED_MESSAGE},
       {"addUsers", IDS_SETTINGS_USERS_ADD_USERS},
       {"addUsersEmail", IDS_SETTINGS_USERS_ADD_USERS_EMAIL},
       {"userExistsError", IDS_SETTINGS_USER_EXISTS_ERROR},
@@ -729,16 +742,19 @@ PeopleSection::PeopleSection(
     FetchAccounts();
   }
 
-  if (chromeos::features::IsSplitSettingsSyncEnabled()) {
-    if (sync_service_) {
-      updater.AddSearchTags(GetSplitSyncSearchConcepts());
+  if (sync_service_) {
+    if (chromeos::features::IsSyncConsentOptionalEnabled()) {
+      DCHECK(chromeos::features::IsSyncSettingsCategorizationEnabled());
+      updater.AddSearchTags(GetCategorizedSyncSearchConcepts());
 
       // Sync search tags are added/removed dynamically.
       sync_service_->AddObserver(this);
       OnStateChanged(sync_service_);
+    } else if (chromeos::features::IsSyncSettingsCategorizationEnabled()) {
+      updater.AddSearchTags(GetCategorizedSyncSearchConcepts());
+    } else {
+      updater.AddSearchTags(GetNonCategorizedSyncSearchConcepts());
     }
-  } else {
-    updater.AddSearchTags(GetNonSplitSyncSearchConcepts());
   }
 
   // Parental control search tags are added if necessary and do not update
@@ -762,7 +778,7 @@ PeopleSection::PeopleSection(
 }
 
 PeopleSection::~PeopleSection() {
-  if (chromeos::features::IsSplitSettingsSyncEnabled() && sync_service_)
+  if (chromeos::features::IsSyncConsentOptionalEnabled() && sync_service_)
     sync_service_->RemoveObserver(this);
 }
 
@@ -852,6 +868,10 @@ void PeopleSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       "driveSuggestAvailable",
       base::FeatureList::IsEnabled(omnibox::kDocumentProvider));
 
+  html_source->AddBoolean(
+      "smartLockUIRevampEnabled",
+      base::FeatureList::IsEnabled(ash::features::kSmartLockUIRevamp));
+
   AddAccountManagerPageStrings(html_source, profile());
   AddLockScreenPageStrings(html_source, profile()->GetPrefs());
   AddFingerprintListStrings(html_source);
@@ -882,7 +902,7 @@ void PeopleSection::AddHandlers(content::WebUI* web_ui) {
             account_manager_, account_manager_facade_, identity_manager_));
   }
 
-  if (chromeos::features::IsSplitSettingsSyncEnabled())
+  if (chromeos::features::IsSyncSettingsCategorizationEnabled())
     web_ui->AddMessageHandler(std::make_unique<OSSyncHandler>(profile()));
 
   web_ui->AddMessageHandler(
@@ -998,6 +1018,10 @@ void PeopleSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   RegisterNestedSettingBulk(mojom::Subpage::kFingerprint, kFingerprintSettings,
                             generator);
 
+  // Smart Lock -- main setting is on multidevice page, but is mirrored here
+  generator->RegisterNestedAltSetting(mojom::Setting::kSmartLockOnOff,
+                                      mojom::Subpage::kSecurityAndSignIn);
+
   // Manage other people.
   generator->RegisterTopLevelSubpage(IDS_SETTINGS_PEOPLE_MANAGE_OTHER_PEOPLE,
                                      mojom::Subpage::kManageOtherPeople,
@@ -1053,23 +1077,23 @@ void PeopleSection::UpdateAccountManagerSearchTags(
 }
 
 void PeopleSection::OnStateChanged(syncer::SyncService* sync_service) {
-  DCHECK(chromeos::features::IsSplitSettingsSyncEnabled());
+  DCHECK(chromeos::features::IsSyncConsentOptionalEnabled());
   DCHECK_EQ(sync_service, sync_service_);
 
   SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
 
   if (sync_service_->IsEngineInitialized() &&
       sync_service_->GetUserSettings()->IsOsSyncFeatureEnabled()) {
-    updater.AddSearchTags(GetSplitSyncOnSearchConcepts());
-    updater.RemoveSearchTags(GetSplitSyncOffSearchConcepts());
+    updater.AddSearchTags(GetSyncOnSearchConcepts());
+    updater.RemoveSearchTags(GetSyncOffSearchConcepts());
   } else {
-    updater.RemoveSearchTags(GetSplitSyncOnSearchConcepts());
-    updater.AddSearchTags(GetSplitSyncOffSearchConcepts());
+    updater.RemoveSearchTags(GetSyncOnSearchConcepts());
+    updater.AddSearchTags(GetSyncOffSearchConcepts());
   }
 }
 
 bool PeopleSection::AreFingerprintSettingsAllowed() {
-  return chromeos::quick_unlock::IsFingerprintEnabled(profile());
+  return quick_unlock::IsFingerprintEnabled(profile());
 }
 
 void PeopleSection::UpdateRemoveFingerprintSearchTags() {

@@ -99,6 +99,7 @@ typedef struct SVC {
   int non_reference_frame;
   int use_flexible_mode;
   int ksvc_fixed_mode;
+  int use_comp_pred;
   /*!\endcond */
 
   /*!

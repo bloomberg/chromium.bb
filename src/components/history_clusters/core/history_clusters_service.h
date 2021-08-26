@@ -19,7 +19,6 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history_clusters/core/clustering_backend.h"
-#include "components/history_clusters/core/history_clusters.mojom.h"
 #include "components/history_clusters/core/visit_data.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/query_parser/query_parser.h"
@@ -34,6 +33,21 @@ class HistoryClustersService : public KeyedService {
    public:
     virtual void OnMemoriesDebugMessage(const std::string& message) = 0;
   };
+
+  // The result data returned by `QueryClusters()`.
+  struct QueryClustersResult {
+    QueryClustersResult();
+    ~QueryClustersResult();
+    QueryClustersResult(const QueryClustersResult&);
+
+    std::vector<history::Cluster> clusters;
+    base::Time continuation_end_time;
+  };
+  using QueryClustersCallback = base::OnceCallback<void(QueryClustersResult)>;
+
+  // Used to track incomplete, unpersisted visits.
+  using IncompleteVisitMap =
+      std::map<int64_t, IncompleteVisitContextAnnotations>;
 
   // `url_loader_factory` is allowed to be nullptr, like in unit tests.
   // In that case, HistoryClustersService will never instantiate a clustering
@@ -76,17 +90,16 @@ class HistoryClustersService : public KeyedService {
 
   // Returns the freshest clusters created from the user visit history based on
   // `query`, `end_time`, and `max_count`. `end_time` is an exclusive upper
-  // bound, and should be set to `base::Time()` if the caller wants everything.
+  // bound and should be set to `base::Time()` if the caller wants everything.
   // The returned clusters are sorted in reverse-chronological order based on
   // their highest scoring visit. The visits within each cluster are sorted by
   // score, from highest to lowest.
-  using QueryClustersCallback =
-      base::OnceCallback<void(std::vector<mojom::ClusterPtr>)>;
   void QueryClusters(const std::string& query,
                      base::Time end_time,
                      size_t max_count,
                      QueryClustersCallback callback,
                      base::CancelableTaskTracker* task_tracker);
+
   // Removes all visits to the specified URLs in the specified time ranges in
   // `expire_list`. Calls `closure` when done.
   void RemoveVisits(const std::vector<history::ExpireHistoryArgs>& expire_list,
@@ -102,13 +115,22 @@ class HistoryClustersService : public KeyedService {
  private:
   friend class HistoryClustersServiceTestApi;
 
-  using IncompleteVisitMap =
-      std::map<int64_t, IncompleteVisitContextAnnotations>;
-
   // This is a callback used for the `QueryClusters()` call from
   // `DoesQueryMatchAnyCluster()`. Populates the cluster keyword cache from the
   // keywords in `clusters`.
-  void PopulateClusterKeywordCache(std::vector<mojom::ClusterPtr> clusters);
+  void PopulateClusterKeywordCache(QueryClustersResult result);
+
+  // Internally used callback for `QueryClusters()`.
+  void OnGotHistoryVisits(const std::string& query,
+                          QueryClustersCallback callback,
+                          std::vector<history::AnnotatedVisit> annotated_visits,
+                          base::Time continuation_end_time) const;
+
+  // Internally used callback for `OnGotHistoryVisits()`.
+  void OnGotClusters(const std::string& query,
+                     base::Time continuation_end_time,
+                     QueryClustersCallback callback,
+                     const std::vector<history::Cluster>& clusters) const;
 
   // `VisitContextAnnotations`s are constructed stepwise; they're initially
   // placed in `incomplete_visit_context_annotations_` and saved to the history

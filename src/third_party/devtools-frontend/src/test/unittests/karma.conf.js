@@ -89,7 +89,6 @@ const TEST_FILES =
         })
         .flat();
 
-
 const TEST_FILES_SOURCE_MAPS = TEST_FILES.map(fileName => `${fileName}.map`);
 
 const DEFAULT_PREPROCESSING_FOLDERS = {
@@ -102,6 +101,7 @@ const DEFAULT_PREPROCESSING_FOLDERS = {
   [path.join(GEN_DIRECTORY, 'front_end/ui/!(components)/**/*.{js,mjs}')]: [...coveragePreprocessors],
   [path.join(GEN_DIRECTORY, 'front_end/ui/components/!(docs)/**/*.{js,mjs}')]: [...coveragePreprocessors],
   [path.join(GEN_DIRECTORY, 'inspector_overlay/**/*.{js,mjs}')]: [...coveragePreprocessors],
+  [path.join(GEN_DIRECTORY, 'front_end/third_party/i18n/**/*.{js,mjs}')]: [...coveragePreprocessors],
 };
 const USER_DEFINED_PROCESSING_FOLDERS = {
   [path.join(GEN_DIRECTORY, `${USER_DEFINED_COVERAGE_FOLDERS}/**/*.{js,mjs}`)]: [...coveragePreprocessors]

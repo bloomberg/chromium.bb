@@ -10,9 +10,9 @@
 #include <string>
 
 #include "base/json/json_writer.h"
+#include "base/json/values_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/util/values/values_util.h"
 #include "base/values.h"
 
 namespace password_manager {
@@ -140,8 +140,9 @@ void PasswordFormToJSON(const PasswordForm& form,
                     ValueElementVectorToString(form.all_possible_passwords));
   target->SetBoolean("blocked_by_user", form.blocked_by_user);
   target->SetDouble("date_last_used", form.date_last_used.ToDoubleT());
+  target->SetDouble("date_password_modified",
+                    form.date_password_modified.ToDoubleT());
   target->SetDouble("date_created", form.date_created.ToDoubleT());
-  target->SetDouble("date_synced", form.date_synced.ToDoubleT());
   target->SetString("type", ToString(form.type));
   target->SetInteger("times_used", form.times_used);
   target->SetString("form_data", ToString(form.form_data));
@@ -171,15 +172,13 @@ void PasswordFormToJSON(const PasswordForm& form,
 
   target->SetString("moving_blocked_for_list", base::JoinString(hashes, ", "));
 
-  if (!form.password_issues.has_value())
-    return;
   std::vector<base::Value> password_issues;
-  password_issues.reserve(form.password_issues->size());
-  for (const auto& issue : form.password_issues.value()) {
+  password_issues.reserve(form.password_issues.size());
+  for (const auto& issue : form.password_issues) {
     base::Value issue_value(base::Value::Type::DICTIONARY);
     issue_value.SetStringPath("insecurity_type", ToString(issue.first));
     issue_value.SetPath("create_time",
-                        util::TimeToValue(issue.second.create_time));
+                        base::TimeToValue(issue.second.create_time));
     issue_value.SetBoolPath("is_muted",
                             static_cast<bool>(issue.second.is_muted));
     password_issues.push_back(std::move(issue_value));
@@ -250,10 +249,8 @@ bool PasswordForm::HasNonEmptyPasswordValue() const {
   return !password_value.empty() || !new_password_value.empty();
 }
 
-bool PasswordForm::IsInsecureCredential(InsecureType type) {
-  if (!password_issues.has_value())
-    return false;
-  return password_issues->find(type) != password_issues->end();
+bool PasswordForm::IsInsecureCredential(InsecureType type) const {
+  return password_issues.find(type) != password_issues.end();
 }
 
 bool ArePasswordFormUniqueKeysEqual(const PasswordForm& left,
@@ -286,8 +283,8 @@ bool operator==(const PasswordForm& lhs, const PasswordForm& rhs) {
              rhs.confirmation_password_element_renderer_id &&
          lhs.new_password_value == rhs.new_password_value &&
          lhs.date_created == rhs.date_created &&
-         lhs.date_synced == rhs.date_synced &&
          lhs.date_last_used == rhs.date_last_used &&
+         lhs.date_password_modified == rhs.date_password_modified &&
          lhs.blocked_by_user == rhs.blocked_by_user && lhs.type == rhs.type &&
          lhs.times_used == rhs.times_used &&
          lhs.form_data.SameFormAs(rhs.form_data) &&
@@ -334,7 +331,7 @@ std::ostream& operator<<(std::ostream& os, const PasswordForm& form) {
     const base::Value* actual_value;
     if (form_json.Get(it_default_key_values.key(), &actual_value) &&
         it_default_key_values.value() == *actual_value) {
-      form_json.Remove(it_default_key_values.key(), nullptr);
+      form_json.RemoveKey(it_default_key_values.key());
     }
   }
 

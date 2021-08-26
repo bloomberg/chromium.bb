@@ -9,8 +9,6 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#include "aom_ports/system_state.h"
-
 #include "av1/common/reconintra.h"
 
 #include "av1/encoder/encoder.h"

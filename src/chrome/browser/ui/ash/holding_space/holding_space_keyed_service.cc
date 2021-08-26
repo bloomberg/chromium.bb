@@ -6,6 +6,7 @@
 
 #include <set>
 
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/holding_space/holding_space_controller.h"
 #include "ash/public/cpp/holding_space/holding_space_item.h"
 #include "ash/public/cpp/holding_space/holding_space_metrics.h"
@@ -131,12 +132,13 @@ void HoldingSpaceKeyedService::BindReceiver(
   receivers_.Add(this, std::move(receiver));
 }
 
-// TODO(crbug.com/1208910): Support incognito.
 void HoldingSpaceKeyedService::AddPrintedPdf(
     const base::FilePath& printed_pdf_path,
     bool from_incognito_profile) {
-  if (!from_incognito_profile)
+  if (!from_incognito_profile ||
+      features::IsHoldingSpaceIncognitoProfileIntegrationEnabled()) {
     AddItemOfType(HoldingSpaceItem::Type::kPrintedPdf, printed_pdf_path);
+  }
 }
 
 void HoldingSpaceKeyedService::AddPinnedFiles(
@@ -308,20 +310,35 @@ void HoldingSpaceKeyedService::AddItemOfType(
 
 void HoldingSpaceKeyedService::CancelItem(const HoldingSpaceItem* item) {
   // Currently it is only possible to cancel download type items.
-  if (HoldingSpaceItem::IsDownload(item->type()) && downloads_delegate_)
-    downloads_delegate_->Cancel(item);
+  if (!HoldingSpaceItem::IsDownload(item->type()) || !downloads_delegate_)
+    return;
+
+  holding_space_metrics::RecordItemAction(
+      {item}, holding_space_metrics::ItemAction::kCancel);
+
+  downloads_delegate_->Cancel(item);
 }
 
 void HoldingSpaceKeyedService::PauseItem(const HoldingSpaceItem* item) {
   // Currently it is only possible to pause download type items.
-  if (HoldingSpaceItem::IsDownload(item->type()) && downloads_delegate_)
-    downloads_delegate_->Pause(item);
+  if (!HoldingSpaceItem::IsDownload(item->type()) || !downloads_delegate_)
+    return;
+
+  holding_space_metrics::RecordItemAction(
+      {item}, holding_space_metrics::ItemAction::kPause);
+
+  downloads_delegate_->Pause(item);
 }
 
 void HoldingSpaceKeyedService::ResumeItem(const HoldingSpaceItem* item) {
   // Currently it is only possible to resume download type items.
-  if (HoldingSpaceItem::IsDownload(item->type()) && downloads_delegate_)
-    downloads_delegate_->Resume(item);
+  if (!HoldingSpaceItem::IsDownload(item->type()) || !downloads_delegate_)
+    return;
+
+  holding_space_metrics::RecordItemAction(
+      {item}, holding_space_metrics::ItemAction::kResume);
+
+  downloads_delegate_->Resume(item);
 }
 
 bool HoldingSpaceKeyedService::OpenItemWhenComplete(

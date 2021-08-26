@@ -68,7 +68,7 @@ class ManifestParserTest : public testing::Test {
 
 TEST_F(ManifestParserTest, CrashTest) {
   // Passing temporary variables should not crash.
-  const String json = "{\"start_url\": \"/\"}";
+  const String json = R"({"start_url": "/"})";
   KURL url("http://example.com");
   ManifestParser parser(json, url, url, /*feature_context=*/nullptr);
 
@@ -114,12 +114,28 @@ TEST_F(ManifestParserTest, ValidNoContentParses) {
   ASSERT_TRUE(manifest->shortcuts.IsEmpty());
 }
 
+TEST_F(ManifestParserTest, UnrecognizedFieldsIgnored) {
+  auto& manifest = ParseManifest(
+      R"({
+        "unrecognizable_manifest_field": ["foo"],
+        "name": "bar"
+      })");
+
+  // Unrecognized Manifest fields are not a parsing error.
+  EXPECT_EQ(0u, GetErrorCount());
+
+  // Check that subsequent fields parsed.
+  ASSERT_FALSE(IsManifestEmpty(manifest));
+  ASSERT_EQ(manifest->name, "bar");
+  ASSERT_EQ(DefaultDocumentUrl().BaseAsString(), manifest->scope.GetString());
+}
+
 TEST_F(ManifestParserTest, MultipleErrorsReporting) {
   auto& manifest = ParseManifest(
-      "{ \"name\": 42, \"short_name\": 4, \"id\": 12,"
-      "\"orientation\": {}, \"display\": \"foo\","
-      "\"start_url\": null, \"icons\": {}, \"theme_color\": 42,"
-      "\"background_color\": 42, \"shortcuts\": {} }");
+      R"({ "name": 42, "short_name": 4, "id": 12,
+      "orientation": {}, "display": "foo",
+      "start_url": null, "icons": {}, "theme_color": 42,
+      "background_color": 42, "shortcuts": {} })");
   ASSERT_FALSE(IsManifestEmpty(manifest));
 
   EXPECT_EQ(9u, GetErrorCount());
@@ -142,7 +158,7 @@ TEST_F(ManifestParserTest, MultipleErrorsReporting) {
 TEST_F(ManifestParserTest, NameParseRules) {
   // Smoke test.
   {
-    auto& manifest = ParseManifest("{ \"name\": \"foo\" }");
+    auto& manifest = ParseManifest(R"({ "name": "foo" })");
     ASSERT_EQ(manifest->name, "foo");
     ASSERT_FALSE(IsManifestEmpty(manifest));
     EXPECT_EQ(0u, GetErrorCount());
@@ -150,14 +166,14 @@ TEST_F(ManifestParserTest, NameParseRules) {
 
   // Trim whitespaces.
   {
-    auto& manifest = ParseManifest("{ \"name\": \"  foo  \" }");
+    auto& manifest = ParseManifest(R"({ "name": "  foo  " })");
     ASSERT_EQ(manifest->name, "foo");
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Don't parse if name isn't a string.
   {
-    auto& manifest = ParseManifest("{ \"name\": {} }");
+    auto& manifest = ParseManifest(R"({ "name": {} })");
     ASSERT_TRUE(manifest->name.IsNull());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'name' ignored, type string expected.", errors()[0]);
@@ -165,7 +181,7 @@ TEST_F(ManifestParserTest, NameParseRules) {
 
   // Don't parse if name isn't a string.
   {
-    auto& manifest = ParseManifest("{ \"name\": 42 }");
+    auto& manifest = ParseManifest(R"({ "name": 42 })");
     ASSERT_TRUE(manifest->name.IsNull());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'name' ignored, type string expected.", errors()[0]);
@@ -219,7 +235,7 @@ TEST_F(ManifestParserTest, DescriptionParseRules) {
 TEST_F(ManifestParserTest, ShortNameParseRules) {
   // Smoke test.
   {
-    auto& manifest = ParseManifest("{ \"short_name\": \"foo\" }");
+    auto& manifest = ParseManifest(R"({ "short_name": "foo" })");
     ASSERT_EQ(manifest->short_name, "foo");
     ASSERT_FALSE(IsManifestEmpty(manifest));
     EXPECT_EQ(0u, GetErrorCount());
@@ -227,14 +243,14 @@ TEST_F(ManifestParserTest, ShortNameParseRules) {
 
   // Trim whitespaces.
   {
-    auto& manifest = ParseManifest("{ \"short_name\": \"  foo  \" }");
+    auto& manifest = ParseManifest(R"({ "short_name": "  foo  " })");
     ASSERT_EQ(manifest->short_name, "foo");
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Don't parse if name isn't a string.
   {
-    auto& manifest = ParseManifest("{ \"short_name\": {} }");
+    auto& manifest = ParseManifest(R"({ "short_name": {} })");
     ASSERT_TRUE(manifest->short_name.IsNull());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'short_name' ignored, type string expected.",
@@ -243,7 +259,7 @@ TEST_F(ManifestParserTest, ShortNameParseRules) {
 
   // Don't parse if name isn't a string.
   {
-    auto& manifest = ParseManifest("{ \"short_name\": 42 }");
+    auto& manifest = ParseManifest(R"({ "short_name": 42 })");
     ASSERT_TRUE(manifest->short_name.IsNull());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'short_name' ignored, type string expected.",
@@ -270,21 +286,58 @@ TEST_F(ManifestParserTest, IdParseRules) {
   }
   // Does not contain id field.
   {
-    auto& manifest = ParseManifest("{\"start_url\": \"/start?query=a\" }");
+    auto& manifest = ParseManifest(R"({"start_url": "/start?query=a" })");
     ASSERT_EQ(0u, GetErrorCount());
+    EXPECT_EQ("start?query=a", manifest->id);
+  }
+  // Invalid type.
+  {
+    auto& manifest =
+        ParseManifest("{\"start_url\": \"/start?query=a\", \"id\": 1}");
+    ASSERT_EQ(1u, GetErrorCount());
     EXPECT_EQ("start?query=a", manifest->id);
   }
   // Empty string.
   {
     auto& manifest =
-        ParseManifest("{ \"start_url\": \"/start?query=a\", \"id\": \"\" }");
+        ParseManifest(R"({ "start_url": "/start?query=a", "id": "" })");
+    ASSERT_EQ(0u, GetErrorCount());
+    EXPECT_EQ("", manifest->id);
+  }
+  // Full url.
+  {
+    auto& manifest = ParseManifest(
+        "{ \"start_url\": \"/start?query=a\", \"id\": \"http://foo.com/foo\" "
+        "}");
+    ASSERT_EQ(0u, GetErrorCount());
+    EXPECT_EQ("foo", manifest->id);
+  }
+  // Full url with different origin.
+  {
+    auto& manifest = ParseManifest(
+        "{ \"start_url\": \"/start?query=a\", \"id\": "
+        "\"http://another.com/foo\" }");
+    ASSERT_EQ(1u, GetErrorCount());
+    EXPECT_EQ("start?query=a", manifest->id);
+  }
+  // Relative path
+  {
+    auto& manifest =
+        ParseManifest("{ \"start_url\": \"/start?query=a\", \"id\": \".\" }");
+    ASSERT_EQ(0u, GetErrorCount());
+    EXPECT_EQ("", manifest->id);
+  }
+  // Absolute path
+  {
+    auto& manifest =
+        ParseManifest("{ \"start_url\": \"/start?query=a\", \"id\": \"/\" }");
     ASSERT_EQ(0u, GetErrorCount());
     EXPECT_EQ("", manifest->id);
   }
   // Smoke test.
   {
     auto& manifest =
-        ParseManifest("{ \"start_url\": \"/start?query=a\", \"id\": \"foo\" }");
+        ParseManifest(R"({ "start_url": "/start?query=a", "id": "foo" })");
     ASSERT_EQ(0u, GetErrorCount());
     EXPECT_EQ("foo", manifest->id);
   }
@@ -293,7 +346,7 @@ TEST_F(ManifestParserTest, IdParseRules) {
 TEST_F(ManifestParserTest, StartURLParseRules) {
   // Smoke test.
   {
-    auto& manifest = ParseManifest("{ \"start_url\": \"land.html\" }");
+    auto& manifest = ParseManifest(R"({ "start_url": "land.html" })");
     ASSERT_EQ(manifest->start_url, KURL(DefaultDocumentUrl(), "land.html"));
     ASSERT_FALSE(IsManifestEmpty(manifest));
     EXPECT_EQ(0u, GetErrorCount());
@@ -301,14 +354,14 @@ TEST_F(ManifestParserTest, StartURLParseRules) {
 
   // Whitespaces.
   {
-    auto& manifest = ParseManifest("{ \"start_url\": \"  land.html  \" }");
+    auto& manifest = ParseManifest(R"({ "start_url": "  land.html  " })");
     ASSERT_EQ(manifest->start_url, KURL(DefaultDocumentUrl(), "land.html"));
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Don't parse if property isn't a string.
   {
-    auto& manifest = ParseManifest("{ \"start_url\": {} }");
+    auto& manifest = ParseManifest(R"({ "start_url": {} })");
     ASSERT_TRUE(manifest->start_url.IsEmpty());
     ASSERT_EQ(String(), manifest->id);
     EXPECT_EQ(1u, GetErrorCount());
@@ -318,7 +371,7 @@ TEST_F(ManifestParserTest, StartURLParseRules) {
 
   // Don't parse if property isn't a string.
   {
-    auto& manifest = ParseManifest("{ \"start_url\": 42 }");
+    auto& manifest = ParseManifest(R"({ "start_url": 42 })");
     ASSERT_TRUE(manifest->start_url.IsEmpty());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'start_url' ignored, type string expected.",
@@ -328,7 +381,7 @@ TEST_F(ManifestParserTest, StartURLParseRules) {
   // Don't parse if property isn't a valid URL.
   {
     auto& manifest =
-        ParseManifest("{ \"start_url\": \"http://www.google.ca:a\" }");
+        ParseManifest(R"({ "start_url": "http://www.google.ca:a" })");
     ASSERT_TRUE(manifest->start_url.IsEmpty());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'start_url' ignored, URL is invalid.", errors()[0]);
@@ -337,7 +390,7 @@ TEST_F(ManifestParserTest, StartURLParseRules) {
   // Absolute start_url, same origin with document.
   {
     auto& manifest =
-        ParseManifestWithURLs("{ \"start_url\": \"http://foo.com/land.html\" }",
+        ParseManifestWithURLs(R"({ "start_url": "http://foo.com/land.html" })",
                               KURL("http://foo.com/manifest.json"),
                               KURL("http://foo.com/index.html"));
     ASSERT_EQ(manifest->start_url.GetString(), "http://foo.com/land.html");
@@ -347,7 +400,7 @@ TEST_F(ManifestParserTest, StartURLParseRules) {
   // Absolute start_url, cross origin with document.
   {
     auto& manifest =
-        ParseManifestWithURLs("{ \"start_url\": \"http://bar.com/land.html\" }",
+        ParseManifestWithURLs(R"({ "start_url": "http://bar.com/land.html" })",
                               KURL("http://foo.com/manifest.json"),
                               KURL("http://foo.com/index.html"));
     ASSERT_TRUE(manifest->start_url.IsEmpty());
@@ -361,7 +414,7 @@ TEST_F(ManifestParserTest, StartURLParseRules) {
   // Resolving has to happen based on the manifest_url.
   {
     auto& manifest =
-        ParseManifestWithURLs("{ \"start_url\": \"land.html\" }",
+        ParseManifestWithURLs(R"({ "start_url": "land.html" })",
                               KURL("http://foo.com/landing/manifest.json"),
                               KURL("http://foo.com/index.html"));
     ASSERT_EQ(manifest->start_url.GetString(),
@@ -374,7 +427,7 @@ TEST_F(ManifestParserTest, ScopeParseRules) {
   // Smoke test.
   {
     auto& manifest = ParseManifest(
-        "{ \"scope\": \"land\", \"start_url\": \"land/landing.html\" }");
+        R"({ "scope": "land", "start_url": "land/landing.html" })");
     ASSERT_EQ(manifest->scope, KURL(DefaultDocumentUrl(), "land"));
     ASSERT_FALSE(IsManifestEmpty(manifest));
     EXPECT_EQ(0u, GetErrorCount());
@@ -383,14 +436,14 @@ TEST_F(ManifestParserTest, ScopeParseRules) {
   // Whitespaces.
   {
     auto& manifest = ParseManifest(
-        "{ \"scope\": \"  land  \", \"start_url\": \"land/landing.html\" }");
+        R"({ "scope": "  land  ", "start_url": "land/landing.html" })");
     ASSERT_EQ(manifest->scope, KURL(DefaultDocumentUrl(), "land"));
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Return the default value if the property isn't a string.
   {
-    auto& manifest = ParseManifest("{ \"scope\": {} }");
+    auto& manifest = ParseManifest(R"({ "scope": {} })");
     ASSERT_EQ(manifest->scope.GetString(), DefaultDocumentUrl().BaseAsString());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'scope' ignored, type string expected.", errors()[0]);
@@ -399,8 +452,8 @@ TEST_F(ManifestParserTest, ScopeParseRules) {
   // Return the default value if property isn't a string.
   {
     auto& manifest = ParseManifest(
-        "{ \"scope\": 42, "
-        "\"start_url\": \"http://foo.com/land/landing.html\" }");
+        R"({ "scope": 42,
+        "start_url": "http://foo.com/land/landing.html" })");
     ASSERT_EQ(manifest->scope, KURL(DefaultDocumentUrl(), "land/"));
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'scope' ignored, type string expected.", errors()[0]);
@@ -409,8 +462,8 @@ TEST_F(ManifestParserTest, ScopeParseRules) {
   // Absolute scope, start URL is in scope.
   {
     auto& manifest = ParseManifestWithURLs(
-        "{ \"scope\": \"http://foo.com/land\", "
-        "\"start_url\": \"http://foo.com/land/landing.html\" }",
+        R"({ "scope": "http://foo.com/land",
+        "start_url": "http://foo.com/land/landing.html" })",
         KURL("http://foo.com/manifest.json"),
         KURL("http://foo.com/index.html"));
     ASSERT_EQ(manifest->scope.GetString(), "http://foo.com/land");
@@ -420,8 +473,8 @@ TEST_F(ManifestParserTest, ScopeParseRules) {
   // Absolute scope, start URL is not in scope.
   {
     auto& manifest = ParseManifestWithURLs(
-        "{ \"scope\": \"http://foo.com/land\", "
-        "\"start_url\": \"http://foo.com/index.html\" }",
+        R"({ "scope": "http://foo.com/land",
+        "start_url": "http://foo.com/index.html" })",
         KURL("http://foo.com/manifest.json"),
         KURL("http://foo.com/index.html"));
     ASSERT_EQ(manifest->scope.GetString(), DefaultDocumentUrl().BaseAsString());
@@ -435,8 +488,8 @@ TEST_F(ManifestParserTest, ScopeParseRules) {
   // Absolute scope, start URL has different origin than scope URL.
   {
     auto& manifest = ParseManifestWithURLs(
-        "{ \"scope\": \"http://foo.com/land\", "
-        "\"start_url\": \"http://bar.com/land/landing.html\" }",
+        R"({ "scope": "http://foo.com/land",
+        "start_url": "http://bar.com/land/landing.html" })",
         KURL("http://foo.com/manifest.json"),
         KURL("http://foo.com/index.html"));
     ASSERT_EQ(manifest->scope.GetString(), DefaultDocumentUrl().BaseAsString());
@@ -454,8 +507,8 @@ TEST_F(ManifestParserTest, ScopeParseRules) {
   {
     KURL document_url("http://bar.com/index.html");
     auto& manifest = ParseManifestWithURLs(
-        "{ \"scope\": \"http://foo.com/land\", "
-        "\"start_url\": \"http://foo.com/land/landing.html\" }",
+        R"({ "scope": "http://foo.com/land",
+        "start_url": "http://foo.com/land/landing.html" })",
         KURL("http://foo.com/manifest.json"), document_url);
     ASSERT_EQ(manifest->scope.GetString(), document_url.BaseAsString());
     ASSERT_EQ(2u, GetErrorCount());
@@ -471,7 +524,7 @@ TEST_F(ManifestParserTest, ScopeParseRules) {
   // No start URL. Document URL is in a subdirectory of scope.
   {
     auto& manifest =
-        ParseManifestWithURLs("{ \"scope\": \"http://foo.com/land\" }",
+        ParseManifestWithURLs(R"({ "scope": "http://foo.com/land" })",
                               KURL("http://foo.com/manifest.json"),
                               KURL("http://foo.com/land/site/index.html"));
     ASSERT_EQ(manifest->scope.GetString(), "http://foo.com/land");
@@ -482,7 +535,7 @@ TEST_F(ManifestParserTest, ScopeParseRules) {
   {
     KURL document_url("http://foo.com/index.html");
     auto& manifest =
-        ParseManifestWithURLs("{ \"scope\": \"http://foo.com/land\" }",
+        ParseManifestWithURLs(R"({ "scope": "http://foo.com/land" })",
                               KURL("http://foo.com/manifest.json"),
                               KURL("http://foo.com/index.html"));
     ASSERT_EQ(manifest->scope.GetString(), document_url.BaseAsString());
@@ -496,7 +549,7 @@ TEST_F(ManifestParserTest, ScopeParseRules) {
   // Resolving has to happen based on the manifest_url.
   {
     auto& manifest = ParseManifestWithURLs(
-        "{ \"scope\": \"treasure\" }", KURL("http://foo.com/map/manifest.json"),
+        R"({ "scope": "treasure" })", KURL("http://foo.com/map/manifest.json"),
         KURL("http://foo.com/map/treasure/island/index.html"));
     ASSERT_EQ(manifest->scope.GetString(), "http://foo.com/map/treasure");
     EXPECT_EQ(0u, GetErrorCount());
@@ -505,7 +558,7 @@ TEST_F(ManifestParserTest, ScopeParseRules) {
   // Scope is parent directory.
   {
     auto& manifest = ParseManifestWithURLs(
-        "{ \"scope\": \"..\" }", KURL("http://foo.com/map/manifest.json"),
+        R"({ "scope": ".." })", KURL("http://foo.com/map/manifest.json"),
         KURL("http://foo.com/index.html"));
     ASSERT_EQ(manifest->scope.GetString(), "http://foo.com/");
     EXPECT_EQ(0u, GetErrorCount());
@@ -514,7 +567,7 @@ TEST_F(ManifestParserTest, ScopeParseRules) {
   // Scope tries to go up past domain.
   {
     auto& manifest = ParseManifestWithURLs(
-        "{ \"scope\": \"../..\" }", KURL("http://foo.com/map/manifest.json"),
+        R"({ "scope": "../.." })", KURL("http://foo.com/map/manifest.json"),
         KURL("http://foo.com/index.html"));
     ASSERT_EQ(manifest->scope.GetString(), "http://foo.com/");
     EXPECT_EQ(0u, GetErrorCount());
@@ -522,14 +575,14 @@ TEST_F(ManifestParserTest, ScopeParseRules) {
 
   // Scope defaults to start_url with the filename, query, and fragment removed.
   {
-    auto& manifest = ParseManifest("{ \"start_url\": \"land/landing.html\" }");
+    auto& manifest = ParseManifest(R"({ "start_url": "land/landing.html" })");
     ASSERT_EQ(manifest->scope, KURL(DefaultDocumentUrl(), "land/"));
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   {
     auto& manifest =
-        ParseManifest("{ \"start_url\": \"land/land/landing.html\" }");
+        ParseManifest(R"({ "start_url": "land/land/landing.html" })");
     ASSERT_EQ(manifest->scope, KURL(DefaultDocumentUrl(), "land/land/"));
     EXPECT_EQ(0u, GetErrorCount());
   }
@@ -545,7 +598,7 @@ TEST_F(ManifestParserTest, ScopeParseRules) {
 TEST_F(ManifestParserTest, DisplayParseRules) {
   // Smoke test.
   {
-    auto& manifest = ParseManifest("{ \"display\": \"browser\" }");
+    auto& manifest = ParseManifest(R"({ "display": "browser" })");
     EXPECT_EQ(manifest->display, blink::mojom::DisplayMode::kBrowser);
     EXPECT_FALSE(IsManifestEmpty(manifest));
     EXPECT_EQ(0u, GetErrorCount());
@@ -553,14 +606,14 @@ TEST_F(ManifestParserTest, DisplayParseRules) {
 
   // Trim whitespaces.
   {
-    auto& manifest = ParseManifest("{ \"display\": \"  browser  \" }");
+    auto& manifest = ParseManifest(R"({ "display": "  browser  " })");
     EXPECT_EQ(manifest->display, blink::mojom::DisplayMode::kBrowser);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Don't parse if name isn't a string.
   {
-    auto& manifest = ParseManifest("{ \"display\": {} }");
+    auto& manifest = ParseManifest(R"({ "display": {} })");
     EXPECT_EQ(manifest->display, blink::mojom::DisplayMode::kUndefined);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ(
@@ -571,7 +624,7 @@ TEST_F(ManifestParserTest, DisplayParseRules) {
 
   // Don't parse if name isn't a string.
   {
-    auto& manifest = ParseManifest("{ \"display\": 42 }");
+    auto& manifest = ParseManifest(R"({ "display": 42 })");
     EXPECT_EQ(manifest->display, blink::mojom::DisplayMode::kUndefined);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ(
@@ -582,7 +635,7 @@ TEST_F(ManifestParserTest, DisplayParseRules) {
 
   // Parse fails if string isn't known.
   {
-    auto& manifest = ParseManifest("{ \"display\": \"browser_something\" }");
+    auto& manifest = ParseManifest(R"({ "display": "browser_something" })");
     EXPECT_EQ(manifest->display, blink::mojom::DisplayMode::kUndefined);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("unknown 'display' value ignored.", errors()[0]);
@@ -590,35 +643,35 @@ TEST_F(ManifestParserTest, DisplayParseRules) {
 
   // Accept 'fullscreen'.
   {
-    auto& manifest = ParseManifest("{ \"display\": \"fullscreen\" }");
+    auto& manifest = ParseManifest(R"({ "display": "fullscreen" })");
     EXPECT_EQ(manifest->display, blink::mojom::DisplayMode::kFullscreen);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Accept 'standalone'.
   {
-    auto& manifest = ParseManifest("{ \"display\": \"standalone\" }");
+    auto& manifest = ParseManifest(R"({ "display": "standalone" })");
     EXPECT_EQ(manifest->display, blink::mojom::DisplayMode::kStandalone);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Accept 'minimal-ui'.
   {
-    auto& manifest = ParseManifest("{ \"display\": \"minimal-ui\" }");
+    auto& manifest = ParseManifest(R"({ "display": "minimal-ui" })");
     EXPECT_EQ(manifest->display, blink::mojom::DisplayMode::kMinimalUi);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Accept 'browser'.
   {
-    auto& manifest = ParseManifest("{ \"display\": \"browser\" }");
+    auto& manifest = ParseManifest(R"({ "display": "browser" })");
     EXPECT_EQ(manifest->display, blink::mojom::DisplayMode::kBrowser);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Case insensitive.
   {
-    auto& manifest = ParseManifest("{ \"display\": \"BROWSER\" }");
+    auto& manifest = ParseManifest(R"({ "display": "BROWSER" })");
     EXPECT_EQ(manifest->display, blink::mojom::DisplayMode::kBrowser);
     EXPECT_EQ(0u, GetErrorCount());
   }
@@ -627,7 +680,7 @@ TEST_F(ManifestParserTest, DisplayParseRules) {
   {
     ScopedWebAppWindowControlsOverlayForTest window_controls_overlay(false);
     auto& manifest =
-        ParseManifest("{ \"display\": \"window-controls-overlay\" }");
+        ParseManifest(R"({ "display": "window-controls-overlay" })");
     EXPECT_EQ(manifest->display, blink::mojom::DisplayMode::kUndefined);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("inapplicable 'display' value ignored.", errors()[0]);
@@ -637,7 +690,7 @@ TEST_F(ManifestParserTest, DisplayParseRules) {
   {
     ScopedWebAppWindowControlsOverlayForTest window_controls_overlay(true);
     auto& manifest =
-        ParseManifest("{ \"display\": \"window-controls-overlay\" }");
+        ParseManifest(R"({ "display": "window-controls-overlay" })");
     EXPECT_EQ(manifest->display, blink::mojom::DisplayMode::kUndefined);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("inapplicable 'display' value ignored.", errors()[0]);
@@ -646,7 +699,7 @@ TEST_F(ManifestParserTest, DisplayParseRules) {
   // Parsing fails for 'tabbed' when flag is disabled.
   {
     ScopedWebAppTabStripForTest tabbed(false);
-    auto& manifest = ParseManifest("{ \"display\": \"tabbed\" }");
+    auto& manifest = ParseManifest(R"({ "display": "tabbed" })");
     EXPECT_EQ(manifest->display, blink::mojom::DisplayMode::kUndefined);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("inapplicable 'display' value ignored.", errors()[0]);
@@ -655,7 +708,7 @@ TEST_F(ManifestParserTest, DisplayParseRules) {
   // Parsing fails for 'tabbed' when flag is enabled.
   {
     ScopedWebAppTabStripForTest tabbed(true);
-    auto& manifest = ParseManifest("{ \"display\": \"tabbed\" }");
+    auto& manifest = ParseManifest(R"({ "display": "tabbed" })");
     EXPECT_EQ(manifest->display, blink::mojom::DisplayMode::kUndefined);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("inapplicable 'display' value ignored.", errors()[0]);
@@ -666,14 +719,14 @@ TEST_F(ManifestParserTest, DisplayOverrideParseRules) {
 
   // Smoke test: if no display_override, no value.
   {
-    auto& manifest = ParseManifest("{ \"display_override\": [] }");
+    auto& manifest = ParseManifest(R"({ "display_override": [] })");
     EXPECT_TRUE(manifest->display_override.IsEmpty());
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Smoke test: if not array, value will be ignored
   {
-    auto& manifest = ParseManifest("{ \"display_override\": 23 }");
+    auto& manifest = ParseManifest(R"({ "display_override": 23 })");
     EXPECT_TRUE(manifest->display_override.IsEmpty());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'display_override' ignored, type array expected.",
@@ -682,21 +735,21 @@ TEST_F(ManifestParserTest, DisplayOverrideParseRules) {
 
   // Smoke test: if array value is not a string, it will be ignored
   {
-    auto& manifest = ParseManifest("{ \"display_override\": [ 23 ] }");
+    auto& manifest = ParseManifest(R"({ "display_override": [ 23 ] })");
     EXPECT_TRUE(manifest->display_override.IsEmpty());
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Smoke test: if array value is not not recognized, it will be ignored
   {
-    auto& manifest = ParseManifest("{ \"display_override\": [ \"test\" ] }");
+    auto& manifest = ParseManifest(R"({ "display_override": [ "test" ] })");
     EXPECT_TRUE(manifest->display_override.IsEmpty());
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Case insensitive
   {
-    auto& manifest = ParseManifest("{ \"display_override\": [ \"BROWSER\" ] }");
+    auto& manifest = ParseManifest(R"({ "display_override": [ "BROWSER" ] })");
     EXPECT_FALSE(manifest->display_override.IsEmpty());
     EXPECT_EQ(manifest->display_override[0],
               blink::mojom::DisplayMode::kBrowser);
@@ -707,7 +760,7 @@ TEST_F(ManifestParserTest, DisplayOverrideParseRules) {
   // Trim whitespace
   {
     auto& manifest =
-        ParseManifest("{ \"display_override\": [ \" browser \" ] }");
+        ParseManifest(R"({ "display_override": [ " browser " ] })");
     EXPECT_FALSE(manifest->display_override.IsEmpty());
     EXPECT_EQ(manifest->display_override[0],
               blink::mojom::DisplayMode::kBrowser);
@@ -717,7 +770,7 @@ TEST_F(ManifestParserTest, DisplayOverrideParseRules) {
 
   // Accept 'browser'
   {
-    auto& manifest = ParseManifest("{ \"display_override\": [ \"browser\" ] }");
+    auto& manifest = ParseManifest(R"({ "display_override": [ "browser" ] })");
     EXPECT_FALSE(manifest->display_override.IsEmpty());
     EXPECT_EQ(manifest->display_override[0],
               blink::mojom::DisplayMode::kBrowser);
@@ -727,8 +780,8 @@ TEST_F(ManifestParserTest, DisplayOverrideParseRules) {
 
   // Accept 'browser', 'minimal-ui'
   {
-    auto& manifest = ParseManifest(
-        "{ \"display_override\": [ \"browser\", \"minimal-ui\" ] }");
+    auto& manifest =
+        ParseManifest(R"({ "display_override": [ "browser", "minimal-ui" ] })");
     EXPECT_FALSE(manifest->display_override.IsEmpty());
     EXPECT_EQ(manifest->display_override[0],
               blink::mojom::DisplayMode::kBrowser);
@@ -742,8 +795,8 @@ TEST_F(ManifestParserTest, DisplayOverrideParseRules) {
   // Accept 'browser', 'minimal-ui'
   {
     auto& manifest = ParseManifest(
-        "{ \"display_override\": [ 3, \"browser\", \"invalid-display\", "
-        "\"minimal-ui\" ] }");
+        R"({ "display_override": [ 3, "browser", "invalid-display",
+        "minimal-ui" ] })");
     EXPECT_FALSE(manifest->display_override.IsEmpty());
     EXPECT_EQ(manifest->display_override[0],
               blink::mojom::DisplayMode::kBrowser);
@@ -758,8 +811,8 @@ TEST_F(ManifestParserTest, DisplayOverrideParseRules) {
   // Accept 'browser', 'minimal-ui', 'standalone'
   {
     auto& manifest = ParseManifest(
-        "{ \"display\": \"standalone\", \"display_override\": [ \"browser\", "
-        "\"minimal-ui\", \"standalone\" ] }");
+        R"({ "display": "standalone", "display_override": [ "browser",
+        "minimal-ui", "standalone" ] })");
     EXPECT_EQ(manifest->display, blink::mojom::DisplayMode::kStandalone);
     EXPECT_EQ(0u, GetErrorCount());
     EXPECT_FALSE(manifest->display_override.IsEmpty());
@@ -775,9 +828,9 @@ TEST_F(ManifestParserTest, DisplayOverrideParseRules) {
   // validate duplicate entries.
   // Accept 'browser', 'minimal-ui', 'browser'
   {
-    auto& manifest = ParseManifest(
-        "{ \"display_override\": [ \"browser\", \"minimal-ui\", "
-        "\"browser\" ] }");
+    auto& manifest =
+        ParseManifest(R"({ "display_override": [ "browser", "minimal-ui",
+        "browser" ] })");
     EXPECT_FALSE(manifest->display_override.IsEmpty());
     EXPECT_EQ(manifest->display_override[0],
               blink::mojom::DisplayMode::kBrowser);
@@ -793,7 +846,7 @@ TEST_F(ManifestParserTest, DisplayOverrideParseRules) {
   {
     ScopedWebAppWindowControlsOverlayForTest window_controls_overlay(false);
     auto& manifest = ParseManifest(
-        "{ \"display_override\": [ \"window-controls-overlay\" ] }");
+        R"({ "display_override": [ "window-controls-overlay" ] })");
     EXPECT_TRUE(manifest->display_override.IsEmpty());
     EXPECT_EQ(0u, GetErrorCount());
   }
@@ -802,7 +855,7 @@ TEST_F(ManifestParserTest, DisplayOverrideParseRules) {
   {
     ScopedWebAppWindowControlsOverlayForTest window_controls_overlay(true);
     auto& manifest = ParseManifest(
-        "{ \"display_override\": [ \"window-controls-overlay\" ] }");
+        R"({ "display_override": [ "window-controls-overlay" ] })");
     EXPECT_FALSE(manifest->display_override.IsEmpty());
     EXPECT_EQ(manifest->display_override[0],
               blink::mojom::DisplayMode::kWindowControlsOverlay);
@@ -813,7 +866,7 @@ TEST_F(ManifestParserTest, DisplayOverrideParseRules) {
   // Ignore 'tabbed' when flag is disabled.
   {
     ScopedWebAppTabStripForTest tabbed(false);
-    auto& manifest = ParseManifest("{ \"display_override\": [ \"tabbed\" ] }");
+    auto& manifest = ParseManifest(R"({ "display_override": [ "tabbed" ] })");
     EXPECT_TRUE(manifest->display_override.IsEmpty());
     EXPECT_EQ(0u, GetErrorCount());
   }
@@ -821,7 +874,7 @@ TEST_F(ManifestParserTest, DisplayOverrideParseRules) {
   // Accept 'tabbed' when flag is enabled.
   {
     ScopedWebAppTabStripForTest tabbed(true);
-    auto& manifest = ParseManifest("{ \"display_override\": [ \"tabbed\" ] }");
+    auto& manifest = ParseManifest(R"({ "display_override": [ "tabbed" ] })");
     EXPECT_FALSE(manifest->display_override.IsEmpty());
     EXPECT_EQ(manifest->display_override[0],
               blink::mojom::DisplayMode::kTabbed);
@@ -833,7 +886,7 @@ TEST_F(ManifestParserTest, DisplayOverrideParseRules) {
 TEST_F(ManifestParserTest, OrientationParseRules) {
   // Smoke test.
   {
-    auto& manifest = ParseManifest("{ \"orientation\": \"natural\" }");
+    auto& manifest = ParseManifest(R"({ "orientation": "natural" })");
     EXPECT_EQ(manifest->orientation,
               device::mojom::ScreenOrientationLockType::NATURAL);
     EXPECT_FALSE(IsManifestEmpty(manifest));
@@ -842,7 +895,7 @@ TEST_F(ManifestParserTest, OrientationParseRules) {
 
   // Trim whitespaces.
   {
-    auto& manifest = ParseManifest("{ \"orientation\": \"natural\" }");
+    auto& manifest = ParseManifest(R"({ "orientation": "natural" })");
     EXPECT_EQ(manifest->orientation,
               device::mojom::ScreenOrientationLockType::NATURAL);
     EXPECT_EQ(0u, GetErrorCount());
@@ -850,7 +903,7 @@ TEST_F(ManifestParserTest, OrientationParseRules) {
 
   // Don't parse if name isn't a string.
   {
-    auto& manifest = ParseManifest("{ \"orientation\": {} }");
+    auto& manifest = ParseManifest(R"({ "orientation": {} })");
     EXPECT_EQ(manifest->orientation,
               device::mojom::ScreenOrientationLockType::DEFAULT);
     EXPECT_EQ(1u, GetErrorCount());
@@ -860,7 +913,7 @@ TEST_F(ManifestParserTest, OrientationParseRules) {
 
   // Don't parse if name isn't a string.
   {
-    auto& manifest = ParseManifest("{ \"orientation\": 42 }");
+    auto& manifest = ParseManifest(R"({ "orientation": 42 })");
     EXPECT_EQ(manifest->orientation,
               device::mojom::ScreenOrientationLockType::DEFAULT);
     EXPECT_EQ(1u, GetErrorCount());
@@ -870,7 +923,7 @@ TEST_F(ManifestParserTest, OrientationParseRules) {
 
   // Parse fails if string isn't known.
   {
-    auto& manifest = ParseManifest("{ \"orientation\": \"naturalish\" }");
+    auto& manifest = ParseManifest(R"({ "orientation": "naturalish" })");
     EXPECT_EQ(manifest->orientation,
               device::mojom::ScreenOrientationLockType::DEFAULT);
     EXPECT_EQ(1u, GetErrorCount());
@@ -879,7 +932,7 @@ TEST_F(ManifestParserTest, OrientationParseRules) {
 
   // Accept 'any'.
   {
-    auto& manifest = ParseManifest("{ \"orientation\": \"any\" }");
+    auto& manifest = ParseManifest(R"({ "orientation": "any" })");
     EXPECT_EQ(manifest->orientation,
               device::mojom::ScreenOrientationLockType::ANY);
     EXPECT_EQ(0u, GetErrorCount());
@@ -887,7 +940,7 @@ TEST_F(ManifestParserTest, OrientationParseRules) {
 
   // Accept 'natural'.
   {
-    auto& manifest = ParseManifest("{ \"orientation\": \"natural\" }");
+    auto& manifest = ParseManifest(R"({ "orientation": "natural" })");
     EXPECT_EQ(manifest->orientation,
               device::mojom::ScreenOrientationLockType::NATURAL);
     EXPECT_EQ(0u, GetErrorCount());
@@ -895,7 +948,7 @@ TEST_F(ManifestParserTest, OrientationParseRules) {
 
   // Accept 'landscape'.
   {
-    auto& manifest = ParseManifest("{ \"orientation\": \"landscape\" }");
+    auto& manifest = ParseManifest(R"({ "orientation": "landscape" })");
     EXPECT_EQ(manifest->orientation,
               device::mojom::ScreenOrientationLockType::LANDSCAPE);
     EXPECT_EQ(0u, GetErrorCount());
@@ -903,8 +956,7 @@ TEST_F(ManifestParserTest, OrientationParseRules) {
 
   // Accept 'landscape-primary'.
   {
-    auto& manifest =
-        ParseManifest("{ \"orientation\": \"landscape-primary\" }");
+    auto& manifest = ParseManifest(R"({ "orientation": "landscape-primary" })");
     EXPECT_EQ(manifest->orientation,
               device::mojom::ScreenOrientationLockType::LANDSCAPE_PRIMARY);
     EXPECT_EQ(0u, GetErrorCount());
@@ -913,7 +965,7 @@ TEST_F(ManifestParserTest, OrientationParseRules) {
   // Accept 'landscape-secondary'.
   {
     auto& manifest =
-        ParseManifest("{ \"orientation\": \"landscape-secondary\" }");
+        ParseManifest(R"({ "orientation": "landscape-secondary" })");
     EXPECT_EQ(manifest->orientation,
               device::mojom::ScreenOrientationLockType::LANDSCAPE_SECONDARY);
     EXPECT_EQ(0u, GetErrorCount());
@@ -921,7 +973,7 @@ TEST_F(ManifestParserTest, OrientationParseRules) {
 
   // Accept 'portrait'.
   {
-    auto& manifest = ParseManifest("{ \"orientation\": \"portrait\" }");
+    auto& manifest = ParseManifest(R"({ "orientation": "portrait" })");
     EXPECT_EQ(manifest->orientation,
               device::mojom::ScreenOrientationLockType::PORTRAIT);
     EXPECT_EQ(0u, GetErrorCount());
@@ -929,7 +981,7 @@ TEST_F(ManifestParserTest, OrientationParseRules) {
 
   // Accept 'portrait-primary'.
   {
-    auto& manifest = ParseManifest("{ \"orientation\": \"portrait-primary\" }");
+    auto& manifest = ParseManifest(R"({ "orientation": "portrait-primary" })");
     EXPECT_EQ(manifest->orientation,
               device::mojom::ScreenOrientationLockType::PORTRAIT_PRIMARY);
     EXPECT_EQ(0u, GetErrorCount());
@@ -938,7 +990,7 @@ TEST_F(ManifestParserTest, OrientationParseRules) {
   // Accept 'portrait-secondary'.
   {
     auto& manifest =
-        ParseManifest("{ \"orientation\": \"portrait-secondary\" }");
+        ParseManifest(R"({ "orientation": "portrait-secondary" })");
     EXPECT_EQ(manifest->orientation,
               device::mojom::ScreenOrientationLockType::PORTRAIT_SECONDARY);
     EXPECT_EQ(0u, GetErrorCount());
@@ -946,7 +998,7 @@ TEST_F(ManifestParserTest, OrientationParseRules) {
 
   // Case insensitive.
   {
-    auto& manifest = ParseManifest("{ \"orientation\": \"LANDSCAPE\" }");
+    auto& manifest = ParseManifest(R"({ "orientation": "LANDSCAPE" })");
     EXPECT_EQ(manifest->orientation,
               device::mojom::ScreenOrientationLockType::LANDSCAPE);
     EXPECT_EQ(0u, GetErrorCount());
@@ -956,28 +1008,28 @@ TEST_F(ManifestParserTest, OrientationParseRules) {
 TEST_F(ManifestParserTest, IconsParseRules) {
   // Smoke test: if no icon, no value.
   {
-    auto& manifest = ParseManifest("{ \"icons\": [] }");
+    auto& manifest = ParseManifest(R"({ "icons": [] })");
     EXPECT_TRUE(manifest->icons.IsEmpty());
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Smoke test: if empty icon, no value.
   {
-    auto& manifest = ParseManifest("{ \"icons\": [ {} ] }");
+    auto& manifest = ParseManifest(R"({ "icons": [ {} ] })");
     EXPECT_TRUE(manifest->icons.IsEmpty());
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Smoke test: icon with invalid src, no value.
   {
-    auto& manifest = ParseManifest("{ \"icons\": [ { \"icons\": [] } ] }");
+    auto& manifest = ParseManifest(R"({ "icons": [ { "icons": [] } ] })");
     EXPECT_TRUE(manifest->icons.IsEmpty());
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Smoke test: if icon with empty src, it will be present in the list.
   {
-    auto& manifest = ParseManifest("{ \"icons\": [ { \"src\": \"\" } ] }");
+    auto& manifest = ParseManifest(R"({ "icons": [ { "src": "" } ] })");
     EXPECT_FALSE(manifest->icons.IsEmpty());
 
     auto& icons = manifest->icons;
@@ -989,7 +1041,7 @@ TEST_F(ManifestParserTest, IconsParseRules) {
 
   // Smoke test: if one icons with valid src, it will be present in the list.
   {
-    auto& manifest = ParseManifest("{ \"icons\": [{ \"src\": \"foo.jpg\" }] }");
+    auto& manifest = ParseManifest(R"({ "icons": [{ "src": "foo.jpg" }] })");
     EXPECT_FALSE(manifest->icons.IsEmpty());
 
     auto& icons = manifest->icons;
@@ -1052,8 +1104,7 @@ TEST_F(ManifestParserTest, ScreenshotsParseRules) {
 TEST_F(ManifestParserTest, IconSrcParseRules) {
   // Smoke test.
   {
-    auto& manifest =
-        ParseManifest("{ \"icons\": [ {\"src\": \"foo.png\" } ] }");
+    auto& manifest = ParseManifest(R"({ "icons": [ {"src": "foo.png" } ] })");
     EXPECT_FALSE(manifest->icons.IsEmpty());
     EXPECT_EQ(manifest->icons[0]->src, KURL(DefaultDocumentUrl(), "foo.png"));
     EXPECT_EQ(0u, GetErrorCount());
@@ -1062,7 +1113,7 @@ TEST_F(ManifestParserTest, IconSrcParseRules) {
   // Whitespaces.
   {
     auto& manifest =
-        ParseManifest("{ \"icons\": [ {\"src\": \"   foo.png   \" } ] }");
+        ParseManifest(R"({ "icons": [ {"src": "   foo.png   " } ] })");
     EXPECT_FALSE(manifest->icons.IsEmpty());
     EXPECT_EQ(manifest->icons[0]->src, KURL(DefaultDocumentUrl(), "foo.png"));
     EXPECT_EQ(0u, GetErrorCount());
@@ -1070,7 +1121,7 @@ TEST_F(ManifestParserTest, IconSrcParseRules) {
 
   // Don't parse if property isn't a string.
   {
-    auto& manifest = ParseManifest("{ \"icons\": [ {\"src\": {} } ] }");
+    auto& manifest = ParseManifest(R"({ "icons": [ {"src": {} } ] })");
     EXPECT_TRUE(manifest->icons.IsEmpty());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'src' ignored, type string expected.", errors()[0]);
@@ -1078,7 +1129,7 @@ TEST_F(ManifestParserTest, IconSrcParseRules) {
 
   // Don't parse if property isn't a string.
   {
-    auto& manifest = ParseManifest("{ \"icons\": [ {\"src\": 42 } ] }");
+    auto& manifest = ParseManifest(R"({ "icons": [ {"src": 42 } ] })");
     EXPECT_TRUE(manifest->icons.IsEmpty());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'src' ignored, type string expected.", errors()[0]);
@@ -1087,7 +1138,7 @@ TEST_F(ManifestParserTest, IconSrcParseRules) {
   // Resolving has to happen based on the document_url.
   {
     auto& manifest = ParseManifestWithURLs(
-        "{ \"icons\": [ {\"src\": \"icons/foo.png\" } ] }",
+        R"({ "icons": [ {"src": "icons/foo.png" } ] })",
         KURL("http://foo.com/landing/index.html"), DefaultManifestUrl());
     EXPECT_FALSE(manifest->icons.IsEmpty());
     EXPECT_EQ(manifest->icons[0]->src.GetString(),
@@ -1100,7 +1151,7 @@ TEST_F(ManifestParserTest, IconTypeParseRules) {
   // Smoke test.
   {
     auto& manifest =
-        ParseManifest("{ \"icons\": [ {\"src\": \"\", \"type\": \"foo\" } ] }");
+        ParseManifest(R"({ "icons": [ {"src": "", "type": "foo" } ] })");
     EXPECT_FALSE(manifest->icons.IsEmpty());
     EXPECT_EQ(manifest->icons[0]->type, "foo");
     EXPECT_EQ(0u, GetErrorCount());
@@ -1108,9 +1159,8 @@ TEST_F(ManifestParserTest, IconTypeParseRules) {
 
   // Trim whitespaces.
   {
-    auto& manifest = ParseManifest(
-        "{ \"icons\": [ {\"src\": \"\","
-        " \"type\": \"  foo  \" } ] }");
+    auto& manifest =
+        ParseManifest(R"({ "icons": [ {"src": "", "type": "  foo  " } ] })");
     EXPECT_FALSE(manifest->icons.IsEmpty());
     EXPECT_EQ(manifest->icons[0]->type, "foo");
     EXPECT_EQ(0u, GetErrorCount());
@@ -1119,7 +1169,7 @@ TEST_F(ManifestParserTest, IconTypeParseRules) {
   // Don't parse if property isn't a string.
   {
     auto& manifest =
-        ParseManifest("{ \"icons\": [ {\"src\": \"\", \"type\": {} } ] }");
+        ParseManifest(R"({ "icons": [ {"src": "", "type": {} } ] })");
     EXPECT_FALSE(manifest->icons.IsEmpty());
     EXPECT_TRUE(manifest->icons[0]->type.IsEmpty());
     EXPECT_EQ(1u, GetErrorCount());
@@ -1129,7 +1179,7 @@ TEST_F(ManifestParserTest, IconTypeParseRules) {
   // Don't parse if property isn't a string.
   {
     auto& manifest =
-        ParseManifest("{ \"icons\": [ {\"src\": \"\", \"type\": 42 } ] }");
+        ParseManifest(R"({ "icons": [ {"src": "", "type": 42 } ] })");
     EXPECT_FALSE(manifest->icons.IsEmpty());
     EXPECT_TRUE(manifest->icons[0]->type.IsEmpty());
     EXPECT_EQ(1u, GetErrorCount());
@@ -1140,9 +1190,8 @@ TEST_F(ManifestParserTest, IconTypeParseRules) {
 TEST_F(ManifestParserTest, IconSizesParseRules) {
   // Smoke test.
   {
-    auto& manifest = ParseManifest(
-        "{ \"icons\": [ {\"src\": \"\","
-        "\"sizes\": \"42x42\" } ] }");
+    auto& manifest =
+        ParseManifest(R"({ "icons": [ {"src": "", "sizes": "42x42" } ] })");
     EXPECT_FALSE(manifest->icons.IsEmpty());
     EXPECT_EQ(manifest->icons[0]->sizes.size(), 1u);
     EXPECT_EQ(0u, GetErrorCount());
@@ -1150,9 +1199,8 @@ TEST_F(ManifestParserTest, IconSizesParseRules) {
 
   // Trim whitespaces.
   {
-    auto& manifest = ParseManifest(
-        "{ \"icons\": [ {\"src\": \"\","
-        "\"sizes\": \"  42x42  \" } ] }");
+    auto& manifest =
+        ParseManifest(R"({ "icons": [ {"src": "", "sizes": "  42x42  " } ] })");
     EXPECT_FALSE(manifest->icons.IsEmpty());
     EXPECT_EQ(manifest->icons[0]->sizes.size(), 1u);
     EXPECT_EQ(0u, GetErrorCount());
@@ -1160,9 +1208,8 @@ TEST_F(ManifestParserTest, IconSizesParseRules) {
 
   // Ignore sizes if property isn't a string.
   {
-    auto& manifest = ParseManifest(
-        "{ \"icons\": [ {\"src\": \"\","
-        "\"sizes\": {} } ] }");
+    auto& manifest =
+        ParseManifest(R"({ "icons": [ {"src": "", "sizes": {} } ] })");
     EXPECT_FALSE(manifest->icons.IsEmpty());
     EXPECT_EQ(manifest->icons[0]->sizes.size(), 0u);
     EXPECT_EQ(1u, GetErrorCount());
@@ -1171,9 +1218,8 @@ TEST_F(ManifestParserTest, IconSizesParseRules) {
 
   // Ignore sizes if property isn't a string.
   {
-    auto& manifest = ParseManifest(
-        "{ \"icons\": [ {\"src\": \"\","
-        "\"sizes\": 42 } ] }");
+    auto& manifest =
+        ParseManifest(R"({ "icons": [ {"src": "", "sizes": 42 } ] })");
     EXPECT_FALSE(manifest->icons.IsEmpty());
     EXPECT_EQ(manifest->icons[0]->sizes.size(), 0u);
     EXPECT_EQ(1u, GetErrorCount());
@@ -1183,8 +1229,7 @@ TEST_F(ManifestParserTest, IconSizesParseRules) {
   // Smoke test: value correctly parsed.
   {
     auto& manifest = ParseManifest(
-        "{ \"icons\": [ {\"src\": \"\","
-        "\"sizes\": \"42x42  48x48\" } ] }");
+        R"({ "icons": [ {"src": "", "sizes": "42x42  48x48" } ] })");
     EXPECT_FALSE(manifest->icons.IsEmpty());
 
     auto& icons = manifest->icons;
@@ -1196,8 +1241,7 @@ TEST_F(ManifestParserTest, IconSizesParseRules) {
   // <WIDTH>'x'<HEIGHT> and <WIDTH>'X'<HEIGHT> are equivalent.
   {
     auto& manifest = ParseManifest(
-        "{ \"icons\": [ {\"src\": \"\","
-        "\"sizes\": \"42X42  48X48\" } ] }");
+        R"({ "icons": [ {"src": "", "sizes": "42X42  48X48" } ] })");
     EXPECT_FALSE(manifest->icons.IsEmpty());
 
     auto& icons = manifest->icons;
@@ -1209,8 +1253,7 @@ TEST_F(ManifestParserTest, IconSizesParseRules) {
   // Twice the same value is parsed twice.
   {
     auto& manifest = ParseManifest(
-        "{ \"icons\": [ {\"src\": \"\","
-        "\"sizes\": \"42X42  42x42\" } ] }");
+        R"({ "icons": [ {"src": "", "sizes": "42X42  42x42" } ] })");
     EXPECT_FALSE(manifest->icons.IsEmpty());
 
     auto& icons = manifest->icons;
@@ -1222,8 +1265,7 @@ TEST_F(ManifestParserTest, IconSizesParseRules) {
   // Width or height can't start with 0.
   {
     auto& manifest = ParseManifest(
-        "{ \"icons\": [ {\"src\": \"\","
-        "\"sizes\": \"004X007  042x00\" } ] }");
+        R"({ "icons": [ {"src": "", "sizes": "004X007  042x00" } ] })");
     EXPECT_FALSE(manifest->icons.IsEmpty());
     EXPECT_EQ(manifest->icons[0]->sizes.size(), 0u);
     EXPECT_EQ(1u, GetErrorCount());
@@ -1233,8 +1275,7 @@ TEST_F(ManifestParserTest, IconSizesParseRules) {
   // Width and height MUST contain digits.
   {
     auto& manifest = ParseManifest(
-        "{ \"icons\": [ {\"src\": \"\","
-        "\"sizes\": \"e4X1.0  55ax1e10\" } ] }");
+        R"({ "icons": [ {"src": "", "sizes": "e4X1.0  55ax1e10" } ] })");
     EXPECT_FALSE(manifest->icons.IsEmpty());
     EXPECT_EQ(manifest->icons[0]->sizes.size(), 0u);
     EXPECT_EQ(1u, GetErrorCount());
@@ -1244,8 +1285,7 @@ TEST_F(ManifestParserTest, IconSizesParseRules) {
   // 'any' is correctly parsed and transformed to gfx::Size(0,0).
   {
     auto& manifest = ParseManifest(
-        "{ \"icons\": [ {\"src\": \"\","
-        "\"sizes\": \"any AnY ANY aNy\" } ] }");
+        R"({ "icons": [ {"src": "", "sizes": "any AnY ANY aNy" } ] })");
     gfx::Size any = gfx::Size(0, 0);
     EXPECT_FALSE(manifest->icons.IsEmpty());
 
@@ -1261,8 +1301,7 @@ TEST_F(ManifestParserTest, IconSizesParseRules) {
   // Some invalid width/height combinations.
   {
     auto& manifest = ParseManifest(
-        "{ \"icons\": [ {\"src\": \"\","
-        "\"sizes\": \"x 40xx 1x2x3 x42 42xx42\" } ] }");
+        R"({ "icons": [ {"src": "", "sizes": "x 40xx 1x2x3 x42 42xx42" } ] })");
     EXPECT_FALSE(manifest->icons.IsEmpty());
     EXPECT_EQ(manifest->icons[0]->sizes.size(), 0u);
     EXPECT_EQ(1u, GetErrorCount());
@@ -1281,9 +1320,8 @@ TEST_F(ManifestParserTest, IconPurposeParseRules) {
 
   // Smoke test.
   {
-    auto& manifest = ParseManifest(
-        "{ \"icons\": [ {\"src\": \"\","
-        "\"purpose\": \"any\" } ] }");
+    auto& manifest = ParseManifest(R"({ "icons": [ {"src": "",
+        "purpose": "any" } ] })");
     EXPECT_FALSE(manifest->icons.IsEmpty());
     EXPECT_EQ(manifest->icons[0]->purpose.size(), 1u);
     EXPECT_EQ(0u, GetErrorCount());
@@ -1291,9 +1329,8 @@ TEST_F(ManifestParserTest, IconPurposeParseRules) {
 
   // Trim leading and trailing whitespaces.
   {
-    auto& manifest = ParseManifest(
-        "{ \"icons\": [ {\"src\": \"\","
-        "\"purpose\": \"  any  \" } ] }");
+    auto& manifest = ParseManifest(R"({ "icons": [ {"src": "",
+        "purpose": "  any  " } ] })");
     EXPECT_FALSE(manifest->icons.IsEmpty());
     EXPECT_EQ(manifest->icons[0]->purpose.size(), 1u);
     EXPECT_EQ(0u, GetErrorCount());
@@ -1301,7 +1338,7 @@ TEST_F(ManifestParserTest, IconPurposeParseRules) {
 
   // 'any' is added when property isn't present.
   {
-    auto& manifest = ParseManifest("{ \"icons\": [ {\"src\": \"\" } ] }");
+    auto& manifest = ParseManifest(R"({ "icons": [ {"src": "" } ] })");
     EXPECT_FALSE(manifest->icons.IsEmpty());
 
     auto& icons = manifest->icons;
@@ -1314,9 +1351,8 @@ TEST_F(ManifestParserTest, IconPurposeParseRules) {
   // 'any' is added with error message when property isn't a string (is a
   // number).
   {
-    auto& manifest = ParseManifest(
-        "{ \"icons\": [ {\"src\": \"\","
-        "\"purpose\": 42 } ] }");
+    auto& manifest = ParseManifest(R"({ "icons": [ {"src": "",
+        "purpose": 42 } ] })");
     EXPECT_FALSE(manifest->icons.IsEmpty());
 
     auto& icons = manifest->icons;
@@ -1330,9 +1366,8 @@ TEST_F(ManifestParserTest, IconPurposeParseRules) {
   // 'any' is added with error message when property isn't a string (is a
   // dictionary).
   {
-    auto& manifest = ParseManifest(
-        "{ \"icons\": [ {\"src\": \"\","
-        "\"purpose\": {} } ] }");
+    auto& manifest = ParseManifest(R"({ "icons": [ {"src": "",
+        "purpose": {} } ] })");
     EXPECT_FALSE(manifest->icons.IsEmpty());
 
     auto& icons = manifest->icons;
@@ -1345,9 +1380,8 @@ TEST_F(ManifestParserTest, IconPurposeParseRules) {
 
   // Smoke test: values correctly parsed.
   {
-    auto& manifest = ParseManifest(
-        "{ \"icons\": [ {\"src\": \"\","
-        "\"purpose\": \"Any Monochrome Maskable\" } ] }");
+    auto& manifest = ParseManifest(R"({ "icons": [ {"src": "",
+        "purpose": "Any Monochrome Maskable" } ] })");
     EXPECT_FALSE(manifest->icons.IsEmpty());
 
     auto& icons = manifest->icons;
@@ -1363,9 +1397,8 @@ TEST_F(ManifestParserTest, IconPurposeParseRules) {
 
   // Trim whitespaces between values.
   {
-    auto& manifest = ParseManifest(
-        "{ \"icons\": [ {\"src\": \"\","
-        "\"purpose\": \"  Any   Monochrome  \" } ] }");
+    auto& manifest = ParseManifest(R"({ "icons": [ {"src": "",
+        "purpose": "  Any   Monochrome  " } ] })");
     EXPECT_FALSE(manifest->icons.IsEmpty());
 
     auto& icons = manifest->icons;
@@ -1379,9 +1412,8 @@ TEST_F(ManifestParserTest, IconPurposeParseRules) {
 
   // Twice the same value is parsed twice.
   {
-    auto& manifest = ParseManifest(
-        "{ \"icons\": [ {\"src\": \"\","
-        "\"purpose\": \"monochrome monochrome\" } ] }");
+    auto& manifest = ParseManifest(R"({ "icons": [ {"src": "",
+        "purpose": "monochrome monochrome" } ] })");
     EXPECT_FALSE(manifest->icons.IsEmpty());
 
     auto& icons = manifest->icons;
@@ -1395,9 +1427,8 @@ TEST_F(ManifestParserTest, IconPurposeParseRules) {
 
   // Invalid icon purpose is ignored.
   {
-    auto& manifest = ParseManifest(
-        "{ \"icons\": [ {\"src\": \"\","
-        "\"purpose\": \"monochrome fizzbuzz\" } ] }");
+    auto& manifest = ParseManifest(R"({ "icons": [ {"src": "",
+        "purpose": "monochrome fizzbuzz" } ] })");
     EXPECT_FALSE(manifest->icons.IsEmpty());
 
     auto& icons = manifest->icons;
@@ -1410,9 +1441,8 @@ TEST_F(ManifestParserTest, IconPurposeParseRules) {
 
   // If developer-supplied purpose is invalid, entire icon is removed.
   {
-    auto& manifest = ParseManifest(
-        "{ \"icons\": [ {\"src\": \"\","
-        "\"purpose\": \"fizzbuzz\" } ] }");
+    auto& manifest = ParseManifest(R"({ "icons": [ {"src": "",
+        "purpose": "fizzbuzz" } ] })");
     ASSERT_TRUE(manifest->icons.IsEmpty());
     ASSERT_EQ(1u, GetErrorCount());
     EXPECT_EQ(kPurposeInvalidValueError, errors()[0]);
@@ -1421,8 +1451,8 @@ TEST_F(ManifestParserTest, IconPurposeParseRules) {
   // Two icons, one with an invalid purpose and the other normal.
   {
     auto& manifest = ParseManifest(
-        "{ \"icons\": [ {\"src\": \"\", \"purpose\": \"fizzbuzz\" }, "
-        "               {\"src\": \"\" }] }");
+        R"({ "icons": [ {"src": "", "purpose": "fizzbuzz" },
+                       {"src": "" }] })");
     EXPECT_FALSE(manifest->icons.IsEmpty());
 
     auto& icons = manifest->icons;
@@ -1438,14 +1468,14 @@ TEST_F(ManifestParserTest, IconPurposeParseRules) {
 TEST_F(ManifestParserTest, ShortcutsParseRules) {
   // Smoke test: if no shortcut, no value.
   {
-    auto& manifest = ParseManifest("{ \"shortcuts\": [] }");
+    auto& manifest = ParseManifest(R"({ "shortcuts": [] })");
     EXPECT_TRUE(manifest->shortcuts.IsEmpty());
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Smoke test: if empty shortcut, no value.
   {
-    auto& manifest = ParseManifest("{ \"shortcuts\": [ {} ] }");
+    auto& manifest = ParseManifest(R"({ "shortcuts": [ {} ] })");
     EXPECT_TRUE(manifest->icons.IsEmpty());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'url' of 'shortcut' not present.", errors()[0]);
@@ -1455,7 +1485,7 @@ TEST_F(ManifestParserTest, ShortcutsParseRules) {
   // the list.
   {
     auto& manifest =
-        ParseManifest("{ \"shortcuts\": [ { \"shortcuts\": [] } ] }");
+        ParseManifest(R"({ "shortcuts": [ { "shortcuts": [] } ] })");
     EXPECT_TRUE(manifest->icons.IsEmpty());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'url' of 'shortcut' not present.", errors()[0]);
@@ -1463,7 +1493,7 @@ TEST_F(ManifestParserTest, ShortcutsParseRules) {
 
   // Smoke test: shortcut with no name, it will not be present in the list.
   {
-    auto& manifest = ParseManifest("{ \"shortcuts\": [ { \"url\": \"\" } ] }");
+    auto& manifest = ParseManifest(R"({ "shortcuts": [ { "url": "" } ] })");
     EXPECT_TRUE(manifest->shortcuts.IsEmpty());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'name' of 'shortcut' not present.", errors()[0]);
@@ -1471,7 +1501,7 @@ TEST_F(ManifestParserTest, ShortcutsParseRules) {
 
   // Smoke test: shortcut with no url, it will not be present in the list.
   {
-    auto& manifest = ParseManifest("{ \"shortcuts\": [ { \"name\": \"\" } ] }");
+    auto& manifest = ParseManifest(R"({ "shortcuts": [ { "name": "" } ] })");
     EXPECT_TRUE(manifest->shortcuts.IsEmpty());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'url' of 'shortcut' not present.", errors()[0]);
@@ -1480,8 +1510,8 @@ TEST_F(ManifestParserTest, ShortcutsParseRules) {
   // Smoke test: shortcut with empty name, and empty src, will not be present in
   // the list.
   {
-    auto& manifest = ParseManifest(
-        "{ \"shortcuts\": [ { \"name\": \"\", \"url\": \"\" } ] }");
+    auto& manifest =
+        ParseManifest(R"({ "shortcuts": [ { "name": "", "url": "" } ] })");
     EXPECT_TRUE(manifest->shortcuts.IsEmpty());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'name' of 'shortcut' is an empty string.", errors()[0]);
@@ -1491,8 +1521,8 @@ TEST_F(ManifestParserTest, ShortcutsParseRules) {
   // in the list.
   {
     auto& manifest = ParseManifest(
-        "{ \"shortcuts\": [{ \"name\": \"New Post\", \"url\": \"compose\" }] "
-        "}");
+        R"({ "shortcuts": [{ "name": "New Post", "url": "compose" }]
+        })");
     EXPECT_FALSE(manifest->shortcuts.IsEmpty());
 
     auto& shortcuts = manifest->shortcuts;
@@ -1508,8 +1538,8 @@ TEST_F(ManifestParserTest, ShortcutNameParseRules) {
   // Smoke test.
   {
     auto& manifest = ParseManifest(
-        "{ \"shortcuts\": [ {\"name\": \"foo\", \"url\": \"NameParseTest\" } ] "
-        "}");
+        R"({ "shortcuts": [ {"name": "foo", "url": "NameParseTest" } ]
+        })");
     EXPECT_FALSE(manifest->shortcuts.IsEmpty());
     EXPECT_EQ(manifest->shortcuts[0]->name, "foo");
     EXPECT_EQ(0u, GetErrorCount());
@@ -1518,8 +1548,8 @@ TEST_F(ManifestParserTest, ShortcutNameParseRules) {
   // Trim whitespaces.
   {
     auto& manifest = ParseManifest(
-        "{ \"shortcuts\": [ {\"name\": \"  foo  \", \"url\": \"NameParseTest\" "
-        "} ] }");
+        R"({ "shortcuts": [ {"name": "  foo  ", "url": "NameParseTest"
+        } ] })");
     ASSERT_EQ(manifest->shortcuts[0]->name, "foo");
     EXPECT_EQ(0u, GetErrorCount());
   }
@@ -1527,7 +1557,7 @@ TEST_F(ManifestParserTest, ShortcutNameParseRules) {
   // Don't parse if shortcut->name isn't present.
   {
     auto& manifest =
-        ParseManifest("{ \"shortcuts\": [ {\"url\": \"NameParseTest\" } ] }");
+        ParseManifest(R"({ "shortcuts": [ {"url": "NameParseTest" } ] })");
     EXPECT_TRUE(manifest->shortcuts.IsEmpty());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'name' of 'shortcut' not present.", errors()[0]);
@@ -1536,7 +1566,7 @@ TEST_F(ManifestParserTest, ShortcutNameParseRules) {
   // Don't parse if shortcut->name isn't a string.
   {
     auto& manifest = ParseManifest(
-        "{ \"shortcuts\": [ {\"name\": {}, \"url\": \"NameParseTest\" } ] }");
+        R"({ "shortcuts": [ {"name": {}, "url": "NameParseTest" } ] })");
     EXPECT_TRUE(manifest->shortcuts.IsEmpty());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'name' of 'shortcut' ignored, type string expected.",
@@ -1546,7 +1576,7 @@ TEST_F(ManifestParserTest, ShortcutNameParseRules) {
   // Don't parse if shortcut->name isn't a string.
   {
     auto& manifest = ParseManifest(
-        "{ \"shortcuts\": [ {\"name\": 42, \"url\": \"NameParseTest\" } ] }");
+        R"({ "shortcuts": [ {"name": 42, "url": "NameParseTest" } ] })");
     EXPECT_TRUE(manifest->shortcuts.IsEmpty());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'name' of 'shortcut' ignored, type string expected.",
@@ -1556,7 +1586,7 @@ TEST_F(ManifestParserTest, ShortcutNameParseRules) {
   // Don't parse if shortcut->name is an empty string.
   {
     auto& manifest = ParseManifest(
-        "{ \"shortcuts\": [ {\"name\": \"\", \"url\": \"NameParseTest\" } ] }");
+        R"({ "shortcuts": [ {"name": "", "url": "NameParseTest" } ] })");
     EXPECT_TRUE(manifest->shortcuts.IsEmpty());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'name' of 'shortcut' is an empty string.", errors()[0]);
@@ -1567,8 +1597,8 @@ TEST_F(ManifestParserTest, ShortcutShortNameParseRules) {
   // Smoke test.
   {
     auto& manifest = ParseManifest(
-        "{ \"shortcuts\": [ {\"name\": \"ShortNameParseTest\", \"short_name\": "
-        "\"foo\", \"url\": \"ShortNameParseTest\" } ] }");
+        R"({ "shortcuts": [ {"name": "ShortNameParseTest", "short_name":
+        "foo", "url": "ShortNameParseTest" } ] })");
     ASSERT_EQ(manifest->shortcuts[0]->short_name, "foo");
     ASSERT_FALSE(IsManifestEmpty(manifest));
     EXPECT_EQ(0u, GetErrorCount());
@@ -1576,9 +1606,9 @@ TEST_F(ManifestParserTest, ShortcutShortNameParseRules) {
 
   // Shortcut member is parsed when no short_name is present
   {
-    auto& manifest = ParseManifest(
-        "{ \"shortcuts\": [ {\"name\": \"ShortNameParseTest\", \"url\": "
-        "\"ShortNameParseTest\" } ] }");
+    auto& manifest =
+        ParseManifest(R"({ "shortcuts": [ {"name": "ShortNameParseTest", "url":
+        "ShortNameParseTest" } ] })");
     ASSERT_TRUE(manifest->shortcuts[0]->short_name.IsNull());
     ASSERT_FALSE(IsManifestEmpty(manifest));
     EXPECT_EQ(0u, GetErrorCount());
@@ -1587,8 +1617,8 @@ TEST_F(ManifestParserTest, ShortcutShortNameParseRules) {
   // Trim whitespaces.
   {
     auto& manifest = ParseManifest(
-        "{ \"shortcuts\": [ {\"name\": \"ShortNameParseTest\", \"short_name\": "
-        "\"  foo  \", \"url\": \"ShortNameParseTest\" } ] }");
+        R"({ "shortcuts": [ {"name": "ShortNameParseTest", "short_name":
+        "  foo  ", "url": "ShortNameParseTest" } ] })");
     ASSERT_EQ(manifest->shortcuts[0]->short_name, "foo");
     EXPECT_EQ(0u, GetErrorCount());
   }
@@ -1596,8 +1626,8 @@ TEST_F(ManifestParserTest, ShortcutShortNameParseRules) {
   // Don't parse short_name if it isn't a string.
   {
     auto& manifest = ParseManifest(
-        "{ \"shortcuts\": [ {\"name\": \"ShortNameParseTest\", \"short_name\": "
-        "{}, \"url\": \"ShortNameParseTest\" } ] }");
+        R"({ "shortcuts": [ {"name": "ShortNameParseTest", "short_name":
+        {}, "url": "ShortNameParseTest" } ] })");
     ASSERT_TRUE(manifest->shortcuts[0]->short_name.IsNull());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ(
@@ -1608,8 +1638,8 @@ TEST_F(ManifestParserTest, ShortcutShortNameParseRules) {
   // Don't parse short_name if it isn't a string.
   {
     auto& manifest = ParseManifest(
-        "{ \"shortcuts\": [ {\"name\": \"ShortNameParseTest\", \"short_name\": "
-        "42, \"url\": \"ShortNameParseTest\" } ] }");
+        R"({ "shortcuts": [ {"name": "ShortNameParseTest", "short_name":
+        42, "url": "ShortNameParseTest" } ] })");
     ASSERT_TRUE(manifest->shortcuts[0]->short_name.IsNull());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ(
@@ -1622,9 +1652,11 @@ TEST_F(ManifestParserTest, ShortcutDescriptionParseRules) {
   // Smoke test.
   {
     auto& manifest = ParseManifest(
-        "{ \"shortcuts\": [ {\"name\": \"DescriptionParseTest\", "
-        "\"description\": "
-        "\"foo\", \"url\": \"DescriptionParseTest\" } ] }");
+        R"({ "shortcuts": [ {
+          "name": "DescriptionParseTest",
+          "description": "foo",
+          "url": "DescriptionParseTest" } ]
+        })");
     ASSERT_EQ(manifest->shortcuts[0]->description, "foo");
     ASSERT_FALSE(IsManifestEmpty(manifest));
     EXPECT_EQ(0u, GetErrorCount());
@@ -1633,8 +1665,8 @@ TEST_F(ManifestParserTest, ShortcutDescriptionParseRules) {
   // Shortcut member is parsed when no description is present
   {
     auto& manifest = ParseManifest(
-        "{ \"shortcuts\": [ {\"name\": \"DescriptionParseTest\", \"url\": "
-        "\"DescriptionParseTest\" } ] }");
+        R"({ "shortcuts": [ {"name": "DescriptionParseTest", "url":
+        "DescriptionParseTest" } ] })");
     ASSERT_TRUE(manifest->shortcuts[0]->description.IsNull());
     ASSERT_FALSE(IsManifestEmpty(manifest));
     EXPECT_EQ(0u, GetErrorCount());
@@ -1643,9 +1675,11 @@ TEST_F(ManifestParserTest, ShortcutDescriptionParseRules) {
   // Trim whitespaces.
   {
     auto& manifest = ParseManifest(
-        "{ \"shortcuts\": [ {\"name\": \"DescriptionParseTest\", "
-        "\"description\": "
-        "\"  foo  \", \"url\": \"DescriptionParseTest\" } ] }");
+        R"({ "shortcuts": [ {
+          "name": "DescriptionParseTest",
+          "description": "  foo  ",
+          "url": "DescriptionParseTest" } ]
+        })");
     ASSERT_EQ(manifest->shortcuts[0]->description, "foo");
     EXPECT_EQ(0u, GetErrorCount());
   }
@@ -1653,9 +1687,11 @@ TEST_F(ManifestParserTest, ShortcutDescriptionParseRules) {
   // Don't parse description if it isn't a string.
   {
     auto& manifest = ParseManifest(
-        "{ \"shortcuts\": [ {\"name\": \"DescriptionParseTest\", "
-        "\"description\": "
-        "{}, \"url\": \"DescriptionParseTest\" } ] }");
+        R"({ "shortcuts": [ {
+          "name": "DescriptionParseTest",
+          "description": {},
+          "url": "DescriptionParseTest" } ]
+        })");
     ASSERT_TRUE(manifest->shortcuts[0]->description.IsNull());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ(
@@ -1666,9 +1702,11 @@ TEST_F(ManifestParserTest, ShortcutDescriptionParseRules) {
   // Don't parse description if it isn't a string.
   {
     auto& manifest = ParseManifest(
-        "{ \"shortcuts\": [ {\"name\": \"DescriptionParseTest\", "
-        "\"description\": "
-        "42, \"url\": \"DescriptionParseTest\" } ] }");
+        R"({ "shortcuts": [ {
+          "name": "DescriptionParseTest",
+          "description": 42,
+          "url": "DescriptionParseTest" } ]
+        })");
     ASSERT_TRUE(manifest->shortcuts[0]->description.IsNull());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ(
@@ -1681,8 +1719,8 @@ TEST_F(ManifestParserTest, ShortcutUrlParseRules) {
   // Smoke test.
   {
     auto& manifest = ParseManifest(
-        "{ \"shortcuts\": [ {\"name\": \"UrlParseTest\", \"url\": \"foo\" } ] "
-        "}");
+        R"({ "shortcuts": [ {"name": "UrlParseTest", "url": "foo" } ]
+        })");
     EXPECT_FALSE(manifest->shortcuts.IsEmpty());
     EXPECT_EQ(manifest->shortcuts[0]->url, KURL(DefaultDocumentUrl(), "foo"));
     EXPECT_EQ(0u, GetErrorCount());
@@ -1690,7 +1728,7 @@ TEST_F(ManifestParserTest, ShortcutUrlParseRules) {
 
   // Smoke test. Don't parse (with an error) when url is not present.
   {
-    auto& manifest = ParseManifest("{ \"shortcuts\": [ { \"name\": \"\" } ] }");
+    auto& manifest = ParseManifest(R"({ "shortcuts": [ { "name": "" } ] })");
     EXPECT_TRUE(manifest->shortcuts.IsEmpty());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'url' of 'shortcut' not present.", errors()[0]);
@@ -1699,8 +1737,7 @@ TEST_F(ManifestParserTest, ShortcutUrlParseRules) {
   // Whitespaces.
   {
     auto& manifest = ParseManifest(
-        "{ \"shortcuts\": [ {\"name\": \"UrlParseTest\", \"url\": \"   foo   "
-        "\" } ] }");
+        R"({ "shortcuts": [ {"name": "UrlParseTest", "url": "   foo   " } ] })");
     EXPECT_FALSE(manifest->shortcuts.IsEmpty());
     EXPECT_EQ(manifest->shortcuts[0]->url, KURL(DefaultDocumentUrl(), "foo"));
     EXPECT_EQ(0u, GetErrorCount());
@@ -1709,7 +1746,7 @@ TEST_F(ManifestParserTest, ShortcutUrlParseRules) {
   // Don't parse if url isn't a string.
   {
     auto& manifest = ParseManifest(
-        "{ \"shortcuts\": [ {\"name\": \"UrlParseTest\", \"url\": {} } ] }");
+        R"({ "shortcuts": [ {"name": "UrlParseTest", "url": {} } ] })");
     EXPECT_TRUE(manifest->shortcuts.IsEmpty());
     EXPECT_EQ(2u, GetErrorCount());
     EXPECT_EQ("property 'url' ignored, type string expected.", errors()[0]);
@@ -1719,7 +1756,7 @@ TEST_F(ManifestParserTest, ShortcutUrlParseRules) {
   // Don't parse if url isn't a string.
   {
     auto& manifest = ParseManifest(
-        "{ \"shortcuts\": [ {\"name\": \"UrlParseTest\", \"url\": 42 } ] }");
+        R"({ "shortcuts": [ {"name": "UrlParseTest", "url": 42 } ] })");
     EXPECT_TRUE(manifest->shortcuts.IsEmpty());
     EXPECT_EQ(2u, GetErrorCount());
     EXPECT_EQ("property 'url' ignored, type string expected.", errors()[0]);
@@ -1729,8 +1766,8 @@ TEST_F(ManifestParserTest, ShortcutUrlParseRules) {
   // Resolving has to happen based on the manifest_url.
   {
     auto& manifest = ParseManifestWithURLs(
-        "{ \"shortcuts\": [ {\"name\": \"UrlParseTest\", \"url\": \"foo\" } ] "
-        "}",
+        R"({ "shortcuts": [ {"name": "UrlParseTest", "url": "foo" } ]
+        })",
         KURL("http://foo.com/landing/manifest.json"), DefaultDocumentUrl());
     EXPECT_FALSE(manifest->shortcuts.IsEmpty());
     EXPECT_EQ(manifest->shortcuts[0]->url.GetString(),
@@ -1741,9 +1778,9 @@ TEST_F(ManifestParserTest, ShortcutUrlParseRules) {
   // Shortcut url should have same origin as the document url.
   {
     auto& manifest = ParseManifestWithURLs(
-        "{ \"shortcuts\": [ {\"name\": \"UrlParseTest\", \"url\": "
-        "\"http://bar.com/landing\" } ] "
-        "}",
+        R"({ "shortcuts": [ {"name": "UrlParseTest", "url":
+        "http://bar.com/landing" } ]
+        })",
         KURL("http://foo.com/landing/manifest.json"), DefaultDocumentUrl());
     EXPECT_TRUE(manifest->shortcuts.IsEmpty());
     EXPECT_EQ(2u, GetErrorCount());
@@ -1757,8 +1794,8 @@ TEST_F(ManifestParserTest, ShortcutUrlParseRules) {
   // The shortcut_url will be http://foo.com/shortcut which is in not in scope.
   {
     auto& manifest = ParseManifestWithURLs(
-        "{ \"scope\": \"http://foo.com/landing\", \"shortcuts\": [ {\"name\": "
-        "\"UrlParseTest\", \"url\": \"shortcut\" } ] }",
+        R"({ "scope": "http://foo.com/landing", "shortcuts": [ {"name":
+        "UrlParseTest", "url": "shortcut" } ] })",
         KURL("http://foo.com/manifest.json"),
         KURL("http://foo.com/landing/index.html"));
     EXPECT_TRUE(manifest->shortcuts.IsEmpty());
@@ -1774,9 +1811,9 @@ TEST_F(ManifestParserTest, ShortcutUrlParseRules) {
   // The shortcut_url will be http://foo.com/land/shortcut which is in scope.
   {
     auto& manifest = ParseManifestWithURLs(
-        "{ \"scope\": \"http://foo.com/land\", \"start_url\": "
-        "\"http://foo.com/land/landing.html\", \"shortcuts\": [ {\"name\": "
-        "\"UrlParseTest\", \"url\": \"shortcut\" } ] }",
+        R"({ "scope": "http://foo.com/land", "start_url":
+        "http://foo.com/land/landing.html", "shortcuts": [ {"name":
+        "UrlParseTest", "url": "shortcut" } ] })",
         KURL("http://foo.com/land/manifest.json"),
         KURL("http://foo.com/index.html"));
     EXPECT_FALSE(manifest->shortcuts.IsEmpty());
@@ -1791,8 +1828,8 @@ TEST_F(ManifestParserTest, ShortcutIconsParseRules) {
   // Smoke test: if no icons, shortcut->icons has no value.
   {
     auto& manifest = ParseManifest(
-        "{ \"shortcuts\": [ {\"name\": \"IconParseTest\", \"url\": \"foo\", "
-        "\"icons\": [] } ] }");
+        R"({ "shortcuts": [ {"name": "IconParseTest", "url": "foo",
+        "icons": [] } ] })");
     EXPECT_FALSE(IsManifestEmpty(manifest));
     EXPECT_FALSE(manifest->shortcuts.IsEmpty());
     EXPECT_TRUE(manifest->shortcuts[0]->icons.IsEmpty());
@@ -1802,8 +1839,8 @@ TEST_F(ManifestParserTest, ShortcutIconsParseRules) {
   // Smoke test: if empty icon, shortcut->icons has no value.
   {
     auto& manifest = ParseManifest(
-        "{ \"shortcuts\": [ {\"name\": \"IconParseTest\", \"url\": \"foo\", "
-        "\"icons\": [{}] } ] }");
+        R"({ "shortcuts": [ {"name": "IconParseTest", "url": "foo",
+        "icons": [{}] } ] })");
     EXPECT_FALSE(IsManifestEmpty(manifest));
     EXPECT_FALSE(manifest->shortcuts.IsEmpty());
     EXPECT_TRUE(manifest->shortcuts[0]->icons.IsEmpty());
@@ -1813,8 +1850,8 @@ TEST_F(ManifestParserTest, ShortcutIconsParseRules) {
   // Smoke test: icon with invalid src, shortcut->icons has no value.
   {
     auto& manifest = ParseManifest(
-        "{ \"shortcuts\": [ {\"name\": \"IconParseTest\", \"url\": \"foo\", "
-        "\"icons\": [{ \"icons\": [] }] } ] }");
+        R"({ "shortcuts": [ {"name": "IconParseTest", "url": "foo",
+        "icons": [{ "icons": [] }] } ] })");
     EXPECT_FALSE(IsManifestEmpty(manifest));
     EXPECT_FALSE(manifest->shortcuts.IsEmpty());
     EXPECT_TRUE(manifest->shortcuts[0]->icons.IsEmpty());
@@ -1824,8 +1861,8 @@ TEST_F(ManifestParserTest, ShortcutIconsParseRules) {
   // Smoke test: if icon with empty src, it will be present in shortcut->icons.
   {
     auto& manifest = ParseManifest(
-        "{ \"shortcuts\": [ {\"name\": \"IconParseTest\", \"url\": \"foo\", "
-        "\"icons\": [ { \"src\": \"\" } ] } ] }");
+        R"({ "shortcuts": [ {"name": "IconParseTest", "url": "foo",
+        "icons": [ { "src": "" } ] } ] })");
     EXPECT_FALSE(IsManifestEmpty(manifest));
     EXPECT_FALSE(manifest->shortcuts.IsEmpty());
     EXPECT_FALSE(manifest->shortcuts[0]->icons.IsEmpty());
@@ -1840,8 +1877,8 @@ TEST_F(ManifestParserTest, ShortcutIconsParseRules) {
   // shortcut->icons.
   {
     auto& manifest = ParseManifest(
-        "{ \"shortcuts\": [ {\"name\": \"IconParseTest\", \"url\": \"foo\", "
-        "\"icons\": [ { \"src\": \"foo.jpg\" } ] } ] }");
+        R"({ "shortcuts": [ {"name": "IconParseTest", "url": "foo",
+        "icons": [ { "src": "foo.jpg" } ] } ] })");
     EXPECT_FALSE(IsManifestEmpty(manifest));
     EXPECT_FALSE(manifest->shortcuts.IsEmpty());
     EXPECT_FALSE(manifest->shortcuts[0]->icons.IsEmpty());
@@ -1855,8 +1892,8 @@ TEST_F(ManifestParserTest, ShortcutIconsParseRules) {
   // shortcut->icons.
   {
     auto& manifest = ParseManifest(
-        "{ \"shortcuts\": [ {\"name\": \"IconParseTest\", \"url\": \"foo\", "
-        "\"icons\": [ {\"src\": \"foo.jpg\"}, {\"src\": \"bar.jpg\"} ] } ] }");
+        R"({ "shortcuts": [ {"name": "IconParseTest", "url": "foo",
+        "icons": [ {"src": "foo.jpg"}, {"src": "bar.jpg"} ] } ] })");
     EXPECT_FALSE(IsManifestEmpty(manifest));
     EXPECT_FALSE(manifest->shortcuts.IsEmpty());
     EXPECT_FALSE(manifest->shortcuts[0]->icons.IsEmpty());
@@ -1880,7 +1917,7 @@ TEST_F(ManifestParserTest, FileHandlerParseRules) {
 
   // file_handlers is not an array.
   {
-    auto& manifest = ParseManifest("{ \"file_handlers\": { } }");
+    auto& manifest = ParseManifest(R"({ "file_handlers": { } })");
     ASSERT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'file_handlers' ignored, type array expected.",
               errors()[0]);
@@ -1889,19 +1926,18 @@ TEST_F(ManifestParserTest, FileHandlerParseRules) {
 
   // Contains file_handlers field but no file handlers.
   {
-    auto& manifest = ParseManifest("{ \"file_handlers\": [ ] }");
+    auto& manifest = ParseManifest(R"({ "file_handlers": [ ] })");
     ASSERT_EQ(0u, GetErrorCount());
     EXPECT_EQ(0u, manifest->file_handlers.size());
   }
 
   // Entries must be objects.
   {
-    auto& manifest = ParseManifest(
-        "{"
-        "  \"file_handlers\": ["
-        "    \"hello world\""
-        "  ]"
-        "}");
+    auto& manifest = ParseManifest(R"({
+          "file_handlers": [
+            "hello world"
+          ]
+        })");
     ASSERT_EQ(1u, GetErrorCount());
     EXPECT_EQ("FileHandler ignored, type object expected.", errors()[0]);
     EXPECT_EQ(0u, manifest->file_handlers.size());
@@ -1910,19 +1946,19 @@ TEST_F(ManifestParserTest, FileHandlerParseRules) {
   // Entry without an action is invalid.
   {
     auto& manifest = ParseManifest(
-        "{"
-        "  \"file_handlers\": ["
-        "    {"
-        "      \"name\": \"name\","
-        "      \"icons\": [{ \"src\": \"foo.jpg\" }],"
-        "      \"accept\": {"
-        "        \"image/png\": ["
-        "          \".png\""
-        "        ]"
-        "      }"
-        "    }"
-        "  ]"
-        "}");
+        R"({
+          "file_handlers": [
+            {
+              "name": "name",
+              "icons": [{ "src": "foo.jpg" }],
+              "accept": {
+                "image/png": [
+                  ".png"
+                ]
+              }
+            }
+          ]
+        })");
     ASSERT_EQ(1u, GetErrorCount());
     EXPECT_EQ("FileHandler ignored. Property 'action' is invalid.",
               errors()[0]);
@@ -1932,20 +1968,20 @@ TEST_F(ManifestParserTest, FileHandlerParseRules) {
   // Entry with an action on a different origin is invalid.
   {
     auto& manifest = ParseManifest(
-        "{"
-        "  \"file_handlers\": ["
-        "    {"
-        "      \"name\": \"name\","
-        "      \"icons\": [{ \"src\": \"foo.jpg\" }],"
-        "      \"action\": \"https://example.com/files\","
-        "      \"accept\": {"
-        "        \"image/png\": ["
-        "          \".png\""
-        "        ]"
-        "      }"
-        "    }"
-        "  ]"
-        "}");
+        R"({
+          "file_handlers": [
+            {
+              "name": "name",
+              "icons": [{ "src": "foo.jpg" }],
+              "action": "https://example.com/files",
+              "accept": {
+                "image/png": [
+                  ".png"
+                ]
+              }
+            }
+          ]
+        })");
     ASSERT_EQ(2u, GetErrorCount());
     EXPECT_EQ(
         "property 'action' ignored, should be within scope of the manifest.",
@@ -1958,22 +1994,22 @@ TEST_F(ManifestParserTest, FileHandlerParseRules) {
   // Entry with an action outside of the manifest scope is invalid.
   {
     auto& manifest = ParseManifest(
-        "{"
-        "  \"start_url\": \"/app/\","
-        "  \"scope\": \"/app/\","
-        "  \"file_handlers\": ["
-        "    {"
-        "      \"name\": \"name\","
-        "      \"icons\": [{ \"src\": \"foo.jpg\" }],"
-        "      \"action\": \"/files\","
-        "      \"accept\": {"
-        "        \"image/png\": ["
-        "          \".png\""
-        "        ]"
-        "      }"
-        "    }"
-        "  ]"
-        "}");
+        R"({
+          "start_url": "/app/",
+          "scope": "/app/",
+          "file_handlers": [
+            {
+              "name": "name",
+              "icons": [{ "src": "foo.jpg" }],
+              "action": "/files",
+              "accept": {
+                "image/png": [
+                  ".png"
+                ]
+              }
+            }
+          ]
+        })");
     ASSERT_EQ(2u, GetErrorCount());
     EXPECT_EQ(
         "property 'action' ignored, should be within scope of the manifest.",
@@ -1986,19 +2022,19 @@ TEST_F(ManifestParserTest, FileHandlerParseRules) {
   // Entry without a name is valid.
   {
     auto& manifest = ParseManifest(
-        "{"
-        "  \"file_handlers\": ["
-        "    {"
-        "      \"icons\": [{ \"src\": \"foo.jpg\" }],"
-        "      \"action\": \"/files\","
-        "      \"accept\": {"
-        "        \"image/png\": ["
-        "          \".png\""
-        "        ]"
-        "      }"
-        "    }"
-        "  ]"
-        "}");
+        R"({
+          "file_handlers": [
+            {
+              "icons": [{ "src": "foo.jpg" }],
+              "action": "/files",
+              "accept": {
+                "image/png": [
+                  ".png"
+                ]
+              }
+            }
+          ]
+        })");
     ASSERT_EQ(0u, GetErrorCount());
     EXPECT_EQ(1u, manifest->file_handlers.size());
   }
@@ -2006,19 +2042,19 @@ TEST_F(ManifestParserTest, FileHandlerParseRules) {
   // Entry without an icon is valid.
   {
     auto& manifest = ParseManifest(
-        "{"
-        "  \"file_handlers\": ["
-        "    {"
-        "      \"name\": \"name\","
-        "      \"action\": \"/files\","
-        "      \"accept\": {"
-        "        \"image/png\": ["
-        "          \".png\""
-        "        ]"
-        "      }"
-        "    }"
-        "  ]"
-        "}");
+        R"({
+          "file_handlers": [
+            {
+              "name": "name",
+              "action": "/files",
+              "accept": {
+                "image/png": [
+                  ".png"
+                ]
+              }
+            }
+          ]
+        })");
     ASSERT_EQ(0u, GetErrorCount());
     EXPECT_EQ(1u, manifest->file_handlers.size());
   }
@@ -2026,15 +2062,15 @@ TEST_F(ManifestParserTest, FileHandlerParseRules) {
   // Entry without an accept is invalid.
   {
     auto& manifest = ParseManifest(
-        "{"
-        "  \"file_handlers\": ["
-        "    {"
-        "      \"name\": \"name\","
-        "      \"icons\": [{ \"src\": \"foo.jpg\" }],"
-        "      \"action\": \"/files\""
-        "    }"
-        "  ]"
-        "}");
+        R"({
+          "file_handlers": [
+            {
+              "name": "name",
+              "icons": [{ "src": "foo.jpg" }],
+              "action": "/files"
+            }
+          ]
+        })");
     ASSERT_EQ(1u, GetErrorCount());
     EXPECT_EQ("FileHandler ignored. Property 'accept' is invalid.",
               errors()[0]);
@@ -2044,16 +2080,16 @@ TEST_F(ManifestParserTest, FileHandlerParseRules) {
   // Entry where accept is not an object is invalid.
   {
     auto& manifest = ParseManifest(
-        "{"
-        "  \"file_handlers\": ["
-        "    {"
-        "      \"name\": \"name\","
-        "      \"icons\": [{ \"src\": \"foo.jpg\" }],"
-        "      \"action\": \"/files\","
-        "      \"accept\": \"image/png\""
-        "    }"
-        "  ]"
-        "}");
+        R"({
+          "file_handlers": [
+            {
+              "name": "name",
+              "icons": [{ "src": "foo.jpg" }],
+              "action": "/files",
+              "accept": "image/png"
+            }
+          ]
+        })");
     ASSERT_EQ(1u, GetErrorCount());
     EXPECT_EQ("FileHandler ignored. Property 'accept' is invalid.",
               errors()[0]);
@@ -2063,18 +2099,18 @@ TEST_F(ManifestParserTest, FileHandlerParseRules) {
   // Entry where accept extensions are not an array or string is invalid.
   {
     auto& manifest = ParseManifest(
-        "{"
-        "  \"file_handlers\": ["
-        "    {"
-        "      \"name\": \"name\","
-        "      \"icons\": [{ \"src\": \"foo.jpg\" }],"
-        "      \"action\": \"/files\","
-        "      \"accept\": {"
-        "        \"image/png\": {}"
-        "      }"
-        "    }"
-        "  ]"
-        "}");
+        R"({
+          "file_handlers": [
+            {
+              "name": "name",
+              "icons": [{ "src": "foo.jpg" }],
+              "action": "/files",
+              "accept": {
+                "image/png": {}
+              }
+            }
+          ]
+        })");
     ASSERT_EQ(2u, GetErrorCount());
     EXPECT_EQ(
         "property 'accept' type ignored. File extensions must be type array or "
@@ -2088,20 +2124,20 @@ TEST_F(ManifestParserTest, FileHandlerParseRules) {
   // Entry where accept extensions are not an array or string is invalid.
   {
     auto& manifest = ParseManifest(
-        "{"
-        "  \"file_handlers\": ["
-        "    {"
-        "      \"name\": \"name\","
-        "      \"icons\": [{ \"src\": \"foo.jpg\" }],"
-        "      \"action\": \"/files\","
-        "      \"accept\": {"
-        "        \"image/png\": ["
-        "          {}"
-        "        ]"
-        "      }"
-        "    }"
-        "  ]"
-        "}");
+        R"({
+          "file_handlers": [
+            {
+              "name": "name",
+              "icons": [{ "src": "foo.jpg" }],
+              "action": "/files",
+              "accept": {
+                "image/png": [
+                  {}
+                ]
+              }
+            }
+          ]
+        })");
     ASSERT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'accept' file extension ignored, type string expected.",
               errors()[0]);
@@ -2111,18 +2147,18 @@ TEST_F(ManifestParserTest, FileHandlerParseRules) {
   // Entry with an empty list of extensions is valid.
   {
     auto& manifest = ParseManifest(
-        "{"
-        "  \"file_handlers\": ["
-        "    {"
-        "      \"name\": \"name\","
-        "      \"icons\": [{ \"src\": \"foo.jpg\" }],"
-        "      \"action\": \"/files\","
-        "      \"accept\": {"
-        "        \"image/png\": []"
-        "      }"
-        "    }"
-        "  ]"
-        "}");
+        R"({
+          "file_handlers": [
+            {
+              "name": "name",
+              "icons": [{ "src": "foo.jpg" }],
+              "action": "/files",
+              "accept": {
+                "image/png": []
+              }
+            }
+          ]
+        })");
     auto& file_handlers = manifest->file_handlers;
 
     ASSERT_EQ(0u, GetErrorCount());
@@ -2139,20 +2175,20 @@ TEST_F(ManifestParserTest, FileHandlerParseRules) {
   // Extensions that do not start with a '.' are invalid.
   {
     auto& manifest = ParseManifest(
-        "{"
-        "  \"file_handlers\": ["
-        "    {"
-        "      \"name\": \"name\","
-        "      \"icons\": [{ \"src\": \"foo.jpg\" }],"
-        "      \"action\": \"/files\","
-        "      \"accept\": {"
-        "        \"image/png\": ["
-        "          \"png\""
-        "        ]"
-        "      }"
-        "    }"
-        "  ]"
-        "}");
+        R"({
+          "file_handlers": [
+            {
+              "name": "name",
+              "icons": [{ "src": "foo.jpg" }],
+              "action": "/files",
+              "accept": {
+                "image/png": [
+                  "png"
+                ]
+              }
+            }
+          ]
+        })");
     auto& file_handlers = manifest->file_handlers;
 
     ASSERT_EQ(1u, GetErrorCount());
@@ -2172,18 +2208,18 @@ TEST_F(ManifestParserTest, FileHandlerParseRules) {
   // Extensions specified as a single string is valid.
   {
     auto& manifest = ParseManifest(
-        "{"
-        "  \"file_handlers\": ["
-        "    {"
-        "      \"name\": \"name\","
-        "      \"icons\": [{ \"src\": \"foo.jpg\" }],"
-        "      \"action\": \"/files\","
-        "      \"accept\": {"
-        "        \"image/png\": \".png\""
-        "      }"
-        "    }"
-        "  ]"
-        "}");
+        R"({
+          "file_handlers": [
+            {
+              "name": "name",
+              "icons": [{ "src": "foo.jpg" }],
+              "action": "/files",
+              "accept": {
+                "image/png": ".png"
+              }
+            }
+          ]
+        })");
     auto& file_handlers = manifest->file_handlers;
 
     ASSERT_EQ(0u, GetErrorCount());
@@ -2201,21 +2237,21 @@ TEST_F(ManifestParserTest, FileHandlerParseRules) {
   // An array of extensions is valid.
   {
     auto& manifest = ParseManifest(
-        "{"
-        "  \"file_handlers\": ["
-        "    {"
-        "      \"name\": \"name\","
-        "      \"icons\": [{ \"src\": \"foo.jpg\" }],"
-        "      \"action\": \"/files\","
-        "      \"accept\": {"
-        "        \"image/jpg\": ["
-        "          \".jpg\","
-        "          \".jpeg\""
-        "        ]"
-        "      }"
-        "    }"
-        "  ]"
-        "}");
+        R"({
+          "file_handlers": [
+            {
+              "name": "name",
+              "icons": [{ "src": "foo.jpg" }],
+              "action": "/files",
+              "accept": {
+                "image/jpg": [
+                  ".jpg",
+                  ".jpeg"
+                ]
+              }
+            }
+          ]
+        })");
     auto& file_handlers = manifest->file_handlers;
 
     ASSERT_EQ(0u, GetErrorCount());
@@ -2234,22 +2270,22 @@ TEST_F(ManifestParserTest, FileHandlerParseRules) {
   // Multiple mime types are valid.
   {
     auto& manifest = ParseManifest(
-        "{"
-        "  \"file_handlers\": ["
-        "    {"
-        "      \"name\": \"Image\","
-        "      \"icons\": [{ \"src\": \"foo.jpg\" }],"
-        "      \"action\": \"/files\","
-        "      \"accept\": {"
-        "        \"image/png\": \".png\","
-        "        \"image/jpg\": ["
-        "          \".jpg\","
-        "          \".jpeg\""
-        "        ]"
-        "      }"
-        "    }"
-        "  ]"
-        "}");
+        R"({
+          "file_handlers": [
+            {
+              "name": "Image",
+              "icons": [{ "src": "foo.jpg" }],
+              "action": "/files",
+              "accept": {
+                "image/png": ".png",
+                "image/jpg": [
+                  ".jpg",
+                  ".jpeg"
+                ]
+              }
+            }
+          ]
+        })");
     auto& file_handlers = manifest->file_handlers;
 
     ASSERT_EQ(0u, GetErrorCount());
@@ -2273,29 +2309,29 @@ TEST_F(ManifestParserTest, FileHandlerParseRules) {
   // file_handlers with multiple entries is valid.
   {
     auto& manifest = ParseManifest(
-        "{"
-        "  \"file_handlers\": ["
-        "    {"
-        "      \"name\": \"Graph\","
-        "      \"icons\": [{ \"src\": \"graph.jpg\" }],"
-        "      \"action\": \"/graph\","
-        "      \"accept\": {"
-        "        \"text/svg+xml\": ["
-        "          \".svg\","
-        "          \".graph\""
-        "        ]"
-        "      }"
-        "    },"
-        "    {"
-        "      \"name\": \"Raw\","
-        "      \"icons\": [{ \"src\": \"raw.jpg\" }],"
-        "      \"action\": \"/raw\","
-        "      \"accept\": {"
-        "        \"text/csv\": \".csv\""
-        "      }"
-        "    }"
-        "  ]"
-        "}");
+        R"({
+          "file_handlers": [
+            {
+              "name": "Graph",
+              "icons": [{ "src": "graph.jpg" }],
+              "action": "/graph",
+              "accept": {
+                "text/svg+xml": [
+                  ".svg",
+                  ".graph"
+                ]
+              }
+            },
+            {
+              "name": "Raw",
+              "icons": [{ "src": "raw.jpg" }],
+              "action": "/raw",
+              "accept": {
+                "text/csv": ".csv"
+              }
+            }
+          ]
+        })");
     auto& file_handlers = manifest->file_handlers;
 
     ASSERT_EQ(0u, GetErrorCount());
@@ -2325,17 +2361,17 @@ TEST_F(ManifestParserTest, FileHandlerIconsParseRules) {
   // Smoke test: if no icons, file_handler->icon has no value.
   {
     auto& manifest = ParseManifest(
-        "{"
-        "  \"file_handlers\": ["
-        "    {"
-        "      \"icons\": [],"
-        "      \"action\": \"/files\","
-        "      \"accept\": {"
-        "        \"image/png\": \".png\""
-        "      }"
-        "    }"
-        "  ]"
-        "}");
+        R"({
+          "file_handlers": [
+            {
+              "icons": [],
+              "action": "/files",
+              "accept": {
+                "image/png": ".png"
+              }
+            }
+          ]
+        })");
     EXPECT_FALSE(IsManifestEmpty(manifest));
     EXPECT_FALSE(manifest->file_handlers.IsEmpty());
     EXPECT_TRUE(manifest->file_handlers[0]->icons.IsEmpty());
@@ -2345,17 +2381,17 @@ TEST_F(ManifestParserTest, FileHandlerIconsParseRules) {
   // Smoke test: if empty icon, file_handler->icons has no value.
   {
     auto& manifest = ParseManifest(
-        "{"
-        "  \"file_handlers\": ["
-        "    {"
-        "      \"icons\": [{}],"
-        "      \"action\": \"/files\","
-        "      \"accept\": {"
-        "        \"image/png\": \".png\""
-        "      }"
-        "    }"
-        "  ]"
-        "}");
+        R"({
+          "file_handlers": [
+            {
+              "icons": [{}],
+              "action": "/files",
+              "accept": {
+                "image/png": ".png"
+              }
+            }
+          ]
+        })");
     EXPECT_FALSE(IsManifestEmpty(manifest));
     EXPECT_FALSE(manifest->file_handlers.IsEmpty());
     EXPECT_TRUE(manifest->file_handlers[0]->icons.IsEmpty());
@@ -2365,17 +2401,17 @@ TEST_F(ManifestParserTest, FileHandlerIconsParseRules) {
   // Smoke test: icon with invalid src, file_handler->icons has no value.
   {
     auto& manifest = ParseManifest(
-        "{"
-        "  \"file_handlers\": ["
-        "    {"
-        "      \"icons\": [{ \"icons\": [] }],"
-        "      \"action\": \"/files\","
-        "      \"accept\": {"
-        "        \"image/png\": \".png\""
-        "      }"
-        "    }"
-        "  ]"
-        "}");
+        R"({
+          "file_handlers": [
+            {
+              "icons": [{ "icons": [] }],
+              "action": "/files",
+              "accept": {
+                "image/png": ".png"
+              }
+            }
+          ]
+        })");
     EXPECT_FALSE(IsManifestEmpty(manifest));
     EXPECT_FALSE(manifest->file_handlers.IsEmpty());
     EXPECT_TRUE(manifest->file_handlers[0]->icons.IsEmpty());
@@ -2386,17 +2422,17 @@ TEST_F(ManifestParserTest, FileHandlerIconsParseRules) {
   // file_handler->icons.
   {
     auto& manifest = ParseManifest(
-        "{"
-        "  \"file_handlers\": ["
-        "    {"
-        "      \"icons\": [{ \"src\": \"\" }],"
-        "      \"action\": \"/files\","
-        "      \"accept\": {"
-        "        \"image/png\": \".png\""
-        "      }"
-        "    }"
-        "  ]"
-        "}");
+        R"({
+          "file_handlers": [
+            {
+              "icons": [{ "src": "" }],
+              "action": "/files",
+              "accept": {
+                "image/png": ".png"
+              }
+            }
+          ]
+        })");
     EXPECT_FALSE(IsManifestEmpty(manifest));
     EXPECT_FALSE(manifest->file_handlers.IsEmpty());
     EXPECT_FALSE(manifest->file_handlers[0]->icons.IsEmpty());
@@ -2411,17 +2447,17 @@ TEST_F(ManifestParserTest, FileHandlerIconsParseRules) {
   // file_handler->icons.
   {
     auto& manifest = ParseManifest(
-        "{"
-        "  \"file_handlers\": ["
-        "    {"
-        "      \"icons\": [{ \"src\": \"foo.jpg\" }],"
-        "      \"action\": \"/files\","
-        "      \"accept\": {"
-        "        \"image/png\": \".png\""
-        "      }"
-        "    }"
-        "  ]"
-        "}");
+        R"({
+          "file_handlers": [
+            {
+              "icons": [{ "src": "foo.jpg" }],
+              "action": "/files",
+              "accept": {
+                "image/png": ".png"
+              }
+            }
+          ]
+        })");
     EXPECT_FALSE(IsManifestEmpty(manifest));
     EXPECT_FALSE(manifest->file_handlers.IsEmpty());
     EXPECT_FALSE(manifest->file_handlers[0]->icons.IsEmpty());
@@ -2435,17 +2471,17 @@ TEST_F(ManifestParserTest, FileHandlerIconsParseRules) {
   // file_handler->icons.
   {
     auto& manifest = ParseManifest(
-        "{"
-        "  \"file_handlers\": ["
-        "    {"
-        "      \"icons\": [{ \"src\": \"foo.jpg\" }, { \"src\": \"bar.jpg\" }],"
-        "      \"action\": \"/files\","
-        "      \"accept\": {"
-        "        \"image/png\": \".png\""
-        "      }"
-        "    }"
-        "  ]"
-        "}");
+        R"({
+          "file_handlers": [
+            {
+              "icons": [{ "src": "foo.jpg" }, { "src": "bar.jpg" }],
+              "action": "/files",
+              "accept": {
+                "image/png": ".png"
+              }
+            }
+          ]
+        })");
     EXPECT_FALSE(IsManifestEmpty(manifest));
     EXPECT_FALSE(manifest->file_handlers.IsEmpty());
     EXPECT_FALSE(manifest->file_handlers[0]->icons.IsEmpty());
@@ -2467,7 +2503,7 @@ TEST_F(ManifestParserTest, ProtocolHandlerParseRules) {
 
   // protocol_handlers is not an array.
   {
-    auto& manifest = ParseManifest("{ \"protocol_handlers\": { } }");
+    auto& manifest = ParseManifest(R"({ "protocol_handlers": { } })");
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'protocol_handlers' ignored, type array expected.",
               errors()[0]);
@@ -2476,19 +2512,18 @@ TEST_F(ManifestParserTest, ProtocolHandlerParseRules) {
 
   // Contains protocol_handlers field but no protocol handlers.
   {
-    auto& manifest = ParseManifest("{ \"protocol_handlers\": [ ] }");
+    auto& manifest = ParseManifest(R"({ "protocol_handlers": [ ] })");
     ASSERT_EQ(0u, GetErrorCount());
     EXPECT_EQ(0u, manifest->protocol_handlers.size());
   }
 
   // Entries must be objects
   {
-    auto& manifest = ParseManifest(
-        "{"
-        "  \"protocol_handlers\": ["
-        "    \"hello world\""
-        "  ]"
-        "}");
+    auto& manifest = ParseManifest(R"({
+          "protocol_handlers": [
+            "hello world"
+          ]
+        })");
     ASSERT_EQ(1u, GetErrorCount());
     EXPECT_EQ("protocol_handlers entry ignored, type object expected.",
               errors()[0]);
@@ -2497,15 +2532,14 @@ TEST_F(ManifestParserTest, ProtocolHandlerParseRules) {
 
   // A valid protocol handler.
   {
-    auto& manifest = ParseManifest(
-        "{"
-        "  \"protocol_handlers\": ["
-        "    {"
-        "      \"protocol\": \"web+github\","
-        "      \"url\": \"http://foo.com/?profile=%s\""
-        "    }"
-        "  ]"
-        "}");
+    auto& manifest = ParseManifest(R"({
+          "protocol_handlers": [
+            {
+              "protocol": "web+github",
+              "url": "http://foo.com/?profile=%s"
+            }
+          ]
+        })");
     auto& protocol_handlers = manifest->protocol_handlers;
 
     ASSERT_EQ(0u, GetErrorCount());
@@ -2517,15 +2551,14 @@ TEST_F(ManifestParserTest, ProtocolHandlerParseRules) {
 
   // An invalid protocol handler with the URL not being from the same origin.
   {
-    auto& manifest = ParseManifest(
-        "{"
-        "  \"protocol_handlers\": ["
-        "    {"
-        "      \"protocol\": \"web+github\","
-        "      \"url\": \"http://bar.com/?profile=%s\""
-        "    }"
-        "  ]"
-        "}");
+    auto& manifest = ParseManifest(R"({
+          "protocol_handlers": [
+            {
+              "protocol": "web+github",
+              "url": "http://bar.com/?profile=%s"
+            }
+          ]
+        })");
     auto& protocol_handlers = manifest->protocol_handlers;
 
     ASSERT_EQ(2u, GetErrorCount());
@@ -2540,16 +2573,16 @@ TEST_F(ManifestParserTest, ProtocolHandlerParseRules) {
   // An invalid protocol handler with the URL not being within manifest scope.
   {
     auto& manifest = ParseManifest(
-        "{"
-        "  \"start_url\": \"/app/\","
-        "  \"scope\": \"/app/\","
-        "  \"protocol_handlers\": ["
-        "    {"
-        "      \"protocol\": \"web+github\","
-        "      \"url\": \"/?profile=%s\""
-        "    }"
-        "  ]"
-        "}");
+        R"({
+          "start_url": "/app/",
+          "scope": "/app/",
+          "protocol_handlers": [
+            {
+              "protocol": "web+github",
+              "url": "/?profile=%s"
+            }
+          ]
+        })");
     auto& protocol_handlers = manifest->protocol_handlers;
 
     ASSERT_EQ(2u, GetErrorCount());
@@ -2563,14 +2596,13 @@ TEST_F(ManifestParserTest, ProtocolHandlerParseRules) {
 
   // An invalid protocol handler with no value for protocol.
   {
-    auto& manifest = ParseManifest(
-        "{"
-        "  \"protocol_handlers\": ["
-        "    {"
-        "      \"url\": \"http://foo.com/?profile=%s\""
-        "    }"
-        "  ]"
-        "}");
+    auto& manifest = ParseManifest(R"({
+          "protocol_handlers": [
+            {
+              "url": "http://foo.com/?profile=%s"
+            }
+          ]
+        })");
     auto& protocol_handlers = manifest->protocol_handlers;
 
     ASSERT_EQ(1u, GetErrorCount());
@@ -2583,14 +2615,13 @@ TEST_F(ManifestParserTest, ProtocolHandlerParseRules) {
 
   // An invalid protocol handler with no url.
   {
-    auto& manifest = ParseManifest(
-        "{"
-        "  \"protocol_handlers\": ["
-        "    {"
-        "      \"protocol\": \"web+github\""
-        "    }"
-        "  ]"
-        "}");
+    auto& manifest = ParseManifest(R"({
+          "protocol_handlers": [
+            {
+              "protocol": "web+github"
+            }
+          ]
+        })");
     auto& protocol_handlers = manifest->protocol_handlers;
 
     ASSERT_EQ(1u, GetErrorCount());
@@ -2602,15 +2633,14 @@ TEST_F(ManifestParserTest, ProtocolHandlerParseRules) {
 
   // An invalid protocol handler with a url that doesn't contain the %s token.
   {
-    auto& manifest = ParseManifest(
-        "{"
-        "  \"protocol_handlers\": ["
-        "    {"
-        "      \"protocol\": \"web+github\","
-        "      \"url\": \"http://foo.com/?profile=\""
-        "    }"
-        "  ]"
-        "}");
+    auto& manifest = ParseManifest(R"({
+          "protocol_handlers": [
+            {
+              "protocol": "web+github",
+              "url": "http://foo.com/?profile="
+            }
+          ]
+        })");
     auto& protocol_handlers = manifest->protocol_handlers;
 
     ASSERT_EQ(2u, GetErrorCount());
@@ -2625,15 +2655,14 @@ TEST_F(ManifestParserTest, ProtocolHandlerParseRules) {
 
   // An invalid protocol handler with a non-allowed protocol.
   {
-    auto& manifest = ParseManifest(
-        "{"
-        "  \"protocol_handlers\": ["
-        "    {"
-        "      \"protocol\": \"github\","
-        "      \"url\": \"http://foo.com/?profile=\""
-        "    }"
-        "  ]"
-        "}");
+    auto& manifest = ParseManifest(R"({
+          "protocol_handlers": [
+            {
+              "protocol": "github",
+              "url": "http://foo.com/?profile="
+            }
+          ]
+        })");
     auto& protocol_handlers = manifest->protocol_handlers;
 
     ASSERT_EQ(2u, GetErrorCount());
@@ -2651,22 +2680,22 @@ TEST_F(ManifestParserTest, ProtocolHandlerParseRules) {
   // Multiple valid protocol handlers
   {
     auto& manifest = ParseManifest(
-        "{"
-        "  \"protocol_handlers\": ["
-        "    {"
-        "      \"protocol\": \"web+github\","
-        "      \"url\": \"http://foo.com/?profile=%s\""
-        "    },"
-        "    {"
-        "      \"protocol\": \"web+test\","
-        "      \"url\": \"http://foo.com/?test=%s\""
-        "    },"
-        "    {"
-        "      \"protocol\": \"web+relative\","
-        "      \"url\": \"relativeURL=%s\""
-        "    }"
-        "  ]"
-        "}");
+        R"({
+          "protocol_handlers": [
+            {
+              "protocol": "web+github",
+              "url": "http://foo.com/?profile=%s"
+            },
+            {
+              "protocol": "web+test",
+              "url": "http://foo.com/?test=%s"
+            },
+            {
+              "protocol": "web+relative",
+              "url": "relativeURL=%s"
+            }
+          ]
+        })");
     auto& protocol_handlers = manifest->protocol_handlers;
 
     ASSERT_EQ(0u, GetErrorCount());
@@ -2694,7 +2723,7 @@ TEST_F(ManifestParserTest, UrlHandlerParseRules) {
 
   // 'url_handlers' is not an array.
   {
-    auto& manifest = ParseManifest("{ \"url_handlers\": { } }");
+    auto& manifest = ParseManifest(R"({ "url_handlers": { } })");
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'url_handlers' ignored, type array expected.",
               errors()[0]);
@@ -2703,19 +2732,18 @@ TEST_F(ManifestParserTest, UrlHandlerParseRules) {
 
   // Contains 'url_handlers' field but no URL handler entries.
   {
-    auto& manifest = ParseManifest("{ \"url_handlers\": [ ] }");
+    auto& manifest = ParseManifest(R"({ "url_handlers": [ ] })");
     ASSERT_EQ(0u, GetErrorCount());
     EXPECT_EQ(0u, manifest->url_handlers.size());
   }
 
   // 'url_handlers' array entries must be objects.
   {
-    auto& manifest = ParseManifest(
-        "{"
-        "  \"url_handlers\": ["
-        "    \"foo.com\""
-        "  ]"
-        "}");
+    auto& manifest = ParseManifest(R"({
+          "url_handlers": [
+            "foo.com"
+          ]
+        })");
     ASSERT_EQ(1u, GetErrorCount());
     EXPECT_EQ("url_handlers entry ignored, type object expected.", errors()[0]);
     EXPECT_EQ(0u, manifest->url_handlers.size());
@@ -2723,14 +2751,13 @@ TEST_F(ManifestParserTest, UrlHandlerParseRules) {
 
   // A valid url handler.
   {
-    auto& manifest = ParseManifest(
-        "{"
-        "  \"url_handlers\": ["
-        "    {"
-        "      \"origin\": \"https://foo.com\""
-        "    }"
-        "  ]"
-        "}");
+    auto& manifest = ParseManifest(R"({
+          "url_handlers": [
+            {
+              "origin": "https://foo.com"
+            }
+          ]
+        })");
     auto& url_handlers = manifest->url_handlers;
 
     ASSERT_EQ(0u, GetErrorCount());
@@ -2741,14 +2768,13 @@ TEST_F(ManifestParserTest, UrlHandlerParseRules) {
 
   // Scheme must be https.
   {
-    auto& manifest = ParseManifest(
-        "{"
-        "  \"url_handlers\": ["
-        "    {"
-        "      \"origin\": \"http://foo.com\""
-        "    }"
-        "  ]"
-        "}");
+    auto& manifest = ParseManifest(R"({
+          "url_handlers": [
+            {
+              "origin": "http://foo.com"
+            }
+          ]
+        })");
     auto& url_handlers = manifest->url_handlers;
 
     ASSERT_EQ(1u, GetErrorCount());
@@ -2761,14 +2787,13 @@ TEST_F(ManifestParserTest, UrlHandlerParseRules) {
 
   // Origin must be valid.
   {
-    auto& manifest = ParseManifest(
-        "{"
-        "  \"url_handlers\": ["
-        "    {"
-        "      \"origin\": \"https:///////\""
-        "    }"
-        "  ]"
-        "}");
+    auto& manifest = ParseManifest(R"({
+          "url_handlers": [
+            {
+              "origin": "https:///////"
+            }
+          ]
+        })");
     auto& url_handlers = manifest->url_handlers;
 
     ASSERT_EQ(1u, GetErrorCount());
@@ -2780,17 +2805,16 @@ TEST_F(ManifestParserTest, UrlHandlerParseRules) {
 
   // Parse multiple valid handlers.
   {
-    auto& manifest = ParseManifest(
-        "{"
-        "  \"url_handlers\": ["
-        "    {"
-        "      \"origin\": \"https://foo.com\""
-        "    },"
-        "    {"
-        "      \"origin\": \"https://bar.com\""
-        "    }"
-        "  ]"
-        "}");
+    auto& manifest = ParseManifest(R"({
+          "url_handlers": [
+            {
+              "origin": "https://foo.com"
+            },
+            {
+              "origin": "https://bar.com"
+            }
+          ]
+        })");
     auto& url_handlers = manifest->url_handlers;
 
     ASSERT_EQ(0u, GetErrorCount());
@@ -2803,17 +2827,16 @@ TEST_F(ManifestParserTest, UrlHandlerParseRules) {
 
   // Parse both valid and invalid handlers.
   {
-    auto& manifest = ParseManifest(
-        "{"
-        "  \"url_handlers\": ["
-        "    {"
-        "      \"origin\": \"https://foo.com\""
-        "    },"
-        "    {"
-        "      \"origin\": \"about:\""
-        "    }"
-        "  ]"
-        "}");
+    auto& manifest = ParseManifest(R"({
+          "url_handlers": [
+            {
+              "origin": "https://foo.com"
+            },
+            {
+              "origin": "about:"
+            }
+          ]
+        })");
     auto& url_handlers = manifest->url_handlers;
 
     ASSERT_EQ(1u, GetErrorCount());
@@ -2827,14 +2850,13 @@ TEST_F(ManifestParserTest, UrlHandlerParseRules) {
 
   // Parse invalid handler where the origin is a TLD.
   {
-    auto& manifest = ParseManifest(
-        "{"
-        "  \"url_handlers\": ["
-        "    {"
-        "      \"origin\": \"https://co.uk\""
-        "    }"
-        "  ]"
-        "}");
+    auto& manifest = ParseManifest(R"({
+          "url_handlers": [
+            {
+              "origin": "https://co.uk"
+            }
+          ]
+        })");
     auto& url_handlers = manifest->url_handlers;
 
     ASSERT_EQ(1u, GetErrorCount());
@@ -2847,14 +2869,13 @@ TEST_F(ManifestParserTest, UrlHandlerParseRules) {
 
   // Parse origin with wildcard.
   {
-    auto& manifest = ParseManifest(
-        "{"
-        "  \"url_handlers\": ["
-        "    {"
-        "      \"origin\": \"https://*.foo.com\""
-        "    }"
-        "  ]"
-        "}");
+    auto& manifest = ParseManifest(R"({
+          "url_handlers": [
+            {
+              "origin": "https://*.foo.com"
+            }
+          ]
+        })");
     auto& url_handlers = manifest->url_handlers;
 
     ASSERT_EQ(0u, GetErrorCount());
@@ -2866,14 +2887,13 @@ TEST_F(ManifestParserTest, UrlHandlerParseRules) {
 
   // Parse invalid origin wildcard format.
   {
-    auto& manifest = ParseManifest(
-        "{"
-        "  \"url_handlers\": ["
-        "    {"
-        "      \"origin\": \"https://*foo.com\""
-        "    }"
-        "  ]"
-        "}");
+    auto& manifest = ParseManifest(R"({
+          "url_handlers": [
+            {
+              "origin": "https://*foo.com"
+            }
+          ]
+        })");
     auto& url_handlers = manifest->url_handlers;
 
     ASSERT_EQ(0u, GetErrorCount());
@@ -2885,14 +2905,13 @@ TEST_F(ManifestParserTest, UrlHandlerParseRules) {
 
   // Parse origin where the host is just the wildcard prefix.
   {
-    auto& manifest = ParseManifest(
-        "{"
-        "  \"url_handlers\": ["
-        "    {"
-        "      \"origin\": \"https://*.\""
-        "    }"
-        "  ]"
-        "}");
+    auto& manifest = ParseManifest(R"({
+          "url_handlers": [
+            {
+              "origin": "https://*."
+            }
+          ]
+        })");
     auto& url_handlers = manifest->url_handlers;
 
     ASSERT_EQ(1u, GetErrorCount());
@@ -2905,14 +2924,13 @@ TEST_F(ManifestParserTest, UrlHandlerParseRules) {
 
   // Parse invalid origin where wildcard is used with a TLD.
   {
-    auto& manifest = ParseManifest(
-        "{"
-        "  \"url_handlers\": ["
-        "    {"
-        "      \"origin\": \"https://*.com\""
-        "    }"
-        "  ]"
-        "}");
+    auto& manifest = ParseManifest(R"({
+          "url_handlers": [
+            {
+              "origin": "https://*.com"
+            }
+          ]
+        })");
     auto& url_handlers = manifest->url_handlers;
 
     ASSERT_EQ(1u, GetErrorCount());
@@ -2925,14 +2943,13 @@ TEST_F(ManifestParserTest, UrlHandlerParseRules) {
 
   // Parse invalid origin where wildcard is used with an unknown TLD.
   {
-    auto& manifest = ParseManifest(
-        "{"
-        "  \"url_handlers\": ["
-        "    {"
-        "      \"origin\": \"https://*.foo\""
-        "    }"
-        "  ]"
-        "}");
+    auto& manifest = ParseManifest(R"({
+          "url_handlers": [
+            {
+              "origin": "https://*.foo"
+            }
+          ]
+        })");
     auto& url_handlers = manifest->url_handlers;
 
     ASSERT_EQ(1u, GetErrorCount());
@@ -2945,14 +2962,13 @@ TEST_F(ManifestParserTest, UrlHandlerParseRules) {
 
   // Parse invalid origin where wildcard is used with a multipart TLD.
   {
-    auto& manifest = ParseManifest(
-        "{"
-        "  \"url_handlers\": ["
-        "    {"
-        "      \"origin\": \"https://*.co.uk\""
-        "    }"
-        "  ]"
-        "}");
+    auto& manifest = ParseManifest(R"({
+          "url_handlers": [
+            {
+              "origin": "https://*.co.uk"
+            }
+          ]
+        })");
     auto& url_handlers = manifest->url_handlers;
 
     ASSERT_EQ(1u, GetErrorCount());
@@ -2965,14 +2981,13 @@ TEST_F(ManifestParserTest, UrlHandlerParseRules) {
 
   // Parse valid origin with private registry.
   {
-    auto& manifest = ParseManifest(
-        "{"
-        "  \"url_handlers\": ["
-        "    {"
-        "      \"origin\": \"https://*.glitch.me\""
-        "    }"
-        "  ]"
-        "}");
+    auto& manifest = ParseManifest(R"({
+          "url_handlers": [
+            {
+              "origin": "https://*.glitch.me"
+            }
+          ]
+        })");
     auto& url_handlers = manifest->url_handlers;
 
     ASSERT_EQ(0u, GetErrorCount());
@@ -2984,14 +2999,13 @@ TEST_F(ManifestParserTest, UrlHandlerParseRules) {
 
   // Parse valid IP address as origin.
   {
-    auto& manifest = ParseManifest(
-        "{"
-        "  \"url_handlers\": ["
-        "    {"
-        "      \"origin\": \"https://192.168.0.1:8888\""
-        "    }"
-        "  ]"
-        "}");
+    auto& manifest = ParseManifest(R"({
+          "url_handlers": [
+            {
+              "origin": "https://192.168.0.1:8888"
+            }
+          ]
+        })");
     auto& url_handlers = manifest->url_handlers;
 
     ASSERT_EQ(0u, GetErrorCount());
@@ -3002,47 +3016,47 @@ TEST_F(ManifestParserTest, UrlHandlerParseRules) {
     ASSERT_FALSE(url_handlers[0]->has_origin_wildcard);
   }
 
-  // Validate only the first 10 handlers are parsed.
+  // Validate only the first 10 handlers are parsed. The following manifest
+  // specifies 11 handlers, so the last one should not be in the result.
   {
     auto& manifest = ParseManifest(
-        "{"
-        "  \"url_handlers\": ["
-        "    {"
-        "      \"origin\": \"https://192.168.0.1:8001\""
-        "    },"
-        "    {"
-        "      \"origin\": \"https://192.168.0.1:8002\""
-        "    },"
-        "    {"
-        "      \"origin\": \"https://192.168.0.1:8003\""
-        "    },"
-        "    {"
-        "      \"origin\": \"https://192.168.0.1:8004\""
-        "    },"
-        "    {"
-        "      \"origin\": \"https://192.168.0.1:8005\""
-        "    },"
-        "    {"
-        "      \"origin\": \"https://192.168.0.1:8006\""
-        "    },"
-        "    {"
-        "      \"origin\": \"https://192.168.0.1:8007\""
-        "    },"
-        "    {"
-        "      \"origin\": \"https://192.168.0.1:8008\""
-        "    },"
-        "    {"
-        "      \"origin\": \"https://192.168.0.1:8009\""
-        "    },"
-        "    {"
-        "      \"origin\": \"https://192.168.0.1:8010\""
-        "    },"
-        // 10 handlers above, this one should not be in the result.
-        "    {"
-        "      \"origin\": \"https://192.168.0.1:8011\""
-        "    }"
-        "  ]"
-        "}");
+        R"({
+          "url_handlers": [
+            {
+              "origin": "https://192.168.0.1:8001"
+            },
+            {
+              "origin": "https://192.168.0.1:8002"
+            },
+            {
+              "origin": "https://192.168.0.1:8003"
+            },
+            {
+              "origin": "https://192.168.0.1:8004"
+            },
+            {
+              "origin": "https://192.168.0.1:8005"
+            },
+            {
+              "origin": "https://192.168.0.1:8006"
+            },
+            {
+              "origin": "https://192.168.0.1:8007"
+            },
+            {
+              "origin": "https://192.168.0.1:8008"
+            },
+            {
+              "origin": "https://192.168.0.1:8009"
+            },
+            {
+              "origin": "https://192.168.0.1:8010"
+            },
+            {
+              "origin": "https://192.168.0.1:8011"
+            }
+          ]
+        })");
     auto& url_handlers = manifest->url_handlers;
 
     ASSERT_EQ(1u, GetErrorCount());
@@ -3175,7 +3189,7 @@ TEST_F(ManifestParserTest, NoteTakingParseRules) {
 TEST_F(ManifestParserTest, ShareTargetParseRules) {
   // Contains share_target field but no keys.
   {
-    auto& manifest = ParseManifest("{ \"share_target\": {} }");
+    auto& manifest = ParseManifest(R"({ "share_target": {} })");
     EXPECT_FALSE(manifest->share_target.get());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'share_target' ignored. Property 'action' is invalid.",
@@ -3184,8 +3198,7 @@ TEST_F(ManifestParserTest, ShareTargetParseRules) {
 
   // Contains share_target field but no params key.
   {
-    auto& manifest =
-        ParseManifest("{ \"share_target\": { \"action\": \"\" } }");
+    auto& manifest = ParseManifest(R"({ "share_target": { "action": "" } })");
     EXPECT_FALSE(manifest->share_target.get());
     EXPECT_EQ(3u, GetErrorCount());
     EXPECT_EQ(
@@ -3205,7 +3218,7 @@ TEST_F(ManifestParserTest, ShareTargetParseRules) {
 
   // Contains share_target field but no action key.
   {
-    auto& manifest = ParseManifest("{ \"share_target\": { \"params\": {} } }");
+    auto& manifest = ParseManifest(R"({ "share_target": { "params": {} } })");
     EXPECT_FALSE(manifest->share_target.get());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'share_target' ignored. Property 'action' is invalid.",
@@ -3215,7 +3228,7 @@ TEST_F(ManifestParserTest, ShareTargetParseRules) {
   // Key in share_target that isn't valid.
   {
     auto& manifest = ParseManifest(
-        "{ \"share_target\": {\"incorrect_key\": \"some_value\" } }");
+        R"({ "share_target": {"incorrect_key": "some_value" } })");
     ASSERT_FALSE(manifest->share_target.get());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'share_target' ignored. Property 'action' is invalid.",
@@ -3230,8 +3243,8 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
   // Contains share_target, but action is empty.
   {
     auto& manifest = ParseManifestWithURLs(
-        "{ \"share_target\": { \"action\": \"\", \"params\": {} } }",
-        manifest_url, document_url);
+        R"({ "share_target": { "action": "", "params": {} } })", manifest_url,
+        document_url);
     ASSERT_TRUE(manifest->share_target.get());
     EXPECT_EQ(manifest->share_target->action, manifest_url);
     EXPECT_TRUE(manifest->share_target->params->text.IsNull());
@@ -3253,8 +3266,8 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
   // Parse but throw an error if url_template property isn't a string.
   {
     auto& manifest = ParseManifestWithURLs(
-        "{ \"share_target\": { \"action\": \"\", \"params\": {} } }",
-        manifest_url, document_url);
+        R"({ "share_target": { "action": "", "params": {} } })", manifest_url,
+        document_url);
     EXPECT_TRUE(manifest->share_target.get());
     EXPECT_EQ(manifest->share_target->action, manifest_url);
     EXPECT_TRUE(manifest->share_target->params->text.IsNull());
@@ -3276,8 +3289,8 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
   // Don't parse if action property isn't a string.
   {
     auto& manifest = ParseManifestWithURLs(
-        "{ \"share_target\": { \"action\": {}, \"params\": {} } }",
-        manifest_url, document_url);
+        R"({ "share_target": { "action": {}, "params": {} } })", manifest_url,
+        document_url);
     EXPECT_FALSE(manifest->share_target.get());
     EXPECT_EQ(2u, GetErrorCount());
     EXPECT_EQ("property 'action' ignored, type string expected.", errors()[0]);
@@ -3288,8 +3301,8 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
   // Don't parse if action property isn't a string.
   {
     auto& manifest = ParseManifestWithURLs(
-        "{ \"share_target\": { \"action\": 42, \"params\": {} } }",
-        manifest_url, document_url);
+        R"({ "share_target": { "action": 42, "params": {} } })", manifest_url,
+        document_url);
     EXPECT_FALSE(manifest->share_target.get());
     EXPECT_EQ(2u, GetErrorCount());
     EXPECT_EQ("property 'action' ignored, type string expected.", errors()[0]);
@@ -3300,8 +3313,8 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
   // Don't parse if params property isn't a dict.
   {
     auto& manifest = ParseManifestWithURLs(
-        "{ \"share_target\": { \"action\": \"\", \"params\": \"\" } }",
-        manifest_url, document_url);
+        R"({ "share_target": { "action": "", "params": "" } })", manifest_url,
+        document_url);
     EXPECT_FALSE(manifest->share_target.get());
     EXPECT_EQ(3u, GetErrorCount());
     EXPECT_EQ(
@@ -3322,8 +3335,8 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
   // Don't parse if params property isn't a dict.
   {
     auto& manifest = ParseManifestWithURLs(
-        "{ \"share_target\": { \"action\": \"\", \"params\": 42 } }",
-        manifest_url, document_url);
+        R"({ "share_target": { "action": "", "params": 42 } })", manifest_url,
+        document_url);
     EXPECT_FALSE(manifest->share_target.get());
     EXPECT_EQ(3u, GetErrorCount());
     EXPECT_EQ(
@@ -3344,8 +3357,8 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
   // Ignore params keys with invalid types.
   {
     auto& manifest = ParseManifestWithURLs(
-        "{ \"share_target\": { \"action\": \"\", \"params\": { \"text\": 42 }"
-        " } }",
+        R"({ "share_target": { "action": "", "params": { "text": 42 }
+         } })",
         manifest_url, document_url);
     ASSERT_TRUE(manifest->share_target.get());
     EXPECT_EQ(manifest->share_target->action, manifest_url);
@@ -3369,8 +3382,8 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
   // Ignore params keys with invalid types.
   {
     auto& manifest = ParseManifestWithURLs(
-        "{ \"share_target\": { \"action\": \"\", "
-        "\"params\": { \"title\": 42 } } }",
+        R"({ "share_target": { "action": "",
+        "params": { "title": 42 } } })",
         manifest_url, document_url);
     ASSERT_TRUE(manifest->share_target.get());
     EXPECT_EQ(manifest->share_target->action, manifest_url);
@@ -3394,8 +3407,8 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
   // Don't parse if params property has keys with invalid types.
   {
     auto& manifest = ParseManifestWithURLs(
-        "{ \"share_target\": { \"action\": \"\", \"params\": { \"url\": {}, "
-        "\"text\": \"hi\" } } }",
+        R"({ "share_target": { "action": "", "params": { "url": {},
+        "text": "hi" } } })",
         manifest_url, document_url);
     ASSERT_TRUE(manifest->share_target.get());
     EXPECT_EQ(manifest->share_target->action, manifest_url);
@@ -3419,8 +3432,8 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
   // Don't parse if action property isn't a valid URL.
   {
     auto& manifest = ParseManifestWithURLs(
-        "{ \"share_target\": { \"action\": \"https://foo.com:a\", \"params\": "
-        "{} } }",
+        R"({ "share_target": { "action": "https://foo.com:a", "params":
+        {} } })",
         manifest_url, document_url);
     EXPECT_FALSE(manifest->share_target.get());
     EXPECT_EQ(2u, GetErrorCount());
@@ -3433,8 +3446,8 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
   // manifest.
   {
     auto& manifest = ParseManifestWithURLs(
-        "{ \"share_target\": { \"action\": \"https://foo2.com/\", "
-        "\"params\": {} } }",
+        R"({ "share_target": { "action": "https://foo2.com/",
+        "params": {} } })",
         manifest_url, document_url);
     EXPECT_FALSE(manifest->share_target.get());
     EXPECT_EQ(2u, GetErrorCount());
@@ -3450,10 +3463,10 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
   // Fail parsing if action is not within scope of the manifest.
   {
     auto& manifest = ParseManifestWithURLs(
-        "{ \"start_url\": \"/app/\","
-        "  \"scope\": \"/app/\","
-        "  \"share_target\": { \"action\": \"/\", "
-        "\"params\": {} } }",
+        R"({ "start_url": "/app/",
+          "scope": "/app/",
+          "share_target": { "action": "/",
+        "params": {} } })",
         manifest_url, document_url);
     EXPECT_FALSE(manifest->share_target.get());
     EXPECT_EQ(2u, GetErrorCount());
@@ -3469,7 +3482,7 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
   // Smoke test: Contains share_target and action, and action is valid.
   {
     auto& manifest = ParseManifestWithURLs(
-        "{ \"share_target\": {\"action\": \"share/\", \"params\": {} } }",
+        R"({ "share_target": {"action": "share/", "params": {} } })",
         manifest_url, document_url);
     ASSERT_TRUE(manifest->share_target.get());
     EXPECT_EQ(manifest->share_target->action.GetString(),
@@ -3494,8 +3507,8 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
   // is populated.
   {
     auto& manifest = ParseManifestWithURLs(
-        "{ \"share_target\": {\"action\": \"share/\", \"params\": { \"text\": "
-        "\"foo\", \"title\": \"bar\", \"url\": \"baz\" } } }",
+        R"({ "share_target": {"action": "share/", "params": { "text":
+        "foo", "title": "bar", "url": "baz" } } })",
         manifest_url, document_url);
     ASSERT_TRUE(manifest->share_target.get());
     EXPECT_EQ(manifest->share_target->action.GetString(),
@@ -3520,10 +3533,10 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
   // action, and action is valid, params is populated.
   {
     auto& manifest = ParseManifestWithURLs(
-        "{ \"share_target\": { \"url_template\": "
-        "\"foo.com/share?title={title}\", "
-        "\"action\": \"share/\", \"params\": { \"text\": "
-        "\"foo\", \"title\": \"bar\", \"url\": \"baz\" } } }",
+        R"({ "share_target": { "url_template":
+        "foo.com/share?title={title}",
+        "action": "share/", "params": { "text":
+        "foo", "title": "bar", "url": "baz" } } })",
         manifest_url, document_url);
     ASSERT_TRUE(manifest->share_target.get());
     EXPECT_EQ(manifest->share_target->action.GetString(),
@@ -3548,9 +3561,9 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
   // valid and is absolute.
   {
     auto& manifest = ParseManifestWithURLs(
-        "{ \"share_target\": { \"action\": \"https://foo.com/#\", \"params\": "
-        "{ \"title\": \"mytitle\" } } "
-        "}",
+        R"({ "share_target": { "action": "https://foo.com/#", "params":
+        { "title": "mytitle" } }
+        })",
         manifest_url, document_url);
     ASSERT_TRUE(manifest->share_target.get());
     EXPECT_EQ(manifest->share_target->action.GetString(), "https://foo.com/#");
@@ -3573,10 +3586,10 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
   // Return undefined if method or enctype is not string.
   {
     auto& manifest = ParseManifestWithURLs(
-        "{ \"share_target\": { \"action\": \"https://foo.com/#\", \"method\": "
-        "10, \"enctype\": 10, \"params\": "
-        "{ \"title\": \"mytitle\" } } "
-        "}",
+        R"({ "share_target": { "action": "https://foo.com/#", "method":
+        10, "enctype": 10, "params":
+        { "title": "mytitle" } }
+        })",
         manifest_url, document_url);
     EXPECT_FALSE(manifest->share_target.get());
     EXPECT_EQ(1u, GetErrorCount());
@@ -3589,11 +3602,11 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
   // Valid method and enctype.
   {
     auto& manifest = ParseManifestWithURLs(
-        "{ \"share_target\": { \"action\": \"https://foo.com/#\", \"method\": "
-        "\"GET\", \"enctype\": \"application/x-www-form-urlencoded\", "
-        "\"params\": "
-        "{ \"title\": \"mytitle\" } } "
-        "}",
+        R"({ "share_target": { "action": "https://foo.com/#", "method":
+        "GET", "enctype": "application/x-www-form-urlencoded",
+        "params":
+        { "title": "mytitle" } }
+        })",
         manifest_url, document_url);
     EXPECT_TRUE(manifest->share_target.get());
     EXPECT_EQ(manifest->share_target->method,
@@ -3606,9 +3619,9 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
   // enctype.
   {
     auto& manifest = ParseManifestWithURLs(
-        "{ \"share_target\": { \"action\": \"https://foo.com/#\", \"params\": "
-        "{ \"title\": \"mytitle\" } } "
-        "}",
+        R"({ "share_target": { "action": "https://foo.com/#", "params":
+        { "title": "mytitle" } }
+        })",
         manifest_url, document_url);
     EXPECT_TRUE(manifest->share_target.get());
     EXPECT_EQ(manifest->share_target->method,
@@ -3620,10 +3633,10 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
   // Invalid method values, return undefined.
   {
     auto& manifest = ParseManifestWithURLs(
-        "{ \"share_target\": { \"action\": \"https://foo.com/#\", \"method\": "
-        "\"\", \"enctype\": \"application/x-www-form-urlencoded\", \"params\": "
-        "{ \"title\": \"mytitle\" } } "
-        "}",
+        R"({ "share_target": { "action": "https://foo.com/#", "method":
+        "", "enctype": "application/x-www-form-urlencoded", "params":
+        { "title": "mytitle" } }
+        })",
         manifest_url, document_url);
     EXPECT_FALSE(manifest->share_target.get());
     EXPECT_EQ(1u, GetErrorCount());
@@ -3637,10 +3650,10 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
   // "application/x-www-form-urlencoded".
   {
     auto& manifest = ParseManifestWithURLs(
-        "{ \"share_target\": { \"action\": \"https://foo.com/#\", \"method\": "
-        "\"GET\", \"enctype\": \"RANDOM\", \"params\": "
-        "{ \"title\": \"mytitle\" } } "
-        "}",
+        R"({ "share_target": { "action": "https://foo.com/#", "method":
+        "GET", "enctype": "RANDOM", "params":
+        { "title": "mytitle" } }
+        })",
         manifest_url, document_url);
     EXPECT_FALSE(manifest->share_target.get());
     EXPECT_EQ(1u, GetErrorCount());
@@ -3654,10 +3667,10 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
   // "application/x-www-form-urlencoded" or "multipart/form-data".
   {
     auto& manifest = ParseManifestWithURLs(
-        "{ \"share_target\": { \"action\": \"https://foo.com/#\", \"method\": "
-        "\"POST\", \"enctype\": \"random\", \"params\": "
-        "{ \"title\": \"mytitle\" } } "
-        "}",
+        R"({ "share_target": { "action": "https://foo.com/#", "method":
+        "POST", "enctype": "random", "params":
+        { "title": "mytitle" } }
+        })",
         manifest_url, document_url);
     EXPECT_FALSE(manifest->share_target.get());
     EXPECT_EQ(1u, GetErrorCount());
@@ -3670,11 +3683,11 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
   // Valid enctype for when method is "POST".
   {
     auto& manifest = ParseManifestWithURLs(
-        "{ \"share_target\": { \"action\": \"https://foo.com/#\", \"method\": "
-        "\"POST\", \"enctype\": \"application/x-www-form-urlencoded\", "
-        "\"params\": "
-        "{ \"title\": \"mytitle\" } } "
-        "}",
+        R"( { "share_target": { "action": "https://foo.com/#", "method":
+        "POST", "enctype": "application/x-www-form-urlencoded",
+        "params":
+        { "title": "mytitle" } }
+        })",
         manifest_url, document_url);
     EXPECT_TRUE(manifest->share_target.get());
     EXPECT_EQ(manifest->share_target->method,
@@ -3687,10 +3700,10 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
   // Valid enctype for when method is "POST".
   {
     auto& manifest = ParseManifestWithURLs(
-        "{ \"share_target\": { \"action\": \"https://foo.com/#\", \"method\": "
-        "\"POST\", \"enctype\": \"multipart/form-data\", \"params\": "
-        "{ \"title\": \"mytitle\" } } "
-        "}",
+        R"({ "share_target": { "action": "https://foo.com/#", "method":
+        "POST", "enctype": "multipart/form-data", "params":
+        { "title": "mytitle" } }
+        })",
         manifest_url, document_url);
     EXPECT_TRUE(manifest->share_target.get());
     EXPECT_EQ(manifest->share_target->method,
@@ -3703,10 +3716,10 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
   // Ascii in-sensitive.
   {
     auto& manifest = ParseManifestWithURLs(
-        "{ \"share_target\": { \"action\": \"https://foo.com/#\", \"method\": "
-        "\"PosT\", \"enctype\": \"mUltIparT/Form-dAta\", \"params\": "
-        "{ \"title\": \"mytitle\" } } "
-        "}",
+        R"({ "share_target": { "action": "https://foo.com/#", "method":
+        "PosT", "enctype": "mUltIparT/Form-dAta", "params":
+        { "title": "mytitle" } }
+        })",
         manifest_url, document_url);
     EXPECT_TRUE(manifest->share_target.get());
     EXPECT_EQ(manifest->share_target->method,
@@ -3719,10 +3732,10 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
   // No files is okay.
   {
     auto& manifest = ParseManifestWithURLs(
-        "{ \"share_target\": { \"action\": \"https://foo.com/#\", \"method\": "
-        "\"POST\", \"enctype\": \"multipart/form-data\", \"params\": "
-        "{ \"title\": \"mytitle\", \"files\": [] } } "
-        "}",
+        R"({ "share_target": { "action": "https://foo.com/#", "method":
+        "POST", "enctype": "multipart/form-data", "params":
+        { "title": "mytitle", "files": [] } }
+        })",
         manifest_url, document_url);
     EXPECT_TRUE(manifest->share_target.get());
     EXPECT_EQ(manifest->share_target->method,
@@ -3736,11 +3749,11 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
   // GET method, for example, will cause an error in this case.
   {
     auto& manifest = ParseManifestWithURLs(
-        "{ \"share_target\": { \"action\": \"https://foo.com/#\", \"method\": "
-        "\"GET\", \"enctype\": \"multipart/form-data\", \"params\": "
-        "{ \"title\": \"mytitle\", \"files\": [{ \"name\": \"name\", "
-        "\"accept\": [\"text/plain\"]}] } } "
-        "}",
+        R"({ "share_target": { "action": "https://foo.com/#", "method":
+        "GET", "enctype": "multipart/form-data", "params":
+        { "title": "mytitle", "files": [{ "name": "name",
+        "accept": ["text/plain"]}] } }
+        })",
         manifest_url, document_url);
     EXPECT_FALSE(manifest->share_target.get());
     EXPECT_EQ(1u, GetErrorCount());
@@ -3754,12 +3767,12 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
   // Enctype other than multipart/form-data will cause an error.
   {
     auto& manifest = ParseManifestWithURLs(
-        "{ \"share_target\": { \"action\": \"https://foo.com/#\", \"method\": "
-        "\"POST\", \"enctype\": \"application/x-www-form-urlencoded\", "
-        "\"params\": "
-        "{ \"title\": \"mytitle\", \"files\": [{ \"name\": \"name\", "
-        "\"accept\": [\"text/plain\"]}] } } "
-        "}",
+        R"({ "share_target": { "action": "https://foo.com/#", "method":
+        "POST", "enctype": "application/x-www-form-urlencoded",
+        "params":
+        { "title": "mytitle", "files": [{ "name": "name",
+        "accept": ["text/plain"]}] } }
+        })",
         manifest_url, document_url);
     EXPECT_FALSE(manifest->share_target.get());
     EXPECT_EQ(1u, GetErrorCount());
@@ -3771,11 +3784,11 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
   // This case is valid.
   {
     auto& manifest = ParseManifestWithURLs(
-        "{ \"share_target\": { \"action\": \"https://foo.com/#\", \"method\": "
-        "\"POST\", \"enctype\": \"multipart/form-data\", \"params\": "
-        "{ \"title\": \"mytitle\", \"files\": [{ \"name\": \"name\", "
-        "\"accept\": [\"text/plain\"]}] } } "
-        "}",
+        R"({ "share_target": { "action": "https://foo.com/#", "method":
+        "POST", "enctype": "multipart/form-data", "params":
+        { "title": "mytitle", "files": [{ "name": "name",
+        "accept": ["text/plain"]}] } }
+        })",
         manifest_url, document_url);
     EXPECT_TRUE(manifest->share_target.get());
     EXPECT_TRUE(manifest->share_target->params->files.has_value());
@@ -3786,11 +3799,11 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
   // Invalid mimetype.
   {
     auto& manifest = ParseManifestWithURLs(
-        "{ \"share_target\": { \"action\": \"https://foo.com/#\", \"method\": "
-        "\"POST\", \"enctype\": \"multipart/form-data\", \"params\": "
-        "{ \"title\": \"mytitle\", \"files\": [{ \"name\": \"name\", "
-        "\"accept\": [\"\"]}] } } "
-        "}",
+        R"({ "share_target": { "action": "https://foo.com/#", "method":
+        "POST", "enctype": "multipart/form-data", "params":
+        { "title": "mytitle", "files": [{ "name": "name",
+        "accept": [""]}] } }
+        })",
         manifest_url, document_url);
     EXPECT_FALSE(manifest->share_target.get());
     EXPECT_EQ(1u, GetErrorCount());
@@ -3800,11 +3813,11 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
   // Invalid mimetype.
   {
     auto& manifest = ParseManifestWithURLs(
-        "{ \"share_target\": { \"action\": \"https://foo.com/#\", \"method\": "
-        "\"POST\", \"enctype\": \"multipart/form-data\", \"params\": "
-        "{ \"title\": \"mytitle\", \"files\": [{ \"name\": \"name\", "
-        "\"accept\": [\"helloworld\"]}] } } "
-        "}",
+        R"({ "share_target": { "action": "https://foo.com/#", "method":
+        "POST", "enctype": "multipart/form-data", "params":
+        { "title": "mytitle", "files": [{ "name": "name",
+        "accept": ["helloworld"]}] } }
+        })",
         manifest_url, document_url);
     EXPECT_FALSE(manifest->share_target.get());
     EXPECT_EQ(1u, GetErrorCount());
@@ -3814,11 +3827,11 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
   // Invalid mimetype.
   {
     auto& manifest = ParseManifestWithURLs(
-        "{ \"share_target\": { \"action\": \"https://foo.com/#\", \"method\": "
-        "\"POST\", \"enctype\": \"multipart/form-data\", \"params\": "
-        "{ \"title\": \"mytitle\", \"files\": [{ \"name\": \"name\", "
-        "\"accept\": [\"^$/@$\"]}] } } "
-        "}",
+        R"({ "share_target": { "action": "https://foo.com/#", "method":
+        "POST", "enctype": "multipart/form-data", "params":
+        { "title": "mytitle", "files": [{ "name": "name",
+        "accept": ["^$/@$"]}] } }
+        })",
         manifest_url, document_url);
     EXPECT_FALSE(manifest->share_target.get());
     EXPECT_EQ(1u, GetErrorCount());
@@ -3828,11 +3841,11 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
   // Invalid mimetype.
   {
     auto& manifest = ParseManifestWithURLs(
-        "{ \"share_target\": { \"action\": \"https://foo.com/#\", \"method\": "
-        "\"POST\", \"enctype\": \"multipart/form-data\", \"params\": "
-        "{ \"title\": \"mytitle\", \"files\": [{ \"name\": \"name\", "
-        "\"accept\": [\"/\"]}] } } "
-        "}",
+        R"({ "share_target": { "action": "https://foo.com/#", "method":
+        "POST", "enctype": "multipart/form-data", "params":
+        { "title": "mytitle", "files": [{ "name": "name",
+        "accept": ["/"]}] } }
+        })",
         manifest_url, document_url);
     EXPECT_FALSE(manifest->share_target.get());
     EXPECT_EQ(1u, GetErrorCount());
@@ -3842,11 +3855,11 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
   // Invalid mimetype.
   {
     auto& manifest = ParseManifestWithURLs(
-        "{ \"share_target\": { \"action\": \"https://foo.com/#\", \"method\": "
-        "\"POST\", \"enctype\": \"multipart/form-data\", \"params\": "
-        "{ \"title\": \"mytitle\", \"files\": [{ \"name\": \"name\", "
-        "\"accept\": [\" \"]}] } } "
-        "}",
+        R"({ "share_target": { "action": "https://foo.com/#", "method":
+        "POST", "enctype": "multipart/form-data", "params":
+        { "title": "mytitle", "files": [{ "name": "name",
+        "accept": [" "]}] } }
+        })",
         manifest_url, document_url);
     EXPECT_FALSE(manifest->share_target.get());
     EXPECT_EQ(1u, GetErrorCount());
@@ -3856,11 +3869,11 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
   // Accept field is empty.
   {
     auto& manifest = ParseManifestWithURLs(
-        "{ \"share_target\": { \"action\": \"https://foo.com/#\", \"method\": "
-        "\"POST\", \"enctype\": \"multipart/form-data\", \"params\": "
-        "{ \"title\": \"mytitle\", \"files\": [{ \"name\": \"name\", "
-        "\"accept\": []}] } } "
-        "}",
+        R"({ "share_target": { "action": "https://foo.com/#", "method":
+        "POST", "enctype": "multipart/form-data", "params":
+        { "title": "mytitle", "files": [{ "name": "name",
+        "accept": []}] } }
+        })",
         manifest_url, document_url);
     EXPECT_TRUE(manifest->share_target.get());
     EXPECT_FALSE(manifest->share_target->params->files.has_value());
@@ -3870,20 +3883,20 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
   // Accept sequence contains non-string elements.
   {
     auto& manifest = ParseManifestWithURLs(
-        "{"
-        "  \"share_target\": {"
-        "    \"action\": \"https://foo.com/#\","
-        "    \"method\": \"POST\","
-        "    \"enctype\": \"multipart/form-data\","
-        "    \"params\": {"
-        "      \"title\": \"mytitle\","
-        "      \"files\": [{"
-        "        \"name\": \"name\","
-        "        \"accept\": [\"image/png\", 42]"
-        "      }]"
-        "    }"
-        "  }"
-        "}",
+        R"({
+          "share_target": {
+            "action": "https://foo.com/#",
+            "method": "POST",
+            "enctype": "multipart/form-data",
+            "params": {
+              "title": "mytitle",
+              "files": [{
+                "name": "name",
+                "accept": ["image/png", 42]
+              }]
+            }
+          }
+        })",
         manifest_url, document_url);
     auto* share_target = manifest->share_target.get();
     EXPECT_TRUE(share_target);
@@ -3905,20 +3918,20 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
   // Accept is just a single string.
   {
     auto& manifest = ParseManifestWithURLs(
-        "{"
-        "  \"share_target\": {"
-        "    \"action\": \"https://foo.com/#\","
-        "    \"method\": \"POST\","
-        "    \"enctype\": \"multipart/form-data\","
-        "    \"params\": {"
-        "      \"title\": \"mytitle\","
-        "      \"files\": [{"
-        "        \"name\": \"name\","
-        "        \"accept\": \"image/png\""
-        "      }]"
-        "    }"
-        "  }"
-        "}",
+        R"({
+          "share_target": {
+            "action": "https://foo.com/#",
+            "method": "POST",
+            "enctype": "multipart/form-data",
+            "params": {
+              "title": "mytitle",
+              "files": [{
+                "name": "name",
+                "accept": "image/png"
+              }]
+            }
+          }
+        })",
         manifest_url, document_url);
     auto* share_target = manifest->share_target.get();
     EXPECT_TRUE(share_target);
@@ -3937,20 +3950,20 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
   // Accept is neither a string nor an array of strings.
   {
     auto& manifest = ParseManifestWithURLs(
-        "{"
-        "  \"share_target\": {"
-        "    \"action\": \"https://foo.com/#\","
-        "    \"method\": \"POST\","
-        "    \"enctype\": \"multipart/form-data\","
-        "    \"params\": {"
-        "      \"title\": \"mytitle\","
-        "      \"files\": [{"
-        "        \"name\": \"name\","
-        "        \"accept\": true"
-        "      }]"
-        "    }"
-        "  }"
-        "}",
+        R"({
+          "share_target": {
+            "action": "https://foo.com/#",
+            "method": "POST",
+            "enctype": "multipart/form-data",
+            "params": {
+              "title": "mytitle",
+              "files": [{
+                "name": "name",
+                "accept": true
+              }]
+            }
+          }
+        })",
         manifest_url, document_url);
     auto* share_target = manifest->share_target.get();
     EXPECT_TRUE(share_target);
@@ -3964,20 +3977,20 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
   // Files is just a single FileFilter (not an array).
   {
     auto& manifest = ParseManifestWithURLs(
-        "{"
-        "  \"share_target\": {"
-        "    \"action\": \"https://foo.com/#\","
-        "    \"method\": \"POST\","
-        "    \"enctype\": \"multipart/form-data\","
-        "    \"params\": {"
-        "      \"title\": \"mytitle\","
-        "      \"files\": {"
-        "        \"name\": \"name\","
-        "        \"accept\": \"image/png\""
-        "      }"
-        "    }"
-        "  }"
-        "}",
+        R"({
+          "share_target": {
+            "action": "https://foo.com/#",
+            "method": "POST",
+            "enctype": "multipart/form-data",
+            "params": {
+              "title": "mytitle",
+              "files": {
+                "name": "name",
+                "accept": "image/png"
+              }
+            }
+          }
+        })",
         manifest_url, document_url);
     EXPECT_TRUE(manifest->share_target.get());
 
@@ -3997,17 +4010,17 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
   // Files is neither array nor FileFilter.
   {
     auto& manifest = ParseManifestWithURLs(
-        "{"
-        "  \"share_target\": {"
-        "    \"action\": \"https://foo.com/#\","
-        "    \"method\": \"POST\","
-        "    \"enctype\": \"multipart/form-data\","
-        "    \"params\": {"
-        "      \"title\": \"mytitle\","
-        "      \"files\": 3"
-        "    }"
-        "  }"
-        "}",
+        R"({
+          "share_target": {
+            "action": "https://foo.com/#",
+            "method": "POST",
+            "enctype": "multipart/form-data",
+            "params": {
+              "title": "mytitle",
+              "files": 3
+            }
+          }
+        })",
         manifest_url, document_url);
     auto* share_target = manifest->share_target.get();
     EXPECT_TRUE(share_target);
@@ -4021,23 +4034,23 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
   // Files contains a non-dictionary entry.
   {
     auto& manifest = ParseManifestWithURLs(
-        "{"
-        "  \"share_target\": {"
-        "    \"action\": \"https://foo.com/#\","
-        "    \"method\": \"POST\","
-        "    \"enctype\": \"multipart/form-data\","
-        "    \"params\": {"
-        "      \"title\": \"mytitle\","
-        "      \"files\": ["
-        "        {"
-        "          \"name\": \"name\","
-        "          \"accept\": \"image/png\""
-        "        },"
-        "        3"
-        "      ]"
-        "    }"
-        "  }"
-        "}",
+        R"({
+          "share_target": {
+            "action": "https://foo.com/#",
+            "method": "POST",
+            "enctype": "multipart/form-data",
+            "params": {
+              "title": "mytitle",
+              "files": [
+                {
+                  "name": "name",
+                  "accept": "image/png"
+                },
+                3
+              ]
+            }
+          }
+        })",
         manifest_url, document_url);
     auto* share_target = manifest->share_target.get();
     EXPECT_TRUE(share_target);
@@ -4059,23 +4072,23 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
   // Files contains empty file.
   {
     auto& manifest = ParseManifestWithURLs(
-        "{"
-        "  \"share_target\": {"
-        "    \"action\": \"https://foo.com/#\","
-        "    \"method\": \"POST\","
-        "    \"enctype\": \"multipart/form-data\","
-        "    \"params\": {"
-        "      \"title\": \"mytitle\","
-        "      \"files\": ["
-        "        {"
-        "          \"name\": \"name\","
-        "          \"accept\": \"image/png\""
-        "        },"
-        "        {}"
-        "      ]"
-        "    }"
-        "  }"
-        "}",
+        R"({
+          "share_target": {
+            "action": "https://foo.com/#",
+            "method": "POST",
+            "enctype": "multipart/form-data",
+            "params": {
+              "title": "mytitle",
+              "files": [
+                {
+                  "name": "name",
+                  "accept": "image/png"
+                },
+                {}
+              ]
+            }
+          }
+        })",
         manifest_url, document_url);
     auto* share_target = manifest->share_target.get();
     EXPECT_TRUE(share_target);
@@ -4097,14 +4110,14 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
 TEST_F(ManifestParserTest, RelatedApplicationsParseRules) {
   // If no application, empty list.
   {
-    auto& manifest = ParseManifest("{ \"related_applications\": []}");
+    auto& manifest = ParseManifest(R"({ "related_applications": []})");
     EXPECT_TRUE(manifest->related_applications.IsEmpty());
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // If empty application, empty list.
   {
-    auto& manifest = ParseManifest("{ \"related_applications\": [{}]}");
+    auto& manifest = ParseManifest(R"({ "related_applications": [{}]})");
     EXPECT_TRUE(manifest->related_applications.IsEmpty());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("'platform' is a required field, related application ignored.",
@@ -4114,7 +4127,7 @@ TEST_F(ManifestParserTest, RelatedApplicationsParseRules) {
   // If invalid platform, application is ignored.
   {
     auto& manifest =
-        ParseManifest("{ \"related_applications\": [{\"platform\": 123}]}");
+        ParseManifest(R"({ "related_applications": [{"platform": 123}]})");
     EXPECT_TRUE(manifest->related_applications.IsEmpty());
     EXPECT_EQ(2u, GetErrorCount());
     EXPECT_EQ("property 'platform' ignored, type string expected.",
@@ -4128,7 +4141,7 @@ TEST_F(ManifestParserTest, RelatedApplicationsParseRules) {
   // If missing platform, application is ignored.
   {
     auto& manifest =
-        ParseManifest("{ \"related_applications\": [{\"id\": \"foo\"}]}");
+        ParseManifest(R"({ "related_applications": [{"id": "foo"}]})");
     EXPECT_TRUE(manifest->related_applications.IsEmpty());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("'platform' is a required field, related application ignored.",
@@ -4137,8 +4150,8 @@ TEST_F(ManifestParserTest, RelatedApplicationsParseRules) {
 
   // If missing id and url, application is ignored.
   {
-    auto& manifest = ParseManifest(
-        "{ \"related_applications\": [{\"platform\": \"play\"}]}");
+    auto& manifest =
+        ParseManifest(R"({ "related_applications": [{"platform": "play"}]})");
     EXPECT_TRUE(manifest->related_applications.IsEmpty());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("one of 'url' or 'id' is required, related application ignored.",
@@ -4147,9 +4160,8 @@ TEST_F(ManifestParserTest, RelatedApplicationsParseRules) {
 
   // Valid application, with url.
   {
-    auto& manifest = ParseManifest(
-        "{ \"related_applications\": ["
-        "{\"platform\": \"play\", \"url\": \"http://www.foo.com\"}]}");
+    auto& manifest = ParseManifest(R"({ "related_applications": [
+        {"platform": "play", "url": "http://www.foo.com"}]})");
     auto& related_applications = manifest->related_applications;
     EXPECT_EQ(related_applications.size(), 1u);
     EXPECT_EQ(related_applications[0]->platform, "play");
@@ -4161,9 +4173,8 @@ TEST_F(ManifestParserTest, RelatedApplicationsParseRules) {
 
   // Application with an invalid url.
   {
-    auto& manifest = ParseManifest(
-        "{ \"related_applications\": ["
-        "{\"platform\": \"play\", \"url\": \"http://www.foo.com:co&uk\"}]}");
+    auto& manifest = ParseManifest(R"({ "related_applications": [
+        {"platform": "play", "url": "http://www.foo.com:co&uk"}]})");
     EXPECT_TRUE(manifest->related_applications.IsEmpty());
     EXPECT_EQ(2u, GetErrorCount());
     EXPECT_EQ("property 'url' ignored, URL is invalid.", errors()[0]);
@@ -4173,9 +4184,8 @@ TEST_F(ManifestParserTest, RelatedApplicationsParseRules) {
 
   // Valid application, with id.
   {
-    auto& manifest = ParseManifest(
-        "{ \"related_applications\": ["
-        "{\"platform\": \"itunes\", \"id\": \"foo\"}]}");
+    auto& manifest = ParseManifest(R"({ "related_applications": [
+        {"platform": "itunes", "id": "foo"}]})");
     auto& related_applications = manifest->related_applications;
     EXPECT_EQ(related_applications.size(), 1u);
     EXPECT_EQ(related_applications[0]->platform, "itunes");
@@ -4187,9 +4197,9 @@ TEST_F(ManifestParserTest, RelatedApplicationsParseRules) {
   // All valid applications are in list.
   {
     auto& manifest = ParseManifest(
-        "{ \"related_applications\": ["
-        "{\"platform\": \"play\", \"id\": \"foo\"},"
-        "{\"platform\": \"itunes\", \"id\": \"bar\"}]}");
+        R"({ "related_applications": [
+        {"platform": "play", "id": "foo"},
+        {"platform": "itunes", "id": "bar"}]})");
     auto& related_applications = manifest->related_applications;
     EXPECT_EQ(related_applications.size(), 2u);
     EXPECT_EQ(related_applications[0]->platform, "play");
@@ -4204,10 +4214,10 @@ TEST_F(ManifestParserTest, RelatedApplicationsParseRules) {
   // be in the list.
   {
     auto& manifest = ParseManifest(
-        "{ \"related_applications\": ["
-        "{\"platform\": \"itunes\"},"
-        "{\"platform\": \"play\", \"id\": \"foo\"},"
-        "{}]}");
+        R"({ "related_applications": [
+        {"platform": "itunes"},
+        {"platform": "play", "id": "foo"},
+        {}]})");
     auto& related_applications = manifest->related_applications;
     EXPECT_EQ(related_applications.size(), 1u);
     EXPECT_EQ(related_applications[0]->platform, "play");
@@ -4224,14 +4234,15 @@ TEST_F(ManifestParserTest, RelatedApplicationsParseRules) {
 TEST_F(ManifestParserTest, ParsePreferRelatedApplicationsParseRules) {
   // Smoke test.
   {
-    auto& manifest = ParseManifest("{ \"prefer_related_applications\": true }");
+    auto& manifest =
+        ParseManifest(R"({ "prefer_related_applications": true })");
     EXPECT_TRUE(manifest->prefer_related_applications);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Don't parse if the property isn't a boolean.
   {
-    auto& manifest = ParseManifest("{ \"prefer_related_applications\": {} }");
+    auto& manifest = ParseManifest(R"({ "prefer_related_applications": {} })");
     EXPECT_FALSE(manifest->prefer_related_applications);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ(
@@ -4241,7 +4252,7 @@ TEST_F(ManifestParserTest, ParsePreferRelatedApplicationsParseRules) {
   }
   {
     auto& manifest =
-        ParseManifest("{ \"prefer_related_applications\": \"true\" }");
+        ParseManifest(R"({ "prefer_related_applications": "true" })");
     EXPECT_FALSE(manifest->prefer_related_applications);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ(
@@ -4250,7 +4261,7 @@ TEST_F(ManifestParserTest, ParsePreferRelatedApplicationsParseRules) {
         errors()[0]);
   }
   {
-    auto& manifest = ParseManifest("{ \"prefer_related_applications\": 1 }");
+    auto& manifest = ParseManifest(R"({ "prefer_related_applications": 1 })");
     EXPECT_FALSE(manifest->prefer_related_applications);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ(
@@ -4262,7 +4273,7 @@ TEST_F(ManifestParserTest, ParsePreferRelatedApplicationsParseRules) {
   // "False" should set the boolean false without throwing errors.
   {
     auto& manifest =
-        ParseManifest("{ \"prefer_related_applications\": false }");
+        ParseManifest(R"({ "prefer_related_applications": false })");
     EXPECT_FALSE(manifest->prefer_related_applications);
     EXPECT_EQ(0u, GetErrorCount());
   }
@@ -4271,7 +4282,7 @@ TEST_F(ManifestParserTest, ParsePreferRelatedApplicationsParseRules) {
 TEST_F(ManifestParserTest, ThemeColorParserRules) {
   // Smoke test.
   {
-    auto& manifest = ParseManifest("{ \"theme_color\": \"#FF0000\" }");
+    auto& manifest = ParseManifest(R"({ "theme_color": "#FF0000" })");
     EXPECT_TRUE(manifest->has_theme_color);
     EXPECT_EQ(manifest->theme_color, 0xFFFF0000u);
     EXPECT_FALSE(IsManifestEmpty(manifest));
@@ -4280,7 +4291,7 @@ TEST_F(ManifestParserTest, ThemeColorParserRules) {
 
   // Trim whitespaces.
   {
-    auto& manifest = ParseManifest("{ \"theme_color\": \"  blue   \" }");
+    auto& manifest = ParseManifest(R"({ "theme_color": "  blue   " })");
     EXPECT_TRUE(manifest->has_theme_color);
     EXPECT_EQ(manifest->theme_color, 0xFF0000FFu);
     EXPECT_EQ(0u, GetErrorCount());
@@ -4288,7 +4299,7 @@ TEST_F(ManifestParserTest, ThemeColorParserRules) {
 
   // Don't parse if theme_color isn't a string.
   {
-    auto& manifest = ParseManifest("{ \"theme_color\": {} }");
+    auto& manifest = ParseManifest(R"({ "theme_color": {} })");
     EXPECT_FALSE(manifest->has_theme_color);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'theme_color' ignored, type string expected.",
@@ -4297,7 +4308,7 @@ TEST_F(ManifestParserTest, ThemeColorParserRules) {
 
   // Don't parse if theme_color isn't a string.
   {
-    auto& manifest = ParseManifest("{ \"theme_color\": false }");
+    auto& manifest = ParseManifest(R"({ "theme_color": false })");
     EXPECT_FALSE(manifest->has_theme_color);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'theme_color' ignored, type string expected.",
@@ -4306,7 +4317,7 @@ TEST_F(ManifestParserTest, ThemeColorParserRules) {
 
   // Don't parse if theme_color isn't a string.
   {
-    auto& manifest = ParseManifest("{ \"theme_color\": null }");
+    auto& manifest = ParseManifest(R"({ "theme_color": null })");
     EXPECT_FALSE(manifest->has_theme_color);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'theme_color' ignored, type string expected.",
@@ -4315,7 +4326,7 @@ TEST_F(ManifestParserTest, ThemeColorParserRules) {
 
   // Don't parse if theme_color isn't a string.
   {
-    auto& manifest = ParseManifest("{ \"theme_color\": [] }");
+    auto& manifest = ParseManifest(R"({ "theme_color": [] })");
     EXPECT_FALSE(manifest->has_theme_color);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'theme_color' ignored, type string expected.",
@@ -4324,7 +4335,7 @@ TEST_F(ManifestParserTest, ThemeColorParserRules) {
 
   // Don't parse if theme_color isn't a string.
   {
-    auto& manifest = ParseManifest("{ \"theme_color\": 42 }");
+    auto& manifest = ParseManifest(R"({ "theme_color": 42 })");
     EXPECT_FALSE(manifest->has_theme_color);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'theme_color' ignored, type string expected.",
@@ -4333,7 +4344,7 @@ TEST_F(ManifestParserTest, ThemeColorParserRules) {
 
   // Parse fails if string is not in a known format.
   {
-    auto& manifest = ParseManifest("{ \"theme_color\": \"foo(bar)\" }");
+    auto& manifest = ParseManifest(R"~({ "theme_color": "foo(bar)" })~");
     EXPECT_FALSE(manifest->has_theme_color);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ(
@@ -4344,7 +4355,7 @@ TEST_F(ManifestParserTest, ThemeColorParserRules) {
 
   // Parse fails if string is not in a known format.
   {
-    auto& manifest = ParseManifest("{ \"theme_color\": \"bleu\" }");
+    auto& manifest = ParseManifest(R"({ "theme_color": "bleu" })");
     EXPECT_FALSE(manifest->has_theme_color);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'theme_color' ignored, 'bleu' is not a valid color.",
@@ -4353,7 +4364,7 @@ TEST_F(ManifestParserTest, ThemeColorParserRules) {
 
   // Parse fails if string is not in a known format.
   {
-    auto& manifest = ParseManifest("{ \"theme_color\": \"FF00FF\" }");
+    auto& manifest = ParseManifest(R"({ "theme_color": "FF00FF" })");
     EXPECT_FALSE(manifest->has_theme_color);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ(
@@ -4364,7 +4375,7 @@ TEST_F(ManifestParserTest, ThemeColorParserRules) {
 
   // Parse fails if multiple values for theme_color are given.
   {
-    auto& manifest = ParseManifest("{ \"theme_color\": \"#ABC #DEF\" }");
+    auto& manifest = ParseManifest(R"({ "theme_color": "#ABC #DEF" })");
     EXPECT_FALSE(manifest->has_theme_color);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ(
@@ -4375,7 +4386,7 @@ TEST_F(ManifestParserTest, ThemeColorParserRules) {
 
   // Parse fails if multiple values for theme_color are given.
   {
-    auto& manifest = ParseManifest("{ \"theme_color\": \"#AABBCC #DDEEFF\" }");
+    auto& manifest = ParseManifest(R"({ "theme_color": "#AABBCC #DDEEFF" })");
     EXPECT_FALSE(manifest->has_theme_color);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ(
@@ -4386,51 +4397,50 @@ TEST_F(ManifestParserTest, ThemeColorParserRules) {
 
   // Accept CSS color keyword format.
   {
-    auto& manifest = ParseManifest("{ \"theme_color\": \"blue\" }");
+    auto& manifest = ParseManifest(R"({ "theme_color": "blue" })");
     EXPECT_EQ(manifest->theme_color, 0xFF0000FFu);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Accept CSS color keyword format.
   {
-    auto& manifest = ParseManifest("{ \"theme_color\": \"chartreuse\" }");
+    auto& manifest = ParseManifest(R"({ "theme_color": "chartreuse" })");
     EXPECT_EQ(manifest->theme_color, 0xFF7FFF00u);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Accept CSS RGB format.
   {
-    auto& manifest = ParseManifest("{ \"theme_color\": \"#FFF\" }");
+    auto& manifest = ParseManifest(R"({ "theme_color": "#FFF" })");
     EXPECT_EQ(manifest->theme_color, 0xFFFFFFFFu);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Accept CSS RGB format.
   {
-    auto& manifest = ParseManifest("{ \"theme_color\": \"#ABC\" }");
+    auto& manifest = ParseManifest(R"({ "theme_color": "#ABC" })");
     EXPECT_EQ(manifest->theme_color, 0xFFAABBCCu);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Accept CSS RRGGBB format.
   {
-    auto& manifest = ParseManifest("{ \"theme_color\": \"#FF0000\" }");
+    auto& manifest = ParseManifest(R"({ "theme_color": "#FF0000" })");
     EXPECT_EQ(manifest->theme_color, 0xFFFF0000u);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Accept translucent colors.
   {
-    auto& manifest = ParseManifest(
-        "{ \"theme_color\": \"rgba(255,0,0,"
-        "0.4)\" }");
+    auto& manifest =
+        ParseManifest(R"~({ "theme_color": "rgba(255,0,0,0.4)" })~");
     EXPECT_EQ(manifest->theme_color, 0x66FF0000u);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Accept transparent colors.
   {
-    auto& manifest = ParseManifest("{ \"theme_color\": \"rgba(0,0,0,0)\" }");
+    auto& manifest = ParseManifest(R"~({ "theme_color": "rgba(0,0,0,0)" })~");
     EXPECT_EQ(manifest->theme_color, 0x00000000u);
     EXPECT_EQ(0u, GetErrorCount());
   }
@@ -4439,7 +4449,7 @@ TEST_F(ManifestParserTest, ThemeColorParserRules) {
 TEST_F(ManifestParserTest, BackgroundColorParserRules) {
   // Smoke test.
   {
-    auto& manifest = ParseManifest("{ \"background_color\": \"#FF0000\" }");
+    auto& manifest = ParseManifest(R"({ "background_color": "#FF0000" })");
     EXPECT_EQ(manifest->background_color, 0xFFFF0000u);
     EXPECT_FALSE(IsManifestEmpty(manifest));
     EXPECT_EQ(0u, GetErrorCount());
@@ -4447,14 +4457,14 @@ TEST_F(ManifestParserTest, BackgroundColorParserRules) {
 
   // Trim whitespaces.
   {
-    auto& manifest = ParseManifest("{ \"background_color\": \"  blue   \" }");
+    auto& manifest = ParseManifest(R"({ "background_color": "  blue   " })");
     EXPECT_EQ(manifest->background_color, 0xFF0000FFu);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Don't parse if background_color isn't a string.
   {
-    auto& manifest = ParseManifest("{ \"background_color\": {} }");
+    auto& manifest = ParseManifest(R"({ "background_color": {} })");
     EXPECT_FALSE(manifest->has_background_color);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'background_color' ignored, type string expected.",
@@ -4463,7 +4473,7 @@ TEST_F(ManifestParserTest, BackgroundColorParserRules) {
 
   // Don't parse if background_color isn't a string.
   {
-    auto& manifest = ParseManifest("{ \"background_color\": false }");
+    auto& manifest = ParseManifest(R"({ "background_color": false })");
     EXPECT_FALSE(manifest->has_background_color);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'background_color' ignored, type string expected.",
@@ -4472,7 +4482,7 @@ TEST_F(ManifestParserTest, BackgroundColorParserRules) {
 
   // Don't parse if background_color isn't a string.
   {
-    auto& manifest = ParseManifest("{ \"background_color\": null }");
+    auto& manifest = ParseManifest(R"({ "background_color": null })");
     EXPECT_FALSE(manifest->has_background_color);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'background_color' ignored, type string expected.",
@@ -4481,7 +4491,7 @@ TEST_F(ManifestParserTest, BackgroundColorParserRules) {
 
   // Don't parse if background_color isn't a string.
   {
-    auto& manifest = ParseManifest("{ \"background_color\": [] }");
+    auto& manifest = ParseManifest(R"({ "background_color": [] })");
     EXPECT_FALSE(manifest->has_background_color);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'background_color' ignored, type string expected.",
@@ -4490,7 +4500,7 @@ TEST_F(ManifestParserTest, BackgroundColorParserRules) {
 
   // Don't parse if background_color isn't a string.
   {
-    auto& manifest = ParseManifest("{ \"background_color\": 42 }");
+    auto& manifest = ParseManifest(R"({ "background_color": 42 })");
     EXPECT_FALSE(manifest->has_background_color);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'background_color' ignored, type string expected.",
@@ -4499,7 +4509,7 @@ TEST_F(ManifestParserTest, BackgroundColorParserRules) {
 
   // Parse fails if string is not in a known format.
   {
-    auto& manifest = ParseManifest("{ \"background_color\": \"foo(bar)\" }");
+    auto& manifest = ParseManifest(R"~({ "background_color": "foo(bar)" })~");
     EXPECT_FALSE(manifest->has_background_color);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ(
@@ -4510,7 +4520,7 @@ TEST_F(ManifestParserTest, BackgroundColorParserRules) {
 
   // Parse fails if string is not in a known format.
   {
-    auto& manifest = ParseManifest("{ \"background_color\": \"bleu\" }");
+    auto& manifest = ParseManifest(R"({ "background_color": "bleu" })");
     EXPECT_FALSE(manifest->has_background_color);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ(
@@ -4521,7 +4531,7 @@ TEST_F(ManifestParserTest, BackgroundColorParserRules) {
 
   // Parse fails if string is not in a known format.
   {
-    auto& manifest = ParseManifest("{ \"background_color\": \"FF00FF\" }");
+    auto& manifest = ParseManifest(R"({ "background_color": "FF00FF" })");
     EXPECT_FALSE(manifest->has_background_color);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ(
@@ -4532,7 +4542,7 @@ TEST_F(ManifestParserTest, BackgroundColorParserRules) {
 
   // Parse fails if multiple values for background_color are given.
   {
-    auto& manifest = ParseManifest("{ \"background_color\": \"#ABC #DEF\" }");
+    auto& manifest = ParseManifest(R"({ "background_color": "#ABC #DEF" })");
     EXPECT_FALSE(manifest->has_background_color);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ(
@@ -4544,7 +4554,7 @@ TEST_F(ManifestParserTest, BackgroundColorParserRules) {
   // Parse fails if multiple values for background_color are given.
   {
     auto& manifest =
-        ParseManifest("{ \"background_color\": \"#AABBCC #DDEEFF\" }");
+        ParseManifest(R"({ "background_color": "#AABBCC #DDEEFF" })");
     EXPECT_FALSE(manifest->has_background_color);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ(
@@ -4555,53 +4565,51 @@ TEST_F(ManifestParserTest, BackgroundColorParserRules) {
 
   // Accept CSS color keyword format.
   {
-    auto& manifest = ParseManifest("{ \"background_color\": \"blue\" }");
+    auto& manifest = ParseManifest(R"({ "background_color": "blue" })");
     EXPECT_EQ(manifest->background_color, 0xFF0000FFu);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Accept CSS color keyword format.
   {
-    auto& manifest = ParseManifest("{ \"background_color\": \"chartreuse\" }");
+    auto& manifest = ParseManifest(R"({ "background_color": "chartreuse" })");
     EXPECT_EQ(manifest->background_color, 0xFF7FFF00u);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Accept CSS RGB format.
   {
-    auto& manifest = ParseManifest("{ \"background_color\": \"#FFF\" }");
+    auto& manifest = ParseManifest(R"({ "background_color": "#FFF" })");
     EXPECT_EQ(manifest->background_color, 0xFFFFFFFFu);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Accept CSS RGB format.
   {
-    auto& manifest = ParseManifest("{ \"background_color\": \"#ABC\" }");
+    auto& manifest = ParseManifest(R"({ "background_color": "#ABC" })");
     EXPECT_EQ(manifest->background_color, 0xFFAABBCCu);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Accept CSS RRGGBB format.
   {
-    auto& manifest = ParseManifest("{ \"background_color\": \"#FF0000\" }");
+    auto& manifest = ParseManifest(R"({ "background_color": "#FF0000" })");
     EXPECT_EQ(manifest->background_color, 0xFFFF0000u);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Accept translucent colors.
   {
-    auto& manifest = ParseManifest(
-        "{ \"background_color\": \"rgba(255,0,0,"
-        "0.4)\" }");
+    auto& manifest =
+        ParseManifest(R"~({ "background_color": "rgba(255,0,0,0.4)" })~");
     EXPECT_EQ(manifest->background_color, 0x66FF0000u);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Accept transparent colors.
   {
-    auto& manifest = ParseManifest(
-        "{ \"background_color\": \"rgba(0,0,0,"
-        "0)\" }");
+    auto& manifest =
+        ParseManifest(R"~({ "background_color": "rgba(0,0,0,0)" })~");
     EXPECT_EQ(manifest->background_color, 0x00000000u);
     EXPECT_EQ(0u, GetErrorCount());
   }
@@ -4610,28 +4618,28 @@ TEST_F(ManifestParserTest, BackgroundColorParserRules) {
 TEST_F(ManifestParserTest, GCMSenderIDParseRules) {
   // Smoke test.
   {
-    auto& manifest = ParseManifest("{ \"gcm_sender_id\": \"foo\" }");
+    auto& manifest = ParseManifest(R"({ "gcm_sender_id": "foo" })");
     EXPECT_EQ(manifest->gcm_sender_id, "foo");
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Trim whitespaces.
   {
-    auto& manifest = ParseManifest("{ \"gcm_sender_id\": \"  foo  \" }");
+    auto& manifest = ParseManifest(R"({ "gcm_sender_id": "  foo  " })");
     EXPECT_EQ(manifest->gcm_sender_id, "foo");
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Don't parse if the property isn't a string.
   {
-    auto& manifest = ParseManifest("{ \"gcm_sender_id\": {} }");
+    auto& manifest = ParseManifest(R"({ "gcm_sender_id": {} })");
     EXPECT_TRUE(manifest->gcm_sender_id.IsNull());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'gcm_sender_id' ignored, type string expected.",
               errors()[0]);
   }
   {
-    auto& manifest = ParseManifest("{ \"gcm_sender_id\": 42 }");
+    auto& manifest = ParseManifest(R"({ "gcm_sender_id": 42 })");
     EXPECT_TRUE(manifest->gcm_sender_id.IsNull());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'gcm_sender_id' ignored, type string expected.",
@@ -4665,9 +4673,9 @@ TEST_F(ManifestParserTest, StorageIsolationBadScope) {
       blink::features::kWebAppEnableIsolatedStorage);
   {
     auto& manifest = ParseManifest(
-        "{ \"isolated_storage\": true,"
-        "\"scope\": \"/invalid\","
-        "\"start_url\": \"/invalid/index.html\" }");
+        R"({ "isolated_storage": true,
+        "scope": "/invalid",
+        "start_url": "/invalid/index.html" })");
     EXPECT_EQ(manifest->isolated_storage, false);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("Isolated storage is only supported with a scope of \"/\".",
@@ -4786,6 +4794,151 @@ TEST_F(ManifestParserTest, CaptureLinksParseRules) {
                 errors()[0]);
       EXPECT_EQ("capture_links value '34' ignored, string expected.",
                 errors()[1]);
+    }
+  }
+}
+
+TEST_F(ManifestParserTest, LaunchHandlerParseRules) {
+  using RouteTo = mojom::blink::ManifestLaunchHandler::RouteTo;
+  using NavigateExistingClient =
+      mojom::blink::ManifestLaunchHandler::NavigateExistingClient;
+
+  {
+    ScopedWebAppLaunchHandlerForTest feature(false);
+
+    // Feature not enabled, should not be parsed.
+    auto& manifest = ParseManifest(R"({
+      "launch_handler": {
+        "route_to": "existing-client",
+        "navigate_existing_client": "never"
+      }
+    })");
+    EXPECT_FALSE(manifest->launch_handler);
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  {
+    ScopedWebAppLaunchHandlerForTest feature(true);
+    // Smoke test.
+    {
+      auto& manifest = ParseManifest(R"({
+        "launch_handler": {
+          "route_to": "existing-client",
+          "navigate_existing_client": "never"
+        }
+      })");
+      EXPECT_EQ(manifest->launch_handler->route_to, RouteTo::kExistingClient);
+      EXPECT_EQ(manifest->launch_handler->navigate_existing_client,
+                NavigateExistingClient::kNever);
+      EXPECT_EQ(0u, GetErrorCount());
+    }
+    {
+      auto& manifest = ParseManifest(R"({
+        "launch_handler": {
+          "route_to": "new-client",
+          "navigate_existing_client": "always"
+        }
+      })");
+      EXPECT_EQ(manifest->launch_handler->route_to, RouteTo::kNewClient);
+      EXPECT_EQ(manifest->launch_handler->navigate_existing_client,
+                NavigateExistingClient::kAlways);
+      EXPECT_EQ(0u, GetErrorCount());
+    }
+
+    // Empty object is fine.
+    {
+      auto& manifest = ParseManifest(R"({
+        "launch_handler": {}
+      })");
+      EXPECT_EQ(manifest->launch_handler->route_to, RouteTo::kAuto);
+      EXPECT_EQ(manifest->launch_handler->navigate_existing_client,
+                NavigateExistingClient::kAlways);
+      EXPECT_EQ(0u, GetErrorCount());
+    }
+
+    // Empty array is fine.
+    {
+      auto& manifest = ParseManifest(R"({
+        "launch_handler": {
+          "route_to": [],
+          "navigate_existing_client": []
+        }
+      })");
+      EXPECT_EQ(manifest->launch_handler->route_to, RouteTo::kAuto);
+      EXPECT_EQ(manifest->launch_handler->navigate_existing_client,
+                NavigateExistingClient::kAlways);
+      EXPECT_EQ(0u, GetErrorCount());
+    }
+
+    // Unknown single string.
+    {
+      auto& manifest = ParseManifest(R"({
+        "launch_handler": {
+          "route_to": "space",
+          "navigate_existing_client": "sometimes"
+        }
+      })");
+      EXPECT_EQ(manifest->launch_handler->route_to, RouteTo::kAuto);
+      EXPECT_EQ(manifest->launch_handler->navigate_existing_client,
+                NavigateExistingClient::kAlways);
+      EXPECT_EQ(2u, GetErrorCount());
+      EXPECT_EQ("route_to value 'space' ignored, unknown value.", errors()[0]);
+      EXPECT_EQ(
+          "navigate_existing_client value 'sometimes' ignored, unknown value.",
+          errors()[1]);
+    }
+
+    // First known value in array is used.
+    {
+      auto& manifest = ParseManifest(R"({
+        "launch_handler": {
+          "route_to": ["existing-client", "new-client"],
+          "navigate_existing_client": ["never", "always"]
+        }
+      })");
+      EXPECT_EQ(manifest->launch_handler->route_to, RouteTo::kExistingClient);
+      EXPECT_EQ(manifest->launch_handler->navigate_existing_client,
+                NavigateExistingClient::kNever);
+      EXPECT_EQ(0u, GetErrorCount());
+    }
+    {
+      auto& manifest = ParseManifest(R"({
+        "launch_handler": {
+          "route_to": [null, "space", "existing-client", "auto"],
+          "navigate_existing_client": [1234, "sometimes", "never", "always"]
+        }
+      })");
+      EXPECT_EQ(manifest->launch_handler->route_to, RouteTo::kExistingClient);
+      EXPECT_EQ(manifest->launch_handler->navigate_existing_client,
+                NavigateExistingClient::kNever);
+      EXPECT_EQ(4u, GetErrorCount());
+      EXPECT_EQ("route_to value 'null' ignored, string expected.", errors()[0]);
+      EXPECT_EQ("route_to value 'space' ignored, unknown value.", errors()[1]);
+      EXPECT_EQ(
+          "navigate_existing_client value '1234' ignored, string expected.",
+          errors()[2]);
+      EXPECT_EQ(
+          "navigate_existing_client value 'sometimes' ignored, unknown value.",
+          errors()[3]);
+    }
+
+    // Don't parse if the property isn't an object.
+    {
+      auto& manifest = ParseManifest(R"({ "launch_handler": null })");
+      EXPECT_FALSE(manifest->launch_handler);
+      EXPECT_EQ(1u, GetErrorCount());
+      EXPECT_EQ("launch_handler value ignored, object expected.", errors()[0]);
+    }
+    {
+      auto& manifest = ParseManifest(R"({
+        "launch_handler": [{
+          "route_to": "new-client",
+          "navigate_existing_client": "never"
+        }]
+      })");
+      EXPECT_FALSE(manifest->launch_handler);
+      EXPECT_EQ(1u, GetErrorCount());
+      EXPECT_EQ("launch_handler value ignored, object expected.", errors()[0]);
     }
   }
 }

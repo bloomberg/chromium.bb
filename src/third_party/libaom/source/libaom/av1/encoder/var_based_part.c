@@ -22,7 +22,6 @@
 #include "aom_dsp/binary_codes_writer.h"
 #include "aom_ports/mem.h"
 #include "aom_ports/aom_timer.h"
-#include "aom_ports/system_state.h"
 
 #include "av1/common/reconinter.h"
 #include "av1/common/blockd.h"
@@ -351,14 +350,22 @@ static AOM_INLINE void set_vbp_thresholds(AV1_COMP *cpi, int64_t thresholds[],
   const int current_qindex = cm->quant_params.base_qindex;
 
   if (is_key_frame) {
+    if (cpi->sf.rt_sf.force_large_partition_blocks_intra) {
+      threshold_base <<= cpi->oxcf.speed - 7;
+    }
     thresholds[0] = threshold_base;
     thresholds[1] = threshold_base;
     if (cm->width * cm->height < 1280 * 720) {
       thresholds[2] = threshold_base / 3;
       thresholds[3] = threshold_base >> 1;
     } else {
-      thresholds[2] = threshold_base >> 2;
-      thresholds[3] = threshold_base >> 2;
+      int shift_val = 2;
+      if (cpi->sf.rt_sf.force_large_partition_blocks_intra) {
+        shift_val = 0;
+      }
+
+      thresholds[2] = threshold_base >> shift_val;
+      thresholds[3] = threshold_base >> shift_val;
     }
     thresholds[4] = threshold_base << 2;
   } else {
@@ -849,7 +856,6 @@ static void setup_planes(AV1_COMP *cpi, MACROBLOCK *x, unsigned int *y_sad,
 
   // Pick the ref frame for partitioning, use golden frame only if its
   // lower sad.
-  aom_clear_system_state();
   if (*y_sad_g < 0.9 * *y_sad) {
     av1_setup_pre_planes(xd, 0, yv12_g, mi_row, mi_col,
                          get_ref_scale_factors(cm, GOLDEN_FRAME), num_planes);
@@ -881,7 +887,6 @@ int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
   VP128x128 *vt;
   VP16x16 *vt2 = NULL;
   unsigned char force_split[85];
-  int avg_32x32;
   int avg_64x64;
   int max_var_32x32[4];
   int min_var_32x32[4];
@@ -989,7 +994,6 @@ int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
 
   avg_64x64 = 0;
   for (m = 0; m < num_64x64_blocks; ++m) {
-    avg_32x32 = 0;
     max_var_32x32[m] = 0;
     min_var_32x32[m] = INT_MAX;
     const int m2 = m << 2;
@@ -1042,7 +1046,6 @@ int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
           force_split[m + 1] = 1;
           force_split[0] = 1;
         }
-        avg_32x32 += var_32x32;
       }
     }
     if (!force_split[1 + m]) {

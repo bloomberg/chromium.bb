@@ -6,6 +6,7 @@
 
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/data_decoder/public/mojom/resource_snapshot_for_web_bundle.mojom-blink.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/chrome_debug_urls.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-blink.h"
@@ -317,6 +318,17 @@ void ActiveURLMessageFilter::DidDispatchOrReject(mojo::Message* message,
 LocalFrameMojoHandler::LocalFrameMojoHandler(blink::LocalFrame& frame)
     : frame_(frame) {
   frame.GetRemoteNavigationAssociatedInterfaces()->GetInterface(
+      back_forward_cache_controller_host_remote_.BindNewEndpointAndPassReceiver(
+          frame.GetTaskRunner(TaskType::kInternalDefault)));
+#if defined(OS_MAC)
+  // It should be bound before accessing TextInputHost which is the interface to
+  // respond to GetCharacterIndexAtPoint.
+  frame.GetBrowserInterfaceBroker().GetInterface(
+      text_input_host_.BindNewPipeAndPassReceiver(
+          frame.GetTaskRunner(TaskType::kInternalDefault)));
+#endif
+
+  frame.GetRemoteNavigationAssociatedInterfaces()->GetInterface(
       local_frame_host_remote_.BindNewEndpointAndPassReceiver(
           frame.GetTaskRunner(TaskType::kInternalDefault)));
 
@@ -335,11 +347,18 @@ LocalFrameMojoHandler::LocalFrameMojoHandler(blink::LocalFrame& frame)
 
 void LocalFrameMojoHandler::Trace(Visitor* visitor) const {
   visitor->Trace(frame_);
+  visitor->Trace(back_forward_cache_controller_host_remote_);
+#if defined(OS_MAC)
+  visitor->Trace(text_input_host_);
+#endif
+  visitor->Trace(reporting_service_);
+  visitor->Trace(device_posture_provider_service_);
   visitor->Trace(local_frame_host_remote_);
   visitor->Trace(local_frame_receiver_);
   visitor->Trace(main_frame_receiver_);
   visitor->Trace(high_priority_frame_receiver_);
   visitor->Trace(fullscreen_video_receiver_);
+  visitor->Trace(device_posture_receiver_);
 }
 
 void LocalFrameMojoHandler::WasAttachedAsLocalMainFrame() {
@@ -359,6 +378,53 @@ void LocalFrameMojoHandler::DidDetachFrame() {
 
 void LocalFrameMojoHandler::ClosePageForTesting() {
   ClosePage(base::DoNothing());
+}
+
+mojom::blink::BackForwardCacheControllerHost&
+LocalFrameMojoHandler::BackForwardCacheControllerHostRemote() {
+  return *back_forward_cache_controller_host_remote_.get();
+}
+
+#if defined(OS_MAC)
+mojom::blink::TextInputHost& LocalFrameMojoHandler::TextInputHost() {
+  DCHECK(text_input_host_.is_bound());
+  return *text_input_host_.get();
+}
+
+void LocalFrameMojoHandler::ResetTextInputHostForTesting() {
+  text_input_host_.reset();
+}
+
+void LocalFrameMojoHandler::RebindTextInputHostForTesting() {
+  frame_->GetBrowserInterfaceBroker().GetInterface(
+      text_input_host_.BindNewPipeAndPassReceiver(
+          frame_->GetTaskRunner(TaskType::kInternalDefault)));
+}
+#endif
+
+mojom::blink::ReportingServiceProxy* LocalFrameMojoHandler::ReportingService() {
+  if (!reporting_service_.is_bound()) {
+    frame_->GetBrowserInterfaceBroker().GetInterface(
+        reporting_service_.BindNewPipeAndPassReceiver(
+            frame_->GetTaskRunner(TaskType::kInternalDefault)));
+  }
+  return reporting_service_.get();
+}
+
+device::mojom::blink::DevicePostureType
+LocalFrameMojoHandler::GetDevicePosture() {
+  if (device_posture_provider_service_.is_bound())
+    return current_device_posture_;
+
+  auto task_runner = frame_->GetTaskRunner(TaskType::kInternalDefault);
+  frame_->GetBrowserInterfaceBroker().GetInterface(
+      device_posture_provider_service_.BindNewPipeAndPassReceiver(task_runner));
+
+  device_posture_provider_service_->AddListenerAndGetCurrentPosture(
+      device_posture_receiver_.BindNewPipeAndPassRemote(task_runner),
+      WTF::Bind(&LocalFrameMojoHandler::OnPostureChanged,
+                WrapPersistent(this)));
+  return current_device_posture_;
 }
 
 Page* LocalFrameMojoHandler::GetPage() const {
@@ -720,6 +786,18 @@ void LocalFrameMojoHandler::OnScreensChange() {
   }
 }
 
+void LocalFrameMojoHandler::OnPostureChanged(
+    device::mojom::blink::DevicePostureType posture) {
+  if (!RuntimeEnabledFeatures::DevicePostureEnabled())
+    return;
+  current_device_posture_ = posture;
+  // A change of the device posture requires re-evaluation of media queries
+  // for the local frame subtree (the device posture affect the
+  // "device-posture" feature).
+  frame_->MediaQueryAffectingValueChangedForLocalSubtree(
+      MediaValueChange::kOther);
+}
+
 void LocalFrameMojoHandler::PostMessageEvent(
     const absl::optional<RemoteFrameToken>& source_frame_token,
     const String& source_origin,
@@ -880,7 +958,7 @@ void LocalFrameMojoHandler::GetFirstRectForRange(const gfx::Range& range) {
         start, range.length(), rect);
   }
 
-  frame_->GetTextInputHost().GotFirstRectForRange(rect);
+  TextInputHost().GotFirstRectForRange(rect);
 }
 
 void LocalFrameMojoHandler::GetStringForRange(
@@ -951,22 +1029,6 @@ void LocalFrameMojoHandler::MixedContentFound(
   MixedContentChecker::MixedContentFound(
       frame_, main_resource_url, mixed_content_url, request_context,
       was_allowed, url_before_redirects, had_redirect, std::move(source));
-}
-
-void LocalFrameMojoHandler::ActivateForPrerendering(
-    base::TimeTicks activation_start) {
-  DCHECK(features::IsPrerender2Enabled());
-
-  // https://jeremyroman.github.io/alternate-loading-modes/#prerendering-browsing-context-activate
-  // Step 8.2. "Let inclusiveDescendants be successorBC extended with
-  // successorBC's active document's list of the descendant browsing contexts."
-  // Step 8.3. "For each bc of inclusiveDescendants, queue a global task on the
-  // networking task source, given bc's active window, to perform the following
-  // steps:"
-  frame_->GetTaskRunner(TaskType::kNetworking)
-      ->PostTask(FROM_HERE,
-                 WTF::Bind(&Document::ActivateForPrerendering,
-                           WrapPersistent(GetDocument()), activation_start));
 }
 
 void LocalFrameMojoHandler::BindDevToolsAgent(

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/realbox/realbox_handler.h"
 
+#include "base/containers/contains.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -58,6 +59,15 @@ namespace {
 constexpr char kGoogleGIconResourceName[] = "google_g.png";
 constexpr char kSearchIconResourceName[] = "search.svg";
 
+constexpr char kAnswerCurrencyIconResourceName[] = "realbox/icons/currency.svg";
+constexpr char kAnswerDefaultIconResourceName[] = "realbox/icons/default.svg";
+constexpr char kAnswerDictionaryIconResourceName[] =
+    "realbox/icons/definition.svg";
+constexpr char kAnswerFinanceIconResourceName[] = "realbox/icons/finance.svg";
+constexpr char kAnswerSunriseIconResourceName[] = "realbox/icons/sunrise.svg";
+constexpr char kAnswerTranslationIconResourceName[] =
+    "realbox/icons/translation.svg";
+constexpr char kAnswerWhenIsIconResourceName[] = "realbox/icons/when_is.svg";
 constexpr char kBookmarkIconResourceName[] =
     "chrome://resources/images/icon_bookmark.svg";
 constexpr char kCalculatorIconResourceName[] = "realbox/icons/calculator.svg";
@@ -68,7 +78,7 @@ constexpr char kDriveFolderIconResourceName[] =
     "realbox/icons/drive_folder.svg";
 constexpr char kDriveFormIconResourceName[] = "realbox/icons/drive_form.svg";
 constexpr char kDriveImageIconResourceName[] = "realbox/icons/drive_image.svg";
-constexpr char kDriveLogoIconResourceName[] = "realbox/icons/drive_logo.svg";
+constexpr char kDriveLogoIconResourceName[] = "icons/drive_logo.svg";
 constexpr char kDrivePdfIconResourceName[] = "realbox/icons/drive_pdf.svg";
 constexpr char kDriveSheetsIconResourceName[] =
     "realbox/icons/drive_sheets.svg";
@@ -152,7 +162,7 @@ std::vector<realbox::mojom::AutocompleteMatchPtr> CreateAutocompleteMatches(
         RealboxHandler::AutocompleteMatchVectorIconToResourceName(
             match.GetVectorIcon(is_bookmarked));
     mojom_match->image_dominant_color = match.image_dominant_color;
-    mojom_match->image_url = match.ImageUrl().spec();
+    mojom_match->image_url = match.image_url.spec();
     mojom_match->fill_into_edit = match.fill_into_edit;
     mojom_match->inline_autocompletion = match.inline_autocompletion;
     mojom_match->is_search_type = AutocompleteMatch::IsSearchType(match.type);
@@ -169,7 +179,13 @@ std::vector<realbox::mojom::AutocompleteMatchPtr> CreateAutocompleteMatches(
                                 {match.contents, additional_text.value()}, u" ")
                           : match.contents,
           ImageLineToString16(match.answer->second_line()));
+      mojom_match->image_url = match.ImageUrl().spec();
     }
+    mojom_match->is_rich_suggestion =
+        !mojom_match->image_url.empty() ||
+        match.type == AutocompleteMatchType::CALCULATOR ||
+        (match.answer.has_value() &&
+         base::FeatureList::IsEnabled(omnibox::kNtpRealboxSuggestionAnswers));
     matches.push_back(std::move(mojom_match));
   }
   return matches;
@@ -221,7 +237,30 @@ void RealboxHandler::SetupWebUIDataSource(content::WebUIDataSource* source) {
 // static
 std::string RealboxHandler::AutocompleteMatchVectorIconToResourceName(
     const gfx::VectorIcon& icon) {
-  if (icon.name == omnibox::kBlankIcon.name) {
+  std::string answerNames[] = {
+      omnibox::kAnswerCurrencyIcon.name,   omnibox::kAnswerDefaultIcon.name,
+      omnibox::kAnswerDictionaryIcon.name, omnibox::kAnswerFinanceIcon.name,
+      omnibox::kAnswerSunriseIcon.name,    omnibox::kAnswerTranslationIcon.name,
+      omnibox::kAnswerWhenIsIcon.name,     omnibox::kAnswerWhenIsIcon.name};
+
+  if (!base::FeatureList::IsEnabled(omnibox::kNtpRealboxSuggestionAnswers) &&
+      base::Contains(answerNames, icon.name)) {
+    return kSearchIconResourceName;
+  } else if (icon.name == omnibox::kAnswerCurrencyIcon.name) {
+    return kAnswerCurrencyIconResourceName;
+  } else if (icon.name == omnibox::kAnswerDefaultIcon.name) {
+    return kAnswerDefaultIconResourceName;
+  } else if (icon.name == omnibox::kAnswerDictionaryIcon.name) {
+    return kAnswerDictionaryIconResourceName;
+  } else if (icon.name == omnibox::kAnswerFinanceIcon.name) {
+    return kAnswerFinanceIconResourceName;
+  } else if (icon.name == omnibox::kAnswerSunriseIcon.name) {
+    return kAnswerSunriseIconResourceName;
+  } else if (icon.name == omnibox::kAnswerTranslationIcon.name) {
+    return kAnswerTranslationIconResourceName;
+  } else if (icon.name == omnibox::kAnswerWhenIsIcon.name) {
+    return kAnswerWhenIsIconResourceName;
+  } else if (icon.name == omnibox::kBlankIcon.name) {
     return "";  // An empty resource name is effectively a blank icon.
   } else if (icon.name == omnibox::kBookmarkIcon.name) {
     return kBookmarkIconResourceName;

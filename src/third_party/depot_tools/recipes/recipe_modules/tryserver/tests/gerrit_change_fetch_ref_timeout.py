@@ -22,7 +22,7 @@ def GenTests(api):
       'linux',
       git_repo='https://chromium.googlesource.com/chromium/src',
       change_number=91827,
-      patch_set=1) + api.tryserver.gerrit_change_target_ref('refs/heads/master')
+      patch_set=1) + api.tryserver.gerrit_change_target_ref('refs/heads/main')
          + api.override_step_data(
              'gerrit fetch current CL info', times_out_after=1200) +
          api.post_process(post_process.StatusException) + api.post_process(

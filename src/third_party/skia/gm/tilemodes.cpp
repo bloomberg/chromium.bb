@@ -9,7 +9,6 @@
 #include "include/core/SkBitmap.h"
 #include "include/core/SkCanvas.h"
 #include "include/core/SkColor.h"
-#include "include/core/SkFilterQuality.h"
 #include "include/core/SkFont.h"
 #include "include/core/SkImage.h"
 #include "include/core/SkImageInfo.h"
@@ -91,7 +90,7 @@ protected:
 
     void onDraw(SkCanvas* canvas) override {
         SkPaint textPaint;
-        SkFont  font(ToolUtils::create_portable_typeface(), 12);
+        SkFont  font(ToolUtils::create_portable_typeface());
 
         int size = fPowerOfTwoSize ? kPOTSize : kNPOTSize;
 
@@ -114,7 +113,6 @@ protected:
                 SkPaint p;
                 p.setDither(true);
                 SkString str;
-                SkFont   font(ToolUtils::create_portable_typeface());
                 str.printf("[%s,%s]", gModeNames[kx], gModeNames[ky]);
 
                 SkTextUtils::DrawString(canvas, str.c_str(), x + r.width()/2, y, font, p,
@@ -274,15 +272,15 @@ DEF_SIMPLE_GM(tilemode_decal, canvas, 720, 1100) {
     std::function<void(SkPaint*, SkTileMode, SkTileMode)> shader_procs[] = {
         [img](SkPaint* paint, SkTileMode tx, SkTileMode ty) {
             // Test no filtering with decal mode
-            paint->setShader(img->makeShader(tx, ty, SkSamplingOptions(kNone_SkFilterQuality)));
+            paint->setShader(img->makeShader(tx, ty, SkSamplingOptions(SkFilterMode::kNearest)));
         },
         [img](SkPaint* paint, SkTileMode tx, SkTileMode ty) {
             // Test bilerp approximation for decal mode (or clamp to border HW)
-            paint->setShader(img->makeShader(tx, ty, SkSamplingOptions(kLow_SkFilterQuality)));
+            paint->setShader(img->makeShader(tx, ty, SkSamplingOptions(SkFilterMode::kLinear)));
         },
         [img](SkPaint* paint, SkTileMode tx, SkTileMode ty) {
             // Test bicubic filter with decal mode
-            paint->setShader(img->makeShader(tx, ty, SkSamplingOptions(kHigh_SkFilterQuality)));
+            paint->setShader(img->makeShader(tx, ty, SkSamplingOptions(SkCubicResampler::Mitchell())));
         },
         [img](SkPaint* paint, SkTileMode tx, SkTileMode ty) {
             SkColor colors[] = { SK_ColorRED, SK_ColorBLUE };

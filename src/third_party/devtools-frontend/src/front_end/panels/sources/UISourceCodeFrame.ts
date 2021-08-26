@@ -34,13 +34,13 @@ import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
-import * as Persistence from '../../models/persistence/persistence.js';  // eslint-disable-line no-unused-vars
+import * as Persistence from '../../models/persistence/persistence.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as IssueCounter from '../../ui/components/issue_counter/issue_counter.js';
 import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
-import type * as TextEditor from '../../ui/legacy/components/text_editor/text_editor.js'; // eslint-disable-line no-unused-vars
+import type * as TextEditor from '../../ui/legacy/components/text_editor/text_editor.js';
 import * as UI from '../../ui/legacy/legacy.js';
 
 import {CoveragePlugin} from './CoveragePlugin.js';
@@ -48,7 +48,7 @@ import {CSSPlugin} from './CSSPlugin.js';
 import {DebuggerPlugin} from './DebuggerPlugin.js';
 import {GutterDiffPlugin} from './GutterDiffPlugin.js';
 import {JavaScriptCompilerPlugin} from './JavaScriptCompilerPlugin.js';
-import type {Plugin} from './Plugin.js'; // eslint-disable-line no-unused-vars
+import type {Plugin} from './Plugin.js';
 import {ScriptOriginPlugin} from './ScriptOriginPlugin.js';
 import {SnippetsPlugin} from './SnippetsPlugin.js';
 import {SourcesPanel} from './SourcesPanel.js';
@@ -323,14 +323,14 @@ export class UISourceCodeFrame extends SourceFrame.SourceFrame.SourceFrameImpl {
     }
   }
 
-  _onWorkingCopyChanged(_event: Common.EventTarget.EventTargetEvent): void {
+  _onWorkingCopyChanged(): void {
     if (this._muteSourceCodeEvents) {
       return;
     }
     this._innerSetContent(this._uiSourceCode.workingCopy());
   }
 
-  _onWorkingCopyCommitted(_event: Common.EventTarget.EventTargetEvent): void {
+  _onWorkingCopyCommitted(): void {
     if (!this._muteSourceCodeEvents) {
       this._innerSetContent(this._uiSourceCode.workingCopy());
     }
@@ -434,8 +434,8 @@ export class UISourceCodeFrame extends SourceFrame.SourceFrame.SourceFrameImpl {
         .removeChangeListener(this._onNetworkPersistenceChanged, this);
   }
 
-  _onMessageAdded(event: Common.EventTarget.EventTargetEvent): void {
-    const message = (event.data as Workspace.UISourceCode.Message);
+  _onMessageAdded(event: Common.EventTarget.EventTargetEvent<Workspace.UISourceCode.Message>): void {
+    const message = event.data;
     this._addMessageToSource(message);
   }
 
@@ -464,8 +464,8 @@ export class UISourceCodeFrame extends SourceFrame.SourceFrame.SourceFrameImpl {
     messageBucket.addMessage(message);
   }
 
-  _onMessageRemoved(event: Common.EventTarget.EventTargetEvent): void {
-    const message = (event.data as Workspace.UISourceCode.Message);
+  _onMessageRemoved(event: Common.EventTarget.EventTargetEvent<Workspace.UISourceCode.Message>): void {
+    const message = event.data;
     this._removeMessageFromSource(message);
   }
 
@@ -498,13 +498,13 @@ export class UISourceCodeFrame extends SourceFrame.SourceFrame.SourceFrameImpl {
     }
   }
 
-  _onLineDecorationAdded(event: Common.EventTarget.EventTargetEvent): void {
-    const marker = (event.data as Workspace.UISourceCode.LineMarker);
+  _onLineDecorationAdded(event: Common.EventTarget.EventTargetEvent<Workspace.UISourceCode.LineMarker>): void {
+    const marker = event.data;
     this._decorateTypeThrottled(marker.type());
   }
 
-  _onLineDecorationRemoved(event: Common.EventTarget.EventTargetEvent): void {
-    const marker = (event.data as Workspace.UISourceCode.LineMarker);
+  _onLineDecorationRemoved(event: Common.EventTarget.EventTargetEvent<Workspace.UISourceCode.LineMarker>): void {
+    const marker = event.data;
     this._decorateTypeThrottled(marker.type());
   }
 

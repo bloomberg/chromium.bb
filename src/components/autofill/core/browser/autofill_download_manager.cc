@@ -12,12 +12,12 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/cxx20_erase.h"
+#include "base/cxx17_backports.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/numerics/ranges.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/rand_util.h"
 #include "base/strings/strcat.h"
@@ -392,7 +392,7 @@ std::ostream& operator<<(std::ostream& out,
 std::string FieldTypeToString(int type) {
   return base::StrCat(
       {base::NumberToString(type), std::string("/"),
-       AutofillType(static_cast<ServerFieldType>(type)).ToString()});
+       AutofillType(ToSafeServerFieldType(type, UNKNOWN_TYPE)).ToString()});
 }
 
 LogBuffer& operator<<(LogBuffer& out,
@@ -419,6 +419,24 @@ LogBuffer& operator<<(LogBuffer& out,
     out << Tr{} << "passwords_revealed:" << upload.passwords_revealed();
   if (upload.has_has_form_tag())
     out << Tr{} << "has_form_tag:" << upload.has_form_tag();
+
+  if (upload.has_single_username_data()) {
+    LogBuffer single_username_data;
+    single_username_data << Tag{"span"} << "[";
+    single_username_data
+        << Tr{} << "username_form_signature:"
+        << upload.single_username_data().username_form_signature();
+    single_username_data
+        << Tr{} << "username_field_signature:"
+        << upload.single_username_data().username_field_signature();
+    single_username_data << Tr{} << "value_type:"
+                         << static_cast<int>(
+                                upload.single_username_data().value_type());
+    single_username_data << Tr{} << "prompt_edit:"
+                         << static_cast<int>(
+                                upload.single_username_data().prompt_edit());
+    out << Tr{} << "single_username_data" << std::move(single_username_data);
+  }
 
   out << Tr{} << "form_signature:" << upload.form_signature();
   for (const auto& field : upload.field()) {
@@ -936,7 +954,7 @@ int AutofillDownloadManager::GetMaxServerAttempts() {
   // statically on first use to avoid re-parsing the param on each retry
   // opportunity.
   static const int max_attempts =
-      base::ClampToRange(kAutofillMaxServerAttempts.Get(), 1, 20);
+      base::clamp(kAutofillMaxServerAttempts.Get(), 1, 20);
   return max_attempts;
 }
 

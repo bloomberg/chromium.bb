@@ -34,21 +34,17 @@ class FormStructure;
 // implementation must be provided by the driver.
 class AutofillDriver {
  public:
-   // The possible actions that the renderer can take on receiving form data.
-  enum RendererFormDataAction {
-    // The renderer should fill the form data.
-    FORM_DATA_ACTION_FILL,
-    // The renderer should preview the form data.
-    FORM_DATA_ACTION_PREVIEW
-  };
-
   virtual ~AutofillDriver() {}
 
   // Returns whether the user is currently operating in an incognito context.
   virtual bool IsIncognito() const = 0;
 
-  // Returns whether AutofillDriver instance is associated to the main frame.
+  // Returns whether AutofillDriver instance is associated with a main frame.
   virtual bool IsInMainFrame() const = 0;
+
+  // Returns whether the AutofillDriver instance is associated with a
+  // prerendered frame.
+  virtual bool IsPrerendering() const = 0;
 
   // Returns true iff a popup can be shown on the behalf of the associated
   // frame.
@@ -77,9 +73,9 @@ class AutofillDriver {
   // triggered, and |field_type_map| are the type predictions; these two
   // parameters can be taken into account to decide which fields to fill across
   // frames. This method is a no-op if the renderer is not currently available.
-  virtual void SendFormDataToRenderer(
+  virtual void FillOrPreviewForm(
       int query_id,
-      RendererFormDataAction action,
+      mojom::RendererFormDataAction action,
       const FormData& data,
       const url::Origin& triggered_origin,
       const base::flat_map<FieldGlobalId, ServerFieldType>& field_type_map) = 0;

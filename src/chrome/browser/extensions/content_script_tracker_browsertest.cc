@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/version_info/channel.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -26,9 +27,13 @@
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/browsertest_util.h"
 #include "extensions/browser/content_script_tracker.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/browser/user_script_manager.h"
 #include "extensions/common/extension_features.h"
+#include "extensions/common/features/feature_channel.h"
 #include "extensions/test/extension_test_message_listener.h"
+#include "extensions/test/test_content_script_load_waiter.h"
 #include "extensions/test/test_extension_dir.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -790,10 +795,14 @@ IN_PROC_BROWSER_TEST_F(ContentScriptTrackerBrowserTest,
   dir.WriteManifest(kManifestTemplate);
   dir.WriteFile(FILE_PATH_LITERAL("background_script.js"), kBackgroundScript);
   const char kContentScript[] = R"(
-      window.onload = function() {
+      function sendResponse() {
           document.body.innerText = 'content script has run';
           chrome.test.sendMessage('Hello from content script!');
       }
+      if (document.readyState === 'complete')
+          sendResponse();
+      else
+          window.onload = sendResponse;
   )";
   dir.WriteFile(FILE_PATH_LITERAL("content_script.js"), kContentScript);
   const Extension* extension = LoadExtension(dir.UnpackedPath());
@@ -885,6 +894,101 @@ IN_PROC_BROWSER_TEST_F(ContentScriptTrackerBrowserTest, HistoryPushState) {
       *main_frame->GetProcess(), extension->id()));
 }
 
+class DynamicScriptsTrackerBrowserTest
+    : public ContentScriptTrackerBrowserTest {
+ public:
+  DynamicScriptsTrackerBrowserTest() = default;
+
+ private:
+  ScopedCurrentChannel current_channel_{version_info::Channel::UNKNOWN};
+};
+
+// Tests tracking of content scripts injected/declared via `chrome.scripting`
+// API.
+IN_PROC_BROWSER_TEST_F(DynamicScriptsTrackerBrowserTest,
+                       ContentScriptViaScriptingApi) {
+  // Install a test extension.
+  TestExtensionDir dir;
+  const char kManifestTemplate[] = R"(
+      {
+        "name": "ContentScriptTrackerBrowserTest - ScriptingAPI",
+        "version": "1.0",
+        "manifest_version": 3,
+        "permissions": [ "scripting" ],
+        "host_permissions": ["*://*/*"],
+        "background": { "service_worker": "worker.js" }
+      } )";
+  const char kWorkerScript[] = R"(
+      var scripts = [{
+        id: 'script1',
+        matches: ['*://a.com/*'],
+        js: ['content_script.js'],
+        runAt: 'document_end'
+      }];
+
+      chrome.runtime.onInstalled.addListener(function(details) {
+        chrome.scripting.registerContentScripts(scripts, () => {
+          chrome.test.sendMessage('SCRIPT_LOADED');
+        });
+      }); )";
+  dir.WriteManifest(kManifestTemplate);
+  dir.WriteFile(FILE_PATH_LITERAL("worker.js"), kWorkerScript);
+  const char kContentScript[] = R"(
+      window.onload = function() {
+          chrome.test.assertEq('complete', document.readyState);
+          document.body.innerText = 'content script has run';
+          chrome.test.sendMessage('SCRIPT_INJECTED');
+      }
+  )";
+  dir.WriteFile(FILE_PATH_LITERAL("content_script.js"), kContentScript);
+
+  ExtensionTestMessageListener script_loaded_listener("SCRIPT_LOADED", false);
+  const Extension* extension = LoadExtension(dir.UnpackedPath());
+  ASSERT_TRUE(extension);
+  ASSERT_TRUE(script_loaded_listener.WaitUntilSatisfied());
+
+  // Navigate to a test page that is *not* covered by the dynamic content script
+  // used above.
+  GURL ignored_url = embedded_test_server()->GetURL("foo.com", "/title1.html");
+  ui_test_utils::NavigateToURL(browser(), ignored_url);
+
+  // Verify that initially no frames show up as having been injected with
+  // content scripts.
+  content::WebContents* first_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_EQ("This page has no title.",
+            content::EvalJs(first_tab, "document.body.innerText"));
+  EXPECT_FALSE(ContentScriptTracker::DidProcessRunContentScriptFromExtension(
+      *first_tab->GetMainFrame()->GetProcess(), extension->id()));
+
+  // Navigate to a test page that *is* covered by the dynamic content script
+  // above.
+  {
+    GURL injected_url = embedded_test_server()->GetURL("a.com", "/title1.html");
+    ExtensionTestMessageListener listener("SCRIPT_INJECTED", false);
+    ui_test_utils::NavigateToURLWithDisposition(
+        browser(), injected_url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
+    ASSERT_TRUE(listener.WaitUntilSatisfied());
+  }
+  content::WebContents* second_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_NE(first_tab, second_tab);
+  EXPECT_NE(first_tab->GetMainFrame()->GetProcess(),
+            second_tab->GetMainFrame()->GetProcess());
+
+  // Verify that the new tab shows up as having been injected with content
+  // scripts.
+  EXPECT_EQ("content script has run",
+            content::EvalJs(second_tab, "document.body.innerText"));
+  EXPECT_EQ("This page has no title.",
+            content::EvalJs(first_tab, "document.body.innerText"));
+  EXPECT_TRUE(ContentScriptTracker::DidProcessRunContentScriptFromExtension(
+      *second_tab->GetMainFrame()->GetProcess(), extension->id()));
+  EXPECT_FALSE(ContentScriptTracker::DidProcessRunContentScriptFromExtension(
+      *first_tab->GetMainFrame()->GetProcess(), extension->id()));
+}
+
 class ContentScriptTrackerAppBrowserTest : public PlatformAppBrowserTest {
  public:
   ContentScriptTrackerAppBrowserTest() = default;
@@ -898,8 +1002,33 @@ class ContentScriptTrackerAppBrowserTest : public PlatformAppBrowserTest {
   }
 };
 
+// Tests that ContentScriptTracker detects content scripts injected via
+// <webview> (aka GuestView) APIs.  This test covers a basic injection scenario.
 IN_PROC_BROWSER_TEST_F(ContentScriptTrackerAppBrowserTest,
                        WebViewContentScript) {
+  // Install an unrelated test extension (for testing that ContentScriptTracker
+  // doesn't think that *all* extensions are injecting scripts into a webView).
+  TestExtensionDir unrelated_dir;
+  const char kUnrelatedManifest[] = R"(
+      {
+        "name": "ContentScriptTrackerBrowserTest - Unrelated",
+        "version": "1.0",
+        "manifest_version": 2,
+        "permissions": [ "tabs", "<all_urls>" ],
+        "content_scripts": [{
+          "all_frames": true,
+          "matches": ["*://bar.com/*"],
+          "js": ["content_script.js"],
+          "run_at": "document_start"
+        }]
+      } )";
+  unrelated_dir.WriteManifest(kUnrelatedManifest);
+  unrelated_dir.WriteFile(FILE_PATH_LITERAL("content_script.js"), R"(
+      chrome.test.sendMessage('Hello from extension content script!'); )");
+  const Extension* unrelated_extension =
+      LoadExtension(unrelated_dir.UnpackedPath());
+  ASSERT_TRUE(unrelated_extension);
+
   // Load the test app.
   TestExtensionDir dir;
   const char kManifest[] = R"(
@@ -941,7 +1070,7 @@ IN_PROC_BROWSER_TEST_F(ContentScriptTrackerAppBrowserTest,
         var webview = document.querySelector('webview');
         webview.src = $1;
     )";
-    GURL guest_url1(embedded_test_server()->GetURL("/title1.html"));
+    GURL guest_url1(embedded_test_server()->GetURL("foo.com", "/title1.html"));
 
     content::WebContentsAddedObserver guest_contents_observer;
     ASSERT_TRUE(ExecuteScript(
@@ -956,6 +1085,8 @@ IN_PROC_BROWSER_TEST_F(ContentScriptTrackerAppBrowserTest,
       guest_contents->GetMainFrame()->GetProcess();
   EXPECT_FALSE(ContentScriptTracker::DidProcessRunContentScriptFromExtension(
       *guest_process, app->id()));
+  EXPECT_FALSE(ContentScriptTracker::DidProcessRunContentScriptFromExtension(
+      *guest_process, unrelated_extension->id()));
 
   // Declare content scripts + trigger their injection with another navigation.
   //
@@ -974,16 +1105,146 @@ IN_PROC_BROWSER_TEST_F(ContentScriptTrackerAppBrowserTest,
         webview.src = $2;
     )";
     const char kContentScript[] = R"(
-        chrome.test.sendMessage("Hello from content script!");
+        chrome.test.sendMessage("Hello from webView content script!");
     )";
-    GURL guest_url2(embedded_test_server()->GetURL("/title2.html"));
+    GURL guest_url2(embedded_test_server()->GetURL("bar.com", "/title2.html"));
 
-    ExtensionTestMessageListener listener("Hello from content script!", false);
+    ExtensionTestMessageListener app_script_listener(
+        "Hello from webView content script!", false);
+    ExtensionTestMessageListener unrelated_extension_script_listener(
+        "Hello from extension content script!", false);
     content::TestNavigationObserver nav_observer(guest_contents);
     content::ExecuteScriptAsync(
         app_contents,
         content::JsReplace(kContentScriptDeclarationScriptTemplate,
                            kContentScript, guest_url2));
+
+    // Wait for the navigation to complete and verify via `listener` that the
+    // expected content script has run.
+    nav_observer.Wait();
+    ASSERT_TRUE(app_script_listener.WaitUntilSatisfied());
+    EXPECT_FALSE(unrelated_extension_script_listener.was_satisfied());
+  }
+
+  // Verify that ContentScriptTracker detected the content script injection
+  // from `app` (but not from `unrelated_extension`).
+  EXPECT_TRUE(ContentScriptTracker::DidProcessRunContentScriptFromExtension(
+      *guest_process, app->id()));
+  EXPECT_FALSE(ContentScriptTracker::DidProcessRunContentScriptFromExtension(
+      *guest_process, unrelated_extension->id()));
+}
+
+// Tests that ContentScriptTracker detects content scripts injected via
+// <webview> (aka GuestView) APIs.  This test covers a scenario where the
+// `addContentScripts` API is called in the middle of the test - after
+// a matching guest content has already loaded (no content scripts there)
+// but before a matching about:blank guest navigation happens (need to detect
+// content scripts there).
+IN_PROC_BROWSER_TEST_F(ContentScriptTrackerAppBrowserTest,
+                       WebViewContentScriptForLateAboutBlank) {
+  // Load the test app.
+  TestExtensionDir dir;
+  const char kManifest[] = R"(
+      {
+        "name": "ContentScriptTrackerBrowserTest - App",
+        "version": "1.0",
+        "manifest_version": 2,
+        "permissions": ["*://*/*", "webview"],
+        "app": {
+          "background": {
+            "scripts": ["background_script.js"]
+          }
+        }
+      } )";
+  dir.WriteManifest(kManifest);
+  const char kBackgroundScript[] = R"(
+      chrome.app.runtime.onLaunched.addListener(function() {
+        chrome.app.window.create('page.html', {}, function () {});
+      });
+  )";
+  dir.WriteFile(FILE_PATH_LITERAL("background_script.js"), kBackgroundScript);
+  const char kPage[] = R"(
+      <div id="webview-tag-container"></div>
+  )";
+  dir.WriteFile(FILE_PATH_LITERAL("page.html"), kPage);
+
+  // Launch the test app and grab its WebContents.
+  const Extension* app = LoadAndLaunchApp(dir.UnpackedPath());
+  ASSERT_TRUE(app);
+  content::WebContents* app_contents = GetFirstAppWindowWebContents();
+  ASSERT_TRUE(content::WaitForLoadStop(app_contents));
+
+  // Navigate the <webview> tag and grab the `guest_process`.
+  content::WebContents* guest_contents = nullptr;
+  {
+    const char kWebViewInjectionScriptTemplate[] = R"(
+        document.querySelector('#webview-tag-container').innerHTML =
+            '<webview style="width: 100px; height: 100px;"></webview>';
+        var webview = document.querySelector('webview');
+        webview.src = $1;
+    )";
+    GURL guest_url1(embedded_test_server()->GetURL("foo.com", "/title1.html"));
+
+    content::WebContentsAddedObserver guest_contents_observer;
+    ASSERT_TRUE(ExecuteScript(
+        app_contents,
+        content::JsReplace(kWebViewInjectionScriptTemplate, guest_url1)));
+    guest_contents = guest_contents_observer.GetWebContents();
+
+    // Wait until the "document_end" timepoint is reached.  (Since this is done
+    // before the `addContentScripts` call below, it means that no content
+    // scripts will get injected into the initial document.)
+    EXPECT_TRUE(WaitForLoadStop(guest_contents));
+  }
+
+  // Verify that ContentScriptTracker correctly shows that no content scripts
+  // got injected just yet.
+  content::RenderProcessHost* guest_process =
+      guest_contents->GetMainFrame()->GetProcess();
+  EXPECT_FALSE(ContentScriptTracker::DidProcessRunContentScriptFromExtension(
+      *guest_process, app->id()));
+
+  // Declare content scripts and wait until they have been loaded (and
+  // communicated to the renderer process).
+  {
+    const char kContentScriptDeclarationScriptTemplate[] = R"(
+        var webview = document.querySelector('webview');
+        webview.addContentScripts([{
+            name: 'rule',
+            all_frames: true,
+            match_about_blank: true,
+            matches: ['*://foo.com/*'],
+            js: { code: $1 },
+            run_at: 'document_end'}]);
+    )";
+    const char kContentScript[] = R"(
+        chrome.test.sendMessage("Hello from content script!");
+    )";
+    std::string script = content::JsReplace(
+        kContentScriptDeclarationScriptTemplate, kContentScript);
+
+    UserScriptManager* user_script_manager =
+        ExtensionSystem::Get(guest_process->GetBrowserContext())
+            ->user_script_manager();
+    ExtensionUserScriptLoader* user_script_loader =
+        user_script_manager->GetUserScriptLoaderForExtension(app->id());
+    ContentScriptLoadWaiter content_script_load_waiter(user_script_loader);
+
+    content::ExecuteScriptAsync(app_contents, script);
+    content_script_load_waiter.Wait();
+  }
+
+  // Create an about:blank subframe where content script should get injected
+  // into.
+  {
+    ExtensionTestMessageListener listener("Hello from content script!", false);
+    content::TestNavigationObserver nav_observer(guest_contents);
+    const char kAboutBlankScript[] = R"(
+        var f = document.createElement('iframe');
+        f.src = 'about:blank';
+        document.body.appendChild(f);
+    )";
+    content::ExecuteScriptAsync(guest_contents, kAboutBlankScript);
 
     // Wait for the navigation to complete and verify via `listener` that the
     // content script has run.
@@ -995,8 +1256,5 @@ IN_PROC_BROWSER_TEST_F(ContentScriptTrackerAppBrowserTest,
   EXPECT_TRUE(ContentScriptTracker::DidProcessRunContentScriptFromExtension(
       *guest_process, app->id()));
 }
-
-// TODO(crbug.com/1215386): Add a test for tracking content scripts added
-// through the scripting API.
 
 }  // namespace extensions

@@ -40,6 +40,7 @@
 <translation id="1254117744268754948">Куржун тандоо</translation>
 <translation id="1265739287306757398">Үйрөнүп алыңыз</translation>
 <translation id="1272079795634619415">Токтотуу</translation>
+<translation id="1275718070701477396">Тандалган</translation>
 <translation id="1282311502488501110">Кирбейм</translation>
 <translation id="1283524564873030414">Акыркы 24 саат</translation>
 <translation id="1285320974508926690">Бул сайт эч качан которулбасын</translation>
@@ -66,6 +67,7 @@
 <translation id="1509960214886564027">Функциялар көпчүлүк сайттарда туура иштебеши мүмкүн.</translation>
 <translation id="152234381334907219">Эч качан сакталбайт</translation>
 <translation id="1523341279170789507">Бардык cookie файлдарына уруксат берүү</translation>
+<translation id="1524563461097350801">Жок, рахмат</translation>
 <translation id="1535268707340844072">Учурдагы жөндөөлөрүңүзгө байланыштуу айрым сайттар туура эмес иштеши мүмкүн. Бардык сайттардын cookie файлдарын башкаруу үчүн <ph name="BEGIN_LINK" />Cookie файлдардын жөндөөлөрүнө<ph name="END_LINK" /> өтүңүз.</translation>
 <translation id="1540800554400757039">1-дарек</translation>
 <translation id="1545749641540134597">QR кодун скандоо</translation>
@@ -112,7 +114,6 @@
 <translation id="1989112275319619282">Серептөө</translation>
 <translation id="2015722694326466240">Сырсөздөрдү көрүү үчүн адегенде, түзмөгүңүздөгү өткөрүүчү кодду жөндөп алышыңыз керек.</translation>
 <translation id="2021670401941426298">Издөө таржымалын өчүрүү үчүн, бар болсо, издөө каражатындагы нускамаларды караңыз.</translation>
-<translation id="2022352537516230970">iPhone'уңуз үчүн түзүлгөн</translation>
 <translation id="2073572773299281212"><ph name="DAYS" /> күн мурун жигердүү болгон</translation>
 <translation id="2074131957428911366">Эмнени шайкештирүү керек экенин <ph name="BEGIN_LINK" />жөндөөлөрдөн<ph name="END_LINK" /> ар дайым тандай аласыз.</translation>
 <translation id="2079545284768500474">Кайтаруу</translation>
@@ -136,6 +137,7 @@
 <translation id="2320166752086256636">Баскычтопту жашыруу</translation>
 <translation id="2339560363438331454">Google кызматтарын шайкештирүү</translation>
 <translation id="2351097562818989364">Которуу жөндөөлөрүңүз баштапкы абалга келтирилди.</translation>
+<translation id="235789365079050412">Google Купуялык саясаты</translation>
 <translation id="2359043044084662842">Которуу</translation>
 <translation id="2359808026110333948">Улантуу</translation>
 <translation id="2360196772093551345">Мобилдик версиясы керек</translation>
@@ -147,6 +149,7 @@
 <translation id="2421004566762153674">Үчүнчү тараптын cookie файлдарын бөгөттөө</translation>
 <translation id="2421044535038393232">Түзөтө берүү</translation>
 <translation id="2435457462613246316">Сырсөздү көрсөтүү</translation>
+<translation id="2476359652512522418">Тандалган жок</translation>
 <translation id="2497852260688568942">Шайкештирүү функциясын администраторуңуз өчүрүп койгон</translation>
 <translation id="2500374554657206846">Сырсөздү сактоо параметрлери</translation>
 <translation id="2523363575747517183">Бул вебсайт башка колдонмону ачууга бир нече жолу аракет кылууда.</translation>
@@ -184,6 +187,7 @@
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2840687315230832938">Баштапкы шайкештирүү жөндөөсү аяктаган жок</translation>
 <translation id="2843803966603263712">Котор жөндөөлрн кайр кюу</translation>
+<translation id="2848086008667475748">Жөндөөлөрдө демейки катары коюу…</translation>
 <translation id="2858204748079866344">Купуялыгыңызды коргоо максатында, Chrome бул талаага сырсөзүңүздү автоматтык түрдө киргизбейт.</translation>
 <translation id="285960592395650245">Дагы бир жолу жүктөп алуу</translation>
 <translation id="2870560284913253234">Сайт</translation>
@@ -283,6 +287,7 @@
 <translation id="3691593122358196899">Кыстарма <ph name="FOLDER_TITLE" /> куржунуна кошулду</translation>
 <translation id="3709582977625132201">Окула элек деп белгилөө</translation>
 <translation id="3740397331642243698">Киргизилген URL даректерин Google Chrome'до Жашыруун режимде ачат.</translation>
+<translation id="3762232513783804601">iPad үчүн түзүлгөн</translation>
 <translation id="3771033907050503522">Жашыруун өтмөктөр</translation>
 <translation id="3775743491439407556">Шайкештирүү иштебей жатат</translation>
 <translation id="3779810277399252432">Интернет жок.</translation>
@@ -322,7 +327,7 @@
 <translation id="4172051516777682613">Ар дайым көрүнсүн</translation>
 <translation id="418156467088430727">Оффлайн версиясын жаңы өтмөктөн көрүү</translation>
 <translation id="4181841719683918333">Тилдер</translation>
-<translation id="4184011057600693970">iPad'ыңыз үчүн түзүлгөн</translation>
+<translation id="4237377247299956313"><ph name="BEGIN_BOLD" />Демейки серепчи колдонмосун<ph name="END_BOLD" /> басыңыз</translation>
 <translation id="424315890655130736">Купуя сөз айкашын киргизиңиз</translation>
 <translation id="4263576668337963058">Жеткиликтүү барак аракеттерин көрсөтүү</translation>
 <translation id="4267380167363222949">Кийинки өтмөк</translation>
@@ -338,9 +343,10 @@
 <translation id="4375040482473363939">QR кодду издөө</translation>
 <translation id="4378154925671717803">Телефон</translation>
 <translation id="4389019817280890563">Тилди өзгөртүү үчүн таптап коюңуз.</translation>
-<translation id="441868831736628555">Купуялык эскертүүсү</translation>
+<translation id="4442550905108052454"><ph name="BEGIN_BOLD" />Жөндөөлөрдү<ph name="END_BOLD" /> ачыңыз</translation>
 <translation id="4454246407045105932">Тил кошуу</translation>
 <translation id="4469418912670346607">Жөндөөнү улантуу</translation>
+<translation id="4474494258097106883">iPhone үчүн түзүлгөн</translation>
 <translation id="4476574785019001431">Жөндөөлөр</translation>
 <translation id="4496373720959965247">Өтмөктөрдү кошуп, барактарды которуштуруңуз</translation>
 <translation id="4502566650163919158">Азыр текшерүү</translation>
@@ -597,6 +603,7 @@ Handoff Жөндөөлөрдүн жалпы бөлүмүндө да иштети
 <translation id="6730682669179532099">Сырсөздөр экспорттолбой жатат</translation>
 <translation id="6748108480210050150">Кимден</translation>
 <translation id="6760509555861141183">Акыркы өтмөккө өтүү</translation>
+<translation id="6762812039470893796">Баарын тандоодон чыгаруу</translation>
 <translation id="6780034285637185932">Почта индекси</translation>
 <translation id="6785453220513215166">Ката жөнүндө кабар жөнөтүү…</translation>
 <translation id="6797885426782475225">Айтып издөө</translation>
@@ -734,6 +741,7 @@ Handoff Жөндөөлөрдүн жалпы бөлүмүндө да иштети
 <translation id="8073872304774253879">Издөө жана серептөө аракеттериңизди жакшыртыңыз</translation>
 <translation id="8076014560081431679">Сакталган сайт жөндөөлөрү өзгөрүлбөйт, андыктан, сайттарды адаттагыдай карай бересиз. <ph name="BEGIN_LINK" />Көбүрөөк маалымат алуу<ph name="END_LINK" /></translation>
 <translation id="8079602123447022758">Бул жөндөөнү администраторуңуз башкарат. Көбүрөөк маалымат алуу үчүн эки жолу басыңыз</translation>
+<translation id="8080028325999236607">Бард кыстрм жап</translation>
 <translation id="8105368624971345109">Өчүрүү</translation>
 <translation id="8114753159095730575">Файлды жүктөп алууга болот. Параметрлер экрандын төмөн жагында берилген.</translation>
 <translation id="8131740175452115882">Ырастоо</translation>
@@ -749,7 +757,6 @@ Handoff Жөндөөлөрдүн жалпы бөлүмүндө да иштети
 <translation id="8283172974887967105">Коюу…</translation>
 <translation id="8299417921174340354">Сырсөздөрдү колдонуу үчүн адегенде, түзмөгүңүздөгү өткөрүүчү кодду жөндөп алышыңыз керек.</translation>
 <translation id="8299613349954694191">Интернетте купуя серептөө үчүн жашыруун өтмөктү ачыңыз.</translation>
-<translation id="83100941411593607">Кирүү аракети өчүрүлдү</translation>
 <translation id="8319076807703933069">Жаңы издөө</translation>
 <translation id="8323906514956095947">Өтмөктөгү башка параметрлерди көрүү үчүн коё бербей басып туруңуз</translation>
 <translation id="8328777765163860529">Баарын жабуу</translation>

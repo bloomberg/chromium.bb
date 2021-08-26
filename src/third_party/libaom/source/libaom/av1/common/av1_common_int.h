@@ -29,9 +29,9 @@
 #include "av1/common/restoration.h"
 #include "av1/common/tile_common.h"
 #include "av1/common/timing.h"
-#include "av1/common/odintrin.h"
 #include "aom_dsp/grain_synthesis.h"
 #include "aom_dsp/grain_table.h"
+#include "aom_dsp/odintrin.h"
 #ifdef __cplusplus
 extern "C" {
 #endif

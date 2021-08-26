@@ -39,6 +39,15 @@ class LaunchCommandPoolCreationError(test_runner.TestRunnerError):
     super(LaunchCommandPoolCreationError, self).__init__(message)
 
 
+def _tests_decided_at_runtime(app_name):
+  """Return if tests in app are selected at runtime by app_name.
+
+  This works for suites defined in chromium infra.
+  """
+  suite_name_fragments = ['ios_chrome_multitasking_eg', '_flaky_eg']
+  return any(fragment in app_name for fragment in suite_name_fragments)
+
+
 def erase_all_simulators(path=None):
   """Erases all simulator devices.
 
@@ -183,6 +192,7 @@ class LaunchCommand(object):
     cancelled_statuses = {'TESTS_DID_NOT_START', 'BUILD_INTERRUPTED'}
     shards = self.shards
     running_tests = set(self.egtests_app.get_all_tests())
+    passed_tests = set()
     # total number of attempts is self.retries+1
     for attempt in range(self.retries + 1):
       # Erase all simulators per each attempt
@@ -217,17 +227,32 @@ class LaunchCommand(object):
         break
 
       # Exclude passed tests in next test attempt.
-      self.egtests_app.excluded_tests += self.test_results['attempts'][-1][
-          'passed']
+      passed_tests = passed_tests | set(
+          self.test_results['attempts'][-1]['passed'])
+      tests_to_include = set()
+      # |running_tests| are compiled tests in target intersecting with swarming
+      # sharding. For some suites, they are more than what's needed to run.
+      if not _tests_decided_at_runtime(self.egtests_app.test_app_path):
+        tests_to_include = tests_to_include | (running_tests - passed_tests)
+      # Add failed tests from last round for runtime decided suites and device
+      # suites.
+      tests_to_include = tests_to_include | (
+          set(self.test_results['attempts'][-1]['failed'].keys()) -
+          cancelled_statuses)
+      self.egtests_app.included_tests = list(tests_to_include)
+
       # crbug.com/987664 - for the case when
       # all tests passed but build was interrupted,
-      # excluded(passed) tests are equal to tests to run.
-      if set(self.egtests_app.excluded_tests) == running_tests:
-        for status in cancelled_statuses:
-          failure = self.test_results['attempts'][-1]['failed'].pop(
-              status, None)
-          if failure:
-            LOGGER.info('Failure for passed tests %s: %s' % (status, failure))
+      # passed tests are equal to tests to run.
+      if passed_tests == running_tests or not self.egtests_app.included_tests:
+        # Keep cancelled status for these, since some tests might be skipped
+        # don't appear in test results.
+        if not _tests_decided_at_runtime(self.egtests_app.test_app_path):
+          for status in cancelled_statuses:
+            failure = self.test_results['attempts'][-1]['failed'].pop(
+                status, None)
+            if failure:
+              LOGGER.info('Failure for passed tests %s: %s' % (status, failure))
         break
 
       # If tests are not completed(interrupted or did not start)
@@ -240,12 +265,16 @@ class LaunchCommand(object):
       # should be confined in this method. Real tests affected by these statuses
       # will be marked timeout in results.
       for status in cancelled_statuses:
-        self.test_results['attempts'][-1]['failed'].pop(status, None)
+        # Keep cancelled status for these, since some tests might be skipped
+        # don't appear in test results.
+        if not _tests_decided_at_runtime(self.egtests_app.test_app_path):
+          self.test_results['attempts'][-1]['failed'].pop(status, None)
 
       if (not cancelled_attempt
           # If need to re-run less than 20 tests, 1 shard should be enough.
-          or (len(running_tests) - len(self.egtests_app.excluded_tests)
-              <= MAXIMUM_TESTS_PER_SHARD_FOR_RERUN)):
+          or (len(self.egtests_app.included_tests) <=
+              MAXIMUM_TESTS_PER_SHARD_FOR_RERUN)):
+
         shards = 1
 
     self.summary_log()
@@ -259,20 +288,8 @@ class LaunchCommand(object):
 class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
   """Class for running simulator tests using xCode."""
 
-  def __init__(self,
-               app_path,
-               host_app_path,
-               iossim_path,
-               version,
-               platform,
-               out_dir,
-               release=False,
-               retries=1,
-               shards=1,
-               test_cases=None,
-               test_args=None,
-               use_clang_coverage=False,
-               env_vars=None):
+  def __init__(self, app_path, host_app_path, iossim_path, version, platform,
+               out_dir, **kwargs):
     """Initializes a new instance of SimulatorParallelTestRunner class.
 
     Args:
@@ -283,7 +300,9 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
       version: (str) iOS version to run simulator on.
       platform: (str) Name of device.
       out_dir: (str) A directory to emit test data into.
+      (Following are potential args in **kwargs)
       release: (bool) Whether this test runner is running for a release build.
+      repeat_count: (int) Number of times to run each test (passed to test app).
       retries: (int) A number to retry test run, will re-run only failed tests.
       shards: (int) A number of shards. Default is 1.
       test_cases: (list) List of tests to be included in the test run.
@@ -299,26 +318,17 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
       XcodeVersionNotFoundError: If the given Xcode version does not exist.
       XCTestPlugInNotFoundError: If the .xctest PlugIn does not exist.
     """
-    super(SimulatorParallelTestRunner, self).__init__(
-        app_path,
-        iossim_path,
-        platform,
-        version,
-        out_dir,
-        env_vars=env_vars,
-        retries=retries or 1,
-        shards=shards or 1,
-        test_args=test_args,
-        test_cases=test_cases,
-        use_clang_coverage=use_clang_coverage,
-        xctest=False)
+    kwargs['retries'] = kwargs.get('retries') or 1
+    super(SimulatorParallelTestRunner,
+          self).__init__(app_path, iossim_path, platform, version, out_dir,
+                         **kwargs)
     self.set_up()
     self.host_app_path = None
     if host_app_path != 'NO_PATH':
       self.host_app_path = os.path.abspath(host_app_path)
     self._init_sharding_data()
     self.logs = collections.OrderedDict()
-    self.release = release
+    self.release = kwargs.get('release') or False
     self.test_results['path_delimiter'] = '/'
     # Do not enable parallel testing when code coverage is enabled, because raw
     # coverage data won't be produced with parallel testing.
@@ -440,12 +450,9 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
     ])
 
     aborted_tests = []
-    # TODO(crbug.com/1048758): For device targets, the list of test names parsed
-    # from otool output is incorrect. For multitasking or any flaky test suite,
-    # the list contains more tests than what actually runs.
-    if (self.__class__.__name__ != 'DeviceXcodeTestRunner' and
-        'ios_chrome_multitasking_eg' not in self.app_path and
-        '_flaky_eg' not in self.app_path):
+    # TODO(crbug.com/1048758): For the multitasking or any flaky test suites,
+    # |all_tests_to_run| contains more tests than what actually runs.
+    if not _tests_decided_at_runtime(self.app_path):
       aborted_tests = list(all_tests_to_run - set(self.logs['failed tests']) -
                            set(self.logs['passed tests']))
     aborted_tests.sort()
@@ -462,17 +469,7 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
       for attempt, attempt_results in enumerate(shard_attempts):
 
         for test in attempt_results['failed'].keys():
-          # TODO(crbug.com/1178923): Remove unicode check when it's figured out
-          # where unicode is introduced.
-          log_lines = []
-          for line in self.logs.get(test, []):
-            if sys.version_info.major == 2:
-              if isinstance(line, unicode):
-                LOGGER.warning('Unicode string: %s' % line)
-                line = line.encode('utf-8')
-            log_lines.append(line)
-
-          output.mark_failed(test, test_log='\n'.join(log_lines))
+          output.mark_failed(test, test_log='\n'.join(self.logs.get(test, [])))
 
         # 'aborted tests' in logs is an array of strings, each string defined
         # as "{TestCase}/{testMethod}"
@@ -496,23 +493,15 @@ class DeviceXcodeTestRunner(SimulatorParallelTestRunner,
                             test_runner.DeviceTestRunner):
   """Class for running tests on real device using xCode."""
 
-  def __init__(
-      self,
-      app_path,
-      host_app_path,
-      out_dir,
-      release=False,
-      retries=1,
-      test_cases=None,
-      test_args=None,
-      env_vars=None,
-  ):
+  def __init__(self, app_path, host_app_path, out_dir, **kwargs):
     """Initializes a new instance of DeviceXcodeTestRunner class.
 
     Args:
       app_path: (str) A path to egtests_app.
       host_app_path: (str) A path to the host app for EG2.
       out_dir: (str) A directory to emit test data into.
+      (Following are potential args in **kwargs)
+      repeat_count: (int) Number of times to run each test (passed to test app).
       retries: (int) A number to retry test run, will re-run only failed tests.
       test_cases: (list) List of tests to be included in the test run.
                   None or [] to include all tests.
@@ -527,15 +516,7 @@ class DeviceXcodeTestRunner(SimulatorParallelTestRunner,
       XcodeVersionNotFoundError: If the given Xcode version does not exist.
       XCTestPlugInNotFoundError: If the .xctest PlugIn does not exist.
     """
-    test_runner.DeviceTestRunner.__init__(
-        self,
-        app_path,
-        out_dir,
-        env_vars=env_vars,
-        retries=retries,
-        test_args=test_args,
-        test_cases=test_cases,
-    )
+    test_runner.DeviceTestRunner.__init__(self, app_path, out_dir, **kwargs)
     self.shards = 1  # For tests on real devices shards=1
     self.version = None
     self.platform = None
@@ -543,7 +524,7 @@ class DeviceXcodeTestRunner(SimulatorParallelTestRunner,
     if host_app_path != 'NO_PATH':
       self.host_app_path = os.path.abspath(host_app_path)
     self.homedir = ''
-    self.release = release
+    self.release = kwargs.get('release') or False
     self.set_up()
     self._init_sharding_data()
     self.start_time = time.strftime('%Y-%m-%d-%H%M%S', time.localtime())

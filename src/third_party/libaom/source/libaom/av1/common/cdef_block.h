@@ -12,7 +12,7 @@
 #ifndef AOM_AV1_COMMON_CDEF_BLOCK_H_
 #define AOM_AV1_COMMON_CDEF_BLOCK_H_
 
-#include "av1/common/odintrin.h"
+#include "aom_dsp/odintrin.h"
 
 #define CDEF_BLOCKSIZE 64
 #define CDEF_BLOCKSIZE_LOG2 6

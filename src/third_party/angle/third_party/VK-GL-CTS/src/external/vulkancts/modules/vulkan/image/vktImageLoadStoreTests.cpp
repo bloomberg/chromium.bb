@@ -563,7 +563,6 @@ void StoreTest::initPrograms (SourceCollections& programCollection) const
 	const std::string texelCoordStr = (dimension == 1 ? "gx" : dimension == 2 ? "ivec2(gx, gy)" : dimension == 3 ? "ivec3(gx, gy, gz)" : "");
 
 	const ImageType usedImageType = (m_singleLayerBind ? getImageTypeForSingleLayer(m_texture.type()) : m_texture.type());
-	const std::string formatQualifierStr = getShaderImageFormatQualifier(mapVkFormat(m_format));
 	const std::string imageTypeStr = getShaderImageType(mapVkFormat(m_format), usedImageType);
 
 	std::ostringstream src;
@@ -571,7 +570,10 @@ void StoreTest::initPrograms (SourceCollections& programCollection) const
 		<< "\n"
 		<< "layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;\n";
 	if (m_declareImageFormatInShader)
+	{
+		const std::string formatQualifierStr = getShaderImageFormatQualifier(mapVkFormat(m_format));
 		src << "layout (binding = 0, " << formatQualifierStr << ") writeonly uniform " << imageTypeStr << " u_image;\n";
+	}
 	else
 		src << "layout (binding = 0) writeonly uniform " << imageTypeStr << " u_image;\n";
 
@@ -2225,12 +2227,6 @@ void checkFormatProperties (const InstanceInterface& vki, VkPhysicalDevice physD
 		TCU_THROW(NotSupportedError, "Format not supported for storage images");
 }
 
-bool is64BitIntegerFormat (VkFormat format)
-{
-	const auto tcuFormat = mapVkFormat(format);
-	return (tcuFormat.type == tcu::TextureFormat::UNSIGNED_INT64 || tcuFormat.type == tcu::TextureFormat::SIGNED_INT64);
-}
-
 void check64BitSupportIfNeeded (Context& context, VkFormat readFormat, VkFormat writeFormat)
 {
 	if (is64BitIntegerFormat(readFormat) || is64BitIntegerFormat(writeFormat))
@@ -2261,6 +2257,7 @@ void ImageExtendOperandTest::initPrograms (SourceCollections& programCollection)
 {
 	tcu::StringTemplate shaderTemplate(
 		"OpCapability Shader\n"
+		"OpCapability StorageImageExtendedFormats\n"
 
 		"${capability}"
 		"${extension}"
@@ -2326,62 +2323,16 @@ void ImageExtendOperandTest::initPrograms (SourceCollections& programCollection)
 	const auto	testedFormat	= mapVkFormat(isWriteTest() ? m_writeFormat : m_readFormat);
 	const bool	isSigned		= (getTextureChannelClass(testedFormat.type) == tcu::TEXTURECHANNELCLASS_SIGNED_INTEGER);
 
-	struct FormatData
-	{
-		std::string		spirvImageFormat;
-		bool			isExtendedFormat;
-	};
-
-	const std::map<vk::VkFormat, FormatData> formatDataMap =
-	{
-		// Mandatory support
-		{ VK_FORMAT_R32G32B32A32_UINT,			{ "Rgba32ui",	false	} },
-		{ VK_FORMAT_R16G16B16A16_UINT,			{ "Rgba16ui",	false	} },
-		{ VK_FORMAT_R8G8B8A8_UINT,				{ "Rgba8ui",	false	} },
-		{ VK_FORMAT_R32_UINT,					{ "R32ui",		false	} },
-		{ VK_FORMAT_R32G32B32A32_SINT,			{ "Rgba32i",	false	} },
-		{ VK_FORMAT_R16G16B16A16_SINT,			{ "Rgba16i",	false	} },
-		{ VK_FORMAT_R8G8B8A8_SINT,				{ "Rgba8i",		false	} },
-		{ VK_FORMAT_R32_SINT,					{ "R32i",		false	} },
-
-		// Requires StorageImageExtendedFormats capability
-		{ VK_FORMAT_R32G32_UINT,				{ "Rg32ui",		true,	} },
-		{ VK_FORMAT_R16G16_UINT,				{ "Rg16ui",		true,	} },
-		{ VK_FORMAT_R16_UINT,					{ "R16ui",		true,	} },
-		{ VK_FORMAT_R8G8_UINT,					{ "Rg8ui",		true,	} },
-		{ VK_FORMAT_R8_UINT,					{ "R8ui",		true,	} },
-		{ VK_FORMAT_R32G32_SINT,				{ "Rg32i",		true,	} },
-		{ VK_FORMAT_R16G16_SINT,				{ "Rg16i",		true,	} },
-		{ VK_FORMAT_R16_SINT,					{ "R16i",		true,	} },
-		{ VK_FORMAT_R8G8_SINT,					{ "Rg8i",		true,	} },
-		{ VK_FORMAT_R8_SINT,					{ "R8i",		true,	} },
-		{ VK_FORMAT_A2B10G10R10_UINT_PACK32,	{ "Rgb10a2ui",	true,	} },
-
-		// Requires Int64ImageEXT.
-		{ VK_FORMAT_R64_SINT,					{ "R64i",		false,	} },
-		{ VK_FORMAT_R64_UINT,					{ "R64ui",		false,	} },
-	};
-
-	const auto readIter		= formatDataMap.find(m_readFormat);
-	const auto writeIter	= formatDataMap.find(m_writeFormat);
-
-	DE_ASSERT (readIter != formatDataMap.end() && writeIter != formatDataMap.end()); // Missing int format data
-
 	const auto isRead64		= is64BitIntegerFormat(m_readFormat);
 	const auto isWrite64	= is64BitIntegerFormat(m_writeFormat);
 	DE_ASSERT(isRead64 == isWrite64);
 
-	const auto readSpirvImageFormat		= readIter->second.spirvImageFormat;
-	const auto writeSpirvImageFormat	= writeIter->second.spirvImageFormat;
 	const bool using64Bits				= (isRead64 || isWrite64);
 
 	// Additional capabilities when needed.
 	std::string capability;
 	std::string extension;
 	std::string extraTypes;
-
-	if (readIter->second.isExtendedFormat || writeIter->second.isExtendedFormat)
-		capability += "OpCapability StorageImageExtendedFormats\n";
 
 	if (using64Bits)
 	{
@@ -2420,7 +2371,7 @@ void ImageExtendOperandTest::initPrograms (SourceCollections& programCollection)
 		{ "extension",				extension },
 		{ "extra_types",			extraTypes },
 		{ "relaxed_precision",		relaxed },
-		{ "image_format",			readSpirvImageFormat },
+		{ "image_format",			getSpirvFormat(m_readFormat) },
 		{ "sampled_type",			(std::string("%type_") + sampledTypePostfix) },
 		{ "sampled_type_vec4",		(std::string("%type_vec4_") + sampledTypePostfix) },
 		{ "read_extend_operand",	(!isWriteTest() ? extendOperandStr : "") },
@@ -2464,7 +2415,7 @@ void ImageExtendOperandTest::initPrograms (SourceCollections& programCollection)
 		imageVariables		= imageVariablesTemplate.specialize(specializations);
 		imageLoad			= imageLoadTemplate.specialize(specializations);
 
-		specializations["image_format"]				= writeSpirvImageFormat;
+		specializations["image_format"]				= getSpirvFormat(m_writeFormat);
 		specializations["image_type_id"]			= "%type_dst_image";
 		specializations["image_uni_ptr_type_id"]	= "%type_ptr_uniform_const_dst_image";
 		specializations["image_var_id"]				= "%dst_image_ptr";
@@ -2514,7 +2465,6 @@ const Texture& getTestTexture (const ImageType imageType)
 
 static const VkFormat s_formats[] =
 {
-	// Mandatory support
 	VK_FORMAT_R32G32B32A32_SFLOAT,
 	VK_FORMAT_R16G16B16A16_SFLOAT,
 	VK_FORMAT_R32_SFLOAT,
@@ -2531,9 +2481,11 @@ static const VkFormat s_formats[] =
 
 	VK_FORMAT_R8G8B8A8_UNORM,
 
+	VK_FORMAT_B8G8R8A8_UNORM,
+	VK_FORMAT_B8G8R8A8_UINT,
+
 	VK_FORMAT_R8G8B8A8_SNORM,
 
-	// Requires StorageImageExtendedFormats capability
 	VK_FORMAT_B10G11R11_UFLOAT_PACK32,
 
 	VK_FORMAT_R32G32_SFLOAT,
@@ -2600,17 +2552,21 @@ tcu::TestCaseGroup* createImageStoreTests (tcu::TestContext& testCtx)
 
 		for (int formatNdx = 0; formatNdx < DE_LENGTH_OF_ARRAY(s_formats); ++formatNdx)
 		{
-			groupWithFormatByImageViewType->addChild(new StoreTest(testCtx, getFormatShortString(s_formats[formatNdx]), "", texture, s_formats[formatNdx]));
+			const bool hasSpirvFmt = hasSpirvFormat(s_formats[formatNdx]);
+
+			if (hasSpirvFmt)
+				groupWithFormatByImageViewType->addChild(new StoreTest(testCtx, getFormatShortString(s_formats[formatNdx]), "", texture, s_formats[formatNdx]));
 			groupWithoutFormatByImageViewType->addChild(new StoreTest(testCtx, getFormatShortString(s_formats[formatNdx]), "", texture, s_formats[formatNdx], 0));
 
-			if (isLayered)
+			if (isLayered && hasSpirvFmt)
 				groupWithFormatByImageViewType->addChild(new StoreTest(testCtx, getFormatShortString(s_formats[formatNdx]) + "_single_layer", "",
 														 texture, s_formats[formatNdx],
 														 StoreTest::FLAG_SINGLE_LAYER_BIND | StoreTest::FLAG_DECLARE_IMAGE_FORMAT_IN_SHADER));
 
 			if (texture.type() == IMAGE_TYPE_BUFFER)
 			{
-				groupWithFormatByImageViewType->addChild(new StoreTest(testCtx, getFormatShortString(s_formats[formatNdx]) + "_minalign", "", texture, s_formats[formatNdx], StoreTest::FLAG_MINALIGN | StoreTest::FLAG_DECLARE_IMAGE_FORMAT_IN_SHADER));
+				if (hasSpirvFmt)
+					groupWithFormatByImageViewType->addChild(new StoreTest(testCtx, getFormatShortString(s_formats[formatNdx]) + "_minalign", "", texture, s_formats[formatNdx], StoreTest::FLAG_MINALIGN | StoreTest::FLAG_DECLARE_IMAGE_FORMAT_IN_SHADER));
 				groupWithoutFormatByImageViewType->addChild(new StoreTest(testCtx, getFormatShortString(s_formats[formatNdx]) + "_minalign", "", texture, s_formats[formatNdx], StoreTest::FLAG_MINALIGN));
 			}
 		}
@@ -2640,6 +2596,11 @@ tcu::TestCaseGroup* createImageLoadStoreTests (tcu::TestContext& testCtx)
 
 		for (int formatNdx = 0; formatNdx < DE_LENGTH_OF_ARRAY(s_formats); ++formatNdx)
 		{
+			// These tests always require a SPIR-V format for the write image, even if the read
+			// image is being used without a format.
+			if (!hasSpirvFormat(s_formats[formatNdx]))
+				continue;
+
 			groupWithFormatByImageViewType->addChild(new LoadStoreTest(testCtx, getFormatShortString(s_formats[formatNdx]), "", texture, s_formats[formatNdx], s_formats[formatNdx]));
 			groupWithoutFormatByImageViewType->addChild(new LoadStoreTest(testCtx, getFormatShortString(s_formats[formatNdx]), "", texture, s_formats[formatNdx], s_formats[formatNdx], 0));
 
@@ -2704,6 +2665,11 @@ tcu::TestCaseGroup* createImageLoadStoreLodAMDTests (tcu::TestContext& testCtx)
 
 		for (int formatNdx = 0; formatNdx < DE_LENGTH_OF_ARRAY(s_formats); ++formatNdx)
 		{
+			// These tests always require a SPIR-V format for the write image, even if the read
+			// image is being used without a format.
+			if (!hasSpirvFormat(s_formats[formatNdx]))
+				continue;
+
 			groupWithFormatByImageViewType->addChild(new LoadStoreTest(testCtx, getFormatShortString(s_formats[formatNdx]), "", texture, s_formats[formatNdx], s_formats[formatNdx], LoadStoreTest::FLAG_DECLARE_IMAGE_FORMAT_IN_SHADER, DE_TRUE));
 			groupWithoutFormatByImageViewType->addChild(new LoadStoreTest(testCtx, getFormatShortString(s_formats[formatNdx]), "", texture, s_formats[formatNdx], s_formats[formatNdx], 0, DE_TRUE));
 
@@ -2735,6 +2701,9 @@ tcu::TestCaseGroup* createImageFormatReinterpretTests (tcu::TestContext& testCtx
 		for (int imageFormatNdx = 0; imageFormatNdx < DE_LENGTH_OF_ARRAY(s_formats); ++imageFormatNdx)
 		for (int formatNdx = 0; formatNdx < DE_LENGTH_OF_ARRAY(s_formats); ++formatNdx)
 		{
+			if (!hasSpirvFormat(s_formats[formatNdx]))
+				continue;
+
 			const std::string caseName = getFormatShortString(s_formats[imageFormatNdx]) + "_" + getFormatShortString(s_formats[formatNdx]);
 			if (imageFormatNdx != formatNdx && formatsAreCompatible(s_formats[imageFormatNdx], s_formats[formatNdx]))
 				groupByImageViewType->addChild(new LoadStoreTest(testCtx, caseName, "", texture, s_formats[formatNdx], s_formats[imageFormatNdx]));
@@ -2856,6 +2825,9 @@ tcu::TestCaseGroup* createImageExtendOperandsTests(tcu::TestContext& testCtx)
 					const auto  writeFormat		= (testType.testType == ExtendTestType::WRITE ? format : otherFormat);
 
 					if (relaxedPrecision && !relaxedOK(readFormat))
+						continue;
+
+					if (!hasSpirvFormat(readFormat) || !hasSpirvFormat(writeFormat))
 						continue;
 
 					matchGroup->addChild(new ImageExtendOperandTest(testCtx, precisionName, texture, readFormat, writeFormat, mismatched, relaxedPrecision, testType.testType));

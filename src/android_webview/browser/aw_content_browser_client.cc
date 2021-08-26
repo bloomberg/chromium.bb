@@ -18,6 +18,7 @@
 #include "android_webview/browser/aw_devtools_manager_delegate.h"
 #include "android_webview/browser/aw_feature_list_creator.h"
 #include "android_webview/browser/aw_http_auth_handler.h"
+#include "android_webview/browser/aw_print_manager.h"
 #include "android_webview/browser/aw_quota_permission_context.h"
 #include "android_webview/browser/aw_resource_context.h"
 #include "android_webview/browser/aw_settings.h"
@@ -63,6 +64,7 @@
 #include "components/safe_browsing/content/browser/browser_url_loader_throttle.h"
 #include "components/safe_browsing/content/browser/mojo_safe_browsing_impl.h"
 #include "components/safe_browsing/core/common/features.h"
+#include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "content/public/browser/browser_associated_interface.h"
 #include "content/public/browser/browser_message_filter.h"
@@ -629,6 +631,36 @@ bool AwContentBrowserClient::BindAssociatedReceiverFromFrame(
         mojo::PendingAssociatedReceiver<
             content_capture::mojom::ContentCaptureReceiver>(std::move(*handle)),
         render_frame_host);
+    return true;
+  }
+  if (interface_name == mojom::FrameHost::Name_) {
+    AwRenderViewHostExt::BindFrameHost(
+        mojo::PendingAssociatedReceiver<mojom::FrameHost>(std::move(*handle)),
+        render_frame_host);
+    return true;
+  }
+  if (interface_name == page_load_metrics::mojom::PageLoadMetrics::Name_) {
+    page_load_metrics::MetricsWebContentsObserver::BindPageLoadMetrics(
+        mojo::PendingAssociatedReceiver<
+            page_load_metrics::mojom::PageLoadMetrics>(std::move(*handle)),
+        render_frame_host);
+    return true;
+  }
+  if (interface_name == printing::mojom::PrintManagerHost::Name_) {
+    AwPrintManager::BindPrintManagerHost(
+        mojo::PendingAssociatedReceiver<printing::mojom::PrintManagerHost>(
+            std::move(*handle)),
+        render_frame_host);
+    return true;
+  }
+  if (interface_name ==
+      security_interstitials::mojom::InterstitialCommands::Name_) {
+    security_interstitials::SecurityInterstitialTabHelper::
+        BindInterstitialCommands(
+            mojo::PendingAssociatedReceiver<
+                security_interstitials::mojom::InterstitialCommands>(
+                std::move(*handle)),
+            render_frame_host);
     return true;
   }
 

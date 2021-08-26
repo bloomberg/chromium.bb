@@ -6,9 +6,9 @@
  */
 
 #include "src/gpu/GrCaps.h"
+#include "src/gpu/GrFragmentProcessor.h"
 #include "src/gpu/GrGeometryProcessor.h"
 #include "src/gpu/GrProcessorAnalysis.h"
-#include "src/gpu/ops/GrDrawOp.h"
 
 GrColorFragmentProcessorAnalysis::GrColorFragmentProcessorAnalysis(
         const GrProcessorAnalysisColor& input,
@@ -40,7 +40,7 @@ GrColorFragmentProcessorAnalysis::GrColorFragmentProcessorAnalysis(
         if (fCompatibleWithCoverageAsAlpha && !fp->compatibleWithCoverageAsAlpha()) {
             fCompatibleWithCoverageAsAlpha = false;
         }
-        if (fp->usesVaryingCoords()) {
+        if (fp->usesSampleCoords()) {
             fUsesLocalCoords = true;
         }
         if (fp->willReadDstColor()) {

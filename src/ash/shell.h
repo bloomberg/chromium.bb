@@ -99,6 +99,7 @@ class BacklightsForcedOffSetter;
 class BluetoothNotificationController;
 class BluetoothPowerController;
 class BrightnessControlDelegate;
+class CalendarController;
 class CaptureModeController;
 class ControlVHistogramRecorder;
 class CrosDisplayConfig;
@@ -173,7 +174,6 @@ class ResolutionNotificationController;
 class RootWindowController;
 class ScreenLayoutObserver;
 class ScreenOrientationController;
-class ScreenshotController;
 class ScreenPinningController;
 class ScreenPositionController;
 class ScreenSwitchCheckController;
@@ -350,6 +350,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   BrightnessControlDelegate* brightness_control_delegate() {
     return brightness_control_delegate_.get();
   }
+  CalendarController* calendar_controller() {
+    return calendar_controller_.get();
+  }
   CrosDisplayConfig* cros_display_config() {
     return cros_display_config_.get();
   }
@@ -484,9 +487,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   }
   ResolutionNotificationController* resolution_notification_controller() {
     return resolution_notification_controller_.get();
-  }
-  ScreenshotController* screenshot_controller() {
-    return screenshot_controller_.get();
   }
   ScreenLayoutObserver* screen_layout_observer() {
     return screen_layout_observer_.get();
@@ -713,6 +713,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<AssistantControllerImpl> assistant_controller_;
   std::unique_ptr<BacklightsForcedOffSetter> backlights_forced_off_setter_;
   std::unique_ptr<BrightnessControlDelegate> brightness_control_delegate_;
+  std::unique_ptr<CalendarController> calendar_controller_;
   std::unique_ptr<CrosDisplayConfig> cros_display_config_;
   std::unique_ptr<DesksController> desks_controller_;
   std::unique_ptr<DetachableBaseHandler> detachable_base_handler_;
@@ -791,8 +792,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<MarkerController> marker_controller_;
   std::unique_ptr<AutoclickController> autoclick_controller_;
   std::unique_ptr<::wm::FocusController> focus_controller_;
-
-  std::unique_ptr<ScreenshotController> screenshot_controller_;
 
   std::unique_ptr<MouseCursorEventFilter> mouse_cursor_filter_;
   std::unique_ptr<ScreenPositionController> screen_position_controller_;

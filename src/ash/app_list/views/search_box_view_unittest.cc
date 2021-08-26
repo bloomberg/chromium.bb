@@ -21,6 +21,7 @@
 #include "ash/app_list/views/result_selection_controller.h"
 #include "ash/app_list/views/search_result_page_view.h"
 #include "ash/constants/ash_features.h"
+#include "ash/public/cpp/app_list/app_list_color_provider.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
 #include "ash/public/cpp/test/test_app_list_color_provider.h"
@@ -34,12 +35,14 @@
 #include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "ui/base/ime/composition_text.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_unittest_util.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/widget_test.h"
@@ -93,8 +96,10 @@ class SearchBoxViewTest : public views::test::WidgetTest,
 
     auto view =
         std::make_unique<SearchBoxView>(this, &view_delegate_, app_list_view());
-    view->set_show_close_button_when_active(true);
-    view->Init();
+    SearchBoxViewBase::InitParams params;
+    params.show_close_button_when_active = true;
+    params.create_background = true;
+    view->Init(params);
     view_ = widget_->GetContentsView()->AddChildView(std::move(view));
 
     counter_view_ = widget_->GetContentsView()->AddChildView(
@@ -201,7 +206,6 @@ class SearchBoxViewTest : public views::test::WidgetTest,
   void BackButtonPressed() override {}
   void CloseButtonPressed() override {}
   void ActiveChanged(SearchBoxViewBase* sender) override {}
-  void SearchBoxFocusChanged(SearchBoxViewBase* sender) override {}
   void OnSearchBoxKeyEvent(ui::KeyEvent* event) override {}
   bool CanSelectSearchResults() override { return true; }
 
@@ -217,6 +221,12 @@ class SearchBoxViewTest : public views::test::WidgetTest,
 
   DISALLOW_COPY_AND_ASSIGN(SearchBoxViewTest);
 };
+
+TEST_F(SearchBoxViewTest, SearchBoxTextUsesAppListSearchBoxTextColor) {
+  EXPECT_EQ(view()->search_box()->GetTextColor(),
+            AppListColorProvider::Get()->GetSearchBoxTextColor(
+                kDeprecatedSearchBoxTextDefaultColor));
+}
 
 // Tests that the close button is invisible by default.
 TEST_F(SearchBoxViewTest, CloseButtonInvisibleByDefault) {
@@ -239,6 +249,15 @@ TEST_F(SearchBoxViewTest, CloseButtonIVisibleInZeroStateSearchBox) {
 // Tests that the search box is inactive by default.
 TEST_F(SearchBoxViewTest, SearchBoxInactiveByDefault) {
   ASSERT_FALSE(view()->is_search_box_active());
+}
+
+TEST_F(SearchBoxViewTest, AccessibilityHintRemovedWhenSearchBoxActive) {
+  EXPECT_EQ(view()->search_box()->GetAccessibleName(),
+            l10n_util::GetStringUTF16(
+                IDS_APP_LIST_SEARCH_BOX_ACCESSIBILITY_NAME_CLAMSHELL));
+
+  SetSearchBoxActive(true, ui::ET_MOUSE_PRESSED);
+  EXPECT_EQ(view()->search_box()->GetAccessibleName(), u"");
 }
 
 // Tests that the black Google icon is used for an inactive Google search.
@@ -601,7 +620,7 @@ TEST_F(SearchBoxViewTest, ResetSelectionAfterResettingSearchBox) {
   SetSearchBoxActive(true, ui::ET_UNKNOWN);
   result_page_view->OnSearchResultContainerResultsChanged();
 
-  // Selection should again rest on the first result, which is default.
+  // Selection should again reset on the first result, which is default.
   selection =
       result_page_view->result_selection_controller()->selected_result();
   EXPECT_EQ(result_page_view->first_result_view(), selection);
@@ -1122,11 +1141,6 @@ class SearchBoxViewAppListBubbleTest : public AshTestBase {
   }
   ~SearchBoxViewAppListBubbleTest() override = default;
 
-  void PressAndReleaseKey(ui::KeyboardCode key) {
-    GetEventGenerator()->PressKey(key, ui::EF_NONE);
-    GetEventGenerator()->ReleaseKey(key, ui::EF_NONE);
-  }
-
   static void AddSearchResult(const std::string& id,
                               const std::u16string& title) {
     SearchModel::SearchResults* search_results =
@@ -1184,6 +1198,15 @@ TEST_F(SearchBoxViewAppListBubbleTest, ResultSelection) {
   SearchResult* result2 = controller->selected_result()->result();
   ASSERT_TRUE(result2);
   EXPECT_EQ(u"title2", result2->title());
+}
+
+TEST_F(SearchBoxViewAppListBubbleTest, HasAccessibilityHintWhenActive) {
+  GetAppListTestHelper()->ShowAppList();
+  SearchBoxView* view = GetAppListTestHelper()->GetBubbleSearchBoxView();
+  EXPECT_TRUE(view->is_search_box_active());
+  EXPECT_EQ(view->search_box()->GetAccessibleName(),
+            l10n_util::GetStringUTF16(
+                IDS_APP_LIST_SEARCH_BOX_ACCESSIBILITY_NAME_CLAMSHELL));
 }
 
 }  // namespace

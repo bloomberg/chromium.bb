@@ -16,6 +16,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/media/router/mojo/media_router_desktop.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/media_router/media_cast_mode.h"
@@ -85,8 +86,10 @@ std::string GetDefaultRequestSessionId(WebContents* web_contents) {
 
 }  // namespace
 
-MediaRouterIntegrationBrowserTest::MediaRouterIntegrationBrowserTest() =
-    default;
+MediaRouterIntegrationBrowserTest::MediaRouterIntegrationBrowserTest() {
+  // TODO(crbug.com/1229305): Implement testing with the feature enabled.
+  feature_list_.InitAndDisableFeature(kGlobalMediaControlsCastStartStop);
+}
 
 MediaRouterIntegrationBrowserTest::~MediaRouterIntegrationBrowserTest() =
     default;
@@ -102,6 +105,7 @@ void MediaRouterIntegrationBrowserTest::SetUp() {
 
 void MediaRouterIntegrationBrowserTest::TearDownOnMainThread() {
   test_ui_->TearDown();
+  test_provider_->TearDown();
   InProcessBrowserTest::TearDownOnMainThread();
   test_navigation_observer_.reset();
 }
@@ -189,7 +193,11 @@ void MediaRouterIntegrationBrowserTest::StartSessionAndAssertNotFoundError() {
 
   // Wait to simulate the user waiting for any sinks to be displayed.
   Wait(base::TimeDelta::FromSeconds(1));
-  test_ui_->HideDialog();
+  if (GlobalMediaControlsCastStartStopEnabled()) {
+    test_ui_->HideGMCDialog();
+  } else {
+    test_ui_->HideCastDialog();
+  }
   CheckStartFailed(web_contents, "NotFoundError", "No screens found.");
 }
 
@@ -200,7 +208,11 @@ MediaRouterIntegrationBrowserTest::StartSessionWithTestPageAndSink() {
   CHECK(web_contents);
   ExecuteJavaScriptAPI(web_contents, kWaitSinkScript);
   ExecuteJavaScriptAPI(web_contents, kStartSessionScript);
-  test_ui_->WaitForDialogShown();
+  if (GlobalMediaControlsCastStartStopEnabled()) {
+    test_ui_->WaitForGMCDialogShown();
+  } else {
+    test_ui_->WaitForCastDialogShown();
+  }
   return web_contents;
 }
 
@@ -208,33 +220,38 @@ WebContents*
 MediaRouterIntegrationBrowserTest::StartSessionWithTestPageAndChooseSink() {
   WebContents* web_contents = StartSessionWithTestPageAndSink();
   test_ui_->WaitForSinkAvailable(receiver_);
-  test_ui_->StartCasting(receiver_);
-  // TODO(takumif): Remove the HideDialog() call once the dialog can close
+  if (GlobalMediaControlsCastStartStopEnabled()) {
+    test_ui_->StartCastingFromGMCDialog(receiver_);
+  } else {
+    test_ui_->StartCastingFromCastDialog(receiver_);
+  }
+  // TODO(takumif): Remove the HideCastDialog() call once the dialog can close
   // itself automatically after casting.
-  test_ui_->HideDialog();
-
+  if (!GlobalMediaControlsCastStartStopEnabled()) {
+    test_ui_->HideCastDialog();
+  }
   return web_contents;
 }
 
 void MediaRouterIntegrationBrowserTest::OpenDialogAndCastFile() {
   GURL file_url = net::FilePathToFileURL(
       media::GetTestDataFilePath(kButterflyVideoFileName));
-  test_ui_->ShowDialog();
+  test_ui_->ShowCastDialog();
   // Mock out file dialog operations, as those can't be simulated.
   test_ui_->SetLocalFile(file_url);
   test_ui_->WaitForSink(receiver_);
   test_ui_->ChooseSourceType(CastDialogView::kLocalFile);
   ASSERT_EQ(CastDialogView::kLocalFile, test_ui_->GetChosenSourceType());
   test_ui_->WaitForSinkAvailable(receiver_);
-  test_ui_->StartCasting(receiver_);
+  test_ui_->StartCastingFromCastDialog(receiver_);
   ASSERT_EQ(file_url, GetActiveWebContents()->GetURL());
 }
 
 void MediaRouterIntegrationBrowserTest::OpenDialogAndCastFileFails() {
   GURL file_url =
       net::FilePathToFileURL(media::GetTestDataFilePath("easy.webm"));
-  test_ui_->ShowDialog();
-  // Mock out file dialog opperations, as those can't be simulated.
+  test_ui_->ShowCastDialog();
+  // Mock out file dialog operations, as those can't be simulated.
   test_ui_->SetLocalFileSelectionIssue(IssueInfo());
   test_ui_->WaitForSink(receiver_);
   test_ui_->ChooseSourceType(CastDialogView::kLocalFile);
@@ -332,8 +349,8 @@ bool MediaRouterIntegrationBrowserTest::IsRouteClosedOnUI() {
   // After execute js script to close route on UI, the dialog will dispear
   // after 3s. But sometimes it takes more than 3s to close the route, so
   // we need to re-open the dialog if it is closed.
-  if (!test_ui_->IsDialogShown())
-    test_ui_->ShowDialog();
+  if (!test_ui_->IsCastDialogShown())
+    test_ui_->ShowCastDialog();
   test_ui_->WaitForSink(receiver_);
   return test_ui_->GetRouteIdForSink(receiver_).empty();
 }
@@ -474,8 +491,8 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
 
   // The dialog will close from navigating to the local file within the tab, so
   // open it again after it closes.
-  test_ui_->WaitForDialogHidden();
-  test_ui_->ShowDialog();
+  test_ui_->WaitForCastDialogHidden();
+  test_ui_->ShowCastDialog();
 
   // Wait for a route to be created.
   test_ui_->WaitForAnyRoute();
@@ -501,7 +518,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
   // Expect that a new tab has been opened.
   ASSERT_EQ(2, browser()->tab_strip_model()->count());
 
-  test_ui_->ShowDialog();
+  test_ui_->ShowCastDialog();
 
   // Wait for a route to be created.
   test_ui_->WaitForAnyRoute();
@@ -611,7 +628,11 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, Fail_StartCancelled) {
   WebContents* web_contents = StartSessionWithTestPageAndSink();
-  test_ui_->HideDialog();
+  if (GlobalMediaControlsCastStartStopEnabled()) {
+    test_ui_->HideGMCDialog();
+  } else {
+    test_ui_->HideCastDialog();
+  }
   CheckStartFailed(web_contents, "NotAllowedError", "Dialog closed.");
 }
 

@@ -40,6 +40,10 @@ class SequencedTaskRunner;
 class SingleThreadTaskRunner;
 }  // namespace base
 
+namespace blink {
+class StorageKey;
+}
+
 namespace leveleb {
 class Env;
 }
@@ -230,12 +234,12 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemContext
   // Used for DeleteFileSystem and OpenPluginPrivateFileSystem.
   using StatusCallback = base::OnceCallback<void(base::File::Error result)>;
 
-  // Opens the filesystem for the given |origin_url| and |type|, and dispatches
-  // |callback| on completion.
-  // If |create| is true this may actually set up a filesystem instance
+  // Opens the filesystem for the given `storage_key` and `type`, and dispatches
+  // `callback` on completion.
+  // If `create` is true this may actually set up a filesystem instance
   // (e.g. by creating the root directory or initializing the database
   // entry etc).
-  void OpenFileSystem(const url::Origin& origin,
+  void OpenFileSystem(const blink::StorageKey& storage_key,
                       FileSystemType type,
                       OpenFileSystemMode mode,
                       OpenFileSystemCallback callback);
@@ -302,11 +306,21 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemContext
 
   const base::FilePath& partition_path() const { return partition_path_; }
 
-  // Same as |CrackFileSystemURL|, but cracks FileSystemURL created from |url|.
-  FileSystemURL CrackURL(const GURL& url) const;
-  // Same as |CrackFileSystemURL|, but cracks FileSystemURL created from method
+  // Same as `CrackFileSystemURL`, but cracks FileSystemURL created from `url`
+  // and `storage_key`.
+  FileSystemURL CrackURL(const GURL& url,
+                         const blink::StorageKey& storage_key) const;
+
+  // Same as `CrackFileSystemURL`, but cracks FileSystemURL created from `url`
+  // and a blink::StorageKey it derives from `url`. Note: never use this
+  // function to crack URLs received from web contents. For all web-exposed
+  // URLs, use the CrackURL function above and pass in the StorageKey of the
+  // frame or worker that provided the URL.
+  FileSystemURL CrackURLInFirstPartyContext(const GURL& url) const;
+
+  // Same as `CrackFileSystemURL`, but cracks FileSystemURL created from method
   // arguments.
-  FileSystemURL CreateCrackedFileSystemURL(const url::Origin& origin,
+  FileSystemURL CreateCrackedFileSystemURL(const blink::StorageKey& storage_key,
                                            FileSystemType type,
                                            const base::FilePath& path) const;
 

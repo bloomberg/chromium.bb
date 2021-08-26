@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/common/buildflags.h"
@@ -40,8 +41,8 @@ AppId InstallDummyWebApp(Profile* profile,
                          const std::string& app_name,
                          const GURL& app_url);
 
-// Synchronous version of InstallManager::InstallWebAppFromInfo. May be used in
-// unit tests and browser tests.
+// Synchronous version of WebAppInstallManager::InstallWebAppFromInfo. May be
+// used in unit tests and browser tests.
 AppId InstallWebApp(Profile* profile, std::unique_ptr<WebApplicationInfo>);
 
 #if defined(OS_WIN) || defined(OS_MAC) || \
@@ -55,6 +56,10 @@ AppId InstallWebAppWithUrlHandlers(
     const std::u16string& app_name,
     const std::vector<apps::UrlHandlerInfo>& url_handlers);
 #endif
+
+// Synchronously uninstall a web app. May be used in unit tests and browser
+// tests.
+void UninstallWebApp(Profile* profile, const AppId& app_id);
 
 }  // namespace test
 }  // namespace web_app

@@ -5,9 +5,9 @@
 
 # TODO(hinoka): Use logging.
 
+from __future__ import division
 from __future__ import print_function
 
-import cStringIO
 import codecs
 from contextlib import contextmanager
 import copy
@@ -18,18 +18,22 @@ import json
 import optparse
 import os
 import pprint
-import random
 import re
 import subprocess
 import sys
 import tempfile
 import threading
 import time
-import urllib2
-import urlparse
 import uuid
 
 import os.path as path
+
+# TODO(crbug.com/1227140): Clean up when py2 is no longer supported.
+from io import BytesIO
+try:
+  import urlparse
+except ImportError:  # pragma: no cover
+  import urllib.parse as urlparse
 
 # How many bytes at a time to read from pipes.
 BUF_SIZE = 256
@@ -94,7 +98,7 @@ GCLIENT_PATH = path.join(DEPOT_TOOLS_DIR, 'gclient.py')
 
 class SubprocessFailed(Exception):
   def __init__(self, message, code, output):
-    Exception.__init__(self, message)
+    self.message = message
     self.code = code
     self.output = output
 
@@ -161,6 +165,14 @@ def _terminate_process(proc):
   proc.terminate()
 
 
+# TODO(crbug.com/1227140): Clean up when py2 is no longer supported.
+def _stdout_write(buf):
+  try:
+    sys.stdout.buffer.write(buf)
+  except AttributeError:
+    sys.stdout.write(buf)
+
+
 def call(*args, **kwargs):  # pragma: no cover
   """Interactive subprocess call."""
   kwargs['stdout'] = subprocess.PIPE
@@ -170,7 +182,7 @@ def call(*args, **kwargs):  # pragma: no cover
   stdin_data = kwargs.pop('stdin_data', None)
   if stdin_data:
     kwargs['stdin'] = subprocess.PIPE
-  out = cStringIO.StringIO()
+  out = BytesIO()
   new_env = kwargs.get('env', {})
   env = os.environ.copy()
   env.update(new_env)
@@ -209,17 +221,17 @@ def call(*args, **kwargs):  # pragma: no cover
     if hanging_cr:
       buf = buf[:-1]
     buf = buf.replace('\r\n', '\n').replace('\r', '\n')
-    sys.stdout.write(buf)
+    _stdout_write(buf)
     out.write(buf)
   if hanging_cr:
-    sys.stdout.write('\n')
+    _stdout_write('\n')
     out.write('\n')
   for observer in observers:
     observer.shutdown()
 
   code = proc.wait()
   elapsed_time = ((time.time() - start_time) / 60.0)
-  outval = out.getvalue()
+  outval = out.getvalue().decode('utf-8')
   if code:
     print('%s ===Failed in %.1f mins of %s ===' %
           (datetime.now(), elapsed_time, ' '.join(args)))
@@ -394,7 +406,7 @@ def gclient_sync(
     args += ['--with_tags']
   for name, revision in sorted(revisions.items()):
     if revision.upper() == 'HEAD':
-      revision = 'refs/remotes/origin/master'
+      revision = 'refs/remotes/origin/main'
     args.extend(['--revision', '%s@%s' % (name, revision)])
 
   if patch_refs:
@@ -455,7 +467,7 @@ def create_manifest():
         for path, info in json.load(f).items()
         if info['rev'] is not None
       }
-  except ValueError, SubprocessFailed:
+  except (ValueError, SubprocessFailed):
     return {}
   finally:
     os.remove(fname)
@@ -542,8 +554,8 @@ def get_target_branch_and_revision(solution_name, git_url, revisions):
 
   if configured is None or COMMIT_HASH_RE.match(configured):
     # TODO(crbug.com/1104182): Get the default branch instead of assuming
-    # 'master'.
-    branch = 'refs/remotes/origin/master'
+    # 'main'.
+    branch = 'refs/remotes/origin/main'
     revision = configured or 'HEAD'
     return branch, revision
   elif ':' in configured:
@@ -598,7 +610,7 @@ def _maybe_break_locks(checkout_path, tries=3):
             print('FAILED to break lock: %s: %s' % (to_break, ex))
             raise
 
-  for _ in xrange(tries):
+  for _ in range(tries):
     try:
       attempt()
       return
@@ -698,7 +710,6 @@ def _git_checkout(sln, sln_dir, revisions, refs, no_fetch_tags, git_cache_dir,
   # Step 2: populate a checkout from local cache. All operations are local.
   mirror_dir = git(
       'cache', 'exists', '--quiet', '--cache-dir', git_cache_dir, url).strip()
-  _set_remote_head(mirror_dir)
   first_try = True
   while True:
     try:
@@ -718,7 +729,6 @@ def _git_checkout(sln, sln_dir, revisions, refs, no_fetch_tags, git_cache_dir,
         git('remote', 'set-url', 'origin', mirror_dir, cwd=sln_dir)
         git('fetch', 'origin', cwd=sln_dir)
       git('remote', 'set-url', '--push', 'origin', url, cwd=sln_dir)
-      _set_remote_head(sln_dir)
       if pin:
         git('fetch', 'origin', pin, cwd=sln_dir)
       for ref in refs:
@@ -749,23 +759,11 @@ def _git_checkout(sln, sln_dir, revisions, refs, no_fetch_tags, git_cache_dir,
 
   return True
 
+
 def _git_disable_gc(cwd):
   git('config', 'gc.auto', '0', cwd=cwd)
   git('config', 'gc.autodetach', '0', cwd=cwd)
   git('config', 'gc.autopacklimit', '0', cwd=cwd)
-
-
-def _set_remote_head(cwd):
-  if len(git('ls-remote', 'origin', 'HEAD', cwd=cwd)) > 0:
-    return
-  try:
-    git('remote', 'set-head', 'origin', '--auto', cwd=cwd)
-  except SubprocessFailed:
-    # If remote HEAD cannot be set automatically, prefer main over master.
-    try:
-      git('remote', 'set-head', 'origin', 'main', cwd=cwd)
-    except SubprocessFailed:
-      git('remote', 'set-head', 'origin', 'master', cwd=cwd)
 
 
 def get_commit_position(git_path, revision='HEAD'):
@@ -816,7 +814,7 @@ def emit_json(out_file, did_run, **kwargs):
   output.update({'did_run': did_run})
   output.update(kwargs)
   with open(out_file, 'wb') as f:
-    f.write(json.dumps(output, sort_keys=True))
+    f.write(json.dumps(output, sort_keys=True).encode('utf-8'))
 
 
 @_set_git_config

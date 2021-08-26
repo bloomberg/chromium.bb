@@ -192,7 +192,7 @@ void PasswordProtectionServiceBase::RequestFinished(
   }
 
   // Remove request from |pending_requests_| list. If it triggers warning, add
-  // it into the !warning_reqeusts_| list.
+  // it into the |warning_requests_| list.
   for (auto it = pending_requests_.begin(); it != pending_requests_.end();
        it++) {
     if (it->get() == request) {
@@ -308,21 +308,20 @@ PasswordProtectionServiceBase::GetPasswordProtectionReusedPasswordAccountType(
         return reused_password_account_type;
       }
       reused_password_account_type.set_account_type(
-          IsPrimaryAccountGmail() ? ReusedPasswordAccountType::GMAIL
-                                  : ReusedPasswordAccountType::GSUITE);
+          IsAccountGmail(username) ? ReusedPasswordAccountType::GMAIL
+                                   : ReusedPasswordAccountType::GSUITE);
       return reused_password_account_type;
     }
     case PasswordType::OTHER_GAIA_PASSWORD: {
-      AccountInfo account_info = GetSignedInNonSyncAccount(username);
+      AccountInfo account_info = GetAccountInfoForUsername(username);
       if (account_info.account_id.empty()) {
         reused_password_account_type.set_account_type(
             ReusedPasswordAccountType::UNKNOWN);
         return reused_password_account_type;
       }
       reused_password_account_type.set_account_type(
-          IsOtherGaiaAccountGmail(username)
-              ? ReusedPasswordAccountType::GMAIL
-              : ReusedPasswordAccountType::GSUITE);
+          IsAccountGmail(username) ? ReusedPasswordAccountType::GMAIL
+                                   : ReusedPasswordAccountType::GSUITE);
       return reused_password_account_type;
     }
     case PasswordType::PASSWORD_TYPE_UNKNOWN:
@@ -380,10 +379,13 @@ bool PasswordProtectionServiceBase::IsSupportedPasswordTypeForModalWarning(
   if (password_type.account_type() == ReusedPasswordAccountType::SAVED_PASSWORD)
     return true;
 
-// Currently password reuse warnings are only supported for saved passwords on
-// Android.
+// Currently password reuse warnings are only supported for saved passwords
+// and GAIA passwords on Android.
 #if defined(OS_ANDROID)
-  return false;
+  return base::FeatureList::IsEnabled(
+             safe_browsing::kPasswordProtectionForSignedInUsers) &&
+         password_type.account_type() == ReusedPasswordAccountType::GMAIL &&
+         password_type.is_account_syncing();
 #else
   if (password_type.account_type() ==
       ReusedPasswordAccountType::NON_GAIA_ENTERPRISE)

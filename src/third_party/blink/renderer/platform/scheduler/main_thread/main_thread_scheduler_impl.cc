@@ -204,8 +204,6 @@ bool IsBlockingEvent(const blink::WebInputEvent& web_input_event) {
          blink::WebInputEvent::DispatchType::kBlocking;
 }
 
-MainThreadSchedulerImpl* g_main_thread_scheduler = nullptr;
-
 }  // namespace
 
 MainThreadSchedulerImpl::MainThreadSchedulerImpl(
@@ -288,8 +286,6 @@ MainThreadSchedulerImpl::MainThreadSchedulerImpl(
 
   // TaskQueueThrottler requires some task runners, then initialize
   // TaskQueueThrottler after task queues/runners are initialized.
-  task_queue_throttler_ =
-      std::make_unique<TaskQueueThrottler>(this, &tracing_controller_);
   update_policy_closure_ = base::BindRepeating(
       &MainThreadSchedulerImpl::UpdatePolicy, weak_factory_.GetWeakPtr());
   end_renderer_hidden_idle_period_closure_.Reset(base::BindRepeating(
@@ -317,14 +313,12 @@ MainThreadSchedulerImpl::MainThreadSchedulerImpl(
     // we choose an arbitrary initial offset.
     main_thread_only().initial_virtual_time_ticks =
         base::TimeTicks() + base::TimeDelta::FromSeconds(10);
-    EnableVirtualTime(BaseTimeOverridePolicy::OVERRIDE);
+    EnableVirtualTime();
     SetVirtualTimePolicy(VirtualTimePolicy::kPause);
   }
 
   main_thread_only().current_policy.find_in_page_priority() =
       find_in_page_budget_pool_controller_->CurrentTaskPriority();
-
-  g_main_thread_scheduler = this;
 
   // Explicitly set the priority of this queue since it is not managed by
   // the main thread scheduler.
@@ -356,13 +350,17 @@ MainThreadSchedulerImpl::~MainThreadSchedulerImpl() {
   // we could end up having stale pointers to the Blink heap which has been
   // terminated by this point.
   DCHECK(was_shutdown_);
-
-  g_main_thread_scheduler = nullptr;
 }
 
 // static
 WebThreadScheduler* WebThreadScheduler::MainThreadScheduler() {
-  return g_main_thread_scheduler;
+  auto* main_thread = Thread::MainThread();
+  // Enforce that this is not called before the main thread is initialized.
+  DCHECK(main_thread && main_thread->Scheduler());
+
+  // This can return nullptr if the main thread scheduler is not a
+  // MainThreadSchedulerImpl, which can happen in tests.
+  return main_thread->Scheduler()->GetWebMainThreadScheduler();
 }
 
 MainThreadSchedulerImpl::MainThreadOnly::MainThreadOnly(
@@ -660,7 +658,6 @@ void MainThreadSchedulerImpl::Shutdown() {
   main_thread_only().metrics_helper.OnRendererShutdown(now);
 
   ShutdownAllQueues();
-  task_queue_throttler_.reset();
 
   // Shut down |helper_| first, so that the ForceUpdatePolicy() call
   // from |idle_helper_| early-outs and doesn't do anything.
@@ -1630,8 +1627,6 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
     new_policy.should_prioritize_loading_with_compositing() = true;
   }
 
-  new_policy.should_disable_throttling() = main_thread_only().use_virtual_time;
-
   new_policy.find_in_page_priority() =
       find_in_page_budget_pool_controller_->CurrentTaskPriority();
 
@@ -1656,15 +1651,6 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
     }
     for (auto& observer : main_thread_only().rail_mode_observers) {
       observer.OnRAILModeChanged(new_policy.rail_mode());
-    }
-  }
-
-  if (new_policy.should_disable_throttling() !=
-      main_thread_only().current_policy.should_disable_throttling()) {
-    if (new_policy.should_disable_throttling()) {
-      task_queue_throttler()->DisableThrottling();
-    } else {
-      task_queue_throttler()->EnableThrottling();
     }
   }
 
@@ -1837,13 +1823,6 @@ IdleTimeEstimator* MainThreadSchedulerImpl::GetIdleTimeEstimatorForTesting() {
 }
 
 base::TimeTicks MainThreadSchedulerImpl::EnableVirtualTime() {
-  return EnableVirtualTime(main_thread_only().initial_virtual_time.is_null()
-                               ? BaseTimeOverridePolicy::DO_NOT_OVERRIDE
-                               : BaseTimeOverridePolicy::OVERRIDE);
-}
-
-base::TimeTicks MainThreadSchedulerImpl::EnableVirtualTime(
-    BaseTimeOverridePolicy policy) {
   if (main_thread_only().use_virtual_time)
     return main_thread_only().initial_virtual_time_ticks;
   main_thread_only().use_virtual_time = true;
@@ -1854,7 +1833,7 @@ base::TimeTicks MainThreadSchedulerImpl::EnableVirtualTime(
     main_thread_only().initial_virtual_time_ticks = tick_clock()->NowTicks();
   virtual_time_domain_ = std::make_unique<AutoAdvancingVirtualTimeDomain>(
       main_thread_only().initial_virtual_time,
-      main_thread_only().initial_virtual_time_ticks, &helper_, policy);
+      main_thread_only().initial_virtual_time_ticks, &helper_);
   RegisterTimeDomain(virtual_time_domain_.get());
 
   DCHECK(!virtual_time_control_task_queue_);
@@ -2100,7 +2079,12 @@ void MainThreadSchedulerImpl::WriteIntoTraceLocked(
            VirtualTimePolicyToString(main_thread_only().virtual_time_policy));
   dict.Add("virtual_time", main_thread_only().use_virtual_time);
 
-  dict.Add("page_schedulers", main_thread_only().page_schedulers);
+  dict.Add("page_schedulers", [&](perfetto::TracedValue context) {
+    auto array = std::move(context).WriteArray();
+    for (const auto* page_scheduler : main_thread_only().page_schedulers) {
+      page_scheduler->WriteIntoTrace(array.AppendItem(), optional_now);
+    }
+  });
 
   dict.Add("policy", main_thread_only().current_policy);
 
@@ -2117,10 +2101,6 @@ void MainThreadSchedulerImpl::WriteIntoTraceLocked(
 
   dict.Add("user_model", any_thread().user_model);
   dict.Add("render_widget_scheduler_signals", render_widget_scheduler_signals_);
-
-  dict.Add("task_queue_throttler", [&](perfetto::TracedValue context) {
-    task_queue_throttler_->WriteIntoTrace(std::move(context), optional_now);
-  });
 }
 
 bool MainThreadSchedulerImpl::Policy::IsQueueEnabled(
@@ -2148,7 +2128,6 @@ void MainThreadSchedulerImpl::Policy::WriteIntoTrace(
   dict.Add("rail_mode", RAILModeToString(rail_mode()));
   dict.Add("use_case", UseCaseToString(use_case()));
 
-  dict.Add("should_disable_throttling", should_disable_throttling());
   dict.Add("should_defer_task_queues", should_defer_task_queues());
   dict.Add("should_pause_task_queues", should_pause_task_queues());
   dict.Add("should_pause_task_queues_for_android_webview",
@@ -2263,9 +2242,6 @@ void MainThreadSchedulerImpl::ResetForNavigationLocked() {
   main_thread_only().idle_time_estimator.Clear();
   main_thread_only().have_reported_blocking_intervention_since_navigation =
       false;
-  for (PageSchedulerImpl* page_scheduler : main_thread_only().page_schedulers) {
-    page_scheduler->OnNavigation();
-  }
   UpdatePolicyLocked(UpdateType::kMayEarlyOutIfPolicyUnchanged);
 
   UMA_HISTOGRAM_COUNTS_100("RendererScheduler.WebViewsPerScheduler",
@@ -2486,8 +2462,7 @@ base::TimeTicks MainThreadSchedulerImpl::MonotonicallyIncreasingVirtualTime() {
   return GetActiveTimeDomain()->Now();
 }
 
-WebThreadScheduler*
-MainThreadSchedulerImpl::GetWebMainThreadSchedulerForTest() {
+WebThreadScheduler* MainThreadSchedulerImpl::GetWebMainThreadScheduler() {
   return this;
 }
 
@@ -2785,6 +2760,12 @@ void MainThreadSchedulerImpl::RemoveTaskTimeObserver(
   helper_.RemoveTaskTimeObserver(task_time_observer);
 }
 
+std::unique_ptr<CPUTimeBudgetPool>
+MainThreadSchedulerImpl::CreateCPUTimeBudgetPoolForTesting(const char* name) {
+  return std::make_unique<CPUTimeBudgetPool>(name, &tracing_controller_,
+                                             tick_clock()->NowTicks());
+}
+
 AutoAdvancingVirtualTimeDomain*
 MainThreadSchedulerImpl::GetVirtualTimeDomain() {
   return virtual_time_domain_.get();
@@ -2921,18 +2902,6 @@ MainThreadSchedulerImpl::ComputeCompositorPriorityFromUseCase() const {
       NOTREACHED();
       return absl::nullopt;
   }
-}
-
-void MainThreadSchedulerImpl::OnSafepointEntered() {
-  DCHECK(WTF::IsMainThread());
-  DCHECK(!main_thread_only().IsInNestedRunloop());
-  main_thread_only().metrics_helper.OnSafepointEntered(helper_.NowTicks());
-}
-
-void MainThreadSchedulerImpl::OnSafepointExited() {
-  DCHECK(WTF::IsMainThread());
-  DCHECK(!main_thread_only().IsInNestedRunloop());
-  main_thread_only().metrics_helper.OnSafepointExited(helper_.NowTicks());
 }
 
 void MainThreadSchedulerImpl::ExecuteAfterCurrentTask(

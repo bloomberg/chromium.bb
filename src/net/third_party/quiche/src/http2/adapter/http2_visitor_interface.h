@@ -5,6 +5,7 @@
 
 #include "absl/strings/string_view.h"
 #include "http2/adapter/http2_protocol.h"
+#include "common/platform/api/quiche_export.h"
 
 namespace http2 {
 namespace adapter {
@@ -44,25 +45,24 @@ namespace adapter {
 //     - OnCloseStream()
 //
 // More details are at RFC 7540 (go/http2spec).
-class Http2VisitorInterface {
+class QUICHE_EXPORT_PRIVATE Http2VisitorInterface {
  public:
   Http2VisitorInterface(const Http2VisitorInterface&) = delete;
   Http2VisitorInterface& operator=(const Http2VisitorInterface&) = delete;
   virtual ~Http2VisitorInterface() = default;
 
+  static const ssize_t kSendBlocked = 0;
+  static const ssize_t kSendError = -1;
   // Called when there are serialized frames to send. Should return how many
-  // bytes were actually sent. Returning 0 indicates that sending is blocked.
-  // Returning -1 indicates an error.
+  // bytes were actually sent. May return kSendBlocked or kSendError.
   virtual ssize_t OnReadyToSend(absl::string_view serialized) = 0;
 
   // Called when a connection-level processing error has been encountered.
   virtual void OnConnectionError() = 0;
 
   // Called when the header for a frame is received.
-  virtual void OnFrameHeader(Http2StreamId stream_id,
-                             size_t length,
-                             uint8_t type,
-                             uint8_t flags) {}
+  virtual void OnFrameHeader(Http2StreamId /*stream_id*/, size_t /*length*/,
+                             uint8_t /*type*/, uint8_t /*flags*/) {}
 
   // Called when a non-ack SETTINGS frame is received.
   virtual void OnSettingsStart() = 0;
@@ -77,8 +77,9 @@ class Http2VisitorInterface {
   virtual void OnSettingsAck() = 0;
 
   // Called when the connection receives the header block for a HEADERS frame on
-  // a stream but has not yet parsed individual headers.
-  virtual void OnBeginHeadersForStream(Http2StreamId stream_id) = 0;
+  // a stream but has not yet parsed individual headers. Returns false if a
+  // fatal error has occurred.
+  virtual bool OnBeginHeadersForStream(Http2StreamId stream_id) = 0;
 
   // Called when the connection receives the header |key| and |value| for a
   // stream. The HTTP/2 pseudo-headers defined in RFC 7540 Sections 8.1.2.3 and

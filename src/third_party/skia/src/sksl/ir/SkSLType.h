@@ -8,6 +8,7 @@
 #ifndef SKSL_TYPE
 #define SKSL_TYPE
 
+#include "include/core/SkStringView.h"
 #include "include/private/SkSLModifiers.h"
 #include "include/private/SkSLSymbol.h"
 #include "src/sksl/SkSLPosition.h"
@@ -22,6 +23,7 @@ namespace SkSL {
 
 class BuiltinTypes;
 class Context;
+class SymbolTable;
 
 struct CoercionCost {
     static CoercionCost Free()              { return {    0,    0, false }; }
@@ -91,6 +93,7 @@ public:
         // Types that represent stages in the Skia pipeline
         kColorFilter,
         kShader,
+        kBlender,
     };
 
     enum class NumberKind : int8_t {
@@ -105,7 +108,11 @@ public:
 
     /** Creates an array type. */
     static constexpr int kUnsizedArray = -1;
-    static std::unique_ptr<Type> MakeArrayType(String name, const Type& componentType, int columns);
+    static std::unique_ptr<Type> MakeArrayType(skstd::string_view name, const Type& componentType,
+                                               int columns);
+
+    /** Converts a component type and a size (float, 10) into an array name ("float[10]"). */
+    String getArrayName(int arraySize) const;
 
     /**
      * Create a generic type which maps to the listed types--e.g. $genType is a generic type which
@@ -137,7 +144,8 @@ public:
                                                  Type::TypeKind typeKind);
 
     /** Creates a struct type with the given fields. */
-    static std::unique_ptr<Type> MakeStructType(int offset, String name, std::vector<Field> fields);
+    static std::unique_ptr<Type> MakeStructType(int offset, skstd::string_view name,
+                                                std::vector<Field> fields);
 
     /** Create a texture type. */
     static std::unique_ptr<Type> MakeTextureType(const char* name, SpvDim_ dimensions,
@@ -280,6 +288,7 @@ public:
      */
     bool isOpaque() const {
         switch (fTypeKind) {
+            case TypeKind::kBlender:
             case TypeKind::kColorFilter:
             case TypeKind::kOther:
             case TypeKind::kSampler:
@@ -374,6 +383,7 @@ public:
      */
     size_t slotCount() const {
         switch (this->typeKind()) {
+            case Type::TypeKind::kBlender:
             case Type::TypeKind::kColorFilter:
             case Type::TypeKind::kGeneric:
             case Type::TypeKind::kOther:
@@ -467,9 +477,11 @@ public:
     }
 
     // Is this type something that can be bound & sampled from an SkRuntimeEffect?
-    // Includes types that represent stages of the Skia pipeline (colorFilter and shader).
+    // Includes types that represent stages of the Skia pipeline (colorFilter, shader, blender).
     bool isEffectChild() const {
-        return fTypeKind == TypeKind::kColorFilter || fTypeKind == TypeKind::kShader;
+        return fTypeKind == TypeKind::kColorFilter ||
+               fTypeKind == TypeKind::kShader ||
+               fTypeKind == TypeKind::kBlender;
     }
 
     virtual bool isMultisampled() const {
@@ -503,6 +515,16 @@ public:
     const Type& toCompound(const Context& context, int columns, int rows) const;
 
     /**
+     * Returns a type which honors the precision qualifiers set in Modifiers. e.g., kMediump_Flag
+     * when applied to `float2` will return `half2`. Generates an error if the precision qualifiers
+     * don't make sense, e.g. `highp bool` or `mediump MyStruct`.
+     */
+    const Type* applyPrecisionQualifiers(const Context& context,
+                                         const Modifiers& modifiers,
+                                         SymbolTable* symbols,
+                                         int offset) const;
+
+    /**
      * Coerces the passed-in expression to this type. If the types are incompatible, reports an
      * error and returns null.
      */
@@ -513,11 +535,9 @@ public:
     bool checkForOutOfRangeLiteral(const Context& context, const Expression& expr) const;
 
 protected:
-    Type(String name, const char* abbrev, TypeKind kind, int offset = -1)
-        : INHERITED(offset, kSymbolKind, /*name=*/"")
-        , fNameString(std::move(name))
+    Type(skstd::string_view name, const char* abbrev, TypeKind kind, int offset = -1)
+        : INHERITED(offset, kSymbolKind, name)
         , fTypeKind(kind) {
-        fName = fNameString;
         SkASSERT(strlen(abbrev) <= kMaxAbbrevLength);
         strcpy(fAbbreviatedName, abbrev);
     }
@@ -527,7 +547,6 @@ private:
 
     using INHERITED = Symbol;
 
-    String fNameString;
     char fAbbreviatedName[kMaxAbbrevLength + 1] = {};
     TypeKind fTypeKind;
 };

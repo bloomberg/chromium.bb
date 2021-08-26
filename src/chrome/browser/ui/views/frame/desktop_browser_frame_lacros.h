@@ -7,7 +7,6 @@
 
 #include "chrome/browser/ui/views/frame/desktop_browser_frame_aura.h"
 
-class BrowserDesktopWindowTreeHostLinux;
 class BrowserFrame;
 class BrowserView;
 class BrowserDesktopWindowTreeHostLinux;

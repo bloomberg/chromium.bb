@@ -134,7 +134,7 @@ class FakeDlpController : public DataTransferDlpController,
 class MockDlpRulesManager : public DlpRulesManagerImpl {
  public:
   explicit MockDlpRulesManager(PrefService* local_state)
-      : DlpRulesManagerImpl(local_state) {}
+      : DlpRulesManagerImpl(local_state, /* dm_token_value= */ "") {}
   ~MockDlpRulesManager() override = default;
 };
 
@@ -552,9 +552,13 @@ class DataTransferDlpBlinkBrowserTest : public InProcessBrowserTest {
   }
 };
 
-// Disabled due to flakiness: crbug.com/1220328
-IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest,
-                       DISABLED_ProceedOnWarn) {
+// Flaky on MSan bots: crbug.com/1230617
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_ProceedOnWarn DISABLED_ProceedOnWarn
+#else
+#define MAYBE_ProceedOnWarn ProceedOnWarn
+#endif
+IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest, MAYBE_ProceedOnWarn) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/title1.html")));
@@ -613,8 +617,8 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest,
              "  };"
              "});"));
 
-  content::UpdateUserActivationStateInterceptor user_activation_interceptor;
-  user_activation_interceptor.Init(GetActiveWebContents()->GetMainFrame());
+  content::UpdateUserActivationStateInterceptor user_activation_interceptor(
+      GetActiveWebContents()->GetMainFrame());
   user_activation_interceptor.UpdateUserActivationState(
       blink::mojom::UserActivationUpdateType::kNotifyActivation,
       blink::mojom::UserActivationNotificationType::kTest);
@@ -635,8 +639,13 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest,
   testing::Mock::VerifyAndClearExpectations(&dlp_controller);
 }
 
-// Disabled due to flakiness: crbug.com/1220328
-IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest, DISABLED_CancelWarn) {
+// Flaky on MSan bots: crbug.com/1230617
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_CancelWarn DISABLED_CancelWarn
+#else
+#define MAYBE_CancelWarn CancelWarn
+#endif
+IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest, MAYBE_CancelWarn) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/title1.html")));
@@ -695,8 +704,8 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest, DISABLED_CancelWarn) {
              "  };"
              "});"));
 
-  content::UpdateUserActivationStateInterceptor user_activation_interceptor;
-  user_activation_interceptor.Init(GetActiveWebContents()->GetMainFrame());
+  content::UpdateUserActivationStateInterceptor user_activation_interceptor(
+      GetActiveWebContents()->GetMainFrame());
   user_activation_interceptor.UpdateUserActivationState(
       blink::mojom::UserActivationUpdateType::kNotifyActivation,
       blink::mojom::UserActivationNotificationType::kTest);
@@ -719,8 +728,13 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest, DISABLED_CancelWarn) {
 }
 
 // Test case for crbug.com/1213143
-// Disabled due to flakiness: crbug.com/1219981
-IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest, DISABLED_Reporting) {
+// Flaky on MSan bots: crbug.com/1230617
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_Reporting DISABLED_Reporting
+#else
+#define MAYBE_Reporting Reporting
+#endif
+IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest, MAYBE_Reporting) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/title1.html")));
@@ -779,8 +793,8 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest, DISABLED_Reporting) {
              "  };"
              "});"));
 
-  content::UpdateUserActivationStateInterceptor user_activation_interceptor;
-  user_activation_interceptor.Init(GetActiveWebContents()->GetMainFrame());
+  content::UpdateUserActivationStateInterceptor user_activation_interceptor(
+      GetActiveWebContents()->GetMainFrame());
   user_activation_interceptor.UpdateUserActivationState(
       blink::mojom::UserActivationUpdateType::kNotifyActivation,
       blink::mojom::UserActivationNotificationType::kTest);

@@ -11,6 +11,7 @@
 <translation id="1546934824884762070">একটি অপ্রত্যাশিত ত্রুটি ঘটেছে৷ দয়া করে বিকাশকারীদের কাছে এই সমস্যাটির বিষয়ে জানান৷</translation>
 <translation id="1697532407822776718">আপনার সমস্ত সেট আছে!</translation>
 <translation id="1742469581923031760">সংযুক্ত হচ্ছে...</translation>
+<translation id="177040763384871009">রিমোট ডিভাইসে ক্লিক করা লিঙ্কটি ক্লায়েন্ট ব্রাউজারে খোলার অনুমতি দিতে আপনাকে সিস্টেমের ওয়েব ব্রাউজার "<ph name="URL_FORWARDER_NAME" />"-এ বদলাতে হবে।</translation>
 <translation id="177096447311351977">এই ক্লায়েন্টের জন্য চ্যানেল IP: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1897488610212723051">মুছুন</translation>
 <translation id="2009755455353575666">সংযোগ ব্যর্থ হয়েছে</translation>
@@ -129,6 +130,7 @@
 <translation id="6963936880795878952">রিমোট কম্পিউটারের কানেকশন সাময়িকভাবে বন্দ করা হয়েছে কারণ কেউ ভুল PIN এর মাধ্যমে এতে কানেক্ট করার চেষ্টা করছিল৷ অনুগ্রহ করে পরে আবার চেষ্টা করুন৷</translation>
 <translation id="6965382102122355670">ঠিক আছে</translation>
 <translation id="6985691951107243942"><ph name="HOSTNAME" />এ রিমোট কানেকশন বন্ধ করার ব্যাপারে আপনি কি নিশ্চিত? আপনি যদি মন বদলান, তাহলে কানেকশনগুলি পুনঃচালু করতে আপনাকে এই কম্পিউটারে যেতে হবে৷</translation>
+<translation id="6998890551706945177">আপনার কম্পিউটার দেখার এবং নিয়ন্ত্রণের অ্যাক্সেস পাওয়ার জন্য, <ph name="CLIENT_USERNAME" /> আপনাকে অনুরোধ করেছেন। আপনি এই ব্যক্তিকে না চিনলে অথবা শেয়ার করার আগে কোনও পরিবর্তন করতে চাইলে ''<ph name="IDS_SHARE_CONFIRM_DIALOG_DECLINE" />'' প্রেস করুন।  অন্যথায় কানেকশনের অনুমতি দিতে ''<ph name="IDS_SHARE_CONFIRM_DIALOG_CONFIRM" />'' প্রেস করুন।</translation>
 <translation id="7019153418965365059">অস্বীকৃত হোস্ট ত্রুটি: <ph name="HOST_OFFLINE_REASON" />।</translation>
 <translation id="701976023053394610">রিমোট সহায়তা</translation>
 <translation id="7026930240735156896">রিমোট অ্যাক্সেসের জন্য আপনার কম্পিউটার সেট-আপ করতে নির্দেশাবলী অনুসরণ করুন</translation>
@@ -142,6 +144,7 @@
 <translation id="7434397035092923453">এই ক্লায়েন্টের জন্য অ্যাক্সেস স্বীকৃত নয়: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">ক্লায়েন্ট সংযুক্ত: <ph name="CLIENT_USERNAME" />৷</translation>
 <translation id="7526139040829362392">অ্যাকাউন্ট পরিবর্তন করুন</translation>
+<translation id="7535110896613603182">ডিফল্ট অ্যাপ সেটিংস খুলুন</translation>
 <translation id="7628469622942688817">এই ডিভাইসে আমার পিন মনে রাখুন।</translation>
 <translation id="7649070708921625228">সহায়তা</translation>
 <translation id="7658239707568436148">বাতিল</translation>

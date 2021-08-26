@@ -29,6 +29,10 @@ bool TestAutofillDriver::IsInMainFrame() const {
   return is_in_main_frame_;
 }
 
+bool TestAutofillDriver::IsPrerendering() const {
+  return false;
+}
+
 bool TestAutofillDriver::CanShowAutofillUi() const {
   return true;
 }
@@ -54,9 +58,9 @@ TestAutofillDriver::GetOrCreateCreditCardInternalAuthenticator() {
 }
 #endif
 
-void TestAutofillDriver::SendFormDataToRenderer(
+void TestAutofillDriver::FillOrPreviewForm(
     int query_id,
-    RendererFormDataAction action,
+    mojom::RendererFormDataAction action,
     const FormData& form_data,
     const url::Origin& triggered_origin,
     const base::flat_map<FieldGlobalId, ServerFieldType>& field_type_map) {}

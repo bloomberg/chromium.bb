@@ -44,6 +44,7 @@ class AccessibilityConfirmationDialog;
 class AccessibilityEventRewriter;
 class AccessibilityHighlightController;
 class AccessibilityObserver;
+class DictationNudgeController;
 class FloatingAccessibilityController;
 class PointScanController;
 class ScopedBacklightsForcedOff;
@@ -55,6 +56,26 @@ enum class Sound;
 enum AccessibilityNotificationVisibility {
   A11Y_NOTIFICATION_NONE,
   A11Y_NOTIFICATION_SHOW,
+};
+
+// Used to indicate which accessibility notification should be shown.
+enum class A11yNotificationType {
+  // No accessibility notification.
+  kNone,
+  // Shown when spoken feedback is set enabled with A11Y_NOTIFICATION_SHOW.
+  kSpokenFeedbackEnabled,
+  // Shown when braille display is connected while spoken feedback is enabled.
+  kBrailleDisplayConnected,
+  // Shown when braille display is connected while spoken feedback is not
+  // enabled yet. Note: in this case braille display connected would enable
+  // spoken feedback.
+  kSpokenFeedbackBrailleEnabled,
+  // Shown when Switch Access is enabled.
+  kSwitchAccessEnabled,
+  // Shown when speech recognition files download successfully.
+  kSpeechRecognitionFilesDownloaded,
+  // Shown when speech recognition files download fails.
+  kSpeechRecognitionFilesFailed,
 };
 
 // The controller for accessibility features in ash. Features can be enabled
@@ -161,6 +182,18 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
     Dialog dialog_;
   };
 
+  // Contains data used to give an accessibility-related notification.
+  struct A11yNotificationWrapper {
+    A11yNotificationWrapper();
+    A11yNotificationWrapper(A11yNotificationType type_in,
+                            std::vector<std::u16string> replacements_in);
+    ~A11yNotificationWrapper();
+    A11yNotificationWrapper(const A11yNotificationWrapper&);
+
+    A11yNotificationType type = A11yNotificationType::kNone;
+    std::vector<std::u16string> replacements;
+  };
+
   AccessibilityControllerImpl();
   ~AccessibilityControllerImpl() override;
 
@@ -178,7 +211,7 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   Feature& autoclick() const;
   Feature& caret_highlight() const;
   Feature& cursor_highlight() const;
-  FeatureWithDialog& dictation() const;
+  Feature& dictation() const;
   Feature& floating_menu() const;
   Feature& focus_highlight() const;
   FeatureWithDialog& fullscreen_magnifier() const;
@@ -382,6 +415,9 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
       int point_scan_speed_dips_per_second) override;
   void SetDictationActive(bool is_active) override;
   void ToggleDictationFromSource(DictationToggleSource source) override;
+  void ShowDictationLanguageUpgradedNudge(
+      const std::string& dictation_locale,
+      const std::string& application_locale) override;
   void HandleAutoclickScrollableBoundsFound(
       gfx::Rect& bounds_in_screen) override;
   std::u16string GetBatteryDescription() const override;
@@ -398,6 +434,11 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
                               base::OnceClosure on_accept_callback,
                               base::OnceClosure on_cancel_callback,
                               base::OnceClosure on_close_callback) override;
+  void UpdateDictationButtonOnSpeechRecognitionDownloadChanged(
+      bool download_in_progress) override;
+  void ShowSpeechRecognitionDownloadNotificationForDictation(
+      bool succeeded,
+      const std::u16string& display_language) override;
 
   // SessionObserver:
   void OnSigninScreenPrefServiceInitialized(PrefService* prefs) override;
@@ -420,6 +461,9 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
 
   bool enable_chromevox_volume_slide_gesture() {
     return enable_chromevox_volume_slide_gesture_;
+  }
+  DictationNudgeController* GetDictationNudgeControllerForTest() {
+    return dictation_nudge_controller_.get();
   }
 
  private:
@@ -512,6 +556,11 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
 
   // Used to force the backlights off to darken the screen.
   std::unique_ptr<ScopedBacklightsForcedOff> scoped_backlights_forced_off_;
+
+  // Used to show the offline dictation language upgrade nudge. This is created
+  // with ShowDictationLanguageUpgradedNudge() and reset at Shutdown() or when
+  // the Dictation feature is disabled.
+  std::unique_ptr<DictationNudgeController> dictation_nudge_controller_;
 
   // True if ChromeVox should enable its volume slide gesture.
   bool enable_chromevox_volume_slide_gesture_ = false;

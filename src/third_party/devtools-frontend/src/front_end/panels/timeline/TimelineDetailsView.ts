@@ -4,7 +4,7 @@
 
 /* eslint-disable rulesdir/no_underscored_properties */
 
-import type * as Common from '../../core/common/common.js'; // eslint-disable-line no-unused-vars
+import type * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as TimelineModel from '../../models/timeline_model/timeline_model.js';
@@ -13,13 +13,13 @@ import * as UI from '../../ui/legacy/legacy.js';
 
 import {EventsTimelineTreeView} from './EventsTimelineTreeView.js';
 import type {PerformanceModel} from './PerformanceModel.js';
-import {Events} from './PerformanceModel.js';  // eslint-disable-line no-unused-vars
+import {Events} from './PerformanceModel.js';
 import {TimelineLayersView} from './TimelineLayersView.js';
 import {TimelinePaintProfilerView} from './TimelinePaintProfilerView.js';
 import type {TimelineModeViewDelegate} from './TimelinePanel.js';
-import {TimelineSelection} from './TimelinePanel.js';  // eslint-disable-line no-unused-vars
+import {TimelineSelection} from './TimelinePanel.js';
 import type {TimelineTreeView} from './TimelineTreeView.js';
-import {BottomUpTimelineTreeView, CallTreeTimelineTreeView} from './TimelineTreeView.js';  // eslint-disable-line no-unused-vars
+import {BottomUpTimelineTreeView, CallTreeTimelineTreeView} from './TimelineTreeView.js';
 import {TimelineDetailsContentHelper, TimelineUIUtils} from './TimelineUIUtils.js';
 
 const UIStrings = {
@@ -320,7 +320,8 @@ export class TimelineDetailsView extends UI.Widget.VBox {
 
     const contentHelper = new TimelineDetailsContentHelper(null, null);
     contentHelper.addSection(i18nString(
-        UIStrings.rangeSS, {PH1: i18n.i18n.millisToString(startOffset), PH2: i18n.i18n.millisToString(endOffset)}));
+        UIStrings.rangeSS,
+        {PH1: i18n.TimeUtilities.millisToString(startOffset), PH2: i18n.TimeUtilities.millisToString(endOffset)}));
     const pieChart = TimelineUIUtils.generatePieChart(aggregatedStats);
     contentHelper.appendElementRow('', pieChart);
     this._setContent(contentHelper.fragment);

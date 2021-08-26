@@ -16,7 +16,6 @@
 # ~~~
 
 add_executable(vk_loader_validation_tests loader_validation_tests.cpp)
-add_test(NAME vk_loader_validation_tests COMMAND vk_loader_validation_tests)
 
 set_target_properties(vk_loader_validation_tests PROPERTIES COMPILE_DEFINITIONS "GTEST_LINKED_AS_SHARED_LIBRARY=1")
 if(UNIX)
@@ -34,6 +33,7 @@ elseif(ANDROID)
 elseif(APPLE)
     add_definitions(-DVK_USE_PLATFORM_MACOS_MVK)
 elseif(UNIX AND NOT APPLE) # i.e.: Linux
+    target_compile_options(vk_loader_validation_tests PUBLIC -fPIC)
     if(BUILD_WSI_XCB_SUPPORT)
         add_definitions(-DVK_USE_PLATFORM_XCB_KHR)
     endif()
@@ -110,28 +110,53 @@ endif()
 
 target_link_libraries(vk_loader_validation_tests "${LOADER_LIB}" gtest gtest_main)
 
-# Copy loader and googletest (gtest) libs to test dir so the test executable can find them.
-if(WIN32)
-    file(COPY vk_loader_validation_tests.vcxproj.user DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
-    if(CMAKE_GENERATOR MATCHES "^Visual Studio.*")
-        file(TO_NATIVE_PATH ${PROJECT_BINARY_DIR}/external/googletest/googletest/$<CONFIG>/gtest_main$<$<CONFIG:Debug>:d>.dll
-                            GTEST_COPY_SRC1)
-        file(TO_NATIVE_PATH ${PROJECT_BINARY_DIR}/external/googletest/googletest/$<CONFIG>/gtest$<$<CONFIG:Debug>:d>.dll
-                            GTEST_COPY_SRC2)
-        file(TO_NATIVE_PATH ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG> GTEST_COPY_DEST)
-    else()
-        file(TO_NATIVE_PATH ${PROJECT_BINARY_DIR}/external/googletest/googletest/gtest_main$<$<CONFIG:Debug>:d>.dll GTEST_COPY_SRC1)
-        file(TO_NATIVE_PATH ${PROJECT_BINARY_DIR}/external/googletest/googletest/gtest$<$<CONFIG:Debug>:d>.dll GTEST_COPY_SRC2)
-        file(TO_NATIVE_PATH ${CMAKE_CURRENT_BINARY_DIR} GTEST_COPY_DEST)
+add_subdirectory(layers)
+
+# By default, tests and loader are built without sanitizers
+# Use these options to force a specific sanitizer on all test executables
+option(TEST_USE_ADDRESS_SANITIZER "Linux only: Advanced memory checking" OFF)
+option(TEST_USE_THREAD_SANITIZER "Linux only: Advanced thread checking" OFF)
+
+include(GoogleTest)
+add_subdirectory(framework)
+
+add_executable(test_regression loader_testing_main.cpp loader_regression_tests.cpp loader_layer_tests.cpp
+    loader_version_tests.cpp loader_alloc_callback_tests.cpp)
+target_link_libraries(test_regression PRIVATE testing_dependencies)
+
+add_executable(test_wsi loader_testing_main.cpp loader_wsi_tests.cpp)
+target_link_libraries(test_wsi PRIVATE testing_dependencies)
+
+if(UNIX AND NOT APPLE) # i.e. Linux
+    if(BUILD_WSI_XCB_SUPPORT)
+        target_include_directories(test_wsi PRIVATE ${XCB_INCLUDE_DIRS})
+        target_link_libraries(test_wsi PRIVATE ${XCB_LIBRARIES})
     endif()
-    add_custom_command(TARGET vk_loader_validation_tests POST_BUILD
-                       COMMAND ${CMAKE_COMMAND} -E copy ${GTEST_COPY_SRC1} ${GTEST_COPY_DEST}
-                       COMMAND ${CMAKE_COMMAND} -E copy ${GTEST_COPY_SRC2} ${GTEST_COPY_DEST})
-    # Copy the loader shared lib (if built) to the test application directory so the test app finds it.
-    if(TARGET vulkan)
-        add_custom_command(TARGET vk_loader_validation_tests POST_BUILD
-                           COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:vulkan> $<TARGET_FILE_DIR:vk_loader_validation_tests>)
+
+    if(BUILD_WSI_XLIB_SUPPORT)
+        target_include_directories(test_wsi PRIVATE ${X11_INCLUDE_DIR})
+        target_link_libraries(test_wsi PRIVATE ${X11_LIBRARIES})
+    endif()
+
+    if(BUILD_WSI_WAYLAND_SUPPORT)
+        target_include_directories(test_wsi PRIVATE ${WAYLAND_CLIENT_INCLUDE_DIR})
+        target_link_libraries(test_wsi PRIVATE ${WAYLAND_CLIENT_LIBRARIES})
     endif()
 endif()
 
-add_subdirectory(layers)
+add_executable(test_threading loader_testing_main.cpp loader_threading_tests.cpp)
+target_link_libraries(test_threading PRIVATE testing_dependencies)
+
+if(WIN32)
+    # Copy loader and googletest (gtest) libs to test dir so the test executable can find them.
+    add_custom_command(TARGET test_regression POST_BUILD
+                       COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:gtest> $<TARGET_FILE_DIR:test_regression>)
+    # Copy the loader shared lib (if built) to the test application directory so the test app finds it.
+    if(TARGET vulkan)
+        add_custom_command(TARGET test_regression POST_BUILD
+                           COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:vulkan> $<TARGET_FILE_DIR:test_regression>)
+    endif()
+endif()
+
+# must happen after the dll's get copied over
+gtest_discover_tests(test_regression)

@@ -9,8 +9,10 @@
 #include <algorithm>
 #include <utility>
 
+#include "constants/ascii.h"
 #include "third_party/base/check.h"
 #include "xfa/fgas/graphics/cfgas_gecolor.h"
+#include "xfa/fgas/graphics/cfgas_gegraphics.h"
 #include "xfa/fgas/graphics/cfgas_gepath.h"
 #include "xfa/fwl/cfwl_edit.h"
 #include "xfa/fwl/cfwl_eventmouse.h"
@@ -35,6 +37,13 @@
 #include "xfa/fxfa/parser/cxfa_margin.h"
 #include "xfa/fxfa/parser/cxfa_node.h"
 #include "xfa/fxfa/parser/cxfa_script.h"
+
+namespace {
+
+constexpr float kMinUIHeight = 4.32f;
+constexpr float kDefaultUIHeight = 2.0f;
+
+}  // namespace
 
 CXFA_FFField::CXFA_FFField(CXFA_Node* pNode) : CXFA_FFWidget(pNode) {}
 
@@ -295,8 +304,8 @@ void CXFA_FFField::CapTopBottomPlacement(const CXFA_Margin* margin,
   if (fWidth > rtWidget.width)
     m_UIRect.width += fWidth - rtWidget.width;
 
-  if (fHeight == XFA_DEFAULTUI_HEIGHT && m_UIRect.height < XFA_MINUI_HEIGHT) {
-    m_UIRect.height = XFA_MINUI_HEIGHT;
+  if (fHeight == kDefaultUIHeight && m_UIRect.height < kMinUIHeight) {
+    m_UIRect.height = kMinUIHeight;
     m_CaptionRect.top += rtUIMargin.top + rtUIMargin.height;
   } else if (fHeight > rtWidget.height) {
     m_UIRect.height += fHeight - rtWidget.height;
@@ -325,8 +334,8 @@ void CXFA_FFField::CapLeftRightPlacement(const CXFA_Margin* margin,
       m_CaptionRect.left += fWidth - rtWidget.width;
   }
 
-  if (fHeight == XFA_DEFAULTUI_HEIGHT && m_UIRect.height < XFA_MINUI_HEIGHT) {
-    m_UIRect.height = XFA_MINUI_HEIGHT;
+  if (fHeight == kDefaultUIHeight && m_UIRect.height < kMinUIHeight) {
+    m_UIRect.height = kMinUIHeight;
     m_CaptionRect.top += rtUIMargin.top + rtUIMargin.height;
   } else if (fHeight > rtWidget.height) {
     m_UIRect.height += fHeight - rtWidget.height;
@@ -362,7 +371,9 @@ bool CXFA_FFField::OnMouseEnter() {
   if (!GetNormalWidget())
     return false;
 
-  CFWL_MessageMouse msg(GetNormalWidget(), FWL_MouseCommand::Enter);
+  CFWL_MessageMouse msg(GetNormalWidget(),
+                        CFWL_MessageMouse::MouseCommand::kEnter,
+                        Mask<XFA_FWL_KeyFlag>(), CFX_PointF());
   SendMessageToFWLWidget(&msg);
   return true;
 }
@@ -371,7 +382,9 @@ bool CXFA_FFField::OnMouseExit() {
   if (!GetNormalWidget())
     return false;
 
-  CFWL_MessageMouse msg(GetNormalWidget(), FWL_MouseCommand::Leave);
+  CFWL_MessageMouse msg(GetNormalWidget(),
+                        CFWL_MessageMouse::MouseCommand::kLeave,
+                        Mask<XFA_FWL_KeyFlag>(), CFX_PointF());
   SendMessageToFWLWidget(&msg);
   return true;
 }
@@ -382,9 +395,10 @@ CFX_PointF CXFA_FFField::FWLToClient(const CFX_PointF& point) {
              : point;
 }
 
-bool CXFA_FFField::AcceptsFocusOnButtonDown(uint32_t dwFlags,
-                                            const CFX_PointF& point,
-                                            FWL_MouseCommand command) {
+bool CXFA_FFField::AcceptsFocusOnButtonDown(
+    Mask<XFA_FWL_KeyFlag> dwFlags,
+    const CFX_PointF& point,
+    CFWL_MessageMouse::MouseCommand command) {
   if (!GetNormalWidget())
     return false;
   if (!m_pNode->IsOpenAccess() || !GetDoc()->GetXFADoc()->IsInteractive())
@@ -395,15 +409,18 @@ bool CXFA_FFField::AcceptsFocusOnButtonDown(uint32_t dwFlags,
   return true;
 }
 
-bool CXFA_FFField::OnLButtonDown(uint32_t dwFlags, const CFX_PointF& point) {
+bool CXFA_FFField::OnLButtonDown(Mask<XFA_FWL_KeyFlag> dwFlags,
+                                 const CFX_PointF& point) {
   SetButtonDown(true);
-  CFWL_MessageMouse msg(GetNormalWidget(), FWL_MouseCommand::LeftButtonDown,
+  CFWL_MessageMouse msg(GetNormalWidget(),
+                        CFWL_MessageMouse::MouseCommand::kLeftButtonDown,
                         dwFlags, FWLToClient(point));
   SendMessageToFWLWidget(&msg);
   return true;
 }
 
-bool CXFA_FFField::OnLButtonUp(uint32_t dwFlags, const CFX_PointF& point) {
+bool CXFA_FFField::OnLButtonUp(Mask<XFA_FWL_KeyFlag> dwFlags,
+                               const CFX_PointF& point) {
   if (!GetNormalWidget())
     return false;
   if (!IsButtonDown())
@@ -411,33 +428,38 @@ bool CXFA_FFField::OnLButtonUp(uint32_t dwFlags, const CFX_PointF& point) {
 
   SetButtonDown(false);
 
-  CFWL_MessageMouse msg(GetNormalWidget(), FWL_MouseCommand::LeftButtonUp,
-                        dwFlags, FWLToClient(point));
-  SendMessageToFWLWidget(&msg);
-  return true;
-}
-
-bool CXFA_FFField::OnLButtonDblClk(uint32_t dwFlags, const CFX_PointF& point) {
-  if (!GetNormalWidget())
-    return false;
-
-  CFWL_MessageMouse msg(GetNormalWidget(), FWL_MouseCommand::LeftButtonDblClk,
-                        dwFlags, FWLToClient(point));
-  SendMessageToFWLWidget(&msg);
-  return true;
-}
-
-bool CXFA_FFField::OnMouseMove(uint32_t dwFlags, const CFX_PointF& point) {
-  if (!GetNormalWidget())
-    return false;
-
-  CFWL_MessageMouse msg(GetNormalWidget(), FWL_MouseCommand::Move, dwFlags,
+  CFWL_MessageMouse msg(GetNormalWidget(),
+                        CFWL_MessageMouse::MouseCommand::kLeftButtonUp, dwFlags,
                         FWLToClient(point));
   SendMessageToFWLWidget(&msg);
   return true;
 }
 
-bool CXFA_FFField::OnMouseWheel(uint32_t dwFlags,
+bool CXFA_FFField::OnLButtonDblClk(Mask<XFA_FWL_KeyFlag> dwFlags,
+                                   const CFX_PointF& point) {
+  if (!GetNormalWidget())
+    return false;
+
+  CFWL_MessageMouse msg(GetNormalWidget(),
+                        CFWL_MessageMouse::MouseCommand::kLeftButtonDblClk,
+                        dwFlags, FWLToClient(point));
+  SendMessageToFWLWidget(&msg);
+  return true;
+}
+
+bool CXFA_FFField::OnMouseMove(Mask<XFA_FWL_KeyFlag> dwFlags,
+                               const CFX_PointF& point) {
+  if (!GetNormalWidget())
+    return false;
+
+  CFWL_MessageMouse msg(GetNormalWidget(),
+                        CFWL_MessageMouse::MouseCommand::kMove, dwFlags,
+                        FWLToClient(point));
+  SendMessageToFWLWidget(&msg);
+  return true;
+}
+
+bool CXFA_FFField::OnMouseWheel(Mask<XFA_FWL_KeyFlag> dwFlags,
                                 const CFX_PointF& point,
                                 const CFX_Vector& delta) {
   if (!GetNormalWidget())
@@ -448,33 +470,39 @@ bool CXFA_FFField::OnMouseWheel(uint32_t dwFlags,
   return true;
 }
 
-bool CXFA_FFField::OnRButtonDown(uint32_t dwFlags, const CFX_PointF& point) {
+bool CXFA_FFField::OnRButtonDown(Mask<XFA_FWL_KeyFlag> dwFlags,
+                                 const CFX_PointF& point) {
   SetButtonDown(true);
 
-  CFWL_MessageMouse msg(GetNormalWidget(), FWL_MouseCommand::RightButtonDown,
+  CFWL_MessageMouse msg(GetNormalWidget(),
+                        CFWL_MessageMouse::MouseCommand::kRightButtonDown,
                         dwFlags, FWLToClient(point));
   SendMessageToFWLWidget(&msg);
   return true;
 }
 
-bool CXFA_FFField::OnRButtonUp(uint32_t dwFlags, const CFX_PointF& point) {
+bool CXFA_FFField::OnRButtonUp(Mask<XFA_FWL_KeyFlag> dwFlags,
+                               const CFX_PointF& point) {
   if (!GetNormalWidget())
     return false;
   if (!IsButtonDown())
     return false;
 
   SetButtonDown(false);
-  CFWL_MessageMouse msg(GetNormalWidget(), FWL_MouseCommand::RightButtonUp,
+  CFWL_MessageMouse msg(GetNormalWidget(),
+                        CFWL_MessageMouse::MouseCommand::kRightButtonUp,
                         dwFlags, FWLToClient(point));
   SendMessageToFWLWidget(&msg);
   return true;
 }
 
-bool CXFA_FFField::OnRButtonDblClk(uint32_t dwFlags, const CFX_PointF& point) {
+bool CXFA_FFField::OnRButtonDblClk(Mask<XFA_FWL_KeyFlag> dwFlags,
+                                   const CFX_PointF& point) {
   if (!GetNormalWidget())
     return false;
 
-  CFWL_MessageMouse msg(GetNormalWidget(), FWL_MouseCommand::RightButtonDblClk,
+  CFWL_MessageMouse msg(GetNormalWidget(),
+                        CFWL_MessageMouse::MouseCommand::kRightButtonDblClk,
                         dwFlags, FWLToClient(point));
   SendMessageToFWLWidget(&msg);
   return true;
@@ -489,7 +517,7 @@ bool CXFA_FFField::OnSetFocus(CXFA_FFWidget* pOldWidget) {
 
   CFWL_MessageSetFocus msg(nullptr, GetNormalWidget());
   SendMessageToFWLWidget(&msg);
-  GetLayoutItem()->SetStatusBits(XFA_WidgetStatus_Focused);
+  GetLayoutItem()->SetStatusBits(XFA_WidgetStatus::kFocused);
   InvalidateRect();
 
   return true;
@@ -499,44 +527,46 @@ bool CXFA_FFField::OnKillFocus(CXFA_FFWidget* pNewWidget) {
   if (GetNormalWidget()) {
     CFWL_MessageKillFocus msg(nullptr, GetNormalWidget());
     SendMessageToFWLWidget(&msg);
-    GetLayoutItem()->ClearStatusBits(XFA_WidgetStatus_Focused);
+    GetLayoutItem()->ClearStatusBits(XFA_WidgetStatus::kFocused);
     InvalidateRect();
   }
   return pNewWidget && CXFA_FFWidget::OnKillFocus(pNewWidget);
 }
 
-bool CXFA_FFField::OnKeyDown(uint32_t dwKeyCode, uint32_t dwFlags) {
+bool CXFA_FFField::OnKeyDown(XFA_FWL_VKEYCODE dwKeyCode,
+                             Mask<XFA_FWL_KeyFlag> dwFlags) {
   if (!GetNormalWidget() || !GetDoc()->GetXFADoc()->IsInteractive())
     return false;
 
-  CFWL_MessageKey msg(GetNormalWidget(), CFWL_MessageKey::Type::kKeyDown,
+  CFWL_MessageKey msg(GetNormalWidget(), CFWL_MessageKey::KeyCommand::kKeyDown,
                       dwFlags, dwKeyCode);
   SendMessageToFWLWidget(&msg);
   return true;
 }
 
-bool CXFA_FFField::OnKeyUp(uint32_t dwKeyCode, uint32_t dwFlags) {
+bool CXFA_FFField::OnKeyUp(XFA_FWL_VKEYCODE dwKeyCode,
+                           Mask<XFA_FWL_KeyFlag> dwFlags) {
   if (!GetNormalWidget() || !GetDoc()->GetXFADoc()->IsInteractive())
     return false;
 
-  CFWL_MessageKey msg(GetNormalWidget(), CFWL_MessageKey::Type::kKeyUp, dwFlags,
-                      dwKeyCode);
+  CFWL_MessageKey msg(GetNormalWidget(), CFWL_MessageKey::KeyCommand::kKeyUp,
+                      dwFlags, dwKeyCode);
   SendMessageToFWLWidget(&msg);
   return true;
 }
 
-bool CXFA_FFField::OnChar(uint32_t dwChar, uint32_t dwFlags) {
+bool CXFA_FFField::OnChar(uint32_t dwChar, Mask<XFA_FWL_KeyFlag> dwFlags) {
   if (!GetDoc()->GetXFADoc()->IsInteractive())
     return false;
-  if (dwChar == XFA_FWL_VKEY_Tab)
+  if (dwChar == pdfium::ascii::kTab)
     return true;
   if (!GetNormalWidget())
     return false;
   if (!m_pNode->IsOpenAccess())
     return false;
 
-  CFWL_MessageKey msg(GetNormalWidget(), CFWL_MessageKey::Type::kChar, dwFlags,
-                      dwChar);
+  CFWL_MessageKey msg(GetNormalWidget(), CFWL_MessageKey::KeyCommand::kChar,
+                      dwFlags, dwChar);
   SendMessageToFWLWidget(&msg);
   return true;
 }
@@ -670,7 +700,7 @@ int32_t CXFA_FFField::CalculateNode(CXFA_Node* pNode) {
                                static_cast<uint32_t>(AlertIcon::kWarning),
                                static_cast<uint32_t>(AlertButton::kYesNo)) ==
           static_cast<uint32_t>(AlertReturn::kYes)) {
-        pNode->SetFlag(XFA_NodeFlag_UserInteractive);
+        pNode->SetFlag(XFA_NodeFlag::kUserInteractive);
         return 1;
       }
       return 0;
@@ -678,7 +708,7 @@ int32_t CXFA_FFField::CalculateNode(CXFA_Node* pNode) {
     case XFA_AttributeValue::Ignore:
       return 0;
     case XFA_AttributeValue::Disabled:
-      pNode->SetFlag(XFA_NodeFlag_UserInteractive);
+      pNode->SetFlag(XFA_NodeFlag::kUserInteractive);
       return 1;
     default:
       return 1;
@@ -704,26 +734,26 @@ void CXFA_FFField::OnProcessEvent(CFWL_Event* pEvent) {
   switch (pEvent->GetType()) {
     case CFWL_Event::Type::Mouse: {
       CFWL_EventMouse* event = static_cast<CFWL_EventMouse*>(pEvent);
-      FWL_MouseCommand cmd = event->GetCommand();
-      if (cmd == FWL_MouseCommand::Enter) {
+      CFWL_MessageMouse::MouseCommand cmd = event->GetCommand();
+      if (cmd == CFWL_MessageMouse::MouseCommand::kEnter) {
         CXFA_EventParam eParam;
         eParam.m_eType = XFA_EVENT_MouseEnter;
         eParam.m_pTarget = m_pNode.Get();
         m_pNode->ProcessEvent(GetDocView(), XFA_AttributeValue::MouseEnter,
                               &eParam);
-      } else if (cmd == FWL_MouseCommand::Leave) {
+      } else if (cmd == CFWL_MessageMouse::MouseCommand::kLeave) {
         CXFA_EventParam eParam;
         eParam.m_eType = XFA_EVENT_MouseExit;
         eParam.m_pTarget = m_pNode.Get();
         m_pNode->ProcessEvent(GetDocView(), XFA_AttributeValue::MouseExit,
                               &eParam);
-      } else if (cmd == FWL_MouseCommand::LeftButtonDown) {
+      } else if (cmd == CFWL_MessageMouse::MouseCommand::kLeftButtonDown) {
         CXFA_EventParam eParam;
         eParam.m_eType = XFA_EVENT_MouseDown;
         eParam.m_pTarget = m_pNode.Get();
         m_pNode->ProcessEvent(GetDocView(), XFA_AttributeValue::MouseDown,
                               &eParam);
-      } else if (cmd == FWL_MouseCommand::LeftButtonUp) {
+      } else if (cmd == CFWL_MessageMouse::MouseCommand::kLeftButtonUp) {
         CXFA_EventParam eParam;
         eParam.m_eType = XFA_EVENT_MouseUp;
         eParam.m_pTarget = m_pNode.Get();

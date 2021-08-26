@@ -27,10 +27,10 @@ DSLVarBase::DSLVarBase(DSLType type, skstd::string_view name, DSLExpression init
 DSLVarBase::DSLVarBase(DSLType type, DSLExpression initialValue)
     : DSLVarBase(type, "var", std::move(initialValue)) {}
 
-DSLVarBase::DSLVarBase(DSLModifiers modifiers, DSLType type, DSLExpression initialValue)
+DSLVarBase::DSLVarBase(const DSLModifiers& modifiers, DSLType type, DSLExpression initialValue)
     : DSLVarBase(modifiers, type, "var", std::move(initialValue)) {}
 
-DSLVarBase::DSLVarBase(DSLModifiers modifiers, DSLType type, skstd::string_view name,
+DSLVarBase::DSLVarBase(const DSLModifiers& modifiers, DSLType type, skstd::string_view name,
                        DSLExpression initialValue)
     : fModifiers(std::move(modifiers))
     , fType(std::move(type))
@@ -55,7 +55,7 @@ DSLVarBase::DSLVarBase(DSLModifiers modifiers, DSLType type, skstd::string_view 
                                                       &grslType));
                 count = 0;
             }
-            const char* name;
+            const char* uniformName;
             SkASSERT(DSLWriter::CurrentEmitArgs());
             fUniformHandle = DSLWriter::CurrentEmitArgs()->fUniformHandler->addUniformArray(
                                                                  &DSLWriter::CurrentEmitArgs()->fFp,
@@ -63,8 +63,8 @@ DSLVarBase::DSLVarBase(DSLModifiers modifiers, DSLType type, skstd::string_view 
                                                                  grslType,
                                                                  String(this->name()).c_str(),
                                                                  count,
-                                                                 &name).toIndex();
-            fName = name;
+                                                                 &uniformName).toIndex();
+            fName = uniformName;
         }
 #endif // SK_SUPPORT_GPU && !defined(SKSL_STANDALONE)
     }

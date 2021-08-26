@@ -18,44 +18,48 @@ namespace blink {
 
 // ReferrerScriptInfo carries a copy of "referencing script's" info referenced
 // in HTML Spec: "HostImportModuleDynamically" algorithm.
-// https://html.spec.whatwg.org/C/#hostimportmoduledynamically(referencingscriptormodule,-specifier,-promisecapability)
+// https://html.spec.whatwg.org/C/#hostimportmoduledynamically(referencingscriptormodule,-modulerequest,-promisecapability)
+
+// There are three sub cases for a referencing script:
+//
+// 1. No referencing scripts (e.g. event handlers)
+//    - CreateNoReferencingScript().
+//    - ReferrerScriptInfo::HasReferencingScript() is false.
+//    - V8's HostDefinedOption is empty `v8::Local<v8::PrimitiveArray>()`.
+//
+// 2. A referencing script with default value (e.g. many of classic scripts)
+//    - CreateWithReferencingScript() with the base URL ==
+//    ScriptOrigin::ResourceName() and default `ScriptFetchOptions()`.
+//    - ReferrerScriptInfo::HasReferencingScript() is true.
+//    - V8's HostDefinedOption is `v8::PrimitiveArray` with length 1.
+//
+// 3. A referencing script with non-default value
+//    - CreateWithReferencingScript().
+//    - ReferrerScriptInfo::HasReferencingScript() is true.
+//    - V8's HostDefinedOption is `v8::PrimitiveArray` with length
+//    HostDefinedOptionsIndex::kLength
 class CORE_EXPORT ReferrerScriptInfo {
   STACK_ALLOCATED();
 
  public:
-  enum class BaseUrlSource {
-    kClassicScriptCORSSameOrigin,
-    kClassicScriptCORSCrossOrigin,
-    kOther
-  };
-  ReferrerScriptInfo() {}
-  ReferrerScriptInfo(const KURL& base_url,
-                     network::mojom::CredentialsMode credentials_mode,
-                     const String& nonce,
-                     ParserDisposition parser_state,
-                     network::mojom::ReferrerPolicy referrer_policy,
-                     BaseUrlSource base_url_source)
-      : base_url_(base_url),
-        credentials_mode_(credentials_mode),
-        nonce_(nonce),
-        parser_state_(parser_state),
-        referrer_policy_(referrer_policy),
-        base_url_source_(base_url_source) {}
-  ReferrerScriptInfo(const KURL& base_url,
-                     const ScriptFetchOptions& options,
-                     BaseUrlSource base_url_source)
-      : ReferrerScriptInfo(base_url,
-                           options.CredentialsMode(),
-                           options.Nonce(),
-                           options.ParserState(),
-                           options.GetReferrerPolicy(),
-                           base_url_source) {}
+  static ReferrerScriptInfo CreateNoReferencingScript();
+
+  // There should exist a corresponding `blink::Script`.
+  static ReferrerScriptInfo CreateWithReferencingScript(
+      const KURL& base_url,
+      const ScriptFetchOptions&);
 
   static ReferrerScriptInfo FromV8HostDefinedOptions(
       v8::Local<v8::Context>,
-      v8::Local<v8::PrimitiveArray>);
-  v8::Local<v8::PrimitiveArray> ToV8HostDefinedOptions(v8::Isolate*) const;
+      v8::Local<v8::PrimitiveArray>,
+      const KURL& script_origin_resource_name);
+  v8::Local<v8::PrimitiveArray> ToV8HostDefinedOptions(
+      v8::Isolate*,
+      const KURL& script_origin_resource_name) const;
 
+  bool HasReferencingScript() const { return has_referencing_script_; }
+  bool HasReferencingScriptWithDefaultValue(
+      const KURL& script_origin_resource_name) const;
   const KURL& BaseURL() const { return base_url_; }
   network::mojom::CredentialsMode CredentialsMode() const {
     return credentials_mode_;
@@ -65,23 +69,27 @@ class CORE_EXPORT ReferrerScriptInfo {
   network::mojom::ReferrerPolicy GetReferrerPolicy() const {
     return referrer_policy_;
   }
-  BaseUrlSource GetBaseUrlSource() const { return base_url_source_; }
-
-  bool IsDefaultValue() const {
-    return base_url_.IsNull() &&
-           credentials_mode_ == network::mojom::CredentialsMode::kSameOrigin &&
-           nonce_.IsEmpty() && parser_state_ == kNotParserInserted &&
-           base_url_source_ == BaseUrlSource::kOther;
-  }
 
  private:
+  ReferrerScriptInfo() = default;
+  ReferrerScriptInfo(const KURL& base_url,
+                     network::mojom::CredentialsMode credentials_mode,
+                     const String& nonce,
+                     ParserDisposition parser_state,
+                     network::mojom::ReferrerPolicy referrer_policy)
+      : has_referencing_script_(true),
+        base_url_(base_url),
+        credentials_mode_(credentials_mode),
+        nonce_(nonce),
+        parser_state_(parser_state),
+        referrer_policy_(referrer_policy) {}
+
+  // Spec: referencingScriptOrModule is not null.
+  const bool has_referencing_script_ = false;
+
   // Spec: "referencing script's base URL"
   // https://html.spec.whatwg.org/C/#concept-script-base-url
-  //
-  // If base_url_.IsNull(), refer to ScriptOrigin::ResourceName() instead.
-  // Note: This improves the chance of getting into the fast path in
-  //       ToV8HostDefinedOptions().
-  const KURL base_url_;
+  const KURL base_url_ = KURL();
 
   // Spec: "referencing script's credentials mode"
   // The default value is "same-origin" per:
@@ -90,7 +98,7 @@ class CORE_EXPORT ReferrerScriptInfo {
       network::mojom::CredentialsMode::kSameOrigin;
 
   // Spec: "referencing script's cryptographic nonce"
-  const String nonce_;
+  const String nonce_ = String();
 
   // Spec: "referencing script's parser state"
   // The default value is "not-parser-inserted" per:
@@ -102,9 +110,6 @@ class CORE_EXPORT ReferrerScriptInfo {
   // https://html.spec.whatwg.org/C/#default-classic-script-fetch-options
   const network::mojom::ReferrerPolicy referrer_policy_ =
       network::mojom::ReferrerPolicy::kDefault;
-
-  // Temporary flag to collect UMA for crbug.com/1082086.
-  const BaseUrlSource base_url_source_ = BaseUrlSource::kOther;
 };
 
 }  // namespace blink

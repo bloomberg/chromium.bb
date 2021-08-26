@@ -286,8 +286,7 @@ void FrameSchedulerImpl::RemoveThrottleableQueueFromBudgetPools(
           : base::sequence_manager::LazyNow(base::TimeTicks::Now());
 
   if (cpu_time_budget_pool) {
-    cpu_time_budget_pool->RemoveQueue(lazy_now.Now(),
-                                      task_queue->GetTaskQueue());
+    task_queue->RemoveFromBudgetPool(lazy_now.Now(), cpu_time_budget_pool);
   }
 
   parent_page_scheduler_->RemoveQueueFromWakeUpBudgetPool(task_queue,
@@ -502,6 +501,27 @@ QueueTraits FrameSchedulerImpl::CreateQueueTraitsForTaskType(TaskType type) {
     // Navigation IPCs do not run using virtual time to avoid hanging.
     case TaskType::kInternalNavigationAssociatedUnfreezable:
       return DoesNotUseVirtualTimeTaskQueueTraits();
+    case TaskType::kInternalPostMessageForwarding:
+      // postMessages to remote frames hop through the scheduler so that any
+      // IPCs generated in the same task arrive first. These tasks must be
+      // pausable in order to maintain this invariant, otherwise they might run
+      // in a nested event loop before the task completes, e.g. debugger
+      // breakpoints or javascript dialogs.
+      if (base::FeatureList::IsEnabled(
+              kDisablePrioritizedPostMessageForwarding)) {
+        // This matches the pre-kInternalPostMessageForwarding behavior.
+        return PausableTaskQueueTraits();
+      } else {
+        // Freezing this task type would prevent transmission of postMessages to
+        // remote frames that occurred in unfreezable tasks or from tasks that
+        // ran prior to being frozen (e.g. freeze event handler), which is not
+        // desirable. The messages are still queued on the receiving side, which
+        // is where frozenness should be assessed.
+        return PausableTaskQueueTraits()
+            .SetCanBeFrozen(false)
+            .SetPrioritisationType(
+                QueueTraits::PrioritisationType::kPostMessageForwarding);
+      }
     case TaskType::kDeprecatedNone:
     case TaskType::kMainThreadTaskQueueV8:
     case TaskType::kMainThreadTaskQueueCompositor:
@@ -521,7 +541,6 @@ QueueTraits FrameSchedulerImpl::CreateQueueTraitsForTaskType(TaskType type) {
     // The associated TaskRunner should be obtained by creating a
     // WebSchedulingTaskQueue with CreateWebSchedulingTaskQueue().
     case TaskType::kExperimentalWebScheduling:
-    case TaskType::kCount:
       // Not a valid frame-level TaskType.
       NOTREACHED();
       return QueueTraits();
@@ -1054,6 +1073,9 @@ TaskQueue::QueuePriority FrameSchedulerImpl::ComputePriority(
       return TaskQueue::QueuePriority::kVeryHighPriority;
     case MainThreadTaskQueue::QueueTraits::PrioritisationType::kBestEffort:
       return TaskQueue::QueuePriority::kBestEffortPriority;
+    case MainThreadTaskQueue::QueueTraits::PrioritisationType::
+        kPostMessageForwarding:
+      return TaskQueue::QueuePriority::kVeryHighPriority;
     default:
       break;
   }
@@ -1269,8 +1291,7 @@ void FrameSchedulerImpl::OnTaskQueueCreated(
     CPUTimeBudgetPool* cpu_time_budget_pool =
         parent_page_scheduler_->background_cpu_time_budget_pool();
     if (cpu_time_budget_pool) {
-      cpu_time_budget_pool->AddQueue(lazy_now.Now(),
-                                     task_queue->GetTaskQueue());
+      task_queue->AddToBudgetPool(lazy_now.Now(), cpu_time_budget_pool);
     }
 
     parent_page_scheduler_->AddQueueToWakeUpBudgetPool(

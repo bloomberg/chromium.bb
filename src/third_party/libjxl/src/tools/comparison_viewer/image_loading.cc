@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #include "tools/comparison_viewer/image_loading.h"
 
@@ -75,9 +66,12 @@ QImage loadImage(const QString& filename, const QByteArray& targetIccProfile,
   if (!ib.CopyTo(Rect(ib), targetColorSpace, &converted, &pool)) {
     return QImage();
   }
-  ScaleImage(255.f, &converted);
 
   QImage image(converted.xsize(), converted.ysize(), QImage::Format_ARGB32);
+
+  const auto ScaleAndClamp = [](const float x) {
+    return Clamp1(x * 255 + .5f, 0.f, 255.f);
+  };
 
   if (ib.HasAlpha()) {
     for (int y = 0; y < image.height(); ++y) {
@@ -87,8 +81,8 @@ QImage loadImage(const QString& filename, const QByteArray& targetIccProfile,
       const float* const greenRow = converted.ConstPlaneRow(1, y);
       const float* const blueRow = converted.ConstPlaneRow(2, y);
       for (int x = 0; x < image.width(); ++x) {
-        row[x] =
-            qRgba(redRow[x], greenRow[x], blueRow[x], alphaRow[x] * 255 + .5f);
+        row[x] = qRgba(ScaleAndClamp(redRow[x]), ScaleAndClamp(greenRow[x]),
+                       ScaleAndClamp(blueRow[x]), ScaleAndClamp(alphaRow[x]));
       }
     }
   } else {
@@ -98,7 +92,8 @@ QImage loadImage(const QString& filename, const QByteArray& targetIccProfile,
       const float* const greenRow = converted.ConstPlaneRow(1, y);
       const float* const blueRow = converted.ConstPlaneRow(2, y);
       for (int x = 0; x < image.width(); ++x) {
-        row[x] = qRgb(redRow[x], greenRow[x], blueRow[x]);
+        row[x] = qRgb(ScaleAndClamp(redRow[x]), ScaleAndClamp(greenRow[x]),
+                      ScaleAndClamp(blueRow[x]));
       }
     }
   }

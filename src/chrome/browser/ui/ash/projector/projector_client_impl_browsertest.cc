@@ -14,11 +14,18 @@
 #include "chrome/browser/speech/cros_speech_recognition_service_factory.h"
 #include "chrome/browser/speech/fake_speech_recognition_service.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/ui_test_utils.h"
+#include "chromeos/components/projector_app/projector_app_constants.h"
 #include "components/soda/soda_installer_impl_chromeos.h"
+#include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/common/page_type.h"
 #include "content/public/test/browser_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace ash {
 
@@ -44,14 +51,14 @@ class ASH_PUBLIC_EXPORT MockProjectorController : public ProjectorController {
                void(const media::SpeechRecognitionResult& result));
   MOCK_METHOD0(OnTranscriptionError, void());
   MOCK_METHOD1(SetProjectorToolsVisible, void(bool is_visible));
-  MOCK_CONST_METHOD0(AreProjectorToolsVisible, bool());
   MOCK_CONST_METHOD0(IsEligible, bool());
 };
 
 class ProjectorClientTest : public InProcessBrowserTest {
  public:
   ProjectorClientTest() {
-    scoped_feature_list_.InitAndEnableFeature(features::kProjector);
+    scoped_feature_list_.InitWithFeatures(
+        {features::kProjector, features::kOnDeviceSpeechRecognition}, {});
   }
 
   ~ProjectorClientTest() override = default;
@@ -61,9 +68,7 @@ class ProjectorClientTest : public InProcessBrowserTest {
   // InProcessBrowserTest:
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
-    static_cast<speech::SodaInstallerImplChromeOS*>(
-        speech::SodaInstaller::GetInstance())
-        ->set_soda_installed_for_test(true);
+    speech::SodaInstaller::GetInstance()->NotifySodaInstalledForTesting();
 
     scoped_resetter_ =
         std::make_unique<ProjectorController::ScopedInstanceResetterForTest>();
@@ -107,6 +112,18 @@ class ProjectorClientTest : public InProcessBrowserTest {
     loop.RunUntilIdle();
   }
 
+  // This test helper verifies that navigating to the |url| doesn't result in a
+  // 404 error.
+  void VerifyUrlValid(const char* url) {
+    GURL gurl(url);
+    EXPECT_TRUE(gurl.is_valid());
+    ui_test_utils::NavigateToURL(browser(), gurl);
+    content::WebContents* tab =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    EXPECT_EQ(tab->GetController().GetLastCommittedEntry()->GetPageType(),
+              content::PAGE_TYPE_NORMAL);
+  }
+
  protected:
   std::unique_ptr<ProjectorController::ScopedInstanceResetterForTest>
       scoped_resetter_;
@@ -124,6 +141,16 @@ IN_PROC_BROWSER_TEST_F(ProjectorClientTest, ShowOrCloseSelfieCamTest) {
   EXPECT_TRUE(client_->IsSelfieCamVisible());
   client_->CloseSelfieCam();
   EXPECT_FALSE(client_->IsSelfieCamVisible());
+}
+
+// This test verifies that the selfie cam WebUI URL is valid.
+IN_PROC_BROWSER_TEST_F(ProjectorClientTest, SelfieCamUrlValid) {
+  VerifyUrlValid(chromeos::kChromeUITrustedProjectorSelfieCamUrl);
+}
+
+// This test verifies that the Projector app WebUI URL is valid.
+IN_PROC_BROWSER_TEST_F(ProjectorClientTest, PlayerUrlValid) {
+  VerifyUrlValid(chromeos::kChromeUITrustedProjectorPlayerUrl);
 }
 
 // TODO(crbug/1199396): Add a test to verify the selfie cam turns off when the

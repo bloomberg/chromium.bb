@@ -48,7 +48,19 @@ using IntraPredictionBuffer =
 // DecoderImpl::DecodeTiles().
 struct FrameScratchBuffer {
   LoopRestorationInfo loop_restoration_info;
-  Array2D<int16_t> cdef_index;
+  Array2D<int8_t> cdef_index;
+  // Encodes the block skip information as a bitmask for the entire frame which
+  // will be used by the cdef process.
+  //
+  // * The size of this array is rows4x4 / 2 * column4x4 / 16.
+  // * Each row of the bitmasks array (cdef_skip) stores the bitmask for 2 rows
+  // of 4x4 blocks.
+  // * Each entry in the row will store the skip information for 16 4x4 blocks
+  // (8 bits).
+  // * If any of the four 4x4 blocks in the 8x8 block is not a skip block, then
+  // the corresponding bit (as described below) will be set to 1.
+  // * For the 4x4 block at column4x4 the bit index is (column4x4 >> 1).
+  Array2D<uint8_t> cdef_skip;
   Array2D<TransformSize> inter_transform_sizes;
   BlockParametersHolder block_parameters_holder;
   TemporalMotionField motion_field;

@@ -91,6 +91,12 @@ enum class VerifySignatureResult {
   ENUM_SIZE
 };
 
+// Describes instance manipulations applied to data.
+struct InstanceManipulations {
+  const bool gzip_compressed;
+  const bool delta_compressed;
+};
+
 #if defined(OS_ANDROID)
 // Records the result of importing a seed during Android first run.
 COMPONENT_EXPORT(VARIATIONS)
@@ -108,6 +114,17 @@ void RecordLoadSafeSeedResult(LoadSeedResult state);
 // Records the result of attempting to store a variations seed received from the
 // server.
 COMPONENT_EXPORT(VARIATIONS) void RecordStoreSeedResult(StoreSeedResult result);
+
+// Records the result of attempting to store a seed as the safe seed.
+COMPONENT_EXPORT(VARIATIONS)
+void RecordStoreSafeSeedResult(StoreSeedResult result);
+
+// Reports to UMA that the seed format specified by the server is unsupported.
+COMPONENT_EXPORT(VARIATIONS) void ReportUnsupportedSeedFormatError();
+
+// Records the instance manipulations a seed was received with.
+COMPONENT_EXPORT(VARIATIONS)
+void RecordSeedInstanceManipulations(const InstanceManipulations& im);
 
 }  // namespace variations
 

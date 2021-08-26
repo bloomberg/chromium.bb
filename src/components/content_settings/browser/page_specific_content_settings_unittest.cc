@@ -124,7 +124,8 @@ TEST_F(PageSpecificContentSettingsTest, BlockedContent) {
   // popup.
   GURL origin("http://google.com");
   std::unique_ptr<net::CanonicalCookie> cookie1(net::CanonicalCookie::Create(
-      origin, "A=B", base::Time::Now(), absl::nullopt /* server_time */));
+      origin, "A=B", base::Time::Now(), absl::nullopt /* server_time */,
+      absl::nullopt /* cookie_partition_key */));
   ASSERT_TRUE(cookie1);
   GetHandle()->OnCookiesAccessed(web_contents()->GetMainFrame(),
                                  {content::CookieAccessDetails::Type::kChange,
@@ -171,7 +172,8 @@ TEST_F(PageSpecificContentSettingsTest, BlockedContent) {
 
   // Block a cookie.
   std::unique_ptr<net::CanonicalCookie> cookie2(net::CanonicalCookie::Create(
-      origin, "C=D", base::Time::Now(), absl::nullopt /* server_time */));
+      origin, "C=D", base::Time::Now(), absl::nullopt /* server_time */,
+      absl::nullopt /* cookie_partition_key */));
   ASSERT_TRUE(cookie2);
   GetHandle()->OnCookiesAccessed(web_contents()->GetMainFrame(),
                                  {content::CookieAccessDetails::Type::kChange,
@@ -258,7 +260,8 @@ TEST_F(PageSpecificContentSettingsTest, AllowedContent) {
   // Record a cookie.
   GURL origin("http://google.com");
   std::unique_ptr<net::CanonicalCookie> cookie1(net::CanonicalCookie::Create(
-      origin, "A=B", base::Time::Now(), absl::nullopt /* server_time */));
+      origin, "A=B", base::Time::Now(), absl::nullopt /* server_time */,
+      absl::nullopt /* cookie_partition_key */));
   ASSERT_TRUE(cookie1);
   GetHandle()->OnCookiesAccessed(web_contents()->GetMainFrame(),
                                  {content::CookieAccessDetails::Type::kChange,
@@ -272,7 +275,8 @@ TEST_F(PageSpecificContentSettingsTest, AllowedContent) {
 
   // Record a blocked cookie.
   std::unique_ptr<net::CanonicalCookie> cookie2(net::CanonicalCookie::Create(
-      origin, "C=D", base::Time::Now(), absl::nullopt /* server_time */));
+      origin, "C=D", base::Time::Now(), absl::nullopt /* server_time */,
+      absl::nullopt /* cookie_partition_key */));
   ASSERT_TRUE(cookie2);
   GetHandle()->OnCookiesAccessed(web_contents()->GetMainFrame(),
                                  {content::CookieAccessDetails::Type::kChange,
@@ -313,7 +317,8 @@ TEST_F(PageSpecificContentSettingsTest, SiteDataObserver) {
   bool blocked_by_policy = false;
   GURL origin("http://google.com");
   std::unique_ptr<net::CanonicalCookie> cookie(net::CanonicalCookie::Create(
-      origin, "A=B", base::Time::Now(), absl::nullopt /* server_time */));
+      origin, "A=B", base::Time::Now(), absl::nullopt /* server_time */,
+      absl::nullopt /* cookie_partition_key */));
   ASSERT_TRUE(cookie);
   GetHandle()->OnCookiesAccessed(web_contents()->GetMainFrame(),
                                  {content::CookieAccessDetails::Type::kChange,
@@ -326,7 +331,8 @@ TEST_F(PageSpecificContentSettingsTest, SiteDataObserver) {
   std::unique_ptr<net::CanonicalCookie> other_cookie(
       net::CanonicalCookie::Create(GURL("http://google.com"),
                                    "CookieName=CookieValue", base::Time::Now(),
-                                   absl::nullopt /* server_time */));
+                                   absl::nullopt /* server_time */,
+                                   absl::nullopt /* cookie_partition_key */));
   ASSERT_TRUE(other_cookie);
 
   cookie_list.push_back(*other_cookie);
@@ -349,9 +355,10 @@ TEST_F(PageSpecificContentSettingsTest, LocalSharedObjectsContainer) {
   PageSpecificContentSettings* content_settings =
       PageSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
   bool blocked_by_policy = false;
-  auto cookie = net::CanonicalCookie::Create(GURL("http://google.com"), "k=v",
-                                             base::Time::Now(),
-                                             absl::nullopt /* server_time */);
+  auto cookie = net::CanonicalCookie::Create(
+      GURL("http://google.com"), "k=v", base::Time::Now(),
+      absl::nullopt /* server_time */,
+      absl::nullopt /* cookie_partition_key */);
   GetHandle()->OnCookiesAccessed(web_contents()->GetMainFrame(),
                                  {content::CookieAccessDetails::Type::kRead,
                                   GURL("http://google.com"),
@@ -387,18 +394,22 @@ TEST_F(PageSpecificContentSettingsTest, LocalSharedObjectsContainerCookie) {
   PageSpecificContentSettings* content_settings =
       PageSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
   bool blocked_by_policy = false;
-  auto cookie1 = net::CanonicalCookie::Create(GURL("http://google.com"), "k1=v",
-                                              base::Time::Now(),
-                                              absl::nullopt /* server_time */);
+  auto cookie1 = net::CanonicalCookie::Create(
+      GURL("http://google.com"), "k1=v", base::Time::Now(),
+      absl::nullopt /* server_time */,
+      absl::nullopt /* cookie_partition_key */);
   auto cookie2 = net::CanonicalCookie::Create(
       GURL("http://www.google.com"), "k2=v; Domain=google.com",
-      base::Time::Now(), absl::nullopt /* server_time */);
+      base::Time::Now(), absl::nullopt /* server_time */,
+      absl::nullopt /* cookie_partition_key */);
   auto cookie3 = net::CanonicalCookie::Create(
       GURL("http://www.google.com"), "k3=v; Domain=.google.com",
-      base::Time::Now(), absl::nullopt /* server_time */);
+      base::Time::Now(), absl::nullopt /* server_time */,
+      absl::nullopt /* cookie_partition_key */);
   auto cookie4 = net::CanonicalCookie::Create(
       GURL("http://www.google.com"), "k4=v; Domain=.www.google.com",
-      base::Time::Now(), absl::nullopt /* server_time */);
+      base::Time::Now(), absl::nullopt /* server_time */,
+      absl::nullopt /* cookie_partition_key */);
   GetHandle()->OnCookiesAccessed(web_contents()->GetMainFrame(),
                                  {content::CookieAccessDetails::Type::kRead,
                                   GURL("http://www.google.com"),
@@ -406,9 +417,10 @@ TEST_F(PageSpecificContentSettingsTest, LocalSharedObjectsContainerCookie) {
                                   {*cookie1, *cookie2, *cookie3, *cookie4},
                                   blocked_by_policy});
 
-  auto cookie5 = net::CanonicalCookie::Create(GURL("https://www.google.com"),
-                                              "k5=v", base::Time::Now(),
-                                              absl::nullopt /* server_time */);
+  auto cookie5 = net::CanonicalCookie::Create(
+      GURL("https://www.google.com"), "k5=v", base::Time::Now(),
+      absl::nullopt /* server_time */,
+      absl::nullopt /* cookie_partition_key */);
   GetHandle()->OnCookiesAccessed(web_contents()->GetMainFrame(),
                                  {content::CookieAccessDetails::Type::kRead,
                                   GURL("https://www.google.com"),
@@ -470,10 +482,11 @@ class PageSpecificContentSettingsWithPrerenderTest
     : public PageSpecificContentSettingsTest {
  public:
   PageSpecificContentSettingsWithPrerenderTest() {
-    std::map<std::string, std::string> parameters;
-    parameters["implementation"] = "mparch";
-    feature_list_.InitAndEnableFeatureWithParameters(
-        blink::features::kPrerender2, parameters);
+    feature_list_.InitWithFeatures(
+        {blink::features::kPrerender2},
+        // Disable the memory requirement of Prerender2 so the test can run on
+        // any bot.
+        {blink::features::kPrerender2MemoryControls});
   }
   ~PageSpecificContentSettingsWithPrerenderTest() override = default;
 
@@ -520,7 +533,8 @@ TEST_F(PageSpecificContentSettingsWithPrerenderTest, SiteDataAccessed) {
     // a popup.
     GURL origin("http://google.com");
     std::unique_ptr<net::CanonicalCookie> cookie1(net::CanonicalCookie::Create(
-        origin, "A=B", base::Time::Now(), absl::nullopt /* server_time */));
+        origin, "A=B", base::Time::Now(), absl::nullopt /* server_time */,
+        absl::nullopt /* cookie_partition_key */));
     ASSERT_TRUE(cookie1);
     pscs->OnCookiesAccessed({content::CookieAccessDetails::Type::kChange,
                              origin,
@@ -536,6 +550,11 @@ TEST_F(PageSpecificContentSettingsWithPrerenderTest, SiteDataAccessed) {
     std::unique_ptr<content::NavigationSimulator> navigation =
         content::NavigationSimulator::CreateRendererInitiated(
             prerender_url, web_contents()->GetMainFrame());
+    // TODO(https://crbug.com/1181763): Investigate how default referrer value
+    // is set and update here accordingly.
+    navigation->SetReferrer(blink::mojom::Referrer::New(
+        web_contents()->GetMainFrame()->GetLastCommittedURL(),
+        network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin));
     navigation->Commit();
   }
 }
@@ -559,8 +578,9 @@ TEST_F(PageSpecificContentSettingsWithPrerenderTest,
   const bool blocked_by_policy = false;
   const GURL url = GURL("http://google.com");
   const url::Origin origin = url::Origin::Create(url);
-  auto cookie = net::CanonicalCookie::Create(url, "k=v", base::Time::Now(),
-                                             absl::nullopt /* server_time */);
+  auto cookie = net::CanonicalCookie::Create(
+      url, "k=v", base::Time::Now(), absl::nullopt /* server_time */,
+      absl::nullopt /* cookie_partition_key */);
   pscs->OnCookiesAccessed({content::CookieAccessDetails::Type::kRead,
                            url,
                            url,
@@ -577,6 +597,9 @@ TEST_F(PageSpecificContentSettingsWithPrerenderTest,
   std::unique_ptr<content::NavigationSimulator> navigation =
       content::NavigationSimulator::CreateRendererInitiated(
           prerender_url, web_contents()->GetMainFrame());
+  navigation->SetReferrer(blink::mojom::Referrer::New(
+      web_contents()->GetMainFrame()->GetLastCommittedURL(),
+      network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin));
   navigation->Commit();
 }
 
@@ -623,6 +646,11 @@ TEST_F(PageSpecificContentSettingsWithPrerenderTest, ContentAllowedAndBlocked) {
   std::unique_ptr<content::NavigationSimulator> navigation =
       content::NavigationSimulator::CreateRendererInitiated(
           prerender_url, web_contents()->GetMainFrame());
+  // TODO(https://crbug.com/1181763): Investigate how default referrer value is
+  // set and update here accordingly.
+  navigation->SetReferrer(blink::mojom::Referrer::New(
+      web_contents()->GetMainFrame()->GetLastCommittedURL(),
+      network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin));
   navigation->Commit();
 }
 

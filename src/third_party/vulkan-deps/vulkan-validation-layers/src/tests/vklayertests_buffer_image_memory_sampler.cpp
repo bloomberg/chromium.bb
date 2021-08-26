@@ -986,6 +986,44 @@ TEST_F(VkLayerTest, QueryMemoryCommitmentWithoutLazyProperty) {
     m_errorMonitor->VerifyFound();
 }
 
+TEST_F(VkLayerTest, InvalidSparseImageUsageBits) {
+    TEST_DESCRIPTION("Try to use VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT with sparse image");
+
+    ASSERT_NO_FATAL_FAILURE(Init());
+
+    VkPhysicalDeviceFeatures device_features = {};
+    ASSERT_NO_FATAL_FAILURE(GetPhysicalDeviceFeatures(&device_features));
+
+    if (!device_features.sparseBinding) {
+        printf("%s No sparseBinding feature. Skipped.\n", kSkipPrefix);
+        return;
+    }
+
+    auto image_create_info = LvlInitStruct<VkImageCreateInfo>();
+    image_create_info.flags = VK_IMAGE_CREATE_SPARSE_BINDING_BIT;
+    image_create_info.imageType = VK_IMAGE_TYPE_2D;
+    image_create_info.format = VK_FORMAT_R8G8B8A8_UNORM;
+    image_create_info.extent.width = 32;
+    image_create_info.extent.height = 32;
+    image_create_info.extent.depth = 1;
+    image_create_info.mipLevels = 1;
+    image_create_info.arrayLayers = 1;
+    image_create_info.samples = VK_SAMPLE_COUNT_1_BIT;
+    image_create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
+    image_create_info.initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
+    image_create_info.usage = VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    image_create_info.queueFamilyIndexCount = 0;
+    image_create_info.pQueueFamilyIndices = NULL;
+    image_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+    VkImageObj image(m_device);
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkImageCreateInfo-None-01925");
+    VkImage img = image.image();
+    vk::CreateImage(m_device->device(), &image_create_info, nullptr, &img);
+    m_errorMonitor->VerifyFound();
+}
+
 TEST_F(VkLayerTest, InvalidUsageBits) {
     TEST_DESCRIPTION(
         "Specify wrong usage for image then create conflicting view of image Initialize buffer with wrong usage then perform copy "
@@ -1115,12 +1153,12 @@ TEST_F(VkLayerTest, CopyBufferToCompressedImage) {
     }
     m_commandBuffer->begin();
 
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdCopyBufferToImage-imageOffset-00197");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdCopyBufferToImage-pRegions-06218");
     vk::CmdCopyBufferToImage(m_commandBuffer->handle(), buffer.handle(), width_image.handle(), VK_IMAGE_LAYOUT_GENERAL, 1, &region);
     m_errorMonitor->VerifyFound();
 
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdCopyBufferToImage-imageOffset-00200");
-    m_errorMonitor->SetUnexpectedError("VUID-vkCmdCopyBufferToImage-pRegions-00172");
+    m_errorMonitor->SetUnexpectedError("VUID-vkCmdCopyBufferToImage-pRegions-06217");
 
     VkResult err;
     VkImageCreateInfo depth_image_create_info = {};
@@ -6257,7 +6295,7 @@ TEST_F(VkLayerTest, InvalidBarriers) {
     buf_barrier.offset = 0;
     buf_barrier.size = VK_WHOLE_SIZE;
 
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdPipelineBarrier-srcStageMask-4098");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdPipelineBarrier-srcStageMask-04098");
 
     VkCommandPoolObj command_pool(m_device, queue_family_index, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
     VkCommandBufferObj bad_command_buffer(m_device, &command_pool);
@@ -6272,7 +6310,7 @@ TEST_F(VkLayerTest, InvalidBarriers) {
 
     // Check for error for trying to wait on pipeline stage not supported by this queue. Specifically since our queue is not a
     // compute queue, vk::CmdWaitEvents cannot have it's source stage mask be VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdWaitEvents-srcStageMask-4098");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdWaitEvents-srcStageMask-04098");
     VkEvent event;
     VkEventCreateInfo event_create_info{};
     event_create_info.sType = VK_STRUCTURE_TYPE_EVENT_CREATE_INFO;
@@ -7834,13 +7872,19 @@ TEST_F(VkLayerTest, CopyInvalidImageMemory) {
     copy_region.extent.height = 4;
     copy_region.extent.depth = 1;
 
+    std::string vuid;
+    bool ycbcr = (DeviceExtensionEnabled(VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME) ||
+                  (DeviceValidationVersion() >= VK_API_VERSION_1_1));
+
     m_commandBuffer->begin();
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdCopyImage-srcImage-01546");
+    vuid = ycbcr ? "VUID-vkCmdCopyImage-srcImage-01546" : "VUID-vkCmdCopyImage-srcImage-00127";
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, vuid);
     m_errorMonitor->SetUnexpectedError("is VK_IMAGE_LAYOUT_UNDEFINED but can only be VK_IMAGE_LAYOUT");
     m_commandBuffer->CopyImage(image_no_mem.handle(), VK_IMAGE_LAYOUT_UNDEFINED, image.handle(), VK_IMAGE_LAYOUT_GENERAL, 1,
                                &copy_region);
     m_errorMonitor->VerifyFound();
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdCopyImage-dstImage-01547");
+    vuid = ycbcr ? "VUID-vkCmdCopyImage-dstImage-01547" : "VUID-vkCmdCopyImage-dstImage-00132";
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, vuid);
     m_errorMonitor->SetUnexpectedError("is VK_IMAGE_LAYOUT_UNDEFINED but can only be VK_IMAGE_LAYOUT");
     m_commandBuffer->CopyImage(image.handle(), VK_IMAGE_LAYOUT_UNDEFINED, image_no_mem.handle(), VK_IMAGE_LAYOUT_GENERAL, 1,
                                &copy_region);
@@ -7862,14 +7906,18 @@ TEST_F(VkLayerTest, CopyInvalidImageMemory) {
                                                 VK_IMAGE_LAYOUT_GENERAL,
                                                 1,
                                                 &copy_region2};
-        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkCopyImageInfo2KHR-srcImage-01546");
+        vuid = ycbcr ? "VUID-VkCopyImageInfo2KHR-srcImage-01546" : "VUID-VkCopyImageInfo2KHR-srcImage-00127";
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, vuid);
         m_errorMonitor->SetUnexpectedError("layout should be VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL instead of GENERAL.");
+        m_errorMonitor->SetUnexpectedError("doesn't match the previously used layout VK_IMAGE_LAYOUT_GENERAL.");
         vkCmdCopyImage2Function(m_commandBuffer->handle(), &copy_image_info2);
         m_errorMonitor->VerifyFound();
         copy_image_info2.srcImage = image.handle();
         copy_image_info2.dstImage = image_no_mem.handle();
-        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkCopyImageInfo2KHR-dstImage-01547");
+        vuid = ycbcr ? "VUID-VkCopyImageInfo2KHR-dstImage-01547" : "VUID-VkCopyImageInfo2KHR-dstImage-00132";
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, vuid);
         m_errorMonitor->SetUnexpectedError("layout should be VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL instead of GENERAL.");
+        m_errorMonitor->SetUnexpectedError("doesn't match the previously used layout VK_IMAGE_LAYOUT_GENERAL..");
         vkCmdCopyImage2Function(m_commandBuffer->handle(), &copy_image_info2);
         m_errorMonitor->VerifyFound();
     }
@@ -9193,6 +9241,7 @@ TEST_F(VkLayerTest, CreateImageViewInvalidSubresourceRange) {
                 VkImageViewCreateInfo img_view_info = volume_img_view_info_template;
                 img_view_info.viewType = VK_IMAGE_VIEW_TYPE_3D;
                 img_view_info.subresourceRange = range;
+                m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkImageViewCreateInfo-imageViewType-04973");
                 CreateImageViewTest(*this, &img_view_info, layer_count_vuid);
             }
             // invalid base layer
@@ -9215,21 +9264,21 @@ TEST_F(VkLayerTest, CreateImageViewInvalidSubresourceRange) {
                 img_view_info.subresourceRange = range;
                 CreateImageViewTest(*this, &img_view_info);
             }
-            // all mips, first layer (should be invalid?)
+            // all mips, first layer (invalid)
             {
                 const VkImageSubresourceRange range = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 4, 0, 1};
                 VkImageViewCreateInfo img_view_info = volume_img_view_info_template;
                 img_view_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
                 img_view_info.subresourceRange = range;
-                CreateImageViewTest(*this, &img_view_info);
+                CreateImageViewTest(*this, &img_view_info, "VUID-VkImageViewCreateInfo-image-04970");
             }
-            // first mip, all layers (should be invalid?)
+            // first mip, all layers (invalid)
             {
                 const VkImageSubresourceRange range = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 8};
                 VkImageViewCreateInfo img_view_info = volume_img_view_info_template;
                 img_view_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
                 img_view_info.subresourceRange = range;
-                CreateImageViewTest(*this, &img_view_info);
+                CreateImageViewTest(*this, &img_view_info, "VUID-VkImageViewCreateInfo-imageViewType-04973");
             }
             // mip 3, 8 layers (invalid)
             {
@@ -9237,6 +9286,7 @@ TEST_F(VkLayerTest, CreateImageViewInvalidSubresourceRange) {
                 VkImageViewCreateInfo img_view_info = volume_img_view_info_template;
                 img_view_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
                 img_view_info.subresourceRange = range;
+                m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkImageViewCreateInfo-imageViewType-04973");
                 CreateImageViewTest(*this, &img_view_info, "VUID-VkImageViewCreateInfo-subresourceRange-02725");
             }
             // mip 3, layer 7 (invalid)
@@ -9257,13 +9307,13 @@ TEST_F(VkLayerTest, CreateImageViewInvalidSubresourceRange) {
                 img_view_info.subresourceRange = range;
                 CreateImageViewTest(*this, &img_view_info);
             }
-            // all mips, first layer (should be invalid?)
+            // all mips, first layer (invalid)
             {
                 const VkImageSubresourceRange range = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 4, 0, 1};
                 VkImageViewCreateInfo img_view_info = volume_img_view_info_template;
                 img_view_info.viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
                 img_view_info.subresourceRange = range;
-                CreateImageViewTest(*this, &img_view_info);
+                CreateImageViewTest(*this, &img_view_info, "VUID-VkImageViewCreateInfo-image-04970");
             }
             // first mip, all layers
             {
@@ -9298,6 +9348,202 @@ TEST_F(VkLayerTest, CreateImageViewInvalidSubresourceRange) {
                 m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkImageViewCreateInfo-image-02724");
                 CreateImageViewTest(*this, &img_view_info, "VUID-VkImageViewCreateInfo-subresourceRange-02725");
             }
+
+            // Checking sparse flags are not set
+            VkImageViewCreateInfo sparse_image_view_ci = volume_img_view_info_template;
+            sparse_image_view_ci.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
+
+            // using VK_IMAGE_CREATE_SPARSE_BINDING_BIT
+            if (device_features.sparseBinding) {
+                VkImageObj sparse_image(m_device);
+                image_ci.flags = VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT_KHR | VK_IMAGE_CREATE_SPARSE_BINDING_BIT;
+                sparse_image.Init(image_ci, 0, false);
+                sparse_image_view_ci.image = sparse_image.handle();
+
+                sparse_image_view_ci.viewType = VK_IMAGE_VIEW_TYPE_2D;
+                m_errorMonitor->SetUnexpectedError("VUID-VkImageViewCreateInfo-image-01020");
+                CreateImageViewTest(*this, &sparse_image_view_ci, "VUID-VkImageViewCreateInfo-image-04971");
+                sparse_image_view_ci.viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
+                m_errorMonitor->SetUnexpectedError("VUID-VkImageViewCreateInfo-image-01020");
+                CreateImageViewTest(*this, &sparse_image_view_ci, "VUID-VkImageViewCreateInfo-image-04971");
+            }
+            // using VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT
+            if (device_features.sparseResidencyImage3D) {
+                VkImageObj sparse_image(m_device);
+                image_ci.flags = VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT_KHR | VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT;
+                sparse_image.Init(image_ci, 0, false);
+                sparse_image_view_ci.image = sparse_image.handle();
+
+                sparse_image_view_ci.viewType = VK_IMAGE_VIEW_TYPE_2D;
+                m_errorMonitor->SetUnexpectedError("VUID-VkImageViewCreateInfo-image-01020");
+                CreateImageViewTest(*this, &sparse_image_view_ci, "VUID-VkImageViewCreateInfo-image-04971");
+                sparse_image_view_ci.viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
+                m_errorMonitor->SetUnexpectedError("VUID-VkImageViewCreateInfo-image-01020");
+                CreateImageViewTest(*this, &sparse_image_view_ci, "VUID-VkImageViewCreateInfo-image-04971");
+            }
+            // using VK_IMAGE_CREATE_SPARSE_ALIASED_BIT
+            if (device_features.sparseResidencyAliased) {
+                VkImageObj sparse_image(m_device);
+                image_ci.flags = VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT_KHR | VK_IMAGE_CREATE_SPARSE_ALIASED_BIT;
+                sparse_image.Init(image_ci, 0, false);
+                sparse_image_view_ci.image = sparse_image.handle();
+
+                sparse_image_view_ci.viewType = VK_IMAGE_VIEW_TYPE_2D;
+                m_errorMonitor->SetUnexpectedError("VUID-VkImageViewCreateInfo-image-01020");
+                CreateImageViewTest(*this, &sparse_image_view_ci, "VUID-VkImageViewCreateInfo-image-04971");
+                sparse_image_view_ci.viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
+                m_errorMonitor->SetUnexpectedError("VUID-VkImageViewCreateInfo-image-01020");
+                CreateImageViewTest(*this, &sparse_image_view_ci, "VUID-VkImageViewCreateInfo-image-04971");
+            }
+        }
+    }
+}
+
+TEST_F(VkLayerTest, InvalidImageViewLayerCount) {
+    TEST_DESCRIPTION("Image and ImageView arrayLayers/layerCount parameters not being compatibile");
+
+    ASSERT_NO_FATAL_FAILURE(Init());
+
+    VkImageCreateInfo image_ci = LvlInitStruct<VkImageCreateInfo>(nullptr);
+    image_ci.flags = 0;
+    image_ci.format = VK_FORMAT_R8G8B8A8_UNORM;
+    image_ci.tiling = VK_IMAGE_TILING_OPTIMAL;
+    image_ci.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    image_ci.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    image_ci.extent = {128, 1, 1};
+    image_ci.mipLevels = 1;
+    image_ci.arrayLayers = 1;
+    image_ci.samples = VK_SAMPLE_COUNT_1_BIT;
+    image_ci.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    image_ci.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+
+    image_ci.imageType = VK_IMAGE_TYPE_1D;
+    VkImageObj image_1d(m_device);
+    image_1d.init(&image_ci);
+    ASSERT_TRUE(image_1d.initialized());
+
+    image_ci.imageType = VK_IMAGE_TYPE_2D;
+    VkImageObj image_2d(m_device);
+    image_2d.init(&image_ci);
+    ASSERT_TRUE(image_2d.initialized());
+
+    image_ci.imageType = VK_IMAGE_TYPE_3D;
+    VkImageObj image_3d(m_device);
+    image_3d.init(&image_ci);
+    ASSERT_TRUE(image_3d.initialized());
+
+    image_ci.arrayLayers = 2;
+
+    image_ci.imageType = VK_IMAGE_TYPE_1D;
+    VkImageObj image_1d_array(m_device);
+    image_1d_array.init(&image_ci);
+    ASSERT_TRUE(image_1d_array.initialized());
+
+    image_ci.imageType = VK_IMAGE_TYPE_2D;
+    VkImageObj image_2d_array(m_device);
+    image_2d_array.init(&image_ci);
+    ASSERT_TRUE(image_2d_array.initialized());
+
+    image_ci.imageType = VK_IMAGE_TYPE_3D;
+    VkImageFormatProperties img_limits;
+    ASSERT_VK_SUCCESS(GPDIFPHelper(gpu(), &image_ci, &img_limits));
+    layer_data::optional<VkImageObj> image_3d_array;
+    if (img_limits.maxArrayLayers >= image_ci.arrayLayers) {
+        image_3d_array.emplace(m_device);
+        image_3d_array->init(&image_ci);
+        ASSERT_TRUE(image_3d_array->initialized());
+    }
+
+    // base for each test that never changes
+    VkImageViewCreateInfo image_view_ci = LvlInitStruct<VkImageViewCreateInfo>(nullptr);
+    image_view_ci.format = VK_FORMAT_R8G8B8A8_UNORM;
+    image_view_ci.subresourceRange.baseMipLevel = 0;
+    image_view_ci.subresourceRange.levelCount = 1;
+    image_view_ci.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+
+    // Sanity checks
+    {
+        image_view_ci.subresourceRange.baseArrayLayer = 0;
+        image_view_ci.subresourceRange.layerCount = 1;
+
+        image_view_ci.viewType = VK_IMAGE_VIEW_TYPE_1D;
+        image_view_ci.image = image_1d_array.image();
+        CreateImageViewTest(*this, &image_view_ci);
+        image_view_ci.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        image_view_ci.image = image_2d_array.image();
+        CreateImageViewTest(*this, &image_view_ci);
+        if (image_3d_array) {
+            image_view_ci.viewType = VK_IMAGE_VIEW_TYPE_3D;
+            image_view_ci.image = image_3d_array->image();
+            CreateImageViewTest(*this, &image_view_ci);
+        }
+
+        image_view_ci.subresourceRange.baseArrayLayer = 1;
+        image_view_ci.subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
+
+        image_view_ci.viewType = VK_IMAGE_VIEW_TYPE_1D;
+        image_view_ci.image = image_1d_array.image();
+        CreateImageViewTest(*this, &image_view_ci);
+        image_view_ci.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        image_view_ci.image = image_2d_array.image();
+        CreateImageViewTest(*this, &image_view_ci);
+        if (image_3d_array) {
+            image_view_ci.viewType = VK_IMAGE_VIEW_TYPE_3D;
+            image_view_ci.image = image_3d_array->image();
+            CreateImageViewTest(*this, &image_view_ci);
+        }
+
+        image_view_ci.subresourceRange.baseArrayLayer = 0;
+        image_view_ci.subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
+
+        image_view_ci.viewType = VK_IMAGE_VIEW_TYPE_1D;
+        image_view_ci.image = image_1d.image();
+        CreateImageViewTest(*this, &image_view_ci);
+        image_view_ci.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        image_view_ci.image = image_2d.image();
+        CreateImageViewTest(*this, &image_view_ci);
+        image_view_ci.viewType = VK_IMAGE_VIEW_TYPE_3D;
+        image_view_ci.image = image_3d.image();
+        CreateImageViewTest(*this, &image_view_ci);
+    }
+
+    // layerCount is not 1 as imageView is not an array type
+    {
+        image_view_ci.subresourceRange.baseArrayLayer = 0;
+        image_view_ci.subresourceRange.layerCount = 2;
+
+        image_view_ci.viewType = VK_IMAGE_VIEW_TYPE_1D;
+        image_view_ci.image = image_1d_array.image();
+        CreateImageViewTest(*this, &image_view_ci, "VUID-VkImageViewCreateInfo-imageViewType-04973");
+
+        image_view_ci.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        image_view_ci.image = image_2d_array.image();
+        CreateImageViewTest(*this, &image_view_ci, "VUID-VkImageViewCreateInfo-imageViewType-04973");
+
+        if (image_3d_array) {
+            image_view_ci.viewType = VK_IMAGE_VIEW_TYPE_3D;
+            image_view_ci.image = image_3d_array->image();
+            CreateImageViewTest(*this, &image_view_ci, "VUID-VkImageViewCreateInfo-imageViewType-04973");
+        }
+    }
+
+    // layerCount is VK_REMAINING_ARRAY_LAYERS but not 1
+    {
+        image_view_ci.subresourceRange.baseArrayLayer = 0;
+        image_view_ci.subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
+
+        image_view_ci.viewType = VK_IMAGE_VIEW_TYPE_1D;
+        image_view_ci.image = image_1d_array.image();
+        CreateImageViewTest(*this, &image_view_ci, "VUID-VkImageViewCreateInfo-imageViewType-04974");
+
+        image_view_ci.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        image_view_ci.image = image_2d_array.image();
+        CreateImageViewTest(*this, &image_view_ci, "VUID-VkImageViewCreateInfo-imageViewType-04974");
+
+        if (image_3d_array) {
+            image_view_ci.viewType = VK_IMAGE_VIEW_TYPE_3D;
+            image_view_ci.image = image_3d_array->image();
+            CreateImageViewTest(*this, &image_view_ci, "VUID-VkImageViewCreateInfo-imageViewType-04974");
         }
     }
 }
@@ -9713,6 +9959,7 @@ TEST_F(VkLayerTest, CreateImageMaxLimitsViolation) {
         } else {
             VkImageCreateInfo image_ci = safe_image_ci;
             image_ci.usage = VK_IMAGE_USAGE_FRAGMENT_DENSITY_MAP_BIT_EXT;
+            image_ci.format = VK_FORMAT_R8G8_UNORM;  // only mandatory format for fragment density map
             VkImageFormatProperties img_limits;
             ASSERT_VK_SUCCESS(GPDIFPHelper(gpu(), &image_ci, &img_limits));
 
@@ -10664,6 +10911,11 @@ TEST_F(VkLayerTest, ImageStencilCreate) {
 
     ASSERT_NO_FATAL_FAILURE(InitState(&device_features));
 
+    PFN_vkGetPhysicalDeviceImageFormatProperties2KHR vkGetPhysicalDeviceImageFormatProperties2KHR =
+        (PFN_vkGetPhysicalDeviceImageFormatProperties2KHR)vk::GetInstanceProcAddr(instance(),
+                                                                                  "vkGetPhysicalDeviceImageFormatProperties2KHR");
+    ASSERT_TRUE(vkGetPhysicalDeviceImageFormatProperties2KHR != nullptr);
+
     VkImageCreateInfo image_create_info = {};
     image_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
     image_create_info.pNext = nullptr;
@@ -10706,7 +10958,7 @@ TEST_F(VkLayerTest, ImageStencilCreate) {
     // VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT or VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT
     image_stencil_create_info.stencilUsage = VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT;
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkImageStencilUsageCreateInfo-stencilUsage-02539");
-    vk::GetPhysicalDeviceImageFormatProperties2(m_device->phy().handle(), &image_format_info2, &image_format_properties2);
+    vkGetPhysicalDeviceImageFormatProperties2KHR(m_device->phy().handle(), &image_format_info2, &image_format_properties2);
     m_errorMonitor->VerifyFound();
     // test vkCreateImage as well for this case
     CreateImageTest(*this, &image_create_info, "VUID-VkImageStencilUsageCreateInfo-stencilUsage-02539");
@@ -11697,349 +11949,6 @@ TEST_F(VkLayerTest, InvalidSamplerFilterMinmax) {
     vkDestroySamplerYcbcrConversionFunction(m_device->handle(), conversion, nullptr);
 }
 
-TEST_F(VkLayerTest, BindImageMemorySwapchain) {
-    TEST_DESCRIPTION("Invalid bind image with a swapchain");
-    SetTargetApiVersion(VK_API_VERSION_1_1);
-
-    if (!AddSurfaceInstanceExtension()) {
-        printf("%s surface extensions not supported, skipping BindSwapchainImageMemory test\n", kSkipPrefix);
-        return;
-    }
-
-    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
-
-    if (IsPlatform(kGalaxyS10)) {
-        printf("%s This test should not run on Galaxy S10\n", kSkipPrefix);
-        return;
-    }
-
-    if (!AddSwapchainDeviceExtension()) {
-        printf("%s swapchain extensions not supported, skipping BindSwapchainImageMemory test\n", kSkipPrefix);
-        return;
-    }
-
-    if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
-        printf("%s VkBindImageMemoryInfo requires Vulkan 1.1+, skipping test\n", kSkipPrefix);
-        return;
-    }
-
-    ASSERT_NO_FATAL_FAILURE(InitState());
-    ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
-    if (!InitSwapchain(VK_IMAGE_USAGE_TRANSFER_SRC_BIT)) {
-        printf("%s Cannot create surface or swapchain, skipping BindSwapchainImageMemory test\n", kSkipPrefix);
-        return;
-    }
-
-    auto image_create_info = LvlInitStruct<VkImageCreateInfo>();
-    image_create_info.imageType = VK_IMAGE_TYPE_2D;
-    image_create_info.format = m_surface_formats[0].format;
-    image_create_info.extent.width = m_surface_capabilities.minImageExtent.width;
-    image_create_info.extent.height = m_surface_capabilities.minImageExtent.height;
-    image_create_info.extent.depth = 1;
-    image_create_info.mipLevels = 1;
-    image_create_info.arrayLayers = 1;
-    image_create_info.samples = VK_SAMPLE_COUNT_1_BIT;
-    image_create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
-    image_create_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    image_create_info.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-    image_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-    auto image_swapchain_create_info = LvlInitStruct<VkImageSwapchainCreateInfoKHR>();
-    image_swapchain_create_info.swapchain = m_swapchain;
-    image_create_info.pNext = &image_swapchain_create_info;
-
-    VkImage image_from_swapchain;
-    VkResult err = vk::CreateImage(device(), &image_create_info, NULL, &image_from_swapchain);
-    ASSERT_VK_SUCCESS(err);
-
-    VkMemoryRequirements mem_reqs = {};
-    vk::GetImageMemoryRequirements(device(), image_from_swapchain, &mem_reqs);
-
-    auto alloc_info = LvlInitStruct<VkMemoryAllocateInfo>();
-    alloc_info.memoryTypeIndex = 0;
-    alloc_info.allocationSize = mem_reqs.size;
-
-    bool pass = m_device->phy().set_memory_type(mem_reqs.memoryTypeBits, &alloc_info, 0);
-    ASSERT_TRUE(pass);
-
-    VkDeviceMemory mem;
-    err = vk::AllocateMemory(m_device->device(), &alloc_info, NULL, &mem);
-    ASSERT_VK_SUCCESS(err);
-
-    auto bind_info = LvlInitStruct<VkBindImageMemoryInfo>();
-    bind_info.image = image_from_swapchain;
-    bind_info.memory = VK_NULL_HANDLE;
-    bind_info.memoryOffset = 0;
-
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkBindImageMemoryInfo-image-01630");
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkBindImageMemoryInfo-pNext-01632");
-    vk::BindImageMemory2(m_device->device(), 1, &bind_info);
-    m_errorMonitor->VerifyFound();
-
-    auto bind_swapchain_info = LvlInitStruct<VkBindImageMemorySwapchainInfoKHR>();
-    bind_swapchain_info.swapchain = VK_NULL_HANDLE;
-    bind_swapchain_info.imageIndex = 0;
-    bind_info.pNext = &bind_swapchain_info;
-
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "UNASSIGNED-GeneralParameterError-RequiredParameter");
-    vk::BindImageMemory2(m_device->device(), 1, &bind_info);
-    m_errorMonitor->VerifyFound();
-
-    bind_info.memory = mem;
-    bind_swapchain_info.swapchain = m_swapchain;
-    bind_swapchain_info.imageIndex = UINT32_MAX;
-
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkBindImageMemoryInfo-pNext-01631");
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkBindImageMemorySwapchainInfoKHR-imageIndex-01644");
-    vk::BindImageMemory2(m_device->device(), 1, &bind_info);
-    m_errorMonitor->VerifyFound();
-
-    vk::DestroyImage(m_device->device(), image_from_swapchain, NULL);
-    vk::FreeMemory(m_device->device(), mem, NULL);
-    DestroySwapchain();
-}
-
-TEST_F(VkLayerTest, ValidSwapchainImage) {
-    TEST_DESCRIPTION("Swapchain images with invalid parameters");
-    const char *vuid = "VUID-VkImageSwapchainCreateInfoKHR-swapchain-00995";
-
-    if (!AddSurfaceInstanceExtension()) {
-        printf("%s surface extensions not supported, skipping test\n", kSkipPrefix);
-        return;
-    }
-
-    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
-
-    if (IsPlatform(kGalaxyS10)) {
-        printf("%s This test should not run on Galaxy S10\n", kSkipPrefix);
-        return;
-    }
-
-    if (!AddSwapchainDeviceExtension()) {
-        printf("%s swapchain extensions not supported, skipping test\n", kSkipPrefix);
-        return;
-    }
-
-    ASSERT_NO_FATAL_FAILURE(InitState());
-    ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
-    if (!InitSwapchain()) {
-        printf("%s Cannot create surface or swapchain, skipping test\n", kSkipPrefix);
-        return;
-    }
-
-    VkImage image;
-    VkImageSwapchainCreateInfoKHR image_swapchain_create_info = {};
-    image_swapchain_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_SWAPCHAIN_CREATE_INFO_KHR;
-    image_swapchain_create_info.pNext = nullptr;
-    image_swapchain_create_info.swapchain = m_swapchain;
-
-    VkImageCreateInfo image_create_info = {};
-    image_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    image_create_info.pNext = &image_swapchain_create_info;
-    image_create_info.flags = 0;
-    image_create_info.imageType = VK_IMAGE_TYPE_2D;
-    image_create_info.format = VK_FORMAT_R8G8B8A8_UNORM;
-    image_create_info.extent.width = 64;
-    image_create_info.extent.height = 64;
-    image_create_info.extent.depth = 1;
-    image_create_info.mipLevels = 1;
-    image_create_info.arrayLayers = 1;
-    image_create_info.samples = VK_SAMPLE_COUNT_1_BIT;
-    image_create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
-    image_create_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    image_create_info.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-    image_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    VkImageCreateInfo good_create_info = image_create_info;
-
-    // imageType
-    image_create_info = good_create_info;
-    image_create_info.imageType = VK_IMAGE_TYPE_3D;
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, vuid);
-    vk::CreateImage(device(), &image_create_info, NULL, &image);
-    m_errorMonitor->VerifyFound();
-
-    // mipLevels
-    image_create_info = good_create_info;
-    image_create_info.mipLevels = 2;
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, vuid);
-    vk::CreateImage(device(), &image_create_info, NULL, &image);
-    m_errorMonitor->VerifyFound();
-
-    // samples
-    image_create_info = good_create_info;
-    image_create_info.samples = VK_SAMPLE_COUNT_4_BIT;
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, vuid);
-    vk::CreateImage(device(), &image_create_info, NULL, &image);
-    m_errorMonitor->VerifyFound();
-
-    // tiling
-    image_create_info = good_create_info;
-    image_create_info.tiling = VK_IMAGE_TILING_LINEAR;
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, vuid);
-    vk::CreateImage(device(), &image_create_info, NULL, &image);
-    m_errorMonitor->VerifyFound();
-
-    // initialLayout
-    image_create_info = good_create_info;
-    image_create_info.initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, vuid);
-    vk::CreateImage(device(), &image_create_info, NULL, &image);
-    m_errorMonitor->VerifyFound();
-
-    // flags
-    if (m_device->phy().features().sparseBinding) {
-        image_create_info = good_create_info;
-        image_create_info.flags = VK_IMAGE_CREATE_SPARSE_BINDING_BIT;
-        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, vuid);
-        vk::CreateImage(device(), &image_create_info, NULL, &image);
-        m_errorMonitor->VerifyFound();
-    }
-
-    DestroySwapchain();
-}
-
-TEST_F(VkLayerTest, TransferImageToSwapchainWithInvalidLayoutDeviceGroup) {
-    TEST_DESCRIPTION("Transfer an image to a swapchain's image with a invalid layout between device group");
-
-#if defined(VK_USE_PLATFORM_ANDROID_KHR)
-    printf(
-        "%s According to valid usage, VkBindImageMemoryInfo-memory should be NULL. But Android will crash if memory is NULL, "
-        "skipping test\n",
-        kSkipPrefix);
-    return;
-#endif
-
-    SetTargetApiVersion(VK_API_VERSION_1_2);
-
-    if (!AddSurfaceInstanceExtension()) {
-        printf("%s surface extensions not supported, skipping test\n", kSkipPrefix);
-        return;
-    }
-
-    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
-
-    if (!AddSwapchainDeviceExtension()) {
-        printf("%s swapchain extensions not supported, skipping test\n", kSkipPrefix);
-        return;
-    }
-
-    if (DeviceValidationVersion() < VK_API_VERSION_1_2) {
-        printf("%s VkBindImageMemoryInfo requires Vulkan 1.2+, skipping test\n", kSkipPrefix);
-        return;
-    }
-
-    if (IsDriver(VK_DRIVER_ID_MESA_RADV)) {
-        // Seeing the same crash as the Android comment above
-        printf("%s This test should not be run on the RADV driver\n", kSkipPrefix);
-        return;
-    }
-
-    uint32_t physical_device_group_count = 0;
-    vk::EnumeratePhysicalDeviceGroups(instance(), &physical_device_group_count, nullptr);
-
-    if (physical_device_group_count == 0) {
-        printf("%s physical_device_group_count is 0, skipping test\n", kSkipPrefix);
-        return;
-    }
-
-    std::vector<VkPhysicalDeviceGroupProperties> physical_device_group(physical_device_group_count,
-                                                                       {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GROUP_PROPERTIES});
-    vk::EnumeratePhysicalDeviceGroups(instance(), &physical_device_group_count, physical_device_group.data());
-    VkDeviceGroupDeviceCreateInfo create_device_pnext = {};
-    create_device_pnext.sType = VK_STRUCTURE_TYPE_DEVICE_GROUP_DEVICE_CREATE_INFO;
-    create_device_pnext.physicalDeviceCount = physical_device_group[0].physicalDeviceCount;
-    create_device_pnext.pPhysicalDevices = physical_device_group[0].physicalDevices;
-    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &create_device_pnext));
-    ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
-    if (!InitSwapchain(VK_IMAGE_USAGE_TRANSFER_DST_BIT)) {
-        printf("%s Cannot create surface or swapchain, skipping test\n", kSkipPrefix);
-        return;
-    }
-
-    auto image_create_info = LvlInitStruct<VkImageCreateInfo>();
-    image_create_info.imageType = VK_IMAGE_TYPE_2D;
-    image_create_info.format = m_surface_formats[0].format;
-    image_create_info.extent.width = m_surface_capabilities.minImageExtent.width;
-    image_create_info.extent.height = m_surface_capabilities.minImageExtent.height;
-    image_create_info.extent.depth = 1;
-    image_create_info.mipLevels = 1;
-    image_create_info.arrayLayers = 1;
-    image_create_info.samples = VK_SAMPLE_COUNT_1_BIT;
-    image_create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
-    image_create_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    image_create_info.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-    image_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-    VkImageObj src_Image(m_device);
-    src_Image.init(&image_create_info);
-
-    image_create_info.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-
-    auto image_swapchain_create_info = LvlInitStruct<VkImageSwapchainCreateInfoKHR>();
-    image_swapchain_create_info.swapchain = m_swapchain;
-    image_create_info.pNext = &image_swapchain_create_info;
-
-    VkImage peer_image;
-    vk::CreateImage(device(), &image_create_info, NULL, &peer_image);
-
-    auto bind_devicegroup_info = LvlInitStruct<VkBindImageMemoryDeviceGroupInfo>();
-    bind_devicegroup_info.deviceIndexCount = 2;
-    std::array<uint32_t, 2> deviceIndices = {{0, 0}};
-    bind_devicegroup_info.pDeviceIndices = deviceIndices.data();
-    bind_devicegroup_info.splitInstanceBindRegionCount = 0;
-    bind_devicegroup_info.pSplitInstanceBindRegions = nullptr;
-
-    auto bind_swapchain_info = LvlInitStruct<VkBindImageMemorySwapchainInfoKHR>(&bind_devicegroup_info);
-    bind_swapchain_info.swapchain = m_swapchain;
-    bind_swapchain_info.imageIndex = 0;
-
-    auto bind_info = LvlInitStruct<VkBindImageMemoryInfo>(&bind_swapchain_info);
-    bind_info.image = peer_image;
-    bind_info.memory = VK_NULL_HANDLE;
-    bind_info.memoryOffset = 0;
-
-    vk::BindImageMemory2(m_device->device(), 1, &bind_info);
-
-    uint32_t swapchain_images_count = 0;
-    vk::GetSwapchainImagesKHR(device(), m_swapchain, &swapchain_images_count, nullptr);
-    std::vector<VkImage> swapchain_images;
-    swapchain_images.resize(swapchain_images_count);
-    vk::GetSwapchainImagesKHR(device(), m_swapchain, &swapchain_images_count, swapchain_images.data());
-
-    m_commandBuffer->begin();
-
-    VkImageCopy copy_region = {};
-    copy_region.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-    copy_region.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-    copy_region.srcSubresource.mipLevel = 0;
-    copy_region.dstSubresource.mipLevel = 0;
-    copy_region.srcSubresource.baseArrayLayer = 0;
-    copy_region.dstSubresource.baseArrayLayer = 0;
-    copy_region.srcSubresource.layerCount = 1;
-    copy_region.dstSubresource.layerCount = 1;
-    copy_region.srcOffset = {0, 0, 0};
-    copy_region.dstOffset = {0, 0, 0};
-    copy_region.extent = {10, 10, 1};
-    vk::CmdCopyImage(m_commandBuffer->handle(), src_Image.handle(), VK_IMAGE_LAYOUT_GENERAL, peer_image,
-                     VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copy_region);
-
-    m_commandBuffer->end();
-
-    VkSubmitInfo submit_info = {};
-    submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    submit_info.commandBufferCount = 1;
-    submit_info.pCommandBuffers = &m_commandBuffer->handle();
-
-    // Both images have incorrect layouts
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "UNASSIGNED-CoreValidation-DrawState-InvalidImageLayout");
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "UNASSIGNED-CoreValidation-DrawState-InvalidImageLayout");
-    vk::QueueSubmit(m_device->m_queue, 1, &submit_info, VK_NULL_HANDLE);
-    m_errorMonitor->VerifyFound();
-
-    vk::DestroyImage(m_device->device(), peer_image, NULL);
-    DestroySwapchain();
-}
-
 TEST_F(VkLayerTest, InvalidMemoryType) {
     // Attempts to allocate from a memory type that doesn't exist
 
@@ -12964,6 +12873,11 @@ TEST_F(VkLayerTest, InvalidExportExternalImageHandleType) {
     }
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
 
+    if (IsPlatform(kGalaxyS10)) {
+        printf("%s Test temporarily disabled on S10 device\n", kSkipPrefix);
+        return;
+    }
+
     bool bind_memory2 = DeviceExtensionSupported(gpu(), nullptr, VK_KHR_BIND_MEMORY_2_EXTENSION_NAME);
     if (DeviceExtensionSupported(gpu(), nullptr, ext_mem_extension_name)) {
         m_device_extension_names.push_back(ext_mem_extension_name);
@@ -13075,6 +12989,11 @@ TEST_F(VkLayerTest, InvalidExportExternalBufferHandleType) {
     }
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
 
+    if (IsPlatform(kGalaxyS10)) {
+        printf("%s Test temporarily disabled on S10 device\n", kSkipPrefix);
+        return;
+    }
+
     bool bind_memory2 = DeviceExtensionSupported(gpu(), nullptr, VK_KHR_BIND_MEMORY_2_EXTENSION_NAME);
     if (DeviceExtensionSupported(gpu(), nullptr, ext_mem_extension_name)) {
         m_device_extension_names.push_back(ext_mem_extension_name);
@@ -13156,116 +13075,6 @@ TEST_F(VkLayerTest, InvalidExportExternalBufferHandleType) {
 
     vk::FreeMemory(device(), memory, nullptr);
     vk::DestroyBuffer(device(), buffer_export, nullptr);
-}
-
-TEST_F(VkLayerTest, ValidSwapchainImageParams) {
-    TEST_DESCRIPTION("Swapchain with invalid implied image creation parameters");
-    const char *vuid = "VUID-VkSwapchainCreateInfoKHR-imageFormat-01778";
-
-    if (!AddSurfaceInstanceExtension()) {
-        printf("%s surface extensions not supported, skipping test\n", kSkipPrefix);
-        return;
-    }
-
-    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
-
-    if (!AddSwapchainDeviceExtension()) {
-        printf("%s swapchain extensions not supported, skipping test\n", kSkipPrefix);
-        return;
-    }
-
-    VkDeviceGroupDeviceCreateInfo device_group_ci = {};
-    device_group_ci.sType = VK_STRUCTURE_TYPE_DEVICE_GROUP_DEVICE_CREATE_INFO;
-    device_group_ci.physicalDeviceCount = 1;
-    VkPhysicalDevice pdev = gpu();
-    device_group_ci.pPhysicalDevices = &pdev;
-    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &device_group_ci));
-    ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
-    if (!InitSurface()) {
-        printf("%s Cannot create surface, skipping test\n", kSkipPrefix);
-        return;
-    }
-    InitSwapchainInfo();
-
-    VkSwapchainCreateInfoKHR good_create_info = {};
-    good_create_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-    good_create_info.pNext = 0;
-    good_create_info.surface = m_surface;
-    good_create_info.minImageCount = m_surface_capabilities.minImageCount;
-    good_create_info.imageFormat = m_surface_formats[0].format;
-    good_create_info.imageColorSpace = m_surface_formats[0].colorSpace;
-    good_create_info.imageExtent = {m_surface_capabilities.minImageExtent.width, m_surface_capabilities.minImageExtent.height};
-    good_create_info.imageArrayLayers = 1;
-    good_create_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-    good_create_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    good_create_info.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
-    good_create_info.compositeAlpha = m_surface_composite_alpha;
-    good_create_info.presentMode = m_surface_present_modes[0];
-    good_create_info.clipped = VK_FALSE;
-    good_create_info.oldSwapchain = 0;
-
-    VkSwapchainCreateInfoKHR create_info_bad_usage = good_create_info;
-    bool found_bad_usage = false;
-    // Trying to find format+usage combination supported by surface, but not supported by image.
-    const std::array<VkImageUsageFlags, 5> kImageUsageFlags = {{
-        VK_IMAGE_USAGE_SAMPLED_BIT,
-        VK_IMAGE_USAGE_STORAGE_BIT,
-        VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-        VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
-        VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT,
-    }};
-
-    for (uint32_t i = 0; i < kImageUsageFlags.size() && !found_bad_usage; ++i) {
-        if ((m_surface_capabilities.supportedUsageFlags & kImageUsageFlags[i]) != 0) {
-            for (size_t j = 0; j < m_surface_formats.size(); ++j) {
-                VkImageFormatProperties image_format_properties = {};
-                VkResult image_format_properties_result = vk::GetPhysicalDeviceImageFormatProperties(
-                    m_device->phy().handle(), m_surface_formats[j].format, VK_IMAGE_TYPE_2D, VK_IMAGE_TILING_OPTIMAL,
-                    kImageUsageFlags[i], 0, &image_format_properties);
-
-                if (image_format_properties_result != VK_SUCCESS) {
-                    create_info_bad_usage.imageFormat = m_surface_formats[j].format;
-                    create_info_bad_usage.imageUsage = kImageUsageFlags[i];
-                    found_bad_usage = true;
-                    break;
-                }
-            }
-        }
-    }
-    VkBool32 supported;
-    vk::GetPhysicalDeviceSurfaceSupportKHR(gpu(), m_device->graphics_queue_node_index_, m_surface, &supported);
-    if (!supported) {
-        printf("%s Graphics queue does not support present, skipping test\n", kSkipPrefix);
-        return;
-    }
-
-    if (found_bad_usage) {
-        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, vuid);
-        vk::CreateSwapchainKHR(device(), &create_info_bad_usage, nullptr, &m_swapchain);
-        m_errorMonitor->VerifyFound();
-    } else {
-        printf(
-            "%s could not find imageFormat and imageUsage values, supported by "
-            "surface but unsupported by image, skipping test\n",
-            kSkipPrefix);
-    }
-    vk::DestroySwapchainKHR(device(), m_swapchain, nullptr);
-
-    VkImageFormatProperties props;
-    VkResult res = vk::GetPhysicalDeviceImageFormatProperties(gpu(), good_create_info.imageFormat, VK_IMAGE_TYPE_2D,
-                                                              VK_IMAGE_TILING_OPTIMAL, good_create_info.imageUsage,
-                                                              VK_IMAGE_CREATE_SPLIT_INSTANCE_BIND_REGIONS_BIT, &props);
-    if (res != VK_SUCCESS) {
-        printf("%s Swapchain image format does not support SPLIT_INSTANCE_BIND_REGIONS, skipping test\n", kSkipPrefix);
-        return;
-    }
-
-    VkSwapchainCreateInfoKHR create_info_bad_flags = good_create_info;
-    create_info_bad_flags.flags = VK_SWAPCHAIN_CREATE_SPLIT_INSTANCE_BIND_REGIONS_BIT_KHR;
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkSwapchainCreateInfoKHR-physicalDeviceCount-01429");
-    vk::CreateSwapchainKHR(device(), &create_info_bad_flags, nullptr, &m_swapchain);
-    m_errorMonitor->VerifyFound();
-    DestroySwapchain();
 }
 
 TEST_F(VkLayerTest, VerityUnnormalizedCoordinatesSampler) {
@@ -13720,4 +13529,574 @@ TEST_F(VkLayerTest, InvalidImageFormatList) {
     // If viewFormatCount is zero should not hit VUID 01585
     imageViewInfo.image = mutableImageZero.handle();
     CreateImageViewTest(*this, &imageViewInfo, {});
+}
+
+TEST_F(VkLayerTest, SparseImageMemoryBindOffset) {
+    TEST_DESCRIPTION("Try to use VkSparseImageMemoryBind with offset not less than memory size");
+
+    ASSERT_NO_FATAL_FAILURE(Init());
+
+    VkImageCreateInfo image_create_info = LvlInitStruct<VkImageCreateInfo>(nullptr);
+    image_create_info.flags = 0;
+    image_create_info.imageType = VK_IMAGE_TYPE_2D;
+    image_create_info.format = VK_FORMAT_R8G8B8A8_UNORM;
+    image_create_info.extent.width = 64;
+    image_create_info.extent.height = 64;
+    image_create_info.extent.depth = 1;
+    image_create_info.mipLevels = 1;
+    image_create_info.arrayLayers = 1;
+    image_create_info.samples = VK_SAMPLE_COUNT_1_BIT;
+    image_create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
+    image_create_info.initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
+    image_create_info.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+    image_create_info.queueFamilyIndexCount = 0;
+    image_create_info.pQueueFamilyIndices = NULL;
+    image_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+    if (m_device->phy().features().sparseResidencyImage2D) {
+        image_create_info.flags = VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT;
+    } else {
+        printf("%s Test requires unsupported sparseResidencyImage2D feature. Skipped.\n", kSkipPrefix);
+        return;
+    }
+
+    VkImageObj image(m_device);
+    image.init_no_mem(*m_device, image_create_info);
+
+    VkMemoryAllocateInfo mem_alloc = LvlInitStruct<VkMemoryAllocateInfo>(nullptr);
+    mem_alloc.allocationSize = 1024;
+
+    VkDeviceMemory mem;
+    VkResult err;
+    err = vk::AllocateMemory(m_device->device(), &mem_alloc, NULL, &mem);
+    ASSERT_VK_SUCCESS(err);
+
+    VkSparseImageMemoryBind image_memory_bind = {};
+    image_memory_bind.subresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    image_memory_bind.memoryOffset = 4096;
+    image_memory_bind.memory = mem;
+
+    VkSparseImageMemoryBindInfo image_memory_bind_info = {};
+    image_memory_bind_info.image = image.handle();
+    image_memory_bind_info.bindCount = 1;
+    image_memory_bind_info.pBinds = &image_memory_bind;
+
+    VkBindSparseInfo bind_info = {};
+    bind_info.sType = VK_STRUCTURE_TYPE_BIND_SPARSE_INFO;
+    bind_info.imageBindCount = 1;
+    bind_info.pImageBinds = &image_memory_bind_info;
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkSparseMemoryBind-memoryOffset-01101");
+    vk::QueueBindSparse(m_device->m_queue, 1, &bind_info, VK_NULL_HANDLE);
+    m_errorMonitor->VerifyFound();
+}
+
+TEST_F(VkLayerTest, InvalidImageSplitInstanceBindRegionCount) {
+    TEST_DESCRIPTION("Bind image memory with VkBindImageMemoryDeviceGroupInfo but invalid flags");
+
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+
+    bool bind_memory_2_extension = DeviceExtensionSupported(gpu(), nullptr, VK_KHR_BIND_MEMORY_2_EXTENSION_NAME);
+    bool device_group_extension = DeviceExtensionSupported(gpu(), nullptr, VK_KHR_DEVICE_GROUP_EXTENSION_NAME);
+
+    if (!bind_memory_2_extension) {
+        printf("%s test requires VK_KHR_bind_memory2 extensions, not available.  Skipping.\n", kSkipPrefix);
+        return;
+    } else if (!device_group_extension) {
+        printf("%s test requires VK_KHR_device_group extensions, not available.  Skipping.\n", kSkipPrefix);
+        return;
+    }
+    m_device_extension_names.push_back(VK_KHR_BIND_MEMORY_2_EXTENSION_NAME);
+    m_device_extension_names.push_back(VK_KHR_DEVICE_GROUP_EXTENSION_NAME);
+
+    ASSERT_NO_FATAL_FAILURE(InitState());
+
+    PFN_vkBindImageMemory2KHR vkBindImageMemory2Function = nullptr;
+
+    if (bind_memory_2_extension) {
+        if (DeviceValidationVersion() >= VK_API_VERSION_1_1) {
+            vkBindImageMemory2Function = vk::BindImageMemory2;
+        } else {
+            vkBindImageMemory2Function =
+                (PFN_vkBindImageMemory2KHR)vk::GetDeviceProcAddr(m_device->handle(), "vkBindImageMemory2KHR");
+        }
+    }
+
+    VkImageCreateInfo image_create_info = LvlInitStruct<VkImageCreateInfo>(nullptr);
+    image_create_info.flags = 0;
+    image_create_info.imageType = VK_IMAGE_TYPE_2D;
+    image_create_info.format = VK_FORMAT_R8G8B8A8_UNORM;
+    image_create_info.extent.width = 64;
+    image_create_info.extent.height = 64;
+    image_create_info.extent.depth = 1;
+    image_create_info.mipLevels = 1;
+    image_create_info.arrayLayers = 1;
+    image_create_info.samples = VK_SAMPLE_COUNT_1_BIT;
+    image_create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
+    image_create_info.initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
+    image_create_info.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+    image_create_info.queueFamilyIndexCount = 0;
+    image_create_info.pQueueFamilyIndices = NULL;
+    image_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+    VkImageObj image(m_device);
+    image.init_no_mem(*m_device, image_create_info);
+
+    VkDeviceMemory image_mem;
+    VkMemoryRequirements mem_reqs;
+    vk::GetImageMemoryRequirements(m_device->device(), image.handle(), &mem_reqs);
+    VkMemoryAllocateInfo mem_alloc = LvlInitStruct<VkMemoryAllocateInfo>(nullptr);
+    mem_alloc.allocationSize = mem_reqs.size;
+
+    for (int i = 0; i < 32; i++) {
+        if (mem_reqs.memoryTypeBits & (1 << i)) {
+            mem_alloc.memoryTypeIndex = i;
+            break;
+        }
+    }
+
+    vk::AllocateMemory(device(), &mem_alloc, NULL, &image_mem);
+
+    std::array<uint32_t, 2> deviceIndices = {{0, 0}};
+    VkRect2D splitInstanceBindregion = {{0, 0}, {16, 16}};
+    VkBindImageMemoryDeviceGroupInfo bind_devicegroup_info = LvlInitStruct<VkBindImageMemoryDeviceGroupInfo>();
+    bind_devicegroup_info.deviceIndexCount = 2;
+    bind_devicegroup_info.pDeviceIndices = deviceIndices.data();
+    bind_devicegroup_info.splitInstanceBindRegionCount = 1;
+    bind_devicegroup_info.pSplitInstanceBindRegions = &splitInstanceBindregion;
+
+    VkBindImageMemoryInfo bindInfo = LvlInitStruct<VkBindImageMemoryInfo>();
+    bindInfo.pNext = &bind_devicegroup_info;
+    bindInfo.image = image.handle();
+    bindInfo.memory = image_mem;
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkBindImageMemoryInfo-pNext-01627");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkBindImageMemoryDeviceGroupInfo-deviceIndexCount-01633");
+    vkBindImageMemory2Function(device(), 1, &bindInfo);
+    m_errorMonitor->VerifyFound();
+}
+
+TEST_F(VkLayerTest, InvalidDescriptorSetLayoutBindings) {
+    TEST_DESCRIPTION("Create descriptor set layout with incompatible bindings.");
+
+    if (!(CheckDescriptorIndexingSupportAndInitFramework(this, m_instance_extension_names, m_device_extension_names, NULL,
+                                                         m_errorMonitor))) {
+        printf("Descriptor indexing or one of its dependencies not supported, skipping tests\n");
+        return;
+    }
+
+    PFN_vkGetPhysicalDeviceFeatures2KHR vkGetPhysicalDeviceFeatures2KHR =
+        (PFN_vkGetPhysicalDeviceFeatures2KHR)vk::GetInstanceProcAddr(instance(), "vkGetPhysicalDeviceFeatures2KHR");
+    ASSERT_TRUE(vkGetPhysicalDeviceFeatures2KHR != nullptr);
+
+    auto indexing_features = LvlInitStruct<VkPhysicalDeviceDescriptorIndexingFeaturesEXT>();
+    auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2KHR>(&indexing_features);
+    vkGetPhysicalDeviceFeatures2KHR(gpu(), &features2);
+
+    if (VK_FALSE == indexing_features.descriptorBindingUniformBufferUpdateAfterBind) {
+        printf("%s Test requires (unsupported) descriptorBindingStorageBufferUpdateAfterBind, skipping\n", kSkipPrefix);
+        return;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2));
+
+    VkDescriptorSetLayoutBinding update_binding = {};
+    update_binding.binding = 0;
+    update_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    update_binding.descriptorCount = 1;
+    update_binding.stageFlags = VK_SHADER_STAGE_ALL;
+    update_binding.pImmutableSamplers = nullptr;
+
+    VkDescriptorSetLayoutBinding dynamic_binding = {};
+    dynamic_binding.binding = 1;
+    dynamic_binding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+    dynamic_binding.descriptorCount = 1;
+    dynamic_binding.stageFlags = VK_SHADER_STAGE_ALL;
+    dynamic_binding.pImmutableSamplers = nullptr;
+
+    VkDescriptorSetLayoutBinding bindings[2] = {update_binding, dynamic_binding};
+
+    VkDescriptorBindingFlags flags[2] = {VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT, 0};
+
+    auto flags_create_info = LvlInitStruct<VkDescriptorSetLayoutBindingFlagsCreateInfoEXT>();
+    flags_create_info.bindingCount = 2;
+    flags_create_info.pBindingFlags = flags;
+
+    VkDescriptorSetLayoutCreateInfo create_info = LvlInitStruct<VkDescriptorSetLayoutCreateInfo>();
+    create_info.pNext = &flags_create_info;
+    create_info.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT_EXT;
+    create_info.bindingCount = 2;
+    create_info.pBindings = bindings;
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkDescriptorSetLayoutCreateInfo-descriptorType-03001");
+    VkDescriptorSetLayout setLayout;
+    vk::CreateDescriptorSetLayout(m_device->handle(), &create_info, nullptr, &setLayout);
+    m_errorMonitor->VerifyFound();
+}
+
+TEST_F(VkLayerTest, InvalidDescriptorSetLayoutBinding) {
+    TEST_DESCRIPTION("Create invalid descriptor set layout.");
+
+    ASSERT_NO_FATAL_FAILURE(Init());
+    if (!DeviceExtensionSupported(gpu(), nullptr, VK_VALVE_MUTABLE_DESCRIPTOR_TYPE_EXTENSION_NAME)) {
+        printf("%s VK_VALVE_mutable_descriptor_type Extension not supported, skipping part of test\n", kSkipPrefix);
+        return;
+    }
+    m_device_extension_names.push_back(VK_VALVE_MUTABLE_DESCRIPTOR_TYPE_EXTENSION_NAME);
+
+    VkSampler sampler = VK_NULL_HANDLE;
+    VkSamplerCreateInfo sampler_info = SafeSaneSamplerCreateInfo();
+    vk::CreateSampler(m_device->device(), &sampler_info, NULL, &sampler);
+
+    VkDescriptorSetLayoutBinding binding = {};
+    binding.binding = 0;
+    binding.descriptorType = VK_DESCRIPTOR_TYPE_MUTABLE_VALVE;
+    binding.descriptorCount = 1;
+    binding.stageFlags = VK_SHADER_STAGE_ALL;
+    binding.pImmutableSamplers = &sampler;
+
+    VkDescriptorSetLayoutCreateInfo create_info = LvlInitStruct<VkDescriptorSetLayoutCreateInfo>();
+    create_info.bindingCount = 1;
+    create_info.pBindings = &binding;
+
+    VkDescriptorSetLayout setLayout;
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkDescriptorSetLayoutBinding-descriptorType-04605");
+    vk::CreateDescriptorSetLayout(m_device->handle(), &create_info, nullptr, &setLayout);
+    m_errorMonitor->VerifyFound();
+}
+
+TEST_F(VkLayerTest, DedicatedAllocationBufferWithInvalidFlags) {
+    TEST_DESCRIPTION("Verify that flags are valid with VkDedicatedAllocationBufferCreateInfoNV");
+
+    // Positive test to check parameter_validation and unique_objects support for NV_dedicated_allocation
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+    if (DeviceExtensionSupported(gpu(), nullptr, VK_NV_DEDICATED_ALLOCATION_EXTENSION_NAME)) {
+        m_device_extension_names.push_back(VK_NV_DEDICATED_ALLOCATION_EXTENSION_NAME);
+    } else {
+        printf("%s VK_NV_DEDICATED_ALLOCATION_EXTENSION_NAME Extension not supported, skipping test\n", kSkipPrefix);
+        return;
+    }
+    ASSERT_NO_FATAL_FAILURE(InitState());
+
+    VkDedicatedAllocationBufferCreateInfoNV dedicated_buffer_create_info = {};
+    dedicated_buffer_create_info.sType = VK_STRUCTURE_TYPE_DEDICATED_ALLOCATION_BUFFER_CREATE_INFO_NV;
+    dedicated_buffer_create_info.pNext = nullptr;
+    dedicated_buffer_create_info.dedicatedAllocation = VK_TRUE;
+
+    uint32_t queue_family_index = 0;
+    VkBufferCreateInfo buffer_create_info = LvlInitStruct<VkBufferCreateInfo>();
+    buffer_create_info.pNext = &dedicated_buffer_create_info;
+    buffer_create_info.flags = VK_BUFFER_CREATE_SPARSE_BINDING_BIT;
+    buffer_create_info.size = 1024;
+    buffer_create_info.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+    buffer_create_info.queueFamilyIndexCount = 1;
+    buffer_create_info.pQueueFamilyIndices = &queue_family_index;
+
+    VkBuffer buffer;
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkBufferCreateInfo-pNext-01571");
+    vk::CreateBuffer(m_device->device(), &buffer_create_info, NULL, &buffer);
+    m_errorMonitor->VerifyFound();
+}
+
+TEST_F(VkLayerTest, InvalidMemoryAllocatepNextChain) {
+    // Attempts to allocate from a memory type that doesn't exist
+
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+    // Check for external memory device extensions
+    if (DeviceExtensionSupported(gpu(), nullptr, VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME)) {
+        m_device_extension_names.push_back(VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME);
+    } else {
+        printf("%s External memory extension not supported, skipping test\n", kSkipPrefix);
+        return;
+    }
+    ASSERT_NO_FATAL_FAILURE(InitState());
+
+    VkPhysicalDeviceMemoryProperties memory_info;
+    vk::GetPhysicalDeviceMemoryProperties(gpu(), &memory_info);
+
+    VkExportMemoryAllocateInfoNV export_memory_info_nv = LvlInitStruct<VkExportMemoryAllocateInfoNV>();
+    export_memory_info_nv.handleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT;
+
+    VkExportMemoryAllocateInfo export_memory_info = LvlInitStruct<VkExportMemoryAllocateInfo>(&export_memory_info_nv);
+    export_memory_info.handleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT;
+
+    VkMemoryAllocateInfo mem_alloc = LvlInitStruct<VkMemoryAllocateInfo>(&export_memory_info);
+    mem_alloc.memoryTypeIndex = memory_info.memoryTypeCount;
+    mem_alloc.allocationSize = 4;
+
+    VkDeviceMemory mem;
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkMemoryAllocateInfo-pNext-00640");
+    vk::AllocateMemory(m_device->device(), &mem_alloc, NULL, &mem);
+    m_errorMonitor->VerifyFound();
+
+#ifdef VK_USE_PLATFORM_WIN32_KHR
+    VkExportMemoryWin32HandleInfoNV export_memory_info_win32_nv = LvlInitStruct<VkExportMemoryWin32HandleInfoNV>();
+    export_memory_info_win32_nv.pAttributes = nullptr;
+    export_memory_info_win32_nv.dwAccess = 0;
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkMemoryAllocateInfo-pNext-00640");
+    export_memory_info.pNext = &export_memory_info_win32_nv;
+    vk::AllocateMemory(m_device->device(), &mem_alloc, NULL, &mem);
+    m_errorMonitor->VerifyFound();
+#endif
+}
+
+TEST_F(VkLayerTest, CreateImageViewWithInvalidLevelOrLayerCount) {
+    TEST_DESCRIPTION(
+        "Attempts to create an Image View with an image using VK_IMAGE_CREATE_BLOCK_TEXEL_VIEW_COMPATIBLE_BIT, but levelCount and "
+        "layerCount are not 1.");
+
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+    if (!DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE2_EXTENSION_NAME)) {
+        printf("%s Test requires API >= 1.1 or KHR_MAINTENANCE2 extension, unavailable - skipped.\n", kSkipPrefix);
+        return;
+    }
+    m_device_extension_names.push_back(VK_KHR_MAINTENANCE2_EXTENSION_NAME);
+    ASSERT_NO_FATAL_FAILURE(InitState());
+
+    auto image_create_info = LvlInitStruct<VkImageCreateInfo>();
+    image_create_info.flags = VK_IMAGE_CREATE_BLOCK_TEXEL_VIEW_COMPATIBLE_BIT;
+    image_create_info.imageType = VK_IMAGE_TYPE_2D;
+    image_create_info.format = VK_FORMAT_R8G8B8A8_UNORM;
+    image_create_info.extent.width = 32;
+    image_create_info.extent.height = 32;
+    image_create_info.extent.depth = 1;
+    image_create_info.mipLevels = 4;
+    image_create_info.arrayLayers = 2;
+    image_create_info.samples = VK_SAMPLE_COUNT_1_BIT;
+    image_create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
+    image_create_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    image_create_info.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
+    image_create_info.queueFamilyIndexCount = 0;
+    image_create_info.pQueueFamilyIndices = NULL;
+    image_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+    VkImageObj image(m_device);
+    image.Init(image_create_info, 0);
+
+    VkImageViewCreateInfo ivci = {};
+    ivci.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    ivci.image = image.handle();
+    ivci.viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
+    ivci.format = VK_FORMAT_R8G8B8A8_UNORM;
+    ivci.subresourceRange.baseMipLevel = 0;
+    ivci.subresourceRange.baseArrayLayer = 0;
+    ivci.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+
+    // Test for error message
+    ivci.subresourceRange.layerCount = 1;
+    ivci.subresourceRange.levelCount = 4;
+    CreateImageViewTest(*this, &ivci, "VUID-VkImageViewCreateInfo-image-01584");
+
+    // Test for error message
+    ivci.subresourceRange.layerCount = 2;
+    ivci.subresourceRange.levelCount = 1;
+    CreateImageViewTest(*this, &ivci, "VUID-VkImageViewCreateInfo-image-01584");
+}
+
+TEST_F(VkLayerTest, InvalidBindIMageMemoryDeviceGroupInfo) {
+    TEST_DESCRIPTION("Checks for invalid BindIMageMemoryDeviceGroupInfo.");
+
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+    if (!DeviceExtensionSupported(gpu(), nullptr, VK_KHR_DEVICE_GROUP_EXTENSION_NAME)) {
+        printf("%s VK_KHR_DEVICE_GROUP_EXTENSION_NAME Extension not supported, skipping test\n", kSkipPrefix);
+        return;
+    }
+    if (!DeviceExtensionSupported(gpu(), nullptr, VK_KHR_BIND_MEMORY_2_EXTENSION_NAME)) {
+        printf("%s VK_KHR_BIND_MEMORY_2_EXTENSION_NAME Extension not supported, skipping test\n", kSkipPrefix);
+        return;
+    }
+    m_device_extension_names.push_back(VK_KHR_DEVICE_GROUP_EXTENSION_NAME);
+    m_device_extension_names.push_back(VK_KHR_BIND_MEMORY_2_EXTENSION_NAME);
+    ASSERT_NO_FATAL_FAILURE(InitState());
+
+    PFN_vkBindImageMemory2KHR vkBindImageMemory2Function =
+        (PFN_vkBindImageMemory2KHR)vk::GetDeviceProcAddr(m_device->handle(), "vkBindImageMemory2KHR");
+
+    VkImageCreateInfo image_create_info = LvlInitStruct<VkImageCreateInfo>();
+    image_create_info.flags = VK_IMAGE_CREATE_SPLIT_INSTANCE_BIND_REGIONS_BIT;
+    image_create_info.imageType = VK_IMAGE_TYPE_2D;
+    image_create_info.format = VK_FORMAT_R8G8B8A8_UNORM;
+    image_create_info.extent.width = 64;
+    image_create_info.extent.height = 64;
+    image_create_info.extent.depth = 1;
+    image_create_info.mipLevels = 1;
+    image_create_info.arrayLayers = 1;
+    image_create_info.samples = VK_SAMPLE_COUNT_1_BIT;
+    image_create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
+    image_create_info.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
+
+    VkImageObj image(m_device);
+    image.init_no_mem(*m_device, image_create_info);
+
+    VkMemoryRequirements mem_reqs;
+    vk::GetImageMemoryRequirements(m_device->device(), image.handle(), &mem_reqs);
+
+    VkMemoryAllocateInfo mem_alloc = LvlInitStruct<VkMemoryAllocateInfo>();
+    mem_alloc.allocationSize = mem_reqs.size;
+    mem_alloc.memoryTypeIndex = mem_reqs.memoryTypeBits;
+
+    bool pass = m_device->phy().set_memory_type(mem_reqs.memoryTypeBits, &mem_alloc, 0);
+    if (!pass) {
+        printf("%s Failed to set memory type.\n", kSkipPrefix);
+        return;
+    }
+
+    VkDeviceMemory memory;
+    vk::AllocateMemory(m_device->device(), &mem_alloc, NULL, &memory);
+
+    uint32_t deviceIndex = 0;
+
+    VkRect2D region = {};
+    region.offset.x = 0;
+    region.offset.y = 0;
+    region.extent.width = image.width();
+    region.extent.height = image.height();
+
+    VkBindImageMemoryDeviceGroupInfo bimdgi = LvlInitStruct<VkBindImageMemoryDeviceGroupInfo>();
+    bimdgi.deviceIndexCount = 1;
+    bimdgi.pDeviceIndices = &deviceIndex;
+    bimdgi.splitInstanceBindRegionCount = 1;
+    bimdgi.pSplitInstanceBindRegions = &region;
+
+    VkBindImageMemoryInfo bind_info = LvlInitStruct<VkBindImageMemoryInfo>(&bimdgi);
+    bind_info.image = image.handle();
+    bind_info.memory = memory;
+    bind_info.memoryOffset = 0;
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkBindImageMemoryDeviceGroupInfo-deviceIndexCount-01633");
+    vkBindImageMemory2Function(m_device->device(), 1, &bind_info);
+    m_errorMonitor->VerifyFound();
+}
+
+TEST_F(VkLayerTest, CreateImageViewWithInvalidViewType) {
+    TEST_DESCRIPTION(
+        "Create Image with VK_IMAGE_CREATE_BLOCK_TEXEL_VIEW_COMPATIBLE_BIT and non-compressed format and ImageView with view type "
+        "VK_IMAGE_VIEW_TYPE_3D.");
+
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+    if (!DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE2_EXTENSION_NAME)) {
+        printf("%s Test requires API >= 1.1 or KHR_MAINTENANCE2 extension, unavailable - skipped.\n", kSkipPrefix);
+        return;
+    }
+    m_device_extension_names.push_back(VK_KHR_MAINTENANCE2_EXTENSION_NAME);
+    ASSERT_NO_FATAL_FAILURE(InitState());
+
+    auto image_create_info = LvlInitStruct<VkImageCreateInfo>();
+    image_create_info.flags = VK_IMAGE_CREATE_BLOCK_TEXEL_VIEW_COMPATIBLE_BIT;
+    image_create_info.imageType = VK_IMAGE_TYPE_3D;
+    image_create_info.format = VK_FORMAT_R8G8B8A8_UNORM;
+    image_create_info.extent.width = 32;
+    image_create_info.extent.height = 32;
+    image_create_info.extent.depth = 1;
+    image_create_info.mipLevels = 1;
+    image_create_info.arrayLayers = 1;
+    image_create_info.samples = VK_SAMPLE_COUNT_1_BIT;
+    image_create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
+    image_create_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    image_create_info.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
+    image_create_info.queueFamilyIndexCount = 0;
+    image_create_info.pQueueFamilyIndices = NULL;
+    image_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+    VkImageObj image(m_device);
+    image.Init(image_create_info, 0);
+
+    VkImageViewCreateInfo ivci = LvlInitStruct<VkImageViewCreateInfo>();
+    ivci.image = image.handle();
+    ivci.viewType = VK_IMAGE_VIEW_TYPE_3D;
+    ivci.format = VK_FORMAT_R8G8B8A8_UNORM;
+    ivci.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    ivci.subresourceRange.baseMipLevel = 0;
+    ivci.subresourceRange.layerCount = 1;
+    ivci.subresourceRange.baseArrayLayer = 0;
+    ivci.subresourceRange.levelCount = 1;
+
+    // Test for error message
+    CreateImageViewTest(*this, &ivci, "VUID-VkImageViewCreateInfo-image-04739");
+}
+
+TEST_F(VkLayerTest, InvalidImageSubresourceRangeAspectMask) {
+    TEST_DESCRIPTION("Test creating Image with invalid VkImageSubresourceRange aspectMask.");
+
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+    if (!DeviceExtensionSupported(gpu(), nullptr, VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME)) {
+        printf("%s Did not find required device extension %s; test skipped.\n", kSkipPrefix,
+               VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME);
+        return;
+    }
+    ASSERT_NO_FATAL_FAILURE(InitState());
+
+    VkFormat mp_format = VK_FORMAT_G8_B8R8_2PLANE_420_UNORM;
+
+    VkImageCreateInfo image_create_info = LvlInitStruct<VkImageCreateInfo>();
+    image_create_info.imageType = VK_IMAGE_TYPE_2D;
+    image_create_info.format = mp_format;
+    image_create_info.extent.width = 32;
+    image_create_info.extent.height = 32;
+    image_create_info.extent.depth = 1;
+    image_create_info.mipLevels = 1;
+    image_create_info.arrayLayers = 1;
+    image_create_info.samples = VK_SAMPLE_COUNT_1_BIT;
+    image_create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
+    image_create_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    image_create_info.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
+    image_create_info.queueFamilyIndexCount = 0;
+    image_create_info.pQueueFamilyIndices = NULL;
+    image_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+    VkImageObj image(m_device);
+    image.init(&image_create_info);
+    ASSERT_TRUE(image.initialized());
+
+    VkImageViewCreateInfo ivci = LvlInitStruct<VkImageViewCreateInfo>();
+    ivci.image = image.handle();
+    ivci.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    ivci.format = mp_format;
+    ivci.subresourceRange.layerCount = 1;
+    ivci.subresourceRange.baseMipLevel = 0;
+    ivci.subresourceRange.levelCount = 1;
+    ivci.subresourceRange.baseArrayLayer = 0;
+    ivci.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT | VK_IMAGE_ASPECT_PLANE_0_BIT;
+
+    CreateImageViewTest(*this, &ivci, "VUID-VkImageSubresourceRange-aspectMask-01670");
+}
+
+TEST_F(VkLayerTest, InvalidCreateImageQueueFamilies) {
+    TEST_DESCRIPTION("Checks for invalid queue families in ImageCreateInfo.");
+
+    bool get_physical_device_properties2 = InstanceExtensionSupported(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+    if (get_physical_device_properties2) {
+        m_instance_extension_names.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+    }
+    ASSERT_NO_FATAL_FAILURE(Init());
+
+    uint32_t queue_families[2] = {0, 0};
+
+    VkImageCreateInfo image_create_info = LvlInitStruct<VkImageCreateInfo>();
+    image_create_info.imageType = VK_IMAGE_TYPE_2D;
+    image_create_info.format = VK_FORMAT_R8G8B8A8_UNORM;
+    image_create_info.extent.width = 64;
+    image_create_info.extent.height = 64;
+    image_create_info.extent.depth = 1;
+    image_create_info.mipLevels = 1;
+    image_create_info.arrayLayers = 1;
+    image_create_info.samples = VK_SAMPLE_COUNT_1_BIT;
+    image_create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
+    image_create_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    image_create_info.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
+    image_create_info.queueFamilyIndexCount = 2;
+    image_create_info.pQueueFamilyIndices = queue_families;
+    image_create_info.sharingMode = VK_SHARING_MODE_CONCURRENT;
+
+    const char *vuid =
+        (get_physical_device_properties2) ? "VUID-VkImageCreateInfo-sharingMode-01420" : "VUID-VkImageCreateInfo-sharingMode-01392";
+    CreateImageTest(*this, &image_create_info, vuid);
+
+    uint32_t queue_node_count;
+    vk::GetPhysicalDeviceQueueFamilyProperties(gpu(), &queue_node_count, NULL);
+
+    queue_families[1] = queue_node_count;
+    CreateImageTest(*this, &image_create_info, vuid);
 }

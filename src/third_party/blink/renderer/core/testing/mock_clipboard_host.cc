@@ -7,6 +7,7 @@
 #include "base/containers/contains.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/base/big_buffer.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/renderer/platform/graphics/color_behavior.h"
 #include "third_party/blink/renderer/platform/image-encoders/image_encoder.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -179,8 +180,39 @@ void MockClipboardHost::WriteImage(const SkBitmap& bitmap) {
 }
 
 void MockClipboardHost::CommitWrite() {
-  ++sequence_number_;
+  sequence_number_ = ClipboardSequenceNumberToken();
   needs_reset_ = true;
+}
+
+void MockClipboardHost::ReadAvailableCustomAndStandardFormats(
+    ReadAvailableCustomAndStandardFormatsCallback callback) {
+  Vector<String> format_names;
+  for (const auto& item : unsanitized_custom_data_map_)
+    format_names.emplace_back(item.key);
+  std::move(callback).Run(format_names);
+}
+
+void MockClipboardHost::ReadUnsanitizedCustomFormat(
+    const String& format,
+    ReadUnsanitizedCustomFormatCallback callback) {
+  const auto it = unsanitized_custom_data_map_.find(format);
+  if (it == unsanitized_custom_data_map_.end())
+    return;
+
+  mojo_base::BigBuffer buffer =
+      mojo_base::BigBuffer(base::make_span(it->value.data(), it->value.size()));
+  std::move(callback).Run(std::move(buffer));
+}
+
+void MockClipboardHost::WriteUnsanitizedCustomFormat(
+    const String& format,
+    mojo_base::BigBuffer data) {
+  if (needs_reset_)
+    Reset();
+  // Simulate the underlying platform copying this data.
+  Vector<uint8_t> data_copy(base::saturated_cast<wtf_size_t>(data.size()),
+                            *data.data());
+  unsanitized_custom_data_map_.Set(format, data_copy);
 }
 
 #if defined(OS_MAC)

@@ -22,7 +22,12 @@
 #include <inttypes.h>
 
 #include "libavutil/adler32.h"
-#include "libavcodec/avcodec.h"
+#include "libavutil/avstring.h"
+
+#include "libavcodec/codec_id.h"
+#include "libavcodec/codec_par.h"
+#include "libavcodec/packet.h"
+
 #include "avformat.h"
 #include "internal.h"
 
@@ -51,6 +56,14 @@ static int framecrc_write_packet(struct AVFormatContext *s, AVPacket *pkt)
              pkt->stream_index, pkt->dts, pkt->pts, pkt->duration, pkt->size, crc);
     if (pkt->flags != AV_PKT_FLAG_KEY)
         av_strlcatf(buf, sizeof(buf), ", F=0x%0X", pkt->flags);
+    if (pkt->side_data_elems) {
+        av_strlcatf(buf, sizeof(buf), ", S=%d", pkt->side_data_elems);
+
+        for (int i = 0; i < pkt->side_data_elems; i++) {
+            av_strlcatf(buf, sizeof(buf), ", %8"SIZE_SPECIFIER,
+                        pkt->side_data[i].size);
+        }
+    }
     av_strlcatf(buf, sizeof(buf), "\n");
     avio_write(s->pb, buf, strlen(buf));
     return 0;

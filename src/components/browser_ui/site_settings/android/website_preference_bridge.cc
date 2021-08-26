@@ -30,7 +30,6 @@
 #include "components/content_settings/core/browser/uma_util.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
-#include "components/embedder_support/android/browser_context/browser_context_handle.h"
 #include "components/permissions/object_permission_context_base.h"
 #include "components/permissions/permission_decision_auto_blocker.h"
 #include "components/permissions/permission_manager.h"
@@ -38,11 +37,13 @@
 #include "components/permissions/permission_util.h"
 #include "components/permissions/permissions_client.h"
 #include "components/user_prefs/user_prefs.h"
+#include "content/public/browser/android/browser_context_handle.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "storage/browser/quota/quota_manager.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "url/origin.h"
 #include "url/url_constants.h"
@@ -65,7 +66,7 @@ const char kHttpPortSuffix[] = ":80";
 const char kHttpsPortSuffix[] = ":443";
 
 BrowserContext* unwrap(const JavaParamRef<jobject>& jbrowser_context_handle) {
-  return browser_context::BrowserContextFromJavaHandle(jbrowser_context_handle);
+  return content::BrowserContextFromJavaHandle(jbrowser_context_handle);
 }
 
 HostContentSettingsMap* GetHostContentSettingsMap(
@@ -644,11 +645,11 @@ static void JNI_WebsitePreferenceBridge_ClearLocalStorageData(
   BrowserContext* browser_context = unwrap(jbrowser_context_handle);
   auto local_storage_helper =
       base::MakeRefCounted<browsing_data::LocalStorageHelper>(browser_context);
-  auto origin =
-      url::Origin::Create(GURL(ConvertJavaStringToUTF8(env, jorigin)));
-  local_storage_helper->DeleteOrigin(
-      origin, base::BindOnce(&OnLocalStorageCleared,
-                             ScopedJavaGlobalRef<jobject>(java_callback)));
+  auto storage_key = blink::StorageKey(
+      url::Origin::Create(GURL(ConvertJavaStringToUTF8(env, jorigin))));
+  local_storage_helper->DeleteStorageKey(
+      storage_key, base::BindOnce(&OnLocalStorageCleared,
+                                  ScopedJavaGlobalRef<jobject>(java_callback)));
 }
 
 static void JNI_WebsitePreferenceBridge_ClearStorageData(
@@ -712,6 +713,15 @@ static jboolean JNI_WebsitePreferenceBridge_IsPermissionControlledByDSE(
   return permissions::PermissionsClient::Get()->IsPermissionControlledByDse(
       unwrap(jbrowser_context_handle),
       static_cast<ContentSettingsType>(content_settings_type),
+      url::Origin::Create(GURL(ConvertJavaStringToUTF8(env, jorigin))));
+}
+
+static jboolean JNI_WebsitePreferenceBridge_IsDSEOrigin(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jbrowser_context_handle,
+    const JavaParamRef<jstring>& jorigin) {
+  return permissions::PermissionsClient::Get()->IsDseOrigin(
+      unwrap(jbrowser_context_handle),
       url::Origin::Create(GURL(ConvertJavaStringToUTF8(env, jorigin))));
 }
 

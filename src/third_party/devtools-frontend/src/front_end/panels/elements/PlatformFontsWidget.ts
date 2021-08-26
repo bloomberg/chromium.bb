@@ -31,12 +31,12 @@
 /* eslint-disable rulesdir/no_underscored_properties */
 
 import * as i18n from '../../core/i18n/i18n.js';
-import type * as SDK from '../../core/sdk/sdk.js'; // eslint-disable-line no-unused-vars
+import type * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import type * as Protocol from '../../generated/protocol.js';
 
 import type {ComputedStyleModel} from './ComputedStyleModel.js';
-import {Events} from './ComputedStyleModel.js';  // eslint-disable-line no-unused-vars
+import {Events} from './ComputedStyleModel.js';
 
 const UIStrings = {
   /**

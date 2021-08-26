@@ -75,7 +75,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandlerImpl
 
   void SetPolicy(::onc::ONCSource onc_source,
                  const std::string& userhash,
-                 const base::ListValue& network_configs_onc,
+                 const base::Value& network_configs_onc,
                  const base::DictionaryValue& global_network_config) override;
 
   bool IsAnyPolicyApplicationRunning() const override;
@@ -103,8 +103,9 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandlerImpl
   bool CanRemoveNetworkConfig(const std::string& guid,
                               const std::string& profile_path) const override;
 
-  bool AllowOnlyPolicyNetworksToConnect() const override;
-  bool AllowOnlyPolicyNetworksToConnectIfAvailable() const override;
+  bool AllowOnlyPolicyCellularNetworks() const override;
+  bool AllowOnlyPolicyWiFiToConnect() const override;
+  bool AllowOnlyPolicyWiFiToConnectIfAvailable() const override;
   bool AllowOnlyPolicyNetworksToAutoconnect() const override;
   std::vector<std::string> GetBlockedHexSSIDs() const override;
 
@@ -113,9 +114,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandlerImpl
   void OnProfileRemoved(const NetworkProfile& profile) override;
 
   // PolicyApplicator::ConfigurationHandler overrides
-  void CreateConfigurationFromPolicy(
-      const base::DictionaryValue& shill_properties,
-      base::OnceClosure callback) override;
+  void CreateConfigurationFromPolicy(const base::Value& shill_properties,
+                                     base::OnceClosure callback) override;
 
   void UpdateExistingConfigurationWithPropertiesFromPolicy(
       const base::DictionaryValue& existing_properties,
@@ -201,18 +201,17 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandlerImpl
                       absl::optional<base::Value> shill_properties);
 
   // Called from SetProperties, calls NCH::SetShillProperties.
-  void SetShillProperties(
-      const std::string& service_path,
-      std::unique_ptr<base::DictionaryValue> shill_dictionary,
-      base::OnceClosure callback,
-      network_handler::ErrorCallback error_callback);
+  void SetShillProperties(const std::string& service_path,
+                          base::Value shill_dictionary,
+                          base::OnceClosure callback,
+                          network_handler::ErrorCallback error_callback);
 
   // Sets the active proxy values in managed network configurations depending on
   // the source of the configuration. Proxy enforced by user policy
   // (provided by kProxy prefence) should have precedence over configurations
   // set by ONC policy.
   void SetManagedActiveProxyValues(const std::string& guid,
-                                   base::DictionaryValue* dictionary);
+                                   base::Value* dictionary);
 
   // Applies policies for |userhash|. |modified_policies| must be not null and
   // contain the GUIDs of the network configurations that changed since the last

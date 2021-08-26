@@ -42,6 +42,7 @@ rtc_library("fuzz_data_helper") {
 }
 
 set_defaults("webrtc_fuzzer_test") {
+  configs = rtc_add_configs
   absl_deps = []
 }
 
@@ -52,6 +53,7 @@ template("webrtc_fuzzer_test") {
       ":fuzz_data_helper",
       ":webrtc_fuzzer_main",
     ]
+    additional_configs = configs
 
     # If absl_deps is [], no action is needed. If not [], then it needs to be
     # converted to //third_party/abseil-cpp:absl when build_with_chromium=true
@@ -226,14 +228,6 @@ webrtc_fuzzer_test("rtp_packetizer_av1_fuzzer") {
     "../../modules/rtp_rtcp:rtp_rtcp",
     "../../modules/rtp_rtcp:rtp_rtcp_format",
     "../../rtc_base:checks",
-  ]
-}
-
-webrtc_fuzzer_test("rtp_header_fuzzer") {
-  sources = [ "rtp_header_fuzzer.cc" ]
-  deps = [
-    "../../modules/rtp_rtcp",
-    "../../modules/rtp_rtcp:rtp_rtcp_format",
   ]
 }
 
@@ -614,11 +608,6 @@ webrtc_fuzzer_test("dcsctp_socket_fuzzer") {
     "../../net/dcsctp/socket:dcsctp_socket",
     "../../rtc_base:rtc_base_approved",
   ]
-}
-
-webrtc_fuzzer_test("rtp_header_parser_fuzzer") {
-  sources = [ "rtp_header_parser_fuzzer.cc" ]
-  deps = [ "../:rtp_test_utils" ]
 }
 
 webrtc_fuzzer_test("ssl_certificate_fuzzer") {

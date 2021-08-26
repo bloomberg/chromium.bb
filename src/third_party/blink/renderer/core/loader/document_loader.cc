@@ -40,6 +40,7 @@
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/public/common/client_hints/client_hints.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/scheme_registry.h"
 #include "third_party/blink/public/mojom/commit_result/commit_result.mojom-blink.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
@@ -262,6 +263,7 @@ struct SameSizeAsDocumentLoader
   bool is_error_page_for_failed_navigation;
   mojo::Remote<mojom::blink::ContentSecurityNotifier> content_security_notifier;
   scoped_refptr<SecurityOrigin> origin_to_commit;
+  BlinkStorageKey storage_key;
   network::mojom::WebSandboxFlags sandbox_flags;
   WebNavigationType navigation_type;
   DocumentLoadTiming document_load_timing;
@@ -314,6 +316,7 @@ struct SameSizeAsDocumentLoader
   WebVector<WebHistoryItem> app_history_forward_entries;
   mojo::Remote<blink::mojom::CodeCacheHost> code_cache_host;
   HashSet<KURL> early_hints_preloaded_resources_;
+  bool scroll_offset_changed_since_last_history_navigation_triggered_;
 };
 
 // Asserts size of DocumentLoader, so that whenever a new attribute is added to
@@ -387,6 +390,7 @@ DocumentLoader::DocumentLoader(
       origin_to_commit_(params_->origin_to_commit.IsNull()
                             ? nullptr
                             : params_->origin_to_commit.Get()->IsolatedCopy()),
+      storage_key_(std::move(params_->storage_key)),
       sandbox_flags_(params_->sandbox_flags),
       navigation_type_(navigation_type),
       document_load_timing_(*this),
@@ -507,6 +511,7 @@ DocumentLoader::CreateWebNavigationParamsToCloneDocument() {
   // javascript: URL in an about:blank frame that inherited an origin will cause
   // the origin to no longer be aliased).
   params->origin_to_commit = window->GetSecurityOrigin();
+  params->storage_key = window->GetStorageKey();
   params->sandbox_flags = sandbox_flags_;
   params->origin_agent_cluster = origin_agent_cluster_;
   params->grant_load_local_resources = grant_load_local_resources_;
@@ -639,11 +644,24 @@ void DocumentLoader::DidObserveInputDelay(base::TimeDelta input_delay) {
     GetLocalFrameClient().DidObserveInputDelay(input_delay);
   }
 }
+
 void DocumentLoader::DidObserveLoadingBehavior(LoadingBehaviorFlag behavior) {
   if (frame_) {
     DCHECK_GE(state_, kCommitted);
     GetLocalFrameClient().DidObserveLoadingBehavior(behavior);
   }
+}
+
+void DocumentLoader::DidTriggerBackForwardNavigation() {
+  scroll_offset_changed_since_last_history_navigation_triggered_ = false;
+}
+
+void DocumentLoader::DidChangeScrollOffset() {
+  // The scroll offset changed. If a pending history navigation commits in this
+  // document later on, we should keep the updated scroll offset instead of
+  // trying to restore the scroll offset from the session history entry.
+  // See also https://crbug.com/1209717.
+  scroll_offset_changed_since_last_history_navigation_triggered_ = true;
 }
 
 // static
@@ -663,26 +681,26 @@ WebHistoryCommitType LoadTypeToCommitType(WebFrameLoadType type) {
 }
 
 static SinglePageAppNavigationType CategorizeSinglePageAppNavigation(
-    SameDocumentNavigationSource same_document_navigation_source,
+    mojom::blink::SameDocumentNavigationType same_document_navigation_type,
     WebFrameLoadType frame_load_type) {
   // |SinglePageAppNavigationType| falls into this grid according to different
-  // combinations of |WebFrameLoadType| and |SameDocumentNavigationSource|:
+  // combinations of |WebFrameLoadType| and |SameDocumentNavigationType|:
   //
   //                 HistoryApi           Default
   //  kBackForward   illegal              otherFragmentNav
   // !kBackForward   sameDocBack/Forward  historyPushOrReplace
-  switch (same_document_navigation_source) {
-    case kSameDocumentNavigationDefault:
+  switch (same_document_navigation_type) {
+    case mojom::blink::SameDocumentNavigationType::kFragment:
       if (frame_load_type == WebFrameLoadType::kBackForward) {
         return kSPANavTypeSameDocumentBackwardOrForward;
       }
       return kSPANavTypeOtherFragmentNavigation;
-    case kSameDocumentNavigationHistoryApi:
-      // It's illegal to have both kSameDocumentNavigationHistoryApi and
+    case mojom::blink::SameDocumentNavigationType::kHistoryApi:
+      // It's illegal to have both kHistoryApi and
       // WebFrameLoadType::kBackForward.
       DCHECK(frame_load_type != WebFrameLoadType::kBackForward);
       return kSPANavTypeHistoryPushStateOrReplaceState;
-    case kSameDocumentNavigationAppHistoryRespondWith:
+    case mojom::blink::SameDocumentNavigationType::kAppHistoryRespondWith:
       return kSPANavTypeAppHistoryRespondWith;
   }
   NOTREACHED();
@@ -691,7 +709,7 @@ static SinglePageAppNavigationType CategorizeSinglePageAppNavigation(
 
 void DocumentLoader::RunURLAndHistoryUpdateSteps(
     const KURL& new_url,
-    SameDocumentNavigationSource same_document_navigation_source,
+    mojom::blink::SameDocumentNavigationType same_document_navigation_type,
     scoped_refptr<SerializedScriptValue> data,
     WebFrameLoadType type,
     mojom::blink::ScrollRestorationType scroll_restoration_type) {
@@ -699,21 +717,21 @@ void DocumentLoader::RunURLAndHistoryUpdateSteps(
   // We use the security origin of this frame since callers of this method must
   // already have performed same origin checks.
   UpdateForSameDocumentNavigation(
-      new_url, same_document_navigation_source, std::move(data),
+      new_url, same_document_navigation_type, std::move(data),
       scroll_restoration_type, type, frame_->DomWindow()->GetSecurityOrigin(),
       /*is_synchronously_committed=*/true);
 }
 
 void DocumentLoader::UpdateForSameDocumentNavigation(
     const KURL& new_url,
-    SameDocumentNavigationSource same_document_navigation_source,
+    mojom::blink::SameDocumentNavigationType same_document_navigation_type,
     scoped_refptr<SerializedScriptValue> data,
     mojom::blink::ScrollRestorationType scroll_restoration_type,
     WebFrameLoadType type,
     const SecurityOrigin* initiator_origin,
     bool is_synchronously_committed) {
   SinglePageAppNavigationType single_page_app_navigation_type =
-      CategorizeSinglePageAppNavigation(same_document_navigation_source, type);
+      CategorizeSinglePageAppNavigation(same_document_navigation_type, type);
   UMA_HISTOGRAM_ENUMERATION(
       "RendererScheduler.UpdateForSameDocumentNavigationCount",
       single_page_app_navigation_type, kSPANavTypeCount);
@@ -738,7 +756,8 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
   url_ = new_url;
   replaces_current_history_item_ = type != WebFrameLoadType::kStandard;
   bool is_history_api_or_app_history_navigation =
-      (same_document_navigation_source != kSameDocumentNavigationDefault);
+      (same_document_navigation_type !=
+       mojom::blink::SameDocumentNavigationType::kFragment);
   if (is_history_api_or_app_history_navigation) {
     // See spec:
     // https://html.spec.whatwg.org/multipage/history.html#url-and-history-update-steps
@@ -757,12 +776,13 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
   // that we don't unintentionally clear the token when we reach here from the
   // history API.
   if (type == WebFrameLoadType::kStandard ||
-      same_document_navigation_source == kSameDocumentNavigationDefault) {
+      same_document_navigation_type ==
+          mojom::blink::SameDocumentNavigationType::kFragment) {
     bool is_browser_initiated = !initiator_origin;
     DCHECK(!(is_browser_initiated && is_synchronously_committed));
     has_text_fragment_token_ =
         TextFragmentAnchor::GenerateNewTokenForSameDocument(
-            *this, type, same_document_navigation_source);
+            *this, type, same_document_navigation_type);
   }
 
   SetHistoryItemStateForCommit(history_item_.Get(), type,
@@ -789,8 +809,7 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
 
   GetLocalFrameClient().DidFinishSameDocumentNavigation(
       history_item_.Get(), commit_type, is_synchronously_committed,
-      (same_document_navigation_source == kSameDocumentNavigationHistoryApi),
-      is_client_redirect_);
+      same_document_navigation_type, is_client_redirect_);
   probe::DidNavigateWithinDocument(frame_);
   if (!was_loading) {
     GetLocalFrameClient().DidStopLoading();
@@ -1295,8 +1314,8 @@ mojom::CommitResult DocumentLoader::CommitSameDocumentNavigation(
     }
   }
 
-  SameDocumentNavigationSource same_document_navigation_source =
-      kSameDocumentNavigationDefault;
+  mojom::blink::SameDocumentNavigationType same_document_navigation_type =
+      mojom::blink::SameDocumentNavigationType::kFragment;
   if (auto* app_history = AppHistory::appHistory(*frame_->DomWindow())) {
     UserNavigationInvolvement involvement = UserNavigationInvolvement::kNone;
     if (triggering_event_info == mojom::blink::TriggeringEventInfo::kUnknown) {
@@ -1315,12 +1334,12 @@ mojom::CommitResult DocumentLoader::CommitSameDocumentNavigation(
     // can abort here. In the back-forward case, though, DispatchNavigateEvent()
     // doesn't have all the state needed to correctly commit, so fall through
     // and let the commit proceed normally, just with the
-    // SameDocumentNavigationSource modified.
+    // mojom::blink::SameDocumentNavigationType modified.
     if (dispatch_result == AppHistory::DispatchResult::kRespondWith) {
       if (frame_load_type != WebFrameLoadType::kBackForward)
         return mojom::blink::CommitResult::Aborted;
-      same_document_navigation_source =
-          kSameDocumentNavigationAppHistoryRespondWith;
+      same_document_navigation_type =
+          mojom::blink::SameDocumentNavigationType::kAppHistoryRespondWith;
     }
   }
 
@@ -1337,7 +1356,7 @@ mojom::CommitResult DocumentLoader::CommitSameDocumentNavigation(
             WTF::Bind(
                 &DocumentLoader::CommitSameDocumentNavigationInternal,
                 WrapWeakPersistent(this), url, frame_load_type,
-                WrapPersistent(history_item), same_document_navigation_source,
+                WrapPersistent(history_item), same_document_navigation_type,
                 client_redirect_policy, has_transient_user_activation,
                 WTF::RetainedRef(initiator_origin), is_synchronously_committed,
                 triggering_event_info, std::move(extra_data)));
@@ -1350,7 +1369,7 @@ mojom::CommitResult DocumentLoader::CommitSameDocumentNavigation(
       frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
     }
     CommitSameDocumentNavigationInternal(
-        url, frame_load_type, history_item, same_document_navigation_source,
+        url, frame_load_type, history_item, same_document_navigation_type,
         client_redirect_policy, has_transient_user_activation, initiator_origin,
         is_synchronously_committed, triggering_event_info,
         std::move(extra_data));
@@ -1362,7 +1381,7 @@ void DocumentLoader::CommitSameDocumentNavigationInternal(
     const KURL& url,
     WebFrameLoadType frame_load_type,
     HistoryItem* history_item,
-    SameDocumentNavigationSource same_document_navigation_source,
+    mojom::blink::SameDocumentNavigationType same_document_navigation_type,
     ClientRedirectPolicy client_redirect,
     bool has_transient_user_activation,
     const SecurityOrigin* initiator_origin,
@@ -1392,6 +1411,10 @@ void DocumentLoader::CommitSameDocumentNavigationInternal(
   // to check again if frame_ is null.
   if (!frame_ || !frame_->GetPage())
     return;
+
+  bool may_restore_scroll_offset =
+      history_item &&
+      !scroll_offset_changed_since_last_history_navigation_triggered_;
   GetFrameLoader().SaveScrollState();
 
   KURL old_url = frame_->GetDocument()->Url();
@@ -1416,7 +1439,7 @@ void DocumentLoader::CommitSameDocumentNavigationInternal(
     history_item_ = history_item;
   if (extra_data)
     GetLocalFrameClient().UpdateDocumentLoader(this, std::move(extra_data));
-  UpdateForSameDocumentNavigation(url, same_document_navigation_source, nullptr,
+  UpdateForSameDocumentNavigation(url, same_document_navigation_type, nullptr,
                                   mojom::blink::ScrollRestorationType::kAuto,
                                   frame_load_type, initiator_origin,
                                   is_synchronously_committed);
@@ -1431,8 +1454,8 @@ void DocumentLoader::CommitSameDocumentNavigationInternal(
   // to a same ISN when a history navigation targets a frame that no longer
   // exists (https://crbug.com/705550).
   if (!same_item_sequence_number) {
-    GetFrameLoader().DidFinishSameDocumentNavigation(url, frame_load_type,
-                                                     history_item);
+    GetFrameLoader().DidFinishSameDocumentNavigation(
+        url, frame_load_type, history_item, may_restore_scroll_offset);
   }
 }
 
@@ -2154,9 +2177,14 @@ void DocumentLoader::InitializeWindow(Document* owner_document) {
   SecurityContext& security_context = frame_->DomWindow()->GetSecurityContext();
   security_context.SetSandboxFlags(sandbox_flags_);
 
-  // TODO(https://crbug.com/1224901): Send storage key with the commit params
-  // and use the storage key sent by the browser directly here.
-  frame_->DomWindow()->SetStorageKey(BlinkStorageKey(security_origin));
+  // TODO(https://crbug.com/888079): Just use the storage key sent by the
+  // browser once the browser will be able to compute the origin in all cases.
+  frame_->DomWindow()->SetStorageKey(
+      storage_key_.GetNonce().has_value()
+          ? BlinkStorageKey::CreateWithNonce(security_origin,
+                                             storage_key_.GetNonce().value())
+          : BlinkStorageKey(security_origin));
+
   // Conceptually, SecurityOrigin doesn't have to be initialized after sandbox
   // flags are applied, but there's a UseCounter in SetSecurityOrigin() that
   // wants to inspect sandbox flags.
@@ -2468,8 +2496,7 @@ void DocumentLoader::CreateParserPostCommit() {
     // Enable Auto Picture-in-Picture feature for the built-in Chrome OS Video
     // Player app.
     const url::Origin origin = window->GetSecurityOrigin()->ToUrlOrigin();
-    if (SchemeRegistry::IsExtensionScheme(
-            String(origin.scheme().c_str(), origin.scheme().size())) &&
+    if (CommonSchemeRegistry::IsExtensionScheme(origin.scheme()) &&
         origin.DomainIs("jcgeabjmjgoblfofpppfkcoakmfobdko") &&
         origin.port() == 0) {
       window->GetOriginTrialContext()->AddFeature(
@@ -2557,6 +2584,10 @@ void DocumentLoader::CountUse(mojom::WebFeature feature) {
   return use_counter_.Count(feature, GetFrame());
 }
 
+void DocumentLoader::CountDeprecation(mojom::WebFeature feature) {
+  return use_counter_.Count(feature, GetFrame());
+}
+
 void DocumentLoader::RecordUseCountersForCommit() {
   // Pre-commit state, count usage the use counter associated with "this"
   // (provisional document loader) instead of frame_'s document loader.
@@ -2596,6 +2627,12 @@ void DocumentLoader::RecordUseCountersForCommit() {
     auto type = static_cast<network::mojom::WebClientHintsType>(i);
     if (client_hints_preferences_.ShouldSend(type))
       hints_context.CountClientHints(type);
+  }
+
+  if (RuntimeEnabledFeatures::EarlyHintsPreloadForNavigationOptInEnabled(
+          frame_->DomWindow()) &&
+      !early_hints_preloaded_resources_.IsEmpty()) {
+    CountUse(WebFeature::kEarlyHintsPreload);
   }
 }
 
@@ -2739,7 +2776,11 @@ blink::mojom::CodeCacheHost* DocumentLoader::GetCodeCacheHost() {
     if (GetDisableCodeCacheForTesting()) {
       return nullptr;
     }
-    GetFrame()->Client()->GetBrowserInterfaceBroker().GetInterface(
+    // TODO(crbug.com/1083097) When NavigationThreadingOptimizations feature is
+    // enabled by default CodeCacheHost interface will be sent along with
+    // CommitNavigation message and the following code would not be required and
+    // we should just return nullptr here.
+    GetLocalFrameClient().GetBrowserInterfaceBroker().GetInterface(
         code_cache_host_.BindNewPipeAndPassReceiver());
     code_cache_host_.set_disconnect_handler(WTF::Bind(
         &DocumentLoader::OnCodeCacheHostClosed, WrapWeakPersistent(this)));
@@ -2754,9 +2795,14 @@ void DocumentLoader::OnCodeCacheHostClosed() {
 void DocumentLoader::SetCodeCacheHost(
     mojo::PendingRemote<mojom::CodeCacheHost> code_cache_host) {
   code_cache_host_.reset();
-  code_cache_host_.Bind(std::move(code_cache_host));
-  code_cache_host_.set_disconnect_handler(WTF::Bind(
-      &DocumentLoader::OnCodeCacheHostClosed, WrapWeakPersistent(this)));
+  // When NavigationThreadingOptimizations feature is disabled, code_cache_host
+  // can be a nullptr. When this feature is turned off the CodeCacheHost
+  // interface is requested via BrowserBrokerInterface when required.
+  if (code_cache_host) {
+    code_cache_host_.Bind(std::move(code_cache_host));
+    code_cache_host_.set_disconnect_handler(WTF::Bind(
+        &DocumentLoader::OnCodeCacheHostClosed, WrapWeakPersistent(this)));
+  }
 }
 
 // static

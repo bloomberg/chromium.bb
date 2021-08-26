@@ -37,13 +37,20 @@ by a child template that "extends" this file.
         <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
     {% endif %}
 
-    <!--
-      TODO(b/183501112): Remove this condition when always building against the S SDK.
-    -->
-    {% if target_sdk_version == 'S' or target_sdk_version|int >= 31 %}
-    <uses-permission-sdk-23 android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30"/>
     <uses-permission-sdk-23 android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30"/>
     <uses-permission-sdk-23 android:name="android.permission.BLUETOOTH_CONNECT"/>
+    <!--
+      Bluetooth advertising is used by Phone as a Security Key to allow
+      a desktop device to prove proximity by receiving a BLE advert from the
+      phone.
+    -->
+    <uses-permission-sdk-23 android:name="android.permission.BLUETOOTH_ADVERTISE"/>
+    <!--
+      The BLUETOOTH permission is needed for
+      BluetoothAdapter.ACTION_REQUEST_ENABLE which at least Phone as a Security
+      Key uses.
+    -->
+    <uses-permission-sdk-23 android:name="android.permission.BLUETOOTH"/>
     <!--
       Bluetooth scanning is used to implement the Web Bluetooth API, which is
       not intended to allow sites to derive location and so can accept a
@@ -51,10 +58,6 @@ by a child template that "extends" this file.
     -->
     <uses-permission-sdk-23 android:name="android.permission.BLUETOOTH_SCAN"
                             android:usesPermissionFlags="neverForLocation"/>
-    {% else %}
-    <uses-permission-sdk-23 android:name="android.permission.BLUETOOTH"/>
-    <uses-permission-sdk-23 android:name="android.permission.BLUETOOTH_ADMIN"/>
-    {% endif %}
 
     <uses-permission-sdk-23 android:name="android.permission.READ_CONTACTS"/>
     <uses-permission-sdk-23 android:name="android.permission.REORDER_TASKS"/>
@@ -471,6 +474,10 @@ by a child template that "extends" this file.
             android:hardwareAccelerated="false"
             {% endblock %}
         >
+            <meta-data
+                android:name="android.activity.launch_mode"
+                android:value="singleInstancePerTask"/>
+
             <!--
               Daydream api categorizes an activity to three categories: Cardboard only, hybrid
               or Daydream. It does so by testing if intents can be resolved by the activity
@@ -926,7 +933,7 @@ by a child template that "extends" this file.
         {% if channel in ['canary', 'default'] %}
         <!-- Quick Action Search widget -->
         <receiver
-            android:name="org.chromium.chrome.browser.quickactionsearchwidget.QuickActionSearchWidgetProvider"
+            android:name="org.chromium.chrome.browser.quickactionsearchwidget.QuickActionSearchWidgetProvider$QuickActionSearchWidgetProviderSmall"
             android:label="@string/quick_action_search_widget_title"
             android:exported="true">
             <intent-filter>
@@ -934,7 +941,31 @@ by a child template that "extends" this file.
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
-                android:resource="@xml/quick_action_search_widget_info" />
+                android:resource="@xml/quick_action_search_widget_small_info" />
+        </receiver>
+
+        <receiver
+            android:name="org.chromium.chrome.browser.quickactionsearchwidget.QuickActionSearchWidgetProvider$QuickActionSearchWidgetProviderMedium"
+            android:label="@string/quick_action_search_widget_title"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/quick_action_search_widget_medium_info" />
+        </receiver>
+
+        <receiver
+        android:name="org.chromium.chrome.browser.quickactionsearchwidget.QuickActionSearchWidgetProvider$QuickActionSearchWidgetProviderDino"
+        android:label="@string/dino_widget_title"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/quick_action_search_widget_dino_info" />
         </receiver>
         {% endif %}
 
@@ -977,15 +1008,6 @@ by a child template that "extends" this file.
                 android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="org.chromium.chrome.browser.searchwidget.START_TEXT_QUERY" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="org.chromium.chrome.browser.searchwidget.START_VOICE_QUERY" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="org.chromium.chrome.browser.searchwidget.UPDATE_ALL_WIDGETS" />
             </intent-filter>
             <meta-data
                     android:name="android.appwidget.provider"
@@ -1301,6 +1323,16 @@ by a child template that "extends" this file.
           android:exported="false"
           tools:node="remove">
       </provider>
+
+      <!-- The Play Core library added support for Play Asset Delivery (PAD), which is primarily
+           used by game apps to allow dynamic delivery of resource bundles. Since chrome does not
+           currently use this feature, remove these services to reclaim 70kb+ of binary size. -->
+      <service
+          android:name="com.google.android.play.core.assetpacks.AssetPackExtractionService"
+          tools:node="remove"/>
+      <service
+          android:name="com.google.android.play.core.assetpacks.ExtractionForegroundService"
+          tools:node="remove"/>
 
       <!-- Provider for chrome data. -->
       <provider android:name="org.chromium.chrome.browser.provider.ChromeBrowserProvider"

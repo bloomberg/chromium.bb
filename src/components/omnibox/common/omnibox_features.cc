@@ -130,7 +130,7 @@ const base::Feature kOmniboxLocalZeroSuggestAgeThreshold{
 // and has no direct impact on the client behavior.
 const base::Feature kOmniboxTrendingZeroPrefixSuggestionsOnNTP{
     "OmniboxTrendingZeroPrefixSuggestionsOnNTP",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    enabled_by_default_desktop_only};
 
 // Enables on-focus suggestions on the Open Web, that are contextual to the
 // current URL. Will only work if user is signed-in and syncing, or is
@@ -196,7 +196,7 @@ const base::Feature kShortBookmarkSuggestions{
     "OmniboxShortBookmarkSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kShortBookmarkSuggestionsByTotalInputLength{
     "OmniboxShortBookmarkSuggestionsByTotalInputLength",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If disabled, updating shortcuts truncates their text to the user input. If
 // enabled, they preserve up to 3 additional chars. See `GetShortcutText()` in
@@ -209,7 +209,7 @@ const base::Feature kPreserveLongerShortcutsText{
 // 'Jupiter' with URL 'en.wikipedia.org/wiki/Jupiter' located in a path
 // containing 'planet.'
 const base::Feature kBookmarkPaths{"OmniboxBookmarkPaths",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
+                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Feature used to fetch document suggestions.
 const base::Feature kDocumentProvider{"OmniboxDocumentProvider",
@@ -256,7 +256,7 @@ const base::Feature kNtpRealboxSuggestionAnswers{
 
 // Feature used to enable the second batch of Pedals (Safety Check, etc.).
 const base::Feature kOmniboxPedalsBatch2{"OmniboxPedalsBatch2",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Feature used to enable the second batch of Pedals (Safety Check, etc.)
 // for non-English locales (English locales are 'en' and 'en-GB').
@@ -270,7 +270,7 @@ const base::Feature kOmniboxPedalsBatch3{"OmniboxPedalsBatch3",
 
 // Feature that enables use of the colored version of the default Pedal icon.
 const base::Feature kOmniboxPedalsDefaultIconColored{
-    "OmniboxPedalsDefaultIconColored", base::FEATURE_DISABLED_BY_DEFAULT};
+    "OmniboxPedalsDefaultIconColored", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Feature that enables loading synonyms from the translation console.
 const base::Feature kOmniboxPedalsTranslationConsole{
@@ -279,10 +279,6 @@ const base::Feature kOmniboxPedalsTranslationConsole{
 // Feature used to enable the keyword search button.
 const base::Feature kOmniboxKeywordSearchButton{
     "OmniboxKeywordSearchButton", enabled_by_default_desktop_only};
-
-// Enables new UI changes indicating focus and hover states.
-const base::Feature kOmniboxRefinedFocusState{"OmniboxRefinedFocusState",
-                                              enabled_by_default_desktop_only};
 
 // If enabled, uses WebUI to render the omnibox suggestions popup, similar to
 // how the NTP "realbox" is implemented.

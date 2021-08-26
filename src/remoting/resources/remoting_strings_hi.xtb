@@ -11,6 +11,7 @@
 <translation id="1546934824884762070">एक अनपेक्षित गड़बड़ी आई. कृपया इस समस्या की रिपोर्ट डेवलपर से करें.</translation>
 <translation id="1697532407822776718">आप बिल्कुल तैयार हैं!</translation>
 <translation id="1742469581923031760">कनेक्ट हो रहा है...</translation>
+<translation id="177040763384871009">रिमोट डिवाइस पर क्लिक किए गए लिंकों को क्लाइंट ब्राउज़र पर खोलने की अनुमति देने के लिए, आपको "<ph name="URL_FORWARDER_NAME" />" को सिस्टम का डिफ़ॉल्ट वेब ब्राउज़र बनाना होगा.</translation>
 <translation id="177096447311351977">क्लाइंट के लिए चैनल IP: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1897488610212723051">मिटाएं</translation>
 <translation id="2009755455353575666">कनेक्‍शन विफल रहा</translation>
@@ -129,6 +130,7 @@
 <translation id="6963936880795878952">दूर के कंप्यूटर के साथ कनेक्शन पर अस्थायी रूप से रोक लगाई गई है क्योंकि कोई गलत पिन के ज़रिए उससे कनेक्ट करने की कोशिश कर रहा था. कृपया बाद में फिर से कोशिश करें.</translation>
 <translation id="6965382102122355670">ठीक है</translation>
 <translation id="6985691951107243942">क्‍या आप वाकई <ph name="HOSTNAME" /> से दूर से किए गए कनेक्‍शन को बंद करना चाहते हैं? अगर आप अपना मन बदलते हैं तो, आपको कनेक्‍शन को फिर से चालू करने के लिए उस कंप्‍यूटर पर जाना होगा.</translation>
+<translation id="6998890551706945177"><ph name="CLIENT_USERNAME" /> ने आपका कंप्यूटर देखने और कंट्रोल करने के लिए, ऐक्सेस मांगा है. अगर ऐक्सेस शेयर करने से पहले कोई बदलाव करना है या आप इस व्यक्ति को नहीं जानते हैं, तो ''<ph name="IDS_SHARE_CONFIRM_DIALOG_DECLINE" />'' दबाएं.  अन्य मामलों में, कनेक्शन की अनुमति देने के लिए, ''<ph name="IDS_SHARE_CONFIRM_DIALOG_CONFIRM" />'' को चुनें.</translation>
 <translation id="7019153418965365059">अपरिचित होस्‍ट गड़बड़ी: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">दूरस्थ सहायता</translation>
 <translation id="7026930240735156896">अपना कंप्यूटर दूर से ऐक्सेस करने के लिए उसे सेटअप करने के निर्देशों को पूरा करें</translation>
@@ -142,6 +144,7 @@
 <translation id="7434397035092923453">क्लाइंट की एक्सेस अस्वीकार की गई: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">क्लाइंट कनेक्ट किया गया: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7526139040829362392">खाता बदलें</translation>
+<translation id="7535110896613603182">डिफ़ॉल्ट ऐप्लिकेशन की सेटिंग खोलें</translation>
 <translation id="7628469622942688817">इस डिवाइस पर मेरा पिन याद रखें.</translation>
 <translation id="7649070708921625228">सहायता</translation>
 <translation id="7658239707568436148">अभी नहीं</translation>

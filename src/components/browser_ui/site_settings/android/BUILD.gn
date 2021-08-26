@@ -5,17 +5,11 @@
 import("//build/config/android/rules.gni")
 
 generate_jni("site_settings_jni_headers") {
-  sources = [
-    "java/src/org/chromium/components/browser_ui/site_settings/SiteSettingsFeatureList.java",
-    "java/src/org/chromium/components/browser_ui/site_settings/WebsitePreferenceBridge.java",
-  ]
+  sources = [ "java/src/org/chromium/components/browser_ui/site_settings/WebsitePreferenceBridge.java" ]
 }
 
 source_set("android") {
   sources = [
-    "features.cc",
-    "features.h",
-    "site_settings_feature_list.cc",
     "storage_info_fetcher.cc",
     "storage_info_fetcher.h",
     "website_preference_bridge.cc",
@@ -26,7 +20,6 @@ source_set("android") {
     "//components/browsing_data/content",
     "//components/cdm/browser",
     "//components/content_settings/core/browser",
-    "//components/embedder_support/android:browser_context",
     "//components/permissions",
     "//components/subresource_filter/android",
     "//components/user_prefs",
@@ -46,7 +39,6 @@ android_library("java") {
     "java/src/org/chromium/components/browser_ui/site_settings/ChosenObjectSettings.java",
     "java/src/org/chromium/components/browser_ui/site_settings/ClearWebsiteStorage.java",
     "java/src/org/chromium/components/browser_ui/site_settings/ClearWebsiteStorageDialog.java",
-    "java/src/org/chromium/components/browser_ui/site_settings/ContentSetting.java",
     "java/src/org/chromium/components/browser_ui/site_settings/ContentSettingException.java",
     "java/src/org/chromium/components/browser_ui/site_settings/ContentSettingsResources.java",
     "java/src/org/chromium/components/browser_ui/site_settings/ForwardingManagedPreferenceDelegate.java",
@@ -63,7 +55,6 @@ android_library("java") {
     "java/src/org/chromium/components/browser_ui/site_settings/SiteSettings.java",
     "java/src/org/chromium/components/browser_ui/site_settings/SiteSettingsCategory.java",
     "java/src/org/chromium/components/browser_ui/site_settings/SiteSettingsDelegate.java",
-    "java/src/org/chromium/components/browser_ui/site_settings/SiteSettingsFeatureList.java",
     "java/src/org/chromium/components/browser_ui/site_settings/SiteSettingsPreferenceFragment.java",
     "java/src/org/chromium/components/browser_ui/site_settings/SiteSettingsUtil.java",
     "java/src/org/chromium/components/browser_ui/site_settings/StorageInfo.java",
@@ -79,11 +70,11 @@ android_library("java") {
   deps = [
     ":java_resources",
     "//base:base_java",
+    "//build/android:build_config_java",
     "//components/browser_ui/settings/android:java",
     "//components/browser_ui/widget/android:java",
     "//components/content_settings/android:content_settings_enums_java",
     "//components/content_settings/android:java",
-    "//components/embedder_support/android:browser_context_java",
     "//components/embedder_support/android:util_java",
     "//components/location/android:location_java",
     "//components/permissions/android:java",

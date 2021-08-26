@@ -56,7 +56,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
 #include "chromeos/assistant/buildflags.h"
 #include "chromeos/attestation/attestation_flow_utils.h"
-#include "chromeos/dbus/update_engine_client.h"
+#include "chromeos/dbus/update_engine/update_engine_client.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/session/arc_session_runner.h"
@@ -100,25 +100,7 @@ void RunWelcomeScreenChecks() {
   test::OobeJS().ExpectHiddenPath({"connect", "languageScreen"});
   test::OobeJS().ExpectHiddenPath({"connect", "timezoneScreen"});
 
-  if (features::IsNewOobeLayoutEnabled()) {
-    test::OobeJS().ExpectFocused({"connect", "welcomeScreen", "getStarted"});
-  } else {
-    test::OobeJS().ExpectFocused(
-        {"connect", "welcomeScreen", "welcomeNextButton"});
-  }
-
-  if (!features::IsNewOobeLayoutEnabled()) {
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-    constexpr int kNumberOfVideosPlaying = 1;
-#else
-    constexpr int kNumberOfVideosPlaying = 0;
-#endif
-    test::OobeJS().ExpectEQ(
-        "(() => {let cnt = 0; for (let v of "
-        "$('connect').$.welcomeScreen.root.querySelectorAll('video')) "
-        "{  cnt += v.paused ? 0 : 1; }; return cnt; })()",
-        kNumberOfVideosPlaying);
-  }
+  test::OobeJS().ExpectFocused({"connect", "welcomeScreen", "getStarted"});
 
   EXPECT_TRUE(ash::LoginScreenTestApi::IsShutdownButtonShown());
   EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
@@ -193,7 +175,7 @@ void RunSyncConsentScreenChecks() {
   screen->OnStateChanged(nullptr);
 
   const std::string button_name =
-      chromeos::features::IsSplitSettingsSyncEnabled()
+      chromeos::features::IsSyncConsentOptionalEnabled()
           ? "acceptButton"
           : "nonSplitSettingsAcceptButton";
   test::OobeJS().ExpectEnabledPath({"sync-consent", button_name});
@@ -788,6 +770,10 @@ class OobeZeroTouchInteractiveUITest : public OobeInteractiveUITest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     OobeInteractiveUITest::SetUpCommandLine(command_line);
+
+    // Enable usage of fake PSM RLWE client (for tests checking initial
+    // enrollment).
+    command_line->AppendSwitch(switches::kEnterpriseUseFakePsmRlweClient);
 
     command_line->AppendSwitchASCII(
         switches::kEnterpriseEnableInitialEnrollment,

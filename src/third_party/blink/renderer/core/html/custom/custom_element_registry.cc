@@ -259,7 +259,7 @@ bool CustomElementRegistry::NameIsDefined(const AtomicString& name) const {
 
 CustomElementDefinition* CustomElementRegistry::DefinitionForName(
     const AtomicString& name) const {
-  return DefinitionForId(name_id_map_.at(name));
+  return DefinitionForId(name_id_map_.DeprecatedAtOrEmptyValue(name));
 }
 
 CustomElementDefinition* CustomElementRegistry::DefinitionForId(
@@ -298,7 +298,8 @@ ScriptPromise CustomElementRegistry::whenDefined(
   CustomElementDefinition* definition = DefinitionForName(name);
   if (definition)
     return ScriptPromise::CastUndefined(script_state);
-  ScriptPromiseResolver* resolver = when_defined_promise_map_.at(name);
+  ScriptPromiseResolver* resolver =
+      when_defined_promise_map_.DeprecatedAtOrEmptyValue(name);
   if (resolver)
     return resolver->Promise();
   auto* new_resolver =

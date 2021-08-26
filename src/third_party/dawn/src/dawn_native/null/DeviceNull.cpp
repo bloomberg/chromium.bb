@@ -20,8 +20,6 @@
 #include "dawn_native/Instance.h"
 #include "dawn_native/Surface.h"
 
-#include <spirv_cross.hpp>
-
 namespace dawn_native { namespace null {
 
     // Implementation of pre-Device objects: the null adapter, null backend connection and Connect()
@@ -31,10 +29,14 @@ namespace dawn_native { namespace null {
         mAdapterType = wgpu::AdapterType::CPU;
 
         // Enable all extensions by default for the convenience of tests.
-        mSupportedExtensions.extensionsBitSet.flip();
+        mSupportedExtensions.extensionsBitSet.set();
     }
 
     Adapter::~Adapter() = default;
+
+    bool Adapter::SupportsExternalImages() const {
+        return false;
+    }
 
     // Used for the tests that intend to use an adapter without all extensions enabled.
     void Adapter::SetSupportedExtensions(const std::vector<const char*>& requiredExtensions) {
@@ -265,6 +267,7 @@ namespace dawn_native { namespace null {
     Buffer::Buffer(Device* device, const BufferDescriptor* descriptor)
         : BufferBase(device, descriptor) {
         mBackingData = std::unique_ptr<uint8_t[]>(new uint8_t[GetSize()]);
+        mAllocatedSize = GetSize();
     }
 
     Buffer::~Buffer() {

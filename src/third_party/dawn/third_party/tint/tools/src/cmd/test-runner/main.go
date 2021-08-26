@@ -23,6 +23,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"sort"
 	"strings"
@@ -116,8 +117,7 @@ func run() error {
 	// Split the --filter flag up by ',', trimming any whitespace at the start and end
 	globIncludes := strings.Split(filter, ",")
 	for i, s := range globIncludes {
-		// Escape backslashes for the glob config
-		s = strings.ReplaceAll(s, `\`, `\\`)
+		s = filepath.ToSlash(s) // Replace '\' with '/'
 		globIncludes[i] = `"` + strings.TrimSpace(s) + `"`
 	}
 
@@ -231,9 +231,11 @@ func run() error {
 	go func() {
 		for i, file := range files { // For each test file...
 			file := filepath.Join(dir, file)
+			flags := parseFlags(file)
 			for _, format := range formats { // For each output format...
 				pendingJobs <- job{
 					file:   file,
+					flags:  flags,
 					format: format,
 					result: results[i][format],
 				}
@@ -250,13 +252,13 @@ func run() error {
 
 	type stats struct {
 		numTests, numPass, numSkip, numFail int
+		timeTaken                           time.Duration
 	}
 
 	// Statistics per output format
 	statsByFmt := map[outputFormat]*stats{}
 	for _, format := range formats {
 		statsByFmt[format] = &stats{}
-
 	}
 
 	// Print the table of file x format and gather per-format stats
@@ -314,6 +316,7 @@ func run() error {
 			result := <-results[format]
 			stats := statsByFmt[format]
 			stats.numTests++
+			stats.timeTaken += result.timeTaken
 			if err := result.err; err != nil {
 				failures = append(failures, failure{
 					file: file, format: format, err: err,
@@ -387,6 +390,14 @@ func run() error {
 	printStat(green, "PASS", func(s *stats) int { return s.numPass })
 	printStat(yellow, "SKIP", func(s *stats) int { return s.numSkip })
 	printStat(red, "FAIL", func(s *stats) int { return s.numFail })
+
+	cyan.Printf(alignRight("TIME", filenameColumnWidth))
+	fmt.Printf(" ┃ ")
+	for _, format := range formats {
+		timeTaken := printDuration(statsByFmt[format].timeTaken)
+		cyan.Printf(alignLeft(timeTaken, formatWidth(format)))
+		fmt.Printf(" │ ")
+	}
 	fmt.Println()
 
 	for _, f := range failures {
@@ -457,12 +468,14 @@ const (
 )
 
 type status struct {
-	code statusCode
-	err  error
+	code      statusCode
+	err       error
+	timeTaken time.Duration
 }
 
 type job struct {
 	file   string
+	flags  []string
 	format outputFormat
 	result chan status
 }
@@ -515,8 +528,13 @@ func (j job) run(wd, exe string, fxc bool, dxcPath, xcrunPath string, generateEx
 			}
 		}
 
+		args = append(args, j.flags...)
+
 		// Invoke the compiler...
+		start := time.Now()
 		ok, out := invoke(wd, exe, args...)
+		timeTaken := time.Since(start)
+
 		out = strings.ReplaceAll(out, "\r\n", "\n")
 		matched := expected == "" || expected == out
 
@@ -528,7 +546,7 @@ func (j job) run(wd, exe string, fxc bool, dxcPath, xcrunPath string, generateEx
 		switch {
 		case ok && matched:
 			// Test passed
-			return status{code: pass}
+			return status{code: pass, timeTaken: timeTaken}
 
 			//       --- Below this point the test has failed ---
 
@@ -536,7 +554,7 @@ func (j job) run(wd, exe string, fxc bool, dxcPath, xcrunPath string, generateEx
 			if generateSkip {
 				saveExpectedFile(j.file, j.format, "SKIP: FAILED\n\n"+out)
 			}
-			return status{code: skip}
+			return status{code: skip, timeTaken: timeTaken}
 
 		case !ok:
 			// Compiler returned non-zero exit code
@@ -544,7 +562,7 @@ func (j job) run(wd, exe string, fxc bool, dxcPath, xcrunPath string, generateEx
 				saveExpectedFile(j.file, j.format, "SKIP: FAILED\n\n"+out)
 			}
 			err := fmt.Errorf("%s", out)
-			return status{code: fail, err: err}
+			return status{code: fail, err: err, timeTaken: timeTaken}
 
 		default:
 			// Compiler returned zero exit code, or output was not as expected
@@ -572,7 +590,7 @@ func (j job) run(wd, exe string, fxc bool, dxcPath, xcrunPath string, generateEx
 --------------------------------------------------------------------------------
 %s`,
 				expected, out, diff)
-			return status{code: fail, err: err}
+			return status{code: fail, err: err, timeTaken: timeTaken}
 		}
 	}()
 }
@@ -611,6 +629,9 @@ func indent(s string, n int) string {
 func alignLeft(val interface{}, width int) string {
 	s := fmt.Sprint(val)
 	padding := width - utf8.RuneCountInString(s)
+	if padding < 0 {
+		return s
+	}
 	return s + strings.Repeat(" ", padding)
 }
 
@@ -619,6 +640,9 @@ func alignLeft(val interface{}, width int) string {
 func alignCenter(val interface{}, width int) string {
 	s := fmt.Sprint(val)
 	padding := width - utf8.RuneCountInString(s)
+	if padding < 0 {
+		return s
+	}
 	return strings.Repeat(" ", padding/2) + s + strings.Repeat(" ", (padding+1)/2)
 }
 
@@ -627,6 +651,9 @@ func alignCenter(val interface{}, width int) string {
 func alignRight(val interface{}, width int) string {
 	s := fmt.Sprint(val)
 	padding := width - utf8.RuneCountInString(s)
+	if padding < 0 {
+		return s
+	}
 	return strings.Repeat(" ", padding) + s
 }
 
@@ -680,4 +707,41 @@ func invoke(wd, exe string, args ...string) (ok bool, output string) {
 		return false, err.Error()
 	}
 	return true, str
+}
+
+var reFlags = regexp.MustCompile(` *\/\/ *flags:(.*)\n`)
+
+// parseFlags looks for a `// flags:` header at the start of the file with the
+// given path, returning each of the space delimited tokens that follow for the
+// line
+func parseFlags(path string) []string {
+	content, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil
+	}
+	header := strings.SplitN(string(content), "\n", 1)[0]
+	m := reFlags.FindStringSubmatch(header)
+	if len(m) != 2 {
+		return nil
+	}
+	return strings.Split(m[1], " ")
+}
+
+func printDuration(d time.Duration) string {
+	sec := int(d.Seconds())
+	min := int(sec) / 60
+	hour := min / 60
+	min -= hour * 60
+	sec -= min * 60
+	sb := &strings.Builder{}
+	if hour > 0 {
+		fmt.Fprintf(sb, "%dh", hour)
+	}
+	if min > 0 {
+		fmt.Fprintf(sb, "%dm", min)
+	}
+	if sec > 0 {
+		fmt.Fprintf(sb, "%ds", sec)
+	}
+	return sb.String()
 }

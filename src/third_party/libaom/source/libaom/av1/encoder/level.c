@@ -9,8 +9,6 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#include "aom_ports/system_state.h"
-
 #include "av1/encoder/encoder.h"
 #include "av1/encoder/level.h"
 
@@ -467,8 +465,6 @@ void av1_decoder_model_print_status(const DECODER_MODEL *const decoder_model) {
 // op_index is the operating point index.
 void av1_decoder_model_init(const AV1_COMP *const cpi, AV1_LEVEL level,
                             int op_index, DECODER_MODEL *const decoder_model) {
-  aom_clear_system_state();
-
   decoder_model->status = DECODER_MODEL_OK;
   decoder_model->level = level;
 
@@ -528,8 +524,6 @@ void av1_decoder_model_process_frame(const AV1_COMP *const cpi,
                                      size_t coded_bits,
                                      DECODER_MODEL *const decoder_model) {
   if (!decoder_model || decoder_model->status != DECODER_MODEL_OK) return;
-
-  aom_clear_system_state();
 
   const AV1_COMMON *const cm = &cpi->common;
   const int luma_pic_size = cm->superres_upscaled_width * cm->height;
@@ -1070,7 +1064,6 @@ void av1_update_level_info(AV1_COMP *cpi, size_t size, int64_t ts_start,
                  &min_cropped_tile_width, &min_cropped_tile_height,
                  &tile_width_is_valid);
 
-  aom_clear_system_state();
   const double compression_ratio = av1_get_compression_ratio(cm, size);
 
   const int temporal_layer_id = cm->temporal_layer_id;

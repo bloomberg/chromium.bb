@@ -44,18 +44,18 @@
 #include "chrome/browser/ash/crostini/crostini_features.h"
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
 #include "chrome/browser/ash/crostini/fake_crostini_features.h"
-#include "chrome/browser/ash/policy/core/device_cloud_policy_manager_chromeos.h"
-#include "chrome/browser/ash/policy/core/device_cloud_policy_store_chromeos.h"
-#include "chrome/browser/ash/policy/core/user_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/ash/policy/core/device_cloud_policy_manager_ash.h"
+#include "chrome/browser/ash/policy/core/device_cloud_policy_store_ash.h"
+#include "chrome/browser/ash/policy/core/user_cloud_policy_manager_ash.h"
 #include "chrome/browser/ash/policy/dlp/dlp_rules_manager.h"
 #include "chrome/browser/ash/policy/dlp/mock_dlp_rules_manager.h"
 #include "chrome/browser/ash/policy/enrollment/device_cloud_policy_initializer.h"
+#include "chrome/browser/ash/policy/status_collector/device_status_collector.h"
+#include "chrome/browser/ash/policy/status_collector/status_collector.h"
+#include "chrome/browser/ash/policy/uploading/status_uploader.h"
+#include "chrome/browser/ash/policy/uploading/system_log_uploader.h"
 #include "chrome/browser/ash/settings/device_settings_test_helper.h"
 #include "chrome/browser/ash/settings/scoped_testing_cros_settings.h"
-#include "chrome/browser/chromeos/policy/status_collector/device_status_collector.h"
-#include "chrome/browser/chromeos/policy/status_collector/status_collector.h"
-#include "chrome/browser/chromeos/policy/uploading/status_uploader.h"
-#include "chrome/browser/chromeos/policy/uploading/system_log_uploader.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -174,19 +174,19 @@ class TestDeviceStatusCollector : public policy::DeviceStatusCollector {
   bool report_app_info_and_activity_;
 };
 
-class TestDeviceCloudPolicyManagerChromeOS
-    : public policy::DeviceCloudPolicyManagerChromeOS {
+class TestDeviceCloudPolicyManagerAsh
+    : public policy::DeviceCloudPolicyManagerAsh {
  public:
-  TestDeviceCloudPolicyManagerChromeOS(
-      std::unique_ptr<policy::DeviceCloudPolicyStoreChromeOS> store,
+  TestDeviceCloudPolicyManagerAsh(
+      std::unique_ptr<policy::DeviceCloudPolicyStoreAsh> store,
       policy::ServerBackedStateKeysBroker* state_keys_broker)
-      : DeviceCloudPolicyManagerChromeOS(std::move(store),
-                                         nullptr,
-                                         nullptr,
-                                         state_keys_broker) {
+      : DeviceCloudPolicyManagerAsh(std::move(store),
+                                    nullptr,
+                                    nullptr,
+                                    state_keys_broker) {
     set_component_policy_disabled_for_testing(true);
   }
-  ~TestDeviceCloudPolicyManagerChromeOS() override = default;
+  ~TestDeviceCloudPolicyManagerAsh() override = default;
 };
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -231,14 +231,14 @@ class TestManagementUIHandler : public ManagementUIHandler {
   policy::PolicyService* GetPolicyService() override { return policy_service_; }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  MOCK_METHOD(policy::DeviceCloudPolicyManagerChromeOS*,
+  MOCK_METHOD(policy::DeviceCloudPolicyManagerAsh*,
               GetDeviceCloudPolicyManager,
               (),
               (const, override));
   bool IsUpdateRequiredEol() const override { return update_required_eol_; }
 
   base::Value GetDeviceReportingInfo(
-      const TestDeviceCloudPolicyManagerChromeOS* manager,
+      const TestDeviceCloudPolicyManagerAsh* manager,
       const TestDeviceStatusCollector* collector,
       const policy::SystemLogUploader* uploader,
       Profile* profile) {
@@ -425,11 +425,11 @@ class ManagementUIHandlerTests : public TestingBaseClass {
 
   void SetUpConnectManager() {
     RegisterLocalState(local_state_.registry());
-    std::unique_ptr<policy::DeviceCloudPolicyStoreChromeOS> store =
-        std::make_unique<policy::DeviceCloudPolicyStoreChromeOS>(
+    std::unique_ptr<policy::DeviceCloudPolicyStoreAsh> store =
+        std::make_unique<policy::DeviceCloudPolicyStoreAsh>(
             device_settings_service_.get(), install_attributes_->Get(),
             base::ThreadTaskRunnerHandle::Get());
-    manager_ = std::make_unique<TestDeviceCloudPolicyManagerChromeOS>(
+    manager_ = std::make_unique<TestDeviceCloudPolicyManagerAsh>(
         std::move(store), &state_keys_broker_);
     TestingBrowserProcess::GetGlobal()->SetLocalState(&local_state_);
     manager_.get()->Initialize(&local_state_);
@@ -537,8 +537,7 @@ class ManagementUIHandlerTests : public TestingBaseClass {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   void OnFatalError() { DCHECK(false); }
 
-  std::unique_ptr<policy::UserCloudPolicyManagerChromeOS>
-  BuildCloudPolicyManager() {
+  std::unique_ptr<policy::UserCloudPolicyManagerAsh> BuildCloudPolicyManager() {
     auto store = std::make_unique<policy::MockCloudPolicyStore>();
     EXPECT_CALL(*store, Load()).Times(AnyNumber());
 
@@ -553,11 +552,10 @@ class ManagementUIHandlerTests : public TestingBaseClass {
         std::make_unique<policy::MockCloudExternalDataManager>();
     EXPECT_CALL(*data_manager, Disconnect());
 
-    return std::make_unique<policy::UserCloudPolicyManagerChromeOS>(
+    return std::make_unique<policy::UserCloudPolicyManagerAsh>(
         managed_user.get(), std::move(store), std::move(data_manager),
         base::FilePath() /* component_policy_cache_path */,
-        policy::UserCloudPolicyManagerChromeOS::PolicyEnforcement::
-            kPolicyRequired,
+        policy::UserCloudPolicyManagerAsh::PolicyEnforcement::kPolicyRequired,
         base::TimeDelta::FromMinutes(1) /* policy_refresh_timeout */,
         base::BindOnce(&ManagementUIHandlerTests::OnFatalError,
                        base::Unretained(this)),
@@ -590,7 +588,7 @@ class ManagementUIHandlerTests : public TestingBaseClass {
   std::unique_ptr<crostini::FakeCrostiniFeatures> crostini_features_;
   TestingPrefServiceSimple local_state_;
   TestingPrefServiceSimple user_prefs_;
-  std::unique_ptr<TestDeviceCloudPolicyManagerChromeOS> manager_;
+  std::unique_ptr<TestDeviceCloudPolicyManagerAsh> manager_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   policy::ServerBackedStateKeysBroker state_keys_broker_;
   ash::ScopedTestingCrosSettings settings_;
@@ -1397,16 +1395,15 @@ TEST_F(ManagementUIHandlerTests, GetAccountManager) {
       std::make_unique<TestingProfileManager>(
           TestingBrowserProcess::GetGlobal());
   ASSERT_TRUE(profile_manager->SetUp());
-  builder_managed_user.SetUserCloudPolicyManagerChromeOS(
-      BuildCloudPolicyManager());
+  builder_managed_user.SetUserCloudPolicyManagerAsh(BuildCloudPolicyManager());
 #else
   builder_managed_user.SetUserCloudPolicyManager(BuildCloudPolicyManager());
 #endif
   auto managed_user = builder_managed_user.Build();
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  policy::UserCloudPolicyManagerChromeOS* policy_manager =
-      managed_user->GetUserCloudPolicyManagerChromeOS();
+  policy::UserCloudPolicyManagerAsh* policy_manager =
+      managed_user->GetUserCloudPolicyManagerAsh();
   policy::MockCloudPolicyStore* mock_store =
       static_cast<policy::MockCloudPolicyStore*>(
           policy_manager->core()->store());

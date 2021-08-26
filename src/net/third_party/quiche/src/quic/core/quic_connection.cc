@@ -62,13 +62,23 @@ const QuicPacketCount kMaxConsecutiveNonRetransmittablePackets = 19;
 // The minimum release time into future in ms.
 const int kMinReleaseTimeIntoFutureMs = 1;
 
-// An alarm that is scheduled to send an ack if a timeout occurs.
-class AckAlarmDelegate : public QuicAlarm::Delegate {
+// Base class of all alarms owned by a QuicConnection.
+class QuicConnectionAlarmDelegate : public QuicAlarm::Delegate {
  public:
-  explicit AckAlarmDelegate(QuicConnection* connection)
+  explicit QuicConnectionAlarmDelegate(QuicConnection* connection)
       : connection_(connection) {}
-  AckAlarmDelegate(const AckAlarmDelegate&) = delete;
-  AckAlarmDelegate& operator=(const AckAlarmDelegate&) = delete;
+  QuicConnectionAlarmDelegate(const QuicConnectionAlarmDelegate&) = delete;
+  QuicConnectionAlarmDelegate& operator=(const QuicConnectionAlarmDelegate&) =
+      delete;
+
+ protected:
+  QuicConnection* connection_;
+};
+
+// An alarm that is scheduled to send an ack if a timeout occurs.
+class AckAlarmDelegate : public QuicConnectionAlarmDelegate {
+ public:
+  using QuicConnectionAlarmDelegate::QuicConnectionAlarmDelegate;
 
   void OnAlarm() override {
     QUICHE_DCHECK(connection_->ack_frame_updated());
@@ -80,136 +90,86 @@ class AckAlarmDelegate : public QuicAlarm::Delegate {
       connection_->SendAck();
     }
   }
-
- private:
-  QuicConnection* connection_;
 };
 
 // This alarm will be scheduled any time a data-bearing packet is sent out.
 // When the alarm goes off, the connection checks to see if the oldest packets
 // have been acked, and retransmit them if they have not.
-class RetransmissionAlarmDelegate : public QuicAlarm::Delegate {
+class RetransmissionAlarmDelegate : public QuicConnectionAlarmDelegate {
  public:
-  explicit RetransmissionAlarmDelegate(QuicConnection* connection)
-      : connection_(connection) {}
-  RetransmissionAlarmDelegate(const RetransmissionAlarmDelegate&) = delete;
-  RetransmissionAlarmDelegate& operator=(const RetransmissionAlarmDelegate&) =
-      delete;
+  using QuicConnectionAlarmDelegate::QuicConnectionAlarmDelegate;
 
   void OnAlarm() override {
     QUICHE_DCHECK(connection_->connected());
     connection_->OnRetransmissionTimeout();
   }
-
- private:
-  QuicConnection* connection_;
 };
 
 // An alarm that is scheduled when the SentPacketManager requires a delay
 // before sending packets and fires when the packet may be sent.
-class SendAlarmDelegate : public QuicAlarm::Delegate {
+class SendAlarmDelegate : public QuicConnectionAlarmDelegate {
  public:
-  explicit SendAlarmDelegate(QuicConnection* connection)
-      : connection_(connection) {}
-  SendAlarmDelegate(const SendAlarmDelegate&) = delete;
-  SendAlarmDelegate& operator=(const SendAlarmDelegate&) = delete;
+  using QuicConnectionAlarmDelegate::QuicConnectionAlarmDelegate;
 
   void OnAlarm() override {
     QUICHE_DCHECK(connection_->connected());
     connection_->WriteIfNotBlocked();
   }
-
- private:
-  QuicConnection* connection_;
 };
 
-class PingAlarmDelegate : public QuicAlarm::Delegate {
+class PingAlarmDelegate : public QuicConnectionAlarmDelegate {
  public:
-  explicit PingAlarmDelegate(QuicConnection* connection)
-      : connection_(connection) {}
-  PingAlarmDelegate(const PingAlarmDelegate&) = delete;
-  PingAlarmDelegate& operator=(const PingAlarmDelegate&) = delete;
+  using QuicConnectionAlarmDelegate::QuicConnectionAlarmDelegate;
 
   void OnAlarm() override {
     QUICHE_DCHECK(connection_->connected());
     connection_->OnPingTimeout();
   }
-
- private:
-  QuicConnection* connection_;
 };
 
-class MtuDiscoveryAlarmDelegate : public QuicAlarm::Delegate {
+class MtuDiscoveryAlarmDelegate : public QuicConnectionAlarmDelegate {
  public:
-  explicit MtuDiscoveryAlarmDelegate(QuicConnection* connection)
-      : connection_(connection) {}
-  MtuDiscoveryAlarmDelegate(const MtuDiscoveryAlarmDelegate&) = delete;
-  MtuDiscoveryAlarmDelegate& operator=(const MtuDiscoveryAlarmDelegate&) =
-      delete;
+  using QuicConnectionAlarmDelegate::QuicConnectionAlarmDelegate;
 
   void OnAlarm() override {
     QUICHE_DCHECK(connection_->connected());
     connection_->DiscoverMtu();
   }
-
- private:
-  QuicConnection* connection_;
 };
 
-class ProcessUndecryptablePacketsAlarmDelegate : public QuicAlarm::Delegate {
+class ProcessUndecryptablePacketsAlarmDelegate
+    : public QuicConnectionAlarmDelegate {
  public:
-  explicit ProcessUndecryptablePacketsAlarmDelegate(QuicConnection* connection)
-      : connection_(connection) {}
-  ProcessUndecryptablePacketsAlarmDelegate(
-      const ProcessUndecryptablePacketsAlarmDelegate&) = delete;
-  ProcessUndecryptablePacketsAlarmDelegate& operator=(
-      const ProcessUndecryptablePacketsAlarmDelegate&) = delete;
+  using QuicConnectionAlarmDelegate::QuicConnectionAlarmDelegate;
 
   void OnAlarm() override {
     QUICHE_DCHECK(connection_->connected());
     QuicConnection::ScopedPacketFlusher flusher(connection_);
     connection_->MaybeProcessUndecryptablePackets();
   }
-
- private:
-  QuicConnection* connection_;
 };
 
-class DiscardPreviousOneRttKeysAlarmDelegate : public QuicAlarm::Delegate {
+class DiscardPreviousOneRttKeysAlarmDelegate
+    : public QuicConnectionAlarmDelegate {
  public:
-  explicit DiscardPreviousOneRttKeysAlarmDelegate(QuicConnection* connection)
-      : connection_(connection) {}
-  DiscardPreviousOneRttKeysAlarmDelegate(
-      const DiscardPreviousOneRttKeysAlarmDelegate&) = delete;
-  DiscardPreviousOneRttKeysAlarmDelegate& operator=(
-      const DiscardPreviousOneRttKeysAlarmDelegate&) = delete;
+  using QuicConnectionAlarmDelegate::QuicConnectionAlarmDelegate;
 
   void OnAlarm() override {
     QUICHE_DCHECK(connection_->connected());
     connection_->DiscardPreviousOneRttKeys();
   }
-
- private:
-  QuicConnection* connection_;
 };
 
-class DiscardZeroRttDecryptionKeysAlarmDelegate : public QuicAlarm::Delegate {
+class DiscardZeroRttDecryptionKeysAlarmDelegate
+    : public QuicConnectionAlarmDelegate {
  public:
-  explicit DiscardZeroRttDecryptionKeysAlarmDelegate(QuicConnection* connection)
-      : connection_(connection) {}
-  DiscardZeroRttDecryptionKeysAlarmDelegate(
-      const DiscardZeroRttDecryptionKeysAlarmDelegate&) = delete;
-  DiscardZeroRttDecryptionKeysAlarmDelegate& operator=(
-      const DiscardZeroRttDecryptionKeysAlarmDelegate&) = delete;
+  using QuicConnectionAlarmDelegate::QuicConnectionAlarmDelegate;
 
   void OnAlarm() override {
     QUICHE_DCHECK(connection_->connected());
     QUIC_DLOG(INFO) << "0-RTT discard alarm fired";
     connection_->RemoveDecrypter(ENCRYPTION_ZERO_RTT);
   }
-
- private:
-  QuicConnection* connection_;
 };
 
 // When the clearer goes out of scope, the coalesced packet gets cleared.
@@ -364,16 +324,10 @@ QuicConnection::QuicConnection(
                              clock_->ApproximateNow(),
                              &arena_,
                              alarm_factory_),
-      use_encryption_level_context_(
-          GetQuicReloadableFlag(quic_use_encryption_level_context)),
       path_validator_(alarm_factory_, &arena_, this, random_generator_),
       most_recent_frame_type_(NUM_FRAME_TYPES) {
   QUICHE_DCHECK(perspective_ == Perspective::IS_CLIENT ||
                 default_path_.self_address.IsInitialized());
-
-  if (use_encryption_level_context_) {
-    QUIC_RELOADABLE_FLAG_COUNT(quic_use_encryption_level_context);
-  }
 
   if (add_missing_update_ack_timeout_) {
     QUIC_RELOADABLE_FLAG_COUNT(quic_add_missing_update_ack_timeout);
@@ -2596,15 +2550,12 @@ QuicConsumedData QuicConnection::SendStreamData(QuicStreamId id,
   }
   if (perspective_ == Perspective::IS_SERVER &&
       version().CanSendCoalescedPackets() && !IsHandshakeConfirmed()) {
-    if (GetQuicReloadableFlag(quic_donot_pto_half_rtt_data)) {
-      QUIC_RELOADABLE_FLAG_COUNT(quic_donot_pto_half_rtt_data);
-      if (in_on_retransmission_time_out_ &&
-          coalesced_packet_.NumberOfPackets() == 0u) {
-        // PTO fires while handshake is not confirmed. Do not preempt handshake
-        // data with stream data.
-        QUIC_CODE_COUNT(quic_try_to_send_half_rtt_data_when_pto_fires);
-        return QuicConsumedData(0, false);
-      }
+    if (in_on_retransmission_time_out_ &&
+        coalesced_packet_.NumberOfPackets() == 0u) {
+      // PTO fires while handshake is not confirmed. Do not preempt handshake
+      // data with stream data.
+      QUIC_CODE_COUNT(quic_try_to_send_half_rtt_data_when_pto_fires);
+      return QuicConsumedData(0, false);
     }
     if (coalesced_packet_.ContainsPacketOfEncryptionLevel(ENCRYPTION_INITIAL) &&
         coalesced_packet_.NumberOfPackets() == 1u) {
@@ -2934,9 +2885,7 @@ void QuicConnection::ProcessUdpPacket(const QuicSocketAddress& self_address,
     }
   }
 
-  const bool processed = MaybeProcessCoalescedPackets();
-  if (!donot_write_mid_packet_processing_ || !processed) {
-    QUIC_RELOADABLE_FLAG_COUNT_N(quic_donot_write_mid_packet_processing, 3, 3);
+  if (!MaybeProcessCoalescedPackets()) {
     MaybeProcessUndecryptablePackets();
     MaybeSendInResponseToPacket();
   }
@@ -3017,7 +2966,7 @@ void QuicConnection::OnCanWrite() {
 }
 
 void QuicConnection::WriteIfNotBlocked() {
-  if (donot_write_mid_packet_processing_ && framer().is_processing_packet()) {
+  if (framer().is_processing_packet()) {
     QUIC_BUG(connection_write_mid_packet_processing)
         << ENDPOINT << "Tried to write in mid of packet processing";
     return;
@@ -4195,9 +4144,7 @@ void QuicConnection::OnPingTimeout() {
       !visitor_->ShouldKeepConnectionAlive()) {
     return;
   }
-  SendPingAtLevel(use_encryption_level_context_
-                      ? framer().GetEncryptionLevelToSendApplicationData()
-                      : encryption_level_);
+  SendPingAtLevel(framer().GetEncryptionLevelToSendApplicationData());
 }
 
 void QuicConnection::SendAck() {
@@ -4264,7 +4211,7 @@ void QuicConnection::OnRetransmissionTimeout() {
       blackhole_detector_.IsDetectionInProgress()) {
     // Stop detection in quiescence.
     QUICHE_DCHECK_EQ(QuicSentPacketManager::LOSS_MODE, retransmission_mode);
-    blackhole_detector_.StopDetection();
+    blackhole_detector_.StopDetection(/*permanent=*/false);
   }
   WriteIfNotBlocked();
 
@@ -4597,11 +4544,7 @@ bool QuicConnection::MaybeProcessCoalescedPackets() {
   }
   if (processed) {
     MaybeProcessUndecryptablePackets();
-    if (donot_write_mid_packet_processing_) {
-      QUIC_RELOADABLE_FLAG_COUNT_N(quic_donot_write_mid_packet_processing, 2,
-                                   3);
-      MaybeSendInResponseToPacket();
-    }
+    MaybeSendInResponseToPacket();
   }
   return processed;
 }
@@ -4654,12 +4597,8 @@ void QuicConnection::SendConnectionClosePacket(
       default_path_.server_connection_id, connection_migration_use_new_cid_);
   if (!SupportsMultiplePacketNumberSpaces()) {
     QUIC_DLOG(INFO) << ENDPOINT << "Sending connection close packet.";
-    if (!use_encryption_level_context_) {
-      SetDefaultEncryptionLevel(GetConnectionCloseEncryptionLevel());
-    }
-    ScopedEncryptionLevelContext context(
-        use_encryption_level_context_ ? this : nullptr,
-        GetConnectionCloseEncryptionLevel());
+    ScopedEncryptionLevelContext context(this,
+                                         GetConnectionCloseEncryptionLevel());
     if (version().CanSendCoalescedPackets()) {
       coalesced_packet_.Clear();
     }
@@ -4690,7 +4629,6 @@ void QuicConnection::SendConnectionClosePacket(
     ClearQueuedPackets();
     return;
   }
-  const EncryptionLevel current_encryption_level = encryption_level_;
   ScopedPacketFlusher flusher(this);
 
   // Now that the connection is being closed, discard any unsent packets
@@ -4708,11 +4646,7 @@ void QuicConnection::SendConnectionClosePacket(
     }
     QUIC_DLOG(INFO) << ENDPOINT
                     << "Sending connection close packet at level: " << level;
-    if (!use_encryption_level_context_) {
-      SetDefaultEncryptionLevel(level);
-    }
-    ScopedEncryptionLevelContext context(
-        use_encryption_level_context_ ? this : nullptr, level);
+    ScopedEncryptionLevelContext context(this, level);
     // Bundle an ACK of the corresponding packet number space for debugging
     // purpose.
     bool send_ack = error != QUIC_PACKET_WRITE_ERROR &&
@@ -4745,9 +4679,6 @@ void QuicConnection::SendConnectionClosePacket(
   // Since the connection is closing, if the connection close packets were not
   // sent, then they should be discarded.
   ClearQueuedPackets();
-  if (!use_encryption_level_context_) {
-    SetDefaultEncryptionLevel(current_encryption_level);
-  }
 }
 
 void QuicConnection::TearDownLocalConnectionState(
@@ -4795,15 +4726,15 @@ void QuicConnection::TearDownLocalConnectionState(
 void QuicConnection::CancelAllAlarms() {
   QUIC_DVLOG(1) << "Cancelling all QuicConnection alarms.";
 
-  ack_alarm_->Cancel();
-  ping_alarm_->Cancel();
-  retransmission_alarm_->Cancel();
-  send_alarm_->Cancel();
-  mtu_discovery_alarm_->Cancel();
-  process_undecryptable_packets_alarm_->Cancel();
-  discard_previous_one_rtt_keys_alarm_->Cancel();
-  discard_zero_rtt_decryption_keys_alarm_->Cancel();
-  blackhole_detector_.StopDetection();
+  ack_alarm_->PermanentCancel();
+  ping_alarm_->PermanentCancel();
+  retransmission_alarm_->PermanentCancel();
+  send_alarm_->PermanentCancel();
+  mtu_discovery_alarm_->PermanentCancel();
+  process_undecryptable_packets_alarm_->PermanentCancel();
+  discard_previous_one_rtt_keys_alarm_->PermanentCancel();
+  discard_zero_rtt_decryption_keys_alarm_->PermanentCancel();
+  blackhole_detector_.StopDetection(/*permanent=*/true);
   idle_network_detector_.StopDetection();
 }
 
@@ -4837,6 +4768,9 @@ void QuicConnection::SetNetworkTimeouts(QuicTime::Delta handshake_timeout,
 }
 
 void QuicConnection::SetPingAlarm() {
+  if (!connected_) {
+    return;
+  }
   if (perspective_ == Perspective::IS_SERVER &&
       initial_retransmittable_on_wire_timeout_.IsInfinite()) {
     // The PING alarm exists to support two features:
@@ -5365,6 +5299,15 @@ void QuicConnection::StartEffectivePeerMigration(AddressChangeType type) {
         << "EffectivePeerMigration started without address change.";
     return;
   }
+  if (packet_creator_.HasPendingFrames()) {
+    QUIC_BUG(bug_731_2)
+        << "Starts effective peer migration with pending frame types: "
+        << packet_creator_.GetPendingFramesInfo() << ". Address change type is "
+        << AddressChangeTypeToString(type)
+        << ". Current frame type: " << framer_.current_received_frame_type()
+        << ". Previous frame type: "
+        << framer_.previously_received_frame_type();
+  }
 
   // Action items:
   //   1. Switch congestion controller;
@@ -5422,6 +5365,15 @@ void QuicConnection::StartEffectivePeerMigration(AddressChangeType type) {
   }
 
   // Update to the new peer address.
+  if (packet_creator_.HasPendingFrames()) {
+    QUIC_BUG(bug_731_1)
+        << "Starts effective peer migration with pending frame types: "
+        << packet_creator_.GetPendingFramesInfo() << ". Address change type is "
+        << AddressChangeTypeToString(type)
+        << ". Current frame type: " << framer_.current_received_frame_type()
+        << ". Previous frame type: "
+        << framer_.previously_received_frame_type();
+  }
   UpdatePeerAddress(last_received_packet_info_.source_address);
   // Update the default path.
   if (IsAlternativePath(last_received_packet_info_.destination_address,
@@ -5835,7 +5787,7 @@ void QuicConnection::PostProcessAfterAckFrame(bool send_stop_waiting,
     // In case no new packets get acknowledged, it is possible packets are
     // detected lost because of time based loss detection. Cancel blackhole
     // detection if there is no packets in flight.
-    blackhole_detector_.StopDetection();
+    blackhole_detector_.StopDetection(/*permanent=*/false);
   }
 
   if (send_stop_waiting) {
@@ -5988,8 +5940,6 @@ void QuicConnection::SendAllPendingAcks() {
   if (!earliest_ack_timeout.IsInitialized()) {
     return;
   }
-  // Latches current encryption level.
-  const EncryptionLevel current_encryption_level = encryption_level_;
   for (int8_t i = INITIAL_DATA; i <= APPLICATION_DATA; ++i) {
     const QuicTime ack_timeout = uber_received_packet_manager_.GetAckTimeout(
         static_cast<PacketNumberSpace>(i));
@@ -6009,14 +5959,8 @@ void QuicConnection::SendAllPendingAcks() {
     QUIC_DVLOG(1) << ENDPOINT << "Sending ACK of packet number space "
                   << PacketNumberSpaceToString(
                          static_cast<PacketNumberSpace>(i));
-    // Switch to the appropriate encryption level.
-    if (!use_encryption_level_context_) {
-      SetDefaultEncryptionLevel(
-          QuicUtils::GetEncryptionLevel(static_cast<PacketNumberSpace>(i)));
-    }
     ScopedEncryptionLevelContext context(
-        use_encryption_level_context_ ? this : nullptr,
-        QuicUtils::GetEncryptionLevel(static_cast<PacketNumberSpace>(i)));
+        this, QuicUtils::GetEncryptionLevel(static_cast<PacketNumberSpace>(i)));
     QuicFrames frames;
     frames.push_back(uber_received_packet_manager_.GetUpdatedAckFrame(
         static_cast<PacketNumberSpace>(i), clock_->ApproximateNow()));
@@ -6031,10 +5975,6 @@ void QuicConnection::SendAllPendingAcks() {
       break;
     }
     ResetAckStates();
-  }
-  if (!use_encryption_level_context_) {
-    // Restores encryption level.
-    SetDefaultEncryptionLevel(current_encryption_level);
   }
 
   const QuicTime timeout =
@@ -6227,6 +6167,9 @@ void QuicConnection::SetLargestReceivedPacketWithAck(
 }
 
 void QuicConnection::OnForwardProgressMade() {
+  if (GetQuicRestartFlag(quic_alarm_add_permanent_cancel) && !connected_) {
+    return;
+  }
   if (is_path_degrading_) {
     visitor_->OnForwardProgressMadeAfterPathDegrading();
     is_path_degrading_ = false;
@@ -6238,7 +6181,7 @@ void QuicConnection::OnForwardProgressMade() {
                                          GetPathMtuReductionDeadline());
   } else {
     // Stop detections in quiecense.
-    blackhole_detector_.StopDetection();
+    blackhole_detector_.StopDetection(/*permanent=*/false);
   }
   QUIC_BUG_IF(quic_bug_12714_35,
               default_enable_5rto_blackhole_detection_ &&
@@ -7200,7 +7143,7 @@ QuicConnection::OnPeerIpAddressChanged() {
   // re-arm it.
   SetRetransmissionAlarm();
   // Stop detections in quiecense.
-  blackhole_detector_.StopDetection();
+  blackhole_detector_.StopDetection(/*permanent=*/false);
   return old_send_algorithm;
 }
 

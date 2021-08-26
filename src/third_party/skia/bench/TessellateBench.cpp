@@ -110,7 +110,12 @@ protected:
     DEF_BENCH( return new PathTessellateBenchmark_##NAME(); ); \
     void PathTessellateBenchmark_##NAME::runBench()
 
-DEF_PATH_TESS_BENCH(GrPathOuterCurveTessellator, make_cubic_path(8), SkMatrix::I()) {
+static const SkMatrix gAlmostIdentity = SkMatrix::MakeAll(
+        1.0001f, 0.0001f, 0.0001f,
+        -.0001f, 0.9999f, -.0001f,
+              0,       0,       1);
+
+DEF_PATH_TESS_BENCH(GrPathCurveTessellator, make_cubic_path(8), SkMatrix::I()) {
     SkArenaAlloc arena(1024);
     GrPipeline noVaryingsPipeline(GrScissorTest::kDisabled, SkBlendMode::kSrcOver,
                                   GrSwizzle::RGBA());
@@ -118,7 +123,8 @@ DEF_PATH_TESS_BENCH(GrPathOuterCurveTessellator, make_cubic_path(8), SkMatrix::I
                                              GrPathCurveTessellator::DrawInnerFan::kNo,
                                              fTarget->caps().minPathVerbsForHwTessellation(),
                                              noVaryingsPipeline, fTarget->caps());
-    tess->prepare(fTarget.get(), SkRectPriv::MakeLargest(), fPath, nullptr);
+    tess->prepare(fTarget.get(), SkRectPriv::MakeLargest(), {gAlmostIdentity, fPath},
+                  fPath.countVerbs());
 }
 
 DEF_PATH_TESS_BENCH(GrPathWedgeTessellator, make_cubic_path(8), SkMatrix::I()) {
@@ -128,7 +134,8 @@ DEF_PATH_TESS_BENCH(GrPathWedgeTessellator, make_cubic_path(8), SkMatrix::I()) {
     auto tess = GrPathWedgeTessellator::Make(&arena, fMatrix, SK_PMColor4fTRANSPARENT,
                                              fTarget->caps().minPathVerbsForHwTessellation(),
                                              noVaryingsPipeline, fTarget->caps());
-    tess->prepare(fTarget.get(), SkRectPriv::MakeLargest(), fPath, nullptr);
+    tess->prepare(fTarget.get(), SkRectPriv::MakeLargest(), {gAlmostIdentity, fPath},
+                  fPath.countVerbs());
 }
 
 static void benchmark_wangs_formula_cubic_log2(const SkMatrix& matrix, const SkPath& path) {
@@ -202,7 +209,9 @@ DEF_PATH_TESS_BENCH(middle_out_triangulation,
     int baseVertex;
     GrVertexWriter vertexWriter = static_cast<SkPoint*>(fTarget->makeVertexSpace(
             sizeof(SkPoint), kNumCubicsInChalkboard, &buffer, &baseVertex));
-    GrMiddleOutPolygonTriangulator::WritePathInnerFan(&vertexWriter, 0, 0, fPath);
+    int numTrianglesWritten;
+    GrMiddleOutPolygonTriangulator::WritePathInnerFan(std::move(vertexWriter), 0, 0,
+                                                      gAlmostIdentity, fPath, &numTrianglesWritten);
 }
 
 using PathStrokeList = GrStrokeTessellator::PathStrokeList;

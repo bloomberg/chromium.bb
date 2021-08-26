@@ -18,7 +18,6 @@
 
 #include "aom_ports/aom_timer.h"
 #include "test/acm_random.h"
-#include "test/clear_system_state.h"
 #include "test/register_state_check.h"
 #include "test/util.h"
 
@@ -258,7 +257,7 @@ class ConvolveScaleTestBase : public ::testing::Test {
  public:
   ConvolveScaleTestBase() : image_(NULL) {}
   virtual ~ConvolveScaleTestBase() { delete image_; }
-  virtual void TearDown() { libaom_test::ClearSystemState(); }
+  virtual void TearDown() {}
 
   // Implemented by subclasses (SetUp depends on the parameters passed
   // in and RunOne depends on the function to be tested. These can't

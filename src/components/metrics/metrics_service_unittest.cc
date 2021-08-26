@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_functions.h"
@@ -145,7 +146,7 @@ class MetricsServiceTest : public testing::Test {
     if (!metrics_state_manager_) {
       metrics_state_manager_ = MetricsStateManager::Create(
           GetLocalState(), enabled_state_provider_.get(), std::wstring(),
-          base::BindRepeating(&StoreNoClientInfoBackup),
+          base::FilePath(), base::BindRepeating(&StoreNoClientInfoBackup),
           base::BindRepeating(&ReturnNoBackup));
     }
     return metrics_state_manager_.get();
@@ -259,7 +260,7 @@ class ExperimentTestMetricsProvider : public TestMetricsProvider {
 
 TEST_F(MetricsServiceTest, InitialStabilityLogAfterCleanShutDown) {
   EnableMetricsReporting();
-  GetLocalState()->SetBoolean(prefs::kStabilityExitedCleanly, true);
+  CleanExitBeacon::SetStabilityExitedCleanlyForTesting(GetLocalState(), true);
 
   TestMetricsServiceClient client;
   TestMetricsService service(
@@ -303,7 +304,7 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAtProviderRequest) {
 
   // Set the clean exit flag, as that will otherwise cause a stabilty
   // log to be produced, irrespective provider requests.
-  GetLocalState()->SetBoolean(prefs::kStabilityExitedCleanly, true);
+  CleanExitBeacon::SetStabilityExitedCleanlyForTesting(GetLocalState(), true);
 
   TestMetricsService service(
       GetMetricsStateManager(), &client, GetLocalState());
@@ -350,7 +351,7 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAtProviderRequest) {
 
 TEST_F(MetricsServiceTest, InitialStabilityLogAfterCrash) {
   EnableMetricsReporting();
-  GetLocalState()->ClearPref(prefs::kStabilityExitedCleanly);
+  CleanExitBeacon::SetStabilityExitedCleanlyForTesting(GetLocalState(), true);
 
   // Set up prefs to simulate restarting after a crash.
 
@@ -368,7 +369,7 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAfterCrash) {
       .SetBuildtimeAndVersion(MetricsLog::GetBuildTime(),
                               client.GetVersionString());
 
-  GetLocalState()->SetBoolean(prefs::kStabilityExitedCleanly, false);
+  CleanExitBeacon::SetStabilityExitedCleanlyForTesting(GetLocalState(), false);
 
   TestMetricsService service(
       GetMetricsStateManager(), &client, GetLocalState());

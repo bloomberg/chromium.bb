@@ -9,16 +9,12 @@
 #include <string>
 #include <utility>
 
-#include "ash/public/cpp/external_arc/message_center/arc_notification_surface.h"
-#include "ash/public/cpp/external_arc/message_center/arc_notification_surface_manager.h"
 #include "base/containers/cxx20_erase.h"
 #include "chrome/browser/ash/arc/accessibility/accessibility_node_info_data_wrapper.h"
 #include "chrome/browser/ash/arc/accessibility/accessibility_window_info_data_wrapper.h"
 #include "chrome/browser/ash/arc/accessibility/arc_accessibility_util.h"
 #include "chrome/browser/ash/arc/accessibility/auto_complete_handler.h"
 #include "chrome/browser/ash/arc/accessibility/drawer_layout_handler.h"
-#include "components/exo/input_method_surface.h"
-#include "components/exo/wm_helper.h"
 #include "extensions/browser/api/automation_internal/automation_event_router.h"
 #include "extensions/common/extension_messages.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -36,10 +32,11 @@ using AXWindowBooleanProperty = mojom::AccessibilityWindowBooleanProperty;
 using AXWindowInfoData = mojom::AccessibilityWindowInfoData;
 using AXWindowIntListProperty = mojom::AccessibilityWindowIntListProperty;
 
-AXTreeSourceArc::AXTreeSourceArc(Delegate* delegate)
+AXTreeSourceArc::AXTreeSourceArc(Delegate* delegate, aura::Window* window)
     : current_tree_serializer_(new AXTreeArcSerializer(this)),
       is_notification_(false),
       is_input_method_window_(false),
+      window_(window),
       delegate_(delegate) {}
 
 AXTreeSourceArc::~AXTreeSourceArc() {
@@ -143,35 +140,6 @@ void AXTreeSourceArc::SerializeNode(AccessibilityInfoDataWrapper* info_data,
     itr->second->PostSerializeNode(out_data);
 }
 
-aura::Window* AXTreeSourceArc::GetWindow() const {
-  if (is_notification_) {
-    if (!notification_key_.has_value())
-      return nullptr;
-
-    auto* surface_manager = ash::ArcNotificationSurfaceManager::Get();
-    if (!surface_manager)
-      return nullptr;
-
-    ash::ArcNotificationSurface* surface =
-        surface_manager->GetArcSurface(notification_key_.value());
-    if (!surface)
-      return nullptr;
-
-    return surface->GetWindow();
-  } else if (is_input_method_window_) {
-    exo::InputMethodSurface* input_method_surface =
-        exo::InputMethodSurface::GetInputMethodSurface();
-    if (!input_method_surface)
-      return nullptr;
-
-    return input_method_surface->host_window();
-  } else if (exo::WMHelper::HasInstance()) {
-    // TODO(b/173658482): Support non-active windows.
-    return FindArcWindow(exo::WMHelper::GetInstance()->GetFocusedWindow());
-  }
-  return nullptr;
-}
-
 void AXTreeSourceArc::NotifyAccessibilityEventInternal(
     const AXEventData& event_data) {
   if (window_id_ != event_data.window_id) {
@@ -266,7 +234,6 @@ void AXTreeSourceArc::NotifyAccessibilityEventInternal(
 
   events.push_back(std::move(event));
 
-  // Force the tree, to update, so unignored fields get updated.
   // On event type of WINDOW_STATE_CHANGED, update the entire tree so that
   // window location is correctly calculated.
   int32_t node_id_to_clear =
@@ -291,12 +258,13 @@ void AXTreeSourceArc::NotifyAccessibilityEventInternal(
     }
   }
 
+  for (const int32_t update_id : update_ids)
+    current_tree_serializer_->InvalidateSubtree(GetFromId(update_id));
+
   std::vector<ui::AXTreeUpdate> updates;
-  for (const int32_t update_root : update_ids) {
+  for (const int32_t update_id : update_ids) {
     ui::AXTreeUpdate update;
-    update.node_id_to_clear = update_root;
-    current_tree_serializer_->InvalidateSubtree(GetFromId(update_root));
-    if (!current_tree_serializer_->SerializeChanges(GetFromId(update_root),
+    if (!current_tree_serializer_->SerializeChanges(GetFromId(update_id),
                                                     &update)) {
       std::string error_string;
       ui::AXTreeSourceChecker<AccessibilityInfoDataWrapper*> checker(this);
@@ -316,6 +284,9 @@ void AXTreeSourceArc::NotifyAccessibilityEventInternal(
 
 extensions::AutomationEventRouterInterface*
 AXTreeSourceArc::GetAutomationEventRouter() const {
+  if (automation_event_router_for_test_)
+    return automation_event_router_for_test_;
+
   return extensions::AutomationEventRouter::GetInstance();
 }
 

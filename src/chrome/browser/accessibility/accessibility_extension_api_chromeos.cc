@@ -453,8 +453,23 @@ AccessibilityPrivateMoveMagnifierToRectFunction::Run() {
                    params->rect.height);
 
   auto* magnification_manager = ash::MagnificationManager::Get();
-  if (magnification_manager)
-    magnification_manager->HandleMoveMagnifierToRectIfEnabled(bounds);
+  DCHECK(magnification_manager);
+  magnification_manager->HandleMoveMagnifierToRectIfEnabled(bounds);
+
+  return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction
+AccessibilityPrivateMagnifierCenterOnPointFunction::Run() {
+  std::unique_ptr<accessibility_private::MagnifierCenterOnPoint::Params>
+      params =
+          accessibility_private::MagnifierCenterOnPoint::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+  gfx::Point point_in_screen(params->point.x, params->point.y);
+
+  auto* magnification_manager = ash::MagnificationManager::Get();
+  DCHECK(magnification_manager);
+  magnification_manager->HandleMagnifierCenterOnPointIfEnabled(point_in_screen);
 
   return RespondNow(NoArguments());
 }

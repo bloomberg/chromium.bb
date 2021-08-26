@@ -59,14 +59,14 @@ export class ComputedStyleModel extends Common.ObjectWrapper.ObjectWrapper {
     }
   }
 
-  _onComputedStyleChanged(event: Common.EventTarget.EventTargetEvent|null): void {
+  _onComputedStyleChanged(event: Common.EventTarget.EventTargetEvent<unknown>|null): void {
     delete this._computedStylePromise;
     this.dispatchEventToListeners(Events.ComputedStyleChanged, event ? event.data : null);
   }
 
-  _onDOMModelChanged(event: Common.EventTarget.EventTargetEvent): void {
+  _onDOMModelChanged(event: Common.EventTarget.EventTargetEvent<SDK.DOMModel.DOMNode>): void {
     // Any attribute removal or modification can affect the styles of "related" nodes.
-    const node = (event.data as SDK.DOMModel.DOMNode);
+    const node = event.data;
     if (!this._node ||
         this._node !== node && node.parentNode !== this._node.parentNode && !node.isAncestor(this._node)) {
       return;
@@ -74,7 +74,7 @@ export class ComputedStyleModel extends Common.ObjectWrapper.ObjectWrapper {
     this._onComputedStyleChanged(null);
   }
 
-  _onFrameResized(_event: Common.EventTarget.EventTargetEvent): void {
+  _onFrameResized(): void {
     function refreshContents(this: ComputedStyleModel): void {
       this._onComputedStyleChanged(null);
       delete this._frameResizedTimer;
@@ -124,7 +124,6 @@ export class ComputedStyleModel extends Common.ObjectWrapper.ObjectWrapper {
 export const enum Events {
   ComputedStyleChanged = 'ComputedStyleChanged',
 }
-
 
 export class ComputedStyle {
   node: SDK.DOMModel.DOMNode;

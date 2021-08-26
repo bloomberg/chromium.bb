@@ -1705,7 +1705,8 @@ void InspectorPageAgent::ApplyCompilationModeOverride(
   }
   const protocol::Binary& data = it->value;
   *cached_data = new v8::ScriptCompiler::CachedData(
-      data.data(), data.size(), v8::ScriptCompiler::CachedData::BufferNotOwned);
+      data.data(), base::checked_cast<int>(data.size()),
+      v8::ScriptCompiler::CachedData::BufferNotOwned);
 }
 
 void InspectorPageAgent::DidProduceCompilationCache(
@@ -1821,6 +1822,21 @@ void InspectorPageAgent::Trace(Visitor* visitor) const {
   visitor->Trace(inspector_resource_content_loader_);
   visitor->Trace(isolated_worlds_);
   InspectorBaseAgent::Trace(visitor);
+}
+
+Response InspectorPageAgent::getOriginTrials(
+    const String& frame_id,
+    std::unique_ptr<protocol::Array<protocol::Page::OriginTrial>>*
+        originTrials) {
+  LocalFrame* frame =
+      IdentifiersFactory::FrameById(inspected_frames_, frame_id);
+
+  if (!frame)
+    return Response::InvalidParams("Invalid frame id");
+
+  *originTrials = CreateOriginTrials(frame->DomWindow());
+
+  return Response::Success();
 }
 
 }  // namespace blink

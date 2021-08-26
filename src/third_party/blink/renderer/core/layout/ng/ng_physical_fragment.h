@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_size.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_ink_overflow.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_link.h"
@@ -124,6 +125,10 @@ class CORE_EXPORT NGPhysicalFragment
   // replaced elements.
   bool IsAtomicInline() const {
     return IsBox() && BoxType() == NGBoxType::kAtomicInline;
+  }
+  bool IsBlockInInline() const {
+    return IsBox() && BoxType() == NGBoxType::kNormalBox && GetLayoutObject() &&
+           IsA<LayoutInline>(GetLayoutObject()->Parent());
   }
   // True if this fragment is in-flow in an inline formatting context.
   bool IsInline() const { return IsInlineBox() || IsAtomicInline(); }
@@ -351,6 +356,11 @@ class CORE_EXPORT NGPhysicalFragment
   bool IsHiddenForPaint() const {
     return is_hidden_for_paint_ || layout_object_->IsTruncated();
   }
+
+  // This fragment is opaque for layout and paint, as if it does not exist and
+  // does not paint its backgrounds and borders, but it can have regular
+  // children and paint properties such as filters can apply.
+  bool IsOpaque() const { return is_opaque_; }
 
   // Return true if this fragment is monolithic, as far as block fragmentation
   // is concerned.
@@ -647,6 +657,7 @@ class CORE_EXPORT NGPhysicalFragment
   const unsigned sub_type_ : 3;       // NGBoxType, NGTextType, or NGLineBoxType
   const unsigned style_variant_ : 2;  // NGStyleVariant
   const unsigned is_hidden_for_paint_ : 1;
+  unsigned is_opaque_ : 1;
   unsigned is_math_fraction_ : 1;
   unsigned is_math_operator_ : 1;
   // base (line box) or resolve (text) direction

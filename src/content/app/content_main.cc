@@ -8,6 +8,7 @@
 #include "base/at_exit.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/compiler_specific.h"
 #include "base/debug/activity_tracker.h"
 #include "base/debug/debugger.h"
 #include "base/debug/stack_trace.h"
@@ -376,8 +377,11 @@ int ContentMainInitialize(ContentMainParams& params,
   return exit_code;
 }
 
-int ContentMainRun(ContentMainParams& params,
-                   ContentMainRunner* content_main_runner) {
+// This function must be marked with NO_STACK_PROTECTOR or it may crash on
+// return, see the --change-stack-guard-on-fork command line flag.
+int NO_STACK_PROTECTOR
+ContentMainRun(ContentMainParams& params,
+               ContentMainRunner* content_main_runner) {
   int exit_code = content_main_runner->Run(params.minimal_browser_mode);
 
   base::debug::GlobalActivityTracker* tracker =
@@ -392,10 +396,12 @@ int ContentMainRun(ContentMainParams& params,
       tracker->process_data().SetInt("exit-code", exit_code);
     }
   }
-  
+
   return exit_code;
 }
 
+// This function must be marked with NO_STACK_PROTECTOR or it may crash on
+// return, see the --change-stack-guard-on-fork command line flag.
 void ContentMainShutdown(ContentMainParams& params,
                          ContentMainRunner* content_main_runner) {
 #if !defined(OS_ANDROID)
@@ -403,8 +409,11 @@ void ContentMainShutdown(ContentMainParams& params,
 #endif
 }
 
-int RunContentProcess(ContentMainParams& params,
-                      ContentMainRunner* content_main_runner) {
+// This function must be marked with NO_STACK_PROTECTOR or it may crash on
+// return, see the --change-stack-guard-on-fork command line flag.
+int NO_STACK_PROTECTOR
+RunContentProcess(ContentMainParams& params,
+                  ContentMainRunner* content_main_runner) {
 #if defined(OS_MAC)
   // We need this pool for all the objects created before we get to the event
   // loop, but we don't want to leave them hanging around until the app quits.
@@ -430,7 +439,9 @@ int RunContentProcess(ContentMainParams& params,
   return exit_code;
 }
 
-int ContentMain(ContentMainParams& params) {
+// This function must be marked with NO_STACK_PROTECTOR or it may crash on
+// return, see the --change-stack-guard-on-fork command line flag.
+int NO_STACK_PROTECTOR ContentMain(ContentMainParams& params) {
   auto runner = ContentMainRunner::Create();
   return RunContentProcess(params, runner.get());
 }

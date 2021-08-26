@@ -15,7 +15,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/chromeos/input_method/input_method_engine_base.h"
+#include "chrome/browser/ash/input_method/input_method_engine_base.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/input_ime.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -39,9 +39,7 @@ class Profile;
 namespace ui {
 class IMEEngineHandlerInterface;
 
-using chromeos::InputMethodEngineBase;
-
-class ImeObserver : public InputMethodEngineBase::Observer {
+class ImeObserver : public ash::input_method::InputMethodEngineBase::Observer {
  public:
   ImeObserver(const std::string& extension_id, Profile* profile);
 

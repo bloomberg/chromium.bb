@@ -9,7 +9,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as UI from '../../ui/legacy/legacy.js';
 
-import type {PerformanceModel} from './PerformanceModel.js'; // eslint-disable-line no-unused-vars
+import type {PerformanceModel} from './PerformanceModel.js';
 import {TimelineEventOverviewCPUActivity, TimelineEventOverviewFrames, TimelineEventOverviewNetwork, TimelineEventOverviewResponsiveness} from './TimelineEventOverview.js';
 
 const UIStrings = {
@@ -252,7 +252,7 @@ export class TimelineHistoryManager {
     UI.ARIAUtils.setAccessibleName(nameSpan, title);
     const tracingModel = performanceModel.tracingModel();
     const duration =
-        i18n.i18n.millisToString(tracingModel.maximumRecordTime() - tracingModel.minimumRecordTime(), false);
+        i18n.TimeUtilities.millisToString(tracingModel.maximumRecordTime() - tracingModel.minimumRecordTime(), false);
     const timeContainer = container.createChild('span', 'time');
     timeContainer.appendChild(document.createTextNode(duration));
     timeContainer.appendChild(timeElement);
@@ -458,7 +458,6 @@ export class DropDown implements UI.ListControl.ListDelegate<PerformanceModel> {
 
   static _instance: DropDown|null = null;
 }
-
 
 export class ToolbarButton extends UI.Toolbar.ToolbarItem {
   _contentElement: HTMLElement;

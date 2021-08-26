@@ -10,6 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/encryption_scheme.h"
+#include "media/base/media_switches.h"
 #include "media/base/media_util.h"
 #include "media/base/test_data_util.h"
 #include "media/base/video_decoder_config.h"
@@ -45,8 +46,8 @@ constexpr const char* usage_msg =
     "           [--validator_type=(none|md5|ssim)]\n"
     "           [--output_frames=(all|corrupt)] [--output_format=(png|yuv)]\n"
     "           [--output_limit=<number>] [--output_folder=<folder>]\n"
-    "           ([--use_vd]|[--use_vd_vda]) [--gtest_help] [--help]\n"
-    "           [<video path>] [<video metadata path>]\n";
+    "           ([--use-legacy][--use_vd]|[--use_vd_vda]) [--gtest_help]\n"
+    "           [--help] [<video path>] [<video metadata path>]\n";
 
 // Video decoder tests help message.
 constexpr const char* help_msg =
@@ -65,6 +66,8 @@ constexpr const char* help_msg =
     "                       frames), ssim (compute SSIM against expected\n"
     "                       frames, currently allowed for AV1 streams only)\n"
     "                       and none (disable frame validation).\n"
+    "  --use-legacy         use the legacy VDA-based video decoders.\n"
+    "                       (enabled by default)\n"
     "  --use_vd             use the new VD-based video decoders, instead of\n"
     "                       the default VDA-based video decoders.\n"
     "  --use_vd_vda         use the new VD-based video decoders with a\n"
@@ -144,6 +147,11 @@ class VideoDecoderTest : public ::testing::Test {
             VideoFrameValidator::ValidationMode::kThreshold, kSSIMTolerance));
       }
     }
+
+    base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
+    command_line.AppendSwitchASCII(
+        switches::kHardwareVideoDecodeFrameRate,
+        base::NumberToString(g_env->Video()->FrameRate()));
 
     config.implementation = g_env->GetDecoderImplementation();
 
@@ -484,6 +492,7 @@ int main(int argc, char** argv) {
       media::test::VideoPlayerTestEnvironment::ValidatorType::kMD5;
   media::test::FrameOutputConfig frame_output_config;
   base::FilePath::StringType output_folder = base::FilePath::kCurrentDirectory;
+  bool use_legacy = false;
   bool use_vd = false;
   bool use_vd_vda = false;
   media::test::DecoderImplementation implementation =
@@ -542,6 +551,9 @@ int main(int argc, char** argv) {
       }
     } else if (it->first == "output_folder") {
       output_folder = it->second;
+    } else if (it->first == "use-legacy") {
+      use_legacy = true;
+      implementation = media::test::DecoderImplementation::kVDA;
     } else if (it->first == "use_vd") {
       use_vd = true;
       implementation = media::test::DecoderImplementation::kVD;
@@ -555,6 +567,16 @@ int main(int argc, char** argv) {
     }
   }
 
+  if (use_legacy && use_vd) {
+    std::cout << "--use-legacy and --use_vd cannot be enabled together.\n"
+              << media::test::usage_msg;
+    return EXIT_FAILURE;
+  }
+  if (use_legacy && use_vd_vda) {
+    std::cout << "--use-legacy and --use_vd_vda cannot be enabled together.\n"
+              << media::test::usage_msg;
+    return EXIT_FAILURE;
+  }
   if (use_vd && use_vd_vda) {
     std::cout << "--use_vd and --use_vd_vda cannot be enabled together.\n"
               << media::test::usage_msg;

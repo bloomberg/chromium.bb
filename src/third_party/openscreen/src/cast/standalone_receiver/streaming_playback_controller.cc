@@ -44,6 +44,11 @@ StreamingPlaybackController::StreamingPlaybackController(
   OSP_CHECK(window_) << "Failed to create SDL window: " << SDL_GetError();
   renderer_ = MakeUniqueSDLRenderer(window_.get(), -1, 0);
   OSP_CHECK(renderer_) << "Failed to create SDL renderer: " << SDL_GetError();
+
+  sdl_event_loop_.RegisterForKeyboardEvent(
+      [this](const SDL_KeyboardEvent& event) {
+        this->HandleKeyboardEvent(event);
+      });
 }
 #else
 StreamingPlaybackController::StreamingPlaybackController(
@@ -84,6 +89,7 @@ void StreamingPlaybackController::OnRemotingNegotiated(
 void StreamingPlaybackController::OnReceiversDestroying(
     const ReceiverSession* session,
     ReceiversDestroyingReason reason) {
+  OSP_LOG_INFO << "Receivers are currently destroying, resetting SDL players.";
   audio_player_.reset();
   video_player_.reset();
 }
@@ -96,6 +102,7 @@ void StreamingPlaybackController::OnError(const ReceiverSession* session,
 void StreamingPlaybackController::Initialize(
     ReceiverSession::ConfiguredReceivers receivers) {
 #if defined(CAST_STANDALONE_RECEIVER_HAVE_EXTERNAL_LIBS)
+  OSP_LOG_INFO << "Successfully negotiated a session, creating SDL players.";
   if (receivers.audio_receiver) {
     audio_player_ = std::make_unique<SDLAudioPlayer>(
         &Clock::now, task_runner_, receivers.audio_receiver,
@@ -120,6 +127,25 @@ void StreamingPlaybackController::Initialize(
   }
 #endif  // defined(CAST_STANDALONE_RECEIVER_HAVE_EXTERNAL_LIBS)
 }
+
+#if defined(CAST_STANDALONE_RECEIVER_HAVE_EXTERNAL_LIBS)
+void StreamingPlaybackController::HandleKeyboardEvent(
+    const SDL_KeyboardEvent& event) {
+  // We only handle keyboard events if we are remoting.
+  if (!remoting_receiver_) {
+    return;
+  }
+
+  switch (event.keysym.sym) {
+    // See codes here: https://wiki.libsdl.org/SDL_Scancode
+    case SDLK_KP_SPACE:  // fallthrough, "Keypad Space"
+    case SDLK_SPACE:     // "Space"
+      is_playing_ = !is_playing_;
+      remoting_receiver_->SendPlaybackRateMessage(is_playing_ ? 1.0 : 0.0);
+      break;
+  }
+}
+#endif
 
 }  // namespace cast
 }  // namespace openscreen

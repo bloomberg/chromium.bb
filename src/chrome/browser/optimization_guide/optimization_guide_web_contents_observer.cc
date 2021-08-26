@@ -4,7 +4,7 @@
 
 #include "chrome/browser/optimization_guide/optimization_guide_web_contents_observer.h"
 
-#include "chrome/browser/optimization_guide/optimization_guide_hints_manager.h"
+#include "chrome/browser/optimization_guide/chrome_hints_manager.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -47,13 +47,15 @@ OptimizationGuideNavigationData* OptimizationGuideWebContentsObserver::
     GetOrCreateOptimizationGuideNavigationData(
         content::NavigationHandle* navigation_handle) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_EQ(web_contents(), navigation_handle->GetWebContents());
 
   int64_t navigation_id = navigation_handle->GetNavigationId();
   if (inflight_optimization_guide_navigation_datas_.find(navigation_id) ==
       inflight_optimization_guide_navigation_datas_.end()) {
     // We do not have one already - create one.
     inflight_optimization_guide_navigation_datas_[navigation_id] =
-        std::make_unique<OptimizationGuideNavigationData>(navigation_id);
+        std::make_unique<OptimizationGuideNavigationData>(
+            navigation_id, navigation_handle->NavigationStart());
   }
 
   DCHECK(inflight_optimization_guide_navigation_datas_.find(navigation_id) !=
@@ -80,8 +82,11 @@ void OptimizationGuideWebContentsObserver::DidStartNavigation(
   if (!optimization_guide_keyed_service_)
     return;
 
+  OptimizationGuideNavigationData* navigation_data =
+      GetOrCreateOptimizationGuideNavigationData(navigation_handle);
+  navigation_data->set_navigation_url(navigation_handle->GetURL());
   optimization_guide_keyed_service_->OnNavigationStartOrRedirect(
-      navigation_handle);
+      navigation_data);
 }
 
 void OptimizationGuideWebContentsObserver::DidRedirectNavigation(
@@ -94,8 +99,11 @@ void OptimizationGuideWebContentsObserver::DidRedirectNavigation(
   if (!optimization_guide_keyed_service_)
     return;
 
+  OptimizationGuideNavigationData* navigation_data =
+      GetOrCreateOptimizationGuideNavigationData(navigation_handle);
+  navigation_data->set_navigation_url(navigation_handle->GetURL());
   optimization_guide_keyed_service_->OnNavigationStartOrRedirect(
-      navigation_handle);
+      navigation_data);
 }
 
 void OptimizationGuideWebContentsObserver::ClearHintsToFetchBasedOnPredictions(
@@ -154,30 +162,18 @@ void OptimizationGuideWebContentsObserver::DocumentOnLoadCompletedInMainFrame(
   // at onload.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::BindOnce(&OptimizationGuideWebContentsObserver::FetchHints,
-                     weak_factory_.GetWeakPtr()),
+      base::BindOnce(
+          &OptimizationGuideWebContentsObserver::FetchHintsUsingManager,
+          weak_factory_.GetWeakPtr(),
+          optimization_guide_keyed_service_->GetHintsManager()),
       optimization_guide::features::GetOnloadDelayForHintsFetching());
 }
 
-void OptimizationGuideWebContentsObserver::FetchHintsUsingManagerForTesting(
-    OptimizationGuideHintsManager* hints_manager) {
+void OptimizationGuideWebContentsObserver::FetchHintsUsingManager(
+    optimization_guide::ChromeHintsManager* hints_manager) {
   DCHECK(hints_manager);
   sent_batched_hints_request_ = true;
-  hints_manager->FetchHintsForPredictions(
-      std::move(hints_target_urls_.vector()));
-  hints_target_urls_.clear();
-}
-
-void OptimizationGuideWebContentsObserver::FetchHints() {
-  if (!optimization_guide_keyed_service_) {
-    return;
-  }
-
-  OptimizationGuideHintsManager* hints_manager =
-      optimization_guide_keyed_service_->GetHintsManager();
-  sent_batched_hints_request_ = true;
-  hints_manager->FetchHintsForPredictions(
-      std::move(hints_target_urls_.vector()));
+  hints_manager->FetchHintsForURLs(std::move(hints_target_urls_.vector()));
   hints_target_urls_.clear();
 }
 

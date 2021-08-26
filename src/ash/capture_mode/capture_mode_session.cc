@@ -340,7 +340,10 @@ class CaptureModeSession::CursorSetter {
         original_cursor_(cursor_manager_->GetCursor()),
         original_cursor_visible_(cursor_manager_->IsCursorVisible()),
         original_cursor_locked_(cursor_manager_->IsCursorLocked()),
-        current_orientation_(GetCurrentScreenOrientation()) {}
+        current_orientation_(GetCurrentScreenOrientation()) {
+    if (!cursor_manager_->IsMouseEventsEnabled())
+      cursor_manager_->EnableMouseEvents();
+  }
 
   CursorSetter(const CursorSetter&) = delete;
   CursorSetter& operator=(const CursorSetter&) = delete;
@@ -511,6 +514,18 @@ CaptureModeSession::CaptureModeSession(CaptureModeController* controller)
 CaptureModeSession::~CaptureModeSession() = default;
 
 void CaptureModeSession::Initialize() {
+  // Trigger this before creating `capture_mode_bar_widget_` as we want to read
+  // out this message before reading out the first view of
+  // `capture_mode_bar_widget_`.
+  capture_mode_util::TriggerAccessibilityAlert(l10n_util::GetStringFUTF8(
+      IDS_ASH_SCREEN_CAPTURE_ALERT_OPEN,
+      l10n_util::GetStringUTF16(GetMessageIdForCaptureSource(
+          controller_->source(), /*for_toggle_alert=*/false)),
+      l10n_util::GetStringUTF16(
+          controller_->type() == CaptureModeType::kImage
+              ? IDS_ASH_SCREEN_CAPTURE_TYPE_SCREENSHOT
+              : IDS_ASH_SCREEN_CAPTURE_TYPE_SCREEN_RECORDING)));
+
   // A context menu may have input capture when entering a session. Remove
   // capture from it, otherwise subsequent mouse events will cause it to close,
   // and then we won't be able to take a screenshot of the menu. Store it so we
@@ -573,14 +588,6 @@ void CaptureModeSession::Initialize() {
   aura::Env::GetInstance()->AddPreTargetHandler(
       this, ui::EventTarget::Priority::kSystem);
 
-  capture_mode_util::TriggerAccessibilityAlert(l10n_util::GetStringFUTF8(
-      IDS_ASH_SCREEN_CAPTURE_ALERT_OPEN,
-      l10n_util::GetStringUTF16(GetMessageIdForCaptureSource(
-          controller_->source(), /*for_toggle_alert=*/false)),
-      l10n_util::GetStringUTF16(
-          controller_->type() == CaptureModeType::kImage
-              ? IDS_ASH_SCREEN_CAPTURE_TYPE_SCREENSHOT
-              : IDS_ASH_SCREEN_CAPTURE_TYPE_SCREEN_RECORDING)));
   UpdateAutoclickMenuBoundsIfNeeded();
 }
 

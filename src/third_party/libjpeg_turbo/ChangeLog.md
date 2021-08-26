@@ -6,6 +6,26 @@
 1. Fixed a regression introduced in 2.1.0 that caused build failures with
 non-GCC-compatible compilers for Un*x/Arm platforms.
 
+2. Fixed a regression introduced by 2.1 beta1[13] that prevented the Arm 32-bit
+(AArch32) Neon SIMD extensions from building unless the C compiler flags
+included `-mfloat-abi=softfp` or `-mfloat-abi=hard`.
+
+3. Fixed an issue in the AArch32 Neon SIMD Huffman encoder whereby reliance on
+undefined C compiler behavior led to crashes ("SIGBUS: illegal alignment") on
+Android systems when running AArch32/Thumb builds of libjpeg-turbo built with
+recent versions of Clang.
+
+4. Added a command-line argument (`-copy icc`) to jpegtran that causes it to
+copy only the ICC profile markers from the source file and discard any other
+metadata.
+
+5. libjpeg-turbo should now build and run on CHERI-enabled architectures, which
+use capability pointers that are larger than the size of `size_t`.
+
+6. Fixed a regression introduced by 2.1 beta1[5] that caused a segfault in the
+64-bit SSE2 Huffman encoder when attempting to losslessly transform a
+specially-crafted malformed JPEG image.
+
 
 2.1.0
 =====

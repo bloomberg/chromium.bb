@@ -40,6 +40,25 @@
       {
         "aesIvMask": "64A6AAC2821880145271BB15B0188821",
         "aesKey": "65386FD9BCC30BC7FB6A4DD1D3B0FA5E",
+        "codecName": "h264",
+        "codecParameter": "avc1.4D4028",
+        "index": 2,
+        "maxBitRate": 4000000,
+        "maxFrameRate": "25",
+        "receiverRtcpEventLog": false,
+        "renderMode": "video",
+        "resolutions": [{"height": 720, "width": 1280}],
+        "rtpExtensions": ["adaptive_playout_delay"],
+        "rtpPayloadType": 97,
+        "rtpProfile": "cast",
+        "ssrc": 748229,
+        "targetDelay": 400,
+        "timeBase": "1/90000",
+        "type": "video_source"
+      },
+      {
+        "aesIvMask": "64A6AAC2821880145271BB15B0188821",
+        "aesKey": "65386FD9BCC30BC7FB6A4DD1D3B0FA5E",
         "codecName": "vp9",
         "index": 2,
         "maxBitRate": 5000000,
@@ -75,6 +94,6 @@
       }
     ]
   },
-  "seqNum": 0,
+  "seqNum": 123,
   "type": "OFFER"
 }

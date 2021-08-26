@@ -18,7 +18,7 @@
 #include "chrome/browser/component_updater/component_installer_errors.h"
 #include "chrome/browser/component_updater/metadata_table_chromeos.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/image_loader_client.h"
+#include "chromeos/dbus/image_loader/image_loader_client.h"
 #include "components/component_updater/component_updater_paths.h"
 #include "components/crx_file/id_util.h"
 #include "components/version_info/version_info.h"
@@ -37,11 +37,11 @@ constexpr char kComponentsRootPath[] = "cros-components";
 const ComponentConfig kConfigs[] = {
     {"epson-inkjet-printer-escpr", ComponentConfig::PolicyType::kEnvVersion,
      "5.0", "1913a5e0a6cad30b6f03e176177e0d7ed62c5d6700a9c66da556d7c3f5d6a47e"},
-    {"cros-termina", ComponentConfig::PolicyType::kEnvVersion, "930.1",
+    {"cros-termina", ComponentConfig::PolicyType::kEnvVersion, "940.1",
      "e9d960f84f628e1f42d05de4046bb5b3154b6f1f65c08412c6af57a29aecaffb"},
-    {"rtanalytics-light", ComponentConfig::PolicyType::kEnvVersion, "92.0",
+    {"rtanalytics-light", ComponentConfig::PolicyType::kEnvVersion, "94.0",
      "69f09d33c439c2ab55bbbe24b47ab55cb3f6c0bd1f1ef46eefea3216ec925038"},
-    {"rtanalytics-full", ComponentConfig::PolicyType::kEnvVersion, "92.0",
+    {"rtanalytics-full", ComponentConfig::PolicyType::kEnvVersion, "94.0",
      "c93c3e1013c52100a20038b405ac854d69fa889f6dc4fa6f188267051e05e444"},
     {"star-cups-driver", ComponentConfig::PolicyType::kEnvVersion, "1.1",
      "6d24de30f671da5aee6d463d9e446cafe9ddac672800a9defe86877dcde6c466"},

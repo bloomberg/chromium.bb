@@ -47,6 +47,7 @@
 #include "services/network/public/mojom/cors.mojom.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/blink/public/common/permissions/permission_utils.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "third_party/blink/public/mojom/app_banner/app_banner.mojom.h"
 #include "third_party/blink/public/mojom/clipboard/clipboard.mojom.h"
@@ -1923,12 +1924,14 @@ void TestRunnerBindings::CopyImageThen(int x,
   frame_->GetBrowserInterfaceBroker()->GetInterface(
       remote_clipboard.BindNewPipeAndPassReceiver());
 
-  uint64_t sequence_number_before = 0;
-  remote_clipboard->GetSequenceNumber(ui::ClipboardBuffer::kCopyPaste,
-                                      &sequence_number_before);
+  blink::ClipboardSequenceNumberToken sequence_number_before;
+  CHECK(remote_clipboard->GetSequenceNumber(ui::ClipboardBuffer::kCopyPaste,
+                                            &sequence_number_before));
   GetWebFrame()->CopyImageAtForTesting(gfx::Point(x, y));
-  uint64_t sequence_number_after = 0;
-  while (sequence_number_before == sequence_number_after) {
+  auto sequence_number_after = sequence_number_before;
+  while (sequence_number_before.value() == sequence_number_after.value()) {
+    // TODO(crbug.com/872076): Ideally we would CHECK here that the mojo call
+    // succeeded, but this crashes under some circumstances (crbug.com/1232810).
     remote_clipboard->GetSequenceNumber(ui::ClipboardBuffer::kCopyPaste,
                                         &sequence_number_after);
   }

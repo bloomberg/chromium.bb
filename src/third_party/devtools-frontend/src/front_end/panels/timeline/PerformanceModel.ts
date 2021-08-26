@@ -6,7 +6,7 @@
 
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import type * as Bindings from '../../models/bindings/bindings.js'; // eslint-disable-line no-unused-vars
+import type * as Bindings from '../../models/bindings/bindings.js';
 import * as TimelineModel from '../../models/timeline_model/timeline_model.js';
 
 import {TimelineUIUtils} from './TimelineUIUtils.js';
@@ -146,7 +146,7 @@ export class PerformanceModel extends Common.ObjectWrapper.ObjectWrapper {
     return this._frameModel;
   }
 
-  interactionRecords(): Common.SegmentedRange.Segment[] {
+  interactionRecords(): Common.SegmentedRange.Segment<TimelineModel.TimelineIRModel.Phases>[] {
     return this._irModel.interactionRecords();
   }
 

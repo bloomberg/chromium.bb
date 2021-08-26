@@ -8,9 +8,9 @@
 #include <utility>
 
 #include "base/containers/adapters.h"
+#include "base/cxx17_backports.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/ptr_util.h"
-#include "base/numerics/ranges.h"
 #include "build/build_config.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/accessibility/ax_action_data.h"
@@ -75,6 +75,12 @@ bool EventIsDoubleTapOrClick(const ui::LocatedEvent& event) {
   if (event.type() == ui::ET_GESTURE_TAP)
     return event.AsGestureEvent()->details().tap_count() == 2;
   return !!(event.flags() & ui::EF_IS_DOUBLE_CLICK);
+}
+
+int GetSpaceThicknessForFocusRing() {
+  static const int kSpaceThicknessForFocusRing =
+      FocusRing::kHaloThickness - FocusRing::kHaloInset;
+  return kSpaceThicknessForFocusRing;
 }
 
 }  // namespace
@@ -672,8 +678,8 @@ gfx::Point TreeView::GetKeyboardContextMenuLocation() {
     if (node_bounds.Intersects(vis_bounds))
       node_bounds.Intersect(vis_bounds);
     gfx::Point menu_point(node_bounds.CenterPoint());
-    x = base::ClampToRange(menu_point.x(), vis_bounds.x(), vis_bounds.right());
-    y = base::ClampToRange(menu_point.y(), vis_bounds.y(), vis_bounds.bottom());
+    x = base::clamp(menu_point.x(), vis_bounds.x(), vis_bounds.right());
+    y = base::clamp(menu_point.y(), vis_bounds.y(), vis_bounds.bottom());
   }
   gfx::Point screen_loc(x, y);
   if (base::i18n::IsRTL())
@@ -991,6 +997,18 @@ void TreeView::UpdatePreferredSize() {
       root_.GetMaxWidth(this, text_offset_, root_shown_ ? 1 : 0) +
           kTextHorizontalPadding * 2,
       row_height_ * GetRowCount());
+
+  // When the editor is visible, more space is needed beyond the regular row,
+  // such as for drawing the focus ring.
+  // If this tree view is scrolled through layers, there is contension for
+  // updating layer bounds and scroll within the same layout call. So an
+  // extra row's height is added as the buffer space.
+  int horizontal_space = GetSpaceThicknessForFocusRing();
+  int vertical_space =
+      std::max(0, (empty_editor_size_.height() - font_list_.GetHeight()) / 2 -
+                      kTextVerticalPadding) +
+      GetSpaceThicknessForFocusRing() + row_height_;
+  preferred_size_.Enlarge(horizontal_space, vertical_space);
 }
 
 void TreeView::LayoutEditor() {
@@ -1021,8 +1039,12 @@ void TreeView::LayoutEditor() {
         gfx::Size(std::min(row_bounds.width(), content_bounds.width()),
                   std::min(row_bounds.height(), content_bounds.height())));
   }
+  // The visible bounds should include the focus ring which is outside the
+  // |row_bounds|.
+  gfx::Rect outter_bounds = row_bounds;
+  outter_bounds.Inset(gfx::Insets(-GetSpaceThicknessForFocusRing()));
   // Scroll as necessary to ensure that the editor is visible.
-  ScrollRectToVisible(row_bounds);
+  ScrollRectToVisible(outter_bounds);
   editor_->SetBoundsRect(row_bounds);
   editor_->Layout();
 }
@@ -1341,7 +1363,7 @@ void TreeView::IncrementSelection(IncrementType type) {
   int depth = 0;
   int delta = type == IncrementType::kPrevious ? -1 : 1;
   int row = GetRowForInternalNode(active_node_, &depth);
-  int new_row = base::ClampToRange(row + delta, 0, GetRowCount() - 1);
+  int new_row = base::clamp(row + delta, 0, GetRowCount() - 1);
   if (new_row == row)
     return;  // At the end/beginning.
   SetSelectedNode(GetNodeByRow(new_row, &depth)->model_node());

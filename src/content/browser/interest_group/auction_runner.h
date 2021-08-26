@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "content/browser/interest_group/auction_process_manager.h"
+#include "content/browser/interest_group/interest_group_storage.h"
 #include "content/common/content_export.h"
 #include "content/services/auction_worklet/public/mojom/auction_worklet_service.mojom-forward.h"
 #include "content/services/auction_worklet/public/mojom/auction_worklet_service.mojom.h"
@@ -22,13 +23,16 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/interest_group/interest_group.h"
 #include "third_party/blink/public/mojom/interest_group/interest_group_types.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
 
 class AuctionURLLoaderFactoryProxy;
+class DebuggableAuctionWorklet;
 class InterestGroupManager;
+class RenderFrameHostImpl;
 
 // An AuctionRunner loads and runs the bidder and seller worklets, along with
 // their reporting phases and produces the result via a callback.
@@ -68,6 +72,9 @@ class CONTENT_EXPORT AuctionRunner {
 
     // Trusted URLLoaderFactory used to load bidder worklets.
     virtual network::mojom::URLLoaderFactory* GetTrustedURLLoaderFactory() = 0;
+
+    // Get containing frame. (Passed to debugging hooks).
+    virtual RenderFrameHostImpl* GetFrame() = 0;
   };
 
   // Result of an auction. Used for histograms. Only recorded for valid
@@ -193,13 +200,14 @@ class CONTENT_EXPORT AuctionRunner {
     BidState(BidState&) = delete;
     BidState& operator=(BidState&) = delete;
 
-    // Convenient function to destroy `bidder_worklet` and `process_handle`.
+    // Convenient function to destroy `bidder_worklet`, `bidder_worklet_debug`,
+    // and `process_handle`.
     // Safe to call if they're already null.
     void ClosePipes();
 
     State state = State::kLoadingWorkletsAndOnSellerProcess;
 
-    auction_worklet::mojom::BiddingInterestGroupPtr bidder;
+    BiddingInterestGroup bidder;
 
     // URLLoaderFactory proxy class configured only to load the URLs the bidder
     // needs.
@@ -208,10 +216,11 @@ class CONTENT_EXPORT AuctionRunner {
     std::unique_ptr<AuctionProcessManager::ProcessHandle> process_handle;
 
     mojo::Remote<auction_worklet::mojom::BidderWorklet> bidder_worklet;
+    std::unique_ptr<DebuggableAuctionWorklet> bidder_worklet_debug;
     auction_worklet::mojom::BidderWorkletBidPtr bid_result;
     // Points to the InterestGroupAd within `bidder` that won the auction. Only
     // nullptr when `bid_result` is also nullptr.
-    blink::mojom::InterestGroupAd* bid_ad = nullptr;
+    const blink::InterestGroup::Ad* bid_ad = nullptr;
 
     double seller_score = 0;
   };
@@ -231,9 +240,7 @@ class CONTENT_EXPORT AuctionRunner {
   // Adds `interest_groups` to `bid_states_`. Continues retrieving bidders from
   // `pending_buyers_` if any have not been retrieved yet. Otherwise, invokes
   // StartBidding().
-  void OnInterestGroupRead(
-      std::vector<auction_worklet::mojom::BiddingInterestGroupPtr>
-          interest_groups);
+  void OnInterestGroupRead(std::vector<BiddingInterestGroup> interest_groups);
 
   // Request seller worklet process. No bidder processes are requested until a
   // seller worklet process has been received.
@@ -339,6 +346,7 @@ class CONTENT_EXPORT AuctionRunner {
   std::unique_ptr<AuctionProcessManager::ProcessHandle>
       seller_worklet_process_handle_;
   mojo::Remote<auction_worklet::mojom::SellerWorklet> seller_worklet_;
+  std::unique_ptr<DebuggableAuctionWorklet> seller_worklet_debug_;
 
   // This is true if the seller script has been loaded successfully --- if the
   // load failed, the entire process is aborted since there is nothing useful

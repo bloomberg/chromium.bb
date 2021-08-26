@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "cast/streaming/constants.h"
 #include "platform/base/interface_info.h"
 
 namespace openscreen {
@@ -40,6 +41,9 @@ struct ConnectionSettings {
 
   // Whether we should loop the video when it is completed.
   bool should_loop_video = true;
+
+  // The codec to use for encoding negotiated video streams.
+  VideoCodec codec;
 };
 
 }  // namespace cast

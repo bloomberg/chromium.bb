@@ -5,6 +5,8 @@
  * found in the LICENSE file.
  */
 
+#include "src/gpu/ops/GrOvalOpFactory.h"
+
 #include "include/core/SkStrokeRec.h"
 #include "src/core/SkMatrixPriv.h"
 #include "src/core/SkRRectPriv.h"
@@ -19,13 +21,11 @@
 #include "src/gpu/GrStyle.h"
 #include "src/gpu/GrVertexWriter.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
-#include "src/gpu/glsl/GrGLSLGeometryProcessor.h"
 #include "src/gpu/glsl/GrGLSLProgramDataManager.h"
 #include "src/gpu/glsl/GrGLSLUniformHandler.h"
 #include "src/gpu/glsl/GrGLSLVarying.h"
 #include "src/gpu/glsl/GrGLSLVertexGeoBuilder.h"
 #include "src/gpu/ops/GrMeshDrawOp.h"
-#include "src/gpu/ops/GrOvalOpFactory.h"
 #include "src/gpu/ops/GrSimpleMeshDrawOpHelper.h"
 
 #include <utility>
@@ -75,12 +75,19 @@ public:
 
     const char* name() const override { return "CircleGeometryProcessor"; }
 
-    void getGLSLProcessorKey(const GrShaderCaps& caps, GrProcessorKeyBuilder* b) const override {
-        GLSLProcessor::GenKey(*this, caps, b);
+    void addToKey(const GrShaderCaps& caps, GrProcessorKeyBuilder* b) const override {
+        b->addBool(fStroke,                             "stroked"        );
+        b->addBool(fInClipPlane.isInitialized(),        "clipPlane"      );
+        b->addBool(fInIsectPlane.isInitialized(),       "isectPlane"     );
+        b->addBool(fInUnionPlane.isInitialized(),       "unionPlane"     );
+        b->addBool(fInRoundCapCenters.isInitialized(),  "roundCapCenters");
+        b->addBits(ProgramImpl::kMatrixKeyBits,
+                   ProgramImpl::ComputeMatrixKey(caps, fLocalMatrix),
+                   "localMatrixType");
     }
 
-    GrGLSLGeometryProcessor* createGLSLInstance(const GrShaderCaps&) const override {
-        return new GLSLProcessor();
+    std::unique_ptr<ProgramImpl> makeProgramImpl(const GrShaderCaps&) const override {
+        return std::make_unique<Impl>();
     }
 
 private:
@@ -111,10 +118,19 @@ private:
         this->setVertexAttributes(&fInPosition, 7);
     }
 
-    class GLSLProcessor : public GrGLSLGeometryProcessor {
+    class Impl : public ProgramImpl {
     public:
-        GLSLProcessor() {}
+        void setData(const GrGLSLProgramDataManager& pdman,
+                     const GrShaderCaps& shaderCaps,
+                     const GrGeometryProcessor& geomProc) override {
+            SetTransform(pdman,
+                         shaderCaps,
+                         fLocalMatrixUniform,
+                         geomProc.cast<CircleGeometryProcessor>().fLocalMatrix,
+                         &fLocalMatrix);
+        }
 
+    private:
         void onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) override {
             const CircleGeometryProcessor& cgp = args.fGeomProc.cast<CircleGeometryProcessor>();
             GrGLSLVertexBuilder* vertBuilder = args.fVertBuilder;
@@ -125,24 +141,28 @@ private:
             // emit attributes
             varyingHandler->emitAttributes(cgp);
             fragBuilder->codeAppend("float4 circleEdge;");
-            varyingHandler->addPassThroughAttribute(cgp.fInCircleEdge, "circleEdge");
+            varyingHandler->addPassThroughAttribute(cgp.fInCircleEdge.asShaderVar(), "circleEdge");
             if (cgp.fInClipPlane.isInitialized()) {
                 fragBuilder->codeAppend("half3 clipPlane;");
-                varyingHandler->addPassThroughAttribute(cgp.fInClipPlane, "clipPlane");
+                varyingHandler->addPassThroughAttribute(cgp.fInClipPlane.asShaderVar(),
+                                                        "clipPlane");
             }
             if (cgp.fInIsectPlane.isInitialized()) {
                 fragBuilder->codeAppend("half3 isectPlane;");
-                varyingHandler->addPassThroughAttribute(cgp.fInIsectPlane, "isectPlane");
+                varyingHandler->addPassThroughAttribute(cgp.fInIsectPlane.asShaderVar(),
+                                                        "isectPlane");
             }
             if (cgp.fInUnionPlane.isInitialized()) {
                 SkASSERT(cgp.fInClipPlane.isInitialized());
                 fragBuilder->codeAppend("half3 unionPlane;");
-                varyingHandler->addPassThroughAttribute(cgp.fInUnionPlane, "unionPlane");
+                varyingHandler->addPassThroughAttribute(cgp.fInUnionPlane.asShaderVar(),
+                                                        "unionPlane");
             }
             GrGLSLVarying capRadius(kFloat_GrSLType);
             if (cgp.fInRoundCapCenters.isInitialized()) {
                 fragBuilder->codeAppend("float4 roundCapCenters;");
-                varyingHandler->addPassThroughAttribute(cgp.fInRoundCapCenters, "roundCapCenters");
+                varyingHandler->addPassThroughAttribute(cgp.fInRoundCapCenters.asShaderVar(),
+                                                        "roundCapCenters");
                 varyingHandler->addVarying("capRadius", &capRadius,
                                            GrGLSLVaryingHandler::Interpolation::kCanBeFlat);
                 // This is the cap radius in normalized space where the outer radius is 1 and
@@ -153,7 +173,7 @@ private:
 
             // setup pass through color
             fragBuilder->codeAppendf("half4 %s;", args.fOutputColor);
-            varyingHandler->addPassThroughAttribute(cgp.fInColor, args.fOutputColor);
+            varyingHandler->addPassThroughAttribute(cgp.fInColor.asShaderVar(), args.fOutputColor);
 
             // Setup position
             WriteOutputPosition(vertBuilder, gpArgs, cgp.fInPosition.name());
@@ -207,33 +227,6 @@ private:
             fragBuilder->codeAppendf("half4 %s = half4(edgeAlpha);", args.fOutputCoverage);
         }
 
-        static void GenKey(const GrGeometryProcessor& gp,
-                           const GrShaderCaps& shaderCaps,
-                           GrProcessorKeyBuilder* b) {
-            const CircleGeometryProcessor& cgp = gp.cast<CircleGeometryProcessor>();
-            b->addBool(cgp.fStroke,                                     "stroked");
-            b->addBool(cgp.fInClipPlane.isInitialized(),                "clipPlane");
-            b->addBool(cgp.fInIsectPlane.isInitialized(),               "isectPlane");
-            b->addBool(cgp.fInUnionPlane.isInitialized(),               "unionPlane");
-            b->addBool(cgp.fInRoundCapCenters.isInitialized(),          "roundCapCenters");
-            b->addBits(kMatrixKeyBits,
-                       ComputeMatrixKey(shaderCaps, cgp.fLocalMatrix),
-                       "localMatrixType");
-        }
-
-        void setData(const GrGLSLProgramDataManager& pdman,
-                     const GrShaderCaps& shaderCaps,
-                     const GrGeometryProcessor& geomProc) override {
-            SetTransform(pdman,
-                         shaderCaps,
-                         fLocalMatrixUniform,
-                         geomProc.cast<CircleGeometryProcessor>().fLocalMatrix,
-                         &fLocalMatrix);
-        }
-
-    private:
-        using INHERITED = GrGLSLGeometryProcessor;
-
         SkMatrix      fLocalMatrix = SkMatrix::InvalidMatrix();
         UniformHandle fLocalMatrixUniform;
     };
@@ -284,12 +277,14 @@ public:
 
     const char* name() const override { return "ButtCapDashedCircleGeometryProcessor"; }
 
-    void getGLSLProcessorKey(const GrShaderCaps& caps, GrProcessorKeyBuilder* b) const override {
-        GLSLProcessor::GenKey(*this, caps, b);
+    void addToKey(const GrShaderCaps& caps, GrProcessorKeyBuilder* b) const override {
+        b->addBits(ProgramImpl::kMatrixKeyBits,
+                   ProgramImpl::ComputeMatrixKey(caps, fLocalMatrix),
+                   "localMatrixType");
     }
 
-    GrGLSLGeometryProcessor* createGLSLInstance(const GrShaderCaps&) const override {
-        return new GLSLProcessor();
+    std::unique_ptr<ProgramImpl> makeProgramImpl(const GrShaderCaps&) const override {
+        return std::make_unique<Impl>();
     }
 
 private:
@@ -303,10 +298,19 @@ private:
         this->setVertexAttributes(&fInPosition, 4);
     }
 
-    class GLSLProcessor : public GrGLSLGeometryProcessor {
+    class Impl : public ProgramImpl {
     public:
-        GLSLProcessor() {}
+        void setData(const GrGLSLProgramDataManager& pdman,
+                     const GrShaderCaps& shaderCaps,
+                     const GrGeometryProcessor& geomProc) override {
+            SetTransform(pdman,
+                         shaderCaps,
+                         fLocalMatrixUniform,
+                         geomProc.cast<ButtCapDashedCircleGeometryProcessor>().fLocalMatrix,
+                         &fLocalMatrix);
+        }
 
+    private:
         void onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) override {
             const ButtCapDashedCircleGeometryProcessor& bcscgp =
                     args.fGeomProc.cast<ButtCapDashedCircleGeometryProcessor>();
@@ -318,11 +322,13 @@ private:
             // emit attributes
             varyingHandler->emitAttributes(bcscgp);
             fragBuilder->codeAppend("float4 circleEdge;");
-            varyingHandler->addPassThroughAttribute(bcscgp.fInCircleEdge, "circleEdge");
+            varyingHandler->addPassThroughAttribute(bcscgp.fInCircleEdge.asShaderVar(),
+                                                    "circleEdge");
 
             fragBuilder->codeAppend("float4 dashParams;");
             varyingHandler->addPassThroughAttribute(
-                    bcscgp.fInDashParams, "dashParams",
+                    bcscgp.fInDashParams.asShaderVar(),
+                    "dashParams",
                     GrGLSLVaryingHandler::Interpolation::kCanBeFlat);
             GrGLSLVarying wrapDashes(kHalf4_GrSLType);
             varyingHandler->addVarying("wrapDashes", &wrapDashes,
@@ -393,7 +399,8 @@ private:
             // setup pass through color
             fragBuilder->codeAppendf("half4 %s;", args.fOutputColor);
             varyingHandler->addPassThroughAttribute(
-                    bcscgp.fInColor, args.fOutputColor,
+                    bcscgp.fInColor.asShaderVar(),
+                    args.fOutputColor,
                     GrGLSLVaryingHandler::Interpolation::kCanBeFlat);
 
             // Setup position
@@ -480,29 +487,6 @@ private:
             fragBuilder->codeAppendf("half4 %s = half4(edgeAlpha);", args.fOutputCoverage);
         }
 
-        static void GenKey(const GrGeometryProcessor& gp,
-                           const GrShaderCaps& shaderCaps,
-                           GrProcessorKeyBuilder* b) {
-            const ButtCapDashedCircleGeometryProcessor& bcscgp =
-                    gp.cast<ButtCapDashedCircleGeometryProcessor>();
-            b->addBits(kMatrixKeyBits,
-                       ComputeMatrixKey(shaderCaps, bcscgp.fLocalMatrix),
-                       "localMatrixType");
-        }
-
-        void setData(const GrGLSLProgramDataManager& pdman,
-                     const GrShaderCaps& shaderCaps,
-                     const GrGeometryProcessor& geomProc) override {
-            SetTransform(pdman,
-                         shaderCaps,
-                         fLocalMatrixUniform,
-                         geomProc.cast<ButtCapDashedCircleGeometryProcessor>().fLocalMatrix,
-                         &fLocalMatrix);
-        }
-
-    private:
-        using INHERITED = GrGLSLGeometryProcessor;
-
         SkMatrix      fLocalMatrix = SkMatrix::InvalidMatrix();
         UniformHandle fLocalMatrixUniform;
     };
@@ -549,12 +533,15 @@ public:
 
     const char* name() const override { return "EllipseGeometryProcessor"; }
 
-    void getGLSLProcessorKey(const GrShaderCaps& caps, GrProcessorKeyBuilder* b) const override {
-        GLSLProcessor::GenKey(*this, caps, b);
+    void addToKey(const GrShaderCaps& caps, GrProcessorKeyBuilder* b) const override {
+        b->addBool(fStroke, "stroked");
+        b->addBits(ProgramImpl::kMatrixKeyBits,
+                   ProgramImpl::ComputeMatrixKey(caps, fLocalMatrix),
+                   "localMatrixType");
     }
 
-    GrGLSLGeometryProcessor* createGLSLInstance(const GrShaderCaps&) const override {
-        return new GLSLProcessor();
+    std::unique_ptr<ProgramImpl> makeProgramImpl(const GrShaderCaps&) const override {
+        return std::make_unique<Impl>();
     }
 
 private:
@@ -575,10 +562,16 @@ private:
         this->setVertexAttributes(&fInPosition, 4);
     }
 
-    class GLSLProcessor : public GrGLSLGeometryProcessor {
+    class Impl : public ProgramImpl {
     public:
-        GLSLProcessor() {}
+        void setData(const GrGLSLProgramDataManager& pdman,
+                     const GrShaderCaps& shaderCaps,
+                     const GrGeometryProcessor& geomProc) override {
+            const EllipseGeometryProcessor& egp = geomProc.cast<EllipseGeometryProcessor>();
+            SetTransform(pdman, shaderCaps, fLocalMatrixUniform, egp.fLocalMatrix, &fLocalMatrix);
+        }
 
+    private:
         void onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) override {
             const EllipseGeometryProcessor& egp = args.fGeomProc.cast<EllipseGeometryProcessor>();
             GrGLSLVertexBuilder* vertBuilder = args.fVertBuilder;
@@ -601,7 +594,7 @@ private:
             GrGLSLFPFragmentBuilder* fragBuilder = args.fFragBuilder;
             // setup pass through color
             fragBuilder->codeAppendf("half4 %s;", args.fOutputColor);
-            varyingHandler->addPassThroughAttribute(egp.fInColor, args.fOutputColor);
+            varyingHandler->addPassThroughAttribute(egp.fInColor.asShaderVar(), args.fOutputColor);
 
             // Setup position
             WriteOutputPosition(vertBuilder, gpArgs, egp.fInPosition.name());
@@ -679,25 +672,7 @@ private:
             fragBuilder->codeAppendf("half4 %s = half4(half(edgeAlpha));", args.fOutputCoverage);
         }
 
-        static void GenKey(const GrGeometryProcessor& gp,
-                           const GrShaderCaps& shaderCaps,
-                           GrProcessorKeyBuilder* b) {
-            const EllipseGeometryProcessor& egp = gp.cast<EllipseGeometryProcessor>();
-            b->addBool(egp.fStroke, "stroked");
-            b->addBits(kMatrixKeyBits,
-                       ComputeMatrixKey(shaderCaps, egp.fLocalMatrix),
-                       "localMatrixType");
-        }
-
-        void setData(const GrGLSLProgramDataManager& pdman,
-                     const GrShaderCaps& shaderCaps,
-                     const GrGeometryProcessor& geomProc) override {
-            const EllipseGeometryProcessor& egp = geomProc.cast<EllipseGeometryProcessor>();
-            SetTransform(pdman, shaderCaps, fLocalMatrixUniform, egp.fLocalMatrix, &fLocalMatrix);
-        }
-
-    private:
-        using INHERITED = GrGLSLGeometryProcessor;
+        using INHERITED = ProgramImpl;
 
         SkMatrix      fLocalMatrix = SkMatrix::InvalidMatrix();
         UniformHandle fLocalMatrixUniform;
@@ -755,12 +730,15 @@ public:
 
     const char* name() const override { return "DIEllipseGeometryProcessor"; }
 
-    void getGLSLProcessorKey(const GrShaderCaps& caps, GrProcessorKeyBuilder* b) const override {
-        GLSLProcessor::GenKey(*this, caps, b);
+    void addToKey(const GrShaderCaps& caps, GrProcessorKeyBuilder* b) const override {
+        b->addBits(2, static_cast<uint32_t>(fStyle), "style");
+        b->addBits(ProgramImpl::kMatrixKeyBits,
+                   ProgramImpl::ComputeMatrixKey(caps, fViewMatrix),
+                   "viewMatrixType");
     }
 
-    GrGLSLGeometryProcessor* createGLSLInstance(const GrShaderCaps&) const override {
-        return new GLSLProcessor();
+    std::unique_ptr<ProgramImpl> makeProgramImpl(const GrShaderCaps&) const override {
+        return std::make_unique<Impl>();
     }
 
 private:
@@ -783,10 +761,17 @@ private:
         this->setVertexAttributes(&fInPosition, 4);
     }
 
-    class GLSLProcessor : public GrGLSLGeometryProcessor {
+    class Impl : public ProgramImpl {
     public:
-        GLSLProcessor() : fViewMatrix(SkMatrix::InvalidMatrix()) {}
+        void setData(const GrGLSLProgramDataManager& pdman,
+                     const GrShaderCaps& shaderCaps,
+                     const GrGeometryProcessor& geomProc) override {
+            const auto& diegp = geomProc.cast<DIEllipseGeometryProcessor>();
 
+            SetTransform(pdman, shaderCaps, fViewMatrixUniform, diegp.fViewMatrix, &fViewMatrix);
+        }
+
+    private:
         void onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) override {
             const auto& diegp = args.fGeomProc.cast<DIEllipseGeometryProcessor>();
             GrGLSLVertexBuilder* vertBuilder = args.fVertBuilder;
@@ -807,7 +792,8 @@ private:
 
             GrGLSLFPFragmentBuilder* fragBuilder = args.fFragBuilder;
             fragBuilder->codeAppendf("half4 %s;", args.fOutputColor);
-            varyingHandler->addPassThroughAttribute(diegp.fInColor, args.fOutputColor);
+            varyingHandler->addPassThroughAttribute(diegp.fInColor.asShaderVar(),
+                                                    args.fOutputColor);
 
             // Setup position
             WriteOutputPosition(vertBuilder,
@@ -878,31 +864,9 @@ private:
             fragBuilder->codeAppendf("half4 %s = half4(half(edgeAlpha));", args.fOutputCoverage);
         }
 
-        static void GenKey(const GrGeometryProcessor& gp,
-                           const GrShaderCaps& shaderCaps,
-                           GrProcessorKeyBuilder* b) {
-            const DIEllipseGeometryProcessor& diegp = gp.cast<DIEllipseGeometryProcessor>();
-            b->addBits(2, static_cast<uint32_t>(diegp.fStyle), "style");
-            b->addBits(kMatrixKeyBits,
-                       ComputeMatrixKey(shaderCaps, diegp.fViewMatrix),
-                       "viewMatrixType");
-        }
-
-        void setData(const GrGLSLProgramDataManager& pdman,
-                     const GrShaderCaps& shaderCaps,
-                     const GrGeometryProcessor& geomProc) override {
-            const auto& diegp = geomProc.cast<DIEllipseGeometryProcessor>();
-
-            SetTransform(pdman, shaderCaps, fViewMatrixUniform, diegp.fViewMatrix, &fViewMatrix);
-        }
-
-    private:
-        SkMatrix      fViewMatrix;
+        SkMatrix fViewMatrix = SkMatrix::InvalidMatrix();
         UniformHandle fViewMatrixUniform;
-
-        using INHERITED = GrGLSLGeometryProcessor;
     };
-
 
     Attribute fInPosition;
     Attribute fInColor;
@@ -3441,6 +3405,10 @@ GrOp::Owner GrOvalOpFactory::MakeArcOp(GrRecordingContext* context,
 #if GR_TEST_UTILS
 
 GR_DRAW_OP_TEST_DEFINE(CircleOp) {
+    if (numSamples > 1) {
+        return nullptr;
+    }
+
     do {
         SkScalar rotate = random->nextSScalar1() * 360.f;
         SkScalar translateX = random->nextSScalar1() * 1000.f;
@@ -3476,6 +3444,10 @@ GR_DRAW_OP_TEST_DEFINE(CircleOp) {
 }
 
 GR_DRAW_OP_TEST_DEFINE(ButtCapDashedCircleOp) {
+    if (numSamples > 1) {
+        return nullptr;
+    }
+
     SkScalar rotate = random->nextSScalar1() * 360.f;
     SkScalar translateX = random->nextSScalar1() * 1000.f;
     SkScalar translateY = random->nextSScalar1() * 1000.f;

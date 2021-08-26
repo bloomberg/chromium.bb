@@ -24,6 +24,7 @@ declare_args() {
   skia_enable_pdf = true
   skia_enable_skottie = !(is_win && is_component_build)
   skia_enable_skrive = true
+  skia_enable_sksl = true
   skia_enable_skvm_jit_when_possible = is_skia_dev_build
   skia_enable_svg = !is_component_build
   skia_enable_tools = is_skia_dev_build
@@ -33,8 +34,6 @@ declare_args() {
   skia_include_multiframe_procs = false
   skia_lex = false
   skia_libgifcodec_path = "third_party/externals/libgifcodec"
-  skia_pdf_subset_harfbuzz =
-      false  # TODO: set skia_pdf_subset_harfbuzz to skia_use_harfbuzz.
   skia_qt_path = getenv("QT_PATH")
   skia_skqp_global_error_tolerance = 0
   skia_tools_require_resources = false
@@ -99,6 +98,10 @@ declare_args() {
 }
 
 declare_args() {
+  skia_pdf_subset_harfbuzz = skia_use_harfbuzz
+}
+
+declare_args() {
   skia_compile_sksl_tests = skia_compile_processors
   skia_enable_fontmgr_android = skia_use_expat && skia_use_freetype
   skia_enable_fontmgr_custom_directory = skia_use_freetype && !is_fuchsia
@@ -146,6 +149,9 @@ declare_args() {
 
 # Our tools require static linking (they use non-exported symbols), and the GPU backend.
 skia_enable_tools = skia_enable_tools && !is_component_build && skia_enable_gpu
+
+# The GPU build requires SkSL
+skia_enable_sksl = skia_enable_sksl || skia_enable_gpu
 
 # Skia's targets may be built inside other gn build systems.
 # Skia builds other project's build targets inside its build.

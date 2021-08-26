@@ -12,7 +12,7 @@ export const g = makeTestGroup(GPUTest);
 g.test('storeOp_controls_whether_1x1_drawn_quad_is_stored')
   .paramsSimple([
     { storeOp: 'store', _expected: 1 }, //
-    { storeOp: 'clear', _expected: 0 },
+    { storeOp: 'discard', _expected: 0 },
   ] as const)
   .fn(async t => {
     const renderTexture = t.device.createTexture({

@@ -461,7 +461,7 @@ ErrorOr<size_t> UrlAvailabilityRequester::ReceiverRequester::OnStreamMessage(
           StopWatching(&response_watch);
         return result;
       }
-    } break;
+    }
     case msgs::Type::kPresentationUrlAvailabilityEvent: {
       msgs::PresentationUrlAvailabilityEvent event;
       ssize_t result = msgs::DecodePresentationUrlAvailabilityEvent(
@@ -483,7 +483,7 @@ ErrorOr<size_t> UrlAvailabilityRequester::ReceiverRequester::OnStreamMessage(
         }
         return result;
       }
-    } break;
+    }
     default:
       break;
   }

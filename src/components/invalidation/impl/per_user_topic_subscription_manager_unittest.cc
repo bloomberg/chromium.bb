@@ -18,6 +18,7 @@
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "net/http/http_status_code.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -645,9 +646,8 @@ TEST_F(PerUserTopicSubscriptionManagerTest,
     const base::Value* private_topic_value =
         topics->FindKeyOfType(topic.first, base::Value::Type::STRING);
     ASSERT_NE(private_topic_value, nullptr);
-    std::string private_topic;
-    private_topic_value->GetAsString(&private_topic);
-    EXPECT_EQ(private_topic, "old-token-topic");
+    ASSERT_TRUE(private_topic_value->is_string());
+    EXPECT_EQ("old-token-topic", private_topic_value->GetString());
   }
 
   EXPECT_EQ(kFakeInstanceIdToken,
@@ -672,9 +672,8 @@ TEST_F(PerUserTopicSubscriptionManagerTest,
     const base::Value* private_topic_value =
         topics->FindKeyOfType(topic.first, base::Value::Type::STRING);
     ASSERT_NE(private_topic_value, nullptr);
-    std::string private_topic;
-    private_topic_value->GetAsString(&private_topic);
-    EXPECT_EQ(private_topic, "new-token-topic");
+    ASSERT_TRUE(private_topic_value->is_string());
+    EXPECT_EQ("new-token-topic", private_topic_value->GetString());
   }
 }
 

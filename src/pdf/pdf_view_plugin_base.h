@@ -118,7 +118,7 @@ class PdfViewPluginBase : public PDFEngine::Client,
   void DocumentHasUnsupportedFeature(const std::string& feature) override;
   void DocumentLoadProgress(uint32_t available, uint32_t doc_size) override;
   void FormTextFieldFocusChange(bool in_focus) override;
-  bool IsPrintPreview() override;
+  bool IsPrintPreview() const override;
   SkColor GetBackgroundColor() override;
   void SetIsSelecting(bool is_selecting) override;
   void SelectionChanged(const gfx::Rect& left, const gfx::Rect& right) override;
@@ -236,7 +236,8 @@ class PdfViewPluginBase : public PDFEngine::Client,
   virtual Image GetPluginImageData() const;
 
   // Updates the geometry of the plugin and its image data if the view's
-  // size or scale has changed.
+  // size or scale has changed. `new_view_rect` must be in CSS pixels (without
+  // device scale applied).
   void UpdateGeometryOnViewChanged(const gfx::Rect& new_view_rect,
                                    float new_device_scale);
 

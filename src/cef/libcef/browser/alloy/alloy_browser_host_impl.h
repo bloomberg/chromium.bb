@@ -72,13 +72,9 @@ class AlloyBrowserHostImpl : public CefBrowserHostBase,
   // Returns the browser associated with the specified WebContents.
   static CefRefPtr<AlloyBrowserHostImpl> GetBrowserForContents(
       const content::WebContents* contents);
-  // Returns the browser associated with the specified FrameTreeNode ID.
-  static CefRefPtr<AlloyBrowserHostImpl> GetBrowserForFrameTreeNode(
-      int frame_tree_node_id);
-  // Returns the browser associated with the specified frame routing IDs.
-  static CefRefPtr<AlloyBrowserHostImpl> GetBrowserForFrameRoute(
-      int render_process_id,
-      int render_routing_id);
+  // Returns the browser associated with the specified global ID.
+  static CefRefPtr<AlloyBrowserHostImpl> GetBrowserForGlobalId(
+      const content::GlobalRenderFrameHostId& global_id);
 
   // CefBrowserHost methods.
   void CloseBrowser(bool force_close) override;
@@ -255,7 +251,7 @@ class AlloyBrowserHostImpl : public CefBrowserHostBase,
                           const std::string& frame_name,
                           const GURL& target_url,
                           content::WebContents* new_contents) override;
-  void DidNavigateMainFramePostCommit(
+  void DidNavigatePrimaryMainFramePostCommit(
       content::WebContents* web_contents) override;
   content::JavaScriptDialogManager* GetJavaScriptDialogManager(
       content::WebContents* source) override;

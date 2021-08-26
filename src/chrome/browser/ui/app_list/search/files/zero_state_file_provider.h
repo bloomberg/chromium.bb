@@ -21,6 +21,7 @@
 #include "chrome/browser/ash/file_manager/file_tasks_observer.h"
 #include "chrome/browser/ui/app_list/search/score_normalizer/score_normalizer.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
+#include "chrome/browser/ui/ash/thumbnail_loader.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 class Profile;
@@ -60,6 +61,8 @@ class ZeroStateFileProvider : public SearchProvider,
   // The reference to profile to get ZeroStateFileProvider service.
   Profile* const profile_;
 
+  ash::ThumbnailLoader thumbnail_loader_;
+
   // The ranking model used to produce local file results for searches with an
   // empty query.
   std::unique_ptr<RecurrenceRanker> files_ranker_;
@@ -72,8 +75,6 @@ class ZeroStateFileProvider : public SearchProvider,
   base::ScopedObservation<file_manager::file_tasks::FileTasksNotifier,
                           file_manager::file_tasks::FileTasksObserver>
       file_tasks_observer_{this};
-
-  SEQUENCE_CHECKER(sequence_checker_);
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   base::WeakPtrFactory<ZeroStateFileProvider> weak_factory_{this};

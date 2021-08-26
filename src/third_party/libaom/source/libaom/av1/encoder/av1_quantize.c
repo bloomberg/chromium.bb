@@ -677,14 +677,49 @@ void av1_init_quantizer(EncQuantDequantParams *const enc_quant_dequant_params,
                       quants, dequants);
 }
 
+void av1_set_q_index(const EncQuantDequantParams *enc_quant_dequant_params,
+                     int qindex, MACROBLOCK *x) {
+  const QUANTS *const quants = &enc_quant_dequant_params->quants;
+  const Dequants *const dequants = &enc_quant_dequant_params->dequants;
+  x->qindex = qindex;
+  x->seg_skip_block =
+      0;  // TODO(angiebird): Find a proper place to init this variable.
+  for (int i = 0; i < MAX_MB_PLANE; ++i) {
+    x->plane[i].quant_QTX = quants->y_quant[qindex];
+    x->plane[i].quant_fp_QTX = quants->y_quant_fp[qindex];
+    x->plane[i].round_fp_QTX = quants->y_round_fp[qindex];
+    x->plane[i].quant_shift_QTX = quants->y_quant_shift[qindex];
+    x->plane[i].zbin_QTX = quants->y_zbin[qindex];
+    x->plane[i].round_QTX = quants->y_round[qindex];
+    x->plane[i].dequant_QTX = dequants->y_dequant_QTX[qindex];
+  }
+}
+
+void av1_set_qmatrix(const CommonQuantParams *quant_params, int segment_id,
+                     MACROBLOCKD *xd) {
+  const int use_qmatrix = av1_use_qmatrix(quant_params, xd, segment_id);
+  const int qmlevel_y =
+      use_qmatrix ? quant_params->qmatrix_level_y : NUM_QM_LEVELS - 1;
+  const int qmlevel_u =
+      use_qmatrix ? quant_params->qmatrix_level_u : NUM_QM_LEVELS - 1;
+  const int qmlevel_v =
+      use_qmatrix ? quant_params->qmatrix_level_v : NUM_QM_LEVELS - 1;
+  const int qmlevel_ls[MAX_MB_PLANE] = { qmlevel_y, qmlevel_u, qmlevel_v };
+  for (int i = 0; i < MAX_MB_PLANE; ++i) {
+    const int qmlevel = qmlevel_ls[i];
+    memcpy(&xd->plane[i].seg_qmatrix[segment_id],
+           quant_params->gqmatrix[qmlevel][i],
+           sizeof(quant_params->gqmatrix[qmlevel][i]));
+    memcpy(&xd->plane[i].seg_iqmatrix[segment_id],
+           quant_params->giqmatrix[qmlevel][i],
+           sizeof(quant_params->giqmatrix[qmlevel][i]));
+  }
+}
+
 void av1_init_plane_quantizers(const AV1_COMP *cpi, MACROBLOCK *x,
                                int segment_id) {
   const AV1_COMMON *const cm = &cpi->common;
   const CommonQuantParams *const quant_params = &cm->quant_params;
-  MACROBLOCKD *const xd = &x->e_mbd;
-  const QUANTS *const quants = &cpi->enc_quant_dequant_params.quants;
-  const Dequants *const dequants = &cpi->enc_quant_dequant_params.dequants;
-
   const int current_qindex = AOMMAX(
       0,
       AOMMIN(QINDEX_RANGE - 1, cm->delta_q_info.delta_q_present_flag
@@ -693,59 +728,12 @@ void av1_init_plane_quantizers(const AV1_COMP *cpi, MACROBLOCK *x,
   const int qindex = av1_get_qindex(&cm->seg, segment_id, current_qindex);
   const int rdmult =
       av1_compute_rd_mult(cpi, qindex + quant_params->y_dc_delta_q);
-  const int use_qmatrix = av1_use_qmatrix(quant_params, xd, segment_id);
+  av1_set_q_index(&cpi->enc_quant_dequant_params, qindex, x);
 
-  // Y
-  const int qmlevel_y =
-      use_qmatrix ? quant_params->qmatrix_level_y : NUM_QM_LEVELS - 1;
-  x->plane[0].quant_QTX = quants->y_quant[qindex];
-  x->plane[0].quant_fp_QTX = quants->y_quant_fp[qindex];
-  x->plane[0].round_fp_QTX = quants->y_round_fp[qindex];
-  x->plane[0].quant_shift_QTX = quants->y_quant_shift[qindex];
-  x->plane[0].zbin_QTX = quants->y_zbin[qindex];
-  x->plane[0].round_QTX = quants->y_round[qindex];
-  x->plane[0].dequant_QTX = dequants->y_dequant_QTX[qindex];
-  memcpy(&xd->plane[0].seg_qmatrix[segment_id],
-         quant_params->gqmatrix[qmlevel_y][0],
-         sizeof(quant_params->gqmatrix[qmlevel_y][0]));
-  memcpy(&xd->plane[0].seg_iqmatrix[segment_id],
-         quant_params->giqmatrix[qmlevel_y][0],
-         sizeof(quant_params->giqmatrix[qmlevel_y][0]));
+  MACROBLOCKD *const xd = &x->e_mbd;
+  av1_set_qmatrix(quant_params, segment_id, xd);
 
-  // U
-  const int qmlevel_u =
-      use_qmatrix ? quant_params->qmatrix_level_u : NUM_QM_LEVELS - 1;
-  x->plane[1].quant_QTX = quants->u_quant[qindex];
-  x->plane[1].quant_fp_QTX = quants->u_quant_fp[qindex];
-  x->plane[1].round_fp_QTX = quants->u_round_fp[qindex];
-  x->plane[1].quant_shift_QTX = quants->u_quant_shift[qindex];
-  x->plane[1].zbin_QTX = quants->u_zbin[qindex];
-  x->plane[1].round_QTX = quants->u_round[qindex];
-  x->plane[1].dequant_QTX = dequants->u_dequant_QTX[qindex];
-  memcpy(&xd->plane[1].seg_qmatrix[segment_id],
-         quant_params->gqmatrix[qmlevel_u][1],
-         sizeof(quant_params->gqmatrix[qmlevel_u][1]));
-  memcpy(&xd->plane[1].seg_iqmatrix[segment_id],
-         quant_params->giqmatrix[qmlevel_u][1],
-         sizeof(quant_params->giqmatrix[qmlevel_u][1]));
-  // V
-  const int qmlevel_v =
-      use_qmatrix ? quant_params->qmatrix_level_v : NUM_QM_LEVELS - 1;
-  x->plane[2].quant_QTX = quants->v_quant[qindex];
-  x->plane[2].quant_fp_QTX = quants->v_quant_fp[qindex];
-  x->plane[2].round_fp_QTX = quants->v_round_fp[qindex];
-  x->plane[2].quant_shift_QTX = quants->v_quant_shift[qindex];
-  x->plane[2].zbin_QTX = quants->v_zbin[qindex];
-  x->plane[2].round_QTX = quants->v_round[qindex];
-  x->plane[2].dequant_QTX = dequants->v_dequant_QTX[qindex];
-  memcpy(&xd->plane[2].seg_qmatrix[segment_id],
-         quant_params->gqmatrix[qmlevel_v][2],
-         sizeof(quant_params->gqmatrix[qmlevel_v][2]));
-  memcpy(&xd->plane[2].seg_iqmatrix[segment_id],
-         quant_params->giqmatrix[qmlevel_v][2],
-         sizeof(quant_params->giqmatrix[qmlevel_v][2]));
   x->seg_skip_block = segfeature_active(&cm->seg, segment_id, SEG_LVL_SKIP);
-  x->qindex = qindex;
 
   av1_set_error_per_bit(&x->errorperbit, rdmult);
   av1_set_sad_per_bit(cpi, &x->sadperbit, qindex);

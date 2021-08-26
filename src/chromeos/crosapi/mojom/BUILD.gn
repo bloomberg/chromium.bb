@@ -30,6 +30,7 @@ mojom("mojom") {
     "message_center.mojom",
     "metrics_reporting.mojom",
     "native_theme.mojom",
+    "network_settings_service.mojom",
     "networking_attributes.mojom",
     "notification.mojom",
     "power.mojom",
@@ -99,6 +100,14 @@ mojom("mojom") {
           mojom = "crosapi.mojom.IconKey"
           cpp = "::apps::mojom::IconKeyPtr"
           move_only = true
+        },
+        {
+          mojom = "crosapi.mojom.WindowMode"
+          cpp = "::apps::mojom::WindowMode"
+        },
+        {
+          mojom = "crosapi.mojom.AppType"
+          cpp = "::apps::mojom::AppType"
         },
       ]
       traits_headers = [

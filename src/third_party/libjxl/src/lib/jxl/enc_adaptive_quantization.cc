@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #include "lib/jxl/enc_adaptive_quantization.h"
 
@@ -298,17 +289,23 @@ float MaskingSqrt(const float v) {
   return GetLane(MaskingSqrt(DScalar(), vscalar));
 }
 
-void StoreMin3(const float v, float& min0, float& min1, float& min2) {
-  if (v < min2) {
+void StoreMin4(const float v, float& min0, float& min1, float& min2,
+               float& min3) {
+  if (v < min3) {
     if (v < min0) {
+      min3 = min2;
       min2 = min1;
       min1 = min0;
       min0 = v;
     } else if (v < min1) {
+      min3 = min2;
       min2 = min1;
       min1 = v;
-    } else {
+    } else if (v < min2) {
+      min3 = min2;
       min2 = v;
+    } else {
+      min3 = v;
     }
   }
 }
@@ -337,21 +334,29 @@ void FuzzyErosion(const Rect& from_rect, const ImageF& from,
       size_t xm1 = x >= kStep ? x - kStep : x;
       size_t xp1 = x + kStep < xsize ? x + kStep : x;
       float min0 = row[x];
-      float min1 = min0;
-      float min2 = min1;
-      StoreMin3(row[xm1], min0, min1, min2);
-      StoreMin3(row[xp1], min0, min1, min2);
-      StoreMin3(rowt[xm1], min0, min1, min2);
-      StoreMin3(rowt[x], min0, min1, min2);
-      StoreMin3(rowt[xp1], min0, min1, min2);
-      StoreMin3(rowb[xm1], min0, min1, min2);
-      StoreMin3(rowb[x], min0, min1, min2);
-      StoreMin3(rowb[xp1], min0, min1, min2);
-      static const float kMulC = 0.029598804634393225 * 0.25f;
-      static const float kMul0 = 0.561331076516815 * 0.25f;
-      static const float kMul1 = 0.16504828561110252 * 0.25f;
-      static const float kMul2 = 0.2440218332376892 * 0.25f;
-      float v = kMulC * row[x] + kMul0 * min0 + kMul1 * min1 + kMul2 * min2;
+      float min1 = row[xm1];
+      float min2 = row[xp1];
+      float min3 = rowt[xm1];
+      // Sort the first four values.
+      if (min0 > min1) std::swap(min0, min1);
+      if (min0 > min2) std::swap(min0, min2);
+      if (min0 > min3) std::swap(min0, min3);
+      if (min1 > min2) std::swap(min1, min2);
+      if (min1 > min3) std::swap(min1, min3);
+      if (min2 > min3) std::swap(min2, min3);
+      // The remaining five values of a 3x3 neighbourhood.
+      StoreMin4(rowt[x], min0, min1, min2, min3);
+      StoreMin4(rowt[xp1], min0, min1, min2, min3);
+      StoreMin4(rowb[xm1], min0, min1, min2, min3);
+      StoreMin4(rowb[x], min0, min1, min2, min3);
+      StoreMin4(rowb[xp1], min0, min1, min2, min3);
+      static const float kMulC = 0.05f;
+      static const float kMul0 = 0.05f;
+      static const float kMul1 = 0.05f;
+      static const float kMul2 = 0.05f;
+      static const float kMul3 = 0.05f;
+      float v = kMulC * row[x] + kMul0 * min0 + kMul1 * min1 + kMul2 * min2 +
+                kMul3 * min3;
       if (fx % 2 == 0 && fy % 2 == 0) {
         row_out[fx / 2] = v;
       } else {
@@ -391,7 +396,7 @@ struct AdaptiveQuantizationImpl {
     const float match_gamma_offset = 0.019;
 
     const HWY_FULL(float) df;
-    const float kXMul = 30.49302140275616f;
+    const float kXMul = 23.426802998210313f;
     const auto kXMulv = Set(df, kXMul);
 
     size_t y_start = rect.y0() * 8;
@@ -660,7 +665,7 @@ ImageF TileDistMap(const ImageF& distmap, int tile_size, int margin,
 
 constexpr float kDcQuantPow = 0.57f;
 static const float kDcQuant = 1.12f;
-static const float kAcQuant = 0.79f;
+static const float kAcQuant = 0.787f;
 
 void FindBestQuantization(const ImageBundle& linear, const Image3F& opsin,
                           PassesEncoderState* enc_state, ThreadPool* pool,
@@ -973,7 +978,10 @@ ImageBundle RoundtripImage(const Image3F& opsin, PassesEncoderState* enc_state,
   PROFILER_ZONE("enc roundtrip");
   std::unique_ptr<PassesDecoderState> dec_state =
       jxl::make_unique<PassesDecoderState>();
-  JXL_CHECK(dec_state->output_encoding_info.Set(enc_state->shared.metadata->m));
+  JXL_CHECK(dec_state->output_encoding_info.Set(
+      *enc_state->shared.metadata,
+      ColorEncoding::LinearSRGB(
+          enc_state->shared.metadata->m.color_encoding.IsGray())));
   dec_state->shared = &enc_state->shared;
   JXL_ASSERT(opsin.ysize() % kBlockDim == 0);
 
@@ -988,7 +996,7 @@ ImageBundle RoundtripImage(const Image3F& opsin, PassesEncoderState* enc_state,
                                             enc_state->cparams);
   InitializePassesEncoder(opsin, pool, enc_state, modular_frame_encoder.get(),
                           nullptr);
-  dec_state->Init();
+  JXL_CHECK(dec_state->Init());
   dec_state->InitForAC(pool);
 
   ImageBundle decoded(&enc_state->shared.metadata->m);

@@ -27,34 +27,18 @@
 #include "services/network/public/cpp/site_for_cookies_mojom_traits.h"
 #include "services/network/public/mojom/chunked_data_pipe_getter.mojom.h"
 #include "services/network/public/mojom/client_security_state.mojom-forward.h"
-#include "services/network/public/mojom/cookie_access_observer.mojom.h"
+#include "services/network/public/mojom/cookie_access_observer.mojom-forward.h"
 #include "services/network/public/mojom/data_pipe_getter.mojom.h"
-#include "services/network/public/mojom/trust_tokens.mojom.h"
-#include "services/network/public/mojom/url_loader.mojom-shared.h"
-#include "services/network/public/mojom/url_loader_network_service_observer.mojom.h"
-#include "services/network/public/mojom/url_request.mojom.h"
-#include "services/network/public/mojom/web_bundle_handle.mojom-shared.h"
+#include "services/network/public/mojom/devtools_observer.mojom-forward.h"
+#include "services/network/public/mojom/trust_tokens.mojom-forward.h"
+#include "services/network/public/mojom/url_loader.mojom-forward.h"
+#include "services/network/public/mojom/url_loader_network_service_observer.mojom-forward.h"
+#include "services/network/public/mojom/url_request.mojom-forward.h"
+#include "services/network/public/mojom/web_bundle_handle.mojom-forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/mojom/url_gurl_mojom_traits.h"
 
 namespace mojo {
-
-template <>
-struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
-    EnumTraits<network::mojom::RequestPriority, net::RequestPriority> {
-  static network::mojom::RequestPriority ToMojom(net::RequestPriority priority);
-  static bool FromMojom(network::mojom::RequestPriority in,
-                        net::RequestPriority* out);
-};
-
-template <>
-struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
-    EnumTraits<network::mojom::URLRequestReferrerPolicy, net::ReferrerPolicy> {
-  static network::mojom::URLRequestReferrerPolicy ToMojom(
-      net::ReferrerPolicy policy);
-  static bool FromMojom(network::mojom::URLRequestReferrerPolicy in,
-                        net::ReferrerPolicy* out);
-};
 
 template <>
 struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
@@ -268,9 +252,6 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
   }
   static int32_t transition_type(const network::ResourceRequest& request) {
     return request.transition_type;
-  }
-  static bool report_raw_headers(const network::ResourceRequest& request) {
-    return request.report_raw_headers;
   }
   static int32_t previews_state(const network::ResourceRequest& request) {
     return request.previews_state;

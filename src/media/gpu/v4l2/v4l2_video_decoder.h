@@ -38,26 +38,34 @@ namespace media {
 class DmabufVideoFramePool;
 
 class MEDIA_GPU_EXPORT V4L2VideoDecoder
-    : public DecoderInterface,
+    : public VideoDecoderMixin,
       public V4L2VideoDecoderBackend::Client {
  public:
   // Create V4L2VideoDecoder instance. The success of the creation doesn't
   // ensure V4L2VideoDecoder is available on the device. It will be
   // determined in Initialize().
-  static std::unique_ptr<DecoderInterface> Create(
+  static std::unique_ptr<VideoDecoderMixin> Create(
+      std::unique_ptr<MediaLog> media_log,
       scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
-      base::WeakPtr<DecoderInterface::Client> client);
+      base::WeakPtr<VideoDecoderMixin::Client> client);
 
-  static SupportedVideoDecoderConfigs GetSupportedConfigs();
+  static absl::optional<SupportedVideoDecoderConfigs> GetSupportedConfigs();
 
-  // DecoderInterface implementation.
+  // VideoDecoderMixin implementation, VideoDecoder part.
   void Initialize(const VideoDecoderConfig& config,
+                  bool low_delay,
                   CdmContext* cdm_context,
                   InitCB init_cb,
                   const OutputCB& output_cb,
                   const WaitingCB& waiting_cb) override;
-  void Reset(base::OnceClosure closure) override;
   void Decode(scoped_refptr<DecoderBuffer> buffer, DecodeCB decode_cb) override;
+  void Reset(base::OnceClosure reset_cb) override;
+  bool NeedsBitstreamConversion() const override;
+  bool CanReadWithoutStalling() const override;
+  int GetMaxDecodeRequests() const override;
+  VideoDecoderType GetDecoderType() const override;
+  bool IsPlatformDecoder() const override;
+  // VideoDecoderMixin implementation, specific part.
   void ApplyResolutionChange() override;
 
   // V4L2VideoDecoderBackend::Client implementation
@@ -76,8 +84,9 @@ class MEDIA_GPU_EXPORT V4L2VideoDecoder
  private:
   friend class V4L2VideoDecoderTest;
 
-  V4L2VideoDecoder(scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
-                   base::WeakPtr<DecoderInterface::Client> client,
+  V4L2VideoDecoder(std::unique_ptr<MediaLog> media_log,
+                   scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
+                   base::WeakPtr<VideoDecoderMixin::Client> client,
                    scoped_refptr<V4L2Device> device);
   ~V4L2VideoDecoder() override;
 
@@ -137,8 +146,12 @@ class MEDIA_GPU_EXPORT V4L2VideoDecoder
                                 const gfx::Rect& visible_rect,
                                 const size_t num_output_frames);
 
-  // Change the state and check the state transition is valid.
+  // Change the |state_| and check the state transition is valid.
   void SetState(State new_state);
+
+  // Tell SetState() to change the |state_| to kError and send |message| to
+  // MediaLog and to LOG(ERROR).
+  void SetErrorState(const std::string& message);
 
   // Continue backend initialization. Decoder will not take a hardware context
   // until InitializeBackend() is called.

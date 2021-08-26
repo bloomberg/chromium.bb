@@ -14,7 +14,7 @@
 
 #include <limits.h>
 #include <stddef.h>
-#include "av1/common/odintrin.h"
+#include "aom_dsp/odintrin.h"
 #include "aom_dsp/prob.h"
 
 #define EC_PROB_SHIFT 6

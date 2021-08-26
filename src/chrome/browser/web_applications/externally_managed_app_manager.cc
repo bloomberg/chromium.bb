@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/web_applications/components/externally_managed_app_manager.h"
+#include "chrome/browser/web_applications/externally_managed_app_manager.h"
 
 #include <algorithm>
 #include <map>
@@ -49,8 +49,8 @@ void ExternallyManagedAppManager::SetSubsystems(
     WebAppRegistrar* registrar,
     OsIntegrationManager* os_integration_manager,
     WebAppUiManager* ui_manager,
-    InstallFinalizer* finalizer,
-    InstallManager* install_manager) {
+    WebAppInstallFinalizer* finalizer,
+    WebAppInstallManager* install_manager) {
   registrar_ = registrar;
   os_integration_manager_ = os_integration_manager;
   ui_manager_ = ui_manager;

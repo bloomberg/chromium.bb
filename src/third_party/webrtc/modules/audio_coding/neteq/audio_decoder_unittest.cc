@@ -8,7 +8,6 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#include <assert.h>
 #include <stdlib.h>
 
 #include <array>
@@ -31,6 +30,7 @@
 #include "modules/audio_coding/codecs/pcm16b/audio_decoder_pcm16b.h"
 #include "modules/audio_coding/codecs/pcm16b/audio_encoder_pcm16b.h"
 #include "modules/audio_coding/neteq/tools/resample_input_audio_file.h"
+#include "rtc_base/system/arch.h"
 #include "test/gtest.h"
 #include "test/testsupport/file_utils.h"
 
@@ -41,7 +41,7 @@ namespace {
 constexpr int kOverheadBytesPerPacket = 50;
 
 // The absolute difference between the input and output (the first channel) is
-// compared vs |tolerance|. The parameter |delay| is used to correct for codec
+// compared vs `tolerance`. The parameter `delay` is used to correct for codec
 // delays.
 void CompareInputOutput(const std::vector<int16_t>& input,
                         const std::vector<int16_t>& output,
@@ -57,8 +57,8 @@ void CompareInputOutput(const std::vector<int16_t>& input,
   }
 }
 
-// The absolute difference between the first two channels in |output| is
-// compared vs |tolerance|.
+// The absolute difference between the first two channels in `output` is
+// compared vs `tolerance`.
 void CompareTwoChannels(const std::vector<int16_t>& output,
                         size_t samples_per_channel,
                         size_t channels,
@@ -71,7 +71,7 @@ void CompareTwoChannels(const std::vector<int16_t>& output,
 }
 
 // Calculates mean-squared error between input and output (the first channel).
-// The parameter |delay| is used to correct for codec delays.
+// The parameter `delay` is used to correct for codec delays.
 double MseInputOutput(const std::vector<int16_t>& input,
                       const std::vector<int16_t>& output,
                       size_t num_samples,
@@ -153,10 +153,10 @@ class AudioDecoderTest : public ::testing::Test {
   }
 
   // Encodes and decodes audio. The absolute difference between the input and
-  // output is compared vs |tolerance|, and the mean-squared error is compared
-  // with |mse|. The encoded stream should contain |expected_bytes|. For stereo
+  // output is compared vs `tolerance`, and the mean-squared error is compared
+  // with `mse`. The encoded stream should contain `expected_bytes`. For stereo
   // audio, the absolute difference between the two channels is compared vs
-  // |channel_diff_tolerance|.
+  // `channel_diff_tolerance`.
   void EncodeDecodeTest(size_t expected_bytes,
                         int tolerance,
                         double mse,
@@ -171,7 +171,7 @@ class AudioDecoderTest : public ::testing::Test {
     std::vector<int16_t> input;
     std::vector<int16_t> decoded;
     while (processed_samples + frame_size_ <= data_length_) {
-      // Extend input vector with |frame_size_|.
+      // Extend input vector with `frame_size_`.
       input.resize(input.size() + frame_size_, 0);
       // Read from input file.
       ASSERT_GE(input.size() - processed_samples, frame_size_);
@@ -581,23 +581,30 @@ TEST_F(AudioDecoderIsacSwbTest, SetTargetBitrate) {
                                           56001 + overhead_rate));
 }
 
+// Run bit exactness test only for release builds.
+#if defined(NDEBUG)
 TEST_F(AudioDecoderIsacFixTest, EncodeDecode) {
   int tolerance = 11034;
   double mse = 3.46e6;
   int delay = 54;  // Delay from input to output.
 #if defined(WEBRTC_ANDROID) && defined(WEBRTC_ARCH_ARM)
   static const int kEncodedBytes = 685;
+#elif defined(WEBRTC_MAC) && defined(WEBRTC_ARCH_ARM64)  // M1 Mac
+  static const int kEncodedBytes = 684;
 #elif defined(WEBRTC_ARCH_ARM64)
   static const int kEncodedBytes = 673;
-#elif defined(WEBRTC_MAC) && defined(WEBRTC_ARCH_ARM64)  // M1 Mac
-  static const int kEncodedBytes = 673;
-#else
+#elif defined(WEBRTC_WIN) && defined(_MSC_VER) && !defined(__clang__)
   static const int kEncodedBytes = 671;
+#elif defined(WEBRTC_IOS) && defined(WEBRTC_ARCH_X86_64)
+  static const int kEncodedBytes = 671;
+#else
+  static const int kEncodedBytes = 687;
 #endif
   EncodeDecodeTest(kEncodedBytes, tolerance, mse, delay);
   ReInitTest();
   EXPECT_FALSE(decoder_->HasDecodePlc());
 }
+#endif
 
 TEST_F(AudioDecoderIsacFixTest, SetTargetBitrate) {
   const int overhead_rate =

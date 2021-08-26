@@ -5,8 +5,12 @@
 #include "ui/base/interaction/interaction_sequence.h"
 
 #include "base/callback_forward.h"
+#include "base/location.h"
+#include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/bind.h"
 #include "base/test/mock_callback.h"
+#include "base/test/task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/interaction/element_identifier.h"
@@ -124,7 +128,12 @@ TEST(InteractionSequenceTest, AbortIfWithInitialElementHiddenBeforeStart) {
                        .Build())
           .Build();
   element.reset();
-  EXPECT_CALL_IN_SCOPE(aborted, Run, tracker->Start());
+  EXPECT_CALL_IN_SCOPE(
+      aborted,
+      Run(nullptr, ElementIdentifier(), InteractionSequence::StepType::kShown,
+          InteractionSequence::AbortedReason::
+              kElementHiddenBeforeSequenceStart),
+      tracker->Start());
 }
 
 TEST(InteractionSequenceTest,
@@ -270,8 +279,10 @@ TEST(InteractionSequenceTest, TransitionFailsOnElementShownIfMustBeVisible) {
                        .SetMustBeVisibleAtStart(true)
                        .Build())
           .Build();
-  EXPECT_CALL(aborted, Run(nullptr, element2.identifier(),
-                           InteractionSequence::StepType::kShown))
+  EXPECT_CALL(
+      aborted,
+      Run(nullptr, element2.identifier(), InteractionSequence::StepType::kShown,
+          InteractionSequence::AbortedReason::kElementNotVisibleAtStartOfStep))
       .Times(1);
   tracker->Start();
 }
@@ -379,8 +390,11 @@ TEST(InteractionSequenceTest, FailOnOtherElementAlreadyHiddenIfMustBeVisible) {
                        .SetStartCallback(step.Get())
                        .Build())
           .Build();
-  EXPECT_CALL(aborted, Run(nullptr, element2.identifier(),
-                           InteractionSequence::StepType::kHidden))
+  EXPECT_CALL(
+      aborted,
+      Run(nullptr, element2.identifier(),
+          InteractionSequence::StepType::kHidden,
+          InteractionSequence::AbortedReason::kElementNotVisibleAtStartOfStep))
       .Times(1);
   tracker->Start();
 }
@@ -631,10 +645,12 @@ TEST(InteractionSequenceTest, CancelMidSequenceWhenViewHidden) {
   EXPECT_CALLS_IN_SCOPE_2(step1_end, Run, step2_start, Run,
                           element2.Activate());
 
-  EXPECT_CALLS_IN_SCOPE_2(step2_end, Run, aborted,
-                          Run(testing::_, element2.identifier(),
-                              InteractionSequence::StepType::kActivated),
-                          element2.Hide());
+  EXPECT_CALLS_IN_SCOPE_2(
+      step2_end, Run, aborted,
+      Run(testing::_, element2.identifier(),
+          InteractionSequence::StepType::kActivated,
+          InteractionSequence::AbortedReason::kElementHiddenDuringStep),
+      element2.Hide());
 }
 
 TEST(InteractionSequenceTest, DontCancelIfViewDoesNotNeedToRemainVisible) {
@@ -1121,10 +1137,11 @@ TEST(InteractionSequenceTest, ElementHiddenDuringStepEndDuringAbort) {
   // First parameter will be null because during the delete the step end
   // callback will hide the element, which happens before the abort callback is
   // called.
-  EXPECT_CALL_IN_SCOPE(aborted,
-                       Run(nullptr, element2.identifier(),
-                           InteractionSequence::StepType::kShown),
-                       tracker.reset());
+  EXPECT_CALL_IN_SCOPE(
+      aborted,
+      Run(nullptr, element2.identifier(), InteractionSequence::StepType::kShown,
+          InteractionSequence::AbortedReason::kSequenceDestroyed),
+      tracker.reset());
 }
 
 TEST(InteractionSequenceTest, SequenceDestroyedDuringInitialStepStartCallback) {
@@ -1192,7 +1209,8 @@ TEST(InteractionSequenceTest, SequenceDestroyedDuringInitialStepAbort) {
 
   std::unique_ptr<InteractionSequence> tracker;
   auto callback = [&](TrackedElement*, ElementIdentifier,
-                      InteractionSequence::StepType) { tracker.reset(); };
+                      InteractionSequence::StepType,
+                      InteractionSequence::AbortedReason) { tracker.reset(); };
   tracker = InteractionSequence::Builder()
                 .SetAbortedCallback(base::BindLambdaForTesting(callback))
                 .SetCompletedCallback(completed.Get())
@@ -1298,7 +1316,8 @@ TEST(InteractionSequenceTest, SequenceDestroyedDuringMidSequenceAbort) {
 
   std::unique_ptr<InteractionSequence> tracker;
   auto callback = [&](TrackedElement*, ElementIdentifier,
-                      InteractionSequence::StepType) { tracker.reset(); };
+                      InteractionSequence::StepType,
+                      InteractionSequence::AbortedReason) { tracker.reset(); };
   tracker = InteractionSequence::Builder()
                 .SetAbortedCallback(base::BindLambdaForTesting(callback))
                 .SetCompletedCallback(completed.Get())
@@ -1397,6 +1416,123 @@ TEST(InteractionSequenceTest, SequenceDestroyedDuringCompleted) {
   EXPECT_CALLS_IN_SCOPE_3(step1_end, Run, step2_start, Run, step2_end, Run,
                           element2.Activate());
   EXPECT_FALSE(tracker);
+}
+
+TEST(InteractionSequenceTest,
+     RunSynchronouslyForTesting_SequenceAbortsDuringStart) {
+  base::test::TaskEnvironment task_environment;
+  auto task_runner = base::ThreadPool::CreateSequencedTaskRunner({});
+  UNCALLED_MOCK_CALLBACK(InteractionSequence::AbortedCallback, aborted);
+  UNCALLED_MOCK_CALLBACK(InteractionSequence::CompletedCallback, completed);
+  TestElement element1(kTestIdentifier1, kTestContext1);
+
+  std::unique_ptr<InteractionSequence> tracker;
+  tracker = InteractionSequence::Builder()
+                .SetAbortedCallback(aborted.Get())
+                .SetCompletedCallback(completed.Get())
+                .SetContext(kTestContext1)
+                .AddStep(InteractionSequence::StepBuilder()
+                             .SetElementID(element1.identifier())
+                             .SetType(InteractionSequence::StepType::kShown)
+                             .SetMustBeVisibleAtStart(true)
+                             .Build())
+                .Build();
+  EXPECT_CALL_IN_SCOPE(aborted, Run, tracker->RunSynchronouslyForTesting());
+}
+
+TEST(InteractionSequenceTest,
+     RunSynchronouslyForTesting_SequenceCompletesDuringStart) {
+  base::test::TaskEnvironment task_environment;
+  auto task_runner = base::ThreadPool::CreateSequencedTaskRunner({});
+  UNCALLED_MOCK_CALLBACK(InteractionSequence::AbortedCallback, aborted);
+  UNCALLED_MOCK_CALLBACK(InteractionSequence::CompletedCallback, completed);
+  TestElement element1(kTestIdentifier1, kTestContext1);
+  element1.Show();
+
+  std::unique_ptr<InteractionSequence> tracker;
+  tracker = InteractionSequence::Builder()
+                .SetAbortedCallback(aborted.Get())
+                .SetCompletedCallback(completed.Get())
+                .SetContext(kTestContext1)
+                .AddStep(InteractionSequence::StepBuilder()
+                             .SetElementID(element1.identifier())
+                             .SetType(InteractionSequence::StepType::kShown)
+                             .SetMustBeVisibleAtStart(true)
+                             .Build())
+                .Build();
+  EXPECT_CALL_IN_SCOPE(completed, Run, tracker->RunSynchronouslyForTesting());
+}
+
+TEST(InteractionSequenceTest,
+     RunSynchronouslyForTesting_SequenceAbortsDuringStep) {
+  base::test::SingleThreadTaskEnvironment task_environment;
+  UNCALLED_MOCK_CALLBACK(InteractionSequence::AbortedCallback, aborted);
+  UNCALLED_MOCK_CALLBACK(InteractionSequence::CompletedCallback, completed);
+  TestElement element1(kTestIdentifier1, kTestContext1);
+  TestElement element2(kTestIdentifier2, kTestContext1);
+  element1.Show();
+
+  std::unique_ptr<InteractionSequence> tracker;
+  tracker =
+      InteractionSequence::Builder()
+          .SetAbortedCallback(aborted.Get())
+          .SetCompletedCallback(completed.Get())
+          .SetContext(kTestContext1)
+          .AddStep(
+              InteractionSequence::StepBuilder()
+                  .SetElementID(element1.identifier())
+                  .SetType(InteractionSequence::StepType::kShown)
+                  .SetMustRemainVisible(true)
+                  .SetStartCallback(base::BindLambdaForTesting(
+                      [&](TrackedElement* element, ElementIdentifier element_id,
+                          InteractionSequence::StepType step_type) {
+                        task_environment.GetMainThreadTaskRunner()->PostTask(
+                            FROM_HERE, base::BindLambdaForTesting(
+                                           [&]() { element1.Hide(); }));
+                      }))
+                  .Build())
+          .AddStep(InteractionSequence::StepBuilder()
+                       .SetElementID(element2.identifier())
+                       .SetType(InteractionSequence::StepType::kShown)
+                       .Build())
+          .Build();
+  EXPECT_CALL_IN_SCOPE(aborted, Run, tracker->RunSynchronouslyForTesting());
+}
+
+TEST(InteractionSequenceTest,
+     RunSynchronouslyForTesting_SequenceCompletesDuringStep) {
+  base::test::SingleThreadTaskEnvironment task_environment;
+
+  UNCALLED_MOCK_CALLBACK(InteractionSequence::AbortedCallback, aborted);
+  UNCALLED_MOCK_CALLBACK(InteractionSequence::CompletedCallback, completed);
+  TestElement element1(kTestIdentifier1, kTestContext1);
+  TestElement element2(kTestIdentifier2, kTestContext1);
+  element1.Show();
+
+  std::unique_ptr<InteractionSequence> tracker;
+  tracker =
+      InteractionSequence::Builder()
+          .SetAbortedCallback(aborted.Get())
+          .SetCompletedCallback(completed.Get())
+          .SetContext(kTestContext1)
+          .AddStep(
+              InteractionSequence::StepBuilder()
+                  .SetElementID(element1.identifier())
+                  .SetType(InteractionSequence::StepType::kShown)
+                  .SetStartCallback(base::BindLambdaForTesting(
+                      [&](TrackedElement* element, ElementIdentifier element_id,
+                          InteractionSequence::StepType step_type) {
+                        task_environment.GetMainThreadTaskRunner()->PostTask(
+                            FROM_HERE, base::BindLambdaForTesting(
+                                           [&]() { element2.Show(); }));
+                      }))
+                  .Build())
+          .AddStep(InteractionSequence::StepBuilder()
+                       .SetElementID(element2.identifier())
+                       .SetType(InteractionSequence::StepType::kShown)
+                       .Build())
+          .Build();
+  EXPECT_CALL_IN_SCOPE(completed, Run, tracker->RunSynchronouslyForTesting());
 }
 
 }  // namespace ui

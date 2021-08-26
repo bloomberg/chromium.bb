@@ -19,7 +19,6 @@
 #include "aom_mem/aom_mem.h"
 #include "aom_ports/bitops.h"
 #include "aom_ports/mem.h"
-#include "aom_ports/system_state.h"
 
 #include "av1/common/common.h"
 #include "av1/common/entropy.h"
@@ -375,12 +374,11 @@ static double def_kf_rd_multiplier(int qindex) {
   return 3.3 + (0.0035 * (double)qindex);
 }
 
-int av1_compute_rd_mult_based_on_qindex(const AV1_COMP *cpi, int qindex) {
-  const int q = av1_dc_quant_QTX(qindex, 0, cpi->common.seq_params->bit_depth);
-  const FRAME_UPDATE_TYPE update_type =
-      cpi->ppi->gf_group.update_type[cpi->gf_frame_index];
+int av1_compute_rd_mult_based_on_qindex(aom_bit_depth_t bit_depth,
+                                        FRAME_UPDATE_TYPE update_type,
+                                        int qindex) {
+  const int q = av1_dc_quant_QTX(qindex, 0, bit_depth);
   int rdmult = q * q;
-
   if (update_type == KF_UPDATE) {
     double def_rd_q_mult = def_kf_rd_multiplier(qindex);
     rdmult = (int)((double)rdmult * def_rd_q_mult);
@@ -392,7 +390,7 @@ int av1_compute_rd_mult_based_on_qindex(const AV1_COMP *cpi, int qindex) {
     rdmult = (int)((double)rdmult * def_rd_q_mult);
   }
 
-  switch (cpi->common.seq_params->bit_depth) {
+  switch (bit_depth) {
     case AOM_BITS_8: break;
     case AOM_BITS_10: rdmult = ROUND_POWER_OF_TWO(rdmult, 4); break;
     case AOM_BITS_12: rdmult = ROUND_POWER_OF_TWO(rdmult, 8); break;
@@ -404,8 +402,12 @@ int av1_compute_rd_mult_based_on_qindex(const AV1_COMP *cpi, int qindex) {
 }
 
 int av1_compute_rd_mult(const AV1_COMP *cpi, int qindex) {
-  int64_t rdmult = av1_compute_rd_mult_based_on_qindex(cpi, qindex);
-  if (is_stat_consumption_stage(cpi) &&
+  const aom_bit_depth_t bit_depth = cpi->common.seq_params->bit_depth;
+  const FRAME_UPDATE_TYPE update_type =
+      cpi->ppi->gf_group.update_type[cpi->gf_frame_index];
+  int64_t rdmult =
+      av1_compute_rd_mult_based_on_qindex(bit_depth, update_type, qindex);
+  if (is_stat_consumption_stage(cpi) && !cpi->oxcf.q_cfg.use_fixed_qp_offsets &&
       (cpi->common.current_frame.frame_type != KEY_FRAME)) {
     const GF_GROUP *const gf_group = &cpi->ppi->gf_group;
     const int boost_index = AOMMIN(15, (cpi->ppi->p_rc.gfu_boost / 100));
@@ -447,6 +449,19 @@ int av1_get_deltaq_offset(aom_bit_depth_t bit_depth, int qindex, double beta) {
     }
   }
   return qindex - orig_qindex;
+}
+
+int av1_adjust_q_from_delta_q_res(int delta_q_res, int prev_qindex,
+                                  int curr_qindex) {
+  curr_qindex = clamp(curr_qindex, delta_q_res, 256 - delta_q_res);
+  const int sign_deltaq_index = curr_qindex - prev_qindex >= 0 ? 1 : -1;
+  const int deltaq_deadzone = delta_q_res / 4;
+  const int qmask = ~(delta_q_res - 1);
+  int abs_deltaq_index = abs(curr_qindex - prev_qindex);
+  abs_deltaq_index = (abs_deltaq_index + deltaq_deadzone) & qmask;
+  int adjust_qindex = prev_qindex + sign_deltaq_index * abs_deltaq_index;
+  adjust_qindex = AOMMAX(adjust_qindex, MINQ + 1);
+  return adjust_qindex;
 }
 
 int av1_get_adaptive_rdmult(const AV1_COMP *cpi, double beta) {
@@ -638,8 +653,6 @@ void av1_initialize_rd_consts(AV1_COMP *cpi) {
   int fill_costs =
       frame_is_intra_only(cm) || (cm->current_frame.frame_number & 0x07) == 1;
   int num_planes = av1_num_planes(cm);
-
-  aom_clear_system_state();
 
   rd->RDMULT = av1_compute_rd_mult(
       cpi, cm->quant_params.base_qindex + cm->quant_params.y_dc_delta_q);

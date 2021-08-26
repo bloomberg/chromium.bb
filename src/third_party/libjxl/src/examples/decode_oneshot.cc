@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 // This C++ example decodes a JPEG XL image in one shot (all input bytes
 // available at once). The example outputs the pixels and color information to a
@@ -25,8 +16,8 @@
 
 #include "jxl/decode.h"
 #include "jxl/decode_cxx.h"
-#include "jxl/thread_parallel_runner.h"
-#include "jxl/thread_parallel_runner_cxx.h"
+#include "jxl/resizable_parallel_runner.h"
+#include "jxl/resizable_parallel_runner_cxx.h"
 
 /** Decodes JPEG XL image to floating point pixels and ICC Profile. Pixel are
  * stored as floating point, as interleaved RGBA (4 floating point values per
@@ -38,8 +29,7 @@ bool DecodeJpegXlOneShot(const uint8_t* jxl, size_t size,
                          std::vector<float>* pixels, size_t* xsize,
                          size_t* ysize, std::vector<uint8_t>* icc_profile) {
   // Multi-threaded parallel runner.
-  auto runner = JxlThreadParallelRunnerMake(
-      nullptr, JxlThreadParallelRunnerDefaultNumWorkerThreads());
+  auto runner = JxlResizableParallelRunnerMake(nullptr);
 
   auto dec = JxlDecoderMake(nullptr);
   if (JXL_DEC_SUCCESS !=
@@ -51,7 +41,7 @@ bool DecodeJpegXlOneShot(const uint8_t* jxl, size_t size,
   }
 
   if (JXL_DEC_SUCCESS != JxlDecoderSetParallelRunner(dec.get(),
-                                                     JxlThreadParallelRunner,
+                                                     JxlResizableParallelRunner,
                                                      runner.get())) {
     fprintf(stderr, "JxlDecoderSetParallelRunner failed\n");
     return false;
@@ -78,6 +68,9 @@ bool DecodeJpegXlOneShot(const uint8_t* jxl, size_t size,
       }
       *xsize = info.xsize;
       *ysize = info.ysize;
+      JxlResizableParallelRunnerSetThreads(
+          runner.get(),
+          JxlResizableParallelRunnerSuggestThreads(info.xsize, info.ysize));
     } else if (status == JXL_DEC_COLOR_ENCODING) {
       // Get the ICC color profile of the pixel data
       size_t icc_size;

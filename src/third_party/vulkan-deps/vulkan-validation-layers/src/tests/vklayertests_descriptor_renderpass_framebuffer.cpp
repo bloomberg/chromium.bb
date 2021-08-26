@@ -979,11 +979,13 @@ TEST_F(VkLayerTest, RenderPassCreateAttachmentsMisc) {
         TestRenderPassCreate(m_errorMonitor, m_device->device(), &rpci_same, rp2Supported,
                              "VUID-VkSubpassDescription-pDepthStencilAttachment-04438", nullptr);
 
-        safe_VkRenderPassCreateInfo2 create_info2;
-        ConvertVkRenderPassCreateInfoToV2KHR(rpci_same, &create_info2);
-        m_errorMonitor->SetUnexpectedError("VUID-VkSubpassDescription2-pColorAttachments-02898");
-        TestRenderPass2KHRCreate(m_errorMonitor, m_device->device(), create_info2.ptr(),
-                                 "VUID-VkSubpassDescription2-pDepthStencilAttachment-04440");
+        if (rp2Supported) {
+            safe_VkRenderPassCreateInfo2 create_info2;
+            ConvertVkRenderPassCreateInfoToV2KHR(rpci_same, &create_info2);
+            m_errorMonitor->SetUnexpectedError("VUID-VkSubpassDescription2-pColorAttachments-02898");
+            TestRenderPass2KHRCreate(m_errorMonitor, m_device->device(), create_info2.ptr(),
+                                     "VUID-VkSubpassDescription2-pDepthStencilAttachment-04440");
+        }
 
         // Same test but use 2 different VkAttachmentReference to point to same attachment
         subpass_same.pDepthStencilAttachment = &depth_1bit.data()[1];
@@ -992,10 +994,13 @@ TEST_F(VkLayerTest, RenderPassCreateAttachmentsMisc) {
         TestRenderPassCreate(m_errorMonitor, m_device->device(), &rpci_same, rp2Supported,
                              "VUID-VkSubpassDescription-pDepthStencilAttachment-04438", nullptr);
 
-        ConvertVkRenderPassCreateInfoToV2KHR(rpci_same, &create_info2);
-        m_errorMonitor->SetUnexpectedError("VUID-VkSubpassDescription2-pColorAttachments-02898");
-        TestRenderPass2KHRCreate(m_errorMonitor, m_device->device(), create_info2.ptr(),
-                                 "VUID-VkSubpassDescription2-pDepthStencilAttachment-04440");
+        if (rp2Supported) {
+            safe_VkRenderPassCreateInfo2 create_info2;
+            ConvertVkRenderPassCreateInfoToV2KHR(rpci_same, &create_info2);
+            m_errorMonitor->SetUnexpectedError("VUID-VkSubpassDescription2-pColorAttachments-02898");
+            TestRenderPass2KHRCreate(m_errorMonitor, m_device->device(), create_info2.ptr(),
+                                     "VUID-VkSubpassDescription2-pDepthStencilAttachment-04440");
+        }
     }
 }
 
@@ -1578,7 +1583,7 @@ TEST_F(VkLayerTest, RenderPassCreateSubpassNonGraphicsPipeline) {
     VkRenderPassCreateInfo rpci = {VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO, nullptr, 0, 0, nullptr, 1, subpasses, 0, nullptr};
 
     TestRenderPassCreate(m_errorMonitor, m_device->device(), &rpci, rp2Supported,
-                         "VUID-VkSubpassDescription-pipelineBindPoint-00844", "VUID-VkSubpassDescription2-pipelineBindPoint-03062");
+                         "VUID-VkSubpassDescription-pipelineBindPoint-04952", "VUID-VkSubpassDescription2-pipelineBindPoint-04953");
 }
 
 TEST_F(VkLayerTest, RenderPassCreateSubpassMissingAttributesBitMultiviewNVX) {
@@ -1997,17 +2002,24 @@ TEST_F(VkLayerTest, RenderPassBeginInvalidRenderArea) {
 
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
     bool rp2Supported = CheckCreateRenderPass2Support(this, m_device_extension_names);
+    bool device_group_supported = false;
+    if (DeviceExtensionSupported(gpu(), nullptr, VK_KHR_DEVICE_GROUP_EXTENSION_NAME)) {
+        m_device_extension_names.push_back(VK_KHR_DEVICE_GROUP_EXTENSION_NAME);
+        device_group_supported = true;
+    }
     ASSERT_NO_FATAL_FAILURE(InitState(nullptr, nullptr, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT));
 
     ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
 
     // Framebuffer for render target is 256x256, exceed that for INVALID_RENDER_AREA
     m_renderPassBeginInfo.renderArea.extent.width = 257;
-    m_renderPassBeginInfo.renderArea.extent.height = 257;
+    m_renderPassBeginInfo.renderArea.extent.height = 256;
 
-    TestRenderPassBegin(m_errorMonitor, m_device->device(), m_commandBuffer->handle(), &m_renderPassBeginInfo, rp2Supported,
-                        "Cannot execute a render pass with renderArea not within the bound of the framebuffer.",
-                        "Cannot execute a render pass with renderArea not within the bound of the framebuffer.");
+    const char *vuid =
+        device_group_supported ? "VUID-VkRenderPassBeginInfo-pNext-02852" : "VUID-VkRenderPassBeginInfo-renderArea-02848";
+
+    TestRenderPassBegin(m_errorMonitor, m_device->device(), m_commandBuffer->handle(), &m_renderPassBeginInfo, rp2Supported, vuid,
+                        vuid);
 }
 
 TEST_F(VkLayerTest, RenderPassBeginWithinRenderPass) {
@@ -5156,6 +5168,100 @@ TEST_F(VkLayerTest, InvalidDynamicDescriptorSet) {
     m_commandBuffer->end();
 }
 
+TEST_F(VkLayerTest, DynamicOffsetWithNullBuffer) {
+    TEST_DESCRIPTION("Create a descriptorSet w/ dynamic descriptors where 1 binding is inactive, but all have null buffers");
+    m_errorMonitor->ExpectSuccess();
+
+    ASSERT_NO_FATAL_FAILURE(Init());
+    if (IsPlatform(kPixel3)) {
+        printf("%s This test should not run on Pixel 3\n", kSkipPrefix);
+        return;
+    }
+    if (IsPlatform(kPixel3aXL)) {
+        printf("%s This test should not run on Pixel 3a XL\n", kSkipPrefix);
+        return;
+    }
+    ASSERT_NO_FATAL_FAILURE(InitViewport());
+    ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
+    OneOffDescriptorSet descriptor_set(m_device,
+                                       {
+                                           {2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr},
+                                           {0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr},
+                                           {1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr},
+                                       });
+
+    // Update descriptors
+    const uint32_t BINDING_COUNT = 3;
+    VkDescriptorBufferInfo buff_info[BINDING_COUNT] = {};
+    buff_info[0].buffer = VK_NULL_HANDLE;
+    buff_info[0].offset = 0;
+    buff_info[0].range = 256;
+    buff_info[1].buffer = VK_NULL_HANDLE;
+    buff_info[1].offset = 256;
+    buff_info[1].range = 512;
+    buff_info[2].buffer = VK_NULL_HANDLE;
+    buff_info[2].offset = 0;
+    buff_info[2].range = 512;
+
+    VkWriteDescriptorSet descriptor_write;
+    memset(&descriptor_write, 0, sizeof(descriptor_write));
+    descriptor_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptor_write.dstSet = descriptor_set.set_;
+    descriptor_write.dstBinding = 0;
+    descriptor_write.descriptorCount = BINDING_COUNT;
+    descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+    descriptor_write.pBufferInfo = buff_info;
+
+    m_errorMonitor->VerifyNotFound();
+    // all 3 descriptors produce this error
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkDescriptorBufferInfo-buffer-02998");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkDescriptorBufferInfo-buffer-02998");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkDescriptorBufferInfo-buffer-02998");
+    vk::UpdateDescriptorSets(m_device->device(), 1, &descriptor_write, 0, NULL);
+    m_errorMonitor->VerifyFound();
+    m_errorMonitor->ExpectSuccess();
+
+    m_commandBuffer->begin();
+    m_commandBuffer->BeginRenderPass(m_renderPassBeginInfo);
+
+    // Create PSO to be used for draw-time errors below
+    char const *fsSource = R"glsl(
+        #version 450
+        layout(location=0) out vec4 x;
+        layout(set=0) layout(binding=0) uniform foo1 { int x; int y; } bar1;
+        layout(set=0) layout(binding=2) uniform foo2 { int x; int y; } bar2;
+        void main(){
+           x = vec4(bar1.y) + vec4(bar2.y);
+        }
+    )glsl";
+    VkShaderObj vs(m_device, bindStateVertShaderText, VK_SHADER_STAGE_VERTEX_BIT, this);
+    VkShaderObj fs(m_device, fsSource, VK_SHADER_STAGE_FRAGMENT_BIT, this);
+
+    CreatePipelineHelper pipe(*this);
+    pipe.InitInfo();
+    pipe.InitState();
+    pipe.shader_stages_ = {vs.GetStageCreateInfo(), fs.GetStageCreateInfo()};
+    pipe.pipeline_layout_ = VkPipelineLayoutObj(m_device, {&descriptor_set.layout_});
+    pipe.CreateGraphicsPipeline();
+    m_errorMonitor->VerifyNotFound();
+
+    m_errorMonitor->ExpectSuccess();
+    vk::CmdBindPipeline(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipe.pipeline_);
+    m_errorMonitor->VerifyNotFound();
+
+    uint32_t dyn_off[BINDING_COUNT] = {0, 1024, 256};
+    // The 2 active descriptors produce this error
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdDraw-None-02699");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdDraw-None-02699");
+    vk::CmdBindDescriptorSets(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipe.pipeline_layout_.handle(), 0, 1,
+                              &descriptor_set.set_, BINDING_COUNT, dyn_off);
+    m_commandBuffer->Draw(1, 0, 0, 0);
+    m_errorMonitor->VerifyFound();
+
+    m_commandBuffer->EndRenderPass();
+    m_commandBuffer->end();
+}
+
 TEST_F(VkLayerTest, UpdateDescriptorSetMismatchType) {
     ASSERT_NO_FATAL_FAILURE(Init());
 
@@ -6607,7 +6713,7 @@ TEST_F(VkLayerTest, DrawWithPipelineIncompatibleWithRenderPassMultiview) {
     VkImageViewCreateInfo ivci = {};
     ivci.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     ivci.image = image.handle();
-    ivci.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    ivci.viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
     ivci.format = VK_FORMAT_B8G8R8A8_UNORM;
     ivci.components = {VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
                        VK_COMPONENT_SWIZZLE_IDENTITY};
@@ -9661,4 +9767,308 @@ TEST_F(VkLayerTest, RenderPassCreateInvalidInputAttachmentLayout) {
         if (err == VK_SUCCESS) vk::DestroyRenderPass(m_device->device(), render_pass, nullptr);
     }
     m_errorMonitor->VerifyFound();
+}
+
+TEST_F(VkLayerTest, RenderPassMultiViewCreateInvalidViewMasks) {
+    TEST_DESCRIPTION("Create a render pass with some view masks 0 and some not 0");
+
+    // Check for VK_KHR_get_physical_device_properties2
+    if (InstanceExtensionSupported(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
+        m_instance_extension_names.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+    bool rp2Supported = CheckCreateRenderPass2Support(this, m_device_extension_names);
+
+    if (!rp2Supported) {
+        if (DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MULTIVIEW_EXTENSION_NAME)) {
+            m_device_extension_names.push_back(VK_KHR_MULTIVIEW_EXTENSION_NAME);
+        } else {
+            printf("%s Extension %s is not supported.\n", kSkipPrefix, VK_KHR_MULTIVIEW_EXTENSION_NAME);
+            return;
+        }
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitState());
+
+    VkSubpassDescription subpasses[2];
+    subpasses[0] = {0, VK_PIPELINE_BIND_POINT_GRAPHICS, 0, nullptr, 0, nullptr, nullptr, nullptr, 0, nullptr};
+    subpasses[1] = {0, VK_PIPELINE_BIND_POINT_GRAPHICS, 0, nullptr, 0, nullptr, nullptr, nullptr, 0, nullptr};
+    uint32_t viewMasks[] = {0x3u, 0x0};
+    uint32_t correlationMasks[] = {0x1u, 0x3u};
+    VkRenderPassMultiviewCreateInfo rpmvci = {
+        VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO, nullptr, 2, viewMasks, 0, nullptr, 2, correlationMasks};
+
+    VkRenderPassCreateInfo rpci = {VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO, &rpmvci, 0, 0, nullptr, 2, subpasses, 0, nullptr};
+
+    TestRenderPassCreate(m_errorMonitor, m_device->device(), &rpci, rp2Supported, "VUID-VkRenderPassCreateInfo-pNext-02513",
+                         nullptr);
+}
+
+TEST_F(VkLayerTest, InvalidCreateDescriptorPoolFlags) {
+    TEST_DESCRIPTION("Create descriptor pool with invalid flags.");
+
+    ASSERT_NO_FATAL_FAILURE(Init());
+    ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
+
+    VkDescriptorPoolSize ds_type_count = {};
+    ds_type_count.type = VK_DESCRIPTOR_TYPE_SAMPLER;
+    ds_type_count.descriptorCount = 1;
+
+    VkDescriptorPoolCreateInfo ds_pool_ci = LvlInitStruct<VkDescriptorPoolCreateInfo>();
+    ds_pool_ci.flags = VK_DESCRIPTOR_POOL_CREATE_HOST_ONLY_BIT_VALVE | VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT;
+    ds_pool_ci.maxSets = 1;
+    ds_pool_ci.poolSizeCount = 1;
+    ds_pool_ci.pPoolSizes = &ds_type_count;
+
+    VkDescriptorPool bad_pool;
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkDescriptorPoolCreateInfo-flags-04607");
+    vk::CreateDescriptorPool(m_device->device(), &ds_pool_ci, NULL, &bad_pool);
+    m_errorMonitor->VerifyFound();
+}
+
+TEST_F(VkLayerTest, InvalidCreateDescriptorPoolAllocateFlags) {
+    TEST_DESCRIPTION("Create descriptor pool with invalid flags.");
+
+    ASSERT_NO_FATAL_FAILURE(Init());
+    ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
+
+    VkDescriptorPoolSize ds_type_count = {};
+    ds_type_count.type = VK_DESCRIPTOR_TYPE_SAMPLER;
+    ds_type_count.descriptorCount = 1;
+
+    VkDescriptorPoolCreateInfo ds_pool_ci = LvlInitStruct<VkDescriptorPoolCreateInfo>();
+    ds_pool_ci.flags = 0;
+    ds_pool_ci.maxSets = 1;
+    ds_pool_ci.poolSizeCount = 1;
+    ds_pool_ci.pPoolSizes = &ds_type_count;
+
+    VkDescriptorPool pool;
+    vk::CreateDescriptorPool(m_device->device(), &ds_pool_ci, NULL, &pool);
+
+    VkDescriptorSetLayoutBinding dsl_binding_samp = {};
+    dsl_binding_samp.binding = 0;
+    dsl_binding_samp.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
+    dsl_binding_samp.descriptorCount = 1;
+    dsl_binding_samp.stageFlags = VK_SHADER_STAGE_ALL;
+    dsl_binding_samp.pImmutableSamplers = NULL;
+
+    const VkDescriptorSetLayoutObj ds_layout_samp(m_device, {dsl_binding_samp},
+                                                  VK_DESCRIPTOR_SET_LAYOUT_CREATE_HOST_ONLY_POOL_BIT_VALVE);
+
+    VkDescriptorSetLayout set_layout = ds_layout_samp.handle();
+
+    VkDescriptorSetAllocateInfo alloc_info = LvlInitStruct<VkDescriptorSetAllocateInfo>();
+    alloc_info.descriptorSetCount = 1;
+    alloc_info.descriptorPool = pool;
+    alloc_info.pSetLayouts = &set_layout;
+
+    VkDescriptorSet descriptor_set;
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkDescriptorSetAllocateInfo-pSetLayouts-04610");
+    vk::AllocateDescriptorSets(m_device->device(), &alloc_info, &descriptor_set);
+    m_errorMonitor->VerifyFound();
+}
+
+TEST_F(VkLayerTest, InvalidRenderArea) {
+    TEST_DESCRIPTION("Begin render pass with render area that is not within the framebuffer.");
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+    bool device_group_supported = false;
+    if (DeviceExtensionSupported(gpu(), nullptr, VK_KHR_DEVICE_GROUP_EXTENSION_NAME)) {
+        m_device_extension_names.push_back(VK_KHR_DEVICE_GROUP_EXTENSION_NAME);
+        device_group_supported = true;
+    }
+    ASSERT_NO_FATAL_FAILURE(InitState());
+    ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
+
+    VkRenderPassBeginInfo rpbinfo = LvlInitStruct<VkRenderPassBeginInfo>();
+    rpbinfo.renderPass = m_renderPass;
+    rpbinfo.framebuffer = m_framebuffer;
+    rpbinfo.renderArea.extent.width = m_framebuffer_info.width;
+    rpbinfo.renderArea.extent.height = m_framebuffer_info.height;
+    rpbinfo.renderArea.offset.x = -32;
+    rpbinfo.renderArea.offset.y = 0;
+    rpbinfo.clearValueCount = 1;
+    rpbinfo.pClearValues = m_renderPassClearValues.data();
+
+    m_commandBuffer->begin();
+
+    if (device_group_supported) {
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkRenderPassBeginInfo-pNext-02850");
+    } else {
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkRenderPassBeginInfo-renderArea-02846");
+    }
+    m_commandBuffer->BeginRenderPass(rpbinfo);
+    m_errorMonitor->VerifyFound();
+
+    rpbinfo.renderArea.offset.x = 0;
+    rpbinfo.renderArea.offset.y = -128;
+
+    if (device_group_supported) {
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkRenderPassBeginInfo-pNext-02851");
+    } else {
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkRenderPassBeginInfo-renderArea-02847");
+    }
+    m_commandBuffer->BeginRenderPass(rpbinfo);
+    m_errorMonitor->VerifyFound();
+
+    rpbinfo.renderArea.offset.y = 0;
+    rpbinfo.renderArea.extent.width = m_framebuffer_info.width + 128;
+
+    if (device_group_supported) {
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkRenderPassBeginInfo-pNext-02852");
+    } else {
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkRenderPassBeginInfo-renderArea-02848");
+    }
+    m_commandBuffer->BeginRenderPass(rpbinfo);
+    m_errorMonitor->VerifyFound();
+
+    rpbinfo.renderArea.extent.width = m_framebuffer_info.width;
+    rpbinfo.renderArea.extent.height = m_framebuffer_info.height + 1;
+
+    if (device_group_supported) {
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkRenderPassBeginInfo-pNext-02853");
+    } else {
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkRenderPassBeginInfo-renderArea-02849");
+    }
+    m_commandBuffer->BeginRenderPass(rpbinfo);
+    m_errorMonitor->VerifyFound();
+
+    m_commandBuffer->end();
+}
+
+TEST_F(VkLayerTest, SwapchainAcquireImageRetired) {
+    TEST_DESCRIPTION("Test vkAcquireNextImageKHR with retired swapchain");
+    SetTargetApiVersion(VK_API_VERSION_1_1);
+
+    if (!AddSurfaceInstanceExtension()) {
+        printf("%s surface extensions not supported, skipping test\n", kSkipPrefix);
+        return;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+
+    if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
+        printf("%s vkAcquireNextImage2KHR not supported, skipping test\n", kSkipPrefix);
+        return;
+    }
+
+    if (DeviceExtensionSupported(gpu(), nullptr, VK_KHR_DEVICE_GROUP_EXTENSION_NAME)) {
+        m_device_extension_names.push_back(VK_KHR_DEVICE_GROUP_EXTENSION_NAME);
+    } else if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
+        printf("%s vkAcquireNextImage2KHR not supported, skipping test\n", kSkipPrefix);
+        return;
+    }
+
+    if (!AddSwapchainDeviceExtension()) {
+        printf("%s swapchain extensions not supported, skipping test\n", kSkipPrefix);
+        return;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitState());
+    ASSERT_TRUE(InitSwapchain());
+
+    VkSwapchainCreateInfoKHR swapchain_create_info = LvlInitStruct<VkSwapchainCreateInfoKHR>();
+    swapchain_create_info.surface = m_surface;
+    swapchain_create_info.minImageCount = m_surface_capabilities.minImageCount;
+    swapchain_create_info.imageFormat = m_surface_formats[0].format;
+    swapchain_create_info.imageColorSpace = m_surface_formats[0].colorSpace;
+    swapchain_create_info.imageExtent = {m_surface_capabilities.minImageExtent.width, m_surface_capabilities.minImageExtent.height};
+    swapchain_create_info.imageArrayLayers = 1;
+    swapchain_create_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    swapchain_create_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    swapchain_create_info.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
+    swapchain_create_info.compositeAlpha = m_surface_composite_alpha;
+    swapchain_create_info.presentMode = m_surface_non_shared_present_mode;
+    swapchain_create_info.clipped = VK_FALSE;
+    swapchain_create_info.oldSwapchain = m_swapchain;
+
+    VkSwapchainKHR swapchain;
+    vk::CreateSwapchainKHR(device(), &swapchain_create_info, nullptr, &swapchain);
+
+    VkSemaphoreCreateInfo semaphore_create_info = LvlInitStruct<VkSemaphoreCreateInfo>();
+    VkSemaphore semaphore;
+    ASSERT_VK_SUCCESS(vk::CreateSemaphore(m_device->device(), &semaphore_create_info, nullptr, &semaphore));
+
+    VkAcquireNextImageInfoKHR acquire_info = LvlInitStruct<VkAcquireNextImageInfoKHR>();
+    acquire_info.swapchain = m_swapchain;
+    acquire_info.timeout = std::numeric_limits<uint64_t>::max();
+    acquire_info.semaphore = semaphore;
+    acquire_info.fence = VK_NULL_HANDLE;
+    acquire_info.deviceMask = 0x1;
+
+    uint32_t dummy;
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkAcquireNextImageKHR-swapchain-01285");
+    vk::AcquireNextImageKHR(device(), m_swapchain, std::numeric_limits<uint64_t>::max(), semaphore, VK_NULL_HANDLE, &dummy);
+    m_errorMonitor->VerifyFound();
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkAcquireNextImageInfoKHR-swapchain-01675");
+    vk::AcquireNextImage2KHR(device(), &acquire_info, &dummy);
+    m_errorMonitor->VerifyFound();
+
+    DestroySwapchain();
+}
+
+TEST_F(VkLayerTest, InvalidDeviceGroupRenderArea) {
+    TEST_DESCRIPTION("Begin render pass with device group render area that is not within the framebuffer.");
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+    if (!DeviceExtensionSupported(gpu(), nullptr, VK_KHR_DEVICE_GROUP_EXTENSION_NAME)) {
+        printf("%s %s extension not supported skipped.\n", kSkipPrefix, VK_KHR_DEVICE_GROUP_EXTENSION_NAME);
+        return;
+    }
+    m_device_extension_names.push_back(VK_KHR_DEVICE_GROUP_EXTENSION_NAME);
+    ASSERT_NO_FATAL_FAILURE(InitState());
+    ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
+
+    VkRect2D renderArea = {};
+    renderArea.offset.x = -1;
+    renderArea.offset.y = -1;
+    renderArea.extent.width = 64;
+    renderArea.extent.height = 64;
+
+    VkDeviceGroupRenderPassBeginInfo device_group_render_pass_begin_info = LvlInitStruct<VkDeviceGroupRenderPassBeginInfo>();
+    device_group_render_pass_begin_info.deviceMask = 0x1;
+    device_group_render_pass_begin_info.deviceRenderAreaCount = 1;
+    device_group_render_pass_begin_info.pDeviceRenderAreas = &renderArea;
+
+    VkRenderPassBeginInfo rpbinfo = LvlInitStruct<VkRenderPassBeginInfo>(&device_group_render_pass_begin_info);
+    rpbinfo.renderPass = m_renderPass;
+    rpbinfo.framebuffer = m_framebuffer;
+    rpbinfo.renderArea.extent.width = m_framebuffer_info.width;
+    rpbinfo.renderArea.extent.height = m_framebuffer_info.height;
+    rpbinfo.renderArea.offset.x = -32;
+    rpbinfo.renderArea.offset.y = 0;
+    rpbinfo.clearValueCount = 1;
+    rpbinfo.pClearValues = m_renderPassClearValues.data();
+
+    m_commandBuffer->begin();
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkRenderPassBeginInfo-pNext-02854");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkRenderPassBeginInfo-pNext-02855");
+    m_commandBuffer->BeginRenderPass(rpbinfo);
+    m_errorMonitor->VerifyFound();
+
+    renderArea.offset.x = 0;
+    renderArea.offset.y = 1;
+    renderArea.extent.width = m_framebuffer_info.width + 1;
+    renderArea.extent.height = m_framebuffer_info.height;
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkRenderPassBeginInfo-pNext-02856");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkRenderPassBeginInfo-pNext-02857");
+    m_commandBuffer->BeginRenderPass(rpbinfo);
+    m_errorMonitor->VerifyFound();
+
+    m_commandBuffer->end();
+}
+
+TEST_F(VkLayerTest, RenderPassBeginNullValues) {
+    TEST_DESCRIPTION("Test invalid null entries for clear color");
+
+    ASSERT_NO_FATAL_FAILURE(InitFramework());
+    ASSERT_NO_FATAL_FAILURE(InitState());
+    ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
+
+    auto rpbi = m_renderPassBeginInfo;
+    rpbi.clearValueCount = 1;
+    rpbi.pClearValues = nullptr;  // clearValueCount != 0, but pClearValues = null, leads to 04962
+    TestRenderPassBegin(m_errorMonitor, m_device->device(), m_commandBuffer->handle(), &rpbi, false,
+                        "VUID-VkRenderPassBeginInfo-clearValueCount-04962", nullptr);
 }

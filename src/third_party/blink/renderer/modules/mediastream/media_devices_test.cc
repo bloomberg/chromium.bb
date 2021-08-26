@@ -49,12 +49,12 @@ String MaxLengthCaptureHandle() {
   return maxHandle;
 }
 
-class MockMediaDevicesDispatcherHost
+class MockMediaDevicesDispatcherHost final
     : public mojom::blink::MediaDevicesDispatcherHost {
  public:
   MockMediaDevicesDispatcherHost() {}
 
-  ~MockMediaDevicesDispatcherHost() final {
+  ~MockMediaDevicesDispatcherHost() override {
     EXPECT_FALSE(expected_capture_handle_config_);
   }
 
@@ -193,7 +193,7 @@ class MockMediaDevicesDispatcherHost
               expected_config->all_origins_permitted);
     ASSERT_EQ(config->permitted_origins.size(),
               expected_config->permitted_origins.size());
-    for (size_t i = 0; i < config->permitted_origins.size(); ++i) {
+    for (wtf_size_t i = 0; i < config->permitted_origins.size(); ++i) {
       EXPECT_TRUE(config->permitted_origins[i]->IsSameOriginWith(
           expected_config->permitted_origins[i].get()));
     }

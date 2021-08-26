@@ -11,6 +11,7 @@
 <translation id="1546934824884762070">ਅਚਾਨਕ ਇੱਕ ਗੜਬੜ ਹੋਈ ਸੀ। ਕਿਰਪਾ ਕਰਕੇ ਵਿਕਾਸਕਾਰਾਂ ਨੂੰ ਇਸ ਸਮੱਸਿਆ ਦੀ ਰਿਪੋਰਟ ਕਰੋ।</translation>
 <translation id="1697532407822776718">ਤੁਸੀਂ ਸਾਰਾ ਸੈਟ ਕਰ ਲਿਆ ਹੈ!</translation>
 <translation id="1742469581923031760">ਕਨੈਕਟ ਕਰ ਰਿਹਾ ਹੈ…</translation>
+<translation id="177040763384871009">ਰਿਮੋਟ ਡੀਵਾਈਸ 'ਤੇ ਕਲਿੱਕ ਕੀਤੇ ਲਿੰਕਾਂ ਨੂੰ ਕਲਾਇੰਟ ਬ੍ਰਾਊਜ਼ਰ 'ਤੇ ਖੋਲ੍ਹਣ ਦੀ ਆਗਿਆ ਦੇਣ ਲਈ, ਤੁਹਾਨੂੰ ਸਿਸਟਮ ਦੇ ਵੈੱਬ ਬ੍ਰਾਊਜ਼ਰ ਨੂੰ "<ph name="URL_FORWARDER_NAME" />" ਵਿੱਚ ਬਦਲਣ ਦੀ ਲੋੜ ਹੈ।</translation>
 <translation id="177096447311351977">ਕਲਾਇੰਟ ਲਈ ਚੈਨਲ IP: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' ਚੈਨਲ='<ph name="CHANNEL_TYPE" />' ਕਨੈਕਸ਼ਨ='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1897488610212723051">ਮਿਟਾਓ</translation>
 <translation id="2009755455353575666">ਕਨੈਕਸ਼ਨ ਅਸਫਲ</translation>
@@ -129,6 +130,7 @@
 <translation id="6963936880795878952">ਰਿਮੋਟ ਕੰਪਿਊਟਰ 'ਤੇ ਕਨੈਕਸ਼ਨਾਂ ਨੂੰ ਅਸਥਾਈ ਤੌਰ 'ਤੇ ਬਲਾਕ ਕੀਤਾ ਗਿਆ ਹੈ ਕਿਉਂਕਿ ਕੋਈ ਵਿਅਕਤੀ ਅਵੈਧ ਪਿੰਨ ਨਾਲ ਇਸ ਨਾਲ ਕਨੈਕਟ ਹੋਣ ਦੀ ਕੋਸ਼ਿਸ਼ ਕਰ ਰਿਹਾ ਸੀ। ਕਿਰਪਾ ਕਰਕੇ ਬਾਅਦ ਵਿੱਚ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।</translation>
 <translation id="6965382102122355670">ਠੀਕ</translation>
 <translation id="6985691951107243942">ਕੀ ਤੁਸੀਂ ਪੱਕਾ <ph name="HOSTNAME" /> ਲਈ ਰਿਮੋਟ ਕਨੈਕਸ਼ਨਾਂ ਨੂੰ ਬੰਦ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ? ਜੇਕਰ ਤੁਸੀਂ ਆਪਣਾ ਵਿਚਾਰ ਬਦਲਦੇ ਹੋ, ਤਾਂ ਤੁਹਾਨੂੰ ਕਨੈਕਸ਼ਨਾਂ ਨੂੂੰ ਮੁੜ ਚਾਲੂ ਕਰਨ ਲਈ ਉਸ ਕੰਪਿਊਟਰ 'ਤੇ ਜਾਣਾ ਪਵੇਗਾ।</translation>
+<translation id="6998890551706945177"><ph name="CLIENT_USERNAME" /> ਨੇ ਤੁਹਾਡੇ ਕੰਪਿਊਟਰ ਨੂੰ ਦੇਖਣ ਅਤੇ ਕੰਟਰੋਲ ਕਰਨ ਲਈ ਪਹੁੰਚ ਦੀ ਬੇਨਤੀ ਕੀਤੀ ਹੈ। ਜੇ ਤੁਸੀਂ ਇਸ ਵਿਅਕਤੀ ਨੂੰ ਨਹੀਂ ਜਾਣਦੇ ਹੋ ਜਾਂ ਸਾਂਝਾ ਕਰਨ ਤੋਂ ਪਹਿਲਾਂ ਤੁਹਾਨੂੰ ਕੋਈ ਵੀ ਤਬਦੀਲੀ ਕਰਨ ਦੀ ਲੋੜ ਹੈ, ਤਾਂ ''<ph name="IDS_SHARE_CONFIRM_DIALOG_DECLINE" />'' ਦਬਾਓ।  ਨਹੀਂ ਤਾਂ ਕਨੈਕਸ਼ਨ ਦੀ ਆਗਿਆ ਦੇਣ ਲਈ ''<ph name="IDS_SHARE_CONFIRM_DIALOG_CONFIRM" />'' ਚੁਣੋ।</translation>
 <translation id="7019153418965365059">ਬਿਨਾਂ ਪਛਾਣੀ ਗਈ ਹੋਸਟ ਗੜਬੜ: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">ਰਿਮੋਟ ਸਹਾਇਤਾ</translation>
 <translation id="7026930240735156896">ਦੂਰ-ਦੁਰਾਡੇ ਤੋਂ ਪਹੁੰਚ ਵਾਸਤੇ ਆਪਣੇ ਕੰਪਿਊਟਰ ਦਾ ਸੈੱਟਅੱਪ ਕਰਨ ਲਈ ਹਿਦਾਇਤਾਂ ਦੀ ਪਾਲਣਾ ਕਰੋ</translation>
@@ -142,6 +144,7 @@
 <translation id="7434397035092923453">ਕਲਾਇੰਟ ਲਈ ਪਹੁੰਚ ਅਸਵੀਕਾਰ ਕੀਤੀ ਗਈ: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">ਕਲਾਇੰਟ ਕਨੈਕਟ ਕੀਤਾ ਗਿਆ: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7526139040829362392">ਖਾਤਾ ਬਦਲੋ</translation>
+<translation id="7535110896613603182">ਪੂਰਵ-ਨਿਰਧਾਰਿਤ ਐਪਾਂ ਦੀਆਂ ਸੈਟਿੰਗਾਂ ਖੋਲ੍ਹੋ</translation>
 <translation id="7628469622942688817">ਇਸ ਡੀਵਾਈਸ 'ਤੇ ਮੇਰਾ ਪਿੰਨ ਯਾਦ ਰੱਖੋ।</translation>
 <translation id="7649070708921625228">ਸਹਾਇਤਾ</translation>
 <translation id="7658239707568436148">ਰੱਦ ਕਰੋ</translation>

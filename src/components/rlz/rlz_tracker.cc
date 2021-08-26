@@ -12,7 +12,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/numerics/ranges.h"
+#include "base/cxx17_backports.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -26,6 +26,7 @@
 #include "components/rlz/rlz_tracker_delegate.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 
@@ -284,7 +285,7 @@ bool RLZTracker::Init(bool first_run,
   if (delegate_->ShouldEnableZeroDelayForTesting())
     EnableZeroDelayForTesting();
 
-  delay = base::ClampToRange(delay, min_init_delay_, kMaxInitDelay);
+  delay = base::clamp(delay, min_init_delay_, kMaxInitDelay);
 
   if (delegate_->GetBrand(&brand_) && !delegate_->IsBrandOrganic(brand_)) {
     // Register for notifications from the omnibox so that we can record when

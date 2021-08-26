@@ -85,9 +85,7 @@ class CloneContext {
   ~CloneContext();
 
   /// Clones the Node or sem::Type `a` into the ProgramBuilder #dst if `a` is
-  /// not null. If `a` is null, then Clone() returns null. If `a` has been
-  /// cloned already by this CloneContext then the same cloned pointer is
-  /// returned.
+  /// not null. If `a` is null, then Clone() returns null.
   ///
   /// Clone() may use a function registered with ReplaceAll() to create a
   /// transformed version of the object. See ReplaceAll() for more information.
@@ -111,7 +109,9 @@ class CloneContext {
     // Was Replace() called for this object?
     auto it = replacements_.find(a);
     if (it != replacements_.end()) {
-      return CheckedCast<T>(it->second);
+      auto* replacement = it->second();
+      TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(Clone, dst, replacement);
+      return CheckedCast<T>(replacement);
     }
 
     Cloneable* cloned = nullptr;
@@ -140,9 +140,7 @@ class CloneContext {
   }
 
   /// Clones the Node or sem::Type `a` into the ProgramBuilder #dst if `a` is
-  /// not null. If `a` is null, then Clone() returns null. If `a` has been
-  /// cloned already by this CloneContext then the same cloned pointer is
-  /// returned.
+  /// not null. If `a` is null, then Clone() returns null.
   ///
   /// Unlike Clone(), this method does not invoke or use any transformations
   /// registered by ReplaceAll().
@@ -158,22 +156,10 @@ class CloneContext {
     if (a == nullptr) {
       return nullptr;
     }
-
     if (src) {
       TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(Clone, src, a);
     }
-
-    // Have we seen this object before? If so, return the previously cloned
-    // version instead of making yet another copy.
-    auto it = replacements_.find(a);
-    if (it != replacements_.end()) {
-      return CheckedCast<T>(it->second);
-    }
-
-    // First time clone and no replacer transforms matched.
-    // Clone with T::Clone().
     auto* c = a->Clone(this);
-    replacements_.emplace(a, c);
     return CheckedCast<T>(c);
   }
 
@@ -358,8 +344,10 @@ class CloneContext {
     return *this;
   }
 
-  /// Replace replaces all occurrences of `what` in #src with `with` in #dst
-  /// when calling Clone().
+  /// Replace replaces all occurrences of `what` in #src with the pointer `with`
+  /// in #dst when calling Clone().
+  /// [DEPRECATED]: This function cannot handle nested replacements. Use the
+  /// overload of Replace() that take a function for the `WITH` argument.
   /// @param what a pointer to the object in #src that will be replaced with
   /// `with`
   /// @param with a pointer to the replacement object owned by #dst that will be
@@ -368,10 +356,32 @@ class CloneContext {
   /// references of the original object. A type mismatch will result in an
   /// assertion in debug builds, and undefined behavior in release builds.
   /// @returns this CloneContext so calls can be chained
-  template <typename WHAT, typename WITH>
+  template <typename WHAT,
+            typename WITH,
+            typename = traits::EnableIfIsType<WITH, Cloneable>>
   CloneContext& Replace(WHAT* what, WITH* with) {
     TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(Clone, src, what);
     TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(Clone, dst, with);
+    replacements_[what] = [with]() -> Cloneable* { return with; };
+    return *this;
+  }
+
+  /// Replace replaces all occurrences of `what` in #src with the result of the
+  /// function `with` in #dst when calling Clone(). `with` will be called each
+  /// time `what` is cloned by this context. If `what` is not cloned, then
+  /// `with` may never be called.
+  /// @param what a pointer to the object in #src that will be replaced with
+  /// `with`
+  /// @param with a function that takes no arguments and returns a pointer to
+  /// the replacement object owned by #dst. The returned pointer will be used as
+  /// a replacement for `what`.
+  /// @warning The replacement object must be of the correct type for all
+  /// references of the original object. A type mismatch will result in an
+  /// assertion in debug builds, and undefined behavior in release builds.
+  /// @returns this CloneContext so calls can be chained
+  template <typename WHAT, typename WITH, typename = std::result_of_t<WITH()>>
+  CloneContext& Replace(WHAT* what, WITH&& with) {
+    TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(Clone, src, what);
     replacements_[what] = with;
     return *this;
   }
@@ -503,12 +513,15 @@ class CloneContext {
   /// Reports an internal compiler error if the cast failed.
   template <typename TO, typename FROM>
   TO* CheckedCast(FROM* obj) {
-    if (TO* cast = As<TO>(obj)) {
+    if (obj == nullptr) {
+      return nullptr;
+    }
+    if (TO* cast = obj->template As<TO>()) {
       return cast;
     }
     TINT_ICE(Clone, Diagnostics())
         << "Cloned object was not of the expected type\n"
-        << "got:      " << (obj ? obj->TypeInfo().name : "<null>") << "\n"
+        << "got:      " << obj->TypeInfo().name << "\n"
         << "expected: " << TypeInfo::Of<TO>().name;
     return nullptr;
   }
@@ -548,8 +561,10 @@ class CloneContext {
     std::unordered_map<const Cloneable*, CloneableList> insert_after_;
   };
 
-  /// A map of object in #src to their replacement in #dst
-  std::unordered_map<const Cloneable*, Cloneable*> replacements_;
+  /// A map of object in #src to functions that create their replacement in
+  /// #dst
+  std::unordered_map<const Cloneable*, std::function<Cloneable*()>>
+      replacements_;
 
   /// A map of symbol in #src to their cloned equivalent in #dst
   std::unordered_map<Symbol, Symbol> cloned_symbols_;

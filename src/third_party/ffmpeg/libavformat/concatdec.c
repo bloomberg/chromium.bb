@@ -18,14 +18,15 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "libavutil/avassert.h"
 #include "libavutil/avstring.h"
 #include "libavutil/bprint.h"
 #include "libavutil/intreadwrite.h"
 #include "libavutil/opt.h"
 #include "libavutil/parseutils.h"
 #include "libavutil/timestamp.h"
+#include "libavcodec/bsf.h"
 #include "avformat.h"
+#include "avio_internal.h"
 #include "internal.h"
 #include "url.h"
 
@@ -510,12 +511,9 @@ static int concat_read_header(AVFormatContext *avf)
                                                MATCH_ONE_TO_ONE;
     if ((ret = open_file(avf, 0)) < 0)
         goto fail;
-    av_bprint_finalize(&bp, NULL);
-    return 0;
 
 fail:
     av_bprint_finalize(&bp, NULL);
-    concat_read_close(avf);
     return ret;
 }
 
@@ -638,8 +636,8 @@ static int concat_read_packet(AVFormatContext *avf, AVPacket *pkt)
         }
     }
 
-    if (cat->cur_file->duration == AV_NOPTS_VALUE && st->cur_dts != AV_NOPTS_VALUE) {
-        int64_t next_dts = av_rescale_q(st->cur_dts, st->time_base, AV_TIME_BASE_Q);
+    if (cat->cur_file->duration == AV_NOPTS_VALUE && st->internal->cur_dts != AV_NOPTS_VALUE) {
+        int64_t next_dts = av_rescale_q(st->internal->cur_dts, st->time_base, AV_TIME_BASE_Q);
         if (cat->cur_file->next_dts == AV_NOPTS_VALUE || next_dts > cat->cur_file->next_dts) {
             cat->cur_file->next_dts = next_dts;
         }
@@ -779,6 +777,7 @@ const AVInputFormat ff_concat_demuxer = {
     .name           = "concat",
     .long_name      = NULL_IF_CONFIG_SMALL("Virtual concatenation script"),
     .priv_data_size = sizeof(ConcatContext),
+    .flags_internal = FF_FMT_INIT_CLEANUP,
     .read_probe     = concat_probe,
     .read_header    = concat_read_header,
     .read_packet    = concat_read_packet,

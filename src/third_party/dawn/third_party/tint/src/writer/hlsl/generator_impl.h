@@ -155,6 +155,14 @@ class GeneratorImpl : public TextGenerator {
   /// @param expr the call expression
   /// @returns true if the call expression is emitted
   bool EmitSelectCall(std::ostream& out, ast::CallExpression* expr);
+  /// Handles generating a call to the `modf()` intrinsic
+  /// @param out the output of the expression stream
+  /// @param expr the call expression
+  /// @param intrinsic the semantic information for the intrinsic
+  /// @returns true if the call expression is emitted
+  bool EmitModfCall(std::ostream& out,
+                    ast::CallExpression* expr,
+                    const sem::Intrinsic* intrinsic);
   /// Handles generating a call to the `frexp()` intrinsic
   /// @param out the output of the expression stream
   /// @param expr the call expression
@@ -188,9 +196,10 @@ class GeneratorImpl : public TextGenerator {
                              ast::CallExpression* expr,
                              const sem::Intrinsic* intrinsic);
   /// Handles a case statement
-  /// @param stmt the statement
+  /// @param s the switch statement
+  /// @param case_idx the index of the switch case in the switch statement
   /// @returns true if the statement was emitted successfully
-  bool EmitCase(ast::CaseStatement* stmt);
+  bool EmitCase(ast::SwitchStatement* s, size_t case_idx);
   /// Handles generating constructor expressions
   /// @param out the output of the expression stream
   /// @param expr the constructor expression
@@ -320,7 +329,7 @@ class GeneratorImpl : public TextGenerator {
   /// @param type the type to generate
   /// @param storage_class the storage class of the variable
   /// @param access the access control type of the variable
-  /// @param name the name of the variable, used for array emission.
+  /// @param name the name to emit
   /// @returns true if the type is emitted
   bool EmitTypeAndName(std::ostream& out,
                        const sem::Type* type,
@@ -328,9 +337,10 @@ class GeneratorImpl : public TextGenerator {
                        ast::Access access,
                        const std::string& name);
   /// Handles generating a structure declaration
+  /// @param buffer the text buffer that the type declaration will be written to
   /// @param ty the struct to generate
   /// @returns true if the struct is emitted
-  bool EmitStructType(const sem::Struct* ty);
+  bool EmitStructType(TextBuffer* buffer, const sem::Struct* ty);
   /// Handles a unary op expression
   /// @param out the output of the expression stream
   /// @param expr the expression to emit
@@ -400,12 +410,30 @@ class GeneratorImpl : public TextGenerator {
     };
   };
 
-  std::string get_buffer_name(ast::Expression* expr);
+  /// CallIntrinsicHelper will call the intrinsic helper function, creating it
+  /// if it hasn't been built already. If the intrinsic needs to be built then
+  /// CallIntrinsicHelper will generate the function signature and will call
+  /// `build` to emit the body of the function.
+  /// @param out the output of the expression stream
+  /// @param call the call expression
+  /// @param intrinsic the semantic information for the intrinsic
+  /// @param build a function with the signature:
+  ///        `bool(TextBuffer* buffer, const std::vector<std::string>& params)`
+  ///        Where:
+  ///          `buffer` is the body of the generated function
+  ///          `params` is the name of all the generated function parameters
+  /// @returns true if the call expression is emitted
+  template <typename F>
+  bool CallIntrinsicHelper(std::ostream& out,
+                           ast::CallExpression* call,
+                           const sem::Intrinsic* intrinsic,
+                           F&& build);
 
   TextBuffer helpers_;  // Helper functions emitted at the top of the output
   std::function<bool()> emit_continuing_;
   std::unordered_map<DMAIntrinsic, std::string, DMAIntrinsic::Hasher>
       dma_intrinsics_;
+  std::unordered_map<const sem::Intrinsic*, std::string> intrinsics_;
   std::unordered_map<const sem::Struct*, std::string> structure_builders_;
   std::unordered_map<const sem::Vector*, std::string> dynamic_vector_write_;
 };

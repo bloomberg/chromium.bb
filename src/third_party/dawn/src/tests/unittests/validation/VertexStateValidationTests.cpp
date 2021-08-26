@@ -291,33 +291,44 @@ TEST_F(VertexStateTest, SetAttributeOffsetOutOfBounds) {
     CreatePipeline(false, state, kDummyVertexShader);
 }
 
-// Check the "component byte size" alignment constraint for the offset.
+// Check the min(4, formatSize) alignment constraint for the offset.
 TEST_F(VertexStateTest, SetOffsetNotAligned) {
     // Control case, setting the offset at the correct alignments.
     utils::ComboVertexStateDescriptor state;
     state.vertexBufferCount = 1;
     state.cVertexBuffers[0].attributeCount = 1;
 
+    // Test that for small formats, the offset must be aligned to the format size.
     state.cAttributes[0].format = wgpu::VertexFormat::Float32;
     state.cAttributes[0].offset = 4;
     CreatePipeline(true, state, kDummyVertexShader);
-
-    state.cAttributes[0].format = wgpu::VertexFormat::Snorm16x2;
-    state.cAttributes[0].offset = 2;
-    CreatePipeline(true, state, kDummyVertexShader);
-
-    state.cAttributes[0].format = wgpu::VertexFormat::Uint8x2;
-    state.cAttributes[0].offset = 1;
-    CreatePipeline(true, state, kDummyVertexShader);
-
-    // Test offset not multiple of the component byte size.
-    state.cAttributes[0].format = wgpu::VertexFormat::Float32;
     state.cAttributes[0].offset = 2;
     CreatePipeline(false, state, kDummyVertexShader);
 
     state.cAttributes[0].format = wgpu::VertexFormat::Snorm16x2;
+    state.cAttributes[0].offset = 4;
+    CreatePipeline(true, state, kDummyVertexShader);
+    state.cAttributes[0].offset = 2;
+    CreatePipeline(false, state, kDummyVertexShader);
+
+    state.cAttributes[0].format = wgpu::VertexFormat::Unorm8x2;
+    state.cAttributes[0].offset = 2;
+    CreatePipeline(true, state, kDummyVertexShader);
     state.cAttributes[0].offset = 1;
     CreatePipeline(false, state, kDummyVertexShader);
+
+    // Test that for large formts the offset only needs to be aligned to 4.
+    state.cAttributes[0].format = wgpu::VertexFormat::Snorm16x4;
+    state.cAttributes[0].offset = 4;
+    CreatePipeline(true, state, kDummyVertexShader);
+
+    state.cAttributes[0].format = wgpu::VertexFormat::Uint32x3;
+    state.cAttributes[0].offset = 4;
+    CreatePipeline(true, state, kDummyVertexShader);
+
+    state.cAttributes[0].format = wgpu::VertexFormat::Sint32x4;
+    state.cAttributes[0].offset = 4;
+    CreatePipeline(true, state, kDummyVertexShader);
 }
 
 // Check attribute offset overflow
@@ -337,4 +348,81 @@ TEST_F(VertexStateTest, VertexFormatLargerThanNonZeroStride) {
     state.cVertexBuffers[0].attributeCount = 1;
     state.cAttributes[0].format = wgpu::VertexFormat::Float32x4;
     CreatePipeline(false, state, kDummyVertexShader);
+}
+
+// Check that the vertex format base type must match the shader's variable base type.
+TEST_F(VertexStateTest, BaseTypeMatching) {
+    auto DoTest = [&](wgpu::VertexFormat format, std::string shaderType, bool success) {
+        utils::ComboVertexStateDescriptor state;
+        state.vertexBufferCount = 1;
+        state.cVertexBuffers[0].arrayStride = 16;
+        state.cVertexBuffers[0].attributeCount = 1;
+        state.cAttributes[0].format = format;
+
+        std::string shader = "[[stage(vertex)]] fn main([[location(0)]] attrib : " + shaderType +
+                             R"() -> [[builtin(position)]] vec4<f32> {
+            return vec4<f32>(0.0, 0.0, 0.0, 0.0);
+        })";
+
+        CreatePipeline(success, state, shader.c_str());
+    };
+
+    // Test that a float format is compatible only with f32 base type.
+    DoTest(wgpu::VertexFormat::Float32, "f32", true);
+    DoTest(wgpu::VertexFormat::Float32, "i32", false);
+    DoTest(wgpu::VertexFormat::Float32, "u32", false);
+
+    // Test that an unorm format is compatible only with f32.
+    DoTest(wgpu::VertexFormat::Unorm16x2, "f32", true);
+    DoTest(wgpu::VertexFormat::Unorm16x2, "i32", false);
+    DoTest(wgpu::VertexFormat::Unorm16x2, "u32", false);
+
+    // Test that an snorm format is compatible only with f32.
+    DoTest(wgpu::VertexFormat::Snorm16x4, "f32", true);
+    DoTest(wgpu::VertexFormat::Snorm16x4, "i32", false);
+    DoTest(wgpu::VertexFormat::Snorm16x4, "u32", false);
+
+    // Test that an uint format is compatible only with u32.
+    DoTest(wgpu::VertexFormat::Uint32x3, "f32", false);
+    DoTest(wgpu::VertexFormat::Uint32x3, "i32", false);
+    DoTest(wgpu::VertexFormat::Uint32x3, "u32", true);
+
+    // Test that an sint format is compatible only with u32.
+    DoTest(wgpu::VertexFormat::Sint8x4, "f32", false);
+    DoTest(wgpu::VertexFormat::Sint8x4, "i32", true);
+    DoTest(wgpu::VertexFormat::Sint8x4, "u32", false);
+
+    // Test that formats are compatible with any width of vectors.
+    DoTest(wgpu::VertexFormat::Float32, "f32", true);
+    DoTest(wgpu::VertexFormat::Float32, "vec2<f32>", true);
+    DoTest(wgpu::VertexFormat::Float32, "vec3<f32>", true);
+    DoTest(wgpu::VertexFormat::Float32, "vec4<f32>", true);
+
+    DoTest(wgpu::VertexFormat::Float32x4, "f32", true);
+    DoTest(wgpu::VertexFormat::Float32x4, "vec2<f32>", true);
+    DoTest(wgpu::VertexFormat::Float32x4, "vec3<f32>", true);
+    DoTest(wgpu::VertexFormat::Float32x4, "vec4<f32>", true);
+}
+
+// Check that we only check base type compatibility for vertex inputs the shader uses.
+TEST_F(VertexStateTest, BaseTypeMatchingForInexistentInput) {
+    auto DoTest = [&](wgpu::VertexFormat format) {
+        utils::ComboVertexStateDescriptor state;
+        state.vertexBufferCount = 1;
+        state.cVertexBuffers[0].arrayStride = 16;
+        state.cVertexBuffers[0].attributeCount = 1;
+        state.cAttributes[0].format = format;
+
+        std::string shader = R"([[stage(vertex)]] fn main() -> [[builtin(position)]] vec4<f32> {
+            return vec4<f32>(0.0, 0.0, 0.0, 0.0);
+        })";
+
+        CreatePipeline(true, state, shader.c_str());
+    };
+
+    DoTest(wgpu::VertexFormat::Float32);
+    DoTest(wgpu::VertexFormat::Unorm16x2);
+    DoTest(wgpu::VertexFormat::Snorm16x4);
+    DoTest(wgpu::VertexFormat::Uint8x4);
+    DoTest(wgpu::VertexFormat::Sint32x2);
 }

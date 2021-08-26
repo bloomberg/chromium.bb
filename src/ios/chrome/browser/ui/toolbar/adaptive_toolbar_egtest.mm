@@ -71,11 +71,6 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   return std::move(http_response);
 }
 
-// Returns a matcher for the bookmark button.
-id<GREYMatcher> BookmarkButton() {
-  return chrome_test_util::ButtonWithAccessibilityLabelId(IDS_TOOLTIP_STAR);
-}
-
 // Returns a matcher for the visible share button.
 id<GREYMatcher> ShareButton() {
   return grey_allOf(grey_accessibilityID(kToolbarShareButtonIdentifier),
@@ -212,7 +207,6 @@ void CheckButtonsVisibilityIPhonePortrait(BOOL omniboxFocused) {
 
     CheckVisibilityInToolbar(ShareButton(), ButtonVisibilityNone);
     CheckVisibilityInToolbar(ReloadButton(), ButtonVisibilityNone);
-    CheckVisibilityInToolbar(BookmarkButton(), ButtonVisibilityNone);
 
     // Those buttons are hidden by the keyboard.
     CheckVisibilityInToolbar(BackButton(), ButtonVisibilityNone);
@@ -225,7 +219,6 @@ void CheckButtonsVisibilityIPhonePortrait(BOOL omniboxFocused) {
 
     CheckVisibilityInToolbar(ShareButton(), ButtonVisibilityNone);
     CheckVisibilityInToolbar(ReloadButton(), ButtonVisibilityNone);
-    CheckVisibilityInToolbar(BookmarkButton(), ButtonVisibilityNone);
 
     CheckVisibilityInToolbar(BackButton(), ButtonVisibilitySecondary);
     CheckVisibilityInToolbar(ForwardButton(), ButtonVisibilitySecondary);
@@ -243,7 +236,6 @@ void CheckButtonsVisibilityIPhoneLandscape(BOOL omniboxFocused) {
 
     CheckVisibilityInToolbar(ShareButton(), ButtonVisibilityNone);
     CheckVisibilityInToolbar(ReloadButton(), ButtonVisibilityNone);
-    CheckVisibilityInToolbar(BookmarkButton(), ButtonVisibilityNone);
 
     CheckVisibilityInToolbar(BackButton(), ButtonVisibilityNone);
     CheckVisibilityInToolbar(ForwardButton(), ButtonVisibilityNone);
@@ -255,7 +247,6 @@ void CheckButtonsVisibilityIPhoneLandscape(BOOL omniboxFocused) {
 
     CheckVisibilityInToolbar(ShareButton(), ButtonVisibilityPrimary);
     CheckVisibilityInToolbar(ReloadButton(), ButtonVisibilityPrimary);
-    CheckVisibilityInToolbar(BookmarkButton(), ButtonVisibilityNone);
 
     CheckVisibilityInToolbar(BackButton(), ButtonVisibilityPrimary);
     CheckVisibilityInToolbar(ForwardButton(), ButtonVisibilityPrimary);
@@ -276,7 +267,6 @@ void CheckButtonsVisibilityIPad() {
 
   CheckVisibilityInToolbar(ShareButton(), ButtonVisibilityPrimary);
   CheckVisibilityInToolbar(ReloadButton(), ButtonVisibilityPrimary);
-  CheckVisibilityInToolbar(BookmarkButton(), ButtonVisibilityNone);
   CheckVisibilityInToolbar(TabGridButton(), ButtonVisibilityPrimary);
 
   CheckVisibilityInToolbar(BackButton(), ButtonVisibilityPrimary);
@@ -563,8 +553,7 @@ UIViewController* TopPresentedViewController() {
 
 // Test that the bottom toolbar is still visible after closing the last
 // incognito tab using long press. See https://crbug.com/849937.
-// TODO(crbug.com/1229034): Fix flakiness
-- (void)DISABLED_testBottomToolbarHeightAfterClosingTab {
+- (void)testBottomToolbarHeightAfterClosingTab {
   if (![ChromeEarlGrey isSplitToolbarMode])
     EARL_GREY_TEST_SKIPPED(@"This test needs a bottom toolbar.");
   // Close all tabs.
@@ -581,7 +570,7 @@ UIViewController* TopPresentedViewController() {
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::TabGridNewIncognitoTabButton()]
       performAction:grey_tap()];
-  GREYWaitForAppToIdleWithTimeout(2.0, @"App failed to idle");
+  GREYWaitForAppToIdleWithTimeout(5.0, @"App failed to idle");
 
   [[self class] closeAllTabs];
   [ChromeEarlGrey openNewTab];

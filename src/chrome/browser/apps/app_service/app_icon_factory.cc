@@ -27,10 +27,9 @@
 #include "chrome/browser/extensions/chrome_app_icon_loader.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/components/app_icon_manager.h"
+#include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon_base/favicon_types.h"
@@ -303,7 +302,7 @@ void LoadCompressedDataFromExtension(
 
 absl::optional<IconPurpose> GetIconPurpose(
     const std::string& web_app_id,
-    const web_app::AppIconManager& icon_manager,
+    const web_app::WebAppIconManager& icon_manager,
     int size_hint_in_dip) {
   // Get the max supported pixel size.
   int max_icon_size_in_px = 0;
@@ -318,8 +317,7 @@ absl::optional<IconPurpose> GetIconPurpose(
   }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon) &&
-      icon_manager.HasSmallestIcon(web_app_id, {IconPurpose::MASKABLE},
+  if (icon_manager.HasSmallestIcon(web_app_id, {IconPurpose::MASKABLE},
                                    max_icon_size_in_px)) {
     return absl::make_optional(IconPurpose::MASKABLE);
   }
@@ -449,7 +447,7 @@ class IconLoadingPipeline : public base::RefCounted<IconLoadingPipeline> {
 
   void LoadWebAppIcon(const std::string& web_app_id,
                       const GURL& launch_url,
-                      const web_app::AppIconManager& icon_manager,
+                      const web_app::WebAppIconManager& icon_manager,
                       Profile* profile);
 
   void LoadExtensionIcon(const extensions::Extension* extension,
@@ -635,7 +633,7 @@ void IconLoadingPipeline::ApplyBadges(apps::IconEffects icon_effects,
 void IconLoadingPipeline::LoadWebAppIcon(
     const std::string& web_app_id,
     const GURL& launch_url,
-    const web_app::AppIconManager& icon_manager,
+    const web_app::WebAppIconManager& icon_manager,
     Profile* profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -1056,6 +1054,16 @@ void IconLoadingPipeline::CompleteWithIconValue(apps::mojom::IconValuePtr iv) {
     return;
   }
 
+  if (iv->uncompressed.isNull()) {
+    // In browser tests, CompleteWithIconValue might be called by the system
+    // shutdown process, but the apply icon effect process hasn't finished, so
+    // the icon might be null. Return early here if the image is null, to
+    // prevent calling MakeThreadSafe, which might cause the system crash due to
+    // DCHECK error on image.
+    CompleteWithCompressed(std::vector<uint8_t>());
+    return;
+  }
+
   iv->uncompressed.MakeThreadSafe();
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
@@ -1439,7 +1447,8 @@ void LoadIconFromWebApp(content::BrowserContext* context,
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(context);
   web_app::WebAppProvider* web_app_provider =
-      web_app::WebAppProvider::Get(Profile::FromBrowserContext(context));
+      web_app::WebAppProvider::GetForLocalApps(
+          Profile::FromBrowserContext(context));
 
   DCHECK(web_app_provider);
   constexpr bool is_placeholder_icon = false;

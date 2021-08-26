@@ -59,7 +59,7 @@ namespace printing {
 
 namespace {
 
-constexpr char kPrinterUri[] = "http://localhost";
+constexpr char kPrinterUri[] = "http://localhost:80";
 
 // Used as a callback to `GetPrinters()` in tests.
 // Records list returned by `GetPrinters()`.
@@ -431,35 +431,33 @@ TEST_F(LocalPrinterAshTest, GetPrinters) {
   local_printer_ash()->GetPrinters(
       base::BindOnce(&RecordPrinterList, std::ref(printers)));
 
-  std::vector<crosapi::mojom::LocalDestinationInfoPtr> expected_printers;
-  expected_printers.push_back(crosapi::mojom::LocalDestinationInfo::New(
-      "printer1", "saved", "description1", false));
-  expected_printers.push_back(crosapi::mojom::LocalDestinationInfo::New(
-      "printer2", "enterprise", "description2", true));
-  expected_printers.push_back(crosapi::mojom::LocalDestinationInfo::New(
-      "printer3", "automatic", "description3", false));
-  EXPECT_EQ(expected_printers, printers);
+  ASSERT_EQ(3u, printers.size());
+
+  EXPECT_EQ("printer1", printers[0]->id);
+  EXPECT_EQ("saved", printers[0]->name);
+  EXPECT_EQ("description1", printers[0]->description);
+  EXPECT_FALSE(printers[0]->configured_via_policy);
+  ASSERT_TRUE(printers[0]->uri);
+  EXPECT_EQ(kPrinterUri, *printers[0]->uri);
+
+  EXPECT_EQ("printer2", printers[1]->id);
+  EXPECT_EQ("enterprise", printers[1]->name);
+  EXPECT_EQ("description2", printers[1]->description);
+  EXPECT_TRUE(printers[1]->configured_via_policy);
+  ASSERT_TRUE(printers[1]->uri);
+  EXPECT_EQ(kPrinterUri, *printers[1]->uri);
+
+  EXPECT_EQ("printer3", printers[2]->id);
+  EXPECT_EQ("automatic", printers[2]->name);
+  EXPECT_EQ("description3", printers[2]->description);
+  EXPECT_FALSE(printers[2]->configured_via_policy);
+  ASSERT_TRUE(printers[2]->uri);
+  EXPECT_EQ(kPrinterUri, *printers[2]->uri);
 }
 
 // Tests that fetching capabilities for an existing installed printer is
 // successful.
 TEST_P(LocalPrinterAshProcessScopeTest, GetCapabilityValidPrinter) {
-  auto* prefs = GetPrefs();
-  // printing::mojom::ColorModeRestriction::kMonochrome |
-  // printing::mojom::ColorModeRestriction::kColor
-  prefs->SetInteger(prefs::kPrintingAllowedColorModes, 3);
-  // printing::mojom::DuplexModeRestriction::kSimplex |
-  // printing::mojom::DuplexModeRestriction::kDuplex
-  prefs->SetInteger(prefs::kPrintingAllowedDuplexModes, 7);
-  // printing::mojom::PinModeRestriction::kPin
-  prefs->SetInteger(prefs::kPrintingAllowedPinModes, 1);
-  // printing::mojom::ColorModeRestriction::kColor
-  prefs->SetInteger(prefs::kPrintingColorDefault, 2);
-  // printing::mojom::DuplexModeRestriction::kSimplex
-  prefs->SetInteger(prefs::kPrintingDuplexDefault, 1);
-  // printing::mojom::PinModeRestriction::kNoPin
-  prefs->SetInteger(prefs::kPrintingPinDefault, 2);
-
   Printer saved_printer =
       CreateTestPrinter("printer1", "saved", "description1");
   printers_manager().AddPrinter(saved_printer, PrinterClass::kSaved);
@@ -477,24 +475,13 @@ TEST_P(LocalPrinterAshProcessScopeTest, GetCapabilityValidPrinter) {
 
   ASSERT_TRUE(fetched_caps);
   EXPECT_FALSE(fetched_caps->has_secure_protocol);
-  EXPECT_EQ(crosapi::mojom::LocalDestinationInfo("printer1", "saved",
-                                                 "description1", false),
-            *fetched_caps->basic_info);
-
-  // printing::mojom::ColorModeRestriction::kMonochrome |
-  // printing::mojom::ColorModeRestriction::kColor
-  EXPECT_EQ(3, fetched_caps->allowed_color_modes);
-  // printing::mojom::DuplexModeRestriction::kSimplex |
-  // printing::mojom::DuplexModeRestriction::kDuplex
-  EXPECT_EQ(7, fetched_caps->allowed_duplex_modes);
-  EXPECT_EQ(printing::mojom::PinModeRestriction::kPin,
-            fetched_caps->allowed_pin_modes);
-  EXPECT_EQ(printing::mojom::ColorModeRestriction::kColor,
-            fetched_caps->default_color_mode);
-  EXPECT_EQ(printing::mojom::DuplexModeRestriction::kSimplex,
-            fetched_caps->default_duplex_mode);
-  EXPECT_EQ(printing::mojom::PinModeRestriction::kNoPin,
-            fetched_caps->default_pin_mode);
+  ASSERT_TRUE(fetched_caps->basic_info);
+  EXPECT_EQ("printer1", fetched_caps->basic_info->id);
+  EXPECT_EQ("saved", fetched_caps->basic_info->name);
+  EXPECT_EQ("description1", fetched_caps->basic_info->description);
+  EXPECT_FALSE(fetched_caps->basic_info->configured_via_policy);
+  ASSERT_TRUE(fetched_caps->basic_info->uri);
+  EXPECT_EQ(kPrinterUri, *fetched_caps->basic_info->uri);
 
   ASSERT_TRUE(fetched_caps->capabilities);
   EXPECT_EQ(kPapers, fetched_caps->capabilities->papers);
@@ -525,10 +512,8 @@ TEST_P(LocalPrinterAshProcessScopeTest, GetCapabilityPrinterNotInstalled) {
 
   EXPECT_TRUE(printers_manager().IsPrinterInstalled(discovered_printer));
   ASSERT_TRUE(fetched_caps);
-  EXPECT_FALSE(fetched_caps->has_secure_protocol);
-  EXPECT_EQ(crosapi::mojom::LocalDestinationInfo("printer1", "discovered",
-                                                 "description1", false),
-            *fetched_caps->basic_info);
+  ASSERT_TRUE(fetched_caps->basic_info);
+  EXPECT_EQ("printer1", fetched_caps->basic_info->id);
   ASSERT_TRUE(fetched_caps->capabilities);
   EXPECT_EQ(kPapers, fetched_caps->capabilities->papers);
 }
@@ -536,7 +521,7 @@ TEST_P(LocalPrinterAshProcessScopeTest, GetCapabilityPrinterNotInstalled) {
 // In this test we expect the `GetCapability` to bail early because the
 // provided printer can't be found in the `CupsPrintersManager`.
 TEST_P(LocalPrinterAshProcessScopeTest, GetCapabilityInvalidPrinter) {
-  crosapi::mojom::CapabilitiesResponsePtr fetched_caps;
+  auto fetched_caps = crosapi::mojom::CapabilitiesResponse::New();
   local_printer_ash()->GetCapability(
       "invalid printer",
       base::BindOnce(&RecordGetCapability, std::ref(fetched_caps)));
@@ -544,6 +529,28 @@ TEST_P(LocalPrinterAshProcessScopeTest, GetCapabilityInvalidPrinter) {
   RunUntilIdle();
 
   EXPECT_FALSE(fetched_caps);
+}
+
+// Tests that no capabilities are returned if a printer is unreachable from
+// CUPS. We simulate this behavior by not calling AddPrinter(), which registers
+// a printer with the test backend.
+TEST_P(LocalPrinterAshProcessScopeTest, GetCapabilityUnreachablePrinter) {
+  Printer saved_printer =
+      CreateTestPrinter("printer1", "saved", "description1");
+  printers_manager().AddPrinter(saved_printer, PrinterClass::kSaved);
+  printers_manager().InstallPrinter("printer1");
+
+  crosapi::mojom::CapabilitiesResponsePtr fetched_caps;
+  local_printer_ash()->GetCapability(
+      /*destination_id=*/"printer1",
+      base::BindOnce(&RecordGetCapability, std::ref(fetched_caps)));
+
+  RunUntilIdle();
+
+  ASSERT_TRUE(fetched_caps);
+  ASSERT_TRUE(fetched_caps->basic_info);
+  EXPECT_EQ("printer1", fetched_caps->basic_info->id);
+  EXPECT_FALSE(fetched_caps->capabilities);
 }
 
 // Tests that fetching capabilities fails if the print backend service
@@ -563,12 +570,15 @@ TEST_F(LocalPrinterAshServiceTest, GetCapabilityTerminatedService) {
 
   crosapi::mojom::CapabilitiesResponsePtr fetched_caps;
   local_printer_ash()->GetCapability(
-      /*destination_id=*/"crashing-test-printer",
+      /*destination_id=*/"printer1",
       base::BindOnce(&RecordGetCapability, std::ref(fetched_caps)));
 
   RunUntilIdle();
 
-  EXPECT_FALSE(fetched_caps);
+  ASSERT_TRUE(fetched_caps);
+  ASSERT_TRUE(fetched_caps->basic_info);
+  EXPECT_EQ("printer1", fetched_caps->basic_info->id);
+  EXPECT_FALSE(fetched_caps->capabilities);
 }
 
 // Test that installed printers to which the user does not have permission to
@@ -591,10 +601,8 @@ TEST_P(LocalPrinterAshProcessScopeTest, GetCapabilityAccessDenied) {
   RunUntilIdle();
 
   ASSERT_TRUE(fetched_caps);
-  EXPECT_FALSE(fetched_caps->has_secure_protocol);
-  EXPECT_EQ(crosapi::mojom::LocalDestinationInfo("printer1", "saved",
-                                                 "description1", false),
-            *fetched_caps->basic_info);
+  ASSERT_TRUE(fetched_caps->basic_info);
+  EXPECT_EQ("printer1", fetched_caps->basic_info->id);
   EXPECT_FALSE(fetched_caps->capabilities);
 }
 
@@ -624,10 +632,8 @@ TEST_F(LocalPrinterAshServiceTest, GetCapabilityElevatedPermissionsSucceeds) {
 
   // Getting capabilities should succeed when fallback is supported.
   ASSERT_TRUE(fetched_caps);
-  EXPECT_FALSE(fetched_caps->has_secure_protocol);
-  EXPECT_EQ(crosapi::mojom::LocalDestinationInfo("printer1", "saved",
-                                                 "description1", false),
-            *fetched_caps->basic_info);
+  ASSERT_TRUE(fetched_caps->basic_info);
+  EXPECT_EQ("printer1", fetched_caps->basic_info->id);
   ASSERT_TRUE(fetched_caps->capabilities);
   EXPECT_EQ(kPapers, fetched_caps->capabilities->papers);
 }
@@ -820,6 +826,55 @@ TEST_F(LocalPrinterAshTest, GetPolicies_PrintHeaderFooter_ManagedEnabled) {
             policies->print_header_footer_allowed);
   EXPECT_EQ(crosapi::mojom::Policies::OptionalBool::kUnset,
             policies->print_header_footer_default);
+}
+
+TEST_F(LocalPrinterAshTest, GetPolicies_Color) {
+  const uint32_t expected_allowed_color_modes = static_cast<uint32_t>(
+      static_cast<int32_t>(printing::mojom::ColorModeRestriction::kMonochrome) |
+      static_cast<int32_t>(printing::mojom::ColorModeRestriction::kColor));
+  auto* prefs = GetPrefs();
+  prefs->SetInteger(prefs::kPrintingAllowedColorModes, 3);
+  prefs->SetInteger(prefs::kPrintingColorDefault, 2);
+
+  crosapi::mojom::PoliciesPtr policies;
+  local_printer_ash()->GetPolicies(base::BindOnce(base::BindLambdaForTesting(
+      [&](crosapi::mojom::PoliciesPtr data) { policies = std::move(data); })));
+
+  EXPECT_EQ(expected_allowed_color_modes, policies->allowed_color_modes);
+  EXPECT_EQ(printing::mojom::ColorModeRestriction::kColor,
+            policies->default_color_mode);
+}
+
+TEST_F(LocalPrinterAshTest, GetPolicies_Duplex) {
+  const uint32_t expected_allowed_duplex_modes = static_cast<uint32_t>(
+      static_cast<int32_t>(printing::mojom::DuplexModeRestriction::kSimplex) |
+      static_cast<int32_t>(printing::mojom::DuplexModeRestriction::kDuplex));
+  auto* prefs = GetPrefs();
+  prefs->SetInteger(prefs::kPrintingAllowedDuplexModes, 7);
+  prefs->SetInteger(prefs::kPrintingDuplexDefault, 1);
+
+  crosapi::mojom::PoliciesPtr policies;
+  local_printer_ash()->GetPolicies(base::BindOnce(base::BindLambdaForTesting(
+      [&](crosapi::mojom::PoliciesPtr data) { policies = std::move(data); })));
+
+  EXPECT_EQ(expected_allowed_duplex_modes, policies->allowed_duplex_modes);
+  EXPECT_EQ(printing::mojom::DuplexModeRestriction::kSimplex,
+            policies->default_duplex_mode);
+}
+
+TEST_F(LocalPrinterAshTest, GetPolicies_Pin) {
+  auto* prefs = GetPrefs();
+  prefs->SetInteger(prefs::kPrintingAllowedPinModes, 1);
+  prefs->SetInteger(prefs::kPrintingPinDefault, 2);
+
+  crosapi::mojom::PoliciesPtr policies;
+  local_printer_ash()->GetPolicies(base::BindOnce(base::BindLambdaForTesting(
+      [&](crosapi::mojom::PoliciesPtr data) { policies = std::move(data); })));
+
+  EXPECT_EQ(printing::mojom::PinModeRestriction::kPin,
+            policies->allowed_pin_modes);
+  EXPECT_EQ(printing::mojom::PinModeRestriction::kNoPin,
+            policies->default_pin_mode);
 }
 
 TEST_F(LocalPrinterAshTest, GetUsernamePerPolicy_Allowed) {

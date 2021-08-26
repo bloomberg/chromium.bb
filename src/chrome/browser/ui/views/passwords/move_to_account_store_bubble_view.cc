@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
-#include "components/password_manager/core/common/password_manager_features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
@@ -258,9 +257,6 @@ MoveToAccountStoreBubbleView::MoveToAccountStoreBubbleView(
                              anchor_view,
                              /*auto_dismissable=*/false),
       controller_(PasswordsModelDelegateFromWebContents(web_contents)) {
-  DCHECK(base::FeatureList::IsEnabled(
-      password_manager::features::kEnablePasswordsAccountStorage));
-
   SetLayoutManager(std::make_unique<views::FlexLayout>())
       ->SetOrientation(views::LayoutOrientation::kVertical)
       .SetCrossAxisAlignment(views::LayoutAlignment::kStretch)
@@ -315,8 +311,7 @@ void MoveToAccountStoreBubbleView::AddedToWidget() {
   static_cast<views::Label*>(GetBubbleFrameView()->title())
       ->SetAllowCharacterBreak(true);
 
-  SetBubbleHeader(IDR_SAVE_PASSWORD_MULTI_DEVICE,
-                  IDR_SAVE_PASSWORD_MULTI_DEVICE_DARK);
+  SetBubbleHeader(IDR_SAVE_PASSWORD, IDR_SAVE_PASSWORD_DARK);
 }
 
 MoveToAccountStoreBubbleController*

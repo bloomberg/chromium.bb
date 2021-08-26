@@ -14,6 +14,7 @@
 <translation id="1204296502688602597">‏DNS تاخیر</translation>
 <translation id="123124571410524056">پورٹل مشکوک ہے</translation>
 <translation id="1238612778414822719">‏HTTPS تاخیر</translation>
+<translation id="1264369926465113395">‏تخلیق کاران کے لیے Chromebook کی نئی ڈیجیٹل میگزین چیک کریں</translation>
 <translation id="1270369111467284986">مشکوک کیپٹو پورٹل</translation>
 <translation id="1290331692326790741">کمزور سگنل</translation>
 <translation id="1314565355471455267">Android VPN</translation>
@@ -34,7 +35,9 @@
 <translation id="1510238584712386396">لانچر</translation>
 <translation id="1600964289716072707">اسکینر پر کوئی دوسرا صفحہ رکھیں اور صفحہ شامل کرنے کیلئے 'اسکین کریں' منتخب کریں۔</translation>
 <translation id="1621067168122174824">چارج ٹیسٹ چلائیں</translation>
+<translation id="1639239467298939599">لوڈ ہو رہی ہے</translation>
 <translation id="1641857168437328880">دستاویز فیڈر (یک طرفہ)</translation>
+<translation id="1643449475550628585">وال پیپر کی تصویر کو روزانہ تبدیل کریں</translation>
 <translation id="1644574205037202324">سرگزشت</translation>
 <translation id="1662989795263954667">رک گیا - سیاہی ختم ہو گئی</translation>
 <translation id="1703835215927279855">Letter</translation>
@@ -65,7 +68,6 @@
 <translation id="2224337661447660594">انٹرنیٹ نہیں ہے</translation>
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="225692081236532131">فعالیت کی صورتحال</translation>
-<translation id="2294675138977897428">کسی بھی ایتھرنیٹ کنکشن کا پتا نہیں چلا</translation>
 <translation id="2326139988748364651"><ph name="RESOLUTION_VALUE" /> dpi</translation>
 <translation id="2338501278241028356">قریبی آلات دریافت کرنے کیلئے بلوٹوتھ آن کریں</translation>
 <translation id="2364498172489649528">پاس ہو گیا</translation>
@@ -75,9 +77,11 @@
 <translation id="2448312741937722512">قسم</translation>
 <translation id="2461822463642141190">حالیہ</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
+<translation id="2505327257735685095">وال پیپر کی موجودہ تصویر کو ریفریش کریں</translation>
 <translation id="2517472476991765520">اسکین کریں</translation>
 <translation id="2570743873672969996"><ph name="TEST_NAME" /> ٹیسٹ چل رہا ہے...</translation>
 <translation id="2585245331261708204">‏Chrome OS میں نیا کیا ہے</translation>
+<translation id="2619761439309613843">روزانہ ریفریش کریں</translation>
 <translation id="2620436844016719705">سسٹم</translation>
 <translation id="2740531572673183784">ٹھیک ہے</translation>
 <translation id="2751739896257479635">‏EAP مرحلہ 2 توثیق</translation>
@@ -87,7 +91,6 @@
 <translation id="2862104018715411648">اپنی دستاویز کو اسکینر پر رکھیں اور شروع کرنے کیلئے 'اسکین کریں' کو منتخب کریں</translation>
 <translation id="2872961005593481000">بند کریں</translation>
 <translation id="2878387241690264070"><ph name="NUM_SECONDS" /> سیکنڈ میں <ph name="RATE" /> ڈسچارج ہوئی۔</translation>
-<translation id="2983662233540284543">گیم کے کسی تخلیق کار سے سیکھیں، گیم ڈیزائن کی ایپس حاصل کریں اور بہت کچھ</translation>
 <translation id="3008341117444806826">ریفریش کریں</translation>
 <translation id="3009958530611748826">محفوظ کرنے کے لئے فولڈر منتخب کریں</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" />mA</translation>
@@ -101,6 +104,7 @@
 <translation id="3188257591659621405">میری فائلز</translation>
 <translation id="3199982728237701504">دستاویز فیڈر (دو طرفہ)</translation>
 <translation id="3226405216343213872">اسکینرز کی تلاش جاری ہے</translation>
+<translation id="3228433892370472777">ڈیفالٹ کنکشن</translation>
 <translation id="3246869037381808805">1 دن سے پرانی پرنٹ جابز کو ہٹا دیا جائے گا</translation>
 <translation id="3268178239013324452">ناکام ہو گیا - دروازہ کھلا ہے</translation>
 <translation id="3283504360622356314">{0,plural, =1{فائل میں ترمیم کریں}other{فائلز میں ترمیم کریں}}</translation>
@@ -117,10 +121,13 @@
 <translation id="3488065109653206955">جزوی طور پر فعال کردہ</translation>
 <translation id="3527036260304016759">ناکام ہو گیا - نامعلوم خرابی</translation>
 <translation id="3532980081107202182">تقریباً <ph name="MIN_REMAINING" /> منٹ باقی ہیں</translation>
+<translation id="3540383942695635079">‏MAC پتہ</translation>
 <translation id="357889014807611375">‏میٹرڈ Wi-Fi</translation>
+<translation id="3582041541988388905">کسی <ph name="NETWORK_NAME" /> کنکشن کا پتہ نہیں چلا</translation>
 <translation id="3595596368722241419">بیٹری پوری چارج ہے</translation>
 <translation id="360565022852130722">‏WiFi نیٹ ورک کمزور پروٹوکول WEP 802.1x کے ساتھ محفوظ ہے</translation>
 <translation id="3689839747745352263"><ph name="TEST_NAME" /> ٹیسٹ</translation>
+<translation id="3708186454126126312">پہلے سے منسلک کردہ</translation>
 <translation id="373232531963562220">{PAGE_NUMBER,plural, =0{صفحہ دوبارہ اسکین کریں}=1{{PAGE_NUMBER} صفحے دوبارہ اسکین کریں}other{{PAGE_NUMBER} صفحے دوبارہ اسکین کریں}}</translation>
 <translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★ (<ph name="AGGREGATED_COUNT" /> جائزے)</translation>
 <translation id="3748026146096797577">منسلک نہیں ہے</translation>
@@ -163,6 +170,7 @@
 <translation id="4479639480957787382">ایتھرنیٹ</translation>
 <translation id="4483049906298469269">غیر ڈیفالٹ نیٹ ورک گیٹ وے کو پنگ کرنے میں ناکام</translation>
 <translation id="4511264077854731334">پورٹل</translation>
+<translation id="4536864596629708641">‏IP کنفیگریشن</translation>
 <translation id="4548483925627140043">سگنل نہیں ملا</translation>
 <translation id="455835558791489930">‏mAh<ph name="CHARGE_VALUE" /> بیٹری</translation>
 <translation id="4562494484721939086">کوئی سروس نہیں</translation>
@@ -171,6 +179,7 @@
 <translation id="4627232916386272576">‏<ph name="DOCUMENT_TITLE" />، <ph name="PRINTER_NAME" />، <ph name="CREATION_TIME" />، <ph name="TOTAL_PAGE_NUMBER" /> میں سے <ph name="PRINTED_PAGE_NUMBER" />۔ براہ کرم پرنٹ جاب منسوخ کرنے کے لیے enter دبائیں۔</translation>
 <translation id="4646949265910132906">‏WiFi کنکشن محفوظ کریں</translation>
 <translation id="4652335678334611408">سیشن لاگ محفوظ کریں</translation>
+<translation id="4654549501020883054">روزانہ تبدیل کریں</translation>
 <translation id="4665014895760275686">مینوفیکچرر</translation>
 <translation id="467510802200863975">پاس ورڈز مماثل نہیں ہیں</translation>
 <translation id="467715984478005772">فائروال مشکوک ہے</translation>
@@ -194,6 +203,7 @@
 <translation id="4891842000192098784">اسٹریس</translation>
 <translation id="4917385247580444890">مضبوط</translation>
 <translation id="4917889632206600977">رک گیا - کاغذ ختم ہو گیا</translation>
+<translation id="491836528011451486">اپنی دستاویز کو اسکینر پر رکھیں اور <ph name="CURRENT_PAGE" /> صفحہ کو اسکین اور تبدیل کرنے کے لیے دوبارہ اسکین کریں کو منتخب کریں۔</translation>
 <translation id="4921665434385737356"><ph name="NUM_SECONDS" /> سیکنڈ میں <ph name="RATE" /> چارج کیا گیا۔</translation>
 <translation id="4932733599132424254">تاریخ</translation>
 <translation id="498186245079027698">اسکینر چیک کریں اور دوبارہ کوشش کریں۔ یقینی بنائیں کہ اسکین کردہ فائلز محفوظ کرنے کے لیے کافی مقامی جگہ ہے۔</translation>
@@ -209,9 +219,9 @@
 <translation id="5154917547274118687">میموری</translation>
 <translation id="5168185087976003268">بیٹری کی صحت</translation>
 <translation id="5170568018924773124">فولڈر میں دکھائیں</translation>
-<translation id="519607504553633437">اپنی ذاتی گیمز ڈیزائن کریں اور بنائیں</translation>
 <translation id="5212543919916444558">مجھے آپ کی اسکرین پر ایسا کچھ نہیں ملا جس سے متعلق میں آپ کی مدد کر سکوں۔ مجھ سے کچھ بھی پوچھنے کے لیے مائیک کو تھپتھپانے کی کوشش کریں۔</translation>
 <translation id="5222676887888702881">سائن آؤٹ</translation>
+<translation id="5234764350956374838">برخاست کریں</translation>
 <translation id="5252456968953390977">رومنگ</translation>
 <translation id="5264277876637023664">‏CPU ٹیسٹ چلائیں</translation>
 <translation id="5267975978099728568"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="ERROR_STATUS" /></translation>
@@ -242,7 +252,6 @@
 <translation id="5691511426247308406">فیملی</translation>
 <translation id="5701381305118179107">مرکز</translation>
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" /> از <ph name="TOTAL_PAGES" /></translation>
-<translation id="5752751666635965375">اپنی ذاتی گیم بنائیں</translation>
 <translation id="5760715441271661976">پورٹل صورت حال</translation>
 <translation id="5832805196449965646">شخص کو شامل کریں</translation>
 <translation id="583281660410589416">نامعلوم</translation>
@@ -265,6 +274,7 @@
 <translation id="6106186594183574873">مکمل کرنے کے لئے اپنا پرانا پاس ورڈ درج کریں</translation>
 <translation id="6108689792487843350">گیٹ وے ناقابل رسائی ہے</translation>
 <translation id="6122191549521593678">آن لائن</translation>
+<translation id="6125438912510167220">لنک کی رفتار</translation>
 <translation id="6137767437444130246">صارف کا سرٹیفیکیٹ</translation>
 <translation id="6146993107019042706">مکمل کرنے کے لئے اپنا نیا پاس ورڈ درج کریں</translation>
 <translation id="6147514244879357420">PNG</translation>
@@ -291,6 +301,8 @@
 <translation id="65587193855025101">فلیٹ بیڈ</translation>
 <translation id="6564646048574748301">ناکام ہو گیا - پرنٹر ناقابل رسائی ہے</translation>
 <translation id="6574762126505704998">بھریں</translation>
+<translation id="6575134580692778371">کنفیگر نہیں ہے</translation>
+<translation id="6596816719288285829">‏IP پتہ</translation>
 <translation id="6603230386432466813">منسلک کرنے میں دشواری ہو رہی ہے؟</translation>
 <translation id="6618744767048954150">جاری ہے</translation>
 <translation id="6620487321149975369">پرنٹ جابز سرگزشت میں ظاہر ہوں گی جب تک کہ انہیں دستی طور پر ہٹا نہیں دیا جاتا</translation>
@@ -313,13 +325,16 @@
 <translation id="7059230779847288458">چارج ہو رہا ہے، مکمل ہونے میں <ph name="TIME_VALUE" /> باقی</translation>
 <translation id="708426984172631313">روک دیا گیا</translation>
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
+<translation id="7134436342991564651">{0,plural, =1{نام سرور}other{نام سرورز}}</translation>
 <translation id="7143207342074048698">منسلک ہو رہا ہے</translation>
 <translation id="7144878232160441200">دوبارہ کوشش کریں</translation>
 <translation id="714876143603641390">‏Lan کنیکٹوٹی</translation>
 <translation id="7162487448488904999">گیلری</translation>
 <translation id="7172721935181587524">1 تصویر</translation>
 <translation id="7177485034254901881">یہ <ph name="DEVICE_TYPE" /> <ph name="MANAGER" /> کے زیر انتظام ہے۔ منتظمین دور سے آلے کو کنفیگر کر سکتے ہیں۔</translation>
+<translation id="7180611975245234373">ریفریش کریں</translation>
 <translation id="7216409898977639127">سیلولر فراہم کنندہ</translation>
+<translation id="7257889006063274246">کیا آپ واقعی <ph name="CURRENT_PAGE" /> صفحہ کو ہٹانا چاہتے ہیں؟</translation>
 <translation id="7271040990581020067">اسکینر فی الحال زیر استعمال ہے۔ بعد میں دوبارہ کوشش کریں۔</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7287310195820267359">وال پیپر کے مجموعے</translation>
@@ -353,9 +368,11 @@
 <translation id="7835501727204647447">‏CloudReady انسٹال کریں</translation>
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7882358943899516840">فراہم کنندہ کی قسم</translation>
+<translation id="7895471513946376273">ڈرائنگ اور ڈیزائن کے ٹولز دریافت کریں</translation>
 <translation id="7936303884198020182">کوئی نام سرور نہیں ملا</translation>
 <translation id="7960831585769876809">درجہ حرارت</translation>
 <translation id="7994702968232966508">‏EAP طریقہ</translation>
+<translation id="8020238979854764615">ایک خرابی پیش آ گئی۔ براہ کرم دوسری تصاویر منتخب کرکے دوبارہ کوشش کریں۔</translation>
 <translation id="802154636333426148">ڈاؤن لوڈ ناکام ہوگیا</translation>
 <translation id="8041089156583427627">تاثرات بھیجیں</translation>
 <translation id="8075838845814659848">باقی چارج</translation>
@@ -367,7 +384,9 @@
 <translation id="8214184102975786227">‏متعدد صفحات کو ایک PDF میں اسکین کریں</translation>
 <translation id="8230672074305416752">ڈیفالٹ نیٹ ورک گیٹ وے کو پنگ کرنے میں ناکام</translation>
 <translation id="8246209727385807362">نامعلوم کیریئر</translation>
+<translation id="8286154143153872371">براہ کرم کسی نیٹ ورک سے منسلک ہوں اور وال پیپر دیکھنے کے لیے صفحے کو دوبارہ لوڈ کریں۔</translation>
 <translation id="8291967909914612644">گھر فراہم کرنے والے کا ملک</translation>
+<translation id="829270796093605079">ڈیزائن ٹولز دریافت کریں</translation>
 <translation id="8294431847097064396">ماخذ</translation>
 <translation id="8297006494302853456">کمزور</translation>
 <translation id="8302368968391049045">‏HTTPS فائروال</translation>
@@ -391,6 +410,7 @@
 <translation id="8575298406870537639">آپ کے کیریئر کو اپنے نیٹ ورک سے منسلک ہونے کیلئے اس اختیار کی ضرورت پڑ سکتی ہے۔ تفصیلات کیلئے اپنے کیریئر سے رابطہ کریں۔</translation>
 <translation id="8576249514688522074">شروع نہیں کیا گیا</translation>
 <translation id="8620617069779373398">رومنگ کی صورتحال</translation>
+<translation id="8655295600908251630">چینل</translation>
 <translation id="8660881923941176839">پاؤنڈز</translation>
 <translation id="8675354002693747642">پہلے سے اشتراک کردہ کلید</translation>
 <translation id="871560550817059752">ناکام ہو گیا - سیاہی ختم ہو گئی</translation>
@@ -403,6 +423,7 @@
 <translation id="8798441408945964110">فراہم کنندہ کا نام</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8818152010000655963">وال پیپر</translation>
+<translation id="8834539327799336565">فی الحال منسلک ہے</translation>
 <translation id="8845001906332463065">مدد حاصل کریں</translation>
 <translation id="8868741746785112895">GUID</translation>
 <translation id="8881098542468797602">ٹیسٹ کامیاب ہو گیا</translation>

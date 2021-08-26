@@ -55,8 +55,6 @@ const base::Feature kAppManagementIntentSettings{
 
 #if !defined(OS_ANDROID)
 // App Service related flags. See components/services/app_service/README.md.
-const base::Feature kAppServiceAdaptiveIcon{"AppServiceAdaptiveIcon",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kAppServiceExternalProtocol{
     "AppServiceExternalProtocol", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // !defined(OS_ANDROID)
@@ -100,6 +98,14 @@ const base::Feature kBorealis{"Borealis", base::FEATURE_DISABLED_BY_DEFAULT};
 // Enables change picture video mode.
 const base::Feature kChangePictureVideoMode{"ChangePictureVideoMode",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
+
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
+// Controls whether Chrome Apps are supported. See https://crbug.com/1221251.
+// If the feature is disabled, Chrome Apps continue to work. If enabled, Chrome
+// Apps will not launch and will be marked in the UI as deprecated.
+const base::Feature kChromeAppsDeprecation{"ChromeAppsDeprecation",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
 
 #if defined(OS_WIN)
 const base::Feature kChromeCleanupScanCompletedNotification{
@@ -210,20 +216,17 @@ const base::Feature kDefaultPinnedAppsUpdate2021Q2{
     "DefaultPinnedAppsUpdate2021Q2", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
-// Enable using tab sharing infobars for desktop capture.
-const base::Feature kDesktopCaptureTabSharingInfobar{
-    "DesktopCaptureTabSharingInfobar", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables Desktop PWA installs to have a menu of shortcuts associated with
-// the app icon in the taskbar on Windows, or the dock on macOS or Linux.
-const base::Feature kDesktopPWAsAppIconShortcutsMenu{
-    "DesktopPWAsAppIconShortcutsMenu", base::FEATURE_ENABLED_BY_DEFAULT};
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-// Enables Desktop PWAs shortcuts menu to be visible and executable in ChromeOS
-// UI surfaces.
+#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_MAC) || defined(OS_LINUX)
+// Enables Desktop PWAs shortcuts menu to be visible and executable in ChromeOS,
+// MacOS and Linux.
 const base::Feature kDesktopPWAsAppIconShortcutsMenuUI{
-    "DesktopPWAsAppIconShortcutsMenuUI", base::FEATURE_ENABLED_BY_DEFAULT};
+  "DesktopPWAsAppIconShortcutsMenuUI",
+#if defined(OS_MAC) || defined(OS_LINUX)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -259,7 +262,13 @@ const base::Feature kDesktopPWAsFlashAppNameInsteadOfOrigin{
 // Replaces the origin text flash and the icon in web app notifications with
 // the name of the app and the icon of the app.
 const base::Feature kDesktopPWAsNotificationIconAndTitle{
-    "DesktopPWAsNotificationIconAndTitle", base::FEATURE_DISABLED_BY_DEFAULT};
+  "DesktopPWAsNotificationIconAndTitle",
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 // Enables or disables Desktop PWAs to be auto-started on OS login.
 const base::Feature kDesktopPWAsRunOnOsLogin {
@@ -492,6 +501,12 @@ const base::Feature kHappinessTrackingSystem{"HappinessTrackingSystem",
 // Enables or disables the Happiness Tracking System for Onboarding Experience.
 const base::Feature kHappinessTrackingSystemOnboarding{
     "HappinessTrackingOnboardingExperience", base::FEATURE_DISABLED_BY_DEFAULT};
+// Enables or disables the Happiness Tracking System for Unlock.
+const base::Feature kHappinessTrackingSystemUnlock{
+    "HappinessTrackingUnlock", base::FEATURE_DISABLED_BY_DEFAULT};
+// Enables or disables the Happiness Tracking System for Smart Lock.
+const base::Feature kHappinessTrackingSystemSmartLock{
+    "HappinessTrackingSmartLock", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 // Hides the origin text from showing up briefly in WebApp windows.
@@ -500,7 +515,7 @@ const base::Feature kHideWebAppOriginText{"HideWebAppOriginText",
 
 // Sets whether the HTTPS-Only Mode setting is displayed in the settings UI.
 const base::Feature kHttpsOnlyMode{"HttpsOnlyMode",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
+                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if defined(OS_MAC)
 const base::Feature kImmersiveFullscreen{"ImmersiveFullscreen",
@@ -532,10 +547,19 @@ const base::Feature kIncompatibleApplicationsWarning{
 // When enabled, keeps Incognito UI consistent regardless of any selected theme.
 const base::Feature kIncognitoBrandConsistencyForAndroid{
     "IncognitoBrandConsistencyForAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// When enabled, user gets a new setting which allows them to gate their
+// existing Incognito tabs behind a reauthentication flow.
+const base::Feature kIncognitoReauthenticationForAndroid{
+    "IncognitoReauthenticationForAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+// When enabled, users will see updated UI in Incognito NTP
+const base::Feature kIncognitoNtpRevamp{"IncognitoNtpRevamp",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if defined(OS_MAC) || defined(OS_WIN) || defined(OS_LINUX) || \
-    defined(OS_CHROMEOS)
+    defined(OS_CHROMEOS) || defined(OS_FUCHSIA)
 // When enabled, removes any theme or background customization done by the user
 // on the Incognito UI.
 const base::Feature kIncognitoBrandConsistencyForDesktop{
@@ -564,7 +588,7 @@ const base::Feature kIntentPickerPWAPersistence{
 // If enabled, CloudPolicyInvalidator and RemoteCommandInvalidator instances
 // will have unique owner name.
 const base::Feature kInvalidatorUniqueOwnerName{
-    "InvalidatorUniqueOwnerName", base::FEATURE_DISABLED_BY_DEFAULT};
+    "InvalidatorUniqueOwnerName", base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 const base::Feature kKernelnextVMs{"KernelnextVMs",
@@ -574,7 +598,7 @@ const base::Feature kKernelnextVMs{"KernelnextVMs",
 #if defined(OS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)
 const base::Feature kLinkDoctorDeprecationAndroid{
-    "LinkDoctorDeprecationAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
+    "LinkDoctorDeprecationAndroid", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_ANDROID)
 
 // Enables LiteVideos, a data-saving optimization that throttles media requests
@@ -664,12 +688,6 @@ const base::Feature kNotificationDurationLongForRequireInteraction{
     base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // OS_WIN
 
-#if defined(OS_MAC)
-// Shows alert notifications via a helper app in a utility process.
-const base::Feature kNotificationsViaHelperApp{
-    "NotificationsViaHelperApp", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // OS_MAC
-
 #if defined(OS_POSIX)
 // Enables NTLMv2, which implicitly disables NTLMv1.
 const base::Feature kNtlmV2Enabled{"NtlmV2Enabled",
@@ -715,12 +733,22 @@ const base::Feature kPermissionAuditing{"PermissionAuditing",
 
 // Enables using the prediction service for permission prompts.
 const base::Feature kPermissionPredictions{"PermissionPredictions",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::FeatureParam<double> kPermissionPredictionsHoldbackChance(
     &kPermissionPredictions,
     "holdback_chance",
     0.0);
+
+// Enables using the prediction service for geolocation permission prompts.
+const base::Feature kPermissionGeolocationPredictions{
+    "PermissionGeolocationPredictions", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::FeatureParam<double>
+    kPermissionGeolocationPredictionsHoldbackChance(
+        &kPermissionGeolocationPredictions,
+        "holdback_chance",
+        0.0);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enable support for "Plugin VMs" on Chrome OS.
@@ -760,7 +788,7 @@ const base::FeatureParam<std::string> kPrivacySandboxSettingsURL{
 
 // Enables additional control set 2 on the privacy sandbox settings page.
 const base::Feature kPrivacySandboxSettings2{"PrivacySandboxSettings2",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 const base::FeatureParam<std::string> kPrivacySandboxSettings2FlocURL{
     &kPrivacySandboxSettings2, "floc-website-url",
     "https://privacysandbox.com/proposals/floc"};
@@ -996,7 +1024,7 @@ const base::Feature kUploadZippedSystemLogs{"UploadZippedSystemLogs",
 #if defined(OS_ANDROID)
 // Enables using NotificationCompat.Builder to create Android notifications.
 const base::Feature kUseNotificationCompatBuilder{
-    "UseNotificationCompatBuilder", base::FEATURE_DISABLED_BY_DEFAULT};
+    "UseNotificationCompatBuilder", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -1013,6 +1041,14 @@ const base::Feature kWebAppManifestIconUpdating{
 
 const base::Feature kWebAppManifestPolicyAppIdentityUpdate{
     "WebAppManifestPolicyAppIdentityUpdate", base::FEATURE_DISABLED_BY_DEFAULT};
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// When enabled, the web (PWA) Kiosk session uses Lacros-chrome as the web
+// browser to launch web (PWA) applications . When disabled, the Ash-chrome will
+// be used instead.
+const base::Feature kWebKioskEnableLacros{"WebKioskEnableLacros",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // When enabled, the Ash browser only manages system web apps, and non-system

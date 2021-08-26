@@ -14,7 +14,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
-#include "base/numerics/ranges.h"
+#include "base/cxx17_backports.h"
 #include "build/build_config.h"
 #include "content/browser/xr/service/vr_service_impl.h"
 #include "content/browser/xr/xr_utils.h"
@@ -25,6 +25,10 @@
 #include "device/vr/public/cpp/session_mode.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/transform_util.h"
+
+#if defined(OS_WIN)
+#include "base/win/windows_types.h"
+#endif
 
 namespace content {
 namespace {
@@ -106,9 +110,9 @@ device::mojom::XRViewPtr ValidateXRView(const device::mojom::XRView* view) {
   // release builds to ensure valid state.
   DCHECK_LT(view->viewport.width(), kMaxSize);
   DCHECK_LT(view->viewport.height(), kMaxSize);
-  ret->viewport = gfx::Size(
-      base::ClampToRange(view->viewport.width(), kMinSize, kMaxSize),
-      base::ClampToRange(view->viewport.height(), kMinSize, kMaxSize));
+  ret->viewport =
+      gfx::Size(base::clamp(view->viewport.width(), kMinSize, kMaxSize),
+                base::clamp(view->viewport.height(), kMinSize, kMaxSize));
   return ret;
 }
 
@@ -435,7 +439,7 @@ void BrowserXRRuntimeImpl::BeforeRuntimeRemoved() {
 }
 
 #if defined(OS_WIN)
-absl::optional<LUID> BrowserXRRuntimeImpl::GetLuid() const {
+absl::optional<CHROME_LUID> BrowserXRRuntimeImpl::GetLuid() const {
   return device_data_->luid;
 }
 #endif

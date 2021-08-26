@@ -39,6 +39,9 @@ class CompositorTimingHistory::UMAReporter {
   // Only the renderer would get the meaningful data.
   virtual void AddDrawIntervalWithCustomPropertyAnimations(
       base::TimeDelta duration) = 0;
+
+  virtual void AddImplFrameDeadlineType(
+      CompositorTimingHistory::DeadlineMode deadline_mode) = 0;
 };
 
 namespace {
@@ -323,6 +326,12 @@ class RendererUMAReporter : public CompositorTimingHistory::UMAReporter {
     UMA_HISTOGRAM_CUSTOM_TIMES_DURATION("Scheduling.Renderer.DrawDuration",
                                         duration);
   }
+
+  void AddImplFrameDeadlineType(
+      CompositorTimingHistory::DeadlineMode deadline_mode) override {
+    UMA_HISTOGRAM_ENUMERATION("Scheduling.Renderer.DeadlineMode",
+                              deadline_mode);
+  }
 };
 
 class BrowserUMAReporter : public CompositorTimingHistory::UMAReporter {
@@ -360,6 +369,12 @@ class BrowserUMAReporter : public CompositorTimingHistory::UMAReporter {
     UMA_HISTOGRAM_CUSTOM_TIMES_DURATION("Scheduling.Browser.DrawDuration",
                                         duration);
   }
+
+  void AddImplFrameDeadlineType(
+      CompositorTimingHistory::DeadlineMode deadline_mode) override {
+    // The browser compositor scheduler is synchronous and only has None (or
+    // Blocked as edges cases) for deadline mode.
+  }
 };
 
 class NullUMAReporter : public CompositorTimingHistory::UMAReporter {
@@ -375,6 +390,8 @@ class NullUMAReporter : public CompositorTimingHistory::UMAReporter {
       base::TimeDelta duration,
       TreePriority priority) override {}
   void AddDrawDuration(base::TimeDelta duration) override {}
+  void AddImplFrameDeadlineType(
+      CompositorTimingHistory::DeadlineMode deadline_mode) override {}
 };
 
 }  // namespace
@@ -509,15 +526,6 @@ CompositorTimingHistory::BeginMainFrameQueueToActivateCriticalEstimate() const {
          CommitDurationEstimate() + CommitToReadyToActivateDurationEstimate() +
          ActivateDurationEstimate() +
          BeginMainFrameQueueDurationCriticalEstimate();
-}
-
-base::TimeDelta
-CompositorTimingHistory::BeginMainFrameQueueToActivateNotCriticalEstimate()
-    const {
-  return BeginMainFrameStartToReadyToCommitDurationEstimate() +
-         CommitDurationEstimate() + CommitToReadyToActivateDurationEstimate() +
-         ActivateDurationEstimate() +
-         BeginMainFrameQueueDurationNotCriticalEstimate();
 }
 
 void CompositorTimingHistory::WillBeginImplFrame(
@@ -729,12 +737,14 @@ void CompositorTimingHistory::DidDraw(bool used_new_active_tree,
     // Emit a trace event to highlight a long time lapse between the draw times
     // of back-to-back BeginImplFrames.
     if (draw_interval > kDrawIntervalTraceThreshold) {
-      TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP0(
+      TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
           "latency", "Long Draw Interval",
-          TRACE_ID_LOCAL(g_num_long_draw_intervals), draw_start_time_);
-      TRACE_EVENT_ASYNC_END_WITH_TIMESTAMP0(
+          TRACE_ID_WITH_SCOPE("Long Draw Interval", g_num_long_draw_intervals),
+          draw_start_time_);
+      TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(
           "latency", "Long Draw Interval",
-          TRACE_ID_LOCAL(g_num_long_draw_intervals), draw_end_time);
+          TRACE_ID_WITH_SCOPE("Long Draw Interval", g_num_long_draw_intervals),
+          draw_end_time);
       g_num_long_draw_intervals++;
     }
     if (has_custom_property_animations &&
@@ -754,6 +764,11 @@ void CompositorTimingHistory::SetTreePriority(TreePriority priority) {
   tree_priority_ = priority;
 }
 
+void CompositorTimingHistory::RecordDeadlineMode(DeadlineMode deadline_mode) {
+  if (uma_reporter_)
+    uma_reporter_->AddImplFrameDeadlineType(deadline_mode);
+}
+
 void CompositorTimingHistory::ClearHistory() {
   TRACE_EVENT0("cc,benchmark", "CompositorTimingHistory::ClearHistory");
 
@@ -767,5 +782,4 @@ void CompositorTimingHistory::ClearHistory() {
   activate_duration_history_.Clear();
   draw_duration_history_.Clear();
 }
-
 }  // namespace cc

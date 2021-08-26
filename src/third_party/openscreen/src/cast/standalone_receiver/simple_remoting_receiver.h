@@ -39,6 +39,10 @@ class SimpleRemotingReceiver {
   using InitializeCallback = std::function<void(AudioCodec, VideoCodec)>;
   void SendInitializeMessage(InitializeCallback initialize_cb);
 
+  // The speed at which the content is decoded is synchronized with the
+  // playback rate. Pausing is a special case with a playback rate of 0.0.
+  void SendPlaybackRateMessage(double playback_rate);
+
  private:
   void OnInitializeCallbackMessage(std::unique_ptr<RpcMessage> message);
 

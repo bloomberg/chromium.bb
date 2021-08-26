@@ -10,6 +10,7 @@
 #include "http2/adapter/window_manager.h"
 #include "http2/core/priority_write_scheduler.h"
 #include "common/platform/api/quiche_bug_tracker.h"
+#include "common/platform/api/quiche_export.h"
 #include "spdy/core/http2_frame_decoder_adapter.h"
 #include "spdy/core/spdy_framer.h"
 
@@ -17,10 +18,12 @@ namespace http2 {
 namespace adapter {
 
 // This class manages state associated with a single multiplexed HTTP/2 session.
-class OgHttp2Session : public Http2Session,
-                       public spdy::SpdyFramerVisitorInterface {
+class QUICHE_EXPORT_PRIVATE OgHttp2Session
+    : public Http2Session,
+      public spdy::SpdyFramerVisitorInterface,
+      public spdy::ExtensionVisitorInterface {
  public:
-  struct Options {
+  struct QUICHE_EXPORT_PRIVATE Options {
     Perspective perspective = Perspective::kClient;
   };
 
@@ -43,6 +46,8 @@ class OgHttp2Session : public Http2Session,
   int SubmitResponse(Http2StreamId stream_id, absl::Span<const Header> headers,
                      std::unique_ptr<DataFrameSource> data_source);
   int SubmitTrailer(Http2StreamId stream_id, absl::Span<const Header> trailers);
+  void SubmitMetadata(Http2StreamId stream_id,
+                      std::unique_ptr<MetadataSource> source);
 
   bool IsServerSession() const {
     return options_.perspective == Perspective::kServer;
@@ -84,7 +89,7 @@ class OgHttp2Session : public Http2Session,
   bool want_read() const override { return !received_goaway_; }
   bool want_write() const override {
     return !frames_.empty() || !serialized_prefix_.empty() ||
-           write_scheduler_.HasReadyStreams();
+           write_scheduler_.HasReadyStreams() || !connection_metadata_.empty();
   }
   int GetRemoteWindowSize() const override { return connection_send_window_; }
 
@@ -117,7 +122,7 @@ class OgHttp2Session : public Http2Session,
   void OnPing(spdy::SpdyPingId unique_id, bool is_ack) override;
   void OnGoAway(spdy::SpdyStreamId last_accepted_stream_id,
                 spdy::SpdyErrorCode error_code) override;
-  bool OnGoAwayFrameData(const char* goaway_data, size_t len);
+  bool OnGoAwayFrameData(const char* goaway_data, size_t len) override;
   void OnHeaders(spdy::SpdyStreamId stream_id,
                  bool has_priority,
                  int weight,
@@ -131,10 +136,9 @@ class OgHttp2Session : public Http2Session,
                      spdy::SpdyStreamId promised_stream_id,
                      bool end) override;
   void OnContinuation(spdy::SpdyStreamId stream_id, bool end) override;
-  void OnAltSvc(spdy::SpdyStreamId /*stream_id*/,
-                absl::string_view /*origin*/,
+  void OnAltSvc(spdy::SpdyStreamId /*stream_id*/, absl::string_view /*origin*/,
                 const spdy::SpdyAltSvcWireFormat::
-                    AlternativeServiceVector& /*altsvc_vector*/);
+                    AlternativeServiceVector& /*altsvc_vector*/) override;
   void OnPriority(spdy::SpdyStreamId stream_id,
                   spdy::SpdyStreamId parent_stream_id,
                   int weight,
@@ -149,22 +153,33 @@ class OgHttp2Session : public Http2Session,
   void OnHeaderStatus(Http2StreamId stream_id,
                       Http2VisitorInterface::OnHeaderResult result);
 
+  // Returns true if a recognized extension frame is received.
+  bool OnFrameHeader(spdy::SpdyStreamId stream_id, size_t length, uint8_t type,
+                     uint8_t flags) override;
+
+  // Handles the payload for a recognized extension frame.
+  void OnFramePayload(const char* data, size_t len) override;
+
  private:
-  struct StreamState {
+  using MetadataSequence = std::vector<std::unique_ptr<MetadataSource>>;
+  struct QUICHE_EXPORT_PRIVATE StreamState {
     StreamState(int32_t stream_receive_window,
                 WindowManager::WindowUpdateListener listener)
         : window_manager(stream_receive_window, std::move(listener)) {}
 
     WindowManager window_manager;
     std::unique_ptr<DataFrameSource> outbound_body;
+    MetadataSequence outbound_metadata;
     std::unique_ptr<spdy::SpdyHeaderBlock> trailers;
     void* user_data = nullptr;
     int32_t send_window = kInitialFlowControlWindowSize;
     bool half_closed_local = false;
     bool half_closed_remote = false;
   };
+  using StreamStateMap = absl::flat_hash_map<Http2StreamId, StreamState>;
 
-  class PassthroughHeadersHandler : public spdy::SpdyHeadersHandlerInterface {
+  class QUICHE_EXPORT_PRIVATE PassthroughHeadersHandler
+      : public spdy::SpdyHeadersHandlerInterface {
    public:
     explicit PassthroughHeadersHandler(OgHttp2Session& session,
                                        Http2VisitorInterface& visitor)
@@ -199,6 +214,8 @@ class OgHttp2Session : public Http2Session,
   // some other reason).
   bool WriteForStream(Http2StreamId stream_id);
 
+  bool SendMetadata(Http2StreamId stream_id, MetadataSequence& sequence);
+
   void SendTrailers(Http2StreamId stream_id, spdy::SpdyHeaderBlock trailers);
 
   // Encapsulates the RST_STREAM NO_ERROR behavior described in RFC 7540
@@ -207,6 +224,9 @@ class OgHttp2Session : public Http2Session,
 
   // Performs flow control accounting for data sent by the peer.
   void MarkDataBuffered(Http2StreamId stream_id, size_t bytes);
+
+  // Creates a stream and returns an iterator pointing to it.
+  StreamStateMap::iterator CreateStream(Http2StreamId stream_id);
 
   // Receives events when inbound frames are parsed.
   Http2VisitorInterface& visitor_;
@@ -218,7 +238,7 @@ class OgHttp2Session : public Http2Session,
   http2::Http2DecoderAdapter decoder_;
 
   // Maintains the state of all streams known to this session.
-  absl::flat_hash_map<Http2StreamId, StreamState> stream_map_;
+  StreamStateMap stream_map_;
 
   // Maintains the queue of outbound frames, and any serialized bytes that have
   // not yet been consumed.
@@ -240,8 +260,12 @@ class OgHttp2Session : public Http2Session,
 
   absl::flat_hash_set<Http2StreamId> streams_reset_;
 
+  MetadataSequence connection_metadata_;
+
   Http2StreamId next_stream_id_ = 1;
   Http2StreamId highest_received_stream_id_ = 0;
+  Http2StreamId metadata_stream_id_ = 0;
+  size_t metadata_length_ = 0;
   int connection_send_window_ = kInitialFlowControlWindowSize;
   // The initial flow control receive window size for any newly created streams.
   int stream_receive_window_limit_ = kInitialFlowControlWindowSize;
@@ -249,6 +273,8 @@ class OgHttp2Session : public Http2Session,
   Options options_;
   bool received_goaway_ = false;
   bool queued_preface_ = false;
+  bool peer_supports_metadata_ = false;
+  bool end_metadata_ = false;
 
   // Replace this with a stream ID, for multiple GOAWAY support.
   bool queued_goaway_ = false;

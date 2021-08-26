@@ -34,7 +34,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/dbus/update_engine_client.h"
+#include "chromeos/dbus/update_engine/update_engine_client.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_test.h"
@@ -72,7 +72,9 @@ class KioskAppUpdateServiceTest
       : app_(NULL),
         update_service_(NULL),
         automatic_reboot_manager_(NULL) {}
-
+  KioskAppUpdateServiceTest(const KioskAppUpdateServiceTest&) = delete;
+  KioskAppUpdateServiceTest& operator=(const KioskAppUpdateServiceTest&) =
+      delete;
   ~KioskAppUpdateServiceTest() override {}
 
   // extensions::PlatformAppBrowserTest overrides:
@@ -165,8 +167,6 @@ class KioskAppUpdateServiceTest
   KioskAppUpdateService* update_service_;  // Not owned.
   system::AutomaticRebootManager* automatic_reboot_manager_;  // Not owned.
   std::unique_ptr<base::RunLoop> run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(KioskAppUpdateServiceTest);
 };
 
 // Verifies that the app is notified a reboot is required when an app update

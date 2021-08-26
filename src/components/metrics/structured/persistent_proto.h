@@ -11,7 +11,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace metrics {
 namespace structured {
@@ -87,10 +86,11 @@ class PersistentProto {
   void StartWrite();
 
   // Safely clear this proto from memory and disk. This is preferred to clearing
-  // the proto, because it ensures the proto is wiped even if called before the
+  // the proto, because it ensures the proto is purged even if called before the
   // backing file is read from disk. In this case, the file is overwritten after
-  // it has been read.
-  void Wipe();
+  // it has been read. In either case, the file is written as soon as possible,
+  // skipping the |save_delay_ms_| wait time.
+  void Purge();
 
  private:
   void OnReadComplete(std::pair<ReadStatus, std::unique_ptr<T>> result);
@@ -107,7 +107,7 @@ class PersistentProto {
   bool write_is_queued_ = false;
 
   // Whether we should immediately clear the proto after reading it.
-  bool wipe_after_reading_ = false;
+  bool purge_after_reading_ = false;
 
   // Run when the cache finishes reading from disk, if provided.
   ReadCallback on_read_;

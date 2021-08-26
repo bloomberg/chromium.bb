@@ -22,7 +22,6 @@
 #include "aom_mem/aom_mem.h"
 #include "aom_ports/aom_timer.h"
 #include "aom_ports/mem.h"
-#include "aom_ports/system_state.h"
 
 #include "av1/common/av1_common_int.h"
 #include "av1/common/cfl.h"
@@ -363,7 +362,6 @@ void av1_inter_mode_data_init(TileDataEnc *tile_data) {
 static int get_est_rate_dist(const TileDataEnc *tile_data, BLOCK_SIZE bsize,
                              int64_t sse, int *est_residue_cost,
                              int64_t *est_dist) {
-  aom_clear_system_state();
   const InterModeRdModel *md = &tile_data->inter_mode_rd_models[bsize];
   if (md->ready) {
     if (sse < md->dist_mean) {
@@ -396,7 +394,6 @@ static int get_est_rate_dist(const TileDataEnc *tile_data, BLOCK_SIZE bsize,
 }
 
 void av1_inter_mode_data_fit(TileDataEnc *tile_data, int rdmult) {
-  aom_clear_system_state();
   for (int bsize = 0; bsize < BLOCK_SIZES_ALL; ++bsize) {
     const int block_idx = inter_mode_data_block_idx(bsize);
     InterModeRdModel *md = &tile_data->inter_mode_rd_models[bsize];
@@ -454,7 +451,6 @@ static AOM_INLINE void inter_mode_data_push(TileDataEnc *tile_data,
   if (block_idx == -1) return;
   InterModeRdModel *rd_model = &tile_data->inter_mode_rd_models[bsize];
   if (rd_model->num < INTER_MODE_RD_DATA_OVERALL_SIZE) {
-    aom_clear_system_state();
     const double ld = (sse - dist) * 1. / residue_cost;
     ++rd_model->num;
     rd_model->dist_sum += dist;
@@ -1290,7 +1286,6 @@ static int64_t motion_mode_rd(
   assert(mbmi->ref_frame[1] != INTRA_FRAME);
   const MV_REFERENCE_FRAME ref_frame_1 = mbmi->ref_frame[1];
   av1_invalid_rd_stats(&best_rd_stats);
-  aom_clear_system_state();
   mbmi->num_proj_ref = 1;  // assume num_proj_ref >=1
   MOTION_MODE last_motion_mode_allowed = SIMPLE_TRANSLATION;
   *yrd = INT64_MAX;
@@ -1360,15 +1355,9 @@ static int64_t motion_mode_rd(
     // predetermined threshold for this update_type and block size.
     const FRAME_UPDATE_TYPE update_type =
         get_frame_update_type(&cpi->ppi->gf_group, cpi->gf_frame_index);
-    int obmc_probability;
-#if CONFIG_FRAME_PARALLEL_ENCODE
-    obmc_probability =
-        cpi->ppi->temp_frame_probs.obmc_probs[update_type][bsize];
-#else
-    obmc_probability = cpi->frame_probs.obmc_probs[update_type][bsize];
-#endif
     const int prune_obmc =
-        obmc_probability < cpi->sf.inter_sf.prune_obmc_prob_thresh;
+        cpi->ppi->frame_probs.obmc_probs[update_type][bsize] <
+        cpi->sf.inter_sf.prune_obmc_prob_thresh;
     if ((!cpi->oxcf.motion_mode_cfg.enable_obmc || prune_obmc) &&
         mbmi->motion_mode == OBMC_CAUSAL)
       continue;
@@ -2901,7 +2890,8 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
                                        RD_STATS *rd_stats, BLOCK_SIZE bsize,
                                        int64_t best_rd) {
   const AV1_COMMON *const cm = &cpi->common;
-  if (!av1_allow_intrabc(cm) || !cpi->oxcf.kf_cfg.enable_intrabc)
+  if (!av1_allow_intrabc(cm) || !cpi->oxcf.kf_cfg.enable_intrabc ||
+      cpi->sf.rt_sf.use_nonrd_pick_mode)
     return INT64_MAX;
   const int num_planes = av1_num_planes(cm);
 
@@ -3795,14 +3785,8 @@ static AOM_INLINE void set_params_rd_pick_inter_mode(
   av1_count_overlappable_neighbors(cm, xd);
   const FRAME_UPDATE_TYPE update_type =
       get_frame_update_type(&cpi->ppi->gf_group, cpi->gf_frame_index);
-  int obmc_probability;
-#if CONFIG_FRAME_PARALLEL_ENCODE
-  obmc_probability = cpi->ppi->temp_frame_probs.obmc_probs[update_type][bsize];
-#else
-  obmc_probability = cpi->frame_probs.obmc_probs[update_type][bsize];
-#endif
-  const int prune_obmc =
-      obmc_probability < cpi->sf.inter_sf.prune_obmc_prob_thresh;
+  const int prune_obmc = cpi->ppi->frame_probs.obmc_probs[update_type][bsize] <
+                         cpi->sf.inter_sf.prune_obmc_prob_thresh;
   if (cpi->oxcf.motion_mode_cfg.enable_obmc && !prune_obmc) {
     if (check_num_overlappable_neighbors(mbmi) &&
         is_motion_variation_allowed_bsize(bsize)) {
@@ -4806,6 +4790,18 @@ static void tx_search_best_inter_candidates(
   *yrd = INT64_MAX;
   int64_t best_rd_in_this_partition = INT64_MAX;
   int num_inter_mode_cands = inter_modes_info->num;
+  int newmv_mode_evaled = 0;
+  int max_allowed_cands = INT_MAX;
+  if (cpi->sf.inter_sf.limit_inter_mode_cands) {
+    // The bound on the no. of inter mode candidates, beyond which the
+    // candidates are limited if a newmv mode got evaluated, is set as
+    // max_allowed_cands + 1.
+    const int num_allowed_cands[4] = { INT_MAX, 10, 9, 6 };
+    assert(cpi->sf.inter_sf.limit_inter_mode_cands <= 3);
+    max_allowed_cands =
+        num_allowed_cands[cpi->sf.inter_sf.limit_inter_mode_cands];
+  }
+  int num_tx_cands = 0;
   // Iterate over best inter mode candidates and perform tx search
   for (int j = 0; j < num_inter_mode_cands; ++j) {
     const int data_idx = inter_modes_info->rd_idx_pair_arr[j].idx;
@@ -4846,6 +4842,8 @@ static void tx_search_best_inter_candidates(
       if (!eval_txfm) continue;
     }
 
+    num_tx_cands++;
+    if (have_newmv_in_inter_mode(mbmi->mode)) newmv_mode_evaled = 1;
     int64_t this_yrd = INT64_MAX;
     // Do the transform search
     if (!av1_txfm_search(cpi, x, bsize, &rd_stats, &rd_stats_y, &rd_stats_uv,
@@ -4907,6 +4905,9 @@ static void tx_search_best_inter_candidates(
         }
       }
     }
+    // If the number of candidates evaluated exceeds max_allowed_cands, break if
+    // a newmv mode was evaluated already.
+    if ((num_tx_cands > max_allowed_cands) && newmv_mode_evaled) break;
   }
 }
 
@@ -5249,7 +5250,6 @@ static AOM_INLINE void skip_intra_modes_in_interframe(
   }
   // Use ML model to prune intra search.
   if (inter_cost >= 0 && intra_cost >= 0) {
-    aom_clear_system_state();
     const NN_CONFIG *nn_config = (AOMMIN(cm->width, cm->height) <= 480)
                                      ? &av1_intrap_nn_config
                                      : &av1_intrap_hd_nn_config;
@@ -5266,12 +5266,12 @@ static AOM_INLINE void skip_intra_modes_in_interframe(
     nn_features[5] = (float)(ac_q_max / ac_q);
 
     av1_nn_predict(nn_features, nn_config, 1, scores);
-    aom_clear_system_state();
 
     // For two parameters, the max prob returned from av1_nn_softmax equals
     // 1.0 / (1.0 + e^(-|diff_score|)). Here use scores directly to avoid the
     // calling of av1_nn_softmax.
-    const float thresh[4] = { 1.4f, 1.4f, 1.4f, 1.4f };
+    const float thresh[5] = { 1.4f, 1.4f, 1.4f, 1.4f, 1.4f };
+    assert(skip_intra_in_interframe <= 5);
     if (scores[1] > scores[0] + thresh[skip_intra_in_interframe - 1]) {
       search_state->intra_search_state.skip_intra_modes = 1;
     }
@@ -5443,7 +5443,8 @@ void av1_rd_pick_inter_mode(struct AV1_COMP *cpi, struct TileDataEnc *tile_data,
 #endif  // !CONFIG_REALTIME_ONLY
 
   // Initialize best mode stats for winner mode processing
-  av1_zero_array(x->winner_mode_stats, MAX_WINNER_MODE_COUNT_INTER);
+  zero_winner_mode_stats(bsize, MAX_WINNER_MODE_COUNT_INTER,
+                         x->winner_mode_stats);
   x->winner_mode_count = 0;
   store_winner_mode_stats(&cpi->common, x, mbmi, NULL, NULL, NULL, THR_INVALID,
                           NULL, bsize, best_rd_so_far,

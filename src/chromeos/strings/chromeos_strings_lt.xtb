@@ -14,6 +14,7 @@
 <translation id="1204296502688602597">DNS delsa</translation>
 <translation id="123124571410524056">Įtariamas portalas</translation>
 <translation id="1238612778414822719">HTTPS delsa</translation>
+<translation id="1264369926465113395">Peržiūrėkite „Chromebook“ naują skaitmeninį žurnalą, skirtą kūrėjams</translation>
 <translation id="1270369111467284986">Įtariamas fiksuotasis portalas</translation>
 <translation id="1290331692326790741">Silpnas signalas</translation>
 <translation id="1314565355471455267">„Android“ VPN</translation>
@@ -34,7 +35,9 @@
 <translation id="1510238584712386396">Paleidimo priemonė</translation>
 <translation id="1600964289716072707">Padėkite kitą puslapį ant skaitytuvo ir pasirinkite „Nuskaityti“, kad pridėtumėte puslapį.</translation>
 <translation id="1621067168122174824">Vykdyti įkrovimo bandymą</translation>
+<translation id="1639239467298939599">Įkeliama</translation>
 <translation id="1641857168437328880">Dokumentų tiektuvas (vienpusis)</translation>
+<translation id="1643449475550628585">Kasdien keisti ekrano fono vaizdą</translation>
 <translation id="1644574205037202324">Istorija</translation>
 <translation id="1662989795263954667">Sustabdyta – baigėsi rašalas</translation>
 <translation id="1703835215927279855">Laiškas</translation>
@@ -65,7 +68,6 @@
 <translation id="2224337661447660594">Nėra interneto ryšio</translation>
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="225692081236532131">Aktyvinimo būsena</translation>
-<translation id="2294675138977897428">Nėra eterneto ryšio</translation>
 <translation id="2326139988748364651"><ph name="RESOLUTION_VALUE" /> tšk./col.</translation>
 <translation id="2338501278241028356">Įjunkite „Bluetooth“, kad aptiktumėte įrenginius netoliese</translation>
 <translation id="2364498172489649528">Pavyko</translation>
@@ -75,9 +77,11 @@
 <translation id="2448312741937722512">Tipas</translation>
 <translation id="2461822463642141190">Dabartinė</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
+<translation id="2505327257735685095">Atnaujinti dabartinio ekrano fono vaizdą</translation>
 <translation id="2517472476991765520">Nuskaityti</translation>
 <translation id="2570743873672969996">Vykdomas „<ph name="TEST_NAME" />“ bandymas...</translation>
 <translation id="2585245331261708204">„Chrome“ OS naujienos</translation>
+<translation id="2619761439309613843">Atnaujinimas per dieną</translation>
 <translation id="2620436844016719705">Sistema</translation>
 <translation id="2740531572673183784">Gerai</translation>
 <translation id="2751739896257479635">EAP 2 tapatybės nustatymo etapas</translation>
@@ -87,7 +91,6 @@
 <translation id="2862104018715411648">Jei norite pradėti, padėkite dokumentą ant skaitytuvo ir pasirinkite „Nuskaityti“</translation>
 <translation id="2872961005593481000">Stabdyti</translation>
 <translation id="2878387241690264070">Išsikrovė: <ph name="RATE" /> per <ph name="NUM_SECONDS" /> sek.</translation>
-<translation id="2983662233540284543">Mokykitės iš žaidimų turinio kūrėjo, gaukite žaidimo kūrimo programų ir kt.</translation>
 <translation id="3008341117444806826">ATNAUJINTI</translation>
 <translation id="3009958530611748826">Pasirinkite aplanką, kuriame pageidaujate išsaugoti</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" /> mA</translation>
@@ -101,6 +104,7 @@
 <translation id="3188257591659621405">Mano failai</translation>
 <translation id="3199982728237701504">Dokumentų tiektuvas (dvipusis)</translation>
 <translation id="3226405216343213872">Ieškoma skaitytuvų</translation>
+<translation id="3228433892370472777">Numatytasis ryšys</translation>
 <translation id="3246869037381808805">Senesnės nei 1 dienos spausdinimo užduotys bus pašalintos</translation>
 <translation id="3268178239013324452">Nepavyko – atidarytos durelės</translation>
 <translation id="3283504360622356314">{0,plural, =1{Redaguoti failą}one{Redaguoti failus}few{Redaguoti failus}many{Redaguoti failus}other{Redaguoti failus}}</translation>
@@ -117,10 +121,13 @@
 <translation id="3488065109653206955">Iš dalies suaktyvinta</translation>
 <translation id="3527036260304016759">Nepavyko – nežinoma klaida</translation>
 <translation id="3532980081107202182">Liko apie <ph name="MIN_REMAINING" /> min.</translation>
+<translation id="3540383942695635079">MAC adresas</translation>
 <translation id="357889014807611375">matuojamas „Wi-Fi“ tinklas</translation>
+<translation id="3582041541988388905">Šis ryšys neaptiktas: <ph name="NETWORK_NAME" /></translation>
 <translation id="3595596368722241419">Akumuliatorius įkrautas</translation>
 <translation id="360565022852130722">„Wi-Fi“ tinklas apsaugotas naudojant nepatikimą protokolą WEP 802.1x</translation>
 <translation id="3689839747745352263">Bandymas „<ph name="TEST_NAME" />“</translation>
+<translation id="3708186454126126312">Anksčiau susieti</translation>
 <translation id="373232531963562220">{PAGE_NUMBER,plural, =0{Iš naujo nuskaityti puslapį}=1{Iš naujo nuskaityti {PAGE_NUMBER} puslapį}one{Iš naujo nuskaityti {PAGE_NUMBER} puslapį}few{Iš naujo nuskaityti {PAGE_NUMBER} puslapį}many{Iš naujo nuskaityti {PAGE_NUMBER} puslapį}other{Iš naujo nuskaityti {PAGE_NUMBER} puslapį}}</translation>
 <translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★ (apžvalgų: <ph name="AGGREGATED_COUNT" />)</translation>
 <translation id="3748026146096797577">Neprisijungta</translation>
@@ -163,6 +170,7 @@
 <translation id="4479639480957787382">Eternetas</translation>
 <translation id="4483049906298469269">Nepavyko patikrinti ryšio su nenumatytuoju tinklų sietuvu</translation>
 <translation id="4511264077854731334">Portalas</translation>
+<translation id="4536864596629708641">IP konfigūracija</translation>
 <translation id="4548483925627140043">Signalas nerastas</translation>
 <translation id="455835558791489930"><ph name="CHARGE_VALUE" /> mAh akumuliatorius</translation>
 <translation id="4562494484721939086">Nėra paslaugos</translation>
@@ -171,6 +179,7 @@
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, „<ph name="PRINTER_NAME" />“, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> iš <ph name="TOTAL_PAGE_NUMBER" /> psl. Paspauskite „Enter“, jei norite atšaukti spausdinimo užduotį.</translation>
 <translation id="4646949265910132906">Saugus „Wi-Fi“ ryšys</translation>
 <translation id="4652335678334611408">Išsaugoti seanso žurnalą</translation>
+<translation id="4654549501020883054">Keisti kasdien</translation>
 <translation id="4665014895760275686">Gamintojas</translation>
 <translation id="467510802200863975">Slaptažodžiai neatitinka</translation>
 <translation id="467715984478005772">Įtariama užkarda</translation>
@@ -194,6 +203,7 @@
 <translation id="4891842000192098784">Įtampa</translation>
 <translation id="4917385247580444890">Stiprus</translation>
 <translation id="4917889632206600977">Sustabdyta – baigėsi popierius</translation>
+<translation id="491836528011451486">Jei norite nuskaityti ir pakeisti puslapį „<ph name="CURRENT_PAGE" />“, padėkite dokumentą ant skaitytuvo ir pasirinkite „Nuskaityti iš naujo“.</translation>
 <translation id="4921665434385737356">Įkrauta: <ph name="RATE" /> per <ph name="NUM_SECONDS" /> sek.</translation>
 <translation id="4932733599132424254">Data</translation>
 <translation id="498186245079027698">Patikrinkite skaitytuvą ir bandykite dar kartą. Įsitikinkite, kad vietinėje sistemoje pakanka vietos nuskaitytiems failams išsaugoti.</translation>
@@ -209,10 +219,10 @@
 <translation id="5154917547274118687">Atmintis</translation>
 <translation id="5168185087976003268">Akumuliatoriaus būsena</translation>
 <translation id="5170568018924773124">Rodyti aplanke</translation>
-<translation id="519607504553633437">Kurkite savo žaidimus</translation>
 <translation id="5212543919916444558">Ekrane nieko nerasta, dėl ko galėtume jums padėti.
 Palieskite mikrofoną, kad užduotumėte reikiamus klausimus.</translation>
 <translation id="5222676887888702881">Atsijungti</translation>
+<translation id="5234764350956374838">Atsisakyti</translation>
 <translation id="5252456968953390977">Tarptinklinis ryšys</translation>
 <translation id="5264277876637023664">Vykdyti centrinio procesoriaus bandymą</translation>
 <translation id="5267975978099728568"><ph name="DOCUMENT_TITLE" />, „<ph name="PRINTER_NAME" />“, <ph name="CREATION_TIME" />, <ph name="ERROR_STATUS" /></translation>
@@ -243,7 +253,6 @@ Palieskite mikrofoną, kad užduotumėte reikiamus klausimus.</translation>
 <translation id="5691511426247308406">Šeima</translation>
 <translation id="5701381305118179107">Centre</translation>
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" /> iš <ph name="TOTAL_PAGES" /></translation>
-<translation id="5752751666635965375">Sukurkite savo žaidimą</translation>
 <translation id="5760715441271661976">Portalo būsena</translation>
 <translation id="5832805196449965646">Pridėti asmenį</translation>
 <translation id="583281660410589416">Nežinoma</translation>
@@ -266,6 +275,7 @@ Palieskite mikrofoną, kad užduotumėte reikiamus klausimus.</translation>
 <translation id="6106186594183574873">Norėdami užbaigti įveskite seną slaptažodį</translation>
 <translation id="6108689792487843350">Tinklų sietuvas nepasiekiamas</translation>
 <translation id="6122191549521593678">Prisijungęs</translation>
+<translation id="6125438912510167220">Ryšio sparta</translation>
 <translation id="6137767437444130246">Naudotojo sertifikatas</translation>
 <translation id="6146993107019042706">Norėdami užbaigti įveskite naują slaptažodį</translation>
 <translation id="6147514244879357420">PNG</translation>
@@ -292,6 +302,8 @@ Palieskite mikrofoną, kad užduotumėte reikiamus klausimus.</translation>
 <translation id="65587193855025101">Plokščiasis</translation>
 <translation id="6564646048574748301">Nepavyko – spausdintuvas nepasiekiamas</translation>
 <translation id="6574762126505704998">Užpildyti</translation>
+<translation id="6575134580692778371">Nesukonfigūruota</translation>
+<translation id="6596816719288285829">IP adresas</translation>
 <translation id="6603230386432466813">Kyla sunkumų prisijungiant?</translation>
 <translation id="6618744767048954150">Vykdoma</translation>
 <translation id="6620487321149975369">Spausdinimo užduotys bus rodomos istorijoje, nebent bus pašalintos neautomatiškai</translation>
@@ -314,13 +326,16 @@ Palieskite mikrofoną, kad užduotumėte reikiamus klausimus.</translation>
 <translation id="7059230779847288458">Kraunama, <ph name="TIME_VALUE" />, kol bus įkrauta</translation>
 <translation id="708426984172631313">SUSTABDYTA</translation>
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
+<translation id="7134436342991564651">{0,plural, =1{Pavadinimų serveris}one{Pavadinimų serveriai}few{Pavadinimų serveriai}many{Pavadinimų serveriai}other{Pavadinimų serveriai}}</translation>
 <translation id="7143207342074048698">Jungiama</translation>
 <translation id="7144878232160441200">Kartoti</translation>
 <translation id="714876143603641390">LAN ryšys</translation>
 <translation id="7162487448488904999">Galerija</translation>
 <translation id="7172721935181587524">Vienas vaizdas</translation>
 <translation id="7177485034254901881">Šį „<ph name="DEVICE_TYPE" />“ valdo <ph name="MANAGER" />. Administratoriai gali nuotoliniu būdu konfigūruoti įrenginį.</translation>
+<translation id="7180611975245234373">Atnaujinti</translation>
 <translation id="7216409898977639127">Mobiliojo ryšio teikėjas</translation>
+<translation id="7257889006063274246">Ar tikrai norite pašalinti puslapį „<ph name="CURRENT_PAGE" />“?</translation>
 <translation id="7271040990581020067">Skaitytuvas šiuo metu naudojamas. Vėliau bandykite dar kartą.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7287310195820267359">Ekrano fonų rinkiniai</translation>
@@ -354,9 +369,11 @@ Palieskite mikrofoną, kad užduotumėte reikiamus klausimus.</translation>
 <translation id="7835501727204647447">Įdiegti „CloudReady“</translation>
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7882358943899516840">Teikėjo tipas</translation>
+<translation id="7895471513946376273">Atraskite piešimo ir dizaino įrankius</translation>
 <translation id="7936303884198020182">Domenų pavadinimų serverių nerasta</translation>
 <translation id="7960831585769876809">Temperatūra</translation>
 <translation id="7994702968232966508">EAP metodas</translation>
+<translation id="8020238979854764615">Įvyko klaida. Bandykite dar kartą pasirinkdami kitus vaizdus.</translation>
 <translation id="802154636333426148">Įvyko atsisiuntimo klaida</translation>
 <translation id="8041089156583427627">Siųsti atsiliepimą</translation>
 <translation id="8075838845814659848">Likusio įkrovimo rodiklis</translation>
@@ -368,7 +385,9 @@ Palieskite mikrofoną, kad užduotumėte reikiamus klausimus.</translation>
 <translation id="8214184102975786227">Kelis puslapius nuskaityti kaip vieną PDF</translation>
 <translation id="8230672074305416752">Nepavyko patikrinti ryšio su numatytuoju tinklų sietuvu</translation>
 <translation id="8246209727385807362">Nežinomas operatorius</translation>
+<translation id="8286154143153872371">Jei norite peržiūrėti ekrano foną, prisijunkite prie tinklo ir iš naujo įkelkite puslapį.</translation>
 <translation id="8291967909914612644">Namų paslaugos teikėjo šalis</translation>
+<translation id="829270796093605079">Dizaino įrankiai</translation>
 <translation id="8294431847097064396">Šaltinis</translation>
 <translation id="8297006494302853456">Silpnas</translation>
 <translation id="8302368968391049045">HTTPS užkarda</translation>
@@ -392,6 +411,7 @@ Palieskite mikrofoną, kad užduotumėte reikiamus klausimus.</translation>
 <translation id="8575298406870537639">Operatoriui gali būti reikalinga ši parinktis, kad būtų galima prisijungti prie tinklo. Jei reikia išsamios informacijos, susisiekite su operatoriumi.</translation>
 <translation id="8576249514688522074">Neinicijuota</translation>
 <translation id="8620617069779373398">Tarptinklinio ryšio būsena</translation>
+<translation id="8655295600908251630">Kanalas</translation>
 <translation id="8660881923941176839">svar.</translation>
 <translation id="8675354002693747642">Paruoštas bendrinti raktas</translation>
 <translation id="871560550817059752">Nepavyko – baigėsi rašalas</translation>
@@ -404,6 +424,7 @@ Palieskite mikrofoną, kad užduotumėte reikiamus klausimus.</translation>
 <translation id="8798441408945964110">Teikėjo pavadinimas</translation>
 <translation id="8814190375133053267">WI-Fi</translation>
 <translation id="8818152010000655963">Ekrano fonas</translation>
+<translation id="8834539327799336565">Šiuo metu susieti</translation>
 <translation id="8845001906332463065">Gauti pagalbos</translation>
 <translation id="8868741746785112895">GUID</translation>
 <translation id="8881098542468797602">Bandymas sėkmingas</translation>

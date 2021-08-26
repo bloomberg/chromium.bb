@@ -10,22 +10,6 @@ struct S {
   tint_padded_array_element arr[4];
 };
 
-typedef tint_padded_array_element tint_symbol_2_ret[4];
-tint_symbol_2_ret tint_symbol_2(uint4 buffer[4], uint offset) {
-  const uint scalar_offset = ((offset + 0u)) / 4;
-  const uint scalar_offset_1 = ((offset + 16u)) / 4;
-  const uint scalar_offset_2 = ((offset + 32u)) / 4;
-  const uint scalar_offset_3 = ((offset + 48u)) / 4;
-  const tint_padded_array_element tint_symbol_5[4] = {{asint(buffer[scalar_offset / 4][scalar_offset % 4])}, {asint(buffer[scalar_offset_1 / 4][scalar_offset_1 % 4])}, {asint(buffer[scalar_offset_2 / 4][scalar_offset_2 % 4])}, {asint(buffer[scalar_offset_3 / 4][scalar_offset_3 % 4])}};
-  return tint_symbol_5;
-}
-
-typedef tint_padded_array_element tint_symbol_4_ret[4];
-tint_symbol_4_ret tint_symbol_4(RWByteAddressBuffer buffer, uint offset) {
-  const tint_padded_array_element tint_symbol_6[4] = {{asint(buffer.Load((offset + 0u)))}, {asint(buffer.Load((offset + 16u)))}, {asint(buffer.Load((offset + 32u)))}, {asint(buffer.Load((offset + 48u)))}};
-  return tint_symbol_6;
-}
-
 static tint_padded_array_element src_private[4] = (tint_padded_array_element[4])0;
 groupshared tint_padded_array_element src_workgroup[4];
 cbuffer cbuffer_src_uniform : register(b0, space0) {
@@ -37,19 +21,42 @@ static int dst_nested[4][3][2] = (int[4][3][2])0;
 
 typedef tint_padded_array_element ret_arr_ret[4];
 ret_arr_ret ret_arr() {
-  const tint_padded_array_element tint_symbol_7[4] = (tint_padded_array_element[4])0;
-  return tint_symbol_7;
+  const tint_padded_array_element tint_symbol_5[4] = (tint_padded_array_element[4])0;
+  return tint_symbol_5;
 }
 
 S ret_struct_arr() {
-  const S tint_symbol_8 = (S)0;
-  return tint_symbol_8;
+  const S tint_symbol_6 = (S)0;
+  return tint_symbol_6;
+}
+
+typedef tint_padded_array_element tint_symbol_1_ret[4];
+tint_symbol_1_ret tint_symbol_1(uint4 buffer[4], uint offset) {
+  tint_padded_array_element arr_1[4] = (tint_padded_array_element[4])0;
+  {
+    for(uint i = 0u; (i < 4u); i = (i + 1u)) {
+      const uint scalar_offset = ((offset + (i * 16u))) / 4;
+      arr_1[i].el = asint(buffer[scalar_offset / 4][scalar_offset % 4]);
+    }
+  }
+  return arr_1;
+}
+
+typedef tint_padded_array_element tint_symbol_3_ret[4];
+tint_symbol_3_ret tint_symbol_3(RWByteAddressBuffer buffer, uint offset) {
+  tint_padded_array_element arr_2[4] = (tint_padded_array_element[4])0;
+  {
+    for(uint i_1 = 0u; (i_1 < 4u); i_1 = (i_1 + 1u)) {
+      arr_2[i_1].el = asint(buffer.Load((offset + (i_1 * 16u))));
+    }
+  }
+  return arr_2;
 }
 
 void foo(tint_padded_array_element src_param[4]) {
   tint_padded_array_element src_function[4] = (tint_padded_array_element[4])0;
-  const tint_padded_array_element tint_symbol_9[4] = {{1}, {2}, {3}, {3}};
-  tint_symbol = tint_symbol_9;
+  const tint_padded_array_element tint_symbol_7[4] = {{1}, {2}, {3}, {3}};
+  tint_symbol = tint_symbol_7;
   tint_symbol = src_param;
   tint_symbol = ret_arr();
   const tint_padded_array_element src_let[4] = (tint_padded_array_element[4])0;
@@ -58,8 +65,8 @@ void foo(tint_padded_array_element src_param[4]) {
   tint_symbol = src_private;
   tint_symbol = src_workgroup;
   tint_symbol = ret_struct_arr().arr;
-  tint_symbol = tint_symbol_2(src_uniform, 0u);
-  tint_symbol = tint_symbol_4(src_storage, 0u);
+  tint_symbol = tint_symbol_1(src_uniform, 0u);
+  tint_symbol = tint_symbol_3(src_storage, 0u);
   int src_nested[4][3][2] = (int[4][3][2])0;
   dst_nested = src_nested;
 }

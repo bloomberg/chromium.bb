@@ -638,14 +638,6 @@ id<GREYMatcher> ContentViewSmallerThanScrollView() {
   return [ChromeMatchersAppInterface contentViewSmallerThanScrollView];
 }
 
-id<GREYMatcher> AutofillSaveCardLocallyInfobar() {
-  return [ChromeMatchersAppInterface autofillSaveCardLocallyInfobar];
-}
-
-id<GREYMatcher> AutofillUploadCardInfobar() {
-  return [ChromeMatchersAppInterface autofillUploadCardInfobar];
-}
-
 id<GREYMatcher> HistoryEntry(const std::string& url, const std::string& title) {
   return [ChromeMatchersAppInterface
       historyEntryForURL:base::SysUTF8ToNSString(url)
@@ -755,6 +747,10 @@ id<GREYMatcher> TabGridEditButton() {
   return [ChromeMatchersAppInterface tabGridEditButton];
 }
 
+id<GREYMatcher> TabGridSelectTabsMenuButton() {
+  return [ChromeMatchersAppInterface tabGridSelectTabsMenuButton];
+}
+
 id<GREYMatcher> TabGridEditAddToButton() {
   return [ChromeMatchersAppInterface tabGridEditAddToButton];
 }
@@ -765,6 +761,10 @@ id<GREYMatcher> TabGridEditCloseTabsButton() {
 
 id<GREYMatcher> TabGridEditSelectAllButton() {
   return [ChromeMatchersAppInterface tabGridEditSelectAllButton];
+}
+
+id<GREYMatcher> TabGridEditShareButton() {
+  return [ChromeMatchersAppInterface tabGridEditShareButton];
 }
 
 }  // namespace chrome_test_util

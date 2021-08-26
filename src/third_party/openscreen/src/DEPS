@@ -13,6 +13,7 @@ vars = {
   'boringssl_git': 'https://boringssl.googlesource.com',
   'chromium_git': 'https://chromium.googlesource.com',
   'quiche_git': 'https://quiche.googlesource.com',
+  'aomedia_git': 'https://aomedia.googlesource.com',
 
   # NOTE: we should only reference GitHub directly for dependencies toggled
   # with the "not build_with_chromium" condition.
@@ -108,14 +109,6 @@ deps = {
     'condition': 'not build_with_chromium',
   },
 
-  'third_party/mDNSResponder/src': {
-    # NOTE: this fork of mDNSResponder is ancient (9 years old), but since
-    # we are moving away from mDNSResponder we will not be updating this.
-    'url': Var('github') + '/jevinskie/mDNSResponder.git' +
-      '@' + '2942dde61f920fbbf96ff9a3840567ebbe7cb1b6',
-    'condition': 'not build_with_chromium',
-  },
-
   # Note about updating BoringSSL: after changing this hash, run the update
   # script in BoringSSL's util folder for generating build files from the
   # <openscreen src-dir>/third_party/boringssl directory:
@@ -169,6 +162,13 @@ deps = {
   'third_party/valijson/src': {
     'url': Var('github') + '/tristanpenman/valijson.git' +
       '@' + 'cf648930313655b19dc07ebae2f9c3fc37966a33', # Tip-of-tree
+    'condition': 'not build_with_chromium'
+  },
+
+  # Keep in sync with third_party/libaom/source/libaom in Chromium DEPS
+  'third_party/aomedia/src': {
+    'url': Var('aomedia_git') + '/aom.git' +
+      '@' + 'bb20160fbdd8226e7904541c8da70b91703e62b8',
     'condition': 'not build_with_chromium'
   }
 }
@@ -233,6 +233,13 @@ include_rules = [
   '+platform/test',
   '+testing/util',
   '+third_party',
+
+  # Inter-module dependencies must be through public APIs.
+  '-discovery',
+  '+discovery/common',
+  '+discovery/dnssd/public',
+  '+discovery/mdns/public',
+  '+discovery/public',
 
   # Don't include abseil from the root so the path can change via include_dirs
   # rules when in Chromium.

@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "constants/ascii.h"
 #include "constants/form_flags.h"
 #include "core/fpdfdoc/cpdf_bafontmap.h"
 #include "fpdfsdk/cpdfsdk_formfillenvironment.h"
@@ -106,9 +107,9 @@ std::unique_ptr<CPWL_Wnd> CFFL_TextField::NewPWLWindow(
 
 bool CFFL_TextField::OnChar(CPDFSDK_Annot* pAnnot,
                             uint32_t nChar,
-                            uint32_t nFlags) {
+                            Mask<FWL_EVENTFLAG> nFlags) {
   switch (nChar) {
-    case FWL_VKEY_Return: {
+    case pdfium::ascii::kReturn: {
       if (m_pWidget->GetFieldFlags() & pdfium::form_flags::kTextMultiline)
         break;
 
@@ -130,7 +131,7 @@ bool CFFL_TextField::OnChar(CPDFSDK_Annot* pAnnot,
       DestroyPWLWindow(pPageView);
       return true;
     }
-    case FWL_VKEY_Escape: {
+    case pdfium::ascii::kEscape: {
       CPDFSDK_PageView* pPageView = GetCurPageView();
       DCHECK(pPageView);
       EscapeFiller(pPageView, true);
@@ -243,7 +244,7 @@ bool CFFL_TextField::IsFieldFull(const CPDFSDK_PageView* pPageView) {
 #endif  // PDF_ENABLE_XFA
 
 void CFFL_TextField::OnSetFocus(CPWL_Edit* pEdit) {
-  pEdit->SetCharSet(FX_CHARSET_ChineseSimplified);
+  pEdit->SetCharSet(FX_Charset::kChineseSimplified);
   pEdit->SetReadyToInput();
 
   WideString wsText = pEdit->GetText();

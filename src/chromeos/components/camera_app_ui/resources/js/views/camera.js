@@ -6,7 +6,6 @@ import * as animate from '../animation.js';
 import {
   assert,
   assertInstanceof,
-  assertString,
 } from '../chrome_util.js';
 import {
   PhotoConstraintsPreferrer,  // eslint-disable-line no-unused-vars
@@ -14,6 +13,8 @@ import {
 } from '../device/constraints_preferrer.js';
 // eslint-disable-next-line no-unused-vars
 import {DeviceInfoUpdater} from '../device/device_info_updater.js';
+// eslint-disable-next-line no-unused-vars
+import {StreamConstraints} from '../device/stream_constraints.js';
 import * as dom from '../dom.js';
 import * as error from '../error.js';
 import {I18nString} from '../i18n_string.js';
@@ -25,6 +26,7 @@ import {ResultSaver} from '../models/result_saver.js';
 import {ChromeHelper} from '../mojo/chrome_helper.js';
 import {DeviceOperator} from '../mojo/device_operator.js';
 import * as nav from '../nav.js';
+import * as newFeatureToast from '../new_feature_toast.js';
 // eslint-disable-next-line no-unused-vars
 import {PerfLogger} from '../perf.js';
 import * as sound from '../sound.js';
@@ -35,6 +37,7 @@ import {
   ErrorLevel,
   ErrorType,
   Facing,
+  MimeType,
   Mode,
   Resolution,
   ViewName,
@@ -45,7 +48,8 @@ import {windowController} from '../window_controller.js';
 import {Layout} from './camera/layout.js';
 import {
   Modes,
-  PhotoHandler,    // eslint-disable-line no-unused-vars
+  PhotoHandler,  // eslint-disable-line no-unused-vars
+  Scanner,
   ScannerHandler,  // eslint-disable-line no-unused-vars
   setAvc1Parameters,
   Video,
@@ -56,7 +60,9 @@ import {Preview} from './camera/preview.js';
 import {ScannerOptions} from './camera/scanner_options.js';
 import * as timertick from './camera/timertick.js';
 import {VideoEncoderOptions} from './camera/video_encoder_options.js';
+import {Dialog} from './dialog.js';
 import {PTZPanel} from './ptz_panel.js';
+import {ReviewDocument} from './review_document.js';
 import {PrimarySettings} from './settings.js';
 import {PTZPanelOptions, View} from './view.js';
 import {WarningType} from './warning.js';
@@ -113,12 +119,27 @@ export class Camera extends View {
     this.perfLogger_ = perfLogger;
 
     /**
+     * @type {!ReviewDocument}
+     * @private
+     */
+    this.reviewDocumentView_ = new ReviewDocument();
+
+    /**
+     * @type {!Dialog}
+     * @private
+     */
+    this.docModeDialogView_ = new Dialog(ViewName.DOCUMENT_MODE_DIALOG);
+
+    /**
      * @const {!Array<!View>}
      * @private
      */
     this.subViews_ = [
       new PrimarySettings(infoUpdater, photoPreferrer, videoPreferrer),
       new PTZPanel(),
+      this.reviewDocumentView_,
+      this.docModeDialogView_,
+      new View(ViewName.FLASH),
     ];
 
     /**
@@ -132,8 +153,11 @@ export class Camera extends View {
      * @type {!ScannerOptions}
      * @private
      */
-    this.scannerOptions_ =
-        new ScannerOptions(this.start.bind(this), this.infoUpdater_);
+    this.scannerOptions_ = new ScannerOptions({
+      doReconfigure: this.start.bind(this),
+      doSwitchDevice: (deviceId) => this.options_.switchDevice(deviceId),
+      infoUpdater: this.infoUpdater_,
+    });
 
     /**
      * Video preview for the camera.
@@ -243,12 +267,6 @@ export class Camera extends View {
     this.banner_ = dom.get('#banner', HTMLElement);
 
     /**
-     * @type {!HTMLElement}
-     * @private
-     */
-    this.ptzToast_ = dom.get('#ptz-toast', HTMLElement);
-
-    /**
      * @type {!HTMLButtonElement}
      */
     this.openPTZPanel_ = dom.get('#open-ptz-panel', HTMLButtonElement);
@@ -258,6 +276,14 @@ export class Camera extends View {
      * @private
      */
     this.configureCompleteListener_ = new Set();
+
+    /**
+     * Preview constraints saved for temporarily close/restore preview
+     * before/after |ScannerHandler| review document result.
+     * @type {?StreamConstraints}
+     * @private
+     */
+    this.constraints_ = null;
 
     /**
      * Gets type of ways to trigger shutter from click event.
@@ -326,7 +352,7 @@ export class Camera extends View {
     this.initOpenPTZPanel_();
 
     // Monitor the states to stop camera when locked/minimized.
-    const idleDetector = new window.IdleDetector();
+    const idleDetector = new IdleDetector();
     idleDetector.addEventListener('change', () => {
       this.locked_ = idleDetector.screenState === 'locked';
       if (this.locked_) {
@@ -397,7 +423,7 @@ export class Camera extends View {
   initOpenPTZPanel_() {
     this.openPTZPanel_.addEventListener('click', () => {
       nav.open(ViewName.PTZ_PANEL, new PTZPanelOptions({
-                 stream: assertInstanceof(this.preview_.stream, MediaStream),
+                 stream: this.preview_.stream,
                  vidPid: this.preview_.getVidPid(),
                  resetPTZ: () => this.preview_.resetPTZ(),
                }));
@@ -405,31 +431,30 @@ export class Camera extends View {
     });
 
     // Highlight effect for PTZ button.
+    let toastShown = false;
     const highlight = (enabled) => {
-      this.ptzToast_.classList.toggle('hidden', !enabled);
-      this.openPTZPanel_.classList.toggle('rippling', enabled);
-      if (enabled) {
-        this.ptzToast_.focus();
-        setTimeout(() => highlight(false), 10000);
+      if (!enabled) {
+        if (toastShown) {
+          newFeatureToast.hide();
+          toastShown = false;
+        }
+        return;
       }
+      toastShown = true;
+      newFeatureToast.show(this.openPTZPanel_);
+      newFeatureToast.focus();
     };
 
     this.addConfigureCompleteListener_(async () => {
-      if (!state.get(state.State.ENABLE_PTZ)) {
+      const ptzToastKey = 'isPTZToastShown';
+      if (!state.get(state.State.ENABLE_PTZ) ||
+          state.get(state.State.IS_NEW_FEATURE_TOAST_SHOWN) ||
+          localStorage.getBool(ptzToastKey)) {
         highlight(false);
         return;
       }
-
-      const ptzToastKey = 'isPTZToastShown';
-      if (localStorage.getBool(ptzToastKey)) {
-        return;
-      }
       localStorage.set(ptzToastKey, true);
-
-      const {bottom, right} =
-          dom.get('#open-ptz-panel', HTMLButtonElement).getBoundingClientRect();
-      this.ptzToast_.style.bottom = `${window.innerHeight - bottom}px`;
-      this.ptzToast_.style.left = `${right + 20}px`;
+      state.set(state.State.IS_NEW_FEATURE_TOAST_SHOWN, true);
       highlight(true);
     });
   }
@@ -454,9 +479,67 @@ export class Camera extends View {
    */
   async initScannerMode_() {
     const helper = await ChromeHelper.getInstance();
-    state.set(
-        state.State.PLATFORM_SUPPORT_SCAN_DOCUMENT,
-        await helper.isDocumentModeSupported());
+    const isPlatformSupport = await helper.isDocumentModeSupported();
+    state.set(state.State.PLATFORM_SUPPORT_SCAN_DOCUMENT, isPlatformSupport);
+    if (!isPlatformSupport) {
+      return;
+    }
+
+    const scannerModeBtn =
+        dom.get('input[data-mode="scanner"]', HTMLInputElement);
+
+    const docModeToastKey = 'isDocModeToastShown';
+    const checkShowToast = () => {
+      state.removeObserver(state.State.SHOW_SCANNER_MODE, checkShowToast);
+      if (state.get(state.State.IS_NEW_FEATURE_TOAST_SHOWN) ||
+          localStorage.getBool(docModeToastKey)) {
+        return;
+      }
+      state.set(state.State.IS_NEW_FEATURE_TOAST_SHOWN, true);
+      localStorage.set(docModeToastKey, true);
+      // aria-owns don't work on HTMLInputElement, show toast on parent div
+      // instead.
+      const scannerModeItem =
+          assertInstanceof(scannerModeBtn.parentElement, HTMLDivElement);
+      newFeatureToast.show(scannerModeItem);
+      scannerModeBtn.addEventListener('click', () => {
+        newFeatureToast.hide();
+      });
+    };
+    if (state.get(state.State.SHOW_SCANNER_MODE)) {
+      checkShowToast();
+    } else {
+      state.addObserver(state.State.SHOW_SCANNER_MODE, checkShowToast);
+    }
+
+    const docModeDialogKey = 'isDocModeDialogShown';
+    if (!localStorage.getBool(docModeDialogKey)) {
+      const checkShowDialog = () => {
+        if (!state.get(Mode.SCANNER) ||
+            !this.scannerOptions_.isDocumentModeEanbled()) {
+          return;
+        }
+        this.removeConfigureCompleteListener_(checkShowDialog);
+        localStorage.set(docModeDialogKey, true);
+        const message = loadTimeData.getI18nMessage(
+            I18nString.DOCUMENT_MODE_DIALOG_INTRO_TITLE);
+        nav.open(ViewName.DOCUMENT_MODE_DIALOG, {message});
+      };
+      this.addConfigureCompleteListener_(checkShowDialog);
+    }
+
+    // When entering document mode, refocus to shutter button for letting user
+    // to take document photo with space key as shortcut. See b/196907822.
+    const checkRefocus = () => {
+      if (!state.get(state.State.CAMERA_CONFIGURING) &&
+          state.get(Mode.SCANNER) &&
+          this.scannerOptions_.isDocumentModeEanbled()) {
+        dom.getAll('button.shutter', HTMLButtonElement)
+            .forEach((btn) => btn.offsetParent && btn.focus());
+      }
+    };
+    state.addObserver(state.State.CAMERA_CONFIGURING, checkRefocus);
+    this.scannerOptions_.onChange = checkRefocus;
   }
 
   /**
@@ -465,6 +548,14 @@ export class Camera extends View {
    */
   addConfigureCompleteListener_(listener) {
     this.configureCompleteListener_.add(listener);
+  }
+
+  /**
+   * @param {function(): *} listener
+   * @private
+   */
+  removeConfigureCompleteListener_(listener) {
+    this.configureCompleteListener_.delete(listener);
   }
 
   /**
@@ -515,19 +606,28 @@ export class Camera extends View {
    * @override
    */
   focus() {
-    const focusOnShutterButton = () => {
-      // Avoid focusing invisible shutters.
-      dom.getAll('button.shutter', HTMLButtonElement)
-          .forEach((btn) => btn.offsetParent && btn.focus());
-    };
     (async () => {
       const shown = localStorage.getBool('isFolderChangeMsgShown');
       await this.configuring_;
       if (!shown) {
         localStorage.set('isFolderChangeMsgShown', true);
         await animate.play(this.banner_);
+        return;
       }
-      focusOnShutterButton();
+
+      // Check the view is still on the top after await.
+      if (!nav.isTopMostView(ViewName.CAMERA)) {
+        return;
+      }
+
+      if (newFeatureToast.isShowing()) {
+        newFeatureToast.focus();
+        return;
+      }
+
+      // Avoid focusing invisible shutters.
+      dom.getAll('button.shutter', HTMLButtonElement)
+          .forEach((btn) => btn.offsetParent && btn.focus());
     })();
   }
 
@@ -625,6 +725,91 @@ export class Camera extends View {
   /**
    * @override
    */
+  handleNoDocument() {
+    const message = loadTimeData.getI18nMessage(
+        I18nString.DOCUMENT_MODE_DIALOG_NOT_DETECTED_TITLE);
+    nav.open(ViewName.DOCUMENT_MODE_DIALOG, {message});
+  }
+
+  /**
+   * @override
+   */
+  async handleResultDocument({blob, resolution, mimeType}, name) {
+    let docResult;
+    if (mimeType === MimeType.JPEG) {
+      docResult = metrics.DocResultType.SAVE_AS_PHOTO;
+    } else if (mimeType === MimeType.PDF) {
+      docResult = metrics.DocResultType.SAVE_AS_PDF;
+    } else {
+      throw new Error(`Unrecognized document mimeType: ${mimeType}`);
+    }
+
+    metrics.sendCaptureEvent({
+      facing: this.facingMode_,
+      resolution,
+      shutterType: this.shutterType_,
+      docResult,
+    });
+    try {
+      await this.resultSaver_.savePhoto(blob, name);
+    } catch (e) {
+      toast.show(I18nString.ERROR_MSG_SAVE_FILE_FAILED);
+      throw e;
+    }
+  }
+
+  /**
+   * @override
+   */
+  handleCancelDocument({resolution}) {
+    metrics.sendCaptureEvent({
+      facing: this.facingMode_,
+      resolution,
+      shutterType: this.shutterType_,
+      docResult: metrics.DocResultType.CANCELED,
+    });
+  }
+
+  /**
+   * @return {!Promise}
+   * @private
+   */
+  async restorePreviewInScannerMode_() {
+    assert(this.constraints_ !== null);
+    await this.modes_.prepareDevice(Mode.SCANNER);
+    await this.preview_.open(this.constraints_);
+    const scannerMode = assertInstanceof(this.modes_.current, Scanner);
+    scannerMode.updatePreview(this.preview_.stream);
+    await this.scannerOptions_.attachPreview(this.preview_.video);
+  }
+
+  /**
+   * @override
+   */
+  async setReviewDocument(blob) {
+    this.constraints_ = this.preview_.getConstraits();
+    await this.preview_.close();
+    await this.scannerOptions_.detachPreview();
+    try {
+      await this.reviewDocumentView_.setReviewDocument(blob);
+    } catch (e) {
+      await this.restorePreviewInScannerMode_();
+      throw e;
+    }
+  }
+
+  /**
+   * @override
+   */
+  async getDocumentReviewResult() {
+    const result = await this.reviewDocumentView_.startReview();
+    await this.restorePreviewInScannerMode_();
+    return result;
+  }
+
+  /**
+   * @override
+   */
   createVideoSaver() {
     return this.resultSaver_.startSaveVideo(this.outputVideoRotation_);
   }
@@ -640,8 +825,16 @@ export class Camera extends View {
   /**
    * @override
    */
-  getPreviewFrame() {
-    return this.preview_.toImage();
+  playBlockingShutterEffect() {
+    sound.play(dom.get('#sound-shutter', HTMLAudioElement));
+    nav.open(ViewName.FLASH);
+  }
+
+  /**
+   * @override
+   */
+  clearBlockingShutterEffect() {
+    nav.close(ViewName.FLASH);
   }
 
   /**
@@ -727,7 +920,7 @@ export class Camera extends View {
 
   /**
    * Try start stream reconfiguration with specified mode and device id.
-   * @param {?string} deviceId Null if the default camera should be started.
+   * @param {string} deviceId
    * @param {!Mode} mode
    * @return {!Promise<boolean>} If found suitable stream and reconfigure
    *     successfully.
@@ -737,8 +930,7 @@ export class Camera extends View {
     state.set(state.State.USE_FAKE_CAMERA, deviceOperator === null);
     let resolCandidates;
     if (deviceOperator) {
-      resolCandidates =
-          this.modes_.getResolutionCandidates(mode, assertString(deviceId));
+      resolCandidates = this.modes_.getResolutionCandidates(mode, deviceId);
     } else {
       resolCandidates = this.modes_.getFakeResolutionCandidates(mode, deviceId);
     }
@@ -747,9 +939,11 @@ export class Camera extends View {
         if (this.isSuspended()) {
           throw new CameraSuspendedError();
         }
-        const factory = this.modes_.getModeFactory(mode);
+        this.modes_.setCaptureOption(constraints, captureR);
+
         try {
-          await factory.prepareDevice(constraints, captureR);
+          await this.modes_.prepareDevice(mode);
+          const factory = this.modes_.getModeFactory(mode);
 
           // Sets 2500 ms delay between screen resumed and open camera preview.
           // TODO(b/173679752): Removes this workaround after fix delay on
@@ -786,14 +980,13 @@ export class Camera extends View {
           await this.modes_.updateModeSelectionUI(deviceId);
           await this.modes_.updateMode(
               mode, factory, stream, this.facingMode_, deviceId, captureR);
-          await this.scannerOptions_.initialize(this.preview_.video);
+          await this.scannerOptions_.attachPreview(this.preview_.video);
           for (const l of this.configureCompleteListener_) {
             l();
           }
           nav.close(ViewName.WARNING, WarningType.NO_CAMERA);
           return true;
         } catch (e) {
-          await factory.clear();
           await this.stopStreams_();
 
           let errorToReport = e;
@@ -814,7 +1007,7 @@ export class Camera extends View {
 
   /**
    * Try start stream reconfiguration with specified device id.
-   * @param {?string} deviceId
+   * @param {string} deviceId
    * @return {!Promise<boolean>} If found suitable stream and reconfigure
    *     successfully.
    */
@@ -841,7 +1034,7 @@ export class Camera extends View {
     try {
       await this.infoUpdater_.lockDeviceInfo(async () => {
         if (!this.isSuspended()) {
-          for (const id of await this.options_.videoDeviceIds()) {
+          for (const id of this.options_.videoDeviceIds()) {
             if (await this.startWithDevice_(id)) {
               // Make the different active camera announced by screen reader.
               const currentId = this.options_.currentDeviceId;
@@ -850,7 +1043,7 @@ export class Camera extends View {
                 return;
               }
               this.activeDeviceId_ = currentId;
-              const info = await this.infoUpdater_.getDeviceInfo(currentId);
+              const info = this.infoUpdater_.getDeviceInfo(currentId);
               if (info !== null) {
                 toast.speak(I18nString.STATUS_MSG_CAMERA_SWITCHED, info.label);
               }
@@ -895,6 +1088,6 @@ export class Camera extends View {
     // mode before stopping preview to close extra stream first.
     await this.modes_.clear();
     await this.preview_.close();
-    await this.scannerOptions_.uninitialize();
+    await this.scannerOptions_.detachPreview();
   }
 }

@@ -4,9 +4,9 @@ Validation tests for drawIndirect/drawIndexedIndirect on render pass and render 
 
 import { makeTestGroup } from '../../../../../../common/framework/test_group.js';
 import { GPUConst } from '../../../../../constants.js';
-import { ValidationTest } from '../../../validation_test.js';
+import { kResourceStates, ValidationTest } from '../../../validation_test.js';
 
-import { kRenderEncodeTypeParams, kBufferStates } from './render.js';
+import { kRenderEncodeTypeParams } from './render.js';
 
 const kIndirectDrawTestParams = kRenderEncodeTypeParams.combine('indexed', [true, false] as const);
 
@@ -27,7 +27,7 @@ g.test('indirect_buffer')
 Tests indirect buffer must be valid.
   `
   )
-  .paramsSubcasesOnly(kIndirectDrawTestParams.combine('state', kBufferStates))
+  .paramsSubcasesOnly(kIndirectDrawTestParams.combine('state', kResourceStates))
   .fn(t => {
     const { encoderType, indexed, state } = t.params;
     const pipeline = t.createNoOpRenderPipeline();
@@ -36,7 +36,7 @@ Tests indirect buffer must be valid.
       usage: GPUBufferUsage.INDIRECT,
     });
 
-    const { encoder, finish } = t.createEncoder(encoderType);
+    const { encoder, validateFinishAndSubmitGivenState } = t.createEncoder(encoderType);
     encoder.setPipeline(pipeline);
     if (indexed) {
       const indexBuffer = t.makeIndexBuffer();
@@ -46,14 +46,15 @@ Tests indirect buffer must be valid.
       encoder.drawIndirect(indirectBuffer, 0);
     }
 
-    t.expectValidationError(() => {
-      if (state === 'destroyed') {
-        t.queue.submit([finish()]);
-      } else {
-        finish();
-      }
-    }, state !== 'valid');
+    validateFinishAndSubmitGivenState(state);
   });
+
+g.test('indirect_buffer,device_mismatch')
+  .desc(
+    'Tests draw(Indexed)Indirect cannot be called with an indirect buffer created from another device'
+  )
+  .paramsSubcasesOnly(kIndirectDrawTestParams.combine('mismatched', [true, false]))
+  .unimplemented();
 
 g.test('indirect_buffer_usage')
   .desc(
@@ -75,7 +76,7 @@ Tests indirect buffer must have 'Indirect' usage.
       usage,
     });
 
-    const { encoder, finish } = t.createEncoder(encoderType);
+    const { encoder, validateFinish } = t.createEncoder(encoderType);
     encoder.setPipeline(t.createNoOpRenderPipeline());
     if (indexed) {
       const indexBuffer = t.makeIndexBuffer();
@@ -84,10 +85,7 @@ Tests indirect buffer must have 'Indirect' usage.
     } else {
       encoder.drawIndirect(indirectBuffer, 0);
     }
-
-    t.expectValidationError(() => {
-      finish();
-    }, (usage | GPUConst.BufferUsage.INDIRECT) !== usage);
+    validateFinish((usage & GPUBufferUsage.INDIRECT) !== 0);
   });
 
 g.test('indirect_offset_alignment')
@@ -105,7 +103,7 @@ Tests indirect offset must be a multiple of 4.
       usage: GPUBufferUsage.INDIRECT,
     });
 
-    const { encoder, finish } = t.createEncoder(encoderType);
+    const { encoder, validateFinish } = t.createEncoder(encoderType);
     encoder.setPipeline(pipeline);
     if (indexed) {
       const indexBuffer = t.makeIndexBuffer();
@@ -115,9 +113,7 @@ Tests indirect offset must be a multiple of 4.
       encoder.drawIndirect(indirectBuffer, indirectOffset);
     }
 
-    t.expectValidationError(() => {
-      finish();
-    }, indirectOffset % 4 !== 0);
+    validateFinish(indirectOffset % 4 === 0);
   });
 
 g.test('indirect_offset_oob')
@@ -167,7 +163,7 @@ Tests indirect draw calls with various indirect offsets and buffer sizes.
       usage: GPUBufferUsage.INDIRECT,
     });
 
-    const { encoder, finish } = t.createEncoder(encoderType);
+    const { encoder, validateFinish } = t.createEncoder(encoderType);
     encoder.setPipeline(pipeline);
     if (indexed) {
       const indexBuffer = t.makeIndexBuffer();
@@ -177,7 +173,5 @@ Tests indirect draw calls with various indirect offsets and buffer sizes.
       encoder.drawIndirect(indirectBuffer, indirectOffset);
     }
 
-    t.expectValidationError(() => {
-      finish();
-    }, !_valid);
+    validateFinish(_valid);
   });

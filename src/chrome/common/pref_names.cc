@@ -12,6 +12,7 @@
 #include "chrome/common/pref_font_webkit_names.h"
 #include "extensions/buildflags/buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
+#include "printing/buildflags/buildflags.h"
 
 namespace prefs {
 
@@ -465,6 +466,13 @@ const char kHideWebStoreIcon[] = "hide_web_store_icon";
 // The list of extensions allowed to use the platformKeys API for remote
 // attestation.
 const char kAttestationExtensionAllowlist[] = "attestation.extension_allowlist";
+
+// The list of extensions allowed to skip print job confirmation dialog when
+// they use the chrome.printing.submitJob() function. Note that this used to be
+// `kPrintingAPIExtensionsWhitelist`, hence the difference between the variable
+// name and the string value.
+const char kPrintingAPIExtensionsAllowlist[] =
+    "printing.printing_api_extensions_whitelist";
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -772,6 +780,24 @@ const char kHatsOnboardingSurveyCycleEndTs[] =
 const char kHatsOnboardingDeviceIsSelected[] =
     "hats_onboarding_device_is_selected";
 
+// An int64 pref. This is the timestamp that indicates the end of the most
+// recent Unlock Experience survey cycle.
+const char kHatsUnlockSurveyCycleEndTs[] = "hats_unlock_cycle_end_timestamp";
+
+// A boolean pref. Indicates if the device is selected for the HaTS Unlock
+// Experience survey
+const char kHatsUnlockDeviceIsSelected[] = "hats_unlock_device_is_selected";
+
+// An int64 pref. This is the timestamp that indicates the end of the most
+// recent Smart Lock Experience survey cycle.
+const char kHatsSmartLockSurveyCycleEndTs[] =
+    "hats_smartlock_cycle_end_timestamp";
+
+// A boolean pref. Indicates if the device is selected for the HaTS Smart Lock
+// Experience survey
+const char kHatsSmartLockDeviceIsSelected[] =
+    "hats_smartlock_device_is_selected";
+
 // A boolean pref. Indicates if we've already shown a notification to inform the
 // current user about the quick unlock feature.
 const char kPinUnlockFeatureNotificationShown[] =
@@ -1058,11 +1084,10 @@ const char kSystemProxyUserTrafficHostAndPort[] =
 const char kEduCoexistenceArcMigrationCompleted[] =
     "account_manager.edu_coexistence_arc_migration_completed";
 
-// Boolean pref indicating whether reusing the Chrome OS login credentials for
-// network authentication is allowed. Note: currently only used for managed
-// proxies secured with NTLM authentication.
-const char kIntegratedWebAuthenticationAllowed[] =
-    "auth.integrated_web_authentication_allowed";
+// List pref containing extension IDs that are exempt from the restricted
+// managed guest session clean-up procedure.
+const char kRestrictedManagedGuestSessionExtensionCleanupExemptList[] =
+    "restricted_managed_guest_session_extension_cleanup_exempt_list";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if defined(OS_CHROMEOS)
@@ -1298,12 +1323,6 @@ const char kProfileUsingGAIAAvatar[] = "profile.using_gaia_avatar";
 // The supervised user ID.
 const char kSupervisedUserId[] = "profile.managed_user_id";
 
-// Boolean specifying if the user has accepted account management. This enables
-// the browser to fetch profile policies even if they have not consented to
-// sync.
-extern const char kUserAcceptedAccountManagement[] =
-    "profile.user_accepted_account_management";
-
 // Integer that specifies the number of times that we have shown the upgrade
 // tutorial card in the avatar menu bubble.
 const char kProfileAvatarTutorialShown[] =
@@ -1312,11 +1331,6 @@ const char kProfileAvatarTutorialShown[] =
 // Indicates if we've already shown a notification that high contrast
 // mode is on, recommending high-contrast extensions and themes.
 const char kInvertNotificationShown[] = "invert_notification_version_2_shown";
-
-// A boolean indicating whether deprecated privet printing should be forced
-// to be enabled.
-const char kForceEnablePrivetPrinting[] =
-    "printing.force_enable_privet_printing";
 
 // A pref holding the list of printer types to be disabled.
 const char kPrinterTypeDenyList[] = "printing.printer_type_deny_list";
@@ -1346,6 +1360,19 @@ const char kPrintPreviewDisabled[] = "printing.print_preview_disabled";
 // selection in the Print Preview. See DefaultPrinterSelection policy.
 const char kPrintPreviewDefaultDestinationSelectionRules[] =
     "printing.default_destination_selection_rules";
+
+#if defined(OS_WIN) || defined(OS_MAC)
+// Boolean controlling whether the "Print as image" option should be available
+// in Print Preview when printing a PDF.
+const char kPrintPdfAsImageAvailability[] =
+    "printing.print_pdf_as_image_availability";
+#endif
+
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+// An integer resolution to use for DPI when rasterizing PDFs with "Print to
+// image".
+const char kPrintRasterizePdfDpi[] = "printing.rasterize_pdf_dpi";
+#endif
 
 #if defined(OS_WIN) && BUILDFLAG(ENABLE_PRINTING)
 // An integer pref that holds the rasterization mode to use when printing.
@@ -1433,13 +1460,6 @@ const char kPrintingMaxSheetsAllowed[] = "printing.max_sheets_allowed";
 // Indicates how long print jobs metadata is stored on the device, in days.
 const char kPrintJobHistoryExpirationPeriod[] =
     "printing.print_job_history_expiration_period";
-
-// The list of extensions allowed to skip print job confirmation dialog when
-// they use the chrome.printing.submitJob() function. Note that this used to be
-// `kPrintingAPIExtensionsWhitelist`, hence the difference between the variable
-// name and the string value.
-const char kPrintingAPIExtensionsAllowlist[] =
-    "printing.printing_api_extensions_whitelist";
 
 // Boolean flag which represents whether the user's print job history can be
 // deleted.
@@ -1773,16 +1793,16 @@ const char kRestartLastSessionOnShutdown[] = "restart.last.session.on.shutdown";
 
 #if !defined(OS_ANDROID)
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
-// Pref name for the policy controlling presentation of full-tab promotional
-// and/or educational content.
-const char kPromotionalTabsEnabled[] = "browser.promotional_tabs_enabled";
-
 // Boolean that specifies whether or not to show security warnings for some
 // potentially bad command-line flags. True by default. Controlled by the
 // CommandLineFlagSecurityWarningsEnabled policy setting.
 const char kCommandLineFlagSecurityWarningsEnabled[] =
     "browser.command_line_flag_security_warnings_enabled";
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
+
+// Pref name for the policy controlling presentation of full-tab promotional
+// and/or educational content.
+const char kPromotionalTabsEnabled[] = "browser.promotional_tabs_enabled";
 
 // Boolean that specifies whether or not showing the unsupported OS warning is
 // suppressed. False by default. Controlled by the SuppressUnsupportedOSWarning
@@ -2014,7 +2034,7 @@ const char kMediaStorageIdSalt[] = "media.storage_id_salt";
 #if defined(OS_WIN)
 // Mapping of origin to their origin id (UnguessableToken). Origin IDs are only
 // stored for origins using MediaFoundation-based CDMs.
-const char kMediaCdmOrigin[] = "media.cdm.origins";
+const char kMediaCdmOriginData[] = "media.cdm.origin_data";
 #endif  // defined(OS_WIN)
 
 // The last used printer and its settings.
@@ -2088,10 +2108,10 @@ const char kAuthNegotiateDelegateByKdcPolicy[] =
     "auth.negotiate_delegate_by_kdc_policy";
 #endif  // defined(OS_LINUX) || defined(OS_MAC) || defined(OS_CHROMEOS)
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
 // Boolean that specifies whether NTLMv2 is enabled.
 const char kNtlmV2Enabled[] = "auth.ntlm_v2_enabled";
-#endif  // defined(OS_POSIX)
+#endif  // defined(OS_POSIX) || defined(OS_FUCHSIA)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Boolean whether Kerberos functionality is enabled.
@@ -2180,8 +2200,37 @@ const char kVideoCaptureAllowedUrls[] = "hardware.video_capture_allowed_urls";
 // A pref holding the value of the policy used to explicitly allow or deny
 // access to screen capture.  This includes all APIs that allow capturing
 // the desktop, a window or a tab. When disabled, access to screen capture
-// is not allowed and API calls will fail with an error.
+// is not allowed and API calls will fail with an error, unless overriden by one
+// of the "allowed" lists below.
 const char kScreenCaptureAllowed[] = "hardware.screen_capture_enabled";
+
+// The Origin Pattern lists below serve as an "override" to the standard screen
+// capture allowed pref. A given origin will be restricted to only capture the
+// most restricted list that it appears in. If an origin matches a pattern from
+// these lists, that origin will ignore any value set in kScreenCaptureAllowed.
+// These lists are listed from least restrictive to most restrictive.
+// e.g. If an origin would match patterns in both |kTabCaptureAllowedByOrigins|
+// and |kWindowCaptureAllowedByOrigins|, the site would only be allowed to
+// capture tabs, but would still be allowed to capture tabs if
+// |kScreenCaptureAllowed| was false.
+
+// Sites matching the Origin patterns in this list will be permitted to capture
+// the desktop, windows, and tabs.
+const char kScreenCaptureAllowedByOrigins[] =
+    "hardware.screen_capture_allowed_by_origins";
+// Sites matching the Origin patterns in this list will be permitted to capture
+// windows and tabs.
+const char kWindowCaptureAllowedByOrigins[] =
+    "hardware.window_capture_allowed_by_origins";
+// Sites matching the Origin patterns in this list will be permitted to capture
+// tabs. Note that this will also allow capturing Windowed Chrome Apps.
+const char kTabCaptureAllowedByOrigins[] =
+    "hardware.tab_capture_allowed_by_origins";
+// Sites matching the Origin patterns in this list will be permitted to capture
+// tabs that have the same origin as themselves. Note that this will also allow
+// capturing Windowed Chrome Apps with the same origin as the site.
+const char kSameOriginTabCaptureAllowedByOrigins[] =
+    "hardware.same_origin_tab_capture_allowed_by_origins";
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // An integer pref that holds enum value of current demo mode configuration.
@@ -2211,6 +2260,16 @@ const char kShouldAutoEnroll[] = "ShouldAutoEnroll";
 // valid if it's not the default value; otherwise, no private-set-membership
 // decision has been made yet.
 const char kShouldRetrieveDeviceState[] = "ShouldRetrieveDeviceState";
+
+// An integer pref. Its valid values are defined in
+// enterprise_management::DeviceRegisterRequest::PsmExecutionResult enum which
+// indicates all possible PSM execution results in the Chrome OS enrollment
+// flow.
+const char kEnrollmentPsmResult[] = "EnrollmentPsmResult";
+
+// An int64 pref to record the timestamp of PSM retrieving the device's
+// determination successfully in the Chrome OS enrollment flow.
+const char kEnrollmentPsmDeterminationTime[] = "EnrollmentPsmDeterminationTime";
 
 // An integer pref with the maximum number of bits used by the client in a
 // previous auto-enrollment request. If the client goes through an auto update
@@ -2530,10 +2589,6 @@ const char kCloudPrintPrinters[] = "cloud_print.user_settings.printers";
 // A boolean indicating whether submitting jobs to Google Cloud Print is
 // blocked by policy.
 const char kCloudPrintSubmitEnabled[] = "cloud_print.submit_enabled";
-// A boolean indicating whether Cloud Print deprecation warnings should be
-// suppressed.
-const char kCloudPrintDeprecationWarningsSuppressed[] =
-    "cloud_print.deprecation_warnings_suppressed";
 
 // Preference to store proxy settings.
 const char kMaxConnectionsPerProxy[] = "net.max_connections_per_proxy";
@@ -2972,6 +3027,22 @@ const char kIsolateOrigins[] = "site_isolation.isolate_origins";
 // Boolean that specifies opting into --site-per-process (full Site Isolation).
 const char kSitePerProcess[] = "site_isolation.site_per_process";
 
+// Boolean that enable cross-origin sharing for WebAssembly modules.
+const char kCrossOriginWebAssemblyModuleSharingEnabled[] =
+    "profile.cross_origin_webassembly_module_sharing_enabled";
+
+// Boolean that is true when the display-capture permissions-policy is enabled.
+// This permissions-policy gates access to getDisplayMedia(), as per this spec:
+// https://www.w3.org/TR/screen-capture/#feature-policy-integration
+// However, if kDisplayCapturePermissionsPolicyEnabled is set to |false|,
+// this requirement is not enforced, and getDisplayMedia() is allowed from
+// contexts that would otherwise be forbidden.
+// This Enterprise policy is temporary. It is intended to unblock Enterprise
+// users whose application is non-spec compliant, but needs time to be fixed.
+// TODO(crbug.com/1233969): Remove this around m100.
+extern const char kDisplayCapturePermissionsPolicyEnabled[] =
+    "display_capture_permissions_policy_enabled";
+
 #if !defined(OS_ANDROID)
 // Boolean to allow SharedArrayBuffer in non-crossOriginIsolated contexts.
 // TODO(crbug.com/1144104) Remove when migration to COOP+COEP is complete.
@@ -3227,6 +3298,15 @@ const char kDeviceAttributesAllowedForOrigins[] =
 // policy.
 const char kDesktopSharingHubEnabled[] =
     "sharing_hub.desktop_sharing_hub_enabled";
+#endif
+
+#if !defined(OS_ANDROID)
+// Pref name for the last major version where the What's New page was
+// successfully shown.
+const char kLastWhatsNewVersion[] = "browser.last_whats_new_version";
+// A boolean indicating whether the Lens Region search feature should be enabled
+// if supported.
+const char kLensRegionSearchEnabled[] = "policy.lens_region_search_enabled";
 #endif
 
 }  // namespace prefs

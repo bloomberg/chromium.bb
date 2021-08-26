@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/task_runner_util.h"
+#include "base/values.h"
 #include "net/base/url_util.h"
 
 namespace google_apis {
@@ -29,6 +30,24 @@ GURL CalendarApiGetRequest::GetURL() const {
   if (!fields_.empty())
     url = net::AppendOrReplaceQueryParameter(url, "fields", fields_);
   return url;
+}
+
+// Maps calendar api error reason to code. See
+// https://developers.google.com/calendar/api/guides/errors.
+ApiErrorCode CalendarApiGetRequest::MapReasonToError(
+    ApiErrorCode code,
+    const std::string& reason) {
+  const char kErrorReasonRateLimitExceeded[] = "rateLimitExceeded";
+
+  // The rateLimitExceeded errors can return either 403 or 429 error codes, but
+  // we want to treat them in the same way.
+  if (reason == kErrorReasonRateLimitExceeded)
+    return google_apis::HTTP_FORBIDDEN;
+  return code;
+}
+
+bool CalendarApiGetRequest::IsSuccessfulErrorCode(ApiErrorCode error) {
+  return IsSuccessfulCalendarApiErrorCode(error);
 }
 
 CalendarApiEventsRequest::CalendarApiEventsRequest(

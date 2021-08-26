@@ -35,7 +35,7 @@
 #include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"
 #include "modules/rtp_rtcp/source/byte_io.h"
 #include "modules/rtp_rtcp/source/rtp_header_extensions.h"
-#include "modules/rtp_rtcp/source/rtp_utility.h"
+#include "modules/rtp_rtcp/source/rtp_packet_received.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/logging.h"
 #include "rtc_base/numerics/safe_conversions.h"
@@ -1311,12 +1311,17 @@ ParsedRtcEventLog::ParseStatus ParsedRtcEventLog::ParseStreamInternal(
     }
 
     if (message_length > s.size()) {
-      RTC_LOG(LS_WARNING) << "Protobuf message length is too large.";
+      RTC_LOG(LS_WARNING) << "Protobuf message length is larger than the "
+                             "remaining bytes in the proto.";
       RTC_PARSE_WARN_AND_RETURN_SUCCESS_IF(allow_incomplete_logs_,
                                            kIncompleteLogError);
-      RTC_PARSE_CHECK_OR_RETURN_LE(message_length, kMaxEventSize);
+      return ParseStatus::Error(
+          "Incomplete message: the length of the next message is larger than "
+          "the remaining bytes in the proto",
+          __FILE__, __LINE__);
     }
 
+    RTC_PARSE_CHECK_OR_RETURN_LE(message_length, kMaxEventSize);
     // Skip forward to the start of the next event.
     s = s.substr(message_length);
     size_t total_event_size = event_start.size() - s.size();
@@ -1362,7 +1367,6 @@ void ParsedRtcEventLog::StoreFirstAndLastTimestamp(const std::vector<T>& v) {
 
 ParsedRtcEventLog::ParseStatus ParsedRtcEventLog::StoreParsedLegacyEvent(
     const rtclog::Event& event) {
-  RTC_PARSE_CHECK_OR_RETURN(event.has_type());
   RTC_PARSE_CHECK_OR_RETURN(event.has_type());
   switch (event.type()) {
     case rtclog::Event::VIDEO_RECEIVER_CONFIG_EVENT: {
@@ -1421,40 +1425,45 @@ ParsedRtcEventLog::ParseStatus ParsedRtcEventLog::StoreParsedLegacyEvent(
       break;
     }
     case rtclog::Event::RTP_EVENT: {
-      PacketDirection direction;
-      uint8_t header[IP_PACKET_SIZE];
-      size_t header_length;
-      size_t total_length;
-      ParseStatus status = GetRtpHeader(event, &direction, header,
-                                        &header_length, &total_length, nullptr);
-      RTC_RETURN_IF_ERROR(status);
+      RTC_PARSE_CHECK_OR_RETURN(event.has_rtp_packet());
+      const rtclog::RtpPacket& rtp_packet = event.rtp_packet();
+      RTC_PARSE_CHECK_OR_RETURN(rtp_packet.has_header());
+      RTC_PARSE_CHECK_OR_RETURN(rtp_packet.has_incoming());
+      RTC_PARSE_CHECK_OR_RETURN(rtp_packet.has_packet_length());
+      size_t total_length = rtp_packet.packet_length();
 
-      uint32_t ssrc = ByteReader<uint32_t>::ReadBigEndian(header + 8);
-      const RtpHeaderExtensionMap* extension_map =
-          GetRtpHeaderExtensionMap(direction, ssrc);
-      RtpUtility::RtpHeaderParser rtp_parser(header, header_length);
+      // Use RtpPacketReceived instead of more generic RtpPacket because former
+      // has a buildin convertion to RTPHeader.
+      RtpPacketReceived rtp_header;
+      RTC_PARSE_CHECK_OR_RETURN(rtp_header.Parse(rtp_packet.header()));
+
+      if (const RtpHeaderExtensionMap* extension_map = GetRtpHeaderExtensionMap(
+              rtp_packet.incoming(), rtp_header.Ssrc())) {
+        rtp_header.IdentifyExtensions(*extension_map);
+      }
+
       RTPHeader parsed_header;
-      rtp_parser.Parse(&parsed_header, extension_map, /*header_only*/ true);
+      rtp_header.GetHeader(&parsed_header);
 
       // Since we give the parser only a header, there is no way for it to know
       // the padding length. The best solution would be to log the padding
       // length in RTC event log. In absence of it, we assume the RTP packet to
       // contain only padding, if the padding bit is set.
       // TODO(webrtc:9730): Use a generic way to obtain padding length.
-      if ((header[0] & 0x20) != 0)
-        parsed_header.paddingLength = total_length - header_length;
+      if (rtp_header.has_padding())
+        parsed_header.paddingLength = total_length - rtp_header.size();
 
       RTC_PARSE_CHECK_OR_RETURN(event.has_timestamp_us());
       int64_t timestamp_us = event.timestamp_us();
-      if (direction == kIncomingPacket) {
+      if (rtp_packet.incoming()) {
         incoming_rtp_packets_map_[parsed_header.ssrc].push_back(
             LoggedRtpPacketIncoming(Timestamp::Micros(timestamp_us),
-                                    parsed_header, header_length,
+                                    parsed_header, rtp_header.size(),
                                     total_length));
       } else {
         outgoing_rtp_packets_map_[parsed_header.ssrc].push_back(
             LoggedRtpPacketOutgoing(Timestamp::Micros(timestamp_us),
-                                    parsed_header, header_length,
+                                    parsed_header, rtp_header.size(),
                                     total_length));
       }
       break;
@@ -1569,59 +1578,11 @@ ParsedRtcEventLog::ParseStatus ParsedRtcEventLog::StoreParsedLegacyEvent(
   return ParseStatus::Success();
 }
 
-// The header must have space for at least IP_PACKET_SIZE bytes.
-ParsedRtcEventLog::ParseStatus ParsedRtcEventLog::GetRtpHeader(
-    const rtclog::Event& event,
-    PacketDirection* incoming,
-    uint8_t* header,
-    size_t* header_length,
-    size_t* total_length,
-    int* probe_cluster_id) const {
-  RTC_PARSE_CHECK_OR_RETURN(event.has_type());
-  RTC_PARSE_CHECK_OR_RETURN_EQ(event.type(), rtclog::Event::RTP_EVENT);
-  RTC_PARSE_CHECK_OR_RETURN(event.has_rtp_packet());
-  const rtclog::RtpPacket& rtp_packet = event.rtp_packet();
-  // Get direction of packet.
-  RTC_PARSE_CHECK_OR_RETURN(rtp_packet.has_incoming());
-  if (incoming != nullptr) {
-    *incoming = rtp_packet.incoming() ? kIncomingPacket : kOutgoingPacket;
-  }
-  // Get packet length.
-  RTC_PARSE_CHECK_OR_RETURN(rtp_packet.has_packet_length());
-  if (total_length != nullptr) {
-    *total_length = rtp_packet.packet_length();
-  }
-  // Get header length.
-  RTC_PARSE_CHECK_OR_RETURN(rtp_packet.has_header());
-  if (header_length != nullptr) {
-    *header_length = rtp_packet.header().size();
-  }
-  if (probe_cluster_id != nullptr) {
-    if (rtp_packet.has_probe_cluster_id()) {
-      *probe_cluster_id = rtp_packet.probe_cluster_id();
-      RTC_PARSE_CHECK_OR_RETURN_NE(*probe_cluster_id,
-                                   PacedPacketInfo::kNotAProbe);
-    } else {
-      *probe_cluster_id = PacedPacketInfo::kNotAProbe;
-    }
-  }
-  // Get header contents.
-  if (header != nullptr) {
-    const size_t kMinRtpHeaderSize = 12;
-    RTC_PARSE_CHECK_OR_RETURN_GE(rtp_packet.header().size(), kMinRtpHeaderSize);
-    RTC_PARSE_CHECK_OR_RETURN_LE(rtp_packet.header().size(),
-                                 static_cast<size_t>(IP_PACKET_SIZE));
-    memcpy(header, rtp_packet.header().data(), rtp_packet.header().size());
-  }
-  return ParseStatus::Success();
-}
-
 const RtpHeaderExtensionMap* ParsedRtcEventLog::GetRtpHeaderExtensionMap(
-    PacketDirection direction,
+    bool incoming,
     uint32_t ssrc) {
-  auto& extensions_maps = direction == PacketDirection::kIncomingPacket
-                              ? incoming_rtp_extensions_maps_
-                              : outgoing_rtp_extensions_maps_;
+  auto& extensions_maps =
+      incoming ? incoming_rtp_extensions_maps_ : outgoing_rtp_extensions_maps_;
   auto it = extensions_maps.find(ssrc);
   if (it != extensions_maps.end()) {
     return &(it->second);
@@ -2134,7 +2095,7 @@ std::vector<LoggedPacketInfo> ParsedRtcEventLog::GetPacketInfos(
       // RTX streams don't have a unique clock offset and frequency, so
       // the RTP timstamps can't be unwrapped.
 
-      // Add an offset to avoid |capture_ticks| to become negative in the case
+      // Add an offset to avoid `capture_ticks` to become negative in the case
       // of reordering.
       constexpr int64_t kStartingCaptureTimeTicks = 90 * 48 * 10000;
       int64_t capture_ticks =
@@ -2205,8 +2166,7 @@ std::vector<LoggedPacketInfo> ParsedRtcEventLog::GetPacketInfos(
           if (packet.received()) {
             receive_timestamp += TimeDelta::Micros(packet.delta_us());
             if (sent->reported_recv_time.IsInfinite()) {
-              sent->reported_recv_time =
-                  Timestamp::Millis(receive_timestamp.ms());
+              sent->reported_recv_time = receive_timestamp;
               sent->log_feedback_time = log_feedback_time;
             }
           } else {
@@ -3099,7 +3059,7 @@ ParsedRtcEventLog::StoreAudioNetworkAdaptationEvent(
       runtime_config.enable_dtx = proto.enable_dtx();
     }
     if (proto.has_num_channels()) {
-      // Note: Encoding N as N-1 only done for |num_channels_deltas|.
+      // Note: Encoding N as N-1 only done for `num_channels_deltas`.
       runtime_config.num_channels = proto.num_channels();
     }
     audio_network_adaptation_events_.emplace_back(

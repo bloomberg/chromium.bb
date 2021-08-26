@@ -28,8 +28,9 @@
 #include "config.h"
 #include "libavutil/avassert.h"
 #include "libavutil/avstring.h"
+#include "libavutil/channel_layout.h"
 #include "libavutil/intreadwrite.h"
-#include "libavutil/mem_internal.h"
+#include "libavutil/mem.h"
 #include "libavutil/pixdesc.h"
 #include "libavutil/imgutils.h"
 #include "libavutil/pixfmt.h"
@@ -40,7 +41,6 @@
 #include "internal.h"
 #include "put_bits.h"
 #include "raw.h"
-#include "version.h"
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stdatomic.h>
@@ -55,7 +55,8 @@ void av_fast_padded_malloc(void *ptr, unsigned int *size, size_t min_size)
         *size = 0;
         return;
     }
-    if (!ff_fast_malloc(p, size, min_size + AV_INPUT_BUFFER_PADDING_SIZE, 1))
+    av_fast_mallocz(p, size, min_size + AV_INPUT_BUFFER_PADDING_SIZE);
+    if (*p)
         memset(*p + min_size, 0, AV_INPUT_BUFFER_PADDING_SIZE);
 }
 
@@ -67,7 +68,8 @@ void av_fast_padded_mallocz(void *ptr, unsigned int *size, size_t min_size)
         *size = 0;
         return;
     }
-    if (!ff_fast_malloc(p, size, min_size + AV_INPUT_BUFFER_PADDING_SIZE, 1))
+    av_fast_malloc(p, size, min_size + AV_INPUT_BUFFER_PADDING_SIZE);
+    if (*p)
         memset(*p, 0, min_size + AV_INPUT_BUFFER_PADDING_SIZE);
 }
 
@@ -710,7 +712,7 @@ static int get_audio_frame_duration(enum AVCodecID id, int sr, int ch, int ba,
             case AV_CODEC_ID_ADPCM_THP:
             case AV_CODEC_ID_ADPCM_THP_LE:
                 if (extradata)
-                    return frame_bytes * 14 / (8 * ch);
+                    return frame_bytes * 14LL / (8 * ch);
                 break;
             case AV_CODEC_ID_ADPCM_XA:
                 return (frame_bytes / 128) * 224 / ch;
@@ -744,25 +746,33 @@ static int get_audio_frame_duration(enum AVCodecID id, int sr, int ch, int ba,
             if (ba > 0) {
                 /* calc from frame_bytes, channels, and block_align */
                 int blocks = frame_bytes / ba;
-                int64_t tmp;
+                int64_t tmp = 0;
                 switch (id) {
                 case AV_CODEC_ID_ADPCM_IMA_WAV:
                     if (bps < 2 || bps > 5)
                         return 0;
                     tmp = blocks * (1LL + (ba - 4 * ch) / (bps * ch) * 8);
+                    break;
+                case AV_CODEC_ID_ADPCM_IMA_DK3:
+                    tmp = blocks * (((ba - 16LL) * 2 / 3 * 4) / ch);
+                    break;
+                case AV_CODEC_ID_ADPCM_IMA_DK4:
+                    tmp = blocks * (1 + (ba - 4LL * ch) * 2 / ch);
+                    break;
+                case AV_CODEC_ID_ADPCM_IMA_RAD:
+                    tmp = blocks * ((ba - 4LL * ch) * 2 / ch);
+                    break;
+                case AV_CODEC_ID_ADPCM_MS:
+                    tmp = blocks * (2 + (ba - 7LL * ch) * 2LL / ch);
+                    break;
+                case AV_CODEC_ID_ADPCM_MTAF:
+                    tmp = blocks * (ba - 16LL) * 2 / ch;
+                    break;
+                }
+                if (tmp) {
                     if (tmp != (int)tmp)
                         return 0;
                     return tmp;
-                case AV_CODEC_ID_ADPCM_IMA_DK3:
-                    return blocks * (((ba - 16) * 2 / 3 * 4) / ch);
-                case AV_CODEC_ID_ADPCM_IMA_DK4:
-                    return blocks * (1 + (ba - 4 * ch) * 2 / ch);
-                case AV_CODEC_ID_ADPCM_IMA_RAD:
-                    return blocks * ((ba - 4 * ch) * 2 / ch);
-                case AV_CODEC_ID_ADPCM_MS:
-                    return blocks * (2 + (ba - 7 * ch) * 2LL / ch);
-                case AV_CODEC_ID_ADPCM_MTAF:
-                    return blocks * (ba - 16) * 2 / ch;
                 }
             }
 

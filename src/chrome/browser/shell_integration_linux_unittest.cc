@@ -32,6 +32,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+#if defined(USE_OZONE)
+#include "ui/base/ui_base_features.h"
+#include "ui/ozone/public/ozone_platform.h"
+#endif
+
 using ::testing::ElementsAre;
 
 namespace shell_integration_linux {
@@ -577,10 +582,26 @@ TEST(ShellIntegrationTest, GetMimeTypesRegistrationFileContents) {
   EXPECT_EQ(file_contents, expected_file_contents);
 }
 
+// The WM class name may be either capitalised or not, depending on the
+// platform.
+void CheckProgramClassClass(const std::string& class_name) {
+#if defined(USE_OZONE)
+  if (features::IsUsingOzonePlatform() &&
+      ui::OzonePlatform::GetPlatformNameForTest() != "x11") {
+    EXPECT_EQ("foo", class_name);
+  } else {
+    EXPECT_EQ("Foo", class_name);
+  }
+#else
+  EXPECT_EQ("foo", class_name);
+#endif
+}
+
 TEST(ShellIntegrationTest, WmClass) {
   base::CommandLine command_line((base::FilePath()));
   EXPECT_EQ("foo", internal::GetProgramClassName(command_line, "foo.desktop"));
-  EXPECT_EQ("Foo", internal::GetProgramClassClass(command_line, "foo.desktop"));
+  CheckProgramClassClass(
+      internal::GetProgramClassClass(command_line, "foo.desktop"));
 
   command_line.AppendSwitchASCII("class", "baR");
   EXPECT_EQ("foo", internal::GetProgramClassName(command_line, "foo.desktop"));
@@ -590,7 +611,8 @@ TEST(ShellIntegrationTest, WmClass) {
   command_line.AppendSwitchASCII("user-data-dir", "/tmp/baz");
   EXPECT_EQ("foo (/tmp/baz)",
             internal::GetProgramClassName(command_line, "foo.desktop"));
-  EXPECT_EQ("Foo", internal::GetProgramClassClass(command_line, "foo.desktop"));
+  CheckProgramClassClass(
+      internal::GetProgramClassClass(command_line, "foo.desktop"));
 }
 
 }  // namespace shell_integration_linux

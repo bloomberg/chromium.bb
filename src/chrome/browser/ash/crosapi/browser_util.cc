@@ -61,6 +61,7 @@
 #include "chromeos/crosapi/mojom/local_printer.mojom.h"
 #include "chromeos/crosapi/mojom/message_center.mojom.h"
 #include "chromeos/crosapi/mojom/metrics_reporting.mojom.h"
+#include "chromeos/crosapi/mojom/network_settings_service.mojom.h"
 #include "chromeos/crosapi/mojom/networking_attributes.mojom.h"
 #include "chromeos/crosapi/mojom/power.mojom.h"
 #include "chromeos/crosapi/mojom/prefs.mojom.h"
@@ -89,6 +90,7 @@
 #include "components/version_info/version_info.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "media/capture/mojom/video_capture.mojom.h"
+#include "media/media_buildflags.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/invitation.h"
 #include "services/device/public/mojom/hid.mojom.h"
@@ -270,6 +272,7 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<crosapi::mojom::Automation>(),
     MakeInterfaceVersionEntry<crosapi::mojom::AccountManager>(),
     MakeInterfaceVersionEntry<crosapi::mojom::AppPublisher>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::AppServiceProxy>(),
     MakeInterfaceVersionEntry<crosapi::mojom::BrowserServiceHost>(),
     MakeInterfaceVersionEntry<crosapi::mojom::CertDatabase>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Clipboard>(),
@@ -292,6 +295,7 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<crosapi::mojom::MetricsReporting>(),
     MakeInterfaceVersionEntry<crosapi::mojom::NativeThemeService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::NetworkingAttributes>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::NetworkSettingsService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Power>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Prefs>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Remoting>(),
@@ -356,7 +360,7 @@ bool IsDataWipeRequiredInternal(base::Version data_version,
 }
 
 static_assert(
-    crosapi::mojom::Crosapi::Version_ == 39,
+    crosapi::mojom::Crosapi::Version_ == 41,
     "if you add a new crosapi, please add it to kInterfaceVersionEntries");
 static_assert(!HasDuplicatedUuid(),
               "Each Crosapi Mojom interface should have unique UUID.");
@@ -697,6 +701,21 @@ mojom::BrowserInitParamsPtr GetBrowserInitParams(
     }
   }
 
+  // Add any BUILDFLAGs we use to pass our per-platform/ build configuration to
+  // lacros for runtime handling instead.
+  std::vector<crosapi::mojom::BuildFlag> build_flags;
+#if BUILDFLAG(ENABLE_PLATFORM_ENCRYPTED_HEVC)
+  build_flags.emplace_back(
+      crosapi::mojom::BuildFlag::kEnablePlatformEncryptedHevc);
+#endif  // BUILDFLAG(ENABLE_PLATFORM_ENCRYPTED_HEVC)
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
+  build_flags.emplace_back(crosapi::mojom::BuildFlag::kEnablePlatformHevc);
+#endif  // BUILDFLAG(ENABLE_PLATFORM_HEVC)
+#if BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA)
+  build_flags.emplace_back(
+      crosapi::mojom::BuildFlag::kUseChromeosProtectedMedia);
+#endif  // BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA)
+  params->build_flags = std::move(build_flags);
   return params;
 }
 

@@ -46,10 +46,6 @@ std::string GetStringNameForOptimizationType(
       return "LoadingPredictor";
     case proto::OptimizationType::FAST_HOST_HINTS:
       return "FastHostHints";
-    case proto::OptimizationType::DELAY_ASYNC_SCRIPT_EXECUTION:
-      return "DelayAsyncScriptExecution";
-    case proto::OptimizationType::DELAY_COMPETING_LOW_PRIORITY_REQUESTS:
-      return "DelayCompetingLowPriorityRequests";
     case proto::OptimizationType::LITE_VIDEO:
       return "LiteVideo";
     case proto::OptimizationType::LINK_PERFORMANCE:

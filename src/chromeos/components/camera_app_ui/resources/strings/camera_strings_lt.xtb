@@ -3,6 +3,8 @@
 <translationbundle lang="lt">
 <translation id="1175958423215084756">Aptikta nuoroda. <ph name="HOSTNAME" /></translation>
 <translation id="1276998909102132017">Galerijos vaizdai</translation>
+<translation id="1300209025925956156">Nuskaitykite dokumentą</translation>
+<translation id="137991641490787891"><ph name="ASPECT_RATIO_WIDTH" />. Naudokite paieškos ir rodyklės kairėn klavišus, kad juos pasiektumėte.</translation>
 <translation id="1430915738399379752">Spausdinti</translation>
 <translation id="1467231725790366244">Kamera „<ph name="CAMERA" />“ atjungta.</translation>
 <translation id="1473110567575736769">3 sek. laikmatis</translation>
@@ -31,7 +33,6 @@
 <translation id="2549985041256363841">Pradėti įrašymą</translation>
 <translation id="2599796128805996109">Užpakalinis fotoaparatas</translation>
 <translation id="2879583609344924966">Kamera „<ph name="CAMERA" />“ prijungta.</translation>
-<translation id="2912439424121107408">Šiame įrenginyje eksperto režimas nepalaikomas</translation>
 <translation id="2968794441791257519">Nuotraukos ir vaizdo įrašai, sukurti naudojant fotoaparatą, bus perkelti į aplanką „Atsisiuntimai“. Juos galite pasiekti Failų programoje.
 
         Programos su saugyklos leidimais galės pasiekti jūsų nuotraukas ir vaizdo įrašus.</translation>
@@ -42,15 +43,16 @@
 <translation id="3227137524299004712">Mikrofonas</translation>
 <translation id="3240426699337459095">Nuoroda nukopijuota</translation>
 <translation id="3259149966178251584">Fotoaparato skyra</translation>
+<translation id="3260401663013584785">Nepavyko aptikti dokumento</translation>
 <translation id="3448774564454087943">Vaizdo įrašas neišsaugotas, nes yra per trumpas</translation>
 <translation id="3517926952904427380">Nepavyko nufotografuoti portretinės nuotraukos</translation>
 <translation id="3569311554794739032">Ar tikrai norite pašalinti „<ph name="FILE" />“?</translation>
-<translation id="3733597664308256288">Pasiekiami papildomi fotoaparato valdikliai. Naudokite paieškos ir rodyklės dešinėn klavišus, kad juos pasiektumėte.</translation>
 <translation id="3810838688059735925">Vaizdo</translation>
 <translation id="3838931309141338733">Nuskaityti brūkšninį kodą</translation>
 <translation id="3892148308691398805">Kopijuoti tekstą</translation>
 <translation id="4000398125663085899">Naujos nuotraukos ir vaizdo įrašai dabar bus išsaugoti aplanke Failų programoje: „Mano failai“ &gt; „Fotoaparatas“</translation>
 <translation id="4118525110028899586">Pristabdyti įrašymą</translation>
+<translation id="4121305183798804752">Aptiktas dokumentas</translation>
 <translation id="4269820728363426813">Kopijuoti nuorodos adresą</translation>
 <translation id="4279490309300973883">Dubliuojama</translation>
 <translation id="4329152592498422850">Perjungti į kvadratinės nuotraukos režimą</translation>
@@ -65,10 +67,13 @@
 <translation id="5057360777601936059">Fotoaparatas šiuo metu nepasiekiamas.
         Patikrinkite, ar fotoaparatas tinkamai prijungtas.</translation>
 <translation id="5152121255775685072">Eiti į galeriją</translation>
+<translation id="520537883758714667">Dabar galima nuskaityti dokumentus</translation>
 <translation id="5268823927180092501">Įgalinti dokumento režimą visuose fotoaparatuose</translation>
 <translation id="5422455049771430511">Nauja vieta jūsų nuotraukoms ir vaizdo įrašams</translation>
+<translation id="5444515100983837161">Visi dokumento kraštai turi būti rėmelyje. Geriausia nuskaitymo kokybė užtikrinama, kai dokumento ir fono spalvos skiriasi.</translation>
 <translation id="5671277269877808209">Kvadratas</translation>
 <translation id="5753488212459587150">Įgalinti eksperto režimą</translation>
+<translation id="5759254179196327752">Nuskaityti dokumentą</translation>
 <translation id="5775960006311140197">Eksperto režimas</translation>
 <translation id="5869546221129391014">Tinklelis</translation>
 <translation id="5975083100439434680">Tolinti</translation>
@@ -82,6 +87,7 @@
 
 Jei atsiliepimas susijęs su vaizdo arba vaizdo įrašo kokybe, pridėkite nuotraukos ar vaizdo įrašo pavyzdį ir apibūdinkite, kad negerai. (Pavyzdžiui, nuotrauka pernelyg tamsi arba objektas nesufokusuotas.)</translation>
 <translation id="6420689864531458495">(<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" /> – <ph name="WIDTH" />x<ph name="HEIGHT" />) <ph name="MEGAPIXEL" /> megapiks.</translation>
+<translation id="667999046851023355">Dokumentas</translation>
 <translation id="6681668084120808868">Fotografuoti</translation>
 <translation id="6778482348691154169">Nepavyko nufotografuoti</translation>
 <translation id="695140971690006676">Nustatyti viską iš naujo</translation>
@@ -108,11 +114,13 @@ Jei atsiliepimas susijęs su vaizdo arba vaizdo įrašo kokybe, pridėkite nuotr
 <translation id="8425673304802773841">Nukreipti žemyn</translation>
 <translation id="8428213095426709021">Nustatymai</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" /> p (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
+<translation id="8712637175834984815">Supratau</translation>
 <translation id="8732462232047530626">Peržiūrėti metaduomenis</translation>
 <translation id="8815966864175525708">Perjungti į portretinės nuotraukos režimą</translation>
 <translation id="8828441885228359828">Tęsti įrašymą</translation>
 <translation id="8870695351537079478">Nepavyko pradėti įrašymo</translation>
 <translation id="8903921497873541725">Artinti</translation>
+<translation id="9045010116236796332">Visi dokumento kraštai turi būti rėmelyje.</translation>
 <translation id="9045155556724273246">10 sek.</translation>
 <translation id="945522503751344254">Siųsti atsiliepimą</translation>
 </translationbundle>

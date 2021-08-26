@@ -13,7 +13,7 @@
 #include "chrome/browser/ash/login/test/device_state_mixin.h"
 #include "chrome/browser/ash/notifications/request_system_proxy_credentials_view.h"
 #include "chrome/browser/ash/policy/affiliation/affiliation_test_helper.h"
-#include "chrome/browser/ash/policy/core/browser_policy_connector_chromeos.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/policy/core/device_policy_cros_browser_test.h"
 #include "chrome/browser/chromeos/net/system_proxy_manager.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
@@ -360,9 +360,9 @@ class SystemProxyManagerPolicyCredentialsBrowserTest
     ASSERT_NO_FATAL_FAILURE((affiliation_helper.SetDeviceAffiliationIDs(
         &policy_helper_, device_affiliation_ids)));
 
-    ON_CALL(provider_, IsInitializationComplete(_)).WillByDefault(Return(true));
-    ON_CALL(provider_, IsFirstPolicyLoadComplete(_))
-        .WillByDefault(Return(true));
+    provider_.SetDefaultReturns(
+        /*is_initialization_complete_return=*/true,
+        /*is_first_policy_load_complete_return=*/true);
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
   }
 

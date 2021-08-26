@@ -8,6 +8,7 @@
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "third_party/blink/public/common/common_export.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/clipboard/clipboard.mojom-blink.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -58,12 +59,19 @@ class MockClipboardHost : public mojom::blink::ClipboardHost {
   void WriteBookmark(const String& url, const String& title) override;
   void WriteImage(const SkBitmap& bitmap) override;
   void CommitWrite() override;
+  void ReadAvailableCustomAndStandardFormats(
+      ReadAvailableCustomAndStandardFormatsCallback callback) override;
+  void ReadUnsanitizedCustomFormat(
+      const String& format,
+      ReadUnsanitizedCustomFormatCallback callback) override;
+  void WriteUnsanitizedCustomFormat(const String& format,
+                                    mojo_base::BigBuffer data) override;
 #if defined(OS_MAC)
   void WriteStringToFindPboard(const String& text) override;
 #endif
 
   mojo::ReceiverSet<mojom::blink::ClipboardHost> receivers_;
-  uint64_t sequence_number_ = 0;
+  ClipboardSequenceNumberToken sequence_number_;
   String plain_text_ = g_empty_string;
   String html_text_ = g_empty_string;
   String svg_text_ = g_empty_string;
@@ -74,6 +82,7 @@ class MockClipboardHost : public mojom::blink::ClipboardHost {
   HashMap<String, String> custom_data_;
   bool write_smart_paste_ = false;
   bool needs_reset_ = false;
+  HashMap<String, Vector<uint8_t>> unsanitized_custom_data_map_;
 };
 
 }  // namespace blink

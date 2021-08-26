@@ -31,7 +31,8 @@ std::string Preamble() {
   return R"(
     OpCapability Shader
     OpMemoryModel Logical Simple
-    OpEntryPoint Vertex %100 "main"
+    OpEntryPoint Fragment %100 "main"
+    OpExecutionMode %100 OriginUpperLeft
 )";
 }
 
@@ -279,8 +280,8 @@ TEST_F(SpvParserMemoryTest, EmitStatement_StoreToModuleScopeVar) {
      %voidfn = OpTypeFunction %void
      %ty = OpTypeInt 32 0
      %val = OpConstant %ty 42
-     %ptr_ty = OpTypePointer Workgroup %ty
-     %1 = OpVariable %ptr_ty Workgroup
+     %ptr_ty = OpTypePointer Private %ty
+     %1 = OpVariable %ptr_ty Private
      %100 = OpFunction %void None %voidfn
      %entry = OpLabel
      OpStore %1 %val
@@ -297,18 +298,18 @@ TEST_F(SpvParserMemoryTest, EmitStatement_StoreToModuleScopeVar) {
 }
 
 TEST_F(SpvParserMemoryTest,
-       EmitStatement_CopyMemory_Scalar_Workgroup_To_Private) {
+       EmitStatement_CopyMemory_Scalar_Function_To_Private) {
   auto p = parser(test::Assemble(Preamble() + R"(
      %void = OpTypeVoid
      %voidfn = OpTypeFunction %void
      %ty = OpTypeInt 32 0
      %val = OpConstant %ty 42
-     %ptr_wg_ty = OpTypePointer Workgroup %ty
+     %ptr_fn_ty = OpTypePointer Function %ty
      %ptr_priv_ty = OpTypePointer Private %ty
-     %1 = OpVariable %ptr_wg_ty Workgroup
      %2 = OpVariable %ptr_priv_ty Private
      %100 = OpFunction %void None %voidfn
      %entry = OpLabel
+     %1 = OpVariable %ptr_fn_ty Function
      OpCopyMemory %2 %1
      OpReturn
      OpFunctionEnd
@@ -330,8 +331,8 @@ TEST_F(SpvParserMemoryTest, EmitStatement_AccessChain_NoOperands) {
      %voidfn = OpTypeFunction %void
      %ty = OpTypeInt 32 0
      %val = OpConstant %ty 42
-     %ptr_ty = OpTypePointer Workgroup %ty
-     %1 = OpVariable %ptr_ty Workgroup
+     %ptr_ty = OpTypePointer Private %ty
+     %1 = OpVariable %ptr_ty Private
      %100 = OpFunction %void None %voidfn
      %entry = OpLabel
 
@@ -340,7 +341,7 @@ TEST_F(SpvParserMemoryTest, EmitStatement_AccessChain_NoOperands) {
      OpReturn
   )");
   EXPECT_THAT(err,
-              Eq("15:5: Expected operand, found next instruction instead."));
+              Eq("16:5: Expected operand, found next instruction instead."));
 }
 
 TEST_F(SpvParserMemoryTest, EmitStatement_AccessChain_BaseIsNotPointer) {
@@ -349,8 +350,8 @@ TEST_F(SpvParserMemoryTest, EmitStatement_AccessChain_BaseIsNotPointer) {
      %voidfn = OpTypeFunction %void
      %10 = OpTypeInt 32 0
      %val = OpConstant %10 42
-     %ptr_ty = OpTypePointer Workgroup %10
-     %20 = OpVariable %10 Workgroup ; bad pointer type
+     %ptr_ty = OpTypePointer Private %10
+     %20 = OpVariable %10 Private ; bad pointer type
      %100 = OpFunction %void None %voidfn
      %entry = OpLabel
      %1 = OpAccessChain %ptr_ty %20
@@ -370,9 +371,9 @@ TEST_F(SpvParserMemoryTest, EmitStatement_AccessChain_VectorSwizzle) {
      %store_ty = OpTypeVector %uint 4
      %uint_2 = OpConstant %uint 2
      %uint_42 = OpConstant %uint 42
-     %elem_ty = OpTypePointer Workgroup %uint
-     %var_ty = OpTypePointer Workgroup %store_ty
-     %1 = OpVariable %var_ty Workgroup
+     %elem_ty = OpTypePointer Private %uint
+     %var_ty = OpTypePointer Private %store_ty
+     %1 = OpVariable %var_ty Private
      %100 = OpFunction %void None %voidfn
      %entry = OpLabel
      %2 = OpAccessChain %elem_ty %1 %uint_2
@@ -403,9 +404,9 @@ TEST_F(SpvParserMemoryTest, EmitStatement_AccessChain_VectorConstOutOfBounds) {
      %store_ty = OpTypeVector %uint 4
      %42 = OpConstant %uint 42
      %uint_99 = OpConstant %uint 99
-     %elem_ty = OpTypePointer Workgroup %uint
-     %var_ty = OpTypePointer Workgroup %store_ty
-     %1 = OpVariable %var_ty Workgroup
+     %elem_ty = OpTypePointer Private %uint
+     %var_ty = OpTypePointer Private %store_ty
+     %1 = OpVariable %var_ty Private
      %100 = OpFunction %void None %voidfn
      %entry = OpLabel
      %2 = OpAccessChain %elem_ty %1 %42
@@ -432,10 +433,10 @@ TEST_F(SpvParserMemoryTest, EmitStatement_AccessChain_VectorNonConstIndex) {
      %store_ty = OpTypeVector %uint 4
      %uint_2 = OpConstant %uint 2
      %uint_42 = OpConstant %uint 42
-     %elem_ty = OpTypePointer Workgroup %uint
-     %var_ty = OpTypePointer Workgroup %store_ty
-     %1 = OpVariable %var_ty Workgroup
-     %10 = OpVariable %var_ty Workgroup
+     %elem_ty = OpTypePointer Private %uint
+     %var_ty = OpTypePointer Private %store_ty
+     %1 = OpVariable %var_ty Private
+     %10 = OpVariable %var_ty Private
      %100 = OpFunction %void None %voidfn
      %entry = OpLabel
      %11 = OpLoad %store_ty %10
@@ -468,14 +469,14 @@ TEST_F(SpvParserMemoryTest, EmitStatement_AccessChain_Matrix) {
      %float = OpTypeFloat 32
      %v4float = OpTypeVector %float 4
      %m3v4float = OpTypeMatrix %v4float 3
-     %elem_ty = OpTypePointer Workgroup %v4float
-     %var_ty = OpTypePointer Workgroup %m3v4float
+     %elem_ty = OpTypePointer Private %v4float
+     %var_ty = OpTypePointer Private %m3v4float
      %uint = OpTypeInt 32 0
      %uint_2 = OpConstant %uint 2
      %float_42 = OpConstant %float 42
      %v4float_42 = OpConstantComposite %v4float %float_42 %float_42 %float_42 %float_42
 
-     %1 = OpVariable %var_ty Workgroup
+     %1 = OpVariable %var_ty Private
      %100 = OpFunction %void None %voidfn
      %entry = OpLabel
      %2 = OpAccessChain %elem_ty %1 %uint_2
@@ -511,14 +512,14 @@ TEST_F(SpvParserMemoryTest, EmitStatement_AccessChain_Array) {
      %float = OpTypeFloat 32
      %v4float = OpTypeVector %float 4
      %m3v4float = OpTypeMatrix %v4float 3
-     %elem_ty = OpTypePointer Workgroup %v4float
-     %var_ty = OpTypePointer Workgroup %m3v4float
+     %elem_ty = OpTypePointer Private %v4float
+     %var_ty = OpTypePointer Private %m3v4float
      %uint = OpTypeInt 32 0
      %uint_2 = OpConstant %uint 2
      %float_42 = OpConstant %float 42
      %v4float_42 = OpConstantComposite %v4float %float_42 %float_42 %float_42 %float_42
 
-     %1 = OpVariable %var_ty Workgroup
+     %1 = OpVariable %var_ty Private
      %100 = OpFunction %void None %voidfn
      %entry = OpLabel
      %2 = OpAccessChain %elem_ty %1 %uint_2
@@ -555,12 +556,12 @@ TEST_F(SpvParserMemoryTest, EmitStatement_AccessChain_Struct) {
      %float = OpTypeFloat 32
      %float_42 = OpConstant %float 42
      %strct = OpTypeStruct %float %float
-     %elem_ty = OpTypePointer Workgroup %float
-     %var_ty = OpTypePointer Workgroup %strct
+     %elem_ty = OpTypePointer Private %float
+     %var_ty = OpTypePointer Private %strct
      %uint = OpTypeInt 32 0
      %uint_1 = OpConstant %uint 1
 
-     %1 = OpVariable %var_ty Workgroup
+     %1 = OpVariable %var_ty Private
      %100 = OpFunction %void None %voidfn
      %entry = OpLabel
      %2 = OpAccessChain %elem_ty %1 %uint_1
@@ -600,14 +601,14 @@ TEST_F(SpvParserMemoryTest,
      %float_420 = OpConstant %float 420
      %strct = OpTypeStruct %float %float
      %strct2 = OpTypeStruct %float %float
-     %elem_ty = OpTypePointer Workgroup %float
-     %var_ty = OpTypePointer Workgroup %strct
-     %var2_ty = OpTypePointer Workgroup %strct2
+     %elem_ty = OpTypePointer Private %float
+     %var_ty = OpTypePointer Private %strct
+     %var2_ty = OpTypePointer Private %strct2
      %uint = OpTypeInt 32 0
      %uint_1 = OpConstant %uint 1
 
-     %1 = OpVariable %var_ty Workgroup
-     %10 = OpVariable %var2_ty Workgroup
+     %1 = OpVariable %var_ty Private
+     %10 = OpVariable %var2_ty Private
      %100 = OpFunction %void None %voidfn
      %entry = OpLabel
      %2 = OpAccessChain %elem_ty %1 %uint_1
@@ -647,14 +648,14 @@ TEST_F(SpvParserMemoryTest, EmitStatement_AccessChain_StructNonConstIndex) {
      %float = OpTypeFloat 32
      %float_42 = OpConstant %float 42
      %55 = OpTypeStruct %float %float
-     %elem_ty = OpTypePointer Workgroup %float
-     %var_ty = OpTypePointer Workgroup %55
+     %elem_ty = OpTypePointer Private %float
+     %var_ty = OpTypePointer Private %55
      %uint = OpTypeInt 32 0
      %uint_1 = OpConstant %uint 1
-     %uint_ptr = OpTypePointer Workgroup %uint
-     %uintvar = OpVariable %uint_ptr Workgroup
+     %uint_ptr = OpTypePointer Private %uint
+     %uintvar = OpVariable %uint_ptr Private
 
-     %1 = OpVariable %var_ty Workgroup
+     %1 = OpVariable %var_ty Private
      %100 = OpFunction %void None %voidfn
      %entry = OpLabel
      %10 = OpLoad %uint %uintvar
@@ -681,12 +682,12 @@ TEST_F(SpvParserMemoryTest, EmitStatement_AccessChain_StructConstOutOfBounds) {
      %float = OpTypeFloat 32
      %float_42 = OpConstant %float 42
      %55 = OpTypeStruct %float %float
-     %elem_ty = OpTypePointer Workgroup %float
-     %var_ty = OpTypePointer Workgroup %55
+     %elem_ty = OpTypePointer Private %float
+     %var_ty = OpTypePointer Private %55
      %uint = OpTypeInt 32 0
      %uint_99 = OpConstant %uint 99
 
-     %1 = OpVariable %var_ty Workgroup
+     %1 = OpVariable %var_ty Private
      %100 = OpFunction %void None %voidfn
      %entry = OpLabel
      %2 = OpAccessChain %elem_ty %1 %uint_99
@@ -760,14 +761,14 @@ TEST_F(SpvParserMemoryTest, EmitStatement_AccessChain_Compound_Matrix_Vector) {
      %float = OpTypeFloat 32
      %v4float = OpTypeVector %float 4
      %m3v4float = OpTypeMatrix %v4float 3
-     %elem_ty = OpTypePointer Workgroup %float
-     %var_ty = OpTypePointer Workgroup %m3v4float
+     %elem_ty = OpTypePointer Private %float
+     %var_ty = OpTypePointer Private %m3v4float
      %uint = OpTypeInt 32 0
      %uint_2 = OpConstant %uint 2
      %uint_3 = OpConstant %uint 3
      %float_42 = OpConstant %float 42
 
-     %1 = OpVariable %var_ty Workgroup
+     %1 = OpVariable %var_ty Private
      %100 = OpFunction %void None %voidfn
      %entry = OpLabel
      %2 = OpAccessChain %elem_ty %1 %uint_2 %uint_3
@@ -798,12 +799,12 @@ TEST_F(SpvParserMemoryTest, EmitStatement_AccessChain_InvalidPointeeType) {
      %55 = OpTypeVoid
      %voidfn = OpTypeFunction %55
      %float = OpTypeFloat 32
-     %60 = OpTypePointer Workgroup %55
-     %var_ty = OpTypePointer Workgroup %60
+     %60 = OpTypePointer Private %55
+     %var_ty = OpTypePointer Private %60
      %uint = OpTypeInt 32 0
      %uint_2 = OpConstant %uint 2
 
-     %1 = OpVariable %var_ty Workgroup
+     %1 = OpVariable %var_ty Private
      %100 = OpFunction %55 None %voidfn
      %entry = OpLabel
      %2 = OpAccessChain %60 %1 %uint_2
@@ -817,7 +818,7 @@ TEST_F(SpvParserMemoryTest, EmitStatement_AccessChain_InvalidPointeeType) {
   EXPECT_FALSE(fe.EmitBody());
   EXPECT_THAT(p->error(),
               HasSubstr("Access chain with unknown or invalid pointee type "
-                        "%60: %60 = OpTypePointer Workgroup %55"));
+                        "%60: %60 = OpTypePointer Private %55"));
 }
 
 TEST_F(SpvParserMemoryTest, EmitStatement_AccessChain_DereferenceBase) {
@@ -889,7 +890,7 @@ TEST_F(SpvParserMemoryTest, EmitStatement_AccessChain_DereferenceBase) {
     Return{}
   }
   Function main -> __void
-  StageDecoration{vertex}
+  StageDecoration{fragment}
   ()
   {
     Call[not set]{
@@ -1198,6 +1199,9 @@ Assignment{
   }
   ScalarConstructor[not set]{0u}
 })")) << p->error();
+
+  p->SkipDumpingPending(
+      "crbug.com/tint/1041 track access mode in spirv-reader parser type");
 }
 
 TEST_F(SpvParserMemoryTest, RemapStorageBuffer_ThroughCopyObject_WithHoisting) {
@@ -1280,19 +1284,19 @@ Return{}
 }
 
 TEST_F(SpvParserMemoryTest, DISABLED_RemapStorageBuffer_ThroughFunctionCall) {
-  // TODO(dneto): Blocked on OpFunctionCall support.
-  // We might need this for passing pointers into atomic builtins.
+  // WGSL does not support pointer-to-storage-buffer as function parameter
 }
 TEST_F(SpvParserMemoryTest,
        DISABLED_RemapStorageBuffer_ThroughFunctionParameter) {
-  // TODO(dneto): Blocked on OpFunctionCall support.
+  // WGSL does not support pointer-to-storage-buffer as function parameter
 }
 
 std::string RuntimeArrayPreamble() {
   return R"(
      OpCapability Shader
      OpMemoryModel Logical Simple
-     OpEntryPoint Vertex %100 "main"
+     OpEntryPoint Fragment %100 "main"
+     OpExecutionMode %100 OriginUpperLeft
 
      OpName %myvar "myvar"
      OpMemberName %struct 0 "first"
@@ -1322,7 +1326,7 @@ std::string RuntimeArrayPreamble() {
   )";
 }
 
-TEST_F(SpvParserMemoryTest, ArrayLength) {
+TEST_F(SpvParserMemoryTest, ArrayLength_FromVar) {
   const auto assembly = RuntimeArrayPreamble() + R"(
 
   %100 = OpFunction %void None %voidfn
@@ -1347,9 +1351,12 @@ TEST_F(SpvParserMemoryTest, ArrayLength) {
       Call[not set]{
         Identifier[not set]{arrayLength}
         (
-          MemberAccessor[not set]{
-            Identifier[not set]{myvar}
-            Identifier[not set]{rtarr}
+          UnaryOp[not set]{
+            address-of
+            MemberAccessor[not set]{
+              Identifier[not set]{myvar}
+              Identifier[not set]{rtarr}
+            }
           }
         )
       }
@@ -1357,6 +1364,181 @@ TEST_F(SpvParserMemoryTest, ArrayLength) {
   }
 }
 )")) << body_str;
+}
+
+TEST_F(SpvParserMemoryTest, ArrayLength_FromCopyObject) {
+  const auto assembly = RuntimeArrayPreamble() + R"(
+
+  %100 = OpFunction %void None %voidfn
+
+  %entry = OpLabel
+  %2 = OpCopyObject %ptr_struct %myvar
+  %1 = OpArrayLength %uint %2 1
+  OpReturn
+  OpFunctionEnd
+)";
+  auto p = parser(test::Assemble(assembly));
+  ASSERT_TRUE(p->BuildAndParseInternalModule()) << assembly << p->error();
+  auto fe = p->function_emitter(100);
+  EXPECT_TRUE(fe.EmitBody()) << p->error();
+  const auto body_str = ToString(p->builder(), fe.ast_body());
+  EXPECT_THAT(body_str, HasSubstr(R"(VariableDeclStatement{
+  VariableConst{
+    x_2
+    none
+    undefined
+    __ptr_storage__type_name_S
+    {
+      UnaryOp[not set]{
+        address-of
+        Identifier[not set]{myvar}
+      }
+    }
+  }
+}
+VariableDeclStatement{
+  VariableConst{
+    x_1
+    none
+    undefined
+    __u32
+    {
+      Call[not set]{
+        Identifier[not set]{arrayLength}
+        (
+          UnaryOp[not set]{
+            address-of
+            MemberAccessor[not set]{
+              UnaryOp[not set]{
+                indirection
+                Identifier[not set]{x_2}
+              }
+              Identifier[not set]{rtarr}
+            }
+          }
+        )
+      }
+    }
+  }
+}
+)")) << body_str;
+
+  p->SkipDumpingPending(
+      "crbug.com/tint/1041 track access mode in spirv-reader parser type");
+}
+
+TEST_F(SpvParserMemoryTest, ArrayLength_FromAccessChain) {
+  const auto assembly = RuntimeArrayPreamble() + R"(
+
+  %100 = OpFunction %void None %voidfn
+
+  %entry = OpLabel
+  %2 = OpAccessChain %ptr_struct %myvar ; no indices
+  %1 = OpArrayLength %uint %2 1
+  OpReturn
+  OpFunctionEnd
+)";
+  auto p = parser(test::Assemble(assembly));
+  ASSERT_TRUE(p->BuildAndParseInternalModule()) << assembly << p->error();
+  auto fe = p->function_emitter(100);
+  EXPECT_TRUE(fe.EmitBody()) << p->error();
+  const auto body_str = ToString(p->builder(), fe.ast_body());
+  EXPECT_THAT(body_str, HasSubstr(R"(VariableDeclStatement{
+  VariableConst{
+    x_1
+    none
+    undefined
+    __u32
+    {
+      Call[not set]{
+        Identifier[not set]{arrayLength}
+        (
+          UnaryOp[not set]{
+            address-of
+            MemberAccessor[not set]{
+              Identifier[not set]{myvar}
+              Identifier[not set]{rtarr}
+            }
+          }
+        )
+      }
+    }
+  }
+}
+)")) << body_str;
+}
+
+std::string InvalidPointerPreamble() {
+  return R"(
+OpCapability Shader
+OpMemoryModel Logical Simple
+OpEntryPoint Fragment %main "main"
+OpExecutionMode %main OriginUpperLeft
+
+%uint = OpTypeInt 32 0
+%ptr_ty = OpTypePointer Function %uint
+
+  %void = OpTypeVoid
+%voidfn = OpTypeFunction %void
+)";
+}
+
+TEST_F(SpvParserMemoryTest, InvalidPointer_Undef_ModuleScope_IsError) {
+  const std::string assembly = InvalidPointerPreamble() + R"(
+ %ptr = OpUndef %ptr_ty
+
+  %main = OpFunction %void None %voidfn
+ %entry = OpLabel
+     %1 = OpCopyObject %ptr_ty %ptr
+     %2 = OpAccessChain %ptr_ty %ptr
+     %3 = OpInBoundsAccessChain %ptr_ty %ptr
+; now show the invalid pointer propagates
+     %10 = OpCopyObject %ptr_ty %1
+     %20 = OpAccessChain %ptr_ty %2
+     %30 = OpInBoundsAccessChain %ptr_ty %3
+          OpReturn
+          OpFunctionEnd
+)";
+  auto p = parser(test::Assemble(assembly));
+  EXPECT_FALSE(p->BuildAndParseInternalModule()) << assembly;
+  EXPECT_EQ(p->error(), "undef pointer is not valid: %9 = OpUndef %6");
+}
+
+TEST_F(SpvParserMemoryTest, InvalidPointer_Undef_FunctionScope_IsError) {
+  const std::string assembly = InvalidPointerPreamble() + R"(
+
+  %main = OpFunction %void None %voidfn
+ %entry = OpLabel
+   %ptr = OpUndef %ptr_ty
+          OpReturn
+          OpFunctionEnd
+)";
+  auto p = parser(test::Assemble(assembly));
+  EXPECT_FALSE(p->BuildAndParseInternalModule()) << assembly;
+  EXPECT_EQ(p->error(), "undef pointer is not valid: %7 = OpUndef %3");
+}
+
+TEST_F(SpvParserMemoryTest, InvalidPointer_ConstantNull_IsError) {
+  // OpConstantNull on logical pointer requires variable-pointers, which
+  // is not (yet) supported by WGSL features.
+  const std::string assembly = InvalidPointerPreamble() + R"(
+ %ptr = OpConstantNull %ptr_ty
+
+  %main = OpFunction %void None %voidfn
+ %entry = OpLabel
+     %1 = OpCopyObject %ptr_ty %ptr
+     %2 = OpAccessChain %ptr_ty %ptr
+     %3 = OpInBoundsAccessChain %ptr_ty %ptr
+; now show the invalid pointer propagates
+     %10 = OpCopyObject %ptr_ty %1
+     %20 = OpAccessChain %ptr_ty %2
+     %30 = OpInBoundsAccessChain %ptr_ty %3
+          OpReturn
+          OpFunctionEnd
+)";
+  auto p = parser(test::Assemble(assembly));
+  EXPECT_FALSE(p->BuildAndParseInternalModule());
+  EXPECT_EQ(p->error(), "null pointer is not valid: %9 = OpConstantNull %6");
 }
 
 }  // namespace

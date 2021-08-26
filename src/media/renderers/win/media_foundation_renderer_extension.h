@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/win/scoped_handle.h"
 #include "media/base/media_export.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -22,18 +23,15 @@ class MEDIA_EXPORT MediaFoundationRendererExtension {
   // TODO(frankli): naming: Change DComp into DirectComposition for interface
   // method names in a separate CL.
 
-  // Enable Direct Composition video rendering.
-  using SetDCompModeCB = base::OnceCallback<void(bool)>;
-  virtual void SetDCompMode(bool enabled, SetDCompModeCB callback) = 0;
-
-  // Get a Direct Composition Surface handle.
-  using GetDCompSurfaceCB = base::OnceCallback<void(HANDLE)>;
+  // Enables Direct Composition video rendering and returns the Direct
+  // Composition Surface handle.
+  using GetDCompSurfaceCB = base::OnceCallback<void(base::win::ScopedHandle)>;
   virtual void GetDCompSurface(GetDCompSurfaceCB callback) = 0;
 
-  // Notify renderer whether video is enabled.
+  // Notifies renderer whether video is enabled.
   virtual void SetVideoStreamEnabled(bool enabled) = 0;
 
-  // Notify renderer of output composition parameters.
+  // Notifies renderer of output composition parameters.
   virtual void SetOutputParams(const ::gfx::Rect& rect) = 0;
 };
 

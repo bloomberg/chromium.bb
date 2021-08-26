@@ -26,6 +26,7 @@ source_set("test_common") {
   deps = [
     "//base",
     "//chrome/updater:base",
+    "//chrome/updater:constants_test",
   ]
 }
 
@@ -58,6 +59,5 @@ executable("updater_test_process") {
     "//base",
     "//base/test:test_support",
     "//build/win:default_exe_manifest",
-    "//chrome/updater:updater_version_cc",
   ]
 }

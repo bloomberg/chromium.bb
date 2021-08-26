@@ -900,7 +900,7 @@ void LockContentsView::OnUsersChanged(const std::vector<LoginUserInfo>& users) {
   // so there is not stale-pointer usage. See crbug.com/884402.
   // TODO(crbug.com/1222096): We should figure out a better way of handling
   // user info changes such as avatar changes. They should not cause view re-layouting.
-  main_view_->RemoveAllChildViews(true /*delete_children*/);
+  main_view_->RemoveAllChildViews();
 
   // Build user state list. Preserve previous state if the user already exists.
   std::vector<UserState> new_users;
@@ -1443,14 +1443,15 @@ void LockContentsView::OnKeyboardVisibilityChanged(bool is_visible) {
     return;
 
   keyboard_shown_ = is_visible;
-  LayoutAuth(CurrentBigUserView(), nullptr /*opt_to_hide*/, true /*animate*/);
+  if (!ongoing_auth_layout_)
+    LayoutAuth(CurrentBigUserView(), nullptr /*opt_to_hide*/, true /*animate*/);
 }
 
 void LockContentsView::SuspendImminent(
     power_manager::SuspendImminent::Reason reason) {
   LoginBigUserView* big_user = CurrentBigUserView();
   if (big_user && big_user->auth_user())
-    big_user->auth_user()->password_view()->Clear();
+    big_user->auth_user()->password_view()->Reset();
 }
 
 void LockContentsView::ShowAuthErrorMessageForDebug(int unlock_attempt) {
@@ -2001,6 +2002,7 @@ void LockContentsView::LayoutAuth(LoginBigUserView* to_update,
       view->auth_user()->ApplyAnimationPostLayout(animate);
   };
 
+  ongoing_auth_layout_ = true;
   // The high-level layout flow:
   capture_animation_state_pre_layout(to_update);
   capture_animation_state_pre_layout(opt_to_hide);
@@ -2009,6 +2011,7 @@ void LockContentsView::LayoutAuth(LoginBigUserView* to_update,
   Layout();
   apply_animation_post_layout(to_update);
   apply_animation_post_layout(opt_to_hide);
+  ongoing_auth_layout_ = false;
 }
 
 void LockContentsView::SwapToBigUser(int user_index) {

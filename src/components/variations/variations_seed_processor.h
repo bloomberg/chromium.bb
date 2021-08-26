@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include <string>
-#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
@@ -54,6 +53,7 @@ class COMPONENT_EXPORT(VARIATIONS) VariationsSeedProcessor {
   static bool ShouldStudyUseLowEntropy(const Study& study);
 
  private:
+  friend void CreateTrialFromStudyFuzzer(const Study& study);
   friend class VariationsSeedProcessorTest;
   FRIEND_TEST_ALL_PREFIXES(VariationsSeedProcessorTest,
                            AllowForceGroupAndVariationId);

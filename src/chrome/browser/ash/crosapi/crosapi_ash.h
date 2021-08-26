@@ -49,6 +49,7 @@ class WebPageInfoFactoryAsh;
 class TestControllerAsh;
 class UrlHandlerAsh;
 class VideoCaptureDeviceFactoryAsh;
+class NetworkSettingsServiceAsh;
 
 // Implementation of Crosapi in Ash. It provides a set of APIs that
 // crosapi clients, such as lacros-chrome, can call into.
@@ -70,6 +71,8 @@ class CrosapiAsh : public mojom::Crosapi {
       mojo::PendingReceiver<mojom::AutomationFactory> receiver) override;
   void BindAccountManager(
       mojo::PendingReceiver<mojom::AccountManager> receiver) override;
+  void BindAppServiceProxy(
+      mojo::PendingReceiver<mojom::AppServiceProxy> receiver) override;
   void BindBrowserServiceHost(
       mojo::PendingReceiver<mojom::BrowserServiceHost> receiver) override;
   void BindCertDatabase(
@@ -151,6 +154,9 @@ class CrosapiAsh : public mojom::Crosapi {
       override;
   void BindWebAppPublisher(
       mojo::PendingReceiver<mojom::AppPublisher> receiver) override;
+  void BindNetworkSettingsService(
+      ::mojo::PendingReceiver<::crosapi::mojom::NetworkSettingsService>
+          receiver) override;
 
   BrowserServiceHostAsh* browser_service_host_ash() {
     return browser_service_host_ash_.get();
@@ -167,6 +173,8 @@ class CrosapiAsh : public mojom::Crosapi {
   }
 
   ImageWriterAsh* image_writer_ash() { return image_writer_ash_.get(); }
+
+  LocalPrinterAsh* local_printer_ash() { return local_printer_ash_.get(); }
 
   NetworkingAttributesAsh* networking_attributes_ash() {
     return networking_attributes_ash_.get();
@@ -201,6 +209,7 @@ class CrosapiAsh : public mojom::Crosapi {
   std::unique_ptr<MetricsReportingAsh> metrics_reporting_ash_;
   std::unique_ptr<NativeThemeServiceAsh> native_theme_service_ash_;
   std::unique_ptr<NetworkingAttributesAsh> networking_attributes_ash_;
+  std::unique_ptr<NetworkSettingsServiceAsh> network_settings_service_ash_;
   std::unique_ptr<PowerAsh> power_ash_;
   std::unique_ptr<PrefsAsh> prefs_ash_;
   std::unique_ptr<RemotingAsh> remoting_ash_;

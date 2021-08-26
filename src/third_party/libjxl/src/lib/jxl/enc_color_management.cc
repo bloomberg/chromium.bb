@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 // Defined by build system; this avoids IDE warnings. Must come before
 // color_management.h (affects header definitions).
@@ -210,9 +201,7 @@ void DoColorSpaceTransform(ColorSpaceTransform* t, const size_t thread,
         &t->skcms_icc_->profile_src_, buf_dst, skcms_PixelFormat_RGB_fff,
         skcms_AlphaFormat_Opaque, &t->skcms_icc_->profile_dst_, t->xsize_));
 #else   // JPEGXL_ENABLE_SKCMS
-    JXL_DASSERT(thread < t->transforms_.size());
-    cmsHTRANSFORM xform = t->transforms_[thread];
-    cmsDoTransform(xform, xform_src, buf_dst,
+    cmsDoTransform(t->lcms_transform_, xform_src, buf_dst,
                    static_cast<cmsUInt32Number>(t->xsize_));
 #endif  // JPEGXL_ENABLE_SKCMS
   }
@@ -744,9 +733,7 @@ void ColorEncoding::DecideIfWantICC() {
 ColorSpaceTransform::~ColorSpaceTransform() {
 #if !JPEGXL_ENABLE_SKCMS
   std::lock_guard<std::mutex> guard(LcmsMutex());
-  for (void* p : transforms_) {
-    TransformDeleter()(p);
-  }
+  TransformDeleter()(lcms_transform_);
 #endif
 }
 
@@ -865,19 +852,16 @@ Status ColorSpaceTransform::Init(const ColorEncoding& c_src,
   // Type includes color space (XYZ vs RGB), so can be different.
   const uint32_t type_src = Type32(c_src);
   const uint32_t type_dst = Type32(c_dst);
-  transforms_.clear();
-  for (size_t i = 0; i < num_threads; ++i) {
-    const uint32_t intent = static_cast<uint32_t>(c_dst.rendering_intent);
-    const uint32_t flags =
-        cmsFLAGS_BLACKPOINTCOMPENSATION | cmsFLAGS_HIGHRESPRECALC;
-    // NOTE: we're using the current thread's context and assuming all state
-    // modified by cmsDoTransform resides in the transform, not the context.
-    transforms_.emplace_back(cmsCreateTransformTHR(context, profile_src.get(),
-                                                   type_src, profile_dst.get(),
-                                                   type_dst, intent, flags));
-    if (transforms_.back() == nullptr) {
-      return JXL_FAILURE("Failed to create transform");
-    }
+  const uint32_t intent = static_cast<uint32_t>(c_dst.rendering_intent);
+  // Use cmsFLAGS_NOCACHE to disable the 1-pixel cache and make calling
+  // cmsDoTransform() thread-safe.
+  const uint32_t flags = cmsFLAGS_NOCACHE | cmsFLAGS_BLACKPOINTCOMPENSATION |
+                         cmsFLAGS_HIGHRESPRECALC;
+  lcms_transform_ =
+      cmsCreateTransformTHR(context, profile_src.get(), type_src,
+                            profile_dst.get(), type_dst, intent, flags);
+  if (lcms_transform_ == nullptr) {
+    return JXL_FAILURE("Failed to create transform");
   }
 #endif  // !JPEGXL_ENABLE_SKCMS
 

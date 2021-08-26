@@ -14,7 +14,7 @@
 #include "base/test/task_environment.h"
 #include "base/values.h"
 #include "chrome/browser/ash/customization/customization_document.h"
-#include "chrome/browser/chromeos/input_method/input_method_configuration.h"
+#include "chrome/browser/ash/input_method/input_method_configuration.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util_test_util.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -68,7 +68,7 @@ class L10nUtilTest : public testing::Test {
 
 L10nUtilTest::L10nUtilTest()
     : input_manager_(new MockInputMethodManagerWithInputMethods) {
-  chromeos::input_method::InitializeForTesting(input_manager_);
+  ash::input_method::InitializeForTesting(input_manager_);
   auto mock_component_extension_ime_manager_delegate = std::make_unique<
       input_method::MockComponentExtensionIMEManagerDelegate>();
   input_manager_->SetComponentExtensionIMEManager(
@@ -79,7 +79,7 @@ L10nUtilTest::L10nUtilTest()
 }
 
 L10nUtilTest::~L10nUtilTest() {
-  chromeos::input_method::Shutdown();
+  ash::input_method::Shutdown();
 }
 
 void L10nUtilTest::SetInputMethods1() {

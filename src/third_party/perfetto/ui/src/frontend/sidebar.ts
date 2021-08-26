@@ -16,6 +16,7 @@ import * as m from 'mithril';
 
 import {assertExists, assertTrue} from '../base/logging';
 import {Actions} from '../common/actions';
+import {getCurrentChannel} from '../common/channels';
 import {TRACE_SUFFIX} from '../common/constants';
 import {ConversionJobStatus} from '../common/conversion_jobs';
 import {EngineMode, TraceArrayBufferSource} from '../common/state';
@@ -305,6 +306,7 @@ const SECTIONS: Section[] = [
         a: 'https://perfetto.dev',
         i: 'find_in_page',
       },
+      {t: 'Flags', a: navigateFlags, i: 'emoji_flags'},
       {
         t: 'Report a bug',
         a: 'https://goto.google.com/perfetto-ui-bug',
@@ -526,6 +528,11 @@ function navigateAnalyze(e: Event) {
   globals.dispatch(Actions.navigate({route: '/query'}));
 }
 
+function navigateFlags(e: Event) {
+  e.preventDefault();
+  globals.dispatch(Actions.navigate({route: '/flags'}));
+}
+
 function navigateMetrics(e: Event) {
   e.preventDefault();
   globals.dispatch(Actions.navigate({route: '/metrics'}));
@@ -745,7 +752,7 @@ const SidebarFooter: m.Component = {
         '.sidebar-footer',
         m('button',
           {
-            onclick: () => globals.frontendLocalState.togglePerfDebug(),
+            onclick: () => globals.dispatch(Actions.togglePerfDebug({})),
           },
           m('i.material-icons',
             {title: 'Toggle Perf Debug Mode'},
@@ -758,7 +765,7 @@ const SidebarFooter: m.Component = {
               {
                 href: `https://github.com/google/perfetto/tree/${
                     version.SCM_REVISION}/ui`,
-                title: `Channel: ${globals.channel}`,
+                title: `Channel: ${getCurrentChannel()}`,
                 target: '_blank',
               },
               `${version.VERSION}`),
@@ -859,26 +866,24 @@ export class Sidebar implements m.ClassComponent {
     return m(
         'nav.sidebar',
         {
-          class: globals.frontendLocalState.sidebarVisible ? 'show-sidebar' :
-                                                             'hide-sidebar',
+          class: globals.state.sidebarVisible ? 'show-sidebar' : 'hide-sidebar',
           // 150 here matches --sidebar-timing in the css.
           ontransitionstart: () => this._redrawWhileAnimating.start(150),
           ontransitionend: () => this._redrawWhileAnimating.stop(),
         },
         m(
-            `header.${globals.channel}`,
+            `header.${getCurrentChannel()}`,
             m(`img[src=${globals.root}assets/brand.png].brand`),
             m('button.sidebar-button',
               {
                 onclick: () => {
-                  globals.frontendLocalState.toggleSidebar();
+                  globals.dispatch(Actions.toggleSidebar({}));
                 },
               },
               m('i.material-icons',
                 {
-                  title: globals.frontendLocalState.sidebarVisible ?
-                      'Hide menu' :
-                      'Show menu',
+                  title: globals.state.sidebarVisible ? 'Hide menu' :
+                                                        'Show menu',
                 },
                 'menu')),
             ),

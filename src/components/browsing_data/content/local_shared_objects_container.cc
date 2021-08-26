@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/memory/scoped_refptr.h"
 #include "base/strings/string_piece.h"
 #include "components/browsing_data/content/appcache_helper.h"
 #include "components/browsing_data/content/cache_storage_helper.h"
@@ -45,27 +46,29 @@ LocalSharedObjectsContainer::LocalSharedObjectsContainer(
     content::BrowserContext* browser_context,
     const std::vector<storage::FileSystemType>& additional_file_system_types,
     browsing_data::CookieHelper::IsDeletionDisabledCallback callback)
-    : appcaches_(new CannedAppCacheHelper(
+    : appcaches_(base::MakeRefCounted<CannedAppCacheHelper>(
           browser_context->GetDefaultStoragePartition()->GetAppCacheService())),
-      cookies_(
-          new CannedCookieHelper(browser_context->GetDefaultStoragePartition(),
-                                 std::move(callback))),
-      databases_(new CannedDatabaseHelper(browser_context)),
-      file_systems_(new CannedFileSystemHelper(
+      cookies_(base::MakeRefCounted<CannedCookieHelper>(
+          browser_context->GetDefaultStoragePartition(),
+          std::move(callback))),
+      databases_(base::MakeRefCounted<CannedDatabaseHelper>(browser_context)),
+      file_systems_(base::MakeRefCounted<CannedFileSystemHelper>(
           browser_context->GetDefaultStoragePartition()->GetFileSystemContext(),
           additional_file_system_types,
           browser_context->GetDefaultStoragePartition()->GetNativeIOContext())),
-      indexed_dbs_(new CannedIndexedDBHelper(
+      indexed_dbs_(base::MakeRefCounted<CannedIndexedDBHelper>(
           browser_context->GetDefaultStoragePartition())),
-      local_storages_(new CannedLocalStorageHelper(browser_context)),
-      service_workers_(new CannedServiceWorkerHelper(
+      local_storages_(
+          base::MakeRefCounted<CannedLocalStorageHelper>(browser_context)),
+      service_workers_(base::MakeRefCounted<CannedServiceWorkerHelper>(
           browser_context->GetDefaultStoragePartition()
               ->GetServiceWorkerContext())),
-      shared_workers_(new CannedSharedWorkerHelper(
+      shared_workers_(base::MakeRefCounted<CannedSharedWorkerHelper>(
           browser_context->GetDefaultStoragePartition())),
-      cache_storages_(new CannedCacheStorageHelper(
+      cache_storages_(base::MakeRefCounted<CannedCacheStorageHelper>(
           browser_context->GetDefaultStoragePartition())),
-      session_storages_(new CannedLocalStorageHelper(browser_context)) {}
+      session_storages_(
+          base::MakeRefCounted<CannedLocalStorageHelper>(browser_context)) {}
 
 LocalSharedObjectsContainer::~LocalSharedObjectsContainer() = default;
 
@@ -93,33 +96,28 @@ size_t LocalSharedObjectsContainer::GetObjectCountForDomain(
   // to be a third party regarding the domain of the provided |origin|. E.g. if
   // the origin is "http://foo.com" then all cookies with domain foo.com,
   // a.foo.com, b.a.foo.com or *.foo.com will be counted.
-  typedef CannedCookieHelper::OriginCookieSetMap OriginCookieSetMap;
-  const OriginCookieSetMap& origin_cookies_set_map =
-      cookies()->origin_cookie_set_map();
-  for (auto it = origin_cookies_set_map.begin();
-       it != origin_cookies_set_map.end(); ++it) {
-    const canonical_cookie::CookieHashSet* cookie_list = it->second.get();
-    for (const auto& cookie : *cookie_list) {
-      // The |domain_url| is only created in order to use the
-      // SameDomainOrHost method below. It does not matter which scheme is
-      // used as the scheme is ignored by the SameDomainOrHost method.
-      GURL domain_url = net::cookie_util::CookieOriginToURL(
-          cookie.Domain(), false /* is_https */);
+  for (const auto& cookie : cookies()->origin_cookie_set()) {
+    // The |domain_url| is only created in order to use the
+    // SameDomainOrHost method below. It does not matter which scheme is
+    // used as the scheme is ignored by the SameDomainOrHost method.
+    GURL domain_url = net::cookie_util::CookieOriginToURL(cookie.Domain(),
+                                                          false /* is_https */);
 
-      if (origin.SchemeIsHTTPOrHTTPS() && SameDomainOrHost(origin, domain_url))
-        ++count;
-    }
-  }
-
-  // Count local storages for the domain of the given |origin|.
-  for (const auto& storage_origin : local_storages()->GetOrigins()) {
-    if (SameDomainOrHost(origin, storage_origin.GetURL()))
+    if (origin.SchemeIsHTTPOrHTTPS() && SameDomainOrHost(origin, domain_url))
       ++count;
   }
 
-  // Count session storages for the domain of the given |origin|.
-  for (const auto& storage_origin : session_storages()->GetOrigins()) {
-    if (SameDomainOrHost(origin, storage_origin.GetURL()))
+  // Count local storages for the domain of the given `storage_key`.
+  for (const auto& storage_key : local_storages()->GetStorageKeys()) {
+    // TODO(https://crbug.com/1199077): Use the real StorageKey once migrated.
+    if (SameDomainOrHost(origin, storage_key.origin().GetURL()))
+      ++count;
+  }
+
+  // Count session storages for the domain of the given `storage_key`.
+  for (const auto& storage_key : session_storages()->GetStorageKeys()) {
+    // TODO(https://crbug.com/1199077): Use the real StorageKey once migrated.
+    if (SameDomainOrHost(origin, storage_key.origin().GetURL()))
       ++count;
   }
 
@@ -175,17 +173,19 @@ size_t LocalSharedObjectsContainer::GetObjectCountForDomain(
 size_t LocalSharedObjectsContainer::GetDomainCount() const {
   std::set<base::StringPiece> hosts;
 
-  for (const auto& it : cookies()->origin_cookie_set_map()) {
-    for (const auto& cookie : *it.second) {
-      hosts.insert(cookie.Domain());
-    }
+  for (const auto& cookie : cookies()->origin_cookie_set()) {
+    hosts.insert(cookie.Domain());
   }
 
-  for (const auto& origin : local_storages()->GetOrigins())
-    hosts.insert(origin.host());
+  for (const auto& storage_key : local_storages()->GetStorageKeys()) {
+    // TODO(https://crbug.com/1199077): Use the real StorageKey once migrated.
+    hosts.insert(storage_key.origin().host());
+  }
 
-  for (const auto& origin : session_storages()->GetOrigins())
-    hosts.insert(origin.host());
+  for (const auto& storage_key : session_storages()->GetStorageKeys()) {
+    // TODO(https://crbug.com/1199077): Use the real StorageKey once migrated.
+    hosts.insert(storage_key.origin().host());
+  }
 
   for (const auto& storage_key : indexed_dbs()->GetStorageKeys()) {
     // TODO(https://crbug.com/1199077): Use the real StorageKey once migrated.

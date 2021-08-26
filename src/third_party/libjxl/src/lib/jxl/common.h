@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #ifndef LIB_JXL_COMMON_H_
 #define LIB_JXL_COMMON_H_
@@ -170,24 +161,9 @@ JXL_INLINE T Clamp1(T val, T low, T hi) {
   return val < low ? low : val > hi ? hi : val;
 }
 
-template <typename T>
-JXL_INLINE T ClampToRange(int64_t val) {
-  return Clamp1<int64_t>(val, std::numeric_limits<T>::min(),
-                         std::numeric_limits<T>::max());
-}
-
-template <typename T>
-JXL_INLINE T SaturatingMul(int64_t a, int64_t b) {
-  return ClampToRange<T>(a * b);
-}
-
-template <typename T>
-JXL_INLINE T SaturatingAdd(int64_t a, int64_t b) {
-  return ClampToRange<T>(a + b);
-}
-
 // Encodes non-negative (X) into (2 * X), negative (-X) into (2 * X - 1)
-constexpr uint32_t PackSigned(int32_t value) {
+constexpr uint32_t PackSigned(int32_t value)
+    JXL_NO_SANITIZE("unsigned-integer-overflow") {
   return (static_cast<uint32_t>(value) << 1) ^
          ((static_cast<uint32_t>(~value) >> 31) - 1);
 }

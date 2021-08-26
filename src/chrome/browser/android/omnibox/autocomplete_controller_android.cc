@@ -521,6 +521,7 @@ AutocompleteControllerAndroid::Factory::Factory()
     : BrowserContextKeyedServiceFactory(
           "AutocompleteControllerAndroid",
           BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(TemplateURLServiceFactory::GetInstance());
   DependsOn(ShortcutsBackendFactory::GetInstance());
 }
 
@@ -539,6 +540,8 @@ static ScopedJavaLocalRef<jobject> JNI_AutocompleteController_GetForProfile(
   AutocompleteControllerAndroid* native_bridge =
       AutocompleteControllerAndroid::Factory::GetForProfile(
           ProfileAndroid::FromProfileAndroid(jprofile));
+  if (!native_bridge)
+    return {};
   return native_bridge->GetJavaObject();
 }
 

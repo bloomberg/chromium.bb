@@ -16,9 +16,11 @@
 #define SRC_RESOLVER_RESOLVER_H_
 
 #include <memory>
+#include <set>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
 #include "src/intrinsic_table.h"
@@ -82,10 +84,6 @@ class Resolver {
   bool IsPlain(const sem::Type* type) const;
 
   /// @param type the given type
-  /// @returns true if the given type is a constructible type
-  bool IsConstructible(const sem::Type* type) const;
-
-  /// @param type the given type
   /// @returns true if the given type is storable
   bool IsStorable(const sem::Type* type) const;
 
@@ -105,7 +103,8 @@ class Resolver {
                  const std::string& type_name,
                  ast::StorageClass storage_class,
                  ast::Access ac,
-                 VariableKind k);
+                 VariableKind k,
+                 uint32_t idx);
     ~VariableInfo();
 
     ast::Variable const* const declaration;
@@ -116,12 +115,16 @@ class Resolver {
     std::vector<ast::IdentifierExpression*> users;
     sem::BindingPoint binding_point;
     VariableKind kind;
+    uint32_t index = 0;  // Parameter index, if kind == kParameter
   };
 
   struct IntrinsicCallInfo {
     const ast::CallExpression* call;
     const sem::Intrinsic* intrinsic;
   };
+
+  std::set<std::pair<const sem::Struct*, ast::StorageClass>>
+      valid_struct_storage_layouts_;
 
   /// Structure holding semantic information about a function.
   /// Used to build the sem::Function nodes at the end of resolving.
@@ -204,13 +207,6 @@ class Resolver {
     sem::Type* const sem;
   };
 
-  // Structure holding a pointer to the sem::Struct and an index to a member of
-  // that structure.
-  struct StructMember {
-    sem::Struct* structure;
-    size_t index;
-  };
-
   /// Resolves the program, without creating final the semantic nodes.
   /// @returns true on success, false on error
   bool ResolveInternal();
@@ -274,17 +270,26 @@ class Resolver {
                                      uint32_t el_align,
                                      const Source& source);
   bool ValidateAtomic(const ast::Atomic* a, const sem::Atomic* s);
-  bool ValidateAtomicUses();
+  bool ValidateAtomicVariable(const VariableInfo* info);
   bool ValidateAssignment(const ast::AssignmentStatement* a);
   bool ValidateBuiltinDecoration(const ast::BuiltinDecoration* deco,
                                  const sem::Type* storage_type,
-                                 const bool is_input = true);
+                                 const bool is_input,
+                                 const bool is_struct_member);
+  bool ValidateCall(ast::CallExpression* call);
   bool ValidateCallStatement(ast::CallStatement* stmt);
   bool ValidateEntryPoint(const ast::Function* func, const FunctionInfo* info);
   bool ValidateFunction(const ast::Function* func, const FunctionInfo* info);
+  bool ValidateFunctionCall(const ast::CallExpression* call,
+                            const FunctionInfo* info);
   bool ValidateGlobalVariable(const VariableInfo* var);
   bool ValidateInterpolateDecoration(const ast::InterpolateDecoration* deco,
                                      const sem::Type* storage_type);
+  bool ValidateLocationDecoration(const ast::LocationDecoration* location,
+                                  const sem::Type* type,
+                                  std::unordered_set<uint32_t>& locations,
+                                  const Source& source,
+                                  const bool is_input = false);
   bool ValidateMatrix(const sem::Matrix* ty, const Source& source);
   bool ValidateFunctionParameter(const ast::Function* func,
                                  const VariableInfo* info);
@@ -318,7 +323,13 @@ class Resolver {
   bool ValidateArrayConstructor(const ast::TypeConstructorExpression* ctor,
                                 const sem::Array* arr_type);
   bool ValidateTypeDecl(const ast::TypeDecl* named_type) const;
+  bool ValidateTextureIntrinsicFunction(const ast::CallExpression* ast_call,
+                                        const sem::Call* sem_call);
   bool ValidateNoDuplicateDecorations(const ast::DecorationList& decorations);
+  // sem::Struct is assumed to have at least one member
+  bool ValidateStorageClassLayout(const sem::Struct* type,
+                                  ast::StorageClass sc);
+  bool ValidateStorageClassLayout(const VariableInfo* info);
 
   /// @returns the sem::Type for the ast::Type `ty`, building it if it
   /// hasn't been constructed already. If an error is raised, nullptr is
@@ -350,7 +361,10 @@ class Resolver {
   /// context-dependent (global, local, parameter)
   /// @param var the variable to create or return the `VariableInfo` for
   /// @param kind what kind of variable we are declaring
-  VariableInfo* Variable(ast::Variable* var, VariableKind kind);
+  /// @param index the index of the parameter, if this variable is a parameter
+  VariableInfo* Variable(ast::Variable* var,
+                         VariableKind kind,
+                         uint32_t index = 0);
 
   /// Records the storage class usage for the given type, and any transient
   /// dependencies of the type. Validates that the type can be used for the
@@ -363,13 +377,6 @@ class Resolver {
   bool ApplyStorageClassUsageToType(ast::StorageClass sc,
                                     sem::Type* ty,
                                     const Source& usage);
-
-  /// @param align the output default alignment in bytes for the type `ty`
-  /// @param size the output default size in bytes for the type `ty`
-  /// @returns true on success, false on error
-  bool DefaultAlignAndSize(const sem::Type* ty,
-                           uint32_t& align,
-                           uint32_t& size);
 
   /// @param storage_class the storage class
   /// @returns the default access control for the given storage class
@@ -457,7 +464,7 @@ class Resolver {
   ScopeStack<VariableInfo*> variable_stack_;
   std::unordered_map<Symbol, FunctionInfo*> symbol_to_function_;
   std::vector<FunctionInfo*> entry_points_;
-  std::vector<StructMember> atomic_members_;
+  std::unordered_map<const sem::Type*, const Source&> atomic_composite_info_;
   std::unordered_map<const ast::Function*, FunctionInfo*> function_to_info_;
   std::unordered_map<const ast::Variable*, VariableInfo*> variable_to_info_;
   std::unordered_map<const ast::CallExpression*, FunctionCallInfo>

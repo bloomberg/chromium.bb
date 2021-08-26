@@ -88,6 +88,8 @@
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if defined(OS_WIN)
+#include "mojo/public/cpp/system/platform_handle.h"
+#include "ui/gl/dcomp_surface_registry.h"
 #include "ui/gl/direct_composition_surface_win.h"
 #endif
 
@@ -595,12 +597,10 @@ void GpuServiceImpl::InitializeWithHost(
 
   media_gpu_channel_manager_ = std::make_unique<media::MediaGpuChannelManager>(
       gpu_channel_manager_.get());
-  if (watchdog_thread())
-    watchdog_thread()->AddPowerObserver();
 
   // Create and Initialize compositor gpu thread.
-  compositor_gpu_thread_ =
-      CompositorGpuThread::Create(gpu_channel_manager_.get());
+  compositor_gpu_thread_ = CompositorGpuThread::Create(
+      gpu_channel_manager_.get(), !!watchdog_thread_);
 }
 
 void GpuServiceImpl::Bind(
@@ -756,6 +756,22 @@ void GpuServiceImpl::CreateJpegEncodeAccelerator(
       std::move(jea_receiver));
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if defined(OS_WIN)
+void GpuServiceImpl::RegisterDCOMPSurfaceHandle(
+    mojo::PlatformHandle surface_handle,
+    RegisterDCOMPSurfaceHandleCallback callback) {
+  auto token =
+      gl::DCOMPSurfaceRegistry::GetInstance()->RegisterDCOMPSurfaceHandle(
+          surface_handle.TakeHandle());
+  std::move(callback).Run(token);
+}
+
+void GpuServiceImpl::UnregisterDCOMPSurfaceHandle(
+    const base::UnguessableToken& token) {
+  gl::DCOMPSurfaceRegistry::GetInstance()->UnregisterDCOMPSurfaceHandle(token);
+}
+#endif  // defined(OS_WIN)
 
 void GpuServiceImpl::CreateVideoEncodeAcceleratorProvider(
     mojo::PendingReceiver<media::mojom::VideoEncodeAcceleratorProvider>
@@ -1139,6 +1155,8 @@ void GpuServiceImpl::OnBackgrounded() {
   DCHECK(io_runner_->BelongsToCurrentThread());
   if (watchdog_thread_)
     watchdog_thread_->OnBackgrounded();
+  if (compositor_gpu_thread_)
+    compositor_gpu_thread_->OnBackgrounded();
 
   main_runner_->PostTask(
       FROM_HERE,
@@ -1148,14 +1166,21 @@ void GpuServiceImpl::OnBackgrounded() {
 void GpuServiceImpl::OnBackgroundedOnMainThread() {
   gpu_channel_manager_->OnApplicationBackgrounded();
 
-  if (visibility_changed_callback_)
+  if (visibility_changed_callback_) {
     visibility_changed_callback_.Run(false);
+    if (gpu_preferences_.enable_gpu_benchmarking_extension) {
+      ++gpu_info_.visibility_callback_call_count;
+      UpdateGPUInfoGL();
+    }
+  }
 }
 
 void GpuServiceImpl::OnForegrounded() {
   DCHECK(io_runner_->BelongsToCurrentThread());
   if (watchdog_thread_)
     watchdog_thread_->OnForegrounded();
+  if (compositor_gpu_thread_)
+    compositor_gpu_thread_->OnForegrounded();
 
   main_runner_->PostTask(
       FROM_HERE,
@@ -1163,8 +1188,13 @@ void GpuServiceImpl::OnForegrounded() {
 }
 
 void GpuServiceImpl::OnForegroundedOnMainThread() {
-  if (visibility_changed_callback_)
+  if (visibility_changed_callback_) {
     visibility_changed_callback_.Run(true);
+    if (gpu_preferences_.enable_gpu_benchmarking_extension) {
+      ++gpu_info_.visibility_callback_call_count;
+      UpdateGPUInfoGL();
+    }
+  }
 }
 
 #if !defined(OS_ANDROID)

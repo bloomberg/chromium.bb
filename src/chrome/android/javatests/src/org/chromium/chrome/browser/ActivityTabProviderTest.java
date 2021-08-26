@@ -8,7 +8,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.SmallTest;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -69,6 +70,11 @@ public class ActivityTabProviderTest {
         @Override
         protected void removeObserverFromTabProvider() {
             TestThreadUtils.runOnUiThreadBlocking(super::removeObserverFromTabProvider);
+        }
+
+        @Override
+        public void destroy() {
+            TestThreadUtils.runOnUiThreadBlocking(super::destroy);
         }
     }
 

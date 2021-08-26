@@ -84,6 +84,9 @@ steps = {
                                 "ensure_remote"]) },
 
   # TODO(liberato): consider moving the "if needed" to |req_fn|.
+  "erase_build_output":
+    { "desc": "Once, at the start of the merge, delete build_ffmpeg output.",
+      "do_fn": robo_build.ObliterateOldBuildOutputIfNeeded },
   "create_sushi_branch":
       { "desc": "Create a sushi-MDY branch if we're not on one",
         "do_fn": robo_branch.CreateAndCheckoutDatedSushiBranchIfNeeded },
@@ -127,7 +130,8 @@ steps = {
 
   # Roll-up for --auto-merge
   "auto-merge":
-      { "do_fn": lambda cfg : RunSteps(cfg, [ "create_sushi_branch",
+      { "do_fn": lambda cfg : RunSteps(cfg, [ "erase_build_output",
+                                              "create_sushi_branch",
                                               "merge_from_upstream",
                                               "push_merge_to_origin",
                                               "build_gn_configs",

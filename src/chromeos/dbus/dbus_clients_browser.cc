@@ -27,27 +27,27 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 #include "chromeos/dbus/debug_daemon/fake_debug_daemon_client.h"
-#include "chromeos/dbus/easy_unlock_client.h"
-#include "chromeos/dbus/fake_easy_unlock_client.h"
-#include "chromeos/dbus/fake_gnubby_client.h"
-#include "chromeos/dbus/fake_image_burner_client.h"
-#include "chromeos/dbus/fake_image_loader_client.h"
-#include "chromeos/dbus/fake_oobe_configuration_client.h"
-#include "chromeos/dbus/fake_runtime_probe_client.h"
-#include "chromeos/dbus/fake_smb_provider_client.h"
-#include "chromeos/dbus/fake_virtual_file_provider_client.h"
-#include "chromeos/dbus/fake_vm_plugin_dispatcher_client.h"
-#include "chromeos/dbus/gnubby_client.h"
-#include "chromeos/dbus/image_burner_client.h"
-#include "chromeos/dbus/image_loader_client.h"
+#include "chromeos/dbus/easy_unlock/easy_unlock_client.h"
+#include "chromeos/dbus/easy_unlock/fake_easy_unlock_client.h"
+#include "chromeos/dbus/gnubby/fake_gnubby_client.h"
+#include "chromeos/dbus/gnubby/gnubby_client.h"
+#include "chromeos/dbus/image_burner/fake_image_burner_client.h"
+#include "chromeos/dbus/image_burner/image_burner_client.h"
+#include "chromeos/dbus/image_loader/fake_image_loader_client.h"
+#include "chromeos/dbus/image_loader/image_loader_client.h"
 #include "chromeos/dbus/lorgnette_manager/fake_lorgnette_manager_client.h"
 #include "chromeos/dbus/lorgnette_manager/lorgnette_manager_client.h"
-#include "chromeos/dbus/oobe_configuration_client.h"
-#include "chromeos/dbus/runtime_probe_client.h"
-#include "chromeos/dbus/smb_provider_client.h"
-#include "chromeos/dbus/update_engine_client.h"
-#include "chromeos/dbus/virtual_file_provider_client.h"
-#include "chromeos/dbus/vm_plugin_dispatcher_client.h"
+#include "chromeos/dbus/oobe_config/fake_oobe_configuration_client.h"
+#include "chromeos/dbus/oobe_config/oobe_configuration_client.h"
+#include "chromeos/dbus/runtime_probe/fake_runtime_probe_client.h"
+#include "chromeos/dbus/runtime_probe/runtime_probe_client.h"
+#include "chromeos/dbus/smbprovider/fake_smb_provider_client.h"
+#include "chromeos/dbus/smbprovider/smb_provider_client.h"
+#include "chromeos/dbus/update_engine/update_engine_client.h"
+#include "chromeos/dbus/virtual_file_provider/fake_virtual_file_provider_client.h"
+#include "chromeos/dbus/virtual_file_provider/virtual_file_provider_client.h"
+#include "chromeos/dbus/vm_plugin_dispatcher/fake_vm_plugin_dispatcher_client.h"
+#include "chromeos/dbus/vm_plugin_dispatcher/vm_plugin_dispatcher_client.h"
 
 namespace chromeos {
 
@@ -101,7 +101,12 @@ DBusClientsBrowser::DBusClientsBrowser(bool use_real_clients) {
       CREATE_DBUS_CLIENT(RuntimeProbeClient, use_real_clients);
   smb_provider_client_ =
       CREATE_DBUS_CLIENT(SmbProviderClient, use_real_clients);
+
+  // TODO(crbug.com/1229048): Resolve among the 3 implementations of
+  // UpdateEngineClient and use CREATE_DBUS_CLIENT, or comment on why this
+  // special case (that doesn't use CREATE_DBUS_CLIENT) exists.
   update_engine_client_.reset(UpdateEngineClient::Create(client_impl_type));
+
   virtual_file_provider_client_ =
       CREATE_DBUS_CLIENT(VirtualFileProviderClient, use_real_clients);
   vm_plugin_dispatcher_client_ =

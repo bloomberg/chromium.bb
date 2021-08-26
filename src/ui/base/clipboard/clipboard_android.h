@@ -18,6 +18,8 @@
 
 namespace ui {
 
+// Documentation on the underlying Android API this ultimately abstracts is
+// available at https://developer.android.com/guide/topics/text/copy-paste.
 class ClipboardAndroid : public Clipboard {
  public:
   // Callback called whenever the clipboard is modified.  The parameter
@@ -61,7 +63,8 @@ class ClipboardAndroid : public Clipboard {
   // Clipboard overrides:
   void OnPreShutdown() override;
   DataTransferEndpoint* GetSource(ClipboardBuffer buffer) const override;
-  uint64_t GetSequenceNumber(ClipboardBuffer buffer) const override;
+  const ClipboardSequenceNumberToken& GetSequenceNumber(
+      ClipboardBuffer buffer) const override;
   bool IsFormatAvailable(const ClipboardFormatType& format,
                          ClipboardBuffer buffer,
                          const DataTransferEndpoint* data_dst) const override;

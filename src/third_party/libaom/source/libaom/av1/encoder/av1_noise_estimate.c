@@ -184,9 +184,6 @@ void av1_update_noise_estimate(AV1_COMP *const cpi) {
     const int src_ystride = cpi->source->y_stride;
     const uint8_t *last_src_y = last_source->y_buffer;
     const int last_src_ystride = last_source->y_stride;
-    const uint8_t *src_u = cpi->source->u_buffer;
-    const uint8_t *src_v = cpi->source->v_buffer;
-    const int src_uvstride = cpi->source->uv_stride;
     int mi_row, mi_col;
     int num_low_motion = 0;
     int frame_low_motion = 1;
@@ -238,13 +235,9 @@ void av1_update_noise_estimate(AV1_COMP *const cpi) {
         }
         src_y += 4;
         last_src_y += 4;
-        src_u += 2;
-        src_v += 2;
       }
       src_y += (src_ystride << 2) - (mi_params->mi_cols << 2);
       last_src_y += (last_src_ystride << 2) - (mi_params->mi_cols << 2);
-      src_u += (src_uvstride << 1) - (mi_params->mi_cols << 1);
-      src_v += (src_uvstride << 1) - (mi_params->mi_cols << 1);
     }
     ne->last_w = cm->width;
     ne->last_h = cm->height;

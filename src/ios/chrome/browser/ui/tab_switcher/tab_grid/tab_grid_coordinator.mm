@@ -24,6 +24,7 @@
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_interaction_controller.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
+#import "ios/chrome/browser/ui/commands/bookmarks_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/browsing_data_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
@@ -164,6 +165,7 @@
                      forProtocol:@protocol(ApplicationSettingsCommands)];
     [_dispatcher startDispatchingToTarget:browsingDataCommandEndpoint
                               forProtocol:@protocol(BrowsingDataCommands)];
+
     _regularBrowser = regularBrowser;
     _incognitoBrowser = incognitoBrowser;
 
@@ -250,6 +252,8 @@
 - (void)stopChildCoordinatorsWithCompletion:(ProceduralBlock)completion {
   // A modal may be presented on top of the Recent Tabs or tab grid.
   [self.baseViewController dismissModals];
+  self.baseViewController.tabGridMode = TabGridModeNormal;
+
   [self.actionSheetCoordinator stop];
   self.actionSheetCoordinator = nil;
   [self.sharingCoordinator stop];
@@ -328,8 +332,6 @@
     // incognito (crbug.com/1136882).
     TabGridPage currentActivePage = self.baseViewController.activePage;
     dispatch_async(dispatch_get_main_queue(), ^{
-      self.baseViewController.childViewControllerForStatusBarStyle = nil;
-
       self.transitionHandler = [[TabGridTransitionHandler alloc]
           initWithLayoutProvider:self.baseViewController];
       self.transitionHandler.animationDisabled = !animated;
@@ -341,6 +343,13 @@
                    self.bvcContainer = nil;
                    [self.baseViewController contentDidAppear];
                  }];
+
+      // On iOS 15+, snapshotting views with afterScreenUpdates:YES waits 0.5s
+      // for the status bar style to update. Work around that delay by taking
+      // the snapshot first (during
+      // |transitionFromBrowser:toTabGrid:activePage:withCompletion|) and then
+      // updating the status bar style afterwards.
+      self.baseViewController.childViewControllerForStatusBarStyle = nil;
     });
   }
   self.tabGridEnterTime = base::TimeTicks::Now();
@@ -432,9 +441,6 @@
     self.firstPresentation = NO;
   };
 
-  self.baseViewController.childViewControllerForStatusBarStyle =
-      self.bvcContainer.currentBVC;
-
   [self.baseViewController contentWillDisappearAnimated:animated];
 
   self.transitionHandler = [[TabGridTransitionHandler alloc]
@@ -447,6 +453,14 @@
              withCompletion:^{
                extendedCompletion();
              }];
+
+  // On iOS 15+, snapshotting views with afterScreenUpdates:YES waits 0.5s for
+  // the status bar style to update. Work around that delay by taking the
+  // snapshot first (during
+  // |transitionFromTabGrid:toBrowser:activePage:withCompletion|) and then
+  // updating the status bar style afterwards.
+  self.baseViewController.childViewControllerForStatusBarStyle =
+      self.bvcContainer.currentBVC;
 }
 
 #pragma mark - Private
@@ -677,6 +691,13 @@
                                                      delegate:self];
   [self.incognitoSnackbarCoordinator start];
 
+  [_regularBrowser->GetCommandDispatcher()
+      startDispatchingToTarget:[self bookmarkInteractionController]
+                   forProtocol:@protocol(BookmarksCommands)];
+  [_incognitoBrowser->GetCommandDispatcher()
+      startDispatchingToTarget:[self bookmarkInteractionController]
+                   forProtocol:@protocol(BookmarksCommands)];
+
   SceneState* sceneState =
       SceneStateBrowserAgent::FromBrowser(self.regularBrowser)->GetSceneState();
   [sceneState addObserver:self];
@@ -716,6 +737,7 @@
   // TODO(crbug.com/845192) : RecentTabsTableViewController behaves like a
   // coordinator and that should be factored out.
   [self.baseViewController.remoteTabsViewController dismissModals];
+  self.baseViewController.remoteTabsViewController.browser = nil;
   [self.remoteTabsMediator disconnect];
   self.remoteTabsMediator = nil;
   [self.actionSheetCoordinator stop];
@@ -1014,6 +1036,12 @@
   } else {
     [self.regularTabsMediator closeItemWithID:identifier];
   }
+}
+
+- (void)selectTabs {
+  base::RecordAction(
+      base::UserMetricsAction("MobileTabGridTabContextMenuSelectTabs"));
+  self.baseViewController.tabGridMode = TabGridModeSelection;
 }
 
 - (void)removeSessionAtTableSectionWithIdentifier:(NSInteger)sectionIdentifier {

@@ -6,12 +6,15 @@
 
 #include "core/fxge/dib/cfx_dibitmap.h"
 
+#include <string.h>
+
 #include <limits>
 #include <memory>
 #include <utility>
 #include <vector>
 
 #include "build/build_config.h"
+#include "core/fxcrt/fx_coordinates.h"
 #include "core/fxcrt/fx_safe_types.h"
 #include "core/fxge/cfx_cliprgn.h"
 #include "core/fxge/dib/cfx_scanlinecompositor.h"

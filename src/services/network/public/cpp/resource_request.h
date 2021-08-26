@@ -25,6 +25,7 @@
 #include "services/network/public/mojom/client_security_state.mojom.h"
 #include "services/network/public/mojom/cookie_access_observer.mojom-forward.h"
 #include "services/network/public/mojom/cors.mojom-shared.h"
+#include "services/network/public/mojom/devtools_observer.mojom-forward.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "services/network/public/mojom/trust_tokens.mojom.h"
@@ -149,7 +150,6 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   bool do_not_prompt_for_login = false;
   bool is_main_frame = false;
   int transition_type = 0;
-  bool report_raw_headers = false;
   int previews_state = 0;
   bool upgrade_if_insecure = false;
   bool is_revalidating = false;

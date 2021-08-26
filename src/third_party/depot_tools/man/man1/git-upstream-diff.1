@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: git-upstream-diff
-.\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 08/10/2020
+.\"    Author: [FIXME: author] [see http://www.docbook.org/tdg5/en/html/author]
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 07/01/2021
 .\"    Manual: Chromium depot_tools Manual
-.\"    Source: depot_tools 8c3f7227
+.\"    Source: depot_tools 906b5026
 .\"  Language: English
 .\"
-.TH "GIT\-UPSTREAM\-DIFF" "1" "08/10/2020" "depot_tools 8c3f7227" "Chromium depot_tools Manual"
+.TH "GIT\-UPSTREAM\-DIFF" "1" "07/01/2021" "depot_tools 906b5026" "Chromium depot_tools Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -50,18 +50,18 @@ git diff \-\-patience \-C \-C branch@{upstream}  \fB(1)\fR \fB(2)\fR
 .\}
 .sp
 .sp
-\fB1. \fR\-C \-C
+\fB1. \fR\fB\-C \-C\fR
 detects file copies/renames
 .br
-\fB2. \fR\-\-patience
+\fB2. \fR\fB\-\-patience\fR
 uses the patience\-diff algorithm, which tends to produce nicer diffs in many cases\&.
 .br
 .sp
-The difference is that branch@{upstream} is actually the tagged merge base of your branch (See \fBgit-rebase-update\fR(1))\&. This means that if your upstream branch was rebased, but you haven\(cqt yet rebased the current branch on top of it, you\(cqll still see an accurate diff compared to just diffing against @{upstream}\&.
+The difference is that \fBbranch@{upstream}\fR is actually the tagged merge base of your branch (See \fBgit-rebase-update\fR(1))\&. This means that if your upstream branch was rebased, but you haven\(cqt yet rebased the current branch on top of it, you\(cqll still see an accurate diff compared to just diffing against \fB@{upstream}\fR\&.
 .sp
-The \-\-wordwise option also allows git\-diff to do word\-by\-word comparison in a semi\-intelligent way\&. However, sometimes it can produce surprising results, so it is disabled by default\&.
+The \fB\-\-wordwise\fR option also allows \fBgit\-diff\fR to do word\-by\-word comparison in a semi\-intelligent way\&. However, sometimes it can produce surprising results, so it is disabled by default\&.
 .sp
-Since any additional options are passed through to git\-diff unchanged, you can use this as a general replacement for git diff for things like:
+Since any additional options are passed through to git\-diff unchanged, you can use this as a general replacement for \fBgit diff\fR for things like:
 .sp
 .if n \{\
 .RS 4
@@ -97,25 +97,25 @@ Show a diff between the specified branch and its upstream, instead of using the 
 .RS 4
 Extra arguments are included in the invocation of
 \fBgit-diff\fR(1)\&. These can be anything that
-git\-diff
+\fBgit\-diff\fR
 normally takes\&.
 .PP
-\-\-stat
+\fB\-\-stat\fR
 .RS 4
 This is particularly useful to show
 \fIwhich\fR
 files have been changed in comparison to the upstream branch\&.
 .RE
 .PP
-\-\-staged
+\fB\-\-staged\fR
 .RS 4
 Diff against the staged (cached) changes, instead of against the working directory\&. This is
 \fIsubstantially\fR
 faster on large repos, but doesn\(cqt take into account unstaged changes (i\&.e\&. changes in your working copy which you haven\(cqt staged with
-git add)\&.
+\fBgit add\fR)\&.
 .RE
 .PP
-\-\- <filename patterns>*
+\fB\-\- <filename patterns>*\fR
 .RS 4
 Restrict the diff to only show the diff for given files compared to the upstream\&.
 .RE
@@ -123,7 +123,7 @@ Restrict the diff to only show the diff for given files compared to the upstream
 .SH "CONFIGURATION VARIABLES"
 .SS "depot\-tools\&.upstream\-diff\&.default\-args"
 .sp
-A list\-configuration variable\&. Each instance of this config variable will be prepended to all invocations of git upstream\-diff, as if you had passed them on the command line\&.
+A list\-configuration variable\&. Each instance of this config variable will be prepended to all invocations of \fBgit upstream\-diff\fR, as if you had passed them on the command line\&.
 .SH "SUGGESTED ALIASES"
 .sp
 Some common short\-hand aliases\&. Feel free to add these to your \fI~/\&.gitconfig\fR file\&.

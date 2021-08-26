@@ -20,6 +20,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "url/origin.h"
 
 namespace content {
@@ -415,10 +416,6 @@ void IdpNetworkRequestManager::OnWellKnownParsed(
 
 void IdpNetworkRequestManager::OnSigninRequestResponse(
     std::unique_ptr<std::string> response_body) {
-  int response_code = -1;
-  if (url_loader_->ResponseInfo() && url_loader_->ResponseInfo()->headers)
-    response_code = url_loader_->ResponseInfo()->headers->response_code();
-
   url_loader_.reset();
 
   if (!response_body) {
@@ -477,10 +474,6 @@ void IdpNetworkRequestManager::OnSigninRequestParsed(
 
 void IdpNetworkRequestManager::OnAccountsRequestResponse(
     std::unique_ptr<std::string> response_body) {
-  int response_code = -1;
-  if (url_loader_->ResponseInfo() && url_loader_->ResponseInfo()->headers)
-    response_code = url_loader_->ResponseInfo()->headers->response_code();
-
   url_loader_.reset();
 
   if (!response_body) {
@@ -521,15 +514,11 @@ void IdpNetworkRequestManager::OnAccountsRequestParsed(
     return;
   }
   std::move(accounts_request_callback_)
-      .Run(AccountsResponse::kSuccess, account_list);
+      .Run(AccountsResponse::kSuccess, std::move(account_list));
 }
 
 void IdpNetworkRequestManager::OnTokenRequestResponse(
     std::unique_ptr<std::string> response_body) {
-  int response_code = -1;
-  if (url_loader_->ResponseInfo() && url_loader_->ResponseInfo()->headers)
-    response_code = url_loader_->ResponseInfo()->headers->response_code();
-
   url_loader_.reset();
 
   if (!response_body) {
@@ -574,10 +563,6 @@ void IdpNetworkRequestManager::OnTokenRequestParsed(
 
 void IdpNetworkRequestManager::OnLogoutCompleted(
     std::unique_ptr<std::string> response_body) {
-  int response_code = -1;
-  if (url_loader_->ResponseInfo() && url_loader_->ResponseInfo()->headers)
-    response_code = url_loader_->ResponseInfo()->headers->response_code();
-
   url_loader_.reset();
 
   if (!response_body) {

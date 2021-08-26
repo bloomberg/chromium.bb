@@ -10,6 +10,7 @@
 
 #include "ash/public/cpp/ash_typography.h"
 #include "ash/public/cpp/tablet_mode.h"
+#include "base/cxx17_backports.h"
 #include "base/i18n/rtl.h"
 #include "base/scoped_observation.h"
 #include "base/time/time.h"
@@ -248,7 +249,7 @@ void SharesheetBubbleView::ShowBubble(
   UpdateAnchorPosition();
 }
 
-void SharesheetBubbleView::ShowNearbyShareBubble(
+void SharesheetBubbleView::ShowNearbyShareBubbleForArc(
     apps::mojom::IntentPtr intent,
     ::sharesheet::DeliveredCallback delivered_callback,
     ::sharesheet::CloseCallback close_callback) {
@@ -510,7 +511,7 @@ bool SharesheetBubbleView::OnKeyPressed(const ui::KeyEvent& event) {
       (show_expanded_view_ ? (expanded_view_->children().size() - 1) : 0);
   const int new_target = static_cast<int>(keyboard_highlighted_target_) + delta;
   keyboard_highlighted_target_ = static_cast<size_t>(
-      base::ClampToRange(new_target, 0, static_cast<int>(targets) - 1));
+      base::clamp(new_target, 0, static_cast<int>(targets) - 1));
 
   if (keyboard_highlighted_target_ < default_views) {
     default_view_->children()[keyboard_highlighted_target_]->RequestFocus();

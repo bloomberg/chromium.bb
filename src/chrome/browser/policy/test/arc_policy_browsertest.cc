@@ -4,7 +4,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
-#include "chrome/browser/ash/policy/handlers/configuration_policy_handler_chromeos.h"
+#include "chrome/browser/ash/policy/handlers/configuration_policy_handler_ash.h"
 #include "chrome/browser/policy/policy_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -20,8 +20,10 @@ namespace policy {
 
 class ArcPolicyTest : public PolicyTest {
  public:
-  ArcPolicyTest() {}
-  ~ArcPolicyTest() override {}
+  ArcPolicyTest() = default;
+  ArcPolicyTest(const ArcPolicyTest&) = delete;
+  ArcPolicyTest& operator=(const ArcPolicyTest&) = delete;
+  ~ArcPolicyTest() override = default;
 
  protected:
   void SetUpOnMainThread() override {
@@ -57,9 +59,6 @@ class ArcPolicyTest : public PolicyTest {
       EXPECT_EQ(prefs->GetBoolean(arc::prefs::kArcEnabled), enabled);
     }
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ArcPolicyTest);
 };
 
 // Test ArcEnabled policy.

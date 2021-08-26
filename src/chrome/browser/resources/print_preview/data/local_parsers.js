@@ -7,9 +7,6 @@ import {isChromeOS, isLacros} from 'chrome://resources/js/cr.m.js';
 
 import {Destination, DestinationConnectionStatus, DestinationOrigin, DestinationProvisionalType, DestinationType} from './destination.js';
 import {PrinterType} from './destination_match.js';
-// <if expr="chromeos or lacros">
-import {DestinationPolicies} from './destination_policies.js';
-// </if>
 
 /**
  * @typedef {{
@@ -18,7 +15,6 @@ import {DestinationPolicies} from './destination_policies.js';
  *   printerDescription: (string | undefined),
  *   cupsEnterprisePrinter: (boolean | undefined),
  *   printerOptions: (Object | undefined),
- *   policies: (DestinationPolicies | undefined),
  * }}
  */
 export let LocalDestinationInfo;
@@ -54,7 +50,6 @@ export let ProvisionalDestinationInfo;
  *        !ProvisionalDestinationInfo} printer Information
  *     about the printer. Type expected depends on |type|:
  *       For LOCAL_PRINTER => LocalDestinationInfo
- *       For PRIVET_PRINTER => PrivetPrinterDescription
  *       For EXTENSION_PRINTER => ProvisionalDestinationInfo
  * @return {?Destination} Only returns null if an invalid value
  *     is provided for |type|.
@@ -63,10 +58,6 @@ export function parseDestination(type, printer) {
   if (type === PrinterType.LOCAL_PRINTER) {
     return parseLocalDestination(
         /** @type {!LocalDestinationInfo} */ (printer));
-  }
-  if (type === PrinterType.PRIVET_PRINTER) {
-    return parsePrivetDestination(
-        /** @type {!PrivetPrinterDescription} */ (printer));
   }
   if (type === PrinterType.EXTENSION_PRINTER) {
     return parseExtensionDestination(
@@ -86,7 +77,6 @@ function parseLocalDestination(destinationInfo) {
   const options = {
     description: destinationInfo.printerDescription,
     isEnterprisePrinter: destinationInfo.cupsEnterprisePrinter,
-    policies: destinationInfo.policies,
   };
   if (destinationInfo.printerOptions) {
     // Convert options into cloud print tags format.
@@ -100,19 +90,6 @@ function parseLocalDestination(destinationInfo) {
       (isChromeOS || isLacros) ? DestinationOrigin.CROS :
                                  DestinationOrigin.LOCAL,
       destinationInfo.printerName, DestinationConnectionStatus.ONLINE, options);
-}
-
-/**
- * Parses a privet destination as a local printer.
- * @param {!PrivetPrinterDescription} destinationInfo Object
- *     that describes a privet printer.
- * @return {!Destination} Parsed destination info.
- */
-function parsePrivetDestination(destinationInfo) {
-  return new Destination(
-      destinationInfo.serviceName, DestinationType.LOCAL,
-      DestinationOrigin.PRIVET, destinationInfo.name,
-      DestinationConnectionStatus.ONLINE, {cloudID: destinationInfo.cloudID});
 }
 
 /**

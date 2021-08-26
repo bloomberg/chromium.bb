@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #include "lib/extras/codec_jpg.h"
 
@@ -30,9 +21,9 @@
 #include <utility>
 #include <vector>
 
+#include "lib/extras/time.h"
 #include "lib/jxl/base/compiler_specific.h"
 #include "lib/jxl/base/status.h"
-#include "lib/jxl/base/time.h"
 #include "lib/jxl/color_encoding_internal.h"
 #include "lib/jxl/color_management.h"
 #include "lib/jxl/common.h"
@@ -43,12 +34,9 @@
 #include "lib/jxl/jpeg/enc_jpeg_data.h"
 #include "lib/jxl/jpeg/enc_jpeg_data_reader.h"
 #include "lib/jxl/luminance.h"
+#include "lib/jxl/sanitizers.h"
 #if JPEGXL_ENABLE_SJPEG
 #include "sjpeg.h"
-#endif
-
-#ifdef MEMORY_SANITIZER
-#include "sanitizer/msan_interface.h"
 #endif
 
 namespace jxl {
@@ -95,12 +83,10 @@ Status ReadICCProfile(jpeg_decompress_struct* const cinfo,
   bool has_num_markers = false;
   for (jpeg_saved_marker_ptr marker = cinfo->marker_list; marker != nullptr;
        marker = marker->next) {
-#ifdef MEMORY_SANITIZER
     // marker is initialized by libjpeg, which we are not instrumenting with
     // msan.
-    __msan_unpoison(marker, sizeof(*marker));
-    __msan_unpoison(marker->data, marker->data_length);
-#endif
+    msan::UnpoisonMemory(marker, sizeof(*marker));
+    msan::UnpoisonMemory(marker->data, marker->data_length);
     if (!MarkerIsICC(marker)) continue;
 
     const int current_marker = marker->data[kICCSignatureSize];
@@ -166,12 +152,10 @@ void ReadExif(jpeg_decompress_struct* const cinfo, PaddedBytes* const exif) {
   constexpr size_t kExifSignatureSize = sizeof kExifSignature;
   for (jpeg_saved_marker_ptr marker = cinfo->marker_list; marker != nullptr;
        marker = marker->next) {
-#ifdef MEMORY_SANITIZER
     // marker is initialized by libjpeg, which we are not instrumenting with
     // msan.
-    __msan_unpoison(marker, sizeof(*marker));
-    __msan_unpoison(marker->data, marker->data_length);
-#endif
+    msan::UnpoisonMemory(marker, sizeof(*marker));
+    msan::UnpoisonMemory(marker->data, marker->data_length);
     if (!MarkerIsExif(marker)) continue;
     size_t marker_length = marker->data_length - kExifSignatureSize;
     exif->resize(marker_length);
@@ -339,10 +323,9 @@ Status DecodeImageJPG(const Span<const uint8_t> bytes, ThreadPool* pool,
     for (size_t y = 0; y < image.ysize(); ++y) {
       JSAMPROW rows[] = {row.get()};
       jpeg_read_scanlines(&cinfo, rows, 1);
-#ifdef MEMORY_SANITIZER
-      __msan_unpoison(row.get(), sizeof(JSAMPLE) * cinfo.output_components *
-                                     cinfo.image_width);
-#endif
+      msan::UnpoisonMemory(
+          row.get(),
+          sizeof(JSAMPLE) * cinfo.output_components * cinfo.image_width);
       auto start = Now();
       float* const JXL_RESTRICT output_row[] = {
           image.PlaneRow(0, y), image.PlaneRow(1, y), image.PlaneRow(2, y)};
@@ -372,7 +355,7 @@ Status DecodeImageJPG(const Span<const uint8_t> bytes, ThreadPool* pool,
   };
 
   return try_catch_block();
-#else  // JPEGXL_ENABLE_JPEG
+#else   // JPEGXL_ENABLE_JPEG
   return JXL_FAILURE("JPEG decoding not enabled at build time.");
 #endif  // JPEGXL_ENABLE_JPEG
 }
@@ -383,11 +366,9 @@ Status EncodeWithLibJpeg(const ImageBundle* ib, const CodecInOut* io,
                          const YCbCrChromaSubsampling& chroma_subsampling,
                          PaddedBytes* bytes) {
   jpeg_compress_struct cinfo;
-#ifdef MEMORY_SANITIZER
   // cinfo is initialized by libjpeg, which we are not instrumenting with
   // msan.
-  __msan_unpoison(&cinfo, sizeof(cinfo));
-#endif
+  msan::UnpoisonMemory(&cinfo, sizeof(cinfo));
   jpeg_error_mgr jerr;
   cinfo.err = jpeg_std_error(&jerr);
   jpeg_create_compress(&cinfo);
@@ -438,11 +419,9 @@ Status EncodeWithLibJpeg(const ImageBundle* ib, const CodecInOut* io,
   jpeg_finish_compress(&cinfo);
   jpeg_destroy_compress(&cinfo);
   bytes->resize(size);
-#ifdef MEMORY_SANITIZER
   // Compressed image data is initialized by libjpeg, which we are not
   // instrumenting with msan.
-  __msan_unpoison(buffer, size);
-#endif
+  msan::UnpoisonMemory(buffer, size);
   std::copy_n(buffer, size, bytes->data());
   std::free(buffer);
   return true;
@@ -532,7 +511,7 @@ Status EncodeImageJPG(const CodecInOut* io, JpegEncoder encoder, size_t quality,
   }
 
   return true;
-#else  // JPEGXL_ENABLE_JPEG
+#else   // JPEGXL_ENABLE_JPEG
   return JXL_FAILURE("JPEG pixel encoding not enabled at build time");
 #endif  // JPEGXL_ENABLE_JPEG
 }

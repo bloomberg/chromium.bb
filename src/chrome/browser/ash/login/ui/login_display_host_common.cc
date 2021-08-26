@@ -23,7 +23,7 @@
 #include "chrome/browser/ash/login/ui/signin_ui.h"
 #include "chrome/browser/ash/login/ui/webui_accelerator_mapping.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
-#include "chrome/browser/ash/policy/core/browser_policy_connector_chromeos.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/system/device_disabling_manager.h"
 #include "chrome/browser/browser_process.h"
@@ -51,7 +51,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_features.h"
 
-namespace chromeos {
+namespace ash {
 namespace {
 
 // The delay of triggering initialization of the device policy subsystem
@@ -130,13 +130,13 @@ int ErrorToMessageId(SigninError error) {
       return IDS_LOGIN_ERROR_OWNER_REQUIRED;
     case SigninError::kTpmUpdateRequired:
       return IDS_LOGIN_ERROR_TPM_UPDATE_REQUIRED;
-    case SigninError::kAuthenticationError:
+    case SigninError::kKnownUserFailedNetworkNotConnected:
       return IDS_LOGIN_ERROR_AUTHENTICATING;
-    case SigninError::kOfflineFailedNetworkNotConnected:
+    case SigninError::kNewUserFailedNetworkNotConnected:
       return IDS_LOGIN_ERROR_OFFLINE_FAILED_NETWORK_NOT_CONNECTED;
-    case SigninError::kAuthenticatingNew:
+    case SigninError::kNewUserFailedNetworkConnected:
       return IDS_LOGIN_ERROR_AUTHENTICATING_NEW;
-    case SigninError::kAuthenticating:
+    case SigninError::kKnownUserFailedNetworkConnected:
       return IDS_LOGIN_ERROR_AUTHENTICATING;
     case SigninError::kOwnerKeyLost:
       return IDS_LOGIN_ERROR_OWNER_KEY_LOST;
@@ -159,10 +159,10 @@ int ErrorToMessageId(SigninError error) {
 
 bool IsAuthError(SigninError error) {
   return error == SigninError::kCaptivePortalError ||
-         error == SigninError::kAuthenticationError ||
-         error == SigninError::kOfflineFailedNetworkNotConnected ||
-         error == SigninError::kAuthenticatingNew ||
-         error == SigninError::kAuthenticating;
+         error == SigninError::kKnownUserFailedNetworkNotConnected ||
+         error == SigninError::kNewUserFailedNetworkNotConnected ||
+         error == SigninError::kNewUserFailedNetworkConnected ||
+         error == SigninError::kKnownUserFailedNetworkConnected;
 }
 
 }  // namespace
@@ -230,8 +230,8 @@ void LoginDisplayHostCommon::StartSignInScreen() {
   }
 
   // Initiate device policy fetching.
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  policy::BrowserPolicyConnectorAsh* connector =
+      g_browser_process->platform_part()->browser_policy_connector_ash();
   connector->ScheduleServiceInitialization(
       kPolicyServiceInitializationDelayMilliseconds);
 
@@ -296,8 +296,8 @@ void LoginDisplayHostCommon::StartKiosk(const KioskAppId& kiosk_app_id,
 }
 
 void LoginDisplayHostCommon::AttemptShowEnableConsumerKioskScreen() {
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  policy::BrowserPolicyConnectorAsh* connector =
+      g_browser_process->platform_part()->browser_policy_connector_ash();
   if (!connector->IsDeviceEnterpriseManaged() &&
       KioskAppManager::IsConsumerKioskEnabled()) {
     ShowEnableConsumerKioskScreen();
@@ -368,10 +368,9 @@ void LoginDisplayHostCommon::ResyncUserData() {
     GetExistingUserController()->ResyncUserData();
 }
 
-bool LoginDisplayHostCommon::HandleAccelerator(
-    ash::LoginAcceleratorAction action) {
+bool LoginDisplayHostCommon::HandleAccelerator(LoginAcceleratorAction action) {
   DCHECK(GetOobeUI());
-  if (action == ash::LoginAcceleratorAction::kShowFeedback) {
+  if (action == LoginAcceleratorAction::kShowFeedback) {
     login_feedback_ = std::make_unique<LoginFeedback>(
         ProfileHelper::Get()->GetSigninProfile());
     login_feedback_->Request(
@@ -381,8 +380,8 @@ bool LoginDisplayHostCommon::HandleAccelerator(
     return true;
   }
 
-  if (action == ash::LoginAcceleratorAction::kLaunchDiagnostics &&
-      base::FeatureList::IsEnabled(chromeos::features::kDiagnosticsApp)) {
+  if (action == LoginAcceleratorAction::kLaunchDiagnostics &&
+      base::FeatureList::IsEnabled(features::kDiagnosticsApp)) {
     // Don't handle this action if device is disabled.
     if (system::DeviceDisablingManager::
             IsDeviceDisabledDuringNormalOperation()) {
@@ -412,6 +411,10 @@ void LoginDisplayHostCommon::StartUserOnboarding() {
   StartWizard(LocaleSwitchView::kScreenId);
 }
 
+void LoginDisplayHostCommon::ResumeUserOnboarding(OobeScreenId screen_id) {
+  StartWizard(screen_id);
+}
+
 void LoginDisplayHostCommon::StartManagementTransition() {
   StartWizard(ManagementTransitionScreenView::kScreenId);
 }
@@ -428,6 +431,11 @@ void LoginDisplayHostCommon::SetAuthSessionForOnboarding(
   // WizardController may not be initialized in the WebUI login display host.
   if (GetWizardController())
     GetWizardController()->SetAuthSessionForOnboarding(user_context);
+}
+
+void LoginDisplayHostCommon::ClearOnboardingAuthSession() {
+  if (GetWizardController())
+    GetWizardController()->ClearOnboardingAuthSession();
 }
 
 void LoginDisplayHostCommon::StartEncryptionMigration(
@@ -449,6 +457,13 @@ void LoginDisplayHostCommon::StartEncryptionMigration(
 void LoginDisplayHostCommon::ShowSigninError(SigninError error,
                                              const std::string& details) {
   VLOG(1) << "Show error, error_id: " << static_cast<int>(error);
+
+  if (error == SigninError::kKnownUserFailedNetworkNotConnected ||
+      error == SigninError::kKnownUserFailedNetworkConnected) {
+    if (!IsOobeUIDialogVisible())
+      // Handled by Views UI.
+      return;
+  }
 
   std::string error_text;
   switch (error) {
@@ -561,4 +576,4 @@ void LoginDisplayHostCommon::OnFeedbackFinished() {
   login_feedback_.reset();
 }
 
-}  // namespace chromeos
+}  // namespace ash

@@ -11,6 +11,7 @@
 
 #if SK_SUPPORT_GPU
 #include "src/gpu/GrFragmentProcessor.h"
+#include "src/gpu/effects/GrBlendFragmentProcessor.h"
 #endif
 
 sk_sp<SkBlender> SkBlender::Mode(SkBlendMode mode) {
@@ -69,12 +70,14 @@ void SkBlendModeBlender::flatten(SkWriteBuffer& buffer) const {
 
 #if SK_SUPPORT_GPU
 std::unique_ptr<GrFragmentProcessor> SkBlendModeBlender::asFragmentProcessor(
-        std::unique_ptr<GrFragmentProcessor> inputFP, const GrFPArgs& fpArgs) const {
-    // Using a SkBlendModeBlender on the GPU side isn't supported; we should use GrXferProcessor to
-    // perform this blend instead. The Xfer processor is able to perform coefficient-based blends
-    // without readback, so it's more efficient.
-    SkDEBUGFAIL("SkBlendModeBlender::asFragmentProcessor is not supported");
-    return nullptr;
+        std::unique_ptr<GrFragmentProcessor> srcFP,
+        std::unique_ptr<GrFragmentProcessor> dstFP,
+        const GrFPArgs& fpArgs) const {
+    // Note that for the final blend onto the canvas, we should prefer to use the GrXferProcessor
+    // instead of a SkBlendModeBlender to perform the blend. The Xfer processor is able to perform
+    // coefficient-based blends directly, without readback. This will be much more efficient.
+    return GrBlendFragmentProcessor::Make(
+            std::move(srcFP), GrFragmentProcessor::UseDestColorAsInput(std::move(dstFP)), fMode);
 }
 #endif
 

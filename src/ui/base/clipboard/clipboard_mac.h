@@ -10,12 +10,17 @@
 
 #include "base/component_export.h"
 #include "base/gtest_prod_util.h"
+#include "base/mac/foundation_util.h"
 #include "ui/base/clipboard/clipboard.h"
 
 @class NSPasteboard;
 
 namespace ui {
 
+// Documentation on the underlying MacOS API this ultimately abstracts is
+// available at https://developer.apple.com/documentation/appkit/nspasteboard
+// and
+// https://developer.apple.com/library/archive/documentation/General/Conceptual/Devpedia-CocoaApp/Pasteboard.html.
 class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ClipboardMac : public Clipboard {
  public:
   ClipboardMac(const ClipboardMac&) = delete;
@@ -38,7 +43,8 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ClipboardMac : public Clipboard {
   // Clipboard overrides:
   void OnPreShutdown() override;
   DataTransferEndpoint* GetSource(ClipboardBuffer buffer) const override;
-  uint64_t GetSequenceNumber(ClipboardBuffer buffer) const override;
+  const ClipboardSequenceNumberToken& GetSequenceNumber(
+      ClipboardBuffer buffer) const override;
   bool IsFormatAvailable(const ClipboardFormatType& format,
                          ClipboardBuffer buffer,
                          const DataTransferEndpoint* data_dst) const override;
@@ -115,6 +121,12 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ClipboardMac : public Clipboard {
                                        NSPasteboard* pasteboard) const;
   SkBitmap ReadImageInternal(ClipboardBuffer buffer,
                              NSPasteboard* pasteboard) const;
+
+  // Mapping of OS-provided sequence number to a unique token.
+  mutable struct {
+    NSInteger sequence_number;
+    ClipboardSequenceNumberToken token;
+  } clipboard_sequence_;
 };
 
 }  // namespace ui

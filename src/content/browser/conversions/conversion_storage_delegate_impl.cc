@@ -5,7 +5,9 @@
 #include "content/browser/conversions/conversion_storage_delegate_impl.h"
 
 #include "base/rand_util.h"
+#include "base/time/time.h"
 #include "content/browser/conversions/conversion_policy.h"
+#include "content/browser/conversions/conversion_report.h"
 
 namespace content {
 
@@ -80,6 +82,18 @@ uint64_t ConversionStorageDelegateImpl::GetFakeEventSourceTriggerData() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return ConversionPolicy::NoiseProvider::GetNoisedEventSourceTriggerDataImpl(
       base::RandUint64());
+}
+
+base::TimeDelta
+ConversionStorageDelegateImpl::GetDeleteExpiredImpressionsFrequency() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return base::TimeDelta::FromMinutes(5);
+}
+
+base::TimeDelta
+ConversionStorageDelegateImpl::GetDeleteExpiredRateLimitsFrequency() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return base::TimeDelta::FromMinutes(5);
 }
 
 base::Time ConversionStorageDelegateImpl::GetReportTime(

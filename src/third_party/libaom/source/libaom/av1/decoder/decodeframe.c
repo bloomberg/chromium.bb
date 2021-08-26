@@ -5155,7 +5155,8 @@ uint32_t av1_decode_frame_headers_and_setup(AV1Decoder *pbi,
 
   cm->mi_params.setup_mi(&cm->mi_params);
 
-  av1_setup_motion_field(cm);
+  av1_calculate_ref_frame_side(cm);
+  if (cm->features.allow_ref_frame_mvs) av1_setup_motion_field(cm);
 
   av1_setup_block_planes(xd, cm->seq_params->subsampling_x,
                          cm->seq_params->subsampling_y, num_planes);
@@ -5229,14 +5230,9 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
 
   if (!cm->features.allow_intrabc && !tiles->single_tile_decoding) {
     if (cm->lf.filter_level[0] || cm->lf.filter_level[1]) {
-      if (pbi->num_workers > 1) {
-        av1_loop_filter_frame_mt(&cm->cur_frame->buf, cm, &pbi->dcb.xd, 0,
-                                 num_planes, 0, pbi->tile_workers,
-                                 pbi->num_workers, &pbi->lf_row_sync, 0);
-      } else {
-        av1_loop_filter_frame(&cm->cur_frame->buf, cm, &pbi->dcb.xd, 0,
-                              num_planes, 0, 0);
-      }
+      av1_loop_filter_frame_mt(&cm->cur_frame->buf, cm, &pbi->dcb.xd, 0,
+                               num_planes, 0, pbi->tile_workers,
+                               pbi->num_workers, &pbi->lf_row_sync, 0);
     }
 
     const int do_cdef =

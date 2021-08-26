@@ -8,8 +8,8 @@
 
 #include "base/callback_helpers.h"
 #include "base/containers/cxx20_erase.h"
+#include "base/cxx17_backports.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/numerics/ranges.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/discardable_handle.h"
@@ -3859,7 +3859,9 @@ error::Error GLES2DecoderPassthroughImpl::DoSwapBuffers(uint64_t swap_id,
 
   client()->OnSwapBuffers(swap_id, flags);
   if (surface_->SupportsAsyncSwap()) {
-    TRACE_EVENT_ASYNC_BEGIN0("gpu", "AsyncSwapBuffers", swap_id);
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
+        "gpu", "AsyncSwapBuffers",
+        TRACE_ID_WITH_SCOPE("AsyncSwapBuffers", swap_id));
     surface_->SwapBuffersAsync(
         base::BindOnce(
             &GLES2DecoderPassthroughImpl::CheckSwapBuffersAsyncResult,
@@ -4007,8 +4009,8 @@ error::Error GLES2DecoderPassthroughImpl::DoResizeCHROMIUM(
   static_assert(sizeof(GLuint) >= sizeof(int), "Unexpected GLuint size.");
   static const GLuint kMaxDimension =
       static_cast<GLuint>(std::numeric_limits<int>::max());
-  gfx::Size safe_size(base::ClampToRange(width, 1U, kMaxDimension),
-                      base::ClampToRange(height, 1U, kMaxDimension));
+  gfx::Size safe_size(base::clamp(width, 1U, kMaxDimension),
+                      base::clamp(height, 1U, kMaxDimension));
   if (offscreen_) {
     if (!ResizeOffscreenFramebuffer(safe_size)) {
       LOG(ERROR) << "GLES2DecoderPassthroughImpl: Context lost because "
@@ -4470,7 +4472,9 @@ error::Error GLES2DecoderPassthroughImpl::DoPostSubBufferCHROMIUM(
 
   client()->OnSwapBuffers(swap_id, flags);
   if (surface_->SupportsAsyncSwap()) {
-    TRACE_EVENT_ASYNC_BEGIN0("gpu", "AsyncSwapBuffers", swap_id);
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
+        "gpu", "AsyncSwapBuffers",
+        TRACE_ID_WITH_SCOPE("AsyncSwapBuffers", swap_id));
     surface_->PostSubBufferAsync(
         x, y, width, height,
         base::BindOnce(
@@ -4776,8 +4780,9 @@ error::Error GLES2DecoderPassthroughImpl::DoDescheduleUntilFinishedCHROMIUM() {
     return error::kNoError;
   }
 
-  TRACE_EVENT_ASYNC_BEGIN0(
-      "cc", "GLES2DecoderPassthroughImpl::DescheduleUntilFinished", this);
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
+      "cc", "GLES2DecoderPassthroughImpl::DescheduleUntilFinished",
+      TRACE_ID_LOCAL(this));
   client()->OnDescheduleUntilFinished();
   return error::kDeferLaterCommands;
 }
@@ -4853,7 +4858,7 @@ error::Error GLES2DecoderPassthroughImpl::DoScheduleOverlayPlaneCHROMIUM(
           plane_z_order, transform, image,
           gfx::Rect(bounds_x, bounds_y, bounds_width, bounds_height),
           gfx::RectF(uv_x, uv_y, uv_width, uv_height), enable_blend,
-          std::move(gpu_fence))) {
+          /*damage_rect=*/gfx::Rect(), std::move(gpu_fence))) {
     InsertError(GL_INVALID_OPERATION, "failed to schedule overlay");
     return error::kNoError;
   }
@@ -5067,7 +5072,9 @@ error::Error GLES2DecoderPassthroughImpl::DoCommitOverlayPlanesCHROMIUM(
 
   client()->OnSwapBuffers(swap_id, flags);
   if (surface_->SupportsAsyncSwap()) {
-    TRACE_EVENT_ASYNC_BEGIN0("gpu", "AsyncSwapBuffers", swap_id);
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
+        "gpu", "AsyncSwapBuffers",
+        TRACE_ID_WITH_SCOPE("AsyncSwapBuffers", swap_id));
     surface_->CommitOverlayPlanesAsync(
         base::BindOnce(
             &GLES2DecoderPassthroughImpl::CheckSwapBuffersAsyncResult,

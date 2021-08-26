@@ -10,7 +10,7 @@ import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import './strings.m.js';
 
 import {MouseHoverableMixin, MouseHoverableMixinInterface} from 'chrome://resources/cr_elements/mouse_hoverable_mixin.js';
-import {getFaviconForPageURL} from 'chrome://resources/js/icon.m.js';
+import {getFaviconForPageURL} from 'chrome://resources/js/icon.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {get as deepGet, html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -80,9 +80,9 @@ export class TabSearchItem extends TabSearchItemBase {
    */
   faviconUrl_(tab) {
     return tab.faviconUrl ?
-        `url("${tab.faviconUrl}")` :
+        `url("${tab.faviconUrl.url}")` :
         getFaviconForPageURL(
-            tab.isDefaultFavicon ? 'chrome://newtab' : tab.url, false);
+            tab.isDefaultFavicon ? 'chrome://newtab' : tab.url.url, false);
   }
 
   /**
@@ -123,13 +123,7 @@ export class TabSearchItem extends TabSearchItemBase {
 
     // Show chrome:// if it's a chrome internal url
     let secondaryLabel = data.hostname;
-    let protocol = '';
-    try {
-      protocol = new URL(data.tab.url).protocol;
-    } catch (e) {
-      // TODO(crbug.com/1186409): Remove this after we root cause the issue
-      console.error(`Error parsing URL on Tab Search: url=${data.tab.url}`);
-    }
+    const protocol = new URL(data.tab.url.url).protocol;
     if (protocol === 'chrome:') {
       /** @type {!HTMLElement} */ (this.$.secondaryText)
           .prepend(document.createTextNode('chrome://'));

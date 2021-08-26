@@ -41,7 +41,6 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
-#include "third_party/blink/renderer/platform/animation/animation_utilities.h"
 #include "third_party/blink/renderer/platform/geometry/float_box.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
@@ -96,7 +95,7 @@ bool KeyframeEffectModelBase::Sample(
 
 namespace {
 
-static const size_t num_compositable_properties = 8;
+static const size_t num_compositable_properties = 9;
 
 const CSSProperty** CompositableProperties() {
   static const CSSProperty*
@@ -104,7 +103,8 @@ const CSSProperty** CompositableProperties() {
           &GetCSSPropertyOpacity(),        &GetCSSPropertyRotate(),
           &GetCSSPropertyScale(),          &GetCSSPropertyTransform(),
           &GetCSSPropertyTranslate(),      &GetCSSPropertyFilter(),
-          &GetCSSPropertyBackdropFilter(), &GetCSSPropertyBackgroundColor()};
+          &GetCSSPropertyBackdropFilter(), &GetCSSPropertyBackgroundColor(),
+          &GetCSSPropertyClipPath()};
   return kCompositableProperties;
 }
 
@@ -211,10 +211,11 @@ bool KeyframeEffectModelBase::SnapshotCompositorKeyFrames(
   if (!should_snapshot_property_callback(property))
     return false;
 
-  PropertySpecificKeyframeGroup* keyframe_group =
-      keyframe_groups_->at(property);
-  if (!keyframe_group)
+  auto it = keyframe_groups_->find(property);
+  if (it == keyframe_groups_->end())
     return false;
+
+  PropertySpecificKeyframeGroup* keyframe_group = it->value;
 
   bool updated = false;
   for (auto& keyframe : keyframe_group->keyframes_) {
@@ -357,7 +358,8 @@ bool KeyframeEffectModelBase::RequiresPropertyNode() const {
       if (!property.IsCSSProperty() ||
           (property.GetCSSProperty().PropertyID() != CSSPropertyID::kVariable &&
            property.GetCSSProperty().PropertyID() !=
-               CSSPropertyID::kBackgroundColor))
+               CSSPropertyID::kBackgroundColor &&
+           property.GetCSSProperty().PropertyID() != CSSPropertyID::kClipPath))
         return true;
     }
   }

@@ -9,7 +9,6 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "base/callback.h"
 #include "base/containers/flat_set.h"
@@ -248,6 +247,13 @@ class StorageQueue : public base::RefCountedDeleteOnSequence<StorageQueue> {
   // (multiple Writes can see the same files and attempt to delete them, and
   // that is not an error).
   Status WriteMetadata(base::StringPiece current_record_digest);
+
+  // Helper method for RestoreMetadata(): loads and verifies metadata file
+  // contents. If accepted, adds the file to the set.
+  Status ReadMetadata(const base::FilePath& meta_file_path,
+                      size_t size,
+                      int64_t sequencing_id,
+                      base::flat_set<base::FilePath>* used_files_set);
 
   // Helper method for Init(): locates file with metadata that matches the
   // last sequencing id and loads metadata from it.

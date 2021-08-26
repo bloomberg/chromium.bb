@@ -5,6 +5,7 @@
 #include "extensions/browser/value_store/testing_value_store.h"
 
 #include <memory>
+#include <ostream>
 #include <utility>
 
 #include "base/notreached.h"
@@ -21,9 +22,8 @@ ValueStore::Status CreateStatusCopy(const ValueStore::Status& status) {
 
 }  // namespace
 
-TestingValueStore::TestingValueStore() : read_count_(0), write_count_(0) {}
-
-TestingValueStore::~TestingValueStore() {}
+TestingValueStore::TestingValueStore() = default;
+TestingValueStore::~TestingValueStore() = default;
 
 void TestingValueStore::set_status_code(StatusCode status_code) {
   status_ = ValueStore::Status(status_code, kGenericErrorMessage);
@@ -59,10 +59,10 @@ ValueStore::ReadResult TestingValueStore::Get(
     return ReadResult(CreateStatusCopy(status_));
 
   auto settings = std::make_unique<base::DictionaryValue>();
-  for (auto it = keys.cbegin(); it != keys.cend(); ++it) {
-    base::Value* value = storage_.FindKey(*it);
+  for (const auto& key : keys) {
+    base::Value* value = storage_.FindKey(key);
     if (value) {
-      settings->SetKey(*it, value->Clone());
+      settings->SetKey(key, value->Clone());
     }
   }
   return ReadResult(std::move(settings), CreateStatusCopy(status_));

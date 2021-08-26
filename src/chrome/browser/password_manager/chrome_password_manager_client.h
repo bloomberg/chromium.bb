@@ -36,9 +36,9 @@
 #include "components/prefs/pref_member.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/signin/public/base/signin_buildflags.h"
+#include "content/public/browser/render_frame_host_receiver_set.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/browser/web_contents_receiver_set.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/rect.h"
@@ -74,6 +74,10 @@ namespace content {
 class WebContents;
 }
 
+namespace device_reauth {
+class BiometricAuthenticator;
+}
+
 // ChromePasswordManagerClient implements the PasswordManagerClient interface.
 class ChromePasswordManagerClient
     : public password_manager::PasswordManagerClient,
@@ -86,6 +90,10 @@ class ChromePasswordManagerClient
   static void CreateForWebContentsWithAutofillClient(
       content::WebContents* contents,
       autofill::AutofillClient* autofill_client);
+  static void BindPasswordGenerationDriver(
+      mojo::PendingAssociatedReceiver<autofill::mojom::PasswordGenerationDriver>
+          receiver,
+      content::RenderFrameHost* rfh);
 
   ~ChromePasswordManagerClient() override;
 
@@ -125,7 +133,7 @@ class ChromePasswordManagerClient
   // Returns a pointer to the BiometricAuthenticator which is created on demand.
   // This is currently only implemented for Android, on all other platforms this
   // will always be null.
-  scoped_refptr<password_manager::BiometricAuthenticator>
+  scoped_refptr<device_reauth::BiometricAuthenticator>
   GetBiometricAuthenticator() override;
   void GeneratePassword(
       autofill::password_generation::PasswordGenerationType type) override;
@@ -369,9 +377,6 @@ class ChromePasswordManagerClient
       generated_password_saved_message_delegate_;
 #endif  // defined(OS_ANDROID)
 
-  scoped_refptr<password_manager::BiometricAuthenticator>
-      biometric_authenticator_;
-
   password_manager::ContentPasswordManagerDriverFactory* driver_factory_;
 
   // As a mojo service, will be registered into service registry
@@ -379,8 +384,7 @@ class ChromePasswordManagerClient
   // once main frame host was created.
   password_manager::ContentCredentialManager content_credential_manager_;
 
-  content::WebContentsFrameReceiverSet<
-      autofill::mojom::PasswordGenerationDriver>
+  content::RenderFrameHostReceiverSet<autofill::mojom::PasswordGenerationDriver>
       password_generation_driver_receivers_;
 
   // Observer for password generation popup.

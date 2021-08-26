@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "components/password_manager/core/browser/fake_password_store_backend.h"
 #include "components/password_manager/core/browser/origin_credential_store.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_hash_data.h"
@@ -33,6 +34,13 @@ scoped_refptr<RefcountedKeyedService> BuildPasswordStore(Context* context) {
   return store;
 }
 
+template <class Context, class Store>
+scoped_refptr<RefcountedKeyedService> BuildPasswordStoreInterface(
+    Context* context) {
+  scoped_refptr<password_manager::PasswordStoreInterface> store(new Store);
+  return store;
+}
+
 // As above, but allows passing parameters to the to-be-created store. The
 // parameters are specified *before* context so that they can be bound (as in
 // base::BindRepeating(&BuildPasswordStoreWithArgs<...>, my_arg)), leaving
@@ -46,6 +54,17 @@ scoped_refptr<RefcountedKeyedService> BuildPasswordStoreWithArgs(
   if (!store->Init(nullptr))
     return nullptr;
   return store;
+}
+
+// Helper function that builds a real password store with a fake backend.
+// Context is the browser context prescribed by TestingFactory.
+template <class Context>
+scoped_refptr<RefcountedKeyedService> BuildPasswordStoreWithFakeBackend(
+    Context* context) {
+  return password_manager::BuildPasswordStoreWithArgs<
+      Context, password_manager::PasswordStore,
+      std::unique_ptr<password_manager::FakePasswordStoreBackend>>(
+      std::make_unique<password_manager::FakePasswordStoreBackend>(), context);
 }
 
 // Struct used for creation of PasswordForms from static arrays of data.

@@ -25,10 +25,10 @@
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/painter.h"
-#include "ui/views/style/platform_style.h"
 #include "ui/views/vector_icons.h"
 #include "ui/views/widget/widget.h"
 
@@ -293,7 +293,8 @@ void HoldingSpaceItemView::OnThemeChanged() {
 }
 
 void HoldingSpaceItemView::OnHoldingSpaceItemUpdated(
-    const HoldingSpaceItem* item) {
+    const HoldingSpaceItem* item,
+    uint32_t updated_fields) {
   if (item_ == item) {
     GetViewAccessibility().OverrideName(item->GetText());
     UpdatePrimaryAction();
@@ -404,7 +405,7 @@ void HoldingSpaceItemView::OnPaintFocus(gfx::Canvas* canvas, gfx::Size size) {
   flags.setAntiAlias(true);
   flags.setColor(AshColorProvider::Get()->GetControlsLayerColor(
       AshColorProvider::ControlsLayerType::kFocusRingColor));
-  flags.setStrokeWidth(views::PlatformStyle::kFocusHaloThickness);
+  flags.setStrokeWidth(views::FocusRing::kHaloThickness);
   flags.setStyle(cc::PaintFlags::kStroke_Style);
 
   gfx::Rect bounds = gfx::Rect(size);
@@ -436,6 +437,9 @@ void HoldingSpaceItemView::OnPrimaryActionPressed() {
 
   DCHECK_NE(primary_action_cancel_->GetVisible(),
             primary_action_pin_->GetVisible());
+
+  if (delegate())
+    delegate()->OnHoldingSpaceItemViewPrimaryActionPressed(this);
 
   // Cancel.
   if (primary_action_cancel_->GetVisible()) {

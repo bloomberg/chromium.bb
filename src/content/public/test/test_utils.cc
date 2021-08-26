@@ -266,8 +266,7 @@ std::string GetWebUIURLString(const std::string& host) {
 }
 
 WebContents* CreateAndAttachInnerContents(RenderFrameHost* rfh) {
-  WebContents* outer_contents =
-      static_cast<RenderFrameHostImpl*>(rfh)->delegate()->GetAsWebContents();
+  auto* outer_contents = WebContents::FromRenderFrameHost(rfh);
   if (!outer_contents)
     return nullptr;
 
@@ -316,10 +315,6 @@ void AwaitDocumentOnLoadCompleted(WebContents* web_contents) {
   };
 
   Awaiter(web_contents).Await();
-}
-
-void ResetFontEnumerationCache() {
-  FontEnumerationCache::GetInstance()->ResetStateForTesting();
 }
 
 MessageLoopRunner::MessageLoopRunner(QuitMode quit_mode)

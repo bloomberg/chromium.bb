@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/ash/shelf/arc_shelf_spinner_item_controller.h"
 
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
-#include "chrome/browser/chromeos/full_restore/arc_app_launch_handler.h"
-#include "chrome/browser/chromeos/full_restore/full_restore_arc_task_handler.h"
+#include "chrome/browser/ash/full_restore/arc_app_launch_handler.h"
+#include "chrome/browser/ash/full_restore/full_restore_arc_task_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/shelf/shelf_spinner_controller.h"
@@ -55,7 +55,7 @@ void ArcShelfSpinnerItemController::ItemSelected(
   if (window_info_ &&
       window_info_->window_id >
           full_restore::kArcSessionIdOffsetForRestoredLaunching) {
-    chromeos::full_restore::FullRestoreArcTaskHandler::GetForProfile(
+    ash::full_restore::FullRestoreArcTaskHandler::GetForProfile(
         observed_profile_)
         ->arc_app_launch_handler()
         ->LaunchApp(app_id());
@@ -103,7 +103,7 @@ void ArcShelfSpinnerItemController::OnAppConnectionReady() {
   // this item when timeout.
   if (IsCreatedByFullRestore() && !close_timer_) {
     close_timer_ = std::make_unique<base::OneShotTimer>();
-    close_timer_->Start(FROM_HERE, chromeos::full_restore::kStopRestoreDelay,
+    close_timer_->Start(FROM_HERE, ash::full_restore::kStopRestoreDelay,
                         base::BindOnce(&ArcShelfSpinnerItemController::Close,
                                        weak_ptr_factory_.GetWeakPtr()));
   }

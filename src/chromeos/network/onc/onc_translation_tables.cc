@@ -6,8 +6,6 @@
 
 #include <cstddef>
 
-#include "ash/constants/ash_features.h"
-#include "base/feature_list.h"
 #include "base/logging.h"
 #include "chromeos/network/network_type_pattern.h"
 #include "chromeos/network/tether_constants.h"
@@ -26,6 +24,7 @@ const FieldTranslationEntry eap_fields[] = {
     {::onc::eap::kAnonymousIdentity, shill::kEapAnonymousIdentityProperty},
     // This field is converted during translation, see onc_translator_*.
     // { ::onc::client_cert::kClientCertPKCS11Id, shill::kEapCertIdProperty },
+    {::onc::eap::kDomainSuffixMatch, shill::kEapDomainSuffixMatchProperty},
     {::onc::eap::kIdentity, shill::kEapIdentityProperty},
     // This field is converted during translation, see onc_translator_*.
     // { ::onc::eap::kInner, shill::kEapPhase2AuthProperty },
@@ -215,6 +214,7 @@ const FieldTranslationEntry cellular_fields[] = {
     {::onc::cellular::kActivationType, shill::kActivationTypeProperty},
     // This field is converted during translation, see onc_translator_*.
     // { ::onc::cellular::kActivationState, shill::kActivationStateProperty},
+    {::onc::cellular::kAllowRoaming, shill::kCellularAllowRoamingProperty},
     {::onc::cellular::kAutoConnect, shill::kAutoConnectProperty},
     {::onc::cellular::kEID, shill::kEidProperty},
     {::onc::cellular::kICCID, shill::kIccidProperty},
@@ -333,7 +333,7 @@ const NestedShillDictionaryEntry nested_shill_dictionaries[] = {
 const StringTranslationEntry kNetworkTypeTable[] = {
     {::onc::network_type::kEthernet, shill::kTypeEthernet},
     // kTypeEthernetEap is set in onc_translator_onc_to_shill.cc.
-    //  { ::onc::network_type::kEthernet, shill::kTypeEthernetEap },
+    // {::onc::network_type::kEthernet, shill::kTypeEthernetEap},
     {::onc::network_type::kWiFi, shill::kTypeWifi},
     // wimax entries are ignored in onc_translator_onc_to_shill.cc.
     // {::onc::network_type::kWimax, shill::kTypeWimax},
@@ -422,11 +422,7 @@ const StringTranslationEntry kOpenVpnCompressionAlgorithmTable[] = {
 const FieldTranslationEntry kCellularDeviceTable[] = {
     // This field is converted during translation, see onc_translator_*.
     // { ::onc::cellular::kAPNList, shill::kCellularApnListProperty},
-    {::onc::cellular::kAllowRoaming,
-     base::FeatureList::IsEnabled(
-         ash::features::kCellularAllowPerNetworkRoaming)
-         ? shill::kCellularPolicyAllowRoamingProperty
-         : shill::kCellularAllowRoamingProperty},
+    {::onc::cellular::kAllowRoaming, shill::kCellularAllowRoamingProperty},
     {::onc::cellular::kESN, shill::kEsnProperty},
     {::onc::cellular::kFamily, shill::kTechnologyFamilyProperty},
     {::onc::cellular::kFirmwareRevision, shill::kFirmwareRevisionProperty},

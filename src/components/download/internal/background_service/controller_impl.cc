@@ -147,8 +147,8 @@ void ControllerImpl::Initialize(base::OnceClosure callback) {
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "DownloadService", base::ThreadTaskRunnerHandle::Get());
 
-  TRACE_EVENT_ASYNC_BEGIN0("download_service", "DownloadServiceInitialize",
-                           this);
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
+      "download_service", "DownloadServiceInitialize", TRACE_ID_LOCAL(this));
 
   driver_->Initialize(this);
   model_->Initialize(this);
@@ -772,7 +772,7 @@ void ControllerImpl::CleanupUnknownFiles() {
       driver_entries.push_back(driver_entry.value());
   }
 
-  file_monitor_->DeleteUnknownFiles(entries, driver_entries);
+  file_monitor_->DeleteUnknownFiles(entries, driver_entries, base::DoNothing());
 }
 
 void ControllerImpl::ResolveInitialRequestStates() {
@@ -1092,7 +1092,8 @@ void ControllerImpl::NotifyClientsOfStartup(bool state_lost) {
 }
 
 void ControllerImpl::NotifyServiceOfStartup() {
-  TRACE_EVENT_ASYNC_END0("download_service", "DownloadServiceInitialize", this);
+  TRACE_EVENT_NESTABLE_ASYNC_END0(
+      "download_service", "DownloadServiceInitialize", TRACE_ID_LOCAL(this));
 
   if (init_callback_.is_null())
     return;

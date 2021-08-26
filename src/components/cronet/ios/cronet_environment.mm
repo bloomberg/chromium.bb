@@ -37,6 +37,7 @@
 #include "net/cert/cert_verifier.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/mapped_host_resolver.h"
+#include "net/http/http_network_session.h"
 #include "net/http/http_server_properties.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/http/http_util.h"
@@ -346,9 +347,9 @@ void CronetEnvironment::InitializeOnNetworkThread() {
 
   // Explicitly disable the persister for Cronet to avoid persistence of dynamic
   // HPKP.  This is a safety measure ensuring that nobody enables the
-  // persistence of HPKP by specifying transport_security_persister_path in the
-  // future.
-  context_builder.set_transport_security_persister_path(base::FilePath());
+  // persistence of HPKP by specifying transport_security_persister_file_path in
+  // the future.
+  context_builder.set_transport_security_persister_file_path(base::FilePath());
 
   config->ConfigureURLRequestContextBuilder(&context_builder);
 

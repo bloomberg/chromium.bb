@@ -142,12 +142,16 @@ WaylandSurfaceFactory::CreateCanvasForWidget(gfx::AcceleratedWidget widget) {
   return std::make_unique<WaylandCanvasSurface>(buffer_manager_, widget);
 }
 
-std::vector<gl::GLImplementation>
+std::vector<gl::GLImplementationParts>
 WaylandSurfaceFactory::GetAllowedGLImplementations() {
-  std::vector<gl::GLImplementation> impls;
+  std::vector<gl::GLImplementationParts> impls;
   if (egl_implementation_) {
-    impls.push_back(gl::kGLImplementationEGLGLES2);
-    impls.push_back(gl::kGLImplementationSwiftShaderGL);
+    impls.emplace_back(
+        gl::GLImplementationParts(gl::kGLImplementationEGLGLES2));
+    impls.emplace_back(
+        gl::GLImplementationParts(gl::kGLImplementationSwiftShaderGL));
+    impls.emplace_back(
+        gl::GLImplementationParts(gl::ANGLEImplementation::kSwiftShader));
   }
   return impls;
 }
@@ -157,6 +161,7 @@ GLOzone* WaylandSurfaceFactory::GetGLOzone(
   switch (implementation.gl) {
     case gl::kGLImplementationEGLGLES2:
     case gl::kGLImplementationSwiftShaderGL:
+    case gl::kGLImplementationEGLANGLE:
       return egl_implementation_.get();
     default:
       return nullptr;

@@ -5,6 +5,7 @@
 syntax = "proto2";
 
 import "components/sync/protocol/web_app_specifics.proto";
+import "chrome/browser/web_applications/proto/web_app_launch_handler.proto";
 import "chrome/browser/web_applications/proto/web_app_share_target.proto";
 import "chrome/browser/web_applications/system_web_apps/system_web_app_data.proto";
 
@@ -82,6 +83,8 @@ message DownloadedShortcutsMenuIconSizesProto {
 // app_id is a hash of launch_url. app_id is the client tag for sync system.
 // app_id is the storage key in ModelTypeStore.
 message WebAppProto {
+  reserved "is_in_sync_install";
+
   // Synced data. It is replicated across all devices with WEB_APPS.
   //
   // |sync_data.name| and |sync_data.theme_color| are read by a device to
@@ -110,7 +113,7 @@ message WebAppProto {
   optional string scope = 6;
   required SourcesProto sources = 7;
   required bool is_locally_installed = 8;
-  optional bool is_in_sync_install = 9;
+  optional bool is_from_sync_and_pending_installation = 9;
   // A list of icon infos.
   repeated sync_pb.WebAppIconInfo icon_infos = 10;
 
@@ -220,4 +223,6 @@ message WebAppProto {
   // url. This list is checked to see if we can bypass the permission dialog
   // when launching the web app.
   repeated string approved_launch_protocols = 37;
+
+  optional LaunchHandlerProto launch_handler = 38;
 }

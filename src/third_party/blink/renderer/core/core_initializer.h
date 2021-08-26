@@ -33,7 +33,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
 #include "third_party/blink/public/mojom/dom_storage/storage_area.mojom-blink-forward.h"
@@ -69,7 +68,6 @@ class WebRemotePlaybackClient;
 
 class CORE_EXPORT CoreInitializer {
   USING_FAST_MALLOC(CoreInitializer);
-  DISALLOW_COPY_AND_ASSIGN(CoreInitializer);
 
  public:
   // Initialize must be called before GetInstance.
@@ -78,6 +76,8 @@ class CORE_EXPORT CoreInitializer {
     return *instance_;
   }
 
+  CoreInitializer(const CoreInitializer&) = delete;
+  CoreInitializer& operator=(const CoreInitializer&) = delete;
   virtual ~CoreInitializer() = default;
 
   // Should be called by clients before trying to create Frames.

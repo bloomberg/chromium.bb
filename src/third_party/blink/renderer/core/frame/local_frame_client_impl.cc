@@ -383,14 +383,14 @@ void LocalFrameClientImpl::DidFinishSameDocumentNavigation(
     HistoryItem* item,
     WebHistoryCommitType commit_type,
     bool is_synchronously_committed,
-    bool is_history_api_navigation,
+    mojom::blink::SameDocumentNavigationType same_document_navigation_type,
     bool is_client_redirect) {
   bool should_create_history_entry = commit_type == kWebStandardCommit;
   // TODO(dglazkov): Does this need to be called for subframes?
   web_frame_->ViewImpl()->DidCommitLoad(should_create_history_entry, true);
   if (web_frame_->Client()) {
     web_frame_->Client()->DidFinishSameDocumentNavigation(
-        commit_type, is_synchronously_committed, is_history_api_navigation,
+        commit_type, is_synchronously_committed, same_document_navigation_type,
         is_client_redirect);
   }
 }
@@ -787,6 +787,17 @@ String LocalFrameClientImpl::UserAgent() {
   if (user_agent_.IsEmpty())
     user_agent_ = Platform::Current()->UserAgent();
   return user_agent_;
+}
+
+String LocalFrameClientImpl::ReducedUserAgent() {
+  WebString override =
+      web_frame_->Client() ? web_frame_->Client()->UserAgentOverride() : "";
+  if (!override.IsEmpty())
+    return override;
+
+  if (reduced_user_agent_.IsEmpty())
+    reduced_user_agent_ = Platform::Current()->ReducedUserAgent();
+  return reduced_user_agent_;
 }
 
 absl::optional<UserAgentMetadata> LocalFrameClientImpl::UserAgentMetadata() {

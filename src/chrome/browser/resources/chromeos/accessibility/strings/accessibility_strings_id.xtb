@@ -6,7 +6,7 @@
 <translation id="1012173283529841972">Item daftar</translation>
 <translation id="1013742170491673792">srched</translation>
 <translation id="1014370462248694370">Geser dua jari ke kanan</translation>
-<translation id="1022586497894531524">Baru pertama kali menggunakan masukan lisan ChromeVox? Tutorial singkat ini akan menjelaskan dasar-dasar memulai ChromeVox.</translation>
+<translation id="1022586497894531524">Baru pertama kali menggunakan respons lisan ChromeVox? Tutorial singkat ini akan menjelaskan dasar-dasar memulai ChromeVox.</translation>
 <translation id="1025074108959230262">Mode lekat dinonaktifkan</translation>
 <translation id="1031961866430398710">kemudian</translation>
 <translation id="1038643060055067718">Baris:</translation>
@@ -288,7 +288,7 @@
 <translation id="2968634799764242930">Sea Green</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{tab}other{# tab}}</translation>
 <translation id="2972205263822847197">Kiat alat</translation>
-<translation id="2976476721782829799">Anda juga dapat berpindah-pindah dengan menarik satu jari pada layar. Ini disebut fitur Klik untuk Info. Coba tarik dan gerakkan jari Anda untuk membaca sisa pelajaran ini.</translation>
+<translation id="2976476721782829799">Anda juga dapat berpindah-pindah dengan menarik satu jari pada layar. Ini disebut fitur Sentuh untuk Pelajari. Coba tarik dan gerakkan jari Anda untuk membaca sisa pelajaran ini.</translation>
 <translation id="297825089465017871">Geser dua jari ke kiri</translation>
 <translation id="2988364959384217951">Petunjuk: Geser dari kanan ke kiri dengan dua jari jika Anda ingin keluar dari tutorial ini.</translation>
 <translation id="2998131015536248178">Karakter Sebelumnya</translation>
@@ -424,6 +424,8 @@
 <translation id="3810838688059735925">Video</translation>
 <translation id="3813387282697781382">Light Coral</translation>
 <translation id="3816633764618089385">Media berikutnya</translation>
+<translation id="3840823741487267909">Singkatan</translation>
+<translation id="3841319830220785495">Suara alami default</translation>
 <translation id="385383972552776628">Membuka halaman opsi</translation>
 <translation id="3856075812838139784">Hanya baca</translation>
 <translation id="3857141338659865495">Medium Turquoise</translation>
@@ -451,6 +453,7 @@
 <translation id="4021716437419160885">Scroll ke bawah</translation>
 <translation id="4035381225449278841">Musim Semi</translation>
 <translation id="4047216625641135770">Tanda</translation>
+<translation id="4047910800766704982">Anda dapat menggunakan suara alami yang mirip manusia saat perangkat online. Teks akan dikirim ke Google untuk diproses. Anda dapat menonaktifkan fitur ini kapan saja di Setelan.</translation>
 <translation id="4053520724192563562">Lime Green</translation>
 <translation id="4054936709456751127">sts</translation>
 <translation id="4058278702844053247">Halaman sedang dimuat</translation>
@@ -464,7 +467,7 @@
 <translation id="4148180433151187540">{COUNT,plural, =1{kurung kurawal tutup}other{# kurung kurawal tutup}}</translation>
 <translation id="4159784952369912983">Ungu</translation>
 <translation id="4161104397932142764">{COUNT,plural, =1{detik}other{detik}}</translation>
-<translation id="4161663686871496107">Masukan lisan ChromeVox siap</translation>
+<translation id="4161663686871496107">Respons lisan ChromeVox siap</translation>
 <translation id="4176463684765177261">Dinonaktifkan</translation>
 <translation id="4187322598335821254">Geser ke atas atau ke bawah untuk berpindah per baris</translation>
 <translation id="4188530942454211480">Kalimat Sebelumnya</translation>
@@ -600,7 +603,7 @@
 <translation id="5140016802771803559">Rebecca Purple</translation>
 <translation id="5142101052131610456">Semua pelajaran</translation>
 <translation id="5158275234811857234">Sampul</translation>
-<translation id="516076699907426116">Untuk melanjutkan, manfaatkan fitur Klik untuk Info guna menemukan tombol Pelajaran berikutnya. Lalu, ketuk dua kali untuk melanjutkan.</translation>
+<translation id="516076699907426116">Untuk melanjutkan, manfaatkan fitur Sentuh untuk Pelajari guna menemukan tombol Pelajaran berikutnya. Lalu, ketuk dua kali untuk melanjutkan.</translation>
 <translation id="5170206230005240598">Teks braille diaktifkan</translation>
 <translation id="5183440668879371625">Baris Braille sebelumnya</translation>
 <translation id="5189244881767082992">Baris</translation>
@@ -686,6 +689,7 @@
 <translation id="5748623122140342504">Judul tingkat 5 sebelumnya</translation>
 <translation id="5760594853119905566">Lampiran</translation>
 <translation id="5761219715606611783">Bagus! Anda telah mempelajari dasar-dasar gestur sentuh ChromeVox. Anda dapat memulai kembali atau keluar dari tutorial ini menggunakan tombol di bawah.</translation>
+<translation id="5776001898637896684">Ekstensi text-to-speech Google Enhanced Network</translation>
 <translation id="5805940204952508776">Ketuk dengan dua jari</translation>
 <translation id="5819072574982403430">Item pohon</translation>
 <translation id="5822819874379903994">Dark Turquoise</translation>
@@ -889,7 +893,7 @@
 <translation id="7308519659008003150">Tidak ada kolom formulir sebelumnya</translation>
 <translation id="731121099745151312">tritm</translation>
 <translation id="7317017974771324508">dipilih sebagian</translation>
-<translation id="7322442671176251901">Klik untuk Info</translation>
+<translation id="7322442671176251901">Sentuh untuk Pelajari</translation>
 <translation id="7344012264516629579">Perintah lewati tambahan di antaranya adalah lewati per link, tombol, dan kotak centang. Daftar lengkap perintah lewati dapat ditemukan dalam menu ChromeVox, yang dapat dibuka dengan menekan Penelusuran + Tanda titik.</translation>
 <translation id="7356165926712028380">Beralih ke braille 8 titik</translation>
 <translation id="7356610683936413584">Detail daftar deskripsi</translation>
@@ -907,6 +911,7 @@
 <translation id="743783356331413498">Contoh</translation>
 <translation id="7439060726180460871">Direktori</translation>
 <translation id="744163271241493234">pwded</translation>
+<translation id="7465123027577412805">Gunakan suara alami?</translation>
 <translation id="7484805699335881122">Ubah tinggi nada saat elemen ucapan mengetik dan mengutip, menghapus, menebalkan, memberi tanda kurung, atau mengapitalkan teks.</translation>
 <translation id="7491962110804786152">tab</translation>
 <translation id="7492497529767769458">Pindah ke bagian berikutnya. Contohnya meliputi Menu Status and Peluncur.</translation>
@@ -945,7 +950,7 @@
     Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk mengarahkan ke tombol Tutup, lalu klik tombolnya.</translation>
 <translation id="7724603315864178912">Potong</translation>
 <translation id="7731785449856576010">Tidak ada widget media berikutnya</translation>
-<translation id="7735498529470878067">Fitur Klik untuk Info dapat membantu Anda memahami dengan cepat apa yang ada di layar.</translation>
+<translation id="7735498529470878067">Fitur Sentuh untuk Pelajari dapat membantu Anda memahami dengan cepat apa yang ada di layar.</translation>
 <translation id="773906353055481349">Tekan Search+Ctrl+Alt dengan tombol panah untuk memilih sel</translation>
 <translation id="7763537600611320912">Download <ph name="FILE_NAME" /> dimulai</translation>
 <translation id="7768784765476638775">Klik untuk diucapkan</translation>
@@ -977,6 +982,7 @@
 <translation id="7968340748835037139">Dark Green</translation>
 <translation id="7972507042926081808">Chocolate</translation>
 <translation id="7974390230414479278">Item menu</translation>
+<translation id="7990863024647916394"><ph name="DISPLAY_NAME" /> Suara <ph name="COUNT" /></translation>
 <translation id="8004507136466386272">Kata</translation>
 <translation id="8004512796067398576">Penambahan</translation>
 <translation id="8007540374018858731">h3</translation>

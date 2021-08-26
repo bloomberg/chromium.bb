@@ -62,12 +62,12 @@ class Array : public Castable<Array, Type> {
   /// @returns the byte alignment of the array
   /// @note this may differ from the alignment of a structure member of this
   /// array type, if the member is annotated with the `[[align(n)]]` decoration.
-  uint32_t Align() const { return align_; }
+  uint32_t Align() const override;
 
   /// @returns the byte size of the array
   /// @note this may differ from the size of a structure member of this array
   /// type, if the member is annotated with the `[[size(n)]]` decoration.
-  uint32_t SizeInBytes() const { return size_; }
+  uint32_t Size() const override;
 
   /// @returns the number of bytes from the start of one element of the
   /// array to the start of the next element
@@ -85,6 +85,10 @@ class Array : public Castable<Array, Type> {
   /// @returns true if this array is runtime sized
   bool IsRuntimeSized() const { return count_ == 0; }
 
+  /// @returns true if constructible as per
+  /// https://gpuweb.github.io/gpuweb/wgsl/#constructible-types
+  bool IsConstructible() const override;
+
   /// @returns the name for the type
   std::string type_name() const override;
 
@@ -100,6 +104,7 @@ class Array : public Castable<Array, Type> {
   uint32_t const size_;
   uint32_t const stride_;
   uint32_t const implicit_stride_;
+  bool const constructible_;
 };
 
 }  // namespace sem

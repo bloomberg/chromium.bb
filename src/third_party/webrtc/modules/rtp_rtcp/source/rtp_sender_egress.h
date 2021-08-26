@@ -44,7 +44,8 @@ class RtpSenderEgress {
   class NonPacedPacketSender : public RtpPacketSender {
    public:
     NonPacedPacketSender(RtpSenderEgress* sender,
-                         SequenceNumberAssigner* sequence_number_assigner);
+                         SequenceNumberAssigner* sequence_number_assigner,
+                         bool deferred_sequencing);
     virtual ~NonPacedPacketSender();
 
     void EnqueuePackets(
@@ -52,6 +53,7 @@ class RtpSenderEgress {
 
    private:
     void PrepareForSend(RtpPacketToSend* packet);
+    const bool deferred_sequencing_;
     uint16_t transport_sequence_number_;
     RtpSenderEgress* const sender_;
     SequenceNumberAssigner* sequence_number_assigner_;
@@ -78,7 +80,7 @@ class RtpSenderEgress {
   void SetMediaHasBeenSent(bool media_sent) RTC_LOCKS_EXCLUDED(lock_);
   void SetTimestampOffset(uint32_t timestamp) RTC_LOCKS_EXCLUDED(lock_);
 
-  // For each sequence number in |sequence_number|, recall the last RTP packet
+  // For each sequence number in `sequence_number`, recall the last RTP packet
   // which bore it - its timestamp and whether it was the first and/or last
   // packet in that frame. If all of the given sequence numbers could be
   // recalled, return a vector with all of them (in corresponding order).
@@ -110,7 +112,7 @@ class RtpSenderEgress {
   void UpdateOnSendPacket(int packet_id,
                           int64_t capture_time_ms,
                           uint32_t ssrc);
-  // Sends packet on to |transport_|, leaving the RTP module.
+  // Sends packet on to `transport_`, leaving the RTP module.
   bool SendPacketToNetwork(const RtpPacketToSend& packet,
                            const PacketOptions& options,
                            const PacedPacketInfo& pacing_info);
@@ -134,6 +136,7 @@ class RtpSenderEgress {
   const absl::optional<uint32_t> flexfec_ssrc_;
   const bool populate_network2_timestamp_;
   const bool send_side_bwe_with_overhead_;
+  const bool deferred_sequencing_;
   Clock* const clock_;
   RtpPacketHistory* const packet_history_;
   Transport* const transport_;
@@ -143,6 +146,8 @@ class RtpSenderEgress {
 #endif
   const bool need_rtp_packet_infos_;
   VideoFecGenerator* const fec_generator_ RTC_GUARDED_BY(pacer_checker_);
+  absl::optional<uint16_t> last_sent_seq_ RTC_GUARDED_BY(pacer_checker_);
+  absl::optional<uint16_t> last_sent_rtx_seq_ RTC_GUARDED_BY(pacer_checker_);
 
   TransportFeedbackObserver* const transport_feedback_observer_;
   SendSideDelayObserver* const send_side_delay_observer_;

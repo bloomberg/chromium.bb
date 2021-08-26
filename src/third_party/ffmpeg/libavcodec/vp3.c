@@ -2335,9 +2335,13 @@ static av_cold int vp3_decode_init(AVCodecContext *avctx)
     if (ret < 0)
         return ret;
 
-    if (avctx->codec_tag == MKTAG('V', 'P', '4', '0'))
+    if (avctx->codec_tag == MKTAG('V', 'P', '4', '0')) {
         s->version = 3;
-    else if (avctx->codec_tag == MKTAG('V', 'P', '3', '0'))
+#if !CONFIG_VP4_DECODER
+        av_log(avctx, AV_LOG_ERROR, "This build does not support decoding VP4.\n");
+        return AVERROR_DECODER_NOT_FOUND;
+#endif
+    } else if (avctx->codec_tag == MKTAG('V', 'P', '3', '0'))
         s->version = 0;
     else
         s->version = 1;
@@ -2404,6 +2408,8 @@ static av_cold int vp3_decode_init(AVCodecContext *avctx)
     s->fragment_start[2] = y_fragment_count + c_fragment_count;
 
     if (!s->theora_tables) {
+        const uint8_t (*bias_tabs)[32][2];
+
         for (i = 0; i < 64; i++) {
             s->coded_dc_scale_factor[0][i] = s->version < 2 ? vp31_dc_scale_factor[i] : vp4_y_dc_scale_factor[i];
             s->coded_dc_scale_factor[1][i] = s->version < 2 ? vp31_dc_scale_factor[i] : vp4_uv_dc_scale_factor[i];
@@ -2424,26 +2430,14 @@ static av_cold int vp3_decode_init(AVCodecContext *avctx)
         }
 
         /* init VLC tables */
-        if (s->version < 2) {
-            for (i = 0; i < FF_ARRAY_ELEMS(s->coeff_vlc); i++) {
-                ret = ff_init_vlc_from_lengths(&s->coeff_vlc[i], 11, 32,
-                                               &vp3_bias[i][0][1], 2,
-                                               &vp3_bias[i][0][0], 2, 1,
-                                               0, 0, avctx);
-                if (ret < 0)
-                    return ret;
-            }
-#if CONFIG_VP4_DECODER
-        } else { /* version >= 2 */
-            for (i = 0; i < FF_ARRAY_ELEMS(s->coeff_vlc); i++) {
-                ret = ff_init_vlc_from_lengths(&s->coeff_vlc[i], 11, 32,
-                                               &vp4_bias[i][0][1], 2,
-                                               &vp4_bias[i][0][0], 2, 1,
-                                               0, 0, avctx);
-                if (ret < 0)
-                    return ret;
-            }
-#endif
+        bias_tabs = CONFIG_VP4_DECODER && s->version >= 2 ? vp4_bias : vp3_bias;
+        for (int i = 0; i < FF_ARRAY_ELEMS(s->coeff_vlc); i++) {
+            ret = ff_init_vlc_from_lengths(&s->coeff_vlc[i], 11, 32,
+                                           &bias_tabs[i][0][1], 2,
+                                           &bias_tabs[i][0][0], 2, 1,
+                                           0, 0, avctx);
+            if (ret < 0)
+                return ret;
         }
     } else {
         for (i = 0; i < FF_ARRAY_ELEMS(s->coeff_vlc); i++) {
@@ -3172,8 +3166,8 @@ const AVCodec ff_theora_decoder = {
                              AV_CODEC_CAP_FRAME_THREADS,
     .flush                 = vp3_decode_flush,
     .update_thread_context = ONLY_IF_THREADS_ENABLED(vp3_update_thread_context),
-    .caps_internal         = FF_CODEC_CAP_EXPORTS_CROPPING | FF_CODEC_CAP_ALLOCATE_PROGRESS |
-                             FF_CODEC_CAP_INIT_CLEANUP,
+    .caps_internal         = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP |
+                             FF_CODEC_CAP_EXPORTS_CROPPING | FF_CODEC_CAP_ALLOCATE_PROGRESS,
 };
 #endif
 
@@ -3190,7 +3184,8 @@ const AVCodec ff_vp3_decoder = {
                              AV_CODEC_CAP_FRAME_THREADS,
     .flush                 = vp3_decode_flush,
     .update_thread_context = ONLY_IF_THREADS_ENABLED(vp3_update_thread_context),
-    .caps_internal         = FF_CODEC_CAP_ALLOCATE_PROGRESS | FF_CODEC_CAP_INIT_CLEANUP,
+    .caps_internal         = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP |
+                             FF_CODEC_CAP_ALLOCATE_PROGRESS,
 };
 
 #if CONFIG_VP4_DECODER
@@ -3207,6 +3202,7 @@ const AVCodec ff_vp4_decoder = {
                              AV_CODEC_CAP_FRAME_THREADS,
     .flush                 = vp3_decode_flush,
     .update_thread_context = ONLY_IF_THREADS_ENABLED(vp3_update_thread_context),
-    .caps_internal         = FF_CODEC_CAP_ALLOCATE_PROGRESS | FF_CODEC_CAP_INIT_CLEANUP,
+    .caps_internal         = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP |
+                             FF_CODEC_CAP_ALLOCATE_PROGRESS,
 };
 #endif

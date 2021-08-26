@@ -5,7 +5,10 @@
 #ifndef COMPONENTS_SODA_SODA_INSTALLER_H_
 #define COMPONENTS_SODA_SODA_INSTALLER_H_
 
+#include <set>
+
 #include "base/component_export.h"
+#include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/observer_list.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -17,6 +20,9 @@ namespace speech {
 
 // Installer of SODA (Speech On-Device API). This is a singleton because there
 // is only one installation of SODA per device.
+// SODA is not supported on some Chrome OS devices. Chrome OS callers should
+// check if ash::features::kOnDeviceSpeechRecognition is enabled before
+// trying to access the SodaInstaller instance.
 class COMPONENT_EXPORT(SODA_INSTALLER) SodaInstaller {
  public:
   // Observer of the SODA (Speech On-Device API) installation.
@@ -90,18 +96,14 @@ class COMPONENT_EXPORT(SODA_INSTALLER) SodaInstaller {
   virtual void InstallLanguage(const std::string& language,
                                PrefService* global_prefs) = 0;
 
-  // Returns whether or not SODA is installed on this device. Will return a
-  // stale value until InstallSoda() and InstallLanguage() have run and
-  // asynchronously returned an answer.
-  virtual bool IsSodaInstalled() const = 0;
-
-  // Returns whether or not the language pack for a given language is
-  // installed. The language should be localized in BCP-47, e.g. "en-US".
-  virtual bool IsLanguageInstalled(const std::string& language) const = 0;
-
   // Gets all installed and installable language codes supported by SODA
   // (in BCP-47 format).
   virtual std::vector<std::string> GetAvailableLanguages() const = 0;
+
+  // Returns whether or not SODA and the given language pack are installed on
+  // this device. Will return a stale value until InstallSoda() and
+  // InstallLanguage() have run and asynchronously returned an answer.
+  bool IsSodaInstalled(speech::LanguageCode language_code) const;
 
   // Adds an observer to the observer list.
   void AddObserver(Observer* observer);
@@ -109,9 +111,17 @@ class COMPONENT_EXPORT(SODA_INSTALLER) SodaInstaller {
   // Removes an observer from the observer list.
   void RemoveObserver(Observer* observer);
 
-  void NotifySodaInstalledForTesting();
+  // Method for checking in-progress downloads.
+  bool IsSodaDownloading(speech::LanguageCode language_code) const;
 
+  // TODO(crbug.com/1237462): Consider creating a MockSodaInstaller class that
+  // implements these test-specific methods.
+  void NotifySodaInstalledForTesting();
+  void NotifySodaErrorForTesting();
   void UninstallSodaForTesting();
+  void NotifySodaDownloadProgressForTesting(int percentage);
+  void NotifyOnSodaLanguagePackInstalledForTesting(LanguageCode language_code);
+  void NotifyOnSodaLanguagePackErrorForTesting(LanguageCode language_code);
 
  protected:
   // Registers the preference tracking the installed SODA language packs.
@@ -159,10 +169,21 @@ class COMPONENT_EXPORT(SODA_INSTALLER) SodaInstaller {
   // installed SODA language packs.
   void UnregisterLanguages(PrefService* global_prefs);
 
+  // Returns whether or not the language pack for a given language is
+  // installed. The language should be localized in BCP-47, e.g. "en-US".
+  bool IsLanguageInstalled(speech::LanguageCode language_code) const;
+
+  bool IsAnyLanguagePackInstalled() const;
+
   base::ObserverList<Observer> observers_;
   bool soda_binary_installed_ = false;
-  bool language_installed_ = false;
   bool soda_installer_initialized_ = false;
+  bool is_soda_downloading_ = false;
+
+  // Tracks all downloaded language packs.
+  std::set<speech::LanguageCode> installed_languages_;
+  // Maps language codes to their install progress.
+  base::flat_map<speech::LanguageCode, double> language_pack_progress_;
 
  private:
   // Any new feature using SODA should add its pref here.

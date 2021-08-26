@@ -178,14 +178,16 @@ def xcode_enum(version):
 xcode = struct(
     # (current default for other projects) xc12.0 gm seed
     x12a7209 = xcode_enum("12a7209"),
-    # (current default for iOS) xc12.4 gm seed
+    # xc12.4 gm seed
     x12d4e = xcode_enum("12d4e"),
     # Xcode 12.5. Requires Mac11+ OS.
     x12e262 = xcode_enum("12e262"),
     # in use by ios-webkit-tot
     x12e262wk = xcode_enum("12e262wk"),
-    # Xcode 13.0 beta 2.
-    x13latestbeta = xcode_enum("13a5155e"),
+    # Default Xcode 13 for chromium iOS (Xcode 13.0 beta 4).
+    x13main = xcode_enum("13a5201ixc"),
+    # Xcode 13.0 latest beta (beta 5).
+    x13latestbeta = xcode_enum("13a5212g"),
 )
 
 ################################################################################
@@ -287,7 +289,7 @@ def _isolated_property(*, isolated_server):
 
     return isolated or None
 
-def _reclient_property(*, instance, service, jobs, rewrapper_env, profiler_service):
+def _reclient_property(*, instance, service, jobs, rewrapper_env, profiler_service, publish_trace):
     reclient = {}
     instance = defaults.get_value("reclient_instance", instance)
     if instance:
@@ -309,6 +311,9 @@ def _reclient_property(*, instance, service, jobs, rewrapper_env, profiler_servi
     profiler_service = defaults.get_value("reclient_profiler_service", profiler_service)
     if profiler_service:
         reclient["profiler_service"] = profiler_service
+    publish_trace = defaults.get_value("reclient_publish_trace", publish_trace)
+    if publish_trace:
+        reclient["publish_trace"] = True
     return reclient or None
 
 ################################################################################
@@ -353,6 +358,7 @@ defaults = args.defaults(
     reclient_jobs = None,
     reclient_rewrapper_env = None,
     reclient_profiler_service = None,
+    reclient_publish_trace = None,
 
     # Provide vars for bucket and executable so users don't have to
     # unnecessarily make wrapper functions
@@ -403,6 +409,7 @@ def builder(
         reclient_jobs = args.DEFAULT,
         reclient_rewrapper_env = args.DEFAULT,
         reclient_profiler_service = args.DEFAULT,
+        reclient_publish_trace = args.DEFAULT,
         **kwargs):
     """Define a builder.
 
@@ -550,6 +557,7 @@ def builder(
         environment variables. All such vars must start with the "RBE_" prefix.
       * reclient_profiler_service - a string indicating service name for
         re-client's cloud profiler.
+      * reclient_publish_trace - If True, it publish trace by rpl2cloudtrace.
       * kwargs - Additional keyword arguments to forward on to `luci.builder`.
     """
 
@@ -697,6 +705,7 @@ def builder(
         jobs = reclient_jobs,
         rewrapper_env = reclient_rewrapper_env,
         profiler_service = reclient_profiler_service,
+        publish_trace = reclient_publish_trace,
     )
     if reclient != None:
         properties["$build/reclient"] = reclient

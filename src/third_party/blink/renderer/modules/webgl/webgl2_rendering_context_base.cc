@@ -12,6 +12,7 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_metric_builder.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_study_settings.h"
+#include "third_party/blink/public/common/privacy_budget/identifiable_token_builder.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/renderer/bindings/modules/v8/webgl_any.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
@@ -837,7 +838,7 @@ void WebGL2RenderingContextBase::readPixels(GLint x,
 
   // Due to WebGL's same-origin restrictions, it is not possible to
   // taint the origin using the WebGL API.
-  DCHECK(canvas()->OriginClean());
+  DCHECK(Host()->OriginClean());
 
   if (!ValidateValueFitNonNegInt32("readPixels", "offset", offset))
     return;

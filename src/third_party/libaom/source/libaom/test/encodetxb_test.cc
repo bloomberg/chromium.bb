@@ -26,7 +26,6 @@
 #include "av1/common/scan.h"
 #include "av1/common/txb_common.h"
 #include "test/acm_random.h"
-#include "test/clear_system_state.h"
 #include "test/register_state_check.h"
 #include "test/util.h"
 
@@ -57,7 +56,6 @@ class EncodeTxbTest : public ::testing::TestWithParam<GetNzMapContextsFunc> {
   virtual void TearDown() {
     aom_free(coeff_contexts_ref_);
     aom_free(coeff_contexts_);
-    libaom_test::ClearSystemState();
   }
 
   void GetNzMapContextsRun() {
@@ -214,7 +212,7 @@ class EncodeTxbInitLevelTest
     : public ::testing::TestWithParam<TxbInitLevelParam> {
  public:
   virtual ~EncodeTxbInitLevelTest() {}
-  virtual void TearDown() { libaom_test::ClearSystemState(); }
+  virtual void TearDown() {}
   void RunTest(av1_txb_init_levels_func test_func, int tx_size, int is_speed);
 };
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(EncodeTxbInitLevelTest);

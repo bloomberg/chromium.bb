@@ -15,9 +15,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
-#include "chrome/browser/optimization_guide/optimization_guide_hints_manager.h"
+#include "chrome/browser/optimization_guide/chrome_hints_manager.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
-#include "chrome/browser/optimization_guide/optimization_guide_web_contents_observer.h"
 #include "chrome/browser/optimization_guide/prediction/prediction_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
@@ -35,6 +34,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
@@ -46,46 +46,6 @@
 #endif
 
 namespace {
-
-// Returns the OptimizationGuideDecision from |optimization_target_decision|.
-optimization_guide::OptimizationGuideDecision
-GetOptimizationGuideDecisionFromOptimizationTargetDecision(
-    optimization_guide::OptimizationTargetDecision
-        optimization_target_decision) {
-  switch (optimization_target_decision) {
-    case optimization_guide::OptimizationTargetDecision::kPageLoadDoesNotMatch:
-    case optimization_guide::OptimizationTargetDecision::
-        kModelPredictionHoldback:
-      return optimization_guide::OptimizationGuideDecision::kFalse;
-    case optimization_guide::OptimizationTargetDecision::kPageLoadMatches:
-      return optimization_guide::OptimizationGuideDecision::kTrue;
-    case optimization_guide::OptimizationTargetDecision::
-        kModelNotAvailableOnClient:
-    case optimization_guide::OptimizationTargetDecision::kUnknown:
-    case optimization_guide::OptimizationTargetDecision::kDeciderNotInitialized:
-      return optimization_guide::OptimizationGuideDecision::kUnknown;
-  }
-}
-
-// Logs |optimization_target_decision| for |optimization_target| in a histogram
-// and passes the corresponding OptimizationGuideDecision to |callback|.
-void LogOptimizationTargetDecisionAndPassOptimizationGuideDecision(
-    optimization_guide::proto::OptimizationTarget optimization_target,
-    optimization_guide::OptimizationGuideTargetDecisionCallback callback,
-    optimization_guide::OptimizationTargetDecision
-        optimization_target_decision) {
-  base::UmaHistogramExactLinear(
-      "OptimizationGuide.TargetDecision." +
-          optimization_guide::GetStringNameForOptimizationTarget(
-              optimization_target),
-      static_cast<int>(optimization_target_decision),
-      static_cast<int>(
-          optimization_guide::OptimizationTargetDecision::kMaxValue));
-
-  std::move(callback).Run(
-      GetOptimizationGuideDecisionFromOptimizationTargetDecision(
-          optimization_target_decision));
-}
 
 const char kOldOptimizationGuideHintStore[] = "previews_hint_cache_store";
 
@@ -195,9 +155,10 @@ void OptimizationGuideKeyedService::Initialize() {
         prediction_model_and_features_store_.get();
   }
 
-  hints_manager_ = std::make_unique<OptimizationGuideHintsManager>(
+  hints_manager_ = std::make_unique<optimization_guide::ChromeHintsManager>(
       profile, profile->GetPrefs(), hint_store, top_host_provider_.get(),
-      tab_url_provider_.get(), url_loader_factory);
+      tab_url_provider_.get(), url_loader_factory,
+      content::GetNetworkConnectionTracker());
   prediction_manager_ = std::make_unique<optimization_guide::PredictionManager>(
       prediction_model_and_features_store, url_loader_factory,
       profile->GetPrefs(), profile);
@@ -208,22 +169,20 @@ void OptimizationGuideKeyedService::Initialize() {
   DeleteOldStorePaths(profile_path);
 }
 
-OptimizationGuideHintsManager*
+optimization_guide::ChromeHintsManager*
 OptimizationGuideKeyedService::GetHintsManager() {
   return hints_manager_.get();
 }
 
 void OptimizationGuideKeyedService::OnNavigationStartOrRedirect(
-    content::NavigationHandle* navigation_handle) {
+    OptimizationGuideNavigationData* navigation_data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  OptimizationGuideNavigationData* navigation_data =
-      GetNavigationDataFromNavigationHandle(navigation_handle);
   base::flat_set<optimization_guide::proto::OptimizationType>
       registered_optimization_types =
           hints_manager_->registered_optimization_types();
   if (!registered_optimization_types.empty()) {
-    hints_manager_->OnNavigationStartOrRedirect(navigation_handle,
+    hints_manager_->OnNavigationStartOrRedirect(navigation_data,
                                                 base::DoNothing());
   }
 
@@ -242,49 +201,6 @@ void OptimizationGuideKeyedService::OnNavigationFinish(
   hints_manager_->OnNavigationFinish(navigation_redirect_chain);
 }
 
-void OptimizationGuideKeyedService::RegisterOptimizationTargets(
-    const std::vector<optimization_guide::proto::OptimizationTarget>&
-        optimization_targets) {
-  std::vector<std::pair<optimization_guide::proto::OptimizationTarget,
-                        absl::optional<optimization_guide::proto::Any>>>
-      optimization_targets_and_metadata;
-  for (optimization_guide::proto::OptimizationTarget optimization_target :
-       optimization_targets) {
-    optimization_targets_and_metadata.emplace_back(
-        std::make_pair(optimization_target, absl::nullopt));
-  }
-  prediction_manager_->RegisterOptimizationTargets(
-      optimization_targets_and_metadata);
-}
-
-// static
-OptimizationGuideNavigationData*
-OptimizationGuideKeyedService::GetNavigationDataFromNavigationHandle(
-    content::NavigationHandle* navigation_handle) {
-  OptimizationGuideWebContentsObserver*
-      optimization_guide_web_contents_observer =
-          OptimizationGuideWebContentsObserver::FromWebContents(
-              navigation_handle->GetWebContents());
-  if (!optimization_guide_web_contents_observer)
-    return nullptr;
-  return optimization_guide_web_contents_observer
-      ->GetOrCreateOptimizationGuideNavigationData(navigation_handle);
-}
-
-void OptimizationGuideKeyedService::ShouldTargetNavigationAsync(
-    content::NavigationHandle* navigation_handle,
-    optimization_guide::proto::OptimizationTarget optimization_target,
-    optimization_guide::OptimizationGuideTargetDecisionCallback callback) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(navigation_handle->IsInMainFrame());
-
-  optimization_guide::OptimizationTargetDecision target_decision =
-      prediction_manager_->ShouldTargetNavigation(navigation_handle,
-                                                  optimization_target);
-  LogOptimizationTargetDecisionAndPassOptimizationGuideDecision(
-      optimization_target, std::move(callback), target_decision);
-}
-
 void OptimizationGuideKeyedService::AddObserverForOptimizationTargetModel(
     optimization_guide::proto::OptimizationTarget optimization_target,
     const absl::optional<optimization_guide::proto::Any>& model_metadata,
@@ -296,14 +212,14 @@ void OptimizationGuideKeyedService::AddObserverForOptimizationTargetModel(
 void OptimizationGuideKeyedService::RemoveObserverForOptimizationTargetModel(
     optimization_guide::proto::OptimizationTarget optimization_target,
     optimization_guide::OptimizationTargetModelObserver* observer) {
-    prediction_manager_->RemoveObserverForOptimizationTargetModel(
-        optimization_target, observer);
+  prediction_manager_->RemoveObserverForOptimizationTargetModel(
+      optimization_target, observer);
 }
 
 void OptimizationGuideKeyedService::RegisterOptimizationTypes(
     const std::vector<optimization_guide::proto::OptimizationType>&
         optimization_types) {
-    hints_manager_->RegisterOptimizationTypes(optimization_types);
+  hints_manager_->RegisterOptimizationTypes(optimization_types);
 }
 
 optimization_guide::OptimizationGuideDecision
@@ -322,7 +238,7 @@ OptimizationGuideKeyedService::CanApplyOptimization(
           optimization_guide::GetStringNameForOptimizationType(
               optimization_type),
       optimization_type_decision);
-  return OptimizationGuideHintsManager::
+  return optimization_guide::ChromeHintsManager::
       GetOptimizationGuideDecisionFromOptimizationTypeDecision(
           optimization_type_decision);
 }
@@ -355,10 +271,9 @@ void OptimizationGuideKeyedService::Shutdown() {
   hints_manager_->Shutdown();
 }
 
-void OptimizationGuideKeyedService::OverrideTargetModelFileForTesting(
+void OptimizationGuideKeyedService::OverrideTargetModelForTesting(
     optimization_guide::proto::OptimizationTarget optimization_target,
-    const absl::optional<optimization_guide::proto::Any>& model_metadata,
-    const base::FilePath& file_path) {
-  prediction_manager_->OverrideTargetModelFileForTesting(
-      optimization_target, model_metadata, file_path);
+    std::unique_ptr<optimization_guide::ModelInfo> model_info) {
+  prediction_manager_->OverrideTargetModelForTesting(  // IN-TEST
+      optimization_target, std::move(model_info));
 }

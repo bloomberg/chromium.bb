@@ -73,7 +73,8 @@ static const VkLayerProperties global_layer = {
 };
 
 static const VkExtensionProperties instance_extensions[] = {{VK_EXT_DEBUG_REPORT_EXTENSION_NAME, VK_EXT_DEBUG_REPORT_SPEC_VERSION},
-                                                            {VK_EXT_DEBUG_UTILS_EXTENSION_NAME, VK_EXT_DEBUG_UTILS_SPEC_VERSION}};
+                                                            {VK_EXT_DEBUG_UTILS_EXTENSION_NAME, VK_EXT_DEBUG_UTILS_SPEC_VERSION},
+                                                            {VK_EXT_VALIDATION_FEATURES_EXTENSION_NAME, VK_EXT_VALIDATION_FEATURES_SPEC_VERSION}};
 static const VkExtensionProperties device_extensions[] = {
     {VK_EXT_VALIDATION_CACHE_EXTENSION_NAME, VK_EXT_VALIDATION_CACHE_SPEC_VERSION},
     {VK_EXT_DEBUG_MARKER_EXTENSION_NAME, VK_EXT_DEBUG_MARKER_SPEC_VERSION},
@@ -380,11 +381,9 @@ VKAPI_ATTR void VKAPI_CALL DestroyInstance(VkInstance instance, const VkAllocati
     auto layer_data = GetLayerDataPtr(key, layer_data_map);
     ActivateInstanceDebugCallbacks(layer_data->report_data);
 
-    bool skip = false;
     for (auto intercept : layer_data->object_dispatch) {
         auto lock = intercept->read_lock();
-        skip |= (const_cast<const ValidationObject*>(intercept))->PreCallValidateDestroyInstance(instance, pAllocator);
-        //if (skip) return; // WORKAROUD: does not currently work properly
+        (const_cast<const ValidationObject*>(intercept))->PreCallValidateDestroyInstance(instance, pAllocator);
     }
     for (auto intercept : layer_data->object_dispatch) {
         auto lock = intercept->write_lock();
@@ -7181,6 +7180,31 @@ VKAPI_ATTR void VKAPI_CALL CmdSetFragmentShadingRateKHR(
 
 
 
+VKAPI_ATTR VkResult VKAPI_CALL WaitForPresentKHR(
+    VkDevice                                    device,
+    VkSwapchainKHR                              swapchain,
+    uint64_t                                    presentId,
+    uint64_t                                    timeout) {
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(device), layer_data_map);
+    bool skip = false;
+    for (auto intercept : layer_data->intercept_vectors[InterceptIdPreCallValidateWaitForPresentKHR]) {
+        auto lock = intercept->read_lock();
+        skip |= (const_cast<const ValidationObject*>(intercept))->PreCallValidateWaitForPresentKHR(device, swapchain, presentId, timeout);
+        if (skip) return VK_ERROR_VALIDATION_FAILED_EXT;
+    }
+    for (auto intercept : layer_data->intercept_vectors[InterceptIdPreCallRecordWaitForPresentKHR]) {
+        auto lock = intercept->write_lock();
+        intercept->PreCallRecordWaitForPresentKHR(device, swapchain, presentId, timeout);
+    }
+    VkResult result = DispatchWaitForPresentKHR(device, swapchain, presentId, timeout);
+    for (auto intercept : layer_data->intercept_vectors[InterceptIdPostCallRecordWaitForPresentKHR]) {
+        auto lock = intercept->write_lock();
+        intercept->PostCallRecordWaitForPresentKHR(device, swapchain, presentId, timeout, result);
+    }
+    return result;
+}
+
+
 
 VKAPI_ATTR VkDeviceAddress VKAPI_CALL GetBufferDeviceAddressKHR(
     VkDevice                                    device,
@@ -7432,6 +7456,7 @@ VKAPI_ATTR VkResult VKAPI_CALL GetPipelineExecutableInternalRepresentationsKHR(
     }
     return result;
 }
+
 
 
 
@@ -10707,6 +10732,7 @@ VKAPI_ATTR void VKAPI_CALL CmdSetStencilOpEXT(
 
 
 
+
 VKAPI_ATTR void VKAPI_CALL GetGeneratedCommandsMemoryRequirementsNV(
     VkDevice                                    device,
     const VkGeneratedCommandsMemoryRequirementsInfoNV* pInfo,
@@ -11248,25 +11274,92 @@ VKAPI_ATTR VkResult VKAPI_CALL GetSemaphoreZirconHandleFUCHSIA(
 #endif // VK_USE_PLATFORM_FUCHSIA
 
 
+VKAPI_ATTR VkResult VKAPI_CALL GetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI(
+    VkDevice                                    device,
+    VkRenderPass                                renderpass,
+    VkExtent2D*                                 pMaxWorkgroupSize) {
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(device), layer_data_map);
+    bool skip = false;
+    for (auto intercept : layer_data->intercept_vectors[InterceptIdPreCallValidateGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI]) {
+        auto lock = intercept->read_lock();
+        skip |= (const_cast<const ValidationObject*>(intercept))->PreCallValidateGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI(device, renderpass, pMaxWorkgroupSize);
+        if (skip) return VK_ERROR_VALIDATION_FAILED_EXT;
+    }
+    for (auto intercept : layer_data->intercept_vectors[InterceptIdPreCallRecordGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI]) {
+        auto lock = intercept->write_lock();
+        intercept->PreCallRecordGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI(device, renderpass, pMaxWorkgroupSize);
+    }
+    VkResult result = DispatchGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI(device, renderpass, pMaxWorkgroupSize);
+    for (auto intercept : layer_data->intercept_vectors[InterceptIdPostCallRecordGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI]) {
+        auto lock = intercept->write_lock();
+        intercept->PostCallRecordGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI(device, renderpass, pMaxWorkgroupSize, result);
+    }
+    return result;
+}
+
+VKAPI_ATTR void VKAPI_CALL CmdSubpassShadingHUAWEI(
+    VkCommandBuffer                             commandBuffer) {
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(commandBuffer), layer_data_map);
+    bool skip = false;
+    for (auto intercept : layer_data->intercept_vectors[InterceptIdPreCallValidateCmdSubpassShadingHUAWEI]) {
+        auto lock = intercept->read_lock();
+        skip |= (const_cast<const ValidationObject*>(intercept))->PreCallValidateCmdSubpassShadingHUAWEI(commandBuffer);
+        if (skip) return;
+    }
+    for (auto intercept : layer_data->intercept_vectors[InterceptIdPreCallRecordCmdSubpassShadingHUAWEI]) {
+        auto lock = intercept->write_lock();
+        intercept->PreCallRecordCmdSubpassShadingHUAWEI(commandBuffer);
+    }
+    DispatchCmdSubpassShadingHUAWEI(commandBuffer);
+    for (auto intercept : layer_data->intercept_vectors[InterceptIdPostCallRecordCmdSubpassShadingHUAWEI]) {
+        auto lock = intercept->write_lock();
+        intercept->PostCallRecordCmdSubpassShadingHUAWEI(commandBuffer);
+    }
+}
+
+
+VKAPI_ATTR void VKAPI_CALL CmdBindInvocationMaskHUAWEI(
+    VkCommandBuffer                             commandBuffer,
+    VkImageView                                 imageView,
+    VkImageLayout                               imageLayout) {
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(commandBuffer), layer_data_map);
+    bool skip = false;
+    for (auto intercept : layer_data->intercept_vectors[InterceptIdPreCallValidateCmdBindInvocationMaskHUAWEI]) {
+        auto lock = intercept->read_lock();
+        skip |= (const_cast<const ValidationObject*>(intercept))->PreCallValidateCmdBindInvocationMaskHUAWEI(commandBuffer, imageView, imageLayout);
+        if (skip) return;
+    }
+    for (auto intercept : layer_data->intercept_vectors[InterceptIdPreCallRecordCmdBindInvocationMaskHUAWEI]) {
+        auto lock = intercept->write_lock();
+        intercept->PreCallRecordCmdBindInvocationMaskHUAWEI(commandBuffer, imageView, imageLayout);
+    }
+    DispatchCmdBindInvocationMaskHUAWEI(commandBuffer, imageView, imageLayout);
+    for (auto intercept : layer_data->intercept_vectors[InterceptIdPostCallRecordCmdBindInvocationMaskHUAWEI]) {
+        auto lock = intercept->write_lock();
+        intercept->PostCallRecordCmdBindInvocationMaskHUAWEI(commandBuffer, imageView, imageLayout);
+    }
+}
+
+
 VKAPI_ATTR VkResult VKAPI_CALL GetMemoryRemoteAddressNV(
     VkDevice                                    device,
-    const VkMemoryGetRemoteAddressInfoNV*       getMemoryRemoteAddressInfo,
+    const VkMemoryGetRemoteAddressInfoNV*       pMemoryGetRemoteAddressInfo,
     VkRemoteAddressNV*                          pAddress) {
     auto layer_data = GetLayerDataPtr(get_dispatch_key(device), layer_data_map);
     bool skip = false;
     for (auto intercept : layer_data->intercept_vectors[InterceptIdPreCallValidateGetMemoryRemoteAddressNV]) {
         auto lock = intercept->read_lock();
-        skip |= (const_cast<const ValidationObject*>(intercept))->PreCallValidateGetMemoryRemoteAddressNV(device, getMemoryRemoteAddressInfo, pAddress);
+        skip |= (const_cast<const ValidationObject*>(intercept))->PreCallValidateGetMemoryRemoteAddressNV(device, pMemoryGetRemoteAddressInfo, pAddress);
         if (skip) return VK_ERROR_VALIDATION_FAILED_EXT;
     }
     for (auto intercept : layer_data->intercept_vectors[InterceptIdPreCallRecordGetMemoryRemoteAddressNV]) {
         auto lock = intercept->write_lock();
-        intercept->PreCallRecordGetMemoryRemoteAddressNV(device, getMemoryRemoteAddressInfo, pAddress);
+        intercept->PreCallRecordGetMemoryRemoteAddressNV(device, pMemoryGetRemoteAddressInfo, pAddress);
     }
-    VkResult result = DispatchGetMemoryRemoteAddressNV(device, getMemoryRemoteAddressInfo, pAddress);
+    VkResult result = DispatchGetMemoryRemoteAddressNV(device, pMemoryGetRemoteAddressInfo, pAddress);
     for (auto intercept : layer_data->intercept_vectors[InterceptIdPostCallRecordGetMemoryRemoteAddressNV]) {
         auto lock = intercept->write_lock();
-        intercept->PostCallRecordGetMemoryRemoteAddressNV(device, getMemoryRemoteAddressInfo, pAddress, result);
+        intercept->PostCallRecordGetMemoryRemoteAddressNV(device, pMemoryGetRemoteAddressInfo, pAddress, result);
     }
     return result;
 }
@@ -11502,6 +11595,7 @@ VKAPI_ATTR void VKAPI_CALL CmdDrawMultiIndexedEXT(
         intercept->PostCallRecordCmdDrawMultiIndexedEXT(commandBuffer, drawCount, pIndexInfo, instanceCount, firstInstance, stride, pVertexOffset);
     }
 }
+
 
 
 VKAPI_ATTR VkResult VKAPI_CALL CreateAccelerationStructureKHR(
@@ -12344,6 +12438,7 @@ const layer_data::unordered_map<std::string, function_data> name_to_funcptr_map 
     {"vkSignalSemaphoreKHR", {kFuncTypeDev, (void*)SignalSemaphoreKHR}},
     {"vkGetPhysicalDeviceFragmentShadingRatesKHR", {kFuncTypePdev, (void*)GetPhysicalDeviceFragmentShadingRatesKHR}},
     {"vkCmdSetFragmentShadingRateKHR", {kFuncTypeDev, (void*)CmdSetFragmentShadingRateKHR}},
+    {"vkWaitForPresentKHR", {kFuncTypeDev, (void*)WaitForPresentKHR}},
     {"vkGetBufferDeviceAddressKHR", {kFuncTypeDev, (void*)GetBufferDeviceAddressKHR}},
     {"vkGetBufferOpaqueCaptureAddressKHR", {kFuncTypeDev, (void*)GetBufferOpaqueCaptureAddressKHR}},
     {"vkGetDeviceMemoryOpaqueCaptureAddressKHR", {kFuncTypeDev, (void*)GetDeviceMemoryOpaqueCaptureAddressKHR}},
@@ -12566,6 +12661,9 @@ const layer_data::unordered_map<std::string, function_data> name_to_funcptr_map 
 #ifdef VK_USE_PLATFORM_FUCHSIA
     {"vkGetSemaphoreZirconHandleFUCHSIA", {kFuncTypeDev, (void*)GetSemaphoreZirconHandleFUCHSIA}},
 #endif
+    {"vkGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI", {kFuncTypeDev, (void*)GetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI}},
+    {"vkCmdSubpassShadingHUAWEI", {kFuncTypeDev, (void*)CmdSubpassShadingHUAWEI}},
+    {"vkCmdBindInvocationMaskHUAWEI", {kFuncTypeDev, (void*)CmdBindInvocationMaskHUAWEI}},
     {"vkGetMemoryRemoteAddressNV", {kFuncTypeDev, (void*)GetMemoryRemoteAddressNV}},
     {"vkCmdSetPatchControlPointsEXT", {kFuncTypeDev, (void*)CmdSetPatchControlPointsEXT}},
     {"vkCmdSetRasterizerDiscardEnableEXT", {kFuncTypeDev, (void*)CmdSetRasterizerDiscardEnableEXT}},

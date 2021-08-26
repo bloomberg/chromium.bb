@@ -38,6 +38,7 @@ std::string expected_texture_overload(
     case ValidTextureOverload::kDimensionsDepth2dArray:
     case ValidTextureOverload::kDimensionsDepthCube:
     case ValidTextureOverload::kDimensionsDepthCubeArray:
+    case ValidTextureOverload::kDimensionsDepthMultisampled2d:
     case ValidTextureOverload::kDimensionsStorageRO2d:
     case ValidTextureOverload::kDimensionsStorageRO2dArray:
     case ValidTextureOverload::kDimensionsStorageWO2d:
@@ -74,6 +75,7 @@ std::string expected_texture_overload(
     case ValidTextureOverload::kNumLevelsDepthCube:
     case ValidTextureOverload::kNumLevelsDepthCubeArray:
       return R"(int(texture.get_num_mip_levels()))";
+    case ValidTextureOverload::kNumSamplesDepthMultisampled2d:
     case ValidTextureOverload::kNumSamplesMultisampled2d:
       return R"(int(texture.get_num_samples()))";
     case ValidTextureOverload::kSample1dF32:
@@ -153,15 +155,15 @@ std::string expected_texture_overload(
     case ValidTextureOverload::kSampleGrad2dF32:
       return R"(texture.sample(sampler, float2(1.0f, 2.0f), gradient2d(float2(3.0f, 4.0f), float2(5.0f, 6.0f))))";
     case ValidTextureOverload::kSampleGrad2dOffsetF32:
-      return R"(texture.sample(sampler, float2(1.0f, 2.0f), gradient2d(float2(3.0f, 4.0f), float2(5.0f, 6.0f)), int2(7, 8)))";
+      return R"(texture.sample(sampler, float2(1.0f, 2.0f), gradient2d(float2(3.0f, 4.0f), float2(5.0f, 6.0f)), int2(7, 7)))";
     case ValidTextureOverload::kSampleGrad2dArrayF32:
       return R"(texture.sample(sampler, float2(1.0f, 2.0f), 3, gradient2d(float2(4.0f, 5.0f), float2(6.0f, 7.0f))))";
     case ValidTextureOverload::kSampleGrad2dArrayOffsetF32:
-      return R"(texture.sample(sampler, float2(1.0f, 2.0f), 3, gradient2d(float2(4.0f, 5.0f), float2(6.0f, 7.0f)), int2(8, 9)))";
+      return R"(texture.sample(sampler, float2(1.0f, 2.0f), 3, gradient2d(float2(4.0f, 5.0f), float2(6.0f, 7.0f)), int2(6, 7)))";
     case ValidTextureOverload::kSampleGrad3dF32:
       return R"(texture.sample(sampler, float3(1.0f, 2.0f, 3.0f), gradient3d(float3(4.0f, 5.0f, 6.0f), float3(7.0f, 8.0f, 9.0f))))";
     case ValidTextureOverload::kSampleGrad3dOffsetF32:
-      return R"(texture.sample(sampler, float3(1.0f, 2.0f, 3.0f), gradient3d(float3(4.0f, 5.0f, 6.0f), float3(7.0f, 8.0f, 9.0f)), int3(10, 11, 12)))";
+      return R"(texture.sample(sampler, float3(1.0f, 2.0f, 3.0f), gradient3d(float3(4.0f, 5.0f, 6.0f), float3(7.0f, 8.0f, 9.0f)), int3(0, 1, 2)))";
     case ValidTextureOverload::kSampleGradCubeF32:
       return R"(texture.sample(sampler, float3(1.0f, 2.0f, 3.0f), gradientcube(float3(4.0f, 5.0f, 6.0f), float3(7.0f, 8.0f, 9.0f))))";
     case ValidTextureOverload::kSampleGradCubeArrayF32:
@@ -221,6 +223,7 @@ std::string expected_texture_overload(
     case ValidTextureOverload::kLoadMultisampled2dI32:
       return R"(texture.read(uint2(int2(1, 2)), 3))";
     case ValidTextureOverload::kLoadDepth2dLevelF32:
+    case ValidTextureOverload::kLoadDepthMultisampled2dF32:
       return R"(texture.read(uint2(int2(1, 2)), 3))";
     case ValidTextureOverload::kLoadDepth2dArrayLevelF32:
       return R"(texture.read(uint2(int2(1, 2)), 3, 4))";
@@ -270,14 +273,11 @@ TEST_P(MslGeneratorIntrinsicTextureTest, Call) {
 
   auto* call =
       create<ast::CallExpression>(Expr(param.function), param.args(this));
+  auto* stmt = ast::intrinsic::test::ReturnsVoid(param.overload)
+                   ? create<ast::CallStatement>(call)
+                   : Ignore(call);
 
-  Func("main", ast::VariableList{}, ty.void_(),
-       ast::StatementList{
-           Ignore(call),
-       },
-       ast::DecorationList{
-           Stage(ast::PipelineStage::kFragment),
-       });
+  Func("main", {}, ty.void_(), {stmt}, {Stage(ast::PipelineStage::kFragment)});
 
   GeneratorImpl& gen = Build();
 

@@ -49,11 +49,11 @@ namespace dawn_native { namespace d3d12 {
             if (usage & wgpu::TextureUsage::CopyDst) {
                 resourceState |= D3D12_RESOURCE_STATE_COPY_DEST;
             }
-            if (usage & (wgpu::TextureUsage::Sampled | kReadOnlyStorageTexture)) {
+            if (usage & (wgpu::TextureUsage::TextureBinding | kReadOnlyStorageTexture)) {
                 resourceState |= (D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE |
                                   D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
             }
-            if (usage & wgpu::TextureUsage::Storage) {
+            if (usage & wgpu::TextureUsage::StorageBinding) {
                 resourceState |= D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
             }
             if (usage & wgpu::TextureUsage::RenderAttachment) {
@@ -72,7 +72,7 @@ namespace dawn_native { namespace d3d12 {
                                                 bool isMultisampledTexture) {
             D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE;
 
-            if (usage & wgpu::TextureUsage::Storage) {
+            if (usage & wgpu::TextureUsage::StorageBinding) {
                 flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
             }
 
@@ -481,6 +481,8 @@ namespace dawn_native { namespace d3d12 {
         // memory management.
         mResourceAllocation = {info, 0, std::move(d3d12Texture), nullptr};
 
+        DAWN_TRY(mResourceAllocation.SetDebugName("Dawn_ExternalTexture"));
+
         return {};
     }
 
@@ -497,7 +499,8 @@ namespace dawn_native { namespace d3d12 {
         // This will need to be much more nuanced when WebGPU has
         // texture view compatibility rules.
         const bool needsTypelessFormat =
-            GetFormat().HasDepthOrStencil() && (GetUsage() & wgpu::TextureUsage::Sampled) != 0;
+            GetFormat().HasDepthOrStencil() &&
+            (GetInternalUsage() & wgpu::TextureUsage::TextureBinding) != 0;
 
         DXGI_FORMAT dxgiFormat = needsTypelessFormat
                                      ? D3D12TypelessTextureFormat(GetFormat().format)
@@ -509,13 +512,15 @@ namespace dawn_native { namespace d3d12 {
         resourceDescriptor.SampleDesc.Quality = 0;
         resourceDescriptor.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
         resourceDescriptor.Flags =
-            D3D12ResourceFlags(GetUsage(), GetFormat(), IsMultisampledTexture());
+            D3D12ResourceFlags(GetInternalUsage(), GetFormat(), IsMultisampledTexture());
         mD3D12ResourceFlags = resourceDescriptor.Flags;
 
         DAWN_TRY_ASSIGN(mResourceAllocation,
                         ToBackend(GetDevice())
                             ->AllocateMemory(D3D12_HEAP_TYPE_DEFAULT, resourceDescriptor,
                                              D3D12_RESOURCE_STATE_COMMON));
+
+        DAWN_TRY(mResourceAllocation.SetDebugName("Dawn_InternalTexture"));
 
         Device* device = ToBackend(GetDevice());
 
@@ -537,6 +542,8 @@ namespace dawn_native { namespace d3d12 {
         // texture is owned externally. The texture's owning entity must remain responsible for
         // memory management.
         mResourceAllocation = {info, 0, std::move(d3d12Texture), nullptr};
+
+        DAWN_TRY(mResourceAllocation.SetDebugName("Dawn_SwapChainTexture"));
         return {};
     }
 

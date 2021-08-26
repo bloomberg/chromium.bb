@@ -8,22 +8,38 @@
 #include <string>
 #include <vector>
 
+#include "ash/components/enhanced_network_tts/mojom/enhanced_network_tts.mojom.h"
 #include "base/values.h"
 
 namespace ash {
 namespace enhanced_network_tts {
 
-// Format the |input_text| to a JSON string that will be accepted by the
+// Format the |tts_request| to a JSON string that will be accepted by the
 // ReadAloud server.
-std::string FormatJsonRequest(const std::string& input_text);
+std::string FormatJsonRequest(const mojom::TtsRequestPtr tts_request);
 
-// Generate a result when encountering errors (e.g., server error, parsing
-// error). We return an empty vector for now.
-// TODO(crbug.com/1217301): Provide more specific error information.
-std::vector<uint8_t> GetResultOnError();
+// Find text breaks for the |utterance|. The text breaks should chunk the
+// utterance into text pieces shorter than |length_limit|. When finding the
+// breaks, we should match text breaks with sentence ends to avoid splitting
+// a sentence into two chunks. If that is not possible, we try to match text
+// breaks with word ends. If that still fails, it indicates that the utterance
+// contains a over-length word and we calculate text breaks using
+// |length_limit| directly. The returned vector contains the indexes for the
+// breaks. For example, a [2, 4] vector means we should pass the utterance
+// "hello" as: "hel" and "lo".
+std::vector<uint16_t> FindTextBreaks(const std::string& utterance,
+                                     const int length_limit);
 
-// Unpack the JSON audio data from the server response to a vector.
-std::vector<uint8_t> UnpackJsonResponse(const base::Value& json_data);
+// Generate a response when encountering errors (e.g., server error, unexpected
+// data).
+mojom::TtsResponsePtr GetResultOnError(const mojom::TtsRequestError error_code);
+
+// Unpack the JSON audio data from the server response. The data corresponds to
+// the text piece that has the |start_index| in the original input utterance.
+// |last_request| indicates if this is the last JSON data we expect.
+mojom::TtsResponsePtr UnpackJsonResponse(const base::Value& json_data,
+                                         const int start_index,
+                                         const bool last_request);
 
 }  // namespace enhanced_network_tts
 }  // namespace ash

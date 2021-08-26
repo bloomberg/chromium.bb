@@ -379,6 +379,8 @@ static_library("browser") {
       "payments/autofill_save_card_infobar_delegate_mobile.cc",
       "payments/autofill_save_card_infobar_delegate_mobile.h",
       "payments/autofill_save_card_infobar_mobile.h",
+      "payments/autofill_save_card_ui_utils_mobile.cc",
+      "payments/autofill_save_card_ui_utils_mobile.h",
       "ui/mobile_label_formatter.cc",
       "ui/mobile_label_formatter.h",
       "ui/payments/card_expiration_date_fix_flow_controller.h",
@@ -477,6 +479,10 @@ static_library("browser") {
     ]
   }
 
+  if (is_android) {
+    deps += [ "//components/messages/android:feature_flags" ]
+  }
+
   if (!is_android && !is_ios) {
     sources += [
       "payments/local_card_migration_manager.cc",
@@ -493,8 +499,6 @@ static_library("browser") {
       "//ui/native_theme:native_theme_browser",
     ]
   }
-
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 }
 
 static_library("test_support") {
@@ -704,6 +708,7 @@ source_set("unit_tests") {
     "data_model/credit_card_unittest.cc",
     "data_model/phone_number_unittest.cc",
     "field_filler_unittest.cc",
+    "field_types_unittest.cc",
     "form_data_importer_unittest.cc",
     "form_parsing/address_field_unittest.cc",
     "form_parsing/credit_card_field_unittest.cc",

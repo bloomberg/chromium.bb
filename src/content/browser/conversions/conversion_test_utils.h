@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include <list>
 #include <vector>
 
 #include "base/containers/circular_deque.h"
@@ -16,17 +15,20 @@
 #include "base/time/time.h"
 #include "content/browser/conversions/conversion_manager.h"
 #include "content/browser/conversions/conversion_manager_impl.h"
+#include "content/browser/conversions/conversion_policy.h"
 #include "content/browser/conversions/conversion_report.h"
 #include "content/browser/conversions/conversion_storage.h"
 #include "content/browser/conversions/sent_report_info.h"
-#include "content/browser/conversions/storable_conversion.h"
 #include "content/browser/conversions/storable_impression.h"
 #include "content/test/test_content_browser_client.h"
 #include "net/base/schemeful_site.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/origin.h"
 
 namespace content {
+
+class StorableConversion;
 
 class ConversionDisallowingContentBrowserClient
     : public TestContentBrowserClient {
@@ -89,6 +91,8 @@ class ConfigurableStorageDelegate : public ConversionStorage::Delegate {
       const StorableImpression& impression) const override;
   int GetMaxAttributionDestinationsPerEventSource() const override;
   uint64_t GetFakeEventSourceTriggerData() const override;
+  base::TimeDelta GetDeleteExpiredImpressionsFrequency() const override;
+  base::TimeDelta GetDeleteExpiredRateLimitsFrequency() const override;
 
   void set_max_conversions_per_impression(int max) {
     max_conversions_per_impression_ = max;
@@ -117,6 +121,14 @@ class ConfigurableStorageDelegate : public ConversionStorage::Delegate {
     fake_event_source_trigger_data_ = data;
   }
 
+  void set_delete_expired_impressions_frequency(base::TimeDelta frequency) {
+    delete_expired_impressions_frequency_ = frequency;
+  }
+
+  void set_delete_expired_rate_limits_frequency(base::TimeDelta frequency) {
+    delete_expired_rate_limits_frequency_ = frequency;
+  }
+
   void set_report_time_ms(int report_time_ms) {
     report_time_ms_ = report_time_ms;
   }
@@ -136,6 +148,9 @@ class ConfigurableStorageDelegate : public ConversionStorage::Delegate {
       StorableImpression::AttributionLogic::kTruthfully;
 
   uint64_t fake_event_source_trigger_data_ = 0;
+
+  base::TimeDelta delete_expired_impressions_frequency_;
+  base::TimeDelta delete_expired_rate_limits_frequency_;
 
   int report_time_ms_ = 0;
 };
@@ -250,6 +265,9 @@ class ImpressionBuilder {
   ImpressionBuilder& SetImpressionId(absl::optional<int64_t> impression_id)
       WARN_UNUSED_RESULT;
 
+  ImpressionBuilder& SetDedupKeys(std::vector<int64_t> dedup_keys)
+      WARN_UNUSED_RESULT;
+
   StorableImpression Build() const WARN_UNUSED_RESULT;
 
  private:
@@ -262,6 +280,7 @@ class ImpressionBuilder {
   StorableImpression::SourceType source_type_;
   int64_t priority_;
   absl::optional<int64_t> impression_id_;
+  std::vector<int64_t> dedup_keys_;
 };
 
 // Returns a StorableConversion with default data which matches the default
@@ -274,7 +293,7 @@ StorableConversion DefaultConversion() WARN_UNUSED_RESULT;
 class ConversionBuilder {
  public:
   ConversionBuilder();
-  ~ConversionBuilder() = default;
+  ~ConversionBuilder();
 
   ConversionBuilder& SetConversionData(uint64_t conversion_data)
       WARN_UNUSED_RESULT;
@@ -290,6 +309,9 @@ class ConversionBuilder {
 
   ConversionBuilder& SetPriority(int64_t priority) WARN_UNUSED_RESULT;
 
+  ConversionBuilder& SetDedupKey(absl::optional<int64_t> dedup_key)
+      WARN_UNUSED_RESULT;
+
   StorableConversion Build() const WARN_UNUSED_RESULT;
 
  private:
@@ -298,6 +320,7 @@ class ConversionBuilder {
   net::SchemefulSite conversion_destination_;
   url::Origin reporting_origin_;
   int64_t priority_ = 0;
+  absl::optional<int64_t> dedup_key_ = absl::nullopt;
 };
 
 bool operator==(const StorableImpression& a, const StorableImpression& b);
@@ -309,6 +332,8 @@ bool operator==(const SentReportInfo& a, const SentReportInfo& b);
 std::vector<ConversionReport> GetConversionsToReportForTesting(
     ConversionManagerImpl* manager,
     base::Time max_report_time) WARN_UNUSED_RESULT;
+
+SentReportInfo GetBlankSentReportInfo();
 
 }  // namespace content
 

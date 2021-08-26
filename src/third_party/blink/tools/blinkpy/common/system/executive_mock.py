@@ -29,6 +29,7 @@
 import collections
 import logging
 import os
+import six
 
 from blinkpy.common.system.executive import ScriptError
 
@@ -50,8 +51,8 @@ class MockProcess(object):
 
     def poll(self):
         # Consider the process completed when all the stdout and stderr has been read.
-        if (self.stdout.len != self.stdout.tell()
-                or self.stderr.len != self.stderr.tell()):
+        if (len(self.stdout.getvalue()) != self.stdout.tell()
+                or len(self.stderr.getvalue()) != self.stderr.tell()):
             return None
         return self.returncode
 
@@ -169,7 +170,7 @@ class MockExecutive(object):
         output = self._output
         if return_stderr:
             output += self._stderr
-        if decode_output and not isinstance(output, unicode):
+        if decode_output and not isinstance(output, six.text_type):
             output = output.decode('utf-8')
 
         return output
@@ -184,7 +185,7 @@ class MockExecutive(object):
         pass
 
     def popen(self, args, cwd=None, env=None, **_):
-        assert all(isinstance(arg, basestring) for arg in args)
+        assert all(isinstance(arg, six.string_types) for arg in args)
         self._append_call(args, cwd=cwd, env=env)
         if self._should_log:
             cwd_string = ''

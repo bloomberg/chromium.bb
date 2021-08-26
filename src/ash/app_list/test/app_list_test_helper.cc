@@ -9,8 +9,8 @@
 #include "ash/app_list/app_list_bubble_presenter.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/app_list_presenter_impl.h"
-#include "ash/app_list/bubble/app_list_bubble_apps_page.h"
-#include "ash/app_list/bubble/app_list_bubble_view.h"
+#include "ash/app_list/views/app_list_bubble_apps_page.h"
+#include "ash/app_list/views/app_list_bubble_view.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/shell.h"
 #include "base/run_loop.h"
@@ -97,6 +97,10 @@ AppListBubbleAppsPage* AppListTestHelper::GetBubbleAppsPage() {
   return app_list_controller_->bubble_presenter_for_test()
       ->bubble_view_for_test()
       ->apps_page_;
+}
+
+ContinueSectionView* AppListTestHelper::GetContinueSectionView() {
+  return GetBubbleAppsPage()->continue_section_;
 }
 
 RecentAppsView* AppListTestHelper::GetBubbleRecentAppsView() {

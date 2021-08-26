@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
-import type {NodeParamConnectionData, NodesConnectionData} from './GraphStyle.js'; // eslint-disable-line no-unused-vars
+import type {NodeParamConnectionData, NodesConnectionData} from './GraphStyle.js';
 import {generateInputPortId, generateOutputPortId, generateParamPortId} from './NodeView.js';
 
 // A class that represents an edge of a graph, including node-to-node connection,

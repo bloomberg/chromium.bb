@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {AccountInfo, DiceWebSigninInterceptBrowserProxy, InterceptionParameters} from 'chrome://signin-dice-web-intercept/dice_web_signin_intercept_browser_proxy.js';
-
-import {TestBrowserProxy} from '../test_browser_proxy.m.js';
+import {TestBrowserProxy} from '../test_browser_proxy.js';
 
 /** @implements {DiceWebSigninInterceptBrowserProxy} */
 export class TestDiceWebSigninInterceptBrowserProxy extends TestBrowserProxy {

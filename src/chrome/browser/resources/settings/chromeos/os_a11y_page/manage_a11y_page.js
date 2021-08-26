@@ -233,7 +233,9 @@ Polymer({
     /** @private */
     dictationLocaleMenuSubtitle_: {
       type: String,
-      value: '',
+      computed: 'computeDictationLocaleSubtitle_(' +
+          'dictationLocaleOptions_, ' +
+          'prefs.settings.a11y.dictation_locale.value)',
     },
 
     /** @private */
@@ -257,6 +259,12 @@ Polymer({
       value() {
         return [];
       }
+    },
+
+    /** @private */
+    showDictationLocaleMenu_: {
+      type: Boolean,
+      value: false,
     },
 
     /**
@@ -665,25 +673,16 @@ Polymer({
                 recommended: localeInfo.recommended ||
                     localeInfo.value === currentLocale,
               };
-            })
-            .sort((first, second) => {
-              // All recommended locales go first.
-              // TODO(crbug.com/1195916): Display recommended languages at the
-              // top of the select options with a horizontal divider before all
-              // languages.
-              if (first.recommended !== second.recommended) {
-                return first.recommended ? -1 : 1;
-              }
-              return first.name.localeCompare(second.name);
             });
-    this.updateDictationLocaleSubtitle_();
   },
 
   /**
-   * Updates the Dictation locale subtitle.
+   * Calculates the Dictation locale subtitle based on the current
+   * locale from prefs and the offline availability of that locale.
+   * @return {string}
    * @private
    */
-  updateDictationLocaleSubtitle_() {
+  computeDictationLocaleSubtitle_() {
     const currentLocale =
         this.get('prefs.settings.a11y.dictation_locale.value');
     const locale = this.dictationLocaleOptions_.find(
@@ -691,9 +690,21 @@ Polymer({
     if (!locale) {
       return '';
     }
-    this.dictationLocaleMenuSubtitle_ = this.i18n(
+    return this.i18n(
         locale.offline ? 'dictationLocaleSubLabelOffline' :
                          'dictationLocaleSubLabelNetwork',
         locale.name);
-  }
+  },
+
+  /** @private */
+  onChangeDictationLocaleButtonClicked_() {
+    if (this.areDictationLocalePrefsAllowed_) {
+      this.showDictationLocaleMenu_ = true;
+    }
+  },
+
+  /** @private */
+  onChangeDictationLocalesDialogClosed_() {
+    this.showDictationLocaleMenu_ = false;
+  },
 });

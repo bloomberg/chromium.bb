@@ -5,14 +5,15 @@
 import './diagnostics_card.js';
 import './diagnostics_fonts_css.js';
 import './diagnostics_shared_css.js';
+import './ip_config_info_drawer.js';
 import './network_info.js';
 import './routine_section.js';
-import 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.m.js';
 
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Network, NetworkHealthProviderInterface, NetworkStateObserverInterface, NetworkStateObserverReceiver, NetworkType, RoutineType} from './diagnostics_types.js';
-import {getNetworkState, getNetworkType} from './diagnostics_utils.js';
+import {getNetworkState, getNetworkType, getRoutinesByNetworkType} from './diagnostics_utils.js';
 import {getNetworkHealthProvider} from './mojo_interface_provider.js';
 
 
@@ -24,6 +25,8 @@ Polymer({
   is: 'connectivity-card',
 
   _template: html`{__html_template__}`,
+
+  behaviors: [I18nBehavior],
 
   /**
    * @private {?NetworkHealthProviderInterface}
@@ -47,19 +50,8 @@ Polymer({
     /** @private {!Array<!RoutineType>} */
     routines_: {
       type: Array,
-      value: [
-        RoutineType.kCaptivePortal,
-        RoutineType.kDnsLatency,
-        RoutineType.kDnsResolution,
-        RoutineType.kDnsResolverPresent,
-        RoutineType.kGatewayCanBePinged,
-        RoutineType.kHasSecureWiFiConnection,
-        RoutineType.kHttpFirewall,
-        RoutineType.kHttpsFirewall,
-        RoutineType.kHttpsLatency,
-        RoutineType.kLanConnectivity,
-        RoutineType.kSignalStrength,
-      ],
+      value: [],
+      computed: 'computeRoutines_(activeGuid, network.type)',
     },
 
     /** @type {string} */
@@ -89,12 +81,6 @@ Polymer({
       type: String,
       value: '',
     },
-
-    /** @private {boolean} */
-    expanded_: {
-      type: Boolean,
-      value: false,
-    },
   },
 
   observers: ['observeNetwork_(activeGuid)'],
@@ -102,6 +88,18 @@ Polymer({
   /** @override */
   created() {
     this.networkHealthProvider_ = getNetworkHealthProvider();
+  },
+
+  computeRoutines_() {
+    if (!this.network) {
+      return [];
+    }
+
+    return getRoutinesByNetworkType(this.network.type);
+  },
+
+  displayRoutines_() {
+    return this.routines_ && this.routines_.length > 0;
   },
 
   /** @private */
@@ -144,7 +142,6 @@ Polymer({
 
   /** @protected */
   getNetworkCardTitle_() {
-    // TODO(michaelcheco): Map network state to an icon or localize.
     var title = this.networkType_;
     if (this.networkState_) {
       title = title + ' (' + this.networkState_ + ')';

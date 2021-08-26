@@ -15,6 +15,7 @@
 #include "core/fxcrt/fx_folder.h"
 #include "core/fxcrt/fx_memory_wrappers.h"
 #include "core/fxcrt/fx_safe_types.h"
+#include "core/fxcrt/fx_system.h"
 #include "core/fxge/cfx_fontmapper.h"
 #include "core/fxge/fx_font.h"
 #include "third_party/base/containers/contains.h"
@@ -86,9 +87,9 @@ ByteString LoadTableFromTT(FILE* pFile,
                            uint32_t fileSize) {
   for (uint32_t i = 0; i < nTables; i++) {
     const uint8_t* p = pTables + i * 16;
-    if (GET_TT_LONG(p) == tag) {
-      uint32_t offset = GET_TT_LONG(p + 8);
-      uint32_t size = GET_TT_LONG(p + 12);
+    if (FXSYS_UINT32_GET_MSBFIRST(p) == tag) {
+      uint32_t offset = FXSYS_UINT32_GET_MSBFIRST(p + 8);
+      uint32_t size = FXSYS_UINT32_GET_MSBFIRST(p + 12);
       if (offset > std::numeric_limits<uint32_t>::max() - size ||
           offset + size > fileSize || fseek(pFile, offset, SEEK_SET) < 0) {
         return ByteString();
@@ -99,19 +100,19 @@ ByteString LoadTableFromTT(FILE* pFile,
   return ByteString();
 }
 
-uint32_t GetCharset(int charset) {
+uint32_t GetCharset(FX_Charset charset) {
   switch (charset) {
-    case FX_CHARSET_ShiftJIS:
+    case FX_Charset::kShiftJIS:
       return CHARSET_FLAG_SHIFTJIS;
-    case FX_CHARSET_ChineseSimplified:
+    case FX_Charset::kChineseSimplified:
       return CHARSET_FLAG_GB;
-    case FX_CHARSET_ChineseTraditional:
+    case FX_Charset::kChineseTraditional:
       return CHARSET_FLAG_BIG5;
-    case FX_CHARSET_Hangul:
+    case FX_Charset::kHangul:
       return CHARSET_FLAG_KOREAN;
-    case FX_CHARSET_Symbol:
+    case FX_Charset::kSymbol:
       return CHARSET_FLAG_SYMBOL;
-    case FX_CHARSET_ANSI:
+    case FX_Charset::kANSI:
       return CHARSET_FLAG_ANSI;
     default:
       break;
@@ -205,12 +206,12 @@ void CFX_FolderFontInfo::ScanFile(const ByteString& path) {
   if (readCnt != 1)
     return;
 
-  if (GET_TT_LONG(buffer) != kTableTTCF) {
+  if (FXSYS_UINT32_GET_MSBFIRST(buffer) != kTableTTCF) {
     ReportFace(path, pFile.get(), filesize, 0);
     return;
   }
 
-  uint32_t nFaces = GET_TT_LONG(buffer + 8);
+  uint32_t nFaces = FXSYS_UINT32_GET_MSBFIRST(buffer + 8);
   FX_SAFE_SIZE_T safe_face_bytes = nFaces;
   safe_face_bytes *= 4;
   if (!safe_face_bytes.IsValid())
@@ -224,8 +225,10 @@ void CFX_FolderFontInfo::ScanFile(const ByteString& path) {
     return;
 
   auto offsets_span = pdfium::make_span(offsets.get(), face_bytes);
-  for (uint32_t i = 0; i < nFaces; i++)
-    ReportFace(path, pFile.get(), filesize, GET_TT_LONG(&offsets_span[i * 4]));
+  for (uint32_t i = 0; i < nFaces; i++) {
+    ReportFace(path, pFile.get(), filesize,
+               FXSYS_UINT32_GET_MSBFIRST(&offsets_span[i * 4]));
+  }
 }
 
 void CFX_FolderFontInfo::ReportFace(const ByteString& path,
@@ -236,7 +239,7 @@ void CFX_FolderFontInfo::ReportFace(const ByteString& path,
   if (fseek(pFile, offset, SEEK_SET) < 0 || !fread(buffer, 12, 1, pFile))
     return;
 
-  uint32_t nTables = GET_TT_SHORT(buffer + 4);
+  uint32_t nTables = FXSYS_UINT16_GET_MSBFIRST(buffer + 4);
   ByteString tables = ReadStringFromFile(pFile, nTables * 16);
   if (tables.IsEmpty())
     return;
@@ -263,29 +266,29 @@ void CFX_FolderFontInfo::ReportFace(const ByteString& path,
       LoadTableFromTT(pFile, tables.raw_str(), nTables, 0x4f532f32, filesize);
   if (os2.GetLength() >= 86) {
     const uint8_t* p = os2.raw_str() + 78;
-    uint32_t codepages = GET_TT_LONG(p);
+    uint32_t codepages = FXSYS_UINT32_GET_MSBFIRST(p);
     if (codepages & (1U << 17)) {
-      m_pMapper->AddInstalledFont(facename, FX_CHARSET_ShiftJIS);
+      m_pMapper->AddInstalledFont(facename, FX_Charset::kShiftJIS);
       pInfo->m_Charsets |= CHARSET_FLAG_SHIFTJIS;
     }
     if (codepages & (1U << 18)) {
-      m_pMapper->AddInstalledFont(facename, FX_CHARSET_ChineseSimplified);
+      m_pMapper->AddInstalledFont(facename, FX_Charset::kChineseSimplified);
       pInfo->m_Charsets |= CHARSET_FLAG_GB;
     }
     if (codepages & (1U << 20)) {
-      m_pMapper->AddInstalledFont(facename, FX_CHARSET_ChineseTraditional);
+      m_pMapper->AddInstalledFont(facename, FX_Charset::kChineseTraditional);
       pInfo->m_Charsets |= CHARSET_FLAG_BIG5;
     }
     if ((codepages & (1U << 19)) || (codepages & (1U << 21))) {
-      m_pMapper->AddInstalledFont(facename, FX_CHARSET_Hangul);
+      m_pMapper->AddInstalledFont(facename, FX_Charset::kHangul);
       pInfo->m_Charsets |= CHARSET_FLAG_KOREAN;
     }
     if (codepages & (1U << 31)) {
-      m_pMapper->AddInstalledFont(facename, FX_CHARSET_Symbol);
+      m_pMapper->AddInstalledFont(facename, FX_Charset::kSymbol);
       pInfo->m_Charsets |= CHARSET_FLAG_SYMBOL;
     }
   }
-  m_pMapper->AddInstalledFont(facename, FX_CHARSET_ANSI);
+  m_pMapper->AddInstalledFont(facename, FX_Charset::kANSI);
   pInfo->m_Charsets |= CHARSET_FLAG_ANSI;
   pInfo->m_Styles = 0;
   if (style.Contains("Bold"))
@@ -309,21 +312,21 @@ void* CFX_FolderFontInfo::GetSubstFont(const ByteString& face) {
 
 void* CFX_FolderFontInfo::FindFont(int weight,
                                    bool bItalic,
-                                   int charset,
+                                   FX_Charset charset,
                                    int pitch_family,
-                                   const char* family,
+                                   const ByteString& family,
                                    bool bMatchName) {
   FontFaceInfo* pFind = nullptr;
-  if (charset == FX_CHARSET_ANSI && FontFamilyIsFixedPitch(pitch_family))
+  if (charset == FX_Charset::kANSI && FontFamilyIsFixedPitch(pitch_family))
     return GetFont("Courier New");
 
-  ByteStringView bsFamily(family);
+  ByteStringView bsFamily = family.AsStringView();
   uint32_t charset_flag = GetCharset(charset);
   int32_t iBestSimilar = 0;
   for (const auto& it : m_FontList) {
     const ByteString& bsName = it.first;
     FontFaceInfo* pFont = it.second.get();
-    if (!(pFont->m_Charsets & charset_flag) && charset != FX_CHARSET_Default)
+    if (!(pFont->m_Charsets & charset_flag) && charset != FX_Charset::kDefault)
       continue;
 
     if (bMatchName && !FindFamilyNameMatch(bsFamily, bsName))
@@ -342,13 +345,13 @@ void* CFX_FolderFontInfo::FindFont(int weight,
 
 void* CFX_FolderFontInfo::MapFont(int weight,
                                   bool bItalic,
-                                  int charset,
+                                  FX_Charset charset,
                                   int pitch_family,
-                                  const char* family) {
+                                  const ByteString& face) {
   return nullptr;
 }
 
-void* CFX_FolderFontInfo::GetFont(const char* face) {
+void* CFX_FolderFontInfo::GetFont(const ByteString& face) {
   auto it = m_FontList.find(face);
   return it != m_FontList.end() ? it->second.get() : nullptr;
 }
@@ -370,9 +373,9 @@ uint32_t CFX_FolderFontInfo::GetFontData(void* hFont,
     uint32_t nTables = pFont->m_FontTables.GetLength() / 16;
     for (uint32_t i = 0; i < nTables; i++) {
       const uint8_t* p = pFont->m_FontTables.raw_str() + i * 16;
-      if (GET_TT_LONG(p) == table) {
-        offset = GET_TT_LONG(p + 8);
-        datasize = GET_TT_LONG(p + 12);
+      if (FXSYS_UINT32_GET_MSBFIRST(p) == table) {
+        offset = FXSYS_UINT32_GET_MSBFIRST(p + 8);
+        datasize = FXSYS_UINT32_GET_MSBFIRST(p + 12);
       }
     }
   }
@@ -401,7 +404,7 @@ bool CFX_FolderFontInfo::GetFaceName(void* hFont, ByteString* name) {
   return true;
 }
 
-bool CFX_FolderFontInfo::GetFontCharset(void* hFont, int* charset) {
+bool CFX_FolderFontInfo::GetFontCharset(void* hFont, FX_Charset* charset) {
   return false;
 }
 

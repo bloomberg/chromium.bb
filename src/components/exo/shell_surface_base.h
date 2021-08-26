@@ -130,7 +130,7 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   void DisableMovement();
 
   // Update the resizability for the surface.
-  virtual void UpdateCanResize();
+  virtual void UpdateResizability();
 
   // Rebind a surface as the root surface of the shell surface.
   void RebindRootSurface(Surface* root_surface,
@@ -186,11 +186,14 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   void SetPip() override;
   void UnsetPip() override;
   void SetAspectRatio(const gfx::SizeF& aspect_ratio) override;
+  void MoveToDesk(int desk_index) override;
+  void SetVisibleOnAllWorkspaces() override;
 
   // SurfaceObserver:
   void OnSurfaceDestroying(Surface* surface) override;
   void OnContentSizeChanged(Surface*) override {}
   void OnFrameLockingChanged(Surface*, bool) override {}
+  void OnDeskChanged(Surface*, int) override {}
 
   // CaptureClientObserver:
   void OnCaptureChanged(aura::Window* lost_capture,
@@ -223,6 +226,8 @@ class ShellSurfaceBase : public SurfaceTreeHost,
                                const void* key,
                                intptr_t old_value) override;
   void OnWindowAddedToRootWindow(aura::Window* window) override;
+  void OnWindowParentChanged(aura::Window* window,
+                             aura::Window* parent) override;
 
   // wm::ActivationChangeObserver:
   void OnWindowActivated(ActivationReason reason,

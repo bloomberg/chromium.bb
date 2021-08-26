@@ -362,7 +362,6 @@ bool StructTraits<network::mojom::CookieSameSiteContextMetadataDataView,
                   net::CookieOptions::SameSiteCookieContext::ContextMetadata>::
     Read(network::mojom::CookieSameSiteContextMetadataDataView data,
          net::CookieOptions::SameSiteCookieContext::ContextMetadata* out) {
-  out->affected_by_bugfix_1166211 = data.affected_by_bugfix_1166211();
   if (!data.ReadCrossSiteRedirectDowngrade(&out->cross_site_redirect_downgrade))
     return false;
 
@@ -464,6 +463,17 @@ bool StructTraits<network::mojom::CookieOptionsDataView, net::CookieOptions>::
   return true;
 }
 
+bool StructTraits<network::mojom::CookiePartitionKeyDataView,
+                  net::CookiePartitionKey>::
+    Read(network::mojom::CookiePartitionKeyDataView partition_key,
+         net::CookiePartitionKey* out) {
+  net::SchemefulSite site;
+  if (!partition_key.ReadSite(&site))
+    return false;
+  *out = net::CookiePartitionKey(site);
+  return true;
+}
+
 bool StructTraits<
     network::mojom::CanonicalCookieDataView,
     net::CanonicalCookie>::Read(network::mojom::CanonicalCookieDataView cookie,
@@ -504,6 +514,10 @@ bool StructTraits<
   if (!cookie.ReadPriority(&priority))
     return false;
 
+  absl::optional<net::CookiePartitionKey> partition_key;
+  if (!cookie.ReadPartitionKey(&partition_key))
+    return false;
+
   net::CookieSourceScheme source_scheme;
   if (!cookie.ReadSourceScheme(&source_scheme))
     return false;
@@ -512,8 +526,8 @@ bool StructTraits<
       std::move(name), std::move(value), std::move(domain), std::move(path),
       std::move(creation_time), std::move(expiry_time),
       std::move(last_access_time), cookie.secure(), cookie.httponly(),
-      site_restrictions, priority, cookie.same_party(), source_scheme,
-      cookie.source_port());
+      site_restrictions, priority, cookie.same_party(), partition_key,
+      source_scheme, cookie.source_port());
   if (!cc)
     return false;
   *out = *cc;

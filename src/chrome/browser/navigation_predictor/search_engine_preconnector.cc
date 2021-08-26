@@ -17,7 +17,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/pref_names.h"
-#include "components/google/core/common/google_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/browser_context.h"
@@ -27,7 +26,7 @@ namespace features {
 // Feature to control preconnect to search.
 const base::Feature kPreconnectToSearch {
   "PreconnectToSearch",
-
+// Experiments are still ongoing on Desktop, but Android is launched for now.
 #if defined(OS_ANDROID)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
@@ -35,9 +34,6 @@ const base::Feature kPreconnectToSearch {
 #endif
 };
 
-// Feature to limit experimentation to Google search only.
-const base::Feature kPreconnectToSearchNonGoogle{
-    "PreconnectToSearchNonGoogle", base::FEATURE_DISABLED_BY_DEFAULT};
 }  // namespace features
 
 SearchEnginePreconnector::SearchEnginePreconnector(
@@ -85,13 +81,6 @@ void SearchEnginePreconnector::PreconnectDSE() {
       preconnect_url.scheme() != url::kHttpsScheme) {
     return;
   }
-  // Limit experimentation to [www].google.com only.
-  if (!base::FeatureList::IsEnabled(features::kPreconnectToSearchNonGoogle) &&
-      !google_util::IsGoogleDomainUrl(preconnect_url,
-                                      google_util::DISALLOW_SUBDOMAIN,
-                                      google_util::ALLOW_NON_STANDARD_PORTS)) {
-    return;
-  }
 
   auto* loading_predictor = predictors::LoadingPredictorFactory::GetForProfile(
       Profile::FromBrowserContext(browser_context_));
@@ -109,14 +98,15 @@ void SearchEnginePreconnector::PreconnectDSE() {
   if (!base::GetFieldTrialParamByFeatureAsBool(features::kPreconnectToSearch,
                                                "skip_in_background", false) ||
       is_browser_app_likely_in_foreground) {
+    net::SchemefulSite schemeful_site(preconnect_url);
+    net::NetworkIsolationKey network_isolation_key(schemeful_site,
+                                                   schemeful_site);
     loading_predictor->PreconnectURLIfAllowed(
-        preconnect_url, /*allow_credentials=*/true,
-        net::NetworkIsolationKey(url::Origin::Create(preconnect_url),
-                                 url::Origin::Create(preconnect_url)));
+        preconnect_url, /*allow_credentials=*/true, network_isolation_key);
 
     loading_predictor->PreconnectURLIfAllowed(preconnect_url,
                                               /*allow_credentials=*/false,
-                                              net::NetworkIsolationKey());
+                                              network_isolation_key);
   }
 
   // The delay beyond the idle socket timeout that net uses when
@@ -141,7 +131,7 @@ GURL SearchEnginePreconnector::GetDefaultSearchEngineOriginURL() const {
   if (!template_service)
     return GURL();
   const auto* search_provider = template_service->GetDefaultSearchProvider();
-  if (!search_provider)
+  if (!search_provider || !search_provider->data().preconnect_to_search_url)
     return GURL();
   return search_provider->GenerateSearchURL({}).GetOrigin();
 }

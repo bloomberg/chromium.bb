@@ -18,6 +18,7 @@
 <translation id="1774152462503052664">Permitir que o Chromium seja executado em segundo plano</translation>
 <translation id="1779356040007214683">Para tornar o Chromium mais seguro, desativámos algumas extensões que não estão listadas na <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> e é possível que tenham sido adicionadas sem o seu conhecimento.</translation>
 <translation id="1808667845054772817">Reinstalar Chromium</translation>
+<translation id="185970820835152459">Pode gerir as suas Contas Google com sessão iniciada. As suas Contas Google são utilizadas para o navegador Chromium, a Play Store, o Gmail e muito mais. Se pretender adicionar uma conta para outra pessoa, como um membro da família, adicione uma nova pessoa ao seu <ph name="DEVICE_TYPE" />. <ph name="LINK_BEGIN" />Saiba mais<ph name="LINK_END" /></translation>
 <translation id="1881322772814446296">Está a iniciar sessão com uma conta gerida e a permitir que o gestor controle o seu perfil do Chromium. Os seus dados do Chromium, como aplicações, marcadores, histórico, palavras-passe e outras definições, ficarão associados definitivamente a <ph name="USER_NAME" />. Poderá eliminar estes dados através do Painel de Controlo das Contas Google, mas não poderá associá-los a outra conta. Opcionalmente, pode criar um perfil novo para manter os seus dados atuais do Chromium em separado. <ph name="LEARN_MORE" /></translation>
 <translation id="1911763535808217981">Ao desativar esta opção, pode iniciar sessão nos sites Google como o Gmail sem iniciar sessão no Chromium.</translation>
 <translation id="1929939181775079593">O Chromium não responde. Reiniciar agora?</translation>
@@ -107,7 +108,6 @@
 <translation id="4407044323746248786">Pretende sair do Chromium mesmo assim?</translation>
 <translation id="4415566066719264597">Permitir que o Chromium seja executado em segundo plano</translation>
 <translation id="4423735387467980091">Personalizar e controlar o Chromium</translation>
-<translation id="4491398312037323794">Esta página permite-lhe gerir Contas Google com sessão iniciada. Estas contas estarão disponíveis no navegador Chromium e nas apps da Play Store, bem como em serviços como o Gmail, o Drive e o YouTube. <ph name="LINK_BEGIN" />Saiba mais<ph name="LINK_END" /></translation>
 <translation id="452711251841752011">Damos-lhe as boas-vindas ao Chromium; nova janela do navegador aberta</translation>
 <translation id="4544142686420020088">O Chromium não foi atualizado. Ocorreu um erro. <ph name="BEGIN_LINK" />Corrija problemas de atualização do Chrome e falhas nas atualizações<ph name="END_LINK" />.</translation>
 <translation id="454579500955453258">Pretende continuar num novo perfil do Chromium?</translation>
@@ -256,6 +256,7 @@ O Chromium não consegue recuperar as suas definições.</translation>
 <translation id="7937630085815544518">Iniciou sessão no Chromium com a conta <ph name="USER_EMAIL_ADDRESS" />. Utilize a mesma conta para iniciar sessão novamente.</translation>
 <translation id="7975919845073681630">Esta é uma instalação secundária do Chromium, pelo que não pode tornar-se o navegador predefinido.</translation>
 <translation id="8013436988911883588">Assim que o Chromium tiver acesso, os Websites poderão solicitar-lhe o acesso.</translation>
+<translation id="8045118833343856403">As seguintes contas não têm sessão iniciada em perfis do Chromium. Se pretender utilizar uma conta noutro perfil, remova esse perfil primeiro.</translation>
 <translation id="81770708095080097">Este ficheiro é perigoso. Como tal, o Chromium bloqueou-o.</translation>
 <translation id="8248265253516264921">Se uma imagem não tiver uma descrição útil, o Chromium tenta fornecer uma. Para criar as descrições, são enviadas imagens para a Google. Pode desativar esta opção nas definições em qualquer altura.</translation>
 <translation id="8266560134891435528">O Chromium não consegue verificar as suas palavras-passe porque não tem sessão iniciada.</translation>

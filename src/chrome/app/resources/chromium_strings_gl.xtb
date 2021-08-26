@@ -20,6 +20,7 @@
 <translation id="1774152462503052664">Deixar que Chromium se execute en segundo plano</translation>
 <translation id="1779356040007214683">Para conseguir que Chromium resulte máis seguro, desactivamos algunhas extensións que non aparecen en <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> e que é posible que se engadisen sen o teu coñecemento.</translation>
 <translation id="1808667845054772817">Reinstalar Chromium</translation>
+<translation id="185970820835152459">Podes xestionar as Contas de Google nas que teñas a sesión iniciada. As túas Contas de Google úsanse para o navegador Chromium, Play Store, Gmail e moito máis. Se queres engadir unha conta para outra persoa, como un familiar, engade unha persoa nova ao teu dispositivo (<ph name="DEVICE_TYPE" />). <ph name="LINK_BEGIN" />Máis información<ph name="LINK_END" /></translation>
 <translation id="1881322772814446296">Estás iniciando sesión cunha conta xestionada e outorgando control ao seu administrador sobre o teu perfil de Chromium. Os teus datos de Chromium, como as túas aplicacións, marcadores, historial, contrasinais e outras configuracións ligaranse permanentemente a <ph name="USER_NAME" />. Poderás eliminar estes datos a través do Panel de control das contas de Google, pero non poderás asociar estes datos a outra conta. Tamén podes crear un perfil novo para manter separados os teus datos de Chromium existentes. <ph name="LEARN_MORE" /></translation>
 <translation id="1911763535808217981">Ao desactivar esta opción, podes iniciar sesión nos sitios de Google, como Gmail, sen iniciar sesión en Chromium</translation>
 <translation id="1929939181775079593">Chromium non responde. Queres volver inicialo agora?</translation>
@@ -109,7 +110,6 @@
 <translation id="4407044323746248786">Queres saír de Chromium de todas formas?</translation>
 <translation id="4415566066719264597">Deixar que Chromium se execute en segundo plano</translation>
 <translation id="4423735387467980091">Personaliza e controla Chromium</translation>
-<translation id="4491398312037323794">Desde esta páxina podes xestionar as contas de Google coas que teñas a sesión iniciada. Estas contas estarán dispoñibles no navegador Chromium e nas aplicacións de Play Store, así como noutros servizos (por exemplo, Gmail, Drive e YouTube). <ph name="LINK_BEGIN" />Máis información<ph name="LINK_END" /></translation>
 <translation id="452711251841752011">Dámosche a benvida a Chromium. Abriuse unha nova ventá do navegador</translation>
 <translation id="4544142686420020088">Chromium non se actualizou, xa que se produciu un erro. <ph name="BEGIN_LINK" />Soluciona os problemas de actualización de Chromium e as actualizacións que non se puidesen realizar<ph name="END_LINK" />.</translation>
 <translation id="454579500955453258">Queres continuar nun perfil de Chromium novo?</translation>
@@ -257,6 +257,7 @@ Chromium non pode recuperar a túa configuración.</translation>
 <translation id="7937630085815544518">Iniciaches sesión en Chromium como <ph name="USER_EMAIL_ADDRESS" />. Utiliza a mesma conta para iniciar sesión de novo.</translation>
 <translation id="7975919845073681630">Esta é unha instalación secundaria de Chromium e non se pode converter no teu navegador predeterminado.</translation>
 <translation id="8013436988911883588">Unha vez que Chromium teña acceso, os sitios web poderán solicitalo tamén.</translation>
+<translation id="8045118833343856403">As seguintes contas non teñen a sesión iniciada en ningún perfil de Chromium. Se queres usar unha conta noutro perfil, primeiro elimina ese perfil.</translation>
 <translation id="81770708095080097">Este ficheiro é perigoso, así que Chromium bloqueouno.</translation>
 <translation id="8248265253516264921">Se unha imaxe non ten unha descrición útil, Chromium tentará proporcionarche unha. Para crear descricións, envíanse imaxes a Google. Podes desactivar esta función na configuración cando queiras.</translation>
 <translation id="8266560134891435528">Chromium non puido comprobar os teus contrasinais porque non iniciaches sesión</translation>

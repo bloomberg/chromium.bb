@@ -1,21 +1,35 @@
 export const description = `copyTexturetoTexture operation tests
 
-TODO(jiawei.shao@intel.com): support all WebGPU texture formats.
+TODO: rename "copy_stencil_aspect" to "copy_depth_stencil" and test the depth aspect.
+TODO: remove fragment stage in InitializeDepthAspect() when browsers support null fragment stage.
 `;
 
 import { makeTestGroup } from '../../../../common/framework/test_group.js';
-import { assert } from '../../../../common/util/util.js';
+import { assert, memcpy } from '../../../../common/util/util.js';
 import {
   kTextureFormatInfo,
   kRegularTextureFormats,
   SizedTextureFormat,
   kCompressedTextureFormats,
+  depthStencilFormatAspectSize,
+  DepthStencilFormat,
+  kBufferSizeAlignment,
+  kDepthStencilFormats,
 } from '../../../capability_info.js';
 import { GPUTest } from '../../../gpu_test.js';
 import { align } from '../../../util/math.js';
 import { physicalMipSize } from '../../../util/texture/base.js';
+import { kBytesPerRowAlignment, dataBytesForCopyOrFail } from '../../../util/texture/layout.js';
 
 class F extends GPUTest {
+  GetInitialData(byteSize: number): Uint8Array {
+    const initialData = new Uint8Array(byteSize);
+    for (let i = 0; i < initialData.length; ++i) {
+      initialData[i] = (i ** 3 + i) % 251;
+    }
+    return initialData;
+  }
+
   GetInitialDataPerMipLevel(
     textureSize: Required<GPUExtent3DDict>,
     format: SizedTextureFormat,
@@ -31,12 +45,22 @@ class F extends GPUTest {
       (textureSizeAtLevel.height / blockHeightInTexel);
 
     const byteSize = bytesPerBlock * blocksPerSubresource * textureSizeAtLevel.depthOrArrayLayers;
-    const initialData = new Uint8Array(new ArrayBuffer(byteSize));
+    return this.GetInitialData(byteSize);
+  }
 
-    for (let i = 0; i < byteSize; ++i) {
-      initialData[i] = (i ** 3 + i) % 251;
-    }
-    return initialData;
+  GetInitialStencilDataPerMipLevel(
+    textureSize: Required<GPUExtent3DDict>,
+    format: DepthStencilFormat,
+    mipLevel: number
+  ): Uint8Array {
+    const textureSizeAtLevel = physicalMipSize(textureSize, format, '2d', mipLevel);
+    const aspectBytesPerBlock = depthStencilFormatAspectSize(format, 'stencil-only');
+    const byteSize =
+      aspectBytesPerBlock *
+      textureSizeAtLevel.width *
+      textureSizeAtLevel.height *
+      textureSizeAtLevel.depthOrArrayLayers;
+    return this.GetInitialData(byteSize);
   }
 
   DoCopyTextureToTextureTest(
@@ -191,18 +215,87 @@ class F extends GPUTest {
             (srcBlockRowsPerImage * srcOffsetZ + srcOffsetYInBlocks) +
           srcCopyOffsetInBlocks.x * bytesPerBlock;
 
-        expectedUint8DataWithPadding.set(
-          expectedUint8Data.slice(
-            expectedDataOffset,
-            expectedDataOffset + appliedCopyBlocksPerRow * bytesPerBlock
-          ),
-          expectedDataWithPaddingOffset
+        const bytesInRow = appliedCopyBlocksPerRow * bytesPerBlock;
+        memcpy(
+          { src: expectedUint8Data, start: expectedDataOffset, length: bytesInRow },
+          { dst: expectedUint8DataWithPadding, start: expectedDataWithPaddingOffset }
         );
       }
     }
 
     // Verify the content of the whole subresouce of dstTexture at dstCopyLevel (in dstBuffer) is expected.
     this.expectGPUBufferValuesEqual(dstBuffer, expectedUint8DataWithPadding);
+  }
+
+  InitializeStencilAspect(
+    sourceTexture: GPUTexture,
+    initialStencilData: Uint8Array,
+    srcCopyLevel: number,
+    srcCopyBaseArrayLayer: number,
+    copySize: readonly [number, number, number]
+  ): void {
+    this.queue.writeTexture(
+      {
+        texture: sourceTexture,
+        mipLevel: srcCopyLevel,
+        aspect: 'stencil-only',
+        origin: { x: 0, y: 0, z: srcCopyBaseArrayLayer },
+      },
+      initialStencilData,
+      { bytesPerRow: copySize[0], rowsPerImage: copySize[1] },
+      copySize
+    );
+  }
+
+  VerifyStencilAspect(
+    destinationTexture: GPUTexture,
+    initialStencilData: Uint8Array,
+    dstCopyLevel: number,
+    dstCopyBaseArrayLayer: number,
+    copySize: readonly [number, number, number]
+  ): void {
+    const bytesPerRow = align(copySize[0], kBytesPerRowAlignment);
+    const rowsPerImage = copySize[1];
+    const outputBufferSize = align(
+      dataBytesForCopyOrFail({
+        layout: { bytesPerRow, rowsPerImage },
+        format: 'stencil8',
+        copySize,
+        method: 'CopyT2B',
+      }),
+      kBufferSizeAlignment
+    );
+    const outputBuffer = this.device.createBuffer({
+      size: outputBufferSize,
+      usage: GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST,
+    });
+    const encoder = this.device.createCommandEncoder();
+    encoder.copyTextureToBuffer(
+      {
+        texture: destinationTexture,
+        aspect: 'stencil-only',
+        mipLevel: dstCopyLevel,
+        origin: { x: 0, y: 0, z: dstCopyBaseArrayLayer },
+      },
+      { buffer: outputBuffer, bytesPerRow, rowsPerImage },
+      copySize
+    );
+    this.queue.submit([encoder.finish()]);
+
+    const expectedStencilData = new Uint8Array(outputBufferSize);
+    for (let z = 0; z < copySize[2]; ++z) {
+      const initialOffsetPerLayer = z * copySize[0] * copySize[1];
+      const expectedOffsetPerLayer = z * bytesPerRow * rowsPerImage;
+      for (let y = 0; y < copySize[1]; ++y) {
+        const initialOffsetPerRow = initialOffsetPerLayer + y * copySize[0];
+        const expectedOffsetPerRow = expectedOffsetPerLayer + y * bytesPerRow;
+        memcpy(
+          { src: initialStencilData, start: initialOffsetPerRow, length: copySize[0] },
+          { dst: expectedStencilData, start: expectedOffsetPerRow }
+        );
+      }
+    }
+    this.expectGPUBufferValuesEqual(outputBuffer, expectedStencilData);
   }
 }
 
@@ -598,8 +691,7 @@ g.test('copy_stencil_aspect')
   Validate the correctness of copyTextureToTexture() with stencil aspect.
 
   For all the texture formats with stencil aspect:
-  - Upload the expected data into a staging buffer
-  - Copy the data of the staging buffer into the stencil aspect of the source texture
+  - Initialize the stencil aspect of the source texture with writeTexture().
   - Copy the stencil aspect from the source texture into the destination texture
   - Copy the stencil aspect of the destination texture into another staging buffer and check its
     content
@@ -607,4 +699,96 @@ g.test('copy_stencil_aspect')
   - Test copying multiple array layers
   `
   )
-  .unimplemented();
+  .params(u =>
+    u
+      .combine('format', kDepthStencilFormats)
+      .beginSubcases()
+      .combine('srcTextureSize', [
+        { width: 32, height: 16, depthOrArrayLayers: 1 },
+        { width: 32, height: 16, depthOrArrayLayers: 4 },
+        { width: 24, height: 48, depthOrArrayLayers: 5 },
+      ])
+      .combine('srcCopyLevel', [0, 2])
+      .combine('dstCopyLevel', [0, 2])
+      .combine('srcCopyBaseArrayLayer', [0, 1])
+      .combine('dstCopyBaseArrayLayer', [0, 1])
+      .filter(t => {
+        return (
+          kTextureFormatInfo[t.format].stencil &&
+          t.srcTextureSize.depthOrArrayLayers > t.srcCopyBaseArrayLayer &&
+          t.srcTextureSize.depthOrArrayLayers > t.dstCopyBaseArrayLayer
+        );
+      })
+  )
+  .fn(async t => {
+    const {
+      format,
+      srcTextureSize,
+      srcCopyLevel,
+      dstCopyLevel,
+      srcCopyBaseArrayLayer,
+      dstCopyBaseArrayLayer,
+    } = t.params;
+    await t.selectDeviceForTextureFormatOrSkipTestCase(format);
+
+    const copySize: [number, number, number] = [
+      srcTextureSize.width >> srcCopyLevel,
+      srcTextureSize.height >> srcCopyLevel,
+      srcTextureSize.depthOrArrayLayers - Math.max(srcCopyBaseArrayLayer, dstCopyBaseArrayLayer),
+    ];
+    const sourceTexture = t.device.createTexture({
+      format,
+      size: srcTextureSize,
+      usage:
+        GPUTextureUsage.COPY_SRC | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT,
+      mipLevelCount: srcCopyLevel + 1,
+    });
+    const destinationTexture = t.device.createTexture({
+      format,
+      size: [
+        copySize[0] << dstCopyLevel,
+        copySize[1] << dstCopyLevel,
+        srcTextureSize.depthOrArrayLayers,
+      ] as const,
+      usage:
+        GPUTextureUsage.COPY_SRC | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT,
+      mipLevelCount: dstCopyLevel + 1,
+    });
+
+    const initialStencilData = t.GetInitialStencilDataPerMipLevel(
+      srcTextureSize,
+      format,
+      srcCopyLevel
+    );
+    t.InitializeStencilAspect(
+      sourceTexture,
+      initialStencilData,
+      srcCopyLevel,
+      srcCopyBaseArrayLayer,
+      copySize
+    );
+
+    const encoder = t.device.createCommandEncoder();
+    encoder.copyTextureToTexture(
+      {
+        texture: sourceTexture,
+        mipLevel: srcCopyLevel,
+        origin: { x: 0, y: 0, z: srcCopyBaseArrayLayer },
+      },
+      {
+        texture: destinationTexture,
+        mipLevel: dstCopyLevel,
+        origin: { x: 0, y: 0, z: dstCopyBaseArrayLayer },
+      },
+      copySize
+    );
+    t.queue.submit([encoder.finish()]);
+
+    t.VerifyStencilAspect(
+      destinationTexture,
+      initialStencilData,
+      dstCopyLevel,
+      dstCopyBaseArrayLayer,
+      copySize
+    );
+  });

@@ -114,7 +114,7 @@ MediaNotificationContainerImpl* MediaDialogView::ShowMediaSession(
     const std::string& id,
     base::WeakPtr<media_message_center::MediaNotificationItem> item) {
   auto container = std::make_unique<MediaNotificationContainerImplView>(
-      id, item, service_, entry_point_);
+      id, item, service_, entry_point_, profile_);
   MediaNotificationContainerImplView* container_ptr = container.get();
   container_ptr->AddObserver(this);
   observed_containers_[id] = container_ptr;
@@ -148,6 +148,10 @@ std::unique_ptr<OverlayMediaNotification> MediaDialogView::PopOut(
 
 void MediaDialogView::HideMediaDialog() {
   HideDialog();
+}
+
+void MediaDialogView::Focus() {
+  RequestFocus();
 }
 
 void MediaDialogView::AddedToWidget() {
@@ -243,6 +247,8 @@ MediaDialogView::MediaDialogView(views::View* anchor_view,
   // appropriately.
   SetPaintClientToLayer(true);
   SetButtons(ui::DIALOG_BUTTON_NONE);
+  SetAccessibleTitle(
+      l10n_util::GetStringUTF16(IDS_GLOBAL_MEDIA_CONTROLS_DIALOG_NAME));
   DCHECK(service_);
 }
 

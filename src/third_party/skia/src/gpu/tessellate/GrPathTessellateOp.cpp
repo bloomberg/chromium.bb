@@ -7,6 +7,8 @@
 
 #include "src/gpu/tessellate/GrPathTessellateOp.h"
 
+#include "src/gpu/GrAppliedClip.h"
+#include "src/gpu/GrOpFlushState.h"
 #include "src/gpu/tessellate/GrPathWedgeTessellator.h"
 #include "src/gpu/tessellate/shaders/GrPathTessellationShader.h"
 
@@ -57,7 +59,7 @@ void GrPathTessellateOp::onPrepare(GrOpFlushState* flushState) {
                                   flushState->detachAppliedClip());
         SkASSERT(fTessellator);
     }
-    fTessellator->prepare(flushState, this->bounds(), fPath);
+    fTessellator->prepare(flushState, this->bounds(), {SkMatrix::I(), fPath}, fPath.countVerbs());
 }
 
 void GrPathTessellateOp::onExecute(GrOpFlushState* flushState, const SkRect& chainBounds) {

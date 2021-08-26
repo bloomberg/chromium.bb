@@ -269,9 +269,6 @@ def escape_quotes(string):
     return string.replace("\"", "\\\"").replace("\'", "\\\'")
 
 
-angle_cpu_bits_define = r'^ANGLE_IS_[0-9]+_BIT_CPU$'
-
-
 def gn_cflags_to_blueprint_cflags(target_info):
     result = []
 
@@ -559,8 +556,30 @@ def main():
             'legacy_unencumbered',
         ],
         'license_text': [
-            'LICENSE', 'third_party/abseil-cpp/LICENSE', 'third_party/vulkan-deps/LICENSE',
-            'third_party/vulkan_memory_allocator/LICENSE.txt', 'third_party/zlib/LICENSE'
+            'LICENSE',
+            'src/common/third_party/smhasher/LICENSE',
+            'src/common/third_party/xxhash/LICENSE',
+            'src/libANGLE/renderer/vulkan/shaders/src/third_party/ffx_spd/LICENSE',
+            'src/tests/test_utils/third_party/LICENSE',
+            'src/third_party/libXNVCtrl/LICENSE',
+            'src/third_party/volk/LICENSE.md',
+            'third_party/abseil-cpp/LICENSE',
+            'third_party/vulkan-deps/glslang/LICENSE',
+            'third_party/vulkan-deps/glslang/src/LICENSE.txt',
+            'third_party/vulkan-deps/LICENSE',
+            'third_party/vulkan-deps/spirv-headers/LICENSE',
+            'third_party/vulkan-deps/spirv-headers/src/LICENSE',
+            'third_party/vulkan-deps/spirv-tools/LICENSE',
+            'third_party/vulkan-deps/spirv-tools/src/LICENSE',
+            'third_party/vulkan-deps/spirv-tools/src/utils/vscode/src/lsp/LICENSE',
+            'third_party/vulkan-deps/vulkan-headers/LICENSE.txt',
+            'third_party/vulkan-deps/vulkan-headers/src/LICENSE.txt',
+            'third_party/vulkan_memory_allocator/LICENSE.txt',
+            'third_party/vulkan_memory_allocator/premake/LICENSE.txt',
+            'third_party/zlib/LICENSE',
+            'tools/flex-bison/third_party/m4sugar/LICENSE',
+            'tools/flex-bison/third_party/skeletons/LICENSE',
+            'util/windows/third_party/StackWalker/LICENSE',
         ],
     }))
 

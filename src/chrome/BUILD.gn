@@ -17,6 +17,7 @@ import("//build/toolchain/toolchain.gni")
 import("//chrome/chrome_paks.gni")
 import("//chrome/common/features.gni")
 import("//chrome/process_version_rc_template.gni")
+import("//components/exo/buildflags.gni")
 import("//components/gwp_asan/buildflags/buildflags.gni")
 import("//components/nacl/features.gni")
 import("//extensions/buildflags/buildflags.gni")
@@ -240,7 +241,7 @@ if (!is_android && !is_mac) {
       sources += [ "app/chrome_exe_main_aura.cc" ]
     }
 
-    if (is_linux || is_chromeos) {
+    if (is_linux || is_chromeos || is_fuchsia) {
       sources += [
         "app/chrome_dll_resource.h",
         "app/chrome_main.cc",
@@ -268,10 +269,15 @@ if (!is_android && !is_mac) {
         "//headless:headless_shell_lib",
       ]
 
-      public_deps = [
-        ":xdg_mime",  # Needs to be public for installer to consume files.
-        "//chrome/common:buildflags",
-      ]
+      public_deps = [ "//chrome/common:buildflags" ]
+
+      if (!is_fuchsia) {
+        public_deps += [
+          ":xdg_mime",  # Needs to be public for installer to consume files.
+        ]
+
+        data_deps += [ "//components/crash/core/app:chrome_crashpad_handler" ]
+      }
 
       ldflags = []
 
@@ -412,16 +418,6 @@ if (is_win) {
         ":chrome_dump_syms",
       ]
     }
-  }
-
-  bundle_data("chrome_framework_services") {
-    sources = [ "$root_out_dir/AlertNotificationService.xpc" ]
-
-    outputs = [ "{{bundle_contents_dir}}/XPCServices/{{source_file_part}}" ]
-
-    public_deps = [
-      "//chrome/browser/ui/cocoa/notifications:alert_notification_xpc_service",
-    ]
   }
 
   tweak_info_plist("chrome_app_plist") {
@@ -1070,6 +1066,7 @@ if (is_win) {
       "//base/allocator:buildflags",
       "//build:chromeos_buildflags",
       "//chrome/app:command_ids",
+      "//chrome/app:notification_metrics",
       "//chrome/common:buildflags",
       "//chrome/common/profiler",
       "//components/crash/core/app",
@@ -1102,7 +1099,6 @@ if (is_win) {
       "Helpers",
       "Libraries",
       "Resources",
-      "XPCServices",
     ]
 
     if (is_chrome_branded) {
@@ -1132,7 +1128,6 @@ if (is_win) {
       ":chrome_framework_helpers",
       ":chrome_framework_plugins",
       ":chrome_framework_resources",
-      ":chrome_framework_services",
       ":keystone_registration_framework",
       ":swiftshader_library",
       ":widevine_cdm_library",
@@ -1219,7 +1214,6 @@ if (is_win) {
     # the list of _dsyms in :chrome_dsym_archive.
     _chrome_symbols_sources = [
       "$root_out_dir/$chrome_product_full_name.app/Contents/MacOS/$chrome_product_full_name",
-      "$root_out_dir/AlertNotificationService.xpc/Contents/MacOS/AlertNotificationService",
       "$root_out_dir/chrome_crashpad_handler",
       "$root_out_dir/libEGL.dylib",
       "$root_out_dir/libGLESv2.dylib",
@@ -1254,7 +1248,6 @@ if (is_win) {
       deps = [
         ":chrome_app",
         ":chrome_framework",
-        "//chrome/browser/ui/cocoa/notifications:alert_notification_xpc_service",
         "//components/crash/core/app:chrome_crashpad_handler",
         "//third_party/angle:libEGL",
         "//third_party/angle:libGLESv2",
@@ -1277,7 +1270,6 @@ if (is_win) {
       # directory it cannot be listed as a source file). The targets that
       # generate both the dSYM and binary image are listed in deps.
       _dsyms = [
-        "$root_out_dir/AlertNotificationService.dSYM",
         "$root_out_dir/$chrome_framework_name.dSYM",
         "$root_out_dir/$chrome_product_full_name.dSYM",
         "$root_out_dir/chrome_crashpad_handler.dSYM",
@@ -1291,7 +1283,6 @@ if (is_win) {
       deps = [
         ":chrome_app",
         ":chrome_framework",
-        "//chrome/browser/ui/cocoa/notifications:alert_notification_xpc_service",
         "//components/crash/core/app:chrome_crashpad_handler",
         "//third_party/angle:libEGL",
         "//third_party/angle:libGLESv2",
@@ -1330,7 +1321,6 @@ group("browser_dependencies") {
     "//chrome/browser",
     "//chrome/browser/policy:path_parser",
     "//chrome/common",
-    "//components/crash/core/app",
     "//components/gwp_asan/buildflags",
     "//components/heap_profiling/in_process",
     "//components/power_scheduler",
@@ -1367,12 +1357,17 @@ group("browser_dependencies") {
   }
 
   if (is_chromeos_ash) {
+    testonly = enable_weston_test
     public_deps += [
       "//ash/constants",
       "//chrome/browser/chromeos",
       "//chromeos",
       "//chromeos/memory",
     ]
+  }
+
+  if (!is_fuchsia) {
+    public_deps += [ "//components/crash/core/app" ]
   }
 
   if (!is_component_build) {
@@ -1696,8 +1691,8 @@ if (is_linux || is_chromeos) {
       deps = [
         ":angle_egl_symbols",
         ":angle_gles_symbols",
+        ":chrome_crashpad_symbols",
         ":chrome_symbols",
-        ":crashpad_symbols",
         ":swiftshader_egl_symbols",
         ":swiftshader_gles_symbols",
       ]
@@ -1720,8 +1715,8 @@ if (is_linux || is_chromeos) {
 
       deps = [ ":chrome" ]
     }
-    extract_symbols("crashpad_symbols") {
-      binary = "$root_out_dir/crashpad_handler"
+    extract_symbols("chrome_crashpad_symbols") {
+      binary = "$root_out_dir/chrome_crashpad_handler"
 
       if (current_cpu == "x86") {
         # GYP used "ia32" so keep that naming for back-compat.
@@ -1730,7 +1725,7 @@ if (is_linux || is_chromeos) {
         symbol_file = "$root_out_dir/crashpad.breakpad.$current_cpu"
       }
 
-      deps = [ "//third_party/crashpad/crashpad/handler:crashpad_handler" ]
+      deps = [ "//components/crash/core/app:chrome_crashpad_handler" ]
     }
     extract_symbols("swiftshader_egl_symbols") {
       binary = "$root_out_dir/swiftshader/libEGL.so"

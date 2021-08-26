@@ -23,30 +23,30 @@
 namespace libgav1 {
 namespace {
 
-// Maps TransformType to dsp::Transform1D for the row transforms.
-constexpr dsp::Transform1D kRowTransform[kNumTransformTypes] = {
-    dsp::k1DTransformDct,      dsp::k1DTransformAdst,
-    dsp::k1DTransformDct,      dsp::k1DTransformAdst,
-    dsp::k1DTransformAdst,     dsp::k1DTransformDct,
-    dsp::k1DTransformAdst,     dsp::k1DTransformAdst,
-    dsp::k1DTransformAdst,     dsp::k1DTransformIdentity,
-    dsp::k1DTransformIdentity, dsp::k1DTransformDct,
-    dsp::k1DTransformIdentity, dsp::k1DTransformAdst,
-    dsp::k1DTransformIdentity, dsp::k1DTransformAdst};
+// Maps TransformType to dsp::Transform1d for the row transforms.
+constexpr dsp::Transform1d kRowTransform[kNumTransformTypes] = {
+    dsp::kTransform1dDct,      dsp::kTransform1dAdst,
+    dsp::kTransform1dDct,      dsp::kTransform1dAdst,
+    dsp::kTransform1dAdst,     dsp::kTransform1dDct,
+    dsp::kTransform1dAdst,     dsp::kTransform1dAdst,
+    dsp::kTransform1dAdst,     dsp::kTransform1dIdentity,
+    dsp::kTransform1dIdentity, dsp::kTransform1dDct,
+    dsp::kTransform1dIdentity, dsp::kTransform1dAdst,
+    dsp::kTransform1dIdentity, dsp::kTransform1dAdst};
 
-// Maps TransformType to dsp::Transform1D for the column transforms.
-constexpr dsp::Transform1D kColumnTransform[kNumTransformTypes] = {
-    dsp::k1DTransformDct,  dsp::k1DTransformDct,
-    dsp::k1DTransformAdst, dsp::k1DTransformAdst,
-    dsp::k1DTransformDct,  dsp::k1DTransformAdst,
-    dsp::k1DTransformAdst, dsp::k1DTransformAdst,
-    dsp::k1DTransformAdst, dsp::k1DTransformIdentity,
-    dsp::k1DTransformDct,  dsp::k1DTransformIdentity,
-    dsp::k1DTransformAdst, dsp::k1DTransformIdentity,
-    dsp::k1DTransformAdst, dsp::k1DTransformIdentity};
+// Maps TransformType to dsp::Transform1d for the column transforms.
+constexpr dsp::Transform1d kColumnTransform[kNumTransformTypes] = {
+    dsp::kTransform1dDct,  dsp::kTransform1dDct,
+    dsp::kTransform1dAdst, dsp::kTransform1dAdst,
+    dsp::kTransform1dDct,  dsp::kTransform1dAdst,
+    dsp::kTransform1dAdst, dsp::kTransform1dAdst,
+    dsp::kTransform1dAdst, dsp::kTransform1dIdentity,
+    dsp::kTransform1dDct,  dsp::kTransform1dIdentity,
+    dsp::kTransform1dAdst, dsp::kTransform1dIdentity,
+    dsp::kTransform1dAdst, dsp::kTransform1dIdentity};
 
-dsp::TransformSize1D Get1DTransformSize(int size_log2) {
-  return static_cast<dsp::TransformSize1D>(size_log2 - 2);
+dsp::Transform1dSize GetTransform1dSize(int size_log2) {
+  return static_cast<dsp::Transform1dSize>(size_log2 - 2);
 }
 
 // Returns the number of rows to process based on |non_zero_coeff_count|. The
@@ -150,10 +150,10 @@ void Reconstruct(const dsp::Dsp& dsp, TransformType tx_type,
   assert(tx_height <= 32);
 
   // Row transform.
-  const dsp::TransformSize1D row_transform_size =
-      Get1DTransformSize(tx_width_log2);
-  const dsp::Transform1D row_transform =
-      lossless ? dsp::k1DTransformWht : kRowTransform[tx_type];
+  const dsp::Transform1dSize row_transform_size =
+      GetTransform1dSize(tx_width_log2);
+  const dsp::Transform1d row_transform =
+      lossless ? dsp::kTransform1dWht : kRowTransform[tx_type];
   const dsp::InverseTransformAddFunc row_transform_func =
       dsp.inverse_transforms[row_transform][row_transform_size][dsp::kRow];
   assert(row_transform_func != nullptr);
@@ -162,10 +162,10 @@ void Reconstruct(const dsp::Dsp& dsp, TransformType tx_type,
                      frame);
 
   // Column transform.
-  const dsp::TransformSize1D column_transform_size =
-      Get1DTransformSize(tx_height_log2);
-  const dsp::Transform1D column_transform =
-      lossless ? dsp::k1DTransformWht : kColumnTransform[tx_type];
+  const dsp::Transform1dSize column_transform_size =
+      GetTransform1dSize(tx_height_log2);
+  const dsp::Transform1d column_transform =
+      lossless ? dsp::kTransform1dWht : kColumnTransform[tx_type];
   const dsp::InverseTransformAddFunc column_transform_func =
       dsp.inverse_transforms[column_transform][column_transform_size]
                             [dsp::kColumn];

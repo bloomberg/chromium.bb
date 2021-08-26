@@ -52,6 +52,15 @@ class MockWebController : public WebController {
   MOCK_METHOD2(CheckOnTop,
                void(const ElementFinder::Result&,
                     base::OnceCallback<void(const ClientStatus&)>));
+  MOCK_METHOD3(FillAddressForm,
+               void(std::unique_ptr<autofill::AutofillProfile>,
+                    const ElementFinder::Result&,
+                    base::OnceCallback<void(const ClientStatus&)>));
+  MOCK_METHOD4(FillCardForm,
+               void(std::unique_ptr<autofill::CreditCard>,
+                    const std::u16string&,
+                    const ElementFinder::Result&,
+                    base::OnceCallback<void(const ClientStatus&)>));
   MOCK_METHOD6(SelectOption,
                void(const std::string& re2,
                     bool case_sensitive,
@@ -82,8 +91,9 @@ class MockWebController : public WebController {
                     int delay_in_millisecond,
                     const ElementFinder::Result& element,
                     base::OnceCallback<void(const ClientStatus&)> callback));
-  MOCK_METHOD2(GetOuterHtml,
-               void(const ElementFinder::Result& element,
+  MOCK_METHOD3(GetOuterHtml,
+               void(bool include_all_inner_text,
+                    const ElementFinder::Result& element,
                     base::OnceCallback<void(const ClientStatus&,
                                             const std::string&)> callback));
   MOCK_METHOD2(GetElementTag,
@@ -94,11 +104,14 @@ class MockWebController : public WebController {
       GetDocumentReadyState,
       void(const ElementFinder::Result&,
            base::OnceCallback<void(const ClientStatus&, DocumentReadyState)>));
-  MOCK_METHOD2(
+
+  MOCK_METHOD3(
       GetOuterHtmls,
-      void(const ElementFinder::Result& elements,
+      void(bool include_all_inner_text,
+           const ElementFinder::Result& elements,
            base::OnceCallback<void(const ClientStatus&,
                                    const std::vector<std::string>&)> callback));
+
   MOCK_METHOD4(WaitUntilElementIsStable,
                void(int,
                     base::TimeDelta wait_time,

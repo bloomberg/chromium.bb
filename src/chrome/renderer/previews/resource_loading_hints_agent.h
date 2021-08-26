@@ -13,7 +13,6 @@
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "url/gurl.h"
@@ -35,7 +34,6 @@ class ResourceLoadingHintsAgent
 
  private:
   // content::RenderFrameObserver:
-  void DidCreateNewDocument() override;
   void OnDestruct() override;
 
   GURL GetDocumentURL() const;
@@ -43,8 +41,6 @@ class ResourceLoadingHintsAgent
   // previews::mojom::PreviewsResourceLoadingHintsReceiver:
   void SetLiteVideoHint(
       previews::mojom::LiteVideoHintPtr lite_video_hint) override;
-  void SetBlinkOptimizationGuideHints(
-      blink::mojom::BlinkOptimizationGuideHintsPtr hints) override;
   void StopThrottlingMediaRequests() override;
 
   void SetReceiver(
@@ -56,8 +52,6 @@ class ResourceLoadingHintsAgent
   mojo::AssociatedReceiver<
       previews::mojom::PreviewsResourceLoadingHintsReceiver>
       receiver_{this};
-
-  blink::mojom::BlinkOptimizationGuideHintsPtr blink_optimization_guide_hints_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceLoadingHintsAgent);
 };

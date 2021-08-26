@@ -18,12 +18,12 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/unguessable_token.h"
 #include "base/values.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
-#include "chrome/browser/ash/backdrop_wallpaper_handlers/backdrop_wallpaper.pb.h"
 #include "chrome/browser/ash/customization/customization_wallpaper_util.h"
 #include "chrome/browser/ash/drive/drive_integration_service.h"
 #include "chrome/browser/ash/drive/file_system_util.h"
@@ -37,6 +37,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/components/personalization_app/proto/backdrop_wallpaper.pb.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/prefs/pref_service.h"
@@ -50,10 +51,12 @@
 #include "extensions/browser/value_store/value_store.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/display/screen.h"
 #include "url/gurl.h"
 
 using backdrop_wallpaper_handlers::SurpriseMeImageFetcher;
+using chromeos::ProfileHelper;
 using extension_misc::kWallpaperManagerId;
 
 namespace {
@@ -65,6 +68,7 @@ constexpr char kChromeAppCollectionId[] = "collectionId";
 constexpr char kDriveFsWallpaperDirName[] = "Chromebook Wallpaper";
 // Encoded in |WallpaperControllerImpl.ResizeAndEncodeImage|.
 constexpr char kDriveFsWallpaperFileName[] = "wallpaper.jpg";
+constexpr char kDriveFsTempWallpaperFileName[] = "wallpaper-tmp.jpg";
 
 WallpaperControllerClientImpl* g_wallpaper_controller_client_instance = nullptr;
 
@@ -112,13 +116,22 @@ bool CanGetFilesId() {
          chromeos::SystemSaltGetter::Get()->GetRawSalt();
 }
 
-// Calls |callback| when system salt is ready. (|CanGetFilesId| returns true.)
-void AddCanGetFilesIdCallback(base::OnceClosure callback) {
-  // System salt may not be initialized in tests.
-  if (chromeos::SystemSaltGetter::IsInitialized()) {
-    chromeos::SystemSaltGetter::Get()->AddOnSystemSaltReady(
-        std::move(callback));
+void GetFilesIdSaltReady(
+    const AccountId& account_id,
+    base::OnceCallback<void(const std::string&)> files_id_callback) {
+  DCHECK(CanGetFilesId());
+  std::string stored_value;
+  if (user_manager::known_user::GetStringPref(account_id, kWallpaperFilesId,
+                                              &stored_value)) {
+    std::move(files_id_callback).Run(stored_value);
+    return;
   }
+
+  const std::string wallpaper_files_id =
+      HashWallpaperFilesIdStr(account_id.GetUserEmail());
+  user_manager::known_user::SetStringPref(account_id, kWallpaperFilesId,
+                                          wallpaper_files_id);
+  std::move(files_id_callback).Run(wallpaper_files_id);
 }
 
 // Returns true if |users| contains users other than device local accounts.
@@ -204,6 +217,7 @@ WallpaperControllerClientImpl::WallpaperControllerClientImpl() {
 }
 
 WallpaperControllerClientImpl::~WallpaperControllerClientImpl() {
+  user_manager::UserManager::Get()->RemoveSessionStateObserver(this);
   wallpaper_controller_->SetClient(nullptr);
   weak_factory_.InvalidateWeakPtrs();
   DCHECK_EQ(this, g_wallpaper_controller_client_instance);
@@ -218,6 +232,8 @@ void WallpaperControllerClientImpl::Init() {
           &WallpaperControllerClientImpl::DeviceWallpaperImageFilePathChanged,
           weak_factory_.GetWeakPtr()));
   wallpaper_controller_ = ash::WallpaperController::Get();
+  user_manager::UserManager::Get()->AddSessionStateObserver(this);
+
   InitController();
 }
 
@@ -276,33 +292,16 @@ WallpaperControllerClientImpl* WallpaperControllerClientImpl::Get() {
   return g_wallpaper_controller_client_instance;
 }
 
-std::string WallpaperControllerClientImpl::GetFilesId(
-    const AccountId& account_id) const {
-  DCHECK(CanGetFilesId());
-  std::string stored_value;
-  if (user_manager::known_user::GetStringPref(account_id, kWallpaperFilesId,
-                                              &stored_value)) {
-    return stored_value;
-  }
-
-  const std::string wallpaper_files_id =
-      HashWallpaperFilesIdStr(account_id.GetUserEmail());
-  user_manager::known_user::SetStringPref(account_id, kWallpaperFilesId,
-                                          wallpaper_files_id);
-  return wallpaper_files_id;
-}
-
 void WallpaperControllerClientImpl::SetCustomWallpaper(
     const AccountId& account_id,
-    const std::string& wallpaper_files_id,
     const std::string& file_name,
     ash::WallpaperLayout layout,
     const gfx::ImageSkia& image,
     bool preview_mode) {
   if (!IsKnownUser(account_id))
     return;
-  wallpaper_controller_->SetCustomWallpaper(
-      account_id, wallpaper_files_id, file_name, layout, image, preview_mode);
+  wallpaper_controller_->SetCustomWallpaper(account_id, file_name, layout,
+                                            image, preview_mode);
 }
 
 void WallpaperControllerClientImpl::SetOnlineWallpaper(
@@ -346,28 +345,17 @@ void WallpaperControllerClientImpl::SetPolicyWallpaper(
   if (!data || !IsKnownUser(account_id))
     return;
 
-  // Postpone setting the wallpaper until we can get files id. See
-  // https://crbug.com/615239.
-  if (!CanGetFilesId()) {
-    AddCanGetFilesIdCallback(base::BindOnce(
-        &WallpaperControllerClientImpl::SetPolicyWallpaper,
-        weak_factory_.GetWeakPtr(), account_id, std::move(data)));
-    return;
-  }
-
-  wallpaper_controller_->SetPolicyWallpaper(account_id, GetFilesId(account_id),
-                                            *data);
+  wallpaper_controller_->SetPolicyWallpaper(account_id, *data);
 }
 
 bool WallpaperControllerClientImpl::SetThirdPartyWallpaper(
     const AccountId& account_id,
-    const std::string& wallpaper_files_id,
     const std::string& file_name,
     ash::WallpaperLayout layout,
     const gfx::ImageSkia& image) {
   return IsKnownUser(account_id) &&
-         wallpaper_controller_->SetThirdPartyWallpaper(
-             account_id, wallpaper_files_id, file_name, layout, image);
+         wallpaper_controller_->SetThirdPartyWallpaper(account_id, file_name,
+                                                       layout, image);
 }
 
 void WallpaperControllerClientImpl::ConfirmPreviewWallpaper() {
@@ -409,19 +397,7 @@ void WallpaperControllerClientImpl::RemoveUserWallpaper(
   if (!IsKnownUser(account_id))
     return;
 
-  // Postpone removing the wallpaper until we can get files id.
-  if (!CanGetFilesId()) {
-    LOG(WARNING)
-        << "Cannot get wallpaper files id in RemoveUserWallpaper. This "
-           "should never happen under normal circumstances.";
-    AddCanGetFilesIdCallback(
-        base::BindOnce(&WallpaperControllerClientImpl::RemoveUserWallpaper,
-                       weak_factory_.GetWeakPtr(), account_id));
-    return;
-  }
-
-  wallpaper_controller_->RemoveUserWallpaper(account_id,
-                                             GetFilesId(account_id));
+  wallpaper_controller_->RemoveUserWallpaper(account_id);
 }
 
 void WallpaperControllerClientImpl::RemovePolicyWallpaper(
@@ -429,19 +405,7 @@ void WallpaperControllerClientImpl::RemovePolicyWallpaper(
   if (!IsKnownUser(account_id))
     return;
 
-  // Postpone removing the wallpaper until we can get files id.
-  if (!CanGetFilesId()) {
-    LOG(WARNING)
-        << "Cannot get wallpaper files id in RemovePolicyWallpaper. This "
-           "should never happen under normal circumstances.";
-    AddCanGetFilesIdCallback(
-        base::BindOnce(&WallpaperControllerClientImpl::RemovePolicyWallpaper,
-                       weak_factory_.GetWeakPtr(), account_id));
-    return;
-  }
-
-  wallpaper_controller_->RemovePolicyWallpaper(account_id,
-                                               GetFilesId(account_id));
+  wallpaper_controller_->RemovePolicyWallpaper(account_id);
 }
 
 void WallpaperControllerClientImpl::GetOfflineWallpaperList(
@@ -503,23 +467,70 @@ bool WallpaperControllerClientImpl::ShouldShowWallpaperSetting() {
   return wallpaper_controller_->ShouldShowWallpaperSetting();
 }
 
-void WallpaperControllerClientImpl::SaveWallpaperToDriveFs(
+bool WallpaperControllerClientImpl::SaveWallpaperToDriveFs(
     const AccountId& account_id,
     const base::FilePath& origin) {
-  Profile* profile =
-      chromeos::ProfileHelper::Get()->GetProfileByAccountId(account_id);
+  Profile* profile = ProfileHelper::Get()->GetProfileByAccountId(account_id);
   base::FilePath destination_directory = GetDriveFsWallpaperDir(profile);
   if (destination_directory.empty())
-    return;
+    return false;
 
   if (!base::DirectoryExists(destination_directory) &&
       !base::CreateDirectory(destination_directory)) {
-    return;
+    return false;
+  }
+
+  std::string temp_file_name =
+      base::UnguessableToken::Create().ToString().append(
+          kDriveFsTempWallpaperFileName);
+  base::FilePath temp_destination =
+      destination_directory.Append(temp_file_name);
+  if (!base::CopyFile(origin, temp_destination)) {
+    base::DeleteFile(temp_destination);
+    return false;
   }
 
   base::FilePath destination =
       destination_directory.Append(kDriveFsWallpaperFileName);
-  base::CopyFile(origin, destination);
+  bool success = base::ReplaceFile(temp_destination, destination, nullptr);
+  base::DeleteFile(temp_destination);
+  return success;
+}
+
+base::FilePath WallpaperControllerClientImpl::GetWallpaperPathFromDriveFs(
+    const AccountId& account_id) {
+  Profile* profile = ProfileHelper::Get()->GetProfileByAccountId(account_id);
+  base::FilePath wallpaper_directory = GetDriveFsWallpaperDir(profile);
+  if (wallpaper_directory.empty())
+    return wallpaper_directory;
+  return wallpaper_directory.Append(kDriveFsWallpaperFileName);
+}
+
+void WallpaperControllerClientImpl::GetFilesId(
+    const AccountId& account_id,
+    base::OnceCallback<void(const std::string&)> files_id_callback) const {
+  chromeos::SystemSaltGetter::Get()->AddOnSystemSaltReady(base::BindOnce(
+      &GetFilesIdSaltReady, account_id, std::move(files_id_callback)));
+}
+
+void WallpaperControllerClientImpl::ActiveUserChanged(
+    user_manager::User* active_user) {
+  volume_manager_observation_.Reset();
+  active_user->AddProfileCreatedObserver(base::BindOnce(
+      &WallpaperControllerClientImpl::ObserveVolumeManagerForActiveUser,
+      weak_factory_.GetWeakPtr(), active_user));
+}
+
+void WallpaperControllerClientImpl::OnVolumeMounted(
+    chromeos::MountError error_code,
+    const file_manager::Volume& volume) {
+  if (volume.type() != file_manager::VolumeType::VOLUME_TYPE_GOOGLE_DRIVE) {
+    return;
+  }
+  user_manager::User* user = user_manager::UserManager::Get()->GetActiveUser();
+  if (user) {
+    wallpaper_controller_->OnGoogleDriveMounted(user->GetAccountId());
+  }
 }
 
 void WallpaperControllerClientImpl::MigrateCollectionIdFromValueStoreForTesting(
@@ -572,8 +583,10 @@ void WallpaperControllerClientImpl::OpenWallpaperPicker() {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   DCHECK(profile);
   if (ash::features::IsWallpaperWebUIEnabled()) {
-    web_app::LaunchSystemWebAppAsync(profile,
-                                     web_app::SystemAppType::PERSONALIZATION);
+    web_app::SystemAppLaunchParams params;
+    params.launch_source = apps::mojom::LaunchSource::kFromShelf;
+    web_app::LaunchSystemWebAppAsync(
+        profile, web_app::SystemAppType::PERSONALIZATION, params);
     return;
   }
 
@@ -583,12 +596,13 @@ void WallpaperControllerClientImpl::OpenWallpaperPicker() {
       apps::mojom::AppType::kUnknown) {
     return;
   }
+
   proxy->Launch(
       kWallpaperManagerId,
       apps::GetEventFlags(apps::mojom::LaunchContainer::kLaunchContainerWindow,
                           WindowOpenDisposition::NEW_WINDOW,
                           false /* preferred_containner */),
-      apps::mojom::LaunchSource::kFromChromeInternal);
+      apps::mojom::LaunchSource::kFromShelf);
 }
 
 void WallpaperControllerClientImpl::MaybeClosePreviewWallpaper() {
@@ -610,19 +624,7 @@ void WallpaperControllerClientImpl::SetDefaultWallpaper(
   if (!IsKnownUser(account_id))
     return;
 
-  // Postpone setting the wallpaper until we can get files id.
-  if (!CanGetFilesId()) {
-    LOG(WARNING)
-        << "Cannot get wallpaper files id in SetDefaultWallpaper. This "
-           "should never happen under normal circumstances.";
-    AddCanGetFilesIdCallback(
-        base::BindOnce(&WallpaperControllerClient::SetDefaultWallpaper,
-                       weak_factory_.GetWeakPtr(), account_id, show_wallpaper));
-    return;
-  }
-
-  wallpaper_controller_->SetDefaultWallpaper(account_id, GetFilesId(account_id),
-                                             show_wallpaper);
+  wallpaper_controller_->SetDefaultWallpaper(account_id, show_wallpaper);
 }
 
 void WallpaperControllerClientImpl::MigrateCollectionIdFromChromeApp() {
@@ -698,9 +700,21 @@ void WallpaperControllerClientImpl::OnDailyImageInfoFetched(
     const backdrop::Image& image,
     const std::string& next_resume_token) {
   if (success) {
-    std::move(callback).Run(image.image_url());
+    std::move(callback).Run(image.asset_id(), image.image_url());
   } else {
-    std::move(callback).Run(std::string());
+    std::move(callback).Run(absl::nullopt, std::string());
   }
   surprise_me_image_fetcher_.reset();
+}
+
+void WallpaperControllerClientImpl::ObserveVolumeManagerForActiveUser(
+    user_manager::User* user) {
+  if (!user->is_active())
+    return;
+
+  Profile* profile = ProfileHelper::Get()->GetProfileByUser(user);
+  DCHECK(profile);
+
+  volume_manager_observation_.Observe(
+      file_manager::VolumeManager::Get(profile));
 }

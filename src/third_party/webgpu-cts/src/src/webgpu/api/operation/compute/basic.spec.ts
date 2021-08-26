@@ -3,21 +3,22 @@ Basic command buffer compute tests.
 `;
 
 import { makeTestGroup } from '../../../../common/framework/test_group.js';
+import { DefaultLimits } from '../../../constants.js';
 import { GPUTest } from '../../../gpu_test.js';
 import { checkElementsEqualGenerated } from '../../../util/check_contents.js';
 
 export const g = makeTestGroup(GPUTest);
 
+const kMaxComputeWorkgroupSize = [
+  DefaultLimits.maxComputeWorkgroupSizeX,
+  DefaultLimits.maxComputeWorkgroupSizeY,
+  DefaultLimits.maxComputeWorkgroupSizeZ,
+];
+
 g.test('memcpy').fn(async t => {
   const data = new Uint32Array([0x01020304]);
 
-  const src = t.device.createBuffer({
-    mappedAtCreation: true,
-    size: 4,
-    usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE,
-  });
-  new Uint32Array(src.getMappedRange()).set(data);
-  src.unmap();
+  const src = t.makeBufferWithContents(data, GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE);
 
   const dst = t.device.createBuffer({
     size: 4,
@@ -65,22 +66,23 @@ g.test('memcpy').fn(async t => {
 });
 
 g.test('large_dispatch')
-  .desc(
-    `
-TODO: add query for the maximum dispatch size and test closer to those limits.
-
-Test reasonably-sized large dispatches (see also stress tests).
-`
-  )
+  .desc(`Test reasonably-sized large dispatches (see also: stress tests).`)
   .params(u =>
     u
       // Reasonably-sized powers of two, and some stranger larger sizes.
-      .combine('dispatchSize', [256, 512, 1024, 2048, 315, 628, 1053, 2179] as const)
+      .combine('dispatchSize', [
+        256,
+        2048,
+        315,
+        628,
+        2179,
+        DefaultLimits.maxComputeWorkgroupsPerDimension,
+      ])
       // Test some reasonable workgroup sizes.
-      .combine('workgroupSize', [1, 2, 4, 8, 16, 32, 64] as const)
       .beginSubcases()
       // 0 == x axis; 1 == y axis; 2 == z axis.
       .combine('largeDimension', [0, 1, 2] as const)
+      .expand('workgroupSize', p => [1, 2, 8, 32, kMaxComputeWorkgroupSize[p.largeDimension]])
   )
   .fn(async t => {
     // The output storage buffer is filled with this value.

@@ -38,6 +38,7 @@
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/loader/code_cache.mojom-forward.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/permissions_policy/policy_disposition.mojom-blink-forward.h"
@@ -46,6 +47,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/frame/dom_timer_coordinator.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/platform/heap_observer_set.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/console_logger.h"
@@ -140,6 +142,12 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
   static ExecutionContext* ForRelevantRealm(
       const v8::PropertyCallbackInfo<v8::Value>&);
 
+  // Returns the CodeCacheHost interface associated with the execution
+  // context. This could return nullptr if there is no CodeCacheHost associated
+  // with the current execution context.
+  static blink::mojom::CodeCacheHost* GetCodeCacheHostFromContext(
+      ExecutionContext*);
+
   virtual bool IsWindow() const { return false; }
   virtual bool IsWorkerOrWorkletGlobalScope() const { return false; }
   virtual bool IsWorkerGlobalScope() const { return false; }
@@ -158,6 +166,9 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
   virtual bool IsContextThread() const { return true; }
 
   virtual bool ShouldInstallV8Extensions() const { return false; }
+
+  virtual void CountUseOnlyInCrossSiteIframe(mojom::blink::WebFeature feature) {
+  }
 
   const SecurityOrigin* GetSecurityOrigin() const;
   SecurityOrigin* GetMutableSecurityOrigin();
@@ -243,6 +254,8 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
   }
   virtual void AddInspectorIssue(mojom::blink::InspectorIssueInfoPtr) = 0;
   virtual void AddInspectorIssue(AuditsIssue) = 0;
+
+  void CountDeprecation(WebFeature feature) override;
 
   bool IsContextPaused() const;
   LoaderFreezeMode GetLoaderFreezeMode() const;

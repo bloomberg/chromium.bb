@@ -11,6 +11,7 @@
 <translation id="1546934824884762070">Gözlənilməz xəta oldu. Problemi developerlərə xəbər verin.</translation>
 <translation id="1697532407822776718">Hər şey hazırdır!</translation>
 <translation id="1742469581923031760">Qoşulur...</translation>
+<translation id="177040763384871009">Uzaqdakı cihazda tıklanan keçidlərin müştəri brauzerində açılmasına icazə vermək üçün sistemin veb brauzerini "<ph name="URL_FORWARDER_NAME" />" olaraq dəyişdirməlisiniz.</translation>
 <translation id="177096447311351977">Klient üçün kanal IP-si <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1897488610212723051">Silin</translation>
 <translation id="2009755455353575666">Bağlantı uğursuz oldu</translation>
@@ -129,6 +130,7 @@ Bu icazəni vermək üçün aşağıda "<ph name="BUTTON_NAME" />" düyməsinə 
 <translation id="6963936880795878952">Kimsə yanlış PIN kod ilə qoşulmağa cəhd etdiyi üçün uzaqdan idarə edilən kompüterə qoşulma müvəqqəti olaraq blok edilib. Yenidən cəhd edin.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942"><ph name="HOSTNAME" /> üzərinə kənar bağlantıları deaktiv etmək istəyirsiniz?</translation>
+<translation id="6998890551706945177"><ph name="CLIENT_USERNAME" /> kompüterinizi görmək və idarə etmək üçün icazə istəyir. Bu şəxsi tanımırsınızsa və ya paylaşmadan əvvəl hər hansı bir dəyişiklik etməlisinizsə ''<ph name="IDS_SHARE_CONFIRM_DIALOG_DECLINE" />'' seçiminə basın.  Əks halda qoşulmağa icazə vermək üçün "<ph name="IDS_SHARE_CONFIRM_DIALOG_CONFIRM" />" seçin.</translation>
 <translation id="7019153418965365059">Tanınmayan host xətası: <ph name="HOST_OFFLINE_REASON" /> .</translation>
 <translation id="701976023053394610">Kənardan yardım</translation>
 <translation id="7026930240735156896">Kompüterinizdə uzaqdan girişi quraşdırmaq üçün təlimatlara əməl edin</translation>
@@ -142,6 +144,7 @@ Bu icazəni vermək üçün aşağıda "<ph name="BUTTON_NAME" />" düyməsinə 
 <translation id="7434397035092923453">Klientə giriş icazəsi verilmədi: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">Müştəri qoşuldu: <ph name="CLIENT_USERNAME" /> .</translation>
 <translation id="7526139040829362392">Hesabı dəyişin</translation>
+<translation id="7535110896613603182">Defolt Tətbiq Ayarlarını Açın</translation>
 <translation id="7628469622942688817">Bu cihazda PIN kodu yadda saxlayın.</translation>
 <translation id="7649070708921625228">Yardım</translation>
 <translation id="7658239707568436148">Ləğv edin</translation>

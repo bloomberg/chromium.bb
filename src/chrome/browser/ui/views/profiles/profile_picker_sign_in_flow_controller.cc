@@ -8,6 +8,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
+#include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_keep_alive_types.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
@@ -44,9 +45,11 @@
 namespace {
 
 // Shows the customization bubble if possible. The bubble won't be shown if the
-// color is enforced by policy or downloaded through Sync. An IPH is shown after
-// the bubble, or right away if the bubble cannot be shown.
-void ShowCustomizationBubble(SkColor new_profile_color, Browser* browser) {
+// color is enforced by policy or downloaded through Sync or the default theme
+// should be used. An IPH is shown after the bubble, or right away if the bubble
+// cannot be shown.
+void ShowCustomizationBubble(absl::optional<SkColor> new_profile_color,
+                             Browser* browser) {
   if (!browser)
     return;
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
@@ -56,8 +59,10 @@ void ShowCustomizationBubble(SkColor new_profile_color, Browser* browser) {
       browser_view->toolbar_button_provider()->GetAvatarToolbarButton();
   CHECK(anchor_view);
 
-  // Don't show the customization bubble if a valid policy theme is set.
-  if (ThemeServiceFactory::GetForProfile(browser->profile())
+  // Don't show the customization bubble if the user picked the default theme
+  // or a valid policy theme is set.
+  if (!new_profile_color.has_value() ||
+      ThemeServiceFactory::GetForProfile(browser->profile())
           ->UsingPolicyTheme()) {
     browser_view->MaybeShowProfileSwitchIPH();
     return;
@@ -71,7 +76,7 @@ void ShowCustomizationBubble(SkColor new_profile_color, Browser* browser) {
     ProfileCustomizationBubbleSyncController::
         ApplyColorAndShowBubbleWhenNoValueSynced(
             browser->profile(), anchor_view,
-            /*suggested_profile_color=*/new_profile_color);
+            /*suggested_profile_color=*/new_profile_color.value());
   } else {
     // For non syncing users, simply show the bubble.
     ProfileCustomizationBubbleView::CreateBubble(browser->profile(),
@@ -129,16 +134,8 @@ void ContinueSAMLSignin(std::unique_ptr<content::WebContents> saml_wc,
 
 ProfilePickerSignInFlowController::ProfilePickerSignInFlowController(
     ProfilePickerWebContentsHost* host,
-    Profile* profile,
-    SkColor profile_color,
     base::TimeDelta extended_account_info_timeout)
     : host_(host),
-      contents_(content::WebContents::Create(
-          content::WebContents::CreateParams(profile))),
-      profile_(profile),
-      profile_keep_alive_(profile_,
-                          ProfileKeepAliveOrigin::kProfileCreationFlow),
-      profile_color_(profile_color),
       extended_account_info_timeout_(extended_account_info_timeout) {}
 
 ProfilePickerSignInFlowController::~ProfilePickerSignInFlowController() {
@@ -162,55 +159,55 @@ ProfilePickerSignInFlowController::~ProfilePickerSignInFlowController() {
   }
 }
 
-void ProfilePickerSignInFlowController::Init() {
-  contents()->SetDelegate(this);
+void ProfilePickerSignInFlowController::SwitchToSignIn(
+    absl::optional<SkColor> profile_color,
+    base::OnceCallback<void(bool)> switch_finished_callback) {
+  // Update the color even if the profile is already initialized (to respect
+  // potentially different choice now).
+  profile_color_ = profile_color;
 
-  // Create a manager that supports modal dialogs, such as for webauthn.
-  web_modal::WebContentsModalDialogManager::CreateForWebContents(contents());
-  web_modal::WebContentsModalDialogManager::FromWebContents(contents())
-      ->SetDelegate(this);
-
-  // Listen for sign-in getting completed.
-  identity_manager_observation_.Observe(
-      IdentityManagerFactory::GetForProfile(profile_));
-
-  ProfileAttributesEntry* entry =
-      g_browser_process->profile_manager()
-          ->GetProfileAttributesStorage()
-          .GetProfileAttributesWithPath(profile_->GetPath());
-  if (!entry) {
-    NOTREACHED();
+  if (IsInitialized()) {
+    std::move(switch_finished_callback).Run(true);
+    // Do not load any url because the desired sign-in screen is still loaded in
+    // `contents()`.
+    host_->ShowScreen(contents(), GURL(), /*show_toolbar=*/true);
     return;
   }
 
-  // Record that the sign in process starts (its end is recorded automatically
-  // by the instance of DiceTurnSyncOnHelper constructed later on).
-  signin_metrics::RecordSigninUserActionForAccessPoint(
-      signin_metrics::AccessPoint::ACCESS_POINT_USER_MANAGER,
-      signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO);
-  signin_metrics::LogSigninAccessPointStarted(
-      signin_metrics::AccessPoint::ACCESS_POINT_USER_MANAGER,
-      signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO);
+  size_t icon_index = profiles::GetPlaceholderAvatarIndex();
+  // Silently create the new profile for browsing on GAIA (so that the sign-in
+  // cookies are stored in the right profile).
+  ProfileManager::CreateMultiProfileAsync(
+      g_browser_process->profile_manager()
+          ->GetProfileAttributesStorage()
+          .ChooseNameForNewProfile(icon_index),
+      icon_index, /*is_hidden=*/true,
+      base::BindRepeating(&ProfilePickerSignInFlowController::OnProfileCreated,
+                          weak_ptr_factory_.GetWeakPtr(),
+                          base::OwnedRef(std::move(switch_finished_callback))));
+}
 
-  // Apply the default theme to get consistent colors for toolbars (this matters
-  // for linux where the 'system' theme is used for new profiles).
-  auto* theme_service = ThemeServiceFactory::GetForProfile(profile_);
-  theme_service->UseDefaultTheme();
+bool ProfilePickerSignInFlowController::IsSigningIn() const {
+  // We are in the sign-in flow if the email is not yet determined.
+  return email_.empty();
+}
 
-  // Make sure the web contents used for sign-in has proper background to match
-  // the toolbar (for dark mode).
-  views::WebContentsSetBackgroundColor::CreateForWebContentsWithColor(
-      contents(), GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR));
+void ProfilePickerSignInFlowController::ReloadSignInPage() {
+  if (IsInitialized() && contents() && IsSigningIn()) {
+    contents()->GetController().Reload(content::ReloadType::BYPASSING_CACHE,
+                                       true);
+  }
+}
 
-  // The back button cannot be created from the constructor as ProfilePickerView
-  // needs to access the ThemeProvider of `this` in the process.
-  host_->CreateToolbarBackButton();
-
-  host_->ShowScreen(contents(), GetSigninURL(host_->ShouldUseDarkColors()),
-                    /*show_toolbar=*/true);
+const ui::ThemeProvider* ProfilePickerSignInFlowController::GetThemeProvider()
+    const {
+  if (!IsInitialized())
+    return nullptr;
+  return &ThemeService::GetThemeProviderForProfile(profile_);
 }
 
 void ProfilePickerSignInFlowController::Cancel() {
+  DCHECK(IsInitialized());
   if (is_finished_)
     return;
 
@@ -222,41 +219,31 @@ void ProfilePickerSignInFlowController::Cancel() {
       profile_->GetPath(), base::DoNothing());
 }
 
-void ProfilePickerSignInFlowController::ReloadSignInPage() {
-  if (contents() && IsSigningIn()) {
-    contents()->GetController().Reload(content::ReloadType::BYPASSING_CACHE,
-                                       true);
+void ProfilePickerSignInFlowController::FinishAndOpenBrowser(
+    BrowserOpenedCallback callback) {
+  DCHECK(IsInitialized());
+  // Do nothing if the sign-in flow is aborted or if this has already been
+  // called. Note that this can get called first time from a special case
+  // handling (such as the Settings link) and than second time when the
+  // DiceTurnSyncOnHelper finishes.
+  if (is_finished_)
+    return;
+  is_finished_ = true;
+
+  if (name_for_signed_in_profile_.empty()) {
+    on_profile_name_available_ = base::BindOnce(
+        &ProfilePickerSignInFlowController::FinishAndOpenBrowserImpl,
+        weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+        /*enterprise_sync_consent_needed=*/false);
+    return;
   }
-}
 
-void ProfilePickerSignInFlowController::SetProfileColor(SkColor color) {
-  profile_color_ = color;
-}
-
-SkColor ProfilePickerSignInFlowController::GetProfileColor() const {
-  // The new profile theme may be overridden by an existing policy theme. This
-  // check ensures the correct theme is applied to the sync confirmation window.
-  auto* theme_service = ThemeServiceFactory::GetForProfile(profile_);
-  if (theme_service->UsingPolicyTheme())
-    return theme_service->GetPolicyThemeColor();
-  return profile_color_;
-}
-
-bool ProfilePickerSignInFlowController::IsSigningIn() const {
-  // We are in the sign-in flow if the email is not yet determined.
-  return email_.empty();
-}
-
-const ui::ThemeProvider* ProfilePickerSignInFlowController::GetThemeProvider()
-    const {
-  return &ThemeService::GetThemeProviderForProfile(profile_);
-}
-
-std::string ProfilePickerSignInFlowController::GetUserDomain() const {
-  return gaia::ExtractDomainName(email_);
+  FinishAndOpenBrowserImpl(std::move(callback),
+                           /*enterprise_sync_consent_needed=*/false);
 }
 
 void ProfilePickerSignInFlowController::SwitchToSyncConfirmation() {
+  DCHECK(IsInitialized());
   host_->ShowScreen(
       contents(), GURL(chrome::kChromeUISyncConfirmationURL),
       /*show_toolbar=*/false,
@@ -269,21 +256,10 @@ void ProfilePickerSignInFlowController::SwitchToSyncConfirmation() {
           base::Unretained(this)));
 }
 
-void ProfilePickerSignInFlowController::SwitchToProfileSwitch(
-    const base::FilePath& profile_path) {
-  // The sign-in flow is finished, no profile window should be shown in the end.
-  Cancel();
-
-  switch_profile_path_ = profile_path;
-  host_->ShowScreenInSystemContents(
-      GURL(chrome::kChromeUIProfilePickerUrl).Resolve("profile-switch"),
-      /*show_toolbar=*/false,
-      /*enable_navigating_back=*/false);
-}
-
 void ProfilePickerSignInFlowController::SwitchToEnterpriseProfileWelcome(
     EnterpriseProfileWelcomeUI::ScreenType type,
     base::OnceCallback<void(bool)> proceed_callback) {
+  DCHECK(IsInitialized());
   host_->ShowScreen(contents(),
                     GURL(chrome::kChromeUIEnterpriseProfileWelcomeURL),
                     /*show_toolbar=*/false,
@@ -295,6 +271,19 @@ void ProfilePickerSignInFlowController::SwitchToEnterpriseProfileWelcome(
                                    // called by the owner of this instance.
                                    base::Unretained(this), type,
                                    std::move(proceed_callback)));
+}
+
+void ProfilePickerSignInFlowController::SwitchToProfileSwitch(
+    const base::FilePath& profile_path) {
+  DCHECK(IsInitialized());
+  // The sign-in flow is finished, no profile window should be shown in the end.
+  Cancel();
+
+  switch_profile_path_ = profile_path;
+  host_->ShowScreenInSystemContents(
+      GURL(chrome::kChromeUIProfilePickerUrl).Resolve("profile-switch"),
+      /*show_toolbar=*/false,
+      /*enable_navigating_back=*/false);
 }
 
 bool ProfilePickerSignInFlowController::HandleContextMenu(
@@ -342,14 +331,14 @@ ProfilePickerSignInFlowController::GetWebContentsModalDialogHost() {
 
 void ProfilePickerSignInFlowController::OnRefreshTokenUpdatedForAccount(
     const CoreAccountInfo& account_info) {
+  DCHECK(IsInitialized());
   DCHECK(!account_info.IsEmpty());
   email_ = account_info.email;
 
   base::OnceClosure sync_consent_completed_closure =
       base::BindOnce(&ProfilePickerSignInFlowController::FinishAndOpenBrowser,
                      weak_ptr_factory_.GetWeakPtr(),
-                     base::BindOnce(&ShowCustomizationBubble, profile_color_),
-                     /*enterprise_sync_consent_needed=*/false);
+                     base::BindOnce(&ShowCustomizationBubble, profile_color_));
 
   // Stop with the sign-in navigation and show a spinner instead. The spinner
   // will be shown until DiceTurnSyncOnHelper (below) figures out whether it's a
@@ -380,6 +369,7 @@ void ProfilePickerSignInFlowController::OnRefreshTokenUpdatedForAccount(
 
 void ProfilePickerSignInFlowController::OnExtendedAccountInfoUpdated(
     const AccountInfo& account_info) {
+  DCHECK(IsInitialized());
   if (!account_info.IsValid())
     return;
   name_for_signed_in_profile_ =
@@ -391,12 +381,14 @@ void ProfilePickerSignInFlowController::OnExtendedAccountInfoUpdated(
 
 void ProfilePickerSignInFlowController::OnExtendedAccountInfoTimeout(
     const CoreAccountInfo& account) {
+  DCHECK(IsInitialized());
   name_for_signed_in_profile_ =
       profiles::GetDefaultNameForNewSignedInProfileWithIncompleteInfo(account);
   OnProfileNameAvailable();
 }
 
 void ProfilePickerSignInFlowController::OnProfileNameAvailable() {
+  DCHECK(IsInitialized());
   // Stop listening to further changes.
   DCHECK(identity_manager_observation_.IsObservingSource(
       IdentityManagerFactory::GetForProfile(profile_)));
@@ -407,6 +399,7 @@ void ProfilePickerSignInFlowController::OnProfileNameAvailable() {
 }
 
 void ProfilePickerSignInFlowController::SwitchToSyncConfirmationFinished() {
+  DCHECK(IsInitialized());
   // Initialize the WebUI page once we know it's committed.
   SyncConfirmationUI* sync_confirmation_ui =
       static_cast<SyncConfirmationUI*>(contents()->GetWebUI()->GetController());
@@ -419,42 +412,110 @@ void ProfilePickerSignInFlowController::
     SwitchToEnterpriseProfileWelcomeFinished(
         EnterpriseProfileWelcomeUI::ScreenType type,
         base::OnceCallback<void(bool)> proceed_callback) {
+  DCHECK(IsInitialized());
   // Initialize the WebUI page once we know it's committed.
   EnterpriseProfileWelcomeUI* enterprise_profile_welcome_ui =
       contents()
           ->GetWebUI()
           ->GetController()
           ->GetAs<EnterpriseProfileWelcomeUI>();
-  enterprise_profile_welcome_ui->Initialize(/*browser=*/nullptr, type,
-                                            GetUserDomain(), GetProfileColor(),
-                                            std::move(proceed_callback));
+
+  enterprise_profile_welcome_ui->Initialize(
+      /*browser=*/nullptr, type,
+      IdentityManagerFactory::GetForProfile(profile_)
+          ->FindExtendedAccountInfoByEmailAddress(email_),
+      GetProfileColor(), std::move(proceed_callback));
 }
 
-void ProfilePickerSignInFlowController::FinishAndOpenBrowser(
-    BrowserOpenedCallback callback,
-    bool enterprise_sync_consent_needed) {
-  // Do nothing if the sign-in flow is aborted or if this has already been
-  // called. Note that this can get called first time from a special case
-  // handling (such as the Settings link) and than second time when the
-  // DiceTurnSyncOnHelper finishes.
-  if (is_finished_)
+void ProfilePickerSignInFlowController::OnProfileCreated(
+    base::OnceCallback<void(bool)>& switch_finished_callback,
+    Profile* new_profile,
+    Profile::CreateStatus status) {
+  if (status == Profile::CREATE_STATUS_LOCAL_FAIL) {
+    std::move(switch_finished_callback).Run(false);
     return;
-  is_finished_ = true;
-
-  if (name_for_signed_in_profile_.empty()) {
-    on_profile_name_available_ = base::BindOnce(
-        &ProfilePickerSignInFlowController::FinishAndOpenBrowserImpl,
-        weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-        enterprise_sync_consent_needed);
+  }
+  if (status != Profile::CREATE_STATUS_INITIALIZED) {
     return;
   }
 
-  FinishAndOpenBrowserImpl(std::move(callback), enterprise_sync_consent_needed);
+  DCHECK(new_profile);
+  DCHECK(!profile_);
+  DCHECK(!contents());
+  std::move(switch_finished_callback).Run(true);
+
+  profile_ = new_profile;
+  profile_keep_alive_ = std::make_unique<ScopedProfileKeepAlive>(
+      profile_, ProfileKeepAliveOrigin::kProfileCreationFlow);
+
+  contents_ = content::WebContents::Create(
+      content::WebContents::CreateParams(profile_));
+  contents()->SetDelegate(this);
+
+  // Create a manager that supports modal dialogs, such as for webauthn.
+  web_modal::WebContentsModalDialogManager::CreateForWebContents(contents());
+  web_modal::WebContentsModalDialogManager::FromWebContents(contents())
+      ->SetDelegate(this);
+
+  // Listen for sign-in getting completed.
+  identity_manager_observation_.Observe(
+      IdentityManagerFactory::GetForProfile(profile_));
+
+  ProfileAttributesEntry* entry =
+      g_browser_process->profile_manager()
+          ->GetProfileAttributesStorage()
+          .GetProfileAttributesWithPath(profile_->GetPath());
+  if (!entry) {
+    NOTREACHED();
+    return;
+  }
+
+  // Record that the sign in process starts (its end is recorded automatically
+  // by the instance of DiceTurnSyncOnHelper constructed later on).
+  signin_metrics::RecordSigninUserActionForAccessPoint(
+      signin_metrics::AccessPoint::ACCESS_POINT_USER_MANAGER,
+      signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO);
+  signin_metrics::LogSigninAccessPointStarted(
+      signin_metrics::AccessPoint::ACCESS_POINT_USER_MANAGER,
+      signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO);
+
+  // Apply the default theme to get consistent colors for toolbars (this matters
+  // for linux where the 'system' theme is used for new profiles).
+  auto* theme_service = ThemeServiceFactory::GetForProfile(profile_);
+  theme_service->UseDefaultTheme();
+
+  // Make sure the web contents used for sign-in has proper background to match
+  // the toolbar (for dark mode).
+  views::WebContentsSetBackgroundColor::CreateForWebContentsWithColor(
+      contents(), GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR));
+
+  // The back button cannot be created from the constructor as ProfilePickerView
+  // needs to access the ThemeProvider of `this` in the process.
+  host_->CreateToolbarBackButton();
+
+  host_->ShowScreen(contents(), GetSigninURL(host_->ShouldUseDarkColors()),
+                    /*show_toolbar=*/true);
+}
+
+bool ProfilePickerSignInFlowController::IsInitialized() const {
+  return profile_ != nullptr;
+}
+
+absl::optional<SkColor> ProfilePickerSignInFlowController::GetProfileColor()
+    const {
+  DCHECK(IsInitialized());
+  // The new profile theme may be overridden by an existing policy theme. This
+  // check ensures the correct theme is applied to the sync confirmation window.
+  auto* theme_service = ThemeServiceFactory::GetForProfile(profile_);
+  if (theme_service->UsingPolicyTheme())
+    return theme_service->GetPolicyThemeColor();
+  return profile_color_;
 }
 
 void ProfilePickerSignInFlowController::FinishAndOpenBrowserImpl(
     BrowserOpenedCallback callback,
     bool enterprise_sync_consent_needed) {
+  DCHECK(IsInitialized());
   DCHECK(!name_for_signed_in_profile_.empty());
 
   ProfileAttributesEntry* entry =
@@ -478,13 +539,14 @@ void ProfilePickerSignInFlowController::FinishAndOpenBrowserImpl(
   ProfileMetrics::LogProfileAddNewUser(
       ProfileMetrics::ADD_NEW_PROFILE_PICKER_SIGNED_IN);
 
-  // If sync is not enabled (and will not likely be enabled with an enterprise
-  // consent), apply a new color to the profile (otherwise, a more complicated
-  // logic gets triggered in ShowCustomizationBubble()).
-  if (!enterprise_sync_consent_needed &&
+  // If the profile uses a custom color and sync is not enabled (and will not
+  // likely be enabled with an enterprise consent), apply a new color to the
+  // profile (otherwise, a more complicated logic gets triggered in
+  // ShowCustomizationBubble()).
+  if (profile_color_.has_value() && !enterprise_sync_consent_needed &&
       !ProfileCustomizationBubbleSyncController::CanThemeSyncStart(profile_)) {
     auto* theme_service = ThemeServiceFactory::GetForProfile(profile_);
-    theme_service->BuildAutogeneratedThemeFromColor(profile_color_);
+    theme_service->BuildAutogeneratedThemeFromColor(profile_color_.value());
   }
 
   // Skip the FRE for this profile as it's replaced by profile creation flow.
@@ -506,6 +568,7 @@ void ProfilePickerSignInFlowController::FinishAndOpenBrowserImpl(
 }
 
 void ProfilePickerSignInFlowController::FinishAndOpenBrowserForSAML() {
+  DCHECK(IsInitialized());
   // First, free up `contents()` to be moved to a new browser window.
   host_->ShowScreenInSystemContents(
       GURL(url::kAboutBlankURL),
@@ -519,6 +582,7 @@ void ProfilePickerSignInFlowController::FinishAndOpenBrowserForSAML() {
 }
 
 void ProfilePickerSignInFlowController::OnSignInContentsFreedUp() {
+  DCHECK(IsInitialized());
   DCHECK(!is_finished_);
   is_finished_ = true;
 
@@ -535,6 +599,7 @@ void ProfilePickerSignInFlowController::OnBrowserOpened(
     BrowserOpenedCallback finish_flow_callback,
     Profile* profile,
     Profile::CreateStatus profile_create_status) {
+  DCHECK(IsInitialized());
   CHECK_EQ(profile, profile_);
 
   // Hide the flow window. This posts a task on the message loop to destroy the

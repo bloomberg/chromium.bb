@@ -43,7 +43,7 @@ class GeneratePasswordForFormFieldActionTest : public testing::Test {
     ON_CALL(mock_action_delegate_, GetUserData)
         .WillByDefault(Return(&user_data_));
 
-    ON_CALL(mock_website_login_manager_, GetGeneratedPassword())
+    ON_CALL(mock_website_login_manager_, GeneratePassword)
         .WillByDefault(Return(kGeneratedPassword));
 
     user_data_.selected_login_ =
@@ -76,9 +76,11 @@ TEST_F(GeneratePasswordForFormFieldActionTest, GeneratedPassword) {
 
   action.ProcessAction(callback_.Get());
   EXPECT_EQ(kGeneratedPassword,
-            user_data_.additional_values_[kMemoryKeyForGeneratedPassword]
-                .strings()
+            user_data_.GetAdditionalValue(kMemoryKeyForGeneratedPassword)
+                ->strings()
                 .values(0));
+  EXPECT_TRUE(user_data_.GetAdditionalValue(kMemoryKeyForGeneratedPassword)
+                  ->is_client_side_only());
 }
 
 TEST_F(GeneratePasswordForFormFieldActionTest, FormDataIsNotRetrieved) {
@@ -94,14 +96,14 @@ TEST_F(GeneratePasswordForFormFieldActionTest, FormDataIsNotRetrieved) {
 
   GeneratePasswordForFormFieldAction action(&mock_action_delegate_, proto_);
 
-  EXPECT_CALL(mock_website_login_manager_, GetGeneratedPassword()).Times(0);
+  EXPECT_CALL(mock_website_login_manager_, GeneratePassword).Times(0);
   EXPECT_CALL(
       callback_,
       Run(Pointee(Property(&ProcessedActionProto::status, INVALID_SELECTOR))));
 
   action.ProcessAction(callback_.Get());
 
-  EXPECT_FALSE(user_data_.has_additional_value(kMemoryKeyForGeneratedPassword));
+  EXPECT_FALSE(user_data_.HasAdditionalValue(kMemoryKeyForGeneratedPassword));
 }
 
 }  // namespace autofill_assistant

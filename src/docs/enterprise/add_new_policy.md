@@ -65,7 +65,7 @@ Usually you need a policy when
             traditionally, and we've seen requests from organizations to
             explicitly spell out the behavior for all possible values and for
             when the policy is unset.
-    -   See [description_guidelines.md](https://chromium.googlesource.com/chromium/src/+/refs/heads/main/docs/enterprise/description_guidelines.md)
+    -   See [description_guidelines.md](description_guidelines.md)
         for additional guidelines when creating a description, including how
         various products should be referenced.
 3.  Create a preference and map the policy value to it.
@@ -117,7 +117,7 @@ Usually you need a policy when
             `components/policy/proto/chrome_device_policy.proto`. Please note
             that all proto fields are optional.
         -   Update
-            `chrome/browser/ash/policy/core/device_policy_decoder_chromeos.{h,cc}`
+            `chrome/browser/ash/policy/core/device_policy_decoder.{h,cc}`
             for the new policy.
 7.  Test the policy.
     -   Add a test to verify the policy. You can add a test in

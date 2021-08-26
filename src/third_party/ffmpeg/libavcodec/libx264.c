@@ -28,6 +28,7 @@
 #include "libavutil/time.h"
 #include "libavutil/intreadwrite.h"
 #include "avcodec.h"
+#include "encode.h"
 #include "internal.h"
 #include "packet_internal.h"
 #include "atsc_a53.h"
@@ -144,7 +145,7 @@ static int encode_nals(AVCodecContext *ctx, AVPacket *pkt,
     for (i = 0; i < nnal; i++)
         size += nals[i].i_payload;
 
-    if ((ret = ff_alloc_packet2(ctx, pkt, size, 0)) < 0)
+    if ((ret = ff_get_encode_buffer(ctx, pkt, size, 0)) < 0)
         return ret;
 
     p = pkt->data;
@@ -552,7 +553,6 @@ static int convert_pix_fmt(enum AVPixelFormat pix_fmt)
     case AV_PIX_FMT_YUVJ444P:
     case AV_PIX_FMT_YUV444P9:
     case AV_PIX_FMT_YUV444P10: return X264_CSP_I444;
-#if CONFIG_LIBX264RGB_ENCODER
     case AV_PIX_FMT_BGR0:
         return X264_CSP_BGRA;
     case AV_PIX_FMT_BGR24:
@@ -560,7 +560,6 @@ static int convert_pix_fmt(enum AVPixelFormat pix_fmt)
 
     case AV_PIX_FMT_RGB24:
         return X264_CSP_RGB;
-#endif
     case AV_PIX_FMT_NV12:      return X264_CSP_NV12;
     case AV_PIX_FMT_NV16:
     case AV_PIX_FMT_NV20:      return X264_CSP_NV16;
@@ -748,6 +747,18 @@ static av_cold int X264_init(AVCodecContext *avctx)
         av_log(avctx, AV_LOG_ERROR,
                "x264 too old for AVC Intra, at least version 142 needed\n");
 #endif
+
+    if (x4->avcintra_class > 200) {
+#if X264_BUILD < 164
+        av_log(avctx, AV_LOG_ERROR,
+                "x264 too old for AVC Intra 300/480, at least version 164 needed\n");
+        return AVERROR(EINVAL);
+#else
+        /* AVC-Intra 300/480 only supported by Sony XAVC flavor */
+        x4->params.i_avcintra_flavor = X264_AVCINTRA_FLAVOR_SONY;
+#endif
+    }
+
     if (x4->b_bias != INT_MIN)
         x4->params.i_bframe_bias              = x4->b_bias;
     if (x4->b_pyramid >= 0)
@@ -879,6 +890,11 @@ static av_cold int X264_init(AVCodecContext *avctx)
         }
     }
 
+#if X264_BUILD >= 142
+    /* Separate headers not supported in AVC-Intra mode */
+    if (x4->params.i_avcintra_class >= 0)
+        x4->params.b_repeat_headers = 1;
+#endif
 
     {
         AVDictionaryEntry *en = NULL;
@@ -1081,7 +1097,7 @@ static const AVOption options[] = {
     { "none",          NULL, 0, AV_OPT_TYPE_CONST, {.i64 = X264_NAL_HRD_NONE}, INT_MIN, INT_MAX, VE, "nal-hrd" },
     { "vbr",           NULL, 0, AV_OPT_TYPE_CONST, {.i64 = X264_NAL_HRD_VBR},  INT_MIN, INT_MAX, VE, "nal-hrd" },
     { "cbr",           NULL, 0, AV_OPT_TYPE_CONST, {.i64 = X264_NAL_HRD_CBR},  INT_MIN, INT_MAX, VE, "nal-hrd" },
-    { "avcintra-class","AVC-Intra class 50/100/200",                      OFFSET(avcintra_class),AV_OPT_TYPE_INT,     { .i64 = -1 }, -1, 200   , VE},
+    { "avcintra-class","AVC-Intra class 50/100/200/300/480",              OFFSET(avcintra_class),AV_OPT_TYPE_INT,    { .i64 = -1 }, -1, 480   , VE},
     { "me_method",    "Set motion estimation method",                     OFFSET(motion_est),    AV_OPT_TYPE_INT,    { .i64 = -1 }, -1, X264_ME_TESA, VE, "motion-est"},
     { "motion-est",   "Set motion estimation method",                     OFFSET(motion_est),    AV_OPT_TYPE_INT,    { .i64 = -1 }, -1, X264_ME_TESA, VE, "motion-est"},
     { "dia",           NULL, 0, AV_OPT_TYPE_CONST, { .i64 = X264_ME_DIA },  INT_MIN, INT_MAX, VE, "motion-est" },
@@ -1147,13 +1163,13 @@ AVCodec ff_libx264_encoder = {
     .long_name        = NULL_IF_CONFIG_SMALL("libx264 H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10"),
     .type             = AVMEDIA_TYPE_VIDEO,
     .id               = AV_CODEC_ID_H264,
+    .capabilities     = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_DELAY |
+                        AV_CODEC_CAP_OTHER_THREADS |
+                        AV_CODEC_CAP_ENCODER_REORDERED_OPAQUE,
     .priv_data_size   = sizeof(X264Context),
     .init             = X264_init,
     .encode2          = X264_frame,
     .close            = X264_close,
-    .capabilities     = AV_CODEC_CAP_DELAY | AV_CODEC_CAP_OTHER_THREADS |
-                        AV_CODEC_CAP_ENCODER_REORDERED_OPAQUE,
-    .caps_internal    = FF_CODEC_CAP_AUTO_THREADS,
     .priv_class       = &x264_class,
     .defaults         = x264_defaults,
 #if X264_BUILD < 153
@@ -1183,12 +1199,13 @@ const AVCodec ff_libx264rgb_encoder = {
     .long_name      = NULL_IF_CONFIG_SMALL("libx264 H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10 RGB"),
     .type           = AVMEDIA_TYPE_VIDEO,
     .id             = AV_CODEC_ID_H264,
+    .capabilities   = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_DELAY |
+                      AV_CODEC_CAP_OTHER_THREADS |
+                      AV_CODEC_CAP_ENCODER_REORDERED_OPAQUE,
     .priv_data_size = sizeof(X264Context),
     .init           = X264_init,
     .encode2        = X264_frame,
     .close          = X264_close,
-    .capabilities   = AV_CODEC_CAP_DELAY | AV_CODEC_CAP_OTHER_THREADS |
-                      AV_CODEC_CAP_ENCODER_REORDERED_OPAQUE,
     .priv_class     = &rgbclass,
     .defaults       = x264_defaults,
     .pix_fmts       = pix_fmts_8bit_rgb,
@@ -1214,12 +1231,13 @@ const AVCodec ff_libx262_encoder = {
     .long_name        = NULL_IF_CONFIG_SMALL("libx262 MPEG2VIDEO"),
     .type             = AVMEDIA_TYPE_VIDEO,
     .id               = AV_CODEC_ID_MPEG2VIDEO,
+    .capabilities     = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_DELAY |
+                        AV_CODEC_CAP_OTHER_THREADS |
+                        AV_CODEC_CAP_ENCODER_REORDERED_OPAQUE,
     .priv_data_size   = sizeof(X264Context),
     .init             = X264_init,
     .encode2          = X264_frame,
     .close            = X264_close,
-    .capabilities     = AV_CODEC_CAP_DELAY | AV_CODEC_CAP_OTHER_THREADS |
-                        AV_CODEC_CAP_ENCODER_REORDERED_OPAQUE,
     .priv_class       = &X262_class,
     .defaults         = x264_defaults,
     .pix_fmts         = pix_fmts_8bit,

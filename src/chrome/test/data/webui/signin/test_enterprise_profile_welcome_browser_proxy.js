@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {EnterpriseProfileInfo, EnterpriseProfileWelcomeBrowserProxy} from 'chrome://enterprise-profile-welcome/enterprise_profile_welcome_browser_proxy.js';
-
-import {TestBrowserProxy} from '../test_browser_proxy.m.js';
+import {TestBrowserProxy} from '../test_browser_proxy.js';
 
 /** @implements {EnterpriseProfileWelcomeBrowserProxy} */
 export class TestEnterpriseProfileWelcomeBrowserProxy extends TestBrowserProxy {

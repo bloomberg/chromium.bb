@@ -4,7 +4,7 @@
 
 /* eslint-disable rulesdir/no_underscored_properties */
 
-import type * as Common from '../../core/common/common.js'; // eslint-disable-line no-unused-vars
+import type * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as FormatterModule from '../../models/formatter/formatter.js';
 import * as Persistence from '../../models/persistence/persistence.js';
@@ -13,7 +13,7 @@ import * as SourceFrame from '../../ui/legacy/components/source_frame/source_fra
 import * as UI from '../../ui/legacy/legacy.js';
 
 import type {EditorAction, SourcesView} from './SourcesView.js';
-import {Events, registerEditorAction} from './SourcesView.js';  // eslint-disable-line no-unused-vars
+import {Events, registerEditorAction} from './SourcesView.js';
 
 const UIStrings = {
   /**

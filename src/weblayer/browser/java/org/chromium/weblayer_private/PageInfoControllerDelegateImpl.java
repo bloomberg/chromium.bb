@@ -23,12 +23,12 @@ import org.chromium.components.browser_ui.site_settings.SiteSettingsDelegate;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.content_settings.CookieControlsBridge;
 import org.chromium.components.content_settings.CookieControlsObserver;
-import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.page_info.PageInfoControllerDelegate;
 import org.chromium.components.page_info.PageInfoMainController;
 import org.chromium.components.page_info.PageInfoRowView;
 import org.chromium.components.page_info.PageInfoSubpageController;
+import org.chromium.content_public.browser.BrowserContextHandle;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.url.GURL;
@@ -104,7 +104,7 @@ public class PageInfoControllerDelegateImpl extends PageInfoControllerDelegate {
     @Override
     @Nullable
     public PageInfoSubpageController createHistoryController(
-            PageInfoMainController mainController, PageInfoRowView rowView, String host) {
+            PageInfoMainController mainController, PageInfoRowView rowView) {
         return null;
     }
 

@@ -41,8 +41,9 @@ void RecordingHttp2Visitor::OnSettingsAck() {
   events_.push_back("OnSettingsAck");
 }
 
-void RecordingHttp2Visitor::OnBeginHeadersForStream(Http2StreamId stream_id) {
+bool RecordingHttp2Visitor::OnBeginHeadersForStream(Http2StreamId stream_id) {
   events_.push_back(absl::StrFormat("OnBeginHeadersForStream %d", stream_id));
+  return true;
 }
 
 Http2VisitorInterface::OnHeaderResult RecordingHttp2Visitor::OnHeaderForStream(
@@ -140,11 +141,9 @@ bool RecordingHttp2Visitor::OnInvalidFrame(Http2StreamId stream_id,
   return true;
 }
 
-void RecordingHttp2Visitor::OnReadyToSendDataForStream(Http2StreamId stream_id,
-                                                       char* destination_buffer,
-                                                       size_t length,
-                                                       ssize_t* written,
-                                                       bool* end_stream) {
+void RecordingHttp2Visitor::OnReadyToSendDataForStream(
+    Http2StreamId stream_id, char* /*destination_buffer*/, size_t length,
+    ssize_t* /*written*/, bool* /*end_stream*/) {
   // TODO(b/181586191): Revisit this. The visitor is expected to write to the
   // |destination_buffer| and set the other pointer values appropriately.
   events_.push_back(
@@ -152,10 +151,8 @@ void RecordingHttp2Visitor::OnReadyToSendDataForStream(Http2StreamId stream_id,
 }
 
 void RecordingHttp2Visitor::OnReadyToSendMetadataForStream(
-    Http2StreamId stream_id,
-    char* buffer,
-    size_t length,
-    ssize_t* written) {
+    Http2StreamId stream_id, char* /*buffer*/, size_t length,
+    ssize_t* /*written*/) {
   // TODO(b/181586191): Revisit this. The visitor is expected to write to the
   // |buffer| and set *written appropriately.
   events_.push_back(absl::StrFormat("OnReadyToSendMetadataForStream %d %d",

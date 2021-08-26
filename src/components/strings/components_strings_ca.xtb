@@ -96,6 +96,7 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Esborreu les galetes<ph name="END_LINK" /></translation>
 <translation id="1301324364792935241">Revisa la configuració de DNS segur</translation>
 <translation id="1307966114820526988">Funcions obsoletes</translation>
+<translation id="1312803275555673949">Quines proves hi ha?</translation>
 <translation id="131405271941274527"><ph name="URL" /> vol enviar i rebre informació quan el teu telèfon toca un dispositiu NFC</translation>
 <translation id="1314509827145471431">Enquadernació a la dreta</translation>
 <translation id="1319245136674974084">No ho tornis a preguntar per a aquesta aplicació</translation>
@@ -139,6 +140,7 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="1422930527989633628">Pot demanar permís per descobrir dispositius Bluetooth propers</translation>
 <translation id="1426410128494586442">Sí</translation>
 <translation id="1428146450423315676">Apiladora 7</translation>
+<translation id="1428729058023778569">Estàs veient aquest advertiment perquè aquest lloc web no admet HTTPS. <ph name="BEGIN_LEARN_MORE_LINK" />Més informació<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="1430915738399379752">Imprimeix</translation>
 <translation id="1436185428532214179">Pot demanar permís per editar fitxers i carpetes del dispositiu</translation>
 <translation id="1442386063175183758">Plegat amb finestra a la dreta</translation>
@@ -213,7 +215,6 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="1662550410081243962">Desa i emplena les formes de pagament</translation>
 <translation id="1663943134801823270">Les targetes i les adreces s'obtenen de Chrome. Pots gestionar-les des de <ph name="BEGIN_LINK" />Configuració<ph name="END_LINK" />.</translation>
 <translation id="1671391448414634642">A partir d'ara, les pàgines en <ph name="SOURCE_LANGUAGE" /> es traduiran a <ph name="TARGET_LANGUAGE" />.</translation>
-<translation id="1676269943528358898"><ph name="SITE" /> utilitza normalment l'encriptació per protegir la vostra informació. En aquesta ocasió, quan Google Chrome ha provat de connectar-se a <ph name="SITE" />, el lloc web ha enviat credencials poc comunes i incorrectes. Pot ser que un atacant estigui provant de fer-se passar per <ph name="SITE" /> o que una pantalla d'inici de sessió a la xarxa Wi-Fi hagi interromput la connexió. En qualsevol cas, la vostra informació continua estant segura, perquè Google Chrome ha aturat la connexió abans no s'intercanviés cap dada.</translation>
 <translation id="1677733453456569361"><ph name="PLAY_CHROME_DINO_GAME_FOCUSED_FRIENDLY_MATCH_TEXT" />: prem Tab i després Retorn per jugar al joc El dinosaure de Chrome</translation>
 <translation id="1682696192498422849">La vora curta primer</translation>
 <translation id="168693727862418163">No s'ha pogut validar el valor d'aquesta política comparant-lo amb l'esquema i, per tant, s'ignorarà.</translation>
@@ -467,8 +468,10 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="2587841377698384444">Identificador de l'API de directoris:</translation>
 <translation id="2594318783181750337">Visualització web ràpida:</translation>
 <translation id="2595719060046994702">Aquest dispositiu i aquest compte no estan gestionats per una empresa ni per una altra organització.</translation>
+<translation id="2596415276201385844">Per establir una connexió segura, el rellotge ha d'estar ben ajustat, perquè els certificats que els llocs web fan servir per identificar-se només són vàlids per a períodes de temps concrets. Com que el rellotge del dispositiu no està ben ajustat, Chrome no pot verificar aquests certificats.</translation>
 <translation id="2597378329261239068">Aquest document està protegit mitjançant contrasenya. Introduïu una contrasenya.</translation>
 <translation id="2609632851001447353">Variacions</translation>
+<translation id="2610561535971892504">Fes clic per copiar</translation>
 <translation id="2618023639789766142">C10 (sobre)</translation>
 <translation id="2625385379895617796">El rellotge està avançat</translation>
 <translation id="262745152991669301">Pot demanar permís per connectar-se a dispositius USB</translation>
@@ -498,6 +501,7 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="2701514975700770343">Cara avall</translation>
 <translation id="2702801445560668637">Llista de lectura</translation>
 <translation id="2704283930420550640">El valor no coincideix amb el format.</translation>
+<translation id="2704606927547763573">Copiada</translation>
 <translation id="2705137772291741111">La còpia desada (a la memòria cau) d'aquest lloc no s'ha pogut llegir.</translation>
 <translation id="2709516037105925701">Emplenament automàtic</translation>
 <translation id="2713444072780614174">Blanc</translation>
@@ -541,6 +545,7 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="290376772003165898">La pàgina no està en <ph name="LANGUAGE" />?</translation>
 <translation id="2909946352844186028">S'ha detectat un canvi a la xarxa.</translation>
 <translation id="2911973620368911614">Identificador d'usuari del compte de treball</translation>
+<translation id="2914160345369867329">Normalment, al lloc web <ph name="SITE" /> es fa servir l'encriptació per protegir la vostra informació. En aquesta ocasió, quan Chrome ha provat de connectar-se a <ph name="SITE" />, el lloc web ha enviat credencials poc comunes i incorrectes. Pot ser que un atacant estigui provant de fer-se passar per <ph name="SITE" /> o que una pantalla d'inici de sessió a la xarxa Wi-Fi hagi interromput la connexió. En qualsevol cas, la vostra informació continua estant segura, perquè Chrome ha aturat la connexió abans no s'intercanviés cap dada.</translation>
 <translation id="2915068235268646559">Inici del bloqueig: <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Tanca altres programes</translation>
 <translation id="2922350208395188000">No es pot comprovar el certificat del servidor.</translation>
@@ -557,7 +562,6 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="2951588413176968965">La meva bústia de correu</translation>
 <translation id="295526156371527179">Advertiment: aquesta política no s'ha combinat com a diccionari segons el que s'especifica a la política perquè no és un diccionari.</translation>
 <translation id="2955913368246107853">Tanca la barra de cerca</translation>
-<translation id="2969319727213777354">Per establir una connexió segura, heu de tenir el rellotge ben configurat, ja que els certificats que els llocs web fan servir per identificar-se només són vàlids durant períodes de temps concrets. Com que el rellotge del dispositiu no està ben configurat, Google Chrome no pot verificar aquests certificats.</translation>
 <translation id="2972581237482394796">&amp;Refés</translation>
 <translation id="2977665033722899841">S'ha seleccionat <ph name="ROW_NAME" />. <ph name="ROW_CONTENT" /></translation>
 <translation id="2985306909656435243">Si s'activa aquesta opció, Chromium desa una còpia de la vostra targeta en aquest dispositiu per agilitzar l'emplenament de formularis.</translation>
@@ -631,8 +635,10 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="3229041911291329567">Informació sobre la versió del dispositiu i del navegador</translation>
 <translation id="323107829343500871">Introdueix el CVC de la targeta <ph name="CREDIT_CARD" /></translation>
 <translation id="3234666976984236645">Detecta sempre el contingut important d'aquest lloc</translation>
+<translation id="3240791268468473923">S'ha obert el full de credencials no coincidents de credencials de pagament segur</translation>
 <translation id="3249845759089040423">Atrevida</translation>
 <translation id="3252266817569339921">Francès</translation>
+<translation id="3257954757204451555">Qui hi ha darrere d'aquesta informació?</translation>
 <translation id="3259648571731540213"><ph name="CREATE_GOOGLE_CALENDAR_EVENT_FOCUSED_FRIENDLY_MATCH_TEXT" />: prem Tab i després Retorn per crear un esdeveniment ràpidament a Google Calendar</translation>
 <translation id="3266793032086590337">Valor (en conflicte)</translation>
 <translation id="3268451620468152448">Pestanyes obertes</translation>
@@ -643,6 +649,7 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="3282497668470633863">Afegeix el titular de la targeta</translation>
 <translation id="3286372614333682499">vertical</translation>
 <translation id="3287510313208355388">Baixa quan estigui en línia</translation>
+<translation id="3288238092761586174">És possible que <ph name="URL" /> hagi de fer més passos per verificar el teu pagament</translation>
 <translation id="3293642807462928945">Més informació sobre la política <ph name="POLICY_NAME" /></translation>
 <translation id="3295444047715739395">Consulta i gestiona les teves contrasenyes a la configuració de Chrome</translation>
 <translation id="3303855915957856445">No s'ha trobat cap resultat de la cerca</translation>
@@ -694,6 +701,7 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="3432601291244612633">Tanca la pàgina</translation>
 <translation id="3435738964857648380">Seguretat</translation>
 <translation id="3438829137925142401">Utilitza les contrasenyes desades al teu Compte de Google</translation>
+<translation id="3440783957068352691">quadrat</translation>
 <translation id="3443726618221119081">Juuro-Ku-Kai</translation>
 <translation id="3447661539832366887">El propietari d'aquest dispositiu ha desactivat el joc de dinosaures.</translation>
 <translation id="3447884698081792621">Mostra el certificat (emès per <ph name="ISSUER" />)</translation>
@@ -995,11 +1003,14 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="4434045419905280838">Finestres emergents i redireccions</translation>
 <translation id="4435702339979719576">Postal)</translation>
 <translation id="443673843213245140">L'ús d'un servidor intermediari no està activat, però s'ha especificat una configuració explícita d'un servidor intermediari.</translation>
+<translation id="4450893287417543264">No ho tornis a mostrar</translation>
 <translation id="4451135742916150903">Pot demanar permís per connectar-se a dispositius HID</translation>
 <translation id="4460315069258617173">Permès fins que tanquis les pestanyes d'aquest lloc web</translation>
 <translation id="4464826014807964867">Llocs web amb informació sobre la teva organització</translation>
+<translation id="4465818729556336129">Aquest document és confidencial i el teu administrador recomana no imprimir-lo.</translation>
 <translation id="4476953670630786061">Aquest formulari no és segur. S'ha desactivat l'emplenament automàtic.</translation>
 <translation id="4477350412780666475">Pista següent</translation>
+<translation id="4481394504112738036">Fitxer confidencial</translation>
 <translation id="4482953324121162758">Aquest lloc web no es traduirà.</translation>
 <translation id="4490717597759821841">A7</translation>
 <translation id="449126573531210296">Encripta contrasenyes sincronitzades amb el teu Compte de Google</translation>
@@ -1022,6 +1033,7 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="455113658016510503">A9</translation>
 <translation id="4558551763791394412">Desactiva les extensions</translation>
 <translation id="4559332380232738994">10x11</translation>
+<translation id="4567686777917670400">L'administrador pot modificar la configuració del navegador de manera remota. És possible que l'activitat d'aquest dispositiu també es gestioni fora de Chromium. <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
 <translation id="457875822857220463">Entrega</translation>
 <translation id="4579056131138995126">Personal (sobre)</translation>
 <translation id="4582204425268416675">Suprimeix la targeta</translation>
@@ -1051,7 +1063,6 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="467809019005607715">Presentacions de Google</translation>
 <translation id="4680804919228900307">Acabes d'introduir la contrasenya en un lloc web enganyós. Chromium et recomana que comprovis les teves contrasenyes desades per a <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> i altres llocs web en què utilitzis aquesta contrasenya ara.</translation>
 <translation id="468314109939257734">Mostra el número de la targeta virtual</translation>
-<translation id="4690462567478992370">Deixa de fer servir un certificat no vàlid</translation>
 <translation id="4691835149146451662">Architecture-A (sobre)</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4702504834785592287">Costat</translation>
@@ -1093,7 +1104,6 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="4800132727771399293">Comproveu la data de caducitat i el CVC i torneu-ho a provar</translation>
 <translation id="480334179571489655">Error de la política d'origen</translation>
 <translation id="4803924862070940586"><ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
-<translation id="4807049035289105102">En aquest moment no podeu visitar <ph name="SITE" /> perquè el lloc web ha enviat credencials aleatòries que Google Chrome no pot processar. Els errors i els atacs de xarxa solen ser temporals, de manera que és probable que aquesta pàgina torni a funcionar més tard.</translation>
 <translation id="4809079943450490359">Instruccions de l'administrador del dispositiu:</translation>
 <translation id="4813512666221746211">Error de la xarxa</translation>
 <translation id="4816492930507672669">Ajusta a la pàgina</translation>
@@ -1205,6 +1215,7 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="5172758083709347301">Automàtica</translation>
 <translation id="5179510805599951267">No està escrita en <ph name="ORIGINAL_LANGUAGE" />? Informa d'aquest error</translation>
 <translation id="5190835502935405962">Barra d'adreces d'interès</translation>
+<translation id="51918995459521422"><ph name="ORIGIN" /> vol baixar diversos fitxers</translation>
 <translation id="519422657042045905">L'anotació no està disponible</translation>
 <translation id="5201306358585911203">Una pàgina inserida en aquesta pàgina diu</translation>
 <translation id="5205222826937269299">El nom és obligatori</translation>
@@ -1373,7 +1384,6 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="578633867165174378">Chrome ha trobat la contrasenya que acabes de fer servir en una violació de les dades. Et recomanem que canviïs la contrasenya ara.</translation>
 <translation id="5803412860119678065">Vols emplenar la informació de la teva targeta <ph name="CARD_DETAIL" />?</translation>
 <translation id="5804241973901381774">Permisos</translation>
-<translation id="5804427196348435412">Utilitza dispositius amb NFC</translation>
 <translation id="5810442152076338065">La connexió a <ph name="DOMAIN" /> s'ha encriptat amb un sistema de xifratge obsolet.</translation>
 <translation id="5813119285467412249">&amp;Refés l'addició</translation>
 <translation id="5817918615728894473">Vincula</translation>
@@ -1449,6 +1459,7 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="6051221802930200923">En aquests moments no pots visitar <ph name="SITE" /> perquè el lloc web fa servir una fixació de certificat. Els atacs i els errors de xarxa acostumen a ser temporals, o sigui que probablement la pàgina funcionarà més endavant.</translation>
 <translation id="6051898664905071243">Nombre de pàgines:</translation>
 <translation id="6052284303005792909">•</translation>
+<translation id="6055888660316801977">Full de credencials no coincidents de credencials de pagament segur</translation>
 <translation id="6058977677006700226">Vols utilitzar les targetes en tots els dispositius?</translation>
 <translation id="6059925163896151826">Dispositius USB</translation>
 <translation id="6060009363608157444">El mode DnsOverHttps no és vàlid.</translation>
@@ -1514,6 +1525,7 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="6337534724793800597">Filtra les polítiques pel nom</translation>
 <translation id="6349101878882523185">Instal·la <ph name="APP_NAME" /></translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{Cap}=1{1 contrasenya per a <ph name="DOMAIN_LIST" /> (sincronitzats)}=2{2 contrasenyes per a <ph name="DOMAIN_LIST" /> (sincronitzats)}other{# contrasenyes per a <ph name="DOMAIN_LIST" /> (sincronitzats)}}</translation>
+<translation id="6355392890578844978">Cap empresa ni cap altra organització no gestiona aquest navegador. És possible que l'activitat d'aquest dispositiu es gestioni fora de Chromium. <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
 <translation id="6358450015545214790">Què vol dir tot això?</translation>
 <translation id="6361757823711327522">B7</translation>
 <translation id="6364095313648930329"><ph name="BEGIN_LINK" />Comprova el servidor intermediari, el tallafoc i la configuració de DNS segur<ph name="END_LINK" /></translation>
@@ -1526,6 +1538,7 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="6389470377220713856">Titular de la targeta</translation>
 <translation id="6390200185239044127">Plegat en Z fins a la meitat</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
+<translation id="6391700400718590966">S'ha tancat el full de credencials no coincidents de credencials de pagament segur</translation>
 <translation id="6393956493820063117">La política de l'administrador no permet enganxar contingut de <ph name="ORIGIN_NAME" /> en aquesta ubicació</translation>
 <translation id="6398765197997659313">Surt del mode de pantalla completa</translation>
 <translation id="6401136357288658127">Aquesta política es considera obsoleta. Hauries de fer servir la política <ph name="NEW_POLICY" />.</translation>
@@ -1608,7 +1621,6 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="6689249931105087298">Relatiu amb compressió de punts negres</translation>
 <translation id="6689271823431384964">Chrome t'està oferint desar les targetes al Compte de Google perquè tens la sessió iniciada. Pots canviar aquest comportament a la configuració. El nom del titular de la targeta s'obté del teu compte.</translation>
 <translation id="6698381487523150993">Creat:</translation>
-<translation id="6699188552522342100">És precís aquest lloc web?</translation>
 <translation id="6702919718839027939">Presenta</translation>
 <translation id="6710213216561001401">Anterior</translation>
 <translation id="6710594484020273272">&lt;Escriviu el terme de cerca&gt;</translation>
@@ -1616,6 +1628,7 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="6711464428925977395">Hi ha hagut algun problema amb el servidor intermediari o l'adreça no és correcta.</translation>
 <translation id="6716672519412350405"><ph name="URL" /> vol crear un mapa en 3D del teu entorn i fer un seguiment de la posició de la càmera</translation>
 <translation id="6718612893943028815">Vols utilitzar la càmera?</translation>
+<translation id="6721678857435001674">Veure la marca i el model de la teva clau de seguretat</translation>
 <translation id="6738516213925468394">Les teves dades es van encriptar el dia <ph name="TIME" /> amb la teva <ph name="BEGIN_LINK" />frase de contrasenya de sincronització<ph name="END_LINK" />. Introdueix-la per començar la sincronització.</translation>
 <translation id="674375294223700098">Error de certificat del servidor desconegut.</translation>
 <translation id="6744009308914054259">Mentre esperes a tenir connexió, pots visitar Baixades per llegir articles sense connexió.</translation>
@@ -1652,13 +1665,13 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="6898699227549475383">Organització (O)</translation>
 <translation id="6907293445143367439">Permet a <ph name="SITE_NAME" />:</translation>
 <translation id="6910240653697687763"><ph name="URL" /> vol obtenir un control total dels teus dispositius MIDI</translation>
+<translation id="691024665142758461">Baixa diversos fitxers</translation>
 <translation id="6915804003454593391">Usuari:</translation>
 <translation id="6934672428414710184">Aquest nom prové del teu Compte de Google</translation>
 <translation id="6944692733090228304">Has introduït la contrasenya en un lloc web que no està gestionat per <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />. Per protegir el teu compte, no facis servir la mateixa contrasenya en altres aplicacions ni llocs web.</translation>
 <translation id="6945221475159498467">Selecciona</translation>
 <translation id="6948051842255602737">S'ha acabat la partida. La teva puntuació és <ph name="SCORE" />.</translation>
 <translation id="6948701128805548767">Per veure els mètodes i els requisits de recollida, selecciona una adreça</translation>
-<translation id="6949479070119158594">Estàs veient aquest advertiment perquè aquest lloc web no admet HTTPS.</translation>
 <translation id="6949872517221025916">Restableix la contrasenya</translation>
 <translation id="6950684638814147129">S'ha produït un error en analitzar el valor JSON: <ph name="ERROR" /></translation>
 <translation id="695140971690006676">Reinicia-ho tot</translation>
@@ -1736,6 +1749,7 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> no compleix la normativa de seguretat.</translation>
 <translation id="7210993021468939304">L'activitat de Linux al contenidor; i també pot instal·lar-hi i executar-hi aplicacions de Linux</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /> sobre aquest problema.</translation>
+<translation id="7215025035562547931">Dedica un moment a valorar la precisió</translation>
 <translation id="7217745192097460130">Vols fer servir Touch ID per verificar la teva identitat i completar la compra?</translation>
 <translation id="7219179957768738017">La connexió utilitza <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">S'està processant</translation>
@@ -1964,10 +1978,12 @@ Detalls addicionals:
 <translation id="7961015016161918242">Mai</translation>
 <translation id="7966803981046576691">Tipus de compte de treball</translation>
 <translation id="79682505114836835">El valor "<ph name="VALUE" />" no és un color hexadecimal vàlid.</translation>
+<translation id="7970392640816874403">Què diuen altres fonts?</translation>
 <translation id="7976214039405368314">Hi ha massa sol·licituds</translation>
 <translation id="7977538094055660992">Dispositiu de sortida</translation>
 <translation id="7977894662897852582">Edp</translation>
 <translation id="798134797138789862">Pot demanar permís per utilitzar dispositius i dades de realitat virtual</translation>
+<translation id="7984945080620862648">En aquest moment no podeu visitar <ph name="SITE" /> perquè el lloc web ha enviat credencials barrejades que Chrome no pot processar. Els errors i els atacs de xarxa solen ser temporals, de manera que és probable que aquesta pàgina torni a funcionar més tard.</translation>
 <translation id="79859296434321399">Per veure contingut en realitat augmentada, instal·la ARCore</translation>
 <translation id="7986319120639858961"><ph name="CARD_TITLE" /> <ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="799149739215780103">Enquadernació</translation>
@@ -2031,7 +2047,6 @@ Detalls addicionals:
 <translation id="8202370299023114387">Conflicte</translation>
 <translation id="8206978196348664717">Prc4 (sobre)</translation>
 <translation id="8211406090763984747">La connexió és segura</translation>
-<translation id="8213464188712611711">Records</translation>
 <translation id="8218327578424803826">Ubicació assignada:</translation>
 <translation id="8220146938470311105">C7/C6 (sobre)</translation>
 <translation id="8221250263817408492">Acabes d'introduir la contrasenya en un lloc web enganyós. Chromium et recomana que vagis a <ph name="WEBSITE_1" /> i a altres llocs web en què utilitzes aquesta contrasenya i que la canviïs ara.</translation>

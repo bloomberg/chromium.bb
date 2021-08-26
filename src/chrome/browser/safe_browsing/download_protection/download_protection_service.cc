@@ -31,6 +31,7 @@
 #include "chrome/browser/safe_browsing/download_protection/download_url_sb_client.h"
 #include "chrome/browser/safe_browsing/download_protection/ppapi_download_request.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager_factory.h"
+#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/services_delegate.h"
 #include "chrome/common/safe_browsing/binary_feature_extractor.h"
 #include "chrome/common/safe_browsing/download_type_util.h"
@@ -415,12 +416,9 @@ void DownloadProtectionService::MaybeSendDangerousDownloadOpenedReport(
   if (browser_context->IsOffTheRecord())
     return;
 
-  // Only report downloads that are known to be dangerous, or downloads that are
-  // opened while scanning isn't done.
-  if (!item->IsDangerous() &&
-      item->GetDangerType() != download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING) {
+  // Only report downloads that are known to be dangerous.
+  if (!item->IsDangerous())
     return;
-  }
 
   OnDangerousDownloadOpened(item, profile);
   if (sb_service_ &&
@@ -454,6 +452,12 @@ void DownloadProtectionService::MaybeSendDangerousDownloadOpenedReport(
           << "Unable to serialize the dangerous download opened report.";
     }
   }
+}
+
+void DownloadProtectionService::ReportDelayedBypassEvent(
+    download::DownloadItem* download,
+    download::DownloadDangerType danger_type) {
+  download_reporter_.ReportDelayedBypassEvent(download, danger_type);
 }
 
 std::unique_ptr<ReferrerChainData>
@@ -598,15 +602,49 @@ void DownloadProtectionService::OnDangerousDownloadOpened(
   std::string raw_digest_sha256 = item->GetHash();
   auto* router =
       extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile);
-  if (router) {
-    auto* scan_result = static_cast<enterprise_connectors::ScanResult*>(
-        item->GetUserData(enterprise_connectors::ScanResult::kKey));
+  if (!router)
+    return;
+
+  auto* scan_result = static_cast<enterprise_connectors::ScanResult*>(
+      item->GetUserData(enterprise_connectors::ScanResult::kKey));
+
+  // A download with a verdict of "sensitive data warning" can be opened and
+  // |item->IsDangerous()| will return |true| for it but the reported event
+  // should be a "sensitive file bypass" event rather than a "dangerous file
+  // bypass" event.
+  if (scan_result &&
+      item->GetDangerType() ==
+          download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_WARNING) {
+    for (const auto& metadata : scan_result->file_metadata) {
+      for (const auto& result : metadata.scan_response.results()) {
+        if (result.tag() != "dlp")
+          continue;
+
+        router->OnAnalysisConnectorWarningBypassed(
+            item->GetURL(), metadata.filename, metadata.sha256,
+            metadata.mime_type,
+            extensions::SafeBrowsingPrivateEventRouter::kTriggerFileDownload,
+            metadata.scan_response.request_token(),
+            DeepScanAccessPoint::DOWNLOAD, result, metadata.size);
+
+        // There won't be multiple DLP verdicts in the same response, so no need
+        // to keep iterating.
+        break;
+      }
+    }
+  } else if (scan_result) {
+    for (const auto& metadata : scan_result->file_metadata) {
+      router->OnDangerousDownloadOpened(item->GetURL(), metadata.filename,
+                                        metadata.sha256, metadata.mime_type,
+                                        metadata.scan_response.request_token(),
+                                        item->GetDangerType(), metadata.size);
+    }
+  } else {
     router->OnDangerousDownloadOpened(
         item->GetURL(), item->GetTargetFilePath().AsUTF8Unsafe(),
         base::HexEncode(raw_digest_sha256.data(), raw_digest_sha256.size()),
-        item->GetMimeType(),
-        scan_result ? scan_result->response.request_token() : "",
-        item->GetDangerType(), item->GetTotalBytes());
+        item->GetMimeType(), /*scan_id*/ "", item->GetDangerType(),
+        item->GetTotalBytes());
   }
 }
 
@@ -638,6 +676,15 @@ void DownloadProtectionService::UploadForDeepScanning(
       std::make_pair(request_raw, std::move(request)));
   DCHECK(insertion_result.second);
   insertion_result.first->second->Start();
+}
+
+std::vector<DeepScanningRequest*>
+DownloadProtectionService::GetDeepScanningRequests() {
+  std::vector<DeepScanningRequest*> requests;
+  for (const auto& pair : deep_scanning_requests_) {
+    requests.push_back(pair.first);
+  }
+  return requests;
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>

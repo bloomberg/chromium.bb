@@ -102,7 +102,7 @@ void av1_get_ref_frames(const RefBufferStack *ref_buffer_stack,
                         RefFrameMapPair ref_frame_map_pairs[REF_FRAMES],
                         int cur_frame_disp,
 #if CONFIG_FRAME_PARALLEL_ENCODE_2
-                        int gf_index,
+                        int gf_index, int is_parallel_encode,
 #endif  // CONFIG_FRAME_PARALLEL_ENCODE_2
 #endif  // CONFIG_FRAME_PARALLEL_ENCODE
                         int remapped_ref_idx[REF_FRAMES]);
@@ -143,6 +143,14 @@ static AOM_INLINE int get_current_frame_ref_type(const AV1_COMP *const cpi) {
     default: return 7;
   }
 }
+
+#if CONFIG_FRAME_PARALLEL_ENCODE
+#if CONFIG_FRAME_PARALLEL_ENCODE_2
+int av1_calc_refresh_idx_for_intnl_arf(
+    AV1_COMP *cpi, RefFrameMapPair ref_frame_map_pairs[REF_FRAMES],
+    int gf_index);
+#endif  // CONFIG_FRAME_PARALLEL_ENCODE_2
+#endif  // CONFIG_FRAME_PARALLEL_ENCODE
 /*!\endcond */
 #ifdef __cplusplus
 }  // extern "C"

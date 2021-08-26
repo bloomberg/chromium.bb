@@ -138,6 +138,7 @@ class ContentAutofillDriver : public AutofillDriver,
   // AutofillDriver:
   bool IsIncognito() const override;
   bool IsInMainFrame() const override;
+  bool IsPrerendering() const override;
   bool CanShowAutofillUi() const override;
   ui::AXTreeID GetAxTreeId() const override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
@@ -153,13 +154,12 @@ class ContentAutofillDriver : public AutofillDriver,
   // These events are forwarded to ContentAutofillRouter.
   // Their implementations (*Impl()) call into the renderer via
   // mojom::AutofillAgent.
-  void SendFormDataToRenderer(
-      int query_id,
-      RendererFormDataAction action,
-      const FormData& data,
-      const url::Origin& triggered_origin,
-      const base::flat_map<FieldGlobalId, ServerFieldType>& field_type_map)
-      override;
+  void FillOrPreviewForm(int query_id,
+                         mojom::RendererFormDataAction action,
+                         const FormData& data,
+                         const url::Origin& triggered_origin,
+                         const base::flat_map<FieldGlobalId, ServerFieldType>&
+                             field_type_map) override;
   void SendAutofillTypePredictionsToRenderer(
       const std::vector<FormStructure*>& forms) override;
   void RendererShouldAcceptDataListSuggestion(
@@ -180,9 +180,9 @@ class ContentAutofillDriver : public AutofillDriver,
 
   // Implementations of the AutofillDriver functions called by the browser.
   // These functions are called by ContentAutofillRouter.
-  void SendFormDataToRendererImpl(int query_id,
-                                  RendererFormDataAction action,
-                                  const FormData& data);
+  void FillOrPreviewFormImpl(int query_id,
+                             mojom::RendererFormDataAction action,
+                             const FormData& data);
   void SendAutofillTypePredictionsToRendererImpl(
       const std::vector<FormDataPredictions>& forms);
   void RendererShouldAcceptDataListSuggestionImpl(const FieldRendererId& field,
@@ -204,6 +204,10 @@ class ContentAutofillDriver : public AutofillDriver,
   // mojom::AutofillDriver functions called by the renderer.
   // These events are forwarded to ContentAutofillRouter.
   // Their implementations (*Impl()) call into AutofillManager.
+  //
+  // We do not expect to receive autofill related messages from a prerendered
+  // page, so we will validate calls accordingly. If we receive an unexpected
+  // call, we will shut down the renderer and log the bad message.
   void SetFormToBeProbablySubmitted(
       const absl::optional<FormData>& form) override;
   void FormsSeen(const std::vector<FormData>& forms) override;
@@ -220,11 +224,11 @@ class ContentAutofillDriver : public AutofillDriver,
   void SelectControlDidChange(const FormData& form,
                               const FormFieldData& field,
                               const gfx::RectF& bounding_box) override;
-  void QueryFormFieldAutofill(int32_t id,
-                              const FormData& form,
-                              const FormFieldData& field,
-                              const gfx::RectF& bounding_box,
-                              bool autoselect_first_suggestion) override;
+  void AskForValuesToFill(int32_t id,
+                          const FormData& form,
+                          const FormFieldData& field,
+                          const gfx::RectF& bounding_box,
+                          bool autoselect_first_suggestion) override;
   void HidePopup() override;
   void FocusNoLongerOnForm(bool had_interacted_form) override;
   void FocusOnFormField(const FormData& form,
@@ -253,11 +257,11 @@ class ContentAutofillDriver : public AutofillDriver,
   void SelectControlDidChangeImpl(const FormData& form,
                                   const FormFieldData& field,
                                   const gfx::RectF& bounding_box);
-  void QueryFormFieldAutofillImpl(int32_t id,
-                                  const FormData& form,
-                                  const FormFieldData& field,
-                                  const gfx::RectF& bounding_box,
-                                  bool autoselect_first_suggestion);
+  void AskForValuesToFillImpl(int32_t id,
+                              const FormData& form,
+                              const FormFieldData& field,
+                              const gfx::RectF& bounding_box,
+                              bool autoselect_first_suggestion);
   void HidePopupImpl();
   void FocusNoLongerOnFormImpl(bool had_interacted_form);
   void FocusOnFormFieldImpl(const FormData& form,
@@ -272,11 +276,11 @@ class ContentAutofillDriver : public AutofillDriver,
   // Triggers filling of |fill_data| into |raw_form| and |raw_field|. This event
   // is called only by Autofill Assistant on the browser side and provides the
   // |fill_data| itself. This is different from the usual Autofill flow, where
-  // the renderer triggers Autofill with the QueryFormFieldAutofill() event,
-  // which displays the Autofill popup to select the fill data.
+  // the renderer triggers Autofill with the AskForValuesToFill() event, which
+  // displays the Autofill popup to select the fill data.
   // FillFormForAssistant() is located in ContentAutofillDriver so that
   // |raw_form| and |raw_field| get their meta data set analogous to
-  // QueryFormFieldAutofill().
+  // AskForValuesToFill().
   // TODO(crbug/1224094): Migrate Autofill Assistant to the standard Autofill
   // flow.
   void FillFormForAssistant(const AutofillableData& fill_data,
@@ -380,11 +384,17 @@ class ContentAutofillDriver : public AutofillDriver,
   void ShowOfferNotificationIfApplicable(
       content::NavigationHandle* navigation_handle);
 
+  // Returns the autofill router and confirms that it may be accessed (we should
+  // not be using the router if we're prerendering).
+  ContentAutofillRouter& GetAutofillRouter();
+
   // Weak ref to the RenderFrameHost the driver is associated with. Should
   // always be non-NULL and valid for lifetime of |this|.
   content::RenderFrameHost* const render_frame_host_ = nullptr;
 
-  // Weak ref to the AutofillRouter associated with the WebContents.
+  // Weak ref to the AutofillRouter associated with the WebContents. Please
+  // access this via GetAutofillRouter() above as it also confirms that the
+  // router may be accessed.
   ContentAutofillRouter* autofill_router_ = nullptr;
 
   // The form pushed from the AutofillAgent to the AutofillDriver. When the

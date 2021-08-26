@@ -15,6 +15,8 @@
 #ifndef CORE_OPTIONS_H_
 #define CORE_OPTIONS_H_
 
+#include <string>
+
 #include "core/strategy.h"
 #include "platform/base/byte_array.h"
 #include "proto/connections_enums.pb.h"
@@ -129,8 +131,7 @@ struct ConnectionOptions {
 
     // Normal connections (i.e., not out-of-band) connections can specify
     // multiple mediums. If none are specified, default to allowing all mediums.
-    if (!allowed.Any(true))
-      result.allowed.SetAll(true);
+    if (!allowed.Any(true)) result.allowed.SetAll(true);
     return result;
   }
   std::vector<Medium> GetMediums() const { return allowed.GetMediums(true); }

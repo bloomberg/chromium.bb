@@ -62,7 +62,7 @@ class PresubmitApi(recipe_api.RecipeApi):
         output[key] = output2[key]
       return output
 
-  def prepare(self):
+  def prepare(self, root_solution_revision=None):
     """Sets up a presubmit run.
 
     This includes:
@@ -72,13 +72,23 @@ class PresubmitApi(recipe_api.RecipeApi):
 
     This expects the gclient configuration to already have been set.
 
+    Args:
+      root_solution_revision: revision of the root solution
+
     Returns:
       the StepResult from the bot_update step.
     """
-    # Expect callers to have already set up their gclient configuration.
+    # Set up the root solution revision by either passing the revision
+    # to this function or adding it to the input properties.
+    root_solution_revision = (
+        root_solution_revision or
+        self.m.properties.get('root_solution_revision'))
 
+    # Expect callers to have already set up their gclient configuration.
     bot_update_step = self.m.bot_update.ensure_checkout(
-        timeout=3600, no_fetch_tags=True)
+        timeout=3600, no_fetch_tags=True,
+        root_solution_revision=root_solution_revision)
+
     relative_root = self.m.gclient.get_gerrit_patch_root().rstrip('/')
 
     abs_root = self.m.context.cwd.join(relative_root)

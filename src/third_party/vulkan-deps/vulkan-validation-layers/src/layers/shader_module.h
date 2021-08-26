@@ -100,6 +100,7 @@ struct decoration_set {
         binding_bit = 1 << 8,
         nonwritable_bit = 1 << 9,
         builtin_bit = 1 << 10,
+        nonreadable_bit = 1 << 11,
     };
     static constexpr uint32_t kInvalidValue = std::numeric_limits<uint32_t>::max();
 
@@ -115,6 +116,14 @@ struct decoration_set {
     void merge(decoration_set const &other);
 
     void add(uint32_t decoration, uint32_t value);
+};
+
+struct atomic_instruction {
+    uint32_t storage_class;
+    uint32_t bit_width;
+    uint32_t type;  // ex. OpTypeInt
+
+    atomic_instruction() : storage_class(0), bit_width(0), type(0) {}
 };
 
 struct function_set {
@@ -194,6 +203,7 @@ struct SHADER_MODULE_STATE : public BASE_NODE {
     bool has_valid_spirv;
     bool has_specialization_constants{false};
     uint32_t gpu_validation_shader_id;
+    std::unordered_map<uint32_t, atomic_instruction> atomic_inst;
 
     SHADER_MODULE_STATE(VkShaderModuleCreateInfo const *pCreateInfo, VkShaderModule shaderModule, spv_target_env env,
                         uint32_t unique_shader_id)
@@ -289,11 +299,20 @@ struct SHADER_MODULE_STATE : public BASE_NODE {
     std::vector<uint32_t> CollectBuiltinBlockMembers(spirv_inst_iter entrypoint, uint32_t storageClass) const;
     std::vector<std::pair<uint32_t, interface_var>> CollectInterfaceByInputAttachmentIndex(
         layer_data::unordered_set<uint32_t> const &accessible_ids) const;
+
+    // Get the image type from a variable id or load operation that reference an image
+    spirv_inst_iter GetImageFormatInst(uint32_t id) const;
+
+    uint32_t GetTypeBitsSize(const spirv_inst_iter &iter) const;
+    uint32_t GetTypeBytesSize(const spirv_inst_iter &iter) const;
+    uint32_t CalcComputeSharedMemory(VkShaderStageFlagBits stage,
+                                     const spirv_inst_iter &insn) const;
 };
 
 // TODO - Most things below are agnostic of even the shader module and more of pure SPIR-V utils
 //        Stuff like this could be part of a future auto-generated file from the spirv grammar json
 bool AtomicOperation(uint32_t opcode);
 bool GroupOperation(uint32_t opcode);
+char const *StorageClassName(unsigned sc);
 
 #endif  // VULKAN_SHADER_MODULE_H

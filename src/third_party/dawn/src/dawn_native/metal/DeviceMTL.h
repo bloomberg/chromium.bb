@@ -51,9 +51,9 @@ namespace dawn_native { namespace metal {
         id<MTLCommandQueue> GetMTLQueue();
 
         CommandRecordingContext* GetPendingCommandContext();
-        void SubmitPendingCommandBuffer();
+        MaybeError SubmitPendingCommandBuffer();
 
-        TextureBase* CreateTextureWrappingIOSurface(const ExternalImageDescriptor* descriptor,
+        Ref<Texture> CreateTextureWrappingIOSurface(const ExternalImageDescriptor* descriptor,
                                                     IOSurfaceRef ioSurface,
                                                     uint32_t plane);
         void WaitForCommandsToBeScheduled();

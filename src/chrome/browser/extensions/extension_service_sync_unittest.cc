@@ -36,7 +36,9 @@
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "components/sync/model/sync_data.h"
-#include "components/sync/protocol/sync.pb.h"
+#include "components/sync/protocol/app_specifics.pb.h"
+#include "components/sync/protocol/entity_specifics.pb.h"
+#include "components/sync/protocol/extension_specifics.pb.h"
 #include "components/sync/test/model/fake_sync_change_processor.h"
 #include "components/sync/test/model/sync_change_processor_wrapper_for_test.h"
 #include "components/sync/test/model/sync_error_factory_mock.h"
@@ -136,12 +138,11 @@ class StatefulChangeProcessor : public syncer::FakeSyncChangeProcessor {
           ExtensionSyncData::CreateFromSyncData(sync_data);
 
       // Start by removing any existing entry for this extension id.
-      syncer::SyncDataList& data_list = data();
-      for (auto iter = data_list.begin(); iter != data_list.end(); ++iter) {
+      for (auto iter = data_.begin(); iter != data_.end(); ++iter) {
         std::unique_ptr<ExtensionSyncData> existing =
             ExtensionSyncData::CreateFromSyncData(*iter);
         if (existing->id() == modified->id()) {
-          data_list.erase(iter);
+          data_.erase(iter);
           break;
         }
       }
@@ -149,20 +150,12 @@ class StatefulChangeProcessor : public syncer::FakeSyncChangeProcessor {
       // Now add in the new data for this id, if appropriate.
       if (change.change_type() == SyncChange::ACTION_ADD ||
           change.change_type() == SyncChange::ACTION_UPDATE) {
-        data_list.push_back(sync_data);
+        data_.push_back(sync_data);
       } else if (change.change_type() != SyncChange::ACTION_DELETE) {
         ADD_FAILURE() << "Unexpected change type " << change.change_type();
       }
     }
     return absl::nullopt;
-  }
-
-  // We override this to help catch the error of trying to use a single
-  // StatefulChangeProcessor to process changes for both extensions and apps
-  // sync data.
-  syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override {
-    EXPECT_EQ(expected_type_, type);
-    return FakeSyncChangeProcessor::GetAllSyncData(type);
   }
 
   // This is a helper to vend a wrapped version of this object suitable for
@@ -174,9 +167,12 @@ class StatefulChangeProcessor : public syncer::FakeSyncChangeProcessor {
     return std::make_unique<syncer::SyncChangeProcessorWrapperForTest>(this);
   }
 
- protected:
+  const syncer::SyncDataList& data() const { return data_; }
+
+ private:
   // The expected ModelType of changes that this processor will see.
-  syncer::ModelType expected_type_;
+  const syncer::ModelType expected_type_;
+  syncer::SyncDataList data_;
 
   DISALLOW_COPY_AND_ASSIGN(StatefulChangeProcessor);
 };
@@ -237,6 +233,25 @@ class ExtensionServiceSyncTest
     return ExtensionSystem::Get(profile());
   }
 };
+
+TEST_F(ExtensionServiceSyncTest, DeleteAllInstalledBookMarkAppsDuringSync) {
+  InitializeEmptyExtensionService();
+
+  // Install the bookmark app.
+  InstallCRX(data_dir().AppendASCII("good.crx"),
+             ManifestLocation::kExternalPref, INSTALL_NEW,
+             Extension::FROM_BOOKMARK);
+  const Extension* extension = registry()->GetInstalledExtension(good_crx);
+  ASSERT_TRUE(extension);
+  ASSERT_TRUE(extension->from_bookmark());
+  ASSERT_FALSE(extensions::util::ShouldSync(extension, profile()));
+
+  StartSyncing(syncer::EXTENSIONS);
+
+  // Should uninstall the bookmark app.
+  EXPECT_FALSE(
+      registry()->GetExtensionById(good_crx, ExtensionRegistry::EVERYTHING));
+}
 
 TEST_F(ExtensionServiceSyncTest, DeferredSyncStartupPreInstalledComponent) {
   InitializeEmptyExtensionService();
@@ -1795,9 +1810,8 @@ TEST_F(ExtensionServiceSyncTest, AppToExtension) {
   // Get the current data from the change processors to use as the input to
   // the following call to MergeDataAndStartSyncing. This simulates what should
   // happen with sync.
-  syncer::SyncDataList extensions_data =
-      extensions_processor.GetAllSyncData(syncer::EXTENSIONS);
-  syncer::SyncDataList apps_data = apps_processor.GetAllSyncData(syncer::APPS);
+  syncer::SyncDataList extensions_data = extensions_processor.data();
+  syncer::SyncDataList apps_data = apps_processor.data();
 
   // Stop syncing, then start again.
   extension_sync_service()->StopSyncing(syncer::EXTENSIONS);

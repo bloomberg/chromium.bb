@@ -31,7 +31,7 @@ TEST_F(ResolverVarLetValidationTest, LetNoInitializer) {
 
   EXPECT_FALSE(r()->Resolve());
   EXPECT_EQ(r()->error(),
-            "12:34 error: let declarations must have initializers");
+            "12:34 error: let declaration must have an initializer");
 }
 
 TEST_F(ResolverVarLetValidationTest, GlobalLetNoInitializer) {
@@ -40,7 +40,27 @@ TEST_F(ResolverVarLetValidationTest, GlobalLetNoInitializer) {
 
   EXPECT_FALSE(r()->Resolve());
   EXPECT_EQ(r()->error(),
-            "12:34 error: let declarations must have initializers");
+            "12:34 error: let declaration must have an initializer");
+}
+
+TEST_F(ResolverVarLetValidationTest, VarNoInitializerNoType) {
+  // var a;
+  WrapInFunction(Var(Source{{12, 34}}, "a", nullptr));
+
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(r()->error(),
+            "12:34 error: function scope var declaration requires a type or "
+            "initializer");
+}
+
+TEST_F(ResolverVarLetValidationTest, GlobalVarNoInitializerNoType) {
+  // var a;
+  Global(Source{{12, 34}}, "a", nullptr);
+
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(r()->error(),
+            "12:34 error: module scope var declaration requires a type and "
+            "initializer");
 }
 
 TEST_F(ResolverVarLetValidationTest, VarTypeNotStorable) {
@@ -56,6 +76,20 @@ TEST_F(ResolverVarLetValidationTest, VarTypeNotStorable) {
   EXPECT_EQ(r()->error(),
             "56:78 error: ptr<function, i32, read_write> cannot be used as the "
             "type of a var");
+}
+
+TEST_F(ResolverVarLetValidationTest, LetTypeNotConstructible) {
+  // [[group(0), binding(0)]] var t1 : texture_2d<f32>;
+  // let t2 : t1;
+  auto* t1 =
+      Global("t1", ty.sampled_texture(ast::TextureDimension::k2d, ty.f32()),
+             GroupAndBinding(0, 0));
+  auto* t2 = Const(Source{{56, 78}}, "t2", nullptr, Expr(t1));
+  WrapInFunction(t2);
+
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(r()->error(),
+            "56:78 error: texture_2d<f32> cannot be used as the type of a let");
 }
 
 TEST_F(ResolverVarLetValidationTest, LetConstructorWrongType) {
@@ -262,6 +296,49 @@ TEST_F(ResolverVarLetValidationTest, InferredPtrStorageAccessMismatch) {
             "12:34 error: cannot initialize let of type "
             "'ptr<storage, i32, read_write>' with value of type "
             "'ptr<storage, i32, read>'");
+}
+
+TEST_F(ResolverVarLetValidationTest, NonConstructibleType_Atomic) {
+  auto* v = Var("v", ty.atomic(Source{{12, 34}}, ty.i32()));
+  WrapInFunction(v);
+
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(r()->error(),
+            "12:34 error: function variable must have a constructible type");
+}
+
+TEST_F(ResolverVarLetValidationTest, NonConstructibleType_RuntimeArray) {
+  auto* s = Structure("S", {Member("m", ty.array(ty.i32()))}, {StructBlock()});
+  auto* v = Var("v", ty.Of(s));
+  WrapInFunction(v);
+
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(r()->error(),
+            "error: function variable must have a constructible type");
+}
+
+TEST_F(ResolverVarLetValidationTest, NonConstructibleType_Struct_WithAtomic) {
+  auto* s = Structure("S", {Member("m", ty.atomic(ty.i32()))});
+  auto* v = Var("v", ty.Of(s));
+  WrapInFunction(v);
+
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(r()->error(),
+            "error: function variable must have a constructible type");
+}
+
+TEST_F(ResolverVarLetValidationTest, NonConstructibleType_InferredType) {
+  // [[group(0), binding(0)]] var s : sampler;
+  // fn foo() {
+  //   var v = s;
+  // }
+  Global("s", ty.sampler(ast::SamplerKind::kSampler), GroupAndBinding(0, 0));
+  auto* v = Var(Source{{12, 34}}, "v", nullptr, Expr("s"));
+  WrapInFunction(v);
+
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(r()->error(),
+            "12:34 error: function variable must have a constructible type");
 }
 
 }  // namespace

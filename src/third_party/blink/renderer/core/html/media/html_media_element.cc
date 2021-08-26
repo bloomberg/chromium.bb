@@ -481,7 +481,7 @@ bool HTMLMediaElement::IsHLSURL(const KURL& url) {
   if (!url.IsLocalFile() && !url.ProtocolIs("http") && !url.ProtocolIs("https"))
     return false;
 
-  return url.GetString().Contains("m3u8");
+  return url.GetPath().EndsWith(".m3u8");
 }
 
 bool HTMLMediaElement::MediaTracksEnabledInternally() {
@@ -2830,6 +2830,14 @@ bool HTMLMediaElement::ShouldShowControls(
   return false;
 }
 
+bool HTMLMediaElement::ShouldShowAllControls() const {
+  // If the user has explicitly shown or hidden the controls, then force that
+  // choice. Otherwise returns whether controls should be shown and no controls
+  // are meant to be hidden.
+  return user_wants_controls_visible_.value_or(
+      ShouldShowControls() && !ControlsListInternal()->CanShowAllControls());
+}
+
 DOMTokenList* HTMLMediaElement::controlsList() const {
   return controls_list_.Get();
 }
@@ -2919,6 +2927,10 @@ void HTMLMediaElement::setMuted(bool muted) {
 void HTMLMediaElement::SetUserWantsControlsVisible(bool visible) {
   user_wants_controls_visible_ = visible;
   UpdateControlsVisibility();
+}
+
+bool HTMLMediaElement::UserWantsControlsVisible() const {
+  return user_wants_controls_visible_.value_or(false);
 }
 
 double HTMLMediaElement::EffectiveMediaVolume() const {
@@ -4434,7 +4446,7 @@ void HTMLMediaElement::AudioSourceProviderImpl::SetClient(
 
 void HTMLMediaElement::AudioSourceProviderImpl::ProvideInput(
     AudioBus* bus,
-    uint32_t frames_to_process) {
+    int frames_to_process) {
   DCHECK(bus);
 
   MutexTryLocker try_locker(provide_input_lock);

@@ -76,6 +76,9 @@ void decoration_set::add(uint32_t decoration, uint32_t value) {
             flags |= builtin_bit;
             builtin = value;
             break;
+        case spv::DecorationNonReadable:
+            flags |= nonreadable_bit;
+            break;
     }
 }
 
@@ -348,8 +351,12 @@ void SHADER_MODULE_STATE::BuildDefIndex() {
                 def_index[insn.word(2)] = insn.offset();
                 break;
 
-                // Variables
+                // Have a result that can be a pointer
             case spv::OpVariable:
+            case spv::OpAccessChain:
+            case spv::OpInBoundsAccessChain:
+            case spv::OpFunctionParameter:
+            case spv::OpImageTexelPointer:
                 def_index[insn.word(2)] = insn.offset();
                 break;
 
@@ -426,7 +433,37 @@ void SHADER_MODULE_STATE::BuildDefIndex() {
                 execution_mode_inst[insn.word(1)].push_back(insn);
             } break;
 
+            case spv::OpLoad: {
+                def_index[insn.word(2)] = insn.offset();
+            } break;
+
             default:
+                if (AtomicOperation(insn.opcode()) == true) {
+                    // All atomics have a pointer referenced
+                    spirv_inst_iter access;
+                    if (insn.opcode() == spv::OpAtomicStore) {
+                        access = get_def(insn.word(1));
+                    } else {
+                        access = get_def(insn.word(3));
+                        def_index[insn.word(2)] = insn.offset();
+                    }
+
+                    atomic_instruction atomic;
+
+                    auto pointer = get_def(access.word(1));
+                    // spirv-val should catch if not pointer
+                    assert(pointer.opcode() == spv::OpTypePointer);
+                    atomic.storage_class = pointer.word(2);
+
+                    auto data_type = get_def(pointer.word(3));
+                    atomic.type = data_type.opcode();
+
+                    // TODO - Should have a proper GetBitWidth like spirv-val does
+                    assert(data_type.opcode() == spv::OpTypeFloat || data_type.opcode() == spv::OpTypeInt);
+                    atomic.bit_width = data_type.word(2);
+
+                    atomic_inst[insn.offset()] = atomic;
+                }
                 // We don't care about any other defs for now.
                 break;
         }
@@ -484,7 +521,7 @@ std::vector<uint32_t> SHADER_MODULE_STATE::PreprocessShaderBinary(uint32_t *src_
     return src;
 }
 
-static char const *StorageClassName(unsigned sc) {
+char const *StorageClassName(unsigned sc) {
     switch (sc) {
         case spv::StorageClassInput:
             return "input";
@@ -1607,37 +1644,8 @@ std::map<location_t, interface_var> SHADER_MODULE_STATE::CollectInterfaceByLocat
 }
 
 std::vector<uint32_t> SHADER_MODULE_STATE::CollectBuiltinBlockMembers(spirv_inst_iter entrypoint, uint32_t storageClass) const {
-    std::vector<uint32_t> variables;
-    std::vector<uint32_t> builtin_struct_members;
-    std::vector<uint32_t> builtin_decorations;
-
-    for (auto insn : member_decoration_inst) {
-        if (insn.word(3) == spv::DecorationBuiltIn) {
-            builtin_struct_members.push_back(insn.word(1));
-        }
-    }
-    for (auto insn : decoration_inst) {
-        switch (insn.word(2)) {
-            case spv::DecorationBlock: {
-                uint32_t block_id = insn.word(1);
-                for (auto builtin_block_id : builtin_struct_members) {
-                    // Check if one of the members of the block are built-in -> the block is built-in
-                    if (block_id == builtin_block_id) {
-                        builtin_decorations.push_back(block_id);
-                        break;
-                    }
-                }
-                break;
-            }
-            case spv::DecorationBuiltIn:
-                builtin_decorations.push_back(insn.word(1));
-                break;
-            default:
-                break;
-        }
-    }
-
     // Find all interface variables belonging to the entrypoint and matching the storage class
+    std::vector<uint32_t> variables;
     for (uint32_t id : FindEntrypointInterfaces(entrypoint)) {
         auto def = get_def(id);
         assert(def != end());
@@ -1656,19 +1664,17 @@ std::vector<uint32_t> SHADER_MODULE_STATE::CollectBuiltinBlockMembers(spirv_inst
 
         // Now find all members belonging to the struct defining the IO block
         if (def.opcode() == spv::OpTypeStruct) {
-            for (auto builtin_id : builtin_decorations) {
-                if (builtin_id == def.word(1)) {
-                    for (int i = 2; i < static_cast<int>(def.len()); i++) {
-                        builtin_block_members.push_back(spv::BuiltInMax);  // Start with undefined builtin for each struct member.
+            for (auto set : builtin_decoration_list) {
+                auto insn = at(set.offset);
+                if ((insn.opcode() == spv::OpMemberDecorate) && (def.word(1) == insn.word(1))) {
+                    // Start with undefined builtin for each struct member.
+                    // But only when confirmed the struct is the built-in inteface block (can only be one per shader)
+                    if (builtin_block_members.size() == 0) {
+                        builtin_block_members.resize(def.len() - 2, spv::BuiltInMax);
                     }
-                    // These shouldn't be left after replacing.
-                    for (auto insn : member_decoration_inst) {
-                        if (insn.word(1) == builtin_id && insn.word(3) == spv::DecorationBuiltIn) {
-                            auto struct_index = insn.word(2);
-                            assert(struct_index < builtin_block_members.size());
-                            builtin_block_members[struct_index] = insn.word(4);
-                        }
-                    }
+                    auto struct_index = insn.word(2);
+                    assert(struct_index < builtin_block_members.size());
+                    builtin_block_members[struct_index] = insn.word(4);
                 }
             }
         }
@@ -1704,6 +1710,87 @@ std::vector<std::pair<uint32_t, interface_var>> SHADER_MODULE_STATE::CollectInte
     }
 
     return out;
+}
+
+spirv_inst_iter SHADER_MODULE_STATE::GetImageFormatInst(uint32_t id) const
+{
+    do {
+        auto def = get_def(id);
+        if (def == end())
+            return def;
+
+        switch (def.opcode()) {
+           case spv::OpLoad:
+           case spv::OpAccessChain:
+           case spv::OpCompositeConstruct:
+           case spv::OpVariable: {
+               id = def.word(1);
+               break;
+           }
+
+           case spv::OpTypeArray:
+           case spv::OpTypeRuntimeArray:
+               id = def.word(2);
+               break;
+
+           case spv::OpTypePointer:
+               id = def.word(3);
+               break;
+
+           case spv::OpTypeImage:
+               return def;
+
+           default:
+               return end();
+        }
+    } while (true);
+}
+
+uint32_t SHADER_MODULE_STATE::GetTypeBitsSize(const spirv_inst_iter &iter) const {
+    const uint32_t opcode = iter.opcode();
+    if (opcode == spv::OpTypeFloat || opcode == spv::OpTypeInt) {
+        return iter.word(2);
+    } else if (opcode == spv::OpTypeVector) {
+        const auto component_type = get_def(iter.word(2));
+        uint32_t scalar_width = GetTypeBitsSize(component_type);
+        uint32_t component_count = iter.word(3);
+        return scalar_width * component_count;
+    } else if (opcode == spv::OpTypeMatrix) {
+        const auto column_type = get_def(iter.word(2));
+        uint32_t vector_width = GetTypeBitsSize(column_type);
+        uint32_t column_count = iter.word(3);
+        return vector_width * column_count;
+    } else if (opcode == spv::OpTypeArray) {
+        const auto element_type = get_def(iter.word(2));
+        uint32_t element_width = GetTypeBitsSize(element_type);
+        const auto length_type = get_def(iter.word(3));
+        uint32_t length = GetConstantValue(length_type);
+        return element_width * length;
+    } else if (opcode == spv::OpTypeStruct) {
+        uint32_t total_size = 0;
+        for (uint32_t i = 2; i < iter.len(); ++i) {
+            total_size += GetTypeBitsSize(get_def(iter.word(i)));
+        }
+        return total_size;
+    }
+    return 0;
+}
+
+uint32_t SHADER_MODULE_STATE::GetTypeBytesSize(const spirv_inst_iter &iter) const { return GetTypeBitsSize(iter) / 8; }
+
+uint32_t SHADER_MODULE_STATE::CalcComputeSharedMemory(VkShaderStageFlagBits stage,
+                                                      const spirv_inst_iter &insn) const {
+    if (stage == VK_SHADER_STAGE_COMPUTE_BIT && insn.opcode() == spv::OpVariable) {
+        uint32_t storage_class = insn.word(3);
+        if (storage_class == spv::StorageClassWorkgroup) {  // StorageClass Workgroup is shared memory
+            uint32_t result_type_id = insn.word(1);
+            auto result_type = get_def(result_type_id);
+            auto type = get_def(result_type.word(3));
+            return GetTypeBytesSize(type);
+        }
+    }
+
+    return 0;
 }
 
 // Assumes itr points to an OpConstant instruction

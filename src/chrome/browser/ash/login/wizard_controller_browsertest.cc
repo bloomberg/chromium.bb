@@ -54,16 +54,19 @@
 #include "chrome/browser/ash/login/test/login_manager_mixin.h"
 #include "chrome/browser/ash/login/test/oobe_base_test.h"
 #include "chrome/browser/ash/login/test/oobe_configuration_waiter.h"
+#include "chrome/browser/ash/login/test/oobe_screen_exit_waiter.h"
 #include "chrome/browser/ash/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/login/ui/webui_login_view.h"
+#include "chrome/browser/ash/net/rollback_network_config/fake_rollback_network_config.h"
+#include "chrome/browser/ash/net/rollback_network_config/rollback_network_config_service.h"
 #include "chrome/browser/ash/policy/enrollment/auto_enrollment_client.h"
 #include "chrome/browser/ash/policy/enrollment/enrollment_config.h"
 #include "chrome/browser/ash/policy/enrollment/fake_auto_enrollment_client.h"
+#include "chrome/browser/ash/policy/server_backed_state/server_backed_device_state.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
-#include "chrome/browser/chromeos/policy/server_backed_state/server_backed_device_state.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
@@ -1445,6 +1448,10 @@ class WizardControllerDeviceStateWithInitialEnrollmentTest
   void SetUpCommandLine(base::CommandLine* command_line) override {
     WizardControllerDeviceStateTest::SetUpCommandLine(command_line);
 
+    // Enable usage of fake PSM RLWE client (for tests checking initial
+    // enrollment).
+    command_line->AppendSwitch(switches::kEnterpriseUseFakePsmRlweClient);
+
     command_line->AppendSwitchASCII(
         switches::kEnterpriseEnableInitialEnrollment,
         AutoEnrollmentController::kInitialEnrollmentAlways);
@@ -1472,6 +1479,9 @@ class WizardControllerDeviceStateWithInitialEnrollmentTest
     mock_eula_screen_->ExitScreen(
         EulaScreen::Result::ACCEPTED_WITHOUT_USAGE_STATS_REPORTING);
 
+    // Wait for auto-enrollment controller to encounter the connection error.
+    WaitForAutoEnrollmentState(policy::AUTO_ENROLLMENT_STATE_CONNECTION_ERROR);
+
     // Let update screen smooth time process (time = 0ms).
     base::RunLoop().RunUntilIdle();
 
@@ -1483,9 +1493,6 @@ class WizardControllerDeviceStateWithInitialEnrollmentTest
     CheckCurrentScreen(AutoEnrollmentCheckScreenView::kScreenId);
     EXPECT_CALL(*mock_auto_enrollment_check_screen_, HideImpl()).Times(1);
     mock_auto_enrollment_check_screen_->RealShow();
-
-    // Wait for auto-enrollment controller to encounter the connection error.
-    WaitForAutoEnrollmentState(policy::AUTO_ENROLLMENT_STATE_CONNECTION_ERROR);
 
     // The error screen shows up if there's no auto-enrollment decision.
     EXPECT_FALSE(StartupUtils::IsOobeCompleted());
@@ -2720,6 +2727,36 @@ IN_PROC_BROWSER_TEST_F(WizardControllerOobeResumeTest,
             WizardController::default_controller()->first_screen_for_testing());
 }
 
+class WizardControllerOnboardingResumeTest : public WizardControllerTest {
+ protected:
+  DeviceStateMixin device_state_{
+      &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_UNOWNED};
+  FakeGaiaMixin gaia_mixin_{&mixin_host_, embedded_test_server()};
+  LoginManagerMixin login_mixin_{&mixin_host_, LoginManagerMixin::UserList(),
+                                 &gaia_mixin_};
+  AccountId user_{
+      AccountId::FromUserEmailGaiaId(test::kTestEmail, test::kTestGaiaId)};
+};
+
+IN_PROC_BROWSER_TEST_F(WizardControllerOnboardingResumeTest,
+                       PRE_ControlFlowResumeInterruptedOnboarding) {
+  OobeScreenWaiter(UserCreationView::kScreenId).Wait();
+  LoginManagerMixin::TestUserInfo test_user(user_);
+  login_mixin_.LoginWithDefaultContext(test_user);
+  OobeScreenExitWaiter(UserCreationView::kScreenId).Wait();
+  WizardController::default_controller()->AdvanceToScreen(
+      MarketingOptInScreenView::kScreenId);
+  OobeScreenWaiter(MarketingOptInScreenView::kScreenId).Wait();
+}
+
+IN_PROC_BROWSER_TEST_F(WizardControllerOnboardingResumeTest,
+                       ControlFlowResumeInterruptedOnboarding) {
+  login_mixin_.LoginAsNewRegularUser();
+  ash::LoginScreenTestApi::SubmitPassword(user_, "password",
+                                          /*check_if_submittable=*/false);
+  OobeScreenWaiter(MarketingOptInScreenView::kScreenId).Wait();
+}
+
 class WizardControllerCellularFirstTest : public WizardControllerFlowTest {
  protected:
   WizardControllerCellularFirstTest() {}
@@ -2779,6 +2816,21 @@ class WizardControllerRollbackFlowTest : public WizardControllerFlowTest {
  protected:
   WizardControllerRollbackFlowTest() {}
 
+  void SetUp() override {
+    std::unique_ptr<FakeRollbackNetworkConfig> network_config =
+        std::make_unique<FakeRollbackNetworkConfig>();
+    network_config_ = network_config.get();
+    // Release ownership of network config. It is to be deleted via `Shutdown`.
+    rollback_network_config::OverrideInProcessInstanceForTesting(
+        std::move(network_config));
+    WizardControllerFlowTest::SetUp();
+  }
+
+  void TearDown() override {
+    rollback_network_config::Shutdown();
+    WizardControllerFlowTest::TearDown();
+  }
+
   // WizardControllerTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     WizardControllerFlowTest::SetUpCommandLine(command_line);
@@ -2793,6 +2845,8 @@ class WizardControllerRollbackFlowTest : public WizardControllerFlowTest {
 
   content::MockNotificationObserver observer_;
   content::NotificationRegistrar registrar_;
+
+  ash::FakeRollbackNetworkConfig* network_config_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WizardControllerRollbackFlowTest);
@@ -2811,6 +2865,30 @@ IN_PROC_BROWSER_TEST_F(WizardControllerRollbackFlowTest,
       EnrollmentScreenView::kScreenId);
   CheckCurrentScreen(EnrollmentScreenView::kScreenId);
   mock_enrollment_screen_->ExitScreen(EnrollmentScreen::Result::COMPLETED);
+}
+
+IN_PROC_BROWSER_TEST_F(WizardControllerRollbackFlowTest,
+                       ImportNetworkConfigAfterRollback) {
+  CheckCurrentScreen(WelcomeView::kScreenId);
+  EXPECT_CALL(*mock_enrollment_screen_, ShowImpl()).Times(1);
+  EXPECT_CALL(*mock_welcome_screen_, HideImpl()).Times(1);
+
+  WizardController::default_controller()->AdvanceToScreen(
+      EnrollmentScreenView::kScreenId);
+  CheckCurrentScreen(EnrollmentScreenView::kScreenId);
+  ASSERT_TRUE(network_config_->imported_config() != nullptr);
+
+  const base::Value* network_list =
+      network_config_->imported_config()->FindListKey("NetworkConfigurations");
+  ASSERT_TRUE(network_list);
+  ASSERT_TRUE(network_list->is_list());
+
+  const base::Value& network = network_list->GetList()[0];
+  ASSERT_TRUE(network.is_dict());
+
+  const std::string* guid = network.FindStringKey("GUID");
+  ASSERT_TRUE(guid);
+  EXPECT_EQ(*guid, "wpa-psk-network-guid");
 }
 
 // TODO(nkostylev): Add test for WebUI accelerators http://crosbug.com/22571

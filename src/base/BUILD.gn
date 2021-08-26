@@ -169,6 +169,7 @@ component("base") {
     "atomicops_internals_atomicword_compat.h",
     "atomicops_internals_portable.h",
     "auto_reset.h",
+    "barrier_callback.h",
     "barrier_closure.cc",
     "barrier_closure.h",
     "base64.cc",
@@ -222,6 +223,8 @@ component("base") {
     "containers/cxx20_erase_unordered_map.h",
     "containers/cxx20_erase_unordered_set.h",
     "containers/cxx20_erase_vector.h",
+    "containers/enum_set.h",
+    "containers/extend.h",
     "containers/fixed_flat_map.h",
     "containers/fixed_flat_set.h",
     "containers/flat_map.h",
@@ -284,6 +287,7 @@ component("base") {
     "files/file.h",
     "files/file_enumerator.cc",
     "files/file_enumerator.h",
+    "files/file_error_or.h",
     "files/file_path.cc",
     "files/file_path.h",
     "files/file_path_constants.cc",
@@ -333,6 +337,8 @@ component("base") {
     "json/json_writer.h",
     "json/string_escape.cc",
     "json/string_escape.h",
+    "json/values_util.cc",
+    "json/values_util.h",
     "lazy_instance.h",
     "lazy_instance_helpers.cc",
     "lazy_instance_helpers.h",
@@ -345,8 +351,6 @@ component("base") {
     "macros.h",
     "memory/aligned_memory.cc",
     "memory/aligned_memory.h",
-    "memory/checked_ptr.cc",
-    "memory/checked_ptr.h",
     "memory/discardable_memory.cc",
     "memory/discardable_memory.h",
     "memory/discardable_memory_allocator.cc",
@@ -365,6 +369,8 @@ component("base") {
     "memory/platform_shared_memory_region.cc",
     "memory/platform_shared_memory_region.h",
     "memory/ptr_util.h",
+    "memory/raw_ptr.cc",
+    "memory/raw_ptr.h",
     "memory/raw_scoped_refptr_mismatch_checker.h",
     "memory/read_only_shared_memory_region.cc",
     "memory/read_only_shared_memory_region.h",
@@ -828,6 +834,8 @@ component("base") {
     "timer/lap_timer.h",
     "timer/timer.cc",
     "timer/timer.h",
+    "timer/wall_clock_timer.cc",
+    "timer/wall_clock_timer.h",
     "token.cc",
     "token.h",
     "trace_event/base_tracing.h",
@@ -878,6 +886,7 @@ component("base") {
     sources += [
       "debug/debugger_posix.cc",
       "debug/stack_trace_posix.cc",
+      "file_descriptor_posix.cc",
       "file_descriptor_posix.h",
       "files/dir_reader_posix.h",
       "files/file_descriptor_watcher_posix.cc",
@@ -1301,6 +1310,8 @@ component("base") {
         "base_paths_posix.cc",
         "debug/elf_reader.cc",
         "debug/elf_reader.h",
+        "stack_canary_linux.cc",
+        "stack_canary_linux.h",
       ]
     }
   }
@@ -1618,6 +1629,7 @@ component("base") {
       "debug/elf_reader.cc",
       "debug/elf_reader.h",
       "debug/stack_trace_fuchsia.cc",
+      "file_descriptor_posix.cc",
       "file_descriptor_posix.h",
       "files/dir_reader_posix.h",
       "files/file_descriptor_watcher_posix.cc",
@@ -1917,6 +1929,7 @@ component("base") {
         "allocator/partition_allocator/starscan/stack/stack.cc",
         "allocator/partition_allocator/starscan/stack/stack.h",
         "allocator/partition_allocator/starscan/starscan_fwd.h",
+        "allocator/partition_allocator/starscan/state_bitmap.h",
         "allocator/partition_allocator/starscan/stats_collector.cc",
         "allocator/partition_allocator/starscan/stats_collector.h",
         "allocator/partition_allocator/starscan/write_protector.cc",
@@ -1990,9 +2003,6 @@ component("base") {
       # library.
       defines += [ "_ENABLE_ATOMIC_ALIGNMENT_FIX" ]
     }
-
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
     libs += [
       "cfgmgr32.lib",
@@ -2376,10 +2386,6 @@ component("base") {
         "trace_event/trace_event_android.cc",
       ]
     }
-
-    if (use_perfetto_client_library) {
-      sources -= [ "trace_event/builtin_categories.cc" ]
-    }
   } else {
     sources += [
       "trace_event/trace_event_stub.cc",
@@ -2605,9 +2611,6 @@ component("i18n") {
     configs += [ "//build/config/compiler:optimize_max" ]
   }
 
-  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
-
   if (is_mac) {
     frameworks = [ "CoreFoundation.framework" ]
   }
@@ -2625,6 +2628,7 @@ test("base_perftests") {
     "task/thread_pool/thread_pool_perftest.cc",
     "threading/counter_perftest.cc",
     "threading/thread_local_storage_perftest.cc",
+    "vlog_perftest.cc",
 
     # "test/run_all_unittests.cc",
     "json/json_perftest.cc",
@@ -2815,6 +2819,21 @@ if (is_apple) {
   }
 }
 
+if (!is_nacl && (is_linux || is_chromeos)) {
+  # This test must compile with -fstack-protector-all
+  source_set("stack_canary_linux_unittests") {
+    testonly = true
+
+    sources = [ "stack_canary_linux_unittest.cc" ]
+    cflags = [ "-fstack-protector-all" ]
+
+    deps = [
+      "//base",
+      "//testing/gtest",
+    ]
+  }
+}
+
 if (is_fuchsia) {
   fidl_library("testfidl") {
     library_name = "base.testfidl"
@@ -2866,6 +2885,7 @@ test("base_unittests") {
     "at_exit_unittest.cc",
     "atomicops_unittest.cc",
     "auto_reset_unittest.cc",
+    "barrier_callback_unittest.cc",
     "barrier_closure_unittest.cc",
     "base64_unittest.cc",
     "base64url_unittest.cc",
@@ -2889,7 +2909,9 @@ test("base_unittests") {
     "containers/circular_deque_unittest.cc",
     "containers/contains_unittest.cc",
     "containers/contiguous_iterator_unittest.cc",
+    "containers/enum_set_unittest.cc",
     "containers/erase_unittest.cc",
+    "containers/extend_unittest.cc",
     "containers/fixed_flat_map_unittest.cc",
     "containers/fixed_flat_set_unittest.cc",
     "containers/flat_map_unittest.cc",
@@ -2957,16 +2979,17 @@ test("base_unittests") {
     "json/json_value_serializer_unittest.cc",
     "json/json_writer_unittest.cc",
     "json/string_escape_unittest.cc",
+    "json/values_util_unittest.cc",
     "lazy_instance_unittest.cc",
     "location_unittest.cc",
     "logging_unittest.cc",
     "memory/aligned_memory_unittest.cc",
-    "memory/checked_ptr_unittest.cc",
     "memory/discardable_memory_backing_field_trial_unittest.cc",
     "memory/discardable_shared_memory_unittest.cc",
     "memory/memory_pressure_listener_unittest.cc",
     "memory/platform_shared_memory_region_unittest.cc",
     "memory/ptr_util_unittest.cc",
+    "memory/raw_ptr_unittest.cc",
     "memory/ref_counted_memory_unittest.cc",
     "memory/ref_counted_unittest.cc",
     "memory/shared_memory_hooks_unittest.cc",
@@ -3131,6 +3154,7 @@ test("base_unittests") {
     "test/scoped_mock_time_message_loop_task_runner_unittest.cc",
     "test/scoped_run_loop_timeout_unittest.cc",
     "test/task_environment_unittest.cc",
+    "test/test_future_unittest.cc",
     "test/test_mock_time_task_runner_unittest.cc",
     "test/test_pending_task_unittest.cc",
     "test/test_waitable_event_unittest.cc",
@@ -3162,6 +3186,7 @@ test("base_unittests") {
     "timer/lap_timer_unittest.cc",
     "timer/mock_timer_unittest.cc",
     "timer/timer_unittest.cc",
+    "timer/wall_clock_timer_unittest.cc",
     "token_unittest.cc",
     "tools_sanity_unittest.cc",
     "traits_bag_unittest.cc",
@@ -3283,6 +3308,10 @@ test("base_unittests") {
       "debug/proc_maps_linux_unittest.cc",
       "files/scoped_file_linux_unittest.cc",
     ]
+
+    if (!is_nacl) {
+      deps += [ ":stack_canary_linux_unittests" ]
+    }
   }
 
   if (is_mac) {
@@ -3476,6 +3505,7 @@ test("base_unittests") {
       "allocator/partition_allocator/starscan/pcscan_unittest.cc",
       "allocator/partition_allocator/starscan/scan_loop_unittest.cc",
       "allocator/partition_allocator/starscan/stack/stack_unittest.cc",
+      "allocator/partition_allocator/starscan/state_bitmap_unittest.cc",
       "allocator/partition_allocator/thread_cache_unittest.cc",
     ]
   }
@@ -3646,10 +3676,8 @@ test("base_unittests") {
     sources += [ "allocator/partition_allocator/arm_bti_test_functions.S" ]
   }
 
-  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
   configs += [
     ":memory_tagging",
-    "//build/config/compiler:no_size_t_to_int_warning",
     "//build/config/compiler:noshadowing",
   ]
 }
@@ -3677,7 +3705,7 @@ if (enable_nocompile_tests) {
       "containers/contains_unittest.nc",
       "containers/span_unittest.nc",
       "debug/crash_logging_unittest.nc",
-      "memory/checked_ptr_unittest.nc",
+      "memory/raw_ptr_unittest.nc",
       "memory/ref_counted_unittest.nc",
       "memory/weak_ptr_unittest.nc",
       "metrics/field_trial_params_unittest.nc",
@@ -3874,7 +3902,6 @@ if (is_android) {
       "android/java/src/org/chromium/base/annotations/MainDex.java",
       "android/java/src/org/chromium/base/annotations/MockedInTests.java",
       "android/java/src/org/chromium/base/annotations/NativeClassQualifiedName.java",
-      "android/java/src/org/chromium/base/annotations/RemovableInRelease.java",
       "android/java/src/org/chromium/base/annotations/UsedByReflection.java",
       "android/java/src/org/chromium/base/annotations/VerifiesOnLollipop.java",
       "android/java/src/org/chromium/base/annotations/VerifiesOnLollipopMR1.java",
@@ -4217,6 +4244,8 @@ if (is_android) {
       "test/android/junit/src/org/chromium/base/test/params/ParameterizedRunnerTest.java",
       "test/android/junit/src/org/chromium/base/test/params/ParameterizedTestNameTest.java",
       "test/android/junit/src/org/chromium/base/test/util/AnnotationProcessingUtilsTest.java",
+      "test/android/junit/src/org/chromium/base/test/util/CommandLineFlagsNoClassAnnotationCheckTest.java",
+      "test/android/junit/src/org/chromium/base/test/util/CommandLineFlagsWithClassAnnotationCheckTest.java",
       "test/android/junit/src/org/chromium/base/test/util/DisableIfTest.java",
       "test/android/junit/src/org/chromium/base/test/util/MinAndroidSdkLevelSkipCheckTest.java",
       "test/android/junit/src/org/chromium/base/test/util/RestrictionSkipCheckTest.java",

@@ -14,7 +14,9 @@ TESTS = \
 	tests/context-matching.tests \
 	tests/cursive-positioning.tests \
 	tests/default-ignorables.tests \
+	tests/digits.tests \
 	tests/emoji.tests \
+	tests/emoji-clusters.tests \
 	tests/fallback-positioning.tests \
 	tests/hangul-jamo.tests \
 	tests/hyphens.tests \
@@ -52,13 +54,14 @@ TESTS = \
 	tests/tibetan-contractions-1.tests \
 	tests/tibetan-contractions-2.tests \
 	tests/tibetan-vowels.tests \
+	tests/tt-kern-gpos.tests \
 	tests/use-indic3.tests \
 	tests/use-marchen.tests \
 	tests/use-syllable.tests \
+	tests/use-vowel-letter-spoofing.tests \
 	tests/use.tests \
-	tests/variations-rounding.tests \
+	tests/variations.tests \
 	tests/variations-rvrn.tests \
-	tests/variations-space.tests \
 	tests/vertical.tests \
 	tests/zero-width-marks.tests \
 	$(NULL)

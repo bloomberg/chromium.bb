@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/numerics/ranges.h"
+#include "base/cxx17_backports.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
 
 namespace autofill_assistant {
@@ -24,12 +24,6 @@ ShowProgressBarAction::~ShowProgressBarAction() = default;
 
 void ShowProgressBarAction::InternalProcessAction(
     ProcessActionCallback callback) {
-  if (proto_.show_progress_bar().has_message()) {
-    // TODO(crbug.com/806868): Deprecate and remove message from this action and
-    // use tell instead.
-    delegate_->SetStatusMessage(proto_.show_progress_bar().message());
-  }
-
   if (proto_.show_progress_bar().has_hide()) {
     delegate_->SetProgressVisible(!proto_.show_progress_bar().hide());
   }
@@ -47,7 +41,7 @@ void ShowProgressBarAction::InternalProcessAction(
   switch (proto_.show_progress_bar().progress_indicator_case()) {
     case ShowProgressBarProto::ProgressIndicatorCase::kProgress:
       delegate_->SetProgress(
-          base::ClampToRange(proto_.show_progress_bar().progress(), 0, 100));
+          base::clamp(proto_.show_progress_bar().progress(), 0, 100));
       break;
     case ShowProgressBarProto::ProgressIndicatorCase::kActiveStep:
       delegate_->SetProgressActiveStep(

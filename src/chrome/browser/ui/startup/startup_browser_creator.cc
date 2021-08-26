@@ -88,7 +88,7 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_switches.h"
 #include "chrome/browser/ash/app_mode/app_launch_utils.h"
-#include "chrome/browser/chromeos/full_restore/full_restore_service.h"
+#include "chrome/browser/ash/full_restore/full_restore_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "components/user_manager/user_manager.h"
@@ -117,6 +117,7 @@
 #include "chrome/browser/notifications/win/notification_launch_id.h"
 #include "chrome/browser/ui/startup/credential_provider_signin_dialog_win.h"
 #include "chrome/browser/ui/webui/settings/reset_settings_handler.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #include "chrome/browser/printing/print_dialog_cloud_win.h"
@@ -362,6 +363,7 @@ bool IsSilentLaunchEnabled(const base::CommandLine& command_line,
 
 void FinalizeWebAppLaunch(
     std::unique_ptr<LaunchModeRecorder> launch_mode_recorder,
+    absl::optional<LaunchMode> app_launch_mode,
     Browser* browser,
     apps::mojom::LaunchContainer container) {
   if (!browser)
@@ -372,7 +374,7 @@ void FinalizeWebAppLaunch(
     switch (container) {
       case apps::mojom::LaunchContainer::kLaunchContainerWindow:
         DCHECK(browser->is_type_app());
-        mode = LaunchMode::kAsWebAppInWindow;
+        mode = app_launch_mode.value_or(LaunchMode::kAsWebAppInWindowOther);
         break;
       case apps::mojom::LaunchContainer::kLaunchContainerTab:
         DCHECK(!browser->is_type_app());
@@ -435,7 +437,8 @@ bool MaybeLaunchApplication(
             /*url_handler_launch_url=*/absl::nullopt,
             /*protocol_handler_launch_url=*/absl::nullopt,
             base::BindOnce(&FinalizeWebAppLaunch,
-                           std::move(launch_mode_recorder)));
+                           std::move(launch_mode_recorder),
+                           LaunchMode::kAsWebAppInWindowByAppId));
     return true;
   }
 
@@ -457,7 +460,7 @@ bool MaybeLaunchApplication(
           apps::OpenExtensionAppShortcutWindow(profile, url);
       if (web_contents) {
         FinalizeWebAppLaunch(
-            std::move(launch_mode_recorder),
+            std::move(launch_mode_recorder), LaunchMode::kAsWebAppInWindowByUrl,
             chrome::FindBrowserWithWebContents(web_contents),
             apps::mojom::LaunchContainer::kLaunchContainerWindow);
         return true;
@@ -491,7 +494,7 @@ bool MaybeLaunchUrlHandlerWebAppFromCmd(
   return web_app::startup::MaybeLaunchUrlHandlerWebAppFromCmd(
       command_line, cur_dir, std::move(on_urls_unhandled_cb),
       base::BindOnce(&FinalizeWebAppLaunch,
-                     std::make_unique<LaunchModeRecorder>()));
+                     std::make_unique<LaunchModeRecorder>(), absl::nullopt));
 }
 #endif
 
@@ -687,7 +690,7 @@ bool StartupBrowserCreator::LaunchBrowserForLastProfiles(
         // restore feature is enabled and the profile is a regular user
         // profile), defer the browser launching to FullRestoreService code.
         auto* full_restore_service =
-            chromeos::full_restore::FullRestoreService::GetForProfile(
+            ash::full_restore::FullRestoreService::GetForProfile(
                 profile_to_open);
         if (full_restore_service) {
           full_restore_service->LaunchBrowserWhenReady();
@@ -812,8 +815,8 @@ void StartupBrowserCreator::ClearLaunchedProfilesForTesting() {
 // static
 void StartupBrowserCreator::RegisterLocalStatePrefs(
     PrefRegistrySimple* registry) {
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
   registry->RegisterBooleanPref(prefs::kPromotionalTabsEnabled, true);
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   registry->RegisterBooleanPref(prefs::kCommandLineFlagSecurityWarningsEnabled,
                                 true);
 #endif
@@ -847,7 +850,7 @@ void StartupBrowserCreator::MaybeHandleProfileAgnosticUrls(
   web_app::startup::MaybeLaunchUrlHandlerWebAppFromUrls(
       urls, std::move(on_urls_unhandled_cb),
       base::BindOnce(&FinalizeWebAppLaunch,
-                     std::make_unique<LaunchModeRecorder>()));
+                     std::make_unique<LaunchModeRecorder>(), absl::nullopt));
 }
 #endif  // defined(OS_MAC)
 
@@ -1010,7 +1013,8 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
     std::string app_id =
         command_line.GetSwitchValueASCII(switches::kUninstallAppId);
 
-    web_app::WebAppUiManagerImpl::Get(privacy_safe_profile)
+    web_app::WebAppUiManagerImpl::Get(
+        web_app::WebAppProvider::GetForWebApps(privacy_safe_profile))
         ->UninstallWebAppFromStartupSwitch(app_id);
 
     // Return true to allow startup to continue and for the main event loop to
@@ -1099,6 +1103,12 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
 
   if (command_line.HasSwitch(switches::kAppId)) {
     std::string app_id = command_line.GetSwitchValueASCII(switches::kAppId);
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
+    // If Chrome Apps are deprecated and |app_id| is a Chrome App, display the
+    // deprecation UI instead of launching the app.
+    if (apps::OpenDeprecatedApplicationPrompt(privacy_safe_profile, app_id))
+      return true;
+#endif
     // If |app_id| is a disabled or terminated platform app we handle it
     // specially here, otherwise it will be handled below.
     if (apps::OpenExtensionApplicationWithReenablePrompt(
@@ -1128,7 +1138,7 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
           command_line, cur_dir, privacy_safe_profile, last_used_profile,
           last_opened_profiles,
           base::BindOnce(&FinalizeWebAppLaunch,
-                         std::make_unique<LaunchModeRecorder>()),
+                         std::make_unique<LaunchModeRecorder>(), absl::nullopt),
           std::move(startup_callback))) {
     return true;
   }
@@ -1425,6 +1435,10 @@ bool HasPendingUncleanExit(Profile* profile) {
          !profile_launch_observer.Get().HasBeenLaunched(profile) &&
          !base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kHideCrashRestoreBubble);
+}
+
+void AddLaunchedProfile(Profile* profile) {
+  profile_launch_observer.Get().AddLaunched(profile);
 }
 
 StartupProfilePathInfo GetStartupProfilePath(

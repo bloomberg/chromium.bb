@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/path_service.h"
-#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/optimization_guide/browser_test_util.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/optimization_guide/page_content_annotations_service_factory.h"
@@ -20,45 +20,12 @@
 #include "components/optimization_guide/content/browser/page_content_annotations_service.h"
 #include "components/optimization_guide/core/optimization_guide_enums.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
+#include "components/optimization_guide/core/optimization_guide_test_util.h"
+#include "components/optimization_guide/core/test_model_info_builder.h"
 #include "components/optimization_guide/machine_learning_tflite_buildflags.h"
 #include "components/optimization_guide/proto/page_topics_model_metadata.pb.h"
 #include "content/public/test/browser_test.h"
 #include "net/dns/mock_host_resolver.h"
-
-namespace {
-
-// Fetch and calculate the total number of samples from all the bins for
-// |histogram_name|. Note: from some browertests run, there might be two
-// profiles created, and this will return the total sample count across
-// profiles.
-int GetTotalHistogramSamples(const base::HistogramTester& histogram_tester,
-                             const std::string& histogram_name) {
-  std::vector<base::Bucket> buckets =
-      histogram_tester.GetAllSamples(histogram_name);
-  int total = 0;
-  for (const auto& bucket : buckets)
-    total += bucket.count;
-
-  return total;
-}
-
-// Retries fetching |histogram_name| until it contains at least |count| samples.
-int RetryForHistogramUntilCountReached(
-    const base::HistogramTester& histogram_tester,
-    const std::string& histogram_name,
-    int count) {
-  int total = 0;
-  while (true) {
-    base::ThreadPoolInstance::Get()->FlushForTesting();
-    base::RunLoop().RunUntilIdle();
-
-    total = GetTotalHistogramSamples(histogram_tester, histogram_name);
-    if (total >= count)
-      return total;
-  }
-}
-
-}  // namespace
 
 namespace optimization_guide {
 
@@ -190,9 +157,12 @@ class PageContentAnnotationsServiceBrowserTest : public InProcessBrowserTest {
             .AppendASCII("optimization_guide")
             .AppendASCII("bert_page_topics_model.tflite");
     OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile())
-        ->OverrideTargetModelFileForTesting(
-            proto::OPTIMIZATION_TARGET_PAGE_TOPICS, any_metadata,
-            model_file_path);
+        ->OverrideTargetModelForTesting(
+            proto::OPTIMIZATION_TARGET_PAGE_TOPICS,
+            optimization_guide::TestModelInfoBuilder()
+                .SetModelFilePath(model_file_path)
+                .SetModelMetadata(any_metadata)
+                .Build());
 
 #if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
     bool expect_model_loaded = !model_is_lazily_loaded_;
@@ -202,7 +172,7 @@ class PageContentAnnotationsServiceBrowserTest : public InProcessBrowserTest {
 
     if (expect_model_loaded) {
       RetryForHistogramUntilCountReached(
-          histogram_tester,
+          &histogram_tester,
           "OptimizationGuide.ModelExecutor.ModelLoadingResult.PageTopics", 1);
       histogram_tester.ExpectUniqueSample(
           "OptimizationGuide.ModelExecutor.ModelLoadingResult.PageTopics",
@@ -266,7 +236,7 @@ IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServiceBrowserTest,
   int expected_count = 0;
 #endif
   RetryForHistogramUntilCountReached(
-      histogram_tester,
+      &histogram_tester,
       "OptimizationGuide.PageContentAnnotationsService.ContentAnnotated",
       expected_count);
 
@@ -292,7 +262,7 @@ IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServiceBrowserTest,
 
 #if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
   RetryForHistogramUntilCountReached(
-      histogram_tester,
+      &histogram_tester,
       "OptimizationGuide.PageContentAnnotationsService."
       "ContentAnnotationsStorageStatus",
       1);
@@ -324,28 +294,45 @@ IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServiceBrowserTest,
 
   HistoryVisit history_visit;
   history_visit.url = GURL("https://probablynotarealurl.com/");
-  service->Annotate(history_visit, "sometext");
 
-  RetryForHistogramUntilCountReached(
-      histogram_tester,
-      "OptimizationGuide.PageContentAnnotationsService.ContentAnnotated", 1);
+  {
+    base::HistogramTester histogram_tester;
 
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.PageContentAnnotationsService.ContentAnnotated", true,
-      1);
+    service->Annotate(history_visit, "sometext");
 
-  RetryForHistogramUntilCountReached(
-      histogram_tester,
-      "OptimizationGuide.PageContentAnnotationsService."
-      "ContentAnnotationsStorageStatus",
-      1);
+    RetryForHistogramUntilCountReached(
+        &histogram_tester,
+        "OptimizationGuide.PageContentAnnotationsService.ContentAnnotated", 1);
 
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.PageContentAnnotationsService."
-      "ContentAnnotationsStorageStatus",
-      PageContentAnnotationsStorageStatus::kNoVisitsForUrl, 1);
+    histogram_tester.ExpectUniqueSample(
+        "OptimizationGuide.PageContentAnnotationsService.ContentAnnotated",
+        true, 1);
 
-  EXPECT_FALSE(GetContentAnnotationsForURL(history_visit.url).has_value());
+    RetryForHistogramUntilCountReached(
+        &histogram_tester,
+        "OptimizationGuide.PageContentAnnotationsService."
+        "ContentAnnotationsStorageStatus",
+        1);
+
+    histogram_tester.ExpectUniqueSample(
+        "OptimizationGuide.PageContentAnnotationsService."
+        "ContentAnnotationsStorageStatus",
+        PageContentAnnotationsStorageStatus::kNoVisitsForUrl, 1);
+
+    EXPECT_FALSE(GetContentAnnotationsForURL(history_visit.url).has_value());
+  }
+
+  {
+    base::HistogramTester histogram_tester;
+
+    // Make sure a repeat visit is not annotated again.
+    service->Annotate(history_visit, "sometext");
+
+    base::RunLoop().RunUntilIdle();
+
+    histogram_tester.ExpectTotalCount(
+        "OptimizationGuide.PageContentAnnotationsService.ContentAnnotated", 0);
+  }
 }
 
 class PageContentAnnotationsServiceNoHistoryTest
@@ -375,7 +362,7 @@ IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServiceNoHistoryTest,
   ui_test_utils::NavigateToURL(browser(), url);
 
   RetryForHistogramUntilCountReached(
-      histogram_tester,
+      &histogram_tester,
       "OptimizationGuide.PageContentAnnotationsService.ContentAnnotated", 1);
 
   histogram_tester.ExpectUniqueSample(
@@ -409,17 +396,16 @@ class PageContentAnnotationsServiceLoadEachExecutionTest
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-// Flaky: crbug/1208866
 // Regression test for crbug/1204162.
 IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServiceLoadEachExecutionTest,
-                       DISABLED_ModelLoadsAndExecutes) {
+                       ModelLoadsAndExecutes) {
   base::HistogramTester histogram_tester;
 
   GURL url(embedded_test_server()->GetURL("a.com", "/hello.html"));
   ui_test_utils::NavigateToURL(browser(), url);
 
   RetryForHistogramUntilCountReached(
-      histogram_tester,
+      &histogram_tester,
       "OptimizationGuide.ModelExecutor.ModelLoadingResult.PageTopics", 1);
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.ModelExecutor.ModelLoadingResult.PageTopics",
@@ -428,7 +414,7 @@ IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServiceLoadEachExecutionTest,
       "OptimizationGuide.ModelExecutor.ModelLoadingDuration.PageTopics", 1);
 
   RetryForHistogramUntilCountReached(
-      histogram_tester,
+      &histogram_tester,
       "OptimizationGuide.PageContentAnnotationsService.ContentAnnotated", 1);
 
   histogram_tester.ExpectTotalCount(
@@ -445,7 +431,7 @@ IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServiceLoadEachExecutionTest,
   EXPECT_EQ(123, *model_version);
 
   RetryForHistogramUntilCountReached(
-      histogram_tester,
+      &histogram_tester,
       "OptimizationGuide.PageContentAnnotationsService."
       "ContentAnnotationsStorageStatus",
       1);
@@ -502,7 +488,7 @@ IN_PROC_BROWSER_TEST_F(
   ui_test_utils::NavigateToURL(browser(), url);
 
   RetryForHistogramUntilCountReached(
-      histogram_tester,
+      &histogram_tester,
       "OptimizationGuide.PageContentAnnotationsService.ModelAvailable", 1);
 
   histogram_tester.ExpectUniqueSample(
@@ -516,7 +502,7 @@ IN_PROC_BROWSER_TEST_F(
   ui_test_utils::NavigateToURL(browser(), url2);
 
   RetryForHistogramUntilCountReached(
-      histogram_tester,
+      &histogram_tester,
       "OptimizationGuide.PageContentAnnotationsService.ModelAvailable", 2);
 
   histogram_tester.ExpectBucketCount(

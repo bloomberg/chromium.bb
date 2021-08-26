@@ -416,6 +416,11 @@ bool TType::isStructureContainingSamplers() const
     return mStructure ? mStructure->containsSamplers() : false;
 }
 
+bool TType::isInterfaceBlockContainingType(TBasicType t) const
+{
+    return isInterfaceBlock() ? mInterfaceBlock->containsType(t) : false;
+}
+
 bool TType::canReplaceWithConstantUnion() const
 {
     if (isArray())
@@ -704,6 +709,13 @@ void TType::toMatrixColumnType()
 {
     ASSERT(isMatrix());
     primarySize   = secondarySize;
+    secondarySize = 1;
+    invalidateMangledName();
+}
+
+void TType::toComponentType()
+{
+    primarySize   = 1;
     secondarySize = 1;
     invalidateMangledName();
 }

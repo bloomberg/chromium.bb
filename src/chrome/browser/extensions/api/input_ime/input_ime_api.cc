@@ -9,6 +9,7 @@
 #include "base/lazy_instance.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/common/extensions/api/input_method_private.h"
 #include "extensions/browser/extension_registry.h"
 #include "ui/base/ime/chromeos/ime_bridge.h"
 #include "ui/base/ime/chromeos/ime_keymap.h"
@@ -17,18 +18,19 @@
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 
+namespace {
+
 namespace input_ime = extensions::api::input_ime;
 namespace KeyEventHandled = extensions::api::input_ime::KeyEventHandled;
 namespace SetComposition = extensions::api::input_ime::SetComposition;
 namespace CommitText = extensions::api::input_ime::CommitText;
 namespace SendKeyEvents = extensions::api::input_ime::SendKeyEvents;
 
-namespace {
 const char kErrorRouterNotAvailable[] = "The router is not available.";
 const char kErrorSetKeyEventsFail[] = "Could not send key events.";
 
-using chromeos::InputMethodEngine;
-using chromeos::InputMethodEngineBase;
+using ::ash::input_method::InputMethodEngine;
+using ::ash::input_method::InputMethodEngineBase;
 
 InputMethodEngine* GetEngineIfActive(Profile* profile,
                                      const std::string& extension_id,
@@ -544,6 +546,8 @@ InputImeAPI::InputImeAPI(content::BrowserContext* context)
 
   EventRouter* event_router = EventRouter::Get(browser_context_);
   event_router->RegisterObserver(this, input_ime::OnFocus::kEventName);
+  event_router->RegisterObserver(
+      this, api::input_method_private::OnFocus::kEventName);
 }
 
 InputImeAPI::~InputImeAPI() = default;

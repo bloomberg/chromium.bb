@@ -5,6 +5,7 @@
 #include "components/prefs/overlay_user_pref_store.h"
 
 #include <memory>
+#include <ostream>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
@@ -93,9 +94,8 @@ std::unique_ptr<base::DictionaryValue> OverlayUserPrefStore::GetValues() const {
   // overwritten by the content of |persistent_user_pref_store_| (the persistent
   // store).
   for (const auto& key : persistent_names_set_) {
-    std::unique_ptr<base::Value> out_value;
-    persistent_values->Remove(key, &out_value);
-    if (out_value) {
+    absl::optional<base::Value> out_value = persistent_values->ExtractPath(key);
+    if (out_value.has_value()) {
       values->SetPath(key, std::move(*out_value));
     }
   }

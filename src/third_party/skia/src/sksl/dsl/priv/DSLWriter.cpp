@@ -79,7 +79,11 @@ SkSL::IRGenerator& DSLWriter::IRGenerator() {
 }
 
 const SkSL::Context& DSLWriter::Context() {
-    return IRGenerator().fContext;
+    return Compiler().context();
+}
+
+SkSL::ProgramSettings& DSLWriter::Settings() {
+    return Context().fConfig->fSettings;
 }
 
 const std::shared_ptr<SkSL::SymbolTable>& DSLWriter::SymbolTable() {
@@ -107,8 +111,8 @@ skstd::string_view DSLWriter::Name(skstd::string_view name) {
 }
 
 #if !defined(SKSL_STANDALONE) && SK_SUPPORT_GPU
-void DSLWriter::StartFragmentProcessor(GrGLSLFragmentProcessor* processor,
-                                       GrGLSLFragmentProcessor::EmitArgs* emitArgs) {
+void DSLWriter::StartFragmentProcessor(GrFragmentProcessor::ProgramImpl* processor,
+                                       GrFragmentProcessor::ProgramImpl::EmitArgs* emitArgs) {
     DSLWriter& instance = Instance();
     instance.fStack.push({processor, emitArgs, StatementArray{}});
     CurrentEmitArgs()->fFragBuilder->fDeclarations.swap(instance.fStack.top().fSavedDeclarations);
@@ -146,8 +150,7 @@ DSLPossibleExpression DSLWriter::Coerce(std::unique_ptr<Expression> expr, const 
     return IRGenerator().coerce(std::move(expr), type);
 }
 
-DSLPossibleExpression DSLWriter::Construct(const SkSL::Type& type,
-                                           SkTArray<DSLExpression> rawArgs) {
+DSLPossibleExpression DSLWriter::Construct(const SkSL::Type& type, SkSpan<DSLExpression> rawArgs) {
     SkSL::ExpressionArray args;
     args.reserve_back(rawArgs.size());
 
@@ -173,7 +176,7 @@ std::unique_ptr<SkSL::Expression> DSLWriter::ConvertField(std::unique_ptr<Expres
 
 std::unique_ptr<SkSL::Expression> DSLWriter::ConvertIndex(std::unique_ptr<Expression> base,
                                                           std::unique_ptr<Expression> index) {
-    return IndexExpression::Convert(Context(), std::move(base), std::move(index));
+    return IndexExpression::Convert(Context(), *SymbolTable(), std::move(base), std::move(index));
 }
 
 std::unique_ptr<SkSL::Expression> DSLWriter::ConvertPostfix(std::unique_ptr<Expression> expr,
@@ -204,16 +207,13 @@ DSLPossibleStatement DSLWriter::ConvertSwitch(std::unique_ptr<Expression> value,
                                     IRGenerator().fSymbolTable);
 }
 
-void DSLWriter::ReportError(const char* msg, PositionInfo* info) {
+void DSLWriter::ReportError(const char* msg, PositionInfo info) {
     Instance().fEncounteredErrors = true;
-    if (info && !info->file_name()) {
-        info = nullptr;
-    }
     if (Instance().fErrorHandler) {
         Instance().fErrorHandler->handleError(msg, info);
-    } else if (info) {
+    } else if (info.file_name()) {
         SK_ABORT("%s: %d: %sNo SkSL DSL error handler configured, treating this as a fatal error\n",
-                 info->file_name(), info->line(), msg);
+                 info.file_name(), info.line(), msg);
     } else {
         SK_ABORT("%sNo SkSL DSL error handler configured, treating this as a fatal error\n", msg);
     }
@@ -235,10 +235,16 @@ const SkSL::Variable* DSLWriter::Var(DSLVarBase& var) {
                                                                           var.storage());
         SkSL::Variable* varPtr = skslvar.get();
         // We can't call VarDeclaration::Convert directly here, because the IRGenerator has special
-        // treatment for sk_FragColor that we want to preserve in DSL.
+        // treatment for sk_FragColor that we want to preserve in DSL. We also do not want the
+        // variable added to the symbol table for several reasons - DSLParser handles the symbol
+        // table itself, parameters don't go into the symbol table until after the
+        // FunctionDeclaration is created which makes this the wrong spot for them, and outside of
+        // DSLParser we don't even need DSL variables to show up in the symbol table in the first
+        // place.
         var.fDeclaration = DSLWriter::IRGenerator().convertVarDeclaration(
-                                                                std::move(skslvar),
-                                                                var.fInitialValue.releaseIfValid());
+                                                                 std::move(skslvar),
+                                                                 var.fInitialValue.releaseIfValid(),
+                                                                 /*addToSymbolTable=*/false);
         if (var.fDeclaration) {
             var.fVar = varPtr;
         }
@@ -274,8 +280,8 @@ void DSLWriter::MarkDeclared(DSLVarBase& var) {
 
 void DSLWriter::ReportErrors(PositionInfo pos) {
     if (Compiler().errorCount()) {
-        ReportError(DSLWriter::Compiler().errorText(/*showCount=*/false).c_str(), &pos);
-        Compiler().setErrorCount(0);
+        ReportError(DSLWriter::Compiler().errorText(/*showCount=*/false).c_str(), pos);
+        Compiler().resetErrors();
     }
 }
 

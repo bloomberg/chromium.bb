@@ -23,7 +23,9 @@
 
 #include <stdint.h>
 
-#include "libavutil/bprint.h"
+#include "libavcodec/avcodec.h"
+#include "libavcodec/bsf.h"
+
 #include "avformat.h"
 #include "os_support.h"
 
@@ -38,6 +40,12 @@
 #else
 #    define hex_dump_debug(class, buf, size) do { if (0) av_hex_dump_log(class, AV_LOG_DEBUG, buf, size); } while(0)
 #endif
+
+/**
+ * For an AVInputFormat with this flag set read_close() needs to be called
+ * by the caller upon read_header() failure.
+ */
+#define FF_FMT_INIT_CLEANUP                             (1 << 0)
 
 typedef struct AVCodecTag {
     enum AVCodecID id;
@@ -194,8 +202,6 @@ struct AVStreamInternal {
      * 1 if avctx has been initialized with the values from the codec parameters
      */
     int avctx_inited;
-
-    enum AVCodecID orig_codec_id;
 
     /* the context for extracting extradata in find_stream_info()
      * inited=1/bsf=NULL signals that extracting is not possible (codec not
@@ -389,6 +395,17 @@ struct AVStreamInternal {
      * 0 means unknown
      */
     int stream_identifier;
+
+    // Timestamp generation support:
+    /**
+     * Timestamp corresponding to the last dts sync point.
+     *
+     * Initialized when AVCodecParserContext.dts_sync_point >= 0 and
+     * a DTS is received from the underlying container. Otherwise set to
+     * AV_NOPTS_VALUE by default.
+     */
+    int64_t first_dts;
+    int64_t cur_dts;
 };
 
 void avpriv_stream_set_need_parsing(AVStream *st, enum AVStreamParseType type);
@@ -520,32 +537,6 @@ int ff_get_line(AVIOContext *s, char *buf, int maxlen);
  */
 int ff_get_chomp_line(AVIOContext *s, char *buf, int maxlen);
 
-/**
- * Read a whole line of text from AVIOContext to an AVBPrint buffer. Stop
- * reading after reaching a \\r, a \\n, a \\r\\n, a \\0 or EOF.  The line
- * ending characters are NOT included in the buffer, but they are skipped on
- * the input.
- *
- * @param s the read-only AVIOContext
- * @param bp the AVBPrint buffer
- * @return the length of the read line, not including the line endings,
- *         negative on error.
- */
-int64_t ff_read_line_to_bprint(AVIOContext *s, AVBPrint *bp);
-
-/**
- * Read a whole line of text from AVIOContext to an AVBPrint buffer overwriting
- * its contents. Stop reading after reaching a \\r, a \\n, a \\r\\n, a \\0 or
- * EOF. The line ending characters are NOT included in the buffer, but they
- * are skipped on the input.
- *
- * @param s the read-only AVIOContext
- * @param bp the AVBPrint buffer
- * @return the length of the read line not including the line endings,
- *         negative on error, or if the buffer becomes truncated.
- */
-int64_t ff_read_line_to_bprint_overwrite(AVIOContext *s, AVBPrint *bp);
-
 #define SPACE_CHARS " \t\r\n"
 
 /**
@@ -635,7 +626,7 @@ int ff_seek_frame_binary(AVFormatContext *s, int stream_index,
  * @param timestamp new dts expressed in time_base of param ref_st
  * @param ref_st reference stream giving time_base of param timestamp
  */
-void ff_update_cur_dts(AVFormatContext *s, AVStream *ref_st, int64_t timestamp);
+void avpriv_update_cur_dts(AVFormatContext *s, AVStream *ref_st, int64_t timestamp);
 
 int ff_find_last_ts(AVFormatContext *s, int stream_index, int64_t *ts, int64_t *pos,
                     int64_t (*read_timestamp)(struct AVFormatContext *, int , int64_t *, int64_t ));
@@ -792,7 +783,7 @@ int ff_stream_add_bitstream_filter(AVStream *st, const char *name, const char *a
 int ff_stream_encode_params_copy(AVStream *dst, const AVStream *src);
 
 /**
- * Wrap avpriv_io_move and log if error happens.
+ * Wrap ffurl_move() and log if error happens.
  *
  * @param url_src source path
  * @param url_dst destination path
@@ -925,6 +916,7 @@ int ff_reshuffle_raw_rgb(AVFormatContext *s, AVPacket **ppkt, AVCodecParameters 
  */
 int ff_get_packet_palette(AVFormatContext *s, AVPacket *pkt, int ret, uint32_t *palette);
 
+struct AVBPrint;
 /**
  * Finalize buf into extradata and set its size appropriately.
  */

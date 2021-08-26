@@ -36,6 +36,11 @@ namespace dawn_native { namespace d3d12 {
         CleanUpDebugLayerFilters();
     }
 
+    bool Adapter::SupportsExternalImages() const {
+        // Via dawn_native::d3d12::ExternalImageDXGI::Create
+        return true;
+    }
+
     const D3D12DeviceInfo& Adapter::GetDeviceInfo() const {
         return mDeviceInfo;
     }
@@ -190,6 +195,11 @@ namespace dawn_native { namespace d3d12 {
 
     void Adapter::CleanUpDebugLayerFilters() {
         if (!GetInstance()->IsBackendValidationEnabled()) {
+            return;
+        }
+
+        // The device may not exist if this adapter failed to initialize.
+        if (mD3d12Device == nullptr) {
             return;
         }
 

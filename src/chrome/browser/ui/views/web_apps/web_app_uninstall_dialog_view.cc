@@ -16,8 +16,8 @@
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/web_apps/web_app_info_image_source.h"
-#include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
+#include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -64,7 +64,7 @@ WebAppUninstallDialogDelegateView::WebAppUninstallDialogDelegateView(
     webapps::WebappUninstallSource uninstall_source,
     std::map<SquareSizePx, SkBitmap> icon_bitmaps)
     : dialog_(dialog_view), app_id_(app_id), profile_(profile) {
-  auto* provider = web_app::WebAppProvider::Get(profile_);
+  auto* provider = web_app::WebAppProvider::GetForWebApps(profile_);
   DCHECK(provider);
 
   app_start_url_ = provider->registrar().GetAppStartUrl(app_id_);
@@ -156,7 +156,7 @@ ui::ImageModel WebAppUninstallDialogDelegateView::GetWindowIcon() {
 }
 
 void WebAppUninstallDialogDelegateView::Uninstall() {
-  auto* provider = web_app::WebAppProvider::Get(profile_);
+  auto* provider = web_app::WebAppProvider::GetForWebApps(profile_);
   DCHECK(provider);
 
   if (!provider->install_finalizer().CanUserUninstallWebApp(app_id_)) {
@@ -235,7 +235,7 @@ void WebAppUninstallDialogViews::ConfirmUninstall(
     return;
   }
 
-  auto* provider = web_app::WebAppProvider::Get(profile_);
+  auto* provider = web_app::WebAppProvider::GetForWebApps(profile_);
   DCHECK(provider);
 
   registrar_observation_.Observe(&provider->registrar());

@@ -14,9 +14,9 @@
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/components/external_install_options.h"
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
-#include "chrome/browser/web_applications/components/os_integration_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/externally_managed_app_registration_task.h"
+#include "chrome/browser/web_applications/os_integration_manager.h"
 #include "chrome/browser/web_applications/test/web_app_registration_waiter.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
@@ -28,6 +28,8 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
+#include "url/origin.h"
 
 namespace web_app {
 
@@ -66,7 +68,7 @@ class ExternallyManagedAppManagerImplBrowserTest : public InProcessBrowserTest {
             ->GetStoragePartition(web_contents->GetSiteInstance())
             ->GetServiceWorkerContext();
     service_worker_context->CheckHasServiceWorker(
-        url,
+        url, blink::StorageKey(url::Origin::Create(url)),
         base::BindLambdaForTesting(
             [&run_loop, status](content::ServiceWorkerCapability capability) {
               CHECK_EQ(status, capability);

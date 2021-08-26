@@ -27,6 +27,7 @@
 #endif
 
 class Browser;
+struct AccountInfo;
 struct CoreAccountId;
 
 namespace content {
@@ -130,7 +131,7 @@ class SigninViewController : public SigninViewControllerDelegate::Observer {
   // enterprise account being shown. `callback` is called with the user's action
   // on the dialog.
   void ShowModalEnterpriseConfirmationDialog(
-      const std::string& domain_name,
+      const AccountInfo& account_info,
       SkColor profile_color,
       base::OnceCallback<void(bool)> callback);
 
@@ -156,6 +157,8 @@ class SigninViewController : public SigninViewControllerDelegate::Observer {
                            ErrorDialogDefaultFocus);
   FRIEND_TEST_ALL_PREFIXES(SignInViewControllerBrowserTest,
                            EnterpriseConfirmationDefaultFocus);
+  FRIEND_TEST_ALL_PREFIXES(SigninViewControllerDelegateViewsBrowserTest,
+                           CloseImmediately);
   friend class login_ui_test_utils::SigninViewControllerTestUtil;
   friend class SigninReauthViewControllerBrowserTest;
 

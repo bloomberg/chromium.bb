@@ -30,7 +30,6 @@
 
 #include <memory>
 #include "base/memory/weak_ptr.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/webpreferences/web_preferences.mojom-blink.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/graphics/deferred_image_decoder.h"
@@ -131,8 +130,7 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
             const cc::PaintFlags&,
             const FloatRect& dst_rect,
             const FloatRect& src_rect,
-            const SkSamplingOptions&,
-            RespectImageOrientationEnum,
+            const ImageDrawOptions& draw_options,
             ImageClampingMode,
             ImageDecodingMode) override;
 

@@ -30,14 +30,13 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using testing::_;
-using testing::Mock;
-using testing::Return;
-using testing::Sequence;
-
-namespace chromeos {
-
+namespace ash {
 namespace {
+
+using ::testing::_;
+using ::testing::Mock;
+using ::testing::Return;
+using ::testing::Sequence;
 
 const char kTestGaiaUser[] = "user@example.com";
 const char kTestSAMLUser[] = "user@saml.example.com";
@@ -74,7 +73,7 @@ class OfflineSigninLimiterTest : public testing::Test {
   user_manager::ScopedUserManager user_manager_enabler_;
 
   std::unique_ptr<TestingProfile> profile_;
-  util::WallClockTimer* timer_;  // Not owned.
+  base::WallClockTimer* timer_;  // Not owned.
 
   OfflineSigninLimiter* limiter_;  // Owned.
   base::test::ScopedPowerMonitorTestSource test_power_monitor_source_;
@@ -1356,4 +1355,4 @@ TEST_F(OfflineSigninLimiterTest, SAMLLogInOfflineWithOnLockReauth) {
   EXPECT_FALSE(timer_->IsRunning());
 }
 
-}  //  namespace chromeos
+}  //  namespace ash

@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/policy/server_backed_state/server_backed_state_keys_broker.h"
+#include "chrome/browser/ash/policy/server_backed_state/server_backed_state_keys_broker.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/policy/proto/cloud_policy.pb.h"
@@ -64,9 +64,6 @@ class LocalPolicyTestServerMixin : public InProcessBrowserTestMixin {
   bool UpdateUserPolicy(const base::Value& mandatory_policy,
                         const base::Value& recommended_policy,
                         const std::string& policy_user);
-
-  void ExpectTokenEnrollment(const std::string& enrollment_token,
-                             const std::string& token_creator);
 
   void SetUpdateDeviceAttributesPermission(bool allowed);
 

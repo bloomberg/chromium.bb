@@ -16,7 +16,7 @@ namespace syncer {
 
 // This class is used by SyncServiceImpl to manage all logic and state
 // pertaining to initialization of the SyncEngine.
-class StartupController : public policy::PolicyService::Observer {
+class StartupController final : public policy::PolicyService::Observer {
  public:
   enum class State {
     // Startup has not been triggered yet.
@@ -37,12 +37,16 @@ class StartupController : public policy::PolicyService::Observer {
       base::RepeatingCallback<bool()> should_start,
       base::RepeatingClosure start_engine,
       policy::PolicyService* policy_service);
-  ~StartupController() final;
+  ~StartupController() override;
 
   // Starts up sync if it is requested by the user and preconditions are met.
   // If |force_immediate| is true, this will start sync immediately, bypassing
   // deferred startup and the "first setup complete" check (but *not* the
   // |should_start_callback_| check!).
+  // Note that (even in the "immediate" case), this will never directly run the
+  // start engine callback - that always happens as a posted task, so that
+  // callers have the opportunity to set up any other state as necessary before
+  // the engine actually starts.
   void TryStart(bool force_immediate);
 
   // Called when a datatype (SyncableService) has a need for sync to start
@@ -85,6 +89,9 @@ class StartupController : public policy::PolicyService::Observer {
     kFallbackTimer = 1,
     kMaxValue = kFallbackTimer
   };
+
+  // The actual (synchronous) implementation of TryStart().
+  void TryStartImpl(bool force_immediate);
 
   // Called when |policy_service_| is defined, but it took too long to receive
   // the first chrome policies.

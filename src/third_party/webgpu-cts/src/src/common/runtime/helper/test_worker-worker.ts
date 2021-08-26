@@ -1,3 +1,4 @@
+import { setBaseResourcePath } from '../../framework/resources.js';
 import { DefaultTestFileLoader } from '../../internal/file_loader.js';
 import { Logger } from '../../internal/logging/logger.js';
 import { parseQuery } from '../../internal/query/parseQuery.js';
@@ -9,6 +10,8 @@ import { assert } from '../../util/util.js';
 declare const self: any;
 
 const loader = new DefaultTestFileLoader();
+
+setBaseResourcePath('../../../resources');
 
 self.onmessage = async (ev: MessageEvent) => {
   const query: string = ev.data.query;

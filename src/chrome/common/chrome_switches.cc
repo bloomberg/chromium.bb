@@ -275,10 +275,6 @@ const char kEnableCloudPrintProxy[]         = "enable-cloud-print-proxy";
 const char kEnableCriticalPersistedTabData[] =
     "enable-critical-persisted-tab-data";
 
-// Enable device discovery notifications.
-const char kEnableDeviceDiscoveryNotifications[] =
-    "enable-device-discovery-notifications";
-
 // Enables Domain Reliability Monitoring.
 const char kEnableDomainReliability[] = "enable-domain-reliability";
 
@@ -801,7 +797,7 @@ const char kAllowNaClSocketAPI[]            = "allow-nacl-socket-api";
 #endif
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_MAC) || \
-    defined(OS_WIN)
+    defined(OS_WIN) || defined(OS_FUCHSIA)
 const char kEnableNewAppMenuIcon[] = "enable-new-app-menu-icon";
 
 // Causes the browser to launch directly in guest mode.

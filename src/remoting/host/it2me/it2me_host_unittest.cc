@@ -17,6 +17,7 @@
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/policy/policy_constants.h"
 #include "net/base/network_change_notifier.h"
@@ -125,7 +126,9 @@ class FakeIt2MeDialogFactory : public It2MeConfirmationDialogFactory {
 };
 
 FakeIt2MeDialogFactory::FakeIt2MeDialogFactory()
-    : remote_user_email_(kTestUserName) {}
+    : It2MeConfirmationDialogFactory(
+          It2MeConfirmationDialog::DialogStyle::kConsumer),
+      remote_user_email_(kTestUserName) {}
 
 FakeIt2MeDialogFactory::~FakeIt2MeDialogFactory() = default;
 
@@ -184,6 +187,7 @@ class It2MeHostTest : public testing::Test, public It2MeHost::Observer {
   base::OnceClosure state_change_callback_;
 
   It2MeHostState last_host_state_ = It2MeHostState::kDisconnected;
+  ErrorCode last_error_code_ = ErrorCode::OK;
 
   // Used to set ConfirmationDialog behavior.
   FakeIt2MeDialogFactory* dialog_factory_ = nullptr;
@@ -369,6 +373,7 @@ void It2MeHostTest::OnNatPoliciesChanged(bool nat_traversal_enabled,
 
 void It2MeHostTest::OnStateChanged(It2MeHostState state, ErrorCode error_code) {
   last_host_state_ = state;
+  last_error_code_ = error_code;
 
   if (state_change_callback_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -404,6 +409,7 @@ TEST_F(It2MeHostTest, StartAndStop) {
 
   ShutdownHost();
   ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
+  ASSERT_EQ(ErrorCode::OK, last_error_code_);
 }
 
 // Verify that IceConfig is passed to the TransportContext.
@@ -715,6 +721,7 @@ TEST_F(It2MeHostTest, ConnectionValidationConfirmationDialogAccept) {
   ASSERT_EQ(It2MeHostState::kConnecting, last_host_state_);
   ShutdownHost();
   ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
+  ASSERT_EQ(ErrorCode::OK, last_error_code_);
 }
 
 TEST_F(It2MeHostTest, ConnectionValidationConfirmationDialogReject) {
@@ -724,6 +731,7 @@ TEST_F(It2MeHostTest, ConnectionValidationConfirmationDialogReject) {
   ASSERT_EQ(ValidationResult::ERROR_REJECTED_BY_USER, validation_result_);
   RunUntilStateChanged(It2MeHostState::kDisconnected);
   ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
+  ASSERT_EQ(ErrorCode::SESSION_REJECTED, last_error_code_);
 }
 
 TEST_F(It2MeHostTest, MultipleConnectionsTriggerDisconnect) {

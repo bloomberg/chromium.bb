@@ -23,6 +23,8 @@ VideoDecoderConfig::Codec ToProtoCodec(VideoCodec value) {
       return VideoDecoderConfig_Codec_kCodecVP8;
     case VideoCodec::kVp9:
       return VideoDecoderConfig_Codec_kCodecVP9;
+    case VideoCodec::kAv1:
+      return VideoDecoderConfig_Codec_kCodecAV1;
     default:
       return VideoDecoderConfig_Codec_kUnknownVideoCodec;
   }
@@ -41,25 +43,41 @@ AudioDecoderConfig::Codec ToProtoCodec(AudioCodec value) {
 
 }  // namespace
 
+RemotingSender::Client::~Client() = default;
+
 RemotingSender::RemotingSender(RpcMessenger* messenger,
                                AudioCodec audio_codec,
                                VideoCodec video_codec,
-                               ReadyCallback ready_cb)
+                               Client* client)
     : messenger_(messenger),
       audio_codec_(audio_codec),
       video_codec_(video_codec),
-      ready_cb_(std::move(ready_cb)) {
+      client_(client) {
+  OSP_DCHECK(client_);
   messenger_->RegisterMessageReceiverCallback(
       RpcMessenger::kAcquireRendererHandle,
       [this](std::unique_ptr<RpcMessage> message) {
         OSP_DCHECK(message);
-        this->OnInitializeMessage(*message);
+        this->OnMessage(*message);
       });
 }
 
 RemotingSender::~RemotingSender() {
   messenger_->UnregisterMessageReceiverCallback(
       RpcMessenger::kAcquireRendererHandle);
+}
+
+void RemotingSender::OnMessage(const RpcMessage& message) {
+  if (!message.has_proc()) {
+    return;
+  }
+  if (message.proc() == RpcMessage_RpcProc_RPC_DS_INITIALIZE) {
+    OSP_VLOG << "Received initialize message";
+    OnInitializeMessage(message);
+  } else if (message.proc() == RpcMessage_RpcProc_RPC_R_SETPLAYBACKRATE) {
+    OSP_VLOG << "Received playback rate message: " << message.double_value();
+    OnPlaybackRateMessage(message);
+  }
 }
 
 void RemotingSender::OnInitializeMessage(const RpcMessage& message) {
@@ -84,11 +102,11 @@ void RemotingSender::OnInitializeMessage(const RpcMessage& message) {
                 << " and video codec " << CodecToString(video_codec_);
   messenger_->SendMessageToRemote(callback_message);
 
-  if (ready_cb_) {
-    ready_cb_();
-  } else {
-    OSP_DLOG_INFO << "Received a ready message, but no ready callback.";
-  }
+  client_->OnReady();
+}
+
+void RemotingSender::OnPlaybackRateMessage(const RpcMessage& message) {
+  client_->OnPlaybackRateChange(message.double_value());
 }
 
 }  // namespace cast

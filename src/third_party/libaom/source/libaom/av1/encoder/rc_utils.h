@@ -62,8 +62,6 @@ static AOM_INLINE void set_rc_buffer_sizes(AV1_COMP *cpi) {
 
 static AOM_INLINE void config_target_level(AV1_COMP *const cpi,
                                            AV1_LEVEL target_level, int tier) {
-  aom_clear_system_state();
-
   AV1EncoderConfig *const oxcf = &cpi->oxcf;
   SequenceHeader *const seq_params = cpi->common.seq_params;
   TileConfig *const tile_cfg = &oxcf->tile_cfg;
@@ -287,7 +285,6 @@ static AOM_INLINE void recode_loop_update_q(
 
   const int min_cr = rc_cfg->min_cr;
   if (min_cr > 0) {
-    aom_clear_system_state();
     const double compression_ratio =
         av1_get_compression_ratio(cm, rc->projected_frame_size >> 3);
     const double target_cr = min_cr / 100.0;

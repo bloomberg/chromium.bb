@@ -141,7 +141,7 @@ class FrameTreeVisualizer {
 
   // Elements are site instance ids. The index of the SiteInstance in the vector
   // determines the abbreviated name (0->A, 1->B) for that SiteInstance.
-  std::vector<int> seen_site_instance_ids_;
+  std::vector<SiteInstanceId> seen_site_instance_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameTreeVisualizer);
 };
@@ -589,8 +589,8 @@ class RenderFrameHostCreatedObserver : public WebContentsObserver {
 // reason and tests will need to assert that it appears.
 BackForwardCache::DisabledReason RenderFrameHostDisabledForTestingReason();
 // Disable using the standard testing DisabledReason.
-void DisableForRenderFrameHostForTesting(RenderFrameHost* render_frame_host);
-void DisableForRenderFrameHostForTesting(GlobalRenderFrameHostId id);
+void DisableBFCacheForRFHForTesting(RenderFrameHost* render_frame_host);
+void DisableBFCacheForRFHForTesting(GlobalRenderFrameHostId id);
 
 // Changes the WebContents and active entry user agent override from
 // DidStartNavigation().

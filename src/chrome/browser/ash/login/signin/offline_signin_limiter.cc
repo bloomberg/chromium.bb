@@ -31,7 +31,7 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 
-namespace chromeos {
+namespace ash {
 
 void OfflineSigninLimiter::SignedIn(UserContext::AuthFlow auth_flow) {
   PrefService* prefs = profile_->GetPrefs();
@@ -106,7 +106,7 @@ void OfflineSigninLimiter::SignedIn(UserContext::AuthFlow auth_flow) {
   UpdateLockScreenLimit();
 }
 
-util::WallClockTimer* OfflineSigninLimiter::GetTimerForTesting() {
+base::WallClockTimer* OfflineSigninLimiter::GetTimerForTesting() {
   return offline_signin_limit_timer_.get();
 }
 
@@ -127,9 +127,9 @@ OfflineSigninLimiter::OfflineSigninLimiter(Profile* profile,
                                            const base::Clock* clock)
     : profile_(profile),
       clock_(clock ? clock : base::DefaultClock::GetInstance()),
-      offline_signin_limit_timer_(std::make_unique<util::WallClockTimer>()),
+      offline_signin_limit_timer_(std::make_unique<base::WallClockTimer>()),
       offline_lock_screen_signin_limit_timer_(
-          std::make_unique<util::WallClockTimer>()) {}
+          std::make_unique<base::WallClockTimer>()) {}
 
 OfflineSigninLimiter::~OfflineSigninLimiter() {
   base::PowerMonitor::RemovePowerSuspendObserver(this);
@@ -415,4 +415,4 @@ void OfflineSigninLimiter::UpdateOnlineSigninData(
   user_manager::known_user::SetOfflineSigninLimit(user->GetAccountId(), limit);
 }
 
-}  // namespace chromeos
+}  // namespace ash

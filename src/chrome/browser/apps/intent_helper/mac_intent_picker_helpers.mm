@@ -7,9 +7,10 @@
 #import <Cocoa/Cocoa.h>
 #import <SafariServices/SafariServices.h>
 
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/timer/elapsed_timer.h"
 #include "net/base/mac/url_conversions.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/models/image_model.h"
 
 namespace apps {
@@ -39,22 +40,47 @@ IntentPickerAppInfo AppInfoForAppUrl(NSURL* app_url) {
                              base::SysNSStringToUTF8(app_name));
 }
 
-absl::optional<IntentPickerAppInfo> AppInfoForUrl(const GURL& url) {
+}  // namespace
+
+absl::optional<IntentPickerAppInfo> FindMacAppForUrl(const GURL& url) {
   if (@available(macOS 10.15, *)) {
+    // This function is called synchronously on the main thread for every
+    // navigation, which means it needs to be fast. Unfortunately, for some
+    // machines, -[SFUniversalLink initWithWebpageURL:] is consistently slow
+    // (https://crbug.com/1228740, FB9364726). Therefore, time all executions of
+    // that API, and if it ever runs too slowly, stop calling it in an attempt
+    // to preserve the user experience. 100ms is the speed of human perception;
+    // this API call must never be allowed to push a navigation from being
+    // perceived as "instant" to not being perceived as "instant". See
+    // https://web.dev/rail/ for more philosophy.
+    static bool api_is_fast_enough = true;
+    if (!api_is_fast_enough)
+      return absl::nullopt;
+
     NSURL* nsurl = net::NSURLWithGURL(url);
     if (!nsurl)
       return absl::nullopt;
 
+    base::ElapsedTimer timer;
     SFUniversalLink* link =
         [[[SFUniversalLink alloc] initWithWebpageURL:nsurl] autorelease];
+    base::TimeDelta api_duration = timer.Elapsed();
+    static constexpr auto kHowFastIsFastEnough =
+        base::TimeDelta::FromMilliseconds(100);
+    if (api_duration > kHowFastIsFastEnough) {
+      api_is_fast_enough = false;
+      // In doing metrics, allow for hangs up to an hour. This is exceptionally
+      // pessimistic, but will provide useful data for feedback to Apple.
+      base::UmaHistogramLongTimes("Mac.UniversalLink.APIDuration",
+                                  api_duration);
+    }
+
     if (link)
       return AppInfoForAppUrl(link.applicationURL);
   }
 
   return absl::nullopt;
 }
-
-}  // namespace
 
 void LaunchMacApp(const GURL& url, const std::string& launch_name) {
   [[NSWorkspace sharedWorkspace]
@@ -64,17 +90,6 @@ void LaunchMacApp(const GURL& url, const std::string& launch_name) {
                    options:0
              configuration:@{}
                      error:nil];
-}
-
-std::vector<IntentPickerAppInfo> FindMacAppsForUrl(
-    content::WebContents* web_contents,
-    const GURL& url,
-    std::vector<IntentPickerAppInfo> apps) {
-  // First, the Universal Link, if there is one.
-  if (auto app_info = AppInfoForUrl(url))
-    apps.push_back(std::move(app_info.value()));
-
-  return apps;
 }
 
 }  // namespace apps

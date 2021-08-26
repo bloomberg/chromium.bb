@@ -6,7 +6,6 @@
 
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/layout/layout_object.h"
 
 namespace blink {
 
@@ -32,6 +31,7 @@ MediaValuesCached::MediaValuesCachedData::MediaValuesCachedData(
     device_width = MediaValues::CalculateDeviceWidth(frame);
     device_height = MediaValues::CalculateDeviceHeight(frame);
     device_pixel_ratio = MediaValues::CalculateDevicePixelRatio(frame);
+    device_supports_hdr = MediaValues::CalculateDeviceSupportsHDR(frame);
     color_bits_per_component =
         MediaValues::CalculateColorBitsPerComponent(frame);
     monochrome_bits_per_component =
@@ -102,6 +102,10 @@ int MediaValuesCached::DeviceHeight() const {
 
 float MediaValuesCached::DevicePixelRatio() const {
   return data_.device_pixel_ratio;
+}
+
+bool MediaValuesCached::DeviceSupportsHDR() const {
+  return data_.device_supports_hdr;
 }
 
 int MediaValuesCached::ColorBitsPerComponent() const {
@@ -196,7 +200,8 @@ ScreenSpanning MediaValuesCached::GetScreenSpanning() const {
   return data_.screen_spanning;
 }
 
-DevicePosture MediaValuesCached::GetDevicePosture() const {
+device::mojom::blink::DevicePostureType MediaValuesCached::GetDevicePosture()
+    const {
   return data_.device_posture;
 }
 

@@ -23,7 +23,7 @@ namespace {
 
 #define HISTORY_CONTENT_ANNOTATIONS_ROW_FIELDS                           \
   " visit_id,floc_protected_score,categories,page_topics_model_version," \
-  "annotation_flags "
+  "annotation_flags,entities,related_searches "
 #define HISTORY_CONTEXT_ANNOTATIONS_ROW_FIELDS                    \
   " visit_id,context_annotation_flags,duration_since_last_visit," \
   "page_end_reason "
@@ -39,15 +39,11 @@ GetCategoriesFromStringColumn(const std::string& column_value) {
   for (const auto& category_string : category_strings) {
     std::vector<std::string> category_parts = base::SplitString(
         category_string, ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-    if (category_parts.size() != 2)
-      return {};
 
-    VisitContentModelAnnotations::Category category;
-    if (!base::StringToInt(category_parts[0], &category.id))
-      continue;
-    if (!base::StringToInt(category_parts[1], &category.weight))
-      continue;
-    categories.emplace_back(category);
+    auto category = VisitContentModelAnnotations::Category::FromStringVector(
+        category_parts);
+    if (category)
+      categories.emplace_back(*category);
   }
   return categories;
 }
@@ -57,11 +53,25 @@ std::string ConvertCategoriesToStringColumn(
     const std::vector<VisitContentModelAnnotations::Category>& categories) {
   std::vector<std::string> serialized_categories;
   for (const auto& category : categories) {
-    serialized_categories.emplace_back(
-        base::StrCat({base::NumberToString(category.id), ":",
-                      base::NumberToString(category.weight)}));
+    serialized_categories.emplace_back(category.ToString());
   }
   return base::JoinString(serialized_categories, ",");
+}
+
+// Converts the serialized related searches string into a vector of strings.
+std::vector<std::string> GetRelatedSearchesFromStringColumn(
+    const std::string& column_value) {
+  using std::string_literals::operator""s;
+  return base::SplitString(column_value, "\0"s, base::TRIM_WHITESPACE,
+                           base::SPLIT_WANT_NONEMPTY);
+}
+
+// Serializes related searches into a string that can be stored in the database.
+std::string ConvertRelatedSearchesToStringColumn(
+    const std::vector<std::string>& related_searches) {
+  // Use the Null character as the separator to serialize the related searches.
+  using std::string_literals::operator""s;
+  return base::JoinString(related_searches, "\0"s);
 }
 
 // An enum of bitmasks to help represent the boolean flags of
@@ -172,7 +182,9 @@ bool VisitAnnotationsDatabase::InitVisitAnnotationsTables() {
                        "floc_protected_score NUMERIC,"
                        "categories VARCHAR,"
                        "page_topics_model_version INTEGER,"
-                       "annotation_flags INTEGER NOT NULL)")) {
+                       "annotation_flags INTEGER NOT NULL,"
+                       "entities VARCHAR,"
+                       "related_searches VARCHAR)")) {
     return false;
   }
 
@@ -228,7 +240,7 @@ void VisitAnnotationsDatabase::AddContentAnnotationsForVisit(
   sql::Statement statement(GetDB().GetCachedStatement(
       SQL_FROM_HERE,
       "INSERT INTO content_annotations(" HISTORY_CONTENT_ANNOTATIONS_ROW_FIELDS
-      ")VALUES(?,?,?,?,?)"));
+      ")VALUES(?,?,?,?,?,?,?)"));
   statement.BindInt64(0, visit_id);
   statement.BindDouble(
       1, static_cast<double>(
@@ -239,6 +251,11 @@ void VisitAnnotationsDatabase::AddContentAnnotationsForVisit(
   statement.BindInt64(
       3, visit_content_annotations.model_annotations.page_topics_model_version);
   statement.BindInt64(4, visit_content_annotations.annotation_flags);
+  statement.BindString(
+      5, ConvertCategoriesToStringColumn(
+             visit_content_annotations.model_annotations.entities));
+  statement.BindString(6, ConvertRelatedSearchesToStringColumn(
+                              visit_content_annotations.related_searches));
 
   if (!statement.Run()) {
     DVLOG(0) << "Failed to execute 'content_annotations' insert statement:  "
@@ -276,7 +293,8 @@ void VisitAnnotationsDatabase::UpdateContentAnnotationsForVisit(
                                  "UPDATE content_annotations SET "
                                  "floc_protected_score=?,categories=?,"
                                  "page_topics_model_version=?,"
-                                 "annotation_flags=? "
+                                 "annotation_flags=?,entities=?,"
+                                 "related_searches=? "
                                  "WHERE visit_id=?"));
   statement.BindDouble(
       0, static_cast<double>(
@@ -287,7 +305,12 @@ void VisitAnnotationsDatabase::UpdateContentAnnotationsForVisit(
   statement.BindInt64(
       2, visit_content_annotations.model_annotations.page_topics_model_version);
   statement.BindInt64(3, visit_content_annotations.annotation_flags);
-  statement.BindInt64(4, visit_id);
+  statement.BindString(
+      4, ConvertCategoriesToStringColumn(
+             visit_content_annotations.model_annotations.entities));
+  statement.BindString(5, ConvertRelatedSearchesToStringColumn(
+                              visit_content_annotations.related_searches));
+  statement.BindInt64(6, visit_id);
 
   if (!statement.Run()) {
     DVLOG(0)
@@ -347,6 +370,10 @@ bool VisitAnnotationsDatabase::GetContentAnnotationsForVisit(
   out_content_annotations->model_annotations.page_topics_model_version =
       statement.ColumnInt64(3);
   out_content_annotations->annotation_flags = statement.ColumnInt64(4);
+  out_content_annotations->model_annotations.entities =
+      GetCategoriesFromStringColumn(statement.ColumnString(5));
+  out_content_annotations->related_searches =
+      GetRelatedSearchesFromStringColumn(statement.ColumnString(6));
   return true;
 }
 
@@ -582,6 +609,39 @@ bool VisitAnnotationsDatabase::MigrateReplaceClusterVisitsTable() {
   // rolled out behind a flag.
   return !GetDB().DoesTableExist("cluster_visits") ||
          GetDB().Execute("DROP TABLE cluster_visits");
+}
+
+bool VisitAnnotationsDatabase::
+    MigrateContentAnnotationsWithoutEntitiesColumn() {
+  if (!GetDB().DoesTableExist("content_annotations")) {
+    NOTREACHED() << " Content annotations table should exist before migration";
+    return false;
+  }
+
+  if (GetDB().DoesColumnExist("content_annotations", "entities"))
+    return true;
+
+  // Old versions don't have the entities column, we modify the table to add
+  // that field.
+  return GetDB().Execute(
+      "ALTER TABLE content_annotations "
+      "ADD COLUMN entities VARCHAR");
+}
+
+bool VisitAnnotationsDatabase::
+    MigrateContentAnnotationsAddRelatedSearchesColumn() {
+  if (!GetDB().DoesTableExist("content_annotations")) {
+    NOTREACHED() << " Content annotations table should exist before migration";
+    return false;
+  }
+
+  if (GetDB().DoesColumnExist("content_annotations", "related_searches"))
+    return true;
+
+  // Add the `related_searches` column to the older versions of the table.
+  return GetDB().Execute(
+      "ALTER TABLE content_annotations "
+      "ADD COLUMN related_searches VARCHAR");
 }
 
 }  // namespace history

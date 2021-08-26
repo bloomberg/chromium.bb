@@ -10,6 +10,7 @@
 #import <Foundation/Foundation.h>
 
 #include "base/bind.h"
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_simple_task_runner.h"
@@ -147,11 +148,12 @@ TEST_P(MobileSessionShutdownMetricsProviderTest, ProvideStabilityMetrics) {
   };
 
   // Setup the MetricsService.
-  local_state_.SetBoolean(metrics::prefs::kStabilityExitedCleanly,
-                          was_last_shutdown_clean);
+  metrics::CleanExitBeacon::SetStabilityExitedCleanlyForTesting(
+      &local_state_, was_last_shutdown_clean);
   metrics_state_ = metrics::MetricsStateManager::Create(
       &local_state_, new metrics::TestEnabledStateProvider(false, false),
-      std::wstring(), metrics::MetricsStateManager::StoreClientInfoCallback(),
+      std::wstring(), base::FilePath(),
+      metrics::MetricsStateManager::StoreClientInfoCallback(),
       metrics::MetricsStateManager::LoadClientInfoCallback());
   metrics_service_.reset(new metrics::MetricsService(
       metrics_state_.get(), &metrics_client_, &local_state_));
@@ -185,10 +187,12 @@ TEST_F(MobileSessionShutdownMetricsProviderTest, TabCountMetricCleanShutdown) {
   // Setup the MetricsService.
   [PreviousSessionInfo sharedInstance].tabCount = 2;
   [PreviousSessionInfo sharedInstance].OTRTabCount = 3;
-  local_state_.SetBoolean(metrics::prefs::kStabilityExitedCleanly, true);
+  metrics::CleanExitBeacon::SetStabilityExitedCleanlyForTesting(&local_state_,
+                                                                true);
   metrics_state_ = metrics::MetricsStateManager::Create(
       &local_state_, new metrics::TestEnabledStateProvider(false, false),
-      std::wstring(), metrics::MetricsStateManager::StoreClientInfoCallback(),
+      std::wstring(), base::FilePath(),
+      metrics::MetricsStateManager::StoreClientInfoCallback(),
       metrics::MetricsStateManager::LoadClientInfoCallback());
   metrics_service_.reset(new metrics::MetricsService(
       metrics_state_.get(), &metrics_client_, &local_state_));
@@ -221,10 +225,12 @@ TEST_F(MobileSessionShutdownMetricsProviderTest, TabCountMetricUte) {
   // Setup the MetricsService.
   [PreviousSessionInfo sharedInstance].tabCount = 2;
   [PreviousSessionInfo sharedInstance].OTRTabCount = 3;
-  local_state_.SetBoolean(metrics::prefs::kStabilityExitedCleanly, false);
+  metrics::CleanExitBeacon::SetStabilityExitedCleanlyForTesting(&local_state_,
+                                                                false);
   metrics_state_ = metrics::MetricsStateManager::Create(
       &local_state_, new metrics::TestEnabledStateProvider(false, false),
-      std::wstring(), metrics::MetricsStateManager::StoreClientInfoCallback(),
+      std::wstring(), base::FilePath(),
+      metrics::MetricsStateManager::StoreClientInfoCallback(),
       metrics::MetricsStateManager::LoadClientInfoCallback());
   metrics_service_.reset(new metrics::MetricsService(
       metrics_state_.get(), &metrics_client_, &local_state_));
@@ -257,10 +263,12 @@ TEST_F(MobileSessionShutdownMetricsProviderTest, TabCountMetricCrashWithLog) {
   // Setup the MetricsService.
   [PreviousSessionInfo sharedInstance].tabCount = 2;
   [PreviousSessionInfo sharedInstance].OTRTabCount = 3;
-  local_state_.SetBoolean(metrics::prefs::kStabilityExitedCleanly, false);
+  metrics::CleanExitBeacon::SetStabilityExitedCleanlyForTesting(&local_state_,
+                                                                false);
   metrics_state_ = metrics::MetricsStateManager::Create(
       &local_state_, new metrics::TestEnabledStateProvider(false, false),
-      std::wstring(), metrics::MetricsStateManager::StoreClientInfoCallback(),
+      std::wstring(), base::FilePath(),
+      metrics::MetricsStateManager::StoreClientInfoCallback(),
       metrics::MetricsStateManager::LoadClientInfoCallback());
   metrics_service_.reset(new metrics::MetricsService(
       metrics_state_.get(), &metrics_client_, &local_state_));
@@ -295,10 +303,12 @@ TEST_F(MobileSessionShutdownMetricsProviderTest, TabCountMetricFreeze) {
   // Setup the MetricsService.
   [PreviousSessionInfo sharedInstance].tabCount = 2;
   [PreviousSessionInfo sharedInstance].OTRTabCount = 3;
-  local_state_.SetBoolean(metrics::prefs::kStabilityExitedCleanly, false);
+  metrics::CleanExitBeacon::SetStabilityExitedCleanlyForTesting(&local_state_,
+                                                                false);
   metrics_state_ = metrics::MetricsStateManager::Create(
       &local_state_, new metrics::TestEnabledStateProvider(false, false),
-      std::wstring(), metrics::MetricsStateManager::StoreClientInfoCallback(),
+      std::wstring(), base::FilePath(),
+      metrics::MetricsStateManager::StoreClientInfoCallback(),
       metrics::MetricsStateManager::LoadClientInfoCallback());
   metrics_service_.reset(new metrics::MetricsService(
       metrics_state_.get(), &metrics_client_, &local_state_));
@@ -335,10 +345,12 @@ TEST_F(MobileSessionShutdownMetricsProviderTest, TabCountMetricFreeze) {
 TEST_F(MobileSessionShutdownMetricsProviderTest,
        ProvideHasPossibleExplanationMetric) {
   // Setup the MetricsService and HistogramTester.
-  local_state_.SetBoolean(metrics::prefs::kStabilityExitedCleanly, false);
+  metrics::CleanExitBeacon::SetStabilityExitedCleanlyForTesting(&local_state_,
+                                                                false);
   metrics_state_ = metrics::MetricsStateManager::Create(
       &local_state_, new metrics::TestEnabledStateProvider(false, false),
-      std::wstring(), metrics::MetricsStateManager::StoreClientInfoCallback(),
+      std::wstring(), base::FilePath(),
+      metrics::MetricsStateManager::StoreClientInfoCallback(),
       metrics::MetricsStateManager::LoadClientInfoCallback());
   metrics_service_.reset(new metrics::MetricsService(
       metrics_state_.get(), &metrics_client_, &local_state_));

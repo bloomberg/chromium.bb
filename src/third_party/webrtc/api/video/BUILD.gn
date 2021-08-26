@@ -71,7 +71,7 @@ rtc_library("video_frame") {
 
 if (is_android) {
   java_cpp_enum("video_frame_enums") {
-    sources = [ "video_codec_type.h" ]
+    sources = [ "video_frame_buffer.h" ]
   }
 }
 
@@ -110,6 +110,11 @@ rtc_source_set("recordable_encoded_frame") {
 rtc_source_set("video_frame_type") {
   visibility = [ "*" ]
   sources = [ "video_frame_type.h" ]
+}
+
+rtc_source_set("render_resolution") {
+  visibility = [ "*" ]
+  public = [ "render_resolution.h" ]
 }
 
 rtc_library("encoded_image") {

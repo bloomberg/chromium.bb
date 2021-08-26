@@ -4,6 +4,8 @@ tests = [
   'cff-full-font',
   'japanese',
   'cff-japanese',
+  'cff.notoserifmyanmar',
+  'glyf_bug_3131',
   'layout',
   'layout.gpos',
   'layout.gpos2',
@@ -28,7 +30,9 @@ tests = [
   'cmap14',
   'sbix',
   'colr',
-  'colrv1.notoemoji',
+# TODO: re-enable once colrv1 subsetting is stabilized.
+# 'colrv1.notoemoji',
+# 'colrv1',
   'colr_with_components',
   'cbdt',
   'variable',
@@ -55,7 +59,7 @@ foreach t : tests
     # ideally better to break and let meson handles them in parallel
     timeout: 500,
     workdir: join_paths(meson.current_build_dir(), '..', '..'),
-    suite: ['subset', 'slow'],
+    suite: 'subset',
   )
 endforeach
 

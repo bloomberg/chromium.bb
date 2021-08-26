@@ -4,13 +4,9 @@ Validation tests for setIndexBuffer on render pass and render bundle.
 
 import { makeTestGroup } from '../../../../../../common/framework/test_group.js';
 import { GPUConst } from '../../../../../constants.js';
-import { ValidationTest } from '../../../validation_test.js';
+import { kResourceStates, ValidationTest } from '../../../validation_test.js';
 
-import {
-  kRenderEncodeTypeParams,
-  kBufferStates,
-  buildBufferOffsetAndSizeOOBTestParams,
-} from './render.js';
+import { kRenderEncodeTypeParams, buildBufferOffsetAndSizeOOBTestParams } from './render.js';
 
 export const g = makeTestGroup(ValidationTest);
 
@@ -20,7 +16,7 @@ g.test('index_buffer')
 Tests index buffer must be valid.
   `
   )
-  .paramsSubcasesOnly(kRenderEncodeTypeParams.combine('state', kBufferStates))
+  .paramsSubcasesOnly(kRenderEncodeTypeParams.combine('state', kResourceStates))
   .fn(t => {
     const { encoderType, state } = t.params;
     const indexBuffer = t.createBufferWithState(state, {
@@ -28,17 +24,15 @@ Tests index buffer must be valid.
       usage: GPUBufferUsage.INDEX,
     });
 
-    const { encoder, finish } = t.createEncoder(encoderType);
+    const { encoder, validateFinishAndSubmitGivenState } = t.createEncoder(encoderType);
     encoder.setIndexBuffer(indexBuffer, 'uint32');
-
-    t.expectValidationError(() => {
-      if (state === 'destroyed') {
-        t.queue.submit([finish()]);
-      } else {
-        finish();
-      }
-    }, state !== 'valid');
+    validateFinishAndSubmitGivenState(state);
   });
+
+g.test('index_buffer,device_mismatch')
+  .desc('Tests setIndexBuffer cannot be called with an index buffer created from another device')
+  .paramsSubcasesOnly(kRenderEncodeTypeParams.combine('mismatched', [true, false]))
+  .unimplemented();
 
 g.test('index_buffer_usage')
   .desc(
@@ -60,12 +54,9 @@ Tests index buffer must have 'Index' usage.
       usage,
     });
 
-    const { encoder, finish } = t.createEncoder(encoderType);
+    const { encoder, validateFinish } = t.createEncoder(encoderType);
     encoder.setIndexBuffer(indexBuffer, 'uint32');
-
-    t.expectValidationError(() => {
-      finish();
-    }, (usage | GPUConst.BufferUsage.INDEX) !== usage);
+    validateFinish((usage & GPUBufferUsage.INDEX) !== 0);
   });
 
 g.test('offset_alignment')
@@ -88,14 +79,12 @@ Tests offset must be a multiple of index format’s byte size.
       usage: GPUBufferUsage.INDEX,
     });
 
-    const { encoder, finish } = t.createEncoder(encoderType);
+    const { encoder, validateFinish } = t.createEncoder(encoderType);
     encoder.setIndexBuffer(indexBuffer, indexFormat, offset);
 
     const alignment =
       indexFormat === 'uint16' ? Uint16Array.BYTES_PER_ELEMENT : Uint32Array.BYTES_PER_ELEMENT;
-    t.expectValidationError(() => {
-      finish();
-    }, offset % alignment !== 0);
+    validateFinish(offset % alignment === 0);
   });
 
 g.test('offset_and_size_oob')
@@ -112,10 +101,7 @@ Tests offset and size cannot be larger than index buffer size.
       usage: GPUBufferUsage.INDEX,
     });
 
-    const { encoder, finish } = t.createEncoder(encoderType);
+    const { encoder, validateFinish } = t.createEncoder(encoderType);
     encoder.setIndexBuffer(indexBuffer, 'uint32', offset, size);
-
-    t.expectValidationError(() => {
-      finish();
-    }, !_valid);
+    validateFinish(_valid);
   });

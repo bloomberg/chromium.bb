@@ -9,14 +9,14 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "build/build_config.h"
-#include "chrome/browser/web_applications/components/install_finalizer.h"
-#include "chrome/browser/web_applications/components/install_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/system_web_apps/test/test_system_web_app_manager.h"
 #include "chrome/browser/web_applications/test/test_web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_install_finalizer.h"
+#include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_switches.h"
@@ -26,8 +26,8 @@
 
 #if defined(OS_WIN) || defined(OS_MAC) || \
     (defined(OS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS))
-#include "chrome/browser/web_applications/components/os_integration_manager.h"
 #include "chrome/browser/web_applications/components/url_handler_manager.h"
+#include "chrome/browser/web_applications/os_integration_manager.h"
 #include "components/services/app_service/public/cpp/url_handler_info.h"
 #endif
 
@@ -72,7 +72,7 @@ AppId InstallDummyWebApp(Profile* profile,
   web_app_info.description = base::UTF8ToUTF16(app_name);
   web_app_info.open_as_window = true;
 
-  InstallFinalizer::FinalizeOptions options;
+  WebAppInstallFinalizer::FinalizeOptions options;
   options.install_source = webapps::WebappInstallSource::EXTERNAL_DEFAULT;
 
   // In unit tests, we do not have Browser or WebContents instances.
@@ -147,6 +147,21 @@ AppId InstallWebAppWithUrlHandlers(
   return app_id;
 }
 #endif
+
+void UninstallWebApp(Profile* profile, const AppId& app_id) {
+  WebAppProvider* const provider = WebAppProvider::Get(profile);
+  base::RunLoop run_loop;
+
+  DCHECK(provider->install_finalizer().CanUserUninstallWebApp(app_id));
+  provider->install_finalizer().UninstallWebApp(
+      app_id, webapps::WebappUninstallSource::kAppMenu,
+      base::BindLambdaForTesting([&](bool uninstalled) {
+        EXPECT_TRUE(uninstalled);
+        run_loop.Quit();
+      }));
+
+  run_loop.Run();
+}
 
 }  // namespace test
 }  // namespace web_app

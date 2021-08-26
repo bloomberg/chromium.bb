@@ -38,6 +38,7 @@ import org.robolectric.shadows.ShadowLog;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooksImpl;
 import org.chromium.chrome.browser.feed.shared.FeedFeatures;
 import org.chromium.chrome.browser.feed.shared.FeedSurfaceDelegate;
@@ -197,6 +198,7 @@ public class FeedSurfaceCoordinatorTest {
     @Before
     public void setUp() {
         mActivity = Robolectric.buildActivity(Activity.class).get();
+        mActivity.setTheme(R.style.ColorOverlay);
         mocker.mock(FeedStreamJni.TEST_HOOKS, mFeedStreamJniMock);
         mocker.mock(FeedServiceBridgeJni.TEST_HOOKS, mFeedServiceBridgeJniMock);
         mocker.mock(WebFeedBridge.getTestHooksForTesting(), mWebFeedBridgeJniMock);
@@ -311,7 +313,7 @@ public class FeedSurfaceCoordinatorTest {
 
     @Test
     public void testGetTabIdFromLaunchOrigin_unknown() {
-        assertEquals(FeedSurfaceCoordinator.StreamTabId.FOR_YOU,
+        assertEquals(FeedSurfaceCoordinator.StreamTabId.DEFAULT,
                 mCoordinator.getTabIdFromLaunchOrigin(NewTabPageLaunchOrigin.UNKNOWN));
     }
 

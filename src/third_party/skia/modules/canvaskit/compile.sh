@@ -72,7 +72,7 @@ if [[ $@ == *cpu* ]]; then
   echo "Using the CPU backend instead of the GPU backend"
   GN_GPU="skia_enable_gpu=false"
   GN_GPU_FLAGS=""
-  WASM_GPU="-DSK_SUPPORT_GPU=0 --pre-js $BASE_DIR/cpu.js -s USE_WEBGL2=0"
+  WASM_GPU="-DSK_SUPPORT_GPU=0 -DSK_ENABLE_SKSL --pre-js $BASE_DIR/cpu.js -s USE_WEBGL2=0"
 fi
 
 SKP_JS="--pre-js $BASE_DIR/skp.js"
@@ -212,7 +212,8 @@ FONT_CFLAGS+=" -DCANVASKIT_NO_ALIAS_FONT"
 fi
 
 GN_SHAPER="skia_use_icu=true skia_use_system_icu=false skia_use_harfbuzz=true skia_use_system_harfbuzz=false"
-SHAPER_LIB="$BUILD_DIR/libharfbuzz.a \
+SHAPER_LIB="$BUILD_DIR/libskunicode.a \
+            $BUILD_DIR/libharfbuzz.a \
             $BUILD_DIR/libicu.a"
 if [[ $@ == *primitive_shaper* ]] || [[ $@ == *no_font* ]]; then
   echo "Using the primitive shaper instead of the harfbuzz/icu one"

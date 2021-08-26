@@ -248,7 +248,7 @@ def bind_blink_api_arguments(code_node, cg_context):
 // https://heycam.github.io/webidl/#dfn-attribute-setter
 // step 4.6.1. Let S be ? ToString(V).
 const auto&& arg1_value_string =
-    NativeValueTraits<IDLStringV2>::NativeValue(
+    NativeValueTraits<IDLString>::NativeValue(
         ${isolate}, ${v8_property_value}, ${exception_state});
 if (UNLIKELY(${exception_state}.HadException()))
   return;
@@ -1184,8 +1184,9 @@ def _make_overload_dispatcher_per_arg_size(cg_context, items):
         dispatch_if("{value}->IsDataView()")
 
     # 12.7. if Type(V) is Object, V has a [[TypedArrayName]] internal slot, ...
-    typed_array_types = ("Int8Array", "Int16Array", "Int32Array", "Uint8Array",
-                         "Uint16Array", "Uint32Array", "Uint8ClampedArray",
+    typed_array_types = ("Int8Array", "Int16Array", "Int32Array",
+                         "BigInt64Array", "Uint8Array", "Uint16Array",
+                         "Uint32Array", "BigUint64Array", "Uint8ClampedArray",
                          "Float32Array", "Float64Array")
     for typed_array_type in typed_array_types:
         func_like = find(lambda t, u: u.keyword_typename == typed_array_type)
@@ -4756,10 +4757,23 @@ def _make_property_entry_v8_property_attribute(property_):
 
 
 def _make_property_entry_v8_side_effect(property_):
-    if property_.extended_attributes.value_of("Affects") == "Nothing":
+    value = property_.extended_attributes.value_of("Affects")
+    if value:
+        if value == "Everything":
+            return "unsigned(v8::SideEffectType::kHasSideEffect)"
+        elif value == "Nothing":
+            return "unsigned(v8::SideEffectType::kHasNoSideEffect)"
+        else:
+            assert False
+    elif isinstance(property_, web_idl.Attribute):
         return "unsigned(v8::SideEffectType::kHasNoSideEffect)"
-    else:
+    elif isinstance(property_, web_idl.Operation):
+        assert property_.identifier == "toString"
+        # The stringifier should have no side effect.
+        return "unsigned(v8::SideEffectType::kHasNoSideEffect)"
+    elif isinstance(property_, web_idl.OperationGroup):
         return "unsigned(v8::SideEffectType::kHasSideEffect)"
+    assert False
 
 
 def _make_property_entry_world(world):
@@ -6111,8 +6125,8 @@ def make_indexed_and_named_property_callbacks_and_install_node(cg_context):
         flags = ["v8::PropertyHandlerFlags::kOnlyInterceptStrings"]
         if "LegacyOverrideBuiltIns" not in interface.extended_attributes:
             flags.append("v8::PropertyHandlerFlags::kNonMasking")
-        if (props.named_getter.extended_attributes.value_of("Affects") ==
-                "Nothing"):
+        if (props.named_getter.extended_attributes.value_of("Affects") !=
+                "Everything"):
             flags.append("v8::PropertyHandlerFlags::kHasNoSideEffect")
         property_handler_flags = (
             "static_cast<v8::PropertyHandlerFlags>({})".format(" | ".join(
@@ -6170,8 +6184,9 @@ interface.indexed_and_named_properties.named_getter.extended_attributes:
                 props.named_setter and props.named_setter.owner,
                 props.named_deleter and props.named_deleter.owner))
         flags = []
-        if (props.indexed_getter and props.indexed_getter.extended_attributes.
-                value_of("Affects") == "Nothing"):
+        if (props.indexed_getter and
+                props.indexed_getter.extended_attributes.value_of("Affects") !=
+                "Everything"):
             flags.append("v8::PropertyHandlerFlags::kHasNoSideEffect")
         else:
             flags.append("v8::PropertyHandlerFlags::kNone")

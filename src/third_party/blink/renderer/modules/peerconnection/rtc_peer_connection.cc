@@ -249,24 +249,6 @@ SdpSemanticRequested GetSdpSemanticRequested(
   return kSdpSemanticRequestedDefault;
 }
 
-enum class OfferExtmapAllowMixedSetting {
-  kDefault,
-  kEnabled,
-  kDisabled,
-  kMaxValue = kDisabled
-};
-
-OfferExtmapAllowMixedSetting GetOfferExtmapAllowMixedSetting(
-    const blink::RTCConfiguration* configuration) {
-  if (!configuration->hasOfferExtmapAllowMixed()) {
-    return OfferExtmapAllowMixedSetting::kDefault;
-  }
-
-  return configuration->offerExtmapAllowMixed()
-             ? OfferExtmapAllowMixedSetting::kEnabled
-             : OfferExtmapAllowMixedSetting::kDisabled;
-}
-
 webrtc::PeerConnectionInterface::IceTransportsType IceTransportPolicyFromString(
     const String& policy) {
   if (policy == "relay")
@@ -367,20 +349,6 @@ webrtc::PeerConnectionInterface::RTCConfiguration ParseConfiguration(
     } else {
       web_configuration.sdp_semantics = webrtc::SdpSemantics::kUnifiedPlan;
     }
-  }
-
-  if (configuration->hasOfferExtmapAllowMixed()) {
-    web_configuration.offer_extmap_allow_mixed =
-        configuration->offerExtmapAllowMixed();
-    if (!web_configuration.offer_extmap_allow_mixed) {
-      // Only show a deprecation warning when set to false. The default
-      // is "true" as of M91.
-      Deprecation::CountDeprecation(
-          context, WebFeature::kRTCPeerConnectionOfferAllowExtmapMixedFalse);
-    }
-  } else {
-    web_configuration.offer_extmap_allow_mixed =
-        base::FeatureList::IsEnabled(features::kRTCOfferExtmapAllowMixed);
   }
 
   if (configuration->hasIceServers()) {
@@ -621,16 +589,38 @@ RTCSetSessionDescriptionOperation GetRTCVoidRequestOperationType(
     const RTCSessionDescriptionInit& description) {
   switch (operation) {
     case RTCPeerConnection::SetSdpOperationType::kSetLocalDescription:
-      if (description.type() == "offer")
-        return RTCSetSessionDescriptionOperation::kSetLocalDescriptionOffer;
-      if (description.type() == "answer" || description.type() == "pranswer")
-        return RTCSetSessionDescriptionOperation::kSetLocalDescriptionAnswer;
+      if (!description.hasType()) {
+        return RTCSetSessionDescriptionOperation::
+            kSetLocalDescriptionInvalidType;
+      }
+      switch (description.type().AsEnum()) {
+        case V8RTCSdpType::Enum::kOffer:
+          return RTCSetSessionDescriptionOperation::kSetLocalDescriptionOffer;
+        case V8RTCSdpType::Enum::kPranswer:
+        case V8RTCSdpType::Enum::kAnswer:
+          return RTCSetSessionDescriptionOperation::kSetLocalDescriptionAnswer;
+        case V8RTCSdpType::Enum::kRollback:
+          return RTCSetSessionDescriptionOperation::
+              kSetLocalDescriptionInvalidType;
+      }
+      NOTREACHED();
       return RTCSetSessionDescriptionOperation::kSetLocalDescriptionInvalidType;
     case RTCPeerConnection::SetSdpOperationType::kSetRemoteDescription:
-      if (description.type() == "offer")
-        return RTCSetSessionDescriptionOperation::kSetRemoteDescriptionOffer;
-      if (description.type() == "answer" || description.type() == "pranswer")
-        return RTCSetSessionDescriptionOperation::kSetRemoteDescriptionAnswer;
+      if (!description.hasType()) {
+        return RTCSetSessionDescriptionOperation::
+            kSetRemoteDescriptionInvalidType;
+      }
+      switch (description.type().AsEnum()) {
+        case V8RTCSdpType::Enum::kOffer:
+          return RTCSetSessionDescriptionOperation::kSetRemoteDescriptionOffer;
+        case V8RTCSdpType::Enum::kPranswer:
+        case V8RTCSdpType::Enum::kAnswer:
+          return RTCSetSessionDescriptionOperation::kSetRemoteDescriptionAnswer;
+        case V8RTCSdpType::Enum::kRollback:
+          return RTCSetSessionDescriptionOperation::
+              kSetRemoteDescriptionInvalidType;
+      }
+      NOTREACHED();
       return RTCSetSessionDescriptionOperation::
           kSetRemoteDescriptionInvalidType;
   }
@@ -746,11 +736,9 @@ RTCPeerConnection* RTCPeerConnection::Create(
 
   RTCPeerConnection* peer_connection = MakeGarbageCollected<RTCPeerConnection>(
       context, std::move(configuration), rtc_configuration->hasSdpSemantics(),
-      rtc_configuration->forceEncodedAudioInsertableStreams() ||
-          rtc_configuration->encodedInsertableStreams(),
-      rtc_configuration->forceEncodedVideoInsertableStreams() ||
-          rtc_configuration->encodedInsertableStreams(),
-      constraints, exception_state);
+      rtc_configuration->encodedInsertableStreams(),
+      rtc_configuration->encodedInsertableStreams(), constraints,
+      exception_state);
   if (exception_state.HadException())
     return nullptr;
 
@@ -769,9 +757,6 @@ RTCPeerConnection* RTCPeerConnection::Create(
     UseCounter::Count(context,
                       WebFeature::kRTCPeerConnectionConstructedWithUnifiedPlan);
   }
-
-  UMA_HISTOGRAM_ENUMERATION("WebRTC.PeerConnection.OfferExtmapAllowMixed",
-                            GetOfferExtmapAllowMixedSetting(rtc_configuration));
 
   return peer_connection;
 }
@@ -1443,17 +1428,22 @@ ScriptPromise RTCPeerConnection::setLocalDescription(
   String sdp = session_description_init->sdp();
   // https://w3c.github.io/webrtc-pc/#dom-peerconnection-setlocaldescription
   // step 4.4 and 4.5: If SDP is empty, return the last created offer or answer.
-  if (sdp.IsNull() || sdp.IsEmpty()) {
-    if (session_description_init->type() == "offer") {
-      sdp = last_offer_;
-    } else if (session_description_init->type() == "answer" ||
-               session_description_init->type() == "pranswer") {
-      sdp = last_answer_;
+  if (sdp.IsEmpty()) {
+    switch (session_description_init->type().AsEnum()) {
+      case V8RTCSdpType::Enum::kOffer:
+        sdp = last_offer_;
+        break;
+      case V8RTCSdpType::Enum::kPranswer:
+      case V8RTCSdpType::Enum::kAnswer:
+        sdp = last_answer_;
+        break;
+      case V8RTCSdpType::Enum::kRollback:
+        break;
     }
   }
   ParsedSessionDescription parsed_sdp =
       ParsedSessionDescription::Parse(session_description_init->type(), sdp);
-  if (session_description_init->type() != "rollback") {
+  if (session_description_init->type() != V8RTCSdpType::Enum::kRollback) {
     RecordSdpCategoryAndMaybeEmitWarnings(parsed_sdp);
     ReportSetSdpUsage(SetSdpOperationType::kSetLocalDescription, parsed_sdp);
 
@@ -1497,17 +1487,26 @@ ScriptPromise RTCPeerConnection::setLocalDescription(
   String sdp = session_description_init->sdp();
   // https://w3c.github.io/webrtc-pc/#dom-peerconnection-setlocaldescription
   // step 4.4 and 4.5: If SDP is empty, return the last created offer or answer.
-  if (sdp.IsNull() || sdp.IsEmpty()) {
-    if (session_description_init->type() == "offer") {
-      sdp = last_offer_;
-    } else if (session_description_init->type() == "answer" ||
-               session_description_init->type() == "pranswer") {
-      sdp = last_answer_;
+  if (sdp.IsEmpty() && session_description_init->hasType()) {
+    switch (session_description_init->type().AsEnum()) {
+      case V8RTCSdpType::Enum::kOffer:
+        sdp = last_offer_;
+        break;
+      case V8RTCSdpType::Enum::kPranswer:
+      case V8RTCSdpType::Enum::kAnswer:
+        sdp = last_answer_;
+        break;
+      case V8RTCSdpType::Enum::kRollback:
+        break;
     }
   }
-  ParsedSessionDescription parsed_sdp =
-      ParsedSessionDescription::Parse(session_description_init->type(), sdp);
-  if (session_description_init->type() != "rollback") {
+  ParsedSessionDescription parsed_sdp = ParsedSessionDescription::Parse(
+      session_description_init->hasType()
+          ? session_description_init->type().AsString()
+          : String(),
+      sdp);
+  if (!session_description_init->hasType() ||
+      session_description_init->type() != V8RTCSdpType::Enum::kRollback) {
     RecordSdpCategoryAndMaybeEmitWarnings(parsed_sdp);
     ReportSetSdpUsage(SetSdpOperationType::kSetLocalDescription, parsed_sdp);
   }
@@ -1529,7 +1528,8 @@ ScriptPromise RTCPeerConnection::setLocalDescription(
           WebFeature::
               kRTCPeerConnectionSetLocalDescriptionLegacyNoFailureCallback);
   }
-  if (session_description_init->type() != "rollback") {
+  if (!session_description_init->hasType() ||
+      session_description_init->type() != V8RTCSdpType::Enum::kRollback) {
     DOMException* exception = checkSdpForStateErrors(context, parsed_sdp);
     if (exception) {
       if (error_callback)
@@ -1575,8 +1575,7 @@ ScriptPromise RTCPeerConnection::setRemoteDescription(
   ParsedSessionDescription parsed_sdp =
       ParsedSessionDescription::Parse(session_description_init);
   if (!session_description_init->hasType() ||
-      session_description_init->type().AsEnum() !=
-          V8RTCSdpType::Enum::kRollback) {
+      session_description_init->type() != V8RTCSdpType::Enum::kRollback) {
     RecordSdpCategoryAndMaybeEmitWarnings(parsed_sdp);
     ReportSetSdpUsage(SetSdpOperationType::kSetRemoteDescription, parsed_sdp);
   }
@@ -1626,7 +1625,8 @@ ScriptPromise RTCPeerConnection::setRemoteDescription(
   DCHECK(script_state->ContextIsValid());
   ParsedSessionDescription parsed_sdp =
       ParsedSessionDescription::Parse(session_description_init);
-  if (session_description_init->type() != "rollback") {
+  if (!session_description_init->hasType() ||
+      session_description_init->type() != V8RTCSdpType::Enum::kRollback) {
     RecordSdpCategoryAndMaybeEmitWarnings(parsed_sdp);
     ReportSetSdpUsage(SetSdpOperationType::kSetRemoteDescription, parsed_sdp);
   }
@@ -2669,7 +2669,7 @@ RTCDataChannel* RTCPeerConnection::createDataChannel(
 
 MediaStreamTrack* RTCPeerConnection::GetTrack(
     MediaStreamComponent* component) const {
-  return tracks_.at(component);
+  return tracks_.DeprecatedAtOrEmptyValue(component);
 }
 
 RTCRtpSender* RTCPeerConnection::FindSenderForTrackAndStream(

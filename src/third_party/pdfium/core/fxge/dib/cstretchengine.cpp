@@ -7,6 +7,7 @@
 #include "core/fxge/dib/cstretchengine.h"
 
 #include <limits.h>
+#include <math.h>
 
 #include <algorithm>
 #include <type_traits>
@@ -20,7 +21,7 @@
 #include "core/fxge/dib/fx_dib.h"
 #include "core/fxge/dib/scanlinecomposer_iface.h"
 #include "third_party/base/check.h"
-#include "third_party/base/numerics/ranges.h"
+#include "third_party/base/cxx17_backports.h"
 
 static_assert(
     std::is_trivially_destructible<CStretchEngine::PixelWeight>::value,
@@ -127,6 +128,11 @@ bool CStretchEngine::WeightTable::CalculateWeights(
     int end_i = floor(std::max(src_start, src_end));
     start_i = std::max(start_i, src_min);
     end_i = std::min(end_i, src_max - 1);
+    if (start_i > end_i) {
+      start_i = std::min(start_i, src_max - 1);
+      pixel_weights.SetStartEnd(start_i, start_i, weight_count);
+      continue;
+    }
     pixel_weights.SetStartEnd(start_i, end_i, weight_count);
     uint32_t remaining = kFixedPointOne;
     double rounding_error = 0.0;

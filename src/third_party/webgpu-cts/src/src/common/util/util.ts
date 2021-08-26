@@ -7,7 +7,7 @@ import { timeout } from './timeout.js';
  * The extra data is omitted if not running the test in debug mode (`?debug=1`).
  */
 export class ErrorWithExtra extends Error {
-  readonly extra: {};
+  readonly extra: { [k: string]: unknown };
 
   /**
    * `extra` function is only called if in debug mode.
@@ -186,3 +186,27 @@ export type TypedArrayBufferViewConstructor<
   from<T>(arrayLike: ArrayLike<T>, mapfn: (v: T, k: number) => number, thisArg?: any): A;
   of(...items: number[]): A;
 };
+
+function subarrayAsU8(
+  buf: ArrayBuffer | TypedArrayBufferView,
+  { start = 0, length }: { start?: number; length?: number }
+): Uint8Array {
+  if (buf instanceof ArrayBuffer) {
+    return new Uint8Array(buf, start, length);
+  } else {
+    const sub = buf.subarray(start, length !== undefined ? start + length : undefined);
+    return new Uint8Array(sub.buffer, sub.byteOffset, sub.byteLength);
+  }
+}
+
+/**
+ * Copy a range of bytes from one ArrayBuffer or TypedArray to another.
+ *
+ * `start`/`length` are in elements (or in bytes, if ArrayBuffer).
+ */
+export function memcpy(
+  src: { src: ArrayBuffer | TypedArrayBufferView; start?: number; length?: number },
+  dst: { dst: ArrayBuffer | TypedArrayBufferView; start?: number }
+): void {
+  subarrayAsU8(dst.dst, dst).set(subarrayAsU8(src.src, src));
+}

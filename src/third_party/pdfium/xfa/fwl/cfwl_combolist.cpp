@@ -84,21 +84,18 @@ void CFWL_ComboList::OnProcessMessage(CFWL_Message* pMessage) {
       }
     }
     switch (pMsg->m_dwCmd) {
-      case FWL_MouseCommand::Move: {
+      case CFWL_MessageMouse::MouseCommand::kMove:
         backDefault = false;
         OnDropListMouseMove(pMsg);
         break;
-      }
-      case FWL_MouseCommand::LeftButtonDown: {
+      case CFWL_MessageMouse::MouseCommand::kLeftButtonDown:
         backDefault = false;
         OnDropListLButtonDown(pMsg);
         break;
-      }
-      case FWL_MouseCommand::LeftButtonUp: {
+      case CFWL_MessageMouse::MouseCommand::kLeftButtonUp:
         backDefault = false;
         OnDropListLButtonUp(pMsg);
         break;
-      }
       default:
         break;
     }
@@ -178,8 +175,8 @@ void CFWL_ComboList::OnDropListLButtonUp(CFWL_MessageMouse* pMsg) {
 bool CFWL_ComboList::OnDropListKey(CFWL_MessageKey* pKey) {
   CFWL_ComboBox* pOuter = static_cast<CFWL_ComboBox*>(GetOuter());
   bool bPropagate = false;
-  if (pKey->m_dwCmd == CFWL_MessageKey::Type::kKeyDown) {
-    uint32_t dwKeyCode = pKey->m_dwKeyCode;
+  if (pKey->m_dwCmd == CFWL_MessageKey::KeyCommand::kKeyDown) {
+    uint32_t dwKeyCode = pKey->m_dwKeyCodeOrChar;
     switch (dwKeyCode) {
       case XFA_FWL_VKEY_Return:
       case XFA_FWL_VKEY_Escape: {
@@ -197,7 +194,7 @@ bool CFWL_ComboList::OnDropListKey(CFWL_MessageKey* pKey) {
         break;
       }
     }
-  } else if (pKey->m_dwCmd == CFWL_MessageKey::Type::kChar) {
+  } else if (pKey->m_dwCmd == CFWL_MessageKey::KeyCommand::kChar) {
     bPropagate = true;
   }
   if (bPropagate) {
@@ -209,7 +206,7 @@ bool CFWL_ComboList::OnDropListKey(CFWL_MessageKey* pKey) {
 }
 
 void CFWL_ComboList::OnDropListKeyDown(CFWL_MessageKey* pKey) {
-  uint32_t dwKeyCode = pKey->m_dwKeyCode;
+  auto dwKeyCode = static_cast<XFA_FWL_VKEYCODE>(pKey->m_dwKeyCodeOrChar);
   switch (dwKeyCode) {
     case XFA_FWL_VKEY_Up:
     case XFA_FWL_VKEY_Down:

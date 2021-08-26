@@ -27,11 +27,11 @@ namespace dawn_native { namespace vulkan {
 
     namespace {
 
-        VkVertexInputRate VulkanInputRate(wgpu::InputStepMode stepMode) {
+        VkVertexInputRate VulkanInputRate(wgpu::VertexStepMode stepMode) {
             switch (stepMode) {
-                case wgpu::InputStepMode::Vertex:
+                case wgpu::VertexStepMode::Vertex:
                     return VK_VERTEX_INPUT_RATE_VERTEX;
-                case wgpu::InputStepMode::Instance:
+                case wgpu::VertexStepMode::Instance:
                     return VK_VERTEX_INPUT_RATE_INSTANCE;
             }
         }
@@ -341,22 +341,16 @@ namespace dawn_native { namespace vulkan {
 
         VkPipelineShaderStageCreateInfo shaderStages[2];
         {
-            if (device->IsToggleEnabled(Toggle::UseTintGenerator)) {
-                // Generate a new VkShaderModule with BindingRemapper tint transform for each
-                // pipeline
-                DAWN_TRY_ASSIGN(shaderStages[0].module,
-                                ToBackend(descriptor->vertex.module)
-                                    ->GetTransformedModuleHandle(descriptor->vertex.entryPoint,
-                                                                 ToBackend(GetLayout())));
-                DAWN_TRY_ASSIGN(shaderStages[1].module,
-                                ToBackend(descriptor->fragment->module)
-                                    ->GetTransformedModuleHandle(descriptor->fragment->entryPoint,
-                                                                 ToBackend(GetLayout())));
-            } else {
-                shaderStages[0].module = ToBackend(descriptor->vertex.module)->GetHandle();
-                shaderStages[1].module = ToBackend(descriptor->fragment->module)->GetHandle();
-            }
-
+            // Generate a new VkShaderModule with BindingRemapper tint transform for each
+            // pipeline
+            DAWN_TRY_ASSIGN(shaderStages[0].module,
+                            ToBackend(descriptor->vertex.module)
+                                ->GetTransformedModuleHandle(descriptor->vertex.entryPoint,
+                                                             ToBackend(GetLayout())));
+            DAWN_TRY_ASSIGN(shaderStages[1].module,
+                            ToBackend(descriptor->fragment->module)
+                                ->GetTransformedModuleHandle(descriptor->fragment->entryPoint,
+                                                             ToBackend(GetLayout())));
             shaderStages[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
             shaderStages[0].pNext = nullptr;
             shaderStages[0].flags = 0;

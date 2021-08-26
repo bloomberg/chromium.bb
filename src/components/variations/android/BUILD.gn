@@ -7,6 +7,7 @@ import("//build/config/android/rules.gni")
 android_library("variations_java") {
   deps = [
     "//base:base_java",
+    "//components/variations:variations_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
@@ -27,6 +28,7 @@ java_library("components_variations_junit_tests") {
     "//base:base_java",
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
+    "//components/variations:variations_java",
     "//third_party/android_deps:robolectric_all_java",
     "//third_party/hamcrest:hamcrest_java",
     "//third_party/junit",

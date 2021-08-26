@@ -4,7 +4,8 @@
 
 import {DiagnosticsBrowserProxy} from 'chrome://diagnostics/diagnostics_browser_proxy.js';
 
-import {TestBrowserProxy} from '../../test_browser_proxy.m.js';
+import {assertEquals} from '../../chai_assert.js';
+import {TestBrowserProxy} from '../../test_browser_proxy.js';
 
 /**
  * Test version of DiagnosticsBrowserProxy.
@@ -15,6 +16,7 @@ export class TestDiagnosticsBrowserProxy extends TestBrowserProxy {
     super([
       'initialize',
       'saveSessionLog',
+      'getPluralString',
     ]);
 
     /** @private {boolean} */
@@ -38,5 +40,16 @@ export class TestDiagnosticsBrowserProxy extends TestBrowserProxy {
   /** @param {boolean} success */
   setSuccess(success) {
     this.success_ = success;
+  }
+
+  /**
+   * @param {string} name
+   * @param {number} count
+   * @return {!Promise}
+   */
+  getPluralString(name, count) {
+    // TODO(michaelcheco): Remove when we have more than one plural string.
+    assertEquals(name, 'nameServersText');
+    return Promise.resolve(`Name Server${count !== 1 ? 's' : ''}`);
   }
 }

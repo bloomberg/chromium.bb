@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: git-reparent-branch
-.\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 08/10/2020
+.\"    Author: [FIXME: author] [see http://www.docbook.org/tdg5/en/html/author]
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 07/01/2021
 .\"    Manual: Chromium depot_tools Manual
-.\"    Source: depot_tools 8c3f7227
+.\"    Source: depot_tools 906b5026
 .\"  Language: English
 .\"
-.TH "GIT\-REPARENT\-BRANC" "1" "08/10/2020" "depot_tools 8c3f7227" "Chromium depot_tools Manual"
+.TH "GIT\-REPARENT\-BRANC" "1" "07/01/2021" "depot_tools 906b5026" "Chromium depot_tools Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -41,7 +41,7 @@ git-reparent-branch \- Alter the parentage (upstream) for the current branch\&.
 .sp
 Change the \fIupstream\fR of the current branch, and then run \fBgit-rebase-update\fR(1) to move the commits in the current branch, as well as the commits in all descendant branches, onto the new parent\&.
 .sp
-<new_parent> may be either a local branch, remote branch, OR a tag (such as lkgr)\&.
+\fB<new_parent>\fR may be either a local branch, remote branch, OR a tag (such as \fBlkgr\fR)\&.
 .sp
 This is particularly useful to reparent an independent CL to become dependent on another CL, or vice versa\&. This could happen if you started both on the assumption that they were independent, but later realized that this was not the case\&.
 .SH "OPTIONS"
@@ -61,7 +61,7 @@ Reparent to track lkgr\&.
 Reparent to track the
 \fIroot\fR
 branch\&. Defaults to
-\fIorigin/master\fR\&. See
+\fIorigin/main\fR\&. See
 \fBgit-new-branch\fR(1)\*(Aqs CONFIGURATION VARIABLES section\&.\&.
 .RE
 .SH "SUGGESTED ALIASES"

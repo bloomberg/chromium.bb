@@ -64,6 +64,12 @@ constexpr int kIndexChildItems = 2;
 constexpr int kIndexFolderHeader = 3;
 constexpr int kIndexPageSwitcher = 4;
 
+// Duration for fading in the target page when opening
+// or closing a folder, and the duration for the top folder icon animation
+// for flying in or out the folder.
+constexpr base::TimeDelta kFolderTransitionDuration =
+    base::TimeDelta::FromMilliseconds(250);
+
 // Transit from the background of the folder item's icon to the opened
 // folder's background when opening the folder. Transit the other way when
 // closing the folder.
@@ -96,8 +102,7 @@ class BackgroundAnimation : public AppListFolderView::Animation,
                               : folder_view_->folder_item_icon_bounds();
     to_rect -= background_view_->bounds().OffsetFromOrigin();
     const SkColor background_color =
-        AppListColorProvider::Get()->GetFolderBackgroundColor(
-            folder_view_->GetAppListConfig().folder_background_color());
+        AppListColorProvider::Get()->GetFolderBackgroundColor();
     const SkColor from_color =
         show_ ? AppListColorProvider::Get()->GetFolderBubbleColor()
               : background_color;
@@ -114,8 +119,7 @@ class BackgroundAnimation : public AppListFolderView::Animation,
 
     ui::ScopedLayerAnimationSettings settings(
         background_view_->layer()->GetAnimator());
-    settings.SetTransitionDuration(
-        folder_view_->GetAppListConfig().folder_transition_in_duration());
+    settings.SetTransitionDuration(kFolderTransitionDuration);
     settings.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
     settings.AddObserver(this);
     background_view_->layer()->SetColor(to_color);
@@ -165,8 +169,7 @@ class FolderItemTitleAnimation : public AppListFolderView::Animation,
                           folder_view_->GetAppListConfig().grid_title_color());
 
     animation_.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
-    animation_.SetSlideDuration(
-        folder_view_->GetAppListConfig().folder_transition_in_duration());
+    animation_.SetSlideDuration(kFolderTransitionDuration);
   }
 
   ~FolderItemTitleAnimation() override = default;
@@ -245,8 +248,7 @@ class TopIconAnimation : public AppListFolderView::Animation,
       const AppListItem* top_item =
           folder_view_->folder_item()->item_list()->item_at(i);
       if (top_item->GetIcon(folder_view_->GetAppListConfig().type()).isNull() ||
-          (folder_view_->items_grid_view()->drag_view() &&
-           top_item == folder_view_->items_grid_view()->drag_view()->item())) {
+          top_item == folder_view_->items_grid_view()->drag_item()) {
         // The item being dragged should be excluded.
         continue;
       }
@@ -269,7 +271,7 @@ class TopIconAnimation : public AppListFolderView::Animation,
       top_icon_views_.push_back(
           folder_view_->background_view()->AddChildView(std::move(icon_view)));
       icon_view_ptr->SetBoundsRect(first_page_item_views_bounds[i]);
-      icon_view_ptr->TransformView();
+      icon_view_ptr->TransformView(kFolderTransitionDuration);
     }
   }
 
@@ -402,8 +404,7 @@ class ContentsContainerAnimation : public AppListFolderView::Animation,
     ui::ScopedLayerAnimationSettings animation(layer->GetAnimator());
     animation.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
     animation.AddObserver(this);
-    animation.SetTransitionDuration(
-        folder_view_->GetAppListConfig().folder_transition_in_duration());
+    animation.SetTransitionDuration(kFolderTransitionDuration);
     layer->SetTransform(show_ ? gfx::Transform() : transform);
     layer->SetOpacity(show_ ? 1.0f : 0.0f);
 
@@ -488,8 +489,7 @@ AppListFolderView::AppListFolderView(AppsContainerView* container_view,
       contents_container_->AddChildView(std::make_unique<PageSwitcher>(
           items_grid_view_->pagination_model(), false /* vertical */,
           view_delegate->IsInTabletMode(),
-          AppListColorProvider::Get()->GetFolderBackgroundColor(
-              items_grid_view_->GetAppListConfig().folder_background_color())));
+          AppListColorProvider::Get()->GetFolderBackgroundColor()));
   view_model_->Add(page_switcher_, kIndexPageSwitcher);
 
   model_->AddObserver(this);
@@ -688,10 +688,12 @@ void AppListFolderView::OnTabletModeChanged(bool started) {
   page_switcher_->set_is_tablet_mode(started);
 }
 
-bool AppListFolderView::IsViewOutsideOfFolder(AppListItemView* view) {
-  gfx::Point point = view->GetLocalBounds().CenterPoint();
-  ConvertPointToTarget(view, this, &point);
-  return !GetLocalBounds().Contains(point);
+bool AppListFolderView::IsDragPointOutsideOfFolder(
+    const gfx::Point& drag_point) {
+  gfx::Point drag_point_in_folder = drag_point;
+  views::View::ConvertPointToTarget(items_grid_view_, this,
+                                    &drag_point_in_folder);
+  return !GetLocalBounds().Contains(drag_point_in_folder);
 }
 
 // When user drags a folder item out of the folder boundary ink bubble, the
@@ -707,8 +709,7 @@ bool AppListFolderView::IsViewOutsideOfFolder(AppListItemView* view) {
 // the top level grid view, until the drag ends.
 void AppListFolderView::ReparentItem(
     AppListItemView* original_drag_view,
-    const gfx::Point& drag_point_in_folder_grid,
-    bool has_native_drag) {
+    const gfx::Point& drag_point_in_folder_grid) {
   // Convert the drag point relative to the root level AppsGridView.
   gfx::Point to_root_level_grid = drag_point_in_folder_grid;
   ConvertPointToTarget(items_grid_view_, container_view_->apps_grid_view(),
@@ -716,8 +717,9 @@ void AppListFolderView::ReparentItem(
   // Ensures the icon updates to reflect that the icon has been removed during
   // the drag
   folder_item_->NotifyOfDraggedItem(original_drag_view->item());
-  StartSetupDragInRootLevelAppsGridView(original_drag_view, to_root_level_grid,
-                                        has_native_drag);
+  container_view_->apps_grid_view()
+      ->InitiateDragFromReparentItemInRootLevelGridView(original_drag_view,
+                                                        to_root_level_grid);
   container_view_->ReparentFolderItemTransit(folder_item_);
 }
 
@@ -725,10 +727,8 @@ void AppListFolderView::DispatchDragEventForReparent(
     AppsGridView::Pointer pointer,
     const gfx::Point& drag_point_in_folder_grid) {
   AppsGridView* root_grid = container_view_->apps_grid_view();
-  gfx::Point drag_point_in_root_grid(
-      GetMirroredXInView(drag_point_in_folder_grid.x()),
-      drag_point_in_folder_grid.y());
 
+  gfx::Point drag_point_in_root_grid = drag_point_in_folder_grid;
   // Temporarily reset the transform of the contents container so that the point
   // can be correctly converted to the root grid's coordinates.
   gfx::Transform original_transform = contents_container_->GetTransform();
@@ -736,16 +736,16 @@ void AppListFolderView::DispatchDragEventForReparent(
   ConvertPointToTarget(items_grid_view_, root_grid, &drag_point_in_root_grid);
   contents_container_->SetTransform(original_transform);
 
-  drag_point_in_root_grid.set_x(
-      root_grid->GetMirroredXInView(drag_point_in_root_grid.x()));
   root_grid->UpdateDragFromReparentItem(pointer, drag_point_in_root_grid);
 }
 
 void AppListFolderView::DispatchEndDragEventForReparent(
     bool events_forwarded_to_drag_drop_host,
-    bool cancel_drag) {
+    bool cancel_drag,
+    std::unique_ptr<AppDragIconProxy> drag_icon_proxy) {
   container_view_->apps_grid_view()->EndDragFromReparentItemInRootLevel(
-      events_forwarded_to_drag_drop_host, cancel_drag);
+      events_forwarded_to_drag_drop_host, cancel_drag,
+      std::move(drag_icon_proxy));
   container_view_->ReparentDragEnded();
 
   // The view was not hidden in order to keeping receiving mouse events. Hide it
@@ -791,10 +791,6 @@ void AppListFolderView::CloseFolderPage() {
 
 bool AppListFolderView::IsOEMFolder() const {
   return folder_item_->folder_type() == AppListFolderItem::FOLDER_TYPE_OEM;
-}
-
-void AppListFolderView::SetRootLevelDragViewVisible(bool visible) {
-  container_view_->apps_grid_view()->SetDragViewVisible(visible);
 }
 
 void AppListFolderView::HandleKeyboardReparent(AppListItemView* reparented_view,
@@ -862,23 +858,6 @@ void AppListFolderView::CalculateIdealBounds() {
       (page_switcher_size.height() - header_frame.height()) / 2);
   page_switcher_frame.set_size(page_switcher_size);
   view_model_->set_ideal_bounds(kIndexPageSwitcher, page_switcher_frame);
-}
-
-void AppListFolderView::StartSetupDragInRootLevelAppsGridView(
-    AppListItemView* original_drag_view,
-    const gfx::Point& drag_point_in_root_grid,
-    bool has_native_drag) {
-  // Converts the original_drag_view's bounds to the coordinate system of
-  // root level grid view.
-  gfx::RectF rect_f(original_drag_view->GetLocalBounds());
-  views::View::ConvertRectToTarget(original_drag_view,
-                                   container_view_->apps_grid_view(), &rect_f);
-  gfx::Rect rect_in_root_grid_view = gfx::ToEnclosingRect(rect_f);
-
-  container_view_->apps_grid_view()
-      ->InitiateDragFromReparentItemInRootLevelGridView(
-          original_drag_view, rect_in_root_grid_view, drag_point_in_root_grid,
-          has_native_drag);
 }
 
 ui::Compositor* AppListFolderView::GetCompositor() {

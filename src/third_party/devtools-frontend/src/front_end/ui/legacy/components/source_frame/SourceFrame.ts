@@ -35,11 +35,11 @@ import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Platform from '../../../../core/platform/platform.js';
 import * as Formatter from '../../../../models/formatter/formatter.js';
 import * as TextUtils from '../../../../models/text_utils/text_utils.js';
-import type * as Workspace from '../../../../models/workspace/workspace.js'; // eslint-disable-line no-unused-vars
+import type * as Workspace from '../../../../models/workspace/workspace.js';
 import * as UI from '../../legacy.js';
 
 import type {SourcesTextEditorDelegate} from './SourcesTextEditor.js';
-import {Events, SourcesTextEditor} from './SourcesTextEditor.js';  // eslint-disable-line no-unused-vars
+import {Events, SourcesTextEditor} from './SourcesTextEditor.js';
 
 const UIStrings = {
   /**
@@ -93,10 +93,7 @@ export class SourceFrameImpl extends UI.View.SimpleView implements UI.Searchable
   _lazyContent: () => Promise<TextUtils.ContentProvider.DeferredContent>;
   _pretty: boolean;
   _rawContent: string|null;
-  _formattedContentPromise: Promise<{
-    content: string,
-    map: Formatter.ScriptFormatter.FormatterSourceMapping,
-  }>|null;
+  _formattedContentPromise: Promise<Formatter.ScriptFormatter.FormattedContent>|null;
   _formattedMap: Formatter.ScriptFormatter.FormatterSourceMapping|null;
   _prettyToggle: UI.Toolbar.ToolbarToggle;
   _shouldAutoPrettyPrint: boolean;
@@ -229,8 +226,8 @@ export class SourceFrameImpl extends UI.View.SimpleView implements UI.Searchable
     let newSelection;
     if (this._pretty) {
       const formatInfo = await this._requestFormattedContent();
-      this._formattedMap = formatInfo.map;
-      this.setContent(formatInfo.content, null);
+      this._formattedMap = formatInfo.formattedMapping;
+      this.setContent(formatInfo.formattedContent, null);
       this._prettyCleanGeneration = this._textEditor.markClean();
       const start = this._rawToPrettyLocation(selection.startLine, selection.startColumn);
       const end = this._rawToPrettyLocation(selection.endLine, selection.endColumn);
@@ -436,24 +433,12 @@ export class SourceFrameImpl extends UI.View.SimpleView implements UI.Searchable
     }
   }
 
-  _requestFormattedContent(): Promise<{
-    content: string,
-    map: Formatter.ScriptFormatter.FormatterSourceMapping,
-  }> {
+  _requestFormattedContent(): Promise<Formatter.ScriptFormatter.FormattedContent> {
     if (this._formattedContentPromise) {
       return this._formattedContentPromise;
     }
-    let fulfill: (arg0: {
-      content: string,
-      map: Formatter.ScriptFormatter.FormatterSourceMapping,
-    }) => void;
-    this._formattedContentPromise = new Promise(x => {
-      fulfill = x;
-    });
-    new Formatter.ScriptFormatter.ScriptFormatter(
-        this._highlighterType, this._rawContent || '', async (content, map) => {
-          fulfill({content, map});
-        });
+    this._formattedContentPromise =
+        Formatter.ScriptFormatter.formatScriptContent(this._highlighterType, this._rawContent || '');
     return this._formattedContentPromise;
   }
 

@@ -31,6 +31,8 @@
 #include "components/sync/model/metadata_change_list.h"
 #include "components/sync/model/model_error.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
+#include "third_party/blink/public/mojom/manifest/capture_links.mojom.h"
+#include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -98,6 +100,55 @@ WebAppProto::CaptureLinks CaptureLinksToProto(
       return WebAppProto_CaptureLinks_NEW_CLIENT;
     case blink::mojom::CaptureLinks::kExistingClientNavigate:
       return WebAppProto_CaptureLinks_EXISTING_CLIENT_NAVIGATE;
+  }
+}
+
+LaunchHandler::RouteTo ProtoToLaunchHandlerRouteTo(
+    const LaunchHandlerProto::RouteTo& route_to) {
+  switch (route_to) {
+    case LaunchHandlerProto_RouteTo_UNSPECIFIED_ROUTE:
+    case LaunchHandlerProto_RouteTo_AUTO:
+      return LaunchHandler::RouteTo::kAuto;
+    case LaunchHandlerProto_RouteTo_NEW_CLIENT:
+      return LaunchHandler::RouteTo::kNewClient;
+    case LaunchHandlerProto_RouteTo_EXISTING_CLIENT:
+      return LaunchHandler::RouteTo::kExistingClient;
+  }
+}
+
+LaunchHandlerProto::RouteTo LaunchHandlerRouteToToProto(
+    const LaunchHandler::RouteTo& route_to) {
+  switch (route_to) {
+    case LaunchHandler::RouteTo::kAuto:
+      return LaunchHandlerProto_RouteTo_AUTO;
+    case LaunchHandler::RouteTo::kNewClient:
+      return LaunchHandlerProto_RouteTo_NEW_CLIENT;
+    case LaunchHandler::RouteTo::kExistingClient:
+      return LaunchHandlerProto_RouteTo_EXISTING_CLIENT;
+  }
+}
+
+LaunchHandler::NavigateExistingClient
+ProtoToLaunchHandlerNavigateExistingClient(
+    const LaunchHandlerProto::NavigateExistingClient&
+        navigate_existing_client) {
+  switch (navigate_existing_client) {
+    case LaunchHandlerProto_NavigateExistingClient_UNSPECIFIED_NAVIGATE:
+    case LaunchHandlerProto_NavigateExistingClient_ALWAYS:
+      return LaunchHandler::NavigateExistingClient::kAlways;
+    case LaunchHandlerProto_NavigateExistingClient_NEVER:
+      return LaunchHandler::NavigateExistingClient::kNever;
+  }
+}
+
+LaunchHandlerProto::NavigateExistingClient
+LaunchHandlerNavigateExistingClientToProto(
+    const LaunchHandler::NavigateExistingClient& navigate_existing_client) {
+  switch (navigate_existing_client) {
+    case LaunchHandler::NavigateExistingClient::kAlways:
+      return LaunchHandlerProto_NavigateExistingClient_ALWAYS;
+    case LaunchHandler::NavigateExistingClient::kNever:
+      return LaunchHandlerProto_NavigateExistingClient_NEVER;
   }
 }
 
@@ -244,7 +295,8 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
 
   local_data->set_user_run_on_os_login_mode(
       ToWebAppProtoRunOnOsLoginMode(web_app.run_on_os_login_mode()));
-  local_data->set_is_in_sync_install(web_app.is_in_sync_install());
+  local_data->set_is_from_sync_and_pending_installation(
+      web_app.is_from_sync_and_pending_installation());
 
   for (const WebApplicationIconInfo& icon_info : web_app.icon_infos())
     *(local_data->add_icon_infos()) = WebAppIconInfoToSyncProto(icon_info);
@@ -400,6 +452,17 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
       web_app.window_controls_overlay_enabled());
 
   local_data->set_is_storage_isolated(web_app.IsStorageIsolated());
+
+  if (web_app.launch_handler()) {
+    LaunchHandlerProto& launch_handler_proto =
+        *local_data->mutable_launch_handler();
+    launch_handler_proto.set_route_to(
+        LaunchHandlerRouteToToProto(web_app.launch_handler()->route_to));
+    launch_handler_proto.set_navigate_existing_client(
+        LaunchHandlerNavigateExistingClientToProto(
+            web_app.launch_handler()->navigate_existing_client));
+  }
+
   return local_data;
 }
 
@@ -548,8 +611,9 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
   if (local_data.has_background_color())
     web_app->SetBackgroundColor(local_data.background_color());
 
-  if (local_data.has_is_in_sync_install())
-    web_app->SetIsInSyncInstall(local_data.is_in_sync_install());
+  if (local_data.has_is_from_sync_and_pending_installation())
+    web_app->SetIsFromSyncAndPendingInstallation(
+        local_data.is_from_sync_and_pending_installation());
 
   if (local_data.has_last_badging_time()) {
     web_app->SetLastBadgingTime(
@@ -821,7 +885,25 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
     web_app->SetWindowControlsOverlayEnabled(
         local_data.window_controls_overlay_enabled());
   }
+
   web_app->SetStorageIsolated(local_data.is_storage_isolated());
+
+  if (local_data.has_launch_handler()) {
+    LaunchHandler launch_handler;
+    const LaunchHandlerProto& launch_handler_proto =
+        local_data.launch_handler();
+    if (launch_handler_proto.has_route_to()) {
+      launch_handler.route_to =
+          ProtoToLaunchHandlerRouteTo(launch_handler_proto.route_to());
+    }
+    if (launch_handler_proto.has_navigate_existing_client()) {
+      launch_handler.navigate_existing_client =
+          ProtoToLaunchHandlerNavigateExistingClient(
+              launch_handler_proto.navigate_existing_client());
+    }
+    web_app->SetLaunchHandler(std::move(launch_handler));
+  }
+
   return web_app;
 }
 

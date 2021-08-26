@@ -15,7 +15,6 @@
 #include "config/av1_rtcd.h"
 #include "config/aom_dsp_rtcd.h"
 #include "test/acm_random.h"
-#include "test/clear_system_state.h"
 #include "aom_ports/aom_timer.h"
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
@@ -190,7 +189,7 @@ class AV1ConvolveTest : public ::testing::TestWithParam<TestParam<T>> {
     rnd_.Reset(libaom_test::ACMRandom::DeterministicSeed());
   }
 
-  virtual void TearDown() override { libaom_test::ClearSystemState(); }
+  virtual void TearDown() override {}
 
   // Randomizes the 8-bit input buffer and returns a pointer to it. Note that
   // the pointer is safe to use with an 8-tap filter. The stride can range

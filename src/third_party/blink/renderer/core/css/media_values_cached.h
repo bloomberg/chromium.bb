@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_MEDIA_VALUES_CACHED_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_MEDIA_VALUES_CACHED_H_
 
+#include "services/device/public/mojom/device_posture_provider.mojom-blink.h"
 #include "third_party/blink/public/common/css/forced_colors.h"
 #include "third_party/blink/public/common/css/navigation_controls.h"
 #include "third_party/blink/public/mojom/css/preferred_color_scheme.mojom-blink.h"
@@ -31,6 +32,7 @@ class CORE_EXPORT MediaValuesCached final : public MediaValues {
     int device_width = 0;
     int device_height = 0;
     float device_pixel_ratio = 1.0;
+    bool device_supports_hdr = false;
     int color_bits_per_component = 24;
     int monochrome_bits_per_component = 0;
     mojom::blink::PointerType primary_pointer_type =
@@ -58,7 +60,8 @@ class CORE_EXPORT MediaValuesCached final : public MediaValues {
     ForcedColors forced_colors = ForcedColors::kNone;
     NavigationControls navigation_controls = NavigationControls::kNone;
     ScreenSpanning screen_spanning = ScreenSpanning::kNone;
-    DevicePosture device_posture = DevicePosture::kNoFold;
+    device::mojom::blink::DevicePostureType device_posture =
+        device::mojom::blink::DevicePostureType::kContinuous;
 
     MediaValuesCachedData();
     explicit MediaValuesCachedData(Document&);
@@ -70,6 +73,7 @@ class CORE_EXPORT MediaValuesCached final : public MediaValues {
       data.device_width = device_width;
       data.device_height = device_height;
       data.device_pixel_ratio = device_pixel_ratio;
+      data.device_supports_hdr = device_supports_hdr;
       data.color_bits_per_component = color_bits_per_component;
       data.monochrome_bits_per_component = monochrome_bits_per_component;
       data.primary_pointer_type = primary_pointer_type;
@@ -112,6 +116,7 @@ class CORE_EXPORT MediaValuesCached final : public MediaValues {
   int DeviceWidth() const override;
   int DeviceHeight() const override;
   float DevicePixelRatio() const override;
+  bool DeviceSupportsHDR() const override;
   int ColorBitsPerComponent() const override;
   int MonochromeBitsPerComponent() const override;
   mojom::blink::PointerType PrimaryPointerType() const override;
@@ -133,7 +138,7 @@ class CORE_EXPORT MediaValuesCached final : public MediaValues {
   ForcedColors GetForcedColors() const override;
   NavigationControls GetNavigationControls() const override;
   ScreenSpanning GetScreenSpanning() const override;
-  DevicePosture GetDevicePosture() const override;
+  device::mojom::blink::DevicePostureType GetDevicePosture() const override;
 
   void OverrideViewportDimensions(double width, double height) override;
 

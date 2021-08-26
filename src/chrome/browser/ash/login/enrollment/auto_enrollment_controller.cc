@@ -14,12 +14,15 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "build/branding_buildflags.h"
-#include "chrome/browser/ash/policy/core/browser_policy_connector_chromeos.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/policy/enrollment/auto_enrollment_client_impl.h"
+#include "chrome/browser/ash/policy/enrollment/private_membership/fake_private_membership_rlwe_client.h"
+#include "chrome/browser/ash/policy/enrollment/private_membership/private_membership_rlwe_client.h"
+#include "chrome/browser/ash/policy/enrollment/private_membership/private_membership_rlwe_client_impl.h"
+#include "chrome/browser/ash/policy/server_backed_state/server_backed_state_keys_broker.h"
 #include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/policy/server_backed_state/server_backed_state_keys_broker.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -179,8 +182,8 @@ bool IsGoogleBrandedChrome() {
 // Schedules immediate initialization of the `DeviceManagementService` and
 // returns it.
 policy::DeviceManagementService* InitializeAndGetDeviceManagementService() {
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  policy::BrowserPolicyConnectorAsh* connector =
+      g_browser_process->platform_part()->browser_policy_connector_ash();
   policy::DeviceManagementService* service =
       connector->device_management_service();
   service->ScheduleInitialization(0);
@@ -368,6 +371,12 @@ bool AutoEnrollmentController::IsPsmEnabled() {
 }
 
 // static
+bool AutoEnrollmentController::ShouldUseFakePsmRlweClient() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnterpriseUseFakePsmRlweClient);
+}
+
+// static
 bool AutoEnrollmentController::IsEnabled() {
   return IsFREEnabled() || IsInitialEnrollmentEnabled();
 }
@@ -401,7 +410,17 @@ AutoEnrollmentController::GetFRERequirement() {
 }
 
 AutoEnrollmentController::AutoEnrollmentController()
-    : system_clock_sync_waiter_(std::make_unique<SystemClockSyncWaiter>()) {}
+    : system_clock_sync_waiter_(std::make_unique<SystemClockSyncWaiter>()) {
+  // Create the PSM RLWE client factory depending on whether
+  // switches::kEnterpriseUseFakePsmRlweClient is set.
+  if (ShouldUseFakePsmRlweClient()) {
+    psm_rlwe_client_factory_ = std::make_unique<
+        policy::FakePrivateMembershipRlweClient::FactoryImpl>();
+  } else {
+    psm_rlwe_client_factory_ = std::make_unique<
+        policy::PrivateMembershipRlweClientImpl::FactoryImpl>();
+  }
+}
 
 AutoEnrollmentController::~AutoEnrollmentController() {}
 
@@ -643,7 +662,7 @@ void AutoEnrollmentController::OnOwnershipStatusCheckDone(
           ++request_state_keys_tries_;
           // For FRE, request state keys first.
           g_browser_process->platform_part()
-              ->browser_policy_connector_chromeos()
+              ->browser_policy_connector_ash()
               ->GetStateKeysBroker()
               ->RequestStateKeys(
                   base::BindOnce(&AutoEnrollmentController::StartClientForFRE,
@@ -686,7 +705,7 @@ void AutoEnrollmentController::StartClientForFRE(
       // Retry to fetch the state keys. For devices where FRE is required to be
       // checked, we can't proceed with empty state keys.
       g_browser_process->platform_part()
-          ->browser_policy_connector_chromeos()
+          ->browser_policy_connector_ash()
           ->GetStateKeysBroker()
           ->RequestStateKeys(
               base::BindOnce(&AutoEnrollmentController::StartClientForFRE,
@@ -757,7 +776,8 @@ void AutoEnrollmentController::StartClientForInitialEnrollment() {
       g_browser_process->system_network_context_manager()
           ->GetSharedURLLoaderFactory(),
       serial_number, rlz_brand_code, power_initial, power_limit,
-      kInitialEnrollmentModulusPowerOutdatedServer);
+      kInitialEnrollmentModulusPowerOutdatedServer,
+      psm_rlwe_client_factory_.get());
 
   LOG(WARNING) << "Starting auto-enrollment client for Initial Enrollment.";
   client_->Start();

@@ -6,14 +6,11 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_BREAKOUT_BOX_PUSHABLE_MEDIA_STREAM_VIDEO_SOURCE_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 
 namespace blink {
-
-class MediaStreamVideoTrackSignalObserver;
 
 // Simplifies the creation of video tracks.  Just do this:
 // auto source = std::make_unique<PushableMediaStreamVideoSource>();
@@ -71,9 +68,6 @@ class MODULES_EXPORT PushableMediaStreamVideoSource
 
   explicit PushableMediaStreamVideoSource(
       scoped_refptr<base::SingleThreadTaskRunner>);
-  PushableMediaStreamVideoSource(
-      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-      const base::WeakPtr<MediaStreamVideoSource>& upstream_source);
   ~PushableMediaStreamVideoSource() override;
 
   // See the definition of VideoCaptureDeliverFrameCB in
@@ -89,20 +83,12 @@ class MODULES_EXPORT PushableMediaStreamVideoSource
   scoped_refptr<Broker> GetBroker() const { return broker_; }
 
   // MediaStreamVideoSource
-  void RequestRefreshFrame() override;
-  void OnFrameDropped(media::VideoCaptureFrameDropReason reason) override;
-  VideoCaptureFeedbackCB GetFeedbackCallback() const override;
   void StartSourceImpl(VideoCaptureDeliverFrameCB frame_callback,
                        EncodedVideoFrameCB encoded_frame_callback) override;
   void StopSourceImpl() override;
   base::WeakPtr<MediaStreamVideoSource> GetWeakPtr() const override;
 
-  VideoCaptureFeedbackCB GetInternalFeedbackCallback() const;
-  void SetSignalObserver(MediaStreamVideoTrackSignalObserver*);
-
  private:
-  base::WeakPtr<MediaStreamVideoSource> upstream_source_;
-  WeakPersistent<MediaStreamVideoTrackSignalObserver> signal_observer_;
   scoped_refptr<Broker> broker_;
   base::WeakPtrFactory<MediaStreamVideoSource> weak_factory_{this};
 };

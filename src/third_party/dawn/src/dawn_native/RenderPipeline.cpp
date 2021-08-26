@@ -15,34 +15,38 @@
 #include "dawn_native/RenderPipeline.h"
 
 #include "common/BitSetIterator.h"
-#include "common/VertexFormatUtils.h"
 #include "dawn_native/ChainUtils_autogen.h"
 #include "dawn_native/Commands.h"
 #include "dawn_native/Device.h"
 #include "dawn_native/ObjectContentHasher.h"
 #include "dawn_native/ValidationUtils_autogen.h"
+#include "dawn_native/VertexFormat.h"
 
 #include <cmath>
+#include <sstream>
 
 namespace dawn_native {
     // Helper functions
     namespace {
 
-        MaybeError ValidateVertexAttribute(DeviceBase* device,
-                                           const VertexAttribute* attribute,
-                                           uint64_t vertexBufferStride,
-                                           std::bitset<kMaxVertexAttributes>* attributesSetMask) {
+        MaybeError ValidateVertexAttribute(
+            DeviceBase* device,
+            const VertexAttribute* attribute,
+            const EntryPointMetadata& metadata,
+            uint64_t vertexBufferStride,
+            ityp::bitset<VertexAttributeLocation, kMaxVertexAttributes>* attributesSetMask) {
             DAWN_TRY(ValidateVertexFormat(attribute->format));
+            const VertexFormatInfo& formatInfo = GetVertexFormatInfo(attribute->format);
 
             if (attribute->shaderLocation >= kMaxVertexAttributes) {
                 return DAWN_VALIDATION_ERROR("Setting attribute out of bounds");
             }
+            VertexAttributeLocation location(static_cast<uint8_t>(attribute->shaderLocation));
 
             // No underflow is possible because the max vertex format size is smaller than
             // kMaxVertexBufferArrayStride.
-            ASSERT(kMaxVertexBufferArrayStride >= dawn::VertexFormatSize(attribute->format));
-            if (attribute->offset >
-                kMaxVertexBufferArrayStride - dawn::VertexFormatSize(attribute->format)) {
+            ASSERT(kMaxVertexBufferArrayStride >= formatInfo.byteSize);
+            if (attribute->offset > kMaxVertexBufferArrayStride - formatInfo.byteSize) {
                 return DAWN_VALIDATION_ERROR("Setting attribute offset out of bounds");
             }
 
@@ -50,29 +54,35 @@ namespace dawn_native {
             // than kMaxVertexBufferArrayStride.
             ASSERT(attribute->offset < kMaxVertexBufferArrayStride);
             if (vertexBufferStride > 0 &&
-                attribute->offset + dawn::VertexFormatSize(attribute->format) >
-                    vertexBufferStride) {
+                attribute->offset + formatInfo.byteSize > vertexBufferStride) {
                 return DAWN_VALIDATION_ERROR("Setting attribute offset out of bounds");
             }
 
-            if (attribute->offset % dawn::VertexFormatComponentSize(attribute->format) != 0) {
+            if (attribute->offset % std::min(4u, formatInfo.byteSize) != 0) {
                 return DAWN_VALIDATION_ERROR(
-                    "Attribute offset needs to be a multiple of the size format's components");
+                    "Attribute offset needs to be a multiple of min(4, formatSize)");
             }
 
-            if ((*attributesSetMask)[attribute->shaderLocation]) {
+            if (metadata.usedVertexInputs[location] &&
+                formatInfo.baseType != metadata.vertexInputBaseTypes[location]) {
+                return DAWN_VALIDATION_ERROR(
+                    "Attribute base type must match the base type in the shader.");
+            }
+
+            if ((*attributesSetMask)[location]) {
                 return DAWN_VALIDATION_ERROR("Setting already set attribute");
             }
 
-            attributesSetMask->set(attribute->shaderLocation);
+            attributesSetMask->set(location);
             return {};
         }
 
         MaybeError ValidateVertexBufferLayout(
             DeviceBase* device,
             const VertexBufferLayout* buffer,
-            std::bitset<kMaxVertexAttributes>* attributesSetMask) {
-            DAWN_TRY(ValidateInputStepMode(buffer->stepMode));
+            const EntryPointMetadata& metadata,
+            ityp::bitset<VertexAttributeLocation, kMaxVertexAttributes>* attributesSetMask) {
+            DAWN_TRY(ValidateVertexStepMode(buffer->stepMode));
             if (buffer->arrayStride > kMaxVertexBufferArrayStride) {
                 return DAWN_VALIDATION_ERROR("Setting arrayStride out of bounds");
             }
@@ -83,7 +93,7 @@ namespace dawn_native {
             }
 
             for (uint32_t i = 0; i < buffer->attributeCount; ++i) {
-                DAWN_TRY(ValidateVertexAttribute(device, &buffer->attributes[i],
+                DAWN_TRY(ValidateVertexAttribute(device, &buffer->attributes[i], metadata,
                                                  buffer->arrayStride, attributesSetMask));
             }
 
@@ -101,10 +111,15 @@ namespace dawn_native {
                 return DAWN_VALIDATION_ERROR("Vertex buffer count exceeds maximum");
             }
 
-            std::bitset<kMaxVertexAttributes> attributesSetMask;
+            DAWN_TRY(ValidateProgrammableStage(device, descriptor->module, descriptor->entryPoint,
+                                               layout, SingleShaderStage::Vertex));
+            const EntryPointMetadata& vertexMetadata =
+                descriptor->module->GetEntryPoint(descriptor->entryPoint);
+
+            ityp::bitset<VertexAttributeLocation, kMaxVertexAttributes> attributesSetMask;
             uint32_t totalAttributesNum = 0;
             for (uint32_t i = 0; i < descriptor->bufferCount; ++i) {
-                DAWN_TRY(ValidateVertexBufferLayout(device, &descriptor->buffers[i],
+                DAWN_TRY(ValidateVertexBufferLayout(device, &descriptor->buffers[i], vertexMetadata,
                                                     &attributesSetMask));
                 totalAttributesNum += descriptor->buffers[i].attributeCount;
             }
@@ -115,11 +130,7 @@ namespace dawn_native {
             // attribute number never exceed kMaxVertexAttributes.
             ASSERT(totalAttributesNum <= kMaxVertexAttributes);
 
-            DAWN_TRY(ValidateProgrammableStage(device, descriptor->module, descriptor->entryPoint,
-                                               layout, SingleShaderStage::Vertex));
-            const EntryPointMetadata& vertexMetadata =
-                descriptor->module->GetEntryPoint(descriptor->entryPoint);
-            if (!IsSubset(vertexMetadata.usedVertexAttributes, attributesSetMask)) {
+            if (!IsSubset(vertexMetadata.usedVertexInputs, attributesSetMask)) {
                 return DAWN_VALIDATION_ERROR(
                     "Pipeline vertex stage uses vertex buffers not in the vertex state");
             }
@@ -242,10 +253,17 @@ namespace dawn_native {
             return {};
         }
 
-        MaybeError ValidateColorTargetState(DeviceBase* device,
-                                            const ColorTargetState* descriptor,
-                                            bool fragmentWritten,
-                                            wgpu::TextureComponentType fragmentOutputBaseType) {
+        bool BlendFactorContainsSrcAlpha(const wgpu::BlendFactor& blendFactor) {
+            return blendFactor == wgpu::BlendFactor::SrcAlpha ||
+                   blendFactor == wgpu::BlendFactor::OneMinusSrcAlpha ||
+                   blendFactor == wgpu::BlendFactor::SrcAlphaSaturated;
+        }
+
+        MaybeError ValidateColorTargetState(
+            DeviceBase* device,
+            const ColorTargetState* descriptor,
+            bool fragmentWritten,
+            const EntryPointMetadata::FragmentOutputVariableInfo& fragmentOutputVariable) {
             if (descriptor->nextInChain != nullptr) {
                 return DAWN_VALIDATION_ERROR("nextInChain must be nullptr");
             }
@@ -261,10 +279,42 @@ namespace dawn_native {
             if (!format->IsColor() || !format->isRenderable) {
                 return DAWN_VALIDATION_ERROR("Color format must be color renderable");
             }
-            if (fragmentWritten &&
-                fragmentOutputBaseType != format->GetAspectInfo(Aspect::Color).baseType) {
+            if (descriptor->blend && !(format->GetAspectInfo(Aspect::Color).supportedSampleTypes &
+                                       SampleTypeBit::Float)) {
                 return DAWN_VALIDATION_ERROR(
-                    "Color format must match the fragment stage output type");
+                    "Color format must be blendable when blending is enabled");
+            }
+            if (fragmentWritten) {
+                if (fragmentOutputVariable.baseType !=
+                    format->GetAspectInfo(Aspect::Color).baseType) {
+                    return DAWN_VALIDATION_ERROR(
+                        "Color format must match the fragment stage output type");
+                }
+
+                if (fragmentOutputVariable.componentCount < format->componentCount) {
+                    return DAWN_VALIDATION_ERROR(
+                        "The fragment stage output components count must be no fewer than the "
+                        "color format channel count");
+                }
+
+                if (descriptor->blend) {
+                    if (fragmentOutputVariable.componentCount < 4u) {
+                        // No alpha channel output
+                        // Make sure there's no alpha involved in the blending operation
+                        if (BlendFactorContainsSrcAlpha(descriptor->blend->color.srcFactor) ||
+                            BlendFactorContainsSrcAlpha(descriptor->blend->color.dstFactor)) {
+                            return DAWN_VALIDATION_ERROR(
+                                "Color blending factor is reading alpha but it is missing from "
+                                "fragment output");
+                        }
+                    }
+                }
+            } else {
+                if (descriptor->writeMask != wgpu::ColorWriteMask::None) {
+                    return DAWN_VALIDATION_ERROR(
+                        "writeMask must be zero for color targets with no corresponding fragment "
+                        "stage output");
+                }
             }
 
             return {};
@@ -288,10 +338,53 @@ namespace dawn_native {
                 descriptor->module->GetEntryPoint(descriptor->entryPoint);
             for (ColorAttachmentIndex i(uint8_t(0));
                  i < ColorAttachmentIndex(static_cast<uint8_t>(descriptor->targetCount)); ++i) {
-                DAWN_TRY(
-                    ValidateColorTargetState(device, &descriptor->targets[static_cast<uint8_t>(i)],
-                                             fragmentMetadata.fragmentOutputsWritten[i],
-                                             fragmentMetadata.fragmentOutputFormatBaseTypes[i]));
+                DAWN_TRY(ValidateColorTargetState(device,
+                                                  &descriptor->targets[static_cast<uint8_t>(i)],
+                                                  fragmentMetadata.fragmentOutputsWritten[i],
+                                                  fragmentMetadata.fragmentOutputVariables[i]));
+            }
+
+            return {};
+        }
+
+        MaybeError ValidateInterStageMatching(DeviceBase* device,
+                                              const VertexState& vertexState,
+                                              const FragmentState& fragmentState) {
+            const EntryPointMetadata& vertexMetadata =
+                vertexState.module->GetEntryPoint(vertexState.entryPoint);
+            const EntryPointMetadata& fragmentMetadata =
+                fragmentState.module->GetEntryPoint(fragmentState.entryPoint);
+
+            if (vertexMetadata.usedInterStageVariables !=
+                fragmentMetadata.usedInterStageVariables) {
+                return DAWN_VALIDATION_ERROR(
+                    "One or more fragment inputs and vertex outputs are not one-to-one matching");
+            }
+
+            auto generateErrorString = [](const char* interStageAttribute, size_t location) {
+                std::ostringstream stream;
+                stream << "The " << interStageAttribute << " of the vertex output at location "
+                       << location
+                       << " is different from the one of the fragment input at the same location";
+                return stream.str();
+            };
+            // TODO(dawn:802): Validate interpolation types and interpolition sampling types
+            for (size_t i : IterateBitSet(vertexMetadata.usedInterStageVariables)) {
+                const auto& vertexOutputInfo = vertexMetadata.interStageVariables[i];
+                const auto& fragmentInputInfo = fragmentMetadata.interStageVariables[i];
+                if (vertexOutputInfo.baseType != fragmentInputInfo.baseType) {
+                    return DAWN_VALIDATION_ERROR(generateErrorString("base type", i));
+                }
+                if (vertexOutputInfo.componentCount != fragmentInputInfo.componentCount) {
+                    return DAWN_VALIDATION_ERROR(generateErrorString("componentCount", i));
+                }
+                if (vertexOutputInfo.interpolationType != fragmentInputInfo.interpolationType) {
+                    return DAWN_VALIDATION_ERROR(generateErrorString("interpolation type", i));
+                }
+                if (vertexOutputInfo.interpolationSampling !=
+                    fragmentInputInfo.interpolationSampling) {
+                    return DAWN_VALIDATION_ERROR(generateErrorString("interpolation sampling", i));
+                }
             }
 
             return {};
@@ -347,6 +440,8 @@ namespace dawn_native {
             return DAWN_VALIDATION_ERROR("Should have at least one color target or a depthStencil");
         }
 
+        DAWN_TRY(ValidateInterStageMatching(device, descriptor->vertex, *(descriptor->fragment)));
+
         return {};
     }
 
@@ -395,6 +490,16 @@ namespace dawn_native {
             mVertexBufferSlotsUsed.set(typedSlot);
             mVertexBufferInfos[typedSlot].arrayStride = buffers[slot].arrayStride;
             mVertexBufferInfos[typedSlot].stepMode = buffers[slot].stepMode;
+            switch (buffers[slot].stepMode) {
+                case wgpu::VertexStepMode::Vertex:
+                    mVertexBufferSlotsUsedAsVertexBuffer.set(typedSlot);
+                    break;
+                case wgpu::VertexStepMode::Instance:
+                    mVertexBufferSlotsUsedAsInstanceBuffer.set(typedSlot);
+                    break;
+                default:
+                    DAWN_UNREACHABLE();
+            }
 
             for (uint32_t i = 0; i < buffers[slot].attributeCount; ++i) {
                 VertexAttributeLocation location = VertexAttributeLocation(
@@ -492,6 +597,18 @@ namespace dawn_native {
     RenderPipelineBase::GetVertexBufferSlotsUsed() const {
         ASSERT(!IsError());
         return mVertexBufferSlotsUsed;
+    }
+
+    const ityp::bitset<VertexBufferSlot, kMaxVertexBuffers>&
+    RenderPipelineBase::GetVertexBufferSlotsUsedAsVertexBuffer() const {
+        ASSERT(!IsError());
+        return mVertexBufferSlotsUsedAsVertexBuffer;
+    }
+
+    const ityp::bitset<VertexBufferSlot, kMaxVertexBuffers>&
+    RenderPipelineBase::GetVertexBufferSlotsUsedAsInstanceBuffer() const {
+        ASSERT(!IsError());
+        return mVertexBufferSlotsUsedAsInstanceBuffer;
     }
 
     const VertexBufferInfo& RenderPipelineBase::GetVertexBuffer(VertexBufferSlot slot) const {

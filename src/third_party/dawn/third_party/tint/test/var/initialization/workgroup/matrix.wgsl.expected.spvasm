@@ -5,38 +5,39 @@
 ; Schema: 0
                OpCapability Shader
                OpMemoryModel Logical GLSL450
-               OpEntryPoint GLCompute %main "main" %tint_symbol
+               OpEntryPoint GLCompute %main "main" %local_invocation_index_1
                OpExecutionMode %main LocalSize 1 1 1
+               OpName %local_invocation_index_1 "local_invocation_index_1"
                OpName %v "v"
-               OpName %tint_symbol "tint_symbol"
+               OpName %main_inner "main_inner"
+               OpName %local_invocation_index "local_invocation_index"
                OpName %main "main"
-               OpDecorate %tint_symbol BuiltIn LocalInvocationIndex
+               OpDecorate %local_invocation_index_1 BuiltIn LocalInvocationIndex
+       %uint = OpTypeInt 32 0
+%_ptr_Input_uint = OpTypePointer Input %uint
+%local_invocation_index_1 = OpVariable %_ptr_Input_uint Input
       %float = OpTypeFloat 32
     %v3float = OpTypeVector %float 3
 %mat2v3float = OpTypeMatrix %v3float 2
 %_ptr_Workgroup_mat2v3float = OpTypePointer Workgroup %mat2v3float
           %v = OpVariable %_ptr_Workgroup_mat2v3float Workgroup
-       %uint = OpTypeInt 32 0
-%_ptr_Input_uint = OpTypePointer Input %uint
-%tint_symbol = OpVariable %_ptr_Input_uint Input
        %void = OpTypeVoid
-          %9 = OpTypeFunction %void
-     %uint_0 = OpConstant %uint 0
-       %bool = OpTypeBool
-         %19 = OpConstantNull %mat2v3float
+          %9 = OpTypeFunction %void %uint
+         %14 = OpConstantNull %mat2v3float
      %uint_2 = OpConstant %uint 2
    %uint_264 = OpConstant %uint 264
-       %main = OpFunction %void None %9
-         %12 = OpLabel
-         %13 = OpLoad %uint %tint_symbol
-         %15 = OpIEqual %bool %13 %uint_0
-               OpSelectionMerge %17 None
-               OpBranchConditional %15 %18 %17
-         %18 = OpLabel
-               OpStore %v %19
-               OpBranch %17
-         %17 = OpLabel
+         %20 = OpTypeFunction %void
+ %main_inner = OpFunction %void None %9
+%local_invocation_index = OpFunctionParameter %uint
+         %13 = OpLabel
+               OpStore %v %14
                OpControlBarrier %uint_2 %uint_2 %uint_264
-         %24 = OpLoad %mat2v3float %v
+         %19 = OpLoad %mat2v3float %v
+               OpReturn
+               OpFunctionEnd
+       %main = OpFunction %void None %20
+         %22 = OpLabel
+         %24 = OpLoad %uint %local_invocation_index_1
+         %23 = OpFunctionCall %void %main_inner %24
                OpReturn
                OpFunctionEnd

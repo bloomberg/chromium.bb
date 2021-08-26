@@ -100,7 +100,7 @@ struct SingleSubstFormat1
 		  unsigned delta)
   {
     TRACE_SERIALIZE (this);
-    if (unlikely (!c->extend_min (*this))) return_trace (false);
+    if (unlikely (!c->extend_min (this))) return_trace (false);
     if (unlikely (!coverage.serialize_serialize (c, glyphs))) return_trace (false);
     c->check_assign (deltaGlyphID, delta, HB_SERIALIZE_ERROR_INT_OVERFLOW);
     return_trace (true);
@@ -209,7 +209,7 @@ struct SingleSubstFormat2
       + it
       | hb_map_retains_sorting (hb_first)
       ;
-    if (unlikely (!c->extend_min (*this))) return_trace (false);
+    if (unlikely (!c->extend_min (this))) return_trace (false);
     if (unlikely (!substitute.serialize (c, substitutes))) return_trace (false);
     if (unlikely (!coverage.serialize_serialize (c, glyphs))) return_trace (false);
     return_trace (true);
@@ -343,9 +343,14 @@ struct Sequence
 
     unsigned int klass = _hb_glyph_info_is_ligature (&c->buffer->cur()) ?
 			 HB_OT_LAYOUT_GLYPH_PROPS_BASE_GLYPH : 0;
+    unsigned lig_id = _hb_glyph_info_get_lig_id (&c->buffer->cur());
 
-    for (unsigned int i = 0; i < count; i++) {
-      _hb_glyph_info_set_lig_props_for_component (&c->buffer->cur(), i);
+    for (unsigned int i = 0; i < count; i++)
+    {
+      /* If is attached to a ligature, don't disturb that.
+       * https://github.com/harfbuzz/harfbuzz/issues/3069 */
+      if (!lig_id)
+	_hb_glyph_info_set_lig_props_for_component (&c->buffer->cur(), i);
       c->output_glyph_for_component (substitute.arrayZ[i], klass);
     }
     c->buffer->skip_glyph ();
@@ -408,7 +413,6 @@ struct MultipleSubstFormat1
     | hb_map (hb_add (this))
     | hb_apply ([c] (const Sequence &_) { _.closure (c); })
     ;
-
   }
 
   void closure_lookups (hb_closure_lookups_context_t *c) const {}
@@ -444,7 +448,7 @@ struct MultipleSubstFormat1
 		  hb_array_t<const HBGlyphID> substitute_glyphs_list)
   {
     TRACE_SERIALIZE (this);
-    if (unlikely (!c->extend_min (*this))) return_trace (false);
+    if (unlikely (!c->extend_min (this))) return_trace (false);
     if (unlikely (!sequence.serialize (c, glyphs.length))) return_trace (false);
     for (unsigned int i = 0; i < glyphs.length; i++)
     {
@@ -559,7 +563,12 @@ struct AlternateSet
 
     /* If alt_index is MAX_VALUE, randomize feature if it is the rand feature. */
     if (alt_index == HB_OT_MAP_MAX_VALUE && c->random)
+    {
+      /* Maybe we can do better than unsafe-to-break all; but since we are
+       * changing random state, it would be hard to track that.  Good 'nough. */
+      c->buffer->unsafe_to_break_all ();
       alt_index = c->random_number () % count + 1;
+    }
 
     if (unlikely (alt_index > count || alt_index == 0)) return_trace (false);
 
@@ -682,7 +691,7 @@ struct AlternateSubstFormat1
 		  hb_array_t<const HBGlyphID> alternate_glyphs_list)
   {
     TRACE_SERIALIZE (this);
-    if (unlikely (!c->extend_min (*this))) return_trace (false);
+    if (unlikely (!c->extend_min (this))) return_trace (false);
     if (unlikely (!alternateSet.serialize (c, glyphs.length))) return_trace (false);
     for (unsigned int i = 0; i < glyphs.length; i++)
     {
@@ -846,7 +855,7 @@ struct Ligature
 		  Iterator components /* Starting from second */)
   {
     TRACE_SERIALIZE (this);
-    if (unlikely (!c->extend_min (*this))) return_trace (false);
+    if (unlikely (!c->extend_min (this))) return_trace (false);
     ligGlyph = ligature;
     if (unlikely (!component.serialize (c, components))) return_trace (false);
     return_trace (true);
@@ -945,7 +954,7 @@ struct LigatureSet
 		  hb_array_t<const HBGlyphID> &component_list /* Starting from second for each ligature */)
   {
     TRACE_SERIALIZE (this);
-    if (unlikely (!c->extend_min (*this))) return_trace (false);
+    if (unlikely (!c->extend_min (this))) return_trace (false);
     if (unlikely (!ligature.serialize (c, ligatures.length))) return_trace (false);
     for (unsigned int i = 0; i < ligatures.length; i++)
     {
@@ -1057,7 +1066,7 @@ struct LigatureSubstFormat1
 		  hb_array_t<const HBGlyphID> component_list /* Starting from second for each ligature */)
   {
     TRACE_SERIALIZE (this);
-    if (unlikely (!c->extend_min (*this))) return_trace (false);
+    if (unlikely (!c->extend_min (this))) return_trace (false);
     if (unlikely (!ligatureSet.serialize (c, first_glyphs.length))) return_trace (false);
     for (unsigned int i = 0; i < first_glyphs.length; i++)
     {

@@ -2375,6 +2375,10 @@ bool OutputHLSL::visitAggregate(Visit visit, TIntermAggregate *node)
 
             bool lod0 = (mInsideDiscontinuousLoop || mOutputLod0Function) &&
                         mShaderType == GL_FRAGMENT_SHADER;
+
+            // No raw function is expected.
+            ASSERT(node->getOp() != EOpCallInternalRawFunction);
+
             if (node->getOp() == EOpCallFunctionInAST)
             {
                 if (node->isArray())
@@ -2388,12 +2392,6 @@ bool OutputHLSL::visitAggregate(Visit visit, TIntermAggregate *node)
                 out << DecorateFunctionIfNeeded(node->getFunction());
                 out << DisambiguateFunctionName(node->getSequence());
                 out << (lod0 ? "Lod0(" : "(");
-            }
-            else if (node->getOp() == EOpCallInternalRawFunction)
-            {
-                // This path is used for internal functions that don't have their definitions in the
-                // AST, such as precision emulation functions.
-                out << DecorateFunctionIfNeeded(node->getFunction()) << "(";
             }
             else if (node->getFunction()->isImageFunction())
             {
@@ -3228,7 +3226,7 @@ void OutputHLSL::writeParameter(const TVariable *param, TInfoSinkBase &out)
         if (mOutputType == SH_HLSL_4_1_OUTPUT)
         {
             // Samplers are passed as indices to the sampler array.
-            ASSERT(qualifier != EvqOut && qualifier != EvqInOut);
+            ASSERT(qualifier != EvqParamOut && qualifier != EvqParamInOut);
             out << "const uint " << nameStr << ArrayString(type);
             return;
         }
@@ -3259,7 +3257,7 @@ void OutputHLSL::writeParameter(const TVariable *param, TInfoSinkBase &out)
     // separate parameters. HLSL doesn't natively support samplers in structs.
     if (type.isStructureContainingSamplers())
     {
-        ASSERT(qualifier != EvqOut && qualifier != EvqInOut);
+        ASSERT(qualifier != EvqParamOut && qualifier != EvqParamInOut);
         TVector<const TVariable *> samplerSymbols;
         std::string namePrefix = "angle";
         namePrefix += nameStr.c_str();

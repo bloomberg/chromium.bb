@@ -7,14 +7,17 @@
 #include "base/run_loop.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/chrome_safe_browsing_blocking_page_factory.h"
-#include "chrome/browser/safe_browsing/ui_manager.h"
+#include "chrome/browser/safe_browsing/chrome_ui_manager_delegate.h"
+#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/content/browser/client_side_detection_service.h"
+#include "components/safe_browsing/content/browser/ui_manager.h"
 #include "components/safe_browsing/core/common/proto/client_model.pb.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/mock_navigation_handle.h"
@@ -77,8 +80,9 @@ class MockSafeBrowsingUIManager : public SafeBrowsingUIManager {
  public:
   MockSafeBrowsingUIManager()
       : SafeBrowsingUIManager(
-            nullptr,
-            std::make_unique<ChromeSafeBrowsingBlockingPageFactory>()) {}
+            std::make_unique<ChromeSafeBrowsingUIManagerDelegate>(),
+            std::make_unique<ChromeSafeBrowsingBlockingPageFactory>(),
+            GURL(chrome::kChromeUINewTabURL)) {}
 
   MOCK_METHOD1(DisplayBlockingPage, void(const UnsafeResource& resource));
 
@@ -172,8 +176,12 @@ class ClientSideDetectionHostPrerenderBrowserTest
   ClientSideDetectionHostPrerenderBrowserTest& operator=(
       const ClientSideDetectionHostPrerenderBrowserTest&) = delete;
 
+  void SetUp() override {
+    prerender_helper_.SetUp(embedded_test_server());
+    ClientSideDetectionHostBrowserTest::SetUp();
+  }
+
   void SetUpOnMainThread() override {
-    prerender_helper_.SetUpOnMainThread(embedded_test_server());
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(embedded_test_server()->Start());
     ClientSideDetectionHostBrowserTest::SetUpOnMainThread();

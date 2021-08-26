@@ -34,7 +34,6 @@ import android.widget.TextView;
 
 import androidx.test.espresso.NoMatchingRootException;
 import androidx.test.espresso.intent.Intents;
-import androidx.test.espresso.intent.rule.IntentsTestRule;
 import androidx.test.filters.MediumTest;
 
 import org.junit.After;
@@ -49,7 +48,6 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
-import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.tab_ui.R;
@@ -92,12 +90,9 @@ public class PriceTrackingDialogTest {
                                                           .setRevision(RENDER_TEST_REVISION)
                                                           .build();
 
-    @Rule
-    public IntentsTestRule<ChromeActivity> mIntentTestRule =
-            new IntentsTestRule<>(ChromeActivity.class, false, false);
-
     @Before
     public void setUp() throws Exception {
+        Intents.init();
         PriceTrackingUtilities.setIsSignedInAndSyncEnabledForTesting(true);
         mActivityTestRule.startMainActivityOnBlankPage();
         CriteriaHelper.pollUiThread(
@@ -111,12 +106,13 @@ public class PriceTrackingDialogTest {
     public void tearDown() {
         PriceTrackingUtilities.setIsSignedInAndSyncEnabledForTesting(null);
         ActivityTestUtils.clearActivityOrientation(mActivityTestRule.getActivity());
+        Intents.release();
     }
 
     @Test
     @MediumTest
     @CommandLineFlags.Add({BASE_PARAMS})
-    @FlakyTest(message = "https://crbug.com/1213194")
+    @Restriction(Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testShowAndHidePriceTrackingDialog() {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
 
@@ -169,7 +165,6 @@ public class PriceTrackingDialogTest {
     @MediumTest
     @CommandLineFlags.Add({BASE_PARAMS + "/enable_price_notification/true"})
     public void testPriceAlertsButton() {
-        Intents.init();
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
 
         MenuUtils.invokeCustomMenuActionSync(
@@ -183,7 +178,6 @@ public class PriceTrackingDialogTest {
         } else {
             intended(hasAction(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS));
         }
-        Intents.release();
     }
 
     @Test
@@ -228,6 +222,7 @@ public class PriceTrackingDialogTest {
     @MediumTest
     @Feature({"RenderTest"})
     @CommandLineFlags.Add({BASE_PARAMS + "/enable_price_notification/true"})
+    @FlakyTest(message = "https://crbug.com/1233364")
     public void testRenderPriceTrackingDialog_Landscape() throws IOException {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
 

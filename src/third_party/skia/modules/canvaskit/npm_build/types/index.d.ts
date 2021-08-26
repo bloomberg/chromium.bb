@@ -61,7 +61,7 @@ export interface CanvasKit {
      * In the CanvasKit canvas2d shim layer, we provide this map for processing
      * canvas2d calls, but not here for code size reasons.
      */
-    parseColorString(color: string, colorMap?: object): Color;
+    parseColorString(color: string, colorMap?: Record<string, Color>): Color;
 
     /**
      * Returns a copy of the passed in color with a new alpha value applied.
@@ -436,7 +436,6 @@ export interface CanvasKit {
     readonly ColorType: ColorTypeEnumValues;
     readonly FillType: FillTypeEnumValues;
     readonly FilterMode: FilterModeEnumValues;
-    readonly FilterQuality: FilterQualityEnumValues;
     readonly FontEdging: FontEdgingEnumValues;
     readonly FontHinting: FontHintingEnumValues;
     readonly GlyphRunFlags: GlyphRunFlagValues;
@@ -580,7 +579,7 @@ export interface EmulatedCanvas2D {
      * @param bytes
      * @param descriptors
      */
-    loadFont(bytes: ArrayBuffer | Uint8Array, descriptors: object): void;
+    loadFont(bytes: ArrayBuffer | Uint8Array, descriptors: Record<string, string>): void;
 
     /**
      * Returns an new emulated Path2D object.
@@ -730,6 +729,15 @@ export interface MallocObj {
 }
 
 /**
+ * This represents a subset of an animation's duration.
+ */
+export interface AnimationMarker {
+    name: string;
+    t0: number; // 0.0 to 1.0
+    t1: number; // 0.0 to 1.0
+}
+
+/**
  * This object maintains a single audio layer during skottie playback
  */
 export interface AudioPlayer {
@@ -813,7 +821,7 @@ export interface ManagedSkottieAnimation extends SkottieAnimation {
     setColor(key: string, color: InputColor): boolean;
     setOpacity(key: string, opacity: number): boolean;
     setText(key: string, text: string, size: number): boolean;
-    getMarkers(): object[];
+    getMarkers(): AnimationMarker[];
     getColorProps(): ColorProperty[];
     getOpacityProps(): OpacityProperty[];
     getTextProps(): TextProperty[];
@@ -2319,7 +2327,15 @@ export interface Path extends EmbindObject<Path> {
     lineTo(x: number, y: number): Path;
 
     /**
-     * Adds begininning of contour at the given point.
+     * Returns a new path that covers the same area as the original path, but with the
+     * Winding FillType. This may re-draw some contours in the path as counter-clockwise
+     * instead of clockwise to achieve that effect. If such a transformation cannot
+     * be done, null is returned.
+     */
+    makeAsWinding(): Path | null;
+
+    /**
+     * Adds beginning of contour at the given point.
      * Returns the modified path for easier chaining.
      * @param x
      * @param y
@@ -3219,10 +3235,10 @@ export interface ImageFilterFactory {
      * local space, which means it effectively happens prior to any transformation coming from the
      * Canvas initiating the filtering.
      * @param matr
-     * @param fq
+     * @param sampling
      * @param input - if null, it will use the dynamic source image (e.g. a saved layer)
      */
-    MakeMatrixTransform(matr: InputMatrix, fq: FilterQuality,
+    MakeMatrixTransform(matr: InputMatrix, sampling: FilterOptions | CubicResampler,
                         input: ImageFilter | null): ImageFilter;
 }
 
@@ -3777,7 +3793,6 @@ export type ColorType = EmbindEnumEntity;
 export type EncodedImageFormat = EmbindEnumEntity;
 export type FillType = EmbindEnumEntity;
 export type FilterMode = EmbindEnumEntity;
-export type FilterQuality = EmbindEnumEntity;
 export type FontEdging = EmbindEnumEntity;
 export type FontHinting = EmbindEnumEntity;
 export type MipmapMode = EmbindEnumEntity;
@@ -3902,13 +3917,6 @@ export interface FillTypeEnumValues extends EmbindEnum {
 export interface FilterModeEnumValues extends EmbindEnum {
     Linear: FilterMode;
     Nearest: FilterMode;
-}
-
-export interface FilterQualityEnumValues extends EmbindEnum {
-    None: FilterQuality;
-    Low: FilterQuality;
-    Medium: FilterQuality;
-    High: FilterQuality;
 }
 
 export interface FontEdgingEnumValues extends EmbindEnum {

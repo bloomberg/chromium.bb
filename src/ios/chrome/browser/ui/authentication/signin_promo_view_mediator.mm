@@ -22,11 +22,10 @@
 #import "ios/chrome/browser/ui/authentication/signin/signin_utils.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
+#import "ios/chrome/browser/ui/signin/signin_presenter.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
-#import "ios/public/provider/chrome/browser/signin/signin_presenter.h"
-#import "ios/public/provider/chrome/browser/signin/signin_resources_provider.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -499,7 +498,6 @@ const char* AlreadySeenSigninViewPreferenceKey(
 
 - (void)signinPromoViewIsRemoved {
   DCHECK_NE(ios::SigninPromoViewState::Invalid, self.signinPromoViewState);
-  DCHECK(!self.signinInProgress);
   BOOL wasNeverVisible =
       self.signinPromoViewState == ios::SigninPromoViewState::NeverVisible;
   BOOL wasUnused =
@@ -606,12 +604,14 @@ const char* AlreadySeenSigninViewPreferenceKey(
 
 // Finishes the sign-in process.
 - (void)signinCallback {
+  if (self.signinPromoViewState == ios::SigninPromoViewState::Invalid) {
+    // The mediator owner can remove the view before the sign-in is done.
+    return;
+  }
   DCHECK_EQ(ios::SigninPromoViewState::UsedAtLeastOnce,
             self.signinPromoViewState);
   DCHECK(self.signinInProgress);
   self.signinInProgress = NO;
-  if ([self.consumer respondsToSelector:@selector(signinDidFinish)])
-    [self.consumer signinDidFinish];
 }
 
 // Starts sign-in process with the Chrome identity from |identity|.
@@ -620,8 +620,15 @@ const char* AlreadySeenSigninViewPreferenceKey(
   self.signinPromoViewState = ios::SigninPromoViewState::UsedAtLeastOnce;
   self.signinInProgress = YES;
   __weak SigninPromoViewMediator* weakSelf = self;
+  // This mediator might be removed before the sign-in callback is invoked.
+  // (if the owner receive primary account notification).
+  // To make sure -[<SigninPromoViewConsumer> signinDidFinish], we have to save
+  // in a variable and not get it from weakSelf (that might not exist anymore).
+  __weak id<SigninPromoViewConsumer> weakConsumer = self.consumer;
   ShowSigninCommandCompletionCallback completion = ^(BOOL succeeded) {
     [weakSelf signinCallback];
+    if ([weakConsumer respondsToSelector:@selector(signinDidFinish)])
+      [weakConsumer signinDidFinish];
   };
   if ([self.consumer respondsToSelector:@selector
                      (signinPromoViewMediator:shouldOpenSigninWithIdentity

@@ -79,7 +79,7 @@ class InheritedCustomPropertyChecker
     return DataEquivalent(inherited_value_.Get(), inherited_value);
   }
 
-  const AtomicString& name_;
+  AtomicString name_;
   const bool is_inherited_property_;
   Persistent<const CSSValue> inherited_value_;
   Persistent<const CSSValue> initial_value_;
@@ -89,17 +89,18 @@ class ResolvedRegisteredCustomPropertyChecker
     : public InterpolationType::ConversionChecker {
  public:
   ResolvedRegisteredCustomPropertyChecker(
-      const CSSCustomPropertyDeclaration& declaration,
+      const PropertyHandle& property,
+      const CSSValue& value,
       scoped_refptr<CSSVariableData> resolved_tokens)
-      : declaration_(declaration),
+      : property_(property),
+        value_(value),
         resolved_tokens_(std::move(resolved_tokens)) {}
 
  private:
   bool IsValid(const InterpolationEnvironment& environment,
                const InterpolationValue&) const final {
     const auto& css_environment = To<CSSInterpolationEnvironment>(environment);
-    const CSSValue* resolved = css_environment.Resolve(
-        PropertyHandle(declaration_->GetName()), declaration_);
+    const CSSValue* resolved = css_environment.Resolve(property_, value_);
     scoped_refptr<CSSVariableData> resolved_tokens;
     if (const auto* decl = DynamicTo<CSSCustomPropertyDeclaration>(resolved))
       resolved_tokens = decl->Value();
@@ -107,7 +108,8 @@ class ResolvedRegisteredCustomPropertyChecker
     return DataEquivalent(resolved_tokens, resolved_tokens_);
   }
 
-  Persistent<const CSSCustomPropertyDeclaration> declaration_;
+  PropertyHandle property_;
+  Persistent<const CSSValue> value_;
   scoped_refptr<CSSVariableData> resolved_tokens_;
 };
 
@@ -210,8 +212,7 @@ InterpolationValue CSSInterpolationType::MaybeConvertCustomPropertyDeclaration(
   const auto& css_environment = To<CSSInterpolationEnvironment>(environment);
   const StyleResolverState& state = css_environment.GetState();
 
-  const AtomicString& name = declaration.GetName();
-  DCHECK_EQ(GetProperty().CustomPropertyName(), name);
+  AtomicString name = GetProperty().CustomPropertyName();
 
   const CSSValue* value = &declaration;
   value = css_environment.Resolve(GetProperty(), value);
@@ -228,7 +229,7 @@ InterpolationValue CSSInterpolationType::MaybeConvertCustomPropertyDeclaration(
     if (resolved_declaration != &declaration) {
       conversion_checkers.push_back(
           std::make_unique<ResolvedRegisteredCustomPropertyChecker>(
-              declaration, resolved_declaration->Value()));
+              GetProperty(), declaration, resolved_declaration->Value()));
     }
   }
 
@@ -333,7 +334,7 @@ void CSSInterpolationType::ApplyCustomPropertyValue(
   // TODO(andruud): Avoid making the CSSCustomPropertyDeclaration by allowing
   // any CSSValue in CustomProperty::ApplyValue.
   const CSSValue* value = MakeGarbageCollected<CSSCustomPropertyDeclaration>(
-      property.CustomPropertyName(), std::move(variable_data));
+      std::move(variable_data));
   StyleBuilder::ApplyProperty(GetProperty().GetCSSPropertyName(), state,
                               ScopedCSSValue(*value, nullptr));
 }

@@ -26,10 +26,13 @@
 #include "chrome/browser/ash/login/saml/password_sync_token_checkers_collection.h"
 #include "chrome/browser/ash/login/screens/encryption_migration_mode.h"
 #include "chrome/browser/ash/login/session/user_session_manager.h"
+// TODO(https://crbug.com/1164001): move to forward declaration.
+#include "chrome/browser/ash/login/signin/oauth2_token_initializer.h"
 #include "chrome/browser/ash/login/ui/login_display.h"
+// TODO(https://crbug.com/1164001): move to forward declaration
+#include "chrome/browser/ash/login/ui/signin_ui.h"
 // TODO(https://crbug.com/1164001): move CrosSettings to forward declaration
 // when moved to chrome/browser/ash/.
-#include "chrome/browser/ash/login/ui/signin_ui.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chromeos/login/auth/login_performer.h"
@@ -50,9 +53,6 @@ class ListValue;
 }
 
 namespace chromeos {
-class LoginDisplay;
-class OAuth2TokenInitializer;
-
 namespace login {
 class NetworkStateHelper;
 }
@@ -140,6 +140,9 @@ class ExistingUserController : public LoginDisplay::Delegate,
   bool IsAutoLoginTimerRunningForTesting() const {
     return auto_login_timer_ && auto_login_timer_->IsRunning();
   }
+
+  // Get account id used in last login attempt.
+  AccountId GetLastLoginAttemptAccountId() const;
 
   // Extracts out users allowed on login screen.
   static user_manager::UserList ExtractLoginUsers(

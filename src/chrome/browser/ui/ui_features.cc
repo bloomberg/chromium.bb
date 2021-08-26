@@ -77,6 +77,9 @@ const base::Feature kReadLaterNewBadgePromo{"ReadLaterNewBadgePromo",
 const base::Feature kReadLaterAddFromDialog{"ReadLaterAddFromDialog",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kSidePanelDragAndDrop{"SidePanelDragAndDrop",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables tabs to scroll in the tabstrip. https://crbug.com/951078
 const base::Feature kScrollableTabStrip{"ScrollableTabStrip",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
@@ -97,15 +100,6 @@ const base::Feature kSettingsLandingPageRedesign{
 // Updated managed profile sign-in popup. https://crbug.com/1141224
 const base::Feature kSyncConfirmationUpdatedText{
     "SyncConfirmationUpdatedText", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Sign-in functionality in the profile creation flow. https://crbug.com/1126913
-const base::Feature kSignInProfileCreation{"SignInProfileCreation",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Smoother enterprise experience in the sign-in profile creation flow.
-// https://crbug.com/1178494
-const base::Feature kSignInProfileCreationEnterprise{
-    "SignInProfileCreationEnterprise", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Automatically create groups for users based on domain.
 // https://crbug.com/1128703
@@ -144,6 +138,9 @@ const char kTabHoverCardImagesLoadingDelayParameterName[] =
 const char kTabHoverCardImagesLoadedDelayParameterName[] = "page_loaded_delay";
 const char kTabHoverCardImagesCrossfadePreviewAtParameterName[] =
     "crossfade_preview_at";
+const char kTabHoverCardAdditionalMaxWidthDelay[] =
+    "additional_max_width_delay";
+const char kTabHoverCardAlternateFormat[] = "alternate_format";
 
 // Enables tab outlines in additional situations for accessibility.
 const base::Feature kTabOutlinesInLowContrastThemes{
@@ -223,15 +220,18 @@ const base::Feature kWebUIDownloadShelf{"WebUIDownloadShelf",
 const base::Feature kWebUITabStrip{"WebUITabStrip",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Whether the new tab button is in the tab strip or the toolbar when WebUI tab
-// strip is enabled.
-const base::Feature kWebUITabStripNewTabButtonInTabStrip{
-    "WebUITabStripNewTabButtonInTabStrip", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kWebUITabStripContextMenuAfterTap{
+    "WebUITabStripContextMenuAfterTap", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables a WebUI Feedback UI, as opposed to the Chrome App UI. See
 // https://crbug.com/1167223.
 const base::Feature kWebUIFeedback{"WebUIFeedback",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
+#if defined(OS_CHROMEOS)
+const base::Feature kChromeOSTabSearchCaptionButton{
+    "ChromeOSTabSearchCaptionButton", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
 #if defined(OS_MAC)
 // Enabled an experiment which increases the prominence to grant MacOS system

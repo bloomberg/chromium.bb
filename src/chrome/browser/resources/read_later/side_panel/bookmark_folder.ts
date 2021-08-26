@@ -5,7 +5,7 @@
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 
-import {getFaviconForPageURL} from 'chrome://resources/js/icon.m.js';
+import {getFaviconForPageURL} from 'chrome://resources/js/icon.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {ReadLaterApiProxy, ReadLaterApiProxyImpl} from '../read_later_api_proxy.js';
@@ -13,7 +13,7 @@ import {ReadLaterApiProxy, ReadLaterApiProxyImpl} from '../read_later_api_proxy.
 import {BookmarksApiProxy} from './bookmarks_api_proxy.js';
 
 /** Event interface for dom-repeat. */
-interface RepeaterMouseEvent extends CustomEvent {
+interface RepeaterMouseEvent extends MouseEvent {
   clientX: number;
   clientY: number;
   model: {
@@ -73,9 +73,21 @@ export class BookmarkFolderElement extends PolymerElement {
   openFolders: string[];
   private bookmarksApi_: BookmarksApiProxy = BookmarksApiProxy.getInstance();
 
+  static get observers() {
+    return [
+      'onChildrenLengthChanged_(folder.children.length)',
+    ];
+  }
+
   private onBookmarkClick_(event: RepeaterMouseEvent) {
     event.preventDefault();
-    this.bookmarksApi_.openBookmark(event.model.item.url!, this.depth);
+    this.bookmarksApi_.openBookmark(event.model.item.url!, this.depth, {
+      middleButton: event.type === 'auxclick',
+      altKey: event.altKey,
+      ctrlKey: event.ctrlKey,
+      metaKey: event.metaKey,
+      shiftKey: event.shiftKey,
+    });
   }
 
   private onBookmarkContextMenu_(event: RepeaterMouseEvent) {
@@ -84,14 +96,25 @@ export class BookmarkFolderElement extends PolymerElement {
         event.model.item.id, event.clientX, event.clientY);
   }
 
+  private onFolderContextMenu_(event: MouseEvent) {
+    event.preventDefault();
+    this.bookmarksApi_.showContextMenu(
+        this.folder.id, event.clientX, event.clientY);
+  }
+
   private getBookmarkIcon_(url: string): string {
     return getFaviconForPageURL(url, false);
+  }
+
+  private onChildrenLengthChanged_() {
+    this.style.setProperty(
+        '--child-count', this.folder.children!.length.toString());
   }
 
   private onDepthChanged_() {
     this.childDepth_ = this.depth + 1;
     this.style.setProperty('--node-depth', `${this.depth}`);
-    this.$.children.style.setProperty('--node-depth', `${this.childDepth_}`);
+    this.style.setProperty('--child-depth', `${this.childDepth_}`);
   }
 
   private onFolderClick_() {

@@ -7,7 +7,7 @@ import {FakeObservables} from 'chrome://resources/ash/common/fake_observables.js
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
 
-import {CalibrationComponent, CalibrationObserverRemote, Component, ComponentRepairState, ComponentType, ErrorObserverRemote, HardwareWriteProtectionStateObserverRemote, PowerCableStateObserverRemote, ProvisioningObserverRemote, ProvisioningStep, RmadErrorCode, RmaState, ShimlessRmaServiceInterface, StateResult} from './shimless_rma_types.js';
+import {CalibrationComponent, CalibrationObserverRemote, Component, ComponentRepairStatus, ComponentType, ErrorObserverRemote, HardwareWriteProtectionStateObserverRemote, PowerCableStateObserverRemote, ProvisioningObserverRemote, ProvisioningStep, QrCode, RmadErrorCode, RmaState, ShimlessRmaServiceInterface, StateResult} from './shimless_rma_types.js';
 
 /** @implements {ShimlessRmaServiceInterface} */
 export class FakeShimlessRmaService {
@@ -45,6 +45,12 @@ export class FakeShimlessRmaService {
      */
     this.automaticallyTriggerProvisioningObservation_ = false;
 
+    /**
+     * Control automatically triggering calibration observations.
+     * @private {boolean}
+     */
+    this.automaticallyTriggerCalibrationObservation_ = false;
+
     this.reset();
   }
 
@@ -52,9 +58,9 @@ export class FakeShimlessRmaService {
    * Set the ordered list of states end error codes for this fake.
    * Setting an empty list (the default) returns kRmaNotRequired for any state
    * function.
-   * getNextState and getPrevState will move through the fake state through the
-   * list, and return kTransitionFailed if it would move off either end.
-   * getCurrentState always return the state at the current index.
+   * transitionNextState and transitionPreviousState will move through the fake
+   * state through the list, and return kTransitionFailed if it would move off
+   * either end. getCurrentState always return the state at the current index.
    *
    * @param {!Array<!StateResult>} states
    */
@@ -67,8 +73,8 @@ export class FakeShimlessRmaService {
    * @return {!Promise<!StateResult>}
    */
   getCurrentState() {
-    // As getNextState and getPrevState can modify the result of this function
-    // the result must be set at the time of the call.
+    // As transitionNextState and transitionPreviousState can modify the result
+    // of this function the result must be set at the time of the call.
     if (this.states_.length === 0) {
       this.setFakeCurrentState_(
           RmaState.kUnknown, RmadErrorCode.kRmaNotRequired);
@@ -85,9 +91,9 @@ export class FakeShimlessRmaService {
   /**
    * @return {!Promise<!StateResult>}
    */
-  getNextState() {
-    // As getNextState and getPrevState can modify the result of this function
-    // the result must be set at the time of the call.
+  transitionNextState() {
+    // As transitionNextState and transitionPreviousState can modify the result
+    // of this function the result must be set at the time of the call.
     if (this.states_.length === 0) {
       this.setFakeNextState_(RmaState.kUnknown, RmadErrorCode.kRmaNotRequired);
     } else if (this.stateIndex_ >= this.states_.length - 1) {
@@ -101,15 +107,15 @@ export class FakeShimlessRmaService {
       let state = this.states_[this.stateIndex_];
       this.setFakeNextState_(state.state, state.error);
     }
-    return this.methods_.resolveMethod('getNextState');
+    return this.methods_.resolveMethod('transitionNextState');
   }
 
   /**
    * @return {!Promise<!StateResult>}
    */
-  getPrevState() {
-    // As getNextState and getPrevState can modify the result of this function
-    // the result must be set at the time of the call.
+  transitionPreviousState() {
+    // As transitionNextState and transitionPreviousState can modify the result
+    // of this function the result must be set at the time of the call.
     if (this.states_.length === 0) {
       this.setFakePrevState_(RmaState.kUnknown, RmadErrorCode.kRmaNotRequired);
     } else if (this.stateIndex_ === 0) {
@@ -123,7 +129,7 @@ export class FakeShimlessRmaService {
       let state = this.states_[this.stateIndex_];
       this.setFakePrevState_(state.state, state.error);
     }
-    return this.methods_.resolveMethod('getPrevState');
+    return this.methods_.resolveMethod('transitionPreviousState');
   }
 
   /**
@@ -144,73 +150,59 @@ export class FakeShimlessRmaService {
   /**
    * @return {!Promise<!StateResult>}
    */
-  checkForNetworkConnection() {
-    const resolver = new PromiseResolver();
-    this.stateIndex_++;
-    this.methods_.resolveMethod('checkForNetworkConnection')
-        .then((nextState) => {
-          if (nextState.state === RmaState.kUpdateChrome) {
-            this.stateIndex_++;
-          }
-          resolver.resolve(nextState);
-        });
-    return resolver.promise;
+  beginFinalization() {
+    return this.getNextStateForMethod_(
+        'beginFinalization', RmaState.kWelcomeScreen);
   }
 
   /**
-   * Sets the return value of checkForNetworkConnection() which is the
-   * next state (either network selection page or the step afterwards).
-   * @param {!StateResult} nextState
+   * @return {!Promise<!StateResult>}
    */
-  setCheckForNetworkConnection(nextState) {
-    assert(
-        nextState.state === RmaState.kUpdateChrome ||
-        nextState.state === RmaState.kConfigureNetwork);
-    this.methods_.setResult('checkForNetworkConnection', nextState);
+  networkSelectionComplete() {
+    return this.getNextStateForMethod_(
+        'networkSelectionComplete', RmaState.kConfigureNetwork);
   }
 
   /**
    * @return {!Promise<!{version: string}>}
    */
-  getCurrentChromeVersion() {
-    return this.methods_.resolveMethod('getCurrentChromeVersion');
+  getCurrentOsVersion() {
+    return this.methods_.resolveMethod('getCurrentOsVersion');
   }
 
   /**
    * @param {string} version
    */
-  setGetCurrentChromeVersionResult(version) {
-    this.methods_.setResult('getCurrentChromeVersion', {version: version});
+  setGetCurrentOsVersionResult(version) {
+    this.methods_.setResult('getCurrentOsVersion', {version: version});
   }
 
   /**
    * @return {!Promise<!{updateAvailable: boolean}>}
    */
-  checkForChromeUpdates() {
-    return this.methods_.resolveMethod('checkForChromeUpdates');
+  checkForOsUpdates() {
+    return this.methods_.resolveMethod('checkForOsUpdates');
   }
 
   /**
    * @param {boolean} available
    */
-  setCheckForChromeUpdatesResult(available) {
-    this.methods_.setResult(
-        'checkForChromeUpdates', {updateAvailable: available});
+  setCheckForOsUpdatesResult(available) {
+    this.methods_.setResult('checkForOsUpdates', {updateAvailable: available});
   }
 
   /**
    * @return {!Promise<!StateResult>}
    */
-  updateChrome() {
-    return this.getNextStateForMethod_('updateChrome', RmaState.kUpdateChrome);
+  updateOs() {
+    return this.getNextStateForMethod_('updateOs', RmaState.kUpdateOs);
   }
 
   /**
    * @return {!Promise<!StateResult>}
    */
-  updateChromeSkipped() {
-    return this.getNextStateForMethod_(
-        'updateChromeSkipped', RmaState.kUpdateChrome);
+  updateOsSkipped() {
+    return this.getNextStateForMethod_('updateOsSkipped', RmaState.kUpdateOs);
   }
 
   /**
@@ -260,6 +252,37 @@ export class FakeShimlessRmaService {
     return this.getNextStateForMethod_(
         'chooseRsuDisableWriteProtect',
         RmaState.kChooseWriteProtectDisableMethod);
+  }
+
+  /**
+   * @return {!Promise<!{challenge: string}>}
+   */
+  getRsuDisableWriteProtectChallenge() {
+    return this.methods_.resolveMethod('getRsuDisableWriteProtectChallenge');
+  }
+
+  /**
+   * @param {string} challenge
+   */
+  setGetRsuDisableWriteProtectChallengeResult(challenge) {
+    this.methods_.setResult(
+        'getRsuDisableWriteProtectChallenge', {challenge: challenge});
+  }
+
+  /**
+   * @return {!Promise<!{qrCode: QrCode}>}
+   */
+  getRsuDisableWriteProtectChallengeQrCode() {
+    return this.methods_.resolveMethod(
+        'getRsuDisableWriteProtectChallengeQrCode');
+  }
+
+  /**
+   * @param {!QrCode} qrCode
+   */
+  setGetRsuDisableWriteProtectChallengeQrCodeResponse(qrCode) {
+    this.methods_.setResult(
+        'getRsuDisableWriteProtectChallengeQrCode', {qrCode: qrCode});
   }
 
   /**
@@ -470,6 +493,10 @@ export class FakeShimlessRmaService {
               /** @type {!CalibrationComponent} */ (component),
               /** @type {number} */ (progress));
         });
+    if (this.automaticallyTriggerCalibrationObservation_) {
+      this.triggerCalibrationObserver(
+          CalibrationComponent.kAccelerometer, 100, 1500);
+    }
   }
 
   /**
@@ -500,6 +527,13 @@ export class FakeShimlessRmaService {
    */
   automaticallyTriggerProvisioningObservation() {
     this.automaticallyTriggerProvisioningObservation_ = true;
+  }
+
+  /**
+   * Trigger calibration observations when an observer is added.
+   */
+  automaticallyTriggerCalibrationObservation() {
+    this.automaticallyTriggerCalibrationObservation_ = true;
   }
 
   /**
@@ -639,22 +673,27 @@ export class FakeShimlessRmaService {
     this.methods_ = new FakeMethodResolver();
 
     this.methods_.register('getCurrentState');
-    this.methods_.register('getNextState');
-    this.methods_.register('getPrevState');
+    this.methods_.register('transitionNextState');
+    this.methods_.register('transitionPreviousState');
 
     this.methods_.register('abortRma');
 
-    this.methods_.register('checkForNetworkConnection');
-    this.methods_.register('getCurrentChromeVersion');
-    this.methods_.register('checkForChromeUpdates');
-    this.methods_.register('updateChrome');
-    this.methods_.register('updateChromeSkipped');
+    this.methods_.register('beginFinalization');
+
+    this.methods_.register('networkSelectionComplete');
+
+    this.methods_.register('getCurrentOsVersion');
+    this.methods_.register('checkForOsUpdates');
+    this.methods_.register('updateOs');
+    this.methods_.register('updateOsSkipped');
 
     this.methods_.register('setSameOwner');
     this.methods_.register('setDifferentOwner');
 
     this.methods_.register('chooseManuallyDisableWriteProtect');
     this.methods_.register('chooseRsuDisableWriteProtect');
+    this.methods_.register('getRsuDisableWriteProtectChallenge');
+    this.methods_.register('getRsuDisableWriteProtectChallengeQrCode');
     this.methods_.register('setRsuDisableWriteProtectCode');
 
     this.methods_.register('getComponentList');
@@ -738,23 +777,24 @@ export class FakeShimlessRmaService {
   }
 
   /**
-   * Sets the value that will be returned when calling getNextState().
+   * Sets the value that will be returned when calling transitionNextState().
    * @private
    * @param {!RmaState} state
    * @param {!RmadErrorCode} error
    */
   setFakeNextState_(state, error) {
-    this.setFakeStateForMethod_('getNextState', state, error);
+    this.setFakeStateForMethod_('transitionNextState', state, error);
   }
 
   /**
-   * Sets the value that will be returned when calling getPrevState().
+   * Sets the value that will be returned when calling
+   * transitionPreviousState().
    * @private
    * @param {!RmaState} state
    * @param {!RmadErrorCode} error
    */
   setFakePrevState_(state, error) {
-    this.setFakeStateForMethod_('getPrevState', state, error);
+    this.setFakeStateForMethod_('transitionPreviousState', state, error);
   }
 
   /**

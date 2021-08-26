@@ -94,7 +94,7 @@ class RequestContext : public URLRequestContext {
         std::make_unique<HttpServerProperties>());
     storage_.set_quic_context(std::make_unique<QuicContext>());
 
-    HttpNetworkSession::Context session_context;
+    HttpNetworkSessionContext session_context;
     session_context.host_resolver = host_resolver();
     session_context.cert_verifier = cert_verifier();
     session_context.transport_security_state = transport_security_state();
@@ -104,7 +104,7 @@ class RequestContext : public URLRequestContext {
     session_context.http_server_properties = http_server_properties();
     session_context.quic_context = quic_context();
     storage_.set_http_network_session(std::make_unique<HttpNetworkSession>(
-        HttpNetworkSession::Params(), session_context));
+        HttpNetworkSessionParams(), session_context));
     storage_.set_http_transaction_factory(std::make_unique<HttpCache>(
         storage_.http_network_session(), HttpCache::DefaultBackend::InMemory(0),
         false));
@@ -307,8 +307,7 @@ TEST_F(PacFileFetcherImplTest, IsolationInfo) {
   params.source = net::HostResolverSource::LOCAL_ONLY;
   std::unique_ptr<net::HostResolver::ResolveHostRequest> host_request =
       context_.host_resolver()->CreateRequest(
-          kHostPortPair,
-          pac_fetcher->isolation_info_for_testing().network_isolation_key(),
+          kHostPortPair, pac_fetcher->isolation_info().network_isolation_key(),
           net::NetLogWithSource(), params);
   net::TestCompletionCallback callback2;
   result = host_request->Start(callback2.callback());

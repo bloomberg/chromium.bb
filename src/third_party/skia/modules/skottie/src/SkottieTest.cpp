@@ -237,9 +237,6 @@ DEF_TEST(Skottie_Properties, reporter) {
                                                    const SkFontArguments&) const override {
             return fTestFont;
         }
-        sk_sp<SkTypeface> onMakeFromFontData(std::unique_ptr<SkFontData>) const override {
-            return fTestFont;
-        }
         sk_sp<SkTypeface> onMakeFromFile(const char path[], int ttcIndex) const override {
             return fTestFont;
         }
@@ -412,8 +409,6 @@ static SkRect ComputeBlobBounds(const sk_sp<SkTextBlob>& blob) {
     }
 
     SkAutoSTArray<16, SkRect> glyphBounds;
-
-    SkTextBlobRunIterator it(blob.get());
 
     for (SkTextBlobRunIterator it(blob.get()); !it.done(); it.next()) {
         glyphBounds.reset(SkToInt(it.glyphCount()));
@@ -659,9 +654,6 @@ DEF_TEST(Skottie_Shaper_ExplicitFontMgr, reporter) {
         }
         sk_sp<SkTypeface> onMakeFromStreamArgs(std::unique_ptr<SkStreamAsset>,
                                                const SkFontArguments&) const override {
-            return nullptr;
-        }
-        sk_sp<SkTypeface> onMakeFromFontData(std::unique_ptr<SkFontData>) const override {
             return nullptr;
         }
         sk_sp<SkTypeface> onMakeFromFile(const char[], int) const override {

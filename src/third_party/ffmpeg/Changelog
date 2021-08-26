@@ -5,6 +5,10 @@ version <next>:
 - ADPCM IMA Westwood encoder
 - Westwood AUD muxer
 - ADPCM IMA Acorn Replay decoder
+- Argonaut Games CVG demuxer
+- Argonaut Games CVG muxer
+- Concatf protocol
+- afwtdn audio filter
 
 
 version 4.4:

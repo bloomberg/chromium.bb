@@ -16,6 +16,7 @@
 #include "base/test/mock_callback.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/task_environment.h"
+#include "base/time/time.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/time.h"
@@ -24,7 +25,10 @@
 #include "components/sync/model/data_type_activation_request.h"
 #include "components/sync/model/entity_change.h"
 #include "components/sync/model/metadata_batch.h"
+#include "components/sync/protocol/device_info_specifics.pb.h"
+#include "components/sync/protocol/entity_specifics.pb.h"
 #include "components/sync/protocol/model_type_state.pb.h"
+#include "components/sync/protocol/sync_enums.pb.h"
 #include "components/sync/test/model/mock_model_type_change_processor.h"
 #include "components/sync/test/model/model_type_store_test_util.h"
 #include "components/sync/test/model/test_matchers.h"
@@ -47,6 +51,7 @@ using sync_pb::EntitySpecifics;
 using sync_pb::ModelTypeState;
 using testing::_;
 using testing::AllOf;
+using testing::InvokeWithoutArgs;
 using testing::IsEmpty;
 using testing::IsNull;
 using testing::Matcher;
@@ -499,6 +504,14 @@ class DeviceInfoSyncBridgeTest : public testing::Test,
   void InitializeAndPump() {
     InitializeBridge();
     task_environment_.RunUntilIdle();
+  }
+
+  void WaitForReadyToSync() {
+    ON_CALL(*processor(), IsTrackingMetadata).WillByDefault(Return(true));
+    base::RunLoop run_loop;
+    EXPECT_CALL(*processor(), ModelReadyToSync)
+        .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
+    run_loop.Run();
   }
 
   // Mimics sync being enabled by the user with no remote data. Must be called
@@ -1668,6 +1681,51 @@ TEST_F(DeviceInfoSyncBridgeTest,
   ASSERT_FALSE(error);
 
   EXPECT_EQ(1u, bridge()->GetAllDeviceInfo().size());
+}
+
+TEST_F(DeviceInfoSyncBridgeTest, ShouldForceLocalDeviceInfoUpload) {
+  const DeviceInfoSpecifics specifics = CreateLocalDeviceSpecifics();
+  const ModelTypeState model_type_state = StateWithEncryption("ekn");
+  WriteToStoreWithMetadata({specifics}, model_type_state);
+
+  InitializeBridge();
+
+  bridge()->ForcePulseForTest();
+
+  // Check that the bridge calls SendLocalData() during initialization.
+  EXPECT_CALL(*processor(), Put);
+
+  WaitForReadyToSync();
+}
+
+TEST_F(DeviceInfoSyncBridgeTest, ShouldNotUploadRecentLocalDeviceUponStartup) {
+  const DeviceInfoSpecifics specifics = CreateLocalDeviceSpecifics();
+  const ModelTypeState model_type_state = StateWithEncryption("ekn");
+  WriteToStoreWithMetadata({specifics}, model_type_state);
+
+  InitializeBridge();
+
+  // Check that the bridge doesn't call SendLocalData() during initialization
+  // (because the local device info has recent last update time).
+  EXPECT_CALL(*processor(), Put).Times(0);
+
+  WaitForReadyToSync();
+}
+
+TEST_F(DeviceInfoSyncBridgeTest, ShouldUploadOutdatedLocalDeviceInfo) {
+  // Create an outdated local device info which should be reuploaded during
+  // initialization.
+  const DeviceInfoSpecifics specifics = CreateLocalDeviceSpecifics(
+      base::Time::Now() - base::TimeDelta::FromDays(10));
+  const ModelTypeState model_type_state = StateWithEncryption("ekn");
+  WriteToStoreWithMetadata({specifics}, model_type_state);
+
+  InitializeBridge();
+
+  // Check that the bridge calls SendLocalData() during initialization.
+  EXPECT_CALL(*processor(), Put);
+
+  WaitForReadyToSync();
 }
 
 }  // namespace

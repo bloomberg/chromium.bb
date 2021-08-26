@@ -20,13 +20,13 @@
 #include "base/containers/fixed_flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/containers/span.h"
+#include "base/cxx17_backports.h"
 #include "base/feature_list.h"
 #include "base/i18n/time_formatting.h"
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
-#include "base/numerics/ranges.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -290,8 +290,8 @@ void PdfViewPluginBase::Print() {
     return;
 
   const bool can_print =
-      engine_->HasPermission(PDFEngine::PERMISSION_PRINT_LOW_QUALITY) ||
-      engine_->HasPermission(PDFEngine::PERMISSION_PRINT_HIGH_QUALITY);
+      engine_->HasPermission(DocumentPermission::kPrintLowQuality) ||
+      engine_->HasPermission(DocumentPermission::kPrintHighQuality);
   if (!can_print)
     return;
 
@@ -403,7 +403,7 @@ void PdfViewPluginBase::FormTextFieldFocusChange(bool in_focus) {
   SetFormFieldInFocus(in_focus);
 }
 
-bool PdfViewPluginBase::IsPrintPreview() {
+bool PdfViewPluginBase::IsPrintPreview() const {
   return is_print_preview_;
 }
 
@@ -638,11 +638,11 @@ void PdfViewPluginBase::HandleAccessibilityAction(
 
 int PdfViewPluginBase::GetContentRestrictions() const {
   int content_restrictions = kContentRestrictionCut | kContentRestrictionPaste;
-  if (!engine()->HasPermission(PDFEngine::PERMISSION_COPY))
+  if (!engine()->HasPermission(DocumentPermission::kCopy))
     content_restrictions |= kContentRestrictionCopy;
 
-  if (!engine()->HasPermission(PDFEngine::PERMISSION_PRINT_LOW_QUALITY) &&
-      !engine()->HasPermission(PDFEngine::PERMISSION_PRINT_HIGH_QUALITY)) {
+  if (!engine()->HasPermission(DocumentPermission::kPrintLowQuality) &&
+      !engine()->HasPermission(DocumentPermission::kPrintHighQuality)) {
     content_restrictions |= kContentRestrictionPrint;
   }
 
@@ -653,8 +653,8 @@ AccessibilityDocInfo PdfViewPluginBase::GetAccessibilityDocInfo() const {
   AccessibilityDocInfo doc_info;
   doc_info.page_count = engine()->GetNumberOfPages();
   doc_info.text_accessible =
-      engine()->HasPermission(PDFEngine::PERMISSION_COPY_ACCESSIBLE);
-  doc_info.text_copyable = engine()->HasPermission(PDFEngine::PERMISSION_COPY);
+      engine()->HasPermission(DocumentPermission::kCopyAccessible);
+  doc_info.text_copyable = engine()->HasPermission(DocumentPermission::kCopy);
   return doc_info;
 }
 
@@ -732,9 +732,9 @@ int PdfViewPluginBase::PrintBegin(const blink::WebPrintParams& print_params) {
     return 0;
 
   const bool can_print =
-      engine()->HasPermission(PDFEngine::PERMISSION_PRINT_HIGH_QUALITY) ||
+      engine()->HasPermission(DocumentPermission::kPrintHighQuality) ||
       (print_params.rasterize_pdf &&
-       engine()->HasPermission(PDFEngine::PERMISSION_PRINT_LOW_QUALITY));
+       engine()->HasPermission(DocumentPermission::kPrintLowQuality));
 
   if (!can_print)
     return 0;
@@ -765,9 +765,8 @@ void PdfViewPluginBase::UpdateGeometryOnViewChanged(
   const gfx::Rect new_plugin_rect =
       gfx::ScaleToEnclosingRectSafe(new_view_rect, new_device_scale);
 
-  if (new_device_scale == device_scale_ && new_plugin_rect == plugin_rect_) {
+  if (new_device_scale == device_scale_ && new_plugin_rect == plugin_rect_)
     return;
-  }
 
   const float old_device_scale = device_scale_;
   device_scale_ = new_device_scale;
@@ -786,10 +785,8 @@ void PdfViewPluginBase::UpdateGeometryOnViewChanged(
   }
 
   // Skip updating the geometry if the new image data buffer is empty.
-  if (image_data_.drawsNothing()) {
-    DCHECK(plugin_rect_.IsEmpty());
+  if (image_data_.drawsNothing())
     return;
-  }
 
   OnGeometryChanged(zoom_, old_device_scale);
 }
@@ -867,11 +864,11 @@ gfx::PointF PdfViewPluginBase::BoundScrollPositionToDocument(
   float max_x = std::max(document_size_.width() * static_cast<float>(zoom_) -
                              plugin_dip_size_.width(),
                          0.0f);
-  float x = base::ClampToRange(scroll_position.x(), 0.0f, max_x);
+  float x = base::clamp(scroll_position.x(), 0.0f, max_x);
   float max_y = std::max(document_size_.height() * static_cast<float>(zoom_) -
                              plugin_dip_size_.height(),
                          0.0f);
-  float y = base::ClampToRange(scroll_position.y(), 0.0f, max_y);
+  float y = base::clamp(scroll_position.y(), 0.0f, max_y);
   return gfx::PointF(x, y);
 }
 
@@ -1047,7 +1044,6 @@ void PdfViewPluginBase::HandleResetPrintPreviewModeMessage(
   InitializeEngine(std::make_unique<PDFiumEngine>(
       this, PDFiumFormFiller::ScriptOption::kNoJavaScript));
   engine()->SetGrayscale(is_grayscale);
-  engine()->New(GetURL().c_str(), /*headers=*/nullptr);
 
   paint_manager_.InvalidateRect(gfx::Rect(plugin_rect().size()));
 }
@@ -1485,8 +1481,8 @@ void PdfViewPluginBase::LoadAccessibility() {
   SetAccessibilityDocInfo(GetAccessibilityDocInfo());
 
   // If the document contents isn't accessible, don't send anything more.
-  if (!(engine_->HasPermission(PDFEngine::PERMISSION_COPY) ||
-        engine_->HasPermission(PDFEngine::PERMISSION_COPY_ACCESSIBLE))) {
+  if (!(engine_->HasPermission(DocumentPermission::kCopy) ||
+        engine_->HasPermission(DocumentPermission::kCopyAccessible))) {
     return;
   }
 
@@ -1557,7 +1553,8 @@ void PdfViewPluginBase::DidOpenPreview(std::unique_ptr<UrlLoader> loader,
   preview_client_ = std::make_unique<PreviewModeClient>(this);
   preview_engine_ = std::make_unique<PDFiumEngine>(
       preview_client_.get(), PDFiumFormFiller::ScriptOption::kNoJavaScript);
-  preview_engine_->HandleDocumentLoad(std::move(loader));
+  preview_engine_->PluginSizeUpdated({});
+  preview_engine_->HandleDocumentLoad(std::move(loader), GetURL());
 }
 
 void PdfViewPluginBase::OnPrintPreviewLoaded() {

@@ -77,6 +77,17 @@ g.test('copy_with_invalid_buffer').fn(async t => {
   });
 });
 
+g.test('buffer,device_mismatch')
+  .desc(
+    'Tests copyBufferToBuffer cannot be called with src buffer or dst buffer created from another device'
+  )
+  .paramsSubcasesOnly([
+    { srcMismatched: false, dstMismatched: false }, // control case
+    { srcMismatched: true, dstMismatched: false },
+    { srcMismatched: false, dstMismatched: true },
+  ] as const)
+  .unimplemented();
+
 g.test('buffer_usage')
   .paramsSubcasesOnly(u =>
     u //

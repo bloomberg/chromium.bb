@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_bubble_type.h"
+#include "chrome/browser/ui/hats/hats_service.h"
 #include "chrome/browser/ui/page_action/page_action_icon_type.h"
 #include "chrome/browser/ui/user_education/in_product_help.h"
 #include "chrome/common/buildflags.h"
@@ -75,6 +76,8 @@ class SendTabToSelfBubbleView;
 }  // namespace send_tab_to_self
 
 namespace sharing_hub {
+class ScreenshotCapturedBubbleController;
+class ScreenshotCapturedBubble;
 class SharingHubBubbleController;
 class SharingHubBubbleView;
 }  // namespace sharing_hub
@@ -387,6 +390,12 @@ class BrowserWindow : public ui::BaseWindow {
   // |already_bookmarked| is true if the url is already bookmarked.
   virtual void ShowBookmarkBubble(const GURL& url, bool already_bookmarked) = 0;
 
+  // Shows the Screenshot bubble.
+  virtual sharing_hub::ScreenshotCapturedBubble* ShowScreenshotCapturedBubble(
+      content::WebContents* contents,
+      const gfx::Image& image,
+      sharing_hub::ScreenshotCapturedBubbleController* controller) = 0;
+
   // Shows the QR Code generator bubble. |url| is the URL for the initial code.
   virtual qrcode_generator::QRCodeGeneratorBubbleView*
   ShowQRCodeGeneratorBubble(
@@ -502,15 +511,16 @@ class BrowserWindow : public ui::BaseWindow {
 
   // Shows User Happiness Tracking Survey's dialog after the survey associated
   // with |site_id| has been successfully loaded. Failure to load the survey
-  // will result in the dialog not being shown. |product_specific_data| should
-  // contain key-value pairs where the keys match the field names set for
-  // the survey in hats_service.cc, and the values are those which will be
-  // associated with the survey response.
+  // will result in the dialog not being shown. |product_specific_bits_data| and
+  // |product_specific_string_data| should contain key-value pairs where the
+  // keys match the field names set for the survey in hats_service.cc, and the
+  // values are those which will be associated with the survey response.
   virtual void ShowHatsDialog(
       const std::string& site_id,
       base::OnceClosure success_callback,
       base::OnceClosure failure_callback,
-      const std::map<std::string, bool>& product_specific_data) = 0;
+      const SurveyBitsData& product_specific_bits_data,
+      const SurveyStringData& product_specific_string_data) = 0;
 
   // Returns object implementing ExclusiveAccessContext interface.
   virtual ExclusiveAccessContext* GetExclusiveAccessContext() = 0;
@@ -545,6 +555,9 @@ class BrowserWindow : public ui::BaseWindow {
 
   // Shows an Incognito clear browsing data dialog.
   virtual void ShowIncognitoClearBrowsingDataDialog() = 0;
+
+  // Shows an Incognito history disclaimer dialog.
+  virtual void ShowIncognitoHistoryDisclaimerDialog() = 0;
 
  protected:
   friend class BrowserCloseManager;

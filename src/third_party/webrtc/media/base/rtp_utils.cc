@@ -25,10 +25,6 @@
 
 namespace cricket {
 
-static const size_t kRtpPayloadTypeOffset = 1;
-static const size_t kRtpSeqNumOffset = 2;
-static const size_t kRtpTimestampOffset = 4;
-static const size_t kRtpSsrcOffset = 8;
 static const size_t kRtcpPayloadTypeOffset = 1;
 static const size_t kRtpExtensionHeaderLen = 4;
 static const size_t kAbsSendTimeExtensionLen = 3;
@@ -73,7 +69,7 @@ void UpdateAbsSendTimeExtensionValue(uint8_t* extension_data,
   extension_data[2] = static_cast<uint8_t>(send_time);
 }
 
-// Assumes |length| is actual packet length + tag length. Updates HMAC at end of
+// Assumes `length` is actual packet length + tag length. Updates HMAC at end of
 // the RTP packet.
 void UpdateRtpAuthTag(uint8_t* rtp,
                       size_t length,
@@ -126,56 +122,7 @@ bool GetUint8(const void* data, size_t offset, int* value) {
   return true;
 }
 
-bool GetUint16(const void* data, size_t offset, int* value) {
-  if (!data || !value) {
-    return false;
-  }
-  *value = static_cast<int>(
-      rtc::GetBE16(static_cast<const uint8_t*>(data) + offset));
-  return true;
-}
-
-bool GetUint32(const void* data, size_t offset, uint32_t* value) {
-  if (!data || !value) {
-    return false;
-  }
-  *value = rtc::GetBE32(static_cast<const uint8_t*>(data) + offset);
-  return true;
-}
-
 }  // namespace
-
-bool GetRtpPayloadType(const void* data, size_t len, int* value) {
-  if (len < kMinRtpPacketLen) {
-    return false;
-  }
-  if (!GetUint8(data, kRtpPayloadTypeOffset, value)) {
-    return false;
-  }
-  *value &= 0x7F;
-  return true;
-}
-
-bool GetRtpSeqNum(const void* data, size_t len, int* value) {
-  if (len < kMinRtpPacketLen) {
-    return false;
-  }
-  return GetUint16(data, kRtpSeqNumOffset, value);
-}
-
-bool GetRtpTimestamp(const void* data, size_t len, uint32_t* value) {
-  if (len < kMinRtpPacketLen) {
-    return false;
-  }
-  return GetUint32(data, kRtpTimestampOffset, value);
-}
-
-bool GetRtpSsrc(const void* data, size_t len, uint32_t* value) {
-  if (len < kMinRtpPacketLen) {
-    return false;
-  }
-  return GetUint32(data, kRtpSsrcOffset, value);
-}
 
 bool GetRtcpType(const void* data, size_t len, int* value) {
   if (len < kMinRtcpPacketLen) {
@@ -412,7 +359,7 @@ bool ApplyPacketOptions(uint8_t* data,
   RTC_DCHECK(data);
   RTC_DCHECK(length);
 
-  // if there is no valid |rtp_sendtime_extension_id| and |srtp_auth_key| in
+  // if there is no valid `rtp_sendtime_extension_id` and `srtp_auth_key` in
   // PacketOptions, nothing to be updated in this packet.
   if (packet_time_params.rtp_sendtime_extension_id == -1 &&
       packet_time_params.srtp_auth_key.empty()) {

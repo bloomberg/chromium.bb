@@ -33,24 +33,24 @@ declare_args() {
 
   # Enables support for background apps.
   enable_background_contents = !is_android && !is_chromecast
-  enable_background_mode = !is_android && !is_chromecast && !is_chromeos_ash
+  enable_background_mode = !is_android && !is_chromecast && !is_chromeos
 
   # Enable the printing system dialog for platforms that support printing
   # and have a system dialog.
   enable_basic_print_dialog = enable_basic_printing && !is_chromeos_ash
 
   # Enables usage of notifications via Chrome's MessageCenter.
-  enable_chrome_notifications = is_mac || is_win || is_linux
+  enable_chrome_notifications = is_mac || is_win || is_linux || is_fuchsia
 
-  # Enables the Click to Call feature on desktop platforms.
-  enable_click_to_call = is_mac || is_win || is_linux || is_chromeos
+  # Disable Click to Call on Fuchsia.
+  enable_click_to_call = !is_fuchsia
 
   # Hangout services is an extension that adds extra features to Hangouts.
   # It is enableable separately to facilitate testing.
   enable_hangout_services_extension = is_chrome_branded
 
-  enable_one_click_signin =
-      is_win || is_mac || ((is_linux || is_chromeos_lacros) && !is_chromecast)
+  enable_one_click_signin = is_win || is_mac || is_fuchsia ||
+                            ((is_linux || is_chromeos_lacros) && !is_chromecast)
 
   enable_service_discovery = (enable_mdns && !is_android) || is_mac
 

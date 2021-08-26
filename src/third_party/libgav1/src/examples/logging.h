@@ -46,7 +46,7 @@ constexpr const char* Basename(const char* file_name, size_t offset) {
 #define LIBGAV1_EXAMPLES_LOG_ERROR(error_string)                              \
   do {                                                                        \
     constexpr const char* libgav1_examples_basename =                         \
-        ::libgav1::examples::Basename(__FILE__, sizeof(__FILE__) - 1);        \
+        libgav1::examples::Basename(__FILE__, sizeof(__FILE__) - 1);          \
     fprintf(stderr, "%s:%d (%s): %s.\n", libgav1_examples_basename, __LINE__, \
             __func__, error_string);                                          \
   } while (false)

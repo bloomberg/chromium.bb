@@ -5,7 +5,7 @@
 import 'chrome://read-later.top-chrome/read_later.mojom-lite.js';
 
 import {ReadLaterApiProxy} from 'chrome://read-later.top-chrome/read_later_api_proxy.js';
-import {TestBrowserProxy} from '../test_browser_proxy.m.js';
+import {TestBrowserProxy} from '../test_browser_proxy.js';
 
 /** @implements {ReadLaterApiProxy} */
 export class TestReadLaterApiProxy extends TestBrowserProxy {
@@ -35,8 +35,8 @@ export class TestReadLaterApiProxy extends TestBrowserProxy {
   }
 
   /** @override */
-  openURL(url, mark_as_read) {
-    this.methodCalled('openURL', [url, mark_as_read]);
+  openURL(url, mark_as_read, click_info) {
+    this.methodCalled('openURL', [url, mark_as_read, click_info]);
   }
 
   /** @override */

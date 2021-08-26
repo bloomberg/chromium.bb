@@ -26,14 +26,6 @@
 // that exploits the well-defined behaviour for unsigned underflow (and hence
 // the standard x < size() can be used in all cases to validate indices).
 
-#define FX_LOCALECATEGORY_DateHash 0xbde9abde
-#define FX_LOCALECATEGORY_TimeHash 0x2d71b00f
-#define FX_LOCALECATEGORY_DateTimeHash 0x158c72ed
-#define FX_LOCALECATEGORY_NumHash 0x0b4ff870
-#define FX_LOCALECATEGORY_TextHash 0x2d08af85
-#define FX_LOCALECATEGORY_ZeroHash 0x568cb500
-#define FX_LOCALECATEGORY_NullHash 0x052931bb
-
 #define FX_NUMSTYLE_Percent 0x01
 #define FX_NUMSTYLE_Exponent 0x02
 #define FX_NUMSTYLE_DotVorv 0x04
@@ -52,7 +44,6 @@ struct LocaleNumberSubcategoryWithHash {
 
 #undef SUBC
 #define SUBC(a, b, c) a, c
-
 constexpr LocaleDateTimeSubcategoryWithHash kLocaleDateTimeSubcategoryData[] = {
     {SUBC(0x14da2125, "default", LocaleIface::DateTimeSubcategory::kDefault)},
     {SUBC(0x9041d4b0, "short", LocaleIface::DateTimeSubcategory::kShort)},
@@ -67,7 +58,6 @@ constexpr LocaleNumberSubcategoryWithHash kLocaleNumSubcategoryData[] = {
     {SUBC(0x54034c2f, "decimal", LocaleIface::NumSubcategory::kDecimal)},
     {SUBC(0x7568e6ae, "integer", LocaleIface::NumSubcategory::kInteger)},
 };
-
 #undef SUBC
 
 struct FX_LOCALETIMEZONEINFO {
@@ -76,14 +66,22 @@ struct FX_LOCALETIMEZONEINFO {
   int16_t iMinute;
 };
 
-const FX_LOCALETIMEZONEINFO g_FXLocaleTimeZoneData[] = {
+constexpr FX_LOCALETIMEZONEINFO kFXLocaleTimeZoneData[] = {
     {L"CDT", -5, 0}, {L"CST", -6, 0}, {L"EDT", -4, 0}, {L"EST", -5, 0},
     {L"MDT", -6, 0}, {L"MST", -7, 0}, {L"PDT", -7, 0}, {L"PST", -8, 0},
 };
 
-const wchar_t kTimeSymbols[] = L"hHkKMSFAzZ";
-const wchar_t kDateSymbols[] = L"DJMEeGgYwW";
-const wchar_t kConstChars[] = L",-:/. ";
+constexpr wchar_t kTimeSymbols[] = L"hHkKMSFAzZ";
+constexpr wchar_t kDateSymbols[] = L"DJMEeGgYwW";
+constexpr wchar_t kConstChars[] = L",-:/. ";
+
+constexpr wchar_t kDateStr[] = L"date";
+constexpr wchar_t kTimeStr[] = L"time";
+constexpr wchar_t kDateTimeStr[] = L"datetime";
+constexpr wchar_t kNumStr[] = L"num";
+constexpr wchar_t kTextStr[] = L"text";
+constexpr wchar_t kZeroStr[] = L"zero";
+constexpr wchar_t kNullStr[] = L"null";
 
 size_t ParseTimeZone(pdfium::span<const wchar_t> spStr, int* tz) {
   *tz = 0;
@@ -456,8 +454,8 @@ bool ParseLocaleTime(const WideString& wsTime,
         ResolveZone(tz_diff_minutes, pLocale, &hour, &minute);
       } else {
         // Search the timezone list. There are only 8 of them, so linear scan.
-        for (size_t i = 0; i < pdfium::size(g_FXLocaleTimeZoneData); ++i) {
-          const FX_LOCALETIMEZONEINFO& info = g_FXLocaleTimeZoneData[i];
+        for (size_t i = 0; i < pdfium::size(kFXLocaleTimeZoneData); ++i) {
+          const FX_LOCALETIMEZONEINFO& info = kFXLocaleTimeZoneData[i];
           if (tz != info.name)
             continue;
 
@@ -907,22 +905,21 @@ CFGAS_StringFormatter::Category CFGAS_StringFormatter::GetCategory() const {
         wsCategory += m_spPattern[ccf];
         ccf++;
       }
-      uint32_t dwHash = FX_HashCode_GetW(wsCategory.AsStringView());
-      if (dwHash == FX_LOCALECATEGORY_DateTimeHash)
+      if (wsCategory == kDateTimeStr)
         return Category::kDateTime;
-      if (dwHash == FX_LOCALECATEGORY_TextHash)
+      if (wsCategory == kTextStr)
         return Category::kText;
-      if (dwHash == FX_LOCALECATEGORY_NumHash)
+      if (wsCategory == kNumStr)
         return Category::kNum;
-      if (dwHash == FX_LOCALECATEGORY_ZeroHash)
+      if (wsCategory == kZeroStr)
         return Category::kZero;
-      if (dwHash == FX_LOCALECATEGORY_NullHash)
+      if (wsCategory == kNullStr)
         return Category::kNull;
-      if (dwHash == FX_LOCALECATEGORY_DateHash) {
+      if (wsCategory == kDateStr) {
         if (eCategory == Category::kTime)
           return Category::kDateTime;
         eCategory = Category::kDate;
-      } else if (dwHash == FX_LOCALECATEGORY_TimeHash) {
+      } else if (wsCategory == kTimeStr) {
         if (eCategory == Category::kDate)
           return Category::kDateTime;
         eCategory = Category::kTime;

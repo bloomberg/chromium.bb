@@ -147,14 +147,10 @@ const Symbol* Rehydrator::symbol() {
             uint16_t id = this->readU16();
             const Type* componentType = this->type();
             int8_t count = this->readS8();
-            String name(componentType->name());
-            if (count == Type::kUnsizedArray) {
-                name += "[]";
-            } else {
-                name += "[" + to_string(count) + "]";
-            }
+            const String* arrayName =
+                    fSymbolTable->takeOwnershipOfString(componentType->getArrayName(count));
             const Type* result = fSymbolTable->takeOwnershipOfSymbol(
-                    Type::MakeArrayType(name, *componentType, count));
+                    Type::MakeArrayType(*arrayName, *componentType, count));
             this->addSymbol(id, result);
             return result;
         }
@@ -199,8 +195,9 @@ const Symbol* Rehydrator::symbol() {
                 const Type* type = this->type();
                 fields.emplace_back(m, fieldName, type);
             }
+            skstd::string_view nameChars(*fSymbolTable->takeOwnershipOfString(std::move(name)));
             const Type* result = fSymbolTable->takeOwnershipOfSymbol(
-                    Type::MakeStructType(/*offset=*/-1, name, std::move(fields)));
+                    Type::MakeStructType(/*offset=*/-1, nameChars, std::move(fields)));
             this->addSymbol(id, result);
             return result;
         }
@@ -297,12 +294,11 @@ std::unique_ptr<ProgramElement> Rehydrator::element() {
         case Rehydrator::kInterfaceBlock_Command: {
             const Symbol* var = this->symbol();
             SkASSERT(var && var->is<Variable>());
-            String typeName(this->readString());
-            String instanceName(this->readString());
+            skstd::string_view typeName = this->readString();
+            skstd::string_view instanceName = this->readString();
             int arraySize = this->readS8();
-            return std::make_unique<InterfaceBlock>(/*offset=*/-1, &var->as<Variable>(),
-                                                    std::move(typeName), std::move(instanceName),
-                                                    arraySize, nullptr);
+            return std::make_unique<InterfaceBlock>(/*offset=*/-1, &var->as<Variable>(), typeName,
+                                                    instanceName, arraySize, nullptr);
         }
         case Rehydrator::kVarDeclarations_Command: {
             std::unique_ptr<Statement> decl = this->statement();

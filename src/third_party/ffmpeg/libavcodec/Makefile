@@ -12,6 +12,7 @@ HEADERS = ac3_parser.h                                                  \
           codec_id.h                                                    \
           codec_par.h                                                   \
           d3d11va.h                                                     \
+          defs.h                                                        \
           dirac.h                                                       \
           dv_profile.h                                                  \
           dxva2.h                                                       \
@@ -853,7 +854,7 @@ OBJS-$(CONFIG_ADPCM_AFC_DECODER)          += adpcm.o adpcm_data.o
 OBJS-$(CONFIG_ADPCM_AGM_DECODER)          += adpcm.o adpcm_data.o
 OBJS-$(CONFIG_ADPCM_AICA_DECODER)         += adpcm.o adpcm_data.o
 OBJS-$(CONFIG_ADPCM_ARGO_DECODER)         += adpcm.o adpcm_data.o
-OBJS-$(CONFIG_ADPCM_ARGO_ENCODER)         += adpcm.o adpcmenc.o
+OBJS-$(CONFIG_ADPCM_ARGO_ENCODER)         += adpcm.o adpcm_data.o adpcmenc.o
 OBJS-$(CONFIG_ADPCM_CT_DECODER)           += adpcm.o adpcm_data.o
 OBJS-$(CONFIG_ADPCM_DTK_DECODER)          += adpcm.o adpcm_data.o
 OBJS-$(CONFIG_ADPCM_EA_DECODER)           += adpcm.o adpcm_data.o

@@ -23,6 +23,9 @@ information on the AV1 video format can be found at
     $ git clone https://github.com/abseil/abseil-cpp.git third_party/abseil-cpp
     ```
 
+    Note: Abseil is required by the examples and tests. libgav1 will depend on
+    it if `LIBGAV1_THREADPOOL_USE_STD_MUTEX` is set to `0` (see below).
+
 4.  (Optional) [GoogleTest](https://github.com/google/googletest)
 
     From within the libgav1 directory:
@@ -66,10 +69,11 @@ Configuration options:
 *   `LIBGAV1_THREADPOOL_USE_STD_MUTEX`: controls use of std::mutex and
     absl::Mutex in ThreadPool. Defining this to 1 will remove any Abseil
     dependency from the core library. Automatically defined in
-    `src/utils/threadpool.h` if unset.
+    `src/utils/threadpool.h` if unset. Defaults to 1 on Android & iOS, 0
+    otherwise.
 *   `LIBGAV1_MAX_THREADS`: sets the number of threads that the library is
-    allowed to create. Has to be an integer > 0. Otherwise this is ignored.
-    The default value is 128.
+    allowed to create. Has to be an integer > 0. Otherwise this is ignored. The
+    default value is 128.
 *   `LIBGAV1_FRAME_PARALLEL_THRESHOLD_MULTIPLIER`: the threshold multiplier that
     is used to determine when to use frame parallel decoding. Frame parallel
     decoding will be used if |threads| > |tile_count| * this multiplier. Has to

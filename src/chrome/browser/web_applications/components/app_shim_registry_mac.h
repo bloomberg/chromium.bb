@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
+#include "base/values.h"
 
 class PrefService;
 class PrefRegistrySimple;
@@ -25,8 +26,8 @@ class PrefRegistrySimple;
 // paths (e.g, the result of calling Profile::GetPath).
 //
 // This class should arguably be a extensions::ExtensionRegistryObserver. It
-// is not (and instead is called by AppShortcutManager, which is one), because
-// apps are in the process of being disentangled from extensions.
+// is not (and instead is called by WebAppShortcutManager, which is one),
+// because apps are in the process of being disentangled from extensions.
 class AppShimRegistry {
  public:
   AppShimRegistry(const AppShimRegistry& other) = delete;
@@ -68,6 +69,9 @@ class AppShimRegistry {
   void SetPrefServiceAndUserDataDirForTesting(
       PrefService* pref_service,
       const base::FilePath& user_data_dir);
+
+  // For logging and debug purposes.
+  base::Value AsDebugValue() const;
 
  protected:
   friend class base::NoDestructor<AppShimRegistry>;

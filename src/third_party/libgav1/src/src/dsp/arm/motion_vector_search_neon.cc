@@ -61,8 +61,8 @@ inline int16x8_t ProjectionClip(const int16x4_t mv0, const int16x4_t mv1) {
 }
 
 inline int16x8_t MvProjectionCompoundClip(
-    const MotionVector* const temporal_mvs,
-    const int8_t* const temporal_reference_offsets,
+    const MotionVector* LIBGAV1_RESTRICT const temporal_mvs,
+    const int8_t* LIBGAV1_RESTRICT const temporal_reference_offsets,
     const int reference_offsets[2]) {
   const auto* const tmvs = reinterpret_cast<const int32_t*>(temporal_mvs);
   const int32x2_t temporal_mv = vld1_s32(tmvs);
@@ -76,9 +76,9 @@ inline int16x8_t MvProjectionCompoundClip(
 }
 
 inline int16x8_t MvProjectionSingleClip(
-    const MotionVector* const temporal_mvs,
-    const int8_t* const temporal_reference_offsets, const int reference_offset,
-    int16x4_t* const lookup) {
+    const MotionVector* LIBGAV1_RESTRICT const temporal_mvs,
+    const int8_t* LIBGAV1_RESTRICT const temporal_reference_offsets,
+    const int reference_offset, int16x4_t* const lookup) {
   const auto* const tmvs = reinterpret_cast<const int16_t*>(temporal_mvs);
   const int16x8_t temporal_mv = vld1q_s16(tmvs);
   *lookup = vld1_lane_s16(
@@ -116,9 +116,10 @@ inline void ForceInteger(const int16x8_t mv, void* const candidate_mvs) {
 }
 
 void MvProjectionCompoundLowPrecision_NEON(
-    const MotionVector* temporal_mvs, const int8_t* temporal_reference_offsets,
+    const MotionVector* LIBGAV1_RESTRICT temporal_mvs,
+    const int8_t* LIBGAV1_RESTRICT temporal_reference_offsets,
     const int reference_offsets[2], const int count,
-    CompoundMotionVector* candidate_mvs) {
+    CompoundMotionVector* LIBGAV1_RESTRICT candidate_mvs) {
   // |reference_offsets| non-zero check usually equals true and is ignored.
   // To facilitate the compilers, make a local copy of |reference_offsets|.
   const int offsets[2] = {reference_offsets[0], reference_offsets[1]};
@@ -131,13 +132,14 @@ void MvProjectionCompoundLowPrecision_NEON(
     temporal_mvs += 2;
     temporal_reference_offsets += 2;
     candidate_mvs += 2;
-  } while (--loop_count);
+  } while (--loop_count != 0);
 }
 
 void MvProjectionCompoundForceInteger_NEON(
-    const MotionVector* temporal_mvs, const int8_t* temporal_reference_offsets,
+    const MotionVector* LIBGAV1_RESTRICT temporal_mvs,
+    const int8_t* LIBGAV1_RESTRICT temporal_reference_offsets,
     const int reference_offsets[2], const int count,
-    CompoundMotionVector* candidate_mvs) {
+    CompoundMotionVector* LIBGAV1_RESTRICT candidate_mvs) {
   // |reference_offsets| non-zero check usually equals true and is ignored.
   // To facilitate the compilers, make a local copy of |reference_offsets|.
   const int offsets[2] = {reference_offsets[0], reference_offsets[1]};
@@ -150,13 +152,14 @@ void MvProjectionCompoundForceInteger_NEON(
     temporal_mvs += 2;
     temporal_reference_offsets += 2;
     candidate_mvs += 2;
-  } while (--loop_count);
+  } while (--loop_count != 0);
 }
 
 void MvProjectionCompoundHighPrecision_NEON(
-    const MotionVector* temporal_mvs, const int8_t* temporal_reference_offsets,
+    const MotionVector* LIBGAV1_RESTRICT temporal_mvs,
+    const int8_t* LIBGAV1_RESTRICT temporal_reference_offsets,
     const int reference_offsets[2], const int count,
-    CompoundMotionVector* candidate_mvs) {
+    CompoundMotionVector* LIBGAV1_RESTRICT candidate_mvs) {
   // |reference_offsets| non-zero check usually equals true and is ignored.
   // To facilitate the compilers, make a local copy of |reference_offsets|.
   const int offsets[2] = {reference_offsets[0], reference_offsets[1]};
@@ -169,12 +172,14 @@ void MvProjectionCompoundHighPrecision_NEON(
     temporal_mvs += 2;
     temporal_reference_offsets += 2;
     candidate_mvs += 2;
-  } while (--loop_count);
+  } while (--loop_count != 0);
 }
 
 void MvProjectionSingleLowPrecision_NEON(
-    const MotionVector* temporal_mvs, const int8_t* temporal_reference_offsets,
-    const int reference_offset, const int count, MotionVector* candidate_mvs) {
+    const MotionVector* LIBGAV1_RESTRICT temporal_mvs,
+    const int8_t* LIBGAV1_RESTRICT temporal_reference_offsets,
+    const int reference_offset, const int count,
+    MotionVector* LIBGAV1_RESTRICT candidate_mvs) {
   // Up to three more elements could be calculated.
   int loop_count = (count + 3) >> 2;
   int16x4_t lookup = vdup_n_s16(0);
@@ -185,12 +190,14 @@ void MvProjectionSingleLowPrecision_NEON(
     temporal_mvs += 4;
     temporal_reference_offsets += 4;
     candidate_mvs += 4;
-  } while (--loop_count);
+  } while (--loop_count != 0);
 }
 
 void MvProjectionSingleForceInteger_NEON(
-    const MotionVector* temporal_mvs, const int8_t* temporal_reference_offsets,
-    const int reference_offset, const int count, MotionVector* candidate_mvs) {
+    const MotionVector* LIBGAV1_RESTRICT temporal_mvs,
+    const int8_t* LIBGAV1_RESTRICT temporal_reference_offsets,
+    const int reference_offset, const int count,
+    MotionVector* LIBGAV1_RESTRICT candidate_mvs) {
   // Up to three more elements could be calculated.
   int loop_count = (count + 3) >> 2;
   int16x4_t lookup = vdup_n_s16(0);
@@ -201,12 +208,14 @@ void MvProjectionSingleForceInteger_NEON(
     temporal_mvs += 4;
     temporal_reference_offsets += 4;
     candidate_mvs += 4;
-  } while (--loop_count);
+  } while (--loop_count != 0);
 }
 
 void MvProjectionSingleHighPrecision_NEON(
-    const MotionVector* temporal_mvs, const int8_t* temporal_reference_offsets,
-    const int reference_offset, const int count, MotionVector* candidate_mvs) {
+    const MotionVector* LIBGAV1_RESTRICT temporal_mvs,
+    const int8_t* LIBGAV1_RESTRICT temporal_reference_offsets,
+    const int reference_offset, const int count,
+    MotionVector* LIBGAV1_RESTRICT candidate_mvs) {
   // Up to three more elements could be calculated.
   int loop_count = (count + 3) >> 2;
   int16x4_t lookup = vdup_n_s16(0);
@@ -217,7 +226,7 @@ void MvProjectionSingleHighPrecision_NEON(
     temporal_mvs += 4;
     temporal_reference_offsets += 4;
     candidate_mvs += 4;
-  } while (--loop_count);
+  } while (--loop_count != 0);
 }
 
 void Init8bpp() {

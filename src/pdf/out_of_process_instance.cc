@@ -467,7 +467,6 @@ bool OutOfProcessInstance::Init(uint32_t argc,
   const char* src_url = nullptr;
   const char* original_url = nullptr;
   const char* top_level_url = nullptr;
-  const char* headers = nullptr;
   for (uint32_t i = 0; i < argc; ++i) {
     if (strcmp(argn[i], "original-url") == 0) {
       original_url = argv[i];
@@ -475,8 +474,6 @@ bool OutOfProcessInstance::Init(uint32_t argc,
       src_url = argv[i];
     } else if (strcmp(argn[i], "top-level-url") == 0) {
       top_level_url = argv[i];
-    } else if (strcmp(argn[i], "headers") == 0) {
-      headers = argv[i];
     } else if (strcmp(argn[i], "full-frame") == 0) {
       set_full_frame(true);
     } else if (strcmp(argn[i], "background-color") == 0) {
@@ -519,7 +516,7 @@ bool OutOfProcessInstance::Init(uint32_t argc,
 #endif  // !BUILDFLAG(ENABLE_INK)
 
   pp::PDF::SetCrashData(this, original_url, top_level_url);
-  return engine()->New(original_url, headers);
+  return true;
 }
 
 void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
@@ -633,9 +630,9 @@ int32_t OutOfProcessInstance::PdfPrintBegin(
 }
 
 uint32_t OutOfProcessInstance::QuerySupportedPrintOutputFormats() {
-  if (engine()->HasPermission(PDFEngine::PERMISSION_PRINT_HIGH_QUALITY))
+  if (engine()->HasPermission(DocumentPermission::kPrintHighQuality))
     return PP_PRINTOUTPUTFORMAT_PDF | PP_PRINTOUTPUTFORMAT_RASTER;
-  if (engine()->HasPermission(PDFEngine::PERMISSION_PRINT_LOW_QUALITY))
+  if (engine()->HasPermission(DocumentPermission::kPrintLowQuality))
     return PP_PRINTOUTPUTFORMAT_RASTER;
   return 0;
 }
@@ -690,7 +687,7 @@ void OutOfProcessInstance::StopFind() {
 void OutOfProcessInstance::DidOpen(std::unique_ptr<UrlLoader> loader,
                                    int32_t result) {
   if (result == PP_OK) {
-    if (!engine()->HandleDocumentLoad(std::move(loader))) {
+    if (!engine()->HandleDocumentLoad(std::move(loader), GetURL())) {
       set_document_load_state(DocumentLoadState::kLoading);
       DocumentLoadFailed();
     }
@@ -732,10 +729,6 @@ void OutOfProcessInstance::UpdateCursor(ui::mojom::CursorType new_cursor_type) {
       reinterpret_cast<const PPB_CursorControl_Dev*>(
           pp::Module::Get()->GetBrowserInterface(
               PPB_CURSOR_CONTROL_DEV_INTERFACE));
-  if (!cursor_interface) {
-    NOTREACHED();
-    return;
-  }
 
   cursor_interface->SetCursor(pp_instance(),
                               PPCursorTypeFromCursorType(cursor_type()),
@@ -781,6 +774,12 @@ void OutOfProcessInstance::NotifySelectedFindResultChanged(
     int current_find_index) {
   DCHECK_GE(current_find_index, -1);
   SelectedFindResultChanged(current_find_index);
+}
+
+void OutOfProcessInstance::CaretChanged(const gfx::Rect& caret_rect) {
+  PP_Rect caret_viewport =
+      PPRectFromRect(caret_rect + available_area().OffsetFromOrigin());
+  text_input_->UpdateCaretPosition(caret_viewport, caret_viewport);
 }
 
 void OutOfProcessInstance::Alert(const std::string& message) {

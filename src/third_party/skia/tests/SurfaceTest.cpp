@@ -25,7 +25,7 @@
 #include "src/gpu/GrImageInfo.h"
 #include "src/gpu/GrRenderTarget.h"
 #include "src/gpu/GrResourceProvider.h"
-#include "src/gpu/GrSurfaceDrawContext.h"
+#include "src/gpu/SurfaceFillContext.h"
 #include "src/image/SkImage_Base.h"
 #include "src/image/SkImage_Gpu.h"
 #include "src/image/SkSurface_Gpu.h"
@@ -755,7 +755,8 @@ static sk_sp<SkSurface> create_gpu_surface_backend_render_target(GrDirectContext
 
 static void test_surface_context_clear(skiatest::Reporter* reporter,
                                        GrDirectContext* dContext,
-                                       GrSurfaceContext* surfaceContext, uint32_t expectedValue) {
+                                       skgpu::SurfaceContext* surfaceContext,
+                                       uint32_t expectedValue) {
     int w = surfaceContext->width();
     int h = surfaceContext->height();
 
@@ -787,13 +788,13 @@ static void test_surface_context_clear(skiatest::Reporter* reporter,
 
 DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(SurfaceClear_Gpu, reporter, ctxInfo) {
     auto dContext = ctxInfo.directContext();
-    // Snaps an image from a surface and then makes a GrSurfaceContext from the image's texture.
+    // Snaps an image from a surface and then makes a SurfaceContext from the image's texture.
     auto makeImageSurfaceContext = [dContext](SkSurface* surface) {
         sk_sp<SkImage> i(surface->makeImageSnapshot());
         auto gpuImage = static_cast<SkImage_Gpu*>(as_IB(i));
         auto [view, ct] = gpuImage->asView(dContext, GrMipmapped::kNo);
         GrColorInfo colorInfo(ct, i->alphaType(), i->refColorSpace());
-        return GrSurfaceContext::Make(dContext, view, std::move(colorInfo));
+        return dContext->priv().makeSC(view, std::move(colorInfo));
     };
 
     // Test that non-wrapped RTs are created clear.
@@ -803,12 +804,12 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(SurfaceClear_Gpu, reporter, ctxInfo) {
             ERRORF(reporter, "Could not create GPU SkSurface.");
             return;
         }
-        auto sdc = SkCanvasPriv::TopDeviceSurfaceDrawContext(surface->getCanvas());
-        if (!sdc) {
+        auto sfc = SkCanvasPriv::TopDeviceSurfaceFillContext(surface->getCanvas());
+        if (!sfc) {
             ERRORF(reporter, "Could access surface context of GPU SkSurface.");
             return;
         }
-        test_surface_context_clear(reporter, dContext, sdc, 0x0);
+        test_surface_context_clear(reporter, dContext, sfc, 0x0);
         auto imageSurfaceCtx = makeImageSurfaceContext(surface.get());
         test_surface_context_clear(reporter, dContext, imageSurfaceCtx.get(), 0x0);
     }
@@ -822,12 +823,12 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(SurfaceClear_Gpu, reporter, ctxInfo) {
             ERRORF(reporter, "Could not create GPU SkSurface.");
             return;
         }
-        auto sdc = SkCanvasPriv::TopDeviceSurfaceDrawContext(surface->getCanvas());
-        if (!sdc) {
+        auto sfc = SkCanvasPriv::TopDeviceSurfaceFillContext(surface->getCanvas());
+        if (!sfc) {
             ERRORF(reporter, "Could access surface context of GPU SkSurface.");
             return;
         }
-        test_surface_context_clear(reporter, dContext, sdc, kOrigColor.toSkColor());
+        test_surface_context_clear(reporter, dContext, sfc, kOrigColor.toSkColor());
         auto imageSurfaceCtx = makeImageSurfaceContext(surface.get());
         test_surface_context_clear(reporter, dContext, imageSurfaceCtx.get(),
                                    kOrigColor.toSkColor());

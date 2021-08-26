@@ -17,7 +17,6 @@ import android.util.Rational;
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 
-import org.chromium.base.BuildInfo;
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.MathUtils;
@@ -124,7 +123,7 @@ public class PictureInPictureController {
         mActivityTabProvider = activityTabProvider;
         mFullscreenManager = fullscreenManager;
 
-        mListenForAutoEnterability = BuildInfo.isAtLeastS();
+        mListenForAutoEnterability = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S;
         if (mListenForAutoEnterability) addObserversIfNeeded();
     }
 
@@ -513,11 +512,19 @@ public class PictureInPictureController {
 
         @Override
         public void onContentChanged(Tab tab) {
-            if (tab == mTab) return;
+            if (tab != mTab) return;
             // While webContentsWillSwap() probably did this, doesn't hurt to do it again.
             cleanupWebContentsObserver();
             // Now that we have a new WebContents, start listening.
             registerWebContentsObserver();
+        }
+
+        @Override
+        public void onDestroyed(Tab tab) {
+            if (tab != mTab) return;
+            cleanupWebContentsObserver();
+            // Don't bother to clean up here -- it clears the observers anyway,
+            // and TabChangeObserver will do it anyway.
         }
     }
 

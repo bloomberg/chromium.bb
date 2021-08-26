@@ -239,22 +239,9 @@
     <template is="dom-if" if="[[isCellular_(managedProperties_)]]">
       <cellular-roaming-toggle-button
         disabled="[[disabled_]]"
-        prefs="{{prefs}}"
-        managed-properties="[[managedProperties_]]">
+        managed-properties="[[managedProperties_]]"
+        prefs="{{prefs}}">
       </cellular-roaming-toggle-button>
-    </template>
-    <!-- SIM Info (Cellular only). -->
-    <!-- TODO(crbug/1093185): Remove when updatedCellularActivationUi
-        flag launches -->
-    <template is="dom-if" if="[[showCellularSim_(managedProperties_)]]"
-        restamp>
-      <div class="settings-box single-column stretch">
-        <network-siminfo id="cellularSimInfo"
-            network-state="[[getNetworkState_(managedProperties_)]]"
-            device-state="[[deviceState_]]"
-            disabled="[[disabled_]]">
-        </network-siminfo>
-      </div>
     </template>
     <!-- IP Address. -->
     <div
@@ -354,7 +341,9 @@
           </div>
           <template is="dom-if" if="[[showScanningSpinner_(
               managedProperties_, deviceState_)]]">
-            <paper-spinner-lite active></paper-spinner-lite>
+            <paper-spinner-lite active 
+                title="$i18n{mobileNetworkScanningLabel}">
+            </paper-spinner-lite>
           </template>
         </div>
       </cr-expand-button>

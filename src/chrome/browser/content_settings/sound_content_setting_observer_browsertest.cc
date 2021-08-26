@@ -132,6 +132,11 @@ class MultipleFramesObserver : public content::WebContentsObserver {
     }
   }
 
+  void RenderFrameDeleted(
+      content::RenderFrameHost* render_frame_host) override {
+    frame_to_client_map_.erase(render_frame_host);
+  }
+
   // Waits for sub frame creations.
   void WaitForSubFrame() {
     if (frame_to_client_map_.size() == kMaxFrameSize)
@@ -253,9 +258,8 @@ IN_PROC_BROWSER_TEST_F(SoundContentSettingObserverBrowserTest,
 // SoundContentSettingObserver::ReadyToCommitNavigation() with NavigationHandle
 // URL, it uses a page that has a sub frame to make sure that it's called with
 // the correct URL.
-// Flaky crashes. https://crbug.com/1228609
 IN_PROC_BROWSER_TEST_F(SoundContentSettingObserverBrowserTest,
-                       DISABLED_AddAutoplayFlagsInPrerendering) {
+                       AddAutoplayFlagsInPrerendering) {
   // Sets up the embedded test server to serve the test javascript file.
   net::test_server::EmbeddedTestServerHandle test_server_handle;
   ASSERT_TRUE(test_server_handle =

@@ -218,17 +218,12 @@ class TabClosingObserver : public TabStripModelObserver {
   int closing_count_ = 0;
 };
 
-// Used by CloseWithAppMenuOpen. Invokes CloseWindow on the supplied browser.
-void CloseWindowCallback(Browser* browser) {
-  chrome::CloseWindow(browser);
-}
-
 // Used by CloseWithAppMenuOpen. Posts a CloseWindowCallback and shows the app
 // menu.
 void RunCloseWithAppMenuCallback(Browser* browser) {
   // ShowAppMenu is modal under views. Schedule a task that closes the window.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&CloseWindowCallback, browser));
+      FROM_HERE, base::BindOnce(&chrome::CloseWindow, browser));
   chrome::ShowAppMenu(browser);
 }
 
@@ -295,7 +290,7 @@ class RenderViewSizeObserver : public content::WebContentsObserver {
 
   // Cache the sizes of RenderWidgetHostView and WebContentsView when the
   // navigation entry is committed, which is before
-  // WebContentsDelegate::DidNavigateMainFramePostCommit is called.
+  // WebContentsDelegate::DidNavigatePrimaryMainFramePostCommit is called.
   void NavigationEntryCommitted(
       const content::LoadCommittedDetails& details) override {
     content::RenderViewHost* rvh =
@@ -602,6 +597,68 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ClearPendingOnFailUnlessNTP) {
     EXPECT_FALSE(web_contents->GetController().GetPendingEntry());
     EXPECT_EQ(real_url, web_contents->GetVisibleURL());
   }
+}
+
+// Test for crbug.com/1232447. Ensure that a non-user-initiated navigation
+// doesn't commit while a JS dialog is showing.
+IN_PROC_BROWSER_TEST_F(BrowserTest, DialogDefersNavigationCommit) {
+  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const GURL kEmptyUrl(embedded_test_server()->GetURL("/empty.html"));
+  const GURL kSecondUrl(embedded_test_server()->GetURL("/title1.html"));
+
+  ui_test_utils::NavigateToURL(browser(), kEmptyUrl);
+
+  content::TestNavigationManager manager(contents, kSecondUrl);
+  auto* js_dialog_manager =
+      javascript_dialogs::TabModalDialogManager::FromWebContents(contents);
+
+  // Start a non-user-gesture navigation to the second page but block after the
+  // request is started.
+  {
+    auto script = content::JsReplace("window.location = $1;", kSecondUrl);
+    ASSERT_TRUE(content::ExecJs(contents->GetMainFrame(), script,
+                                content::EXECUTE_SCRIPT_NO_USER_GESTURE));
+    ASSERT_TRUE(manager.WaitForRequestStart());
+  }
+
+  // Show a modal JavaScript dialog.
+  {
+    base::RunLoop run_loop;
+
+    js_dialog_manager->SetDialogShownCallbackForTesting(run_loop.QuitClosure());
+    contents->GetMainFrame()->ExecuteJavaScriptForTests(u"alert('one'); ",
+                                                        base::NullCallback());
+    run_loop.Run();
+
+    ASSERT_TRUE(js_dialog_manager->IsShowingDialogForTesting());
+  }
+
+  // Continue the navigation through the response and on to commit. Since a
+  // dialog is showing, this should cause the navigation to be deferred before
+  // commit and the dialog should remain showing.
+  {
+    ASSERT_TRUE(manager.WaitForResponse());
+    manager.ResumeNavigation();
+
+    content::NavigationHandle* handle = manager.GetNavigationHandle();
+    EXPECT_FALSE(handle->IsWaitingToCommit());
+    EXPECT_TRUE(handle->IsCommitDeferringConditionDeferredForTesting());
+    EXPECT_TRUE(js_dialog_manager->IsShowingDialogForTesting());
+  }
+
+  // Dismiss the dialog. This should resume the navigation.
+  {
+    js_dialog_manager->ClickDialogButtonForTesting(true, std::u16string());
+    ASSERT_FALSE(js_dialog_manager->IsShowingDialogForTesting());
+
+    content::NavigationHandle* handle = manager.GetNavigationHandle();
+    EXPECT_FALSE(handle->IsCommitDeferringConditionDeferredForTesting());
+    EXPECT_TRUE(handle->IsWaitingToCommit());
+  }
+
+  manager.WaitForNavigationFinished();
 }
 
 // Test for crbug.com/297289.  Ensure that modal dialogs are closed when a
@@ -2448,7 +2505,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, GetSizeForNewRenderView) {
   // should be the same as when it was first created.
   EXPECT_EQ(rwhv_create_size0, rwhv_commit_size0);
   // Sizes of the current RenderWidgetHostView and WebContentsView should not
-  // change before and after WebContentsDelegate::DidNavigateMainFramePostCommit
+  // change before and after
+  // WebContentsDelegate::DidNavigatePrimaryMainFramePostCommit
   // (implemented by Browser); we obtain the sizes before PostCommit via
   // WebContentsObserver::NavigationEntryCommitted (implemented by
   // RenderViewSizeObserver).
@@ -2585,14 +2643,11 @@ void CheckDisplayModeMQ(const std::u16string& display_mode,
   bool js_result = false;
   base::RunLoop run_loop;
   web_contents->GetMainFrame()->ExecuteJavaScriptForTests(
-      function, base::BindOnce(
-                    [](base::OnceClosure quit_closure, bool* out_result,
-                       base::Value value) {
-                      DCHECK(value.is_bool());
-                      *out_result = value.GetBool();
-                      std::move(quit_closure).Run();
-                    },
-                    run_loop.QuitClosure(), &js_result));
+      function, base::BindLambdaForTesting([&](base::Value value) {
+        DCHECK(value.is_bool());
+        js_result = value.GetBool();
+        run_loop.Quit();
+      }));
   run_loop.Run();
   EXPECT_TRUE(js_result);
 }

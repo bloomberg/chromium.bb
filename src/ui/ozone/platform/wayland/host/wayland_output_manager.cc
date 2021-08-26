@@ -62,6 +62,10 @@ std::unique_ptr<WaylandScreen> WaylandOutputManager::CreateWaylandScreen() {
   auto wayland_screen = std::make_unique<WaylandScreen>(connection_);
   wayland_screen_ = wayland_screen->GetWeakPtr();
 
+  return wayland_screen;
+}
+
+void WaylandOutputManager::InitWaylandScreen(WaylandScreen* screen) {
   // As long as |wl_output| sends geometry and other events asynchronously (that
   // is, the initial configuration is sent once the interface is bound), we'll
   // have to tell each output to manually inform the delegate about available
@@ -72,12 +76,11 @@ std::unique_ptr<WaylandScreen> WaylandOutputManager::CreateWaylandScreen() {
   // changes.
   for (const auto& output : output_list_) {
     if (output->is_ready()) {
-      wayland_screen->OnOutputAddedOrUpdated(
-          output->output_id(), output->bounds(), output->scale_factor());
+      screen->OnOutputAddedOrUpdated(output->output_id(), output->bounds(),
+                                     output->scale_factor(),
+                                     output->transform());
     }
   }
-
-  return wayland_screen;
 }
 
 WaylandOutput* WaylandOutputManager::GetOutput(uint32_t id) const {
@@ -95,10 +98,11 @@ WaylandOutput* WaylandOutputManager::GetPrimaryOutput() const {
 
 void WaylandOutputManager::OnOutputHandleMetrics(uint32_t output_id,
                                                  const gfx::Rect& new_bounds,
-                                                 int32_t scale_factor) {
+                                                 int32_t scale_factor,
+                                                 int32_t transform) {
   if (wayland_screen_) {
     wayland_screen_->OnOutputAddedOrUpdated(output_id, new_bounds,
-                                            scale_factor);
+                                            scale_factor, transform);
   }
   auto* wayland_window_manager = connection_->wayland_window_manager();
   for (auto* window : wayland_window_manager->GetWindowsOnOutput(output_id))

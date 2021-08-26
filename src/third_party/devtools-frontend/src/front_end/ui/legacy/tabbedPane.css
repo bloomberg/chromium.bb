@@ -194,6 +194,12 @@
   display: block;
 }
 
+.tabbed-pane-header-tabs-drop-down-container > .chevron-icon:hover,
+.tabbed-pane-header-tabs-drop-down-container > .chevron-icon:focus-visible {
+  background-color: var(--color-text-primary);
+  display: block;
+}
+
 .tabbed-pane-header-tabs-drop-down-container:hover,
 .tabbed-pane-header-tabs-drop-down-container:focus-visible {
   background-color: var(--color-background-elevation-2);
@@ -261,6 +267,7 @@
   color: inherit;
   border: none transparent;
   border-left: 6px solid var(--override-vertical-tab-selected-border-color);
+  background-color: var(--color-background-elevation-1);
 }
 
 .-theme-with-dark-background .tabbed-pane-shadow.vertical-tab-layout .tabbed-pane-header-tab.selected,

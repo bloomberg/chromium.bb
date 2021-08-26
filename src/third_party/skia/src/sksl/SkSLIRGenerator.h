@@ -124,7 +124,7 @@ public:
     const Program::Settings& settings() const { return fContext.fConfig->fSettings; }
     ProgramKind programKind() const { return fContext.fConfig->fKind; }
 
-    ErrorReporter& errorReporter() const { return fContext.fErrors; }
+    ErrorReporter& errorReporter() const { return fContext.errors(); }
 
     std::shared_ptr<SymbolTable>& symbolTable() {
         return fSymbolTable;
@@ -164,7 +164,8 @@ private:
                                          bool isArray, std::unique_ptr<Expression> arraySize,
                                          Variable::Storage storage);
     std::unique_ptr<Statement> convertVarDeclaration(std::unique_ptr<Variable> var,
-                                                     std::unique_ptr<Expression> value);
+                                                     std::unique_ptr<Expression> value,
+                                                     bool addToSymbolTable = true);
     std::unique_ptr<Statement> convertVarDeclaration(int offset, const Modifiers& modifiers,
                                                      const Type* baseType, skstd::string_view name,
                                                      bool isArray,
@@ -243,6 +244,10 @@ private:
         return fContext.fConfig->strictES2Mode();
     }
 
+    bool isRuntimeEffect() const {
+        return ProgramConfig::IsRuntimeEffect(fContext.fConfig->fKind);
+    }
+
     const ShaderCapsClass& caps() const {
         return fContext.fCaps;
     }
@@ -274,6 +279,7 @@ private:
     friend class AutoSwitchLevel;
     friend class AutoDisableInline;
     friend class Compiler;
+    friend class DSLParser;
     friend class dsl::DSLCore;
     friend class dsl::DSLFunction;
     friend class dsl::DSLVar;

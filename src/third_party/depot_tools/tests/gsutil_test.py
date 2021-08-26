@@ -72,7 +72,7 @@ class GsutilUnitTests(unittest.TestCase):
     setattr(subprocess, 'call', self.old_call)
 
   def test_download_gsutil(self):
-    version = gsutil.VERSION
+    version = '4.2'
     filename = 'gsutil_%s.zip' % version
     full_filename = os.path.join(self.tempdir, filename)
     fake_file = b'This is gsutil.zip'
@@ -113,7 +113,7 @@ class GsutilUnitTests(unittest.TestCase):
     self.assertEqual(self.fake.expectations, [])
 
   def test_ensure_gsutil_full(self):
-    version = gsutil.VERSION
+    version = '4.2'
     gsutil_dir = os.path.join(self.tempdir, 'gsutil_%s' % version, 'gsutil')
     gsutil_bin = os.path.join(gsutil_dir, 'gsutil')
     gsutil_flag = os.path.join(gsutil_dir, 'install.flag')
@@ -137,7 +137,7 @@ class GsutilUnitTests(unittest.TestCase):
     self.assertEqual(self.fake.expectations, [])
 
   def test_ensure_gsutil_short(self):
-    version = gsutil.VERSION
+    version = '4.2'
     gsutil_dir = os.path.join(self.tempdir, 'gsutil_%s' % version, 'gsutil')
     gsutil_bin = os.path.join(gsutil_dir, 'gsutil')
     gsutil_flag = os.path.join(gsutil_dir, 'install.flag')

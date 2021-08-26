@@ -17,8 +17,8 @@ import org.chromium.base.Consumer;
 import org.chromium.components.browser_ui.site_settings.SiteSettingsDelegate;
 import org.chromium.components.content_settings.CookieControlsBridge;
 import org.chromium.components.content_settings.CookieControlsObserver;
-import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
 import org.chromium.components.omnibox.AutocompleteSchemeClassifier;
+import org.chromium.content_public.browser.BrowserContextHandle;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.url.GURL;
 
@@ -182,7 +182,7 @@ public abstract class PageInfoControllerDelegate {
      */
     @Nullable
     public abstract PageInfoSubpageController createHistoryController(
-            PageInfoMainController mainController, PageInfoRowView rowView, String host);
+            PageInfoMainController mainController, PageInfoRowView rowView);
 
     /**
      * @return Returns the browser context associated with this dialog.

@@ -281,6 +281,8 @@ void ChromeContentClient::AddAdditionalSchemes(Schemes* schemes) {
   schemes->referrer_schemes.push_back(content::kAndroidAppScheme);
 #endif
 
+  schemes->extension_schemes.push_back(extensions::kExtensionScheme);
+
   schemes->savable_schemes.push_back(extensions::kExtensionScheme);
   schemes->savable_schemes.push_back(chrome::kChromeSearchScheme);
   schemes->savable_schemes.push_back(dom_distiller::kDomDistillerScheme);
@@ -333,7 +335,7 @@ std::u16string ChromeContentClient::GetLocalizedString(
 
 base::StringPiece ChromeContentClient::GetDataResource(
     int resource_id,
-    ui::ScaleFactor scale_factor) {
+    ui::ResourceScaleFactor scale_factor) {
   return ui::ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
       resource_id, scale_factor);
 }
@@ -355,7 +357,7 @@ base::FilePath ChromeContentClient::GetChildProcessPath(
     const base::FilePath& helpers_path) {
   std::string helper_name(chrome::kHelperProcessExecutableName);
   if (child_flags == chrome::kChildProcessHelperAlerts) {
-    helper_name += " (Alerts)";
+    helper_name += chrome::kMacHelperSuffixAlerts;
     return helpers_path.Append(helper_name + ".app")
         .Append("Contents")
         .Append("MacOS")

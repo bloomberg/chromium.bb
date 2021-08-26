@@ -50,6 +50,8 @@ class PatchInfo:
     self._does_insert = False
     # Set of lines that a diff deletes.
     self._deleted_lines = set()
+    # Is the patch a whole-file delete in origin of an upstream file?
+    self._is_delete_of_file_in_origin = False
 
   def record_inserted_line(self, line):
     """ Records that |line| was inserted as part of the patch.
@@ -79,11 +81,22 @@ class PatchInfo:
     If those changes end up in the same diff block, then we'll miss A
     because of this test.  However, in practice, checking for both seems
     to remove some noise.
+
+    Also note that, if the patch is a whole-file deletion in origin, then none
+    of the missing lines are interesting.  The whole file is gone, and it'll
+    be handled specially elsewhere, rather than trying to 'git blame' specific
+    deleted lines.
     """
-    if self._deleted_lines and not self._does_insert:
+    if self._deleted_lines and not self._does_insert and not self._is_delete_of_file_in_origin:
       return self._deleted_lines
     return set()
 
+  def set_is_delete_of_file_in_origin(self):
+    """ Records that this patch is a whole-file deletion."""
+    self._is_delete_of_file_in_origin = True;
+
+  def is_delete_of_file_in_origin(self):
+    return self._is_delete_of_file_in_origin
 
 def main(argv):
   # Origin branch that contains the patches we want to find.
@@ -134,6 +147,10 @@ def write_patches_file(origin_branch, output_file):
   files_to_deleted_lines = {}
   patch_info = PatchInfo()
   filename = None
+  # Files that were delted in origin but exist in upstream.
+  files_deleted_in_origin = set()
+
+  last_minus_file = None
 
   # Process each diff.  Include a dummy line to flush out the last diff.
   log("Scanning diffs between origin and upstream")
@@ -141,23 +158,36 @@ def write_patches_file(origin_branch, output_file):
     if line.startswith("+++"):
       # If the previous patch was delete-only, then we need to search for it
       # differently, since we don't get blame entries for deleted lines.
-      # Add the set of deleted lines to this filename.
+      # Add the set of deleted lines to this filename.  Remember that whole-file
+      # deletions have no interesting deleted lines, and are handled even more
+      # differently than deleted lines inside the file.
       deleted_lines = patch_info.interesting_deleted_lines()
       if deleted_lines:
         files_to_deleted_lines[filename] = deleted_lines
 
-      # Update to the new filename.
-      filename = line[6:]
-      log("Checking diffs in %s" % filename)
-
       # Start of a new diff.  We don't know if it inserts / deletes lines.
       patch_info = PatchInfo()
-    elif line.startswith("@@"):
+
+      # Update to the new filename.
+      # If the line is "+++ /dev/null", then it means that chromium deleted the
+      # file, while upstream has it.  Note that it does not contain the "a/"
+      # or "b/" that we'd expect, so line[6:] would grab "ev/null" if we didn't
+      # handle it specially.
+      if "/dev/null" in line:
+        files_deleted_in_origin.add(last_minus_file)
+        patch_info.set_is_delete_of_file_in_origin()
+        log("File was deleted in origin: %s" % last_minus_file)
+      else:
+        filename = line[6:]
+        log("Checking diffs in %s" % filename)
+    elif line.startswith("@@") and not patch_info.is_delete_of_file_in_origin():
       # @@ -linespec +linespec @@
       # linespec is either "line_number,number_of_lines" or "line_number".
       # Extract the "+linespec", which is what was added by |origin|.
       # If the number of lines is specified as 0, then it's a deletion only.
       # If the number of lines is unspecified, then it's 1.
+      # If the diff is a whole-file delete, then don't do any of this, since
+      # it's not going to work anyway.  We'll look up the whole file later.
       added_linespec = re.sub(r"^.*\+(.*) @@.*", r"\1", line)
       # Figure out the lines to blame.  This is just "starting_line,+number".
       if "," in added_linespec:
@@ -185,6 +215,9 @@ def write_patches_file(origin_branch, output_file):
           sha1ToFiles[sha1].add(filename)
     elif line.startswith("---"):
       # Do nothing.  Just avoid matching "---" when we check for "-"
+      # Record the filename, though, in case we deleted it in origin.  We won't
+      # get the filename in the upcoming +++; it'll be "+++ /dev/null".
+      last_minus_file = line[6:]
       pass
     elif line.startswith("-"):
       # This diff does delete lines.
@@ -215,6 +248,14 @@ def write_patches_file(origin_branch, output_file):
       # Add the sha1 to the sets
       sha1s.add(sha1)
       sha1ToFiles[sha1].add(filename)
+
+  # Find which commit deleted each file in origin.
+  for filename in files_deleted_in_origin:
+    log("Finding commit that deleted %s" % filename)
+    sha1 = shell.output_or_error([
+        "git", "log", "-1", origin_branch, "--format=%H", "--", filename])
+    sha1s.add(sha1)
+    sha1ToFiles[sha1].add(filename)
 
   # Look up dates from sha1 hashes.  We want to output them in a canonical order
   # so that we can diff easier.  Date order seems more convenient that sha1.

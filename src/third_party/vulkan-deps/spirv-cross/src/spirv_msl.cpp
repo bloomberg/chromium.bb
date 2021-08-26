@@ -230,13 +230,12 @@ void CompilerMSL::build_implicit_builtins()
 	    (active_input_builtins.get(BuiltInVertexId) || active_input_builtins.get(BuiltInVertexIndex) ||
 	     active_input_builtins.get(BuiltInBaseVertex) || active_input_builtins.get(BuiltInInstanceId) ||
 	     active_input_builtins.get(BuiltInInstanceIndex) || active_input_builtins.get(BuiltInBaseInstance));
-	bool need_sample_mask = msl_options.additional_fixed_sample_mask != 0xffffffff;
 	bool need_local_invocation_index = msl_options.emulate_subgroups && active_input_builtins.get(BuiltInSubgroupId);
 	bool need_workgroup_size = msl_options.emulate_subgroups && active_input_builtins.get(BuiltInNumSubgroups);
 
 	if (need_subpass_input || need_sample_pos || need_subgroup_mask || need_vertex_params || need_tesc_params ||
 	    need_multiview || need_dispatch_base || need_vertex_base_params || need_grid_params || needs_sample_id ||
-	    needs_subgroup_invocation_id || needs_subgroup_size || need_sample_mask || need_local_invocation_index ||
+	    needs_subgroup_invocation_id || needs_subgroup_size || has_additional_fixed_sample_mask() || need_local_invocation_index ||
 	    need_workgroup_size)
 	{
 		bool has_frag_coord = false;
@@ -267,7 +266,7 @@ void CompilerMSL::build_implicit_builtins()
 
 			if (var.storage == StorageClassOutput)
 			{
-				if (need_sample_mask && builtin == BuiltInSampleMask)
+				if (has_additional_fixed_sample_mask() && builtin == BuiltInSampleMask)
 				{
 					builtin_sample_mask_id = var.self;
 					mark_implicit_builtin(StorageClassOutput, BuiltInSampleMask, var.self);
@@ -757,7 +756,7 @@ void CompilerMSL::build_implicit_builtins()
 			builtin_dispatch_base_id = var_id;
 		}
 
-		if (need_sample_mask && !does_shader_write_sample_mask)
+		if (has_additional_fixed_sample_mask() && !does_shader_write_sample_mask)
 		{
 			uint32_t offset = ir.increase_bound_by(2);
 			uint32_t var_id = offset + 1;
@@ -5384,9 +5383,7 @@ void CompilerMSL::emit_custom_functions()
 				statement("// SPIR-V callers expect a uint4. We must convert.");
 				statement("// FIXME: This won't include higher bits if Apple ever supports");
 				statement("// 128 lanes in an SIMD-group.");
-				statement(
-				    "return uint4((uint)((simd_vote::vote_t)vote & 0xFFFFFFFF), (uint)(((simd_vote::vote_t)vote >> "
-				    "32) & 0xFFFFFFFF), 0, 0);");
+				statement("return uint4(as_type<uint2>((simd_vote::vote_t)vote), 0, 0);");
 			}
 			end_scope();
 			statement("");
@@ -7449,7 +7446,7 @@ void CompilerMSL::fix_up_interpolant_access_chain(const uint32_t *ops, uint32_t 
 	// for that getting the base index.
 	for (uint32_t i = 3; i < length; ++i)
 	{
-		if (is_vector(*type) && is_scalar(result_type))
+		if (is_vector(*type) && !is_array(*type) && is_scalar(result_type))
 		{
 			// We don't want to combine the next index. Actually, we need to save it
 			// so we know to apply a swizzle to the result of the interpolation.
@@ -12311,29 +12308,17 @@ void CompilerMSL::fix_up_shader_inputs_outputs()
 				break;
 			}
 		}
-		else if (var.storage == StorageClassOutput && is_builtin_variable(var) && active_output_builtins.get(bi_type))
+		else if (var.storage == StorageClassOutput && get_execution_model() == ExecutionModelFragment &&
+				 is_builtin_variable(var) && active_output_builtins.get(bi_type) &&
+				 bi_type == BuiltInSampleMask && has_additional_fixed_sample_mask())
 		{
-			if (bi_type == BuiltInSampleMask && get_execution_model() == ExecutionModelFragment &&
-			    msl_options.additional_fixed_sample_mask != 0xffffffff)
-			{
-				// If the additional fixed sample mask was set, we need to adjust the sample_mask
-				// output to reflect that. If the shader outputs the sample_mask itself too, we need
-				// to AND the two masks to get the final one.
-				if (does_shader_write_sample_mask)
-				{
-					entry_func.fixup_hooks_out.push_back([=]() {
-						statement(to_expression(builtin_sample_mask_id),
-						          " &= ", msl_options.additional_fixed_sample_mask, ";");
-					});
-				}
-				else
-				{
-					entry_func.fixup_hooks_out.push_back([=]() {
-						statement(to_expression(builtin_sample_mask_id), " = ",
-						          msl_options.additional_fixed_sample_mask, ";");
-					});
-				}
-			}
+			// If the additional fixed sample mask was set, we need to adjust the sample_mask
+			// output to reflect that. If the shader outputs the sample_mask itself too, we need
+			// to AND the two masks to get the final one.
+			string op_str = does_shader_write_sample_mask ? " &= " : " = ";
+			entry_func.fixup_hooks_out.push_back([=]() {
+				statement(to_expression(builtin_sample_mask_id), op_str, additional_fixed_sample_mask_str(), ";");
+			});
 		}
 	});
 }
@@ -14050,9 +14035,26 @@ string CompilerMSL::builtin_to_glsl(BuiltIn builtin, StorageClass storage)
 	case BuiltInClipDistance:
 	case BuiltInCullDistance:
 	case BuiltInLayer:
-	case BuiltInSampleMask:
 		if (get_execution_model() == ExecutionModelTessellationControl)
 			break;
+		if (storage != StorageClassInput && current_function && (current_function->self == ir.default_entry_point) &&
+		    !is_stage_output_builtin_masked(builtin))
+			return stage_out_var_name + "." + CompilerGLSL::builtin_to_glsl(builtin, storage);
+		break;
+
+	case BuiltInSampleMask:
+		if (storage == StorageClassInput && current_function && (current_function->self == ir.default_entry_point) &&
+			(has_additional_fixed_sample_mask() || needs_sample_id))
+		{
+			string samp_mask_in;
+			samp_mask_in += "(" + CompilerGLSL::builtin_to_glsl(builtin, storage);
+			if (has_additional_fixed_sample_mask())
+				samp_mask_in += " & " + additional_fixed_sample_mask_str();
+			if (needs_sample_id)
+				samp_mask_in += " & (1 << gl_SampleID)";
+			samp_mask_in += ")";
+			return samp_mask_in;
+		}
 		if (storage != StorageClassInput && current_function && (current_function->self == ir.default_entry_point) &&
 		    !is_stage_output_builtin_masked(builtin))
 			return stage_out_var_name + "." + CompilerGLSL::builtin_to_glsl(builtin, storage);
@@ -15935,4 +15937,11 @@ const char *CompilerMSL::get_combined_sampler_suffix() const
 
 void CompilerMSL::emit_block_hints(const SPIRBlock &)
 {
+}
+
+string CompilerMSL::additional_fixed_sample_mask_str() const
+{
+	char print_buffer[32];
+	sprintf(print_buffer, "0x%x", msl_options.additional_fixed_sample_mask);
+	return print_buffer;
 }

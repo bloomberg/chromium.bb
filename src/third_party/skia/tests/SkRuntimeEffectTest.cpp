@@ -12,6 +12,7 @@
 #include "include/core/SkData.h"
 #include "include/core/SkPaint.h"
 #include "include/core/SkSurface.h"
+#include "include/effects/SkBlenders.h"
 #include "include/effects/SkRuntimeEffect.h"
 #include "include/gpu/GrDirectContext.h"
 #include "src/core/SkColorSpacePriv.h"
@@ -37,16 +38,6 @@ void test_invalid_effect(skiatest::Reporter* r, const char* src, const char* exp
 
 #define EMPTY_MAIN "half4 main(float2 p) { return half4(0); }"
 
-DEF_TEST(SkRuntimeEffectInvalid_FPOnly, r) {
-    // Features that are only allowed in .fp files (key, in uniform, ctype, when).
-    // Ensure that these fail, and the error messages contain the relevant keyword.
-    test_invalid_effect(r, "layout(key) in bool Input;"             EMPTY_MAIN, "key");
-    test_invalid_effect(r, "in uniform float Input;"                EMPTY_MAIN, "in uniform");
-    test_invalid_effect(r, "layout(ctype=SkRect) float4 Input;"     EMPTY_MAIN, "ctype");
-    test_invalid_effect(r, "in bool Flag; "
-                           "layout(when=Flag) uniform float Input;" EMPTY_MAIN, "when");
-}
-
 DEF_TEST(SkRuntimeEffectInvalid_LimitedUniformTypes, r) {
     // Runtime SkSL supports a limited set of uniform types. No bool, for example:
     test_invalid_effect(r, "uniform bool b;" EMPTY_MAIN, "uniform");
@@ -62,7 +53,7 @@ DEF_TEST(SkRuntimeEffectInvalid_NoInVariables, r) {
 
 DEF_TEST(SkRuntimeEffectInvalid_UndefinedFunction, r) {
     test_invalid_effect(r, "half4 missing(); half4 main(float2 p) { return missing(); }",
-                           "undefined function");
+                           "function 'half4 missing()' is not defined");
 }
 
 DEF_TEST(SkRuntimeEffectInvalid_UndefinedMain, r) {
@@ -186,8 +177,8 @@ DEF_TEST(SkRuntimeEffectForBlender, r) {
                         errorText.c_str());
     };
 
-    // Color filters must use the 'half4 main(half4, half4)' signature. Any mixture of
-    // float4/vec4/half4 is allowed.
+    // Blenders must use the 'half4 main(half4, half4)' signature. Any mixture of float4/vec4/half4
+    // is allowed.
     test_valid("half4  main(half4  s, half4  d) { return s; }");
     test_valid("float4 main(float4 s, float4 d) { return d; }");
     test_valid("float4 main(half4  s, float4 d) { return s; }");
@@ -212,21 +203,56 @@ DEF_TEST(SkRuntimeEffectForBlender, r) {
     test_invalid("half4 main(half4 s, half4 d) { return sk_FragCoord.xy01; }",
                  "unknown identifier");
 
-    // Child shaders are currently unsupported in blends
-    test_invalid("uniform shader sh; half4 main(half4 s, half4 d) { return s; }",
-                 "'shader' is not allowed in runtime blend");
-    test_invalid("uniform shader sh; half4 main(half4 s, half4 d) { return sample(sh, s.rg); }",
-                 "unknown identifier 'sample'");
+    // Sampling a child shader requires that we pass explicit coords
+    test_valid("uniform shader child;"
+               "half4 main(half4 s, half4 d) { return sample(child, s.rg); }");
+    // Trying to pass a color as well. (Works internally with FPs, but not in runtime effects).
+    test_invalid("uniform shader child;"
+                 "half4 main(half4 s, half4 d) { return sample(child, s.rg, d); }",
+                 "no match for sample(shader, half2, half4)");
+
+    // Shader with just a color
+    test_invalid("uniform shader child;"
+                 "half4 main(half4 s, half4 d) { return sample(child, s); }",
+                 "no match for sample(shader, half4)");
+    // Coords and color in a different order
+    test_invalid("uniform shader child;"
+                 "half4 main(half4 s, half4 d) { return sample(child, s, d.rg); }",
+                 "no match for sample(shader, half4, half2)");
+
+    // Older variants that are no longer allowed
+    test_invalid("uniform shader child;"
+                 "half4 main(half4 s, half4 d) { return sample(child); }",
+                 "no match for sample(shader)");
+    test_invalid("uniform shader child;"
+                 "half4 main(half4 s, half4 d) { return sample(child, float3x3(1)); }",
+                 "no match for sample(shader, float3x3)");
+
+    // Sampling a colorFilter requires a color. No other signatures are valid.
+    test_valid("uniform colorFilter child;"
+               "half4 main(half4 s, half4 d) { return sample(child, d); }");
+
+    test_invalid("uniform colorFilter child;"
+                 "half4 main(half4 s, half4 d) { return sample(child); }",
+                 "sample(colorFilter)");
+    test_invalid("uniform colorFilter child;"
+                 "half4 main(half4 s, half4 d) { return sample(child, d.rg); }",
+                 "sample(colorFilter, half2)");
+    test_invalid("uniform colorFilter child;"
+                 "half4 main(half4 s, half4 d) { return sample(child, d.rg, s); }",
+                 "sample(colorFilter, half2, half4)");
 }
 
 DEF_TEST(SkRuntimeEffectForShader, r) {
     // Tests that the shader factory rejects or accepts certain SkSL constructs
-    auto test_valid = [r](const char* sksl) {
-        auto [effect, errorText] = SkRuntimeEffect::MakeForShader(SkString(sksl));
+    auto test_valid = [r](const char* sksl, SkRuntimeEffect::Options options = {}) {
+        auto [effect, errorText] = SkRuntimeEffect::MakeForShader(SkString(sksl), options);
         REPORTER_ASSERT(r, effect, "%s", errorText.c_str());
     };
 
-    auto test_invalid = [r](const char* sksl, const char* expected) {
+    auto test_invalid = [r](const char* sksl,
+                            const char* expected,
+                            SkRuntimeEffect::Options options = {}) {
         auto [effect, errorText] = SkRuntimeEffect::MakeForShader(SkString(sksl));
         REPORTER_ASSERT(r, !effect);
         REPORTER_ASSERT(r,
@@ -258,8 +284,13 @@ DEF_TEST(SkRuntimeEffectForShader, r) {
     test_invalid("half4 main() { return half4(1); }", "'main' parameter");
     test_invalid("half4 main(half4 c) { return c; }", "'main' parameter");
 
-    // sk_FragCoord should be available
-    test_valid("half4 main(float2 p) { return sk_FragCoord.xy01; }");
+    // sk_FragCoord should be available, but only if we've enabled it via Options
+    test_invalid("half4 main(float2 p) { return sk_FragCoord.xy01; }",
+                 "unknown identifier 'sk_FragCoord'");
+
+    SkRuntimeEffect::Options optionsWithFragCoord;
+    SkRuntimeEffectPriv::EnableFragCoord(&optionsWithFragCoord);
+    test_valid("half4 main(float2 p) { return sk_FragCoord.xy01; }", optionsWithFragCoord);
 
     // Sampling a child shader requires that we pass explicit coords
     test_valid("uniform shader child;"
@@ -344,7 +375,9 @@ public:
             : fReporter(r), fSurface(std::move(surface)) {}
 
     void build(const char* src) {
-        auto [effect, errorText] = SkRuntimeEffect::MakeForShader(SkString(src));
+        SkRuntimeEffect::Options options;
+        SkRuntimeEffectPriv::EnableFragCoord(&options);
+        auto [effect, errorText] = SkRuntimeEffect::MakeForShader(SkString(src), options);
         if (!effect) {
             REPORT_FAILURE(fReporter, "effect",
                            SkStringPrintf("Effect didn't compile: %s", errorText.c_str()));
@@ -405,6 +438,10 @@ public:
 
     SkRuntimeBlendBuilder::BuilderUniform uniform(const char* name) {
         return fBuilder->uniform(name);
+    }
+
+    SkRuntimeBlendBuilder::BuilderChild child(const char* name) {
+        return fBuilder->child(name);
     }
 
     void test(std::array<GrColor, 4> expected, PreTestFn preTestCallback = nullptr) {
@@ -553,6 +590,7 @@ static void test_RuntimeEffect_Blenders(skiatest::Reporter* r, GrRecordingContex
     REPORTER_ASSERT(r, surface);
     TestBlend effect(r, surface);
 
+    using float2 = std::array<float, 2>;
     using float4 = std::array<float, 4>;
     using int4 = std::array<int, 4>;
 
@@ -581,10 +619,10 @@ static void test_RuntimeEffect_Blenders(skiatest::Reporter* r, GrRecordingContex
     effect.test(0xFF888888);
 
     // Fill the destination with a variety of colors (using the RGBW shader)
-    SkPaint paint;
-    paint.setShader(make_RGBW_shader());
-    paint.setBlendMode(SkBlendMode::kSrc);
-    surface->getCanvas()->drawPaint(paint);
+    SkPaint rgbwPaint;
+    rgbwPaint.setShader(make_RGBW_shader());
+    rgbwPaint.setBlendMode(SkBlendMode::kSrc);
+    surface->getCanvas()->drawPaint(rgbwPaint);
 
     // Verify that we can read back the dest color exactly as-is (ignoring the source color)
     // This is equivalent to the kDst blend mode.
@@ -601,6 +639,70 @@ static void test_RuntimeEffect_Blenders(skiatest::Reporter* r, GrRecordingContex
     effect.test(0x00000000);
     effect.build("half4 main(half4 s, half4 d) { return half4(2); }");
     effect.test(0xFFFFFFFF);
+
+    //
+    // Sampling children
+    //
+
+    // Sampling a null shader/color filter should return the paint color.
+    effect.build("uniform shader child;"
+                 "half4 main(half4 s, half4 d) { return sample(child, s.rg); }");
+    effect.child("child") = nullptr;
+    effect.test(0xFF00FFFF,
+                [](SkCanvas*, SkPaint* paint) { paint->setColor4f({1.0f, 1.0f, 0.0f, 1.0f}); });
+
+    effect.build("uniform colorFilter child;"
+                 "half4 main(half4 s, half4 d) { return sample(child, s); }");
+    effect.child("child") = nullptr;
+    effect.test(0xFF00FFFF,
+                [](SkCanvas*, SkPaint* paint) { paint->setColor4f({1.0f, 1.0f, 0.0f, 1.0f}); });
+
+    // Sampling a null blender should do a src-over blend. Draw 50% black over RGBW to verify this.
+    surface->getCanvas()->drawPaint(rgbwPaint);
+    effect.build("uniform blender child;"
+                 "half4 main(half4 s, half4 d) { return sample(child, s, d); }");
+    effect.child("child") = nullptr;
+    effect.test({0xFF000080, 0xFF008000, 0xFF800000, 0xFF808080},
+                [](SkCanvas*, SkPaint* paint) { paint->setColor4f({0.0f, 0.0f, 0.0f, 0.497f}); });
+
+    // Sampling a shader at various coordinates
+    effect.build("uniform shader child;"
+                 "uniform half2 pos;"
+                 "half4 main(half4 s, half4 d) { return sample(child, pos); }");
+    effect.child("child") = make_RGBW_shader();
+    effect.uniform("pos") = float2{0, 0};
+    effect.test(0xFF0000FF);
+
+    effect.uniform("pos") = float2{1, 0};
+    effect.test(0xFF00FF00);
+
+    effect.uniform("pos") = float2{0, 1};
+    effect.test(0xFFFF0000);
+
+    effect.uniform("pos") = float2{1, 1};
+    effect.test(0xFFFFFFFF);
+
+    // Sampling a color filter
+    effect.build("uniform colorFilter child;"
+                 "half4 main(half4 s, half4 d) { return sample(child, half4(1)); }");
+    effect.child("child") = SkColorFilters::Blend(0xFF012345, SkBlendMode::kSrc);
+    effect.test(0xFF452301);
+
+    // Sampling a built-in blender
+    surface->getCanvas()->drawPaint(rgbwPaint);
+    effect.build("uniform blender child;"
+                 "half4 main(half4 s, half4 d) { return sample(child, s, d); }");
+    effect.child("child") = SkBlender::Mode(SkBlendMode::kPlus);
+    effect.test({0xFF4523FF, 0xFF45FF01, 0xFFFF2301, 0xFFFFFFFF},
+                [](SkCanvas*, SkPaint* paint) { paint->setColor(0xFF012345); });
+
+    // Sampling a runtime-effect blender
+    surface->getCanvas()->drawPaint(rgbwPaint);
+    effect.build("uniform blender child;"
+                 "half4 main(half4 s, half4 d) { return sample(child, s, d); }");
+    effect.child("child") = SkBlenders::Arithmetic(0, 1, 1, 0, /*enforcePremul=*/false);
+    effect.test({0xFF4523FF, 0xFF45FF01, 0xFFFF2301, 0xFFFFFFFF},
+                [](SkCanvas*, SkPaint* paint) { paint->setColor(0xFF012345); });
 }
 
 DEF_TEST(SkRuntimeEffect_Blender_CPU, r) {
@@ -684,7 +786,9 @@ DEF_TEST(SkRuntimeEffectThreaded, r) {
     std::thread threads[16];
     for (auto& thread : threads) {
         thread = std::thread([r]() {
-            auto [effect, error] = SkRuntimeEffect::MakeForShader(SkString(kSource));
+            SkRuntimeEffect::Options options;
+            SkRuntimeEffectPriv::EnableFragCoord(&options);
+            auto [effect, error] = SkRuntimeEffect::MakeForShader(SkString(kSource), options);
             REPORTER_ASSERT(r, effect);
         });
     }
@@ -789,8 +893,8 @@ DEF_TEST(SkRuntimeShaderSampleCoords, r) {
                                  "child", std::move(child));
         REPORTER_ASSERT(r, fp);
 
-        REPORTER_ASSERT(r, fp->childProcessor(0)->isSampledWithExplicitCoords() == expectExplicit);
-        REPORTER_ASSERT(r, fp->referencesSampleCoords() == expectReferencesSampleCoords);
+        REPORTER_ASSERT(r, fp->childProcessor(0)->sampleUsage().isExplicit() == expectExplicit);
+        REPORTER_ASSERT(r, fp->usesSampleCoords() == expectReferencesSampleCoords);
     };
 
     // Cases where our optimization is valid, and works:
@@ -843,8 +947,7 @@ DEF_GPUTEST_FOR_ALL_CONTEXTS(GrSkSLFP_Specialized, r, ctxInfo) {
                                    GrSkSLFP::OptFlags::kNone,
                                    "color", GrSkSLFP::SpecializeIf(specialize, color));
         GrProcessorKeyBuilder builder(&result.key);
-        result.fp->getGLSLProcessorKey(*ctxInfo.directContext()->priv().caps()->shaderCaps(),
-                                       &builder);
+        result.fp->addToKey(*ctxInfo.directContext()->priv().caps()->shaderCaps(), &builder);
         builder.flush();
         return result;
     };

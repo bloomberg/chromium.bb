@@ -582,7 +582,11 @@ void GuestViewBase::WebContentsDestroyed() {
 
 void GuestViewBase::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame() || !navigation_handle->HasCommitted())
+  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+  // frames. This caller was converted automatically to the primary main frame
+  // to preserve its semantics. Follow up to confirm correctness.
+  if (!navigation_handle->IsInPrimaryMainFrame() ||
+      !navigation_handle->HasCommitted())
     return;
 
   if (attached() && ZoomPropagatesFromEmbedderToGuest())
@@ -631,17 +635,6 @@ void GuestViewBase::LoadingStateChanged(WebContents* source,
 
   embedder_web_contents()->GetDelegate()->LoadingStateChanged(
       embedder_web_contents(), to_different_document);
-}
-
-std::unique_ptr<content::ColorChooser> GuestViewBase::OpenColorChooser(
-    WebContents* web_contents,
-    SkColor color,
-    const std::vector<blink::mojom::ColorSuggestionPtr>& suggestions) {
-  if (!attached() || !embedder_web_contents()->GetDelegate())
-    return nullptr;
-
-  return embedder_web_contents()->GetDelegate()->OpenColorChooser(
-      web_contents, color, suggestions);
 }
 
 void GuestViewBase::ResizeDueToAutoResize(WebContents* web_contents,

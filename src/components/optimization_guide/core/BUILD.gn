@@ -33,17 +33,22 @@ static_library("core") {
     "hints_fetcher.h",
     "hints_fetcher_factory.cc",
     "hints_fetcher_factory.h",
+    "hints_manager.cc",
+    "hints_manager.h",
     "hints_processing_util.cc",
     "hints_processing_util.h",
     "insertion_ordered_set.h",
     "memory_hint.cc",
     "memory_hint.h",
+    "model_info.cc",
+    "model_info.h",
     "noisy_metrics_recorder.cc",
     "noisy_metrics_recorder.h",
     "optimization_filter.cc",
     "optimization_filter.h",
     "optimization_guide_constants.cc",
     "optimization_guide_constants.h",
+    "optimization_guide_decision.h",
     "optimization_guide_enums.h",
     "optimization_guide_features.cc",
     "optimization_guide_features.h",
@@ -70,8 +75,6 @@ static_library("core") {
     "prediction_model.h",
     "prediction_model_fetcher.cc",
     "prediction_model_fetcher.h",
-    "prediction_model_file.cc",
-    "prediction_model_file.h",
     "push_notification_manager.h",
     "store_update_data.cc",
     "store_update_data.h",
@@ -87,6 +90,7 @@ static_library("core") {
       "bert_model_executor.cc",
       "bert_model_executor.h",
       "model_executor.h",
+      "page_entities_model_executor.h",
     ]
   }
 
@@ -145,6 +149,8 @@ static_library("test_support") {
     "proto_database_provider_test_base.h",
     "test_hints_component_creator.cc",
     "test_hints_component_creator.h",
+    "test_model_info_builder.cc",
+    "test_model_info_builder.h",
     "test_optimization_guide_model_provider.cc",
     "test_optimization_guide_model_provider.h",
   ]
@@ -167,6 +173,7 @@ source_set("unit_tests") {
     "hint_cache_unittest.cc",
     "hints_component_util_unittest.cc",
     "hints_fetcher_unittest.cc",
+    "hints_manager_unittest.cc",
     "hints_processing_util_unittest.cc",
     "insertion_ordered_set_unittest.cc",
     "noisy_metrics_recorder_unittest.cc",
@@ -220,5 +227,12 @@ source_set("unit_tests") {
       "//third_party/tflite-support",
       "//third_party/tflite-support:tflite-support-proto",
     ]
+  }
+}
+
+if (is_android) {
+  java_cpp_enum("optimization_guide_generated_enums") {
+    sources = [ "optimization_guide_decision.h" ]
+    visibility = [ "//chrome/browser/optimization_guide/android:*" ]
   }
 }

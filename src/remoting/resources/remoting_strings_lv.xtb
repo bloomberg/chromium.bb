@@ -11,6 +11,7 @@
 <translation id="1546934824884762070">Radās neparedzēta kļūda. Lūdzu, ziņojiet par šo problēmu izstrādātājiem.</translation>
 <translation id="1697532407822776718">Gatavs!</translation>
 <translation id="1742469581923031760">Notiek savienojuma izveide…</translation>
+<translation id="177040763384871009">Lai klienta pārlūkā varētu atvērt saites, uz kurām tiek noklikšķināts attālajā ierīcē, jums ir jāmaina sistēmas pārlūks uz “<ph name="URL_FORWARDER_NAME" />”.</translation>
 <translation id="177096447311351977">Klienta kanāla IP: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1897488610212723051">Dzēst</translation>
 <translation id="2009755455353575666">Savienojuma kļūme</translation>
@@ -129,6 +130,7 @@ Ja kastīte “<ph name="SERVICE_SCRIPT_NAME" />” jau ir atzīmēta, noņemiet
 <translation id="6963936880795878952">Savienojumi ar attālo datoru īslaicīgi ir bloķēti, jo kāda persona mēģināja izveidot savienojumu, izmantojot nederīgu PIN. Lūdzu, vēlāk mēģiniet vēlreiz.</translation>
 <translation id="6965382102122355670">Labi</translation>
 <translation id="6985691951107243942">Vai tiešām vēlaties atspējot attālos savienojumus ar saimniekdatoru <ph name="HOSTNAME" />? Ja pārdomāsiet, savienojumus ar šo datoru varēsiet iespējot tikai klātienē.</translation>
+<translation id="6998890551706945177">Lietotājs <ph name="CLIENT_USERNAME" /> ir pieprasījis piekļuvi, lai skatītu un pārvaldītu jūsu datoru. Nospiediet “<ph name="IDS_SHARE_CONFIRM_DIALOG_DECLINE" />”, ja nezināt šo personu vai pirms kopīgošanas ir nepieciešams veikt izmaiņas.  Pretējā gadījumā atlasiet “<ph name="IDS_SHARE_CONFIRM_DIALOG_CONFIRM" />”, lai atļautu savienojumu.</translation>
 <translation id="7019153418965365059">Neatpazīta saimniekdatora kļūda: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Attālā palīdzība</translation>
 <translation id="7026930240735156896">Sekojiet norādījumiem, lai iestatītu datoru attālai piekļuvei</translation>
@@ -142,6 +144,7 @@ Ja kastīte “<ph name="SERVICE_SCRIPT_NAME" />” jau ir atzīmēta, noņemiet
 <translation id="7434397035092923453">Piekļuve liegta šim klientam: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">Klients, kas izveidojis savienojumu: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7526139040829362392">Mainīt kontu</translation>
+<translation id="7535110896613603182">Atvērt noklusējuma lietotņu iestatījumus</translation>
 <translation id="7628469622942688817">Atcerēties manu PIN šajā ierīcē.</translation>
 <translation id="7649070708921625228">Palīdzība</translation>
 <translation id="7658239707568436148">Atcelt</translation>

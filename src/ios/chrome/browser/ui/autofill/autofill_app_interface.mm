@@ -17,15 +17,15 @@
 #import "components/autofill/ios/browser/credit_card_save_manager_test_observer_bridge.h"
 #include "components/autofill/ios/browser/ios_test_event_waiter.h"
 #include "components/keyed_service/core/service_access_type.h"
-#include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
+#include "components/password_manager/core/browser/password_store_interface.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
-#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#import "ios/public/provider/chrome/browser/risk_data/risk_data_api.h"
 #import "ios/web/public/js_messaging/web_frames_manager.h"
 #import "ios/web/public/web_state.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -41,13 +41,13 @@ const char16_t kExampleUsername[] = u"concrete username";
 const char16_t kExamplePassword[] = u"concrete password";
 
 // Gets the current password store.
-scoped_refptr<password_manager::PasswordStore> GetPasswordStore() {
+scoped_refptr<password_manager::PasswordStoreInterface> GetPasswordStore() {
   // ServiceAccessType governs behaviour in Incognito: only modifications with
   // EXPLICIT_ACCESS, which correspond to user's explicit gesture, succeed.
   // This test does not deal with Incognito, and should not run in Incognito
   // context. Therefore IMPLICIT_ACCESS is used to let the test fail if in
   // Incognito context.
-  return IOSChromePasswordStoreFactory::GetForBrowserState(
+  return IOSChromePasswordStoreFactory::GetInterfaceForBrowserState(
       chrome_test_util::GetOriginalBrowserState(),
       ServiceAccessType::IMPLICIT_ACCESS);
 }
@@ -467,7 +467,7 @@ class SaveCardInfobarEGTestHelper
 }
 
 + (NSString*)paymentsRiskData {
-  return base::SysUTF8ToNSString(ios::GetChromeBrowserProvider().GetRiskData());
+  return ios::provider::GetRiskData();
 }
 
 #pragma mark - Private

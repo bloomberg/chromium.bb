@@ -41,6 +41,7 @@ TEST_CONFIGS = [
   'infra',
   'infradata_master_manager',
   'infradata_config',
+  'infradata_rbe',
   'internal_deps',
   'luci_gae',
   'luci_go',

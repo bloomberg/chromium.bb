@@ -7,6 +7,9 @@
 #ifndef CORE_FPDFDOC_CPDF_INTERACTIVEFORM_H_
 #define CORE_FPDFDOC_CPDF_INTERACTIVEFORM_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <memory>
 #include <vector>
@@ -14,8 +17,8 @@
 #include "core/fpdfapi/parser/fpdf_parser_decode.h"
 #include "core/fpdfdoc/cpdf_defaultappearance.h"
 #include "core/fpdfdoc/cpdf_formfield.h"
+#include "core/fxcrt/fx_coordinates.h"
 #include "core/fxcrt/fx_string.h"
-#include "core/fxcrt/fx_system.h"
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxcrt/unowned_ptr.h"
 

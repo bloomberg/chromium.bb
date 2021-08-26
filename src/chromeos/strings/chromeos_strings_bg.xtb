@@ -14,6 +14,7 @@
 <translation id="1204296502688602597">Забавяне на DNS</translation>
 <translation id="123124571410524056">Предполага се наличие на портал</translation>
 <translation id="1238612778414822719">Забавяне на HTTPS</translation>
+<translation id="1264369926465113395">Разгледайте новото дигитално списание на Chromebook за създатели</translation>
 <translation id="1270369111467284986">Предполага се наличие на портал за удостоверяване</translation>
 <translation id="1290331692326790741">слаб сигнал</translation>
 <translation id="1314565355471455267">VPN за Android</translation>
@@ -34,7 +35,9 @@
 <translation id="1510238584712386396">Стартов панел</translation>
 <translation id="1600964289716072707">Поставете друга страница върху скенера и изберете „Сканиране“, за да добавите страница.</translation>
 <translation id="1621067168122174824">Стартиране на тест на зареждането</translation>
+<translation id="1639239467298939599">Зарежда се</translation>
 <translation id="1641857168437328880">Подавач на документи (едностранно)</translation>
+<translation id="1643449475550628585">Ежедневна промяна на изображението на тапета</translation>
 <translation id="1644574205037202324">История</translation>
 <translation id="1662989795263954667">Спряло – няма мастило</translation>
 <translation id="1703835215927279855">Letter</translation>
@@ -65,7 +68,6 @@
 <translation id="2224337661447660594">Няма достъп до интернет</translation>
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="225692081236532131">Състояние на активирането</translation>
-<translation id="2294675138977897428">Не е открита връзка с Ethernet</translation>
 <translation id="2326139988748364651"><ph name="RESOLUTION_VALUE" /> DPI</translation>
 <translation id="2338501278241028356">Включете Bluetooth, за да бъдат открити устройствата в близост</translation>
 <translation id="2364498172489649528">Премината</translation>
@@ -75,9 +77,11 @@
 <translation id="2448312741937722512">Тип</translation>
 <translation id="2461822463642141190">Ток</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
+<translation id="2505327257735685095">Опресняване на текущото изображение на тапета</translation>
 <translation id="2517472476991765520">Сканиране</translation>
 <translation id="2570743873672969996">Изпълняван тест: <ph name="TEST_NAME" /></translation>
 <translation id="2585245331261708204">Новите неща в Chrome OS</translation>
+<translation id="2619761439309613843">Ежедневно опресняване</translation>
 <translation id="2620436844016719705">Система</translation>
 <translation id="2740531572673183784">OK</translation>
 <translation id="2751739896257479635">Удостоверяване във фаза 2 през EAP</translation>
@@ -87,7 +91,6 @@
 <translation id="2862104018715411648">За да започнете, поставете документа върху скенера и изберете „Сканиране във“</translation>
 <translation id="2872961005593481000">Изключване</translation>
 <translation id="2878387241690264070">За <ph name="NUM_SECONDS" /> секунди батерията се разреди с(ъс) <ph name="RATE" />.</translation>
-<translation id="2983662233540284543">Учете се от създател на игри, получете приложения за дизайн на игри и др.</translation>
 <translation id="3008341117444806826">ОПРЕСНЯВАНЕ</translation>
 <translation id="3009958530611748826">Изберете папка, в която да запазите</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" /> mA</translation>
@@ -101,6 +104,7 @@
 <translation id="3188257591659621405">Моите файлове</translation>
 <translation id="3199982728237701504">Подавач на документи (двустранно)</translation>
 <translation id="3226405216343213872">Търсят се скенери</translation>
+<translation id="3228433892370472777">Връзка по подразбиране</translation>
 <translation id="3246869037381808805">Заданията за отпечатване, по-стари от 1 ден, ще бъдат премахнати</translation>
 <translation id="3268178239013324452">Неуспешно – вратичката е отворена</translation>
 <translation id="3283504360622356314">{0,plural, =1{Редактиране на файла}other{Редактиране на файловете}}</translation>
@@ -117,10 +121,13 @@
 <translation id="3488065109653206955">Частично активиран</translation>
 <translation id="3527036260304016759">Неуспешно – неизвестна грешка</translation>
 <translation id="3532980081107202182">Остават около <ph name="MIN_REMAINING" /> минути</translation>
+<translation id="3540383942695635079">MAC адрес</translation>
 <translation id="357889014807611375">Wi-Fi мрежа с отчитане</translation>
+<translation id="3582041541988388905">Няма открита връзка с <ph name="NETWORK_NAME" /></translation>
 <translation id="3595596368722241419">Батерията е заредена</translation>
 <translation id="360565022852130722">Wi-Fi мрежата е защитена със слабия протокол WEP 802.1x</translation>
 <translation id="3689839747745352263">Тест: <ph name="TEST_NAME" /></translation>
+<translation id="3708186454126126312">Свързвани преди</translation>
 <translation id="373232531963562220">{PAGE_NUMBER,plural, =0{Повторно сканиране на страницата}=1{Повторно сканиране на страница {PAGE_NUMBER}}other{Повторно сканиране на страница {PAGE_NUMBER}}}</translation>
 <translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★ (<ph name="AGGREGATED_COUNT" /> отзива)</translation>
 <translation id="3748026146096797577">Няма връзка</translation>
@@ -163,6 +170,7 @@
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4483049906298469269">Неуспех при команда ping към шлюза на допълнителната мрежа</translation>
 <translation id="4511264077854731334">Портал</translation>
+<translation id="4536864596629708641">Конфигурация на IP адреса</translation>
 <translation id="4548483925627140043">Не бе открит сигнал</translation>
 <translation id="455835558791489930">Батерия с капацитет от <ph name="CHARGE_VALUE" /> мАч</translation>
 <translation id="4562494484721939086">Няма покритие</translation>
@@ -171,6 +179,7 @@
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> от <ph name="TOTAL_PAGE_NUMBER" />. Натиснете Enter, за да откажете заданието за отпечатване</translation>
 <translation id="4646949265910132906">Сигурна Wi-Fi връзка</translation>
 <translation id="4652335678334611408">Запазване на регистрационния файл за сесията</translation>
+<translation id="4654549501020883054">Промяна всеки ден</translation>
 <translation id="4665014895760275686">Производител</translation>
 <translation id="467510802200863975">Паролите не са идентични</translation>
 <translation id="467715984478005772">Предполага се наличие на защитна стена</translation>
@@ -194,6 +203,7 @@
 <translation id="4891842000192098784">Стрес</translation>
 <translation id="4917385247580444890">Силен</translation>
 <translation id="4917889632206600977">Спряло – няма хартия</translation>
+<translation id="491836528011451486">За да сканирате и замените страница <ph name="CURRENT_PAGE" />, поставете документа върху скенера и изберете „Повторно сканиране“.</translation>
 <translation id="4921665434385737356">За <ph name="NUM_SECONDS" /> секунди се заредиха <ph name="RATE" />.</translation>
 <translation id="4932733599132424254">Дата</translation>
 <translation id="498186245079027698">Проверете скенера и опитайте отново. Уверете се, че на устройството ви има достатъчно място за запазване на сканираните файлове.</translation>
@@ -209,10 +219,10 @@
 <translation id="5154917547274118687">Памет</translation>
 <translation id="5168185087976003268">Състояние на батерията</translation>
 <translation id="5170568018924773124">Показване в папката</translation>
-<translation id="519607504553633437">Създавайте и програмирайте собствени игри</translation>
 <translation id="5212543919916444558">На екрана ви не намирам нищо, за което да мога да ви помогна.
 Докоснете иконата на микрофон, за да ме попитате каквото и да е.</translation>
 <translation id="5222676887888702881">Изход</translation>
+<translation id="5234764350956374838">Отхвърляне</translation>
 <translation id="5252456968953390977">Роуминг</translation>
 <translation id="5264277876637023664">Тестване на процесора</translation>
 <translation id="5267975978099728568"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="ERROR_STATUS" /></translation>
@@ -243,7 +253,6 @@
 <translation id="5691511426247308406">Семейство</translation>
 <translation id="5701381305118179107">Центриране</translation>
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" /> от <ph name="TOTAL_PAGES" /></translation>
-<translation id="5752751666635965375">Създайте собствена игра</translation>
 <translation id="5760715441271661976">Състояние на портала</translation>
 <translation id="5832805196449965646">Добавяне на човек</translation>
 <translation id="583281660410589416">Неизвестно</translation>
@@ -266,6 +275,7 @@
 <translation id="6106186594183574873">За да завършите процеса, въведете старата си парола</translation>
 <translation id="6108689792487843350">Шлюзът е недостъпен</translation>
 <translation id="6122191549521593678">Онлайн</translation>
+<translation id="6125438912510167220">Скорост на връзката</translation>
 <translation id="6137767437444130246">Потребителски сертификат</translation>
 <translation id="6146993107019042706">За да завършите процеса, въведете новата си парола</translation>
 <translation id="6147514244879357420">PNG</translation>
@@ -292,6 +302,8 @@
 <translation id="65587193855025101">Плосък скенер</translation>
 <translation id="6564646048574748301">Неуспешно – няма връзка с принтера</translation>
 <translation id="6574762126505704998">Запълване</translation>
+<translation id="6575134580692778371">Не е конфигурирано</translation>
+<translation id="6596816719288285829">IP адрес</translation>
 <translation id="6603230386432466813">Имате проблеми при свързване?</translation>
 <translation id="6618744767048954150">В ход</translation>
 <translation id="6620487321149975369">Заданията за отпечатване ще се показват в историята, освен ако не ги премахнете ръчно</translation>
@@ -314,13 +326,16 @@
 <translation id="7059230779847288458">Зарежда се: <ph name="TIME_VALUE" /> до пълно зареждане</translation>
 <translation id="708426984172631313">СПРЯН</translation>
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
+<translation id="7134436342991564651">{0,plural, =1{Сървър за имена}other{Сървъри за имена}}</translation>
 <translation id="7143207342074048698">Свързва се</translation>
 <translation id="7144878232160441200">Повторен опит</translation>
 <translation id="714876143603641390">Връзка с LAN</translation>
 <translation id="7162487448488904999">Галерия</translation>
 <translation id="7172721935181587524">1 изображение</translation>
 <translation id="7177485034254901881">Това устройство <ph name="DEVICE_TYPE" /> се управлява от <ph name="MANAGER" />. Администраторите може да го конфигурират отдалечено.</translation>
+<translation id="7180611975245234373">Опресняване</translation>
 <translation id="7216409898977639127">Мобилен оператор</translation>
+<translation id="7257889006063274246">Наистина ли искате да премахнете страница <ph name="CURRENT_PAGE" />?</translation>
 <translation id="7271040990581020067">Скенерът се използва понастоящем. Опитайте отново по-късно.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7287310195820267359">Колекции от тапети</translation>
@@ -354,9 +369,11 @@
 <translation id="7835501727204647447">Инсталиране на CloudReady</translation>
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7882358943899516840">Тип на доставчика</translation>
+<translation id="7895471513946376273">Открийте инструменти за рисуване и дизайн</translation>
 <translation id="7936303884198020182">Не са намерени сървъри за имена</translation>
 <translation id="7960831585769876809">Температура</translation>
 <translation id="7994702968232966508">Метод с EAP</translation>
+<translation id="8020238979854764615">Възникна грешка. Моля, опитайте отново, като изберете други изображения.</translation>
 <translation id="802154636333426148">Изтеглянето не бе успешно</translation>
 <translation id="8041089156583427627">Изпращане на отзивите</translation>
 <translation id="8075838845814659848">Оставащ заряд</translation>
@@ -368,7 +385,9 @@
 <translation id="8214184102975786227">Сканиране на няколко страници в един PDF файл</translation>
 <translation id="8230672074305416752">Неуспех при команда ping към шлюза на основната мрежа</translation>
 <translation id="8246209727385807362">Неизвестен оператор</translation>
+<translation id="8286154143153872371">Моля, свържете се с мрежа и презаредете страницата, за да прегледате тапета.</translation>
 <translation id="8291967909914612644">Държава на собствения доставчик</translation>
+<translation id="829270796093605079">Инструменти за дизайн</translation>
 <translation id="8294431847097064396">Източник</translation>
 <translation id="8297006494302853456">Слаб</translation>
 <translation id="8302368968391049045">Защитна стена за HTTPS</translation>
@@ -392,6 +411,7 @@
 <translation id="8575298406870537639">Тази опция може да е необходима за свързване с мрежата на оператора ви. За подробности се обърнете към него.</translation>
 <translation id="8576249514688522074">Неинициализирана</translation>
 <translation id="8620617069779373398">Състояние на роуминга</translation>
+<translation id="8655295600908251630">Канал</translation>
 <translation id="8660881923941176839">фунта</translation>
 <translation id="8675354002693747642">Предварително споделен ключ</translation>
 <translation id="871560550817059752">Неуспешно – няма мастило</translation>
@@ -404,6 +424,7 @@
 <translation id="8798441408945964110">Име на доставчика</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8818152010000655963">Тапет</translation>
+<translation id="8834539327799336565">Свързани сега</translation>
 <translation id="8845001906332463065">Получете помощ</translation>
 <translation id="8868741746785112895">GUID</translation>
 <translation id="8881098542468797602">Тестът бе успешен</translation>

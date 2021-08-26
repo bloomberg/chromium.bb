@@ -8,6 +8,7 @@
 
 #include "build/build_config.h"
 #include "xfa/fgas/graphics/cfgas_gecolor.h"
+#include "xfa/fgas/graphics/cfgas_gegraphics.h"
 #include "xfa/fgas/graphics/cfgas_gepath.h"
 #include "xfa/fwl/cfwl_listbox.h"
 #include "xfa/fwl/cfwl_themebackground.h"
@@ -39,9 +40,9 @@ void CFWL_ListBoxTP::DrawBackground(const CFWL_ThemeBackground& pParams) {
     }
     case CFWL_ThemePart::Part::kCheck: {
       uint32_t color = 0xFF000000;
-      if (pParams.m_dwStates == CFWL_PartState_Checked) {
+      if (pParams.m_dwStates == CFWL_PartState::kChecked) {
         color = 0xFFFF0000;
-      } else if (pParams.m_dwStates == CFWL_PartState_Normal) {
+      } else if (pParams.m_dwStates == CFWL_PartState::kNormal) {
         color = 0xFF0000FF;
       }
       FillSolidRect(pParams.GetGraphics(), color, pParams.m_PartRect,
@@ -54,11 +55,11 @@ void CFWL_ListBoxTP::DrawBackground(const CFWL_ThemeBackground& pParams) {
 }
 
 void CFWL_ListBoxTP::DrawListBoxItem(CFGAS_GEGraphics* pGraphics,
-                                     uint32_t dwStates,
+                                     Mask<CFWL_PartState> dwStates,
                                      const CFX_RectF& rtItem,
                                      const CFX_RectF* pData,
                                      const CFX_Matrix& matrix) {
-  if (dwStates & CFWL_PartState_Selected) {
+  if (dwStates & CFWL_PartState::kSelected) {
     pGraphics->SaveGraphState();
     pGraphics->SetFillColor(CFGAS_GEColor(FWLTHEME_COLOR_BKSelected));
     CFGAS_GEPath path;
@@ -72,6 +73,6 @@ void CFWL_ListBoxTP::DrawListBoxItem(CFGAS_GEGraphics* pGraphics,
                         matrix);
     pGraphics->RestoreGraphState();
   }
-  if ((dwStates & CFWL_PartState_Focused) && pData)
+  if ((dwStates & CFWL_PartState::kFocused) && pData)
     DrawFocus(pGraphics, *pData, matrix);
 }

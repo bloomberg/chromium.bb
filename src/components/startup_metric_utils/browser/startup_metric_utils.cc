@@ -249,12 +249,13 @@ void UmaHistogramWithTraceAndTemperature(
     base::TimeTicks end_ticks) {
   UmaHistogramWithTemperature(histogram_function, histogram_basename,
                               end_ticks - begin_ticks);
-  TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP1("startup", histogram_basename.c_str(),
-                                          0, begin_ticks, "Temperature",
-                                          g_startup_temperature);
-  TRACE_EVENT_ASYNC_END_WITH_TIMESTAMP1("startup", histogram_basename.c_str(),
-                                        0, end_ticks, "Temperature",
-                                        g_startup_temperature);
+  TRACE_EVENT_COPY_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP1(
+      "startup", histogram_basename.c_str(),
+      TRACE_ID_WITH_SCOPE(histogram_basename.c_str(), 0), begin_ticks,
+      "Temperature", g_startup_temperature);
+  TRACE_EVENT_COPY_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(
+      "startup", histogram_basename.c_str(),
+      TRACE_ID_WITH_SCOPE(histogram_basename.c_str(), 0), end_ticks);
 }
 
 // Extension to the UmaHistogramWithTraceAndTemperature that records a
@@ -591,38 +592,6 @@ void RecordBrowserWindowFirstPaint(base::TimeTicks ticks) {
 
 base::TimeTicks MainEntryPointTicks() {
   return g_chrome_main_entry_ticks;
-}
-
-void RecordWebFooterDidFirstVisuallyNonEmptyPaint(base::TimeTicks ticks) {
-  DCHECK(!g_application_start_ticks.is_null());
-
-  static bool is_first_call = true;
-  if (!is_first_call || ticks.is_null())
-    return;
-  is_first_call = false;
-  if (!ShouldLogStartupHistogram())
-    return;
-
-  UmaHistogramWithTraceAndTemperature(
-      &base::UmaHistogramMediumTimes,
-      "Startup.WebFooterExperiment.DidFirstVisuallyNonEmptyPaint",
-      g_application_start_ticks, ticks);
-}
-
-void RecordWebFooterCreation(base::TimeTicks ticks) {
-  DCHECK(!g_application_start_ticks.is_null());
-
-  static bool is_first_call = true;
-  if (!is_first_call || ticks.is_null())
-    return;
-  is_first_call = false;
-  if (!ShouldLogStartupHistogram())
-    return;
-
-  UmaHistogramWithTraceAndTemperature(
-      &base::UmaHistogramMediumTimes,
-      "Startup.WebFooterExperiment.WebFooterCreation",
-      g_application_start_ticks, ticks);
 }
 
 void RecordExternalStartupMetric(const std::string& histogram_name,

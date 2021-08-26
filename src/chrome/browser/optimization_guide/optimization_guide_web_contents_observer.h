@@ -20,7 +20,11 @@ namespace content {
 class NavigationHandle;
 }  // namespace content
 
-class OptimizationGuideHintsManager;
+namespace optimization_guide {
+class ChromeHintsManager;
+class ChromeHintsManagerFetchingTest;
+}  // namespace optimization_guide
+
 class OptimizationGuideKeyedService;
 
 // Observes navigation events.
@@ -30,12 +34,6 @@ class OptimizationGuideWebContentsObserver
           OptimizationGuideWebContentsObserver> {
  public:
   ~OptimizationGuideWebContentsObserver() override;
-
-  // Gets the OptimizationGuideNavigationData associated with
-  // |navigation_handle|. If one does not exist already, one will be created for
-  // it.
-  OptimizationGuideNavigationData* GetOrCreateOptimizationGuideNavigationData(
-      content::NavigationHandle* navigation_handle);
 
   // Notifies |this| to flush |last_navigation_data| so metrics are recorded.
   void FlushLastNavigationData();
@@ -47,13 +45,18 @@ class OptimizationGuideWebContentsObserver
                                             content::WebContents* web_contents);
 
  private:
-  friend class OptimizationGuideHintsManagerFetchingTest;
-
   friend class content::WebContentsUserData<
       OptimizationGuideWebContentsObserver>;
+  friend class optimization_guide::ChromeHintsManagerFetchingTest;
 
   explicit OptimizationGuideWebContentsObserver(
       content::WebContents* web_contents);
+
+  // Gets the OptimizationGuideNavigationData associated with the
+  // |navigation_handle|. If one does not exist already, one will be created for
+  // it.
+  OptimizationGuideNavigationData* GetOrCreateOptimizationGuideNavigationData(
+      content::NavigationHandle* navigation_handle);
 
   // Clears the state related to hints to be fetched at onload due to navigation
   // predictions.
@@ -70,13 +73,10 @@ class OptimizationGuideWebContentsObserver
   void DocumentOnLoadCompletedInMainFrame(
       content::RenderFrameHost* render_frame_host) override;
 
-  // Ask OptimizationGuideHintsManager to fetch hints for navigations that were
-  // predicted for the current page load.
-  void FetchHints();
-
-  // For testing.
-  void FetchHintsUsingManagerForTesting(
-      OptimizationGuideHintsManager* hints_manager);
+  // Ask |hints_manager| to fetch hints for navigations that were predicted for
+  // the current page load.
+  void FetchHintsUsingManager(
+      optimization_guide::ChromeHintsManager* hints_manager);
 
   // Notifies |optimization_guide_keyed_service_| that the navigation has
   // finished.
@@ -96,7 +96,7 @@ class OptimizationGuideWebContentsObserver
   OptimizationGuideKeyedService* optimization_guide_keyed_service_ = nullptr;
 
   // List of predicted URLs to fetch hints for once the page reaches onload.
-  InsertionOrderedSet<GURL> hints_target_urls_;
+  optimization_guide::InsertionOrderedSet<GURL> hints_target_urls_;
 
   // Whether a hints request for predicted URLs has been fired off for this page
   // loads. Used to avoid sending more than one predicted URLs hints request per

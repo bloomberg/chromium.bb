@@ -1,7 +1,7 @@
 export const description = `API Operation Tests for RenderPass StoreOp.
 Tests a render pass with a resolveTarget resolves correctly for many combinations of:
   - number of color attachments, some with and some without a resolveTarget
-  - renderPass storeOp set to {'store', 'clear'}
+  - renderPass storeOp set to {'store', 'discard'}
   - resolveTarget mip level {0, >0} (TODO?: different mip level from colorAttachment)
   - resolveTarget {2d array layer, TODO: 3d slice} {0, >0} with {2d, TODO: 3d} resolveTarget
     (TODO?: different z from colorAttachment)
@@ -30,7 +30,7 @@ export const g = makeTestGroup(GPUTest);
 g.test('render_pass_resolve')
   .params(u =>
     u
-      .combine('storeOperation', ['clear', 'store'] as const)
+      .combine('storeOperation', ['discard', 'store'] as const)
       .beginSubcases()
       .combine('numColorAttachments', [2, 4] as const)
       .combine('slotsToResolve', kSlotsToResolve)

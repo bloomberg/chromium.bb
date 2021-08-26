@@ -7,6 +7,9 @@
 #ifndef CORE_FPDFAPI_PARSER_CPDF_PARSER_H_
 #define CORE_FPDFAPI_PARSER_CPDF_PARSER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <limits>
 #include <map>
 #include <memory>
@@ -16,7 +19,7 @@
 #include "core/fpdfapi/parser/cpdf_cross_ref_table.h"
 #include "core/fpdfapi/parser/cpdf_indirect_object_holder.h"
 #include "core/fxcrt/fx_string.h"
-#include "core/fxcrt/fx_system.h"
+#include "core/fxcrt/fx_types.h"
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxcrt/unowned_ptr.h"
 
@@ -59,11 +62,11 @@ class CPDF_Parser {
   ~CPDF_Parser();
 
   Error StartParse(const RetainPtr<IFX_SeekableReadStream>& pFile,
-                   const char* password);
+                   const ByteString& password);
   Error StartLinearizedParse(const RetainPtr<CPDF_ReadValidator>& validator,
-                             const char* password);
+                             const ByteString& password);
 
-  void SetPassword(const char* password) { m_Password = password; }
+  void SetPassword(const ByteString& password) { m_Password = password; }
   ByteString GetPassword() const { return m_Password; }
 
   // Take the GetPassword() value and encode it, if necessary, based on the

@@ -25,6 +25,10 @@ class PrintViewManager : public PrintViewManagerBase,
  public:
   ~PrintViewManager() override;
 
+  static void BindPrintManagerHost(
+      mojo::PendingAssociatedReceiver<mojom::PrintManagerHost> receiver,
+      content::RenderFrameHost* rfh);
+
   // Same as PrintNow(), but for the case where a user prints with the system
   // dialog from print preview.
   // |dialog_shown_callback| is called when the print dialog is shown.
@@ -74,6 +78,9 @@ class PrintViewManager : public PrintViewManagerBase,
 
   content::RenderFrameHost* print_preview_rfh() { return print_preview_rfh_; }
 
+  // Sets the target object for BindPrintManagerHost() for tests.
+  static void SetReceiverImplForTesting(PrintManager* impl);
+
  protected:
   explicit PrintViewManager(content::WebContents* web_contents);
 
@@ -98,14 +105,42 @@ class PrintViewManager : public PrintViewManagerBase,
 
   void OnScriptedPrintPreviewReply(SetupScriptedPrintPreviewCallback callback);
 
+  // Helper method for SetupScriptedPrintPreview(). To be called after
+  // RejectPrintPreviewRequestIfRestricted(), in case the request is not
+  // rejected.
+  void OnScriptedPrintPreviewAllowed(SetupScriptedPrintPreviewCallback callback,
+                                     int render_process_id,
+                                     int render_frame_id);
+
+  // Helper method for RequestPrintPreview(). To be called after
+  // RejectPrintPreviewRequestIfRestricted(), in case the request is not
+  // rejected.
+  void OnRequestPrintPreviewAllowed(mojom::RequestPrintPreviewParamsPtr params,
+                                    int render_process_id,
+                                    int render_frame_id);
+
   void MaybeUnblockScriptedPreviewRPH();
 
   // Checks whether printing is restricted due to Data Leak Protection rules.
   bool IsPrintingRestricted() const;
 
+  // Checks whether printing is not advised due to Data Leak Protection rules.
+  bool ShouldWarnBeforePrinting() const;
+
   // Checks whether printing is currently restricted and aborts print preview if
-  // needed.
-  bool RejectPrintPreviewRequestIfRestricted(content::RenderFrameHost* rfh);
+  // needed. There are cases when this check is performed asynchronously, so in
+  // order to continue or abort the print preview, one of
+  // |on_print_preview_allowed_cb| or |on_print_preview_rejected_cb| will be
+  // invoked.
+  void RejectPrintPreviewRequestIfRestricted(
+      base::OnceClosure on_print_preview_allowed_cb,
+      base::OnceClosure on_print_preview_rejected_cb);
+
+  // Helper method for RejectPrintPreviewRequestIfRestricted(). Handles any
+  // tasks that need to be done when the request is rejected due to
+  // restrictions.
+  void OnPrintPreviewRequestRejected(int render_process_id,
+                                     int render_frame_id);
 
   base::OnceClosure on_print_dialog_shown_callback_;
 

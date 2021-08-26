@@ -10,6 +10,7 @@
 #include "content/browser/devtools/protocol/network_handler.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "services/network/public/mojom/http_raw_headers.mojom.h"
 
 namespace content {
 
@@ -66,13 +67,15 @@ void NetworkServiceDevToolsObserver::OnRawResponse(
     const net::CookieAndLineAccessResultList& response_cookie_list,
     std::vector<network::mojom::HttpRawHeaderPairPtr> response_headers,
     const absl::optional<std::string>& response_headers_text,
-    network::mojom::IPAddressSpace resource_address_space) {
+    network::mojom::IPAddressSpace resource_address_space,
+    int32_t http_status_code) {
   auto* host = GetDevToolsAgentHost();
   if (!host)
     return;
   DispatchToAgents(host, &protocol::NetworkHandler::OnResponseReceivedExtraInfo,
                    devtools_request_id, response_cookie_list, response_headers,
-                   response_headers_text, resource_address_space);
+                   response_headers_text, resource_address_space,
+                   http_status_code);
 }
 
 void NetworkServiceDevToolsObserver::OnTrustTokenOperationDone(
@@ -137,7 +140,8 @@ void NetworkServiceDevToolsObserver::OnPrivateNetworkRequest(
 
 void NetworkServiceDevToolsObserver::OnCorsPreflightRequest(
     const base::UnguessableToken& devtools_request_id,
-    const network::ResourceRequest& request,
+    const net::HttpRequestHeaders& request_headers,
+    network::mojom::URLRequestDevToolsInfoPtr request_info,
     const GURL& initiator_url,
     const std::string& initiator_devtools_request_id) {
   auto* host = GetDevToolsAgentHost();
@@ -146,7 +150,7 @@ void NetworkServiceDevToolsObserver::OnCorsPreflightRequest(
   auto timestamp = base::TimeTicks::Now();
   auto id = devtools_request_id.ToString();
   DispatchToAgents(host, &protocol::NetworkHandler::RequestSent, id,
-                   /* loader_id=*/"", request,
+                   /* loader_id=*/"", request_headers, *request_info,
                    protocol::Network::Initiator::TypeEnum::Preflight,
                    initiator_url, initiator_devtools_request_id, timestamp);
 }

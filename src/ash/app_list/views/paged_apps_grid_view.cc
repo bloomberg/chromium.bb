@@ -17,6 +17,7 @@
 #include "ash/app_list/views/apps_container_view.h"
 #include "ash/app_list/views/contents_view.h"
 #include "ash/constants/ash_features.h"
+#include "ash/public/cpp/app_list/app_list_color_provider.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/pagination/pagination_controller.h"
@@ -25,6 +26,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/check.h"
+#include "base/cxx17_backports.h"
 #include "base/metrics/histogram_macros.h"
 #include "cc/paint/paint_flags.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -181,6 +183,9 @@ PagedAppsGridView::PagedAppsGridView(
       contents_view_(contents_view),
       page_flip_delay_(kPageFlipDelay) {
   DCHECK(contents_view_);
+  view_structure_.Init(IsInFolder() ? PagedViewStructure::Mode::kFullPages
+                                    : PagedViewStructure::Mode::kPartialPages);
+
   pagination_model_.AddObserver(this);
 
   pagination_controller_ = std::make_unique<PaginationController>(
@@ -195,6 +200,12 @@ PagedAppsGridView::PagedAppsGridView(
 
 PagedAppsGridView::~PagedAppsGridView() {
   pagination_model_.RemoveObserver(this);
+}
+
+void PagedAppsGridView::Init() {
+  const auto& config = GetAppListConfig();
+  SetLayout(config.preferred_cols(), config.preferred_rows());
+  AppsGridView::Init();
 }
 
 void PagedAppsGridView::OnTabletModeChanged(bool started) {
@@ -221,7 +232,9 @@ void PagedAppsGridView::HandleScrollFromAppListView(const gfx::Vector2d& offset,
   pagination_controller_->OnScroll(offset, type);
 }
 
-void PagedAppsGridView::UpdateOpacity(bool restore_opacity) {
+void PagedAppsGridView::UpdateOpacity(bool restore_opacity,
+                                      float apps_opacity_change_start,
+                                      float apps_opacity_change_end) {
   if (view_structure_.pages().empty())
     return;
 
@@ -241,7 +254,7 @@ void PagedAppsGridView::UpdateOpacity(bool restore_opacity) {
     // opacity (the layers will be deleted when drag operation completes).
     if (items_need_layer_for_drag_) {
       for (const auto& entry : view_model()->entries()) {
-        if (drag_view() != entry.view && entry.view->layer())
+        if (!IsViewHiddenForDrag(entry.view) && entry.view->layer())
           entry.view->layer()->SetOpacity(1.0f);
       }
       return;
@@ -262,14 +275,14 @@ void PagedAppsGridView::UpdateOpacity(bool restore_opacity) {
   // centerline reaches |kAllAppsOpacityEndPx| above the work area bottom.
   AppListView* app_list_view = contents_view_->app_list_view();
   const int selected_page = pagination_model_.selected_page();
-  // Logging for https://crbug.com/1194639. We suspect |selected_page| is
-  // sometimes off the end of the view structure pages array.
-  if (selected_page >= static_cast<int>(view_structure_.pages().size())) {
-    // Use concise log so it fits in a crash key.
-    LOG(FATAL) << "crbug.com/1194639 " << pagination_model_.total_pages() << " "
-               << selected_page << " "
-               << static_cast<int>(view_structure_.pages().size());
+
+  // `pagination_model_` may have an extra page during app list item drag (if
+  // the user is trying to add the app to a new page).
+  if (selected_page == static_cast<int>(view_structure_.pages().size())) {
+    CHECK(extra_page_opened_);
+    return;
   }
+
   auto current_page = view_structure_.pages()[selected_page];
 
   // Ensure layers and update their opacity.
@@ -284,18 +297,17 @@ void PagedAppsGridView::UpdateOpacity(bool restore_opacity) {
     views::View::ConvertRectToScreen(item_view, &view_bounds);
     centerline_above_work_area = std::max<float>(
         app_list_view->GetScreenBottom() - view_bounds.CenterPoint().y(), 0.f);
-    const float start_px = GetAppListConfig().all_apps_opacity_start_px();
-    opacity = base::ClampToRange(
-        (centerline_above_work_area - start_px) /
-            (GetAppListConfig().all_apps_opacity_end_px() - start_px),
-        0.f, 1.0f);
+    opacity =
+        base::clamp((centerline_above_work_area - apps_opacity_change_start) /
+                        (apps_opacity_change_end - apps_opacity_change_start),
+                    0.f, 1.0f);
 
     if (opacity == item_view->layer()->opacity())
       continue;
 
     const size_t end_index = std::min(current_page.size() - 1, i + cols() - 1);
     for (size_t j = i; j <= end_index; ++j) {
-      if (current_page[j] != drag_view())
+      if (!IsViewHiddenForDrag(current_page[j]))
         current_page[j]->layer()->SetOpacity(opacity);
     }
   }
@@ -457,14 +469,7 @@ void PagedAppsGridView::Layout() {
   CalculateIdealBoundsForFolder();
   for (int i = 0; i < view_model()->view_size(); ++i) {
     AppListItemView* view = GetItemViewAt(i);
-    if (view != drag_view_) {
-      view->SetBoundsRect(view_model()->ideal_bounds(i));
-    } else {
-      // If the drag view size changes, make sure it has the same center.
-      gfx::Rect bounds = view->bounds();
-      bounds.ClampToCenteredSize(GetTileViewSize());
-      view->SetBoundsRect(bounds);
-    }
+    view->SetBoundsRect(view_model()->ideal_bounds(i));
   }
   if (cardified_state_) {
     DCHECK(!background_cards_.empty());
@@ -521,6 +526,14 @@ bool PagedAppsGridView::IsScrollAxisVertical() const {
          PaginationController::SCROLL_AXIS_VERTICAL;
 }
 
+void PagedAppsGridView::UpdateBorder() {
+  if (IsInFolder())
+    return;
+
+  SetBorder(views::CreateEmptyBorder(
+      gfx::Insets(GetAppListConfig().grid_fadeout_mask_height(), 0)));
+}
+
 void PagedAppsGridView::MaybeStartCardifiedView() {
   if (!cardified_state_)
     StartAppsGridCardifiedView();
@@ -545,6 +558,16 @@ void PagedAppsGridView::MaybeStartPageFlip() {
 
 void PagedAppsGridView::MaybeStopPageFlip() {
   StopPageFlipTimer();
+}
+
+bool PagedAppsGridView::MaybeAutoScroll() {
+  // Paged view does not auto-scroll.
+  return false;
+}
+
+void PagedAppsGridView::SetFocusAfterEndDrag() {
+  // Leave focus on the dragged item. Pressing tab or an arrow key will
+  // highlight that item.
 }
 
 void PagedAppsGridView::RecordAppMovingTypeMetrics(AppListAppMovingType type) {
@@ -606,8 +629,6 @@ void PagedAppsGridView::SelectedPageChanged(int old_selected,
                                             int new_selected) {
   items_container()->layer()->SetTransform(gfx::Transform());
   if (IsDragging()) {
-    drag_view_->layer()->SetTransform(gfx::Transform());
-
     // Sets the transform to locate the scrolled content.
     gfx::Size grid_size = GetTileGridSize();
     gfx::Vector2d update;
@@ -619,10 +640,8 @@ void PagedAppsGridView::SelectedPageChanged(int old_selected,
       const int page_height = grid_size.height() + GetPaddingBetweenPages();
       update.set_y(page_height * (new_selected - old_selected));
     }
-    drag_view_start_ += update;
-    drag_view_->SetPosition(drag_view_->origin() + update);
-    UpdateDropTargetRegion();
     Layout();
+    UpdateDropTargetRegion();
     MaybeStartPageFlipTimer(last_drag_point());
   } else {
     // If the selected view is no longer on the page, select the first item in
@@ -684,14 +703,6 @@ void PagedAppsGridView::TransitionChanged() {
   gfx::Transform transform;
   transform.Translate(translate);
   items_container()->layer()->SetTransform(transform);
-
-  // |drag_view_| should stay in the same location in the screen, so makes
-  // the opposite effect of the transform.
-  if (drag_view_) {
-    gfx::Transform drag_view_transform;
-    drag_view_transform.Translate(-translate);
-    drag_view_->layer()->SetTransform(drag_view_transform);
-  }
 
   if (presentation_time_recorder_)
     presentation_time_recorder_->RequestNext();
@@ -956,19 +967,9 @@ void PagedAppsGridView::AnimateCardifiedState() {
   // change it.
   gfx::Point start_position = items_container()->origin();
   RecenterItemsContainer();
-  gfx::Vector2d translate_offset(
-      0, start_position.y() - items_container()->origin().y());
-  if (cardified_state_) {
-    // The drag view is translated when the items container is recentered.
-    // Reposition the drag view to compensate for the translation offset.
-    drag_view_start_ += translate_offset;
-    drag_view_->SetPosition(drag_view_start_);
-  }
+
   // Drag view can be nullptr or moved from the model by EndDrag.
-  const bool model_contains_drag_view =
-      drag_view_ && (view_model()->GetIndexOfView(drag_view_) != -1);
-  const int number_of_views_to_animate =
-      view_model()->view_size() - (model_contains_drag_view ? 1 : 0);
+  const int number_of_views_to_animate = view_model()->view_size();
 
   base::RepeatingClosure on_bounds_animator_callback;
   if (number_of_views_to_animate > 0) {
@@ -979,11 +980,10 @@ void PagedAppsGridView::AnimateCardifiedState() {
     bounds_animation_for_cardified_state_in_progress_++;
   }
 
+  gfx::Vector2d translate_offset(
+      0, start_position.y() - items_container()->origin().y());
   for (int i = 0; i < view_model()->view_size(); ++i) {
     AppListItemView* entry_view = view_model()->view_at(i);
-    // We don't animate bounds for the dragged view.
-    if (entry_view == drag_view_)
-      continue;
     // Reposition view bounds to compensate for the translation offset.
     gfx::Rect current_bounds = entry_view->bounds();
     current_bounds.Offset(translate_offset);
@@ -998,10 +998,19 @@ void PagedAppsGridView::AnimateCardifiedState() {
     gfx::Rect target_bounds(view_model()->ideal_bounds(i));
     entry_view->SetBoundsRect(target_bounds);
 
+    if (IsViewHiddenForDrag(entry_view)) {
+      on_bounds_animator_callback.Run();
+      continue;
+    }
+
     // View bounds are currently |target_bounds|. Transform the view so it
-    // appears in |current_bounds|.
+    // appears in |current_bounds|. Note that bounds are flipped by views in
+    // RTL UI direction, which is not taken into account by
+    // `gfx::TransformBetweenRects()` - use mirrored rects to calculate
+    // transition transform when needed.
     gfx::Transform transform = gfx::TransformBetweenRects(
-        gfx::RectF(target_bounds), gfx::RectF(current_bounds));
+        gfx::RectF(items_container()->GetMirroredRect(target_bounds)),
+        gfx::RectF(items_container()->GetMirroredRect(current_bounds)));
     entry_view->layer()->SetTransform(transform);
 
     ui::ScopedLayerAnimationSettings animator(
@@ -1043,8 +1052,11 @@ void PagedAppsGridView::AnimateCardifiedState() {
       const bool is_active_page =
           background_cards_[pagination_model_.selected_page()] ==
           background_card;
+      auto* color_provider = AppListColorProvider::Get();
       background_card->SetColor(
-          GetAppListConfig().GetCardifiedBackgroundColor(is_active_page));
+          is_active_page
+              ? color_provider->GetGridBackgroundCardActiveColor()
+              : color_provider->GetGridBackgroundCardInactiveColor());
     } else {
       background_card->SetOpacity(kBackgroundCardOpacityHide);
     }
@@ -1131,13 +1143,13 @@ void PagedAppsGridView::SetHighlightedBackgroundCard(int new_highlighted_page) {
     return;
 
   if (new_highlighted_page != highlighted_page_) {
+    auto* color_provider = AppListColorProvider::Get();
     background_cards_[highlighted_page_]->SetColor(
-        GetAppListConfig().GetCardifiedBackgroundColor(
-            /*is_active=*/false));
+        color_provider->GetGridBackgroundCardInactiveColor());
     if (static_cast<int>(background_cards_.size()) == new_highlighted_page)
       AppendBackgroundCard();
     background_cards_[new_highlighted_page]->SetColor(
-        GetAppListConfig().GetCardifiedBackgroundColor(/*is_active=*/true));
+        color_provider->GetGridBackgroundCardActiveColor());
 
     highlighted_page_ = new_highlighted_page;
   }

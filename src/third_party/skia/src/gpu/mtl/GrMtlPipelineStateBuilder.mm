@@ -725,17 +725,19 @@ GrMtlPipelineState* GrMtlPipelineStateBuilder::finalize(
         return nullptr;
     }
 
+    sk_sp<GrMtlRenderPipeline> renderPipeline = GrMtlRenderPipeline::Make(pipelineState);
+
     uint32_t bufferSize = buffer_size(fUniformHandler.fCurrentUBOOffset,
                                       fUniformHandler.fCurrentUBOMaxAlignment);
     return new GrMtlPipelineState(fGpu,
-                                  pipelineState,
+                                  std::move(renderPipeline),
                                   pipelineDescriptor.colorAttachments[0].pixelFormat,
                                   fUniformHandles,
                                   fUniformHandler.fUniforms,
                                   bufferSize,
                                   (uint32_t)fUniformHandler.numSamplers(),
-                                  std::move(fGeometryProcessor),
-                                  std::move(fXferProcessor),
+                                  std::move(fGPImpl),
+                                  std::move(fXPImpl),
                                   std::move(fFPImpls));
 }
 

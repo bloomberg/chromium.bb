@@ -78,6 +78,26 @@ constexpr char kValidOfferMessage[] = R"({
         ]
       },
       {
+        "index": 31339,
+        "type": "video_source",
+        "codecName": "hevc",
+        "codecParameter": "hev1.1.6.L150.B0",
+        "rtpProfile": "cast",
+        "rtpPayloadType": 127,
+        "ssrc": 19088746,
+        "maxFrameRate": "120",
+        "timeBase": "1/90000",
+        "maxBitRate": 5000000,
+        "aesKey": "040d756791711fd3adb939066e6d8690",
+        "aesIvMask": "9ff0f022a959150e70a2d05a6c184aed",
+        "resolutions": [
+          {
+            "width": 1920,
+            "height": 1080
+          }
+        ]
+      },
+      {
         "index": 1337,
         "type": "audio_source",
         "codecName": "opus",
@@ -307,6 +327,10 @@ class FakeClient : public ReceiverSession::Client {
               (const ReceiverSession*, ReceiversDestroyingReason),
               (override));
   MOCK_METHOD(void, OnError, (const ReceiverSession*, Error error), (override));
+  MOCK_METHOD(bool,
+              SupportsCodecParameter,
+              (const std::string& parameter),
+              (override));
 };
 
 void ExpectIsErrorAnswerMessage(const ErrorOr<Json::Value>& message_or_error) {
@@ -446,6 +470,63 @@ TEST_F(ReceiverSessionTest, CanNegotiateWithCustomCodecPreferences) {
         EXPECT_EQ(cr.video_receiver->config().channels, 1);
         EXPECT_EQ(cr.video_receiver->config().rtp_timebase, 90000);
         EXPECT_EQ(cr.video_config.codec, VideoCodec::kVp9);
+      });
+  EXPECT_CALL(client_, OnReceiversDestroying(
+                           &session, ReceiverSession::Client::kEndOfSession));
+  message_port_->ReceiveMessage(kValidOfferMessage);
+}
+
+TEST_F(ReceiverSessionTest, RejectsStreamWithUnsupportedCodecParameter) {
+  ReceiverSession::Preferences preferences({VideoCodec::kHevc},
+                                           {AudioCodec::kOpus});
+  EXPECT_CALL(client_, SupportsCodecParameter(_)).WillRepeatedly(Return(false));
+  ReceiverSession session(&client_, environment_.get(), message_port_.get(),
+                          preferences);
+  InSequence s;
+  EXPECT_CALL(client_, OnNegotiated(&session, _))
+      .WillOnce([](const ReceiverSession* session_,
+                   ReceiverSession::ConfiguredReceivers cr) {
+        EXPECT_FALSE(cr.video_receiver);
+      });
+  EXPECT_CALL(client_, OnReceiversDestroying(
+                           &session, ReceiverSession::Client::kEndOfSession));
+  message_port_->ReceiveMessage(kValidOfferMessage);
+}
+
+TEST_F(ReceiverSessionTest, AcceptsStreamWithNoCodecParameter) {
+  ReceiverSession::Preferences preferences(
+      {VideoCodec::kHevc, VideoCodec::kVp9}, {AudioCodec::kOpus});
+  EXPECT_CALL(client_, SupportsCodecParameter(_)).WillRepeatedly(Return(false));
+
+  ReceiverSession session(&client_, environment_.get(), message_port_.get(),
+                          std::move(preferences));
+  InSequence s;
+  EXPECT_CALL(client_, OnNegotiated(&session, _))
+      .WillOnce([](const ReceiverSession* session_,
+                   ReceiverSession::ConfiguredReceivers cr) {
+        EXPECT_TRUE(cr.video_receiver);
+        EXPECT_EQ(cr.video_config.codec, VideoCodec::kVp9);
+      });
+  EXPECT_CALL(client_, OnReceiversDestroying(
+                           &session, ReceiverSession::Client::kEndOfSession));
+  message_port_->ReceiveMessage(kValidOfferMessage);
+}
+
+TEST_F(ReceiverSessionTest, AcceptsStreamWithMatchingParameter) {
+  ReceiverSession::Preferences preferences({VideoCodec::kHevc},
+                                           {AudioCodec::kOpus});
+  EXPECT_CALL(client_, SupportsCodecParameter(_))
+      .WillRepeatedly(
+          [](const std::string& param) { return param == "hev1.1.6.L150.B0"; });
+
+  ReceiverSession session(&client_, environment_.get(), message_port_.get(),
+                          std::move(preferences));
+  InSequence s;
+  EXPECT_CALL(client_, OnNegotiated(&session, _))
+      .WillOnce([](const ReceiverSession* session_,
+                   ReceiverSession::ConfiguredReceivers cr) {
+        EXPECT_TRUE(cr.video_receiver);
+        EXPECT_EQ(cr.video_config.codec, VideoCodec::kHevc);
       });
   EXPECT_CALL(client_, OnReceiversDestroying(
                            &session, ReceiverSession::Client::kEndOfSession));

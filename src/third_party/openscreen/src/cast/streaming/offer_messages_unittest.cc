@@ -463,6 +463,80 @@ TEST(OfferTest, ErrorOnMissingVideoStreamMandatoryField) {
   })");
 }
 
+TEST(OfferTest, ValidatesCodecParameterFormat) {
+  ExpectFailureOnParse(R"({
+    "castMode": "mirroring",
+    "supportedStreams": [{
+      "index": 2,
+      "type": "audio_source",
+      "codecName": "aac",
+      "codecParameter": "vp08.123.332",
+      "rtpProfile": "cast",
+      "rtpPayloadType": 96,
+      "ssrc": 19088743,
+      "bitRate": 124000,
+      "timeBase": "1/10000000",
+      "channels": 2,
+      "aesKey": "51027e4e2347cbcb49d57ef10177aebc",
+      "aesIvMask": "7f12a19be62a36c04ae4116caaeff6d1"
+    }]
+  })");
+
+  ExpectFailureOnParse(R"({
+    "castMode": "mirroring",
+    "supportedStreams": [{
+      "index": 2,
+      "type": "video_source",
+      "codecName": "vp8",
+      "codecParameter": "vp09.11.23",
+      "rtpProfile": "cast",
+      "rtpPayloadType": 100,
+      "ssrc": 19088743,
+      "timeBase": "1/48000",
+       "resolutions": [],
+       "maxBitRate": 10000,
+       "aesKey": "51027e4e2347cbcb49d57ef10177aebc"
+    }]
+  })");
+
+  const ErrorOr<Json::Value> audio_root = json::Parse(R"({
+    "castMode": "mirroring",
+    "supportedStreams": [{
+      "index": 2,
+      "type": "audio_source",
+      "codecName": "aac",
+      "codecParameter": "mp4a.12",
+      "rtpProfile": "cast",
+      "rtpPayloadType": 96,
+      "ssrc": 19088743,
+      "bitRate": 124000,
+      "timeBase": "1/10000000",
+      "channels": 2,
+      "aesKey": "51027e4e2347cbcb49d57ef10177aebc",
+      "aesIvMask": "7f12a19be62a36c04ae4116caaeff6d1"
+    }]
+  })");
+  ASSERT_TRUE(audio_root.is_value()) << audio_root.error();
+
+  const ErrorOr<Json::Value> video_root = json::Parse(R"({
+    "castMode": "mirroring",
+    "supportedStreams": [{
+      "index": 2,
+      "type": "video_source",
+      "codecName": "vp9",
+      "codecParameter": "vp09.11.23",
+      "rtpProfile": "cast",
+      "rtpPayloadType": 100,
+      "ssrc": 19088743,
+      "timeBase": "1/48000",
+       "resolutions": [],
+       "maxBitRate": 10000,
+       "aesKey": "51027e4e2347cbcb49d57ef10177aebc"
+    }]
+  })");
+  ASSERT_TRUE(video_root.is_value()) << video_root.error();
+}
+
 TEST(OfferTest, CanParseValidButMinimalVideoOffer) {
   ErrorOr<Json::Value> root = json::Parse(R"({
     "castMode": "mirroring",

@@ -403,6 +403,8 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
     return is_viewport_mobile_optimized_;
   }
 
+  void SetPrefersReducedMotion(bool prefers_reduced_motion);
+
   // Updates registered ElementIds present in |changed_list|. Call this after
   // changing the property trees for the |changed_list| trees.
   void UpdateElements(ElementListType changed_list);
@@ -661,6 +663,12 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
   // See comment in equivalent ThreadedInputHandler method for what this means.
   ActivelyScrollingType GetActivelyScrollingType() const;
   bool ScrollAffectsScrollHandler() const;
+  bool CurrentScrollDidCheckerboardLargeArea() const {
+    return current_scroll_did_checkerboard_large_area_;
+  }
+  void SetCurrentScrollDidCheckerboardLargeArea() {
+    current_scroll_did_checkerboard_large_area_ = true;
+  }
   void SetExternalPinchGestureActive(bool active);
   void set_force_smooth_wheel_scrolling_for_testing(bool enabled) {
     GetInputHandler().set_force_smooth_wheel_scrolling_for_testing(enabled);
@@ -1170,6 +1178,8 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
   // <meta name="viewport" content="initial-scale=1.0">
   bool is_viewport_mobile_optimized_ = false;
 
+  bool prefers_reduced_motion_ = false;
+
   std::unique_ptr<PendingTreeRasterDurationHistogramTimer>
       pending_tree_raster_duration_timer_;
 
@@ -1235,6 +1245,11 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
   // TODO(bokan): This is quite old and scheduling has become much more
   // sophisticated since so it's not clear how much value it's still providing.
   bool scroll_affects_scroll_handler_ = false;
+
+  // Whether at least 30% of the viewport at the time of draw was
+  // checkerboarded during a scroll. This bit can get set during a scroll and
+  // is sticky for the duration of the scroll.
+  bool current_scroll_did_checkerboard_large_area_ = false;
 
   // Provides support for PaintWorklets which depend on input properties that
   // are being animated by the compositor (aka 'animated' PaintWorklets).

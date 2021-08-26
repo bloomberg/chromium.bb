@@ -11,6 +11,7 @@
 <translation id="1546934824884762070">예기치 않은 오류가 발생했습니다. 개발자에게 문제를 신고해 주세요.</translation>
 <translation id="1697532407822776718">설정 완료</translation>
 <translation id="1742469581923031760">연결 중...</translation>
+<translation id="177040763384871009">원격 기기에서 클릭한 링크가 클라이언트 브라우저에서 열리도록 허용하려면 시스템 웹브라우저를 "<ph name="URL_FORWARDER_NAME" />"(으)로 변경해야 합니다.</translation>
 <translation id="177096447311351977">클라이언트용 채널 IP: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'</translation>
 <translation id="1897488610212723051">삭제</translation>
 <translation id="2009755455353575666">연결 실패</translation>
@@ -129,6 +130,7 @@
 <translation id="6963936880795878952">누군가 잘못된 PIN으로 연결을 시도하여 원격 컴퓨터 연결이 일시적으로 차단되었습니다. 나중에 다시 시도해 주세요.</translation>
 <translation id="6965382102122355670">확인</translation>
 <translation id="6985691951107243942"><ph name="HOSTNAME" />와(과)의 원격 연결을 사용중지하시겠습니까? 생각이 바뀌면 해당 컴퓨터에서 연결을 다시 사용하도록 설정해야 합니다.</translation>
+<translation id="6998890551706945177"><ph name="CLIENT_USERNAME" />님이 내 컴퓨터를 확인하고 제어하기 위한 액세스 권한을 요청했습니다. 모르는 사용자이거나 공유하기 전에 변경할 사항이 있다면 ''<ph name="IDS_SHARE_CONFIRM_DIALOG_DECLINE" />''를 누르세요.  그렇지 않다면 ''<ph name="IDS_SHARE_CONFIRM_DIALOG_CONFIRM" />''를 선택해 연결을 허용합니다.</translation>
 <translation id="7019153418965365059">알 수 없는 호스트 오류입니다. <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">원격 지원</translation>
 <translation id="7026930240735156896">안내에 따라 컴퓨터에서 원격으로 액세스할 수 있도록 설정하세요.</translation>
@@ -142,6 +144,7 @@
 <translation id="7434397035092923453"><ph name="CLIENT_USERNAME" /> 클라이언트의 액세스가 거부되었습니다.</translation>
 <translation id="7444276978508498879">연결된 클라이언트: <ph name="CLIENT_USERNAME" /></translation>
 <translation id="7526139040829362392">계정 변경</translation>
+<translation id="7535110896613603182">기본 앱 설정 열기</translation>
 <translation id="7628469622942688817">이 기기에 내 PIN을 저장합니다.</translation>
 <translation id="7649070708921625228">도움말</translation>
 <translation id="7658239707568436148">취소</translation>

@@ -23,10 +23,6 @@
 #include "components/optimization_guide/proto/models.pb.h"
 #include "url/origin.h"
 
-namespace base {
-class FilePath;
-}  // namespace base
-
 namespace content {
 class NavigationHandle;
 }  // namespace content
@@ -46,7 +42,7 @@ class OptimizationTargetModelObserver;
 class PredictionModel;
 class PredictionModelDownloadManager;
 class PredictionModelFetcher;
-class PredictionModelFile;
+class ModelInfo;
 
 using HostModelFeaturesMRUCache =
     base::HashingMRUCache<std::string, base::flat_map<std::string, float>>;
@@ -69,13 +65,6 @@ class PredictionManager : public PredictionModelDownloadObserver {
       Profile* profile);
 
   ~PredictionManager() override;
-
-  // Register the optimization targets that may have ShouldTargetNavigation
-  // requested by consumers of the Optimization Guide.
-  void RegisterOptimizationTargets(
-      const std::vector<
-          std::pair<proto::OptimizationTarget, absl::optional<proto::Any>>>&
-          optimization_targets_and_metadata);
 
   // Adds an observer for updates to the model for |optimization_target|.
   //
@@ -106,6 +95,8 @@ class PredictionManager : public PredictionModelDownloadObserver {
   // |override_client_model_feature_values| and inject any host model features
   // it received from the server and send that complete feature map for
   // evaluation.
+  // TODO(crbug/1183507): Remove ShouldTargetNavigation, host model features,
+  // the relevant unittests, and the histograms.
   OptimizationTargetDecision ShouldTargetNavigation(
       content::NavigationHandle* navigation_handle,
       proto::OptimizationTarget optimization_target);
@@ -143,11 +134,11 @@ class PredictionManager : public PredictionModelDownloadObserver {
   void ClearHostModelFeatures();
 
   // Override the model file returned to observers for |optimization_target|.
-  // For testing purposes only.
-  void OverrideTargetModelFileForTesting(
+  // Use |TestModelInfoBuilder| to construct the model files. For
+  // testing purposes only.
+  void OverrideTargetModelForTesting(
       proto::OptimizationTarget optimization_target,
-      const absl::optional<proto::Any>& model_metadata,
-      const base::FilePath& file_path);
+      std::unique_ptr<ModelInfo> model_info);
 
   // PredictionModelDownloadObserver:
   void OnModelReady(const proto::PredictionModel& model) override;
@@ -189,9 +180,18 @@ class PredictionManager : public PredictionModelDownloadObserver {
           prediction_models);
 
  private:
+  friend class PredictionManagerTestBase;
+
   // Called on construction to initialize the prediction model and host model
   // features store, and register as an observer to the network quality tracker.
   void Initialize();
+
+  // Register the optimization targets for which the prediction models should be
+  // fetched and updated to the consumers of the Optimization Guide.
+  void RegisterOptimizationTargets(
+      const std::vector<
+          std::pair<proto::OptimizationTarget, absl::optional<proto::Any>>>&
+          optimization_targets_and_metadata);
 
   // Construct and return a map containing the current feature values for the
   // requested set of model features. The host model features cache is updated
@@ -265,9 +265,8 @@ class PredictionManager : public PredictionModelDownloadObserver {
 
   // Updates the in-memory model file for |optimization_target| to
   // |prediction_model_file|.
-  void StoreLoadedPredictionModelFile(
-      proto::OptimizationTarget optimization_target,
-      std::unique_ptr<PredictionModelFile> prediction_model_file);
+  void StoreLoadedModelInfo(proto::OptimizationTarget optimization_target,
+                            std::unique_ptr<ModelInfo> prediction_model_file);
 
   // Updates the in-memory model for |optimization_target| to
   // |prediction_model|.
@@ -309,12 +308,10 @@ class PredictionManager : public PredictionModelDownloadObserver {
   // 2. The last time a fetch attempt was made.
   void ScheduleModelsFetch();
 
-  // Notifies observers of |optimization_target| that the model file has been
-  // updated to |file_path|.
-  void NotifyObserversOfNewModelPath(
-      proto::OptimizationTarget optimization_target,
-      const absl::optional<proto::Any>& model_metadata,
-      const base::FilePath& file_path) const;
+  // Notifies observers of |optimization_target| that the model has been
+  // updated.
+  void NotifyObserversOfNewModel(proto::OptimizationTarget optimization_target,
+                                 const ModelInfo& model_info) const;
 
   // A map of optimization target to the prediction model capable of making
   // an optimization target decision for it.
@@ -323,9 +320,8 @@ class PredictionManager : public PredictionModelDownloadObserver {
 
   // A map of optimization target to the model file containing the model for the
   // target.
-  base::flat_map<proto::OptimizationTarget,
-                 std::unique_ptr<PredictionModelFile>>
-      optimization_target_prediction_model_file_map_;
+  base::flat_map<proto::OptimizationTarget, std::unique_ptr<ModelInfo>>
+      optimization_target_model_info_map_;
 
   // The map from optimization targets to feature-provided metadata that have
   // been registered with the prediction manager.
@@ -350,6 +346,8 @@ class PredictionManager : public PredictionModelDownloadObserver {
   std::unique_ptr<PredictionModelDownloadManager>
       prediction_model_download_manager_;
 
+  // TODO(crbug/1183507): Remove host model features store and all relevant
+  // code, and deprecate the proto field too.
   // The optimization guide store that contains prediction models and host
   // model features from the remote Optimization Guide Service. Not owned and
   // guaranteed to outlive |this|.

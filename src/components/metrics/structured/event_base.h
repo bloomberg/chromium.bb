@@ -8,6 +8,8 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/metrics_proto/structured_data.pb.h"
 
 namespace metrics {
 namespace structured {
@@ -29,10 +31,18 @@ class EventBase {
     kUnidentified = 2,
   };
 
+  // Specifies whether an identifier is used different for each profile, or is
+  // shared for all profiles on a device.
+  enum class IdScope {
+    kPerProfile = 0,
+    kPerDevice = 1,
+  };
+
   // Specifies which value type a Metric object holds.
   enum class MetricType {
-    kString = 0,
+    kHmac = 0,
     kInt = 1,
+    kRawString = 2,
   };
 
   // Stores all information about a single metric: name hash, value, and a
@@ -49,16 +59,22 @@ class EventBase {
 
     // TODO(crbug.com/10116655): Replace this with a base::Value.
     // All possible value types a metric can take. Exactly one of these should
-    // be set. If |string_value| is set (with |type| as MetricType::STRING),
+    // be set. If |hmac_value| is set (with |type| as MetricType::kHmac),
     // only the HMAC digest will be reported, so it is safe to put any value
-    // here.
-    std::string string_value;
+    // here. If |raw_string_value| is set (with |type| as MetricType::kString),
+    // the unprocessed string will be reported.
+    std::string hmac_value;
     int64_t int_value;
+    std::string string_value;
   };
 
   // Finalizes the event and sends it for recording. After this call, the event
   // is left in an invalid state and should not be used further.
   void Record();
+
+  // Returns when the key for |project_name_hash| was last rotated, in days
+  // since epoch. Returns nullopt if the information is not available.
+  absl::optional<int> LastKeyRotation();
 
   std::vector<Metric> metrics() const { return metrics_; }
 
@@ -68,14 +84,22 @@ class EventBase {
 
   IdType id_type() const { return id_type_; }
 
- protected:
-  explicit EventBase(uint64_t event_name_hash,
-                     uint64_t project_name_hash,
-                     IdType id_type);
+  IdScope id_scope() const { return id_scope_; }
 
-  void AddStringMetric(uint64_t name_hash, const std::string& value);
+  StructuredEventProto_EventType event_type() const { return event_type_; }
+
+ protected:
+  EventBase(uint64_t event_name_hash,
+            uint64_t project_name_hash,
+            IdType id_type,
+            IdScope id_scope,
+            StructuredEventProto_EventType event_type);
+
+  void AddHmacMetric(uint64_t name_hash, const std::string& value);
 
   void AddIntMetric(uint64_t name_hash, int64_t value);
+
+  void AddRawStringMetric(uint64_t name_hash, const std::string& value);
 
  private:
   // First 8 bytes of the MD5 hash of the event name, as defined in
@@ -95,7 +119,16 @@ class EventBase {
   // name.
   uint64_t project_name_hash_;
 
+  // See enum definition.
   IdType id_type_;
+
+  // See enum definition.
+  IdScope id_scope_;
+
+  // Specifies the type of an event, which determines how it is treated after
+  // upload. See /third_party/metrics_proto/structured_data.proto for more
+  // information.
+  StructuredEventProto_EventType event_type_;
 
   std::vector<Metric> metrics_;
 };

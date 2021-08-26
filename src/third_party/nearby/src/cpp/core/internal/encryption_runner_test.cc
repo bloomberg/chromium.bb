@@ -14,6 +14,9 @@
 
 #include "core/internal/encryption_runner.h"
 
+#include "gmock/gmock.h"
+#include "gtest/gtest.h"
+#include "absl/time/clock.h"
 #include "core/internal/client_proxy.h"
 #include "core/internal/endpoint_channel.h"
 #include "platform/base/byte_array.h"
@@ -21,9 +24,6 @@
 #include "platform/public/pipe.h"
 #include "platform/public/system_clock.h"
 #include "proto/connections_enums.pb.h"
-#include "gmock/gmock.h"
-#include "gtest/gtest.h"
-#include "absl/time/clock.h"
 
 namespace location {
 namespace nearby {

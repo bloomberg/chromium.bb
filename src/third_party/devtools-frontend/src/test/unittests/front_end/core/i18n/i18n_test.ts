@@ -5,6 +5,9 @@
 const {assert} = chai;
 
 import * as i18n from '../../../../../front_end/core/i18n/i18n.js';
+import * as i18nRaw from '../../../../../front_end/third_party/i18n/i18n.js';
+
+import {assertElement} from '../../helpers/DOMHelpers.js';
 
 describe('serializeUIString', () => {
   it('serializes strings without placeholders', () => {
@@ -76,90 +79,44 @@ describe('getLocalizedLanguageRegion', () => {
   });
 });
 
-describe('preciseMillisToString', () => {
-  it('formats without a given precision', () => {
-    const inputNumber = 7.84;
-    const outputString = i18n.i18n.preciseMillisToString(inputNumber);
-    assert.strictEqual(outputString, '8\xA0ms');
+describe('getFormatLocalizedString', () => {
+  let i18nInstance: i18nRaw.I18n.I18n;
+  beforeEach(() => {
+    i18nInstance = new i18nRaw.I18n.I18n();
+    i18nInstance.registerLocaleData('en-US', {});  // Always fall back to UIStrings.
   });
 
-  it('formats without a given precision', () => {
-    const inputNumber = 7.84;
-    const precision = 2;
-    const outputString = i18n.i18n.preciseMillisToString(inputNumber, precision);
-    assert.strictEqual(outputString, '7.84\xA0ms');
-  });
-});
+  it('returns an HTML element', () => {
+    const uiStrings = {simple: 'a simple message'};
+    const registeredStrings = i18nInstance.registerFileStrings('test.ts', uiStrings);
 
-describe('millisToString', () => {
-  it('formats when number is infinite', () => {
-    const inputNumber = Infinity;
-    const outputString = i18n.i18n.millisToString(inputNumber);
-    assert.strictEqual(outputString, '-');
+    const messageElement = i18n.i18n.getFormatLocalizedString(registeredStrings, uiStrings.simple, {});
+
+    assertElement(messageElement, HTMLElement);
+    assert.strictEqual(messageElement.innerText, 'a simple message');
   });
 
-  it('formats when number is zero', () => {
-    const inputNumber = 0;
-    const outputString = i18n.i18n.millisToString(inputNumber);
-    assert.strictEqual(outputString, '0');
+  it('nests HTML placeholders in the message element', () => {
+    const uiStrings = {placeholder: 'a message with a {PH1} placeholder'};
+    const registeredStrings = i18nInstance.registerFileStrings('test.ts', uiStrings);
+    const placeholder = document.createElement('span');
+    placeholder.innerText = 'very pretty';
+
+    const messageElement =
+        i18n.i18n.getFormatLocalizedString(registeredStrings, uiStrings.placeholder, {PH1: placeholder});
+
+    assertElement(messageElement, HTMLElement);
+    assert.strictEqual(messageElement.innerHTML, 'a message with a <span>very pretty</span> placeholder');
   });
 
-  it('formats with higher resolution and a number less that 0.1', () => {
-    const inputNumber = 0.01;
-    const higherResolution = true;
-    const outputString = i18n.i18n.millisToString(inputNumber, higherResolution);
-    assert.strictEqual(outputString, '10\xA0μs');
-  });
+  it('nests string placeholders in the message element', () => {
+    const uiStrings = {placeholder: 'a message with a {PH1} placeholder'};
+    const registeredStrings = i18nInstance.registerFileStrings('test.ts', uiStrings);
 
-  it('formats with higher resolution and a number less that 1000', () => {
-    const inputNumber = 897.98;
-    const higherResolution = true;
-    const outputString = i18n.i18n.millisToString(inputNumber, higherResolution);
-    assert.strictEqual(outputString, '897.98\xA0ms');
-  });
+    const messageElement =
+        i18n.i18n.getFormatLocalizedString(registeredStrings, uiStrings.placeholder, {PH1: 'somewhat nice'});
 
-  it('formats without higher resolution and a number less that 1000', () => {
-    const inputNumber = 897.98;
-    const higherResolution = false;
-    const outputString = i18n.i18n.millisToString(inputNumber, higherResolution);
-    assert.strictEqual(outputString, '898\xA0ms');
-  });
-
-  it('formats less than 60 seconds', () => {
-    const inputNumber = 12345;
-    const outputString = i18n.i18n.millisToString(inputNumber);
-    assert.strictEqual(outputString, '12.35\xA0s');
-  });
-
-  it('formats less than 60 minutes', () => {
-    const inputNumber = 265000;
-    const outputString = i18n.i18n.millisToString(inputNumber);
-    assert.strictEqual(outputString, '4.4\xA0min');
-  });
-
-  it('formats less than 24 hours', () => {
-    const inputNumber = 20000000;
-    const outputString = i18n.i18n.millisToString(inputNumber);
-    assert.strictEqual(outputString, '5.6\xA0hrs');
-  });
-
-  it('formats days', () => {
-    const inputNumber = 100000000;
-    const outputString = i18n.i18n.millisToString(inputNumber);
-    assert.strictEqual(outputString, '1.2\xA0days');
-  });
-});
-
-describe('secondsToString', () => {
-  it('formats infinte numbers correctly', () => {
-    const inputNumber = Infinity;
-    const outputString = i18n.i18n.secondsToString(inputNumber);
-    assert.strictEqual(outputString, '-');
-  });
-
-  it('formats finite numbers correctly', () => {
-    const inputNumber = 7.849;
-    const outputString = i18n.i18n.secondsToString(inputNumber);
-    assert.strictEqual(outputString, '7.85\xA0s');
+    assertElement(messageElement, HTMLElement);
+    assert.strictEqual(messageElement.innerHTML, 'a message with a somewhat nice placeholder');
   });
 });

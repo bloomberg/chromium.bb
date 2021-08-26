@@ -94,6 +94,10 @@ crbug.com/1069614 external/wpt/css/css-flexbox/overflow-top-left.html [ Failure 
 crbug.com/1011718 external/wpt/css/css-flexbox/flexbox-justify-content-vert-006.xhtml [ Failure ]
 crbug.com/1011718 external/wpt/css/css-flexbox/flexbox_justifycontent-left-002.html [ Failure ]
 crbug.com/1011718 external/wpt/css/css-flexbox/flexbox_justifycontent-right-002.html [ Failure ]
+crbug.com/470421 external/wpt/css/css-flexbox/flexbox-flex-basis-content-001a.html [ Failure ]
+crbug.com/470421 external/wpt/css/css-flexbox/flexbox-flex-basis-content-001b.html [ Failure ]
+crbug.com/470421 external/wpt/css/css-flexbox/flexbox-flex-basis-content-002a.html [ Failure ]
+crbug.com/470421 external/wpt/css/css-flexbox/flexbox-flex-basis-content-002b.html [ Failure ]
 
 ### external/wpt/css/css-fonts/
 crbug.com/591099 external/wpt/css/css-fonts/font-features-across-space-1.html [ Failure ]
@@ -161,6 +165,7 @@ crbug.com/1045599 external/wpt/css/css-grid/layout-algorithm/grid-flex-track-int
 crbug.com/1045599 external/wpt/css/css-grid/layout-algorithm/grid-flex-track-intrinsic-sizes-002.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-grid/layout-algorithm/grid-flex-track-intrinsic-sizes-003.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-grid/layout-algorithm/grid-intrinsic-size-with-orthogonal-items.html [ Failure ]
+crbug.com/1045599 external/wpt/css/css-grid/grid-within-flexbox-indefinite.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-sizing/contain-intrinsic-size/contain-intrinsic-size-025.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-sizing/contain-intrinsic-size/contain-intrinsic-size-026.html [ Failure ]
 crbug.com/1045599 fast/css-grid-layout/grid-item-spanning-and-orthogonal-flows.html [ Failure ]
@@ -274,8 +279,6 @@ crbug.com/1157740 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-002
 crbug.com/1157740 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-004.html [ Pass ]
 crbug.com/1157740 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-024.html [ Failure ]
 crbug.com/1157740 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-025.html [ Pass ]
-crbug.com/1203090 external/wpt/css/css-sizing/aspect-ratio/grid-aspect-ratio-018.html [ Failure Pass ]
-crbug.com/1203090 external/wpt/css/css-sizing/aspect-ratio/grid-aspect-ratio-019.html [ Pass ]
 crbug.com/591099 external/wpt/css/css-sizing/clone-nowrap-intrinsic-size-bidi.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-sizing/intrinsic-percent-non-replaced-004.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-sizing/intrinsic-percent-non-replaced-005.html [ Failure ]
@@ -650,9 +653,6 @@ crbug.com/591099 virtual/gpu-rasterization/images/favicon-as-image.html [ Failur
 ### virtual/layout_ng_block_frag/
 virtual/layout_ng_block_frag/* [ Skip ]
 
-### virtual/layout_ng_fragment_traversal/
-virtual/layout_ng_fragment_traversal/* [ Skip ]
-
 ### virtual/layout-ng-grid/
 virtual/layout-ng-grid/* [ Skip ]
 
@@ -923,7 +923,6 @@ crbug.com/958381 external/wpt/css/css-tables/border-writing-mode-dynamic-001.htm
 ### Should we rebase virtuals too?
 crbug.com/958381 virtual/gpu/fast/canvas/canvas-composite-video-shadow.html [ Failure ]
 crbug.com/958381 virtual/gpu/fast/canvas/canvas-composite-video.html [ Failure ]
-crbug.com/958381 virtual/synchronous_html_parser/fast/css/bidi-override-in-anonymous-block.html [ Failure ]
 crbug.com/958381 virtual/text-antialias/textIteratorNilRenderer.html [ Failure ]
 crbug.com/958381 virtual/text-antialias/basic/generic-family-reset.html [ Failure ]
 crbug.com/958381 virtual/text-antialias/international/bidi-layout-across-linebreak.html [ Failure ]
@@ -1186,7 +1185,6 @@ crbug.com/591099 external/wpt/css/css-sizing/replaced-aspect-ratio-stretch-fit-0
 crbug.com/591099 external/wpt/css/css-sizing/replaced-aspect-ratio-stretch-fit-003.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-sizing/aspect-ratio/abspos-020.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-sizing/aspect-ratio/block-aspect-ratio-035.html [ Failure ]
-crbug.com/591099 external/wpt/css/css-sizing/aspect-ratio/replaced-element-034.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-typed-om/idlharness.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-ui/box-sizing-014.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-ui/box-sizing-015.html [ Failure ]
@@ -1240,12 +1238,16 @@ crbug.com/591099 external/wpt/css/css-flexbox/flex-aspect-ratio-img-row-013.html
 
 # The no-layout-ng bot compiles without proprietary codecs.
 # Timeout due to https://github.com/web-platform-tests/wpt/issues/29373
+crbug.com/591099 external/wpt/webcodecs/audio-decoder.https.any.html [ Failure ]
 crbug.com/591099 external/wpt/webcodecs/audioDecoder-codec-specific.any.html?adts_aac [ Failure ]
 crbug.com/591099 external/wpt/webcodecs/audioDecoder-codec-specific.any.html?mp4_aac [ Failure ]
+crbug.com/591099 external/wpt/webcodecs/video-decoder.https.any.html [ Failure ]
 crbug.com/591099 external/wpt/webcodecs/videoDecoder-codec-specific.any.html?h264_annexb [ Failure ]
 crbug.com/591099 external/wpt/webcodecs/videoDecoder-codec-specific.any.html?h264_avc [ Failure ]
+crbug.com/591099 external/wpt/webcodecs/audio-decoder.https.any.worker.html [ Failure Timeout ]
 crbug.com/591099 external/wpt/webcodecs/audioDecoder-codec-specific.any.worker.html?adts_aac [ Failure Timeout ]
 crbug.com/591099 external/wpt/webcodecs/audioDecoder-codec-specific.any.worker.html?mp4_aac [ Failure Timeout ]
+crbug.com/591099 external/wpt/webcodecs/video-decoder.https.any.worker.html [ Failure Timeout ]
 crbug.com/591099 external/wpt/webcodecs/videoDecoder-codec-specific.any.worker.html?h264_annexb [ Failure Timeout ]
 crbug.com/591099 external/wpt/webcodecs/videoDecoder-codec-specific.any.worker.html?h264_avc [ Failure Timeout ]
 

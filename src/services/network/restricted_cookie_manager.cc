@@ -44,11 +44,11 @@ net::CookieOptions MakeOptionsForSet(
     const GURL& url,
     const net::SiteForCookies& site_for_cookies,
     const net::IsolationInfo& isolation_info,
-    const CookieSettings* cookie_settings,
+    const CookieSettings& cookie_settings,
     const net::CookieAccessDelegate* cookie_access_delegate) {
   net::CookieOptions options;
   bool force_ignore_site_for_cookies =
-      cookie_settings->ShouldIgnoreSameSiteRestrictions(
+      cookie_settings.ShouldIgnoreSameSiteRestrictions(
           url, site_for_cookies.RepresentativeUrl());
   if (role == mojom::RestrictedCookieManagerRole::SCRIPT) {
     options.set_exclude_httponly();  // Default, but make it explicit here.
@@ -97,12 +97,12 @@ net::CookieOptions MakeOptionsForGet(
     const GURL& url,
     const net::SiteForCookies& site_for_cookies,
     const net::IsolationInfo& isolation_info,
-    const CookieSettings* cookie_settings,
+    const CookieSettings& cookie_settings,
     const net::CookieAccessDelegate* cookie_access_delegate) {
   // TODO(https://crbug.com/925311): Wire initiator here.
   net::CookieOptions options;
   bool force_ignore_site_for_cookies =
-      cookie_settings->ShouldIgnoreSameSiteRestrictions(
+      cookie_settings.ShouldIgnoreSameSiteRestrictions(
           url, site_for_cookies.RepresentativeUrl());
   if (role == mojom::RestrictedCookieManagerRole::SCRIPT) {
     options.set_exclude_httponly();  // Default, but make it explicit here.
@@ -208,7 +208,7 @@ class RestrictedCookieManager::Listener : public base::LinkNode<Listener> {
     // not deleted. This check prevents the site from observing their cookies
     // being deleted at a later time, which can happen due to eviction or due to
     // the user explicitly deleting all cookies.
-    if (!restricted_cookie_manager_->cookie_settings()->IsCookieAccessible(
+    if (!restricted_cookie_manager_->cookie_settings().IsCookieAccessible(
             change.cookie, url_, site_for_cookies_.RepresentativeUrl(),
             top_frame_origin_)) {
       return;
@@ -250,7 +250,7 @@ class RestrictedCookieManager::Listener : public base::LinkNode<Listener> {
 RestrictedCookieManager::RestrictedCookieManager(
     const mojom::RestrictedCookieManagerRole role,
     net::CookieStore* cookie_store,
-    const CookieSettings* cookie_settings,
+    const CookieSettings& cookie_settings,
     const url::Origin& origin,
     const net::IsolationInfo& isolation_info,
     mojo::PendingRemote<mojom::CookieAccessObserver> cookie_observer)
@@ -320,7 +320,7 @@ void RestrictedCookieManager::CookieListToGetAllForUrlCallback(
 
   net::CookieAccessResultList maybe_included_cookies = cookie_list;
   net::CookieAccessResultList excluded_cookies = excluded_list;
-  cookie_settings()->AnnotateAndMoveUserBlockedCookies(
+  cookie_settings().AnnotateAndMoveUserBlockedCookies(
       url, site_for_cookies.RepresentativeUrl(), &top_frame_origin,
       maybe_included_cookies, excluded_cookies);
 
@@ -371,7 +371,7 @@ void RestrictedCookieManager::CookieListToGetAllForUrlCallback(
             mojom::CookieOrLine::NewCookie(cookie), access_result));
   }
 
-  if (cookie_observer_) {
+  if (cookie_observer_ && !on_cookies_accessed_result.empty()) {
     cookie_observer_->OnCookiesAccessed(mojom::CookieAccessDetails::New(
         mojom::CookieAccessDetails::Type::kRead, url, site_for_cookies,
         std::move(on_cookies_accessed_result), absl::nullopt));
@@ -400,7 +400,7 @@ void RestrictedCookieManager::SetCanonicalCookie(
   }
 
   // TODO(morlovich): Try to validate site_for_cookies as well.
-  bool blocked = !cookie_settings_->IsCookieAccessible(
+  bool blocked = !cookie_settings_.IsCookieAccessible(
       cookie, url, site_for_cookies.RepresentativeUrl(), top_frame_origin);
 
   net::CookieInclusionStatus status;
@@ -443,8 +443,8 @@ void RestrictedCookieManager::SetCanonicalCookie(
   auto sanitized_cookie = net::CanonicalCookie::FromStorage(
       cookie.Name(), cookie.Value(), cookie.Domain(), cookie.Path(), now,
       cookie.ExpiryDate(), now, cookie.IsSecure(), cookie.IsHttpOnly(),
-      cookie.SameSite(), cookie.Priority(), cookie.IsSameParty(), source_scheme,
-      origin_.port());
+      cookie.SameSite(), cookie.Priority(), cookie.IsSameParty(),
+      cookie.PartitionKey(), source_scheme, origin_.port());
   DCHECK(sanitized_cookie);
   net::CanonicalCookie cookie_copy = *sanitized_cookie;
 
@@ -527,7 +527,8 @@ void RestrictedCookieManager::SetCookieFromString(
   net::CookieInclusionStatus status;
   std::unique_ptr<net::CanonicalCookie> parsed_cookie =
       net::CanonicalCookie::Create(url, cookie, base::Time::Now(),
-                                   absl::nullopt /* server_time */, &status);
+                                   absl::nullopt /* server_time */,
+                                   net::CookiePartitionKey::Todo(), &status);
   if (!parsed_cookie) {
     if (cookie_observer_) {
       std::vector<network::mojom::CookieOrLineWithAccessResultPtr>
@@ -586,7 +587,7 @@ void RestrictedCookieManager::CookiesEnabledFor(
     return;
   }
 
-  std::move(callback).Run(cookie_settings_->IsFullCookieAccessAllowed(
+  std::move(callback).Run(cookie_settings_.IsFullCookieAccessAllowed(
       url, site_for_cookies.RepresentativeUrl(), top_frame_origin));
 }
 

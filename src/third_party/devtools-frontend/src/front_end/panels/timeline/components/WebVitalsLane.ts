@@ -135,7 +135,7 @@ export class WebVitalsEventLane extends WebVitalsLane {
   private getMarker(event: Event): Marker {
     const markerType = this.getMarkerType(event);
     const timestamp = this.timeline.getTimeSinceLastMainFrameNavigation(event.timestamp);
-    const timestampLabel = i18n.i18n.preciseMillisToString(timestamp, 1);
+    const timestampLabel = i18n.TimeUtilities.preciseMillisToString(timestamp, 1);
     const timestampMetrics = this.measureTimestamp(timestampLabel);
     const widthIncludingLabel = 10 + 5 + this.labelMetrics.width + 5;
     const widthIncludingTimestamp = widthIncludingLabel + 5 + timestampMetrics.width;
@@ -248,7 +248,6 @@ export class WebVitalsEventLane extends WebVitalsLane {
       const tY = 1;
       const tWidth = widthIncludingTimestamp + 2 * 5;
       const tHeight = this.timeline.getLineHeight() - 2;
-
 
       this.context.fillStyle = this.theme.background;
       this.context.fillRect(tX, tY, tWidth, tHeight);

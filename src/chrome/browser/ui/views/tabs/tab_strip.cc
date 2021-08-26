@@ -19,6 +19,7 @@
 #include "base/containers/adapters.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
+#include "base/cxx17_backports.h"
 #include "base/feature_list.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/weak_ptr.h"
@@ -27,7 +28,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/no_destructor.h"
-#include "base/numerics/ranges.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/scoped_observation.h"
 #include "base/stl_util.h"
@@ -1161,7 +1161,7 @@ TabStrip::~TabStrip() {
 
   // The child tabs may call back to us from their destructors. Delete them so
   // that if they call back we aren't in a weird state.
-  RemoveAllChildViews(true);
+  RemoveAllChildViews();
 
   CHECK(!IsInObserverList());
 }
@@ -1886,7 +1886,7 @@ absl::optional<int> TabStrip::GetFocusedTabIndex() const {
 }
 
 views::View* TabStrip::GetTabViewForPromoAnchor(int index_hint) {
-  return tab_at(base::ClampToRange(index_hint, 0, GetTabCount() - 1));
+  return tab_at(base::clamp(index_hint, 0, GetTabCount() - 1));
 }
 
 views::View* TabStrip::GetDefaultFocusableChild() {
@@ -2149,12 +2149,13 @@ void TabStrip::OnMouseEventInTab(views::View* source,
 }
 
 void TabStrip::UpdateHoverCard(Tab* tab, HoverCardUpdateType update_type) {
-  // We don't want to show a hover card while the tabstrip is animating.
+  // Some operations (including e.g. starting a drag) can cause the tab focus
+  // to change at the same time as the tabstrip is starting to animate; the
+  // hover card should not be visible at this time.
+  // See crbug.com/1220840 for an example case.
   if (bounds_animator_.IsAnimating()) {
-    // Once we're animating the hover card should already be hidden.
-    DCHECK(!tab || !hover_card_controller_ ||
-           !hover_card_controller_->IsHoverCardVisible());
-    return;
+    tab = nullptr;
+    update_type = HoverCardUpdateType::kAnimating;
   }
 
   if (!hover_card_controller_) {

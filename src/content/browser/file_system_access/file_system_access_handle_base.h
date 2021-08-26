@@ -54,9 +54,6 @@ class CONTENT_EXPORT FileSystemAccessHandleBase : public WebContentsObserver {
 
   const storage::FileSystemURL& url() const { return url_; }
   const SharedHandleState& handle_state() const { return handle_state_; }
-  const storage::IsolatedContext::ScopedFSHandle& file_system() const {
-    return handle_state_.file_system;
-  }
   const BindingContext& context() const { return context_; }
 
   PermissionStatus GetReadPermissionStatus();
@@ -109,10 +106,6 @@ class CONTENT_EXPORT FileSystemAccessHandleBase : public WebContentsObserver {
   // Note that |callback| is passed to this method before other arguments, while
   // the wrapped callback will be passed as last argument to the underlying
   // FileSystemOperation |method|.
-  //
-  // TODO(mek): Once Promises are a thing, this can be done a lot cleaner, and
-  // mostly just be integrated in base::SequenceBound, eliminating the need for
-  // these helper methods.
   template <typename... MethodArgs,
             typename... ArgsMinusCallback,
             typename... CallbackArgs>

@@ -15,14 +15,16 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/chrome_safe_browsing_blocking_page_factory.h"
+#include "chrome/browser/safe_browsing/chrome_ui_manager_delegate.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "chrome/browser/safe_browsing/ui_manager.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/safe_browsing/content/browser/threat_details.h"
 #include "components/safe_browsing/content/browser/threat_details_history.h"
+#include "components/safe_browsing/content/browser/ui_manager.h"
 #include "components/safe_browsing/content/common/safe_browsing.mojom.h"
 #include "components/safe_browsing/core/browser/referrer_chain_provider.h"
 #include "components/safe_browsing/core/common/proto/csd.pb.h"
@@ -163,8 +165,9 @@ class MockSafeBrowsingUIManager : public SafeBrowsingUIManager {
   // The safe browsing UI manager does not need a service for this test.
   MockSafeBrowsingUIManager()
       : SafeBrowsingUIManager(
-            nullptr,
-            std::make_unique<ChromeSafeBrowsingBlockingPageFactory>()),
+            std::make_unique<ChromeSafeBrowsingUIManagerDelegate>(),
+            std::make_unique<ChromeSafeBrowsingBlockingPageFactory>(),
+            GURL(chrome::kChromeUINewTabURL)),
         report_sent_(false) {}
 
   // When the serialized report is sent, this is called.
@@ -247,14 +250,16 @@ class ThreatDetailsTest : public ChromeRenderViewHostTestHarness {
                     bool is_subresource,
                     const GURL& url,
                     UnsafeResource* resource) {
+    const content::GlobalRenderFrameHostId primary_main_frame_id =
+        web_contents()->GetMainFrame()->GetGlobalId();
     resource->url = url;
     resource->is_subresource = is_subresource;
     resource->threat_type = threat_type;
     resource->threat_source = threat_source;
     resource->web_contents_getter =
-        security_interstitials::GetWebContentsGetter(
-            web_contents()->GetMainFrame()->GetProcess()->GetID(),
-            web_contents()->GetMainFrame()->GetRoutingID());
+        security_interstitials::GetWebContentsGetter(primary_main_frame_id);
+    resource->render_process_id = primary_main_frame_id.child_id;
+    resource->render_frame_id = primary_main_frame_id.frame_routing_id;
   }
 
   void VerifyResults(const ClientSafeBrowsingReportRequest& report_pb,

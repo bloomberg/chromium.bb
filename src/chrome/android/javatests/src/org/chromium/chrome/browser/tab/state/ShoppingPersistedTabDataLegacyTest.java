@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.tab.state;
 
 import static org.mockito.Mockito.doReturn;
 
-import android.support.test.filters.SmallTest;
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -67,7 +67,8 @@ public class ShoppingPersistedTabDataLegacyTest {
                 mOptimizationGuideBridgeJniMock,
                 HintsProto.OptimizationType.SHOPPING_PAGE_PREDICTOR.getNumber(),
                 OptimizationGuideDecision.TRUE, null);
-        PersistedTabDataConfiguration.setUseTestConfig(true);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> PersistedTabDataConfiguration.setUseTestConfig(true));
     }
 
     @SmallTest

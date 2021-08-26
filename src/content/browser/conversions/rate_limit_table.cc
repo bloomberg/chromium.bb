@@ -6,10 +6,12 @@
 
 #include "base/check.h"
 #include "base/time/clock.h"
+#include "content/browser/conversions/conversion_report.h"
 #include "content/browser/conversions/sql_utils.h"
+#include "net/base/schemeful_site.h"
+#include "sql/database.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
-#include "url/gurl.h"
 #include "url/origin.h"
 
 namespace content {
@@ -78,14 +80,16 @@ bool RateLimitTable::AddRateLimit(sql::Database* db,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(report.impression.impression_id().has_value());
 
-  // Only delete expired rate limits every X minutes to avoid excessive DB
+  // Only delete expired rate limits periodically to avoid excessive DB
   // operations.
-  const base::TimeDelta kDeleteFrequency = base::TimeDelta::FromMinutes(5);
-  base::Time now = clock_->Now();
-  if (now - last_cleared_ >= kDeleteFrequency) {
-    last_cleared_ = now;
+  const base::TimeDelta delete_frequency =
+      delegate_->GetDeleteExpiredRateLimitsFrequency();
+  DCHECK_GE(delete_frequency, base::TimeDelta());
+  const base::Time now = clock_->Now();
+  if (now - last_cleared_ >= delete_frequency) {
     if (!DeleteExpiredRateLimits(db))
       return false;
+    last_cleared_ = now;
   }
 
   static constexpr char kStoreRateLimitSql[] =
@@ -118,6 +122,7 @@ bool RateLimitTable::IsAttributionAllowed(sql::Database* db,
 
   static constexpr char kAttributionAllowedSql[] =
       "SELECT COUNT(*)FROM rate_limits "
+      DCHECK_SQL_INDEXED_BY("rate_limit_impression_site_type_idx")
       "WHERE attribution_type = ? "
       "AND impression_site = ? "
       "AND conversion_destination = ? "
@@ -145,8 +150,9 @@ bool RateLimitTable::ClearAllDataInRange(sql::Database* db,
            delete_end.is_max()));
 
   static constexpr char kDeleteRateLimitRangeSql[] =
-      "DELETE FROM rate_limits WHERE conversion_time BETWEEN ? AND "
-      "?";
+      "DELETE FROM rate_limits "
+      DCHECK_SQL_INDEXED_BY("rate_limit_conversion_time_idx")
+      "WHERE conversion_time BETWEEN ? AND ?";
   sql::Statement statement(
       db->GetCachedStatement(SQL_FROM_HERE, kDeleteRateLimitRangeSql));
   statement.BindTime(0, delete_begin);
@@ -176,6 +182,7 @@ bool RateLimitTable::ClearDataForOriginsInRange(
     static constexpr char kScanCandidateData[] =
         "SELECT rate_limit_id,impression_site,impression_origin,"
         "conversion_destination,conversion_origin FROM rate_limits "
+        DCHECK_SQL_INDEXED_BY("rate_limit_conversion_time_idx")
         "WHERE conversion_time BETWEEN ? AND ?";
     sql::Statement statement(
         db->GetCachedStatement(SQL_FROM_HERE, kScanCandidateData));
@@ -218,7 +225,10 @@ bool RateLimitTable::DeleteExpiredRateLimits(sql::Database* db) {
   base::Time timestamp = clock_->Now() - delegate_->GetRateLimits().time_window;
 
   static constexpr char kDeleteExpiredRateLimits[] =
-      "DELETE FROM rate_limits WHERE conversion_time <= ?";
+      // clang-format off
+      "DELETE FROM rate_limits "
+      DCHECK_SQL_INDEXED_BY("rate_limit_conversion_time_idx")
+      "WHERE conversion_time <= ?";  // clang-format on
   sql::Statement statement(
       db->GetCachedStatement(SQL_FROM_HERE, kDeleteExpiredRateLimits));
   statement.BindTime(0, timestamp);

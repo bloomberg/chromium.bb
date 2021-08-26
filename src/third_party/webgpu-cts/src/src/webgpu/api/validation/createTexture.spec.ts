@@ -9,6 +9,7 @@ import {
   kTextureDimensions,
   kTextureUsages,
   kUncompressedTextureFormats,
+  kRegularTextureFormats,
   textureDimensionAndFormatCompatible,
 } from '../../capability_info.js';
 import { DefaultLimits, GPUConst } from '../../constants.js';
@@ -530,10 +531,12 @@ g.test('texture_size,2d_texture,compressed_format')
   });
 
 g.test('texture_size,3d_texture,uncompressed_format')
-  .desc(`Test texture size requirement for 3D texture with uncompressed format.`)
+  .desc(
+    `Test texture size requirement for 3D texture with uncompressed format. Note that depth/stencil formats are invalid for 3D textures, so we only test regular formats.`
+  )
   .paramsSubcasesOnly(u =>
     u //
-      .combine('format', kUncompressedTextureFormats)
+      .combine('format', kRegularTextureFormats)
       .combine('size', [
         // Test the bound of width
         [DefaultLimits.maxTextureDimension3D - 1, 1, 1],

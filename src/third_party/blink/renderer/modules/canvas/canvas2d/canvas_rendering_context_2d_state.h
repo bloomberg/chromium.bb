@@ -6,9 +6,11 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_CANVAS_RENDERING_CONTEXT_2D_STATE_H_
 
 #include "base/macros.h"
+#include "cc/paint/paint_flags.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/clip_list.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
 #include "third_party/blink/renderer/platform/fonts/font_selector_client.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_filter.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_flags.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
@@ -37,8 +39,9 @@ class CanvasRenderingContext2DState final
  public:
   enum ClipListCopyMode { kCopyClipList, kDontCopyClipList };
   // SaveType indicates whether the state was pushed to the state stack by Save
-  // or by BeginLayer. By default, it is set to kSaveRestore.
-  enum class SaveType { kSaveRestore, kBeginEndLayer };
+  // or by BeginLayer. The first state on the state stack, which is created in 
+  // the canvas constructor and not by Save or BeginLayer, has SaveType kInitial.
+  enum class SaveType { kSaveRestore, kBeginEndLayer, kInitial };
 
   CanvasRenderingContext2DState();
   CanvasRenderingContext2DState(const CanvasRenderingContext2DState&,
@@ -103,11 +106,11 @@ class CanvasRenderingContext2DState final
                                CanvasRenderingContext2D*);
   sk_sp<PaintFilter> GetFilterForOffscreenCanvas(IntSize canvas_size,
                                                  BaseRenderingContext2D*);
-  bool HasFilterForOffscreenCanvas(IntSize canvas_size,
-                                   BaseRenderingContext2D*);
-  bool HasFilter(Element*, IntSize canvas_size, CanvasRenderingContext2D*);
   ALWAYS_INLINE bool IsFilterUnresolved() const {
     return filter_state_ == FilterState::kUnresolved;
+  }
+  ALWAYS_INLINE bool IsFilterResolved() const {
+    return filter_state_ == FilterState::kResolved;
   }
 
   void ClearResolvedFilter();
@@ -141,11 +144,11 @@ class CanvasRenderingContext2DState final
   void SetTextBaseline(TextBaseline baseline) { text_baseline_ = baseline; }
   TextBaseline GetTextBaseline() const { return text_baseline_; }
 
-  void SetTextLetterSpacing(float letter_space, FontSelector* selector);
-  float GetTextLetterSpacing() const { return letter_spacing_; }
+  void SetLetterSpacing(float letter_space, FontSelector* selector);
+  float GetLetterSpacing() const { return letter_spacing_; }
 
-  void SetTextWordSpacing(float word_space, FontSelector* selector);
-  float GetTextWordSpacing() const { return word_spacing_; }
+  void SetWordSpacing(float word_space, FontSelector* selector);
+  float GetWordSpacing() const { return word_spacing_; }
 
   void SetTextRendering(TextRenderingMode text_rendering,
                         FontSelector* selector);
@@ -229,12 +232,18 @@ class CanvasRenderingContext2DState final
 
   SaveType GetSaveType() const { return save_type_; }
 
+  void setRestoreToCount(absl::optional<int> count) {
+    restore_to_count_ = count;
+  }
+
+  absl::optional<int> getRestoreToCount() { return restore_to_count_; }
+
  private:
   void UpdateLineDash() const;
   void UpdateStrokeStyle() const;
   void UpdateFillStyle() const;
   void UpdateFilterQuality() const;
-  void UpdateFilterQualityWithSkFilterQuality(const SkFilterQuality&) const;
+  void UpdateFilterQuality(cc::PaintFlags::FilterQuality) const;
   void ShadowParameterChanged();
   sk_sp<SkDrawLooper>& EmptyDrawLooper() const;
   sk_sp<SkDrawLooper>& ShadowOnlyDrawLooper() const;
@@ -302,14 +311,23 @@ class CanvasRenderingContext2DState final
   mutable bool line_dash_dirty_ : 1;
 
   bool image_smoothing_enabled_;
-  SkFilterQuality image_smoothing_quality_;
+  cc::PaintFlags::FilterQuality image_smoothing_quality_;
 
   ClipList clip_list_;
 
-  const SaveType save_type_ = SaveType::kSaveRestore;
+  const SaveType save_type_ = SaveType::kInitial;
 
   DISALLOW_COPY_AND_ASSIGN(CanvasRenderingContext2DState);
+
+  // Some endlayer calls need to restore to a specific save count.
+  // If no such restore is needed, restore_to_count_ is set to nullopt.
+  absl::optional<int> restore_to_count_ = absl::nullopt;
 };
+
+ALWAYS_INLINE bool CanvasRenderingContext2DState::ShouldDrawShadows() const {
+  return AlphaChannel(shadow_color_) &&
+         (shadow_blur_ || !shadow_offset_.IsZero());
+}
 
 }  // namespace blink
 

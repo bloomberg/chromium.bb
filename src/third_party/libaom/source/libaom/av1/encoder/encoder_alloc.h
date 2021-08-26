@@ -85,7 +85,7 @@ static AOM_INLINE void alloc_compressor_data(AV1_COMP *cpi) {
   CHECK_MEM_ERROR(cm, cpi->td.mb.dv_costs,
                   (IntraBCMVCosts *)aom_malloc(sizeof(*cpi->td.mb.dv_costs)));
 
-  av1_setup_shared_coeff_buffer(&cpi->ppi->error, &cpi->td.shared_coeff_buf);
+  av1_setup_shared_coeff_buffer(cm->error, &cpi->td.shared_coeff_buf);
   av1_setup_sms_tree(cpi, &cpi->td);
   cpi->td.firstpass_ctx =
       av1_alloc_pmc(cpi, BLOCK_16X16, &cpi->td.shared_coeff_buf);
@@ -286,8 +286,8 @@ static AOM_INLINE void dealloc_compressor_data(AV1_COMP *cpi) {
     cpi->consec_zero_mv = NULL;
   }
 
-  aom_free(cpi->mb_wiener_variance);
-  cpi->mb_wiener_variance = NULL;
+  aom_free(cpi->mb_weber_stats);
+  cpi->mb_weber_stats = NULL;
 }
 
 static AOM_INLINE void variance_partition_alloc(AV1_COMP *cpi) {

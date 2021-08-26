@@ -30,6 +30,7 @@ import org.chromium.components.image_fetcher.ImageFetcherConfig;
 import org.chromium.components.image_fetcher.ImageFetcherFactory;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
+import org.chromium.url.GURL;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -96,8 +97,8 @@ public class NoteCreationCoordinatorImpl implements NoteCreationCoordinator, Top
      */
     @Override
     public void dismiss() {
-        NoteCreationMetrics.recordNoteCreationDismissed(getTimeElapsedSinceCreationStart());
-        NoteCreationMetrics.recordNbTemplateChanges(mDialog.getNbTemplateSwitches());
+        NoteCreationMetrics.recordNoteCreationDismissed(
+                getTimeElapsedSinceCreationStart(), mDialog.getNbTemplateSwitches());
         mDialog.dismiss();
     }
 
@@ -116,13 +117,11 @@ public class NoteCreationCoordinatorImpl implements NoteCreationCoordinator, Top
     public void executeAction() {
         // Top bar may be loaded before notes.
         if (mListModel.size() == 0) return;
-
-        NoteCreationMetrics.recordNoteTemplateSelected(getTimeElapsedSinceCreationStart());
-        NoteCreationMetrics.recordNbTemplateChanges(mDialog.getNbTemplateSwitches());
-
         int selectedNoteIndex = mDialog.getSelectedItemIndex();
-        NoteCreationMetrics.recordSelectedTemplateId(
+        NoteCreationMetrics.recordNoteTemplateSelected(getTimeElapsedSinceCreationStart(),
+                mDialog.getNbTemplateSwitches(),
                 mListModel.get(selectedNoteIndex).model.get(NoteProperties.TEMPLATE).id);
+
         View noteView = mDialog.getNoteViewAt(selectedNoteIndex);
 
         assert noteView != null;
@@ -157,8 +156,10 @@ public class NoteCreationCoordinatorImpl implements NoteCreationCoordinator, Top
                                     .build();
 
                     long shareStartTime = System.currentTimeMillis();
-                    ChromeShareExtras extras =
-                            new ChromeShareExtras.Builder().setSkipPageSharingActions(true).build();
+                    ChromeShareExtras extras = new ChromeShareExtras.Builder()
+                                                       .setSkipPageSharingActions(true)
+                                                       .setContentUrl(new GURL(mShareUrl))
+                                                       .build();
 
                     // Dismiss current dialog before showing the share sheet.
                     this.dismiss();
@@ -224,8 +225,10 @@ public class NoteCreationCoordinatorImpl implements NoteCreationCoordinator, Top
                 new ShareParams.Builder(mTab.getWindowAndroid(), sheetTitle, noteUrl).build();
 
         long shareStartTime = System.currentTimeMillis();
-        ChromeShareExtras extras =
-                new ChromeShareExtras.Builder().setSkipPageSharingActions(true).build();
+        ChromeShareExtras extras = new ChromeShareExtras.Builder()
+                                           .setSkipPageSharingActions(true)
+                                           .setContentUrl(new GURL(mShareUrl))
+                                           .build();
 
         // Dismiss current dialog before showing the share sheet.
         this.dismiss();

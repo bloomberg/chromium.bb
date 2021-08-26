@@ -90,14 +90,15 @@ void NgHttp2Adapter::SubmitWindowUpdate(Http2StreamId stream_id,
                                stream_id, window_increment);
 }
 
-void NgHttp2Adapter::SubmitMetadata(Http2StreamId stream_id,
-                                    bool end_metadata) {
+void NgHttp2Adapter::SubmitMetadata(
+    Http2StreamId /*stream_id*/, std::unique_ptr<MetadataSource> /*source*/) {
   QUICHE_LOG(DFATAL) << "Not implemented";
 }
 
 int NgHttp2Adapter::Send() {
   const int result = nghttp2_session_send(session_->raw_ptr());
   if (result != 0) {
+    QUICHE_VLOG(1) << "nghttp2_session_send returned " << result;
     visitor_.OnConnectionError();
   }
   return result;

@@ -16,6 +16,7 @@
 #include "include/core/SkString.h"
 #include "include/gpu/GrRecordingContext.h"
 #include "include/private/GrTypesPriv.h"
+#include "src/core/SkCanvasPriv.h"
 #include "src/gpu/GrBuffer.h"
 #include "src/gpu/GrCaps.h"
 #include "src/gpu/GrDirectContextPriv.h"
@@ -32,15 +33,14 @@
 #include "src/gpu/GrResourceProvider.h"
 #include "src/gpu/GrShaderCaps.h"
 #include "src/gpu/GrShaderVar.h"
-#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
-#include "src/gpu/glsl/GrGLSLGeometryProcessor.h"
 #include "src/gpu/glsl/GrGLSLProgramDataManager.h"
 #include "src/gpu/glsl/GrGLSLUniformHandler.h"
 #include "src/gpu/glsl/GrGLSLVarying.h"
 #include "src/gpu/glsl/GrGLSLVertexGeoBuilder.h"
 #include "src/gpu/ops/GrDrawOp.h"
 #include "src/gpu/ops/GrOp.h"
+#include "src/gpu/v1/SurfaceDrawContext_v1.h"
 #include "tools/gpu/ProxyUtils.h"
 
 #include <memory>
@@ -51,7 +51,7 @@ class GrAppliedClip;
 /**
  * This test ensures that fwidth() works properly on GPU configs by drawing a squircle.
  */
-namespace skiagm {
+namespace {
 
 static constexpr GrGeometryProcessor::Attribute gVertex =
         {"bboxcoord", kFloat2_GrVertexAttribType, kFloat2_GrSLType};
@@ -69,9 +69,9 @@ public:
 
     const char* name() const override { return "FwidthSquircleTestProcessor"; }
 
-    void getGLSLProcessorKey(const GrShaderCaps&, GrProcessorKeyBuilder* b) const final {}
+    void addToKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const final {}
 
-    GrGLSLGeometryProcessor* createGLSLInstance(const GrShaderCaps&) const final;
+    std::unique_ptr<ProgramImpl> makeProgramImpl(const GrShaderCaps&) const final;
 
 private:
     FwidthSquircleTestProcessor(const SkMatrix& viewMatrix)
@@ -82,62 +82,66 @@ private:
 
     const SkMatrix fViewMatrix;
 
-    class Impl;
-
     using INHERITED = GrGeometryProcessor;
 };
 
-class FwidthSquircleTestProcessor::Impl : public GrGLSLGeometryProcessor {
-    void onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) override {
-        const auto& proc = args.fGeomProc.cast<FwidthSquircleTestProcessor>();
-
-        auto* uniforms = args.fUniformHandler;
-        fViewMatrixHandle = uniforms->addUniform(nullptr, kVertex_GrShaderFlag, kFloat3x3_GrSLType,
-                                                 "viewmatrix");
-
-        auto* varyings = args.fVaryingHandler;
-        varyings->emitAttributes(proc);
-
-        GrGLSLVarying squircleCoord(kFloat2_GrSLType);
-        varyings->addVarying("bboxcoord", &squircleCoord);
-
-        auto* v = args.fVertBuilder;
-        v->codeAppendf("float2x2 R = float2x2(cos(.05), sin(.05), -sin(.05), cos(.05));");
-
-        v->codeAppendf("%s = bboxcoord * 1.25;", squircleCoord.vsOut());
-        v->codeAppendf("float3 vertexpos = float3(bboxcoord * 100 * R + 100, 1);");
-        v->codeAppendf("vertexpos = %s * vertexpos;", uniforms->getUniformCStr(fViewMatrixHandle));
-        gpArgs->fPositionVar.set(kFloat3_GrSLType, "vertexpos");
-
-        auto* f = args.fFragBuilder;
-        f->codeAppendf("float golden_ratio = 1.61803398875;");
-        f->codeAppendf("float pi = 3.141592653589793;");
-        f->codeAppendf("float x = abs(%s.x), y = abs(%s.y);",
-                       squircleCoord.fsIn(), squircleCoord.fsIn());
-
-        // Squircle function!
-        f->codeAppendf("float fn = half(pow(x, golden_ratio*pi) + pow(y, golden_ratio*pi) - 1);");
-        f->codeAppendf("float fnwidth = fwidth(fn);");
-        f->codeAppendf("fnwidth += 1e-10;");  // Guard against divide-by-zero.
-        f->codeAppendf("half coverage = clamp(half(.5 - fn/fnwidth), 0, 1);");
-
-        f->codeAppendf("half4 %s = half4(.51, .42, .71, 1) * .89;", args.fOutputColor);
-        f->codeAppendf("half4 %s = half4(coverage);", args.fOutputCoverage);
-    }
-
-    void setData(const GrGLSLProgramDataManager& pdman,
-                 const GrShaderCaps&,
-                 const GrGeometryProcessor& geomProc) override {
-        const auto& proc = geomProc.cast<FwidthSquircleTestProcessor>();
-        pdman.setSkMatrix(fViewMatrixHandle, proc.fViewMatrix);
-    }
-
-    UniformHandle fViewMatrixHandle;
-};
-
-GrGLSLGeometryProcessor* FwidthSquircleTestProcessor::createGLSLInstance(
+std::unique_ptr<GrGeometryProcessor::ProgramImpl> FwidthSquircleTestProcessor::makeProgramImpl(
         const GrShaderCaps&) const {
-    return new Impl();
+    class Impl : public ProgramImpl {
+    public:
+        void setData(const GrGLSLProgramDataManager& pdman,
+                     const GrShaderCaps&,
+                     const GrGeometryProcessor& geomProc) override {
+            const auto& proc = geomProc.cast<FwidthSquircleTestProcessor>();
+            pdman.setSkMatrix(fViewMatrixHandle, proc.fViewMatrix);
+        }
+
+    private:
+        void onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) override {
+            const auto& proc = args.fGeomProc.cast<FwidthSquircleTestProcessor>();
+
+            auto* uniforms = args.fUniformHandler;
+            fViewMatrixHandle = uniforms->addUniform(nullptr,
+                                                     kVertex_GrShaderFlag,
+                                                     kFloat3x3_GrSLType,
+                                                     "viewmatrix");
+
+            auto* varyings = args.fVaryingHandler;
+            varyings->emitAttributes(proc);
+
+            GrGLSLVarying squircleCoord(kFloat2_GrSLType);
+            varyings->addVarying("bboxcoord", &squircleCoord);
+
+            auto* v = args.fVertBuilder;
+            v->codeAppendf("float2x2 R = float2x2(cos(.05), sin(.05), -sin(.05), cos(.05));");
+
+            v->codeAppendf("%s = bboxcoord * 1.25;", squircleCoord.vsOut());
+            v->codeAppendf("float3 vertexpos = float3(bboxcoord * 100 * R + 100, 1);");
+            v->codeAppendf("vertexpos = %s * vertexpos;",
+                           uniforms->getUniformCStr(fViewMatrixHandle));
+            gpArgs->fPositionVar.set(kFloat3_GrSLType, "vertexpos");
+
+            auto* f = args.fFragBuilder;
+            f->codeAppendf("float golden_ratio = 1.61803398875;");
+            f->codeAppendf("float pi = 3.141592653589793;");
+            f->codeAppendf("float x = abs(%s.x), y = abs(%s.y);",
+                           squircleCoord.fsIn(), squircleCoord.fsIn());
+
+            // Squircle function!
+            f->codeAppendf("float fn = half(pow(x, golden_ratio*pi) + "
+                           "pow(y, golden_ratio*pi) - 1);");
+            f->codeAppendf("float fnwidth = fwidth(fn);");
+            f->codeAppendf("fnwidth += 1e-10;");  // Guard against divide-by-zero.
+            f->codeAppendf("half coverage = clamp(half(.5 - fn/fnwidth), 0, 1);");
+
+            f->codeAppendf("half4 %s = half4(.51, .42, .71, 1) * .89;", args.fOutputColor);
+            f->codeAppendf("half4 %s = half4(coverage);", args.fOutputCoverage);
+        }
+
+        UniformHandle fViewMatrixHandle;
+    };
+
+    return std::make_unique<Impl>();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -252,18 +256,28 @@ private:
     using INHERITED = GrDrawOp;
 };
 
+} // namespace
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Test.
 
-DEF_SIMPLE_GPU_GM_CAN_FAIL(fwidth_squircle, ctx, rtc, canvas, errorMsg, 200, 200) {
-    if (!ctx->priv().caps()->shaderCaps()->shaderDerivativeSupport()) {
+namespace skiagm {
+
+DEF_SIMPLE_GPU_GM_CAN_FAIL(fwidth_squircle, rContext, canvas, errorMsg, 200, 200) {
+    if (!rContext->priv().caps()->shaderCaps()->shaderDerivativeSupport()) {
         *errorMsg = "Shader derivatives not supported.";
+        return DrawResult::kSkip;
+    }
+
+    auto sdc = SkCanvasPriv::TopDeviceSurfaceDrawContext(canvas);
+    if (!sdc) {
+        *errorMsg = GM::kErrorMsg_DrawSkippedGpuOnly;
         return DrawResult::kSkip;
     }
 
     // Draw the test directly to the frame buffer.
     canvas->clear(SK_ColorWHITE);
-    rtc->addDrawOp(FwidthSquircleTestOp::Make(ctx, canvas->getTotalMatrix()));
+    sdc->addDrawOp(FwidthSquircleTestOp::Make(rContext, canvas->getTotalMatrix()));
     return skiagm::DrawResult::kOk;
 }
 

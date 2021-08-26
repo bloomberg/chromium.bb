@@ -94,17 +94,19 @@ void WKWebViewConfigurationProvider::ResetWithWebViewConfiguration(
     WKWebViewConfiguration* configuration) {
   DCHECK([NSThread isMainThread]);
 
-  if (!configuration) {
-    configuration = [[WKWebViewConfiguration alloc] init];
-  } else {
-    configuration = [configuration copy];
-  }
   if (configuration_) {
     Purge();
   }
-  configuration_ = configuration;
 
-  if (browser_state_->IsOffTheRecord()) {
+  if (!configuration) {
+    configuration_ = [[WKWebViewConfiguration alloc] init];
+  } else {
+    configuration_ = [configuration copy];
+  }
+
+  if (browser_state_->IsOffTheRecord() && configuration == nil) {
+    // Set the data store only when configuration is nil because the data store
+    // in the configuration should be used.
     [configuration_
         setWebsiteDataStore:[WKWebsiteDataStore nonPersistentDataStore]];
   }
@@ -118,11 +120,9 @@ void WKWebViewConfigurationProvider::ResetWithWebViewConfiguration(
       // displayed and also prevents the iOS 13 ContextMenu delegate methods
       // from being called.
       // https://github.com/WebKit/webkit/blob/1233effdb7826a5f03b3cdc0f67d713741e70976/Source/WebKit/UIProcess/API/Cocoa/WKWebViewConfiguration.mm#L307
-      BOOL disable_long_press_system_actions =
-
-          web::GetWebClient()->EnableLongPressAndForceTouchHandling() ||
-          web::GetWebClient()->EnableLongPressUIContextMenu();
-      [configuration_ setValue:@(!disable_long_press_system_actions)
+      BOOL enable_webkit_long_press_actions =
+          !web::GetWebClient()->EnableLongPressAndForceTouchHandling();
+      [configuration_ setValue:@(enable_webkit_long_press_actions)
                         forKey:@"longPressActionsEnabled"];
     } @catch (NSException* exception) {
       NOTREACHED() << "Error setting value for longPressActionsEnabled";

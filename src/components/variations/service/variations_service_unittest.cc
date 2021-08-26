@@ -15,6 +15,7 @@
 #include "base/bind.h"
 #include "base/cxx17_backports.h"
 #include "base/feature_list.h"
+#include "base/files/file_path.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -138,6 +139,8 @@ class TestVariationsService : public VariationsService {
                           UIStringOverrider()),
         intercepts_fetch_(true),
         fetch_attempted_(false),
+        latest_serial_number_(""),
+        seed_stores_succeed_(true),
         seed_stored_(false),
         delta_compressed_seed_(false),
         gzip_compressed_seed_(false) {
@@ -158,6 +161,10 @@ class TestVariationsService : public VariationsService {
   void set_last_request_was_retry(bool was_retry) {
     set_last_request_was_http_retry(was_retry);
   }
+  void set_latest_serial_number(const std::string& serial_number) {
+    latest_serial_number_ = serial_number;
+  }
+  void set_seed_stores_succeed(bool value) { seed_stores_succeed_ = value; }
   bool fetch_attempted() const { return fetch_attempted_; }
   bool seed_stored() const { return seed_stored_; }
   const std::string& stored_country() const { return stored_country_; }
@@ -165,6 +172,10 @@ class TestVariationsService : public VariationsService {
   bool gzip_compressed_seed() const { return gzip_compressed_seed_; }
 
   bool CallMaybeRetryOverHTTP() { return CallMaybeRetryOverHTTPForTesting(); }
+
+  const std::string& GetLatestSerialNumber() override {
+    return latest_serial_number_;
+  }
 
   void DoActualFetch() override {
     if (intercepts_fetch_) {
@@ -197,7 +208,7 @@ class TestVariationsService : public VariationsService {
     delta_compressed_seed_ = is_delta_compressed;
     gzip_compressed_seed_ = is_gzip_compressed;
     RecordSuccessfulFetch();
-    return true;
+    return seed_stores_succeed_;
   }
 
   std::unique_ptr<const base::FieldTrial::EntropyProvider>
@@ -218,6 +229,8 @@ class TestVariationsService : public VariationsService {
   GURL interception_url_;
   bool intercepts_fetch_;
   bool fetch_attempted_;
+  std::string latest_serial_number_;
+  bool seed_stores_succeed_;
   bool seed_stored_;
   std::string stored_seed_data_;
   std::string stored_country_;
@@ -300,6 +313,24 @@ std::string ListValueToString(const base::ListValue& list_value) {
   return json;
 }
 
+// Adds an OK response to the test_url_loader_factory with IM headers.
+void AddOKResponseWithIM(
+    const GURL& interception_url,
+    const std::string& body,
+    const std::string& im,
+    network::TestURLLoaderFactory* test_url_loader_factory) {
+  std::string headers("HTTP/1.1 200 OK\n\n");
+  auto head = network::mojom::URLResponseHead::New();
+  head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(headers));
+  if (!im.empty())
+    head->headers->SetHeader("IM", im);
+  network::URLLoaderCompletionStatus status;
+  status.decoded_body_length = body.size();
+  test_url_loader_factory->AddResponse(interception_url, std::move(head), body,
+                                       status);
+}
+
 }  // namespace
 
 class VariationsServiceTest : public ::testing::Test {
@@ -319,7 +350,7 @@ class VariationsServiceTest : public ::testing::Test {
     if (!metrics_state_manager_) {
       metrics_state_manager_ = metrics::MetricsStateManager::Create(
           &prefs_, enabled_state_provider_.get(), std::wstring(),
-          base::BindRepeating(&StubStoreClientInfo),
+          base::FilePath(), base::BindRepeating(&StubStoreClientInfo),
           base::BindRepeating(&StubLoadClientInfo));
     }
     return metrics_state_manager_.get();
@@ -529,6 +560,52 @@ TEST_F(VariationsServiceTest, RequestGzipCompressedSeed) {
   EXPECT_EQ("gzip", field);
 }
 
+TEST_F(VariationsServiceTest, RequestDeltaCompressedSeed) {
+  VariationsService::EnableFetchForTesting();
+
+  std::string serialized_seed = SerializeSeed(CreateTestSeed());
+
+  TestVariationsService service(
+      std::make_unique<web_resource::TestRequestAllowedNotifier>(
+          &prefs_, network_tracker_),
+      &prefs_, GetMetricsStateManager(), true);
+  service.set_intercepts_fetch(false);
+  net::HttpRequestHeaders intercepted_headers;
+  service.test_url_loader_factory()->SetInterceptor(
+      base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
+        intercepted_headers = request.headers;
+      }));
+
+  // Set a serial number to allow delta compression.
+  service.set_latest_serial_number("abc");
+
+  // Prepare a delta response that fails to store.
+  service.set_seed_stores_succeed(false);
+  AddOKResponseWithIM(service.interception_url(), serialized_seed, "x-bm",
+                      service.test_url_loader_factory());
+  service.DoActualFetch();
+
+  // Make sure the initial request was generated with correct delta headers.
+  std::string field;
+  ASSERT_TRUE(intercepted_headers.GetHeader("A-IM", &field));
+  EXPECT_EQ("x-bm,gzip", field);
+  ASSERT_TRUE(intercepted_headers.GetHeader("If-None-Match", &field));
+  EXPECT_EQ("abc", field);
+
+  // Do a retry.
+  service.set_seed_stores_succeed(true);
+  AddOKResponseWithIM(service.interception_url(), serialized_seed, "",
+                      service.test_url_loader_factory());
+  service.DoActualFetch();
+
+  // The retry request should not request delta compression.
+  ASSERT_TRUE(intercepted_headers.GetHeader("A-IM", &field));
+  EXPECT_EQ("gzip", field);
+  // It should still provide the serial number.
+  ASSERT_TRUE(intercepted_headers.GetHeader("If-None-Match", &field));
+  EXPECT_EQ("abc", field);
+}
+
 TEST_F(VariationsServiceTest, InstanceManipulations) {
   struct  {
     std::string im;
@@ -554,16 +631,8 @@ TEST_F(VariationsServiceTest, InstanceManipulations) {
         &prefs_, GetMetricsStateManager(), true);
     service.set_intercepts_fetch(false);
 
-    std::string headers("HTTP/1.1 200 OK\n\n");
-    auto head = network::mojom::URLResponseHead::New();
-    head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
-        net::HttpUtil::AssembleRawHeaders(headers));
-    if (!cases[i].im.empty())
-      head->headers->SetHeader("IM", cases[i].im);
-    network::URLLoaderCompletionStatus status;
-    status.decoded_body_length = serialized_seed.size();
-    service.test_url_loader_factory()->AddResponse(
-        service.interception_url(), std::move(head), serialized_seed, status);
+    AddOKResponseWithIM(service.interception_url(), serialized_seed,
+                        cases[i].im, service.test_url_loader_factory());
 
     service.DoActualFetch();
 
@@ -981,7 +1050,7 @@ TEST_F(VariationsServiceTest, DoNotRetryIfInsecureURLIsHTTPS) {
   EXPECT_FALSE(service.fetch_attempted());
 }
 
-TEST_F(VariationsServiceTest, SeedNotStoredWhenRedirected) {
+TEST_F(VariationsServiceTest, SeedStoredWhenRedirected) {
   VariationsService::EnableFetchForTesting();
 
   TestVariationsService service(
@@ -1006,7 +1075,7 @@ TEST_F(VariationsServiceTest, SeedNotStoredWhenRedirected) {
 
   service.set_intercepts_fetch(false);
   service.DoActualFetch();
-  EXPECT_FALSE(service.seed_stored());
+  EXPECT_TRUE(service.seed_stored());
 }
 
 TEST_F(VariationsServiceTest, NullResponseReceivedWithHTTPOk) {

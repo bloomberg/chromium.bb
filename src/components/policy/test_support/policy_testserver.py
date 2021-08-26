@@ -48,10 +48,6 @@ Example:
   ],
   "current_key_index": 0,
   "robot_api_auth_code": "",
-   "token_enrollment": {
-      "token": "abcd-ef01-123123123",
-      "username": "admin@example.com"
-   },
    "expected_errors": {
      "register": 500,
    }
@@ -70,6 +66,7 @@ Example:
 import base64
 from six.moves import BaseHTTPServer
 import cgi
+import codecs
 import glob
 import google.protobuf.text_format
 import hashlib
@@ -95,6 +92,8 @@ import testserver_base
 import device_management_backend_pb2 as dm
 import cloud_policy_pb2 as cp
 import policy_common_definitions_pb2 as cd
+import private_membership_pb2 as psm
+import private_membership_rlwe_pb2 as psm_rlwe
 
 # Policy for extensions is not supported on Android.
 try:
@@ -112,9 +111,9 @@ except ImportError:
 # This is currently OK because policy_testserver.py's support for certificate
 # provisioning is only used in Tast test for now.
 try:
-    from OpenSSL import crypto
+  from OpenSSL import crypto
 except ImportError:
-    crypto = None
+  crypto = None
 
 # ASN.1 object identifier for PKCS#1/RSA.
 PKCS1_RSA_OID = b'\x2a\x86\x48\x86\xf7\x0d\x01\x01\x01'
@@ -122,6 +121,10 @@ PKCS1_RSA_OID = b'\x2a\x86\x48\x86\xf7\x0d\x01\x01\x01'
 # List of machines that trigger the server to send kiosk enrollment response
 # for the register request.
 KIOSK_MACHINE_IDS = [ 'KIOSK' ]
+
+# List of all IDs that will be used to construct PSM ID, and have membership.
+PSM_MEMBERSHIP_SERIAL_NUMBER_IDS = ["111111"]
+PSM_MEMBERSHIP_BRAND_CODES = ["TEST"]
 
 # Dictionary containing base64-encoded policy signing keys plus per-domain
 # signatures. Format is:
@@ -380,6 +383,9 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       response = self.ProcessPolicy(rmsg, request_type)
     elif request_type == 'enterprise_check':
       response = self.ProcessAutoEnrollment(rmsg.auto_enrollment_request)
+    elif request_type == 'enterprise_psm_check':
+      response = self.ProcessPsmAutoEnrollment(
+          rmsg.private_set_membership_request)
     elif request_type == 'device_initial_enrollment_state':
       response = self.ProcessDeviceInitialEnrollmentState(
           rmsg.device_initial_enrollment_state_request)
@@ -463,18 +469,6 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     return None
 
-  def CheckEnrollmentToken(self):
-    """Extracts the enrollment token from the request and returns it. The token
-    is GoogleEnrollmentToken token from an Authorization header. Returns None
-    if no token is present.
-    """
-    match = re.match('GoogleEnrollmentToken token=(\\S+)',
-                     self.headers.get('Authorization', ''))
-    if match:
-      return match.group(1)
-
-    return None
-
   def ProcessRegister(self, msg):
     """Handles a register request.
 
@@ -526,25 +520,7 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         ENTERPRISE_ENROLLMENT_CERTIFICATE:
       return(403, 'Invalid certificate type for registration')
 
-    register_req = req.device_register_request
-    username = None
-
-    if (register_req.flavor == dm.DeviceRegisterRequest.
-        FLAVOR_ENROLLMENT_ATTESTATION_USB_ENROLLMENT):
-      enrollment_token = self.CheckEnrollmentToken()
-      policy = self.server.GetPolicies()
-      if not enrollment_token:
-        return (401, 'Missing enrollment token.')
-
-      if ((not policy['token_enrollment']) or
-              (not policy['token_enrollment']['token']) or
-              (not policy['token_enrollment']['username'])):
-        return (500, 'Error in config - no token-based enrollment')
-      if policy['token_enrollment']['token'] != enrollment_token:
-        return (403, 'Invalid enrollment token')
-      username = policy['token_enrollment']['username']
-
-    return self.RegisterDeviceAndSendResponse(register_req, username)
+    return self.RegisterDeviceAndSendResponse(req.device_register_request, None)
 
   def RegisterDeviceAndSendResponse(self, msg, username):
     """Registers a device and send a response to the client.
@@ -733,6 +709,107 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     response = dm.DeviceManagementResponse()
     response.auto_enrollment_response.CopyFrom(auto_enrollment_response)
+    return (200, response)
+
+  def GetPsmMembershipResponse(self, encrypted_id):
+    """Retrieves the PSM membership for a given encrypted_id.
+
+    Args:
+      encrypted_id: A string which contains an encrypted ID.
+
+    Returns a boolean:
+      1. True, if encrypted_id has a PSM membership.
+      2. False, otherwise.
+    """
+    for serial_number in PSM_MEMBERSHIP_SERIAL_NUMBER_IDS:
+      for brand_code in PSM_MEMBERSHIP_BRAND_CODES:
+        psm_id = '{}/{}'.format(brand_code.encode('hex'), serial_number)
+        if psm_id == encrypted_id:
+          return True
+    return False
+
+  def GetPsmRlweOprfResponse(self, oprf_request):
+    """Retrieves the fake PSM RLWE OPRF response for a given PSM OPRF request.
+
+    Args:
+      oprf_request: A PrivateMembershipRlweOprfRequest proto message.
+
+    Returns:
+    A PrivateMembershipRlweOprfResponse proto message which will include the
+    passed encrypted_id, from the oprf_request, inside the
+    doubly_encrypted_ids field.
+    """
+    oprf_response = psm_rlwe.PrivateMembershipRlweOprfResponse()
+    encrypted_id = psm.DoublyEncryptedId()
+    encrypted_id.queried_encrypted_id = oprf_request.encrypted_ids[0]
+    oprf_response.doubly_encrypted_ids.append(encrypted_id)
+    return oprf_response
+
+  def GetPsmRlweQueryResponse(self, query_request):
+    """Retrieves the fake PSM RLWE query response for a given PSM query request.
+
+    Args:
+      query_request: A PrivateMembershipRlweQueryRequest proto message.
+
+    Returns:
+    A PrivateMembershipRlweQueryResponse proto message which will include the
+    following:
+        1. The first passed encrypted_id, from queried_encrypted_id field,
+        inside PrivateMembershipRlwePirResponse.queried_encrypted_id field.
+        2. The membership response as a signal data inside
+        PirResponse.plaintext_entry_size  field.
+    """
+    query_response = psm_rlwe.PrivateMembershipRlweQueryResponse()
+    encrypted_id = query_request.queries[0].queried_encrypted_id
+    pir_response = psm_rlwe.PrivateMembershipRlwePirResponse()
+    pir_response.queried_encrypted_id = encrypted_id
+    pir_response.pir_response.plaintext_entry_size =\
+        self.GetPsmMembershipResponse(encrypted_id)
+    query_response.pir_responses.append(pir_response)
+    return query_response
+
+  def ProcessPsmAutoEnrollment(self, msg):
+    """Handles an auto-enrollment PSM check request.
+
+    The reply depends on which PSM request phases is received, as follows:
+      1. In case RLWE OPRF request is filled, replies by sending OPRF response
+      that contain the first received encrypted id.
+      2. In case RLWE Query request is filled, replies by sending Query response
+      that contain the first queried encrypted id. Also, sending out a signal
+      data (inside PirResponse.plaintext_entry_size) to indicate whether there
+      is a membership or not, depending on the received encrypted id.
+      3. Otherwise, it will return an error.
+
+    These allow the client to pick the testing scenario it wants to simulate.
+
+    Args:
+      msg: The PrivateSetMembershipRequest message received from the client.
+
+    Returns:
+      A tuple of HTTP status code and response data to send to the client.
+    """
+    psm_response = dm.PrivateSetMembershipResponse()
+
+    rlwe_request = msg.rlwe_request
+
+    if rlwe_request.HasField('oprf_request'):
+      oprf_request = rlwe_request.oprf_request
+      if not len(oprf_request.encrypted_ids):
+        return (400, 'PSM RLWE OPRF request must contains encrypted_ids field')
+      psm_response.rlwe_response.oprf_response.CopyFrom(
+          self.GetPsmRlweOprfResponse(oprf_request))
+    elif rlwe_request.HasField('query_request'):
+      query_request = rlwe_request.query_request
+      if not len(query_request.queries):
+        return (400, 'PSM RLWE query request must contains queries field')
+      psm_response.rlwe_response.query_response.CopyFrom(
+          self.GetPsmRlweQueryResponse(query_request))
+    else:
+      return (400,
+              'PSM RLWE oprf_request, or query_request fields must be filled')
+
+    response = dm.DeviceManagementResponse()
+    response.private_set_membership_response.CopyFrom(psm_response)
     return (200, response)
 
   def ProcessDeviceInitialEnrollmentState(self, msg):
@@ -1310,7 +1387,7 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       start_csr_response.va_challenge = va_challenge
       start_csr_response.hashing_algorithm = 2
       start_csr_response.signing_algorithm = 1
-      start_csr_response.data_to_sign = 'data_to_sign_123'
+      start_csr_response.data_to_sign = b'data_to_sign_123'
 
       response = dm.DeviceManagementResponse()
       response.client_certificate_provisioning_response.start_csr_response.\
@@ -1331,7 +1408,7 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       pubKey = crypto.load_publickey(crypto.FILETYPE_ASN1, msg.public_key)
 
       caPrivKey = crypto.load_privatekey(
-        crypto.FILETYPE_PEM, CERT_PROVISIONING_CA_PRIVATE_KEY_PEM, 'pass')
+        crypto.FILETYPE_PEM, CERT_PROVISIONING_CA_PRIVATE_KEY_PEM, b'pass')
 
       cert = crypto.X509()
       cert.set_serial_number(3)
@@ -1663,8 +1740,8 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
       state_keys: The state keys to set.
     """
     if dmtoken in self._registered_tokens:
-      self._registered_tokens[dmtoken]['state_keys'] = [key.encode('hex')
-              for key in state_keys]
+      self._registered_tokens[dmtoken]['state_keys'] = [
+        str(codecs.getencoder('hex')(key)[0]) for key in state_keys]
       self.WriteClientState()
 
   def LookupToken(self, dmtoken):

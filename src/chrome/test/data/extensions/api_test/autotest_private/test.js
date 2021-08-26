@@ -733,6 +733,7 @@ var defaultTests = [
         chrome.autotestPrivate.setAppWindowState(
             window.id,
             change,
+            true /* wait */,
             function(state) {
               chrome.test.assertEq(state, 'Fullscreen');
               chrome.autotestPrivate.getAppWindowList(async function(list) {
@@ -755,7 +756,8 @@ var defaultTests = [
                   var revert_change = new Object();
                   revert_change.eventType = 'WMEventNormal';
                   chrome.autotestPrivate.setAppWindowState(
-                      window.id, revert_change, function(state) {
+                      window.id, revert_change, true /* wait */,
+                      function(state) {
                         chrome.test.assertEq(state, 'Normal');
                         chrome.test.assertNoLastError();
                         chrome.test.succeed();
@@ -783,24 +785,35 @@ var defaultTests = [
         var change = new Object();
         change.eventType = 'WMEventFullscreen';
         chrome.autotestPrivate.setAppWindowState(
-            window.id, change, function(state) {
+            window.id, change, true /* wait */, function(state) {
               chrome.test.assertEq(state, 'Fullscreen');
 
-              chrome.autotestPrivate.setTabletModeEnabled(
-                  false, function(isEnabled) {
-                    chrome.test.assertFalse(isEnabled);
+              // Just send the rejectable request (normal state request in
+              // tablet mode) but without waiting for the state change.
+              const rejectable_change = {
+                eventType: 'WMEventNormal'
+              };
+              chrome.autotestPrivate.setAppWindowState(
+                  window.id, rejectable_change, false /* wait */,
+                  function(state) {
+                    chrome.autotestPrivate.setTabletModeEnabled(
+                        false, function(isEnabled) {
+                          chrome.test.assertFalse(isEnabled);
 
-                    // Revert window state back to normal and exit tablet mode
-                    // for the next test.
-                    var revert_change = new Object();
-                    revert_change.eventType = 'WMEventNormal';
-                    chrome.autotestPrivate.setAppWindowState(
-                        window.id, revert_change, function(state) {
-                          chrome.test.assertEq(state, 'Normal');
-                          chrome.test.assertNoLastError();
-                          chrome.test.succeed();
+                          // Revert window state back to normal and exit tablet
+                          // mode for the next test.
+                          const revert_change = {
+                            eventType: 'WMEventNormal'
+                          };
+                          chrome.autotestPrivate.setAppWindowState(
+                              window.id, revert_change, true /* wait */,
+                              function(state) {
+                                chrome.test.assertEq(state, 'Normal');
+                                chrome.test.assertNoLastError();
+                                chrome.test.succeed();
+                              });
                         });
-                  });
+                      });
             });
       });
     });
@@ -961,6 +974,31 @@ var defaultTests = [
           });
         });
       });
+    });
+  },
+  function stopSmoothnessTrackingMultiple() {
+    chrome.autotestPrivate.startSmoothnessTracking(async function() {
+      chrome.test.assertNoLastError();
+
+      // Wait for a few frames.
+      await raf();
+
+      // A few racing stopSmoothnessTracking calls.
+      const count = 3;
+      let promises = [];
+      for (let i = 0; i < count; ++i)
+        promises.push(promisify(chrome.autotestPrivate.stopSmoothnessTracking));
+
+      // Only one should succeed and no crashes/DCHECKs.
+      let success = 0;
+      for (let i = 0; i < count; ++i) {
+        try {
+          await promises[i];
+          ++success;
+        } catch(error) {}
+      }
+      chrome.test.assertEq(success, 1);
+      chrome.test.succeed();
     });
   },
 

@@ -2,13 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as Platform from '../platform/platform.js';
 
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export class Segment<T = any> {
+export class Segment<T> {
   begin: number;
   end: number;
   data: T;
@@ -22,15 +18,13 @@ export class Segment<T = any> {
     this.data = data;
   }
 
-  intersects(that: Segment): boolean {
+  intersects(that: Segment<T>): boolean {
     return this.begin < that.end && that.begin < this.end;
   }
 }
 
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export class SegmentedRange<T = any> {
-  private segmentsInternal: Segment[];
+export class SegmentedRange<T> {
+  private segmentsInternal: Segment<T>[];
   private readonly mergeCallback: ((arg0: Segment<T>, arg1: Segment<T>) => Segment<T>| null)|undefined;
 
   constructor(mergeCallback?: ((arg0: Segment<T>, arg1: Segment<T>) => Segment<T>| null)) {
@@ -46,7 +40,7 @@ export class SegmentedRange<T = any> {
     if (startIndex > 0) {
       // 2. Try mering the preceding segment
       const precedingSegment = this.segmentsInternal[startIndex - 1];
-      merged = this._tryMerge(precedingSegment, newSegment);
+      merged = this.tryMerge(precedingSegment, newSegment);
       if (merged) {
         --startIndex;
         newSegment = merged;
@@ -66,7 +60,7 @@ export class SegmentedRange<T = any> {
     }
     // 4. Merge or adjust the succeeding segment if it overlaps.
     if (endIndex < this.segmentsInternal.length) {
-      merged = this._tryMerge(newSegment, this.segmentsInternal[endIndex]);
+      merged = this.tryMerge(newSegment, this.segmentsInternal[endIndex]);
       if (merged) {
         endIndex++;
         newSegment = merged;
@@ -85,7 +79,7 @@ export class SegmentedRange<T = any> {
     return this.segmentsInternal;
   }
 
-  _tryMerge(first: Segment<T>, second: Segment<T>): Segment<T>|null {
+  private tryMerge(first: Segment<T>, second: Segment<T>): Segment<T>|null {
     const merged = this.mergeCallback && this.mergeCallback(first, second);
     if (!merged) {
       return null;

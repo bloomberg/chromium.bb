@@ -888,6 +888,9 @@ class VideoStreamEncoderTest : public ::testing::Test {
       info.apply_alignment_to_all_simulcast_layers =
           apply_alignment_to_all_simulcast_layers_;
       info.preferred_pixel_formats = preferred_pixel_formats_;
+      if (is_qp_trusted_.has_value()) {
+        info.is_qp_trusted = is_qp_trusted_;
+      }
       return info;
     }
 
@@ -1034,6 +1037,11 @@ class VideoStreamEncoderTest : public ::testing::Test {
             pixel_formats) {
       MutexLock lock(&local_mutex_);
       preferred_pixel_formats_ = std::move(pixel_formats);
+    }
+
+    void SetIsQpTrusted(absl::optional<bool> trusted) {
+      MutexLock lock(&local_mutex_);
+      is_qp_trusted_ = trusted;
     }
 
    private:
@@ -1185,6 +1193,7 @@ class VideoStreamEncoderTest : public ::testing::Test {
         RTC_GUARDED_BY(local_mutex_);
     absl::InlinedVector<VideoFrameBuffer::Type, kMaxPreferredPixelFormats>
         preferred_pixel_formats_ RTC_GUARDED_BY(local_mutex_);
+    absl::optional<bool> is_qp_trusted_ RTC_GUARDED_BY(local_mutex_);
   };
 
   class TestSink : public VideoStreamEncoder::EncoderSink {
@@ -5698,7 +5707,7 @@ TEST_F(VideoStreamEncoderTest, InitialFrameDropActivatesWhenSVCLayersChange) {
   video_encoder_config.max_bitrate_bps = kSimulcastTargetBitrateBps;
   video_encoder_config.content_type =
       VideoEncoderConfig::ContentType::kRealtimeVideo;
-  // Currently simulcast layers |active| flags are used to inidicate
+  // Currently simulcast layers `active` flags are used to inidicate
   // which SVC layers are active.
   video_encoder_config.simulcast_layers.resize(3);
 
@@ -6167,7 +6176,7 @@ TEST_F(VideoStreamEncoderTest, RampsUpInQualityWhenBwIsHigh) {
   video_stream_encoder_->OnBitrateUpdatedAndWaitForManagedResources(
       max_bitrate, max_bitrate, max_bitrate, 0, 0, 0);
 
-  // Insert frames and advance |min_duration_ms|.
+  // Insert frames and advance `min_duration_ms`.
   for (size_t i = 1; i <= 10; i++) {
     timestamp_ms += kFrameIntervalMs;
     source.IncomingCapturedFrame(CreateFrame(timestamp_ms, kWidth, kHeight));
@@ -7649,8 +7658,8 @@ TEST_F(VideoStreamEncoderTest, EncoderSelectorCurrentEncoderIsSignaled) {
 
   // The encoders produces by the VideoEncoderProxyFactory have a pointer back
   // to it's factory, so in order for the encoder instance in the
-  // |video_stream_encoder_| to be destroyed before the |encoder_factory| we
-  // reset the |video_stream_encoder_| here.
+  // `video_stream_encoder_` to be destroyed before the `encoder_factory` we
+  // reset the `video_stream_encoder_` here.
   video_stream_encoder_.reset();
 }
 
@@ -7736,8 +7745,8 @@ TEST_F(VideoStreamEncoderTest, EncoderSelectorBrokenEncoderSwitch) {
 
   // The encoders produces by the VideoEncoderProxyFactory have a pointer back
   // to it's factory, so in order for the encoder instance in the
-  // |video_stream_encoder_| to be destroyed before the |encoder_factory| we
-  // reset the |video_stream_encoder_| here.
+  // `video_stream_encoder_` to be destroyed before the `encoder_factory` we
+  // reset the `video_stream_encoder_` here.
   video_stream_encoder_.reset();
 }
 
@@ -8020,7 +8029,7 @@ TEST_F(VideoStreamEncoderTest, EncoderResolutionsExposedInSinglecast) {
 TEST_F(VideoStreamEncoderTest, EncoderResolutionsExposedInSimulcast) {
   // Pick downscale factors such that we never encode at full resolution - this
   // is an interesting use case. The frame resolution influences the encoder
-  // resolutions, but if no layer has |scale_resolution_down_by| == 1 then the
+  // resolutions, but if no layer has `scale_resolution_down_by` == 1 then the
   // encoder should not ask for the frame resolution. This allows video frames
   // to have the appearence of one resolution but optimize its internal buffers
   // for what is actually encoded.
@@ -8191,6 +8200,66 @@ TEST_F(VideoStreamEncoderTest,
   video_stream_encoder_->Stop();
 }
 
+TEST_F(VideoStreamEncoderTest, QualityScalingAllowed_IsQpTrustedSetFalse) {
+  VideoEncoderConfig video_encoder_config = video_encoder_config_.Copy();
+
+  // Disable scaling settings in encoder info.
+  fake_encoder_.SetQualityScaling(false);
+  // Set QP not trusted in encoder info.
+  fake_encoder_.SetIsQpTrusted(false);
+  // Enable quality scaling in encoder config.
+  video_encoder_config.is_quality_scaling_allowed = true;
+  ConfigureEncoder(std::move(video_encoder_config));
+
+  video_stream_encoder_->OnBitrateUpdatedAndWaitForManagedResources(
+      DataRate::BitsPerSec(kTargetBitrateBps),
+      DataRate::BitsPerSec(kTargetBitrateBps),
+      DataRate::BitsPerSec(kTargetBitrateBps), 0, 0, 0);
+
+  test::FrameForwarder source;
+  video_stream_encoder_->SetSource(
+      &source, webrtc::DegradationPreference::MAINTAIN_FRAMERATE);
+  EXPECT_THAT(source.sink_wants(), UnlimitedSinkWants());
+  EXPECT_FALSE(stats_proxy_->GetStats().bw_limited_resolution);
+
+  source.IncomingCapturedFrame(CreateFrame(1, 1280, 720));
+  WaitForEncodedFrame(1);
+  video_stream_encoder_->TriggerQualityLow();
+  EXPECT_FALSE(stats_proxy_->GetStats().bw_limited_resolution);
+
+  video_stream_encoder_->Stop();
+}
+
+TEST_F(VideoStreamEncoderTest, QualityScalingNotAllowed_IsQpTrustedSetTrue) {
+  VideoEncoderConfig video_encoder_config = video_encoder_config_.Copy();
+
+  // Disable scaling settings in encoder info.
+  fake_encoder_.SetQualityScaling(false);
+  // Set QP trusted in encoder info.
+  fake_encoder_.SetIsQpTrusted(true);
+  // Enable quality scaling in encoder config.
+  video_encoder_config.is_quality_scaling_allowed = false;
+  ConfigureEncoder(std::move(video_encoder_config));
+
+  video_stream_encoder_->OnBitrateUpdatedAndWaitForManagedResources(
+      DataRate::BitsPerSec(kTargetBitrateBps),
+      DataRate::BitsPerSec(kTargetBitrateBps),
+      DataRate::BitsPerSec(kTargetBitrateBps), 0, 0, 0);
+
+  test::FrameForwarder source;
+  video_stream_encoder_->SetSource(
+      &source, webrtc::DegradationPreference::MAINTAIN_FRAMERATE);
+  EXPECT_THAT(source.sink_wants(), UnlimitedSinkWants());
+  EXPECT_FALSE(stats_proxy_->GetStats().bw_limited_resolution);
+
+  source.IncomingCapturedFrame(CreateFrame(1, 1280, 720));
+  WaitForEncodedFrame(1);
+  video_stream_encoder_->TriggerQualityLow();
+  EXPECT_FALSE(stats_proxy_->GetStats().bw_limited_resolution);
+
+  video_stream_encoder_->Stop();
+}
+
 #if !defined(WEBRTC_IOS)
 // TODO(bugs.webrtc.org/12401): Disabled because WebRTC-Video-QualityScaling is
 // disabled by default on iOS.
@@ -8199,6 +8268,36 @@ TEST_F(VideoStreamEncoderTest, QualityScalingAllowed_QualityScalingEnabled) {
 
   // Disable scaling settings in encoder info.
   fake_encoder_.SetQualityScaling(false);
+  // Enable quality scaling in encoder config.
+  video_encoder_config.is_quality_scaling_allowed = true;
+  ConfigureEncoder(std::move(video_encoder_config));
+
+  video_stream_encoder_->OnBitrateUpdatedAndWaitForManagedResources(
+      DataRate::BitsPerSec(kTargetBitrateBps),
+      DataRate::BitsPerSec(kTargetBitrateBps),
+      DataRate::BitsPerSec(kTargetBitrateBps), 0, 0, 0);
+
+  test::FrameForwarder source;
+  video_stream_encoder_->SetSource(
+      &source, webrtc::DegradationPreference::MAINTAIN_FRAMERATE);
+  EXPECT_THAT(source.sink_wants(), UnlimitedSinkWants());
+  EXPECT_FALSE(stats_proxy_->GetStats().bw_limited_resolution);
+
+  source.IncomingCapturedFrame(CreateFrame(1, 1280, 720));
+  WaitForEncodedFrame(1);
+  video_stream_encoder_->TriggerQualityLow();
+  EXPECT_TRUE(stats_proxy_->GetStats().bw_limited_resolution);
+
+  video_stream_encoder_->Stop();
+}
+
+TEST_F(VideoStreamEncoderTest, QualityScalingAllowed_IsQpTrustedSetTrue) {
+  VideoEncoderConfig video_encoder_config = video_encoder_config_.Copy();
+
+  // Disable scaling settings in encoder info.
+  fake_encoder_.SetQualityScaling(false);
+  // Set QP trusted in encoder info.
+  fake_encoder_.SetIsQpTrusted(true);
   // Enable quality scaling in encoder config.
   video_encoder_config.is_quality_scaling_allowed = true;
   ConfigureEncoder(std::move(video_encoder_config));
@@ -8268,8 +8367,8 @@ class VideoStreamEncoderWithRealEncoderTest
 
   void TearDown() override {
     video_stream_encoder_->Stop();
-    // Ensure |video_stream_encoder_| is destroyed before
-    // |encoder_proxy_factory_|.
+    // Ensure `video_stream_encoder_` is destroyed before
+    // `encoder_proxy_factory_`.
     video_stream_encoder_.reset();
     VideoStreamEncoderTest::TearDown();
   }

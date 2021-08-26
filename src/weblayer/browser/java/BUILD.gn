@@ -176,6 +176,8 @@ android_library("java") {
     "org/chromium/weblayer_private/WebMessageReplyProxyImpl.java",
     "org/chromium/weblayer_private/WebShareServiceFactory.java",
     "org/chromium/weblayer_private/WebappsHelper.java",
+    "org/chromium/weblayer_private/bluetooth/WebLayerBluetoothChooserAndroidDelegate.java",
+    "org/chromium/weblayer_private/bluetooth/WebLayerBluetoothScanningPromptAndroidDelegate.java",
     "org/chromium/weblayer_private/media/MediaRouteDialogFragmentImpl.java",
     "org/chromium/weblayer_private/media/MediaRouterClientImpl.java",
     "org/chromium/weblayer_private/media/MediaSessionManager.java",
@@ -224,6 +226,7 @@ android_library("java") {
     "//components/browser_ui/util/android:java",
     "//components/browser_ui/webshare/android:java",
     "//components/browser_ui/widget/android:java",
+    "//components/component_updater/android:embedded_component_loader_java",
     "//components/content_capture/android:java",
     "//components/content_settings/android:content_settings_enums_java",
     "//components/content_settings/android:java",
@@ -233,7 +236,6 @@ android_library("java") {
     "//components/download/internal/common:internal_java",
     "//components/download/network:network_java",
     "//components/embedder_support/android:application_java",
-    "//components/embedder_support/android:browser_context_java",
     "//components/embedder_support/android:content_view_java",
     "//components/embedder_support/android:context_menu_java",
     "//components/embedder_support/android:util_java",
@@ -301,6 +303,7 @@ android_library("java") {
 
   if (enable_arcore) {
     sources += [
+      "org/chromium/weblayer_private/ArCompositorDelegateImpl.java",
       "org/chromium/weblayer_private/ArCompositorDelegateProviderImpl.java",
       "org/chromium/weblayer_private/ArCoreVersionUtils.java",
     ]
@@ -488,6 +491,8 @@ generate_jni("jni") {
     "org/chromium/weblayer_private/WebMessageReplyProxyImpl.java",
     "org/chromium/weblayer_private/WebViewCompatibilityHelperImpl.java",
     "org/chromium/weblayer_private/WebappsHelper.java",
+    "org/chromium/weblayer_private/bluetooth/WebLayerBluetoothChooserAndroidDelegate.java",
+    "org/chromium/weblayer_private/bluetooth/WebLayerBluetoothScanningPromptAndroidDelegate.java",
     "org/chromium/weblayer_private/media/MediaRouterClientImpl.java",
     "org/chromium/weblayer_private/media/MediaStreamManager.java",
     "org/chromium/weblayer_private/metrics/MetricsServiceClient.java",

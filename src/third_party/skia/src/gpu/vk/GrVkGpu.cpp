@@ -15,6 +15,7 @@
 #include "src/core/SkCompressedDataUtils.h"
 #include "src/core/SkConvertPixels.h"
 #include "src/core/SkMipmap.h"
+#include "src/core/SkTraceEvent.h"
 #include "src/gpu/GrBackendUtils.h"
 #include "src/gpu/GrDataUtils.h"
 #include "src/gpu/GrDirectContextPriv.h"
@@ -24,7 +25,6 @@
 #include "src/gpu/GrPipeline.h"
 #include "src/gpu/GrRenderTarget.h"
 #include "src/gpu/GrResourceProvider.h"
-#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/GrTexture.h"
 #include "src/gpu/GrThreadSafePipelineBuilder.h"
 #include "src/gpu/SkGr.h"
@@ -920,10 +920,8 @@ bool GrVkGpu::uploadTexDataOptimal(GrVkAttachment* texAttachment,
 
     int currentWidth = rect.width();
     int currentHeight = rect.height();
-    int layerHeight = texAttachment->height();
     for (int currentMipLevel = 0; currentMipLevel < mipLevelCount; currentMipLevel++) {
         if (texelsShallowCopy[currentMipLevel].fPixels) {
-            SkASSERT(1 == mipLevelCount || currentHeight == layerHeight);
             const size_t trimRowBytes = currentWidth * bpp;
             const size_t rowBytes = texelsShallowCopy[currentMipLevel].fRowBytes;
 
@@ -944,8 +942,6 @@ bool GrVkGpu::uploadTexDataOptimal(GrVkAttachment* texAttachment,
 
         currentWidth  = std::max(1,  currentWidth/2);
         currentHeight = std::max(1, currentHeight/2);
-
-        layerHeight = currentHeight;
     }
 
     // Change layout of our target so it can be copied to

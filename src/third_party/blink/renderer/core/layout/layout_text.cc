@@ -416,10 +416,12 @@ Vector<LayoutText::TextBoxInfo> LayoutText::GetTextBoxInfo() const {
         // Compute start of the legacy text box.
         if (unit.AssociatedNode()) {
           // In case of |text_| comes from DOM node.
-          const absl::optional<unsigned> box_start =
-              CaretOffsetForPosition(mapping->GetLastPosition(clamped_start));
-          DCHECK(box_start.has_value());
-          results.push_back(TextBoxInfo{rect, *box_start, box_length});
+          if (const absl::optional<unsigned> box_start = CaretOffsetForPosition(
+                  mapping->GetLastPosition(clamped_start))) {
+            results.push_back(TextBoxInfo{rect, *box_start, box_length});
+            continue;
+          }
+          NOTREACHED();
           continue;
         }
         // Handle CSS generated content, e.g. ::before/::after
@@ -663,9 +665,6 @@ void LayoutText::AbsoluteQuadsForRange(Vector<FloatQuad>& quads,
 
     // Find fragments that have text for the specified range.
     DCHECK_LE(start, end);
-    const LayoutBlock* block_for_flipping = nullptr;
-    if (UNLIKELY(HasFlippedBlocksWritingMode()))
-      block_for_flipping = ContainingBlock();
     NGInlineCursor cursor;
     bool is_last_end_included = false;
     for (cursor.MoveTo(*this); cursor; cursor.MoveToNextForSameLayoutObject()) {
@@ -2123,7 +2122,9 @@ void LayoutText::SecureText(UChar mask) {
 
   int last_typed_character_offset_to_reveal = -1;
   UChar revealed_text;
-  SecureTextTimer* secure_text_timer = GetSecureTextTimers().at(this);
+  auto it = GetSecureTextTimers().find(this);
+  SecureTextTimer* secure_text_timer =
+      it != GetSecureTextTimers().end() ? it->value : nullptr;
   if (secure_text_timer && secure_text_timer->IsActive()) {
     last_typed_character_offset_to_reveal =
         secure_text_timer->LastTypedCharacterOffset();
@@ -2134,7 +2135,7 @@ void LayoutText::SecureText(UChar mask) {
   text_.Fill(mask);
   if (last_typed_character_offset_to_reveal >= 0) {
     text_.replace(last_typed_character_offset_to_reveal, 1,
-                  String(&revealed_text, 1));
+                  String(&revealed_text, 1u));
     // m_text may be updated later before timer fires. We invalidate the
     // lastTypedCharacterOffset to avoid inconsistency.
     secure_text_timer->Invalidate();
@@ -2747,7 +2748,9 @@ bool LayoutText::IsAfterNonCollapsedCharacter(unsigned text_offset) const {
 void LayoutText::MomentarilyRevealLastTypedCharacter(
     unsigned last_typed_character_offset) {
   NOT_DESTROYED();
-  SecureTextTimer* secure_text_timer = GetSecureTextTimers().at(this);
+  auto it = GetSecureTextTimers().find(this);
+  SecureTextTimer* secure_text_timer =
+      it != GetSecureTextTimers().end() ? it->value : nullptr;
   if (!secure_text_timer) {
     secure_text_timer = new SecureTextTimer(this);
     GetSecureTextTimers().insert(this, secure_text_timer);
@@ -2809,8 +2812,9 @@ const DisplayItemClient* LayoutText::GetSelectionDisplayItemClient() const {
     return text_combine;
   if (!IsSelected())
     return nullptr;
-  if (const auto* client = GetSelectionDisplayItemClientMap().at(this))
-    return client;
+  auto it = GetSelectionDisplayItemClientMap().find(this);
+  if (it != GetSelectionDisplayItemClientMap().end())
+    return &*it->value;
   return GetSelectionDisplayItemClientMap()
       .insert(this, std::make_unique<SelectionDisplayItemClient>())
       .stored_value->value.get();

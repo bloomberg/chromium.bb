@@ -3,7 +3,7 @@ Tests for GPUAdapter.requestDevice.
 
 TODO:
 - descriptor is {null, undefined}
-- descriptor with the combinations of features and limits
+- descriptor with the combinations of features
 `;
 
 import { makeTestGroup } from '../../../../common/framework/test_group.js';

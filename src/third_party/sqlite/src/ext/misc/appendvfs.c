@@ -530,9 +530,11 @@ static int apndOpen(
   rc = pBaseVfs->xOpen(pBaseVfs, zName, pBaseFile, flags, pOutFlags);
   if( rc==SQLITE_OK ){
     rc = pBaseFile->pMethods->xFileSize(pBaseFile, &sz);
+    if( rc ){
+      pBaseFile->pMethods->xClose(pBaseFile);
+    }
   }
   if( rc ){
-    pBaseFile->pMethods->xClose(pBaseFile);
     pFile->pMethods = 0;
     return rc;
   }
@@ -655,6 +657,7 @@ int sqlite3_appendvfs_init(
   (void)pzErrMsg;
   (void)db;
   pOrig = sqlite3_vfs_find(0);
+  if( pOrig==0 ) return SQLITE_ERROR;
   apnd_vfs.iVersion = pOrig->iVersion;
   apnd_vfs.pAppData = pOrig;
   apnd_vfs.szOsFile = pOrig->szOsFile + sizeof(ApndFile);

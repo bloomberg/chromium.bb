@@ -5,6 +5,8 @@
 #ifndef OSP_IMPL_SERVICE_PUBLISHER_IMPL_H_
 #define OSP_IMPL_SERVICE_PUBLISHER_IMPL_H_
 
+#include <memory>
+
 #include "osp/impl/with_destruction_callback.h"
 #include "osp/public/service_publisher.h"
 #include "platform/base/macros.h"
@@ -18,18 +20,18 @@ class ServicePublisherImpl final : public ServicePublisher,
   class Delegate {
    public:
     Delegate();
+    virtual ~Delegate();
 
     void SetPublisherImpl(ServicePublisherImpl* publisher);
 
-    virtual void StartPublisher() = 0;
-    virtual void StartAndSuspendPublisher() = 0;
+    virtual void StartPublisher(const ServicePublisher::Config& config) = 0;
+    virtual void StartAndSuspendPublisher(
+        const ServicePublisher::Config& config) = 0;
     virtual void StopPublisher() = 0;
     virtual void SuspendPublisher() = 0;
-    virtual void ResumePublisher() = 0;
+    virtual void ResumePublisher(const ServicePublisher::Config& config) = 0;
 
    protected:
-    virtual ~Delegate();
-
     void SetState(State state) { publisher_->SetState(state); }
 
     ServicePublisherImpl* publisher_ = nullptr;
@@ -38,7 +40,7 @@ class ServicePublisherImpl final : public ServicePublisher,
   // |observer| is optional.  If it is provided, it will receive appropriate
   // notifications about this ServicePublisher.  |delegate| is required and
   // is used to implement state transitions.
-  ServicePublisherImpl(Observer* observer, Delegate* delegate);
+  ServicePublisherImpl(Observer* observer, std::unique_ptr<Delegate> delegate);
   ~ServicePublisherImpl() override;
 
   // ServicePublisher overrides.
@@ -57,7 +59,7 @@ class ServicePublisherImpl final : public ServicePublisher,
   // by the observer interface.
   void MaybeNotifyObserver();
 
-  Delegate* const delegate_;
+  std::unique_ptr<Delegate> delegate_;
 
   OSP_DISALLOW_COPY_AND_ASSIGN(ServicePublisherImpl);
 };

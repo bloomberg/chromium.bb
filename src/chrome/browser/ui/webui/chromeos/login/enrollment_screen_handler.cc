@@ -24,7 +24,7 @@
 #include "chrome/browser/ash/login/signin_partition_manager.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
-#include "chrome/browser/ash/policy/core/browser_policy_connector_chromeos.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/policy/core/policy_oauth2_token_fetcher.h"
 #include "chrome/browser/ash/policy/enrollment/enrollment_requisition_manager.h"
 #include "chrome/browser/browser_process.h"
@@ -94,7 +94,6 @@ std::string EnrollmentModeToUIMode(policy::EnrollmentConfig::Mode mode) {
     case policy::EnrollmentConfig::MODE_INITIAL_SERVER_FORCED:
     case policy::EnrollmentConfig::MODE_ATTESTATION_INITIAL_SERVER_FORCED:
     case policy::EnrollmentConfig::MODE_ATTESTATION_INITIAL_MANUAL_FALLBACK:
-    case policy::EnrollmentConfig::MODE_ATTESTATION_ENROLLMENT_TOKEN:
       return kEnrollmentModeUIForced;
     case policy::EnrollmentConfig::MODE_RECOVERY:
       return kEnrollmentModeUIRecovery;
@@ -260,20 +259,26 @@ void EnrollmentScreenHandler::ShowUserError(UserErrorType error_type,
   CallJS("login.OAuthEnrollmentScreen.doReload");
   switch (error_type) {
     case UserErrorType::kConsumerDomain: {
-      ShowError(
-          IDS_ENTERPRISE_ENROLLMENT_CONSUMER_ACCOUNT_WITH_PACKAGED_LICENSE,
+      ShowErrorMessage(
+          l10n_util::GetStringFUTF8(
+              IDS_ENTERPRISE_ENROLLMENT_CONSUMER_ACCOUNT_WITH_PACKAGED_LICENSE_ACCOUNT_CHECK,
+              base::ASCIIToUTF16(email)),
           true);
       break;
     }
     case UserErrorType::kBusinessDomain: {
       ShowErrorMessage(
           l10n_util::GetStringFUTF8(
-              IDS_ENTERPRISE_ENROLLMENT_CONSUMER_ACCOUNT_BUSINESS_DOMAIN_WITH_PACKAGED_LICENSE,
-              base::ASCIIToUTF16(gaia::ExtractDomainName(email))),
+              IDS_ENTERPRISE_ENROLLMENT_CONSUMER_ACCOUNT_WITH_PACKAGED_LICENSE_ACCOUNT_CHECK,
+              base::ASCIIToUTF16(email)),
           true);
       break;
     }
   }
+}
+
+void EnrollmentScreenHandler::ShowEnrollmentCloudReadyNotAllowedError() {
+  ShowError(IDS_ENTERPRISE_ENROLLMENT_STATUS_CLOUD_READY_NOT_ALLOWED, false);
 }
 
 void EnrollmentScreenHandler::ShowActiveDirectoryScreen(
@@ -626,10 +631,6 @@ void EnrollmentScreenHandler::DeclareLocalizedValues(
   builder->Add("oauthEnrollSuccessTitle",
                IDS_ENTERPRISE_ENROLLMENT_SUCCESS_TITLE);
   builder->Add("oauthEnrollErrorTitle", IDS_ENTERPRISE_ENROLLMENT_ERROR_TITLE);
-  builder->Add("enrollmentSuccessIllustrationTitle",
-               IDS_ENTERPRISE_ENROLLMENT_SUCCESS_ILLUSTRATION_TITLE);
-  builder->Add("enrollmentErrorIllustrationTitle",
-               IDS_ENTERPRISE_ENROLLMENT_ERROR_ILLUSTRATION_TITLE);
   builder->Add("oauthEnrollDeviceInformation",
                IDS_ENTERPRISE_ENROLLMENT_DEVICE_INFORMATION);
   builder->Add("oauthEnrollExplainAttributeLink",
@@ -819,7 +820,7 @@ void EnrollmentScreenHandler::HandleClose(const std::string& reason) {
   DCHECK(controller_);
   if (active_directory_join_type_ != ActiveDirectoryDomainJoinType::COUNT) {
     DCHECK(g_browser_process->platform_part()
-               ->browser_policy_connector_chromeos()
+               ->browser_policy_connector_ash()
                ->IsActiveDirectoryManaged());
     // Record Active Directory join type in case of successful enrollment and
     // domain join.

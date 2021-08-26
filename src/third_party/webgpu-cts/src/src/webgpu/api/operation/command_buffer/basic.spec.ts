@@ -3,6 +3,7 @@ Basic tests.
 `;
 
 import { makeTestGroup } from '../../../../common/framework/test_group.js';
+import { memcpy } from '../../../../common/util/util.js';
 import { GPUTest } from '../../../gpu_test.js';
 
 export const g = makeTestGroup(GPUTest);
@@ -21,7 +22,7 @@ g.test('b2t2b').fn(async t => {
     size: 4,
     usage: GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST,
   });
-  new Uint32Array(src.getMappedRange()).set(data);
+  memcpy({ src: data }, { dst: src.getMappedRange() });
   src.unmap();
 
   const dst = t.device.createBuffer({
@@ -59,7 +60,7 @@ g.test('b2t2t2b').fn(async t => {
     size: 4,
     usage: GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST,
   });
-  new Uint32Array(src.getMappedRange()).set(data);
+  memcpy({ src: data }, { dst: src.getMappedRange() });
   src.unmap();
 
   const dst = t.device.createBuffer({

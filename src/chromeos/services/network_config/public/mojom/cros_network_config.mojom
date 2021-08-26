@@ -321,6 +321,10 @@ struct ApnProperties {
   string? attach;
 };
 
+struct RoamingProperties {
+  bool allow_roaming;
+};
+
 struct CellularProviderProperties {
   string name;
   string code;
@@ -558,7 +562,7 @@ struct ManagedCellularProperties {
   ActivationStateType activation_state;
   // Note: |sim_locked| field is not part of ONC spec.
   bool sim_locked = false;
-  bool allow_roaming = false;
+  ManagedBoolean? allow_roaming;
   ManagedApnList? apn_list;
   ManagedBoolean? auto_connect;
   // List of user-entered custom APN entries. Note: This field is not
@@ -772,6 +776,9 @@ struct OpenVPNConfigProperties {
 // TODO(stevenjb): Make these a union.
 struct CellularConfigProperties {
   ApnProperties? apn;
+  // If not provided the default allow_roaming behavior will be used for the
+  // network.
+  RoamingProperties? roaming;
 };
 
 struct EthernetConfigProperties {
@@ -838,17 +845,21 @@ struct CellularSimState {
 // Properties provided by GetGlobalPolicy. These properties affect network
 // configuration as a whole instead of individual network configurations.
 struct GlobalPolicy {
+  // If true, only cellular networks present in policy may be connected to and
+  // no new networks may be added or configured.
+  bool allow_only_policy_cellular_networks = false;
+
   // If true, only policy networks may auto connect.
   bool allow_only_policy_networks_to_autoconnect = false;
 
-  // If true, only policy networks may be connected to and no new networks may
-  // be added or configured.
-  bool allow_only_policy_networks_to_connect = false;
+  // If true, only WiFi networks present in policy may be connected to and no
+  // new networks may be added or configured.
+  bool allow_only_policy_wifi_networks_to_connect = false;
 
   // If true and a managed network is available in the visible network list,
-  // only policy networks may be connected to and no new networks may be added
-  // or configured.
-  bool allow_only_policy_networks_to_connect_if_available = false;
+  // only WiFi networks present in policy may be connected to and no new
+  // networks may be added or configured.
+  bool allow_only_policy_wifi_networks_to_connect_if_available = false;
 
   // List of blocked networks which can not be connected to.
   array<string> blocked_hex_ssids;

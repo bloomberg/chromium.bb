@@ -27,8 +27,7 @@ import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://re
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../i18n_setup.js';
-import {LifetimeBrowserProxy, LifetimeBrowserProxyImpl} from '../lifetime_browser_proxy.js';
-import {Router} from '../router.js';
+import {LifetimeBrowserProxyImpl} from '../lifetime_browser_proxy.js';
 
 import {AboutPageBrowserProxy, AboutPageBrowserProxyImpl, PromoteUpdaterStatus, UpdateStatus, UpdateStatusChangedEvent} from './about_page_browser_proxy.js';
 
@@ -127,9 +126,6 @@ export class SettingsAboutPageElement extends SettingsAboutPageElementBase {
 
     /** @private {!AboutPageBrowserProxy} */
     this.aboutBrowserProxy_ = AboutPageBrowserProxyImpl.getInstance();
-
-    /** @private {!LifetimeBrowserProxy} */
-    this.lifetimeBrowserProxy_ = LifetimeBrowserProxyImpl.getInstance();
   }
 
   /** @override */
@@ -140,11 +136,6 @@ export class SettingsAboutPageElement extends SettingsAboutPageElementBase {
 
     // <if expr="not chromeos">
     this.startListening_();
-    if (Router.getInstance().getQueryParameters().get('checkForUpdate') ===
-        'true') {
-      this.onUpdateStatusChanged_({status: UpdateStatus.CHECKING});
-      this.aboutBrowserProxy_.requestUpdate();
-    }
     // </if>
   }
 
@@ -218,18 +209,13 @@ export class SettingsAboutPageElement extends SettingsAboutPageElementBase {
   }
 
   /** @private */
-  onReleaseNotesTap_() {
-    this.aboutBrowserProxy_.launchReleaseNotes();
-  }
-
-  /** @private */
   onHelpTap_() {
     this.aboutBrowserProxy_.openHelpPage();
   }
 
   /** @private */
   onRelaunchTap_() {
-    this.lifetimeBrowserProxy_.relaunch();
+    LifetimeBrowserProxyImpl.getInstance().relaunch();
   }
 
   // <if expr="not chromeos">
@@ -401,18 +387,18 @@ export class SettingsAboutPageElement extends SettingsAboutPageElementBase {
   }
   // </if>
 
+  // <if expr="not chromeos">
   /**
    * @return {boolean}
    * @private
    */
   shouldShowIcons_() {
-    // <if expr="not chromeos">
     if (this.obsoleteSystemInfo_.endOfLine) {
       return true;
     }
-    // </if>
     return this.showUpdateStatus_;
   }
+  // </if>
 }
 
 customElements.define(SettingsAboutPageElement.is, SettingsAboutPageElement);

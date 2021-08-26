@@ -12,7 +12,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/install_bounce_metric.h"
-#include "chrome/browser/web_applications/components/os_integration_manager.h"
 #include "chrome/browser/web_applications/components/url_handler_manager.h"
 #include "chrome/browser/web_applications/components/url_handler_manager_impl.h"
 #include "chrome/browser/web_applications/components/web_app_audio_focus_id_map.h"
@@ -24,6 +23,7 @@
 #include "chrome/browser/web_applications/file_utils_wrapper.h"
 #include "chrome/browser/web_applications/isolation_prefs_utils.h"
 #include "chrome/browser/web_applications/manifest_update_manager.h"
+#include "chrome/browser/web_applications/os_integration_manager.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/preinstalled_web_app_manager.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
@@ -93,12 +93,17 @@ WebAppProvider* WebAppProvider::GetForWebApps(Profile* profile) {
 }
 
 // static
+WebAppProvider* WebAppProvider::GetForLocalApps(Profile* profile) {
+  return WebAppProviderFactory::GetForProfile(profile);
+}
+
+// static
 WebAppProvider* WebAppProvider::GetForWebContents(
     content::WebContents* web_contents) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   DCHECK(profile);
-  return WebAppProvider::Get(profile);
+  return WebAppProvider::GetForLocalApps(profile);
 }
 
 // static
@@ -139,12 +144,12 @@ AppRegistryController& WebAppProvider::registry_controller() {
   return *registry_controller_;
 }
 
-InstallManager& WebAppProvider::install_manager() {
+WebAppInstallManager& WebAppProvider::install_manager() {
   CheckIsConnected();
   return *install_manager_;
 }
 
-InstallFinalizer& WebAppProvider::install_finalizer() {
+WebAppInstallFinalizer& WebAppProvider::install_finalizer() {
   CheckIsConnected();
   return *install_finalizer_;
 }
@@ -174,7 +179,7 @@ WebAppAudioFocusIdMap& WebAppProvider::audio_focus_id_map() {
   return *audio_focus_id_map_;
 }
 
-AppIconManager& WebAppProvider::icon_manager() {
+WebAppIconManager& WebAppProvider::icon_manager() {
   CheckIsConnected();
   return *icon_manager_;
 }
@@ -304,7 +309,7 @@ void WebAppProvider::ConnectSubsystems() {
       registrar_.get(), os_integration_manager_.get(), ui_manager_.get(),
       install_finalizer_.get(), install_manager_.get());
   preinstalled_web_app_manager_->SetSubsystems(
-      registrar_->AsWebAppRegistrar(), externally_managed_app_manager_.get());
+      registrar_.get(), externally_managed_app_manager_.get());
   system_web_app_manager_->SetSubsystems(
       externally_managed_app_manager_.get(), registrar_.get(),
       registry_controller_.get(), ui_manager_.get(),
@@ -318,7 +323,6 @@ void WebAppProvider::ConnectSubsystems() {
   os_integration_manager_->SetSubsystems(registrar_.get(), ui_manager_.get(),
                                          icon_manager_.get());
   registrar_->SetSubsystems(os_integration_manager_.get());
-  registry_controller_->SetSubsystems(os_integration_manager_.get());
 
   connected_ = true;
 }

@@ -353,7 +353,6 @@ Vector<LayoutUnit> SynchronizeAssignableTableInlineSizeAndColumnsFixed(
     return column.is_constrained && column.max_inline_size == LayoutUnit();
   };
 
-  float total_percent = 0.0f;
   LayoutUnit total_percent_inline_size;
   LayoutUnit total_auto_max_inline_size;
   LayoutUnit total_fixed_inline_size;
@@ -364,7 +363,6 @@ Vector<LayoutUnit> SynchronizeAssignableTableInlineSizeAndColumnsFixed(
     all_columns_count++;
     if (column.percent) {
       percent_columns_count++;
-      total_percent += *column.percent;
       total_percent_inline_size +=
           column.ResolvePercentInlineSize(target_inline_size);
     } else if (TreatAsFixed(column)) {
@@ -734,10 +732,12 @@ void DistributeExcessBlockSizeToRows(
                row->has_rowspan_start;
       };
 
-  auto IsEmptyRow = [](const NGTableTypes::Row* row) {
-    return row->block_size == LayoutUnit() &&
-           (!row->percent || *row->percent == 0);
-  };
+  auto IsEmptyRow =
+      [&percentage_resolution_block_size](const NGTableTypes::Row* row) {
+        bool is_percent = percentage_resolution_block_size != kIndefiniteSize &&
+                          row->percent && *row->percent != 0;
+        return row->block_size == LayoutUnit() && !is_percent;
+      };
 
   unsigned percent_rows_with_deficit_count = 0;
   unsigned rows_with_originating_rowspan = 0;

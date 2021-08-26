@@ -25,7 +25,6 @@
 
 #include "modules/audio_device/win/audio_device_core_win.h"
 
-#include <assert.h>
 #include <string.h>
 
 #include <comdef.h>
@@ -3001,8 +3000,8 @@ DWORD AudioDeviceWindowsCore::DoCaptureThreadPollDMO() {
         dmoBuffer.pBuffer->AddRef();
 
         // Poll the DMO for AEC processed capture data. The DMO will
-        // copy available data to |dmoBuffer|, and should only return
-        // 10 ms frames. The value of |dwStatus| should be ignored.
+        // copy available data to `dmoBuffer`, and should only return
+        // 10 ms frames. The value of `dwStatus` should be ignored.
         hr = _dmo->ProcessOutput(0, 1, &dmoBuffer, &dwStatus);
         SAFE_RELEASE(dmoBuffer.pBuffer);
         dwStatus = dmoBuffer.dwStatus;

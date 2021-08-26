@@ -4,12 +4,12 @@
 
 /* eslint-disable rulesdir/no_underscored_properties */
 
-import type * as Common from '../../core/common/common.js'; // eslint-disable-line no-unused-vars
+import type * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 
-import {Context} from './Context.js';  // eslint-disable-line no-unused-vars
+import {Context} from './Context.js';
 import {KeyboardShortcut} from './KeyboardShortcut.js';
-import {ForwardedShortcut, ShortcutRegistry} from './ShortcutRegistry.js';  // eslint-disable-line no-unused-vars
+import {ForwardedShortcut, ShortcutRegistry} from './ShortcutRegistry.js';
 
 export class ForwardedInputEventHandler {
   constructor() {

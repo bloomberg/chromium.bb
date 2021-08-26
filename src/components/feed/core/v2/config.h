@@ -70,9 +70,8 @@ struct Config {
   base::TimeDelta fetch_web_feed_info_delay = base::TimeDelta::FromSeconds(40);
   // How long before cached recommended feed data on the device is considered
   // stale and refetched.
-  // TODO(crbug/1152592): Revert to 7 days.
   base::TimeDelta recommended_feeds_staleness_threshold =
-      base::TimeDelta::FromDays(1);
+      base::TimeDelta::FromDays(28);
   // How long before cached subscribed feed data on the device is considered
   // stale and refetched.
   base::TimeDelta subscribed_feeds_staleness_threshold =
@@ -89,8 +88,8 @@ struct Config {
   int persistent_kv_store_cleanup_interval_in_written_bytes = 1000000;
 
   // Until we get the new list contents API working, keep using FeedQuery.
-  // TODO(crbug/1152592): turn this off when possible.
-  bool use_feed_query_requests_for_web_feeds = true;
+  // TODO(crbug/1152592): remove this when new endpoint is tested enough.
+  bool use_feed_query_requests_for_web_feeds = false;
 
   // Set of optional capabilities included in requests. See
   // CreateFeedQueryRequest() for required capabilities.
@@ -104,6 +103,7 @@ struct Config {
       feedwire::Capability::REQUEST_SCHEDULE,
       feedwire::Capability::UI_THEME_V2,
       feedwire::Capability::UNDO_FOR_DISMISS_COMMAND,
+      feedwire::Capability::CONTENT_LIFETIME,
   };
 
   Config();

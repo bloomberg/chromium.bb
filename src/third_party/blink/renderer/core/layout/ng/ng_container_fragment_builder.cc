@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/exclusions/ng_exclusion_space.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_absolute_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
@@ -41,7 +42,8 @@ void NGContainerFragmentBuilder::PropagateChildData(
     LogicalOffset relative_offset,
     const NGInlineContainer<LogicalOffset>* inline_container,
     absl::optional<LayoutUnit> adjustment_for_oof_propagation) {
-  if (adjustment_for_oof_propagation) {
+  if (adjustment_for_oof_propagation &&
+      NeedsOOFPositionedInfoPropagation(child)) {
     PropagateOOFPositionedInfo(child, child_offset, relative_offset,
                                /* offset_adjustment */ LogicalOffset(),
                                inline_container,
@@ -145,8 +147,7 @@ void NGContainerFragmentBuilder::AddOutOfFlowChildCandidate(
     const LogicalOffset& child_offset,
     NGLogicalStaticPosition::InlineEdge inline_edge,
     NGLogicalStaticPosition::BlockEdge block_edge,
-    bool needs_block_offset_adjustment,
-    const absl::optional<LogicalRect> containing_block_rect) {
+    bool needs_block_offset_adjustment) {
   DCHECK(child);
 
   // If an OOF-positioned candidate has a static-position which uses a
@@ -161,8 +162,7 @@ void NGContainerFragmentBuilder::AddOutOfFlowChildCandidate(
       child, NGLogicalStaticPosition{child_offset, inline_edge, block_edge},
       NGInlineContainer<LogicalOffset>(), needs_block_offset_adjustment,
       /* containing_block */ NGContainingBlock<LogicalOffset>(),
-      /* fixedpos_containing_block */ NGContainingBlock<LogicalOffset>(),
-      containing_block_rect);
+      /* fixedpos_containing_block */ NGContainingBlock<LogicalOffset>());
 }
 
 void NGContainerFragmentBuilder::AddOutOfFlowChildCandidate(
@@ -307,12 +307,12 @@ void NGContainerFragmentBuilder::PropagateOOFPositionedInfo(
     LayoutUnit containing_block_adjustment,
     const NGContainingBlock<LogicalOffset>* fixedpos_containing_block,
     LogicalOffset additional_fixedpos_offset) {
-  LogicalOffset adjusted_offset = offset + offset_adjustment;
+  // Calling this method without any work to do is expensive, even if it ends up
+  // skipping all its parts (probably due to its size). Make sure that we have a
+  // reason to be here.
+  DCHECK(NeedsOOFPositionedInfoPropagation(fragment));
 
-  // The relative offset is already applied for inlines, so don't include it
-  // in the |adjusted_offset|, as well.
-  if (!fragment.IsInlineBox())
-    adjusted_offset += relative_offset;
+  LogicalOffset adjusted_offset = offset + offset_adjustment + relative_offset;
 
   // Collect the child's out of flow descendants.
   const WritingModeConverter converter(GetWritingDirection(), fragment.Size());
@@ -349,6 +349,12 @@ void NGContainerFragmentBuilder::PropagateOOFPositionedInfo(
          additional_fixedpos_offset != LogicalOffset()) &&
         node.Style().GetPosition() == EPosition::kFixed) {
       static_position.offset += additional_fixedpos_offset;
+      // Relative offsets should be applied after fragmentation. However, if
+      // there is any relative offset that occurrend before the fixedpos reached
+      // its containing block, that relative offset should be applied to the
+      // static position (before fragmentation).
+      static_position.offset +=
+          relative_offset - fixedpos_containing_block->relative_offset;
       if (fixedpos_containing_block && fixedpos_containing_block->fragment) {
         AddOutOfFlowFragmentainerDescendant(
             {node, static_position, new_inline_container,
@@ -516,6 +522,12 @@ void NGContainerFragmentBuilder::PropagateOOFPositionedInfo(
                                           fixedpos_containing_block_rel_offset,
                                           fixedpos_containing_block_fragment)});
   }
+}
+
+scoped_refptr<const NGLayoutResult> NGContainerFragmentBuilder::Abort(
+    NGLayoutResult::EStatus status) {
+  return base::AdoptRef(new NGLayoutResult(
+      NGLayoutResult::NGContainerFragmentBuilderPassKey(), status, this));
 }
 
 #if DCHECK_IS_ON()

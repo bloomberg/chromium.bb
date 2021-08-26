@@ -8,15 +8,23 @@
 #include <stdint.h>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
-#include "base/time/time.h"
-#include "content/browser/conversions/conversion_report.h"
-#include "content/browser/conversions/storable_conversion.h"
 #include "content/browser/conversions/storable_impression.h"
-#include "url/origin.h"
+
+namespace base {
+class Time;
+}  // namespace base
+
+namespace url {
+class Origin;
+}  // namespace url
 
 namespace content {
+
+class StorableConversion;
+
+struct ConversionReport;
 
 // This class provides an interface for persisting impression/conversion data to
 // disk, and performing queries on it. ConversionStorage should initialize
@@ -88,6 +96,16 @@ class ConversionStorage {
     // data in tests. The data must be sanitized in the same way it would be for
     // `ConversionPolicy::GetNoisedEventSourceTriggerData()`.
     virtual uint64_t GetFakeEventSourceTriggerData() const
+        WARN_UNUSED_RESULT = 0;
+
+    // Returns the maximum frequency at which to delete expired impressions.
+    // Must be positive.
+    virtual base::TimeDelta GetDeleteExpiredImpressionsFrequency() const
+        WARN_UNUSED_RESULT = 0;
+
+    // Returns the maximum frequency at which to delete expired rate limits.
+    // Must be positive.
+    virtual base::TimeDelta GetDeleteExpiredRateLimitsFrequency() const
         WARN_UNUSED_RESULT = 0;
   };
   virtual ~ConversionStorage() = default;

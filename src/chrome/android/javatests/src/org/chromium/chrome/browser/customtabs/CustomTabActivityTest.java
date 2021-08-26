@@ -16,7 +16,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
-import static org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule.LONG_TIMEOUT_MS;
 import static org.chromium.chrome.browser.customtabs.CustomTabsTestUtils.createTestBitmap;
 import static org.chromium.components.content_settings.PrefNames.COOKIE_CONTROLS_MODE;
 
@@ -196,7 +195,6 @@ public class CustomTabActivityTest {
     private String mTestPage;
     private String mTestPage2;
     private EmbeddedTestServer mTestServer;
-    private TestWebServer mWebServer;
     private CustomTabsConnection mConnectionToCleanup;
 
     private class CustomTabsExtraCallbackHelper<T> extends CallbackHelper {
@@ -227,14 +225,13 @@ public class CustomTabActivityTest {
         mTestPage = mTestServer.getURL(TEST_PAGE);
         mTestPage2 = mTestServer.getURL(TEST_PAGE_2);
         LibraryLoader.getInstance().ensureInitialized();
-        mWebServer = TestWebServer.start();
     }
 
     @After
     public void tearDown() {
         TestThreadUtils.runOnUiThreadBlocking(() -> FirstRunStatus.setFirstRunFlowComplete(false));
 
-        mTestServer.stopAndDestroyServer();
+        stopAndShutdownEmbeddedTestServer();
 
         // finish() is called on a non-UI thread by the testing harness. Must hide the menu
         // first, otherwise the UI is manipulated on a non-UI thread.
@@ -246,11 +243,22 @@ public class CustomTabActivityTest {
             AppMenuHandler handler = coordinator.getAppMenuHandler();
             if (handler != null) handler.hideAppMenu();
         });
-        mWebServer.shutdown();
 
         if (mConnectionToCleanup != null) {
             CustomTabsTestUtils.cleanupSessions(mConnectionToCleanup);
         }
+    }
+
+    private void stopAndShutdownEmbeddedTestServer() {
+        if (mTestServer != null) {
+            mTestServer.stopAndDestroyServer();
+            mTestServer = null;
+        }
+    }
+
+    private TestWebServer createTestWebServer() throws Exception {
+        stopAndShutdownEmbeddedTestServer();
+        return TestWebServer.start();
     }
 
     private CustomTabActivity getActivity() {
@@ -293,14 +301,16 @@ public class CustomTabActivityTest {
 
         final Tab tab = getActivity().getActivityTab();
         final CallbackHelper pageLoadFinishedHelper = new CallbackHelper();
-        tab.addObserver(new EmptyTabObserver() {
-            @Override
-            public void onLoadUrl(Tab tab, LoadUrlParams params, int loadType) {
-                assertTrue(params.getVerbatimHeaders().contains("bearer-token: Some token"));
-                assertTrue(params.getVerbatimHeaders().contains(
-                        "redirect-url: https://www.google.com"));
-                pageLoadFinishedHelper.notifyCalled();
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            tab.addObserver(new EmptyTabObserver() {
+                @Override
+                public void onLoadUrl(Tab tab, LoadUrlParams params, int loadType) {
+                    assertTrue(params.getVerbatimHeaders().contains("bearer-token: Some token"));
+                    assertTrue(params.getVerbatimHeaders().contains(
+                            "redirect-url: https://www.google.com"));
+                    pageLoadFinishedHelper.notifyCalled();
+                }
+            });
         });
 
         TestThreadUtils.runOnUiThreadBlockingNoException(
@@ -855,11 +865,13 @@ public class CustomTabActivityTest {
                 }));
         final Tab tab = getActivity().getActivityTab();
         final CallbackHelper pageLoadFinishedHelper = new CallbackHelper();
-        tab.addObserver(new EmptyTabObserver() {
-            @Override
-            public void onPageLoadFinished(Tab tab, GURL url) {
-                pageLoadFinishedHelper.notifyCalled();
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            tab.addObserver(new EmptyTabObserver() {
+                @Override
+                public void onPageLoadFinished(Tab tab, GURL url) {
+                    pageLoadFinishedHelper.notifyCalled();
+                }
+            });
         });
         pageLoadFinishedHelper.waitForCallback(0);
         CriteriaHelper.pollInstrumentationThread(() -> {
@@ -915,16 +927,18 @@ public class CustomTabActivityTest {
 
         final Tab tab = getActivity().getActivityTab();
         final CallbackHelper pageLoadFinishedHelper = new CallbackHelper();
-        tab.addObserver(new EmptyTabObserver() {
-            @Override
-            public void onLoadUrl(Tab tab, LoadUrlParams params, int loadType) {
-                assertEquals(referrer, params.getReferrer().getUrl());
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            tab.addObserver(new EmptyTabObserver() {
+                @Override
+                public void onLoadUrl(Tab tab, LoadUrlParams params, int loadType) {
+                    assertEquals(referrer, params.getReferrer().getUrl());
+                }
 
-            @Override
-            public void onPageLoadFinished(Tab tab, GURL url) {
-                pageLoadFinishedHelper.notifyCalled();
-            }
+                @Override
+                public void onPageLoadFinished(Tab tab, GURL url) {
+                    pageLoadFinishedHelper.notifyCalled();
+                }
+            });
         });
         Assert.assertTrue("CustomTabContentHandler can't handle intent with same session",
                 TestThreadUtils.runOnUiThreadBlockingNoException(
@@ -955,16 +969,18 @@ public class CustomTabActivityTest {
 
         final Tab tab = getActivity().getActivityTab();
         final CallbackHelper pageLoadFinishedHelper = new CallbackHelper();
-        tab.addObserver(new EmptyTabObserver() {
-            @Override
-            public void onLoadUrl(Tab tab, LoadUrlParams params, int loadType) {
-                assertEquals(referrer, params.getReferrer().getUrl());
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            tab.addObserver(new EmptyTabObserver() {
+                @Override
+                public void onLoadUrl(Tab tab, LoadUrlParams params, int loadType) {
+                    assertEquals(referrer, params.getReferrer().getUrl());
+                }
 
-            @Override
-            public void onPageLoadFinished(Tab tab, GURL url) {
-                pageLoadFinishedHelper.notifyCalled();
-            }
+                @Override
+                public void onPageLoadFinished(Tab tab, GURL url) {
+                    pageLoadFinishedHelper.notifyCalled();
+                }
+            });
         });
         Assert.assertTrue("CustomTabContentHandler can't handle intent with same session",
                 TestThreadUtils.runOnUiThreadBlockingNoException(
@@ -1070,8 +1086,10 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     public void testToolbarTitleOnlyStateWithProperTitle() throws Exception {
-        final String url = mWebServer.setResponse("/test.html", ONLOAD_TITLE_CHANGE, null);
+        TestWebServer webServer = createTestWebServer();
+        final String url = webServer.setResponse("/test.html", ONLOAD_TITLE_CHANGE, null);
         hideDomainAndEnsureTitleIsSet(url, false, "nytimes.com");
+        webServer.shutdown();
     }
 
     /**
@@ -1080,8 +1098,10 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     public void testToolbarTitleOnlyStateWithProperTitleHiddenTab() throws Exception {
-        final String url = mWebServer.setResponse("/test.html", ONLOAD_TITLE_CHANGE, null);
+        TestWebServer webServer = createTestWebServer();
+        final String url = webServer.setResponse("/test.html", ONLOAD_TITLE_CHANGE, null);
         hideDomainAndEnsureTitleIsSet(url, true, "nytimes.com");
+        webServer.shutdown();
     }
 
     /**
@@ -1090,8 +1110,10 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     public void testToolbarTitleOnlyStateWithDelayedTitle() throws Exception {
-        final String url = mWebServer.setResponse("/test.html", DELAYED_TITLE_CHANGE, null);
+        TestWebServer webServer = createTestWebServer();
+        final String url = webServer.setResponse("/test.html", DELAYED_TITLE_CHANGE, null);
         hideDomainAndEnsureTitleIsSet(url, false, "nytimes.com");
+        webServer.shutdown();
     }
 
     private void hideDomainAndEnsureTitleIsSet(
@@ -1109,7 +1131,7 @@ public class CustomTabActivityTest {
         if (useHiddenTab) {
             setCanUseHiddenTabForSession(connection, token, true);
             Assert.assertTrue(connection.mayLaunchUrl(token, Uri.parse(url), null, null));
-            ensureCompletedSpeculationForUrl(connection, url);
+            CustomTabsTestUtils.ensureCompletedSpeculationForUrl(connection, url);
         }
 
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
@@ -1239,6 +1261,7 @@ public class CustomTabActivityTest {
     /** Same as above, but the hidden tab matching should not ignore the fragment. */
     @Test
     @SmallTest
+    @FlakyTest(message = "https://crbug.com/1237331")
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testHiddenTabAndChangingFragmentDontIgnoreFragments() throws Exception {
         startHiddenTabAndChangeFragment(false, true);
@@ -1322,7 +1345,7 @@ public class CustomTabActivityTest {
         Assert.assertTrue(connection.mayLaunchUrl(token, Uri.parse(initialUrl), null, null));
 
         if (wait) {
-            ensureCompletedSpeculationForUrl(connection, initialUrl);
+            CustomTabsTestUtils.ensureCompletedSpeculationForUrl(connection, initialUrl);
         }
 
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
@@ -1372,7 +1395,7 @@ public class CustomTabActivityTest {
         connection.newSession(token);
         setCanUseHiddenTabForSession(connection, token, true);
         Assert.assertTrue(connection.mayLaunchUrl(token, Uri.parse(mTestPage), null, null));
-        ensureCompletedSpeculationForUrl(connection, mTestPage);
+        CustomTabsTestUtils.ensureCompletedSpeculationForUrl(connection, mTestPage);
 
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(
                 CustomTabsTestUtils.createMinimalCustomTabIntent(context, mTestPage));
@@ -1589,7 +1612,8 @@ public class CustomTabActivityTest {
                 tabbedActivity.set((ChromeTabbedActivity) activity);
             }
         };
-        ApplicationStatus.registerStateListenerForAllActivities(listener);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> ApplicationStatus.registerStateListenerForAllActivities(listener));
 
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
             TabTestUtils.openNewTab(cctActivity.getActivityTab(), new GURL("about:blank"), null,
@@ -1609,7 +1633,8 @@ public class CustomTabActivityTest {
                     ChromeTabUtils.getUrlStringOnUiThread(tab), is("about:blank"));
         });
 
-        ApplicationStatus.unregisterActivityStateListener(listener);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> ApplicationStatus.unregisterActivityStateListener(listener));
     }
 
     /** Maybe prerenders a URL with a referrer, then launch it with another one. */
@@ -1630,7 +1655,7 @@ public class CustomTabActivityTest {
                 extras.putParcelable(Intent.EXTRA_REFERRER, Uri.parse(speculationReferrer));
             }
             Assert.assertTrue(connection.mayLaunchUrl(token, Uri.parse(url), extras, null));
-            ensureCompletedSpeculationForUrl(connection, url);
+            CustomTabsTestUtils.ensureCompletedSpeculationForUrl(connection, url);
         }
 
         if (launchReferrer != null) {
@@ -1791,11 +1816,13 @@ public class CustomTabActivityTest {
     @SmallTest
     @CommandLineFlags.Add({ContentSwitches.HOST_RESOLVER_RULES + "=MAP * 127.0.0.1",
             "ignore-certificate-errors", "ignore-google-port-numbers"})
+    @DisabledTest(message = "https://crbug.com/1238931")
     public void
     testMayLaunchUrlAddsClientDataHeader() throws Exception {
-        mWebServer.setServerHost("www.google.com");
+        TestWebServer webServer = createTestWebServer();
+        webServer.setServerHost("www.google.com");
         final String expectedHeader = "test-header";
-        String url = mWebServer.setResponse("/ok.html", "<html>ok</html>", null);
+        String url = webServer.setResponse("/ok.html", "<html>ok</html>", null);
         AppHooks.setInstanceForTesting(new AppHooksImpl() {
             @Override
             public CustomTabsConnection createCustomTabsConnection() {
@@ -1822,9 +1849,9 @@ public class CustomTabActivityTest {
         Tab hiddenTab =
                 TestThreadUtils.runOnUiThreadBlocking(() -> { return connection.getHiddenTab(); });
         ChromeTabUtils.waitForTabPageLoaded(hiddenTab, url);
-        String actualHeader =
-                mWebServer.getLastRequest("/ok.html").headerValue("X-CCT-Client-Data");
+        String actualHeader = webServer.getLastRequest("/ok.html").headerValue("X-CCT-Client-Data");
         assertEquals(expectedHeader, actualHeader);
+        webServer.shutdown();
     }
 
     @Test
@@ -1853,7 +1880,7 @@ public class CustomTabActivityTest {
         setCanUseHiddenTabForSession(connection, token, true);
 
         Assert.assertTrue(connection.mayLaunchUrl(token, Uri.parse(speculationUrl), null, null));
-        ensureCompletedSpeculationForUrl(connection, speculationUrl);
+        CustomTabsTestUtils.ensureCompletedSpeculationForUrl(connection, speculationUrl);
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
 
         Tab tab = getActivity().getActivityTab();
@@ -1892,7 +1919,7 @@ public class CustomTabActivityTest {
                 tabHiddenHelper.notifyCalled();
             }
         };
-        tabToBeReparented.addObserver(observer);
+        TestThreadUtils.runOnUiThreadBlocking(() -> tabToBeReparented.addObserver(observer));
         PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
             getActivity().getComponent().resolveNavigationController()
                     .openCurrentUrlInBrowser(true);
@@ -1919,11 +1946,14 @@ public class CustomTabActivityTest {
         assertEquals("The tab should never be hidden during the reparenting process", 0,
                 tabHiddenHelper.getCallCount());
         Assert.assertFalse(TabTestUtils.isCustomTab(tabToBeReparented));
-        tabToBeReparented.removeObserver(observer);
-        RewindableIterator<TabObserver> observers = TabTestUtils.getTabObservers(tabToBeReparented);
-        while (observers.hasNext()) {
-            Assert.assertFalse(observers.next() instanceof CustomTabObserver);
-        }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            tabToBeReparented.removeObserver(observer);
+            RewindableIterator<TabObserver> observers =
+                    TabTestUtils.getTabObservers(tabToBeReparented);
+            while (observers.hasNext()) {
+                Assert.assertFalse(observers.next() instanceof CustomTabObserver);
+            }
+        });
         return newActivity;
     }
 
@@ -2065,15 +2095,6 @@ public class CustomTabActivityTest {
     private CustomTabsSessionToken warmUpAndLaunchUrlWithSession() throws Exception {
         return warmUpAndLaunchUrlWithSession(CustomTabsTestUtils.createMinimalCustomTabIntent(
                 InstrumentationRegistry.getTargetContext(), mTestPage));
-    }
-
-    private static void ensureCompletedSpeculationForUrl(
-            final CustomTabsConnection connection, final String url) {
-        CriteriaHelper.pollUiThread(() -> {
-            Criteria.checkThat("Tab was not created", connection.getSpeculationParamsForTesting(),
-                    Matchers.notNullValue());
-        }, LONG_TIMEOUT_MS, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
-        ChromeTabUtils.waitForTabPageLoaded(connection.getSpeculationParamsForTesting().tab, url);
     }
 
     private static class ElementContentCriteria implements Runnable {

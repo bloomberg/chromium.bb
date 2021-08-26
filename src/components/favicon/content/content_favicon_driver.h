@@ -14,13 +14,9 @@
 #include "content/public/browser/render_document_host_user_data.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
+#include "third_party/blink/public/mojom/manifest/manifest.mojom-forward.h"
 #include "url/gurl.h"
-
-namespace blink {
-struct Manifest;
-}  // namespace blink
 
 namespace favicon {
 
@@ -72,7 +68,7 @@ class ContentFaviconDriver
   // Callback when a manifest is downloaded.
   void OnDidDownloadManifest(ManifestDownloadCallback callback,
                              const GURL& manifest_url,
-                             const blink::Manifest& manifest);
+                             blink::mojom::ManifestPtr manifest);
 
   // FaviconHandler::Delegate implementation.
   int DownloadImage(const GURL& url,

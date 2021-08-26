@@ -14,6 +14,8 @@
 #include "chrome/browser/apps/app_service/publishers/standalone_browser_extension_apps_factory.h"
 #include "chrome/browser/apps/app_service/publishers/web_apps_crosapi.h"
 #include "chrome/browser/apps/app_service/publishers/web_apps_crosapi_factory.h"
+#include "chrome/browser/apps/app_service/subscriber_crosapi.h"
+#include "chrome/browser/apps/app_service/subscriber_crosapi_factory.h"
 #include "chrome/browser/ash/crosapi/automation_ash.h"
 #include "chrome/browser/ash/crosapi/browser_manager.h"
 #include "chrome/browser/ash/crosapi/browser_service_host_ash.h"
@@ -33,6 +35,7 @@
 #include "chrome/browser/ash/crosapi/message_center_ash.h"
 #include "chrome/browser/ash/crosapi/metrics_reporting_ash.h"
 #include "chrome/browser/ash/crosapi/native_theme_service_ash.h"
+#include "chrome/browser/ash/crosapi/network_settings_service_ash.h"
 #include "chrome/browser/ash/crosapi/networking_attributes_ash.h"
 #include "chrome/browser/ash/crosapi/power_ash.h"
 #include "chrome/browser/ash/crosapi/prefs_ash.h"
@@ -67,7 +70,7 @@
 #include "chromeos/services/machine_learning/public/cpp/service_connection.h"
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
 #include "components/account_manager_core/chromeos/account_manager.h"
-#include "components/account_manager_core/chromeos/account_manager_ash.h"
+#include "components/account_manager_core/chromeos/account_manager_mojo_service.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/device_service.h"
 #include "content/public/browser/media_session_service.h"
@@ -116,6 +119,8 @@ CrosapiAsh::CrosapiAsh()
           g_browser_process->local_state())),
       native_theme_service_ash_(std::make_unique<NativeThemeServiceAsh>()),
       networking_attributes_ash_(std::make_unique<NetworkingAttributesAsh>()),
+      network_settings_service_ash_(
+          std::make_unique<NetworkSettingsServiceAsh>()),
       power_ash_(std::make_unique<PowerAsh>()),
       prefs_ash_(
           std::make_unique<PrefsAsh>(g_browser_process->profile_manager(),
@@ -163,14 +168,22 @@ void CrosapiAsh::BindAutomationFactory(
 void CrosapiAsh::BindAccountManager(
     mojo::PendingReceiver<mojom::AccountManager> receiver) {
   // Given `GetAshProfile()` assumptions, there is 1 and only 1
-  // `AccountManagerAsh` that can/should be contacted - the one attached to the
-  // regular `Profile` in ash-chrome for the active `User`.
-  crosapi::AccountManagerAsh* const account_manager_ash =
+  // `AccountManagerMojoService` that can/should be contacted - the one attached
+  // to the regular `Profile` in ash-chrome for the active `User`.
+  crosapi::AccountManagerMojoService* const account_manager_mojo_service =
       g_browser_process->platform_part()
           ->GetAccountManagerFactory()
-          ->GetAccountManagerAsh(
+          ->GetAccountManagerMojoService(
               /*profile_path=*/GetAshProfile()->GetPath().value());
-  account_manager_ash->BindReceiver(std::move(receiver));
+  account_manager_mojo_service->BindReceiver(std::move(receiver));
+}
+
+void CrosapiAsh::BindAppServiceProxy(
+    mojo::PendingReceiver<crosapi::mojom::AppServiceProxy> receiver) {
+  Profile* profile = ProfileManager::GetPrimaryUserProfile();
+  auto* subscriber_crosapi =
+      apps::SubscriberCrosapiFactory::GetForProfile(profile);
+  subscriber_crosapi->RegisterAppServiceProxyFromCrosapi(std::move(receiver));
 }
 
 void CrosapiAsh::BindBrowserServiceHost(
@@ -378,6 +391,11 @@ void CrosapiAsh::BindWebAppPublisher(
   apps::WebAppsCrosapi* web_apps =
       apps::WebAppsCrosapiFactory::GetForProfile(profile);
   web_apps->RegisterWebAppsCrosapiHost(std::move(receiver));
+}
+void CrosapiAsh::BindNetworkSettingsService(
+    ::mojo::PendingReceiver<::crosapi::mojom::NetworkSettingsService>
+        receiver) {
+  network_settings_service_ash_->BindReceiver(std::move(receiver));
 }
 
 void CrosapiAsh::BindDriveIntegrationService(

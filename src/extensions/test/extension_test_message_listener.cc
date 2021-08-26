@@ -67,6 +67,7 @@ void ExtensionTestMessageListener::Reset() {
   satisfied_ = false;
   failed_ = false;
   message_.clear();
+  had_user_gesture_ = false;
   extension_id_for_message_.clear();
 }
 
@@ -86,7 +87,8 @@ void ExtensionTestMessageListener::Observe(
     sender_extension_id = function->extension_id();
 
   if (satisfied_ ||
-      (!extension_id_.empty() && sender_extension_id != extension_id_)) {
+      (!extension_id_.empty() && sender_extension_id != extension_id_) ||
+      (browser_context_ && function->browser_context() != browser_context_)) {
     return;
   }
 
@@ -110,6 +112,7 @@ void ExtensionTestMessageListener::Observe(
     extension_id_for_message_ = sender_extension_id;
     satisfied_ = true;
     failed_ = is_failure_message;
+    had_user_gesture_ = function->user_gesture();
 
     if (will_reply_) {
       DCHECK(!*listener_will_respond) << "Only one listener may reply.";
@@ -120,5 +123,10 @@ void ExtensionTestMessageListener::Observe(
 
     if (quit_wait_closure_)
       std::move(quit_wait_closure_).Run();
+
+    if (on_satisfied_)
+      std::move(on_satisfied_).Run(message);
+    if (on_repeatedly_satisfied_)
+      on_repeatedly_satisfied_.Run(message);
   }
 }

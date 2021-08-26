@@ -20,12 +20,13 @@
 #include <memory>
 #include <utility>
 
+#include "absl/types/variant.h"
 #include "platform/base/byte_array.h"
 #include "platform/base/input_stream.h"
 #include "platform/base/payload_id.h"
 #include "platform/base/prng.h"
 #include "platform/public/file.h"
-#include "absl/types/variant.h"
+#include "platform/public/logging.h"
 
 namespace location {
 namespace nearby {
@@ -89,17 +90,28 @@ class Payload {
   // Returns Payload type.
   Type GetType() const { return type_; }
 
+  // Sets the payload offset in bytes
+  void SetOffset(size_t offset) {
+    CHECK(type_ == Type::kFile || type_ == Type::kStream);
+    InputFile* file = AsFile();
+    if (file != nullptr) {
+      CHECK(file->GetTotalSize() > 0 && offset < (size_t)file->GetTotalSize());
+    }
+    offset_ = offset;
+  }
+
+  size_t GetOffset() { return offset_; }
+
   // Generate Payload Id; to be passed to outgoing file constructor.
   static Id GenerateId() { return Prng().NextInt64(); }
 
  private:
-  Type FindType(const Content& content) const {
-    return static_cast<Type>(content_.index());
-  }
+  Type FindType() const { return static_cast<Type>(content_.index()); }
 
   Content content_;
   Id id_{GenerateId()};
-  Type type_{FindType(content_)};
+  Type type_{FindType()};
+  size_t offset_{0};
 };
 
 }  // namespace connections

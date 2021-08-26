@@ -231,6 +231,11 @@ void RTCPSender::SetSendingStatus(const FeedbackState& feedback_state,
   }
 }
 
+void RTCPSender::SetNonSenderRttMeasurement(bool enabled) {
+  MutexLock lock(&mutex_rtcp_sender_);
+  xr_send_receiver_reference_time_enabled_ = enabled;
+}
+
 int32_t RTCPSender::SendLossNotification(const FeedbackState& feedback_state,
                                          uint16_t last_decoded_seq_num,
                                          uint16_t last_received_seq_num,
@@ -277,6 +282,10 @@ int32_t RTCPSender::SendLossNotification(const FeedbackState& feedback_state,
 void RTCPSender::SetRemb(int64_t bitrate_bps, std::vector<uint32_t> ssrcs) {
   RTC_CHECK_GE(bitrate_bps, 0);
   MutexLock lock(&mutex_rtcp_sender_);
+  if (method_ == RtcpMode::kOff) {
+    RTC_LOG(LS_WARNING) << "Can't send rtcp if it is disabled.";
+    return;
+  }
   remb_bitrate_ = bitrate_bps;
   remb_ssrcs_ = std::move(ssrcs);
 
@@ -812,7 +821,7 @@ std::vector<rtcp::ReportBlock> RTCPSender::CreateReportBlocks(
   if (!receive_statistics_)
     return result;
 
-  // TODO(danilchap): Support sending more than |RTCP_MAX_REPORT_BLOCKS| per
+  // TODO(danilchap): Support sending more than `RTCP_MAX_REPORT_BLOCKS` per
   // compound rtcp packet when single rtcp module is used for multiple media
   // streams.
   result = receive_statistics_->RtcpReportBlocks(RTCP_MAX_REPORT_BLOCKS);
@@ -882,6 +891,10 @@ bool RTCPSender::AllVolatileFlagsConsumed() const {
 void RTCPSender::SetVideoBitrateAllocation(
     const VideoBitrateAllocation& bitrate) {
   MutexLock lock(&mutex_rtcp_sender_);
+  if (method_ == RtcpMode::kOff) {
+    RTC_LOG(LS_WARNING) << "Can't send rtcp if it is disabled.";
+    return;
+  }
   // Check if this allocation is first ever, or has a different set of
   // spatial/temporal layers signaled and enabled, if so trigger an rtcp report
   // as soon as possible.

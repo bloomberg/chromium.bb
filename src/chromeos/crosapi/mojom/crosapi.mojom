@@ -27,6 +27,7 @@ import "chromeos/crosapi/mojom/metrics_reporting.mojom";
 import "chromeos/crosapi/mojom/native_theme.mojom";
 import "chromeos/crosapi/mojom/networking_attributes.mojom";
 import "chromeos/crosapi/mojom/power.mojom";
+import "chromeos/crosapi/mojom/network_settings_service.mojom";
 import "chromeos/crosapi/mojom/prefs.mojom";
 import "chromeos/crosapi/mojom/remoting.mojom";
 import "chromeos/crosapi/mojom/resource_manager.mojom";
@@ -67,8 +68,8 @@ struct BrowserInfo {
 // please note the milestone when you added it, to help us reason about
 // compatibility between the client applications and older ash-chrome binaries.
 //
-// Next version: 40
-// Next method id: 45
+// Next version: 42
+// Next method id: 47
 [Stable, Uuid="8b79c34f-2bf8-4499-979a-b17cac522c1e",
  RenamedFrom="crosapi.mojom.AshChromeService"]
 interface Crosapi {
@@ -87,6 +88,12 @@ interface Crosapi {
   // Added in M87.
   [MinVersion=4]
   BindAccountManager@7(pending_receiver<AccountManager> receiver);
+
+  // Bind the app service proxy, which allows the Lacros Browser to
+  // interact with all apps installed in App Service in ash-chrome.
+  // Added in M93.
+  [MinVersion=40]
+  BindAppServiceProxy@45(pending_receiver<AppServiceProxy> receiver);
 
   // Binds the BrowserServiceHost interface to prepare registering
   // a BrowserService to crosapi.
@@ -161,6 +168,13 @@ interface Crosapi {
   // Added in M93.
   [MinVersion=37]
   BindImageWriter@42(pending_receiver<ImageWriter> receiver);
+
+  // Binds the NetworkSettingsService interface for reading and observing
+  // network changes.
+  // Added in M93.
+  [MinVersion=41]
+  BindNetworkSettingsService@46(
+      pending_receiver<NetworkSettingsService> receiver);
 
   // Binds the KeystoreService interface for challenging keys.
   // Added in M87.
@@ -300,7 +314,8 @@ enum SessionType {
   kUnknown,
   kRegularSession,
   kGuestSession,
-  kPublicSession
+  kPublicSession,
+  [MinVersion=40] kWebKioskSession,
 };
 
 // Device mode (e.g. enterprise enrollment state). See policy::DeviceMode.
@@ -413,6 +428,16 @@ enum OndeviceHandwritingSupport{
   kUseDlc = 2,
 };
 
+// Corresponds to BUILDFLAGs we use in ash-chrome that we want to propagate to
+// Lacros Chrome. On the Lacros side we turn this into command line switches.
+[Stable, Extensible]
+enum BuildFlag {
+  [Default] kUnknown = 0,
+  kUseChromeosProtectedMedia = 1,
+  kEnablePlatformEncryptedHevc = 2,
+  kEnablePlatformHevc = 3,
+};
+
 // BrowserInitParams is a set of parameters for initialization of browsers
 // (such as lacros-chrome), which is passed from ash-chrome to a browser.
 // Since ash-chrome and browsers may have different versions, the browsers must
@@ -431,7 +456,7 @@ enum OndeviceHandwritingSupport{
 // processed by the browser.
 //
 // Next version: 24
-// Next id: 23
+// Next id: 24
 [Stable, RenamedFrom="crosapi.mojom.LacrosInitParams"]
 struct BrowserInitParams {
   // This is ash-chrome's version of the Crosapi interface. This is used by
@@ -573,6 +598,11 @@ struct BrowserInitParams {
   // Whether (and how) on-device handwriting recognition is supported, depending
   // ash-chrome's startup switches.
   OndeviceHandwritingSupport ondevice_handwriting_support@22;
+
+  [MinVersion=23]
+  // Build flags from ash-chrome that we turn into command line switches to
+  // enforce at run-time in lacros-chrome.
+  array<BuildFlag>? build_flags@23;
 };
 
 // BrowserService defines the APIs that live in a browser (such as

@@ -139,24 +139,22 @@ void CardUnmaskPromptViews::GotVerificationResult(
       SetRetriableErrorMessage(std::u16string());
 
       // Rows cannot be replaced in GridLayout, so we reset it.
-      overlay_->RemoveAllChildViews(/*delete_children=*/true);
+      overlay_->RemoveAllChildViews();
       views::GridLayout* layout = ResetOverlayLayout(overlay_);
 
       // The label of the overlay will now show the error in red.
       auto error_label = std::make_unique<views::Label>(error_message);
-      const SkColor warning_text_color = views::style::GetColor(
-          *error_label, ChromeTextContext::CONTEXT_DIALOG_BODY_TEXT_SMALL,
-          STYLE_RED);
-      error_label->SetEnabledColor(warning_text_color);
+      views::SetCascadingNativeThemeColor(
+          error_label.get(), views::kCascadingLabelEnabledColor,
+          ui::NativeTheme::kColorId_AlertSeverityHigh);
       error_label->SetMultiLine(true);
 
       // Replace the throbber with a warning icon. Since this is a permanent
       // error we do not intend to return to a previous state.
-      auto error_icon = std::make_unique<views::ImageView>();
-      error_icon->SetImage(gfx::CreateVectorIcon(
-          kBrowserToolsErrorIcon,
-          GetNativeTheme()->GetSystemColor(
-              ui::NativeTheme::kColorId_AlertSeverityHigh)));
+      auto error_icon =
+          std::make_unique<views::ImageView>(ui::ImageModel::FromVectorIcon(
+              kBrowserToolsErrorIcon,
+              ui::NativeTheme::kColorId_AlertSeverityHigh));
 
       layout->StartRow(1.0, 0);
       layout->AddView(std::move(error_icon));

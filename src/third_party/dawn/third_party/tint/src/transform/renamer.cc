@@ -108,6 +108,7 @@ const char* kReservedKeywordsHLSL[] = {
     "RWByteAddressBuffer",
     "RWStructuredBuffer",
     "RWTexture1D",
+    "RWTexture1DArray",
     "RWTexture2D",
     "RWTexture2DArray",
     "RWTexture3D",
@@ -144,6 +145,8 @@ const char* kReservedKeywordsHLSL[] = {
     "Sampler2D",
     "Sampler3D",
     "SamplerCUBE",
+    "SamplerComparisonState",
+    "SamplerState",
     "StructuredBuffer",
     "TANGENT",
     "TESSFACTOR",
@@ -151,6 +154,7 @@ const char* kReservedKeywordsHLSL[] = {
     "Texcoord",
     "Texture",
     "Texture1D",
+    "Texture1DArray",
     "Texture2D",
     "Texture2DArray",
     "Texture2DMS",
@@ -203,6 +207,7 @@ const char* kReservedKeywordsHLSL[] = {
     "class",
     "clip",
     "column_major",
+    "compile",
     "compile_fragment",
     "const",
     "const_cast",
@@ -214,6 +219,7 @@ const char* kReservedKeywordsHLSL[] = {
     "ddy",
     "ddy_coarse",
     "ddy_fine",
+    "default",
     "degrees",
     "delete",
     "discard",
@@ -355,6 +361,7 @@ const char* kReservedKeywordsHLSL[] = {
     "isinf",
     "isnan",
     "lerp",
+    "line",
     "lineadj",
     "linear",
     "lit",
@@ -889,7 +896,8 @@ Output Renamer::Run(const Program* in, const DataMap& inputs) {
   // Disable auto-cloning of symbols, since we want to rename them.
   CloneContext ctx(&out, in, false);
 
-  // Swizzles and intrinsic calls need to keep their symbols preserved.
+  // Swizzles, intrinsic calls and builtin structure members need to keep their
+  // symbols preserved.
   std::unordered_set<ast::IdentifierExpression*> preserve;
   for (auto* node : in->ASTNodes().Objects()) {
     if (auto* member = node->As<ast::MemberAccessorExpression>()) {
@@ -901,6 +909,12 @@ Output Renamer::Run(const Program* in, const DataMap& inputs) {
       }
       if (sem->Is<sem::Swizzle>()) {
         preserve.emplace(member->member());
+      } else if (auto* str_expr = in->Sem().Get(member->structure())) {
+        if (auto* ty = str_expr->Type()->UnwrapRef()->As<sem::Struct>()) {
+          if (ty->Declaration() == nullptr) {  // Builtin structure
+            preserve.emplace(member->member());
+          }
+        }
       }
     } else if (auto* call = node->As<ast::CallExpression>()) {
       auto* sem = in->Sem().Get(call);

@@ -11,6 +11,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/guid.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -193,7 +194,7 @@ HRESULT MediaFoundationRenderer::CreateMediaEngine(
       &mf_source_, media_resource, task_runner_));
 
   if (force_dcomp_mode_for_testing_)
-    SetDCompMode(true, base::DoNothing());
+    ignore_result(SetDCompModeInternal());
 
   if (!mf_source_->HasEncryptedStream()) {
     // Supports clear stream for testing.
@@ -401,26 +402,23 @@ void MediaFoundationRenderer::SetPlaybackRate(double playback_rate) {
   DVLOG_IF(1, FAILED(hr)) << "Failed to set playback rate: " << PrintHr(hr);
 }
 
-void MediaFoundationRenderer::SetDCompMode(bool enabled,
-                                           SetDCompModeCB callback) {
-  DVLOG_FUNC(1);
-
-  HRESULT hr = SetDCompModeInternal(enabled);
-  if (FAILED(hr)) {
-    DLOG(ERROR) << "Failed to set DComp mode: " << PrintHr(hr);
-    std::move(callback).Run(false);
-    return;
-  }
-
-  std::move(callback).Run(true);
-}
-
 void MediaFoundationRenderer::GetDCompSurface(GetDCompSurfaceCB callback) {
   DVLOG_FUNC(1);
 
+  HRESULT hr = SetDCompModeInternal();
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Failed to set DComp mode: " << PrintHr(hr);
+    std::move(callback).Run(base::win::ScopedHandle());
+    return;
+  }
+
   HANDLE surface_handle = INVALID_HANDLE_VALUE;
-  HRESULT hr = GetDCompSurfaceInternal(&surface_handle);
-  DVLOG_IF(1, FAILED(hr)) << "Failed to get DComp surface: " << PrintHr(hr);
+  hr = GetDCompSurfaceInternal(&surface_handle);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Failed to get DComp surface: " << PrintHr(hr);
+    std::move(callback).Run(base::win::ScopedHandle());
+    return;
+  }
 
   // Only need read & execute access right for the handle to be duplicated
   // without breaking in sandbox_win.cc!CheckDuplicateHandle().
@@ -431,9 +429,11 @@ void MediaFoundationRenderer::GetDCompSurface(GetDCompSurfaceCB callback) {
       GENERIC_READ | GENERIC_EXECUTE, false, DUPLICATE_CLOSE_SOURCE);
   if (!result) {
     DLOG(ERROR) << "Duplicate surface_handle failed: " << ::GetLastError();
+    std::move(callback).Run(base::win::ScopedHandle());
+    return;
   }
 
-  std::move(callback).Run(std::move(duplicated_handle));
+  std::move(callback).Run(base::win::ScopedHandle(duplicated_handle));
 }
 
 // TODO(crbug.com/1070030): Investigate if we need to add
@@ -455,24 +455,35 @@ void MediaFoundationRenderer::SetVideoStreamEnabled(bool enabled) {
 void MediaFoundationRenderer::SetOutputParams(const gfx::Rect& output_rect) {
   DVLOG_FUNC(2);
 
-  HRESULT hr = SetOutputParamsInternal(output_rect);
-  DVLOG_IF(1, FAILED(hr)) << "Failed to set output parameters: " << PrintHr(hr);
-}
-
-HRESULT MediaFoundationRenderer::SetOutputParamsInternal(
-    const gfx::Rect& output_rect) {
-  DVLOG_FUNC(2);
+  output_rect_ = output_rect;
 
   if (virtual_video_window_ &&
       !::SetWindowPos(virtual_video_window_, HWND_BOTTOM, output_rect.x(),
                       output_rect.y(), output_rect.width(),
                       output_rect.height(), SWP_NOACTIVATE)) {
-    return HRESULT_FROM_WIN32(GetLastError());
+    DLOG(ERROR) << "Failed to SetWindowPos: "
+                << PrintHr(HRESULT_FROM_WIN32(GetLastError()));
+    return;
   }
 
-  // TODO(frankli): Update MFMediaEngineEx with |output_rect| change and update
-  // renderer client with output size.
+  ignore_result(UpdateVideoStream(output_rect));
+}
 
+HRESULT MediaFoundationRenderer::UpdateVideoStream(const gfx::Rect& rect) {
+  ComPtr<IMFMediaEngineEx> mf_media_engine_ex;
+  RETURN_IF_FAILED(mf_media_engine_.As(&mf_media_engine_ex));
+  RECT dest_rect = rect.ToRECT();
+  RETURN_IF_FAILED(mf_media_engine_ex->UpdateVideoStream(
+      /*pSrc=*/nullptr, &dest_rect, /*pBorderClr=*/nullptr));
+  return S_OK;
+}
+
+HRESULT MediaFoundationRenderer::SetDCompModeInternal() {
+  DVLOG_FUNC(1);
+
+  ComPtr<IMFMediaEngineEx> media_engine_ex;
+  RETURN_IF_FAILED(mf_media_engine_.As(&media_engine_ex));
+  RETURN_IF_FAILED(media_engine_ex->EnableWindowlessSwapchainMode(true));
   return S_OK;
 }
 
@@ -483,15 +494,6 @@ HRESULT MediaFoundationRenderer::GetDCompSurfaceInternal(
   ComPtr<IMFMediaEngineEx> media_engine_ex;
   RETURN_IF_FAILED(mf_media_engine_.As(&media_engine_ex));
   RETURN_IF_FAILED(media_engine_ex->GetVideoSwapchainHandle(surface_handle));
-  return S_OK;
-}
-
-HRESULT MediaFoundationRenderer::SetDCompModeInternal(bool enabled) {
-  DVLOG_FUNC(1) << "enabled=" << enabled;
-
-  ComPtr<IMFMediaEngineEx> media_engine_ex;
-  RETURN_IF_FAILED(mf_media_engine_.As(&media_engine_ex));
-  RETURN_IF_FAILED(media_engine_ex->EnableWindowlessSwapchainMode(enabled));
   return S_OK;
 }
 
@@ -622,31 +624,15 @@ void MediaFoundationRenderer::OnVideoNaturalSizeChange() {
                 << hr;
     native_video_size_ = {640, 320};
   } else {
-    native_video_size_ = {static_cast<int>(native_width),
-                          static_cast<int>(native_height)};
+    native_video_size_ = {base::checked_cast<int>(native_width),
+                          base::checked_cast<int>(native_height)};
   }
 
-  // TODO(frankli): Use actual dest rect provided by client instead of video
-  // size. Will fix the following in another CL.
-  ComPtr<IMFMediaEngineEx> mf_media_engine_ex;
-  hr = mf_media_engine_.As(&mf_media_engine_ex);
-  if (FAILED(hr)) {
-    DLOG(ERROR) << PrintHr(hr);
-    return;
-  }
-
-  RECT video_dest_rect = {0};
-  video_dest_rect.right = native_video_size_.width();
-  video_dest_rect.bottom = native_video_size_.height();
-  hr =
-      mf_media_engine_ex->UpdateVideoStream(nullptr, &video_dest_rect, nullptr);
-  if (FAILED(hr)) {
-    DLOG(ERROR) << PrintHr(hr);
-    return;
-  }
+  // If `output_rect_` is not available yet, use `native_video_size_` for now.
+  if (output_rect_.IsEmpty())
+    ignore_result(UpdateVideoStream(gfx::Rect(native_video_size_)));
 
   renderer_client_->OnVideoNaturalSizeChange(native_video_size_);
-  return;
 }
 
 void MediaFoundationRenderer::OnTimeUpdate() {

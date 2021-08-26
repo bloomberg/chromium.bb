@@ -4,7 +4,7 @@
 
 import {isMac, webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {AboutPageBrowserProxy, UpdateStatus} from 'chrome://settings/settings.js';
-import {TestBrowserProxy} from '../test_browser_proxy.m.js';
+import {TestBrowserProxy} from '../test_browser_proxy.js';
 
 /** @implements {AboutPageBrowserProxy} */
 export class TestAboutPageBrowserProxy extends TestBrowserProxy {
@@ -31,15 +31,6 @@ export class TestAboutPageBrowserProxy extends TestBrowserProxy {
     this.updateStatus_ = updateStatus;
   }
 
-  sendStatusNoInternet() {
-    webUIListenerCallback('update-status-changed', {
-      progress: 0,
-      status: UpdateStatus.FAILED,
-      message: 'offline',
-      connectionTypes: 'no internet',
-    });
-  }
-
   /** @override */
   pageReady() {
     this.methodCalled('pageReady');
@@ -63,46 +54,6 @@ export class TestAboutPageBrowserProxy extends TestBrowserProxy {
   openHelpPage() {
     this.methodCalled('openHelpPage');
   }
-
-  /** @override */
-  launchReleaseNotes() {}
-
-  /** @override */
-  openOsHelpPage() {}
-
-  /** @override */
-  openDiagnostics() {}
-
-  /** @override */
-  requestUpdate() {}
-
-  /** @override */
-  requestUpdateOverCellular() {}
-
-  /** @override */
-  setChannel() {}
-
-  /** @override */
-  getChannelInfo() {}
-
-  /** @override */
-  canChangeChannel() {}
-
-  /** @override */
-  getVersionInfo() {}
-
-
-  /** @override */
-  getRegulatoryInfo() {}
-
-  /** @override */
-  getEndOfLifeInfo() {}
-
-  /** @override */
-  checkInternetConnection() {}
-
-  /** @override */
-  refreshTPMFirmwareUpdateStatus() {}
 }
 
 if (isMac) {

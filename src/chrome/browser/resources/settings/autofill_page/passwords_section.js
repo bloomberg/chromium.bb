@@ -13,13 +13,14 @@ let ExceptionEntryEntryEvent;
 
 import {afterNextRender, html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.m.js';
+import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
 import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import {OpenWindowProxyImpl} from '../open_window_proxy.js';
+import {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
 import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
@@ -255,14 +256,6 @@ class PasswordsSectionElement extends PasswordsSectionElementBase {
       },
 
       /** @private */
-      accountStorageFeatureEnabled_: {
-        type: Boolean,
-        value() {
-          return loadTimeData.getBoolean('enableAccountStorage');
-        }
-      },
-
-      /** @private */
       profileEmail_: {
         type: String,
         value: '',
@@ -433,9 +426,8 @@ class PasswordsSectionElement extends PasswordsSectionElementBase {
     // (|!this.syncStatus_.signedin|). They should not be using a custom
     // passphrase to encrypt their sync data, since there's no way for account
     // storage users to input their passphrase and decrypt the passwords.
-    return this.accountStorageFeatureEnabled_ &&
-        (!!this.syncStatus_ && !this.syncStatus_.signedIn) && this.signedIn_ &&
-        (!this.syncPrefs_ || !this.syncPrefs_.encryptAllData);
+    return (!!this.syncStatus_ && !this.syncStatus_.signedIn) &&
+        this.signedIn_ && (!this.syncPrefs_ || !this.syncPrefs_.encryptAllData);
   }
 
   /**

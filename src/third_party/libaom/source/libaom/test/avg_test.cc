@@ -16,7 +16,6 @@
 #include "config/aom_dsp_rtcd.h"
 
 #include "test/acm_random.h"
-#include "test/clear_system_state.h"
 #include "test/register_state_check.h"
 #include "test/util.h"
 
@@ -34,7 +33,6 @@ class AverageTestBase : public ::testing::Test {
   virtual void TearDown() {
     aom_free(source_data_);
     source_data_ = NULL;
-    libaom_test::ClearSystemState();
   }
 
  protected:
@@ -110,7 +108,7 @@ class AverageTest : public AverageTestBase<uint8_t>,
     }
 
     unsigned int actual;
-    ASM_REGISTER_STATE_CHECK(
+    API_REGISTER_STATE_CHECK(
         actual = GET_PARAM(4)(source_data_ + GET_PARAM(2), source_stride_));
 
     EXPECT_EQ(expected, actual);
@@ -173,8 +171,8 @@ class IntProRowTest : public AverageTestBase<uint8_t>,
   }
 
   void RunComparison() {
-    ASM_REGISTER_STATE_CHECK(c_func_(hbuf_c_, source_data_, 0, height_));
-    ASM_REGISTER_STATE_CHECK(asm_func_(hbuf_asm_, source_data_, 0, height_));
+    API_REGISTER_STATE_CHECK(c_func_(hbuf_c_, source_data_, 0, height_));
+    API_REGISTER_STATE_CHECK(asm_func_(hbuf_asm_, source_data_, 0, height_));
     EXPECT_EQ(0, memcmp(hbuf_c_, hbuf_asm_, sizeof(*hbuf_c_) * 16))
         << "Output mismatch\n";
   }
@@ -232,8 +230,8 @@ class IntProColTest : public AverageTestBase<uint8_t>,
 
  protected:
   void RunComparison() {
-    ASM_REGISTER_STATE_CHECK(sum_c_ = c_func_(source_data_, width_));
-    ASM_REGISTER_STATE_CHECK(sum_asm_ = asm_func_(source_data_, width_));
+    API_REGISTER_STATE_CHECK(sum_c_ = c_func_(source_data_, width_));
+    API_REGISTER_STATE_CHECK(sum_asm_ = asm_func_(source_data_, width_));
     EXPECT_EQ(sum_c_, sum_asm_) << "Output mismatch";
   }
   void RunSpeedTest() {
@@ -338,7 +336,6 @@ class VectorVarTestBase : public ::testing::Test {
     ref_vector = NULL;
     aom_free(src_vector);
     src_vector = NULL;
-    libaom_test::ClearSystemState();
   }
 
   void FillConstant(int16_t fill_constant_ref, int16_t fill_constant_src) {
@@ -538,10 +535,7 @@ class SatdTest : public ::testing::Test,
         aom_memalign(32, sizeof(*src_) * satd_size_));
     ASSERT_TRUE(src_ != NULL);
   }
-  virtual void TearDown() {
-    libaom_test::ClearSystemState();
-    aom_free(src_);
-  }
+  virtual void TearDown() { aom_free(src_); }
   void FillConstant(const tran_low_t val) {
     for (int i = 0; i < satd_size_; ++i) src_[i] = val;
   }
@@ -552,19 +546,19 @@ class SatdTest : public ::testing::Test,
   }
   void Check(int expected) {
     int total_ref;
-    ASM_REGISTER_STATE_CHECK(total_ref = satd_func_ref_(src_, satd_size_));
+    API_REGISTER_STATE_CHECK(total_ref = satd_func_ref_(src_, satd_size_));
     EXPECT_EQ(expected, total_ref);
 
     int total_simd;
-    ASM_REGISTER_STATE_CHECK(total_simd = satd_func_simd_(src_, satd_size_));
+    API_REGISTER_STATE_CHECK(total_simd = satd_func_simd_(src_, satd_size_));
     EXPECT_EQ(expected, total_simd);
   }
   void RunComparison() {
     int total_ref;
-    ASM_REGISTER_STATE_CHECK(total_ref = satd_func_ref_(src_, satd_size_));
+    API_REGISTER_STATE_CHECK(total_ref = satd_func_ref_(src_, satd_size_));
 
     int total_simd;
-    ASM_REGISTER_STATE_CHECK(total_simd = satd_func_simd_(src_, satd_size_));
+    API_REGISTER_STATE_CHECK(total_simd = satd_func_simd_(src_, satd_size_));
 
     EXPECT_EQ(total_ref, total_simd);
   }

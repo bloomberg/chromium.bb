@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/webgpu/dawn_enum_conversions.h"
 
 #include "base/check.h"
+#include "base/notreached.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_index_format.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -582,16 +583,16 @@ WGPUBlendOperation AsDawnEnum<WGPUBlendOperation>(
 }
 
 template <>
-WGPUInputStepMode AsDawnEnum<WGPUInputStepMode>(
+WGPUVertexStepMode AsDawnEnum<WGPUVertexStepMode>(
     const WTF::String& webgpu_enum) {
   if (webgpu_enum == "vertex") {
-    return WGPUInputStepMode_Vertex;
+    return WGPUVertexStepMode_Vertex;
   }
   if (webgpu_enum == "instance") {
-    return WGPUInputStepMode_Instance;
+    return WGPUVertexStepMode_Instance;
   }
   NOTREACHED();
-  return WGPUInputStepMode_Force32;
+  return WGPUVertexStepMode_Force32;
 }
 
 template <>

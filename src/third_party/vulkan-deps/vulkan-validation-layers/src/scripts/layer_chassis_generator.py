@@ -712,7 +712,8 @@ static const VkLayerProperties global_layer = {
 };
 
 static const VkExtensionProperties instance_extensions[] = {{VK_EXT_DEBUG_REPORT_EXTENSION_NAME, VK_EXT_DEBUG_REPORT_SPEC_VERSION},
-                                                            {VK_EXT_DEBUG_UTILS_EXTENSION_NAME, VK_EXT_DEBUG_UTILS_SPEC_VERSION}};
+                                                            {VK_EXT_DEBUG_UTILS_EXTENSION_NAME, VK_EXT_DEBUG_UTILS_SPEC_VERSION},
+                                                            {VK_EXT_VALIDATION_FEATURES_EXTENSION_NAME, VK_EXT_VALIDATION_FEATURES_SPEC_VERSION}};
 static const VkExtensionProperties device_extensions[] = {
     {VK_EXT_VALIDATION_CACHE_EXTENSION_NAME, VK_EXT_VALIDATION_CACHE_SPEC_VERSION},
     {VK_EXT_DEBUG_MARKER_EXTENSION_NAME, VK_EXT_DEBUG_MARKER_SPEC_VERSION},
@@ -1019,11 +1020,9 @@ VKAPI_ATTR void VKAPI_CALL DestroyInstance(VkInstance instance, const VkAllocati
     auto layer_data = GetLayerDataPtr(key, layer_data_map);
     ActivateInstanceDebugCallbacks(layer_data->report_data);
 
-    bool skip = false;
     """ + precallvalidate_loop + """
         auto lock = intercept->read_lock();
-        skip |= (const_cast<const ValidationObject*>(intercept))->PreCallValidateDestroyInstance(instance, pAllocator);
-        //if (skip) return; // WORKAROUD: does not currently work properly
+        (const_cast<const ValidationObject*>(intercept))->PreCallValidateDestroyInstance(instance, pAllocator);
     }
     """ + precallrecord_loop + """
         auto lock = intercept->write_lock();

@@ -10,7 +10,6 @@
 #include "base/location.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/numerics/ranges.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner.h"
@@ -118,8 +117,7 @@ void NetworkLocationProvider::OnWifiDataUpdate() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(IsStarted());
 #if defined(OS_MAC)
-  if (!is_system_permission_granted_ &&
-      base::FeatureList::IsEnabled(features::kMacCoreLocationImplementation)) {
+  if (!is_system_permission_granted_) {
     if (!is_awaiting_initial_permission_status_) {
       mojom::Geoposition error_position;
       error_position.error_code =
@@ -207,8 +205,7 @@ void NetworkLocationProvider::RequestPosition() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
 #if defined(OS_MAC)
-  if (!is_system_permission_granted_ &&
-      base::FeatureList::IsEnabled(features::kMacCoreLocationImplementation)) {
+  if (!is_system_permission_granted_) {
     return;
   }
 #endif

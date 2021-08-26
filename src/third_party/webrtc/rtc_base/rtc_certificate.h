@@ -31,7 +31,7 @@ class SSLIdentity;
 // certificate and acts as a text representation of RTCCertificate. Certificates
 // can be serialized and deserialized to and from this format, which allows for
 // cloning and storing of certificates to disk. The PEM format is that of
-// |SSLIdentity::PrivateKeyToPEMString| and |SSLCertificate::ToPEMString|, e.g.
+// `SSLIdentity::PrivateKeyToPEMString` and `SSLCertificate::ToPEMString`, e.g.
 // the string representations used by OpenSSL.
 class RTCCertificatePEM {
  public:
@@ -53,13 +53,13 @@ class RTCCertificatePEM {
 class RTC_EXPORT RTCCertificate final
     : public RefCountedNonVirtual<RTCCertificate> {
  public:
-  // Takes ownership of |identity|.
+  // Takes ownership of `identity`.
   static scoped_refptr<RTCCertificate> Create(
       std::unique_ptr<SSLIdentity> identity);
 
   // Returns the expiration time in ms relative to epoch, 1970-01-01T00:00:00Z.
   uint64_t Expires() const;
-  // Checks if the certificate has expired, where |now| is expressed in ms
+  // Checks if the certificate has expired, where `now` is expressed in ms
   // relative to epoch, 1970-01-01T00:00:00Z.
   bool HasExpired(uint64_t now) const;
 
@@ -87,7 +87,7 @@ class RTC_EXPORT RTCCertificate final
 
  private:
   // The SSLIdentity is the owner of the SSLCertificate. To protect our
-  // GetSSLCertificate() we take ownership of |identity_|.
+  // GetSSLCertificate() we take ownership of `identity_`.
   const std::unique_ptr<SSLIdentity> identity_;
 };
 

@@ -2602,6 +2602,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Android.MultiWindowMode.Enter">
+  <owner>jinsukkim@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <description>The activity entered Android N multi-window mode.</description>
 </action>
@@ -2633,7 +2634,8 @@ should be able to be added at any place in this file.
   <owner>twellington@chromium.org</owner>
   <description>
     A second activity instance (ChromeTabbedActivity2) has been created in
-    Android N multi-window mode.
+    Android N multi-window mode. Starting with Chrome version 94, this is only
+    recorded on Android R. See 'Android.MultiInstance.Enter' for Android S.
   </description>
 </action>
 
@@ -2647,6 +2649,41 @@ should be able to be added at any place in this file.
 <action name="Android.Survey.ShowSurveyInfoBar">
   <owner>danielpark@chromium.org</owner>
   <description>The survey infobar was displayed.</description>
+</action>
+
+<action name="Android.WindowManager.CloseWindow">
+  <owner>jinsukkim@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <description>
+    User tapped Close in the 3-dot menu from the in-app window manager to remove
+    a Chrome window.
+  </description>
+</action>
+
+<action name="Android.WindowManager.NewWindow">
+  <owner>jinsukkim@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <description>
+    User tapped the 'New window' button in Chrome's in-app window manager to
+    create a new Chrome window.
+  </description>
+</action>
+
+<action name="Android.WindowManager.SecondaryMenu">
+  <owner>jinsukkim@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <description>
+    User taps the 3-dot menu of a Window in the in-app window manager list.
+  </description>
+</action>
+
+<action name="Android.WindowManager.SelectWindow">
+  <owner>jinsukkim@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <description>
+    User taps on a Window from the in-app window manager list to bring the
+    Window to the foreground.
+  </description>
 </action>
 
 <action name="AppCloseButton_Clk">
@@ -4619,6 +4656,10 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ChromeOS.Settings.Languages.Browser">
+  <obsolete>
+    Deprecated as of M88, as the languages browser settings page has been
+    replaced with the languages OS settings page.
+  </obsolete>
   <owner>myy@chromium.org</owner>
   <owner>essential-inputs-team@google.com</owner>
   <description>
@@ -5046,6 +5087,42 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Commerce.PriceAlertsMessageCard.Dismissed">
+  <owner>zhiyuancai@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <description>
+    Triggered when the user taps the close button on PriceAlertsMessageCard.
+    Recorded only on Android.
+  </description>
+</action>
+
+<action name="Commerce.PriceAlertsMessageCard.Reviewed">
+  <owner>zhiyuancai@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <description>
+    Triggered when the user taps the action button on PriceAlertsMessageCard.
+    Recorded only on Android.
+  </description>
+</action>
+
+<action name="Commerce.PriceWelcomeMessageCard.Dismissed">
+  <owner>zhiyuancai@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <description>
+    Triggered when the user taps the close button on PriceWelcomeMessageCard.
+    Recorded only on Android.
+  </description>
+</action>
+
+<action name="Commerce.PriceWelcomeMessageCard.Reviewed">
+  <owner>zhiyuancai@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <description>
+    Triggered when the user taps the action button on PriceWelcomeMessageCard.
+    Recorded only on Android.
+  </description>
+</action>
+
 <action name="Commerce.TabGridSwitched.HasPriceDrop">
   <owner>davidjm@chromium.org</owner>
   <owner>ayman@chromium.org</owner>
@@ -5335,6 +5412,15 @@ should be able to be added at any place in this file.
   <owner>chili@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <description>The user selected 'share' option for a Feed card.</description>
+</action>
+
+<action name="ContentSuggestions.Feed.CardAction.TapPreview">
+  <owner>tinazwang@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <description>
+    After long-pressing the feed card and seeing the preview, the user tapped on
+    preview.
+  </description>
 </action>
 
 <action name="ContentSuggestions.Feed.DeviceOrientationChanged.Landscape">
@@ -6180,11 +6266,53 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="DesktopReadingList.MarkAsRead">
+  <owner>corising@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    The user marked an item as read from the reading list (Desktop only).
+  </description>
+</action>
+
+<action name="DesktopReadingList.MarkAsUnread">
+  <owner>corising@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    The user marked an item as unread from the reading list (Desktop only).
+  </description>
+</action>
+
+<action name="DesktopReadingList.Navigation.FromReadList">
+  <owner>corising@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    The user opened an item from the read section of the reading list (Desktop
+    only).
+  </description>
+</action>
+
+<action name="DesktopReadingList.Navigation.FromUnreadList">
+  <owner>corising@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    The user opened an item from the unread section of the reading list (Desktop
+    only).
+  </description>
+</action>
+
 <action name="DesktopReadingList.OpenReadingList">
   <owner>corising@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <description>
     The user clicked the Desktop reading list button to open the reading list.
+  </description>
+</action>
+
+<action name="DesktopReadingList.RemoveItem">
+  <owner>corising@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    The user removed an item from the reading list (Desktop only)
   </description>
 </action>
 
@@ -13846,6 +13974,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileBookmarkManagerReopenBookmarksInSameSession">
+  <owner>wylieb@chromium.org</owner>
+  <owner>clank-app-team@google.com</owner>
+  <description>
+    Tracks the bookmark manager being reopened while clank was running.
+  </description>
+</action>
+
 <action name="MobileBookmarkManagerShowInFolder">
   <owner>twellington@google.com</owner>
   <owner>clank-app-team@google.com</owner>
@@ -14766,6 +14902,12 @@ should be able to be added at any place in this file.
 <action name="MobileMenuVoiceSearch">
   <owner>gambard@chromium.org</owner>
   <description>User pressed 'Voice Search' in the app menu.</description>
+</action>
+
+<action name="MobileMenuWindowManager">
+  <owner>jinsukkim@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <description>User pressed 'Manage windows' in the app menu.</description>
 </action>
 
 <action name="MobileMessagesBadgeAcceptedTapped">
@@ -15854,6 +15996,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileSyncEncryptionSettingsClose">
+  <owner>jlebel@chromium.org</owner>
+  <owner>fernandex@chromium.org</owner>
+  <description>
+    Sync Encryption Settings UI was dismissed. iOS only.
+  </description>
+</action>
+
 <action name="MobileSyncPassphraseSettingsClose">
   <owner>jlebel@chromium.org</owner>
   <owner>fernandex@chromium.org</owner>
@@ -16126,6 +16276,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileTabGridSelectionDeselectAll">
+  <owner>mrefaat@chromium.org</owner>
+  <owner>michaeldo@chromium.org</owner>
+  <description>
+    User in the iOS tab grid used the Deselect All button to deselect all items.
+  </description>
+</action>
+
 <action name="MobileTabGridSelectionDone">
   <owner>mrefaat@chromium.org</owner>
   <owner>michaeldo@chromium.org</owner>
@@ -16140,6 +16298,15 @@ should be able to be added at any place in this file.
   <owner>michaeldo@chromium.org</owner>
   <description>
     User in the iOS tab grid used the Select All button to select all items.
+  </description>
+</action>
+
+<action name="MobileTabGridSelectionShareTabs">
+  <owner>mrefaat@chromium.org</owner>
+  <owner>michaeldo@chromium.org</owner>
+  <description>
+    Users in the iOS tab grid used the share button in the selection mode to
+    share multiple tabs at once.
   </description>
 </action>
 
@@ -16166,6 +16333,14 @@ should be able to be added at any place in this file.
   <owner>michaeldo@chromium.org</owner>
   <description>
     User tapped the 'Select' button in the iOS tab grid.
+  </description>
+</action>
+
+<action name="MobileTabGridTabContextMenuSelectTabs">
+  <owner>mrefaat@chromium.org</owner>
+  <owner>michaeldo@chromium.org</owner>
+  <description>
+    User in the iOS tab grid used the tab context menu to enter selection mode.
   </description>
 </action>
 
@@ -17387,6 +17562,11 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Notifications.Quiet.ManageClicked">
+  <obsolete>
+    From July 2021. Migrated to
+    Permissions.Prompt.QuietBubble.Notifications.ManageClicked as that name
+    represents the metric better.
+  </obsolete>
   <owner>andypaicu@chromium.org</owner>
   <owner>engedy@chromium.org</owner>
   <owner>hkamila@chromium.org</owner>
@@ -17408,6 +17588,11 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Notifications.Quiet.ShowForSiteClicked">
+  <obsolete>
+    From July 2021. Migrated to
+    Permissions.Prompt.QuietBubble.Notifications.AllowClicked as that name
+    represents the metric better.
+  </obsolete>
   <owner>andypaicu@chromium.org</owner>
   <owner>engedy@chromium.org</owner>
   <owner>hkamila@chromium.org</owner>
@@ -20732,6 +20917,50 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Permissions.Prompt.QuietBubble.Geolocation.AllowClicked">
+  <owner>engedy@chromium.org</owner>
+  <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
+  <description>
+    Logs when the user clicks &quot;Allow for this site&quot;, which is a
+    button, that upon being clicked, allows the site to send notifications. This
+    metric can be baselined against
+    &quot;Permissions.QuietChip.TimeToInteraction&quot; histogram.
+  </description>
+</action>
+
+<action name="Permissions.Prompt.QuietBubble.Geolocation.ManageClicked">
+  <owner>engedy@chromium.org</owner>
+  <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
+  <description>
+    Logs when the user clicks &quot;Manage&quot;, which is a button, that upon
+    being clicked, navigates the user to the geolocation category settings page.
+    This metric can be baselined against
+    &quot;Permissions.QuietChip.TimeToInteraction&quot; histogram.
+  </description>
+</action>
+
+<action name="Permissions.Prompt.QuietBubble.Notifications.AllowClicked">
+  <owner>engedy@chromium.org</owner>
+  <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
+  <description>
+    Logs when the user clicks &quot;Show for site&quot;, which is a button, that
+    upon being clicked, allows the site to send notifications. This metric can
+    be baselined against &quot;Permissions.QuietChip.TimeToInteraction&quot;
+    histogram.
+  </description>
+</action>
+
+<action name="Permissions.Prompt.QuietBubble.Notifications.ManageClicked">
+  <owner>engedy@chromium.org</owner>
+  <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
+  <description>
+    Logs when the user clicks &quot;Manage&quot;, which is a button, that upon
+    being clicked, navigates the user to the notifications category settings
+    page. This metric can be baselined against
+    &quot;Permissions.QuietChip.TimeToInteraction&quot; histogram.
+  </description>
+</action>
+
 <action name="PhysicalWeb.NotificationPressed">
   <obsolete>Replaced by the histogram PhysicalWeb.ActivityReferral</obsolete>
   <owner>cco3@chromium.org</owner>
@@ -21860,6 +22089,10 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Screenshot_Annotate">
+  <obsolete>
+    Removed 07/2021. The new screen capture tool doesn't have an annotate button
+    in its notification.
+  </obsolete>
   <owner>derat@chromium.org</owner>
   <owner>jdufault@chromium.org</owner>
   <owner>tbuckley@chromium.org</owner>
@@ -21870,11 +22103,19 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Screenshot_CopyClipboard">
+  <obsolete>
+    Removed 07/2021. The new screen capture tool copies the image to the
+    clipboard directly.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
 <action name="Screenshot_ShowInFolder">
+  <obsolete>
+    Removed 07/2021. Use histogram Ash.CaptureModeController.QuickAction
+    instead.
+  </obsolete>
   <owner>xiyuan@chromium.org</owner>
   <owner>gzadina@google.com</owner>
   <description>
@@ -24271,6 +24512,18 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_Signin_WipeDataOnChildAccountSignin">
+  <obsolete>
+    This metric was recorded in a wrong way. Deprecated in 2021/08.
+  </obsolete>
+  <owner>triploblastic@chromium.org</owner>
+  <owner>aliceywang@chromium.org</owner>
+  <description>
+    Recorded when wiping data during child account sign-in process. Only
+    recorded on Android.
+  </description>
+</action>
+
+<action name="Signin_Signin_WipeDataOnChildAccountSignin2">
   <owner>triploblastic@chromium.org</owner>
   <owner>aliceywang@chromium.org</owner>
   <description>

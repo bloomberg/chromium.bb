@@ -6,7 +6,6 @@
 <translation id="1124090076051167250">ఇది మీ హోమ్ స్క్రీన్‌పై ఉన్న, సైట్‌లు లేదా యాప్‌ల ద్వారా స్టోర్ చేయబడిన <ph name="DATASIZE" /> డేటా, కుక్కీలను క్లియర్ చేస్తుంది.</translation>
 <translation id="1178581264944972037">పాజ్ చేయి</translation>
 <translation id="1181037720776840403">తీసివేయి</translation>
-<translation id="1195941046451948919">మీరు ఖచ్చితంగా ఈ వెబ్‌సైట్‌కు సంబంధించిన అన్ని అనుమతులను రీసెట్ చేయాలనుకుంటున్నారా?</translation>
 <translation id="1201402288615127009">తరువాత</translation>
 <translation id="1242008676835033345"><ph name="WEBSITE_URL" />లో పొందుపరచబడింది</translation>
 <translation id="1272079795634619415">ఆపు</translation>
@@ -70,6 +69,7 @@
 <translation id="2687403674020088961">అన్ని కుక్కీలను బ్లాక్ చేయండి (సిఫార్సు చేయడం లేదు)</translation>
 <translation id="2704606927547763573">కాపీ చేయబడింది</translation>
 <translation id="2717722538473713889">ఇమెయిల్ అడ్రస్‌లు</translation>
+<translation id="2785051990912111074">దీనిని ఎంచుకోవడం ద్వారా <ph name="WEBSITE" />కు సంబంధించిన కుక్కీలు క్లియర్ చేయబడతాయి</translation>
 <translation id="2822354292072154809">మీరు <ph name="CHOSEN_OBJECT_NAME" /> కోసం అన్ని సైట్ అనుమతులను ఖచ్చితంగా రీసెట్ చేయాలనుకుంటున్నారా ?</translation>
 <translation id="2870560284913253234">సైట్</translation>
 <translation id="2874939134665556319">మునుపటి ట్రాక్</translation>
@@ -130,7 +130,6 @@
 <translation id="4570913071927164677">వివరాలు</translation>
 <translation id="4645575059429386691">మీ తల్లి/తండ్రి ద్వారా నిర్వహించబడుతోంది</translation>
 <translation id="4670064810192446073">వర్చువల్ రియాలిటీ</translation>
-<translation id="4708011789095599544">మీరు ఖచ్చితంగా ఈ వెబ్‌సైట్‌కు సంబంధించిన కుక్కీలు అలాగే ఇతర సైట్ డేటాను క్లియర్ చేయాలనుకుంటున్నారా?</translation>
 <translation id="4751476147751820511">కదలిక లేదా కాంతి సెన్సార్‌లు</translation>
 <translation id="4836046166855586901">మీరు ఈ పరికరాన్ని యాక్టివ్‌గా ఉపయోగిస్తున్నప్పుడు ఆ విషయాన్ని సైట్ తెలుసుకోవాలంటే సైట్ మీ అనుమతిని అడగాలి</translation>
 <translation id="4883854917563148705">నిర్వహిత సెట్టింగ్‌లు రీసెట్ చేయబడవు</translation>
@@ -140,6 +139,7 @@
 <translation id="4976702386844183910"><ph name="DATE" />న చివరగా సందర్శించారు</translation>
 <translation id="4994033804516042629">పరిచయాలు కనుగొనబడలేదు</translation>
 <translation id="4996978546172906250">దీని ద్వారా భాగస్వామ్యం చే.</translation>
+<translation id="5014906230196386306">కుక్కీలను క్లియర్ చేయాలా?</translation>
 <translation id="5039804452771397117">అనుమతించు</translation>
 <translation id="5048398596102334565">మోషన్ సెన్సార్‌లను యాక్సెస్ చేయడానికి సైట్‌లను అనుమతించండి (సిఫార్సు చేస్తున్నాము)</translation>
 <translation id="5050380848339752099">ఈ సైట్ అజ్ఞాత మోడ్ వెలుపల ఉన్న ఒక యాప్‌తో సమాచారాన్ని షేర్ చేయబోతోంది.</translation>
@@ -157,9 +157,9 @@
 <translation id="5335288049665977812">సైట్‌లను జావాస్క్రిప్ట్ అమలు చేయడానికి అనుమతిస్తుంది (సిఫార్సు చేయబడింది)</translation>
 <translation id="534295439873310000">NFC పరికరాలు</translation>
 <translation id="5354152178998424783">ఇది సైట్‌ల ద్వారా స్టోర్ చేయబడిన <ph name="DATASIZE" /> డేటాను, కుక్కీలను క్లియర్ చేస్తుంది.</translation>
-<translation id="5391532827096253100">ఈ సైట్‌కి మీ కనెక్షన్ సురక్షితంగా లేదు. సైట్ సమాచారం</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ మరో 1)}other{(+ మరో #)}}</translation>
 <translation id="5403592356182871684">పేర్లు</translation>
+<translation id="5438097262470833822">దీనిని ఎంచుకోవడం ద్వారా <ph name="WEBSITE" />కు సంబంధించిన అనుమతులు రీసెట్ చేయబడతాయి</translation>
 <translation id="5489227211564503167"><ph name="TOTAL_TIME" />లో <ph name="ELAPSED_TIME" /> సమయం గడిచిపోయింది.</translation>
 <translation id="5494752089476963479">అనుచితమైన లేదా తప్పుదారి పట్టించే ప్రకటనలను చూపించే సైట్‌లలో ప్రకటనలను బ్లాక్ చేస్తుంది</translation>
 <translation id="5502860503640766021"><ph name="PERMISSION_1" /> అనుమతించబడింది, <ph name="PERMISSION_2" /> బ్లాక్ చేయబడింది</translation>
@@ -190,10 +190,10 @@
 <translation id="6064125863973209585">పూర్తయిన డౌన్‌లోడ్‌లు</translation>
 <translation id="6165508094623778733">మరింత తెలుసుకోండి</translation>
 <translation id="6177111841848151710">ప్రస్తుత శోధన ఇంజిన్‌కు బ్లాక్ చేయబడింది</translation>
+<translation id="6177128806592000436">ఈ సైట్‌తో మీకున్న కనెక్షన్ సురక్షితంగా లేదు</translation>
 <translation id="6181444274883918285">సైట్ మినహాయింపును జోడించు</translation>
 <translation id="6192792657125177640">మినహాయింపులు</translation>
 <translation id="6196640612572343990">థర్డ్ పార్టీ కుక్కీలను బ్లాక్ చేయండి</translation>
-<translation id="6206551242102657620">కనెక్షన్ సురక్షితం. సైట్ సమాచారం</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> ఎంపికలు</translation>
 <translation id="6231752747840485235">'<ph name="APP_NAME" />'ను అన్‌ఇన్‌స్టాల్ చేయాలా?</translation>
 <translation id="6262279340360821358"><ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> బ్లాక్ చేయబడ్డాయి</translation>
@@ -202,7 +202,6 @@
 <translation id="6320088164292336938">వైబ్రేట్ చేయి</translation>
 <translation id="6388207532828177975">క్లియర్ చేసి, రీసెట్ చేయి</translation>
 <translation id="6398765197997659313">పూర్తి స్క్రీన్ నుండి నిష్క్రమించు</translation>
-<translation id="6423924377271166037">కుక్కీలను క్లియర్ చేయి</translation>
 <translation id="6439114592976064011">మీ వర్చువల్ రియాలిటీ పరికరాన్ని, డేటాను ఉపయోగించనివ్వకుండా సైట్‌లను బ్లాక్ చేస్తుంది</translation>
 <translation id="6447842834002726250">కుక్కీలు</translation>
 <translation id="6527303717912515753">భాగస్వామ్యం చేయి</translation>
@@ -217,6 +216,7 @@
 <translation id="6689172468748959065">ప్రొఫైల్ ఫోటోలు</translation>
 <translation id="6697925417670533197">యాక్టివ్‌గా ఉన్న డౌన్‌లోడ్‌లు</translation>
 <translation id="6746124502594467657">క్రిందికి తరలించు</translation>
+<translation id="6749077623962119521">అనుమతులను రీసెట్ చేయాలా?</translation>
 <translation id="6766622839693428701">మూసివేయడానికి దిగువకు స్వైప్ చేయండి.</translation>
 <translation id="6790428901817661496">ప్లే చేయి</translation>
 <translation id="6818926723028410516">అంశాలను ఎంచుకోండి</translation>
@@ -224,7 +224,6 @@
 <translation id="6910211073230771657">తొలగించబడింది</translation>
 <translation id="6912998170423641340">క్లిప్‌బోర్డ్ నుండి వచనం మరియు చిత్రాలను చదవకుండా సైట్‌లు బ్లాక్ చేయబడతాయి</translation>
 <translation id="6945221475159498467">ఎంచుకోండి</translation>
-<translation id="6963642900430330478">ఈ పేజీ ప్రమాదకరమైనది. సైట్ సమాచారం</translation>
 <translation id="6965382102122355670">సరే</translation>
 <translation id="6992289844737586249">మీ మైక్రోఫోన్‌ను ఏవైనా సైట్‌లు ఉపయోగించగలిగేలా వాటిని అనుమతించే ముందు, మిమ్మల్ని అడుగుతుంది (సిఫార్సు చేయబడింది)</translation>
 <translation id="7000754031042624318">Android సెట్టింగ్‌లలో ఆఫ్ చేయబడింది</translation>
@@ -232,7 +231,6 @@
 <translation id="7053983685419859001">నిరోధించు</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 ఎంచుకోబడింది}other{# ఎంచుకోబడ్డాయి}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> ఎంచుకోబడ్డాయి.  ఎంపికలు స్క్రీన్ పైభాగానికి సమీపంలో అందుబాటులో ఉన్నాయి</translation>
-<translation id="7128222689758636196">ప్రస్తుత శోధన ఇంజిన్‌కు అనుమతిస్తుంది</translation>
 <translation id="7141896414559753902">మళ్లింపులు, పాప్-అప్‌లను చూపనివ్వకుండా సైట్‌లను బ్లాక్ చేస్తుంది (సిఫార్సు చేయడమైనది)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="723171743924126238">చిత్రాలను ఎంచుకోండి</translation>
@@ -247,7 +245,6 @@
 <translation id="7561196759112975576">ఎల్లప్పుడూ</translation>
 <translation id="7572498721684305250">మీరు NFC పరికరాలను నొక్కినప్పుడు, సైట్‌లు సమాచారాన్ని పంపడాన్ని, అలాగే స్వీకరించడాన్ని బ్లాక్ చేస్తుంది (సిఫార్సు చేయబడింది)</translation>
 <translation id="757524316907819857">రక్షిత కంటెంట్‌ను ప్లే చేయకుండా సైట్‌లను బ్లాక్ చేస్తుంది</translation>
-<translation id="7589445247086920869">ప్రస్తుత శోధన ఇంజిన్‌కు బ్లాక్ చేయండి</translation>
 <translation id="7649070708921625228">సహాయం</translation>
 <translation id="7658239707568436148">రద్దు చేయి</translation>
 <translation id="7781829728241885113">నిన్న</translation>
@@ -270,10 +267,12 @@
 <translation id="8068648041423924542">ప్రమాణపత్రం ఎంపిక చేయడం సాధ్యపడలేదు.</translation>
 <translation id="8087000398470557479">ఈ కంటెంట్ Google ద్వారా డెలివర్ చేయబడిన <ph name="DOMAIN_NAME" />లోనిది.</translation>
 <translation id="8116925261070264013">మ్యూట్ చేసినవి</translation>
+<translation id="813082847718468539">సైట్ సమాచారాన్ని చూడండి</translation>
 <translation id="8131740175452115882">నిర్ధారించు</translation>
 <translation id="8197286292360124385"><ph name="PERMISSION_1" /> అనుమతించబడింది</translation>
 <translation id="8200772114523450471">మ‌ళ్లీ ప్రారంభించు</translation>
 <translation id="8206354486702514201">ఈ సెట్టింగ్ మీ నిర్వాహకుడి ద్వారా అమలు చేయబడింది.</translation>
+<translation id="8211406090763984747">కనెక్షన్ సురక్షితంగా ఉంది</translation>
 <translation id="8249310407154411074">ఎగువకు తరలించు</translation>
 <translation id="8261506727792406068">తొలగించు</translation>
 <translation id="8300705686683892304">యాప్ ద్వారా నిర్వహించబడుతున్నవి</translation>
@@ -315,7 +314,7 @@
 <translation id="9074739597929991885">బ్లూటూత్</translation>
 <translation id="9109747640384633967">{PERMISSIONS_SUMMARY_MIXED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" />, ఇంకా మరో <ph name="NUM_MORE" />}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" />, ఇంకా మరో <ph name="NUM_MORE" />}}</translation>
 <translation id="913657688200966289"><ph name="BEGIN_LINK" />Android సెట్టింగ్‌ల<ph name="END_LINK" />లో <ph name="APP_NAME" /> కోసం అనుమతులను ఆన్ చేయండి.</translation>
+<translation id="9162462602695099906">ఈ పేజీ ప్రమాదకరం</translation>
 <translation id="930525582205581608">ఈ సైట్‌ను విస్మరించాలా?</translation>
-<translation id="965817943346481315">సైట్ అనుచితమైన లేదా తప్పుదారి పట్టించే ప్రకటనలను చూపించినప్పుడు బ్లాక్ చేయి (సిఫార్సు చేయబడింది)</translation>
 <translation id="967624055006145463">నిల్వ చేయబడిన డేటా</translation>
 </translationbundle>

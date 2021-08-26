@@ -9,8 +9,8 @@
 #include "ash/clipboard/clipboard_history_util.h"
 #include "ash/clipboard/views/clipboard_history_delete_button.h"
 #include "ash/clipboard/views/clipboard_history_view_constants.h"
+#include "ash/public/cpp/style/scoped_light_mode_as_default.h"
 #include "ash/style/ash_color_provider.h"
-#include "ash/style/scoped_light_mode_as_default.h"
 #include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/time/time.h"
@@ -226,7 +226,7 @@ class ClipboardHistoryBitmapItemView::BitmapContentsView
     ScopedLightModeAsDefault scoped_light_mode_as_default;
 
     ContentsView::OnThemeChanged();
-    border_container_view_->border()->set_color(
+    border_container_view_->GetBorder()->set_color(
         AshColorProvider::Get()->GetControlsLayerColor(
             AshColorProvider::ControlsLayerType::kHairlineBorderColor));
   }

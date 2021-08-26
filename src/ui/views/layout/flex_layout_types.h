@@ -10,7 +10,6 @@
 #include <string>
 
 #include "base/callback.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/views/layout/layout_types.h"
 #include "ui/views/views_export.h"
 
@@ -64,8 +63,9 @@ enum class MinimumFlexSizeRule {
 // Describes a simple rule for how a child view should grow in a layout when
 // there is extra size avaialble for that view to occupy.
 enum class MaximumFlexSizeRule {
-  kPreferred,  // Don't resize above preferred size.
-  kUnbounded   // Allow resize to arbitrary size.
+  kPreferred,       // Don't resize above preferred size.
+  kScaleToMaximum,  // Allow resize up to the maximum size.
+  kUnbounded        // Allow resize to arbitrary size.
 };
 
 // Specifies how a view should flex (i.e. grow or shrink) within its parent as

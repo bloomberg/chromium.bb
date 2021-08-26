@@ -1815,17 +1815,42 @@ bool GetSystemInfoVendorIDAndDeviceID(const FunctionsGL *functions,
                                       angle::VendorID *outVendor,
                                       angle::DeviceID *outDevice)
 {
+    // Get vendor from GL itself, so on multi-GPU systems the correct GPU is selected.
+    *outVendor = GetVendorID(functions);
+    *outDevice = 0;
+
+    // Gather additional information from the system to detect multi-GPU scenarios.
     bool isGetSystemInfoSuccess = angle::GetSystemInfo(outSystemInfo);
+
+    // Get the device id from system info, corresponding to the vendor of the active GPU.
     if (isGetSystemInfoSuccess && !outSystemInfo->gpus.empty())
     {
-        *outVendor = outSystemInfo->gpus[outSystemInfo->activeGPUIndex].vendorId;
-        *outDevice = outSystemInfo->gpus[outSystemInfo->activeGPUIndex].deviceId;
+        if (*outVendor == VENDOR_ID_UNKNOWN)
+        {
+            // If vendor ID is unknown, take the best estimate of the active GPU.  Chances are there
+            // is only one GPU anyway.
+            *outVendor = outSystemInfo->gpus[outSystemInfo->activeGPUIndex].vendorId;
+            *outDevice = outSystemInfo->gpus[outSystemInfo->activeGPUIndex].deviceId;
+        }
+        else
+        {
+            for (const angle::GPUDeviceInfo &gpu : outSystemInfo->gpus)
+            {
+                if (*outVendor == gpu.vendorId)
+                {
+                    // Note that deviceId may not necessarily have been possible to retrieve.
+                    *outDevice = gpu.deviceId;
+                    break;
+                }
+            }
+        }
     }
     else
     {
-        *outVendor = GetVendorID(functions);
+        // If system info is not available, attempt to deduce the device from GL itself.
         *outDevice = GetDeviceID(functions);
     }
+
     return isGetSystemInfoSuccess;
 }
 
@@ -1935,8 +1960,6 @@ void InitializeFeatures(const FunctionsGL *functions, angle::FeaturesGL *feature
     ANGLE_FEATURE_CONDITION(features, reapplyUBOBindingsAfterUsingBinaryProgram,
                             isAMD || IsAndroid());
 
-    ANGLE_FEATURE_CONDITION(features, rewriteVectorScalarArithmetic, isNvidia);
-
     // TODO(oetuaho): Make this specific to the affected driver versions. Versions at least up to
     // 390 are known to be affected. Versions after that are expected not to be affected.
     ANGLE_FEATURE_CONDITION(features, clampFragDepth, isNvidia);
@@ -2027,7 +2050,7 @@ void InitializeFeatures(const FunctionsGL *functions, angle::FeaturesGL *feature
 
     // Workaround for the widespread OpenGL ES driver implementaion bug
     ANGLE_FEATURE_CONDITION(features, readPixelsUsingImplementationColorReadFormatForNorm16,
-                            functions->standard == STANDARD_GL_ES &&
+                            !isIntel && functions->standard == STANDARD_GL_ES &&
                                 functions->isAtLeastGLES(gl::Version(3, 1)) &&
                                 functions->hasGLESExtension("GL_EXT_texture_norm16"));
 

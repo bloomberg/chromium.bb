@@ -38,7 +38,8 @@ ScenicWindow::ScenicWindow(ScenicWindowManager* window_manager,
       safe_presenter_(&scenic_session_),
       view_ref_(std::move(properties.view_ref_pair.view_ref)),
       view_(&scenic_session_,
-            std::move(std::move(properties.view_token)),
+            fuchsia::ui::views::ViewToken(
+                {zx::eventpair(std::move(properties.view_token))}),
             std::move(properties.view_ref_pair.control_ref),
             CloneViewRef(),
             "chromium window"),
@@ -112,7 +113,7 @@ void ScenicWindow::SetBounds(const gfx::Rect& bounds) {
 }
 
 void ScenicWindow::SetTitle(const std::u16string& title) {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void ScenicWindow::Show(bool inactive) {
@@ -151,7 +152,7 @@ bool ScenicWindow::IsVisible() const {
 }
 
 void ScenicWindow::PrepareForShutdown() {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void ScenicWindow::SetCapture() {
@@ -168,23 +169,23 @@ bool ScenicWindow::HasCapture() const {
 }
 
 void ScenicWindow::ToggleFullscreen() {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void ScenicWindow::Maximize() {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void ScenicWindow::Minimize() {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void ScenicWindow::Restore() {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 PlatformWindowState ScenicWindow::GetPlatformWindowState() const {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   return PlatformWindowState::kNormal;
 }
 
@@ -212,25 +213,25 @@ void ScenicWindow::MoveCursorTo(const gfx::Point& location) {
 }
 
 void ScenicWindow::ConfineCursorToBounds(const gfx::Rect& bounds) {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void ScenicWindow::SetRestoredBoundsInPixels(const gfx::Rect& bounds) {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 gfx::Rect ScenicWindow::GetRestoredBoundsInPixels() const {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   return gfx::Rect();
 }
 
 void ScenicWindow::SetWindowIcons(const gfx::ImageSkia& window_icon,
                                   const gfx::ImageSkia& app_icon) {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void ScenicWindow::SizeConstraintsChanged() {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void ScenicWindow::UpdateSize() {

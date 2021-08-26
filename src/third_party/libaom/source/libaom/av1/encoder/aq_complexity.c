@@ -18,7 +18,6 @@
 #include "av1/common/seg_common.h"
 #include "av1/encoder/segmentation.h"
 #include "aom_dsp/aom_dsp_common.h"
-#include "aom_ports/system_state.h"
 
 #define AQ_C_SEGMENTS 5
 #define DEFAULT_AQ2_SEG 3  // Neutral Q segment
@@ -69,7 +68,6 @@ void av1_setup_in_frame_q_adj(AV1_COMP *cpi) {
                          cm->height != cm->prev_frame->height);
 
   // Make SURE use of floating point in this function is safe.
-  aom_clear_system_state();
 
   if (resolution_change) {
     memset(cpi->enc_seg.map, 0, cm->mi_params.mi_rows * cm->mi_params.mi_cols);
@@ -157,11 +155,10 @@ void av1_caq_select_segment(const AV1_COMP *cpi, MACROBLOCK *mb, BLOCK_SIZE bs,
     const int aq_strength = get_aq_c_strength(cm->quant_params.base_qindex,
                                               cm->seq_params->bit_depth);
 
-    aom_clear_system_state();
-    low_var_thresh =
-        (is_stat_consumption_stage_twopass(cpi))
-            ? AOMMAX(exp(cpi->ppi->twopass.mb_av_energy), MIN_DEFAULT_LV_THRESH)
-            : DEFAULT_LV_THRESH;
+    low_var_thresh = (is_stat_consumption_stage_twopass(cpi))
+                         ? AOMMAX(exp(cpi->twopass_frame.mb_av_energy),
+                                  MIN_DEFAULT_LV_THRESH)
+                         : DEFAULT_LV_THRESH;
 
     av1_setup_src_planes(mb, cpi->source, mi_row, mi_col, num_planes, bs);
     logvar = av1_log_block_var(cpi, mb, bs);

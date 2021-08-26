@@ -176,7 +176,7 @@ class PageLoadMetricsUpdateDispatcher {
   void DidFinishSubFrameNavigation(
       content::NavigationHandle* navigation_handle);
 
-  void OnFrameDeleted(int frame_tree_node_id);
+  void OnSubFrameDeleted(int frame_tree_node_id);
 
   void ShutDown();
 
@@ -284,6 +284,9 @@ class PageLoadMetricsUpdateDispatcher {
 
   // MobileFrienddliness data for current view.
   blink::MobileFriendliness mobile_friendliness_;
+
+  // True if this page load started in prerender.
+  const bool is_prerendered_page_load_;
 
   // In general, page_render_data_ contains combined data across all frames on
   // the page, while main_frame_render_data_ contains data specific to the main

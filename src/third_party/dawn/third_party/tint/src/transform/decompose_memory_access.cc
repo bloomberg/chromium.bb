@@ -26,6 +26,7 @@
 #include "src/ast/scalar_constructor_expression.h"
 #include "src/ast/type_name.h"
 #include "src/ast/unary_op.h"
+#include "src/block_allocator.h"
 #include "src/program_builder.h"
 #include "src/sem/array.h"
 #include "src/sem/atomic_type.h"
@@ -50,7 +51,7 @@ namespace {
 /// offsets for storage and uniform buffer accesses.
 struct Offset : Castable<Offset> {
   /// @returns builds and returns the ast::Expression in `ctx.dst`
-  virtual ast::Expression* Build(CloneContext& ctx) = 0;
+  virtual ast::Expression* Build(CloneContext& ctx) const = 0;
 };
 
 /// OffsetExpr is an implementation of Offset that clones and casts the given
@@ -60,7 +61,7 @@ struct OffsetExpr : Offset {
 
   explicit OffsetExpr(ast::Expression* e) : expr(e) {}
 
-  ast::Expression* Build(CloneContext& ctx) override {
+  ast::Expression* Build(CloneContext& ctx) const override {
     auto* type = ctx.src->Sem().Get(expr)->Type()->UnwrapRef();
     auto* res = ctx.Clone(expr);
     if (!type->Is<sem::U32>()) {
@@ -77,7 +78,7 @@ struct OffsetLiteral : Castable<OffsetLiteral, Offset> {
 
   explicit OffsetLiteral(uint32_t lit) : literal(lit) {}
 
-  ast::Expression* Build(CloneContext& ctx) override {
+  ast::Expression* Build(CloneContext& ctx) const override {
     return ctx.dst->Expr(literal);
   }
 };
@@ -86,103 +87,20 @@ struct OffsetLiteral : Castable<OffsetLiteral, Offset> {
 /// two Offsets.
 struct OffsetBinOp : Offset {
   ast::BinaryOp op;
-  std::unique_ptr<Offset> lhs;
-  std::unique_ptr<Offset> rhs;
+  Offset const* lhs = nullptr;
+  Offset const* rhs = nullptr;
 
-  ast::Expression* Build(CloneContext& ctx) override {
+  ast::Expression* Build(CloneContext& ctx) const override {
     return ctx.dst->create<ast::BinaryExpression>(op, lhs->Build(ctx),
                                                   rhs->Build(ctx));
   }
 };
 
-/// @returns an Offset for the given literal value
-std::unique_ptr<Offset> ToOffset(uint32_t offset) {
-  return std::make_unique<OffsetLiteral>(offset);
-}
-
-/// @returns an Offset for the given ast::Expression
-std::unique_ptr<Offset> ToOffset(ast::Expression* expr) {
-  if (auto* scalar = expr->As<ast::ScalarConstructorExpression>()) {
-    if (auto* u32 = scalar->literal()->As<ast::UintLiteral>()) {
-      return std::make_unique<OffsetLiteral>(u32->value());
-    } else if (auto* i32 = scalar->literal()->As<ast::SintLiteral>()) {
-      if (i32->value() > 0) {
-        return std::make_unique<OffsetLiteral>(i32->value());
-      }
-    }
-  }
-  return std::make_unique<OffsetExpr>(expr);
-}
-
-/// @returns the given offset (pass-through)
-std::unique_ptr<Offset> ToOffset(std::unique_ptr<Offset> offset) {
-  return offset;
-}
-
-/// @return an Offset that is a sum of lhs and rhs, performing basic constant
-/// folding if possible
-template <typename LHS, typename RHS>
-std::unique_ptr<Offset> Add(LHS&& lhs_, RHS&& rhs_) {
-  std::unique_ptr<Offset> lhs = ToOffset(std::forward<LHS>(lhs_));
-  std::unique_ptr<Offset> rhs = ToOffset(std::forward<RHS>(rhs_));
-  auto* lhs_lit = lhs->As<OffsetLiteral>();
-  auto* rhs_lit = rhs->As<OffsetLiteral>();
-  if (lhs_lit && lhs_lit->literal == 0) {
-    return rhs;
-  }
-  if (rhs_lit && rhs_lit->literal == 0) {
-    return lhs;
-  }
-  if (lhs_lit && rhs_lit) {
-    if (static_cast<uint64_t>(lhs_lit->literal) +
-            static_cast<uint64_t>(rhs_lit->literal) <=
-        0xffffffff) {
-      return std::make_unique<OffsetLiteral>(lhs_lit->literal +
-                                             rhs_lit->literal);
-    }
-  }
-  auto out = std::make_unique<OffsetBinOp>();
-  out->op = ast::BinaryOp::kAdd;
-  out->lhs = std::move(lhs);
-  out->rhs = std::move(rhs);
-  return out;
-}
-
-/// @return an Offset that is the multiplication of lhs and rhs, performing
-/// basic constant folding if possible
-template <typename LHS, typename RHS>
-std::unique_ptr<Offset> Mul(LHS&& lhs_, RHS&& rhs_) {
-  std::unique_ptr<Offset> lhs = ToOffset(std::forward<LHS>(lhs_));
-  std::unique_ptr<Offset> rhs = ToOffset(std::forward<RHS>(rhs_));
-  auto* lhs_lit = lhs->As<OffsetLiteral>();
-  auto* rhs_lit = rhs->As<OffsetLiteral>();
-  if (lhs_lit && lhs_lit->literal == 0) {
-    return std::make_unique<OffsetLiteral>(0);
-  }
-  if (rhs_lit && rhs_lit->literal == 0) {
-    return std::make_unique<OffsetLiteral>(0);
-  }
-  if (lhs_lit && lhs_lit->literal == 1) {
-    return rhs;
-  }
-  if (rhs_lit && rhs_lit->literal == 1) {
-    return lhs;
-  }
-  if (lhs_lit && rhs_lit) {
-    return std::make_unique<OffsetLiteral>(lhs_lit->literal * rhs_lit->literal);
-  }
-  auto out = std::make_unique<OffsetBinOp>();
-  out->op = ast::BinaryOp::kMultiply;
-  out->lhs = std::move(lhs);
-  out->rhs = std::move(rhs);
-  return out;
-}
-
 /// LoadStoreKey is the unordered map key to a load or store intrinsic.
 struct LoadStoreKey {
   ast::StorageClass const storage_class;  // buffer storage class
-  sem::Type const* buf_ty;                // buffer type
-  sem::Type const* el_ty;                 // element type
+  sem::Type const* buf_ty = nullptr;      // buffer type
+  sem::Type const* el_ty = nullptr;       // element type
   bool operator==(const LoadStoreKey& rhs) const {
     return storage_class == rhs.storage_class && buf_ty == rhs.buf_ty &&
            el_ty == rhs.el_ty;
@@ -196,9 +114,9 @@ struct LoadStoreKey {
 
 /// AtomicKey is the unordered map key to an atomic intrinsic.
 struct AtomicKey {
-  sem::Type const* buf_ty;      // buffer type
-  sem::Type const* el_ty;       // element type
-  sem::IntrinsicType const op;  // atomic op
+  sem::Type const* buf_ty = nullptr;  // buffer type
+  sem::Type const* el_ty = nullptr;   // element type
+  sem::IntrinsicType const op;        // atomic op
   bool operator==(const AtomicKey& rhs) const {
     return buf_ty == rhs.buf_ty && el_ty == rhs.el_ty && op == rhs.op;
   }
@@ -208,17 +126,6 @@ struct AtomicKey {
     }
   };
 };
-
-/// @returns the size in bytes of a scalar
-uint32_t ScalarSize(const sem::Type*) {
-  // TODO(bclayton): Assumes 32-bit elements
-  return 4;
-}
-
-/// @returns the number of bytes between columns of the given matrix
-uint32_t MatrixColumnStride(const sem::Matrix* mat) {
-  return ScalarSize(mat->type()) * ((mat->rows() == 2) ? 2 : 4);
-}
 
 bool IntrinsicDataTypeFor(const sem::Type* ty,
                           DecomposeMemoryAccess::Intrinsic::DataType& out) {
@@ -235,7 +142,7 @@ bool IntrinsicDataTypeFor(const sem::Type* ty,
     return true;
   }
   if (auto* vec = ty->As<sem::Vector>()) {
-    switch (vec->size()) {
+    switch (vec->Width()) {
       case 2:
         if (vec->type()->Is<sem::I32>()) {
           out = DecomposeMemoryAccess::Intrinsic::DataType::kVec2I32;
@@ -367,39 +274,10 @@ DecomposeMemoryAccess::Intrinsic* IntrinsicAtomicFor(ProgramBuilder* builder,
       builder->ID(), op, ast::StorageClass::kStorage, type);
 }
 
-/// Inserts `node` before `insert_after` in the global declarations of
-/// `ctx.dst`. If `insert_after` is nullptr, then `node` is inserted at the top
-/// of the module.
-void InsertGlobal(CloneContext& ctx,
-                  const Cloneable* insert_after,
-                  Cloneable* node) {
-  auto& globals = ctx.src->AST().GlobalDeclarations();
-  if (insert_after) {
-    ctx.InsertAfter(globals, insert_after, node);
-  } else {
-    ctx.InsertBefore(globals, *globals.begin(), node);
-  }
-}
-
-/// @returns the unwrapped, user-declared type of ty.
-const ast::TypeDecl* TypeDeclOf(const sem::Type* ty) {
-  while (true) {
-    if (auto* ref = ty->As<sem::Reference>()) {
-      ty = ref->StoreType();
-      continue;
-    }
-    if (auto* str = ty->As<sem::Struct>()) {
-      return str->Declaration();
-    }
-    // Not a declared type
-    return nullptr;
-  }
-}
-
 /// BufferAccess describes a single storage or uniform buffer access
 struct BufferAccess {
   sem::Expression const* var = nullptr;  // Storage buffer variable
-  std::unique_ptr<Offset> offset;        // The byte offset on var
+  Offset const* offset = nullptr;        // The byte offset on var
   sem::Type const* type = nullptr;       // The type of the access
   operator bool() const { return var; }  // Returns true if valid
 };
@@ -414,6 +292,10 @@ struct Store {
 
 /// State holds the current transform state
 struct DecomposeMemoryAccess::State {
+  /// The clone context
+  CloneContext& ctx;
+  /// Alias to `*ctx.dst`
+  ProgramBuilder& b;
   /// Map of AST expression to storage or uniform buffer access
   /// This map has entries added when encountered, and removed when outer
   /// expressions chain the access.
@@ -430,14 +312,109 @@ struct DecomposeMemoryAccess::State {
   std::unordered_map<AtomicKey, Symbol, AtomicKey::Hasher> atomic_funcs;
   /// List of storage or uniform buffer writes
   std::vector<Store> stores;
+  /// Allocations for offsets
+  BlockAllocator<Offset> offsets_;
+
+  /// Constructor
+  /// @param context the CloneContext
+  explicit State(CloneContext& context) : ctx(context), b(*ctx.dst) {}
+
+  /// @param offset the offset value to wrap in an Offset
+  /// @returns an Offset for the given literal value
+  const Offset* ToOffset(uint32_t offset) {
+    return offsets_.Create<OffsetLiteral>(offset);
+  }
+
+  /// @param expr the expression to convert to an Offset
+  /// @returns an Offset for the given ast::Expression
+  const Offset* ToOffset(ast::Expression* expr) {
+    if (auto* scalar = expr->As<ast::ScalarConstructorExpression>()) {
+      if (auto* u32 = scalar->literal()->As<ast::UintLiteral>()) {
+        return offsets_.Create<OffsetLiteral>(u32->value());
+      } else if (auto* i32 = scalar->literal()->As<ast::SintLiteral>()) {
+        if (i32->value() > 0) {
+          return offsets_.Create<OffsetLiteral>(i32->value());
+        }
+      }
+    }
+    return offsets_.Create<OffsetExpr>(expr);
+  }
+
+  /// @param offset the Offset that is returned
+  /// @returns the given offset (pass-through)
+  const Offset* ToOffset(const Offset* offset) { return offset; }
+
+  /// @param lhs_ the left-hand side of the add expression
+  /// @param rhs_ the right-hand side of the add expression
+  /// @return an Offset that is a sum of lhs and rhs, performing basic constant
+  /// folding if possible
+  template <typename LHS, typename RHS>
+  const Offset* Add(LHS&& lhs_, RHS&& rhs_) {
+    auto* lhs = ToOffset(std::forward<LHS>(lhs_));
+    auto* rhs = ToOffset(std::forward<RHS>(rhs_));
+    auto* lhs_lit = tint::As<OffsetLiteral>(lhs);
+    auto* rhs_lit = tint::As<OffsetLiteral>(rhs);
+    if (lhs_lit && lhs_lit->literal == 0) {
+      return rhs;
+    }
+    if (rhs_lit && rhs_lit->literal == 0) {
+      return lhs;
+    }
+    if (lhs_lit && rhs_lit) {
+      if (static_cast<uint64_t>(lhs_lit->literal) +
+              static_cast<uint64_t>(rhs_lit->literal) <=
+          0xffffffff) {
+        return offsets_.Create<OffsetLiteral>(lhs_lit->literal +
+                                              rhs_lit->literal);
+      }
+    }
+    auto* out = offsets_.Create<OffsetBinOp>();
+    out->op = ast::BinaryOp::kAdd;
+    out->lhs = lhs;
+    out->rhs = rhs;
+    return out;
+  }
+
+  /// @param lhs_ the left-hand side of the multiply expression
+  /// @param rhs_ the right-hand side of the multiply expression
+  /// @return an Offset that is the multiplication of lhs and rhs, performing
+  /// basic constant folding if possible
+  template <typename LHS, typename RHS>
+  const Offset* Mul(LHS&& lhs_, RHS&& rhs_) {
+    auto* lhs = ToOffset(std::forward<LHS>(lhs_));
+    auto* rhs = ToOffset(std::forward<RHS>(rhs_));
+    auto* lhs_lit = tint::As<OffsetLiteral>(lhs);
+    auto* rhs_lit = tint::As<OffsetLiteral>(rhs);
+    if (lhs_lit && lhs_lit->literal == 0) {
+      return offsets_.Create<OffsetLiteral>(0);
+    }
+    if (rhs_lit && rhs_lit->literal == 0) {
+      return offsets_.Create<OffsetLiteral>(0);
+    }
+    if (lhs_lit && lhs_lit->literal == 1) {
+      return rhs;
+    }
+    if (rhs_lit && rhs_lit->literal == 1) {
+      return lhs;
+    }
+    if (lhs_lit && rhs_lit) {
+      return offsets_.Create<OffsetLiteral>(lhs_lit->literal *
+                                            rhs_lit->literal);
+    }
+    auto* out = offsets_.Create<OffsetBinOp>();
+    out->op = ast::BinaryOp::kMultiply;
+    out->lhs = lhs;
+    out->rhs = rhs;
+    return out;
+  }
 
   /// AddAccess() adds the `expr -> access` map item to #accesses, and `expr`
   /// to #expression_order.
   /// @param expr the expression that performs the access
   /// @param access the access
-  void AddAccess(ast::Expression* expr, BufferAccess&& access) {
+  void AddAccess(ast::Expression* expr, const BufferAccess& access) {
     TINT_ASSERT(Transform, access.type);
-    accesses.emplace(expr, std::move(access));
+    accesses.emplace(expr, access);
     expression_order.emplace_back(expr);
   }
 
@@ -451,7 +428,7 @@ struct DecomposeMemoryAccess::State {
     if (lhs_it == accesses.end()) {
       return {};
     }
-    auto access = std::move(lhs_it->second);
+    auto access = lhs_it->second;
     accesses.erase(node);
     return access;
   }
@@ -460,87 +437,101 @@ struct DecomposeMemoryAccess::State {
   /// of type `el_ty` from a storage or uniform buffer of type `buf_ty`.
   /// The emitted function has the signature:
   ///   `fn load(buf : buf_ty, offset : u32) -> el_ty`
-  /// @param ctx the CloneContext
-  /// @param insert_after the user-declared type to insert the function after
   /// @param buf_ty the storage or uniform buffer type
   /// @param el_ty the storage or uniform buffer element type
   /// @param var_user the variable user
   /// @return the name of the function that performs the load
-  Symbol LoadFunc(CloneContext& ctx,
-                  const ast::TypeDecl* insert_after,
-                  const sem::Type* buf_ty,
+  Symbol LoadFunc(const sem::Type* buf_ty,
                   const sem::Type* el_ty,
                   const sem::VariableUser* var_user) {
     auto storage_class = var_user->Variable()->StorageClass();
     return utils::GetOrCreate(
         load_funcs, LoadStoreKey{storage_class, buf_ty, el_ty}, [&] {
-          auto* buf_ast_ty = CreateASTTypeFor(&ctx, buf_ty);
+          auto* buf_ast_ty = CreateASTTypeFor(ctx, buf_ty);
           auto* disable_validation =
-              ctx.dst->ASTNodes().Create<ast::DisableValidationDecoration>(
-                  ctx.dst->ID(), ast::DisabledValidation::
-                                     kIgnoreConstructibleFunctionParameter);
+              b.ASTNodes().Create<ast::DisableValidationDecoration>(
+                  b.ID(), ast::DisabledValidation::
+                              kIgnoreConstructibleFunctionParameter);
 
           ast::VariableList params = {
               // Note: The buffer parameter requires the StorageClass in
               // order for HLSL to emit this as a ByteAddressBuffer or cbuffer
               // array.
-              ctx.dst->create<ast::Variable>(
-                  ctx.dst->Sym("buffer"), storage_class,
-                  var_user->Variable()->Access(), buf_ast_ty, true, nullptr,
-                  ast::DecorationList{disable_validation}),
-              ctx.dst->Param("offset", ctx.dst->ty.u32()),
+              b.create<ast::Variable>(b.Sym("buffer"), storage_class,
+                                      var_user->Variable()->Access(),
+                                      buf_ast_ty, true, nullptr,
+                                      ast::DecorationList{disable_validation}),
+              b.Param("offset", b.ty.u32()),
           };
 
-          ast::Function* func = nullptr;
+          auto name = b.Sym();
+
           if (auto* intrinsic =
                   IntrinsicLoadFor(ctx.dst, storage_class, el_ty)) {
-            auto* el_ast_ty = CreateASTTypeFor(&ctx, el_ty);
-            func = ctx.dst->create<ast::Function>(
-                ctx.dst->Sym(), params, el_ast_ty, nullptr,
+            auto* el_ast_ty = CreateASTTypeFor(ctx, el_ty);
+            auto* func = b.create<ast::Function>(
+                name, params, el_ast_ty, nullptr,
                 ast::DecorationList{
                     intrinsic,
-                    ctx.dst->ASTNodes()
-                        .Create<ast::DisableValidationDecoration>(
-                            ctx.dst->ID(),
-                            ast::DisabledValidation::kFunctionHasNoBody),
+                    b.ASTNodes().Create<ast::DisableValidationDecoration>(
+                        b.ID(), ast::DisabledValidation::kFunctionHasNoBody),
                 },
                 ast::DecorationList{});
+            b.AST().AddFunction(func);
+          } else if (auto* arr_ty = el_ty->As<sem::Array>()) {
+            // fn load_func(buf : buf_ty, offset : u32) -> array<T, N> {
+            //   var arr : array<T, N>;
+            //   for (var i = 0u; i < array_count; i = i + 1) {
+            //     arr[i] = el_load_func(buf, offset + i * array_stride)
+            //   }
+            //   return arr;
+            // }
+            auto load =
+                LoadFunc(buf_ty, arr_ty->ElemType()->UnwrapRef(), var_user);
+            auto* arr =
+                b.Var(b.Symbols().New("arr"), CreateASTTypeFor(ctx, arr_ty));
+            auto* i = b.Var(b.Symbols().New("i"), nullptr, b.Expr(0u));
+            auto* for_init = b.Decl(i);
+            auto* for_cond = b.create<ast::BinaryExpression>(
+                ast::BinaryOp::kLessThan, b.Expr(i), b.Expr(arr_ty->Count()));
+            auto* for_cont = b.Assign(i, b.Add(i, 1u));
+            auto* arr_el = b.IndexAccessor(arr, i);
+            auto* el_offset =
+                b.Add(b.Expr("offset"), b.Mul(i, arr_ty->Stride()));
+            auto* el_val = b.Call(load, "buffer", el_offset);
+            auto* for_loop = b.For(for_init, for_cond, for_cont,
+                                   b.Block(b.Assign(arr_el, el_val)));
+
+            b.Func(name, params, CreateASTTypeFor(ctx, arr_ty),
+                   {
+                       b.Decl(arr),
+                       for_loop,
+                       b.Return(arr),
+                   });
           } else {
             ast::ExpressionList values;
             if (auto* mat_ty = el_ty->As<sem::Matrix>()) {
               auto* vec_ty = mat_ty->ColumnType();
-              Symbol load =
-                  LoadFunc(ctx, insert_after, buf_ty, vec_ty, var_user);
+              Symbol load = LoadFunc(buf_ty, vec_ty, var_user);
               for (uint32_t i = 0; i < mat_ty->columns(); i++) {
-                auto* offset =
-                    ctx.dst->Add("offset", i * MatrixColumnStride(mat_ty));
-                values.emplace_back(ctx.dst->Call(load, "buffer", offset));
+                auto* offset = b.Add("offset", i * mat_ty->ColumnStride());
+                values.emplace_back(b.Call(load, "buffer", offset));
               }
             } else if (auto* str = el_ty->As<sem::Struct>()) {
               for (auto* member : str->Members()) {
-                auto* offset = ctx.dst->Add("offset", member->Offset());
-                Symbol load = LoadFunc(ctx, insert_after, buf_ty,
-                                       member->Type()->UnwrapRef(), var_user);
-                values.emplace_back(ctx.dst->Call(load, "buffer", offset));
-              }
-            } else if (auto* arr = el_ty->As<sem::Array>()) {
-              for (uint32_t i = 0; i < arr->Count(); i++) {
-                auto* offset = ctx.dst->Add("offset", arr->Stride() * i);
-                Symbol load = LoadFunc(ctx, insert_after, buf_ty,
-                                       arr->ElemType()->UnwrapRef(), var_user);
-                values.emplace_back(ctx.dst->Call(load, "buffer", offset));
+                auto* offset = b.Add("offset", member->Offset());
+                Symbol load =
+                    LoadFunc(buf_ty, member->Type()->UnwrapRef(), var_user);
+                values.emplace_back(b.Call(load, "buffer", offset));
               }
             }
-            auto* el_ast_ty = CreateASTTypeFor(&ctx, el_ty);
-            func = ctx.dst->create<ast::Function>(
-                ctx.dst->Sym(), params, el_ast_ty,
-                ctx.dst->Block(ctx.dst->Return(
-                    ctx.dst->create<ast::TypeConstructorExpression>(
-                        CreateASTTypeFor(&ctx, el_ty), values))),
-                ast::DecorationList{}, ast::DecorationList{});
+            b.Func(name, params, CreateASTTypeFor(ctx, el_ty),
+                   {
+                       b.Return(b.create<ast::TypeConstructorExpression>(
+                           CreateASTTypeFor(ctx, el_ty), values)),
+                   });
           }
-          InsertGlobal(ctx, insert_after, func);
-          return func->symbol();
+          return name;
         });
   }
 
@@ -548,94 +539,100 @@ struct DecomposeMemoryAccess::State {
   /// element of type `el_ty` to a storage buffer of type `buf_ty`.
   /// The function has the signature:
   ///   `fn store(buf : buf_ty, offset : u32, value : el_ty)`
-  /// @param ctx the CloneContext
-  /// @param insert_after the user-declared type to insert the function after
   /// @param buf_ty the storage buffer type
   /// @param el_ty the storage buffer element type
   /// @param var_user the variable user
   /// @return the name of the function that performs the store
-  Symbol StoreFunc(CloneContext& ctx,
-                   const ast::TypeDecl* insert_after,
-                   const sem::Type* buf_ty,
+  Symbol StoreFunc(const sem::Type* buf_ty,
                    const sem::Type* el_ty,
                    const sem::VariableUser* var_user) {
     auto storage_class = var_user->Variable()->StorageClass();
     return utils::GetOrCreate(
         store_funcs, LoadStoreKey{storage_class, buf_ty, el_ty}, [&] {
-          auto* buf_ast_ty = CreateASTTypeFor(&ctx, buf_ty);
-          auto* el_ast_ty = CreateASTTypeFor(&ctx, el_ty);
+          auto* buf_ast_ty = CreateASTTypeFor(ctx, buf_ty);
+          auto* el_ast_ty = CreateASTTypeFor(ctx, el_ty);
           auto* disable_validation =
-              ctx.dst->ASTNodes().Create<ast::DisableValidationDecoration>(
-                  ctx.dst->ID(), ast::DisabledValidation::
-                                     kIgnoreConstructibleFunctionParameter);
+              b.ASTNodes().Create<ast::DisableValidationDecoration>(
+                  b.ID(), ast::DisabledValidation::
+                              kIgnoreConstructibleFunctionParameter);
           ast::VariableList params{
               // Note: The buffer parameter requires the StorageClass in
               // order for HLSL to emit this as a ByteAddressBuffer.
 
-              ctx.dst->create<ast::Variable>(
-                  ctx.dst->Sym("buffer"), storage_class,
-                  var_user->Variable()->Access(), buf_ast_ty, true, nullptr,
-                  ast::DecorationList{disable_validation}),
-              ctx.dst->Param("offset", ctx.dst->ty.u32()),
-              ctx.dst->Param("value", el_ast_ty),
+              b.create<ast::Variable>(b.Sym("buffer"), storage_class,
+                                      var_user->Variable()->Access(),
+                                      buf_ast_ty, true, nullptr,
+                                      ast::DecorationList{disable_validation}),
+              b.Param("offset", b.ty.u32()),
+              b.Param("value", el_ast_ty),
           };
-          ast::Function* func = nullptr;
+
+          auto name = b.Sym();
+
           if (auto* intrinsic =
                   IntrinsicStoreFor(ctx.dst, storage_class, el_ty)) {
-            func = ctx.dst->create<ast::Function>(
-                ctx.dst->Sym(), params, ctx.dst->ty.void_(), nullptr,
+            auto* func = b.create<ast::Function>(
+                name, params, b.ty.void_(), nullptr,
                 ast::DecorationList{
                     intrinsic,
-                    ctx.dst->ASTNodes()
-                        .Create<ast::DisableValidationDecoration>(
-                            ctx.dst->ID(),
-                            ast::DisabledValidation::kFunctionHasNoBody),
+                    b.ASTNodes().Create<ast::DisableValidationDecoration>(
+                        b.ID(), ast::DisabledValidation::kFunctionHasNoBody),
                 },
                 ast::DecorationList{});
-
+            b.AST().AddFunction(func);
           } else {
             ast::StatementList body;
-            if (auto* mat_ty = el_ty->As<sem::Matrix>()) {
+            if (auto* arr_ty = el_ty->As<sem::Array>()) {
+              // fn store_func(buf : buf_ty, offset : u32, value : el_ty) {
+              //   var array = value; // No dynamic indexing on constant arrays
+              //   for (var i = 0u; i < array_count; i = i + 1) {
+              //     arr[i] = el_store_func(buf, offset + i * array_stride,
+              //                            value[i])
+              //   }
+              //   return arr;
+              // }
+              auto* array =
+                  b.Var(b.Symbols().New("array"), nullptr, b.Expr("value"));
+              auto store =
+                  StoreFunc(buf_ty, arr_ty->ElemType()->UnwrapRef(), var_user);
+              auto* i = b.Var(b.Symbols().New("i"), nullptr, b.Expr(0u));
+              auto* for_init = b.Decl(i);
+              auto* for_cond = b.create<ast::BinaryExpression>(
+                  ast::BinaryOp::kLessThan, b.Expr(i), b.Expr(arr_ty->Count()));
+              auto* for_cont = b.Assign(i, b.Add(i, 1u));
+              auto* arr_el = b.IndexAccessor(array, i);
+              auto* el_offset =
+                  b.Add(b.Expr("offset"), b.Mul(i, arr_ty->Stride()));
+              auto* store_stmt = b.create<ast::CallStatement>(
+                  b.Call(store, "buffer", el_offset, arr_el));
+              auto* for_loop =
+                  b.For(for_init, for_cond, for_cont, b.Block(store_stmt));
+
+              body = {b.Decl(array), for_loop};
+            } else if (auto* mat_ty = el_ty->As<sem::Matrix>()) {
               auto* vec_ty = mat_ty->ColumnType();
-              Symbol store =
-                  StoreFunc(ctx, insert_after, buf_ty, vec_ty, var_user);
+              Symbol store = StoreFunc(buf_ty, vec_ty, var_user);
               for (uint32_t i = 0; i < mat_ty->columns(); i++) {
-                auto* offset =
-                    ctx.dst->Add("offset", i * MatrixColumnStride(mat_ty));
-                auto* access = ctx.dst->IndexAccessor("value", i);
-                auto* call = ctx.dst->Call(store, "buffer", offset, access);
-                body.emplace_back(ctx.dst->create<ast::CallStatement>(call));
+                auto* offset = b.Add("offset", i * mat_ty->ColumnStride());
+                auto* access = b.IndexAccessor("value", i);
+                auto* call = b.Call(store, "buffer", offset, access);
+                body.emplace_back(b.create<ast::CallStatement>(call));
               }
             } else if (auto* str = el_ty->As<sem::Struct>()) {
               for (auto* member : str->Members()) {
-                auto* offset = ctx.dst->Add("offset", member->Offset());
-                auto* access = ctx.dst->MemberAccessor(
+                auto* offset = b.Add("offset", member->Offset());
+                auto* access = b.MemberAccessor(
                     "value", ctx.Clone(member->Declaration()->symbol()));
-                Symbol store = StoreFunc(ctx, insert_after, buf_ty,
-                                         member->Type()->UnwrapRef(), var_user);
-                auto* call = ctx.dst->Call(store, "buffer", offset, access);
-                body.emplace_back(ctx.dst->create<ast::CallStatement>(call));
-              }
-            } else if (auto* arr = el_ty->As<sem::Array>()) {
-              for (uint32_t i = 0; i < arr->Count(); i++) {
-                auto* offset = ctx.dst->Add("offset", arr->Stride() * i);
-                auto* access =
-                    ctx.dst->IndexAccessor("value", ctx.dst->Expr(i));
                 Symbol store =
-                    StoreFunc(ctx, insert_after, buf_ty,
-                              arr->ElemType()->UnwrapRef(), var_user);
-                auto* call = ctx.dst->Call(store, "buffer", offset, access);
-                body.emplace_back(ctx.dst->create<ast::CallStatement>(call));
+                    StoreFunc(buf_ty, member->Type()->UnwrapRef(), var_user);
+                auto* call = b.Call(store, "buffer", offset, access);
+                body.emplace_back(b.create<ast::CallStatement>(call));
               }
             }
-            func = ctx.dst->create<ast::Function>(
-                ctx.dst->Sym(), params, ctx.dst->ty.void_(),
-                ctx.dst->Block(body), ast::DecorationList{},
-                ast::DecorationList{});
+            b.Func(name, params, b.ty.void_(), body);
           }
 
-          InsertGlobal(ctx, insert_after, func);
-          return func->symbol();
+          return name;
         });
   }
 
@@ -643,25 +640,21 @@ struct DecomposeMemoryAccess::State {
   /// atomic operation from a storage buffer of type `buf_ty`. The function has
   /// the signature:
   // `fn atomic_op(buf : buf_ty, offset : u32, ...) -> T`
-  /// @param ctx the CloneContext
-  /// @param insert_after the user-declared type to insert the function after
   /// @param buf_ty the storage buffer type
   /// @param el_ty the storage buffer element type
   /// @param intrinsic the atomic intrinsic
   /// @param var_user the variable user
   /// @return the name of the function that performs the load
-  Symbol AtomicFunc(CloneContext& ctx,
-                    const ast::TypeDecl* insert_after,
-                    const sem::Type* buf_ty,
+  Symbol AtomicFunc(const sem::Type* buf_ty,
                     const sem::Type* el_ty,
                     const sem::Intrinsic* intrinsic,
                     const sem::VariableUser* var_user) {
     auto op = intrinsic->Type();
     return utils::GetOrCreate(atomic_funcs, AtomicKey{buf_ty, el_ty, op}, [&] {
-      auto* buf_ast_ty = CreateASTTypeFor(&ctx, buf_ty);
+      auto* buf_ast_ty = CreateASTTypeFor(ctx, buf_ty);
       auto* disable_validation =
-          ctx.dst->ASTNodes().Create<ast::DisableValidationDecoration>(
-              ctx.dst->ID(),
+          b.ASTNodes().Create<ast::DisableValidationDecoration>(
+              b.ID(),
               ast::DisabledValidation::kIgnoreConstructibleFunctionParameter);
       // The first parameter to all WGSL atomics is the expression to the
       // atomic. This is replaced with two parameters: the buffer and offset.
@@ -669,38 +662,38 @@ struct DecomposeMemoryAccess::State {
       ast::VariableList params = {
           // Note: The buffer parameter requires the kStorage StorageClass in
           // order for HLSL to emit this as a ByteAddressBuffer.
-          ctx.dst->create<ast::Variable>(
-              ctx.dst->Sym("buffer"), ast::StorageClass::kStorage,
-              var_user->Variable()->Access(), buf_ast_ty, true, nullptr,
-              ast::DecorationList{disable_validation}),
-          ctx.dst->Param("offset", ctx.dst->ty.u32()),
+          b.create<ast::Variable>(b.Sym("buffer"), ast::StorageClass::kStorage,
+                                  var_user->Variable()->Access(), buf_ast_ty,
+                                  true, nullptr,
+                                  ast::DecorationList{disable_validation}),
+          b.Param("offset", b.ty.u32()),
       };
 
       // Other parameters are copied as-is:
       for (size_t i = 1; i < intrinsic->Parameters().size(); i++) {
-        auto& param = intrinsic->Parameters()[i];
-        auto* ty = CreateASTTypeFor(&ctx, param.type);
-        params.emplace_back(ctx.dst->Param("param_" + std::to_string(i), ty));
+        auto* param = intrinsic->Parameters()[i];
+        auto* ty = CreateASTTypeFor(ctx, param->Type());
+        params.emplace_back(b.Param("param_" + std::to_string(i), ty));
       }
 
       auto* atomic = IntrinsicAtomicFor(ctx.dst, op, el_ty);
       if (atomic == nullptr) {
-        TINT_ICE(Transform, ctx.dst->Diagnostics())
+        TINT_ICE(Transform, b.Diagnostics())
             << "IntrinsicAtomicFor() returned nullptr for op " << op
             << " and type " << el_ty->type_name();
       }
 
-      auto* ret_ty = CreateASTTypeFor(&ctx, intrinsic->ReturnType());
-      auto* func = ctx.dst->create<ast::Function>(
-          ctx.dst->Sym(), params, ret_ty, nullptr,
+      auto* ret_ty = CreateASTTypeFor(ctx, intrinsic->ReturnType());
+      auto* func = b.create<ast::Function>(
+          b.Sym(), params, ret_ty, nullptr,
           ast::DecorationList{
               atomic,
-              ctx.dst->ASTNodes().Create<ast::DisableValidationDecoration>(
-                  ctx.dst->ID(), ast::DisabledValidation::kFunctionHasNoBody),
+              b.ASTNodes().Create<ast::DisableValidationDecoration>(
+                  b.ID(), ast::DisabledValidation::kFunctionHasNoBody),
           },
           ast::DecorationList{});
 
-      InsertGlobal(ctx, insert_after, func);
+      b.AST().AddFunction(func);
       return func->symbol();
     });
   }
@@ -806,7 +799,7 @@ DecomposeMemoryAccess::~DecomposeMemoryAccess() = default;
 void DecomposeMemoryAccess::Run(CloneContext& ctx, const DataMap&, DataMap&) {
   auto& sem = ctx.src->Sem();
 
-  State state;
+  State state(ctx);
 
   // Scan the AST nodes for storage and uniform buffer accesses. Complex
   // expression chains (e.g. `storage_buffer.foo.bar[20].x`) are handled by
@@ -825,7 +818,7 @@ void DecomposeMemoryAccess::Run(CloneContext& ctx, const DataMap&, DataMap&) {
           // Variable to a storage or uniform buffer
           state.AddAccess(ident, {
                                      var,
-                                     ToOffset(0u),
+                                     state.ToOffset(0u),
                                      var->Type()->UnwrapRef(),
                                  });
         }
@@ -840,14 +833,13 @@ void DecomposeMemoryAccess::Run(CloneContext& ctx, const DataMap&, DataMap&) {
         if (swizzle->Indices().size() == 1) {
           if (auto access = state.TakeAccess(accessor->structure())) {
             auto* vec_ty = access.type->As<sem::Vector>();
-            auto offset =
-                Mul(ScalarSize(vec_ty->type()), swizzle->Indices()[0]);
-            state.AddAccess(
-                accessor, {
-                              access.var,
-                              Add(std::move(access.offset), std::move(offset)),
-                              vec_ty->type()->UnwrapRef(),
-                          });
+            auto* offset =
+                state.Mul(vec_ty->type()->Size(), swizzle->Indices()[0]);
+            state.AddAccess(accessor, {
+                                          access.var,
+                                          state.Add(access.offset, offset),
+                                          vec_ty->type()->UnwrapRef(),
+                                      });
           }
         }
       } else {
@@ -855,12 +847,11 @@ void DecomposeMemoryAccess::Run(CloneContext& ctx, const DataMap&, DataMap&) {
           auto* str_ty = access.type->As<sem::Struct>();
           auto* member = str_ty->FindMember(accessor->member()->symbol());
           auto offset = member->Offset();
-          state.AddAccess(accessor,
-                          {
-                              access.var,
-                              Add(std::move(access.offset), std::move(offset)),
-                              member->Type()->UnwrapRef(),
-                          });
+          state.AddAccess(accessor, {
+                                        access.var,
+                                        state.Add(access.offset, offset),
+                                        member->Type()->UnwrapRef(),
+                                    });
         }
       }
       continue;
@@ -870,33 +861,32 @@ void DecomposeMemoryAccess::Run(CloneContext& ctx, const DataMap&, DataMap&) {
       if (auto access = state.TakeAccess(accessor->array())) {
         // X[Y]
         if (auto* arr = access.type->As<sem::Array>()) {
-          auto offset = Mul(arr->Stride(), accessor->idx_expr());
-          state.AddAccess(accessor,
-                          {
-                              access.var,
-                              Add(std::move(access.offset), std::move(offset)),
-                              arr->ElemType()->UnwrapRef(),
-                          });
+          auto* offset = state.Mul(arr->Stride(), accessor->idx_expr());
+          state.AddAccess(accessor, {
+                                        access.var,
+                                        state.Add(access.offset, offset),
+                                        arr->ElemType()->UnwrapRef(),
+                                    });
           continue;
         }
         if (auto* vec_ty = access.type->As<sem::Vector>()) {
-          auto offset = Mul(ScalarSize(vec_ty->type()), accessor->idx_expr());
-          state.AddAccess(accessor,
-                          {
-                              access.var,
-                              Add(std::move(access.offset), std::move(offset)),
-                              vec_ty->type()->UnwrapRef(),
-                          });
+          auto* offset =
+              state.Mul(vec_ty->type()->Size(), accessor->idx_expr());
+          state.AddAccess(accessor, {
+                                        access.var,
+                                        state.Add(access.offset, offset),
+                                        vec_ty->type()->UnwrapRef(),
+                                    });
           continue;
         }
         if (auto* mat_ty = access.type->As<sem::Matrix>()) {
-          auto offset = Mul(MatrixColumnStride(mat_ty), accessor->idx_expr());
-          state.AddAccess(accessor,
-                          {
-                              access.var,
-                              Add(std::move(access.offset), std::move(offset)),
-                              mat_ty->ColumnType(),
-                          });
+          auto* offset =
+              state.Mul(mat_ty->ColumnStride(), accessor->idx_expr());
+          state.AddAccess(accessor, {
+                                        access.var,
+                                        state.Add(access.offset, offset),
+                                        mat_ty->ColumnType(),
+                                    });
           continue;
         }
       }
@@ -908,7 +898,7 @@ void DecomposeMemoryAccess::Run(CloneContext& ctx, const DataMap&, DataMap&) {
         if (auto access = state.TakeAccess(op->expr())) {
           // HLSL does not support pointers, so just take the access from the
           // reference and place it on the pointer.
-          state.AddAccess(op, std::move(access));
+          state.AddAccess(op, access);
           continue;
         }
       }
@@ -918,39 +908,52 @@ void DecomposeMemoryAccess::Run(CloneContext& ctx, const DataMap&, DataMap&) {
       // X = Y
       // Move the LHS access to a store.
       if (auto lhs = state.TakeAccess(assign->lhs())) {
-        state.stores.emplace_back(Store{assign, std::move(lhs)});
+        state.stores.emplace_back(Store{assign, lhs});
       }
     }
 
     if (auto* call_expr = node->As<ast::CallExpression>()) {
       auto* call = sem.Get(call_expr);
       if (auto* intrinsic = call->Target()->As<sem::Intrinsic>()) {
+        if (intrinsic->Type() == sem::IntrinsicType::kIgnore) {
+          // ignore(X)
+          // If X is an memory access, don't transform it into a load, as it
+          // may refer to a structure holding a runtime array, which cannot be
+          // loaded. Instead replace X with the underlying storage / uniform
+          // buffer variable.
+          if (auto access = state.TakeAccess(call_expr->params()[0])) {
+            ctx.Replace(call_expr->params()[0], [=, &ctx] {
+              return ctx.CloneWithoutTransform(access.var->Declaration());
+            });
+          }
+          continue;
+        }
         if (intrinsic->Type() == sem::IntrinsicType::kArrayLength) {
           // arrayLength(X)
           // Don't convert X into a load, this intrinsic actually requires the
           // real pointer.
           state.TakeAccess(call_expr->params()[0]);
+          continue;
         }
         if (intrinsic->IsAtomic()) {
           if (auto access = state.TakeAccess(call_expr->params()[0])) {
             // atomic___(X)
+            ctx.Replace(call_expr, [=, &ctx, &state] {
+              auto* buf = access.var->Declaration();
+              auto* offset = access.offset->Build(ctx);
+              auto* buf_ty = access.var->Type()->UnwrapRef();
+              auto* el_ty = access.type->UnwrapRef()->As<sem::Atomic>()->Type();
+              Symbol func =
+                  state.AtomicFunc(buf_ty, el_ty, intrinsic,
+                                   access.var->As<sem::VariableUser>());
 
-            auto* buf = access.var->Declaration();
-            auto* offset = access.offset->Build(ctx);
-            auto* buf_ty = access.var->Type()->UnwrapRef();
-            auto* el_ty = access.type->UnwrapRef()->As<sem::Atomic>()->Type();
-            auto* insert_after = TypeDeclOf(access.var->Type());
-            Symbol func =
-                state.AtomicFunc(ctx, insert_after, buf_ty, el_ty, intrinsic,
-                                 access.var->As<sem::VariableUser>());
-
-            ast::ExpressionList args{ctx.Clone(buf), offset};
-            for (size_t i = 1; i < call_expr->params().size(); i++) {
-              auto* arg = call_expr->params()[i];
-              args.emplace_back(ctx.Clone(arg));
-            }
-
-            ctx.Replace(call_expr, ctx.dst->Call(func, args));
+              ast::ExpressionList args{ctx.Clone(buf), offset};
+              for (size_t i = 1; i < call_expr->params().size(); i++) {
+                auto* arg = call_expr->params()[i];
+                args.emplace_back(ctx.Clone(arg));
+              }
+              return ctx.dst->Call(func, args);
+            });
           }
         }
       }
@@ -964,36 +967,32 @@ void DecomposeMemoryAccess::Run(CloneContext& ctx, const DataMap&, DataMap&) {
     if (access_it == state.accesses.end()) {
       continue;
     }
-
-    auto access = std::move(access_it->second);
-
-    auto* buf = access.var->Declaration();
-    auto* offset = access.offset->Build(ctx);
-    auto* buf_ty = access.var->Type()->UnwrapRef();
-    auto* el_ty = access.type->UnwrapRef();
-    auto* insert_after = TypeDeclOf(access.var->Type());
-    Symbol func = state.LoadFunc(ctx, insert_after, buf_ty, el_ty,
-                                 access.var->As<sem::VariableUser>());
-
-    auto* load = ctx.dst->Call(func, ctx.Clone(buf), offset);
-
-    ctx.Replace(expr, load);
+    BufferAccess access = access_it->second;
+    ctx.Replace(expr, [=, &ctx, &state] {
+      auto* buf = access.var->Declaration();
+      auto* offset = access.offset->Build(ctx);
+      auto* buf_ty = access.var->Type()->UnwrapRef();
+      auto* el_ty = access.type->UnwrapRef();
+      Symbol func =
+          state.LoadFunc(buf_ty, el_ty, access.var->As<sem::VariableUser>());
+      return ctx.dst->Call(func, ctx.CloneWithoutTransform(buf), offset);
+    });
   }
 
   // And replace all storage and uniform buffer assignments with stores
-  for (auto& store : state.stores) {
-    auto* buf = store.target.var->Declaration();
-    auto* offset = store.target.offset->Build(ctx);
-    auto* buf_ty = store.target.var->Type()->UnwrapRef();
-    auto* el_ty = store.target.type->UnwrapRef();
-    auto* value = store.assignment->rhs();
-    auto* insert_after = TypeDeclOf(store.target.var->Type());
-    Symbol func = state.StoreFunc(ctx, insert_after, buf_ty, el_ty,
-                                  store.target.var->As<sem::VariableUser>());
-
-    auto* call = ctx.dst->Call(func, ctx.Clone(buf), offset, ctx.Clone(value));
-
-    ctx.Replace(store.assignment, ctx.dst->create<ast::CallStatement>(call));
+  for (auto store : state.stores) {
+    ctx.Replace(store.assignment, [=, &ctx, &state] {
+      auto* buf = store.target.var->Declaration();
+      auto* offset = store.target.offset->Build(ctx);
+      auto* buf_ty = store.target.var->Type()->UnwrapRef();
+      auto* el_ty = store.target.type->UnwrapRef();
+      auto* value = store.assignment->rhs();
+      Symbol func = state.StoreFunc(buf_ty, el_ty,
+                                    store.target.var->As<sem::VariableUser>());
+      auto* call = ctx.dst->Call(func, ctx.CloneWithoutTransform(buf), offset,
+                                 ctx.Clone(value));
+      return ctx.dst->create<ast::CallStatement>(call);
+    });
   }
 
   ctx.Clone();

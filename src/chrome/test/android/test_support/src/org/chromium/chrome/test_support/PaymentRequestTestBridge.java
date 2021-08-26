@@ -19,6 +19,7 @@ import org.chromium.components.payments.PaymentApp;
 import org.chromium.components.payments.PaymentRequestService;
 import org.chromium.components.payments.PaymentRequestService.NativeObserverForTest;
 import org.chromium.components.payments.PaymentUiServiceTestInterface;
+import org.chromium.components.payments.secure_payment_confirmation.SecurePaymentConfirmationNoMatchingCredController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentItem;
 
@@ -120,13 +121,14 @@ public class PaymentRequestTestBridge {
         private final long mOnAbortCalledPtr;
         private final long mOnCompleteHandledPtr;
         private final long mOnMinimalUIReadyPtr;
+        private final long mOnUiDisplayed;
 
         PaymentRequestNativeObserverBridgeToNativeForTest(long onCanMakePaymentCalledPtr,
                 long onCanMakePaymentReturnedPtr, long onHasEnrolledInstrumentCalledPtr,
                 long onHasEnrolledInstrumentReturnedPtr, long onAppListReadyPtr,
                 long setAppDescriptionPtr, long onErrorDisplayedPtr, long onNotSupportedErrorPtr,
                 long onConnectionTerminatedPtr, long onAbortCalledPtr, long onCompleteHandledPtr,
-                long onMinimalUIReadyPtr) {
+                long onMinimalUIReadyPtr, long onUiDisplayed) {
             mOnCanMakePaymentCalledPtr = onCanMakePaymentCalledPtr;
             mOnCanMakePaymentReturnedPtr = onCanMakePaymentReturnedPtr;
             mOnHasEnrolledInstrumentCalledPtr = onHasEnrolledInstrumentCalledPtr;
@@ -139,17 +141,18 @@ public class PaymentRequestTestBridge {
             mOnAbortCalledPtr = onAbortCalledPtr;
             mOnCompleteHandledPtr = onCompleteHandledPtr;
             mOnMinimalUIReadyPtr = onMinimalUIReadyPtr;
+            mOnUiDisplayed = onUiDisplayed;
         }
 
         @Override
         public void onPaymentUiServiceCreated(PaymentUiServiceTestInterface uiService) {
             assert uiService != null;
-            PaymentRequestTestBridge.sUiService = uiService;
+            sUiService = uiService;
         }
 
         @Override
         public void onClosed() {
-            PaymentRequestTestBridge.sUiService = null;
+            sUiService = null;
         }
 
         @Override
@@ -219,6 +222,10 @@ public class PaymentRequestTestBridge {
         public void onMinimalUIReady() {
             nativeResolvePaymentRequestObserverCallback(mOnMinimalUIReadyPtr);
         }
+        @Override
+        public void onUiDisplayed() {
+            nativeResolvePaymentRequestObserverCallback(mOnUiDisplayed);
+        }
     }
 
     private static final String TAG = "PaymentRequestTestBridge";
@@ -242,13 +249,14 @@ public class PaymentRequestTestBridge {
             long onHasEnrolledInstrumentReturnedPtr, long onAppListReadyPtr,
             long setAppDescriptionPtr, long onErrorDisplayedPtr, long onNotSupportedErrorPtr,
             long onConnectionTerminatedPtr, long onAbortCalledPtr, long onCompleteCalledPtr,
-            long onMinimalUIReadyPtr) {
+            long onMinimalUIReadyPtr, long onUiDisplayedPtr) {
         PaymentRequestService.setNativeObserverForTest(
                 new PaymentRequestNativeObserverBridgeToNativeForTest(onCanMakePaymentCalledPtr,
                         onCanMakePaymentReturnedPtr, onHasEnrolledInstrumentCalledPtr,
                         onHasEnrolledInstrumentReturnedPtr, onAppListReadyPtr, setAppDescriptionPtr,
                         onErrorDisplayedPtr, onNotSupportedErrorPtr, onConnectionTerminatedPtr,
-                        onAbortCalledPtr, onCompleteCalledPtr, onMinimalUIReadyPtr));
+                        onAbortCalledPtr, onCompleteCalledPtr, onMinimalUIReadyPtr,
+                        onUiDisplayedPtr));
     }
 
     @CalledByNative
@@ -268,6 +276,9 @@ public class PaymentRequestTestBridge {
 
     @CalledByNative
     private static boolean closeDialogForTest() {
+        SecurePaymentConfirmationNoMatchingCredController noMatchingUi =
+                PaymentRequestService.getSecurePaymentConfirmationNoMatchingCredUiForTesting();
+        if (noMatchingUi != null) noMatchingUi.hide();
         return sUiService == null || sUiService.closeDialogForTest();
     }
 

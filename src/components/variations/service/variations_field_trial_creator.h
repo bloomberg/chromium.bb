@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/variations/client_filterable_state.h"
 #include "components/variations/metrics.h"
@@ -26,6 +27,17 @@ class MetricsStateManager;
 }
 
 namespace variations {
+
+// Denotes a variations seed's expiry state. Exposed for testing.
+//
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class VariationsSeedExpiry {
+  kNotExpired = 0,
+  kFetchTimeMissing = 1,
+  kExpired = 2,
+  kMaxValue = kExpired,
+};
 
 enum LoadPermanentConsistencyCountryResult {
   LOAD_COUNTRY_NO_PREF_NO_SEED = 0,
@@ -83,6 +95,10 @@ class VariationsFieldTrialCreator {
   // value is true).
   // |low_entropy_source_value| contains the low entropy source value that was
   // used for client-side randomization of variations.
+  // |extend_variations_safe_mode| indicates whether the client should
+  // participate in the extended variations safe mode field trial. This should
+  // be the case for all platforms that use a VariationsSeed with the exception
+  // of Android WebView, which has its own safe mode mechanism: crbug/1220131.
   //
   // NOTE: The ordering of the FeatureList method calls is such that the
   // explicit --disable-features and --enable-features from the command line
@@ -101,7 +117,8 @@ class VariationsFieldTrialCreator {
       metrics::MetricsStateManager* metrics_state_manager,
       PlatformFieldTrials* platform_field_trials,
       SafeSeedManager* safe_seed_manager,
-      absl::optional<int> low_entropy_source_value);
+      absl::optional<int> low_entropy_source_value,
+      bool extend_variations_safe_mode = true);
 
   // Returns all of the client state used for filtering studies.
   // As a side-effect, may update the stored permanent consistency country.
@@ -139,20 +156,12 @@ class VariationsFieldTrialCreator {
   const std::string& application_locale() const { return application_locale_; }
 
  private:
-  // Loads the seed from the variations store into |seed|, and records metrics
-  // about the loaded seed. Returns true on success, in which case |seed| will
-  // contain the loaded data, and |seed_data| and |base64_signature| will
-  // contain the raw pref values.
-  bool LoadSeed(VariationsSeed* seed,
-                std::string* seed_data,
-                std::string* base64_signature) WARN_UNUSED_RESULT;
-
-  // Loads the safe seed from the variations store into |seed| and updates any
-  // relevant |client_state| fields. If the load succeeds, records metrics about
-  // the loaded seed. Returns the result of loading the seed.
-  LoadSeedResult LoadSafeSeed(VariationsSeed* seed,
-                              ClientFilterableState* client_state)
-      WARN_UNUSED_RESULT;
+  // Returns true if the loaded VariationsSeed has expired. An expired seed is
+  // one that (a) was fetched over |kMaxVariationsSeedAgeDays| ago and (b) is
+  // older than the binary build time.
+  //
+  // Also, records a couple VariationsSeed-related metrics.
+  bool HasSeedExpired(bool is_safe_seed);
 
   // Creates field trials based on the variations seed loaded from local state.
   // If there is a problem loading the seed data, all trials specified by the
@@ -173,10 +182,13 @@ class VariationsFieldTrialCreator {
   // Returns the seed store. Virtual for testing.
   virtual VariationsSeedStore* GetSeedStore();
 
+  // Returns the time at which the binary was built. Virtual for testing.
+  virtual base::Time GetBuildTime() const;
+
   // Get the platform we're running on, respecting OverrideVariationsPlatform().
   Study::Platform GetPlatform();
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
   // On channels that support the ExtendedVariationsSafeMode experiment, (a)
   // assigns the client to an experiment group and (b) applies group-specific
   // behavior. Does nothing if the channel does not support the experiment.

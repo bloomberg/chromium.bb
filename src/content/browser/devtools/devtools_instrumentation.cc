@@ -43,6 +43,7 @@
 #include "net/quic/web_transport_error.h"
 #include "net/ssl/ssl_info.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/public/mojom/devtools_observer.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom.h"
@@ -344,11 +345,16 @@ void OnSignedExchangeCertificateRequestSent(
     const GURL& signed_exchange_url) {
   // Make sure both back-ends yield the same timestamp.
   auto timestamp = base::TimeTicks::Now();
-  DispatchToAgents(frame_tree_node, &protocol::NetworkHandler::RequestSent,
-                   request_id.ToString(), loader_id.ToString(), request,
-                   protocol::Network::Initiator::TypeEnum::SignedExchange,
-                   signed_exchange_url, /*initiator_devtools_request_id=*/"",
-                   timestamp);
+  network::mojom::URLRequestDevToolsInfo request_info(
+      request.method, request.url, request.priority, request.referrer_policy,
+      request.trust_token_params ? request.trust_token_params->Clone()
+                                 : nullptr,
+      request.has_user_gesture);
+  DispatchToAgents(
+      frame_tree_node, &protocol::NetworkHandler::RequestSent,
+      request_id.ToString(), loader_id.ToString(), request.headers,
+      request_info, protocol::Network::Initiator::TypeEnum::SignedExchange,
+      signed_exchange_url, /*initiator_devtools_request_id=*/"", timestamp);
 
   auto value = std::make_unique<base::trace_event::TracedValue>();
   value->SetString("requestId", request_id.ToString());
@@ -831,19 +837,26 @@ bool HandleCertificateError(WebContents* web_contents,
   return !callback;
 }
 
+namespace {
+void UpdatePortals(RenderFrameHostImpl* render_frame_host_impl) {
+  auto* agent_host = static_cast<RenderFrameDevToolsAgentHost*>(
+      RenderFrameDevToolsAgentHost::GetFor(
+          render_frame_host_impl->frame_tree_node()));
+  if (agent_host)
+    agent_host->UpdatePortals();
+}
+}  // namespace
+
 void PortalAttached(RenderFrameHostImpl* render_frame_host_impl) {
-  DispatchToAgents(render_frame_host_impl->frame_tree_node(),
-                   &protocol::TargetHandler::UpdatePortals);
+  UpdatePortals(render_frame_host_impl);
 }
 
 void PortalDetached(RenderFrameHostImpl* render_frame_host_impl) {
-  DispatchToAgents(render_frame_host_impl->frame_tree_node(),
-                   &protocol::TargetHandler::UpdatePortals);
+  UpdatePortals(render_frame_host_impl);
 }
 
 void PortalActivated(RenderFrameHostImpl* render_frame_host_impl) {
-  DispatchToAgents(render_frame_host_impl->frame_tree_node(),
-                   &protocol::TargetHandler::UpdatePortals);
+  UpdatePortals(render_frame_host_impl);
 }
 
 void WillStartDragging(FrameTreeNode* main_frame_tree_node,
@@ -890,6 +903,12 @@ std::unique_ptr<protocol::Array<protocol::String>> BuildExclusionReasons(
     exclusion_reasons->push_back(
         protocol::Audits::SameSiteCookieExclusionReasonEnum::
             ExcludeInvalidSameParty);
+  }
+  if (status.HasExclusionReason(
+          net::CookieInclusionStatus::EXCLUDE_SAMEPARTY_CROSS_PARTY_CONTEXT)) {
+    exclusion_reasons->push_back(
+        protocol::Audits::SameSiteCookieExclusionReasonEnum::
+            ExcludeSamePartyCrossPartyContext);
   }
 
   return exclusion_reasons;
@@ -972,6 +991,15 @@ void ReportSameSiteCookieIssue(
     const net::SiteForCookies& site_for_cookies,
     blink::mojom::SameSiteCookieOperation operation,
     const absl::optional<std::string>& devtools_request_id) {
+  auto exclusion_reasons =
+      BuildExclusionReasons(excluded_cookie->access_result.status);
+  auto warning_reasons =
+      BuildWarningReasons(excluded_cookie->access_result.status);
+  if (exclusion_reasons->empty() && warning_reasons->empty()) {
+    // If we don't report any reason, there is no point in informing DevTools.
+    return;
+  }
+
   std::unique_ptr<protocol::Audits::AffectedRequest> affected_request;
   if (devtools_request_id) {
     // We can report the url here, because if devtools_request_id is set, the
@@ -984,10 +1012,8 @@ void ReportSameSiteCookieIssue(
 
   auto same_site_details =
       protocol::Audits::SameSiteCookieIssueDetails::Create()
-          .SetCookieExclusionReasons(
-              BuildExclusionReasons(excluded_cookie->access_result.status))
-          .SetCookieWarningReasons(
-              BuildWarningReasons(excluded_cookie->access_result.status))
+          .SetCookieExclusionReasons(std::move(exclusion_reasons))
+          .SetCookieWarningReasons(std::move(warning_reasons))
           .SetOperation(BuildCookieOperation(operation))
           .SetCookieUrl(url.spec())
           .SetRequest(std::move(affected_request))

@@ -55,7 +55,7 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 public class AccountManagementFragmentTest {
     private static final String CHILD_ACCOUNT_EMAIL = "child@gmail.com";
 
-    private final FakeAccountManagerFacade mFakeFacade = new FakeAccountManagerFacade(null) {
+    private final FakeAccountManagerFacade mFakeFacade = new FakeAccountManagerFacade() {
         @Override
         public void checkChildAccountStatus(Account account, ChildAccountStatusListener listener) {
             listener.onStatusReady(CHILD_ACCOUNT_EMAIL.equals(account.name)
@@ -135,10 +135,10 @@ public class AccountManagementFragmentTest {
         onView(withText(R.string.sign_out)).perform(click());
         TestThreadUtils.runOnUiThreadBlocking(
                 ()
-                        -> Assert.assertNull("Account should be signed out!",
+                        -> Assert.assertFalse("Account should be signed out!",
                                 IdentityServicesProvider.get()
                                         .getIdentityManager(Profile.getLastUsedRegularProfile())
-                                        .getPrimaryAccountInfo(ConsentLevel.SIGNIN)));
+                                        .hasPrimaryAccount(ConsentLevel.SIGNIN)));
     }
 
     @Test

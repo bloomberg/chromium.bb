@@ -25,7 +25,7 @@ class GitilesTestApi(recipe_test_api.RecipeTestApi):
                 new_files=['%s.py' % (chr(i + ord('a')))],
                 email='fake_%s@fake_%i.email.com' % (s, i),
             )
-            for i in xrange(n)
+            for i in range(n)
         ],
     }
     if cursor:

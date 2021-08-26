@@ -364,7 +364,7 @@ public class ToolbarTablet extends ToolbarLayout
         if (mIsIncognito == null || mIsIncognito != incognito) {
             // TODO (amaralp): Have progress bar observe theme color and incognito changes directly.
             getProgressBar().setThemeColor(
-                    ChromeColors.getDefaultThemeColor(getResources(), incognito), isIncognito());
+                    ChromeColors.getDefaultThemeColor(getContext(), incognito), isIncognito());
 
             mIsIncognito = incognito;
         }
@@ -390,7 +390,7 @@ public class ToolbarTablet extends ToolbarLayout
     public void onThemeColorChanged(int color, boolean shouldAnimate) {
         setBackgroundColor(color);
         final int textBoxColor = ThemeUtils.getTextBoxColorForToolbarBackgroundInNonNativePage(
-                getResources(), color, isIncognito());
+                getContext(), color, isIncognito());
         mLocationBar.getTabletCoordinator().getBackground().setTint(textBoxColor);
         mLocationBar.updateVisualsForState();
         setToolbarHairlineColor(color);

@@ -21,6 +21,7 @@
 #include "ash/public/cpp/event_rewriter_controller.h"
 #include "ash/public/cpp/multi_user_window_manager.h"
 #include "ash/public/cpp/multi_user_window_manager_delegate.h"
+#include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/screen_util.h"
@@ -113,6 +114,17 @@
 namespace ash {
 
 namespace {
+
+class TestShelfItemDelegate : public ShelfItemDelegate {
+ public:
+  explicit TestShelfItemDelegate(const ShelfID& shelf_id)
+      : ShelfItemDelegate(shelf_id) {}
+  void ExecuteCommand(bool from_context_menu,
+                      int64_t command_id,
+                      int32_t event_flags,
+                      int64_t display_id) override {}
+  void Close() override {}
+};
 
 void NewDesk() {
   // Create a desk through keyboard. Do not use |kButton| to avoid empty name.
@@ -367,10 +379,8 @@ class DesksTest : public AshTestBase,
     SetVirtualKeyboardEnabled(true);
   }
 
-  void SendKey(ui::KeyboardCode key_code, int flags = 0) {
-    auto* generator = GetEventGenerator();
-    generator->PressKey(key_code, flags);
-    generator->ReleaseKey(key_code, flags);
+  void SendKey(ui::KeyboardCode key_code, int flags = ui::EF_NONE) {
+    PressAndReleaseKey(key_code, flags);
   }
 
  private:
@@ -3940,7 +3950,8 @@ class PerDeskShelfTest : public AshTestBase,
     item.status = ShelfItemStatus::STATUS_RUNNING;
     item.type = type;
     item.id = shelf_id;
-    ShelfModel::Get()->Add(item);
+    ShelfModel::Get()->Add(item,
+                           std::make_unique<TestShelfItemDelegate>(item.id));
     return window;
   }
 
@@ -5804,17 +5815,8 @@ class PersistentDesksBarTest : public DesksTest {
     scoped_feature_list_.InitAndEnableFeature(features::kBentoBar);
     DesksTest::SetUp();
 
-    // Initializing pref `kUserHasUsedDesksRecently` to be true for the tests.
-    base::SimpleTestClock test_clock;
-    base::Time time;
-    auto* desks_controller = DesksController::Get();
-    ASSERT_TRUE(base::Time::FromString("Tue, 27 Jul 2021 00:00:01", &time));
-    test_clock.SetNow(time);
-    desks_restore_util::OverrideClockForTesting(&test_clock);
-    NewDesk();
-    RemoveDesk(desks_controller->desks().back().get());
-    desks_restore_util::OverrideClockForTesting(nullptr);
-    EXPECT_TRUE(desks_restore_util::HasPrimaryUserUsedDesksRecently());
+    desks_restore_util::SetPrimaryUserHasUsedDesksRecentlyForTesting(true);
+    ASSERT_TRUE(desks_restore_util::HasPrimaryUserUsedDesksRecently());
   }
   PersistentDesksBarTest() = default;
   PersistentDesksBarTest(const PersistentDesksBarTest&) = delete;

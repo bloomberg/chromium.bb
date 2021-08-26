@@ -12,7 +12,6 @@
 #include "base/check.h"
 #include "base/containers/span.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/flatbuffers/src/include/flatbuffers/flatbuffers.h"
 
 namespace extensions {
@@ -29,7 +28,7 @@ class ParseInfo {
             int ruleset_checksum);
 
   // Constructor to be used on error.
-  ParseInfo(ParseResult error_reason, const int* rule_id);
+  ParseInfo(ParseResult error_reason, int rule_id);
 
   ParseInfo(ParseInfo&&);
   ParseInfo& operator=(ParseInfo&&);
