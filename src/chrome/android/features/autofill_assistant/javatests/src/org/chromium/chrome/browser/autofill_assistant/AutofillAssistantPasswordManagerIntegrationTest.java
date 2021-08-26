@@ -13,9 +13,8 @@ import static org.hamcrest.Matchers.is;
 
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.getElementValue;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewMatchesCondition;
+import static org.chromium.chrome.browser.autofill_assistant.MiniActionTestUtil.addSetValueSteps;
 import static org.chromium.chrome.browser.autofill_assistant.ProtoTestUtil.toCssSelector;
-
-import android.support.test.InstrumentationRegistry;
 
 import androidx.test.filters.MediumTest;
 
@@ -23,20 +22,23 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.autofill_assistant.proto.ActionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ChipProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.GeneratePasswordForFormFieldProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.PasswordManagerValue;
+import org.chromium.chrome.browser.autofill_assistant.proto.PasswordManagerValue.CredentialType;
 import org.chromium.chrome.browser.autofill_assistant.proto.PresaveGeneratedPasswordProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.PromptProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SaveGeneratedPasswordProto;
-import org.chromium.chrome.browser.autofill_assistant.proto.SetFormFieldValueProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto.PresentationProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.TextValue;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
-import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.password_manager.PasswordChangeLauncher;
 import org.chromium.chrome.browser.password_manager.PasswordManagerClientBridgeForTesting;
@@ -53,11 +55,11 @@ import java.util.Collections;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @RunWith(ChromeJUnit4ClassRunner.class)
 public class AutofillAssistantPasswordManagerIntegrationTest {
-    @Rule
-    public CustomTabActivityTestRule mTestRule = new CustomTabActivityTestRule();
+    private final CustomTabActivityTestRule mTestRule = new CustomTabActivityTestRule();
 
-    private static final String TEST_PAGE = "/components/test/data/autofill_assistant/html/"
-            + "form_target_website.html";
+    @Rule
+    public final TestRule mRulesChain = RuleChain.outerRule(mTestRule).around(
+            new AutofillAssistantCustomTabTestRule(mTestRule, "form_target_website.html"));
 
     private WebContents getWebContents() {
         return mTestRule.getWebContents();
@@ -65,10 +67,6 @@ public class AutofillAssistantPasswordManagerIntegrationTest {
 
     @Before
     public void setUp() throws Exception {
-        AutofillAssistantPreferencesUtil.setInitialPreferences(true);
-        mTestRule.startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
-                InstrumentationRegistry.getTargetContext(),
-                mTestRule.getTestServer().getURL(TEST_PAGE)));
         TestThreadUtils.runOnUiThreadBlocking(
                 ()
                         -> PasswordManagerClientBridgeForTesting.setLeakDialogWasShownForTesting(
@@ -96,6 +94,24 @@ public class AutofillAssistantPasswordManagerIntegrationTest {
                                 getWebContents().getLastCommittedUrl(), username));
     }
 
+    private static TextValue buildUsernameValue() {
+        return TextValue.newBuilder()
+                .setPasswordManagerValue(PasswordManagerValue.newBuilder().setCredentialType(
+                        CredentialType.USERNAME))
+                .build();
+    }
+
+    private static TextValue buildPasswordValue() {
+        return TextValue.newBuilder()
+                .setPasswordManagerValue(PasswordManagerValue.newBuilder().setCredentialType(
+                        CredentialType.PASSWORD))
+                .build();
+    }
+
+    private static TextValue buildClientMemoryValue(String clientMemoryKey) {
+        return TextValue.newBuilder().setClientMemoryKey(clientMemoryKey).build();
+    }
+
     /**
      * Run a password change flow (fill a form with username, old password, new
      * password).
@@ -106,13 +122,7 @@ public class AutofillAssistantPasswordManagerIntegrationTest {
         ArrayList<ActionProto> list = new ArrayList<>();
 
         // Sets username
-        list.add(ActionProto.newBuilder()
-                         .setSetFormValue(
-                                 SetFormFieldValueProto.newBuilder()
-                                         .addValue(SetFormFieldValueProto.KeyPress.newBuilder()
-                                                           .setUseUsername(true))
-                                         .setElement(toCssSelector("#username")))
-                         .build());
+        addSetValueSteps(toCssSelector("#username"), buildUsernameValue(), list);
         // Generates new password
         list.add(ActionProto.newBuilder()
                          .setGeneratePasswordForFormField(
@@ -129,22 +139,12 @@ public class AutofillAssistantPasswordManagerIntegrationTest {
                          .build());
 
         // Sets new password
-        list.add(ActionProto.newBuilder()
-                         .setSetFormValue(
-                                 SetFormFieldValueProto.newBuilder()
-                                         .addValue(SetFormFieldValueProto.KeyPress.newBuilder()
-                                                           .setClientMemoryKey("memory-key"))
-                                         .setElement(toCssSelector("#new-password")))
-                         .build());
+        addSetValueSteps(
+                toCssSelector("#new-password"), buildClientMemoryValue("memory-key"), list);
 
         // Sets password confirmation
-        list.add(ActionProto.newBuilder()
-                         .setSetFormValue(
-                                 SetFormFieldValueProto.newBuilder()
-                                         .addValue(SetFormFieldValueProto.KeyPress.newBuilder()
-                                                           .setClientMemoryKey("memory-key"))
-                                         .setElement(toCssSelector("#password-conf")))
-                         .build());
+        addSetValueSteps(
+                toCssSelector("#password-conf"), buildClientMemoryValue("memory-key"), list);
 
         // Saves generated password
         list.add(ActionProto.newBuilder()
@@ -153,13 +153,7 @@ public class AutofillAssistantPasswordManagerIntegrationTest {
                          .build());
 
         // Fills login password field with saved password
-        list.add(ActionProto.newBuilder()
-                         .setSetFormValue(
-                                 SetFormFieldValueProto.newBuilder()
-                                         .addValue(SetFormFieldValueProto.KeyPress.newBuilder()
-                                                           .setUsePassword(true))
-                                         .setElement(toCssSelector("#login-password")))
-                         .build());
+        addSetValueSteps(toCssSelector("#login-password"), buildPasswordValue(), list);
 
         // Shows prompt
         list.add(ActionProto.newBuilder()

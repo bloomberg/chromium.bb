@@ -24,6 +24,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -124,6 +125,7 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
+#include "content/public/test/prerender_test_util.h"
 #include "content/public/test/slow_download_http_response.h"
 #include "content/public/test/test_download_http_response.h"
 #include "content/public/test/test_file_error_injector.h"
@@ -503,7 +505,8 @@ void CreateCompletedDownload(content::DownloadManager* download_manager,
       download::DOWNLOAD_DANGER_TYPE_USER_VALIDATED,
       download::DOWNLOAD_INTERRUPT_REASON_NONE, false /* opened */,
       current_time, false /* transient */,
-      std::vector<download::DownloadItem::ReceivedSlice>());
+      std::vector<download::DownloadItem::ReceivedSlice>(),
+      download::DownloadItemRerouteInfo());
 }
 
 }  // namespace
@@ -1278,6 +1281,38 @@ INSTANTIATE_TEST_SUITE_P(
         network::mojom::ReferrerPolicy::kSameOrigin,
         network::mojom::ReferrerPolicy::kStrictOrigin));
 
+class PrerenderDownloadTest : public DownloadTest {
+ public:
+  PrerenderDownloadTest()
+      : prerender_helper_(
+            base::BindRepeating(&PrerenderDownloadTest::GetWebContents,
+                                base::Unretained(this))) {}
+  ~PrerenderDownloadTest() override = default;
+
+  void SetUp() override {
+    prerender_helper_.SetUp(embedded_test_server());
+    DownloadTest::SetUp();
+  }
+
+  void SetUpOnMainThread() override {
+    DownloadTest::SetUpOnMainThread();
+    ASSERT_TRUE(test_server_handle_ =
+                    embedded_test_server()->StartAndReturnHandle());
+  }
+
+  content::WebContents* GetWebContents() {
+    return browser()->tab_strip_model()->GetActiveWebContents();
+  }
+
+  content::test::PrerenderTestHelper* prerender_helper() {
+    return &prerender_helper_;
+  }
+
+ private:
+  content::test::PrerenderTestHelper prerender_helper_;
+  net::test_server::EmbeddedTestServerHandle test_server_handle_;
+};
+
 namespace {
 
 class FakeDownloadProtectionService
@@ -1691,6 +1726,49 @@ IN_PROC_BROWSER_TEST_F(DownloadTest,
   base::ScopedAllowBlockingForTesting allow_blocking;
   EXPECT_FALSE(base::PathExists(file_path1));
   EXPECT_TRUE(base::PathExists(file_path2));
+}
+
+// Verify that non-active main frame downloads (e.g. prerendering) don't affect
+// the DownloadRequestLimiter state of the WebContents.
+IN_PROC_BROWSER_TEST_F(PrerenderDownloadTest,
+                       DownloadRequestLimiterIsUnaffectedByPrerendering) {
+  const GURL kInitialUrl = embedded_test_server()->GetURL("/empty.html");
+  const GURL kPrerenderingUrl =
+      embedded_test_server()->GetURL("/download_script.html");
+
+  ui_test_utils::NavigateToURL(browser(), kInitialUrl);
+
+  // Check the initial DownloadRequestLimiter state.
+  auto* web_contents = GetWebContents();
+  const DownloadRequestLimiter::TabDownloadState* tab_download_state =
+      g_browser_process->download_request_limiter()->GetDownloadState(
+          web_contents, true);
+  ASSERT_TRUE(tab_download_state);
+  EXPECT_EQ(tab_download_state->download_status(),
+            DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD);
+
+  // Create a prerendered page.
+  int host_id = prerender_helper()->AddPrerender(kPrerenderingUrl);
+  ASSERT_NE(host_id, content::RenderFrameHost::kNoFrameTreeNodeId);
+  content::test::PrerenderHostObserver host_observer(*web_contents, host_id);
+
+  // Try to start the download via Javascript in the prerendered page.
+  ignore_result(
+      content::ExecJs(prerender_helper()->GetPrerenderedMainFrameHost(host_id),
+                      "startDownload();"));
+
+  // Navigations aren't allowed on prerendered pages.
+  host_observer.WaitForDestroyed();
+
+  // Check that the DownloadRequestLimiter state wasn't modified.
+  const DownloadRequestLimiter::TabDownloadState* new_tab_download_state =
+      g_browser_process->download_request_limiter()->GetDownloadState(
+          web_contents, false);
+  ASSERT_EQ(tab_download_state, new_tab_download_state);
+  EXPECT_EQ(new_tab_download_state->download_status(),
+            DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD);
+
+  EXPECT_TRUE(VerifyNoDownloads());
 }
 
 // Download a 0-size file with a content-disposition header, verify that the
@@ -4744,6 +4822,7 @@ IN_PROC_BROWSER_TEST_F(InProgressDownloadTest,
           false /* allow_metered */, false /* opened */, current_time,
           false /* transient */,
           std::vector<download::DownloadItem::ReceivedSlice>(),
+          download::DownloadItemRerouteInfo(),
           absl::nullopt /*download_schedule*/, nullptr /* download_entry */));
 
   download::DownloadItem* download = coordinator->GetDownloadByGuid(guid);

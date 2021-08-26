@@ -224,6 +224,10 @@ enum {
 typedef struct {
   TX_TYPE_PRUNE_MODE prune_2d_txfm_mode;
   int fast_intra_tx_type_search;
+
+  // 1: Force tx type based on probability of the tx type, during mode search.
+  // 2: Force tx type to be DCT_DCT unconditionally, during mode search. (More
+  // aggressive).
   int fast_inter_tx_type_search;
 
   // Prune less likely chosen transforms for each intra mode. The speed
@@ -376,6 +380,11 @@ typedef struct FIRST_PASS_SPEED_FEATURES {
    * \brief Skips reconstruction by using source buffers for prediction
    */
   int disable_recon;
+
+  /*!
+   * \brief Skips the motion search centered on 0,0 mv.
+   */
+  int skip_zeromv_motion_search;
 } FIRST_PASS_SPEED_FEATURES;
 
 /*!\cond */
@@ -491,9 +500,6 @@ typedef struct PARTITION_SPEED_FEATURES {
   // Thresholds for ML based partition search breakout.
   int ml_partition_search_breakout_thresh[PARTITION_BLOCK_SIZES];
 
-  // Allow skipping partition search for still image frame
-  int allow_partition_search_skip;
-
   // The aggressiveness of pruning with simple_motion_search.
   // Currently 0 is the lowest, and 2 the highest.
   int simple_motion_search_prune_agg;
@@ -525,11 +531,17 @@ typedef struct PARTITION_SPEED_FEATURES {
   BLOCK_SIZE max_intra_bsize;
 
   // Use CNN with luma pixels on source frame on each of the 64x64 subblock to
-  // perform split/no_split decision on intra-frames.
-  int intra_cnn_split;
+  // perform partition pruning in intra frames.
+  // 0: No Pruning
+  // 1: Prune split and rectangular partitions only
+  // 2: Prune none, split and rectangular partitions
+  int intra_cnn_based_part_prune_level;
 
   // Disable extended partition search for lower block sizes.
   int ext_partition_eval_thresh;
+
+  // Disable rectangular partitions for larger block sizes.
+  int rect_partition_eval_thresh;
 
   // prune extended partition search
   // 0 : no pruning
@@ -867,6 +879,12 @@ typedef struct INTER_MODE_SPEED_FEATURES {
 
   // Early breakout from transform search of inter modes
   int inter_mode_txfm_breakout;
+
+  // Limit number of inter modes for txfm search if a newmv mode gets
+  // evaluated among the top modes.
+  // 0: no pruning
+  // 1 to 3 indicate increasing order of aggressiveness
+  int limit_inter_mode_cands;
 } INTER_MODE_SPEED_FEATURES;
 
 typedef struct INTERP_FILTER_SPEED_FEATURES {
@@ -931,6 +949,26 @@ typedef struct INTRA_MODE_SPEED_FEATURES {
   // palette colors is not the winner.
   int prune_palette_search_level;
 
+  // Terminate early in luma palette_size search. Speed feature values indicate
+  // increasing level of pruning.
+  // 0: No early termination
+  // 1: Terminate early for higher luma palette_size, if header rd cost of lower
+  // palette_size is more than 2 * best_rd. This level of pruning is more
+  // conservative when compared to sf level 2 as the cases which will get pruned
+  // with sf level 1 is a subset of the cases which will get pruned with sf
+  // level 2.
+  // 2: Terminate early for higher luma palette_size, if header rd cost of lower
+  // palette_size is more than best_rd.
+  // For allintra encode, this sf reduces instruction count by 2.49%, 1.07%,
+  // 2.76%, 2.30%, 1.84%, 2.69%, 2.04%, 2.05% and 1.44% for speed 0, 1, 2, 3, 4,
+  // 5, 6, 7 and 8 on screen content set with coding performance change less
+  // than 0.01% for speed <= 2 and less than 0.03% for speed >= 3. For AVIF
+  // image encode, this sf reduces instruction count by 1.94%, 1.13%, 1.29%,
+  // 0.93%, 0.89%, 1.03%, 1.07%, 1.20% and 0.18% for speed 0, 1, 2, 3, 4, 5, 6,
+  // 7 and 8 on a typical image dataset with coding performance change less than
+  // 0.01%.
+  int prune_luma_palette_size_search_level;
+
   // Prune chroma intra modes based on luma intra mode winner.
   // 0: No pruning
   // 1: Prune chroma intra modes other than UV_DC_PRED, UV_SMOOTH_PRED,
@@ -957,6 +995,18 @@ typedef struct INTRA_MODE_SPEED_FEATURES {
   // intra mode decision. Here, add a speed feature to reduce this number for
   // higher speeds.
   int top_intra_model_count_allowed;
+
+  // Terminate early in chroma palette_size search.
+  // 0: No early termination
+  // 1: Terminate early for higher palette_size, if header rd cost of lower
+  // palette_size is more than best_rd.
+  // For allintra encode, this sf reduces instruction count by 0.45%,
+  // 0.62%, 1.73%, 2.50%, 2.89%, 3.09% and 3.86% for speed 0 to 6 on screen
+  // content set with coding performance change less than 0.01%.
+  // For AVIF image encode, this sf reduces instruction count by 0.45%, 0.81%,
+  // 0.85%, 1.05%, 1.45%, 1.66% and 1.95% for speed 0 to 6 on a typical image
+  // dataset with no quality drop.
+  int early_term_chroma_palette_size_search;
 } INTRA_MODE_SPEED_FEATURES;
 
 typedef struct TX_SPEED_FEATURES {
@@ -1147,11 +1197,14 @@ typedef struct REAL_TIME_SPEED_FEATURES {
   // Use ALTREF frame in non-RD mode decision.
   int use_nonrd_altref_frame;
 
+  // Use GOLDEN frame in pickmode decision.
+  int use_golden_frame;
+
   // Use compound reference for non-RD mode.
   int use_comp_ref_nonrd;
 
   // Reference frames for compound prediction for nonrd pickmode:
-  // LAST_GOLDEN (0, default) or LAST_LAST2 (1).
+  // LAST_GOLDEN (0, default), LAST_LAST2 (1), or LAST_ALTREF (2).
   int ref_frame_comp_nonrd;
 
   // use reduced ref set for real-time mode
@@ -1224,6 +1277,10 @@ typedef struct REAL_TIME_SPEED_FEATURES {
   // sensitivity is off. When color sensitivity is on for a superblock, all
   // 64x64 blocks within will not skip.
   int skip_cdef_sb;
+
+  // Forces larger partition blocks in variance based partitioning for intra
+  // frames
+  int force_large_partition_blocks_intra;
 } REAL_TIME_SPEED_FEATURES;
 
 /*!\endcond */

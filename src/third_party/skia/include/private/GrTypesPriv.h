@@ -196,8 +196,8 @@ enum class GrFillRule : bool {
     kEvenOdd
 };
 
-inline GrFillRule GrFillRuleForSkPath(const SkPath& path) {
-    switch (path.getFillType()) {
+inline GrFillRule GrFillRuleForPathFillType(SkPathFillType fillType) {
+    switch (fillType) {
         case SkPathFillType::kWinding:
         case SkPathFillType::kInverseWinding:
             return GrFillRule::kNonzero;
@@ -206,6 +206,10 @@ inline GrFillRule GrFillRuleForSkPath(const SkPath& path) {
             return GrFillRule::kEvenOdd;
     }
     SkUNREACHABLE;
+}
+
+inline GrFillRule GrFillRuleForSkPath(const SkPath& path) {
+    return GrFillRuleForPathFillType(path.getFillType());
 }
 
 /** This enum indicates the type of antialiasing to be performed. */
@@ -852,14 +856,15 @@ typedef uint64_t GrFence;
 enum class GpuPathRenderers {
     kNone              =   0,  // Always use software masks and/or GrDefaultPathRenderer.
     kDashLine          =   1 << 0,
-    kTessellation      =   1 << 1,
-    kCoverageCounting  =   1 << 2,
-    kAAHairline        =   1 << 3,
-    kAAConvex          =   1 << 4,
-    kAALinearizing     =   1 << 5,
-    kSmall             =   1 << 6,
-    kTriangulating     =   1 << 7,
-    kDefault           = ((1 << 8) - 1)  // All path renderers.
+    kAtlas             =   1 << 1,
+    kTessellation      =   1 << 2,
+    kCoverageCounting  =   1 << 3,
+    kAAHairline        =   1 << 4,
+    kAAConvex          =   1 << 5,
+    kAALinearizing     =   1 << 6,
+    kSmall             =   1 << 7,
+    kTriangulating     =   1 << 8,
+    kDefault           = ((1 << 9) - 1)  // All path renderers.
 };
 
 /**

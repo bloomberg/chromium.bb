@@ -1,16 +1,7 @@
-# Copyright (c) the JPEG XL Project
+# Copyright (c) the JPEG XL Project Authors. All rights reserved.
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
 
 # Lists all source files for the JPEG XL decoder library. These are also used
 # by the encoder: the encoder uses both dec and enc ourse files, while the
@@ -52,8 +43,6 @@ set(JPEGXL_INTERNAL_SOURCES_DEC
   jxl/base/status.cc
   jxl/base/status.h
   jxl/base/thread_pool_internal.h
-  jxl/base/time.cc
-  jxl/base/time.h
   jxl/blending.cc
   jxl/blending.h
   jxl/chroma_from_luma.cc
@@ -80,6 +69,7 @@ set(JPEGXL_INTERNAL_SOURCES_DEC
   jxl/dec_ans.cc
   jxl/dec_ans.h
   jxl/dec_bit_reader.h
+  jxl/dec_cache.cc
   jxl/dec_cache.h
   jxl/dec_context_map.cc
   jxl/dec_context_map.h
@@ -102,6 +92,7 @@ set(JPEGXL_INTERNAL_SOURCES_DEC
   jxl/dec_patch_dictionary.h
   jxl/dec_reconstruct.cc
   jxl/dec_reconstruct.h
+  jxl/dec_render_pipeline.h
   jxl/dec_transforms-inl.h
   jxl/dec_upsample.cc
   jxl/dec_upsample.h
@@ -169,10 +160,10 @@ set(JPEGXL_INTERNAL_SOURCES_DEC
   jxl/modular/modular_image.cc
   jxl/modular/modular_image.h
   jxl/modular/options.h
-  jxl/modular/transform/near-lossless.h
   jxl/modular/transform/palette.h
+  jxl/modular/transform/rct.h
+  jxl/modular/transform/squeeze.cc
   jxl/modular/transform/squeeze.h
-  jxl/modular/transform/subtractgreen.h
   jxl/modular/transform/transform.cc
   jxl/modular/transform/transform.h
   jxl/noise.h
@@ -188,6 +179,7 @@ set(JPEGXL_INTERNAL_SOURCES_DEC
   jxl/quantizer.cc
   jxl/quantizer.h
   jxl/rational_polynomial-inl.h
+  jxl/sanitizers.h
   jxl/splines.cc
   jxl/splines.h
   jxl/toc.cc
@@ -263,6 +255,8 @@ set(JPEGXL_INTERNAL_SOURCES_ENC
   jxl/enc_params.h
   jxl/enc_patch_dictionary.cc
   jxl/enc_patch_dictionary.h
+  jxl/enc_photon_noise.cc
+  jxl/enc_photon_noise.h
   jxl/enc_quant_weights.cc
   jxl/enc_quant_weights.h
   jxl/enc_splines.cc
@@ -291,6 +285,14 @@ set(JPEGXL_INTERNAL_SOURCES_ENC
   jxl/modular/encoding/enc_encoding.h
   jxl/modular/encoding/enc_ma.cc
   jxl/modular/encoding/enc_ma.h
+  jxl/modular/transform/enc_palette.cc
+  jxl/modular/transform/enc_palette.h
+  jxl/modular/transform/enc_rct.cc
+  jxl/modular/transform/enc_rct.h
+  jxl/modular/transform/enc_squeeze.cc
+  jxl/modular/transform/enc_squeeze.h
+  jxl/modular/transform/enc_transform.cc
+  jxl/modular/transform/enc_transform.h
   jxl/optimize.cc
   jxl/optimize.h
   jxl/progressive_split.cc
@@ -301,10 +303,6 @@ set(JPEGXL_DEC_INTERNAL_LIBS
   brotlidec-static
   brotlicommon-static
   hwy
-)
-
-set_source_files_properties(jxl/decode.cc PROPERTIES
-  COMPILE_FLAGS -Wno-deprecated-declarations
 )
 
 if(JPEGXL_ENABLE_PROFILER)
@@ -548,6 +546,10 @@ endforeach()
 # both.
 install(TARGETS jxl
   DESTINATION ${CMAKE_INSTALL_LIBDIR})
+else()
+add_library(jxl ALIAS jxl-static)
+add_library(jxl_dec ALIAS jxl_dec-static)
+endif()  # TARGET_SUPPORTS_SHARED_LIBS AND NOT JPEGXL_STATIC
 
 # Add a pkg-config file for libjxl.
 set(JPEGXL_LIBRARY_REQUIRES
@@ -556,8 +558,3 @@ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/jxl/libjxl.pc.in"
                "libjxl.pc" @ONLY)
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/libjxl.pc"
   DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
-
-else()
-add_library(jxl ALIAS jxl-static)
-add_library(jxl_dec ALIAS jxl_dec-static)
-endif()  # TARGET_SUPPORTS_SHARED_LIBS AND NOT JPEGXL_STATIC

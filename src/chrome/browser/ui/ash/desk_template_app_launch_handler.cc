@@ -6,16 +6,24 @@
 
 #include <string>
 
+#include "ash/public/cpp/desks_helper.h"
 #include "base/notreached.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/chromeos/full_restore/full_restore_app_launch_handler.h"
-#include "chrome/browser/chromeos/full_restore/full_restore_service.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/ash/full_restore/full_restore_app_launch_handler.h"
+#include "chrome/browser/ash/full_restore/full_restore_service.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/ash/shelf/chrome_shelf_controller_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
+#include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "components/full_restore/restore_data.h"
 #include "components/full_restore/window_info.h"
-#include "extensions/common/constants.h"
+#include "extensions/common/extension.h"
 
 namespace {
 
@@ -27,7 +35,7 @@ constexpr base::TimeDelta kClearRestoreDataDuration =
 }  // namespace
 
 DeskTemplateAppLaunchHandler::DeskTemplateAppLaunchHandler(Profile* profile)
-    : chromeos::AppLaunchHandler(profile) {
+    : ash::AppLaunchHandler(profile) {
   full_restore::DeskTemplateReadHandler::GetInstance()->SetDelegate(this);
 }
 
@@ -88,11 +96,11 @@ int32_t DeskTemplateAppLaunchHandler::FetchRestoreWindowId(
 }
 
 bool DeskTemplateAppLaunchHandler::IsFullRestoreRunning() const {
-  chromeos::full_restore::FullRestoreService* full_restore_service =
-      chromeos::full_restore::FullRestoreService::GetForProfile(profile_);
+  ash::full_restore::FullRestoreService* full_restore_service =
+      ash::full_restore::FullRestoreService::GetForProfile(profile_);
   if (!full_restore_service)
     return false;
-  chromeos::full_restore::FullRestoreAppLaunchHandler*
+  ash::full_restore::FullRestoreAppLaunchHandler*
       full_restore_app_launch_handler =
           full_restore_service->app_launch_handler();
   DCHECK(full_restore_app_launch_handler);
@@ -109,13 +117,61 @@ bool DeskTemplateAppLaunchHandler::IsFullRestoreRunning() const {
          kClearRestoreDataDuration;
 }
 
+bool DeskTemplateAppLaunchHandler::ShouldLaunchSystemWebAppOrChromeApp(
+    const std::string& app_id) {
+  // Find out if the app can have multiple instances. Apps that can have
+  // multiple instances are:
+  //   1) System web apps which can open multiple windows
+  //   2) Non platform app type Chrome apps
+  // TODO(crubg.com/1239089): Investigate if we can have a way to handle moving
+  // single instance windows without all these heuristics.
+
+  bool is_multi_instance_window = false;
+
+  // Check the app registry cache to see if the app is a system web app.
+  bool is_system_web_app = false;
+  apps::AppServiceProxyFactory::GetForProfile(profile_)
+      ->AppRegistryCache()
+      .ForOneApp(app_id, [&is_system_web_app](const apps::AppUpdate& update) {
+        if (update.AppType() == apps::mojom::AppType::kWeb ||
+            update.AppType() == apps::mojom::AppType::kSystemWeb) {
+          is_system_web_app = true;
+        }
+      });
+
+  // A SWA can handle multiple instances if it can open multiple windows.
+  if (is_system_web_app) {
+    absl::optional<web_app::SystemAppType> swa_type =
+        web_app::GetSystemWebAppTypeForAppId(profile_, app_id);
+    is_multi_instance_window =
+        swa_type && web_app::WebAppProvider::GetForSystemWebApps(profile_)
+                        ->system_web_app_manager()
+                        .ShouldShowNewWindowMenuOption(*swa_type);
+  } else {
+    // Check the extensions registry to see if the app is a platform app. No
+    // need to do this check if the app is a system web app.
+    DCHECK(!is_multi_instance_window);
+    const extensions::Extension* extension =
+        GetExtensionForAppID(app_id, profile_);
+    is_multi_instance_window = extension && !extension->is_platform_app();
+  }
+
+  // Do not try sending an existing window to the active desk and launch a new
+  // instance.
+  if (is_multi_instance_window)
+    return true;
+
+  return ash::DesksHelper::Get()->OnSingleInstanceAppLaunchingFromTemplate(
+      app_id);
+}
+
 void DeskTemplateAppLaunchHandler::OnExtensionLaunching(
     const std::string& app_id) {
   if (restore_data_clone_)
     restore_data_clone_->SetNextRestoreWindowIdForChromeApp(app_id);
 }
 
-base::WeakPtr<chromeos::AppLaunchHandler>
+base::WeakPtr<ash::AppLaunchHandler>
 DeskTemplateAppLaunchHandler::GetWeakPtrAppLaunchHandler() {
   return weak_ptr_factory_.GetWeakPtr();
 }

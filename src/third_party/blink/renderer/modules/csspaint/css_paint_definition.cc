@@ -15,12 +15,12 @@
 #include "third_party/blink/renderer/core/css/cssom/css_paint_worklet_input.h"
 #include "third_party/blink/renderer/core/css/cssom/prepopulated_computed_style_property_map.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
-#include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/modules/csspaint/paint_rendering_context_2d.h"
 #include "third_party/blink/renderer/modules/csspaint/paint_size.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding_macros.h"
 #include "third_party/blink/renderer/platform/graphics/paint_generated_image.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -61,9 +61,8 @@ sk_sp<PaintRecord> CSSPaintDefinition::Paint(
     const CompositorPaintWorkletInput* compositor_input,
     const CompositorPaintWorkletJob::AnimatedPropertyValues&
         animated_property_values) {
-  // TODO(crbug.com/1227698): Use To<> with checks instead of static_cast.
   const CSSPaintWorkletInput* input =
-      static_cast<const CSSPaintWorkletInput*>(compositor_input);
+      To<CSSPaintWorkletInput>(compositor_input);
   PaintWorkletStylePropertyMap* style_map =
       MakeGarbageCollected<PaintWorkletStylePropertyMap>(input->StyleMapData());
   CSSStyleValueVector paint_arguments;

@@ -16,6 +16,7 @@
 #include "api/task_queue/task_queue_base.h"
 #include "api/video/video_codec_type.h"
 #include "api/video/video_frame_type.h"
+#include "call/test/mock_rtp_packet_sink_interface.h"
 #include "common_video/h264/h264_common.h"
 #include "media/base/media_constants.h"
 #include "modules/rtp_rtcp/source/rtp_descriptor_authentication.h"
@@ -38,6 +39,7 @@
 #include "test/gmock.h"
 #include "test/gtest.h"
 #include "test/mock_frame_transformer.h"
+#include "test/mock_transport.h"
 #include "test/time_controller/simulated_task_queue.h"
 #include "test/time_controller/simulated_time_controller.h"
 
@@ -72,15 +74,6 @@ RTPVideoHeader GetGenericVideoHeader(VideoFrameType frame_type) {
   video_header.frame_type = frame_type;
   return video_header;
 }
-
-class MockTransport : public Transport {
- public:
-  MOCK_METHOD(bool,
-              SendRtp,
-              (const uint8_t*, size_t length, const PacketOptions& options),
-              (override));
-  MOCK_METHOD(bool, SendRtcp, (const uint8_t*, size_t length), (override));
-};
 
 class MockNackSender : public NackSender {
  public:
@@ -130,11 +123,6 @@ class MockOnCompleteFrameCallback
   rtc::ByteBufferWriter buffer_;
 };
 
-class MockRtpPacketSink : public RtpPacketSinkInterface {
- public:
-  MOCK_METHOD(void, OnRtpPacket, (const RtpPacketReceived&), (override));
-};
-
 constexpr uint32_t kSsrc = 111;
 constexpr int kPayloadType = 100;
 constexpr int kRedPayloadType = 125;
@@ -172,11 +160,11 @@ class RtpVideoStreamReceiver2Test : public ::testing::Test,
     rtp_video_stream_receiver_ = std::make_unique<RtpVideoStreamReceiver2>(
         TaskQueueBase::Current(), Clock::GetRealTimeClock(), &mock_transport_,
         nullptr, nullptr, &config_, rtp_receive_statistics_.get(), nullptr,
-        nullptr, &mock_nack_sender_, &mock_key_frame_request_sender_,
-        &mock_on_complete_frame_callback_, nullptr, nullptr);
-    VideoCodec codec;
-    codec.codecType = kVideoCodecGeneric;
-    rtp_video_stream_receiver_->AddReceiveCodec(kPayloadType, codec, {},
+        nullptr, &nack_periodic_processor_, &mock_nack_sender_,
+        &mock_key_frame_request_sender_, &mock_on_complete_frame_callback_,
+        nullptr, nullptr);
+    rtp_video_stream_receiver_->AddReceiveCodec(kPayloadType,
+                                                kVideoCodecGeneric, {},
                                                 /*raw_payload=*/false);
   }
 
@@ -244,6 +232,7 @@ class RtpVideoStreamReceiver2Test : public ::testing::Test,
 
   const webrtc::test::ScopedFieldTrials override_field_trials_;
   VideoReceiveStream::Config config_;
+  NackPeriodicProcessor nack_periodic_processor_;
   MockNackSender mock_nack_sender_;
   MockKeyFrameRequestSender mock_key_frame_request_sender_;
   MockTransport mock_transport_;
@@ -317,10 +306,8 @@ TEST_F(RtpVideoStreamReceiver2Test, CacheColorSpaceFromLastPacketOfKeyframe) {
   received_packet_generator.SetColorSpace(kColorSpace);
 
   // Prepare the receiver for VP9.
-  VideoCodec codec;
-  codec.codecType = kVideoCodecVP9;
   std::map<std::string, std::string> codec_params;
-  rtp_video_stream_receiver_->AddReceiveCodec(kVp9PayloadType, codec,
+  rtp_video_stream_receiver_->AddReceiveCodec(kVp9PayloadType, kVideoCodecVP9,
                                               codec_params,
                                               /*raw_payload=*/false);
 
@@ -573,13 +560,13 @@ TEST_P(RtpVideoStreamReceiver2TestH264, InBandSpsPps) {
 
 TEST_P(RtpVideoStreamReceiver2TestH264, OutOfBandFmtpSpsPps) {
   constexpr int kPayloadType = 99;
-  VideoCodec codec;
   std::map<std::string, std::string> codec_params;
   // Example parameter sets from https://tools.ietf.org/html/rfc3984#section-8.2
   // .
   codec_params.insert(
       {cricket::kH264FmtpSpropParameterSets, "Z0IACpZTBYmI,aMljiA=="});
-  rtp_video_stream_receiver_->AddReceiveCodec(kPayloadType, codec, codec_params,
+  rtp_video_stream_receiver_->AddReceiveCodec(kPayloadType, kVideoCodecH264,
+                                              codec_params,
                                               /*raw_payload=*/false);
   const uint8_t binary_sps[] = {0x67, 0x42, 0x00, 0x0a, 0x96,
                                 0x53, 0x05, 0x89, 0x88};
@@ -614,13 +601,13 @@ TEST_P(RtpVideoStreamReceiver2TestH264, OutOfBandFmtpSpsPps) {
 
 TEST_P(RtpVideoStreamReceiver2TestH264, ForceSpsPpsIdrIsKeyframe) {
   constexpr int kPayloadType = 99;
-  VideoCodec codec;
   std::map<std::string, std::string> codec_params;
   if (GetParam() ==
       "") {  // Forcing can be done either with field trial or codec_params.
     codec_params.insert({cricket::kH264FmtpSpsPpsIdrInKeyframe, ""});
   }
-  rtp_video_stream_receiver_->AddReceiveCodec(kPayloadType, codec, codec_params,
+  rtp_video_stream_receiver_->AddReceiveCodec(kPayloadType, kVideoCodecH264,
+                                              codec_params,
                                               /*raw_payload=*/false);
   rtc::CopyOnWriteBuffer sps_data;
   RtpPacketReceived rtp_packet;
@@ -771,8 +758,8 @@ TEST_F(RtpVideoStreamReceiver2Test, SinkGetsRtpNotifications) {
 }
 
 TEST_F(RtpVideoStreamReceiver2Test, NonStartedStreamGetsNoRtpCallbacks) {
-  // Explicitly showing that the stream is not in the |started| state,
-  // regardless of whether streams start out |started| or |stopped|.
+  // Explicitly showing that the stream is not in the `started` state,
+  // regardless of whether streams start out `started` or `stopped`.
   rtp_video_stream_receiver_->StopReceive();
 
   MockRtpPacketSink test_sink;
@@ -809,7 +796,7 @@ TEST_F(RtpVideoStreamReceiver2Test, ParseGenericDescriptorOnePacket) {
 
   uint8_t* payload = rtp_packet.SetPayloadSize(data.size());
   memcpy(payload, data.data(), data.size());
-  // The first byte is the header, so we ignore the first byte of |data|.
+  // The first byte is the header, so we ignore the first byte of `data`.
   mock_on_complete_frame_callback_.AppendExpectedBitstream(data.data() + 1,
                                                            data.size() - 1);
 
@@ -850,7 +837,7 @@ TEST_F(RtpVideoStreamReceiver2Test, ParseGenericDescriptorTwoPackets) {
 
   uint8_t* first_packet_payload = first_packet.SetPayloadSize(data.size());
   memcpy(first_packet_payload, data.data(), data.size());
-  // The first byte is the header, so we ignore the first byte of |data|.
+  // The first byte is the header, so we ignore the first byte of `data`.
   mock_on_complete_frame_callback_.AppendExpectedBitstream(data.data() + 1,
                                                            data.size() - 1);
 
@@ -871,7 +858,7 @@ TEST_F(RtpVideoStreamReceiver2Test, ParseGenericDescriptorTwoPackets) {
 
   uint8_t* second_packet_payload = second_packet.SetPayloadSize(data.size());
   memcpy(second_packet_payload, data.data(), data.size());
-  // The first byte is the header, so we ignore the first byte of |data|.
+  // The first byte is the header, so we ignore the first byte of `data`.
   mock_on_complete_frame_callback_.AppendExpectedBitstream(data.data() + 1,
                                                            data.size() - 1);
 
@@ -891,8 +878,8 @@ TEST_F(RtpVideoStreamReceiver2Test, ParseGenericDescriptorRawPayload) {
   const std::vector<uint8_t> data = {0, 1, 2, 3, 4};
   const int kRawPayloadType = 123;
 
-  VideoCodec codec;
-  rtp_video_stream_receiver_->AddReceiveCodec(kRawPayloadType, codec, {},
+  rtp_video_stream_receiver_->AddReceiveCodec(kRawPayloadType,
+                                              kVideoCodecGeneric, {},
                                               /*raw_payload=*/true);
   rtp_video_stream_receiver_->StartReceive();
 
@@ -923,8 +910,8 @@ TEST_F(RtpVideoStreamReceiver2Test, UnwrapsFrameId) {
   const std::vector<uint8_t> data = {0, 1, 2, 3, 4};
   const int kPayloadType = 123;
 
-  VideoCodec codec;
-  rtp_video_stream_receiver_->AddReceiveCodec(kPayloadType, codec, {},
+  rtp_video_stream_receiver_->AddReceiveCodec(kPayloadType, kVideoCodecGeneric,
+                                              {},
                                               /*raw_payload=*/true);
   rtp_video_stream_receiver_->StartReceive();
   RtpHeaderExtensionMap extension_map;
@@ -969,8 +956,8 @@ class RtpVideoStreamReceiver2DependencyDescriptorTest
     : public RtpVideoStreamReceiver2Test {
  public:
   RtpVideoStreamReceiver2DependencyDescriptorTest() {
-    VideoCodec codec;
-    rtp_video_stream_receiver_->AddReceiveCodec(payload_type_, codec, {},
+    rtp_video_stream_receiver_->AddReceiveCodec(payload_type_,
+                                                kVideoCodecGeneric, {},
                                                 /*raw_payload=*/true);
     extension_map_.Register<RtpDependencyDescriptorExtension>(7);
     rtp_video_stream_receiver_->StartReceive();
@@ -1132,11 +1119,9 @@ TEST_F(RtpVideoStreamReceiver2Test, TransformFrame) {
   auto receiver = std::make_unique<RtpVideoStreamReceiver2>(
       TaskQueueBase::Current(), Clock::GetRealTimeClock(), &mock_transport_,
       nullptr, nullptr, &config_, rtp_receive_statistics_.get(), nullptr,
-      nullptr, &mock_nack_sender_, nullptr, &mock_on_complete_frame_callback_,
-      nullptr, mock_frame_transformer);
-  VideoCodec video_codec;
-  video_codec.codecType = kVideoCodecGeneric;
-  receiver->AddReceiveCodec(kPayloadType, video_codec, {},
+      nullptr, &nack_periodic_processor_, &mock_nack_sender_, nullptr,
+      &mock_on_complete_frame_callback_, nullptr, mock_frame_transformer);
+  receiver->AddReceiveCodec(kPayloadType, kVideoCodecGeneric, {},
                             /*raw_payload=*/false);
 
   RtpPacketReceived rtp_packet;

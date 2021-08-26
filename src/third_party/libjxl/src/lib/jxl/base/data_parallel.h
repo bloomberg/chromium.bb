@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #ifndef LIB_JXL_BASE_DATA_PARALLEL_H_
 #define LIB_JXL_BASE_DATA_PARALLEL_H_
@@ -113,24 +104,18 @@ class ThreadPool {
   void* const runner_opaque_;
 };
 
-void TraceRunBegin(const char* caller, double* t0);
-void TraceRunEnd(const char* caller, double t0);
-
 // TODO(deymo): Convert the return value to a Status when not using SkipInit.
 template <class InitFunc, class DataFunc>
 bool RunOnPool(ThreadPool* pool, const uint32_t begin, const uint32_t end,
                const InitFunc& init_func, const DataFunc& data_func,
                const char* caller) {
   Status ret = true;
-  double t0;
-  TraceRunBegin(caller, &t0);
   if (pool == nullptr) {
     ThreadPool default_pool(nullptr, nullptr);
     ret = default_pool.Run(begin, end, init_func, data_func, caller);
   } else {
     ret = pool->Run(begin, end, init_func, data_func, caller);
   }
-  TraceRunEnd(caller, t0);
   return ret;
 }
 

@@ -290,6 +290,10 @@ static void dump_video_param(AVCodecContext *avctx, QSVEncContext *q,
                "NalHrdConformance: %s; SingleSeiNalUnit: %s; VuiVclHrdParameters: %s VuiNalHrdParameters: %s\n",
                print_threestate(co->NalHrdConformance), print_threestate(co->SingleSeiNalUnit),
                print_threestate(co->VuiVclHrdParameters), print_threestate(co->VuiNalHrdParameters));
+    } else if ((avctx->codec_id == AV_CODEC_ID_HEVC) && QSV_RUNTIME_VERSION_ATLEAST(q->ver, 1, 28)) {
+        av_log(avctx, AV_LOG_VERBOSE,
+               "NalHrdConformance: %s; VuiNalHrdParameters: %s\n",
+               print_threestate(co->NalHrdConformance), print_threestate(co->VuiNalHrdParameters));
     }
 
     av_log(avctx, AV_LOG_VERBOSE, "FrameRateExtD: %"PRIu32"; FrameRateExtN: %"PRIu32" \n",
@@ -527,7 +531,7 @@ static int init_video_param(AVCodecContext *avctx, QSVEncContext *q)
     q->param.mfx.GopPicSize         = FFMAX(0, avctx->gop_size);
     q->param.mfx.GopRefDist         = FFMAX(-1, avctx->max_b_frames) + 1;
     q->param.mfx.GopOptFlag         = avctx->flags & AV_CODEC_FLAG_CLOSED_GOP ?
-                                      MFX_GOP_CLOSED : 0;
+                                      MFX_GOP_CLOSED : MFX_GOP_STRICT;
     q->param.mfx.IdrInterval        = q->idr_interval;
     q->param.mfx.NumSlice           = avctx->slices;
     q->param.mfx.NumRefFrame        = FFMAX(0, avctx->refs);
@@ -646,7 +650,7 @@ static int init_video_param(AVCodecContext *avctx, QSVEncContext *q)
     case MFX_RATECONTROL_LA_ICQ:
         q->extco2.LookAheadDepth = q->look_ahead_depth;
     case MFX_RATECONTROL_ICQ:
-        q->param.mfx.ICQQuality  = avctx->global_quality;
+        q->param.mfx.ICQQuality  = av_clip(avctx->global_quality, 1, 51);
         break;
 #endif
 #endif
@@ -679,6 +683,15 @@ static int init_video_param(AVCodecContext *avctx, QSVEncContext *q)
             if (q->recovery_point_sei >= 0)
                 q->extco.RecoveryPointSEI = q->recovery_point_sei ? MFX_CODINGOPTION_ON : MFX_CODINGOPTION_OFF;
             q->extco.MaxDecFrameBuffering = q->max_dec_frame_buffering;
+            q->extco.AUDelimiter          = q->aud ? MFX_CODINGOPTION_ON : MFX_CODINGOPTION_OFF;
+        } else if (avctx->codec_id == AV_CODEC_ID_HEVC) {
+            if (avctx->strict_std_compliance != FF_COMPLIANCE_NORMAL)
+                q->extco.NalHrdConformance = avctx->strict_std_compliance > FF_COMPLIANCE_NORMAL ?
+                                             MFX_CODINGOPTION_ON : MFX_CODINGOPTION_OFF;
+
+            if (q->recovery_point_sei >= 0)
+                q->extco.RecoveryPointSEI = q->recovery_point_sei ? MFX_CODINGOPTION_ON : MFX_CODINGOPTION_OFF;
+
             q->extco.AUDelimiter          = q->aud ? MFX_CODINGOPTION_ON : MFX_CODINGOPTION_OFF;
         }
 

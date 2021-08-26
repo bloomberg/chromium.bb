@@ -12,8 +12,6 @@ namespace configuration {
 // Configuration keys that are used to automate OOBE screens go here.
 // Please keep keys grouped by screens and ordered according to OOBE flow.
 
-extern const char kSkipHIDDetection[];
-
 extern const char kLanguage[];
 extern const char kInputMethod[];
 extern const char kWelcomeNext[];
@@ -24,6 +22,7 @@ extern const char kDemoModePreferencesNext[];
 extern const char kNetworkSelectGUID[];
 extern const char kNetworkOfflineDemo[];
 extern const char kNetworkUseConnected[];
+extern const char kNetworkConfig[];
 
 extern const char kDeviceRequisition[];
 
@@ -37,7 +36,6 @@ extern const char kUpdateSkipUpdate[];
 extern const char kWizardAutoEnroll[];
 
 extern const char kRestoreAfterRollback[];
-extern const char kEnrollmentToken[];
 extern const char kEnrollmentAssetId[];
 extern const char kEnrollmentLocation[];
 extern const char kEnrollmentAutoAttributes[];
@@ -70,9 +68,7 @@ using ::chromeos::configuration::kEnableDemoMode;
 using ::chromeos::configuration::kEnrollmentAssetId;
 using ::chromeos::configuration::kEnrollmentAutoAttributes;
 using ::chromeos::configuration::kEnrollmentLocation;
-using ::chromeos::configuration::kEnrollmentToken;
 using ::chromeos::configuration::kRestoreAfterRollback;
-using ::chromeos::configuration::kSkipHIDDetection;
 using ::chromeos::configuration::kUpdateSkipUpdate;
 using ::chromeos::configuration::kWizardAutoEnroll;
 }  // namespace configuration

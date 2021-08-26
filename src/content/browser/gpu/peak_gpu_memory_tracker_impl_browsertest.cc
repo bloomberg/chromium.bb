@@ -85,6 +85,13 @@ class TestGpuService : public viz::mojom::GpuService {
       mojo::PendingReceiver<chromeos_camera::mojom::JpegEncodeAccelerator>
           jea_receiver) override {}
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_WIN)
+  void RegisterDCOMPSurfaceHandle(
+      mojo::PlatformHandle surface_handle,
+      RegisterDCOMPSurfaceHandleCallback callback) override {}
+  void UnregisterDCOMPSurfaceHandle(
+      const base::UnguessableToken& token) override {}
+#endif
   void CreateVideoEncodeAcceleratorProvider(
       mojo::PendingReceiver<media::mojom::VideoEncodeAcceleratorProvider>
           receiver) override {}

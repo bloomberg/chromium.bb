@@ -31,6 +31,7 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.util.TestWebServer;
 import org.chromium.weblayer.Browser;
@@ -1168,6 +1169,7 @@ public class NavigationTest {
     // This is a regression test for https://crbug.com/1121388.
     @Test
     @SmallTest
+    @DisabledTest(message = "crbug.com/1225662")
     public void testDestroyTabWithModalDialog() throws Exception {
         // Load a page with a form.
         InstrumentationActivity activity =
@@ -1367,6 +1369,7 @@ public class NavigationTest {
                 curFailedCount, STREAM_URL, LoadError.CONNECTIVITY_ERROR);
     }
 
+    @DisabledTest(message = "https://crbug.com/1238151")
     @Test
     @SmallTest
     public void testWebResponseExpired() throws Exception {

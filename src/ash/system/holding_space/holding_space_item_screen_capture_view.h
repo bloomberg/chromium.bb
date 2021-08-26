@@ -38,7 +38,8 @@ class ASH_EXPORT HoldingSpaceItemScreenCaptureView
   // HoldingSpaceItemView:
   views::View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
   std::u16string GetTooltipText(const gfx::Point& point) const override;
-  void OnHoldingSpaceItemUpdated(const HoldingSpaceItem* item) override;
+  void OnHoldingSpaceItemUpdated(const HoldingSpaceItem* item,
+                                 uint32_t updated_fields) override;
   void OnThemeChanged() override;
 
   void UpdateImage();
@@ -47,7 +48,7 @@ class ASH_EXPORT HoldingSpaceItemScreenCaptureView
   RoundedImageView* image_ = nullptr;
   views::ImageView* play_icon_ = nullptr;
 
-  base::CallbackListSubscription image_subscription_;
+  base::CallbackListSubscription image_skia_changed_subscription_;
 };
 
 BEGIN_VIEW_BUILDER(/* no export */,

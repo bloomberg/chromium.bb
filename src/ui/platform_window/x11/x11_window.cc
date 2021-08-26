@@ -1134,6 +1134,12 @@ void X11Window::SetOverrideRedirect(bool override_redirect) {
   }
 }
 
+bool X11Window::CanResetOverrideRedirect() const {
+  // Ratpoision sometimes hangs when setting the override-redirect state to a
+  // new value (https://crbug.com/1216221).
+  return ui::GuessWindowManager() != ui::WindowManagerName::WM_RATPOISON;
+}
+
 void X11Window::SetX11ExtensionDelegate(X11ExtensionDelegate* delegate) {
   x11_extension_delegate_ = delegate;
 }
@@ -1205,6 +1211,8 @@ void X11Window::DispatchUiEvent(ui::Event* event, const x11::Event& xev) {
     last_motion = ui::BuildEventFromXEvent(last_xev);
     event = last_motion.get();
   }
+  if (!event)
+    return;
 
   // If |event| is a located event (mouse, touch, etc) and another X11 window
   // is set as the current located events grabber, the |event| must be
@@ -1232,22 +1240,20 @@ void X11Window::DispatchUiEvent(ui::Event* event, const x11::Event& xev) {
   // include mouse wheel events as well. Investigation showed that events on
   // Linux are checked with cmt-device path, and can include DT_CMT_SCROLL_
   // data. See more discussion in https://crrev.com/c/853953
-  if (event) {
-    UpdateWMUserTime(event);
-    bool event_dispatched = false;
+  UpdateWMUserTime(event);
+  bool event_dispatched = false;
 #if defined(USE_OZONE)
-    if (features::IsUsingOzonePlatform()) {
-      event_dispatched = true;
-      DispatchEventFromNativeUiEvent(
-          event, base::BindOnce(&PlatformWindowDelegate::DispatchEvent,
-                                base::Unretained(platform_window_delegate())));
-    }
+  if (features::IsUsingOzonePlatform()) {
+    event_dispatched = true;
+    DispatchEventFromNativeUiEvent(
+        event, base::BindOnce(&PlatformWindowDelegate::DispatchEvent,
+                              base::Unretained(platform_window_delegate())));
+  }
 #endif
 #if defined(USE_X11)
-    if (!event_dispatched)
-      platform_window_delegate_->DispatchEvent(event);
+  if (!event_dispatched)
+    platform_window_delegate_->DispatchEvent(event);
 #endif
-  }
 }
 
 void X11Window::OnXWindowStateChanged() {
@@ -1577,7 +1583,7 @@ void X11Window::CreateXWindow(const PlatformWindowInitProperties& properties) {
   bounds.set_size(adjusted_size_in_pixels);
   const auto override_redirect =
       properties.x11_extension_delegate &&
-      properties.x11_extension_delegate->IsOverrideRedirect(IsWmTiling());
+      properties.x11_extension_delegate->IsOverrideRedirect();
 
   workspace_extension_delegate_ = properties.workspace_extension_delegate;
   x11_extension_delegate_ = properties.x11_extension_delegate;
@@ -1654,6 +1660,11 @@ void X11Window::CreateXWindow(const PlatformWindowInitProperties& properties) {
                                           &visual_id, &depth, &colormap,
                                           &visual_has_alpha_);
   }
+  // When drawing translucent windows, ensure a translucent background pixel
+  // value so that a colored border won't be shown in the time after the window
+  // has been resized smaller but before Chrome has finished drawing a frame.
+  if (visual_has_alpha_)
+    req.background_pixel = 0;
 
   // x.org will BadMatch if we don't set a border when the depth isn't the
   // same as the parent depth.
@@ -2312,15 +2323,6 @@ void X11Window::UpdateWindowRegion(
         .destination_window = xwindow_,
         .source_bitmap = x11::Pixmap::None,
     });
-  } else {
-    // Conversely, if the window does not have system borders, the mask must be
-    // manually set to a rectangle that covers the whole window (not null). This
-    // is due to a bug in KWin <= 4.11.5 (KDE bug #330573) where setting a null
-    // shape causes the hint to disable system borders to be ignored (resulting
-    // in a double border).
-    x11::Rectangle r{0, 0, static_cast<uint16_t>(bounds_in_pixels_.width()),
-                     static_cast<uint16_t>(bounds_in_pixels_.height())};
-    set_shape({r});
   }
 }
 

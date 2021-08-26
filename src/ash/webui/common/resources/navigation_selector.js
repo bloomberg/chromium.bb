@@ -16,6 +16,7 @@ import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
  *   name: string,
  *   pageIs: string,
  *   icon: string,
+ *   id: string,
  * }}
  */
 export let SelectorItem;
@@ -61,7 +62,7 @@ export class NavigationSelectorElement extends PolymerElement {
       selectedItem: {
         type: Object,
         value: null,
-        observer: 'updateCurrentSelection_',
+        observer: 'selectedItemChanged_',
         notify: true,
       },
 
@@ -91,8 +92,8 @@ export class NavigationSelectorElement extends PolymerElement {
     this.selectedItem = e.model.item;
   }
 
-  /** @private */
-  updateCurrentSelection_() {
+  /** @protected */
+  selectedItemChanged_() {
     // Update any top-level entries.
     const items = /** @type {!NodeList<!HTMLDivElement>} */(
         this.shadowRoot.querySelectorAll('.navigation-item'));
@@ -138,7 +139,7 @@ export class NavigationSelectorElement extends PolymerElement {
 
   /**
    * @param {!MenuSelectorItem} item
-   * @private
+   * @protected
    */
   isCollapsible_(item) {
     return item.properties.isCollapsible;

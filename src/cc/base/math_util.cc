@@ -11,7 +11,7 @@
 #include <xmmintrin.h>
 #endif
 
-#include "base/numerics/ranges.h"
+#include "base/cxx17_backports.h"
 #include "base/trace_event/traced_value.h"
 #include "base/values.h"
 #include "ui/gfx/geometry/angle_conversions.h"
@@ -71,12 +71,12 @@ const float kStationaryPointEpsilon = 0.00001f;
 
 }  // namespace
 
-static void homogenousLimitAtZero(SkScalar a1,
-                                  SkScalar w1,
-                                  SkScalar a2,
-                                  SkScalar w2,
-                                  float t,
-                                  float* limit) {
+static void homogeneousLimitAtZero(SkScalar a1,
+                                   SkScalar w1,
+                                   SkScalar a2,
+                                   SkScalar w2,
+                                   float t,
+                                   float* limit) {
   if (std::abs(a1 * w2 / w1 / a2 - 1.0f) > kStationaryPointEpsilon) {
     // We are going to explode towards an infinity, but we choose the one that
     // corresponds to the one on the positive side of w.
@@ -118,24 +118,26 @@ static gfx::PointF ComputeClippedCartesianPoint2dForEdge(
   float x;
   float y;
 
-  homogenousLimitAtZero(h1.x(), h1.w(), h2.x(), h2.w(), t, &x);
-  homogenousLimitAtZero(h1.y(), h1.w(), h2.y(), h2.w(), t, &y);
+  homogeneousLimitAtZero(h1.x(), h1.w(), h2.x(), h2.w(), t, &x);
+  homogeneousLimitAtZero(h1.y(), h1.w(), h2.y(), h2.w(), t, &y);
 
   return gfx::PointF(x, y);
 }
 
-static void homogenousLimitNearZero(SkScalar a1,
-                                    SkScalar w1,
-                                    SkScalar a2,
-                                    SkScalar w2,
-                                    float t,
-                                    float* limit) {
+static void homogeneousLimitNearZero(SkScalar a1,
+                                     SkScalar w1,
+                                     SkScalar a2,
+                                     SkScalar w2,
+                                     float t,
+                                     float* limit) {
   if (std::abs(a1 * w2 / w1 / a2 - 1.0f) > kStationaryPointEpsilon) {
     // t has been computed so that w is near but not at zero.
     *limit = ((1.0f - t) * a1 + t * a2) / ((1.0f - t) * w1 + t * w2);
-    DCHECK(t == 0.0f || t == 1.0f ||
-           std::abs(*limit) * 0.998f <
-               HomogeneousCoordinate::kInfiniteCoordinate);
+    // std::abs(*limit) should now be somewhere near
+    // HomogeneousCoordinate::kInfiniteCoordinate, preferably smaller than it,
+    // but there are edge cases where it will be larger (for example, if the
+    // point where a crosses 0 is very close to the point where w crosses 0),
+    // so it's hard to DCHECK() that this is the case.
   } else {
     *limit = a1 / w1;  // (== a2 / w2) && == (1.0f - t) * a1 / w1 + t * a2 / w2
   }
@@ -196,9 +198,9 @@ static gfx::Point3F ComputeClippedCartesianPoint3dForEdge(
   float y;
   float z;
 
-  homogenousLimitNearZero(h1.x(), h1.w(), h2.x(), h2.w(), t, &x);
-  homogenousLimitNearZero(h1.y(), h1.w(), h2.y(), h2.w(), t, &y);
-  homogenousLimitNearZero(h1.z(), h1.w(), h2.z(), h2.w(), t, &z);
+  homogeneousLimitNearZero(h1.x(), h1.w(), h2.x(), h2.w(), t, &x);
+  homogeneousLimitNearZero(h1.y(), h1.w(), h2.y(), h2.w(), t, &y);
+  homogeneousLimitNearZero(h1.z(), h1.w(), h2.z(), h2.w(), t, &z);
 
   return gfx::Point3F(x, y, z);
 }
@@ -368,6 +370,8 @@ gfx::Rect MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(
     const gfx::Transform& transform,
     const gfx::Rect& rect) {
   DCHECK(transform.Preserves2dAxisAlignment());
+  DCHECK_GT(transform.matrix().get(3, 3), 0);
+  DCHECK(std::isnormal(transform.matrix().get(3, 3)));
 
   if (transform.IsIdentityOrIntegerTranslation()) {
     gfx::Vector2d offset(static_cast<int>(transform.matrix().getFloat(0, 3)),
@@ -600,15 +604,15 @@ bool MathUtil::MapClippedQuad3d(const gfx::Transform& transform,
       // for 2D.
       for (int i = 0; i < *num_vertices_in_clipped_quad; ++i) {
         gfx::Point3F& point = clipped_quad[i];
-        point.set_x(base::ClampToRange(
-            point.x(), -HomogeneousCoordinate::kInfiniteCoordinate,
-            float{HomogeneousCoordinate::kInfiniteCoordinate}));
-        point.set_y(base::ClampToRange(
-            point.y(), -HomogeneousCoordinate::kInfiniteCoordinate,
-            float{HomogeneousCoordinate::kInfiniteCoordinate}));
-        point.set_z(base::ClampToRange(
-            point.z(), -HomogeneousCoordinate::kInfiniteCoordinate,
-            float{HomogeneousCoordinate::kInfiniteCoordinate}));
+        point.set_x(
+            base::clamp(point.x(), -HomogeneousCoordinate::kInfiniteCoordinate,
+                        float{HomogeneousCoordinate::kInfiniteCoordinate}));
+        point.set_y(
+            base::clamp(point.y(), -HomogeneousCoordinate::kInfiniteCoordinate,
+                        float{HomogeneousCoordinate::kInfiniteCoordinate}));
+        point.set_z(
+            base::clamp(point.z(), -HomogeneousCoordinate::kInfiniteCoordinate,
+                        float{HomogeneousCoordinate::kInfiniteCoordinate}));
       }
     }
   }
@@ -805,7 +809,7 @@ float MathUtil::SmallestAngleBetweenVectors(const gfx::Vector2dF& v1,
                                             const gfx::Vector2dF& v2) {
   double dot_product = gfx::DotProduct(v1, v2) / v1.Length() / v2.Length();
   // Clamp to compensate for rounding errors.
-  dot_product = base::ClampToRange(dot_product, -1.0, 1.0);
+  dot_product = base::clamp(dot_product, -1.0, 1.0);
   return static_cast<float>(gfx::RadToDeg(std::acos(dot_product)));
 }
 

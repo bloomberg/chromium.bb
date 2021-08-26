@@ -15,6 +15,7 @@
 #include "components/sync/base/sync_base_switches.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine/commit_queue.h"
+#include "components/sync/engine/data_type_activation_response.h"
 #include "components/sync/model/type_entities_count.h"
 #include "components/sync/nigori/nigori_sync_bridge.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -60,7 +61,6 @@ syncer::UpdateResponseData CreateDummyNigoriUpdateResponseData(
     const std::string keystore_decryptor_token_key_name,
     int response_version) {
   syncer::EntityData entity_data;
-  entity_data.is_folder = true;
   entity_data.id = kNigoriServerId;
   sync_pb::NigoriSpecifics* nigori_specifics =
       entity_data.specifics.mutable_nigori();
@@ -205,7 +205,6 @@ TEST_F(NigoriModelTypeProcessorTest, ShouldIncrementSequenceNumberWhenPut) {
   auto entity_data = std::make_unique<syncer::EntityData>();
   entity_data->specifics.mutable_nigori();
   entity_data->name = kNigoriNonUniqueName;
-  entity_data->is_folder = true;
 
   processor()->Put(std::move(entity_data));
 
@@ -232,7 +231,6 @@ TEST_F(NigoriModelTypeProcessorTest, ShouldGetLocalChangesWhenPut) {
   auto entity_data = std::make_unique<syncer::EntityData>();
   entity_data->specifics.mutable_nigori();
   entity_data->name = kNigoriNonUniqueName;
-  entity_data->is_folder = true;
 
   processor()->Put(std::move(entity_data));
   CommitRequestDataList commit_request;
@@ -250,7 +248,6 @@ TEST_F(NigoriModelTypeProcessorTest,
   auto entity_data = std::make_unique<syncer::EntityData>();
   entity_data->specifics.mutable_nigori();
   entity_data->name = kNigoriNonUniqueName;
-  entity_data->is_folder = true;
 
   processor()->Put(std::move(entity_data));
   CommitRequestDataList commit_request_list;
@@ -287,7 +284,6 @@ TEST_F(NigoriModelTypeProcessorTest,
   auto entity_data = std::make_unique<syncer::EntityData>();
   entity_data->specifics.mutable_nigori();
   entity_data->name = kNigoriNonUniqueName;
-  entity_data->is_folder = true;
 
   processor()->Put(std::move(entity_data));
   CommitRequestDataList commit_request_list;
@@ -309,7 +305,6 @@ TEST_F(NigoriModelTypeProcessorTest,
     auto entity_data = std::make_unique<syncer::EntityData>();
     entity_data->specifics.mutable_nigori();
     entity_data->name = kNigoriNonUniqueName;
-    entity_data->is_folder = true;
     return entity_data;
   });
 
@@ -330,7 +325,6 @@ TEST_F(NigoriModelTypeProcessorTest,
       entity_data->specifics.mutable_nigori();
   nigori_specifics->set_encrypt_bookmarks(true);
   entity_data->name = kNigoriNonUniqueName;
-  entity_data->is_folder = true;
 
   processor()->Put(std::move(entity_data));
   CommitRequestDataList commit_request_list;
@@ -350,7 +344,6 @@ TEST_F(NigoriModelTypeProcessorTest,
   entity_data = std::make_unique<syncer::EntityData>();
   nigori_specifics = entity_data->specifics.mutable_nigori();
   entity_data->name = kNigoriNonUniqueName;
-  entity_data->is_folder = true;
   nigori_specifics->set_encrypt_preferences(true);
   processor()->Put(std::move(entity_data));
 
@@ -376,7 +369,6 @@ TEST_F(NigoriModelTypeProcessorTest,
   auto entity_data = std::make_unique<syncer::EntityData>();
   entity_data->specifics.mutable_nigori();
   entity_data->name = kNigoriNonUniqueName;
-  entity_data->is_folder = true;
 
   processor()->Put(std::move(entity_data));
 
@@ -391,7 +383,6 @@ TEST_F(NigoriModelTypeProcessorTest, ShouldNudgeForCommitUponPutIfReadyToSync) {
   auto entity_data = std::make_unique<syncer::EntityData>();
   entity_data->specifics.mutable_nigori();
   entity_data->name = kNigoriNonUniqueName;
-  entity_data->is_folder = true;
 
   EXPECT_CALL(*mock_commit_queue(), NudgeForCommit());
   processor()->Put(std::move(entity_data));

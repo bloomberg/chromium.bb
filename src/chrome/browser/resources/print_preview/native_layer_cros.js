@@ -6,16 +6,13 @@ import {assert} from 'chrome://resources/js/assert.m.js';
 import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
 
 import {Cdd} from './data/cdd.js';
-import {DestinationPolicies} from './data/destination_policies.js';
 import {ProvisionalDestinationInfo} from './data/local_parsers.js';
 import {PrinterStatus, PrinterStatusReason} from './data/printer_status_cros.js';
 
 /**
  * @typedef {{
  *   printerId: string,
- *   success: boolean,
  *   capabilities: !Cdd,
- *   policies: (DestinationPolicies | undefined),
  * }}
  */
 export let PrinterSetupResponse;

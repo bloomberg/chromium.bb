@@ -369,6 +369,11 @@ void WaylandWindow::SetWindowIcons(const gfx::ImageSkia& window_icon,
 
 void WaylandWindow::SizeConstraintsChanged() {}
 
+bool WaylandWindow::IsTranslucentWindowOpacitySupported() const {
+  // Wayland compositors always support translucency.
+  return true;
+}
+
 bool WaylandWindow::ShouldUpdateWindowShape() const {
   return false;
 }
@@ -788,7 +793,8 @@ bool WaylandWindow::CommitOverlays(
         (*iter)->wayland_surface()->SetViewportDestination(
             (*overlay_iter)->bounds_rect.size());
         connection_->buffer_manager_host()->CommitBufferInternal(
-            (*iter)->wayland_surface(), (*overlay_iter)->buffer_id, gfx::Rect(),
+            (*iter)->wayland_surface(), (*overlay_iter)->buffer_id,
+            (*overlay_iter)->damage_region,
             /*wait_for_frame_callback=*/true,
             /*commit_synced_subsurface=*/true,
             std::move((*overlay_iter)->access_fence_handle));
@@ -823,7 +829,8 @@ bool WaylandWindow::CommitOverlays(
         (*iter)->wayland_surface()->SetViewportDestination(
             (*overlay_iter)->bounds_rect.size());
         connection_->buffer_manager_host()->CommitBufferInternal(
-            (*iter)->wayland_surface(), (*overlay_iter)->buffer_id, gfx::Rect(),
+            (*iter)->wayland_surface(), (*overlay_iter)->buffer_id,
+            (*overlay_iter)->damage_region,
             /*wait_for_frame_callback=*/true,
             /*commit_synced_subsurface=*/true,
             std::move((*overlay_iter)->access_fence_handle));

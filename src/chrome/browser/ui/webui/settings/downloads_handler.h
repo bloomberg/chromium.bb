@@ -57,11 +57,28 @@ class DownloadsHandler : public SettingsPageUIHandler,
   void HandleGetDownloadLocationText(const base::ListValue* args);
 #endif
 
+  bool IsDownloadsConnectionPolicyEnabled() const;
+  void SendDownloadsConnectionPolicyToJavascript();
+
+  // Callback for the "setDownloadsConnectionAccountLink" message. If there is
+  // no account linked and arg is true, this prompts the user to sign in; if
+  // there is an existing linked account and arg is false, this removes the
+  // linked account info and stored authentication tokens; otherwise, this
+  // merely sends the latest stored account info.
+  void HandleSetDownloadsConnectionAccountLink(const base::ListValue* args);
+  // Callback for file system connector code, since prompting the user to sign
+  // in is async.
+  void OnDownloadsConnectionAccountLinkSet(bool success);
+  // Sends the latest stored account info to the settings page.
+  void SendDownloadsConnectionInfoToJavascript();
+
   Profile* profile_;
 
   PrefChangeRegistrar pref_registrar_;
 
   scoped_refptr<ui::SelectFileDialog> select_folder_dialog_;
+
+  base::WeakPtrFactory<DownloadsHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DownloadsHandler);
 };

@@ -30,7 +30,7 @@
  * types, removing or reassigning enums, adding/removing/rearranging
  * fields to structures.
  */
-#define AOM_EXT_PART_ABI_VERSION (1)
+#define AOM_EXT_PART_ABI_VERSION (2)
 
 #ifdef __cplusplus
 extern "C" {
@@ -154,6 +154,46 @@ typedef enum {
   FEATURE_AFTER_PART_AB
 } PART_FEATURE_ID;
 
+/*!\brief Features collected from the tpl process.
+ *
+ * The tpl process collects information that help measure the inter-frame
+ * dependency.
+ * The tpl process is computed in the unit of tpl_bsize_1d (16x16).
+ * Therefore, the max number of units inside a superblock is
+ * 128x128 / (16x16) = 64. Change it if the tpl process changes.
+ */
+typedef struct aom_sb_tpl_features {
+  int tpl_unit_length; /**< The block length of tpl process */
+  int num_units;       /**< The number of units inside the current superblock */
+  int64_t intra_cost[64];  /**< The intra cost of each unit */
+  int64_t inter_cost[64];  /**< The inter cost of each unit */
+  int64_t mc_dep_cost[64]; /**< The motion compensated dependecy cost */
+} aom_sb_tpl_features_t;
+
+/*!\brief Features collected from the simple motion process.
+ *
+ * The simple motion process collects information by applying motion compensated
+ * prediction on each block.
+ * The block size is 16x16, which could be changed. If it is changed, update
+ * comments and the array size here.
+ */
+typedef struct aom_sb_simple_motion_features {
+  int unit_length;   /**< The block length of the simple motion process */
+  int num_units;     /**< The number of units inside the current superblock */
+  int block_sse[64]; /**< Sum of squared error of each unit */
+  int block_var[64]; /**< Variance of each unit */
+} aom_sb_simple_motion_features_t;
+
+/*!\brief Features of each super block.
+ *
+ * Features collected for each super block before partition search.
+ */
+typedef struct aom_sb_features {
+  aom_sb_simple_motion_features_t
+      motion_features;                /**< Features from motion search*/
+  aom_sb_tpl_features_t tpl_features; /**< Features from tpl process */
+} aom_sb_features_t;
+
 /*!\brief Features pass to the external model to make partition decisions.
  *
  * The encoder sends these features to the external model through
@@ -163,6 +203,7 @@ typedef enum {
  * Once new features are finalized, bump the major version of libaom.
  */
 typedef struct aom_partition_features {
+  // Features for the current supervised multi-stage ML model.
   PART_FEATURE_ID id; /**< Feature ID to indicate active features */
   aom_partition_features_before_none_t
       before_part_none; /**< Features collected before NONE partition */
@@ -174,6 +215,9 @@ typedef struct aom_partition_features {
       after_part_rect; /**< Features collected after RECTANGULAR partition */
   aom_partition_features_ab_t
       after_part_ab; /**< Features collected after AB partition */
+
+  // Features for a new ML model.
+  aom_sb_features_t sb_features; /**< Features collected for the super block */
 } aom_partition_features_t;
 
 /*!\brief Partition decisions received from the external model.

@@ -51,7 +51,7 @@ void NGLineTruncator::SetupEllipsis() {
   ellipsis_text_ =
       ellipsis_font_data_ && ellipsis_font_data_->GlyphForCharacter(
                                  kHorizontalEllipsisCharacter)
-          ? String(&kHorizontalEllipsisCharacter, 1)
+          ? String(&kHorizontalEllipsisCharacter, 1u)
           : String(u"...");
   HarfBuzzShaper shaper(ellipsis_text_);
   ellipsis_shape_result_ =
@@ -165,7 +165,8 @@ LayoutUnit NGLineTruncator::TruncateLine(LayoutUnit line_width,
   if (truncated_child) {
     // In order to preserve layout information before truncated, hide the
     // original fragment and insert a truncated one.
-    size_t child_index_to_truncate = ellipsized_child - line_box->begin();
+    unsigned child_index_to_truncate =
+        base::checked_cast<unsigned>(ellipsized_child - line_box->begin());
     line_box->InsertChild(child_index_to_truncate + 1,
                           std::move(*truncated_child));
     box_states->ChildInserted(child_index_to_truncate + 1);

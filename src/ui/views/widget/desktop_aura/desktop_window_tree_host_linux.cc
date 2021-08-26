@@ -19,6 +19,7 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
+#include "ui/platform_window/extensions/desk_extension.h"
 #include "ui/platform_window/extensions/wayland_extension.h"
 #include "ui/platform_window/extensions/x11_extension.h"
 #include "ui/platform_window/platform_window_init_properties.h"
@@ -159,12 +160,22 @@ base::OnceClosure DesktopWindowTreeHostLinux::DisableEventListening() {
 }
 
 ui::WaylandExtension* DesktopWindowTreeHostLinux::GetWaylandExtension() {
-  return ui::GetWaylandExtension(*(platform_window()));
+  return platform_window() ? ui::GetWaylandExtension(*(platform_window()))
+                           : nullptr;
 }
 
 const ui::WaylandExtension* DesktopWindowTreeHostLinux::GetWaylandExtension()
     const {
-  return ui::GetWaylandExtension(*(platform_window()));
+  return platform_window() ? ui::GetWaylandExtension(*(platform_window()))
+                           : nullptr;
+}
+
+ui::DeskExtension* DesktopWindowTreeHostLinux::GetDeskExtension() {
+  return ui::GetDeskExtension(*(platform_window()));
+}
+
+const ui::DeskExtension* DesktopWindowTreeHostLinux::GetDeskExtension() const {
+  return ui::GetDeskExtension(*(platform_window()));
 }
 
 void DesktopWindowTreeHostLinux::Init(const Widget::InitParams& params) {
@@ -290,11 +301,13 @@ void DesktopWindowTreeHostLinux::OnActivationChanged(bool active) {
 }
 
 ui::X11Extension* DesktopWindowTreeHostLinux::GetX11Extension() {
-  return ui::GetX11Extension(*(platform_window()));
+  return platform_window() ? ui::GetX11Extension(*(platform_window()))
+                           : nullptr;
 }
 
 const ui::X11Extension* DesktopWindowTreeHostLinux::GetX11Extension() const {
-  return ui::GetX11Extension(*(platform_window()));
+  return platform_window() ? ui::GetX11Extension(*(platform_window()))
+                           : nullptr;
 }
 
 #if BUILDFLAG(USE_ATK)
@@ -307,7 +320,7 @@ bool DesktopWindowTreeHostLinux::OnAtkKeyEvent(AtkKeyEventStruct* atk_event,
 }
 #endif
 
-bool DesktopWindowTreeHostLinux::IsOverrideRedirect(bool is_tiling_wm) const {
+bool DesktopWindowTreeHostLinux::IsOverrideRedirect() const {
   // BrowserDesktopWindowTreeHostLinux implements this for browser windows.
   return false;
 }

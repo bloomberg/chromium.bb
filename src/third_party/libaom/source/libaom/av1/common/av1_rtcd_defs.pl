@@ -15,6 +15,7 @@ print <<EOF
  */
 
 #include "aom/aom_integer.h"
+#include "aom_dsp/odintrin.h"
 #include "aom_dsp/txfm_common.h"
 #include "av1/common/common.h"
 #include "av1/common/enums.h"
@@ -22,7 +23,6 @@ print <<EOF
 #include "av1/common/filter.h"
 #include "av1/common/convolve.h"
 #include "av1/common/av1_txfm.h"
-#include "av1/common/odintrin.h"
 #include "av1/common/restoration.h"
 
 struct macroblockd;
@@ -214,6 +214,7 @@ specialize qw/av1_inv_txfm2d_add_64x16  neon/;
 
 add_proto qw/void av1_highbd_iwht4x4_1_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int bd";
 add_proto qw/void av1_highbd_iwht4x4_16_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int bd";
+specialize qw/av1_highbd_iwht4x4_16_add  sse4_1/;
 
 add_proto qw/void av1_inv_txfm2d_add_4x8/, "const int32_t *input, uint16_t *output, int stride, TX_TYPE tx_type, int bd";
 add_proto qw/void av1_inv_txfm2d_add_8x4/, "const int32_t *input, uint16_t *output, int stride, TX_TYPE tx_type, int bd";
@@ -302,7 +303,7 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
   # fdct functions
 
   add_proto qw/void av1_fwht4x4/, "const int16_t *input, tran_low_t *output, int stride";
-  specialize qw/av1_fwht4x4 neon/;
+  specialize qw/av1_fwht4x4 sse4_1 neon/;
 
   #fwd txfm
   add_proto qw/void av1_lowbd_fwd_txfm/, "const int16_t *src_diff, tran_low_t *coeff, int diff_stride, TxfmParam *txfm_param";
@@ -383,7 +384,7 @@ add_proto qw/void av1_calc_indices_dim2/, "const int *data, const int *centroids
   }
 
   add_proto qw/void av1_highbd_fwht4x4/, "const int16_t *input, tran_low_t *output, int stride";
-  specialize qw/av1_highbd_fwht4x4 neon/;
+  specialize qw/av1_highbd_fwht4x4 sse4_1 neon/;
 
   # End av1_high encoder functions
 
@@ -430,8 +431,11 @@ add_proto qw/void av1_calc_indices_dim2/, "const int *data, const int *centroids
   specialize qw/av1_get_horver_correlation_full sse4_1 avx2 neon/;
 
   add_proto qw/void av1_nn_predict/, " const float *input_nodes, const NN_CONFIG *const nn_config, int reduce_prec, float *const output";
+
+  add_proto qw/void av1_nn_fast_softmax_16/, " const float *input_nodes, float *output";
   if (aom_config("CONFIG_EXCLUDE_SIMD_MISMATCH") ne "yes") {
     specialize qw/av1_nn_predict sse3 neon/;
+    specialize qw/av1_nn_fast_softmax_16 sse3/;
   }
 
   # CNN functions

@@ -22,6 +22,7 @@ class BrowserContext;
 // uniqueness key to lookup StoragePartition objects in the global map.
 class CONTENT_EXPORT StoragePartitionConfig {
  public:
+  StoragePartitionConfig();  // Needed by the SiteInfo default constructor
   StoragePartitionConfig(const StoragePartitionConfig&);
   StoragePartitionConfig& operator=(const StoragePartitionConfig&);
 
@@ -84,6 +85,10 @@ class CONTENT_EXPORT StoragePartitionConfig {
   bool operator!=(const StoragePartitionConfig& rhs) const;
 
  private:
+  friend StoragePartitionConfig CreateStoragePartitionConfigForTesting(
+      bool,
+      const std::string&,
+      const std::string&);
   FRIEND_TEST_ALL_PREFIXES(StoragePartitionConfigTest, OperatorLess);
 
   StoragePartitionConfig(const std::string& partition_domain,

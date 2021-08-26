@@ -35,24 +35,24 @@ import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Root from '../../core/root/root.js';
 
-import type {ActionDelegate as ActionDelegateInterface} from './ActionRegistration.js'; // eslint-disable-line no-unused-vars
-import type {Context} from './Context.js';         // eslint-disable-line no-unused-vars
-import type {ContextMenu} from './ContextMenu.js'; // eslint-disable-line no-unused-vars
+import type {ActionDelegate as ActionDelegateInterface} from './ActionRegistration.js';
+import type {Context} from './Context.js';
+import type {ContextMenu} from './ContextMenu.js';
 import {Dialog} from './Dialog.js';
 import {DockController, State} from './DockController.js';
 import {GlassPane} from './GlassPane.js';
-import type {Icon} from './Icon.js'; // eslint-disable-line no-unused-vars
+import type {Icon} from './Icon.js';
 import {Infobar, Type as InfobarType} from './Infobar.js';
 import {KeyboardShortcut} from './KeyboardShortcut.js';
-import type {Panel} from './Panel.js'; // eslint-disable-line no-unused-vars
+import type {Panel} from './Panel.js';
 import {SplitWidget} from './SplitWidget.js';
 import {Events as TabbedPaneEvents} from './TabbedPane.js';
-import type {TabbedPane, TabbedPaneTabDelegate} from './TabbedPane.js'; // eslint-disable-line no-unused-vars
+import type {TabbedPane, TabbedPaneTabDelegate} from './TabbedPane.js';
 import {ToolbarButton} from './Toolbar.js';
-import type {TabbedViewLocation, View, ViewLocation, ViewLocationResolver} from './View.js'; // eslint-disable-line no-unused-vars
+import type {TabbedViewLocation, View, ViewLocation, ViewLocationResolver} from './View.js';
 import {ViewManager} from './ViewManager.js';
 import type {Widget} from './Widget.js';
-import {VBox, WidgetFocusRestorer} from './Widget.js';  // eslint-disable-line no-unused-vars
+import {VBox, WidgetFocusRestorer} from './Widget.js';
 
 const UIStrings = {
   /**
@@ -121,7 +121,7 @@ export class InspectorView extends VBox implements ViewLocationResolver {
   constructor() {
     super();
     GlassPane.setContainer(this.element);
-    this.setMinimumSize(240, 72);
+    this.setMinimumSize(250, 72);
 
     // DevTools sidebar is a vertical split of panels tabbed pane and a drawer.
     this._drawerSplitWidget = new SplitWidget(false, true, 'Inspector.drawerSplitViewState', 200, 200);

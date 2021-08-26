@@ -15,8 +15,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/web_applications/components/app_registry_controller.h"
-#include "chrome/browser/web_applications/components/install_finalizer.h"
-#include "chrome/browser/web_applications/components/install_manager.h"
+#include "chrome/browser/web_applications/web_app_install_finalizer.h"
+#include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/chrome_features.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
@@ -41,8 +41,8 @@ namespace web_app {
 std::unique_ptr<WebAppMover> WebAppMover::CreateIfNeeded(
     Profile* profile,
     WebAppRegistrar* registrar,
-    InstallFinalizer* install_finalizer,
-    InstallManager* install_manager,
+    WebAppInstallFinalizer* install_finalizer,
+    WebAppInstallManager* install_manager,
     AppRegistryController* controller) {
   if (g_disabled_for_testing)
     return nullptr;
@@ -122,8 +122,8 @@ void WebAppMover::SetCompletedCallbackForTesting(base::OnceClosure callback) {
 
 WebAppMover::WebAppMover(Profile* profile,
                          WebAppRegistrar* registrar,
-                         InstallFinalizer* install_finalizer,
-                         InstallManager* install_manager,
+                         WebAppInstallFinalizer* install_finalizer,
+                         WebAppInstallManager* install_manager,
                          AppRegistryController* controller,
                          UninstallMode uninstall_mode,
                          std::string uninstall_url_prefix_or_pattern,
@@ -242,17 +242,17 @@ void WebAppMover::OnFirstSyncCycleComplete() {
 void WebAppMover::OnInstallManifestFetched(
     base::ScopedClosureRunner complete_callback_runner,
     std::unique_ptr<content::WebContents> web_contents,
-    InstallManager::InstallableCheckResult result,
+    InstallableCheckResult result,
     absl::optional<AppId> app_id) {
   switch (result) {
-    case InstallManager::InstallableCheckResult::kAlreadyInstalled:
+    case InstallableCheckResult::kAlreadyInstalled:
       LOG(WARNING) << "App already installed.";
       return;
-    case InstallManager::InstallableCheckResult::kNotInstallable:
+    case InstallableCheckResult::kNotInstallable:
       // If the app is not installable, then abort.
       RecordResults(WebAppMoverResult::kNotInstallable);
       return;
-    case InstallManager::InstallableCheckResult::kInstallable:
+    case InstallableCheckResult::kInstallable:
       break;
   }
   DCHECK(!apps_to_uninstall_.empty());
@@ -299,21 +299,21 @@ void WebAppMover::OnAllUninstalled(
   auto* web_contents = web_contents_for_install.get();
   install_manager_->InstallWebAppFromManifest(
       web_contents, true, webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON,
-      base::BindOnce([](content::WebContents* initiator_web_contents,
-                        std::unique_ptr<WebApplicationInfo> web_app_info,
-                        ForInstallableSite for_installable_site,
-                        InstallManager::WebAppInstallationAcceptanceCallback
-                            acceptance_callback) {
-        // Note: |open_as_window| is set to false here (which it should be by
-        // default), because if that is true the WebAppInstallTask will try to
-        // reparent the the web contents into an app browser. This is
-        // impossible, as this web contents is internal & not visible to the
-        // user (and we will segfault). Instead, set the user display mode after
-        // installation is complete.
-        DCHECK(web_app_info);
-        web_app_info->open_as_window = false;
-        std::move(acceptance_callback).Run(true, std::move(web_app_info));
-      }),
+      base::BindOnce(
+          [](content::WebContents* initiator_web_contents,
+             std::unique_ptr<WebApplicationInfo> web_app_info,
+             ForInstallableSite for_installable_site,
+             WebAppInstallationAcceptanceCallback acceptance_callback) {
+            // Note: |open_as_window| is set to false here (which it should be
+            // by default), because if that is true the WebAppInstallTask will
+            // try to reparent the the web contents into an app browser. This is
+            // impossible, as this web contents is internal & not visible to the
+            // user (and we will segfault). Instead, set the user display mode
+            // after installation is complete.
+            DCHECK(web_app_info);
+            web_app_info->open_as_window = false;
+            std::move(acceptance_callback).Run(true, std::move(web_app_info));
+          }),
       base::BindOnce(&WebAppMover::OnInstallCompleted,
                      weak_ptr_factory_.GetWeakPtr(),
                      std::move(complete_callback_runner),

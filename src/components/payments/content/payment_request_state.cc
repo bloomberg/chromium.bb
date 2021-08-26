@@ -67,8 +67,8 @@ PaymentRequestState::PaymentRequestState(
     base::WeakPtr<Delegate> delegate,
     const std::string& app_locale,
     autofill::PersonalDataManager* personal_data_manager,
-    ContentPaymentRequestDelegate* payment_request_delegate,
-    JourneyLogger* journey_logger)
+    base::WeakPtr<ContentPaymentRequestDelegate> payment_request_delegate,
+    base::WeakPtr<JourneyLogger> journey_logger)
     : frame_routing_id_(content::GlobalRenderFrameHostId(
           initiator_render_frame_host->GetProcess()->GetID(),
           initiator_render_frame_host->GetRoutingID())),
@@ -78,8 +78,8 @@ PaymentRequestState::PaymentRequestState(
       app_locale_(app_locale),
       spec_(spec),
       delegate_(delegate),
-      personal_data_manager_(personal_data_manager),
       journey_logger_(journey_logger),
+      personal_data_manager_(personal_data_manager),
       are_requested_methods_supported_(
           !spec_->supported_card_networks().empty()),
       payment_request_delegate_(payment_request_delegate),
@@ -102,8 +102,8 @@ content::WebContents* PaymentRequestState::GetWebContents() {
                                 : nullptr;
 }
 
-ContentPaymentRequestDelegate* PaymentRequestState::GetPaymentRequestDelegate()
-    const {
+base::WeakPtr<ContentPaymentRequestDelegate>
+PaymentRequestState::GetPaymentRequestDelegate() const {
   return payment_request_delegate_;
 }
 
@@ -177,16 +177,18 @@ bool PaymentRequestState::IsOffTheRecord() const {
 }
 
 void PaymentRequestState::OnPaymentAppCreated(std::unique_ptr<PaymentApp> app) {
-  if (app->type() == PaymentApp::Type::AUTOFILL) {
-    journey_logger_->SetAvailableMethod(
-        JourneyLogger::PaymentMethodCategory::kBasicCard);
-  } else if (base::Contains(app->GetAppMethodNames(), methods::kGooglePay) ||
-             base::Contains(app->GetAppMethodNames(), methods::kAndroidPay)) {
-    journey_logger_->SetAvailableMethod(
-        JourneyLogger::PaymentMethodCategory::kGoogle);
-  } else {
-    journey_logger_->SetAvailableMethod(
-        JourneyLogger::PaymentMethodCategory::kOther);
+  if (journey_logger_) {
+    if (app->type() == PaymentApp::Type::AUTOFILL) {
+      journey_logger_->SetAvailableMethod(
+          JourneyLogger::PaymentMethodCategory::kBasicCard);
+    } else if (base::Contains(app->GetAppMethodNames(), methods::kGooglePay) ||
+               base::Contains(app->GetAppMethodNames(), methods::kAndroidPay)) {
+      journey_logger_->SetAvailableMethod(
+          JourneyLogger::PaymentMethodCategory::kGoogle);
+    } else {
+      journey_logger_->SetAvailableMethod(
+          JourneyLogger::PaymentMethodCategory::kOther);
+    }
   }
   available_apps_.emplace_back(std::move(app));
 }
@@ -376,7 +378,9 @@ void PaymentRequestState::CheckRequestedMethodsSupported(
 }
 
 std::string PaymentRequestState::GetAuthenticatedEmail() const {
-  return payment_request_delegate_->GetAuthenticatedEmail();
+  return payment_request_delegate_
+             ? payment_request_delegate_->GetAuthenticatedEmail()
+             : std::string();
 }
 
 void PaymentRequestState::AddObserver(Observer* observer) {
@@ -450,8 +454,10 @@ void PaymentRequestState::AddAutofillPaymentApp(
     return;
 
   available_apps_.push_back(std::move(app));
-  journey_logger_->SetAvailableMethod(
-      JourneyLogger::PaymentMethodCategory::kBasicCard);
+  if (journey_logger_) {
+    journey_logger_->SetAvailableMethod(
+        JourneyLogger::PaymentMethodCategory::kBasicCard);
+  }
 
   if (selected) {
     SetSelectedApp(available_apps_.back()->AsWeakPtr());
@@ -517,11 +523,13 @@ void PaymentRequestState::SetSelectedShippingProfile(
   // merchant.
   is_waiting_for_merchant_validation_ = true;
 
-  // Start the normalization of the shipping address.
-  payment_request_delegate_->GetAddressNormalizer()->NormalizeAddressAsync(
-      *selected_shipping_profile_, /*timeout_seconds=*/2,
-      base::BindOnce(&PaymentRequestState::OnAddressNormalized,
-                     weak_ptr_factory_.GetWeakPtr()));
+  if (payment_request_delegate_) {
+    // Start the normalization of the shipping address.
+    payment_request_delegate_->GetAddressNormalizer()->NormalizeAddressAsync(
+        *selected_shipping_profile_, /*timeout_seconds=*/2,
+        base::BindOnce(&PaymentRequestState::OnAddressNormalized,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 void PaymentRequestState::SetSelectedContactProfile(
@@ -554,7 +562,9 @@ autofill::PersonalDataManager* PaymentRequestState::GetPersonalDataManager() {
 }
 
 autofill::RegionDataLoader* PaymentRequestState::GetRegionDataLoader() {
-  return payment_request_delegate_->GetRegionDataLoader();
+  return payment_request_delegate_
+             ? payment_request_delegate_->GetRegionDataLoader()
+             : nullptr;
 }
 
 bool PaymentRequestState::IsPaymentAppInvoked() const {
@@ -562,7 +572,9 @@ bool PaymentRequestState::IsPaymentAppInvoked() const {
 }
 
 autofill::AddressNormalizer* PaymentRequestState::GetAddressNormalizer() {
-  return payment_request_delegate_->GetAddressNormalizer();
+  return payment_request_delegate_
+             ? payment_request_delegate_->GetAddressNormalizer()
+             : nullptr;
 }
 
 bool PaymentRequestState::IsInitialized() const {
@@ -645,9 +657,11 @@ void PaymentRequestState::PopulateProfileCache() {
             ? false
             : profile_comparator()->IsContactInfoComplete(contact_profiles_[0]);
     is_requested_autofill_data_available_ &= has_complete_contact;
-    journey_logger_->SetNumberOfSuggestionsShown(
-        JourneyLogger::Section::SECTION_CONTACT_INFO, contact_profiles_.size(),
-        has_complete_contact);
+    if (journey_logger_) {
+      journey_logger_->SetNumberOfSuggestionsShown(
+          JourneyLogger::Section::SECTION_CONTACT_INFO,
+          contact_profiles_.size(), has_complete_contact);
+    }
   }
   if (ShouldShowShippingSection()) {
     bool has_complete_shipping =
@@ -655,9 +669,12 @@ void PaymentRequestState::PopulateProfileCache() {
             ? false
             : profile_comparator()->IsShippingComplete(shipping_profiles_[0]);
     is_requested_autofill_data_available_ &= has_complete_shipping;
-    journey_logger_->SetNumberOfSuggestionsShown(
-        JourneyLogger::Section::SECTION_SHIPPING_ADDRESS,
-        shipping_profiles_.size(), has_complete_shipping);
+
+    if (journey_logger_) {
+      journey_logger_->SetNumberOfSuggestionsShown(
+          JourneyLogger::Section::SECTION_SHIPPING_ADDRESS,
+          shipping_profiles_.size(), has_complete_shipping);
+    }
   }
 }
 
@@ -701,9 +718,11 @@ void PaymentRequestState::SetDefaultProfileSelections() {
 
   SelectDefaultShippingAddressAndNotifyObservers();
 
-  journey_logger_->SetNumberOfSuggestionsShown(
-      JourneyLogger::Section::SECTION_PAYMENT_METHOD, available_apps().size(),
-      selected_app_.get());
+  if (journey_logger_) {
+    journey_logger_->SetNumberOfSuggestionsShown(
+        JourneyLogger::Section::SECTION_PAYMENT_METHOD, available_apps().size(),
+        selected_app_.get());
+  }
 }
 
 void PaymentRequestState::UpdateIsReadyToPayAndNotifyObservers() {
@@ -758,7 +777,9 @@ void PaymentRequestState::OnAddressNormalized(
 }
 
 bool PaymentRequestState::IsInTwa() const {
-  return !payment_request_delegate_->GetTwaPackageName().empty();
+  return payment_request_delegate_
+             ? !payment_request_delegate_->GetTwaPackageName().empty()
+             : false;
 }
 
 bool PaymentRequestState::GetCanMakePaymentValue() const {

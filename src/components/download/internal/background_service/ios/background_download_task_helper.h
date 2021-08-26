@@ -25,14 +25,13 @@ struct SchedulingParams;
 // app will not be waked up to resume the download.
 class BackgroundDownloadTaskHelper {
  public:
-  // Callback with whether download is succeeded and the file path of the
-  // succeeded download.
+  // Callback with whether download is succeeded and the file path and the file
+  // size of the succeeded download.
   using CompletionCallback =
-      base::OnceCallback<void(bool, const base::FilePath&)>;
+      base::OnceCallback<void(bool, const base::FilePath&, int64_t)>;
   // Callback with number of bytes downloaded.
   using UpdateCallback = base::RepeatingCallback<void(int64_t)>;
-  static std::unique_ptr<BackgroundDownloadTaskHelper> Create(
-      const base::FilePath& download_dir);
+  static std::unique_ptr<BackgroundDownloadTaskHelper> Create();
 
   BackgroundDownloadTaskHelper() = default;
   virtual ~BackgroundDownloadTaskHelper() = default;
@@ -42,6 +41,7 @@ class BackgroundDownloadTaskHelper {
 
   // Starts a download.
   virtual void StartDownload(const std::string& guid,
+                             const base::FilePath& target_path,
                              const RequestParams& request_params,
                              const SchedulingParams& scheduling_params,
                              CompletionCallback completion_callback,

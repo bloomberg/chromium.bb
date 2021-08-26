@@ -2175,10 +2175,10 @@ angle::Result ContextVk::submitFrame(const vk::Semaphore *signalSemaphore)
     }
 
     getShareGroupVk()->acquireResourceUseList(std::move(mResourceUseList));
-    ANGLE_TRY(mRenderer->submitFrame(this, mContextPriority, std::move(mWaitSemaphores),
-                                     std::move(mWaitSemaphoreStageMasks), signalSemaphore,
-                                     getShareGroupVk()->releaseResourceUseLists(),
-                                     std::move(mCurrentGarbage), &mCommandPool));
+    ANGLE_TRY(mRenderer->submitFrame(
+        this, hasProtectedContent(), mContextPriority, std::move(mWaitSemaphores),
+        std::move(mWaitSemaphoreStageMasks), signalSemaphore,
+        getShareGroupVk()->releaseResourceUseLists(), std::move(mCurrentGarbage), &mCommandPool));
 
     onRenderPassFinished();
     mComputeDirtyBits |= mNewComputeCommandBufferDirtyBits;
@@ -2302,7 +2302,7 @@ angle::Result ContextVk::synchronizeCpuGpuTime()
 
         vk::ResourceUseList scratchResourceUseList;
 
-        ANGLE_TRY(mRenderer->getCommandBufferOneOff(this, &commandBuffer));
+        ANGLE_TRY(mRenderer->getCommandBufferOneOff(this, hasProtectedContent(), &commandBuffer));
 
         commandBuffer.setEvent(gpuReady.get().getHandle(), VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT);
         commandBuffer.waitEvents(1, cpuReady.get().ptr(), VK_PIPELINE_STAGE_HOST_BIT,
@@ -2318,9 +2318,9 @@ angle::Result ContextVk::synchronizeCpuGpuTime()
         Serial throwAwaySerial;
         // vkEvent's are externally synchronized, therefore need work to be submitted before calling
         // vkGetEventStatus
-        ANGLE_TRY(mRenderer->queueSubmitOneOff(this, std::move(commandBuffer), mContextPriority,
-                                               nullptr, vk::SubmitPolicy::EnsureSubmitted,
-                                               &throwAwaySerial));
+        ANGLE_TRY(mRenderer->queueSubmitOneOff(
+            this, std::move(commandBuffer), hasProtectedContent(), mContextPriority, nullptr,
+            vk::SubmitPolicy::EnsureSubmitted, &throwAwaySerial));
         scratchResourceUseList.releaseResourceUsesAndUpdateSerials(throwAwaySerial);
 
         // Wait for GPU to be ready.  This is a short busy wait.
@@ -4261,6 +4261,11 @@ angle::Result ContextVk::onFramebufferChange(FramebufferVk *framebufferVk)
         return angle::Result::Continue;
     }
 
+    // Always consider the render pass finished.  FramebufferVk::syncState (caller of this function)
+    // normally closes the render pass, except for blit to allow an optimization.  The following
+    // code nevertheless must treat the render pass closed.
+    onRenderPassFinished();
+
     // Ensure that the pipeline description is updated.
     if (mGraphicsPipelineDesc->getRasterizationSamples() !=
         static_cast<uint32_t>(framebufferVk->getSamples()))
@@ -5005,9 +5010,9 @@ angle::Result ContextVk::updateActiveTextures(const gl::Context *context)
     const gl::ActiveTextureMask &activeTextures    = executable->getActiveSamplersMask();
     const gl::ActiveTextureTypeArray &textureTypes = executable->getActiveSamplerTypes();
 
-    bool anyTextureHasImmutableSampler            = false;
-    bool recreatePipelineLayout                   = false;
-    ImmutableSamplerFormatIndexMap formatIndexMap = {};
+    bool recreatePipelineLayout                     = false;
+    FormatIndexMap<uint64_t> externalFormatIndexMap = {};
+    FormatIndexMap<VkFormat> vkFormatIndexMap       = {};
     for (size_t textureUnit : activeTextures)
     {
         gl::Texture *texture        = textures[textureUnit];
@@ -5087,21 +5092,24 @@ angle::Result ContextVk::updateActiveTextures(const gl::Context *context)
 
         if (textureVk->getImage().hasImmutableSampler())
         {
-            anyTextureHasImmutableSampler = true;
-            formatIndexMap[textureVk->getImage().getExternalFormat()] =
-                static_cast<uint32_t>(textureUnit);
+            uint64_t externalFormat = textureVk->getImage().getExternalFormat();
+            VkFormat vkFormat       = textureVk->getImage().getFormat().actualImageVkFormat();
+            if (externalFormat != 0)
+            {
+                externalFormatIndexMap[externalFormat] = static_cast<uint32_t>(textureUnit);
+            }
+            else
+            {
+                ASSERT(vkFormat != 0);
+                vkFormatIndexMap[vkFormat] = static_cast<uint32_t>(textureUnit);
+            }
         }
+
         recreatePipelineLayout =
             textureVk->getAndResetImmutableSamplerDirtyState() || recreatePipelineLayout;
     }
 
-    if (anyTextureHasImmutableSampler != mExecutable->usesImmutableSamplers())
-    {
-        recreatePipelineLayout = true;
-    }
-
-    if (mExecutable->usesImmutableSamplers() &&
-        !mExecutable->isImmutableSamplerFormatCompatible(formatIndexMap))
+    if (!mExecutable->isImmutableSamplerFormatCompatible(externalFormatIndexMap, vkFormatIndexMap))
     {
         recreatePipelineLayout = true;
     }
@@ -5311,7 +5319,7 @@ angle::Result ContextVk::finishImpl()
     ANGLE_TRACE_EVENT0("gpu.angle", "ContextVk::finishImpl");
 
     ANGLE_TRY(flushImpl(nullptr));
-    ANGLE_TRY(mRenderer->finish(this));
+    ANGLE_TRY(mRenderer->finish(this, hasProtectedContent()));
 
     clearAllGarbage();
 
@@ -5411,7 +5419,7 @@ angle::Result ContextVk::getTimestamp(uint64_t *timestampOut)
     vk::DeviceScoped<vk::PrimaryCommandBuffer> commandBatch(device);
     vk::PrimaryCommandBuffer &commandBuffer = commandBatch.get();
 
-    ANGLE_TRY(mRenderer->getCommandBufferOneOff(this, &commandBuffer));
+    ANGLE_TRY(mRenderer->getCommandBufferOneOff(this, hasProtectedContent(), &commandBuffer));
 
     timestampQuery.writeTimestampToPrimary(this, &commandBuffer);
     timestampQuery.retain(&scratchResourceUseList);
@@ -5425,21 +5433,10 @@ angle::Result ContextVk::getTimestamp(uint64_t *timestampOut)
     vk::DeviceScoped<vk::Fence> fence(device);
     ANGLE_VK_TRY(this, fence.get().init(device, fenceInfo));
 
-    // Submit the command buffer
-    VkSubmitInfo submitInfo         = {};
-    submitInfo.sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    submitInfo.waitSemaphoreCount   = 0;
-    submitInfo.pWaitSemaphores      = nullptr;
-    submitInfo.pWaitDstStageMask    = nullptr;
-    submitInfo.commandBufferCount   = 1;
-    submitInfo.pCommandBuffers      = commandBuffer.ptr();
-    submitInfo.signalSemaphoreCount = 0;
-    submitInfo.pSignalSemaphores    = nullptr;
-
     Serial throwAwaySerial;
-    ANGLE_TRY(mRenderer->queueSubmitOneOff(this, std::move(commandBuffer), mContextPriority,
-                                           &fence.get(), vk::SubmitPolicy::EnsureSubmitted,
-                                           &throwAwaySerial));
+    ANGLE_TRY(mRenderer->queueSubmitOneOff(this, std::move(commandBuffer), hasProtectedContent(),
+                                           mContextPriority, &fence.get(),
+                                           vk::SubmitPolicy::EnsureSubmitted, &throwAwaySerial));
 
     // Wait for the submission to finish.  Given no semaphores, there is hope that it would execute
     // in parallel with what's already running on the GPU.
@@ -5685,7 +5682,8 @@ angle::Result ContextVk::flushCommandsAndEndRenderPassImpl()
     ANGLE_TRY(getRenderPassWithOps(mRenderPassCommands->getRenderPassDesc(),
                                    mRenderPassCommands->getAttachmentOps(), &renderPass));
 
-    ANGLE_TRY(mRenderer->flushRenderPassCommands(this, *renderPass, &mRenderPassCommands));
+    ANGLE_TRY(mRenderer->flushRenderPassCommands(this, hasProtectedContent(), *renderPass,
+                                                 &mRenderPassCommands));
 
     if (mGpuEventsEnabled)
     {
@@ -5833,7 +5831,8 @@ angle::Result ContextVk::flushOutsideRenderPassCommands()
         mOutsideRenderPassCommands->addCommandDiagnostics(this);
     }
 
-    ANGLE_TRY(mRenderer->flushOutsideRPCommands(this, &mOutsideRenderPassCommands));
+    ANGLE_TRY(mRenderer->flushOutsideRPCommands(this, hasProtectedContent(),
+                                                &mOutsideRenderPassCommands));
 
     // Make sure appropriate dirty bits are set, in case another thread makes a submission before
     // the next dispatch call.

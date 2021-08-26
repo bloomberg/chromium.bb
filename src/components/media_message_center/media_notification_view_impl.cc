@@ -8,7 +8,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "components/media_message_center/media_notification_background_ash_impl.h"
 #include "components/media_message_center/media_notification_background_impl.h"
-#include "components/media_message_center/media_notification_constants.h"
 #include "components/media_message_center/media_notification_container.h"
 #include "components/media_message_center/media_notification_item.h"
 #include "components/media_message_center/media_notification_util.h"
@@ -305,6 +304,9 @@ MediaNotificationViewImpl::MediaNotificationViewImpl(
   UpdateCornerRadius(message_center::kNotificationCornerRadius,
                      message_center::kNotificationCornerRadius);
   UpdateViewForExpandedState();
+
+  if (header_row_)
+    header_row_->SetExpandButtonEnabled(GetExpandable());
 
   if (item_)
     item_->SetView(this);
@@ -647,6 +649,7 @@ void MediaNotificationViewImpl::CreateHeaderRow(
   }
 
   header_row->SetAppName(default_app_name_);
+  header_row->SetFocusBehavior(FocusBehavior::NEVER);
 
   if (should_show_icon) {
     header_row->ClearAppIcon();

@@ -18,10 +18,17 @@ def RunSteps(api):
   data = api.gerrit.create_gerrit_branch(host, project, branch, commit)
   assert data == 'refs/heads/test'
 
-  data = api.gerrit.get_gerrit_branch(host, project, 'master')
+  data = api.gerrit.get_gerrit_branch(host, project, 'main')
   assert data == '67ebf73496383c6777035e374d2d664009e2aa5c'
 
   api.gerrit.move_changes(host, project, 'master', 'main')
+
+  change = api.gerrit.update_files(host,
+                                   project,
+                                   'main', {'chrome/VERSION': '99.99.99.99'},
+                                   'Dummy CL.',
+                                   submit=True)
+  assert change == 91827, change
 
   # Query for changes in Chromium's CQ.
   api.gerrit.get_changes(
@@ -69,7 +76,9 @@ def GenTests(api):
       api.test('basic') +
       api.step_data('gerrit create_gerrit_branch (v8/v8 test)',
                     api.gerrit.make_gerrit_create_branch_response_data()) +
-      api.step_data('gerrit get_gerrit_branch (v8/v8 master)',
+      api.step_data('gerrit create change at (v8/v8 main)',
+                    api.gerrit.update_files_response_data()) +
+      api.step_data('gerrit get_gerrit_branch (v8/v8 main)',
                     api.gerrit.make_gerrit_get_branch_response_data()) +
       api.step_data('gerrit move changes',
                     api.gerrit.get_move_change_response_data(branch='main')) +

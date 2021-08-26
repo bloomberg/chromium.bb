@@ -9,7 +9,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/browser/ash/login/test/session_manager_state_waiter.h"
-#include "chrome/browser/ash/policy/core/browser_policy_connector_chromeos.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/policy/core/user_policy_test_helper.h"
 #include "chrome/browser/ash/policy/login/login_policy_test_base.h"
 #include "chrome/browser/browser_process.h"
@@ -161,6 +161,10 @@ IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, AllowedInputMethods) {
 class StartupBrowserWindowLaunchSuppressedTest : public LoginPolicyTestBase {
  public:
   StartupBrowserWindowLaunchSuppressedTest() = default;
+  StartupBrowserWindowLaunchSuppressedTest(
+      const StartupBrowserWindowLaunchSuppressedTest&) = delete;
+  StartupBrowserWindowLaunchSuppressedTest& operator=(
+      const StartupBrowserWindowLaunchSuppressedTest&) = delete;
 
   void SetUpPolicy(bool enabled) {
     std::unique_ptr<base::DictionaryValue> policy =
@@ -180,9 +184,6 @@ class StartupBrowserWindowLaunchSuppressedTest : public LoginPolicyTestBase {
 
     ASSERT_EQ(count, chrome::GetBrowserCount(profile));
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(StartupBrowserWindowLaunchSuppressedTest);
 };
 
 // Test that the browser window is not launched when
@@ -204,16 +205,17 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserWindowLaunchSuppressedTest,
 class PrimaryUserPoliciesProxiedTest : public LoginPolicyTestBase {
  public:
   PrimaryUserPoliciesProxiedTest() = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PrimaryUserPoliciesProxiedTest);
+  PrimaryUserPoliciesProxiedTest(const PrimaryUserPoliciesProxiedTest&) =
+      delete;
+  PrimaryUserPoliciesProxiedTest& operator=(
+      const PrimaryUserPoliciesProxiedTest&) = delete;
 };
 
 IN_PROC_BROWSER_TEST_F(PrimaryUserPoliciesProxiedTest,
                        AvailableInLocalStateEarly) {
   PolicyService* const device_wide_policy_service =
       g_browser_process->platform_part()
-          ->browser_policy_connector_chromeos()
+          ->browser_policy_connector_ash()
           ->GetPolicyService();
 
   // Sanity check default state without a policy active.

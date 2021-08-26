@@ -13,6 +13,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/policy/enrollment/auto_enrollment_client.h"
+#include "chrome/browser/ash/policy/enrollment/private_membership/private_membership_rlwe_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
@@ -24,7 +25,6 @@ class PrefService;
 
 namespace private_membership {
 namespace rlwe {
-class PrivateMembershipRlweClient;
 class RlwePlaintextId;
 }  // namespace rlwe
 }  // namespace private_membership
@@ -125,7 +125,8 @@ class AutoEnrollmentClientImpl
         const std::string& device_brand_code,
         int power_initial,
         int power_limit,
-        int power_outdated_server_detect) override;
+        int power_outdated_server_detect,
+        PrivateMembershipRlweClient::Factory* psm_rlwe_client_factory) override;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(FactoryImpl);
@@ -145,11 +146,9 @@ class AutoEnrollmentClientImpl
   // network::NetworkConnectionTracker::NetworkConnectionObserver:
   void OnConnectionChanged(network::mojom::ConnectionType type) override;
 
-  // Sets the PSM RLWE client for testing through |psm_helper_|, if the protocol
+  // Sets the PSM RLWE ID for testing through |psm_helper_|, if the protocol
   // is enabled. Also, the |psm_rlwe_client| has to be non-null.
-  void SetPsmRlweClientForTesting(
-      std::unique_ptr<private_membership::rlwe::PrivateMembershipRlweClient>
-          psm_rlwe_client,
+  void SetPsmRlweIdForTesting(
       const private_membership::rlwe::RlwePlaintextId& psm_rlwe_id);
 
  private:
@@ -177,15 +176,32 @@ class AutoEnrollmentClientImpl
   // local state. Returns true if that decision has been made and is valid.
   bool GetCachedDecision();
 
+  // Returns true if PSM has a cached decision, then store its value locally
+  // (i.e. store it in |has_server_state_|). Otherwise, false.
+  bool RetrievePsmCachedDecision();
+
+  // Returns true if the current client got created for initial enrollment use
+  // case. Otherwise, false.
+  bool IsClientForInitialEnrollment() const;
+
+  // Returns true if the device has a server-backed state and its state hasn't
+  // been retrieved yet. Otherwise, false.
+  bool ShouldSendDeviceStateRequest() const;
+
+  // For detailed design, see go/psm-source-of-truth-initial-enrollment.
   // Kicks protocol processing, restarting the current step if applicable.
   // Returns true if progress has been made, false if the protocol is done.
   bool RetryStep();
 
-  // Retries running PSM protocol, if the protocol
-  // is enabled and it is possible to start. Returns true if the protocol is
-  // enabled or it's in progress, false if the protocol is done. Note that the
-  // PSM protocol is only performed once per OOBE flow.
+  // Retries running PSM protocol, if it is possible to start it.
+  // Returns true if the protocol is in progress, false if the protocol is done
+  // or had an error.
+  // Note that the PSM protocol is only performed once per OOBE flow.
   bool PsmRetryStep();
+
+  // Calls `NextStep` in case of successful execution of PSM protocol.
+  // Otherwise, reports the failure reason of PSM protocol execution.
+  void HandlePsmCompletion(DeviceManagementStatus status);
 
   // Cleans up and invokes |progress_callback_|.
   void ReportProgress(AutoEnrollmentState state);
@@ -234,10 +250,6 @@ class AutoEnrollmentClientImpl
   // Updates the UMA histogram for successful hash dance.
   void RecordHashDanceSuccessTimeHistogram();
 
-  // Records the UMA histogram comparing results of hash dance and PSM. This
-  // function should be called after PSM and hash dance requests finished.
-  void RecordPsmHashDanceComparison();
-
   // Callback to invoke when the protocol generates a relevant event. This can
   // be either successful completion or an error that requires external action.
   ProgressCallback progress_callback_;
@@ -245,9 +257,12 @@ class AutoEnrollmentClientImpl
   // Current state.
   AutoEnrollmentState state_;
 
-  // Whether the hash bucket check succeeded, indicating that the server knows
-  // this device and might have keep state for it.
-  bool has_server_state_;
+  // Indicates whether the device has a server-backed state or not, regardless
+  // of which protocol (i.e. PSM or Hash dance) collected that information.
+  // Note that if it doesn't have an associated value after starting the auto
+  // enrollment client, then the used protocol failed to collect that
+  // information.
+  absl::optional<bool> has_server_state_;
 
   // Whether the download of server-kept device state completed successfully.
   bool device_state_available_;
@@ -310,11 +325,6 @@ class AutoEnrollmentClientImpl
   // |AutoEnrollmentClient| used for FRE and ".InitialEnrollment" for an
   // |AutoEnrollmentclient| used for initial enrollment.
   const std::string uma_suffix_;
-
-  // Whether this instance already recorded the comparison of PSM and hash
-  // dance. This is required because we do not want to record the result again
-  // on a hash dance retry.
-  bool recorded_psm_hash_dance_comparison_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AutoEnrollmentClientImpl);
 };

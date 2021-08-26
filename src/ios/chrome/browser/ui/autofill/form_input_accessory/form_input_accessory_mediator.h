@@ -7,16 +7,14 @@
 
 #import <Foundation/Foundation.h>
 
-#include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/browser/password_store_interface.h"
 #import "ios/chrome/browser/autofill/form_input_navigator.h"
 #import "ios/chrome/browser/autofill/form_suggestion_client.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/web/public/web_state_observer_bridge.h"
 
-@class AppState;
 @class ChromeCoordinator;
 @protocol FormInputAccessoryConsumer;
-@class FormInputAccessoryMediator;
 @protocol FormInputSuggestionsProvider;
 @class ReauthenticationModule;
 @protocol SecurityAlertCommands;
@@ -34,14 +32,8 @@ class WebStateList;
 // Handler in charge of accessory mediator events.
 @protocol FormInputAccessoryMediatorHandler
 
-// The mediator detected that the keyboard was hidden and it is no longer
-// present on the screen.
-- (void)mediatorDidDetectKeyboardHide:(FormInputAccessoryMediator*)mediator;
-
-// The mediator detected that the keyboard was hidden and it is no longer
-// present on the screen.
-- (void)mediatorDidDetectMovingToBackground:
-    (FormInputAccessoryMediator*)mediator;
+// The mediator detected that the keyboard input view should be reset.
+- (void)resetFormInputView;
 
 @end
 
@@ -58,13 +50,16 @@ class WebStateList;
               webStateList:(WebStateList*)webStateList
        personalDataManager:(autofill::PersonalDataManager*)personalDataManager
              passwordStore:
-                 (scoped_refptr<password_manager::PasswordStore>)passwordStore
-                  appState:(AppState*)appState
+                 (scoped_refptr<password_manager::PasswordStoreInterface>)
+                     passwordStore
       securityAlertHandler:(id<SecurityAlertCommands>)securityAlertHandler
     reauthenticationModule:(ReauthenticationModule*)reauthenticationModule;
 
 // Unavailable, use initWithConsumer:webStateList: instead.
 - (instancetype)init NS_UNAVAILABLE;
+
+@property(nonatomic, readonly, getter=isInputAccessoryViewActive)
+    BOOL inputAccessoryViewActive;
 
 // Disables suggestions updates and asks the consumer to remove the current
 // ones.

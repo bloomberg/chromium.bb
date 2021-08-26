@@ -31,8 +31,6 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/feature_list.h"
-#include "base/files/file_enumerator.h"
-#include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -55,7 +53,6 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
-#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/api/chrome_extensions_api_client.h"
 #include "chrome/browser/policy/policy_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
@@ -155,12 +152,9 @@
 #include "chrome/browser/ash/login/test/js_checker.h"
 #include "chrome/browser/ash/system/timezone_resolver_manager.h"
 #include "chrome/browser/chromeos/note_taking_helper.h"
-#include "chrome/browser/ui/ash/chrome_screenshot_grabber.h"
-#include "chrome/browser/ui/ash/chrome_screenshot_grabber_test_observer.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user_manager.h"
-#include "ui/snapshot/screenshot_grabber.h"
 #endif
 
 #if !defined(OS_MAC)
@@ -168,7 +162,6 @@
 #endif
 
 #if !defined(OS_ANDROID)
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
 #endif
@@ -186,19 +179,6 @@ namespace {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 const int kOneHourInMs = 60 * 60 * 1000;
 const int kThreeHoursInMs = 180 * 60 * 1000;
-#endif
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-int CountScreenshots() {
-  DownloadPrefs* download_prefs =
-      DownloadPrefs::FromBrowserContext(ProfileManager::GetActiveUserProfile());
-  base::FileEnumerator enumerator(download_prefs->DownloadPath(), false,
-                                  base::FileEnumerator::FILES, "Screenshot*");
-  int count = 0;
-  while (!enumerator.Next().empty())
-    count++;
-  return count;
-}
 #endif
 
 // Checks if WebGL is enabled in the given WebContents.
@@ -331,19 +311,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_IncognitoEnabled) {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 
-// Flaky on MSan (crbug.com/476964) and regular Chrome OS (crbug.com/645769).
-IN_PROC_BROWSER_TEST_F(PolicyTest, DISABLED_DisableScreenshotsFile) {
-  int screenshot_count = CountScreenshots();
-
-  // Make sure screenshots are counted correctly.
-  TestScreenshotFile(true);
-  ASSERT_EQ(CountScreenshots(), screenshot_count + 1);
-
-  // Check if trying to take a screenshot fails when disabled by policy.
-  TestScreenshotFile(false);
-  ASSERT_EQ(CountScreenshots(), screenshot_count + 1);
-}
-
 // Disabled, see http://crbug.com/554728.
 IN_PROC_BROWSER_TEST_F(PolicyTest,
                        DISABLED_PRE_WaitForInitialUserActivityUnsatisfied) {
@@ -427,8 +394,10 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, WaitForInitialUserActivitySatisfied) {
 
 class NetworkTimePolicyTest : public PolicyTest {
  public:
-  NetworkTimePolicyTest() {}
-  ~NetworkTimePolicyTest() override {}
+  NetworkTimePolicyTest() = default;
+  NetworkTimePolicyTest(const NetworkTimePolicyTest&) = delete;
+  NetworkTimePolicyTest& operator=(const NetworkTimePolicyTest&) = delete;
+  ~NetworkTimePolicyTest() override = default;
 
   void SetUpOnMainThread() override {
     std::map<std::string, std::string> parameters;
@@ -459,8 +428,6 @@ class NetworkTimePolicyTest : public PolicyTest {
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
   uint32_t num_requests_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkTimePolicyTest);
 };
 
 // TODO(https://crbug.com/1012853): This test is using ScopedFeatureList

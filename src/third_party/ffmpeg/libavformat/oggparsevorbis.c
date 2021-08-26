@@ -492,8 +492,14 @@ static int vorbis_packet(AVFormatContext *s, int idx)
             priv->final_pts      = os->lastpts;
             priv->final_duration = 0;
         }
-        if (os->segp == os->nsegs)
+        if (os->segp == os->nsegs) {
+#if 0   // vvvv chromium patch (crbug.com/1234960)
+            int64_t skip = priv->final_pts + priv->final_duration + os->pduration - os->granule;
+            if (skip > 0)
+                os->end_trimming = skip;
+#endif  // ^^^^ chromium patch
             os->pduration = os->granule - priv->final_pts - priv->final_duration;
+        }
         priv->final_duration += os->pduration;
     }
 

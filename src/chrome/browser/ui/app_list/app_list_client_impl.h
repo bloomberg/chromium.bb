@@ -114,6 +114,7 @@ class AppListClientImpl
       const ash::SearchResultIdWithPositionIndices& results,
       int position_index) override;
   ash::AppListNotifier* GetNotifier() override;
+  void LoadIcon(int profile_id, const std::string& app_id) override;
 
   // user_manager::UserManager::UserSessionStateObserver:
   void ActiveUserChanged(user_manager::User* active_user) override;
@@ -127,7 +128,8 @@ class AppListClientImpl
   void PinApp(const std::string& app_id) override;
   void UnpinApp(const std::string& app_id) override;
   Pinnable GetPinnable(const std::string& app_id) override;
-  void CreateNewWindow(bool incognito) override;
+  void CreateNewWindow(bool incognito,
+                       bool should_trigger_session_restore) override;
   void OpenURL(Profile* profile,
                const GURL& url,
                ui::PageTransition transition,

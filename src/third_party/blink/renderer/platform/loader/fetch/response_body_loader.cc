@@ -303,7 +303,7 @@ class ResponseBodyLoader::Buffer final
                  "total_bytes_read", static_cast<int>(total_bytes_read_),
                  "added_bytes", static_cast<int>(available));
     Vector<char> new_chunk;
-    new_chunk.Append(buffer, available);
+    new_chunk.Append(buffer, base::checked_cast<wtf_size_t>(available));
     buffered_data_.emplace_back(std::move(new_chunk));
   }
 
@@ -567,7 +567,7 @@ void ResponseBodyLoader::OnStateChange() {
 
   size_t num_bytes_consumed = 0;
   while (!aborted_ && (!IsSuspended() || IsSuspendedForBackForwardCache())) {
-    uint32_t chunk_size = network::features::GetLoaderChunkSize();
+    const uint32_t chunk_size = network::features::GetLoaderChunkSize();
     if (chunk_size == num_bytes_consumed) {
       // We've already consumed many bytes in this task. Defer the remaining
       // to the next task.

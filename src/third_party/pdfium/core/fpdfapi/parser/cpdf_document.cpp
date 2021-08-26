@@ -143,7 +143,7 @@ bool CPDF_Document::TryInit() {
 
 CPDF_Parser::Error CPDF_Document::LoadDoc(
     const RetainPtr<IFX_SeekableReadStream>& pFileAccess,
-    const char* password) {
+    const ByteString& password) {
   if (!m_pParser)
     SetParser(std::make_unique<CPDF_Parser>(this));
 
@@ -152,7 +152,7 @@ CPDF_Parser::Error CPDF_Document::LoadDoc(
 
 CPDF_Parser::Error CPDF_Document::LoadLinearizedDoc(
     const RetainPtr<CPDF_ReadValidator>& validator,
-    const char* password) {
+    const ByteString& password) {
   if (!m_pParser)
     SetParser(std::make_unique<CPDF_Parser>(this));
 

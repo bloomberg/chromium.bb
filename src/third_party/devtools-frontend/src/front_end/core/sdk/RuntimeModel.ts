@@ -28,45 +28,42 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
 import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
 import type * as Protocol from '../../generated/protocol.js';
 
 import type {FunctionDetails} from './DebuggerModel.js';
-import {DebuggerModel} from './DebuggerModel.js';  // eslint-disable-line no-unused-vars
+import {DebuggerModel} from './DebuggerModel.js';
 import {HeapProfilerModel} from './HeapProfilerModel.js';
 import type {ScopeRef} from './RemoteObject.js';
-import {RemoteFunction, RemoteObject, RemoteObjectImpl,                     // eslint-disable-line no-unused-vars
-        RemoteObjectProperty, ScopeRemoteObject} from './RemoteObject.js';  // eslint-disable-line no-unused-vars
+import {RemoteFunction, RemoteObject, RemoteObjectImpl, RemoteObjectProperty, ScopeRemoteObject} from './RemoteObject.js';
 import type {Target} from './Target.js';
 import {Capability, Type} from './Target.js';
-import {SDKModel} from './SDKModel.js';  // eslint-disable-line no-unused-vars
+import {SDKModel} from './SDKModel.js';
 
-export class RuntimeModel extends SDKModel {
-  _agent: ProtocolProxyApi.RuntimeApi;
-  _executionContextById: Map<number, ExecutionContext>;
-  _executionContextComparator: (arg0: ExecutionContext, arg1: ExecutionContext) => number;
-  _hasSideEffectSupport: boolean|null;
+export class RuntimeModel extends SDKModel<EventTypes> {
+  readonly agent: ProtocolProxyApi.RuntimeApi;
+  private readonly executionContextById: Map<number, ExecutionContext>;
+  private executionContextComparatorInternal: (arg0: ExecutionContext, arg1: ExecutionContext) => number;
+  private hasSideEffectSupportInternal: boolean|null;
   constructor(target: Target) {
     super(target);
 
-    this._agent = target.runtimeAgent();
+    this.agent = target.runtimeAgent();
     this.target().registerRuntimeDispatcher(new RuntimeDispatcher(this));
-    this._agent.invoke_enable();
-    this._executionContextById = new Map();
-    this._executionContextComparator = ExecutionContext.comparator;
-    this._hasSideEffectSupport = null;
+    this.agent.invoke_enable();
+    this.executionContextById = new Map();
+    this.executionContextComparatorInternal = ExecutionContext.comparator;
+    this.hasSideEffectSupportInternal = null;
 
     if (Common.Settings.Settings.instance().moduleSetting('customFormatters').get()) {
-      this._agent.invoke_setCustomObjectFormatterEnabled({enabled: true});
+      this.agent.invoke_setCustomObjectFormatterEnabled({enabled: true});
     }
 
     Common.Settings.Settings.instance()
         .moduleSetting('customFormatters')
-        .addChangeListener(this._customFormattersStateChanged.bind(this));
+        .addChangeListener(this.customFormattersStateChanged.bind(this));
   }
 
   static isSideEffectFailure(response: Protocol.Runtime.EvaluateResponse|EvaluationResult): boolean {
@@ -85,17 +82,17 @@ export class RuntimeModel extends SDKModel {
   }
 
   executionContexts(): ExecutionContext[] {
-    return [...this._executionContextById.values()].sort(this.executionContextComparator());
+    return [...this.executionContextById.values()].sort(this.executionContextComparator());
   }
 
   setExecutionContextComparator(comparator: (arg0: ExecutionContext, arg1: ExecutionContext) => number): void {
-    this._executionContextComparator = comparator;
+    this.executionContextComparatorInternal = comparator;
   }
 
   /** comparator
      */
   executionContextComparator(): (arg0: ExecutionContext, arg1: ExecutionContext) => number {
-    return this._executionContextComparator;
+    return this.executionContextComparatorInternal;
   }
 
   defaultExecutionContext(): ExecutionContext|null {
@@ -108,24 +105,24 @@ export class RuntimeModel extends SDKModel {
   }
 
   executionContext(id: number): ExecutionContext|null {
-    return this._executionContextById.get(id) || null;
+    return this.executionContextById.get(id) || null;
   }
 
-  _executionContextCreated(context: Protocol.Runtime.ExecutionContextDescription): void {
+  executionContextCreated(context: Protocol.Runtime.ExecutionContextDescription): void {
     const data = context.auxData || {isDefault: true};
     const executionContext = new ExecutionContext(
         this, context.id, context.uniqueId, context.name, context.origin, data['isDefault'], data['frameId']);
-    this._executionContextById.set(executionContext.id, executionContext);
+    this.executionContextById.set(executionContext.id, executionContext);
     this.dispatchEventToListeners(Events.ExecutionContextCreated, executionContext);
   }
 
-  _executionContextDestroyed(executionContextId: number): void {
-    const executionContext = this._executionContextById.get(executionContextId);
+  executionContextDestroyed(executionContextId: number): void {
+    const executionContext = this.executionContextById.get(executionContextId);
     if (!executionContext) {
       return;
     }
     this.debuggerModel().executionContextDestroyed(executionContext);
-    this._executionContextById.delete(executionContextId);
+    this.executionContextById.delete(executionContextId);
     this.dispatchEventToListeners(Events.ExecutionContextDestroyed, executionContext);
   }
 
@@ -133,10 +130,10 @@ export class RuntimeModel extends SDKModel {
     this.dispatchEventToListeners(Events.ExecutionContextOrderChanged, this);
   }
 
-  _executionContextsCleared(): void {
+  executionContextsCleared(): void {
     this.debuggerModel().globalObjectCleared();
     const contexts = this.executionContexts();
-    this._executionContextById.clear();
+    this.executionContextById.clear();
     for (let i = 0; i < contexts.length; ++i) {
       this.dispatchEventToListeners(Events.ExecutionContextDestroyed, contexts[i]);
     }
@@ -173,11 +170,11 @@ export class RuntimeModel extends SDKModel {
   }
 
   discardConsoleEntries(): void {
-    this._agent.invoke_discardConsoleEntries();
+    this.agent.invoke_discardConsoleEntries();
   }
 
   releaseObjectGroup(objectGroup: string): void {
-    this._agent.invoke_releaseObjectGroup({objectGroup});
+    this.agent.invoke_releaseObjectGroup({objectGroup});
   }
 
   releaseEvaluationResult(result: EvaluationResult): void {
@@ -192,17 +189,17 @@ export class RuntimeModel extends SDKModel {
   }
 
   runIfWaitingForDebugger(): void {
-    this._agent.invoke_runIfWaitingForDebugger();
+    this.agent.invoke_runIfWaitingForDebugger();
   }
 
-  _customFormattersStateChanged(event: Common.EventTarget.EventTargetEvent): void {
+  private customFormattersStateChanged(event: Common.EventTarget.EventTargetEvent): void {
     const enabled = (event.data as boolean);
-    this._agent.invoke_setCustomObjectFormatterEnabled({enabled});
+    this.agent.invoke_setCustomObjectFormatterEnabled({enabled});
   }
 
   async compileScript(expression: string, sourceURL: string, persistScript: boolean, executionContextId: number):
       Promise<CompileScriptResult|null> {
-    const response = await this._agent.invoke_compileScript({
+    const response = await this.agent.invoke_compileScript({
       expression: expression,
       sourceURL: sourceURL,
       persistScript: persistScript,
@@ -220,7 +217,7 @@ export class RuntimeModel extends SDKModel {
       scriptId: string, executionContextId: number, objectGroup?: string, silent?: boolean,
       includeCommandLineAPI?: boolean, returnByValue?: boolean, generatePreview?: boolean,
       awaitPromise?: boolean): Promise<EvaluationResult> {
-    const response = await this._agent.invoke_runScript({
+    const response = await this.agent.invoke_runScript({
       scriptId,
       executionContextId,
       objectGroup,
@@ -243,7 +240,7 @@ export class RuntimeModel extends SDKModel {
     if (!prototype.objectId) {
       return {error: 'Prototype should be an Object.'};
     }
-    const response = await this._agent.invoke_queryObjects(
+    const response = await this.agent.invoke_queryObjects(
         {prototypeObjectId: (prototype.objectId as string), objectGroup: 'console'});
     const error = response.getError();
     if (error) {
@@ -254,7 +251,7 @@ export class RuntimeModel extends SDKModel {
   }
 
   async isolateId(): Promise<string> {
-    const response = await this._agent.invoke_getIsolateId();
+    const response = await this.agent.invoke_getIsolateId();
     if (response.getError() || !response.id) {
       return this.target().id();
     }
@@ -265,22 +262,22 @@ export class RuntimeModel extends SDKModel {
     usedSize: number,
     totalSize: number,
   }|null> {
-    const result = await this._agent.invoke_getHeapUsage();
+    const result = await this.agent.invoke_getHeapUsage();
     return result.getError() ? null : result;
   }
 
   // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  _inspectRequested(payload: Protocol.Runtime.RemoteObject, hints?: any): void {
+  inspectRequested(payload: Protocol.Runtime.RemoteObject, hints?: any, executionContextId?: number): void {
     const object = this.createRemoteObject(payload);
 
     if (hints && 'copyToClipboard' in hints && Boolean(hints.copyToClipboard)) {
-      this._copyRequested(object);
+      this.copyRequested(object);
       return;
     }
 
     if (hints && 'queryObjects' in hints && hints.queryObjects) {
-      this._queryObjectsRequested(object);
+      this.queryObjectsRequested(object, executionContextId);
       return;
     }
 
@@ -305,14 +302,14 @@ export class RuntimeModel extends SDKModel {
   }
 
   async addBinding(event: Protocol.Runtime.AddBindingRequest): Promise<Protocol.ProtocolResponseWithError> {
-    return await this._agent.invoke_addBinding(event);
+    return await this.agent.invoke_addBinding(event);
   }
 
-  _bindingCalled(event: Protocol.Runtime.BindingCalledEvent): void {
+  bindingCalled(event: Protocol.Runtime.BindingCalledEvent): void {
     this.dispatchEventToListeners(Events.BindingCalled, event);
   }
 
-  _copyRequested(object: RemoteObject): void {
+  private copyRequested(object: RemoteObject): void {
     if (!object.objectId) {
       Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(
           object.unserializableValue() || (object.value as string));
@@ -353,14 +350,14 @@ export class RuntimeModel extends SDKModel {
     }
   }
 
-  async _queryObjectsRequested(object: RemoteObject): Promise<void> {
+  private async queryObjectsRequested(object: RemoteObject, executionContextId?: number): Promise<void> {
     const result = await this.queryObjects(object);
     object.release();
     if ('error' in result) {
       Common.Console.Console.instance().error(result.error);
       return;
     }
-    this.dispatchEventToListeners(Events.QueryObjectRequested, {objects: result.objects});
+    this.dispatchEventToListeners(Events.QueryObjectRequested, {objects: result.objects, executionContextId});
   }
 
   static simpleTextFromException(exceptionDetails: Protocol.Runtime.ExceptionDetails): string {
@@ -380,13 +377,13 @@ export class RuntimeModel extends SDKModel {
     this.dispatchEventToListeners(Events.ExceptionThrown, exceptionWithTimestamp);
   }
 
-  _exceptionRevoked(exceptionId: number): void {
+  exceptionRevoked(exceptionId: number): void {
     this.dispatchEventToListeners(Events.ExceptionRevoked, exceptionId);
   }
 
-  _consoleAPICalled(
-      type: string, args: Protocol.Runtime.RemoteObject[], executionContextId: number, timestamp: number,
-      stackTrace?: Protocol.Runtime.StackTrace, context?: string): void {
+  consoleAPICalled(
+      type: Protocol.Runtime.ConsoleAPICalledEventType, args: Protocol.Runtime.RemoteObject[],
+      executionContextId: number, timestamp: number, stackTrace?: Protocol.Runtime.StackTrace, context?: string): void {
     const consoleAPICall = {
       type: type,
       args: args,
@@ -415,7 +412,7 @@ export class RuntimeModel extends SDKModel {
   }
 
   hasSideEffectSupport(): boolean|null {
-    return this._hasSideEffectSupport;
+    return this.hasSideEffectSupportInternal;
   }
 
   async checkSideEffectSupport(): Promise<boolean> {
@@ -425,21 +422,21 @@ export class RuntimeModel extends SDKModel {
       return false;
     }
     // Check for a positive throwOnSideEffect response without triggering side effects.
-    const response = await this._agent.invoke_evaluate({
+    const response = await this.agent.invoke_evaluate({
       expression: _sideEffectTestExpression,
       contextId: testContext.id,
       throwOnSideEffect: true,
     });
 
-    this._hasSideEffectSupport = response.getError() ? false : RuntimeModel.isSideEffectFailure(response);
+    this.hasSideEffectSupportInternal = response.getError() ? false : RuntimeModel.isSideEffectFailure(response);
 
-    return this._hasSideEffectSupport;
+    return this.hasSideEffectSupportInternal;
   }
 
   // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   terminateExecution(): Promise<any> {
-    return this._agent.invoke_terminateExecution();
+    return this.agent.invoke_terminateExecution();
   }
 }
 
@@ -468,44 +465,74 @@ export enum Events {
   QueryObjectRequested = 'QueryObjectRequested',
 }
 
+export interface ConsoleAPICall {
+  type: Protocol.Runtime.ConsoleAPICalledEventType;
+  args: Protocol.Runtime.RemoteObject[];
+  executionContextId: number;
+  timestamp: number;
+  stackTrace?: Protocol.Runtime.StackTrace;
+  context?: string;
+}
+
+export interface ExceptionWithTimestamp {
+  timestamp: number;
+  details: Protocol.Runtime.ExceptionDetails;
+}
+
+export interface QueryObjectRequestedEvent {
+  objects: RemoteObject;
+  executionContextId?: number;
+}
+
+export type EventTypes = {
+  [Events.BindingCalled]: Protocol.Runtime.BindingCalledEvent,
+  [Events.ExecutionContextCreated]: Protocol.Runtime.ExecutionContextDescription,
+  [Events.ExecutionContextDestroyed]: ExecutionContext,
+  [Events.ExecutionContextChanged]: ExecutionContext,
+  [Events.ExecutionContextOrderChanged]: RuntimeModel,
+  [Events.ExceptionThrown]: ExceptionWithTimestamp,
+  [Events.ExceptionRevoked]: number,
+  [Events.ConsoleAPICalled]: ConsoleAPICall,
+  [Events.QueryObjectRequested]: QueryObjectRequestedEvent,
+};
 
 class RuntimeDispatcher implements ProtocolProxyApi.RuntimeDispatcher {
-  _runtimeModel: RuntimeModel;
+  private readonly runtimeModel: RuntimeModel;
   constructor(runtimeModel: RuntimeModel) {
-    this._runtimeModel = runtimeModel;
+    this.runtimeModel = runtimeModel;
   }
 
   executionContextCreated({context}: Protocol.Runtime.ExecutionContextCreatedEvent): void {
-    this._runtimeModel._executionContextCreated(context);
+    this.runtimeModel.executionContextCreated(context);
   }
 
   executionContextDestroyed({executionContextId}: Protocol.Runtime.ExecutionContextDestroyedEvent): void {
-    this._runtimeModel._executionContextDestroyed(executionContextId);
+    this.runtimeModel.executionContextDestroyed(executionContextId);
   }
 
   executionContextsCleared(): void {
-    this._runtimeModel._executionContextsCleared();
+    this.runtimeModel.executionContextsCleared();
   }
 
   exceptionThrown({timestamp, exceptionDetails}: Protocol.Runtime.ExceptionThrownEvent): void {
-    this._runtimeModel.exceptionThrown(timestamp, exceptionDetails);
+    this.runtimeModel.exceptionThrown(timestamp, exceptionDetails);
   }
 
   exceptionRevoked({exceptionId}: Protocol.Runtime.ExceptionRevokedEvent): void {
-    this._runtimeModel._exceptionRevoked(exceptionId);
+    this.runtimeModel.exceptionRevoked(exceptionId);
   }
 
   consoleAPICalled({type, args, executionContextId, timestamp, stackTrace, context}:
                        Protocol.Runtime.ConsoleAPICalledEvent): void {
-    this._runtimeModel._consoleAPICalled(type, args, executionContextId, timestamp, stackTrace, context);
+    this.runtimeModel.consoleAPICalled(type, args, executionContextId, timestamp, stackTrace, context);
   }
 
-  inspectRequested({object, hints}: Protocol.Runtime.InspectRequestedEvent): void {
-    this._runtimeModel._inspectRequested(object, hints);
+  inspectRequested({object, hints, executionContextId}: Protocol.Runtime.InspectRequestedEvent): void {
+    this.runtimeModel.inspectRequested(object, hints, executionContextId);
   }
 
   bindingCalled(event: Protocol.Runtime.BindingCalledEvent): void {
-    this._runtimeModel._bindingCalled(event);
+    this.runtimeModel.bindingCalled(event);
   }
 }
 
@@ -513,7 +540,7 @@ export class ExecutionContext {
   id: number;
   uniqueId: string;
   name: string;
-  _label: string|null;
+  private labelInternal: string|null;
   origin: string;
   isDefault: boolean;
   runtimeModel: RuntimeModel;
@@ -525,13 +552,13 @@ export class ExecutionContext {
     this.id = id;
     this.uniqueId = uniqueId;
     this.name = name;
-    this._label = null;
+    this.labelInternal = null;
     this.origin = origin;
     this.isDefault = isDefault;
     this.runtimeModel = runtimeModel;
     this.debuggerModel = runtimeModel.debuggerModel();
     this.frameId = frameId;
-    this._setLabel('');
+    this.setLabelInternal('');
   }
 
   target(): Target {
@@ -610,14 +637,14 @@ export class ExecutionContext {
     // Assume backends either support both throwOnSideEffect and timeout options or neither.
     const needsTerminationOptions = Boolean(options.throwOnSideEffect) || options.timeout !== undefined;
     if (!needsTerminationOptions || this.runtimeModel.hasSideEffectSupport()) {
-      return this._evaluateGlobal(options, userGesture, awaitPromise);
+      return this.evaluateGlobal(options, userGesture, awaitPromise);
     }
 
     /** @type {!EvaluationResult} */
     if (this.runtimeModel.hasSideEffectSupport() !== false) {
       await this.runtimeModel.checkSideEffectSupport();
       if (this.runtimeModel.hasSideEffectSupport()) {
-        return this._evaluateGlobal(options, userGesture, awaitPromise);
+        return this.evaluateGlobal(options, userGesture, awaitPromise);
       }
     }
     return {error: 'Side-effect checks not supported by backend.'};
@@ -632,17 +659,17 @@ export class ExecutionContext {
       returnByValue: false,
       generatePreview: generatePreview,
     };
-    return this._evaluateGlobal((evaluationOptions as EvaluationOptions), false, false);
+    return this.evaluateGlobal((evaluationOptions as EvaluationOptions), false, false);
   }
 
-  async _evaluateGlobal(options: EvaluationOptions, userGesture: boolean, awaitPromise: boolean):
+  private async evaluateGlobal(options: EvaluationOptions, userGesture: boolean, awaitPromise: boolean):
       Promise<EvaluationResult> {
     if (!options.expression) {
       // There is no expression, so the completion should happen against global properties.
       options.expression = 'this';
     }
 
-    const response = await this.runtimeModel._agent.invoke_evaluate({
+    const response = await this.runtimeModel.agent.invoke_evaluate({
       expression: options.expression,
       objectGroup: options.objectGroup,
       includeCommandLineAPI: options.includeCommandLineAPI,
@@ -670,30 +697,30 @@ export class ExecutionContext {
   }
 
   async globalLexicalScopeNames(): Promise<string[]|null> {
-    const response = await this.runtimeModel._agent.invoke_globalLexicalScopeNames({executionContextId: this.id});
+    const response = await this.runtimeModel.agent.invoke_globalLexicalScopeNames({executionContextId: this.id});
     return response.getError() ? [] : response.names;
   }
 
   label(): string|null {
-    return this._label;
+    return this.labelInternal;
   }
 
   setLabel(label: string): void {
-    this._setLabel(label);
+    this.setLabelInternal(label);
     this.runtimeModel.dispatchEventToListeners(Events.ExecutionContextChanged, this);
   }
 
-  _setLabel(label: string): void {
+  private setLabelInternal(label: string): void {
     if (label) {
-      this._label = label;
+      this.labelInternal = label;
       return;
     }
     if (this.name) {
-      this._label = this.name;
+      this.labelInternal = this.name;
       return;
     }
     const parsedUrl = Common.ParsedURL.ParsedURL.fromString(this.origin);
-    this._label = parsedUrl ? parsedUrl.lastPathComponentWithFragment() : '';
+    this.labelInternal = parsedUrl ? parsedUrl.lastPathComponentWithFragment() : '';
   }
 }
 

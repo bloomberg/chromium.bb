@@ -201,9 +201,6 @@ class CONTENT_EXPORT WebContentsDelegate {
   // gestures.
   virtual bool CanOverscrollContent();
 
-  // Invoked prior to showing before unload handler confirmation dialog.
-  virtual void WillRunBeforeUnloadConfirm() {}
-
   // Returns true if javascript dialogs and unload alerts are suppressed.
   // Default is false.
   virtual bool ShouldSuppressDialogs(WebContents* source);
@@ -388,21 +385,23 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual void RendererResponsive(WebContents* source,
                                   RenderWidgetHost* render_widget_host) {}
 
-  // Invoked when a main fram navigation occurs.
-  virtual void DidNavigateMainFramePostCommit(WebContents* source) {}
+  // Invoked when a primary main frame navigation occurs.
+  virtual void DidNavigatePrimaryMainFramePostCommit(WebContents* source) {}
 
   // Returns a pointer to a service to manage JavaScript dialogs. May return
   // nullptr in which case dialogs aren't shown.
   virtual JavaScriptDialogManager* GetJavaScriptDialogManager(
       WebContents* source);
 
+#if defined(OS_ANDROID)
   // Called when color chooser should open. Returns the opened color chooser.
-  // Returns nullptr if we failed to open the color chooser (e.g. when there is
-  // a ColorChooserDialog already open on Windows).
+  // Returns nullptr if we failed to open the color chooser. The color chooser
+  // is only supported/required for Android.
   virtual std::unique_ptr<ColorChooser> OpenColorChooser(
       WebContents* web_contents,
       SkColor color,
       const std::vector<blink::mojom::ColorSuggestionPtr>& suggestions);
+#endif
 
   // Called when an eye dropper should open. Returns the eye dropper window.
   // The eye dropper is responsible for calling listener->ColorSelected() or
@@ -546,6 +545,13 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual std::string GetDefaultMediaDeviceID(
       WebContents* web_contents,
       blink::mojom::MediaStreamType type);
+
+  // Returns the human-readable name for title in Media Controls.
+  // If the returned value is an empty string, it means that there is no
+  // human-readable name.
+  // For example, this returns an extension name for title instead of extension
+  // url.
+  virtual std::string GetTitleForMediaControls(WebContents* web_contents);
 
 #if defined(OS_ANDROID)
   // Returns true if the given media should be blocked to load.

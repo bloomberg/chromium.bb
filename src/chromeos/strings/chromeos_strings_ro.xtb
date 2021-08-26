@@ -14,6 +14,7 @@
 <translation id="1204296502688602597">Latența DNS</translation>
 <translation id="123124571410524056">Posibil portal</translation>
 <translation id="1238612778414822719">Latență a solicitărilor HTTPS</translation>
+<translation id="1264369926465113395">Citește noua revistă digitală pentru Chromebookuri dedicată creatorilor</translation>
 <translation id="1270369111467284986">Posibil portal captiv</translation>
 <translation id="1290331692326790741">Semnal slab</translation>
 <translation id="1314565355471455267">VPN Android</translation>
@@ -34,7 +35,9 @@
 <translation id="1510238584712386396">Lansator</translation>
 <translation id="1600964289716072707">Așază altă pagină pe scaner și selectează Scanează ca să o adaugi.</translation>
 <translation id="1621067168122174824">Rulează testul Încărcare</translation>
+<translation id="1639239467298939599">Se încarcă</translation>
 <translation id="1641857168437328880">Alimentator de documente (o singură față)</translation>
+<translation id="1643449475550628585">Schimbă zilnic imaginea de fundal</translation>
 <translation id="1644574205037202324">Istoric</translation>
 <translation id="1662989795263954667">Oprită – Cerneală epuizată</translation>
 <translation id="1703835215927279855">Letter</translation>
@@ -65,7 +68,6 @@
 <translation id="2224337661447660594">Nu există conexiune la internet</translation>
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="225692081236532131">Stare de activare</translation>
-<translation id="2294675138977897428">Nu s-a detectat nicio conexiune la Ethernet</translation>
 <translation id="2326139988748364651"><ph name="RESOLUTION_VALUE" /> dpi</translation>
 <translation id="2338501278241028356">Pentru a descoperi dispozitivele din apropiere, activează Bluetooth</translation>
 <translation id="2364498172489649528">Reușită</translation>
@@ -75,9 +77,11 @@
 <translation id="2448312741937722512">Tipul</translation>
 <translation id="2461822463642141190">Actual</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
+<translation id="2505327257735685095">Actualizează imaginea de fundal actuală</translation>
 <translation id="2517472476991765520">Scanează</translation>
 <translation id="2570743873672969996">Se rulează testul <ph name="TEST_NAME" />...</translation>
 <translation id="2585245331261708204">Noutăți în SO Chrome</translation>
+<translation id="2619761439309613843">Actualizare zilnică</translation>
 <translation id="2620436844016719705">Sistem</translation>
 <translation id="2740531572673183784">OK</translation>
 <translation id="2751739896257479635">Autentificare EAP din a doua fază</translation>
@@ -87,7 +91,6 @@
 <translation id="2862104018715411648">Așază documentul pe scaner și selectează Scanează pentru a începe</translation>
 <translation id="2872961005593481000">Închide</translation>
 <translation id="2878387241690264070">S-a descărcat cu <ph name="RATE" /> în <ph name="NUM_SECONDS" /> secunde.</translation>
-<translation id="2983662233540284543">Învață de la un creator de jocuri, descarcă aplicații de design pentru jocuri și altele</translation>
 <translation id="3008341117444806826">ACTUALIZEAZĂ</translation>
 <translation id="3009958530611748826">Selectează un dosar în care să salvezi</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" /> mA</translation>
@@ -101,6 +104,7 @@
 <translation id="3188257591659621405">Fișierele mele</translation>
 <translation id="3199982728237701504">Alimentator de documente (față-verso)</translation>
 <translation id="3226405216343213872">Se caută scanere</translation>
+<translation id="3228433892370472777">Conexiune prestabilită</translation>
 <translation id="3246869037381808805">Sarcinile de printare mai vechi de o zi vor fi eliminate</translation>
 <translation id="3268178239013324452">Nereușită – Ușă deschisă</translation>
 <translation id="3283504360622356314">{0,plural, =1{Editează fișierul}few{Editează fișierele}other{Editează fișierele}}</translation>
@@ -117,10 +121,13 @@
 <translation id="3488065109653206955">Activat parțial</translation>
 <translation id="3527036260304016759">Nereușită – Eroare necunoscută</translation>
 <translation id="3532980081107202182">Au mai rămas aproximativ <ph name="MIN_REMAINING" /> minute</translation>
+<translation id="3540383942695635079">Adresa MAC</translation>
 <translation id="357889014807611375">Wi-Fi contorizat</translation>
+<translation id="3582041541988388905">Nu a fost detectată nicio conexiune <ph name="NETWORK_NAME" /></translation>
 <translation id="3595596368722241419">Baterie încărcată</translation>
 <translation id="360565022852130722">Rețeaua Wi-Fi este securizată cu protocolul slab WEP 802.1x</translation>
 <translation id="3689839747745352263">Testul <ph name="TEST_NAME" /></translation>
+<translation id="3708186454126126312">Conectat anterior</translation>
 <translation id="373232531963562220">{PAGE_NUMBER,plural, =0{Scanează din nou pagina}=1{Scanează din nou pagina {PAGE_NUMBER}}few{Scanează din nou pagina {PAGE_NUMBER}}other{Scanează din nou pagina {PAGE_NUMBER}}}</translation>
 <translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★ (<ph name="AGGREGATED_COUNT" /> recenzii)</translation>
 <translation id="3748026146096797577">Neconectat</translation>
@@ -163,6 +170,7 @@
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4483049906298469269">Nu s-a putut da ping către gateway-ul de rețea care nu este prestabilit</translation>
 <translation id="4511264077854731334">Portal</translation>
+<translation id="4536864596629708641">Configurația adresei IP</translation>
 <translation id="4548483925627140043">Nu s-a detectat semnal</translation>
 <translation id="455835558791489930">Baterie de <ph name="CHARGE_VALUE" /> mAh</translation>
 <translation id="4562494484721939086">Fără semnal</translation>
@@ -171,6 +179,7 @@
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> din <ph name="TOTAL_PAGE_NUMBER" />. Apasă pe Enter pentru a anula sarcina de printare.</translation>
 <translation id="4646949265910132906">Conexiune Wi-Fi securizată</translation>
 <translation id="4652335678334611408">Salvează jurnalul de sesiune</translation>
+<translation id="4654549501020883054">Schimbă zilnic</translation>
 <translation id="4665014895760275686">Producător</translation>
 <translation id="467510802200863975">Parolele nu se potrivesc</translation>
 <translation id="467715984478005772">Posibil firewall</translation>
@@ -194,6 +203,7 @@
 <translation id="4891842000192098784">Stres</translation>
 <translation id="4917385247580444890">Puternic</translation>
 <translation id="4917889632206600977">Oprită – Hârtie epuizată</translation>
+<translation id="491836528011451486">Așază documentul pe scaner și selectează Scanează din nou pentru a scana și a înlocui pagina <ph name="CURRENT_PAGE" />.</translation>
 <translation id="4921665434385737356">S-a încărcat cu <ph name="RATE" /> în <ph name="NUM_SECONDS" /> secunde.</translation>
 <translation id="4932733599132424254">Data</translation>
 <translation id="498186245079027698">Verifică scanerul și încearcă din nou. Asigură-te că există spațiu suficient la nivel local pentru a salva fișierele scanate.</translation>
@@ -209,10 +219,10 @@
 <translation id="5154917547274118687">Memorie</translation>
 <translation id="5168185087976003268">Buna funcționare a bateriei:</translation>
 <translation id="5170568018924773124">Afișează în dosar</translation>
-<translation id="519607504553633437">Dezvoltă și creează propriile jocuri</translation>
 <translation id="5212543919916444558">Nu găsesc conținut pe ecran în privința căruia te-aș putea ajuta.
 Atinge microfonul și întreabă orice dorești.</translation>
 <translation id="5222676887888702881">Deconectează-te</translation>
+<translation id="5234764350956374838">Închide</translation>
 <translation id="5252456968953390977">Roaming</translation>
 <translation id="5264277876637023664">Rulează testul CPU</translation>
 <translation id="5267975978099728568"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="ERROR_STATUS" /></translation>
@@ -243,7 +253,6 @@ Atinge microfonul și întreabă orice dorești.</translation>
 <translation id="5691511426247308406">Familie</translation>
 <translation id="5701381305118179107">Pe centru</translation>
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" /> din <ph name="TOTAL_PAGES" /></translation>
-<translation id="5752751666635965375">Creează propriul joc</translation>
 <translation id="5760715441271661976">Starea portalului</translation>
 <translation id="5832805196449965646">Adăugați un utilizator</translation>
 <translation id="583281660410589416">Necunoscut</translation>
@@ -266,6 +275,7 @@ Atinge microfonul și întreabă orice dorești.</translation>
 <translation id="6106186594183574873">Pentru a finaliza, introdu vechea parolă</translation>
 <translation id="6108689792487843350">Gateway-ul nu poate fi accesat</translation>
 <translation id="6122191549521593678">Online</translation>
+<translation id="6125438912510167220">Viteza conexiunii</translation>
 <translation id="6137767437444130246">Certificat de utilizator</translation>
 <translation id="6146993107019042706">Pentru a finaliza, introdu noua parolă</translation>
 <translation id="6147514244879357420">PNG</translation>
@@ -292,6 +302,8 @@ Atinge microfonul și întreabă orice dorești.</translation>
 <translation id="65587193855025101">Suport plat</translation>
 <translation id="6564646048574748301">Nereușită – Imprimanta nu poate fi accesată</translation>
 <translation id="6574762126505704998">Umplere</translation>
+<translation id="6575134580692778371">Nu este configurată</translation>
+<translation id="6596816719288285829">Adresă IP</translation>
 <translation id="6603230386432466813">Ai întâmpinat probleme la conectare?</translation>
 <translation id="6618744767048954150">Rulează</translation>
 <translation id="6620487321149975369">Sarcinile de printare vor apărea în istoric dacă nu sunt eliminate manual</translation>
@@ -314,13 +326,16 @@ Atinge microfonul și întreabă orice dorești.</translation>
 <translation id="7059230779847288458">Se încarcă, <ph name="TIME_VALUE" /> până la încărcarea completă</translation>
 <translation id="708426984172631313">OPRIT</translation>
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
+<translation id="7134436342991564651">{0,plural, =1{Server de nume}few{Servere de nume}other{Servere de nume}}</translation>
 <translation id="7143207342074048698">Se conectează</translation>
 <translation id="7144878232160441200">Reîncearcă</translation>
 <translation id="714876143603641390">Conectivitatea prin LAN</translation>
 <translation id="7162487448488904999">Galerie</translation>
 <translation id="7172721935181587524">O imagine</translation>
 <translation id="7177485034254901881">Acest <ph name="DEVICE_TYPE" /> este gestionat de <ph name="MANAGER" />. Administratorii pot să configureze dispozitivul de la distanță.</translation>
+<translation id="7180611975245234373">Actualizați</translation>
 <translation id="7216409898977639127">Furnizor de date mobile</translation>
+<translation id="7257889006063274246">Sigur vrei să elimini pagina <ph name="CURRENT_PAGE" />?</translation>
 <translation id="7271040990581020067">Scanerul este în uz. Încearcă din nou mai târziu.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7287310195820267359">Colecții de imagini de fundal</translation>
@@ -354,9 +369,11 @@ Atinge microfonul și întreabă orice dorești.</translation>
 <translation id="7835501727204647447">Instalează CloudReady</translation>
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7882358943899516840">Tip furnizor</translation>
+<translation id="7895471513946376273">Descoperă instrumente de desenare și design</translation>
 <translation id="7936303884198020182">Nu s-au găsit servere de nume</translation>
 <translation id="7960831585769876809">Temperatură</translation>
 <translation id="7994702968232966508">Metodă EAP</translation>
+<translation id="8020238979854764615">A apărut o eroare. Încearcă din nou alegând alte imagini.</translation>
 <translation id="802154636333426148">Descărcarea nu a reușit</translation>
 <translation id="8041089156583427627">Trimiteți feedback</translation>
 <translation id="8075838845814659848">Nivel de încărcare rămas</translation>
@@ -368,7 +385,9 @@ Atinge microfonul și întreabă orice dorești.</translation>
 <translation id="8214184102975786227">Scanează mai multe pagini într-un fișier PDF</translation>
 <translation id="8230672074305416752">Nu s-a putut da ping către gateway-ul de rețea prestabilit</translation>
 <translation id="8246209727385807362">Operator necunoscut</translation>
+<translation id="8286154143153872371">Conectează-te la o rețea și reîncarcă pagina pentru a vedea imaginea de fundal.</translation>
 <translation id="8291967909914612644">Țara furnizorului local</translation>
+<translation id="829270796093605079">Instrumente de design</translation>
 <translation id="8294431847097064396">Sursă</translation>
 <translation id="8297006494302853456">Slab</translation>
 <translation id="8302368968391049045">Firewall HTTPS</translation>
@@ -392,6 +411,7 @@ Atinge microfonul și întreabă orice dorești.</translation>
 <translation id="8575298406870537639">Operatorul poate solicita această opțiune ca să te conectezi la rețeaua respectivă. Contactează operatorul pentru detalii.</translation>
 <translation id="8576249514688522074">Neinițializată</translation>
 <translation id="8620617069779373398">Stare roaming</translation>
+<translation id="8655295600908251630">Canal</translation>
 <translation id="8660881923941176839">livre</translation>
 <translation id="8675354002693747642">Cheie predistribuită</translation>
 <translation id="871560550817059752">Nereușită – Cerneală epuizată</translation>
@@ -404,6 +424,7 @@ Atinge microfonul și întreabă orice dorești.</translation>
 <translation id="8798441408945964110">Numele furnizorului</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8818152010000655963">Imaginea de fundal</translation>
+<translation id="8834539327799336565">Conectat</translation>
 <translation id="8845001906332463065">Obține ajutor</translation>
 <translation id="8868741746785112895">GUID</translation>
 <translation id="8881098542468797602">Testul a reușit</translation>

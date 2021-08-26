@@ -40,6 +40,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
 using base::android::AttachCurrentThread;
@@ -206,14 +207,19 @@ void ClientAndroid::FetchWebsiteActions(
     const base::android::JavaParamRef<jobjectArray>& jparameter_names,
     const base::android::JavaParamRef<jobjectArray>& jparameter_values,
     const base::android::JavaParamRef<jobject>& jcallback) {
-  if (!controller_)
-    CreateController(nullptr, absl::nullopt);
+  if (!controller_) {
+    CreateController(ui_controller_android_utils::GetServiceToInject(env, this),
+                     absl::nullopt);
+  }
 
   base::android::ScopedJavaGlobalRef<jobject> scoped_jcallback(env, jcallback);
   controller_->Track(
       ui_controller_android_utils::CreateTriggerContext(
           env, web_contents_, jexperiment_ids, jparameter_names,
-          jparameter_values,
+          jparameter_values, /* jdevice_only_parameter_names= */
+          base::android::JavaParamRef<jobjectArray>(nullptr),
+          /* jdevice_only_parameter_values= */
+          base::android::JavaParamRef<jobjectArray>(nullptr),
           /* onboarding_shown = */ false,
           /* is_direct_action = */ true,
           /* jinitial_url = */ nullptr),
@@ -333,7 +339,11 @@ bool ClientAndroid::PerformDirectAction(
       base::android::ConvertJavaStringToUTF8(env, jaction_name);
 
   auto trigger_context = ui_controller_android_utils::CreateTriggerContext(
-      env, web_contents_, jexperiment_ids, jparameter_names, jparameter_values,
+      env, web_contents_, jexperiment_ids, jparameter_names,
+      jparameter_values, /* jdevice_only_parameter_names= */
+      base::android::JavaParamRef<jobjectArray>(nullptr),
+      /* jdevice_only_parameter_values= */
+      base::android::JavaParamRef<jobjectArray>(nullptr),
       /* onboarding_shown = */ false,
       /* is_direct_action = */ true,
       /* jinitial_url = */ nullptr);
@@ -358,6 +368,18 @@ bool ClientAndroid::PerformDirectAction(
 
   return controller_->PerformUserActionWithContext(action_index,
                                                    std::move(trigger_context));
+}
+
+void ClientAndroid::ShowFatalError(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller) {
+  if (!controller_) {
+    return;
+  }
+  controller_->RequireUI();
+  controller_->OnFatalError(
+      l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DEFAULT_ERROR),
+      /*show_feedback_chip = */ false, Metrics::DropOutReason::NO_SCRIPTS);
 }
 
 int ClientAndroid::FindDirectAction(const std::string& action_name) {

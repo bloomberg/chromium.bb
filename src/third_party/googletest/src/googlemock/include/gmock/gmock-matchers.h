@@ -250,8 +250,6 @@
 // See googletest/include/gtest/gtest-matchers.h for the definition of class
 // Matcher, class MatcherInterface, and others.
 
-// GOOGLETEST_CM0002 DO NOT DELETE
-
 #ifndef GOOGLEMOCK_INCLUDE_GMOCK_GMOCK_MATCHERS_H_
 #define GOOGLEMOCK_INCLUDE_GMOCK_GMOCK_MATCHERS_H_
 
@@ -1124,6 +1122,45 @@ class EndsWithMatcher {
   const StringType suffix_;
 };
 
+// Implements the polymorphic WhenBase64Unescaped(matcher) matcher, which can be
+// used as a Matcher<T> as long as T can be converted to a string.
+class WhenBase64UnescapedMatcher {
+ public:
+  using is_gtest_matcher = void;
+
+  explicit WhenBase64UnescapedMatcher(
+      const Matcher<const std::string&>& internal_matcher)
+      : internal_matcher_(internal_matcher) {}
+
+  // Matches anything that can convert to std::string.
+  template <typename MatcheeStringType>
+  bool MatchAndExplain(const MatcheeStringType& s,
+                       MatchResultListener* listener) const {
+    const std::string s2(s);  // NOLINT (needed for working with string_view).
+    std::string unescaped;
+    if (!internal::Base64Unescape(s2, &unescaped)) {
+      if (listener != nullptr) {
+        *listener << "is not a valid base64 escaped string";
+      }
+      return false;
+    }
+    return MatchPrintAndExplain(unescaped, internal_matcher_, listener);
+  }
+
+  void DescribeTo(::std::ostream* os) const {
+    *os << "matches after Base64Unescape ";
+    internal_matcher_.DescribeTo(os);
+  }
+
+  void DescribeNegationTo(::std::ostream* os) const {
+    *os << "does not match after Base64Unescape ";
+    internal_matcher_.DescribeTo(os);
+  }
+
+ private:
+  const Matcher<const std::string&> internal_matcher_;
+};
+
 // Implements a matcher that compares the two fields of a 2-tuple
 // using one of the ==, <=, <, etc, operators.  The two fields being
 // compared don't have to have the same type.
@@ -1404,6 +1441,30 @@ class AnyOfMatcherImpl : public MatcherInterface<const T&> {
 // AnyOfMatcher is used for the variadic implementation of AnyOf(m_1, m_2, ...).
 template <typename... Args>
 using AnyOfMatcher = VariadicMatcher<AnyOfMatcherImpl, Args...>;
+
+// ConditionalMatcher is the implementation of Conditional(cond, m1, m2)
+template <typename MatcherTrue, typename MatcherFalse>
+class ConditionalMatcher {
+ public:
+  ConditionalMatcher(bool condition, MatcherTrue matcher_true,
+                     MatcherFalse matcher_false)
+      : condition_(condition),
+        matcher_true_(std::move(matcher_true)),
+        matcher_false_(std::move(matcher_false)) {}
+
+  template <typename T>
+  operator Matcher<T>() const {  // NOLINT(runtime/explicit)
+    return condition_ ? SafeMatcherCast<T>(matcher_true_)
+                      : SafeMatcherCast<T>(matcher_false_);
+  }
+
+ private:
+  bool condition_;
+  MatcherTrue matcher_true_;
+  MatcherFalse matcher_false_;
+
+  GTEST_DISALLOW_ASSIGN_(ConditionalMatcher);
+};
 
 // Wrapper for implementation of Any/AllOfArray().
 template <template <class> class MatcherImpl, typename T>
@@ -4926,6 +4987,18 @@ Pair(FirstMatcher first_matcher, SecondMatcher second_matcher) {
 }
 
 namespace no_adl {
+// Conditional() creates a matcher that conditionally uses either the first or
+// second matcher provided. For example, we could create an `equal if, and only
+// if' matcher using the Conditional wrapper as follows:
+//
+//   EXPECT_THAT(result, Conditional(condition, Eq(expected), Ne(expected)));
+template <typename MatcherTrue, typename MatcherFalse>
+internal::ConditionalMatcher<MatcherTrue, MatcherFalse> Conditional(
+    bool condition, MatcherTrue matcher_true, MatcherFalse matcher_false) {
+  return internal::ConditionalMatcher<MatcherTrue, MatcherFalse>(
+      condition, std::move(matcher_true), std::move(matcher_false));
+}
+
 // FieldsAre(matchers...) matches piecewise the fields of compatible structs.
 // These include those that support `get<I>(obj)`, and when structured bindings
 // are enabled any class that supports them.
@@ -4951,6 +5024,14 @@ template <typename InnerMatcher>
 inline internal::AddressMatcher<InnerMatcher> Address(
     const InnerMatcher& inner_matcher) {
   return internal::AddressMatcher<InnerMatcher>(inner_matcher);
+}
+
+// Matches a base64 escaped string, when the unescaped string matches the
+// internal matcher.
+template <typename MatcherType>
+internal::WhenBase64UnescapedMatcher WhenBase64Unescaped(
+    const MatcherType& internal_matcher) {
+  return internal::WhenBase64UnescapedMatcher(internal_matcher);
 }
 }  // namespace no_adl
 
@@ -5364,6 +5445,7 @@ PolymorphicMatcher<internal::ExceptionMatcherImpl<Err>> ThrowsMessage(
                                                                                \
      private:                                                                  \
       ::std::string FormatDescription(bool negation) const {                   \
+        /* NOLINTNEXTLINE readability-redundant-string-init */                 \
         ::std::string gmock_description = (description);                       \
         if (!gmock_description.empty()) {                                      \
           return gmock_description;                                            \

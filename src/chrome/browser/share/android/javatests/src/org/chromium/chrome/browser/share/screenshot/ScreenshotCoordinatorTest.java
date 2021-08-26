@@ -35,6 +35,7 @@ import org.chromium.chrome.modules.image_editor.ImageEditorModuleProvider;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.module_installer.engine.InstallListener;
+import org.chromium.url.JUnitTestGURLs;
 
 // clang-format off
 /**
@@ -106,15 +107,16 @@ public class ScreenshotCoordinatorTest {
                 .thenReturn(mImageEditorDialogCoordinatorMock);
         doNothing()
                 .when(mImageEditorDialogCoordinatorMock)
-                .launchEditor(mActivity, mBitmap, mTab, mChromeOptionShareCallback);
+                .launchEditor(mActivity, mBitmap, mTab, JUnitTestGURLs.EXAMPLE_URL,
+                        mChromeOptionShareCallback);
 
         mBitmap = Bitmap.createBitmap(800, 600, Bitmap.Config.ARGB_8888);
 
         // Instantiate the object under test.
-        mScreenshotCoordinator =
-                new ScreenshotCoordinator(mActivity, mTab, new FakeEditorScreenshotTask(),
-                        mScreenshotShareSheetDialogMock, mChromeOptionShareCallback,
-                        mBottomSheetControllerMock, mImageEditorModuleProviderMock);
+        mScreenshotCoordinator = new ScreenshotCoordinator(mActivity, mTab,
+                JUnitTestGURLs.EXAMPLE_URL, new FakeEditorScreenshotTask(),
+                mScreenshotShareSheetDialogMock, mChromeOptionShareCallback,
+                mBottomSheetControllerMock, mImageEditorModuleProviderMock);
     }
 
     @Test
@@ -131,7 +133,8 @@ public class ScreenshotCoordinatorTest {
 
         // Ensure the editor launches.
         verify(mImageEditorDialogCoordinatorMock)
-                .launchEditor(mActivity, mBitmap, mTab, mChromeOptionShareCallback);
+                .launchEditor(mActivity, mBitmap, mTab, JUnitTestGURLs.EXAMPLE_URL,
+                        mChromeOptionShareCallback);
     }
 
     @Test
@@ -149,7 +152,8 @@ public class ScreenshotCoordinatorTest {
         // Failed install loads the share sheet.
         verify(mScreenshotShareSheetDialogMock).show(any(FragmentManager.class), any());
         // The editor is not launched.
-        verify(mImageEditorDialogCoordinatorMock, never()).launchEditor(any(), any(), any(), any());
+        verify(mImageEditorDialogCoordinatorMock, never())
+                .launchEditor(any(), any(), any(), any(), any());
 
         // A second install is attempted and succeeds.
         when(mImageEditorModuleProviderMock.isModuleInstalled()).thenReturn(true);
@@ -160,7 +164,8 @@ public class ScreenshotCoordinatorTest {
         mScreenshotCoordinator.captureScreenshot();
         // The editor should launch without requiring a discrete user action.
         verify(mImageEditorDialogCoordinatorMock)
-                .launchEditor(mActivity, mBitmap, mTab, mChromeOptionShareCallback);
+                .launchEditor(mActivity, mBitmap, mTab, JUnitTestGURLs.EXAMPLE_URL,
+                        mChromeOptionShareCallback);
     }
 
     @Test
@@ -181,7 +186,8 @@ public class ScreenshotCoordinatorTest {
         verify(mScreenshotShareSheetDialogMock, times(ScreenshotCoordinator.MAX_INSTALL_ATTEMPTS))
                 .show(any(FragmentManager.class), any());
         // Ensure the editor was never loaded.
-        verify(mImageEditorDialogCoordinatorMock, never()).launchEditor(any(), any(), any(), any());
+        verify(mImageEditorDialogCoordinatorMock, never())
+                .launchEditor(any(), any(), any(), any(), any());
 
         // Subsequent attempts will not invoke installation.
         mScreenshotCoordinator.captureScreenshot();
@@ -193,6 +199,7 @@ public class ScreenshotCoordinatorTest {
                 times(ScreenshotCoordinator.MAX_INSTALL_ATTEMPTS + 1))
                 .show(any(FragmentManager.class), any());
         // The editor should not attempt to be loaded.
-        verify(mImageEditorDialogCoordinatorMock, never()).launchEditor(any(), any(), any(), any());
+        verify(mImageEditorDialogCoordinatorMock, never())
+                .launchEditor(any(), any(), any(), any(), any());
     }
 }

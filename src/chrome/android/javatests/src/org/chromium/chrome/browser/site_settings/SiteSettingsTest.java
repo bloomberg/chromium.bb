@@ -65,16 +65,17 @@ import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridge;
 import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridgeJni;
 import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsType;
-import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
 import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.components.location.LocationUtils;
 import org.chromium.components.permissions.nfc.NfcSystemLevelSetting;
 import org.chromium.components.policy.test.annotations.Policies;
 import org.chromium.components.user_prefs.UserPrefs;
+import org.chromium.content_public.browser.BrowserContextHandle;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.device.geolocation.LocationProviderOverrider;
 import org.chromium.device.geolocation.MockLocationProvider;
+import org.chromium.ui.test.util.UiDisableIf;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -103,7 +104,10 @@ public class SiteSettingsTest {
     @After
     public void tearDown() throws TimeoutException {
         if (mPermissionUpdateWaiter != null) {
-            mPermissionRule.getActivity().getActivityTab().removeObserver(mPermissionUpdateWaiter);
+            TestThreadUtils.runOnUiThreadBlocking(() -> {
+                mPermissionRule.getActivity().getActivityTab().removeObserver(
+                        mPermissionUpdateWaiter);
+            });
         }
 
         // Clean up default content setting and system settings.
@@ -132,13 +136,16 @@ public class SiteSettingsTest {
 
     private void initializeUpdateWaiter(final boolean expectGranted) {
         if (mPermissionUpdateWaiter != null) {
-            mPermissionRule.getActivity().getActivityTab().removeObserver(mPermissionUpdateWaiter);
+            TestThreadUtils.runOnUiThreadBlocking(() -> {
+                mPermissionRule.getActivity().getActivityTab().removeObserver(
+                        mPermissionUpdateWaiter);
+            });
         }
         Tab tab = mPermissionRule.getActivity().getActivityTab();
 
         mPermissionUpdateWaiter = new PermissionUpdateWaiter(
                 expectGranted ? "Granted" : "Denied", mPermissionRule.getActivity());
-        tab.addObserver(mPermissionUpdateWaiter);
+        TestThreadUtils.runOnUiThreadBlocking(() -> tab.addObserver(mPermissionUpdateWaiter));
     }
 
     private BrowserContextHandle getBrowserContextHandle() {
@@ -1361,6 +1368,7 @@ public class SiteSettingsTest {
     @MediumTest
     @Feature({"Preferences"})
     @DisableIf.Build(message = "EME not working before M", sdk_is_less_than = Build.VERSION_CODES.M)
+    @DisableIf.Device(type = {UiDisableIf.TABLET}) // https://crbug.com/1234530
     public void testProtectedContentAllowThenBlock() throws Exception {
         initializeUpdateWaiter(true /* expectGranted */);
         mPermissionRule.runNoPromptTest(mPermissionUpdateWaiter,

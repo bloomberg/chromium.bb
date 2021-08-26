@@ -3,6 +3,8 @@
 <translationbundle lang="ml">
 <translation id="1175958423215084756">ലിങ്ക് തിരിച്ചറിഞ്ഞു. <ph name="HOSTNAME" /></translation>
 <translation id="1276998909102132017">ഗാലറി ചിത്രങ്ങൾ</translation>
+<translation id="1300209025925956156">നിങ്ങളുടെ ഡോക്യുമെന്റ് സ്‌കാൻ ചെയ്യുക</translation>
+<translation id="137991641490787891"><ph name="ASPECT_RATIO_WIDTH" />. ആക്‌സസ് ചെയ്യാൻ തിരയൽ + ഇടത്തേയ്ക്കുള്ള അമ്പടയാളം അമർത്തുക.</translation>
 <translation id="1430915738399379752">അച്ചടിക്കുക</translation>
 <translation id="1467231725790366244"><ph name="CAMERA" /> അൺപ്ലഗ് ചെയ്‌തിരിക്കുന്നു.</translation>
 <translation id="1473110567575736769">3 സെക്കൻഡ് ടൈമർ</translation>
@@ -31,7 +33,6 @@
 <translation id="2549985041256363841">റെക്കോർഡിംഗ് ആരംഭിക്കൂ</translation>
 <translation id="2599796128805996109">പിൻ ക്യാമറ</translation>
 <translation id="2879583609344924966"><ph name="CAMERA" /> പ്ലഗ്-ഇൻ ചെയ്‌തിരിക്കുന്നു.</translation>
-<translation id="2912439424121107408">വിദഗ്‌ദ്ധ മോഡ് ഈ ഉപകരണത്തിൽ പിന്തുണയ്‌ക്കുന്നില്ല</translation>
 <translation id="2968794441791257519">ക്യാമറ ഉപയോഗിച്ച് എടുത്ത ഫോട്ടോകളും വീഡിയോകളും 'ഡൗൺലോഡുകൾ' ഫോൾഡറിലേക്ക് നീക്കും. നിങ്ങൾക്ക് അവ Files-ൽ ആക്‌സസ് ചെയ്യാനാവും.
 
 സ്‌റ്റോറേജ് അനുമതികളുള്ള ആപ്പുകൾക്ക് നിങ്ങളുടെ ഫോട്ടോകളിലേക്കും വീഡിയോകളിലേക്കും ആക്‌സസ് ഉണ്ടായിരിക്കും.</translation>
@@ -42,15 +43,16 @@
 <translation id="3227137524299004712">മൈക്രോഫോൺ</translation>
 <translation id="3240426699337459095">ലിങ്ക് പകർത്തി</translation>
 <translation id="3259149966178251584">ക്യാമറ റെസല്യൂഷൻ</translation>
+<translation id="3260401663013584785">ഡോക്യുമെന്റ് കണ്ടെത്താനായില്ല</translation>
 <translation id="3448774564454087943">തീരെ ചെറുതായതിനാൽ വീഡിയോ സംരക്ഷിക്കാനായില്ല</translation>
 <translation id="3517926952904427380">പോർട്രെയ്റ്റ് ഫോട്ടോ എടുക്കാനായില്ല</translation>
 <translation id="3569311554794739032">"<ph name="FILE" />" നീക്കംചെയ്യണമെന്ന് തീർച്ചയാണോ?</translation>
-<translation id="3733597664308256288">അധിക ക്യാമറാ നിയന്ത്രണങ്ങൾ ലഭ്യമാണ്. ആക്‌സസ് ചെയ്യാൻ തിരയൽ + വലത്തേയ്ക്കുള്ള അമ്പടയാളം അമർത്തുക.</translation>
 <translation id="3810838688059735925">വീഡിയോ</translation>
 <translation id="3838931309141338733">ബാർകോഡ് സ്‌കാൻ ചെയ്യുക</translation>
 <translation id="3892148308691398805">ടെക്‌സ്‌റ്റ് പകർത്തുക</translation>
 <translation id="4000398125663085899">പുതിയ ഫോട്ടോകളും വീഡിയോകളും ഇപ്പോൾ Files ആപ്പ്: എന്റെ ഫയലുകൾ &gt; ക്യാമറ എന്നതിലെ ഒരു ഫോൾഡറിലേക്ക് സംരക്ഷിക്കും</translation>
 <translation id="4118525110028899586">റെക്കോർഡ് ചെയ്യൽ തൽക്കാലം നിർത്തുക</translation>
+<translation id="4121305183798804752">ഡോക്യുമെന്റ് കണ്ടെത്തി</translation>
 <translation id="4269820728363426813">ലിങ്ക് വിലാസം പകർത്തുക</translation>
 <translation id="4279490309300973883">മിററിംഗ്</translation>
 <translation id="4329152592498422850">സമചതുര ഫോട്ടോയെടുക്കൽ മോഡിലേക്ക് മാറുക</translation>
@@ -65,10 +67,13 @@
 <translation id="5057360777601936059">നിങ്ങളുടെ ക്യാമറ നിലവിൽ ലഭ്യമല്ല.
         ക്യാമറ ശരിയായി കണക്‌റ്റ് ചെയ്‌തിട്ടുണ്ടോയെന്ന് പരിശോധിക്കുക.</translation>
 <translation id="5152121255775685072">ഗാലറിയിലേക്ക് പോവുക</translation>
+<translation id="520537883758714667">ഡോക്യുമെന്റ് സ്‌കാൻ ചെയ്യൽ ഇപ്പോൾ ലഭ്യമാണ്</translation>
 <translation id="5268823927180092501">എല്ലാ ക്യാമറകളിലും ഡോക്യുമെന്റ് മോഡ് പ്രവർത്തനക്ഷമമാക്കുക</translation>
 <translation id="5422455049771430511">നിങ്ങളുടെ ഫോട്ടോകൾക്കും വീഡിയോകൾക്കും ഒരു പുതിയ ഇടം</translation>
+<translation id="5444515100983837161">ഡോക്യുമെന്റിന്റെ എല്ലാ അരികുകളും ഫ്രെയിമിനകത്ത് വയ്ക്കുക. ഡോക്യുമെന്റും അതിന്റെ പശ്ചാത്തലവും വ്യത്യസ്ത നിറങ്ങളിലാണെങ്കിൽ സ്‌കാൻ ചെയ്യൽ മികച്ച രീതിയിൽ പ്രവർത്തിക്കുന്നു.</translation>
 <translation id="5671277269877808209">ചതുരം</translation>
 <translation id="5753488212459587150">വിദഗ്‌ദ്ധ മോഡ് പ്രവർത്തനക്ഷമമാക്കുക</translation>
+<translation id="5759254179196327752">ഡോക്യുമെന്റ് സ്‌കാൻ ചെയ്യുക</translation>
 <translation id="5775960006311140197">വിദഗ്‌ദ്ധ മോഡ്</translation>
 <translation id="5869546221129391014">ഗ്രിഡ്</translation>
 <translation id="5975083100439434680">സൂം ഔട്ട് ചെയ്യുക</translation>
@@ -82,6 +87,7 @@
 
 നിങ്ങളുടെ ഫീഡ്‌ബാക്ക് ചിത്രത്തെക്കുറിച്ചോ വീഡിയോ നിലവാരത്തെക്കുറിച്ചോ ആണെങ്കിൽ, സാമ്പിൾ ഫോട്ടോയോ വീഡിയോയോ അറ്റാച്ച് ചെയ്‌ത് പ്രശ്‌നം എന്താണെന്ന് വിവരിക്കുക. (ഉദാഹരണത്തിന്, ഫോട്ടോ വളരെ ഇരുണ്ടതാണ് അല്ലെങ്കിൽ വസ്‌തു ഫോക്കസിലല്ല ഉള്ളത്.)</translation>
 <translation id="6420689864531458495">(<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" /> - <ph name="WIDTH" />x<ph name="HEIGHT" />) <ph name="MEGAPIXEL" /> മെഗാ പിക്‌സൽ</translation>
+<translation id="667999046851023355">പ്രമാണം</translation>
 <translation id="6681668084120808868">ഫോട്ടോ എടുക്കുക</translation>
 <translation id="6778482348691154169">ഫോട്ടോ എടുക്കാനായില്ല</translation>
 <translation id="695140971690006676">എല്ലാം റീസെറ്റ് ചെയ്യുക</translation>
@@ -108,11 +114,13 @@
 <translation id="8425673304802773841">താഴേക്ക് ടിൽറ്റ് ചെയ്യുക</translation>
 <translation id="8428213095426709021">ക്രമീകരണങ്ങള്‍</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" />p (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
+<translation id="8712637175834984815">മനസ്സിലായി</translation>
 <translation id="8732462232047530626">മെറ്റാഡാറ്റ പ്രിവ്യൂ ചെയ്യൂ</translation>
 <translation id="8815966864175525708">പോർട്രെയ്റ്റ് ഫോട്ടോയെടുക്കൽ മോഡിലേക്ക് മാറുക</translation>
 <translation id="8828441885228359828">റെക്കോർഡ് ചെയ്യൽ പുനരാരംഭിക്കുക</translation>
 <translation id="8870695351537079478">റെക്കോർഡിംഗ് ആരംഭിക്കാനായില്ല</translation>
 <translation id="8903921497873541725">സൂം ഇന്‍ ചെയ്യുക</translation>
+<translation id="9045010116236796332">ഡോക്യുമെന്റിന്റെ എല്ലാ അരികുകളും ഫ്രെയിമിനകത്ത് ഉൾക്കൊള്ളിക്കുക</translation>
 <translation id="9045155556724273246">10 സെക്കൻഡ്</translation>
 <translation id="945522503751344254">ഫീഡ്‌ബാക്ക് അയയ്‌ക്കുക</translation>
 </translationbundle>

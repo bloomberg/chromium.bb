@@ -272,13 +272,14 @@ protected:
 
     std::unordered_set<skstd::string_view> fReservedWords;
     std::unordered_map<const Type::Field*, const InterfaceBlock*> fInterfaceBlockMap;
-    std::unordered_map<const InterfaceBlock*, String> fInterfaceBlockNameMap;
+    std::unordered_map<const InterfaceBlock*, skstd::string_view> fInterfaceBlockNameMap;
     int fAnonInterfaceCount = 0;
     int fPaddingCount = 0;
     const char* fLineEnding;
     const Context& fContext;
     String fFunctionHeader;
     StringStream fExtraFunctions;
+    StringStream fExtraFunctionPrototypes;
     int fVarCount = 0;
     int fIndentation = 0;
     bool fAtLineStart = false;

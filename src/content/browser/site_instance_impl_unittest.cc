@@ -41,6 +41,7 @@
 #include "content/public/test/scoped_web_ui_controller_factory_registration.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_utils.h"
+#include "content/test/storage_partition_test_helpers.h"
 #include "content/test/test_content_browser_client.h"
 #include "content/test/test_content_client.h"
 #include "content/test/test_render_view_host.h"
@@ -62,7 +63,8 @@ bool DoesURLRequireDedicatedProcess(const IsolationContext& isolation_context,
 SiteInfo CreateSimpleSiteInfo(const GURL& process_lock_url,
                               bool is_origin_keyed) {
   return SiteInfo(GURL("https://www.foo.com"), process_lock_url,
-                  is_origin_keyed, WebExposedIsolationInfo::CreateNonIsolated(),
+                  is_origin_keyed, CreateStoragePartitionConfigForTesting(),
+                  WebExposedIsolationInfo::CreateNonIsolated(),
                   false /* is_guest */,
                   false /* does_site_request_dedicated_process_for_coop */,
                   false /* is_jit_disabled */);
@@ -125,10 +127,8 @@ class SiteInstanceTest : public testing::Test {
 
   GURL GetSiteForURL(const IsolationContext& isolation_context,
                      const GURL& url) {
-    return SiteInfo::Create(
-               isolation_context,
-               UrlInfo(url, UrlInfo::OriginIsolationRequest::kNone),
-               WebExposedIsolationInfo::CreateNonIsolated())
+    return SiteInfo::Create(isolation_context, UrlInfo(UrlInfoInit(url)),
+                            WebExposedIsolationInfo::CreateNonIsolated())
         .site_url();
   }
 
@@ -136,6 +136,7 @@ class SiteInstanceTest : public testing::Test {
     old_browser_client_ = SetBrowserClientForTesting(&browser_client_);
     RenderProcessHostImpl::set_render_process_host_factory_for_testing(
         &rph_factory_);
+    SiteIsolationPolicy::DisableFlagCachingForTesting();
   }
 
   void TearDown() override {
@@ -197,11 +198,10 @@ class SiteInstanceTest : public testing::Test {
   static bool IsSameSite(BrowserContext* context,
                          const GURL& url1,
                          const GURL& url2) {
-    return SiteInstanceImpl::IsSameSite(
-        IsolationContext(context),
-        UrlInfo(url1, UrlInfo::OriginIsolationRequest::kNone),
-        UrlInfo(url2, UrlInfo::OriginIsolationRequest::kNone),
-        /*should_compare_effective_urls=*/true);
+    return SiteInstanceImpl::IsSameSite(IsolationContext(context),
+                                        UrlInfo(UrlInfoInit(url1)),
+                                        UrlInfo(UrlInfoInit(url2)),
+                                        /*should_compare_effective_urls=*/true);
   }
 
  private:
@@ -272,8 +272,8 @@ TEST_F(SiteInstanceTest, SiteInfoAsContainerKey) {
   auto site_info_1_with_isolation_request = SiteInfo(
       GURL("https://www.foo.com") /* site_url */,
       GURL("https://foo.com") /* process_lock_url */,
-      false /* is_origin_keyed */, WebExposedIsolationInfo::CreateNonIsolated(),
-      false /* is_guest */,
+      false /* is_origin_keyed */, CreateStoragePartitionConfigForTesting(),
+      WebExposedIsolationInfo::CreateNonIsolated(), false /* is_guest */,
       true /* does_site_request_dedicated_process_for_coop */,
       false /* is_jit_disabled */);
   EXPECT_TRUE(
@@ -285,8 +285,8 @@ TEST_F(SiteInstanceTest, SiteInfoAsContainerKey) {
   auto site_info_1_with_jit_disabled = SiteInfo(
       GURL("https://www.foo.com") /* site_url */,
       GURL("https://foo.com") /* process_lock_url */,
-      false /* is_origin_keyed */, WebExposedIsolationInfo::CreateNonIsolated(),
-      false /* is_guest */,
+      false /* is_origin_keyed */, CreateStoragePartitionConfigForTesting(),
+      WebExposedIsolationInfo::CreateNonIsolated(), false /* is_guest */,
       false /* does_site_request_dedicated_process_for_coop */,
       true /* is_jit_disabled */);
   EXPECT_FALSE(site_info_1.IsSamePrincipalWith(site_info_1_with_jit_disabled));
@@ -502,7 +502,9 @@ TEST_F(SiteInstanceTest, DefaultSiteInstanceProperties) {
   EXPECT_TRUE(site_instance->HasSite());
   EXPECT_EQ(site_instance->GetSiteInfo(),
             SiteInfo::CreateForDefaultSiteInstance(
-                &browser_context, cross_origin_isolation_info));
+                &browser_context,
+                StoragePartitionConfig::CreateDefault(&browser_context),
+                cross_origin_isolation_info));
   EXPECT_FALSE(site_instance->RequiresDedicatedProcess());
 }
 
@@ -689,6 +691,7 @@ TEST_F(SiteInstanceTest, GetSiteForURL) {
 
   // Error page URLs.
   auto error_site_info = SiteInfo::CreateForErrorPage(
+      CreateStoragePartitionConfigForTesting(),
       WebExposedIsolationInfo::CreateNonIsolated());
   test_url = GURL(kUnreachableWebDataURL);
   site_url = GetSiteForURL(test_url);
@@ -728,8 +731,8 @@ TEST_F(SiteInstanceTest, ProcessLockDoesNotUseEffectiveURL) {
 
   SiteInfo expected_site_info(
       app_url /* site_url */, nonapp_site_url /* process_lock_url */,
-      false /* is_origin_keyed */, WebExposedIsolationInfo::CreateNonIsolated(),
-      false /* is_guest */,
+      false /* is_origin_keyed */, CreateStoragePartitionConfigForTesting(),
+      WebExposedIsolationInfo::CreateNonIsolated(), false /* is_guest */,
       false /* does_site_request_dedicated_process_for_coop */,
       false /* is_jit_disabled */);
 
@@ -1138,17 +1141,16 @@ TEST_F(SiteInstanceTest, NoProcessPerSiteForEmptySite) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kProcessPerSite);
   std::unique_ptr<TestBrowserContext> browser_context(new TestBrowserContext());
-  RenderProcessHost* host;
   scoped_refptr<SiteInstanceImpl> instance(
       SiteInstanceImpl::Create(browser_context.get()));
 
   instance->SetSite(UrlInfo());
   EXPECT_TRUE(instance->HasSite());
   EXPECT_TRUE(instance->GetSiteURL().is_empty());
-  host = instance->GetProcess();
+  instance->GetProcess();
 
   EXPECT_FALSE(RenderProcessHostImpl::GetSoleProcessHostForSite(
-      instance->GetIsolationContext(), SiteInfo()));
+      instance->GetIsolationContext(), SiteInfo(browser_context.get())));
 
   DrainMessageLoop();
 }
@@ -1526,8 +1528,8 @@ TEST_F(SiteInstanceTest, OriginalURL) {
 
   SiteInfo expected_site_info(
       app_url /* site_url */, original_url /* process_lock_url */,
-      false /* is_origin_keyed */, WebExposedIsolationInfo::CreateNonIsolated(),
-      false /* is_guest */,
+      false /* is_origin_keyed */, CreateStoragePartitionConfigForTesting(),
+      WebExposedIsolationInfo::CreateNonIsolated(), false /* is_guest */,
       false /* does_site_request_dedicated_process_for_coop */,
       false /* is_jit_disabled */);
 
@@ -1575,6 +1577,7 @@ namespace {
 ProcessLock ProcessLockFromString(const std::string& url) {
   return ProcessLock(SiteInfo(
       GURL(url), GURL(url), false /* is_origin_keyed */,
+      CreateStoragePartitionConfigForTesting(),
       WebExposedIsolationInfo::CreateNonIsolated(), false /* is_guest */,
       false /* does_site_request_dedicated_process_for_coop */,
       false /* is_jit_disabled */));
@@ -1892,10 +1895,10 @@ TEST_F(SiteInstanceTest, ErrorPage) {
   const auto isolated_coi = WebExposedIsolationInfo::CreateIsolated(
       url::Origin::Create(non_error_page_url));
 
-  const auto non_isolated_error_site_info =
-      SiteInfo::CreateForErrorPage(non_isolated_coi);
-  const auto isolated_error_site_info =
-      SiteInfo::CreateForErrorPage(isolated_coi);
+  const auto non_isolated_error_site_info = SiteInfo::CreateForErrorPage(
+      CreateStoragePartitionConfigForTesting(), non_isolated_coi);
+  const auto isolated_error_site_info = SiteInfo::CreateForErrorPage(
+      CreateStoragePartitionConfigForTesting(), isolated_coi);
 
   // Verify that non-isolated and isolated error page SiteInfos are not
   // equal, but indicate they are both for error pages.
@@ -1956,6 +1959,37 @@ TEST_F(SiteInstanceTest, ErrorPage) {
   EXPECT_EQ(isolated_error_site_info,
             static_cast<SiteInstanceImpl*>(isolated_related_instance.get())
                 ->GetSiteInfo());
+}
+
+TEST_F(SiteInstanceTest, RelatedSitesInheritStoragePartitionConfig) {
+  const GURL test_url("https://example.com");
+  const auto isolation_info = WebExposedIsolationInfo::CreateNonIsolated();
+
+  // Create a UrlInfo for test_url loaded in a special StoragePartition.
+  const auto non_default_partition_config =
+      CreateStoragePartitionConfigForTesting(
+          /*in_memory=*/false, /*partition_domain=*/"test_partition");
+  const UrlInfo partitioned_url_info(
+      UrlInfoInit(test_url).WithStoragePartitionConfig(
+          non_default_partition_config));
+
+  // Create a SiteInstance for test_url in the special StoragePartition, and
+  // verify that the StoragePartition is correct.
+  const auto partitioned_instance = SiteInstanceImpl::CreateForUrlInfo(
+      context(), partitioned_url_info, isolation_info);
+  EXPECT_EQ(non_default_partition_config,
+            static_cast<SiteInstanceImpl*>(partitioned_instance.get())
+                ->GetSiteInfo()
+                .storage_partition_config());
+
+  // Create a related SiteInstance that doesn't specify a
+  // StoragePartitionConfig and make sure the StoragePartition gets propagated.
+  const auto related_instance =
+      partitioned_instance->GetRelatedSiteInstance(test_url);
+  EXPECT_EQ(non_default_partition_config,
+            static_cast<SiteInstanceImpl*>(related_instance.get())
+                ->GetSiteInfo()
+                .storage_partition_config());
 }
 
 }  // namespace content

@@ -13,7 +13,7 @@ mapRegionBoundModes is used to get mapRegion from range:
 `;
 
 import { makeTestGroup } from '../../../../common/framework/test_group.js';
-import { assert } from '../../../../common/util/util.js';
+import { assert, memcpy } from '../../../../common/util/util.js';
 import { checkElementsEqual } from '../../../util/check_contents.js';
 
 import { MappingTest } from './mapping_test.js';
@@ -274,8 +274,7 @@ g.test('mapAsync,read,typedArrayAccess')
 
     // Copy the expected values into the mapped range.
     assert(init.byteLength === rangeSize);
-    const data = new Uint8Array(init);
-    data.set(new Uint8Array(expectedArrayBuffer));
+    memcpy({ src: expectedArrayBuffer }, { dst: init });
     buffer.unmap();
 
     const mapRegion = getRegionForMap(size, [rangeOffset, rangeSize], t.params);

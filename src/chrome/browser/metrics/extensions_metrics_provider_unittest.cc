@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/files/file_path.h"
 #include "base/test/task_environment.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
@@ -22,6 +23,7 @@
 #include "components/metrics/metrics_state_manager.h"
 #include "components/metrics/test/test_enabled_state_provider.h"
 #include "components/prefs/testing_pref_service.h"
+#include "extensions/browser/blocklist_extension_prefs.h"
 #include "extensions/browser/disable_reason.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/extension.h"
@@ -133,7 +135,7 @@ TEST(ExtensionsMetricsProvider, SystemProtoEncoding) {
   std::unique_ptr<metrics::MetricsStateManager> metrics_state_manager(
       metrics::MetricsStateManager::Create(
           &local_state, &enabled_state_provider, std::wstring(),
-          base::BindRepeating(&StoreNoClientInfoBackup),
+          base::FilePath(), base::BindRepeating(&StoreNoClientInfoBackup),
           base::BindRepeating(&ReturnNoBackup)));
   TestExtensionsMetricsProvider extension_metrics(metrics_state_manager.get());
   extension_metrics.ProvideSystemProfileMetrics(&system_profile);
@@ -388,8 +390,10 @@ TEST_F(ExtensionMetricsProviderInstallsTest, TestProtoConstruction) {
             .SetLocation(ManifestLocation::kInternal)
             .Build();
     add_extension(extension.get());
-    prefs()->SetExtensionBlocklistState(
-        extension->id(), extensions::BLOCKLISTED_SECURITY_VULNERABILITY);
+    extensions::blocklist_prefs::SetSafeBrowsingExtensionBlocklistState(
+        extension->id(),
+        extensions::BitMapBlocklistState::BLOCKLISTED_SECURITY_VULNERABILITY,
+        prefs());
     ExtensionInstallProto install = ConstructProto(*extension);
     EXPECT_EQ(ExtensionInstallProto::BLACKLISTED_SECURITY_VULNERABILITY,
               install.blacklist_state());

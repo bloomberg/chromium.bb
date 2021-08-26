@@ -42,6 +42,7 @@
 #include "libavutil/thread.h"
 #include "avcodec.h"
 #include "dct.h"
+#include "encode.h"
 #include "idctdsp.h"
 #include "mpeg12.h"
 #include "mpegvideo.h"
@@ -84,7 +85,7 @@ static int dct_quantize_trellis_c(MpegEncContext *s, int16_t *block, int n, int 
 static uint8_t default_mv_penalty[MAX_FCODE + 1][MAX_DMV * 2 + 1];
 static uint8_t default_fcode_tab[MAX_MV * 2 + 1];
 
-const AVOption ff_mpv_generic_options[] = {
+static const AVOption mpv_generic_options[] = {
     FF_MPV_COMMON_OPTS
 #if FF_API_MPEGVIDEO_OPTS
     FF_MPV_DEPRECATED_MPEG_QUANT_OPT
@@ -93,6 +94,13 @@ const AVOption ff_mpv_generic_options[] = {
     FF_MPV_DEPRECATED_BFRAME_OPTS
 #endif
     { NULL },
+};
+
+const AVClass ff_mpv_enc_class = {
+    .class_name = "generic mpegvideo encoder",
+    .item_name  = av_default_item_name,
+    .option     = mpv_generic_options,
+    .version    = LIBAVUTIL_VERSION_INT,
 };
 
 void ff_convert_matrix(MpegEncContext *s, int (*qmat)[64],
@@ -1721,7 +1729,7 @@ int ff_mpv_encode_picture(AVCodecContext *avctx, AVPacket *pkt,
         int pkt_size = growing_buffer ? FFMAX(s->mb_width*s->mb_height*64+10000, avctx->internal->byte_buffer_size) - AV_INPUT_BUFFER_PADDING_SIZE
                                               :
                                               s->mb_width*s->mb_height*(MAX_MB_BYTES+100)+10000;
-        if ((ret = ff_alloc_packet2(avctx, pkt, pkt_size, 0)) < 0)
+        if ((ret = ff_alloc_packet(avctx, pkt, pkt_size)) < 0)
             return ret;
         if (s->mb_info) {
             s->mb_info_ptr = av_packet_new_side_data(pkt,
@@ -1846,6 +1854,7 @@ vbv_retry:
             break;
             default:
                 av_log(avctx, AV_LOG_ERROR, "vbv buffer overflow\n");
+                s->stuffing_bits = 0;
             }
             flush_put_bits(&s->pb);
             s->frame_bits  = put_bits_count(&s->pb);
@@ -4646,32 +4655,18 @@ const AVCodec ff_h263p_encoder = {
     .priv_class     = &h263p_class,
 };
 
-static const AVClass msmpeg4v2_class = {
-    .class_name = "msmpeg4v2 encoder",
-    .item_name  = av_default_item_name,
-    .option     = ff_mpv_generic_options,
-    .version    = LIBAVUTIL_VERSION_INT,
-};
-
 const AVCodec ff_msmpeg4v2_encoder = {
     .name           = "msmpeg4v2",
     .long_name      = NULL_IF_CONFIG_SMALL("MPEG-4 part 2 Microsoft variant version 2"),
     .type           = AVMEDIA_TYPE_VIDEO,
     .id             = AV_CODEC_ID_MSMPEG4V2,
+    .priv_class     = &ff_mpv_enc_class,
     .priv_data_size = sizeof(MpegEncContext),
     .init           = ff_mpv_encode_init,
     .encode2        = ff_mpv_encode_picture,
     .close          = ff_mpv_encode_end,
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
     .pix_fmts       = (const enum AVPixelFormat[]){ AV_PIX_FMT_YUV420P, AV_PIX_FMT_NONE },
-    .priv_class     = &msmpeg4v2_class,
-};
-
-static const AVClass msmpeg4v3_class = {
-    .class_name = "msmpeg4v3 encoder",
-    .item_name  = av_default_item_name,
-    .option     = ff_mpv_generic_options,
-    .version    = LIBAVUTIL_VERSION_INT,
 };
 
 const AVCodec ff_msmpeg4v3_encoder = {
@@ -4679,20 +4674,13 @@ const AVCodec ff_msmpeg4v3_encoder = {
     .long_name      = NULL_IF_CONFIG_SMALL("MPEG-4 part 2 Microsoft variant version 3"),
     .type           = AVMEDIA_TYPE_VIDEO,
     .id             = AV_CODEC_ID_MSMPEG4V3,
+    .priv_class     = &ff_mpv_enc_class,
     .priv_data_size = sizeof(MpegEncContext),
     .init           = ff_mpv_encode_init,
     .encode2        = ff_mpv_encode_picture,
     .close          = ff_mpv_encode_end,
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
     .pix_fmts       = (const enum AVPixelFormat[]){ AV_PIX_FMT_YUV420P, AV_PIX_FMT_NONE },
-    .priv_class     = &msmpeg4v3_class,
-};
-
-static const AVClass wmv1_class = {
-    .class_name = "wmv1 encoder",
-    .item_name  = av_default_item_name,
-    .option     = ff_mpv_generic_options,
-    .version    = LIBAVUTIL_VERSION_INT,
 };
 
 const AVCodec ff_wmv1_encoder = {
@@ -4700,11 +4688,11 @@ const AVCodec ff_wmv1_encoder = {
     .long_name      = NULL_IF_CONFIG_SMALL("Windows Media Video 7"),
     .type           = AVMEDIA_TYPE_VIDEO,
     .id             = AV_CODEC_ID_WMV1,
+    .priv_class     = &ff_mpv_enc_class,
     .priv_data_size = sizeof(MpegEncContext),
     .init           = ff_mpv_encode_init,
     .encode2        = ff_mpv_encode_picture,
     .close          = ff_mpv_encode_end,
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
     .pix_fmts       = (const enum AVPixelFormat[]){ AV_PIX_FMT_YUV420P, AV_PIX_FMT_NONE },
-    .priv_class     = &wmv1_class,
 };

@@ -13,8 +13,8 @@
 #include "config/aom_dsp_rtcd.h"
 
 #include "aom/aom_integer.h"
+#include "aom_dsp/quantize.h"
 #include "aom_dsp/x86/quantize_x86.h"
-#include "av1/encoder/av1_quantize.h"
 
 static INLINE __m128i highbd_invert_sign_64bit_sse2(__m128i a, __m128i sign) {
   a = _mm_xor_si128(a, sign);

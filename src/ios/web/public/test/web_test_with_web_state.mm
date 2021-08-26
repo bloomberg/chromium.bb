@@ -136,22 +136,9 @@ void WebTestWithWebState::LoadHtml(NSString* html, const GURL& url) {
   // |-loadHTMLString:baseURL| that doesn't create a navigation entry.
   if (!web_state()->GetNavigationManager()->GetItemCount()) {
     GURL placeholder_url(url::kAboutBlankURL);
-    if (!base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage))
-      placeholder_url = wk_navigation_util::CreatePlaceholderUrlForUrl(url);
 
     NavigationManager::WebLoadParams params(placeholder_url);
     web_state()->GetNavigationManager()->LoadURLWithParams(params);
-
-    if (!base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage)) {
-      // Set NoNavigationError so the placeHolder doesn't trigger a
-      // kNavigatingToFailedNavigationItem.
-      web::WebStateImpl* web_state_impl =
-          static_cast<web::WebStateImpl*>(web_state());
-      web_state_impl->GetNavigationManagerImpl()
-          .GetCurrentItemImpl()
-          ->error_retry_state_machine()
-          .SetIgnorePlaceholderNavigation();
-    }
 
     ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
       return web_controller.navigationState == web::WKNavigationState::FINISHED;

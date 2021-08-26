@@ -16,18 +16,10 @@
 6153 VULKAN WIN INTEL : GLSLTest_ES31.StructAndArrayEqualOperator/ES3_1_Vulkan_DirectSPIRVGen = SKIP
 6153 VULKAN PIXEL4ORXL : GLSLTest_ES31.StructAndArrayEqualOperator/ES3_1_Vulkan_DirectSPIRVGen = SKIP
 
-// SPIR-V generation doesn't yet support bools in interface blocks
-4889 VULKAN : GLSLTest.NestedSequenceOperatorWithTernaryInside/ES2_Vulkan_DirectSPIRVGen = SKIP
-4889 VULKAN : GLSLTest.CompoundStructsWithSamplersAsFunctionArg/ES2_Vulkan_DirectSPIRVGen = SKIP
-4889 VULKAN : GLSLTest.MoreNestedCompoundStructsWithSamplersAsFunctionArg/ES2_Vulkan_DirectSPIRVGen = SKIP
-4889 VULKAN : GLSLTest.NestedCompoundStructsWithSamplersAsFunctionArg/ES2_Vulkan_DirectSPIRVGen = SKIP
-4889 VULKAN : GLSLTest.SamplerInStructMemberIndexing/ES2_Vulkan_DirectSPIRVGen = SKIP
-// SPIR-V generation doesn't yet handle structs qualified with row-major
-4889 VULKAN : GLSLTest_ES31.MixedRowAndColumnMajorMatrices/ES3_1_Vulkan_DirectSPIRVGen = SKIP
-4889 VULKAN : GLSLTest_ES3.MixedRowAndColumnMajorMatrices_ReadSideEffect/ES3_Vulkan_DirectSPIRVGen = SKIP
-// SPIR-V generation doesn't yet handle copy between different SPIR-V types generated from the same GLSL type
-4889 VULKAN : GLSLTest_ES31.BasicTypeArrayAndArrayOfSampler/ES3_1_Vulkan_DirectSPIRVGen = SKIP
-4889 VULKAN : GLSLTest_ES31.StructBothInvariantAndNot/ES3_1_Vulkan_DirectSPIRVGen = SKIP
+// Direct SPIR-V generation.  The following tests pass on some platforms but not others.  Need to investigate.
+4889 VULKAN : GeometryShaderTest.LayeredFramebufferPreRenderClear2DArrayColor/ES3_1_Vulkan_DirectSPIRVGen = SKIP
+4889 VULKAN : GeometryShaderTest.LayeredFramebufferPreRenderClear3DColor/ES3_1_Vulkan_DirectSPIRVGen = SKIP
+4889 VULKAN : GLSLTest_ES31.VaryingTessellationSampleInAndOut/ES3_1_Vulkan_DirectSPIRVGen = SKIP
 
 // Windows
 3786 WIN NVIDIA D3D11 : BufferDataOverflowTest.VertexBufferIntegerOverflow/* = SKIP
@@ -38,11 +30,18 @@
 6101 WIN OPENGL INTEL : BlitFramebufferTest.OOBWrite/* = SKIP
 6123 WIN AMD VULKAN : GLSLTestLoops.DoWhileContinueInSwitch/* = SKIP
 1229184 WIN NVIDIA VULKAN : SimpleStateChangeTest.RedefineFramebufferTexture/ES2_Vulkan = SKIP
+6173 WIN INTEL OPENGL : GLSLTest_ES31.BoolInInterfaceBlocks/* = SKIP
+6217 WIN INTEL OPENGL : GLSLTest_ES31.StorageBufferBoolVectorPassedToFunctions/* = SKIP
 
 // Linux
 6065 LINUX INTEL VULKAN : SimpleStateChangeTestES31.DrawThenUpdateUBOThenDrawThenDrawIndexed/* = SKIP
 // Fails in older mesa
 6109 LINUX INTEL : GLSLTestLoops.*While*/* = SKIP
+// Crashes when compiling the shader
+6173 LINUX INTEL OPENGL : GLSLTest_ES31.TypesUsedInDifferentBlockStorages/* = SKIP
+1230024 LINUX AMD GLES : GLSLTest_ES31.TypesUsedInDifferentBlockStorages/* = SKIP
+1230024 LINUX AMD OPENGL : GLSLTest_ES31.TypesUsedInDifferentBlockStorages/* = SKIP
+6192 LINUX AMD OPENGL : GLSLTest_ES31.BoolInInterfaceBlocks/ES3_1_OpenGL = SKIP
 
 // Nvidia
 6115 NVIDIA OPENGL : GLSLTestLoops.DoWhileContinue/* = SKIP
@@ -53,6 +52,9 @@
 6115 NVIDIA GLES : GLSLTestLoops.DoWhileUnconditionalContinue/* = SKIP
 6115 NVIDIA GLES : GLSLTestLoops.DoWhileContinueInSwitch/* = SKIP
 6115 NVIDIA GLES : GLSLTestLoops.WhileBreak/* = SKIP
+// Generates invalid errors when compiling the shader in the GL backend
+6172 NVIDIA OpenGL : GLSLTest_ES31.TypesUsedInDifferentBlockStorages/* = SKIP
+6172 NVIDIA GLES : GLSLTest_ES31.TypesUsedInDifferentBlockStorages/* = SKIP
 
 // Intel Vulkan
 
@@ -76,19 +78,29 @@
 6060 MAC METAL : BlitFramebufferTest.OOBWrite/* = SKIP
 6124 MAC OPENGL : GLSLTestLoops.*ContinueInSwitch/* = SKIP
 6144 MAC OPENGL : BlitFramebufferTest.BlitDepthStencilPixelByPixel/* = SKIP
+6236 MAC OPENGL : BufferDataTestES3.DrawWithNotCallingBufferData/* = SKIP
 1227129 MAC METAL : StateChangeTestES3.SamplerMetadataUpdateOnSetProgram/* = SKIP
+772651 MAC NVIDIA OPENGL : GLSLTest.VectorScalarDivideAndAddInLoop/* = SKIP
+772651 MAC NVIDIA OPENGL : GLSLTest.VectorScalarMultiplyAndAddInLoop/* = SKIP
 
 // D3D
 6091 WIN D3D11 : GLSLTest_ES3.InitGlobalComplexConstant/* = SKIP
 6122 WIN D3D11 : GLSLTestLoops.*ContinueInSwitch/* = SKIP
 6150 WIN D3D11 : GLSLTest_ES31.StructAndArrayEqualOperator/* = SKIP
+// Fails on assertion in translation to D3D
+3841 WIN D3D11 : GLSLTest_ES31.TypesUsedInDifferentBlockStorages/* = SKIP
+3841 WIN D3D11 : GLSLTest_ES31.BoolInInterfaceBlocks/* = SKIP
+// Mistranslation
+6216 WIN D3D11 : GLSLTest_ES31.StorageBufferBoolVectorPassedToFunctions/* = SKIP
 
 // Android
 6095 ANDROID GLES : GLSLTest_ES3.InitGlobalComplexConstant/ES3_OpenGLES = SKIP
 6116 ANDROID GLES : GLSLTestLoops.ForNoCondition/ES3_OpenGLES = SKIP
+6237 ANDROID GLES : BufferDataTestES3.DrawWithNotCallingBufferData/ES3_OpenGLES = SKIP
 
 // Nexus 5X expectations.
 6149 NEXUS5X GLES : GLSLTest_ES31.StructAndArrayEqualOperator/* = SKIP
+6193 NEXUS5X GLES : GLSLTest_ES31.BuiltInsWithOutParameters/* = SKIP
 
 // Pixel 4 expectations.
 5981 PIXEL4ORXL GLES : BlitFramebufferTest.BlitSRGBToRGBOversizedDestArea/* = SKIP
@@ -183,9 +195,20 @@
 6167 PIXEL4ORXL GLES : DepthStencilTestES3.FramebufferClearThenStencilTestStateThenStencilAttached/* = SKIP
 6167 PIXEL4ORXL GLES : DepthStencilTestES3.StencilTestStateThenFramebufferClearThenStencilAttached/* = SKIP
 
+// Internal driver failures on both GLES and Vulkan
+3839 NEXUS5X : GLSLTest_ES31.TypesUsedInDifferentBlockStorages/* = SKIP
+3839 PIXEL4ORXL : GLSLTest_ES31.TypesUsedInDifferentBlockStorages/* = SKIP
+// Failure to compile the shader
+6179 NEXUS5X GLES : GLSLTest_ES31.BoolInInterfaceBlocks/* = SKIP
+6179 PIXEL4ORXL GLES : GLSLTest_ES31.BoolInInterfaceBlocks/* = SKIP
+
 // AMD windows failures.  The GPU and driver on our bots are very old and buggy.
 // http://crbug.com/1224996
 4889 WIN AMD VULKAN : GLSLTest.StructWithInitializer/ES2_Vulkan_DirectSPIRVGen = SKIP
 4889 WIN AMD VULKAN : GLSLTest.StructWithUniformInitializer/ES2_Vulkan_DirectSPIRVGen = SKIP
 4889 WIN AMD VULKAN : GLSLTest_ES3.ValidIndexClampES300/ES3_Vulkan_DirectSPIRVGen = SKIP
 4889 WIN AMD VULKAN : GLSLTest_ES3.InitGlobalComplexConstant/ES3_Vulkan_DirectSPIRVGen = SKIP
+4889 WIN AMD VULKAN : GLSLTest_ES31.TypesUsedInDifferentBlockStorages/* = SKIP
+
+// Test is disabled as it only pertains to desktop GLSL
+6197 : GLSLTest_ES31.InterpolateAtWithSwizzle/* = SKIP

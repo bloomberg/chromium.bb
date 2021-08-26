@@ -18,6 +18,8 @@
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "components/reporting/compression/compression_module.h"
+#include "components/reporting/compression/decompression.h"
+#include "components/reporting/compression/test_compression_module.h"
 #include "components/reporting/encryption/test_encryption_module.h"
 #include "components/reporting/proto/record.pb.h"
 #include "components/reporting/storage/resources/resource_interface.h"
@@ -44,9 +46,12 @@ using ::testing::WithoutArgs;
 namespace reporting {
 namespace {
 
+constexpr size_t kCompressionThreshold = 2;
+const CompressionInformation::CompressionAlgorithm kCompressionType =
+    CompressionInformation::COMPRESSION_SNAPPY;
+
 // Metadata file name prefix.
 const base::FilePath::CharType METADATA_NAME[] = FILE_PATH_LITERAL("META");
-constexpr size_t kCompressionThreshold = 512;
 
 class MockUploadClient : public ::testing::NiceMock<UploaderInterface> {
  public:
@@ -65,6 +70,13 @@ class MockUploadClient : public ::testing::NiceMock<UploaderInterface> {
   void ProcessRecord(EncryptedRecord encrypted_record,
                      base::OnceCallback<void(bool)> processed_cb) override {
     WrappedRecord wrapped_record;
+    // Decompress encrypted_wrapped_record if is was compressed.
+    if (encrypted_record.has_compression_information()) {
+      std::string decompressed_record = Decompression::DecompressRecord(
+          encrypted_record.encrypted_wrapped_record(),
+          encrypted_record.compression_information());
+      encrypted_record.set_encrypted_wrapped_record(decompressed_record);
+    }
     ASSERT_TRUE(wrapped_record.ParseFromString(
         encrypted_record.encrypted_wrapped_record()));
     // Verify generation match.
@@ -303,8 +315,7 @@ class StorageQueueTest : public ::testing::TestWithParam<size_t> {
         base::BindRepeating(&StorageQueueTest::AsyncStartMockUploader,
                             base::Unretained(this)),
         test_encryption_module_,
-        CompressionModule::Create(kCompressionThreshold,
-                                  CompressionInformation::COMPRESSION_SNAPPY),
+        CompressionModule::Create(kCompressionThreshold, kCompressionType),
         storage_queue_create_event.cb());
     StatusOr<scoped_refptr<StorageQueue>> storage_queue_result =
         storage_queue_create_event.result();
@@ -473,7 +484,9 @@ TEST_P(StorageQueueTest, WriteIntoNewStorageQueueAndUploadWithFailures) {
   task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
 }
 
-TEST_P(StorageQueueTest, WriteIntoNewStorageQueueReopenWriteMoreAndUpload) {
+// TODO(crbug.com/1233846): This test is very flaky.
+TEST_P(StorageQueueTest,
+       DISABLED_WriteIntoNewStorageQueueReopenWriteMoreAndUpload) {
   CreateTestStorageQueueOrDie(BuildStorageQueueOptionsPeriodic());
   WriteStringOrDie(kData[0]);
   WriteStringOrDie(kData[1]);
@@ -505,8 +518,10 @@ TEST_P(StorageQueueTest, WriteIntoNewStorageQueueReopenWriteMoreAndUpload) {
   task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
 }
 
-TEST_P(StorageQueueTest,
-       WriteIntoNewStorageQueueReopenWithMissingMetadataWriteMoreAndUpload) {
+// TODO(crbug.com/1194878) - this is very flaky on all platforms.
+TEST_P(
+    StorageQueueTest,
+    DISABLED_WriteIntoNewStorageQueueReopenWithMissingMetadataWriteMoreAndUpload) {
   CreateTestStorageQueueOrDie(BuildStorageQueueOptionsPeriodic());
   WriteStringOrDie(kData[0]);
   WriteStringOrDie(kData[1]);
@@ -549,8 +564,56 @@ TEST_P(StorageQueueTest,
   task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
 }
 
-TEST_P(StorageQueueTest,
-       WriteIntoNewStorageQueueReopenWithMissingDataWriteMoreAndUpload) {
+// TODO(crbug.com/1194878) - this is very flaky on all platforms.
+TEST_P(
+    StorageQueueTest,
+    DISABLED_WriteIntoNewStorageQueueReopenWithMissingLastMetadataWriteMoreAndUpload) {
+  CreateTestStorageQueueOrDie(BuildStorageQueueOptionsPeriodic());
+  WriteStringOrDie(kData[0]);
+  WriteStringOrDie(kData[1]);
+  WriteStringOrDie(kData[2]);
+
+  // Save copy of options.
+  const QueueOptions options = storage_queue_->options();
+
+  ResetTestStorageQueue();
+
+  // Delete all metadata files.
+  base::FileEnumerator dir_enum(
+      options.directory(),
+      /*recursive=*/false, base::FileEnumerator::FILES,
+      base::StrCat({METADATA_NAME, FILE_PATH_LITERAL(".2")}));
+  base::FilePath full_name = dir_enum.Next();
+  ASSERT_FALSE(full_name.empty());
+  base::DeleteFile(full_name);
+  ASSERT_TRUE(dir_enum.Next().empty());
+
+  // Reopen, starting a new generation.
+  CreateTestStorageQueueOrDie(BuildStorageQueueOptionsPeriodic());
+  WriteStringOrDie(kMoreData[0]);
+  WriteStringOrDie(kMoreData[1]);
+  WriteStringOrDie(kMoreData[2]);
+
+  // Set uploader expectations. Previous data is all lost.
+  test::TestCallbackAutoWaiter waiter;
+  EXPECT_CALL(set_mock_uploader_expectations_, Call(NotNull()))
+      .WillOnce(Invoke([&waiter](MockUploadClient* mock_upload_client) {
+        MockUploadClient::SetUp(mock_upload_client, &waiter)
+            .Required(0, kMoreData[0])
+            .Required(1, kMoreData[1])
+            .Required(2, kMoreData[2]);
+        return Status::StatusOK();
+      }))
+      .WillRepeatedly(Invoke(&DoNotUpload));
+
+  // Trigger upload.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+}
+
+// TODO(crbug.com/1194878) - this is very flaky on all platforms.
+TEST_P(
+    StorageQueueTest,
+    DISABLED_WriteIntoNewStorageQueueReopenWithMissingDataWriteMoreAndUpload) {
   CreateTestStorageQueueOrDie(BuildStorageQueueOptionsPeriodic());
   WriteStringOrDie(kData[0]);
   WriteStringOrDie(kData[1]);
@@ -805,7 +868,16 @@ TEST_P(StorageQueueTest, WriteAndRepeatedlyUploadWithConfirmations) {
   }
 }
 
-TEST_P(StorageQueueTest, WriteAndRepeatedlyUploadWithConfirmationsAndReopen) {
+// Disable on Linux and Chrome OS due to flaky. crbug.com/1232644
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+#define MAYBE_WriteAndRepeatedlyUploadWithConfirmationsAndReopen \
+  DISABLED_WriteAndRepeatedlyUploadWithConfirmationsAndReopen
+#else
+#define MAYBE_WriteAndRepeatedlyUploadWithConfirmationsAndReopen \
+  WriteAndRepeatedlyUploadWithConfirmationsAndReopen
+#endif
+TEST_P(StorageQueueTest,
+       MAYBE_WriteAndRepeatedlyUploadWithConfirmationsAndReopen) {
   CreateTestStorageQueueOrDie(BuildStorageQueueOptionsPeriodic());
 
   WriteStringOrDie(kData[0]);

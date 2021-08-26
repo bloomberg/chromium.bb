@@ -5,16 +5,12 @@
 #include "gpu/command_buffer/service/shared_image_backing_ozone.h"
 
 #include <dawn/webgpu.h>
-#include <vulkan/vulkan.h>
 
 #include <memory>
 #include <utility>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
-#include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/common/mailbox.h"
@@ -26,18 +22,20 @@
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/command_buffer/service/shared_image_representation_gl_ozone.h"
 #include "gpu/command_buffer/service/shared_image_representation_skia_gl.h"
-#include "gpu/vulkan/vulkan_device_queue.h"
+#include "gpu/command_buffer/service/skia_utils.h"
+#include "third_party/skia/include/core/SkPromiseImageTexture.h"
+#include "third_party/skia/include/gpu/GrBackendSemaphore.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_fence.h"
+#include "ui/gfx/gpu_fence_handle.h"
 #include "ui/gfx/native_pixmap.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/buildflags.h"
-#include "ui/ozone/public/ozone_platform.h"
-#include "ui/ozone/public/surface_factory_ozone.h"
+#include "ui/gl/gl_image_native_pixmap.h"
 
 #if BUILDFLAG(USE_DAWN)
 #include "gpu/command_buffer/service/shared_image_representation_dawn_ozone.h"
@@ -49,18 +47,6 @@ namespace {
 size_t GetPixmapSizeInBytes(const gfx::NativePixmap& pixmap) {
   return gfx::BufferSizeForBufferFormat(pixmap.GetBufferSize(),
                                         pixmap.GetBufferFormat());
-}
-
-gfx::BufferUsage GetBufferUsage(uint32_t usage) {
-  if (usage & SHARED_IMAGE_USAGE_WEBGPU) {
-    // Just use SCANOUT for WebGPU since the memory doesn't need to be linear.
-    return gfx::BufferUsage::SCANOUT;
-  } else if (usage & SHARED_IMAGE_USAGE_SCANOUT) {
-    return gfx::BufferUsage::SCANOUT;
-  } else {
-    NOTREACHED() << "Unsupported usage flags.";
-    return gfx::BufferUsage::SCANOUT;
-  }
 }
 
 }  // namespace
@@ -89,37 +75,36 @@ class SharedImageBackingOzone::SharedImageRepresentationVaapiOzone
   }
 };
 
-std::unique_ptr<SharedImageBackingOzone> SharedImageBackingOzone::Create(
-    scoped_refptr<base::RefCountedData<DawnProcTable>> dawn_procs,
-    SharedContextState* context_state,
-    const Mailbox& mailbox,
-    viz::ResourceFormat format,
-    const gfx::Size& size,
-    const gfx::ColorSpace& color_space,
-    GrSurfaceOrigin surface_origin,
-    SkAlphaType alpha_type,
-    uint32_t usage,
-    SurfaceHandle surface_handle) {
-  gfx::BufferFormat buffer_format = viz::BufferFormat(format);
-  gfx::BufferUsage buffer_usage = GetBufferUsage(usage);
-  VkDevice vk_device = VK_NULL_HANDLE;
-  DCHECK(context_state);
-  if (context_state->vk_context_provider()) {
-    vk_device = context_state->vk_context_provider()
-                    ->GetDeviceQueue()
-                    ->GetVulkanDevice();
+class SharedImageBackingOzone::SharedImageRepresentationOverlayOzone
+    : public SharedImageRepresentationOverlay {
+ public:
+  SharedImageRepresentationOverlayOzone(
+      SharedImageManager* manager,
+      SharedImageBacking* backing,
+      MemoryTypeTracker* tracker,
+      scoped_refptr<gl::GLImageNativePixmap> image)
+      : SharedImageRepresentationOverlay(manager, backing, tracker),
+        gl_image_(image) {}
+  ~SharedImageRepresentationOverlayOzone() override = default;
+
+ private:
+  bool BeginReadAccess(std::vector<gfx::GpuFence>* acquire_fences) override {
+    auto* ozone_backing = static_cast<SharedImageBackingOzone*>(backing());
+    std::vector<gfx::GpuFenceHandle> fences;
+    ozone_backing->BeginAccess(&fences);
+    for (auto& fence : fences) {
+      acquire_fences->emplace_back(std::move(fence));
+    }
+    return true;
   }
-  ui::SurfaceFactoryOzone* surface_factory =
-      ui::OzonePlatform::GetInstance()->GetSurfaceFactoryOzone();
-  scoped_refptr<gfx::NativePixmap> pixmap = surface_factory->CreateNativePixmap(
-      surface_handle, vk_device, size, buffer_format, buffer_usage);
-  if (!pixmap) {
-    return nullptr;
+  void EndReadAccess(gfx::GpuFenceHandle release_fence) override {
+    auto* ozone_backing = static_cast<SharedImageBackingOzone*>(backing());
+    ozone_backing->EndAccess(true, std::move(release_fence));
   }
-  return base::WrapUnique(new SharedImageBackingOzone(
-      mailbox, format, size, color_space, surface_origin, alpha_type, usage,
-      context_state, std::move(pixmap), std::move(dawn_procs)));
-}
+  gl::GLImage* GetGLImage() override { return gl_image_.get(); }
+
+  scoped_refptr<gl::GLImageNativePixmap> gl_image_;
+};
 
 SharedImageBackingOzone::~SharedImageBackingOzone() = default;
 
@@ -196,8 +181,11 @@ SharedImageBackingOzone::ProduceSkia(
 std::unique_ptr<SharedImageRepresentationOverlay>
 SharedImageBackingOzone::ProduceOverlay(SharedImageManager* manager,
                                         MemoryTypeTracker* tracker) {
-  NOTIMPLEMENTED_LOG_ONCE();
-  return nullptr;
+  gfx::BufferFormat buffer_format = viz::BufferFormat(format());
+  auto image = base::MakeRefCounted<gl::GLImageNativePixmap>(
+      pixmap_->GetBufferSize(), buffer_format);
+  return std::make_unique<SharedImageRepresentationOverlayOzone>(
+      manager, this, tracker, image);
 }
 
 SharedImageBackingOzone::SharedImageBackingOzone(
@@ -247,4 +235,105 @@ bool SharedImageBackingOzone::VaSync() {
     has_pending_va_writes_ = !vaapi_deps_->SyncSurface();
   return !has_pending_va_writes_;
 }
+
+bool SharedImageBackingOzone::WritePixels(
+    base::span<const uint8_t> pixel_data,
+    SharedContextState* const shared_context_state,
+    viz::ResourceFormat format,
+    const gfx::Size& size,
+    SkAlphaType alpha_type) {
+  auto representation =
+      ProduceSkia(nullptr, shared_context_state->memory_type_tracker(),
+                  shared_context_state);
+
+  SkImageInfo info = SkImageInfo::Make(size.width(), size.height(),
+                                       ResourceFormatToClosestSkColorType(
+                                           /*gpu_compositing=*/true, format),
+                                       alpha_type);
+  SkPixmap sk_pixmap(info, pixel_data.data(), info.minRowBytes());
+
+  std::vector<GrBackendSemaphore> begin_semaphores;
+  std::vector<GrBackendSemaphore> end_semaphores;
+  // Allow uncleared access, as we manually handle clear tracking.
+  auto dest_scoped_access = representation->BeginScopedWriteAccess(
+      &begin_semaphores, &end_semaphores,
+      SharedImageRepresentation::AllowUnclearedAccess::kYes,
+      /*use_sk_surface=*/false);
+  if (!dest_scoped_access) {
+    return false;
+  }
+  if (!begin_semaphores.empty()) {
+    bool result = shared_context_state->gr_context()->wait(
+        begin_semaphores.size(), begin_semaphores.data(),
+        /*deleteSemaphoresAfterWait=*/false);
+    DCHECK(result);
+  }
+
+  bool written = shared_context_state->gr_context()->updateBackendTexture(
+      dest_scoped_access->promise_image_texture()->backendTexture(), &sk_pixmap,
+      /*numLevels=*/1, representation->surface_origin(), nullptr, nullptr);
+
+  FlushAndSubmitIfNecessary(std::move(end_semaphores), shared_context_state);
+  if (written && !representation->IsCleared()) {
+    representation->SetClearedRect(gfx::Rect(info.width(), info.height()));
+  }
+  return written;
+}
+
+void SharedImageBackingOzone::FlushAndSubmitIfNecessary(
+    std::vector<GrBackendSemaphore> signal_semaphores,
+    SharedContextState* const shared_context_state) {
+  bool sync_cpu = gpu::ShouldVulkanSyncCpuForSkiaSubmit(
+      shared_context_state->vk_context_provider());
+  GrFlushInfo flush_info = {};
+  if (!signal_semaphores.empty()) {
+    flush_info = {
+        .fNumSemaphores = signal_semaphores.size(),
+        .fSignalSemaphores = signal_semaphores.data(),
+    };
+    gpu::AddVulkanCleanupTaskForSkiaFlush(
+        shared_context_state->vk_context_provider(), &flush_info);
+  }
+
+  shared_context_state->gr_context()->flush(flush_info);
+  if (sync_cpu || !signal_semaphores.empty()) {
+    shared_context_state->gr_context()->submit();
+  }
+}
+
+bool SharedImageBackingOzone::NeedsSynchronization() const {
+  return (usage() & SHARED_IMAGE_USAGE_WEBGPU) ||
+         (usage() & SHARED_IMAGE_USAGE_SCANOUT);
+}
+
+void SharedImageBackingOzone::BeginAccess(
+    std::vector<gfx::GpuFenceHandle>* fences) {
+  if (NeedsSynchronization()) {
+    // Technically, we don't need to wait on other read fences when performing
+    // a read access, but like in the case of |ExternalVkImageBacking|, reading
+    // repeatedly without a write access will cause us to run out of FDs.
+    // TODO(penghuang): Avoid waiting on read semaphores.
+    *fences = std::move(read_fences_);
+    read_fences_.clear();
+    if (!write_fence_.is_null()) {
+      fences->push_back(std::move(write_fence_));
+      write_fence_ = gfx::GpuFenceHandle();
+    }
+  }
+}
+
+void SharedImageBackingOzone::EndAccess(bool readonly,
+                                        gfx::GpuFenceHandle fence) {
+  if (NeedsSynchronization()) {
+    DCHECK(!fence.is_null());
+    if (readonly) {
+      read_fences_.push_back(std::move(fence));
+    } else {
+      DCHECK(write_fence_.is_null());
+      DCHECK(read_fences_.empty());
+      write_fence_ = std::move(fence);
+    }
+  }
+}
+
 }  // namespace gpu

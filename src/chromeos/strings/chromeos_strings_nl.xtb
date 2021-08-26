@@ -14,6 +14,7 @@
 <translation id="1204296502688602597">DNS-latentie</translation>
 <translation id="123124571410524056">Vermoedelijke portal</translation>
 <translation id="1238612778414822719">HTTPS-latentie</translation>
+<translation id="1264369926465113395">Bekijk het nieuwe digitale tijdschrift van Chromebook voor makers</translation>
 <translation id="1270369111467284986">Vermoedelijke captive portal</translation>
 <translation id="1290331692326790741">Zwak signaal</translation>
 <translation id="1314565355471455267">Android VPN</translation>
@@ -34,7 +35,9 @@
 <translation id="1510238584712386396">Launcher</translation>
 <translation id="1600964289716072707">Leg een andere pagina op de scanner en selecteer Scannen om de pagina toe te voegen.</translation>
 <translation id="1621067168122174824">Batterijlading testen</translation>
+<translation id="1639239467298939599">Laden</translation>
 <translation id="1641857168437328880">Documentfeeder (enkelzijdig)</translation>
+<translation id="1643449475550628585">Achtergrondafbeelding dagelijks wijzigen</translation>
 <translation id="1644574205037202324">Geschiedenis</translation>
 <translation id="1662989795263954667">Gestopt: geen inkt meer</translation>
 <translation id="1703835215927279855">Letter</translation>
@@ -65,7 +68,6 @@
 <translation id="2224337661447660594">Geen internet</translation>
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="225692081236532131">Activeringsstatus</translation>
-<translation id="2294675138977897428">Geen ethernetverbinding gevonden</translation>
 <translation id="2326139988748364651"><ph name="RESOLUTION_VALUE" /> dpi</translation>
 <translation id="2338501278241028356">Zet Bluetooth aan om apparaten in de buurt te vinden</translation>
 <translation id="2364498172489649528">Geslaagd</translation>
@@ -75,9 +77,11 @@
 <translation id="2448312741937722512">Type</translation>
 <translation id="2461822463642141190">Huidig</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
+<translation id="2505327257735685095">De huidige achtergrondafbeelding vernieuwen</translation>
 <translation id="2517472476991765520">Scannen</translation>
 <translation id="2570743873672969996">Test <ph name="TEST_NAME" /> wordt uitgevoerd...</translation>
 <translation id="2585245331261708204">Nieuw bij Chrome OS</translation>
+<translation id="2619761439309613843">Dagelijks vernieuwen</translation>
 <translation id="2620436844016719705">Systeem</translation>
 <translation id="2740531572673183784">OK</translation>
 <translation id="2751739896257479635">EAP Phase 2-verificatie</translation>
@@ -87,7 +91,6 @@
 <translation id="2862104018715411648">Leg je document op de scanner en selecteer Scannen om aan de slag te gaan</translation>
 <translation id="2872961005593481000">Afsluiten</translation>
 <translation id="2878387241690264070"><ph name="RATE" /> ontladen in <ph name="NUM_SECONDS" /> seconden.</translation>
-<translation id="2983662233540284543">Leer van een game-creator, download apps voor gamedesign en meer</translation>
 <translation id="3008341117444806826">VERNIEUWEN</translation>
 <translation id="3009958530611748826">Selecteer een map voor opslaan</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" /> mA</translation>
@@ -101,6 +104,7 @@
 <translation id="3188257591659621405">Mijn bestanden</translation>
 <translation id="3199982728237701504">Documentfeeder (dubbelzijdig)</translation>
 <translation id="3226405216343213872">Zoeken naar scanners</translation>
+<translation id="3228433892370472777">Standaardverbinding</translation>
 <translation id="3246869037381808805">Afdruktaken ouder dan 1 dag worden verwijderd</translation>
 <translation id="3268178239013324452">Mislukt - Klep geopend</translation>
 <translation id="3283504360622356314">{0,plural, =1{Bestand bewerken}other{Bestanden bewerken}}</translation>
@@ -117,10 +121,13 @@
 <translation id="3488065109653206955">Gedeeltelijk geactiveerd</translation>
 <translation id="3527036260304016759">Mislukt - Onbekende fout</translation>
 <translation id="3532980081107202182">Nog ongeveer <ph name="MIN_REMAINING" /> minuten</translation>
+<translation id="3540383942695635079">MAC-adres</translation>
 <translation id="357889014807611375">wifi met datalimiet</translation>
+<translation id="3582041541988388905">Geen <ph name="NETWORK_NAME" />-verbinding gevonden</translation>
 <translation id="3595596368722241419">Batterij is vol</translation>
 <translation id="360565022852130722">Wifi-netwerk is beveiligd met het zwakke protocol WEP 802.1x</translation>
 <translation id="3689839747745352263">Test <ph name="TEST_NAME" /></translation>
+<translation id="3708186454126126312">Eerder verbonden</translation>
 <translation id="373232531963562220">{PAGE_NUMBER,plural, =0{Pagina opnieuw scannen}=1{Pagina {PAGE_NUMBER} opnieuw scannen}other{Pagina {PAGE_NUMBER} opnieuw scannen}}</translation>
 <translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★ (<ph name="AGGREGATED_COUNT" /> reviews)</translation>
 <translation id="3748026146096797577">Niet verbonden</translation>
@@ -163,6 +170,7 @@
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4483049906298469269">Kan de niet-standaard netwerkgateway niet pingen</translation>
 <translation id="4511264077854731334">Portal</translation>
+<translation id="4536864596629708641">IP-configuratie</translation>
 <translation id="4548483925627140043">Signaal niet gevonden</translation>
 <translation id="455835558791489930">Batterij van <ph name="CHARGE_VALUE" /> mAh</translation>
 <translation id="4562494484721939086">Geen service</translation>
@@ -171,6 +179,7 @@
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> van <ph name="TOTAL_PAGE_NUMBER" />. Druk op Enter om de afdruktaak te annuleren.</translation>
 <translation id="4646949265910132906">Beveiligde wifi-verbinding</translation>
 <translation id="4652335678334611408">Sessielogboek opslaan</translation>
+<translation id="4654549501020883054">Dagelijks wijzigen</translation>
 <translation id="4665014895760275686">Fabrikant</translation>
 <translation id="467510802200863975">De wachtwoorden komen niet overeen</translation>
 <translation id="467715984478005772">Vermoedelijke firewall</translation>
@@ -194,6 +203,7 @@
 <translation id="4891842000192098784">Stress</translation>
 <translation id="4917385247580444890">Sterk</translation>
 <translation id="4917889632206600977">Gestopt: geen papier meer</translation>
+<translation id="491836528011451486">Leg je document op de scanner en selecteer Opnieuw scannen om te scannen en de pagina <ph name="CURRENT_PAGE" /> te vervangen.</translation>
 <translation id="4921665434385737356"><ph name="RATE" /> opgeladen in <ph name="NUM_SECONDS" /> seconden.</translation>
 <translation id="4932733599132424254">Datum</translation>
 <translation id="498186245079027698">Check de scanner en probeer het opnieuw. Zorg dat er voldoende lokale ruimte is om gescande bestanden op te slaan.</translation>
@@ -209,10 +219,10 @@
 <translation id="5154917547274118687">Geheugen</translation>
 <translation id="5168185087976003268">Batterijprestaties</translation>
 <translation id="5170568018924773124">Tonen in map</translation>
-<translation id="519607504553633437">Ontwerp en ontwikkel je eigen games</translation>
 <translation id="5212543919916444558">Ik heb niets gevonden op je scherm waarmee ik kan helpen.
 Tik op de microfoon om me iets te vragen.</translation>
 <translation id="5222676887888702881">Uitloggen</translation>
+<translation id="5234764350956374838">Sluiten</translation>
 <translation id="5252456968953390977">Roaming</translation>
 <translation id="5264277876637023664">CPU-test doen</translation>
 <translation id="5267975978099728568"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="ERROR_STATUS" /></translation>
@@ -243,7 +253,6 @@ Tik op de microfoon om me iets te vragen.</translation>
 <translation id="5691511426247308406">Gezin</translation>
 <translation id="5701381305118179107">Centreren</translation>
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" /> van <ph name="TOTAL_PAGES" /></translation>
-<translation id="5752751666635965375">Maak je eigen game</translation>
 <translation id="5760715441271661976">Status van portal</translation>
 <translation id="5832805196449965646">Persoon toevoegen</translation>
 <translation id="583281660410589416">Onbekend</translation>
@@ -266,6 +275,7 @@ Tik op de microfoon om me iets te vragen.</translation>
 <translation id="6106186594183574873">Geef je oude wachtwoord op om te voltooien</translation>
 <translation id="6108689792487843350">Gateway is onbereikbaar</translation>
 <translation id="6122191549521593678">Online</translation>
+<translation id="6125438912510167220">Verbindingssnelheid</translation>
 <translation id="6137767437444130246">Gebruikerscertificaat</translation>
 <translation id="6146993107019042706">Geef je nieuwe wachtwoord opnieuw op om te voltooien</translation>
 <translation id="6147514244879357420">Png</translation>
@@ -292,6 +302,8 @@ Tik op de microfoon om me iets te vragen.</translation>
 <translation id="65587193855025101">Flatbed</translation>
 <translation id="6564646048574748301">Mislukt - Printer is niet bereikbaar</translation>
 <translation id="6574762126505704998">Uitvullen</translation>
+<translation id="6575134580692778371">Niet geconfigureerd</translation>
+<translation id="6596816719288285829">IP-adres</translation>
 <translation id="6603230386432466813">Heb je problemen met verbinding maken?</translation>
 <translation id="6618744767048954150">Wordt uitgevoerd</translation>
 <translation id="6620487321149975369">Afdruktaken zie je in de geschiedenis, tenzij ze handmatig worden verwijderd</translation>
@@ -314,13 +326,16 @@ Tik op de microfoon om me iets te vragen.</translation>
 <translation id="7059230779847288458">Opladen, vol over <ph name="TIME_VALUE" /></translation>
 <translation id="708426984172631313">GESTOPT</translation>
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
+<translation id="7134436342991564651">{0,plural, =1{Naamserver}other{Naamservers}}</translation>
 <translation id="7143207342074048698">Verbinden</translation>
 <translation id="7144878232160441200">Opnieuw proberen</translation>
 <translation id="714876143603641390">LAN-connectiviteit</translation>
 <translation id="7162487448488904999">Galerij</translation>
 <translation id="7172721935181587524">1 afbeelding</translation>
 <translation id="7177485034254901881">Dit <ph name="DEVICE_TYPE" /> wordt beheerd door <ph name="MANAGER" />. Beheerders kunnen het apparaat op afstand instellen.</translation>
+<translation id="7180611975245234373">Vernieuwen</translation>
 <translation id="7216409898977639127">Mobiele provider</translation>
+<translation id="7257889006063274246">Weet je zeker dat je de pagina <ph name="CURRENT_PAGE" /> wilt verwijderen?</translation>
 <translation id="7271040990581020067">De scanner wordt momenteel gebruikt. Probeer het later opnieuw.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7287310195820267359">Achtergrondcollecties</translation>
@@ -354,9 +369,11 @@ Tik op de microfoon om me iets te vragen.</translation>
 <translation id="7835501727204647447">CloudReady installeren</translation>
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7882358943899516840">Type provider</translation>
+<translation id="7895471513946376273">Ontdek tools voor tekenen en ontwerpen</translation>
 <translation id="7936303884198020182">Geen naamservers gevonden</translation>
 <translation id="7960831585769876809">Temperatuur</translation>
 <translation id="7994702968232966508">EAP-methode</translation>
+<translation id="8020238979854764615">Er is een fout opgetreden. Probeer het opnieuw door andere afbeeldingen te kiezen.</translation>
 <translation id="802154636333426148">Downloaden mislukt</translation>
 <translation id="8041089156583427627">Feedback sturen</translation>
 <translation id="8075838845814659848">Resterende batterijlading</translation>
@@ -368,7 +385,9 @@ Tik op de microfoon om me iets te vragen.</translation>
 <translation id="8214184102975786227">Meerdere pagina's scannen in 1 pdf-bestand</translation>
 <translation id="8230672074305416752">Kan de standaard netwerkgateway niet pingen</translation>
 <translation id="8246209727385807362">Onbekende provider</translation>
+<translation id="8286154143153872371">Maak verbinding met een netwerk en laad de pagina opnieuw om de achtergrond te bekijken.</translation>
 <translation id="8291967909914612644">Land thuisprovider</translation>
+<translation id="829270796093605079">Ontwerptools ontdekken</translation>
 <translation id="8294431847097064396">Bron</translation>
 <translation id="8297006494302853456">Zwak</translation>
 <translation id="8302368968391049045">HTTPS-firewall</translation>
@@ -392,6 +411,7 @@ Tik op de microfoon om me iets te vragen.</translation>
 <translation id="8575298406870537639">Je provider kan deze optie vereisen om verbinding te maken met hun netwerk. Neem contact op met je provider voor meer informatie.</translation>
 <translation id="8576249514688522074">Niet geïnitialiseerd</translation>
 <translation id="8620617069779373398">Roamingstatus</translation>
+<translation id="8655295600908251630">Kanaal</translation>
 <translation id="8660881923941176839">pound</translation>
 <translation id="8675354002693747642">Eerder gedeelde sleutel</translation>
 <translation id="871560550817059752">Mislukt - Geen inkt meer</translation>
@@ -404,6 +424,7 @@ Tik op de microfoon om me iets te vragen.</translation>
 <translation id="8798441408945964110">Naam provider</translation>
 <translation id="8814190375133053267">Wifi</translation>
 <translation id="8818152010000655963">Achtergrond</translation>
+<translation id="8834539327799336565">Momenteel verbonden</translation>
 <translation id="8845001906332463065">Hulp nodig?</translation>
 <translation id="8868741746785112895">GUID</translation>
 <translation id="8881098542468797602">Test geslaagd</translation>

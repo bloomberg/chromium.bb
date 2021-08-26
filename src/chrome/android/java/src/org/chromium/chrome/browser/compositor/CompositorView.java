@@ -85,6 +85,9 @@ public class CompositorView
     // it is never recreated when it is turned on again. This is the only workaround that seems to
     // be working, see crbug.com/931195.
     class ScreenStateReceiverWorkaround extends BroadcastReceiver {
+        // True indicates we should destroy and recreate the surface manager.
+        private boolean mNeedsReset;
+
         ScreenStateReceiverWorkaround() {
             IntentFilter filter = new IntentFilter(Intent.ACTION_SCREEN_OFF);
             getContext().getApplicationContext().registerReceiver(this, filter);
@@ -99,6 +102,15 @@ public class CompositorView
             if (intent.getAction().equals(Intent.ACTION_SCREEN_OFF)
                     && mCompositorSurfaceManager != null && !mIsInXr
                     && mNativeCompositorView != 0) {
+                mNeedsReset = true;
+            }
+        }
+
+        public void maybeResetCompositorSurfaceManager() {
+            if (!mNeedsReset) return;
+            mNeedsReset = false;
+
+            if (mCompositorSurfaceManager != null) {
                 mCompositorSurfaceManager.shutDown();
                 createCompositorSurfaceManager();
             }
@@ -140,7 +152,7 @@ public class CompositorView
         // Cover the black surface before it has valid content.  Set this placeholder view to
         // visible, but don't yet make SurfaceView visible, in order to delay
         // surfaceCreate/surfaceChanged calls until the native library is loaded.
-        setBackgroundColor(ChromeColors.getPrimaryBackgroundColor(getResources(), false));
+        setBackgroundColor(ChromeColors.getPrimaryBackgroundColor(getContext(), false));
         super.setVisibility(View.VISIBLE);
 
         // Request the opaque surface.  We might need the translucent one, but
@@ -422,6 +434,10 @@ public class CompositorView
         }
 
         CompositorViewJni.get().surfaceDestroyed(mNativeCompositorView, CompositorView.this);
+
+        if (mScreenStateReceiver != null) {
+            mScreenStateReceiver.maybeResetCompositorSurfaceManager();
+        }
     }
 
     @Override

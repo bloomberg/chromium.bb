@@ -18,11 +18,12 @@
 #include "base/time/time.h"
 #include "chrome/browser/ash/login/login_pref_names.h"
 #include "chrome/browser/ash/login/onboarding_user_activity_counter.h"
-#include "chrome/browser/ash/policy/core/browser_policy_connector_chromeos.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
+#include "components/arc/arc_prefs.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -110,6 +111,14 @@ void StartupUtils::RegisterOobeProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(
       prefs::kOobeMarketingOptInChoice, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterStringPref(prefs::kLastLoginInputMethod, std::string());
+  registry->RegisterTimePref(prefs::kOobeOnboardingTime, base::Time());
+  // The `Arc.PlayStoreLaunchWithinAWeek` metric can only be recorded if
+  // `kOobeOnboardingTime` has been set. Therefore,
+  // `kArcPlayStoreLaunchMetricCanBeRecorded` should be registered and
+  // initialized along with `kOobeOnboardingTime`.
+  registry->RegisterBooleanPref(
+      arc::prefs::kArcPlayStoreLaunchMetricCanBeRecorded, false);
   ash::OnboardingUserActivityCounter::RegisterProfilePrefs(registry);
 }
 
@@ -227,8 +236,8 @@ void StartupUtils::SetInitialLocale(const std::string& locale) {
 
 // static
 bool StartupUtils::IsDeviceOwned() {
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  policy::BrowserPolicyConnectorAsh* connector =
+      g_browser_process->platform_part()->browser_policy_connector_ash();
   return !user_manager::UserManager::Get()->GetUsers().empty() ||
          connector->IsDeviceEnterpriseManaged();
 }

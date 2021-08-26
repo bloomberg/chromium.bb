@@ -56,10 +56,13 @@ namespace {
 
 using fake_server::GetServerNigori;
 using fake_server::SetNigoriInFakeServer;
+using syncer::BuildCustomPassphraseNigoriSpecifics;
 using syncer::BuildKeystoreNigoriSpecifics;
 using syncer::BuildTrustedVaultNigoriSpecifics;
 using syncer::KeyParamsForTesting;
-using syncer::Pbkdf2KeyParamsForTesting;
+using syncer::KeystoreKeyParamsForTesting;
+using syncer::Pbkdf2PassphraseKeyParamsForTesting;
+using syncer::TrustedVaultKeyParamsForTesting;
 using testing::NotNull;
 using testing::SizeIs;
 
@@ -347,7 +350,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientNigoriSyncTest,
   ASSERT_THAT(keystore_keys, SizeIs(1));
   EXPECT_THAT(
       specifics.encryption_keybag(),
-      IsDataEncryptedWith(Pbkdf2KeyParamsForTesting(keystore_keys.back())));
+      IsDataEncryptedWith(KeystoreKeyParamsForTesting(keystore_keys.back())));
   EXPECT_EQ(specifics.passphrase_type(),
             sync_pb::NigoriSpecifics::KEYSTORE_PASSPHRASE);
   EXPECT_TRUE(specifics.keybag_is_frozen());
@@ -360,8 +363,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientNigoriSyncTest,
 // this password form.
 IN_PROC_BROWSER_TEST_F(SingleClientNigoriSyncTest,
                        ShouldDecryptWithImplicitPassphraseNigori) {
-  const KeyParamsForTesting kKeyParams = {
-      syncer::KeyDerivationParams::CreateForPbkdf2(), "passphrase"};
+  const KeyParamsForTesting kKeyParams =
+      Pbkdf2PassphraseKeyParamsForTesting("passphrase");
   sync_pb::NigoriSpecifics specifics;
   std::unique_ptr<syncer::CryptographerImpl> cryptographer =
       syncer::CryptographerImpl::FromSingleKeyForTesting(
@@ -391,7 +394,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientNigoriSyncTest,
       GetFakeServer()->GetKeystoreKeys();
   ASSERT_THAT(keystore_keys, SizeIs(1));
   const KeyParamsForTesting kKeystoreKeyParams =
-      Pbkdf2KeyParamsForTesting(keystore_keys.back());
+      KeystoreKeyParamsForTesting(keystore_keys.back());
   SetNigoriInFakeServer(BuildKeystoreNigoriSpecifics(
                             /*keybag_keys_params=*/{kKeystoreKeyParams},
                             /*keystore_decryptor_params=*/kKeystoreKeyParams,
@@ -415,7 +418,7 @@ IN_PROC_BROWSER_TEST_F(
       GetFakeServer()->GetKeystoreKeys();
   ASSERT_THAT(keystore_keys, SizeIs(1));
   const KeyParamsForTesting kKeystoreKeyParams =
-      Pbkdf2KeyParamsForTesting(keystore_keys.back());
+      KeystoreKeyParamsForTesting(keystore_keys.back());
   SetNigoriInFakeServer(BuildKeystoreNigoriSpecifics(
                             /*keybag_keys_params=*/{kKeystoreKeyParams},
                             /*keystore_decryptor_params=*/kKeystoreKeyParams,
@@ -456,9 +459,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientNigoriSyncTest,
       GetFakeServer()->GetKeystoreKeys();
   ASSERT_THAT(keystore_keys, SizeIs(1));
   const KeyParamsForTesting kKeystoreKeyParams =
-      Pbkdf2KeyParamsForTesting(keystore_keys.back());
-  const KeyParamsForTesting kDefaultKeyParams = {
-      syncer::KeyDerivationParams::CreateForPbkdf2(), "password"};
+      KeystoreKeyParamsForTesting(keystore_keys.back());
+  const KeyParamsForTesting kDefaultKeyParams =
+      Pbkdf2PassphraseKeyParamsForTesting("password");
   SetNigoriInFakeServer(
       BuildKeystoreNigoriSpecifics(
           /*keybag_keys_params=*/{kDefaultKeyParams, kKeystoreKeyParams},
@@ -482,7 +485,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientNigoriSyncTest, ShouldRotateKeystoreKey) {
       GetFakeServer()->GetKeystoreKeys();
   ASSERT_THAT(keystore_keys, SizeIs(2));
   const KeyParamsForTesting new_keystore_key_params =
-      Pbkdf2KeyParamsForTesting(keystore_keys[1]);
+      KeystoreKeyParamsForTesting(keystore_keys[1]);
   const std::string expected_key_bag_key_name =
       ComputeKeyName(new_keystore_key_params);
   EXPECT_TRUE(ServerNigoriKeyNameChecker(expected_key_bag_key_name,
@@ -497,9 +500,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientNigoriSyncTestWithFullKeystoreMigration,
       GetFakeServer()->GetKeystoreKeys();
   ASSERT_THAT(keystore_keys, SizeIs(1));
   const KeyParamsForTesting kKeystoreKeyParams =
-      Pbkdf2KeyParamsForTesting(keystore_keys.back());
-  const KeyParamsForTesting kDefaultKeyParams = {
-      syncer::KeyDerivationParams::CreateForPbkdf2(), "password"};
+      KeystoreKeyParamsForTesting(keystore_keys.back());
+  const KeyParamsForTesting kDefaultKeyParams =
+      Pbkdf2PassphraseKeyParamsForTesting("password");
   SetNigoriInFakeServer(
       BuildKeystoreNigoriSpecifics(
           /*keybag_keys_params=*/{kDefaultKeyParams, kKeystoreKeyParams},
@@ -518,7 +521,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientNigoriSyncTestWithFullKeystoreMigration,
                        ShouldCompleteKeystoreMigrationAfterRestart) {
   ASSERT_TRUE(SetupClients());
   const std::string expected_key_bag_key_name =
-      ComputeKeyName(Pbkdf2KeyParamsForTesting(
+      ComputeKeyName(KeystoreKeyParamsForTesting(
           /*raw_key=*/GetFakeServer()->GetKeystoreKeys().back()));
   EXPECT_TRUE(ServerNigoriKeyNameChecker(expected_key_bag_key_name,
                                          GetSyncService(0), GetFakeServer())
@@ -541,9 +544,9 @@ IN_PROC_BROWSER_TEST_F(
   std::vector<uint8_t> corrupted_keystore_key = keystore_keys[0];
   corrupted_keystore_key.push_back(42u);
   const KeyParamsForTesting kKeystoreKeyParams =
-      Pbkdf2KeyParamsForTesting(corrupted_keystore_key);
-  const KeyParamsForTesting kDefaultKeyParams = {
-      syncer::KeyDerivationParams::CreateForPbkdf2(), "password"};
+      KeystoreKeyParamsForTesting(corrupted_keystore_key);
+  const KeyParamsForTesting kDefaultKeyParams =
+      Pbkdf2PassphraseKeyParamsForTesting("password");
   SetNigoriInFakeServer(
       BuildKeystoreNigoriSpecifics(
           /*keybag_keys_params=*/{kDefaultKeyParams, kKeystoreKeyParams},
@@ -875,9 +878,9 @@ IN_PROC_BROWSER_TEST_F(
       GetFakeServer()->GetKeystoreKeys();
   ASSERT_THAT(keystore_keys, SizeIs(1));
   const KeyParamsForTesting kKeystoreKeyParams =
-      Pbkdf2KeyParamsForTesting(keystore_keys.back());
+      KeystoreKeyParamsForTesting(keystore_keys.back());
   const KeyParamsForTesting kTrustedVaultKeyParams =
-      Pbkdf2KeyParamsForTesting(kTestEncryptionKey);
+      TrustedVaultKeyParamsForTesting(kTestEncryptionKey);
   SetNigoriInFakeServer(
       BuildKeystoreNigoriSpecifics(
           /*keybag_keys_params=*/{kTrustedVaultKeyParams, kKeystoreKeyParams},
@@ -939,12 +942,12 @@ IN_PROC_BROWSER_TEST_F(
           .Wait());
 
   // Mimic remote transition to custom passphrase.
-  const KeyParamsForTesting kCustomPassphraseKeyParams = {
-      syncer::KeyDerivationParams::CreateForPbkdf2(), "passphrase"};
+  const KeyParamsForTesting kCustomPassphraseKeyParams =
+      Pbkdf2PassphraseKeyParamsForTesting("passphrase");
   const KeyParamsForTesting kTrustedVaultKeyParams =
-      Pbkdf2KeyParamsForTesting(kTestEncryptionKey);
-  SetNigoriInFakeServer(CreateCustomPassphraseNigori(kCustomPassphraseKeyParams,
-                                                     kTrustedVaultKeyParams),
+      TrustedVaultKeyParamsForTesting(kTestEncryptionKey);
+  SetNigoriInFakeServer(BuildCustomPassphraseNigoriSpecifics(
+                            kCustomPassphraseKeyParams, kTrustedVaultKeyParams),
                         GetFakeServer());
 
   EXPECT_TRUE(
@@ -1285,7 +1288,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientNigoriWithRecoverySyncTest,
   // Inject password encrypted with trusted vault key and verify client is able
   // to decrypt it.
   const KeyParamsForTesting trusted_vault_key_params =
-      Pbkdf2KeyParamsForTesting(new_trusted_vault_key);
+      TrustedVaultKeyParamsForTesting(new_trusted_vault_key);
   const password_manager::PasswordForm password_form =
       passwords_helper::CreateTestPasswordForm(0);
   passwords_helper::InjectEncryptedServerPassword(

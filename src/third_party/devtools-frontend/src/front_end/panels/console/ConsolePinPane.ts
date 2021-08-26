@@ -11,7 +11,7 @@ import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
 // eslint-disable-next-line rulesdir/es_modules_import
 import objectValueStyles from '../../ui/legacy/components/object_ui/objectValue.css.js';
-import * as TextEditor from '../../ui/legacy/components/text_editor/text_editor.js';  // eslint-disable-line no-unused-vars
+import * as TextEditor from '../../ui/legacy/components/text_editor/text_editor.js';
 import * as UI from '../../ui/legacy/legacy.js';
 
 import consolePinPaneStyles from './consolePinPane.css.js';
@@ -328,7 +328,7 @@ export class ConsolePin extends Common.ObjectWrapper.ObjectWrapper {
     const preprocessedExpression = ObjectUI.JavaScriptREPL.JavaScriptREPL.preprocessExpression(text);
     const {preview, result} = await ObjectUI.JavaScriptREPL.JavaScriptREPL.evaluateAndBuildPreview(
         `${preprocessedExpression}\n//# sourceURL=watch-expression-${this.consolePinNumber}.devtools`,
-        throwOnSideEffect, timeout, !isEditing /* allowErrors */, 'console');
+        throwOnSideEffect, false /* replMode */, timeout, !isEditing /* allowErrors */, 'console');
     if (this._lastResult && this._lastExecutionContext) {
       this._lastExecutionContext.runtimeModel.releaseEvaluationResult(this._lastResult);
     }

@@ -4,8 +4,8 @@
 
 #include "third_party/blink/renderer/core/html/conversion_measurement_parsing.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
-#include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_attribution_source_params.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -16,7 +16,6 @@
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/html_anchor_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
-#include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/inspector_audits_issue.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -26,9 +25,9 @@ namespace blink {
 
 namespace {
 
-absl::optional<uint64_t> ParseExpiry(const String& expiry) {
+absl::optional<int64_t> ParseExpiry(const String& expiry) {
   bool expiry_is_valid = false;
-  uint64_t parsed_expiry = expiry.ToUInt64Strict(&expiry_is_valid);
+  int64_t parsed_expiry = expiry.ToInt64Strict(&expiry_is_valid);
   return expiry_is_valid ? absl::make_optional(parsed_expiry) : absl::nullopt;
 }
 
@@ -56,7 +55,7 @@ WebImpressionOrError GetImpression(
     const String& impression_data_string,
     const String& conversion_destination_string,
     const absl::optional<String>& reporting_origin_string,
-    absl::optional<uint64_t> impression_expiry_milliseconds,
+    absl::optional<int64_t> impression_expiry_milliseconds,
     absl::optional<int64_t> attribution_source_priority,
     HTMLAnchorElement* element,
     bool allow_invalid_impression_data) {
@@ -78,21 +77,16 @@ WebImpressionOrError GetImpression(
     return mojom::blink::RegisterImpressionError::kNotAllowed;
   }
 
-  if (!execution_context->IsFeatureEnabled(
-          mojom::blink::PermissionsPolicyFeature::kAttributionReporting)) {
+  const bool feature_policy_enabled = execution_context->IsFeatureEnabled(
+      mojom::blink::PermissionsPolicyFeature::kAttributionReporting);
+  UMA_HISTOGRAM_BOOLEAN("Conversions.ImpressionIgnoredByFeaturePolicy",
+                        !feature_policy_enabled);
+
+  if (!feature_policy_enabled) {
     AuditsIssue::ReportAttributionIssue(
         frame->DomWindow(),
         AttributionReportingIssueType::kPermissionPolicyDisabled,
         frame->GetDevToolsFrameToken(), element);
-
-    // TODO(crbug.com/1178400): Remove console message once the issue reported
-    //     above is actually shown in DevTools.
-    String message =
-        "The 'attribution-reporting' permissions policy must be enabled to "
-        "declare an attribution source.";
-    execution_context->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-        mojom::blink::ConsoleMessageSource::kOther,
-        mojom::blink::ConsoleMessageLevel::kError, message));
     return mojom::blink::RegisterImpressionError::kNotAllowed;
   }
 
@@ -192,7 +186,7 @@ WebImpressionOrError GetImpression(
 
 absl::optional<WebImpression> GetImpressionForAnchor(
     HTMLAnchorElement* element) {
-  absl::optional<uint64_t> expiry;
+  absl::optional<int64_t> expiry;
   if (element->hasAttribute(html_names::kAttributionexpiryAttr)) {
     expiry = ParseExpiry(
         element->FastGetAttribute(html_names::kAttributionexpiryAttr)

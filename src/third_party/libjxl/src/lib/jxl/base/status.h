@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #ifndef LIB_JXL_BASE_STATUS_H_
 #define LIB_JXL_BASE_STATUS_H_
@@ -147,6 +138,7 @@ JXL_NORETURN bool Abort();
 
 // Define JXL_IS_DEBUG_BUILD that denotes asan, msan and other debug builds,
 // but not opt or release.
+#ifndef JXL_IS_DEBUG_BUILD
 #if !defined(NDEBUG) || defined(ADDRESS_SANITIZER) ||         \
     defined(MEMORY_SANITIZER) || defined(THREAD_SANITIZER) || \
     defined(__clang_analyzer__)
@@ -154,6 +146,7 @@ JXL_NORETURN bool Abort();
 #else
 #define JXL_IS_DEBUG_BUILD 0
 #endif
+#endif  //  JXL_IS_DEBUG_BUILD
 
 // Same as above, but only runs in debug builds (builds where NDEBUG is not
 // defined). This is useful for slower asserts that we want to run more rarely

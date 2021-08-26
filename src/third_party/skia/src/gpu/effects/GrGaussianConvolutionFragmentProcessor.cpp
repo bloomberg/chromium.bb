@@ -11,7 +11,6 @@
 #include "src/gpu/GrTexture.h"
 #include "src/gpu/GrTextureProxy.h"
 #include "src/gpu/effects/GrTextureEffect.h"
-#include "src/gpu/glsl/GrGLSLFragmentProcessor.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
 #include "src/gpu/glsl/GrGLSLProgramDataManager.h"
 #include "src/gpu/glsl/GrGLSLUniformHandler.h"
@@ -21,22 +20,17 @@
 using UniformHandle = GrGLSLProgramDataManager::UniformHandle;
 using Direction = GrGaussianConvolutionFragmentProcessor::Direction;
 
-class GrGaussianConvolutionFragmentProcessor::Impl : public GrGLSLFragmentProcessor {
+class GrGaussianConvolutionFragmentProcessor::Impl : public ProgramImpl {
 public:
     void emitCode(EmitArgs&) override;
 
-    static inline void GenKey(const GrProcessor&, const GrShaderCaps&, GrProcessorKeyBuilder*);
-
-protected:
+private:
     void onSetData(const GrGLSLProgramDataManager&, const GrFragmentProcessor&) override;
 
-private:
     UniformHandle fKernelUni;
     UniformHandle fOffsetsUni;
     UniformHandle fKernelWidthUni;
     UniformHandle fIncrementUni;
-
-    using INHERITED = GrGLSLFragmentProcessor;
 };
 
 enum class LoopType {
@@ -143,15 +137,6 @@ void GrGaussianConvolutionFragmentProcessor::Impl::onSetData(const GrGLSLProgram
     }
 }
 
-void GrGaussianConvolutionFragmentProcessor::Impl::GenKey(const GrProcessor& processor,
-                                                          const GrShaderCaps& shaderCaps,
-                                                          GrProcessorKeyBuilder* b) {
-    const auto& conv = processor.cast<GrGaussianConvolutionFragmentProcessor>();
-    if (loop_type(shaderCaps) != LoopType::kVariableLength) {
-        b->add32(conv.fRadius);
-    }
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 
 std::unique_ptr<GrFragmentProcessor> GrGaussianConvolutionFragmentProcessor::Make(
@@ -227,21 +212,21 @@ GrGaussianConvolutionFragmentProcessor::GrGaussianConvolutionFragmentProcessor(
 
 GrGaussianConvolutionFragmentProcessor::GrGaussianConvolutionFragmentProcessor(
         const GrGaussianConvolutionFragmentProcessor& that)
-        : INHERITED(kGrGaussianConvolutionFragmentProcessor_ClassID, that.optimizationFlags())
+        : INHERITED(that)
         , fRadius(that.fRadius)
         , fDirection(that.fDirection) {
-    this->cloneAndRegisterAllChildProcessors(that);
     memcpy(fKernel, that.fKernel, SkGpuBlurUtils::LinearKernelWidth(fRadius) * sizeof(float));
     memcpy(fOffsets, that.fOffsets, SkGpuBlurUtils::LinearKernelWidth(fRadius) * sizeof(float));
-    this->setUsesSampleCoordsDirectly();
 }
 
-void GrGaussianConvolutionFragmentProcessor::onGetGLSLProcessorKey(const GrShaderCaps& caps,
-                                                                   GrProcessorKeyBuilder* b) const {
-    Impl::GenKey(*this, caps, b);
+void GrGaussianConvolutionFragmentProcessor::onAddToKey(const GrShaderCaps& shaderCaps,
+                                                        GrProcessorKeyBuilder* b) const {
+    if (loop_type(shaderCaps) != LoopType::kVariableLength) {
+        b->add32(fRadius);
+    }
 }
 
-std::unique_ptr<GrGLSLFragmentProcessor>
+std::unique_ptr<GrFragmentProcessor::ProgramImpl>
 GrGaussianConvolutionFragmentProcessor::onMakeProgramImpl() const {
     return std::make_unique<Impl>();
 }

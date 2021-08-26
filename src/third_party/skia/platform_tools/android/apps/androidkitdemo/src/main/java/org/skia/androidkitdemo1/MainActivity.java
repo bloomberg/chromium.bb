@@ -14,8 +14,13 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+
 import org.skia.androidkit.*;
+import org.skia.androidkit.util.SkottieView;
 import org.skia.androidkit.util.SurfaceRenderer;
 
 public class MainActivity extends Activity {
@@ -83,6 +88,18 @@ public class MainActivity extends Activity {
          */
         SurfaceView runtimeEffectView = findViewById(R.id.runtimeEffect);
         runtimeEffectView.getHolder().addCallback(new DemoRuntimeShaderRenderer());
+
+        /*
+         * SkottieView added programmatically to view hierarchy
+         */
+        SkottieView skottieView = new SkottieView(this, R.raw.im_thirsty, new Color(1, 1, 1, 1));
+        skottieView.setLayoutParams(new ViewGroup.LayoutParams(400, 400));
+        skottieView.setOnClickListener((View v) -> {
+            SkottieView s = (SkottieView)v;
+            s.pause();
+        });
+        LinearLayout skottieContainer = findViewById(R.id.skottie_container);
+        skottieContainer.addView(skottieView);
     }
 
     private class ThreadedSurfaceHandler implements SurfaceHolder.Callback {
@@ -98,8 +115,10 @@ public class MainActivity extends Activity {
             p.setStrokeCap(Paint.Cap.ROUND);
             p.setStrokeJoin(Paint.Join.ROUND);
             p.setStrokeMiter(4);
-            //ImageFilter filter = ImageFilter.distantLitDiffuse(.5f, .5f, .5f, new Color(1, 0, 0, 1), 1, 1, null);
-            ImageFilter filter = ImageFilter.blur(10, 10, TileMode.DECAL, null);
+//            ImageFilter filter = ImageFilter.distantLitDiffuse(.5f, .5f, .5f, new Color(1, 0, 0, 1), 1, 1, null);
+//            ImageFilter filter = ImageFilter.blur(10, 10, TileMode.DECAL, null);
+            ImageFilter filter = ImageFilter.dropShadow(10, 10, 10, 10, new Color(1, 0, 0, 1), null);
+//            ImageFilter filter2 = ImageFilter.blend(BlendMode.DIFFERENCE, null, filter);
             p.setImageFilter(filter);
             PathBuilder pathBuilder = new PathBuilder();
             pathBuilder.moveTo(20, 20);

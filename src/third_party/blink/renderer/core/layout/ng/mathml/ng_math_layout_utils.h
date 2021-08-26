@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_MATHML_NG_MATH_LAYOUT_UTILS_H_
 
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/fonts/opentype/open_type_math_support.h"
 
@@ -24,7 +25,12 @@ NGConstraintSpace CreateConstraintSpaceForMathChild(
     const NGBlockNode& parent_node,
     const LogicalSize& child_available_size,
     const NGConstraintSpace& parent_constraint_space,
-    const NGLayoutInputNode&);
+    const NGLayoutInputNode&,
+    const NGCacheSlot = NGCacheSlot::kLayout,
+    const absl::optional<NGConstraintSpace::MathTargetStretchBlockSizes>
+        target_stretch_block_sizes = absl::nullopt,
+    const absl::optional<LayoutUnit> target_stretch_inline_size =
+        absl::nullopt);
 
 MinMaxSizesResult ComputeMinAndMaxContentContributionForMathChild(
     const ComputedStyle& parent_style,
@@ -92,6 +98,19 @@ MinMaxSizes GetMinMaxSizesForVerticalStretchyOperator(const ComputedStyle&,
 
 bool IsUnderOverLaidOutAsSubSup(const NGBlockNode& node);
 bool IsOperatorWithSpecialShaping(const NGBlockNode& node);
+
+LayoutUnit MathTableBaseline(const ComputedStyle&, LayoutUnit block_offset);
+
+// For nodes corresponding to embellished operators, this function returns the
+// properties of its core operator. Otherwise, it returns a null optional.
+// See https://mathml-refresh.github.io/mathml-core/#embellished-operators
+struct MathMLEmbellishedOperatorProperties {
+  bool has_movablelimits;
+  LayoutUnit lspace;
+  LayoutUnit rspace;
+};
+absl::optional<MathMLEmbellishedOperatorProperties>
+GetMathMLEmbellishedOperatorProperties(const NGBlockNode&);
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_MATHML_NG_MATH_LAYOUT_UTILS_H_

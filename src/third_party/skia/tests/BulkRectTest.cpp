@@ -8,15 +8,16 @@
 #include "include/gpu/GrDirectContext.h"
 #include "src/core/SkBlendModePriv.h"
 #include "src/gpu/GrDirectContextPriv.h"
+#include "src/gpu/GrOpsTypes.h"
 #include "src/gpu/GrProxyProvider.h"
 #include "src/gpu/GrResourceProvider.h"
-#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/ops/GrFillRectOp.h"
 #include "src/gpu/ops/GrTextureOp.h"
+#include "src/gpu/v1/SurfaceDrawContext_v1.h"
 #include "tests/Test.h"
 
-static std::unique_ptr<GrSurfaceDrawContext> new_RTC(GrRecordingContext* rContext) {
-    return GrSurfaceDrawContext::Make(
+static std::unique_ptr<skgpu::v1::SurfaceDrawContext> new_SDC(GrRecordingContext* rContext) {
+    return skgpu::v1::SurfaceDrawContext::Make(
             rContext, GrColorType::kRGBA_8888, nullptr, SkBackingFit::kExact, {128, 128},
             SkSurfaceProps());
 }
@@ -55,9 +56,9 @@ static void fillrectop_creation_test(skiatest::Reporter* reporter, GrDirectConte
         return;
     }
 
-    std::unique_ptr<GrSurfaceDrawContext> rtc = new_RTC(dContext);
+    std::unique_ptr<skgpu::v1::SurfaceDrawContext> sdc = new_SDC(dContext);
 
-    auto quads = new GrSurfaceDrawContext::QuadSetEntry[requestedTotNumQuads];
+    auto quads = new GrQuadSetEntry[requestedTotNumQuads];
 
     for (int i = 0; i < requestedTotNumQuads; ++i) {
         quads[i].fRect = SkRect::MakeWH(100.5f, 100.5f); // prevent the int non-AA optimization
@@ -69,10 +70,10 @@ static void fillrectop_creation_test(skiatest::Reporter* reporter, GrDirectConte
     GrPaint paint;
     paint.setXPFactory(SkBlendMode_AsXPFactory(blendMode));
 
-    GrFillRectOp::AddFillRectOps(rtc.get(), nullptr, dContext, std::move(paint), overallAA,
+    GrFillRectOp::AddFillRectOps(sdc.get(), nullptr, dContext, std::move(paint), overallAA,
                                  SkMatrix::I(), quads, requestedTotNumQuads);
 
-    GrOpsTask* opsTask = rtc->testingOnly_PeekLastOpsTask();
+    GrOpsTask* opsTask = sdc->testingOnly_PeekLastOpsTask();
     int actualNumOps = opsTask->numOpChains();
 
     int actualTotNumQuads = 0;
@@ -99,7 +100,7 @@ static void textureop_creation_test(skiatest::Reporter* reporter, GrDirectContex
                                     bool allUniqueProxies,
                                     int requestedTotNumQuads, int expectedNumOps) {
 
-    std::unique_ptr<GrSurfaceDrawContext> rtc = new_RTC(dContext);
+    std::unique_ptr<skgpu::v1::SurfaceDrawContext> sdc = new_SDC(dContext);
 
     GrSurfaceProxyView proxyViewA, proxyViewB;
 
@@ -114,7 +115,7 @@ static void textureop_creation_test(skiatest::Reporter* reporter, GrDirectContex
                                         GrSwizzle::RGBA());
     }
 
-    auto set = new GrSurfaceDrawContext::TextureSetEntry[requestedTotNumQuads];
+    auto set = new GrTextureSetEntry[requestedTotNumQuads];
 
     for (int i = 0; i < requestedTotNumQuads; ++i) {
         if (!allUniqueProxies) {
@@ -158,10 +159,10 @@ static void textureop_creation_test(skiatest::Reporter* reporter, GrDirectContex
                                                overallAA,
                                                &quad,
                                                nullptr);
-            rtc->addDrawOp(nullptr, std::move(op));
+            sdc->addDrawOp(nullptr, std::move(op));
         }
     } else {
-        GrTextureOp::AddTextureSetOps(rtc.get(),
+        GrTextureOp::AddTextureSetOps(sdc.get(),
                                       nullptr,
                                       dContext,
                                       set,
@@ -177,7 +178,7 @@ static void textureop_creation_test(skiatest::Reporter* reporter, GrDirectContex
                                       nullptr);
     }
 
-    GrOpsTask* opsTask = rtc->testingOnly_PeekLastOpsTask();
+    GrOpsTask* opsTask = sdc->testingOnly_PeekLastOpsTask();
     int actualNumOps = opsTask->numOpChains();
 
     int actualTotNumQuads = 0;

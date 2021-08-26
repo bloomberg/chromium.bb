@@ -22,6 +22,7 @@
 #include "ash/app_list/views/expand_arrow_view.h"
 #include "ash/app_list/views/paged_apps_grid_view.h"
 #include "ash/app_list/views/search_box_view.h"
+#include "ash/app_list/views/suggestion_chip_container_view.h"
 #include "ash/constants/ash_features.h"
 #include "ash/ime/ime_controller_impl.h"
 #include "ash/ime/test_ime_controller_client.h"
@@ -96,8 +97,12 @@ aura::Window* GetVirtualKeyboardWindow() {
       ->GetKeyboardWindow();
 }
 
+AppsContainerView* GetAppsContainerView() {
+  return GetContentsView()->apps_container_view();
+}
+
 AppsGridView* GetAppsGridView() {
-  return GetContentsView()->apps_container_view()->apps_grid_view();
+  return GetAppsContainerView()->apps_grid_view();
 }
 
 void ShowAppListNow(AppListViewState state) {
@@ -128,9 +133,11 @@ class AppListControllerImplTest : public AshTestBase {
 
   void PopulateItem(int num) {
     for (int i = 0; i < num; i++) {
-      std::unique_ptr<AppListItem> item(
-          new AppListItem("app_id" + base::UTF16ToUTF8(base::FormatNumber(i))));
+      std::unique_ptr<AppListItem> item(new AppListItem(
+          "app_id" +
+          base::UTF16ToUTF8(base::FormatNumber(populated_item_count_))));
       Shell::Get()->app_list_controller()->GetModel()->AddItem(std::move(item));
+      ++populated_item_count_;
     }
   }
 
@@ -142,6 +149,9 @@ class AppListControllerImplTest : public AshTestBase {
   }
 
  private:
+  // The count of the items created by `PopulateItem()`.
+  int populated_item_count_ = 0;
+
   DISALLOW_COPY_AND_ASSIGN(AppListControllerImplTest);
 };
 
@@ -360,16 +370,14 @@ TEST_F(AppListControllerImplTest, VirtualKeyboardNotShownWhenUserStartsTyping) {
   // keyboard is not shown.
   ShowAppListNow(AppListViewState::kPeeking);
   EXPECT_EQ(AppListViewState::kPeeking, GetAppListView()->app_list_state());
-  ui::test::EventGenerator* event_generator = GetEventGenerator();
-  event_generator->PressKey(ui::KeyboardCode::VKEY_0, 0);
-  event_generator->ReleaseKey(ui::KeyboardCode::VKEY_0, 0);
+  PressAndReleaseKey(ui::KeyboardCode::VKEY_0);
   EXPECT_EQ(AppListViewState::kHalf, GetAppListView()->app_list_state());
 
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(GetVirtualKeyboardWindow()->IsVisible());
 
   // The keyboard should get shown if the user taps on the search box.
-  event_generator->GestureTapAt(
+  GetEventGenerator()->GestureTapAt(
       GetAppListView()->search_box_view()->GetBoundsInScreen().CenterPoint());
   ASSERT_TRUE(keyboard::WaitUntilShown());
 
@@ -1302,6 +1310,74 @@ TEST_F(AppListControllerImplAppListBubbleTest, EnteringTabletModeClosesBubble) {
   EnableTabletMode();
 
   EXPECT_FALSE(controller->bubble_presenter_for_test()->IsShowing());
+}
+
+class AppListSortTest : public AppListControllerImplTest {
+ public:
+  AppListSortTest() {
+    feature_list_.InitWithFeatures({ash::features::kLauncherAppSort,
+                                    ash::features::kLauncherRemoveEmptySpace},
+                                   {});
+  }
+  ~AppListSortTest() override = default;
+
+  views::View* GetLeftSortButton() {
+    return GetAppsContainerView()
+        ->sort_button_container_for_test()
+        ->children()[0];
+  }
+
+  views::View* GetRightSortButton() {
+    return GetAppsContainerView()
+        ->sort_button_container_for_test()
+        ->children()[1];
+  }
+
+  int CountPageBreakItems() {
+    auto* top_list =
+        Shell::Get()->app_list_controller()->GetModel()->top_level_item_list();
+    int count = 0;
+    for (size_t index = 0; index < top_list->item_count(); ++index) {
+      if (top_list->item_at(index)->is_page_break())
+        ++count;
+    }
+    return count;
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Verifies basic UI elements for the app list sort.
+TEST_F(AppListSortTest, BasicUI) {
+  // Verify sort buttons in the peeking state.
+  ShowAppListNow(AppListViewState::kPeeking);
+  ASSERT_EQ(AppListViewState::kPeeking, GetAppListView()->app_list_state());
+  EXPECT_TRUE(GetLeftSortButton()->GetVisible());
+  EXPECT_TRUE(GetRightSortButton()->GetVisible());
+  DismissAppListNow();
+
+  // Verify sort buttons in the full screen state.
+  ShowAppListNow(AppListViewState::kFullscreenAllApps);
+  ASSERT_EQ(AppListViewState::kFullscreenAllApps,
+            GetAppListView()->app_list_state());
+  EXPECT_TRUE(GetLeftSortButton()->GetVisible());
+  EXPECT_TRUE(GetRightSortButton()->GetVisible());
+}
+
+TEST_F(AppListSortTest, CreatePage) {
+  ShowAppListNow(AppListViewState::kFullscreenAllApps);
+  AppsGridView* apps_grid_view = GetAppsGridView();
+  test::AppsGridViewTestApi test_api(apps_grid_view);
+  PopulateItem(test_api.TilesPerPage());
+  EXPECT_EQ(1, apps_grid_view->pagination_model()->total_pages());
+
+  // Add an extra item and verify that the page count is 2 now.
+  PopulateItem(1);
+  EXPECT_EQ(2, apps_grid_view->pagination_model()->total_pages());
+
+  // Verify that there is no page break items.
+  EXPECT_EQ(0, CountPageBreakItems());
 }
 
 }  // namespace ash

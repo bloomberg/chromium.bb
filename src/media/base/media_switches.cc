@@ -206,6 +206,20 @@ const char kEnableLiveCaptionPrefForTesting[] =
 const char kEnableClearHevcForTesting[] = "enable-clear-hevc-for-testing";
 #endif
 
+#if defined(OS_CHROMEOS)
+// These are flags passed from ash-chrome to lacros-chrome that correspond to
+// buildflags for the platform we are running on. lacros-chrome only builds for
+// x86/arm differences, so we unconditionally build in the below features into
+// the relevant parts of lacros-chrome and then filter the functionality based
+// on these command line flags.
+MEDIA_EXPORT extern const char kLacrosEnablePlatformEncryptedHevc[] =
+    "lacros-enable-platform-encrypted-hevc";
+MEDIA_EXPORT extern const char kLacrosEnablePlatformHevc[] =
+    "lacros-enable-platform-hevc";
+MEDIA_EXPORT extern const char kLacrosUseChromeosProtectedMedia[] =
+    "lacros-use-chromeos-protected-media";
+#endif  // defined(OS_CHROMEOS)
+
 namespace autoplay {
 
 // Autoplay policy that requires a document user activation.
@@ -220,6 +234,13 @@ const char kUserGestureRequiredPolicy[] = "user-gesture-required";
 
 }  // namespace autoplay
 
+#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+// Some (Qualcomm only at the moment) V4L2 video decoders require setting the
+// framerate so that the hardware decoder can scale the clocks efficiently.
+// This provides a mechanism during testing to lock the decoder framerate
+// to a specific value.
+const char kHardwareVideoDecodeFrameRate[] = "hardware-video-decode-framerate";
+#endif
 }  // namespace switches
 
 namespace media {
@@ -315,9 +336,16 @@ const base::Feature kCdmProcessSiteIsolation{"CdmProcessSiteIsolation",
 const base::Feature kMemoryPressureBasedSourceBufferGC{
     "MemoryPressureBasedSourceBufferGC", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enable binding multiple shared images to a single GpuMemoryBuffer.
-const base::Feature kMultiPlaneVideoSharedImages {
-  "MultiPlaneVideoSharedImages", base::FEATURE_DISABLED_BY_DEFAULT};
+// Enable binding multiple shared images to a single GpuMemoryBuffer for video
+// frames created by video capture.
+const base::Feature kMultiPlaneVideoCaptureSharedImages {
+  "MultiPlaneVideoCaptureSharedImages",
+#if defined(OS_MAC)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 // Approach original pre-REC MSE object URL autorevoking behavior, though await
 // actual attempt to use the object URL for attachment to perform revocation.
@@ -435,7 +463,7 @@ const base::Feature kGlobalMediaControlsOverlayControls{
 const base::Feature kGlobalMediaControlsPictureInPicture {
   "GlobalMediaControlsPictureInPicture",
 #if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
-    BUILDFLAG(IS_CHROMEOS_LACROS)
+    defined(OS_CHROMEOS) || BUILDFLAG(IS_CHROMEOS_LACROS)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
@@ -542,6 +570,11 @@ const base::Feature kLiveCaption{"LiveCaption",
 // of the Cloud-based Open Speech API.
 const base::Feature kUseSodaForLiveCaption{"UseSodaForLiveCaption",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enable the Speaker Change Detection feature, which inserts a line break when
+// the Speech On-Device API (SODA) detects a speaker change.
+const base::Feature kSpeakerChangeDetection{"SpeakerChangeDetection",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Live Caption can be used in multiple languages, as opposed to just English.
 const base::Feature kLiveCaptionMultiLanguage{
@@ -686,6 +719,13 @@ const base::Feature kUseAlternateVideoDecoderImplementation{
     "UseAlternateVideoDecoderImplementation",
     base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_CHROMEOS) && BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+
+#if defined(OS_MAC)
+// Enable binding multiple shared images to a single GpuMemoryBuffer for
+// accelerated video decode using VideoToolbox.
+const base::Feature kMultiPlaneVideoToolboxSharedImages{
+    "MultiPlaneVideoToolboxSharedImages", base::FEATURE_ENABLED_BY_DEFAULT};
+#endif
 
 #if defined(OS_WIN)
 // Does NV12->NV12 video copy on the main thread right before the texture's

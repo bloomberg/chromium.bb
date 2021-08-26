@@ -46,8 +46,7 @@ class ModelTypeRegistry : public ModelTypeConnector,
       ModelType type,
       std::unique_ptr<DataTypeActivationResponse> activation_response) override;
   void DisconnectDataType(ModelType type) override;
-  void ConnectProxyType(ModelType type) override;
-  void DisconnectProxyType(ModelType type) override;
+  void SetProxyTabsDatatypeEnabled(bool enabled) override;
 
   // Implementation of SyncEncryptionHandler::Observer.
   void OnPassphraseRequired(
@@ -65,15 +64,16 @@ class ModelTypeRegistry : public ModelTypeConnector,
   void OnPassphraseTypeChanged(PassphraseType type,
                                base::Time passphrase_time) override;
 
-  // Gets the set of enabled types.
-  ModelTypeSet GetEnabledTypes() const;
+  // Gets the set of connected types, which is essentially the set of types that
+  // the sync engine cares about. For each of these, a worker exists to
+  // propagate changes between the server and the local model's processor.
+  ModelTypeSet GetConnectedTypes() const;
+
+  bool proxy_tabs_datatype_enabled() const;
 
   // Returns set of types for which initial set of updates was downloaded and
   // applied.
   ModelTypeSet GetInitialSyncEndedTypes() const;
-
-  // Returns set of enabled types, i.e. types that has alive ModelTypeWorker.
-  ModelTypeSet GetEnabledDataTypes() const;
 
   // Returns the update handler for |type|.
   const UpdateHandler* GetUpdateHandler(ModelType type) const;
@@ -88,8 +88,9 @@ class ModelTypeRegistry : public ModelTypeConnector,
   base::WeakPtr<ModelTypeConnector> AsWeakPtr();
 
  private:
-  // Enabled proxy types, which don't have a worker.
-  ModelTypeSet enabled_proxy_types_;
+  // Whether PROXY_TABS is enabled, which is not enabled for real (e.g. it
+  // doesn't have a worker).
+  bool proxy_tabs_datatype_enabled_ = false;
 
   std::vector<std::unique_ptr<ModelTypeWorker>> connected_model_type_workers_;
 

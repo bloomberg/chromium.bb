@@ -100,7 +100,8 @@ class State : angle::NonCopyable
           bool clientArraysEnabled,
           bool robustResourceInit,
           bool programBinaryCacheEnabled,
-          EGLenum contextPriority);
+          EGLenum contextPriority,
+          bool hasProtectedContent);
     ~State();
 
     void initialize(Context *context);
@@ -110,6 +111,7 @@ class State : angle::NonCopyable
     ContextID getContextID() const { return mID; }
     EGLenum getClientType() const { return mClientType; }
     EGLenum getContextPriority() const { return mContextPriority; }
+    bool hasProtectedContent() const { return mHasProtectedContent; }
     GLint getClientMajorVersion() const { return mClientVersion.major; }
     GLint getClientMinorVersion() const { return mClientVersion.minor; }
     const Version &getClientVersion() const { return mClientVersion; }
@@ -780,6 +782,8 @@ class State : angle::NonCopyable
     void onImageStateChange(const Context *context, size_t unit);
 
     void onUniformBufferStateChange(size_t uniformBufferIndex);
+    void onAtomicCounterBufferStateChange(size_t atomicCounterBufferIndex);
+    void onShaderStorageBufferStateChange(size_t shaderStorageBufferIndex);
 
     bool isCurrentTransformFeedback(const TransformFeedback *tf) const
     {
@@ -981,6 +985,7 @@ class State : angle::NonCopyable
 
     EGLenum mClientType;
     EGLenum mContextPriority;
+    bool mHasProtectedContent;
     Version mClientVersion;
 
     // Caps to use for validation
@@ -1158,6 +1163,16 @@ class State : angle::NonCopyable
     DrawBufferMask mBlendFuncConstantAlphaDrawBuffers;
     DrawBufferMask mBlendFuncConstantColorDrawBuffers;
     bool mNoSimultaneousConstantColorAndAlphaBlendFunc;
+
+    // GL_EXT_primitive_bounding_box
+    GLfloat mBoundingBoxMinX;
+    GLfloat mBoundingBoxMinY;
+    GLfloat mBoundingBoxMinZ;
+    GLfloat mBoundingBoxMinW;
+    GLfloat mBoundingBoxMaxX;
+    GLfloat mBoundingBoxMaxY;
+    GLfloat mBoundingBoxMaxZ;
+    GLfloat mBoundingBoxMaxW;
 };
 
 ANGLE_INLINE angle::Result State::syncDirtyObjects(const Context *context,

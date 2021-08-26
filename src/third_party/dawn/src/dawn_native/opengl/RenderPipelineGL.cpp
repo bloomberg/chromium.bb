@@ -219,16 +219,26 @@ namespace dawn_native { namespace opengl {
 
     }  // anonymous namespace
 
+    // static
+    ResultOrError<Ref<RenderPipeline>> RenderPipeline::Create(
+        Device* device,
+        const RenderPipelineDescriptor* descriptor) {
+        Ref<RenderPipeline> pipeline = AcquireRef(new RenderPipeline(device, descriptor));
+        DAWN_TRY(pipeline->Initialize());
+        return pipeline;
+    }
+
     RenderPipeline::RenderPipeline(Device* device, const RenderPipelineDescriptor* descriptor)
         : RenderPipelineBase(device, descriptor),
           mVertexArrayObject(0),
           mGlPrimitiveTopology(GLPrimitiveTopology(GetPrimitiveTopology())) {
-        PerStage<const ShaderModule*> modules(nullptr);
-        modules[SingleShaderStage::Vertex] = ToBackend(descriptor->vertex.module);
-        modules[SingleShaderStage::Fragment] = ToBackend(descriptor->fragment->module);
+    }
 
-        PipelineGL::Initialize(device->gl, ToBackend(GetLayout()), GetAllStages());
+    MaybeError RenderPipeline::Initialize() {
+        DAWN_TRY(
+            InitializeBase(ToBackend(GetDevice())->gl, ToBackend(GetLayout()), GetAllStages()));
         CreateVAOForVertexState();
+        return {};
     }
 
     RenderPipeline::~RenderPipeline() {
@@ -267,9 +277,9 @@ namespace dawn_native { namespace opengl {
                 gl.VertexAttribDivisor(glAttrib, 0xffffffff);
             } else {
                 switch (vertexBuffer.stepMode) {
-                    case wgpu::InputStepMode::Vertex:
+                    case wgpu::VertexStepMode::Vertex:
                         break;
-                    case wgpu::InputStepMode::Instance:
+                    case wgpu::VertexStepMode::Instance:
                         gl.VertexAttribDivisor(glAttrib, 1);
                         break;
                 }

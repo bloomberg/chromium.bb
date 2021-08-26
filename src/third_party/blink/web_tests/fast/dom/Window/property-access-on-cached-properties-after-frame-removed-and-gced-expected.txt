@@ -32,6 +32,7 @@ PASS window.cached_navigator.hardwareConcurrency is window.navigator.hardwareCon
 PASS window.cached_navigator.language is window.navigator.language
 PASS window.cached_navigator.maxTouchPoints is 0
 PASS window.cached_navigator.onLine is window.navigator.onLine
+PASS window.cached_navigator.pdfViewerEnabled is false
 PASS window.cached_navigator.platform is window.navigator.platform
 PASS window.cached_navigator.product is window.navigator.product
 PASS window.cached_navigator.productSub is window.navigator.productSub
@@ -44,7 +45,7 @@ PASS window.cached_navigator_connection.onchange is null
 PASS window.cached_navigator_connection.ontypechange is null
 PASS window.cached_navigator_connection.saveData is false
 PASS window.cached_navigator_devicePosture.onchange is null
-PASS window.cached_navigator_devicePosture.type is 'no-fold'
+PASS window.cached_navigator_devicePosture.type is 'continuous'
 PASS window.cached_navigator_hid.onconnect is null
 PASS window.cached_navigator_hid.ondisconnect is null
 PASS window.cached_navigator_managed.onmanagedconfigurationchange is null

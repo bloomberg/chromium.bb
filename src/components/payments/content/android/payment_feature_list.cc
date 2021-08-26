@@ -21,7 +21,7 @@ namespace {
 // or the .h file (for Android only features).
 const base::Feature* const kFeaturesExposedToJava[] = {
     &::features::kSecurePaymentConfirmation,
-    &::features::kSecurePaymentConfirmationAPIV2,
+    &::features::kSecurePaymentConfirmationAPIV3,
     &::features::kServiceWorkerPaymentApps,
     &::features::kWebPayments,
     &::features::kWebPaymentsMinimalUI,

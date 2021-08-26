@@ -92,7 +92,7 @@
 #include "ui/strings/grit/ui_strings.h"
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "chrome/browser/lacros/account_manager_util.h"
+#include "chrome/browser/lacros/account_manager/account_manager_util.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -503,12 +503,40 @@ void AddDownloadsStrings(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"downloadsPageTitle", IDS_SETTINGS_DOWNLOADS},
       {"downloadLocation", IDS_SETTINGS_DOWNLOAD_LOCATION},
+      {"downloadLocalLocation", IDS_SETTINGS_DOWNLOAD_LOCAL_LOCATION},
+      {"downloadConnectionAccountTitle",
+       IDS_SETTINGS_DOWNLOAD_CONNECTION_ACCOUNT_TITLE},
+      {"downloadConnectionLearnMore",
+       IDS_SETTINGS_DOWNLOAD_CONNECTION_LEARN_MORE},
       {"changeDownloadLocation", IDS_SETTINGS_CHANGE_DOWNLOAD_LOCATION},
       {"promptForDownload", IDS_SETTINGS_PROMPT_FOR_DOWNLOAD},
       {"openFileTypesAutomatically",
        IDS_SETTINGS_OPEN_FILE_TYPES_AUTOMATICALLY},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
+  const std::u16string kBox =
+      l10n_util::GetStringUTF16(IDS_FILE_SYSTEM_CONNECTOR_BOX);
+  html_source->AddString(
+      "downloadsConnectionTitle",
+      l10n_util::GetStringFUTF16(IDS_SETTINGS_DOWNLOAD_CONNECTION_TITLE, kBox));
+  html_source->AddString(
+      "downloadsConnectionUnlinkedMessage",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_DOWNLOAD_CONNECTION_UNLINKED_MESSAGE, kBox));
+  html_source->AddString(
+      "downloadsConnectionLinkButton",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_DOWNLOAD_CONNECTION_SIGN_IN_BUTTON, kBox));
+  html_source->AddString(
+      "downloadsConnectionLinkedMessage",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_DOWNLOAD_CONNECTION_LINKED_MESSAGE, kBox));
+  html_source->AddString("downloadsConnectionUnlinkButton",
+                         l10n_util::GetStringUTF16(
+                             IDS_SETTINGS_DOWNLOAD_CONNECTION_SIGN_OUT_BUTTON));
+  html_source->AddString("downloadConnectionLinkedFolder",
+                         l10n_util::GetStringFUTF16(
+                             IDS_SETTINGS_DOWNLOAD_WEB_DRIVE_LOCATION, kBox));
 }
 
 #if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -674,8 +702,8 @@ void AddResetStrings(content::WebUIDataSource* html_source, Profile* profile) {
       ResetSettingsHandler::ShouldShowResetProfileBanner(profile));
   bool is_reset_shortcuts_feature_enabled = false;
 #if defined(OS_WIN)
-  is_reset_shortcuts_feature_enabled =
-      base::FeatureList::IsEnabled(safe_browsing::kResetShortcutsFeature);
+  // TODO(crbug/1234599): Remove this flag from the JS.
+  is_reset_shortcuts_feature_enabled = true;
 #endif
   html_source->AddBoolean("showExplanationWithBulletPoints",
                           is_reset_shortcuts_feature_enabled);
@@ -710,6 +738,7 @@ void AddImportDataStrings(content::WebUIDataSource* html_source) {
 
 void AddLanguagesStrings(content::WebUIDataSource* html_source,
                          Profile* profile) {
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
     {"languagesPageTitle", IDS_SETTINGS_LANGUAGES_PAGE_TITLE},
     {"languagesListTitle", IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_TITLE},
@@ -724,8 +753,6 @@ void AddLanguagesStrings(content::WebUIDataSource* html_source,
     {"removeLanguage", IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_REMOVE},
     {"addLanguages", IDS_SETTINGS_LANGUAGES_LANGUAGES_ADD},
     {"addLanguagesDialogTitle", IDS_SETTINGS_LANGUAGES_MANAGE_LANGUAGES_TITLE},
-    {"allLanguages", IDS_SETTINGS_LANGUAGES_ALL_LANGUAGES},
-    {"enabledLanguages", IDS_SETTINGS_LANGUAGES_ENABLED_LANGUAGES},
 #if defined(OS_WIN)
     {"isDisplayedInThisLanguage",
      IDS_SETTINGS_LANGUAGES_IS_DISPLAYED_IN_THIS_LANGUAGE},
@@ -775,24 +802,16 @@ void AddLanguagesStrings(content::WebUIDataSource* html_source,
 #endif
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
-
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
-  const user_manager::User* user =
-      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
-  const user_manager::User* primary_user = user_manager->GetPrimaryUser();
-  html_source->AddBoolean(
-      "isSecondaryUser",
-      user && user->GetAccountId() != primary_user->GetAccountId());
-
-  html_source->AddString(
+  html_source->AddLocalizedString("languagesPageTitle",
+                                  IDS_SETTINGS_LANGUAGES_PAGE_TITLE);
+  html_source->AddLocalizedString(
       "openChromeOSLanguagesSettingsLabel",
-      l10n_util::GetStringUTF16(
-          IDS_SETTINGS_LANGUAGES_OPEN_CHROME_OS_SETTINGS_LABEL));
+      IDS_SETTINGS_LANGUAGES_OPEN_CHROME_OS_SETTINGS_LABEL);
   html_source->AddString(
       "chromeOSLanguagesSettingsPath",
       chromeos::settings::mojom::kLanguagesAndInputSectionPath);
-
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
@@ -1324,117 +1343,124 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
   AddSyncPageStrings(html_source);
 }
 
-bool IsSecureDnsAvailable() {
-  return
+bool ShouldLinkSecureDnsOsSettings() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-      (!base::FeatureList::IsEnabled(chromeos::features::kEnableDnsProxy) ||
-       !base::FeatureList::IsEnabled(::features::kDnsProxyEnableDOH)) &&
+  return base::FeatureList::IsEnabled(chromeos::features::kEnableDnsProxy) &&
+         base::FeatureList::IsEnabled(::features::kDnsProxyEnableDOH);
+#else
+  return false;
 #endif
-      features::kDnsOverHttpsShowUiParam.Get();
+}
+
+bool IsSecureDnsAvailable() {
+  return features::kDnsOverHttpsShowUiParam.Get();
 }
 
 void AddPrivacyStrings(content::WebUIDataSource* html_source,
                        Profile* profile) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
-      {"privacyPageTitle", IDS_SETTINGS_PRIVACY},
-      {"privacyPageMore", IDS_SETTINGS_PRIVACY_MORE},
-      {"doNotTrack", IDS_SETTINGS_ENABLE_DO_NOT_TRACK},
-      {"doNotTrackDialogTitle", IDS_SETTINGS_ENABLE_DO_NOT_TRACK_DIALOG_TITLE},
-      // TODO(crbug.com/1062607): This string is no longer used. Remove.
-      {"permissionsPageTitle", IDS_SETTINGS_PERMISSIONS},
-      {"permissionsPageDescription", IDS_SETTINGS_PERMISSIONS_DESCRIPTION},
-      {"securityPageTitle", IDS_SETTINGS_SECURITY},
-      {"securityPageDescription", IDS_SETTINGS_SECURITY_DESCRIPTION},
-      {"advancedProtectionProgramTitle",
-       IDS_SETTINGS_ADVANCED_PROTECTION_PROGRAM},
-      {"advancedProtectionProgramDesc",
-       IDS_SETTINGS_ADVANCED_PROTECTION_PROGRAM_DESC},
-      {"httpsOnlyModeTitle", IDS_SETTINGS_HTTPS_ONLY_MODE},
-      {"httpsOnlyModeDescription", IDS_SETTINGS_HTTPS_ONLY_MODE_DESCRIPTION},
-      {"manageCertificates", IDS_SETTINGS_MANAGE_CERTIFICATES},
-      {"manageCertificatesDescription",
-       IDS_SETTINGS_MANAGE_CERTIFICATES_DESCRIPTION},
-      {"contentSettings", IDS_SETTINGS_CONTENT_SETTINGS},
-      {"siteSettings", IDS_SETTINGS_SITE_SETTINGS},
-      {"siteSettingsDescription", IDS_SETTINGS_SITE_SETTINGS_DESCRIPTION},
-      {"clearData", IDS_SETTINGS_CLEAR_DATA},
-      {"clearingData", IDS_SETTINGS_CLEARING_DATA},
-      {"clearedData", IDS_SETTINGS_CLEARED_DATA},
-      {"clearBrowsingData", IDS_SETTINGS_CLEAR_BROWSING_DATA},
-      {"clearBrowsingDataDescription", IDS_SETTINGS_CLEAR_DATA_DESCRIPTION},
-      {"titleAndCount", IDS_SETTINGS_TITLE_AND_COUNT},
-      {"safeBrowsingEnableExtendedReporting",
-       IDS_SETTINGS_SAFEBROWSING_ENABLE_REPORTING},
-      {"safeBrowsingEnableExtendedReportingDesc",
-       IDS_SETTINGS_SAFEBROWSING_ENABLE_REPORTING_DESC},
-      {"safeBrowsingEnhanced", IDS_SETTINGS_SAFEBROWSING_ENHANCED},
-      {"safeBrowsingEnhancedDesc", IDS_SETTINGS_SAFEBROWSING_ENHANCED_DESC},
-      {"safeBrowsingEnhancedExpandA11yLabel",
-       IDS_SETTINGS_SAFEBROWSING_ENHANCED_EXPAND_ACCESSIBILITY_LABEL},
-      {"safeBrowsingEnhancedBulOne",
-       IDS_SETTINGS_SAFEBROWSING_ENHANCED_BULLET_ONE},
-      {"safeBrowsingEnhancedBulTwo",
-       IDS_SETTINGS_SAFEBROWSING_ENHANCED_BULLET_TWO},
-      {"safeBrowsingEnhancedBulThree",
-       IDS_SETTINGS_SAFEBROWSING_ENHANCED_BULLET_THREE},
-      {"safeBrowsingEnhancedBulFour",
-       IDS_SETTINGS_SAFEBROWSING_ENHANCED_BULLET_FOUR},
-      {"safeBrowsingEnhancedBulFive",
-       IDS_SETTINGS_SAFEBROWSING_ENHANCED_BULLET_FIVE},
-      {"safeBrowsingStandard", IDS_SETTINGS_SAFEBROWSING_STANDARD},
-      {"safeBrowsingStandardDesc", IDS_SETTINGS_SAFEBROWSING_STANDARD_DESC},
-      {"safeBrowsingStandardExpandA11yLabel",
-       IDS_SETTINGS_SAFEBROWSING_STANDARD_EXPAND_ACCESSIBILITY_LABEL},
-      {"safeBrowsingStandardBulOne",
-       IDS_SETTINGS_SAFEBROWSING_STANDARD_BULLET_ONE},
-      {"safeBrowsingStandardBulTwo",
-       IDS_SETTINGS_SAFEBROWSING_STANDARD_BULLET_TWO},
-      {"safeBrowsingStandardReportingLabel",
-       IDS_SETTINGS_SAFEBROWSING_STANDARD_HELP_IMPROVE},
-      {"safeBrowsingNone", IDS_SETTINGS_SAFEBROWSING_NONE},
-      {"safeBrowsingNoneDesc", IDS_SETTINGS_SAFEBROWSING_NONE_DESC},
-      {"safeBrowsingDisableDialog",
-       IDS_SETTINGS_SAFEBROWSING_DISABLE_DIALOG_TITLE},
-      {"safeBrowsingDisableDialogDesc",
-       IDS_SETTINGS_SAFEBROWSING_DISABLE_DIALOG_DESC},
-      {"safeBrowsingDisableDialogConfirm",
-       IDS_SETTINGS_SAFEBROWSING_DISABLE_DIALOG_CONFIRM},
-      {"safeBrowsingEnableProtection",
-       IDS_SETTINGS_SAFEBROWSING_ENABLEPROTECTION},
-      {"safeBrowsingEnableProtectionDesc",
-       IDS_SETTINGS_SAFEBROWSING_ENABLEPROTECTION_DESC},
-      {"safeBrowsingSectionLabel", IDS_SETTINGS_SAFEBROWSING_SECTION_LABEL},
-      {"syncAndGoogleServicesPrivacyDescription",
-       IDS_SETTINGS_SYNC_AND_GOOGLE_SERVICES_PRIVACY_DESC_UNIFIED_CONSENT},
-      {"urlKeyedAnonymizedDataCollection",
-       IDS_SETTINGS_ENABLE_URL_KEYED_ANONYMIZED_DATA_COLLECTION},
-      {"urlKeyedAnonymizedDataCollectionDesc",
-       IDS_SETTINGS_ENABLE_URL_KEYED_ANONYMIZED_DATA_COLLECTION_DESC},
-      {"noRecentPermissions", IDS_SETTINGS_RECENT_PERMISSIONS_NO_CHANGES},
-      {"recentPermissionAllowedOneItem",
-       IDS_SETTINGS_RECENT_PERMISSIONS_ALLOWED_ONE_ITEM},
-      {"recentPermissionAllowedTwoItems",
-       IDS_SETTINGS_RECENT_PERMISSIONS_ALLOWED_TWO_ITEMS},
-      {"recentPermissionAllowedMoreThanTwoItems",
-       IDS_SETTINGS_RECENT_PERMISSIONS_ALLOWED_MORE_THAN_TWO_ITEMS},
-      {"recentPermissionAutoBlockedOneItem",
-       IDS_SETTINGS_RECENT_PERMISSIONS_AUTOMATICALLY_BLOCKED_ONE_ITEM},
-      {"recentPermissionAutoBlockedTwoItems",
-       IDS_SETTINGS_RECENT_PERMISSIONS_AUTOMATICALLY_BLOCKED_TWO_ITEMS},
-      {"recentPermissionAutoBlockedMoreThanTwoItems",
-       IDS_SETTINGS_RECENT_PERMISSIONS_AUTOMATICALLY_BLOCKED_MORE_THAN_TWO_ITEMS},
-      {"recentPermissionBlockedOneItem",
-       IDS_SETTINGS_RECENT_PERMISSIONS_BLOCKED_ONE_ITEM},
-      {"recentPermissionBlockedTwoItems",
-       IDS_SETTINGS_RECENT_PERMISSIONS_BLOCKED_TWO_ITEMS},
-      {"recentPermissionBlockedMoreThanTwoItems",
-       IDS_SETTINGS_RECENT_PERMISSIONS_BLOCKED_MORE_THAN_TWO_ITEMS},
-      {"networkPredictionEnabled",
-       IDS_SETTINGS_NETWORK_PREDICTION_ENABLED_LABEL},
-      {"networkPredictionEnabledDesc",
-       IDS_SETTINGS_NETWORK_PREDICTION_ENABLED_DESC},
-      {"networkPredictionEnabledDescCookiesPage",
-       IDS_SETTINGS_NETWORK_PREDICTION_ENABLED_DESC_COOKIES_PAGE},
+    {"privacyPageTitle", IDS_SETTINGS_PRIVACY},
+    {"privacyPageMore", IDS_SETTINGS_PRIVACY_MORE},
+    {"doNotTrack", IDS_SETTINGS_ENABLE_DO_NOT_TRACK},
+    {"doNotTrackDialogTitle", IDS_SETTINGS_ENABLE_DO_NOT_TRACK_DIALOG_TITLE},
+    // TODO(crbug.com/1062607): This string is no longer used. Remove.
+    {"permissionsPageTitle", IDS_SETTINGS_PERMISSIONS},
+    {"permissionsPageDescription", IDS_SETTINGS_PERMISSIONS_DESCRIPTION},
+    {"securityPageTitle", IDS_SETTINGS_SECURITY},
+    {"securityPageDescription", IDS_SETTINGS_SECURITY_DESCRIPTION},
+    {"advancedProtectionProgramTitle",
+     IDS_SETTINGS_ADVANCED_PROTECTION_PROGRAM},
+    {"advancedProtectionProgramDesc",
+     IDS_SETTINGS_ADVANCED_PROTECTION_PROGRAM_DESC},
+    {"httpsOnlyModeTitle", IDS_SETTINGS_HTTPS_ONLY_MODE},
+    {"httpsOnlyModeDescription", IDS_SETTINGS_HTTPS_ONLY_MODE_DESCRIPTION},
+    {"manageCertificates", IDS_SETTINGS_MANAGE_CERTIFICATES},
+    {"manageCertificatesDescription",
+     IDS_SETTINGS_MANAGE_CERTIFICATES_DESCRIPTION},
+    {"contentSettings", IDS_SETTINGS_CONTENT_SETTINGS},
+    {"siteSettings", IDS_SETTINGS_SITE_SETTINGS},
+    {"siteSettingsDescription", IDS_SETTINGS_SITE_SETTINGS_DESCRIPTION},
+    {"clearData", IDS_SETTINGS_CLEAR_DATA},
+    {"clearingData", IDS_SETTINGS_CLEARING_DATA},
+    {"clearedData", IDS_SETTINGS_CLEARED_DATA},
+    {"clearBrowsingData", IDS_SETTINGS_CLEAR_BROWSING_DATA},
+    {"clearBrowsingDataDescription", IDS_SETTINGS_CLEAR_DATA_DESCRIPTION},
+    {"titleAndCount", IDS_SETTINGS_TITLE_AND_COUNT},
+    {"safeBrowsingEnableExtendedReporting",
+     IDS_SETTINGS_SAFEBROWSING_ENABLE_REPORTING},
+    {"safeBrowsingEnableExtendedReportingDesc",
+     IDS_SETTINGS_SAFEBROWSING_ENABLE_REPORTING_DESC},
+    {"safeBrowsingEnhanced", IDS_SETTINGS_SAFEBROWSING_ENHANCED},
+    {"safeBrowsingEnhancedDesc", IDS_SETTINGS_SAFEBROWSING_ENHANCED_DESC},
+    {"safeBrowsingEnhancedExpandA11yLabel",
+     IDS_SETTINGS_SAFEBROWSING_ENHANCED_EXPAND_ACCESSIBILITY_LABEL},
+    {"safeBrowsingEnhancedBulOne",
+     IDS_SETTINGS_SAFEBROWSING_ENHANCED_BULLET_ONE},
+    {"safeBrowsingEnhancedBulTwo",
+     IDS_SETTINGS_SAFEBROWSING_ENHANCED_BULLET_TWO},
+    {"safeBrowsingEnhancedBulThree",
+     IDS_SETTINGS_SAFEBROWSING_ENHANCED_BULLET_THREE},
+    {"safeBrowsingEnhancedBulFour",
+     IDS_SETTINGS_SAFEBROWSING_ENHANCED_BULLET_FOUR},
+    {"safeBrowsingEnhancedBulFive",
+     IDS_SETTINGS_SAFEBROWSING_ENHANCED_BULLET_FIVE},
+    {"safeBrowsingStandard", IDS_SETTINGS_SAFEBROWSING_STANDARD},
+    {"safeBrowsingStandardDesc", IDS_SETTINGS_SAFEBROWSING_STANDARD_DESC},
+    {"safeBrowsingStandardExpandA11yLabel",
+     IDS_SETTINGS_SAFEBROWSING_STANDARD_EXPAND_ACCESSIBILITY_LABEL},
+    {"safeBrowsingStandardBulOne",
+     IDS_SETTINGS_SAFEBROWSING_STANDARD_BULLET_ONE},
+    {"safeBrowsingStandardBulTwo",
+     IDS_SETTINGS_SAFEBROWSING_STANDARD_BULLET_TWO},
+    {"safeBrowsingStandardReportingLabel",
+     IDS_SETTINGS_SAFEBROWSING_STANDARD_HELP_IMPROVE},
+    {"safeBrowsingNone", IDS_SETTINGS_SAFEBROWSING_NONE},
+    {"safeBrowsingNoneDesc", IDS_SETTINGS_SAFEBROWSING_NONE_DESC},
+    {"safeBrowsingDisableDialog",
+     IDS_SETTINGS_SAFEBROWSING_DISABLE_DIALOG_TITLE},
+    {"safeBrowsingDisableDialogDesc",
+     IDS_SETTINGS_SAFEBROWSING_DISABLE_DIALOG_DESC},
+    {"safeBrowsingDisableDialogConfirm",
+     IDS_SETTINGS_SAFEBROWSING_DISABLE_DIALOG_CONFIRM},
+    {"safeBrowsingEnableProtection",
+     IDS_SETTINGS_SAFEBROWSING_ENABLEPROTECTION},
+    {"safeBrowsingEnableProtectionDesc",
+     IDS_SETTINGS_SAFEBROWSING_ENABLEPROTECTION_DESC},
+    {"safeBrowsingSectionLabel", IDS_SETTINGS_SAFEBROWSING_SECTION_LABEL},
+    {"syncAndGoogleServicesPrivacyDescription",
+     IDS_SETTINGS_SYNC_AND_GOOGLE_SERVICES_PRIVACY_DESC_UNIFIED_CONSENT},
+    {"urlKeyedAnonymizedDataCollection",
+     IDS_SETTINGS_ENABLE_URL_KEYED_ANONYMIZED_DATA_COLLECTION},
+    {"urlKeyedAnonymizedDataCollectionDesc",
+     IDS_SETTINGS_ENABLE_URL_KEYED_ANONYMIZED_DATA_COLLECTION_DESC},
+    {"noRecentPermissions", IDS_SETTINGS_RECENT_PERMISSIONS_NO_CHANGES},
+    {"recentPermissionAllowedOneItem",
+     IDS_SETTINGS_RECENT_PERMISSIONS_ALLOWED_ONE_ITEM},
+    {"recentPermissionAllowedTwoItems",
+     IDS_SETTINGS_RECENT_PERMISSIONS_ALLOWED_TWO_ITEMS},
+    {"recentPermissionAllowedMoreThanTwoItems",
+     IDS_SETTINGS_RECENT_PERMISSIONS_ALLOWED_MORE_THAN_TWO_ITEMS},
+    {"recentPermissionAutoBlockedOneItem",
+     IDS_SETTINGS_RECENT_PERMISSIONS_AUTOMATICALLY_BLOCKED_ONE_ITEM},
+    {"recentPermissionAutoBlockedTwoItems",
+     IDS_SETTINGS_RECENT_PERMISSIONS_AUTOMATICALLY_BLOCKED_TWO_ITEMS},
+    {"recentPermissionAutoBlockedMoreThanTwoItems",
+     IDS_SETTINGS_RECENT_PERMISSIONS_AUTOMATICALLY_BLOCKED_MORE_THAN_TWO_ITEMS},
+    {"recentPermissionBlockedOneItem",
+     IDS_SETTINGS_RECENT_PERMISSIONS_BLOCKED_ONE_ITEM},
+    {"recentPermissionBlockedTwoItems",
+     IDS_SETTINGS_RECENT_PERMISSIONS_BLOCKED_TWO_ITEMS},
+    {"recentPermissionBlockedMoreThanTwoItems",
+     IDS_SETTINGS_RECENT_PERMISSIONS_BLOCKED_MORE_THAN_TWO_ITEMS},
+    {"networkPredictionEnabled", IDS_SETTINGS_NETWORK_PREDICTION_ENABLED_LABEL},
+    {"networkPredictionEnabledDesc",
+     IDS_SETTINGS_NETWORK_PREDICTION_ENABLED_DESC},
+    {"networkPredictionEnabledDescCookiesPage",
+     IDS_SETTINGS_NETWORK_PREDICTION_ENABLED_DESC_COOKIES_PAGE},
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"openChromeOSSecureDnsSettingsLabel",
+     IDS_SETTINGS_SECURE_DNS_OPEN_CHROME_OS_SETTINGS_LABEL},
+#endif
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
@@ -1462,7 +1488,17 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
       "driveSuggestAvailable",
       base::FeatureList::IsEnabled(omnibox::kDocumentProvider));
 
-  html_source->AddBoolean("showSecureDnsSetting", IsSecureDnsAvailable());
+  bool show_secure_dns = IsSecureDnsAvailable();
+  bool link_secure_dns = ShouldLinkSecureDnsOsSettings();
+  html_source->AddBoolean("showSecureDnsSetting",
+                          show_secure_dns && !link_secure_dns);
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  html_source->AddBoolean("showSecureDnsSettingLink",
+                          show_secure_dns && link_secure_dns);
+  html_source->AddString(
+      "chromeOSPrivacyAndSecuritySectionPath",
+      chromeos::settings::mojom::kPrivacyAndSecuritySectionPath);
+#endif
 
   html_source->AddBoolean(
       "showHttpsOnlyModeSetting",
@@ -1586,12 +1622,38 @@ void AddPrivacySandboxStrings(content::WebUIDataSource* html_source,
 }
 
 void AddPrivacyReviewStrings(content::WebUIDataSource* html_source) {
-  // Strings used outside the privacy review. The i18n preprocessor might
-  // replace those before the corresponding flag value is checked, which is why
-  // they are included independently of the flag value.
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"privacyReviewLabel", IDS_SETTINGS_PRIVACY_REVIEW_LABEL},
       {"privacyReviewSublabel", IDS_SETTINGS_PRIVACY_REVIEW_SUBLABEL},
+      {"privacyReviewPromoTitle", IDS_SETTINGS_PRIVACY_REVIEW_PROMO_TITLE},
+      {"privacyReviewPromoBody", IDS_SETTINGS_PRIVACY_REVIEW_PROMO_BODY},
+      {"privacyReviewPromoStartButton",
+       IDS_SETTINGS_PRIVACY_REVIEW_PROMO_START_BUTTON},
+      {"privacyReviewNextButton", IDS_SETTINGS_PRIVACY_REVIEW_NEXT_BUTTON},
+      {"privacyReviewFeatureDescriptionHeader",
+       IDS_SETTINGS_PRIVACY_REVIEW_FEATURE_DESCRIPTION_HEADER},
+      {"privacyReviewWhatYouShareWithGoogle",
+       IDS_SETTINGS_PRIVACY_REVIEW_WHAT_YOU_SHARE_WITH_GOOGLE},
+      {"privacyReviewWelcomeCardHeader",
+       IDS_SETTINGS_PRIVACY_REVIEW_WELCOME_CARD_HEADER},
+      {"privacyReviewWelcomeCardStartButton",
+       IDS_SETTINGS_PRIVACY_REVIEW_WELCOME_CARD_START_BUTTON},
+      {"privacyReviewCompletionCardHeader",
+       IDS_SETTINGS_PRIVACY_REVIEW_COMPLETION_CARD_HEADER},
+      {"privacyReviewCompletionCardLeaveButton",
+       IDS_SETTINGS_PRIVACY_REVIEW_COMPLETION_CARD_LEAVE_BUTTON},
+      {"privacyReviewMsbbCardHeader",
+       IDS_SETTINGS_PRIVACY_REVIEW_MSBB_CARD_HEADER},
+      {"privacyReviewMsbbFeatureDescription1",
+       IDS_SETTINGS_PRIVACY_REVIEW_MSBB_FEATURE_DESCRIPTION1},
+      {"privacyReviewMsbbFeatureDescription2",
+       IDS_SETTINGS_PRIVACY_REVIEW_MSBB_FEATURE_DESCRIPTION2},
+      {"privacyReviewMsbbFeatureDescription3",
+       IDS_SETTINGS_PRIVACY_REVIEW_MSBB_FEATURE_DESCRIPTION3},
+      {"privacyReviewMsbbPrivacyDescription1",
+       IDS_SETTINGS_PRIVACY_REVIEW_MSBB_PRIVACY_DESCRIPTION1},
+      {"privacyReviewMsbbPrivacyDescription2",
+       IDS_SETTINGS_PRIVACY_REVIEW_MSBB_PRIVACY_DESCRIPTION2},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 }

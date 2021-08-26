@@ -261,23 +261,20 @@ static INLINE void sync_write(AV1LfSync *const lf_sync, int r, int c,
 #endif  // CONFIG_MULTITHREAD
 }
 
-static void enqueue_lf_jobs(AV1LfSync *lf_sync, AV1_COMMON *cm, int start,
-                            int stop, int plane_start, int plane_end,
-                            int is_realtime) {
+static void enqueue_lf_jobs(AV1LfSync *lf_sync, int start, int stop,
+                            const int planes_to_lf[3], int is_realtime) {
   int mi_row, plane, dir;
   AV1LfMTInfo *lf_job_queue = lf_sync->job_queue;
   lf_sync->jobs_enqueued = 0;
   lf_sync->jobs_dequeued = 0;
 
-  for (dir = 0; dir < 2; dir++) {
-    for (plane = plane_start; plane < plane_end; plane++) {
-      if (plane == 0 && !(cm->lf.filter_level[0]) && !(cm->lf.filter_level[1]))
-        break;
-      else if (plane == 1 && !(cm->lf.filter_level_u))
-        continue;
-      else if (plane == 2 && !(cm->lf.filter_level_v))
-        continue;
-      for (mi_row = start; mi_row < stop; mi_row += MAX_MIB_SIZE) {
+  // Launch all vertical jobs first, as they are blocking the horizontal ones.
+  // Launch top row jobs for all planes first, in case the output can be
+  // partially reconstructed row by row.
+  for (dir = 0; dir < 2; ++dir) {
+    for (mi_row = start; mi_row < stop; mi_row += MAX_MIB_SIZE) {
+      for (plane = 0; plane < 3; ++plane) {
+        if (!planes_to_lf[plane]) continue;
         lf_job_queue->mi_row = mi_row;
         lf_job_queue->plane = plane;
         lf_job_queue->dir = dir;
@@ -308,82 +305,67 @@ static AV1LfMTInfo *get_lf_job_info(AV1LfSync *lf_sync) {
   return cur_job_info;
 }
 
-// Implement row loopfiltering for each thread.
+// One job of row loopfiltering.
 static INLINE void thread_loop_filter_rows(
     const YV12_BUFFER_CONFIG *const frame_buffer, AV1_COMMON *const cm,
-    struct macroblockd_plane *planes, MACROBLOCKD *xd,
-    AV1LfSync *const lf_sync) {
+    struct macroblockd_plane *planes, MACROBLOCKD *xd, int mi_row, int plane,
+    int dir, int is_realtime, AV1LfSync *const lf_sync) {
   const int sb_cols =
       ALIGN_POWER_OF_TWO(cm->mi_params.mi_cols, MAX_MIB_SIZE_LOG2) >>
       MAX_MIB_SIZE_LOG2;
-  int mi_row, mi_col, plane, dir, is_realtime;
-  int r, c;
+  const int r = mi_row >> MAX_MIB_SIZE_LOG2;
+  int mi_col, c;
 
-  while (1) {
-    AV1LfMTInfo *cur_job_info = get_lf_job_info(lf_sync);
+  if (dir == 0) {
+    for (mi_col = 0; mi_col < cm->mi_params.mi_cols; mi_col += MAX_MIB_SIZE) {
+      c = mi_col >> MAX_MIB_SIZE_LOG2;
 
-    if (cur_job_info != NULL) {
-      mi_row = cur_job_info->mi_row;
-      plane = cur_job_info->plane;
-      dir = cur_job_info->dir;
-      r = mi_row >> MAX_MIB_SIZE_LOG2;
-      is_realtime = cur_job_info->is_realtime && !plane;
-
-      if (dir == 0) {
-        for (mi_col = 0; mi_col < cm->mi_params.mi_cols;
-             mi_col += MAX_MIB_SIZE) {
-          c = mi_col >> MAX_MIB_SIZE_LOG2;
-
-          av1_setup_dst_planes(planes, cm->seq_params->sb_size, frame_buffer,
-                               mi_row, mi_col, plane, plane + 1);
+      av1_setup_dst_planes(planes, cm->seq_params->sb_size, frame_buffer,
+                           mi_row, mi_col, plane, plane + 1);
 #if CONFIG_AV1_HIGHBITDEPTH
-          (void)is_realtime;
-          av1_filter_block_plane_vert(cm, xd, plane, &planes[plane], mi_row,
-                                      mi_col);
+      (void)is_realtime;
+      av1_filter_block_plane_vert(cm, xd, plane, &planes[plane], mi_row,
+                                  mi_col);
 #else
-          if (is_realtime) {
-            av1_filter_block_plane_vert_rt(cm, xd, plane, &planes[plane],
-                                           mi_row, mi_col);
+      if (is_realtime) {
+        av1_filter_block_plane_vert_rt(cm, xd, plane, &planes[plane], mi_row,
+                                       mi_col);
 
-          } else {
-            av1_filter_block_plane_vert(cm, xd, plane, &planes[plane], mi_row,
-                                        mi_col);
-          }
-#endif
-          sync_write(lf_sync, r, c, sb_cols, plane);
-        }
-      } else if (dir == 1) {
-        for (mi_col = 0; mi_col < cm->mi_params.mi_cols;
-             mi_col += MAX_MIB_SIZE) {
-          c = mi_col >> MAX_MIB_SIZE_LOG2;
-
-          // Wait for vertical edge filtering of the top-right block to be
-          // completed
-          sync_read(lf_sync, r, c, plane);
-
-          // Wait for vertical edge filtering of the right block to be
-          // completed
-          sync_read(lf_sync, r + 1, c, plane);
-
-          av1_setup_dst_planes(planes, cm->seq_params->sb_size, frame_buffer,
-                               mi_row, mi_col, plane, plane + 1);
-#if CONFIG_AV1_HIGHBITDEPTH
-          (void)is_realtime;
-          av1_filter_block_plane_horz(cm, xd, plane, &planes[plane], mi_row,
-                                      mi_col);
-#else
-          if (is_realtime) {
-            av1_filter_block_plane_horz_rt(cm, xd, plane, &planes[plane],
-                                           mi_row, mi_col);
-          } else {
-            av1_filter_block_plane_horz(cm, xd, plane, &planes[plane], mi_row,
-                                        mi_col);
-          }
-#endif
-        }
+      } else {
+        av1_filter_block_plane_vert(cm, xd, plane, &planes[plane], mi_row,
+                                    mi_col);
       }
-    } else {
-      break;
+#endif
+      if (lf_sync != NULL) sync_write(lf_sync, r, c, sb_cols, plane);
+    }
+  } else if (dir == 1) {
+    for (mi_col = 0; mi_col < cm->mi_params.mi_cols; mi_col += MAX_MIB_SIZE) {
+      c = mi_col >> MAX_MIB_SIZE_LOG2;
+
+      if (lf_sync != NULL) {
+        // Wait for vertical edge filtering of the top-right block to be
+        // completed
+        sync_read(lf_sync, r, c, plane);
+
+        // Wait for vertical edge filtering of the right block to be completed
+        sync_read(lf_sync, r + 1, c, plane);
+      }
+
+      av1_setup_dst_planes(planes, cm->seq_params->sb_size, frame_buffer,
+                           mi_row, mi_col, plane, plane + 1);
+#if CONFIG_AV1_HIGHBITDEPTH
+      (void)is_realtime;
+      av1_filter_block_plane_horz(cm, xd, plane, &planes[plane], mi_row,
+                                  mi_col);
+#else
+      if (is_realtime) {
+        av1_filter_block_plane_horz_rt(cm, xd, plane, &planes[plane], mi_row,
+                                       mi_col);
+      } else {
+        av1_filter_block_plane_horz(cm, xd, plane, &planes[plane], mi_row,
+                                    mi_col);
+      }
+#endif
     }
   }
 }
@@ -392,22 +374,27 @@ static INLINE void thread_loop_filter_rows(
 static int loop_filter_row_worker(void *arg1, void *arg2) {
   AV1LfSync *const lf_sync = (AV1LfSync *)arg1;
   LFWorkerData *const lf_data = (LFWorkerData *)arg2;
-  thread_loop_filter_rows(lf_data->frame_buffer, lf_data->cm, lf_data->planes,
-                          lf_data->xd, lf_sync);
+  AV1LfMTInfo *cur_job_info;
+  while ((cur_job_info = get_lf_job_info(lf_sync)) != NULL) {
+    const int is_realtime = cur_job_info->is_realtime && !cur_job_info->plane;
+    thread_loop_filter_rows(lf_data->frame_buffer, lf_data->cm, lf_data->planes,
+                            lf_data->xd, cur_job_info->mi_row,
+                            cur_job_info->plane, cur_job_info->dir, is_realtime,
+                            lf_sync);
+  }
   return 1;
 }
 
 static void loop_filter_rows_mt(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
                                 MACROBLOCKD *xd, int start, int stop,
-                                int plane_start, int plane_end,
-                                AVxWorker *workers, int nworkers,
-                                AV1LfSync *lf_sync, int is_realtime) {
+                                const int planes_to_lf[3], AVxWorker *workers,
+                                int num_workers, AV1LfSync *lf_sync,
+                                int is_realtime) {
   const AVxWorkerInterface *const winterface = aom_get_worker_interface();
   // Number of superblock rows and cols
   const int sb_rows =
       ALIGN_POWER_OF_TWO(cm->mi_params.mi_rows, MAX_MIB_SIZE_LOG2) >>
       MAX_MIB_SIZE_LOG2;
-  const int num_workers = nworkers;
   int i;
 
   if (!lf_sync->sync_range || sb_rows != lf_sync->rows ||
@@ -422,8 +409,7 @@ static void loop_filter_rows_mt(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
            sizeof(*(lf_sync->cur_sb_col[i])) * sb_rows);
   }
 
-  enqueue_lf_jobs(lf_sync, cm, start, stop, plane_start, plane_end,
-                  is_realtime);
+  enqueue_lf_jobs(lf_sync, start, stop, planes_to_lf, is_realtime);
 
   // Set up loopfilter thread data.
   for (i = num_workers - 1; i >= 0; --i) {
@@ -451,12 +437,40 @@ static void loop_filter_rows_mt(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
   }
 }
 
+static void loop_filter_rows(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
+                             MACROBLOCKD *xd, int start, int stop,
+                             const int planes_to_lf[3], int is_realtime) {
+  // Filter top rows of all planes first, in case the output can be partially
+  // reconstructed row by row.
+  int mi_row, plane, dir;
+  for (mi_row = start; mi_row < stop; mi_row += MAX_MIB_SIZE) {
+    for (plane = 0; plane < 3; ++plane) {
+      if (!planes_to_lf[plane]) continue;
+      for (dir = 0; dir < 2; ++dir) {
+        thread_loop_filter_rows(frame, cm, xd->plane, xd, mi_row, plane, dir,
+                                is_realtime && !plane, /*lf_sync=*/NULL);
+      }
+    }
+  }
+}
+
 void av1_loop_filter_frame_mt(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
                               MACROBLOCKD *xd, int plane_start, int plane_end,
                               int partial_frame, AVxWorker *workers,
                               int num_workers, AV1LfSync *lf_sync,
                               int is_realtime) {
   int start_mi_row, end_mi_row, mi_rows_to_filter;
+  int planes_to_lf[3];
+
+  // For each luma and chroma plane, whether to filter it or not.
+  planes_to_lf[0] = (cm->lf.filter_level[0] || cm->lf.filter_level[1]) &&
+                    plane_start <= 0 && 0 < plane_end;
+  planes_to_lf[1] = cm->lf.filter_level_u && plane_start <= 1 && 1 < plane_end;
+  planes_to_lf[2] = cm->lf.filter_level_v && plane_start <= 2 && 2 < plane_end;
+  // If the luma plane is purposely not filtered, the chroma planes neither.
+  if (!planes_to_lf[0] && plane_start <= 0 && 0 < plane_end) return;
+  // Early exit.
+  if (!planes_to_lf[0] && !planes_to_lf[1] && !planes_to_lf[2]) return;
 
   start_mi_row = 0;
   mi_rows_to_filter = cm->mi_params.mi_rows;
@@ -467,8 +481,16 @@ void av1_loop_filter_frame_mt(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
   }
   end_mi_row = start_mi_row + mi_rows_to_filter;
   av1_loop_filter_frame_init(cm, plane_start, plane_end);
-  loop_filter_rows_mt(frame, cm, xd, start_mi_row, end_mi_row, plane_start,
-                      plane_end, workers, num_workers, lf_sync, is_realtime);
+
+  if (num_workers > 1) {
+    // Enqueue and execute loopfiltering jobs.
+    loop_filter_rows_mt(frame, cm, xd, start_mi_row, end_mi_row, planes_to_lf,
+                        workers, num_workers, lf_sync, is_realtime);
+  } else {
+    // Directly filter in the main thread.
+    loop_filter_rows(frame, cm, xd, start_mi_row, end_mi_row, planes_to_lf,
+                     is_realtime);
+  }
 }
 
 #if !CONFIG_REALTIME_ONLY

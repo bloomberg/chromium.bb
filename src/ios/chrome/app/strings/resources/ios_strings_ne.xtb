@@ -40,6 +40,7 @@
 <translation id="1254117744268754948">फोल्डर रोज्नुहोस्</translation>
 <translation id="1265739287306757398">कसरी गर्ने भनी सिक्नुहोस्</translation>
 <translation id="1272079795634619415">रोक्नुहोस्</translation>
+<translation id="1275718070701477396">चयन गरिएको</translation>
 <translation id="1282311502488501110">साइन इन नगर्नुहोस्</translation>
 <translation id="1283524564873030414">पछिल्ला २४ घन्टा</translation>
 <translation id="1285320974508926690">यो साइट कहिले पनि अनुवाद नगर्नुहोस्</translation>
@@ -66,6 +67,7 @@
 <translation id="1509960214886564027">कयौँ साइटका सुविधाहरूले काम नगर्न सक्छन्</translation>
 <translation id="152234381334907219">कहिल्यै सुरक्षित गरिँदैन</translation>
 <translation id="1523341279170789507">सबै कुकीलाई अनुमति दिनुहोस्</translation>
+<translation id="1524563461097350801">पर्दैन, धन्यवाद</translation>
 <translation id="1535268707340844072">तपाईंको हालको सेटिङका कारण केही साइटहरूले सही रूपमा काम नगर्न सक्छन्। सबै साइटका कुकीहरू व्यवस्थापन गर्न, <ph name="BEGIN_LINK" />कुकीसम्बन्धी सेटिङ<ph name="END_LINK" />मा जानुहोस्।</translation>
 <translation id="1540800554400757039">ठेगाना 1</translation>
 <translation id="1545749641540134597">QR कोड स्क्यान गर्नुहोस्</translation>
@@ -112,7 +114,6 @@
 <translation id="1989112275319619282">ब्राउज गर्नुहोस्</translation>
 <translation id="2015722694326466240">पासवर्डहरू हेर्नका लागि सर्वप्रथम तपाईंले अनिवार्य रूपमा आफ्नो यन्त्रमा कुनै पासकोड सेट गर्नुपर्छ।</translation>
 <translation id="2021670401941426298">तपाईंको सर्च इन्जिनमा खोजको इतिहास मेटाउन मिल्छ भने खोज इतिहास मेटाउन सर्च इन्जिनले उपलब्ध गराएका निर्देशनहरू हेर्नुहोस्।</translation>
-<translation id="2022352537516230970">तपाईंको iPhone का लागि बनाइएको</translation>
 <translation id="2073572773299281212"><ph name="DAYS" /> दिनअघि सक्रिय</translation>
 <translation id="2074131957428911366">तपाईं जुनसुकै बेला <ph name="BEGIN_LINK" />सेटिङहरू<ph name="END_LINK" /> मा गई सिंक गर्ने कुरा छनौट गर्न सक्नुहुन्छ।</translation>
 <translation id="2079545284768500474">अन्डू गर्नुहोस्</translation>
@@ -136,6 +137,7 @@
 <translation id="2320166752086256636">किबोर्ड लुकाउनुहोस्</translation>
 <translation id="2339560363438331454">सिंक तथा Google सेवाहरू</translation>
 <translation id="2351097562818989364">तपाईंका अनुवाद सेटिङहरू रिसेट गरिएका छन्।</translation>
+<translation id="235789365079050412">Google को गोपनीयता नीति</translation>
 <translation id="2359043044084662842">अनुवाद गर्नुहोस्</translation>
 <translation id="2359808026110333948">जारी राख्नुहोस्</translation>
 <translation id="2360196772093551345">मोबाइल साइट अनुरोध गर्नुहोस्</translation>
@@ -147,6 +149,7 @@
 <translation id="2421004566762153674">तेस्रो पक्षीय कुकीहरूलाई रोक लगाउँदै</translation>
 <translation id="2421044535038393232">सम्पादन गरिरहनुहोस्</translation>
 <translation id="2435457462613246316">पासवर्ड देखाउनुहोस्</translation>
+<translation id="2476359652512522418">चयन गरिएको छैन</translation>
 <translation id="2497852260688568942">तपाईंको प्रशासकले सिंंक असक्षम पार्नुभएको छ।</translation>
 <translation id="2500374554657206846">पासवर्ड सुरक्षित गर्ने विकल्पहरू</translation>
 <translation id="2523363575747517183">यो वेबसाइटले बारम्बार अर्को एप खोल्ने प्रयास गर्दैछ।</translation>
@@ -184,6 +187,7 @@
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2840687315230832938">सिंक गर्ने कार्यको प्रारम्भिक सेटअप पूरा भएको छैन</translation>
 <translation id="2843803966603263712">अनुवाद सेटिङहरू रिसेट गर्नुहोस्</translation>
+<translation id="2848086008667475748">सेटिङमा गई यसलाई डिफल्ट ब्राउजर बनाउनुहोस्…</translation>
 <translation id="2858204748079866344">तपाईंको गोपनीयताको सुरक्षा गर्न Chrome ले यो फिल्डमा तपाईंको पासवर्ड स्वतः भर्ने छैन।</translation>
 <translation id="285960592395650245">डाउनलोड गर्न पुन: प्रयास गर्नुहोस्</translation>
 <translation id="2870560284913253234">साइट</translation>
@@ -283,6 +287,7 @@
 <translation id="3691593122358196899"><ph name="FOLDER_TITLE" /> मा पुस्तक चिन्ह लगाइयो</translation>
 <translation id="3709582977625132201">'नपढिएको' सामग्रीका रूपमा चिन्ह लगाउनुहोस्</translation>
 <translation id="3740397331642243698">प्रविष्टि गरिएका URL हरू Google Chrome को इन्कोग्निटो मोडमा खोलिन्छ।</translation>
+<translation id="3762232513783804601">तपाईंको iPad का लागि बनाइएको</translation>
 <translation id="3771033907050503522">इन्कग्निटो ट्याबहरू</translation>
 <translation id="3775743491439407556">सिंक गर्ने सुविधाले काम गरिरहेको छैन</translation>
 <translation id="3779810277399252432">इन्टरनेट छैन</translation>
@@ -322,7 +327,7 @@
 <translation id="4172051516777682613">सधैँ देखाउनुहोस्</translation>
 <translation id="418156467088430727">नयाँ ट्याबमा अफलाइन संस्करण हेर्नुहोस्</translation>
 <translation id="4181841719683918333">भाषाहरू</translation>
-<translation id="4184011057600693970">तपाईंको iPad का लागि बनाइएको</translation>
+<translation id="4237377247299956313"><ph name="BEGIN_BOLD" />डिफल्ट ब्राउजर एप<ph name="END_BOLD" />मा ट्याप गर्नुहोस्</translation>
 <translation id="424315890655130736">पासफ्रेज प्रविष्टि गर्नुहोस्</translation>
 <translation id="4263576668337963058">पृष्ठमा गर्न सकिने उपलब्ध कारबाहीहरू देखाउनुहोस्</translation>
 <translation id="4267380167363222949">अर्को ट्याब</translation>
@@ -338,9 +343,10 @@
 <translation id="4375040482473363939">QR कोड खोज्नुहोस्‌</translation>
 <translation id="4378154925671717803">फोन</translation>
 <translation id="4389019817280890563">भाषा परिवर्तन गर्न ट्याप गर्नुहोस्।</translation>
-<translation id="441868831736628555">गोपनीयता सूचना</translation>
+<translation id="4442550905108052454"><ph name="BEGIN_BOLD" />सेटिङ<ph name="END_BOLD" /> खोल्नुहोस्</translation>
 <translation id="4454246407045105932">भाषा थप्नुहोस्</translation>
 <translation id="4469418912670346607">सेटअप जारी राख्नुहोस्</translation>
+<translation id="4474494258097106883">तपाईंको iPhone का लागि बनाइएको</translation>
 <translation id="4476574785019001431">सेटिङहरू</translation>
 <translation id="4496373720959965247">ट्याबहरू थप्नुहोस् र पृष्ठहरू बीच बदल्नुहोस्</translation>
 <translation id="4502566650163919158">अहिले नै जाँच्नुहोस्</translation>
@@ -597,6 +603,7 @@
 <translation id="6730682669179532099">पासवर्डहरू निर्यात गर्न सकिएन</translation>
 <translation id="6748108480210050150">बाट</translation>
 <translation id="6760509555861141183">भर्खरै खोलिएको ट्याबमा जानुहोस्</translation>
+<translation id="6762812039470893796">सबै ट्याबको चयन रद्द गर्नुहोस्</translation>
 <translation id="6780034285637185932">जिप कोड</translation>
 <translation id="6785453220513215166">क्रयास रिपोर्ट पठाउँदै ...</translation>
 <translation id="6797885426782475225">आवाज मार्फत खोजी</translation>
@@ -734,6 +741,7 @@
 <translation id="8073872304774253879">खोज तथा ब्राउजिङलाई अझ राम्रा बनाउनुहोस्</translation>
 <translation id="8076014560081431679">सुरक्षित गरिएका साइटका सेटिङहरूलाई मेटाइने छैन र त्यसले तपाईँको ब्राउज गर्ने बानीलाई झल्काउन सक्छ। <ph name="BEGIN_LINK" />थप जान्नुहोस्<ph name="END_LINK" /></translation>
 <translation id="8079602123447022758">यो सेटिङ व्यवस्थापन गरिएको छ। थप जानकारीका लागि डबल ट्याप गर्नुहोस्</translation>
+<translation id="8080028325999236607">सबै ट्याबहरू बन्द गर्नुहोस्</translation>
 <translation id="8105368624971345109">निष्क्रिय पार्नुहोस्</translation>
 <translation id="8114753159095730575">डाउनलोड गर्न फाइल उपलब्ध छ। स्क्रिनको फेदनजिकै विकल्पहरू उपलब्ध छन्।</translation>
 <translation id="8131740175452115882">निश्चित</translation>
@@ -749,7 +757,6 @@
 <translation id="8283172974887967105">सेट गर्नुहोस्…</translation>
 <translation id="8299417921174340354">पासवर्डहरू प्रयोग गर्न सर्वप्रथम तपाईंले आफ्नो यन्त्रमा अनिवार्य रूपमा कुनै पासकोड सेट गर्नु पर्छ।</translation>
 <translation id="8299613349954694191">गोप्य रूपमा वेब ब्राउज गर्न इन्कोग्निटो ट्याब खोल्नुहोस्।</translation>
-<translation id="83100941411593607">साइन इन गर्ने सुविधा अफ गरिएको छ</translation>
 <translation id="8319076807703933069">नयाँ खोज</translation>
 <translation id="8323906514956095947">ट्याबसम्बन्धी थप विकल्पहरू हेर्न टच एण्ड होल्ड गर्नुहोस्</translation>
 <translation id="8328777765163860529">सबै बन्द गर्नुहोस्</translation>

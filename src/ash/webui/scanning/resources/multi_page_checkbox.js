@@ -25,10 +25,17 @@ Polymer({
       type: Boolean,
       notify: true,
     },
+
+    /** @type {boolean} */
+    disabled: Boolean,
   },
 
   /** @private */
   onCheckboxClick_() {
+    if (this.disabled) {
+      return;
+    }
+
     this.multiPageScanChecked = !this.multiPageScanChecked;
   },
 });

@@ -9,6 +9,7 @@
 #include "chrome/browser/policy/policy_test_utils.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_service.h"
@@ -18,13 +19,7 @@
 
 namespace policy {
 
-// TODO(https://crbug.com/1226768): flaky
-#if defined(OS_WIN)
-#define MAYBE_SeparateProxyPoliciesMerging DISABLED_SeparateProxyPoliciesMerging
-#else
-#define MAYBE_SeparateProxyPoliciesMerging SeparateProxyPoliciesMerging
-#endif
-IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_SeparateProxyPoliciesMerging) {
+IN_PROC_BROWSER_TEST_F(PolicyTest, SeparateProxyPoliciesMerging) {
   // Add an individual proxy policy value.
   PolicyMap policies;
   policies.Set(key::kProxyServerMode, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,

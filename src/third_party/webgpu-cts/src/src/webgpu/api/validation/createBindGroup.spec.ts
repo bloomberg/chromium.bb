@@ -5,10 +5,12 @@ export const description = `
 `;
 
 import { makeTestGroup } from '../../../common/framework/test_group.js';
-import { unreachable } from '../../../common/util/util.js';
+import { assert, unreachable } from '../../../common/util/util.js';
 import {
   allBindingEntries,
   bindingTypeInfo,
+  bufferBindingEntries,
+  bufferBindingTypeInfo,
   kBindableResources,
   kTextureUsages,
   kTextureViewDimensions,
@@ -18,7 +20,7 @@ import {
 import { GPUConst } from '../../constants.js';
 import { getTextureDimensionFromView } from '../../util/texture/base.js';
 
-import { ValidationTest } from './validation_test.js';
+import { kResourceStates, ValidationTest } from './validation_test.js';
 
 function clone<T extends GPUTextureDescriptor>(descriptor: T): T {
   return JSON.parse(JSON.stringify(descriptor));
@@ -112,15 +114,14 @@ g.test('binding_must_contain_resource_defined_in_layout')
     const resource = t.getBindingResource(resourceType);
 
     let resourceBindingIsCompatible;
-    switch (resourceType) {
+    switch (info.resource) {
       // Either type of sampler may be bound to a filtering sampler binding.
       case 'filtSamp':
-        resourceBindingIsCompatible =
-          info.resource === 'filtSamp' || info.resource === 'nonFiltSamp';
+        resourceBindingIsCompatible = resourceType === 'filtSamp' || resourceType === 'nonFiltSamp';
         break;
       // But only non-filtering samplers can be used with non-filtering sampler bindings.
       case 'nonFiltSamp':
-        resourceBindingIsCompatible = info.resource === 'nonFiltSamp';
+        resourceBindingIsCompatible = resourceType === 'nonFiltSamp';
         break;
       default:
         resourceBindingIsCompatible = info.resource === resourceType;
@@ -296,8 +297,7 @@ g.test('buffer_offset_and_size_for_bind_groups_match')
   .desc(
     `
     Test that a buffer binding's [offset, offset + size) must be contained in the BindGroup entry's buffer.
-    - Test for various offsets and sizes
-    - TODO(#234): disallow zero-sized bindings`
+    - Test for various offsets and sizes`
   )
   .paramsSubcasesOnly([
     { offset: 0, size: 512, _success: true }, // offset 0 is valid
@@ -310,10 +310,10 @@ g.test('buffer_offset_and_size_for_bind_groups_match')
     { offset: 256 * 3, size: undefined, _success: true },
 
     // Zero-sized bindings
-    { offset: 0, size: 0, _success: true },
-    { offset: 256, size: 0, _success: true },
-    { offset: 1024, size: 0, _success: true },
-    { offset: 1024, size: undefined, _success: true },
+    { offset: 0, size: 0, _success: false },
+    { offset: 256, size: 0, _success: false },
+    { offset: 1024, size: 0, _success: false },
+    { offset: 1024, size: undefined, _success: false },
 
     // Unaligned buffer offset is invalid
     { offset: 1, size: 256, _success: false },
@@ -405,3 +405,123 @@ g.test('minBindingSize')
       });
     }, minBindingSize !== undefined && size < minBindingSize);
   });
+
+g.test('buffer,resource_state')
+  .desc('Test bind group creation with various buffer resource states')
+  .paramsSubcasesOnly(u =>
+    u.combine('state', kResourceStates).combine('entry', bufferBindingEntries(true))
+  )
+  .fn(t => {
+    const { state, entry } = t.params;
+
+    assert(entry.buffer !== undefined);
+    const info = bufferBindingTypeInfo(entry.buffer);
+
+    const bgl = t.device.createBindGroupLayout({
+      entries: [
+        {
+          ...entry,
+          binding: 0,
+          visibility: info.validStages,
+        },
+      ],
+    });
+
+    const buffer = t.createBufferWithState(state, {
+      usage: info.usage,
+      size: 4,
+    });
+
+    t.expectValidationError(() => {
+      t.device.createBindGroup({
+        layout: bgl,
+        entries: [
+          {
+            binding: 0,
+            resource: {
+              buffer,
+            },
+          },
+        ],
+      });
+    }, state === 'invalid');
+  });
+
+g.test('texture,resource_state')
+  .desc('Test bind group creation with various texture resource states')
+  .paramsSubcasesOnly(u =>
+    u
+      .combine('state', kResourceStates)
+      .combine('entry', sampledAndStorageBindingEntries(true, 'rgba8unorm'))
+  )
+  .fn(t => {
+    const { state, entry } = t.params;
+    const info = texBindingTypeInfo(entry);
+
+    const bgl = t.device.createBindGroupLayout({
+      entries: [
+        {
+          ...entry,
+          binding: 0,
+          visibility: info.validStages,
+        },
+      ],
+    });
+
+    const texture = t.createTextureWithState(state, {
+      usage: info.usage,
+      size: [1, 1],
+      format: 'rgba8unorm',
+      sampleCount: entry.texture?.multisampled ? 4 : 1,
+    });
+
+    let textureView: GPUTextureView;
+    t.expectValidationError(() => {
+      textureView = texture.createView();
+    }, state === 'invalid');
+
+    t.expectValidationError(() => {
+      t.device.createBindGroup({
+        layout: bgl,
+        entries: [
+          {
+            binding: 0,
+            resource: textureView,
+          },
+        ],
+      });
+    }, state === 'invalid');
+  });
+
+g.test('bind_group_layout,device_mismatch')
+  .desc(
+    'Tests createBindGroup cannot be called with a bind group layout created from another device'
+  )
+  .paramsSubcasesOnly(u => u.combine('mismatched', [true, false]))
+  .unimplemented();
+
+g.test('binding_resources,device_mismatch')
+  .desc(
+    `
+    Tests createBindGroup cannot be called with various resources created from another device
+    Test with two resources to make sure all resources can be validated:
+    - resource0 and resource1 from same device
+    - resource0 and resource1 from different device
+    `
+  )
+  .paramsSubcasesOnly(u =>
+    u
+      .combine('bindingResource', [
+        'buffer',
+        'sampler',
+        'texture',
+        'storageTexture',
+        'externalTexture',
+      ] as const)
+      .combineWithParams([
+        { resource0Mismatched: false, resource1Mismatched: false }, //control case
+        { resource0Mismatched: true, resource1Mismatched: false },
+        { resource0Mismatched: false, resource1Mismatched: true },
+      ])
+  )
+  .unimplemented();

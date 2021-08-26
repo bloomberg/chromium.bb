@@ -137,12 +137,17 @@ class MockBluetoothDevice : public BluetoothDevice {
   // ON_CALL(*mock_device, GetGattServices))
   //   .WillByDefault(Invoke(*mock_device,
   //                         &MockBluetoothDevice::GetMockServices));
-  void AddMockService(std::unique_ptr<MockBluetoothGattService> mock_device);
+  void AddMockService(std::unique_ptr<MockBluetoothGattService> mock_service);
   std::vector<BluetoothRemoteGattService*> GetMockServices() const;
   BluetoothRemoteGattService* GetMockService(
       const std::string& identifier) const;
 
   void AddUUID(const BluetoothUUID& uuid) { uuids_.insert(uuid); }
+
+  void SetServiceDataForUUID(const BluetoothUUID& uuid,
+                             const std::vector<uint8_t>& service_data) {
+    service_data_[uuid] = service_data;
+  }
 
   // Updates the device's Manufacturer Data that are returned by
   // BluetoothDevice::GetManufacturerData().

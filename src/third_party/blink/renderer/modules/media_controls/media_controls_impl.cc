@@ -154,7 +154,8 @@ void MaybeParserAppendChild(Element* parent, Element* child) {
 
 bool ShouldShowPlaybackSpeedButton(HTMLMediaElement& media_element) {
   // The page disabled the button via the controlsList attribute.
-  if (media_element.ControlsListInternal()->ShouldHidePlaybackRate()) {
+  if (media_element.ControlsListInternal()->ShouldHidePlaybackRate() &&
+      !media_element.UserWantsControlsVisible()) {
     UseCounter::Count(media_element.GetDocument(),
                       WebFeature::kHTMLMediaElementControlsListNoPlaybackRate);
     return false;
@@ -193,7 +194,8 @@ bool ShouldShowCastButton(HTMLMediaElement& media_element) {
   }
 
   // The page disabled the button via the attribute.
-  if (media_element.ControlsListInternal()->ShouldHideRemotePlayback()) {
+  if (media_element.ControlsListInternal()->ShouldHideRemotePlayback() &&
+      !media_element.UserWantsControlsVisible()) {
     UseCounter::Count(
         media_element.GetDocument(),
         WebFeature::kHTMLMediaElementControlsListNoRemotePlayback);
@@ -1862,11 +1864,13 @@ void MediaControlsImpl::OnPlay() {
 void MediaControlsImpl::OnPlaying() {
   StartHideMediaControlsTimer();
   UpdateCSSClassFromState();
+  timeline_->OnMediaPlaying();
 }
 
 void MediaControlsImpl::OnPause() {
   UpdatePlayState();
   UpdateTimeIndicators();
+  timeline_->OnMediaStoppedPlaying();
   MakeOpaque();
 
   StopHideMediaControlsTimer();
@@ -1991,7 +1995,7 @@ void MediaControlsImpl::ElementSizeChangedTimerFired(TimerBase*) {
 }
 
 void MediaControlsImpl::OnLoadingProgress() {
-  timeline_->RenderBarSegments();
+  timeline_->OnProgress();
 }
 
 void MediaControlsImpl::ComputeWhichControlsFit() {
@@ -2191,6 +2195,7 @@ MediaControlOverflowMenuButtonElement& MediaControlsImpl::OverflowButton() {
 }
 
 void MediaControlsImpl::OnWaiting() {
+  timeline_->OnMediaStoppedPlaying();
   UpdateCSSClassFromState();
 }
 

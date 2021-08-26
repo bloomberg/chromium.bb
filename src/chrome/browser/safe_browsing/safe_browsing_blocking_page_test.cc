@@ -37,7 +37,6 @@
 #include "chrome/browser/safe_browsing/safe_browsing_metrics_collector_factory.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager_factory.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
-#include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/safe_browsing/user_interaction_observer.h"
 #include "chrome/browser/safe_browsing/verdict_cache_manager_factory.h"
 #include "chrome/browser/ssl/cert_verifier_browser_test.h"
@@ -66,6 +65,7 @@
 #include "components/safe_browsing/content/browser/safe_browsing_blocking_page.h"
 #include "components/safe_browsing/content/browser/safe_browsing_blocking_page_factory.h"
 #include "components/safe_browsing/content/browser/threat_details.h"
+#include "components/safe_browsing/content/browser/ui_manager.h"
 #include "components/safe_browsing/content/common/safe_browsing.mojom.h"
 #include "components/safe_browsing/core/browser/db/database_manager.h"
 #include "components/safe_browsing/core/browser/db/fake_database_manager.h"
@@ -501,6 +501,8 @@ class SafeBrowsingBlockingPageBrowserTest
     ASSERT_TRUE(embedded_test_server()->Start());
   }
 
+  SBThreatType GetThreatType() const { return testing::get<0>(GetParam()); }
+
   void SetURLThreatType(const GURL& url, SBThreatType threat_type) {
     TestSafeBrowsingService* service = factory_.test_safe_browsing_service();
     ASSERT_TRUE(service);
@@ -586,7 +588,7 @@ class SafeBrowsingBlockingPageBrowserTest
   GURL SetupThreatIframeWarningAndNavigate() {
     GURL url = embedded_test_server()->GetURL(kCrossSiteMaliciousPage);
     GURL iframe_url = embedded_test_server()->GetURL(kMaliciousIframe);
-    SetURLThreatType(iframe_url, testing::get<0>(GetParam()));
+    SetURLThreatType(iframe_url, GetThreatType());
 
     ui_test_utils::NavigateToURL(browser(), url);
     EXPECT_TRUE(WaitForReady(browser()));
@@ -604,7 +606,7 @@ class SafeBrowsingBlockingPageBrowserTest
     GURL::Replacements replace_host;
     replace_host.SetHostStr(kCrossOriginMaliciousIframeHost);
     *iframe_url = iframe_url->ReplaceComponents(replace_host);
-    SetURLThreatType(*iframe_url, testing::get<0>(GetParam()));
+    SetURLThreatType(*iframe_url, GetThreatType());
 
     ui_test_utils::NavigateToURL(browser(), url);
     EXPECT_TRUE(WaitForReady(browser()));
@@ -670,7 +672,7 @@ class SafeBrowsingBlockingPageBrowserTest
   }
 
   void TestReportingDisabledAndDontProceed(const GURL& url) {
-    SetURLThreatType(url, testing::get<0>(GetParam()));
+    SetURLThreatType(url, GetThreatType());
     ui_test_utils::NavigateToURL(browser(), url);
     ASSERT_TRUE(WaitForReady(browser()));
 
@@ -783,7 +785,7 @@ class SafeBrowsingBlockingPageBrowserTest
   // safebrowsing service, navigates to that page, and returns the url.
   // The various wrappers supply different URLs.
   GURL SetupWarningAndNavigateToURL(GURL url, Browser* browser) {
-    SetURLThreatType(url, testing::get<0>(GetParam()));
+    SetURLThreatType(url, GetThreatType());
     ui_test_utils::NavigateToURL(browser, url);
     EXPECT_TRUE(WaitForReady(browser));
     return url;
@@ -792,7 +794,7 @@ class SafeBrowsingBlockingPageBrowserTest
   // safebrowsing service, navigates to that page, and returns the url.
   // The various wrappers supply different URLs.
   GURL SetupWarningAndNavigateToURLInNewTab(GURL url, Browser* browser) {
-    SetURLThreatType(url, testing::get<0>(GetParam()));
+    SetURLThreatType(url, GetThreatType());
     ui_test_utils::NavigateToURLWithDisposition(
         browser, url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
         ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
@@ -854,7 +856,40 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, DontProceed) {
             browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
+IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, DontProceed_RTL) {
+  base::i18n::SetICUDefaultLocale("ar");
+  ASSERT_TRUE(base::i18n::IsRTL());
+
+  SetupWarningAndNavigate(browser());
+
+  EXPECT_EQ(VISIBLE, GetVisibility("primary-button"));
+  EXPECT_EQ(HIDDEN, GetVisibility("details"));
+  EXPECT_EQ(HIDDEN, GetVisibility("proceed-link"));
+  EXPECT_EQ(HIDDEN, GetVisibility("error-code"));
+  EXPECT_TRUE(Click("details-button"));
+  EXPECT_EQ(VISIBLE, GetVisibility("details"));
+  EXPECT_EQ(VISIBLE, GetVisibility("proceed-link"));
+  EXPECT_EQ(HIDDEN, GetVisibility("error-code"));
+  EXPECT_TRUE(ClickAndWaitForDetach("primary-button"));
+
+  AssertNoInterstitial(false);          // Assert the interstitial is gone
+  EXPECT_EQ(GURL(url::kAboutBlankURL),  // Back to "about:blank"
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+}
+
 IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, Proceed) {
+  GURL url = SetupWarningAndNavigate(browser());
+
+  EXPECT_TRUE(ClickAndWaitForDetach("proceed-link"));
+  AssertNoInterstitial(true);  // Assert the interstitial is gone.
+  EXPECT_EQ(url,
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+}
+
+IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, Proceed_RTL) {
+  base::i18n::SetICUDefaultLocale("ar");
+  ASSERT_TRUE(base::i18n::IsRTL());
+
   GURL url = SetupWarningAndNavigate(browser());
 
   EXPECT_TRUE(ClickAndWaitForDetach("proceed-link"));
@@ -905,8 +940,7 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
   // The extended reporting opt-in is presented in the interstitial for malware,
   // phishing, and UwS threats.
   const bool expect_threat_details =
-      SafeBrowsingBlockingPage::ShouldReportThreatDetails(
-          testing::get<0>(GetParam()));
+      SafeBrowsingBlockingPage::ShouldReportThreatDetails(GetThreatType());
 
   scoped_refptr<content::MessageLoopRunner> threat_report_sent_runner(
       new content::MessageLoopRunner);
@@ -989,8 +1023,7 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
                        MainFrameBlockedShouldHaveNoDOMDetailsWhenDontProceed) {
   SetExtendedReportingPrefForTests(browser()->profile()->GetPrefs(), true);
   const bool expect_threat_details =
-      SafeBrowsingBlockingPage::ShouldReportThreatDetails(
-          testing::get<0>(GetParam()));
+      SafeBrowsingBlockingPage::ShouldReportThreatDetails(GetThreatType());
 
   scoped_refptr<content::MessageLoopRunner> threat_report_sent_runner(
       new content::MessageLoopRunner);
@@ -1041,8 +1074,7 @@ IN_PROC_BROWSER_TEST_P(
     MainFrameBlockedShouldHaveNoDOMDetailsWhenProceeding) {
   SetExtendedReportingPrefForTests(browser()->profile()->GetPrefs(), true);
   const bool expect_threat_details =
-      SafeBrowsingBlockingPage::ShouldReportThreatDetails(
-          testing::get<0>(GetParam()));
+      SafeBrowsingBlockingPage::ShouldReportThreatDetails(GetThreatType());
 
   scoped_refptr<content::MessageLoopRunner> threat_report_sent_runner(
       new content::MessageLoopRunner);
@@ -1237,7 +1269,7 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
                        Histograms_DontProceed) {
   base::HistogramTester histograms;
   std::string prefix;
-  SBThreatType threat_type = testing::get<0>(GetParam());
+  SBThreatType threat_type = GetThreatType();
   if (threat_type == SB_THREAT_TYPE_URL_MALWARE)
     prefix = "malware";
   else if (threat_type == SB_THREAT_TYPE_URL_PHISHING)
@@ -1289,7 +1321,7 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
                        Histograms_Proceed) {
   base::HistogramTester histograms;
   std::string prefix;
-  SBThreatType threat_type = testing::get<0>(GetParam());
+  SBThreatType threat_type = GetThreatType();
   if (threat_type == SB_THREAT_TYPE_URL_MALWARE)
     prefix = "malware";
   else if (threat_type == SB_THREAT_TYPE_URL_PHISHING)
@@ -1396,8 +1428,7 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
   // The extended reporting opt-in is presented in the interstitial for malware,
   // phishing, and UwS threats.
   const bool expect_threat_details =
-      SafeBrowsingBlockingPage::ShouldReportThreatDetails(
-          testing::get<0>(GetParam()));
+      SafeBrowsingBlockingPage::ShouldReportThreatDetails(GetThreatType());
 
   scoped_refptr<content::MessageLoopRunner> threat_report_sent_runner(
       new content::MessageLoopRunner);
@@ -1415,8 +1446,7 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
   // The extended reporting opt-in is presented in the interstitial for malware,
   // phishing, and UwS threats.
   const bool expect_threat_details =
-      SafeBrowsingBlockingPage::ShouldReportThreatDetails(
-          testing::get<0>(GetParam()));
+      SafeBrowsingBlockingPage::ShouldReportThreatDetails(GetThreatType());
 
   scoped_refptr<content::MessageLoopRunner> threat_report_sent_runner(
       new content::MessageLoopRunner);
@@ -1439,8 +1469,7 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
   // The extended reporting opt-in is presented in the interstitial for malware,
   // phishing, and UwS threats.
   const bool expect_threat_details =
-      SafeBrowsingBlockingPage::ShouldReportThreatDetails(
-          testing::get<0>(GetParam()));
+      SafeBrowsingBlockingPage::ShouldReportThreatDetails(GetThreatType());
 
   scoped_refptr<content::MessageLoopRunner> threat_report_sent_runner(
       new content::MessageLoopRunner);
@@ -1683,7 +1712,7 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
   browser()->profile()->GetPrefs()->Set(prefs::kSafeBrowsingAllowlistDomains,
                                         allowlist);
 
-  SetURLThreatType(url, testing::get<0>(GetParam()));
+  SetURLThreatType(url, GetThreatType());
   ui_test_utils::NavigateToURL(browser(), url);
   base::RunLoop().RunUntilIdle();
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
@@ -1704,7 +1733,7 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
   browser()->profile()->GetPrefs()->Set(prefs::kSafeBrowsingAllowlistDomains,
                                         allowlist);
 
-  SetURLThreatType(js_url, testing::get<0>(GetParam()));
+  SetURLThreatType(js_url, GetThreatType());
   // Open a new tab to rebind the allowlist to the renderer.
   chrome::NewTab(browser());
   ui_test_utils::NavigateToURL(browser(), url);
@@ -2731,14 +2760,17 @@ class SafeBrowsingBlockingPageIDNTest
 
     SafeBrowsingService* sb_service =
         g_browser_process->safe_browsing_service();
+    const content::GlobalRenderFrameHostId primary_main_frame_id =
+        contents->GetMainFrame()->GetGlobalId();
     SafeBrowsingBlockingPage::UnsafeResource resource;
 
     resource.url = request_url;
     resource.is_subresource = is_subresource;
     resource.threat_type = testing::get<1>(GetParam());
-    resource.web_contents_getter = security_interstitials::GetWebContentsGetter(
-        contents->GetMainFrame()->GetProcess()->GetID(),
-        contents->GetMainFrame()->GetRoutingID());
+    resource.web_contents_getter =
+        security_interstitials::GetWebContentsGetter(primary_main_frame_id);
+    resource.render_process_id = primary_main_frame_id.child_id;
+    resource.render_frame_id = primary_main_frame_id.frame_routing_id;
     resource.threat_source = safe_browsing::ThreatSource::LOCAL_PVER4;
 
     auto* ui_manager = sb_service->ui_manager().get();
@@ -3057,9 +3089,9 @@ class SafeBrowsingPrerenderBrowserTest
   SafeBrowsingPrerenderBrowserTest& operator=(
       const SafeBrowsingPrerenderBrowserTest&) = delete;
 
-  void SetUpOnMainThread() override {
-    prerender_helper_.SetUpOnMainThread(embedded_test_server());
-    SafeBrowsingBlockingPageBrowserTest::SetUpOnMainThread();
+  void SetUp() override {
+    prerender_helper_.SetUp(embedded_test_server());
+    SafeBrowsingBlockingPageBrowserTest::SetUp();
   }
 
   content::test::PrerenderTestHelper& prerender_helper() {
@@ -3070,6 +3102,19 @@ class SafeBrowsingPrerenderBrowserTest
     return browser()->tab_strip_model()->GetActiveWebContents();
   }
 
+  // Prerenders |prerender_url|, which triggers SafeBrowsing, then verifies that
+  // the prerender is cancelled and that the security state of the primary page
+  // is not affected.
+  void PrerenderAndExpectCancellation(const GURL& prerender_url) {
+    content::test::PrerenderHostObserver observer(*GetWebContents(),
+                                                  prerender_url);
+    prerender_helper().AddPrerenderAsync(prerender_url);
+    observer.WaitForDestroyed();
+
+    EXPECT_FALSE(IsShowingInterstitial(GetWebContents()));
+    ExpectNoSecurityIndicatorDowngrade(GetWebContents());
+  }
+
  private:
   content::test::PrerenderTestHelper prerender_helper_;
 };
@@ -3077,18 +3122,99 @@ class SafeBrowsingPrerenderBrowserTest
 INSTANTIATE_TEST_SUITE_P(
     All,
     SafeBrowsingPrerenderBrowserTest,
+    testing::Combine(
+        testing::Values(SB_THREAT_TYPE_URL_MALWARE,  // Threat types
+                        SB_THREAT_TYPE_URL_PHISHING,
+                        SB_THREAT_TYPE_URL_UNWANTED),
+        testing::Bool()));  // If isolate all sites for testing.
+
+// Attempt to prerender an unsafe page. The prerender navigation should be
+// cancelled and should not affect the security state of the primary page.
+IN_PROC_BROWSER_TEST_P(SafeBrowsingPrerenderBrowserTest, UnsafePrerender) {
+  const GURL initial_url = embedded_test_server()->GetURL("/title1.html");
+  ui_test_utils::NavigateToURL(browser(), initial_url);
+
+  const GURL prerender_url = embedded_test_server()->GetURL(kEmptyPage);
+  SetURLThreatType(prerender_url, GetThreatType());
+
+  PrerenderAndExpectCancellation(prerender_url);
+}
+
+// Like SafeBrowsingPrerenderBrowserTest.UnsafePrerender, but for when a
+// prerendered page has a subresource that's unsafe.
+IN_PROC_BROWSER_TEST_P(SafeBrowsingPrerenderBrowserTest,
+                       UnsafeSubresourcePrerender) {
+  const GURL initial_url = embedded_test_server()->GetURL("/title1.html");
+  ui_test_utils::NavigateToURL(browser(), initial_url);
+
+  const GURL prerender_url = embedded_test_server()->GetURL(kMaliciousJsPage);
+  const GURL unsafe_resource_url = embedded_test_server()->GetURL(kMaliciousJs);
+  SetURLThreatType(unsafe_resource_url, GetThreatType());
+
+  PrerenderAndExpectCancellation(prerender_url);
+}
+
+// Like SafeBrowsingPrerenderBrowserTest.UnsafePrerender, but for when a
+// prerendered page has a subframe that's unsafe.
+IN_PROC_BROWSER_TEST_P(SafeBrowsingPrerenderBrowserTest,
+                       UnsafeSubframePrerender) {
+  const GURL initial_url = embedded_test_server()->GetURL("/title1.html");
+  ui_test_utils::NavigateToURL(browser(), initial_url);
+
+  const GURL prerender_url =
+      embedded_test_server()->GetURL("/iframe_blank.html");
+  const GURL unsafe_iframe_url =
+      embedded_test_server()->GetURL(kMaliciousIframe);
+  SetURLThreatType(unsafe_iframe_url, GetThreatType());
+
+  prerender_helper().AddPrerender(prerender_url);
+  auto host_id = prerender_helper().AddPrerender(prerender_url);
+  content::RenderFrameHost* prerender_rfh =
+      prerender_helper().GetPrerenderedMainFrameHost(host_id);
+  ASSERT_TRUE(prerender_rfh);
+
+  content::test::PrerenderHostObserver observer(*GetWebContents(), host_id);
+  content::ExecuteScriptAsync(
+      prerender_rfh,
+      content::JsReplace("document.getElementById('test').src = $1;",
+                         unsafe_iframe_url));
+  observer.WaitForDestroyed();
+
+  EXPECT_FALSE(IsShowingInterstitial(GetWebContents()));
+  ExpectNoSecurityIndicatorDowngrade(GetWebContents());
+}
+
+IN_PROC_BROWSER_TEST_P(SafeBrowsingPrerenderBrowserTest,
+                       UnsafeCrossOriginSubframePrerender) {
+  const GURL initial_url = embedded_test_server()->GetURL("/title1.html");
+  ui_test_utils::NavigateToURL(browser(), initial_url);
+
+  const GURL prerender_url =
+      embedded_test_server()->GetURL(kPageWithCrossOriginMaliciousIframe);
+  const GURL unsafe_iframe_url = embedded_test_server()->GetURL(
+      kCrossOriginMaliciousIframeHost, kMaliciousIframe);
+  SetURLThreatType(unsafe_iframe_url, GetThreatType());
+
+  PrerenderAndExpectCancellation(prerender_url);
+}
+
+class SafeBrowsingThreatDetailsPrerenderBrowserTest
+    : public SafeBrowsingPrerenderBrowserTest {};
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    SafeBrowsingThreatDetailsPrerenderBrowserTest,
     // We simulate a SB_THREAT_TYPE_URL_CLIENT_SIDE_MALWARE to trigger DOM
     // detail collection.
     testing::Combine(testing::Values(SB_THREAT_TYPE_URL_CLIENT_SIDE_MALWARE),
                      testing::Bool()));  // If isolate all sites for testing.
 
 // Test that the prerendering doesn't affect on the primary's threat report.
-IN_PROC_BROWSER_TEST_P(SafeBrowsingPrerenderBrowserTest,
+IN_PROC_BROWSER_TEST_P(SafeBrowsingThreatDetailsPrerenderBrowserTest,
                        DontContainPrerenderingInfoInThreatReport) {
   SetExtendedReportingPrefForTests(browser()->profile()->GetPrefs(), true);
   const bool expect_threat_details =
-      SafeBrowsingBlockingPage::ShouldReportThreatDetails(
-          testing::get<0>(GetParam()));
+      SafeBrowsingBlockingPage::ShouldReportThreatDetails(GetThreatType());
 
   auto threat_report_sent_runner = std::make_unique<base::RunLoop>();
   if (expect_threat_details)

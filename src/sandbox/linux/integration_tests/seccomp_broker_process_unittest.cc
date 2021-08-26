@@ -34,6 +34,7 @@
 #include "sandbox/linux/syscall_broker/broker_file_permission.h"
 #include "sandbox/linux/syscall_broker/broker_process.h"
 #include "sandbox/linux/system_headers/linux_seccomp.h"
+#include "sandbox/linux/system_headers/linux_stat.h"
 #include "sandbox/linux/system_headers/linux_syscalls.h"
 #include "sandbox/linux/tests/scoped_temporary_file.h"
 #include "sandbox/linux/tests/test_utils.h"
@@ -202,6 +203,26 @@ namespace {
 // not accept this as a valid error number. E.g. bionic accepts up to 255, glibc
 // and musl up to 4096.
 const int kFakeErrnoSentinel = 254;
+
+void ConvertKernelStatToLibcStat(default_stat_struct& in_stat,
+                                 struct stat& out_stat) {
+  out_stat.st_dev = in_stat.st_dev;
+  out_stat.st_ino = in_stat.st_ino;
+  out_stat.st_mode = in_stat.st_mode;
+  out_stat.st_nlink = in_stat.st_nlink;
+  out_stat.st_uid = in_stat.st_uid;
+  out_stat.st_gid = in_stat.st_gid;
+  out_stat.st_rdev = in_stat.st_rdev;
+  out_stat.st_size = in_stat.st_size;
+  out_stat.st_blksize = in_stat.st_blksize;
+  out_stat.st_blocks = in_stat.st_blocks;
+  out_stat.st_atim.tv_sec = in_stat.st_atime_;
+  out_stat.st_atim.tv_nsec = in_stat.st_atime_nsec_;
+  out_stat.st_mtim.tv_sec = in_stat.st_mtime_;
+  out_stat.st_mtim.tv_nsec = in_stat.st_mtime_nsec_;
+  out_stat.st_ctim.tv_sec = in_stat.st_ctime_;
+  out_stat.st_ctim.tv_nsec = in_stat.st_ctime_nsec_;
+}
 }  // namespace
 
 // There are a variety of ways to make syscalls in a sandboxed process. One is
@@ -217,6 +238,10 @@ class Syscaller {
 
   virtual int Open(const char* filepath, int flags) = 0;
   virtual int Access(const char* filepath, int mode) = 0;
+  // NOTE: we use struct stat instead of default_stat_struct, to make the libc
+  // syscaller simpler. Copying from default_stat_struct (the structure returned
+  // from a stat sycall) to struct stat (the structure exposed by a libc to its
+  // users) is simpler than going in the opposite direction.
   virtual int Stat(const char* filepath,
                    bool follow_links,
                    struct stat* statbuf) = 0;
@@ -243,8 +268,12 @@ class IPCSyscaller : public Syscaller {
   int Stat(const char* filepath,
            bool follow_links,
            struct stat* statbuf) override {
-    return broker_->GetBrokerClientSignalBased()->Stat(filepath, follow_links,
-                                                       statbuf);
+    default_stat_struct buf;
+    int ret = broker_->GetBrokerClientSignalBased()->DefaultStatForTesting(
+        filepath, follow_links, &buf);
+    if (ret >= 0)
+      ConvertKernelStatToLibcStat(buf, *statbuf);
+    return ret;
   }
 
   int Rename(const char* oldpath, const char* newpath) override {
@@ -300,10 +329,13 @@ class DirectSyscaller : public Syscaller {
   int Stat(const char* filepath,
            bool follow_links,
            struct stat* statbuf) override {
-    int ret = follow_links ? syscall(__NR_stat, filepath, statbuf)
-                           : syscall(__NR_lstat, filepath, statbuf);
+    struct kernel_stat buf;
+    int ret = syscall(__NR_newfstatat, AT_FDCWD, filepath, &buf,
+                      follow_links ? 0 : AT_SYMLINK_NOFOLLOW);
     if (ret < 0)
       return -errno;
+
+    ConvertKernelStatToLibcStat(buf, *statbuf);
     return ret;
   }
 
@@ -1212,11 +1244,11 @@ class StatFileNoCommandDelegate final : public StatFileDelegate {
 };
 
 TEST(BrokerProcessIntegrationTest, StatFileNoCommandFollowLinks) {
-  RunAllBrokerTests<StatFileNoCommandDelegate<true>>();
+  RunAllBrokerTests<StatFileNoCommandDelegate</*follow_links=*/true>>();
 }
 
 TEST(BrokerProcessIntegrationTest, StatFileNoCommandNoFollowLinks) {
-  RunAllBrokerTests<StatFileNoCommandDelegate<false>>();
+  RunAllBrokerTests<StatFileNoCommandDelegate</*follow_links=*/false>>();
 }
 
 // Allows the STAT command without any file permissions.
@@ -1242,11 +1274,11 @@ class StatFilesNoPermissionDelegate final : public StatFileDelegate {
 };
 
 TEST(BrokerProcessIntegrationTest, StatFilesNoPermissionFollowLinks) {
-  RunAllBrokerTests<StatFilesNoPermissionDelegate<true>>();
+  RunAllBrokerTests<StatFilesNoPermissionDelegate</*follow_links=*/true>>();
 }
 
 TEST(BrokerProcessIntegrationTest, StatFilesNoPermissionNoFollowLinks) {
-  RunAllBrokerTests<StatFilesNoPermissionDelegate<false>>();
+  RunAllBrokerTests<StatFilesNoPermissionDelegate</*follow_links=*/false>>();
 }
 
 // Nonexistent file with permissions to see file.
@@ -1291,12 +1323,14 @@ class StatNonexistentFileWithPermissionsDelegate final
 
 TEST(BrokerProcessIntegrationTest,
      StatNonexistentFileWithPermissionsFollowLinks) {
-  RunAllBrokerTests<StatNonexistentFileWithPermissionsDelegate<true>>();
+  RunAllBrokerTests<
+      StatNonexistentFileWithPermissionsDelegate</*follow_links=*/true>>();
 }
 
 TEST(BrokerProcessIntegrationTest,
      StatNonexistentFileWithPermissionsNoFollowLinks) {
-  RunAllBrokerTests<StatNonexistentFileWithPermissionsDelegate<false>>();
+  RunAllBrokerTests<
+      StatNonexistentFileWithPermissionsDelegate</*follow_links=*/false>>();
 }
 
 // Nonexistent file with permissions to create file.
@@ -1340,12 +1374,14 @@ class StatNonexistentFileWithCreatePermissionsDelegate final
 
 TEST(BrokerProcessIntegrationTest,
      StatNonexistentFileWithCreatePermissionsFollowLinks) {
-  RunAllBrokerTests<StatNonexistentFileWithCreatePermissionsDelegate<true>>();
+  RunAllBrokerTests<StatNonexistentFileWithCreatePermissionsDelegate<
+      /*follow_links=*/true>>();
 }
 
 TEST(BrokerProcessIntegrationTest,
      StatNonexistentFileWithCreatePermissionsNoFollowLinks) {
-  RunAllBrokerTests<StatNonexistentFileWithCreatePermissionsDelegate<false>>();
+  RunAllBrokerTests<StatNonexistentFileWithCreatePermissionsDelegate<
+      /*follow_links=*/false>>();
 }
 
 // Actual file with permissions to see file.
@@ -1387,11 +1423,11 @@ class StatFileWithPermissionsDelegate final : public StatFileDelegate {
 };
 
 TEST(BrokerProcessIntegrationTest, StatFileWithPermissionsFollowLinks) {
-  RunAllBrokerTests<StatFileWithPermissionsDelegate<true>>();
+  RunAllBrokerTests<StatFileWithPermissionsDelegate</*follow_links=*/true>>();
 }
 
 TEST(BrokerProcessIntegrationTest, StatFileWithPermissionsNoFollowLinks) {
-  RunAllBrokerTests<StatFileWithPermissionsDelegate<false>>();
+  RunAllBrokerTests<StatFileWithPermissionsDelegate</*follow_links=*/false>>();
 }
 
 class RenameTestDelegate : public BrokerTestDelegate {
@@ -1421,6 +1457,16 @@ class RenameTestDelegate : public BrokerTestDelegate {
   }
 
  protected:
+  void ExpectRenamed() {
+    EXPECT_TRUE(access(oldpath_.c_str(), 0) < 0);
+    EXPECT_TRUE(access(newpath_.c_str(), 0) == 0);
+  }
+
+  void ExpectNotRenamed() {
+    EXPECT_TRUE(access(oldpath_.c_str(), 0) == 0);
+    EXPECT_TRUE(access(newpath_.c_str(), 0) < 0);
+  }
+
   std::string oldpath_;
   std::string newpath_;
 };
@@ -1443,13 +1489,7 @@ class RenameNoCommandDelegate final : public RenameTestDelegate {
   }
 
   void ParentTearDown() override {
-    if (true) {
-      EXPECT_TRUE(access(oldpath_.c_str(), 0) == 0);
-      EXPECT_TRUE(access(newpath_.c_str(), 0) < 0);
-    } else {
-      EXPECT_TRUE(access(oldpath_.c_str(), 0) < 0);
-      EXPECT_TRUE(access(newpath_.c_str(), 0) == 0);
-    }
+    ExpectNotRenamed();
     RenameTestDelegate::ParentTearDown();
   }
 };
@@ -1474,13 +1514,7 @@ class RenameNoPermNewDelegate final : public RenameTestDelegate {
   }
 
   void ParentTearDown() override {
-    if (true) {
-      EXPECT_TRUE(access(oldpath_.c_str(), 0) == 0);
-      EXPECT_TRUE(access(newpath_.c_str(), 0) < 0);
-    } else {
-      EXPECT_TRUE(access(oldpath_.c_str(), 0) < 0);
-      EXPECT_TRUE(access(newpath_.c_str(), 0) == 0);
-    }
+    ExpectNotRenamed();
     RenameTestDelegate::ParentTearDown();
   }
 };
@@ -1505,13 +1539,7 @@ class RenameNoPermOldDelegate final : public RenameTestDelegate {
   }
 
   void ParentTearDown() override {
-    if (true) {
-      EXPECT_TRUE(access(oldpath_.c_str(), 0) == 0);
-      EXPECT_TRUE(access(newpath_.c_str(), 0) < 0);
-    } else {
-      EXPECT_TRUE(access(oldpath_.c_str(), 0) < 0);
-      EXPECT_TRUE(access(newpath_.c_str(), 0) == 0);
-    }
+    ExpectNotRenamed();
     RenameTestDelegate::ParentTearDown();
   }
 };
@@ -1538,13 +1566,7 @@ class RenameReadPermNewDelegate final : public RenameTestDelegate {
   }
 
   void ParentTearDown() override {
-    if (true) {
-      EXPECT_TRUE(access(oldpath_.c_str(), 0) == 0);
-      EXPECT_TRUE(access(newpath_.c_str(), 0) < 0);
-    } else {
-      EXPECT_TRUE(access(oldpath_.c_str(), 0) < 0);
-      EXPECT_TRUE(access(newpath_.c_str(), 0) == 0);
-    }
+    ExpectNotRenamed();
     RenameTestDelegate::ParentTearDown();
   }
 };
@@ -1571,13 +1593,7 @@ class RenameReadPermOldDelegate final : public RenameTestDelegate {
   }
 
   void ParentTearDown() override {
-    if (true) {
-      EXPECT_TRUE(access(oldpath_.c_str(), 0) == 0);
-      EXPECT_TRUE(access(newpath_.c_str(), 0) < 0);
-    } else {
-      EXPECT_TRUE(access(oldpath_.c_str(), 0) < 0);
-      EXPECT_TRUE(access(newpath_.c_str(), 0) == 0);
-    }
+    ExpectNotRenamed();
     RenameTestDelegate::ParentTearDown();
   }
 };
@@ -1603,13 +1619,7 @@ class RenameWritePermsBothDelegate final : public RenameTestDelegate {
   }
 
   void ParentTearDown() override {
-    if (false) {
-      EXPECT_TRUE(access(oldpath_.c_str(), 0) == 0);
-      EXPECT_TRUE(access(newpath_.c_str(), 0) < 0);
-    } else {
-      EXPECT_TRUE(access(oldpath_.c_str(), 0) < 0);
-      EXPECT_TRUE(access(newpath_.c_str(), 0) == 0);
-    }
+    ExpectRenamed();
     RenameTestDelegate::ParentTearDown();
   }
 };

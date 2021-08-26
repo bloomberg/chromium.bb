@@ -13,8 +13,8 @@ import * as ColorPicker from '../../ui/legacy/components/color_picker/color_pick
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
 import * as UI from '../../ui/legacy/legacy.js';
 
-import type {StylePropertyTreeElement} from './StylePropertyTreeElement.js'; // eslint-disable-line no-unused-vars
-import type {StylePropertiesSection, StylesSidebarPane} from './StylesSidebarPane.js'; // eslint-disable-line no-unused-vars
+import type {StylePropertyTreeElement} from './StylePropertyTreeElement.js';
+import type {StylePropertiesSection, StylesSidebarPane} from './StylesSidebarPane.js';
 
 const UIStrings = {
   /**
@@ -129,7 +129,7 @@ export class ColorSwatchPopoverIcon {
     this._treeElement = treeElement;
     this._swatchPopoverHelper = swatchPopoverHelper;
     this._swatch = swatch;
-    this._swatch.addEventListener('swatch-click', this._iconClick.bind(this));
+    this._swatch.addEventListener(InlineEditor.ColorSwatch.ClickEvent.eventName, this._iconClick.bind(this));
     this._contrastInfo = null;
 
     this._boundSpectrumChanged = this._spectrumChanged.bind(this);

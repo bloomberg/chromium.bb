@@ -53,7 +53,6 @@
 #import "ios/chrome/browser/ui/reading_list/reading_list_menu_notifier.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/browser/web/features.h"
 #import "ios/chrome/browser/web/font_size/font_size_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
@@ -931,8 +930,7 @@ PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
 
   NSArray* collectionActions = [self collectionItems];
 
-  if (base::FeatureList::IsEnabled(kEnableIOSManagedSettingsUI) &&
-      _browserPolicyConnector &&
+  if (_browserPolicyConnector &&
       _browserPolicyConnector->HasMachineLevelPolicies()) {
     // Show enterprise infomation when chrome is managed by policy and the
     // settings UI flag is enabled.
@@ -1000,7 +998,8 @@ PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
       @"popup_menu_translate", kToolsMenuTranslateId);
   if (self.engagementTracker &&
       self.engagementTracker->ShouldTriggerHelpUI(
-          feature_engagement::kIPHBadgedTranslateManualTriggerFeature)) {
+          feature_engagement::kIPHBadgedTranslateManualTriggerFeature) &&
+      self.isTranslateEnabled) {
     self.translateItem.badgeText = l10n_util::GetNSStringWithFixup(
         IDS_IOS_TOOLS_MENU_CELL_NEW_FEATURE_BADGE);
   }

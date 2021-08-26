@@ -38,19 +38,11 @@ class ModelTypeController : public DataTypeController {
       std::unique_ptr<ModelTypeControllerDelegate> delegate_for_transport_mode);
   ~ModelTypeController() override;
 
-  // Steals the activation response, only used for Nigori.
-  // TODO(crbug.com/967677): Once all datatypes are in USS, we should redesign
-  // or remove ActivateDataType, and expose the activation response via
-  // LoadModels(), which is more natural in USS.
-  std::unique_ptr<DataTypeActivationResponse> ActivateManuallyForNigori();
-
   // DataTypeController implementation.
   void LoadModels(const ConfigureContext& configure_context,
                   const ModelLoadCallback& model_load_callback) override;
-  ActivateDataTypeResult ActivateDataType(
-      ModelTypeConfigurer* configurer) override;
-  void DeactivateDataType(ModelTypeConfigurer* configurer) override;
-  void Stop(ShutdownReason shutdown_reason, StopCallback callback) override;
+  std::unique_ptr<DataTypeActivationResponse> Connect() override;
+  void Stop(ShutdownReason reason, StopCallback callback) override;
   State state() const override;
   bool ShouldRunInTransportOnlyMode() const override;
   void GetAllNodes(AllNodesCallback callback) override;
@@ -104,7 +96,7 @@ class ModelTypeController : public DataTypeController {
 
   // Controller receives |activation_response_| from
   // ClientTagBasedModelTypeProcessor callback and must temporarily own it until
-  // ActivateDataType is called.
+  // Connect is called.
   std::unique_ptr<DataTypeActivationResponse> activation_response_;
 
   DISALLOW_COPY_AND_ASSIGN(ModelTypeController);

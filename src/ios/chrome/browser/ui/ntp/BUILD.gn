@@ -20,6 +20,8 @@ source_set("ntp") {
 
 source_set("constants") {
   sources = [
+    "discover_feed_constants.h",
+    "discover_feed_constants.mm",
     "new_tab_page_constants.h",
     "new_tab_page_constants.mm",
     "new_tab_page_header_constants.h",
@@ -129,6 +131,7 @@ source_set("ntp_internal") {
     "//components/prefs",
     "//components/strings",
     "//ios/chrome/app/strings",
+    "//ios/chrome/app/theme",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/drag_and_drop",
@@ -163,7 +166,7 @@ source_set("ntp_internal") {
     "//ios/chrome/common/ui/favicon",
     "//ios/chrome/common/ui/util",
     "//ios/public/provider/chrome/browser",
-    "//ios/public/provider/chrome/browser/images",
+    "//ios/public/provider/chrome/browser/branded_images:branded_images_api",
     "//ios/public/provider/chrome/browser/ui",
     "//ios/public/provider/chrome/browser/voice",
     "//ios/third_party/material_components_ios",
@@ -227,7 +230,6 @@ source_set("unit_tests") {
     "//ios/chrome/common/ntp_tile",
     "//ios/chrome/common/ui/favicon",
     "//ios/chrome/test:test_support",
-    "//ios/public/provider/chrome/browser/images",
     "//ios/web/public/test",
     "//testing/gtest",
     "//third_party/ocmock",

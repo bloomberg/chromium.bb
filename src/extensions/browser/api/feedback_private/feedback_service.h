@@ -24,12 +24,17 @@ namespace extensions {
 struct FeedbackParams {
   // The user has a @google.com email or not.
   bool is_internal_email = false;
+  // Set this to true if system information should be loaded. If the data has
+  // been pre-loaded into the feedback_data, this should be set to false.
+  bool load_system_info = false;
   // If true, include the browser tab titles in the feedback.
   bool send_tab_titles = false;
   // If true, include histograms in the feedback.
   bool send_histograms = false;
   // If true, include bluetooth logs in the feedback.
   bool send_bluetooth_logs = false;
+  // The time when the feedback form submission was received by the backend.
+  base::TimeTicks form_submit_time;
 };
 
 // Callback invoked when the feedback report is ready to be sent.
@@ -43,6 +48,8 @@ using SendFeedbackCallback = base::OnceCallback<void(bool)>;
 class FeedbackService : public base::RefCountedThreadSafe<FeedbackService> {
  public:
   explicit FeedbackService(content::BrowserContext* browser_context);
+  FeedbackService(content::BrowserContext* browser_context,
+                  FeedbackPrivateDelegate* delegate);
   FeedbackService(const FeedbackService&) = delete;
   FeedbackService& operator=(const FeedbackService&) = delete;
 
@@ -63,32 +70,32 @@ class FeedbackService : public base::RefCountedThreadSafe<FeedbackService> {
       const FeedbackParams& params,
       scoped_refptr<feedback::FeedbackData> feedback_data,
       SendFeedbackCallback callback);
+  void FetchSystemInformation(
+      const FeedbackParams& params,
+      scoped_refptr<feedback::FeedbackData> feedback_data);
+  void OnSystemInformationFetched(
+      base::TimeTicks fetch_start_time,
+      const FeedbackParams& params,
+      scoped_refptr<feedback::FeedbackData> feedback_data,
+      std::unique_ptr<system_logs::SystemLogsResponse> sys_info);
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Gets logs that aren't covered by FetchSystemInformation, but should be
   // included in the feedback report. These currently consist of the Intel Wi-Fi
   // debug logs (if they exist).
-  // Modifies |feedback_data| and passes it on to |callback|.
-  void FetchExtraLogs(scoped_refptr<feedback::FeedbackData> feedback_data,
-                      FetchExtraLogsCallback callback);
+  void FetchExtraLogs(const FeedbackParams& params,
+                      scoped_refptr<feedback::FeedbackData> feedback_data);
   void OnExtraLogsFetched(const FeedbackParams& params,
-                          SendFeedbackCallback callback,
                           scoped_refptr<feedback::FeedbackData> feedback_data);
-
-  using GetHistogramsCallback = base::OnceCallback<void(const std::string&)>;
-  // Gets Lacros histograms in zip compressed format which will be attached
-  // as a file in unified feedback report.
-  void FetchLacrosHistograms(GetHistogramsCallback callback);
   void OnLacrosHistogramsFetched(
       const FeedbackParams& params,
       scoped_refptr<feedback::FeedbackData> feedback_data,
-      SendFeedbackCallback callback,
       const std::string& compressed_histograms);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   void OnAllLogsFetched(const FeedbackParams& params,
-                        scoped_refptr<feedback::FeedbackData> feedback_data,
-                        SendFeedbackCallback callback);
+                        scoped_refptr<feedback::FeedbackData> feedback_data);
 
   content::BrowserContext* browser_context_;
+  FeedbackPrivateDelegate* delegate_;
 };
 
 }  // namespace extensions

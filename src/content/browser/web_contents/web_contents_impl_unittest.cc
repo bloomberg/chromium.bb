@@ -231,6 +231,27 @@ class TestWebContentsObserver : public WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(TestWebContentsObserver);
 };
 
+class MockWebContentsDelegate : public WebContentsDelegate {
+ public:
+  explicit MockWebContentsDelegate(
+      blink::ProtocolHandlerSecurityLevel security_level =
+          blink::ProtocolHandlerSecurityLevel::kStrict)
+      : security_level_(security_level) {}
+  MOCK_METHOD2(HandleContextMenu,
+               bool(RenderFrameHost*, const ContextMenuParams&));
+  MOCK_METHOD4(RegisterProtocolHandler,
+               void(RenderFrameHost*, const std::string&, const GURL&, bool));
+  MOCK_METHOD(void, NavigationStateChanged, (WebContents*, InvalidateTypes));
+
+  blink::ProtocolHandlerSecurityLevel GetProtocolHandlerSecurityLevel(
+      RenderFrameHost*) override {
+    return security_level_;
+  }
+
+ private:
+  blink::ProtocolHandlerSecurityLevel security_level_;
+};
+
 // Pretends to be a normal browser that receives toggles and transitions to/from
 // a fullscreened state.
 class FakeFullscreenDelegate : public WebContentsDelegate {
@@ -332,6 +353,13 @@ class FakeImageDownloader : public blink::mojom::ImageDownloader {
 
 }  // namespace
 
+TEST_F(WebContentsImplTest, SetMainFrameMimeType) {
+  ASSERT_TRUE(controller().IsInitialNavigation());
+  std::string mime = "text/html";
+  main_test_rfh()->GetPage().SetContentsMimeType(mime);
+  EXPECT_EQ(mime, contents()->GetContentsMimeType());
+}
+
 TEST_F(WebContentsImplTest, UpdateTitle) {
   FakeWebContentsDelegate fake_delegate;
   contents()->SetDelegate(&fake_delegate);
@@ -372,36 +400,55 @@ TEST_F(WebContentsImplTest, UpdateTitleBeforeFirstNavigation) {
   EXPECT_EQ(title, contents()->GetTitle());
 }
 
-TEST_F(WebContentsImplTest, SetMainFrameMimeType) {
-  ASSERT_TRUE(controller().IsInitialNavigation());
-  std::string mime = "text/html";
-  main_test_rfh()->GetPage().SetContentsMimeType(mime);
-  EXPECT_EQ(mime, contents()->GetContentsMimeType());
-}
-
-TEST_F(WebContentsImplTest, DontUseTitleFromPendingEntry) {
+TEST_F(WebContentsImplTest, UpdateTitleWhileFirstNavigationIsPending) {
   const GURL kGURL(GetWebUIURL("blah"));
-  controller().LoadURL(
-      kGURL, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  EXPECT_EQ(std::u16string(), contents()->GetTitle());
-
-  // Also test setting title while the first navigation is still pending.
+  controller().LoadURL(kGURL, Referrer(), ui::PAGE_TRANSITION_TYPED,
+                       std::string());
+  ASSERT_TRUE(!!controller().GetPendingEntry());
   const std::u16string title = u"Initial Entry Title";
   contents()->UpdateTitle(main_test_rfh(), title, base::i18n::LEFT_TO_RIGHT);
   EXPECT_EQ(title, contents()->GetTitle());
 }
 
-TEST_F(WebContentsImplTest, UseTitleFromPendingEntryIfSet) {
+TEST_F(WebContentsImplTest, DontUsePendingEntryUrlAsTitle) {
   const GURL kGURL(GetWebUIURL("blah"));
-  const std::u16string title = u"My Title";
   controller().LoadURL(
       kGURL, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
+  EXPECT_EQ(std::u16string(), contents()->GetTitle());
+}
 
-  NavigationEntry* entry = controller().GetVisibleEntry();
-  ASSERT_EQ(kGURL, entry->GetURL());
-  entry->SetTitle(title);
+TEST_F(WebContentsImplTest, UpdateAndUseTitleFromFirstNavigationPendingEntry) {
+  const GURL kGURL(GetWebUIURL("blah"));
+  controller().LoadURL(kGURL, Referrer(), ui::PAGE_TRANSITION_TYPED,
+                       std::string());
 
+  MockWebContentsDelegate delegate;
+  contents()->SetDelegate(&delegate);
+  EXPECT_CALL(delegate,
+              NavigationStateChanged(contents(), INVALIDATE_TYPE_TITLE));
+
+  const std::u16string title = u"Initial Entry Title";
+  contents()->UpdateTitleForEntry(controller().GetPendingEntry(), title);
   EXPECT_EQ(title, contents()->GetTitle());
+}
+
+TEST_F(WebContentsImplTest,
+       UpdateAndDontUseTitleFromPendingEntryForSecondNavigation) {
+  const GURL first_gurl("http://www.foo.com");
+  const GURL second_gurl("http://www.bar.com");
+
+  // Complete first navigation.
+  NavigationSimulator::NavigateAndCommitFromBrowser(contents(), first_gurl);
+  std::u16string first_title = contents()->GetTitle();
+
+  // Start second navigation.
+  controller().LoadURL(second_gurl, Referrer(), ui::PAGE_TRANSITION_TYPED,
+                       std::string());
+  // We shouldn't use the title of the second navigation's pending entry, even
+  // after explicitly setting it - we only use the pending entry's title if it's
+  // for the first navigation.
+  contents()->UpdateTitleForEntry(controller().GetPendingEntry(), u"bar");
+  EXPECT_EQ(contents()->GetTitle(), first_title);
 }
 
 // Stub out local frame mojo binding. Intercepts calls to EnableViewSourceMode
@@ -1333,9 +1380,9 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationBackOldNavigationIgnored) {
   webui_rfh = contents()->GetSpeculativePrimaryMainFrame();
 
   // DidNavigate from the second back.
-  // Note that the process in instance1 is gone at this point, but we will still
-  // use instance1 and entry1 because IsSuitableForURL will return true when
-  // there is no process and the site URL matches.
+  // Note that the process in instance1 is gone at this point, but we will
+  // still use instance1 and entry1 because IsSuitableForUrlInfo will return
+  // true when there is no process and the site URL matches.
   back_navigation2->Commit();
 
   // That should have landed us on the first entry.
@@ -1499,7 +1546,7 @@ TEST_F(WebContentsImplTest, NavigationEntryContentStateNewWindow) {
   NavigationEntryImpl* entry_impl =
       NavigationEntryImpl::FromNavigationEntry(entry);
   EXPECT_FALSE(entry_impl->site_instance()->HasSite());
-  int32_t site_instance_id = entry_impl->site_instance()->GetId();
+  auto site_instance_id = entry_impl->site_instance()->GetId();
 
   // Navigating to a normal page should not cause a process swap.
   const GURL new_url("http://www.google.com");
@@ -1793,7 +1840,7 @@ TEST_F(WebContentsImplTest, CaptureHoldsWakeLock) {
 
 TEST_F(WebContentsImplTest, CapturerOverridesPreferredSize) {
   const gfx::Size original_preferred_size(1024, 768);
-  contents()->UpdatePreferredSize(original_preferred_size);
+  contents()->UpdateWindowPreferredSize(original_preferred_size);
 
   // With no capturers, expect the preferred size to be the one propagated into
   // WebContentsImpl via the RenderViewHostDelegate interface.
@@ -2684,30 +2731,6 @@ TEST_F(WebContentsImplTest, DidChangeVerticalScrollDirection) {
             observer.last_vertical_scroll_direction().value());
 }
 
-namespace {
-
-class MockWebContentsDelegate : public WebContentsDelegate {
- public:
-  explicit MockWebContentsDelegate(
-      blink::ProtocolHandlerSecurityLevel security_level =
-          blink::ProtocolHandlerSecurityLevel::kStrict)
-      : security_level_(security_level) {}
-  MOCK_METHOD2(HandleContextMenu,
-               bool(RenderFrameHost*, const ContextMenuParams&));
-  MOCK_METHOD4(RegisterProtocolHandler,
-               void(RenderFrameHost*, const std::string&, const GURL&, bool));
-
-  blink::ProtocolHandlerSecurityLevel GetProtocolHandlerSecurityLevel(
-      RenderFrameHost*) override {
-    return security_level_;
-  }
-
- private:
-  blink::ProtocolHandlerSecurityLevel security_level_;
-};
-
-}  // namespace
-
 TEST_F(WebContentsImplTest, HandleContextMenuDelegate) {
   MockWebContentsDelegate delegate;
   contents()->SetDelegate(&delegate);
@@ -3033,6 +3056,69 @@ TEST_F(WebContentsImplTest,
 
   // Further proof that the config was not reset.
   EXPECT_EQ(contents()->GetCaptureHandleConfig(), *config);
+}
+
+class TestCanonicalUrlLocalFrame : public content::FakeLocalFrame,
+                                   public WebContentsObserver {
+ public:
+  explicit TestCanonicalUrlLocalFrame(WebContents* web_contents,
+                                      absl::optional<GURL> canonical_url)
+      : WebContentsObserver(web_contents), canonical_url_(canonical_url) {}
+
+  void RenderFrameCreated(RenderFrameHost* render_frame_host) override {
+    if (!initialized_) {
+      initialized_ = true;
+      Init(render_frame_host->GetRemoteAssociatedInterfaces());
+    }
+  }
+
+  void GetCanonicalUrlForSharing(
+      base::OnceCallback<void(const absl::optional<GURL>&)> callback) override {
+    std::move(callback).Run(canonical_url_);
+  }
+
+ private:
+  bool initialized_ = false;
+  absl::optional<GURL> canonical_url_;
+};
+
+TEST_F(WebContentsImplTest, CanonicalUrlSchemeHttpsIsAllowed) {
+  TestCanonicalUrlLocalFrame local_frame(contents(), GURL("https://someurl/"));
+  NavigationSimulator::NavigateAndCommitFromBrowser(contents(),
+                                                    GURL("https://site/"));
+
+  base::RunLoop run_loop;
+  absl::optional<GURL> canonical_url;
+  base::RepeatingClosure quit = run_loop.QuitClosure();
+  auto on_done = [&](const absl::optional<GURL>& result) {
+    canonical_url = result;
+    quit.Run();
+  };
+  contents()->GetMainFrame()->GetCanonicalUrl(
+      base::BindLambdaForTesting(on_done));
+  run_loop.Run();
+
+  ASSERT_TRUE(canonical_url);
+  EXPECT_EQ(GURL("https://someurl/"), *canonical_url);
+}
+
+TEST_F(WebContentsImplTest, CanonicalUrlSchemeChromeIsNotAllowed) {
+  TestCanonicalUrlLocalFrame local_frame(contents(), GURL("chrome://someurl/"));
+  NavigationSimulator::NavigateAndCommitFromBrowser(contents(),
+                                                    GURL("https://site/"));
+
+  base::RunLoop run_loop;
+  absl::optional<GURL> canonical_url;
+  base::RepeatingClosure quit = run_loop.QuitClosure();
+  auto on_done = [&](const absl::optional<GURL>& result) {
+    canonical_url = result;
+    quit.Run();
+  };
+  contents()->GetMainFrame()->GetCanonicalUrl(
+      base::BindLambdaForTesting(on_done));
+  run_loop.Run();
+
+  ASSERT_FALSE(canonical_url) << "canonical_url=" << *canonical_url;
 }
 
 }  // namespace content

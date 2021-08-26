@@ -11,6 +11,7 @@
 <translation id="1546934824884762070">Ocorreu um erro inesperado. Informe este problema aos desenvolvedores.</translation>
 <translation id="1697532407822776718">Pronto.</translation>
 <translation id="1742469581923031760">Conectando...</translation>
+<translation id="177040763384871009">Para permitir que links clicados no dispositivo remoto sejam abertos no navegador do cliente, mude o navegador da Web do sistema para "<ph name="URL_FORWARDER_NAME" />".</translation>
 <translation id="177096447311351977">IP do canal do cliente: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' ip_host='<ph name="HOST_IP_ADDRESS_AND_PORT" />' canal='<ph name="CHANNEL_TYPE" />' conexão='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1897488610212723051">Excluir</translation>
 <translation id="2009755455353575666">Falha na conexão</translation>
@@ -129,6 +130,7 @@ Se a opção "<ph name="SERVICE_SCRIPT_NAME" />" já estiver marcada, desmarque-
 <translation id="6963936880795878952">As conexões com o computador remoto estão temporariamente bloqueadas porque alguém estava tentando se conectar a ele com um PIN inválido. Tente novamente mais tarde.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Você quer mesmo desativar conexões remotas para <ph name="HOSTNAME" />? Se mudar de idéia, precisará visitar este computador para reativar as conexões.</translation>
+<translation id="6998890551706945177"><ph name="CLIENT_USERNAME" /> solicitou acesso para ver e controlar seu computador. Pressione "<ph name="IDS_SHARE_CONFIRM_DIALOG_DECLINE" />" caso você não conheça essa pessoa ou precise fazer alguma mudança antes do compartilhamento.  Se estiver tudo certo, pressione "<ph name="IDS_SHARE_CONFIRM_DIALOG_CONFIRM" />" para permitir a conexão.</translation>
 <translation id="7019153418965365059">Erro de host não reconhecido: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Assistência remota</translation>
 <translation id="7026930240735156896">Siga as instruções para configurar seu computador para acesso remoto</translation>
@@ -142,6 +144,7 @@ Se a opção "<ph name="SERVICE_SCRIPT_NAME" />" já estiver marcada, desmarque-
 <translation id="7434397035092923453">Acesso negado para o cliente <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">Cliente conectado: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7526139040829362392">Alterar conta</translation>
+<translation id="7535110896613603182">Abrir configurações padrão dos apps</translation>
 <translation id="7628469622942688817">Lembrar meu PIN neste dispositivo.</translation>
 <translation id="7649070708921625228">Ajuda</translation>
 <translation id="7658239707568436148">Cancelar</translation>

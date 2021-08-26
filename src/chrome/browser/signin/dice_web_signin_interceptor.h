@@ -86,7 +86,10 @@ enum class SigninInterceptionHeuristicOutcome {
   kInterceptEnterpriseForced = 16,
   kInterceptEnterpriseForcedProfileSwitch = 17,
 
-  kMaxValue = kInterceptEnterpriseForcedProfileSwitch,
+  // The interceptor is not triggered if the tab has already been closed.
+  kAbortTabClosed = 18,
+
+  kMaxValue = kAbortTabClosed,
 };
 
 // User selection in the interception bubble.
@@ -144,7 +147,13 @@ class DiceWebSigninInterceptor : public KeyedService,
                                  public content::WebContentsObserver,
                                  public signin::IdentityManager::Observer {
  public:
-  enum class SigninInterceptionType { kProfileSwitch, kEnterprise, kMultiUser };
+  enum class SigninInterceptionType {
+    kProfileSwitch,
+    kEnterprise,
+    kMultiUser,
+    kEnterpriseForced,
+    kProfileSwitchForced
+  };
 
   // Delegate class responsible for showing the various interception UIs.
   class Delegate {
@@ -176,15 +185,6 @@ class DiceWebSigninInterceptor : public KeyedService,
         content::WebContents* web_contents,
         const BubbleParameters& bubble_parameters,
         base::OnceCallback<void(SigninInterceptionResult)> callback) = 0;
-
-    // Shows the enterprise profile confirmation dialog to notify the user that
-    // a managed profile will be created or that their account needs a new
-    // profile to be created.
-    virtual void ShowEnterpriseProfileInterceptionDialog(
-        Browser* browser,
-        const std::string& email,
-        SkColor profile_color,
-        base::OnceCallback<void(bool)> callback) = 0;
 
     // Shows the profile customization bubble.
     virtual void ShowProfileCustomizationBubble(Browser* browser) = 0;
@@ -225,7 +225,6 @@ class DiceWebSigninInterceptor : public KeyedService,
       content::WebContents* intercepted_contents,
       std::unique_ptr<ScopedDiceWebSigninInterceptionBubbleHandle>
           bubble_handle,
-      bool managed_account_interception,
       bool is_new_profile);
 
   // Returns the outcome of the interception heuristic.
@@ -313,7 +312,7 @@ class DiceWebSigninInterceptor : public KeyedService,
   // the account is signed out.
   void OnEnterpriseProfileCreationResult(const AccountInfo& account_info,
                                          SkColor profile_color,
-                                         bool create);
+                                         SigninInterceptionResult create);
 
   // Called when the new browser is created after interception. Passed as
   // callback to `session_startup_helper_`.
@@ -344,7 +343,6 @@ class DiceWebSigninInterceptor : public KeyedService,
   bool is_interception_in_progress_ = false;
   CoreAccountId account_id_;
   bool new_account_interception_ = false;
-  bool managed_account_interception_ = false;
   bool intercepted_account_management_accepted_ = false;
   base::ScopedObservation<signin::IdentityManager,
                           signin::IdentityManager::Observer>

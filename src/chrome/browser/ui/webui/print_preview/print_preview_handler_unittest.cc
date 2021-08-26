@@ -32,6 +32,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/render_frame_host.h"
@@ -49,7 +50,10 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/crosapi/crosapi_manager.h"
+#include "chrome/browser/ash/crosapi/idle_service_ash.h"
 #include "chrome/browser/ash/crosapi/test_local_printer_ash.h"
+#include "chromeos/login/login_state/login_state.h"
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chrome/test/chromeos/printing/fake_local_printer_chromeos.h"
 #endif
@@ -65,19 +69,17 @@ const char kTestData[] = "abc";
 
 // Array of all mojom::PrinterTypes.
 constexpr mojom::PrinterType kAllTypes[] = {
-    mojom::PrinterType::kPrivet, mojom::PrinterType::kExtension,
-    mojom::PrinterType::kPdf, mojom::PrinterType::kLocal,
-    mojom::PrinterType::kCloud};
+    mojom::PrinterType::kExtension, mojom::PrinterType::kPdf,
+    mojom::PrinterType::kLocal, mojom::PrinterType::kCloud};
 
 // Array of all mojom::PrinterTypes that have working PrinterHandlers.
 constexpr mojom::PrinterType kAllSupportedTypes[] = {
-    mojom::PrinterType::kPrivet, mojom::PrinterType::kExtension,
-    mojom::PrinterType::kPdf, mojom::PrinterType::kLocal};
-
-// All three printer types that implement PrinterHandler::StartGetPrinters().
-constexpr mojom::PrinterType kFetchableTypes[] = {
-    mojom::PrinterType::kPrivet, mojom::PrinterType::kExtension,
+    mojom::PrinterType::kExtension, mojom::PrinterType::kPdf,
     mojom::PrinterType::kLocal};
+
+// Both printer types that implement PrinterHandler::StartGetPrinters().
+constexpr mojom::PrinterType kFetchableTypes[] = {
+    mojom::PrinterType::kExtension, mojom::PrinterType::kLocal};
 
 struct PrinterInfo {
   std::string id;
@@ -267,7 +269,7 @@ class FakePrintPreviewUI : public PrintPreviewUI {
   void OnClosePrintPreviewDialog() override {}
 };
 
-class TestPrintPreviewPrintRenderFrame : public FakePrintRenderFrame {
+class TestPrintPreviewPrintRenderFrame final : public FakePrintRenderFrame {
  public:
   explicit TestPrintPreviewPrintRenderFrame(
       blink::AssociatedInterfaceProvider* provider)
@@ -276,7 +278,7 @@ class TestPrintPreviewPrintRenderFrame : public FakePrintRenderFrame {
       delete;
   TestPrintPreviewPrintRenderFrame& operator=(
       const TestPrintPreviewPrintRenderFrame&) = delete;
-  ~TestPrintPreviewPrintRenderFrame() final = default;
+  ~TestPrintPreviewPrintRenderFrame() override = default;
 
   const base::Value& GetSettings() { return settings_; }
 
@@ -286,7 +288,7 @@ class TestPrintPreviewPrintRenderFrame : public FakePrintRenderFrame {
 
  private:
   // FakePrintRenderFrame:
-  void PrintPreview(base::Value settings) final {
+  void PrintPreview(base::Value settings) override {
     settings_ = std::move(settings);
     std::move(closure_).Run();
   }
@@ -388,13 +390,19 @@ class PrintPreviewHandlerTest : public testing::Test {
 #endif
 
   void SetUp() override {
-    TestingProfile::Builder builder;
-    profile_ = builder.Build();
+    ASSERT_TRUE(testing_profile_manager_.SetUp());
+    profile_ = testing_profile_manager_.CreateSystemProfile();
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    local_printer_ = std::make_unique<TestLocalPrinterAsh>(profile_, nullptr);
+    crosapi::IdleServiceAsh::DisableForTesting();
+    chromeos::LoginState::Initialize();
+    manager_ = std::make_unique<crosapi::CrosapiManager>();
+#endif
     initiator_web_contents_ = content::WebContents::Create(
-        content::WebContents::CreateParams(profile_.get()));
+        content::WebContents::CreateParams(profile_));
     content::WebContents* initiator = initiator_web_contents_.get();
     preview_web_contents_ = content::WebContents::Create(
-        content::WebContents::CreateParams(profile_.get()));
+        content::WebContents::CreateParams(profile_));
     PrintViewManager::CreateForWebContents(initiator);
     PrintViewManager::FromWebContents(initiator)->PrintPreviewNow(
         initiator->GetMainFrame(), false);
@@ -410,8 +418,7 @@ class PrintPreviewHandlerTest : public testing::Test {
     handler_ = preview_handler.get();
     handler_->set_web_ui(web_ui());
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    handler_->local_printer_ =
-        std::make_unique<TestLocalPrinterAsh>(profile_.get(), nullptr);
+    handler_->local_printer_ = local_printer_.get();
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
     handler_->local_printer_ = &local_printer_;
     handler_->local_printer_version_ = crosapi::mojom::LocalPrinter::Version_;
@@ -424,6 +431,10 @@ class PrintPreviewHandlerTest : public testing::Test {
   }
 
   void TearDown() override {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    manager_.reset();
+    chromeos::LoginState::Shutdown();
+#endif
     PrintViewManager::FromWebContents(initiator_web_contents_.get())
         ->PrintPreviewDone();
   }
@@ -669,7 +680,7 @@ class PrintPreviewHandlerTest : public testing::Test {
         ->GetRemoteAssociatedInterfaces();
   }
 
-  const Profile* profile() { return profile_.get(); }
+  const Profile* profile() { return profile_; }
   sync_preferences::TestingPrefServiceSyncable* prefs() {
     return profile_->GetTestingPrefService();
   }
@@ -680,7 +691,9 @@ class PrintPreviewHandlerTest : public testing::Test {
 
  private:
   content::BrowserTaskEnvironment task_environment_;
-  std::unique_ptr<TestingProfile> profile_;
+  TestingProfileManager testing_profile_manager_{
+      TestingBrowserProcess::GetGlobal()};
+  TestingProfile* profile_;
   std::unique_ptr<content::TestWebUI> web_ui_;
   content::RenderViewHostTestEnabler rvh_test_enabler_;
   std::unique_ptr<content::WebContents> preview_web_contents_;
@@ -688,7 +701,10 @@ class PrintPreviewHandlerTest : public testing::Test {
   std::vector<PrinterInfo> printers_;
   TestPrinterHandler* printer_handler_;
   TestPrintPreviewHandler* handler_;
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  std::unique_ptr<TestLocalPrinterAsh> local_printer_;
+  std::unique_ptr<crosapi::CrosapiManager> manager_;
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
   TestLocalPrinter local_printer_;
 #endif
 };
@@ -970,6 +986,91 @@ TEST_F(PrintPreviewHandlerTest, InitialSettingsMaxSheetsAllowedPolicy) {
   ValidateInitialSettingsValuePolicy(*web_ui()->call_data().back(), "sheets",
                                      base::Value(2));
 }
+
+TEST_F(PrintPreviewHandlerTest, InitialSettingsEnableColorAndMonochrome) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  crosapi::mojom::Policies policies;
+  policies.allowed_color_modes = 3;
+  SetPolicies(policies);
+#else
+  // Set a pref that should take priority over StickySettings.
+  prefs()->SetInteger(prefs::kPrintingAllowedColorModes, 3);
+#endif
+  Initialize();
+  ValidateInitialSettingsAllowedDefaultModePolicy(
+      *web_ui()->call_data().back(), "color", base::Value(3), absl::nullopt);
+}
+
+TEST_F(PrintPreviewHandlerTest, InitialSettingsDefaultColor) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  crosapi::mojom::Policies policies;
+  policies.default_color_mode = printing::mojom::ColorModeRestriction::kColor;
+  SetPolicies(policies);
+#else
+  // Set a pref that should take priority over StickySettings.
+  prefs()->SetInteger(prefs::kPrintingColorDefault, 2);
+#endif
+  Initialize();
+  ValidateInitialSettingsAllowedDefaultModePolicy(
+      *web_ui()->call_data().back(), "color", absl::nullopt, base::Value(2));
+}
+
+TEST_F(PrintPreviewHandlerTest, InitialSettingsEnableSimplexAndDuplex) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  crosapi::mojom::Policies policies;
+  policies.allowed_duplex_modes = 7;
+  SetPolicies(policies);
+#else
+  // Set a pref that should take priority over StickySettings.
+  prefs()->SetInteger(prefs::kPrintingAllowedDuplexModes, 7);
+#endif
+  Initialize();
+  ValidateInitialSettingsAllowedDefaultModePolicy(
+      *web_ui()->call_data().back(), "duplex", base::Value(7), absl::nullopt);
+}
+
+TEST_F(PrintPreviewHandlerTest, InitialSettingsDefaultSimplex) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  crosapi::mojom::Policies policies;
+  policies.default_duplex_mode =
+      printing::mojom::DuplexModeRestriction::kSimplex;
+  SetPolicies(policies);
+#else
+  // Set a pref that should take priority over StickySettings.
+  prefs()->SetInteger(prefs::kPrintingDuplexDefault, 1);
+#endif
+  Initialize();
+  ValidateInitialSettingsAllowedDefaultModePolicy(
+      *web_ui()->call_data().back(), "duplex", absl::nullopt, base::Value(1));
+}
+
+TEST_F(PrintPreviewHandlerTest, InitialSettingsRestrictPin) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  crosapi::mojom::Policies policies;
+  policies.allowed_pin_modes = printing::mojom::PinModeRestriction::kPin;
+  SetPolicies(policies);
+#else
+  // Set a pref that should take priority over StickySettings.
+  prefs()->SetInteger(prefs::kPrintingAllowedPinModes, 1);
+#endif
+  Initialize();
+  ValidateInitialSettingsAllowedDefaultModePolicy(
+      *web_ui()->call_data().back(), "pin", base::Value(1), absl::nullopt);
+}
+
+TEST_F(PrintPreviewHandlerTest, InitialSettingsDefaultNoPin) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  crosapi::mojom::Policies policies;
+  policies.default_pin_mode = printing::mojom::PinModeRestriction::kNoPin;
+  SetPolicies(policies);
+#else
+  // Set a pref that should take priority over StickySettings.
+  prefs()->SetInteger(prefs::kPrintingPinDefault, 2);
+#endif
+  Initialize();
+  ValidateInitialSettingsAllowedDefaultModePolicy(
+      *web_ui()->call_data().back(), "pin", absl::nullopt, base::Value(2));
+}
 #endif  // defined(OS_CHROMEOS)
 
 TEST_F(PrintPreviewHandlerTest, GetPrinters) {
@@ -998,17 +1099,15 @@ TEST_F(PrintPreviewHandlerTest, GetPrinters) {
 }
 
 // Validates the 'printing.printer_type_deny_list' pref by placing the extension
-// and privet printer types on a deny list. A 'getPrinters' Web UI message is
-// then called for all three fetchable printer types; only local printers should
+// printer type on a deny list. A 'getPrinters' Web UI message is
+// then called both fetchable printer types; only local printers should
 // be successfully fetched.
 TEST_F(PrintPreviewHandlerTest, GetNoDenyListPrinters) {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   AddToDenyList(mojom::PrinterType::kExtension);
-  AddToDenyList(mojom::PrinterType::kPrivet);
 #else
   base::Value::ListStorage deny_list;
   deny_list.push_back(base::Value("extension"));
-  deny_list.push_back(base::Value("privet"));
   prefs()->Set(prefs::kPrinterTypeDenyList, base::Value(std::move(deny_list)));
 #endif
   Initialize();
@@ -1088,8 +1187,8 @@ TEST_F(PrintPreviewHandlerTest, GetPrinterCapabilities) {
 
 // Validates the 'printing.printer_type_deny_list' pref by placing the local and
 // PDF printer types on the deny list. A 'getPrinterCapabilities' Web UI message
-// is then called for all supported printer types; only privet and extension
-// printer capabilties should be successfully fetched.
+// is then called for all supported printer types; only extension
+// printer capabilities should be successfully fetched.
 TEST_F(PrintPreviewHandlerTest, GetNoDenyListPrinterCapabilities) {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   AddToDenyList(mojom::PrinterType::kLocal);
@@ -1111,8 +1210,7 @@ TEST_F(PrintPreviewHandlerTest, GetNoDenyListPrinterCapabilities) {
     handler()->reset_calls();
     SendGetPrinterCapabilities(type, callback_id_in, kDummyPrinterName);
 
-    const bool is_allowed_type = type == mojom::PrinterType::kPrivet ||
-                                 type == mojom::PrinterType::kExtension;
+    const bool is_allowed_type = type == mojom::PrinterType::kExtension;
     EXPECT_EQ(is_allowed_type, handler()->CalledOnlyForType(type));
 
     // Start with 1 call from initial settings, then add 1 more for each loop

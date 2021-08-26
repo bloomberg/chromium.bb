@@ -27,6 +27,7 @@
 #include "ash/ambient/ambient_controller.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/assistant/assistant_controller_impl.h"
+#include "ash/calendar/calendar_controller.h"
 #include "ash/capture_mode/capture_mode_controller.h"
 #include "ash/child_accounts/parent_access_controller_impl.h"
 #include "ash/clipboard/clipboard_history_controller_impl.h"
@@ -90,7 +91,6 @@
 #include "ash/quick_answers/quick_answers_controller_impl.h"
 #include "ash/quick_pair/keyed_service/quick_pair_mediator.h"
 #include "ash/root_window_controller.h"
-#include "ash/screenshot_delegate.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/contextual_tooltip.h"
 #include "ash/shelf/shelf.h"
@@ -140,7 +140,6 @@
 #include "ash/touch/touch_devices_controller.h"
 #include "ash/tray_action/tray_action.h"
 #include "ash/utility/occlusion_tracker_pauser.h"
-#include "ash/utility/screenshot_controller.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/ash_focus_rules.h"
 #include "ash/wm/container_finder.h"
@@ -561,8 +560,7 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate)
       shell_delegate_(std::move(shell_delegate)),
       shutdown_controller_(std::make_unique<ShutdownControllerImpl>()),
       system_tray_notifier_(std::make_unique<SystemTrayNotifier>()),
-      native_cursor_manager_(nullptr),
-      quick_pair_mediator_(quick_pair::Mediator::Factory::Create()) {
+      native_cursor_manager_(nullptr) {
   AccelerometerReader::GetInstance()->Initialize();
 
   login_screen_controller_ =
@@ -582,6 +580,10 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate)
         std::move(bluetooth_system_factory));
   } else {
     tray_bluetooth_helper_ = std::make_unique<TrayBluetoothHelperLegacy>();
+  }
+
+  if (base::FeatureList::IsEnabled(features::kFastPair)) {
+    quick_pair_mediator_ = quick_pair::Mediator::Factory::Create();
   }
 
   PowerStatus::Initialize();
@@ -775,7 +777,6 @@ Shell::~Shell() {
 
   multidevice_notification_presenter_.reset();
   resolution_notification_controller_.reset();
-  screenshot_controller_.reset();
   mouse_cursor_filter_.reset();
   modality_filter_.reset();
 
@@ -898,6 +899,10 @@ Shell::~Shell() {
   // destructed before it.
   holding_space_controller_.reset();
 
+  // `CalendarController` observes `SessionController` and must be destructed
+  // before it.
+  calendar_controller_.reset();
+
   ash_color_provider_.reset();
 
   shell_delegate_.reset();
@@ -974,10 +979,8 @@ void Shell::Init(
   power_event_observer_ = std::make_unique<PowerEventObserver>();
   window_cycle_controller_ = std::make_unique<WindowCycleController>();
 
-  if (features::IsCaptureModeEnabled()) {
-    capture_mode_controller_ = std::make_unique<CaptureModeController>(
-        shell_delegate_->CreateCaptureModeDelegate());
-  }
+  capture_mode_controller_ = std::make_unique<CaptureModeController>(
+      shell_delegate_->CreateCaptureModeDelegate());
 
   // Accelerometer file reader starts listening to tablet mode controller.
   AccelerometerReader::GetInstance()->StartListenToTabletModeController();
@@ -1071,6 +1074,8 @@ void Shell::Init(
   // `HoldingSpaceController` must be instantiated before the shelf.
   holding_space_controller_ = std::make_unique<HoldingSpaceController>();
 
+  calendar_controller_ = std::make_unique<CalendarController>();
+
   shelf_config_ = std::make_unique<ShelfConfig>();
   shelf_controller_ = std::make_unique<ShelfController>();
 
@@ -1132,12 +1137,6 @@ void Shell::Init(
 
   drag_drop_controller_ = std::make_unique<DragDropController>();
 
-  // |screenshot_controller_| needs to be created (and prepended as a
-  // pre-target handler) at this point, because |mouse_cursor_filter_| needs to
-  // process mouse events prior to screenshot session.
-  // See http://crbug.com/459214
-  screenshot_controller_ = std::make_unique<ScreenshotController>(
-      shell_delegate_->CreateScreenshotDelegate());
   mouse_cursor_filter_ = std::make_unique<MouseCursorEventFilter>();
   AddPreTargetHandler(mouse_cursor_filter_.get(),
                       ui::EventTarget::Priority::kAccessibility);
@@ -1187,13 +1186,12 @@ void Shell::Init(
 
   high_contrast_controller_ = std::make_unique<HighContrastController>();
 
-  docked_magnifier_controller_ =
-      std::make_unique<DockedMagnifierController>();
+  docked_magnifier_controller_ = std::make_unique<DockedMagnifierController>();
 
   video_detector_ = std::make_unique<VideoDetector>();
 
   tooltip_controller_ = std::make_unique<views::corewm::TooltipController>(
-      std::make_unique<views::corewm::TooltipAura>());
+      std::make_unique<views::corewm::TooltipAura>(), activation_client());
   AddPreTargetHandler(tooltip_controller_.get());
 
   modality_filter_ = std::make_unique<SystemModalContainerEventFilter>(this);

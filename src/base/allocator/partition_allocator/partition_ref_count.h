@@ -23,6 +23,15 @@ namespace internal {
 
 #if BUILDFLAG(USE_BACKUP_REF_PTR)
 
+namespace {
+
+[[noreturn]] NOINLINE NOT_TAIL_CALLED void DoubleFreeOrCorruptionDetected() {
+  NO_CODE_FOLDING();
+  IMMEDIATE_CRASH();
+}
+
+}  // namespace
+
 // Special-purpose atomic reference count class used by BackupRefPtrImpl.
 // The least significant bit of the count is reserved for tracking the liveness
 // state of an allocation: it's set when the allocation is created and cleared
@@ -84,7 +93,8 @@ class BASE_EXPORT PartitionRefCount {
 #endif
 
     int32_t old_count = count_.fetch_sub(1, std::memory_order_release);
-    PA_CHECK(old_count & 1);  // double-free detection
+    if (UNLIKELY(!(old_count & 1)))
+      DoubleFreeOrCorruptionDetected();
     if (old_count == 1) {
       std::atomic_thread_fence(std::memory_order_acquire);
 #if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
@@ -98,7 +108,7 @@ class BASE_EXPORT PartitionRefCount {
   }
 
   // "IsAlive" means is allocated and not freed. "KnownRefs" refers to
-  // CheckedPtr references. There may be other references from raw pointers or
+  // raw_ptr<T> references. There may be other references from raw pointers or
   // unique_ptr, but we have no way of tracking them, so we hope for the best.
   // To summarize, the function returns whether we believe the allocation can be
   // safely freed.
@@ -169,25 +179,26 @@ static_assert((sizeof(PartitionRefCount) * (kSuperPageSize / SystemPageSize()) *
               "<= SystemPageSize().");
 
 ALWAYS_INLINE PartitionRefCount* PartitionRefCountPointer(void* slot_start) {
-  DCheckGetSlotOffsetIsZero(slot_start);
+#if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
+  CheckThatSlotOffsetIsZero(slot_start);
+#endif
   uintptr_t slot_start_as_uintptr = reinterpret_cast<uintptr_t>(slot_start);
   if (LIKELY(slot_start_as_uintptr & SystemPageOffsetMask())) {
     uintptr_t refcount_ptr_as_uintptr =
         slot_start_as_uintptr - sizeof(PartitionRefCount);
-    PA_DCHECK(refcount_ptr_as_uintptr % alignof(PartitionRefCount) == 0);
+#if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
+    PA_CHECK(refcount_ptr_as_uintptr % alignof(PartitionRefCount) == 0);
+#endif
     return reinterpret_cast<PartitionRefCount*>(refcount_ptr_as_uintptr);
   } else {
     PartitionRefCount* bitmap_base = reinterpret_cast<PartitionRefCount*>(
         (slot_start_as_uintptr & kSuperPageBaseMask) + SystemPageSize() * 2);
-    size_t index = ((slot_start_as_uintptr & kSuperPageOffsetMask)
-#if !defined(OS_APPLE)
-                    >> SystemPageShift()
-#else
-                    / SystemPageSize()
+    size_t index =
+        ((slot_start_as_uintptr & kSuperPageOffsetMask) >> SystemPageShift()) *
+        kPartitionRefCountIndexMultiplier;
+#if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
+    PA_CHECK(sizeof(PartitionRefCount) * index <= SystemPageSize());
 #endif
-                        ) *
-                   kPartitionRefCountIndexMultiplier;
-    PA_DCHECK(sizeof(PartitionRefCount) * index <= SystemPageSize());
     return bitmap_base + index;
   }
 }
@@ -205,7 +216,9 @@ constexpr size_t kPartitionRefCountOffsetAdjustment = kInSlotRefCountBufferSize;
 constexpr size_t kPartitionPastAllocationAdjustment = 1;
 
 ALWAYS_INLINE PartitionRefCount* PartitionRefCountPointer(void* slot_start) {
-  DCheckGetSlotOffsetIsZero(slot_start);
+#if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
+  CheckThatSlotOffsetIsZero(slot_start);
+#endif
   return reinterpret_cast<PartitionRefCount*>(slot_start);
 }
 

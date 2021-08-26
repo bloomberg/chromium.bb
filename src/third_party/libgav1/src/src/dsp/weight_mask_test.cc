@@ -156,7 +156,7 @@ std::ostream& operator<<(std::ostream& os, const WeightMaskTestParam& param) {
 }
 
 template <int bitdepth>
-class WeightMaskTest : public ::testing::TestWithParam<WeightMaskTestParam>,
+class WeightMaskTest : public testing::TestWithParam<WeightMaskTestParam>,
                        public test_utils::MaxAlignedAllocable {
  public:
   WeightMaskTest() = default;
@@ -169,8 +169,8 @@ class WeightMaskTest : public ::testing::TestWithParam<WeightMaskTestParam>,
     ASSERT_NE(dsp, nullptr);
     const int width_index = FloorLog2(width_) - 3;
     const int height_index = FloorLog2(height_) - 3;
-    const ::testing::TestInfo* const test_info =
-        ::testing::UnitTest::GetInstance()->current_test_info();
+    const testing::TestInfo* const test_info =
+        testing::UnitTest::GetInstance()->current_test_info();
     const char* const test_case = test_info->test_suite_name();
     if (absl::StartsWith(test_case, "C/")) {
     } else if (absl::StartsWith(test_case, "NEON/")) {
@@ -345,14 +345,14 @@ TEST_P(WeightMaskTest8bpp, DISABLED_Speed) {
 }
 
 INSTANTIATE_TEST_SUITE_P(C, WeightMaskTest8bpp,
-                         ::testing::ValuesIn(weight_mask_test_param));
+                         testing::ValuesIn(weight_mask_test_param));
 #if LIBGAV1_ENABLE_NEON
 INSTANTIATE_TEST_SUITE_P(NEON, WeightMaskTest8bpp,
-                         ::testing::ValuesIn(weight_mask_test_param));
+                         testing::ValuesIn(weight_mask_test_param));
 #endif
 #if LIBGAV1_ENABLE_SSE4_1
 INSTANTIATE_TEST_SUITE_P(SSE41, WeightMaskTest8bpp,
-                         ::testing::ValuesIn(weight_mask_test_param));
+                         testing::ValuesIn(weight_mask_test_param));
 #endif
 
 #if LIBGAV1_MAX_BITDEPTH >= 10
@@ -374,14 +374,14 @@ TEST_P(WeightMaskTest10bpp, DISABLED_Speed) {
 }
 
 INSTANTIATE_TEST_SUITE_P(C, WeightMaskTest10bpp,
-                         ::testing::ValuesIn(weight_mask_test_param));
+                         testing::ValuesIn(weight_mask_test_param));
 #if LIBGAV1_ENABLE_NEON
 INSTANTIATE_TEST_SUITE_P(NEON, WeightMaskTest10bpp,
-                         ::testing::ValuesIn(weight_mask_test_param));
+                         testing::ValuesIn(weight_mask_test_param));
 #endif
 #if LIBGAV1_ENABLE_SSE4_1
 INSTANTIATE_TEST_SUITE_P(SSE41, WeightMaskTest10bpp,
-                         ::testing::ValuesIn(weight_mask_test_param));
+                         testing::ValuesIn(weight_mask_test_param));
 #endif
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
 

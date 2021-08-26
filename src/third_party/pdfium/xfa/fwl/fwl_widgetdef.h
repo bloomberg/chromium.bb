@@ -7,22 +7,8 @@
 #ifndef XFA_FWL_FWL_WIDGETDEF_H_
 #define XFA_FWL_FWL_WIDGETDEF_H_
 
-#define FWL_WGTSTYLE_OverLapper 0
-#define FWL_WGTSTYLE_Popup (1L << 0)
-#define FWL_WGTSTYLE_Child (2L << 0)
-#define FWL_WGTSTYLE_WindowTypeMask (3L << 0)
-#define FWL_WGTSTYLE_Border (1L << 2)
-#define FWL_WGTSTYLE_VScroll (1L << 11)
-#define FWL_WGTSTYLE_Group (1L << 22)
-#define FWL_WGTSTYLE_NoBackground (1L << 28)
-
-#define FWL_WGTSTATE_Disabled (1L << 2)
-#define FWL_WGTSTATE_Focused (1L << 4)
-#define FWL_WGTSTATE_Invisible (1L << 5)
-#define FWL_WGTSTATE_MAX (6)
-
-// Same as enum FWL_VKEYCODE in public/fpdf_fwlevent.h, but duplicated to keep
-// xfa/fwl standalone.
+// Same as enum FWL_VKEYCODE in public/fpdf_fwlevent.h, but duplicated here
+// to keep xfa/fwl standalone.
 enum XFA_FWL_VKEYCODE {
   XFA_FWL_VKEY_Back = 0x08,
   XFA_FWL_VKEY_Tab = 0x09,
@@ -193,6 +179,18 @@ enum XFA_FWL_VKEYCODE {
   XFA_FWL_VKEY_PA1 = 0xFD,
   XFA_FWL_VKEY_OEM_Clear = 0xFE,
   XFA_FWL_VKEY_Unknown = 0,
+};
+
+// Derived from FWL_EVENTFLAG in public/fwl_event.h, but not the same
+// values bit-for-bit, duplicated here to keep XFA standalone.
+enum class XFA_FWL_KeyFlag : uint8_t {
+  kCtrl = 1 << 0,
+  kAlt = 1 << 1,
+  kShift = 1 << 2,
+  kCommand = 1 << 3,
+  kLButton = 1 << 4,
+  kRButton = 1 << 5,
+  kMButton = 1 << 6
 };
 
 #endif  // XFA_FWL_FWL_WIDGETDEF_H_

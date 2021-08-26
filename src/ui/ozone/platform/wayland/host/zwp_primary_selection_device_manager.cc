@@ -8,11 +8,44 @@
 
 #include <memory>
 
-#include "ui/ozone/platform/wayland/host/zwp_primary_selection_device.h"
+#include "base/logging.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_source.h"
+#include "ui/ozone/platform/wayland/host/zwp_primary_selection_device.h"
 
 namespace ui {
+
+namespace {
+constexpr uint32_t kMaxGtkPrimarySelectionDeviceManagerVersion = 1;
+}  // namespace
+
+// static
+void ZwpPrimarySelectionDeviceManager::Register(WaylandConnection* connection) {
+  connection->RegisterGlobalObjectFactory(
+      "zwp_primary_selection_device_manager_v1",
+      &ZwpPrimarySelectionDeviceManager::Instantiate);
+}
+
+// static
+void ZwpPrimarySelectionDeviceManager::Instantiate(
+    WaylandConnection* connection,
+    wl_registry* registry,
+    uint32_t name,
+    uint32_t version) {
+  if (connection->zwp_primary_selection_device_manager_)
+    return;
+
+  auto manager = wl::Bind<zwp_primary_selection_device_manager_v1>(
+      registry, name,
+      std::min(version, kMaxGtkPrimarySelectionDeviceManagerVersion));
+  if (!manager) {
+    LOG(ERROR) << "Failed to bind zwp_primary_selection_device_manager_v1";
+    return;
+  }
+  connection->zwp_primary_selection_device_manager_ =
+      std::make_unique<ZwpPrimarySelectionDeviceManager>(manager.release(),
+                                                         connection);
+}
 
 ZwpPrimarySelectionDeviceManager::ZwpPrimarySelectionDeviceManager(
     zwp_primary_selection_device_manager_v1* manager,
@@ -30,6 +63,7 @@ ZwpPrimarySelectionDevice* ZwpPrimarySelectionDeviceManager::GetDevice() {
     device_ = std::make_unique<ZwpPrimarySelectionDevice>(
         connection_, zwp_primary_selection_device_manager_v1_get_device(
                          device_manager_.get(), connection_->seat()));
+    connection_->ScheduleFlush();
   }
   DCHECK(device_);
   return device_.get();
@@ -40,8 +74,9 @@ ZwpPrimarySelectionDeviceManager::CreateSource(
     ZwpPrimarySelectionSource::Delegate* delegate) {
   auto* data_source = zwp_primary_selection_device_manager_v1_create_source(
       device_manager_.get());
+  connection_->ScheduleFlush();
   return std::make_unique<ZwpPrimarySelectionSource>(data_source, connection_,
-                                                  delegate);
+                                                     delegate);
 }
 
 }  // namespace ui

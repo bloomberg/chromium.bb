@@ -28,7 +28,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
-#include "google_apis/drive/task_util.h"
+#include "google_apis/common/task_util.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "storage/browser/file_system/file_system_context.h"
 
@@ -151,7 +151,7 @@ bool IsUnderNonNativeLocalPath(Profile* profile,
 
   storage::FileSystemURL filesystem_url =
       GetFileSystemContextForSourceURL(profile, GetFileManagerURL())
-          ->CrackURL(url);
+          ->CrackURLInFirstPartyContext(url);
   if (!filesystem_url.is_valid())
     return false;
 

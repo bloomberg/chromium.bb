@@ -12,7 +12,7 @@ import type * as Protocol from '../../../../../front_end/generated/protocol.js';
 
 const simulateRequestWithStartTime = (startTime: number): SDK.NetworkRequest.NetworkRequest => {
   const requestId = 'r0' as Protocol.Network.RequestId;
-  const request = SDK.NetworkRequest.NetworkRequest.create(requestId, 'p0.com', '', '', '', null);
+  const request = SDK.NetworkRequest.NetworkRequest.create(requestId, 'p0.com', '', '', null, null);
   request.setIssueTime(startTime, startTime);
   request.setContentDataProvider(() => Promise.resolve({error: null, content: '', encoded: false}));
   return request;
@@ -29,7 +29,7 @@ describe('HARWriter', () => {
 
     const progressIndicator = new UI.ProgressIndicator.ProgressIndicator();
     const compositeProgress = new Common.Progress.CompositeProgress(progressIndicator);
-    const result = await HAR.Writer.Writer._harStringForRequests(
+    const result = await HAR.Writer.Writer.harStringForRequests(
         [
           req3,
           req2,

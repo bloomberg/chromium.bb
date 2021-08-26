@@ -182,6 +182,27 @@ TEST_F(
       });
     });
 
+// Disabled - failing on ASan: crbug.com/1236009
+TEST_F('MagnifierE2ETest', 'DISABLED_MagnifierCenterOnPoint', function() {
+  this.runWithLoadedTree('', async function(root) {
+    const targetPoint = {x: 100, y: 100};
+    const targetBounds = {left: 100, top: 100, width: 0, height: 0};
+    const magnifier = accessibilityCommon.getMagnifierForTest();
+    magnifier.setIsInitializingForTest(false);
+
+    // Verify magnifier bounds don't include |targetBounds|.
+    bounds = await this.getNextMagnifierBounds();
+    assertFalse(RectUtil.contains(bounds, targetBounds));
+
+    // Center magnifier on point |targetPoint|.
+    chrome.accessibilityPrivate.magnifierCenterOnPoint(targetPoint);
+
+    // Verify magnifier bounds do include |targetBounds|.
+    bounds = await this.getNextMagnifierBounds();
+    assertTrue(RectUtil.contains(bounds, targetBounds));
+  });
+});
+
 
 TEST_F('MagnifierE2ETest', 'ScreenMagnifierFocusFollowingPref', function() {
   this.newCallback(async () => {

@@ -36,14 +36,13 @@
 
 namespace subresource_filter {
 
-const char kSubresourceFilterActionsHistogram[] = "SubresourceFilter.Actions2";
-
 class SubresourceFilterSettingsBrowserTest
     : public SubresourceFilterBrowserTest {
  public:
   void SetUp() override {
-    EXPECT_CALL(provider_, IsInitializationComplete(::testing::_))
-        .WillRepeatedly(::testing::Return(true));
+    provider_.SetDefaultReturns(
+        /*is_initialization_complete_return=*/true,
+        /*is_first_policy_load_complete_return=*/true);
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
     SubresourceFilterBrowserTest::SetUp();
   }
@@ -54,7 +53,7 @@ class SubresourceFilterSettingsBrowserTest
   }
 
  private:
-  policy::MockConfigurationPolicyProvider provider_;
+  ::testing::NiceMock<policy::MockConfigurationPolicyProvider> provider_;
 };
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterSettingsBrowserTest,
@@ -182,8 +181,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterSettingsBrowserTest,
 
   // Allowlist via a reload.
   content::TestNavigationObserver navigation_observer(web_contents(), 1);
-  subresource_filter::ContentSubresourceFilterThrottleManager::FromWebContents(
-      web_contents())
+  subresource_filter::ContentSubresourceFilterThrottleManager::FromPage(
+      web_contents()->GetPrimaryPage())
       ->OnReloadRequested();
   navigation_observer.Wait();
 
@@ -202,8 +201,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterSettingsBrowserTest,
 
   // Allowlist via a reload.
   content::TestNavigationObserver navigation_observer(web_contents(), 1);
-  subresource_filter::ContentSubresourceFilterThrottleManager::FromWebContents(
-      web_contents())
+  subresource_filter::ContentSubresourceFilterThrottleManager::FromPage(
+      web_contents()->GetPrimaryPage())
       ->OnReloadRequested();
   navigation_observer.Wait();
 

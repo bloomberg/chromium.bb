@@ -6,12 +6,20 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_LOCAL_FRAME_MOJO_HANDLER_H_
 
 #include "build/build_config.h"
+#include "services/device/public/mojom/device_posture_provider.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame/back_forward_cache_controller.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/media/fullscreen_video_element.mojom-blink.h"
+#include "third_party/blink/public/mojom/reporting/reporting.mojom-blink.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_associated_receiver.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_associated_remote.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
+
+#if defined(OS_MAC)
+#include "third_party/blink/public/mojom/input/text_input_host.mojom-blink.h"
+#endif
 
 namespace blink {
 
@@ -20,8 +28,14 @@ class LocalDOMWindow;
 class LocalFrame;
 class Page;
 
-// LocalFrameMojoHandler is responsible for providing Mojo receivers and
-// remotes associated to blink::LocalFrame.
+// LocalFrameMojoHandler is a part of LocalFrame, and is responsible for having
+// Mojo-related stuff in order to avoid including full mojom headers from
+// local_frame.h.
+//
+// This class should have:
+//  - Mojo receivers
+//  - Mojo remotes
+//  - Data members of which types are defined by mojom.
 //
 // A single LocalFrame instance owns a single LocalFrameMojoHandler instance.
 class LocalFrameMojoHandler
@@ -29,7 +43,8 @@ class LocalFrameMojoHandler
       public mojom::blink::LocalFrame,
       public mojom::blink::LocalMainFrame,
       public mojom::blink::HighPriorityLocalFrame,
-      public mojom::blink::FullscreenVideoElementHandler {
+      public mojom::blink::FullscreenVideoElementHandler,
+      public device::mojom::blink::DevicePostureProviderClient {
  public:
   explicit LocalFrameMojoHandler(blink::LocalFrame& frame);
   void Trace(Visitor* visitor) const;
@@ -42,6 +57,18 @@ class LocalFrameMojoHandler
   mojom::blink::LocalFrameHost& LocalFrameHostRemote() const {
     return *local_frame_host_remote_.get();
   }
+
+  mojom::blink::ReportingServiceProxy* ReportingService();
+  mojom::blink::BackForwardCacheControllerHost&
+  BackForwardCacheControllerHostRemote();
+
+#if defined(OS_MAC)
+  mojom::blink::TextInputHost& TextInputHost();
+  void ResetTextInputHostForTesting();
+  void RebindTextInputHostForTesting();
+#endif
+
+  device::mojom::blink::DevicePostureType GetDevicePosture();
 
  private:
   Page* GetPage() const;
@@ -152,7 +179,6 @@ class LocalFrameMojoHandler
       const KURL& url_before_redirects,
       bool had_redirect,
       network::mojom::blink::SourceLocationPtr source_location) final;
-  void ActivateForPrerendering(base::TimeTicks activation_start) final;
   void BindDevToolsAgent(
       mojo::PendingAssociatedRemote<mojom::blink::DevToolsAgentHost> host,
       mojo::PendingAssociatedReceiver<mojom::blink::DevToolsAgent> receiver)
@@ -205,7 +231,23 @@ class LocalFrameMojoHandler
   // mojom::FullscreenVideoElementHandler implementation:
   void RequestFullscreenVideoElement() final;
 
+  // DevicePostureServiceClient implementation:
+  void OnPostureChanged(device::mojom::blink::DevicePostureType posture) final;
+
   Member<blink::LocalFrame> frame_;
+
+  HeapMojoAssociatedRemote<mojom::blink::BackForwardCacheControllerHost>
+      back_forward_cache_controller_host_remote_{nullptr};
+
+#if defined(OS_MAC)
+  HeapMojoRemote<mojom::blink::TextInputHost> text_input_host_{nullptr};
+#endif
+
+  HeapMojoRemote<mojom::blink::ReportingServiceProxy> reporting_service_{
+      nullptr};
+
+  HeapMojoRemote<device::mojom::blink::DevicePostureProvider>
+      device_posture_provider_service_{nullptr};
 
   HeapMojoAssociatedRemote<mojom::blink::LocalFrameHost>
       local_frame_host_remote_{nullptr};
@@ -224,6 +266,14 @@ class LocalFrameMojoHandler
   HeapMojoAssociatedReceiver<mojom::blink::FullscreenVideoElementHandler,
                              LocalFrameMojoHandler>
       fullscreen_video_receiver_{this, nullptr};
+
+  // LocalFrameMojoHandler can be reused by multiple ExecutionContext.
+  HeapMojoReceiver<device::mojom::blink::DevicePostureProviderClient,
+                   LocalFrameMojoHandler>
+      device_posture_receiver_{this, nullptr};
+
+  device::mojom::blink::DevicePostureType current_device_posture_ =
+      device::mojom::blink::DevicePostureType::kContinuous;
 };
 
 class ActiveURLMessageFilter : public mojo::MessageFilter {

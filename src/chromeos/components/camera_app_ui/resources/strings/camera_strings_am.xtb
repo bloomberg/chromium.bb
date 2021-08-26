@@ -3,6 +3,8 @@
 <translationbundle lang="am">
 <translation id="1175958423215084756">አገናኝ ተገኝቷል። <ph name="HOSTNAME" /></translation>
 <translation id="1276998909102132017">የማዕከለ-ሥዕላት ምስሎች</translation>
+<translation id="1300209025925956156">ሰነድዎን ይቃኙ</translation>
+<translation id="137991641490787891"><ph name="ASPECT_RATIO_WIDTH" />። ለመድረስ ፍለጋ + የግራ ቀስት።</translation>
 <translation id="1430915738399379752">አትም</translation>
 <translation id="1467231725790366244"><ph name="CAMERA" /> ተነቅሏል።</translation>
 <translation id="1473110567575736769">3 ሰከንዶች መቁጠሪያ</translation>
@@ -31,7 +33,6 @@
 <translation id="2549985041256363841">መቅረጽ ጀምር</translation>
 <translation id="2599796128805996109">የኋላ ካሜራ</translation>
 <translation id="2879583609344924966"><ph name="CAMERA" /> ተሰክቷል።</translation>
-<translation id="2912439424121107408">ወደ ውጭ መላክ በዚህ መሣሪያ ላይ አይደገፍም</translation>
 <translation id="2968794441791257519">በካሜራው የተነሱ ፎቶዎች ወይም የተቀረጹ ቪዲዮዎች ወደ የውርዶች አቃፊው ይወሰዳሉ። በፋይሎች ውስጥ ሊደርሱባቸው ይችላሉ።
 
         የማከማቻ ፈቃዶች ያላቸው መተግበሪያዎች የእርስዎ ፎቶዎች እና ቪዲዮዎች መዳረሻ ይኖራቸዋል።</translation>
@@ -42,15 +43,16 @@
 <translation id="3227137524299004712">ማይክሮፎን</translation>
 <translation id="3240426699337459095">አገናኝ ተቀድቷል</translation>
 <translation id="3259149966178251584">የካሜራ ምስል ጥራት</translation>
+<translation id="3260401663013584785">ሰነድን ማግኘት አልተቻለም</translation>
 <translation id="3448774564454087943">ቪዲዮ በጣም አጭር ስለሆነ አልተቀመጠም</translation>
 <translation id="3517926952904427380">የቁም ፎቶን ማንሳት አልተቻለም</translation>
 <translation id="3569311554794739032">እርግጠኛ ነዎት <ph name="FILE" />ን ማስወገድ ይፈልጋሉ?</translation>
-<translation id="3733597664308256288">ተጨማሪ የካሜራ መቆጣጠሪያዎች ይገኛሉ። ለመድረስ ፍለጋ + የቀኝ ቀስት።</translation>
 <translation id="3810838688059735925">ቪዲዮ</translation>
 <translation id="3838931309141338733">የአሞሌ ኮድ ይቃኙ</translation>
 <translation id="3892148308691398805">ጽሑፍ ቅዳ</translation>
 <translation id="4000398125663085899">አዳዲስ ፎቶዎች እና ቪዲዮዎች አሁን በፋይሎች መተግበሪያ ውስጥ ወዳለው አቃፊ ይቀመጣሉ፦ የእኔ ፋይሎች&gt; ካሜራ</translation>
 <translation id="4118525110028899586">ቀረጻን ለአፍታ አቁም</translation>
+<translation id="4121305183798804752">ሰነድ ተገኝቷል</translation>
 <translation id="4269820728363426813">የአገናኝ አድራሻ ቅዳ</translation>
 <translation id="4279490309300973883">በማንጸባረቅ ላይ</translation>
 <translation id="4329152592498422850">የካሬ ፎቶን ለማንሳት ይቀይሩ</translation>
@@ -65,10 +67,13 @@
 <translation id="5057360777601936059">የእርስዎ ካሜራ በአሁኑ ጊዜ አይገኝም።
         ካሜራው በትክክል ተገናኝቶ ከሆነ እባክዎ ይፈትሹ።</translation>
 <translation id="5152121255775685072">ወደ ማዕከለ-ሥዕላት ሂድ</translation>
+<translation id="520537883758714667">የሰነድ ቅኝት አሁን ይገኛል</translation>
 <translation id="5268823927180092501">በሁሉም ካሜራዎች ላይ የሰነድ ሁነታን ያንቁ</translation>
 <translation id="5422455049771430511">የእርስዎ ፎቶዎች እና ቪዲዮዎች አዲስ ቤት አላቸው</translation>
+<translation id="5444515100983837161">የሰነዱን ሁሉንም ጠርዞች በክፈፉ ውስጥ ያስቀምጡ። ሰነዱ እና ዳራ የተለያዩ ቀለሞች ከሆኑ ቅኝት በተሻለ ሁኔታ ይሠራል።</translation>
 <translation id="5671277269877808209">ካሬ</translation>
 <translation id="5753488212459587150">የባለሙያ ሁነታን ያንቁ</translation>
+<translation id="5759254179196327752">ሰነድ ቃኝ</translation>
 <translation id="5775960006311140197">ወደ ውጭ መላክ ሁነታ</translation>
 <translation id="5869546221129391014">ፍርግርግ</translation>
 <translation id="5975083100439434680">አሳንስ</translation>
@@ -82,6 +87,7 @@
 
 የእርስዎ ግብረመልስ ስለምስል ወይም ቪዲዮ ጥራት ከሆነ እባክዎ ናሙና ፎቶ ወይም ቪዲዮ ያያይዙ እና ምን ችግር እንዳለበት ያብራሩ። (ለምሳሌ፣ ፎቶ በጣም ጨለማ ነው ወይም የፎቶው ዋና አካል በትኩረት ላይ አይደለም።)</translation>
 <translation id="6420689864531458495">(<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" /> - <ph name="WIDTH" />x<ph name="HEIGHT" />) <ph name="MEGAPIXEL" /> ሜጋ ፒክሴል</translation>
+<translation id="667999046851023355">ሰነድ</translation>
 <translation id="6681668084120808868">ፎቶ አንሳ</translation>
 <translation id="6778482348691154169">ፎቶ ለማንሳት አልተቻለም</translation>
 <translation id="695140971690006676">ሁሉንም ዳግም አስጀምር</translation>
@@ -108,11 +114,13 @@
 <translation id="8425673304802773841">ወደ ታች አጋድል</translation>
 <translation id="8428213095426709021">ቅንብሮች</translation>
 <translation id="8687491812650032292">ኤችዲ <ph name="HEIGHT" />ፒ (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
+<translation id="8712637175834984815">ገባኝ</translation>
 <translation id="8732462232047530626">የቅድመ እይታ ዲበ ውሂብ</translation>
 <translation id="8815966864175525708">የቁም ፎቶ ለማንሳት ይቀይሩ</translation>
 <translation id="8828441885228359828">ቀረጻን ከቆመበት ቀጥል</translation>
 <translation id="8870695351537079478">መቅረጽ መጀመር አልተቻለም</translation>
 <translation id="8903921497873541725">አጉላ</translation>
+<translation id="9045010116236796332">የሰነዱን ሁሉንም ጠርዞች በክፈፉ ውስጥ ያስቀምጡ</translation>
 <translation id="9045155556724273246">10 ሰከንዶች</translation>
 <translation id="945522503751344254">ግብረመልስ ላክ</translation>
 </translationbundle>

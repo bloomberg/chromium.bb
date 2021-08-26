@@ -386,7 +386,7 @@ static INLINE int is_winner_mode_processing_enabled(
   // TODO(any): Move block independent condition checks to frame level
   if (is_inter_block(mbmi)) {
     if (is_inter_mode(best_mode) &&
-        sf->tx_sf.tx_type_search.fast_inter_tx_type_search &&
+        (sf->tx_sf.tx_type_search.fast_inter_tx_type_search != 0) &&
         !cpi->oxcf.txfm_cfg.use_inter_dct_only)
       return 1;
   } else {

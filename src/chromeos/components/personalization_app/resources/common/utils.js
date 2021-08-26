@@ -63,3 +63,22 @@ export function unguessableTokensEqual(a, b) {
   return a.hasOwnProperty('high') && a.high === b.high &&
       a.hasOwnProperty('low') && a.low === b.low;
 }
+
+/**
+ * Returns true if this event is a user action to select an item.
+ * @param {!Event} event
+ * @return {boolean}
+ */
+export function isSelectionEvent(event) {
+  return (event instanceof MouseEvent && event.type === 'click') ||
+      (event instanceof KeyboardEvent && event.key === 'Enter');
+}
+
+/**
+ * Sets a css variable to control the animation delay.
+ * @param {number} index
+ * @return {string}
+ */
+export function getLoadingPlaceholderAnimationDelay(index) {
+  return `--animation-delay: ${index * 83}ms;`
+}

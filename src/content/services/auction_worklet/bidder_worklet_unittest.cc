@@ -24,6 +24,7 @@
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/interest_group/interest_group.h"
 #include "third_party/blink/public/mojom/interest_group/interest_group_types.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -69,9 +70,12 @@ std::string CreateReportWinScript(const std::string& function_body) {
 
 class BidderWorkletTest : public testing::Test {
  public:
-  BidderWorkletTest() { SetDefaultParameters(); }
+  BidderWorkletTest() {
+    SetDefaultParameters();
+    v8_helper_ = AuctionV8Helper::Create(AuctionV8Helper::CreateTaskRunner());
+  }
 
-  ~BidderWorkletTest() override = default;
+  ~BidderWorkletTest() override { task_environment_.RunUntilIdle(); }
 
   // Default values. No test actually depends on these being anything but valid,
   // but test that set these can use this to reset values to default after each
@@ -82,7 +86,7 @@ class BidderWorkletTest : public testing::Test {
     interest_group_user_bidding_signals_ = std::string();
 
     interest_group_ads_.clear();
-    interest_group_ads_.push_back(blink::mojom::InterestGroupAd::New(
+    interest_group_ads_.emplace_back(blink::InterestGroup::Ad(
         GURL("https://response.test/"), absl::nullopt /* metadata */));
 
     interest_group_trusted_bidding_signals_url_.reset();
@@ -176,11 +180,11 @@ class BidderWorkletTest : public testing::Test {
       const absl::optional<GURL>& expected_report_url,
       const std::vector<std::string>& expected_errors =
           std::vector<std::string>()) {
-    auto bidder_worket = CreateWorkletAndGenerateBid();
-    ASSERT_TRUE(bidder_worket);
+    auto bidder_worklet = CreateWorkletAndGenerateBid();
+    ASSERT_TRUE(bidder_worklet);
 
     base::RunLoop run_loop;
-    bidder_worket->ReportWin(
+    bidder_worklet->ReportWin(
         seller_signals_, browser_signal_render_url_,
         browser_signal_ad_render_fingerprint_, browser_signal_bid_,
         base::BindLambdaForTesting(
@@ -196,24 +200,20 @@ class BidderWorkletTest : public testing::Test {
 
   // Creates a BiddingInterestGroup based on test fixture configuration.
   mojom::BiddingInterestGroupPtr CreateBiddingInterestGroup() {
-    blink::mojom::InterestGroupPtr interest_group =
-        blink::mojom::InterestGroup::New();
-    interest_group->owner = interest_group_owner_;
-    interest_group->name = interest_group_name_;
-    interest_group->bidding_url = interest_group_bidding_url_;
+    blink::InterestGroup interest_group;
+    interest_group.owner = interest_group_owner_;
+    interest_group.name = interest_group_name_;
+    interest_group.bidding_url = interest_group_bidding_url_;
     // Convert a string to an optional. Empty string means empty optional value.
     if (!interest_group_user_bidding_signals_.empty()) {
-      interest_group->user_bidding_signals =
+      interest_group.user_bidding_signals =
           interest_group_user_bidding_signals_;
     }
-    interest_group->trusted_bidding_signals_url =
+    interest_group.trusted_bidding_signals_url =
         interest_group_trusted_bidding_signals_url_;
-    interest_group->trusted_bidding_signals_keys =
+    interest_group.trusted_bidding_signals_keys =
         interest_group_trusted_bidding_signals_keys_;
-    interest_group->ads = std::vector<blink::mojom::InterestGroupAdPtr>();
-    for (const auto& ad : interest_group_ads_) {
-      interest_group->ads->emplace_back(ad.Clone());
-    }
+    interest_group.ads = interest_group_ads_;
 
     mojom::BiddingBrowserSignalsPtr bidding_browser_signals =
         mojom::BiddingBrowserSignals::New(
@@ -237,7 +237,7 @@ class BidderWorkletTest : public testing::Test {
     mojo::Remote<mojom::BidderWorklet> bidder_worklet;
     mojo::MakeSelfOwnedReceiver(
         std::make_unique<BidderWorklet>(
-            &v8_helper_, std::move(url_loader_factory),
+            v8_helper_, std::move(url_loader_factory),
             CreateBiddingInterestGroup(),
             null_auction_signals_
                 ? absl::nullopt
@@ -288,7 +288,7 @@ class BidderWorkletTest : public testing::Test {
   // This is actually an optional value, but to make testing easier, use a
   // string. An empty string means nullptr.
   std::string interest_group_user_bidding_signals_;
-  std::vector<blink::mojom::InterestGroupAdPtr> interest_group_ads_;
+  std::vector<blink::InterestGroup::Ad> interest_group_ads_;
   absl::optional<GURL> interest_group_trusted_bidding_signals_url_;
   absl::optional<std::vector<std::string>>
       interest_group_trusted_bidding_signals_keys_;
@@ -325,7 +325,7 @@ class BidderWorkletTest : public testing::Test {
   std::vector<std::string> bid_errors_;
 
   network::TestURLLoaderFactory url_loader_factory_;
-  AuctionV8Helper v8_helper_;
+  scoped_refptr<AuctionV8Helper> v8_helper_;
 };
 
 // Test the case the BidderWorklet pipe is closed before invoking the
@@ -340,7 +340,7 @@ TEST_F(BidderWorkletTest, PipeClosed) {
 
   mojo::MakeSelfOwnedReceiver(
       std::make_unique<BidderWorklet>(
-          &v8_helper_,
+          v8_helper_,
           url_loader_factory_receiver.InitWithNewPipeAndPassRemote(),
           CreateBiddingInterestGroup(),
           absl::nullopt /* auction_signals_json */,
@@ -792,7 +792,7 @@ TEST_F(BidderWorkletTest, GenerateBidBasicInputParameters) {
 
   // Adding an ad with a corresponding `renderUrl` should result in success.
   // Also check the `interestGroup.ads` field passed to Javascript.
-  interest_group_ads_.push_back(blink::mojom::InterestGroupAd::New(
+  interest_group_ads_.emplace_back(blink::InterestGroup::Ad(
       GURL("https://response2.test/"), R"(["metadata"])" /* metadata */));
   RunGenerateBidWithReturnValueExpectingResult(
       R"({ad: interestGroup.ads, bid:1, render:"https://response2.test/"})",
@@ -1044,6 +1044,26 @@ TEST_F(BidderWorkletTest, ReportWin) {
        "most once."});
 }
 
+TEST_F(BidderWorkletTest, DeleteBeforeReportWinCallback) {
+  AddJavascriptResponse(
+      &url_loader_factory_, interest_group_bidding_url_,
+      CreateReportWinScript(R"(sendReportTo("https://foo.test"))"));
+  auto bidder_worklet = CreateWorkletAndGenerateBid();
+  ASSERT_TRUE(bidder_worklet);
+
+  base::WaitableEvent* event_handle = WedgeV8Thread(v8_helper_.get());
+  bidder_worklet->ReportWin(
+      seller_signals_, browser_signal_render_url_,
+      browser_signal_ad_render_fingerprint_, browser_signal_bid_,
+      base::BindOnce([](const absl::optional<GURL>& report_url,
+                        const std::vector<std::string>& errors) {
+        ADD_FAILURE() << "Callback should not be invoked since worklet deleted";
+      }));
+  base::RunLoop().RunUntilIdle();
+  bidder_worklet.reset();
+  event_handle->Signal();
+}
+
 // Make sure Date() is not available when running reportWin().
 TEST_F(BidderWorkletTest, ReportWinDateNotAvailable) {
   RunReportWinWithFunctionBodyExpectingResult(
@@ -1250,12 +1270,12 @@ TEST_F(BidderWorkletTest, ScriptIsolation) {
           sendReportTo("https://" + ad[0] + ad[1] + ".test/");
         }
       )");
-  auto bidder_worket = CreateWorkletAndGenerateBid();
-  ASSERT_TRUE(bidder_worket);
+  auto bidder_worklet = CreateWorkletAndGenerateBid();
+  ASSERT_TRUE(bidder_worklet);
 
   for (int i = 0; i < 3; ++i) {
     base::RunLoop run_loop;
-    bidder_worket->ReportWin(
+    bidder_worklet->ReportWin(
         seller_signals_, browser_signal_render_url_,
         browser_signal_ad_render_fingerprint_, browser_signal_bid_,
         base::BindLambdaForTesting(

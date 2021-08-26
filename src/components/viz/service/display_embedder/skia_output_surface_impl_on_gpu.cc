@@ -7,6 +7,7 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
+#include "base/bind_post_task.h"
 #include "base/callback_helpers.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -225,6 +226,7 @@ class SkiaOutputSurfaceImplOnGpu::CopyOutputResultYUV
                       const gfx::Rect& rect,
                       std::unique_ptr<const SkSurface::AsyncReadResult> result)
       : CopyOutputResult(Format::I420_PLANES,
+                         Destination::kSystemMemory,
                          rect,
                          /*needs_lock_for_bitmap=*/false),
         result_(impl, std::move(result)) {
@@ -307,7 +309,8 @@ class SkiaOutputSurfaceImplOnGpu::CopyOutputResultRGBA
                        const gfx::Rect& rect,
                        std::unique_ptr<const SkSurface::AsyncReadResult> result,
                        const gfx::ColorSpace& color_space)
-      : CopyOutputResult(Format::RGBA_BITMAP,
+      : CopyOutputResult(Format::RGBA,
+                         Destination::kSystemMemory,
                          rect,
                          /*needs_lock_for_bitmap=*/true),
         result_(impl, std::move(result)),
@@ -578,6 +581,9 @@ SkiaOutputSurfaceImplOnGpu::~SkiaOutputSurfaceImplOnGpu() {
     }
   }
 
+  for (auto& callback : release_on_gpu_callbacks_)
+    std::move(*callback).Run(gpu::SyncToken(), /*is_lost=*/true);
+
   // |output_device_| may still need |shared_image_factory_|, so release it
   // first.
   output_device_.reset();
@@ -830,15 +836,6 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
   }
 }
 
-static void PostTaskFromMainToImplThread(
-    scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
-    ReleaseCallback callback,
-    const gpu::SyncToken& sync_token,
-    bool is_lost) {
-  impl_task_runner->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), sync_token, is_lost));
-}
-
 void SkiaOutputSurfaceImplOnGpu::CopyOutput(
     AggregatedRenderPassId id,
     copy_output::RenderPassGeometry geometry,
@@ -846,7 +843,8 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
     std::unique_ptr<CopyOutputRequest> request,
     const gpu::Mailbox& mailbox) {
   TRACE_EVENT0("viz", "SkiaOutputSurfaceImplOnGpu::CopyOutput");
-  // TODO(crbug.com/898595): Do this on the GPU instead of CPU with Vulkan.
+  // TODO(https://crbug.com/898595): Do this on the GPU instead of CPU with
+  // Vulkan.
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (context_is_lost_)
@@ -958,7 +956,9 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
         SkSurface::RescaleGamma::kSrc, rescale_mode,
         &CopyOutputResultYUV::OnReadbackDone, context.release());
   } else if (request->result_format() ==
-             CopyOutputRequest::ResultFormat::RGBA_BITMAP) {
+                 CopyOutputRequest::ResultFormat::RGBA &&
+             request->result_destination() ==
+                 CopyOutputRequest::ResultDestination::kSystemMemory) {
     // Perform swizzle during readback.
     const bool skbitmap_is_bgra = (kN32_SkColorType == kBGRA_8888_SkColorType);
     // If we can't convert |color_space| to a SkColorSpace
@@ -984,7 +984,9 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
         dst_info, src_rect, SkSurface::RescaleGamma::kSrc, rescale_mode,
         &CopyOutputResultRGBA::OnReadbackDone, context.release());
   } else if (request->result_format() ==
-             CopyOutputRequest::ResultFormat::RGBA_TEXTURE) {
+                 CopyOutputRequest::ResultFormat::RGBA &&
+             request->result_destination() ==
+                 CopyOutputRequest::ResultDestination::kNativeTextures) {
     gpu::Mailbox mailbox = gpu::Mailbox::GenerateForSharedImage();
     constexpr auto kUsage = gpu::SHARED_IMAGE_USAGE_GLES2 |
                             gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT |
@@ -1026,6 +1028,13 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
 
     dest_canvas->clipRect(
         SkRect::MakeXYWH(0, 0, src_rect.width(), src_rect.height()));
+    // TODO(b/197353769): Ideally, we should simply use a kSrc blending mode,
+    // but for some reason, this triggers some antialiasing code that causes
+    // various Vulkan tests to fail. We should investigate this and replace
+    // this clear with blend mode.
+    if (surface->imageInfo().alphaType() != kOpaque_SkAlphaType) {
+      dest_canvas->clear(SK_ColorTRANSPARENT);
+    }
     auto sampling =
         is_downscale_or_identity_in_both_dimensions
             ? SkSamplingOptions(SkFilterMode::kLinear, SkMipmapMode::kLinear)
@@ -1045,16 +1054,25 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
       DLOG(ERROR) << "dest_surface->flush() failed.";
       return;
     }
-    auto release_callback = base::BindOnce(
-        &SkiaOutputSurfaceImplOnGpu::DestroySharedImageOnImplThread,
+
+    auto gpu_callback = std::make_unique<ReleaseCallback>(base::BindOnce(
+        &SkiaOutputSurfaceImplOnGpu::DestroyCopyOutputResourcesOnGpuThread,
         weak_ptr_factory_.GetWeakPtr(), std::move(representation),
-        context_state_);
-    auto main_callback = base::BindOnce(&PostTaskFromMainToImplThread,
-                                        base::ThreadTaskRunnerHandle::Get(),
-                                        std::move(release_callback));
+        context_state_));
+    release_on_gpu_callbacks_.push_back(std::move(gpu_callback));
+    auto run_gpu_callback = base::BindOnce(
+        &SkiaOutputSurfaceImplOnGpu::RunDestroyCopyOutputResourcesOnGpuThread,
+        weak_ptr_factory_.GetWeakPtr(), release_on_gpu_callbacks_.back().get());
+    auto viz_callback = base::BindPostTask(base::ThreadTaskRunnerHandle::Get(),
+                                           std::move(run_gpu_callback));
+
+    CopyOutputResult::ReleaseCallbacks release_callbacks;
+    release_callbacks.push_back(std::move(viz_callback));
+
     request->SendResult(std::make_unique<CopyOutputTextureResult>(
-        geometry.result_bounds, mailbox, gpu::SyncToken(), color_space,
-        std::move(main_callback)));
+        geometry.result_bounds,
+        CopyOutputResult::TextureResult(mailbox, gpu::SyncToken(), color_space),
+        std::move(release_callbacks)));
   } else {
     NOTREACHED();
   }
@@ -1078,7 +1096,22 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
   ScheduleCheckReadbackCompletion();
 }
 
-void SkiaOutputSurfaceImplOnGpu::DestroySharedImageOnImplThread(
+void SkiaOutputSurfaceImplOnGpu::RunDestroyCopyOutputResourcesOnGpuThread(
+    ReleaseCallback* callback,
+    const gpu::SyncToken& sync_token,
+    bool is_lost) {
+  for (size_t i = 0; i < release_on_gpu_callbacks_.size(); ++i) {
+    if (release_on_gpu_callbacks_[i].get() == callback) {
+      std::move(*release_on_gpu_callbacks_[i]).Run(sync_token, is_lost);
+      release_on_gpu_callbacks_.erase(release_on_gpu_callbacks_.begin() + i);
+      return;
+    }
+  }
+  NOTREACHED() << "The Callback returned by GetDeleteCallback() was called "
+               << "more than once.";
+}
+
+void SkiaOutputSurfaceImplOnGpu::DestroyCopyOutputResourcesOnGpuThread(
     std::unique_ptr<gpu::SharedImageRepresentationSkia> representation,
     scoped_refptr<gpu::SharedContextState> context_state,
     const gpu::SyncToken& sync_token,
@@ -1629,10 +1662,6 @@ void SkiaOutputSurfaceImplOnGpu::PostSubmit(
 
   destroy_after_swap_.clear();
   context_state_->UpdateSkiaOwnedMemorySize();
-#if BUILDFLAG(ENABLE_VULKAN)
-  if (is_using_vulkan())
-    gpu::ReportUMAPerSwapBuffers();
-#endif
 }
 
 bool SkiaOutputSurfaceImplOnGpu::IsDisplayedAsOverlay() {

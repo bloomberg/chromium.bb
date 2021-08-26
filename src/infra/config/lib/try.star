@@ -112,10 +112,7 @@ def try_builder(
     if not branches.matches(branch_selector):
         return
 
-    # Enable "chromium.resultdb.result_sink" on try builders.
     experiments = experiments or {}
-    experiments.setdefault("chromium.resultdb.result_sink", 100)
-    experiments.setdefault("chromium.resultdb.result_sink.junit_tests", 100)
 
     merged_resultdb_bigquery_exports = [
         # TODO(crbug.com/1230801): Remove when all usages of this table have
@@ -135,6 +132,14 @@ def try_builder(
                 # denoting the binary that's included, so also catch those with
                 # [^/]*.
                 test_id_regexp = "ninja://(chrome/test:|content/test:fuchsia_)telemetry_gpu_integration_test[^/]*/.+",
+            ),
+        ),
+        resultdb.export_test_results(
+            bq_table = "chrome-luci-data.chromium.blink_web_tests_try_test_results",
+            predicate = resultdb.test_result_predicate(
+                # Match the "blink_web_tests" target and all of its
+                # flag-specific versions, e.g. "vulkan_swiftshader_blink_web_tests".
+                test_id_regexp = "ninja://[^/]*blink_web_tests/.+",
             ),
         ),
     ]
@@ -168,7 +173,8 @@ def try_builder(
             fail("Try Windows builder {} must disable ATS".format(name))
 
     # TODO(crbug.com/1143122): remove this after migration.
-    experiments["chromium.chromium_tests.use_rbe_cas"] = 0
+    if "chromium.chromium_tests.use_rbe_cas" not in experiments:
+        experiments["chromium.chromium_tests.use_rbe_cas"] = 5
 
     # Define the builder first so that any validation of luci.builder arguments
     # (e.g. bucket) occurs before we try to use it
@@ -295,6 +301,10 @@ def chromium_chromiumos_builder(*, name, **kwargs):
         name = name,
         builder_group = "tryserver.chromium.chromiumos",
         goma_backend = builders.goma.backend.RBE_PROD,
+        experiments = {
+            # TODO(crbug.com/1237607): disable rbe cas temporarily.
+            "chromium.chromium_tests.use_rbe_cas": 0,
+        },
         **kwargs
     )
 
@@ -354,7 +364,7 @@ def chromium_mac_ios_builder(
         executable = "recipe:chromium_trybot",
         goma_backend = builders.goma.backend.RBE_PROD,
         os = builders.os.MAC_11,
-        xcode = builders.xcode.x12d4e,
+        xcode = builders.xcode.x13main,
         **kwargs):
     return try_builder(
         name = name,

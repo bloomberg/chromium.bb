@@ -15,7 +15,7 @@ import { unreachable } from '../../../common/util/util.js';
 import {
   RegularTextureFormat,
   kTextureFormatInfo,
-  kValidTextureFormatsForCopyIB2T,
+  kValidTextureFormatsForCopyE2T,
 } from '../../capability_info.js';
 import { GPUTest } from '../../gpu_test.js';
 import { kTexelRepresentationInfo } from '../../util/texture/texel_data.js';
@@ -119,20 +119,20 @@ got [${failedByteActualValues.join(', ')}]`;
   }
 
   doTestAndCheckResult(
-    imageBitmapCopyView: GPUImageCopyImageBitmap,
+    srcCopyView: GPUImageCopyExternalImage,
     dstTextureCopyView: GPUImageCopyTexture,
     copySize: GPUExtent3DDict,
     bytesPerPixel: number,
     expectedData: Uint8ClampedArray
   ): void {
-    this.device.queue.copyImageBitmapToTexture(imageBitmapCopyView, dstTextureCopyView, copySize);
+    this.device.queue.copyExternalImageToTexture(srcCopyView, dstTextureCopyView, copySize);
 
-    const imageBitmap = imageBitmapCopyView.imageBitmap;
+    const imageSource = srcCopyView.source;
     const dstTexture = dstTextureCopyView.texture;
 
-    const bytesPerRow = calculateRowPitch(imageBitmap.width, bytesPerPixel);
+    const bytesPerRow = calculateRowPitch(imageSource.width, bytesPerPixel);
     const testBuffer = this.device.createBuffer({
-      size: bytesPerRow * imageBitmap.height,
+      size: bytesPerRow * imageSource.height,
       usage: GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST,
     });
 
@@ -141,15 +141,15 @@ got [${failedByteActualValues.join(', ')}]`;
     encoder.copyTextureToBuffer(
       { texture: dstTexture, mipLevel: 0, origin: { x: 0, y: 0, z: 0 } },
       { buffer: testBuffer, bytesPerRow },
-      { width: imageBitmap.width, height: imageBitmap.height, depthOrArrayLayers: 1 }
+      { width: imageSource.width, height: imageSource.height, depthOrArrayLayers: 1 }
     );
     this.device.queue.submit([encoder.finish()]);
 
     this.checkCopyImageBitmapResult(
       testBuffer,
       expectedData,
-      imageBitmap.width,
-      imageBitmap.height,
+      imageSource.width,
+      imageSource.height,
       bytesPerPixel
     );
   }
@@ -261,7 +261,7 @@ g.test('from_ImageData')
     u
       .combine('alpha', ['none', 'premultiply'] as const)
       .combine('orientation', ['none', 'flipY'] as const)
-      .combine('dstColorFormat', kValidTextureFormatsForCopyIB2T)
+      .combine('dstColorFormat', kValidTextureFormatsForCopyE2T)
       .beginSubcases()
       .combine('width', [1, 2, 4, 15, 255, 256])
       .combine('height', [1, 2, 4, 15, 255, 256])
@@ -307,7 +307,7 @@ g.test('from_ImageData')
     });
 
     t.doTestAndCheckResult(
-      { imageBitmap, origin: { x: 0, y: 0 } },
+      { source: imageBitmap, origin: { x: 0, y: 0 } },
       { texture: dst },
       { width: imageBitmap.width, height: imageBitmap.height, depthOrArrayLayers: 1 },
       dstBytesPerPixel,
@@ -325,7 +325,7 @@ g.test('from_canvas')
   .params(u =>
     u
       .combine('orientation', ['none', 'flipY'] as const)
-      .combine('dstColorFormat', kValidTextureFormatsForCopyIB2T)
+      .combine('dstColorFormat', kValidTextureFormatsForCopyE2T)
       .beginSubcases()
       .combine('width', [1, 2, 4, 15, 255, 256])
       .combine('height', [1, 2, 4, 15, 255, 256])
@@ -397,7 +397,7 @@ g.test('from_canvas')
     });
 
     t.doTestAndCheckResult(
-      { imageBitmap, origin: { x: 0, y: 0 } },
+      { source: imageBitmap, origin: { x: 0, y: 0 } },
       { texture: dst },
       { width: imageBitmap.width, height: imageBitmap.height, depthOrArrayLayers: 1 },
       dstBytesPerPixel,

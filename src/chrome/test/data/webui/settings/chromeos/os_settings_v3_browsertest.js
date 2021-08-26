@@ -28,7 +28,6 @@ var OSSettingsV3BrowserTest = class extends PolymerTest {
     return {
       enabled: [
         'chromeos::features::kEnableHostnameSetting',
-        'chromeos::features::kUpdatedCellularActivationUi',
         'features::kCrostini',
       ],
     };
@@ -266,14 +265,31 @@ TEST_F(
       mocha.run();
     });
 
+// TODO(crbug.com/1234871) Move this test back into the list of tests below once
+// Bluetooth revamp is launched.
+// eslint-disable-next-line no-var
+var OSSettingsOsSettingsPageV3Test = class extends OSSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/os_settings_page_test.m.js';
+  }
+
+  /** @override */
+  get featureList() {
+    return {
+      enabled:
+          super.featureList.enabled.concat(['ash::features::kBluetoothRevamp'])
+    };
+  }
+};
+
 [['AccessibilityPage', 'os_a11y_page_tests.m.js'],
  ['AboutPage', 'os_about_page_tests.m.js'],
  ['AccountsPage', 'add_users_tests.m.js'],
  ['AmbientModePage', 'ambient_mode_page_test.m.js'],
  ['AmbientModePhotosPage', 'ambient_mode_photos_page_test.m.js'],
  ['AppsPage', 'apps_page_test.m.js'],
- // TODO(crbug.com/1229194): Re-enable once flakiness is fixed.
- //  ['AppNotificationsSubpage', 'app_notifications_subpage_tests.m.js'],
+ ['AppNotificationsSubpage', 'app_notifications_subpage_tests.m.js'],
  ['AppManagementAppDetailView', 'app_detail_view_test.m.js'],
  ['AppManagementAppItem', 'app_item_test.m.js'],
  ['AppManagementArcDetailView', 'arc_detail_view_test.m.js'],
@@ -296,6 +312,10 @@ TEST_F(
  ['CellularNetworksList', 'cellular_networks_list_test.m.js'],
  ['CellularRoamingToggleButton', 'cellular_roaming_toggle_button_test.m.js'],
  ['CellularSetupDialog', 'cellular_setup_dialog_test.m.js'],
+ [
+   'DictationChangeLanguageLocaleDialogTest',
+   'change_dictation_locale_dialog_test.m.js'
+ ],
  ['CrostiniPage', 'crostini_page_test.m.js'],
  ['CupsPrinterEntry', 'cups_printer_entry_tests.m.js'],
  ['CupsPrinterLandingPage', 'cups_printer_landing_page_tests.m.js'],
@@ -331,6 +351,7 @@ TEST_F(
    'multidevice_notification_access_setup_dialog_tests.m.js'
  ],
  ['MultidevicePage', 'multidevice_page_tests.m.js'],
+ ['MultideviceSmartLockItem', 'multidevice_smartlock_item_test.m.js'],
  ['MultideviceSmartLockSubPage', 'multidevice_smartlock_subpage_test.m.js'],
  ['MultideviceSubPage', 'multidevice_subpage_tests.m.js'],
  [
@@ -350,15 +371,19 @@ TEST_F(
  ['NetworkProxySection', 'network_proxy_section_test.m.js'],
  ['NetworkSummary', 'network_summary_test.m.js'],
  ['NetworkSummaryItem', 'network_summary_item_test.m.js'],
+ ['OsBluetoothDevicesSubpage', 'os_bluetooth_devices_subpage_tests.m.js'],
+ ['OsBluetoothPage', 'os_bluetooth_page_tests.m.js'],
+ ['OsBluetoothSummary', 'os_bluetooth_summary_tests.m.js'],
  ['OsEditDictionaryPage', 'os_edit_dictionary_page_test.m.js'],
  ['OsLanguagesPageV2', 'os_languages_page_v2_tests.m.js'],
+ ['OsPairedBluetoothList', 'os_paired_bluetooth_list_tests.m.js'],
+ ['OsPairedBluetoothListItem', 'os_paired_bluetooth_list_item_tests.m.js'],
  ['OsSettingsUi', 'os_settings_ui_test.m.js'],
  ['OsSettingsUi2', 'os_settings_ui_test_2.m.js'],
  ['OsSettingsMain', 'os_settings_main_test.m.js'],
  ['OsSearchPage', 'os_search_page_test.m.js'],
  ['OsSettingsSearchBox', 'os_settings_search_box_test.m.js'],
  ['OSSettingsMenu', 'os_settings_menu_test.m.js'],
- ['OsSettingsPage', 'os_settings_page_test.m.js'],
  ['NearbyShareConfirmPage', 'nearby_share_confirm_page_test.m.js'],
  ['NearbyShareReceiveDialog', 'nearby_share_receive_dialog_tests.m.js'],
  ['ParentalControlsPage', 'parental_controls_page_test.m.js'],

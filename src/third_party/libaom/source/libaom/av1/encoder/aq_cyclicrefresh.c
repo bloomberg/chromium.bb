@@ -19,7 +19,6 @@
 #include "av1/encoder/segmentation.h"
 #include "av1/encoder/tokenize.h"
 #include "aom_dsp/aom_dsp_common.h"
-#include "aom_ports/system_state.h"
 
 CYCLIC_REFRESH *av1_cyclic_refresh_alloc(int mi_rows, int mi_cols) {
   size_t last_coded_q_map_size;
@@ -391,6 +390,7 @@ static void cyclic_refresh_update_map(AV1_COMP *const cpi) {
 void av1_cyclic_refresh_update_parameters(AV1_COMP *const cpi) {
   // TODO(marpan): Parameters need to be tuned.
   const RATE_CONTROL *const rc = &cpi->rc;
+  const PRIMARY_RATE_CONTROL *const p_rc = &cpi->ppi->p_rc;
   const AV1_COMMON *const cm = &cpi->common;
   CYCLIC_REFRESH *const cr = cpi->cyclic_refresh;
   int num4x4bl = cm->mi_params.MBs << 4;
@@ -400,20 +400,11 @@ void av1_cyclic_refresh_update_parameters(AV1_COMP *const cpi) {
   int qp_thresh = AOMMIN(20, rc->best_quality << 1);
   int qp_max_thresh = 118 * MAXQ >> 7;
   cr->apply_cyclic_refresh = 1;
-  int avg_frame_qindex_inter_frame;
-#if CONFIG_FRAME_PARALLEL_ENCODE
-  avg_frame_qindex_inter_frame =
-      (cpi->ppi->gf_group.frame_parallel_level[cpi->gf_frame_index] > 0)
-          ? cpi->ppi->temp_avg_frame_qindex[INTER_FRAME]
-          : rc->avg_frame_qindex[INTER_FRAME];
-#else
-  avg_frame_qindex_inter_frame = rc->avg_frame_qindex[INTER_FRAME];
-#endif  // CONFIG_FRAME_PARALLEL_ENCODE
   if (frame_is_intra_only(cm) || is_lossless_requested(&cpi->oxcf.rc_cfg) ||
       cpi->svc.temporal_layer_id > 0 ||
-      avg_frame_qindex_inter_frame < qp_thresh ||
+      p_rc->avg_frame_qindex[INTER_FRAME] < qp_thresh ||
       (rc->frames_since_key > 20 &&
-       avg_frame_qindex_inter_frame > qp_max_thresh) ||
+       p_rc->avg_frame_qindex[INTER_FRAME] > qp_max_thresh) ||
       (rc->avg_frame_low_motion < 45 && rc->frames_since_key > 40)) {
     cr->apply_cyclic_refresh = 0;
     return;
@@ -495,7 +486,6 @@ void av1_cyclic_refresh_setup(AV1_COMP *const cpi) {
   } else {
     const double q = av1_convert_qindex_to_q(cm->quant_params.base_qindex,
                                              cm->seq_params->bit_depth);
-    aom_clear_system_state();
     // Set rate threshold to some multiple (set to 2 for now) of the target
     // rate (target is given by sb64_target_rate and scaled by 256).
     cr->thresh_rate_sb = ((int64_t)(rc->sb64_target_rate) << 8) << 2;

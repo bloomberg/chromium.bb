@@ -197,7 +197,6 @@ void PerformanceManagerTabHelper::RenderFrameCreated(
   std::unique_ptr<FrameNodeImpl> frame =
       PerformanceManagerImpl::CreateFrameNode(
           process_node, primary_page_node(), parent_frame_node,
-          render_frame_host->GetFrameTreeNodeId(),
           render_frame_host->GetRoutingID(),
           blink::LocalFrameToken(render_frame_host->GetFrameToken()),
           site_instance->GetBrowsingInstanceId(), site_instance->GetId(),
@@ -362,7 +361,7 @@ void PerformanceManagerTabHelper::DidFinishNavigation(
                                 base::Unretained(frame_node), url,
                                 navigation_handle->IsSameDocument()));
 
-  if (!navigation_handle->IsInMainFrame())
+  if (!navigation_handle->IsInPrimaryMainFrame())
     return;
 
   // Make sure the hierarchical structure is constructed before sending signal

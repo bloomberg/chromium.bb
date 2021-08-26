@@ -10,12 +10,14 @@
 #include "base/test/task_environment.h"
 #include "components/optimization_guide/core/base_model_executor.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
+#include "components/optimization_guide/core/test_model_info_builder.h"
 #include "components/optimization_guide/core/test_optimization_guide_model_provider.h"
 #include "components/optimization_guide/proto/common_types.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/tflite-support/src/tensorflow_lite_support/cc/task/core/task_utils.h"
 
 namespace optimization_guide {
+namespace {
 
 class TestModelExecutor
     : public BaseModelExecutor<std::vector<float>, const std::vector<float>&> {
@@ -56,7 +58,7 @@ class TestModelExecutorHandle
 
   // There is a method on the base class that exposes the returned supported
   // features, if provided by the loaded model received from the server.
-  // absl::optional<proto::Any> supported_features_for_loaded_model();
+  // absl::optional<T> ParsedSupportedFeaturesForLoadedModel();
 };
 
 class ModelObserverTracker : public TestOptimizationGuideModelProvider {
@@ -134,8 +136,12 @@ class BaseModelExecutorTest : public testing::Test {
       proto::OptimizationTarget optimization_target,
       const absl::optional<proto::Any>& model_metadata) {
     DCHECK(model_executor_handle_);
-    model_executor_handle_->OnModelFileUpdated(
-        optimization_target, model_metadata, model_file_path_);
+    std::unique_ptr<ModelInfo> model_info =
+        TestModelInfoBuilder()
+            .SetModelFilePath(model_file_path_)
+            .SetModelMetadata(model_metadata)
+            .Build();
+    model_executor_handle_->OnModelUpdated(optimization_target, *model_info);
     RunUntilIdle();
   }
 
@@ -424,7 +430,8 @@ TEST_F(ModelExecutorWithModelLoadingTest, LoadModelFileForEachExecution) {
 
   // While the model isn't actually loaded yet, the supported features are
   // already known and do not change when the model is loaded or unloaded.
-  EXPECT_TRUE(model_executor_handle()->supported_features_for_loaded_model());
+  EXPECT_TRUE(model_executor_handle()
+                  ->ParsedSupportedFeaturesForLoadedModel<proto::Duration>());
 
   std::vector<float> input;
   size_t expected_dims = 1 * 32 * 32 * 3;
@@ -450,7 +457,8 @@ TEST_F(ModelExecutorWithModelLoadingTest, LoadModelFileForEachExecution) {
   // After execution, the model should be unloaded in a PostTask, but the
   // metadata should still be available.
 
-  EXPECT_TRUE(model_executor_handle()->supported_features_for_loaded_model());
+  EXPECT_TRUE(model_executor_handle()
+                  ->ParsedSupportedFeaturesForLoadedModel<proto::Duration>());
 
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.ModelExecutor.TaskSchedulingLatency." +
@@ -502,4 +510,5 @@ TEST_F(ModelExecutorWithModelLoadingTest, LoadModelFileForEachExecution) {
       true, 2);
 }
 
+}  // namespace
 }  // namespace optimization_guide

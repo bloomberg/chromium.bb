@@ -130,16 +130,16 @@ class ASH_EXPORT AppListFolderView : public views::View,
 
   // Overridden from AppsGridViewFolderDelegate:
   void ReparentItem(AppListItemView* original_drag_view,
-                    const gfx::Point& drag_point_in_folder_grid,
-                    bool has_native_drag) override;
+                    const gfx::Point& drag_point_in_folder_grid) override;
   void DispatchDragEventForReparent(
       AppsGridView::Pointer pointer,
       const gfx::Point& drag_point_in_folder_grid) override;
-  void DispatchEndDragEventForReparent(bool events_forwarded_to_drag_drop_host,
-                                       bool cancel_drag) override;
-  bool IsViewOutsideOfFolder(AppListItemView* view) override;
+  void DispatchEndDragEventForReparent(
+      bool events_forwarded_to_drag_drop_host,
+      bool cancel_drag,
+      std::unique_ptr<AppDragIconProxy> drag_icon_proxy) override;
+  bool IsDragPointOutsideOfFolder(const gfx::Point& drag_point) override;
   bool IsOEMFolder() const override;
-  void SetRootLevelDragViewVisible(bool visible) override;
   void HandleKeyboardReparent(AppListItemView* reparented_view,
                               ui::KeyboardCode key_code) override;
   void UpdateFolderBounds() override;
@@ -148,14 +148,6 @@ class ASH_EXPORT AppListFolderView : public views::View,
 
  private:
   void CalculateIdealBounds();
-
-  // Starts setting up drag in root level apps grid view for re-parenting a
-  // folder item. `drag_point_in_root_grid` is in the coordinates of root
-  // level AppsGridView.
-  void StartSetupDragInRootLevelAppsGridView(
-      AppListItemView* original_drag_view,
-      const gfx::Point& drag_point_in_root_grid,
-      bool has_native_drag);
 
   // Returns the compositor associated to the widget containing this view.
   // Returns nullptr if there isn't one associated with this widget.

@@ -6,13 +6,12 @@
 #define COMPONENTS_DOWNLOAD_INTERNAL_BACKGROUND_SERVICE_STATS_H_
 
 #include "base/files/file.h"
-#include "components/download/internal/background_service/controller.h"
+#include "components/download/internal/background_service/constants.h"
 #include "components/download/internal/background_service/download_blockage_status.h"
 #include "components/download/internal/background_service/driver_entry.h"
 #include "components/download/public/background_service/clients.h"
 #include "components/download/public/background_service/download_params.h"
 #include "components/download/public/task/download_task_types.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace download {
 
@@ -131,6 +130,9 @@ enum class DownloadEvent {
 // Logs the results of starting up the Controller.  Will log each failure reason
 // if |status| contains more than one initialization failure.
 void LogControllerStartupStatus(bool in_recovery, const StartupStatus& status);
+
+// Logs the service starting up result.
+void LogStartUpResult(bool in_recovery, StartUpResult result);
 
 // Logs an action taken on the service API.
 void LogServiceApiAction(DownloadClient client, ServiceApiAction action);

@@ -15,15 +15,14 @@
 #include "src/gpu/GrGeometryProcessor.h"
 #include "src/gpu/GrMemoryPool.h"
 #include "src/gpu/GrProgramInfo.h"
-#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/SkGr.h"
 #include "src/gpu/glsl/GrGLSLColorSpaceXformHelper.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
-#include "src/gpu/glsl/GrGLSLGeometryProcessor.h"
 #include "src/gpu/glsl/GrGLSLVarying.h"
 #include "src/gpu/glsl/GrGLSLVertexGeoBuilder.h"
 #include "src/gpu/ops/GrMeshDrawOp.h"
 #include "src/gpu/ops/GrSimpleMeshDrawOpHelper.h"
+#include "src/gpu/v1/SurfaceDrawContext_v1.h"
 
 namespace {
 
@@ -45,9 +44,17 @@ public:
 
     const char* name() const override { return "VertexColorXformGP"; }
 
-    GrGLSLGeometryProcessor* createGLSLInstance(const GrShaderCaps&) const override {
-        class GLSLGP : public GrGLSLGeometryProcessor {
+    std::unique_ptr<ProgramImpl> makeProgramImpl(const GrShaderCaps&) const override {
+        class Impl : public ProgramImpl {
         public:
+            void setData(const GrGLSLProgramDataManager& pdman,
+                         const GrShaderCaps&,
+                         const GrGeometryProcessor& geomProc) override {
+                const GP& gp = geomProc.cast<GP>();
+                fColorSpaceHelper.setData(pdman, gp.fColorSpaceXform.get());
+            }
+
+        private:
             void onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) override {
                 const GP& gp = args.fGeomProc.cast<GP>();
                 GrGLSLVertexBuilder* vertBuilder = args.fVertBuilder;
@@ -80,19 +87,14 @@ public:
                 // Coverage
                 fragBuilder->codeAppendf("const half4 %s = half4(1);", args.fOutputCoverage);
             }
-            void setData(const GrGLSLProgramDataManager& pdman,
-                         const GrShaderCaps&,
-                         const GrGeometryProcessor& geomProc) override {
-                const GP& gp = geomProc.cast<GP>();
-                fColorSpaceHelper.setData(pdman, gp.fColorSpaceXform.get());
-            }
 
             GrGLSLColorSpaceXformHelper fColorSpaceHelper;
         };
-        return new GLSLGP();
+
+        return std::make_unique<Impl>();
     }
 
-    void getGLSLProcessorKey(const GrShaderCaps&, GrProcessorKeyBuilder* b) const override {
+    void addToKey(const GrShaderCaps&, GrProcessorKeyBuilder* b) const override {
         b->add32(fMode);
         b->add32(GrColorSpaceXform::XformKey(fColorSpaceXform.get()));
     }
@@ -309,10 +311,10 @@ public:
         const int kDrawsPerLoop = 32;
 
         for (int i = 0; i < loops; ++i) {
-            auto rtc = GrSurfaceDrawContext::Make(context, GrColorType::kRGBA_8888, p3,
-                                                  SkBackingFit::kApprox, {100, 100},
-                                                  SkSurfaceProps());
-            SkASSERT(rtc);
+            auto sdc = skgpu::v1::SurfaceDrawContext::Make(context, GrColorType::kRGBA_8888, p3,
+                                                           SkBackingFit::kApprox, {100, 100},
+                                                           SkSurfaceProps());
+            SkASSERT(sdc);
 
             for (int j = 0; j < kDrawsPerLoop; ++j) {
                 SkColor c = r.nextU();
@@ -332,7 +334,7 @@ public:
                         op = GrOp::Make<Op>(rContext, c4f, fMode);
                     }
                 }
-                rtc->addDrawOp(std::move(op));
+                sdc->addDrawOp(std::move(op));
             }
 
             context->flushAndSubmit();

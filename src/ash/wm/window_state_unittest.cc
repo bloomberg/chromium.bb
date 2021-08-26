@@ -126,16 +126,15 @@ TEST_F(WindowStateTest, SnapWindowMinimumSize) {
                 kWorkAreaBounds.width() - 1, kWorkAreaBounds.height());
   EXPECT_EQ(expected.ToString(), window->GetBoundsInScreen().ToString());
 
-  // It should not be possible to snap a window with a maximum size defined.
-  delegate.set_maximum_size(gfx::Size(kWorkAreaBounds.width() - 1, 0));
-  EXPECT_FALSE(window_state->CanSnap());
-  delegate.set_maximum_size(gfx::Size(0, kWorkAreaBounds.height() - 1));
-  EXPECT_FALSE(window_state->CanSnap());
-  delegate.set_maximum_size(gfx::Size());
+  // It should not be possible to snap a window if not maximizable.
   window->SetProperty(aura::client::kResizeBehaviorKey,
-                      aura::client::kResizeBehaviorCanResize);
-  // It should be possible to snap a window with a maximum size, if it
-  // can be maximized.
+                      window->GetProperty(aura::client::kResizeBehaviorKey) ^
+                          aura::client::kResizeBehaviorCanMaximize);
+  EXPECT_FALSE(window_state->CanSnap());
+  window->SetProperty(aura::client::kResizeBehaviorKey,
+                      window->GetProperty(aura::client::kResizeBehaviorKey) |
+                          aura::client::kResizeBehaviorCanMaximize);
+  // It should be possible to snap a window if it can be maximized.
   EXPECT_TRUE(window_state->CanSnap());
 }
 
@@ -267,7 +266,7 @@ TEST_F(WindowStateTest, AndroidPipWindowUmaMetricsCountsExitOnDestroy) {
 }
 
 // Test that modal window dialogs can be snapped.
-TEST_F(WindowStateTest, SnapModalWindowWithoutMaximumSizeLimit) {
+TEST_F(WindowStateTest, SnapModalWindow) {
   UpdateDisplay("0+0-600x900");
   const gfx::Rect kWorkAreaBounds =
       display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
@@ -284,30 +283,15 @@ TEST_F(WindowStateTest, SnapModalWindowWithoutMaximumSizeLimit) {
       &delegate, -1, gfx::Rect(100, 100, 400, 500)));
 
   delegate.set_minimum_size(gfx::Size(200, 300));
-  WindowState* window_state = WindowState::Get(window.get());
-  EXPECT_TRUE(window_state->CanSnap());
 
-  window->SetProperty(aura::client::kResizeBehaviorKey,
-                      aura::client::kResizeBehaviorCanResize |
-                          aura::client::kResizeBehaviorCanMaximize);
-  delegate.set_maximum_size(gfx::Size());
+  WindowState* window_state = WindowState::Get(window.get());
   EXPECT_TRUE(window_state->CanSnap());
 
   ::wm::AddTransientChild(parent_window.get(), window.get());
   EXPECT_TRUE(window_state->CanSnap());
 
-  delegate.set_maximum_size(gfx::Size());
-  EXPECT_TRUE(window_state->CanSnap());
-
   window->SetProperty(aura::client::kResizeBehaviorKey,
                       aura::client::kResizeBehaviorCanResize);
-  EXPECT_TRUE(window_state->CanSnap());
-
-  // It should be possible to snap a modal window without maximum size.
-  window->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
-  EXPECT_TRUE(window_state->CanSnap());
-
-  delegate.set_maximum_size(gfx::Size(300, 400));
   EXPECT_FALSE(window_state->CanSnap());
 
   ::wm::RemoveTransientChild(parent_window.get(), window.get());
@@ -368,7 +352,7 @@ TEST_F(WindowStateTest, TestIgnoreTooBigMinimumSize) {
   EXPECT_EQ(work_area_size.ToString(), window->bounds().size().ToString());
 }
 
-// Tests UpdateSnappedWidthRatio. (1) It should have ratio reset when window
+// Tests UpdateSnapRatio. (1) It should have ratio reset when window
 // enters snapped state; (2) it should update ratio on bounds event when
 // snapped.
 TEST_F(WindowStateTest, UpdateSnapWidthRatioTest) {
@@ -387,7 +371,7 @@ TEST_F(WindowStateTest, UpdateSnapWidthRatioTest) {
       gfx::Rect(kWorkAreaBounds.x(), kWorkAreaBounds.y(),
                 kWorkAreaBounds.width() / 2, kWorkAreaBounds.height());
   EXPECT_EQ(expected, window->GetBoundsInScreen());
-  EXPECT_EQ(0.5f, *window_state->snapped_width_ratio());
+  EXPECT_EQ(0.5f, *window_state->snap_ratio());
 
   // Drag to change snapped window width.
   const int kIncreasedWidth = 225;
@@ -400,18 +384,18 @@ TEST_F(WindowStateTest, UpdateSnapWidthRatioTest) {
   expected.set_width(expected.width() + kIncreasedWidth);
   EXPECT_EQ(expected, window->GetBoundsInScreen());
   EXPECT_EQ(WindowStateType::kPrimarySnapped, window_state->GetStateType());
-  EXPECT_EQ(0.75f, *window_state->snapped_width_ratio());
+  EXPECT_EQ(0.75f, *window_state->snap_ratio());
 
   // Another cycle snap left event will restore window state to normal.
   window_state->OnWMEvent(&cycle_snap_left);
   EXPECT_EQ(WindowStateType::kNormal, window_state->GetStateType());
-  EXPECT_FALSE(window_state->snapped_width_ratio());
+  EXPECT_FALSE(window_state->snap_ratio());
 
   // Another cycle snap left event will snap window and reset snapped width
   // ratio.
   window_state->OnWMEvent(&cycle_snap_left);
   EXPECT_EQ(WindowStateType::kPrimarySnapped, window_state->GetStateType());
-  EXPECT_EQ(0.5f, *window_state->snapped_width_ratio());
+  EXPECT_EQ(0.5f, *window_state->snap_ratio());
 }
 
 // Tests that dragging and snapping the snapped window update the width ratio
@@ -445,7 +429,7 @@ TEST_F(WindowStateTest, SnapSnappedWindow) {
   window->layer()->GetAnimator()->Step(base::TimeTicks::Now() +
                                        base::TimeDelta::FromSeconds(1));
   EXPECT_EQ(expected, window->GetBoundsInScreen());
-  EXPECT_EQ(0.5f, *window_state->snapped_width_ratio());
+  EXPECT_EQ(0.5f, *window_state->snap_ratio());
 
   // Drag the window to unsnap but do not release.
   ui::test::EventGenerator* generator = GetEventGenerator();
@@ -454,7 +438,7 @@ TEST_F(WindowStateTest, SnapSnappedWindow) {
   generator->MoveMouseBy(5, 0);
   // While dragged, the window size should restore to its normal bound.
   EXPECT_EQ(window_normal_size, window->bounds().size());
-  EXPECT_EQ(1.0f, *window_state->snapped_width_ratio());
+  EXPECT_EQ(1.0f, *window_state->snap_ratio());
 
   // Continue dragging the window and snap it back to the same position.
   generator->MoveMouseBy(-405, 0);
@@ -462,7 +446,7 @@ TEST_F(WindowStateTest, SnapSnappedWindow) {
 
   // The snapped ratio should be correct regardless of whether the animation
   // is finished or not.
-  EXPECT_EQ(0.5f, *window_state->snapped_width_ratio());
+  EXPECT_EQ(0.5f, *window_state->snap_ratio());
 }
 
 // Test that snapping left/right preserves the restore bounds.

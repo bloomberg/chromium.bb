@@ -19,7 +19,7 @@
 #include "components/sync/base/model_type.h"
 #include "components/sync/engine/backoff_delay_provider.h"
 #include "components/sync/engine/sync_engine_switches.h"
-#include "components/sync/protocol/sync.pb.h"
+#include "components/sync/protocol/sync_enums.pb.h"
 
 using base::TimeDelta;
 using base::TimeTicks;
@@ -221,7 +221,7 @@ base::Time SyncSchedulerImpl::ComputeLastPollOnStart(
 }
 
 ModelTypeSet SyncSchedulerImpl::GetEnabledAndUnblockedTypes() {
-  ModelTypeSet enabled_types = cycle_context_->GetEnabledTypes();
+  ModelTypeSet enabled_types = cycle_context_->GetConnectedTypes();
   ModelTypeSet enabled_protocol_types =
       Intersection(ProtocolTypes(), enabled_types);
   ModelTypeSet blocked_types = nudge_tracker_.GetBlockedTypes();
@@ -294,7 +294,7 @@ bool SyncSchedulerImpl::CanRunNudgeJobNow(JobPriority priority) {
     return false;
   }
 
-  const ModelTypeSet enabled_types = cycle_context_->GetEnabledTypes();
+  const ModelTypeSet enabled_types = cycle_context_->GetConnectedTypes();
   if (nudge_tracker_.GetBlockedTypes().HasAll(enabled_types)) {
     SDVLOG(1) << "Not running a nudge because we're fully type throttled or "
                  "backed off.";
@@ -396,8 +396,7 @@ const char* SyncSchedulerImpl::GetModeString(SyncScheduler::Mode mode) {
 
 void SyncSchedulerImpl::ForceShortNudgeDelayForTest() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // Only protocol types can have their delay customized.
-  for (ModelType type : syncer::ProtocolTypes()) {
+  for (ModelType type : ModelTypeSet::All()) {
     nudge_tracker_.SetLocalChangeDelayIgnoringMinForTest(
         type, kLocalChangeNudgeDelayForTest);
   }

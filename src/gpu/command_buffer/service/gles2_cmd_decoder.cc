@@ -32,7 +32,6 @@
 #include "base/hash/legacy_hash.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/numerics/ranges.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -91,6 +90,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -4597,9 +4597,6 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
   if (!workarounds().dont_initialize_uninitialized_locals)
     driver_bug_workarounds |= SH_INITIALIZE_UNINITIALIZED_LOCALS;
 
-  resources.WEBGL_debug_shader_precision =
-      group_->gpu_preferences().emulate_shader_precision;
-
   ShShaderOutput shader_output_language =
       ShaderTranslator::GetShaderOutputLanguageForContext(gl_version_info());
 
@@ -5891,8 +5888,8 @@ error::Error GLES2DecoderImpl::HandleResizeCHROMIUM(
   static_assert(sizeof(GLuint) >= sizeof(int), "Unexpected GLuint size.");
   static const GLuint kMaxDimension =
       static_cast<GLuint>(std::numeric_limits<int>::max());
-  width = base::ClampToRange(width, 1U, kMaxDimension);
-  height = base::ClampToRange(height, 1U, kMaxDimension);
+  width = base::clamp(width, 1U, kMaxDimension);
+  height = base::clamp(height, 1U, kMaxDimension);
 
   bool is_offscreen = !!offscreen_target_frame_buffer_.get();
   if (is_offscreen) {
@@ -8447,13 +8444,13 @@ void GLES2DecoderImpl::DoEnableiOES(GLenum target, GLuint index) {
 }
 
 void GLES2DecoderImpl::DoDepthRangef(GLclampf znear, GLclampf zfar) {
-  state_.z_near = base::ClampToRange(znear, 0.0f, 1.0f);
-  state_.z_far = base::ClampToRange(zfar, 0.0f, 1.0f);
+  state_.z_near = base::clamp(znear, 0.0f, 1.0f);
+  state_.z_far = base::clamp(zfar, 0.0f, 1.0f);
   api()->glDepthRangeFn(znear, zfar);
 }
 
 void GLES2DecoderImpl::DoSampleCoverage(GLclampf value, GLboolean invert) {
-  state_.sample_coverage_value = base::ClampToRange(value, 0.0f, 1.0f);
+  state_.sample_coverage_value = base::clamp(value, 0.0f, 1.0f);
   state_.sample_coverage_invert = (invert != 0);
   api()->glSampleCoverageFn(state_.sample_coverage_value, invert);
 }
@@ -9813,7 +9810,7 @@ void GLES2DecoderImpl::DoRenderbufferStorage(
 
 void GLES2DecoderImpl::DoLineWidth(GLfloat width) {
   api()->glLineWidthFn(
-      base::ClampToRange(width, line_width_range_[0], line_width_range_[1]));
+      base::clamp(width, line_width_range_[0], line_width_range_[1]));
 }
 
 void GLES2DecoderImpl::DoLinkProgram(GLuint program_id) {
@@ -10854,8 +10851,8 @@ bool GLES2DecoderImpl::ValidateStencilStateForDraw(const char* function_name) {
     GLuint max_stencil_value = (1 << stencil_bits) - 1;
     GLint max_stencil_ref = static_cast<GLint>(max_stencil_value);
     bool different_refs =
-        base::ClampToRange(state_.stencil_front_ref, 0, max_stencil_ref) !=
-        base::ClampToRange(state_.stencil_back_ref, 0, max_stencil_ref);
+        base::clamp(state_.stencil_front_ref, 0, max_stencil_ref) !=
+        base::clamp(state_.stencil_back_ref, 0, max_stencil_ref);
     bool different_writemasks =
         (state_.stencil_front_writemask & max_stencil_value) !=
         (state_.stencil_back_writemask & max_stencil_value);
@@ -13675,7 +13672,9 @@ error::Error GLES2DecoderImpl::HandlePostSubBufferCHROMIUM(
   ClearScheduleCALayerState();
 
   if (supports_async_swap_) {
-    TRACE_EVENT_ASYNC_BEGIN0("gpu", "AsyncSwapBuffers", c.swap_id());
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
+        "gpu", "AsyncSwapBuffers",
+        TRACE_ID_WITH_SCOPE("AsyncSwapBuffers", c.swap_id()));
 
     client()->OnSwapBuffers(c.swap_id(), c.flags);
     surface_->PostSubBufferAsync(
@@ -13735,7 +13734,7 @@ error::Error GLES2DecoderImpl::HandleScheduleOverlayPlaneCHROMIUM(
           c.plane_z_order, transform, image,
           gfx::Rect(c.bounds_x, c.bounds_y, c.bounds_width, c.bounds_height),
           gfx::RectF(c.uv_x, c.uv_y, c.uv_width, c.uv_height), c.enable_blend,
-          std::move(gpu_fence))) {
+          /*damage_rect=*/gfx::Rect(), std::move(gpu_fence))) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
                        "glScheduleOverlayPlaneCHROMIUM",
                        "failed to schedule overlay");
@@ -17029,7 +17028,9 @@ void GLES2DecoderImpl::DoSwapBuffers(uint64_t swap_id, GLbitfield flags) {
         api()->glFlushFn();
     }
   } else if (supports_async_swap_) {
-    TRACE_EVENT_ASYNC_BEGIN0("gpu", "AsyncSwapBuffers", swap_id);
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
+        "gpu", "AsyncSwapBuffers",
+        TRACE_ID_WITH_SCOPE("AsyncSwapBuffers", swap_id));
 
     client()->OnSwapBuffers(swap_id, flags);
     surface_->SwapBuffersAsync(
@@ -17049,7 +17050,9 @@ void GLES2DecoderImpl::DoSwapBuffers(uint64_t swap_id, GLbitfield flags) {
 void GLES2DecoderImpl::FinishAsyncSwapBuffers(
     uint64_t swap_id,
     gfx::SwapCompletionResult result) {
-  TRACE_EVENT_ASYNC_END0("gpu", "AsyncSwapBuffers", swap_id);
+  TRACE_EVENT_NESTABLE_ASYNC_END0(
+      "gpu", "AsyncSwapBuffers",
+      TRACE_ID_WITH_SCOPE("AsyncSwapBuffers", swap_id));
   FinishSwapBuffers(result.swap_result);
 }
 
@@ -17512,8 +17515,8 @@ error::Error GLES2DecoderImpl::HandleDescheduleUntilFinishedCHROMIUM(
     return error::kNoError;
   }
 
-  TRACE_EVENT_ASYNC_BEGIN0("cc", "GLES2DecoderImpl::DescheduleUntilFinished",
-                           this);
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
+      "cc", "GLES2DecoderImpl::DescheduleUntilFinished", TRACE_ID_LOCAL(this));
   client()->OnDescheduleUntilFinished();
   return error::kDeferLaterCommands;
 }
@@ -17607,8 +17610,8 @@ void GLES2DecoderImpl::ProcessDescheduleUntilFinished() {
   if (!deschedule_until_finished_fences_[0]->HasCompleted())
     return;
 
-  TRACE_EVENT_ASYNC_END0("cc", "GLES2DecoderImpl::DescheduleUntilFinished",
-                         this);
+  TRACE_EVENT_NESTABLE_ASYNC_END0(
+      "cc", "GLES2DecoderImpl::DescheduleUntilFinished", TRACE_ID_LOCAL(this));
   deschedule_until_finished_fences_.erase(
       deschedule_until_finished_fences_.begin());
   client()->OnRescheduleAfterFinished();

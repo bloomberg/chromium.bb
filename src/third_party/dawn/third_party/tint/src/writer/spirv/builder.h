@@ -35,6 +35,7 @@
 #include "src/ast/variable_decl_statement.h"
 #include "src/program_builder.h"
 #include "src/scope_stack.h"
+#include "src/sem/intrinsic.h"
 #include "src/sem/storage_texture_type.h"
 #include "src/writer/spirv/function.h"
 #include "src/writer/spirv/scalar_constant.h"
@@ -485,7 +486,7 @@ class Builder {
   /// @returns the id of the struct member or 0 on error.
   uint32_t GenerateStructMember(uint32_t struct_id,
                                 uint32_t idx,
-                                ast::StructMember* member);
+                                const sem::StructMember* member);
   /// Generates a variable declaration statement
   /// @param stmt the statement to generate
   /// @returns true on successfull generation
@@ -536,7 +537,7 @@ class Builder {
     return builder_.TypeOf(expr);
   }
 
-  /// Generates a constant if needed
+  /// Generates a scalar constant if needed
   /// @param constant the constant to generate.
   /// @returns the ID on success or 0 on failure
   uint32_t GenerateConstantIfNeeded(const ScalarConstant& constant);
@@ -545,6 +546,13 @@ class Builder {
   /// @param type the type of the constant null to generate.
   /// @returns the ID on success or 0 on failure
   uint32_t GenerateConstantNullIfNeeded(const sem::Type* type);
+
+  /// Generates a vector constant splat if needed
+  /// @param type the type of the vector to generate
+  /// @param value_id the ID of the scalar value to splat
+  /// @returns the ID on success or 0 on failure
+  uint32_t GenerateConstantVectorSplatIfNeeded(const sem::Vector* type,
+                                               uint32_t value_id);
 
   ProgramBuilder builder_;
   std::string error_;
@@ -567,6 +575,7 @@ class Builder {
   std::unordered_map<ScalarConstant, uint32_t> const_to_id_;
   std::unordered_map<std::string, uint32_t> type_constructor_to_id_;
   std::unordered_map<std::string, uint32_t> const_null_to_id_;
+  std::unordered_map<uint64_t, uint32_t> const_splat_to_id_;
   std::unordered_map<std::string, uint32_t>
       texture_type_name_to_sampled_image_type_id_;
   ScopeStack<uint32_t> scope_stack_;
@@ -575,6 +584,33 @@ class Builder {
   std::vector<uint32_t> continue_stack_;
   std::unordered_set<uint32_t> capability_set_;
   bool has_overridable_workgroup_size_ = false;
+
+  struct ContinuingInfo {
+    ContinuingInfo(const ast::Statement* last_statement,
+                   uint32_t loop_header_id,
+                   uint32_t break_target_id);
+    // The last statement in the continiung block.
+    const ast::Statement* const last_statement = nullptr;
+    // The ID of the loop header
+    const uint32_t loop_header_id = 0u;
+    // The ID of the merge block for the loop.
+    const uint32_t break_target_id = 0u;
+  };
+  // Stack of nodes, where each is the last statement in a surrounding
+  // continuing block.
+  std::vector<ContinuingInfo> continuing_stack_;
+
+  // The instruction to emit as the backedge of a loop.
+  struct Backedge {
+    Backedge(spv::Op, OperandList);
+    Backedge(const Backedge&);
+    Backedge& operator=(const Backedge&);
+    ~Backedge();
+
+    spv::Op opcode;
+    OperandList operands;
+  };
+  std::vector<Backedge> backedge_stack_;
 };
 
 }  // namespace spirv

@@ -25,9 +25,8 @@
 
 #include <unicode/uchar.h>
 
-// Define platform neutral 8 bit character type (L is for Latin-1).
-typedef unsigned char LChar;
-static_assert(sizeof(UChar) == 2, "UChar should be two bytes");
+#include "third_party/blink/renderer/platform/wtf/text/ascii_ctype.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_uchar.h"
 
 namespace WTF {
 namespace unicode {
@@ -169,7 +168,17 @@ inline CharDecompositionType DecompositionType(UChar32 c) {
       u_getIntPropertyValue(c, UCHAR_DECOMPOSITION_TYPE));
 }
 
+inline bool IsSpaceOrNewline(UChar c) {
+  // Use IsASCIISpace() for basic Latin-1.
+  // This will include newlines, which aren't included in Unicode DirWS.
+  return c <= 0x7F
+             ? WTF::IsASCIISpace(c)
+             : WTF::unicode::Direction(c) == WTF::unicode::kWhiteSpaceNeutral;
+}
+
 }  // namespace unicode
 }  // namespace WTF
+
+using WTF::unicode::IsSpaceOrNewline;
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_UNICODE_H_

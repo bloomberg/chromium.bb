@@ -70,7 +70,9 @@ def DepotToolsPylint(input_api, output_api):
 def CommonChecks(input_api, output_api, tests_to_skip_list):
   input_api.SetTimeout(TEST_TIMEOUT_S)
 
-  results = []
+  file_filter = lambda x: x.LocalPath() == 'infra/config/recipes.cfg'
+  results = input_api.canned_checks.CheckJsonParses(input_api, output_api,
+                                                    file_filter=file_filter)
 
   # The tests here are assuming this is not defined, so raise an error
   # if it is.

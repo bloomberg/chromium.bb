@@ -46,15 +46,15 @@ import * as Extensions from '../../models/extensions/extensions.js';
 import * as TimelineModel from '../../models/timeline_model/timeline_model.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import type * as Coverage from '../coverage/coverage.js'; // eslint-disable-line no-unused-vars
+import type * as Coverage from '../coverage/coverage.js';
 import * as MobileThrottling from '../mobile_throttling/mobile_throttling.js';
 
 import type {Window} from './PerformanceModel.js';
-import {Events, PerformanceModel} from './PerformanceModel.js';  // eslint-disable-line no-unused-vars
+import {Events, PerformanceModel} from './PerformanceModel.js';
 import type {Client} from './TimelineController.js';
-import {TimelineController} from './TimelineController.js';  // eslint-disable-line no-unused-vars
+import {TimelineController} from './TimelineController.js';
 import type {TimelineEventOverview} from './TimelineEventOverview.js';
-import {TimelineEventOverviewCoverage, TimelineEventOverviewCPUActivity, TimelineEventOverviewFrames, TimelineEventOverviewInput, TimelineEventOverviewMemory, TimelineEventOverviewNetwork, TimelineEventOverviewResponsiveness, TimelineFilmStripOverview} from './TimelineEventOverview.js';  // eslint-disable-line no-unused-vars
+import {TimelineEventOverviewCoverage, TimelineEventOverviewCPUActivity, TimelineEventOverviewFrames, TimelineEventOverviewInput, TimelineEventOverviewMemory, TimelineEventOverviewNetwork, TimelineEventOverviewResponsiveness, TimelineFilmStripOverview} from './TimelineEventOverview.js';
 import {TimelineFlameChartView} from './TimelineFlameChartView.js';
 import {TimelineHistoryManager} from './TimelineHistoryManager.js';
 import {TimelineLoader} from './TimelineLoader.js';
@@ -1133,7 +1133,10 @@ export class TimelinePanel extends UI.Panel.Panel implements Client, TimelineMod
     this._overviewPane.setMarkers(markers);
   }
 
-  async _loadEventFired(event: Common.EventTarget.EventTargetEvent): Promise<void> {
+  async _loadEventFired(
+      event: Common.EventTarget
+          .EventTargetEvent<{resourceTreeModel: SDK.ResourceTreeModel.ResourceTreeModel, loadTime: number}>):
+      Promise<void> {
     if (this._state !== State.Recording || !this._recordingPageReload || !this._controller ||
         this._controller.mainTarget() !== event.data.resourceTreeModel.target()) {
       return;
@@ -1257,7 +1260,6 @@ export enum State {
   RecordingFailed = 'RecordingFailed',
 }
 
-
 // TODO(crbug.com/1167717): Make this a const enum again
 // eslint-disable-next-line rulesdir/const_enum
 export enum ViewMode {
@@ -1266,7 +1268,6 @@ export enum ViewMode {
   CallTree = 'CallTree',
   EventLog = 'EventLog',
 }
-
 
 // Define row and header height, should be in sync with styles for timeline graphs.
 export const rowHeight = 18;

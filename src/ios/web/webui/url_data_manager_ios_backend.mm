@@ -54,7 +54,6 @@ const char kChromeURLContentSecurityPolicyHeaderBase[] =
 const char kXFrameOptions[] = "X-Frame-Options";
 const char kChromeURLXFrameOptionsHeader[] = "DENY";
 
-const std::string kWebUIResources = "/ui/webui/resources";
 const char kWebUIResourcesHost[] = "resources";
 
 // Returns whether |url| passes some sanity checks and is a valid GURL.
@@ -89,6 +88,7 @@ void URLToRequestPath(const GURL& url, std::string* path) {
 // The use of x/../../../../ui/webui/resources is mapped by webkit to
 // x/ui/webui/resources so to not go out of scope of the module.
 GURL RedirectWebUIResources(const GURL url) {
+  static std::string kWebUIResources = "/ui/webui/resources";
   if (base::StartsWith(url.path(), kWebUIResources,
                        base::CompareCase::SENSITIVE)) {
     GURL::Replacements replacements;
@@ -246,8 +246,9 @@ URLRequestChromeJob::~URLRequestChromeJob() {
 }
 
 void URLRequestChromeJob::Start() {
-  TRACE_EVENT_ASYNC_BEGIN1("browser", "DataManager:Request", this, "URL",
-                           request_->url().possibly_invalid_spec());
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("browser", "DataManager:Request",
+                                    TRACE_ID_LOCAL(this), "URL",
+                                    request_->url().possibly_invalid_spec());
 
   if (!request_)
     return;
@@ -339,7 +340,8 @@ void URLRequestChromeJob::MimeTypeAvailable(URLDataSourceIOSImpl* source,
 }
 
 void URLRequestChromeJob::DataAvailable(base::RefCountedMemory* bytes) {
-  TRACE_EVENT_ASYNC_END0("browser", "DataManager:Request", this);
+  TRACE_EVENT_NESTABLE_ASYNC_END0("browser", "DataManager:Request",
+                                  TRACE_ID_LOCAL(this));
   if (bytes) {
     data_ = bytes;
     if (pending_buf_.get()) {

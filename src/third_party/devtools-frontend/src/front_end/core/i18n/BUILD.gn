@@ -10,15 +10,16 @@ import("../../../scripts/build/ninja/devtools_pre_built.gni")
 devtools_module("i18n") {
   sources = [
     "DevToolsLocale.ts",
-    "LocalizedStringSet.ts",
     "i18nImpl.ts",
     "i18nTypes.ts",
+    "time-utilities.ts",
   ]
 
   deps = [
     "../../core/platform:bundle",
     "../../core/root:bundle",
     "../../third_party/i18n:bundle",
+    "../../third_party/intl-messageformat:bundle",
   ]
 
   public_deps = [

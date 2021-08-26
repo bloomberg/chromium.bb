@@ -26,7 +26,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "libavutil/avassert.h"
 #include "libavutil/imgutils.h"
 #include "libavutil/opt.h"
 
@@ -34,6 +33,7 @@
 #include "bytestream.h"
 #include "cfhd.h"
 #include "cfhdencdsp.h"
+#include "encode.h"
 #include "put_bits.h"
 #include "internal.h"
 #include "thread.h"
@@ -547,7 +547,7 @@ static int cfhd_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
                          width, height * 2);
     }
 
-    ret = ff_alloc_packet2(avctx, pkt, 64LL + s->planes * (2LL * avctx->width * avctx->height + 1000LL), 0);
+    ret = ff_alloc_packet(avctx, pkt, 64LL + s->planes * (2LL * avctx->width * avctx->height + 1000LL));
     if (ret < 0)
         return ret;
 

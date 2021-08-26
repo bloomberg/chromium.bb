@@ -27,8 +27,6 @@
 #include "components/variations/variations_seed_store.h"
 #include "components/version_info/version_info.h"
 #include "components/web_resource/resource_request_allowed_notifier.h"
-#include "net/url_request/redirect_info.h"
-#include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "url/gurl.h"
 
 class PrefService;
@@ -218,6 +216,9 @@ class VariationsService
                         const std::string& osname_server_param_override);
 
  protected:
+  // Gets the serial number of the most recent Finch seed. Virtual for testing.
+  virtual const std::string& GetLatestSerialNumber();
+
   // Starts the fetching process once, where |OnURLFetchComplete| is called with
   // the response. This calls DoFetchToURL with the set url.
   virtual void DoActualFetch();
@@ -322,17 +323,6 @@ class VariationsService
   // Called by SimpleURLLoader when |pending_seed_request_| load completes.
   void OnSimpleLoaderComplete(std::unique_ptr<std::string> response_body);
 
-  // Called by SimpleURLLoader when |pending_seed_request_| load is redirected.
-  void OnSimpleLoaderRedirect(
-      const net::RedirectInfo& redirect_info,
-      const network::mojom::URLResponseHead& response_head,
-      std::vector<std::string>* to_be_removed_headers);
-
-  // Handles post-fetch events.
-  void OnSimpleLoaderCompleteOrRedirect(
-      std::unique_ptr<std::string> response_body,
-      bool was_redirect);
-
   // Retry the fetch over HTTP, called by OnSimpleLoaderComplete when a request
   // fails. Returns true is the fetch was successfully started, this does not
   // imply the actual fetch was successful.
@@ -399,10 +389,9 @@ class VariationsService
   // Tracks whether the initial request to the variations server had completed.
   bool initial_request_completed_;
 
-  // Indicates that the next request to the variations service shouldn't specify
-  // that it supports delta compression. Set to true when a delta compressed
-  // response encountered an error.
-  bool disable_deltas_for_next_request_;
+  // Tracks whether any errors resolving delta compression were encountered
+  // since the last time a seed was fetched successfully.
+  bool delta_error_since_last_success_;
 
   // Helper class used to tell this service if it's allowed to make network
   // resource requests.

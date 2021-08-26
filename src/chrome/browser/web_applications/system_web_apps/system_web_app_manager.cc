@@ -28,13 +28,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/app_registry_controller.h"
 #include "chrome/browser/web_applications/components/external_install_options.h"
-#include "chrome/browser/web_applications/components/os_integration_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/os_integration_manager.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_delegate.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -75,6 +75,7 @@
 #include "chrome/browser/ash/web_applications/os_settings_web_app_info.h"
 #include "chrome/browser/ash/web_applications/personalization_app/personalization_app_info.h"
 #include "chrome/browser/ash/web_applications/print_management_web_app_info.h"
+#include "chrome/browser/ash/web_applications/projector_system_web_app_info.h"
 #include "chrome/browser/ash/web_applications/scanning_system_web_app_info.h"
 #include "chrome/browser/ash/web_applications/shimless_rma_system_web_app_info.h"
 #include "chrome/browser/ash/web_applications/shortcut_customization_system_web_app_info.h"
@@ -136,6 +137,8 @@ SystemAppDelegateMap CreateSystemWebApps(Profile* profile) {
   info_vec.emplace_back(std::make_unique<OSFeedbackAppDelegate>(profile));
   info_vec.emplace_back(
       std::make_unique<FileManagerSystemAppDelegate>(profile));
+  info_vec.emplace_back(
+      std::make_unique<ProjectorSystemWebAppDelegate>(profile));
 
 #if !defined(OFFICIAL_BUILD)
   info_vec.emplace_back(std::make_unique<TelemetrySystemAppDelegate>(profile));
@@ -349,13 +352,7 @@ absl::optional<AppId> SystemWebAppManager::GetAppIdForSystemApp(
 
 absl::optional<SystemAppType> SystemWebAppManager::GetSystemAppTypeForAppId(
     AppId app_id) const {
-  WebAppRegistrar* web_registrar = registrar_->AsWebAppRegistrar();
-
-  if (!web_registrar) {
-    return absl::nullopt;
-  }
-
-  const WebApp* web_app = web_registrar->GetAppById(app_id);
+  const WebApp* web_app = registrar_->GetAppById(app_id);
   if (!web_app || !web_app->client_data().system_web_app_data.has_value()) {
     return absl::nullopt;
   }

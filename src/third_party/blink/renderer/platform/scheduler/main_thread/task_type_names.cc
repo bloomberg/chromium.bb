@@ -151,8 +151,8 @@ const char* TaskTypeNames::TaskTypeToString(TaskType task_type) {
       return "WakeLock";
     case TaskType::kWebGPU:
       return "WebGPU";
-    case TaskType::kCount:
-      return "Count";
+    case TaskType::kInternalPostMessageForwarding:
+      return "InternalPostMessageForwarding";
   }
   // FrameSchedulerImpl should not call this for invalid TaskTypes.
   NOTREACHED();

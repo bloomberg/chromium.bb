@@ -32,9 +32,8 @@ class Strategy {
 
   constexpr Strategy() : Strategy(kNone) {}
 
-  constexpr Strategy(const Strategy& other)
-      : connection_type_(other.connection_type_),
-        topology_type_(other.topology_type_) {}
+  constexpr Strategy(const Strategy&) = default;
+  constexpr Strategy& operator=(const Strategy&) = default;
 
   // Returns true, if strategy is kNone, false otherwise.
   bool IsNone() const;
@@ -44,9 +43,7 @@ class Strategy {
   // Returns a string representing given strategy, for every valid strategy.
   std::string GetName() const;
   // Undefine strategy.
-  void Clear() {
-    *this = kNone;
-  }
+  void Clear() { *this = kNone; }
 
   friend bool operator==(const Strategy& lhs, const Strategy& rhs);
   friend bool operator!=(const Strategy& lhs, const Strategy& rhs);

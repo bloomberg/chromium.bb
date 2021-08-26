@@ -7,6 +7,8 @@
 
 #include "src/gpu/gl/GrGLProgram.h"
 
+#include "src/gpu/GrFragmentProcessor.h"
+#include "src/gpu/GrGeometryProcessor.h"
 #include "src/gpu/GrPipeline.h"
 #include "src/gpu/GrProcessor.h"
 #include "src/gpu/GrProgramInfo.h"
@@ -15,9 +17,6 @@
 #include "src/gpu/effects/GrTextureEffect.h"
 #include "src/gpu/gl/GrGLBuffer.h"
 #include "src/gpu/gl/GrGLGpu.h"
-#include "src/gpu/glsl/GrGLSLFragmentProcessor.h"
-#include "src/gpu/glsl/GrGLSLGeometryProcessor.h"
-#include "src/gpu/glsl/GrGLSLXferProcessor.h"
 #include "src/sksl/SkSLCompiler.h"
 
 #define GL_CALL(X) GR_GL_CALL(fGpu->glInterface(), X)
@@ -31,9 +30,9 @@ sk_sp<GrGLProgram> GrGLProgram::Make(
         GrGLuint programID,
         const UniformInfoArray& uniforms,
         const UniformInfoArray& textureSamplers,
-        std::unique_ptr<GrGLSLGeometryProcessor> geometryProcessor,
-        std::unique_ptr<GrGLSLXferProcessor> xferProcessor,
-        std::vector<std::unique_ptr<GrGLSLFragmentProcessor>> fpImpls,
+        std::unique_ptr<GrGeometryProcessor::ProgramImpl> gpImpl,
+        std::unique_ptr<GrXferProcessor::ProgramImpl> xpImpl,
+        std::vector<std::unique_ptr<GrFragmentProcessor::ProgramImpl>> fpImpls,
         std::unique_ptr<Attribute[]> attributes,
         int vertexAttributeCnt,
         int instanceAttributeCnt,
@@ -44,8 +43,8 @@ sk_sp<GrGLProgram> GrGLProgram::Make(
                                                programID,
                                                uniforms,
                                                textureSamplers,
-                                               std::move(geometryProcessor),
-                                               std::move(xferProcessor),
+                                               std::move(gpImpl),
+                                               std::move(xpImpl),
                                                std::move(fpImpls),
                                                std::move(attributes),
                                                vertexAttributeCnt,
@@ -63,9 +62,9 @@ GrGLProgram::GrGLProgram(GrGLGpu* gpu,
                          GrGLuint programID,
                          const UniformInfoArray& uniforms,
                          const UniformInfoArray& textureSamplers,
-                         std::unique_ptr<GrGLSLGeometryProcessor> geometryProcessor,
-                         std::unique_ptr<GrGLSLXferProcessor> xferProcessor,
-                         std::vector<std::unique_ptr<GrGLSLFragmentProcessor>> fpImpls,
+                         std::unique_ptr<GrGeometryProcessor::ProgramImpl> gpImpl,
+                         std::unique_ptr<GrXferProcessor::ProgramImpl> xpImpl,
+                         std::vector<std::unique_ptr<GrFragmentProcessor::ProgramImpl>> fpImpls,
                          std::unique_ptr<Attribute[]> attributes,
                          int vertexAttributeCnt,
                          int instanceAttributeCnt,
@@ -73,8 +72,8 @@ GrGLProgram::GrGLProgram(GrGLGpu* gpu,
                          int instanceStride)
         : fBuiltinUniformHandles(builtinUniforms)
         , fProgramID(programID)
-        , fGeometryProcessor(std::move(geometryProcessor))
-        , fXferProcessor(std::move(xferProcessor))
+        , fGPImpl(std::move(gpImpl))
+        , fXPImpl(std::move(xpImpl))
         , fFPImpls(std::move(fpImpls))
         , fAttributes(std::move(attributes))
         , fVertexAttributeCnt(vertexAttributeCnt)
@@ -83,8 +82,7 @@ GrGLProgram::GrGLProgram(GrGLGpu* gpu,
         , fInstanceStride(instanceStride)
         , fGpu(gpu)
         , fProgramDataManager(gpu, uniforms)
-        , fNumTextureSamplers(textureSamplers.count()) {
-}
+        , fNumTextureSamplers(textureSamplers.count()) {}
 
 GrGLProgram::~GrGLProgram() {
     if (fProgramID) {
@@ -108,19 +106,18 @@ void GrGLProgram::updateUniforms(const GrRenderTarget* renderTarget,
     // We must bind to texture units in the same order in which we set the uniforms in
     // GrGLProgramDataManager. That is, we bind textures for processors in this order:
     // primProc, fragProcs, XP.
-    fGeometryProcessor->setData(fProgramDataManager,
-                                *fGpu->caps()->shaderCaps(),
-                                programInfo.geomProc());
+    fGPImpl->setData(fProgramDataManager, *fGpu->caps()->shaderCaps(), programInfo.geomProc());
 
     for (int i = 0; i < programInfo.pipeline().numFragmentProcessors(); ++i) {
-        auto& fp = programInfo.pipeline().getFragmentProcessor(i);
-        for (auto [fp, impl] : GrGLSLFragmentProcessor::ParallelRange(fp, *fFPImpls[i])) {
+        const auto& fp = programInfo.pipeline().getFragmentProcessor(i);
+        fp.visitWithImpls([&](const GrFragmentProcessor& fp,
+                              GrFragmentProcessor::ProgramImpl& impl) {
             impl.setData(fProgramDataManager, fp);
-        }
+        }, *fFPImpls[i]);
     }
 
     programInfo.pipeline().setDstTextureUniforms(fProgramDataManager, &fBuiltinUniformHandles);
-    fXferProcessor->setData(fProgramDataManager, programInfo.pipeline().getXferProcessor());
+    fXPImpl->setData(fProgramDataManager, programInfo.pipeline().getXferProcessor());
 }
 
 void GrGLProgram::bindTextures(const GrGeometryProcessor& geomProc,

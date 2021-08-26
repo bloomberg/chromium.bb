@@ -55,7 +55,7 @@ const char* GetDirectionDigest(const int bitdepth, const int num_runs) {
 }
 
 template <int bitdepth, typename Pixel>
-class CdefDirectionTest : public ::testing::TestWithParam<int> {
+class CdefDirectionTest : public testing::TestWithParam<int> {
  public:
   CdefDirectionTest() = default;
   CdefDirectionTest(const CdefDirectionTest&) = delete;
@@ -70,8 +70,8 @@ class CdefDirectionTest : public ::testing::TestWithParam<int> {
     const Dsp* const dsp = GetDspTable(bitdepth);
     ASSERT_NE(dsp, nullptr);
     base_cdef_direction_ = nullptr;
-    const ::testing::TestInfo* const test_info =
-        ::testing::UnitTest::GetInstance()->current_test_info();
+    const testing::TestInfo* const test_info =
+        testing::UnitTest::GetInstance()->current_test_info();
     const char* const test_case = test_info->test_suite_name();
     if (absl::StartsWith(test_case, "C/")) {
     } else if (absl::StartsWith(test_case, "SSE41/")) {
@@ -135,18 +135,18 @@ TEST_P(CdefDirectionTest8bpp, DISABLED_Speed) {
   TestRandomValues(kNumSpeedTests / 100);
 }
 
-INSTANTIATE_TEST_SUITE_P(C, CdefDirectionTest8bpp, ::testing::Values(0));
+INSTANTIATE_TEST_SUITE_P(C, CdefDirectionTest8bpp, testing::Values(0));
 
 #if LIBGAV1_ENABLE_NEON
-INSTANTIATE_TEST_SUITE_P(NEON, CdefDirectionTest8bpp, ::testing::Values(0));
+INSTANTIATE_TEST_SUITE_P(NEON, CdefDirectionTest8bpp, testing::Values(0));
 #endif
 
 #if LIBGAV1_ENABLE_SSE4_1
-INSTANTIATE_TEST_SUITE_P(SSE41, CdefDirectionTest8bpp, ::testing::Values(0));
+INSTANTIATE_TEST_SUITE_P(SSE41, CdefDirectionTest8bpp, testing::Values(0));
 #endif
 
 #if LIBGAV1_ENABLE_AVX2
-INSTANTIATE_TEST_SUITE_P(AVX2, CdefDirectionTest8bpp, ::testing::Values(0));
+INSTANTIATE_TEST_SUITE_P(AVX2, CdefDirectionTest8bpp, testing::Values(0));
 #endif  // LIBGAV1_ENABLE_AVX2
 
 #if LIBGAV1_MAX_BITDEPTH >= 10
@@ -158,7 +158,11 @@ TEST_P(CdefDirectionTest10bpp, DISABLED_Speed) {
   TestRandomValues(kNumSpeedTests / 100);
 }
 
-INSTANTIATE_TEST_SUITE_P(C, CdefDirectionTest10bpp, ::testing::Values(0));
+INSTANTIATE_TEST_SUITE_P(C, CdefDirectionTest10bpp, testing::Values(0));
+
+#if LIBGAV1_ENABLE_NEON
+INSTANTIATE_TEST_SUITE_P(NEON, CdefDirectionTest10bpp, testing::Values(0));
+#endif
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
 
 const char* GetDigest8bpp(int id) {
@@ -234,7 +238,7 @@ std::ostream& operator<<(std::ostream& os, const CdefTestParam& param) {
 // CdefFilteringFuncs. It should cover 4x4, 8x4, 8x8 blocks and
 // primary/secondary strength combinations for both Y and UV.
 template <int bitdepth, typename Pixel>
-class CdefFilteringTest : public ::testing::TestWithParam<CdefTestParam> {
+class CdefFilteringTest : public testing::TestWithParam<CdefTestParam> {
  public:
   CdefFilteringTest() = default;
   CdefFilteringTest(const CdefFilteringTest&) = delete;
@@ -248,8 +252,8 @@ class CdefFilteringTest : public ::testing::TestWithParam<CdefTestParam> {
 
     const Dsp* const dsp = GetDspTable(bitdepth);
     ASSERT_NE(dsp, nullptr);
-    const ::testing::TestInfo* const test_info =
-        ::testing::UnitTest::GetInstance()->current_test_info();
+    const testing::TestInfo* const test_info =
+        testing::UnitTest::GetInstance()->current_test_info();
     const char* const test_case = test_info->test_suite_name();
     if (absl::StartsWith(test_case, "C/")) {
     } else if (absl::StartsWith(test_case, "NEON/")) {
@@ -282,7 +286,9 @@ class CdefFilteringTest : public ::testing::TestWithParam<CdefTestParam> {
 
 template <int bitdepth, typename Pixel>
 void CdefFilteringTest<bitdepth, Pixel>::TestRandomValues(int num_runs) {
-  const int id = ((param_.rows4x4 < 4) + (param_.rows4x4 < 2)) * 3 +
+  const int id = (static_cast<int>(param_.rows4x4 < 4) +
+                  static_cast<int>(param_.rows4x4 < 2)) *
+                     3 +
                  param_.subsampling_x * 9 + param_.subsampling_y * 18;
   absl::Duration elapsed_time;
   for (int num_tests = 0; num_tests < num_runs; ++num_tests) {
@@ -374,21 +380,21 @@ TEST_P(CdefFilteringTest8bpp, DISABLED_Speed) {
 }
 
 INSTANTIATE_TEST_SUITE_P(C, CdefFilteringTest8bpp,
-                         ::testing::ValuesIn(cdef_test_param));
+                         testing::ValuesIn(cdef_test_param));
 
 #if LIBGAV1_ENABLE_NEON
 INSTANTIATE_TEST_SUITE_P(NEON, CdefFilteringTest8bpp,
-                         ::testing::ValuesIn(cdef_test_param));
+                         testing::ValuesIn(cdef_test_param));
 #endif
 
 #if LIBGAV1_ENABLE_SSE4_1
 INSTANTIATE_TEST_SUITE_P(SSE41, CdefFilteringTest8bpp,
-                         ::testing::ValuesIn(cdef_test_param));
+                         testing::ValuesIn(cdef_test_param));
 #endif
 
 #if LIBGAV1_ENABLE_AVX2
 INSTANTIATE_TEST_SUITE_P(AVX2, CdefFilteringTest8bpp,
-                         ::testing::ValuesIn(cdef_test_param));
+                         testing::ValuesIn(cdef_test_param));
 #endif  // LIBGAV1_ENABLE_AVX2
 
 #if LIBGAV1_MAX_BITDEPTH >= 10
@@ -401,7 +407,12 @@ TEST_P(CdefFilteringTest10bpp, DISABLED_Speed) {
 }
 
 INSTANTIATE_TEST_SUITE_P(C, CdefFilteringTest10bpp,
-                         ::testing::ValuesIn(cdef_test_param));
+                         testing::ValuesIn(cdef_test_param));
+
+#if LIBGAV1_ENABLE_NEON
+INSTANTIATE_TEST_SUITE_P(NEON, CdefFilteringTest10bpp,
+                         testing::ValuesIn(cdef_test_param));
+#endif
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
 
 }  // namespace

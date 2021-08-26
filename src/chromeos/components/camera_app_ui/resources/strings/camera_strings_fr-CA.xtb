@@ -3,6 +3,8 @@
 <translationbundle lang="fr-CA">
 <translation id="1175958423215084756">Lien détecté. <ph name="HOSTNAME" /></translation>
 <translation id="1276998909102132017">Galerie d'images</translation>
+<translation id="1300209025925956156">Numériser votre document</translation>
+<translation id="137991641490787891"><ph name="ASPECT_RATIO_WIDTH" />. Recherche et flèche vers la gauche pour y accéder.</translation>
 <translation id="1430915738399379752">Imprimer</translation>
 <translation id="1467231725790366244"><ph name="CAMERA" /> est débranchée.</translation>
 <translation id="1473110567575736769">Minuterie de trois secondes</translation>
@@ -31,7 +33,6 @@
 <translation id="2549985041256363841">Commencer l'enregistrement</translation>
 <translation id="2599796128805996109">Appareil photo arrière</translation>
 <translation id="2879583609344924966"><ph name="CAMERA" /> est branchée.</translation>
-<translation id="2912439424121107408">Le mode Expert n'est pas pris en charge sur cet appareil</translation>
 <translation id="2968794441791257519">Les photos que vous prenez et les vidéos que vous enregistrez avec l'appareil photo seront déplacées dans le dossier des téléchargements. Vous pourrez y accéder dans Fichiers.
 
         Les applications disposant d'autorisations d'accès à l'espace de stockage pourront accéder à vos photos et à vos vidéos.</translation>
@@ -42,15 +43,16 @@
 <translation id="3227137524299004712">Microphone</translation>
 <translation id="3240426699337459095">Lien copié</translation>
 <translation id="3259149966178251584">Résolution de l'appareil photo</translation>
+<translation id="3260401663013584785">Impossible de détecter un document</translation>
 <translation id="3448774564454087943">Impossible d'enregistrer la vidéo parce qu'elle est trop courte</translation>
 <translation id="3517926952904427380">Impossible de prendre une photo en mode portrait</translation>
 <translation id="3569311554794739032">Voulez-vous vraiment supprimer <ph name="FILE" />?</translation>
-<translation id="3733597664308256288">De nouvelles commandes sont offertes pour l'appareil photo. Utilisez les touches Rechercher+flèche vers la droite pour y accéder.</translation>
 <translation id="3810838688059735925">Vidéo</translation>
 <translation id="3838931309141338733">Numériser le code-barres</translation>
 <translation id="3892148308691398805">Copier le texte</translation>
 <translation id="4000398125663085899">Les nouvelles photos et vidéos seront maintenant enregistrées dans un dossier de l'application Fichiers : Mes fichiers &gt; Caméra</translation>
 <translation id="4118525110028899586">Interrompre l'enregistrement</translation>
+<translation id="4121305183798804752">Document détecté</translation>
 <translation id="4269820728363426813">Copier l'adresse du lien</translation>
 <translation id="4279490309300973883">Mise en miroir</translation>
 <translation id="4329152592498422850">Bouton permettant de prendre une photo carrée</translation>
@@ -65,10 +67,13 @@
 <translation id="5057360777601936059">Votre appareil photo n'est pas accessible pour le moment.
         Veuillez vérifier si l'appareil photo est connecté correctement.</translation>
 <translation id="5152121255775685072">Accéder à la galerie</translation>
+<translation id="520537883758714667">Numérisation de documents désormais disponible</translation>
 <translation id="5268823927180092501">Activer le mode document sur tous les appareils photo</translation>
 <translation id="5422455049771430511">Nouveau répertoire pour les photos et les vidéos</translation>
+<translation id="5444515100983837161">Placez l'intégralité du document dans le cadre. La numérisation sera de meilleure qualité si les couleurs du document et de l'arrière-plan sont différentes.</translation>
 <translation id="5671277269877808209">Carré</translation>
 <translation id="5753488212459587150">Activer le mode Expert</translation>
+<translation id="5759254179196327752">Numérisation de document</translation>
 <translation id="5775960006311140197">Mode Expert</translation>
 <translation id="5869546221129391014">Grille</translation>
 <translation id="5975083100439434680">Zoom arrière</translation>
@@ -82,6 +87,7 @@
 
 Si vos commentaires portaient sur la qualité de l'image ou de la vidéo, veuillez joindre un échantillon de photo ou de vidéo et décrire la situation. (Par exemple, la photo est trop sombre ou la mise au point du sujet est floue.)</translation>
 <translation id="6420689864531458495">(<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" /> à <ph name="WIDTH" /> x<ph name="HEIGHT" />) <ph name="MEGAPIXEL" /> mégapixels</translation>
+<translation id="667999046851023355">Document</translation>
 <translation id="6681668084120808868">Prendre une photo</translation>
 <translation id="6778482348691154169">Impossible de prendre la photo</translation>
 <translation id="695140971690006676">Tout réinitialiser</translation>
@@ -108,11 +114,13 @@ Si vos commentaires portaient sur la qualité de l'image ou de la vidéo, veuill
 <translation id="8425673304802773841">Incliner vers le bas</translation>
 <translation id="8428213095426709021">Paramètres</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" />p (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
+<translation id="8712637175834984815">OK</translation>
 <translation id="8732462232047530626">Afficher un aperçu des métadonnées</translation>
 <translation id="8815966864175525708">Bouton permettant de prendre une photo en mode Portrait</translation>
 <translation id="8828441885228359828">Reprendre l'enregistrement</translation>
 <translation id="8870695351537079478">Impossible de démarrer l'enregistrement</translation>
 <translation id="8903921497873541725">Zoom avant</translation>
+<translation id="9045010116236796332">Placez l'intégralité du document dans le cadre</translation>
 <translation id="9045155556724273246">10 secondes</translation>
 <translation id="945522503751344254">Envoyer un commentaire à Google</translation>
 </translationbundle>

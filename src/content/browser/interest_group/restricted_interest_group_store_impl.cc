@@ -11,7 +11,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/content_client.h"
-#include "third_party/blink/public/common/interest_group/validate_interest_group.h"
+#include "third_party/blink/public/common/interest_group/interest_group.h"
 #include "third_party/blink/public/mojom/interest_group/interest_group_types.mojom.h"
 
 namespace content {
@@ -43,24 +43,29 @@ void RestrictedInterestGroupStoreImpl::CreateMojoService(
 }
 
 void RestrictedInterestGroupStoreImpl::JoinInterestGroup(
-    blink::mojom::InterestGroupPtr group) {
+    const blink::InterestGroup& group) {
   // If the interest group API is not allowed for this origin do nothing.
   if (!GetContentClient()->browser()->IsInterestGroupAPIAllowed(
           render_frame_host()->GetBrowserContext(), origin(),
-          group->owner.GetURL())) {
+          group.owner.GetURL())) {
     return;
   }
 
-  if (!blink::ValidateInterestGroup(origin(), *group)) {
-    // TODO(mmenke): Call ReportBadMessage on the receiver pipe here
-    // (DocumentServiceBase currently does not expose it).
+  // Disallow setting interest groups for another origin. Eventually, this will
+  // need to perform a fetch to check for cross-origin permissions to add an
+  // interest group.
+  if (origin() != group.owner)
     return;
-  }
 
+  RenderFrameHost* main_frame = render_frame_host()->GetMainFrame();
+  GURL main_frame_url = main_frame->GetLastCommittedURL();
+
+  blink::InterestGroup updated_group = group;
   base::Time max_expiry = base::Time::Now() + kMaxExpiry;
-  if (group->expiry > max_expiry)
-    group->expiry = max_expiry;
-  interest_group_manager_.JoinInterestGroup(std::move(group));
+  if (updated_group.expiry > max_expiry)
+    updated_group.expiry = max_expiry;
+  interest_group_manager_.JoinInterestGroup(std::move(updated_group),
+                                            main_frame_url);
 }
 
 void RestrictedInterestGroupStoreImpl::LeaveInterestGroup(
@@ -79,6 +84,16 @@ void RestrictedInterestGroupStoreImpl::LeaveInterestGroup(
     return;
 
   interest_group_manager_.LeaveInterestGroup(owner, name);
+}
+
+void RestrictedInterestGroupStoreImpl::UpdateAdInterestGroups() {
+  // If the interest group API is not allowed for this origin do nothing.
+  if (!GetContentClient()->browser()->IsInterestGroupAPIAllowed(
+          render_frame_host()->GetBrowserContext(), origin(),
+          origin().GetURL())) {
+    return;
+  }
+  interest_group_manager_.UpdateInterestGroupsOfOwner(origin());
 }
 
 RestrictedInterestGroupStoreImpl::~RestrictedInterestGroupStoreImpl() = default;

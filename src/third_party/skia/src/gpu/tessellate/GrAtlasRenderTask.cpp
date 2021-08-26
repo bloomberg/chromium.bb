@@ -11,6 +11,7 @@
 #include "src/core/SkIPoint16.h"
 #include "src/gpu/GrGpu.h"
 #include "src/gpu/GrOpFlushState.h"
+#include "src/gpu/GrOpsTypes.h"
 #include "src/gpu/ops/GrFillRectOp.h"
 #include "src/gpu/tessellate/GrPathStencilCoverOp.h"
 
@@ -24,7 +25,7 @@ GrAtlasRenderTask::GrAtlasRenderTask(GrRecordingContext* rContext,
         , fDynamicAtlas(std::move(dynamicAtlas)) {
 }
 
-bool GrAtlasRenderTask::addPath(const SkMatrix& viewMatrix, const SkPath& path, bool antialias,
+bool GrAtlasRenderTask::addPath(const SkMatrix& viewMatrix, const SkPath& path,
                                 SkIPoint pathDevTopLeft, int widthInAtlas, int heightInAtlas,
                                 bool transposedInAtlas, SkIPoint16* locationInAtlas) {
     SkASSERT(!this->isClosed());
@@ -47,10 +48,11 @@ bool GrAtlasRenderTask::addPath(const SkMatrix& viewMatrix, const SkPath& path, 
                                         locationInAtlas->y() - pathDevTopLeft.y());
     }
 
-    // Concatenate this path onto our uber path that matches its fill and AA types.
-    SkPath* uberPath = this->getUberPath(path.getFillType(), antialias);
-    uberPath->moveTo(locationInAtlas->x(), locationInAtlas->y());  // Implicit moveTo(0,0).
-    uberPath->addPath(path, pathToAtlasMatrix);
+    if (GrFillRuleForSkPath(path) == GrFillRule::kNonzero) {
+        fWindingPathList.add(&fPathDrawAllocator, pathToAtlasMatrix, path);
+    } else {
+        fEvenOddPathList.add(&fPathDrawAllocator, pathToAtlasMatrix, path);
+    }
     return true;
 }
 
@@ -88,18 +90,18 @@ GrRenderTask::ExpectedOutcome GrAtlasRenderTask::onMakeClosed(GrRecordingContext
     }
 
     // Add ops to stencil the atlas paths.
-    for (auto antialias : {false, true}) {
-        for (auto fillType : {SkPathFillType::kWinding, SkPathFillType::kEvenOdd}) {
-            SkPath* uberPath = this->getUberPath(fillType, antialias);
-            if (uberPath->isEmpty()) {
-                continue;
-            }
-            uberPath->setFillType(fillType);
-            GrAAType aaType = (antialias) ? GrAAType::kMSAA : GrAAType::kNone;
+    for (const auto* pathList : {&fWindingPathList, &fEvenOddPathList}) {
+        if (pathList->pathCount() > 0) {
             auto op = GrOp::Make<GrPathStencilCoverOp>(
-                    rContext, SkMatrix::I(), *uberPath, GrPaint(), aaType,
-                    GrTessellationPathRenderer::PathFlags::kStencilOnly, drawRect);
-            this->addAtlasDrawOp(std::move(op), antialias, caps);
+                    rContext,
+                    pathList->pathDrawList(),
+                    pathList->totalCombinedPathVerbCnt(),
+                    pathList->pathCount(),
+                    GrPaint(),
+                    GrAAType::kMSAA,
+                    GrTessellationPathRenderer::PathFlags::kStencilOnly,
+                    drawRect);
+            this->addAtlasDrawOp(std::move(op), caps);
         }
     }
 
@@ -151,10 +153,10 @@ void GrAtlasRenderTask::stencilAtlasRect(GrRecordingContext* rContext, const SkR
     GrQuad quad(rect);
     DrawQuad drawQuad{quad, quad, GrQuadAAFlags::kAll};
     auto op = GrFillRectOp::Make(rContext, std::move(paint), GrAAType::kMSAA, &drawQuad, stencil);
-    this->addAtlasDrawOp(std::move(op), true/*usesMSAA*/, *rContext->priv().caps());
+    this->addAtlasDrawOp(std::move(op), *rContext->priv().caps());
 }
 
-void GrAtlasRenderTask::addAtlasDrawOp(GrOp::Owner op, bool usesMSAA, const GrCaps& caps) {
+void GrAtlasRenderTask::addAtlasDrawOp(GrOp::Owner op, const GrCaps& caps) {
     SkASSERT(!this->isClosed());
 
     auto drawOp = static_cast<GrDrawOp*>(op.get());
@@ -166,7 +168,7 @@ void GrAtlasRenderTask::addAtlasDrawOp(GrOp::Owner op, bool usesMSAA, const GrCa
     SkASSERT(!processorAnalysis.usesNonCoherentHWBlending());
 
     drawOp->setClippedBounds(drawOp->bounds());
-    this->recordOp(std::move(op), usesMSAA, processorAnalysis, nullptr, nullptr, caps);
+    this->recordOp(std::move(op), true/*usesMSAA*/, processorAnalysis, nullptr, nullptr, caps);
 }
 
 bool GrAtlasRenderTask::onExecute(GrOpFlushState* flushState) {

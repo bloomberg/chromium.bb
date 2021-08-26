@@ -48,13 +48,18 @@
 
 namespace media {
 
-namespace {
+const base::Feature kMultiPlaneSoftwareVideoSharedImages {
+  "MultiPlaneSoftwareVideoSharedImages",
+#if defined(OS_MAC)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
-bool MultiPlaneVideoSharedImagesEnabled() {
-  return base::FeatureList::IsEnabled(kMultiPlaneVideoSharedImages);
+bool GpuMemoryBufferVideoFramePool::MultiPlaneVideoSharedImagesEnabled() {
+  return base::FeatureList::IsEnabled(kMultiPlaneSoftwareVideoSharedImages);
 }
-
-}  // namespace
 
 // Implementation of a pool of GpuMemoryBuffers used to back VideoFrames.
 class GpuMemoryBufferVideoFramePool::PoolImpl
@@ -366,7 +371,7 @@ size_t NumGpuMemoryBuffers(GpuVideoAcceleratorFactories::OutputFormat format) {
 // The number of shared images for a given format. Note that a single
 // GpuMemoryBuffer can be mapped to several SharedImages (one for each plane).
 size_t NumSharedImages(GpuVideoAcceleratorFactories::OutputFormat format) {
-  if (MultiPlaneVideoSharedImagesEnabled()) {
+  if (GpuMemoryBufferVideoFramePool::MultiPlaneVideoSharedImagesEnabled()) {
     if (format == GpuVideoAcceleratorFactories::OutputFormat::NV12_SINGLE_GMB) {
       return 2;
     }
@@ -380,7 +385,7 @@ size_t NumSharedImages(GpuVideoAcceleratorFactories::OutputFormat format) {
 size_t GpuMemoryBufferPlaneResourceIndexForPlane(
     GpuVideoAcceleratorFactories::OutputFormat format,
     size_t plane) {
-  if (MultiPlaneVideoSharedImagesEnabled()) {
+  if (GpuMemoryBufferVideoFramePool::MultiPlaneVideoSharedImagesEnabled()) {
     if (format == GpuVideoAcceleratorFactories::OutputFormat::NV12_SINGLE_GMB) {
       return 0;
     }
@@ -393,7 +398,7 @@ size_t GpuMemoryBufferPlaneResourceIndexForPlane(
 gfx::BufferPlane GetSharedImageBufferPlane(
     GpuVideoAcceleratorFactories::OutputFormat format,
     size_t plane) {
-  if (MultiPlaneVideoSharedImagesEnabled()) {
+  if (GpuMemoryBufferVideoFramePool::MultiPlaneVideoSharedImagesEnabled()) {
     if (format == GpuVideoAcceleratorFactories::OutputFormat::NV12_SINGLE_GMB) {
       switch (plane) {
         case 0:
@@ -860,8 +865,10 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::OnCopiesDone(
     }
   }
 
-  TRACE_EVENT_ASYNC_END0("media", "CopyVideoFrameToGpuMemoryBuffers",
-                         video_frame->timestamp().InNanoseconds() /* id */);
+  TRACE_EVENT_NESTABLE_ASYNC_END0(
+      "media", "CopyVideoFrameToGpuMemoryBuffers",
+      TRACE_ID_WITH_SCOPE("CopyVideoFrameToGpuMemoryBuffers",
+                          video_frame->timestamp().InNanoseconds()));
 
   media_task_runner_->PostTask(
       FROM_HERE,
@@ -936,8 +943,10 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CopyVideoFrameToGpuMemoryBuffers(
       base::BindOnce(&PoolImpl::OnCopiesDone, this, /*copy_failed=*/false,
                      video_frame, frame_resources));
 
-  TRACE_EVENT_ASYNC_BEGIN0("media", "CopyVideoFrameToGpuMemoryBuffers",
-                           video_frame->timestamp().InNanoseconds() /* id */);
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
+      "media", "CopyVideoFrameToGpuMemoryBuffers",
+      TRACE_ID_WITH_SCOPE("CopyVideoFrameToGpuMemoryBuffers",
+                          video_frame->timestamp().InNanoseconds()));
   // Post all the async tasks.
   for (size_t i = 0; i < num_planes; i += planes_per_copy) {
     gfx::GpuMemoryBuffer* buffer =

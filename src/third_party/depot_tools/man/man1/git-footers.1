@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: git-footers
-.\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 08/10/2020
+.\"    Author: [FIXME: author] [see http://www.docbook.org/tdg5/en/html/author]
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 07/01/2021
 .\"    Manual: Chromium depot_tools Manual
-.\"    Source: depot_tools 8c3f7227
+.\"    Source: depot_tools 906b5026
 .\"  Language: English
 .\"
-.TH "GIT\-FOOTERS" "1" "08/10/2020" "depot_tools 8c3f7227" "Chromium depot_tools Manual"
+.TH "GIT\-FOOTERS" "1" "07/01/2021" "depot_tools 906b5026" "Chromium depot_tools Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -38,7 +38,7 @@ git-footers \- Extract meta\-information expressed as footers in a commit messag
 .sp
 .SH "DESCRIPTION"
 .sp
-git footers extracts information included in commit messages as "footers", which are roughly like HTTP headers except they are at the end\&. For example, a commit might look like:
+\fBgit footers\fR extracts information included in commit messages as "footers", which are roughly like HTTP headers except they are at the end\&. For example, a commit might look like:
 .sp
 .if n \{\
 .RS 4
@@ -61,7 +61,7 @@ Tech\-Debt\-Introduced: 17 nanoMSOffices
 .RE
 .\}
 .sp
-git footers knows how to extract this information\&.
+\fBgit footers\fR knows how to extract this information\&.
 .sp
 Footers are order\-independent and can appear more than once\&. Thus they are treated as a multimap\&.
 .SH "OPTIONS"
@@ -76,9 +76,9 @@ Extract all the headers associated with the given key, and print one per line\&.
 \-\-position
 .RS 4
 Extract the Chrome commit position from the footers\&. This first attempts to get the value of the
-Cr\-Commit\-Position
+\fBCr\-Commit\-Position\fR
 footer\&. If that doesn\(cqt exist then it tries a heuristic based on
-Git\-Svn\-Id\&. Output is in one of the following forms:
+\fBGit\-Svn\-Id\fR\&. Output is in one of the following forms:
 .sp
 .if n \{\
 .RS 4
@@ -99,9 +99,9 @@ Extracts and prints the Chrome commit position number only (292272 in the exampl
 .PP
 \-\-position\-ref
 .RS 4
-Extracts and prints the Chrome commit position ref name only (ref/heads/master
+Extracts and prints the Chrome commit position ref name only (\fBref/heads/master\fR
 or
-refs/branch\-heads/branchname
+\fBrefs/branch\-heads/branchname\fR
 in the example above)\&.
 .RE
 .SH "EXAMPLE"

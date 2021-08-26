@@ -19,6 +19,8 @@ component("permissions_common") {
 
 source_set("permissions") {
   sources = [
+    "bluetooth_delegate_impl.cc",
+    "bluetooth_delegate_impl.h",
     "chooser_controller.cc",
     "chooser_controller.h",
     "chooser_title_util.cc",
@@ -70,8 +72,6 @@ source_set("permissions") {
     "permission_request.h",
     "permission_request_id.cc",
     "permission_request_id.h",
-    "permission_request_impl.cc",
-    "permission_request_impl.h",
     "permission_request_manager.cc",
     "permission_request_manager.h",
     "permission_result.cc",
@@ -247,6 +247,9 @@ source_set("unit_tests") {
       "bluetooth_chooser_controller_unittest.cc",
       "bluetooth_scanning_prompt_controller_unittest.cc",
     ]
+  }
+  if (is_android) {
+    sources += [ "android/permission_dialog_delegate_unittest.cc" ]
   }
   deps = [
     ":permissions",

@@ -41,13 +41,15 @@ import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_e
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as ElementsComponents from './components/components.js';
+import computedStyleSidebarPaneStyles from './computedStyleSidebarPane.css.js';
+import computedStyleWidgetTreeStyles from './computedStyleWidgetTree.css.js';
 
 import type {ComputedStyle} from './ComputedStyleModel.js';
-import {ComputedStyleModel, Events} from './ComputedStyleModel.js';  // eslint-disable-line no-unused-vars
+import {ComputedStyleModel, Events} from './ComputedStyleModel.js';
 import {ImagePreviewPopover} from './ImagePreviewPopover.js';
 import {PlatformFontsWidget} from './PlatformFontsWidget.js';
 import type {Category} from './PropertyNameCategories.js';
-import {categorizePropertyName, DefaultCategoryOrder} from './PropertyNameCategories.js';  // eslint-disable-line no-unused-vars
+import {categorizePropertyName, DefaultCategoryOrder} from './PropertyNameCategories.js';
 import {IdleCallbackManager, StylePropertiesSection, StylesSidebarPane, StylesSidebarPropertyRenderer} from './StylesSidebarPane.js';
 
 const UIStrings = {
@@ -72,7 +74,7 @@ const UIStrings = {
   * grouped together or not. In Computed Style Widget of the Elements panel.
   */
   group: 'Group',
-  /**
+  /** [
   * @description Text shown to the user when a filter is applied to the computed CSS properties, but
   * no properties matched the filter and thus no results were returned.
   */
@@ -96,7 +98,7 @@ const createPropertyElement = (node: SDK.DOMModel.DOMNode, propertyName: string,
   const propertyElement = new ElementsComponents.ComputedStyleProperty.ComputedStyleProperty();
 
   const renderer = new StylesSidebarPropertyRenderer(null, node, propertyName, propertyValue);
-  renderer.setColorHandler(processComputedColor);
+  renderer.setColorHandler(processColor.bind(null, false /* computed styles don't provide the original format */));
 
   const propertyNameElement = renderer.renderName();
   propertyNameElement.slot = 'property-name';
@@ -116,7 +118,7 @@ const createTraceElement =
       const trace = new ElementsComponents.ComputedStyleTrace.ComputedStyleTrace();
 
       const renderer = new StylesSidebarPropertyRenderer(null, node, property.name, (property.value as string));
-      renderer.setColorHandler(processColor);
+      renderer.setColorHandler(processColor.bind(null, true));
       const valueElement = renderer.renderValue();
       valueElement.slot = 'trace-value';
       trace.appendChild(valueElement);
@@ -137,18 +139,19 @@ const createTraceElement =
       return trace;
     };
 
-const processColor = (text: string): Node => {
+const processColor = (autoDetectFormat: boolean, text: string): Node => {
   const swatch = new InlineEditor.ColorSwatch.ColorSwatch();
-  swatch.renderColor(text, true);
-  swatch.createChild('span').textContent = text;
-  return swatch;
-};
+  swatch.renderColor(text, autoDetectFormat || Common.Color.Format.RGB);
+  const valueElement = document.createElement('span');
+  valueElement.textContent = text;
+  swatch.append(valueElement);
 
-const processComputedColor = (text: string): Node => {
-  const swatch = new InlineEditor.ColorSwatch.ColorSwatch();
-  // Computed styles don't provide the original format, so switch to RGB.
-  swatch.renderColor(text, Common.Color.Format.RGB);
-  swatch.createChild('span').textContent = text;
+  swatch.addEventListener(
+      InlineEditor.ColorSwatch.FormatChangedEvent.eventName, (event: InlineEditor.ColorSwatch.FormatChangedEvent) => {
+        const {data} = event;
+        valueElement.textContent = data.text;
+      });
+
   return swatch;
 };
 
@@ -190,7 +193,6 @@ export class ComputedStyleWidget extends UI.ThrottledWidget.ThrottledWidget {
 
   constructor() {
     super(true);
-    this.registerRequiredCSS('panels/elements/computedStyleSidebarPane.css');
 
     this._computedStyleModel = new ComputedStyleModel();
     this._computedStyleModel.addEventListener(Events.ComputedStyleChanged, this.update, this);
@@ -226,7 +228,6 @@ export class ComputedStyleWidget extends UI.ThrottledWidget.ThrottledWidget {
     this._propertiesOutline.hideOverflow();
     this._propertiesOutline.setShowSelectionOnKeyboardFocus(true);
     this._propertiesOutline.setFocusable(true);
-    this._propertiesOutline.registerRequiredCSS('panels/elements/computedStyleWidgetTree.css');
     this._propertiesOutline.element.classList.add('monospace', 'computed-properties');
     this._propertiesOutline.addEventListener(UI.TreeOutline.Events.ElementExpanded, this._onTreeElementToggled, this);
     this._propertiesOutline.addEventListener(UI.TreeOutline.Events.ElementCollapsed, this._onTreeElementToggled, this);
@@ -269,6 +270,12 @@ export class ComputedStyleWidget extends UI.ThrottledWidget.ThrottledWidget {
     }
     this._idleCallbackManager = new IdleCallbackManager();
     super.update();
+  }
+
+  wasShown(): void {
+    super.wasShown();
+    this.registerCSSFiles([computedStyleSidebarPaneStyles]);
+    this._propertiesOutline.registerCSSFiles([computedStyleWidgetTreeStyles]);
   }
 
   async doUpdate(): Promise<void> {

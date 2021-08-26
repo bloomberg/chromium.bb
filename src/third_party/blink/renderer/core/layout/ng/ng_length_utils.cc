@@ -371,41 +371,26 @@ MinMaxSizesResult ComputeMinAndMaxContentContributionForReplaced(
     const NGBlockNode& child,
     const NGConstraintSpace& space) {
   const auto& child_style = child.Style();
+  const NGBoxStrut border_padding =
+      ComputeBorders(space, child) + ComputePadding(space, child_style);
+
   MinMaxSizes result;
+  result = ComputeReplacedSize(child, space, border_padding).inline_size;
 
-  if (RuntimeEnabledFeatures::LayoutNGReplacedEnabled()) {
-    const NGBoxStrut border_padding =
-        ComputeBorders(space, child) + ComputePadding(space, child_style);
-    result = ComputeReplacedSize(child, space, border_padding).inline_size;
-
-    if (child_style.LogicalWidth().IsPercentOrCalc() ||
-        child_style.LogicalMaxWidth().IsPercentOrCalc()) {
-      // TODO(ikilpatrick): No browser does this today, but we'd get slightly
-      // better results here if we also considered the min-block size, and
-      // transferred through the aspect-ratio (if available).
-      result.min_size = ResolveMinInlineLength(
-          space, child_style, border_padding,
-          [&](MinMaxSizesType) -> MinMaxSizesResult {
-            // Behave the same as if we couldn't resolve the min-inline size.
-            MinMaxSizes sizes;
-            sizes = border_padding.InlineSum();
-            return {sizes, /* depends_on_block_constraints */ false};
-          },
-          child_style.LogicalMinWidth());
-    }
-  } else {
-    LayoutBox* box = child.GetLayoutBox();
-    bool needs_size_reset = false;
-    if (!box->HasOverrideContainingBlockContentLogicalHeight()) {
-      box->SetOverrideContainingBlockContentLogicalHeight(
-          space.ReplacedPercentageResolutionBlockSize());
-      needs_size_reset = true;
-    }
-
-    result = box->PreferredLogicalWidths();
-
-    if (needs_size_reset)
-      box->ClearOverrideContainingBlockContentSize();
+  if (child_style.LogicalWidth().IsPercentOrCalc() ||
+      child_style.LogicalMaxWidth().IsPercentOrCalc()) {
+    // TODO(ikilpatrick): No browser does this today, but we'd get slightly
+    // better results here if we also considered the min-block size, and
+    // transferred through the aspect-ratio (if available).
+    result.min_size = ResolveMinInlineLength(
+        space, child_style, border_padding,
+        [&](MinMaxSizesType) -> MinMaxSizesResult {
+          // Behave the same as if we couldn't resolve the min-inline size.
+          MinMaxSizes sizes;
+          sizes = border_padding.InlineSum();
+          return {sizes, /* depends_on_block_constraints */ false};
+        },
+        child_style.LogicalMinWidth());
   }
 
   // Replaced elements which have a percentage block-size always depend on
@@ -1568,23 +1553,6 @@ LogicalSize AdjustChildPercentageSize(const NGConstraintSpace& space,
                                       const NGBlockNode node,
                                       LogicalSize child_percentage_size,
                                       LayoutUnit parent_percentage_block_size) {
-  bool is_table_cell_in_measure_phase =
-      space.IsTableCell() && !space.IsFixedBlockSize();
-  // A table-cell during the "measure" phase forces its descendants to have an
-  // indefinite percentage resolution size.
-  // NOTE: If the Layout and ComputeMinMaxSizes ever get merged, this can be
-  // removed (as we'll need to allow for indefinite %-inline-sizes).
-  if (is_table_cell_in_measure_phase) {
-    // Orthogonal cells need to call layout on the cell to determine
-    // size of the table. Because table's inline size is unknown, percentages
-    // are resolved against 0.
-    if (space.IsOrthogonalWritingModeRoot())
-      child_percentage_size.block_size = LayoutUnit();
-    else
-      child_percentage_size.block_size = kIndefiniteSize;
-    return child_percentage_size;
-  }
-
   // In quirks mode the percentage resolution height is passed from parent to
   // child.
   // https://quirks.spec.whatwg.org/#the-percentage-height-calculation-quirk

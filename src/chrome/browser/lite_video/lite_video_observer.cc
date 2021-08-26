@@ -63,11 +63,23 @@ void LiteVideoObserver::MaybeCreateForWebContents(
   }
 }
 
+// static
+void LiteVideoObserver::BindLiteVideoService(
+    mojo::PendingAssociatedReceiver<lite_video::mojom::LiteVideoService>
+        receiver,
+    content::RenderFrameHost* rfh) {
+  auto* web_contents = content::WebContents::FromRenderFrameHost(rfh);
+  if (!web_contents)
+    return;
+  auto* tab_helper = LiteVideoObserver::FromWebContents(web_contents);
+  if (!tab_helper)
+    return;
+  tab_helper->receivers_.Bind(rfh, std::move(receiver));
+}
+
 LiteVideoObserver::LiteVideoObserver(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      receivers_(web_contents,
-                 this,
-                 content::WebContentsFrameReceiverSetPassKey()) {
+      receivers_(web_contents, this) {
   lite_video_decider_ = GetLiteVideoDeciderFromWebContents(web_contents);
   routing_ids_to_notify_ = {};
 }
@@ -92,9 +104,6 @@ void LiteVideoObserver::DidFinishNavigation(
   lite_video::LiteVideoBlocklistReason blocklist_reason =
       lite_video::LiteVideoBlocklistReason::kUnknown;
 
-  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
-  // frames. This caller was converted automatically to the primary main frame
-  // to preserve its semantics. Follow up to confirm correctness.
   if (navigation_handle->IsInPrimaryMainFrame()) {
     FlushUKMMetrics();
     routing_ids_to_notify_.clear();
@@ -126,6 +135,9 @@ void LiteVideoObserver::OnHintAvailable(
   auto* render_frame_host =
       content::RenderFrameHost::FromID(render_frame_host_routing_id);
   if (!render_frame_host)
+    return;
+
+  if (!render_frame_host->GetPage().IsPrimary())
     return;
 
   bool is_mainframe = render_frame_host->GetMainFrame() == render_frame_host;
@@ -232,9 +244,6 @@ void LiteVideoObserver::FlushUKMMetrics() {
 // Returns the result of a coinflip.
 void LiteVideoObserver::MaybeUpdateCoinflipExperimentState(
     content::NavigationHandle* navigation_handle) {
-  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
-  // frames. This caller was converted automatically to the primary main frame
-  // to preserve its semantics. Follow up to confirm correctness.
   if (!navigation_handle->IsInPrimaryMainFrame())
     return;
   if (!lite_video::features::IsCoinflipExperimentEnabled())

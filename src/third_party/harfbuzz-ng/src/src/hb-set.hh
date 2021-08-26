@@ -35,7 +35,7 @@
  * hb_set_t
  */
 
-/* TODO Keep a free-list so we can free pages that are completely zeroed.  At that
+/* TODO Keep a freelist so we can release pages that are completely zeroed.  At that
  * point maybe also use a sentinel value for "all-1" pages? */
 
 struct hb_set_t
@@ -427,7 +427,7 @@ struct hb_set_t
   {
     /* TODO perform op even if !successful. */
     if (unlikely (!successful)) return;
-    if (unlikely (a > b || a == INVALID || b == INVALID)) return;
+    if (unlikely (a > b || a == INVALID)) return;
     dirty ();
     unsigned int ma = get_major (a);
     unsigned int mb = get_major (b);
@@ -488,8 +488,9 @@ struct hb_set_t
     if (!resize (count))
       return;
     population = other.population;
-    memcpy ((void *) pages, (const void *) other.pages, count * pages.item_size);
-    memcpy ((void *) page_map, (const void *) other.page_map, count * page_map.item_size);
+
+    hb_memcpy ((void *) pages, (const void *) other.pages, count * pages.item_size);
+    hb_memcpy ((void *) page_map, (const void *) other.page_map, count * page_map.item_size);
   }
 
   bool is_equal (const hb_set_t &other) const
@@ -758,7 +759,7 @@ struct hb_set_t
 
     if (unlikely (i >= page_map.length || page_map_array[i].major != major))
     {
-      page_map.bfind (major, &i, HB_BFIND_NOT_FOUND_STORE_CLOSEST);
+      page_map.bfind (major, &i, HB_NOT_FOUND_STORE_CLOSEST);
       if (i >= page_map.length) {
         *codepoint = INVALID;
         return false;
@@ -802,7 +803,7 @@ struct hb_set_t
 
     page_map_t map = {get_major (*codepoint), 0};
     unsigned int i;
-    page_map.bfind (map, &i, HB_BFIND_NOT_FOUND_STORE_CLOSEST);
+    page_map.bfind (map, &i, HB_NOT_FOUND_STORE_CLOSEST);
     if (i < page_map.length && page_map[i].major == map.major)
     {
       if (pages[page_map[i].index].previous (codepoint))
@@ -933,7 +934,7 @@ struct hb_set_t
   {
     page_map_t map = {get_major (g), pages.length};
     unsigned int i;
-    if (!page_map.bfind (map, &i, HB_BFIND_NOT_FOUND_STORE_CLOSEST))
+    if (!page_map.bfind (map, &i, HB_NOT_FOUND_STORE_CLOSEST))
     {
       if (!resize (pages.length + 1))
 	return nullptr;

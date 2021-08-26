@@ -14,11 +14,13 @@
 
 #include "core/internal/offline_frames_validator.h"
 
-#include "core/internal/offline_frames.h"
-#include "proto/connections/offline_wire_formats.pb.h"
-#include "platform/base/byte_array.h"
+#include <string>
+
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "core/internal/offline_frames.h"
+#include "platform/base/byte_array.h"
+#include "proto/connections/offline_wire_formats.pb.h"
 
 namespace location {
 namespace nearby {

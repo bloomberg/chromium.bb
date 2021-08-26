@@ -88,14 +88,14 @@ VideoFrameType ConvertToVideoFrameType(EVideoFrameType type) {
 }  // namespace
 
 // Helper method used by H264EncoderImpl::Encode.
-// Copies the encoded bytes from |info| to |encoded_image|. The
-// |encoded_image->_buffer| may be deleted and reallocated if a bigger buffer is
+// Copies the encoded bytes from `info` to `encoded_image`. The
+// `encoded_image->_buffer` may be deleted and reallocated if a bigger buffer is
 // required.
 //
-// After OpenH264 encoding, the encoded bytes are stored in |info| spread out
+// After OpenH264 encoding, the encoded bytes are stored in `info` spread out
 // over a number of layers and "NAL units". Each NAL unit is a fragment starting
 // with the four-byte start code {0,0,0,1}. All of this data (including the
-// start codes) is copied to the |encoded_image->_buffer|.
+// start codes) is copied to the `encoded_image->_buffer`.
 static void RtpFragmentize(EncodedImage* encoded_image, SFrameBSInfo* info) {
   // Calculate minimum buffer size required to hold encoded data.
   size_t required_capacity = 0;
@@ -104,7 +104,7 @@ static void RtpFragmentize(EncodedImage* encoded_image, SFrameBSInfo* info) {
     const SLayerBSInfo& layerInfo = info->sLayerInfo[layer];
     for (int nal = 0; nal < layerInfo.iNalCount; ++nal, ++fragments_count) {
       RTC_CHECK_GE(layerInfo.pNalLengthInByte[nal], 0);
-      // Ensure |required_capacity| will not overflow.
+      // Ensure `required_capacity` will not overflow.
       RTC_CHECK_LE(layerInfo.pNalLengthInByte[nal],
                    std::numeric_limits<size_t>::max() - required_capacity);
       required_capacity += layerInfo.pNalLengthInByte[nal];
@@ -115,7 +115,7 @@ static void RtpFragmentize(EncodedImage* encoded_image, SFrameBSInfo* info) {
   encoded_image->SetEncodedData(buffer);
 
   // Iterate layers and NAL units, note each NAL unit as a fragment and copy
-  // the data to |encoded_image->_buffer|.
+  // the data to `encoded_image->_buffer`.
   const uint8_t start_code[4] = {0, 0, 0, 1};
   size_t frag = 0;
   encoded_image->set_size(0);
@@ -124,8 +124,8 @@ static void RtpFragmentize(EncodedImage* encoded_image, SFrameBSInfo* info) {
     // Iterate NAL units making up this layer, noting fragments.
     size_t layer_len = 0;
     for (int nal = 0; nal < layerInfo.iNalCount; ++nal, ++frag) {
-      // Because the sum of all layer lengths, |required_capacity|, fits in a
-      // |size_t|, we know that any indices in-between will not overflow.
+      // Because the sum of all layer lengths, `required_capacity`, fits in a
+      // `size_t`, we know that any indices in-between will not overflow.
       RTC_DCHECK_GE(layerInfo.pNalLengthInByte[nal], 4);
       RTC_DCHECK_EQ(layerInfo.pBsBuf[layer_len + 0], start_code[0]);
       RTC_DCHECK_EQ(layerInfo.pBsBuf[layer_len + 1], start_code[1]);
@@ -377,17 +377,15 @@ int32_t H264EncoderImpl::Encode(
 
   rtc::scoped_refptr<I420BufferInterface> frame_buffer =
       input_frame.video_frame_buffer()->ToI420();
-  // The buffer should now be a mapped I420 or I420A format, but some buffer
-  // implementations incorrectly return the wrong buffer format, such as
-  // kNative. As a workaround to this, we perform ToI420() a second time.
-  // TODO(https://crbug.com/webrtc/12602): When Android buffers have a correct
-  // ToI420() implementaion, remove his workaround.
-  if (frame_buffer->type() != VideoFrameBuffer::Type::kI420 &&
-      frame_buffer->type() != VideoFrameBuffer::Type::kI420A) {
-    frame_buffer = frame_buffer->ToI420();
-    RTC_CHECK(frame_buffer->type() == VideoFrameBuffer::Type::kI420 ||
-              frame_buffer->type() == VideoFrameBuffer::Type::kI420A);
+  if (!frame_buffer) {
+    RTC_LOG(LS_ERROR) << "Failed to convert "
+                      << VideoFrameBufferTypeToString(
+                             input_frame.video_frame_buffer()->type())
+                      << " image to I420. Can't encode frame.";
+    return WEBRTC_VIDEO_CODEC_ENCODER_FAILURE;
   }
+  RTC_CHECK(frame_buffer->type() == VideoFrameBuffer::Type::kI420 ||
+            frame_buffer->type() == VideoFrameBuffer::Type::kI420A);
 
   bool send_key_frame = false;
   for (size_t i = 0; i < configurations_.size(); ++i) {
@@ -461,7 +459,7 @@ int32_t H264EncoderImpl::Encode(
     }
     if (send_key_frame) {
       // API doc says ForceIntraFrame(false) does nothing, but calling this
-      // function forces a key frame regardless of the |bIDR| argument's value.
+      // function forces a key frame regardless of the `bIDR` argument's value.
       // (If every frame is a key frame we get lag/delays.)
       encoders_[i]->ForceIntraFrame(true);
       configurations_[i].key_frame_request = false;
@@ -487,11 +485,11 @@ int32_t H264EncoderImpl::Encode(
     encoded_images_[i].SetSpatialIndex(configurations_[i].simulcast_idx);
 
     // Split encoded image up into fragments. This also updates
-    // |encoded_image_|.
+    // `encoded_image_`.
     RtpFragmentize(&encoded_images_[i], &info);
 
     // Encoder can skip frames to save bandwidth in which case
-    // |encoded_images_[i]._length| == 0.
+    // `encoded_images_[i]._length` == 0.
     if (encoded_images_[i].size() > 0) {
       // Parse QP.
       h264_bitstream_parser_.ParseBitstream(encoded_images_[i]);
@@ -554,8 +552,8 @@ SEncParamExt H264EncoderImpl::CreateEncoderParams(size_t i) const {
   // The following parameters are extension parameters (they're in SEncParamExt,
   // not in SEncParamBase).
   encoder_params.bEnableFrameSkip = configurations_[i].frame_dropping_on;
-  // |uiIntraPeriod|    - multiple of GOP size
-  // |keyFrameInterval| - number of frames
+  // `uiIntraPeriod`    - multiple of GOP size
+  // `keyFrameInterval` - number of frames
   encoder_params.uiIntraPeriod = configurations_[i].key_frame_interval;
   // Reuse SPS id if possible. This helps to avoid reset of chromium HW decoder
   // on each key-frame.

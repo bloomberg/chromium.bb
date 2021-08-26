@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "core/fxcrt/fx_system.h"
 #include "core/fxcrt/stl_util.h"
 #include "core/fxge/cfx_fontmapper.h"
 
@@ -49,11 +50,12 @@ CFX_CTTGSUBTable::CFX_CTTGSUBTable(FT_Bytes gsub) {
 CFX_CTTGSUBTable::~CFX_CTTGSUBTable() = default;
 
 bool CFX_CTTGSUBTable::LoadGSUBTable(FT_Bytes gsub) {
-  if ((gsub[0] << 24u | gsub[1] << 16u | gsub[2] << 8u | gsub[3]) != 0x00010000)
+  if (FXSYS_UINT32_GET_MSBFIRST(gsub) != 0x00010000)
     return false;
 
-  return Parse(&gsub[gsub[4] << 8 | gsub[5]], &gsub[gsub[6] << 8 | gsub[7]],
-               &gsub[gsub[8] << 8 | gsub[9]]);
+  return Parse(&gsub[FXSYS_UINT16_GET_MSBFIRST(gsub + 4)],
+               &gsub[FXSYS_UINT16_GET_MSBFIRST(gsub + 6)],
+               &gsub[FXSYS_UINT16_GET_MSBFIRST(gsub + 8)]);
 }
 
 uint32_t CFX_CTTGSUBTable::GetVerticalGlyph(uint32_t glyphnum) const {
@@ -145,25 +147,25 @@ uint8_t CFX_CTTGSUBTable::GetUInt8(FT_Bytes& p) const {
 }
 
 int16_t CFX_CTTGSUBTable::GetInt16(FT_Bytes& p) const {
-  uint16_t ret = p[0] << 8 | p[1];
+  uint16_t ret = FXSYS_UINT16_GET_MSBFIRST(p);
   p += 2;
   return *(int16_t*)&ret;
 }
 
 uint16_t CFX_CTTGSUBTable::GetUInt16(FT_Bytes& p) const {
-  uint16_t ret = p[0] << 8 | p[1];
+  uint16_t ret = FXSYS_UINT16_GET_MSBFIRST(p);
   p += 2;
   return ret;
 }
 
 int32_t CFX_CTTGSUBTable::GetInt32(FT_Bytes& p) const {
-  uint32_t ret = p[0] << 24 | p[1] << 16 | p[2] << 8 | p[3];
+  uint32_t ret = FXSYS_UINT32_GET_MSBFIRST(p);
   p += 4;
   return *(int32_t*)&ret;
 }
 
 uint32_t CFX_CTTGSUBTable::GetUInt32(FT_Bytes& p) const {
-  uint32_t ret = p[0] << 24 | p[1] << 16 | p[2] << 8 | p[3];
+  uint32_t ret = FXSYS_UINT32_GET_MSBFIRST(p);
   p += 4;
   return ret;
 }

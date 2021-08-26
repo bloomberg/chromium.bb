@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import {assert, assertNotReached} from '/assert.m.js';
-import {EventType, SelectCollectionEvent, SelectImageEvent, SelectLocalCollectionEvent, SendCollectionsEvent, SendImageCountsEvent, SendImagesEvent, SendLocalImageDataEvent, SendLocalImagesEvent, trustedOrigin, untrustedOrigin} from './constants.js';
+import {EventType, SelectCollectionEvent, SelectImageEvent, SelectLocalCollectionEvent, SendCollectionsEvent, SendCurrentWallpaperAssetIdEvent, SendImageCountsEvent, SendImagesEvent, SendLocalImageDataEvent, SendLocalImagesEvent, SendPendingWallpaperAssetIdEvent, SendVisibleEvent, trustedOrigin, untrustedOrigin} from './constants.js';
 import {isNonEmptyArray} from './utils.js';
 
 /**
@@ -28,12 +28,27 @@ export function sendCollections(target, collections) {
 
 /**
  * Send a mapping of collectionId to the number of images in that collection.
+ * A value of null for a given collection id represents that the collection
+ * failed to load.
  * @param {!Window} target
- * @param {!Object<string, number>} counts
+ * @param {!Object<string, ?number>} counts
  */
 export function sendImageCounts(target, counts) {
   /** @type {!SendImageCountsEvent} */
   const event = {type: EventType.SEND_IMAGE_COUNTS, counts};
+  target.postMessage(event, untrustedOrigin);
+}
+
+/**
+ * Send visibility status to a target iframe. Currently used to trigger a
+ * resize event on iron-list when an iframe becomes visible again so that
+ * iron-list will run layout with the current size.
+ * @param {!Window} target
+ * @param {boolean} visible
+ */
+export function sendVisible(target, visible) {
+  /** @type {!SendVisibleEvent} */
+  const event = {type: EventType.SEND_VISIBLE, visible};
   target.postMessage(event, untrustedOrigin);
 }
 
@@ -61,13 +76,37 @@ export function sendLocalImages(target, images) {
 }
 
 /**
+ * Sends image data keyed by stringified image id.
  * @param {!Window} target
- * @param {!chromeos.personalizationApp.mojom.LocalImage} image
- * @param {!string} data
+ * @param {!Object<string, string>} data
  */
-export function sendLocalImageData(target, image, data) {
+export function sendLocalImageData(target, data) {
   /** @type {!SendLocalImageDataEvent} */
-  const event = {type: EventType.SEND_LOCAL_IMAGE_DATA, id: image.id, data};
+  const event = {type: EventType.SEND_LOCAL_IMAGE_DATA, data};
+  target.postMessage(event, untrustedOrigin);
+}
+
+/**
+ * Send the |assetId| of the currently selected wallpaper to |target| iframe
+ * window. Sending null indicates that no image is selected.
+ * @param {!Window} target
+ * @param {?bigint} assetId
+ */
+export function sendCurrentWallpaperAssetId(target, assetId) {
+  /** @type {!SendCurrentWallpaperAssetIdEvent} */
+  const event = {type: EventType.SEND_CURRENT_WALLPAPER_ASSET_ID, assetId};
+  target.postMessage(event, untrustedOrigin);
+}
+
+/**
+ * Send the |assetId| to the |target| iframe when the user clicks on online
+ * wallpaper image.
+ * @param {!Window} target
+ * @param {?bigint} assetId
+ */
+export function sendPendingWallpaperAssetId(target, assetId) {
+  /** @type {!SendPendingWallpaperAssetIdEvent} */
+  const event = {type: EventType.SEND_PENDING_WALLPAPER_ASSET_ID, assetId};
   target.postMessage(event, untrustedOrigin);
 }
 
@@ -141,7 +180,7 @@ export function selectImage(target, assetId) {
  * expected type and contains the expected data.
  * @param {!Event} event
  * @param {!EventType} expectedEventType
- * @return {!Array<!T>}
+ * @return {?T}
  * @template T
  */
 export function validateReceivedData(event, expectedEventType) {
@@ -151,19 +190,39 @@ export function validateReceivedData(event, expectedEventType) {
       event.data.type === expectedEventType,
       `Expected event type: ${expectedEventType}`);
 
-  /** @type {SendCollectionsEvent|SendImagesEvent} */
+  /**
+   * @type {
+   *   SendCollectionsEvent|
+   *   SendImagesEvent|
+   *   SendCurrentWallpaperAssetIdEvent|
+   *   SendPendingWallpaperAssetIdEvent|
+   *   SendLocalImagesEvent|
+   *   SendLocalImageDataEvent|
+   *   SendVisibleEvent
+   * }
+   */
   const data = event.data;
   switch (data.type) {
     case EventType.SEND_COLLECTIONS:
       assert(isNonEmptyArray(data.collections), 'Expected collections array');
       return data.collections;
+    case EventType.SEND_LOCAL_IMAGE_DATA:
+      assert(typeof data.data === 'object', 'Expected data object');
+      return data.data;
     case EventType.SEND_LOCAL_IMAGES:
     case EventType.SEND_IMAGES:
       // Images array may be empty.
       assert(Array.isArray(data.images), 'Expected images array');
       return data.images;
+    case EventType.SEND_CURRENT_WALLPAPER_ASSET_ID:
+    case EventType.SEND_PENDING_WALLPAPER_ASSET_ID:
+      assert(data.assetId === null || typeof data.assetId === 'bigint');
+      return data.assetId;
+    case EventType.SEND_VISIBLE:
+      assert(typeof data.visible === 'boolean');
+      return data.visible;
     default:
       assertNotReached('Unknown event type');
   }
-  return [];
+  return null;
 }

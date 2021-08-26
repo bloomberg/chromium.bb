@@ -9,13 +9,16 @@
 #define GrFillRectOp_DEFINED
 
 #include "include/private/GrTypesPriv.h"
-#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/ops/GrSimpleMeshDrawOpHelper.h"
 
+struct DrawQuad;
+class GrClip;
 class GrDrawOp;
 class GrPaint;
 class GrQuad;
+struct GrQuadSetEntry;
 class GrRecordingContext;
+namespace skgpu { namespace v1 { class SurfaceDrawContext; }}
 struct GrUserStencilSettings;
 class SkMatrix;
 struct SkRect;
@@ -30,33 +33,36 @@ class GrFillRectOp {
 public:
     using InputFlags = GrSimpleMeshDrawOpHelper::InputFlags;
 
-    static GrOp::Owner Make(GrRecordingContext* context,
-                            GrPaint&& paint,
-                            GrAAType aaType,
-                            DrawQuad* quad,
-                            const GrUserStencilSettings* stencil = nullptr,
+    static GrOp::Owner Make(GrRecordingContext*,
+                            GrPaint&&,
+                            GrAAType,
+                            DrawQuad*,
+                            const GrUserStencilSettings* = nullptr,
                             InputFlags = InputFlags::kNone);
 
     // Utility function to create a non-AA rect transformed by view. This is used commonly enough
     // in testing and GMs that manage ops without going through GrRTC that it's worth the
     // convenience.
-    static GrOp::Owner MakeNonAARect(GrRecordingContext* context,
-                                     GrPaint&& paint,
+    static GrOp::Owner MakeNonAARect(GrRecordingContext*,
+                                     GrPaint&&,
                                      const SkMatrix& view,
-                                     const SkRect& rect,
-                                     const GrUserStencilSettings* stencil = nullptr);
+                                     const SkRect&,
+                                     const GrUserStencilSettings* = nullptr);
 
+    // TODO: remove this guard once GrFillRectOp is made V1-only
+#if SK_GPU_V1
     // Bulk API for drawing quads with a single op
     // TODO(michaelludwig) - remove if the bulk API is not useful for SkiaRenderer
-    static void AddFillRectOps(GrSurfaceDrawContext*,
-                               const GrClip* clip,
+    static void AddFillRectOps(skgpu::v1::SurfaceDrawContext*,
+                               const GrClip*,
                                GrRecordingContext*,
                                GrPaint&&,
                                GrAAType,
                                const SkMatrix& viewMatrix,
-                               const GrSurfaceDrawContext::QuadSetEntry quads[],
+                               const GrQuadSetEntry quads[],
                                int quadCount,
                                const GrUserStencilSettings* = nullptr);
+#endif
 
 #if GR_TEST_UTILS
     static uint32_t ClassID();
@@ -69,7 +75,7 @@ private:
                               GrPaint&&,
                               GrAAType,
                               const SkMatrix& viewMatrix,
-                              const GrSurfaceDrawContext::QuadSetEntry quads[],
+                              const GrQuadSetEntry quads[],
                               int quadCount,
                               const GrUserStencilSettings*,
                               int* numConsumed);

@@ -5,7 +5,8 @@ Does **not** test usage scopes (resource_usages/) or programmable pass stuff (pr
 `;
 
 import { makeTestGroup } from '../../../../../common/framework/test_group.js';
-import { ValidationTest } from '../../validation_test.js';
+import { DefaultLimits } from '../../../../constants.js';
+import { kResourceStates, ResourceState, ValidationTest } from '../../validation_test.js';
 
 class F extends ValidationTest {
   createComputePipeline(state: 'valid' | 'invalid'): GPUComputePipeline {
@@ -16,7 +17,7 @@ class F extends ValidationTest {
     return this.createErrorComputePipeline();
   }
 
-  createIndirectBuffer(state: 'valid' | 'invalid' | 'destroyed', data: Uint32Array): GPUBuffer {
+  createIndirectBuffer(state: ResourceState, data: Uint32Array): GPUBuffer {
     const descriptor: GPUBufferDescriptor = {
       size: data.byteLength,
       usage: GPUBufferUsage.INDIRECT | GPUBufferUsage.COPY_DST,
@@ -52,43 +53,62 @@ setPipeline should generate an error iff using an 'invalid' pipeline.
   )
   .params(u => u.beginSubcases().combine('state', ['valid', 'invalid'] as const))
   .fn(t => {
-    const pipeline = t.createComputePipeline(t.params.state);
-    const { encoder, finish } = t.createEncoder('compute pass');
+    const { state } = t.params;
+    const pipeline = t.createComputePipeline(state);
+
+    const { encoder, validateFinishAndSubmitGivenState } = t.createEncoder('compute pass');
     encoder.setPipeline(pipeline);
-    t.expectValidationError(() => {
-      finish();
-    }, t.params.state === 'invalid');
+    validateFinishAndSubmitGivenState(state);
   });
 
+g.test('pipeline,device_mismatch')
+  .desc('Tests setPipeline cannot be called with a compute pipeline created from another device')
+  .paramsSubcasesOnly(u => u.combine('mismatched', [true, false]))
+  .unimplemented();
+
+const kMaxDispatch = DefaultLimits.maxComputeWorkgroupsPerDimension;
 g.test('dispatch_sizes')
   .desc(
-    `
-Test 'direct' and 'indirect' dispatch with various sizes.
-  - workgroup sizes:
-    - valid, {[0, 0, 0], [1, 1, 1]}
-    - invalid, TODO: workSizes {x,y,z} just under and above limit, once limit is established.
+    `Test 'direct' and 'indirect' dispatch with various sizes.
+
+  Only direct dispatches can produce validation errors.
+  Workgroup sizes:
+    - valid: { zero, one, just under limit }
+    - invalid: { just over limit, way over limit }
+
+  TODO: Verify that the invalid cases don't execute any invocations at all.
 `
   )
   .params(u =>
     u
       .combine('dispatchType', ['direct', 'indirect'] as const)
+      .combine('largeDimValue', [0, 1, kMaxDispatch, kMaxDispatch + 1, 0x7fff_ffff, 0xffff_ffff])
       .beginSubcases()
-      .combine('workSizes', [
-        [0, 0, 0],
-        [1, 1, 1],
-      ] as const)
+      .combine('largeDimIndex', [0, 1, 2] as const)
+      .combine('smallDimValue', [0, 1])
   )
   .fn(t => {
+    const { dispatchType, largeDimIndex, smallDimValue, largeDimValue } = t.params;
+
     const pipeline = t.createNoOpComputePipeline();
-    const [x, y, z] = t.params.workSizes;
-    const { encoder, finish } = t.createEncoder('compute pass');
+
+    const workSizes = [smallDimValue, smallDimValue, smallDimValue];
+    workSizes[largeDimIndex] = largeDimValue;
+
+    const { encoder, validateFinishAndSubmit } = t.createEncoder('compute pass');
     encoder.setPipeline(pipeline);
-    if (t.params.dispatchType === 'direct') {
+    if (dispatchType === 'direct') {
+      const [x, y, z] = workSizes;
       encoder.dispatch(x, y, z);
-    } else if (t.params.dispatchType === 'indirect') {
-      encoder.dispatchIndirect(t.createIndirectBuffer('valid', new Uint32Array([x, y, z])), 0);
+    } else if (dispatchType === 'indirect') {
+      encoder.dispatchIndirect(t.createIndirectBuffer('valid', new Uint32Array(workSizes)), 0);
     }
-    t.queue.submit([finish()]);
+
+    const shouldError =
+      dispatchType === 'direct' &&
+      (workSizes[0] > kMaxDispatch || workSizes[1] > kMaxDispatch || workSizes[2] > kMaxDispatch);
+
+    validateFinishAndSubmit(!shouldError, true);
   });
 
 const kBufferData = new Uint32Array(6).fill(1);
@@ -109,7 +129,7 @@ TODO: test specifically which call the validation error occurs in.
   )
   .paramsSubcasesOnly(u =>
     u //
-      .combine('state', ['valid', 'invalid', 'destroyed'] as const)
+      .combine('state', kResourceStates)
       .combine('offset', [
         // valid (for 'valid' buffers)
         0,
@@ -125,10 +145,21 @@ TODO: test specifically which call the validation error occurs in.
     const { state, offset } = t.params;
     const pipeline = t.createNoOpComputePipeline();
     const buffer = t.createIndirectBuffer(state, kBufferData);
-    const { encoder, finish } = t.createEncoder('compute pass');
+
+    const { encoder, validateFinishAndSubmit } = t.createEncoder('compute pass');
     encoder.setPipeline(pipeline);
-    t.expectValidationError(() => {
-      encoder.dispatchIndirect(buffer, offset);
-      t.queue.submit([finish()]);
-    }, state !== 'valid' || offset % 4 !== 0 || offset + 3 * Uint32Array.BYTES_PER_ELEMENT > kBufferData.byteLength);
+    encoder.dispatchIndirect(buffer, offset);
+
+    const finishShouldError =
+      state === 'invalid' ||
+      offset % 4 !== 0 ||
+      offset + 3 * Uint32Array.BYTES_PER_ELEMENT > kBufferData.byteLength;
+    validateFinishAndSubmit(!finishShouldError, state !== 'destroyed');
   });
+
+g.test('indirect_dispatch_buffer,device_mismatch')
+  .desc(
+    'Tests dispatchIndirect cannot be called with an indirect buffer created from another device'
+  )
+  .paramsSubcasesOnly(u => u.combine('mismatched', [true, false]))
+  .unimplemented();

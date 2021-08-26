@@ -8,8 +8,8 @@ import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.components.content_settings.ContentSettingsType;
-import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
 import org.chromium.components.location.LocationUtils;
+import org.chromium.content_public.browser.BrowserContextHandle;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -151,6 +151,13 @@ public class WebsitePreferenceBridge {
             @ContentSettingsType int contentSettingsType, String origin) {
         return WebsitePreferenceBridgeJni.get().isPermissionControlledByDSE(
                 browserContextHandle, contentSettingsType, origin);
+    }
+
+    /**
+     * Returns whether the DSE (Default Search Engine) origin matches the given origin.
+     */
+    public static boolean isDSEOrigin(BrowserContextHandle browserContextHandle, String origin) {
+        return WebsitePreferenceBridgeJni.get().isDSEOrigin(browserContextHandle, origin);
     }
 
     /**
@@ -355,6 +362,7 @@ public class WebsitePreferenceBridge {
                 int value);
         boolean isPermissionControlledByDSE(BrowserContextHandle browserContextHandle,
                 @ContentSettingsType int contentSettingsType, String origin);
+        boolean isDSEOrigin(BrowserContextHandle browserContextHandle, String origin);
         boolean getAdBlockingActivated(BrowserContextHandle browserContextHandle, String origin);
         boolean isContentSettingEnabled(
                 BrowserContextHandle browserContextHandle, int contentSettingType);

@@ -41,6 +41,12 @@ class FormCache {
   std::vector<FormData> ExtractNewForms(
       const FieldDataManager* field_data_manager);
 
+  // Modified version of ExtractNewForms(). It is used only if
+  // `AutofillUseNewFormExtraction` feature is enabled. Remove after the feature
+  // is deleted.
+  std::vector<FormData> ModifiedExtractNewForms(
+      const FieldDataManager* field_data_manager);
+
   // Resets the forms.
   void Reset();
 
@@ -56,28 +62,17 @@ class FormCache {
   bool ShowPredictions(const FormDataPredictions& form,
                        bool attach_predictions_to_dom);
 
-  // For a given |control_element| check whether it is eligible for manual
-  // filling on form interaction.
-  bool IsFormElementEligibleForManualFilling(
-      const blink::WebFormControlElement& control_element);
-
   // Stores the FieldRendererId of the fields that are eligible for manual
   // filling in a set.
   void SetFieldsEligibleForManualFilling(
       const std::vector<FieldRendererId>& fields_eligible_for_manual_filling);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(FormCacheTest,
-                           ShouldShowAutocompleteConsoleWarnings_Enabled);
-  FRIEND_TEST_ALL_PREFIXES(FormCacheTest,
-                           ShouldShowAutocompleteConsoleWarnings_Disabled);
-  FRIEND_TEST_ALL_PREFIXES(FormCacheBrowserTest, FreeDataOnElementRemoval);
-  FRIEND_TEST_ALL_PREFIXES(
-      FormCacheBrowserTest,
-      RemoveReextractedModifiedNonSyntheticFormsWithSameRendererID);
-  FRIEND_TEST_ALL_PREFIXES(
-      FormCacheBrowserTest,
-      RemoveReextractedModifiedSyntheticFormsWithSameRendererID);
+  friend class FormCacheTestApi;
+
+  // Holds a subset of FormData members. ModifiedExtractNewForms() re-extracts
+  // a form only if these values have changed.
+  struct CachedFormData;
 
   // Scans |control_elements| and returns the number of editable elements.
   // Also logs warning messages for deprecated attribute if
@@ -89,14 +84,6 @@ class FormCache {
   // Saves initial state of checkbox and select elements.
   void SaveInitialValues(
       const std::vector<blink::WebFormControlElement>& control_elements);
-
-  // Returns whether we should show a console warning related to a wrong
-  // autocomplete attribute. We will show a warning if (1) there is no
-  // autocomplete attribute and we have a guess for one or (2) we recognize the
-  // autocomplete attribute but it appears to be the wrong one.
-  bool ShouldShowAutocompleteConsoleWarnings(
-      const std::string& predicted_autocomplete,
-      const std::string& actual_autocomplete);
 
   // Clears the value of the |control_element|.
   void ClearElement(blink::WebFormControlElement& control_element,
@@ -112,6 +99,11 @@ class FormCache {
   // The cached forms. Used to prevent re-extraction of forms.
   // TODO(crbug/896689) Move to std::map<unique_rederer_id, FormData>.
   std::set<FormData, FormData::IdentityComparator> parsed_forms_;
+
+  // Same as |parsed_forms_|, but moved to a different type. It is used only if
+  // `AutofillUseNewFormExtraction` feature is enabled. Remove after the feature
+  // is deleted.
+  std::map<FormRendererId, CachedFormData> parsed_forms_rendererid_;
 
   // The synthetic FormData is for all the fieldsets in the document without a
   // form owner.

@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "constants/ascii.h"
 #include "core/fpdfdoc/cpdf_formcontrol.h"
 #include "fpdfsdk/cpdfsdk_formfillenvironment.h"
 #include "fpdfsdk/cpdfsdk_widget.h"
@@ -31,7 +32,8 @@ std::unique_ptr<CPWL_Wnd> CFFL_RadioButton::NewPWLWindow(
   return std::move(pWnd);
 }
 
-bool CFFL_RadioButton::OnKeyDown(uint32_t nKeyCode, uint32_t nFlags) {
+bool CFFL_RadioButton::OnKeyDown(FWL_VKEYCODE nKeyCode,
+                                 Mask<FWL_EVENTFLAG> nFlags) {
   switch (nKeyCode) {
     case FWL_VKEY_Return:
     case FWL_VKEY_Space:
@@ -43,10 +45,10 @@ bool CFFL_RadioButton::OnKeyDown(uint32_t nKeyCode, uint32_t nFlags) {
 
 bool CFFL_RadioButton::OnChar(CPDFSDK_Annot* pAnnot,
                               uint32_t nChar,
-                              uint32_t nFlags) {
+                              Mask<FWL_EVENTFLAG> nFlags) {
   switch (nChar) {
-    case FWL_VKEY_Return:
-    case FWL_VKEY_Space: {
+    case pdfium::ascii::kReturn:
+    case pdfium::ascii::kSpace: {
       CPDFSDK_PageView* pPageView = pAnnot->GetPageView();
       DCHECK(pPageView);
 
@@ -70,7 +72,7 @@ bool CFFL_RadioButton::OnChar(CPDFSDK_Annot* pAnnot,
 
 bool CFFL_RadioButton::OnLButtonUp(CPDFSDK_PageView* pPageView,
                                    CPDFSDK_Annot* pAnnot,
-                                   uint32_t nFlags,
+                                   Mask<FWL_EVENTFLAG> nFlags,
                                    const CFX_PointF& point) {
   CFFL_Button::OnLButtonUp(pPageView, pAnnot, nFlags, point);
 

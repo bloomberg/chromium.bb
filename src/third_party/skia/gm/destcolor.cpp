@@ -12,13 +12,13 @@
 #include "include/core/SkRect.h"
 #include "include/core/SkTypes.h"
 #include "include/effects/SkImageFilters.h"
+#include "src/core/SkCanvasPriv.h"
 #include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/GrFragmentProcessor.h"
 #include "src/gpu/GrStyle.h"
-#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/SkGr.h"
-#include "src/gpu/glsl/GrGLSLFragmentProcessor.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
+#include "src/gpu/v1/SurfaceDrawContext_v1.h"
 #include "tools/Resources.h"
 #include "tools/ToolUtils.h"
 
@@ -41,25 +41,21 @@ private:
     }
 
     explicit DestColorTestFP(const DestColorTestFP& that)
-            : INHERITED(kTestFP_ClassID, that.optimizationFlags()) {
-        this->cloneAndRegisterAllChildProcessors(that);
-    }
+            : INHERITED(that) {}
 
     const char* name() const override { return "DestColorTestFP"; }
-    void onGetGLSLProcessorKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const override {}
+    void onAddToKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const override {}
     bool onIsEqual(const GrFragmentProcessor&) const override { return true; }
 
-    class Impl : public GrGLSLFragmentProcessor {
-        void emitCode(EmitArgs& args) override {
-            SkString result = this->invokeChild(0, args);
-            args.fFragBuilder->codeAppendf("return (half4(1) - (%s)).rgb1;", result.c_str());
-        }
-        void onSetData(const GrGLSLProgramDataManager& pdman,
-                       const GrFragmentProcessor& processor) override {
-        }
-    };
+    std::unique_ptr<ProgramImpl> onMakeProgramImpl() const override {
+        class Impl : public ProgramImpl {
+        public:
+            void emitCode(EmitArgs& args) override {
+                SkString result = this->invokeChild(0, args);
+                args.fFragBuilder->codeAppendf("return (half4(1) - (%s)).rgb1;", result.c_str());
+            }
+        };
 
-    std::unique_ptr<GrGLSLFragmentProcessor> onMakeProgramImpl() const override {
         return std::make_unique<Impl>();
     }
 
@@ -68,8 +64,16 @@ private:
 
 }  // namespace
 
-DEF_SIMPLE_GPU_GM(destcolor, rContext, sdc, canvas, 640, 640) {
+namespace skiagm {
+
+DEF_SIMPLE_GPU_GM_CAN_FAIL(destcolor, rContext, canvas, errorMsg, 640, 640) {
     SkRect bounds = SkRect::MakeIWH(512, 512);
+
+    auto sdc = SkCanvasPriv::TopDeviceSurfaceDrawContext(canvas);
+    if (!sdc) {
+        *errorMsg = GM::kErrorMsg_DrawSkippedGpuOnly;
+        return DrawResult::kSkip;
+    }
 
     // Draw the mandrill.
     SkPaint p;
@@ -81,7 +85,12 @@ DEF_SIMPLE_GPU_GM(destcolor, rContext, sdc, canvas, 640, 640) {
     GrPaint invertPaint;
     invertPaint.setColor4f(SK_PMColor4fWHITE);
     invertPaint.setPorterDuffXPFactory(SkBlendMode::kSrcOver);
-    invertPaint.setColorFragmentProcessor(DestColorTestFP::Make(GrFragmentProcessor::DestColor()));
+    invertPaint.setColorFragmentProcessor(
+            DestColorTestFP::Make(GrFragmentProcessor::SurfaceColor()));
     sdc->drawOval(/*clip*/ nullptr, std::move(invertPaint), GrAA::kYes, SkMatrix::I(),
                   SkRect::MakeLTRB(128, 128, 640, 640), GrStyle::SimpleFill());
+
+    return DrawResult::kOk;
 }
+
+} // namespace skiagm

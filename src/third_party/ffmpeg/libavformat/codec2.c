@@ -21,11 +21,12 @@
 
 #include <memory.h>
 #include "libavcodec/codec2utils.h"
+#include "libavutil/channel_layout.h"
 #include "libavutil/intreadwrite.h"
+#include "libavutil/opt.h"
 #include "avio_internal.h"
 #include "avformat.h"
 #include "internal.h"
-#include "rawdec.h"
 #include "rawenc.h"
 #include "pcm.h"
 
@@ -276,13 +277,6 @@ static const AVOption codec2raw_options[] = {
     { NULL },
 };
 
-static const AVClass codec2_mux_class = {
-    .class_name = "codec2 muxer",
-    .item_name  = av_default_item_name,
-    .version    = LIBAVUTIL_VERSION_INT,
-    .category   = AV_CLASS_CATEGORY_DEMUXER,
-};
-
 static const AVClass codec2_demux_class = {
     .class_name = "codec2 demuxer",
     .item_name  = av_default_item_name,
@@ -326,7 +320,6 @@ const AVOutputFormat ff_codec2_muxer = {
     .write_header   = codec2_write_header,
     .write_packet   = ff_raw_write_packet,
     .flags          = AVFMT_NOTIMESTAMPS,
-    .priv_class     = &codec2_mux_class,
 };
 #endif
 

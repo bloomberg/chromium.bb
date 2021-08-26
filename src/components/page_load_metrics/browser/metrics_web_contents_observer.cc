@@ -115,6 +115,19 @@ MetricsWebContentsObserver* MetricsWebContentsObserver::CreateForWebContents(
   return metrics;
 }
 
+// static
+void MetricsWebContentsObserver::BindPageLoadMetrics(
+    mojo::PendingAssociatedReceiver<mojom::PageLoadMetrics> receiver,
+    content::RenderFrameHost* rfh) {
+  auto* web_contents = content::WebContents::FromRenderFrameHost(rfh);
+  if (!web_contents)
+    return;
+  auto* observer = MetricsWebContentsObserver::FromWebContents(web_contents);
+  if (!observer)
+    return;
+  observer->page_load_metrics_receivers_.Bind(rfh, std::move(receiver));
+}
+
 MetricsWebContentsObserver::~MetricsWebContentsObserver() {}
 
 void MetricsWebContentsObserver::WebContentsWillSoonBeDestroyed() {
@@ -160,9 +173,12 @@ void MetricsWebContentsObserver::RenderViewHostChanged(
 }
 
 void MetricsWebContentsObserver::FrameDeleted(int frame_tree_node_id) {
-  // TODO(crbug.com/1190112): Support MPArch.
-  if (committed_load_)
-    committed_load_->FrameDeleted(frame_tree_node_id);
+  content::RenderFrameHost* rfh =
+      web_contents()->UnsafeFindFrameByFrameTreeNodeId(frame_tree_node_id);
+  if (!rfh || !rfh->GetParent())
+    return;
+  if (PageLoadTracker* tracker = GetPageLoadTracker(rfh))
+    tracker->SubFrameDeleted(frame_tree_node_id);
 }
 
 void MetricsWebContentsObserver::RenderFrameDeleted(
@@ -222,10 +238,7 @@ MetricsWebContentsObserver::MetricsWebContentsObserver(
                      content::Visibility::HIDDEN),
       embedder_interface_(std::move(embedder_interface)),
       has_navigated_(false),
-      page_load_metrics_receiver_(
-          web_contents,
-          this,
-          content::WebContentsFrameReceiverSetPassKey()) {
+      page_load_metrics_receivers_(web_contents, this) {
   // NoStatePrefetch loads erroneously report that they are initially visible,
   // so we manually override visibility state for prerender.
   if (embedder_interface_->IsNoStatePrefetch(web_contents))
@@ -985,7 +998,7 @@ void MetricsWebContentsObserver::UpdateTiming(
     mojom::InputTimingPtr input_timing_delta,
     const blink::MobileFriendliness& mobile_friendliness) {
   content::RenderFrameHost* render_frame_host =
-      page_load_metrics_receiver_.GetCurrentTargetFrame();
+      page_load_metrics_receivers_.GetCurrentTargetFrame();
   OnTimingUpdated(render_frame_host, std::move(timing), std::move(metadata),
                   new_features, resources, std::move(render_data),
                   std::move(cpu_timing), std::move(new_deferred_resource_data),
@@ -996,7 +1009,7 @@ void MetricsWebContentsObserver::UpdateTiming(
 void MetricsWebContentsObserver::SetUpSharedMemoryForSmoothness(
     base::ReadOnlySharedMemoryRegion shared_memory) {
   content::RenderFrameHost* render_frame_host =
-      page_load_metrics_receiver_.GetCurrentTargetFrame();
+      page_load_metrics_receivers_.GetCurrentTargetFrame();
   const bool is_main_frame = render_frame_host->GetParent() == nullptr;
   if (!is_main_frame) {
     // TODO(1115136): Merge smoothness metrics from OOPIFs with the main-frame.
@@ -1093,11 +1106,12 @@ MetricsWebContentsObserver::TestingObserver::GetDelegateForCommittedLoad() {
   return observer_ ? &observer_->GetDelegateForCommittedLoad() : nullptr;
 }
 
-void MetricsWebContentsObserver::BroadcastEventToObservers(
-    PageLoadMetricsEvent event) {
-  // TODO(crbug.com/1190112): Support MPArch.
+void MetricsWebContentsObserver::OnPrefetchLikely() {
+  // Prefetching can be triggered by speculation rules (by SpeculationHostImpl::
+  // UpdateSpeculationCandidates()) or by NavigationPredictor, both of which
+  // work only on behalf of a primary page.
   if (committed_load_)
-    committed_load_->BroadcastEventToObservers(event);
+    committed_load_->OnPrefetchLikely();
 }
 
 void MetricsWebContentsObserver::OnV8MemoryChanged(

@@ -126,6 +126,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/client_hints/client_hints.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -4447,12 +4448,14 @@ class PrefetchProxyPrerenderBrowserTest : public PrefetchProxyBrowserTest {
   PrefetchProxyPrerenderBrowserTest& operator=(
       const PrefetchProxyPrerenderBrowserTest&) = delete;
 
-  void SetUp() override { PrefetchProxyBrowserTest::SetUp(); }
-
   void TearDown() override { PrefetchProxyBrowserTest::ResetFeatureList(); }
 
+  void SetUp() override {
+    prerender_test_helper_.SetUp(embedded_test_server());
+    PrefetchProxyBrowserTest::SetUp();
+  }
+
   void SetUpOnMainThread() override {
-    prerender_test_helper_.SetUpOnMainThread(embedded_test_server());
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(embedded_test_server()->Start());
     PrefetchProxyBrowserTest::SetUpOnMainThread();
@@ -4514,4 +4517,68 @@ IN_PROC_BROWSER_TEST_F(PrefetchProxyPrerenderBrowserTest,
 
   // Check if the prefetched URL is different from the prerendered frame.
   EXPECT_NE(tab_helper->after_srp_metrics()->url_, prerender_render_frame_url);
+}
+
+class ZeroCacheTimePrefetchProxyBrowserTest : public PrefetchProxyBrowserTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* cmd) override {
+    PrefetchProxyBrowserTest::SetUpCommandLine(cmd);
+  }
+
+  void SetFeatures() override {
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        features::kIsolatePrerenders, {
+                                          {"cacheable_duration", "0"},
+                                      });
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(
+    ZeroCacheTimePrefetchProxyBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMEOS(PrefetchAfterCacheExpiration)) {
+  SetDataSaverEnabled(true);
+  GURL starting_page = GetOriginServerURL("/simple.html");
+  ui_test_utils::NavigateToURL(browser(), starting_page);
+  WaitForUpdatedCustomProxyConfig();
+
+  PrefetchProxyTabHelper* tab_helper =
+      PrefetchProxyTabHelper::FromWebContents(GetWebContents());
+
+  GURL eligible_link =
+      GetOriginServerURL("/prefetch/prefetch_proxy/prefetch_page.html");
+
+  TestTabHelperObserver tab_helper_observer(tab_helper);
+
+  tab_helper_observer.SetExpectedSuccessfulURLs({eligible_link});
+
+  base::RunLoop prefetch_run_loop;
+  tab_helper_observer.SetOnPrefetchSuccessfulClosure(
+      prefetch_run_loop.QuitClosure());
+
+  base::HistogramTester histogram_tester;
+  GURL doc_url("https://www.google.com/search?q=test");
+  MakeNavigationPrediction(doc_url, {eligible_link});
+
+  // This run loop will quit when the prefetch response has been
+  // successfully done and processed.
+  prefetch_run_loop.Run();
+
+  // Navigate to the predicted site.
+  ui_test_utils::NavigateToURL(browser(), eligible_link);
+
+  // Navigate again to trigger UKM recording.
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+
+  // 30 = |kPrefetchIsStale|.
+  EXPECT_EQ(absl::optional<int64_t>(30),
+            GetUKMMetric(eligible_link,
+                         ukm::builders::PrefetchProxy_AfterSRPClick::kEntryName,
+                         ukm::builders::PrefetchProxy_AfterSRPClick::
+                             kSRPClickPrefetchStatusName));
+
+  histogram_tester.ExpectTotalCount(
+      "PrefetchProxy.Prefetch.Mainframe.CookiesToCopy", 0);
 }

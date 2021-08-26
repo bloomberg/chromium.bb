@@ -7,8 +7,10 @@
 #include "base/check.h"
 #include "base/i18n/rtl.h"
 #import "ios/chrome/browser/ui/first_run/highlighted_button.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/button_util.h"
+#include "ios/chrome/common/ui/util/dynamic_type_util.h"
 #import "ios/chrome/common/ui/util/pointer_interaction_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -33,6 +35,7 @@ NSString* const kFirstRunScrollViewAccessibilityIdentifier =
 namespace {
 
 constexpr CGFloat kDefaultMargin = 16;
+constexpr CGFloat kTitleHorizontalMargin = 18;
 constexpr CGFloat kActionsBottomMargin = 10;
 constexpr CGFloat kTallBannerMultiplier = 0.35;
 constexpr CGFloat kDefaultBannerMultiplier = 0.25;
@@ -40,6 +43,7 @@ constexpr CGFloat kContentWidthMultiplier = 0.65;
 constexpr CGFloat kContentMaxWidth = 327;
 constexpr CGFloat kMoreArrowMargin = 4;
 constexpr CGFloat kPreviousContentVisibleOnScroll = 0.15;
+constexpr CGFloat kSeparatorHeight = 1;
 
 }  // namespace
 
@@ -49,18 +53,19 @@ constexpr CGFloat kPreviousContentVisibleOnScroll = 0.15;
 @property(nonatomic, strong) UIImageView* imageView;
 // UIView that wraps the scrollable content.
 @property(nonatomic, strong) UIView* scrollContentView;
-@property(nonatomic, strong) UILabel* titleLabel;
 @property(nonatomic, strong) UILabel* subtitleLabel;
 @property(nonatomic, strong) HighlightedButton* primaryActionButton;
 @property(nonatomic, strong) UIButton* secondaryActionButton;
 @property(nonatomic, strong) UIButton* tertiaryActionButton;
 
+@property(nonatomic, strong) UIView* separator;
+
 @property(nonatomic, assign) BOOL didReachBottom;
 
-// YES if the primary button content can be updated (e.g., change the text
-// label string) which corresponds to the moment where the layout reflects the
-// latest updates.
-@property(nonatomic, assign) BOOL canUpdatePrimaryButton;
+// YES if the views can be updated on scroll updates (e.g., change the text
+// label string of the primary button) which corresponds to the moment where the
+// layout reflects the latest updates.
+@property(nonatomic, assign) BOOL canUpdateViewsOnScroll;
 
 @end
 
@@ -77,6 +82,12 @@ constexpr CGFloat kPreviousContentVisibleOnScroll = 0.15;
   // specific content. A layout guide is needed because the margin scales with
   // the view height.
   UILayoutGuide* subtitleMarginLayoutGuide = [[UILayoutGuide alloc] init];
+
+  self.separator = [[UIView alloc] init];
+  self.separator.translatesAutoresizingMaskIntoConstraints = NO;
+  self.separator.backgroundColor = [UIColor colorNamed:kSeparatorColor];
+  self.separator.hidden = YES;
+  [self.view addSubview:self.separator];
 
   self.scrollContentView = [[UIView alloc] init];
   self.scrollContentView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -146,6 +157,15 @@ constexpr CGFloat kPreviousContentVisibleOnScroll = 0.15;
         constraintEqualToAnchor:actionStackView.topAnchor
                        constant:actionStackViewTopMargin],
 
+    // Separator constraints.
+    [self.separator.heightAnchor constraintEqualToConstant:kSeparatorHeight],
+    [self.separator.leadingAnchor
+        constraintEqualToAnchor:self.view.leadingAnchor],
+    [self.separator.trailingAnchor
+        constraintEqualToAnchor:self.view.trailingAnchor],
+    [self.separator.topAnchor
+        constraintEqualToAnchor:self.scrollView.bottomAnchor],
+
     // Scroll content view constraints. Constrain its height to at least the
     // scroll view height, so that derived VCs can pin UI elements just above
     // the buttons.
@@ -176,7 +196,8 @@ constexpr CGFloat kPreviousContentVisibleOnScroll = 0.15;
     [self.titleLabel.centerXAnchor
         constraintEqualToAnchor:self.scrollContentView.centerXAnchor],
     [self.titleLabel.widthAnchor
-        constraintLessThanOrEqualToAnchor:self.scrollContentView.widthAnchor],
+        constraintLessThanOrEqualToAnchor:self.scrollContentView.widthAnchor
+                                 constant:-2 * kTitleHorizontalMargin],
     [self.subtitleLabel.topAnchor
         constraintEqualToAnchor:self.titleLabel.bottomAnchor
                        constant:kDefaultMargin],
@@ -234,7 +255,7 @@ constexpr CGFloat kPreviousContentVisibleOnScroll = 0.15;
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
-  self.canUpdatePrimaryButton = NO;
+  self.canUpdateViewsOnScroll = NO;
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -260,19 +281,19 @@ constexpr CGFloat kPreviousContentVisibleOnScroll = 0.15;
   // done.
   dispatch_async(dispatch_get_main_queue(), ^{
     self.scrollView.delegate = self;
-    self.canUpdatePrimaryButton = YES;
+    self.canUpdateViewsOnScroll = YES;
 
     // At this point, the scroll view has computed its content height. If
     // scrolling to the end is needed, and the entire content is already
     // fully visible (scrolled), set |didReachBottom| to YES. Otherwise, replace
     // the primary button's label with the read more label to indicate that more
     // scrolling is required.
-    if (!self.didReachBottom) {
-      if ([self isScrolledToBottom]) {
-        self.didReachBottom = YES;
-      } else {
-        [self setReadMoreText];
-      }
+    BOOL isScrolledToBottom = [self isScrolledToBottom];
+    self.separator.hidden = isScrolledToBottom;
+    if (isScrolledToBottom) {
+      self.didReachBottom = YES;
+    } else if (!self.didReachBottom) {
+      [self setReadMoreText];
     }
   });
 }
@@ -286,7 +307,7 @@ constexpr CGFloat kPreviousContentVisibleOnScroll = 0.15;
   // right measurements to evaluate the scroll position.
   void (^transition)(id<UIViewControllerTransitionCoordinatorContext>) =
       ^(id<UIViewControllerTransitionCoordinatorContext> context) {
-        [self updatePrimaryButtonIfReachedBottom];
+        [self updateViewsOnScrollViewUpdate];
       };
   [coordinator animateAlongsideTransition:transition completion:nil];
 }
@@ -297,13 +318,13 @@ constexpr CGFloat kPreviousContentVisibleOnScroll = 0.15;
   // Reset the title font and the learn more text to make sure that they are
   // properly scaled. Nothing will be done for the Read More text if the
   // bottom is reached.
-  [self setTitleFont:self.titleLabel];
+  [self setFontForTitle:self.titleLabel];
   [self setReadMoreText];
 
   // Update the primary button once the layout changes take effect to have the
   // right measurements to evaluate the scroll position.
   dispatch_async(dispatch_get_main_queue(), ^{
-    [self updatePrimaryButtonIfReachedBottom];
+    [self updateViewsOnScrollViewUpdate];
   });
 }
 
@@ -375,18 +396,27 @@ constexpr CGFloat kPreviousContentVisibleOnScroll = 0.15;
   return newImage;
 }
 
+// Determines which font text style to use depending on the device size, the
+// size class and if dynamic type is enabled.
+- (UIFontTextStyle)titleLabelFontTextStyle {
+  BOOL dynamicTypeEnabled = UIContentSizeCategoryIsAccessibilityCategory(
+      self.traitCollection.preferredContentSizeCategory);
+
+  if (!dynamicTypeEnabled) {
+    if (IsRegularXRegularSizeClass(self.traitCollection)) {
+      return UIFontTextStyleTitle1;
+    } else if (!IsSmallDevice()) {
+      return UIFontTextStyleLargeTitle;
+    }
+  }
+  return UIFontTextStyleTitle2;
+}
+
 - (UILabel*)titleLabel {
   if (!_titleLabel) {
     _titleLabel = [[UILabel alloc] init];
     _titleLabel.numberOfLines = 0;
-    [self setTitleFont:_titleLabel];
-    UIFontDescriptor* descriptor = [UIFontDescriptor
-        preferredFontDescriptorWithTextStyle:UIFontTextStyleLargeTitle];
-    UIFont* font = [UIFont systemFontOfSize:descriptor.pointSize
-                                     weight:UIFontWeightBold];
-    UIFontMetrics* fontMetrics =
-        [UIFontMetrics metricsForTextStyle:UIFontTextStyleLargeTitle];
-    _titleLabel.font = [fontMetrics scaledFontForFont:font];
+    [self setFontForTitle:_titleLabel];
     _titleLabel.textColor = [UIColor colorNamed:kTextPrimaryColor];
     _titleLabel.text = self.titleText;
     _titleLabel.textAlignment = NSTextAlignmentCenter;
@@ -397,13 +427,14 @@ constexpr CGFloat kPreviousContentVisibleOnScroll = 0.15;
   return _titleLabel;
 }
 
-- (void)setTitleFont:(UILabel*)titleLabel {
-  UIFontDescriptor* descriptor = [UIFontDescriptor
-      preferredFontDescriptorWithTextStyle:UIFontTextStyleLargeTitle];
+- (void)setFontForTitle:(UILabel*)titleLabel {
+  UIFontTextStyle textStyle = [self titleLabelFontTextStyle];
+
+  UIFontDescriptor* descriptor =
+      [UIFontDescriptor preferredFontDescriptorWithTextStyle:textStyle];
   UIFont* font = [UIFont systemFontOfSize:descriptor.pointSize
                                    weight:UIFontWeightBold];
-  UIFontMetrics* fontMetrics =
-      [UIFontMetrics metricsForTextStyle:UIFontTextStyleLargeTitle];
+  UIFontMetrics* fontMetrics = [UIFontMetrics metricsForTextStyle:textStyle];
   titleLabel.font = [fontMetrics scaledFontForFont:font];
 }
 
@@ -486,7 +517,7 @@ constexpr CGFloat kPreviousContentVisibleOnScroll = 0.15;
     return;
   }
 
-  if (!self.canUpdatePrimaryButton) {
+  if (!self.canUpdateViewsOnScroll) {
     return;
   }
 
@@ -599,16 +630,18 @@ constexpr CGFloat kPreviousContentVisibleOnScroll = 0.15;
 // If scrolling to the end of the content is mandatory, this method updates the
 // primary button's label based on whether the scroll view is currently scrolled
 // to the end. If the scroll view has scrolled to the end, also sets
-// |didReachBottom|. If scrolling to the end of the content isn't mandatory, or
-// if the scroll view had already been scrolled to the end previously, this
-// method has no effect.
-- (void)updatePrimaryButtonIfReachedBottom {
-  if (!self.canUpdatePrimaryButton) {
+// |didReachBottom|.
+// It also updates the separator visibility based on scroll position.
+- (void)updateViewsOnScrollViewUpdate {
+  if (!self.canUpdateViewsOnScroll) {
     return;
   }
 
-  if (self.scrollToEndMandatory && !self.didReachBottom &&
-      [self isScrolledToBottom]) {
+  BOOL isScrolledToBottom = [self isScrolledToBottom];
+
+  self.separator.hidden = isScrolledToBottom;
+
+  if (self.scrollToEndMandatory && !self.didReachBottom && isScrolledToBottom) {
     self.didReachBottom = YES;
     [self.primaryActionButton setAttributedTitle:nil
                                         forState:UIControlStateNormal];
@@ -662,7 +695,7 @@ constexpr CGFloat kPreviousContentVisibleOnScroll = 0.15;
 #pragma mark - UIScrollViewDelegate
 
 - (void)scrollViewDidScroll:(UIScrollView*)scrollView {
-  [self updatePrimaryButtonIfReachedBottom];
+  [self updateViewsOnScrollViewUpdate];
 }
 
 @end

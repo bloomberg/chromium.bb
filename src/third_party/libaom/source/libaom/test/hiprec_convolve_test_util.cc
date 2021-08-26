@@ -85,7 +85,7 @@ void AV1HiprecConvolveTest::SetUp() {
   rnd_.Reset(ACMRandom::DeterministicSeed());
 }
 
-void AV1HiprecConvolveTest::TearDown() { libaom_test::ClearSystemState(); }
+void AV1HiprecConvolveTest::TearDown() {}
 
 void AV1HiprecConvolveTest::RunCheckOutput(hiprec_convolve_func test_impl) {
   const int w = 128, h = 128;
@@ -220,9 +220,7 @@ void AV1HighbdHiprecConvolveTest::SetUp() {
   rnd_.Reset(ACMRandom::DeterministicSeed());
 }
 
-void AV1HighbdHiprecConvolveTest::TearDown() {
-  libaom_test::ClearSystemState();
-}
+void AV1HighbdHiprecConvolveTest::TearDown() {}
 
 void AV1HighbdHiprecConvolveTest::RunCheckOutput(
     highbd_hiprec_convolve_func test_impl) {

@@ -6,14 +6,11 @@
 
 #include <string>
 #include <utility>
-#include <vector>
 
 #include "base/check_op.h"
 #include "base/debug/dump_without_crashing.h"
-#include "base/files/file_path.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_metrics.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -27,14 +24,13 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_manager.h"
-#include "chrome/browser/web_applications/components/os_integration_manager.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/os_integration_manager.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_launch/web_launch_files_helper.h"
 #include "chrome/common/webui_url_constants.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/window_open_disposition.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -188,8 +184,7 @@ void LaunchSystemWebAppAsync(Profile* profile,
     DCHECK(!params.url.has_value())
         << "Launch URL can't be used with launch_paths.";
     app_service->LaunchAppWithFiles(
-        *app_id, apps::mojom::LaunchContainer::kLaunchContainerWindow,
-        event_flags, params.launch_source,
+        *app_id, event_flags, params.launch_source,
         apps::mojom::FilePaths::New(params.launch_paths));
     return;
   }
@@ -353,19 +348,16 @@ absl::optional<SystemAppType> GetCapturingSystemAppForURL(Profile* profile,
 
 gfx::Size GetSystemWebAppMinimumWindowSize(Browser* browser) {
   DCHECK(browser);
-  if (!browser->app_controller())
-    return gfx::Size();  // Not an app.
-
   auto* app_controller = browser->app_controller();
-  if (!app_controller->HasAppId())
-    return gfx::Size();
+  if (!app_controller)
+    return gfx::Size();  // Not an app.
 
   auto* provider = WebAppProvider::GetForSystemWebApps(browser->profile());
   if (!provider)
     return gfx::Size();
 
   return provider->system_web_app_manager().GetMinimumWindowSize(
-      app_controller->GetAppId());
+      app_controller->app_id());
 }
 
 }  // namespace web_app

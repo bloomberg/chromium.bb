@@ -6,11 +6,35 @@
 
 #include <xdg-foreign-unstable-v1-client-protocol.h>
 
+#include "base/logging.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 
 namespace ui {
+
+// static
+void XdgForeignWrapper::Register(WaylandConnection* connection) {
+  connection->RegisterGlobalObjectFactory("zxdg_exporter_v1",
+                                          &XdgForeignWrapper::Instantiate);
+}
+
+// static
+void XdgForeignWrapper::Instantiate(WaylandConnection* connection,
+                                    wl_registry* registry,
+                                    uint32_t name,
+                                    uint32_t version) {
+  if (connection->xdg_foreign_)
+    return;
+
+  auto zxdg_exporter = wl::Bind<zxdg_exporter_v1>(registry, name, version);
+  if (!zxdg_exporter) {
+    LOG(ERROR) << "Failed to bind zxdg_exporter";
+    return;
+  }
+  connection->xdg_foreign_ =
+      std::make_unique<XdgForeignWrapper>(connection, std::move(zxdg_exporter));
+}
 
 struct XdgForeignWrapper::ExportedSurface {
   ExportedSurface(wl_surface* surface, OnHandleExported cb);
@@ -84,8 +108,7 @@ XdgForeignWrapper::ExportedSurface* XdgForeignWrapper::GetExportedSurface(
 
 void XdgForeignWrapper::ExportSurfaceInternal(wl_surface* surface,
                                               OnHandleExported cb) {
-  static const struct zxdg_exported_v1_listener kExportedListener = {
-      &XdgForeignWrapper::OnExported};
+  static constexpr zxdg_exported_v1_listener kExportedListener = {&OnExported};
 
   ExportedSurface exported_surface(surface, std::move(cb));
   exported_surface.exported.reset(

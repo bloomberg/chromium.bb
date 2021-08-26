@@ -31,7 +31,8 @@ class PLATFORM_EXPORT NonMainThreadSchedulerHelper : public SchedulerHelper {
   ~NonMainThreadSchedulerHelper() override;
 
   scoped_refptr<NonMainThreadTaskQueue> NewTaskQueue(
-      const base::sequence_manager::TaskQueue::Spec& spec);
+      const base::sequence_manager::TaskQueue::Spec& spec,
+      bool can_be_throttled = false);
 
   scoped_refptr<NonMainThreadTaskQueue> DefaultNonMainThreadTaskQueue();
   scoped_refptr<NonMainThreadTaskQueue> ControlNonMainThreadTaskQueue();
@@ -41,12 +42,15 @@ class PLATFORM_EXPORT NonMainThreadSchedulerHelper : public SchedulerHelper {
   const scoped_refptr<base::SingleThreadTaskRunner>& ControlTaskRunner()
       override;
 
+  const scoped_refptr<base::SingleThreadTaskRunner>& InputTaskRunner();
+
  protected:
   void ShutdownAllQueues() override;
 
  private:
   NonMainThreadSchedulerImpl* non_main_thread_scheduler_;  // NOT OWNED
   const scoped_refptr<NonMainThreadTaskQueue> default_task_queue_;
+  const scoped_refptr<NonMainThreadTaskQueue> input_task_queue_;
   const scoped_refptr<NonMainThreadTaskQueue> control_task_queue_;
 };
 

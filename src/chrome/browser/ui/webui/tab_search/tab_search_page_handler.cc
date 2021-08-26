@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/tabs/tab_renderer_data.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/ui_features.h"
+#include "chrome/browser/ui/webui/tab_search/tab_search_prefs.h"
 #include "chrome/browser/ui/webui/util/image_util.h"
 #include "chrome/common/webui_url_constants.h"
 #include "ui/base/l10n/time_format.h"
@@ -188,6 +189,11 @@ void TabSearchPageHandler::OpenRecentlyClosedEntry(int32_t session_id) {
       WindowOpenDisposition::NEW_FOREGROUND_TAB);
 }
 
+void TabSearchPageHandler::SaveRecentlyClosedExpandedPref(bool expanded) {
+  Profile::FromWebUI(web_ui_)->GetPrefs()->SetBoolean(
+      tab_search_prefs::kTabSearchRecentlyClosedSectionExpanded, expanded);
+}
+
 void TabSearchPageHandler::ShowUI() {
   auto embedder = webui_controller_->embedder();
   if (embedder)
@@ -245,6 +251,10 @@ tab_search::mojom::ProfileDataPtr TabSearchPageHandler::CreateProfileData() {
                            tab_group_ids, profile_data->tab_groups,
                            tab_dedup_keys);
   DCHECK(features::kTabSearchRecentlyClosedTabCountThreshold.Get() >= 0);
+
+  profile_data->recently_closed_section_expanded =
+      Profile::FromWebUI(web_ui_)->GetPrefs()->GetBoolean(
+          tab_search_prefs::kTabSearchRecentlyClosedSectionExpanded);
   return profile_data;
 }
 
@@ -369,10 +379,11 @@ bool TabSearchPageHandler::AddRecentlyClosedTab(
       GetRecentlyClosedTab(tab);
 
   DedupKey dedup_id(recently_closed_tab->url, recently_closed_tab->group_id);
-  // Ignore NTP entries, duplicate entries and and tabs with empty URLs.
+  // Ignore NTP entries, duplicate entries and tabs with invalid URLs such as
+  // empty URLs.
   if (base::Contains(tab_dedup_keys, dedup_id) ||
       recently_closed_tab->url == GURL(chrome::kChromeUINewTabPageURL) ||
-      recently_closed_tab->url.empty()) {
+      !recently_closed_tab->url.is_valid()) {
     return false;
   }
   tab_dedup_keys.insert(dedup_id);
@@ -405,14 +416,14 @@ tab_search::mojom::TabPtr TabSearchPageHandler::GetTab(
   tab_data->pinned = tab_renderer_data.pinned;
   tab_data->title = base::UTF16ToUTF8(tab_renderer_data.title);
   tab_data->url = tab_renderer_data.last_committed_url.is_empty()
-                      ? tab_renderer_data.visible_url.spec()
-                      : tab_renderer_data.last_committed_url.spec();
+                      ? tab_renderer_data.visible_url
+                      : tab_renderer_data.last_committed_url;
 
   if (tab_renderer_data.favicon.isNull()) {
     tab_data->is_default_favicon = true;
   } else {
-    tab_data->favicon_url = webui::EncodePNGAndMakeDataURI(
-        tab_renderer_data.favicon, web_ui_->GetDeviceScaleFactor());
+    tab_data->favicon_url = GURL(webui::EncodePNGAndMakeDataURI(
+        tab_renderer_data.favicon, web_ui_->GetDeviceScaleFactor()));
     tab_data->is_default_favicon =
         tab_renderer_data.favicon.BackedBySameObjectAs(
             favicon::GetDefaultFavicon().AsImageSkia());
@@ -436,9 +447,9 @@ TabSearchPageHandler::GetRecentlyClosedTab(
   sessions::SerializedNavigationEntry& entry =
       tab->navigations[tab->current_navigation_index];
   recently_closed_tab->tab_id = tab->id.id();
-  recently_closed_tab->url = entry.virtual_url().spec();
+  recently_closed_tab->url = entry.virtual_url();
   recently_closed_tab->title = entry.title().empty()
-                                   ? recently_closed_tab->url
+                                   ? recently_closed_tab->url.spec()
                                    : base::UTF16ToUTF8(entry.title());
   const base::Time last_active_time = entry.timestamp();
   recently_closed_tab->last_active_time = last_active_time;
@@ -484,8 +495,13 @@ void TabSearchPageHandler::TabChangedAt(content::WebContents* contents,
   Browser* browser = chrome::FindBrowserWithWebContents(contents);
   if (!browser)
     return;
+  Browser* active_browser = chrome::FindLastActive();
   TRACE_EVENT0("browser", "TabSearchPageHandler:TabChangedAt");
-  page_->TabUpdated(GetTab(browser->tab_strip_model(), contents, index));
+
+  auto tab_update_info = tab_search::mojom::TabUpdateInfo::New();
+  tab_update_info->in_active_window = (browser == active_browser);
+  tab_update_info->tab = GetTab(browser->tab_strip_model(), contents, index);
+  page_->TabUpdated(std::move(tab_update_info));
 }
 
 void TabSearchPageHandler::ScheduleDebounce() {

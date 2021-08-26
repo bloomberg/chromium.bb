@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #include "tools/djxl.h"
 
@@ -18,12 +9,12 @@
 
 #include "lib/extras/codec.h"
 #include "lib/extras/codec_jpg.h"
+#include "lib/extras/time.h"
 #include "lib/extras/tone_mapping.h"
 #include "lib/jxl/alpha.h"
 #include "lib/jxl/base/data_parallel.h"
 #include "lib/jxl/base/file_io.h"
 #include "lib/jxl/base/override.h"
-#include "lib/jxl/base/time.h"
 #include "lib/jxl/color_encoding_internal.h"
 #include "lib/jxl/color_management.h"
 #include "lib/jxl/dec_file.h"
@@ -276,12 +267,16 @@ jxl::Status WriteJxlOutput(const DecompressArgs& args, const char* file_out,
   if (args.bits_per_sample != 0) bits_per_sample = args.bits_per_sample;
 
   if (args.tone_map) {
-    JXL_RETURN_IF_ERROR(jxl::ToneMapTo(args.display_nits, &io, pool));
+    jxl::Status status = jxl::ToneMapTo(args.display_nits, &io, pool);
+    if (!status) fprintf(stderr, "Failed to map tones.\n");
+    JXL_RETURN_IF_ERROR(status);
     if (c_out.tf.IsPQ() && args.color_space.empty()) {
       // Prevent writing the tone-mapped image to PQ output unless explicitly
       // requested. The result would look even dimmer than it would have without
       // tone mapping.
       c_out.tf.SetTransferFunction(jxl::TransferFunction::kSRGB);
+      status = c_out.CreateICC();
+      if (!status) fprintf(stderr, "Failed to create ICC\n");
       JXL_RETURN_IF_ERROR(c_out.CreateICC());
     }
   }
@@ -321,7 +316,6 @@ jxl::Status WriteJxlOutput(const DecompressArgs& args, const char* file_out,
       }
     }
   }
-  if (!args.quiet) fprintf(stderr, "Done.\n");
   return true;
 }
 

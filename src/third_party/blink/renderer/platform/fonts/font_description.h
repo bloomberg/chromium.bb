@@ -95,6 +95,7 @@ class PLATFORM_EXPORT FontDescription {
     kTitlingCaps
   };
   static String ToString(FontVariantCaps);
+  static String ToStringForIdl(FontVariantCaps);
 
   FontDescription();
   FontDescription(const FontDescription&);
@@ -281,10 +282,8 @@ class PLATFORM_EXPORT FontDescription {
 
   float EffectiveFontSize()
       const;  // Returns either the computedSize or the computedPixelSize
-  FontCacheKey CacheKey(
-      const FontFaceCreationParams&,
-      bool is_unique_match,
-      const FontSelectionRequest& = FontSelectionRequest()) const;
+  FontCacheKey CacheKey(const FontFaceCreationParams&,
+                        bool is_unique_match) const;
 
   void SetFamily(const FontFamily& family) { family_list_ = family; }
   void SetComputedSize(float s) { computed_size_ = clampTo<float>(s); }

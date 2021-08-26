@@ -76,9 +76,9 @@
 #include "net/dns/context_host_resolver.h"
 #include "net/dns/dns_test_util.h"
 #include "net/dns/host_resolver_manager.h"
-#include "net/dns/host_resolver_source.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/dns/public/dns_query_type.h"
+#include "net/dns/public/host_resolver_source.h"
 #include "net/dns/public/secure_dns_policy.h"
 #include "net/dns/resolve_context.h"
 #include "net/http/http_auth.h"
@@ -809,7 +809,7 @@ TEST_F(NetworkContextTest, DefaultHttpNetworkSessionParams) {
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateNetworkContextParamsForTesting());
 
-  const net::HttpNetworkSession::Params& params =
+  const net::HttpNetworkSessionParams& params =
       network_context->url_request_context()
           ->http_transaction_factory()
           ->GetSession()
@@ -837,7 +837,7 @@ TEST_F(NetworkContextTest, FixedHttpPort) {
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateNetworkContextParamsForTesting());
 
-  const net::HttpNetworkSession::Params& params =
+  const net::HttpNetworkSessionParams& params =
       network_context->url_request_context()
           ->http_transaction_factory()
           ->GetSession()
@@ -1135,9 +1135,8 @@ TEST_F(NetworkContextTest, TransportSecurityStatePersisted) {
   const char kDomain[] = "foo.test";
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  base::FilePath transport_security_persister_path = temp_dir.GetPath();
   base::FilePath transport_security_persister_file_path =
-      transport_security_persister_path.AppendASCII("TransportSecurity");
+      temp_dir.GetPath().AppendASCII("TransportSecurity");
   EXPECT_FALSE(base::PathExists(transport_security_persister_file_path));
 
   for (bool on_disk : {false, true}) {
@@ -1145,8 +1144,8 @@ TEST_F(NetworkContextTest, TransportSecurityStatePersisted) {
     mojom::NetworkContextParamsPtr context_params =
         CreateNetworkContextParamsForTesting();
     if (on_disk) {
-      context_params->transport_security_persister_path =
-          transport_security_persister_path;
+      context_params->transport_security_persister_file_path =
+          transport_security_persister_file_path;
     }
     std::unique_ptr<NetworkContext> network_context =
         CreateContextWithParams(std::move(context_params));
@@ -1173,8 +1172,8 @@ TEST_F(NetworkContextTest, TransportSecurityStatePersisted) {
     // added STS entry still exists.
     context_params = CreateNetworkContextParamsForTesting();
     if (on_disk) {
-      context_params->transport_security_persister_path =
-          transport_security_persister_path;
+      context_params->transport_security_persister_file_path =
+          transport_security_persister_file_path;
     }
     network_context = CreateContextWithParams(std::move(context_params));
     // Wait for the entry to load.
@@ -1773,7 +1772,8 @@ TEST_F(NetworkContextTest, ClearHostCache) {
         network_context->url_request_context()->host_resolver()->GetHostCache();
     ASSERT_TRUE(host_cache);
 
-    // Add the 4 test domains to the host cache.
+    // Add the 4 test domains to the host cache, each once with scheme and once
+    // without.
     for (const auto* domain : kDomains) {
       host_cache->Set(
           net::HostCache::Key(domain, net::DnsQueryType::UNSPECIFIED, 0,
@@ -1782,9 +1782,17 @@ TEST_F(NetworkContextTest, ClearHostCache) {
           net::HostCache::Entry(net::OK, net::AddressList(),
                                 net::HostCache::Entry::SOURCE_UNKNOWN),
           base::TimeTicks::Now(), base::TimeDelta::FromDays(1));
+      host_cache->Set(
+          net::HostCache::Key(
+              url::SchemeHostPort(url::kHttpsScheme, domain, 443),
+              net::DnsQueryType::UNSPECIFIED, 0, net::HostResolverSource::ANY,
+              net::NetworkIsolationKey()),
+          net::HostCache::Entry(net::OK, net::AddressList(),
+                                net::HostCache::Entry::SOURCE_UNKNOWN),
+          base::TimeTicks::Now(), base::TimeDelta::FromDays(1));
     }
     // Sanity check.
-    EXPECT_EQ(base::size(kDomains), host_cache->entries().size());
+    EXPECT_EQ(base::size(kDomains) * 2, host_cache->entries().size());
 
     // Set up and run the filter, according to |test_case|.
     mojom::ClearDataFilterPtr clear_data_filter;
@@ -1802,14 +1810,19 @@ TEST_F(NetworkContextTest, ClearHostCache) {
     run_loop.Run();
 
     // Check that only the expected domains remain in the cache.
+    size_t expected_cached = 0;
     for (size_t i = 0; i < base::size(kDomains); ++i) {
       bool expect_domain_cached =
           ((test_case.expected_cached_domains & (1 << i)) != 0);
-      EXPECT_EQ(
-          expect_domain_cached,
-          (host_cache->GetMatchingKey(kDomains[i], nullptr /* source_out */,
-                                      nullptr /* stale_out */) != nullptr));
+      EXPECT_EQ(expect_domain_cached,
+                (host_cache->GetMatchingKeyForTesting(
+                     kDomains[i], nullptr /* source_out */,
+                     nullptr /* stale_out */) != nullptr));
+      if (expect_domain_cached)
+        expected_cached += 2;
     }
+
+    EXPECT_EQ(host_cache->entries().size(), expected_cached);
   }
 }
 

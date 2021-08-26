@@ -13,7 +13,7 @@ This test suite can be embedded inside [WPT](https://github.com/web-platform-tes
 ## Contributing
 
 Please read the [introductory guidelines](docs/intro/README.md) before contributing.
-Other documentation may be found in [`docs/`](docs/) and in the [helper index](docs/tsdoc/).
+Other documentation may be found in [`docs/`](docs/) and in the [helper index](https://gpuweb.github.io/cts/docs/tsdoc/) ([source](docs/helper_index.txt)).
 
 Read [CONTRIBUTING.md](CONTRIBUTING.md) on licensing.
 

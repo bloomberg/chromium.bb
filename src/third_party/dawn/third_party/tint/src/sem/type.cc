@@ -52,6 +52,18 @@ const Type* Type::UnwrapRef() const {
   return type;
 }
 
+uint32_t Type::Size() const {
+  return 0;
+}
+
+uint32_t Type::Align() const {
+  return 0;
+}
+
+bool Type::IsConstructible() const {
+  return false;
+}
+
 bool Type::is_scalar() const {
   return IsAnyOf<F32, U32, I32, Bool>();
 }

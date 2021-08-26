@@ -413,9 +413,9 @@ OffTheRecordProfileImpl::GetPolicySchemaRegistryService() {
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-policy::UserCloudPolicyManagerChromeOS*
-OffTheRecordProfileImpl::GetUserCloudPolicyManagerChromeOS() {
-  return GetOriginalProfile()->GetUserCloudPolicyManagerChromeOS();
+policy::UserCloudPolicyManagerAsh*
+OffTheRecordProfileImpl::GetUserCloudPolicyManagerAsh() {
+  return GetOriginalProfile()->GetUserCloudPolicyManagerAsh();
 }
 
 policy::ActiveDirectoryPolicyManager*

@@ -2784,7 +2784,7 @@ void AutofillMetrics::LogFieldParsingTranslatedFormLanguageMetric(
     base::StringPiece locale) {
   base::UmaHistogramSparse(
       "Autofill.ParsedFieldTypesUsingTranslatedPageLanguage",
-      language::LanguageUsageMetrics::ToLanguageCode(locale));
+      language::LanguageUsageMetrics::ToLanguageCodeHash(locale));
 }
 
 // static
@@ -2820,6 +2820,12 @@ void AutofillMetrics::LogProfileImportType(
     AutofillProfileImportType import_type) {
   base::UmaHistogramEnumeration("Autofill.ProfileImport.ProfileImportType",
                                 import_type);
+}
+
+void AutofillMetrics::LogSilentUpdatesProfileImportType(
+    AutofillProfileImportType import_type) {
+  base::UmaHistogramEnumeration(
+      "Autofill.ProfileImport.SilentUpdatesProfileImportType", import_type);
 }
 
 void AutofillMetrics::LogNewProfileImportDecision(

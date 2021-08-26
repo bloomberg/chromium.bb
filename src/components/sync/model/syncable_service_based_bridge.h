@@ -21,7 +21,7 @@
 
 namespace sync_pb {
 class EntitySpecifics;
-}  // namespace sync_pb
+}
 
 namespace syncer {
 

@@ -8,6 +8,7 @@ import './styles.js';
 import {html, PolymerElement} from 'chrome-untrusted://personalization/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {EventType} from '../common/constants.js';
 import {selectImage, validateReceivedData} from '../common/iframe_api.js';
+import {isSelectionEvent} from '../common/utils.js';
 
 /**
  * @fileoverview Responds to |SendImagesEvent| from trusted. Handles user input
@@ -33,6 +34,24 @@ class ImagesGrid extends PolymerElement {
         type: Array,
         value: [],
       },
+
+      /**
+       * @type {?bigint}
+       * @private
+       */
+      selectedAssetId_: {
+        type: Object,
+        value: null,
+      },
+
+      /**
+       * @type {?bigint}
+       * @private
+       */
+      pendingSelectedAssetId_: {
+        type: Object,
+        value: null,
+      }
     };
   }
 
@@ -60,32 +79,68 @@ class ImagesGrid extends PolymerElement {
    * @private
    */
   onMessageReceived_(message) {
-    try {
-      this.images_ = validateReceivedData(message, EventType.SEND_IMAGES);
-    } catch (e) {
-      console.warn('Invalid images received', e);
-      this.images_ = [];
+    switch (message.data.type) {
+      case EventType.SEND_IMAGES:
+        try {
+          this.images_ = validateReceivedData(message, EventType.SEND_IMAGES);
+        } catch (e) {
+          console.warn('Invalid images received', e);
+          this.images_ = [];
+        }
+        return;
+      case EventType.SEND_CURRENT_WALLPAPER_ASSET_ID:
+        this.selectedAssetId_ = validateReceivedData(
+            message, EventType.SEND_CURRENT_WALLPAPER_ASSET_ID);
+        return;
+      case EventType.SEND_PENDING_WALLPAPER_ASSET_ID:
+        this.pendingSelectedAssetId_ = validateReceivedData(
+          message, EventType.SEND_PENDING_WALLPAPER_ASSET_ID);
+        return;
+      case EventType.SEND_VISIBLE:
+        const visible = validateReceivedData(message, EventType.SEND_VISIBLE);
+        if (!visible) {
+          // When the iframe is hidden, do some dom magic to hide old image
+          // content. This is in preparation for a user switching to a new
+          // wallpaper collection and loading a new set of images.
+          const ironList = this.shadowRoot.querySelector('iron-list');
+          const images = ironList.querySelectorAll('.photo-container img');
+          for (const image of images) {
+            image.src = '';
+          }
+          this.images_ = [];
+        }
+        return;
+      default:
+        throw new Error('unexpected event type');
     }
   }
 
   /**
-   * TODO(b/192975897) compare with currently selected image to return correct
-   * aria-selected attribute.
-   * @param {!chromeos.personalizationApp.mojom.LocalImage} image
+   * @param {!chromeos.personalizationApp.mojom.WallpaperImage} image
+   * @param {?bigint} selectedAssetId
+   * @param {?bigint} pendingSelectedAssetId
    * @return {string}
    */
-  getAriaSelected_(image) {
-    return 'false';
+  getAriaSelected_(image, selectedAssetId, pendingSelectedAssetId) {
+    // Make sure that both are bigint (not undefined) and equal.
+    return (typeof selectedAssetId === 'bigint' &&
+            image.assetId === selectedAssetId && !pendingSelectedAssetId ||
+            typeof pendingSelectedAssetId === 'bigint' &&
+            image.assetId === pendingSelectedAssetId)
+        .toString();
   }
 
   /**
-   * Notify trusted code that a user clicked on an image.
+   * Notify trusted code that a user selected an image.
    * @private
    * @param {!Event} e
    */
-  onImageClicked_(e) {
-    const img = e.currentTarget;
-    selectImage(window.parent, BigInt(img.dataset.id));
+  onImageSelected_(e) {
+    if (!isSelectionEvent(e)) {
+      return;
+    }
+    const assetId = BigInt(e.currentTarget.dataset.id);
+    selectImage(window.parent, assetId);
   }
 
   /**
@@ -93,7 +148,7 @@ class ImagesGrid extends PolymerElement {
    * @param {!chromeos.personalizationApp.mojom.WallpaperImage} image
    * @return {string}
    */
-  getImgAlt_(image) {
+  getAriaLabel_(image) {
     return image.attribution.join(' ');
   }
 

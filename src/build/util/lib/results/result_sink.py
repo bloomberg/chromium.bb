@@ -9,7 +9,7 @@ import os
 import six
 
 import requests  # pylint: disable=import-error
-from . import result_types
+from lib.results import result_types
 
 # Maps result_types to the luci test-result.proto.
 # https://godoc.org/go.chromium.org/luci/resultdb/proto/v1#TestStatus
@@ -58,8 +58,14 @@ class ResultSinkClient(object):
         'Authorization': 'ResultSink %s' % context['auth_token'],
     }
 
-  def Post(self, test_id, status, duration, test_log, test_file,
-           artifacts=None):
+  def Post(self,
+           test_id,
+           status,
+           duration,
+           test_log,
+           test_file,
+           artifacts=None,
+           failure_reason=None):
     """Uploads the test result to the ResultSink server.
 
     This assumes that the rdb stream has been called already and that
@@ -72,6 +78,8 @@ class ResultSinkClient(object):
       test_log: A string representing the test's output.
       test_file: A string representing the file location of the test.
       artifacts: An optional dict of artifacts to attach to the test.
+      failure_reason: An optional string with the reason why the test failed.
+          Should be None if the test did not fail.
 
     Returns:
       N/A
@@ -108,6 +116,10 @@ class ResultSinkClient(object):
       tr['summaryHtml'] = '<text-artifact artifact-id="Test Log" />'
     if artifacts:
       tr['artifacts'] = artifacts
+    if failure_reason:
+      tr['failureReason'] = {
+          'primaryErrorMessage': _TruncateToUTF8Bytes(failure_reason, 1024)
+      }
 
     if duration is not None:
       # Duration must be formatted to avoid scientific notation in case
@@ -143,3 +155,26 @@ class ResultSinkClient(object):
                         headers=self.headers,
                         data=json.dumps(req))
     res.raise_for_status()
+
+
+def _TruncateToUTF8Bytes(s, length):
+  """ Truncates a string to a given number of bytes when encoded as UTF-8.
+
+  Ensures the given string does not take more than length bytes when encoded
+  as UTF-8. Adds trailing ellipsis (...) if truncation occurred. A truncated
+  string may end up encoding to a length slightly shorter than length because
+  only whole Unicode codepoints are dropped.
+
+  Args:
+    s: The string to truncate.
+    length: the length (in bytes) to truncate to.
+  """
+  encoded = s.encode('utf-8')
+  if len(encoded) > length:
+    # Truncate, leaving space for trailing ellipsis (...).
+    encoded = encoded[:length - 3]
+    # Truncating the string encoded as UTF-8 may have left the final codepoint
+    # only partially present. Pass 'ignore' to acknowledge and ensure this is
+    # dropped.
+    return encoded.decode('utf-8', 'ignore') + "..."
+  return s

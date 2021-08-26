@@ -11,10 +11,9 @@
 #include "content/public/renderer/render_accessibility.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
-#include "content/public/renderer/renderer_ppapi_host.h"
-#include "content/public/test/fake_pepper_plugin_instance.h"
 #include "content/public/test/render_view_test.h"
 #include "pdf/accessibility_structs.h"
+#include "pdf/pdf_accessibility_action_handler.h"
 #include "pdf/pdf_features.h"
 #include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -25,39 +24,46 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/geometry/rect_f.h"
 
 namespace pdf {
 
 namespace {
 
-const PP_PrivateAccessibilityTextRunInfo kFirstTextRun = {
-    15, PP_MakeFloatRectFromXYWH(26.0f, 189.0f, 84.0f, 13.0f)};
-const PP_PrivateAccessibilityTextRunInfo kSecondTextRun = {
-    15, PP_MakeFloatRectFromXYWH(28.0f, 117.0f, 152.0f, 19.0f)};
-const PP_PrivateAccessibilityCharInfo kDummyCharsData[] = {
+const chrome_pdf::AccessibilityTextRunInfo kFirstTextRun = {
+    15, gfx::RectF(26.0f, 189.0f, 84.0f, 13.0f),
+    chrome_pdf::AccessibilityTextDirection::kNone,
+    chrome_pdf::AccessibilityTextStyleInfo()};
+const chrome_pdf::AccessibilityTextRunInfo kSecondTextRun = {
+    15, gfx::RectF(28.0f, 117.0f, 152.0f, 19.0f),
+    chrome_pdf::AccessibilityTextDirection::kNone,
+    chrome_pdf::AccessibilityTextStyleInfo()};
+const chrome_pdf::AccessibilityCharInfo kDummyCharsData[] = {
     {'H', 12}, {'e', 6},  {'l', 5},  {'l', 4},  {'o', 8},  {',', 4},
     {' ', 4},  {'w', 12}, {'o', 6},  {'r', 6},  {'l', 4},  {'d', 9},
     {'!', 4},  {' ', 0},  {' ', 0},  {'G', 16}, {'o', 12}, {'o', 12},
     {'d', 12}, {'b', 10}, {'y', 12}, {'e', 12}, {',', 4},  {' ', 6},
     {'w', 16}, {'o', 12}, {'r', 8},  {'l', 4},  {'d', 12}, {'!', 2},
 };
-const PP_PrivateAccessibilityTextRunInfo kFirstRunMultiLine = {
-    7, PP_MakeFloatRectFromXYWH(26.0f, 189.0f, 84.0f, 13.0f)};
-const PP_PrivateAccessibilityTextRunInfo kSecondRunMultiLine = {
-    8, PP_MakeFloatRectFromXYWH(26.0f, 189.0f, 84.0f, 13.0f)};
-const PP_PrivateAccessibilityTextRunInfo kThirdRunMultiLine = {
-    9, PP_MakeFloatRectFromXYWH(26.0f, 189.0f, 84.0f, 13.0f)};
-const PP_PrivateAccessibilityTextRunInfo kFourthRunMultiLine = {
-    6, PP_MakeFloatRectFromXYWH(26.0f, 189.0f, 84.0f, 13.0f)};
+const chrome_pdf::AccessibilityTextRunInfo kFirstRunMultiLine = {
+    7, gfx::RectF(26.0f, 189.0f, 84.0f, 13.0f),
+    chrome_pdf::AccessibilityTextDirection::kNone,
+    chrome_pdf::AccessibilityTextStyleInfo()};
+const chrome_pdf::AccessibilityTextRunInfo kSecondRunMultiLine = {
+    8, gfx::RectF(26.0f, 189.0f, 84.0f, 13.0f),
+    chrome_pdf::AccessibilityTextDirection::kNone,
+    chrome_pdf::AccessibilityTextStyleInfo()};
+const chrome_pdf::AccessibilityTextRunInfo kThirdRunMultiLine = {
+    9, gfx::RectF(26.0f, 189.0f, 84.0f, 13.0f),
+    chrome_pdf::AccessibilityTextDirection::kNone,
+    chrome_pdf::AccessibilityTextStyleInfo()};
+const chrome_pdf::AccessibilityTextRunInfo kFourthRunMultiLine = {
+    6, gfx::RectF(26.0f, 189.0f, 84.0f, 13.0f),
+    chrome_pdf::AccessibilityTextDirection::kNone,
+    chrome_pdf::AccessibilityTextStyleInfo()};
 
 const char kChromiumTestUrl[] = "www.cs.chromium.org";
-
-void CompareRect(const PP_Rect& expected_rect, const PP_Rect& actual_rect) {
-  EXPECT_EQ(expected_rect.point.x, actual_rect.point.x);
-  EXPECT_EQ(expected_rect.point.y, actual_rect.point.y);
-  EXPECT_EQ(expected_rect.size.height, actual_rect.size.height);
-  EXPECT_EQ(expected_rect.size.width, actual_rect.size.width);
-}
 
 void CompareRect(const gfx::RectF& expected_rect,
                  const gfx::RectF& actual_rect) {
@@ -74,87 +80,26 @@ constexpr uint32_t MakeARGB(unsigned int a,
   return (a << 24) | (r << 16) | (g << 8) | b;
 }
 
-// This class overrides content::FakePepperPluginInstance to record received
+// This class overrides PdfAccessibilityActionHandler to record received
 // action data when tests make an accessibility action call.
-class ActionHandlingFakePepperPluginInstance
-    : public content::FakePepperPluginInstance {
+class TestPdfAccessibilityActionHandler
+    : public chrome_pdf::PdfAccessibilityActionHandler {
  public:
-  ActionHandlingFakePepperPluginInstance() = default;
-  ~ActionHandlingFakePepperPluginInstance() override = default;
+  TestPdfAccessibilityActionHandler() = default;
+  ~TestPdfAccessibilityActionHandler() override = default;
 
-  // content::FakePepperPluginInstance:
+  // chrome_pdf::PdfAccessibilityActionHandler:
   void HandleAccessibilityAction(
-      const PP_PdfAccessibilityActionData& action_data) override {
+      const chrome_pdf::AccessibilityActionData& action_data) override {
     received_action_data_ = action_data;
   }
 
-  PP_PdfAccessibilityActionData GetReceivedActionData() {
+  chrome_pdf::AccessibilityActionData received_action_data() {
     return received_action_data_;
   }
 
  private:
-  PP_PdfAccessibilityActionData received_action_data_;
-};
-
-class FakeRendererPpapiHost : public content::RendererPpapiHost {
- public:
-  explicit FakeRendererPpapiHost(content::RenderFrame* render_frame)
-      : FakeRendererPpapiHost(render_frame, nullptr) {}
-  FakeRendererPpapiHost(
-      content::RenderFrame* render_frame,
-      ActionHandlingFakePepperPluginInstance* fake_pepper_plugin_instance)
-      : render_frame_(render_frame),
-        fake_pepper_plugin_instance_(fake_pepper_plugin_instance) {}
-  ~FakeRendererPpapiHost() override = default;
-
-  ppapi::host::PpapiHost* GetPpapiHost() override { return nullptr; }
-  bool IsValidInstance(PP_Instance instance) override { return true; }
-  content::PepperPluginInstance* GetPluginInstance(
-      PP_Instance instance) override {
-    return fake_pepper_plugin_instance_;
-  }
-  content::RenderFrame* GetRenderFrameForInstance(
-      PP_Instance instance) override {
-    return render_frame_;
-  }
-  content::RenderView* GetRenderViewForInstance(PP_Instance instance) override {
-    return nullptr;
-  }
-  blink::WebPluginContainer* GetContainerForInstance(
-      PP_Instance instance) override {
-    return nullptr;
-  }
-  bool HasUserGesture(PP_Instance instance) override { return false; }
-  int GetRoutingIDForWidget(PP_Instance instance) override { return 0; }
-  gfx::Point PluginPointToRenderFrame(PP_Instance instance,
-                                      const gfx::Point& pt) override {
-    return gfx::Point();
-  }
-  IPC::PlatformFileForTransit ShareHandleWithRemote(
-      base::PlatformFile handle,
-      bool should_close_source) override {
-    return IPC::PlatformFileForTransit();
-  }
-  base::UnsafeSharedMemoryRegion ShareUnsafeSharedMemoryRegionWithRemote(
-      const base::UnsafeSharedMemoryRegion& region) override {
-    return base::UnsafeSharedMemoryRegion();
-  }
-  base::ReadOnlySharedMemoryRegion ShareReadOnlySharedMemoryRegionWithRemote(
-      const base::ReadOnlySharedMemoryRegion& region) override {
-    return base::ReadOnlySharedMemoryRegion();
-  }
-  bool IsRunningInProcess() override { return false; }
-  std::string GetPluginName() override { return std::string(); }
-  void SetToExternalPluginHost() override {}
-  void CreateBrowserResourceHosts(
-      PP_Instance instance,
-      const std::vector<IPC::Message>& nested_msgs,
-      base::OnceCallback<void(const std::vector<int>&)> callback) override {}
-  GURL GetDocumentURL(PP_Instance instance) override { return GURL(); }
-
- private:
-  content::RenderFrame* render_frame_;
-  ActionHandlingFakePepperPluginInstance* fake_pepper_plugin_instance_;
+  chrome_pdf::AccessibilityActionData received_action_data_;
 };
 
 }  // namespace
@@ -186,16 +131,16 @@ class PdfAccessibilityTreeTest : public content::RenderViewTest {
     page_info_.page_index = 0;
     page_info_.text_run_count = 0;
     page_info_.char_count = 0;
-    page_info_.bounds = PP_MakeRectFromXYWH(0, 0, 1, 1);
+    page_info_.bounds = gfx::Rect(0, 0, 1, 1);
   }
 
  protected:
   chrome_pdf::AccessibilityViewportInfo viewport_info_;
   chrome_pdf::AccessibilityDocInfo doc_info_;
-  PP_PrivateAccessibilityPageInfo page_info_;
-  std::vector<ppapi::PdfAccessibilityTextRunInfo> text_runs_;
-  std::vector<PP_PrivateAccessibilityCharInfo> chars_;
-  ppapi::PdfAccessibilityPageObjects page_objects_;
+  chrome_pdf::AccessibilityPageInfo page_info_;
+  std::vector<chrome_pdf::AccessibilityTextRunInfo> text_runs_;
+  std::vector<chrome_pdf::AccessibilityCharInfo> chars_;
+  chrome_pdf::AccessibilityPageObjects page_objects_;
 };
 
 TEST_F(PdfAccessibilityTreeTest, TestEmptyPDFPage) {
@@ -203,9 +148,8 @@ TEST_F(PdfAccessibilityTreeTest, TestEmptyPDFPage) {
   render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
   ASSERT_TRUE(render_frame->GetRenderAccessibility());
 
-  FakeRendererPpapiHost host(GetMainRenderFrame());
-  PP_Instance instance = 0;
-  PdfAccessibilityTree pdf_accessibility_tree(&host, instance);
+  TestPdfAccessibilityActionHandler action_handler;
+  PdfAccessibilityTree pdf_accessibility_tree(render_frame, &action_handler);
 
   pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
   pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
@@ -221,9 +165,8 @@ TEST_F(PdfAccessibilityTreeTest, TestAccessibilityDisabledDuringPDFLoad) {
   render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
   ASSERT_TRUE(render_frame->GetRenderAccessibility());
 
-  FakeRendererPpapiHost host(GetMainRenderFrame());
-  PP_Instance instance = 0;
-  PdfAccessibilityTree pdf_accessibility_tree(&host, instance);
+  TestPdfAccessibilityActionHandler action_handler;
+  PdfAccessibilityTree pdf_accessibility_tree(render_frame, &action_handler);
 
   pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
   pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
@@ -242,9 +185,8 @@ TEST_F(PdfAccessibilityTreeTest, TestPdfAccessibilityTreeReload) {
   render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
   ASSERT_TRUE(render_frame->GetRenderAccessibility());
 
-  FakeRendererPpapiHost host(GetMainRenderFrame());
-  PP_Instance instance = 0;
-  pdf::PdfAccessibilityTree pdf_accessibility_tree(&host, instance);
+  TestPdfAccessibilityActionHandler action_handler;
+  PdfAccessibilityTree pdf_accessibility_tree(render_frame, &action_handler);
 
   // Make the accessibility tree with a portrait page and then remake with a
   // landscape page.
@@ -253,9 +195,7 @@ TEST_F(PdfAccessibilityTreeTest, TestPdfAccessibilityTreeReload) {
     if (i == 2)
       page_bounds.Transpose();
 
-    page_info_.bounds =
-        PP_MakeRectFromXYWH(page_bounds.x(), page_bounds.y(),
-                            page_bounds.width(), page_bounds.height());
+    page_info_.bounds = gfx::ToEnclosingRect(page_bounds);
     pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
     pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
     pdf_accessibility_tree.SetAccessibilityPageInfo(page_info_, text_runs_,
@@ -284,26 +224,26 @@ TEST_F(PdfAccessibilityTreeTest, TestPdfAccessibilityTreeCreation) {
                 std::end(kDummyCharsData));
 
   {
-    ppapi::PdfAccessibilityLinkInfo link;
-    link.bounds = PP_MakeFloatRectFromXYWH(1.0f, 1.0f, 5.0f, 6.0f);
+    chrome_pdf::AccessibilityLinkInfo link;
+    link.bounds = gfx::RectF(1.0f, 1.0f, 5.0f, 6.0f);
     link.url = kChromiumTestUrl;
-    link.text_run_index = 0;
-    link.text_run_count = 1;
+    link.text_range.index = 0;
+    link.text_range.count = 1;
     link.index_in_page = 0;
     page_objects_.links.push_back(std::move(link));
   }
 
   {
-    ppapi::PdfAccessibilityImageInfo image;
-    image.bounds = PP_MakeFloatRectFromXYWH(8.0f, 9.0f, 2.0f, 1.0f);
+    chrome_pdf::AccessibilityImageInfo image;
+    image.bounds = gfx::RectF(8.0f, 9.0f, 2.0f, 1.0f);
     image.alt_text = kTestAltText;
     image.text_run_index = 2;
     page_objects_.images.push_back(std::move(image));
   }
 
   {
-    ppapi::PdfAccessibilityImageInfo image;
-    image.bounds = PP_MakeFloatRectFromXYWH(11.0f, 14.0f, 5.0f, 8.0f);
+    chrome_pdf::AccessibilityImageInfo image;
+    image.bounds = gfx::RectF(11.0f, 14.0f, 5.0f, 8.0f);
     image.text_run_index = 2;
     page_objects_.images.push_back(std::move(image));
   }
@@ -315,9 +255,8 @@ TEST_F(PdfAccessibilityTreeTest, TestPdfAccessibilityTreeCreation) {
   render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
   ASSERT_TRUE(render_frame->GetRenderAccessibility());
 
-  FakeRendererPpapiHost host(GetMainRenderFrame());
-  PP_Instance instance = 0;
-  pdf::PdfAccessibilityTree pdf_accessibility_tree(&host, instance);
+  TestPdfAccessibilityActionHandler action_handler;
+  PdfAccessibilityTree pdf_accessibility_tree(render_frame, &action_handler);
 
   pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
   pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
@@ -400,21 +339,21 @@ TEST_F(PdfAccessibilityTreeTest, TestOverlappingAnnots) {
                 std::end(kDummyCharsData));
 
   {
-    ppapi::PdfAccessibilityLinkInfo link;
-    link.bounds = PP_MakeFloatRectFromXYWH(1.0f, 1.0f, 5.0f, 6.0f);
+    chrome_pdf::AccessibilityLinkInfo link;
+    link.bounds = gfx::RectF(1.0f, 1.0f, 5.0f, 6.0f);
     link.url = kChromiumTestUrl;
-    link.text_run_index = 0;
-    link.text_run_count = 3;
+    link.text_range.index = 0;
+    link.text_range.count = 3;
     link.index_in_page = 0;
     page_objects_.links.push_back(std::move(link));
   }
 
   {
-    ppapi::PdfAccessibilityLinkInfo link;
-    link.bounds = PP_MakeFloatRectFromXYWH(1.0f, 2.0f, 5.0f, 6.0f);
+    chrome_pdf::AccessibilityLinkInfo link;
+    link.bounds = gfx::RectF(1.0f, 2.0f, 5.0f, 6.0f);
     link.url = kChromiumTestUrl;
-    link.text_run_index = 1;
-    link.text_run_count = 2;
+    link.text_range.index = 1;
+    link.text_range.count = 2;
     link.index_in_page = 1;
     page_objects_.links.push_back(std::move(link));
   }
@@ -427,9 +366,8 @@ TEST_F(PdfAccessibilityTreeTest, TestOverlappingAnnots) {
   render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
   ASSERT_TRUE(render_frame->GetRenderAccessibility());
 
-  FakeRendererPpapiHost host(GetMainRenderFrame());
-  PP_Instance instance = 0;
-  pdf::PdfAccessibilityTree pdf_accessibility_tree(&host, instance);
+  TestPdfAccessibilityActionHandler action_handler;
+  PdfAccessibilityTree pdf_accessibility_tree(render_frame, &action_handler);
 
   pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
   pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
@@ -496,10 +434,10 @@ TEST_F(PdfAccessibilityTreeTest, TestHighlightCreation) {
                 std::end(kDummyCharsData));
 
   {
-    ppapi::PdfAccessibilityHighlightInfo highlight;
-    highlight.bounds = PP_MakeFloatRectFromXYWH(1.0f, 1.0f, 5.0f, 6.0f);
-    highlight.text_run_index = 0;
-    highlight.text_run_count = 2;
+    chrome_pdf::AccessibilityHighlightInfo highlight;
+    highlight.bounds = gfx::RectF(1.0f, 1.0f, 5.0f, 6.0f);
+    highlight.text_range.index = 0;
+    highlight.text_range.count = 2;
     highlight.index_in_page = 0;
     highlight.color = kHighlightWhiteColor;
     highlight.note_text = kPopupNoteText;
@@ -513,9 +451,8 @@ TEST_F(PdfAccessibilityTreeTest, TestHighlightCreation) {
   render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
   ASSERT_TRUE(render_frame->GetRenderAccessibility());
 
-  FakeRendererPpapiHost host(GetMainRenderFrame());
-  PP_Instance instance = 0;
-  pdf::PdfAccessibilityTree pdf_accessibility_tree(&host, instance);
+  TestPdfAccessibilityActionHandler action_handler;
+  PdfAccessibilityTree pdf_accessibility_tree(render_frame, &action_handler);
 
   pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
   pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
@@ -602,8 +539,8 @@ TEST_F(PdfAccessibilityTreeTest, TestTextFieldNodeCreation) {
                 std::end(kDummyCharsData));
 
   {
-    ppapi::PdfAccessibilityTextFieldInfo text_field;
-    text_field.bounds = PP_MakeFloatRectFromXYWH(1.0f, 1.0f, 5.0f, 6.0f);
+    chrome_pdf::AccessibilityTextFieldInfo text_field;
+    text_field.bounds = gfx::RectF(1.0f, 1.0f, 5.0f, 6.0f);
     text_field.index_in_page = 0;
     text_field.text_run_index = 2;
     text_field.name = "Text Box";
@@ -615,8 +552,8 @@ TEST_F(PdfAccessibilityTreeTest, TestTextFieldNodeCreation) {
   }
 
   {
-    ppapi::PdfAccessibilityTextFieldInfo text_field;
-    text_field.bounds = PP_MakeFloatRectFromXYWH(1.0f, 10.0f, 5.0f, 6.0f);
+    chrome_pdf::AccessibilityTextFieldInfo text_field;
+    text_field.bounds = gfx::RectF(1.0f, 10.0f, 5.0f, 6.0f);
     text_field.index_in_page = 1;
     text_field.text_run_index = 2;
     text_field.name = "Text Box 2";
@@ -635,9 +572,8 @@ TEST_F(PdfAccessibilityTreeTest, TestTextFieldNodeCreation) {
   render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
   ASSERT_TRUE(render_frame->GetRenderAccessibility());
 
-  FakeRendererPpapiHost host(GetMainRenderFrame());
-  PP_Instance instance = 0;
-  pdf::PdfAccessibilityTree pdf_accessibility_tree(&host, instance);
+  TestPdfAccessibilityActionHandler action_handler;
+  PdfAccessibilityTree pdf_accessibility_tree(render_frame, &action_handler);
 
   pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
   pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
@@ -729,8 +665,8 @@ TEST_F(PdfAccessibilityTreeTest, TestButtonNodeCreation) {
                 std::end(kDummyCharsData));
 
   {
-    ppapi::PdfAccessibilityButtonInfo check_box;
-    check_box.bounds = PP_MakeFloatRectFromXYWH(1.0f, 1.0f, 5.0f, 6.0f);
+    chrome_pdf::AccessibilityButtonInfo check_box;
+    check_box.bounds = gfx::RectF(1.0f, 1.0f, 5.0f, 6.0f);
     check_box.index_in_page = 0;
     check_box.text_run_index = 2;
     check_box.name = "Read Only Checkbox";
@@ -739,13 +675,13 @@ TEST_F(PdfAccessibilityTreeTest, TestButtonNodeCreation) {
     check_box.is_checked = true;
     check_box.control_count = 1;
     check_box.control_index = 0;
-    check_box.type = PP_PrivateButtonType::PP_PRIVATEBUTTON_CHECKBOX;
+    check_box.type = chrome_pdf::ButtonType::kCheckBox;
     page_objects_.form_fields.buttons.push_back(std::move(check_box));
   }
 
   {
-    ppapi::PdfAccessibilityButtonInfo radio_button;
-    radio_button.bounds = PP_MakeFloatRectFromXYWH(1.0f, 2.0f, 5.0f, 6.0f);
+    chrome_pdf::AccessibilityButtonInfo radio_button;
+    radio_button.bounds = gfx::RectF(1.0f, 2.0f, 5.0f, 6.0f);
     radio_button.index_in_page = 1;
     radio_button.text_run_index = 2;
     radio_button.name = "Radio Button";
@@ -754,13 +690,13 @@ TEST_F(PdfAccessibilityTreeTest, TestButtonNodeCreation) {
     radio_button.is_checked = false;
     radio_button.control_count = 2;
     radio_button.control_index = 0;
-    radio_button.type = PP_PrivateButtonType::PP_PRIVATEBUTTON_RADIOBUTTON;
+    radio_button.type = chrome_pdf::ButtonType::kRadioButton;
     page_objects_.form_fields.buttons.push_back(std::move(radio_button));
   }
 
   {
-    ppapi::PdfAccessibilityButtonInfo radio_button;
-    radio_button.bounds = PP_MakeFloatRectFromXYWH(1.0f, 3.0f, 5.0f, 6.0f);
+    chrome_pdf::AccessibilityButtonInfo radio_button;
+    radio_button.bounds = gfx::RectF(1.0f, 3.0f, 5.0f, 6.0f);
     radio_button.index_in_page = 2;
     radio_button.text_run_index = 2;
     radio_button.name = "Radio Button";
@@ -769,18 +705,18 @@ TEST_F(PdfAccessibilityTreeTest, TestButtonNodeCreation) {
     radio_button.is_checked = true;
     radio_button.control_count = 2;
     radio_button.control_index = 1;
-    radio_button.type = PP_PrivateButtonType::PP_PRIVATEBUTTON_RADIOBUTTON;
+    radio_button.type = chrome_pdf::ButtonType::kRadioButton;
     page_objects_.form_fields.buttons.push_back(std::move(radio_button));
   }
 
   {
-    ppapi::PdfAccessibilityButtonInfo push_button;
-    push_button.bounds = PP_MakeFloatRectFromXYWH(1.0f, 4.0f, 5.0f, 6.0f);
+    chrome_pdf::AccessibilityButtonInfo push_button;
+    push_button.bounds = gfx::RectF(1.0f, 4.0f, 5.0f, 6.0f);
     push_button.index_in_page = 3;
     push_button.text_run_index = 2;
     push_button.name = "Push Button";
     push_button.is_read_only = false;
-    push_button.type = PP_PrivateButtonType::PP_PRIVATEBUTTON_PUSHBUTTON;
+    push_button.type = chrome_pdf::ButtonType::kPushButton;
     page_objects_.form_fields.buttons.push_back(std::move(push_button));
   }
 
@@ -792,9 +728,8 @@ TEST_F(PdfAccessibilityTreeTest, TestButtonNodeCreation) {
   render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
   ASSERT_TRUE(render_frame->GetRenderAccessibility());
 
-  FakeRendererPpapiHost host(GetMainRenderFrame());
-  PP_Instance instance = 0;
-  pdf::PdfAccessibilityTree pdf_accessibility_tree(&host, instance);
+  TestPdfAccessibilityActionHandler action_handler;
+  PdfAccessibilityTree pdf_accessibility_tree(render_frame, &action_handler);
 
   pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
   pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
@@ -936,17 +871,17 @@ TEST_F(PdfAccessibilityTreeTest, TestListboxNodeCreation) {
                                         {1.0f, 10.0f, 5.0f, 6.0f}};
 
   {
-    ppapi::PdfAccessibilityChoiceFieldInfo choice_field;
-    choice_field.bounds = PP_MakeFloatRectFromXYWH(1.0f, 1.0f, 5.0f, 6.0f);
+    chrome_pdf::AccessibilityChoiceFieldInfo choice_field;
+    choice_field.bounds = gfx::RectF(1.0f, 1.0f, 5.0f, 6.0f);
     choice_field.index_in_page = 0;
     choice_field.text_run_index = 2;
-    choice_field.type = PP_PRIVATECHOICEFIELD_LISTBOX;
+    choice_field.type = chrome_pdf::ChoiceFieldType::kListBox;
     choice_field.name = "List Box";
     choice_field.is_read_only = false;
     choice_field.is_multi_select = true;
     choice_field.has_editable_text_box = false;
     for (const ListboxOptionInfo& expected_option : kExpectedOptions[0]) {
-      ppapi::PdfAccessibilityChoiceFieldOptionInfo choice_field_option;
+      chrome_pdf::AccessibilityChoiceFieldOptionInfo choice_field_option;
       choice_field_option.name = expected_option.name;
       choice_field_option.is_selected = expected_option.is_selected;
       choice_field.options.push_back(std::move(choice_field_option));
@@ -955,17 +890,17 @@ TEST_F(PdfAccessibilityTreeTest, TestListboxNodeCreation) {
   }
 
   {
-    ppapi::PdfAccessibilityChoiceFieldInfo choice_field;
-    choice_field.bounds = PP_MakeFloatRectFromXYWH(1.0f, 10.0f, 5.0f, 6.0f);
+    chrome_pdf::AccessibilityChoiceFieldInfo choice_field;
+    choice_field.bounds = gfx::RectF(1.0f, 10.0f, 5.0f, 6.0f);
     choice_field.index_in_page = 1;
     choice_field.text_run_index = 2;
-    choice_field.type = PP_PRIVATECHOICEFIELD_LISTBOX;
+    choice_field.type = chrome_pdf::ChoiceFieldType::kListBox;
     choice_field.name = "Read Only List Box";
     choice_field.is_read_only = true;
     choice_field.is_multi_select = false;
     choice_field.has_editable_text_box = false;
     for (const ListboxOptionInfo& expected_option : kExpectedOptions[1]) {
-      ppapi::PdfAccessibilityChoiceFieldOptionInfo choice_field_option;
+      chrome_pdf::AccessibilityChoiceFieldOptionInfo choice_field_option;
       choice_field_option.name = expected_option.name;
       choice_field_option.is_selected = expected_option.is_selected;
       choice_field.options.push_back(std::move(choice_field_option));
@@ -981,9 +916,8 @@ TEST_F(PdfAccessibilityTreeTest, TestListboxNodeCreation) {
   render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
   ASSERT_TRUE(render_frame->GetRenderAccessibility());
 
-  FakeRendererPpapiHost host(GetMainRenderFrame());
-  PP_Instance instance = 0;
-  pdf::PdfAccessibilityTree pdf_accessibility_tree(&host, instance);
+  TestPdfAccessibilityActionHandler action_handler;
+  PdfAccessibilityTree pdf_accessibility_tree(render_frame, &action_handler);
 
   pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
   pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
@@ -1129,17 +1063,17 @@ TEST_F(PdfAccessibilityTreeTest, TestComboboxNodeCreation) {
                                         {1.0f, 10.0f, 5.0f, 6.0f}};
 
   {
-    ppapi::PdfAccessibilityChoiceFieldInfo choice_field;
-    choice_field.bounds = PP_MakeFloatRectFromXYWH(1.0f, 1.0f, 5.0f, 6.0f);
+    chrome_pdf::AccessibilityChoiceFieldInfo choice_field;
+    choice_field.bounds = gfx::RectF(1.0f, 1.0f, 5.0f, 6.0f);
     choice_field.index_in_page = 0;
     choice_field.text_run_index = 2;
-    choice_field.type = PP_PRIVATECHOICEFIELD_COMBOBOX;
+    choice_field.type = chrome_pdf::ChoiceFieldType::kComboBox;
     choice_field.name = "Editable Combo Box";
     choice_field.is_read_only = false;
     choice_field.is_multi_select = true;
     choice_field.has_editable_text_box = true;
     for (const ComboboxOptionInfo& expected_option : kExpectedOptions[0]) {
-      ppapi::PdfAccessibilityChoiceFieldOptionInfo choice_field_option;
+      chrome_pdf::AccessibilityChoiceFieldOptionInfo choice_field_option;
       choice_field_option.name = expected_option.name;
       choice_field_option.is_selected = expected_option.is_selected;
       choice_field.options.push_back(std::move(choice_field_option));
@@ -1148,17 +1082,17 @@ TEST_F(PdfAccessibilityTreeTest, TestComboboxNodeCreation) {
   }
 
   {
-    ppapi::PdfAccessibilityChoiceFieldInfo choice_field;
-    choice_field.bounds = PP_MakeFloatRectFromXYWH(1.0f, 10.0f, 5.0f, 6.0f);
+    chrome_pdf::AccessibilityChoiceFieldInfo choice_field;
+    choice_field.bounds = gfx::RectF(1.0f, 10.0f, 5.0f, 6.0f);
     choice_field.index_in_page = 1;
     choice_field.text_run_index = 2;
-    choice_field.type = PP_PRIVATECHOICEFIELD_COMBOBOX;
+    choice_field.type = chrome_pdf::ChoiceFieldType::kComboBox;
     choice_field.name = "Read Only Combo Box";
     choice_field.is_read_only = true;
     choice_field.is_multi_select = false;
     choice_field.has_editable_text_box = false;
     for (const ComboboxOptionInfo& expected_option : kExpectedOptions[1]) {
-      ppapi::PdfAccessibilityChoiceFieldOptionInfo choice_field_option;
+      chrome_pdf::AccessibilityChoiceFieldOptionInfo choice_field_option;
       choice_field_option.name = expected_option.name;
       choice_field_option.is_selected = expected_option.is_selected;
       choice_field.options.push_back(std::move(choice_field_option));
@@ -1174,9 +1108,8 @@ TEST_F(PdfAccessibilityTreeTest, TestComboboxNodeCreation) {
   render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
   ASSERT_TRUE(render_frame->GetRenderAccessibility());
 
-  FakeRendererPpapiHost host(GetMainRenderFrame());
-  PP_Instance instance = 0;
-  pdf::PdfAccessibilityTree pdf_accessibility_tree(&host, instance);
+  TestPdfAccessibilityActionHandler action_handler;
+  PdfAccessibilityTree pdf_accessibility_tree(render_frame, &action_handler);
 
   pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
   pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
@@ -1369,11 +1302,11 @@ TEST_F(PdfAccessibilityTreeTest, TestPreviousNextOnLine) {
                 std::end(kDummyCharsData));
 
   {
-    ppapi::PdfAccessibilityLinkInfo link;
-    link.bounds = PP_MakeFloatRectFromXYWH(0.0f, 0.0f, 0.0f, 0.0f);
+    chrome_pdf::AccessibilityLinkInfo link;
+    link.bounds = gfx::RectF(0.0f, 0.0f, 0.0f, 0.0f);
     link.url = kChromiumTestUrl;
-    link.text_run_index = 2;
-    link.text_run_count = 2;
+    link.text_range.index = 2;
+    link.text_range.count = 2;
     link.index_in_page = 0;
     page_objects_.links.push_back(std::move(link));
   }
@@ -1385,9 +1318,8 @@ TEST_F(PdfAccessibilityTreeTest, TestPreviousNextOnLine) {
   render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
   ASSERT_TRUE(render_frame->GetRenderAccessibility());
 
-  FakeRendererPpapiHost host(GetMainRenderFrame());
-  PP_Instance instance = 0;
-  pdf::PdfAccessibilityTree pdf_accessibility_tree(&host, instance);
+  TestPdfAccessibilityActionHandler action_handler;
+  PdfAccessibilityTree pdf_accessibility_tree(render_frame, &action_handler);
 
   pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
   pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
@@ -1498,8 +1430,8 @@ TEST_F(PdfAccessibilityTreeTest, TestPreviousNextOnLine) {
 }
 
 TEST_F(PdfAccessibilityTreeTest, TextRunsAndCharsMismatch) {
-  // |chars_| and |text_runs_| span over the same page text. They should denote
-  // the same page text size, but |text_runs_| is incorrect and only denotes 1
+  // `chars_` and `text_runs_` span over the same page text. They should denote
+  // the same page text size, but `text_runs_` is incorrect and only denotes 1
   // of 2 text runs.
   text_runs_.emplace_back(kFirstTextRun);
   chars_.insert(chars_.end(), std::begin(kDummyCharsData),
@@ -1512,9 +1444,8 @@ TEST_F(PdfAccessibilityTreeTest, TextRunsAndCharsMismatch) {
   render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
   ASSERT_TRUE(render_frame->GetRenderAccessibility());
 
-  FakeRendererPpapiHost host(GetMainRenderFrame());
-  PP_Instance instance = 0;
-  PdfAccessibilityTree pdf_accessibility_tree(&host, instance);
+  TestPdfAccessibilityActionHandler action_handler;
+  PdfAccessibilityTree pdf_accessibility_tree(render_frame, &action_handler);
 
   pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
   pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
@@ -1534,19 +1465,19 @@ TEST_F(PdfAccessibilityTreeTest, UnsortedLinkVector) {
 
   {
     // Add first link in the vector.
-    ppapi::PdfAccessibilityLinkInfo link;
-    link.bounds = PP_MakeFloatRectFromXYWH(0.0f, 0.0f, 0.0f, 0.0f);
-    link.text_run_index = 2;
-    link.text_run_count = 0;
+    chrome_pdf::AccessibilityLinkInfo link;
+    link.bounds = gfx::RectF(0.0f, 0.0f, 0.0f, 0.0f);
+    link.text_range.index = 2;
+    link.text_range.count = 0;
     page_objects_.links.push_back(std::move(link));
   }
 
   {
     // Add second link in the vector.
-    ppapi::PdfAccessibilityLinkInfo link;
-    link.bounds = PP_MakeFloatRectFromXYWH(0.0f, 0.0f, 0.0f, 0.0f);
-    link.text_run_index = 0;
-    link.text_run_count = 1;
+    chrome_pdf::AccessibilityLinkInfo link;
+    link.bounds = gfx::RectF(0.0f, 0.0f, 0.0f, 0.0f);
+    link.text_range.index = 0;
+    link.text_range.count = 1;
     page_objects_.links.push_back(std::move(link));
   }
 
@@ -1557,9 +1488,8 @@ TEST_F(PdfAccessibilityTreeTest, UnsortedLinkVector) {
   render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
   ASSERT_TRUE(render_frame->GetRenderAccessibility());
 
-  FakeRendererPpapiHost host(GetMainRenderFrame());
-  PP_Instance instance = 0;
-  PdfAccessibilityTree pdf_accessibility_tree(&host, instance);
+  TestPdfAccessibilityActionHandler action_handler;
+  PdfAccessibilityTree pdf_accessibility_tree(render_frame, &action_handler);
 
   pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
   pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
@@ -1578,11 +1508,11 @@ TEST_F(PdfAccessibilityTreeTest, OutOfBoundLink) {
                 std::end(kDummyCharsData));
 
   {
-    ppapi::PdfAccessibilityLinkInfo link;
-    link.bounds = PP_MakeFloatRectFromXYWH(0.0f, 0.0f, 0.0f, 0.0f);
-    link.text_run_index = 3;
+    chrome_pdf::AccessibilityLinkInfo link;
+    link.bounds = gfx::RectF(0.0f, 0.0f, 0.0f, 0.0f);
+    link.text_range.index = 3;
     link.index_in_page = 0;
-    link.text_run_count = 0;
+    link.text_range.count = 0;
     page_objects_.links.push_back(std::move(link));
   }
 
@@ -1593,9 +1523,8 @@ TEST_F(PdfAccessibilityTreeTest, OutOfBoundLink) {
   render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
   ASSERT_TRUE(render_frame->GetRenderAccessibility());
 
-  FakeRendererPpapiHost host(GetMainRenderFrame());
-  PP_Instance instance = 0;
-  PdfAccessibilityTree pdf_accessibility_tree(&host, instance);
+  TestPdfAccessibilityActionHandler action_handler;
+  PdfAccessibilityTree pdf_accessibility_tree(render_frame, &action_handler);
 
   pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
   pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
@@ -1615,16 +1544,16 @@ TEST_F(PdfAccessibilityTreeTest, UnsortedImageVector) {
 
   {
     // Add first image to the vector.
-    ppapi::PdfAccessibilityImageInfo image;
-    image.bounds = PP_MakeFloatRectFromXYWH(0.0f, 0.0f, 0.0f, 0.0f);
+    chrome_pdf::AccessibilityImageInfo image;
+    image.bounds = gfx::RectF(0.0f, 0.0f, 0.0f, 0.0f);
     image.text_run_index = 1;
     page_objects_.images.push_back(std::move(image));
   }
 
   {
     // Add second image to the vector.
-    ppapi::PdfAccessibilityImageInfo image;
-    image.bounds = PP_MakeFloatRectFromXYWH(0.0f, 0.0f, 0.0f, 0.0f);
+    chrome_pdf::AccessibilityImageInfo image;
+    image.bounds = gfx::RectF(0.0f, 0.0f, 0.0f, 0.0f);
     image.text_run_index = 0;
     page_objects_.images.push_back(std::move(image));
   }
@@ -1636,9 +1565,8 @@ TEST_F(PdfAccessibilityTreeTest, UnsortedImageVector) {
   render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
   ASSERT_TRUE(render_frame->GetRenderAccessibility());
 
-  FakeRendererPpapiHost host(GetMainRenderFrame());
-  PP_Instance instance = 0;
-  PdfAccessibilityTree pdf_accessibility_tree(&host, instance);
+  TestPdfAccessibilityActionHandler action_handler;
+  PdfAccessibilityTree pdf_accessibility_tree(render_frame, &action_handler);
 
   pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
   pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
@@ -1657,8 +1585,8 @@ TEST_F(PdfAccessibilityTreeTest, OutOfBoundImage) {
                 std::end(kDummyCharsData));
 
   {
-    ppapi::PdfAccessibilityImageInfo image;
-    image.bounds = PP_MakeFloatRectFromXYWH(0.0f, 0.0f, 0.0f, 0.0f);
+    chrome_pdf::AccessibilityImageInfo image;
+    image.bounds = gfx::RectF(0.0f, 0.0f, 0.0f, 0.0f);
     image.text_run_index = 3;
     page_objects_.images.push_back(std::move(image));
   }
@@ -1670,9 +1598,8 @@ TEST_F(PdfAccessibilityTreeTest, OutOfBoundImage) {
   render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
   ASSERT_TRUE(render_frame->GetRenderAccessibility());
 
-  FakeRendererPpapiHost host(GetMainRenderFrame());
-  PP_Instance instance = 0;
-  PdfAccessibilityTree pdf_accessibility_tree(&host, instance);
+  TestPdfAccessibilityActionHandler action_handler;
+  PdfAccessibilityTree pdf_accessibility_tree(render_frame, &action_handler);
 
   pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
   pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
@@ -1692,20 +1619,20 @@ TEST_F(PdfAccessibilityTreeTest, UnsortedHighlightVector) {
 
   {
     // Add first highlight in the vector.
-    ppapi::PdfAccessibilityHighlightInfo highlight;
-    highlight.bounds = PP_MakeFloatRectFromXYWH(0.0f, 0.0f, 1.0f, 1.0f);
-    highlight.text_run_index = 2;
-    highlight.text_run_count = 0;
+    chrome_pdf::AccessibilityHighlightInfo highlight;
+    highlight.bounds = gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f);
+    highlight.text_range.index = 2;
+    highlight.text_range.count = 0;
     highlight.index_in_page = 0;
     page_objects_.highlights.push_back(std::move(highlight));
   }
 
   {
     // Add second highlight in the vector.
-    ppapi::PdfAccessibilityHighlightInfo highlight;
-    highlight.bounds = PP_MakeFloatRectFromXYWH(2.0f, 2.0f, 1.0f, 1.0f);
-    highlight.text_run_index = 0;
-    highlight.text_run_count = 1;
+    chrome_pdf::AccessibilityHighlightInfo highlight;
+    highlight.bounds = gfx::RectF(2.0f, 2.0f, 1.0f, 1.0f);
+    highlight.text_range.index = 0;
+    highlight.text_range.count = 1;
     highlight.index_in_page = 1;
     page_objects_.highlights.push_back(std::move(highlight));
   }
@@ -1718,9 +1645,8 @@ TEST_F(PdfAccessibilityTreeTest, UnsortedHighlightVector) {
   render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
   ASSERT_TRUE(render_frame->GetRenderAccessibility());
 
-  FakeRendererPpapiHost host(GetMainRenderFrame());
-  PP_Instance instance = 0;
-  PdfAccessibilityTree pdf_accessibility_tree(&host, instance);
+  TestPdfAccessibilityActionHandler action_handler;
+  PdfAccessibilityTree pdf_accessibility_tree(render_frame, &action_handler);
 
   pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
   pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
@@ -1739,10 +1665,10 @@ TEST_F(PdfAccessibilityTreeTest, OutOfBoundHighlight) {
                 std::end(kDummyCharsData));
 
   {
-    ppapi::PdfAccessibilityHighlightInfo highlight;
-    highlight.bounds = PP_MakeFloatRectFromXYWH(0.0f, 0.0f, 1.0f, 1.0f);
-    highlight.text_run_index = 3;
-    highlight.text_run_count = 0;
+    chrome_pdf::AccessibilityHighlightInfo highlight;
+    highlight.bounds = gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f);
+    highlight.text_range.index = 3;
+    highlight.text_range.count = 0;
     highlight.index_in_page = 0;
     page_objects_.highlights.push_back(std::move(highlight));
   }
@@ -1755,9 +1681,8 @@ TEST_F(PdfAccessibilityTreeTest, OutOfBoundHighlight) {
   render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
   ASSERT_TRUE(render_frame->GetRenderAccessibility());
 
-  FakeRendererPpapiHost host(GetMainRenderFrame());
-  PP_Instance instance = 0;
-  PdfAccessibilityTree pdf_accessibility_tree(&host, instance);
+  TestPdfAccessibilityActionHandler action_handler;
+  PdfAccessibilityTree pdf_accessibility_tree(render_frame, &action_handler);
 
   pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
   pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
@@ -1771,15 +1696,13 @@ TEST_F(PdfAccessibilityTreeTest, OutOfBoundHighlight) {
 
 TEST_F(PdfAccessibilityTreeTest, TestActionDataConversion) {
   // This test verifies the AXActionData conversion to
-  // PP_AccessibilityActionData.
+  // `chrome_pdf::AccessibilityActionData`.
   content::RenderFrame* render_frame = GetMainRenderFrame();
   render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
   ASSERT_TRUE(render_frame->GetRenderAccessibility());
 
-  ActionHandlingFakePepperPluginInstance fake_pepper_instance;
-  FakeRendererPpapiHost host(GetMainRenderFrame(), &fake_pepper_instance);
-  PP_Instance instance = 0;
-  PdfAccessibilityTree pdf_accessibility_tree(&host, instance);
+  TestPdfAccessibilityActionHandler action_handler;
+  PdfAccessibilityTree pdf_accessibility_tree(render_frame, &action_handler);
 
   pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
   pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
@@ -1795,13 +1718,13 @@ TEST_F(PdfAccessibilityTreeTest, TestActionDataConversion) {
       gfx::Rect(0, 0, 50, 50), ax::mojom::ScrollAlignment::kScrollAlignmentLeft,
       ax::mojom::ScrollAlignment::kScrollAlignmentTop,
       ax::mojom::ScrollBehavior::kDoNotScrollIfVisible));
-  PP_PdfAccessibilityActionData action_data =
-      fake_pepper_instance.GetReceivedActionData();
-  EXPECT_EQ(PP_PdfAccessibilityAction::PP_PDF_SCROLL_TO_MAKE_VISIBLE,
+  chrome_pdf::AccessibilityActionData action_data =
+      action_handler.received_action_data();
+  EXPECT_EQ(chrome_pdf::AccessibilityAction::kScrollToMakeVisible,
             action_data.action);
-  EXPECT_EQ(PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_ALIGNMENT_LEFT,
+  EXPECT_EQ(chrome_pdf::AccessibilityScrollAlignment::kLeft,
             action_data.horizontal_scroll_alignment);
-  EXPECT_EQ(PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_ALIGNMENT_TOP,
+  EXPECT_EQ(chrome_pdf::AccessibilityScrollAlignment::kTop,
             action_data.vertical_scroll_alignment);
 
   EXPECT_TRUE(pdf_action_target->ScrollToMakeVisibleWithSubFocus(
@@ -1809,8 +1732,8 @@ TEST_F(PdfAccessibilityTreeTest, TestActionDataConversion) {
       ax::mojom::ScrollAlignment::kScrollAlignmentRight,
       ax::mojom::ScrollAlignment::kScrollAlignmentTop,
       ax::mojom::ScrollBehavior::kDoNotScrollIfVisible));
-  action_data = fake_pepper_instance.GetReceivedActionData();
-  EXPECT_EQ(PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_ALIGNMENT_RIGHT,
+  action_data = action_handler.received_action_data();
+  EXPECT_EQ(chrome_pdf::AccessibilityScrollAlignment::kRight,
             action_data.horizontal_scroll_alignment);
 
   EXPECT_TRUE(pdf_action_target->ScrollToMakeVisibleWithSubFocus(
@@ -1818,8 +1741,8 @@ TEST_F(PdfAccessibilityTreeTest, TestActionDataConversion) {
       ax::mojom::ScrollAlignment::kScrollAlignmentBottom,
       ax::mojom::ScrollAlignment::kScrollAlignmentBottom,
       ax::mojom::ScrollBehavior::kDoNotScrollIfVisible));
-  action_data = fake_pepper_instance.GetReceivedActionData();
-  EXPECT_EQ(PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_ALIGNMENT_BOTTOM,
+  action_data = action_handler.received_action_data();
+  EXPECT_EQ(chrome_pdf::AccessibilityScrollAlignment::kBottom,
             action_data.horizontal_scroll_alignment);
 
   EXPECT_TRUE(pdf_action_target->ScrollToMakeVisibleWithSubFocus(
@@ -1827,13 +1750,12 @@ TEST_F(PdfAccessibilityTreeTest, TestActionDataConversion) {
       ax::mojom::ScrollAlignment::kScrollAlignmentCenter,
       ax::mojom::ScrollAlignment::kScrollAlignmentClosestEdge,
       ax::mojom::ScrollBehavior::kDoNotScrollIfVisible));
-  action_data = fake_pepper_instance.GetReceivedActionData();
-  EXPECT_EQ(PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_ALIGNMENT_CENTER,
+  action_data = action_handler.received_action_data();
+  EXPECT_EQ(chrome_pdf::AccessibilityScrollAlignment::kCenter,
             action_data.horizontal_scroll_alignment);
-  EXPECT_EQ(
-      PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_ALIGNMENT_CLOSEST_EDGE,
-      action_data.vertical_scroll_alignment);
-  CompareRect({{0, 0}, {1, 1}}, action_data.target_rect);
+  EXPECT_EQ(chrome_pdf::AccessibilityScrollAlignment::kClosestToEdge,
+            action_data.vertical_scroll_alignment);
+  EXPECT_EQ(gfx::Rect({0, 0}, {1, 1}), action_data.target_rect);
 }
 
 TEST_F(PdfAccessibilityTreeTest, TestScrollToGlobalPointDataConversion) {
@@ -1841,10 +1763,8 @@ TEST_F(PdfAccessibilityTreeTest, TestScrollToGlobalPointDataConversion) {
   render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
   ASSERT_TRUE(render_frame->GetRenderAccessibility());
 
-  ActionHandlingFakePepperPluginInstance fake_pepper_instance;
-  FakeRendererPpapiHost host(GetMainRenderFrame(), &fake_pepper_instance);
-  PP_Instance instance = 0;
-  PdfAccessibilityTree pdf_accessibility_tree(&host, instance);
+  TestPdfAccessibilityActionHandler action_handler;
+  PdfAccessibilityTree pdf_accessibility_tree(render_frame, &action_handler);
 
   pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
   pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
@@ -1863,13 +1783,12 @@ TEST_F(PdfAccessibilityTreeTest, TestScrollToGlobalPointDataConversion) {
     EXPECT_TRUE(pdf_action_target->PerformAction(action_data));
   }
 
-  PP_PdfAccessibilityActionData action_data =
-      fake_pepper_instance.GetReceivedActionData();
-  EXPECT_EQ(PP_PdfAccessibilityAction::PP_PDF_SCROLL_TO_GLOBAL_POINT,
+  chrome_pdf::AccessibilityActionData action_data =
+      action_handler.received_action_data();
+  EXPECT_EQ(chrome_pdf::AccessibilityAction::kScrollToGlobalPoint,
             action_data.action);
-  EXPECT_EQ(50, action_data.target_point.x);
-  EXPECT_EQ(50, action_data.target_point.y);
-  CompareRect({{0, 0}, {1, 1}}, action_data.target_rect);
+  EXPECT_EQ(gfx::Point(50, 50), action_data.target_point);
+  EXPECT_EQ(gfx::Rect({0, 0}, {1, 1}), action_data.target_rect);
 }
 
 TEST_F(PdfAccessibilityTreeTest, TestClickActionDataConversion) {
@@ -1879,20 +1798,20 @@ TEST_F(PdfAccessibilityTreeTest, TestClickActionDataConversion) {
                 std::end(kDummyCharsData));
 
   {
-    ppapi::PdfAccessibilityLinkInfo link;
+    chrome_pdf::AccessibilityLinkInfo link;
     link.url = kChromiumTestUrl;
-    link.text_run_index = 0;
-    link.text_run_count = 1;
+    link.text_range.index = 0;
+    link.text_range.count = 1;
     link.bounds = {{0, 0}, {10, 10}};
     link.index_in_page = 0;
     page_objects_.links.push_back(std::move(link));
   }
 
   {
-    ppapi::PdfAccessibilityLinkInfo link;
+    chrome_pdf::AccessibilityLinkInfo link;
     link.url = kChromiumTestUrl;
-    link.text_run_index = 1;
-    link.text_run_count = 1;
+    link.text_range.index = 1;
+    link.text_range.count = 1;
     link.bounds = {{10, 10}, {10, 10}};
     link.index_in_page = 1;
     page_objects_.links.push_back(std::move(link));
@@ -1905,10 +1824,8 @@ TEST_F(PdfAccessibilityTreeTest, TestClickActionDataConversion) {
   render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
   ASSERT_TRUE(render_frame->GetRenderAccessibility());
 
-  ActionHandlingFakePepperPluginInstance fake_pepper_instance;
-  FakeRendererPpapiHost host(GetMainRenderFrame(), &fake_pepper_instance);
-  PP_Instance instance = 0;
-  PdfAccessibilityTree pdf_accessibility_tree(&host, instance);
+  TestPdfAccessibilityActionHandler action_handler;
+  PdfAccessibilityTree pdf_accessibility_tree(render_frame, &action_handler);
 
   pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
   pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
@@ -1931,20 +1848,20 @@ TEST_F(PdfAccessibilityTreeTest, TestClickActionDataConversion) {
     action_data.action = ax::mojom::Action::kDoDefault;
     pdf_action_target->PerformAction(action_data);
   }
-  PP_PdfAccessibilityActionData pdf_action_data =
-      fake_pepper_instance.GetReceivedActionData();
+  chrome_pdf::AccessibilityActionData pdf_action_data =
+      action_handler.received_action_data();
 
-  EXPECT_EQ(PP_PdfAccessibilityAction::PP_PDF_DO_DEFAULT_ACTION,
+  EXPECT_EQ(chrome_pdf::AccessibilityAction::kDoDefaultAction,
             pdf_action_data.action);
-  EXPECT_EQ(PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_NONE,
+  EXPECT_EQ(chrome_pdf::AccessibilityScrollAlignment::kNone,
             pdf_action_data.horizontal_scroll_alignment);
-  EXPECT_EQ(PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_NONE,
+  EXPECT_EQ(chrome_pdf::AccessibilityScrollAlignment::kNone,
             pdf_action_data.vertical_scroll_alignment);
   EXPECT_EQ(0u, pdf_action_data.page_index);
-  EXPECT_EQ(PP_PdfAccessibilityAnnotationType::PP_PDF_LINK,
+  EXPECT_EQ(chrome_pdf::AccessibilityAnnotationType::kLink,
             pdf_action_data.annotation_type);
   EXPECT_EQ(1u, pdf_action_data.annotation_index);
-  CompareRect({{0, 0}, {0, 0}}, pdf_action_data.target_rect);
+  EXPECT_EQ(gfx::Rect({0, 0}, {0, 0}), pdf_action_data.target_rect);
 }
 
 TEST_F(PdfAccessibilityTreeTest, TestEmptyPdfAxActions) {
@@ -1952,10 +1869,8 @@ TEST_F(PdfAccessibilityTreeTest, TestEmptyPdfAxActions) {
   render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
   ASSERT_TRUE(render_frame->GetRenderAccessibility());
 
-  ActionHandlingFakePepperPluginInstance fake_pepper_instance;
-  FakeRendererPpapiHost host(GetMainRenderFrame(), &fake_pepper_instance);
-  PP_Instance instance = 0;
-  PdfAccessibilityTree pdf_accessibility_tree(&host, instance);
+  TestPdfAccessibilityActionHandler action_handler;
+  PdfAccessibilityTree pdf_accessibility_tree(render_frame, &action_handler);
 
   pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
   pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
@@ -1997,10 +1912,8 @@ TEST_F(PdfAccessibilityTreeTest, TestZoomAndScaleChanges) {
   render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
   ASSERT_TRUE(render_frame->GetRenderAccessibility());
 
-  ActionHandlingFakePepperPluginInstance fake_pepper_instance;
-  FakeRendererPpapiHost host(GetMainRenderFrame(), &fake_pepper_instance);
-  PP_Instance instance = 0;
-  PdfAccessibilityTree pdf_accessibility_tree(&host, instance);
+  TestPdfAccessibilityActionHandler action_handler;
+  PdfAccessibilityTree pdf_accessibility_tree(render_frame, &action_handler);
   pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
   pdf_accessibility_tree.SetAccessibilityPageInfo(page_info_, text_runs_,
                                                   chars_, page_objects_);
@@ -2059,10 +1972,8 @@ TEST_F(PdfAccessibilityTreeTest, TestSelectionActionDataConversion) {
   content::RenderFrame* render_frame = GetMainRenderFrame();
   render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
   ASSERT_TRUE(render_frame->GetRenderAccessibility());
-  ActionHandlingFakePepperPluginInstance fake_pepper_instance;
-  FakeRendererPpapiHost host(GetMainRenderFrame(), &fake_pepper_instance);
-  PP_Instance instance = 0;
-  PdfAccessibilityTree pdf_accessibility_tree(&host, instance);
+  TestPdfAccessibilityActionHandler action_handler;
+  PdfAccessibilityTree pdf_accessibility_tree(render_frame, &action_handler);
   pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
   pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
   pdf_accessibility_tree.SetAccessibilityPageInfo(page_info_, text_runs_,
@@ -2103,9 +2014,9 @@ TEST_F(PdfAccessibilityTreeTest, TestSelectionActionDataConversion) {
   EXPECT_TRUE(pdf_anchor_action_target->SetSelection(
       pdf_anchor_action_target.get(), 1, pdf_focus_action_target.get(), 5));
 
-  PP_PdfAccessibilityActionData pdf_action_data =
-      fake_pepper_instance.GetReceivedActionData();
-  EXPECT_EQ(PP_PdfAccessibilityAction::PP_PDF_SET_SELECTION,
+  chrome_pdf::AccessibilityActionData pdf_action_data =
+      action_handler.received_action_data();
+  EXPECT_EQ(chrome_pdf::AccessibilityAction::kSetSelection,
             pdf_action_data.action);
   EXPECT_EQ(0u, pdf_action_data.selection_start_index.page_index);
   EXPECT_EQ(1u, pdf_action_data.selection_start_index.char_index);
@@ -2122,8 +2033,8 @@ TEST_F(PdfAccessibilityTreeTest, TestSelectionActionDataConversion) {
   EXPECT_TRUE(pdf_anchor_action_target->SetSelection(
       pdf_anchor_action_target.get(), 1, pdf_focus_action_target.get(), 4));
 
-  pdf_action_data = fake_pepper_instance.GetReceivedActionData();
-  EXPECT_EQ(PP_PdfAccessibilityAction::PP_PDF_SET_SELECTION,
+  pdf_action_data = action_handler.received_action_data();
+  EXPECT_EQ(chrome_pdf::AccessibilityAction::kSetSelection,
             pdf_action_data.action);
   EXPECT_EQ(0u, pdf_action_data.selection_start_index.page_index);
   EXPECT_EQ(1u, pdf_action_data.selection_start_index.char_index);
@@ -2155,10 +2066,8 @@ TEST_F(PdfAccessibilityTreeTest, TestShowContextMenuAction) {
   render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
   ASSERT_TRUE(render_frame->GetRenderAccessibility());
 
-  ActionHandlingFakePepperPluginInstance fake_pepper_instance;
-  FakeRendererPpapiHost host(GetMainRenderFrame(), &fake_pepper_instance);
-  PP_Instance instance = 0;
-  PdfAccessibilityTree pdf_accessibility_tree(&host, instance);
+  TestPdfAccessibilityActionHandler action_handler;
+  PdfAccessibilityTree pdf_accessibility_tree(render_frame, &action_handler);
   pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
   pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
   pdf_accessibility_tree.SetAccessibilityPageInfo(page_info_, text_runs_,

@@ -31,6 +31,7 @@
 #include "media/engine/simulcast.h"
 #include "media/engine/webrtc_media_engine.h"
 #include "media/engine/webrtc_voice_engine.h"
+#include "modules/rtp_rtcp/source/rtp_util.h"
 #include "rtc_base/copy_on_write_buffer.h"
 #include "rtc_base/experiments/field_trial_parser.h"
 #include "rtc_base/experiments/field_trial_units.h"
@@ -45,6 +46,9 @@
 namespace cricket {
 
 namespace {
+
+using ::webrtc::ParseRtpPayloadType;
+using ::webrtc::ParseRtpSsrc;
 
 const int kMinLayerSize = 16;
 constexpr int64_t kUnsignaledSsrcCooldownMs = rtc::kNumMillisecsPerSec / 2;
@@ -444,7 +448,7 @@ MergeInfoAboutOutboundRtpSubstreams(
     webrtc::VideoSendStream::StreamStats& rtp_substream =
         rtp_substreams[media_ssrc];
 
-    // We only merge |rtp_stats|. All other metrics are not applicable for RTX
+    // We only merge `rtp_stats`. All other metrics are not applicable for RTX
     // and FlexFEC.
     // TODO(hbos): kRtx and kFlexfec stats should use a separate struct to make
     // it clear what is or is not applicable.
@@ -1539,7 +1543,7 @@ void WebRtcVideoChannel::ConfigureReceiverRtp(
     flexfec_config->protected_media_ssrcs = {ssrc};
     flexfec_config->rtp.local_ssrc = config->rtp.local_ssrc;
     flexfec_config->rtcp_mode = config->rtp.rtcp_mode;
-    // TODO(brandtr): We should be spec-compliant and set |transport_cc| here
+    // TODO(brandtr): We should be spec-compliant and set `transport_cc` here
     // based on the rtcp-fb for the FlexFEC codec, not the media codec.
     flexfec_config->rtp.transport_cc = config->rtp.transport_cc;
     flexfec_config->rtp.extensions = config->rtp.extensions;
@@ -1569,7 +1573,7 @@ void WebRtcVideoChannel::ResetUnsignaledRecvStream() {
   last_unsignalled_ssrc_creation_time_ms_ = absl::nullopt;
 
   // Delete any created default streams. This is needed to avoid SSRC collisions
-  // in Call's RtpDemuxer, in the case that |this| has created a default video
+  // in Call's RtpDemuxer, in the case that `this` has created a default video
   // receiver, and then some other WebRtcVideoChannel gets the SSRC signaled
   // in the corresponding Unified Plan "m=" section.
   auto it = receive_streams_.begin();
@@ -1727,10 +1731,7 @@ void WebRtcVideoChannel::OnPacketReceived(rtc::CopyOnWriteBuffer packet,
             break;
         }
 
-        uint32_t ssrc = 0;
-        if (!GetRtpSsrc(packet.cdata(), packet.size(), &ssrc)) {
-          return;
-        }
+        uint32_t ssrc = ParseRtpSsrc(packet);
 
         if (unknown_ssrc_packet_buffer_) {
           unknown_ssrc_packet_buffer_->AddPacket(ssrc, packet_time_us, packet);
@@ -1741,10 +1742,7 @@ void WebRtcVideoChannel::OnPacketReceived(rtc::CopyOnWriteBuffer packet,
           return;
         }
 
-        int payload_type = 0;
-        if (!GetRtpPayloadType(packet.cdata(), packet.size(), &payload_type)) {
-          return;
-        }
+        int payload_type = ParseRtpPayloadType(packet);
 
         // See if this payload_type is registered as one that usually gets its
         // own SSRC (RTX) or at least is safe to drop either way (FEC). If it
@@ -2181,7 +2179,7 @@ webrtc::DegradationPreference
 WebRtcVideoChannel::WebRtcVideoSendStream::GetDegradationPreference() const {
   // Do not adapt resolution for screen content as this will likely
   // result in blurry and unreadable text.
-  // |this| acts like a VideoSource to make sure SinkWants are handled on the
+  // `this` acts like a VideoSource to make sure SinkWants are handled on the
   // correct thread.
   if (!enable_cpu_overuse_detection_) {
     return webrtc::DegradationPreference::DISABLED;
@@ -2265,7 +2263,7 @@ void WebRtcVideoChannel::WebRtcVideoSendStream::SetCodec(
 void WebRtcVideoChannel::WebRtcVideoSendStream::SetSendParameters(
     const ChangedSendParameters& params) {
   RTC_DCHECK_RUN_ON(&thread_checker_);
-  // |recreate_stream| means construction-time parameters have changed and the
+  // `recreate_stream` means construction-time parameters have changed and the
   // sending stream needs to be reset with the new config.
   bool recreate_stream = false;
   if (params.rtcp_mode) {
@@ -2554,7 +2552,7 @@ WebRtcVideoChannel::WebRtcVideoSendStream::CreateVideoEncoderConfig(
 void WebRtcVideoChannel::WebRtcVideoSendStream::ReconfigureEncoder() {
   RTC_DCHECK_RUN_ON(&thread_checker_);
   if (!stream_) {
-    // The webrtc::VideoSendStream |stream_| has not yet been created but other
+    // The webrtc::VideoSendStream `stream_` has not yet been created but other
     // parameters has changed.
     return;
   }
@@ -2634,8 +2632,8 @@ WebRtcVideoChannel::WebRtcVideoSendStream::GetPerLayerVideoSenderInfos(
     common_info.aggregated_framerate_sent = stats.encode_frame_rate;
     common_info.aggregated_huge_frames_sent = stats.huge_frames_sent;
 
-    // If we don't have any substreams, get the remaining metrics from |stats|.
-    // Otherwise, these values are obtained from |sub_stream| below.
+    // If we don't have any substreams, get the remaining metrics from `stats`.
+    // Otherwise, these values are obtained from `sub_stream` below.
     if (stats.substreams.empty()) {
       for (uint32_t ssrc : parameters_.config.rtp.ssrcs) {
         common_info.add_ssrc(ssrc);
@@ -3000,7 +2998,7 @@ void WebRtcVideoChannel::WebRtcVideoReceiveStream::SetFeedbackParameters(
   config_.rtp.nack.rtp_history_ms = nack_history_ms;
   config_.rtp.transport_cc = transport_cc_enabled;
   config_.rtp.rtcp_mode = rtcp_mode;
-  // TODO(brandtr): We should be spec-compliant and set |transport_cc| here
+  // TODO(brandtr): We should be spec-compliant and set `transport_cc` here
   // based on the rtcp-fb for the FlexFEC codec, not the media codec.
   flexfec_config_.rtp.transport_cc = config_.rtp.transport_cc;
   flexfec_config_.rtcp_mode = config_.rtp.rtcp_mode;
@@ -3163,7 +3161,7 @@ WebRtcVideoChannel::WebRtcVideoReceiveStream::GetVideoReceiverInfo(
       stats.rtp_stats.packet_counter.padding_bytes;
   info.packets_rcvd = stats.rtp_stats.packet_counter.packets;
   info.packets_lost = stats.rtp_stats.packets_lost;
-  info.jitter_ms = stats.rtp_stats.jitter;
+  info.jitter_ms = stats.rtp_stats.jitter / (kVideoCodecClockrate / 1000);
 
   info.framerate_rcvd = stats.network_frame_rate;
   info.framerate_decoded = stats.decode_frame_rate;
@@ -3300,7 +3298,7 @@ WebRtcVideoChannel::MapCodecs(const std::vector<VideoCodec>& codecs) {
 
   std::vector<VideoCodecSettings> video_codecs;
   std::map<int, VideoCodec::CodecType> payload_codec_type;
-  // |rtx_mapping| maps video payload type to rtx payload type.
+  // `rtx_mapping` maps video payload type to rtx payload type.
   std::map<int, int> rtx_mapping;
   std::map<int, int> rtx_time_mapping;
 

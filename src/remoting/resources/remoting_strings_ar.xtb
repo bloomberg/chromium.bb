@@ -11,6 +11,7 @@
 <translation id="1546934824884762070">حدث خطأ غير متوقع. يُرجى الإبلاغ عن هذه المشكلة إلى مطوري البرامج.</translation>
 <translation id="1697532407822776718">أنت الآن على أتم استعداد.</translation>
 <translation id="1742469581923031760">جارٍ الاتصال...</translation>
+<translation id="177040763384871009">للسماح بفتح الروابط التي تم النقر عليها على الجهاز البعيد على متصفِّح العميل، يجب تغيير متصفِّح الويب على النظام إلى "<ph name="URL_FORWARDER_NAME" />".</translation>
 <translation id="177096447311351977">‏عنوان IP للقناة التابع للعميل: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1897488610212723051">حذف</translation>
 <translation id="2009755455353575666">تعذّر الاتصال</translation>
@@ -129,6 +130,7 @@
 <translation id="6963936880795878952">تم حظر الاتصالات بجهاز الكمبيوتر البعيد مؤقتًا نظرًا لأن شخصًا ما كان يحاول الاتصال به باستخدام رقم تعريف شخصي غير صالح. يُرجى إعادة المحاولة لاحقًا.</translation>
 <translation id="6965382102122355670">حسنًا</translation>
 <translation id="6985691951107243942">هل تريد فعلًا إيقاف الاتصالات عن بُعد بـ <ph name="HOSTNAME" />؟ إذا عدلت عن هذا القرار، فسيلزمك الانتقال إلى جهاز الكمبيوتر لإعادة تفعيل الاتصالات.</translation>
+<translation id="6998890551706945177">طلب <ph name="CLIENT_USERNAME" /> إذنًا بالدخول إلى جهاز الكمبيوتر الخاص بك للاطّلاع عليه والتحكم فيه. اضغط على ''<ph name="IDS_SHARE_CONFIRM_DIALOG_DECLINE" />'' إذا كنت لا تعرّف هذا المستخدم أو إذا كنت تريد إجراء أي تغييرات قبل مشاركة الجهاز، أو اختَر ''<ph name="IDS_SHARE_CONFIRM_DIALOG_CONFIRM" />'' للسماح بالاتصال.</translation>
 <translation id="7019153418965365059">خطأ بالمضيف غير معروف: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">المساعدة عن بُعد</translation>
 <translation id="7026930240735156896">اتّباع التعليمات لإعداد جهاز الكمبيوتر لإتاحة الوصول عن بُعد</translation>
@@ -142,6 +144,7 @@
 <translation id="7434397035092923453">تم رفض دخول العميل: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">العميل المتصل: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7526139040829362392">تغيير حساب</translation>
+<translation id="7535110896613603182">فتح إعدادات التطبيقات التلقائية</translation>
 <translation id="7628469622942688817">تذكّر رقم التعريف الشخصي التابع لي على هذا الجهاز.</translation>
 <translation id="7649070708921625228">مساعدة</translation>
 <translation id="7658239707568436148">إلغاء</translation>

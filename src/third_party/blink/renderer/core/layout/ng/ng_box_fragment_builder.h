@@ -137,8 +137,8 @@ class CORE_EXPORT NGBoxFragmentBuilder final
 
   LayoutUnit FragmentBlockSize() const {
 #if DCHECK_IS_ON()
-    if (has_block_fragmentation_)
-      DCHECK(!block_size_is_for_all_fragments_);
+    DCHECK(!block_size_is_for_all_fragments_ || !has_block_fragmentation_ ||
+           IsInitialColumnBalancingPass());
     DCHECK(size_.block_size != kIndefiniteSize);
 #endif
     return size_.block_size;
@@ -394,9 +394,6 @@ class CORE_EXPORT NGBoxFragmentBuilder final
     may_have_descendant_above_block_start_ = b;
   }
 
-  void SetColumnSpanner(NGBlockNode spanner) { column_spanner_ = spanner; }
-  bool FoundColumnSpanner() const { return !!column_spanner_; }
-
   void SetLinesUntilClamp(const absl::optional<int>& value) {
     lines_until_clamp_ = value;
   }
@@ -434,8 +431,6 @@ class CORE_EXPORT NGBoxFragmentBuilder final
     DCHECK_EQ(BoxType(), NGPhysicalFragment::kInlineBox);
     return ToBoxFragment(ToLineWritingMode(GetWritingMode()));
   }
-
-  scoped_refptr<const NGLayoutResult> Abort(NGLayoutResult::EStatus);
 
   NGPhysicalFragment::NGBoxType BoxType() const;
   void SetBoxType(NGPhysicalFragment::NGBoxType box_type) {
@@ -553,7 +548,10 @@ class CORE_EXPORT NGBoxFragmentBuilder final
     grid_data_ = std::move(grid_data);
   }
 
-  const NGGridData& GetNGGridData() const { return *grid_data_.get(); }
+  const NGGridData& GetNGGridData() const {
+    DCHECK(grid_data_);
+    return *grid_data_.get();
+  }
 
   // The |NGFragmentItemsBuilder| for the inline formatting context of this box.
   NGFragmentItemsBuilder* ItemsBuilder() { return items_builder_; }
@@ -617,8 +615,6 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   absl::optional<LogicalRect> inflow_bounds_;
 
   NGFragmentItemsBuilder* items_builder_ = nullptr;
-
-  NGBlockNode column_spanner_ = nullptr;
 
   NGPhysicalFragment::NGBoxType box_type_;
   bool may_have_descendant_above_block_start_ = false;

@@ -876,7 +876,7 @@ class DomTreeExtractionBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
       computed_styles[i] = std::move(style);
     }
 
-    base::ThreadRestrictions::SetIOAllowed(true);
+    base::ScopedAllowBlockingForTesting allow_blocking;
     base::FilePath source_root_dir;
     base::PathService::Get(base::DIR_SOURCE_ROOT, &source_root_dir);
     base::FilePath expected_dom_nodes_path =
@@ -1029,31 +1029,6 @@ class BlockedByClient_NetworkObserver_Test
 };
 
 DISABLED_HEADLESS_ASYNC_DEVTOOLED_TEST_F(BlockedByClient_NetworkObserver_Test);
-
-class DevToolsSetCookieTest : public HeadlessAsyncDevTooledBrowserTest,
-                              public network::Observer {
- public:
-  void RunDevTooledTest() override {
-    EXPECT_TRUE(embedded_test_server()->Start());
-    devtools_client_->GetNetwork()->AddObserver(this);
-
-    base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
-    devtools_client_->GetNetwork()->Enable(run_loop.QuitClosure());
-    run_loop.Run();
-
-    devtools_client_->GetPage()->Navigate(
-        embedded_test_server()->GetURL("/set-cookie?cookie1").spec());
-  }
-
-  void OnResponseReceived(
-      const network::ResponseReceivedParams& params) override {
-    EXPECT_NE(std::string::npos, params.GetResponse()->GetHeadersText().find(
-                                     "Set-Cookie: cookie1"));
-    FinishAsynchronousTest();
-  }
-};
-
-HEADLESS_ASYNC_DEVTOOLED_TEST_F(DevToolsSetCookieTest);
 
 class DevtoolsInterceptionWithAuthProxyTest
     : public HeadlessAsyncDevTooledBrowserTest,

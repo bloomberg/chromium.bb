@@ -92,6 +92,10 @@ TabGroupHeader::TabGroupHeader(TabStrip* tab_strip,
   // The size and color of the chip are set in VisualsChanged().
   title_chip_ = AddChildView(std::make_unique<views::View>());
 
+  // Disable events processing (like tooltip handling)
+  // for children of TabGroupHeader.
+  title_chip_->SetCanProcessEventsWithinSubtree(false);
+
   // The text and color of the title are set in VisualsChanged().
   title_ = title_chip_->AddChildView(std::make_unique<views::Label>());
   title_->SetCollapseWhenHidden(true);
@@ -105,6 +109,10 @@ TabGroupHeader::TabGroupHeader(TabStrip* tab_strip,
   views::HighlightPathGenerator::Install(
       this,
       std::make_unique<TabGroupHighlightPathGenerator>(title_chip_, title_));
+  // The tab group gets painted with a solid color that may not contrast well
+  // with the focus indicator, so draw an outline around the focus ring for it
+  // to contrast with the solid color.
+  SetProperty(views::kDrawFocusRingBackgroundOutline, true);
 
   SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
 
@@ -285,6 +293,18 @@ void TabGroupHeader::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   }
 }
 
+std::u16string TabGroupHeader::GetTooltipText(const gfx::Point& p) const {
+  if (!title_->GetText().empty()) {
+    return l10n_util::GetStringFUTF16(
+        IDS_TAB_GROUPS_NAMED_GROUP_TOOLTIP, title_->GetText(),
+        tab_strip_->controller()->GetGroupContentString(group().value()));
+  } else {
+    return l10n_util::GetStringFUTF16(
+        IDS_TAB_GROUPS_UNNAMED_GROUP_TOOLTIP,
+        tab_strip_->controller()->GetGroupContentString(group().value()));
+  }
+}
+
 TabSlotView::ViewType TabGroupHeader::GetTabSlotViewType() const {
   return TabSlotView::ViewType::kTabGroupHeader;
 }
@@ -401,10 +421,10 @@ void TabGroupHeader::VisualsChanged() {
       tab_strip_->controller()->GetGroupColorId(group().value());
   const SkColor color = tab_strip_->GetPaintedGroupColor(color_id);
 
+  title_->SetText(title);
+
   if (title.empty()) {
     // If the title is empty, the chip is just a circle.
-    title_->SetVisible(false);
-
     const int y = (GetLayoutConstant(TAB_HEIGHT) - kEmptyChipSize) / 2;
 
     title_chip_->SetBounds(TabGroupUnderline::GetStrokeInset(), y,
@@ -414,9 +434,7 @@ void TabGroupHeader::VisualsChanged() {
   } else {
     // If the title is set, the chip is a rounded rect that matches the active
     // tab shape, particularly the tab's corner radius.
-    title_->SetVisible(true);
     title_->SetEnabledColor(color_utils::GetColorWithMaxContrast(color));
-    title_->SetText(title);
 
     // Set the radius such that the chip nestles snugly against the tab corner
     // radius, taking into account the group underline stroke.

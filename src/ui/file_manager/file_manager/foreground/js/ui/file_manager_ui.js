@@ -17,6 +17,7 @@ import {VolumeManager} from '../../../externs/volume_manager.js';
 import {FilesPasswordDialog} from '../../elements/files_password_dialog.js';
 import {FilesToast} from '../../elements/files_toast.js';
 import {FilesTooltip} from '../../elements/files_tooltip.js';
+import {BannerController} from '../banner_controller.js';
 import {DialogType} from '../dialog_type.js';
 import {LaunchParam} from '../launch_param.js';
 import {ProvidersModel} from '../providers_model.js';
@@ -75,16 +76,6 @@ export class FileManagerUI {
      * @private
      */
     this.dialogType_ = launchParam.type;
-
-    /**
-     * <hr> elements in Menu.
-     * This is a workaround for crbug.com/689255. This member variable is just
-     * for keeping explicit reference to decorated <hr>s to prevent GC from
-     * collecting <hr> wrappers, and not used anywhere.
-     * TODO(fukino): Remove this member variable once the root cause is fixed.
-     * @private {!Array<!Element>}
-     */
-    this.separators_ = [].slice.call(document.querySelectorAll('cr-menu > hr'));
 
     /**
      * Alert dialog.
@@ -366,7 +357,7 @@ export class FileManagerUI {
 
     /**
      * Banners in the file list.
-     * @type {Banners}
+     * @type {Banners|BannerController}
      */
     this.banners = null;
 
@@ -568,7 +559,7 @@ export class FileManagerUI {
 
   /**
    * TODO(mtomasz): Merge the method into initAdditionalUI if possible.
-   * @param {!Banners} banners
+   * @param {!Banners|!BannerController} banners
    */
   initBanners(banners) {
     this.banners = banners;

@@ -7,15 +7,15 @@
 #include <utility>
 
 #include "base/callback.h"
-#include "chrome/browser/ash/policy/core/device_cloud_policy_store_chromeos.h"
+#include "chrome/browser/ash/policy/core/device_cloud_policy_store_ash.h"
 #include "components/policy/core/common/cloud/mock_cloud_external_data_manager.h"
 
 namespace policy {
 
 FakeDeviceCloudPolicyManager::FakeDeviceCloudPolicyManager(
-    std::unique_ptr<DeviceCloudPolicyStoreChromeOS> store,
+    std::unique_ptr<DeviceCloudPolicyStoreAsh> store,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)
-    : DeviceCloudPolicyManagerChromeOS(
+    : DeviceCloudPolicyManagerAsh(
           std::move(store),
           std::make_unique<MockCloudExternalDataManager>(),
           task_runner,

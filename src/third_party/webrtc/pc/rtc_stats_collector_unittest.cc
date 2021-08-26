@@ -55,7 +55,7 @@ using ::testing::Return;
 
 namespace webrtc {
 
-// These are used by gtest code, such as if |EXPECT_EQ| fails.
+// These are used by gtest code, such as if `EXPECT_EQ` fails.
 void PrintTo(const RTCCertificateStats& stats, ::std::ostream* os) {
   *os << stats.ToJson();
 }
@@ -916,7 +916,7 @@ TEST_F(RTCStatsCollectorTest, MultipleCallbacks) {
 }
 
 TEST_F(RTCStatsCollectorTest, CachedStatsReports) {
-  // Caching should ensure |a| and |b| are the same report.
+  // Caching should ensure `a` and `b` are the same report.
   rtc::scoped_refptr<const RTCStatsReport> a = stats_->GetStatsReport();
   rtc::scoped_refptr<const RTCStatsReport> b = stats_->GetStatsReport();
   EXPECT_EQ(a.get(), b.get());
@@ -942,8 +942,8 @@ TEST_F(RTCStatsCollectorTest, MultipleCallbacksWithInvalidatedCacheInBetween) {
   EXPECT_TRUE_WAIT(b, kGetStatsReportTimeoutMs);
   EXPECT_TRUE_WAIT(c, kGetStatsReportTimeoutMs);
   EXPECT_EQ(a.get(), b.get());
-  // The act of doing |AdvanceTime| processes all messages. If this was not the
-  // case we might not require |c| to be fresher than |b|.
+  // The act of doing `AdvanceTime` processes all messages. If this was not the
+  // case we might not require `c` to be fresher than `b`.
   EXPECT_NE(c.get(), b.get());
 }
 
@@ -1466,9 +1466,9 @@ TEST_F(RTCStatsCollectorTest, CollectRTCIceCandidatePairStats) {
   expected_pair.responses_received = 4321;
   expected_pair.responses_sent = 1000;
   expected_pair.consent_requests_sent = (2020 - 2000);
-  // |expected_pair.current_round_trip_time| should be undefined because the
+  // `expected_pair.current_round_trip_time` should be undefined because the
   // current RTT is not set.
-  // |expected_pair.available_[outgoing/incoming]_bitrate| should be undefined
+  // `expected_pair.available_[outgoing/incoming]_bitrate` should be undefined
   // because is is not the current pair.
 
   ASSERT_TRUE(report->Get(expected_pair.id()));
@@ -1768,7 +1768,7 @@ TEST_F(RTCStatsCollectorTest,
       IdForType<RTCMediaStreamTrackStats>(report), report->timestamp_us(),
       RTCMediaStreamTrackKind::kAudio);
   expected_remote_audio_track.track_identifier = remote_audio_track->id();
-  // |expected_remote_audio_track.media_source_id| should be undefined
+  // `expected_remote_audio_track.media_source_id` should be undefined
   // because the track is remote.
   expected_remote_audio_track.remote_source = true;
   expected_remote_audio_track.ended = false;
@@ -1920,7 +1920,7 @@ TEST_F(RTCStatsCollectorTest,
       RTCMediaStreamTrackKind::kVideo);
   expected_remote_video_track_ssrc3.track_identifier =
       remote_video_track_ssrc3->id();
-  // |expected_remote_video_track_ssrc3.media_source_id| should be undefined
+  // `expected_remote_video_track_ssrc3.media_source_id` should be undefined
   // because the track is remote.
   expected_remote_video_track_ssrc3.remote_source = true;
   expected_remote_video_track_ssrc3.ended = true;
@@ -1953,6 +1953,7 @@ TEST_F(RTCStatsCollectorTest, CollectRTCInboundRTPStreamStats_Audio) {
       cricket::SsrcReceiverInfo());
   voice_media_info.receivers[0].local_stats[0].ssrc = 1;
   voice_media_info.receivers[0].packets_lost = -1;  // Signed per RFC3550
+  voice_media_info.receivers[0].packets_discarded = 7788;
   voice_media_info.receivers[0].packets_rcvd = 2;
   voice_media_info.receivers[0].nacks_sent = 5;
   voice_media_info.receivers[0].fec_packets_discarded = 5566;
@@ -2009,7 +2010,8 @@ TEST_F(RTCStatsCollectorTest, CollectRTCInboundRTPStreamStats_Audio) {
   expected_audio.bytes_received = 3;
   expected_audio.header_bytes_received = 4;
   expected_audio.packets_lost = -1;
-  // |expected_audio.last_packet_received_timestamp| should be undefined.
+  expected_audio.packets_discarded = 7788;
+  // `expected_audio.last_packet_received_timestamp` should be undefined.
   expected_audio.jitter = 4.5;
   expected_audio.jitter_buffer_delay = 1.0;
   expected_audio.jitter_buffer_emitted_count = 2;
@@ -2114,16 +2116,16 @@ TEST_F(RTCStatsCollectorTest, CollectRTCInboundRTPStreamStats_Video) {
   expected_video.frames_decoded = 9;
   expected_video.key_frames_decoded = 3;
   expected_video.frames_dropped = 13;
-  // |expected_video.qp_sum| should be undefined.
+  // `expected_video.qp_sum` should be undefined.
   expected_video.total_decode_time = 9.0;
   expected_video.total_inter_frame_delay = 0.123;
   expected_video.total_squared_inter_frame_delay = 0.00456;
   expected_video.jitter = 1.199;
   expected_video.jitter_buffer_delay = 3.456;
   expected_video.jitter_buffer_emitted_count = 13;
-  // |expected_video.last_packet_received_timestamp| should be undefined.
-  // |expected_video.content_type| should be undefined.
-  // |expected_video.decoder_implementation| should be undefined.
+  // `expected_video.last_packet_received_timestamp` should be undefined.
+  // `expected_video.content_type` should be undefined.
+  // `expected_video.decoder_implementation` should be undefined.
 
   ASSERT_TRUE(report->Get(expected_video.id()));
   EXPECT_EQ(
@@ -2187,7 +2189,7 @@ TEST_F(RTCStatsCollectorTest, CollectRTCOutboundRTPStreamStats_Audio) {
   RTCOutboundRTPStreamStats expected_audio("RTCOutboundRTPAudioStream_1",
                                            report->timestamp_us());
   expected_audio.media_source_id = "RTCAudioSource_50";
-  // |expected_audio.remote_id| should be undefined.
+  // `expected_audio.remote_id` should be undefined.
   expected_audio.ssrc = 1;
   expected_audio.media_type = "audio";
   expected_audio.kind = "audio";
@@ -2273,7 +2275,7 @@ TEST_F(RTCStatsCollectorTest, CollectRTCOutboundRTPStreamStats_Video) {
   RTCOutboundRTPStreamStats expected_video(stats_of_my_type[0]->id(),
                                            report->timestamp_us());
   expected_video.media_source_id = "RTCVideoSource_50";
-  // |expected_video.remote_id| should be undefined.
+  // `expected_video.remote_id` should be undefined.
   expected_video.ssrc = 1;
   expected_video.media_type = "video";
   expected_video.kind = "video";
@@ -2303,9 +2305,9 @@ TEST_F(RTCStatsCollectorTest, CollectRTCOutboundRTPStreamStats_Video) {
   expected_video.frames_per_second = 10.0;
   expected_video.frames_sent = 5;
   expected_video.huge_frames_sent = 2;
-  // |expected_video.content_type| should be undefined.
-  // |expected_video.qp_sum| should be undefined.
-  // |expected_video.encoder_implementation| should be undefined.
+  // `expected_video.content_type` should be undefined.
+  // `expected_video.qp_sum` should be undefined.
+  // `expected_video.encoder_implementation` should be undefined.
   ASSERT_TRUE(report->Get(expected_video.id()));
 
   EXPECT_EQ(
@@ -2526,7 +2528,7 @@ TEST_F(RTCStatsCollectorTest, CollectRTCTransportStatsWithCrypto) {
   rtp_transport_channel_stats.ssl_version_bytes = 0x0203;
   // 0x2F is TLS_RSA_WITH_AES_128_CBC_SHA according to IANA
   rtp_transport_channel_stats.ssl_cipher_suite = 0x2F;
-  rtp_transport_channel_stats.srtp_crypto_suite = rtc::SRTP_AES128_CM_SHA1_80;
+  rtp_transport_channel_stats.srtp_crypto_suite = rtc::kSrtpAes128CmSha1_80;
   pc_->SetTransportStats(kTransportName, {rtp_transport_channel_stats});
 
   // Get stats
@@ -2805,7 +2807,7 @@ class RTCStatsCollectorTestWithParamKind
   }
 
   // Adds a sender and channel of the appropriate kind, creating a sender info
-  // with the report block's |source_ssrc| and report block data.
+  // with the report block's `source_ssrc` and report block data.
   void AddSenderInfoAndMediaChannel(
       std::string transport_name,
       const std::vector<ReportBlockData>& report_block_datas,
@@ -2879,7 +2881,7 @@ TEST_P(RTCStatsCollectorTestWithParamKind,
   for (auto ssrc : ssrcs) {
     RTCPReportBlock report_block;
     // The remote-inbound-rtp SSRC and the outbound-rtp SSRC is the same as the
-    // |source_ssrc|, "SSRC of the RTP packet sender".
+    // `source_ssrc`, "SSRC of the RTP packet sender".
     report_block.source_ssrc = ssrc;
     report_block.packets_lost = 7;
     report_block.fraction_lost = kFractionLost;
@@ -2887,7 +2889,7 @@ TEST_P(RTCStatsCollectorTestWithParamKind,
     report_block_data.SetReportBlock(report_block, kReportBlockTimestampUtcUs);
     report_block_data.AddRoundTripTimeSample(kRoundTripTimeSample1Ms);
     // Only the last sample should be exposed as the
-    // |RTCRemoteInboundRtpStreamStats::round_trip_time|.
+    // `RTCRemoteInboundRtpStreamStats::round_trip_time`.
     report_block_data.AddRoundTripTimeSample(kRoundTripTimeSample2Ms);
     report_block_datas.push_back(report_block_data);
   }
@@ -2914,7 +2916,7 @@ TEST_P(RTCStatsCollectorTestWithParamKind,
     expected_remote_inbound_rtp.total_round_trip_time =
         kRoundTripTimeSample1Seconds + kRoundTripTimeSample2Seconds;
     expected_remote_inbound_rtp.round_trip_time_measurements = 2;
-    // This test does not set up RTCCodecStats, so |codec_id| and |jitter| are
+    // This test does not set up RTCCodecStats, so `codec_id` and `jitter` are
     // expected to be missing. These are tested separately.
 
     ASSERT_TRUE(report->Get(expected_remote_inbound_rtp.id()));
@@ -2938,7 +2940,7 @@ TEST_P(RTCStatsCollectorTestWithParamKind,
 
   RTCPReportBlock report_block;
   // The remote-inbound-rtp SSRC and the outbound-rtp SSRC is the same as the
-  // |source_ssrc|, "SSRC of the RTP packet sender".
+  // `source_ssrc`, "SSRC of the RTP packet sender".
   report_block.source_ssrc = 12;
   ReportBlockData report_block_data;
   report_block_data.SetReportBlock(report_block, kReportBlockTimestampUtcUs);
@@ -2970,7 +2972,7 @@ TEST_P(RTCStatsCollectorTestWithParamKind,
 
   RTCPReportBlock report_block;
   // The remote-inbound-rtp SSRC and the outbound-rtp SSRC is the same as the
-  // |source_ssrc|, "SSRC of the RTP packet sender".
+  // `source_ssrc`, "SSRC of the RTP packet sender".
   report_block.source_ssrc = 12;
   report_block.jitter = 5000;
   ReportBlockData report_block_data;
@@ -3007,7 +3009,7 @@ TEST_P(RTCStatsCollectorTestWithParamKind,
 
   RTCPReportBlock report_block;
   // The remote-inbound-rtp SSRC and the outbound-rtp SSRC is the same as the
-  // |source_ssrc|, "SSRC of the RTP packet sender".
+  // `source_ssrc`, "SSRC of the RTP packet sender".
   report_block.source_ssrc = 12;
   ReportBlockData report_block_data;
   report_block_data.SetReportBlock(report_block, kReportBlockTimestampUtcUs);

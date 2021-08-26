@@ -23,6 +23,7 @@ namespace ash {
 class AccountManagerFactory;
 class ChromeSessionManager;
 class ChromeUserManager;
+class InSessionPasswordChangeManager;
 class ProfileHelper;
 
 namespace system {
@@ -35,14 +36,13 @@ class SystemClock;
 }  // namespace ash
 
 namespace chromeos {
-class InSessionPasswordChangeManager;
 class KernelFeatureManager;
 class SchedulerConfigurationManager;
 class TimeZoneResolver;
 }  // namespace chromeos
 
 namespace policy {
-class BrowserPolicyConnectorChromeOS;
+class BrowserPolicyConnectorAsh;
 }
 
 class ScopedKeepAlive;
@@ -96,7 +96,7 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
     return automatic_reboot_manager_.get();
   }
 
-  policy::BrowserPolicyConnectorChromeOS* browser_policy_connector_chromeos();
+  policy::BrowserPolicyConnectorAsh* browser_policy_connector_ash();
 
   ash::ChromeSessionManager* session_manager() {
     return session_manager_.get();
@@ -133,8 +133,7 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
 
   ash::AccountManagerFactory* GetAccountManagerFactory();
 
-  chromeos::InSessionPasswordChangeManager*
-  in_session_password_change_manager() {
+  ash::InSessionPasswordChangeManager* in_session_password_change_manager() {
     return in_session_password_change_manager_.get();
   }
 
@@ -197,7 +196,7 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
 
   std::unique_ptr<ash::AccountManagerFactory> account_manager_factory_;
 
-  std::unique_ptr<chromeos::InSessionPasswordChangeManager>
+  std::unique_ptr<ash::InSessionPasswordChangeManager>
       in_session_password_change_manager_;
 
   base::CallbackListSubscription primary_profile_shutdown_subscription_;

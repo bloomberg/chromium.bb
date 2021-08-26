@@ -32,7 +32,8 @@ struct FeatureEntry;
 class FlagsStorage;
 struct SwitchEntry;
 
-// Enumeration of flag filters.
+// Enumeration of flag filters. These values don't persist and can be
+// renumbered.
 enum {
   kOsMac = 1 << 0,
   kOsWin = 1 << 1,
@@ -41,12 +42,14 @@ enum {
   kOsAndroid = 1 << 4,
   kOsCrOSOwnerOnly = 1 << 5,
   kOsIos = 1 << 6,
-  kDeprecated = 1 << 7,
-  kOsFuchsia = 1 << 8,
+  kOsFuchsia = 1 << 7,
+  kOsWebView = 1 << 8,
+
+  kDeprecated = 1 << 9,
 
   // Flags marked with this are internal to the flags system. Never set this on
   // a manually-added flag.
-  kFlagInfrastructure = 1 << 9,
+  kFlagInfrastructure = 1 << 10,
 };
 
 // A flag controlling the behavior of the |ConvertFlagsToSwitches| function -
@@ -138,6 +141,18 @@ class FlagsState {
       FlagsStorage* flags_storage,
       base::FeatureList* feature_list);
 
+  // A static version of above RegisterAllFeatureVariationParameters(), which
+  // finds the enabled feature entries from |enabled_entries| from
+  // |feature_entries|.
+  // |enabled_entries| is a set of string whose format is
+  // feature_entry_internal_name@index_of_enabled_variation, refer to
+  // FeatureEntry::NameForOption.
+  static std::vector<std::string> RegisterEnabledFeatureVariationParameters(
+      const base::span<const FeatureEntry>& feature_entries,
+      const std::set<std::string>& enabled_entries,
+      const std::string& trial_group,
+      base::FeatureList* feature_list);
+
   // Gets the list of feature entries. Entries that are available for the
   // current platform are appended to |supported_entries|; all other entries are
   // appended to |unsupported_entries|.
@@ -218,6 +233,7 @@ class FlagsState {
   // from |flags_storage|. On output, |enabled_entries| will contain the
   // internal names of enabled flags and |name_to_switch_map| will contain
   // information on how they map to command-line flags or features.
+  // When |enabled_entries| is empty |name_to_switch_map| won't be filled.
   void GenerateFlagsToSwitchesMapping(
       FlagsStorage* flags_storage,
       std::set<std::string>* enabled_entries,

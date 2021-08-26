@@ -175,7 +175,7 @@ class ScriptStreamingTest : public testing::Test {
 
  protected:
   void AppendData(const char* data) {
-    uint32_t data_len = strlen(data);
+    uint32_t data_len = base::checked_cast<uint32_t>(strlen(data));
     MojoResult result = producer_handle_->WriteData(
         data, &data_len, MOJO_WRITE_DATA_FLAG_ALL_OR_NONE);
     EXPECT_EQ(result, MOJO_RESULT_OK);
@@ -251,7 +251,8 @@ TEST_F(ScriptStreamingTest, DISABLED_CompilingStreamedScript) {
   EXPECT_TRUE(V8ScriptRunner::CompileScript(
                   scope.GetScriptState(), source_code,
                   SanitizeScriptErrors::kDoNotSanitize, compile_options,
-                  no_cache_reason, ReferrerScriptInfo())
+                  no_cache_reason,
+                  ReferrerScriptInfo::CreateNoReferencingScript())
                   .ToLocal(&script));
   EXPECT_FALSE(try_catch.HasCaught());
 }
@@ -288,7 +289,8 @@ TEST_F(ScriptStreamingTest, DISABLED_CompilingStreamedScriptWithParseError) {
   EXPECT_FALSE(V8ScriptRunner::CompileScript(
                    scope.GetScriptState(), source_code,
                    SanitizeScriptErrors::kDoNotSanitize, compile_options,
-                   no_cache_reason, ReferrerScriptInfo())
+                   no_cache_reason,
+                   ReferrerScriptInfo::CreateNoReferencingScript())
                    .ToLocal(&script));
   EXPECT_TRUE(try_catch.HasCaught());
 }
@@ -359,7 +361,10 @@ TEST_F(ScriptStreamingTest, DISABLED_SuppressingStreaming) {
   SingleCachedMetadataHandler* cache_handler = resource_->CacheHandler();
   EXPECT_TRUE(cache_handler);
   cache_handler->DisableSendToPlatformForTesting();
-  cache_handler->SetCachedMetadata(V8CodeCache::TagForCodeCache(cache_handler),
+  // CodeCacheHost can be nullptr since we disabled sending data to
+  // GeneratedCodeCacheHost for testing.
+  cache_handler->SetCachedMetadata(/*code_cache_host*/ nullptr,
+                                   V8CodeCache::TagForCodeCache(cache_handler),
                                    reinterpret_cast<const uint8_t*>("X"), 1);
 
   AppendData("function foo() {");
@@ -440,7 +445,8 @@ TEST_F(ScriptStreamingTest, DISABLED_ScriptsWithSmallFirstChunk) {
   EXPECT_TRUE(V8ScriptRunner::CompileScript(
                   scope.GetScriptState(), source_code,
                   SanitizeScriptErrors::kDoNotSanitize, compile_options,
-                  no_cache_reason, ReferrerScriptInfo())
+                  no_cache_reason,
+                  ReferrerScriptInfo::CreateNoReferencingScript())
                   .ToLocal(&script));
   EXPECT_FALSE(try_catch.HasCaught());
 }
@@ -476,7 +482,8 @@ TEST_F(ScriptStreamingTest, DISABLED_EncodingChanges) {
   EXPECT_TRUE(V8ScriptRunner::CompileScript(
                   scope.GetScriptState(), source_code,
                   SanitizeScriptErrors::kDoNotSanitize, compile_options,
-                  no_cache_reason, ReferrerScriptInfo())
+                  no_cache_reason,
+                  ReferrerScriptInfo::CreateNoReferencingScript())
                   .ToLocal(&script));
   EXPECT_FALSE(try_catch.HasCaught());
 }
@@ -513,7 +520,8 @@ TEST_F(ScriptStreamingTest, DISABLED_EncodingFromBOM) {
   EXPECT_TRUE(V8ScriptRunner::CompileScript(
                   scope.GetScriptState(), source_code,
                   SanitizeScriptErrors::kDoNotSanitize, compile_options,
-                  no_cache_reason, ReferrerScriptInfo())
+                  no_cache_reason,
+                  ReferrerScriptInfo::CreateNoReferencingScript())
                   .ToLocal(&script));
   EXPECT_FALSE(try_catch.HasCaught());
 }

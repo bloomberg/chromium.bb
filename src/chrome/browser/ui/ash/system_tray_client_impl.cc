@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/ash/system_tray_client_impl.h"
 
-#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/locale_update_controller.h"
 #include "ash/public/cpp/system_tray.h"
 #include "ash/public/cpp/update_types.h"
@@ -17,9 +16,9 @@
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chrome/browser/ash/login/help_app_launcher.h"
-#include "chrome/browser/ash/policy/core/browser_policy_connector_chromeos.h"
-#include "chrome/browser/ash/policy/core/device_cloud_policy_manager_chromeos.h"
-#include "chrome/browser/ash/policy/core/user_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
+#include "chrome/browser/ash/policy/core/device_cloud_policy_manager_ash.h"
+#include "chrome/browser/ash/policy/core/user_cloud_policy_manager_ash.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/system/system_clock.h"
 #include "chrome/browser/browser_process.h"
@@ -116,8 +115,7 @@ bool ShouldOpenCellularSetupPsimFlowOnClick(const std::string& network_id) {
   const chromeos::NetworkState* network_state = GetNetworkState(network_id);
   return network_state && network_state->type() == shill::kTypeCellular &&
          network_state->activation_state() ==
-             shill::kActivationStateNotActivated &&
-         chromeos::features::IsCellularActivationUiEnabled();
+             shill::kActivationStateNotActivated;
 }
 
 }  // namespace
@@ -184,8 +182,8 @@ class SystemTrayClientImpl::EnterpriseAccountObserver
 
     profile_ = profile;
     if (profile_) {
-      policy::UserCloudPolicyManagerChromeOS* manager =
-          profile_->GetUserCloudPolicyManagerChromeOS();
+      policy::UserCloudPolicyManagerAsh* manager =
+          profile_->GetUserCloudPolicyManagerAsh();
       if (manager)
         policy_observation_.Observe(manager->core()->store());
     }
@@ -210,9 +208,9 @@ SystemTrayClientImpl::SystemTrayClientImpl()
     HandleUpdateAvailable(ash::UpdateType::kSystem);
 
   // If the device is enterprise managed then send ash the enterprise domain.
-  policy::BrowserPolicyConnectorChromeOS* policy_connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
+  policy::BrowserPolicyConnectorAsh* policy_connector =
+      g_browser_process->platform_part()->browser_policy_connector_ash();
+  policy::DeviceCloudPolicyManagerAsh* policy_manager =
       policy_connector->GetDeviceCloudPolicyManager();
   if (policy_manager)
     policy_manager->core()->store()->AddObserver(this);
@@ -231,9 +229,9 @@ SystemTrayClientImpl::~SystemTrayClientImpl() {
 
   system_tray_->SetClient(nullptr);
 
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
+  policy::BrowserPolicyConnectorAsh* connector =
+      g_browser_process->platform_part()->browser_policy_connector_ash();
+  policy::DeviceCloudPolicyManagerAsh* policy_manager =
       connector->GetDeviceCloudPolicyManager();
   if (policy_manager)
     policy_manager->core()->store()->RemoveObserver(this);
@@ -465,17 +463,7 @@ void SystemTrayClientImpl::ShowNetworkConfigure(const std::string& network_id) {
 
 void SystemTrayClientImpl::ShowNetworkCreate(const std::string& type) {
   if (type == ::onc::network_type::kCellular) {
-    if (chromeos::features::IsCellularActivationUiEnabled()) {
-      ShowSettingsCellularSetup(/*show_psim_flow=*/false);
-      return;
-    }
-    const chromeos::NetworkState* cellular =
-        chromeos::NetworkHandler::Get()
-            ->network_state_handler()
-            ->FirstNetworkByType(
-                chromeos::onc::NetworkTypePatternFromOncType(type));
-    std::string network_id = cellular ? cellular->guid() : "";
-    ShowNetworkSettingsHelper(network_id, false /* show_configure */);
+    ShowSettingsCellularSetup(/*show_psim_flow=*/false);
     return;
   }
   chromeos::InternetConfigDialog::ShowDialogForNetworkType(type);
@@ -540,10 +528,9 @@ void SystemTrayClientImpl::ShowNetworkSettingsHelper(
   }
 
   if (ShouldOpenCellularSetupPsimFlowOnClick(network_id)) {
-    // Special case: Clicking on "click to activate" on a psim network item
-    // should open cellular setup dialogs' psim flow if the device has
-    // |kUpdatedCellularActivationUi| feature enabled and is a non-activated
-    // cellular network
+    // Special case: clicking "click to activate" on a network item should open
+    // the cellular setup dialogs' pSIM flow if the network is a non-activated
+    // cellular network.
     ShowSettingsCellularSetup(/*show_psim_flow=*/true);
     return;
   }
@@ -649,8 +636,8 @@ void SystemTrayClientImpl::OnStoreError(policy::CloudPolicyStore* store) {
 }
 
 void SystemTrayClientImpl::UpdateEnterpriseDomainInfo() {
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  policy::BrowserPolicyConnectorAsh* connector =
+      g_browser_process->platform_part()->browser_policy_connector_ash();
   const std::string enterprise_domain_manager =
       connector->GetEnterpriseDomainManager();
   const bool active_directory_managed = connector->IsActiveDirectoryManaged();

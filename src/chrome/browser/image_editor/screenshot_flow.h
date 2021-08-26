@@ -71,8 +71,8 @@ class ScreenshotFlow : public ui::LayerDelegate, public ui::EventHandler {
 
  private:
   // ui:EventHandler:
+  void OnKeyEvent(ui::KeyEvent* event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
-  void OnKeyEvent(ui::KeyEvent* event) override {}
 
   // ui::LayerDelegate:
   void OnPaintLayer(const ui::PaintContext& context) override;

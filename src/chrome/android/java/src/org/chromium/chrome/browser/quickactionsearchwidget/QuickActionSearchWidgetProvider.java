@@ -13,15 +13,54 @@ import android.content.pm.PackageManager;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.ThreadUtils;
+import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.ui.quickactionsearchwidget.QuickActionSearchWidgetProviderDelegate;
+import org.chromium.chrome.browser.ui.quickactionsearchwidget.QuickActionSearchWidgetType;
 
 /**
  * {@link AppWidgetProvider} for a widget that provides an entry point for users to quickly perform
  * actions in Chrome.
  */
-public class QuickActionSearchWidgetProvider extends AppWidgetProvider {
+public abstract class QuickActionSearchWidgetProvider extends AppWidgetProvider {
     private QuickActionSearchWidgetProviderDelegate mDelegate;
+
+    /**
+     * A sub class of {@link QuickActionSearchWidgetProvider} that provides the widget that
+     * initially has the small layout.
+     */
+    public static class QuickActionSearchWidgetProviderSmall
+            extends QuickActionSearchWidgetProvider {
+        @Override
+        protected int getWidgetType() {
+            return QuickActionSearchWidgetType.SMALL;
+        }
+    }
+
+    /**
+     * A sub class of {@link QuickActionSearchWidgetProvider} that provides the widget that
+     * initially has the medium layout.
+     */
+    public static class QuickActionSearchWidgetProviderMedium
+            extends QuickActionSearchWidgetProvider {
+        @Override
+        protected int getWidgetType() {
+            return QuickActionSearchWidgetType.MEDIUM;
+        }
+    }
+
+    /**
+     * A sub class of {@link QuickActionSearchWidgetProvider} that provides the widget that
+     * only contains a touch surface for launching the Dino game.
+     */
+    public static class QuickActionSearchWidgetProviderDino
+            extends QuickActionSearchWidgetProvider {
+        @Override
+        protected int getWidgetType() {
+            return QuickActionSearchWidgetType.DINO;
+        }
+    }
 
     @Override
     public void onUpdate(
@@ -39,13 +78,20 @@ public class QuickActionSearchWidgetProvider extends AppWidgetProvider {
      */
     private QuickActionSearchWidgetProviderDelegate getDelegate(final Context context) {
         if (mDelegate == null) {
+            int widgetType = getWidgetType();
+
             ComponentName widgetReceiverComponent =
                     new ComponentName(context, QuickActionSearchWidgetReceiver.class);
 
-            mDelegate = new QuickActionSearchWidgetProviderDelegate(widgetReceiverComponent);
+            mDelegate = new QuickActionSearchWidgetProviderDelegate(widgetType,
+                    widgetReceiverComponent,
+                    IntentHandler.createTrustedOpenNewTabIntent(context, /*incognito=*/true));
         }
         return mDelegate;
     }
+
+    /** @return The {@link QuickActionSearchWidgetType} for this widget */
+    protected abstract @QuickActionSearchWidgetType int getWidgetType();
 
     /**
      * This function initializes the QuickActionSearchWidgetProvider component. Namely, this
@@ -58,7 +104,9 @@ public class QuickActionSearchWidgetProvider extends AppWidgetProvider {
      * This function is expected to be called exactly once after native libraries are initialized.
      */
     public static void initialize() {
-        setWidgetEnabled(ChromeFeatureList.isEnabled(ChromeFeatureList.QUICK_ACTION_SEARCH_WIDGET));
+        setWidgetEnabled(ChromeFeatureList.isEnabled(ChromeFeatureList.QUICK_ACTION_SEARCH_WIDGET),
+                ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.QUICK_ACTION_SEARCH_WIDGET_DINO_VARIANT));
     }
 
     /**
@@ -67,17 +115,42 @@ public class QuickActionSearchWidgetProvider extends AppWidgetProvider {
      *
      * @param shouldEnableQuickActionSearchWidget a boolean indicating whether the widget component
      *                                            should be enabled or not.
+     * @param shouldEnableDinoVariant a boolean indicating whether the widget component of the Dino
+     *         variant should be enabled.
      */
-    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    public static void setWidgetEnabled(boolean shouldEnableQuickActionSearchWidget) {
-        int componentEnabledState = shouldEnableQuickActionSearchWidget
+    private static void setWidgetEnabled(
+            boolean shouldEnableQuickActionSearchWidget, boolean shouldEnableDinoVariant) {
+        setWidgetComponentEnabled(
+                QuickActionSearchWidgetProviderSmall.class, shouldEnableQuickActionSearchWidget);
+        setWidgetComponentEnabled(
+                QuickActionSearchWidgetProviderMedium.class, shouldEnableQuickActionSearchWidget);
+        setWidgetComponentEnabled(
+                QuickActionSearchWidgetProviderDino.class, shouldEnableDinoVariant);
+    }
+
+    /**
+     * Enables/Disables the given widget component for a variation of the Quick Action Search
+     * Widget.
+     *
+     * @param component The {@link QuickActionSearchWidgetProvider} subclass corresponding to the
+     *         widget that is to be disabled.
+     * @param shouldEnableWidgetComponent a boolean indicating whether the widget component should
+     *         be enabled or not.
+     */
+    private static void setWidgetComponentEnabled(
+            final Class<? extends QuickActionSearchWidgetProvider> component,
+            final boolean shouldEnableWidgetComponent) {
+        // The initialization must be performed on a background thread because the following logic
+        // can trigger disk access. The PostTask in ProcessInitializationHandler can be removed once
+        // the experimentation phase is over.
+        ThreadUtils.assertOnBackgroundThread();
+        Context context = ContextUtils.getApplicationContext();
+
+        int componentEnabledState = shouldEnableWidgetComponent
                 ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED
                 : PackageManager.COMPONENT_ENABLED_STATE_DISABLED;
 
-        Context context = ContextUtils.getApplicationContext();
-        ComponentName componentName =
-                new ComponentName(context, QuickActionSearchWidgetProvider.class);
-
+        ComponentName componentName = new ComponentName(context, component);
         context.getPackageManager().setComponentEnabledSetting(
                 componentName, componentEnabledState, PackageManager.DONT_KILL_APP);
     }

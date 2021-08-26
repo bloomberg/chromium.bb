@@ -46,13 +46,6 @@ class MockDiceWebSigninInterceptorDelegate
                const BubbleParameters& bubble_parameters,
                base::OnceCallback<void(SigninInterceptionResult)> callback),
               (override));
-  MOCK_METHOD(void,
-              ShowEnterpriseProfileInterceptionDialog,
-              (Browser * browser,
-               const std::string& email,
-               SkColor profile_color,
-               base::OnceCallback<void(bool)> callback),
-              (override));
   void ShowProfileCustomizationBubble(Browser* browser) override {}
 };
 
@@ -397,8 +390,11 @@ TEST_F(DiceWebSigninInterceptorReauthTest,
   EXPECT_TRUE(interceptor()->ShouldEnforceEnterpriseProfileSeparation(
       primary_account_info));
 
-  profile()->GetPrefs()->SetBoolean(prefs::kUserAcceptedAccountManagement,
-                                    true);
+  ProfileAttributesEntry* entry =
+      profile_attributes_storage()->GetProfileAttributesWithPath(
+          profile()->GetPath());
+  entry->SetUserAcceptedAccountManagement(true);
+
   EXPECT_FALSE(interceptor()->ShouldEnforceEnterpriseProfileSeparation(
       primary_account_info));
 }
@@ -419,14 +415,16 @@ TEST_F(DiceWebSigninInterceptorReauthTest,
   identity_test_env()->UpdateAccountInfoForAccount(account_info);
   profile()->GetPrefs()->SetString(prefs::kManagedAccountsSigninRestriction,
                                    "primary_account");
+
+  // Check that interception works otherwise, as a sanity check.
+  DiceWebSigninInterceptor::Delegate::BubbleParameters expected_parameters = {
+      DiceWebSigninInterceptor::SigninInterceptionType::kEnterpriseForced,
+      account_info, account_info, SkColor()};
   EXPECT_CALL(*mock_delegate(),
-              ShowEnterpriseProfileInterceptionDialog(testing::_, testing::_,
-                                                      testing::_, testing::_))
-      .WillOnce(testing::Invoke([](Browser* browser, const std::string& email,
-                                   SkColor profile_color,
-                                   base::OnceCallback<void(bool)> callback) {
-        std::move(callback).Run(true);
-      }));
+              ShowSigninInterceptionBubble(
+                  web_contents(), MatchBubbleParameters(expected_parameters),
+                  testing::_));
+
   TestAsynchronousInterception(
       account_info, /*is_new_account=*/false, /*is_sync_signin=*/false,
       SigninInterceptionHeuristicOutcome::kInterceptEnterpriseForced);
@@ -442,14 +440,14 @@ TEST_F(DiceWebSigninInterceptorTest, EnforceManagedAccountAsPrimaryManaged) {
   profile()->GetPrefs()->SetString(prefs::kManagedAccountsSigninRestriction,
                                    "primary_account_strict");
 
+  // Check that interception works otherwise, as a sanity check.
+  DiceWebSigninInterceptor::Delegate::BubbleParameters expected_parameters = {
+      DiceWebSigninInterceptor::SigninInterceptionType::kEnterpriseForced,
+      account_info, AccountInfo(), SkColor()};
   EXPECT_CALL(*mock_delegate(),
-              ShowEnterpriseProfileInterceptionDialog(testing::_, testing::_,
-                                                      testing::_, testing::_))
-      .WillOnce(testing::Invoke([](Browser* browser, const std::string& email,
-                                   SkColor profile_color,
-                                   base::OnceCallback<void(bool)> callback) {
-        std::move(callback).Run(true);
-      }));
+              ShowSigninInterceptionBubble(
+                  web_contents(), MatchBubbleParameters(expected_parameters),
+                  testing::_));
   TestAsynchronousInterception(
       account_info, /*is_new_account=*/true, /*is_sync_signin=*/false,
       SigninInterceptionHeuristicOutcome::kInterceptEnterpriseForced);
@@ -476,6 +474,14 @@ TEST_F(DiceWebSigninInterceptorTest,
   ASSERT_NE(entry, nullptr);
   entry->SetAuthInfo(account_info.gaia, base::UTF8ToUTF16(account_info.email),
                      /*is_consented_primary_account=*/false);
+  // Check that interception works otherwise, as a sanity check.
+  DiceWebSigninInterceptor::Delegate::BubbleParameters expected_parameters = {
+      DiceWebSigninInterceptor::SigninInterceptionType::kProfileSwitchForced,
+      account_info, AccountInfo(), SkColor()};
+  EXPECT_CALL(*mock_delegate(),
+              ShowSigninInterceptionBubble(
+                  web_contents(), MatchBubbleParameters(expected_parameters),
+                  testing::_));
   TestAsynchronousInterception(account_info, /*is_new_account=*/true,
                                /*is_sync_signin=*/false,
                                SigninInterceptionHeuristicOutcome::
@@ -611,7 +617,7 @@ TEST_F(DiceWebSigninInterceptorTest, HeuristicDefaultsToGmail) {
 }
 
 // Checks that no heuristic is returned if signin interception is disabled.
-TEST_F(DiceWebSigninInterceptorTest, InterceptionDsiabled) {
+TEST_F(DiceWebSigninInterceptorTest, InterceptionDisabled) {
   // Setup for profile switch interception.
   std::string email = "bob@gmail.com";
   Profile* profile_2 = CreateTestingProfile("Profile 2");
@@ -631,6 +637,16 @@ TEST_F(DiceWebSigninInterceptorTest, InterceptionDsiabled) {
           /*is_new_account=*/true, /*is_sync_signin=*/false, "bob@example.com",
           /*entry=*/nullptr),
       SigninInterceptionHeuristicOutcome::kAbortInterceptionDisabled);
+}
+
+TEST_F(DiceWebSigninInterceptorTest, TabClosed) {
+  base::HistogramTester histogram_tester;
+  interceptor()->MaybeInterceptWebSignin(
+      /*web_contents=*/nullptr, CoreAccountId(),
+      /*is_new_account=*/true, /*is_sync_signin=*/false);
+  histogram_tester.ExpectUniqueSample(
+      "Signin.Intercept.HeuristicOutcome",
+      SigninInterceptionHeuristicOutcome::kAbortTabClosed, 1);
 }
 
 TEST_F(DiceWebSigninInterceptorTest, InterceptionInProgress) {

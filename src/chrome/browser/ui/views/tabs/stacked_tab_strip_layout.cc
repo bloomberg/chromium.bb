@@ -7,6 +7,7 @@
 #include <stdio.h>
 
 #include "base/check_op.h"
+#include "base/cxx17_backports.h"
 #include "base/metrics/user_metrics.h"
 #include "base/numerics/ranges.h"
 #include "base/strings/string_number_conversions.h"
@@ -341,9 +342,13 @@ void StackedTabStripLayout::MakeVisible(int index) {
 
   // Move the active tab to the left so that all tabs between the active tab
   // and |index| (inclusive) can be made visible.
-  const int active_x =
-      base::ClampToRange(ideal_x(index) - ideal_delta, GetMinX(active_index()),
-                         ideal_x(active_index()));
+  // This is a broken clamp function that successfully returns a bogus value
+  // when invalid inputs are provided, rather than crashing.
+  // TODO(https://crbug.com/1231839): Migrate this call to use base::clamp()
+  // from base/cxx17_backports.h, and fix all the broken tests that result.
+  const int active_x = base::BrokenClampThatShouldNotBeUsed(
+      ideal_x(index) - ideal_delta, GetMinX(active_index()),
+      ideal_x(active_index()));
   SetIdealBoundsAt(active_index(), active_x);
   LayoutByTabOffsetBefore(active_index());
   LayoutByTabOffsetAfter(active_index());
@@ -367,8 +372,12 @@ void StackedTabStripLayout::MakeVisible(int index) {
 }
 
 int StackedTabStripLayout::ConstrainActiveX(int x) const {
-  return base::ClampToRange(x, GetMinX(active_index()),
-                            GetMaxX(active_index()));
+  // This is a broken clamp function that successfully returns a bogus value
+  // when invalid inputs are provided, rather than crashing.
+  // TODO(https://crbug.com/1231839): Migrate this call to use base::clamp()
+  // from base/cxx17_backports.h, and fix all the broken tests that result.
+  return base::BrokenClampThatShouldNotBeUsed(x, GetMinX(active_index()),
+                                              GetMaxX(active_index()));
 }
 
 void StackedTabStripLayout::SetActiveBoundsAndLayoutFromActiveTab() {
@@ -401,7 +410,7 @@ void StackedTabStripLayout::LayoutUsingCurrentAfter(int index) {
   for (int i = index + 1; i < tab_count(); ++i) {
     int x = std::min(ideal_x(i), ideal_x(i - 1) + tab_offset());
     int min_x = width_ - width_for_count(tab_count() - i);
-    SetIdealBoundsAt(i, base::ClampToRange(x, min_x, GetMaxX(i)));
+    SetIdealBoundsAt(i, base::clamp(x, min_x, GetMaxX(i)));
   }
 }
 
@@ -430,7 +439,7 @@ void StackedTabStripLayout::LayoutForDragAfter(int index) {
   for (int i = index + 1; i < tab_count(); ++i) {
     const int min_x = ideal_x(i - 1) + stacked_padding_;
     const int max_x = ideal_x(i - 1) + tab_offset();
-    SetIdealBoundsAt(i, base::ClampToRange(ideal_x(i), min_x, max_x));
+    SetIdealBoundsAt(i, base::clamp(ideal_x(i), min_x, max_x));
   }
 }
 
@@ -438,7 +447,7 @@ void StackedTabStripLayout::LayoutForDragBefore(int index) {
   for (int i = index - 1; i >= pinned_tab_count_; --i) {
     const int max_x = ideal_x(i + 1) - stacked_padding_;
     const int min_x = ideal_x(i + 1) - tab_offset();
-    SetIdealBoundsAt(i, base::ClampToRange(ideal_x(i), min_x, max_x));
+    SetIdealBoundsAt(i, base::clamp(ideal_x(i), min_x, max_x));
   }
 
   if (pinned_tab_count_ == 0)

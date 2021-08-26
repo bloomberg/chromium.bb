@@ -43,7 +43,6 @@
 #include "test/frame_generator_capturer.h"
 #include "test/gtest.h"
 #include "test/null_transport.h"
-#include "test/rtp_header_parser.h"
 #include "test/rtp_rtcp_observer.h"
 #include "test/testsupport/file_utils.h"
 #include "test/testsupport/perf_test.h"
@@ -425,7 +424,7 @@ void CallPerfTest::TestCaptureNtpTime(
       int64_t now_ms = clock_->TimeInMilliseconds();
       int64_t time_since_creation = now_ms - creation_time_ms_;
       if (time_since_creation < start_time_ms_) {
-        // Wait for |start_time_ms_| before start measuring.
+        // Wait for `start_time_ms_` before start measuring.
         return;
       }
 
@@ -798,7 +797,7 @@ TEST_F(CallPerfTest, MAYBE_KeepsHighBitrateWhenReconfiguringSender) {
       ++encoder_inits_;
       if (encoder_inits_ == 1) {
         // First time initialization. Frame size is known.
-        // |expected_bitrate| is affected by bandwidth estimation before the
+        // `expected_bitrate` is affected by bandwidth estimation before the
         // first frame arrives to the encoder.
         uint32_t expected_bitrate = last_set_bitrate_kbps_ > 0
                                         ? last_set_bitrate_kbps_
@@ -889,9 +888,9 @@ TEST_F(CallPerfTest, MAYBE_KeepsHighBitrateWhenReconfiguringSender) {
 // contrained to the test bitrate.
 //
 // |test_bitrate_from test_bitrate_to| bitrate constraint range
-// |test_bitrate_step| bitrate constraint update step during the test
+// `test_bitrate_step` bitrate constraint update step during the test
 // |min_bwe max_bwe| BWE range
-// |start_bwe| initial BWE
+// `start_bwe` initial BWE
 void CallPerfTest::TestMinAudioVideoBitrate(int test_bitrate_from,
                                             int test_bitrate_to,
                                             int test_bitrate_step,

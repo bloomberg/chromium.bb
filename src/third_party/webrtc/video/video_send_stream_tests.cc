@@ -1325,7 +1325,7 @@ TEST_F(VideoSendStreamTest, NoPaddingWhenVideoIsMuted) {
           (last_packet_time_ms_ &&
            clock_->TimeInMilliseconds() - last_packet_time_ms_.value() >
                kNoPacketsThresholdMs)) {
-        // No packets seen for |kNoPacketsThresholdMs|, restart camera.
+        // No packets seen for `kNoPacketsThresholdMs`, restart camera.
         capturer_->Start();
         test_state_ = kWaitingForMediaAfterCameraRestart;
       }
@@ -1464,7 +1464,7 @@ TEST_F(VideoSendStreamTest, MinTransmitBitrateRespectsRemb) {
           bitrate_capped_(false) {}
 
     ~BitrateObserver() override {
-      // Make sure we free |rtp_rtcp_| in the same context as we constructed it.
+      // Make sure we free `rtp_rtcp_` in the same context as we constructed it.
       SendTask(RTC_FROM_HERE, task_queue_, [this]() { rtp_rtcp_ = nullptr; });
     }
 
@@ -1554,7 +1554,7 @@ TEST_F(VideoSendStreamTest, ChangingNetworkRoute) {
 
     ~ChangingNetworkRouteTest() {
       // Block until all already posted tasks run to avoid 'use after free'
-      // when such task accesses |this|.
+      // when such task accesses `this`.
       SendTask(RTC_FROM_HERE, task_queue_, [] {});
     }
 
@@ -1680,7 +1680,7 @@ TEST_F(VideoSendStreamTest, RelayToDirectRoute) {
 
     ~RelayToDirectRouteTest() {
       // Block until all already posted tasks run to avoid 'use after free'
-      // when such task accesses |this|.
+      // when such task accesses `this`.
       SendTask(RTC_FROM_HERE, task_queue_, [] {});
     }
 
@@ -1851,7 +1851,7 @@ class MaxPaddingSetTest : public test::SendTest {
 
   ~MaxPaddingSetTest() {
     // Block until all already posted tasks run to avoid 'use after free'
-    // when such task accesses |this|.
+    // when such task accesses `this`.
     SendTask(RTC_FROM_HERE, task_queue_, [] {});
   }
 
@@ -1892,7 +1892,7 @@ class MaxPaddingSetTest : public test::SendTest {
       RTC_DCHECK_RUN_ON(&task_queue_thread_);
       // In case we get a callback during teardown.
       // When this happens, OnStreamsStopped() has been called already,
-      // |call_| is null and the streams are being torn down.
+      // `call_` is null and the streams are being torn down.
       if (!call_)
         return;
 
@@ -1928,7 +1928,7 @@ class MaxPaddingSetTest : public test::SendTest {
     return SEND_PACKET;
   }
 
-  // Called on |task_queue_|
+  // Called on `task_queue_`
   void OnStreamsStopped() override {
     RTC_DCHECK_RUN_ON(&task_queue_thread_);
     RTC_DCHECK(task_queue_->IsCurrent());
@@ -3819,7 +3819,7 @@ const float kAlrProbingExperimentPaceMultiplier = 1.0f;
 
 TEST_F(VideoSendStreamTest, AlrConfiguredWhenSendSideOn) {
   test::ScopedFieldTrials alr_experiment(GetAlrProbingExperimentString());
-  // Send-side bwe on, use pacing factor from |kAlrProbingExperiment| above.
+  // Send-side bwe on, use pacing factor from `kAlrProbingExperiment` above.
   PacingFactorObserver test_with_send_side(true,
                                            kAlrProbingExperimentPaceMultiplier);
   RunBaseTest(&test_with_send_side);

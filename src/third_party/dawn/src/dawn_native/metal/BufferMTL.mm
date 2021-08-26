@@ -45,23 +45,40 @@ namespace dawn_native { namespace metal {
             storageMode = MTLResourceStorageModePrivate;
         }
 
-        if (GetSize() > std::numeric_limits<NSUInteger>::max()) {
-            return DAWN_OUT_OF_MEMORY_ERROR("Buffer allocation is too large");
-        }
-        NSUInteger currentSize = static_cast<NSUInteger>(std::max(GetSize(), uint64_t(4u)));
+        uint32_t alignment = 1;
+#ifdef DAWN_PLATFORM_MACOS
+        // [MTLBlitCommandEncoder fillBuffer] requires the size to be a multiple of 4 on MacOS.
+        alignment = 4;
+#endif
 
         // Metal validation layer requires the size of uniform buffer and storage buffer to be no
         // less than the size of the buffer block defined in shader, and the overall size of the
         // buffer must be aligned to the largest alignment of its members.
         if (GetUsage() &
             (wgpu::BufferUsage::Uniform | wgpu::BufferUsage::Storage | kInternalStorageBuffer)) {
-            if (currentSize >
-                std::numeric_limits<NSUInteger>::max() - kMinUniformOrStorageBufferAlignment) {
-                // Alignment would overlow.
-                return DAWN_OUT_OF_MEMORY_ERROR("Buffer allocation is too large");
-            }
-            currentSize = Align(currentSize, kMinUniformOrStorageBufferAlignment);
+            ASSERT(IsAligned(kMinUniformOrStorageBufferAlignment, alignment));
+            alignment = kMinUniformOrStorageBufferAlignment;
         }
+
+        // The vertex pulling transform requires at least 4 bytes in the buffer.
+        // 0-sized vertex buffer bindings are allowed, so we always need an additional 4 bytes
+        // after the end.
+        NSUInteger extraBytes = 0u;
+        if ((GetUsage() & wgpu::BufferUsage::Vertex) != 0) {
+            extraBytes = 4u;
+        }
+
+        if (GetSize() > std::numeric_limits<NSUInteger>::max() - extraBytes) {
+            return DAWN_OUT_OF_MEMORY_ERROR("Buffer allocation is too large");
+        }
+        NSUInteger currentSize =
+            std::max(static_cast<NSUInteger>(GetSize()) + extraBytes, NSUInteger(4));
+
+        if (currentSize > std::numeric_limits<NSUInteger>::max() - alignment) {
+            // Alignment would overlow.
+            return DAWN_OUT_OF_MEMORY_ERROR("Buffer allocation is too large");
+        }
+        currentSize = Align(currentSize, alignment);
 
         if (@available(iOS 12, macOS 10.14, *)) {
             NSUInteger maxBufferSize = [ToBackend(GetDevice())->GetMTLDevice() maxBufferLength];
@@ -83,6 +100,7 @@ namespace dawn_native { namespace metal {
             return DAWN_OUT_OF_MEMORY_ERROR("Buffer allocation is too large");
         }
 
+        mAllocatedSize = currentSize;
         mMtlBuffer.Acquire([ToBackend(GetDevice())->GetMTLDevice()
             newBufferWithLength:currentSize
                         options:storageMode]);
@@ -99,6 +117,19 @@ namespace dawn_native { namespace metal {
             ClearBuffer(commandContext, uint8_t(1u));
         }
 
+        // Initialize the padding bytes to zero.
+        if (GetDevice()->IsToggleEnabled(Toggle::LazyClearResourceOnFirstUse) &&
+            !mappedAtCreation) {
+            uint32_t paddingBytes = GetAllocatedSize() - GetSize();
+            if (paddingBytes > 0) {
+                uint32_t clearSize = Align(paddingBytes, 4);
+                uint64_t clearOffset = GetAllocatedSize() - clearSize;
+
+                CommandRecordingContext* commandContext =
+                    ToBackend(GetDevice())->GetPendingCommandContext();
+                ClearBuffer(commandContext, 0, clearOffset, clearSize);
+            }
+        }
         return {};
     }
 
@@ -187,16 +218,15 @@ namespace dawn_native { namespace metal {
         GetDevice()->IncrementLazyClearCountForTesting();
     }
 
-    void Buffer::ClearBuffer(CommandRecordingContext* commandContext, uint8_t clearValue) {
+    void Buffer::ClearBuffer(CommandRecordingContext* commandContext,
+                             uint8_t clearValue,
+                             uint64_t offset,
+                             uint64_t size) {
         ASSERT(commandContext != nullptr);
-
-        // Metal validation layer doesn't allow the length of the range in fillBuffer() to be 0.
-        if (GetSize() == 0u) {
-            return;
-        }
-
+        size = size > 0 ? size : GetAllocatedSize();
+        ASSERT(size > 0);
         [commandContext->EnsureBlit() fillBuffer:mMtlBuffer.Get()
-                                           range:NSMakeRange(0, GetSize())
+                                           range:NSMakeRange(offset, size)
                                            value:clearValue];
     }
 

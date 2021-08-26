@@ -14,6 +14,7 @@
 <translation id="1204296502688602597">Latence avec le DNS</translation>
 <translation id="123124571410524056">Un portail semble activé</translation>
 <translation id="1238612778414822719">Latence des requêtes HTTPS</translation>
+<translation id="1264369926465113395">Découvrez le nouveau magazine numérique dédié au Chromebook pour les créatifs</translation>
 <translation id="1270369111467284986">Un portail captif semble être présent</translation>
 <translation id="1290331692326790741">Signal de faible intensité</translation>
 <translation id="1314565355471455267">VPN Android</translation>
@@ -34,7 +35,9 @@
 <translation id="1510238584712386396">Lanceur d'applications</translation>
 <translation id="1600964289716072707">Placez une autre page sur le scanner, puis sélectionnez "Scanner" pour ajouter une page.</translation>
 <translation id="1621067168122174824">Lancer le test de recharge</translation>
+<translation id="1639239467298939599">Chargement en cours</translation>
 <translation id="1641857168437328880">Chargeur de document (recto)</translation>
+<translation id="1643449475550628585">Modifier le fond d'écran tous les jours</translation>
 <translation id="1644574205037202324">Historique</translation>
 <translation id="1662989795263954667">Tâche suspendue - À court d'encre</translation>
 <translation id="1703835215927279855">Letter</translation>
@@ -65,7 +68,6 @@
 <translation id="2224337661447660594">Aucun accès à Internet</translation>
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="225692081236532131">État d'activation</translation>
-<translation id="2294675138977897428">Aucune connexion Ethernet détectée</translation>
 <translation id="2326139988748364651"><ph name="RESOLUTION_VALUE" /> ppp</translation>
 <translation id="2338501278241028356">Activer le Bluetooth pour découvrir les appareils à proximité</translation>
 <translation id="2364498172489649528">Réussi</translation>
@@ -75,9 +77,11 @@
 <translation id="2448312741937722512">Type</translation>
 <translation id="2461822463642141190">Consommation actuelle</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
+<translation id="2505327257735685095">Actualiser le fond d'écran actuel</translation>
 <translation id="2517472476991765520">Scanner</translation>
 <translation id="2570743873672969996">Exécution du test <ph name="TEST_NAME" />…</translation>
 <translation id="2585245331261708204">Nouveautés de Chrome OS</translation>
+<translation id="2619761439309613843">Actualisation quotidienne</translation>
 <translation id="2620436844016719705">Système</translation>
 <translation id="2740531572673183784">OK</translation>
 <translation id="2751739896257479635">Authentification EAP phase 2</translation>
@@ -87,7 +91,6 @@
 <translation id="2862104018715411648">Placez votre document sur le scanner, puis sélectionnez Scanner pour commencer</translation>
 <translation id="2872961005593481000">Éteindre</translation>
 <translation id="2878387241690264070">Déchargée de <ph name="RATE" /> en <ph name="NUM_SECONDS" /> secondes.</translation>
-<translation id="2983662233540284543">Apprenez auprès d'un créateur, installez des applis de conception et plus</translation>
 <translation id="3008341117444806826">ACTUALISER</translation>
 <translation id="3009958530611748826">Sélectionner un dossier de destination</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" /> mA</translation>
@@ -101,6 +104,7 @@
 <translation id="3188257591659621405">Mes fichiers</translation>
 <translation id="3199982728237701504">Chargeur de document (recto verso)</translation>
 <translation id="3226405216343213872">Recherche de scanners…</translation>
+<translation id="3228433892370472777">Connexion par défaut</translation>
 <translation id="3246869037381808805">Les tâches d'impression de plus d'un jour seront supprimées</translation>
 <translation id="3268178239013324452">Échec – Capot de l'imprimante ouvert</translation>
 <translation id="3283504360622356314">{0,plural, =1{Modifier le fichier}one{Modifier le fichier}other{Modifier les fichiers}}</translation>
@@ -117,10 +121,13 @@
 <translation id="3488065109653206955">Partiellement activé</translation>
 <translation id="3527036260304016759">Échec – Erreur inconnue</translation>
 <translation id="3532980081107202182">Environ <ph name="MIN_REMAINING" /> minutes restantes</translation>
+<translation id="3540383942695635079">Adresse MAC</translation>
 <translation id="357889014807611375">Wi-Fi facturé à l'usage</translation>
+<translation id="3582041541988388905">Aucune connexion <ph name="NETWORK_NAME" /> détectée</translation>
 <translation id="3595596368722241419">Batterie pleine</translation>
 <translation id="360565022852130722">Le réseau Wi-Fi est protégé par le protocole peu sécurisé WEP 802.1x</translation>
 <translation id="3689839747745352263">Test de <ph name="TEST_NAME" /></translation>
+<translation id="3708186454126126312">Connectés précédemment</translation>
 <translation id="373232531963562220">{PAGE_NUMBER,plural, =0{Rescanner la page}=1{Rescanner la page {PAGE_NUMBER}}one{Rescanner la page {PAGE_NUMBER}}other{Rescanner les pages {PAGE_NUMBER}}}</translation>
 <translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★ (<ph name="AGGREGATED_COUNT" /> avis)</translation>
 <translation id="3748026146096797577">Non connecté</translation>
@@ -163,6 +170,7 @@
 <translation id="4479639480957787382">Ethernet </translation>
 <translation id="4483049906298469269">Impossible de pinguer la passerelle du réseau non défini par défaut</translation>
 <translation id="4511264077854731334">Portail</translation>
+<translation id="4536864596629708641">Configuration IP</translation>
 <translation id="4548483925627140043">Signal introuvable</translation>
 <translation id="455835558791489930">Batterie de <ph name="CHARGE_VALUE" /> mAh</translation>
 <translation id="4562494484721939086">Aucun service</translation>
@@ -171,6 +179,7 @@
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> sur <ph name="TOTAL_PAGE_NUMBER" />. Appuyez sur Entrée pour annuler la tâche d'impression.</translation>
 <translation id="4646949265910132906">Connexion Wi-Fi sécurisée</translation>
 <translation id="4652335678334611408">Enregistrer le journal de session</translation>
+<translation id="4654549501020883054">Modifier tous les jours</translation>
 <translation id="4665014895760275686">Fabricant</translation>
 <translation id="467510802200863975">Les mots de passe sont différents</translation>
 <translation id="467715984478005772">Un pare-feu semble activé</translation>
@@ -194,6 +203,7 @@
 <translation id="4891842000192098784">Contrainte</translation>
 <translation id="4917385247580444890">Très bon</translation>
 <translation id="4917889632206600977">Tâche suspendue - À court de papier</translation>
+<translation id="491836528011451486">Placez votre document dans le scanner et scannez-le à nouveau pour remplacer la page <ph name="CURRENT_PAGE" />.</translation>
 <translation id="4921665434385737356"><ph name="RATE" /> chargés en <ph name="NUM_SECONDS" /> secondes.</translation>
 <translation id="4932733599132424254">Date</translation>
 <translation id="498186245079027698">Vérifiez le scanner et réessayez. Assurez-vous que l'espace de stockage local est suffisant pour y enregistrer les fichiers numérisés.</translation>
@@ -209,10 +219,10 @@
 <translation id="5154917547274118687">Mémoire</translation>
 <translation id="5168185087976003268">État de la batterie</translation>
 <translation id="5170568018924773124">Afficher le dossier</translation>
-<translation id="519607504553633437">Concevez et créez vos propres jeux</translation>
 <translation id="5212543919916444558">Je ne parviens pas à détecter d'éléments sur votre écran pour lesquels je peux vous aider.
 Veuillez appuyer sur le micro pour me poser une question.</translation>
 <translation id="5222676887888702881">Déconnexion</translation>
+<translation id="5234764350956374838">Ignorer</translation>
 <translation id="5252456968953390977">Itinérance</translation>
 <translation id="5264277876637023664">Lancer le test de CPU</translation>
 <translation id="5267975978099728568"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="ERROR_STATUS" /></translation>
@@ -243,7 +253,6 @@ Veuillez appuyer sur le micro pour me poser une question.</translation>
 <translation id="5691511426247308406">Famille</translation>
 <translation id="5701381305118179107">Centrer</translation>
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" /> sur <ph name="TOTAL_PAGES" /></translation>
-<translation id="5752751666635965375">Créer votre propre jeu</translation>
 <translation id="5760715441271661976">État du portail</translation>
 <translation id="5832805196449965646">Ajouter une personne</translation>
 <translation id="583281660410589416">Inconnu</translation>
@@ -266,6 +275,7 @@ Veuillez appuyer sur le micro pour me poser une question.</translation>
 <translation id="6106186594183574873">Pour terminer, saisissez votre ancien mot de passe</translation>
 <translation id="6108689792487843350">Passerelle injoignable</translation>
 <translation id="6122191549521593678">En ligne</translation>
+<translation id="6125438912510167220">Vitesse de la liaison</translation>
 <translation id="6137767437444130246">Certificat utilisateur</translation>
 <translation id="6146993107019042706">Pour terminer, saisissez votre nouveau mot de passe</translation>
 <translation id="6147514244879357420">PNG</translation>
@@ -292,6 +302,8 @@ Veuillez appuyer sur le micro pour me poser une question.</translation>
 <translation id="65587193855025101">Vitre du plateau</translation>
 <translation id="6564646048574748301">Échec – Imprimante inaccessible</translation>
 <translation id="6574762126505704998">Remplissage</translation>
+<translation id="6575134580692778371">Non configuré</translation>
+<translation id="6596816719288285829">Adresse IP</translation>
 <translation id="6603230386432466813">Des problèmes de connexion ?</translation>
 <translation id="6618744767048954150">En cours</translation>
 <translation id="6620487321149975369">Les tâches d'impression seront incluses dans l'historique, sauf si vous les supprimez manuellement</translation>
@@ -314,13 +326,16 @@ Veuillez appuyer sur le micro pour me poser une question.</translation>
 <translation id="7059230779847288458">Recharge en cours, complète dans <ph name="TIME_VALUE" /></translation>
 <translation id="708426984172631313">ARRÊTÉ</translation>
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
+<translation id="7134436342991564651">{0,plural, =1{Serveur de noms}one{Serveur de noms}other{Serveurs de noms}}</translation>
 <translation id="7143207342074048698">Connexion</translation>
 <translation id="7144878232160441200">Réessayer</translation>
 <translation id="714876143603641390">Connectivité LAN</translation>
 <translation id="7162487448488904999">Galerie</translation>
 <translation id="7172721935181587524">1 image</translation>
 <translation id="7177485034254901881">Votre <ph name="DEVICE_TYPE" /> est géré par <ph name="MANAGER" />. Les administrateurs peuvent le configurer à distance.</translation>
+<translation id="7180611975245234373">Actualiser</translation>
 <translation id="7216409898977639127">Opérateur de téléphonie mobile</translation>
+<translation id="7257889006063274246">Voulez-vous vraiment supprimer la page <ph name="CURRENT_PAGE" /> ?</translation>
 <translation id="7271040990581020067">Le scanner est en cours d'utilisation. Réessayez plus tard.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7287310195820267359">Collections de fonds d'écran</translation>
@@ -354,9 +369,11 @@ Veuillez appuyer sur le micro pour me poser une question.</translation>
 <translation id="7835501727204647447">Installer CloudReady</translation>
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7882358943899516840">Type de fournisseur</translation>
+<translation id="7895471513946376273">Découvrez les outils de dessin et de graphisme</translation>
 <translation id="7936303884198020182">Aucun serveur de noms trouvé</translation>
 <translation id="7960831585769876809">Température</translation>
 <translation id="7994702968232966508">Méthode EAP</translation>
+<translation id="8020238979854764615">Une erreur s'est produite. Veuillez réessayer en sélectionnant d'autres images.</translation>
 <translation id="802154636333426148">Échec du téléchargement</translation>
 <translation id="8041089156583427627">Envoyer</translation>
 <translation id="8075838845814659848">Niveau de charge</translation>
@@ -368,7 +385,9 @@ Veuillez appuyer sur le micro pour me poser une question.</translation>
 <translation id="8214184102975786227">Scanner plusieurs pages en un seul PDF</translation>
 <translation id="8230672074305416752">Impossible de pinguer la passerelle du réseau par défaut</translation>
 <translation id="8246209727385807362">Opérateur inconnu</translation>
+<translation id="8286154143153872371">Connectez-vous à un réseau et actualisez la page pour voir le fond d'écran.</translation>
 <translation id="8291967909914612644">Pays du fournisseur personnel</translation>
+<translation id="829270796093605079">Outils de conception</translation>
 <translation id="8294431847097064396">Source</translation>
 <translation id="8297006494302853456">Faible</translation>
 <translation id="8302368968391049045">Pare-feu HTTPS</translation>
@@ -392,6 +411,7 @@ Veuillez appuyer sur le micro pour me poser une question.</translation>
 <translation id="8575298406870537639">Votre opérateur peut exiger ce réglage pour la connexion à son réseau. Contactez-le pour en savoir plus.</translation>
 <translation id="8576249514688522074">Non initialisé</translation>
 <translation id="8620617069779373398">État d'itinérance</translation>
+<translation id="8655295600908251630">Version</translation>
 <translation id="8660881923941176839">livres</translation>
 <translation id="8675354002693747642">Clé pré-partagée</translation>
 <translation id="871560550817059752">Échec – À court d'encre</translation>
@@ -404,6 +424,7 @@ Veuillez appuyer sur le micro pour me poser une question.</translation>
 <translation id="8798441408945964110">Nom du fournisseur</translation>
 <translation id="8814190375133053267">Wi-Fi </translation>
 <translation id="8818152010000655963">Fond d'écran</translation>
+<translation id="8834539327799336565">Actuellement connectés</translation>
 <translation id="8845001906332463065">Obtenir de l'aide</translation>
 <translation id="8868741746785112895">GUID</translation>
 <translation id="8881098542468797602">Test réussi</translation>

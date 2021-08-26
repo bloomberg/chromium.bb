@@ -5,10 +5,10 @@
 import 'chrome-untrusted://personalization/polymer/v3_0/iron-list/iron-list.js';
 import './setup.js';
 import './styles.js';
-import {html, PolymerElement} from 'chrome-untrusted://personalization/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {afterNextRender, html, PolymerElement} from 'chrome-untrusted://personalization/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {EventType, kMaximumLocalImagePreviews} from '../common/constants.js';
 import {selectCollection, selectLocalCollection, validateReceivedData} from '../common/iframe_api.js';
-import {unguessableTokenToString} from '../common/utils.js';
+import {getLoadingPlaceholderAnimationDelay, isSelectionEvent, unguessableTokenToString} from '../common/utils.js';
 
 /**
  * @fileoverview Responds to |SendCollectionsEvent| from trusted. Handles user
@@ -17,15 +17,50 @@ import {unguessableTokenToString} from '../common/utils.js';
 
 const kLocalCollectionId = 'local_';
 
+/** Width in pixels of when the app switches from 3 to 4 tiles wide. */
+const k3to4WidthCutoffPx = 688;
+
+/** Height in pixels of a tile. */
+const kTileHeightPx = 136;
+
+/** @enum {string} */
+const TileType = {
+  loading: 'loading',
+  image: 'image',
+  failure: 'failure',
+};
+
 /**
- * A displayable type constructed from a LocalImage or a WallpaperImage.
+ * @typedef {{type: TileType}}
+ */
+let LoadingTile;
+
+/**
+ * Type that represents a collection that failed to load. The preview image
+ * is still displayed, but is grayed out and unclickable.
+ * @typedef {{
+ *   id: string,
+ *   name: string,
+ *   preview: !Array<!url.mojom.Url>,
+ *   type: TileType,
+ * }}
+ */
+let FailureTile;
+
+/**
+ * A displayable type constructed from up to three LocalImages or a
+ * WallpaperCollection.
  * @typedef {{
  *   id: string,
  *   name: string,
  *   count: string,
  *   preview: !Array<!url.mojom.Url>,
+ *   type: TileType,
  * }}
  */
+let ImageTile;
+
+/** @typedef {LoadingTile|FailureTile|ImageTile} */
 let Tile;
 
 /**
@@ -74,10 +109,9 @@ function getImages(localImages, localImageData) {
 /**
  * A common display format between local images and WallpaperCollection.
  * Get the first displayable image with data from the list of possible images.
- * TODO(b/184774974) display a collage of up to three images.
  * @param {Array<!chromeos.personalizationApp.mojom.LocalImage>} localImages
  * @param {Object<string, string>} localImageData
- * @return {!Tile}
+ * @return {!ImageTile}
  */
 function getLocalTile(localImages, localImageData) {
   const name = loadTimeData.getString('myImagesLabel');
@@ -87,6 +121,7 @@ function getLocalTile(localImages, localImageData) {
     id: kLocalCollectionId,
     count: getCountText(Array.isArray(localImages) ? localImages.length : 0),
     preview: imagesToDisplay,
+    type: TileType.image,
   };
 }
 
@@ -102,53 +137,63 @@ class CollectionsGrid extends PolymerElement {
   static get properties() {
     return {
       /**
-       * @type {!Array<!chromeos.personalizationApp.mojom.WallpaperCollection>}
+       * @type {Array<!chromeos.personalizationApp.mojom.WallpaperCollection>}
        * @private
        */
       collections_: {
         type: Array,
-        value: [],
       },
 
       /**
        * Mapping of collection id to number of images. Loads in progressively
        * after collections_.
-       * @type {!Object<string, number>}
+       * @type {Object<string, number>}
        * @private
        */
       imageCounts_: {
         type: Object,
-        value: {},
       },
 
       /**
-       * @type {!Array<!chromeos.personalizationApp.mojom.LocalImage>}
+       * @type {Array<!chromeos.personalizationApp.mojom.LocalImage>}
        * @private
        */
       localImages_: {
         type: Array,
-        value: [],
       },
 
       /**
        * Stores a mapping of local image id to thumbnail data.
+       * @type {Object<string, string>}
        * @private
-       * @type {!Object<string, string>}
        */
       localImageData_: {
         type: Object,
-        value: {},
       },
 
       /**
+       * List of tiles to be displayed to the user.
        * @type {!Array<!Tile>}
+       * @private
        */
       tiles_: {
         type: Array,
-        computed:
-            'computeTiles_(collections_, imageCounts_, localImages_, localImageData_)',
+        value() {
+          // Fill the view with loading tiles. Will be adjusted to the correct
+          // number of tiles when collections are received.
+          const x = window.innerWidth > k3to4WidthCutoffPx ? 4 : 3;
+          const y = Math.floor(window.innerHeight / kTileHeightPx);
+          return Array.from({length: x * y}, () => ({type: TileType.loading}));
+        }
       },
     };
+  }
+
+  static get observers() {
+    return [
+      'onLocalImagesLoaded_(localImages_, localImageData_)',
+      'onCollectionLoaded_(collections_, imageCounts_)',
+    ]
   }
 
   /** @override */
@@ -170,23 +215,67 @@ class CollectionsGrid extends PolymerElement {
   }
 
   /**
-   * @param {!Array<!chromeos.personalizationApp.mojom.WallpaperCollection>}
+   * Called each time a new collection finishes loading. |imageCounts| contains
+   * a mapping of collection id to the number of images in that collection.
+   * A value of null indicates that the given collection id has failed to load.
+   * @private
+   * @param {?Array<!chromeos.personalizationApp.mojom.WallpaperCollection>}
    *     collections
-   * @param {!Object<string, number>} imageCounts
-   * @param {!Array<!chromeos.personalizationApp.mojom.LocalImage>} localImages
-   * @param {!Object<string, string>} localImageData
+   * @param {?Object<string, ?number>} imageCounts
    */
-  computeTiles_(collections, imageCounts, localImages, localImageData) {
-    const localTile = getLocalTile(localImages, localImageData);
-    const collectionTiles = collections.map(({name, id, preview}) => {
-      return {
-        name,
-        id,
-        count: getCountText(imageCounts[id]),
-        preview: [preview],
-      };
+  onCollectionLoaded_(collections, imageCounts) {
+    if (!Array.isArray(collections) || !imageCounts) {
+      return;
+    }
+
+    while (this.tiles_.length < collections.length + 1) {
+      this.push('tiles_', {type: TileType.loading});
+    }
+    while (this.tiles_.length > collections.length + 1) {
+      this.pop('tiles_');
+    }
+
+    collections.forEach((collection, i) => {
+      const index = i + 1;
+      const tile = this.tiles_[index];
+      // This tile failed to load completely.
+      if (imageCounts[collection.id] === null && !this.isFailureTile_(tile)) {
+        this.set(`tiles_.${index}`, {
+          id: collection.id,
+          name: collection.name,
+          count: '',
+          preview: [collection.preview],
+          type: TileType.failure,
+        });
+        return;
+      }
+      // This tile loaded successfully.
+      if (typeof imageCounts[collection.id] === 'number' &&
+          !this.isImageTile_(tile)) {
+        this.set(`tiles_.${index}`, {
+          id: collection.id,
+          name: collection.name,
+          count: getCountText(imageCounts[collection.id]),
+          preview: [collection.preview],
+          type: TileType.image,
+        });
+      }
     });
-    return [localTile, ...collectionTiles];
+  }
+
+  /**
+   * Called with updated local image list or local image thumbnail data when
+   * either of those properties changes.
+   * @param {?Array<!chromeos.personalizationApp.mojom.LocalImage>} localImages
+   * @param {Object<string, string>} localImageData
+   * @private
+   */
+  onLocalImagesLoaded_(localImages, localImageData) {
+    if (!Array.isArray(localImages) || !localImageData) {
+      return;
+    }
+    const tile = getLocalTile(localImages, localImageData);
+    this.set('tiles_.0', tile);
   }
 
   /**
@@ -219,11 +308,27 @@ class CollectionsGrid extends PolymerElement {
         }
         break;
       case EventType.SEND_LOCAL_IMAGE_DATA:
-        this.localImageData_ = {
-          ...this.localImageData_,
-          [unguessableTokenToString(message.data.id)]: message.data.data,
-        };
+        try {
+          this.localImageData_ =
+              validateReceivedData(message, EventType.SEND_LOCAL_IMAGE_DATA);
+        } catch (e) {
+          console.warn('Invalid local image data received', e);
+          this.localImageData_ = {};
+        }
         break;
+      case EventType.SEND_VISIBLE:
+        const visible = validateReceivedData(message, EventType.SEND_VISIBLE);
+        if (visible) {
+          // If iron-list items were updated while this iron-list was hidden,
+          // the layout will be incorrect. Trigger another layout when iron-list
+          // becomes visible again. Wait until |afterNextRender| completes
+          // otherwise iron-list width may still be 0.
+          afterNextRender(this, () => {
+            // Trigger a layout now that iron-list has the correct width.
+            this.shadowRoot.querySelector('iron-list').fire('iron-resize');
+          });
+        }
+        return;
       default:
         console.error(`Unexpected event type ${message.data.type}`);
         break;
@@ -231,7 +336,7 @@ class CollectionsGrid extends PolymerElement {
   }
 
   /**
-   * @param {!Tile} tile
+   * @param {!ImageTile} tile
    * @return {string}
    */
   getClassForImagesContainer_(tile) {
@@ -241,11 +346,14 @@ class CollectionsGrid extends PolymerElement {
   }
 
   /**
-   * Notify trusted code that a user clicked on a collection.
+   * Notify trusted code that a user selected a collection.
    * @private
    * @param {!Event} e
    */
-  onCollectionClicked_(e) {
+  onCollectionSelected_(e) {
+    if (!isSelectionEvent(e)) {
+      return;
+    }
     const id = e.currentTarget.dataset.id;
     if (id === kLocalCollectionId) {
       selectLocalCollection(window.parent);
@@ -255,12 +363,56 @@ class CollectionsGrid extends PolymerElement {
   }
 
   /**
-   * @private
-   * @param {number} i
-   * @return {number}
+   * Not using I18nBehavior because of chrome-untrusted:// incompatibility.
+   * @param {string} str
+   * @return {string}
    */
-  getAriaIndex_(i) {
-    return i + 1;
+  geti18n_(str) {
+    return loadTimeData.getString(str);
+  }
+
+  /**
+   * @private
+   * @param {?Tile} item
+   * @return {boolean}
+   */
+  isLoadingTile_(item) {
+    return item?.type === TileType.loading;
+  }
+
+  /**
+   * @private
+   * @param {?Tile} item
+   * @return {boolean}
+   */
+  isFailureTile_(item) {
+    return item?.type === TileType.failure;
+  }
+
+  /**
+   * @param {?Tile} item
+   * @return {boolean}
+   * @private
+   */
+  isEmptyTile_(item) {
+    return !!item && item.type === TileType.image && item.preview.length === 0;
+  }
+
+  /**
+   * @private
+   * @param {?Tile} item
+   * @return {boolean}
+   */
+  isImageTile_(item) {
+    return item?.type === TileType.image && !this.isEmptyTile_(item);
+  }
+
+  /**
+   * @param {number} index
+   * @return {string}
+   */
+  getLoadingPlaceholderAnimationDelay(index) {
+    return getLoadingPlaceholderAnimationDelay(index);
   }
 }
 

@@ -80,7 +80,8 @@ source_set("unit_tests") {
     "//ios/chrome/test:test_support",
     "//ios/chrome/test/ocmock",
     "//ios/public/provider/chrome/browser:test_support",
-    "//ios/public/provider/chrome/browser/distribution",
+    "//ios/public/provider/chrome/browser/app_distribution:app_distribution_api",
+    "//ios/public/provider/chrome/browser/app_distribution:test_app_distribution",
     "//ios/public/provider/chrome/browser/user_feedback:test_support",
     "//ios/testing:block_swizzler",
     "//ios/testing:ocmock_support",
@@ -151,6 +152,24 @@ source_set("app_state_header") {
   public_deps = [
     "//ios/chrome/browser/ui/main:scene_state_observer",
     "//ios/chrome/browser/ui/scoped_ui_blocker",
+  ]
+}
+
+source_set("observing_app_state_agent") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  sources = [
+    "observing_app_state_agent.h",
+    "observing_app_state_agent.mm",
+  ]
+
+  frameworks = [ "UIKit.framework" ]
+
+  deps = [ "//base" ]
+
+  public_deps = [
+    ":app_state_header",
+    "//ios/chrome/browser/ui/main:scene_state_header",
   ]
 }
 
@@ -225,8 +244,8 @@ source_set("application_delegate_internal") {
     "//ios/chrome/common/app_group:main_app",
     "//ios/net",
     "//ios/public/provider/chrome/browser",
+    "//ios/public/provider/chrome/browser/app_distribution:app_distribution_api",
     "//ios/public/provider/chrome/browser/discover_feed",
-    "//ios/public/provider/chrome/browser/distribution",
     "//ios/public/provider/chrome/browser/user_feedback",
     "//ios/web",
     "//net",

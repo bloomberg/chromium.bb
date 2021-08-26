@@ -6,6 +6,8 @@
 
 #include "core/fxge/agg/fx_agg_driver.h"
 
+#include <math.h>
+
 #include <algorithm>
 #include <utility>
 
@@ -19,8 +21,8 @@
 #include "core/fxge/dib/cfx_imagestretcher.h"
 #include "third_party/base/check.h"
 #include "third_party/base/check_op.h"
+#include "third_party/base/cxx17_backports.h"
 #include "third_party/base/notreached.h"
-#include "third_party/base/numerics/ranges.h"
 #include "third_party/base/span.h"
 
 // Ignore fallthrough warnings in agg23 headers.

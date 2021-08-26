@@ -14,7 +14,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/banners/app_banner_manager_desktop.h"
 #include "chrome/browser/web_applications/components/web_app_icon_generator.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/common/chrome_features.h"
 #include "components/services/app_service/public/cpp/share_target.h"
 #include "components/webapps/browser/banners/app_banner_manager.h"
@@ -22,12 +21,14 @@
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/common/manifest/manifest.h"
+#include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace web_app {
 
 namespace {
+
+const char kChromeScheme[] = "chrome";
 
 // We restrict the number of icons to limit disk usage per installed PWA. This
 // value can change overtime as new features are added.
@@ -78,8 +79,7 @@ void AddSquareIconsFromBitmaps(
 
 // Populate |web_app_info|'s shortcuts_menu_item_infos vector using the
 // blink::Manifest's shortcuts vector.
-std::vector<WebApplicationShortcutsMenuItemInfo>
-UpdateShortcutsMenuItemInfosFromManifest(
+std::vector<WebApplicationShortcutsMenuItemInfo> ToWebAppShortcutsMenuItemInfos(
     const std::vector<blink::Manifest::ShortcutItem>& shortcuts) {
   std::vector<WebApplicationShortcutsMenuItemInfo> web_app_shortcut_infos;
   web_app_shortcut_infos.reserve(shortcuts.size());
@@ -192,18 +192,68 @@ absl::optional<apps::ShareTarget> ToWebAppShareTarget(
 }
 
 apps::UrlHandlers ToWebAppUrlHandlers(
-    const std::vector<blink::Manifest::UrlHandler>& url_handlers) {
+    const std::vector<blink::mojom::ManifestUrlHandlerPtr>& url_handlers) {
   apps::UrlHandlers apps_url_handlers;
   for (const auto& url_handler : url_handlers) {
-    apps_url_handlers.emplace_back(url_handler.origin,
-                                   url_handler.has_origin_wildcard);
+    DCHECK(url_handler);
+    apps_url_handlers.emplace_back(url_handler->origin,
+                                   url_handler->has_origin_wildcard);
   }
   return apps_url_handlers;
 }
 
+std::vector<apps::ProtocolHandlerInfo> ToWebAppProtocolHandlers(
+    const std::vector<blink::mojom::ManifestProtocolHandlerPtr>&
+        manifest_protocol_handlers) {
+  std::vector<apps::ProtocolHandlerInfo> protocol_handlers;
+  for (const auto& manifest_protocol_handler : manifest_protocol_handlers) {
+    apps::ProtocolHandlerInfo protocol_handler;
+    protocol_handler.protocol =
+        base::UTF16ToUTF8(manifest_protocol_handler->protocol);
+    protocol_handler.url = manifest_protocol_handler->url;
+    protocol_handlers.push_back(std::move(protocol_handler));
+  }
+  return protocol_handlers;
+}
+
 }  // namespace
 
-void UpdateWebAppInfoFromManifest(const blink::Manifest& manifest,
+apps::FileHandlers CreateFileHandlersFromManifest(
+    const std::vector<blink::mojom::ManifestFileHandlerPtr>&
+        manifest_file_handlers,
+    const GURL& app_scope) {
+  apps::FileHandlers web_app_file_handlers;
+
+  for (const auto& manifest_file_handler : manifest_file_handlers) {
+    DCHECK(manifest_file_handler);
+    apps::FileHandler web_app_file_handler;
+    web_app_file_handler.action = manifest_file_handler->action;
+
+    for (const auto& it : manifest_file_handler->accept) {
+      apps::FileHandler::AcceptEntry web_app_accept_entry;
+      web_app_accept_entry.mime_type = base::UTF16ToUTF8(it.first);
+      for (const auto& manifest_file_extension : it.second) {
+        web_app_accept_entry.file_extensions.insert(
+            base::UTF16ToUTF8(manifest_file_extension));
+      }
+      web_app_file_handler.accept.push_back(std::move(web_app_accept_entry));
+    }
+
+    web_app_file_handlers.push_back(std::move(web_app_file_handler));
+
+    if (web_app_file_handlers.size() == kMaxFileHandlers &&
+        !app_scope.SchemeIs(kChromeScheme)) {
+      break;
+    }
+  }
+
+  DCHECK(web_app_file_handlers.size() <= kMaxFileHandlers ||
+         app_scope.SchemeIs(kChromeScheme));
+
+  return web_app_file_handlers;
+}
+
+void UpdateWebAppInfoFromManifest(const blink::mojom::Manifest& manifest,
                                   const GURL& manifest_url,
                                   WebApplicationInfo* web_app_info) {
   // Give the full length name priority if it's not empty.
@@ -225,14 +275,14 @@ void UpdateWebAppInfoFromManifest(const blink::Manifest& manifest,
   if (manifest.scope.is_valid())
     web_app_info->scope = manifest.scope;
 
-  if (manifest.theme_color) {
+  if (manifest.has_theme_color) {
     web_app_info->theme_color =
-        SkColorSetA(*manifest.theme_color, SK_AlphaOPAQUE);
+        SkColorSetA(SkColor(manifest.theme_color), SK_AlphaOPAQUE);
   }
 
-  if (manifest.background_color) {
+  if (manifest.has_background_color) {
     web_app_info->background_color =
-        SkColorSetA(*manifest.background_color, SK_AlphaOPAQUE);
+        SkColorSetA(SkColor(manifest.background_color), SK_AlphaOPAQUE);
   }
 
   if (manifest.display != DisplayMode::kUndefined)
@@ -284,11 +334,13 @@ void UpdateWebAppInfoFromManifest(const blink::Manifest& manifest,
     web_app_info->icon_infos = std::move(web_app_icons);
 
   // TODO(crbug.com/1218210): Confirm incoming icons to write to web_app_info.
-  web_app_info->file_handlers = manifest.file_handlers;
+  web_app_info->file_handlers = CreateFileHandlersFromManifest(
+      manifest.file_handlers, web_app_info->scope);
 
   web_app_info->share_target = ToWebAppShareTarget(manifest.share_target);
 
-  web_app_info->protocol_handlers = manifest.protocol_handlers;
+  web_app_info->protocol_handlers =
+      ToWebAppProtocolHandlers(manifest.protocol_handlers);
 
   web_app_info->url_handlers = ToWebAppUrlHandlers(manifest.url_handlers);
 
@@ -297,14 +349,9 @@ void UpdateWebAppInfoFromManifest(const blink::Manifest& manifest,
     web_app_info->note_taking_new_note_url = manifest.note_taking->new_note_url;
   }
 
-  // If any shortcuts are specified in the manifest, they take precedence over
-  // any we picked up from the web_app stuff.
-  if (!manifest.shortcuts.empty() &&
-      base::FeatureList::IsEnabled(
-          features::kDesktopPWAsAppIconShortcutsMenu)) {
-    web_app_info->shortcuts_menu_item_infos =
-        UpdateShortcutsMenuItemInfosFromManifest(manifest.shortcuts);
-  }
+  DCHECK(web_app_info->shortcuts_menu_item_infos.empty());
+  web_app_info->shortcuts_menu_item_infos =
+      ToWebAppShortcutsMenuItemInfos(manifest.shortcuts);
 
   web_app_info->capture_links = manifest.capture_links;
 
@@ -312,27 +359,28 @@ void UpdateWebAppInfoFromManifest(const blink::Manifest& manifest,
     web_app_info->manifest_url = manifest_url;
 
   web_app_info->is_storage_isolated = manifest.isolated_storage;
+
+  web_app_info->launch_handler = manifest.launch_handler;
 }
 
 std::vector<GURL> GetValidIconUrlsToDownload(
     const WebApplicationInfo& web_app_info) {
   std::vector<GURL> web_app_info_icon_urls;
+  // App icons.
   for (const WebApplicationIconInfo& info : web_app_info.icon_infos) {
     if (!info.url.is_valid())
       continue;
     web_app_info_icon_urls.push_back(info.url);
   }
-  if (base::FeatureList::IsEnabled(
-          features::kDesktopPWAsAppIconShortcutsMenu)) {
-    // Also add shortcut icon urls, so they can be downloaded.
-    for (const auto& shortcut : web_app_info.shortcuts_menu_item_infos) {
-      for (IconPurpose purpose : kIconPurposes) {
-        for (const auto& icon :
-             shortcut.GetShortcutIconInfosForPurpose(purpose)) {
-          if (!icon.url.is_valid())
-            continue;
-          web_app_info_icon_urls.push_back(icon.url);
-        }
+
+  // Shortcut icons.
+  for (const auto& shortcut : web_app_info.shortcuts_menu_item_infos) {
+    for (IconPurpose purpose : kIconPurposes) {
+      for (const auto& icon :
+           shortcut.GetShortcutIconInfosForPurpose(purpose)) {
+        if (!icon.url.is_valid())
+          continue;
+        web_app_info_icon_urls.push_back(icon.url);
       }
     }
   }
@@ -342,7 +390,8 @@ std::vector<GURL> GetValidIconUrlsToDownload(
 }
 
 void PopulateShortcutItemIcons(WebApplicationInfo* web_app_info,
-                               const IconsMap* icons_map) {
+                               const IconsMap& icons_map) {
+  web_app_info->shortcuts_menu_icon_bitmaps.clear();
   for (auto& shortcut : web_app_info->shortcuts_menu_item_infos) {
     IconBitmaps shortcut_icon_bitmaps;
 
@@ -350,8 +399,8 @@ void PopulateShortcutItemIcons(WebApplicationInfo* web_app_info,
       std::map<SquareSizePx, SkBitmap> bitmaps;
       for (const auto& icon :
            shortcut.GetShortcutIconInfosForPurpose(purpose)) {
-        auto it = icons_map->find(icon.url);
-        if (it != icons_map->end()) {
+        auto it = icons_map.find(icon.url);
+        if (it != icons_map.end()) {
           std::set<SquareSizePx> sizes_to_generate;
           sizes_to_generate.emplace(icon.square_size_px);
           SizeToBitmap resized_bitmaps(
@@ -369,17 +418,8 @@ void PopulateShortcutItemIcons(WebApplicationInfo* web_app_info,
   }
 }
 
-void FilterAndResizeIconsGenerateMissing(WebApplicationInfo* web_app_info,
-                                         const IconsMap* icons_map) {
-  if (base::FeatureList::IsEnabled(
-          features::kDesktopPWAsAppIconShortcutsMenu) &&
-      icons_map) {
-    // When icon redownloading on app update is disabled, FilterAndResize* won't
-    // be called in the install task, and instead PopulateShortcutItemIcons will
-    // be called directly from OnIconsRetrievedFinalizeUpdate.
-    PopulateShortcutItemIcons(web_app_info, icons_map);
-  }
-
+void PopulateProductIcons(WebApplicationInfo* web_app_info,
+                          const IconsMap* icons_map) {
   std::vector<WebApplicationIconInfo> icon_infos_any;
   std::vector<WebApplicationIconInfo> icon_infos_maskable;
   std::vector<WebApplicationIconInfo> icon_infos_monochrome;

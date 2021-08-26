@@ -18,7 +18,7 @@
       "git",
       "fetch",
       "not_origin",
-      "master",
+      "main",
       "--recurse-submodules",
       "--progress"
     ],
@@ -195,7 +195,7 @@
     "cmd": [
       "git",
       "rebase",
-      "not_origin/master"
+      "not_origin/main"
     ],
     "cwd": "[START_DIR]/src",
     "infra_step": true,

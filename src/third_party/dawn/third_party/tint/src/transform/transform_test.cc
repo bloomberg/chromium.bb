@@ -32,7 +32,7 @@ struct CreateASTTypeForTest : public testing::Test, public Transform {
     auto* sem_type = create_sem_type(sem_type_builder);
     Program program(std::move(sem_type_builder));
     CloneContext ctx(&ast_type_builder, &program, false);
-    return CreateASTTypeFor(&ctx, sem_type);
+    return CreateASTTypeFor(ctx, sem_type);
   }
 
   ProgramBuilder ast_type_builder;
@@ -106,8 +106,9 @@ TEST_F(CreateASTTypeForTest, ArrayNonImplicitStride) {
 TEST_F(CreateASTTypeForTest, Struct) {
   auto* str = create([](ProgramBuilder& b) {
     auto* decl = b.Structure("S", {}, {});
-    return b.create<sem::Struct>(decl, sem::StructMemberList{}, 4 /* align */,
-                                 4 /* size */, 4 /* size_no_padding */);
+    return b.create<sem::Struct>(decl, decl->name(), sem::StructMemberList{},
+                                 4 /* align */, 4 /* size */,
+                                 4 /* size_no_padding */);
   });
   ASSERT_TRUE(str->Is<ast::TypeName>());
   EXPECT_EQ(

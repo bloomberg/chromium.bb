@@ -5,12 +5,13 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_view_controller.h"
 
 #include "base/check_op.h"
+#include "base/cxx17_backports.h"
 #include "base/ios/block_types.h"
+#import "base/ios/ios_util.h"
 #import "base/mac/foundation_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/notreached.h"
-#include "base/numerics/ranges.h"
 #import "base/numerics/safe_conversions.h"
 #include "ios/chrome/browser/procedural_block_types.h"
 #import "ios/chrome/browser/ui/commands/thumb_strip_commands.h"
@@ -239,12 +240,32 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
 - (void)setMode:(TabGridMode)mode {
   _mode = mode;
+
+  NSRange allSectionsRange =
+      NSMakeRange(/*location=*/0, self.collectionView.numberOfSections);
+  NSIndexSet* allSectionsIndexSet =
+      [NSIndexSet indexSetWithIndexesInRange:allSectionsRange];
+  // Reloading specific sections in a |performBatchUpdates| fades the changes in
+  // rather than reloads the collection view with a harsh flash.
+  [self.collectionView
+      performBatchUpdates:^{
+        [self.collectionView reloadSections:allSectionsIndexSet];
+      }
+               completion:nil];
+
   // Clear items when exiting selection mode.
   if (mode == TabGridModeNormal) {
     [self.selectedEditingItemIDs removeAllObjects];
     [self.selectedSharableEditingItemIDs removeAllObjects];
+    // After transition from the selection mode to the normal mode, the
+    // selection border doesn't show around the selection item. The collection
+    // view needs to be updated with the selected item again for it to appear
+    // correctly.
+    [self.collectionView
+        selectItemAtIndexPath:CreateIndexPath(self.selectedIndex)
+                     animated:NO
+               scrollPosition:UICollectionViewScrollPositionNone];
   }
-  [self.collectionView reloadData];
 }
 
 - (BOOL)isSelectedCellVisible {
@@ -451,6 +472,16 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 }
 
 #pragma mark - UICollectionViewDragDelegate
+
+- (void)collectionView:(UICollectionView*)collectionView
+    dragSessionWillBegin:(id<UIDragSession>)session {
+  [self.delegate gridViewControllerDragSessionWillBegin:self];
+}
+
+- (void)collectionView:(UICollectionView*)collectionView
+     dragSessionDidEnd:(id<UIDragSession>)session {
+  [self.delegate gridViewControllerDragSessionDidEnd:self];
+}
 
 - (NSArray<UIDragItem*>*)collectionView:(UICollectionView*)collectionView
            itemsForBeginningDragSession:(id<UIDragSession>)session
@@ -1061,7 +1092,18 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     } else {
       [self selectItemWithIDForEditing:itemID];
     }
-    [self.collectionView reloadItemsAtIndexPaths:@[ indexPath ]];
+    // Dragging multiple tabs to reorder them is not supported. So there is no
+    // need to enable dragging when multiple items are selected in devices that
+    // don't support multiple windows.
+    if (self.selectedItemIDsForEditing.count > 1 &&
+        !base::ios::IsMultipleScenesSupported()) {
+      self.collectionView.dragInteractionEnabled = NO;
+    } else {
+      self.collectionView.dragInteractionEnabled = YES;
+    }
+    [UIView performWithoutAnimation:^{
+      [self.collectionView reloadItemsAtIndexPaths:@[ indexPath ]];
+    }];
   }
 
   [self.delegate gridViewController:self didSelectItemWithID:itemID];
@@ -1106,7 +1148,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 // Updates the value stored in |fractionVisibleOfLastItem|.
 - (void)updateFractionVisibleOfLastItem {
   CGFloat offset = self.offsetPastEndOfScrollView;
-  self.fractionVisibleOfLastItem = base::ClampToRange<CGFloat>(
+  self.fractionVisibleOfLastItem = base::clamp<CGFloat>(
       1 - offset / kScrollThresholdForPlusSignButtonHide, 0, 1);
 }
 
@@ -1147,12 +1189,28 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   [self.collectionView reloadData];
 }
 
+- (void)deselectAllItemsForEditing {
+  if (_mode != TabGridModeSelection) {
+    return;
+  }
+
+  for (TabSwitcherItem* item in self.items) {
+    [self deselectItemWithIDForEditing:item.identifier];
+  }
+  [self.collectionView reloadData];
+}
+
 - (NSArray<NSString*>*)selectedItemIDsForEditing {
   return [self.selectedEditingItemIDs allObjects];
 }
 
 - (NSArray<NSString*>*)selectedShareableItemIDsForEditing {
   return [self.selectedSharableEditingItemIDs allObjects];
+}
+
+- (BOOL)allItemsSelectedForEditing {
+  return _mode == TabGridModeSelection &&
+         self.items.count == self.selectedEditingItemIDs.count;
 }
 
 #pragma mark - Private Editing Mode Selection

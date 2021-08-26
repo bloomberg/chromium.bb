@@ -118,9 +118,9 @@ message HostnameUserConfigurableProto {
 
 // Policies to turn on portions of the device status reports.
 // If changed, the default values have to be updated in
-// chrome/browser/chromeos/policy/status_collector/device_status_collector.cc
+// chrome/browser/ash/policy/status_collector/device_status_collector.cc
 // and
-// chrome/browser/chromeos/policy/status_collector/child_status_collector.cc.
+// chrome/browser/ash/policy/status_collector/child_status_collector.cc.
 message DeviceReportingProto {
   optional bool report_version_info = 1 [default = true];
   optional bool report_activity_times = 2 [default = true];
@@ -154,7 +154,7 @@ message DeviceReportingProto {
 
   // Frequency to report device status, default to 3 hours.
   // If changed, the default value has to be updated in
-  // chrome/browser/ash/policy/core/device_cloud_policy_manager_chromeos.cc.
+  // chrome/browser/ash/policy/core/device_cloud_policy_manager_ash.cc.
   optional int64 device_status_frequency = 9 [default = 10800000];
 }
 
@@ -1763,7 +1763,7 @@ message DeviceArcDataSnapshotHoursProto {
 // Setting that controls whether system-wide trace collection using the Perfetto
 // system tracing service is allowed.
 message DeviceSystemWideTracingEnabledProto {
-  optional bool enabled = 1 [default = true];
+  optional bool enabled = 1 [default = false];
 }
 
 // Setting that controls whether data access is enabled for Thunderbolt/USB4

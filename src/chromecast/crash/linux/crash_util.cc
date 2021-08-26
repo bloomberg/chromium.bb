@@ -80,10 +80,11 @@ uint64_t CrashUtil::GetCurrentTimeMs() {
 bool CrashUtil::RequestUploadCrashDump(
     const std::string& existing_minidump_path,
     uint64_t crashed_pid,
-    uint64_t crashed_process_start_time_ms) {
+    uint64_t crashed_process_start_time_ms,
+    const std::vector<Attachment>* attachments) {
   // Remove IO restrictions from this thread. Chromium IO functions must be used
   // to access the file system and upload information to the crash server.
-  const bool io_allowed = base::ThreadRestrictions::SetIOAllowed(true);
+  base::ScopedAllowBlocking allow_blocking;
 
   LOG(INFO) << "Request to upload crash dump " << existing_minidump_path
             << " for process " << crashed_pid;
@@ -103,10 +104,11 @@ bool CrashUtil::RequestUploadCrashDump(
   std::unique_ptr<MinidumpWriter> writer;
   if (g_dumpstate_cb) {
     writer.reset(new MinidumpWriter(&minidump_generator, filename.value(),
-                                    params, std::move(*g_dumpstate_cb)));
+                                    params, std::move(*g_dumpstate_cb),
+                                    attachments));
   } else {
-    writer.reset(
-        new MinidumpWriter(&minidump_generator, filename.value(), params));
+    writer.reset(new MinidumpWriter(&minidump_generator, filename.value(),
+                                    params, attachments));
   }
   bool success = false;
   success = (0 == writer->Write());  // error already logged.
@@ -122,9 +124,6 @@ bool CrashUtil::RequestUploadCrashDump(
   // Use std::endl to flush the log stream in case this process exits.
   LOG(INFO) << "Request to upload crash dump finished. "
             << "Exit now if it is main process that crashed." << std::endl;
-
-  // Restore the original IO restrictions on the thread, if there were any.
-  base::ThreadRestrictions::SetIOAllowed(io_allowed);
 
   return success;
 }

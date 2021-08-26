@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as Platform from '../../../../core/platform/platform.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
 import * as UI from '../../legacy.js';
@@ -37,7 +35,7 @@ export class JavaScriptREPL {
   }
 
   static async evaluateAndBuildPreview(
-      text: string, throwOnSideEffect: boolean, timeout?: number, allowErrors?: boolean,
+      text: string, throwOnSideEffect: boolean, replMode: boolean, timeout?: number, allowErrors?: boolean,
       objectGroup?: string): Promise<{
     preview: DocumentFragment,
     result: SDK.RuntimeModel.EvaluationResult|null,
@@ -57,17 +55,18 @@ export class JavaScriptREPL {
       timeout: timeout,
       objectGroup: objectGroup,
       disableBreaks: true,
-      replMode: true,
+      replMode: replMode,
       silent: undefined,
       returnByValue: undefined,
       allowUnsafeEvalBlockedByCSP: undefined,
     };
     const result = await executionContext.evaluate(options, false /* userGesture */, false /* awaitPromise */);
-    const preview = JavaScriptREPL._buildEvaluationPreview(result, allowErrors);
+    const preview = JavaScriptREPL.buildEvaluationPreview(result, allowErrors);
     return {preview, result};
   }
 
-  static _buildEvaluationPreview(result: SDK.RuntimeModel.EvaluationResult, allowErrors?: boolean): DocumentFragment {
+  private static buildEvaluationPreview(result: SDK.RuntimeModel.EvaluationResult, allowErrors?: boolean):
+      DocumentFragment {
     const fragment = document.createDocumentFragment();
     if ('error' in result) {
       return fragment;

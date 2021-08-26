@@ -7,13 +7,13 @@
 
 #include <map>
 
-#include "chrome/browser/web_applications/components/os_integration_manager.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
+#include "chrome/browser/web_applications/os_integration_manager.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace web_app {
 
-class AppShortcutManager;
+class WebAppShortcutManager;
 class FileHandlerManager;
 class ProtocolHandlerManager;
 class UrlHandlerManager;
@@ -22,7 +22,7 @@ class TestOsIntegrationManager : public OsIntegrationManager {
  public:
   TestOsIntegrationManager(
       Profile* profile,
-      std::unique_ptr<AppShortcutManager> shortcut_manager,
+      std::unique_ptr<WebAppShortcutManager> shortcut_manager,
       std::unique_ptr<FileHandlerManager> file_handler_manager,
       std::unique_ptr<ProtocolHandlerManager> protocol_handler_manager,
       std::unique_ptr<UrlHandlerManager> url_handler_manager);
@@ -40,7 +40,6 @@ class TestOsIntegrationManager : public OsIntegrationManager {
                            UninstallOsHooksCallback callback) override;
   void UpdateOsHooks(const AppId& app_id,
                      base::StringPiece old_name,
-                     std::unique_ptr<ShortcutInfo> old_shortcut,
                      FileHandlerUpdateAction file_handlers_need_os_update,
                      const WebApplicationInfo& web_app_info) override;
 
@@ -108,7 +107,7 @@ class TestOsIntegrationManager : public OsIntegrationManager {
 };
 
 // Stub test shortcut manager.
-class TestShortcutManager : public AppShortcutManager {
+class TestShortcutManager : public WebAppShortcutManager {
  public:
   explicit TestShortcutManager(Profile* profile);
   ~TestShortcutManager() override;

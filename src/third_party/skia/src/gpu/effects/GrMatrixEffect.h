@@ -20,7 +20,6 @@ public:
 
     std::unique_ptr<GrFragmentProcessor> clone() const override;
     const char* name() const override { return "MatrixEffect"; }
-    const SkMatrix& matrix() const { return fMatrix; }
 
 private:
     GrMatrixEffect(const GrMatrixEffect& src);
@@ -33,8 +32,8 @@ private:
                             SkSL::SampleUsage::UniformMatrix(matrix.hasPerspective()));
     }
 
-    std::unique_ptr<GrGLSLFragmentProcessor> onMakeProgramImpl() const override;
-    void onGetGLSLProcessorKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const override;
+    std::unique_ptr<ProgramImpl> onMakeProgramImpl() const override;
+    void onAddToKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const override;
     bool onIsEqual(const GrFragmentProcessor&) const override;
     SkPMColor4f constantOutputForConstantInput(const SkPMColor4f& inputColor) const override {
         return ConstantOutputForConstantInput(this->childProcessor(0), inputColor);

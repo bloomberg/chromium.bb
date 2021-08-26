@@ -13,7 +13,6 @@
 #include "include/core/SkColorFilter.h"
 #include "include/core/SkColorPriv.h"
 #include "include/core/SkColorSpace.h"
-#include "include/core/SkFilterQuality.h"
 #include "include/core/SkFont.h"
 #include "include/core/SkFontStyle.h"
 #include "include/core/SkFontTypes.h"
@@ -55,8 +54,6 @@
 #include <initializer_list>
 #include <memory>
 #include <utility>
-
-class GrSurfaceDrawContext;
 
 static const int kTileWidthHeight = 128;
 static const int kLabelWidth = 64;

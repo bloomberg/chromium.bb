@@ -92,13 +92,14 @@ class TestWebStatePolicyDecider : public WebStatePolicyDecider {
   const std::string& allowed_page_text() const { return allowed_query_; }
 
   // WebStatePolicyDecider overrides
-  PolicyDecision ShouldAllowRequest(NSURLRequest* request,
-                                    const RequestInfo& request_info) override {
+  void ShouldAllowRequest(NSURLRequest* request,
+                          const RequestInfo& request_info,
+                          PolicyDecisionCallback callback) override {
     PolicyDecision decision = PolicyDecision::Allow();
     GURL URL = net::GURLWithNSURL(request.URL);
     if (URL.path() != path_ || URL.query() == blocked_request_query_)
       decision = PolicyDecision::CancelAndDisplayError(CreateEmbedderError());
-    return decision;
+    std::move(callback).Run(decision);
   }
   void ShouldAllowResponse(NSURLResponse* response,
                            bool for_main_frame,
@@ -165,13 +166,11 @@ class ErrorPageTest : public WebTestWithWebState {
 #define MAYBE_BackForwardErrorPage FLAKY_BackForwardErrorPage
 #endif
 TEST_F(ErrorPageTest, MAYBE_BackForwardErrorPage) {
-  if (base::FeatureList::IsEnabled(features::kUseJSForErrorPage)) {
-    // TODO(crbug.com/1153261): this test should be fixed in newer versions of
-    // WebKit.
-    if (@available(iOS 14.4, *)) {
-    } else {
-      return;
-    }
+  // TODO(crbug.com/1153261): this test should be fixed in newer versions of
+  // WebKit.
+  if (@available(iOS 15, *)) {
+  } else {
+    return;
   }
   test::LoadUrl(web_state(), server_.GetURL("/close-socket"));
   ASSERT_TRUE(WaitForErrorText(web_state(), server_.GetURL("/close-socket")));
@@ -226,14 +225,10 @@ TEST_F(ErrorPageTest, ReloadErrorPage) {
   server_responds_with_content_ = false;
   test::LoadUrl(web_state(), server_.GetURL("/echo-query?foo"));
   ASSERT_TRUE(WaitForErrorText(web_state(), server_.GetURL("/echo-query?foo")));
-  if (base::FeatureList::IsEnabled(features::kUseJSForErrorPage)) {
-    ASSERT_TRUE(security_state_info());
-    ASSERT_TRUE(security_state_info()->visible_ssl_status);
-    EXPECT_EQ(SECURITY_STYLE_UNAUTHENTICATED,
-              security_state_info()->visible_ssl_status->security_style);
-  } else {
-    ASSERT_FALSE(security_state_info());
-  }
+  ASSERT_TRUE(security_state_info());
+  ASSERT_TRUE(security_state_info()->visible_ssl_status);
+  EXPECT_EQ(SECURITY_STYLE_UNAUTHENTICATED,
+            security_state_info()->visible_ssl_status->security_style);
 
   // Reload the page, which should load without errors.
   server_responds_with_content_ = true;
@@ -257,13 +252,8 @@ TEST_F(ErrorPageTest, ReloadPageAfterServerIsDown) {
   ASSERT_TRUE(WaitForErrorText(web_state(), server_.GetURL("/echo-query?foo")));
   ASSERT_TRUE(security_state_info());
   ASSERT_TRUE(security_state_info()->visible_ssl_status);
-  if (base::FeatureList::IsEnabled(features::kUseJSForErrorPage)) {
-    EXPECT_EQ(SECURITY_STYLE_UNAUTHENTICATED,
-              security_state_info()->visible_ssl_status->security_style);
-  } else {
-    EXPECT_EQ(SECURITY_STYLE_UNKNOWN,
-              security_state_info()->visible_ssl_status->security_style);
-  }
+  EXPECT_EQ(SECURITY_STYLE_UNAUTHENTICATED,
+            security_state_info()->visible_ssl_status->security_style);
 }
 
 // Sucessfully loads the page, goes back, stops the server, goes forward and
@@ -296,13 +286,8 @@ TEST_F(ErrorPageTest, GoForwardAfterServerIsDownAndReload) {
   ASSERT_TRUE(WaitForErrorText(web_state(), server_.GetURL("/echo-query?foo")));
   ASSERT_TRUE(security_state_info());
   ASSERT_TRUE(security_state_info()->visible_ssl_status);
-  if (base::FeatureList::IsEnabled(features::kUseJSForErrorPage)) {
-    EXPECT_EQ(SECURITY_STYLE_UNAUTHENTICATED,
-              security_state_info()->visible_ssl_status->security_style);
-  } else {
-    EXPECT_EQ(SECURITY_STYLE_UNKNOWN,
-              security_state_info()->visible_ssl_status->security_style);
-  }
+  EXPECT_EQ(SECURITY_STYLE_UNAUTHENTICATED,
+            security_state_info()->visible_ssl_status->security_style);
 #endif  // TARGET_IPHONE_SIMULATOR
 }
 
@@ -327,13 +312,8 @@ TEST_F(ErrorPageTest, GoBackFromErrorPageAndForwardToErrorPage) {
   ASSERT_TRUE(WaitForErrorText(web_state(), server_.GetURL("/close-socket")));
   ASSERT_TRUE(security_state_info());
   ASSERT_TRUE(security_state_info()->visible_ssl_status);
-  if (base::FeatureList::IsEnabled(features::kUseJSForErrorPage)) {
-    EXPECT_EQ(SECURITY_STYLE_UNAUTHENTICATED,
-              security_state_info()->visible_ssl_status->security_style);
-  } else {
-    EXPECT_EQ(SECURITY_STYLE_UNKNOWN,
-              security_state_info()->visible_ssl_status->security_style);
-  }
+  EXPECT_EQ(SECURITY_STYLE_UNAUTHENTICATED,
+            security_state_info()->visible_ssl_status->security_style);
 }
 
 // Sucessfully loads the page, then loads the URL which fails to load, then
@@ -442,8 +422,6 @@ TEST_F(ErrorPageTest, URLAndVirtualURLAfterError) {
 // WebStatePolicyDecider::ShouldAllowRequest() and that the error page loads
 // correctly when navigating forward to the error page.
 TEST_F(ErrorPageTest, ShouldAllowRequestCancelAndDisplayErrorForwardNav) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(web::features::kUseJSForErrorPage);
   server_responds_with_content_ = true;
 
   TestWebStatePolicyDecider policy_decider(web_state());
@@ -478,8 +456,6 @@ TEST_F(ErrorPageTest, ShouldAllowRequestCancelAndDisplayErrorForwardNav) {
 // WebStatePolicyDecider::ShouldAllowRequest() and that the error page loads
 // correctly when navigating back to the error page.
 TEST_F(ErrorPageTest, ShouldAllowRequestCancelAndDisplayErrorBackNav) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(web::features::kUseJSForErrorPage);
   server_responds_with_content_ = true;
 
   TestWebStatePolicyDecider policy_decider(web_state());

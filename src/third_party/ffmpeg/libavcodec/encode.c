@@ -20,6 +20,7 @@
 
 #include "libavutil/attributes.h"
 #include "libavutil/avassert.h"
+#include "libavutil/channel_layout.h"
 #include "libavutil/frame.h"
 #include "libavutil/imgutils.h"
 #include "libavutil/internal.h"
@@ -30,7 +31,7 @@
 #include "frame_thread_encoder.h"
 #include "internal.h"
 
-int ff_alloc_packet2(AVCodecContext *avctx, AVPacket *avpkt, int64_t size, int64_t min_size)
+int ff_alloc_packet(AVCodecContext *avctx, AVPacket *avpkt, int64_t size)
 {
     if (size < 0 || size > INT_MAX - AV_INPUT_BUFFER_PADDING_SIZE) {
         av_log(avctx, AV_LOG_ERROR, "Invalid minimum required packet size %"PRId64" (max allowed is %d)\n",
@@ -40,18 +41,14 @@ int ff_alloc_packet2(AVCodecContext *avctx, AVPacket *avpkt, int64_t size, int64
 
     av_assert0(!avpkt->data);
 
-    if (avctx && 2*min_size < size) { // FIXME The factor needs to be finetuned
-        av_fast_padded_malloc(&avctx->internal->byte_buffer, &avctx->internal->byte_buffer_size, size);
-        avpkt->data = avctx->internal->byte_buffer;
-        avpkt->size = size;
-    }
-
+    av_fast_padded_malloc(&avctx->internal->byte_buffer,
+                          &avctx->internal->byte_buffer_size, size);
+    avpkt->data = avctx->internal->byte_buffer;
     if (!avpkt->data) {
-        int ret = av_new_packet(avpkt, size);
-        if (ret < 0)
-            av_log(avctx, AV_LOG_ERROR, "Failed to allocate packet of size %"PRId64"\n", size);
-        return ret;
+        av_log(avctx, AV_LOG_ERROR, "Failed to allocate packet of size %"PRId64"\n", size);
+        return AVERROR(ENOMEM);
     }
+    avpkt->size = size;
 
     return 0;
 }

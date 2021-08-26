@@ -13,28 +13,24 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
-#include "base/strings/string_util.h"
 #include "base/values.h"
-#include "chrome/browser/ash/attestation/attestation_ca_client.h"
 #include "chrome/browser/ash/login/login_pref_names.h"
-#include "chrome/browser/ash/policy/core/device_cloud_policy_manager_chromeos.h"
-#include "chrome/browser/ash/policy/core/device_cloud_policy_store_chromeos.h"
+#include "chrome/browser/ash/policy/core/device_cloud_policy_client_factory_ash.h"
+#include "chrome/browser/ash/policy/core/device_cloud_policy_manager_ash.h"
+#include "chrome/browser/ash/policy/core/device_cloud_policy_store_ash.h"
 #include "chrome/browser/ash/policy/enrollment/enrollment_config.h"
-#include "chrome/browser/ash/policy/enrollment/enrollment_handler_chromeos.h"
+#include "chrome/browser/ash/policy/enrollment/enrollment_handler.h"
 #include "chrome/browser/ash/policy/enrollment/enrollment_requisition_manager.h"
+#include "chrome/browser/ash/policy/enrollment/tpm_enrollment_key_signing_service.h"
+#include "chrome/browser/ash/policy/server_backed_state/server_backed_device_state.h"
+#include "chrome/browser/ash/policy/status_collector/device_status_collector.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/policy/server_backed_state/server_backed_device_state.h"
-#include "chrome/browser/chromeos/policy/status_collector/device_status_collector.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/policy/enrollment_status.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/attestation/attestation_flow.h"
-#include "chromeos/attestation/attestation_flow_utils.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
-#include "chromeos/dbus/attestation/attestation.pb.h"
-#include "chromeos/dbus/attestation/attestation_client.h"
-#include "chromeos/dbus/attestation/interface.pb.h"
 #include "chromeos/system/statistics_provider.h"
 #include "chromeos/tpm/install_attributes.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
@@ -42,17 +38,6 @@
 #include "components/prefs/pref_service.h"
 
 namespace policy {
-class ActiveDirectoryJoinDelegate;
-
-namespace {
-
-// Format MAC address from AA:AA:AA:AA:AA:AA into AAAAAAAAAAAA (12 digit string)
-void FormatMacAddress(std::string* mac_address) {
-  base::ReplaceChars(*mac_address, ":", "", mac_address);
-  DCHECK(mac_address->empty() || mac_address->size() == 12);
-}
-
-}  // namespace
 
 DeviceCloudPolicyInitializer::DeviceCloudPolicyInitializer(
     PrefService* local_state,
@@ -60,9 +45,9 @@ DeviceCloudPolicyInitializer::DeviceCloudPolicyInitializer(
     const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
     chromeos::InstallAttributes* install_attributes,
     ServerBackedStateKeysBroker* state_keys_broker,
-    DeviceCloudPolicyStoreChromeOS* policy_store,
-    DeviceCloudPolicyManagerChromeOS* policy_manager,
-    std::unique_ptr<chromeos::attestation::AttestationFlow> attestation_flow,
+    DeviceCloudPolicyStoreAsh* policy_store,
+    DeviceCloudPolicyManagerAsh* policy_manager,
+    chromeos::attestation::AttestationFlow* attestation_flow,
     chromeos::system::StatisticsProvider* statistics_provider)
     : local_state_(local_state),
       enterprise_service_(enterprise_service),
@@ -71,7 +56,7 @@ DeviceCloudPolicyInitializer::DeviceCloudPolicyInitializer(
       state_keys_broker_(state_keys_broker),
       policy_store_(policy_store),
       policy_manager_(policy_manager),
-      attestation_flow_(std::move(attestation_flow)),
+      attestation_flow_(attestation_flow),
       statistics_provider_(statistics_provider),
       signing_service_(std::make_unique<TpmEnrollmentKeySigningService>()) {}
 
@@ -86,8 +71,8 @@ void DeviceCloudPolicyInitializer::SetSystemURLLoaderFactoryForTesting(
 }
 
 void DeviceCloudPolicyInitializer::SetAttestationFlowForTesting(
-    std::unique_ptr<chromeos::attestation::AttestationFlow> attestation_flow) {
-  attestation_flow_ = std::move(attestation_flow);
+    chromeos::attestation::AttestationFlow* attestation_flow) {
+  attestation_flow_ = attestation_flow;
 }
 
 DeviceCloudPolicyInitializer::~DeviceCloudPolicyInitializer() {
@@ -127,9 +112,9 @@ void DeviceCloudPolicyInitializer::PrepareEnrollment(
 
   policy_manager_->core()->Disconnect();
 
-  enrollment_handler_ = std::make_unique<EnrollmentHandlerChromeOS>(
-      policy_store_, install_attributes_, state_keys_broker_,
-      attestation_flow_.get(), CreateClient(device_management_service),
+  enrollment_handler_ = std::make_unique<EnrollmentHandler>(
+      policy_store_, install_attributes_, state_keys_broker_, attestation_flow_,
+      signing_service_.get(), CreateClient(device_management_service),
       background_task_runner_, ad_join_delegate, enrollment_config,
       std::move(dm_auth), install_attributes_->GetDeviceId(),
       EnrollmentRequisitionManager::GetDeviceRequisition(),
@@ -151,7 +136,7 @@ EnrollmentConfig DeviceCloudPolicyInitializer::GetPrescribedEnrollmentConfig()
   // Authentication through the attestation mechanism is controlled by a
   // command line switch that either enables it or forces it (meaning that
   // interactive authentication is disabled).
-  switch (DeviceCloudPolicyManagerChromeOS::GetZeroTouchEnrollmentMode()) {
+  switch (DeviceCloudPolicyManagerAsh::GetZeroTouchEnrollmentMode()) {
     case ZeroTouchEnrollmentMode::DISABLED:
       // Only use interactive authentication.
       config.auth_mechanism = EnrollmentConfig::AUTH_MECHANISM_INTERACTIVE;
@@ -322,34 +307,10 @@ void DeviceCloudPolicyInitializer::EnrollmentCompleted(
 
 std::unique_ptr<CloudPolicyClient> DeviceCloudPolicyInitializer::CreateClient(
     DeviceManagementService* device_management_service) {
-  std::string machine_model;
-  statistics_provider_->GetMachineStatistic(chromeos::system::kHardwareClassKey,
-                                            &machine_model);
-  std::string brand_code;
-  statistics_provider_->GetMachineStatistic(chromeos::system::kRlzBrandCodeKey,
-                                            &brand_code);
-  std::string attested_device_id;
-  statistics_provider_->GetMachineStatistic(
-      chromeos::system::kAttestedDeviceIdKey, &attested_device_id);
-  // The :'s should be removed from MAC addresses to match the format of
-  // reporting MAC addresses and corresponding VPD fields.
-  std::string ethernet_mac_address;
-  statistics_provider_->GetMachineStatistic(
-      chromeos::system::kEthernetMacAddressKey, &ethernet_mac_address);
-  FormatMacAddress(&ethernet_mac_address);
-  std::string dock_mac_address;
-  statistics_provider_->GetMachineStatistic(
-      chromeos::system::kDockMacAddressKey, &dock_mac_address);
-  FormatMacAddress(&dock_mac_address);
-  std::string manufacture_date;
-  statistics_provider_->GetMachineStatistic(
-      chromeos::system::kManufactureDateKey, &manufacture_date);
   // DeviceDMToken callback is empty here because for device policies this
   // DMToken is already provided in the policy fetch requests.
-  return std::make_unique<CloudPolicyClient>(
-      statistics_provider_->GetEnterpriseMachineID(), machine_model, brand_code,
-      attested_device_id, ethernet_mac_address, dock_mac_address,
-      manufacture_date, signing_service_.get(), device_management_service,
+  return CreateDeviceCloudPolicyClientAsh(
+      statistics_provider_, device_management_service,
       system_url_loader_factory_for_testing_
           ? system_url_loader_factory_for_testing_
           : g_browser_process->shared_url_loader_factory(),
@@ -378,7 +339,7 @@ void DeviceCloudPolicyInitializer::TryToStartConnection(
 void DeviceCloudPolicyInitializer::StartConnection(
     DeviceCloudPolicyInitializer::StartConnectionReason reason,
     std::unique_ptr<CloudPolicyClient> client) {
-  if (!policy_manager_->core()->service()) {
+  if (!policy_manager_->IsConnected()) {
     LOG(WARNING)
         << "DeviceCloudPolicyInitializer will be removed soon with reason: "
         << static_cast<int>(reason);
@@ -393,47 +354,6 @@ bool DeviceCloudPolicyInitializer::GetMachineFlag(const std::string& key,
     return default_value;
 
   return value;
-}
-
-DeviceCloudPolicyInitializer::TpmEnrollmentKeySigningService::
-    TpmEnrollmentKeySigningService() = default;
-
-DeviceCloudPolicyInitializer::TpmEnrollmentKeySigningService::
-    ~TpmEnrollmentKeySigningService() = default;
-
-void DeviceCloudPolicyInitializer::TpmEnrollmentKeySigningService::SignData(
-    const std::string& data,
-    SigningCallback callback) {
-  const chromeos::attestation::AttestationCertificateProfile cert_profile =
-      chromeos::attestation::PROFILE_ENTERPRISE_ENROLLMENT_CERTIFICATE;
-  ::attestation::SignSimpleChallengeRequest request;
-  request.set_username("");
-  request.set_key_label(
-      chromeos::attestation::GetKeyNameForProfile(cert_profile, ""));
-  request.set_challenge(data);
-  chromeos::AttestationClient::Get()->SignSimpleChallenge(
-      request, base::BindOnce(&DeviceCloudPolicyInitializer::
-                                  TpmEnrollmentKeySigningService::OnDataSigned,
-                              weak_ptr_factory_.GetWeakPtr(), data,
-                              std::move(callback)));
-}
-
-void DeviceCloudPolicyInitializer::TpmEnrollmentKeySigningService::OnDataSigned(
-    const std::string& data,
-    SigningCallback callback,
-    const ::attestation::SignSimpleChallengeReply& reply) {
-  enterprise_management::SignedData em_signed_data;
-  chromeos::attestation::SignedData att_signed_data;
-  const bool success =
-      reply.status() == ::attestation::STATUS_SUCCESS &&
-      att_signed_data.ParseFromString(reply.challenge_response());
-  if (success) {
-    em_signed_data.set_data(att_signed_data.data());
-    em_signed_data.set_signature(att_signed_data.signature());
-    em_signed_data.set_extra_data_bytes(att_signed_data.data().size() -
-                                        data.size());
-  }
-  std::move(callback).Run(success, em_signed_data);
 }
 
 }  // namespace policy

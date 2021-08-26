@@ -8,7 +8,7 @@
 #include "google_apis/calendar/calendar_api_response_types.h"
 #include "google_apis/calendar/calendar_api_url_generator.h"
 #include "google_apis/common/api_error_codes.h"
-#include "google_apis/drive/base_requests.h"
+#include "google_apis/common/base_requests.h"
 
 namespace google_apis {
 
@@ -35,6 +35,9 @@ class CalendarApiGetRequest : public UrlFetchRequestBase {
  protected:
   // UrlFetchRequestBase:
   GURL GetURL() const override;
+  ApiErrorCode MapReasonToError(ApiErrorCode code,
+                                const std::string& reason) override;
+  bool IsSuccessfulErrorCode(ApiErrorCode error) override;
 
   // Derived classes should override GetURLInternal instead of GetURL()
   // directly since fields are appended in the GetURL() method.

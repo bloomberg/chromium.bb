@@ -12,6 +12,7 @@
 #include <memory>
 #include <string>
 
+#include "ash/public/cpp/wallpaper/local_image_info.h"
 #include "ash/public/cpp/wallpaper/wallpaper_info.h"
 #include "base/files/file.h"
 #include "base/memory/weak_ptr.h"
@@ -85,12 +86,16 @@ class ChromePersonalizationAppUiDelegate : public PersonalizationAppUiDelegate {
 
   void SetCustomWallpaperLayout(ash::WallpaperLayout layout) override;
 
- private:
-  mojo::Receiver<chromeos::personalization_app::mojom::WallpaperProvider>
-      wallpaper_receiver_{this};
+  void SetDailyRefreshCollectionId(const std::string& collection_id) override;
 
-  void OnFetchCollections(FetchCollectionsCallback callback,
-                          bool success,
+  void GetDailyRefreshCollectionId(
+      GetDailyRefreshCollectionIdCallback callback) override;
+
+  void UpdateDailyRefreshWallpaper(
+      UpdateDailyRefreshWallpaperCallback callback) override;
+
+ private:
+  void OnFetchCollections(bool success,
                           const std::vector<backdrop::Collection>& collections);
 
   void OnFetchCollectionImages(FetchImagesForCollectionCallback callback,
@@ -105,21 +110,31 @@ class ChromePersonalizationAppUiDelegate : public PersonalizationAppUiDelegate {
                                 const SkBitmap* bitmap,
                                 base::File::Error error);
 
-  void OnGetOnlineImageAttribution(const ash::WallpaperInfo& info,
-                                   const GURL& gurl,
-                                   GetCurrentWallpaperCallback callback,
-                                   bool success,
-                                   const std::string& collection_id,
-                                   const std::vector<backdrop::Image>& images);
+  void FindAttribution(
+      const ash::WallpaperInfo& info,
+      const GURL& wallpaper_data_url,
+      const absl::optional<std::vector<backdrop::Collection>>& collections);
+
+  void FindAttributionInCollection(
+      const ash::WallpaperInfo& info,
+      const GURL& wallpaper_data_url,
+      std::size_t current_index,
+      const absl::optional<std::vector<backdrop::Collection>>& collections,
+      bool success,
+      const std::string& collection_id,
+      const std::vector<backdrop::Image>& images);
 
   std::unique_ptr<backdrop_wallpaper_handlers::CollectionInfoFetcher>
       wallpaper_collection_info_fetcher_;
+  std::vector<FetchCollectionsCallback> pending_collections_callbacks_;
 
   std::unique_ptr<backdrop_wallpaper_handlers::ImageInfoFetcher>
       wallpaper_images_info_fetcher_;
 
   std::unique_ptr<backdrop_wallpaper_handlers::ImageInfoFetcher>
       wallpaper_attribution_info_fetcher_;
+
+  GetCurrentWallpaperCallback pending_get_current_wallpaper_callback_;
 
   std::unique_ptr<ash::ThumbnailLoader> thumbnail_loader_;
 
@@ -133,12 +148,17 @@ class ChromePersonalizationAppUiDelegate : public PersonalizationAppUiDelegate {
   std::map<uint64_t, ImageInfo> image_asset_id_map_;
 
   // When local images are fetched, assign each one a random |UnguessableToken|
-  // id. Store a mapping from these tokens to |FilePath|. The SWA passes a token
-  // id to get an image thumbnail preview.
-  std::map<base::UnguessableToken, base::FilePath> local_image_id_map_;
+  // id. Store a mapping from these tokens to |ash::LocalImageInfo|. The SWA
+  // passes a token id to get an image thumbnail preview.
+  std::map<base::UnguessableToken, ash::LocalImageInfo> local_image_info_map_;
 
   // Pointer to profile of user that opened personalization SWA. Not owned.
   Profile* const profile_ = nullptr;
+
+  // Place near bottom of class so this is cleaned up before any pending
+  // callbacks are dropped.
+  mojo::Receiver<chromeos::personalization_app::mojom::WallpaperProvider>
+      wallpaper_receiver_{this};
 
   // Used for interacting with local filesystem and fetching online image
   // attribution.

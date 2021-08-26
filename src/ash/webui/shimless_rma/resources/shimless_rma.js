@@ -11,6 +11,8 @@ import './onboarding_select_components_page.js';
 import './onboarding_update_page.js';
 import './onboarding_wait_for_manual_wp_disable_page.js';
 import './onboarding_wp_disable_complete_page.js';
+import './reimaging_calibration_page.js';
+import './reimaging_device_information_page.js';
 import './reimaging_firmware_update_page.js';
 import './reimaging_provisioning_page.js';
 import './shimless_rma_shared_css.js';
@@ -20,7 +22,7 @@ import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {getShimlessRmaService} from './mojo_interface_provider.js';
+import {getShimlessRmaService, rmadErrorString} from './mojo_interface_provider.js';
 import {RmadErrorCode, RmaState, ShimlessRmaServiceInterface, StateResult} from './shimless_rma_types.js'
 
 /**
@@ -84,7 +86,7 @@ const StateComponentMapping = {
     buttonCancel: ButtonState.HIDDEN,
     buttonBack: ButtonState.VISIBLE,
   },
-  [RmaState.kUpdateChrome]: {
+  [RmaState.kUpdateOs]: {
     componentIs: 'onboarding-update-page',
     buttonNext: ButtonState.VISIBLE,
     buttonCancel: ButtonState.VISIBLE,
@@ -110,6 +112,18 @@ const StateComponentMapping = {
   },
   [RmaState.kChooseFirmwareReimageMethod]: {
     componentIs: 'reimaging-firmware-update-page',
+    buttonNext: ButtonState.VISIBLE,
+    buttonCancel: ButtonState.HIDDEN,
+    buttonBack: ButtonState.VISIBLE,
+  },
+  [RmaState.kUpdateDeviceInformation]: {
+    componentIs: 'reimaging-device-information-page',
+    btnNext: ButtonState.VISIBLE,
+    btnCancel: ButtonState.HIDDEN,
+    btnBack: ButtonState.VISIBLE,
+  },
+  [RmaState.kCheckCalibration]: {
+    componentIs: 'reimaging-calibration-page',
     buttonNext: ButtonState.VISIBLE,
     buttonCancel: ButtonState.HIDDEN,
     buttonBack: ButtonState.VISIBLE,
@@ -167,6 +181,12 @@ export class ShimlessRmaElement extends PolymerElement {
       initialState_: {
         type: Object,
         value: null,
+      },
+
+      /** @protected {string} */
+      errorMessage_: {
+        type: String,
+        value: '',
       }
     };
   }
@@ -179,6 +199,7 @@ export class ShimlessRmaElement extends PolymerElement {
     // Get the initial state.
     this.fetchState_().then((stateResult) => {
       // TODO(gavindodd): Handle stateResult.error
+      this.errorMessage_ = rmadErrorString(stateResult.error);
       this.initialState_ = stateResult.state;
       this.loadState_(stateResult.state);
     });
@@ -191,12 +212,12 @@ export class ShimlessRmaElement extends PolymerElement {
 
   /** @private */
   fetchNextState_() {
-    return this.shimlessRmaService_.getNextState();
+    return this.shimlessRmaService_.transitionNextState();
   }
 
   /** @private */
   fetchPrevState_() {
-    return this.shimlessRmaService_.getPrevState();
+    return this.shimlessRmaService_.transitionPreviousState();
   }
 
   /**
@@ -274,8 +295,10 @@ export class ShimlessRmaElement extends PolymerElement {
 
   /** @protected */
   onBackButtonClicked_() {
-    this.fetchPrevState_().then(
-        (stateResult) => this.loadState_(stateResult.state));
+    this.fetchPrevState_().then((stateResult) => {
+      this.errorMessage_ = rmadErrorString(stateResult.error);
+      this.loadState_(stateResult.state);
+    });
   }
 
   /** @protected */
@@ -293,12 +316,17 @@ export class ShimlessRmaElement extends PolymerElement {
         .then(
             (stateResult) => !!stateResult ? Promise.resolve(stateResult) :
                                              this.fetchNextState_())
-        .then((stateResult) => this.loadState_(stateResult.state))
+        .then((stateResult) => {
+          this.errorMessage_ = rmadErrorString(stateResult.error);
+          this.loadState_(stateResult.state);
+        })
         .catch((err) => void 0);
   }
 
   /** @protected */
   onCancelButtonClicked_() {
+    // TODO(gavindodd): This should call abortRma
+    this.errorMessage_ = '';
     this.loadState_(assert(this.initialState_));
   }
 };

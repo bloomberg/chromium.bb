@@ -49,7 +49,7 @@ bool CXFA_FFCheckButton::LoadWidget() {
   m_pOldDelegate = pCheckBox->GetDelegate();
   pCheckBox->SetDelegate(this);
   if (m_pNode->IsRadioButton())
-    pCheckBox->ModifyStylesEx(FWL_STYLEEXT_CKB_RadioButton, 0xFFFFFFFF);
+    pCheckBox->ModifyStyleExts(FWL_STYLEEXT_CKB_RadioButton, 0xFFFFFFFF);
 
   {
     CFWL_Widget::ScopedUpdateLock update_lock(pCheckBox);
@@ -93,7 +93,7 @@ void CXFA_FFCheckButton::UpdateWidgetProperty() {
   if (button_->IsAllowNeutral())
     dwStyleEx |= FWL_STYLEEXT_CKB_3State;
 
-  pCheckBox->ModifyStylesEx(
+  pCheckBox->ModifyStyleExts(
       dwStyleEx, FWL_STYLEEXT_CKB_SignShapeMask | FWL_STYLEEXT_CKB_3State);
 }
 
@@ -252,14 +252,15 @@ void CXFA_FFCheckButton::RenderWidget(CFGAS_GEGraphics* pGS,
   GetApp()->GetFWLWidgetMgr()->OnDrawWidget(GetNormalWidget(), pGS, mt);
 }
 
-bool CXFA_FFCheckButton::OnLButtonUp(uint32_t dwFlags,
+bool CXFA_FFCheckButton::OnLButtonUp(Mask<XFA_FWL_KeyFlag> dwFlags,
                                      const CFX_PointF& point) {
   if (!GetNormalWidget() || !IsButtonDown())
     return false;
 
   SetButtonDown(false);
-  CFWL_MessageMouse msg(GetNormalWidget(), FWL_MouseCommand::LeftButtonUp,
-                        dwFlags, FWLToClient(point));
+  CFWL_MessageMouse msg(GetNormalWidget(),
+                        CFWL_MessageMouse::MouseCommand::kLeftButtonUp, dwFlags,
+                        FWLToClient(point));
   SendMessageToFWLWidget(&msg);
   return true;
 }

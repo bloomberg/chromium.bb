@@ -46,23 +46,31 @@ class VaapiWrapper;
 class VideoFrame;
 class VASurface;
 
-class VaapiVideoDecoder : public DecoderInterface,
+class VaapiVideoDecoder : public VideoDecoderMixin,
                           public DecodeSurfaceHandler<VASurface> {
  public:
-  static std::unique_ptr<DecoderInterface> Create(
+  static std::unique_ptr<VideoDecoderMixin> Create(
+      std::unique_ptr<MediaLog> media_log,
       scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
-      base::WeakPtr<DecoderInterface::Client> client);
+      base::WeakPtr<VideoDecoderMixin::Client> client);
 
-  static SupportedVideoDecoderConfigs GetSupportedConfigs();
+  static absl::optional<SupportedVideoDecoderConfigs> GetSupportedConfigs();
 
-  // DecoderInterface implementation.
+  // VideoDecoderMixin implementation, VideoDecoder part.
   void Initialize(const VideoDecoderConfig& config,
+                  bool low_delay,
                   CdmContext* cdm_context,
                   InitCB init_cb,
                   const OutputCB& output_cb,
                   const WaitingCB& waiting_cb) override;
   void Decode(scoped_refptr<DecoderBuffer> buffer, DecodeCB decode_cb) override;
   void Reset(base::OnceClosure reset_cb) override;
+  bool NeedsBitstreamConversion() const override;
+  bool CanReadWithoutStalling() const override;
+  int GetMaxDecodeRequests() const override;
+  VideoDecoderType GetDecoderType() const override;
+  bool IsPlatformDecoder() const override;
+  // VideoDecoderMixin implementation, specific part.
   void ApplyResolutionChange() override;
   bool NeedsTranscryption() override;
 
@@ -107,8 +115,9 @@ class VaapiVideoDecoder : public DecoderInterface,
   };
 
   VaapiVideoDecoder(
+      std::unique_ptr<MediaLog> media_log,
       scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
-      base::WeakPtr<DecoderInterface::Client> client);
+      base::WeakPtr<VideoDecoderMixin::Client> client);
   ~VaapiVideoDecoder() override;
 
   // Schedule the next decode task in the queue to be executed.
@@ -143,6 +152,10 @@ class VaapiVideoDecoder : public DecoderInterface,
 
   // Change the current |state_| to the specified |state|.
   void SetState(State state);
+
+  // Tell SetState() to change the |state_| to kError and send |message| to
+  // MediaLog and to LOG(ERROR).
+  void SetErrorState(std::string message);
 
   // Callback for the CDM to notify |this|.
   void OnCdmContextEvent(CdmContext::Event event);

@@ -13,7 +13,7 @@ proto_library("offline_wire_formats_proto") {
 
 proto_library("web_rtc_signaling_frames_proto") {
   sources = [ "src/proto/mediums/web_rtc_signaling_frames.proto" ]
-  proto_out_dir = "location/nearby/mediums/proto"
+  proto_out_dir = "third_party/nearby/proto/mediums"
 }
 
 # src/proto
@@ -122,6 +122,7 @@ source_set("platform_base") {
   sources = [
     "src/cpp/platform/base/base64_utils.cc",
     "src/cpp/platform/base/bluetooth_utils.cc",
+    "src/cpp/platform/base/input_stream.cc",
     "src/cpp/platform/base/prng.cc",
   ]
   public = [

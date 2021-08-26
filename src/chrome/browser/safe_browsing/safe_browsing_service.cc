@@ -30,15 +30,16 @@
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #include "chrome/browser/safe_browsing/chrome_password_protection_service_factory.h"
 #include "chrome/browser/safe_browsing/chrome_safe_browsing_blocking_page_factory.h"
+#include "chrome/browser/safe_browsing/chrome_ui_manager_delegate.h"
 #include "chrome/browser/safe_browsing/network_context_service.h"
 #include "chrome/browser/safe_browsing/network_context_service_factory.h"
 #include "chrome/browser/safe_browsing/safe_browsing_metrics_collector_factory.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager_factory.h"
 #include "chrome/browser/safe_browsing/services_delegate.h"
-#include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/buildflags.h"
@@ -47,6 +48,7 @@
 #include "components/safe_browsing/content/browser/safe_browsing_navigation_observer_manager.h"
 #include "components/safe_browsing/content/browser/safe_browsing_network_context.h"
 #include "components/safe_browsing/content/browser/triggers/trigger_manager.h"
+#include "components/safe_browsing/content/browser/ui_manager.h"
 #include "components/safe_browsing/content/browser/web_ui/safe_browsing_ui.h"
 #include "components/safe_browsing/content/common/file_type_policies.h"
 #include "components/safe_browsing/core/browser/db/database_manager.h"
@@ -199,13 +201,14 @@ network::mojom::NetworkContext* SafeBrowsingService::GetNetworkContext(
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>
-SafeBrowsingService::GetURLLoaderFactory(Profile* profile) {
+SafeBrowsingService::GetURLLoaderFactory(
+    content::BrowserContext* browser_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!base::FeatureList::IsEnabled(kSafeBrowsingSeparateNetworkContexts))
     return GetURLLoaderFactory();
 
   NetworkContextService* service =
-      NetworkContextServiceFactory::GetForBrowserContext(profile);
+      NetworkContextServiceFactory::GetForBrowserContext(browser_context);
   if (!service)
     return nullptr;
 
@@ -276,7 +279,9 @@ void SafeBrowsingService::AddDownloadManager(
 
 SafeBrowsingUIManager* SafeBrowsingService::CreateUIManager() {
   return new SafeBrowsingUIManager(
-      this, std::make_unique<ChromeSafeBrowsingBlockingPageFactory>());
+      std::make_unique<ChromeSafeBrowsingUIManagerDelegate>(),
+      std::make_unique<ChromeSafeBrowsingBlockingPageFactory>(),
+      GURL(chrome::kChromeUINewTabURL));
 }
 
 void SafeBrowsingService::RegisterAllDelayedAnalysis() {

@@ -33,11 +33,11 @@
 #include "src/gpu/GrProxyProvider.h"
 #include "src/gpu/GrRecordingContextPriv.h"
 #include "src/gpu/GrSemaphore.h"
-#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/GrTexture.h"
 #include "src/gpu/GrTextureProxy.h"
 #include "src/gpu/GrTextureProxyPriv.h"
 #include "src/gpu/GrYUVATextureProxies.h"
+#include "src/gpu/SurfaceFillContext.h"
 #include "src/gpu/effects/GrTextureEffect.h"
 #include "src/gpu/gl/GrGLTexture.h"
 
@@ -287,34 +287,32 @@ size_t SkImage_Gpu::onTextureSize() const { return fChooser.gpuMemorySize(); }
 
 sk_sp<SkImage> SkImage_Gpu::onMakeColorTypeAndColorSpace(SkColorType targetCT,
                                                          sk_sp<SkColorSpace> targetCS,
-                                                         GrDirectContext* direct) const {
+                                                         GrDirectContext* dContext) const {
     SkColorInfo info(targetCT, this->alphaType(), std::move(targetCS));
-    if (!fContext->priv().matches(direct)) {
+    if (!fContext->priv().matches(dContext)) {
         return nullptr;
     }
 
-    auto surfaceFillContext = GrSurfaceFillContext::MakeWithFallback(
-            direct,
-            GrImageInfo(info, this->dimensions()),
-            SkBackingFit::kExact);
-    if (!surfaceFillContext) {
+    auto sfc = dContext->priv().makeSFCWithFallback(GrImageInfo(info, this->dimensions()),
+                                                    SkBackingFit::kExact);
+    if (!sfc) {
         return nullptr;
     }
     // We respecify info's CT because we called MakeWithFallback.
-    auto ct = GrColorTypeToSkColorType(surfaceFillContext->colorInfo().colorType());
+    auto ct = GrColorTypeToSkColorType(sfc->colorInfo().colorType());
     info = info.makeColorType(ct);
 
     // Draw this image's texture into the SFC.
-    auto [view, _] = this->asView(direct, GrMipmapped(this->hasMipmaps()));
+    auto [view, _] = this->asView(dContext, GrMipmapped(this->hasMipmaps()));
     auto texFP = GrTextureEffect::Make(std::move(view), this->alphaType());
     auto colorFP = GrColorSpaceXformEffect::Make(std::move(texFP),
                                                  this->imageInfo().colorInfo(),
                                                  info);
-    surfaceFillContext->fillWithFP(std::move(colorFP));
+    sfc->fillWithFP(std::move(colorFP));
 
-    return sk_make_sp<SkImage_Gpu>(sk_ref_sp(direct),
+    return sk_make_sp<SkImage_Gpu>(sk_ref_sp(dContext),
                                    kNeedNewImageUniqueID,
-                                   surfaceFillContext->readSurfaceView(),
+                                   sfc->readSurfaceView(),
                                    std::move(info));
 }
 
@@ -340,9 +338,7 @@ void SkImage_Gpu::onAsyncRescaleAndReadPixels(const SkImageInfo& info,
         callback(context, nullptr);
         return;
     }
-    auto ctx = GrSurfaceContext::Make(dContext,
-                                      this->makeView(dContext),
-                                      this->imageInfo().colorInfo());
+    auto ctx = dContext->priv().makeSC(this->makeView(dContext), this->imageInfo().colorInfo());
     if (!ctx) {
         callback(context, nullptr);
         return;
@@ -365,9 +361,7 @@ void SkImage_Gpu::onAsyncRescaleAndReadPixelsYUV420(SkYUVColorSpace yuvColorSpac
         callback(context, nullptr);
         return;
     }
-    auto ctx = GrSurfaceContext::Make(dContext,
-                                      this->makeView(dContext),
-                                      this->imageInfo().colorInfo());
+    auto ctx = dContext->priv().makeSC(this->makeView(dContext), this->imageInfo().colorInfo());
     if (!ctx) {
         callback(context, nullptr);
         return;
@@ -767,7 +761,7 @@ sk_sp<SkImage> SkImage::MakeFromAHardwareBufferWithData(GrDirectContext* dContex
         return nullptr;
     }
 
-    GrSurfaceContext surfaceContext(
+    skgpu::SurfaceContext surfaceContext(
             dContext, std::move(framebufferView),image->imageInfo().colorInfo());
 
     surfaceContext.writePixels(dContext, pixmap, {0, 0});

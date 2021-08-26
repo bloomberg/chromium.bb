@@ -6,13 +6,14 @@
 #define CAST_STANDALONE_SENDER_LOOPING_FILE_SENDER_H_
 
 #include <algorithm>
+#include <memory>
 #include <string>
 
 #include "cast/standalone_sender/connection_settings.h"
 #include "cast/standalone_sender/constants.h"
 #include "cast/standalone_sender/simulated_capturer.h"
 #include "cast/standalone_sender/streaming_opus_encoder.h"
-#include "cast/standalone_sender/streaming_vp8_encoder.h"
+#include "cast/standalone_sender/streaming_video_encoder.h"
 #include "cast/streaming/sender_session.h"
 
 namespace openscreen {
@@ -33,6 +34,8 @@ class LoopingFileSender final : public SimulatedAudioCapturer::Client,
 
   ~LoopingFileSender() final;
 
+  void SetPlaybackRate(double rate);
+
  private:
   void UpdateEncoderBitrates();
   void ControlForNetworkCongestion();
@@ -49,11 +52,16 @@ class LoopingFileSender final : public SimulatedAudioCapturer::Client,
 
   void UpdateStatusOnConsole();
 
-  // SimulatedCapturer overrides.
+  // SimulatedCapturer::Client overrides.
   void OnEndOfFile(SimulatedCapturer* capturer) final;
   void OnError(SimulatedCapturer* capturer, std::string message) final;
 
   const char* ToTrackName(SimulatedCapturer* capturer) const;
+
+  std::unique_ptr<StreamingVideoEncoder> CreateVideoEncoder(
+      const StreamingVideoEncoder::Parameters& params,
+      TaskRunner* task_runner,
+      Sender* sender);
 
   // Holds the required injected dependencies (clock, task runner) used for Cast
   // Streaming, and owns the UDP socket over which all communications occur with
@@ -73,7 +81,7 @@ class LoopingFileSender final : public SimulatedAudioCapturer::Client,
   int bandwidth_being_utilized_;
 
   StreamingOpusEncoder audio_encoder_;
-  StreamingVp8Encoder video_encoder_;
+  std::unique_ptr<StreamingVideoEncoder> video_encoder_;
 
   int num_capturers_running_ = 0;
   Clock::time_point capture_start_time_{};

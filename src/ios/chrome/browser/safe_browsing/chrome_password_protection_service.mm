@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/notreached.h"
@@ -14,7 +15,7 @@
 #include "base/time/time.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/omnibox/common/omnibox_features.h"
-#include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/browser/insecure_credentials_helper.h"
 #include "components/password_manager/core/browser/ui/password_check_referrer.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/browser/verdict_cache_manager.h"
@@ -77,6 +78,13 @@ using ShowWarningCallback =
 
 namespace {
 
+// Records changes in the phished status of saved credential.
+void LogCredentialPhishedStatusChanged(
+    safe_browsing::CredentialPhishedStatus status) {
+  base::UmaHistogramEnumeration("SafeBrowsing.CredentialPhishedStatusChange",
+                                status);
+}
+
 // Returns true if the command line has an artificial unsafe cached verdict.
 bool HasArtificialCachedVerdict() {
   std::string phishing_url_string =
@@ -128,7 +136,9 @@ std::unique_ptr<UserEventSpecifics> GetUserEventSpecifics(
 
 ChromePasswordProtectionService::ChromePasswordProtectionService(
     SafeBrowsingService* sb_service,
-    ChromeBrowserState* browser_state)
+    ChromeBrowserState* browser_state,
+    ChangePhishedCredentialsCallback add_phished_credentials,
+    ChangePhishedCredentialsCallback remove_phished_credentials)
     : safe_browsing::PasswordProtectionService(
           sb_service->GetDatabaseManager(),
           sb_service->GetURLLoaderFactory(),
@@ -140,7 +150,9 @@ ChromePasswordProtectionService::ChromePasswordProtectionService(
           browser_state->IsOffTheRecord(),
           /*identity_manager=*/nullptr,
           /*try_token_fetch=*/false),
-      browser_state_(browser_state) {}
+      browser_state_(browser_state),
+      add_phished_credentials_(std::move(add_phished_credentials)),
+      remove_phished_credentials_(std::move(remove_phished_credentials)) {}
 
 ChromePasswordProtectionService::~ChromePasswordProtectionService() = default;
 
@@ -249,16 +261,15 @@ void ChromePasswordProtectionService::PersistPhishedSavedPasswordCredential(
     return;
 
   for (const auto& credential : matching_reused_credentials) {
-    password_manager::PasswordStore* password_store =
+    password_manager::PasswordStoreInterface* password_store =
         GetStoreForReusedCredential(credential);
     // Password store can be null in tests.
     if (!password_store) {
       continue;
     }
-    password_store->AddInsecureCredential(password_manager::InsecureCredential(
-        credential.signon_realm, credential.username, base::Time::Now(),
-        password_manager::InsecureType::kPhished,
-        password_manager::IsMuted(false)));
+    LogCredentialPhishedStatusChanged(
+        safe_browsing::CredentialPhishedStatus::kMarkedAsPhished);
+    add_phished_credentials_.Run(password_store, credential);
   }
 }
 
@@ -269,16 +280,15 @@ void ChromePasswordProtectionService::RemovePhishedSavedPasswordCredential(
     return;
 
   for (const auto& credential : matching_reused_credentials) {
-    password_manager::PasswordStore* password_store =
+    password_manager::PasswordStoreInterface* password_store =
         GetStoreForReusedCredential(credential);
     // Password store can be null in tests.
     if (!password_store) {
       continue;
     }
-    password_store->RemoveInsecureCredentials(
-        credential.signon_realm, credential.username,
-        password_manager::RemoveInsecureCredentialsReason::
-            kMarkSiteAsLegitimate);
+    LogCredentialPhishedStatusChanged(
+        safe_browsing::CredentialPhishedStatus::kSiteMarkedAsLegitimate);
+    remove_phished_credentials_.Run(password_store, credential);
   }
 }
 
@@ -368,7 +378,7 @@ AccountInfo ChromePasswordProtectionService::GetAccountInfo() const {
       identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSync));
 }
 
-AccountInfo ChromePasswordProtectionService::GetSignedInNonSyncAccount(
+AccountInfo ChromePasswordProtectionService::GetAccountInfoForUsername(
     const std::string& username) const {
   auto* identity_manager =
       IdentityManagerFactory::GetForBrowserState(browser_state_);
@@ -469,13 +479,9 @@ bool ChromePasswordProtectionService::IsPrimaryAccountSignedIn() const {
          !GetAccountInfo().hosted_domain.empty();
 }
 
-bool ChromePasswordProtectionService::IsPrimaryAccountGmail() const {
-  return GetAccountInfo().hosted_domain == kNoHostedDomainFound;
-}
-
-bool ChromePasswordProtectionService::IsOtherGaiaAccountGmail(
+bool ChromePasswordProtectionService::IsAccountGmail(
     const std::string& username) const {
-  return GetSignedInNonSyncAccount(username).hosted_domain ==
+  return GetAccountInfoForUsername(username).hosted_domain ==
          kNoHostedDomainFound;
 }
 
@@ -758,7 +764,7 @@ void ChromePasswordProtectionService::FillUserPopulation(
   *request_proto->mutable_population() = GetUserPopulation(browser_state_);
 }
 
-password_manager::PasswordStore*
+password_manager::PasswordStoreInterface*
 ChromePasswordProtectionService::GetStoreForReusedCredential(
     const password_manager::MatchingReusedCredential& reused_credential) {
   if (!browser_state_)
@@ -769,16 +775,16 @@ ChromePasswordProtectionService::GetStoreForReusedCredential(
              : GetProfilePasswordStore();
 }
 
-password_manager::PasswordStore*
+password_manager::PasswordStoreInterface*
 ChromePasswordProtectionService::GetProfilePasswordStore() const {
   // Always use EXPLICIT_ACCESS as the password manager checks IsIncognito
   // itself when it shouldn't access the PasswordStore.
-  return IOSChromePasswordStoreFactory::GetForBrowserState(
+  return IOSChromePasswordStoreFactory::GetInterfaceForBrowserState(
              browser_state_, ServiceAccessType::EXPLICIT_ACCESS)
       .get();
 }
 
-password_manager::PasswordStore*
+password_manager::PasswordStoreInterface*
 ChromePasswordProtectionService::GetAccountPasswordStore() const {
   // AccountPasswordStore is currenly not supported on iOS.
   return nullptr;

@@ -273,8 +273,15 @@ IN_PROC_BROWSER_TEST_F(PrivacyBudgetBrowserTest, CallsCanvasToBlob) {
               }));
 }
 
+// TODO(crbug.com/1238940, crbug.com/1238859): Test is flaky on Win and Android.
+#if defined(OS_WIN) || defined(OS_ANDROID)
+#define MAYBE_CanvasToBlobDifferentDocument \
+  DISABLED_CanvasToBlobDifferentDocument
+#else
+#define MAYBE_CanvasToBlobDifferentDocument CanvasToBlobDifferentDocument
+#endif
 IN_PROC_BROWSER_TEST_F(PrivacyBudgetBrowserTest,
-                       CanvasToBlobDifferentDocument) {
+                       MAYBE_CanvasToBlobDifferentDocument) {
   ASSERT_TRUE(embedded_test_server()->Start());
   // Ensure that the previous page won't be stored in the back/forward cache, so
   // that the histogram will be recorded when the previous page is unloaded.
@@ -313,18 +320,27 @@ IN_PROC_BROWSER_TEST_F(PrivacyBudgetBrowserTest,
   // adjust this test to deal.
   ASSERT_EQ(1u, merged_entries.size());
 
+  auto& metrics = merged_entries.begin()->second->metrics;
+
   // (kCanvasReadback | input_digest << kTypeBits) = one of the merged_entries
   // If the value of the relevant merged entry changes, input_digest needs to
   // change. The new input_digest can be calculated by:
   // new_input_digest = new_ukm_entry >> kTypeBits
-  constexpr uint64_t input_digest = UINT64_C(61919955620835840);
-  EXPECT_THAT(merged_entries.begin()->second->metrics,
+  constexpr uint64_t input_digest = UINT64_C(33457614533296512);
+  EXPECT_THAT(metrics,
               IsSupersetOf({
                   Key(blink::IdentifiableSurface::FromTypeAndToken(
                           blink::IdentifiableSurface::Type::kCanvasReadback,
                           input_digest)
                           .ToUkmMetricHash()),
               }));
+
+  for (auto& metric : metrics) {
+    auto surface(blink::IdentifiableSurface::FromMetricHash(metric.first));
+    LOG(INFO) << "surface type " << static_cast<uint64_t>(surface.GetType())
+              << " surface input hash " << surface.GetInputHash() << " value "
+              << metric.second;
+  }
 }
 
 #if BUILDFLAG(FIELDTRIAL_TESTING_ENABLED)

@@ -67,7 +67,7 @@
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
-#include "ui/display/test/display_manager_test_api.h"
+#include "ui/display/test/display_manager_test_api.h"  // nogncheck
 #endif
 
 namespace {
@@ -1189,18 +1189,11 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
   EXPECT_FALSE(frame_c_popup_opened);
 }
 
-// Flaky on Linux and ChromeOS (crbug.com/1021895)
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
-#define MAYBE_TabCloseWithCrossSiteBeforeUnloadIframe \
-  DISABLED_TabCloseWithCrossSiteBeforeUnloadIframe
-#else
-#define MAYBE_TabCloseWithCrossSiteBeforeUnloadIframe \
-  TabCloseWithCrossSiteBeforeUnloadIframe
-#endif
+// TODO(crbug.com/1021895): Flaky.
 // Tests that a cross-site iframe runs its beforeunload handler when closing a
 // tab.  See https://crbug.com/853021.
 IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
-                       MAYBE_TabCloseWithCrossSiteBeforeUnloadIframe) {
+                       DISABLED_TabCloseWithCrossSiteBeforeUnloadIframe) {
   TabStripModel* tab_strip_model = browser()->tab_strip_model();
   content::WebContents* first_web_contents =
       tab_strip_model->GetActiveWebContents();
@@ -1252,16 +1245,9 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
 // Tests that a same-site iframe runs its beforeunload handler when closing a
 // tab.  Same as the test above, but for a same-site rather than cross-site
 // iframe.  See https://crbug.com/1010456.
-// Flaky on Linux, ChromeOS and Windows (crbug.com/1033002)
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_WIN)
-#define MAYBE_TabCloseWithSameSiteBeforeUnloadIframe \
-  DISABLED_TabCloseWithSameSiteBeforeUnloadIframe
-#else
-#define MAYBE_TabCloseWithSameSiteBeforeUnloadIframe \
-  TabCloseWithSameSiteBeforeUnloadIframe
-#endif
+// Flaky (timeout) on Linux, ChromeOS, MacOS, and Windows (crbug.com/1033002)
 IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
-                       MAYBE_TabCloseWithSameSiteBeforeUnloadIframe) {
+                       DISABLED_TabCloseWithSameSiteBeforeUnloadIframe) {
   TabStripModel* tab_strip_model = browser()->tab_strip_model();
   content::WebContents* first_web_contents =
       tab_strip_model->GetActiveWebContents();

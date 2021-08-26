@@ -7,7 +7,6 @@
 #include <cmath>
 #include <vector>
 
-#include "ash/constants/ash_features.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/guid.h"
@@ -510,15 +509,7 @@ mojom::DeviceStatePropertiesPtr DeviceStateToMojo(
   result->mac_address =
       network_util::FormattedMacAddress(device->mac_address());
   result->scanning = device->scanning();
-
-  // Before multi-SIM support was in place, the Cellular device would always be
-  // disabled anytime that a SIM was absent. Special-case this logic to ensure
-  // that users with the flag off will still see a disabled UI in this case.
-  if (device->IsSimAbsent() && !features::IsCellularActivationUiEnabled())
-    result->device_state = mojom::DeviceStateType::kDisabled;
-  else
-    result->device_state = technology_state;
-
+  result->device_state = technology_state;
   result->managed_network_available =
       !device->available_managed_network_path().empty();
   result->sim_absent = device->IsSimAbsent();
@@ -1403,7 +1394,7 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
       cellular->apn_list =
           GetManagedApnList(cellular_dict->FindKey(::onc::cellular::kAPNList));
       cellular->allow_roaming =
-          GetBoolean(cellular_dict, ::onc::cellular::kAllowRoaming);
+          GetManagedBoolean(cellular_dict, ::onc::cellular::kAllowRoaming);
       cellular->esn = GetString(cellular_dict, ::onc::cellular::kESN);
       cellular->family = GetString(cellular_dict, ::onc::cellular::kFamily);
       cellular->firmware_revision =
@@ -1675,6 +1666,10 @@ std::unique_ptr<base::DictionaryValue> GetOncFromConfigProperties(
       SetString(::onc::cellular_apn::kUsername, apn.username, &apn_dict);
       SetString(::onc::cellular_apn::kAttach, apn.attach, &apn_dict);
       type_dict.SetKey(::onc::cellular::kAPN, std::move(apn_dict));
+    }
+    if (cellular.roaming) {
+      type_dict.SetKey(::onc::cellular::kAllowRoaming,
+                       base::Value(cellular.roaming->allow_roaming));
     }
   } else if (properties->type_config->is_ethernet()) {
     type = mojom::NetworkType::kEthernet;
@@ -2651,15 +2646,19 @@ void CrosNetworkConfig::GetGlobalPolicy(GetGlobalPolicyCallback callback) {
       network_configuration_handler_->GetGlobalConfigFromPolicy(
           /*userhash=*/std::string());
   if (global_policy_dict) {
+    result->allow_only_policy_cellular_networks = GetBoolean(
+        global_policy_dict,
+        ::onc::global_network_config::kAllowOnlyPolicyCellularNetworks);
     result->allow_only_policy_networks_to_autoconnect = GetBoolean(
         global_policy_dict,
         ::onc::global_network_config::kAllowOnlyPolicyNetworksToAutoconnect);
-    result->allow_only_policy_networks_to_connect = GetBoolean(
+    result->allow_only_policy_wifi_networks_to_connect =
+        GetBoolean(global_policy_dict,
+                   ::onc::global_network_config::kAllowOnlyPolicyWiFiToConnect);
+    result
+        ->allow_only_policy_wifi_networks_to_connect_if_available = GetBoolean(
         global_policy_dict,
-        ::onc::global_network_config::kAllowOnlyPolicyNetworksToConnect);
-    result->allow_only_policy_networks_to_connect_if_available = GetBoolean(
-        global_policy_dict, ::onc::global_network_config::
-                                kAllowOnlyPolicyNetworksToConnectIfAvailable);
+        ::onc::global_network_config::kAllowOnlyPolicyWiFiToConnectIfAvailable);
     absl::optional<std::vector<std::string>> blocked_hex_ssids = GetStringList(
         global_policy_dict, ::onc::global_network_config::kBlockedHexSSIDs);
     if (blocked_hex_ssids)

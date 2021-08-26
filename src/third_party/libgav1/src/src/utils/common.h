@@ -40,6 +40,26 @@
 
 namespace libgav1 {
 
+// LIBGAV1_RESTRICT
+// Declares a pointer with the restrict type qualifier if available.
+// This allows code to hint to the compiler that only this pointer references a
+// particular object or memory region within the scope of the block in which it
+// is declared. This may allow for improved optimizations due to the lack of
+// pointer aliasing. See also:
+// https://en.cppreference.com/w/c/language/restrict
+// Note a template alias is not used for compatibility with older compilers
+// (e.g., gcc < 10) that do not expand the type when instantiating a template
+// function, either explicitly or in an assignment to a function pointer as is
+// done within the dsp code. RestrictPtr<T>::type is an alternative to this,
+// similar to std::add_const, but for conciseness the macro is preferred.
+#ifdef __GNUC__
+#define LIBGAV1_RESTRICT __restrict__
+#elif defined(_MSC_VER)
+#define LIBGAV1_RESTRICT __restrict
+#else
+#define LIBGAV1_RESTRICT
+#endif
+
 // Aligns |value| to the desired |alignment|. |alignment| must be a power of 2.
 template <typename T>
 inline T Align(T value, T alignment) {

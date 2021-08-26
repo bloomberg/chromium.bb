@@ -81,6 +81,10 @@ void UpdateOptInFlowResultUMA(OptInFlowResult result) {
   LogStabilityUmaEnum("Arc.OptInResult", result);
 }
 
+void UpdateOptInNetworkErrorActionUMA(OptInNetworkErrorActionType type) {
+  base::UmaHistogramEnumeration("Arc.OptInNetworkErrorAction", type);
+}
+
 void UpdateProvisioningStatusUMA(ProvisioningStatus status,
                                  const Profile* profile) {
   DCHECK_NE(status, ProvisioningStatus::CHROME_SERVER_COMMUNICATION_ERROR);
@@ -194,6 +198,12 @@ void UpdateAuthAccountCheckStatus(mojom::AccountCheckStatus status,
   LogStabilityUmaEnum(
       GetHistogramNameByUserType("Arc.Auth.AccountCheck.Status", profile),
       status);
+}
+
+void UpdateAndroidIdSource(mojom::AndroidIdSource source,
+                           const Profile* profile) {
+  base::UmaHistogramEnumeration(
+      GetHistogramNameByUserType("Arc.Auth.AndroidIdSource", profile), source);
 }
 
 void UpdateAuthCodeFetcherProxyBypassUMA(bool proxy_bypassed,

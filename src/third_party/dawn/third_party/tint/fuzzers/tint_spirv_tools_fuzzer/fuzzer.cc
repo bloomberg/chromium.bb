@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <iostream>
+#include <cassert>
 #include <memory>
 #include <random>
 #include <string>
@@ -25,6 +25,7 @@
 #include "fuzzers/tint_spirv_tools_fuzzer/spirv_opt_mutator.h"
 #include "fuzzers/tint_spirv_tools_fuzzer/spirv_reduce_mutator.h"
 #include "fuzzers/tint_spirv_tools_fuzzer/util.h"
+#include "spirv-tools/libspirv.hpp"
 
 namespace tint {
 namespace fuzzers {
@@ -39,7 +40,7 @@ struct Context {
 Context* context = nullptr;
 
 extern "C" int LLVMFuzzerInitialize(int* argc, char*** argv) {
-  auto params = ParseFuzzerCliParams(*argc, *argv);
+  auto params = ParseFuzzerCliParams(argc, *argv);
   auto mutator_cache =
       params.mutator_cache_size
           ? std::make_unique<MutatorCache>(params.mutator_cache_size)
@@ -96,23 +97,66 @@ std::unique_ptr<Mutator> CreateMutator(const std::vector<uint32_t>& binary,
   }
 }
 
+void CLIMessageConsumer(spv_message_level_t level,
+                        const char*,
+                        const spv_position_t& position,
+                        const char* message) {
+  switch (level) {
+    case SPV_MSG_FATAL:
+    case SPV_MSG_INTERNAL_ERROR:
+    case SPV_MSG_ERROR:
+      std::cerr << "error: line " << position.index << ": " << message
+                << std::endl;
+      break;
+    case SPV_MSG_WARNING:
+      std::cout << "warning: line " << position.index << ": " << message
+                << std::endl;
+      break;
+    case SPV_MSG_INFO:
+      std::cout << "info: line " << position.index << ": " << message
+                << std::endl;
+      break;
+    default:
+      break;
+  }
+}
+
+bool IsValid(const std::vector<uint32_t>& binary) {
+  spvtools::SpirvTools tools(context->params.mutator_params.target_env);
+  tools.SetMessageConsumer(CLIMessageConsumer);
+  return tools.IsValid() && tools.Validate(binary.data(), binary.size(),
+                                           spvtools::ValidatorOptions());
+}
+
 extern "C" size_t LLVMFuzzerCustomMutator(uint8_t* data,
                                           size_t size,
                                           size_t max_size,
                                           unsigned seed) {
+  if ((size % sizeof(uint32_t)) != 0) {
+    // A valid SPIR-V binary's size must be a multiple of the size of a 32-bit
+    // word, and the SPIR-V Tools fuzzer is only designed to work with valid
+    // binaries.
+    return 0;
+  }
+
   std::vector<uint32_t> binary(size / sizeof(uint32_t));
   std::memcpy(binary.data(), data, size);
 
   MutatorCache dummy_cache(1);
   auto* mutator_cache = context->mutator_cache.get();
   if (!mutator_cache) {
-    // Use a dummy cache if the user has decided not to use a real cache.
-    // The dummy cache will be destroyed when we return from this function but
-    // it will save us from writing all the `if (mutator_cache)` below.
+    // Use a placeholder cache if the user has decided not to use a real cache.
+    // The placeholder cache will be destroyed when we return from this function
+    // but it will save us from writing all the `if (mutator_cache)` below.
     mutator_cache = &dummy_cache;
   }
 
   if (!mutator_cache->Get(binary)) {
+    // This is an unknown binary, so its validity must be checked before
+    // proceeding.
+    if (!IsValid(binary)) {
+      return 0;
+    }
     // Assign a mutator to the binary if it doesn't have one yet.
     mutator_cache->Put(binary, CreateMutator(binary, seed));
   }
@@ -170,22 +214,24 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     return 0;
   }
 
+  if ((size % sizeof(uint32_t)) != 0) {
+    // The SPIR-V Tools fuzzer has been designed to work with valid
+    // SPIR-V binaries, whose sizes should be multiples of the size of a 32-bit
+    // word.
+    return 0;
+  }
+
   CommonFuzzer spv_to_wgsl(InputFormat::kSpv, OutputFormat::kWGSL);
   spv_to_wgsl.EnableInspector();
   spv_to_wgsl.Run(data, size);
   if (spv_to_wgsl.HasErrors()) {
-    util::LogSpvError(spv_to_wgsl.GetErrors(), data, size,
-                      context->params.error_dir);
+    auto error = spv_to_wgsl.Diagnostics().str();
+    util::LogSpvError(error, data, size,
+                      context ? context->params.error_dir : "");
     return 0;
   }
 
-  const auto* writer =
-      static_cast<const writer::wgsl::Generator*>(spv_to_wgsl.GetWriter());
-
-  assert(writer && writer->error().empty() &&
-         "Errors should have already been handled");
-
-  auto wgsl = writer->result();
+  const auto& wgsl = spv_to_wgsl.GetGeneratedWgsl();
 
   std::pair<FuzzingTarget, OutputFormat> targets[] = {
       {FuzzingTarget::kHlsl, OutputFormat::kHLSL},
@@ -202,7 +248,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     fuzzer.EnableInspector();
     fuzzer.Run(reinterpret_cast<const uint8_t*>(wgsl.data()), wgsl.size());
     if (fuzzer.HasErrors()) {
-      util::LogWgslError(fuzzer.GetErrors(), data, size, wgsl, target.second,
+      auto error = spv_to_wgsl.Diagnostics().str();
+      util::LogWgslError(error, data, size, wgsl, target.second,
                          context->params.error_dir);
     }
   }

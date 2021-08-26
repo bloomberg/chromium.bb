@@ -16,10 +16,12 @@ import * as MarkdownView from '../../ui/components/markdown_view/markdown_view.j
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Adorners from '../../ui/components/adorners/adorners.js';
 import * as NetworkForward from '../../panels/network/forward/forward.js';
+import * as Root from '../../core/root/root.js';
+import * as Components from './components/components.js';
 
 import {AffectedDirectivesView} from './AffectedDirectivesView.js';
 import {AffectedBlockedByResponseView} from './AffectedBlockedByResponseView.js';
-import {AffectedCookiesView} from './AffectedCookiesView.js';
+import {AffectedCookiesView, AffectedRawCookieLinesView} from './AffectedCookiesView.js';
 import {AffectedDocumentsInQuirksModeView} from './AffectedDocumentsInQuirksModeView.js';
 import {AffectedElementsView} from './AffectedElementsView.js';
 import {AffectedElementsWithLowContrastView} from './AffectedElementsWithLowContrastView.js';
@@ -33,6 +35,7 @@ import {WasmCrossOriginModuleSharingAffectedResourcesView} from './WasmCrossOrig
 import {AttributionReportingIssueDetailsView} from './AttributionReportingIssueDetailsView.js';
 
 import type {AggregatedIssue} from './IssueAggregator.js';
+import type {HiddenIssuesMenuData} from './components/HideIssuesMenu.js';
 
 const UIStrings = {
   /**
@@ -214,22 +217,21 @@ class AffectedMixedContentView extends AffectedResourcesView {
 }
 
 export class IssueView extends UI.TreeOutline.TreeElement {
-  _parent: UI.Widget.VBox;
   _issue: AggregatedIssue;
   _description: IssuesManager.MarkdownIssueDescription.IssueDescription;
   toggleOnClick: boolean;
   affectedResources: UI.TreeOutline.TreeElement;
   _affectedResourceViews: AffectedResourcesView[];
   _aggregatedIssuesCount: HTMLElement|null;
+  private issueKindIcon: IconButton.Icon.Icon|null = null;
   _hasBeenExpandedBefore: boolean;
   private throttle: Common.Throttler.Throttler;
   private needsUpdateOnExpand = true;
+  private hiddenIssuesMenu: Components.HideIssuesMenu.HideIssuesMenu;
+  private contentCreated: boolean = false;
 
-  constructor(
-      parent: UI.Widget.VBox, issue: AggregatedIssue,
-      description: IssuesManager.MarkdownIssueDescription.IssueDescription) {
+  constructor(issue: AggregatedIssue, description: IssuesManager.MarkdownIssueDescription.IssueDescription) {
     super();
-    this._parent = parent;
     this._issue = issue;
     this._description = description;
     this.throttle = new Common.Throttler.Throttler(250);
@@ -256,8 +258,10 @@ export class IssueView extends UI.TreeOutline.TreeElement {
       new AffectedDocumentsInQuirksModeView(this, this._issue),
       new AttributionReportingIssueDetailsView(this, this._issue),
       new WasmCrossOriginModuleSharingAffectedResourcesView(this, this._issue),
+      new AffectedRawCookieLinesView(this, this._issue),
     ];
 
+    this.hiddenIssuesMenu = new Components.HideIssuesMenu.HideIssuesMenu();
     this._aggregatedIssuesCount = null;
     this._hasBeenExpandedBefore = false;
   }
@@ -278,6 +282,14 @@ export class IssueView extends UI.TreeOutline.TreeElement {
   }
 
   onattach(): void {
+    if (!this.contentCreated) {
+      this.createContent();
+      return;
+    }
+    this.update();
+  }
+
+  createContent(): void {
     this._appendHeader();
     this._createBody();
     this.appendChild(this.affectedResources);
@@ -288,6 +300,7 @@ export class IssueView extends UI.TreeOutline.TreeElement {
 
     this._createReadMoreLinks();
     this.updateAffectedResourceVisibility();
+    this.contentCreated = true;
   }
 
   appendAffectedResource(resource: UI.TreeOutline.TreeElement): void {
@@ -296,11 +309,15 @@ export class IssueView extends UI.TreeOutline.TreeElement {
 
   _appendHeader(): void {
     const header = document.createElement('div');
+    if (Root.Runtime.experiments.isEnabled('hideIssuesFeature')) {
+      header.addEventListener('mouseenter', this.showHiddenIssuesMenu.bind(this));
+      header.addEventListener('mouseleave', this.hideHiddenIssuesMenu.bind(this));
+    }
     header.classList.add('header');
-    const icon = new IconButton.Icon.Icon();
+    this.issueKindIcon = new IconButton.Icon.Icon();
     const kind = this._issue.getKind();
-    icon.data = IssueCounter.IssueCounter.getIssueKindIconData(kind);
-    icon.classList.add('leading-issue-icon');
+    this.issueKindIcon.data = IssueCounter.IssueCounter.getIssueKindIconData(kind);
+    this.issueKindIcon.classList.add('leading-issue-icon');
     this._aggregatedIssuesCount = document.createElement('span');
     const countAdorner = new Adorners.Adorner.Adorner();
     countAdorner.data = {
@@ -309,16 +326,30 @@ export class IssueView extends UI.TreeOutline.TreeElement {
     };
     countAdorner.classList.add('aggregated-issues-count');
     this._aggregatedIssuesCount.textContent = `${this._issue.getAggregatedIssuesCount()}`;
-    header.appendChild(icon);
-    UI.Tooltip.Tooltip.install(icon, IssueCounter.IssueCounter.getIssueKindDescription(kind));
+    header.appendChild(this.issueKindIcon);
+    UI.Tooltip.Tooltip.install(this.issueKindIcon, IssuesManager.Issue.getIssueKindDescription(kind));
     header.appendChild(countAdorner);
 
     const title = document.createElement('div');
     title.classList.add('title');
     title.textContent = this._description.title;
     header.appendChild(title);
-
+    if (Root.Runtime.experiments.isEnabled('hideIssuesFeature')) {
+      header.appendChild(this.hiddenIssuesMenu);
+      const data: HiddenIssuesMenuData = {
+        issueCode: this._issue.code(),
+        forHiddenIssue: this._issue.isHidden(),
+      };
+      this.hiddenIssuesMenu.data = data;
+    }
     this.listItemElement.appendChild(header);
+  }
+  private showHiddenIssuesMenu(): void {
+    this.hiddenIssuesMenu?.setVisible(true);
+  }
+
+  private hideHiddenIssuesMenu(): void {
+    this.hiddenIssuesMenu?.setVisible(false);
   }
 
   onexpand(): void {
@@ -336,7 +367,11 @@ export class IssueView extends UI.TreeOutline.TreeElement {
     }
   }
 
-  _updateAggregatedIssuesCount(): void {
+  private updateFromIssue(): void {
+    if (this.issueKindIcon) {
+      const kind = this._issue.getKind();
+      this.issueKindIcon.data = IssueCounter.IssueCounter.getIssueKindIconData(kind);
+    }
     if (this._aggregatedIssuesCount) {
       this._aggregatedIssuesCount.textContent = `${this._issue.getAggregatedIssuesCount()}`;
     }
@@ -401,12 +436,22 @@ export class IssueView extends UI.TreeOutline.TreeElement {
       this._affectedResourceViews.forEach(view => view.update());
       this.updateAffectedResourceVisibility();
     }
+    const data: HiddenIssuesMenuData = {
+      issueCode: this._issue.code(),
+      forHiddenIssue: this._issue.isHidden(),
+    };
+    this.listItemElement.classList.toggle('hidden-issue', this._issue.isHidden());
+    this.hiddenIssuesMenu.data = data;
     this.needsUpdateOnExpand = !this.expanded;
-    this._updateAggregatedIssuesCount();
+    this.updateFromIssue();
   }
 
   update(): void {
     this.throttle.schedule(async () => this.doUpdate());
+  }
+
+  isForHiddenIssue(): boolean {
+    return this._issue.isHidden();
   }
 
   toggle(expand?: boolean): void {

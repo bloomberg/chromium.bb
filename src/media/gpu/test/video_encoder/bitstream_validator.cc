@@ -4,6 +4,8 @@
 
 #include "media/gpu/test/video_encoder/bitstream_validator.h"
 
+#include <numeric>
+
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
@@ -56,8 +58,9 @@ std::unique_ptr<BitstreamValidator> BitstreamValidator::Create(
     const VideoDecoderConfig& decoder_config,
     size_t last_frame_index,
     std::vector<std::unique_ptr<VideoFrameProcessor>> video_frame_processors,
-    absl::optional<size_t> vp9_spatial_layer_index_to_decode,
-    absl::optional<size_t> num_vp9_temporal_layers_to_decode) {
+    absl::optional<size_t> spatial_layer_index_to_decode,
+    absl::optional<size_t> temporal_layer_index_to_decode,
+    const std::vector<gfx::Size>& spatial_layer_resolutions) {
   std::unique_ptr<MediaLog> media_log;
   auto decoder = CreateDecoder(decoder_config.codec(), &media_log);
   if (!decoder)
@@ -65,8 +68,9 @@ std::unique_ptr<BitstreamValidator> BitstreamValidator::Create(
 
   auto validator = base::WrapUnique(new BitstreamValidator(
       std::move(decoder), std::move(media_log), last_frame_index,
-      decoder_config.visible_rect(), vp9_spatial_layer_index_to_decode,
-      num_vp9_temporal_layers_to_decode, std::move(video_frame_processors)));
+      decoder_config.visible_rect(), spatial_layer_index_to_decode,
+      temporal_layer_index_to_decode, spatial_layer_resolutions,
+      std::move(video_frame_processors)));
   if (!validator->Initialize(decoder_config))
     return nullptr;
 
@@ -104,7 +108,7 @@ bool BitstreamValidator::Initialize(const VideoDecoderConfig& decoder_config) {
 void BitstreamValidator::InitializeVideoDecoder(
     const VideoDecoderConfig& decoder_config,
     VideoDecoder::InitCB init_cb) {
-  SEQUENCE_CHECKER(validator_thread_sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(validator_thread_sequence_checker_);
   decoder_->Initialize(
       decoder_config, false, nullptr, std::move(init_cb),
       base::BindRepeating(&BitstreamValidator::VerifyOutputFrame,
@@ -117,15 +121,17 @@ BitstreamValidator::BitstreamValidator(
     std::unique_ptr<MediaLog> media_log,
     size_t last_frame_index,
     const gfx::Rect& decoding_rect,
-    absl::optional<size_t> vp9_spatial_layer_index_to_decode,
-    absl::optional<size_t> num_vp9_temporal_layers_to_decode,
+    absl::optional<size_t> spatial_layer_index_to_decode,
+    absl::optional<size_t> temporal_layer_index_to_decode,
+    const std::vector<gfx::Size>& spatial_layer_resolutions,
     std::vector<std::unique_ptr<VideoFrameProcessor>> video_frame_processors)
     : decoder_(std::move(decoder)),
       media_log_(std::move(media_log)),
       last_frame_index_(last_frame_index),
       desired_decoding_rect_(decoding_rect),
-      vp9_spatial_layer_index_to_decode_(vp9_spatial_layer_index_to_decode),
-      num_vp9_temporal_layers_to_decode_(num_vp9_temporal_layers_to_decode),
+      spatial_layer_index_to_decode_(spatial_layer_index_to_decode),
+      temporal_layer_index_to_decode_(temporal_layer_index_to_decode),
+      spatial_layer_resolutions_(spatial_layer_resolutions),
       video_frame_processors_(std::move(video_frame_processors)),
       validator_thread_("BitstreamValidatorThread"),
       validator_cv_(&validator_lock_),
@@ -144,6 +150,26 @@ BitstreamValidator::~BitstreamValidator() {
   // Initialize(). Destroys it on the validator thread task runner.
   if (validator_thread_.IsRunning())
     validator_thread_.task_runner()->DeleteSoon(FROM_HERE, std::move(decoder_));
+}
+
+void BitstreamValidator::ConstructSpatialIndices(
+    const std::vector<gfx::Size>& spatial_layer_resolutions) {
+  SEQUENCE_CHECKER(validator_thread_sequence_checker_);
+  CHECK(!spatial_layer_resolutions.empty());
+  CHECK_LE(spatial_layer_resolutions.size(), spatial_layer_resolutions_.size());
+
+  original_spatial_indices_.resize(spatial_layer_resolutions.size());
+  auto begin = std::find(spatial_layer_resolutions_.begin(),
+                         spatial_layer_resolutions_.end(),
+                         spatial_layer_resolutions.front());
+  CHECK(begin != spatial_layer_resolutions_.end());
+  uint8_t sid_offset = begin - spatial_layer_resolutions_.begin();
+  for (size_t i = 0; i < spatial_layer_resolutions.size(); ++i) {
+    CHECK_LT(sid_offset + i, spatial_layer_resolutions_.size());
+    CHECK_EQ(spatial_layer_resolutions[i],
+             spatial_layer_resolutions_[sid_offset + i]);
+    original_spatial_indices_[i] = sid_offset + i;
+  }
 }
 
 void BitstreamValidator::ProcessBitstream(scoped_refptr<BitstreamRef> bitstream,
@@ -174,29 +200,34 @@ void BitstreamValidator::ProcessBitstream(scoped_refptr<BitstreamRef> bitstream,
 void BitstreamValidator::ProcessBitstreamTask(
     scoped_refptr<BitstreamRef> bitstream,
     size_t frame_index) {
-  SEQUENCE_CHECKER(validator_thread_sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(validator_thread_sequence_checker_);
   bool should_decode = false;
   bool should_flush = false;
-  if (!vp9_spatial_layer_index_to_decode_ &&
-      !num_vp9_temporal_layers_to_decode_) {
+  if (!spatial_layer_index_to_decode_ && !temporal_layer_index_to_decode_) {
     should_decode = true;
     should_flush = frame_index == last_frame_index_;
-  } else {
+  } else if (bitstream->metadata.vp9) {
+    const Vp9Metadata& metadata = *bitstream->metadata.vp9;
+    if (bitstream->metadata.key_frame)
+      ConstructSpatialIndices(metadata.spatial_layer_resolutions);
+
+    const uint8_t spatial_idx = original_spatial_indices_[metadata.spatial_idx];
     // |should_decode| equals true if SVC encoding mode with corresponding
     // spatial/temporal decode chain.
     // Check the spatial layer index.
-    should_decode =
-        (bitstream->metadata.vp9->spatial_idx ==
-         *vp9_spatial_layer_index_to_decode_) ||
-        (bitstream->metadata.vp9->spatial_idx <
-             *vp9_spatial_layer_index_to_decode_ &&
-         bitstream->metadata.vp9->referenced_by_upper_spatial_layers);
+    should_decode = (spatial_idx == *spatial_layer_index_to_decode_) ||
+                    (spatial_idx < *spatial_layer_index_to_decode_ &&
+                     metadata.referenced_by_upper_spatial_layers);
     // Check the temporal layer index.
-    should_decode &= bitstream->metadata.vp9->temporal_idx <
-                     *num_vp9_temporal_layers_to_decode_;
+    should_decode &= metadata.temporal_idx <= *temporal_layer_index_to_decode_;
+    // |should_flush| is true if the last frame is received regardless whether
+    // the frame is decoded.
     should_flush = frame_index == last_frame_index_ &&
-                   bitstream->metadata.vp9->spatial_idx ==
-                       *vp9_spatial_layer_index_to_decode_;
+                   spatial_idx == original_spatial_indices_.size() - 1;
+  } else if (bitstream->metadata.h264) {
+    const H264Metadata& metadata = *bitstream->metadata.h264;
+    should_decode = metadata.temporal_idx <= *temporal_layer_index_to_decode_;
+    should_flush = frame_index == last_frame_index_;
   }
 
   if (should_flush) {
@@ -234,7 +265,7 @@ void BitstreamValidator::ProcessBitstreamTask(
 }
 
 void BitstreamValidator::DecodeDone(int64_t timestamp, Status status) {
-  SEQUENCE_CHECKER(validator_thread_sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(validator_thread_sequence_checker_);
   if (!status.is_ok()) {
     base::AutoLock lock(validator_lock_);
     if (!decode_error_) {
@@ -270,7 +301,7 @@ void BitstreamValidator::OutputFrameProcessed() {
 }
 
 void BitstreamValidator::VerifyOutputFrame(scoped_refptr<VideoFrame> frame) {
-  SEQUENCE_CHECKER(validator_thread_sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(validator_thread_sequence_checker_);
   auto it = decoding_buffers_.Peek(frame->timestamp().InMicroseconds());
   if (it == decoding_buffers_.end()) {
     LOG(WARNING) << "Unexpected timestamp: "
@@ -284,14 +315,14 @@ void BitstreamValidator::VerifyOutputFrame(scoped_refptr<VideoFrame> frame) {
   // validated spatial layer in key picture. We don't validate the lower spatial
   // layer frames as they are not shown frames. Skip them.
   if (frame->visible_rect() != desired_decoding_rect_) {
-    if (!vp9_spatial_layer_index_to_decode_ ||
-        *vp9_spatial_layer_index_to_decode_ == 0) {
+    if (!spatial_layer_index_to_decode_ ||
+        *spatial_layer_index_to_decode_ == 0) {
       LOG(ERROR) << __func__ << " Unexpected frame skip";
     }
     DVLOGF(3) << "Skip a frame to be not shown. visible_rect="
               << frame->visible_rect().ToString()
               << ", shown visible_rect=" << desired_decoding_rect_.ToString();
-    DCHECK_EQ(frame_index, 0u);
+
     OutputFrameProcessed();
     return;
   }

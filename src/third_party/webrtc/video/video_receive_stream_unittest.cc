@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "api/task_queue/default_task_queue_factory.h"
+#include "api/test/mock_video_decoder.h"
 #include "api/test/video/function_video_decoder_factory.h"
 #include "api/video_codecs/video_decoder.h"
 #include "call/rtp_stream_receiver_controller.h"
@@ -31,6 +32,7 @@
 #include "test/field_trial.h"
 #include "test/gmock.h"
 #include "test/gtest.h"
+#include "test/mock_transport.h"
 #include "test/time_controller/simulated_time_controller.h"
 #include "test/video_decoder_proxy_factory.h"
 #include "video/call_stats.h"
@@ -45,36 +47,6 @@ using ::testing::IsEmpty;
 using ::testing::SizeIs;
 
 constexpr int kDefaultTimeOutMs = 50;
-
-class MockTransport : public Transport {
- public:
-  MOCK_METHOD(bool,
-              SendRtp,
-              (const uint8_t*, size_t length, const PacketOptions& options),
-              (override));
-  MOCK_METHOD(bool, SendRtcp, (const uint8_t*, size_t length), (override));
-};
-
-class MockVideoDecoder : public VideoDecoder {
- public:
-  MOCK_METHOD(int32_t,
-              InitDecode,
-              (const VideoCodec*, int32_t number_of_cores),
-              (override));
-  MOCK_METHOD(int32_t,
-              Decode,
-              (const EncodedImage& input,
-               bool missing_frames,
-               int64_t render_time_ms),
-              (override));
-  MOCK_METHOD(int32_t,
-              RegisterDecodeCompleteCallback,
-              (DecodedImageCallback*),
-              (override));
-  MOCK_METHOD(int32_t, Release, (), (override));
-  MOCK_METHOD(VideoDecoder::DecoderInfo, GetDetcoderInfo, (), (const override));
-  const char* ImplementationName() const { return "MockVideoDecoder"; }
-};
 
 class FrameObjectFake : public EncodedFrame {
  public:
@@ -205,7 +177,7 @@ TEST_F(VideoReceiveStreamTest, PlayoutDelayPreservesDefaultMaxValue) {
 
   video_receive_stream_->OnCompleteFrame(std::move(test_frame));
 
-  // Ensure that -1 preserves default maximum value from |timing_|.
+  // Ensure that -1 preserves default maximum value from `timing_`.
   EXPECT_EQ(kPlayoutDelayMs.min_ms, timing_->min_playout_delay());
   EXPECT_NE(kPlayoutDelayMs.max_ms, timing_->max_playout_delay());
   EXPECT_EQ(default_max_playout_latency, timing_->max_playout_delay());
@@ -221,7 +193,7 @@ TEST_F(VideoReceiveStreamTest, PlayoutDelayPreservesDefaultMinValue) {
 
   video_receive_stream_->OnCompleteFrame(std::move(test_frame));
 
-  // Ensure that -1 preserves default minimum value from |timing_|.
+  // Ensure that -1 preserves default minimum value from `timing_`.
   EXPECT_NE(kPlayoutDelayMs.min_ms, timing_->min_playout_delay());
   EXPECT_EQ(kPlayoutDelayMs.max_ms, timing_->max_playout_delay());
   EXPECT_EQ(default_min_playout_latency, timing_->min_playout_delay());
@@ -363,7 +335,7 @@ TEST_F(VideoReceiveStreamTestWithFakeDecoder, RenderedFrameUpdatesGetSources) {
   // Verify that the per-packet information is passed to the renderer.
   EXPECT_THAT(fake_renderer_.packet_infos(), ElementsAreArray(packet_infos));
 
-  // Verify that the per-packet information also updates |GetSources()|.
+  // Verify that the per-packet information also updates `GetSources()`.
   std::vector<RtpSource> sources = video_receive_stream_->GetSources();
   ASSERT_THAT(sources, SizeIs(2));
   {

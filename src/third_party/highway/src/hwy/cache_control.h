@@ -32,6 +32,14 @@
 #include <emmintrin.h>  // SSE2
 #endif
 
+// Windows.h #defines these, which causes infinite recursion. Temporarily
+// undefine them in this header; these functions are anyway deprecated.
+// TODO(janwas): remove when these functions are removed.
+#pragma push_macro("LoadFence")
+#pragma push_macro("StoreFence")
+#undef LoadFence
+#undef StoreFence
+
 namespace hwy {
 
 // Even if N*sizeof(T) is smaller, Stream may write a multiple of this size.
@@ -83,6 +91,17 @@ HWY_INLINE HWY_ATTR_CACHE void FlushCacheline(const void* p) {
 #endif
 }
 
+// Reduces power consumption in spin-loops. No effect on non-x86.
+HWY_INLINE HWY_ATTR_CACHE void Pause() {
+#if HWY_ARCH_X86 && !defined(HWY_DISABLE_CACHE_CONTROL)
+  _mm_pause();
+#endif
+}
+
 }  // namespace hwy
+
+// TODO(janwas): remove when these functions are removed. (See above.)
+#pragma pop_macro("StoreFence")
+#pragma pop_macro("LoadFence")
 
 #endif  // HIGHWAY_HWY_CACHE_CONTROL_H_

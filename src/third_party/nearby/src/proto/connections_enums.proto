@@ -17,6 +17,8 @@ syntax = "proto2";
 package location.nearby.proto.connections;
 
 
+
+
 option optimize_for = LITE_RUNTIME;
 option java_package = "com.google.location.nearby.proto";
 option java_outer_classname = "ConnectionsEnums";
@@ -79,8 +81,13 @@ enum Medium {
   NFC = 7;
   WIFI_DIRECT = 8;
   WEB_RTC = 9;
+  BLE_L2CAP = 10;
 }
-// LINT.ThenChange(//depot/google3/java/com/google/android/gmscore/integ/client/nearby/src/com/google/android/gms/nearby/connection/Medium.java)
+// LINT.ThenChange(
+//     //depot/google3/java/com/google/android/gmscore/integ/client/nearby/src/com/google/android/gms/nearby/connection/Medium.java,
+//     //depot/google3/java/com/google/android/gms/nearby/internal/connection/api.proto,
+//     //depot/google3/third_party/nearby_connections/proto/connections/offline_wire_formats.proto
+// )
 
 // The result of a ConnectionRequest.
 enum ConnectionRequestResponse {
@@ -166,7 +173,7 @@ enum PayloadStatus {
   REMOTE_CANCELLATION = 8;
 }
 
-// next_id: 18
+// next_id: 19
 // Result of an upgrade attempt.
 enum BandwidthUpgradeResult {
   UNKNOWN_BANDWIDTH_UPGRADE_RESULT = 0;
@@ -215,6 +222,9 @@ enum BandwidthUpgradeResult {
 
   // When the remote endpoint had an error on their end.
   RESULT_REMOTE_ERROR = 17;
+
+  // The attempt was never made because a precondition check failed.
+  ATTEMPT_SKIPPED = 18;
 }
 
 // next_id: 35

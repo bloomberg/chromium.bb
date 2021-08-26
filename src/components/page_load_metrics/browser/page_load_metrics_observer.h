@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "components/page_load_metrics/browser/page_load_metrics_event.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer_delegate.h"
 #include "components/page_load_metrics/common/page_load_timing.h"
 #include "content/public/browser/global_routing_id.h"
@@ -20,7 +19,6 @@
 #include "net/cookies/canonical_cookie.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/use_counter/use_counter_feature.h"
 #include "url/gurl.h"
@@ -530,7 +528,7 @@ class PageLoadMetricsObserver {
 
   virtual void OnRenderFrameDeleted(
       content::RenderFrameHost* render_frame_host) {}
-  virtual void OnFrameDeleted(int frame_tree_node_id) {}
+  virtual void OnSubFrameDeleted(int frame_tree_node_id) {}
 
   // Called when a cookie is read for a resource request or by document.cookie.
   virtual void OnCookiesRead(const GURL& url,
@@ -552,8 +550,8 @@ class PageLoadMetricsObserver {
                                  bool blocked_by_policy,
                                  StorageType access_type) {}
 
-  // Called when |event| occurs in this page load.
-  virtual void OnEventOccurred(PageLoadMetricsEvent event) {}
+  // Called when prefetch is likely to occur in this page load.
+  virtual void OnPrefetchLikely() {}
 
   // Called when the page tracked was just activated after being loaded inside a
   // portal.

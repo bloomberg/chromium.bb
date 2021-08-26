@@ -198,6 +198,7 @@ source_set("host_resolver") {
     "//chrome/test:unit_tests",
     "//components/grpc_support/test:unit_tests",
     "//content/shell:content_shell_lib",
+    "//content/test:*",
 
     # Stand-alone tools.
     "//google_apis/gcm:mcs_probe",
@@ -207,17 +208,12 @@ source_set("host_resolver") {
     "//components/cronet/*",
     "//net/*",
     "//services/network/*",
-
-    # The proxy resolution service uses its own host cache and HostResolver Mojo
-    # wrapper.
-    "//services/proxy_resolver/*",
   ]
 
   sources = [
     "dns_config.h",
     "host_cache.h",
     "host_resolver.h",
-    "host_resolver_source.h",
     "mapped_host_resolver.h",
   ]
   public = []

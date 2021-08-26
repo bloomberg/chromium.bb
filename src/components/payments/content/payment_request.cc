@@ -19,6 +19,7 @@
 #include "components/payments/content/payment_details_converter.h"
 #include "components/payments/content/payment_request_converter.h"
 #include "components/payments/content/payment_request_web_contents_manager.h"
+#include "components/payments/content/secure_payment_confirmation_no_creds.h"
 #include "components/payments/core/can_make_payment_query.h"
 #include "components/payments/core/error_message_util.h"
 #include "components/payments/core/error_strings.h"
@@ -77,7 +78,7 @@ PaymentRequest::PaymentRequest(
     PaymentRequestWebContentsManager* manager,
     PaymentRequestDisplayManager* display_manager,
     mojo::PendingReceiver<mojom::PaymentRequest> receiver,
-    ObserverForTest* observer_for_testing)
+    base::WeakPtr<ObserverForTest> observer_for_testing)
     : initiator_frame_routing_id_(content::GlobalRenderFrameHostId(
           render_frame_host->GetProcess()->GetID(),
           render_frame_host->GetRoutingID())),
@@ -209,7 +210,7 @@ void PaymentRequest::Init(
       initiator_frame, top_level_origin_, frame_origin_, frame_security_origin_,
       spec(), /*delegate=*/weak_ptr_factory_.GetWeakPtr(),
       delegate_->GetApplicationLocale(), delegate_->GetPersonalDataManager(),
-      delegate_.get(), &journey_logger_);
+      delegate_->GetContentWeakPtr(), journey_logger_.GetWeakPtr());
 
   journey_logger_.SetRequestedInformation(
       spec_->request_shipping(), spec_->request_payer_email(),
@@ -291,7 +292,7 @@ void PaymentRequest::Show(bool is_user_gesture, bool wait_for_updated_details) {
   journey_logger_.SetTriggerTime();
 
   // A tab can display only one PaymentRequest UI at a time.
-  display_handle_ = display_manager_->TryShow(delegate_.get());
+  display_handle_ = display_manager_->TryShow(delegate_->GetContentWeakPtr());
   if (!display_handle_) {
     log_.Error(errors::kAnotherUiShowing);
     DCHECK(!has_recorded_completion_);
@@ -635,6 +636,22 @@ void PaymentRequest::AreRequestedMethodsSupportedCallback(
     observer_for_testing_->OnAppListReady(weak_ptr_factory_.GetWeakPtr());
   }
 
+  if (web_contents() && spec_->IsSecurePaymentConfirmationRequested() &&
+      state()->available_apps().empty() &&
+      base::FeatureList::IsEnabled(::features::kSecurePaymentConfirmation) &&
+      base::FeatureList::IsEnabled(
+          ::features::kSecurePaymentConfirmationAPIV3)) {
+    delegate_->ShowNoMatchingPaymentCredentialDialog(
+        url_formatter::FormatUrlForSecurityDisplay(
+            state_->GetTopOrigin(),
+            url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC),
+        base::BindOnce(&PaymentRequest::OnUserCancelled,
+                       weak_ptr_factory_.GetWeakPtr()));
+    if (observer_for_testing_)
+      observer_for_testing_->OnErrorDisplayed();
+    return;
+  }
+
   if (methods_supported) {
     if (SatisfiesSkipUIConstraints()) {
       Pay();
@@ -783,10 +800,15 @@ void PaymentRequest::OnUserCancelled() {
   RecordFirstAbortReason(JourneyLogger::ABORT_REASON_ABORTED_BY_USER);
 
   // This sends an error to the renderer, which informs the API user.
-  client_->OnError(mojom::PaymentErrorReason::USER_CANCEL,
-                   !reject_show_error_message_.empty()
-                       ? reject_show_error_message_
-                       : errors::kUserCancelled);
+  // If SPC flag is enabled, use NotAllowedError instead.
+  bool is_spc_enabled = spec_->IsSecurePaymentConfirmationRequested();
+  client_->OnError(
+      is_spc_enabled ? mojom::PaymentErrorReason::NOT_ALLOWED_ERROR
+                     : mojom::PaymentErrorReason::USER_CANCEL,
+      is_spc_enabled
+          ? errors::kWebAuthnOperationTimedOutOrNotAllowed
+          : (!reject_show_error_message_.empty() ? reject_show_error_message_
+                                                 : errors::kUserCancelled));
 
   // We close all bindings and ask to be destroyed.
   client_.reset();

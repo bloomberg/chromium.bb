@@ -4,11 +4,11 @@
 
 import 'chrome://diagnostics/network_card.js';
 
-import {fakeCellularNetwork, fakeEthernetNetwork, fakeNetworkGuidInfoList, fakeWifiNetwork} from 'chrome://diagnostics/fake_data.js';
+import {fakeCellularNetwork, fakeDisconnectedEthernetNetwork, fakeDisconnectedWifiNetwork, fakeEthernetNetwork, fakeNetworkGuidInfoList, fakeWifiNetwork} from 'chrome://diagnostics/fake_data.js';
 import {FakeNetworkHealthProvider} from 'chrome://diagnostics/fake_network_health_provider.js';
 import {setNetworkHealthProviderForTesting} from 'chrome://diagnostics/mojo_interface_provider.js';
 
-import {assertFalse, assertTrue} from '../../chai_assert.js';
+import {assertDeepEquals, assertFalse, assertTrue} from '../../chai_assert.js';
 import {flushTasks, isVisible} from '../../test_util.m.js';
 
 import * as dx_utils from './diagnostics_test_utils.js';
@@ -44,7 +44,10 @@ export function networkCardTestSuite() {
     provider.setFakeNetworkState('wifiGuid', [fakeWifiNetwork]);
     provider.setFakeNetworkState('cellularGuid', [fakeCellularNetwork]);
     provider.setFakeNetworkState('ethernetGuid', [fakeEthernetNetwork]);
-
+    provider.setFakeNetworkState(
+        'ethernetDisconnectedGuid', [fakeDisconnectedEthernetNetwork]);
+    provider.setFakeNetworkState(
+        'wifiDisconnectedGuid', [fakeDisconnectedWifiNetwork]);
     // Add the network info to the DOM.
     networkCardElement = /** @type {!NetworkCardElement} */ (
         document.createElement('network-card'));
@@ -55,10 +58,27 @@ export function networkCardTestSuite() {
     return flushTasks();
   }
 
+  /**
+   * @return {!HTMLElement}
+   */
+  function getTroubleConnectingElement() {
+    return /** @type {!HTMLElement} */ (
+        networkCardElement.$$('#networkTroubleshooting'));
+  }
+
   test('CardTitleWiFiConnectedInitializedCorrectly', () => {
     return initializeNetworkCard('wifiGuid').then(() => {
       dx_utils.assertElementContainsText(
-          networkCardElement.$$('#cardTitle'), 'WiFi (Connected)');
+          networkCardElement.$$('#cardTitle'), 'Wi-Fi (Connected)');
+      assertFalse(isVisible(getTroubleConnectingElement()));
+    });
+  });
+
+  test('WifiDisconnectedShowTroubleShooting', () => {
+    return initializeNetworkCard('wifiDisconnectedGuid').then(() => {
+      dx_utils.assertElementContainsText(
+          networkCardElement.$$('#cardTitle'), 'Wi-Fi (Not Connected)');
+      assertTrue(isVisible(getTroubleConnectingElement()));
     });
   });
 
@@ -66,23 +86,26 @@ export function networkCardTestSuite() {
     return initializeNetworkCard('ethernetGuid').then(() => {
       dx_utils.assertElementContainsText(
           networkCardElement.$$('#cardTitle'), 'Ethernet (Online)');
+      assertFalse(isVisible(getTroubleConnectingElement()));
     });
   });
 
-  test('EthernetNotDetectedStateVisible', () => {
-    return initializeNetworkCard('ethernetGuid')
-        .then(
-            () => assertTrue(isVisible(
-                /** @type {!HTMLElement} */ (
-                    networkCardElement.$$('#troubleConnectingContainer')))));
+  test('EthernetDisconnectedShowTroubleShooting', () => {
+    return initializeNetworkCard('ethernetDisconnectedGuid').then(() => {
+      dx_utils.assertElementContainsText(
+          networkCardElement.$$('#cardTitle'), 'Ethernet (Not Connected)');
+      assertTrue(isVisible(getTroubleConnectingElement()));
+    });
   });
 
-  test('EthernetNotDetectedStateHidden', () => {
-    // Trouble connecting state should only be visible for Ethernet networks.
-    return initializeNetworkCard('wifiGuid')
-        .then(
-            () => assertFalse(isVisible(
-                /** @type {!HTMLElement} */ (
-                    networkCardElement.$$('#troubleConnectingContainer')))));
+  test('CardDrawerInitializedCorrectly', () => {
+    return initializeNetworkCard('wifiGuid').then(() => {
+      const ipConfigInfoDrawerElement =
+          /** @type {!IpConfigInfoDrawerElement} */ (
+              networkCardElement.$$('#ipConfigInfoDrawer'));
+      assertTrue(
+          isVisible(/** @type {!HTMLElement} */ (ipConfigInfoDrawerElement)));
+      assertDeepEquals(fakeWifiNetwork, ipConfigInfoDrawerElement.network);
+    });
   });
 }

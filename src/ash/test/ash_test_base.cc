@@ -29,9 +29,7 @@
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/test_widget_builder.h"
 #include "ash/test/test_window_builder.h"
-#include "ash/test_screenshot_delegate.h"
 #include "ash/test_shell_delegate.h"
-#include "ash/utility/screenshot_controller.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_positioner.h"
@@ -303,11 +301,6 @@ void AshTestBase::SetUserPref(const std::string& user_email,
   prefs->Set(path, value);
 }
 
-TestScreenshotDelegate* AshTestBase::GetScreenshotDelegate() {
-  return static_cast<TestScreenshotDelegate*>(
-      Shell::Get()->screenshot_controller()->screenshot_delegate_.get());
-}
-
 TestSessionControllerClient* AshTestBase::GetSessionControllerClient() {
   return ash_test_helper_->test_session_controller_client();
 }
@@ -464,6 +457,10 @@ bool AshTestBase::TestIfMouseWarpsAt(ui::test::EventGenerator* event_generator,
              ->GetDisplayNearestPoint(
                  aura::Env::GetInstance()->last_mouse_location())
              .id();
+}
+
+void AshTestBase::PressAndReleaseKey(ui::KeyboardCode key_code, int flags) {
+  GetEventGenerator()->PressAndReleaseKey(key_code, flags);
 }
 
 void AshTestBase::SimulateMouseClickAt(

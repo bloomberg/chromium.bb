@@ -385,6 +385,15 @@ void LayoutInline::UpdateAlwaysCreateLineBoxes(bool full_layout) {
 bool LayoutInline::ComputeInitialShouldCreateBoxFragment(
     const ComputedStyle& style) const {
   NOT_DESTROYED();
+
+  // We'd like to use ScopedSVGPaintState in
+  // NGInlineBoxFragmentPainter::Paint().
+  // TODO(layout-dev): Improve the below condition so that we a create box
+  // fragment only if this requires ScopedSVGPaintState, instead of
+  // creating box fragments for all LayoutSVGInlines.
+  if (IsSVGInline())
+    return true;
+
   if (style.HasBoxDecorationBackground() || style.MayHavePadding() ||
       style.MayHaveMargin())
     return true;
@@ -523,7 +532,8 @@ void LayoutInline::AddChildIgnoringContinuation(LayoutObject* new_child,
 
   if (!new_child->IsInline() && !new_child->IsFloatingOrOutOfFlowPositioned() &&
       !new_child->IsTablePart()) {
-    if (UNLIKELY(RuntimeEnabledFeatures::LayoutNGBlockInInlineEnabled())) {
+    if (UNLIKELY(RuntimeEnabledFeatures::LayoutNGBlockInInlineEnabled()) &&
+        !ForceLegacyLayout()) {
       // TODO(crbug.com/716930): This logic is still at the prototype level and
       // to be re-written, but landed under the runtime flag to allow us working
       // on dependent code in parallel.
@@ -531,13 +541,15 @@ void LayoutInline::AddChildIgnoringContinuation(LayoutObject* new_child,
       auto* anonymous_box = DynamicTo<LayoutBlockFlow>(
           before_child ? before_child->PreviousSibling() : LastChild());
       if (!anonymous_box || !anonymous_box->IsAnonymous()) {
-        anonymous_box = CreateAnonymousContainerForBlockChildren();
+        anonymous_box =
+            CreateAnonymousContainerForBlockChildren(/* split_flow */ false);
         LayoutBoxModelObject::AddChild(anonymous_box, before_child);
       }
       anonymous_box->AddChild(new_child);
       return;
     }
-    LayoutBlockFlow* new_box = CreateAnonymousContainerForBlockChildren();
+    LayoutBlockFlow* new_box =
+        CreateAnonymousContainerForBlockChildren(/* split_flow */ true);
     LayoutBoxModelObject* old_continuation = Continuation();
     SetContinuation(new_box);
 
@@ -732,7 +744,8 @@ void LayoutInline::SplitFlow(LayoutObject* before_child,
       layout_invalidation_reason::kAnonymousBlockChange);
 }
 
-LayoutBlockFlow* LayoutInline::CreateAnonymousContainerForBlockChildren() {
+LayoutBlockFlow* LayoutInline::CreateAnonymousContainerForBlockChildren(
+    bool split_flow) {
   NOT_DESTROYED();
   // We are placing a block inside an inline. We have to perform a split of this
   // inline into continuations. This involves creating an anonymous block box to
@@ -754,11 +767,14 @@ LayoutBlockFlow* LayoutInline::CreateAnonymousContainerForBlockChildren() {
   // for continuations.
   new_style->SetDirection(containing_block->StyleRef().Direction());
 
-  // If inside an inline affected by in-flow positioning the block needs to be
-  // affected by it too. Giving the block a layer like this allows it to collect
-  // the x/y offsets from inline parents later.
-  if (LayoutObject* positioned_ancestor = InFlowPositionedInlineAncestor(this))
-    new_style->SetPosition(positioned_ancestor->StyleRef().GetPosition());
+  if (split_flow) {
+    // If inside an inline affected by in-flow positioning the block needs to be
+    // affected by it too. Giving the block a layer like this allows it to
+    // collect the x/y offsets from inline parents later.
+    if (LayoutObject* positioned_ancestor =
+            InFlowPositionedInlineAncestor(this))
+      new_style->SetPosition(positioned_ancestor->StyleRef().GetPosition());
+  }
 
   LegacyLayout legacy = containing_block->ForceLegacyLayout()
                             ? LegacyLayout::kForce
@@ -1599,7 +1615,8 @@ PaintLayerType LayoutInline::LayerTypeRequired() const {
 
 void LayoutInline::ChildBecameNonInline(LayoutObject* child) {
   NOT_DESTROYED();
-  if (UNLIKELY(RuntimeEnabledFeatures::LayoutNGBlockInInlineEnabled())) {
+  if (UNLIKELY(RuntimeEnabledFeatures::LayoutNGBlockInInlineEnabled()) &&
+      !ForceLegacyLayout()) {
     DCHECK(!child->IsInline());
     // TODO(crbug.com/716930): Add anonymous blocks as
     // |AddChildIgnoringContinuation| does.
@@ -1607,7 +1624,8 @@ void LayoutInline::ChildBecameNonInline(LayoutObject* child) {
     return;
   }
   // We have to split the parent flow.
-  LayoutBlockFlow* new_box = CreateAnonymousContainerForBlockChildren();
+  LayoutBlockFlow* new_box =
+      CreateAnonymousContainerForBlockChildren(/* split_flow */ true);
   LayoutBoxModelObject* old_continuation = Continuation();
   SetContinuation(new_box);
   LayoutObject* before_child = child->NextSibling();

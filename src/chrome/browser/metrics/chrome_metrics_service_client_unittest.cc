@@ -54,7 +54,7 @@ class ChromeMetricsServiceClientTest : public testing::Test {
     testing::Test::SetUp();
     metrics::MetricsService::RegisterPrefs(prefs_.registry());
     metrics_state_manager_ = metrics::MetricsStateManager::Create(
-        &prefs_, &enabled_state_provider_, std::wstring(),
+        &prefs_, &enabled_state_provider_, std::wstring(), base::FilePath(),
         base::BindRepeating(
             &ChromeMetricsServiceClientTest::FakeStoreClientInfoBackup,
             base::Unretained(this)),
@@ -229,6 +229,10 @@ TEST_F(ChromeMetricsServiceClientTest, TestRegisterMetricsServiceProviders) {
   expected_providers++;  // DesktopPlatformFeaturesMetricsProvider
 #endif  // defined(OS_WIN) || defined(OS_MAC) || (defined(OS_LINUX) ||
         // BUILDFLAG(IS_CHROMEOS_LACROS))
+
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
+  expected_providers++;  // DesktopSessionMetricsProvider
+#endif  // defined(OS_WIN) || defined(OS_MAC) || (defined(OS_LINUX)
 
   std::unique_ptr<ChromeMetricsServiceClient> chrome_metrics_service_client =
       ChromeMetricsServiceClient::Create(metrics_state_manager_.get());

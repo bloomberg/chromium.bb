@@ -80,6 +80,8 @@ set(TINT_LIB_SRCS
   ast/continue_statement.h
   ast/decoration.cc
   ast/decoration.h
+  ast/depth_multisampled_texture.cc
+  ast/depth_multisampled_texture.h
   ast/disable_validation_decoration.cc
   ast/disable_validation_decoration.h
   ast/depth_texture.cc
@@ -256,6 +258,8 @@ set(TINT_LIB_SRCS
   sem/call.h
   sem/constant.cc
   sem/constant.h
+  sem/depth_multisampled_texture_type.cc
+  sem/depth_multisampled_texture_type.h
   sem/expression.cc
   sem/expression.h
   sem/function.cc
@@ -292,6 +296,8 @@ set(TINT_LIB_SRCS
   transform/canonicalize_entry_point_io.h
   transform/decompose_memory_access.cc
   transform/decompose_memory_access.h
+  transform/decompose_strided_matrix.cc
+  transform/decompose_strided_matrix.h
   transform/external_texture_transform.cc
   transform/external_texture_transform.h
   transform/first_index_offset.cc
@@ -564,6 +570,7 @@ if(${TINT_BUILD_TESTS})
     ast/call_statement_test.cc
     ast/case_statement_test.cc
     ast/continue_statement_test.cc
+    ast/depth_multisampled_texture_test.cc
     ast/depth_texture_test.cc
     ast/discard_statement_test.cc
     ast/else_statement_test.cc
@@ -625,6 +632,8 @@ if(${TINT_BUILD_TESTS})
     inspector/inspector_test.cc
     inspector/test_inspector_builder.cc
     inspector/test_inspector_builder.h
+    inspector/test_inspector_runner.cc
+    inspector/test_inspector_runner.h
     intrinsic_table_test.cc
     program_test.cc
     resolver/assignment_validation_test.cc
@@ -651,6 +660,7 @@ if(${TINT_BUILD_TESTS})
     resolver/resolver_test_helper.cc
     resolver/resolver_test_helper.h
     resolver/resolver_test.cc
+    resolver/storage_class_layout_validation_test.cc
     resolver/storage_class_validation_test.cc
     resolver/struct_layout_test.cc
     resolver/struct_pipeline_stage_use_test.cc
@@ -668,6 +678,7 @@ if(${TINT_BUILD_TESTS})
     test_main.cc
     sem/atomic_type_test.cc
     sem/bool_type_test.cc
+    sem/depth_multisampled_texture_type_test.cc
     sem/depth_texture_type_test.cc
     sem/external_texture_type_test.cc
     sem/f32_type_test.cc
@@ -897,6 +908,7 @@ if(${TINT_BUILD_TESTS})
       transform/calculate_array_length_test.cc
       transform/canonicalize_entry_point_io_test.cc
       transform/decompose_memory_access_test.cc
+      transform/decompose_strided_matrix_test.cc
       transform/external_texture_transform_test.cc
       transform/first_index_offset_test.cc
       transform/fold_constants_test.cc

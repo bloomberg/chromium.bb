@@ -5,6 +5,7 @@
 #include "components/soda/soda_installer.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #include "base/containers/contains.h"
@@ -29,6 +30,10 @@ SodaInstaller* g_instance = nullptr;
 
 // static
 SodaInstaller* SodaInstaller::GetInstance() {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  DCHECK(
+      base::FeatureList::IsEnabled(ash::features::kOnDeviceSpeechRecognition));
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   return g_instance;
 }
 
@@ -63,7 +68,12 @@ void SodaInstaller::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
 
 void SodaInstaller::Init(PrefService* profile_prefs,
                          PrefService* global_prefs) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (!base::FeatureList::IsEnabled(
+          ash::features::kOnDeviceSpeechRecognition) ||
+#else  // !BUILDFLAG(IS_CHROMEOS_ASH)
   if (!base::FeatureList::IsEnabled(media::kUseSodaForLiveCaption) ||
+#endif
       soda_installer_initialized_) {
     return;
   }
@@ -83,6 +93,7 @@ void SodaInstaller::Init(PrefService* profile_prefs,
         global_prefs->GetTime(prefs::kSodaScheduledDeletionTime);
     if (!deletion_time.is_null() && deletion_time < base::Time::Now()) {
       UninstallSoda(global_prefs);
+      soda_installer_initialized_ = false;
     }
   }
 }
@@ -100,6 +111,19 @@ void SodaInstaller::SetUninstallTimer(PrefService* profile_prefs,
       base::Time::Now() + base::TimeDelta::FromDays(kSodaCleanUpDelayInDays));
 }
 
+bool SodaInstaller::IsSodaInstalled(speech::LanguageCode language_code) const {
+  return (soda_binary_installed_ && IsLanguageInstalled(language_code));
+}
+
+bool SodaInstaller::IsAnyLanguagePackInstalled() const {
+  return !installed_languages_.empty();
+}
+
+bool SodaInstaller::IsLanguageInstalled(
+    speech::LanguageCode language_code) const {
+  return installed_languages_.find(language_code) != installed_languages_.end();
+}
+
 void SodaInstaller::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
@@ -110,13 +134,50 @@ void SodaInstaller::RemoveObserver(Observer* observer) {
 
 void SodaInstaller::NotifySodaInstalledForTesting() {
   soda_binary_installed_ = true;
-  language_installed_ = true;
+  is_soda_downloading_ = false;
+  installed_languages_.insert(speech::LanguageCode::kEnUs);
+  language_pack_progress_.clear();
   NotifyOnSodaInstalled();
+}
+
+void SodaInstaller::NotifySodaErrorForTesting() {
+  soda_binary_installed_ = false;
+  is_soda_downloading_ = false;
+  installed_languages_.clear();
+  language_pack_progress_.clear();
+  NotifyOnSodaError();
 }
 
 void SodaInstaller::UninstallSodaForTesting() {
   soda_binary_installed_ = false;
-  language_installed_ = false;
+  is_soda_downloading_ = false;
+  soda_installer_initialized_ = false;
+  installed_languages_.clear();
+  language_pack_progress_.clear();
+}
+
+void SodaInstaller::NotifySodaDownloadProgressForTesting(int progress) {
+  soda_binary_installed_ = false;
+  is_soda_downloading_ = true;
+  installed_languages_.clear();
+  NotifyOnSodaProgress(progress);
+}
+
+void SodaInstaller::NotifyOnSodaLanguagePackInstalledForTesting(
+    LanguageCode language_code) {
+  installed_languages_.insert(language_code);
+  auto it = language_pack_progress_.find(language_code);
+  if (it != language_pack_progress_.end())
+    language_pack_progress_.erase(language_code);
+  NotifyOnSodaLanguagePackInstalled(language_code);
+}
+
+void SodaInstaller::NotifyOnSodaLanguagePackErrorForTesting(
+    LanguageCode language_code) {
+  auto it = language_pack_progress_.find(language_code);
+  if (it != language_pack_progress_.end())
+    language_pack_progress_.erase(language_code);
+  NotifyOnSodaLanguagePackError(language_code);
 }
 
 void SodaInstaller::RegisterRegisteredLanguagePackPref(
@@ -135,10 +196,8 @@ void SodaInstaller::NotifyOnSodaInstalled() {
 
 void SodaInstaller::NotifyOnSodaLanguagePackInstalled(
     speech::LanguageCode language_code) {
-  if (base::FeatureList::IsEnabled(media::kLiveCaptionMultiLanguage)) {
-    for (Observer& observer : observers_)
-      observer.OnSodaLanguagePackInstalled(language_code);
-  }
+  for (Observer& observer : observers_)
+    observer.OnSodaLanguagePackInstalled(language_code);
 }
 
 void SodaInstaller::NotifyOnSodaError() {
@@ -148,10 +207,8 @@ void SodaInstaller::NotifyOnSodaError() {
 
 void SodaInstaller::NotifyOnSodaLanguagePackError(
     speech::LanguageCode language_code) {
-  if (base::FeatureList::IsEnabled(media::kLiveCaptionMultiLanguage)) {
-    for (Observer& observer : observers_)
-      observer.OnSodaLanguagePackError(language_code);
-  }
+  for (Observer& observer : observers_)
+    observer.OnSodaLanguagePackError(language_code);
 }
 
 void SodaInstaller::NotifyOnSodaProgress(int combined_progress) {
@@ -162,10 +219,8 @@ void SodaInstaller::NotifyOnSodaProgress(int combined_progress) {
 void SodaInstaller::NotifyOnSodaLanguagePackProgress(
     int language_progress,
     LanguageCode language_code) {
-  if (base::FeatureList::IsEnabled(media::kLiveCaptionMultiLanguage)) {
-    for (Observer& observer : observers_)
-      observer.OnSodaLanguagePackProgress(language_progress, language_code);
-  }
+  for (Observer& observer : observers_)
+    observer.OnSodaLanguagePackProgress(language_progress, language_code);
 }
 
 void SodaInstaller::RegisterLanguage(const std::string& language,
@@ -179,6 +234,12 @@ void SodaInstaller::RegisterLanguage(const std::string& language,
 void SodaInstaller::UnregisterLanguages(PrefService* global_prefs) {
   ListPrefUpdate update(global_prefs, prefs::kSodaRegisteredLanguagePacks);
   update->ClearList();
+}
+
+bool SodaInstaller::IsSodaDownloading(
+    speech::LanguageCode language_code) const {
+  return is_soda_downloading_ || language_pack_progress_.find(language_code) !=
+                                     language_pack_progress_.end();
 }
 
 bool SodaInstaller::IsAnyFeatureUsingSodaEnabled(PrefService* prefs) {

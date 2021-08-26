@@ -1,18 +1,10 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #include <stdio.h>
+#include <string.h>
 
 #include <fstream>
 #include <iostream>
@@ -26,13 +18,36 @@
 #include "lib/jxl/modular/encoding/context_predict.h"
 #include "lib/jxl/modular/encoding/enc_ma.h"
 #include "lib/jxl/modular/encoding/encoding.h"
+#include "lib/jxl/splines.h"
 
 namespace jxl {
 
 namespace {
+struct SplineData {
+  int32_t quantization_adjustment;
+  std::vector<Spline> splines;
+};
+
+Splines SplinesFromSplineData(const SplineData& spline_data,
+                              const ColorCorrelationMap& cmap) {
+  std::vector<QuantizedSpline> quantized_splines;
+  std::vector<Spline::Point> starting_points;
+  quantized_splines.reserve(spline_data.splines.size());
+  starting_points.reserve(spline_data.splines.size());
+  for (const Spline& spline : spline_data.splines) {
+    JXL_CHECK(!spline.control_points.empty());
+    quantized_splines.emplace_back(spline, spline_data.quantization_adjustment,
+                                   cmap.YtoXRatio(0), cmap.YtoBRatio(0));
+    starting_points.push_back(spline.control_points.front());
+  }
+  return Splines(spline_data.quantization_adjustment,
+                 std::move(quantized_splines), std::move(starting_points));
+}
+
 template <typename F>
-bool ParseNode(F& tok, Tree& tree, CompressParams& cparams, size_t& W,
-               size_t& H, CodecInOut& io, int& have_next, int& x0, int& y0) {
+bool ParseNode(F& tok, Tree& tree, SplineData& spline_data,
+               CompressParams& cparams, size_t& W, size_t& H, CodecInOut& io,
+               int& have_next, int& x0, int& y0) {
   static const std::unordered_map<std::string, int> property_map = {
       {"c", 0},
       {"g", 1},
@@ -98,8 +113,8 @@ bool ParseNode(F& tok, Tree& tree, CompressParams& cparams, size_t& W,
     }
     size_t pos = tree.size();
     tree.emplace_back(PropertyDecisionNode::Split(p, split, pos + 1));
-    JXL_RETURN_IF_ERROR(
-        ParseNode(tok, tree, cparams, W, H, io, have_next, x0, y0));
+    JXL_RETURN_IF_ERROR(ParseNode(tok, tree, spline_data, cparams, W, H, io,
+                                  have_next, x0, y0));
     tree[pos].rchild = tree.size();
   } else if (t == "-") {
     // Leaf
@@ -213,12 +228,110 @@ bool ParseNode(F& tok, Tree& tree, CompressParams& cparams, size_t& W,
     }
   } else if (t == "NotLast") {
     have_next = 1;
+  } else if (t == "Upsample") {
+    t = tok();
+    size_t num = 0;
+    cparams.resampling = std::stoul(t, &num);
+    if (num != t.size() ||
+        (cparams.resampling != 1 && cparams.resampling != 2 &&
+         cparams.resampling != 4 && cparams.resampling != 8)) {
+      fprintf(stderr, "Invalid Upsample: %s\n", t.c_str());
+      return false;
+    }
+  } else if (t == "Upsample_EC") {
+    t = tok();
+    size_t num = 0;
+    cparams.ec_resampling = std::stoul(t, &num);
+    if (num != t.size() ||
+        (cparams.ec_resampling != 1 && cparams.ec_resampling != 2 &&
+         cparams.ec_resampling != 4 && cparams.ec_resampling != 8)) {
+      fprintf(stderr, "Invalid Upsample_EC: %s\n", t.c_str());
+      return false;
+    }
+  } else if (t == "Animation") {
+    io.metadata.m.have_animation = true;
+    io.metadata.m.animation.tps_numerator = 1000;
+    io.frames[0].duration = 100;
+  } else if (t == "Duration") {
+    t = tok();
+    size_t num = 0;
+    io.frames[0].duration = std::stoul(t, &num);
+    if (num != t.size()) {
+      fprintf(stderr, "Invalid Duration: %s\n", t.c_str());
+      return false;
+    }
+  } else if (t == "BlendMode") {
+    t = tok();
+    if (t == "kAdd") {
+      io.frames[0].blendmode = BlendMode::kAdd;
+    } else if (t == "kBlend") {
+      io.frames[0].blendmode = BlendMode::kBlend;
+    } else if (t == "kAlphaWeightedAdd") {
+      io.frames[0].blendmode = BlendMode::kAlphaWeightedAdd;
+    } else if (t == "kMul") {
+      io.frames[0].blendmode = BlendMode::kMul;
+    } else {
+      fprintf(stderr, "Invalid BlendMode: %s\n", t.c_str());
+      return false;
+    }
+  } else if (t == "SplineQuantizationAdjustment") {
+    t = tok();
+    size_t num = 0;
+    spline_data.quantization_adjustment = std::stoul(t, &num);
+    if (num != t.size()) {
+      fprintf(stderr, "Invalid SplineQuantizationAdjustment: %s\n", t.c_str());
+      return false;
+    }
+  } else if (t == "Spline") {
+    Spline spline;
+    const auto ParseFloat = [&t, &tok](float& output) {
+      t = tok();
+      size_t num = 0;
+      output = std::stof(t, &num);
+      if (num != t.size()) {
+        fprintf(stderr, "Invalid spline data: %s\n", t.c_str());
+        return false;
+      }
+      return true;
+    };
+    for (auto& dct : spline.color_dct) {
+      for (float& coefficient : dct) {
+        JXL_RETURN_IF_ERROR(ParseFloat(coefficient));
+      }
+    }
+    for (float& coefficient : spline.sigma_dct) {
+      JXL_RETURN_IF_ERROR(ParseFloat(coefficient));
+    }
+
+    while (true) {
+      t = tok();
+      if (t == "EndSpline") break;
+      size_t num = 0;
+      Spline::Point point;
+      point.x = std::stof(t, &num);
+      bool ok_x = num == t.size();
+      auto t_y = tok();
+      point.y = std::stof(t_y, &num);
+      if (!ok_x || num != t_y.size()) {
+        fprintf(stderr, "Invalid spline control point: %s %s\n", t.c_str(),
+                t_y.c_str());
+        return false;
+      }
+      spline.control_points.push_back(point);
+    }
+
+    if (spline.control_points.empty()) {
+      fprintf(stderr, "Spline with no control point\n");
+      return false;
+    }
+
+    spline_data.splines.push_back(std::move(spline));
   } else {
     fprintf(stderr, "Unexpected node type: %s\n", t.c_str());
     return false;
   }
   JXL_RETURN_IF_ERROR(
-      ParseNode(tok, tree, cparams, W, H, io, have_next, x0, y0));
+      ParseNode(tok, tree, spline_data, cparams, W, H, io, have_next, x0, y0));
   return true;
 }
 
@@ -262,6 +375,7 @@ class Heuristics : public DefaultEncoderHeuristics {
 
 int JxlFromTree(const char* in, const char* out, const char* tree_out) {
   Tree tree;
+  SplineData spline_data;
   CompressParams cparams;
   size_t width = 1024, height = 1024;
   int x0 = 0, y0 = 0;
@@ -276,7 +390,8 @@ int JxlFromTree(const char* in, const char* out, const char* tree_out) {
     f >> out;
     return out;
   };
-  if (!ParseNode(tok, tree, cparams, width, height, io, have_next, x0, y0)) {
+  if (!ParseNode(tok, tree, spline_data, cparams, width, height, io, have_next,
+                 x0, y0)) {
     return 1;
   }
 
@@ -285,13 +400,16 @@ int JxlFromTree(const char* in, const char* out, const char* tree_out) {
   }
   Image3F image(width, height);
   io.SetFromImage(std::move(image), ColorEncoding::SRGB());
-  io.SetSize(width + x0, height + y0);
+  io.SetSize((width + x0) * cparams.resampling,
+             (height + y0) * cparams.resampling);
   io.metadata.m.color_encoding.DecideIfWantICC();
   cparams.options.zero_tokens = true;
   cparams.modular_mode = true;
   cparams.palette_colors = 0;
   cparams.channel_colors_pre_transform_percent = 0;
   cparams.channel_colors_percent = 0;
+  cparams.patches = jxl::Override::kOff;
+  cparams.already_downsampled = true;
   PaddedBytes compressed;
 
   io.CheckMetadata();
@@ -300,6 +418,7 @@ int JxlFromTree(const char* in, const char* out, const char* tree_out) {
   std::unique_ptr<CodecMetadata> metadata = jxl::make_unique<CodecMetadata>();
   *metadata = io.metadata;
   JXL_RETURN_IF_ERROR(metadata->size.Set(io.xsize(), io.ysize()));
+
   metadata->m.xyb_encoded =
       cparams.color_transform == ColorTransform::kXYB ? true : false;
 
@@ -309,6 +428,8 @@ int JxlFromTree(const char* in, const char* out, const char* tree_out) {
   while (true) {
     PassesEncoderState enc_state;
     enc_state.heuristics = make_unique<Heuristics>(tree);
+    enc_state.shared.image_features.splines =
+        SplinesFromSplineData(spline_data, enc_state.shared.cmap);
 
     FrameInfo info;
     info.is_last = !have_next;
@@ -321,14 +442,15 @@ int JxlFromTree(const char* in, const char* out, const char* tree_out) {
                                     &enc_state, nullptr, &writer, nullptr));
     if (!have_next) break;
     tree.clear();
+    spline_data.splines.clear();
     have_next = 0;
-    if (!ParseNode(tok, tree, cparams, width, height, io, have_next, x0, y0)) {
+    if (!ParseNode(tok, tree, spline_data, cparams, width, height, io,
+                   have_next, x0, y0)) {
       return 1;
     }
     Image3F image(width, height);
     io.SetFromImage(std::move(image), ColorEncoding::SRGB());
     io.frames[0].blend = true;
-    JXL_RETURN_IF_ERROR(metadata->size.Set(io.xsize(), io.ysize()));
   }
 
   compressed = std::move(writer).TakeBytes();
@@ -343,7 +465,7 @@ int JxlFromTree(const char* in, const char* out, const char* tree_out) {
 }  // namespace jxl
 
 int main(int argc, char** argv) {
-  if (argc != 3 && argc != 4) {
+  if ((argc != 3 && argc != 4) || !strcmp(argv[1], argv[2])) {
     fprintf(stderr, "Usage: %s tree_in.txt out.jxl [tree_drawing]\n", argv[0]);
     return 1;
   }

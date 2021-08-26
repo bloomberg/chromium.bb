@@ -139,8 +139,6 @@ class CFDE_TextEditEngine : public CFGAS_TxtBreak::Engine {
   bool Undo();
   void ClearOperationRecords();
 
-  // This is not const it can trigger a |Layout|.
-  size_t GetIndexBefore(size_t pos);
   size_t GetIndexLeft(size_t pos) const;
   size_t GetIndexRight(size_t pos) const;
   size_t GetIndexUp(size_t pos) const;
@@ -167,6 +165,10 @@ class CFDE_TextEditEngine : public CFGAS_TxtBreak::Engine {
   size_t GetIndexForPoint(const CFX_PointF& point);
   // <start_idx, count>
   std::pair<size_t, size_t> BoundsForWordAt(size_t idx) const;
+
+  // Note that if CanGenerateCharacterInfo() returns false, then
+  // GetCharacterInfo() cannot be called.
+  bool CanGenerateCharacterInfo() const { return text_length_ > 0 && font_; }
 
   // Returns <bidi level, character rect>
   std::pair<int32_t, CFX_RectF> GetCharacterInfo(int32_t start_idx);

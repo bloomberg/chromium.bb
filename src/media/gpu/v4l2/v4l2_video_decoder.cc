@@ -8,10 +8,14 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/task/post_task.h"
+#include "base/trace_event/trace_event.h"
 #include "media/base/limits.h"
+#include "media/base/media_log.h"
 #include "media/base/video_types.h"
 #include "media/base/video_util.h"
 #include "media/gpu/chromeos/dmabuf_video_frame_pool.h"
@@ -50,9 +54,10 @@ constexpr size_t kDpbOutputBufferExtraCount = limits::kMaxVideoFrames + 1;
 base::AtomicRefCount V4L2VideoDecoder::num_instances_(0);
 
 // static
-std::unique_ptr<DecoderInterface> V4L2VideoDecoder::Create(
+std::unique_ptr<VideoDecoderMixin> V4L2VideoDecoder::Create(
+    std::unique_ptr<MediaLog> media_log,
     scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
-    base::WeakPtr<DecoderInterface::Client> client) {
+    base::WeakPtr<VideoDecoderMixin::Client> client) {
   DCHECK(decoder_task_runner->RunsTasksInCurrentSequence());
   DCHECK(client);
 
@@ -62,27 +67,35 @@ std::unique_ptr<DecoderInterface> V4L2VideoDecoder::Create(
     return nullptr;
   }
 
-  return base::WrapUnique<DecoderInterface>(new V4L2VideoDecoder(
-      std::move(decoder_task_runner), std::move(client), std::move(device)));
+  return base::WrapUnique<VideoDecoderMixin>(
+      new V4L2VideoDecoder(std::move(media_log), std::move(decoder_task_runner),
+                           std::move(client), std::move(device)));
 }
 
 // static
-SupportedVideoDecoderConfigs V4L2VideoDecoder::GetSupportedConfigs() {
+absl::optional<SupportedVideoDecoderConfigs>
+V4L2VideoDecoder::GetSupportedConfigs() {
   scoped_refptr<V4L2Device> device = V4L2Device::Create();
   if (!device)
-    return SupportedVideoDecoderConfigs();
+    return absl::nullopt;
 
-  return ConvertFromSupportedProfiles(
-      device->GetSupportedDecodeProfiles(base::size(kSupportedInputFourccs),
-                                         kSupportedInputFourccs),
-      false);
+  auto configs = device->GetSupportedDecodeProfiles(
+      base::size(kSupportedInputFourccs), kSupportedInputFourccs);
+
+  if (configs.empty())
+    return absl::nullopt;
+
+  return ConvertFromSupportedProfiles(configs, false);
 }
 
 V4L2VideoDecoder::V4L2VideoDecoder(
+    std::unique_ptr<MediaLog> media_log,
     scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
-    base::WeakPtr<DecoderInterface::Client> client,
+    base::WeakPtr<VideoDecoderMixin::Client> client,
     scoped_refptr<V4L2Device> device)
-    : DecoderInterface(std::move(decoder_task_runner), std::move(client)),
+    : VideoDecoderMixin(std::move(media_log),
+                        std::move(decoder_task_runner),
+                        std::move(client)),
       device_(std::move(device)),
       weak_this_factory_(this) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
@@ -119,6 +132,7 @@ V4L2VideoDecoder::~V4L2VideoDecoder() {
 }
 
 void V4L2VideoDecoder::Initialize(const VideoDecoderConfig& config,
+                                  bool /*low_delay*/,
                                   CdmContext* cdm_context,
                                   InitCB init_cb,
                                   const OutputCB& output_cb,
@@ -159,8 +173,7 @@ void V4L2VideoDecoder::Initialize(const VideoDecoderConfig& config,
 
     device_ = V4L2Device::Create();
     if (!device_) {
-      VLOGF(1) << "Failed to create V4L2 device.";
-      SetState(State::kError);
+      SetErrorState("failed to create V4L2 device");
       std::move(init_cb).Run(StatusCode::kV4l2NoDevice);
       return;
     }
@@ -173,19 +186,39 @@ void V4L2VideoDecoder::Initialize(const VideoDecoderConfig& config,
   DCHECK(!output_queue_);
 
   profile_ = config.profile();
+  DCHECK_NE(profile_, VIDEO_CODEC_PROFILE_UNKNOWN);
   aspect_ratio_ = config.aspect_ratio();
-
-  if (profile_ == VIDEO_CODEC_PROFILE_UNKNOWN) {
-    VLOGF(1) << "Unknown profile.";
-    SetState(State::kError);
-    std::move(init_cb).Run(StatusCode::kV4l2NoDecoder);
-    return;
-  }
 
   // Call init_cb
   output_cb_ = std::move(output_cb);
   SetState(State::kInitialized);
   std::move(init_cb).Run(::media::OkStatus());
+}
+
+bool V4L2VideoDecoder::NeedsBitstreamConversion() const {
+  DCHECK(output_cb_) << "V4L2VideoDecoder hasn't been initialized";
+  NOTREACHED();
+  return (profile_ >= H264PROFILE_MIN && profile_ <= H264PROFILE_MAX) ||
+         (profile_ >= HEVCPROFILE_MIN && profile_ <= HEVCPROFILE_MAX);
+}
+
+bool V4L2VideoDecoder::CanReadWithoutStalling() const {
+  NOTIMPLEMENTED();
+  NOTREACHED();
+  return true;
+}
+
+int V4L2VideoDecoder::GetMaxDecodeRequests() const {
+  NOTREACHED();
+  return 4;
+}
+
+VideoDecoderType V4L2VideoDecoder::GetDecoderType() const {
+  return VideoDecoderType::kV4L2;
+}
+
+bool V4L2VideoDecoder::IsPlatformDecoder() const {
+  return true;
 }
 
 StatusCode V4L2VideoDecoder::InitializeBackend() {
@@ -195,8 +228,10 @@ StatusCode V4L2VideoDecoder::InitializeBackend() {
 
   can_use_decoder_ = num_instances_.Increment() < kMaxNumOfInstances;
   if (!can_use_decoder_) {
-    VLOGF(1) << "Reached maximum number of decoder instances ("
-             << kMaxNumOfInstances << ")";
+    SetErrorState(
+        base::StringPrintf("failed to initialize backend, reached maximum "
+                           "number of decoder instances(%d)",
+                           kMaxNumOfInstances));
     return StatusCode::kDecoderCreationFailed;
   }
 
@@ -220,7 +255,8 @@ StatusCode V4L2VideoDecoder::InitializeBackend() {
   if (!api_and_format.has_value()) {
     num_instances_.Decrement();
     can_use_decoder_ = false;
-    VLOGF(1) << "No V4L2 API found for profile: " << GetProfileName(profile_);
+    SetErrorState(base::StringPrintf("no V4L2 API found for profile %s",
+                                     GetProfileName(profile_).c_str()));
     return StatusCode::kV4l2NoDecoder;
   }
 
@@ -228,16 +264,21 @@ StatusCode V4L2VideoDecoder::InitializeBackend() {
   const __u32 kCapsRequired = V4L2_CAP_VIDEO_M2M_MPLANE | V4L2_CAP_STREAMING;
   if (device_->Ioctl(VIDIOC_QUERYCAP, &caps) ||
       (caps.capabilities & kCapsRequired) != kCapsRequired) {
-    VLOGF(1) << "ioctl() failed: VIDIOC_QUERYCAP, "
-             << "caps check failed: 0x" << std::hex << caps.capabilities;
+    SetErrorState(
+        base::StringPrintf("capability check failed, needed 0x%x, got 0x%x",
+                           kCapsRequired, caps.capabilities));
     return StatusCode::kV4l2FailedFileCapabilitiesCheck;
   }
 
   // Create Input/Output V4L2Queue
   input_queue_ = device_->GetQueue(V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE);
+  if (!input_queue_) {
+    SetErrorState("failed to create |input_queue_|");
+    return StatusCode::kV4l2FailedResourceAllocation;
+  }
   output_queue_ = device_->GetQueue(V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE);
-  if (!input_queue_ || !output_queue_) {
-    VLOGF(1) << "Failed to create V4L2 queue.";
+  if (!output_queue_) {
+    SetErrorState("failed to create |output_queue_|");
     return StatusCode::kV4l2FailedResourceAllocation;
   }
 
@@ -258,24 +299,28 @@ StatusCode V4L2VideoDecoder::InitializeBackend() {
   }
 
   if (!backend_->Initialize()) {
-    VLOGF(1) << "Failed to initialize backend.";
+    SetErrorState("failed to initialize backend");
     return StatusCode::kV4l2FailedResourceAllocation;
   }
 
   if (!SetupInputFormat(input_format_fourcc)) {
-    VLOGF(1) << "Failed to setup input format.";
+    SetErrorState(
+        base::StringPrintf("Failed to setup input format (%s)",
+                           FourccToString(input_format_fourcc).c_str()));
     return StatusCode::kV4l2BadFormat;
   }
 
   if (input_queue_->AllocateBuffers(kNumInputBuffers, V4L2_MEMORY_MMAP) == 0) {
-    VLOGF(1) << "Failed to allocate input buffer.";
+    SetErrorState(
+        base::StringPrintf("failed to allocate %d input buffers",
+                           base::checked_cast<int>(kNumInputBuffers)));
     return StatusCode::kV4l2FailedResourceAllocation;
   }
 
   // Start streaming input queue and polling. This is required for the stateful
   // decoder, and doesn't hurt for the stateless one.
   if (!StartStreamV4L2Queue(false)) {
-    VLOGF(1) << "Failed to start streaming.";
+    SetErrorState("failed to start streaming");
     return StatusCode::kV4L2FailedToStartStreamQueue;
   }
 
@@ -290,9 +335,8 @@ bool V4L2VideoDecoder::SetupInputFormat(uint32_t input_format_fourcc) {
   // Check if the format is supported.
   std::vector<uint32_t> formats = device_->EnumerateSupportedPixelformats(
       V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE);
-  if (std::find(formats.begin(), formats.end(), input_format_fourcc) ==
-      formats.end()) {
-    DVLOGF(3) << "Input fourcc " << input_format_fourcc
+  if (!base::Contains(formats, input_format_fourcc)) {
+    DVLOGF(3) << "Input fourcc " << FourccToString(input_format_fourcc)
               << " not supported by device.";
     return false;
   }
@@ -417,12 +461,18 @@ void V4L2VideoDecoder::Reset(base::OnceClosure closure) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(3);
 
+  // In order to preserve the order of the callbacks between Decode() and
+  // Reset(), we also trampoline the callback of Reset().
+  auto trampoline_reset_cb = base::BindOnce(
+      &base::SequencedTaskRunner::PostTask,
+      base::SequencedTaskRunnerHandle::Get(), FROM_HERE, std::move(closure));
+
   // Reset callback for resolution change, because the pipeline won't notify
   // flushed after reset.
   continue_change_resolution_cb_.Reset();
 
   if (state_ == State::kInitialized) {
-    std::move(closure).Run();
+    std::move(trampoline_reset_cb).Run();
     return;
   }
 
@@ -446,7 +496,7 @@ void V4L2VideoDecoder::Reset(base::OnceClosure closure) {
   // Now we are ready to decode new buffer. Go back to decoding state.
   SetState(State::kDecoding);
 
-  std::move(closure).Run();
+  std::move(trampoline_reset_cb).Run();
 }
 
 void V4L2VideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
@@ -454,41 +504,51 @@ void V4L2VideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DCHECK_NE(state_, State::kUninitialized);
 
+  // VideoDecoder interface: |decode_cb| can't be called from within Decode().
+  auto trampoline_decode_cb = base::BindOnce(
+      [](const scoped_refptr<base::SequencedTaskRunner>& this_sequence_runner,
+         DecodeCB decode_cb, Status status) {
+        this_sequence_runner->PostTask(
+            FROM_HERE, base::BindOnce(std::move(decode_cb), status));
+      },
+      base::SequencedTaskRunnerHandle::Get(), std::move(decode_cb));
+
   if (state_ == State::kError) {
-    std::move(decode_cb).Run(DecodeStatus::DECODE_ERROR);
+    std::move(trampoline_decode_cb).Run(DecodeStatus::DECODE_ERROR);
     return;
   }
 
   if (state_ == State::kInitialized) {
     const StatusCode status = InitializeBackend();
     if (status != StatusCode::kOk) {
-      SetState(State::kError);
-      std::move(decode_cb).Run(status);
+      std::move(trampoline_decode_cb).Run(status);
       return;
     }
   }
 
   const int32_t bitstream_id = bitstream_id_generator_.GetNextBitstreamId();
-  backend_->EnqueueDecodeTask(std::move(buffer), std::move(decode_cb),
-                              bitstream_id);
+  backend_->EnqueueDecodeTask(std::move(buffer),
+                              std::move(trampoline_decode_cb), bitstream_id);
 }
 
 bool V4L2VideoDecoder::StartStreamV4L2Queue(bool start_output_queue) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(3);
 
-  if (!input_queue_->Streamon() ||
-      (start_output_queue && !output_queue_->Streamon())) {
-    VLOGF(1) << "Failed to streamon V4L2 queue.";
-    SetState(State::kError);
+  if (!input_queue_->Streamon()) {
+    SetErrorState("failed to streamon V4L2 input queue");
+    return false;
+  }
+  if (start_output_queue && !output_queue_->Streamon()) {
+    SetErrorState("failed to streamon V4L2 output queue");
     return false;
   }
 
   if (!device_->StartPolling(
           base::BindRepeating(&V4L2VideoDecoder::ServiceDeviceTask, weak_this_),
-          base::BindRepeating(&V4L2VideoDecoder::SetState, weak_this_,
-                              State::kError))) {
-    SetState(State::kError);
+          base::BindRepeating(&V4L2VideoDecoder::SetErrorState, weak_this_,
+                              "V4L2DevicePoller error"))) {
+    SetErrorState("failed to start polling V4L2Device");
     return false;
   }
 
@@ -500,7 +560,7 @@ bool V4L2VideoDecoder::StopStreamV4L2Queue(bool stop_input_queue) {
   DVLOGF(3);
 
   if (!device_->StopPolling()) {
-    SetState(State::kError);
+    SetErrorState("failed to stop polling V4L2Device");
     return false;
   }
 
@@ -581,18 +641,18 @@ void V4L2VideoDecoder::ContinueChangeResolution(
     return;
 
   if (!output_queue_->DeallocateBuffers()) {
-    SetState(State::kError);
+    SetErrorState("failed to deallocate buffers");
     return;
   }
 
   if (!backend_->ApplyResolution(pic_size, visible_rect, num_output_frames_)) {
-    SetState(State::kError);
+    SetErrorState("failed to apply resolution");
     return;
   }
 
   if (!SetupOutputFormat(pic_size, visible_rect)) {
-    VLOGF(1) << "Failed to setup output format.";
-    SetState(State::kError);
+    // TODO(b/158716673): improve error reporting from SetupOutputFormat().
+    SetErrorState("failed to setup output format");
     return;
   }
 
@@ -602,20 +662,25 @@ void V4L2VideoDecoder::ContinueChangeResolution(
       (type == V4L2_MEMORY_DMABUF) ? VIDEO_MAX_FRAME : num_output_frames_;
 
   if (output_queue_->AllocateBuffers(v4l2_num_buffers, type) == 0) {
-    VLOGF(1) << "Failed to request output buffers.";
-    SetState(State::kError);
+    SetErrorState(
+        base::StringPrintf("failed to allocate %d |output_queue_| buffers",
+                           base::checked_cast<int>(v4l2_num_buffers)));
     return;
   }
-  if (output_queue_->AllocatedBuffersCount() < num_output_frames_) {
-    VLOGF(1) << "Could not allocate requested number of output buffers.";
-    SetState(State::kError);
+  const auto actual_v4l2_num_buffers = output_queue_->AllocatedBuffersCount();
+  // TODO(mcasas): Is this comparison right or should we
+  // s/num_output_frames_/v4l2_num_buffers/?
+  if (actual_v4l2_num_buffers < num_output_frames_) {
+    SetErrorState(base::StringPrintf(
+        "allocated num buffers (%d) is less than the expected (%d)",
+        base::checked_cast<int>(actual_v4l2_num_buffers),
+        base::checked_cast<int>(num_output_frames_)));
     return;
   }
 
-  if (!StartStreamV4L2Queue(true)) {
-    SetState(State::kError);
+  // StartStreamV4L2Queue() already calls SetErrorState(...) inside.
+  if (!StartStreamV4L2Queue(true))
     return;
-  }
 
   // Now notify |backend_| that changing resolution is done successfully.
   // Note: |backend_| is owned by this, using base::Unretained() is safe.
@@ -632,6 +697,10 @@ void V4L2VideoDecoder::ServiceDeviceTask(bool event) {
               << input_queue_->QueuedBuffersCount()
               << ", Number of queued output buffers: "
               << output_queue_->QueuedBuffersCount();
+    TRACE_COUNTER_ID2(
+        "media,gpu", "V4L2 queue sizes", this, "input (OUTPUT_queue)",
+        input_queue_->QueuedBuffersCount(), "output (CAPTURE_queue)",
+        output_queue_->QueuedBuffersCount());
   }
 
   if (backend_)
@@ -644,7 +713,7 @@ void V4L2VideoDecoder::ServiceDeviceTask(bool event) {
 
     std::tie(success, dequeued_buffer) = output_queue_->DequeueBuffer();
     if (!success) {
-      SetState(State::kError);
+      SetErrorState("failed to dequeue buffer from |output_queue_|");
       return;
     }
     if (!dequeued_buffer)
@@ -659,7 +728,7 @@ void V4L2VideoDecoder::ServiceDeviceTask(bool event) {
 
     std::tie(success, dequeued_buffer) = input_queue_->DequeueBuffer();
     if (!success) {
-      SetState(State::kError);
+      SetErrorState("failed to dequeue buffer from |input_queue_|");
       return;
     }
     if (!dequeued_buffer)
@@ -709,7 +778,8 @@ void V4L2VideoDecoder::SetState(State new_state) {
   if (state_ == new_state)
     return;
   if (state_ == State::kError) {
-    DVLOGF(3) << "Already in kError state.";
+    DVLOGF(3)
+        << "V4L2VideoDecoder is in State::kError, ignoring state transition.";
     return;
   }
 
@@ -753,11 +823,18 @@ void V4L2VideoDecoder::SetState(State new_state) {
   return;
 }
 
+void V4L2VideoDecoder::SetErrorState(const std::string& message) {
+  LOG(ERROR) << message;
+  MEDIA_LOG(ERROR, media_log_) << "V4L2VideoDecoder: " << message;
+  SetState(State::kError);
+}
+
 void V4L2VideoDecoder::OnBackendError() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(2);
 
-  SetState(State::kError);
+  // TODO(b/158716673): improve error reporting from backends.
+  SetErrorState("V4L2VideoDecoderBackend signalled an error");
 }
 
 bool V4L2VideoDecoder::IsDecoding() const {

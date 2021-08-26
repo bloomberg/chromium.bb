@@ -10,17 +10,16 @@
 #include "base/cxx17_backports.h"
 #include "base/i18n/rtl.h"
 #include "base/strings/string_split.h"
+#include "components/embedder_support/user_agent_utils.h"
 #include "components/policy/content/safe_sites_navigation_throttle.h"
 #include "components/site_isolation/features.h"
 #include "components/site_isolation/preloaded_isolated_origins.h"
 #include "components/strings/grit/components_locale_settings.h"
-#include "components/version_info/version_info.h"
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/devtools_manager_delegate.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/user_agent.h"
 #include "fuchsia/base/fuchsia_dir_scheme.h"
 #include "fuchsia/engine/browser/frame_impl.h"
 #include "fuchsia/engine/browser/navigation_policy_throttle.h"
@@ -35,6 +34,7 @@
 #include "media/base/media_switches.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/cpp/network_switches.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "third_party/blink/public/common/switches.h"
@@ -43,26 +43,26 @@
 
 namespace {
 
-class DevToolsManagerDelegate : public content::DevToolsManagerDelegate {
+class DevToolsManagerDelegate final : public content::DevToolsManagerDelegate {
  public:
   explicit DevToolsManagerDelegate(WebEngineBrowserMainParts* main_parts)
       : main_parts_(main_parts) {
     DCHECK(main_parts_);
   }
-  ~DevToolsManagerDelegate() final = default;
+  ~DevToolsManagerDelegate() override = default;
 
   DevToolsManagerDelegate(const DevToolsManagerDelegate&) = delete;
   DevToolsManagerDelegate& operator=(const DevToolsManagerDelegate&) = delete;
 
   // content::DevToolsManagerDelegate implementation.
-  std::vector<content::BrowserContext*> GetBrowserContexts() final {
+  std::vector<content::BrowserContext*> GetBrowserContexts() override {
     return main_parts_->browser_contexts();
   }
-  content::BrowserContext* GetDefaultBrowserContext() final {
+  content::BrowserContext* GetDefaultBrowserContext() override {
     std::vector<content::BrowserContext*> contexts = GetBrowserContexts();
     return contexts.empty() ? nullptr : contexts.front();
   }
-  content::DevToolsAgentHost::List RemoteDebuggingTargets() final {
+  content::DevToolsAgentHost::List RemoteDebuggingTargets() override {
     return main_parts_->devtools_controller()->RemoteDebuggingTargets();
   }
 
@@ -102,11 +102,11 @@ WebEngineContentBrowserClient::CreateDevToolsManagerDelegate() {
 }
 
 std::string WebEngineContentBrowserClient::GetProduct() {
-  return version_info::GetProductNameAndVersionForUserAgent();
+  return embedder_support::GetProduct();
 }
 
 std::string WebEngineContentBrowserClient::GetUserAgent() {
-  std::string user_agent = content::BuildUserAgentFromProduct(GetProduct());
+  std::string user_agent = embedder_support::GetUserAgent();
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUserAgentProductAndVersion)) {
     user_agent +=
@@ -114,6 +114,10 @@ std::string WebEngineContentBrowserClient::GetUserAgent() {
                   switches::kUserAgentProductAndVersion);
   }
   return user_agent;
+}
+
+blink::UserAgentMetadata WebEngineContentBrowserClient::GetUserAgentMetadata() {
+  return embedder_support::GetUserAgentMetadata();
 }
 
 void WebEngineContentBrowserClient::OverrideWebkitPrefs(

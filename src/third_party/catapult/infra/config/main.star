@@ -65,13 +65,21 @@ luci.project(
 # Per-service tweaks.
 luci.logdog(gs_bucket = "chromium-luci-logdog")
 
+luci.bucket(name = "try")
+
+# Allow LED users to trigger swarming tasks directly when debugging try
+# builders.
+luci.binding(
+    realm = "try",
+    roles = "role/swarming.taskTriggerer",
+    groups = "flex-try-led-users",
+)
+
 luci.cq(
     status_host = "chromium-cq-status.appspot.com",
     submit_max_burst = 4,
     submit_burst_delay = 480 * time.second,
 )
-
-luci.bucket(name = "try")
 
 luci.cq_group(
     name = "catapult",
@@ -174,8 +182,8 @@ def try_builder(
 try_builder("Catapult Linux Tryserver", "Ubuntu")
 try_builder("Catapult Linux Tryserver Py3", "Ubuntu", experiment = 100, properties = {"use_python3": True})
 
-try_builder("Catapult Windows Tryserver", "Windows")
-try_builder("Catapult Windows Tryserver Py3", "Windows", experiment = 100, properties = {"use_python3": True})
+try_builder("Catapult Windows Tryserver", "Windows-10")
+try_builder("Catapult Windows Tryserver Py3", "Windows-10", experiment = 100, properties = {"use_python3": True})
 
 try_builder("Catapult Mac Tryserver", "Mac")
 try_builder("Catapult Mac Tryserver Py3", "Mac", experiment = 100, properties = {"use_python3": True})
@@ -186,4 +194,4 @@ try_builder("Catapult Android Tryserver Py3", "Android", experiment = 100, dimen
 try_builder("Catapult Presubmit", "Ubuntu", is_presubmit = True)
 
 try_builder("Dashboard Linux Tryserver", "Ubuntu", is_dashboard = True)
-try_builder("Dashboard Windows Tryserver", "Windows", is_dashboard = True)
+try_builder("Dashboard Windows Tryserver", "Windows-10", is_dashboard = True)

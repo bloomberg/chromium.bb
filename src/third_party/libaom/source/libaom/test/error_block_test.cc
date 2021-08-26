@@ -20,7 +20,6 @@
 #include "config/av1_rtcd.h"
 
 #include "test/acm_random.h"
-#include "test/clear_system_state.h"
 #include "test/register_state_check.h"
 #include "test/util.h"
 #include "av1/common/entropy.h"
@@ -60,7 +59,7 @@ class ErrorBlockTest : public ::testing::TestWithParam<ErrorBlockParam> {
     bit_depth_ = GET_PARAM(2);
   }
 
-  virtual void TearDown() { libaom_test::ClearSystemState(); }
+  virtual void TearDown() {}
 
  protected:
   aom_bit_depth_t bit_depth_;
@@ -99,7 +98,7 @@ TEST_P(ErrorBlockTest, OperationCheck) {
     }
     ref_ret =
         ref_error_block_op_(coeff, dqcoeff, block_size, &ref_ssz, bit_depth_);
-    ASM_REGISTER_STATE_CHECK(
+    API_REGISTER_STATE_CHECK(
         ret = error_block_op_(coeff, dqcoeff, block_size, &ssz, bit_depth_));
     err_count += (ref_ret != ret) | (ref_ssz != ssz);
     if (err_count && !err_count_total) {
@@ -157,7 +156,7 @@ TEST_P(ErrorBlockTest, ExtremeValues) {
     }
     ref_ret =
         ref_error_block_op_(coeff, dqcoeff, block_size, &ref_ssz, bit_depth_);
-    ASM_REGISTER_STATE_CHECK(
+    API_REGISTER_STATE_CHECK(
         ret = error_block_op_(coeff, dqcoeff, block_size, &ssz, bit_depth_));
     err_count += (ref_ret != ret) | (ref_ssz != ssz);
     if (err_count && !err_count_total) {

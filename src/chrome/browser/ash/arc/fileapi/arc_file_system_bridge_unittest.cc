@@ -24,7 +24,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_virtual_file_provider_client.h"
+#include "chromeos/dbus/virtual_file_provider/fake_virtual_file_provider_client.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_file_system_instance.h"
@@ -43,6 +43,7 @@ constexpr char kTestingProfileName[] = "test-user";
 constexpr char kTestUrl[] = "externalfile:abc:test-filesystem:/hello.txt";
 constexpr char kTestFileType[] = "text/plain";
 constexpr int64_t kTestFileSize = 55;
+constexpr char kTestFileLastModified[] = "Fri, 25 Apr 2014 01:47:53";
 constexpr char kExtensionId[] = "abc";
 constexpr char kFileSystemId[] = "test-filesystem";
 
@@ -177,6 +178,24 @@ TEST_F(ArcFileSystemBridgeTest, GetFileSize) {
             run_loop->Quit();
           },
           &run_loop));
+  run_loop.Run();
+}
+
+TEST_F(ArcFileSystemBridgeTest, GetLastModified) {
+  base::Time expected;
+  ASSERT_TRUE(base::Time::FromUTCString(kTestFileLastModified, &expected));
+
+  base::RunLoop run_loop;
+  arc_file_system_bridge_->GetLastModified(
+      EncodeToChromeContentProviderUrl(GURL(kTestUrl)),
+      base::BindOnce(
+          [](base::RunLoop* run_loop, const base::Time& expected,
+             const absl::optional<base::Time> result) {
+            ASSERT_TRUE(result.has_value());
+            EXPECT_EQ(expected, result.value());
+            run_loop->Quit();
+          },
+          &run_loop, expected));
   run_loop.Run();
 }
 

@@ -14,6 +14,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/common/chrome_paths.h"
 #include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -26,6 +27,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/test/mock_notification_observer.h"
+#include "extensions/browser/blocklist_extension_prefs.h"
 #include "extensions/browser/extension_pref_value_map.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/install_flag.h"
@@ -66,6 +68,11 @@ void ExtensionPrefsTest::SetUp() {
 
 void ExtensionPrefsTest::TearDown() {
   Verify();
+
+  // Shutdown the InstallTracker early, which is a dependency on some
+  // ExtensionPrefTests (and depends on PrefService being available in
+  // shutdown).
+  InstallTracker::Get(prefs_.profile())->Shutdown();
 
   // Reset ExtensionPrefs, and re-verify.
   prefs_.ResetPrefRegistry();
@@ -808,130 +815,6 @@ PrefsPrepopulatedTestBase::PrefsPrepopulatedTestBase()
 
 PrefsPrepopulatedTestBase::~PrefsPrepopulatedTestBase() {
 }
-
-// Tests that blocklist state can be queried.
-class ExtensionPrefsBlocklistedExtensions : public ExtensionPrefsTest {
- public:
-  ~ExtensionPrefsBlocklistedExtensions() override {}
-
-  void Initialize() override {
-    extension_a_ = prefs_.AddExtension("a");
-    extension_b_ = prefs_.AddExtension("b");
-    extension_c_ = prefs_.AddExtension("c");
-  }
-
-  void Verify() override {
-    {
-      ExtensionIdSet ids;
-      EXPECT_EQ(ids, prefs()->GetBlocklistedExtensions());
-    }
-    prefs()->SetExtensionBlocklistState(extension_a_->id(),
-                                        BLOCKLISTED_MALWARE);
-    {
-      ExtensionIdSet ids;
-      ids.insert(extension_a_->id());
-      EXPECT_EQ(ids, prefs()->GetBlocklistedExtensions());
-    }
-    prefs()->SetExtensionBlocklistState(extension_b_->id(),
-                                        BLOCKLISTED_MALWARE);
-    prefs()->SetExtensionBlocklistState(extension_c_->id(),
-                                        BLOCKLISTED_MALWARE);
-    {
-      ExtensionIdSet ids;
-      ids.insert(extension_a_->id());
-      ids.insert(extension_b_->id());
-      ids.insert(extension_c_->id());
-      EXPECT_EQ(ids, prefs()->GetBlocklistedExtensions());
-    }
-    prefs()->SetExtensionBlocklistState(extension_a_->id(), NOT_BLOCKLISTED);
-    {
-      ExtensionIdSet ids;
-      ids.insert(extension_b_->id());
-      ids.insert(extension_c_->id());
-      EXPECT_EQ(ids, prefs()->GetBlocklistedExtensions());
-    }
-    prefs()->SetExtensionBlocklistState(extension_b_->id(), NOT_BLOCKLISTED);
-    prefs()->SetExtensionBlocklistState(extension_c_->id(), NOT_BLOCKLISTED);
-    {
-      ExtensionIdSet ids;
-      EXPECT_EQ(ids, prefs()->GetBlocklistedExtensions());
-    }
-
-    // The interesting part: make sure that we're cleaning up after ourselves
-    // when we're storing *just* the fact that the extension is blocklisted.
-    std::string arbitrary_id = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-
-    prefs()->SetExtensionBlocklistState(arbitrary_id, BLOCKLISTED_MALWARE);
-    prefs()->SetExtensionBlocklistState(extension_a_->id(),
-                                        BLOCKLISTED_MALWARE);
-
-    // (And make sure that the acknowledged bit is also cleared).
-    prefs()->AcknowledgeBlocklistedExtension(arbitrary_id);
-
-    {
-      ExtensionIdSet ids;
-      ids.insert(arbitrary_id);
-      ids.insert(extension_a_->id());
-      EXPECT_EQ(ids, prefs()->GetBlocklistedExtensions());
-    }
-    prefs()->SetExtensionBlocklistState(arbitrary_id, NOT_BLOCKLISTED);
-    prefs()->SetExtensionBlocklistState(extension_a_->id(), NOT_BLOCKLISTED);
-    {
-      ExtensionIdSet ids;
-      EXPECT_EQ(ids, prefs()->GetBlocklistedExtensions());
-    }
-  }
-
- private:
-  scoped_refptr<const Extension> extension_a_;
-  scoped_refptr<const Extension> extension_b_;
-  scoped_refptr<const Extension> extension_c_;
-};
-TEST_F(ExtensionPrefsBlocklistedExtensions,
-       ExtensionPrefsBlocklistedExtensions) {}
-
-// Tests the blocklist state. Old "blocklist" preference should take precedence
-// over new "blocklist_state".
-class ExtensionPrefsBlocklistState : public ExtensionPrefsTest {
- public:
-  ~ExtensionPrefsBlocklistState() override {}
-
-  void Initialize() override { extension_a_ = prefs_.AddExtension("a"); }
-
-  void Verify() override {
-    ExtensionIdSet empty_ids;
-    EXPECT_EQ(empty_ids, prefs()->GetBlocklistedExtensions());
-
-    prefs()->SetExtensionBlocklistState(extension_a_->id(),
-                                        BLOCKLISTED_MALWARE);
-    EXPECT_EQ(BLOCKLISTED_MALWARE,
-              prefs()->GetExtensionBlocklistState(extension_a_->id()));
-
-    prefs()->SetExtensionBlocklistState(extension_a_->id(),
-                                        BLOCKLISTED_POTENTIALLY_UNWANTED);
-    EXPECT_EQ(BLOCKLISTED_POTENTIALLY_UNWANTED,
-              prefs()->GetExtensionBlocklistState(extension_a_->id()));
-    EXPECT_FALSE(prefs()->IsExtensionBlocklisted(extension_a_->id()));
-    EXPECT_EQ(empty_ids, prefs()->GetBlocklistedExtensions());
-
-    prefs()->SetExtensionBlocklistState(extension_a_->id(),
-                                        BLOCKLISTED_MALWARE);
-    EXPECT_TRUE(prefs()->IsExtensionBlocklisted(extension_a_->id()));
-    EXPECT_EQ(BLOCKLISTED_MALWARE,
-              prefs()->GetExtensionBlocklistState(extension_a_->id()));
-    EXPECT_EQ(1u, prefs()->GetBlocklistedExtensions().size());
-
-    prefs()->SetExtensionBlocklistState(extension_a_->id(), NOT_BLOCKLISTED);
-    EXPECT_EQ(NOT_BLOCKLISTED,
-              prefs()->GetExtensionBlocklistState(extension_a_->id()));
-    EXPECT_FALSE(prefs()->IsExtensionBlocklisted(extension_a_->id()));
-    EXPECT_EQ(empty_ids, prefs()->GetBlocklistedExtensions());
-  }
-
- private:
-  scoped_refptr<const Extension> extension_a_;
-};
-TEST_F(ExtensionPrefsBlocklistState, ExtensionPrefsBlocklistState) {}
 
 // Tests clearing the last launched preference.
 class ExtensionPrefsClearLastLaunched : public ExtensionPrefsTest {

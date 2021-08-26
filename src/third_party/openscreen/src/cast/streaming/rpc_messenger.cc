@@ -74,14 +74,17 @@ void RpcMessenger::ProcessMessageFromRemote(const uint8_t* message,
                   << "\"";
     return;
   }
+  ProcessMessageFromRemote(std::move(rpc));
+}
 
-  const auto entry = receive_callbacks_.find(rpc->handle());
+void RpcMessenger::ProcessMessageFromRemote(std::unique_ptr<RpcMessage> message) {
+  const auto entry = receive_callbacks_.find(message->handle());
   if (entry == receive_callbacks_.end()) {
     OSP_VLOG << "Dropping message due to unregistered handle: "
-             << rpc->handle();
+             << message->handle();
     return;
   }
-  entry->second(std::move(rpc));
+  entry->second(std::move(message));
 }
 
 void RpcMessenger::SendMessageToRemote(const RpcMessage& rpc) {
@@ -93,6 +96,10 @@ void RpcMessenger::SendMessageToRemote(const RpcMessage& rpc) {
 
 bool RpcMessenger::IsRegisteredForTesting(RpcMessenger::Handle handle) {
   return receive_callbacks_.find(handle) != receive_callbacks_.end();
+}
+
+WeakPtr<RpcMessenger> RpcMessenger::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 }  // namespace cast

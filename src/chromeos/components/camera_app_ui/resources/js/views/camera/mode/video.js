@@ -3,10 +3,9 @@
 // found in the LICENSE file.
 
 import {AsyncJobQueue} from '../../../async_job_queue.js';
-import {
-  assert,
-  assertString,
-} from '../../../chrome_util.js';
+import {assert, assertInstanceof} from '../../../chrome_util.js';
+// eslint-disable-next-line no-unused-vars
+import {StreamConstraints} from '../../../device/stream_constraints.js';
 import {
   CaptureStream,  // eslint-disable-line no-unused-vars
   StreamManager,
@@ -21,7 +20,7 @@ import * as loadTimeData from '../../../models/load_time_data.js';
 import {
   VideoSaver,  // eslint-disable-line no-unused-vars
 } from '../../../models/video_saver.js';
-import {DeviceOperator} from '../../../mojo/device_operator.js';
+import {CrosImageCapture} from '../../../mojo/image_capture.js';
 import * as sound from '../../../sound.js';
 import * as state from '../../../state.js';
 import * as toast from '../../../toast.js';
@@ -33,9 +32,7 @@ import {
   NoChunkError,
   PerfEvent,
   Resolution,
-  ResolutionList,  // eslint-disable-line no-unused-vars
 } from '../../../type.js';
-import * as util from '../../../util.js';
 import {WaitableEvent} from '../../../waitable_event.js';
 
 import {ModeBase, ModeFactory} from './mode_base.js';
@@ -87,7 +84,7 @@ function getVideoMimeType(param) {
 /**
  * The 'beforeunload' listener which will show confirm dialog when trying to
  * close window.
- * @param {!Event} event The 'beforeunload' event.
+ * @param {!BeforeUnloadEvent} event The 'beforeunload' event.
  */
 function beforeUnloadListener(event) {
   event.preventDefault();
@@ -167,13 +164,6 @@ export class VideoHandler {
    * Plays UI effect when doing video snapshot.
    */
   playShutterEffect() {}
-
-  /**
-   * Gets frame image blob from current preview.
-   * @return {!Promise<!Blob>}
-   * @abstract
-   */
-  getPreviewFrame() {}
 }
 
 /**
@@ -182,7 +172,7 @@ export class VideoHandler {
 export class Video extends ModeBase {
   /**
    * @param {!MediaStream} stream Preview stream.
-   * @param {?MediaStreamConstraints} captureConstraints
+   * @param {?StreamConstraints} captureConstraints
    * @param {?Resolution} captureResolution
    * @param {!Facing} facing
    * @param {!VideoHandler} handler
@@ -191,7 +181,7 @@ export class Video extends ModeBase {
     super(stream, facing);
 
     /**
-     * @const {?MediaStreamConstraints}
+     * @const {?StreamConstraints}
      * @private
      */
     this.captureConstraints_ = captureConstraints;
@@ -228,10 +218,10 @@ export class Video extends ModeBase {
     this.mediaRecorder_ = null;
 
     /**
-     * @type {?ImageCapture}
+     * @type {?CrosImageCapture}
      * @private
      */
-    this.imageCapture_ = null;
+    this.crosImageCapture_ = null;
 
     /**
      * Record-time for the elapsed recording time.
@@ -277,18 +267,7 @@ export class Video extends ModeBase {
    */
   takeSnapshot() {
     const doSnapshot = async () => {
-      const bitmap = await this.imageCapture_.grabFrame();
-      const {canvas, ctx} = util.newDrawingCanvas(this.captureResolution_);
-      ctx.drawImage(bitmap, 0, 0);
-      const blob = await (new Promise((resolve, reject) => {
-        canvas.toBlob((blob) => {
-          if (blob) {
-            resolve(blob);
-          } else {
-            reject(new Error('Photo blob error.'));
-          }
-        }, 'image/jpeg');
-      }));
+      const blob = await this.crosImageCapture_.grabJpegFrame();
 
       this.handler_.playShutterEffect();
       const imageName = (new Filenamer()).newImageName();
@@ -412,8 +391,8 @@ export class Video extends ModeBase {
       this.captureStream_ = await StreamManager.getInstance().openCaptureStream(
           this.captureConstraints_);
     }
-    if (this.imageCapture_ === null) {
-      this.imageCapture_ = new ImageCapture(this.getVideoTrack_());
+    if (this.crosImageCapture_ === null) {
+      this.crosImageCapture_ = new CrosImageCapture(this.getVideoTrack_());
     }
 
     try {
@@ -558,75 +537,41 @@ export class Video extends ModeBase {
  */
 export class VideoFactory extends ModeFactory {
   /**
+   * @param {!StreamConstraints} constraints Constraints for preview
+   *     stream.
+   * @param {?Resolution} captureResolution
    * @param {!VideoHandler} handler
    */
-  constructor(handler) {
-    super();
+  constructor(constraints, captureResolution, handler) {
+    super(constraints, captureResolution);
 
     /**
      * @const {!VideoHandler}
      * @private
      */
     this.handler_ = handler;
-
-    /**
-     * @type {?MediaStreamConstraints}
-     * @private
-     */
-    this.captureConstraints_ = null;
   }
 
   /**
    * @override
    */
-  async prepareDevice(constraints, resolution) {
-    this.captureResolution_ = resolution;
-    const deviceId = assertString(constraints.video.deviceId.exact);
+  produce() {
+    let captureConstraints = null;
     if (state.get(state.State.ENABLE_MULTISTREAM_RECORDING)) {
-      this.captureConstraints_ = {
-        audio: constraints.audio,
+      const {width, height} =
+          assertInstanceof(this.captureResolution_, Resolution);
+      captureConstraints = {
+        deviceId: this.constraints_.deviceId,
+        audio: this.constraints_.audio,
         video: {
-          deviceId: constraints.video.deviceId,
-          frameRate: constraints.video.frameRate,
+          frameRate: this.constraints_.video.frameRate,
+          width,
+          height,
         },
       };
-      if (resolution !== null) {
-        this.captureConstraints_.video.width = resolution.width;
-        this.captureConstraints_.video.height = resolution.height;
-      }
     }
-
-    const deviceOperator = await DeviceOperator.getInstance();
-    if (deviceOperator === null) {
-      return;
-    }
-    await deviceOperator.setCaptureIntent(
-        deviceId, cros.mojom.CaptureIntent.VIDEO_RECORD);
-
-    let /** number */ minFrameRate = 0;
-    let /** number */ maxFrameRate = 0;
-    if (constraints.video && constraints.video.frameRate) {
-      const frameRate = constraints.video.frameRate;
-      if (frameRate.exact) {
-        minFrameRate = frameRate.exact;
-        maxFrameRate = frameRate.exact;
-      } else if (frameRate.min && frameRate.max) {
-        minFrameRate = frameRate.min;
-        maxFrameRate = frameRate.max;
-      }
-      // TODO(wtlee): To set the fps range to the default value, we should
-      // remove the frameRate from constraints instead of using incomplete
-      // range.
-    }
-    await deviceOperator.setFpsRange(deviceId, minFrameRate, maxFrameRate);
-  }
-
-  /**
-   * @override
-   */
-  produce_() {
     return new Video(
-        this.previewStream_, this.captureConstraints_, this.captureResolution_,
+        this.previewStream_, captureConstraints, this.captureResolution_,
         this.facing_, this.handler_);
   }
 }

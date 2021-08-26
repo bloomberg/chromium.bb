@@ -144,6 +144,7 @@
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/site_isolation/site_isolation_policy.h"
+#include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/url_formatter/url_fixer.h"
 #include "components/user_prefs/user_prefs.h"
@@ -178,8 +179,8 @@
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/login/session/user_session_manager.h"
 #include "chrome/browser/ash/policy/active_directory/active_directory_policy_manager.h"
-#include "chrome/browser/ash/policy/core/user_cloud_policy_manager_chromeos.h"
-#include "chrome/browser/ash/policy/core/user_policy_manager_builder_chromeos.h"
+#include "chrome/browser/ash/policy/core/user_cloud_policy_manager_ash.h"
+#include "chrome/browser/ash/policy/core/user_policy_manager_builder_ash.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/locale_change_guard.h"
@@ -240,11 +241,15 @@
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
-#include "chromeos/lacros/lacros_chrome_service_impl.h"
+#include "chromeos/lacros/lacros_service.h"
 #include "components/policy/core/common/async_policy_provider.h"
 #include "components/policy/core/common/policy_loader_lacros.h"
 #include "components/policy/core/common/policy_proto_decoders.h"
 #include "components/signin/public/base/signin_switches.h"
+#endif
+
+#if defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+#include "chrome/browser/spellchecker/spellcheck_service.h"
 #endif
 
 using base::TimeDelta;
@@ -418,8 +423,14 @@ void ProfileImpl::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kPrintPreviewDisabled, false);
   registry->RegisterStringPref(
       prefs::kPrintPreviewDefaultDestinationSelectionRules, std::string());
+#if defined(OS_WIN) || defined(OS_MAC)
+  registry->RegisterBooleanPref(prefs::kPrintPdfAsImageAvailability, false);
+#endif
 #if defined(OS_WIN) && BUILDFLAG(ENABLE_PRINTING)
   registry->RegisterIntegerPref(prefs::kPrintRasterizationMode, 0);
+#endif
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+  registry->RegisterIntegerPref(prefs::kPrintRasterizePdfDpi, 0);
 #endif
 
   registry->RegisterBooleanPref(prefs::kForceEphemeralProfiles, false);
@@ -592,10 +603,10 @@ void ProfileImpl::LoadPrefsForNormalStartup(bool async_prefs) {
 
   policy::CreateConfigurationPolicyProvider(
       this, force_immediate_policy_load, io_task_runner_,
-      &user_cloud_policy_manager_chromeos_, &active_directory_policy_manager_);
+      &user_cloud_policy_manager_ash_, &active_directory_policy_manager_);
 
   user_cloud_policy_manager = nullptr;
-  policy_provider = GetUserCloudPolicyManagerChromeOS();
+  policy_provider = GetUserCloudPolicyManagerAsh();
   if (!policy_provider) {
     policy_provider = GetActiveDirectoryPolicyManager();
   }
@@ -789,6 +800,17 @@ void ProfileImpl::DoFinalInit(CreateMode create_mode) {
 
   content::URLDataSource::Add(this,
                               std::make_unique<PrefsInternalsSource>(this));
+
+#if defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+  if (IsNewProfile()) {
+    // The installed Windows language packs aren't determined until
+    // the spellcheck service is initialized. Make sure the primary
+    // preferred language is enabled for spellchecking until the user
+    // opts out later. If there is no dictionary support for the language
+    // then it will later be automatically disabled.
+    SpellcheckService::EnableFirstUserLanguageForSpellcheck(prefs_.get());
+  }
+#endif
 
   if (delegate_) {
     TRACE_EVENT0("browser",
@@ -1199,9 +1221,8 @@ policy::SchemaRegistryService* ProfileImpl::GetPolicySchemaRegistryService() {
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-policy::UserCloudPolicyManagerChromeOS*
-ProfileImpl::GetUserCloudPolicyManagerChromeOS() {
-  return user_cloud_policy_manager_chromeos_.get();
+policy::UserCloudPolicyManagerAsh* ProfileImpl::GetUserCloudPolicyManagerAsh() {
+  return user_cloud_policy_manager_ash_.get();
 }
 
 policy::ActiveDirectoryPolicyManager*
@@ -1217,8 +1238,8 @@ policy::UserCloudPolicyManager* ProfileImpl::GetUserCloudPolicyManager() {
 policy::ConfigurationPolicyProvider*
 ProfileImpl::configuration_policy_provider() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (user_cloud_policy_manager_chromeos_)
-    return user_cloud_policy_manager_chromeos_.get();
+  if (user_cloud_policy_manager_ash_)
+    return user_cloud_policy_manager_ash_.get();
   if (active_directory_policy_manager_)
     return active_directory_policy_manager_.get();
   return nullptr;

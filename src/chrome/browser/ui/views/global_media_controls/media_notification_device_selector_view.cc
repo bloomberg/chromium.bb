@@ -11,19 +11,28 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_container_impl.h"
 #include "chrome/browser/ui/media_router/cast_dialog_model.h"
+#include "chrome/browser/ui/views/global_media_controls/media_notification_device_selector_observer.h"
 #include "chrome/browser/ui/views/global_media_controls/media_notification_device_selector_view_delegate.h"
+#include "chrome/browser/ui/views/media_router/cast_dialog_sink_button.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/media_message_center/media_notification_item.h"
+#include "components/media_router/browser/media_router_metrics.h"
+#include "components/media_router/common/mojom/media_route_provider_id.mojom-shared.h"
 #include "components/media_router/common/mojom/media_router.mojom.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "media/audio/audio_device_description.h"
 #include "media/base/media_switches.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/layout/box_layout.h"
+
+using media_router::mojom::MediaRouteProviderId;
 
 namespace {
 
@@ -37,6 +46,41 @@ constexpr gfx::Insets kExpandButtonBorderInsets{4, 8};
 // chosen because it would be very unlikely to see a user with 30+ audio
 // devices.
 const int kAudioDevicesCountHistogramMax = 30;
+
+media_router::MediaRouterDialogOpenOrigin ConvertToOrigin(
+    GlobalMediaControlsEntryPoint entry_point) {
+  switch (entry_point) {
+    case GlobalMediaControlsEntryPoint::kPresentation:
+      return media_router::MediaRouterDialogOpenOrigin::PAGE;
+    case GlobalMediaControlsEntryPoint::kSystemTray:
+      return media_router::MediaRouterDialogOpenOrigin::SYSTEM_TRAY;
+    case GlobalMediaControlsEntryPoint::kToolbarIcon:
+      return media_router::MediaRouterDialogOpenOrigin::TOOLBAR;
+  }
+}
+
+void RecordCastDeviceCountMetrics(GlobalMediaControlsEntryPoint entry_point,
+                                  std::vector<CastDeviceEntryView*> entries) {
+  media_router::MediaRouterMetrics::RecordDeviceCount(entries.size());
+
+  std::map<MediaRouteProviderId, std::map<bool, int>> counts = {
+      {MediaRouteProviderId::CAST, {{true, 0}, {false, 0}}},
+      {MediaRouteProviderId::DIAL, {{true, 0}, {false, 0}}},
+      {MediaRouteProviderId::WIRED_DISPLAY, {{true, 0}, {false, 0}}}};
+  for (const CastDeviceEntryView* entry : entries) {
+    if (entry->sink().provider != MediaRouteProviderId::TEST) {
+      counts.at(entry->sink().provider).at(entry->GetEnabled())++;
+    }
+  }
+  for (auto provider : {MediaRouteProviderId::CAST, MediaRouteProviderId::DIAL,
+                        MediaRouteProviderId::WIRED_DISPLAY}) {
+    for (bool is_available : {true, false}) {
+      int count = counts.at(provider).at(is_available);
+      media_router::MediaRouterMetrics::RecordGmcDeviceCount(
+          ConvertToOrigin(entry_point), provider, is_available, count);
+    }
+  }
+}
 
 class ExpandDeviceSelectorButton : public IconLabelBubbleView {
  public:
@@ -93,7 +137,8 @@ MediaNotificationDeviceSelectorView::MediaNotificationDeviceSelectorView(
     const std::string& current_device_id,
     const SkColor& foreground_color,
     const SkColor& background_color,
-    GlobalMediaControlsEntryPoint entry_point)
+    GlobalMediaControlsEntryPoint entry_point,
+    bool show_expand_button)
     : delegate_(delegate),
       current_device_id_(current_device_id),
       foreground_color_(foreground_color),
@@ -118,6 +163,9 @@ MediaNotificationDeviceSelectorView::MediaNotificationDeviceSelectorView(
   expand_button_->SetCallback(base::BindRepeating(
       &MediaNotificationDeviceSelectorView::ExpandButtonPressed,
       base::Unretained(this)));
+
+  if (!show_expand_button)
+    expand_button_strip_->SetVisible(false);
 
   device_entry_views_container_ = AddChildView(std::make_unique<views::View>());
   device_entry_views_container_->SetLayoutManager(
@@ -213,6 +261,8 @@ void MediaNotificationDeviceSelectorView::UpdateAvailableAudioDevices(
           : media::AudioDeviceDescription::kDefaultDeviceId);
 
   UpdateVisibility();
+  for (auto& observer : observers_)
+    observer.OnMediaNotificationDeviceSelectorUpdated(device_entry_ui_map_);
 }
 
 void MediaNotificationDeviceSelectorView::OnColorsChanged(
@@ -256,9 +306,23 @@ bool MediaNotificationDeviceSelectorView::GetEntryIsHighlightedForTesting(
   return GetDeviceEntryUI(entry_view)->GetEntryIsHighlightedForTesting();
 }
 
+std::vector<media_router::CastDialogSinkButton*>
+MediaNotificationDeviceSelectorView::GetCastSinkButtonsForTesting() {
+  std::vector<media_router::CastDialogSinkButton*> buttons;
+  for (auto* view : device_entry_views_container_->children()) {
+    if (GetDeviceEntryUI(view)->GetType() == DeviceEntryUIType::kCast) {
+      buttons.push_back(static_cast<media_router::CastDialogSinkButton*>(view));
+    }
+  }
+  return buttons;
+}
+
 void MediaNotificationDeviceSelectorView::ShowDevices() {
   DCHECK(!is_expanded_);
   is_expanded_ = true;
+  NotifyAccessibilityEvent(ax::mojom::Event::kExpandedChanged, true);
+  GetViewAccessibility().AnnounceText(
+      l10n_util::GetStringUTF16(IDS_GLOBAL_MEDIA_CONTROLS_SHOW_DEVICE_LIST));
 
   if (!have_devices_been_shown_) {
     base::UmaHistogramExactLinear(
@@ -266,6 +330,7 @@ void MediaNotificationDeviceSelectorView::ShowDevices() {
         device_entry_views_container_->children().size(),
         kAudioDevicesCountHistogramMax);
     base::UmaHistogramBoolean(kDeviceSelectorOpenedHistogramName, true);
+    RecordCastDeviceCountAfterDelay();
     have_devices_been_shown_ = true;
   }
 
@@ -276,6 +341,9 @@ void MediaNotificationDeviceSelectorView::ShowDevices() {
 void MediaNotificationDeviceSelectorView::HideDevices() {
   DCHECK(is_expanded_);
   is_expanded_ = false;
+  NotifyAccessibilityEvent(ax::mojom::Event::kExpandedChanged, true);
+  GetViewAccessibility().AnnounceText(
+      l10n_util::GetStringUTF16(IDS_GLOBAL_MEDIA_CONTROLS_HIDE_DEVICE_LIST));
 
   device_entry_views_container_->SetVisible(false);
   PreferredSizeChanged();
@@ -380,10 +448,35 @@ void MediaNotificationDeviceSelectorView::OnModelUpdated(
   device_entry_views_container_->Layout();
 
   UpdateVisibility();
+  for (auto& observer : observers_)
+    observer.OnMediaNotificationDeviceSelectorUpdated(device_entry_ui_map_);
 }
 
 void MediaNotificationDeviceSelectorView::OnControllerInvalidated() {
   cast_controller_.reset();
+}
+
+void MediaNotificationDeviceSelectorView::OnDeviceSelected(int tag) {
+  auto it = device_entry_ui_map_.find(tag);
+  DCHECK(it != device_entry_ui_map_.end());
+
+  if (it->second->GetType() == DeviceEntryUIType::kAudio)
+    delegate_->OnAudioSinkChosen(it->second->raw_device_id());
+  else
+    StartCastSession(static_cast<CastDeviceEntryView*>(it->second));
+}
+
+void MediaNotificationDeviceSelectorView::OnDropdownButtonClicked() {
+  ExpandButtonPressed();
+}
+
+bool MediaNotificationDeviceSelectorView::IsDeviceSelectorExpanded() {
+  return is_expanded_;
+}
+
+void MediaNotificationDeviceSelectorView::AddObserver(
+    MediaNotificationDeviceSelectorObserver* observer) {
+  observers_.AddObserver(observer);
 }
 
 void MediaNotificationDeviceSelectorView::StartCastSession(
@@ -407,6 +500,9 @@ void MediaNotificationDeviceSelectorView::StartCastSession(
   if (sink.state == media_router::UIMediaSinkState::AVAILABLE) {
     DoStartCastSession(sink);
   } else if (sink.state == media_router::UIMediaSinkState::CONNECTED) {
+    // We record stopping casting here even if we are starting casting, because
+    // the existing session is being stopped and replaced by a new session.
+    RecordStopCastingMetrics();
     if (sink.provider == media_router::mojom::MediaRouteProviderId::DIAL) {
       DCHECK(sink.route);
       cast_controller_->StopCasting(sink.route->media_route_id());
@@ -441,6 +537,44 @@ void MediaNotificationDeviceSelectorView::RecordStartCastingMetrics() {
   base::UmaHistogramEnumeration(
       media_message_center::MediaNotificationItem::kCastStartStopHistogramName,
       action);
+}
+
+void MediaNotificationDeviceSelectorView::RecordStopCastingMetrics() {
+  GlobalMediaControlsCastActionAndEntryPoint action;
+  switch (entry_point_) {
+    case GlobalMediaControlsEntryPoint::kToolbarIcon:
+      action = GlobalMediaControlsCastActionAndEntryPoint::kStopViaToolbarIcon;
+      break;
+    case GlobalMediaControlsEntryPoint::kPresentation:
+      action = GlobalMediaControlsCastActionAndEntryPoint::kStopViaPresentation;
+      break;
+    case GlobalMediaControlsEntryPoint::kSystemTray:
+      action = GlobalMediaControlsCastActionAndEntryPoint::kStopViaSystemTray;
+      break;
+  }
+  base::UmaHistogramEnumeration(
+      media_message_center::MediaNotificationItem::kCastStartStopHistogramName,
+      action);
+}
+
+void MediaNotificationDeviceSelectorView::RecordCastDeviceCountAfterDelay() {
+  content::GetUIThreadTaskRunner({})->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(
+          &MediaNotificationDeviceSelectorView::RecordCastDeviceCount,
+          weak_ptr_factory_.GetWeakPtr()),
+      media_router::MediaRouterMetrics::kDeviceCountMetricDelay);
+}
+
+void MediaNotificationDeviceSelectorView::RecordCastDeviceCount() {
+  std::vector<CastDeviceEntryView*> entries;
+  for (views::View* view : device_entry_views_container_->children()) {
+    DeviceEntryUI* entry = GetDeviceEntryUI(view);
+    if (entry->GetType() == DeviceEntryUIType::kCast) {
+      entries.push_back(static_cast<CastDeviceEntryView*>(entry));
+    }
+  }
+  RecordCastDeviceCountMetrics(entry_point_, entries);
 }
 
 void MediaNotificationDeviceSelectorView::RegisterAudioDeviceCallbacks() {

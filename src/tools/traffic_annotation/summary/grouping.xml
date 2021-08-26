@@ -15,7 +15,6 @@ hidden="true" so that these annotations don't show up in the document.
   <group name="Mobile" hidden="true">
     <!-- Android-specific features -->
     <sender name="Android">
-      <traffic_annotation unique_id="affiliation_lookup"/>
       <traffic_annotation unique_id="android_device_manager_socket"/>
       <traffic_annotation unique_id="android_web_socket"/>
       <traffic_annotation unique_id="query_tiles_fetcher"/>
@@ -42,6 +41,7 @@ hidden="true" so that these annotations don't show up in the document.
     <sender name="Unsorted Sender">
       <traffic_annotation unique_id="auction_downloader"/>
       <traffic_annotation unique_id="auction_report_sender"/>
+      <traffic_annotation unique_id="interest_group_update_fetcher"/>
       <traffic_annotation unique_id="prefetch_proxy_canary_check"/>
       <traffic_annotation unique_id="proxy_config_windows_resolver"/>
       <traffic_annotation unique_id="remoting_directory_delete_host"/>
@@ -71,9 +71,6 @@ hidden="true" so that these annotations don't show up in the document.
       <traffic_annotation unique_id="pdf_plugin_placeholder"/>
       <traffic_annotation unique_id="predictive_prefetch"/>
       <traffic_annotation unique_id="navigation_predictor_srp_prefetch"/>
-      <traffic_annotation unique_id="cloud_print_privet_register"/>
-      <traffic_annotation unique_id="cloud_print_search"/>
-      <traffic_annotation unique_id="privet_http_impl"/>
       <traffic_annotation unique_id="render_view_context_menu"/>
       <traffic_annotation unique_id="media_router_global_media_controls_image"/>
       <traffic_annotation unique_id="omnibox_navigation_observer"/>
@@ -100,13 +97,13 @@ hidden="true" so that these annotations don't show up in the document.
       <traffic_annotation unique_id="proxy_config_settings"/>
       <traffic_annotation unique_id="video_tutorial_fetcher"/>
       <traffic_annotation unique_id="qr_code_save"/>
+      <traffic_annotation unique_id="desktop_screenshot_save"/>
       <traffic_annotation unique_id="safe_browsing_cache_collector"/>
       <traffic_annotation unique_id="safety_check_update_connectivity"/>
       <traffic_annotation unique_id="open_search"/>
       <traffic_annotation unique_id="logo_service"/>
       <traffic_annotation unique_id="ssl_name_mismatch_lookup"/>
       <traffic_annotation unique_id="ui_devtools_server"/>
-      <traffic_annotation unique_id="viz_devtools_server"/>
       <traffic_annotation unique_id="appcache_update_job"/>
       <traffic_annotation unique_id="background_fetch_context"/>
       <traffic_annotation unique_id="devtools_proxy_config"/>
@@ -388,8 +385,8 @@ hidden="true" so that these annotations don't show up in the document.
       <traffic_annotation unique_id="backdrop_next_image_download"/>
       <traffic_annotation unique_id="drive_service"/>
       <traffic_annotation unique_id="ntp_snippets_fetch"/>
-      <traffic_annotation unique_id="ntp_custom_background"/>
       <traffic_annotation unique_id="nux_ntp_background_preview"/>
+      <traffic_annotation unique_id="photos_service"/>
       <traffic_annotation unique_id="popular_sites_fetch"/>
       <traffic_annotation unique_id="search_suggest_service"/>
       <traffic_annotation unique_id="remote_suggestions_provider"/>
@@ -406,9 +403,6 @@ hidden="true" so that these annotations don't show up in the document.
       <traffic_annotation unique_id="spellcheck_hunspell_dictionary"/>
       <traffic_annotation unique_id="spellcheck_lookup"/>
     </sender>
-    <sender name="Suggestions">
-      <traffic_annotation unique_id="suggestions_service"/>
-    </sender>
     <sender name="Translate">
       <traffic_annotation unique_id="translate_url_fetcher"/>
     </sender>
@@ -423,6 +417,9 @@ hidden="true" so that these annotations don't show up in the document.
     </sender>
     <sender name="Memories">
       <traffic_annotation unique_id="memories_remote_model_request"/>
+    </sender>
+    <sender name="Whats New">
+      <traffic_annotation unique_id="whats_new_handler"/>
     </sender>
   </group>
 </groups>

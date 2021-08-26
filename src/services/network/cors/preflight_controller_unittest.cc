@@ -21,6 +21,8 @@
 #include "services/network/cors/cors_url_loader_factory.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/cors/cors.h"
+#include "services/network/public/mojom/devtools_observer.mojom.h"
+#include "services/network/public/mojom/http_raw_headers.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -270,8 +272,8 @@ class MockDevToolsObserver : public mojom::DevToolsObserver {
 
   bool on_raw_request_called() const { return on_raw_request_called_; }
   bool on_raw_response_called() const { return on_raw_response_called_; }
-  const absl::optional<network::ResourceRequest>& preflight_request() const {
-    return preflight_request_;
+  const network::mojom::URLRequestDevToolsInfoPtr& preflight_request() const {
+    return preflight_request_info_;
   }
   const network::mojom::URLResponseHeadPtr& preflight_response() const {
     return preflight_response_;
@@ -298,15 +300,17 @@ class MockDevToolsObserver : public mojom::DevToolsObserver {
       const net::CookieAndLineAccessResultList& cookies_with_access_result,
       std::vector<network::mojom::HttpRawHeaderPairPtr> headers,
       const absl::optional<std::string>& raw_response_headers,
-      network::mojom::IPAddressSpace resource_address_space) override {
+      network::mojom::IPAddressSpace resource_address_space,
+      int32_t http_status_code) override {
     on_raw_response_called_ = true;
   }
   void OnCorsPreflightRequest(
       const base::UnguessableToken& devtool_request_id,
-      const network::ResourceRequest& request,
+      const net::HttpRequestHeaders& request_headers,
+      network::mojom::URLRequestDevToolsInfoPtr request_info,
       const GURL& initiator_url,
       const std::string& initiator_devtools_request_id) override {
-    preflight_request_ = request;
+    preflight_request_info_ = std::move(request_info);
     initiator_devtools_request_id_ = initiator_devtools_request_id;
   }
   void OnCorsPreflightResponse(
@@ -363,7 +367,7 @@ class MockDevToolsObserver : public mojom::DevToolsObserver {
   base::OnceClosure wait_for_completed_;
   bool on_raw_request_called_ = false;
   bool on_raw_response_called_ = false;
-  absl::optional<network::ResourceRequest> preflight_request_;
+  network::mojom::URLRequestDevToolsInfoPtr preflight_request_info_;
   network::mojom::URLResponseHeadPtr preflight_response_;
   absl::optional<network::URLLoaderCompletionStatus> preflight_status_;
   std::string initiator_devtools_request_id_;
@@ -697,7 +701,7 @@ TEST_F(PreflightControllerTest, DevToolsEvents) {
   devtools_observer()->WaitUntilRequestCompleted();
   EXPECT_TRUE(devtools_observer()->on_raw_request_called());
   EXPECT_TRUE(devtools_observer()->on_raw_response_called());
-  ASSERT_TRUE(devtools_observer()->preflight_request().has_value());
+  ASSERT_TRUE(devtools_observer()->preflight_request());
   EXPECT_EQ(request.url, devtools_observer()->preflight_request()->url);
   EXPECT_EQ("OPTIONS", devtools_observer()->preflight_request()->method);
   ASSERT_TRUE(devtools_observer()->preflight_response());

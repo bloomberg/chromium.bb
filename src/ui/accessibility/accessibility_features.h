@@ -116,22 +116,14 @@ AX_BASE_EXPORT extern const base::Feature kEnableSwitchAccessPointScanning;
 // enabled.
 AX_BASE_EXPORT bool IsSwitchAccessPointScanningEnabled();
 
-// Enables dictation using web speech to listen for a longer duration and
-// allow profanity, and for dictation with web speech or on-device speech
-// to continue listening after speech is finalized.
-AX_BASE_EXPORT extern const base::Feature
-    kExperimentalAccessibilityDictationListening;
-
-// Returns true if the feature to allow experimental listening features for
-// Dictation is enabled.
-AX_BASE_EXPORT bool IsExperimentalAccessibilityDictationListeningEnabled();
-
 // Enables dictation to use on-device speech recognition when available.
 AX_BASE_EXPORT extern const base::Feature
     kExperimentalAccessibilityDictationOffline;
 
 // Returns true if experimental accessibility offline dictation is enabled.
 AX_BASE_EXPORT bool IsExperimentalAccessibilityDictationOfflineEnabled();
+
+AX_BASE_EXPORT bool IsDictationOfflineAvailableAndEnabled();
 
 // Enables high-quality, network-based voices in Select-to-speak.
 AX_BASE_EXPORT extern const base::Feature kEnhancedNetworkVoices;

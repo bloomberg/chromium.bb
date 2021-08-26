@@ -33,7 +33,7 @@ public class ShareParams {
     private final String mTextFormat;
 
     /** The URL of the page to be shared. */
-    private final String mUrl;
+    private String mUrl;
 
     /** The common MIME type of the files to be shared. A wildcard if they have differing types. */
     private final String mFileContentType;
@@ -50,6 +50,12 @@ public class ShareParams {
     /** The boolean result of link to text generation. */
     private final Boolean mLinkToTextSuccessful;
 
+    /** The sharing hub preview text. */
+    private final String mPreviewText;
+
+    /** A format to be used when sharing |mPreviewText|. */
+    private final String mPreviewTextFormat;
+
     /**
      * Optional callback to be called when user makes a choice. Will not be called if receiving a
      * response when the user makes a choice is not supported (on older Android versions).
@@ -59,7 +65,8 @@ public class ShareParams {
     private ShareParams(WindowAndroid window, String title, String text, String textFormat,
             String url, @Nullable String fileContentType, @Nullable ArrayList<Uri> fileUris,
             @Nullable Uri offlineUri, @Nullable Uri screenshotUri,
-            @Nullable TargetChosenCallback callback, @Nullable Boolean linkToTextSuccessful) {
+            @Nullable TargetChosenCallback callback, @Nullable Boolean linkToTextSuccessful,
+            @Nullable String previewText, String previewTextFormat) {
         mWindow = window;
         mTitle = title;
         mText = text;
@@ -71,6 +78,8 @@ public class ShareParams {
         mScreenshotUri = screenshotUri;
         mCallback = callback;
         mLinkToTextSuccessful = linkToTextSuccessful;
+        mPreviewText = previewText;
+        mPreviewTextFormat = previewTextFormat;
     }
 
     /**
@@ -123,6 +132,13 @@ public class ShareParams {
      */
     public String getUrl() {
         return mUrl;
+    }
+
+    /**
+     * @param url set URL to be shared.
+     */
+    public void setUrl(String url) {
+        mUrl = url;
     }
 
     /**
@@ -180,6 +196,15 @@ public class ShareParams {
         return mLinkToTextSuccessful;
     }
 
+    /**
+     * @return The text to be shared in the format it is meant to be shared.
+     */
+    @Nullable
+    public String getPreviewText() {
+        return mPreviewTextFormat == null ? mPreviewText
+                                          : String.format(mPreviewTextFormat, mPreviewText);
+    }
+
     /** The builder for {@link ShareParams} objects. */
     public static class Builder {
         private WindowAndroid mWindow;
@@ -193,6 +218,8 @@ public class ShareParams {
         private Uri mScreenshotUri;
         private TargetChosenCallback mCallback;
         private Boolean mLinkToTextSuccessful;
+        private String mPreviewText;
+        private String mPreviewTextFormat;
 
         public Builder(@NonNull WindowAndroid window, @NonNull String title, @NonNull String url) {
             mWindow = window;
@@ -214,6 +241,15 @@ public class ShareParams {
         public Builder setText(@NonNull String text, @NonNull String format) {
             mTextFormat = format;
             return setText(text);
+        }
+
+        /**
+         * Sets the sharing hub preview text.
+         */
+        public Builder setPreviewText(@NonNull String previewText, @NonNull String format) {
+            mPreviewTextFormat = format;
+            mPreviewText = previewText;
+            return this;
         }
 
         /**
@@ -270,7 +306,8 @@ public class ShareParams {
                 mUrl = DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(mUrl);
             }
             return new ShareParams(mWindow, mTitle, mText, mTextFormat, mUrl, mFileContentType,
-                    mFileUris, mOfflineUri, mScreenshotUri, mCallback, mLinkToTextSuccessful);
+                    mFileUris, mOfflineUri, mScreenshotUri, mCallback, mLinkToTextSuccessful,
+                    mPreviewText, mPreviewTextFormat);
         }
     }
 

@@ -567,6 +567,7 @@ const char* getStructureTypeName (VkStructureType value)
 		case VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_CREATE_INFO_EXT:								return "VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_CREATE_INFO_EXT";
 		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TOOL_PROPERTIES_EXT:									return "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TOOL_PROPERTIES_EXT";
 		case VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT:												return "VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT";
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_WAIT_FEATURES_KHR:							return "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_WAIT_FEATURES_KHR";
 		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_FEATURES_NV:						return "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_FEATURES_NV";
 		case VK_STRUCTURE_TYPE_COOPERATIVE_MATRIX_PROPERTIES_NV:									return "VK_STRUCTURE_TYPE_COOPERATIVE_MATRIX_PROPERTIES_NV";
 		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_PROPERTIES_NV:					return "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_PROPERTIES_NV";
@@ -594,6 +595,7 @@ const char* getStructureTypeName (VkStructureType value)
 		case VK_STRUCTURE_TYPE_PIPELINE_EXECUTABLE_INFO_KHR:										return "VK_STRUCTURE_TYPE_PIPELINE_EXECUTABLE_INFO_KHR";
 		case VK_STRUCTURE_TYPE_PIPELINE_EXECUTABLE_STATISTIC_KHR:									return "VK_STRUCTURE_TYPE_PIPELINE_EXECUTABLE_STATISTIC_KHR";
 		case VK_STRUCTURE_TYPE_PIPELINE_EXECUTABLE_INTERNAL_REPRESENTATION_KHR:						return "VK_STRUCTURE_TYPE_PIPELINE_EXECUTABLE_INTERNAL_REPRESENTATION_KHR";
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_FLOAT_2_FEATURES_EXT:					return "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_FLOAT_2_FEATURES_EXT";
 		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DEMOTE_TO_HELPER_INVOCATION_FEATURES_EXT:		return "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DEMOTE_TO_HELPER_INVOCATION_FEATURES_EXT";
 		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_PROPERTIES_NV:				return "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_PROPERTIES_NV";
 		case VK_STRUCTURE_TYPE_GRAPHICS_SHADER_GROUP_CREATE_INFO_NV:								return "VK_STRUCTURE_TYPE_GRAPHICS_SHADER_GROUP_CREATE_INFO_NV";
@@ -618,6 +620,8 @@ const char* getStructureTypeName (VkStructureType value)
 		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUSTOM_BORDER_COLOR_PROPERTIES_EXT:					return "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUSTOM_BORDER_COLOR_PROPERTIES_EXT";
 		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUSTOM_BORDER_COLOR_FEATURES_EXT:					return "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUSTOM_BORDER_COLOR_FEATURES_EXT";
 		case VK_STRUCTURE_TYPE_PIPELINE_LIBRARY_CREATE_INFO_KHR:									return "VK_STRUCTURE_TYPE_PIPELINE_LIBRARY_CREATE_INFO_KHR";
+		case VK_STRUCTURE_TYPE_PRESENT_ID_KHR:														return "VK_STRUCTURE_TYPE_PRESENT_ID_KHR";
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_ID_FEATURES_KHR:								return "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_ID_FEATURES_KHR";
 		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRIVATE_DATA_FEATURES_EXT:							return "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRIVATE_DATA_FEATURES_EXT";
 		case VK_STRUCTURE_TYPE_DEVICE_PRIVATE_DATA_CREATE_INFO_EXT:									return "VK_STRUCTURE_TYPE_DEVICE_PRIVATE_DATA_CREATE_INFO_EXT";
 		case VK_STRUCTURE_TYPE_PRIVATE_DATA_SLOT_CREATE_INFO_EXT:									return "VK_STRUCTURE_TYPE_PRIVATE_DATA_SLOT_CREATE_INFO_EXT";
@@ -677,6 +681,7 @@ const char* getStructureTypeName (VkStructureType value)
 		case VK_STRUCTURE_TYPE_SUBPASS_SHADING_PIPELINE_CREATE_INFO_HUAWEI:							return "VK_STRUCTURE_TYPE_SUBPASS_SHADING_PIPELINE_CREATE_INFO_HUAWEI";
 		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBPASS_SHADING_FEATURES_HUAWEI:						return "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBPASS_SHADING_FEATURES_HUAWEI";
 		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBPASS_SHADING_PROPERTIES_HUAWEI:					return "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBPASS_SHADING_PROPERTIES_HUAWEI";
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INVOCATION_MASK_FEATURES_HUAWEI:						return "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INVOCATION_MASK_FEATURES_HUAWEI";
 		case VK_STRUCTURE_TYPE_MEMORY_GET_REMOTE_ADDRESS_INFO_NV:									return "VK_STRUCTURE_TYPE_MEMORY_GET_REMOTE_ADDRESS_INFO_NV";
 		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_MEMORY_RDMA_FEATURES_NV:					return "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_MEMORY_RDMA_FEATURES_NV";
 		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_2_FEATURES_EXT:				return "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_2_FEATURES_EXT";
@@ -2878,6 +2883,7 @@ tcu::Format::Bitfield<32> getImageUsageFlagsStr (VkImageUsageFlags value)
 		tcu::Format::BitDesc(VK_IMAGE_USAGE_VIDEO_ENCODE_DST_BIT_KHR,					"VK_IMAGE_USAGE_VIDEO_ENCODE_DST_BIT_KHR"),
 		tcu::Format::BitDesc(VK_IMAGE_USAGE_VIDEO_ENCODE_SRC_BIT_KHR,					"VK_IMAGE_USAGE_VIDEO_ENCODE_SRC_BIT_KHR"),
 		tcu::Format::BitDesc(VK_IMAGE_USAGE_VIDEO_ENCODE_DPB_BIT_KHR,					"VK_IMAGE_USAGE_VIDEO_ENCODE_DPB_BIT_KHR"),
+		tcu::Format::BitDesc(VK_IMAGE_USAGE_INVOCATION_MASK_BIT_HUAWEI,					"VK_IMAGE_USAGE_INVOCATION_MASK_BIT_HUAWEI"),
 		tcu::Format::BitDesc(VK_IMAGE_USAGE_SHADING_RATE_IMAGE_BIT_NV,					"VK_IMAGE_USAGE_SHADING_RATE_IMAGE_BIT_NV"),
 		tcu::Format::BitDesc(VK_IMAGE_USAGE_FLAG_BITS_MAX_ENUM,							"VK_IMAGE_USAGE_FLAG_BITS_MAX_ENUM"),
 	};
@@ -4593,7 +4599,7 @@ std::ostream& operator<< (std::ostream& s, const VkPipelineCacheHeaderVersionOne
 	s << "\theaderVersion = " << value.headerVersion << '\n';
 	s << "\tvendorID = " << value.vendorID << '\n';
 	s << "\tdeviceID = " << value.deviceID << '\n';
-	s << "\tpipelineCacheUUID = " << '\n' << tcu::formatArray(tcu::Format::HexIterator<deUint8>(DE_ARRAY_BEGIN(value.pipelineCacheUUID)), tcu::Format::HexIterator<deUint8>(DE_ARRAY_END(value.pipelineCacheUUID))) << '\n';
+	s << "\tpipelineCacheUUID = " << '\n' << tcu::formatArray(tcu::Format::HexIterator<uint8_t>(DE_ARRAY_BEGIN(value.pipelineCacheUUID)), tcu::Format::HexIterator<uint8_t>(DE_ARRAY_END(value.pipelineCacheUUID))) << '\n';
 	s << '}';
 	return s;
 }
@@ -4887,7 +4893,7 @@ std::ostream& operator<< (std::ostream& s, const VkPhysicalDeviceProperties& val
 	s << "\tdeviceID = " << value.deviceID << '\n';
 	s << "\tdeviceType = " << value.deviceType << '\n';
 	s << "\tdeviceName = " << (const char*)value.deviceName << '\n';
-	s << "\tpipelineCacheUUID = " << '\n' << tcu::formatArray(tcu::Format::HexIterator<deUint8>(DE_ARRAY_BEGIN(value.pipelineCacheUUID)), tcu::Format::HexIterator<deUint8>(DE_ARRAY_END(value.pipelineCacheUUID))) << '\n';
+	s << "\tpipelineCacheUUID = " << '\n' << tcu::formatArray(tcu::Format::HexIterator<uint8_t>(DE_ARRAY_BEGIN(value.pipelineCacheUUID)), tcu::Format::HexIterator<uint8_t>(DE_ARRAY_END(value.pipelineCacheUUID))) << '\n';
 	s << "\tlimits = " << value.limits << '\n';
 	s << "\tsparseProperties = " << value.sparseProperties << '\n';
 	s << '}';
@@ -6587,9 +6593,9 @@ std::ostream& operator<< (std::ostream& s, const VkPhysicalDeviceIDProperties& v
 	s << "VkPhysicalDeviceIDProperties = {\n";
 	s << "\tsType = " << value.sType << '\n';
 	s << "\tpNext = " << value.pNext << '\n';
-	s << "\tdeviceUUID = " << '\n' << tcu::formatArray(tcu::Format::HexIterator<deUint8>(DE_ARRAY_BEGIN(value.deviceUUID)), tcu::Format::HexIterator<deUint8>(DE_ARRAY_END(value.deviceUUID))) << '\n';
-	s << "\tdriverUUID = " << '\n' << tcu::formatArray(tcu::Format::HexIterator<deUint8>(DE_ARRAY_BEGIN(value.driverUUID)), tcu::Format::HexIterator<deUint8>(DE_ARRAY_END(value.driverUUID))) << '\n';
-	s << "\tdeviceLUID = " << '\n' << tcu::formatArray(tcu::Format::HexIterator<deUint8>(DE_ARRAY_BEGIN(value.deviceLUID)), tcu::Format::HexIterator<deUint8>(DE_ARRAY_END(value.deviceLUID))) << '\n';
+	s << "\tdeviceUUID = " << '\n' << tcu::formatArray(tcu::Format::HexIterator<uint8_t>(DE_ARRAY_BEGIN(value.deviceUUID)), tcu::Format::HexIterator<uint8_t>(DE_ARRAY_END(value.deviceUUID))) << '\n';
+	s << "\tdriverUUID = " << '\n' << tcu::formatArray(tcu::Format::HexIterator<uint8_t>(DE_ARRAY_BEGIN(value.driverUUID)), tcu::Format::HexIterator<uint8_t>(DE_ARRAY_END(value.driverUUID))) << '\n';
+	s << "\tdeviceLUID = " << '\n' << tcu::formatArray(tcu::Format::HexIterator<uint8_t>(DE_ARRAY_BEGIN(value.deviceLUID)), tcu::Format::HexIterator<uint8_t>(DE_ARRAY_END(value.deviceLUID))) << '\n';
 	s << "\tdeviceNodeMask = " << value.deviceNodeMask << '\n';
 	s << "\tdeviceLUIDValid = " << value.deviceLUIDValid << '\n';
 	s << '}';
@@ -6747,9 +6753,9 @@ std::ostream& operator<< (std::ostream& s, const VkPhysicalDeviceVulkan11Propert
 	s << "VkPhysicalDeviceVulkan11Properties = {\n";
 	s << "\tsType = " << value.sType << '\n';
 	s << "\tpNext = " << value.pNext << '\n';
-	s << "\tdeviceUUID = " << '\n' << tcu::formatArray(tcu::Format::HexIterator<deUint8>(DE_ARRAY_BEGIN(value.deviceUUID)), tcu::Format::HexIterator<deUint8>(DE_ARRAY_END(value.deviceUUID))) << '\n';
-	s << "\tdriverUUID = " << '\n' << tcu::formatArray(tcu::Format::HexIterator<deUint8>(DE_ARRAY_BEGIN(value.driverUUID)), tcu::Format::HexIterator<deUint8>(DE_ARRAY_END(value.driverUUID))) << '\n';
-	s << "\tdeviceLUID = " << '\n' << tcu::formatArray(tcu::Format::HexIterator<deUint8>(DE_ARRAY_BEGIN(value.deviceLUID)), tcu::Format::HexIterator<deUint8>(DE_ARRAY_END(value.deviceLUID))) << '\n';
+	s << "\tdeviceUUID = " << '\n' << tcu::formatArray(tcu::Format::HexIterator<uint8_t>(DE_ARRAY_BEGIN(value.deviceUUID)), tcu::Format::HexIterator<uint8_t>(DE_ARRAY_END(value.deviceUUID))) << '\n';
+	s << "\tdriverUUID = " << '\n' << tcu::formatArray(tcu::Format::HexIterator<uint8_t>(DE_ARRAY_BEGIN(value.driverUUID)), tcu::Format::HexIterator<uint8_t>(DE_ARRAY_END(value.driverUUID))) << '\n';
+	s << "\tdeviceLUID = " << '\n' << tcu::formatArray(tcu::Format::HexIterator<uint8_t>(DE_ARRAY_BEGIN(value.deviceLUID)), tcu::Format::HexIterator<uint8_t>(DE_ARRAY_END(value.deviceLUID))) << '\n';
 	s << "\tdeviceNodeMask = " << value.deviceNodeMask << '\n';
 	s << "\tdeviceLUIDValid = " << value.deviceLUIDValid << '\n';
 	s << "\tsubgroupSize = " << value.subgroupSize << '\n';
@@ -7872,7 +7878,7 @@ std::ostream& operator<< (std::ostream& s, const VkPerformanceCounterKHR& value)
 	s << "\tunit = " << value.unit << '\n';
 	s << "\tscope = " << value.scope << '\n';
 	s << "\tstorage = " << value.storage << '\n';
-	s << "\tuuid = " << '\n' << tcu::formatArray(tcu::Format::HexIterator<deUint8>(DE_ARRAY_BEGIN(value.uuid)), tcu::Format::HexIterator<deUint8>(DE_ARRAY_END(value.uuid))) << '\n';
+	s << "\tuuid = " << '\n' << tcu::formatArray(tcu::Format::HexIterator<uint8_t>(DE_ARRAY_BEGIN(value.uuid)), tcu::Format::HexIterator<uint8_t>(DE_ARRAY_END(value.uuid))) << '\n';
 	s << '}';
 	return s;
 }
@@ -8119,6 +8125,16 @@ std::ostream& operator<< (std::ostream& s, const VkSurfaceProtectedCapabilitiesK
 	return s;
 }
 
+std::ostream& operator<< (std::ostream& s, const VkPhysicalDevicePresentWaitFeaturesKHR& value)
+{
+	s << "VkPhysicalDevicePresentWaitFeaturesKHR = {\n";
+	s << "\tsType = " << value.sType << '\n';
+	s << "\tpNext = " << value.pNext << '\n';
+	s << "\tpresentWait = " << value.presentWait << '\n';
+	s << '}';
+	return s;
+}
+
 std::ostream& operator<< (std::ostream& s, const VkPhysicalDevicePipelineExecutablePropertiesFeaturesKHR& value)
 {
 	s << "VkPhysicalDevicePipelineExecutablePropertiesFeaturesKHR = {\n";
@@ -8208,6 +8224,27 @@ std::ostream& operator<< (std::ostream& s, const VkPipelineLibraryCreateInfoKHR&
 	s << "\tpNext = " << value.pNext << '\n';
 	s << "\tlibraryCount = " << value.libraryCount << '\n';
 	s << "\tpLibraries = " << value.pLibraries << '\n';
+	s << '}';
+	return s;
+}
+
+std::ostream& operator<< (std::ostream& s, const VkPresentIdKHR& value)
+{
+	s << "VkPresentIdKHR = {\n";
+	s << "\tsType = " << value.sType << '\n';
+	s << "\tpNext = " << value.pNext << '\n';
+	s << "\tswapchainCount = " << value.swapchainCount << '\n';
+	s << "\tpPresentIds = " << value.pPresentIds << '\n';
+	s << '}';
+	return s;
+}
+
+std::ostream& operator<< (std::ostream& s, const VkPhysicalDevicePresentIdFeaturesKHR& value)
+{
+	s << "VkPhysicalDevicePresentIdFeaturesKHR = {\n";
+	s << "\tsType = " << value.sType << '\n';
+	s << "\tpNext = " << value.pNext << '\n';
+	s << "\tpresentId = " << value.presentId << '\n';
 	s << '}';
 	return s;
 }
@@ -10634,6 +10671,27 @@ std::ostream& operator<< (std::ostream& s, const VkPhysicalDeviceExtendedDynamic
 	return s;
 }
 
+std::ostream& operator<< (std::ostream& s, const VkPhysicalDeviceShaderAtomicFloat2FeaturesEXT& value)
+{
+	s << "VkPhysicalDeviceShaderAtomicFloat2FeaturesEXT = {\n";
+	s << "\tsType = " << value.sType << '\n';
+	s << "\tpNext = " << value.pNext << '\n';
+	s << "\tshaderBufferFloat16Atomics = " << value.shaderBufferFloat16Atomics << '\n';
+	s << "\tshaderBufferFloat16AtomicAdd = " << value.shaderBufferFloat16AtomicAdd << '\n';
+	s << "\tshaderBufferFloat16AtomicMinMax = " << value.shaderBufferFloat16AtomicMinMax << '\n';
+	s << "\tshaderBufferFloat32AtomicMinMax = " << value.shaderBufferFloat32AtomicMinMax << '\n';
+	s << "\tshaderBufferFloat64AtomicMinMax = " << value.shaderBufferFloat64AtomicMinMax << '\n';
+	s << "\tshaderSharedFloat16Atomics = " << value.shaderSharedFloat16Atomics << '\n';
+	s << "\tshaderSharedFloat16AtomicAdd = " << value.shaderSharedFloat16AtomicAdd << '\n';
+	s << "\tshaderSharedFloat16AtomicMinMax = " << value.shaderSharedFloat16AtomicMinMax << '\n';
+	s << "\tshaderSharedFloat32AtomicMinMax = " << value.shaderSharedFloat32AtomicMinMax << '\n';
+	s << "\tshaderSharedFloat64AtomicMinMax = " << value.shaderSharedFloat64AtomicMinMax << '\n';
+	s << "\tshaderImageFloat32AtomicMinMax = " << value.shaderImageFloat32AtomicMinMax << '\n';
+	s << "\tsparseImageFloat32AtomicMinMax = " << value.sparseImageFloat32AtomicMinMax << '\n';
+	s << '}';
+	return s;
+}
+
 std::ostream& operator<< (std::ostream& s, const VkPhysicalDeviceShaderDemoteToHelperInvocationFeaturesEXT& value)
 {
 	s << "VkPhysicalDeviceShaderDemoteToHelperInvocationFeaturesEXT = {\n";
@@ -11352,6 +11410,16 @@ std::ostream& operator<< (std::ostream& s, const VkPhysicalDeviceSubpassShadingP
 	s << "\tsType = " << value.sType << '\n';
 	s << "\tpNext = " << value.pNext << '\n';
 	s << "\tmaxSubpassShadingWorkgroupSizeAspectRatio = " << value.maxSubpassShadingWorkgroupSizeAspectRatio << '\n';
+	s << '}';
+	return s;
+}
+
+std::ostream& operator<< (std::ostream& s, const VkPhysicalDeviceInvocationMaskFeaturesHUAWEI& value)
+{
+	s << "VkPhysicalDeviceInvocationMaskFeaturesHUAWEI = {\n";
+	s << "\tsType = " << value.sType << '\n';
+	s << "\tpNext = " << value.pNext << '\n';
+	s << "\tinvocationMask = " << value.invocationMask << '\n';
 	s << '}';
 	return s;
 }
@@ -12188,7 +12256,7 @@ std::ostream& operator<< (std::ostream& s, const StdVideoH264HrdParameters& valu
 	s << "\tcpb_size_scale = " << value.cpb_size_scale << '\n';
 	s << "\tbit_rate_value_minus1 = " << '\n' << tcu::formatArray(DE_ARRAY_BEGIN(value.bit_rate_value_minus1), DE_ARRAY_END(value.bit_rate_value_minus1)) << '\n';
 	s << "\tcpb_size_value_minus1 = " << '\n' << tcu::formatArray(DE_ARRAY_BEGIN(value.cpb_size_value_minus1), DE_ARRAY_END(value.cpb_size_value_minus1)) << '\n';
-	s << "\tcbr_flag = " << '\n' << tcu::formatArray(tcu::Format::HexIterator<deUint8>(DE_ARRAY_BEGIN(value.cbr_flag)), tcu::Format::HexIterator<deUint8>(DE_ARRAY_END(value.cbr_flag))) << '\n';
+	s << "\tcbr_flag = " << '\n' << tcu::formatArray(tcu::Format::HexIterator<uint8_t>(DE_ARRAY_BEGIN(value.cbr_flag)), tcu::Format::HexIterator<uint8_t>(DE_ARRAY_END(value.cbr_flag))) << '\n';
 	s << "\tinitial_cpb_removal_delay_length_minus1 = " << value.initial_cpb_removal_delay_length_minus1 << '\n';
 	s << "\tcpb_removal_delay_length_minus1 = " << value.cpb_removal_delay_length_minus1 << '\n';
 	s << "\tdpb_output_delay_length_minus1 = " << value.dpb_output_delay_length_minus1 << '\n';
@@ -12725,8 +12793,8 @@ std::ostream& operator<< (std::ostream& s, const StdVideoH265DecPicBufMgr& value
 {
 	s << "StdVideoH265DecPicBufMgr = {\n";
 	s << "\tmax_latency_increase_plus1 = " << '\n' << tcu::formatArray(DE_ARRAY_BEGIN(value.max_latency_increase_plus1), DE_ARRAY_END(value.max_latency_increase_plus1)) << '\n';
-	s << "\tmax_dec_pic_buffering_minus1 = " << '\n' << tcu::formatArray(tcu::Format::HexIterator<deUint8>(DE_ARRAY_BEGIN(value.max_dec_pic_buffering_minus1)), tcu::Format::HexIterator<deUint8>(DE_ARRAY_END(value.max_dec_pic_buffering_minus1))) << '\n';
-	s << "\tmax_num_reorder_pics = " << '\n' << tcu::formatArray(tcu::Format::HexIterator<deUint8>(DE_ARRAY_BEGIN(value.max_num_reorder_pics)), tcu::Format::HexIterator<deUint8>(DE_ARRAY_END(value.max_num_reorder_pics))) << '\n';
+	s << "\tmax_dec_pic_buffering_minus1 = " << '\n' << tcu::formatArray(tcu::Format::HexIterator<uint8_t>(DE_ARRAY_BEGIN(value.max_dec_pic_buffering_minus1)), tcu::Format::HexIterator<uint8_t>(DE_ARRAY_END(value.max_dec_pic_buffering_minus1))) << '\n';
+	s << "\tmax_num_reorder_pics = " << '\n' << tcu::formatArray(tcu::Format::HexIterator<uint8_t>(DE_ARRAY_BEGIN(value.max_num_reorder_pics)), tcu::Format::HexIterator<uint8_t>(DE_ARRAY_END(value.max_num_reorder_pics))) << '\n';
 	s << '}';
 	return s;
 }
@@ -12769,7 +12837,7 @@ std::ostream& operator<< (std::ostream& s, const StdVideoH265HrdParameters& valu
 	s << "\tinitial_cpb_removal_delay_length_minus1 = " << value.initial_cpb_removal_delay_length_minus1 << '\n';
 	s << "\tau_cpb_removal_delay_length_minus1 = " << value.au_cpb_removal_delay_length_minus1 << '\n';
 	s << "\tdpb_output_delay_length_minus1 = " << value.dpb_output_delay_length_minus1 << '\n';
-	s << "\tcpb_cnt_minus1 = " << '\n' << tcu::formatArray(tcu::Format::HexIterator<deUint8>(DE_ARRAY_BEGIN(value.cpb_cnt_minus1)), tcu::Format::HexIterator<deUint8>(DE_ARRAY_END(value.cpb_cnt_minus1))) << '\n';
+	s << "\tcpb_cnt_minus1 = " << '\n' << tcu::formatArray(tcu::Format::HexIterator<uint8_t>(DE_ARRAY_BEGIN(value.cpb_cnt_minus1)), tcu::Format::HexIterator<uint8_t>(DE_ARRAY_END(value.cpb_cnt_minus1))) << '\n';
 	s << "\telemental_duration_in_tc_minus1 = " << '\n' << tcu::formatArray(DE_ARRAY_BEGIN(value.elemental_duration_in_tc_minus1), DE_ARRAY_END(value.elemental_duration_in_tc_minus1)) << '\n';
 	s << "\tSubLayerHrdParametersNal = " << '\n' << tcu::formatArray(DE_ARRAY_BEGIN(value.SubLayerHrdParametersNal), DE_ARRAY_END(value.SubLayerHrdParametersNal)) << '\n';
 	s << "\tSubLayerHrdParametersVcl = " << '\n' << tcu::formatArray(DE_ARRAY_BEGIN(value.SubLayerHrdParametersVcl), DE_ARRAY_END(value.SubLayerHrdParametersVcl)) << '\n';
@@ -12811,8 +12879,8 @@ std::ostream& operator<< (std::ostream& s, const StdVideoH265ScalingLists& value
 	s << "\tScalingList8x8 = " << '\n' << tcu::formatArray(DE_ARRAY_BEGIN(value.ScalingList8x8), DE_ARRAY_END(value.ScalingList8x8)) << '\n';
 	s << "\tScalingList16x16 = " << '\n' << tcu::formatArray(DE_ARRAY_BEGIN(value.ScalingList16x16), DE_ARRAY_END(value.ScalingList16x16)) << '\n';
 	s << "\tScalingList32x32 = " << '\n' << tcu::formatArray(DE_ARRAY_BEGIN(value.ScalingList32x32), DE_ARRAY_END(value.ScalingList32x32)) << '\n';
-	s << "\tScalingListDCCoef16x16 = " << '\n' << tcu::formatArray(tcu::Format::HexIterator<deUint8>(DE_ARRAY_BEGIN(value.ScalingListDCCoef16x16)), tcu::Format::HexIterator<deUint8>(DE_ARRAY_END(value.ScalingListDCCoef16x16))) << '\n';
-	s << "\tScalingListDCCoef32x32 = " << '\n' << tcu::formatArray(tcu::Format::HexIterator<deUint8>(DE_ARRAY_BEGIN(value.ScalingListDCCoef32x32)), tcu::Format::HexIterator<deUint8>(DE_ARRAY_END(value.ScalingListDCCoef32x32))) << '\n';
+	s << "\tScalingListDCCoef16x16 = " << '\n' << tcu::formatArray(tcu::Format::HexIterator<uint8_t>(DE_ARRAY_BEGIN(value.ScalingListDCCoef16x16)), tcu::Format::HexIterator<uint8_t>(DE_ARRAY_END(value.ScalingListDCCoef16x16))) << '\n';
+	s << "\tScalingListDCCoef32x32 = " << '\n' << tcu::formatArray(tcu::Format::HexIterator<uint8_t>(DE_ARRAY_BEGIN(value.ScalingListDCCoef32x32)), tcu::Format::HexIterator<uint8_t>(DE_ARRAY_END(value.ScalingListDCCoef32x32))) << '\n';
 	s << '}';
 	return s;
 }
@@ -13056,9 +13124,9 @@ std::ostream& operator<< (std::ostream& s, const StdVideoDecodeH265PictureInfo& 
 	s << "\tPicOrderCntVal = " << value.PicOrderCntVal << '\n';
 	s << "\tNumBitsForSTRefPicSetInSlice = " << value.NumBitsForSTRefPicSetInSlice << '\n';
 	s << "\tNumDeltaPocsOfRefRpsIdx = " << value.NumDeltaPocsOfRefRpsIdx << '\n';
-	s << "\tRefPicSetStCurrBefore = " << '\n' << tcu::formatArray(tcu::Format::HexIterator<deUint8>(DE_ARRAY_BEGIN(value.RefPicSetStCurrBefore)), tcu::Format::HexIterator<deUint8>(DE_ARRAY_END(value.RefPicSetStCurrBefore))) << '\n';
-	s << "\tRefPicSetStCurrAfter = " << '\n' << tcu::formatArray(tcu::Format::HexIterator<deUint8>(DE_ARRAY_BEGIN(value.RefPicSetStCurrAfter)), tcu::Format::HexIterator<deUint8>(DE_ARRAY_END(value.RefPicSetStCurrAfter))) << '\n';
-	s << "\tRefPicSetLtCurr = " << '\n' << tcu::formatArray(tcu::Format::HexIterator<deUint8>(DE_ARRAY_BEGIN(value.RefPicSetLtCurr)), tcu::Format::HexIterator<deUint8>(DE_ARRAY_END(value.RefPicSetLtCurr))) << '\n';
+	s << "\tRefPicSetStCurrBefore = " << '\n' << tcu::formatArray(tcu::Format::HexIterator<uint8_t>(DE_ARRAY_BEGIN(value.RefPicSetStCurrBefore)), tcu::Format::HexIterator<uint8_t>(DE_ARRAY_END(value.RefPicSetStCurrBefore))) << '\n';
+	s << "\tRefPicSetStCurrAfter = " << '\n' << tcu::formatArray(tcu::Format::HexIterator<uint8_t>(DE_ARRAY_BEGIN(value.RefPicSetStCurrAfter)), tcu::Format::HexIterator<uint8_t>(DE_ARRAY_END(value.RefPicSetStCurrAfter))) << '\n';
+	s << "\tRefPicSetLtCurr = " << '\n' << tcu::formatArray(tcu::Format::HexIterator<uint8_t>(DE_ARRAY_BEGIN(value.RefPicSetLtCurr)), tcu::Format::HexIterator<uint8_t>(DE_ARRAY_END(value.RefPicSetLtCurr))) << '\n';
 	s << "\tflags = " << value.flags << '\n';
 	s << '}';
 	return s;

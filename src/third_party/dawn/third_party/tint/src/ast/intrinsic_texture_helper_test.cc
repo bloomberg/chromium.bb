@@ -88,6 +88,9 @@ std::ostream& operator<<(std::ostream& out, const TextureKind& kind) {
     case TextureKind::kDepth:
       out << "depth";
       break;
+    case TextureKind::kDepthMultisampled:
+      out << "depth-multisampled";
+      break;
     case TextureKind::kMultisampled:
       out << "multisampled";
       break;
@@ -161,6 +164,11 @@ ast::Variable* TextureOverloadCase::buildTextureVariable(
 
     case ast::intrinsic::test::TextureKind::kDepth:
       return b->Global("texture", b->ty.depth_texture(texture_dimension),
+                       decos);
+
+    case ast::intrinsic::test::TextureKind::kDepthMultisampled:
+      return b->Global("texture",
+                       b->ty.depth_multisampled_texture(texture_dimension),
                        decos);
 
     case ast::intrinsic::test::TextureKind::kMultisampled:
@@ -399,6 +407,16 @@ std::vector<TextureOverloadCase> TextureOverloadCase::ValidCases() {
           TextureDataType::kF32,
           "textureDimensions",
           [](ProgramBuilder* b) { return b->ExprList("texture", 1); },
+      },
+      {
+          ValidTextureOverload::kDimensionsDepthMultisampled2d,
+          "textureDimensions(t : texture_depth_multisampled_2d) -> vec2<i32>",
+          TextureKind::kDepthMultisampled,
+          ast::SamplerKind::kSampler,
+          ast::TextureDimension::k2d,
+          TextureDataType::kF32,
+          "textureDimensions",
+          [](ProgramBuilder* b) { return b->ExprList("texture"); },
       },
       {
           ValidTextureOverload::kDimensionsStorageRO1d,
@@ -1367,7 +1385,7 @@ std::vector<TextureOverloadCase> TextureOverloadCase::ValidCases() {
                                b->vec2<f32>(1.f, 2.f),  // coords
                                b->vec2<f32>(3.f, 4.f),  // ddx
                                b->vec2<f32>(5.f, 6.f),  // ddy
-                               b->vec2<i32>(7, 8));     // offset
+                               b->vec2<i32>(7, 7));     // offset
           },
       },
       {
@@ -1413,7 +1431,7 @@ std::vector<TextureOverloadCase> TextureOverloadCase::ValidCases() {
                                3,                       // array_index
                                b->vec2<f32>(4.f, 5.f),  // ddx
                                b->vec2<f32>(6.f, 7.f),  // ddy
-                               b->vec2<i32>(8, 9));     // offset
+                               b->vec2<i32>(6, 7));     // offset
           },
       },
       {
@@ -1455,7 +1473,7 @@ std::vector<TextureOverloadCase> TextureOverloadCase::ValidCases() {
                                b->vec3<f32>(1.f, 2.f, 3.f),  // coords
                                b->vec3<f32>(4.f, 5.f, 6.f),  // ddx
                                b->vec3<f32>(7.f, 8.f, 9.f),  // ddy
-                               b->vec3<i32>(10, 11, 12));    // offset
+                               b->vec3<i32>(0, 1, 2));       // offset
           },
       },
       {
@@ -2217,6 +2235,18 @@ std::vector<TextureOverloadCase> TextureOverloadCase::ValidCases() {
           },
       },
   };
+}
+
+bool ReturnsVoid(ValidTextureOverload texture_overload) {
+  switch (texture_overload) {
+    case ValidTextureOverload::kStoreWO1dRgba32float:
+    case ValidTextureOverload::kStoreWO2dRgba32float:
+    case ValidTextureOverload::kStoreWO2dArrayRgba32float:
+    case ValidTextureOverload::kStoreWO3dRgba32float:
+      return true;
+    default:
+      return false;
+  }
 }
 
 }  // namespace test

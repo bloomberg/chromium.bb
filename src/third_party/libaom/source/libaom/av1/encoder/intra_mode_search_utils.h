@@ -420,15 +420,12 @@ static INLINE void collect_hog_data(const MACROBLOCK *x, BLOCK_SIZE bsize,
 static AOM_INLINE void prune_intra_mode_with_hog(
     const MACROBLOCK *x, BLOCK_SIZE bsize, BLOCK_SIZE sb_size, float th,
     uint8_t *directional_mode_skip_mask, int is_chroma) {
-  aom_clear_system_state();
-
   const int plane = is_chroma ? AOM_PLANE_U : AOM_PLANE_Y;
   float hist[BINS] = { 0.0f };
   collect_hog_data(x, bsize, sb_size, plane, hist);
 
   // Make prediction for each of the mode
   float scores[DIRECTIONAL_MODES] = { 0.0f };
-  aom_clear_system_state();
   av1_nn_predict(hist, &av1_intra_hog_model_nnconfig, 1, scores);
   for (UV_PREDICTION_MODE uv_mode = UV_V_PRED; uv_mode <= UV_D67_PRED;
        uv_mode++) {
@@ -436,8 +433,6 @@ static AOM_INLINE void prune_intra_mode_with_hog(
       directional_mode_skip_mask[uv_mode] = 1;
     }
   }
-
-  aom_clear_system_state();
 }
 #undef BINS
 

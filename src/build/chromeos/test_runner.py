@@ -435,10 +435,12 @@ class TastTest(RemoteTest):
         result = base_test_result.ResultType.FAIL
       else:
         result = base_test_result.ResultType.PASS
+      primary_error_message = None
       error_log = ''
       if errors:
         # See the link below for the format of these errors:
-        # https://godoc.org/chromium.googlesource.com/chromiumos/platform/tast.git/src/chromiumos/tast/testing#Error
+        # https://source.chromium.org/chromiumos/chromiumos/codesearch/+/main:src/platform/tast/src/chromiumos/tast/cmd/tast/internal/run/resultsjson/resultsjson.go
+        primary_error_message = errors[0]['reason']
         for err in errors:
           error_log += err['stack'] + '\n'
       error_log += (
@@ -460,7 +462,8 @@ class TastTest(RemoteTest):
             duration_ms,
             error_log,
             None,
-            artifacts=artifacts)
+            artifacts=artifacts,
+            failure_reason=primary_error_message)
 
     if self._rdb_client and self._logs_dir:
       # Attach artifacts from the device that don't apply to a single test.
@@ -702,6 +705,23 @@ class GTestTest(RemoteTest):
   def post_run(self, _):
     if self._on_device_script:
       os.remove(self._on_device_script)
+
+    if self._test_launcher_summary_output and self._rdb_client:
+      if not os.path.exists(self._test_launcher_summary_output):
+        logging.error('Unable to locate %s in order to upload results to RDB.',
+                      self._test_launcher_summary_output)
+        return
+      with open(self._test_launcher_summary_output) as f:
+        raw_results = json.load(f)
+      parsed_results = json_results.ParseResultsFromJson(raw_results)
+      for r in parsed_results:
+        self._rdb_client.Post(
+            r.GetName(),
+            r.GetType(),
+            r.GetDuration(),
+            r.GetLog(),
+            None,
+            failure_reason=r.GetFailureReason())
 
 
 def device_test(args, unknown_args):

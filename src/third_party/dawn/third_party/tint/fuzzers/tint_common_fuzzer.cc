@@ -15,6 +15,7 @@
 #include "fuzzers/tint_common_fuzzer.h"
 
 #include <cstring>
+#include <fstream>
 #include <memory>
 #include <sstream>
 #include <string>
@@ -28,6 +29,7 @@
 #include "src/ast/module.h"
 #include "src/diagnostic/formatter.h"
 #include "src/program.h"
+#include "src/utils/hash.h"
 
 namespace tint {
 namespace fuzzers {
@@ -35,10 +37,10 @@ namespace fuzzers {
 namespace {
 
 [[noreturn]] void FatalError(const tint::diag::List& diags,
-                             std::string msg = "") {
+                             const std::string& msg = "") {
   auto printer = tint::diag::Printer::create(stderr, true);
-  if (msg.size()) {
-    printer->write((msg + "\n").c_str(), {diag::Color::kRed, true});
+  if (!msg.empty()) {
+    printer->write(msg + "\n", {diag::Color::kRed, true});
   }
   tint::diag::Formatter().format(diags, printer.get());
   __builtin_trap();
@@ -51,7 +53,7 @@ namespace {
 
 transform::VertexAttributeDescriptor ExtractVertexAttributeDescriptor(
     Reader* r) {
-  transform::VertexAttributeDescriptor desc;
+  transform::VertexAttributeDescriptor desc{};
   desc.format = r->enum_class<transform::VertexFormat>(
       static_cast<uint8_t>(transform::VertexFormat::kLastEntry) + 1);
   desc.offset = r->read<uint32_t>();
@@ -63,14 +65,14 @@ transform::VertexBufferLayoutDescriptor ExtractVertexBufferLayoutDescriptor(
     Reader* r) {
   transform::VertexBufferLayoutDescriptor desc;
   desc.array_stride = r->read<uint32_t>();
-  desc.step_mode = r->enum_class<transform::InputStepMode>(
-      static_cast<uint8_t>(transform::InputStepMode::kLastEntry) + 1);
+  desc.step_mode = r->enum_class<transform::VertexStepMode>(
+      static_cast<uint8_t>(transform::VertexStepMode::kLastEntry) + 1);
   desc.attributes = r->vector(ExtractVertexAttributeDescriptor);
   return desc;
 }
 
 bool SPIRVToolsValidationCheck(const tint::Program& program,
-                               std::vector<uint32_t> spirv) {
+                               const std::vector<uint32_t>& spirv) {
   spvtools::SpirvTools tools(SPV_ENV_VULKAN_1_1);
   const tint::diag::List& diags = program.Diagnostics();
   tools.SetMessageConsumer([diags](spv_message_level_t, const char*,
@@ -115,7 +117,7 @@ void Reader::read(void* out, size_t n) {
     mark_failed();
     return;
   }
-  memcpy(&out, data_, n);
+  memcpy(out, data_, n);
   data_ += n;
   size_ -= n;
 }
@@ -168,6 +170,22 @@ void ExtractVertexPullingInputs(Reader* r, tint::transform::DataMap* inputs) {
   inputs->Add<transform::VertexPulling::Config>(cfg);
 }
 
+void ExtractSpirvOptions(Reader* r, writer::spirv::Options* options) {
+  *options = r->read<writer::spirv::Options>();
+}
+
+void ExtractWgslOptions(Reader* r, writer::wgsl::Options* options) {
+  *options = r->read<writer::wgsl::Options>();
+}
+
+void ExtractHlslOptions(Reader* r, writer::hlsl::Options* options) {
+  *options = r->read<writer::hlsl::Options>();
+}
+
+void ExtractMslOptions(Reader* r, writer::msl::Options* options) {
+  *options = r->read<writer::msl::Options>();
+}
+
 CommonFuzzer::CommonFuzzer(InputFormat input, OutputFormat output)
     : input_(input),
       output_(output),
@@ -181,31 +199,52 @@ int CommonFuzzer::Run(const uint8_t* data, size_t size) {
 
   Program program;
 
-#if TINT_BUILD_WGSL_READER
-  std::unique_ptr<Source::File> file;
-#endif  // TINT_BUILD_WGSL_READER
-
 #if TINT_BUILD_SPV_READER
-  size_t u32_size = size / sizeof(uint32_t);
-  const uint32_t* u32_data = reinterpret_cast<const uint32_t*>(data);
-  std::vector<uint32_t> spirv_input(u32_data, u32_data + u32_size);
+  std::vector<uint32_t> spirv_input(size / sizeof(uint32_t));
 
 #endif  // TINT_BUILD_SPV_READER
+
+#if TINT_BUILD_WGSL_READER || TINT_BUILD_SPV_READER
+  auto dump_input_data = [&](auto& content, const char* extension) {
+    size_t hash = utils::Hash(content);
+    auto filename = "fuzzer_input_" + std::to_string(hash) + extension;  //
+    std::ofstream fout(filename, std::ios::binary);
+    fout.write(reinterpret_cast<const char*>(data),
+               static_cast<std::streamsize>(size));
+    std::cout << "Dumped input data to " << filename << std::endl;
+  };
+#endif
 
   switch (input_) {
 #if TINT_BUILD_WGSL_READER
     case InputFormat::kWGSL: {
+      // Clear any existing diagnostics, as these will hold pointers to file_,
+      // which we are about to release.
+      diagnostics_ = {};
       std::string str(reinterpret_cast<const char*>(data), size);
-      file = std::make_unique<Source::File>("test.wgsl", str);
-      program = reader::wgsl::Parse(file.get());
+      file_ = std::make_unique<Source::File>("test.wgsl", str);
+      if (dump_input_) {
+        dump_input_data(str, ".wgsl");
+      }
+      program = reader::wgsl::Parse(file_.get());
       break;
     }
 #endif  // TINT_BUILD_WGSL_READER
 #if TINT_BUILD_SPV_READER
     case InputFormat::kSpv: {
-      if (spirv_input.size() != 0) {
-        program = reader::spirv::Parse(spirv_input);
+      // `spirv_input` has been initialized with the capacity to store `size /
+      // sizeof(uint32_t)` uint32_t values. If `size` is not a multiple of
+      // sizeof(uint32_t) then not all of `data` can be copied into
+      // `spirv_input`, and any trailing bytes are discarded.
+      std::memcpy(spirv_input.data(), data,
+                  spirv_input.size() * sizeof(uint32_t));
+      if (spirv_input.empty()) {
+        return 0;
       }
+      if (dump_input_) {
+        dump_input_data(spirv_input, ".spv");
+      }
+      program = reader::spirv::Parse(spirv_input);
       break;
     }
 #endif  // TINT_BUILD_SPV_READER
@@ -218,7 +257,7 @@ int CommonFuzzer::Run(const uint8_t* data, size_t size) {
   }
 
   if (!program.IsValid()) {
-    errors_ = diag::Formatter().format(program.Diagnostics());
+    diagnostics_ = program.Diagnostics();
     return 0;
   }
 
@@ -235,68 +274,77 @@ int CommonFuzzer::Run(const uint8_t* data, size_t size) {
 
     auto entry_points = inspector.GetEntryPoints();
     if (inspector.has_error()) {
-      errors_ = inspector.error();
+      diagnostics_.add_error(tint::diag::System::Inspector, inspector.error());
       return 0;
     }
 
     for (auto& ep : entry_points) {
       auto remapped_name = inspector.GetRemappedNameForEntryPoint(ep.name);
       if (inspector.has_error()) {
-        errors_ = inspector.error();
+        diagnostics_.add_error(tint::diag::System::Inspector,
+                               inspector.error());
         return 0;
       }
 
       auto constant_ids = inspector.GetConstantIDs();
       if (inspector.has_error()) {
-        errors_ = inspector.error();
+        diagnostics_.add_error(tint::diag::System::Inspector,
+                               inspector.error());
         return 0;
       }
 
       auto uniform_bindings =
           inspector.GetUniformBufferResourceBindings(ep.name);
       if (inspector.has_error()) {
-        errors_ = inspector.error();
+        diagnostics_.add_error(tint::diag::System::Inspector,
+                               inspector.error());
         return 0;
       }
 
       auto storage_bindings =
           inspector.GetStorageBufferResourceBindings(ep.name);
       if (inspector.has_error()) {
-        errors_ = inspector.error();
+        diagnostics_.add_error(tint::diag::System::Inspector,
+                               inspector.error());
         return 0;
       }
 
       auto readonly_bindings =
           inspector.GetReadOnlyStorageBufferResourceBindings(ep.name);
       if (inspector.has_error()) {
-        errors_ = inspector.error();
+        diagnostics_.add_error(tint::diag::System::Inspector,
+                               inspector.error());
         return 0;
       }
 
       auto sampler_bindings = inspector.GetSamplerResourceBindings(ep.name);
       if (inspector.has_error()) {
-        errors_ = inspector.error();
+        diagnostics_.add_error(tint::diag::System::Inspector,
+                               inspector.error());
         return 0;
       }
 
       auto comparison_sampler_bindings =
           inspector.GetComparisonSamplerResourceBindings(ep.name);
       if (inspector.has_error()) {
-        errors_ = inspector.error();
+        diagnostics_.add_error(tint::diag::System::Inspector,
+                               inspector.error());
         return 0;
       }
 
       auto sampled_texture_bindings =
           inspector.GetSampledTextureResourceBindings(ep.name);
       if (inspector.has_error()) {
-        errors_ = inspector.error();
+        diagnostics_.add_error(tint::diag::System::Inspector,
+                               inspector.error());
         return 0;
       }
 
       auto multisampled_texture_bindings =
           inspector.GetMultisampledTextureResourceBindings(ep.name);
       if (inspector.has_error()) {
-        errors_ = inspector.error();
+        diagnostics_.add_error(tint::diag::System::Inspector,
+                               inspector.error());
         return 0;
       }
     }
@@ -307,7 +355,7 @@ int CommonFuzzer::Run(const uint8_t* data, size_t size) {
     if (!out.program.IsValid()) {
       // Transforms can produce error messages for bad input.
       // Catch ICEs and errors from non transform systems.
-      for (auto diag : out.program.Diagnostics()) {
+      for (const auto& diag : out.program.Diagnostics()) {
         if (diag.severity > diag::Severity::Error ||
             diag.system != diag::System::Transform) {
           FatalError(out.program.Diagnostics(),
@@ -323,24 +371,24 @@ int CommonFuzzer::Run(const uint8_t* data, size_t size) {
   switch (output_) {
     case OutputFormat::kWGSL: {
 #if TINT_BUILD_WGSL_WRITER
-      writer::wgsl::Options options;
-      auto result = writer::wgsl::Generate(&program, options);
+      auto result = writer::wgsl::Generate(&program, options_wgsl_);
+      generated_wgsl_ = std::move(result.wgsl);
       if (!result.success) {
-        errors_ = writer_->error();
-        return 0;
+        FatalError(program.Diagnostics(),
+                   "WGSL writer failed: " + result.error);
       }
 #endif  // TINT_BUILD_WGSL_WRITER
       break;
     }
     case OutputFormat::kSpv: {
 #if TINT_BUILD_SPV_WRITER
-      writer::spirv::Options options;
-      auto result = writer::spirv::Generate(&program, options);
+      auto result = writer::spirv::Generate(&program, options_spirv_);
+      generated_spirv_ = std::move(result.spirv);
       if (!result.success) {
-        errors_ = writer_->error();
-        return 0;
+        FatalError(program.Diagnostics(),
+                   "SPIR-V writer failed: " + result.error);
       }
-      if (!SPIRVToolsValidationCheck(program, result.spirv)) {
+      if (!SPIRVToolsValidationCheck(program, generated_spirv_)) {
         FatalError(program.Diagnostics(),
                    "Fuzzing detected invalid spirv being emitted by Tint");
       }
@@ -350,22 +398,21 @@ int CommonFuzzer::Run(const uint8_t* data, size_t size) {
     }
     case OutputFormat::kHLSL: {
 #if TINT_BUILD_HLSL_WRITER
-      writer::hlsl::Options options;
-      auto result = writer::hlsl::Generate(&program, options);
+      auto result = writer::hlsl::Generate(&program, options_hlsl_);
+      generated_hlsl_ = std::move(result.hlsl);
       if (!result.success) {
-        errors_ = writer_->error();
-        return 0;
+        FatalError(program.Diagnostics(),
+                   "HLSL writer failed: " + result.error);
       }
 #endif  // TINT_BUILD_HLSL_WRITER
       break;
     }
     case OutputFormat::kMSL: {
 #if TINT_BUILD_MSL_WRITER
-      writer::msl::Options options;
-      auto result = writer::msl::Generate(&program, options);
+      auto result = writer::msl::Generate(&program, options_msl_);
+      generated_msl_ = std::move(result.msl);
       if (!result.success) {
-        errors_ = writer_->error();
-        return 0;
+        FatalError(program.Diagnostics(), "MSL writer failed: " + result.error);
       }
 #endif  // TINT_BUILD_MSL_WRITER
       break;
@@ -375,10 +422,6 @@ int CommonFuzzer::Run(const uint8_t* data, size_t size) {
   }
 
   return 0;
-}
-
-const writer::Writer* CommonFuzzer::GetWriter() const {
-  return writer_.get();
 }
 
 }  // namespace fuzzers

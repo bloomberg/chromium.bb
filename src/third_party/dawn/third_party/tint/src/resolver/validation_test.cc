@@ -20,6 +20,7 @@
 #include "src/ast/break_statement.h"
 #include "src/ast/call_statement.h"
 #include "src/ast/continue_statement.h"
+#include "src/ast/discard_statement.h"
 #include "src/ast/if_statement.h"
 #include "src/ast/intrinsic_texture_helper_test.h"
 #include "src/ast/loop_statement.h"
@@ -93,11 +94,11 @@ TEST_F(ResolverValidationTest, WorkgroupMemoryUsedInFragmentStage) {
   Global("dst", ty.vec4<f32>(), ast::StorageClass::kPrivate);
   auto* stmt = Assign(Expr("dst"), Expr(Source{{3, 4}}, "wg"));
 
-  Func(Source{{5, 6}}, "f2", ast::VariableList{}, ty.void_(), {stmt});
-  Func(Source{{7, 8}}, "f1", ast::VariableList{}, ty.void_(),
-       {Ignore(Call("f2"))});
-  Func(Source{{9, 10}}, "f0", ast::VariableList{}, ty.void_(),
-       {Ignore(Call("f1"))},
+  Func(Source{{5, 6}}, "f2", {}, ty.void_(), {stmt});
+  Func(Source{{7, 8}}, "f1", {}, ty.void_(),
+       {create<ast::CallStatement>(Call("f2"))});
+  Func(Source{{9, 10}}, "f0", {}, ty.void_(),
+       {create<ast::CallStatement>(Call("f1"))},
        ast::DecorationList{Stage(ast::PipelineStage::kFragment)});
 
   EXPECT_FALSE(r()->Resolve());
@@ -351,8 +352,8 @@ TEST_F(ResolverValidationTest, StorageClass_FunctionVariableWorkgroupClass) {
             "error: function variable has a non-function storage class");
 }
 
-TEST_F(ResolverValidationTest, StorageClass_FunctionVariableHandleClass) {
-  auto* var = Var("s", ty.sampler(ast::SamplerKind::kSampler));
+TEST_F(ResolverValidationTest, StorageClass_FunctionVariableI32) {
+  auto* var = Var("s", ty.i32(), ast::StorageClass::kPrivate);
 
   auto* stmt = Decl(var);
   Func("func", ast::VariableList{}, ty.void_(), ast::StatementList{stmt},
@@ -650,6 +651,133 @@ TEST_F(ResolverTest, Stmt_Loop_ContinueInLoopBodyAfterDecl_UsageInContinuing) {
   EXPECT_TRUE(r()->Resolve());
 }
 
+TEST_F(ResolverTest, Stmt_Loop_ReturnInContinuing_Direct) {
+  // loop  {
+  //   continuing {
+  //     return;
+  //   }
+  // }
+
+  WrapInFunction(Loop(  // loop
+      Block(),          //   loop block
+      Block(            //   loop continuing block
+          Return(Source{{12, 34}}))));
+
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(
+      r()->error(),
+      R"(12:34 error: continuing blocks must not contain a return statement)");
+}
+
+TEST_F(ResolverTest, Stmt_Loop_ReturnInContinuing_Indirect) {
+  // loop {
+  //   continuing {
+  //     loop {
+  //       return;
+  //     }
+  //   }
+  // }
+
+  WrapInFunction(Loop(         // outer loop
+      Block(),                 //   outer loop block
+      Block(Source{{56, 78}},  //   outer loop continuing block
+            Loop(              //     inner loop
+                Block(         //       inner loop block
+                    Return(Source{{12, 34}}))))));
+
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(
+      r()->error(),
+      R"(12:34 error: continuing blocks must not contain a return statement
+56:78 note: see continuing block here)");
+}
+
+TEST_F(ResolverTest, Stmt_Loop_DiscardInContinuing_Direct) {
+  // loop  {
+  //   continuing {
+  //     discard;
+  //   }
+  // }
+
+  WrapInFunction(Loop(  // loop
+      Block(),          //   loop block
+      Block(            //   loop continuing block
+          create<ast::DiscardStatement>(Source{{12, 34}}))));
+
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(
+      r()->error(),
+      R"(12:34 error: continuing blocks must not contain a discard statement)");
+}
+
+TEST_F(ResolverTest, Stmt_Loop_DiscardInContinuing_Indirect) {
+  // loop {
+  //   continuing {
+  //     loop { discard; }
+  //   }
+  // }
+
+  WrapInFunction(Loop(         // outer loop
+      Block(),                 //   outer loop block
+      Block(Source{{56, 78}},  //   outer loop continuing block
+            Loop(              //     inner loop
+                Block(         //       inner loop block
+                    create<ast::DiscardStatement>(Source{{12, 34}}))))));
+
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(
+      r()->error(),
+      R"(12:34 error: continuing blocks must not contain a discard statement
+56:78 note: see continuing block here)");
+}
+
+TEST_F(ResolverTest, Stmt_Loop_ContinueInContinuing_Direct) {
+  // loop  {
+  //     continuing {
+  //         continue;
+  //     }
+  // }
+
+  WrapInFunction(Loop(         // loop
+      Block(),                 //   loop block
+      Block(Source{{56, 78}},  //   loop continuing block
+            create<ast::ContinueStatement>(Source{{12, 34}}))));
+
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(
+      r()->error(),
+      "12:34 error: continuing blocks must not contain a continue statement");
+}
+
+TEST_F(ResolverTest, Stmt_Loop_ContinueInContinuing_Indirect) {
+  // loop {
+  //   continuing {
+  //     loop {
+  //       continue;
+  //     }
+  //   }
+  // }
+
+  WrapInFunction(Loop(  // outer loop
+      Block(),          //   outer loop block
+      Block(            //   outer loop continuing block
+          Loop(         //     inner loop
+              Block(    //       inner loop block
+                  create<ast::ContinueStatement>(Source{{12, 34}}))))));
+
+  EXPECT_TRUE(r()->Resolve()) << r()->error();
+}
+
+TEST_F(ResolverTest, Stmt_ForLoop_CondIsBoolRef) {
+  // var cond : bool = true;
+  // for (; cond; ) {
+  // }
+
+  auto* cond = Var("cond", ty.bool_(), Expr(true));
+  WrapInFunction(Decl(cond), For(nullptr, "cond", nullptr, Block()));
+  EXPECT_TRUE(r()->Resolve()) << r()->error();
+}
+
 TEST_F(ResolverTest, Stmt_ForLoop_CondIsNotBool) {
   // for (; 1.0f; ) {
   // }
@@ -690,6 +818,28 @@ TEST_F(ResolverValidationTest, Stmt_BreakNotInLoopOrSwitch) {
   EXPECT_FALSE(r()->Resolve());
   EXPECT_EQ(r()->error(),
             "12:34 error: break statement must be in a loop or switch case");
+}
+
+TEST_F(ResolverValidationTest, StructMemberDuplicateName) {
+  Structure("S", {Member(Source{{12, 34}}, "a", ty.i32()),
+                  Member(Source{{56, 78}}, "a", ty.i32())});
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(r()->error(),
+            "56:78 error: redefinition of 'a'\n12:34 note: previous definition "
+            "is here");
+}
+TEST_F(ResolverValidationTest, StructMemberDuplicateNameDifferentTypes) {
+  Structure("S", {Member(Source{{12, 34}}, "a", ty.bool_()),
+                  Member(Source{{12, 34}}, "a", ty.vec3<f32>())});
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(r()->error(),
+            "12:34 error: redefinition of 'a'\n12:34 note: previous definition "
+            "is here");
+}
+TEST_F(ResolverValidationTest, StructMemberDuplicateNamePass) {
+  Structure("S", {Member("a", ty.i32()), Member("b", ty.f32())});
+  Structure("S1", {Member("a", ty.i32()), Member("b", ty.f32())});
+  EXPECT_TRUE(r()->Resolve());
 }
 
 TEST_F(ResolverValidationTest, NonPOTStructMemberAlignDecoration) {
@@ -769,7 +919,7 @@ TEST_F(ResolverTest, Expr_Constructor_Cast_Pointer) {
   WrapInFunction(Decl(vf), Decl(ip));
 
   EXPECT_FALSE(r()->Resolve());
-  EXPECT_EQ(r()->error(), "12:34 error: cannot cast to a pointer");
+  EXPECT_EQ(r()->error(), "12:34 error: type is not constructible");
 }
 
 }  // namespace

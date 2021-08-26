@@ -27,17 +27,17 @@ EnumNameTable<ReceiverMessage::Type, 5> kMessageTypeNames{
      {"CAPABILITIES_RESPONSE", ReceiverMessage::Type::kCapabilitiesResponse},
      {"RPC", ReceiverMessage::Type::kRpc}}};
 
-EnumNameTable<MediaCapability, 9> kMediaCapabilityNames{{
-    {"audio", MediaCapability::kAudio},
-    {"aac", MediaCapability::kAac},
-    {"opus", MediaCapability::kOpus},
-    {"video", MediaCapability::kVideo},
-    {"4k", MediaCapability::k4k},
-    {"h264", MediaCapability::kH264},
-    {"vp8", MediaCapability::kVp8},
-    {"vp9", MediaCapability::kVp9},
-    {"hevc", MediaCapability::kHevc},
-}};
+EnumNameTable<MediaCapability, 10> kMediaCapabilityNames{
+    {{"audio", MediaCapability::kAudio},
+     {"aac", MediaCapability::kAac},
+     {"opus", MediaCapability::kOpus},
+     {"video", MediaCapability::kVideo},
+     {"4k", MediaCapability::k4k},
+     {"h264", MediaCapability::kH264},
+     {"vp8", MediaCapability::kVp8},
+     {"vp9", MediaCapability::kVp9},
+     {"hevc", MediaCapability::kHevc},
+     {"av1", MediaCapability::kAv1}}};
 
 ReceiverMessage::Type GetMessageType(const Json::Value& root) {
   std::string type;

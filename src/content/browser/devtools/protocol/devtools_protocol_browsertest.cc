@@ -2313,15 +2313,15 @@ class CountingDownloadFile : public download::DownloadFileImpl {
     active_files_--;
   }
 
-  void Initialize(InitializeCallback callback,
-                  CancelRequestCallback cancel_request_callback,
-                  const download::DownloadItem::ReceivedSlices& received_slices,
-                  bool is_parallelizable) override {
+  void Initialize(
+      InitializeCallback callback,
+      CancelRequestCallback cancel_request_callback,
+      const download::DownloadItem::ReceivedSlices& received_slices) override {
     DCHECK(download::GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
     active_files_++;
     download::DownloadFileImpl::Initialize(std::move(callback),
                                            std::move(cancel_request_callback),
-                                           received_slices, is_parallelizable);
+                                           received_slices);
   }
 
   static void GetNumberActiveFiles(int* result) {
@@ -2431,7 +2431,7 @@ bool IsDownloadInState(download::DownloadItem::DownloadState state,
 class DevToolsDownloadContentTest : public DevToolsProtocolTest {
  protected:
   void SetUpOnMainThread() override {
-    base::ThreadRestrictions::SetIOAllowed(true);
+    base::ScopedAllowBlockingForTesting allow_blocking;
     ASSERT_TRUE(downloads_directory_.CreateUniqueTempDir());
 
     // Set shell default download manager to test proxy reset behavior.
@@ -2543,7 +2543,7 @@ class DevToolsDownloadContentTest : public DevToolsProtocolTest {
 
 // Check that downloading a single file works.
 IN_PROC_BROWSER_TEST_F(DevToolsDownloadContentTest, SingleDownload) {
-  base::ThreadRestrictions::SetIOAllowed(true);
+  base::ScopedAllowBlockingForTesting allow_blocking;
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   std::string download_path =
@@ -2565,7 +2565,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsDownloadContentTest, SingleDownload) {
 
 // Check that downloads can be cancelled gracefully.
 IN_PROC_BROWSER_TEST_F(DevToolsDownloadContentTest, DownloadCancelled) {
-  base::ThreadRestrictions::SetIOAllowed(true);
+  base::ScopedAllowBlockingForTesting allow_blocking;
   SetupEnsureNoPendingDownloads();
   NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
   Attach();
@@ -2589,7 +2589,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsDownloadContentTest, DownloadCancelled) {
 
 // Check that denying downloads works.
 IN_PROC_BROWSER_TEST_F(DevToolsDownloadContentTest, DeniedDownload) {
-  base::ThreadRestrictions::SetIOAllowed(true);
+  base::ScopedAllowBlockingForTesting allow_blocking;
   SetupEnsureNoPendingDownloads();
   NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
   Attach();
@@ -2606,7 +2606,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsDownloadContentTest, DeniedDownload) {
 
 // Check that defaulting downloads works as expected.
 IN_PROC_BROWSER_TEST_F(DevToolsDownloadContentTest, DefaultDownload) {
-  base::ThreadRestrictions::SetIOAllowed(true);
+  base::ScopedAllowBlockingForTesting allow_blocking;
   SetupEnsureNoPendingDownloads();
   NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
   Attach();
@@ -2631,7 +2631,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsDownloadContentTest, DefaultDownload) {
 // Check that defaulting downloads cancels when there's no proxy
 // download delegate.
 IN_PROC_BROWSER_TEST_F(DevToolsDownloadContentTest, DefaultDownloadHeadless) {
-  base::ThreadRestrictions::SetIOAllowed(true);
+  base::ScopedAllowBlockingForTesting allow_blocking;
   SetupEnsureNoPendingDownloads();
   NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
   Attach();
@@ -2652,7 +2652,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsDownloadContentTest, DefaultDownloadHeadless) {
 // Check that downloading multiple (in this case, 2) files does not result in
 // corrupted files.
 IN_PROC_BROWSER_TEST_F(DevToolsDownloadContentTest, DISABLED_MultiDownload) {
-  base::ThreadRestrictions::SetIOAllowed(true);
+  base::ScopedAllowBlockingForTesting allow_blocking;
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   std::string download1_path =

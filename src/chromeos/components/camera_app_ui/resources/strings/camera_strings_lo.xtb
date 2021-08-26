@@ -3,6 +3,8 @@
 <translationbundle lang="lo">
 <translation id="1175958423215084756">ກວດພົບລິ້ງ. <ph name="HOSTNAME" /></translation>
 <translation id="1276998909102132017">ຮູບພາບໃນຄັງ</translation>
+<translation id="1300209025925956156">ສະແກນເອກະສານຂອງທ່ານ</translation>
+<translation id="137991641490787891"><ph name="ASPECT_RATIO_WIDTH" />. ຊອກຫາ + ລູກສອນຊ້າຍເພື່ອເຂົ້າເຖິງ.</translation>
 <translation id="1430915738399379752">ພິມ</translation>
 <translation id="1467231725790366244">ຖອດສາຍ <ph name="CAMERA" /> ແລ້ວ.</translation>
 <translation id="1473110567575736769">ໂມງນັບຖອຍຫຼັງ 3 ວິນາທີ</translation>
@@ -31,7 +33,6 @@
 <translation id="2549985041256363841">ເລີ່ມການບັນທຶກ</translation>
 <translation id="2599796128805996109">ກ້ອງຫຼັງ</translation>
 <translation id="2879583609344924966">ສຽບສາຍ <ph name="CAMERA" /> ແລ້ວ.</translation>
-<translation id="2912439424121107408">ບໍ່ຮອງຮັບໂໝດຜູ້ຊ່ຽວຊານໃນອຸປະກອນນີ້</translation>
 <translation id="2968794441791257519">ຮູບພາບ ແລະ ວິດີໂອທີ່ຖ່າຍດ້ວຍກ້ອງຖ່າຍຮູບຈະຖືກຍ້າຍໄປໃສ່ໂຟນເດີດາວໂຫຼດ. ທ່ານສາມາດເຂົ້າເຖິງພວກມັນໄດ້ໃນໄຟລ໌.
 
        ແອັບທີ່ມີການອະນຸຍາດບ່ອນເກັບຂໍ້ມູນຈະມີສິດເຂົ້າເຖິງຮູບພາບ ແລະ ວິດີໂອຂອງທ່ານໄດ້.</translation>
@@ -42,15 +43,16 @@
 <translation id="3227137524299004712">ໄມໂຄຣໂຟນ</translation>
 <translation id="3240426699337459095">ອັດ​ສຳ​ເນົາ​ລິ້ງ​ແລ້ວ</translation>
 <translation id="3259149966178251584">ຄວາມລະອຽດກ້ອງຖ່າຍຮູບ</translation>
+<translation id="3260401663013584785">ບໍ່ສາມາດກວດພົບເອກະສານໄດ້</translation>
 <translation id="3448774564454087943">ບໍ່ໄດ້ບັນທຶກວິດີໂອເນື່ອງຈາກມັນສັ້ນເກີນໄປ</translation>
 <translation id="3517926952904427380">ບໍ່ສາມາດຖ່າຍຮູບບຸກຄົນໄດ້</translation>
 <translation id="3569311554794739032">ທ່ານຕ້ອງການລຶບ <ph name="FILE" /> ອອກແທ້ບໍ?</translation>
-<translation id="3733597664308256288">ສາມາດໃຊ້ການຄວບຄຸມກ້ອງຖ່າຍຮູບເພີ່ມເຕີມໄດ້. ຊອກຫາ + ລູກຂວາ ເພື່ອເຂົ້າເຖິງ.</translation>
 <translation id="3810838688059735925">ວິ​ດີ​ໂອ</translation>
 <translation id="3838931309141338733">ສະແກນບາໂຄດ</translation>
 <translation id="3892148308691398805">ສຳເນົາຂໍ້ຄວາມ</translation>
 <translation id="4000398125663085899">ດຽວນີ້ຮູບພາບ ແລະ ວິດີໂອໃໝ່ຈະຖືກບັນທຶກໄວ້ໃນໂຟນເດີໃນແອັບ Files: ໄຟລ໌ຂອງຂ້ອຍ &gt; ກ້ອງ</translation>
 <translation id="4118525110028899586">ຢຸດການບັນທຶກໄວ້ຊົ່ວຄາວ</translation>
+<translation id="4121305183798804752">ກວດພົບເອກະສານ</translation>
 <translation id="4269820728363426813">ກັອບປີ້ທີ່ຢູ່ລິ້ງ</translation>
 <translation id="4279490309300973883">ການສ່ອງ</translation>
 <translation id="4329152592498422850">ສະຫຼັບເພື່ອຖ່າຍຮູບແບບເປັນສີ່ຫຼ່ຽມສາກ</translation>
@@ -65,10 +67,13 @@
 <translation id="5057360777601936059">ກ້ອງຖ່າຍຮູບຂອງທ່ານບໍ່ສາມາດໃຊ້ໄດ້ໃນຂະນະນີ້.
         ກະລຸນາກວດເບິ່ງວ່າໄດ້ເຊື່ອມຕໍ່ກ້ອງຖ່າຍຮູບຢ່າງຖືກຕ້ອງຫຼືບໍ່.</translation>
 <translation id="5152121255775685072">ໄປທີ່ຄັງຮູບພາບ</translation>
+<translation id="520537883758714667">ຕອນນີ້ສາມາດສະແກນເອກະສານໄດ້ແລ້ວ</translation>
 <translation id="5268823927180092501">ເປີດການນຳໃຊ້ໂໝດເອກະສານຢູ່ກ້ອງຖ່າຍຮູບທັງໝົດ</translation>
 <translation id="5422455049771430511">ຮູບພາບ ແລະ ວິດີໂອຂອງທ່ານມີໂຟນເດີໃໝ່</translation>
+<translation id="5444515100983837161">ວາງຂອບທັງໝົດຂອງເອກະສານໄວ້ພາຍໃນເຟຣມ. ການສະແກນເຮັດວຽກໄດ້ດີທີ່ສຸດຫາກເອກະສານ ແລະ ພື້ນຫຼັງເປັນຄົນລະສີກັນ.</translation>
 <translation id="5671277269877808209">ສີ່ຫຼ່ຽມ</translation>
 <translation id="5753488212459587150">ເປີດການນຳໃຊ້ໂໝດຜູ້ຊ່ຽວຊານ</translation>
+<translation id="5759254179196327752">ສະແກນເອກະສານ</translation>
 <translation id="5775960006311140197">ໂໝດຜູ້ຊ່ຽວຊານ</translation>
 <translation id="5869546221129391014">ຕາຂ່າຍ</translation>
 <translation id="5975083100439434680">ຊູມອອກ</translation>
@@ -82,6 +87,7 @@
 
 ຖ້າຄຳຕິຊົມຂອງທ່ານກ່ຽວກັບຄຸນນະພາບຮູບ ຫຼື ວິດີໂອ, ກະລຸນາແນບຮູບ ຫຼື ວິດີໂອຕົວຢ່າງມານຳ ແລະ ໃຫ້ລາຍລະອຽດວ່າມີຫຍັງຜິດພາດ. (ຕົວຢ່າງ: ຮູບມືດເກີນໄປ ຫຼື ຮູບເປົ້າໝາຍບໍ່ຢູ່ໃນໂຟກັສ.)</translation>
 <translation id="6420689864531458495">(<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" /> - <ph name="WIDTH" />x<ph name="HEIGHT" />) <ph name="MEGAPIXEL" /> ເມກະພິກເຊວ</translation>
+<translation id="667999046851023355">ເອ​ກະ​ສານ</translation>
 <translation id="6681668084120808868">ຖ່າຍຮູບ</translation>
 <translation id="6778482348691154169">ບໍ່ສາມາດຖ່າຍຮູບໄດ້</translation>
 <translation id="695140971690006676">ຣິເຊັດທັງໝົດ</translation>
@@ -108,11 +114,13 @@
 <translation id="8425673304802773841">ອຽງລົງ</translation>
 <translation id="8428213095426709021">ການ​ຕັ້ງຄ່າ</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" />p (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
+<translation id="8712637175834984815">ເຂົ້າໃຈແລ້ວ</translation>
 <translation id="8732462232047530626">ສະແດງຕົວຢ່າງເມຕາເດຕາ</translation>
 <translation id="8815966864175525708">ປ່ຽນເປັນຖ່າຍຮູບບຸກຄົນ</translation>
 <translation id="8828441885228359828">ສືບຕໍ່ການບັນທຶກ</translation>
 <translation id="8870695351537079478">ບໍ່ສາມາດເລີ່ມການບັນທຶກໄດ້</translation>
 <translation id="8903921497873541725">ຊຸມເຂົ້າ</translation>
+<translation id="9045010116236796332">ວາງຂອບທັງໝົດຂອງເອກະສານໄວ້ພາຍໃນເຟຣມ</translation>
 <translation id="9045155556724273246">10 ວິນາທີ</translation>
 <translation id="945522503751344254">ສົ່ງ​ຄໍາ​ຄິດ​​ເຫັນ</translation>
 </translationbundle>

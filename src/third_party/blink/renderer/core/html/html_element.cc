@@ -79,6 +79,7 @@
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/mathml/mathml_element.h"
 #include "third_party/blink/renderer/core/mathml_names.h"
 #include "third_party/blink/renderer/core/page/spatial_navigation.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
@@ -140,10 +141,9 @@ bool IsEditableOrEditingHost(const Node& node) {
     return true;
   if (IsA<SVGSVGElement>(node))
     return true;
-  auto* element = DynamicTo<Element>(node);
-  if (element && element->HasTagName(mathml_names::kMathTag))
-    return true;
-  return !element && node.parentNode()->IsHTMLElement();
+  if (auto* mathml_element = DynamicTo<MathMLElement>(node))
+    return mathml_element->HasTagName(mathml_names::kMathTag);
+  return !IsA<Element>(node) && node.parentNode()->IsHTMLElement();
 }
 
 const WebFeature kNoWebFeature = static_cast<WebFeature>(0);
@@ -909,14 +909,6 @@ void HTMLElement::setOuterText(const String& text,
   else
     new_child = Text::Create(GetDocument(), text);
 
-  // textToFragment might cause mutation events.
-  if (!parentNode()) {
-    // TODO(crbug.com/1206014) We can likely remove this entire if() block.
-    NOTREACHED();
-    exception_state.ThrowDOMException(DOMExceptionCode::kHierarchyRequestError,
-                                      "The element has no parent.");
-  }
-
   if (exception_state.HadException())
     return;
 
@@ -1206,8 +1198,10 @@ bool HTMLElement::HasDirectionAuto() const {
          EqualIgnoringASCIICase(direction, "auto");
 }
 
-TextDirection HTMLElement::ResolveAutoDirectionality(bool& is_deferred,
-                                                     Node* stay_within) const {
+template <typename Traversal>
+absl::optional<TextDirection> HTMLElement::ResolveAutoDirectionality(
+    bool& is_deferred,
+    Node* stay_within) const {
   is_deferred = false;
   if (auto* input_element = DynamicTo<HTMLInputElement>(*this)) {
     bool has_strong_directionality;
@@ -1215,7 +1209,11 @@ TextDirection HTMLElement::ResolveAutoDirectionality(bool& is_deferred,
                                    &has_strong_directionality);
   }
 
-  Node* node = FlatTreeTraversal::FirstChild(*this);
+  // For <textarea>, the heuristic is applied on a per-paragraph level, and
+  // we should traverse the flat tree.
+  Node* node = (IsA<HTMLTextAreaElement>(*this) || IsA<HTMLSlotElement>(*this))
+                   ? FlatTreeTraversal::FirstChild(*this)
+                   : Traversal::FirstChild(*this);
   while (node) {
     // Skip bdi, script, style and text form controls.
     auto* element = DynamicTo<Element>(node);
@@ -1224,11 +1222,12 @@ TextDirection HTMLElement::ResolveAutoDirectionality(bool& is_deferred,
         (element && element->IsTextControl()) ||
         (element && element->ShadowPseudoId() ==
                         shadow_element_names::kPseudoInputPlaceholder)) {
-      node = FlatTreeTraversal::NextSkippingChildren(*node, stay_within);
+      node = Traversal::NextSkippingChildren(*node, stay_within);
       continue;
     }
 
-    if (auto* slot = ToHTMLSlotElementIfSupportsAssignmentOrNull(node)) {
+    auto* slot = ToHTMLSlotElementIfSupportsAssignmentOrNull(node);
+    if (slot) {
       ShadowRoot* root = slot->ContainingShadowRoot();
       // Defer to adjust the directionality to avoid recalcuating slot
       // assignment in FlatTreeTraversal when updating slot.
@@ -1245,7 +1244,7 @@ TextDirection HTMLElement::ResolveAutoDirectionality(bool& is_deferred,
       AtomicString dir_attribute_value =
           element_node->FastGetAttribute(html_names::kDirAttr);
       if (IsValidDirAttribute(dir_attribute_value)) {
-        node = FlatTreeTraversal::NextSkippingChildren(*node, stay_within);
+        node = Traversal::NextSkippingChildren(*node, stay_within);
         continue;
       }
     }
@@ -1257,16 +1256,27 @@ TextDirection HTMLElement::ResolveAutoDirectionality(bool& is_deferred,
       if (has_strong_directionality)
         return text_direction;
     }
-    node = FlatTreeTraversal::Next(*node, stay_within);
+
+    if (slot) {
+      absl::optional<TextDirection> text_direction =
+          slot->ResolveAutoDirectionality<FlatTreeTraversal>(is_deferred,
+                                                             stay_within);
+      if (text_direction.has_value())
+        return text_direction;
+    }
+
+    node = Traversal::Next(*node, stay_within);
   }
-  return TextDirection::kLtr;
+  return absl::nullopt;
 }
 
 void HTMLElement::AdjustDirectionalityIfNeededAfterChildAttributeChanged(
     Element* child) {
   DCHECK(SelfOrAncestorHasDirAutoAttribute());
   bool is_deferred;
-  TextDirection text_direction = ResolveAutoDirectionality(is_deferred, this);
+  TextDirection text_direction =
+      ResolveAutoDirectionality<NodeTraversal>(is_deferred, this)
+          .value_or(TextDirection::kLtr);
   if (CachedDirectionality() != text_direction && !is_deferred) {
     SetCachedDirectionality(text_direction);
 
@@ -1292,7 +1302,8 @@ void HTMLElement::AdjustDirectionalityIfNeededAfterChildAttributeChanged(
 bool HTMLElement::CalculateAndAdjustAutoDirectionality(Node* stay_within) {
   bool is_deferred = false;
   TextDirection text_direction =
-      ResolveAutoDirectionality(is_deferred, stay_within);
+      ResolveAutoDirectionality<NodeTraversal>(is_deferred, stay_within)
+          .value_or(TextDirection::kLtr);
   if (CachedDirectionality() != text_direction && !is_deferred) {
     UpdateDirectionalityAndDescendant(text_direction);
 
@@ -1382,21 +1393,14 @@ void HTMLElement::AdjustCandidateDirectionalityForSlot(
   for (auto& node : candidate_set) {
     Node* node_to_adjust = node.Get();
     if (!node->SelfOrAncestorHasDirAutoAttribute()) {
-      auto* slot = node->AssignedSlot();
-      auto* parent =
-          DynamicTo<HTMLElement>(FlatTreeTraversal::ParentElement(*node));
       if (ElementAffectsDirectionality(node))
         continue;
+      auto* slot = node->AssignedSlot();
       if (slot && slot->SelfOrAncestorHasDirAutoAttribute()) {
         node_to_adjust = slot;
-      } else if (parent && parent->SelfOrAncestorHasDirAutoAttribute()) {
-        node_to_adjust = parent;
       } else {
-        if (ElementAffectsDirectionality(slot)) {
+        if (slot && !slot->NeedsInheritDirectionalityFromParent()) {
           node->SetCachedDirectionality(slot->CachedDirectionality());
-        } else if (parent && !parent->NeedsInheritDirectionalityFromParent() &&
-                   node->NeedsInheritDirectionalityFromParent()) {
-          node->SetCachedDirectionality(parent->CachedDirectionality());
         }
         continue;
       }

@@ -131,7 +131,7 @@ int AcmReceiver::InsertPacket(const RTPHeader& rtp_header,
                                   /*num_channels=*/format->num_channels,
                                   /*sdp_format=*/std::move(format->sdp_format)};
     }
-  }  // |mutex_| is released.
+  }  // `mutex_` is released.
 
   if (neteq_->InsertPacket(rtp_header, incoming_payload) < 0) {
     RTC_LOG(LERROR) << "AcmReceiver::InsertPacket "
@@ -201,7 +201,7 @@ int AcmReceiver::GetAudio(int desired_freq_hz,
     // We might end up here ONLY if codec is changed.
   }
 
-  // Store current audio in |last_audio_buffer_| for next time.
+  // Store current audio in `last_audio_buffer_` for next time.
   memcpy(last_audio_buffer_.get(), audio_frame->data(),
          sizeof(int16_t) * audio_frame->samples_per_channel_ *
              audio_frame->num_channels_);
@@ -307,6 +307,8 @@ void AcmReceiver::GetNetworkStatistics(
       neteq_->GetOperationsAndState();
   acm_stat->packetBufferFlushes =
       neteq_operations_and_state.packet_buffer_flushes;
+  acm_stat->packetsDiscarded =
+      neteq_operations_and_state.discarded_primary_packets;
 }
 
 int AcmReceiver::EnableNack(size_t max_nack_list_size) {

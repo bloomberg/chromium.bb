@@ -7,10 +7,12 @@
 
 #include "src/gpu/mtl/GrMtlCommandBuffer.h"
 
+#include "src/core/SkTraceEvent.h"
 #include "src/gpu/mtl/GrMtlGpu.h"
 #include "src/gpu/mtl/GrMtlOpsRenderPass.h"
 #include "src/gpu/mtl/GrMtlPipelineState.h"
 #include "src/gpu/mtl/GrMtlRenderCommandEncoder.h"
+#include "src/gpu/mtl/GrMtlSemaphore.h"
 
 #if !__has_feature(objc_arc)
 #error This file must be compiled with Arc. Use -fobjc-arc flag
@@ -20,7 +22,7 @@ GR_NORETAIN_BEGIN
 
 sk_sp<GrMtlCommandBuffer> GrMtlCommandBuffer::Make(id<MTLCommandQueue> queue) {
     id<MTLCommandBuffer> mtlCommandBuffer;
-    mtlCommandBuffer = [queue commandBuffer];
+    mtlCommandBuffer = [queue commandBufferWithUnretainedReferences];
     if (nil == mtlCommandBuffer) {
         return nullptr;
     }
@@ -34,10 +36,18 @@ sk_sp<GrMtlCommandBuffer> GrMtlCommandBuffer::Make(id<MTLCommandQueue> queue) {
 
 GrMtlCommandBuffer::~GrMtlCommandBuffer() {
     this->endAllEncoding();
-    fTrackedGrBuffers.reset();
+    this->releaseResources();
     this->callFinishedCallbacks();
 
     fCmdBuffer = nil;
+}
+
+void GrMtlCommandBuffer::releaseResources() {
+    TRACE_EVENT0("skia.gpu", TRACE_FUNC);
+
+    fTrackedResources.reset();
+    fTrackedGrBuffers.reset();
+    fTrackedGrSurfaces.reset();
 }
 
 id<MTLBlitCommandEncoder> GrMtlCommandBuffer::getBlitCommandEncoder() {
@@ -127,21 +137,23 @@ void GrMtlCommandBuffer::endAllEncoding() {
     }
 }
 
-void GrMtlCommandBuffer::encodeSignalEvent(id<MTLEvent> event, uint64_t eventValue) {
+void GrMtlCommandBuffer::encodeSignalEvent(sk_sp<GrMtlEvent> event, uint64_t eventValue) {
     SkASSERT(fCmdBuffer);
     this->endAllEncoding(); // ensure we don't have any active command encoders
     if (@available(macOS 10.14, iOS 12.0, *)) {
-        [fCmdBuffer encodeSignalEvent:event value:eventValue];
+        [fCmdBuffer encodeSignalEvent:event->mtlEvent() value:eventValue];
+        this->addResource(std::move(event));
     }
     fHasWork = true;
 }
 
-void GrMtlCommandBuffer::encodeWaitForEvent(id<MTLEvent> event, uint64_t eventValue) {
+void GrMtlCommandBuffer::encodeWaitForEvent(sk_sp<GrMtlEvent> event, uint64_t eventValue) {
     SkASSERT(fCmdBuffer);
     this->endAllEncoding(); // ensure we don't have any active command encoders
                             // TODO: not sure if needed but probably
     if (@available(macOS 10.14, iOS 12.0, *)) {
-        [fCmdBuffer encodeWaitForEvent:event value:eventValue];
+        [fCmdBuffer encodeWaitForEvent:event->mtlEvent() value:eventValue];
+        this->addResource(std::move(event));
     }
     fHasWork = true;
 }

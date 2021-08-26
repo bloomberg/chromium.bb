@@ -34,7 +34,7 @@ VideoEncodeAccelerator::Config kDefaultVEAConfig(
 
 class MockVaapiWrapper : public VaapiWrapper {
  public:
-  MockVaapiWrapper() : VaapiWrapper(kEncode) {}
+  MockVaapiWrapper() : VaapiWrapper(kEncodeConstantBitrate) {}
 
  protected:
   ~MockVaapiWrapper() override = default;
@@ -80,6 +80,19 @@ TEST_F(H264VaapiVideoEncoderDelegateTest, Initialize) {
   vea_config.input_visible_size.SetSize(3840, 2160);
   EXPECT_TRUE(encoder_->Initialize(vea_config, vea_delegate_config));
   ExpectLevel(H264SPS::kLevelIDC5p1);
+}
+
+TEST_F(H264VaapiVideoEncoderDelegateTest, InitializeFailsTemporalLayerRequest) {
+  auto vea_config = kDefaultVEAConfig;
+  vea_config.spatial_layers.resize(1u);
+  auto& sl = vea_config.spatial_layers[0];
+  sl.width = vea_config.input_visible_size.width();
+  sl.height = vea_config.input_visible_size.height();
+  sl.bitrate_bps = vea_config.bitrate.target();
+  sl.framerate = vea_config.initial_framerate.value_or(30);
+  sl.max_qp = 30;
+  sl.num_of_temporal_layers = 2u;
+  EXPECT_FALSE(encoder_->Initialize(vea_config, kDefaultVEADelegateConfig));
 }
 
 }  // namespace media

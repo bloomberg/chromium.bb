@@ -10,9 +10,12 @@
 #include "base/compiler_specific.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-#include "net/base/schemeful_site.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/origin.h"
+
+namespace net {
+class SchemefulSite;
+}  // namespace net
 
 namespace content {
 
@@ -90,6 +93,14 @@ class CONTENT_EXPORT StorableImpression {
 
   int64_t priority() const WARN_UNUSED_RESULT { return priority_; }
 
+  const std::vector<int64_t>& dedup_keys() const WARN_UNUSED_RESULT {
+    return dedup_keys_;
+  }
+
+  void SetDedupKeys(std::vector<int64_t> dedup_keys) {
+    dedup_keys_ = std::move(dedup_keys);
+  }
+
   // Returns the schemeful site of |conversion_origin|.
   //
   // TODO(johnidel): Consider storing the SchemefulSite as a separate member so
@@ -114,6 +125,10 @@ class CONTENT_EXPORT StorableImpression {
 
   // If null, an ID has not been assigned yet.
   absl::optional<int64_t> impression_id_;
+
+  // Dedup keys associated with the impression. Only set in values returned from
+  // `ConversionStorage::GetActiveImpressions()`.
+  std::vector<int64_t> dedup_keys_;
 
   // When adding new members, the corresponding `operator==()` definition in
   // `conversion_test_utils.h` should also be updated.

@@ -13,6 +13,7 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_block.h"
 #include "base/macros.h"
+#include "cc/paint/paint_shader.h"
 #import "skia/ext/skia_utils_mac.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
@@ -443,9 +444,9 @@ void NativeThemeMac::PaintScrollbarTrackOuterBorder(
   }
 }
 
-gfx::Size NativeThemeMac::GetThumbMinSize(bool vertical) const {
-  constexpr int kLength = 18;
-  constexpr int kGirth = 6;
+gfx::Size NativeThemeMac::GetThumbMinSize(bool vertical, float scale) const {
+  const int kLength = 18 * scale;
+  const int kGirth = 6 * scale;
 
   return vertical ? gfx::Size(kGirth, kLength) : gfx::Size(kLength, kGirth);
 }
@@ -472,12 +473,16 @@ void NativeThemeMac::PaintMacScrollbarThumb(
       thumb_insets.set_top(
           thumb_insets.top() +
           ScrollbarTrackBorderWidth(scroll_thumb.scale_from_dip));
-      ConstrainedInset(&bounds, GetThumbMinSize(false), thumb_insets);
+      ConstrainedInset(&bounds,
+                       GetThumbMinSize(false, scroll_thumb.scale_from_dip),
+                       thumb_insets);
     } else {
       thumb_insets.set_left(
           thumb_insets.left() +
           ScrollbarTrackBorderWidth(scroll_thumb.scale_from_dip));
-      ConstrainedInset(&bounds, GetThumbMinSize(true), thumb_insets);
+      ConstrainedInset(&bounds,
+                       GetThumbMinSize(true, scroll_thumb.scale_from_dip),
+                       thumb_insets);
     }
   }
 

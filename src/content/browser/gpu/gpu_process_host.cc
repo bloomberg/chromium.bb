@@ -25,7 +25,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
-#include "base/numerics/ranges.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
@@ -256,8 +255,6 @@ static const char* const kSwitchNames[] = {
     switches::kEnableDeJelly,
     switches::kDeJellyScreenWidth,
     switches::kDoubleBufferCompositing,
-    switches::kDrawPredictedInkPoint,
-    switches::kEnableVizDevTools,
     switches::kHeadless,
     switches::kLoggingLevel,
     switches::kEnableLowEndDeviceMode,
@@ -311,6 +308,14 @@ static const char* const kSwitchNames[] = {
 #if defined(OS_CHROMEOS)
     switches::kPlatformDisallowsChromeOSDirectVideoDecoder,
     switches::kSchedulerBoostUrgent,
+#endif
+#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+    switches::kHardwareVideoDecodeFrameRate,
+#endif
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    switches::kLacrosEnablePlatformEncryptedHevc,
+    switches::kLacrosEnablePlatformHevc,
+    switches::kLacrosUseChromeosProtectedMedia,
 #endif
 };
 
@@ -775,7 +780,7 @@ GpuProcessHost::~GpuProcessHost() {
         // Windows always returns PROCESS_CRASHED on abnormal termination, as it
         // doesn't have a way to distinguish the two.
         base::UmaHistogramSparse("GPU.GPUProcessExitCode",
-                                 base::ClampToRange(info.exit_code, 0, 100));
+                                 base::clamp(info.exit_code, 0, 100));
       }
 
       message = "The GPU process ";
@@ -910,16 +915,6 @@ bool GpuProcessHost::Init() {
     // Fake a callback that the process is ready.
     OnProcessLaunched();
   }
-
-#if BUILDFLAG(USE_VIZ_DEVTOOLS)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableVizDevTools)) {
-    // Start creating a socket for the Viz DevTools server. If it is created
-    // before the FrameSinkManager, the socket will be stashed.
-    devtools_connector_ = std::make_unique<VizDevToolsConnector>();
-    devtools_connector_->ConnectVizDevTools();
-  }
-#endif
 
 #if defined(OS_MAC)
   ca_transaction_gpu_coordinator_ = CATransactionGPUCoordinator::Create(this);

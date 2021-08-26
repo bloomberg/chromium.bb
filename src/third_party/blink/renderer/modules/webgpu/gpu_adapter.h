@@ -15,6 +15,7 @@
 
 namespace blink {
 
+class GPU;
 class GPUDeviceDescriptor;
 class GPUSupportedFeatures;
 class GPUSupportedLimits;
@@ -24,7 +25,8 @@ class GPUAdapter final : public ScriptWrappable, public DawnObjectBase {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  GPUAdapter(const String& name,
+  GPUAdapter(GPU* gpu,
+             const String& name,
              uint32_t adapter_service_id,
              const WGPUDeviceProperties& properties,
              scoped_refptr<DawnControlClientHolder> dawn_control_client);
@@ -32,6 +34,7 @@ class GPUAdapter final : public ScriptWrappable, public DawnObjectBase {
   void Trace(Visitor* visitor) const override;
 
   const String& name() const;
+  GPU* gpu() const { return gpu_; }
   GPUSupportedFeatures* features() const;
   GPUSupportedLimits* limits() const { return limits_; }
 
@@ -49,7 +52,8 @@ class GPUAdapter final : public ScriptWrappable, public DawnObjectBase {
                          const char* message);
 
  private:
-  void OnRequestDeviceCallback(ScriptPromiseResolver* resolver,
+  void OnRequestDeviceCallback(ScriptState* script_state,
+                               ScriptPromiseResolver* resolver,
                                const GPUDeviceDescriptor* descriptor,
                                WGPUDevice dawn_device);
   void InitializeFeatureNameList();
@@ -57,6 +61,7 @@ class GPUAdapter final : public ScriptWrappable, public DawnObjectBase {
   String name_;
   uint32_t adapter_service_id_;
   WGPUDeviceProperties adapter_properties_;
+  Member<GPU> gpu_;
   Member<GPUSupportedFeatures> features_;
   Member<GPUSupportedLimits> limits_;
 

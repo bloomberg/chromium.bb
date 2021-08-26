@@ -235,6 +235,24 @@ GEN('#if defined(OS_CHROMEOS)');
 TEST_F('PrintPreviewPolicyTest', 'SheetsPolicy', function() {
   this.runMochaTest(policy_tests.TestNames.SheetsPolicy);
 });
+
+TEST_F('PrintPreviewPolicyTest', 'ColorPolicy', function() {
+  this.runMochaTest(policy_tests.TestNames.ColorPolicy);
+});
+
+TEST_F('PrintPreviewPolicyTest', 'DuplexPolicy', function() {
+  this.runMochaTest(policy_tests.TestNames.DuplexPolicy);
+});
+
+TEST_F('PrintPreviewPolicyTest', 'PinPolicy', function() {
+  this.runMochaTest(policy_tests.TestNames.PinPolicy);
+});
+GEN('#endif');
+
+GEN('#if defined(OS_WIN) || defined(OS_MAC)');
+TEST_F('PrintPreviewPolicyTest', 'PrintPdfAsImageAvailability', function() {
+  this.runMochaTest(policy_tests.TestNames.PrintPdfAsImageAvailability);
+});
 GEN('#endif');
 
 // eslint-disable-next-line no-var
@@ -347,6 +365,10 @@ TEST_F('PrintPreviewModelTest', 'GetCloudPrintTicket', function() {
 
 TEST_F('PrintPreviewModelTest', 'ChangeDestination', function() {
   this.runMochaTest(model_test.TestNames.ChangeDestination);
+});
+
+TEST_F('PrintPreviewModelTest', 'CddResetToDefault', function() {
+  this.runMochaTest(model_test.TestNames.CddResetToDefault);
 });
 
 GEN('#if defined(OS_CHROMEOS)');
@@ -982,20 +1004,6 @@ TEST_F(
 
 TEST_F(
     'PrintPreviewDestinationSearchTestChromeOS', 'ResolutionFails', function() {
-      this.runMochaTest(
-          destination_search_test_chromeos.TestNames.ResolutionFails);
-    });
-
-TEST_F(
-    'PrintPreviewDestinationSearchTestChromeOS', 'ReceiveFailedSetup',
-    function() {
-      this.runMochaTest(
-          destination_search_test_chromeos.TestNames.ReceiveFailedSetup);
-    });
-
-TEST_F(
-    'PrintPreviewDestinationSearchTestChromeOS',
-    'ReceiveSuccessfultSetupWithPolicies', function() {
       this.runMochaTest(
           destination_search_test_chromeos.TestNames.ResolutionFails);
     });

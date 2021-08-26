@@ -41,7 +41,8 @@ class PLATFORM_EXPORT RasterInvalidator {
   // paint artifact.
   void Generate(RasterInvalidationFunction,
                 const PaintChunkSubset&,
-                const gfx::Rect& layer_bounds,
+                const FloatPoint& layer_offset,
+                const IntSize& layer_bounds,
                 const PropertyTreeState& layer_state,
                 const DisplayItemClient* layer_client = nullptr);
 
@@ -52,7 +53,7 @@ class PLATFORM_EXPORT RasterInvalidator {
   // PaintArtifactCompositor and pass it in Generate().
   void SetOldPaintArtifact(scoped_refptr<const PaintArtifact>);
 
-  const gfx::Rect& LayerBounds() const { return layer_bounds_; }
+  const IntSize& LayerBounds() const { return layer_bounds_; }
 
   size_t ApproximateUnsharedMemoryUsage() const;
 
@@ -78,6 +79,20 @@ class PLATFORM_EXPORT RasterInvalidator {
           chunk_to_layer_transform(mapper.Transform()) {
     }
 
+    PaintChunkInfo(const PaintChunkInfo& old_chunk_info,
+                   const PaintChunkIterator& chunk_it)
+        : index_in_paint_artifact(chunk_it.IndexInPaintArtifact()),
+#if DCHECK_IS_ON()
+          id(chunk_it->id),
+#endif
+          bounds_in_layer(old_chunk_info.bounds_in_layer),
+          chunk_to_layer_clip(old_chunk_info.chunk_to_layer_clip),
+          chunk_to_layer_transform(old_chunk_info.chunk_to_layer_transform) {
+#if DCHECK_IS_ON()
+      DCHECK_EQ(id, old_chunk_info.id);
+#endif
+    }
+
     // The index of the chunk in the PaintArtifact. It may be different from
     // the index of this PaintChunkInfo in paint_chunks_info_ when a subset of
     // the paint chunks is handled by the RasterInvalidator.
@@ -95,6 +110,7 @@ class PLATFORM_EXPORT RasterInvalidator {
   void GenerateRasterInvalidations(RasterInvalidationFunction,
                                    const PaintChunkSubset&,
                                    const PropertyTreeState& layer_state,
+                                   bool layer_offset_changed,
                                    Vector<PaintChunkInfo>& new_chunks_info);
 
   ALWAYS_INLINE const PaintChunk& GetOldChunk(wtf_size_t index) const;
@@ -138,10 +154,11 @@ class PLATFORM_EXPORT RasterInvalidator {
   template <typename Rect>
   Rect ClipByLayerBounds(const Rect& r) const {
     return Intersection(
-        r, Rect(0, 0, layer_bounds_.width(), layer_bounds_.height()));
+        r, Rect(0, 0, layer_bounds_.Width(), layer_bounds_.Height()));
   }
 
-  gfx::Rect layer_bounds_;
+  FloatPoint layer_offset_;
+  IntSize layer_bounds_;
   Vector<PaintChunkInfo> old_paint_chunks_info_;
   scoped_refptr<const PaintArtifact> old_paint_artifact_;
 

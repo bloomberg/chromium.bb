@@ -2,7 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import types
+try:
+  _STRING_TYPE = basestring
+except NameError:  # pragma: no cover
+  _STRING_TYPE = str
 
 from recipe_engine.config import config_item_context, ConfigGroup, BadConf
 from recipe_engine.config import ConfigList, Dict, Single, Static, Set, List
@@ -16,31 +19,31 @@ def BaseConfig(USE_MIRROR=True, CACHE_DIR=None,
   return ConfigGroup(
     solutions = ConfigList(
       lambda: ConfigGroup(
-        name = Single(basestring),
-        url = Single((basestring, type(None)), empty_val=''),
-        deps_file = Single(basestring, empty_val=deps_file, required=False,
+        name = Single(_STRING_TYPE),
+        url = Single((_STRING_TYPE, type(None)), empty_val=''),
+        deps_file = Single(_STRING_TYPE, empty_val=deps_file, required=False,
                            hidden=False),
         managed = Single(bool, empty_val=True, required=False, hidden=False),
-        custom_deps = Dict(value_type=(basestring, types.NoneType)),
-        custom_vars = Dict(value_type=(basestring, types.BooleanType)),
-        safesync_url = Single(basestring, required=False),
+        custom_deps = Dict(value_type=(_STRING_TYPE, type(None))),
+        custom_vars = Dict(value_type=(_STRING_TYPE, bool)),
+        safesync_url = Single(_STRING_TYPE, required=False),
 
         revision = Single(
-            (basestring, gclient_api.RevisionResolver),
+            (_STRING_TYPE, gclient_api.RevisionResolver),
             required=False, hidden=True),
       )
     ),
-    deps_os = Dict(value_type=basestring),
-    hooks = List(basestring),
-    target_os = Set(basestring),
+    deps_os = Dict(value_type=_STRING_TYPE),
+    hooks = List(_STRING_TYPE),
+    target_os = Set(_STRING_TYPE),
     target_os_only = Single(bool, empty_val=False, required=False),
-    target_cpu = Set(basestring),
+    target_cpu = Set(_STRING_TYPE),
     target_cpu_only = Single(bool, empty_val=False, required=False),
     cache_dir = Static(cache_dir, hidden=False),
 
     # If supplied, use this as the source root (instead of the first solution's
     # checkout).
-    src_root = Single(basestring, required=False, hidden=True),
+    src_root = Single(_STRING_TYPE, required=False, hidden=True),
 
     # Maps 'solution' -> build_property
     # TODO(machenbach): Deprecate this in favor of the one below.
@@ -54,7 +57,7 @@ def BaseConfig(USE_MIRROR=True, CACHE_DIR=None,
     # of code here of setting custom vars AND passing in --revision. We hope
     # to remove custom vars later.
     revisions = Dict(
-        value_type=(basestring, gclient_api.RevisionResolver),
+        value_type=(_STRING_TYPE, gclient_api.RevisionResolver),
         hidden=True),
 
     # TODO(iannucci): HACK! The use of None here to indicate that we apply this
@@ -83,7 +86,7 @@ def BaseConfig(USE_MIRROR=True, CACHE_DIR=None,
     #     'https://chromium.googlesource.com/angle/angle': (
     #       'src/third_party/angle', 'HEAD')
     # then a patch to Angle project can be applied to a chromium src's
-    # checkout after first updating Angle's repo to its master's HEAD.
+    # checkout after first updating Angle's repo to its main's HEAD.
     repo_path_map = Dict(value_type=tuple, hidden=True),
 
     # Check out refs/branch-heads.
@@ -314,11 +317,11 @@ def infra_internal(c):  # pragma: no cover
 @config_ctx(includes=['infra'])
 def luci_gae(c):
   # luci/gae is checked out as a part of infra.git solution at HEAD.
-  c.revisions['infra'] = 'refs/heads/master'
+  c.revisions['infra'] = 'refs/heads/main'
   # luci/gae is developed together with luci-go, which should be at HEAD.
-  c.revisions['infra/go/src/go.chromium.org/luci'] = 'refs/heads/master'
+  c.revisions['infra/go/src/go.chromium.org/luci'] = 'refs/heads/main'
   c.revisions['infra/go/src/go.chromium.org/gae'] = (
-      gclient_api.RevisionFallbackChain('refs/heads/master'))
+      gclient_api.RevisionFallbackChain('refs/heads/main'))
   m = c.got_revision_mapping
   del m['infra']
   m['infra/go/src/go.chromium.org/gae'] = 'got_revision'
@@ -326,9 +329,9 @@ def luci_gae(c):
 @config_ctx(includes=['infra'])
 def luci_go(c):
   # luci-go is checked out as a part of infra.git solution at HEAD.
-  c.revisions['infra'] = 'refs/heads/master'
+  c.revisions['infra'] = 'refs/heads/main'
   c.revisions['infra/go/src/go.chromium.org/luci'] = (
-      gclient_api.RevisionFallbackChain('refs/heads/master'))
+      gclient_api.RevisionFallbackChain('refs/heads/main'))
   m = c.got_revision_mapping
   del m['infra']
   m['infra/go/src/go.chromium.org/luci'] = 'got_revision'
@@ -337,18 +340,18 @@ def luci_go(c):
 def luci_py(c):
   # luci-py is checked out as part of infra just to have appengine
   # pre-installed, as that's what luci-py PRESUBMIT relies on.
-  c.revisions['infra'] = 'refs/heads/master'
+  c.revisions['infra'] = 'refs/heads/main'
   c.revisions['infra/luci'] = (
-      gclient_api.RevisionFallbackChain('refs/heads/master'))
+      gclient_api.RevisionFallbackChain('refs/heads/main'))
   m = c.got_revision_mapping
   del m['infra']
   m['infra/luci'] = 'got_revision'
 
 @config_ctx(includes=['infra'])
 def recipes_py(c):
-  c.revisions['infra'] = 'refs/heads/master'
+  c.revisions['infra'] = 'refs/heads/main'
   c.revisions['infra/recipes-py'] = (
-      gclient_api.RevisionFallbackChain('refs/heads/master'))
+      gclient_api.RevisionFallbackChain('refs/heads/main'))
   m = c.got_revision_mapping
   del m['infra']
   m['infra/recipes-py'] = 'got_revision'
@@ -382,6 +385,13 @@ def infradata_config(c):
   soln.name = 'infra-data-config'
   soln.url = 'https://chrome-internal.googlesource.com/infradata/config.git'
   c.got_revision_mapping['infra-data-config'] = 'got_revision'
+
+@config_ctx()
+def infradata_rbe(c):
+  soln = c.solutions.add()
+  soln.name = 'infradata-rbe'
+  soln.url = 'https://chrome-internal.googlesource.com/infradata/rbe.git'
+  c.got_revision_mapping['infradata-rbe'] = 'got_revision'
 
 @config_ctx()
 def with_branch_heads(c):

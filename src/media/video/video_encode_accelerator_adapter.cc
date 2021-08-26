@@ -11,7 +11,6 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/numerics/ranges.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/waitable_event.h"
@@ -62,8 +61,8 @@ VideoEncodeAccelerator::Config SetUpVeaConfig(
     config.spatial_layers.push_back(layer);
   }
 
-  // We don't mind if Mac encoding will have higher latency on low resolutions.
-  config.require_low_delay = false;
+  config.require_low_delay =
+      opts.latency_mode == VideoEncoder::LatencyMode::Realtime;
 
   const bool is_rgb =
       format == PIXEL_FORMAT_XBGR || format == PIXEL_FORMAT_XRGB ||
@@ -91,8 +90,6 @@ VideoEncodeAccelerator::Config SetUpVeaConfig(
 
 VideoEncodeAcceleratorAdapter::PendingOp::PendingOp() = default;
 VideoEncodeAcceleratorAdapter::PendingOp::~PendingOp() = default;
-VideoEncodeAcceleratorAdapter::PendingEncode::PendingEncode() = default;
-VideoEncodeAcceleratorAdapter::PendingEncode::~PendingEncode() = default;
 
 VideoEncodeAcceleratorAdapter::VideoEncodeAcceleratorAdapter(
     GpuVideoAcceleratorFactories* gpu_factories,
@@ -451,7 +448,9 @@ void VideoEncodeAcceleratorAdapter::BitstreamBufferReady(
   result.key_frame = metadata.key_frame;
   result.timestamp = metadata.timestamp;
   result.size = metadata.payload_size_bytes;
-  if (metadata.vp9.has_value())
+  if (metadata.h264.has_value())
+    result.temporal_id = metadata.h264.value().temporal_idx;
+  else if (metadata.vp9.has_value())
     result.temporal_id = metadata.vp9.value().temporal_idx;
   else if (metadata.vp8.has_value())
     result.temporal_id = metadata.vp8.value().temporal_idx;

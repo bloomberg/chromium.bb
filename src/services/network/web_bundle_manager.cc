@@ -5,9 +5,11 @@
 #include "services/network/web_bundle_manager.h"
 
 #include "base/bind.h"
+#include "base/metrics/histogram_functions.h"
 #include "components/web_package/web_bundle_utils.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/network_context.h"
+#include "services/network/public/mojom/devtools_observer.mojom.h"
 #include "services/network/public/mojom/web_bundle_handle.mojom.h"
 #include "services/network/web_bundle_memory_quota_consumer.h"
 #include "services/network/web_bundle_url_loader_factory.h"

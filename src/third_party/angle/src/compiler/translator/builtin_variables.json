@@ -832,7 +832,7 @@
                     "gl_FragDepthEXT":{
                         "essl_level":"ESSL1_BUILTINS",
                         "essl_extension":"EXT_frag_depth",
-                        "initDynamicType":"TType *{type_name} = new TType(EbtFloat, resources.FragmentPrecisionHigh ? EbpHigh : EbpMedium, EvqFragDepthEXT, 1);"
+                        "initDynamicType":"TType *{type_name} = new TType(EbtFloat, resources.FragmentPrecisionHigh ? EbpHigh : EbpMedium, EvqFragDepth, 1);"
                     }
                 }
             },
@@ -1386,6 +1386,17 @@
                         "initDynamicType":"TType *{type_name} = new TType(EbtFloat, EbpHigh, EvqPosition, 4); {type_name}->setInterfaceBlock(gl_PerVertexOutTcsBlock{ext_or_core_suffix});"
                     }
                 }
+            },
+            "EXTPrimitiveBoundingBox":{
+                "variables":{
+                    "gl_BoundingBoxEXT":{
+                        "suffix":"TCS",
+                        "essl_level":"ESSL3_1_BUILTINS",
+                        "essl_extension":"EXT_tessellation_shader",
+                        "essl_extension_becomes_core_in":"ESSL3_2_BUILTINS",
+                        "initDynamicType":"TType *{type_name} = new TType(EbtFloat, EbpHigh, EvqBoundingBoxEXT, 4); {type_name}->makeArray(4u);"
+                    }
+                }
             }
         }
     },
@@ -1419,7 +1430,8 @@
                 "type":{
                     "basic":"Float",
                     "precision":"High",
-                    "primarySize":3
+                    "primarySize":3,
+                    "qualifier":"TessCoord"
                 }
             },
             "gl_TessLevelOuter":{

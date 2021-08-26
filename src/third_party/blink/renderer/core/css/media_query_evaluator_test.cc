@@ -190,8 +190,8 @@ MediaQueryEvaluatorTestCase g_preferscontrast_nopreference_cases[] = {
     {"(prefers-contrast)", false},
     {"(prefers-contrast: more)", false},
     {"(prefers-contrast: less)", false},
-    {"(prefers-contrast: forced)", false},
     {"(prefers-contrast: no-preference)", true},
+    {"(prefers-contrast: custom)", false},
     {nullptr, false}  // Do not remove the terminator line.
 };
 
@@ -199,8 +199,8 @@ MediaQueryEvaluatorTestCase g_preferscontrast_more_cases[] = {
     {"(prefers-contrast)", true},
     {"(prefers-contrast: more)", true},
     {"(prefers-contrast: less)", false},
-    {"(prefers-contrast: forced)", false},
     {"(prefers-contrast: no-preference)", false},
+    {"(prefers-contrast: custom)", false},
     {nullptr, false}  // Do not remove the terminator line.
 };
 
@@ -208,35 +208,17 @@ MediaQueryEvaluatorTestCase g_preferscontrast_less_cases[] = {
     {"(prefers-contrast)", true},
     {"(prefers-contrast: more)", false},
     {"(prefers-contrast: less)", true},
-    {"(prefers-contrast: forced)", false},
     {"(prefers-contrast: no-preference)", false},
+    {"(prefers-contrast: custom)", false},
     {nullptr, false}  // Do not remove the terminator line.
 };
 
-MediaQueryEvaluatorTestCase g_preferscontrast_forced_cases[] = {
+MediaQueryEvaluatorTestCase g_preferscontrast_custom_cases[] = {
     {"(prefers-contrast)", true},
     {"(prefers-contrast: more)", false},
     {"(prefers-contrast: less)", false},
-    {"(prefers-contrast: forced)", true},
     {"(prefers-contrast: no-preference)", false},
-    {nullptr, false}  // Do not remove the terminator line.
-};
-
-MediaQueryEvaluatorTestCase g_preferscontrast_forced_more_cases[] = {
-    {"(prefers-contrast)", true},
-    {"(prefers-contrast: more)", true},
-    {"(prefers-contrast: less)", false},
-    {"(prefers-contrast: forced)", true},
-    {"(prefers-contrast: no-preference)", false},
-    {nullptr, false}  // Do not remove the terminator line.
-};
-
-MediaQueryEvaluatorTestCase g_preferscontrast_forced_less_cases[] = {
-    {"(prefers-contrast)", true},
-    {"(prefers-contrast: more)", false},
-    {"(prefers-contrast: less)", true},
-    {"(prefers-contrast: forced)", true},
-    {"(prefers-contrast: no-preference)", false},
+    {"(prefers-contrast: custom)", true},
     {nullptr, false}  // Do not remove the terminator line.
 };
 
@@ -280,70 +262,70 @@ MediaQueryEvaluatorTestCase g_screen_spanning_single_fold_horizontal_cases[] = {
 
 MediaQueryEvaluatorTestCase g_device_posture_none_cases[] = {
     {"(device-posture)", true},
-    {"(device-posture: laptop)", false},
-    {"(device-posture: flat)", false},
-    {"(device-posture: tent)", false},
-    {"(device-posture: tablet)", false},
-    {"(device-posture: book)", false},
-    {"(device-posture: no-fold)", true},
+    {"(device-posture: continuous)", true},
+    {"(device-posture: folded)", false},
+    {"(device-posture: folded-over)", false},
     {"(device-posture: 15)", false},
     {"(device-posture: 2px)", false},
     {"(device-posture: 16/9)", false},
     {nullptr, false}  // Do not remove the terminator line.
 };
 
-MediaQueryEvaluatorTestCase g_device_posture_laptop_cases[] = {
+MediaQueryEvaluatorTestCase g_device_posture_folded_cases[] = {
     {"(device-posture)", true},
-    {"(device-posture: laptop)", true},
-    {"(device-posture: flat)", false},
-    {"(device-posture: tent)", false},
-    {"(device-posture: tablet)", false},
-    {"(device-posture: book)", false},
-    {"(device-posture: no-fold)", false},
+    {"(device-posture: continuous)", false},
+    {"(device-posture: folded)", true},
+    {"(device-posture: folded-over)", false},
     {nullptr, false}  // Do not remove the terminator line.
 };
 
-MediaQueryEvaluatorTestCase g_device_posture_flat_cases[] = {
+MediaQueryEvaluatorTestCase g_device_posture_folded_over_cases[] = {
     {"(device-posture)", true},
-    {"(device-posture: laptop)", false},
-    {"(device-posture: flat)", true},
-    {"(device-posture: tent)", false},
-    {"(device-posture: tablet)", false},
-    {"(device-posture: book)", false},
-    {"(device-posture: no-fold)", false},
+    {"(device-posture: continuous)", false},
+    {"(device-posture: folded)", false},
+    {"(device-posture: folded-over)", true},
     {nullptr, false}  // Do not remove the terminator line.
 };
 
-MediaQueryEvaluatorTestCase g_device_posture_tent_cases[] = {
-    {"(device-posture)", true},
-    {"(device-posture: laptop)", false},
-    {"(device-posture: flat)", false},
-    {"(device-posture: tent)", true},
-    {"(device-posture: tablet)", false},
-    {"(device-posture: book)", false},
-    {"(device-posture: no-fold)", false},
+MediaQueryEvaluatorTestCase g_dynamic_range_standard_cases[] = {
+    {"(dynamic-range: standard)", true},
+    {"(dynamic-range: high)", false},
+    {"(dynamic-range: invalid)", false},
     {nullptr, false}  // Do not remove the terminator line.
 };
 
-MediaQueryEvaluatorTestCase g_device_posture_tablet_cases[] = {
-    {"(device-posture)", true},
-    {"(device-posture: laptop)", false},
-    {"(device-posture: flat)", false},
-    {"(device-posture: tent)", false},
-    {"(device-posture: tablet)", true},
-    {"(device-posture: book)", false},
-    {"(device-posture: no-fold)", false},
+MediaQueryEvaluatorTestCase g_dynamic_range_high_cases[] = {
+    {"(dynamic-range: standard)", false},
+    {"(dynamic-range: high)", true},
+    {"(dynamic-range: invalid)", false},
     {nullptr, false}  // Do not remove the terminator line.
 };
 
-MediaQueryEvaluatorTestCase g_device_posture_book_cases[] = {
-    {"(device-posture)", true},
-    {"(device-posture: laptop)", false},
-    {"(device-posture: flat)", false},
-    {"(device-posture: tent)", false},
-    {"(device-posture: tablet)", false},
-    {"(device-posture: book)", true},
-    {"(device-posture: no-fold)", false},
+MediaQueryEvaluatorTestCase g_dynamic_range_feature_disabled_cases[] = {
+    {"(dynamic-range: standard)", false},
+    {"(dynamic-range: high)", false},
+    {"(dynamic-range: invalid)", false},
+    {nullptr, false}  // Do not remove the terminator line.
+};
+
+MediaQueryEvaluatorTestCase g_video_dynamic_range_standard_cases[] = {
+    {"(video-dynamic-range: standard)", true},
+    {"(video-dynamic-range: high)", false},
+    {"(video-dynamic-range: invalid)", false},
+    {nullptr, false}  // Do not remove the terminator line.
+};
+
+MediaQueryEvaluatorTestCase g_video_dynamic_range_high_cases[] = {
+    {"(video-dynamic-range: standard)", false},
+    {"(video-dynamic-range: high)", true},
+    {"(video-dynamic-range: invalid)", false},
+    {nullptr, false}  // Do not remove the terminator line.
+};
+
+MediaQueryEvaluatorTestCase g_video_dynamic_range_feature_disabled_cases[] = {
+    {"(video-dynamic-range: standard)", false},
+    {"(video-dynamic-range: high)", false},
+    {"(video-dynamic-range: invalid)", false},
     {nullptr, false}  // Do not remove the terminator line.
 };
 
@@ -535,29 +517,12 @@ TEST(MediaQueryEvaluatorTest, CachedPrefersContrast) {
     TestMQEvaluator(g_preferscontrast_less_cases, media_query_evaluator);
   }
 
-  // Prefers-contrast - forced.
+  // Prefers-contrast - custom.
   {
-    data.preferred_contrast = mojom::blink::PreferredContrast::kNoPreference;
-    data.forced_colors = ForcedColors::kActive;
+    data.preferred_contrast = mojom::blink::PreferredContrast::kCustom;
     MediaValues* media_values = MakeGarbageCollected<MediaValuesCached>(data);
     MediaQueryEvaluator media_query_evaluator(*media_values);
-    TestMQEvaluator(g_preferscontrast_forced_cases, media_query_evaluator);
-  }
-
-  // Prefers-contrast - forced and more.
-  {
-    data.preferred_contrast = mojom::blink::PreferredContrast::kMore;
-    MediaValues* media_values = MakeGarbageCollected<MediaValuesCached>(data);
-    MediaQueryEvaluator media_query_evaluator(*media_values);
-    TestMQEvaluator(g_preferscontrast_forced_more_cases, media_query_evaluator);
-  }
-
-  // Prefers-contrast - forced and less.
-  {
-    data.preferred_contrast = mojom::blink::PreferredContrast::kLess;
-    MediaValues* media_values = MakeGarbageCollected<MediaValuesCached>(data);
-    MediaQueryEvaluator media_query_evaluator(*media_values);
-    TestMQEvaluator(g_preferscontrast_forced_less_cases, media_query_evaluator);
+    TestMQEvaluator(g_preferscontrast_custom_cases, media_query_evaluator);
   }
 }
 
@@ -595,46 +560,126 @@ TEST(MediaQueryEvaluatorTest, CachedDevicePosture) {
 
   MediaValuesCached::MediaValuesCachedData data;
   {
-    data.device_posture = DevicePosture::kNoFold;
+    data.device_posture = device::mojom::blink::DevicePostureType::kContinuous;
     MediaValues* media_values = MakeGarbageCollected<MediaValuesCached>(data);
-
     MediaQueryEvaluator media_query_evaluator(*media_values);
     TestMQEvaluator(g_device_posture_none_cases, media_query_evaluator);
   }
 
   {
-    data.device_posture = DevicePosture::kLaptop;
+    data.device_posture = device::mojom::blink::DevicePostureType::kFolded;
     MediaValues* media_values = MakeGarbageCollected<MediaValuesCached>(data);
     MediaQueryEvaluator media_query_evaluator(*media_values);
-    TestMQEvaluator(g_device_posture_laptop_cases, media_query_evaluator);
+    TestMQEvaluator(g_device_posture_folded_cases, media_query_evaluator);
   }
 
   {
-    data.device_posture = DevicePosture::kFlat;
+    data.device_posture = device::mojom::blink::DevicePostureType::kFoldedOver;
     MediaValues* media_values = MakeGarbageCollected<MediaValuesCached>(data);
     MediaQueryEvaluator media_query_evaluator(*media_values);
-    TestMQEvaluator(g_device_posture_flat_cases, media_query_evaluator);
+    TestMQEvaluator(g_device_posture_folded_over_cases, media_query_evaluator);
+  }
+}
+
+TEST(MediaQueryEvaluatorTest, CachedDynamicRange) {
+  MediaValuesCached::MediaValuesCachedData data;
+
+  // Test with color spaces supporting standard dynamic range
+  {
+    data.device_supports_hdr = gfx::DisplayColorSpaces().SupportsHDR();
+    MediaValues* media_values = MakeGarbageCollected<MediaValuesCached>(data);
+    MediaQueryEvaluator media_query_evaluator(*media_values);
+    TestMQEvaluator(g_dynamic_range_standard_cases, media_query_evaluator);
+    TestMQEvaluator(g_video_dynamic_range_standard_cases,
+                    media_query_evaluator);
+
+    // Test again with the feature disabled
+    ScopedCSSDynamicRangeMediaQueriesForTest const disable_feature{false};
+    TestMQEvaluator(g_dynamic_range_feature_disabled_cases,
+                    media_query_evaluator);
+    TestMQEvaluator(g_video_dynamic_range_feature_disabled_cases,
+                    media_query_evaluator);
+  }
+  {
+    data.device_supports_hdr =
+        gfx::DisplayColorSpaces(gfx::ColorSpace::CreateDisplayP3D65())
+            .SupportsHDR();
+    MediaValues* media_values = MakeGarbageCollected<MediaValuesCached>(data);
+    MediaQueryEvaluator media_query_evaluator(*media_values);
+    TestMQEvaluator(g_dynamic_range_standard_cases, media_query_evaluator);
+    TestMQEvaluator(g_video_dynamic_range_standard_cases,
+                    media_query_evaluator);
+
+    // Test again with the feature disabled
+    ScopedCSSDynamicRangeMediaQueriesForTest const disable_feature{false};
+    TestMQEvaluator(g_dynamic_range_feature_disabled_cases,
+                    media_query_evaluator);
+    TestMQEvaluator(g_video_dynamic_range_feature_disabled_cases,
+                    media_query_evaluator);
   }
 
+  // Test with color spaces supporting high dynamic range
   {
-    data.device_posture = DevicePosture::kTent;
+    data.device_supports_hdr =
+        gfx::DisplayColorSpaces(gfx::ColorSpace::CreateExtendedSRGB())
+            .SupportsHDR();
     MediaValues* media_values = MakeGarbageCollected<MediaValuesCached>(data);
     MediaQueryEvaluator media_query_evaluator(*media_values);
-    TestMQEvaluator(g_device_posture_tent_cases, media_query_evaluator);
-  }
+    TestMQEvaluator(g_dynamic_range_high_cases, media_query_evaluator);
+    TestMQEvaluator(g_video_dynamic_range_high_cases, media_query_evaluator);
 
-  {
-    data.device_posture = DevicePosture::kTablet;
-    MediaValues* media_values = MakeGarbageCollected<MediaValuesCached>(data);
-    MediaQueryEvaluator media_query_evaluator(*media_values);
-    TestMQEvaluator(g_device_posture_tablet_cases, media_query_evaluator);
+    // Test again with the feature disabled
+    ScopedCSSDynamicRangeMediaQueriesForTest const disable_feature{false};
+    TestMQEvaluator(g_dynamic_range_feature_disabled_cases,
+                    media_query_evaluator);
+    TestMQEvaluator(g_video_dynamic_range_feature_disabled_cases,
+                    media_query_evaluator);
   }
-
   {
-    data.device_posture = DevicePosture::kBook;
+    data.device_supports_hdr =
+        gfx::DisplayColorSpaces(gfx::ColorSpace::CreateSCRGBLinear())
+            .SupportsHDR();
     MediaValues* media_values = MakeGarbageCollected<MediaValuesCached>(data);
     MediaQueryEvaluator media_query_evaluator(*media_values);
-    TestMQEvaluator(g_device_posture_book_cases, media_query_evaluator);
+    TestMQEvaluator(g_dynamic_range_high_cases, media_query_evaluator);
+    TestMQEvaluator(g_video_dynamic_range_high_cases, media_query_evaluator);
+
+    // Test again with the feature disabled
+    ScopedCSSDynamicRangeMediaQueriesForTest const disable_feature{false};
+    TestMQEvaluator(g_dynamic_range_feature_disabled_cases,
+                    media_query_evaluator);
+    TestMQEvaluator(g_video_dynamic_range_feature_disabled_cases,
+                    media_query_evaluator);
+  }
+  {
+    data.device_supports_hdr =
+        gfx::DisplayColorSpaces(gfx::ColorSpace::CreateHDR10()).SupportsHDR();
+    MediaValues* media_values = MakeGarbageCollected<MediaValuesCached>(data);
+    MediaQueryEvaluator media_query_evaluator(*media_values);
+    TestMQEvaluator(g_dynamic_range_high_cases, media_query_evaluator);
+    TestMQEvaluator(g_video_dynamic_range_high_cases, media_query_evaluator);
+
+    // Test again with the feature disabled
+    ScopedCSSDynamicRangeMediaQueriesForTest const disable_feature{false};
+    TestMQEvaluator(g_dynamic_range_feature_disabled_cases,
+                    media_query_evaluator);
+    TestMQEvaluator(g_video_dynamic_range_feature_disabled_cases,
+                    media_query_evaluator);
+  }
+  {
+    data.device_supports_hdr =
+        gfx::DisplayColorSpaces(gfx::ColorSpace::CreateHLG()).SupportsHDR();
+    MediaValues* media_values = MakeGarbageCollected<MediaValuesCached>(data);
+    MediaQueryEvaluator media_query_evaluator(*media_values);
+    TestMQEvaluator(g_dynamic_range_high_cases, media_query_evaluator);
+    TestMQEvaluator(g_video_dynamic_range_high_cases, media_query_evaluator);
+
+    // Test again with the feature disabled
+    ScopedCSSDynamicRangeMediaQueriesForTest const disable_feature{false};
+    TestMQEvaluator(g_dynamic_range_feature_disabled_cases,
+                    media_query_evaluator);
+    TestMQEvaluator(g_video_dynamic_range_feature_disabled_cases,
+                    media_query_evaluator);
   }
 }
 

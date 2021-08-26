@@ -11,6 +11,7 @@
 <translation id="1546934824884762070">एक अनपेक्षित एरर आली. कृपया डेव्हलपरकडे या समस्येची तक्रार करा.</translation>
 <translation id="1697532407822776718">तुम्ही पूर्णपणे तयार आहात!</translation>
 <translation id="1742469581923031760">कनेक्ट करीत आहे...</translation>
+<translation id="177040763384871009">रिमोट डिव्हाइसवर क्लिक केलेल्या लिंक या क्लायंट ब्राउझरवर उघडता येण्यासाठी, तुम्ही सिस्टमचा वेब ब्राउझर "<ph name="URL_FORWARDER_NAME" />" वर बदलणे आवश्यक आहे.</translation>
 <translation id="177096447311351977">क्लायंट साठी चॅनल IP: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1897488610212723051">हटवा</translation>
 <translation id="2009755455353575666">कनेक्शन अयशस्वी</translation>
@@ -129,6 +130,7 @@
 <translation id="6963936880795878952">रिमोट कॉंप्युटरशी कनेक्शन तात्पुरते ब्लॉक केली आहेत, कारण कोणीतरी अवैध पिन सह त्यावर कनेक्ट करण्‍याचा प्रयत्न करत होते. कृपया नंतर पुन्हा प्रयत्न करा.</translation>
 <translation id="6965382102122355670">ठीक आहे</translation>
 <translation id="6985691951107243942">तुम्हाला खात्री आहे की तुम्हाला <ph name="HOSTNAME" /> चे रिमोट कनेक्शन अक्षम करायचे आहे? तुम्ही तुमचा विचार बदलल्यास, तुम्हाला कनेक्शन पुन्हा सक्षम करण्‍यासाठी त्या कॉंप्युटरला भेट देणे आवश्यक असेल.</translation>
+<translation id="6998890551706945177"><ph name="CLIENT_USERNAME" /> ने तुमचा कॉंप्युटर पाहण्यासाठी आणि नियंत्रित करण्यासाठी ॲक्सेसची विनंती केली आहे. तुम्ही या व्यक्तीला ओळखत नसल्यास किंवा शेअर करण्यापूर्वी कोणतेही बदल करणे आवश्यक असल्यास, ''<ph name="IDS_SHARE_CONFIRM_DIALOG_DECLINE" />'' दाबा.  अन्यथा कनेक्शनची अनुमती देण्यासाठी ''<ph name="IDS_SHARE_CONFIRM_DIALOG_CONFIRM" />'' निवडा.</translation>
 <translation id="7019153418965365059">न ओळखलेली होस्ट एरर: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">दूरस्‍थ सहाय्य</translation>
 <translation id="7026930240735156896">रिमोट ॲक्सेससाठी तुमचा कॉंप्युटर सेट करण्यासाठी सूचना फॉलो करा</translation>
@@ -142,6 +144,7 @@
 <translation id="7434397035092923453">क्लायंटसाठी ॲक्सेस नाकारला: <ph name="CLIENT_USERNAME" /></translation>
 <translation id="7444276978508498879">कनेक्ट केलेला क्लायंट: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7526139040829362392">खाते बदला</translation>
+<translation id="7535110896613603182">डीफॉल्ट अ‍ॅप्ससंबंधित सेटिंग्ज उघडा</translation>
 <translation id="7628469622942688817">या डीव्हाइसवर माझा पिन लक्षात ठेवा.</translation>
 <translation id="7649070708921625228">मदत</translation>
 <translation id="7658239707568436148">रद्द करा</translation>

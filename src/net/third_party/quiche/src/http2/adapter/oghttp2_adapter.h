@@ -6,11 +6,12 @@
 #include "http2/adapter/http2_adapter.h"
 #include "http2/adapter/http2_session.h"
 #include "http2/adapter/oghttp2_session.h"
+#include "common/platform/api/quiche_export.h"
 
 namespace http2 {
 namespace adapter {
 
-class OgHttp2Adapter : public Http2Adapter {
+class QUICHE_EXPORT_PRIVATE OgHttp2Adapter : public Http2Adapter {
  public:
   using Options = OgHttp2Session::Options;
   static std::unique_ptr<OgHttp2Adapter> Create(Http2VisitorInterface& visitor,
@@ -33,7 +34,8 @@ class OgHttp2Adapter : public Http2Adapter {
                     absl::string_view opaque_data) override;
   void SubmitWindowUpdate(Http2StreamId stream_id,
                           int window_increment) override;
-  void SubmitMetadata(Http2StreamId stream_id, bool fin) override;
+  void SubmitMetadata(Http2StreamId stream_id,
+                      std::unique_ptr<MetadataSource> source) override;
   int Send() override;
   int GetSendWindowSize() const override;
   int GetStreamSendWindowSize(Http2StreamId stream_id) const override;

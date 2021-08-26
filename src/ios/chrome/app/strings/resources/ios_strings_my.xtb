@@ -40,6 +40,7 @@
 <translation id="1254117744268754948">ဖိုလ်ဒါကို ရွေးရန်</translation>
 <translation id="1265739287306757398">လုပ်ပုံကို လေ့လာပါ</translation>
 <translation id="1272079795634619415">ရပ်ရန်</translation>
+<translation id="1275718070701477396">ရွေးထား</translation>
 <translation id="1282311502488501110">လက်မှတ်ထိုး မဝင်ပါနှင့်</translation>
 <translation id="1283524564873030414">ပြီးခဲ့သည့် ၂၄ နာရီ</translation>
 <translation id="1285320974508926690">ဒီဆိုက်ကို ဘယ်တော့မှ ဘာသာမပြန်ပါနှင့်</translation>
@@ -66,6 +67,7 @@
 <translation id="1509960214886564027">ဝဘ်ဆိုက်အတော်များများရှိ ဝန်ဆောင်မှုများ ရပ်သွားနိုင်သည်</translation>
 <translation id="152234381334907219">ဘယ်တော့မှ သိမ်းဆည်းခြင်းမပြုပါ</translation>
 <translation id="1523341279170789507">ကွတ်ကီးအားလုံးကို ခွင့်ပြုရန်</translation>
+<translation id="1524563461097350801">မလိုပါ</translation>
 <translation id="1535268707340844072">သင့်လက်ရှိဆက်တင်များသည် အချို့ဝဘ်ဆိုက်များ အလုပ်လုပ်ခြင်းမှရပ်တန့်သွားစေနိုင်သည်။ ဝဘ်ဆိုက်အားလုံးအတွက် ကွတ်ကီးများကို စီမံရန် <ph name="BEGIN_LINK" />ကွတ်ကီးဆက်တင်များ<ph name="END_LINK" /> ကို ကြည့်ပါ။</translation>
 <translation id="1540800554400757039">လိပ်စာ: 1</translation>
 <translation id="1545749641540134597">QR ကုဒ်ကို ဖတ်ပါ</translation>
@@ -112,7 +114,6 @@
 <translation id="1989112275319619282">ကြည့်ရန်</translation>
 <translation id="2015722694326466240">စကားဝှက်များကို ကြည့်ရှုရန်အတွက် သင့်စက်တွင် လျှို့ဝှက်ကုဒ်တစ်ခုကို ဦးစွာ သတ်မှတ်ရပါမည်။</translation>
 <translation id="2021670401941426298">သက်ဆိုင်မှုရှိပါက သင်၏ရှာဖွေမှတ်တမ်းကို ဖျက်ရန်အတွက် သင့်ရှာဖွေရေး အင်ဂျင်၏ ညွှန်ကြားချက်များကို ကြည့်ပါ။</translation>
-<translation id="2022352537516230970">သင့် iPhone အတွက် ပြုလုပ်ထားသည်</translation>
 <translation id="2073572773299281212">ပြီးခဲ့သော <ph name="DAYS" /> ရက်က အသုံးပြုထားသည်</translation>
 <translation id="2074131957428911366">စင့်ခ်လုပ်မည့်အရာကို <ph name="BEGIN_LINK" />ဆက်တင်များ<ph name="END_LINK" />တွင် အချိန်မရွေး ရွေးချယ်နိုင်သည်။</translation>
 <translation id="2079545284768500474">တစ်ဆင့်နောက်ပြန်ရန်</translation>
@@ -136,6 +137,7 @@
 <translation id="2320166752086256636">ကီးဘုတ် ဝှက်ထားရန်</translation>
 <translation id="2339560363438331454">စင့်ခ်နှင့် Google ဝန်ဆောင်မှု</translation>
 <translation id="2351097562818989364">သင်၏ ဘာသာပြန်ရေး ဆက်တင်များကို ပြန်သတ်မှတ်ခဲ့သည်။</translation>
+<translation id="235789365079050412">Google ကိုယ်ရေးအချက်အလက်လုံခြုံမှုဆိုင်ရာ မူဝါဒ</translation>
 <translation id="2359043044084662842">ဘာသာပြန်ရန်</translation>
 <translation id="2359808026110333948">ဆက်လုပ်ရန်</translation>
 <translation id="2360196772093551345">မိုဘိုင်းဝဘ်ဆိုက်ကို တောင်းဆိုရန်</translation>
@@ -147,6 +149,7 @@
 <translation id="2421004566762153674">ပြင်ပအဖွဲ့အစည်း၏ ကွတ်ကီးများကို ပိတ်ထားသည်</translation>
 <translation id="2421044535038393232">ဆက်လက်တည်းဖြတ်ရန်</translation>
 <translation id="2435457462613246316">စကားဝှက်ကို ပြပါ</translation>
+<translation id="2476359652512522418">ရွေးမထားပါ</translation>
 <translation id="2497852260688568942">စင့်ခ်ပြုလုပ်ခြင်းကို သင့်စီမံခန့်ခွဲသူက ပိတ်ဆို့ထားပါသည်</translation>
 <translation id="2500374554657206846">'စကားဝှက် သိမ်းရန်' ရွေးစရာများ</translation>
 <translation id="2523363575747517183">ဤဝဘ်ဆိုက်က နောက်ထပ် အပလီကေးရှင်းတစ်ခုကို ထပ်တလဲလဲ ဖွင့်နေပါသည်။</translation>
@@ -184,6 +187,7 @@
 <translation id="2834956026595107950"><ph name="TITLE" />၊ <ph name="STATE" />၊ <ph name="URL" /></translation>
 <translation id="2840687315230832938">စင့်ခ် စတင်လုပ်ရန် စီစဉ်သတ်မှတ်ခြင်းကို အပြီးသတ်၍ မရပါ</translation>
 <translation id="2843803966603263712">ဘာသာပြန် ဆက်တင်များ ပြန်လည်သတ်မှတ်မည်</translation>
+<translation id="2848086008667475748">ဆက်တင်များထဲတွင် ပုံသေသတ်မှတ်ရန်…</translation>
 <translation id="2858204748079866344">သင်၏ ပုဂ္ဂိုလ်ရေးကို ကာကွယ်ရန် Chrome သည် ဤအကွက်အတွက် သင်၏ စကားဝှက်ကို အော်တိုဖြည့်မည် မဟုတ်ပါ။</translation>
 <translation id="285960592395650245">ဒေါင်းလုဒ် ထပ်မံကြိုးစားမည်</translation>
 <translation id="2870560284913253234">ဆိုက်</translation>
@@ -283,6 +287,7 @@
 <translation id="3691593122358196899"><ph name="FOLDER_TITLE" />သို့ စာညှပ်ကို ထည့်ထားပါသည်</translation>
 <translation id="3709582977625132201">မဖတ်ရသေးအဖြစ် မှတ်သားရန်</translation>
 <translation id="3740397331642243698">ထည့်သွင်းထားသော URL များကို Google Chrome ရုပ်ဖျက်မုဒ်တွင် ဖွင့်သည်။</translation>
+<translation id="3762232513783804601">သင့် iPad အတွက် ပြုလုပ်ထားသည်</translation>
 <translation id="3771033907050503522">ကိုယ်ပျောက် တဲဘ်များ</translation>
 <translation id="3775743491439407556">စင့်ခ်လုပ်၍ မရပါ</translation>
 <translation id="3779810277399252432">အင်တာနက် ချိတ်ဆက်မှု မရှိပါ။</translation>
@@ -322,7 +327,7 @@
 <translation id="4172051516777682613">အမြဲပြရန်</translation>
 <translation id="418156467088430727">အော့ဖ်လိုင်းဗားရှင်းကို တဘ်အသစ်တွင် ကြည့်ရန်</translation>
 <translation id="4181841719683918333">ဘာသာစကားများ</translation>
-<translation id="4184011057600693970">သင့် iPad အတွက် ပြုလုပ်ထားသည်</translation>
+<translation id="4237377247299956313"><ph name="BEGIN_BOLD" />မူရင်း ဘရောင်ဇာအက်ပ်<ph name="END_BOLD" /> ကို တို့ပါ</translation>
 <translation id="424315890655130736">စကားဝှက်ကိုထည့်ပါ</translation>
 <translation id="4263576668337963058">ရနိုင်သော စာမျက်နှာဆိုင်ရာ လုပ်ဆောင်ချက်များ ပြရန်</translation>
 <translation id="4267380167363222949">နောက်တဘ်</translation>
@@ -338,9 +343,10 @@
 <translation id="4375040482473363939">QR ကုဒ် ရှာဖွေရန်</translation>
 <translation id="4378154925671717803">ဖုန်း</translation>
 <translation id="4389019817280890563">ဘာသာစကားပြောင်းရန်အတွက် တို့ပါ</translation>
-<translation id="441868831736628555">ကိုယ်ရေး သတိပေးချက်</translation>
+<translation id="4442550905108052454"><ph name="BEGIN_BOLD" />ဆက်တင်များ<ph name="END_BOLD" /> ဖွင့်ပါ</translation>
 <translation id="4454246407045105932">ဘာသာစကား ထည့်ခြင်း</translation>
 <translation id="4469418912670346607">စနစ်ထည့်သွင်းမှု ဆက်လက်ပြုလုပ်ရန်</translation>
+<translation id="4474494258097106883">သင့် iPhone အတွက် ပြုလုပ်ထားသည်</translation>
 <translation id="4476574785019001431">ဆက်တင်များ</translation>
 <translation id="4496373720959965247">စာမျက်နှာများအကြားတွင် တက်ဘ်များထည့်ပြီး ပြောင်းပါ</translation>
 <translation id="4502566650163919158">ယခု စစ်ကြည့်ရန်</translation>
@@ -596,6 +602,7 @@ Handoff ကို ဆက်တင်များ၏ ယေဘူယျအပိ�
 <translation id="6730682669179532099">စကားဝှက်များကို တင်ပို့၍မရပါ</translation>
 <translation id="6748108480210050150">မှ</translation>
 <translation id="6760509555861141183">‘လတ်တလောတဘ်’ သို့ ပြန်သွားပါ</translation>
+<translation id="6762812039470893796">အားလုံးမရွေးရန်</translation>
 <translation id="6780034285637185932">စာတိုက် ကုဒ်</translation>
 <translation id="6785453220513215166">ပျက်စီးမှုအစီရင်ခံချက် ပေးပို့နေသည်...</translation>
 <translation id="6797885426782475225">အသံဖြင့် ရှာဖွေမှု</translation>
@@ -733,6 +740,7 @@ Handoff ကို ဆက်တင်များ၏ ယေဘူယျအပိ�
 <translation id="8073872304774253879">ရှာဖွေမှုနှင့် ဖွင့်ကြည့်မှု ပိုမိုကောင်းမွန်အောင် ပြုလုပ်ခြင်း</translation>
 <translation id="8076014560081431679">သိမ်းဆည်းထားသည့် ဆိုက်ဆက်တင်များကိုတော့ ဖျက်လိုက်မည် မဟုတ်ဘဲ သင်အင်တာနက် အသုံးပြုမှု အမူအကျင့်များကို ဖော်ပြပါလိမ့်မည်။ <ph name="BEGIN_LINK" />ပိုမိုလေ့လာရန်<ph name="END_LINK" /></translation>
 <translation id="8079602123447022758">ဤဆက်တင်ကို စီမံခန့်ခွဲထားသည်၊ နောက်ထပ်အချက်အလက်အတွက် နှစ်ချက်တို့ပါ</translation>
+<translation id="8080028325999236607">တဘ်အားလုံး ပိတ်မည်</translation>
 <translation id="8105368624971345109">ပိတ်ပါ</translation>
 <translation id="8114753159095730575">ဖိုင်ကို ဒေါင်းလုဒ်လုပ်နိုင်ပါပြီ။ မျက်နှာပြင်အောက်ခြေနားတွင် ရွေးချယ်စရာများ ရှိပါသည်။</translation>
 <translation id="8131740175452115882">အတည်ပြုရန်</translation>
@@ -748,7 +756,6 @@ Handoff ကို ဆက်တင်များ၏ ယေဘူယျအပိ�
 <translation id="8283172974887967105">သတ်မှတ်ရန်…</translation>
 <translation id="8299417921174340354">စကားဝှက်များသုံးရန် သင့်စက်တွင် လျှို့ဝှက်ကုဒ်တစ်ခုကို ဦးစွာ သတ်မှတ်ရပါမည်။</translation>
 <translation id="8299613349954694191">ဝဘ်ကို သီးသန့်ကြည့်ရှုရန် ရုပ်ဖျက်တဘ် ဖွင့်ပါ။</translation>
-<translation id="83100941411593607">လက်မှတ်ထိုးဝင်ခြင်းကို ပိတ်ထားသည်</translation>
 <translation id="8319076807703933069">ရှာဖွေမှု အသစ်</translation>
 <translation id="8323906514956095947">နောက်ထပ် တဘ်ရွေးချယ်စရာများအတွက် တို့၍ဖိထားပါ</translation>
 <translation id="8328777765163860529">အားလုံး ပိတ်ရန်</translation>

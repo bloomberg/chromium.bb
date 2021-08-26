@@ -339,27 +339,11 @@ RenderViewHostImpl::RenderViewHostImpl(
 RenderViewHostImpl::~RenderViewHostImpl() {
   PerProcessRenderViewHostSet::GetOrCreateForProcess(GetProcess())->Erase(this);
 
-  // We can't release the SessionStorageNamespace until our peer
-  // in the renderer has wound down.
-  // TODO(crbug.com/1111231): `WillDestroyRenderView()` should probably be
-  // called on the AgentSchedulingGroupHost rather than the
-  // RenderProcessHostImpl. If that happens, does it still make sense to test if
-  // the process is still alive, or should that be encapsulated in
-  // `AgentSchedulingGroupHost::WillDestroyRenderView()`?
-  if (GetProcess()->IsInitializedAndNotDead()) {
-    RenderProcessHostImpl::WillDestroyRenderView(
-        GetProcess(), delegate_->GetSessionStorageNamespaceMap(),
-        GetRoutingID());
-  }
-
   // Destroy the RenderWidgetHost.
   GetWidget()->ShutdownAndDestroyWidget(false);
   if (IsRenderViewLive()) {
     // Destroy the RenderView, which will also destroy the RenderWidget.
-    GetAgentSchedulingGroup().DestroyView(
-        GetRoutingID(),
-        base::BindOnce(&RenderProcessHostImpl::DidDestroyRenderView,
-                       GetProcess()->GetID(), GetRoutingID()));
+    GetAgentSchedulingGroup().DestroyView(GetRoutingID());
   }
 
   ui::GpuSwitchingManager::GetInstance()->RemoveObserver(this);
@@ -560,13 +544,16 @@ void RenderViewHostImpl::LeaveBackForwardCache(
       is_in_back_forward_cache_, std::move(page_restore_params));
 }
 
-void RenderViewHostImpl::ActivatePrerenderedPage() {
-  // Null in some unit tests that use TestRenderViewHost.
-  // TODO(falken): Bind this in tests.
-  if (!page_broadcast_)
-    return;
-
-  page_broadcast_->ActivatePrerenderedPage();
+void RenderViewHostImpl::ActivatePrerenderedPage(
+    base::TimeTicks activation_start,
+    base::OnceClosure callback) {
+  // TODO(https://crbug.com/1217977): Consider using a ScopedClosureRunner here
+  // in case the renderer crashes before it can send us the callback. But we
+  // can't do that until the linked bug is fixed, or else we can reach
+  // DidActivateForPrerendering() outside of a Mojo message dispatch which
+  // breaks the DCHECK for releasing Mojo Capability Control.
+  page_broadcast_->ActivatePrerenderedPage(activation_start,
+                                           std::move(callback));
 }
 
 void RenderViewHostImpl::SetFrameTreeVisibility(
@@ -585,9 +572,9 @@ void RenderViewHostImpl::OnBackForwardCacheTimeout() {
   const auto& entries =
       frame_tree_->controller().GetBackForwardCache().GetEntries();
   for (auto& entry : entries) {
-    for (auto* const rvh : entry->render_view_hosts) {
+    for (auto* const rvh : entry->render_view_hosts()) {
       if (rvh == this) {
-        RenderFrameHostImpl* rfh = entry->render_frame_host.get();
+        RenderFrameHostImpl* rfh = entry->render_frame_host();
         rfh->EvictFromBackForwardCacheWithReason(
             BackForwardCacheMetrics::NotRestoredReason::kTimeoutPuttingInCache);
         break;
@@ -603,9 +590,9 @@ void RenderViewHostImpl::MaybeEvictFromBackForwardCache() {
   const auto& entries =
       frame_tree_->controller().GetBackForwardCache().GetEntries();
   for (auto& entry : entries) {
-    for (auto* const rvh : entry->render_view_hosts) {
+    for (auto* const rvh : entry->render_view_hosts()) {
       if (rvh == this) {
-        RenderFrameHostImpl* rfh = entry->render_frame_host.get();
+        RenderFrameHostImpl* rfh = entry->render_frame_host();
         rfh->MaybeEvictFromBackForwardCache();
       }
     }
@@ -780,11 +767,6 @@ bool RenderViewHostImpl::SuddenTerminationAllowed() {
 
 bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
   return false;
-}
-
-void RenderViewHostImpl::OnDidContentsPreferredSizeChange(
-    const gfx::Size& new_size) {
-  delegate_->UpdatePreferredSize(new_size);
 }
 
 void RenderViewHostImpl::OnTakeFocus(bool reverse) {

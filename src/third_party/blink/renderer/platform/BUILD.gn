@@ -132,9 +132,6 @@ config("blink_platform_config") {
     "//third_party/blink/renderer:config",
     "//third_party/blink/renderer:inside_blink",
     "//build/config/compiler:noshadowing",
-
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    "//build/config/compiler:no_size_t_to_int_warning",
   ]
 }
 
@@ -265,7 +262,6 @@ component("platform") {
   sources = [
     "animation/animation_translation_util.cc",
     "animation/animation_translation_util.h",
-    "animation/animation_utilities.h",
     "animation/compositor_animation.cc",
     "animation/compositor_animation.h",
     "animation/compositor_animation_client.cc",
@@ -472,6 +468,7 @@ component("platform") {
     "bindings/v8_dom_wrapper.h",
     "bindings/v8_global_value_map.h",
     "bindings/v8_interface_bridge.h",
+    "bindings/v8_interface_bridge_base.cc",
     "bindings/v8_interface_bridge_base.h",
     "bindings/v8_object_constructor.cc",
     "bindings/v8_object_constructor.h",
@@ -540,7 +537,6 @@ component("platform") {
     "exported/web_font.cc",
     "exported/web_font_description.cc",
     "exported/web_http_body.cc",
-    "exported/web_http_load_info.cc",
     "exported/web_icon_sizes_parser.cc",
     "exported/web_image_generator.cc",
     "exported/web_media_player_client.cc",
@@ -993,8 +989,6 @@ component("platform") {
     "graphics/graphics_types.cc",
     "graphics/graphics_types.h",
     "graphics/graphics_types_3d.h",
-    "graphics/identifiability_paint_op_digest.cc",
-    "graphics/identifiability_paint_op_digest.h",
     "graphics/image.cc",
     "graphics/image.h",
     "graphics/image_data_buffer.cc",
@@ -1167,8 +1161,12 @@ component("platform") {
     "graphics/video_frame_image_util.h",
     "graphics/video_frame_resource_provider.cc",
     "graphics/video_frame_resource_provider.h",
+    "graphics/video_frame_sink_bundle.cc",
+    "graphics/video_frame_sink_bundle.h",
     "graphics/video_frame_submitter.cc",
     "graphics/video_frame_submitter.h",
+    "graphics/viz_util.cc",
+    "graphics/viz_util.h",
     "graphics/web_graphics_context_3d_provider_util.cc",
     "graphics/web_graphics_context_3d_provider_util.h",
     "graphics/web_graphics_context_3d_provider_wrapper.cc",
@@ -1483,6 +1481,7 @@ component("platform") {
     "weborigin/kurl_hash.h",
     "weborigin/origin_access_entry.cc",
     "weborigin/origin_access_entry.h",
+    "weborigin/referrer.cc",
     "weborigin/referrer.h",
     "weborigin/reporting_disposition.h",
     "weborigin/scheme_registry.cc",
@@ -1870,7 +1869,9 @@ static_library("test_support") {
     "graphics/test/gpu_test_utils.cc",
     "graphics/test/gpu_test_utils.h",
     "graphics/test/mock_compositor_frame_sink.h",
+    "graphics/test/mock_compositor_frame_sink_client.h",
     "graphics/test/mock_embedded_frame_sink_provider.h",
+    "graphics/test/mock_frame_sink_bundle.h",
     "graphics/test/mock_image_decoder.h",
     "graphics/test/mock_paint_canvas.h",
     "testing/code_cache_loader_mock.cc",
@@ -1893,6 +1894,8 @@ static_library("test_support") {
     "testing/layer_tree_host_embedder.h",
     "testing/message_loop_for_mojo.h",
     "testing/mock_context_lifecycle_notifier.h",
+    "testing/noop_web_url_loader.cc",
+    "testing/noop_web_url_loader.h",
     "testing/paint_property_test_helpers.h",
     "testing/paint_test_configurations.h",
     "testing/picture_matchers.cc",
@@ -2091,7 +2094,6 @@ source_set("blink_platform_unittests_sources") {
     "graphics/gpu/webgpu_resource_provider_cache_test.cc",
     "graphics/gpu/webgpu_swap_buffer_provider_test.cc",
     "graphics/graphics_context_test.cc",
-    "graphics/identifiability_paint_op_digest_unittest.cc",
     "graphics/paint/cull_rect_test.cc",
     "graphics/paint/display_item_client_test.cc",
     "graphics/paint/display_item_raster_invalidator_test.cc",
@@ -2116,6 +2118,7 @@ source_set("blink_platform_unittests_sources") {
     "graphics/raster_dark_mode_filter_impl_test.cc",
     "graphics/rw_buffer_test.cc",
     "graphics/video_frame_image_util_test.cc",
+    "graphics/video_frame_sink_bundle_test.cc",
     "graphics/video_frame_submitter_test.cc",
     "heap_observer_set_test.cc",
     "image-decoders/bmp/bmp_image_decoder_test.cc",
@@ -2361,8 +2364,6 @@ test("blink_platform_perftests") {
   ]
 
   configs += [
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    "//build/config/compiler:no_size_t_to_int_warning",
     "//third_party/blink/renderer/platform/wtf:wtf_config",
     "//third_party/blink/renderer:config",
   ]

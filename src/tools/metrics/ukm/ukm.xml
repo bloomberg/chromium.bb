@@ -144,6 +144,39 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="AccuracyTipDialog">
+  <owner>dullweber@chromium.org</owner>
+  <owner>eokoyomon@chromium.org</owner>
+  <summary>
+    Recorded when an action on the accuracy tip dialog is taken.
+  </summary>
+  <metric name="Interaction" enum="AccuracyTipInteraction">
+    <summary>
+      Records an enum value representing which action in the accuracy tip was
+      taken.
+    </summary>
+  </metric>
+  <metric name="TimeSpent">
+    <summary>
+      The amount of time spent on the dialog until it was closed. In seconds.
+    </summary>
+  </metric>
+</event>
+
+<event name="AccuracyTipStatus">
+  <owner>dullweber@chromium.org</owner>
+  <owner>eokoyomon@chromium.org</owner>
+  <summary>
+    Recorded on each page load when the AccuracyService determines whether an
+    accuracy tip should be shown or the reason why it was not shown.
+  </summary>
+  <metric name="Status" enum="AccuracyTipStatus">
+    <summary>
+      The accuracy tip status that was determined for a pageload.
+    </summary>
+  </metric>
+</event>
+
 <event name="AdFrameLoad">
   <owner>johnidel@chromium.org</owner>
   <owner>jkarlin@chromium.org</owner>
@@ -2380,6 +2413,19 @@ be describing additional metrics about the same event.
       and First Contentful Paint, in microseconds.
     </summary>
   </metric>
+  <metric name="IntersectionObservationInternalCount">
+    <summary>
+      The total number of times a blink-internal IntersectionObservation was
+      recomputed between navigation and First Contentful Paint.
+    </summary>
+  </metric>
+  <metric name="IntersectionObservationJavascriptCount">
+    <summary>
+      The total number of times a javascript-instantiated
+      IntersectionObservation was recomputed between navigation and First
+      Contentful Paint.
+    </summary>
+  </metric>
   <metric name="JavascriptDocumentUpdate">
     <summary>
       The time spent doing forced document updates due to generic Javascript API
@@ -3166,6 +3212,44 @@ be describing additional metrics about the same event.
       observations, in microseconds.
     </summary>
   </metric>
+  <metric name="IntersectionObservationInternalCount">
+    <summary>
+      The number of blink-internal IntersectionObservations that were recomputed
+      during the sampled frame.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="IntersectionObservationInternalCountBeginMainFrame">
+    <summary>
+      The number of blink-internal IntersectionObservations that were recomputed
+      during the sampled frame.
+    </summary>
+  </metric>
+  <metric name="IntersectionObservationJavascriptCount">
+    <summary>
+      The number of javascript-instantiated IntersectionObservations that were
+      recomputed during the sampled frame.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="IntersectionObservationJavascriptCountBeginMainFrame">
+    <summary>
+      The number of javascript-instantiated IntersectionObservations that were
+      recomputed during the sampled frame.
+    </summary>
+  </metric>
   <metric name="IntersectionObservationPercentage">
     <obsolete>
       Deprecated as of 11/2020. Replaced with
@@ -3933,6 +4017,46 @@ be describing additional metrics about the same event.
   <metric name="LaunchSource" enum="LaunchSource">
     <summary>
       An enum that records where the app was launched.
+    </summary>
+  </metric>
+  <metric name="UserDeviceMatrix" enum="UserDeviceMatrix">
+    <summary>
+      An enum that records the user type and the device type.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
+<event name="ChromeOSApp.UninstallApp">
+  <owner>nancylingwang@chromium.org</owner>
+  <owner>dominickn@chromium.org</owner>
+  <summary>
+    Records the uninstalled app in Chrome OS, only when the user allows app
+    syncing or allows sync of everything, and the user does not set up a sync
+    passphrase. Only ARC apps, Chrome apps and web apps(PWA), system web apps,
+    buildin apps are recorded. This is logged when the user uninstalls an app.
+  </summary>
+  <metric name="AppType" enum="AppType">
+    <summary>
+      An enum that records the app type.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="UninstallSource" enum="UninstallSource">
+    <summary>
+      An enum that records how the app was uninstalled.
     </summary>
   </metric>
   <metric name="UserDeviceMatrix" enum="UserDeviceMatrix">
@@ -6659,6 +6783,9 @@ be describing additional metrics about the same event.
     </summary>
     <aggregation>
       <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
         <statistics>
           <quantiles type="std-percentiles"/>
         </statistics>
@@ -6673,6 +6800,9 @@ be describing additional metrics about the same event.
     </summary>
     <aggregation>
       <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
         <statistics>
           <quantiles type="std-percentiles"/>
         </statistics>
@@ -6685,6 +6815,9 @@ be describing additional metrics about the same event.
     </summary>
     <aggregation>
       <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
         <statistics>
           <quantiles type="std-percentiles"/>
         </statistics>
@@ -6699,6 +6832,9 @@ be describing additional metrics about the same event.
     </summary>
     <aggregation>
       <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
         <statistics>
           <quantiles type="std-percentiles"/>
         </statistics>
@@ -6712,6 +6848,9 @@ be describing additional metrics about the same event.
     </summary>
     <aggregation>
       <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
         <statistics>
           <quantiles type="std-percentiles"/>
         </statistics>
@@ -6725,6 +6864,9 @@ be describing additional metrics about the same event.
     </summary>
     <aggregation>
       <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
         <statistics>
           <quantiles type="std-percentiles"/>
         </statistics>
@@ -6738,6 +6880,9 @@ be describing additional metrics about the same event.
     </summary>
     <aggregation>
       <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
         <statistics>
           <quantiles type="std-percentiles"/>
         </statistics>
@@ -7454,6 +7599,14 @@ be describing additional metrics about the same event.
       from the back-forward cache.
     </summary>
   </metric>
+  <metric name="PageEndReasonAfterBackForwardCacheRestore">
+    <summary>
+      The reason (as a |page_load_metrics::PageEndReason|) why the user
+      navigated away from the page after it was restored from the back-forward
+      cache. This includes navigations after which the page is stored in the
+      back-forward cache again, as well as other page-ending events.
+    </summary>
+  </metric>
   <metric name="SameOriginSubframesFeatures">
     <summary>
       Bitmask of features used by the same origin subframes of the previous page
@@ -7860,6 +8013,12 @@ be describing additional metrics about the same event.
     can use multiple frameworks at the same time, hence why this reports each
     framework individually instead of a single enum.
   </summary>
+  <metric name="AngularPageLoad" enum="Boolean">
+    <summary>
+      True if the page loaded in the main frame uses the Angular JavaScript
+      framework.
+    </summary>
+  </metric>
   <metric name="GatsbyPageLoad" enum="Boolean">
     <summary>
       True if the page loaded in the main frame uses the Gatsby JavaScript
@@ -7878,9 +8037,33 @@ be describing additional metrics about the same event.
       framework.
     </summary>
   </metric>
+  <metric name="PreactPageLoad" enum="Boolean">
+    <summary>
+      True if the page loaded in the main frame uses the Preact JavaScript
+      framework.
+    </summary>
+  </metric>
+  <metric name="ReactPageLoad" enum="Boolean">
+    <summary>
+      True if the page loaded in the main frame uses the React JavaScript
+      framework.
+    </summary>
+  </metric>
   <metric name="SapperPageLoad" enum="Boolean">
     <summary>
       True if the page loaded in the main frame uses the Sapper JavaScript
+      framework.
+    </summary>
+  </metric>
+  <metric name="SveltePageLoad" enum="Boolean">
+    <summary>
+      True if the page loaded in the main frame uses the Svelte JavaScript
+      framework.
+    </summary>
+  </metric>
+  <metric name="VuePageLoad" enum="Boolean">
+    <summary>
+      True if the page loaded in the main frame uses the Vue JavaScript
       framework.
     </summary>
   </metric>
@@ -7893,6 +8076,9 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="Layout.DisplayCutout.StateChanged">
+  <obsolete>
+    Obsolete as of 08/2021.
+  </obsolete>
   <owner>beccahughes@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>
@@ -9203,7 +9389,6 @@ be describing additional metrics about the same event.
 
 <event name="Media.WebAudio.AudioContext.AudibleTime">
   <owner>hongchan@chromium.org</owner>
-  <owner>rtoy@chromium.org</owner>
   <owner>webaudio-dev@chromium.org</owner>
   <summary>
     Records the AudioContext audible time information.
@@ -10985,7 +11170,8 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="PageInfoBubble">
-  <owner>chlily@chromium.org</owner>
+  <owner>dullweber@chromium.org</owner>
+  <owner>chrome-privacy-core@google.com</owner>
   <summary>
     Recorded when an action on the Page Info Bubble (aka Origin Info Bubble or
     WebsiteSettings Bubble) is taken. May be recorded multiple times for a
@@ -12031,6 +12217,13 @@ be describing additional metrics about the same event.
       'mark_fully_loaded' name to mark that the page is fully loaded. If the
       mark is called more than once, the last is used.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="PageTiming.UserTimingMarkFullyVisible">
     <summary>
@@ -12038,6 +12231,13 @@ be describing additional metrics about the same event.
       'mark_fully_visible' name to mark that the page is fully visible. If the
       mark is called more than once, the last is used.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="PageTiming.UserTimingMarkInteractive">
     <summary>
@@ -12045,6 +12245,13 @@ be describing additional metrics about the same event.
       'mark_interactive' name to mark that the page is interactive. If the mark
       is called more than once, the last is used.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="PaintTiming.NavigationToExperimentalLargestContentfulPaint">
     <obsolete>
@@ -13344,7 +13551,7 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="PostMessage.Incoming.Frame">
-  <owner>chlily@chromium.org</owner>
+  <owner>arichiv@chromium.org</owner>
   <owner>miketaylr@chromium.org</owner>
   <summary>
     The frame received an incoming postMessage event. This is recorded only for
@@ -13358,7 +13565,7 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="PostMessage.Incoming.Page">
-  <owner>chlily@chromium.org</owner>
+  <owner>arichiv@chromium.org</owner>
   <owner>miketaylr@chromium.org</owner>
   <summary>
     A frame on the page received an incoming postMessage event. This is recorded
@@ -16167,7 +16374,7 @@ be describing additional metrics about the same event.
     instances where the user backgrounds then kills Chrome.
   </summary>
   <metric name="FinalSourceLanguage" semantic_type="ST_DEMOGRAPHIC_INFO"
-      enum="CLD3LanguageCode">
+      enum="LocaleCodeISO639">
     <summary>
       The source language at the time the event is recorded. In most cases this
       will match the intial source language, but the user can change the source
@@ -16184,7 +16391,7 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="FinalTargetLanguage" semantic_type="ST_DEMOGRAPHIC_INFO"
-      enum="CLD3LanguageCode">
+      enum="LocaleCodeISO639">
     <summary>
       The target language at the time the event is recorded. In most cases this
       will match the initial target language, but the user can change the target
@@ -16204,7 +16411,7 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="HTMLContentLanguage" semantic_type="ST_DEMOGRAPHIC_INFO"
-      enum="CLD3LanguageCode">
+      enum="LocaleCodeISO639">
     <summary>
       The HTML language content attribute specified by the document. Note that
       the semantic_type attribute is included in order to remain consistent with
@@ -16212,7 +16419,7 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="HTMLDocumentLanguage" semantic_type="ST_DEMOGRAPHIC_INFO"
-      enum="CLD3LanguageCode">
+      enum="LocaleCodeISO639">
     <summary>
       The HTML language attribute specified by the document. Note that the
       semantic_type attribute is included in order to remain consistent with the
@@ -16220,7 +16427,7 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="InitialSourceLanguage" semantic_type="ST_DEMOGRAPHIC_INFO"
-      enum="CLD3LanguageCode">
+      enum="LocaleCodeISO639">
     <summary>
       The initial source language that Translate determines for the page. Note
       that the semantic_type attribute is included in order to remain consistent
@@ -16243,7 +16450,7 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="InitialTargetLanguage" semantic_type="ST_DEMOGRAPHIC_INFO"
-      enum="CLD3LanguageCode">
+      enum="LocaleCodeISO639">
     <summary>
       The initial target language that Translate thinks it should translate to.
       Note that the semantic_type attribute is included in order to remain
@@ -16257,7 +16464,7 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="ModelDetectedLanguage" semantic_type="ST_DEMOGRAPHIC_INFO"
-      enum="CLD3LanguageCode">
+      enum="LocaleCodeISO639">
     <summary>
       The language that was estimated by the language model based on the page's
       content. Note that the semantic_type attribute is included in order to
@@ -16336,6 +16543,26 @@ be describing additional metrics about the same event.
       Whether the page content used to detect the page language was empty or
       not.
     </summary>
+  </metric>
+</event>
+
+<event name="TrustedWebActivity.LocationDelegation" singular="True">
+  <owner>eirage@chromium.org</owner>
+  <owner>peconn@chromium.org</owner>
+  <summary>
+    Records when a site running in Trusted Web Activity requests geolocation.
+  </summary>
+  <metric name="Enrolled" enum="Boolean">
+    <summary>
+      Whether the Trusted Web Activity client app enrolled location delegation.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
 </event>
 

@@ -7,10 +7,11 @@
 #include <algorithm>
 #include <utility>
 
-#include "base/numerics/ranges.h"
+#include "base/cxx17_backports.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "cc/paint/paint_record.h"
+#include "cc/paint/paint_shader.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_types.h"
@@ -30,7 +31,7 @@
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/skia_util.h"
-#include "ui/views/style/platform_style.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/widget/widget.h"
 
@@ -291,8 +292,8 @@ SkPath GM2TabStyle::GetPath(PathType path_type,
   } else if (path_type == PathType::kHighlight) {
     // The path is a round rect inset by the focus ring thickness. The
     // radius is also adjusted by the inset.
-    const float inset = views::PlatformStyle::kFocusHaloThickness +
-                        views::PlatformStyle::kFocusHaloInset;
+    const float inset =
+        views::FocusRing::kHaloThickness + views::FocusRing::kHaloInset;
     SkRRect rrect = SkRRect::MakeRectXY(
         SkRect::MakeLTRB(tab_left + inset, tab_top + inset, tab_right - inset,
                          tab_bottom - inset),
@@ -721,7 +722,7 @@ float GM2TabStyle::GetHoverOpacity() const {
   const float range_start = static_cast<float>(GetStandardWidth());
   const float range_end = static_cast<float>(GetMinimumInactiveWidth());
   const float value_in_range = static_cast<float>(tab_->width());
-  const float t = base::ClampToRange(
+  const float t = base::clamp(
       (value_in_range - range_start) / (range_end - range_start), 0.0f, 1.0f);
   return tab_->controller()->GetHoverOpacityForTab(t * t);
 }
@@ -916,7 +917,7 @@ float GM2TabStyle::GetTopCornerRadiusForWidth(int width) {
   // To maintain a round-rect appearance, ensure at least one third of the top
   // of the tab is flat.
   const float radius = top_width / 3.f;
-  return base::ClampToRange<float>(radius, 0, ideal_radius);
+  return base::clamp<float>(radius, 0, ideal_radius);
 }
 
 // static

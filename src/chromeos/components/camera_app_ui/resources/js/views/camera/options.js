@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import * as animate from '../../animation.js';
+import {assertString} from '../../chrome_util.js';
 // eslint-disable-next-line no-unused-vars
 import {Camera3DeviceInfo} from '../../device/camera3_device_info.js';
 // eslint-disable-next-line no-unused-vars
@@ -81,12 +82,10 @@ export class Options {
      */
     this.audioTrack_ = null;
 
-    [['#switch-device', () => this.switchDevice_()],
-     ['#open-settings', () => nav.open(ViewName.SETTINGS)],
-    ]
-        .forEach(
-            ([selector, fn]) => dom.get(selector, HTMLButtonElement)
-                                    .addEventListener('click', fn));
+    dom.get('#switch-device', HTMLButtonElement)
+        .addEventListener('click', () => this.switchDevice(undefined));
+    dom.get('#open-settings', HTMLButtonElement)
+        .addEventListener('click', () => nav.open(ViewName.SETTINGS));
 
     this.toggleMic_.addEventListener('click', () => this.updateAudioByMic_());
     this.toggleMirror_.addEventListener('click', () => this.saveMirroring_());
@@ -103,10 +102,8 @@ export class Options {
     // Remove the deprecated values.
     localStorage.remove('effectIndex', 'toggleMulti', 'toggleMirror');
 
-    this.infoUpdater_.addDeviceChangeListener(async (updater) => {
-      state.set(
-          state.State.MULTI_CAMERA,
-          (await updater.getDevicesInfo()).length >= 2);
+    this.infoUpdater_.addDeviceChangeListener((updater) => {
+      state.set(state.State.MULTI_CAMERA, updater.getDevicesInfo().length >= 2);
     });
   }
 
@@ -119,25 +116,28 @@ export class Options {
   }
 
   /**
-   * Switches to the next available camera device.
-   * @private
+   * Switches to specified or the next available camera device.
+   * @param {(string|undefined)} deviceId The target device id to switch to.
+   *     Sets to undefined for switching to next camera device in order.
    */
-  async switchDevice_() {
+  async switchDevice(deviceId) {
     if (!state.get(state.State.STREAMING) || state.get(state.State.TAKING)) {
       return;
     }
     state.set(PerfEvent.CAMERA_SWITCHING, true);
-    const devices = await this.infoUpdater_.getDevicesInfo();
+    if (deviceId === undefined) {
+      const devices = this.infoUpdater_.getDevicesInfo();
+      let index =
+          devices.findIndex((entry) => entry.deviceId === this.videoDeviceId_);
+      if (index === -1) {
+        index = 0;
+      } else {
+        index = (index + 1) % devices.length;
+        deviceId = devices[index].deviceId;
+      }
+    }
+    this.videoDeviceId_ = assertString(deviceId);
     animate.play(dom.get('#switch-device', HTMLElement));
-    let index =
-        devices.findIndex((entry) => entry.deviceId === this.videoDeviceId_);
-    if (index === -1) {
-      index = 0;
-    }
-    if (devices.length > 0) {
-      index = (index + 1) % devices.length;
-      this.videoDeviceId_ = devices[index].deviceId;
-    }
     const isSuccess = await this.doSwitchDevice_();
     state.set(PerfEvent.CAMERA_SWITCHING, false, {hasError: !isSuccess});
   }
@@ -196,9 +196,9 @@ export class Options {
 
   /**
    * Gets the video device ids sorted by preference.
-   * @return {!Promise<!Array<?string>>} May contain null for fake cameras.
+   * @return {!Array<string>}
    */
-  async videoDeviceIds() {
+  videoDeviceIds() {
     /** @type {!Array<(!Camera3DeviceInfo|!MediaDeviceInfo)>} */
     let devices;
     /**
@@ -207,7 +207,7 @@ export class Options {
      */
     let facings = null;
 
-    const camera3Info = await this.infoUpdater_.getCamera3DevicesInfo();
+    const camera3Info = this.infoUpdater_.getCamera3DevicesInfo();
     if (camera3Info) {
       devices = camera3Info;
       facings = {};
@@ -215,7 +215,7 @@ export class Options {
         facings[deviceId] = facing;
       }
     } else {
-      devices = await this.infoUpdater_.getDevicesInfo();
+      devices = this.infoUpdater_.getDevicesInfo();
     }
 
     const defaultFacing = util.getDefaultFacing();
@@ -230,12 +230,6 @@ export class Options {
       }
       return 1;
     });
-    // Prepended 'null' deviceId means there is no facing information to sort
-    // device IDs and prefer the default one. Add it only when the app is
-    // launched (no video-device-id set) and there is at least one device.
-    if (!facings && this.videoDeviceId_ === null && sorted.length > 0) {
-      sorted.unshift(null);
-    }
     return sorted;
   }
 }

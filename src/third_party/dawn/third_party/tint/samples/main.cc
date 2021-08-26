@@ -34,6 +34,16 @@ namespace {
     const tint::diag::List& diagnostics) {
   auto printer = tint::diag::Printer::create(stderr, true);
   tint::diag::Formatter{}.format(diagnostics, printer.get());
+  tint::diag::Style bold_red{tint::diag::Color::kRed, true};
+  constexpr const char* please_file_bug = R"(
+********************************************************************
+*  The tint shader compiler has encountered an unexpected error.   *
+*                                                                  *
+*  Please help us fix this issue by submitting a bug report at     *
+*  crbug.com/tint with the source program that triggered the bug.  *
+********************************************************************
+)";
+  printer->write(please_file_bug, bold_red);
   exit(1);
 }
 
@@ -54,6 +64,7 @@ struct Options {
 
   bool parse_only = false;
   bool dump_ast = false;
+  bool disable_workgroup_init = false;
   bool validate = false;
   bool demangle = false;
   bool dump_inspector_bindings = false;
@@ -93,6 +104,7 @@ const char kUsage[] = R"(Usage: tint [options] <input-file>
                                 robustness
   --parse-only              -- Stop after parsing the input
   --dump-ast                -- Dump the generated AST to stdout
+  --disable-workgroup-init  -- Disable workgroup memory zero initialization.
   --demangle                -- Preserve original source names. Demangle them.
                                Affects AST dumping, and text-based output languages.
   --dump-inspector-bindings -- Dump reflection data about bindins to stdout.
@@ -349,6 +361,9 @@ std::string ResourceTypeToString(
       return "WriteOnlyStorageTexture";
     case tint::inspector::ResourceBinding::ResourceType::kDepthTexture:
       return "DepthTexture";
+    case tint::inspector::ResourceBinding::ResourceType::
+        kDepthMultisampledTexture:
+      return "DepthMultisampledTexture";
     case tint::inspector::ResourceBinding::ResourceType::kExternalTexture:
       return "ExternalTexture";
   }
@@ -401,6 +416,8 @@ bool ParseArgs(const std::vector<std::string>& args, Options* opts) {
       opts->parse_only = true;
     } else if (arg == "--dump-ast") {
       opts->dump_ast = true;
+    } else if (arg == "--disable-workgroup-init") {
+      opts->disable_workgroup_init = true;
     } else if (arg == "--demangle") {
       opts->demangle = true;
     } else if (arg == "--dump-inspector-bindings") {
@@ -603,6 +620,7 @@ bool GenerateSpirv(const tint::Program* program, const Options& options) {
 #if TINT_BUILD_SPV_WRITER
   // TODO(jrprice): Provide a way for the user to set non-default options.
   tint::writer::spirv::Options gen_options;
+  gen_options.disable_workgroup_init = options.disable_workgroup_init;
   auto result = tint::writer::spirv::Generate(program, gen_options);
   if (!result.success) {
     PrintWGSL(std::cerr, *program);
@@ -670,6 +688,7 @@ bool GenerateMsl(const tint::Program* program, const Options& options) {
 #if TINT_BUILD_MSL_WRITER
   // TODO(jrprice): Provide a way for the user to set non-default options.
   tint::writer::msl::Options gen_options;
+  gen_options.disable_workgroup_init = options.disable_workgroup_init;
   auto result = tint::writer::msl::Generate(program, gen_options);
   if (!result.success) {
     PrintWGSL(std::cerr, *program);
@@ -721,6 +740,7 @@ bool GenerateHlsl(const tint::Program* program, const Options& options) {
 #if TINT_BUILD_HLSL_WRITER
   // TODO(jrprice): Provide a way for the user to set non-default options.
   tint::writer::hlsl::Options gen_options;
+  gen_options.disable_workgroup_init = options.disable_workgroup_init;
   auto result = tint::writer::hlsl::Generate(program, gen_options);
   if (!result.success) {
     PrintWGSL(std::cerr, *program);
@@ -772,6 +792,16 @@ int main(int argc, const char** argv) {
   Options options;
 
   tint::SetInternalCompilerErrorReporter(&TintInternalCompilerErrorReporter);
+
+#if TINT_BUILD_WGSL_WRITER
+  tint::Program::printer = [](const tint::Program* program) {
+    auto result = tint::writer::wgsl::Generate(program, {});
+    if (!result.error.empty()) {
+      return "error: " + result.error;
+    }
+    return result.wgsl;
+  };
+#endif  //  TINT_BUILD_WGSL_WRITER
 
   if (!ParseArgs(args, &options)) {
     std::cerr << "Failed to parse arguments." << std::endl;

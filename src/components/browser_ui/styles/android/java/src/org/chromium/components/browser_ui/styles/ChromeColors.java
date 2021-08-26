@@ -6,11 +6,11 @@ package org.chromium.components.browser_ui.styles;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
-import android.content.res.Resources;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.ColorRes;
 import androidx.annotation.DimenRes;
+import androidx.annotation.Px;
 import androidx.appcompat.content.res.AppCompatResources;
 
 import com.google.android.material.color.MaterialColors;
@@ -23,20 +23,6 @@ import org.chromium.base.ApiCompatibilityUtils;
  */
 public class ChromeColors {
     private static final String TAG = "ChromeColors";
-
-    /**
-     * Determines the default theme color used for toolbar based on the provided parameters.
-     *
-     * @param res {@link Resources} used to retrieve colors.
-     * @param forceDarkBgColor When true, returns the default dark-mode color; otherwise returns
-     *        adaptive default color.
-     * @return The default theme color.
-     */
-    public static @ColorInt int getDefaultThemeColor(Resources res, boolean forceDarkBgColor) {
-        return forceDarkBgColor
-                ? ApiCompatibilityUtils.getColor(res, R.color.toolbar_background_primary_dark)
-                : ApiCompatibilityUtils.getColor(res, R.color.toolbar_background_primary);
-    }
 
     /**
      * Determines the default theme color used for toolbar based on the provided parameters.
@@ -56,14 +42,15 @@ public class ChromeColors {
      * Returns the primary background color used as native page background based on the given
      * parameters.
      *
-     * @param res The {@link Resources} used to retrieve colors.
-     * @param forceDarkBgColor When true, returns the dark-mode primary background color; otherwise
-     *        returns adaptive primary background color.
+     * @param context The {@link Context} used to retrieve colors.
+     * @param isIncognito Whether the color is used in incognito mode. If true, this method will
+     *                    return a non-dynamic dark background color.
      * @return The primary background color.
      */
-    public static @ColorInt int getPrimaryBackgroundColor(Resources res, boolean forceDarkBgColor) {
-        return forceDarkBgColor ? ApiCompatibilityUtils.getColor(res, R.color.default_bg_color_dark)
-                                : ApiCompatibilityUtils.getColor(res, R.color.default_bg_color);
+    public static @ColorInt int getPrimaryBackgroundColor(Context context, boolean isIncognito) {
+        return isIncognito ? ApiCompatibilityUtils.getColor(
+                       context.getResources(), R.color.default_bg_color_dark)
+                           : MaterialColors.getColor(context, R.attr.default_bg_color_dynamic, TAG);
     }
 
     /**
@@ -145,14 +132,24 @@ public class ChromeColors {
     }
 
     /**
-     * Calculates the surface color using theme colors. Only the elevation is needed.
+     * Calculates the surface color using theme colors.
      * @param context The {@link Context} used to retrieve attrs, colors, and dimens.
      * @param elevationDimen The dimen to look up the elevation level with.
      * @return the {@link ColorInt} for the background of a surface view.
      */
     public static @ColorInt int getSurfaceColor(Context context, @DimenRes int elevationDimen) {
-        ElevationOverlayProvider elevationOverlayProvider = new ElevationOverlayProvider(context);
         float elevation = context.getResources().getDimension(elevationDimen);
+        return getSurfaceColor(context, elevation);
+    }
+
+    /**
+     * Calculates the surface color using theme colors.
+     * @param context The {@link Context} used to retrieve attrs and colors.
+     * @param elevation The elevation in px.
+     * @return the {@link ColorInt} for the background of a surface view.
+     */
+    public static @ColorInt int getSurfaceColor(Context context, @Px float elevation) {
+        ElevationOverlayProvider elevationOverlayProvider = new ElevationOverlayProvider(context);
         return elevationOverlayProvider.compositeOverlayWithThemeSurfaceColorIfNeeded(elevation);
     }
 }

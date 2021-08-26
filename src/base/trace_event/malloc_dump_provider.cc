@@ -11,6 +11,7 @@
 #include "base/allocator/allocator_extension.h"
 #include "base/allocator/buildflags.h"
 #include "base/allocator/partition_allocator/partition_alloc_config.h"
+#include "base/allocator/partition_allocator/partition_bucket_lookup.h"
 #include "base/debug/profiler.h"
 #include "base/format_macros.h"
 #include "base/memory/nonscannable_memory.h"
@@ -301,6 +302,12 @@ void MemoryDumpPartitionStatsDumper::PartitionDumpTotals(
                             memory_stats->total_mmapped_bytes);
   allocator_dump->AddScalar("virtual_committed_size", "bytes",
                             memory_stats->total_committed_bytes);
+  allocator_dump->AddScalar("max_committed_size", "bytes",
+                            memory_stats->max_committed_bytes);
+  allocator_dump->AddScalar("allocated_size", "bytes",
+                            memory_stats->total_allocated_bytes);
+  allocator_dump->AddScalar("max_allocated_size", "bytes",
+                            memory_stats->max_allocated_bytes);
   allocator_dump->AddScalar("decommittable_size", "bytes",
                             memory_stats->total_decommittable_bytes);
   allocator_dump->AddScalar("discardable_size", "bytes",
@@ -393,9 +400,10 @@ void ReportPartitionAllocThreadCacheStats(ProcessMemoryDump* pmd,
 
 #if defined(PA_THREAD_CACHE_ALLOC_STATS)
     if (detailed) {
+      base::internal::BucketIndexLookup lookup{};
       std::string name = dump->absolute_name();
       for (size_t i = 0; i < kNumBuckets; i++) {
-        size_t bucket_size = stats.bucket_size_[i];
+        size_t bucket_size = lookup.bucket_sizes()[i];
         if (bucket_size == kInvalidBucketSize)
           continue;
         std::string dump_name = base::StringPrintf(

@@ -107,7 +107,7 @@
 + (NSUInteger)evictedMainTabCount WARN_UNUSED_RESULT;
 
 // Evicts the tabs associated with the non-current browser mode.
-+ (void)evictOtherTabModelTabs;
++ (void)evictOtherBrowserTabs;
 
 // Sets the normal tabs as 'cold start' tabs
 // If not succeed returns an NSError indicating  why the
@@ -541,6 +541,9 @@
 
 // Sets the value of a boolean user pref in the original browser state.
 + (void)setBoolValue:(BOOL)value forUserPref:(NSString*)prefName;
+
+// Sets the value of a integer user pref in the original browser state.
++ (void)setIntegerValue:(int)value forUserPref:(NSString*)prefName;
 
 // Resets the BrowsingDataPrefs, which defines if its selected or not when
 // clearing Browsing data.

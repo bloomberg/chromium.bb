@@ -34,10 +34,6 @@ public class BuildInfo {
     private static PackageInfo sBrowserPackageInfo;
     private static boolean sInitialized;
 
-    // TODO(crbug.com/1192402): Replace this with Build.VERSION_CODES.S in the code once chromium
-    // import Android S SDK.
-    public static final int ANDROID_S_API_SDK_INT = 31;
-
     /** Not a member variable to avoid creating the instance early (it is set early in start up). */
     private static String sFirebaseAppId = "";
 
@@ -243,7 +239,6 @@ public class BuildInfo {
      *
      * @return {@code true} if S APIs are available for use, {@code false} otherwise
      */
-    @CalledByNative
     @ChecksSdkIntAtLeast(api = 31, codename = "S")
     public static boolean isAtLeastS() {
         return VERSION.SDK_INT >= 31 || isAtLeastPreReleaseCodename("S", VERSION.CODENAME);

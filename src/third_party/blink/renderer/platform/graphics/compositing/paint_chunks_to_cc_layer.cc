@@ -35,7 +35,7 @@ class ConversionContext {
 
  public:
   ConversionContext(const PropertyTreeState& layer_state,
-                    const gfx::Vector2dF& layer_offset,
+                    const FloatPoint& layer_offset,
                     cc::DisplayItemList& cc_list)
       : layer_state_(layer_state),
         layer_offset_(layer_offset),
@@ -214,7 +214,7 @@ class ConversionContext {
   Vector<StateEntry> state_stack_;
 
   const PropertyTreeState& layer_state_;
-  gfx::Vector2dF layer_offset_;
+  FloatPoint layer_offset_;
   bool translated_for_layer_offset_ = false;
 
   // These fields are neve nullptr.
@@ -268,12 +268,12 @@ ConversionContext::~ConversionContext() {
 }
 
 void ConversionContext::TranslateForLayerOffsetOnce() {
-  if (translated_for_layer_offset_ || layer_offset_.IsZero())
+  if (translated_for_layer_offset_ || layer_offset_ == FloatPoint())
     return;
 
   cc_list_.StartPaint();
   cc_list_.push<cc::SaveOp>();
-  cc_list_.push<cc::TranslateOp>(-layer_offset_.x(), -layer_offset_.y());
+  cc_list_.push<cc::TranslateOp>(-layer_offset_.X(), -layer_offset_.Y());
   cc_list_.EndPaintOfPairedBegin();
   translated_for_layer_offset_ = true;
 }
@@ -762,7 +762,7 @@ void ConversionContext::Convert(const PaintChunkSubset& chunks) {
 
 void PaintChunksToCcLayer::ConvertInto(const PaintChunkSubset& chunks,
                                        const PropertyTreeState& layer_state,
-                                       const gfx::Vector2dF& layer_offset,
+                                       const FloatPoint& layer_offset,
                                        cc::DisplayItemList& cc_list) {
   ConversionContext(layer_state, layer_offset, cc_list).Convert(chunks);
 }
@@ -770,7 +770,7 @@ void PaintChunksToCcLayer::ConvertInto(const PaintChunkSubset& chunks,
 scoped_refptr<cc::DisplayItemList> PaintChunksToCcLayer::Convert(
     const PaintChunkSubset& paint_chunks,
     const PropertyTreeState& layer_state,
-    const gfx::Vector2dF& layer_offset,
+    const FloatPoint& layer_offset,
     cc::DisplayItemList::UsageHint hint,
     RasterUnderInvalidationCheckingParams* under_invalidation_checking_params) {
   auto cc_list = base::MakeRefCounted<cc::DisplayItemList>(hint);
@@ -1008,10 +1008,11 @@ ConvertPaintedSelectionBoundToLayerSelectionBound(
   return layer_bound;
 }
 
-static void UpdateLayerSelection(cc::Layer& layer,
-                                 const PropertyTreeState& layer_state,
-                                 const PaintChunkSubset& chunks,
-                                 cc::LayerSelection& layer_selection) {
+void PaintChunksToCcLayer::UpdateLayerSelection(
+    cc::Layer& layer,
+    const PropertyTreeState& layer_state,
+    const PaintChunkSubset& chunks,
+    cc::LayerSelection& layer_selection) {
   gfx::Vector2dF cc_layer_offset = layer.offset_to_transform_parent();
   FloatPoint layer_offset(cc_layer_offset.x(), cc_layer_offset.y());
   for (const auto& chunk : chunks) {
@@ -1040,12 +1041,10 @@ static void UpdateLayerSelection(cc::Layer& layer,
 void PaintChunksToCcLayer::UpdateLayerProperties(
     cc::Layer& layer,
     const PropertyTreeState& layer_state,
-    const PaintChunkSubset& chunks,
-    cc::LayerSelection& layer_selection) {
+    const PaintChunkSubset& chunks) {
   UpdateBackgroundColor(layer, layer_state.Effect(), chunks);
   UpdateTouchActionWheelEventHandlerAndNonFastScrollableRegions(
       layer, layer_state, chunks);
-  UpdateLayerSelection(layer, layer_state, chunks, layer_selection);
 }
 
 }  // namespace blink

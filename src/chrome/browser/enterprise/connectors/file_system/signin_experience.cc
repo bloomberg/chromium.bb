@@ -6,6 +6,8 @@
 
 #include "chrome/browser/enterprise/connectors/common.h"
 #include "chrome/browser/enterprise/connectors/connectors_service.h"
+#include "chrome/browser/enterprise/connectors/file_system/account_info_utils.h"
+#include "chrome/browser/enterprise/connectors/file_system/rename_handler.h"
 #include "chrome/browser/enterprise/connectors/file_system/service_settings.h"
 #include "chrome/browser/enterprise/connectors/file_system/signin_confirmation_modal.h"
 #include "chrome/browser/ui/browser.h"
@@ -14,6 +16,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/download_item_utils.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "net/base/mime_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -45,10 +48,14 @@ gfx::NativeWindow FindMostRelevantContextWindow(
 
 namespace ec = enterprise_connectors;
 
-bool MimeTypeMatches(const std::set<std::string>& mime_types,
+bool MimeTypeMatches(const std::set<std::string>& mime_types_to_match,
                      const std::string& mime_type) {
-  return mime_types.count(ec::kWildcardMimeType) != 0 ||
-         mime_types.count(mime_type) != 0;
+  for (const std::string& mime_type_pattern : mime_types_to_match) {
+    if (net::MatchesMimeType(mime_type_pattern, mime_type)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 ec::ConnectorsService* GetConnectorsService(content::BrowserContext* context) {
@@ -74,6 +81,24 @@ absl::optional<FileSystemSettings> GetFileSystemSettings(Profile* profile) {
       FileSystemConnector::SEND_DOWNLOAD_TO_CLOUD);
 }
 
+absl::optional<FileSystemSettings> MatchedToEnable(ConnectorsService* service,
+                                                   const GURL& url,
+                                                   std::string mime_type) {
+  absl::optional<FileSystemSettings> settings = service->GetFileSystemSettings(
+      url, FileSystemConnector::SEND_DOWNLOAD_TO_CLOUD);
+  if (!settings.has_value())
+    return absl::nullopt;
+
+  bool mime_matched = MimeTypeMatches(settings->mime_types, mime_type);
+
+  // The condition mime_matched == settings->enable_with_mime_types includes 2
+  // cases that should result in the decision to enable routing:
+  //    1/ Did match and settings->mime_types was for enabling;
+  //    2/ Didn't match but settings->mime_types was for disabling.
+  return (mime_matched == settings->enable_with_mime_types) ? settings
+                                                            : absl::nullopt;
+}
+
 absl::optional<FileSystemSettings> GetFileSystemSettings(
     download::DownloadItem* download_item) {
   auto* context = content::DownloadItemUtils::GetBrowserContext(download_item);
@@ -81,27 +106,20 @@ absl::optional<FileSystemSettings> GetFileSystemSettings(
   if (!service)
     return absl::nullopt;
 
-  auto settings = service->GetFileSystemSettings(
-      download_item->GetURL(), FileSystemConnector::SEND_DOWNLOAD_TO_CLOUD);
-  if (settings.has_value() &&
-      MimeTypeMatches(settings->mime_types, download_item->GetMimeType())) {
+  absl::optional<FileSystemSettings> settings = MatchedToEnable(
+      service, download_item->GetURL(), download_item->GetMimeType());
+  if (settings.has_value())
     return settings;
-  }
 
-  settings = service->GetFileSystemSettings(
-      download_item->GetTabUrl(), FileSystemConnector::SEND_DOWNLOAD_TO_CLOUD);
-  if (settings.has_value() &&
-      MimeTypeMatches(settings->mime_types, download_item->GetMimeType())) {
-    return settings;
-  }
-
-  return absl::nullopt;
+  return MatchedToEnable(service, download_item->GetTabUrl(),
+                         download_item->GetMimeType());
 }
 
 void OnConfirmationModalClosed(gfx::NativeWindow context,
                                content::BrowserContext* browser_context,
                                const FileSystemSettings& settings,
                                AuthorizationCompletedCallback callback,
+                               SigninExperienceTestObserver* test_observer,
                                bool user_confirmed_to_proceed) {
   if (!user_confirmed_to_proceed) {
     return ReturnCancellation(std::move(callback));
@@ -110,6 +128,7 @@ void OnConfirmationModalClosed(gfx::NativeWindow context,
   std::unique_ptr<FileSystemSigninDialogDelegate> delegate =
       std::make_unique<FileSystemSigninDialogDelegate>(
           browser_context, settings, std::move(callback));
+  content::WebContents* dialog_web_contents = delegate->web_contents();
 
   // We want a dialog whose lifetime is independent from that of |web_contents|,
   // therefore using FindMostRelevantContextWindow() as context, instead of
@@ -117,23 +136,29 @@ void OnConfirmationModalClosed(gfx::NativeWindow context,
   // top-level window.
   auto* widget = views::DialogDelegate::CreateDialogWidget(
       std::move(delegate), context, /* parent = */ nullptr);
+
+  if (test_observer)
+    test_observer->OnSignInDialogCreated(dialog_web_contents, widget);
+
   widget->Show();
 }
 
+// Start the sign in experience as triggered by a download item.
 void StartFileSystemConnectorSigninExperienceForDownloadItem(
     content::WebContents* web_contents,
     const FileSystemSettings& settings,
-    AuthorizationCompletedCallback callback) {
+    AuthorizationCompletedCallback callback,
+    SigninExperienceTestObserver* test_observer) {
   gfx::NativeWindow context = FindMostRelevantContextWindow(web_contents);
   DCHECK(context);
 
-  DCHECK_EQ(settings.service_provider, kBoxProviderName);
+  DCHECK_EQ(settings.service_provider, kFileSystemServiceProviderPrefNameBox);
   std::u16string provider =
       l10n_util::GetStringUTF16(IDS_FILE_SYSTEM_CONNECTOR_BOX);
 
   base::OnceCallback<void(bool)> confirmed_to_sign_in = base::BindOnce(
       &OnConfirmationModalClosed, context, web_contents->GetBrowserContext(),
-      settings, std::move(callback));
+      settings, std::move(callback), test_observer);
   FileSystemConfirmationModal::Show(
       context,
       l10n_util::GetStringFUTF16(
@@ -144,7 +169,146 @@ void StartFileSystemConnectorSigninExperienceForDownloadItem(
           IDS_FILE_SYSTEM_CONNECTOR_SIGNIN_REQUIRED_CANCEL_BUTTON),
       l10n_util::GetStringUTF16(
           IDS_FILE_SYSTEM_CONNECTOR_SIGNIN_REQUIRED_ACCEPT_BUTTON),
+      std::move(confirmed_to_sign_in), test_observer);
+}
+
+void OnConfirmationModalClosedForSettingsPage(
+    gfx::NativeWindow context,
+    Profile* profile,
+    const FileSystemSettings& settings,
+    base::OnceCallback<void(bool)> settings_page_callback,
+    SigninExperienceTestObserver* test_observer,
+    bool user_confirmed_to_proceed) {
+  AuthorizationCompletedCallback converted_cb = base::BindOnce(
+      [](PrefService* prefs, const std::string& provider,
+         base::OnceCallback<void(bool)> cb,
+         const GoogleServiceAuthError& status, const std::string& access_token,
+         const std::string& refresh_token) {
+        bool signin_success =
+            (status.state() == GoogleServiceAuthError::State::NONE);
+        if (signin_success) {
+          SetFileSystemOAuth2Tokens(prefs, provider, access_token,
+                                    refresh_token);
+        }
+        std::move(cb).Run(signin_success);
+      },
+      profile->GetPrefs(), settings.service_provider,
+      std::move(settings_page_callback));
+  OnConfirmationModalClosed(context, profile, settings, std::move(converted_cb),
+                            test_observer, user_confirmed_to_proceed);
+}
+
+// Start the sign in experience as triggered by the settings page. Similar to
+// StartFileSystemConnectorSigninExperienceForDownloadItem() but with different
+// displayed texts for FileSystemConfirmationModal::Show().
+void StartFileSystemConnectorSigninExperienceForSettingsPage(
+    Profile* profile,
+    base::OnceCallback<void(bool)> callback,
+    SigninExperienceTestObserver* test_observer) {
+  gfx::NativeWindow context = FindMostRelevantContextWindow(nullptr);
+  DCHECK(context);
+
+  auto settings = GetFileSystemSettings(profile);
+  if (!settings.has_value())
+    return std::move(callback).Run(false);
+
+  DCHECK_EQ(settings->service_provider, kFileSystemServiceProviderPrefNameBox);
+  std::u16string provider =
+      l10n_util::GetStringUTF16(IDS_FILE_SYSTEM_CONNECTOR_BOX);
+
+  base::OnceCallback<void(bool)> confirmed_to_sign_in = base::BindOnce(
+      &OnConfirmationModalClosedForSettingsPage, context, profile,
+      settings.value(), std::move(callback), test_observer);
+  FileSystemConfirmationModal::Show(
+      context,
+      l10n_util::GetStringFUTF16(IDS_FILE_SYSTEM_CONNECTOR_SIGNIN_CONFIRM_TITLE,
+                                 provider),
+      l10n_util::GetStringUTF16(
+          IDS_FILE_SYSTEM_CONNECTOR_SIGNIN_CONFIRM_MESSAGE),
+      l10n_util::GetStringUTF16(
+          IDS_FILE_SYSTEM_CONNECTOR_SIGNIN_CONFIRM_CANCEL_BUTTON),
+      l10n_util::GetStringUTF16(
+          IDS_FILE_SYSTEM_CONNECTOR_SIGNIN_CONFIRM_ACCEPT_BUTTON),
       std::move(confirmed_to_sign_in));
+}
+
+// Clear authentication tokens and stored account info.
+bool ClearFileSystemConnectorLinkedAccount(const FileSystemSettings& settings,
+                                           PrefService* prefs) {
+  ClearDefaultFolder(prefs, settings.service_provider);
+  return ClearFileSystemOAuth2Tokens(prefs, settings.service_provider) &&
+         ClearFileSystemAccountInfo(prefs, settings.service_provider);
+}
+
+std::vector<std::string> GetFileSystemConnectorPrefsForSettingsPage(
+    Profile* profile) {
+  std::vector<std::string> prefs_paths;
+  auto settings = GetFileSystemSettings(profile);
+  if (settings.has_value()) {
+    return GetFileSystemConnectorAccountInfoPrefs(settings->service_provider);
+  }
+  return std::vector<std::string>();
+}
+
+AccountInfo::AccountInfo() = default;
+AccountInfo::~AccountInfo() = default;
+AccountInfo::AccountInfo(const AccountInfo& other) = default;
+
+absl::optional<AccountInfo> GetFileSystemConnectorLinkedAccountInfo(
+    const FileSystemSettings& settings,
+    PrefService* prefs) {
+  const std::string& provider = settings.service_provider;
+  base::Value stored_account_info = GetFileSystemAccountInfo(prefs, provider);
+  std::string refresh_token;
+  std::string *account_name, *account_login;
+  if (stored_account_info.DictEmpty() ||
+      !(account_name = stored_account_info.FindStringPath("name")) ||
+      !(account_login = stored_account_info.FindStringPath("login")) ||
+      !GetFileSystemOAuth2Tokens(prefs, provider, /* access_token = */ nullptr,
+                                 &refresh_token) ||
+      refresh_token.empty()) {
+    return absl::nullopt;
+  }
+
+  AccountInfo account_info;
+  account_info.account_name = *account_name;
+  account_info.account_login = *account_login;
+  account_info.folder_name = GetDefaultFolderName(prefs, provider);
+  account_info.folder_link = GetDefaultFolderLink(prefs, provider);
+  DCHECK(!account_info.account_name.empty());
+  DCHECK(!account_info.account_login.empty());
+  DCHECK(!account_info.folder_name.empty());
+  return absl::make_optional<AccountInfo>(std::move(account_info));
+}
+
+void SetFileSystemConnectorAccountLinkForSettingsPage(
+    bool enable_link,
+    Profile* profile,
+    base::OnceCallback<void(bool)> callback,
+    SigninExperienceTestObserver* test_observer) {
+  absl::optional<FileSystemSettings> settings = GetFileSystemSettings(profile);
+  auto has_linked_account =
+      settings.has_value() && GetFileSystemConnectorLinkedAccountInfo(
+                                  settings.value(), profile->GetPrefs());
+
+  // Early return if linked state already match the desired state.
+  if (has_linked_account == enable_link) {
+    std::move(callback).Run(true);
+    return;
+  }
+
+  // Early return after a quick clearing function call.
+  if (has_linked_account) {
+    bool success = ClearFileSystemConnectorLinkedAccount(
+        GetFileSystemSettings(profile).value(), profile->GetPrefs());
+    std::move(callback).Run(success);
+    return;
+  }
+
+  // This shows dialogs for the sign-in experience that the user needs to
+  // interact with, so the process is async.
+  StartFileSystemConnectorSigninExperienceForSettingsPage(
+      profile, std::move(callback), test_observer);
 }
 
 void ReturnCancellation(AuthorizationCompletedCallback callback) {
@@ -152,5 +316,26 @@ void ReturnCancellation(AuthorizationCompletedCallback callback) {
       GoogleServiceAuthError{GoogleServiceAuthError::State::REQUEST_CANCELED},
       std::string(), std::string());
 }
+
+// SigninExperienceTestObserver
+SigninExperienceTestObserver::SigninExperienceTestObserver() = default;
+
+void SigninExperienceTestObserver::InitForTesting(
+    FileSystemRenameHandler* rename_handler) {
+  if (!rename_handler)
+    return;
+  rename_handler_ =
+      rename_handler->RegisterSigninObserverForTesting(this);  // IN-TEST
+}
+
+SigninExperienceTestObserver::~SigninExperienceTestObserver() {
+  if (!rename_handler_)
+    return;
+  rename_handler_->UnregisterSigninObserverForTesting(this);  // IN-TEST
+  rename_handler_.reset();
+}
+
+// TODO(https://crbug.com/1159185): add browser_tests for
+// StartFileSystemConnectorSigninExperienceForXxx.
 
 }  // namespace enterprise_connectors

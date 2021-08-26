@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as i18n from '../i18n/i18n.js';
-import type * as Platform from '../platform/platform.js'; // eslint-disable-line no-unused-vars
+import type * as Platform from '../platform/platform.js';
 
 const UIStrings = {
   /**

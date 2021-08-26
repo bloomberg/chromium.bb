@@ -51,8 +51,10 @@ Whenever a new generally-useful helper is added, it should be indexed here.
     Also can be composed with {@link GPUTest.expectGPUBufferValuesPassCheck}, used to implement
     GPUBuffer checking helpers in GPUTest.
 - {@link webgpu/util/conversion}: Numeric encoding/decoding for float/unorm/snorm values, etc.
-- {@link webgpu/util/copyToTexture}:
+- {@link webgpu/util/copy_to_texture}:
     Helper class for copyToTexture test suites for execution copy and check results.
+- {@link webgpu/util/create_elements}:
+    Helpers for creating web elements like HTMLCanvasElement, OffscrrenCanvas, etc.
 - {@link webgpu/util/navigator_gpu}: Finds and returns the `navigator.gpu` object or equivalent.
 - {@link webgpu/util/texture/base}: General texture-related helpers.
 - {@link webgpu/util/texture/layout}: Helpers for working with linear image data
@@ -60,9 +62,11 @@ Whenever a new generally-useful helper is added, it should be indexed here.
 - {@link webgpu/util/texture/subresource}: Helpers for working with texture subresource ranges.
 - {@link webgpu/util/texture/texel_data}: Helpers encoding/decoding texel formats.
 - {@link webgpu/shader/types}: Helpers for WGSL data types.
+- {@link webgpu/web_platform/util}: Helpers for web platform features (e.g. video elements).
 
 ### General Helpers
 
+- {@link common/framework/resources}: Provides the path to the `resources/` directory.
 - {@link common/util/util}: Miscellaneous utilities.
     - {@link common/util/util.assert | assert}: Assert a condition, otherwise throw an exception.
     - {@link common/util/util.unreachable | unreachable}: Assert unreachable code.

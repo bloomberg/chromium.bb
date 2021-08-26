@@ -21,43 +21,34 @@
 #include "src/sem/sampled_texture_type.h"
 #include "src/sem/storage_texture_type.h"
 #include "src/sem/variable.h"
+#include "src/utils/to_const_ptr_vec.h"
 
 TINT_INSTANTIATE_TYPEINFO(tint::sem::Function);
 
 namespace tint {
 namespace sem {
 
-namespace {
-
-ParameterList GetParameters(const std::vector<const Variable*>& params) {
-  ParameterList parameters;
-  parameters.reserve(params.size());
-  for (auto* param : params) {
-    parameters.emplace_back(Parameter{param->Type(), ParameterUsage::kNone});
-  }
-  return parameters;
-}
-
-}  // namespace
-
 Function::Function(ast::Function* declaration,
                    Type* return_type,
-                   std::vector<const Variable*> parameters,
+                   std::vector<Parameter*> parameters,
                    std::vector<const Variable*> referenced_module_vars,
                    std::vector<const Variable*> local_referenced_module_vars,
                    std::vector<const ast::ReturnStatement*> return_statements,
                    std::vector<const ast::CallExpression*> callsites,
                    std::vector<Symbol> ancestor_entry_points,
                    std::array<WorkgroupDimension, 3> workgroup_size)
-    : Base(return_type, GetParameters(parameters)),
+    : Base(return_type, utils::ToConstPtrVec(parameters)),
       declaration_(declaration),
-      parameters_(std::move(parameters)),
       referenced_module_vars_(std::move(referenced_module_vars)),
       local_referenced_module_vars_(std::move(local_referenced_module_vars)),
       return_statements_(std::move(return_statements)),
       callsites_(callsites),
       ancestor_entry_points_(std::move(ancestor_entry_points)),
-      workgroup_size_(std::move(workgroup_size)) {}
+      workgroup_size_(std::move(workgroup_size)) {
+  for (auto* parameter : parameters) {
+    parameter->SetOwner(this);
+  }
+}
 
 Function::~Function() = default;
 
@@ -139,53 +130,15 @@ Function::VariableBindings Function::ReferencedMultisampledTextureVariables()
   return ReferencedSampledTextureVariablesImpl(true);
 }
 
-Function::VariableBindings Function::ReferencedStorageTextureVariables() const {
+Function::VariableBindings Function::ReferencedVariablesOfType(
+    const tint::TypeInfo& type_info) const {
   VariableBindings ret;
-
   for (auto* var : ReferencedModuleVariables()) {
     auto* unwrapped_type = var->Type()->UnwrapRef();
-    auto* storage_texture = unwrapped_type->As<sem::StorageTexture>();
-    if (storage_texture == nullptr) {
-      continue;
-    }
-
-    if (auto binding_point = var->Declaration()->binding_point()) {
-      ret.push_back({var, binding_point});
-    }
-  }
-  return ret;
-}
-
-Function::VariableBindings Function::ReferencedDepthTextureVariables() const {
-  VariableBindings ret;
-
-  for (auto* var : ReferencedModuleVariables()) {
-    auto* unwrapped_type = var->Type()->UnwrapRef();
-    auto* storage_texture = unwrapped_type->As<sem::DepthTexture>();
-    if (storage_texture == nullptr) {
-      continue;
-    }
-
-    if (auto binding_point = var->Declaration()->binding_point()) {
-      ret.push_back({var, binding_point});
-    }
-  }
-  return ret;
-}
-
-Function::VariableBindings Function::ReferencedExternalTextureVariables()
-    const {
-  VariableBindings ret;
-
-  for (auto* var : ReferencedModuleVariables()) {
-    auto* unwrapped_type = var->Type()->UnwrapRef();
-    auto* external_texture = unwrapped_type->As<sem::ExternalTexture>();
-    if (external_texture == nullptr) {
-      continue;
-    }
-
-    if (auto binding_point = var->Declaration()->binding_point()) {
-      ret.push_back({var, binding_point});
+    if (unwrapped_type->TypeInfo().Is(type_info)) {
+      if (auto binding_point = var->Declaration()->binding_point()) {
+        ret.push_back({var, binding_point});
+      }
     }
   }
   return ret;

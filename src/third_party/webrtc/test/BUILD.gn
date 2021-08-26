@@ -196,8 +196,6 @@ rtc_library("rtp_test_utils") {
     "rtp_file_reader.h",
     "rtp_file_writer.cc",
     "rtp_file_writer.h",
-    "rtp_header_parser.cc",
-    "rtp_header_parser.h",
   ]
 
   deps = [
@@ -212,7 +210,6 @@ rtc_library("rtp_test_utils") {
     "../rtc_base/synchronization:mutex",
     "../rtc_base/system:arch",
   ]
-  absl_deps = [ "//third_party/abseil-cpp/absl/types:optional" ]
 }
 
 rtc_library("field_trial") {
@@ -284,6 +281,7 @@ if (is_ios) {
     sources = [
       "ios/coverage_util_ios.h",
       "ios/coverage_util_ios.mm",
+      "ios/google_test_runner_delegate.h",
       "ios/test_support.h",
       "ios/test_support.mm",
     ]
@@ -520,6 +518,7 @@ if (rtc_include_tests && !build_with_chromium) {
       ":test_support_test_artifacts",
       ":video_test_common",
       ":video_test_support",
+      "../api:array_view",
       "../api:create_frame_generator",
       "../api:create_simulcast_test_fixture_api",
       "../api:frame_generator_api",
@@ -533,7 +532,6 @@ if (rtc_include_tests && !build_with_chromium) {
       "../call:video_stream_api",
       "../common_video",
       "../media:rtc_media_base",
-      "../modules/rtp_rtcp",
       "../modules/rtp_rtcp:rtp_rtcp_format",
       "../modules/video_coding:simulcast_test_fixture_impl",
       "../modules/video_coding:video_codec_interface",

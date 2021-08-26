@@ -150,7 +150,7 @@ the useful options are listed on this page, others can be obtained from running
 an ASanified binary with `ASAN_OPTIONS=help=1`. Note that Chromium sets its own
 defaults for some options, so the default behavior may be different from that
 observed in other projects.
-See `base/debug/sanitizer_options.cc` for more details.
+See `build/sanitizers/sanitizer_options.cc` for more details.
 
 ## NaCl support under ASan
 
@@ -264,6 +264,28 @@ ninja -C out_asan_chroot/Release chrome
 ```
 
 **Note**: `disable_nacl=1` is needed for now.
+
+## Running on Chrome OS
+
+For the linux-chromeos "emulator" build, run Asan following the instructions
+above, just like you would for Linux.
+
+For Chromebook hardware, add `is_asan = true` to your args.gn and build.
+`deploy_chrome` with `--mount` and `--nostrip`. ASan logs can be found in
+`/var/log/asan/`.
+
+To catch crashes in gdb:
+
+-   Edit `/etc/chrome_dev.conf` and add `ASAN_OPTIONS=abort_on_error=1`
+-   `restart ui`
+-   gdb -p 12345  # Find the pid from /var/log/chrome/chrome
+
+When you trigger the crash, you'll get a SIGABRT in gdb. `bt` will show the
+stack.
+
+See
+[Chrome OS stack traces](https://chromium.googlesource.com/chromiumos/docs/+/main/stack_traces.md)
+for more details.
 
 ## AsanCoverage
 

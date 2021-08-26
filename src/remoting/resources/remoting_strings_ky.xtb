@@ -11,6 +11,7 @@
 <translation id="1546934824884762070">Күтүлбөгөн ката кетти. Бул көйгөй жөнүндө иштеп чыгуучуларга кабарлаңыз.</translation>
 <translation id="1697532407822776718">Баары даяр!</translation>
 <translation id="1742469581923031760">Туташууда…</translation>
+<translation id="177040763384871009">Шилтемелерди пульт менен басып, кардардын серепчисинде ачуу үчүн тутумдун веб-серепчисин төмөнкүгө өзгөртүшүңүз керек: "<ph name="URL_FORWARDER_NAME" />".</translation>
 <translation id="177096447311351977">Кардар үчүн IP каналы: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' хост_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' канал='<ph name="CHANNEL_TYPE" />' туташуу='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1897488610212723051">Жок кылуу</translation>
 <translation id="2009755455353575666">Туташпай койду</translation>
@@ -129,6 +130,7 @@
 <translation id="6963936880795878952">Кимдир-бирөө алыскы компьютерге туура эмес PIN-код менен киргенге аракет кылып жаткандыктан, ушул компьютерге болгон туташуулар убактылуу бөгөттөлдү. Бир аздан кийин кайталап көрүңүз.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942"><ph name="HOSTNAME" /> менен алыстан туташуу мүмкүнчүлүгүн чын эле өчүргүңүз келеби? Өчүргүңүз келбесе, туташууну кайра иштетүү үчүн ал компьютерге өтүшүңүз керек.</translation>
+<translation id="6998890551706945177"><ph name="CLIENT_USERNAME" /> компьютериңизди көрүп жана көзөмөлдөөгө уруксат сурады. Бул адамды билбесеңиз же бөлүшүүдөн мурда кандайдыр бир өзгөртүүлөрдү киргизүү үчүн «<ph name="IDS_SHARE_CONFIRM_DIALOG_DECLINE" />» баскычын басыңыз.  Же болбосо, туташууга уруксат берүү үчүн «<ph name="IDS_SHARE_CONFIRM_DIALOG_CONFIRM" />» баскычын тандаңыз.</translation>
 <translation id="7019153418965365059">Белгисиз хост катасы: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Алыстан жардам берүү</translation>
 <translation id="7026930240735156896">Компьютериңизге алыстан кирүүнү жөндөө үчүн нускамаларды аткарыңыз</translation>
@@ -142,6 +144,7 @@
 <translation id="7434397035092923453">Төмөнкү кардарга колдонуу мүмкүнчүлүгү берилген жок: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">Туташкан кардар: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7526139040829362392">Аккаунтту өзгөртүү</translation>
+<translation id="7535110896613603182">Колдонмонун демейки жөндөөлөрүн ачуу</translation>
 <translation id="7628469622942688817">Бул түзмөктө PIN кодду эске сактап коюу.</translation>
 <translation id="7649070708921625228">Жардам</translation>
 <translation id="7658239707568436148">Жокко чыгаруу</translation>

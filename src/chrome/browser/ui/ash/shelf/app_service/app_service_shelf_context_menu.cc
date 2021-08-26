@@ -18,6 +18,7 @@
 #include "chrome/browser/ash/crostini/crostini_shelf_utils.h"
 #include "chrome/browser/ash/crostini/crostini_terminal.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
+#include "chrome/browser/ash/full_restore/full_restore_service.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_manager.h"
@@ -124,6 +125,8 @@ void AppServiceShelfContextMenu::ExecuteCommand(int command_id,
   switch (command_id) {
     case ash::SHOW_APP_INFO:
       ShowAppInfo();
+      ash::full_restore::FullRestoreService::MaybeCloseNotification(
+          controller()->profile());
       break;
 
     case ash::MENU_NEW_WINDOW:
@@ -132,16 +135,24 @@ void AppServiceShelfContextMenu::ExecuteCommand(int command_id,
       } else if (app_type_ == apps::mojom::AppType::kStandaloneBrowser) {
         crosapi::BrowserManager::Get()->NewWindow(/*incongnito=*/false);
       } else {
-        ash::NewWindowDelegate::GetInstance()->NewWindow(/*incognito=*/false);
+        ash::NewWindowDelegate::GetInstance()->NewWindow(
+            /*incognito=*/false,
+            /*should_trigger_session_restore=*/false);
       }
+      ash::full_restore::FullRestoreService::MaybeCloseNotification(
+          controller()->profile());
       break;
 
     case ash::MENU_NEW_INCOGNITO_WINDOW:
       if (app_type_ == apps::mojom::AppType::kStandaloneBrowser) {
         crosapi::BrowserManager::Get()->NewWindow(/*incognito=*/true);
       } else {
-        ash::NewWindowDelegate::GetInstance()->NewWindow(/*incognito=*/true);
+        ash::NewWindowDelegate::GetInstance()->NewWindow(
+            /*incognito=*/true,
+            /*should_trigger_session_restore=*/false);
       }
+      ash::full_restore::FullRestoreService::MaybeCloseNotification(
+          controller()->profile());
       break;
 
     case ash::SHUTDOWN_GUEST_OS:
@@ -183,8 +194,11 @@ void AppServiceShelfContextMenu::ExecuteCommand(int command_id,
     }
 
     case ash::SETTINGS:
-      if (item().id.app_id == crostini::kCrostiniTerminalSystemAppId)
+      if (item().id.app_id == crostini::kCrostiniTerminalSystemAppId) {
         crostini::LaunchTerminalSettings(controller()->profile(), display_id());
+        ash::full_restore::FullRestoreService::MaybeCloseNotification(
+            controller()->profile());
+      }
       return;
 
     default:
@@ -325,7 +339,8 @@ void AppServiceShelfContextMenu::OnGetMenuModel(
     return;
   }
 
-  if (app_type_ == apps::mojom::AppType::kWeb) {
+  if (app_type_ == apps::mojom::AppType::kWeb ||
+      app_type_ == apps::mojom::AppType::kSystemWeb) {
     BuildAppShortcutsMenu(std::move(menu_items), std::move(menu_model),
                           std::move(callback), shortcut_index);
     return;
@@ -550,6 +565,7 @@ bool AppServiceShelfContextMenu::ShouldAddPinMenu() {
       return show_in_launcher;
     }
     case apps::mojom::AppType::kCrostini:
+    case apps::mojom::AppType::kBorealis:
     case apps::mojom::AppType::kExtension:
     case apps::mojom::AppType::kWeb:
     case apps::mojom::AppType::kSystemWeb:
@@ -564,7 +580,6 @@ bool AppServiceShelfContextMenu::ShouldAddPinMenu() {
       return false;
     case apps::mojom::AppType::kMacOs:
     case apps::mojom::AppType::kRemote:
-    case apps::mojom::AppType::kBorealis:
       NOTREACHED() << "Type " << app_type_ << " should not appear in shelf.";
       return false;
   }

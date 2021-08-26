@@ -64,18 +64,25 @@ class CC_EXPORT SchedulerStateMachine {
       BeginImplFrameState
       BeginImplFrameStateToProtozeroEnum(BeginImplFrameState state);
 
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  // TODO(weiliangc): The histogram is used to understanding what type of
+  // deadline mode do we encounter in real world and is set to expire after
+  // 2022. The Enum can be changed after the histogram is removed.
   // The scheduler uses a deadline to wait for main thread updates before
   // submitting a compositor frame. BeginImplFrameDeadlineMode specifies when
   // the deadline should run.
   enum class BeginImplFrameDeadlineMode {
-    NONE,  // No deadline should be scheduled e.g. for synchronous compositor.
-    IMMEDIATE,  // Deadline should be scheduled to run immediately.
-    REGULAR,  // Deadline should be scheduled to run at the deadline provided by
-              // in the BeginFrameArgs.
-    LATE,  // Deadline should be scheduled run when the next frame is expected
-           // to arrive.
-    BLOCKED,  // Deadline should be blocked indefinitely until the next frame
-              // arrives.
+    NONE = 0,  // No deadline should be scheduled e.g. for synchronous
+               // compositor.
+    IMMEDIATE = 1,  // Deadline should be scheduled to run immediately.
+    REGULAR = 2,    // Deadline should be scheduled to run at the deadline
+                    // provided by in the BeginFrameArgs.
+    LATE = 3,       // Deadline should be scheduled run when the next frame is
+                    // expected to arrive.
+    BLOCKED = 4,    // Deadline should be blocked indefinitely until the next
+                    // frame arrives.
+    kMaxValue = BLOCKED,
   };
   // TODO(nuskos): Update Scheduler::ScheduleBeginImplFrameDeadline event to
   // used typed macros so we can remove this ToString function.
@@ -212,8 +219,6 @@ class CC_EXPORT SchedulerStateMachine {
     return did_invalidate_layer_tree_frame_sink_;
   }
 
-  bool OnlyImplSideUpdatesExpected() const;
-
   // Indicates that prepare-tiles is required. This guarantees another
   // PrepareTiles will occur shortly (even if no redraw is required).
   void SetNeedsPrepareTiles();
@@ -264,9 +269,6 @@ class CC_EXPORT SchedulerStateMachine {
   // Call this only in response to receiving an Action::SEND_BEGIN_MAIN_FRAME
   // from NextAction if the client rejects the BeginMainFrame message.
   void BeginMainFrameAborted(CommitEarlyOutReason reason);
-
-  // Indicates production should be skipped to recover latency.
-  void SetSkipNextBeginMainFrameToReduceLatency(bool skip);
 
   // For Android WebView, resourceless software draws are allowed even when
   // invisible.
@@ -453,7 +455,6 @@ class CC_EXPORT SchedulerStateMachine {
       ScrollHandlerState::SCROLL_DOES_NOT_AFFECT_SCROLL_HANDLER;
   bool critical_begin_main_frame_to_activate_is_fast_ = true;
   bool main_thread_missed_last_deadline_ = false;
-  bool skip_next_begin_main_frame_to_reduce_latency_ = false;
   bool defer_begin_main_frame_ = false;
   bool video_needs_begin_frames_ = false;
   bool last_commit_had_no_updates_ = false;

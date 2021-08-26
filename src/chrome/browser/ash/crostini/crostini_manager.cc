@@ -20,6 +20,7 @@
 #include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/strings/string_split.h"
+#include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/task/thread_pool.h"
 #include "base/time/clock.h"
@@ -54,7 +55,7 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
-#include "chromeos/dbus/image_loader_client.h"
+#include "chromeos/dbus/image_loader/image_loader_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/network/device_state.h"
@@ -519,7 +520,7 @@ class CrostiniManager::CrostiniRestarter
     // path so we can pass it to StartTerminaVm.
     StartStage(mojom::InstallerState::kCreateDiskImage);
     crostini_manager_->CreateDiskImage(
-        base::FilePath(container_id_.vm_name),
+        container_id_.vm_name,
         vm_tools::concierge::StorageLocation::STORAGE_CRYPTOHOME_ROOT,
         disk_size_bytes,
         base::BindOnce(&CrostiniRestarter::CreateDiskImageFinished,
@@ -754,28 +755,6 @@ void CrostiniManager::AddStoppingVmForTesting(std::string vm_name) {
   running_vms_[std::move(vm_name)] = VmInfo{VmState::STOPPING};
 }
 
-LinuxPackageInfo::LinuxPackageInfo() = default;
-LinuxPackageInfo::LinuxPackageInfo(LinuxPackageInfo&&) = default;
-LinuxPackageInfo::LinuxPackageInfo(const LinuxPackageInfo&) = default;
-LinuxPackageInfo& LinuxPackageInfo::operator=(LinuxPackageInfo&&) = default;
-LinuxPackageInfo& LinuxPackageInfo::operator=(const LinuxPackageInfo&) =
-    default;
-LinuxPackageInfo::~LinuxPackageInfo() = default;
-
-ContainerInfo::ContainerInfo(std::string container_name,
-                             std::string container_username,
-                             std::string container_homedir,
-                             std::string ipv4_address)
-    : name(std::move(container_name)),
-      username(std::move(container_username)),
-      homedir(std::move(container_homedir)),
-      ipv4_address(std::move(ipv4_address)) {}
-ContainerInfo::~ContainerInfo() = default;
-ContainerInfo::ContainerInfo(ContainerInfo&&) = default;
-ContainerInfo::ContainerInfo(const ContainerInfo&) = default;
-ContainerInfo& ContainerInfo::operator=(ContainerInfo&&) = default;
-ContainerInfo& ContainerInfo::operator=(const ContainerInfo&) = default;
-
 namespace {
 
 ContainerOsVersion VersionFromOsRelease(
@@ -785,6 +764,8 @@ ContainerOsVersion VersionFromOsRelease(
       return ContainerOsVersion::kDebianStretch;
     } else if (os_release.version_id() == "10") {
       return ContainerOsVersion::kDebianBuster;
+    } else if (os_release.version_id() == "11") {
+      return ContainerOsVersion::kDebianBullseye;
     } else {
       return ContainerOsVersion::kDebianOther;
     }
@@ -1024,31 +1005,26 @@ void CrostiniManager::MaybeUpdateCrostini() {
       base::BindOnce(&CrostiniManager::CheckPaths),
       base::BindOnce(&CrostiniManager::MaybeUpdateCrostiniAfterChecks,
                      weak_ptr_factory_.GetWeakPtr()));
+
   // Probe Concierge - if it's still running after an unclean shutdown, a
   // success response will be received.
-  if (profile_->GetLastSessionExitType() == Profile::EXIT_CRASHED) {
-    vm_tools::concierge::GetVmInfoRequest concierge_request;
-    concierge_request.set_owner_id(owner_id_);
-    concierge_request.set_name(kCrostiniDefaultVmName);
-    GetConciergeClient()->GetVmInfo(
-        std::move(concierge_request),
-        base::BindOnce(
-            [](base::WeakPtr<CrostiniManager> weak_this,
-               absl::optional<vm_tools::concierge::GetVmInfoResponse> reply) {
-              if (weak_this) {
-                VLOG(1) << "Exit type: "
-                        << static_cast<int>(Profile::EXIT_CRASHED);
-                VLOG(1) << "GetVmInfo result: "
-                        << (reply.has_value() && reply->success());
-                weak_this->is_unclean_startup_ =
-                    reply.has_value() && reply->success();
-                if (weak_this->is_unclean_startup_) {
-                  weak_this->RemoveUncleanSshfsMounts();
-                }
+  vm_tools::concierge::GetVmInfoRequest concierge_request;
+  concierge_request.set_owner_id(owner_id_);
+  concierge_request.set_name(kCrostiniDefaultVmName);
+  GetConciergeClient()->GetVmInfo(
+      std::move(concierge_request),
+      base::BindOnce(
+          [](base::WeakPtr<CrostiniManager> weak_this,
+             absl::optional<vm_tools::concierge::GetVmInfoResponse> reply) {
+            if (weak_this) {
+              weak_this->is_unclean_startup_ =
+                  reply.has_value() && reply->success();
+              if (weak_this->is_unclean_startup_) {
+                weak_this->RemoveUncleanSshfsMounts();
               }
-            },
-            weak_ptr_factory_.GetWeakPtr()));
-  }
+            }
+          },
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
 // static
@@ -1110,13 +1086,12 @@ void CrostiniManager::UninstallTermina(BoolCallback callback) {
 }
 
 void CrostiniManager::CreateDiskImage(
-    const base::FilePath& disk_path,
+    const std::string& vm_name,
     vm_tools::concierge::StorageLocation storage_location,
     int64_t disk_size_bytes,
     CreateDiskImageCallback callback) {
-  std::string disk_path_string = disk_path.AsUTF8Unsafe();
-  if (disk_path_string.empty()) {
-    LOG(ERROR) << "Disk path cannot be empty";
+  if (vm_name.empty()) {
+    LOG(ERROR) << "VM name must not be empty";
     std::move(callback).Run(
         /*success=*/false,
         vm_tools::concierge::DiskImageStatus::DISK_STATUS_UNKNOWN,
@@ -1126,7 +1101,7 @@ void CrostiniManager::CreateDiskImage(
 
   vm_tools::concierge::CreateDiskImageRequest request;
   request.set_cryptohome_id(CryptohomeIdForProfile(profile_));
-  request.set_disk_path(std::move(disk_path_string));
+  request.set_vm_name(std::move(vm_name));
   // The type of disk image to be created.
   request.set_image_type(vm_tools::concierge::DISK_IMAGE_AUTO);
 
@@ -1149,18 +1124,17 @@ void CrostiniManager::CreateDiskImage(
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void CrostiniManager::DestroyDiskImage(const base::FilePath& disk_path,
+void CrostiniManager::DestroyDiskImage(const std::string& vm_name,
                                        BoolCallback callback) {
-  std::string disk_path_string = disk_path.AsUTF8Unsafe();
-  if (disk_path_string.empty()) {
-    LOG(ERROR) << "Disk path cannot be empty";
+  if (vm_name.empty()) {
+    LOG(ERROR) << "VM name must not be empty";
     std::move(callback).Run(/*success=*/false);
     return;
   }
 
   vm_tools::concierge::DestroyDiskImageRequest request;
   request.set_cryptohome_id(CryptohomeIdForProfile(profile_));
-  request.set_disk_path(std::move(disk_path_string));
+  request.set_vm_name(std::move(vm_name));
 
   GetConciergeClient()->DestroyDiskImage(
       std::move(request),
@@ -1338,12 +1312,16 @@ void CrostiniManager::CreateLxdContainer(ContainerId container_id,
   request.set_image_server(image_server_url.empty()
                                ? kCrostiniDefaultImageServerUrl
                                : image_server_url);
-  if (base::FeatureList::IsEnabled(
-          chromeos::features::kCrostiniUseBusterImage)) {
-    request.set_image_alias(kCrostiniBusterImageAlias);
+  std::string debian_version;
+  auto* cmdline = base::CommandLine::ForCurrentProcess();
+  if (cmdline->HasSwitch(kCrostiniContainerFlag)) {
+    debian_version = cmdline->GetSwitchValueASCII(kCrostiniContainerFlag);
   } else {
-    request.set_image_alias(kCrostiniStretchImageAlias);
+    debian_version = kCrostiniContainerDefaultVersion;
   }
+  request.set_image_alias(
+      base::StringPrintf(kCrostiniImageAliasPattern, debian_version.c_str()));
+
   GetCiceroneClient()->CreateLxdContainer(
       std::move(request),
       base::BindOnce(&CrostiniManager::OnCreateLxdContainer,
@@ -3626,6 +3604,30 @@ void CrostiniManager::MountCrostiniFiles(ContainerId container_id,
           },
           std::move(callback)),
       background);
+}
+
+void CrostiniManager::GetInstallLocation(
+    base::OnceCallback<void(base::FilePath)> callback) {
+  if (!crostini::CrostiniFeatures::Get()->IsEnabled(profile_)) {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), base::FilePath()));
+    return;
+  }
+
+  InstallTermina(
+      base::BindOnce(
+          [](base::WeakPtr<CrostiniManager> weak_this,
+             base::OnceCallback<void(base::FilePath)> callback,
+             CrostiniResult result) {
+            if (result != CrostiniResult::SUCCESS || !weak_this) {
+              std::move(callback).Run(base::FilePath());
+            } else {
+              std::move(callback).Run(
+                  weak_this->termina_installer_.GetInstallLocation());
+            }
+          },
+          weak_ptr_factory_.GetWeakPtr(), std::move(callback)),
+      false);
 }
 
 void CrostiniManager::CallRestarterStartLxdContainerFinishedForTesting(

@@ -1,0 +1,133 @@
+// Copyright 2021 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module chromeos.bluetooth_config.mojom;
+
+import "mojo/public/mojom/base/string16.mojom";
+
+// State of Bluetooth on the device.
+enum BluetoothSystemState {
+  // Device does not have access to Bluetooth.
+  kUnavailable,
+
+  // Bluetooth is turned off.
+  kDisabled,
+
+  // Bluetooth is in the process of turning off.
+  kDisabling,
+
+  // Bluetooth is turned on.
+  kEnabled,
+
+  // Bluetooth is in the process of turning on.
+  kEnabling
+};
+
+// Bluetooth device type, derived from the device's ClassOfDevice attribute.
+enum DeviceType {
+  kUnknown,
+  kComputer,
+  kPhone,
+  kHeadset,
+  kVideoCamera,
+  kGameController,
+  kKeyboard,
+  kMouse,
+  kTablet
+};
+
+// Audio capability, derived from the device's ClassOfDevice attribute.
+enum AudioOutputCapability {
+  // Cannot provide audio output.
+  kNotCapableOfAudioOutput,
+
+  // Can output audio (e.g., Bluetooth headset).
+  kCapableOfAudioOutput
+};
+
+enum DeviceConnectionState {
+  kNotConnected,
+  kConnecting,
+  kConnected
+};
+
+struct BatteryProperties {
+  // From 0 to 100.
+  uint8 battery_percentage;
+};
+
+// Battery info belonging to a device. Initially contains an optional
+// "default" set of properties, but will eventually contain information
+// about multiple batteries per device (e.g., Pixel Buds include battery
+// info about the left earbud, right earbud, and case).
+struct DeviceBatteryInfo {
+  BatteryProperties? default_properties;
+};
+
+// Properties belonging to a Bluetooth device.
+struct BluetoothDeviceProperties {
+  // Unique identifier for this device, which is stable across device reboots.
+  string id;
+
+  // Publicly-visible name provided by the device. If no name is provided by
+  // the device, the device address is used as a name.
+  mojo_base.mojom.String16 public_name;
+
+  // Device type, derived from the ClassOfDevice attribute for the device.
+  DeviceType device_type;
+
+  // Audio output capability of the device; note that this capability is
+  // independent of the device type.
+  AudioOutputCapability audio_capability;
+
+  // Null if no battery information is available for the device.
+  DeviceBatteryInfo? battery_info;
+
+  DeviceConnectionState connection_state;
+};
+
+// Properties belonging to a Bluetooth device which has been paired to this
+// Chrome OS device.
+struct PairedBluetoothDeviceProperties {
+  BluetoothDeviceProperties device_properties;
+
+  // Nickname for this device as provided by the user. Local to the device
+  // (i.e., other devices do not have access to this name). Null if the
+  // device has not been nicknamed by the user.
+  string? nickname;
+};
+
+// Describes the high-level status of system Bluetooth.
+// TODO(khorimoto): Add property describing modification state.
+struct BluetoothSystemProperties {
+  BluetoothSystemState system_state;
+
+  // List of paired devices. UI surfaces should display devices in the order
+  // indicated by this array.
+  array<PairedBluetoothDeviceProperties> paired_devices;
+};
+
+// Observer for changes to Bluetooth system properties.
+interface SystemPropertiesObserver {
+  // Invoked whenever any property changes, including whenever a property of a
+  // paired device changes (e.g., from connected to disconnected).
+  OnPropertiesUpdated(BluetoothSystemProperties properties);
+};
+
+// Provides Bluetooth metadata and controls. Embedded in the browser process.
+//
+// Clients include:
+// * Ash system UI; implemented in C++ as part of the browser process
+// * WebUI such as chrome://os-settings; implemented in JS as part of renderer
+//   processes
+interface CrosBluetoothConfig {
+  // Invokes OnPropertiesUpdated() with initial set of properties when observer
+  // is first added, then again whenever properties are updated. To stop
+  // observing, disconnect |observer|.
+  ObserveSystemProperties(pending_remote<SystemPropertiesObserver> observer);
+
+  // Turns Bluetooth on or off. If Bluetooth is unavailable or if it is
+  // not currently modifiable, this function is a no-op.
+  SetBluetoothEnabledState(bool enabled);
+};

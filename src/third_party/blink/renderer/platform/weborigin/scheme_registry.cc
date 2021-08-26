@@ -104,8 +104,8 @@ class URLSchemesRegistry final {
   URLSchemesSet error_schemes;
   URLSchemesSet wasm_eval_csp_schemes;
   URLSchemesSet allowing_shared_array_buffer_schemes;
-  URLSchemesSet extension_schemes;
   URLSchemesSet web_ui_schemes;
+  URLSchemesSet code_cache_with_hashing_schemes;
 
  private:
   friend const URLSchemesRegistry& GetURLSchemesRegistry();
@@ -113,7 +113,7 @@ class URLSchemesRegistry final {
   friend URLSchemesRegistry& GetMutableURLSchemesRegistryForTest();
 
   static URLSchemesRegistry& GetInstance() {
-    DEFINE_STATIC_LOCAL(URLSchemesRegistry, schemes, ());
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(URLSchemesRegistry, schemes, ());
     return schemes;
   }
 };
@@ -417,8 +417,9 @@ bool SchemeRegistry::SchemeShouldBypassContentSecurityPolicy(
 
   // get() returns 0 (PolicyAreaNone) if there is no entry in the map.
   // Thus by default, schemes do not bypass CSP.
-  return (GetURLSchemesRegistry().content_security_policy_bypassing_schemes.at(
-              scheme) &
+  return (GetURLSchemesRegistry()
+              .content_security_policy_bypassing_schemes
+              .DeprecatedAtOrEmptyValue(scheme) &
           policy_areas) == policy_areas;
 }
 
@@ -451,22 +452,6 @@ bool SchemeRegistry::SchemeSupportsWasmEvalCSP(const String& scheme) {
   return GetURLSchemesRegistry().wasm_eval_csp_schemes.Contains(scheme);
 }
 
-void SchemeRegistry::RegisterURLSchemeAsExtension(const String& scheme) {
-  DCHECK_EQ(scheme, scheme.LowerASCII());
-  GetMutableURLSchemesRegistry().extension_schemes.insert(scheme);
-}
-
-void SchemeRegistry::RemoveURLSchemeAsExtension(const String& scheme) {
-  GetMutableURLSchemesRegistry().extension_schemes.erase(scheme);
-}
-
-bool SchemeRegistry::IsExtensionScheme(const String& scheme) {
-  if (scheme.IsEmpty())
-    return false;
-  DCHECK_EQ(scheme, scheme.LowerASCII());
-  return GetURLSchemesRegistry().extension_schemes.Contains(scheme);
-}
-
 void SchemeRegistry::RegisterURLSchemeAsWebUI(const String& scheme) {
   DCHECK_EQ(scheme, scheme.LowerASCII());
   GetMutableURLSchemesRegistry().web_ui_schemes.insert(scheme);
@@ -481,6 +466,34 @@ bool SchemeRegistry::IsWebUIScheme(const String& scheme) {
     return false;
   DCHECK_EQ(scheme, scheme.LowerASCII());
   return GetURLSchemesRegistry().web_ui_schemes.Contains(scheme);
+}
+
+void SchemeRegistry::RegisterURLSchemeAsWebUIForTest(const String& scheme) {
+  DCHECK_EQ(scheme, scheme.LowerASCII());
+  GetMutableURLSchemesRegistryForTest().web_ui_schemes.insert(scheme);
+}
+
+void SchemeRegistry::RemoveURLSchemeAsWebUIForTest(const String& scheme) {
+  GetMutableURLSchemesRegistryForTest().web_ui_schemes.erase(scheme);
+}
+
+void SchemeRegistry::RegisterURLSchemeAsCodeCacheWithHashing(
+    const String& scheme) {
+  DCHECK_EQ(scheme, scheme.LowerASCII());
+  GetMutableURLSchemesRegistry().code_cache_with_hashing_schemes.insert(scheme);
+}
+
+void SchemeRegistry::RemoveURLSchemeAsCodeCacheWithHashing(
+    const String& scheme) {
+  GetMutableURLSchemesRegistry().code_cache_with_hashing_schemes.erase(scheme);
+}
+
+bool SchemeRegistry::SchemeSupportsCodeCacheWithHashing(const String& scheme) {
+  if (scheme.IsEmpty())
+    return false;
+  DCHECK_EQ(scheme, scheme.LowerASCII());
+  return GetURLSchemesRegistry().code_cache_with_hashing_schemes.Contains(
+      scheme);
 }
 
 }  // namespace blink

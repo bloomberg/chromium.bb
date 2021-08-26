@@ -11,6 +11,7 @@
 <translation id="1546934824884762070">ఊహించని ఎర్రర్ ఏర్పడింది. దయచేసి డెవలపర్‌లకు ఈ సమస్యను రిపోర్ట్ చేయండి.</translation>
 <translation id="1697532407822776718">మీరు సిద్ధంగా ఉన్నారు!</translation>
 <translation id="1742469581923031760">కనెక్ట్ చేస్తోంది…</translation>
+<translation id="177040763384871009">రిమోట్ పరికరంలో క్లిక్ చేసిన లింక్‌లను క్లయింట్ బ్రౌజర్‌లో తెరవడం కోసం అనుమతించడానికి, మీరు సిస్టమ్ వెబ్ బ్రౌజర్‌ను "<ph name="URL_FORWARDER_NAME" />"కు మార్చాలి.</translation>
 <translation id="177096447311351977">ఈ క్లయింట్ కోసం ఛానెల్ IP: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1897488610212723051">తొలగించు</translation>
 <translation id="2009755455353575666">కనెక్షన్ విఫలమైంది</translation>
@@ -129,6 +130,7 @@
 <translation id="6963936880795878952">ఒకరు చెల్లని PINతో రిమోట్ కంప్యూటర్‌కు కనెక్ట్ చేయడానికి ప్రయత్నిస్తున్నందున, దీనికి కనెక్షన్‌లు తాత్కాలికంగా బ్లాక్ చేయబడ్డాయి. దయచేసి తర్వాత మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="6965382102122355670">సరే</translation>
 <translation id="6985691951107243942">మీరు <ph name="HOSTNAME" />కు రిమోట్ కనెక్షన్‌లను ఖచ్చితంగా నిలిపివేయాలనుకుంటున్నారా? మీరు మీ మనస్సు మార్చుకుంటే, కనెక్షన్‌లను పునఃప్రారంభించడానికి మీరు ఆ కంప్యూటర్‌ను సందర్శించాలి.</translation>
+<translation id="6998890551706945177">మీ కంప్యూటర్‌ను చూడటానికి, కంట్రోల్ చేయడానికి కావాల్సిన యాక్సెస్ కోసం <ph name="CLIENT_USERNAME" /> రిక్వెస్ట్ చేశారు. మీకు ఈ వ్యక్తి తెలియకపోతే లేదా షేర్ చేయడానికి ముందు ఏవైనా మార్పులు చేయాల్సి వస్తే "<ph name="IDS_SHARE_CONFIRM_DIALOG_DECLINE" />"ను నొక్కండి.  లేకపోతే, కనెక్షన్‌ను అనుమతించడానికి."<ph name="IDS_SHARE_CONFIRM_DIALOG_CONFIRM" />"ను ఎంచుకోండి.</translation>
 <translation id="7019153418965365059">తెలియని హోస్ట్ ఎర్రర్: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">రిమోట్ సహాయం</translation>
 <translation id="7026930240735156896">మీ కంప్యూటర్‌ను రిమోట్ యాక్సెస్ కోసం సెటప్ చేయడానికి సూచనలను పాటించండి</translation>
@@ -142,6 +144,7 @@
 <translation id="7434397035092923453">ఈ క్లయింట్‌కు యాక్సెస్‌ తిరస్కరించబడింది: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">ఈ క్లయింట్ కనెక్ట్ చేయబడ్డారు: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7526139040829362392">ఖాతాను మార్చు</translation>
+<translation id="7535110896613603182">ఆటోమేటిక్ యాప్‌ల సెట్టింగ్‌లను తెరవండి</translation>
 <translation id="7628469622942688817">ఈ పరికరంలో నా PINను గుర్తుంచుకో.</translation>
 <translation id="7649070708921625228">సహాయం</translation>
 <translation id="7658239707568436148">రద్దు చేయి</translation>

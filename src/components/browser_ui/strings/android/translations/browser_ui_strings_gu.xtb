@@ -6,7 +6,6 @@
 <translation id="1124090076051167250">આમ કરવાથી તમારી હોમ સ્ક્રીન પર સાઇટ કે ઍપ દ્વારા સ્ટોર કરવામાં આવેલો ડેટા અને કૂકીના <ph name="DATASIZE" /> સાફ કરવામાં આવશે.</translation>
 <translation id="1178581264944972037">થોભો</translation>
 <translation id="1181037720776840403">કાઢી નાખો</translation>
-<translation id="1195941046451948919">શું તમે ખરેખર આ વેબસાઇટ માટેની પરવાનગીઓ રીસેટ કરવા માગો છો?</translation>
 <translation id="1201402288615127009">આગલું</translation>
 <translation id="1242008676835033345"><ph name="WEBSITE_URL" /> પર શામેલ કર્યું</translation>
 <translation id="1272079795634619415">રોકો</translation>
@@ -70,6 +69,7 @@
 <translation id="2687403674020088961">બધી કુકીને બ્લૉક કરો (સુઝાવ આપતા નથી)</translation>
 <translation id="2704606927547763573">કૉપિ કર્યું</translation>
 <translation id="2717722538473713889">ઇમેઇલ ઍડ્રેસ</translation>
+<translation id="2785051990912111074">આ પસંદગી <ph name="WEBSITE" /> માટે કુકીને સાફ કરશે</translation>
 <translation id="2822354292072154809">શું તમે ખરેખર <ph name="CHOSEN_OBJECT_NAME" />ની બધી સાઇટ પસંદગીઓને રીસેટ કરવા માગો છે?</translation>
 <translation id="2870560284913253234">સાઇટ</translation>
 <translation id="2874939134665556319">પાછલું ટ્રૅક</translation>
@@ -130,7 +130,6 @@
 <translation id="4570913071927164677">વિગતો</translation>
 <translation id="4645575059429386691">તમારા માતાપિતા દ્વારા મેનેજ થયેલ</translation>
 <translation id="4670064810192446073">વર્ચ્યુઅલ રિયાલિટી</translation>
-<translation id="4708011789095599544">શું તમે ખરેખર આ વેબસાઇટ માટેની કુકી અને અન્ય સાઇટ ડેટા સાફ કરવા માગો છો?</translation>
 <translation id="4751476147751820511">મોશન અથવા લાઇટ સેન્સર</translation>
 <translation id="4836046166855586901">તમે સક્રિય રૂપે આ ડિવાઇસનો ઉપયોગ ક્યારે કરો છો તેના વિશે જ્યારે કોઈ સાઇટ જાણવા માગે, ત્યારે પૂછો</translation>
 <translation id="4883854917563148705">મેનેજ કરવામાં આવેલા સેટિંગને રીસેટ કરી શકાતા નથી</translation>
@@ -140,6 +139,7 @@
 <translation id="4976702386844183910">છેલ્લે <ph name="DATE" />ના રોજ મુલાકાત લીધી</translation>
 <translation id="4994033804516042629">કોઈ સંપર્કો મળ્યા નથી</translation>
 <translation id="4996978546172906250">આનાથી શેર કરો</translation>
+<translation id="5014906230196386306">કુકી સાફ કરીએ?</translation>
 <translation id="5039804452771397117">મંજૂરી આપો</translation>
 <translation id="5048398596102334565">સાઇટને મોશન સેન્સરના ઍક્સેસની મંજૂરી આપો (સુઝાવ આપેલ)</translation>
 <translation id="5050380848339752099">આ સાઇટ છૂપા મોડની બહારની એક ઍપ સાથે માહિતી શેર કરવા જઈ રહી છે.</translation>
@@ -157,9 +157,9 @@
 <translation id="5335288049665977812">સાઇટ્સને JavaScript ચલાવાની મંજૂરી આપો (ભલામણ કરેલ)</translation>
 <translation id="534295439873310000">NFC ડિવાઇસ</translation>
 <translation id="5354152178998424783">આમ કરવાથી સાઇટ દ્વારા સ્ટોર કરવામાં આવેલા <ph name="DATASIZE" /> જેટલો ડેટા અને કુકી સાફ થશે.</translation>
-<translation id="5391532827096253100">આ સાઇટ સાથેનું તમારું કનેક્શન સુરક્ષિત નથી. સાઇટની માહિતી</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ વધુ 1)}one{(+ વધુ #)}other{(+ વધુ #)}}</translation>
 <translation id="5403592356182871684">નામ</translation>
+<translation id="5438097262470833822">આ પસંદગી <ph name="WEBSITE" /> માટેની પરવાનગીઓને રીસેટ કરશે</translation>
 <translation id="5489227211564503167"><ph name="TOTAL_TIME" />માંથી <ph name="ELAPSED_TIME" />નો સમય વીતી ગયો.</translation>
 <translation id="5494752089476963479">ઘૃણાસ્પદ અથવા ભ્રામક જાહેરાતો બતાવતી સાઇટ પરથી જાહેરાતો બ્લૉક કરો</translation>
 <translation id="5502860503640766021"><ph name="PERMISSION_1" />ને મંજૂરી આપી, <ph name="PERMISSION_2" />ને બ્લૉક કર્યો</translation>
@@ -190,10 +190,10 @@
 <translation id="6064125863973209585">પૂર્ણ થયેલા ડાઉનલોડ</translation>
 <translation id="6165508094623778733">વધુ જાણો</translation>
 <translation id="6177111841848151710">હાલનાં શોધ એંજિન માટે અવરોધિત</translation>
+<translation id="6177128806592000436">આ સાઇટ પરનું તમારું કનેક્શન સુરક્ષિત નથી</translation>
 <translation id="6181444274883918285">સાઇટ અપવાદ ઉમેરો</translation>
 <translation id="6192792657125177640">અપવાદો</translation>
 <translation id="6196640612572343990">ત્રીજા પક્ષની કુકીને બ્લૉક કરો</translation>
-<translation id="6206551242102657620">કનેક્શન સુરક્ષિત છે. સાઇટની માહિતી</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" />ના વિકલ્પો</translation>
 <translation id="6231752747840485235">'<ph name="APP_NAME" />' અનઇન્સ્ટૉલ કરીએ?</translation>
 <translation id="6262279340360821358"><ph name="PERMISSION_1" /> અને <ph name="PERMISSION_2" />ને બ્લૉક કર્યા</translation>
@@ -202,7 +202,6 @@
 <translation id="6320088164292336938">વાઇબ્રેટ</translation>
 <translation id="6388207532828177975">સાફ કરો અને ફરીથી સેટ કરો</translation>
 <translation id="6398765197997659313">પૂર્ણ સ્ક્રીનથી બહાર નીકળો</translation>
-<translation id="6423924377271166037">કુકી સાફ કરો</translation>
 <translation id="6439114592976064011">સાઇટને તમારું વર્ચ્યુઅલ રિયાલિટી ડિવાઇસ અને ડેટાનો ઉપયોગ કરવાથી બ્લૉક કરો</translation>
 <translation id="6447842834002726250">કૂકીઝ</translation>
 <translation id="6527303717912515753">શેર કરો</translation>
@@ -217,6 +216,7 @@
 <translation id="6689172468748959065">પ્રોફાઇલ ફોટો</translation>
 <translation id="6697925417670533197">ડાઉનલોડ કરવાનું સક્રિય કરો</translation>
 <translation id="6746124502594467657">નીચે ખસેડો</translation>
+<translation id="6749077623962119521">પરવાનગીઓ રીસેટ કરીએ?</translation>
 <translation id="6766622839693428701">બંધ કરવા માટે નીચેની તરફ સ્વાઇપ કરો.</translation>
 <translation id="6790428901817661496">ચલાવો</translation>
 <translation id="6818926723028410516">આઇટમ પસંદ કરો</translation>
@@ -224,7 +224,6 @@
 <translation id="6910211073230771657">કાઢી નાખ્યું</translation>
 <translation id="6912998170423641340">બધી સાઇટને ક્લિપબોર્ડ પરની ટેક્સ્ટ અને છબીઓ વાંચવાથી બ્લૉક કરો</translation>
 <translation id="6945221475159498467">પસંદ કરો</translation>
-<translation id="6963642900430330478">આ પેજ જોખમી છે. સાઇટની માહિતી</translation>
 <translation id="6965382102122355670">બરાબર, સમજાઇ ગયું</translation>
 <translation id="6992289844737586249">સાઇટ્સને તમારા માઇક્રોફોનનો ઉપયોગ કરવાની મંજૂરી આપતાં પહેલા પૂછો (ભલામણ કરેલ)</translation>
 <translation id="7000754031042624318">Android સેટિંગમાં પરવાનગી બંધ કરી છે</translation>
@@ -232,7 +231,6 @@
 <translation id="7053983685419859001">અવરોધિત કરો</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 પસંદ કરી}one{# પસંદ કરી}other{# પસંદ કરી}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" />ની પસંદગી કરી. સ્ક્રીનના ટોચની નજીક વિકલ્પો ઉપલબ્ધ છે</translation>
-<translation id="7128222689758636196">હાલનાં શોધ એંજિન માટે પરવાનગી આપો</translation>
 <translation id="7141896414559753902">સાઇટને પૉપ-અપ અને રીડાયરેક્ટ બતાવવા દેવાથી બ્લૉક કરો (સુઝાવ આપેલ)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="723171743924126238">છબીઓ પસંદ કરો</translation>
@@ -247,7 +245,6 @@
 <translation id="7561196759112975576">હંમેશાં</translation>
 <translation id="7572498721684305250">જ્યારે તમે NFC ડિવાઇસ પર ટૅપ કરો ત્યારે સાઇટને માહિતી મોકલવા અને પ્રાપ્ત કરવાથી બ્લૉક કરો</translation>
 <translation id="757524316907819857">સાઇટને સંરક્ષિત કન્ટેન્ટ ચલાવવાથી બ્લૉક કરો</translation>
-<translation id="7589445247086920869">હાલનું શોધ એંજિન અવરોધિત કરો</translation>
 <translation id="7649070708921625228">સહાય</translation>
 <translation id="7658239707568436148">રદ કરો</translation>
 <translation id="7781829728241885113">ગઈ કાલે</translation>
@@ -270,10 +267,12 @@
 <translation id="8068648041423924542">પ્રમાણપત્ર પસંદ કરવામાં અસમર્થ.</translation>
 <translation id="8087000398470557479">આ કન્ટેન્ટ <ph name="DOMAIN_NAME" /> માંથી, Google દ્વારા વિતરિત કરેલ છે.</translation>
 <translation id="8116925261070264013">મ્યૂટ કરેલ</translation>
+<translation id="813082847718468539">સ્થાન માહિતી જુઓ</translation>
 <translation id="8131740175452115882">પુષ્ટિ કરો</translation>
 <translation id="8197286292360124385"><ph name="PERMISSION_1" />ની મંજૂરી આપી</translation>
 <translation id="8200772114523450471">રિઝ્યુમે</translation>
 <translation id="8206354486702514201">આ સેટિંગ તમારા વહીવટકર્તા દ્વારા લાગુ કરેલી છે.</translation>
+<translation id="8211406090763984747">કનેક્શન સુરક્ષિત છે</translation>
 <translation id="8249310407154411074">ટોચે ખસેડો</translation>
 <translation id="8261506727792406068">ડિલીટ કરો</translation>
 <translation id="8300705686683892304">ઍપ દ્વારા મેનેજ થતી</translation>
@@ -315,7 +314,7 @@
 <translation id="9074739597929991885">બ્લૂટૂથ</translation>
 <translation id="9109747640384633967">{PERMISSIONS_SUMMARY_MIXED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> અને વધુ <ph name="NUM_MORE" />}one{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> અને વધુ <ph name="NUM_MORE" />}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> અને વધુ <ph name="NUM_MORE" />}}</translation>
 <translation id="913657688200966289"><ph name="BEGIN_LINK" />Android સેટિંગ<ph name="END_LINK" />માં <ph name="APP_NAME" /> માટે પરવાનગીઓ ચાલુ કરો.</translation>
+<translation id="9162462602695099906">આ પેજ જોખમી છે</translation>
 <translation id="930525582205581608">આ સાઇટને ભૂલી જઈએ?</translation>
-<translation id="965817943346481315">જો સાઇટ ઘૃણાસ્પદ અથવા ભ્રામક જાહેરાતો બતાવતી હોય, તો બ્લૉક કરો (ભલામણ કરેલ)</translation>
 <translation id="967624055006145463">સ્ટોર કરેલ ડેટા</translation>
 </translationbundle>

@@ -425,6 +425,8 @@ Chrome బ్రౌజర్ మెనూను తెరవడానికి, 
 <translation id="3810838688059735925">వీడియో</translation>
 <translation id="3813387282697781382">పగడం వంటి లేత ఎర్రని రంగు</translation>
 <translation id="3816633764618089385">తరువాత మీడియా</translation>
+<translation id="3840823741487267909">సంక్షిప్తీకరణ</translation>
+<translation id="3841319830220785495">ఆటోమేటిక్ సహజ వాయిస్</translation>
 <translation id="385383972552776628">ఎంపికల పేజీని తెరవండి</translation>
 <translation id="3856075812838139784">చదవడానికి మాత్రమే</translation>
 <translation id="3857141338659865495">మధ్యస్థ నీలమణి రంగు</translation>
@@ -452,6 +454,7 @@ Chrome బ్రౌజర్ మెనూను తెరవడానికి, 
 <translation id="4021716437419160885">కిందికి స్క్రోల్ చేయి</translation>
 <translation id="4035381225449278841">వసంత కాలం</translation>
 <translation id="4047216625641135770">గుర్తు పెట్టండి</translation>
+<translation id="4047910800766704982">మీ పరికరం ఆన్‌లైన్‌లో ఉన్నప్పుడు మీరు సహజమైన, మనిషి వాయిస్‌ను ఉపయోగించవచ్చు. ప్రాసెసింగ్ కోసం Googleకు SMS పంపబడుతుంది. మీరు దీనిని సెట్టింగ్‌లలో ఎప్పుడైనా ఆఫ్ చేయవచ్చు.</translation>
 <translation id="4053520724192563562">నిమ్మపండు ఆకుపచ్చ</translation>
 <translation id="4054936709456751127">sts</translation>
 <translation id="4058278702844053247">పేజీ లోడ్ కావడం ప్రోగ్రెస్‌లో ఉంది</translation>
@@ -687,6 +690,7 @@ Chrome బ్రౌజర్ మెనూను తెరవడానికి, 
 <translation id="5748623122140342504">మునుపటి స్థాయి 5 శీర్షిక</translation>
 <translation id="5760594853119905566">అనుబంధం</translation>
 <translation id="5761219715606611783">చక్కగా చేశారు! మీరు ChromeVox టచ్ ప్రాథమికాంశాలను నేర్చుకున్నారు. కింది బటన్‌లను ఉపయోగించి మీరు మళ్లీ ట్యుటోరియల్‌ను చూడవచ్చు లేదా ట్యుటోరియల్ నుండి నిష్క్రమించవచ్చు.</translation>
+<translation id="5776001898637896684">Google Enhanced Network టెక్స్ట్-టు-స్పీచ్ ఎక్స్‌టెన్షన్</translation>
 <translation id="5805940204952508776">రెండు వేళ్లతో నొక్కండి</translation>
 <translation id="5819072574982403430">ట్రీ అంశం</translation>
 <translation id="5822819874379903994">ముదురు నీలమణి రంగు</translation>
@@ -909,6 +913,7 @@ Chrome బ్రౌజర్ మెనూను తెరవడానికి, 
 <translation id="743783356331413498">ఉదాహరణ</translation>
 <translation id="7439060726180460871">డైరెక్టరీ</translation>
 <translation id="744163271241493234">pwded</translation>
+<translation id="7465123027577412805">సహజ వాయిస్‌ను ఉపయోగించమంటారా?</translation>
 <translation id="7484805699335881122">ఎలిమెంట్ రకాలు అలాగే కోట్ చేసిన, తొలగించబడిన, బోల్డ్‌గా చేసిన, బ్రాకెట్‌లలో ఉన్న, క్యాపిటల్ లెటర్స్ గల టెక్స్ట్‌ను మాట్లాడేటప్పుడు పిచ్‌ను మార్చండి.</translation>
 <translation id="7491962110804786152">tab</translation>
 <translation id="7492497529767769458">తర్వాతి విభాగానికి వెళ్లండి. ఉదాహరణలలో స్టేటస్ ట్రే, లాంచర్ ఉంటాయి.</translation>
@@ -979,6 +984,7 @@ Chrome బ్రౌజర్ మెనూను తెరవడానికి, 
 <translation id="7968340748835037139">ముదురు ఆకుపచ్చ</translation>
 <translation id="7972507042926081808">చాక్లెట్ రంగు</translation>
 <translation id="7974390230414479278">మెనూ అంశం</translation>
+<translation id="7990863024647916394"><ph name="DISPLAY_NAME" /> వాయిస్ <ph name="COUNT" /></translation>
 <translation id="8004507136466386272">పదాలు</translation>
 <translation id="8004512796067398576">పెరుగుదల</translation>
 <translation id="8007540374018858731">h3</translation>

@@ -149,6 +149,41 @@ fn tint_symbol() -> [[builtin(position)]] vec4<f32> {
   EXPECT_THAT(data->remappings, ContainerEq(expected_remappings));
 }
 
+TEST_F(RenamerTest, PreserveBuiltinTypes) {
+  auto* src = R"(
+[[stage(compute), workgroup_size(1)]]
+fn entry() {
+  var a = modf(1.0).whole;
+  var b = modf(1.0).fract;
+  var c = frexp(1.0).sig;
+  var d = frexp(1.0).exp;
+}
+)";
+
+  auto* expect = R"(
+[[stage(compute), workgroup_size(1)]]
+fn tint_symbol() {
+  var tint_symbol_1 = modf(1.0).whole;
+  var tint_symbol_2 = modf(1.0).fract;
+  var tint_symbol_3 = frexp(1.0).sig;
+  var tint_symbol_4 = frexp(1.0).exp;
+}
+)";
+
+  auto got = Run<Renamer>(src);
+
+  EXPECT_EQ(expect, str(got));
+
+  auto* data = got.data.Get<Renamer::Data>();
+
+  ASSERT_NE(data, nullptr);
+  Renamer::Data::Remappings expected_remappings = {
+      {"entry", "tint_symbol"}, {"a", "tint_symbol_1"}, {"b", "tint_symbol_2"},
+      {"c", "tint_symbol_3"},   {"d", "tint_symbol_4"},
+  };
+  EXPECT_THAT(data->remappings, ContainerEq(expected_remappings));
+}
+
 TEST_F(RenamerTest, AttemptSymbolCollision) {
   auto* src = R"(
 [[stage(vertex)]]
@@ -316,6 +351,7 @@ INSTANTIATE_TEST_SUITE_P(RenamerTestHlsl,
                                          "RWByteAddressBuffer",
                                          "RWStructuredBuffer",
                                          "RWTexture1D",
+                                         "RWTexture1DArray",
                                          "RWTexture2D",
                                          "RWTexture2DArray",
                                          "RWTexture3D",
@@ -352,6 +388,8 @@ INSTANTIATE_TEST_SUITE_P(RenamerTestHlsl,
                                          "Sampler2D",
                                          "Sampler3D",
                                          "SamplerCUBE",
+                                         "SamplerComparisonState",
+                                         "SamplerState",
                                          "StructuredBuffer",
                                          "TANGENT",
                                          "TESSFACTOR",
@@ -359,6 +397,7 @@ INSTANTIATE_TEST_SUITE_P(RenamerTestHlsl,
                                          "Texcoord",
                                          "Texture",
                                          "Texture1D",
+                                         "Texture1DArray",
                                          "Texture2D",
                                          "Texture2DArray",
                                          "Texture2DMS",
@@ -420,6 +459,7 @@ INSTANTIATE_TEST_SUITE_P(RenamerTestHlsl,
                                          "class",
                                          "clip",
                                          "column_major",
+                                         "compile",
                                          "compile_fragment",
                                          // "const",  // WGSL keyword
                                          "const_cast",
@@ -434,6 +474,7 @@ INSTANTIATE_TEST_SUITE_P(RenamerTestHlsl,
                                          "ddy",
                                          "ddy_coarse",
                                          "ddy_fine",
+                                         // "default",  // WGSL keyword
                                          "degrees",
                                          "delete",
                                          // "determinant",  // WGSL intrinsic
@@ -587,6 +628,7 @@ INSTANTIATE_TEST_SUITE_P(RenamerTestHlsl,
                                          // "ldexp",  // WGSL intrinsic
                                          // "length",  // WGSL intrinsic
                                          "lerp",
+                                         "line",
                                          "lineadj",
                                          "linear",
                                          "lit",

@@ -49,6 +49,15 @@ struct DeprecationData {
     std::string target;
 };
 
+struct SpecialUseVUIDs
+{
+    const char* cadsupport;
+    const char* d3demulation;
+    const char* devtools;
+    const char* debugging;
+    const char* glemulation;
+};
+
 typedef enum {
     kBPVendorArm = 0x00000001,
 } BPVendorFlagBits;
@@ -101,8 +110,8 @@ struct PHYSICAL_DEVICE_STATE_BP {
 
 class SWAPCHAIN_STATE_BP : public SWAPCHAIN_NODE {
   public:
-    SWAPCHAIN_STATE_BP(const VkSwapchainCreateInfoKHR* pCreateInfo, VkSwapchainKHR swapchain)
-        : SWAPCHAIN_NODE(pCreateInfo, swapchain) {}
+    SWAPCHAIN_STATE_BP(ValidationStateTracker* dev_data, const VkSwapchainCreateInfoKHR* pCreateInfo, VkSwapchainKHR swapchain)
+        : SWAPCHAIN_NODE(dev_data, pCreateInfo, swapchain) {}
     CALL_STATE vkGetSwapchainImagesKHRState = UNCALLED;
 };
 
@@ -141,7 +150,7 @@ class BestPractices : public ValidationStateTracker {
 
     bool ValidateDeprecatedExtensions(const char* api_name, const char* extension_name, uint32_t version, const char* vuid) const;
 
-    bool ValidateSpecialUseExtensions(const char* api_name, const char* extension_name, const char* vuid) const;
+    bool ValidateSpecialUseExtensions(const char* api_name, const char* extension_name, const SpecialUseVUIDs& special_use_vuids) const;
 
     bool PreCallValidateCmdDrawIndexedIndirectCount(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset,
                                                     VkBuffer countBuffer, VkDeviceSize countBufferOffset, uint32_t maxDrawCount,
@@ -478,7 +487,7 @@ class BestPractices : public ValidationStateTracker {
 
     std::shared_ptr<SWAPCHAIN_NODE> CreateSwapchainState(const VkSwapchainCreateInfoKHR* create_info,
                                                          VkSwapchainKHR swapchain) final {
-        return std::static_pointer_cast<SWAPCHAIN_NODE>(std::make_shared<SWAPCHAIN_STATE_BP>(create_info, swapchain));
+        return std::static_pointer_cast<SWAPCHAIN_NODE>(std::make_shared<SWAPCHAIN_STATE_BP>(this, create_info, swapchain));
     }
 
 // Include code-generated functions

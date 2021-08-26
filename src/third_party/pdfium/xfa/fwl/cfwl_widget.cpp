@@ -29,9 +29,13 @@
 #include "xfa/fwl/cfwl_widgetmgr.h"
 #include "xfa/fwl/ifwl_themeprovider.h"
 
-#define FWL_WGT_CalcHeight 2048
-#define FWL_WGT_CalcWidth 2048
-#define FWL_WGT_CalcMultiLineDefWidth 120.0f
+namespace {
+
+constexpr float kCalcHeight = 2048.0f;
+constexpr float kCalcWidth = 2048.0f;
+constexpr float kCalcMultiLineDefWidth = 120.0f;
+
+}  // namespace
 
 CFWL_Widget::CFWL_Widget(CFWL_App* app,
                          const Properties& properties,
@@ -93,10 +97,10 @@ void CFWL_Widget::ModifyStyles(uint32_t dwStylesAdded,
   m_Properties.m_dwStyles |= dwStylesAdded;
 }
 
-void CFWL_Widget::ModifyStylesEx(uint32_t dwStylesExAdded,
-                                 uint32_t dwStylesExRemoved) {
-  m_Properties.m_dwStyleExes &= ~dwStylesExRemoved;
-  m_Properties.m_dwStyleExes |= dwStylesExAdded;
+void CFWL_Widget::ModifyStyleExts(uint32_t dwStyleExtsAdded,
+                                  uint32_t dwStyleExtsRemoved) {
+  m_Properties.m_dwStyleExts &= ~dwStyleExtsRemoved;
+  m_Properties.m_dwStyleExts |= dwStyleExtsAdded;
 }
 
 static void NotifyHideChildWidget(CFWL_WidgetMgr* widgetMgr,
@@ -173,28 +177,28 @@ IFWL_ThemeProvider* CFWL_Widget::GetThemeProvider() const {
 }
 
 bool CFWL_Widget::IsEnabled() const {
-  return (m_Properties.m_dwStates & FWL_WGTSTATE_Disabled) == 0;
+  return (m_Properties.m_dwStates & FWL_STATE_WGT_Disabled) == 0;
 }
 
 bool CFWL_Widget::HasBorder() const {
-  return !!(m_Properties.m_dwStyles & FWL_WGTSTYLE_Border);
+  return !!(m_Properties.m_dwStyles & FWL_STYLE_WGT_Border);
 }
 
 bool CFWL_Widget::IsVisible() const {
-  return !(m_Properties.m_dwStates & FWL_WGTSTATE_Invisible);
+  return !(m_Properties.m_dwStates & FWL_STATE_WGT_Invisible);
 }
 
 bool CFWL_Widget::IsOverLapper() const {
-  return (m_Properties.m_dwStyles & FWL_WGTSTYLE_WindowTypeMask) ==
-         FWL_WGTSTYLE_OverLapper;
+  return (m_Properties.m_dwStyles & FWL_STYLE_WGT_WindowTypeMask) ==
+         FWL_STYLE_WGT_OverLapper;
 }
 
 bool CFWL_Widget::IsPopup() const {
-  return !!(m_Properties.m_dwStyles & FWL_WGTSTYLE_Popup);
+  return !!(m_Properties.m_dwStyles & FWL_STYLE_WGT_Popup);
 }
 
 bool CFWL_Widget::IsChild() const {
-  return !!(m_Properties.m_dwStyles & FWL_WGTSTYLE_Child);
+  return !!(m_Properties.m_dwStyles & FWL_STYLE_WGT_Child);
 }
 
 CFWL_Widget* CFWL_Widget::GetOutmost() const {
@@ -232,8 +236,8 @@ CFX_SizeF CFWL_Widget::CalcTextSize(const WideString& wsText, bool bMultiLine) {
     calPart.m_dwTTOStyles.single_line_ = true;
 
   calPart.m_iTTOAlign = FDE_TextAlignment::kTopLeft;
-  float fWidth = bMultiLine ? FWL_WGT_CalcMultiLineDefWidth : FWL_WGT_CalcWidth;
-  CFX_RectF rect(0, 0, fWidth, FWL_WGT_CalcHeight);
+  float fWidth = bMultiLine ? kCalcMultiLineDefWidth : kCalcWidth;
+  CFX_RectF rect(0, 0, fWidth, kCalcHeight);
   GetThemeProvider()->CalcTextRect(calPart, &rect);
   return CFX_SizeF(rect.width, rect.height);
 }

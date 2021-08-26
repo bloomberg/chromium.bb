@@ -23,6 +23,7 @@ class Browser;
 @class BrowserContainerViewController;
 @class BrowserViewControllerDependencyFactory;
 @class CommandDispatcher;
+@protocol CRWResponderInputView;
 @class DefaultBrowserPromoNonModalScheduler;
 @protocol DefaultPromoNonModalPresentationDelegate;
 @class ToolbarAccessoryPresenter;
@@ -92,6 +93,9 @@ class Browser;
 @property(nonatomic, weak) id<DefaultPromoNonModalPresentationDelegate>
     nonModalPromoPresentationDelegate;
 
+// The input view provider for this browser view controller.
+@property(nonatomic, weak) id<CRWResponderInputView> inputViewProvider;
+
 // Whether the receiver is currently the primary BVC.
 - (void)setPrimary:(BOOL)primary;
 
@@ -104,7 +108,7 @@ class Browser;
                     inheritOpener:(BOOL)inheritOpener;
 
 // Adds |tabAddedCompletion| to the completion block (if any) that will be run
-// the next time a tab is added to the TabModel this object was initialized
+// the next time a tab is added to the Browser this object was initialized
 // with.
 - (void)appendTabAddedCompletion:(ProceduralBlock)tabAddedCompletion;
 

@@ -14,63 +14,41 @@
 
 #include <bitset>
 #include <limits>
-#include <list>
-#include <map>
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/command_line.h"
-#include "base/compiler_specific.h"
 #include "base/containers/contains.h"
-#include "base/environment.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/singleton.h"
-#include "base/metrics/histogram_macros.h"
-#include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/sys_byteorder.h"
-#include "base/task/current_thread.h"
-#include "base/threading/thread.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
-#include "third_party/skia/include/core/SkTypes.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/base/x/visual_picker_glx.h"
-#include "ui/base/x/x11_cursor.h"
-#include "ui/base/x/x11_cursor_loader.h"
-#include "ui/base/x/x11_menu_list.h"
 #include "ui/display/util/gpu_info_util.h"
 #include "ui/events/devices/x11/device_data_manager_x11.h"
 #include "ui/events/devices/x11/touch_factory_x11.h"
-#include "ui/events/event_utils.h"
-#include "ui/events/keycodes/keyboard_code_conversion_x.h"
-#include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/image/image_skia_rep.h"
-#include "ui/gfx/skia_util.h"
 #include "ui/gfx/switches.h"
 #include "ui/gfx/x/connection.h"
 #include "ui/gfx/x/screensaver.h"
 #include "ui/gfx/x/shm.h"
-#include "ui/gfx/x/sync.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/xproto.h"
 #include "ui/gfx/x/xproto_util.h"
@@ -205,6 +183,15 @@ bool GetDecoratedWindowBounds(x11::Window window, gfx::Rect* rect) {
 
   rect->Inset(GetWindowDecorationAdjustment(window));
   return true;
+}
+
+// Returns true if the event has event_x and event_y fields.
+bool EventHasCoordinates(const x11::Event& event) {
+  return event.As<x11::KeyEvent>() || event.As<x11::ButtonEvent>() ||
+         event.As<x11::MotionNotifyEvent>() || event.As<x11::CrossingEvent>() ||
+         event.As<x11::Input::LegacyDeviceEvent>() ||
+         event.As<x11::Input::DeviceEvent>() ||
+         event.As<x11::Input::CrossingEvent>();
 }
 
 }  // namespace
@@ -354,34 +341,34 @@ bool QueryShmSupport() {
 
 int CoalescePendingMotionEvents(const x11::Event& x11_event,
                                 x11::Event* last_event) {
+  auto* conn = x11::Connection::Get();
+  auto* ddmx11 = ui::DeviceDataManagerX11::GetInstance();
+  int num_coalesced = 0;
+
   const auto* motion = x11_event.As<x11::MotionNotifyEvent>();
   const auto* device = x11_event.As<x11::Input::DeviceEvent>();
   DCHECK(motion || device);
-  auto* conn = x11::Connection::Get();
-  int num_coalesced = 0;
+  DCHECK(!device || device->opcode == x11::Input::DeviceEvent::Motion ||
+         device->opcode == x11::Input::DeviceEvent::TouchUpdate);
 
   conn->ReadResponses();
-  if (motion) {
-    for (auto& next_event : conn->events()) {
+  for (auto& event : conn->events()) {
+    if (!EventHasCoordinates(event))
+      continue;
+
+    if (motion) {
+      const auto* next_motion = event.As<x11::MotionNotifyEvent>();
+
       // Discard all but the most recent motion event that targets the same
       // window with unchanged state.
-      const auto* next_motion = next_event.As<x11::MotionNotifyEvent>();
       if (next_motion && next_motion->event == motion->event &&
           next_motion->child == motion->child &&
           next_motion->state == motion->state) {
-        *last_event = std::move(next_event);
-      } else {
-        break;
+        *last_event = std::move(event);
+        continue;
       }
-    }
-  } else {
-    DCHECK(device->opcode == x11::Input::DeviceEvent::Motion ||
-           device->opcode == x11::Input::DeviceEvent::TouchUpdate);
-
-    auto* ddmx11 = ui::DeviceDataManagerX11::GetInstance();
-    for (auto& event : conn->events()) {
+    } else {
       auto* next_device = event.As<x11::Input::DeviceEvent>();
-
       if (!next_device)
         break;
 
@@ -395,27 +382,26 @@ int CoalescePendingMotionEvents(const x11::Event& x11_event,
         continue;
       }
 
+      // Confirm that the motion event is of the same type, is
+      // targeted at the same window, and that no buttons or modifiers
+      // have changed.
       if (next_device->opcode == device->opcode &&
           !ddmx11->IsCMTGestureEvent(event) &&
-          ddmx11->GetScrollClassEventDetail(event) == SCROLL_TYPE_NO_SCROLL) {
-        // Confirm that the motion event is targeted at the same window
-        // and that no buttons or modifiers have changed.
-        if (device->event == next_device->event &&
-            device->child == next_device->child &&
-            device->detail == next_device->detail &&
-            device->button_mask == next_device->button_mask &&
-            device->mods.base == next_device->mods.base &&
-            device->mods.latched == next_device->mods.latched &&
-            device->mods.locked == next_device->mods.locked &&
-            device->mods.effective == next_device->mods.effective) {
-          *last_event = std::move(event);
-          num_coalesced++;
-          continue;
-        }
+          ddmx11->GetScrollClassEventDetail(event) == SCROLL_TYPE_NO_SCROLL &&
+          device->event == next_device->event &&
+          device->child == next_device->child &&
+          device->detail == next_device->detail &&
+          device->button_mask == next_device->button_mask &&
+          device->mods.base == next_device->mods.base &&
+          device->mods.latched == next_device->mods.latched &&
+          device->mods.locked == next_device->mods.locked &&
+          device->mods.effective == next_device->mods.effective) {
+        *last_event = std::move(event);
+        num_coalesced++;
+        continue;
       }
-
-      break;
     }
+    break;
   }
 
   return num_coalesced;

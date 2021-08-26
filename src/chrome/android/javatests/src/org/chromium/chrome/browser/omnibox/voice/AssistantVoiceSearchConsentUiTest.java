@@ -82,13 +82,13 @@ public class AssistantVoiceSearchConsentUiTest {
     public void setUp() {
         mActivityTestRule.startMainActivityOnBlankPage();
 
-        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
-        mBottomSheetController = cta.getRootUiCoordinatorForTesting().getBottomSheetController();
-        mBottomSheetTestSupport = new BottomSheetTestSupport(mBottomSheetController);
-        mAssistantVoiceSearchConsentUi = new AssistantVoiceSearchConsentUi(cta.getWindowAndroid(),
-                cta, mSharedPreferencesManager,
-                () -> AutofillAssistantPreferenceFragment.launchSettings(cta),
-                mBottomSheetController);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+            mBottomSheetController =
+                    cta.getRootUiCoordinatorForTesting().getBottomSheetController();
+            mBottomSheetTestSupport = new BottomSheetTestSupport(mBottomSheetController);
+            mAssistantVoiceSearchConsentUi = createConsentUi();
+        });
     }
 
     @After
@@ -103,12 +103,25 @@ public class AssistantVoiceSearchConsentUiTest {
         });
     }
 
+    private AssistantVoiceSearchConsentUi createConsentUi() {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
+            ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+            return new AssistantVoiceSearchConsentUi(cta.getWindowAndroid(), cta,
+                    mSharedPreferencesManager,
+                    ()
+                            -> AutofillAssistantPreferenceFragment.launchSettings(cta),
+                    mBottomSheetController);
+        });
+    }
+
     @Test
     @MediumTest
     public void testNoBottomSheetControllerAvailable() {
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
-        AssistantVoiceSearchConsentUi.show(
-                cta.getWindowAndroid(), mSharedPreferencesManager, () -> {}, null, mCallback);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            AssistantVoiceSearchConsentUi.show(
+                    cta.getWindowAndroid(), mSharedPreferencesManager, () -> {}, null, mCallback);
+        });
         Mockito.verify(mCallback, Mockito.timeout(1000)).onResult(false);
     }
 
@@ -252,12 +265,7 @@ public class AssistantVoiceSearchConsentUiTest {
 
         // Successful showing of the consent calls destroy(). Need to recreate the new
         // instance to set up the state again.
-        mAssistantVoiceSearchConsentUi = new AssistantVoiceSearchConsentUi(
-                mActivityTestRule.getActivity().getWindowAndroid(), mActivityTestRule.getActivity(),
-                mSharedPreferencesManager, () -> {
-                    AutofillAssistantPreferenceFragment.launchSettings(
-                            mActivityTestRule.getActivity());
-                }, mBottomSheetController);
+        mAssistantVoiceSearchConsentUi = createConsentUi();
         verifyAcceptingConsent();
     }
 
@@ -276,12 +284,7 @@ public class AssistantVoiceSearchConsentUiTest {
                     ConsentOutcome.CANCELED_VIA_BACK_BUTTON_PRESS);
             // Successful showing of the consent calls destroy(). Need to recreate the new
             // instance to set up the state again.
-            mAssistantVoiceSearchConsentUi = new AssistantVoiceSearchConsentUi(
-                    mActivityTestRule.getActivity().getWindowAndroid(),
-                    mActivityTestRule.getActivity(), mSharedPreferencesManager, () -> {
-                        AutofillAssistantPreferenceFragment.launchSettings(
-                                mActivityTestRule.getActivity());
-                    }, mBottomSheetController);
+            mAssistantVoiceSearchConsentUi = createConsentUi();
         }
 
         // But the max_taps_ignored+1-th will be treated as a rejection.

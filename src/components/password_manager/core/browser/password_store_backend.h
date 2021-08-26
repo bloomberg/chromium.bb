@@ -12,9 +12,18 @@
 #include "components/password_manager/core/browser/password_store_change.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
+namespace syncer {
+class ProxyModelTypeControllerDelegate;
+}  // namespace syncer
+
 namespace password_manager {
 
+class LoginDatabase;
+
 struct PasswordForm;
+
+class FieldInfoStore;
+class SmartBubbleStatsStore;
 
 using LoginsResult = std::vector<std::unique_ptr<PasswordForm>>;
 using LoginsReply = base::OnceCallback<void(LoginsResult)>;
@@ -55,12 +64,14 @@ class PasswordStoreBackend {
   // called on the main sequence.
   virtual void GetAutofillableLoginsAsync(LoginsReply callback) = 0;
 
-  // Returns all PasswordForms with the same or PSL-matched signon_realm as
-  // a form in |forms|. If multiple forms are given, those will be concatenated.
+  // Returns all PasswordForms with the same signon_realm as a form in |forms|.
+  // If |include_psl|==true, the PSL-matched forms are also included.
+  // If multiple forms are given, those will be concatenated.
   // Callback is called on the main sequence.
   // TODO(crbug.com/1217071): Check whether this needs OptionalLoginsReply, too.
   virtual void FillMatchingLoginsAsync(
       LoginsReply callback,
+      bool include_psl,
       const std::vector<PasswordFormDigest>& forms) = 0;
 
   // For all methods below:
@@ -87,13 +98,21 @@ class PasswordStoreBackend {
       base::Time delete_end,
       PasswordStoreChangeListReply callback) = 0;
   virtual void DisableAutoSignInForOriginsAsync(
-      PasswordStoreChangeListReply callback,
-      const base::RepeatingCallback<bool(const GURL&)>& origin_filter) {}
-  virtual void FillMatchingLoginsByPasswordAsync(
-      LoginsReply callback,
-      const std::u16string& plain_text_password) {}
-  virtual void FillAutofillableLoginsAsync(LoginsReply callback) {}
-  virtual void FillBlocklistLoginsAsync(LoginsReply callback) {}
+      const base::RepeatingCallback<bool(const GURL&)>& origin_filter,
+      base::OnceClosure completion) = 0;
+
+  virtual SmartBubbleStatsStore* GetSmartBubbleStatsStore() = 0;
+  virtual FieldInfoStore* GetFieldInfoStore() = 0;
+
+  // For sync codebase only: instantiates a proxy controller delegate to
+  // react to sync events.
+  virtual std::unique_ptr<syncer::ProxyModelTypeControllerDelegate>
+  CreateSyncControllerDelegateFactory() = 0;
+
+  // Factory function for creating the backend. The Local backend requires the
+  // provided `login_db` for storage and Android backend for migration purposes.
+  static std::unique_ptr<PasswordStoreBackend> Create(
+      std::unique_ptr<LoginDatabase> login_db);
 };
 
 }  // namespace password_manager

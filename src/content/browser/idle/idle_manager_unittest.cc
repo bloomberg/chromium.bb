@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/idle/idle_manager_impl.h"
 
 #include <tuple>
 #include <utility>
@@ -12,15 +11,18 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
-#include "base/test/task_environment.h"
-#include "base/test/test_mock_time_task_runner.h"
 #include "base/time/time.h"
+#include "content/browser/idle/idle_manager_impl.h"
 #include "content/browser/permissions/permission_controller_impl.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/idle_time_provider.h"
 #include "content/public/browser/permission_controller.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/test/browser_task_environment.h"
+#include "content/public/test/idle_test_utils.h"
 #include "content/public/test/mock_permission_manager.h"
 #include "content/public/test/test_browser_context.h"
+#include "content/public/test/test_renderer_host.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
@@ -37,7 +39,6 @@ using ::testing::_;
 using ::testing::Invoke;
 using ::testing::NiceMock;
 using ::testing::Return;
-using url::Origin;
 
 namespace content {
 
@@ -52,7 +53,7 @@ class MockIdleMonitor : public blink::mojom::IdleMonitor {
   MOCK_METHOD1(Update, void(IdleStatePtr));
 };
 
-class MockIdleTimeProvider : public IdleManager::IdleTimeProvider {
+class MockIdleTimeProvider : public IdleTimeProvider {
  public:
   MockIdleTimeProvider() = default;
   ~MockIdleTimeProvider() override = default;
@@ -63,37 +64,45 @@ class MockIdleTimeProvider : public IdleManager::IdleTimeProvider {
   MOCK_METHOD0(CheckIdleStateIsLocked, bool());
 };
 
-class IdleManagerTest : public testing::Test {
+class IdleManagerTest : public RenderViewHostTestHarness {
  protected:
   IdleManagerTest()
-      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
-        browser_context_(new TestBrowserContext()) {}
+      : RenderViewHostTestHarness(
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
   ~IdleManagerTest() override = default;
   IdleManagerTest(const IdleManagerTest&) = delete;
   IdleManagerTest& operator=(const IdleManagerTest&) = delete;
 
   void SetUp() override {
+    RenderViewHostTestHarness::SetUp();
+
+    NavigateAndCommit(url_);
+
     permission_manager_ = new NiceMock<MockPermissionManager>();
-    idle_time_provider_ = new NiceMock<MockIdleTimeProvider>();
-    browser_context_->SetPermissionControllerDelegate(
+    auto* test_browser_context =
+        static_cast<TestBrowserContext*>(browser_context());
+    test_browser_context->SetPermissionControllerDelegate(
         base::WrapUnique(permission_manager_));
-    idle_manager_ = std::make_unique<IdleManagerImpl>(browser_context_.get());
-    idle_manager_->SetIdleTimeProviderForTest(
+
+    idle_time_provider_ = new NiceMock<MockIdleTimeProvider>();
+    idle_manager_ = std::make_unique<IdleManagerImpl>(main_rfh());
+    scoped_idle_time_provider_ = std::make_unique<ScopedIdleProviderForTest>(
         base::WrapUnique(idle_time_provider_));
-    idle_manager_->CreateService(service_remote_.BindNewPipeAndPassReceiver(),
-                                 Origin::Create(url_));
+    idle_manager_->CreateService(service_remote_.BindNewPipeAndPassReceiver());
   }
 
   void TearDown() override {
+    scoped_idle_time_provider_.reset();
     idle_manager_.reset();
+    RenderViewHostTestHarness::TearDown();
   }
 
   IdleManagerImpl* GetIdleManager() { return idle_manager_.get(); }
 
-  void SetPermissionStatus(const GURL& origin,
-                           blink::mojom::PermissionStatus permission_status) {
+  void SetPermissionStatus(blink::mojom::PermissionStatus permission_status) {
     ON_CALL(*permission_manager_,
-            GetPermissionStatus(PermissionType::IDLE_DETECTION, origin, origin))
+            GetPermissionStatusForFrame(PermissionType::IDLE_DETECTION,
+                                        main_rfh(), url_))
         .WillByDefault(Return(permission_status));
   }
 
@@ -131,7 +140,7 @@ class IdleManagerTest : public testing::Test {
             }));
 
     // Fast forward to run polling task.
-    task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+    task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(1));
     loop.Run();
     return std::make_tuple(user_result, screen_result);
   }
@@ -149,17 +158,15 @@ class IdleManagerTest : public testing::Test {
   MockIdleTimeProvider* idle_time_provider() const {
     return idle_time_provider_;
   }
-  const GURL& url() const { return url_; }
 
  protected:
   mojo::Remote<blink::mojom::IdleManager> service_remote_;
 
  private:
-  BrowserTaskEnvironment task_environment_;
-  std::unique_ptr<TestBrowserContext> browser_context_;
   std::unique_ptr<IdleManagerImpl> idle_manager_;
   MockPermissionManager* permission_manager_;
   MockIdleTimeProvider* idle_time_provider_;
+  std::unique_ptr<ScopedIdleProviderForTest> scoped_idle_time_provider_;
   NiceMock<MockIdleMonitor> idle_monitor_;
   mojo::Receiver<blink::mojom::IdleMonitor> monitor_receiver_{&idle_monitor_};
   GURL url_ = GURL(kTestUrl);
@@ -168,7 +175,7 @@ class IdleManagerTest : public testing::Test {
 }  // namespace
 
 TEST_F(IdleManagerTest, AddMonitor) {
-  SetPermissionStatus(url(), blink::mojom::PermissionStatus::GRANTED);
+  SetPermissionStatus(blink::mojom::PermissionStatus::GRANTED);
 
   // Initial state of the system.
   EXPECT_CALL(*idle_time_provider(), CalculateIdleTime())
@@ -181,7 +188,7 @@ TEST_F(IdleManagerTest, AddMonitor) {
 }
 
 TEST_F(IdleManagerTest, Idle) {
-  SetPermissionStatus(url(), blink::mojom::PermissionStatus::GRANTED);
+  SetPermissionStatus(blink::mojom::PermissionStatus::GRANTED);
 
   // Initial state of the system.
   EXPECT_CALL(*idle_time_provider(), CalculateIdleTime())
@@ -212,7 +219,7 @@ TEST_F(IdleManagerTest, Idle) {
 }
 
 TEST_F(IdleManagerTest, UnlockingScreen) {
-  SetPermissionStatus(url(), blink::mojom::PermissionStatus::GRANTED);
+  SetPermissionStatus(blink::mojom::PermissionStatus::GRANTED);
 
   // Initial state of the system.
   EXPECT_CALL(*idle_time_provider(), CalculateIdleTime())
@@ -234,7 +241,7 @@ TEST_F(IdleManagerTest, UnlockingScreen) {
 }
 
 TEST_F(IdleManagerTest, LockingScreen) {
-  SetPermissionStatus(url(), blink::mojom::PermissionStatus::GRANTED);
+  SetPermissionStatus(blink::mojom::PermissionStatus::GRANTED);
 
   // Initial state of the system.
   EXPECT_CALL(*idle_time_provider(), CalculateIdleTime())
@@ -256,7 +263,7 @@ TEST_F(IdleManagerTest, LockingScreen) {
 }
 
 TEST_F(IdleManagerTest, LockingScreenThenIdle) {
-  SetPermissionStatus(url(), blink::mojom::PermissionStatus::GRANTED);
+  SetPermissionStatus(blink::mojom::PermissionStatus::GRANTED);
 
   // Initial state of the system.
   EXPECT_CALL(*idle_time_provider(), CalculateIdleTime())
@@ -287,7 +294,7 @@ TEST_F(IdleManagerTest, LockingScreenThenIdle) {
 }
 
 TEST_F(IdleManagerTest, LockingScreenAfterIdle) {
-  SetPermissionStatus(url(), blink::mojom::PermissionStatus::GRANTED);
+  SetPermissionStatus(blink::mojom::PermissionStatus::GRANTED);
 
   // Initial state of the system.
   EXPECT_CALL(*idle_time_provider(), CalculateIdleTime())
@@ -323,20 +330,19 @@ TEST_F(IdleManagerTest, RemoveMonitorStopsPolling) {
   // Simulates the renderer disconnecting (e.g. on page reload) and verifies
   // that the polling stops for the idle detection.
 
-  SetPermissionStatus(url(), blink::mojom::PermissionStatus::GRANTED);
+  SetPermissionStatus(blink::mojom::PermissionStatus::GRANTED);
 
   AddMonitorRequest(kThreshold);
 
-  auto* impl = GetIdleManager();
-  EXPECT_TRUE(impl->IsPollingForTest());
+  EXPECT_TRUE(IdlePollingService::GetInstance()->IsPollingForTest());
 
   DisconnectRenderer();
 
-  EXPECT_FALSE(impl->IsPollingForTest());
+  EXPECT_FALSE(IdlePollingService::GetInstance()->IsPollingForTest());
 }
 
 TEST_F(IdleManagerTest, Threshold) {
-  SetPermissionStatus(url(), blink::mojom::PermissionStatus::GRANTED);
+  SetPermissionStatus(blink::mojom::PermissionStatus::GRANTED);
 
   // Initial state of the system.
   EXPECT_CALL(*idle_time_provider(), CalculateIdleTime())
@@ -350,7 +356,7 @@ TEST_F(IdleManagerTest, Threshold) {
 }
 
 TEST_F(IdleManagerTest, InvalidThreshold) {
-  SetPermissionStatus(url(), blink::mojom::PermissionStatus::GRANTED);
+  SetPermissionStatus(blink::mojom::PermissionStatus::GRANTED);
   mojo::test::BadMessageObserver bad_message_observer;
 
   MockIdleMonitor monitor;
@@ -369,7 +375,7 @@ TEST_F(IdleManagerTest, InvalidThreshold) {
 }
 
 TEST_F(IdleManagerTest, PermissionDenied) {
-  SetPermissionStatus(url(), blink::mojom::PermissionStatus::DENIED);
+  SetPermissionStatus(blink::mojom::PermissionStatus::DENIED);
 
   MockIdleMonitor monitor;
   mojo::Receiver<blink::mojom::IdleMonitor> monitor_receiver(&monitor);
@@ -391,7 +397,7 @@ TEST_F(IdleManagerTest, PermissionDenied) {
 }
 
 TEST_F(IdleManagerTest, SetAndClearOverrides) {
-  SetPermissionStatus(url(), blink::mojom::PermissionStatus::GRANTED);
+  SetPermissionStatus(blink::mojom::PermissionStatus::GRANTED);
 
   // Verify initial state without overrides.
   EXPECT_EQ(std::make_tuple(UserIdleState::kActive, ScreenIdleState::kUnlocked),
@@ -408,4 +414,5 @@ TEST_F(IdleManagerTest, SetAndClearOverrides) {
   EXPECT_EQ(std::make_tuple(UserIdleState::kActive, ScreenIdleState::kUnlocked),
             GetIdleStatus());
 }
+
 }  // namespace content

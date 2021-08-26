@@ -1,17 +1,27 @@
+float2 tint_unpack2x16snorm(uint param_0) {
+  int j = int(param_0);
+  int2 i = int2(j << 16, j) >> 16;
+  return clamp(float2(i) / 32767.0, -1.0, 1.0);
+}
+
 void unpack2x16snorm_b4aea6() {
-  int tint_tmp_1 = int(1u);
-  int2 tint_tmp = int2(tint_tmp_1 << 16, tint_tmp_1) >> 16;
-  float2 res = clamp(float2(tint_tmp) / 32767.0, -1.0, 1.0);
+  float2 res = tint_unpack2x16snorm(1u);
 }
 
 struct tint_symbol {
   float4 value : SV_Position;
 };
 
-tint_symbol vertex_main() {
+float4 vertex_main_inner() {
   unpack2x16snorm_b4aea6();
-  const tint_symbol tint_symbol_1 = {float4(0.0f, 0.0f, 0.0f, 0.0f)};
-  return tint_symbol_1;
+  return float4(0.0f, 0.0f, 0.0f, 0.0f);
+}
+
+tint_symbol vertex_main() {
+  const float4 inner_result = vertex_main_inner();
+  tint_symbol wrapper_result = (tint_symbol)0;
+  wrapper_result.value = inner_result;
+  return wrapper_result;
 }
 
 void fragment_main() {

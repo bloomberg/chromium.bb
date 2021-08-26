@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
 
@@ -20,13 +21,11 @@ import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.sync.SyncService;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountUtils;
-import org.chromium.components.signin.ProfileDataSource;
 import org.chromium.components.signin.base.AccountInfo;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.AccountInfoServiceProvider;
 import org.chromium.components.signin.test.util.FakeAccountInfoService;
 import org.chromium.components.signin.test.util.FakeAccountManagerFacade;
-import org.chromium.components.signin.test.util.FakeProfileDataSource;
 import org.chromium.components.signin.test.util.R;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
@@ -40,25 +39,26 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 public class AccountManagerTestRule implements TestRule {
     public static final String TEST_ACCOUNT_EMAIL = "test@gmail.com";
 
-    private final FakeAccountManagerFacade mFakeAccountManagerFacade;
+    private final @NonNull FakeAccountManagerFacade mFakeAccountManagerFacade;
     private final @Nullable FakeAccountInfoService mFakeAccountInfoService;
     private boolean mIsSignedIn;
 
     public AccountManagerTestRule() {
-        this(new FakeAccountManagerFacade(null));
+        this(new FakeAccountManagerFacade());
     }
 
-    public AccountManagerTestRule(FakeProfileDataSource fakeProfileDataSource) {
-        this(new FakeAccountManagerFacade(fakeProfileDataSource));
-    }
-
-    public AccountManagerTestRule(FakeAccountManagerFacade fakeAccountManagerFacade) {
+    public AccountManagerTestRule(@NonNull FakeAccountManagerFacade fakeAccountManagerFacade) {
         mFakeAccountManagerFacade = fakeAccountManagerFacade;
         mFakeAccountInfoService = null;
     }
 
-    public AccountManagerTestRule(FakeAccountInfoService fakeAccountInfoService) {
-        mFakeAccountManagerFacade = new FakeAccountManagerFacade(null);
+    public AccountManagerTestRule(@NonNull FakeAccountInfoService fakeAccountInfoService) {
+        this(new FakeAccountManagerFacade(), fakeAccountInfoService);
+    }
+
+    public AccountManagerTestRule(@NonNull FakeAccountManagerFacade fakeAccountManagerFacade,
+            @NonNull FakeAccountInfoService fakeAccountInfoService) {
+        mFakeAccountManagerFacade = fakeAccountManagerFacade;
         mFakeAccountInfoService = fakeAccountInfoService;
     }
 
@@ -82,7 +82,9 @@ public class AccountManagerTestRule implements TestRule {
      */
     public void setUpRule() {
         if (mFakeAccountInfoService != null) {
-            AccountInfoServiceProvider.setInstanceForTests(mFakeAccountInfoService);
+            TestThreadUtils.runOnUiThreadBlocking(() -> {
+                AccountInfoServiceProvider.setInstanceForTests(mFakeAccountInfoService);
+            });
         }
         AccountManagerFacadeProvider.setInstanceForTests(mFakeAccountManagerFacade);
     }
@@ -106,14 +108,13 @@ public class AccountManagerTestRule implements TestRule {
     }
 
     /**
-     * Add an account to the fake AccountManagerFacade, if the {@link FakeAccountInfoService} is
+     * Adds an account to the fake AccountManagerFacade, if the {@link FakeAccountInfoService} is
      * set up, add the corresponding {@link AccountInfo} to the {@link FakeAccountInfoService}.
      * @return The CoreAccountInfo for the account added.
      */
     public CoreAccountInfo addAccount(Account account) {
         if (mFakeAccountInfoService != null) {
-            return addAccount(
-                    account.name, /* fullName= */ "", /* givenName= */ "", /* avatar= */ null);
+            return addAccountWithNameAndAvatar(account.name);
         } else {
             mFakeAccountManagerFacade.addAccount(account);
             return toCoreAccountInfo(account.name);
@@ -121,7 +122,7 @@ public class AccountManagerTestRule implements TestRule {
     }
 
     /**
-     * Add an account of the given accountName to the fake AccountManagerFacade.
+     * Adds an account of the given accountName to the fake AccountManagerFacade.
      * @return The CoreAccountInfo for the account added.
      */
     public CoreAccountInfo addAccount(String accountName) {
@@ -129,27 +130,26 @@ public class AccountManagerTestRule implements TestRule {
     }
 
     /**
-     * Add an account to the fake AccountManagerFacade and its profileData to the
-     * ProfileDataSource of the fake AccountManagerFacade.
-     * @return The account added.
-     */
-    public CoreAccountInfo addAccount(ProfileDataSource.ProfileData profileData) {
-        CoreAccountInfo coreAccountInfo = addAccount(profileData.getAccountEmail());
-        mFakeAccountManagerFacade.addProfileData(profileData);
-        return coreAccountInfo;
-    }
-
-    /**
-     * Add an account to the fake AccountManagerFacade and {@link AccountInfo} to
+     * Adds an account to the fake AccountManagerFacade and {@link AccountInfo} to
      * {@link FakeAccountInfoService}.
      */
     public CoreAccountInfo addAccount(
             String email, String fullName, String givenName, @Nullable Bitmap avatar) {
-        assert mFakeAccountManagerFacade != null;
+        assert mFakeAccountInfoService != null;
         mFakeAccountInfoService.addAccountInfo(email, fullName, givenName, avatar);
         final Account account = AccountUtils.createAccountFromName(email);
         mFakeAccountManagerFacade.addAccount(account);
         return toCoreAccountInfo(email);
+    }
+
+    /**
+     * Adds an account to the fake AccountManagerFacade and the corresponding {@link AccountInfo}
+     * with name and avatar to {@link FakeAccountInfoService}.
+     */
+    public CoreAccountInfo addAccountWithNameAndAvatar(String email) {
+        assert mFakeAccountInfoService != null;
+        final String baseEmail = email.split("@", 2)[0];
+        return addAccount(email, baseEmail + ".full", baseEmail + ".given", createAvatar());
     }
 
     /**
@@ -167,15 +167,12 @@ public class AccountManagerTestRule implements TestRule {
     }
 
     /**
-     * Adds an account and seed it in native code. Will create a ProfileData entry for the account
-     * if ProfileDataSource is not null.
+     * Adds an account and seed it in native code.
      *
      * This method invokes native code. It shouldn't be called in a Robolectric test.
      */
     public CoreAccountInfo addAccountAndWaitForSeeding(String accountName) {
-        CoreAccountInfo coreAccountInfo = mFakeAccountManagerFacade.getProfileDataSource() == null
-                ? addAccount(accountName)
-                : addAccount(createProfileDataFromName(accountName));
+        final CoreAccountInfo coreAccountInfo = addAccount(accountName);
         waitForSeeding();
         return coreAccountInfo;
     }
@@ -231,17 +228,6 @@ public class AccountManagerTestRule implements TestRule {
     }
 
     /**
-     * Creates ProfileData object from accountName.
-     */
-    public ProfileDataSource.ProfileData createProfileDataFromName(String accountName) {
-        String email = accountName.split("@", 2)[0];
-        String givenName = email + ".given";
-        String fullName = email + ".full";
-        return new ProfileDataSource.ProfileData(
-                accountName, createProfileImage(), fullName, givenName);
-    }
-
-    /**
      * Returns the currently signed in account.
      *
      * This method invokes native code. It shouldn't be called in a Robolectric test.
@@ -269,9 +255,9 @@ public class AccountManagerTestRule implements TestRule {
     }
 
     /**
-     * Returns a profile image created from test resource.
+     * Returns an avatar image created from test resource.
      */
-    public Bitmap createProfileImage() {
+    private static Bitmap createAvatar() {
         Drawable drawable = AppCompatResources.getDrawable(
                 ContextUtils.getApplicationContext(), R.drawable.test_profile_picture);
         Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(),

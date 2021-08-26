@@ -16,7 +16,6 @@
 
 #include "aom_dsp/ssim.h"
 #include "aom_ports/mem.h"
-#include "aom_ports/system_state.h"
 
 #if CONFIG_INTERNAL_STATS
 void aom_ssim_parms_16x16_c(const uint8_t *s, int sp, const uint8_t *r, int rp,
@@ -227,7 +226,6 @@ double aom_get_ssim_metrics(uint8_t *img1, int img1_pitch, uint8_t *img2,
   int c = 0;
   double norm;
   double old_ssim_total = 0;
-  aom_clear_system_state();
   // We can sample points as frequently as we like start with 1 per 4x4.
   for (i = 0; i < height;
        i += 4, img1 += img1_pitch * 4, img2 += img2_pitch * 4) {

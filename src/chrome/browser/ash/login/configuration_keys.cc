@@ -15,12 +15,6 @@ namespace configuration {
 // These keys are used in
 // chrome/browser/resources/chromeos/login/components/oobe_types.js
 
-// == HID Detection screen:
-
-// Boolean value indicating if we should skip HID detection screen altogether.
-
-const char kSkipHIDDetection[] = "skipHIDDetection";
-
 // == Welcome screen:
 
 // Boolean value indicating if "Next" button on welcome screen is pressed
@@ -57,6 +51,10 @@ const char kNetworkOfflineDemo[] = "networkOfflineDemo";
 // selected automatically.
 const char kNetworkUseConnected[] = "networkUseConnected";
 
+// String that holds network configuration preserved during rollback.
+const char kNetworkConfig[] = "networkConfig";
+
+
 // == EULA screen:
 
 // Boolean value indicating if device should send usage statistics.
@@ -89,13 +87,8 @@ const char kDeviceRequisition[] = "deviceRequisition";
 
 // == Enrollment screen
 
-// Boolean value, indicates that device is actually enrolled, so we only need
-// to perform specific enrollment-time actions (e.g. create robot accounts).
+// Boolean value, indicates that device was enrolled before rollback.
 const char kRestoreAfterRollback[] = "enrollmentRestoreAfterRollback";
-
-// String value containing an enrollment token that would be used during
-// enrollment to identify organization device is enrolled into.
-const char kEnrollmentToken[] = "enrollmentToken";
 
 // String value indicating what value would be propagated to Asset ID field
 // on Device Attributes step.
@@ -116,8 +109,6 @@ constexpr struct {
   ValueType type;
   ConfigurationHandlerSide side;
 } kAllConfigurationKeys[] = {
-    {kSkipHIDDetection, ValueType::BOOLEAN,
-     ConfigurationHandlerSide::HANDLER_CPP},
     {kWelcomeNext, ValueType::BOOLEAN, ConfigurationHandlerSide::HANDLER_JS},
     {kLanguage, ValueType::STRING, ConfigurationHandlerSide::HANDLER_JS},
     {kInputMethod, ValueType::STRING, ConfigurationHandlerSide::HANDLER_JS},
@@ -125,6 +116,7 @@ constexpr struct {
      ConfigurationHandlerSide::HANDLER_JS},
     {kNetworkUseConnected, ValueType::BOOLEAN,
      ConfigurationHandlerSide::HANDLER_JS},
+    {kNetworkConfig, ValueType::STRING, ConfigurationHandlerSide::HANDLER_CPP},
     {kEULASendUsageStatistics, ValueType::BOOLEAN,
      ConfigurationHandlerSide::HANDLER_JS},
     {kEULAAutoAccept, ValueType::BOOLEAN, ConfigurationHandlerSide::HANDLER_JS},
@@ -135,8 +127,6 @@ constexpr struct {
     {kRestoreAfterRollback, ValueType::BOOLEAN,
      ConfigurationHandlerSide::HANDLER_CPP},
     {kDeviceRequisition, ValueType::STRING,
-     ConfigurationHandlerSide::HANDLER_CPP},
-    {kEnrollmentToken, ValueType::STRING,
      ConfigurationHandlerSide::HANDLER_CPP},
     {kEnrollmentLocation, ValueType::STRING,
      ConfigurationHandlerSide::HANDLER_CPP},

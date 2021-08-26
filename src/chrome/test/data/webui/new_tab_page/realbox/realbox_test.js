@@ -6,7 +6,7 @@ import {decodeString16, mojoString16, RealboxBrowserProxy} from 'chrome://new-ta
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 import {assertStyle, createTheme} from 'chrome://test/new_tab_page/test_support.js';
-import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.js';
 import {eventToPromise} from 'chrome://test/test_util.m.js';
 
 /**
@@ -2007,6 +2007,7 @@ suite('NewTabPageRealboxTest', () => {
             iconUrl: 'clock.svg',
             imageUrl: 'https://gstatic.com/',
             imageDominantColor: '#757575',
+            isRichSuggestion: true,
           })
         ];
         testProxy.callbackRouterRemote.autocompleteResultChanged({
@@ -2056,36 +2057,36 @@ suite('NewTabPageRealboxTest', () => {
         // Input is updated.
         assertEquals('hello world', realbox.$.input.value);
         // Second match shows a placeholder color until the image loads.
-        const imageContainerEl = matchEls[1].$.icon.$.imageContainer;
+        const containerEl = matchEls[1].$.icon.$.container;
         assertStyle(
-            imageContainerEl, 'background-color', 'rgba(117, 117, 117, 0.25)');
-        // Realbox icon is updated.
-        assertIconMaskImageUrl(realbox.$.icon, 'clock.svg');
+            containerEl, 'background-color', 'rgba(117, 117, 117, 0.25)');
+        assertIconMaskImageUrl(realbox.$.icon, 'search.svg');  // Default icon.
 
         // URL of the loaded image must match image URL of the match.
         testProxy.callbackRouterRemote.autocompleteMatchImageAvailable(
             1, {url: 'http://example.com/'}, imageData);
         await testProxy.callbackRouterRemote.$.flushForTesting();
         assertStyle(
-            imageContainerEl, 'background-color', 'rgba(117, 117, 117, 0.25)');
-        assertIconMaskImageUrl(realbox.$.icon, 'clock.svg');
+            containerEl, 'background-color', 'rgba(117, 117, 117, 0.25)');
+        assertIconMaskImageUrl(realbox.$.icon, 'search.svg');  // Default icon.
 
         // Index of the loaded image must match index of the match.
         testProxy.callbackRouterRemote.autocompleteMatchImageAvailable(
             0, {url: 'https://gstatic.com/'}, imageData);
         await testProxy.callbackRouterRemote.$.flushForTesting();
         assertStyle(
-            imageContainerEl, 'background-color', 'rgba(117, 117, 117, 0.25)');
-        assertIconMaskImageUrl(realbox.$.icon, 'clock.svg');
+            containerEl, 'background-color', 'rgba(117, 117, 117, 0.25)');
+        assertIconMaskImageUrl(realbox.$.icon, 'search.svg');  // Default icon.
 
         // Once the image successfully loads it replaces the match icon.
         testProxy.callbackRouterRemote.autocompleteMatchImageAvailable(
             1, {url: 'https://gstatic.com/'}, imageData);
         await testProxy.callbackRouterRemote.$.flushForTesting();
         assertEquals(matchEls[1].$.icon.$.image.getAttribute('src'), imageData);
-        assertStyle(imageContainerEl, 'background-color', 'rgba(0, 0, 0, 0)');
+        assertStyle(containerEl, 'background-color', 'rgba(0, 0, 0, 0)');
         // Realbox icon is not updated as the input does not feature images.
-        assertIconMaskImageUrl(realbox.$.icon, 'clock.svg');
+        assertIconMaskImageUrl(realbox.$.icon, 'search.svg');  // Default icon.
+        assertTrue(window.getComputedStyle(realbox.$.icon).display !== 'none');
 
         // Select the first match by pressing 'Escape'.
         let escapeEvent = new KeyboardEvent('keydown', {
@@ -2255,7 +2256,7 @@ suite('NewTabPageRealboxTest', () => {
   //============================================================================
 
   test('match calculator answer type', async () => {
-    const matches = [createCalculatorMatch()];
+    const matches = [createCalculatorMatch({isRichSuggestion: true})];
 
     realbox.$.input.value = '2 + 3';
     realbox.$.input.dispatchEvent(new InputEvent('input'));
@@ -2291,7 +2292,8 @@ suite('NewTabPageRealboxTest', () => {
 
     assertTrue(matchEls[0].classList.contains(CLASSES.SELECTED));
     assertEquals('5', realbox.$.input.value);
-    assertIconMaskImageUrl(realbox.$.icon, 'calculator.svg');
+
+    assertIconMaskImageUrl(realbox.$.icon, 'search.svg'); // Default Icon
   });
 
   //============================================================================
@@ -2305,7 +2307,8 @@ suite('NewTabPageRealboxTest', () => {
       answer: {
         firstLine: mojoString16('When is Christmas Day'),
         secondLine: mojoString16('Saturday, December 25, 2021')
-      }
+      },
+      isRichSuggestion: true,
     })];
     testProxy.callbackRouterRemote.autocompleteResultChanged({
       input: mojoString16(realbox.$.input.value.trimLeft()),
@@ -2317,5 +2320,22 @@ suite('NewTabPageRealboxTest', () => {
     let matchEls =
         realbox.$.matches.shadowRoot.querySelectorAll('ntp-realbox-match');
     verifyMatch(matches[0], matchEls[0]);
+
+    // Separator is not displayed
+    assertEquals(
+        window.getComputedStyle(matchEls[0].$.separator).display, 'none');
+
+    let arrowDownEvent = new KeyboardEvent('keydown', {
+      bubbles: true,
+      cancelable: true,
+      composed: true,  // So it propagates across shadow DOM boundary.
+      key: 'ArrowDown',
+    });
+    realbox.$.input.dispatchEvent(arrowDownEvent);
+    assertTrue(arrowDownEvent.defaultPrevented);
+
+    assertTrue(matchEls[0].classList.contains(CLASSES.SELECTED));
+
+    assertIconMaskImageUrl(realbox.$.icon, 'search.svg'); // Default Icon
   });
 });

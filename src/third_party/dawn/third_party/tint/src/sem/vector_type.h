@@ -35,8 +35,6 @@ class Vector : public Castable<Vector, Type> {
 
   /// @returns the type of the vector elements
   Type* type() const { return const_cast<Type*>(subtype_); }
-  /// @returns the size of the vector
-  uint32_t size() const { return size_; }
 
   /// @returns the name for th type
   std::string type_name() const override;
@@ -46,9 +44,31 @@ class Vector : public Castable<Vector, Type> {
   /// declared in WGSL.
   std::string FriendlyName(const SymbolTable& symbols) const override;
 
+  /// @returns true if constructible as per
+  /// https://gpuweb.github.io/gpuweb/wgsl/#constructible-types
+  bool IsConstructible() const override;
+
+  /// @returns the number of elements in the vector
+  uint32_t Width() const { return width_; }
+
+  /// @returns the size in bytes of the type. This may include tail padding.
+  uint32_t Size() const override;
+
+  /// @returns the alignment in bytes of the type. This may include tail
+  /// padding.
+  uint32_t Align() const override;
+
+  /// @param width the width of the vector
+  /// @returns the size in bytes of a vector of the given width.
+  static uint32_t SizeOf(uint32_t width);
+
+  /// @param width the width of the vector
+  /// @returns the alignment in bytes of a vector of the given width.
+  static uint32_t AlignOf(uint32_t width);
+
  private:
   Type const* const subtype_;
-  uint32_t const size_;
+  uint32_t const width_;
 };
 
 }  // namespace sem

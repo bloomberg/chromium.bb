@@ -11,14 +11,15 @@
 #include "base/containers/contains.h"
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/run_loop.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"
+#include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/devtools/protocol/devtools_protocol_test_support.h"
-#include "chrome/browser/policy/policy_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -29,20 +30,22 @@
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/pref_names.h"
+#include "components/embedder_support/switches.h"
 #include "components/embedder_support/user_agent_utils.h"
 #include "components/metrics/content/subprocess_metrics_provider.h"
 #include "components/page_load_metrics/browser/page_load_metrics_test_waiter.h"
-#include "components/policy/core/common/policy_map.h"
-#include "components/policy/core/common/policy_pref_names.h"
-#include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/content_browser_test.h"
+#include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "net/dns/mock_host_resolver.h"
@@ -55,14 +58,21 @@
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/web_client_hints_types.mojom-shared.h"
+#include "testing/gmock/include/gmock/gmock-matchers.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/client_hints/client_hints.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
 
 namespace {
 
-const unsigned expected_client_hints_number = 13u;
-const int32_t uma_histogram_max_value = 1471228928;
+using ::testing::Eq;
+using ::testing::Optional;
+
+constexpr unsigned expected_client_hints_number = 13u;
+constexpr int32_t uma_histogram_max_value = 1471228928;
 
 // An interceptor that records count of fetches and client hint headers for
 // requests to https://foo.com/non-existing-image.jpg.
@@ -151,7 +161,7 @@ bool IsSimilarToIntABNF(const std::string& header_value) {
 
 }  // namespace
 
-class ClientHintsBrowserTest : public policy::PolicyTest,
+class ClientHintsBrowserTest : public InProcessBrowserTest,
                                public testing::WithParamInterface<bool> {
  public:
   ClientHintsBrowserTest()
@@ -689,6 +699,15 @@ class ClientHintsBrowserTest : public policy::PolicyTest,
               "sec-ch-ua-mobile" ||
           std::string(blink::kClientHintsHeaderMapping[i]) ==
               "sec-ch-ua-platform") {
+        continue;
+      }
+
+      // Skip over the `Sec-CH-UA-Reduced` client hint because it is only added
+      // in the presence of a valid "UserAgentReduction" Origin Trial token.
+      // `Sec-CH-UA-Reduced` is tested via UaReducedOriginTrialBrowserTest
+      // below.
+      if (std::string(blink::kClientHintsHeaderMapping[i]) ==
+          "sec-ch-ua-reduced") {
         continue;
       }
 
@@ -2082,29 +2101,6 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
             count_client_hints_headers_seen());
 }
 
-class ClientHintsEnterprisePolicyTest : public ClientHintsBrowserTest {
-  void SetUpInProcessBrowserTestFixture() override {
-    policy::PolicyTest::SetUpInProcessBrowserTestFixture();
-    policy::PolicyMap policies;
-    SetPolicy(&policies, policy::key::kUserAgentClientHintsEnabled,
-              base::Value(false));
-    provider_.UpdateChromePolicy(policies);
-  }
-};
-
-// Makes sure that no client hints are sent by default when the
-// "UserAgentClientHintsEnabled" enterprise polickly is set to
-// false
-IN_PROC_BROWSER_TEST_F(ClientHintsEnterprisePolicyTest,
-                       ClientHintsEnterprisePolicy) {
-  const GURL gurl = accept_ch_without_lifetime_url();
-  ui_test_utils::NavigateToURL(browser(), gurl);
-  // These would normally be one each
-  EXPECT_EQ(0u, count_user_agent_hint_headers_seen());
-  EXPECT_EQ(0u, count_ua_mobile_client_hints_headers_seen());
-  EXPECT_EQ(0u, count_ua_platform_client_hints_headers_seen());
-}
-
 class ClientHintsWebHoldbackBrowserTest : public ClientHintsBrowserTest {
  public:
   ClientHintsWebHoldbackBrowserTest() : ClientHintsBrowserTest() {
@@ -2311,6 +2307,117 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest, UseCounter) {
   web_feature_waiter->Wait();
 }
 
+class CriticalClientHintsBrowserTest : public InProcessBrowserTest {
+ public:
+  CriticalClientHintsBrowserTest()
+      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
+    https_server_.ServeFilesFromSourceDirectory(
+        "chrome/test/data/client_hints");
+    https_server_.RegisterRequestMonitor(base::BindRepeating(
+        &CriticalClientHintsBrowserTest::MonitorResourceRequest,
+        base::Unretained(this)));
+    EXPECT_TRUE(https_server_.Start());
+  }
+
+  void SetUp() override {
+    std::unique_ptr<base::FeatureList> feature_list =
+        std::make_unique<base::FeatureList>();
+    // Don't include LangClientHintHeader in the enabled features; we will
+    // verify that the Sec-CH-Lang header is not included.
+    feature_list->InitializeFromCommandLine(
+        "UserAgentClientHint,CriticalClientHint,AcceptCHFrame,"
+        "PrefersColorSchemeClientHintHeader",
+        "");
+    scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
+    InProcessBrowserTest::SetUp();
+  }
+
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+  }
+
+  GURL critical_ch_ua_full_version_url() const {
+    return https_server_.GetURL("/critical_ch_ua_full_version.html");
+  }
+
+  GURL critical_ch_lang_url() const {
+    return https_server_.GetURL("/critical_ch_lang.html");
+  }
+
+  const absl::optional<std::string>& observed_ch_ua_full_version() {
+    base::AutoLock lock(ch_ua_full_version_lock_);
+    return ch_ua_full_version_;
+  }
+
+  const absl::optional<std::string>& observed_ch_lang() {
+    base::AutoLock lock(ch_lang_lock_);
+    return ch_lang_;
+  }
+
+  void MonitorResourceRequest(const net::test_server::HttpRequest& request) {
+    if (request.headers.find("sec-ch-ua-full-version") !=
+        request.headers.end()) {
+      SetChUaFullVersion(request.headers.at("sec-ch-ua-full-version"));
+    }
+    if (request.headers.find("sec-ch-lang") != request.headers.end()) {
+      SetChLang(request.headers.at("sec-ch-lang"));
+    }
+  }
+
+ private:
+  void SetChUaFullVersion(const std::string& ch_ua_full_version) {
+    base::AutoLock lock(ch_ua_full_version_lock_);
+    ch_ua_full_version_ = ch_ua_full_version;
+  }
+
+  void SetChLang(const std::string& ch_lang) {
+    base::AutoLock lock(ch_lang_lock_);
+    ch_lang_ = ch_lang;
+  }
+
+  base::test::ScopedFeatureList scoped_feature_list_;
+  net::EmbeddedTestServer https_server_;
+  base::Lock ch_ua_full_version_lock_;
+  absl::optional<std::string> ch_ua_full_version_
+      GUARDED_BY(ch_ua_full_version_lock_);
+  base::Lock ch_lang_lock_;
+  absl::optional<std::string> ch_lang_ GUARDED_BY(ch_lang_lock_);
+};
+
+// Verify that setting Critical-CH in the response header causes the request to
+// be resent with the client hint included.
+IN_PROC_BROWSER_TEST_F(CriticalClientHintsBrowserTest,
+                       CriticalClientHintInRequestHeader) {
+  blink::UserAgentMetadata ua = embedder_support::GetUserAgentMetadata();
+  // On the first navigation request, the client hints in the Critical-CH
+  // should be set on the request header.
+  ui_test_utils::NavigateToURL(browser(), critical_ch_ua_full_version_url());
+  const std::string expected_ch_ua_full_version = "\"" + ua.full_version + "\"";
+  EXPECT_THAT(observed_ch_ua_full_version(),
+              Optional(Eq(expected_ch_ua_full_version)));
+  EXPECT_EQ(observed_ch_lang(), absl::nullopt);
+}
+
+// Verify that setting Critical-CH in the response header with a client hint
+// that is filtered out of Accept-CH causes the request to *not* be resent and
+// the critical client hint is not included.
+//
+// NB: When the LangClientHintHeader feature is removed, this test needs to be
+// updated.
+IN_PROC_BROWSER_TEST_F(
+    CriticalClientHintsBrowserTest,
+    CriticalClientHintFilteredOutOfAcceptChNotInRequestHeader) {
+  // On the first navigation request, the client hints in the Critical-CH
+  // should be set on the request header, but in this case, the
+  // LangClientHintHeader is not enabled, so the critical client hint won't be
+  // set in the request header.
+  ui_test_utils::NavigateToURL(browser(), critical_ch_lang_url());
+  EXPECT_EQ(observed_ch_lang(), absl::nullopt);
+  // The request should not have been resent, so ch-ua-full-version should also
+  // not be present.
+  EXPECT_EQ(observed_ch_ua_full_version(), absl::nullopt);
+}
+
 class ClientHintsBrowserTestWithEmulatedMedia
     : public DevToolsProtocolTestBase {
  public:
@@ -2379,4 +2486,185 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTestWithEmulatedMedia,
   EmulatePrefersColorScheme("dark");
   ui_test_utils::NavigateToURL(browser(), test_url());
   EXPECT_EQ(prefers_color_scheme_observed(), "dark");
+}
+
+// Tests that the Sec-CH-UA-Reduced client hint is sent if and only if the
+// UserAgentReduction Origin Trial token is present and valid in the response
+// headers.
+//
+// The test Origin Trial token found in the test files was generated by running
+// (in tools/origin_trials):
+// generate_token.py https://127.0.0.1:44444 UserAgentReduction
+// --expire-timestamp=2000000000
+//
+// The Origin Trial token expires in 2033.  Generate a new token by then, or
+// find a better way to re-generate a test trial token.
+class UaReducedOriginTrialBrowserTest : public InProcessBrowserTest {
+ public:
+  UaReducedOriginTrialBrowserTest() = default;
+
+  // The URL that was used to register for the Origin Trial token.
+  static constexpr const char kOriginUrl[] = "https://127.0.0.1:44444";
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // The public key for the default privatey key used by the
+    // tools/origin_trials/generate_token.py tool.
+    static constexpr char kOriginTrialTestPublicKey[] =
+        "dRCs+TocuKkocNKa0AtZ4awrt9XKH2SQCI6o4FY6BNA=";
+    command_line->AppendSwitchASCII(embedder_support::kOriginTrialPublicKey,
+                                    kOriginTrialTestPublicKey);
+  }
+
+  void SetUp() override {
+    std::unique_ptr<base::FeatureList> feature_list =
+        std::make_unique<base::FeatureList>();
+    feature_list->InitializeFromCommandLine("CriticalClientHint", "");
+    scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
+
+    InProcessBrowserTest::SetUp();
+  }
+
+  void SetUpOnMainThread() override {
+    InProcessBrowserTest::SetUpOnMainThread();
+
+    // We use a URLLoaderInterceptor, rather than the EmbeddedTestServer, since
+    // the origin trial token in the response is associated with a fixed
+    // origin, whereas EmbeddedTestServer serves content on a random port.
+    url_loader_interceptor_ =
+        content::URLLoaderInterceptor::ServeFilesFromDirectoryAtOrigin(
+            "chrome/test/data/client_hints", GURL(kOriginUrl));
+  }
+
+  void TearDownOnMainThread() override {
+    url_loader_interceptor_.reset();
+    InProcessBrowserTest::TearDownOnMainThread();
+  }
+
+  GURL ua_reduced_with_valid_origin_trial_token_url() const {
+    return GURL(base::StrCat(
+        {kOriginUrl, "/accept_ch_ua_reduced_with_valid_origin_trial.html"}));
+  }
+
+  GURL ua_reduced_with_invalid_origin_trial_token_url() const {
+    return GURL(base::StrCat(
+        {kOriginUrl, "/accept_ch_ua_reduced_with_invalid_origin_trial.html"}));
+  }
+
+  GURL ua_reduced_with_no_origin_trial_token_url() const {
+    return GURL(base::StrCat(
+        {kOriginUrl, "/accept_ch_ua_reduced_with_no_origin_trial.html"}));
+  }
+
+  GURL ua_reduced_missing_with_valid_origin_trial_token_url() const {
+    return GURL(base::StrCat(
+        {kOriginUrl, "/accept_ch_ua_reduced_missing_valid_origin_trial.html"}));
+  }
+
+  GURL critical_ch_ua_reduced_with_valid_origin_trial_token_url() const {
+    return GURL(base::StrCat(
+        {kOriginUrl, "/critical_ch_ua_reduced_with_valid_origin_trial.html"}));
+  }
+
+  GURL critical_ch_ua_reduced_with_invalid_origin_trial_token_url() const {
+    return GURL(base::StrCat(
+        {kOriginUrl,
+         "/critical_ch_ua_reduced_with_invalid_origin_trial.html"}));
+  }
+
+  void NavigateAndCheckHeader(const GURL& url,
+                              const bool ch_ua_reduced_expected) {
+    ui_test_utils::NavigateToURL(browser(), url);
+    base::RunLoop().RunUntilIdle();
+
+    std::string header_value;
+    const bool ch_ua_reduced =
+        url_loader_interceptor_->GetLastRequestHeaders().GetHeader(
+            "sec-ch-ua-reduced", &header_value);
+
+    EXPECT_EQ(ch_ua_reduced, ch_ua_reduced_expected);
+    if (ch_ua_reduced_expected) {
+      EXPECT_EQ(header_value, "?1");
+    }
+  }
+
+  void NavigateTwiceAndCheckHeader(const GURL& url,
+                                   const bool ch_ua_reduced_expected,
+                                   const bool critical_ch_ua_reduced_expected) {
+    // If Critical-CH is set, we expect Sec-CH-UA-Reduced in the first
+    // navigation request header.  If Critical-CH is not set, we don't expect
+    // Sec-CH-UA-Reduced in the first navigation request.
+    NavigateAndCheckHeader(
+        url, critical_ch_ua_reduced_expected && ch_ua_reduced_expected);
+
+    // Regardless of the Critical-CH setting, we expect the Sec-CH-UA-Reduced
+    // client hint sent on the second request, if Sec-CH-UA-Reduced is set and
+    // the Origin Trial token is valid.
+    NavigateAndCheckHeader(url, ch_ua_reduced_expected);
+  }
+
+ private:
+  std::unique_ptr<content::URLLoaderInterceptor> url_loader_interceptor_;
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+constexpr const char UaReducedOriginTrialBrowserTest::kOriginUrl[];
+
+IN_PROC_BROWSER_TEST_F(UaReducedOriginTrialBrowserTest,
+                       AcceptChUaReducedWithValidOriginTrialToken) {
+  NavigateTwiceAndCheckHeader(ua_reduced_with_valid_origin_trial_token_url(),
+                              /*ch_ua_reduced_expected=*/true,
+                              /*critical_ch_ua_reduced_expected=*/false);
+}
+
+IN_PROC_BROWSER_TEST_F(UaReducedOriginTrialBrowserTest,
+                       AcceptChUaReducedWithInvalidOriginTrialToken) {
+  // The response contained Sec-CH-UA-Reduced in the Accept-CH header, but the
+  // origin trial token is invalid.
+  NavigateTwiceAndCheckHeader(ua_reduced_with_invalid_origin_trial_token_url(),
+                              /*ch_ua_reduced_expected=*/false,
+                              /*critical_ch_ua_reduced_expected=*/false);
+}
+
+IN_PROC_BROWSER_TEST_F(UaReducedOriginTrialBrowserTest,
+                       AcceptChUaReducedWithNoOriginTrialToken) {
+  // The response contained Sec-CH-UA-Reduced in the Accept-CH header, but the
+  // origin trial token is not present.
+  NavigateTwiceAndCheckHeader(ua_reduced_with_no_origin_trial_token_url(),
+                              /*ch_ua_reduced_expected=*/false,
+                              /*critical_ch_ua_reduced_expected=*/false);
+}
+
+IN_PROC_BROWSER_TEST_F(UaReducedOriginTrialBrowserTest,
+                       NoAcceptChUaReducedWithValidOriginTrialToken) {
+  // The response contained a valid Origin Trial token, but no Sec-CH-UA-Reduced
+  // in the Accept-CH header.
+  NavigateTwiceAndCheckHeader(
+      ua_reduced_missing_with_valid_origin_trial_token_url(),
+      /*ch_ua_reduced_expected=*/false,
+      /*critical_ch_ua_reduced_expected=*/false);
+}
+
+IN_PROC_BROWSER_TEST_F(UaReducedOriginTrialBrowserTest,
+                       CriticalChUaReducedWithValidOriginTrialToken) {
+  // The initial navigation also contains the Critical-CH header, so the
+  // Sec-CH-UA-Reduced header should be set after the first navigation.
+  NavigateTwiceAndCheckHeader(
+      critical_ch_ua_reduced_with_valid_origin_trial_token_url(),
+      /*ch_ua_reduced_expected=*/true,
+      /*critical_ch_ua_reduced_expected=*/true);
+}
+
+IN_PROC_BROWSER_TEST_F(UaReducedOriginTrialBrowserTest,
+                       CriticalChUaReducedWithInvalidOriginTrialToken) {
+  // The Origin Trial token is invalid, so the Critical-CH should not have
+  // resulted in the Sec-CH-UA-Reduced header being sent.
+  NavigateTwiceAndCheckHeader(
+      critical_ch_ua_reduced_with_invalid_origin_trial_token_url(),
+      /*ch_ua_reduced_expected=*/false,
+      /*critical_ch_ua_reduced_expected=*/false);
+}
+
+IN_PROC_BROWSER_TEST_F(UaReducedOriginTrialBrowserTest,
+                       ThirdPartyUaReducedWithValidOriginTrialToken) {
+  // TODO(crbug.com/1222742): Implement this test.
 }

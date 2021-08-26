@@ -41,6 +41,7 @@
 #include "libavutil/avassert.h"
 #include "libavutil/avstring.h"
 #include "libavutil/bprint.h"
+#include "libavutil/channel_layout.h"
 #include "libavutil/display.h"
 #include "libavutil/mathematics.h"
 #include "libavutil/imgutils.h"
@@ -53,6 +54,7 @@
 #include "libavutil/cpu.h"
 #include "libavutil/ffversion.h"
 #include "libavutil/version.h"
+#include "libavcodec/bsf.h"
 #include "cmdutils.h"
 #if HAVE_SYS_RESOURCE_H
 #include <sys/time.h>
@@ -71,6 +73,7 @@ AVDictionary *format_opts, *codec_opts, *resample_opts;
 static FILE *report_file;
 static int report_file_level = AV_LOG_DEBUG;
 int hide_banner = 0;
+int cpu_count = -1;
 
 enum show_muxdemuxers {
     SHOW_DEFAULT,
@@ -851,6 +854,32 @@ int opt_cpuflags(void *optctx, const char *opt, const char *arg)
 
     av_force_cpu_flags(flags);
     return 0;
+}
+
+int opt_cpucount(void *optctx, const char *opt, const char *arg)
+{
+    int ret;
+    int count;
+
+    static const AVOption opts[] = {
+        {"count", NULL, 0, AV_OPT_TYPE_INT, { .i64 = -1}, -1, INT_MAX, NULL},
+        {NULL},
+    };
+    static const AVClass class = {
+        .class_name = "cpucount",
+        .item_name  = av_default_item_name,
+        .option     = opts,
+        .version    = LIBAVUTIL_VERSION_INT,
+    };
+    const AVClass *pclass = &class;
+
+    ret = av_opt_eval_int(&pclass, opts, arg, &count);
+
+    if (!ret) {
+        av_cpu_force_count(count);
+    }
+
+    return ret;
 }
 
 int opt_loglevel(void *optctx, const char *opt, const char *arg)

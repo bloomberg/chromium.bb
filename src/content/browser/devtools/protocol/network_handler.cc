@@ -78,11 +78,12 @@
 #include "net/url_request/referrer_policy.h"
 #include "services/network/public/cpp/data_element.h"
 #include "services/network/public/cpp/features.h"
-#include "services/network/public/cpp/http_raw_request_response_info.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/client_security_state.mojom-shared.h"
+#include "services/network/public/mojom/devtools_observer.mojom.h"
+#include "services/network/public/mojom/http_raw_headers.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/loader/referrer_utils.h"
 #include "third_party/blink/public/mojom/navigation/navigation_params.mojom.h"
@@ -371,11 +372,12 @@ MakeCookieFromProtocolValues(const std::string& name,
   else if (priority == Network::CookiePriorityEnum::Low)
     cp = net::CookiePriority::COOKIE_PRIORITY_LOW;
 
+  // TODO(crbug.com/1225444) Add Partitioned to DevTools cookie structures.
   std::unique_ptr<net::CanonicalCookie> cookie =
       net::CanonicalCookie::CreateSanitizedCookie(
           url, name, value, normalized_domain, path, base::Time(),
-          expiration_date, base::Time(), secure, http_only, css, cp,
-          same_party);
+          expiration_date, base::Time(), secure, http_only, css, cp, same_party,
+          absl::nullopt);
 
   if (!cookie)
     return Response::InvalidParams("Sanitizing cookie failed");
@@ -1711,23 +1713,6 @@ std::unique_ptr<Network::Response> BuildResponse(
     response->SetCacheStorageCacheName(info.cache_storage_cache_name);
   }
 
-  auto* raw_info = info.raw_request_response_info.get();
-  if (raw_info) {
-    if (raw_info->http_status_code) {
-      response->SetStatus(raw_info->http_status_code);
-      response->SetStatusText(raw_info->http_status_text);
-    }
-    if (raw_info->request_headers.size()) {
-      response->SetRequestHeaders(GetRawHeaders(raw_info->request_headers));
-    }
-    if (!raw_info->request_headers_text.empty()) {
-      response->SetRequestHeadersText(raw_info->request_headers_text);
-    }
-    if (raw_info->response_headers.size())
-      response->SetHeaders(GetRawHeaders(raw_info->response_headers));
-    if (!raw_info->response_headers_text.empty())
-      response->SetHeadersText(raw_info->response_headers_text);
-  }
   response->SetProtocol(GetProtocol(url, info));
   response->SetRemoteIPAddress(
       net::HostPortPair::FromIPEndPoint(info.remote_endpoint).HostForURL());
@@ -1958,7 +1943,8 @@ void NetworkHandler::NavigationRequestWillBeSent(
 void NetworkHandler::RequestSent(
     const std::string& request_id,
     const std::string& loader_id,
-    const network::ResourceRequest& request,
+    const net::HttpRequestHeaders& request_headers,
+    const network::mojom::URLRequestDevToolsInfo& request_info,
     const char* initiator_type,
     const absl::optional<GURL>& initiator_url,
     const std::string& initiator_devtools_request_id,
@@ -1966,7 +1952,7 @@ void NetworkHandler::RequestSent(
   if (!enabled_)
     return;
   std::unique_ptr<DictionaryValue> headers_dict(DictionaryValue::create());
-  for (net::HttpRequestHeaders::Iterator it(request.headers); it.GetNext();)
+  for (net::HttpRequestHeaders::Iterator it(request_headers); it.GetNext();)
     headers_dict->setString(it.name(), it.value());
   std::unique_ptr<Network::Initiator> initiator =
       Network::Initiator::Create().SetType(initiator_type).Build();
@@ -1976,27 +1962,27 @@ void NetworkHandler::RequestSent(
     initiator->SetRequestId(initiator_devtools_request_id);
   std::string url_fragment;
   std::string url_without_fragment =
-      ExtractFragment(request.url, &url_fragment);
+      ExtractFragment(request_info.url, &url_fragment);
   auto request_object =
       Network::Request::Create()
           .SetUrl(url_without_fragment)
-          .SetMethod(request.method)
+          .SetMethod(request_info.method)
           .SetHeaders(Object::fromValue(headers_dict.get(), nullptr))
-          .SetInitialPriority(resourcePriority(request.priority))
-          .SetReferrerPolicy(referrerPolicy(request.referrer_policy))
+          .SetInitialPriority(resourcePriority(request_info.priority))
+          .SetReferrerPolicy(referrerPolicy(request_info.referrer_policy))
           .Build();
   if (!url_fragment.empty())
     request_object->SetUrlFragment(url_fragment);
-  if (request.trust_token_params.has_value()) {
+  if (request_info.trust_token_params) {
     request_object->SetTrustTokenParams(
-        BuildTrustTokenParams(request.trust_token_params.value()));
+        BuildTrustTokenParams(*request_info.trust_token_params));
   }
   frontend_->RequestWillBeSent(
       request_id, loader_id, url_without_fragment, std::move(request_object),
       timestamp.since_origin().InSecondsF(), base::Time::Now().ToDoubleT(),
       std::move(initiator), std::unique_ptr<Network::Response>(),
       std::string(Network::ResourceTypeEnum::Other),
-      Maybe<std::string>() /* frame_id */, request.has_user_gesture);
+      Maybe<std::string>() /* frame_id */, request_info.has_user_gesture);
 }
 
 namespace {
@@ -2642,14 +2628,15 @@ void NetworkHandler::OnResponseReceivedExtraInfo(
     const net::CookieAndLineAccessResultList& response_cookie_list,
     const std::vector<network::mojom::HttpRawHeaderPairPtr>& response_headers,
     const absl::optional<std::string>& response_headers_text,
-    network::mojom::IPAddressSpace resource_address_space) {
+    network::mojom::IPAddressSpace resource_address_space,
+    int32_t http_status_code) {
   if (!enabled_)
     return;
 
   frontend_->ResponseReceivedExtraInfo(
       devtools_request_id, BuildProtocolBlockedSetCookies(response_cookie_list),
       GetRawHeaders(response_headers),
-      BuildIpAddressSpace(resource_address_space),
+      BuildIpAddressSpace(resource_address_space), http_status_code,
       response_headers_text.has_value() ? response_headers_text.value()
                                         : Maybe<String>());
 }
@@ -2733,7 +2720,7 @@ CreateNetworkFactoryForDevTools(
 }  // namespace
 
 void NetworkHandler::LoadNetworkResource(
-    const String& frame_id,
+    Maybe<protocol::String> maybe_frame_id,
     const String& url,
     std::unique_ptr<protocol::Network::LoadNetworkResourceOptions> options,
     std::unique_ptr<LoadNetworkResourceCallback> callback) {
@@ -2759,8 +2746,13 @@ void NetworkHandler::LoadNetworkResource(
 
   mojo::Remote<network::mojom::URLLoaderFactory> url_loader_factory;
   if (host_) {
-    FrameTreeNode* node =
-        FrameTreeNodeFromDevToolsFrameToken(host_->frame_tree_node(), frame_id);
+    if (!maybe_frame_id.isJust()) {
+      callback->sendFailure(Response::InvalidParams(
+          "Parameter frameId must be provided for frame targets"));
+      return;
+    }
+    FrameTreeNode* node = FrameTreeNodeFromDevToolsFrameToken(
+        host_->frame_tree_node(), maybe_frame_id.fromJust());
     RenderFrameHostImpl* frame = node ? node->current_frame_host() : nullptr;
     if (!frame) {
       callback->sendFailure(Response::InvalidParams("Frame not found"));

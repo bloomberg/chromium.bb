@@ -6,6 +6,7 @@ import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/locales.gni")
 import("//build/config/ui.gni")
 import("//chrome/common/features.gni")
+import("//chromeos/components/chromebox_for_meetings/buildflags/buildflags.gni")
 import("//components/gwp_asan/buildflags/buildflags.gni")
 import("//components/nacl/features.gni")
 import("//ppapi/buildflags/buildflags.gni")
@@ -14,6 +15,9 @@ import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
 
 if (is_android) {
   import("//build/config/android/rules.gni")
+} else if (is_fuchsia) {
+  import("//third_party/fuchsia-sdk/sdk/build/component.gni")
+  import("//third_party/fuchsia-sdk/sdk/build/package.gni")
 }
 
 # This target is for dependency tracking for the command ID header.
@@ -53,6 +57,16 @@ if (is_win) {
   }
 }
 
+if (is_mac) {
+  source_set("notification_metrics") {
+    sources = [
+      "notification_metrics.cc",
+      "notification_metrics.h",
+    ]
+    deps = [ "//base" ]
+  }
+}
+
 if (is_android) {
   android_generated_java_resources =
       [ "java/res/values/generated_resources.xml" ] +
@@ -64,6 +78,9 @@ if (is_android) {
 grit("generated_resources") {
   source = "generated_resources.grd"
   defines = chrome_grit_defines
+  if (is_cfm) {
+    defines += [ "is_cfm" ]
+  }
   output_dir = "$root_gen_dir/chrome"
   outputs =
       [ "grit/generated_resources.h" ] +
@@ -189,5 +206,35 @@ static_library("test_support") {
 
   if (enable_gwp_asan) {
     deps += [ "//components/gwp_asan/client" ]
+  }
+}
+
+if (is_fuchsia) {
+  # Generate a packaged component, and an installer script to aid development.
+
+  # TODO(crbug.com/1211758): Remove this once bringup on CFv2 is complete.
+  fuchsia_component("chrome_component_v1") {
+    manifest = "chrome_v1.cmx"
+    data_deps = [ "//chrome:chrome_initial" ]
+    visibility = [ ":*" ]
+  }
+
+  fuchsia_component("chrome_component") {
+    manifest = "chrome.cml"
+    data_deps = [ "//chrome:chrome_initial" ]
+    visibility = [ ":*" ]
+  }
+
+  fuchsia_package("chrome_pkg") {
+    package_name = "chrome"
+    deps = [
+      ":chrome_component",
+      ":chrome_component_v1",
+    ]
+  }
+
+  fuchsia_package_runner("chrome_fuchsia") {
+    package = ":chrome_pkg"
+    package_name_override = "chrome"
   }
 }

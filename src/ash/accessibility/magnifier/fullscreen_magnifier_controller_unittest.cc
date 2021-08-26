@@ -6,6 +6,8 @@
 
 #include "ash/accessibility/magnifier/magnifier_test_utils.h"
 #include "ash/accessibility/magnifier/magnifier_utils.h"
+#include "ash/capture_mode/capture_mode_controller.h"
+#include "ash/capture_mode/capture_mode_session.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/shell.h"
@@ -654,9 +656,7 @@ TEST_F(FullscreenMagnifierControllerTest, FollowTextInputFieldKeyPress) {
   // Press keys on text input simulate typing on text field and the caret
   // moves beyond the caret right panning margin. The viewport is moved to the
   // place where caret's x coordinate is centered at the new viewport.
-  ui::test::EventGenerator* event_generator = GetEventGenerator();
-  event_generator->PressKey(ui::VKEY_A, 0);
-  event_generator->ReleaseKey(ui::VKEY_A, 0);
+  PressAndReleaseKey(ui::VKEY_A);
   gfx::Rect caret_bounds = text_input_helper_.GetCaretBounds();
   EXPECT_LT(view_port.right() - kCaretPanningMargin / kScale,
             text_input_helper_.GetCaretBounds().x());
@@ -694,9 +694,7 @@ TEST_F(FullscreenMagnifierControllerTest, CenterTextCaretNotInsideViewport) {
 
   // Press keys on text input simulate typing on text field and the viewport
   // should be moved to keep the caret centered.
-  ui::test::EventGenerator* event_generator = GetEventGenerator();
-  event_generator->PressKey(ui::VKEY_A, 0);
-  event_generator->ReleaseKey(ui::VKEY_A, 0);
+  PressAndReleaseKey(ui::VKEY_A);
   base::RunLoop().RunUntilIdle();
   gfx::Rect new_caret_bounds = text_input_helper_.GetCaretBounds();
   EXPECT_NE(caret_bounds, new_caret_bounds);
@@ -1124,7 +1122,7 @@ TEST_F(FullscreenMagnifierControllerTest, DragWindow) {
 
 // Tests that the magnifier gets updated while drag a window across displays.
 TEST_F(FullscreenMagnifierControllerTest, DragWindowAcrossDisplays) {
-  UpdateDisplay("0+0-500x500, 500+0-500x500");
+  UpdateDisplay("0+0-500x450, 500+0-500x450");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
 
   // Create a window and start dragging by grabbing its caption.
@@ -1146,6 +1144,32 @@ TEST_F(FullscreenMagnifierControllerTest, DragWindowAcrossDisplays) {
   event_generator->MoveMouseToInHost(gfx::Point(950, 250));
   EXPECT_TRUE(root_windows[0]->layer()->transform().IsIdentity());
   EXPECT_FALSE(root_windows[1]->layer()->transform().IsIdentity());
+}
+
+TEST_F(FullscreenMagnifierControllerTest, CaptureMode) {
+  auto* magnifier = GetFullscreenMagnifierController();
+  magnifier->SetEnabled(true);
+  magnifier->set_mouse_following_mode(MagnifierMouseFollowingMode::kCentered);
+
+  auto* capture_mode_controller = CaptureModeController::Get();
+  capture_mode_controller->Start(CaptureModeEntryType::kQuickSettings);
+
+  // Test that the magnifier viewport changes as the cursor moves on random
+  // points on the screen or the capture mode bar.
+  gfx::Point viewport_center = GetViewport().CenterPoint();
+  auto* event_generator = GetEventGenerator();
+  event_generator->MoveMouseTo(gfx::Point{10, 20});
+  EXPECT_NE(viewport_center, GetViewport().CenterPoint());
+  viewport_center = GetViewport().CenterPoint();
+  event_generator->MoveMouseTo(gfx::Point{510, 420});
+  EXPECT_NE(viewport_center, GetViewport().CenterPoint());
+  viewport_center = GetViewport().CenterPoint();
+  auto* bar_widget = capture_mode_controller->capture_mode_session()
+                         ->capture_mode_bar_widget();
+  const auto point_of_interest =
+      bar_widget->GetWindowBoundsInScreen().CenterPoint();
+  event_generator->MoveMouseTo(point_of_interest);
+  EXPECT_NE(viewport_center, GetViewport().CenterPoint());
 }
 
 }  // namespace ash

@@ -17,6 +17,7 @@
 
 #include "common/mathutil.h"
 #include "common/matrix_utils.h"
+#include "common/utilities.h"
 #include "compiler/translator/Diagnostics.h"
 #include "compiler/translator/ImmutableString.h"
 #include "compiler/translator/IntermNode.h"
@@ -176,6 +177,19 @@ bool CanFoldAggregateBuiltInOp(TOperator op)
             return true;
         default:
             return false;
+    }
+}
+
+void PropagatePrecisionIfApplicable(TIntermTyped *node, TPrecision precision)
+{
+    if (precision == EbpUndefined || node->getPrecision() != EbpUndefined)
+    {
+        return;
+    }
+
+    if (IsPrecisionApplicableToType(node->getBasicType()))
+    {
+        node->propagatePrecision(precision);
     }
 }
 
@@ -575,6 +589,16 @@ const TType &TIntermSymbol::getType() const
     return mVariable->getType();
 }
 
+void TIntermSymbol::propagatePrecision(TPrecision precision)
+{
+    // Every declared variable should already have a precision.  Some built-ins don't have a defined
+    // precision.  This is not asserted however:
+    //
+    // - A shader with no precision specified either globally or on a variable will fail with a
+    //   compilation error later on.
+    // - Transformations declaring variables without precision will be caught by AST validation.
+}
+
 TIntermAggregate *TIntermAggregate::CreateFunctionCall(const TFunction &func,
                                                        TIntermSequence *arguments)
 {
@@ -604,10 +628,7 @@ TIntermAggregate::TIntermAggregate(const TFunction *func,
                                    const TType &type,
                                    TOperator op,
                                    TIntermSequence *arguments)
-    : TIntermOperator(op, type),
-      mUseEmulatedFunction(false),
-      mGotPrecisionFromChildren(false),
-      mFunction(func)
+    : TIntermOperator(op, type), mUseEmulatedFunction(false), mFunction(func)
 {
     if (arguments != nullptr)
     {
@@ -620,35 +641,20 @@ TIntermAggregate::TIntermAggregate(const TFunction *func,
 void TIntermAggregate::setPrecisionAndQualifier()
 {
     mType.setQualifier(EvqTemporary);
-    if (BuiltInGroup::IsBuiltIn(mOp) && !BuiltInGroup::IsMath(mOp))
+    if ((!BuiltInGroup::IsBuiltIn(mOp) && !isFunctionCall()) || BuiltInGroup::IsMath(mOp))
     {
-        setBuiltInFunctionPrecision();
-    }
-    else if (!isFunctionCall())
-    {
-        if (isConstructor())
-        {
-            // Structs should not be precision qualified, the individual members may be.
-            // Built-in types on the other hand should be precision qualified.
-            if (getBasicType() != EbtStruct)
-            {
-                setPrecisionFromChildren();
-            }
-        }
-        else
-        {
-            setPrecisionForMathBuiltInOp();
-        }
         if (areChildrenConstQualified())
         {
             mType.setQualifier(EvqConst);
         }
     }
+
+    propagatePrecision(derivePrecision());
 }
 
 bool TIntermAggregate::areChildrenConstQualified()
 {
-    for (TIntermNode *&arg : mArguments)
+    for (TIntermNode *arg : mArguments)
     {
         TIntermTyped *typedArg = arg->getAsTyped();
         if (typedArg && typedArg->getQualifier() != EvqConst)
@@ -659,81 +665,88 @@ bool TIntermAggregate::areChildrenConstQualified()
     return true;
 }
 
-void TIntermAggregate::setPrecisionFromChildren()
+// Derive precision from children nodes
+TPrecision TIntermAggregate::derivePrecision() const
 {
-    mGotPrecisionFromChildren = true;
-    if (getBasicType() == EbtBool)
+    if (getBasicType() == EbtBool || getBasicType() == EbtVoid || getBasicType() == EbtStruct)
     {
-        mType.setPrecision(EbpUndefined);
-        return;
+        return EbpUndefined;
     }
 
-    TPrecision precision                = EbpUndefined;
-    TIntermSequence::iterator childIter = mArguments.begin();
-    while (childIter != mArguments.end())
+    // For AST function calls, take the qualifier from the declared one.
+    if (isFunctionCall())
     {
-        TIntermTyped *typed = (*childIter)->getAsTyped();
-        if (typed)
-            precision = GetHigherPrecision(typed->getPrecision(), precision);
-        ++childIter;
+        return mType.getPrecision();
     }
-    mType.setPrecision(precision);
-}
 
-void TIntermAggregate::setPrecisionForMathBuiltInOp()
-{
-    ASSERT(BuiltInGroup::IsMath(mOp));
-    if (!setPrecisionForSpecialBuiltInOp())
-    {
-        setPrecisionFromChildren();
-    }
-}
-
-bool TIntermAggregate::setPrecisionForSpecialBuiltInOp()
-{
+    // Some built-ins explicitly specify their precision.
     switch (mOp)
     {
         case EOpBitfieldExtract:
-            mType.setPrecision(mArguments[0]->getAsTyped()->getPrecision());
-            mGotPrecisionFromChildren = true;
-            return true;
+            return mArguments[0]->getAsTyped()->getPrecision();
         case EOpBitfieldInsert:
-            mType.setPrecision(GetHigherPrecision(mArguments[0]->getAsTyped()->getPrecision(),
-                                                  mArguments[1]->getAsTyped()->getPrecision()));
-            mGotPrecisionFromChildren = true;
-            return true;
+            return GetHigherPrecision(mArguments[0]->getAsTyped()->getPrecision(),
+                                      mArguments[1]->getAsTyped()->getPrecision());
+        case EOpTextureSize:
+        case EOpImageSize:
         case EOpUaddCarry:
         case EOpUsubBorrow:
-            mType.setPrecision(EbpHigh);
-            return true;
+        case EOpUmulExtended:
+        case EOpImulExtended:
+        case EOpFrexp:
+        case EOpLdexp:
+            return EbpHigh;
         default:
-            return false;
+            break;
     }
+
+    // The rest of the math operations and constructors get their precision from their
+    // arguments.
+    if (BuiltInGroup::IsMath(mOp) || mOp == EOpConstruct)
+    {
+        TPrecision precision = EbpUndefined;
+        for (TIntermNode *argument : mArguments)
+        {
+            precision = GetHigherPrecision(argument->getAsTyped()->getPrecision(), precision);
+        }
+        return precision;
+    }
+
+    // Image load and atomic operations return highp.
+    if (BuiltInGroup::IsImageLoad(mOp) || BuiltInGroup::IsImageAtomic(mOp) ||
+        BuiltInGroup::IsAtomicCounter(mOp) || BuiltInGroup::IsAtomicMemory(mOp))
+    {
+        return EbpHigh;
+    }
+
+    // Texture functions return the same precision as that of the sampler.  textureSize returns
+    // highp, but that's handled above.  The same is true for dFd*, interpolateAt* and
+    // subpassLoad operations.
+    if (BuiltInGroup::IsTexture(mOp) || BuiltInGroup::IsDerivativesFS(mOp) ||
+        BuiltInGroup::IsInterpolationFS(mOp) || mOp == EOpSubpassLoad)
+    {
+        return mArguments[0]->getAsTyped()->getPrecision();
+    }
+
+    // Every possibility must be explicitly handled, except for desktop-GLSL-specific built-ins
+    // for which precision does't matter.
+    return EbpUndefined;
 }
 
-void TIntermAggregate::setBuiltInFunctionPrecision()
+// Propagate precision to children nodes that don't already have it defined.
+void TIntermAggregate::propagatePrecision(TPrecision precision)
 {
-    // All built-ins returning bool are math operations.
-    ASSERT(getBasicType() != EbtBool);
-    ASSERT(!isFunctionCall() && !isConstructor() && !BuiltInGroup::IsMath(mOp));
+    mType.setPrecision(precision);
 
-    TPrecision precision = EbpUndefined;
-    for (TIntermNode *arg : mArguments)
+    // Propagate precision only to constructor arguments.  Precision doesn't propagate through
+    // function call arguments.
+    if (isConstructor())
     {
-        TIntermTyped *typed = arg->getAsTyped();
-        // ESSL spec section 8: texture functions get their precision from the sampler.
-        if (typed && IsSampler(typed->getBasicType()))
+        for (TIntermNode *arg : mArguments)
         {
-            precision = typed->getPrecision();
-            break;
+            PropagatePrecisionIfApplicable(arg->getAsTyped(), precision);
         }
     }
-    // ESSL 3.0 spec section 8: textureSize always gets highp precision.
-    // All other functions that take a sampler are assumed to be texture functions.
-    if (mOp == EOpTextureSize)
-        mType.setPrecision(EbpHigh);
-    else
-        mType.setPrecision(precision);
 }
 
 const char *TIntermAggregate::functionName() const
@@ -1061,12 +1074,16 @@ bool TIntermCase::replaceChildNode(TIntermNode *original, TIntermNode *replaceme
     return false;
 }
 
-TIntermTyped::TIntermTyped(const TIntermTyped &node) : TIntermNode()
+TIntermTyped::TIntermTyped() : mIsPrecise(false) {}
+TIntermTyped::TIntermTyped(const TIntermTyped &node) : TIntermTyped()
 {
     // Copy constructor is disallowed for TIntermNode in order to disallow it for subclasses that
     // don't explicitly allow it, so normal TIntermNode constructor is used to construct the copy.
     // We need to manually copy any fields of TIntermNode.
     mLine = node.mLine;
+
+    // Once deteremined, the tree is not expected to transform.
+    ASSERT(!mIsPrecise);
 }
 
 bool TIntermTyped::hasConstantValue() const
@@ -1082,6 +1099,17 @@ bool TIntermTyped::isConstantNullValue() const
 const TConstantUnion *TIntermTyped::getConstantValue() const
 {
     return nullptr;
+}
+
+TPrecision TIntermTyped::derivePrecision() const
+{
+    UNREACHABLE();
+    return EbpUndefined;
+}
+
+void TIntermTyped::propagatePrecision(TPrecision precision)
+{
+    UNREACHABLE();
 }
 
 TIntermConstantUnion::TIntermConstantUnion(const TIntermConstantUnion &node)
@@ -1104,7 +1132,6 @@ const TType &TIntermFunctionPrototype::getType() const
 TIntermAggregate::TIntermAggregate(const TIntermAggregate &node)
     : TIntermOperator(node),
       mUseEmulatedFunction(node.mUseEmulatedFunction),
-      mGotPrecisionFromChildren(node.mGotPrecisionFromChildren),
       mFunction(node.mFunction)
 {
     for (TIntermNode *arg : node.mArguments)
@@ -1299,7 +1326,7 @@ void TIntermUnary::promote()
     if (mOp == EOpArrayLength)
     {
         // Special case: the qualifier of .length() doesn't depend on the operand qualifier.
-        setType(TType(EbtInt, EbpUndefined, EvqConst));
+        setType(TType(EbtInt, EbpHigh, EvqConst));
         return;
     }
 
@@ -1307,71 +1334,124 @@ void TIntermUnary::promote()
     if (mOperand->getQualifier() == EvqConst)
         resultQualifier = EvqConst;
 
-    unsigned char operandPrimarySize =
-        static_cast<unsigned char>(mOperand->getType().getNominalSize());
+    TType resultType = mOperand->getType();
+    resultType.setQualifier(resultQualifier);
+
+    // Result is an intermediate value, so make sure it's identified as such.
+    resultType.setInterfaceBlock(nullptr);
+
+    // Override type properties for special built-ins.  Precision is determined later by
+    // |derivePrecision|.
     switch (mOp)
     {
         case EOpFloatBitsToInt:
-            setType(TType(EbtInt, EbpHigh, resultQualifier, operandPrimarySize));
+            resultType.setBasicType(EbtInt);
             break;
         case EOpFloatBitsToUint:
-            setType(TType(EbtUInt, EbpHigh, resultQualifier, operandPrimarySize));
+            resultType.setBasicType(EbtUInt);
             break;
         case EOpIntBitsToFloat:
         case EOpUintBitsToFloat:
-            setType(TType(EbtFloat, EbpHigh, resultQualifier, operandPrimarySize));
+            resultType.setBasicType(EbtFloat);
             break;
         case EOpPackSnorm2x16:
         case EOpPackUnorm2x16:
         case EOpPackHalf2x16:
         case EOpPackUnorm4x8:
         case EOpPackSnorm4x8:
-            setType(TType(EbtUInt, EbpHigh, resultQualifier));
+            resultType.setBasicType(EbtUInt);
+            resultType.setPrimarySize(1);
             break;
         case EOpUnpackSnorm2x16:
         case EOpUnpackUnorm2x16:
-            setType(TType(EbtFloat, EbpHigh, resultQualifier, 2));
-            break;
         case EOpUnpackHalf2x16:
-            setType(TType(EbtFloat, EbpMedium, resultQualifier, 2));
+            resultType.setBasicType(EbtFloat);
+            resultType.setPrimarySize(2);
             break;
         case EOpUnpackUnorm4x8:
         case EOpUnpackSnorm4x8:
-            setType(TType(EbtFloat, EbpMedium, resultQualifier, 4));
+            resultType.setBasicType(EbtFloat);
+            resultType.setPrimarySize(4);
             break;
         case EOpAny:
         case EOpAll:
-            setType(TType(EbtBool, EbpUndefined, resultQualifier));
+            resultType.setBasicType(EbtBool);
+            resultType.setPrimarySize(1);
             break;
         case EOpLength:
         case EOpDeterminant:
-            setType(TType(EbtFloat, mOperand->getType().getPrecision(), resultQualifier));
+            resultType.setBasicType(EbtFloat);
+            resultType.setPrimarySize(1);
+            resultType.setSecondarySize(1);
             break;
         case EOpTranspose:
-            setType(TType(EbtFloat, mOperand->getType().getPrecision(), resultQualifier,
-                          static_cast<unsigned char>(mOperand->getType().getRows()),
-                          static_cast<unsigned char>(mOperand->getType().getCols())));
+            ASSERT(resultType.getBasicType() == EbtFloat);
+            resultType.setPrimarySize(static_cast<unsigned char>(mOperand->getType().getRows()));
+            resultType.setSecondarySize(static_cast<unsigned char>(mOperand->getType().getCols()));
             break;
         case EOpIsinf:
         case EOpIsnan:
-            setType(TType(EbtBool, EbpUndefined, resultQualifier, operandPrimarySize));
-            break;
-        case EOpBitfieldReverse:
-            setType(TType(mOperand->getBasicType(), EbpHigh, resultQualifier, operandPrimarySize));
+            resultType.setBasicType(EbtBool);
             break;
         case EOpBitCount:
-            setType(TType(EbtInt, EbpLow, resultQualifier, operandPrimarySize));
-            break;
         case EOpFindLSB:
-            setType(TType(EbtInt, EbpLow, resultQualifier, operandPrimarySize));
-            break;
         case EOpFindMSB:
-            setType(TType(EbtInt, EbpLow, resultQualifier, operandPrimarySize));
+            resultType.setBasicType(EbtInt);
             break;
         default:
-            setType(mOperand->getType());
-            mType.setQualifier(resultQualifier);
             break;
+    }
+
+    setType(resultType);
+    propagatePrecision(derivePrecision());
+}
+
+// Derive precision from children nodes
+TPrecision TIntermUnary::derivePrecision() const
+{
+    // Unary operators generally derive their precision from their operand, except for a few
+    // built-ins where this is overriden.
+    switch (mOp)
+    {
+        case EOpArrayLength:
+        case EOpFloatBitsToInt:
+        case EOpFloatBitsToUint:
+        case EOpIntBitsToFloat:
+        case EOpUintBitsToFloat:
+        case EOpPackSnorm2x16:
+        case EOpPackUnorm2x16:
+        case EOpPackHalf2x16:
+        case EOpPackUnorm4x8:
+        case EOpPackSnorm4x8:
+        case EOpUnpackSnorm2x16:
+        case EOpUnpackUnorm2x16:
+        case EOpBitfieldReverse:
+            return EbpHigh;
+        case EOpUnpackHalf2x16:
+        case EOpUnpackUnorm4x8:
+        case EOpUnpackSnorm4x8:
+            return EbpMedium;
+        case EOpBitCount:
+        case EOpFindLSB:
+        case EOpFindMSB:
+            return EbpLow;
+        case EOpAny:
+        case EOpAll:
+        case EOpIsinf:
+        case EOpIsnan:
+            return EbpUndefined;
+        default:
+            return mOperand->getPrecision();
+    }
+}
+
+void TIntermUnary::propagatePrecision(TPrecision precision)
+{
+    mType.setPrecision(precision);
+
+    if (mOp != EOpArrayLength)
+    {
+        PropagatePrecisionIfApplicable(mOperand, precision);
     }
 }
 
@@ -1440,6 +1520,8 @@ TIntermTernary::TIntermTernary(TIntermTyped *cond,
     ASSERT(mFalseExpression);
     getTypePointer()->setQualifier(
         TIntermTernary::DetermineQualifier(cond, trueExpression, falseExpression));
+
+    propagatePrecision(derivePrecision());
 }
 
 TIntermLoop::TIntermLoop(TLoopType type,
@@ -1513,6 +1595,20 @@ TQualifier TIntermTernary::DetermineQualifier(TIntermTyped *cond,
     return EvqTemporary;
 }
 
+// Derive precision from children nodes
+TPrecision TIntermTernary::derivePrecision() const
+{
+    return GetHigherPrecision(mTrueExpression->getPrecision(), mFalseExpression->getPrecision());
+}
+
+void TIntermTernary::propagatePrecision(TPrecision precision)
+{
+    mType.setPrecision(precision);
+
+    PropagatePrecisionIfApplicable(mTrueExpression, precision);
+    PropagatePrecisionIfApplicable(mFalseExpression, precision);
+}
+
 TIntermTyped *TIntermTernary::fold(TDiagnostics * /* diagnostics */)
 {
     if (mCondition->getAsConstantUnion())
@@ -1536,8 +1632,22 @@ void TIntermSwizzle::promote()
         resultQualifier = EvqConst;
 
     auto numFields = mSwizzleOffsets.size();
-    setType(TType(mOperand->getBasicType(), mOperand->getPrecision(), resultQualifier,
+    setType(TType(mOperand->getBasicType(), EbpUndefined, resultQualifier,
                   static_cast<unsigned char>(numFields)));
+    propagatePrecision(derivePrecision());
+}
+
+// Derive precision from children nodes
+TPrecision TIntermSwizzle::derivePrecision() const
+{
+    return mOperand->getPrecision();
+}
+
+void TIntermSwizzle::propagatePrecision(TPrecision precision)
+{
+    mType.setPrecision(precision);
+
+    PropagatePrecisionIfApplicable(mOperand, precision);
 }
 
 bool TIntermSwizzle::hasDuplicateOffsets() const
@@ -1636,6 +1746,13 @@ void TIntermBinary::promote()
         getTypePointer()->setQualifier(EvqTemporary);
     }
 
+    // Result is an intermediate value, so make sure it's identified as such.  That's not true for
+    // interface block arrays being indexed.
+    if (mOp != EOpIndexDirect && mOp != EOpIndexIndirect)
+    {
+        getTypePointer()->setInterfaceBlock(nullptr);
+    }
+
     // Handle indexing ops.
     switch (mOp)
     {
@@ -1647,12 +1764,11 @@ void TIntermBinary::promote()
             }
             else if (mLeft->isMatrix())
             {
-                setType(TType(mLeft->getBasicType(), mLeft->getPrecision(), resultQualifier,
-                              static_cast<unsigned char>(mLeft->getRows())));
+                mType.toMatrixColumnType();
             }
             else if (mLeft->isVector())
             {
-                setType(TType(mLeft->getBasicType(), mLeft->getPrecision(), resultQualifier));
+                mType.toComponentType();
             }
             else
             {
@@ -1662,16 +1778,16 @@ void TIntermBinary::promote()
         case EOpIndexDirectStruct:
         {
             const TFieldList &fields = mLeft->getType().getStruct()->fields();
-            const int i              = mRight->getAsConstantUnion()->getIConst(0);
-            setType(*fields[i]->type());
+            const int fieldIndex     = mRight->getAsConstantUnion()->getIConst(0);
+            setType(*fields[fieldIndex]->type());
             getTypePointer()->setQualifier(resultQualifier);
             return;
         }
         case EOpIndexDirectInterfaceBlock:
         {
             const TFieldList &fields = mLeft->getType().getInterfaceBlock()->fields();
-            const int i              = mRight->getAsConstantUnion()->getIConst(0);
-            setType(*fields[i]->type());
+            const int fieldIndex     = mRight->getAsConstantUnion()->getIConst(0);
+            setType(*fields[fieldIndex]->type());
             getTypePointer()->setQualifier(resultQualifier);
             return;
         }
@@ -1681,50 +1797,7 @@ void TIntermBinary::promote()
 
     ASSERT(mLeft->isArray() == mRight->isArray());
 
-    // The result gets promoted to the highest precision.
-    TPrecision higherPrecision = GetHigherPrecision(mLeft->getPrecision(), mRight->getPrecision());
-    getTypePointer()->setPrecision(higherPrecision);
-
     const int nominalSize = std::max(mLeft->getNominalSize(), mRight->getNominalSize());
-
-    //
-    // All scalars or structs. Code after this test assumes this case is removed!
-    //
-    if (nominalSize == 1)
-    {
-        switch (mOp)
-        {
-            //
-            // Promote to conditional
-            //
-            case EOpEqual:
-            case EOpNotEqual:
-            case EOpLessThan:
-            case EOpGreaterThan:
-            case EOpLessThanEqual:
-            case EOpGreaterThanEqual:
-                setType(TType(EbtBool, EbpUndefined, resultQualifier));
-                break;
-
-            //
-            // And and Or operate on conditionals
-            //
-            case EOpLogicalAnd:
-            case EOpLogicalXor:
-            case EOpLogicalOr:
-                ASSERT(mLeft->getBasicType() == EbtBool && mRight->getBasicType() == EbtBool);
-                setType(TType(EbtBool, EbpUndefined, resultQualifier));
-                break;
-
-            default:
-                break;
-        }
-        return;
-    }
-
-    // If we reach here, at least one of the operands is vector or matrix.
-    // The other operand could be a scalar, vector, or matrix.
-    TBasicType basicType = mLeft->getBasicType();
 
     switch (mOp)
     {
@@ -1733,27 +1806,24 @@ void TIntermBinary::promote()
         case EOpMatrixTimesScalar:
             if (mRight->isMatrix())
             {
-                setType(TType(basicType, higherPrecision, resultQualifier,
-                              static_cast<unsigned char>(mRight->getCols()),
-                              static_cast<unsigned char>(mRight->getRows())));
+                getTypePointer()->setPrimarySize(static_cast<unsigned char>(mRight->getCols()));
+                getTypePointer()->setSecondarySize(static_cast<unsigned char>(mRight->getRows()));
             }
             break;
         case EOpMatrixTimesVector:
-            setType(TType(basicType, higherPrecision, resultQualifier,
-                          static_cast<unsigned char>(mLeft->getRows()), 1));
+            getTypePointer()->setPrimarySize(static_cast<unsigned char>(mLeft->getRows()));
+            getTypePointer()->setSecondarySize(1);
             break;
         case EOpMatrixTimesMatrix:
-            setType(TType(basicType, higherPrecision, resultQualifier,
-                          static_cast<unsigned char>(mRight->getCols()),
-                          static_cast<unsigned char>(mLeft->getRows())));
+            getTypePointer()->setPrimarySize(static_cast<unsigned char>(mRight->getCols()));
+            getTypePointer()->setSecondarySize(static_cast<unsigned char>(mLeft->getRows()));
             break;
         case EOpVectorTimesScalar:
-            setType(TType(basicType, higherPrecision, resultQualifier,
-                          static_cast<unsigned char>(nominalSize), 1));
+            getTypePointer()->setPrimarySize(static_cast<unsigned char>(nominalSize));
             break;
         case EOpVectorTimesMatrix:
-            setType(TType(basicType, higherPrecision, resultQualifier,
-                          static_cast<unsigned char>(mRight->getCols()), 1));
+            getTypePointer()->setPrimarySize(static_cast<unsigned char>(mRight->getCols()));
+            ASSERT(getType().getSecondarySize() == 1);
             break;
         case EOpMulAssign:
         case EOpVectorTimesScalarAssign:
@@ -1786,12 +1856,11 @@ void TIntermBinary::promote()
         case EOpBitwiseXorAssign:
         case EOpBitwiseOrAssign:
         {
+            ASSERT(!mLeft->isArray() && !mRight->isArray());
             const int secondarySize =
                 std::max(mLeft->getSecondarySize(), mRight->getSecondarySize());
-            setType(TType(basicType, higherPrecision, resultQualifier,
-                          static_cast<unsigned char>(nominalSize),
-                          static_cast<unsigned char>(secondarySize)));
-            ASSERT(!mLeft->isArray() && !mRight->isArray());
+            getTypePointer()->setPrimarySize(static_cast<unsigned char>(nominalSize));
+            getTypePointer()->setSecondarySize(static_cast<unsigned char>(secondarySize));
             break;
         }
         case EOpEqual:
@@ -1805,6 +1874,15 @@ void TIntermBinary::promote()
             setType(TType(EbtBool, EbpUndefined, resultQualifier));
             break;
 
+        //
+        // And and Or operate on conditionals
+        //
+        case EOpLogicalAnd:
+        case EOpLogicalXor:
+        case EOpLogicalOr:
+            ASSERT(mLeft->getBasicType() == EbtBool && mRight->getBasicType() == EbtBool);
+            break;
+
         case EOpIndexDirect:
         case EOpIndexIndirect:
         case EOpIndexDirectInterfaceBlock:
@@ -1815,6 +1893,71 @@ void TIntermBinary::promote()
         default:
             UNREACHABLE();
             break;
+    }
+
+    propagatePrecision(derivePrecision());
+}
+
+// Derive precision from children nodes
+TPrecision TIntermBinary::derivePrecision() const
+{
+    const TPrecision higherPrecision =
+        GetHigherPrecision(mLeft->getPrecision(), mRight->getPrecision());
+
+    switch (mOp)
+    {
+        case EOpComma:
+            // Comma takes the right node's value.
+            return mRight->getPrecision();
+
+        case EOpIndexDirect:
+        case EOpIndexIndirect:
+            // When indexing an array, the precision of the array is preserved.
+            return mLeft->getPrecision();
+
+        case EOpIndexDirectStruct:
+        case EOpIndexDirectInterfaceBlock:
+        {
+            // When selecting the field of a block, the precision is taken from the field's
+            // declaration.
+            const TFieldList &fields = mOp == EOpIndexDirectStruct
+                                           ? mLeft->getType().getStruct()->fields()
+                                           : mLeft->getType().getInterfaceBlock()->fields();
+            const int fieldIndex = mRight->getAsConstantUnion()->getIConst(0);
+            return fields[fieldIndex]->type()->getPrecision();
+        }
+
+        case EOpEqual:
+        case EOpNotEqual:
+        case EOpLessThan:
+        case EOpGreaterThan:
+        case EOpLessThanEqual:
+        case EOpGreaterThanEqual:
+        case EOpLogicalAnd:
+        case EOpLogicalXor:
+        case EOpLogicalOr:
+            // No precision specified on bool results.
+            return EbpUndefined;
+
+        default:
+            // All other operations are evaluated at the higher of the two operands' precisions.
+            return higherPrecision;
+    }
+}
+
+void TIntermBinary::propagatePrecision(TPrecision precision)
+{
+    getTypePointer()->setPrecision(precision);
+
+    if (mOp != EOpComma)
+    {
+        PropagatePrecisionIfApplicable(mLeft, precision);
+    }
+
+    if (mOp != EOpIndexDirect && mOp != EOpIndexIndirect && mOp != EOpIndexDirectStruct &&
+        mOp != EOpIndexDirectInterfaceBlock)
+    {
+        PropagatePrecisionIfApplicable(mRight, precision);
     }
 }
 
@@ -3190,6 +3333,11 @@ void TIntermConstantUnion::foldFloatTypeUnary(const TConstantUnion &parameter,
 
     ASSERT(getType().getBasicType() == EbtFloat);
     result->setFConst(builtinFunc(parameter.getFConst()));
+}
+
+void TIntermConstantUnion::propagatePrecision(TPrecision precision)
+{
+    mType.setPrecision(precision);
 }
 
 // static

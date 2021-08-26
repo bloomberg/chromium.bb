@@ -18,8 +18,6 @@
 #include "aom/aom_codec.h"
 #include "aom/aom_encoder.h"
 
-#include "aom_ports/system_state.h"
-
 #if CONFIG_MISMATCH_DEBUG
 #include "aom_util/debug_util.h"
 #endif  // CONFIG_MISMATCH_DEBUG
@@ -201,7 +199,6 @@ static void adjust_frame_rate(AV1_COMP *cpi, int64_t ts_start, int64_t ts_end) {
   int step = 0;
 
   // Clear down mmx registers
-  aom_clear_system_state();
 
   if (cpi->ppi->use_svc && cpi->svc.spatial_layer_id > 0) {
     cpi->framerate = cpi->svc.base_framerate;
@@ -317,12 +314,8 @@ static struct lookahead_entry *choose_frame_source(
 #if CONFIG_FRAME_PARALLEL_ENCODE
   // Future frame in parallel encode set
   if (gf_group->src_offset[cpi->gf_frame_index] != 0 &&
-      !is_stat_generation_stage(cpi) &&
-      0 /*will be turned on along with frame parallel encode*/) {
+      !is_stat_generation_stage(cpi)) {
     src_index = gf_group->src_offset[cpi->gf_frame_index];
-    // Don't remove future frames from lookahead_ctx. They will be
-    // removed in their actual encode call.
-    *pop_lookahead = 0;
   }
 #endif
   if (frame_params->show_frame) {
@@ -339,10 +332,6 @@ static struct lookahead_entry *choose_frame_source(
     // no show frames are arf frames
     source = av1_lookahead_peek(cpi->ppi->lookahead, src_index,
                                 cpi->compressor_stage);
-    // When src_index == rc->frames_to_key, it indicates a fwd_kf
-    if (src_index == cpi->rc.frames_to_key && src_index != 0) {
-      cpi->no_show_fwd_kf = 1;
-    }
     if (source != NULL) {
       cm->showable_frame = 1;
     }
@@ -706,6 +695,29 @@ static int get_refresh_idx(RefFrameMapPair ref_frame_map_pairs[REF_FRAMES],
   assert(0 && "No valid refresh index found");
   return -1;
 }
+
+#if CONFIG_FRAME_PARALLEL_ENCODE_2
+// Computes the reference refresh index for INTNL_ARF_UPDATE frame.
+int av1_calc_refresh_idx_for_intnl_arf(
+    AV1_COMP *cpi, RefFrameMapPair ref_frame_map_pairs[REF_FRAMES],
+    int gf_index) {
+  GF_GROUP *const gf_group = &cpi->ppi->gf_group;
+
+  // Search for the open slot to store the current frame.
+  int free_fb_index = get_free_ref_map_index(ref_frame_map_pairs, NULL);
+
+  // Use a free slot if available.
+  if (free_fb_index != INVALID_IDX) {
+    return free_fb_index;
+  } else {
+    int enable_refresh_skip = !is_one_pass_rt_params(cpi);
+    int refresh_idx =
+        get_refresh_idx(ref_frame_map_pairs, 0, gf_group, gf_index,
+                        enable_refresh_skip, gf_group->display_idx[gf_index]);
+    return refresh_idx;
+  }
+}
+#endif  // CONFIG_FRAME_PARALLEL_ENCODE_2
 #endif  // CONFIG_FRAME_PARALLEL_ENCODE
 
 int av1_get_refresh_frame_flags(const AV1_COMP *const cpi,
@@ -908,7 +920,7 @@ static int denoise_and_encode(AV1_COMP *const cpi, uint8_t *const dest,
 #endif
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
   AV1_COMMON *const cm = &cpi->common;
-  const GF_GROUP *const gf_group = &cpi->ppi->gf_group;
+  GF_GROUP *const gf_group = &cpi->ppi->gf_group;
   FRAME_UPDATE_TYPE update_type =
       get_frame_update_type(&cpi->ppi->gf_group, cpi->gf_frame_index);
 
@@ -969,7 +981,7 @@ static int denoise_and_encode(AV1_COMP *const cpi, uint8_t *const dest,
     // Currently INTNL_ARF_UPDATE only do show_existing.
     if (update_type == ARF_UPDATE &&
         gf_group->frame_type[cpi->gf_frame_index] != KEY_FRAME) {
-      cpi->show_existing_alt_ref = show_existing_alt_ref;
+      cpi->ppi->show_existing_alt_ref = show_existing_alt_ref;
     }
   }
 #if CONFIG_COLLECT_COMPONENT_TIMING
@@ -987,7 +999,6 @@ static int denoise_and_encode(AV1_COMP *const cpi, uint8_t *const dest,
   if (frame_params->frame_type == KEY_FRAME) {
     // Don't do tpl for fwd key frames or fwd key frame overlays
     allow_tpl = allow_tpl && !cpi->sf.tpl_sf.disable_filtered_key_tpl &&
-                !cpi->no_show_fwd_kf &&
                 gf_group->update_type[cpi->gf_frame_index] != OVERLAY_UPDATE;
   } else {
     // Do tpl after ARF is filtered, or if no ARF, at the second frame of GF
@@ -1018,6 +1029,13 @@ static int denoise_and_encode(AV1_COMP *const cpi, uint8_t *const dest,
     if (!cpi->skip_tpl_setup_stats) {
       av1_tpl_preload_rc_estimate(cpi, frame_params);
       av1_tpl_setup_stats(cpi, 0, frame_params, frame_input);
+#if CONFIG_BITRATE_ACCURACY
+      av1_vbr_estimate_mv_and_update(&cpi->ppi->tpl_data, gf_group->size,
+                                     cpi->gf_frame_index, &cpi->vbr_rc_info);
+      av1_vbr_rc_update_q_index_list(&cpi->vbr_rc_info, &cpi->ppi->tpl_data,
+                                     gf_group, cpi->gf_frame_index,
+                                     cm->seq_params->bit_depth);
+#endif
     }
   }
 
@@ -1125,7 +1143,7 @@ static void set_unmapped_ref(RefBufMapData *buffer_map, int n_bufs,
 static void get_ref_frames(AV1_COMP *const cpi,
                            RefFrameMapPair ref_frame_map_pairs[REF_FRAMES],
 #if CONFIG_FRAME_PARALLEL_ENCODE_2
-                           int gf_index,
+                           int gf_index, int is_parallel_encode,
 #endif  // CONFIG_FRAME_PARALLEL_ENCODE_2
                            int cur_frame_disp) {
   AV1_COMMON *cm = &cpi->common;
@@ -1209,18 +1227,25 @@ static void get_ref_frames(AV1_COMP *const cpi,
     // During parallel encodes of lower layer frames, exclude the first frame
     // (frame_parallel_level 1) from being used for the reference assignment of
     // the second frame (frame_parallel_level 2).
-    if (!is_one_pass_rt &&
-        gf_group->skip_frame_as_ref[gf_index] != INVALID_IDX) {
-      assert(gf_group->frame_parallel_level[gf_index] == 2 &&
-             gf_group->update_type[gf_index] == INTNL_ARF_UPDATE);
-      assert(gf_group->frame_parallel_level[gf_index - 1] == 1 &&
-             gf_group->update_type[gf_index - 1] == INTNL_ARF_UPDATE);
-      if (buffer_map[i].disp_order == gf_group->skip_frame_as_ref[gf_index]) {
-        buffer_map[i].used = 1;
-        // In case a ref frame is excluded from being used during assignment,
-        // skip the call to set_unmapped_ref(). Applicable in steady state.
-        skip_ref_unmapping = 1;
-      }
+    if (!is_one_pass_rt && gf_group->frame_parallel_level[gf_index] == 2 &&
+        gf_group->frame_parallel_level[gf_index - 1] == 1 &&
+        gf_group->update_type[gf_index - 1] == INTNL_ARF_UPDATE) {
+      assert(gf_group->update_type[gf_index] == INTNL_ARF_UPDATE);
+      // TODO(Remya): Use original value of is_parallel_encode when FPMT is
+      // enabled.
+      is_parallel_encode = 0;
+      // If parallel cpis are active, use ref_idx_to_skip, else, use display
+      // index.
+      assert(IMPLIES(is_parallel_encode, cpi->ref_idx_to_skip != INVALID_IDX));
+      assert(IMPLIES(!is_parallel_encode,
+                     gf_group->skip_frame_as_ref[gf_index] != INVALID_IDX));
+      buffer_map[i].used = is_parallel_encode
+                               ? (buffer_map[i].map_idx == cpi->ref_idx_to_skip)
+                               : (buffer_map[i].disp_order ==
+                                  gf_group->skip_frame_as_ref[gf_index]);
+      // In case a ref frame is excluded from being used during assignment,
+      // skip the call to set_unmapped_ref(). Applicable in steady state.
+      if (buffer_map[i].used) skip_ref_unmapping = 1;
     }
 #endif  // CONFIG_FRAME_PARALLEL_ENCODE_2
 
@@ -1332,7 +1357,7 @@ void av1_get_ref_frames(const RefBufferStack *ref_buffer_stack,
                         RefFrameMapPair ref_frame_map_pairs[REF_FRAMES],
                         int cur_frame_disp,
 #if CONFIG_FRAME_PARALLEL_ENCODE_2
-                        int gf_index,
+                        int gf_index, int is_parallel_encode,
 #endif  // CONFIG_FRAME_PARALLEL_ENCODE_2
 #endif  // CONFIG_FRAME_PARALLEL_ENCODE
                         int remapped_ref_idx[REF_FRAMES]) {
@@ -1341,7 +1366,7 @@ void av1_get_ref_frames(const RefBufferStack *ref_buffer_stack,
   (void)remapped_ref_idx;
   get_ref_frames(cpi, ref_frame_map_pairs,
 #if CONFIG_FRAME_PARALLEL_ENCODE_2
-                 gf_index,
+                 gf_index, is_parallel_encode,
 #endif  // CONFIG_FRAME_PARALLEL_ENCODE_2
                  cur_frame_disp);
   return;
@@ -1472,6 +1497,7 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
 
   cpi->skip_tpl_setup_stats = 0;
 #if !CONFIG_REALTIME_ONLY
+  cpi->twopass_frame.this_frame = NULL;
   const int use_one_pass_rt_params = is_one_pass_rt_params(cpi);
   if (!use_one_pass_rt_params && !is_stat_generation_stage(cpi)) {
 #if CONFIG_COLLECT_COMPONENT_TIMING
@@ -1486,6 +1512,8 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
         cpi->rc.frame_level_rate_correction_factors[i] =
             cpi->ppi->p_rc.temp_rate_correction_factors[i];
     }
+    // copy mv_stats from ppi to frame_level cpi.
+    cpi->mv_stats = cpi->ppi->mv_stats;
 #endif
     av1_get_second_pass_params(cpi, &frame_params, &frame_input, *frame_flags);
 #if CONFIG_COLLECT_COMPONENT_TIMING
@@ -1501,7 +1529,7 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
       frame_params.show_existing_frame = 1;
     } else {
       frame_params.show_existing_frame =
-          (cpi->show_existing_alt_ref &&
+          (cpi->ppi->show_existing_alt_ref &&
            gf_group->update_type[cpi->gf_frame_index] == OVERLAY_UPDATE) ||
           gf_group->update_type[cpi->gf_frame_index] == INTNL_OVERLAY_UPDATE;
     }
@@ -1509,7 +1537,7 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
 
     // Reset show_existing_alt_ref decision to 0 after it is used.
     if (gf_group->update_type[cpi->gf_frame_index] == OVERLAY_UPDATE) {
-      cpi->show_existing_alt_ref = 0;
+      cpi->ppi->show_existing_alt_ref = 0;
     }
   } else {
     frame_params.show_existing_frame = 0;
@@ -1671,7 +1699,7 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
 #if CONFIG_FRAME_PARALLEL_ENCODE
                          cpi, ref_frame_map_pairs, cur_frame_disp,
 #if CONFIG_FRAME_PARALLEL_ENCODE_2
-                         cpi->gf_frame_index,
+                         cpi->gf_frame_index, 1,
 #endif  // CONFIG_FRAME_PARALLEL_ENCODE_2
 #endif  // CONFIG_FRAME_PARALLEL_ENCODE
                          cm->remapped_ref_idx);
@@ -1687,8 +1715,9 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
     }
 
     // Work out which reference frame slots may be used.
-    frame_params.ref_frame_flags = get_ref_frame_flags(
-        &cpi->sf, ref_frame_buf, ext_flags->ref_frame_flags);
+    frame_params.ref_frame_flags =
+        get_ref_frame_flags(&cpi->sf, is_one_pass_rt_params(cpi), ref_frame_buf,
+                            ext_flags->ref_frame_flags);
 
 #if CONFIG_FRAME_PARALLEL_ENCODE
     // Set primary_ref_frame of non-reference frames as PRIMARY_REF_NONE.
@@ -1705,12 +1734,26 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
 
     frame_params.order_offset = gf_group->arf_src_offset[cpi->gf_frame_index];
 
-    frame_params.refresh_frame_flags = av1_get_refresh_frame_flags(
-        cpi, &frame_params, frame_update_type, cpi->gf_frame_index,
 #if CONFIG_FRAME_PARALLEL_ENCODE
-        cur_frame_disp, ref_frame_map_pairs,
+#if CONFIG_FRAME_PARALLEL_ENCODE_2
+    // Call av1_get_refresh_frame_flags() if refresh index not available.
+    if (!cpi->refresh_idx_available) {
+#endif
+#endif
+      frame_params.refresh_frame_flags = av1_get_refresh_frame_flags(
+          cpi, &frame_params, frame_update_type, cpi->gf_frame_index,
+#if CONFIG_FRAME_PARALLEL_ENCODE
+          cur_frame_disp, ref_frame_map_pairs,
 #endif  // CONFIG_FRAME_PARALLEL_ENCODE
-        &cpi->ref_buffer_stack);
+          &cpi->ref_buffer_stack);
+#if CONFIG_FRAME_PARALLEL_ENCODE
+#if CONFIG_FRAME_PARALLEL_ENCODE_2
+    } else {
+      assert(cpi->ref_refresh_index != INVALID_IDX);
+      frame_params.refresh_frame_flags = (1 << cpi->ref_refresh_index);
+    }
+#endif  // CONFIG_FRAME_PARALLEL_ENCODE
+#endif  // CONFIG_FRAME_PARALLEL_ENCODE_2
 
 #if CONFIG_FRAME_PARALLEL_ENCODE
     // Make the frames marked as is_frame_non_ref to non-reference frames.
@@ -1780,12 +1823,6 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
     return AOM_CODEC_ERROR;
   }
 #endif  // CONFIG_REALTIME_ONLY
-
-#if CONFIG_FRAME_PARALLEL_ENCODE
-  // Store current frame's largest MV component in ppi.
-  if (!is_stat_generation_stage(cpi) && cpi->do_frame_data_update)
-    cpi->ppi->max_mv_magnitude = cpi->mv_search_params.max_mv_magnitude;
-#endif
 
   if (!is_stat_generation_stage(cpi)) {
     // First pass doesn't modify reference buffer assignment or produce frame

@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 #include "tools/benchmark/benchmark_codec_webp.h"
 
 #include <stdint.h>
@@ -21,20 +12,17 @@
 #include <string>
 #include <vector>
 
+#include "lib/extras/time.h"
 #include "lib/jxl/base/compiler_specific.h"
 #include "lib/jxl/base/data_parallel.h"
 #include "lib/jxl/base/padded_bytes.h"
 #include "lib/jxl/base/span.h"
 #include "lib/jxl/base/thread_pool_internal.h"
-#include "lib/jxl/base/time.h"
 #include "lib/jxl/codec_in_out.h"
 #include "lib/jxl/enc_external_image.h"
 #include "lib/jxl/image.h"
 #include "lib/jxl/image_bundle.h"
-
-#ifdef MEMORY_SANITIZER
-#include "sanitizer/msan_interface.h"
-#endif
+#include "lib/jxl/sanitizers.h"
 
 namespace jxl {
 
@@ -183,16 +171,14 @@ class WebPCodec : public ImageCodec {
     const bool has_alpha = true;
     const uint8_t* data_begin = &buf->u.RGBA.rgba[0];
     const uint8_t* data_end = data_begin + buf->width * buf->height * 4;
-#ifdef MEMORY_SANITIZER
     // The image data is initialized by libwebp, which we are not instrumenting
     // with msan.
-    __msan_unpoison(data_begin, data_end - data_begin);
-#endif
+    msan::UnpoisonMemory(data_begin, data_end - data_begin);
     if (io->metadata.m.color_encoding.IsGray() != is_gray) {
       // TODO(lode): either ensure is_gray matches what the color profile says,
       // or set a correct color profile, e.g.
       // io->metadata.m.color_encoding = ColorEncoding::SRGB(is_gray);
-      // Return a standard failure becuase SetFromSRGB triggers a fatal assert
+      // Return a standard failure because SetFromSRGB triggers a fatal assert
       // for this instead.
       return JXL_FAILURE("Color profile is-gray mismatch");
     }
@@ -294,11 +280,9 @@ class WebPCodec : public ImageCodec {
     // pixels high or wide.
     bool ok = WebPEncode(&config, &pic);
     WebPPictureFree(&pic);
-#ifdef MEMORY_SANITIZER
     // Compressed image data is initialized by libwebp, which we are not
     // instrumenting with msan.
-    __msan_unpoison(compressed->data(), compressed->size());
-#endif
+    msan::UnpoisonMemory(compressed->data(), compressed->size());
     return ok;
   }
 

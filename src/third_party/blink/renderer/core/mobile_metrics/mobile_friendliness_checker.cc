@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/page_scale_constraints_set.h"
+#include "third_party/blink/renderer/core/frame/root_frame_viewport.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
 #include "third_party/blink/renderer/core/html/html_anchor_element.h"
@@ -26,6 +27,10 @@ namespace blink {
 using mojom::blink::ViewportStatus;
 static constexpr int kSmallFontThreshold = 9;
 static constexpr int kTimeBudgetExceeded = -2;
+
+// Values of maximum-scale smaller than this threshold will be considered to
+// prevent the user from scaling the page as if user-scalable=no was set.
+static constexpr double kMaximumScalePreventsZoomingThreshold = 1.2;
 
 // Finding bad tap targets may takes too time for big page and should abort if
 // it takes more than 5ms.
@@ -62,10 +67,10 @@ bool IsTimeBudgetExpired(const base::Time& from) {
 // targets which are too close.
 class FenwickTree {
  public:
-  explicit FenwickTree(size_t n) : tree(n + 1) {}
+  explicit FenwickTree(wtf_size_t n) : tree(n + 1) {}
 
   // Returns prefix sum of the array from 0 to |index|.
-  int sum(size_t index) const {
+  int sum(wtf_size_t index) const {
     int sum = 0;
     for (index += 1; 0 < index; index -= index & -index)
       sum += tree[index];
@@ -73,7 +78,7 @@ class FenwickTree {
   }
 
   // Adds |val| at |index| of the array.
-  void add(size_t index, int val) {
+  void add(wtf_size_t index, int val) {
     for (index += 1; index <= tree.size() - 1; index += index & -index)
       tree[index] += val;
   }
@@ -91,37 +96,42 @@ class FenwickTree {
 struct EdgeOrCenter {
   enum Type : int { kStartEdge = 0, kCenter = 1, kEndEdge = 2 } type;
 
+  union PositionOrIndexUnion {
+    int position;
+    wtf_size_t index;
+  };
+
   union EdgeOrCenterUnion {
     // Valid iff |type| is Edge.
     struct Edge {
-      int left;
-      int right;
+      PositionOrIndexUnion left;
+      PositionOrIndexUnion right;
     } edge;
 
     // Valid iff |type| is Center.
-    int center;
+    PositionOrIndexUnion center;
   } v;
 
   static EdgeOrCenter StartEdge(int left, int right) {
     EdgeOrCenter edge;
     edge.type = EdgeOrCenter::kStartEdge;
-    edge.v.edge.left = left;
-    edge.v.edge.right = right;
+    edge.v.edge.left.position = left;
+    edge.v.edge.right.position = right;
     return edge;
   }
 
   static EdgeOrCenter EndEdge(int left, int right) {
     EdgeOrCenter edge;
     edge.type = EdgeOrCenter::kEndEdge;
-    edge.v.edge.left = left;
-    edge.v.edge.right = right;
+    edge.v.edge.left.position = left;
+    edge.v.edge.right.position = right;
     return edge;
   }
 
   static EdgeOrCenter Center(int center) {
     EdgeOrCenter edge;
     edge.type = EdgeOrCenter::kCenter;
-    edge.v.center = center;
+    edge.v.center.position = center;
     return edge;
   }
 };
@@ -174,10 +184,9 @@ int ExtractAndCountAllTapTargets(
       const int bottom = clampTo<int>(rect.MaxY() + finger_radius);
       const int left = clampTo<int>(rect.X() - finger_radius);
       const int right = clampTo<int>(rect.MaxX() + finger_radius);
-      const int center = left + (right - left) / 2;
+      const int center = right / 2 + left / 2;
       vertices.emplace_back(top, EdgeOrCenter::StartEdge(left, right));
-      vertices.emplace_back(top + (bottom - top) / 2,
-                            EdgeOrCenter::Center(center));
+      vertices.emplace_back(bottom / 2 + top / 2, EdgeOrCenter::Center(center));
       vertices.emplace_back(bottom, EdgeOrCenter::EndEdge(left, right));
       x_positions.push_back(left);
       x_positions.push_back(right);
@@ -202,21 +211,21 @@ void CompressKeyWithVector(const Vector<int>& positions,
     switch (vertex.type) {
       case EdgeOrCenter::kStartEdge:
       case EdgeOrCenter::kEndEdge: {
-        vertex.v.edge.left =
+        vertex.v.edge.left.index = static_cast<wtf_size_t>(
             std::distance(positions.begin(),
                           std::lower_bound(positions.begin(), positions.end(),
-                                           vertex.v.edge.left));
-        vertex.v.edge.right =
+                                           vertex.v.edge.left.position)));
+        vertex.v.edge.right.index = static_cast<wtf_size_t>(
             std::distance(positions.begin(),
                           std::lower_bound(positions.begin(), positions.end(),
-                                           vertex.v.edge.right));
+                                           vertex.v.edge.right.position)));
         break;
       }
       case EdgeOrCenter::kCenter: {
-        vertex.v.center =
+        vertex.v.center.index = static_cast<wtf_size_t>(
             std::distance(positions.begin(),
                           std::lower_bound(positions.begin(), positions.end(),
-                                           vertex.v.center));
+                                           vertex.v.center.position)));
         break;
       }
     }
@@ -229,7 +238,7 @@ void CompressKeyWithVector(const Vector<int>& positions,
 // rightmost_position: Rightmost x position in all vertices.
 // Returns bad tap targets count.
 // Returns -1 if time limit exceeded.
-int CountBadTapTargets(int rightmost_position,
+int CountBadTapTargets(wtf_size_t rightmost_position,
                        const Vector<std::pair<int, EdgeOrCenter>>& vertices,
                        const base::Time& started) {
   FenwickTree tree(rightmost_position);
@@ -239,20 +248,20 @@ int CountBadTapTargets(int rightmost_position,
     switch (vertex.type) {
       case EdgeOrCenter::kStartEdge: {
         // Tap region begins.
-        tree.add(vertex.v.edge.left, 1);
-        tree.add(vertex.v.edge.right, -1);
+        tree.add(vertex.v.edge.left.index, 1);
+        tree.add(vertex.v.edge.right.index, -1);
         break;
       }
       case EdgeOrCenter::kEndEdge: {
         // Tap region ends.
-        tree.add(vertex.v.edge.left, -1);
-        tree.add(vertex.v.edge.right, 1);
+        tree.add(vertex.v.edge.left.index, -1);
+        tree.add(vertex.v.edge.right.index, 1);
         break;
       }
       case EdgeOrCenter::kCenter: {
         // Iff the center of a tap target is included other than itself, it is a
         // Bad Target.
-        if (tree.sum(vertex.v.center) > 1)
+        if (tree.sum(vertex.v.center.index) > 1)
           bad_tap_targets++;
         break;
       }
@@ -316,7 +325,7 @@ void MobileFriendlinessChecker::ComputeBadTapTargetsRatio() {
 
   if (all_tap_targets > 0) {
     mobile_friendliness_.bad_tap_targets_ratio =
-        bad_tap_targets * 100 / all_tap_targets;
+        bad_tap_targets * 100.0 / all_tap_targets;
   } else {
     mobile_friendliness_.bad_tap_targets_ratio = 0;
   }
@@ -334,18 +343,16 @@ void MobileFriendlinessChecker::EvaluateNow() {
   if (font_size_check_enabled_)
     mobile_friendliness_.small_text_ratio = text_area_sizes_.SmallTextRatio();
 
-  // As long as evaluated as MF, TextOutsideViewportPercentage UKM must not be
-  // -1 (means unknown). Even if there is no call of
-  // ComputeTextContentOutsideViewport(), as far as there are FCP notification
-  // and unload event, that value is not -1 anymore and to be 0.
-  mobile_friendliness_.text_content_outside_viewport_percentage = std::max(
-      0, mobile_friendliness_.text_content_outside_viewport_percentage);
+  mobile_friendliness_.text_content_outside_viewport_percentage =
+      ComputeContentOutsideViewport();
 
   frame_view_->DidChangeMobileFriendliness(mobile_friendliness_);
 }
 
 void MobileFriendlinessChecker::NotifyViewportUpdated(
     const ViewportDescription& viewport) {
+  const double zoom = viewport.zoom_is_explicit ? viewport.zoom : 1.0;
+
   switch (viewport.type) {
     case ViewportDescription::Type::kUserAgentStyleSheet:
       if (mobile_friendliness_.viewport_device_width ==
@@ -374,6 +381,10 @@ void MobileFriendlinessChecker::NotifyViewportUpdated(
         mobile_friendliness_.allow_user_zoom =
             viewport.user_zoom ? ViewportStatus::kYes : ViewportStatus::kNo;
       }
+      if (viewport.max_zoom_is_explicit &&
+          viewport.max_zoom / zoom < kMaximumScalePreventsZoomingThreshold) {
+        mobile_friendliness_.allow_user_zoom = ViewportStatus::kNo;
+      }
       break;
     default:
       return;
@@ -388,8 +399,6 @@ int MobileFriendlinessChecker::TextAreaWithFontSize::SmallTextRatio() const {
 
 void MobileFriendlinessChecker::NotifyInvalidatePaint(
     const LayoutObject& object) {
-  ComputeTextContentOutsideViewport(object);
-
   if (font_size_check_enabled_)
     ComputeSmallTextRatio(object);
 }
@@ -397,12 +406,19 @@ void MobileFriendlinessChecker::NotifyInvalidatePaint(
 void MobileFriendlinessChecker::ComputeSmallTextRatio(
     const LayoutObject& object) {
   if (const auto* text = DynamicTo<LayoutText>(object)) {
-    const ComputedStyle* style = text->Style();
+    const auto& style = text->StyleRef();
 
-    if (style->Visibility() != EVisibility::kVisible)
+    // Ignore elements that users cannot see.
+    if (style.Visibility() != EVisibility::kVisible)
       return;
 
-    double actual_font_size = style->FontSize();
+    // Ignore elements intended only for screen readers.
+    if (style.HasOutOfFlowPosition() && style.ClipLeft().IsZero() &&
+        style.ClipRight().IsZero() && style.ClipTop().IsZero() &&
+        style.ClipBottom().IsZero())
+      return;
+
+    double actual_font_size = style.FontSize();
     double initial_scale = frame_view_->GetPage()
                                ->GetPageScaleConstraintsSet()
                                .FinalConstraints()
@@ -419,63 +435,29 @@ void MobileFriendlinessChecker::ComputeSmallTextRatio(
   }
 }
 
-constexpr int kMaxAncestorCount = 5;
-bool CheckParentHasOverflowXHidden(const LayoutObject* obj) {
-  int ancestor_count = kMaxAncestorCount;
-  while (obj && ancestor_count > 0) {
-    const ComputedStyle* style = obj->Style();
-    if (style->OverflowX() == EOverflow::kHidden)
-      return true;
-    obj = obj->Parent();
-    --ancestor_count;
-  }
-  return false;
-}
-
-void MobileFriendlinessChecker::ComputeTextContentOutsideViewport(
-    const LayoutObject& object) {
+int MobileFriendlinessChecker::ComputeContentOutsideViewport() {
   int frame_width = frame_view_->GetPage()->GetVisualViewport().Size().Width();
   if (frame_width == 0) {
-    return;
+    return 0;
   }
 
-  int total_text_width;
-  if (const auto* text = DynamicTo<LayoutText>(object)) {
-    const ComputedStyle* style = text->Style();
-    if (style->Visibility() != EVisibility::kVisible ||
-        style->ContentVisibility() != EContentVisibility::kVisible ||
-        style->Opacity() == 0.0 || CheckParentHasOverflowXHidden(&object))
-      return;
-    total_text_width = text->PhysicalRightOffset().ToInt();
-  } else if (const auto* image = DynamicTo<LayoutImage>(object)) {
-    const ComputedStyle* style = image->Style();
-    if (style->Visibility() != EVisibility::kVisible ||
-        style->ContentVisibility() != EContentVisibility::kVisible ||
-        style->Opacity() == 0.0 || CheckParentHasOverflowXHidden(&object))
-      return;
-    total_text_width = image->FrameRect().MaxX().ToInt();
-  } else {
-    return;
+  const auto* root_frame_viewport = frame_view_->GetRootFrameViewport();
+  if (root_frame_viewport == nullptr) {
+    return 0;
   }
 
   double initial_scale = frame_view_->GetPage()
                              ->GetPageScaleConstraintsSet()
                              .FinalConstraints()
                              .initial_scale;
-  if (initial_scale > 0)
-    total_text_width *= initial_scale;
+  int content_width =
+      root_frame_viewport->LayoutViewport().ContentsSize().Width() *
+      initial_scale;
+  int max_scroll_offset = content_width - frame_width;
 
-  int text_content_outside_viewport_percentage = 0;
-  if (total_text_width > frame_width) {
-    // We use ceil function here because we want to treat 100.1% as 101 which
-    // requires a scroll bar.
-    text_content_outside_viewport_percentage =
-        std::ceil((total_text_width - frame_width) * 100.0 / frame_width);
-  }
-
-  mobile_friendliness_.text_content_outside_viewport_percentage =
-      std::max(mobile_friendliness_.text_content_outside_viewport_percentage,
-               text_content_outside_viewport_percentage);
+  // We use ceil function here because we want to treat 100.1% as 101 which
+  // requires a scroll bar.
+  return std::ceil(max_scroll_offset * 100.0 / frame_width);
 }
 
 void MobileFriendlinessChecker::Trace(Visitor* visitor) const {

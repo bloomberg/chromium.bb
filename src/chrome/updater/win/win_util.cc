@@ -9,22 +9,33 @@
 #include <windows.h>
 #include <wtsapi32.h>
 
+#include <cstdlib>
+#include <memory>
 #include <string>
 
+#include "base/callback_helpers.h"
+#include "base/check.h"
 #include "base/command_line.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/guid.h"
 #include "base/logging.h"
-#include "base/numerics/ranges.h"
+#include "base/memory/free_deleter.h"
 #include "base/process/process_iterator.h"
 #include "base/scoped_native_library.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
+#include "base/win/scoped_handle.h"
 #include "chrome/updater/constants.h"
+#include "chrome/updater/updater_branding.h"
 #include "chrome/updater/updater_scope.h"
+#include "chrome/updater/updater_version.h"
 #include "chrome/updater/win/user_info.h"
 #include "chrome/updater/win/win_constants.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace updater {
 namespace {
@@ -34,6 +45,100 @@ const unsigned int kMaxProcessQueryIterations = 50;
 
 // The sleep time in ms between each poll.
 const unsigned int kProcessQueryWaitTimeMs = 100;
+
+class ProcessFilterExplorer : public base::ProcessFilter {
+ public:
+  ~ProcessFilterExplorer() override = default;
+
+  // Overrides for base::ProcessFilter.
+  bool Includes(const base::ProcessEntry& entry) const override {
+    return base::EqualsCaseInsensitiveASCII(entry.exe_file(), L"EXPLORER.EXE");
+  }
+};
+
+HRESULT IsUserRunningSplitToken(bool& is_split_token) {
+  HANDLE token = NULL;
+  if (!::OpenProcessToken(::GetCurrentProcess(), TOKEN_QUERY, &token))
+    return HRESULTFromLastError();
+  base::win::ScopedHandle token_holder(token);
+  TOKEN_ELEVATION_TYPE elevation_type = TokenElevationTypeDefault;
+  DWORD size_returned = 0;
+  if (!::GetTokenInformation(token_holder.Get(), TokenElevationType,
+                             &elevation_type, sizeof(elevation_type),
+                             &size_returned)) {
+    return HRESULTFromLastError();
+  }
+  is_split_token = elevation_type == TokenElevationTypeFull ||
+                   elevation_type == TokenElevationTypeLimited;
+  DCHECK(is_split_token || elevation_type == TokenElevationTypeDefault);
+  return S_OK;
+}
+
+HRESULT GetSidIntegrityLevel(PSID sid, MANDATORY_LEVEL* level) {
+  if (!::IsValidSid(sid))
+    return E_FAIL;
+  SID_IDENTIFIER_AUTHORITY* authority = ::GetSidIdentifierAuthority(sid);
+  if (!authority)
+    return E_FAIL;
+  static const SID_IDENTIFIER_AUTHORITY kMandatoryLabelAuth =
+      SECURITY_MANDATORY_LABEL_AUTHORITY;
+  if (std::memcmp(authority, &kMandatoryLabelAuth,
+                  sizeof(SID_IDENTIFIER_AUTHORITY))) {
+    return E_FAIL;
+  }
+  PUCHAR count = ::GetSidSubAuthorityCount(sid);
+  if (!count || *count != 1)
+    return E_FAIL;
+  DWORD* rid = ::GetSidSubAuthority(sid, 0);
+  if (!rid)
+    return E_FAIL;
+  if ((*rid & 0xFFF) != 0 || *rid > SECURITY_MANDATORY_PROTECTED_PROCESS_RID)
+    return E_FAIL;
+  *level = static_cast<MANDATORY_LEVEL>(*rid >> 12);
+  return S_OK;
+}
+
+// Gets the mandatory integrity level of a process.
+// TODO(crbug.com/1233748): consider reusing
+// base::GetCurrentProcessIntegrityLevel().
+HRESULT GetProcessIntegrityLevel(DWORD process_id, MANDATORY_LEVEL* level) {
+  HANDLE process = ::OpenProcess(PROCESS_QUERY_INFORMATION, false, process_id);
+  if (!process)
+    return HRESULTFromLastError();
+  base::win::ScopedHandle process_holder(process);
+  HANDLE token = NULL;
+  if (!::OpenProcessToken(process_holder.Get(),
+                          TOKEN_QUERY | TOKEN_QUERY_SOURCE, &token)) {
+    return HRESULTFromLastError();
+  }
+  base::win::ScopedHandle token_holder(token);
+  DWORD label_size = 0;
+  if (::GetTokenInformation(token_holder.Get(), TokenIntegrityLevel, nullptr, 0,
+                            &label_size) ||
+      ::GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
+    return E_FAIL;
+  }
+  std::unique_ptr<TOKEN_MANDATORY_LABEL, base::FreeDeleter> label(
+      static_cast<TOKEN_MANDATORY_LABEL*>(std::malloc(label_size)));
+  if (!::GetTokenInformation(token_holder.Get(), TokenIntegrityLevel,
+                             label.get(), label_size, &label_size)) {
+    return HRESULTFromLastError();
+  }
+  return GetSidIntegrityLevel(label->Label.Sid, level);
+}
+
+bool IsExplorerRunningAtMediumOrLower() {
+  ProcessFilterExplorer filter;
+  base::ProcessIterator iter(&filter);
+  while (const base::ProcessEntry* process_entry = iter.NextProcessEntry()) {
+    MANDATORY_LEVEL level = MandatoryLevelUntrusted;
+    if (SUCCEEDED(GetProcessIntegrityLevel(process_entry->pid(), &level)) &&
+        level <= MandatoryLevelMedium) {
+      return true;
+    }
+  }
+  return false;
+}
 
 }  // namespace
 
@@ -183,10 +288,8 @@ HRESULT CreateUniqueEventInEnvironment(const std::wstring& var_name,
   if (FAILED(hr))
     return hr;
 
-  if (!::SetEnvironmentVariable(var_name.c_str(), event_name.c_str())) {
-    DWORD error = ::GetLastError();
-    return HRESULT_FROM_WIN32(error);
-  }
+  if (!::SetEnvironmentVariable(var_name.c_str(), event_name.c_str()))
+    return HRESULTFromLastError();
 
   return S_OK;
 }
@@ -199,18 +302,15 @@ HRESULT OpenUniqueEventFromEnvironment(const std::wstring& var_name,
   wchar_t event_name[MAX_PATH] = {0};
   if (!::GetEnvironmentVariable(var_name.c_str(), event_name,
                                 base::size(event_name))) {
-    DWORD error = ::GetLastError();
-    return HRESULT_FROM_WIN32(error);
+    return HRESULTFromLastError();
   }
 
   NamedObjectAttributes attr;
   GetNamedObjectAttributes(event_name, scope, &attr);
   *unique_event = ::OpenEvent(EVENT_ALL_ACCESS, false, attr.name.c_str());
 
-  if (!*unique_event) {
-    DWORD error = ::GetLastError();
-    return HRESULT_FROM_WIN32(error);
-  }
+  if (!*unique_event)
+    return HRESULTFromLastError();
 
   return S_OK;
 }
@@ -224,10 +324,8 @@ HRESULT CreateEvent(NamedObjectAttributes* event_attr, HANDLE* event_handle) {
                                 false,  // not signaled
                                 event_attr->name.c_str());
 
-  if (!*event_handle) {
-    DWORD error = ::GetLastError();
-    return HRESULT_FROM_WIN32(error);
-  }
+  if (!*event_handle)
+    return HRESULTFromLastError();
 
   return S_OK;
 }
@@ -325,9 +423,8 @@ int GetDownloadProgress(int64_t downloaded_bytes, int64_t total_bytes) {
   if (downloaded_bytes == -1 || total_bytes == -1 || total_bytes == 0)
     return -1;
   DCHECK_LE(downloaded_bytes, total_bytes);
-  return 100 *
-         base::ClampToRange(static_cast<double>(downloaded_bytes) / total_bytes,
-                            0.0, 1.0);
+  return 100 * base::clamp(static_cast<double>(downloaded_bytes) / total_bytes,
+                           0.0, 1.0);
 }
 
 base::win::ScopedHandle GetUserTokenFromCurrentSessionId() {
@@ -363,22 +460,101 @@ bool PathOwnedByUser(const base::FilePath& path) {
 }
 
 // TODO(crbug.com/1212187): maybe handle filtered tokens.
-bool IsRunningElevated() {
+HRESULT IsUserAdmin(bool& is_user_admin) {
   SID_IDENTIFIER_AUTHORITY nt_authority = SECURITY_NT_AUTHORITY;
   PSID administrators_group = nullptr;
   if (!::AllocateAndInitializeSid(&nt_authority, 2, SECURITY_BUILTIN_DOMAIN_RID,
                                   DOMAIN_ALIAS_RID_ADMINS, 0, 0, 0, 0, 0, 0,
                                   &administrators_group)) {
-    return false;
+    return HRESULTFromLastError();
+  }
+  base::ScopedClosureRunner free_sid(
+      base::BindOnce([](PSID sid) { ::FreeSid(sid); }, administrators_group));
+  BOOL is_member = false;
+  if (!::CheckTokenMembership(NULL, administrators_group, &is_member))
+    return HRESULTFromLastError();
+  is_user_admin = is_member;
+  return S_OK;
+}
+
+HRESULT IsUserNonElevatedAdmin(bool& is_user_non_elevated_admin) {
+  HANDLE token = NULL;
+  if (!::OpenProcessToken(::GetCurrentProcess(), TOKEN_READ, &token))
+    return HRESULTFromLastError();
+  is_user_non_elevated_admin = false;
+  base::win::ScopedHandle token_holder(token);
+  TOKEN_ELEVATION_TYPE elevation_type = TokenElevationTypeDefault;
+  DWORD size_returned = 0;
+  if (::GetTokenInformation(token_holder.Get(), TokenElevationType,
+                            &elevation_type, sizeof(elevation_type),
+                            &size_returned)) {
+    if (elevation_type == TokenElevationTypeLimited) {
+      is_user_non_elevated_admin = true;
+    }
+  }
+  return S_OK;
+}
+
+HRESULT IsUACOn(bool& is_uac_on) {
+  // The presence of a split token definitively indicates that UAC is on. But
+  // the absence of the token does not necessarily indicate that UAC is off.
+  bool is_split_token = false;
+  if (SUCCEEDED(IsUserRunningSplitToken(is_split_token)) && is_split_token) {
+    is_uac_on = true;
+    return S_OK;
   }
 
-  BOOL result = false;
-  if (!::CheckTokenMembership(NULL, administrators_group, &result)) {
-    result = false;
-  }
-  ::FreeSid(administrators_group);
+  is_uac_on = IsExplorerRunningAtMediumOrLower();
+  return S_OK;
+}
 
-  return result;
+HRESULT IsElevatedWithUACOn(bool& is_elevated_with_uac_on) {
+  bool is_user_admin = false;
+  if (SUCCEEDED(IsUserAdmin(is_user_admin)) && !is_user_admin) {
+    is_elevated_with_uac_on = false;
+    return S_OK;
+  }
+  return IsUACOn(is_elevated_with_uac_on);
+}
+
+std::string GetUACState() {
+  std::string s;
+
+  bool is_user_admin = false;
+  if (SUCCEEDED(IsUserAdmin(is_user_admin)))
+    base::StringAppendF(&s, "IsUserAdmin: %d, ", is_user_admin);
+
+  bool is_user_non_elevated_admin = false;
+  if (SUCCEEDED(IsUserNonElevatedAdmin(is_user_non_elevated_admin))) {
+    base::StringAppendF(&s, "IsUserNonElevatedAdmin: %d, ",
+                        is_user_non_elevated_admin);
+  }
+
+  bool is_uac_on = false;
+  if (SUCCEEDED(IsUACOn(is_uac_on)))
+    base::StringAppendF(&s, "IsUACOn: %d, ", is_uac_on);
+
+  bool is_elevated_with_uac_on = false;
+  if (SUCCEEDED(IsElevatedWithUACOn(is_elevated_with_uac_on))) {
+    base::StringAppendF(&s, "IsElevatedWithUACOn: %d", is_elevated_with_uac_on);
+  }
+
+  return s;
+}
+
+std::wstring GetServiceName(bool is_internal_service) {
+  std::wstring service_name = GetServiceDisplayName(is_internal_service);
+  service_name.erase(
+      std::remove_if(service_name.begin(), service_name.end(), isspace),
+      service_name.end());
+  return service_name;
+}
+
+std::wstring GetServiceDisplayName(bool is_internal_service) {
+  return base::StrCat(
+      {base::ASCIIToWide(PRODUCT_FULLNAME_STRING), L" ",
+       is_internal_service ? kWindowsInternalServiceName : kWindowsServiceName,
+       L" ", kUpdaterVersionUtf16});
 }
 
 }  // namespace updater

@@ -34,11 +34,13 @@ public:
     const Attribute& inShadowParams() const { return fInShadowParams; }
     GrColor color() const { return fColor; }
 
-    void getGLSLProcessorKey(const GrShaderCaps& caps, GrProcessorKeyBuilder* b) const override {}
+    void addToKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const override {}
 
-    GrGLSLGeometryProcessor* createGLSLInstance(const GrShaderCaps&) const override;
+    std::unique_ptr<ProgramImpl> makeProgramImpl(const GrShaderCaps&) const override;
 
 private:
+    class Impl;
+
     GrRRectShadowGeoProc(const GrSurfaceProxyView& lutView);
 
     const TextureSampler& onTextureSampler(int i) const override { return fLUTTextureSampler; }

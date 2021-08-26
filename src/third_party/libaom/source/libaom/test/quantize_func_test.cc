@@ -22,7 +22,6 @@
 #include "av1/encoder/encoder.h"
 #include "av1/common/scan.h"
 #include "test/acm_random.h"
-#include "test/clear_system_state.h"
 #include "test/register_state_check.h"
 #include "test/util.h"
 
@@ -100,7 +99,6 @@ class QuantizeTestBase : public ::testing::TestWithParam<QuantizeParam> {
     qtab_ = NULL;
     aom_free(coeff_);
     coeff_ = NULL;
-    libaom_test::ClearSystemState();
   }
 
   void InitQuantizer() {
@@ -159,7 +157,7 @@ class QuantizeTestBase : public ::testing::TestWithParam<QuantizeParam> {
                  qcoeff_ref, dqcoeff_ref, dequant, &eob[0], sc->scan,
                  sc->iscan);
 
-      ASM_REGISTER_STATE_CHECK(quant_(coeff_ptr, n_coeffs, zbin, round, quant,
+      API_REGISTER_STATE_CHECK(quant_(coeff_ptr, n_coeffs, zbin, round, quant,
                                       quant_shift, qcoeff, dqcoeff, dequant,
                                       &eob[1], sc->scan, sc->iscan));
 
@@ -270,7 +268,7 @@ class FullPrecisionQuantizeTest : public QuantizeTestBase<tran_low_t> {
                quant_shift_ptr, qcoeff_ref_ptr, dqcoeff_ref_ptr, dequant_ptr,
                eob_ref_ptr, scan, iscan);
 
-    ASM_REGISTER_STATE_CHECK(quant_(
+    API_REGISTER_STATE_CHECK(quant_(
         coeff_ptr, n_coeffs, zbin_ptr, round_ptr, quant_ptr, quant_shift_ptr,
         qcoeff_ptr, dqcoeff_ptr, dequant_ptr, eob_ptr, scan, iscan));
   }

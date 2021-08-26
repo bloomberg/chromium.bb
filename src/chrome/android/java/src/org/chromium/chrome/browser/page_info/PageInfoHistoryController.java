@@ -8,9 +8,15 @@ import android.text.format.DateUtils;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.history.BrowsingHistoryBridge;
 import org.chromium.chrome.browser.history.HistoryContentManager;
 import org.chromium.chrome.browser.history.HistoryItem;
+import org.chromium.chrome.browser.history.HistoryProvider;
+import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.components.browser_ui.util.date.CalendarUtils;
 import org.chromium.components.browser_ui.util.date.StringUtils;
 import org.chromium.components.page_info.PageInfoAction;
 import org.chromium.components.page_info.PageInfoControllerDelegate;
@@ -25,23 +31,32 @@ import java.util.Date;
  */
 public class PageInfoHistoryController
         implements PageInfoSubpageController, HistoryContentManager.Observer {
+    private static HistoryProvider sProviderForTests;
+    /** Clock to use so we can mock time in tests. */
+    public interface Clock {
+        long currentTimeMillis();
+    }
+    private static Clock sClock = System::currentTimeMillis;
+
     private final PageInfoMainController mMainController;
     private final PageInfoRowView mRowView;
     private final PageInfoControllerDelegate mDelegate;
     private final String mTitle;
     private final String mHost;
+    private boolean mDataIsStale;
+    private HistoryProvider mHistoryProvider;
     private HistoryContentManager mContentManager;
     private long mLastVisitedTimestamp;
 
     public PageInfoHistoryController(PageInfoMainController mainController, PageInfoRowView rowView,
-            PageInfoControllerDelegate delegate, String host) {
+            PageInfoControllerDelegate delegate) {
         mMainController = mainController;
         mRowView = rowView;
         mDelegate = delegate;
         mTitle = mRowView.getContext().getResources().getString(R.string.page_info_history_title);
-        mHost = host;
+        mHost = mainController.getURL().getHost();
 
-        setupHistoryRow();
+        updateLastVisit();
     }
 
     private void launchSubpage() {
@@ -75,12 +90,27 @@ public class PageInfoHistoryController
         }
     }
 
+    private void updateLastVisit() {
+        mHistoryProvider = sProviderForTests != null
+                ? sProviderForTests
+                : new BrowsingHistoryBridge(Profile.getLastUsedRegularProfile());
+        mHistoryProvider.getLastVisitToHostBeforeRecentNavigations(mHost, (timestamp) -> {
+            mLastVisitedTimestamp = timestamp;
+            if (mHistoryProvider != null) {
+                mHistoryProvider.destroy();
+                mHistoryProvider = null;
+            }
+            setupHistoryRow();
+        });
+    }
+
     private void setupHistoryRow() {
         PageInfoRowView.ViewParams rowParams = new PageInfoRowView.ViewParams();
         rowParams.title = getRowTitle();
         rowParams.visible = rowParams.title != null && mDelegate.isSiteSettingsAvailable()
                 && !mDelegate.isIncognito();
         rowParams.iconResId = R.drawable.ic_history_googblue_24dp;
+        rowParams.decreaseIconSize = true;
         rowParams.clickCallback = this::launchSubpage;
 
         mRowView.setParams(rowParams);
@@ -88,12 +118,16 @@ public class PageInfoHistoryController
 
     private String getRowTitle() {
         if (mLastVisitedTimestamp == 0) {
-            return mTitle;
+            return null;
         }
-        // TODO(crbug.com/1173154): Set last visit timestamp based on history query.
-        long difference = 0;
+        long today = CalendarUtils.getStartOfDay(sClock.currentTimeMillis()).getTime().getTime();
+        long lastVisitedDay =
+                CalendarUtils.getStartOfDay(mLastVisitedTimestamp).getTime().getTime();
+        long difference = today - lastVisitedDay;
         Resources resources = mRowView.getContext().getResources();
-        if (difference == 0) {
+        if (difference < 0) {
+            return null;
+        } else if (difference == 0) {
             return resources.getString(R.string.page_info_history_last_visit_today);
         } else if (difference == DateUtils.DAY_IN_MILLIS) {
             return resources.getString(R.string.page_info_history_last_visit_yesterday);
@@ -113,6 +147,14 @@ public class PageInfoHistoryController
         return;
     }
 
+    @Override
+    public void updateRowIfNeeded() {
+        if (mDataIsStale) {
+            updateLastVisit();
+        }
+        mDataIsStale = false;
+    };
+
     // HistoryContentManager.Observer
     @Override
     public void onScrolledCallback(boolean loadedMore) {}
@@ -128,6 +170,7 @@ public class PageInfoHistoryController
     @Override
     public void onItemRemoved(HistoryItem item) {
         mMainController.recordAction(PageInfoAction.PAGE_INFO_HISTORY_ENTRY_REMOVED);
+        mDataIsStale = true;
         return;
     }
 
@@ -146,4 +189,15 @@ public class PageInfoHistoryController
     // HistoryContentManager.Observer
     @Override
     public void onUserAccountStateChanged() {}
+
+    /** @param provider The {@link HistoryProvider} that is used in place of a real one. */
+    @VisibleForTesting
+    public static void setProviderForTests(HistoryProvider provider) {
+        sProviderForTests = provider;
+    }
+
+    @VisibleForTesting
+    static void setClockForTesting(Clock clock) {
+        sClock = clock;
+    }
 }

@@ -16,7 +16,7 @@
       "git",
       "fetch",
       "origin",
-      "master",
+      "main",
       "--recurse-submodules",
       "--progress"
     ],
@@ -97,14 +97,14 @@
     "infra_step": true,
     "name": "count-objects",
     "~followup_annotations": [
-      "@@@STEP_LOG_LINE@exception@ValueError(\"invalid literal for long() with base 10: 'xxx'\",)@@@",
+      "@@@STEP_LOG_LINE@exception@ValueError(\"invalid literal for int() with base 10: 'xxx'\",)@@@",
       "@@@STEP_LOG_END@exception@@@",
       "@@@STEP_WARNINGS@@@"
     ]
   },
   {
     "failure": {
-      "humanReason": "count-objects failed: invalid literal for long() with base 10: 'xxx'"
+      "humanReason": "count-objects failed: invalid literal for int() with base 10: 'xxx'"
     },
     "name": "$result"
   }

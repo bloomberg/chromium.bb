@@ -16,6 +16,7 @@
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 #import "ios/chrome/browser/ui/gestures/view_controller_trait_collection_observer.h"
 #import "ios/chrome/browser/ui/gestures/view_revealing_vertical_pan_handler.h"
+#import "ios/chrome/browser/ui/menu/action_factory.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_table_view_controller.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/disabled_tab_view_controller.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/features.h"
@@ -250,6 +251,10 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
   [self setupTopToolbar];
   [self setupBottomToolbar];
+  if (@available(iOS 14, *)) {
+    if (IsTabsBulkActionsEnabled())
+      [self setupEditButton];
+  }
 
   // Hide the toolbars and the floating button, so they can fade in the first
   // time there's a transition into this view controller.
@@ -594,6 +599,10 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 #pragma mark - TabGridMode
 
 - (void)setTabGridMode:(TabGridMode)mode {
+  if (_tabGridMode == mode) {
+    return;
+  }
+
   _tabGridMode = mode;
 
   self.bottomToolbar.mode = self.tabGridMode;
@@ -601,6 +610,8 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   self.incognitoTabsViewController.mode = self.tabGridMode;
   self.topToolbar.mode = self.tabGridMode;
   self.scrollView.scrollEnabled = (self.tabGridMode != TabGridModeSelection);
+  if (mode == TabGridModeSelection)
+    [self updateSelectionModeToolbars];
 }
 
 #pragma mark - LayoutSwitcherProvider
@@ -1165,6 +1176,23 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   }
 }
 
+- (void)setupEditButton API_AVAILABLE(ios(14.0)) {
+  ActionFactory* actionFactory =
+      [[ActionFactory alloc] initWithScenario:MenuScenario::kTabGridEdit];
+  __weak TabGridViewController* weakSelf = self;
+  NSArray<UIMenuElement*>* menuElements = @[
+    [actionFactory actionToCloseAllTabsWithBlock:^{
+      [weakSelf closeAllButtonTapped:nil];
+    }],
+    [actionFactory actionToSelectTabsWithBlock:^{
+      [weakSelf selectTabsButtonTapped:nil];
+    }]
+  ];
+  UIMenu* menu = [UIMenu menuWithChildren:menuElements];
+  [self.topToolbar setEditButtonMenu:menu];
+  [self.bottomToolbar setEditButtonMenu:menu];
+}
+
 // Adds the top toolbar and sets constraints.
 - (void)setupTopToolbar {
   TabGridTopToolbar* topToolbar = [[TabGridTopToolbar alloc] init];
@@ -1178,8 +1206,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
                                action:@selector(closeAllButtonTapped:)];
   [topToolbar setDoneButtonTarget:self action:@selector(doneButtonTapped:)];
   [topToolbar setNewTabButtonTarget:self action:@selector(newTabButtonTapped:)];
-  [topToolbar setSelectTabButtonTarget:self
-                                action:@selector(selectButtonTapped:)];
   [topToolbar setSelectAllButtonTarget:self
                                 action:@selector(selectAllButtonTapped:)];
 
@@ -1287,19 +1313,19 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   if (@available(iOS 14, *)) {
     GridViewController* gridViewController =
         [self gridViewControllerForPage:self.currentPage];
+    NSArray<NSString*>* items =
+        gridViewController.selectedShareableItemIDsForEditing;
     UIMenu* menu = nil;
     switch (self.currentPage) {
       case TabGridPageIncognitoTabs:
         menu = [UIMenu
             menuWithChildren:[self.incognitoTabsDelegate
-                                 addToButtonMenuElementsForGridViewController:
-                                     gridViewController]];
+                                 addToButtonMenuElementsForItems:items]];
         break;
       case TabGridPageRegularTabs:
         menu = [UIMenu
             menuWithChildren:[self.regularTabsDelegate
-                                 addToButtonMenuElementsForGridViewController:
-                                     gridViewController]];
+                                 addToButtonMenuElementsForItems:items]];
         break;
       case TabGridPageRemoteTabs:
         // No-op, Add To button inaccessible in remote tabs page.
@@ -1331,6 +1357,8 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     [self.bottomToolbar setNewTabButtonEnabled:NO];
     [self.topToolbar setCloseAllButtonEnabled:NO];
     [self.bottomToolbar setCloseAllButtonEnabled:NO];
+    [self.bottomToolbar setEditButtonEnabled:NO];
+    [self.topToolbar setEditButtonEnabled:NO];
     return;
   }
 
@@ -1402,6 +1430,8 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
   [self.topToolbar setCloseAllButtonEnabled:enabled];
   [self.bottomToolbar setCloseAllButtonEnabled:enabled];
+  [self.bottomToolbar setEditButtonEnabled:enabled];
+  [self.topToolbar setEditButtonEnabled:enabled];
 }
 
 // Shows the two toolbars and the floating button. Suitable for use in
@@ -1515,11 +1545,17 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   NSUInteger sharableSelectedItemsCount =
       [currentGridViewController.selectedShareableItemIDsForEditing count];
   self.topToolbar.selectedTabsCount = selectedItemsCount;
-
   self.bottomToolbar.selectedTabsCount = selectedItemsCount;
-  [self.bottomToolbar setCloseAllButtonEnabled:selectedItemsCount > 0];
   [self.bottomToolbar setShareTabsButtonEnabled:sharableSelectedItemsCount > 0];
   [self.bottomToolbar setAddToButtonEnabled:sharableSelectedItemsCount > 0];
+  [self.bottomToolbar setCloseTabsButtonEnabled:selectedItemsCount];
+  [self.topToolbar setSelectAllButtonEnabled:YES];
+
+  if (currentGridViewController.allItemsSelectedForEditing) {
+    [self.topToolbar configureDeselectAllButtonTitle];
+  } else {
+    [self.topToolbar configureSelectAllButtonTitle];
+  }
 }
 
 // Records when the user switches between incognito and regular pages in the tab
@@ -1820,6 +1856,28 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   [self.regularPopupMenuHandler dismissPopupMenuAnimated:YES];
 }
 
+- (void)gridViewControllerDragSessionWillBegin:
+    (GridViewController*)gridViewController {
+  // Actions on both bars should be disabled during dragging.
+  [self.topToolbar setDoneButtonEnabled:NO];
+  [self.bottomToolbar setDoneButtonEnabled:NO];
+  [self.topToolbar setNewTabButtonEnabled:NO];
+  [self.topToolbar setSelectAllButtonEnabled:NO];
+  [self.topToolbar setEditButtonEnabled:NO];
+  [self.bottomToolbar setEditButtonEnabled:NO];
+  [self.bottomToolbar setAddToButtonEnabled:NO];
+  [self.bottomToolbar setShareTabsButtonEnabled:NO];
+  [self.bottomToolbar setCloseTabsButtonEnabled:NO];
+}
+
+- (void)gridViewControllerDragSessionDidEnd:
+    (GridViewController*)gridViewController {
+  [self configureDoneButtonBasedOnPage:self.currentPage];
+  [self configureCloseAllButtonForCurrentPageAndUndoAvailability];
+  [self configureNewTabButtonBasedOnContentPermissions];
+  [self updateSelectionModeToolbars];
+}
+
 #pragma mark - Control actions
 
 - (void)doneButtonTapped:(id)sender {
@@ -1850,18 +1908,26 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   }
 }
 
-- (void)selectButtonTapped:(id)sender {
+- (void)selectTabsButtonTapped:(id)sender {
   self.tabGridMode = TabGridModeSelection;
   base::RecordAction(base::UserMetricsAction("MobileTabGridSelectTabs"));
 }
 
 - (void)selectAllButtonTapped:(id)sender {
-  base::RecordAction(
-      base::UserMetricsAction("MobileTabGridSelectionSelectAll"));
-
   GridViewController* gridViewController =
       [self gridViewControllerForPage:self.currentPage];
-  [gridViewController selectAllItemsForEditing];
+
+  // Deselect all items if they are all already selected.
+  if (gridViewController.allItemsSelectedForEditing) {
+    base::RecordAction(
+        base::UserMetricsAction("MobileTabGridSelectionDeselectAll"));
+    [gridViewController deselectAllItemsForEditing];
+  } else {
+    base::RecordAction(
+        base::UserMetricsAction("MobileTabGridSelectionSelectAll"));
+    [gridViewController selectAllItemsForEditing];
+  }
+
   [self updateSelectionModeToolbars];
 }
 

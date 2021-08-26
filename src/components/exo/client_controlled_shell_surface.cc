@@ -727,7 +727,7 @@ void ClientControlledShellSurface::SetResizeLock(bool resize_lock) {
   pending_resize_lock_ = resize_lock;
 }
 
-void ClientControlledShellSurface::UpdateCanResize() {
+void ClientControlledShellSurface::UpdateResizability() {
   TRACE_EVENT0("exo", "ClientControlledShellSurface::updateCanResize");
   ash::ArcResizeLockType resizeLockType = ash::ArcResizeLockType::RESIZABLE;
   if (pending_resize_lock_) {
@@ -747,7 +747,7 @@ void ClientControlledShellSurface::UpdateCanResize() {
     SetCanResize(false);
     return;
   }
-  ShellSurfaceBase::UpdateCanResize();
+  ShellSurfaceBase::UpdateResizability();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1119,7 +1119,7 @@ absl::optional<gfx::Rect> ClientControlledShellSurface::GetWidgetBounds()
     const {
   const ash::NonClientFrameViewAsh* frame_view = GetFrameView();
   if (frame_view->GetFrameEnabled()) {
-    gfx::Rect visible_bounds = ShellSurfaceBase::GetVisibleBounds();
+    gfx::Rect visible_bounds = GetVisibleBounds();
     if (widget_->IsMaximized() && frame_type_ == SurfaceFrameType::NORMAL) {
       // When the widget is maximized in clamshell mode, client sends
       // |geometry_| without taking caption height into account.
@@ -1251,7 +1251,7 @@ void ClientControlledShellSurface::OnPostWidgetCommit() {
                                               ? ui::ZOrderLevel::kFloatingWindow
                                               : ui::ZOrderLevel::kNormal);
 
-  UpdateCanResize();
+  UpdateResizability();
 
   ash::WindowState* window_state = GetWindowState();
   // For PIP, the snap fraction is used to specify the ideal position. Usually

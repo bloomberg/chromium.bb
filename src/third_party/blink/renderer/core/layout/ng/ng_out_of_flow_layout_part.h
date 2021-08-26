@@ -70,6 +70,9 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
   // LayoutResult::OutOfFlowPositionedDescendants.
   void Run(const LayoutBox* only_layout = nullptr);
 
+  // Handle the layout of any OOF elements in a fragmentation context.
+  void HandleFragmentation();
+
  private:
   // Information needed to position descendant within a containing block.
   // Geometry expressed here is complicated:
@@ -199,7 +202,8 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
       const WritingDirectionMode container_writing_direction,
       PhysicalSize container_builder_size,
       LogicalOffset containing_block_relative_offset = LogicalOffset(),
-      LogicalOffset containing_block_offset = LogicalOffset());
+      LogicalOffset containing_block_offset = LogicalOffset(),
+      bool adjust_for_fragmentation = false);
 
   void LayoutCandidates(Vector<NGLogicalOutOfFlowPositionedNode>* candidates,
                         const LayoutBox* only_layout,
@@ -222,7 +226,7 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
   NodeInfo SetupNodeInfo(const NGLogicalOutOfFlowPositionedNode& oof_node);
 
   scoped_refptr<const NGLayoutResult> LayoutOOFNode(
-      const NodeToLayout& oof_node_to_layout,
+      NodeToLayout& oof_node_to_layout,
       const LayoutBox* only_layout,
       const NGConstraintSpace* fragmentainer_constraint_space = nullptr);
 
@@ -234,7 +238,6 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
 
   scoped_refptr<const NGLayoutResult> Layout(
       const NodeToLayout& oof_node_to_layout,
-      const OffsetInfo& offset_info,
       const NGConstraintSpace* fragmentainer_constraint_space);
 
   bool IsContainingBlockForCandidate(const NGLogicalOutOfFlowPositionedNode&);
@@ -258,12 +261,11 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
   // |fragmented_descendants| is also an output variable in that any OOF that
   // has not finished layout in the current pass will be added back to
   // |fragmented_descendants| to continue layout in the next fragmentainer.
-  void LayoutOOFsInFragmentainer(
-      const Vector<NodeToLayout>& pending_descendants,
-      wtf_size_t index,
-      LayoutUnit column_inline_progression,
-      Vector<NodeToLayout>* fragmented_descendants);
-  void AddOOFToFragmentainer(const NodeToLayout& descendant,
+  void LayoutOOFsInFragmentainer(Vector<NodeToLayout>& pending_descendants,
+                                 wtf_size_t index,
+                                 LayoutUnit column_inline_progression,
+                                 Vector<NodeToLayout>* fragmented_descendants);
+  void AddOOFToFragmentainer(NodeToLayout& descendant,
                              const NGConstraintSpace* fragmentainer_space,
                              LogicalOffset fragmentainer_offset,
                              wtf_size_t index,
@@ -303,6 +305,10 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
   const WritingMode writing_mode_;
   const WritingDirectionMode default_writing_direction_;
 
+  // Out-of-flow positioned nodes that we should lay out at a later time. For
+  // example, if the containing block has not finished layout.
+  Vector<NGLogicalOutOfFlowPositionedNode> delayed_descendants_;
+
   // Holds the children of an inner multicol if we are laying out OOF elements
   // inside a nested fragmentation context.
   Vector<MulticolChildInfo>* multicol_children_;
@@ -317,7 +323,6 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
   bool is_fixed_container_ = false;
   bool allow_first_tier_oof_cache_ = false;
   bool has_block_fragmentation_ = false;
-  bool can_traverse_fragments_ = false;
   // A fixedpos containing block was found in an outer fragmentation context.
   bool outer_context_has_fixedpos_container_ = false;
 };

@@ -20,6 +20,12 @@
       settings-collapse-radio-button:not(:first-of-type) {
         --settings-collapse-separator-line: var(--cr-separator-line);
       }
+
+      settings-privacy-review-page {
+        background-color: var(--cr-card-background-color);
+        border-radius: var(--cr-card-border-radius);
+        box-shadow: var(--cr-card-shadow);
+      }
     </style>
     <template is="dom-if" if="[[showClearBrowsingDataDialog_]]" restamp>
       <settings-clear-browsing-data-dialog prefs="{{prefs}}"
@@ -252,6 +258,18 @@
             </category-setting-exceptions>
           </template>
         </settings-subpage>
+      </template>
+      <template is="dom-if" if="[[enablePrivacyReview_]]">
+        <template is="dom-if" route-path="/privacy/review">
+          <settings-subpage id="privacy-review"
+              class="multi-card"
+              page-title="$i18n{privacyReviewLabel}"
+              associated-control="[[$$('#privacyReviewLinkRow')]]">
+            <settings-privacy-review-page prefs="{{prefs}}"
+                focus-config="[[focusConfig_]]">
+            </settings-privacy-review-page>
+          </settings-subpage>
+        </template>
       </template>
       <template is="dom-if" route-path="/cookies">
         <settings-subpage id="cookies" page-title="$i18n{cookiePageTitle}"
@@ -1311,25 +1329,23 @@
           </template>
         </settings-subpage>
       </template>
-      <template is="dom-if" if="[[enableExperimentalWebPlatformFeatures_]]">
-        <template is="dom-if" route-path="/content/windowPlacement" no-search>
-          <settings-subpage page-title="$i18n{siteSettingsWindowPlacement}"
-              search-label="$i18n{siteSettingsAllSitesSearch}"
-              search-term="{{searchFilter_}}">
-            <category-default-setting
-                toggle-off-label="$i18n{siteSettingsWindowPlacementBlock}"
-                toggle-on-label=
-                    "$i18n{siteSettingsWindowPlacementAskRecommended}"
-                category="[[contentSettingsTypesEnum_.WINDOW_PLACEMENT]]">
-            </category-default-setting>
-            <category-setting-exceptions
-                category="[[contentSettingsTypesEnum_.WINDOW_PLACEMENT]]"
-                block-header="$i18n{siteSettingsBlock}"
-                allow-header="$i18n{siteSettingsAllow}"
-                search-filter="[[searchFilter_]]">
-            </category-setting-exceptions>
-          </settings-subpage>
-        </template>
+      <template is="dom-if" route-path="/content/windowPlacement" no-search>
+        <settings-subpage page-title="$i18n{siteSettingsWindowPlacement}"
+            search-label="$i18n{siteSettingsAllSitesSearch}"
+            search-term="{{searchFilter_}}">
+          <category-default-setting
+              toggle-off-label="$i18n{siteSettingsWindowPlacementBlock}"
+              toggle-on-label=
+                  "$i18n{siteSettingsWindowPlacementAskRecommended}"
+              category="[[contentSettingsTypesEnum_.WINDOW_PLACEMENT]]">
+          </category-default-setting>
+          <category-setting-exceptions
+              category="[[contentSettingsTypesEnum_.WINDOW_PLACEMENT]]"
+              block-header="$i18n{siteSettingsBlock}"
+              allow-header="$i18n{siteSettingsAllow}"
+              search-filter="[[searchFilter_]]">
+          </category-setting-exceptions>
+        </settings-subpage>
       </template>
       <template is="dom-if" route-path="/content/fontAccess" no-search>
         <settings-subpage page-title="$i18n{fonts}"

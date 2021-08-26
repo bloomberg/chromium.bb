@@ -12,6 +12,7 @@ import '../controls/settings_toggle_button.js';
 import '../icons.js';
 import '../prefs/prefs.js';
 import '../settings_shared_css.js';
+import './disable_safebrowsing_dialog.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
@@ -20,6 +21,7 @@ import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v
 
 import {loadTimeData} from '../i18n_setup.js';
 import {MetricsBrowserProxy, MetricsBrowserProxyImpl, PrivacyElementInteractions, SafeBrowsingInteractions} from '../metrics_browser_proxy.js';
+import {OpenWindowProxyImpl} from '../open_window_proxy.js';
 import {PrefsBehavior, PrefsBehaviorInterface} from '../prefs/prefs_behavior.js';
 import {routes} from '../route.js';
 import {Route, RouteObserverMixin, RouteObserverMixinInterface, Router} from '../router.js';
@@ -93,6 +95,20 @@ export class SettingsSecurityPageElement extends
           return loadTimeData.getBoolean('showSecureDnsSetting');
         },
       },
+
+      // <if expr="chromeos">
+      /**
+       * Whether a link to secure DNS OS setting should be displayed.
+       * @private
+       */
+      showSecureDnsSettingLink_: {
+        type: Boolean,
+        readOnly: true,
+        value: function() {
+          return loadTimeData.getBoolean('showSecureDnsSettingLink');
+        },
+      },
+      // </if>
 
       /**
        * Valid safe browsing states.
@@ -319,6 +335,15 @@ export class SettingsSecurityPageElement extends
         SafeBrowsingSetting.STANDARD);
     this.recordActionOnExpandButtonClicked_(SafeBrowsingSetting.STANDARD);
   }
+
+  // <if expr="chromeos">
+  /** @private */
+  onOpenChromeOSSecureDnsSettingsClicked_() {
+    const path =
+        loadTimeData.getString('chromeOSPrivacyAndSecuritySectionPath');
+    OpenWindowProxyImpl.getInstance().openURL(`chrome://os-settings/${path}`);
+  }
+  // </if>
 
   /**
    * @param {!SafeBrowsingSetting} safeBrowsingSetting

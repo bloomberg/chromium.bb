@@ -67,16 +67,6 @@ TranslateManager::TranslateInitCallbackList* g_init_callback_list_ = nullptr;
 TranslateManager::LanguageDetectedCallbackList* g_detection_callback_list_ =
     nullptr;
 
-const char kReportLanguageDetectionErrorURL[] =
-    "https://translate.google.com/translate_error?client=cr&action=langidc";
-
-// Used in kReportLanguageDetectionErrorURL to specify the page source
-// language.
-const char kSourceLanguageQueryName[] = "sl";
-
-// Used in kReportLanguageDetectionErrorURL to specify the page URL.
-const char kUrlQueryName[] = "u";
-
 std::set<std::string> GetSkippedLanguagesForExperiments(
     std::string source_lang,
     translate::TranslatePrefs* translate_prefs) {
@@ -378,7 +368,8 @@ void TranslateManager::ShowTranslateUI(bool auto_translate,
   if (auto_translate && !language_state_.IsPageTranslated()) {
     TranslatePage(
         source_code, target_lang, triggered_from_menu,
-        GetActiveTranslateMetricsLogger()->GetNextManualTranslationType());
+        GetActiveTranslateMetricsLogger()->GetNextManualTranslationType(
+            triggered_from_menu));
     return;
   }
 
@@ -488,25 +479,6 @@ void TranslateManager::RevertTranslation() {
   language_state_.SetCurrentLanguage(language_state_.source_language());
 
   GetActiveTranslateMetricsLogger()->LogReversion();
-}
-
-void TranslateManager::ReportLanguageDetectionError() {
-  TranslateBrowserMetrics::ReportLanguageDetectionError();
-
-  GURL report_error_url = GURL(kReportLanguageDetectionErrorURL);
-
-  report_error_url = net::AppendQueryParameter(
-      report_error_url, kUrlQueryName,
-      translate_driver_->GetLastCommittedURL().spec());
-
-  report_error_url =
-      net::AppendQueryParameter(report_error_url, kSourceLanguageQueryName,
-                                language_state_.source_language());
-
-  report_error_url = translate::AddHostLocaleToUrl(report_error_url);
-  report_error_url = translate::AddApiKeyToUrl(report_error_url);
-
-  translate_client_->ShowReportLanguageDetectionErrorUI(report_error_url);
 }
 
 void TranslateManager::DoTranslatePage(const std::string& translate_script,
@@ -918,9 +890,8 @@ void TranslateManager::FilterIsTranslatePossible(
   if (!ignore_missing_key_for_testing_ &&
       !::google_apis::HasAPIKeyConfigured()) {
     // Without an API key, translate won't work, so don't offer to translate in
-    // the first place. Leave prefs::kOfferTranslateEnabled on, though, because
-    // that settings syncs and we don't want to turn off translate everywhere
-    // else.
+    // the first place. Leave kOfferTranslateEnabled on, though, because that
+    // settings syncs and we don't want to turn off translate everywhere else.
     decision->PreventAllTriggering();
     decision->initiation_statuses.push_back(
         TranslateBrowserMetrics::INITIATION_STATUS_DISABLED_BY_KEY);
@@ -1379,13 +1350,6 @@ void TranslateManager::RecordDecisionMetrics(
         TranslateBrowserMetrics::INITIATION_STATUS_LANGUAGE_IS_NOT_SUPPORTED) {
       TranslateBrowserMetrics::ReportUnsupportedLanguageAtInitiation(
           page_language_code);
-    }
-
-    if (status ==
-        TranslateBrowserMetrics::INITIATION_STATUS_DISABLED_BY_PREFS) {
-      const std::string& locale =
-          TranslateDownloadManager::GetInstance()->application_locale();
-      TranslateBrowserMetrics::ReportLocalesOnDisabledByPrefs(locale);
     }
   }
 }

@@ -46,12 +46,23 @@ namespace dawn_native {
 
         textureUsage.Update(range,
                             [usage](const SubresourceRange&, wgpu::TextureUsage* storedUsage) {
+                                // TODO(crbug.com/dawn/1001): Consider optimizing to have fewer
+                                // branches.
+                                if ((*storedUsage & wgpu::TextureUsage::RenderAttachment) != 0 &&
+                                    (usage & wgpu::TextureUsage::RenderAttachment) != 0) {
+                                    // Using the same subresource as an attachment for two different
+                                    // render attachments is a write-write hazard. Add this internal
+                                    // usage so we will fail the check that a subresource with
+                                    // writable usage is the single usage.
+                                    *storedUsage |= kAgainAsRenderAttachment;
+                                }
                                 *storedUsage |= usage;
                             });
     }
 
-    void SyncScopeUsageTracker::AddTextureUsage(TextureBase* texture,
-                                                const TextureSubresourceUsage& textureUsage) {
+    void SyncScopeUsageTracker::AddRenderBundleTextureUsage(
+        TextureBase* texture,
+        const TextureSubresourceUsage& textureUsage) {
         // Get or create a new TextureSubresourceUsage for that texture (initially filled with
         // wgpu::TextureUsage::None)
         auto it = mTextureUsages.emplace(
@@ -62,7 +73,10 @@ namespace dawn_native {
 
         passTextureUsage->Merge(
             textureUsage, [](const SubresourceRange&, wgpu::TextureUsage* storedUsage,
-                             const wgpu::TextureUsage& addedUsage) { *storedUsage |= addedUsage; });
+                             const wgpu::TextureUsage& addedUsage) {
+                ASSERT((addedUsage & wgpu::TextureUsage::RenderAttachment) == 0);
+                *storedUsage |= addedUsage;
+            });
     }
 
     void SyncScopeUsageTracker::AddBindGroup(BindGroupBase* group) {
@@ -94,7 +108,7 @@ namespace dawn_native {
 
                 case BindingInfoType::Texture: {
                     TextureViewBase* view = group->GetBindingAsTextureView(bindingIndex);
-                    TextureViewUsedAs(view, wgpu::TextureUsage::Sampled);
+                    TextureViewUsedAs(view, wgpu::TextureUsage::TextureBinding);
                     break;
                 }
 
@@ -105,7 +119,7 @@ namespace dawn_native {
                             TextureViewUsedAs(view, kReadOnlyStorageTexture);
                             break;
                         case wgpu::StorageTextureAccess::WriteOnly:
-                            TextureViewUsedAs(view, wgpu::TextureUsage::Storage);
+                            TextureViewUsedAs(view, wgpu::TextureUsage::StorageBinding);
                             break;
                         case wgpu::StorageTextureAccess::Undefined:
                             UNREACHABLE();
@@ -126,7 +140,7 @@ namespace dawn_native {
                     ASSERT(textureViews[2].Get() == nullptr);
 
                     mExternalTextureUsages.insert(externalTexture);
-                    TextureViewUsedAs(textureViews[0].Get(), wgpu::TextureUsage::Sampled);
+                    TextureViewUsedAs(textureViews[0].Get(), wgpu::TextureUsage::TextureBinding);
                     break;
                 }
 

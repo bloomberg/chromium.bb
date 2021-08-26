@@ -167,13 +167,13 @@ function clickNextMonthButton() {
   eventSender.mouseUp();
 }
 
-function skipAnimationAndGetPositionOfTodayButton() {
+function skipAnimationAndGetPositionOfButton(selector) {
   skipAnimation();
   const calendarTableView = popupWindow.global.picker.datePicker ?
       popupWindow.global.picker.datePicker.calendarTableView :
       popupWindow.global.picker.calendarTableView;
   var buttonElement =
-      calendarTableView.element.querySelector('.today-button');
+      calendarTableView.element.querySelector(selector);
   var offset = cumulativeOffset(buttonElement);
   return {
     x: offset[0] + buttonElement.offsetWidth / 2,
@@ -181,8 +181,19 @@ function skipAnimationAndGetPositionOfTodayButton() {
   };
 }
 
+function hoverOverClearButton() {
+  var position = skipAnimationAndGetPositionOfButton('.clear-button');
+  eventSender.mouseMoveTo(position.x, position.y);
+}
+
+function clickClearButton() {
+  hoverOverClearButton();
+  eventSender.mouseDown();
+  eventSender.mouseUp();
+}
+
 function hoverOverTodayButton() {
-  var position = skipAnimationAndGetPositionOfTodayButton();
+  var position = skipAnimationAndGetPositionOfButton('.today-button');
   eventSender.mouseMoveTo(position.x, position.y);
 }
 
@@ -192,10 +203,9 @@ function clickTodayButton() {
   eventSender.mouseUp();
 }
 
-function skipAnimationAndGetPositionOfThisMonthButton() {
+function skipAnimationAndGetPositionOfGlobalPickerButton(selector) {
   skipAnimation();
-  const button =
-      popupWindow.global.picker.querySelector('.today-button');
+  const button = popupWindow.global.picker.querySelector(selector);
   var offset = cumulativeOffset(button);
   return {
     x: offset[0] + button.offsetWidth / 2,
@@ -203,8 +213,21 @@ function skipAnimationAndGetPositionOfThisMonthButton() {
   };
 }
 
+function hoverOverClearMonthButton() {
+  var position =
+      skipAnimationAndGetPositionOfGlobalPickerButton('.clear-button');
+  eventSender.mouseMoveTo(position.x, position.y);
+}
+
+function clickClearMonthButton() {
+  hoverOverClearMonthButton();
+  eventSender.mouseDown();
+  eventSender.mouseUp();
+}
+
 function hoverOverThisMonthButton() {
-  var position = skipAnimationAndGetPositionOfThisMonthButton();
+  var position =
+      skipAnimationAndGetPositionOfGlobalPickerButton('.today-button');
   eventSender.mouseMoveTo(position.x, position.y);
 }
 

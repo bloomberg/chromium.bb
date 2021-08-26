@@ -11,6 +11,9 @@
 #include "components/viz/common/viz_common_export.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
+// See the following for guidance on adding new viz feature flags:
+// https://cs.chromium.org/chromium/src/components/viz/README.md#runtime-features
+
 namespace features {
 
 VIZ_COMMON_EXPORT extern const base::Feature kAdpf;
@@ -42,6 +45,12 @@ VIZ_COMMON_EXPORT extern const base::Feature kUsePlatformDelegatedInk;
 VIZ_COMMON_EXPORT extern const base::Feature kUseSurfaceLayerForVideoDefault;
 #endif
 VIZ_COMMON_EXPORT extern const base::Feature kSurfaceSyncThrottling;
+
+VIZ_COMMON_EXPORT extern const base::Feature kDrawPredictedInkPoint;
+VIZ_COMMON_EXPORT extern const char kDraw1Point12Ms[];
+VIZ_COMMON_EXPORT extern const char kDraw2Points6Ms[];
+VIZ_COMMON_EXPORT extern const char kDraw1Point6Ms[];
+VIZ_COMMON_EXPORT extern const char kDraw2Points3Ms[];
 
 VIZ_COMMON_EXPORT bool IsAdpfEnabled();
 VIZ_COMMON_EXPORT bool IsSimpleFrameRateThrottlingEnabled();

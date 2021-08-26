@@ -28,6 +28,8 @@
 #include "storage/browser/test/test_file_system_context.h"
 #include "storage/browser/test/test_file_system_options.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -85,7 +87,7 @@ class FileSystemOperationRunnerTest : public testing::Test {
 
   FileSystemURL URL(const std::string& path) {
     return file_system_context_->CreateCrackedFileSystemURL(
-        url::Origin::Create(GURL("http://example.com")),
+        blink::StorageKey::CreateFromStringForTesting("http://example.com"),
         storage::kFileSystemTypeTemporary,
         base::FilePath::FromUTF8Unsafe(path));
   }
@@ -207,17 +209,16 @@ class MultiThreadFileSystemOperationRunnerTest : public testing::Test {
         storage::CreateAllowFileAccessOptions());
 
     // Disallow IO on the main loop.
-    base::ThreadRestrictions::SetIOAllowed(false);
+    disallow_blocking_.emplace();
   }
 
   void TearDown() override {
-    base::ThreadRestrictions::SetIOAllowed(true);
     file_system_context_ = nullptr;
   }
 
   FileSystemURL URL(const std::string& path) {
     return file_system_context_->CreateCrackedFileSystemURL(
-        url::Origin::Create(GURL("http://example.com")),
+        blink::StorageKey::CreateFromStringForTesting("http://example.com"),
         storage::kFileSystemTypeTemporary,
         base::FilePath::FromUTF8Unsafe(path));
   }
@@ -229,6 +230,7 @@ class MultiThreadFileSystemOperationRunnerTest : public testing::Test {
  private:
   base::ScopedTempDir base_;
   content::BrowserTaskEnvironment task_environment_;
+  absl::optional<base::ScopedDisallowBlocking> disallow_blocking_;
   scoped_refptr<FileSystemContext> file_system_context_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiThreadFileSystemOperationRunnerTest);

@@ -100,6 +100,7 @@ export const checkContentsBySampling: CheckContents = (
         size: byteLength,
         usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC,
       });
+      t.trackForCleanup(resultBuffer);
 
       const bindGroup = t.device.createBindGroup({
         layout: computePipeline.getBindGroupLayout(0),

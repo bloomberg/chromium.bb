@@ -86,10 +86,10 @@ bool SystemClipboard::IsFormatAvailable(blink::mojom::ClipboardFormat format) {
   return result;
 }
 
-uint64_t SystemClipboard::SequenceNumber() {
+ClipboardSequenceNumberToken SystemClipboard::SequenceNumber() {
   if (!IsValidBufferType(buffer_) || !clipboard_.is_bound())
-    return 0;
-  uint64_t result = 0;
+    return ClipboardSequenceNumberToken();
+  ClipboardSequenceNumberToken result;
   clipboard_->GetSequenceNumber(buffer_, &result);
   return result;
 }
@@ -368,6 +368,29 @@ void SystemClipboard::RecordImageLoadError(const String& image_url) {
     base::UmaHistogramEnumeration("Blink.Clipboard.Paste.Image",
                                   ClipboardPastedImageUrls::kImageLoadError);
   }
+}
+
+void SystemClipboard::ReadAvailableCustomAndStandardFormats(
+    mojom::blink::ClipboardHost::ReadAvailableCustomAndStandardFormatsCallback
+        callback) {
+  clipboard_->ReadAvailableCustomAndStandardFormats(std::move(callback));
+}
+
+void SystemClipboard::ReadUnsanitizedCustomFormat(
+    const String& type,
+    mojom::blink::ClipboardHost::ReadUnsanitizedCustomFormatCallback callback) {
+  // The format size restriction is added in `ClipboardWriter::IsValidType`.
+  DCHECK_LT(type.length(), mojom::blink::ClipboardHost::kMaxFormatSize);
+  clipboard_->ReadUnsanitizedCustomFormat(type, std::move(callback));
+}
+
+void SystemClipboard::WriteUnsanitizedCustomFormat(const String& type,
+                                                   mojo_base::BigBuffer data) {
+  if (data.size() >= mojom::blink::ClipboardHost::kMaxDataSize)
+    return;
+  // The format size restriction is added in `ClipboardWriter::IsValidType`.
+  DCHECK_LT(type.length(), mojom::blink::ClipboardHost::kMaxFormatSize);
+  clipboard_->WriteUnsanitizedCustomFormat(type, std::move(data));
 }
 
 void SystemClipboard::Trace(Visitor* visitor) const {

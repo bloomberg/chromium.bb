@@ -11,14 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 load("//ads/util/non_compile:non_compile.bzl", "cc_with_non_compile_test")
+
+licenses(["notice"])
 
 cc_library(
     name = "base",
     srcs = [
         "base64_utils.cc",
         "bluetooth_utils.cc",
+        "input_stream.cc",
         "prng.cc",
     ],
     hdrs = [
@@ -38,6 +40,7 @@ cc_library(
         "socket.h",
         "types.h",
     ],
+    compatible_with = ["//buildenv/target:non_prod"],
     visibility = [
         "//googlemac/iPhone/Shared/Nearby/Connections:__subpackages__",
         "//core:__subpackages__",
@@ -67,6 +70,7 @@ cc_library(
         "base_pipe.h",
         "byte_utils.h",
     ],
+    compatible_with = ["//buildenv/target:non_prod"],
     visibility = [
         "//core:__subpackages__",
         "//platform/impl:__subpackages__",
@@ -74,9 +78,9 @@ cc_library(
     ],
     deps = [
         ":base",
-        "//platform/api:types",
         "//absl/base:core_headers",
         "//absl/strings:str_format",
+        "//platform/api:types",
     ],
 )
 
@@ -85,6 +89,7 @@ cc_library(
     hdrs = [
         "logging.h",
     ],
+    compatible_with = ["//buildenv/target:non_prod"],
     visibility = [
         "//googlemac/iPhone/Shared/Nearby/Connections:__subpackages__",
         "//platform:__subpackages__",
@@ -105,6 +110,7 @@ cc_library(
         "cancellation_flag.h",
         "cancellation_flag_listener.h",
     ],
+    compatible_with = ["//buildenv/target:non_prod"],
     visibility = [
         "//core/internal:__subpackages__",
         "//platform/api:__subpackages__",
@@ -136,10 +142,10 @@ cc_library(
     deps = [
         ":base",
         ":logging",
-        "//platform/api:comm",
-        "//platform/public:types",
         "//absl/container:flat_hash_map",
         "//absl/strings",
+        "//platform/api:comm",
+        "//platform/public:types",
     ],
 )
 
@@ -154,8 +160,8 @@ cc_test(
     deps = [
         ":base",
         ":test_util",
-        "//platform/impl/g3",  # build_cleaner: keep
         "//testing/base/public:gunit_main",
+        "//platform/impl/g3",  # build_cleaner: keep
     ],
 )
 
@@ -180,8 +186,8 @@ cc_test(
         ":base",
         ":cancellation_flag",
         ":test_util",
-        "//platform/impl/g3",  # build_cleaner: keep
         "//testing/base/public:gunit_main",
+        "//platform/impl/g3",  # build_cleaner: keep
     ],
 )
 

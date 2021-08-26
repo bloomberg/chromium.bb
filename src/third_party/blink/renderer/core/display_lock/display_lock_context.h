@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/core/style/computed_style_base_constants.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -218,6 +219,12 @@ class CORE_EXPORT DisplayLockContext final
 
   // We unlock auto locks for printing, which is set here.
   void SetShouldUnlockAutoForPrint(bool);
+
+  void SetForDetailsElement(bool for_details_element) {
+    for_details_element_ = for_details_element;
+  }
+
+  bool HasElement() const { return element_; }
 
  private:
   // Give access to |NotifyForcedUpdateScopeStarted()| and
@@ -430,6 +437,10 @@ class CORE_EXPORT DisplayLockContext final
   bool set_requested_state_scope_ = false;
 
   absl::optional<ScrollOffset> stashed_scroll_offset_;
+
+  // When we use content-visibility:hidden for a <details> element, it should be
+  // activatable by find-in-page, element fragments, and text fragments.
+  bool for_details_element_ = false;
 };
 
 }  // namespace blink

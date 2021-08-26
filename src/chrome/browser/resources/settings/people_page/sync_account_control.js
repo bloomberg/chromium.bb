@@ -6,7 +6,7 @@
  * 'settings-sync-account-section' is the settings page containing sign-in
  * settings.
  */
-import '//resources/cr_elements/cr_action_menu/cr_action_menu.m.js';
+import '//resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import '//resources/cr_elements/cr_button/cr_button.m.js';
 import '//resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import '//resources/cr_elements/icons.m.js';
@@ -18,6 +18,7 @@ import '../icons.js';
 import '../prefs/prefs.js';
 import '../settings_shared_css.js';
 
+import {CrActionMenuElement} from '//resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import {assert} from '//resources/js/assert.m.js';
 import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from '//resources/js/web_ui_listener_behavior.m.js';
 import {html, mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';

@@ -39,7 +39,8 @@ void MultiStoreFormFetcher::Fetch() {
     return;
   }
 
-  PasswordStore* account_password_store = client_->GetAccountPasswordStore();
+  PasswordStoreInterface* account_password_store =
+      client_->GetAccountPasswordStoreInterface();
 
   // Issue a fetch from the profile store and, if it exists, also from the
   // account store.
@@ -55,11 +56,6 @@ void MultiStoreFormFetcher::Fetch() {
   if (account_password_store) {
     state_ = State::WAITING;
     account_password_store->GetLogins(form_digest_, this);
-#if !defined(OS_IOS) && !defined(OS_ANDROID)
-    // The desktop bubble needs this information.
-    account_password_store->GetMatchingInsecureCredentials(
-        form_digest_.signon_realm, this);
-#endif
   }
 }
 
@@ -153,7 +149,7 @@ void MultiStoreFormFetcher::AggregatePasswordStoreResults(
     BrowserSavePasswordProgressLogger(client_->GetLogManager())
         .LogNumber(Logger::STRING_ON_GET_STORE_RESULTS_METHOD, results.size());
   }
-  ProcessPasswordStoreResults(std::move(partial_results_));
+  FindMatchesAndNotifyConsumers(std::move(partial_results_));
 }
 
 void MultiStoreFormFetcher::ProcessMigratedForms(
@@ -161,14 +157,6 @@ void MultiStoreFormFetcher::ProcessMigratedForms(
   // The migration from HTTP to HTTPS (within the profile store) was finished.
   // Continue processing with the migrated results.
   AggregatePasswordStoreResults(std::move(forms));
-}
-
-void MultiStoreFormFetcher::OnGetInsecureCredentials(
-    std::vector<InsecureCredential> insecure_credentials) {
-  // Both the profile and account store has been queried. Therefore, append the
-  // received credentials to the existing ones.
-  base::ranges::move(insecure_credentials,
-                     std::back_inserter(insecure_credentials_));
 }
 
 void MultiStoreFormFetcher::SplitResults(

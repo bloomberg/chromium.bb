@@ -9,6 +9,7 @@
 
 #include "base/containers/contains.h"
 #include "components/sync/base/sync_base_switches.h"
+#include "components/sync/protocol/data_type_progress_marker.pb.h"
 
 namespace syncer {
 
@@ -23,7 +24,7 @@ constexpr base::TimeDelta kRemoteInvalidationDelay =
 }  // namespace
 
 NudgeTracker::NudgeTracker() {
-  for (ModelType type : ProtocolTypes()) {
+  for (ModelType type : ModelTypeSet::All()) {
     type_trackers_[type] = std::make_unique<DataTypeTracker>(type);
   }
 }

@@ -16,7 +16,11 @@ import {driveDescriptor as driveV2Descriptor} from './drive_v2/module.js';
 import {dummyDescriptor, dummyDescriptor2} from './dummy/module.js';
 // </if>
 import {ModuleDescriptor} from './module_descriptor.js';
+// <if expr="not is_official_build">
+import {photosDescriptor} from './photos/module.js';
+// </if>
 import {recipeTasksDescriptor, shoppingTasksDescriptor} from './task_module/module.js';
+import {recipeTasksDescriptor as recipeTasksV2Descriptor} from './recipes_v2/module.js';
 
 /** @type {!Array<!ModuleDescriptor>} */
 export const descriptors = [];
@@ -26,7 +30,11 @@ if (loadTimeData.getBoolean('shoppingTasksModuleEnabled')) {
 }
 
 if (loadTimeData.getBoolean('recipeTasksModuleEnabled')) {
-  descriptors.push(recipeTasksDescriptor);
+  if (loadTimeData.getBoolean('modulesRedesignedEnabled')) {
+    descriptors.push(recipeTasksV2Descriptor);
+  } else {
+    descriptors.push(recipeTasksDescriptor);
+  }
 }
 
 if (loadTimeData.getBoolean('chromeCartModuleEnabled')) {
@@ -46,6 +54,9 @@ if (loadTimeData.getBoolean('driveModuleEnabled')) {
 }
 
 // <if expr="not is_official_build">
+if (loadTimeData.getBoolean('photosModuleEnabled')) {
+  descriptors.push(photosDescriptor);
+}
 descriptors.push(dummyDescriptor);
 descriptors.push(dummyDescriptor2);
 // </if>

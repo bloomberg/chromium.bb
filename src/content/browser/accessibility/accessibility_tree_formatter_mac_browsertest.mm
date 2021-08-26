@@ -210,6 +210,19 @@ IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
+                       Serialize_NSRange) {
+  TestFormat(R"~~(data:text/html,<input id='input' value='alphabet'>
+                    <script>
+                      let input = document.getElementById('input');
+                      input.select();
+                    </script>)~~",
+             {":3;AXSelectedTextRange=*"}, R"~~(AXWebArea
+++AXGroup
+++++AXTextField AXSelectedTextRange={loc: 0, len: 8} AXValue='alphabet'
+)~~");
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
                        ParameterizedAttributes_Int) {
   TestFormat(R"~~(data:text/html,
                     <p contentEditable='true'>Text</p>)~~",
@@ -417,6 +430,65 @@ IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
 )~~");
 }
 
+IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
+                       Script_UnrecognizedAttribute) {
+  TestScript(R"~~(data:text/html,
+                    <input id='textbox' aria-label='input'>)~~",
+             {"textbox.AXRolio"},
+             R"~~(textbox.AXRolio=ERROR:FAILED_TO_PARSE
+)~~");
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
+                       Script_Comment) {
+  TestScript(R"~~(data:text/html,
+                    <input id='textbox' aria-label='input'>)~~",
+             {"// textbox.AXRolio"},
+             R"~~(// textbox.AXRolio
+)~~");
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
+                       Script_Object_IntArray) {
+  TestScript("data:text/html,", {"var:= [3, 4]"},
+             R"~~(var=[3, 4]
+)~~");
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
+                       Script_Object_NSRange) {
+  TestScript("data:text/html,", {"var:= {loc: 3, len: 2}"},
+             R"~~(var={loc: 3, len: 2}
+)~~");
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
+                       Script_Object_TextMarker) {
+  TestScript(R"~~(data:text/html,
+                    <textarea id="textarea">Text</textarea>)~~",
+             {"var:= {:2, 2, down}"},
+             R"~~(var={:2, 2, down}
+)~~");
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
+                       Script_Object_TextMarkerArray) {
+  TestScript(R"~~(data:text/html,
+                    <textarea id="textarea">Text</textarea>)~~",
+             {"var:= [{:2, 2, down}, {:1, 1, up}]"},
+             R"~~(var=[{:2, 2, down}, {:1, 1, up}]
+)~~");
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
+                       Script_Object_TextMarkerRange) {
+  TestScript(R"~~(data:text/html,
+                    <textarea id="textarea">Text</textarea>)~~",
+             {"var:= {anchor: {:3, 0, down}, focus: {:3, 4, down}}"},
+             R"~~(var={anchor: {:3, 0, down}, focus: {:3, 4, down}}
+)~~");
+}
+
 IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest, Script_Chain) {
   TestScript(R"~~(data:text/html,
                     <input id='input' aria-label='input'>)~~",
@@ -462,6 +534,15 @@ IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
+                       Script_Chain_TextRange_Error) {
+  TestScript(R"~~(data:text/html,
+                    <p id='p'>Paragraph</p>)~~",
+             {"p.AXTextMarkerRangeForUIElement(p).haha"},
+             R"~~(p.AXTextMarkerRangeForUIElement(p).haha=ERROR:FAILED_TO_PARSE
+)~~");
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
                        Script_Variables_AXElement) {
   TestScript(R"~~(data:text/html,
                     <p id='p'>Paragraph</p>)~~",
@@ -490,11 +571,13 @@ IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
                        Script_SetAttribute) {
-  TestScript(R"~~(data:text/html,
+  TestScript(
+      R"~~(data:text/html,
                     <textarea id="textarea">Text</textarea>)~~",
-             {"textarea.AXSelectedTextMarkerRange = "
-              "textarea.AXTextMarkerRangeForUIElement(textarea)"},
-             "");
+      {"textarea.AXSelectedTextMarkerRange = "
+       "textarea.AXTextMarkerRangeForUIElement(textarea)"},
+      R"~~(textarea.AXSelectedTextMarkerRange={anchor: {:3, 0, down}, focus: {:3, 4, down}}
+)~~");
 }
 
 }  // namespace content

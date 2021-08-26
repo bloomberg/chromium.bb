@@ -1,16 +1,7 @@
-# Copyright (c) the JPEG XL Project
+# Copyright (c) the JPEG XL Project Authors. All rights reserved.
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
 
 # ICC detection library used by the comparison and viewer tools.
 if(JPEGXL_ENABLE_VIEWERS)
@@ -250,34 +241,33 @@ set(FUZZER_BINARIES
 )
 
 # Fuzzers.
-if(${JPEGXL_ENABLE_FUZZERS})
-  foreach(BINARY IN LISTS FUZZER_BINARIES)
+foreach(FUZZER IN LISTS FUZZER_BINARIES)
+  if(${JPEGXL_ENABLE_FUZZERS})
+    set(BINARY "${FUZZER}")
     add_executable("${BINARY}" "${BINARY}.cc")
-    target_include_directories("${BINARY}" PRIVATE "${CMAKE_SOURCE_DIR}")
-    target_link_libraries("${BINARY}" jxl-static jxl_extras-static jxl_threads-static jxl_tool)
-    target_compile_options("${BINARY}" PRIVATE "-fsanitize=fuzzer-no-link")
-    target_link_libraries("${BINARY}" -fsanitize=fuzzer)
-  endforeach()
-endif()  # JPEGXL_ENABLE_FUZZERS
-
-# Still tests the deprecated DC functions.
-set_source_files_properties(djxl_fuzzer.cc PROPERTIES
-    COMPILE_FLAGS "-Wno-deprecated -Wno-deprecated-declarations"
-)
-
-# For coverage we want a lightweight alternative for regular fuzzers.
-if(${JPEGXL_ENABLE_COVERAGE})
-  foreach(FUZZER IN LISTS FUZZER_BINARIES)
+    target_link_libraries("${BINARY}" ${JPEGXL_FUZZER_LINK_FLAGS})
+  else()
+    # When not enabled we want a lightweight alternative for regular fuzzers
+    # that just run the target.
     set(BINARY "${FUZZER}_runner")
-    add_executable("${BINARY}" "fuzzer_stub.cc" "${FUZZER}.cc")
+    add_executable("${BINARY}" EXCLUDE_FROM_ALL
+        "fuzzer_stub.cc" "${FUZZER}.cc")
+  endif()  # JPEGXL_ENABLE_FUZZERS
     target_include_directories("${BINARY}" PRIVATE "${CMAKE_SOURCE_DIR}")
     if(${FUZZER} STREQUAL djxl_fuzzer)
-      target_link_libraries("${BINARY}" jxl_dec-static jxl_threads-static)
+      target_link_libraries("${BINARY}"
+        jxl_dec-static
+        jxl_threads-static
+      )
     else()
-      target_link_libraries("${BINARY}" jxl-static jxl_extras-static jxl_threads-static jxl_tool)
+      target_link_libraries("${BINARY}"
+        jxl-static
+        jxl_extras-static
+        jxl_threads-static
+        jxl_tool
+      )
     endif()
-  endforeach()
-endif()  # JPEGXL_ENABLE_COVERAGE
+endforeach()
 
 # EMSCRIPTEN doesn't support dynamic libraries so testing for linkage there
 # doesn't make much sense.
@@ -353,6 +343,9 @@ if ("${JNI_FOUND}" AND "${Java_FOUND}")
     jni/org/jpeg/jpegxl/wrapper/Decoder.java
     jni/org/jpeg/jpegxl/wrapper/DecoderJni.java
     jni/org/jpeg/jpegxl/wrapper/ImageData.java
+    jni/org/jpeg/jpegxl/wrapper/PixelFormat.java
+    jni/org/jpeg/jpegxl/wrapper/Status.java
+    jni/org/jpeg/jpegxl/wrapper/StreamInfo.java
   )
   get_target_property(JXL_JNI_WRAPPER_JAR jxl_jni_wrapper JAR_FILE)
 
@@ -362,14 +355,16 @@ if ("${JNI_FOUND}" AND "${Java_FOUND}")
   )
   get_target_property(JXL_JNI_WRAPPER_TEST_JAR jxl_jni_wrapper_test JAR_FILE)
 
-  # NB: Vanilla OpenJDK 8 / 11 are known to work well (i.e. either "which java"
-  #     or JAVA_HOME environment variable point to the path like
-  #     "/usr/lib/jvm/java-xx-openjdk-yyy" on Debian Linux).
-  add_test(
-    NAME test_jxl_jni_wrapper
-    COMMAND ${Java_JAVA_EXECUTABLE}
-            -cp "${JXL_JNI_WRAPPER_JAR}:${JXL_JNI_WRAPPER_TEST_JAR}"
-            -Dorg.jpeg.jpegxl.wrapper.lib=$<TARGET_FILE:jxl_jni>
-            org.jpeg.jpegxl.wrapper.DecoderTest
-  )
+  if(NOT "${SANITIZER}" MATCHES ".san")
+    # NB: Vanilla OpenJDK 8 / 11 are known to work well (i.e. either
+    #     "which java" or JAVA_HOME environment variable point to the path like
+    #     "/usr/lib/jvm/java-xx-openjdk-yyy" on Debian Linux).
+    add_test(
+      NAME test_jxl_jni_wrapper
+      COMMAND ${Java_JAVA_EXECUTABLE}
+              -cp "${JXL_JNI_WRAPPER_JAR}:${JXL_JNI_WRAPPER_TEST_JAR}"
+              -Dorg.jpeg.jpegxl.wrapper.lib=$<TARGET_FILE:jxl_jni>
+              org.jpeg.jpegxl.wrapper.DecoderTest
+    )
+  endif()  # JPEGXL_ENABLE_FUZZERS
 endif()  # JNI_FOUND & Java_FOUND

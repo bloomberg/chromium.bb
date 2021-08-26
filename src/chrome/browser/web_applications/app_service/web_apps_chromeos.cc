@@ -26,13 +26,13 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_manager.h"
 #include "chrome/browser/ui/web_applications/web_app_ui_manager_impl.h"
-#include "chrome/browser/web_applications/components/app_icon_manager.h"
-#include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
+#include "chrome/browser/web_applications/web_app_icon_manager.h"
+#include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
@@ -139,7 +139,7 @@ void WebAppsChromeOs::GetMenuModel(const std::string& app_id,
   }
 
   if (menu_type == apps::mojom::MenuType::kShelf &&
-      !instance_registry_->GetWindows(app_id).empty()) {
+      instance_registry_->ContainsAppId(app_id)) {
     apps::AddCommandItem(ash::MENU_CLOSE, IDS_SHELF_CONTEXT_MENU_CLOSE,
                          &menu_items);
   }
@@ -219,11 +219,10 @@ void WebAppsChromeOs::OnShortcutsMenuIconsRead(
     gfx::ImageSkia icon;
     if (menu_item_icon_bitmaps) {
       IconEffects icon_effects = IconEffects::kNone;
-      if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
-        // We apply masking to each shortcut icon, regardless if the purpose is
-        // |MASKABLE| or |ANY|.
-        icon_effects = apps::kCrOsStandardBackground | apps::kCrOsStandardMask;
-      }
+
+      // We apply masking to each shortcut icon, regardless if the purpose is
+      // |MASKABLE| or |ANY|.
+      icon_effects = apps::kCrOsStandardBackground | apps::kCrOsStandardMask;
 
       icon = ConvertSquareBitmapsToImageSkia(
           *menu_item_icon_bitmaps, icon_effects,

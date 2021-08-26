@@ -6,12 +6,12 @@
   /* Standard CrOS styles */
   --blue-300-rgb: 138, 180, 248;
   --blue-300: rgb(var(--blue-300-rgb));
-  --blue-600-dark-rgb: 37, 129, 223;
-  --blue-600-dark: rgb(var(--blue-600-rgb));
   --grey-100: rgb(241, 243, 244);
   --grey-200: rgb(232, 234, 237);
+  --grey-500: rgb(154, 160, 166);
   --grey-900-rgb: 32, 33, 36;
   --grey-900: rgb(var(--grey-900-rgb));
+  --yellow-300: rgb(253, 214, 99);
 
   --fast1-duration: 100ms;
   --fast2-duration: 200ms;
@@ -25,8 +25,11 @@
   --exit-easing: cubic-bezier(0.4, 0, 1, 1);
 
   /* App specific settings */
+  --bottom-line: 44px;
   --default-font-family: 'Google Sans', sans-serif;
   --fixed-width-font-family: 'Cousine', monospace;
+  --left-line: 44px;
+  --right-line: 50px;
 
   /* From https://www.w3.org/TR/css-backgrounds-3/#corner-overlap. */
   --border-radius-rounded-with-short-side: 9999999px;
@@ -194,8 +197,6 @@ body.taking.video #options-group :not(#open-ptz-panel) {
 }
 
 #shutters-group {
-  --shutter-size: 60px;
-
   bottom: var(--shutter-vertical-center);
   display: flex;
   flex-direction: column;
@@ -289,8 +290,9 @@ body.should-handle-intent-result #modes-group {
 }
 
 #confirm-result-groups>button {
-  flex: 0 0 76px;
   height: 72px;
+  margin-bottom: 2px;
+  margin-top: 2px;
   width: 72px;
 }
 
@@ -708,7 +710,10 @@ body.should-handle-intent-result #open-settings {
 }
 
 #view-camera,
+#view-document-mode-dialog,
 #view-ptz-panel,
+#view-review-document,
+#view-flash,
 #view-settings,
 #view-grid-settings,
 #view-timer-settings,
@@ -730,7 +735,10 @@ body.should-handle-intent-result #open-settings {
 }
 
 body.view-camera #view-camera,
+body.view-document-mode-dialog #view-document-mode-dialog,
 body.view-ptz-panel #view-ptz-panel,
+body.view-review-document #view-review-document,
+body.view-flash #view-flash,
 body.view-settings #view-settings,
 body.view-grid-settings #view-grid-settings,
 body.view-timer-settings #view-timer-settings,
@@ -784,9 +792,6 @@ html[dir=rtl] body.view-expert-settings .right-stripe {
 
 #view-camera {
   --big-icon: 48px;
-  --bottom-line: 44px;
-  --left-line: 44px;
-  --right-line: 50px;
   --small-icon: 40px;
   --shutter-vertical-center: 180px;
 
@@ -829,7 +834,8 @@ body.streaming .preview-content {
 
 body.mirror .preview-content ,
 body.mirror #preview-focus,
-body.mirror #preview-face-overlay {
+body.mirror #preview-face-overlay,
+body.mirror #preview-document-corner-overlay .corner-container {
   transform: scaleX(-1);
 }
 
@@ -867,6 +873,10 @@ body:not(.streaming) #preview-video {
 
 body.mirror:not(.streaming) #preview-video {
   transform: scale(-1.03, 1.03);
+}
+
+body.use-fake-camera #view-expert-settings label.require-chromeos-vcd {
+  display: none;
 }
 
 #expert-controls {
@@ -1493,8 +1503,8 @@ html[dir=rtl] .icon.end {
 }
 
 body.tab-navigation .dialog-buttons button:focus {
-  background-color: var(--blue-600-dark);
-  border-color: var(--blue-600-dark);
+  background-color: var(--blue-300);
+  border-color: var(--blue-300);
   color: white;
 }
 
@@ -1513,6 +1523,11 @@ body.tab-navigation .dialog-buttons button:focus::after {
 #view-splash {
   background: no-repeat center url(/images/camera_mode_photo.svg), black;
   z-index: 2;
+}
+
+body.view-flash #view-flash {
+  background: white;
+  transition: opacity var(--moderate2-duration);
 }
 
 body:not(.mode-switching):not(.streaming):not(.review-result) #spinner {

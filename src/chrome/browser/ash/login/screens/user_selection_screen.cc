@@ -35,7 +35,7 @@
 #include "chrome/browser/ash/login/users/chrome_user_manager.h"
 #include "chrome/browser/ash/login/users/default_user_image/default_user_images.h"
 #include "chrome/browser/ash/login/users/multi_profile_user_controller.h"
-#include "chrome/browser/ash/policy/core/browser_policy_connector_chromeos.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/system/system_clock.h"
 #include "chrome/browser/browser_process.h"
@@ -82,8 +82,8 @@ const size_t kMaxUsers = 50;
 // `out_manager`:  Output value of the manager of the device's domain. Can be
 // either a domain (foo.com) or an email address (user@foo.com)
 bool GetDeviceManager(std::string* out_manager) {
-  policy::BrowserPolicyConnectorChromeOS* policy_connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  policy::BrowserPolicyConnectorAsh* policy_connector =
+      g_browser_process->platform_part()->browser_policy_connector_ash();
   if (policy_connector->IsCloudManaged()) {
     *out_manager = policy_connector->GetEnterpriseDomainManager();
     return true;
@@ -178,8 +178,8 @@ AccountId GetOwnerAccountId() {
 }
 
 bool IsDeviceEnterpriseManaged() {
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  policy::BrowserPolicyConnectorAsh* connector =
+      g_browser_process->platform_part()->browser_policy_connector_ash();
   return connector->IsDeviceEnterpriseManaged();
 }
 
@@ -540,8 +540,8 @@ UserAvatar UserSelectionScreen::BuildAshUserAvatarForUser(
   // user_image_source::GetUserImageInternal.
   auto load_image_from_resource = [&avatar](int resource_id) {
     auto& rb = ui::ResourceBundle::GetSharedInstance();
-    base::StringPiece avatar_data =
-        rb.GetRawDataResourceForScale(resource_id, rb.GetMaxScaleFactor());
+    base::StringPiece avatar_data = rb.GetRawDataResourceForScale(
+        resource_id, rb.GetMaxResourceScaleFactor());
     avatar.bytes.assign(avatar_data.begin(), avatar_data.end());
   };
   if (user.has_image_bytes()) {
@@ -841,7 +841,7 @@ void UserSelectionScreen::HardLockPod(const AccountId& account_id) {
   EasyUnlockService* service = GetEasyUnlockServiceForUser(account_id);
   if (!service)
     return;
-  service->SetHardlockState(EasyUnlockScreenlockStateHandler::USER_HARDLOCK);
+  service->SetHardlockState(SmartLockStateHandler::USER_HARDLOCK);
 }
 
 void UserSelectionScreen::AttemptEasyUnlock(const AccountId& account_id) {

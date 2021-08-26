@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/authentication/signin/consistency_promo_signin/consistency_default_account/consistency_default_account_view_controller.h"
 
 #import "base/strings/sys_string_conversions.h"
+#import "ios/chrome/browser/ui/authentication/signin/consistency_promo_signin/consistency_layout_delegate.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/authentication/views/identity_button_control.h"
 #import "ios/chrome/browser/ui/authentication/views/identity_view.h"
@@ -79,6 +80,11 @@ constexpr CGFloat kContentSpacing = 16.;
 
 #pragma mark - UIViewController
 
+- (void)viewWillAppear:(BOOL)animated {
+  self.identityButtonControl.backgroundColor =
+      [UIColor colorNamed:kGroupedSecondaryBackgroundColor];
+}
+
 - (void)viewDidLoad {
   [super viewDidLoad];
   // Set the navigation title in the left bar button item to have left
@@ -88,22 +94,28 @@ constexpr CGFloat kContentSpacing = 16.;
   titleLabel.text =
       l10n_util::GetNSString(IDS_IOS_CONSISTENCY_PROMO_DEFAULT_ACCOUNT_TITLE);
   titleLabel.textAlignment = NSTextAlignmentLeft;
+  titleLabel.adjustsFontSizeToFitWidth = YES;
+  titleLabel.minimumScaleFactor = 0.1;
   UIBarButtonItem* leftItem =
       [[UIBarButtonItem alloc] initWithCustomView:titleLabel];
   self.navigationItem.leftBarButtonItem = leftItem;
+
   // Set the skip button in the right bar button item.
-  UIBarButtonItem* anotherButton = [[UIBarButtonItem alloc]
+  UIBarButtonItem* skipButton = [[UIBarButtonItem alloc]
       initWithTitle:l10n_util::GetNSString(IDS_IOS_CONSISTENCY_PROMO_SKIP)
               style:UIBarButtonItemStylePlain
              target:self
              action:@selector(skipButtonAction:)];
-  self.navigationItem.rightBarButtonItem = anotherButton;
+  skipButton.accessibilityIdentifier =
+      kWebSigninSkipButtonAccessibilityIdentifier;
+  self.navigationItem.rightBarButtonItem = skipButton;
   // Replace the controller view by the scroll view.
   UIScrollView* scrollView = [[UIScrollView alloc] init];
   scrollView.translatesAutoresizingMaskIntoConstraints = NO;
   [self.view addSubview:scrollView];
   [NSLayoutConstraint activateConstraints:@[
-    [scrollView.topAnchor constraintEqualToAnchor:self.view.topAnchor],
+    [scrollView.topAnchor
+        constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor],
     [scrollView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor],
     [scrollView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
     [scrollView.trailingAnchor
@@ -210,12 +222,19 @@ constexpr CGFloat kContentSpacing = 16.;
         systemLayoutSizeFittingSize:size
       withHorizontalFittingPriority:UILayoutPriorityRequired
             verticalFittingPriority:UILayoutPriorityFittingSizeLevel];
+  CGFloat safeAreaInsetsHeight = 0;
+  switch (self.layoutDelegate.displayStyle) {
+    case ConsistencySheetDisplayStyleBottom:
+      safeAreaInsetsHeight =
+          self.navigationController.view.window.safeAreaInsets.bottom;
+      break;
+    case ConsistencySheetDisplayStyleCentered:
+      break;
+  }
   // Safe area insets needs to be based on the window since the |self.view|
   // might not be part of the window hierarchy when the animation is configured.
-  return size.height +
-         self.navigationController.navigationBar.frame.size.height +
-         self.navigationController.view.window.safeAreaInsets.bottom +
-         kContentMargin * 2;
+  return self.navigationController.navigationBar.frame.size.height +
+         kContentMargin + size.height + kContentMargin + safeAreaInsetsHeight;
 }
 
 #pragma mark - ConsistencyDefaultAccountConsumer

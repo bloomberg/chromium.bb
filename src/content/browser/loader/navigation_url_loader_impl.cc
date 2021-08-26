@@ -39,7 +39,6 @@
 #include "content/browser/service_worker/service_worker_main_resource_loader_interceptor.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/url_loader_factory_getter.h"
-#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
 #include "content/browser/web_package/signed_exchange_consts.h"
 #include "content/browser/web_package/signed_exchange_request_handler.h"
@@ -247,7 +246,6 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   new_request->load_flags = load_flags;
 
   new_request->request_body = request_info.common_params->post_data.get();
-  new_request->report_raw_headers = request_info.report_raw_headers;
   new_request->has_user_gesture = request_info.common_params->has_user_gesture;
   new_request->enable_load_timing = true;
   new_request->mode = network::mojom::RequestMode::kNavigate;
@@ -288,15 +286,22 @@ void UnknownSchemeCallback(
           handled_externally ? net::ERR_ABORTED : net::ERR_UNKNOWN_URL_SCHEME));
 }
 
-uint32_t GetURLLoaderOptions(bool is_main_frame) {
+uint32_t GetURLLoaderOptions(bool is_main_frame, bool is_in_fenced_frame_tree) {
   uint32_t options = network::mojom::kURLLoadOptionNone;
 
   // Ensure that Mime sniffing works.
   options |= network::mojom::kURLLoadOptionSniffMimeType;
 
-  if (is_main_frame) {
-    // SSLInfo is not needed on subframe responses because users can inspect
-    // only the certificate for the main frame when using the info bubble.
+  if (is_in_fenced_frame_tree) {
+    // Fenced frames cannot have any credentialed requests.
+    // TODO(crbug.com/1229638): Once cookies partitioning is in place, consider
+    // using a unique partition for those cookies instead of blocking. For
+    // unpartitioned cookies though, we will continue to block them.
+    options |= network::mojom::kURLLoadOptionBlockAllCookies;
+  } else if (is_main_frame) {
+    // SSLInfo is not needed on subframe or fenced frame responses because users
+    // can inspect only the certificate for the main frame when using the info
+    // bubble.
     options |= network::mojom::kURLLoadOptionSendSSLInfoWithResponse;
   }
 
@@ -685,7 +690,9 @@ NavigationURLLoaderImpl::PrepareForNonInterceptedRequest(
   url_chain_.push_back(resource_request_->url);
   *out_options = GetURLLoaderOptions(
       resource_request_->resource_type ==
-      static_cast<int>(blink::mojom::ResourceType::kMainFrame));
+          static_cast<int>(blink::mojom::ResourceType::kMainFrame),
+      FrameTreeNode::GloballyFindByID(frame_tree_node_id_)
+          ->IsInFencedFrameTree());
   return factory;
 }
 
@@ -765,13 +772,16 @@ void NavigationURLLoaderImpl::OnReceiveEarlyHints(
     return;
 
   if (!early_hints_manager_) {
-    // TODO(crbug.com/1225556): Create URLLoaderFactory via
-    // URLLoaderFactoryParams of which values are calculated from `early_hints`
-    // and `this`. Then add browsertests which check whether the resulting
-    // factory cannot fetch subresources from the private network.
+    mojo::Remote<network::mojom::URLLoaderFactory> loader_factory;
+    absl::optional<url::Origin> origin =
+        delegate_->CreateURLLoaderFactoryForEarlyHintsPreload(
+            loader_factory.BindNewPipeAndPassReceiver(), *early_hints);
+
+    if (!origin.has_value())
+      return;
+
     early_hints_manager_ = std::make_unique<NavigationEarlyHintsManager>(
-        *browser_context_,
-        storage_partition_->GetURLLoaderFactoryForBrowserProcess(),
+        *browser_context_, std::move(loader_factory), *origin,
         frame_tree_node_id_);
   }
 
@@ -1060,8 +1070,11 @@ NavigationURLLoaderImpl::CreateSignedExchangeRequestHandler(
   // unretained |this|, because the passed callback will be used by a
   // SignedExchangeHandler which is indirectly owned by |this| until its
   // header is verified and parsed, that's where the getter is used.
+  FrameTreeNode* frame_tree_node =
+      FrameTreeNode::GloballyFindByID(frame_tree_node_id_);
   return std::make_unique<SignedExchangeRequestHandler>(
-      GetURLLoaderOptions(request_info.is_main_frame),
+      GetURLLoaderOptions(request_info.is_main_frame,
+                          frame_tree_node->IsInFencedFrameTree()),
       request_info.frame_tree_node_id, request_info.devtools_navigation_token,
       std::move(url_loader_factory),
       base::BindRepeating(&NavigationURLLoaderImpl::CreateURLLoaderThrottles,
@@ -1156,8 +1169,8 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
       download_policy_(request_info_->common_params->download_policy) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP1(
-      "navigation", "Navigation timeToResponseStarted", this,
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP1(
+      "navigation", "Navigation timeToResponseStarted", TRACE_ID_LOCAL(this),
       request_info_->common_params->navigation_start, "FrameTreeNode id",
       frame_tree_node_id_);
 
@@ -1322,9 +1335,9 @@ void NavigationURLLoaderImpl::NotifyResponseStarted(
   // TODO(https://crbug.com/1068896): Remove
   // "Navigation.NavigationURLLoaderImplIOPostTime" histogram as well.
 
-  TRACE_EVENT_ASYNC_END2("navigation", "Navigation timeToResponseStarted", this,
-                         "&NavigationURLLoaderImpl", static_cast<void*>(this),
-                         "success", true);
+  TRACE_EVENT_NESTABLE_ASYNC_END2(
+      "navigation", "Navigation timeToResponseStarted", TRACE_ID_LOCAL(this),
+      "&NavigationURLLoaderImpl", static_cast<void*>(this), "success", true);
 
   if (is_download)
     download_policy_.RecordHistogram();
@@ -1364,9 +1377,9 @@ void NavigationURLLoaderImpl::NotifyRequestRedirected(
 
 void NavigationURLLoaderImpl::NotifyRequestFailed(
     const network::URLLoaderCompletionStatus& status) {
-  TRACE_EVENT_ASYNC_END2("navigation", "Navigation timeToResponseStarted", this,
-                         "&NavigationURLLoaderImpl", static_cast<void*>(this),
-                         "success", false);
+  TRACE_EVENT_NESTABLE_ASYNC_END2(
+      "navigation", "Navigation timeToResponseStarted", TRACE_ID_LOCAL(this),
+      "&NavigationURLLoaderImpl", static_cast<void*>(this), "success", false);
   delegate_->OnRequestFailed(status);
 }
 

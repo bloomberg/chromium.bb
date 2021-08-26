@@ -2824,7 +2824,7 @@
       "driver_version": {
         "schema": "intel_driver",
         "op": "<",
-        "value": "0.0.0.9999"
+        "value": "0.0.100.0"
       },
       "features": [
         "disable_nv12_dynamic_textures"
@@ -3575,6 +3575,7 @@
         "type": "win"
       },
       "vendor_id": "0x1002",
+      "multi_gpu_category": "any",
       "features": [
         "disable_direct_composition_sw_video_overlays"
       ]
@@ -3636,6 +3637,7 @@
       "os": {
         "type": "win"
       },
+      "multi_gpu_category": "any",
       "vendor_id": "0x8086",
       "features": [
         "disable_direct_composition_sw_video_overlays"
@@ -3757,6 +3759,22 @@
       "vendor_id": "0x10de",
       "features": [
         "disable_canvas_oop_rasterization"
+      ]
+    },
+    {
+      "id": 379,
+      "cr_bugs": [1217298],
+      "description": "Disable VP9 HW encode on Intel Gen 9.5 SoCs using the i965 VA driver backend",
+      "os": {
+        "type": "chromeos"
+      },
+      "vendor_id": "0x8086",
+      "intel_gpu_series": [
+        "kabylake",
+        "geminilake"
+      ],
+      "features": [
+        "disable_accelerated_vp9_encode"
       ]
     }
   ]

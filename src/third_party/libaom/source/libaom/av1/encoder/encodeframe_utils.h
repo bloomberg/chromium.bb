@@ -13,7 +13,6 @@
 #define AOM_AV1_ENCODER_ENCODEFRAME_UTILS_H_
 
 #include "aom_ports/aom_timer.h"
-#include "aom_ports/system_state.h"
 
 #include "av1/common/reconinter.h"
 
@@ -206,12 +205,27 @@ typedef struct {
   int is_split_ctx_is_ready[2];
   int is_rect_ctx_is_ready[NUM_RECT_PARTS];
 
-  // Flags to prune/skip particular partition size evaluation.
+  // If true, skips the rest of partition evaluation at the current bsize level.
   int terminate_partition_search;
+
+  // If false, skips rdopt on PARTITION_NONE.
   int partition_none_allowed;
+
+  // If partition_rect_allowed[HORZ] is false, skips searching PARTITION_HORZ,
+  // PARTITION_HORZ_A, PARTITIO_HORZ_B, PARTITION_HORZ_4. Same holds for VERT.
   int partition_rect_allowed[NUM_RECT_PARTS];
+
+  // If false, skips searching rectangular partition unless some logic related
+  // to edge detection holds.
   int do_rectangular_split;
+
+  // If false, skips searching PARTITION_SPLIT.
   int do_square_split;
+
+  // If true, prunes the corresponding PARTITION_HORZ/PARTITION_VERT. Note that
+  // this does not directly affect the extended partitions, so this can be used
+  // to prune out PARTITION_HORZ/PARTITION_VERT while still allowing rdopt of
+  // PARTITION_HORZ_AB4, etc.
   int prune_rect_part[NUM_RECT_PARTS];
 
   // Chroma subsampling in x and y directions.
@@ -228,6 +242,48 @@ typedef struct {
   PartitionTimingStats part_timing_stats;
 #endif  // CONFIG_COLLECT_PARTITION_STATS
 } PartitionSearchState;
+
+static AOM_INLINE void av1_disable_square_split_partition(
+    PartitionSearchState *part_state) {
+  part_state->do_square_split = 0;
+}
+
+// Disables all possible rectangular splits. This includes PARTITION_AB4 as they
+// depend on the corresponding partition_rect_allowed.
+static AOM_INLINE void av1_disable_rect_partitions(
+    PartitionSearchState *part_state) {
+  part_state->do_rectangular_split = 0;
+  part_state->partition_rect_allowed[HORZ] = 0;
+  part_state->partition_rect_allowed[VERT] = 0;
+}
+
+// Disables all possible splits so that only PARTITION_NONE *might* be allowed.
+static AOM_INLINE void av1_disable_all_splits(
+    PartitionSearchState *part_state) {
+  av1_disable_square_split_partition(part_state);
+  av1_disable_rect_partitions(part_state);
+}
+
+static AOM_INLINE void av1_set_square_split_only(
+    PartitionSearchState *part_state) {
+  part_state->partition_none_allowed = 0;
+  part_state->do_square_split = 1;
+  av1_disable_rect_partitions(part_state);
+}
+
+static AOM_INLINE bool av1_blk_has_rows_and_cols(
+    const PartitionBlkParams *blk_params) {
+  return blk_params->has_rows && blk_params->has_cols;
+}
+
+static AOM_INLINE bool av1_is_whole_blk_in_frame(
+    const PartitionBlkParams *blk_params,
+    const CommonModeInfoParams *mi_params) {
+  const int mi_row = blk_params->mi_row, mi_col = blk_params->mi_col;
+  const BLOCK_SIZE bsize = blk_params->bsize;
+  return mi_row + mi_size_high[bsize] <= mi_params->mi_rows &&
+         mi_col + mi_size_wide[bsize] <= mi_params->mi_cols;
+}
 
 static AOM_INLINE void update_filter_type_cdf(const MACROBLOCKD *xd,
                                               const MB_MODE_INFO *mbmi,
@@ -246,14 +302,13 @@ static AOM_INLINE int set_segment_rdmult(const AV1_COMP *const cpi,
                                          int8_t segment_id) {
   const AV1_COMMON *const cm = &cpi->common;
   av1_init_plane_quantizers(cpi, x, segment_id);
-  aom_clear_system_state();
   const int segment_qindex =
       av1_get_qindex(&cm->seg, segment_id, cm->quant_params.base_qindex);
   return av1_compute_rd_mult(cpi,
                              segment_qindex + cm->quant_params.y_dc_delta_q);
 }
 
-static AOM_INLINE int do_slipt_check(BLOCK_SIZE bsize) {
+static AOM_INLINE int do_split_check(BLOCK_SIZE bsize) {
   return (bsize == BLOCK_16X16 || bsize == BLOCK_32X32);
 }
 
@@ -421,7 +476,6 @@ static AOM_INLINE unsigned int get_num_refs_to_disable(
       else if (is_stat_consumption_stage_twopass(cpi)) {
         const FIRSTPASS_STATS *const this_frame_stats =
             read_one_frame_stats(&cpi->ppi->twopass, cur_frame_display_index);
-        aom_clear_system_state();
         const double coded_error_per_mb = this_frame_stats->coded_error;
         // Disable LAST2_FRAME if the coded error of the current frame based on
         // first pass stats is very low.

@@ -27,6 +27,8 @@ public:
 
   TextMetrics(const TextMetrics&) = default;
 
+  TextMetrics& operator=(const TextMetrics&) = default;
+
   void merge(TextMetrics tail) {
       this->fAscent = std::min(this->fAscent, tail.fAscent);
       this->fDescent = std::max(this->fDescent, tail.fDescent);
@@ -166,14 +168,32 @@ private:
 
 class Line {
 public:
-    Line(const Stretch& stretch, const Stretch& spaces, SkSTArray<1, size_t, true> visualOrder);
+    Line(const Stretch& stretch, const Stretch& spaces, SkSTArray<1, size_t, true> visualOrder, SkScalar verticalOffset, bool hardLineBreak);
     ~Line() = default;
 
     TextMetrics getMetrics() const { return fTextMetrics; }
+    GlyphPos glyphStart() const { return fTextStart; }
+    GlyphPos glyphEnd() const { return fTextEnd; }
+    GlyphPos glyphTrailingEnd() const { return fWhitespacesEnd; }
+    SkScalar width() const { return fTextWidth; }
+    SkScalar withWithTrailingSpaces() const { return fTextWidth + fSpacesWidth; }
+    SkScalar horizontalOffset() const { return fHorizontalOffset; }
+    SkScalar verticalOffset() const { return fVerticalOffset; }
+    size_t runsNumber() const { return fRunsInVisualOrder.size(); }
+    size_t visualRun(size_t index) const { return fRunsInVisualOrder[index]; }
+    SkScalar height() const { return fTextMetrics.height(); }
+    SkScalar baseline() const { return fTextMetrics.baseline(); }
+    TextRange text() const { return fText; }
+    TextRange whitespaces() const { return fWhitespaces; }
+    bool isHardLineBreak() const { return fHardLineBreak; }
+    GlyphRange glyphRange(size_t runIndex, size_t runSize) const {
+        GlyphIndex start = runIndex == this->glyphStart().runIndex() ? this->glyphStart().glyphIndex() : 0;
+        GlyphIndex end = runIndex == this->glyphTrailingEnd().runIndex() ? this->glyphTrailingEnd().glyphIndex() : runSize;
+        return GlyphRange(start, end);
+    }
 
 private:
     friend class WrappedText;
-    friend class FormattedText;
 
     GlyphPos fTextStart;
     GlyphPos fTextEnd;
@@ -182,7 +202,10 @@ private:
     TextRange fWhitespaces;
     SkScalar fTextWidth;
     SkScalar fSpacesWidth;
+    SkScalar fHorizontalOffset;
+    SkScalar fVerticalOffset;
     TextMetrics fTextMetrics;
+    bool fHardLineBreak;
     SkSTArray<1, size_t, true> fRunsInVisualOrder;
 };
 

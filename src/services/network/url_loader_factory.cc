@@ -23,6 +23,7 @@
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/network/public/cpp/load_info_util.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/mojom/devtools_observer.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/resource_scheduler/resource_scheduler_client.h"
 #include "services/network/trust_tokens/local_trust_token_operation_delegate_impl.h"
@@ -40,30 +41,6 @@ namespace {
 // The interval to send load updates.
 constexpr auto kUpdateLoadStatesInterval =
     base::TimeDelta::FromMilliseconds(250);
-
-// An enum class representing whether / how keepalive requests are blocked. This
-// is used for UMA so do NOT re-assign values.
-enum class KeepaliveBlockStatus {
-  // The request is not blocked.
-  kNotBlocked = 0,
-  // The request is blocked due to NetworkContext::CanCreateLoader.
-  kBlockedDueToCanCreateLoader = 1,
-  // The request is blocked due to the number of requests per process.
-  kBlockedDueToNumberOfRequestsPerProcess = 2,
-  // The request is blocked due to the number of requests per top-level frame.
-  kBlockedDueToNumberOfRequestsPerTopLevelFrame = 3,
-  // The request is blocked due to the number of requests in the system.
-  kBlockedDueToNumberOfRequests = 4,
-  // The request is blocked due to the total size of URL and request headers.
-  kBlockedDueToTotalSizeOfUrlAndHeaders = 5,
-  // The request is NOT blocked but the total size of URL and request headers
-  // exceeds 384kb.
-  kNotBlockedButUrlAndHeadersExceeds384kb = 6,
-  // The request is NOT blocked but the total size of URL and request headers
-  // exceeds 256kb.
-  kNotBlockedButUrlAndHeadersExceeds256kb = 7,
-  kMaxValue = kNotBlockedButUrlAndHeadersExceeds256kb,
-};
 
 }  // namespace
 
@@ -180,40 +157,18 @@ void URLLoaderFactory::CreateLoaderAndStart(
 
     keepalive_request_size = url_size + headers_size;
 
-    KeepaliveBlockStatus block_status = KeepaliveBlockStatus::kNotBlocked;
     const auto& top_frame_id = *params_->top_frame_id;
     const auto& recorder = *keepalive_statistics_recorder;
 
-    if (!context_->CanCreateLoader(params_->process_id)) {
-      // We already checked this, but we have this here for histogram.
-      DCHECK(exhausted);
-      block_status = KeepaliveBlockStatus::kBlockedDueToCanCreateLoader;
-    } else if (recorder.num_inflight_requests() >= kMaxKeepaliveConnections) {
-      exhausted = true;
-      block_status = KeepaliveBlockStatus::kBlockedDueToNumberOfRequests;
-    } else if (recorder.NumInflightRequestsPerTopLevelFrame(top_frame_id) >=
-               kMaxKeepaliveConnectionsPerTopLevelFrame) {
-      exhausted = true;
-      block_status =
-          KeepaliveBlockStatus::kBlockedDueToNumberOfRequestsPerTopLevelFrame;
-    } else if (recorder.GetTotalRequestSizePerTopLevelFrame(top_frame_id) +
-                   keepalive_request_size >
-               kMaxTotalKeepaliveRequestSize) {
-      exhausted = true;
-      block_status =
-          KeepaliveBlockStatus::kBlockedDueToTotalSizeOfUrlAndHeaders;
-    } else if (recorder.GetTotalRequestSizePerTopLevelFrame(top_frame_id) +
-                   keepalive_request_size >
-               384 * 1024) {
-      block_status =
-          KeepaliveBlockStatus::kNotBlockedButUrlAndHeadersExceeds384kb;
-    } else if (recorder.GetTotalRequestSizePerTopLevelFrame(top_frame_id) +
-                   keepalive_request_size >
-               256 * 1024) {
-      block_status =
-          KeepaliveBlockStatus::kNotBlockedButUrlAndHeadersExceeds256kb;
-    } else {
-      block_status = KeepaliveBlockStatus::kNotBlocked;
+    if (!exhausted) {
+      if (recorder.num_inflight_requests() >= kMaxKeepaliveConnections ||
+          recorder.NumInflightRequestsPerTopLevelFrame(top_frame_id) >=
+              kMaxKeepaliveConnectionsPerTopLevelFrame ||
+          recorder.GetTotalRequestSizePerTopLevelFrame(top_frame_id) +
+                  keepalive_request_size >
+              kMaxTotalKeepaliveRequestSize) {
+        exhausted = true;
+      }
     }
   }
 

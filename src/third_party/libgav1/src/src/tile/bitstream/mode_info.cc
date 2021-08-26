@@ -185,19 +185,22 @@ int GetReferenceContext(const Tile::Block& block,
 }  // namespace
 
 bool Tile::ReadSegmentId(const Block& block) {
+  // These two asserts ensure that current_frame_.segmentation_map() is not
+  // nullptr.
+  assert(frame_header_.segmentation.enabled);
+  assert(frame_header_.segmentation.update_map);
+  const SegmentationMap& map = *current_frame_.segmentation_map();
   int top_left = -1;
   if (block.top_available[kPlaneY] && block.left_available[kPlaneY]) {
-    top_left =
-        block_parameters_holder_.Find(block.row4x4 - 1, block.column4x4 - 1)
-            ->segment_id;
+    top_left = map.segment_id(block.row4x4 - 1, block.column4x4 - 1);
   }
   int top = -1;
   if (block.top_available[kPlaneY]) {
-    top = block.bp_top->segment_id;
+    top = map.segment_id(block.row4x4 - 1, block.column4x4);
   }
   int left = -1;
   if (block.left_available[kPlaneY]) {
-    left = block.bp_left->segment_id;
+    left = map.segment_id(block.row4x4, block.column4x4 - 1);
   }
   int pred;
   if (top == -1) {
@@ -209,7 +212,7 @@ bool Tile::ReadSegmentId(const Block& block) {
   }
   BlockParameters& bp = *block.bp;
   if (bp.skip) {
-    bp.segment_id = pred;
+    bp.prediction_parameters->segment_id = pred;
     return true;
   }
   int context = 0;
@@ -224,17 +227,18 @@ bool Tile::ReadSegmentId(const Block& block) {
       symbol_decoder_context_.segment_id_cdf[context];
   const int encoded_segment_id =
       reader_.ReadSymbol<kMaxSegments>(segment_id_cdf);
-  bp.segment_id =
+  bp.prediction_parameters->segment_id =
       DecodeSegmentId(encoded_segment_id, pred,
                       frame_header_.segmentation.last_active_segment_id + 1);
   // Check the bitstream conformance requirement in Section 6.10.8 of the spec.
-  if (bp.segment_id < 0 ||
-      bp.segment_id > frame_header_.segmentation.last_active_segment_id) {
+  if (bp.prediction_parameters->segment_id < 0 ||
+      bp.prediction_parameters->segment_id >
+          frame_header_.segmentation.last_active_segment_id) {
     LIBGAV1_DLOG(
         ERROR,
         "Corrupted segment_ids: encoded %d, last active %d, postprocessed %d",
         encoded_segment_id, frame_header_.segmentation.last_active_segment_id,
-        bp.segment_id);
+        bp.prediction_parameters->segment_id);
     return false;
   }
   return true;
@@ -243,7 +247,7 @@ bool Tile::ReadSegmentId(const Block& block) {
 bool Tile::ReadIntraSegmentId(const Block& block) {
   BlockParameters& bp = *block.bp;
   if (!frame_header_.segmentation.enabled) {
-    bp.segment_id = 0;
+    bp.prediction_parameters->segment_id = 0;
     return true;
   }
   return ReadSegmentId(block);
@@ -252,8 +256,8 @@ bool Tile::ReadIntraSegmentId(const Block& block) {
 void Tile::ReadSkip(const Block& block) {
   BlockParameters& bp = *block.bp;
   if (frame_header_.segmentation.segment_id_pre_skip &&
-      frame_header_.segmentation.FeatureActive(bp.segment_id,
-                                               kSegmentFeatureSkip)) {
+      frame_header_.segmentation.FeatureActive(
+          bp.prediction_parameters->segment_id, kSegmentFeatureSkip)) {
     bp.skip = true;
     return;
   }
@@ -268,51 +272,53 @@ void Tile::ReadSkip(const Block& block) {
   bp.skip = reader_.ReadSymbol(skip_cdf);
 }
 
-void Tile::ReadSkipMode(const Block& block) {
+bool Tile::ReadSkipMode(const Block& block) {
   BlockParameters& bp = *block.bp;
   if (!frame_header_.skip_mode_present ||
-      frame_header_.segmentation.FeatureActive(bp.segment_id,
-                                               kSegmentFeatureSkip) ||
-      frame_header_.segmentation.FeatureActive(bp.segment_id,
-                                               kSegmentFeatureReferenceFrame) ||
-      frame_header_.segmentation.FeatureActive(bp.segment_id,
-                                               kSegmentFeatureGlobalMv) ||
+      frame_header_.segmentation.FeatureActive(
+          bp.prediction_parameters->segment_id, kSegmentFeatureSkip) ||
+      frame_header_.segmentation.FeatureActive(
+          bp.prediction_parameters->segment_id,
+          kSegmentFeatureReferenceFrame) ||
+      frame_header_.segmentation.FeatureActive(
+          bp.prediction_parameters->segment_id, kSegmentFeatureGlobalMv) ||
       IsBlockDimension4(block.size)) {
-    bp.skip_mode = false;
-    return;
+    return false;
   }
   const int context =
       (block.left_available[kPlaneY]
-           ? static_cast<int>(block.bp_left->skip_mode)
+           ? static_cast<int>(left_context_.skip_mode[block.left_context_index])
            : 0) +
-      (block.top_available[kPlaneY] ? static_cast<int>(block.bp_top->skip_mode)
-                                    : 0);
-  bp.skip_mode =
-      reader_.ReadSymbol(symbol_decoder_context_.skip_mode_cdf[context]);
+      (block.top_available[kPlaneY]
+           ? static_cast<int>(
+                 block.top_context->skip_mode[block.top_context_index])
+           : 0);
+  return reader_.ReadSymbol(symbol_decoder_context_.skip_mode_cdf[context]);
 }
 
 void Tile::ReadCdef(const Block& block) {
   BlockParameters& bp = *block.bp;
   if (bp.skip || frame_header_.coded_lossless ||
-      !sequence_header_.enable_cdef || frame_header_.allow_intrabc) {
+      !sequence_header_.enable_cdef || frame_header_.allow_intrabc ||
+      frame_header_.cdef.bits == 0) {
     return;
   }
-  const int cdef_size4x4 = kNum4x4BlocksWide[kBlock64x64];
-  const int cdef_mask4x4 = ~(cdef_size4x4 - 1);
-  const int row4x4 = block.row4x4 & cdef_mask4x4;
-  const int column4x4 = block.column4x4 & cdef_mask4x4;
-  const int row = DivideBy16(row4x4);
-  const int column = DivideBy16(column4x4);
-  if (cdef_index_[row][column] == -1) {
-    cdef_index_[row][column] =
-        frame_header_.cdef.bits > 0
-            ? static_cast<int16_t>(reader_.ReadLiteral(frame_header_.cdef.bits))
-            : 0;
-    for (int i = row4x4; i < row4x4 + block.height4x4; i += cdef_size4x4) {
-      for (int j = column4x4; j < column4x4 + block.width4x4;
-           j += cdef_size4x4) {
-        cdef_index_[DivideBy16(i)][DivideBy16(j)] = cdef_index_[row][column];
-      }
+  int8_t* const cdef_index =
+      &cdef_index_[DivideBy16(block.row4x4)][DivideBy16(block.column4x4)];
+  int stride = cdef_index_.columns();
+  if (cdef_index[0] == -1) {
+    cdef_index[0] =
+        static_cast<int8_t>(reader_.ReadLiteral(frame_header_.cdef.bits));
+    if (block.size == kBlock128x128) {
+      // This condition is shorthand for block.width4x4 > 16 && block.height4x4
+      // > 16.
+      cdef_index[1] = cdef_index[0];
+      cdef_index[stride] = cdef_index[0];
+      cdef_index[stride + 1] = cdef_index[0];
+    } else if (block.width4x4 > 16) {
+      cdef_index[1] = cdef_index[0];
+    } else if (block.height4x4 > 16) {
+      cdef_index[stride] = cdef_index[0];
     }
   }
 }
@@ -328,7 +334,7 @@ int Tile::ReadAndClipDelta(uint16_t* const cdf, int delta_small, int scale,
     abs = abs_remaining_bits + (1 << remaining_bit_count) + 1;
   }
   if (abs != 0) {
-    const bool sign = static_cast<bool>(reader_.ReadBit());
+    const bool sign = reader_.ReadBit() != 0;
     const int scaled_abs = abs << scale;
     const int reduced_delta = sign ? -scaled_abs : scaled_abs;
     value += reduced_delta;
@@ -404,8 +410,9 @@ void Tile::ReadIntraAngleInfo(const Block& block, PlaneType plane_type) {
   PredictionParameters& prediction_parameters =
       *block.bp->prediction_parameters;
   prediction_parameters.angle_delta[plane_type] = 0;
-  const PredictionMode mode =
-      (plane_type == kPlaneTypeY) ? bp.y_mode : bp.uv_mode;
+  const PredictionMode mode = (plane_type == kPlaneTypeY)
+                                  ? bp.y_mode
+                                  : bp.prediction_parameters->uv_mode;
   if (IsBlockSmallerThan8x8(block.size) || !IsDirectionalMode(mode)) return;
   uint16_t* const cdf =
       symbol_decoder_context_.angle_delta_cdf[mode - kPredictionModeVertical];
@@ -445,7 +452,8 @@ void Tile::ReadCflAlpha(const Block& block) {
 void Tile::ReadPredictionModeUV(const Block& block) {
   BlockParameters& bp = *block.bp;
   bool chroma_from_luma_allowed;
-  if (frame_header_.segmentation.lossless[bp.segment_id]) {
+  if (frame_header_.segmentation
+          .lossless[bp.prediction_parameters->segment_id]) {
     chroma_from_luma_allowed = block.residual_size[kPlaneU] == kBlock4x4;
   } else {
     chroma_from_luma_allowed = IsBlockDimensionLessThan64(block.size);
@@ -454,10 +462,10 @@ void Tile::ReadPredictionModeUV(const Block& block) {
       symbol_decoder_context_
           .uv_mode_cdf[static_cast<int>(chroma_from_luma_allowed)][bp.y_mode];
   if (chroma_from_luma_allowed) {
-    bp.uv_mode = static_cast<PredictionMode>(
+    bp.prediction_parameters->uv_mode = static_cast<PredictionMode>(
         reader_.ReadSymbol<kIntraPredictionModesUV>(cdf));
   } else {
-    bp.uv_mode = static_cast<PredictionMode>(
+    bp.prediction_parameters->uv_mode = static_cast<PredictionMode>(
         reader_.ReadSymbol<kIntraPredictionModesUV - 1>(cdf));
   }
 }
@@ -528,7 +536,7 @@ void Tile::ReadFilterIntraModeInfo(const Block& block) {
       *block.bp->prediction_parameters;
   prediction_parameters.use_filter_intra = false;
   if (!sequence_header_.enable_filter_intra || bp.y_mode != kPredictionModeDc ||
-      bp.palette_mode_info.size[kPlaneTypeY] != 0 ||
+      bp.prediction_parameters->palette_mode_info.size[kPlaneTypeY] != 0 ||
       !IsBlockDimensionLessThan64(block.size)) {
     return;
   }
@@ -548,7 +556,7 @@ bool Tile::DecodeIntraModeInfo(const Block& block) {
       !ReadIntraSegmentId(block)) {
     return false;
   }
-  bp.skip_mode = false;
+  SetCdfContextSkipMode(block, false);
   ReadSkip(block);
   if (!frame_header_.segmentation.segment_id_pre_skip &&
       !ReadIntraSegmentId(block)) {
@@ -572,12 +580,14 @@ bool Tile::DecodeIntraModeInfo(const Block& block) {
     bp.reference_frame[0] = kReferenceFrameIntra;
     bp.reference_frame[1] = kReferenceFrameNone;
     bp.y_mode = kPredictionModeDc;
-    bp.uv_mode = kPredictionModeDc;
+    bp.prediction_parameters->uv_mode = kPredictionModeDc;
+    SetCdfContextUVMode(block);
     prediction_parameters.motion_mode = kMotionModeSimple;
     prediction_parameters.compound_prediction_type =
         kCompoundPredictionTypeAverage;
-    bp.palette_mode_info.size[kPlaneTypeY] = 0;
-    bp.palette_mode_info.size[kPlaneTypeUV] = 0;
+    bp.prediction_parameters->palette_mode_info.size[kPlaneTypeY] = 0;
+    bp.prediction_parameters->palette_mode_info.size[kPlaneTypeUV] = 0;
+    SetCdfContextPaletteSize(block);
     bp.interpolation_filter[0] = kInterpolationFilterBilinear;
     bp.interpolation_filter[1] = kInterpolationFilterBilinear;
     MvContexts dummy_mode_contexts;
@@ -608,59 +618,73 @@ int8_t Tile::ComputePredictedSegmentId(const Block& block) const {
   return id;
 }
 
+void Tile::SetCdfContextUsePredictedSegmentId(const Block& block,
+                                              bool use_predicted_segment_id) {
+  memset(left_context_.use_predicted_segment_id + block.left_context_index,
+         static_cast<int>(use_predicted_segment_id), block.height4x4);
+  memset(block.top_context->use_predicted_segment_id + block.top_context_index,
+         static_cast<int>(use_predicted_segment_id), block.width4x4);
+}
+
 bool Tile::ReadInterSegmentId(const Block& block, bool pre_skip) {
   BlockParameters& bp = *block.bp;
   if (!frame_header_.segmentation.enabled) {
-    bp.segment_id = 0;
+    bp.prediction_parameters->segment_id = 0;
     return true;
   }
   if (!frame_header_.segmentation.update_map) {
-    bp.segment_id = ComputePredictedSegmentId(block);
+    bp.prediction_parameters->segment_id = ComputePredictedSegmentId(block);
     return true;
   }
   if (pre_skip) {
     if (!frame_header_.segmentation.segment_id_pre_skip) {
-      bp.segment_id = 0;
+      bp.prediction_parameters->segment_id = 0;
       return true;
     }
   } else if (bp.skip) {
-    bp.use_predicted_segment_id = false;
+    SetCdfContextUsePredictedSegmentId(block, false);
     return ReadSegmentId(block);
   }
   if (frame_header_.segmentation.temporal_update) {
     const int context =
         (block.left_available[kPlaneY]
-             ? static_cast<int>(block.bp_left->use_predicted_segment_id)
+             ? static_cast<int>(
+                   left_context_
+                       .use_predicted_segment_id[block.left_context_index])
              : 0) +
         (block.top_available[kPlaneY]
-             ? static_cast<int>(block.bp_top->use_predicted_segment_id)
+             ? static_cast<int>(
+                   block.top_context
+                       ->use_predicted_segment_id[block.top_context_index])
              : 0);
-    bp.use_predicted_segment_id = reader_.ReadSymbol(
+    const bool use_predicted_segment_id = reader_.ReadSymbol(
         symbol_decoder_context_.use_predicted_segment_id_cdf[context]);
-    if (bp.use_predicted_segment_id) {
-      bp.segment_id = ComputePredictedSegmentId(block);
+    SetCdfContextUsePredictedSegmentId(block, use_predicted_segment_id);
+    if (use_predicted_segment_id) {
+      bp.prediction_parameters->segment_id = ComputePredictedSegmentId(block);
       return true;
     }
   }
   return ReadSegmentId(block);
 }
 
-void Tile::ReadIsInter(const Block& block) {
+void Tile::ReadIsInter(const Block& block, bool skip_mode) {
   BlockParameters& bp = *block.bp;
-  if (bp.skip_mode) {
+  if (skip_mode) {
     bp.is_inter = true;
     return;
   }
-  if (frame_header_.segmentation.FeatureActive(bp.segment_id,
-                                               kSegmentFeatureReferenceFrame)) {
-    bp.is_inter =
-        frame_header_.segmentation
-            .feature_data[bp.segment_id][kSegmentFeatureReferenceFrame] !=
-        kReferenceFrameIntra;
+  if (frame_header_.segmentation.FeatureActive(
+          bp.prediction_parameters->segment_id,
+          kSegmentFeatureReferenceFrame)) {
+    bp.is_inter = frame_header_.segmentation
+                      .feature_data[bp.prediction_parameters->segment_id]
+                                   [kSegmentFeatureReferenceFrame] !=
+                  kReferenceFrameIntra;
     return;
   }
-  if (frame_header_.segmentation.FeatureActive(bp.segment_id,
-                                               kSegmentFeatureGlobalMv)) {
+  if (frame_header_.segmentation.FeatureActive(
+          bp.prediction_parameters->segment_id, kSegmentFeatureGlobalMv)) {
     bp.is_inter = true;
     return;
   }
@@ -678,6 +702,49 @@ void Tile::ReadIsInter(const Block& block) {
       reader_.ReadSymbol(symbol_decoder_context_.is_inter_cdf[context]);
 }
 
+void Tile::SetCdfContextPaletteSize(const Block& block) {
+  const PaletteModeInfo& palette_mode_info =
+      block.bp->prediction_parameters->palette_mode_info;
+  for (int plane_type = kPlaneTypeY; plane_type <= kPlaneTypeUV; ++plane_type) {
+    memset(left_context_.palette_size[plane_type] + block.left_context_index,
+           palette_mode_info.size[plane_type], block.height4x4);
+    memset(
+        block.top_context->palette_size[plane_type] + block.top_context_index,
+        palette_mode_info.size[plane_type], block.width4x4);
+    if (palette_mode_info.size[plane_type] == 0) continue;
+    for (int i = block.left_context_index;
+         i < block.left_context_index + block.height4x4; ++i) {
+      memcpy(left_context_.palette_color[i][plane_type],
+             palette_mode_info.color[plane_type],
+             kMaxPaletteSize * sizeof(palette_mode_info.color[0][0]));
+    }
+    for (int i = block.top_context_index;
+         i < block.top_context_index + block.width4x4; ++i) {
+      memcpy(block.top_context->palette_color[i][plane_type],
+             palette_mode_info.color[plane_type],
+             kMaxPaletteSize * sizeof(palette_mode_info.color[0][0]));
+    }
+  }
+}
+
+void Tile::SetCdfContextUVMode(const Block& block) {
+  // BlockCdfContext.uv_mode is only used to compute is_smooth_prediction for
+  // the intra edge upsamplers in the subsequent blocks. They have some special
+  // rules for subsampled UV planes. For subsampled UV planes, update left
+  // context only if current block contains the last odd column and update top
+  // context only if current block contains the last odd row.
+  if (subsampling_x_[kPlaneU] == 0 || (block.column4x4 & 1) == 1 ||
+      block.width4x4 > 1) {
+    memset(left_context_.uv_mode + block.left_context_index,
+           block.bp->prediction_parameters->uv_mode, block.height4x4);
+  }
+  if (subsampling_y_[kPlaneU] == 0 || (block.row4x4 & 1) == 1 ||
+      block.height4x4 > 1) {
+    memset(block.top_context->uv_mode + block.top_context_index,
+           block.bp->prediction_parameters->uv_mode, block.width4x4);
+  }
+}
+
 bool Tile::ReadIntraBlockModeInfo(const Block& block, bool intra_y_mode) {
   BlockParameters& bp = *block.bp;
   bp.reference_frame[0] = kReferenceFrameIntra;
@@ -686,12 +753,39 @@ bool Tile::ReadIntraBlockModeInfo(const Block& block, bool intra_y_mode) {
   ReadIntraAngleInfo(block, kPlaneTypeY);
   if (block.HasChroma()) {
     ReadPredictionModeUV(block);
-    if (bp.uv_mode == kPredictionModeChromaFromLuma) {
+    if (bp.prediction_parameters->uv_mode == kPredictionModeChromaFromLuma) {
       ReadCflAlpha(block);
     }
+    if (block.left_available[kPlaneU]) {
+      const int smooth_row =
+          block.row4x4 + (~block.row4x4 & subsampling_y_[kPlaneU]);
+      const int smooth_column =
+          block.column4x4 - 1 - (block.column4x4 & subsampling_x_[kPlaneU]);
+      const BlockParameters& bp_left =
+          *block_parameters_holder_.Find(smooth_row, smooth_column);
+      bp.prediction_parameters->chroma_left_uses_smooth_prediction =
+          (bp_left.reference_frame[0] <= kReferenceFrameIntra) &&
+          kPredictionModeSmoothMask.Contains(
+              left_context_.uv_mode[CdfContextIndex(smooth_row)]);
+    }
+    if (block.top_available[kPlaneU]) {
+      const int smooth_row =
+          block.row4x4 - 1 - (block.row4x4 & subsampling_y_[kPlaneU]);
+      const int smooth_column =
+          block.column4x4 + (~block.column4x4 & subsampling_x_[kPlaneU]);
+      const BlockParameters& bp_top =
+          *block_parameters_holder_.Find(smooth_row, smooth_column);
+      bp.prediction_parameters->chroma_top_uses_smooth_prediction =
+          (bp_top.reference_frame[0] <= kReferenceFrameIntra) &&
+          kPredictionModeSmoothMask.Contains(
+              top_context_.get()[SuperBlockColumnIndex(smooth_column)]
+                  .uv_mode[CdfContextIndex(smooth_column)]);
+    }
+    SetCdfContextUVMode(block);
     ReadIntraAngleInfo(block, kPlaneTypeUV);
   }
   ReadPaletteModeInfo(block);
+  SetCdfContextPaletteSize(block);
   ReadFilterIntraModeInfo(block);
   return true;
 }
@@ -808,25 +902,27 @@ uint16_t* Tile::GetReferenceCdf(
   return symbol_decoder_context_.compound_reference_cdf[type][context][index];
 }
 
-void Tile::ReadReferenceFrames(const Block& block) {
+void Tile::ReadReferenceFrames(const Block& block, bool skip_mode) {
   BlockParameters& bp = *block.bp;
-  if (bp.skip_mode) {
+  if (skip_mode) {
     bp.reference_frame[0] = frame_header_.skip_mode_frame[0];
     bp.reference_frame[1] = frame_header_.skip_mode_frame[1];
     return;
   }
-  if (frame_header_.segmentation.FeatureActive(bp.segment_id,
-                                               kSegmentFeatureReferenceFrame)) {
+  if (frame_header_.segmentation.FeatureActive(
+          bp.prediction_parameters->segment_id,
+          kSegmentFeatureReferenceFrame)) {
     bp.reference_frame[0] = static_cast<ReferenceFrameType>(
         frame_header_.segmentation
-            .feature_data[bp.segment_id][kSegmentFeatureReferenceFrame]);
+            .feature_data[bp.prediction_parameters->segment_id]
+                         [kSegmentFeatureReferenceFrame]);
     bp.reference_frame[1] = kReferenceFrameNone;
     return;
   }
-  if (frame_header_.segmentation.FeatureActive(bp.segment_id,
-                                               kSegmentFeatureSkip) ||
-      frame_header_.segmentation.FeatureActive(bp.segment_id,
-                                               kSegmentFeatureGlobalMv)) {
+  if (frame_header_.segmentation.FeatureActive(
+          bp.prediction_parameters->segment_id, kSegmentFeatureSkip) ||
+      frame_header_.segmentation.FeatureActive(
+          bp.prediction_parameters->segment_id, kSegmentFeatureGlobalMv)) {
     bp.reference_frame[0] = kReferenceFrameLast;
     bp.reference_frame[1] = kReferenceFrameNone;
     return;
@@ -927,16 +1023,17 @@ void Tile::ReadReferenceFrames(const Block& block) {
 }
 
 void Tile::ReadInterPredictionModeY(const Block& block,
-                                    const MvContexts& mode_contexts) {
+                                    const MvContexts& mode_contexts,
+                                    bool skip_mode) {
   BlockParameters& bp = *block.bp;
-  if (bp.skip_mode) {
+  if (skip_mode) {
     bp.y_mode = kPredictionModeNearestNearestMv;
     return;
   }
-  if (frame_header_.segmentation.FeatureActive(bp.segment_id,
-                                               kSegmentFeatureSkip) ||
-      frame_header_.segmentation.FeatureActive(bp.segment_id,
-                                               kSegmentFeatureGlobalMv)) {
+  if (frame_header_.segmentation.FeatureActive(
+          bp.prediction_parameters->segment_id, kSegmentFeatureSkip) ||
+      frame_header_.segmentation.FeatureActive(
+          bp.prediction_parameters->segment_id, kSegmentFeatureGlobalMv)) {
     bp.y_mode = kPredictionModeGlobalMv;
     return;
   }
@@ -995,13 +1092,14 @@ void Tile::ReadRefMvIndex(const Block& block) {
   }
 }
 
-void Tile::ReadInterIntraMode(const Block& block, bool is_compound) {
+void Tile::ReadInterIntraMode(const Block& block, bool is_compound,
+                              bool skip_mode) {
   BlockParameters& bp = *block.bp;
   PredictionParameters& prediction_parameters =
       *block.bp->prediction_parameters;
   prediction_parameters.inter_intra_mode = kNumInterIntraModes;
   prediction_parameters.is_wedge_inter_intra = false;
-  if (bp.skip_mode || !sequence_header_.enable_interintra_compound ||
+  if (skip_mode || !sequence_header_.enable_interintra_compound ||
       is_compound || !kIsInterIntraModeAllowedMask.Contains(block.size)) {
     return;
   }
@@ -1031,13 +1129,14 @@ void Tile::ReadInterIntraMode(const Block& block, bool is_compound) {
   prediction_parameters.wedge_sign = 0;
 }
 
-void Tile::ReadMotionMode(const Block& block, bool is_compound) {
+void Tile::ReadMotionMode(const Block& block, bool is_compound,
+                          bool skip_mode) {
   BlockParameters& bp = *block.bp;
   PredictionParameters& prediction_parameters =
       *block.bp->prediction_parameters;
   const auto global_motion_type =
       frame_header_.global_motion[bp.reference_frame[0]].type;
-  if (bp.skip_mode || !frame_header_.is_motion_mode_switchable ||
+  if (skip_mode || !frame_header_.is_motion_mode_switchable ||
       IsBlockDimension4(block.size) ||
       (frame_header_.force_integer_mv == 0 &&
        (bp.y_mode == kPredictionModeGlobalMv ||
@@ -1073,14 +1172,17 @@ uint16_t* Tile::GetIsExplicitCompoundTypeCdf(const Block& block) {
   int context = 0;
   if (block.top_available[kPlaneY]) {
     if (!block.IsTopSingle()) {
-      context += static_cast<int>(block.bp_top->is_explicit_compound_type);
+      context += static_cast<int>(
+          block.top_context
+              ->is_explicit_compound_type[block.top_context_index]);
     } else if (block.TopReference(0) == kReferenceFrameAlternate) {
       context += 3;
     }
   }
   if (block.left_available[kPlaneY]) {
     if (!block.IsLeftSingle()) {
-      context += static_cast<int>(block.bp_left->is_explicit_compound_type);
+      context += static_cast<int>(
+          left_context_.is_explicit_compound_type[block.left_context_index]);
     } else if (block.LeftReference(0) == kReferenceFrameAlternate) {
       context += 3;
     }
@@ -1099,14 +1201,16 @@ uint16_t* Tile::GetIsCompoundTypeAverageCdf(const Block& block) {
   int context = (forward == backward) ? 3 : 0;
   if (block.top_available[kPlaneY]) {
     if (!block.IsTopSingle()) {
-      context += static_cast<int>(block.bp_top->is_compound_type_average);
+      context += static_cast<int>(
+          block.top_context->is_compound_type_average[block.top_context_index]);
     } else if (block.TopReference(0) == kReferenceFrameAlternate) {
       ++context;
     }
   }
   if (block.left_available[kPlaneY]) {
     if (!block.IsLeftSingle()) {
-      context += static_cast<int>(block.bp_left->is_compound_type_average);
+      context += static_cast<int>(
+          left_context_.is_compound_type_average[block.left_context_index]);
     } else if (block.LeftReference(0) == kReferenceFrameAlternate) {
       ++context;
     }
@@ -1114,23 +1218,25 @@ uint16_t* Tile::GetIsCompoundTypeAverageCdf(const Block& block) {
   return symbol_decoder_context_.is_compound_type_average_cdf[context];
 }
 
-void Tile::ReadCompoundType(const Block& block, bool is_compound) {
-  BlockParameters& bp = *block.bp;
-  bp.is_explicit_compound_type = false;
-  bp.is_compound_type_average = true;
+void Tile::ReadCompoundType(const Block& block, bool is_compound,
+                            bool skip_mode,
+                            bool* const is_explicit_compound_type,
+                            bool* const is_compound_type_average) {
+  *is_explicit_compound_type = false;
+  *is_compound_type_average = true;
   PredictionParameters& prediction_parameters =
       *block.bp->prediction_parameters;
-  if (bp.skip_mode) {
+  if (skip_mode) {
     prediction_parameters.compound_prediction_type =
         kCompoundPredictionTypeAverage;
     return;
   }
   if (is_compound) {
     if (sequence_header_.enable_masked_compound) {
-      bp.is_explicit_compound_type =
+      *is_explicit_compound_type =
           reader_.ReadSymbol(GetIsExplicitCompoundTypeCdf(block));
     }
-    if (bp.is_explicit_compound_type) {
+    if (*is_explicit_compound_type) {
       if (kIsWedgeCompoundModeAllowed.Contains(block.size)) {
         // Only kCompoundPredictionTypeWedge and
         // kCompoundPredictionTypeDiffWeighted are signaled explicitly.
@@ -1143,11 +1249,11 @@ void Tile::ReadCompoundType(const Block& block, bool is_compound) {
       }
     } else {
       if (sequence_header_.enable_jnt_comp) {
-        bp.is_compound_type_average =
+        *is_compound_type_average =
             reader_.ReadSymbol(GetIsCompoundTypeAverageCdf(block));
         prediction_parameters.compound_prediction_type =
-            bp.is_compound_type_average ? kCompoundPredictionTypeAverage
-                                        : kCompoundPredictionTypeDistance;
+            *is_compound_type_average ? kCompoundPredictionTypeAverage
+                                      : kCompoundPredictionTypeDistance;
       } else {
         prediction_parameters.compound_prediction_type =
             kCompoundPredictionTypeAverage;
@@ -1162,8 +1268,7 @@ void Tile::ReadCompoundType(const Block& block, bool is_compound) {
       prediction_parameters.wedge_sign = static_cast<int>(reader_.ReadBit());
     } else if (prediction_parameters.compound_prediction_type ==
                kCompoundPredictionTypeDiffWeighted) {
-      prediction_parameters.mask_is_inverse =
-          static_cast<bool>(reader_.ReadBit());
+      prediction_parameters.mask_is_inverse = reader_.ReadBit() != 0;
     }
     return;
   }
@@ -1209,7 +1314,7 @@ uint16_t* Tile::GetInterpolationFilterCdf(const Block& block, int direction) {
   return symbol_decoder_context_.interpolation_filter_cdf[context];
 }
 
-void Tile::ReadInterpolationFilter(const Block& block) {
+void Tile::ReadInterpolationFilter(const Block& block, bool skip_mode) {
   BlockParameters& bp = *block.bp;
   if (frame_header_.interpolation_filter != kInterpolationFilterSwitchable) {
     static_assert(
@@ -1222,7 +1327,7 @@ void Tile::ReadInterpolationFilter(const Block& block) {
     return;
   }
   bool interpolation_filter_present = true;
-  if (bp.skip_mode ||
+  if (skip_mode ||
       block.bp->prediction_parameters->motion_mode == kMotionModeLocalWarp) {
     interpolation_filter_present = false;
   } else if (!IsBlockDimension4(block.size) &&
@@ -1251,22 +1356,48 @@ void Tile::ReadInterpolationFilter(const Block& block) {
   }
 }
 
-bool Tile::ReadInterBlockModeInfo(const Block& block) {
+void Tile::SetCdfContextCompoundType(const Block& block,
+                                     bool is_explicit_compound_type,
+                                     bool is_compound_type_average) {
+  memset(left_context_.is_explicit_compound_type + block.left_context_index,
+         static_cast<int>(is_explicit_compound_type), block.height4x4);
+  memset(left_context_.is_compound_type_average + block.left_context_index,
+         static_cast<int>(is_compound_type_average), block.height4x4);
+  memset(block.top_context->is_explicit_compound_type + block.top_context_index,
+         static_cast<int>(is_explicit_compound_type), block.width4x4);
+  memset(block.top_context->is_compound_type_average + block.top_context_index,
+         static_cast<int>(is_compound_type_average), block.width4x4);
+}
+
+bool Tile::ReadInterBlockModeInfo(const Block& block, bool skip_mode) {
   BlockParameters& bp = *block.bp;
-  bp.palette_mode_info.size[kPlaneTypeY] = 0;
-  bp.palette_mode_info.size[kPlaneTypeUV] = 0;
-  ReadReferenceFrames(block);
+  bp.prediction_parameters->palette_mode_info.size[kPlaneTypeY] = 0;
+  bp.prediction_parameters->palette_mode_info.size[kPlaneTypeUV] = 0;
+  SetCdfContextPaletteSize(block);
+  ReadReferenceFrames(block, skip_mode);
   const bool is_compound = bp.reference_frame[1] > kReferenceFrameIntra;
   MvContexts mode_contexts;
   FindMvStack(block, is_compound, &mode_contexts);
-  ReadInterPredictionModeY(block, mode_contexts);
+  ReadInterPredictionModeY(block, mode_contexts, skip_mode);
   ReadRefMvIndex(block);
   if (!AssignInterMv(block, is_compound)) return false;
-  ReadInterIntraMode(block, is_compound);
-  ReadMotionMode(block, is_compound);
-  ReadCompoundType(block, is_compound);
-  ReadInterpolationFilter(block);
+  ReadInterIntraMode(block, is_compound, skip_mode);
+  ReadMotionMode(block, is_compound, skip_mode);
+  bool is_explicit_compound_type;
+  bool is_compound_type_average;
+  ReadCompoundType(block, is_compound, skip_mode, &is_explicit_compound_type,
+                   &is_compound_type_average);
+  SetCdfContextCompoundType(block, is_explicit_compound_type,
+                            is_compound_type_average);
+  ReadInterpolationFilter(block, skip_mode);
   return true;
+}
+
+void Tile::SetCdfContextSkipMode(const Block& block, bool skip_mode) {
+  memset(left_context_.skip_mode + block.left_context_index,
+         static_cast<int>(skip_mode), block.height4x4);
+  memset(block.top_context->skip_mode + block.top_context_index,
+         static_cast<int>(skip_mode), block.width4x4);
 }
 
 bool Tile::DecodeInterModeInfo(const Block& block) {
@@ -1274,8 +1405,9 @@ bool Tile::DecodeInterModeInfo(const Block& block) {
   block.bp->prediction_parameters->use_intra_block_copy = false;
   bp.skip = false;
   if (!ReadInterSegmentId(block, /*pre_skip=*/true)) return false;
-  ReadSkipMode(block);
-  if (bp.skip_mode) {
+  bool skip_mode = ReadSkipMode(block);
+  SetCdfContextSkipMode(block, skip_mode);
+  if (skip_mode) {
     bp.skip = true;
   } else {
     ReadSkip(block);
@@ -1290,8 +1422,8 @@ bool Tile::DecodeInterModeInfo(const Block& block) {
     ReadLoopFilterDelta(block);
     read_deltas_ = false;
   }
-  ReadIsInter(block);
-  return bp.is_inter ? ReadInterBlockModeInfo(block)
+  ReadIsInter(block, skip_mode);
+  return bp.is_inter ? ReadInterBlockModeInfo(block, skip_mode)
                      : ReadIntraBlockModeInfo(block, /*intra_y_mode=*/false);
 }
 

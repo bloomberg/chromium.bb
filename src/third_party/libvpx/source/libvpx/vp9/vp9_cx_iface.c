@@ -583,10 +583,6 @@ static vpx_codec_err_t set_encoder_config(
 
   vp9_set_first_pass_stats(oxcf, &cfg->rc_twopass_stats_in);
 
-#if CONFIG_FP_MB_STATS
-  oxcf->firstpass_mb_stats_in = cfg->rc_firstpass_mb_stats_in;
-#endif
-
   oxcf->color_space = extra_cfg->color_space;
   oxcf->color_range = extra_cfg->color_range;
   oxcf->render_width = extra_cfg->render_width;
@@ -834,6 +830,25 @@ static vpx_codec_err_t ctrl_get_quantizer64(vpx_codec_alg_priv_t *ctx,
   return VPX_CODEC_OK;
 }
 
+static vpx_codec_err_t ctrl_get_quantizer_svc_layers(vpx_codec_alg_priv_t *ctx,
+                                                     va_list args) {
+  int *const arg = va_arg(args, int *);
+  int i;
+  if (arg == NULL) return VPX_CODEC_INVALID_PARAM;
+  for (i = 0; i < VPX_SS_MAX_LAYERS; i++) {
+    arg[i] = ctx->cpi->svc.base_qindex[i];
+  }
+  return VPX_CODEC_OK;
+}
+
+static vpx_codec_err_t ctrl_get_loopfilter_level(vpx_codec_alg_priv_t *ctx,
+                                                 va_list args) {
+  int *const arg = va_arg(args, int *);
+  if (arg == NULL) return VPX_CODEC_INVALID_PARAM;
+  *arg = ctx->cpi->common.lf.filter_level;
+  return VPX_CODEC_OK;
+}
+
 static vpx_codec_err_t update_extra_cfg(vpx_codec_alg_priv_t *ctx,
                                         const struct vp9_extracfg *extra_cfg) {
   const vpx_codec_err_t res = validate_config(ctx, &ctx->cfg, extra_cfg);
@@ -1029,6 +1044,18 @@ static vpx_codec_err_t ctrl_set_row_mt(vpx_codec_alg_priv_t *ctx,
   struct vp9_extracfg extra_cfg = ctx->extra_cfg;
   extra_cfg.row_mt = CAST(VP9E_SET_ROW_MT, args);
   return update_extra_cfg(ctx, &extra_cfg);
+}
+
+static vpx_codec_err_t ctrl_set_rtc_external_ratectrl(vpx_codec_alg_priv_t *ctx,
+                                                      va_list args) {
+  VP9_COMP *const cpi = ctx->cpi;
+  const unsigned int data = va_arg(args, unsigned int);
+  if (data) {
+    cpi->compute_frame_low_motion_onepass = 0;
+    cpi->rc.constrain_gf_key_freq_onepass_vbr = 0;
+    cpi->cyclic_refresh->content_mode = 0;
+  }
+  return VPX_CODEC_OK;
 }
 
 static vpx_codec_err_t ctrl_enable_motion_vector_unit_test(
@@ -1962,11 +1989,14 @@ static vpx_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { VP9E_SET_SVC_SPATIAL_LAYER_SYNC, ctrl_set_svc_spatial_layer_sync },
   { VP9E_SET_DELTA_Q_UV, ctrl_set_delta_q_uv },
   { VP9E_SET_DISABLE_LOOPFILTER, ctrl_set_disable_loopfilter },
+  { VP9E_SET_RTC_EXTERNAL_RATECTRL, ctrl_set_rtc_external_ratectrl },
   { VP9E_SET_EXTERNAL_RATE_CONTROL, ctrl_set_external_rate_control },
 
   // Getters
   { VP8E_GET_LAST_QUANTIZER, ctrl_get_quantizer },
   { VP8E_GET_LAST_QUANTIZER_64, ctrl_get_quantizer64 },
+  { VP9E_GET_LAST_QUANTIZER_SVC_LAYERS, ctrl_get_quantizer_svc_layers },
+  { VP9E_GET_LOOPFILTER_LEVEL, ctrl_get_loopfilter_level },
   { VP9_GET_REFERENCE, ctrl_get_reference },
   { VP9E_GET_SVC_LAYER_ID, ctrl_get_svc_layer_id },
   { VP9E_GET_ACTIVEMAP, ctrl_get_active_map },
@@ -2271,11 +2301,6 @@ void vp9_dump_encoder_config(const VP9EncoderConfig *oxcf, FILE *fp) {
   DUMP_STRUCT_VALUE(fp, oxcf, target_level);
 
   // TODO(angiebird): dump two_pass_stats_in
-
-#if CONFIG_FP_MB_STATS
-  // TODO(angiebird): dump firstpass_mb_stats_in
-#endif
-
   DUMP_STRUCT_VALUE(fp, oxcf, tuning);
   DUMP_STRUCT_VALUE(fp, oxcf, content);
 #if CONFIG_VP9_HIGHBITDEPTH

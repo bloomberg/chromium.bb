@@ -49,7 +49,7 @@
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
-#include "ui/display/test/display_manager_test_api.h"
+#include "ui/display/test/display_manager_test_api.h"  // nogncheck
 #endif
 
 namespace extensions {
@@ -224,14 +224,29 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, TableProperties) {
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AutomationApiTest, TabsAutomationBooleanPermissions) {
+// Flaky on Mac: crbug.com/1235249
+#if defined(OS_MAC)
+#define MAYBE_TabsAutomationBooleanPermissions \
+  DISABLED_TabsAutomationBooleanPermissions
+#else
+#define MAYBE_TabsAutomationBooleanPermissions TabsAutomationBooleanPermissions
+#endif
+IN_PROC_BROWSER_TEST_F(AutomationApiTest,
+                       MAYBE_TabsAutomationBooleanPermissions) {
   StartEmbeddedTestServer();
   ASSERT_TRUE(RunExtensionTest("automation/tests/tabs_automation_boolean",
                                {.page_url = "permissions.html"}))
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AutomationApiTest, TabsAutomationBooleanActions) {
+// Flaky on Mac: crbug.com/1235249
+#if defined(OS_MAC)
+#define MAYBE_TabsAutomationBooleanActions \
+  DISABLED_TabsAutomationBooleanActions
+#else
+#define MAYBE_TabsAutomationBooleanActions TabsAutomationBooleanActions
+#endif
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, MAYBE_TabsAutomationBooleanActions) {
   StartEmbeddedTestServer();
   ASSERT_TRUE(RunExtensionTest("automation/tests/tabs_automation_boolean",
                                {.page_url = "actions.html"}))
@@ -253,7 +268,13 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest,
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AutomationApiTest, CloseTab) {
+// Flaky on Mac: crbug.com/1235249
+#if defined(OS_MAC)
+#define MAYBE_CloseTab DISABLED_CloseTab
+#else
+#define MAYBE_CloseTab CloseTab
+#endif
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, MAYBE_CloseTab) {
   StartEmbeddedTestServer();
   ASSERT_TRUE(
       RunExtensionTest("automation/tests/tabs", {.page_url = "close_tab.html"}))
@@ -406,13 +427,7 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, Desktop) {
       << message_;
 }
 
-// TODO(http://crbug.com/1213987): flaky on ChromeOS.
-#if defined(OS_CHROMEOS)
-#define MAYBE_DesktopInitialFocus DISABLED_DesktopInitialFocus
-#else
-#define MAYBE_DesktopInitialFocus DesktopInitialFocus
-#endif
-IN_PROC_BROWSER_TEST_F(AutomationApiTest, MAYBE_DesktopInitialFocus) {
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopInitialFocus) {
   ASSERT_TRUE(RunExtensionTest("automation/tests/desktop",
                                {.page_url = "initial_focus.html"}))
       << message_;

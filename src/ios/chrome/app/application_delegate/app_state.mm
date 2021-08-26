@@ -12,6 +12,7 @@
 #import "base/ios/crb_protocol_observers.h"
 #import "base/ios/ios_util.h"
 #include "base/mac/foundation_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "components/feature_engagement/public/event_constants.h"
@@ -53,9 +54,9 @@
 #include "ios/chrome/browser/web_state_list/session_metrics.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_metrics_browser_agent.h"
 #include "ios/net/cookies/cookie_store_ios.h"
+#include "ios/public/provider/chrome/browser/app_distribution/app_distribution_api.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/discover_feed/discover_feed_provider.h"
-#include "ios/public/provider/chrome/browser/distribution/app_distribution_provider.h"
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_provider.h"
 #include "ios/web/public/thread/web_task_traits.h"
 #include "net/url_request/url_request_context.h"
@@ -395,9 +396,7 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
   [_appCommandDispatcher prepareForShutdown];
 
   // Cancel any in-flight distribution notifications.
-  ios::GetChromeBrowserProvider()
-      .GetAppDistributionProvider()
-      ->CancelDistributionNotifications();
+  ios::provider::CancelAppDistributionNotifications();
 
   // Halt the tabs, so any outstanding requests get cleaned up, without actually
   // closing the tabs. Set the BVC to inactive to cancel all the dialogs.
@@ -436,7 +435,7 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
   crash_keys::SetConnectedScenesCount([self connectedScenes].count);
 }
 
-- (void)willResignActiveTabModel {
+- (void)willResignActive {
   if (self.initStage < InitStageBrowserObjectsForUI) {
     // If the application did not pass the foreground initialization stage,
     // there is no active tab model to resign.

@@ -76,6 +76,8 @@ static_library("test_support") {
     "../browser/media/session/mock_media_session_service_impl.h",
     "../browser/presentation/presentation_test_utils.cc",
     "../browser/presentation/presentation_test_utils.h",
+    "../browser/renderer_host/document_service_base_echo_impl.cc",
+    "../browser/renderer_host/document_service_base_echo_impl.h",
     "../browser/renderer_host/input/mock_input_router.cc",
     "../browser/renderer_host/input/mock_input_router.h",
     "../browser/renderer_host/mock_render_widget_host.cc",
@@ -276,9 +278,10 @@ static_library("test_support") {
     "../public/test/url_loader_interceptor.h",
     "../public/test/url_loader_monitor.cc",
     "../public/test/url_loader_monitor.h",
-    "../public/test/web_contents_receiver_set_test_binder.h",
     "../public/test/web_contents_tester.cc",
     "../public/test/web_contents_tester.h",
+    "../public/test/web_transport_simple_test_server.cc",
+    "../public/test/web_transport_simple_test_server.h",
     "../public/test/web_ui_browsertest_util.cc",
     "../public/test/web_ui_browsertest_util.h",
     "../renderer/mock_agent_scheduling_group.cc",
@@ -323,8 +326,6 @@ static_library("test_support") {
     "mock_overscroll_observer.h",
     "mock_platform_notification_service.cc",
     "mock_platform_notification_service.h",
-    "mock_raw_clipboard_host.cc",
-    "mock_raw_clipboard_host.h",
     "mock_render_widget_host_delegate.cc",
     "mock_render_widget_host_delegate.h",
     "mock_ssl_host_state_delegate.cc",
@@ -374,6 +375,8 @@ static_library("test_support") {
     "test_navigation_url_loader_factory.h",
     "test_overscroll_delegate.cc",
     "test_overscroll_delegate.h",
+    "test_page_broadcast.cc",
+    "test_page_broadcast.h",
     "test_render_frame.cc",
     "test_render_frame.h",
     "test_render_frame_host.cc",
@@ -406,7 +409,7 @@ static_library("test_support") {
   public_deps = [
     ":test_interfaces",
     "//components/download/public/common:test_support",
-    "//components/enterprise/common/proto:download_item_reroute_info_proto",
+    "//components/enterprise/common:download_item_reroute_info",
     "//components/services/filesystem/public/mojom",
     "//components/services/storage/public/cpp",
     "//components/services/storage/public/mojom",
@@ -420,6 +423,7 @@ static_library("test_support") {
     "//services/media_session/public/mojom",
     "//third_party/blink/public:blink",
     "//third_party/blink/public:test_support",
+    "//third_party/blink/public/common:headers",
     "//third_party/blink/public/strings:strings_grit",
     "//ui/gl:test_support",
   ]
@@ -429,6 +433,7 @@ static_library("test_support") {
     "//base/third_party/dynamic_annotations",
     "//build:chromeos_buildflags",
     "//cc:test_support",
+    "//components/network_session_configurator/common:common",
     "//components/services/storage",
     "//components/variations",
     "//components/viz/client",
@@ -454,6 +459,8 @@ static_library("test_support") {
     "//media/capture",
     "//media/capture/mojom:image_capture",
     "//mojo/core/embedder",
+    "//net:quic_test_tools",
+    "//net:simple_quic_tools",
     "//net:test_support",
     "//ppapi/c:c",
     "//services/audio",
@@ -698,7 +705,10 @@ if (is_fuchsia) {
   }
   group("performance_web_engine_test_suite") {
     testonly = true
-    data = [ "//content/test/gpu/run_telemetry_benchmark_fuchsia.py" ]
+    data = [
+      "//content/test/gpu/fuchsia_util.py",
+      "//content/test/gpu/run_telemetry_benchmark_fuchsia.py",
+    ]
     data_deps = [
       ":telemetry_gpu_integration_test_data",
       "//fuchsia/engine:web_engine_shell",
@@ -1094,6 +1104,7 @@ test("content_browsertests") {
     "../browser/cross_site_transfer_browsertest.cc",
     "../browser/data_decoder_browsertest.cc",
     "../browser/database_browsertest.cc",
+    "../browser/device_posture/device_posture_browsertest.cc",
     "../browser/device_sensors/device_sensor_browsertest.cc",
     "../browser/devtools/devtools_conversion_browsertest.cc",
     "../browser/devtools/devtools_issue_storage_browsertest.cc",
@@ -1194,6 +1205,7 @@ test("content_browsertests") {
     "../browser/renderer_host/back_forward_cache_metrics_browsertest.cc",
     "../browser/renderer_host/blocked_scheme_navigation_browsertest.cc",
     "../browser/renderer_host/cookie_browsertest.cc",
+    "../browser/renderer_host/document_service_base_browsertest.cc",
     "../browser/renderer_host/embedding_token_browsertest.cc",
     "../browser/renderer_host/frame_tree_browsertest.cc",
     "../browser/renderer_host/input/autoscroll_browsertest.cc",
@@ -1277,7 +1289,6 @@ test("content_browsertests") {
     "../browser/web_contents/web_contents_impl_browsertest.cc",
     "../browser/web_contents/web_contents_observer_browsertest.cc",
     "../browser/web_contents/web_contents_view_aura_browsertest.cc",
-    "../browser/web_contents_receiver_set_browsertest.cc",
     "../browser/web_package/link_web_bundle_browsertest.cc",
     "../browser/web_package/save_page_as_web_bundle_browsertest.cc",
     "../browser/web_package/signed_exchange_request_handler_browsertest.cc",
@@ -1346,10 +1357,7 @@ test("content_browsertests") {
 
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 
-  configs += [
-    "//build/config:precompiled_headers",
-    "//build/config/compiler:no_size_t_to_int_warning",
-  ]
+  configs += [ "//build/config:precompiled_headers" ]
 
   public_deps = [
     ":test_interfaces",
@@ -1685,7 +1693,6 @@ test("content_browsertests") {
 
   if (is_mac) {
     sources += [
-      "../browser/accessibility/accessibility_scripts_mac_browsertest.mm",
       "../browser/accessibility/accessibility_tree_formatter_mac_browsertest.mm",
       "../browser/accessibility/browser_accessibility_cocoa_browsertest.mm",
       "../browser/accessibility/hit_testing_mac_browsertest.mm",
@@ -1859,6 +1866,7 @@ test("content_unittests") {
     "../browser/accessibility/browser_accessibility_unittest.cc",
     "../browser/accessibility/one_shot_accessibility_tree_search_unittest.cc",
     "../browser/accessibility/touch_passthrough_manager_unittest.cc",
+    "../browser/aggregation_service/aggregation_service_key_fetcher_unittest.cc",
     "../browser/aggregation_service/aggregation_service_storage_unittest.cc",
     "../browser/aggregation_service/public_key_parsing_utils_unittest.cc",
     "../browser/appcache/appcache_cache_test_helper.cc",
@@ -2195,7 +2203,6 @@ test("content_unittests") {
     "../browser/tracing/background_startup_tracing_observer_unittest.cc",
     "../browser/tracing/background_tracing_config_unittest.cc",
     "../browser/web_contents/aura/gesture_nav_simple_unittest.cc",
-    "../browser/web_contents/color_chooser_unittest.cc",
     "../browser/web_contents/web_contents_delegate_unittest.cc",
     "../browser/web_contents/web_contents_impl_unittest.cc",
     "../browser/web_contents/web_contents_user_data_unittest.cc",
@@ -2332,6 +2339,7 @@ test("content_unittests") {
       "../browser/android/nfc_host_unittest.cc",
       "../browser/renderer_host/input/web_input_event_builders_android_unittest.cc",
       "../browser/tracing/background_reached_code_tracing_observer_android_unittest.cc",
+      "../browser/web_contents/color_chooser_unittest.cc",
       "../common/android/cpu_time_metrics_unittest.cc",
       "../common/android/gin_java_bridge_value_unittest.cc",
     ]
@@ -2466,6 +2474,7 @@ test("content_unittests") {
     "//third_party/blink/public:blink",
     "//third_party/blink/public:test_support",
     "//third_party/blink/public/common:font_enumeration_table_proto",
+    "//third_party/blink/public/common:headers",
     "//third_party/icu",
     "//third_party/inspector_protocol:crdtp_test",
     "//third_party/leveldatabase",
@@ -2700,10 +2709,14 @@ test("content_unittests") {
       "//device/fido:cablev2_test_util",
       "//device/fido:mocks",
       "//device/fido:test_support",
+      "//services/device/hid:test_support",
       "//services/device/public/cpp/hid:test_support",
     ]
     if (is_chromeos_ash) {
-      deps += [ "//chromeos/dbus/u2f" ]
+      deps += [
+        "//chromeos/dbus/tpm_manager",
+        "//chromeos/dbus/u2f",
+      ]
     }
   }
 

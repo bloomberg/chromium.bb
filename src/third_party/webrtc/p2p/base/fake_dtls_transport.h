@@ -96,8 +96,8 @@ class FakeDtlsTransport : public DtlsTransportInternal {
   }
 
   // Simulates the two DTLS transports connecting to each other.
-  // If |asymmetric| is true this method only affects this FakeDtlsTransport.
-  // If false, it affects |dest| as well.
+  // If `asymmetric` is true this method only affects this FakeDtlsTransport.
+  // If false, it affects `dest` as well.
   void SetDestination(FakeDtlsTransport* dest, bool asymmetric = false) {
     if (dest == dest_) {
       return;
@@ -118,7 +118,7 @@ class FakeDtlsTransport : public DtlsTransportInternal {
       if (!asymmetric) {
         dest->SetDestination(this, true);
       }
-      // If the |dtls_role_| is unset, set it to SSL_CLIENT by default.
+      // If the `dtls_role_` is unset, set it to SSL_CLIENT by default.
       if (!dtls_role_) {
         dtls_role_ = std::move(rtc::SSL_CLIENT);
       }
@@ -293,7 +293,7 @@ class FakeDtlsTransport : public DtlsTransportInternal {
   rtc::SSLProtocolVersion ssl_max_version_ = rtc::SSL_PROTOCOL_DTLS_12;
   rtc::SSLFingerprint dtls_fingerprint_;
   absl::optional<rtc::SSLRole> dtls_role_;
-  int crypto_suite_ = rtc::SRTP_AES128_CM_SHA1_80;
+  int crypto_suite_ = rtc::kSrtpAes128CmSha1_80;
   absl::optional<int> ssl_cipher_suite_;
 
   webrtc::DtlsTransportState dtls_state_ = webrtc::DtlsTransportState::kNew;

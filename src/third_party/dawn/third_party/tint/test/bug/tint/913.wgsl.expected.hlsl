@@ -13,9 +13,7 @@ struct tint_symbol_2 {
   uint3 GlobalInvocationID : SV_DispatchThreadID;
 };
 
-[numthreads(1, 1, 1)]
-void main(tint_symbol_2 tint_symbol_1) {
-  const uint3 GlobalInvocationID = tint_symbol_1.GlobalInvocationID;
+void main_inner(uint3 GlobalInvocationID) {
   int2 tint_tmp;
   src.GetDimensions(tint_tmp.x, tint_tmp.y);
   const int2 srcSize = tint_tmp;
@@ -40,7 +38,7 @@ void main(tint_symbol_2 tint_symbol_1) {
   if ((tint_tmp_2)) {
     bool tint_tmp_5 = success;
     if (tint_tmp_5) {
-      tint_tmp_5 = all((tint_symbol.Load(int3(dstTexCoord, 0)) == nonCoveredColor));
+      tint_tmp_5 = all((tint_symbol.Load(int3(int2(dstTexCoord), 0)) == nonCoveredColor));
     }
     success = (tint_tmp_5);
   } else {
@@ -48,8 +46,8 @@ void main(tint_symbol_2 tint_symbol_1) {
     if ((uniforms[0].x == 1u)) {
       srcTexCoord.y = ((uint(srcSize.y) - srcTexCoord.y) - 1u);
     }
-    const float4 srcColor = src.Load(int3(srcTexCoord, 0));
-    const float4 dstColor = tint_symbol.Load(int3(dstTexCoord, 0));
+    const float4 srcColor = src.Load(int3(int2(srcTexCoord), 0));
+    const float4 dstColor = tint_symbol.Load(int3(int2(dstTexCoord), 0));
     if ((uniforms[0].y == 2u)) {
       bool tint_tmp_7 = success;
       if (tint_tmp_7) {
@@ -86,5 +84,10 @@ void main(tint_symbol_2 tint_symbol_1) {
   } else {
     output.Store((4u * outputIndex), asuint(0u));
   }
+}
+
+[numthreads(1, 1, 1)]
+void main(tint_symbol_2 tint_symbol_1) {
+  main_inner(tint_symbol_1.GlobalInvocationID);
   return;
 }

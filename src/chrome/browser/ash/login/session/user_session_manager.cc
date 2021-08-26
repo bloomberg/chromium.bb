@@ -35,6 +35,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "base/version.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/ash/account_manager/account_manager_migrator.h"
@@ -44,6 +45,8 @@
 #include "chrome/browser/ash/base/locale_util.h"
 #include "chrome/browser/ash/child_accounts/child_policy_observer.h"
 #include "chrome/browser/ash/crosapi/browser_data_migrator.h"
+#include "chrome/browser/ash/first_run/first_run.h"
+#include "chrome/browser/ash/full_restore/full_restore_service.h"
 #include "chrome/browser/ash/hats/hats_config.h"
 #include "chrome/browser/ash/login/auth/chrome_cryptohome_authenticator.h"
 #include "chrome/browser/ash/login/chrome_restart_request.h"
@@ -73,7 +76,7 @@
 #include "chrome/browser/ash/login/users/chrome_user_manager.h"
 #include "chrome/browser/ash/login/users/supervised_user_manager.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
-#include "chrome/browser/ash/policy/core/browser_policy_connector_chromeos.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/policy/handlers/adb_sideloading_allowance_mode_policy_handler.h"
 #include "chrome/browser/ash/policy/handlers/minimum_version_policy_handler.h"
 #include "chrome/browser/ash/policy/handlers/tpm_auto_update_mode_policy_handler.h"
@@ -87,8 +90,6 @@
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/boot_times_recorder.h"
-#include "chrome/browser/chromeos/first_run/first_run.h"
-#include "chrome/browser/chromeos/full_restore/full_restore_service.h"
 #include "chrome/browser/chromeos/logging.h"
 #include "chrome/browser/chromeos/tether/tether_service.h"
 #include "chrome/browser/chromeos/tpm_firmware_update_notification.h"
@@ -105,6 +106,7 @@
 #include "chrome/browser/supervised_user/child_accounts/child_account_service_factory.h"
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/startup/launch_mode_recorder.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/common/channel_info.h"
@@ -130,6 +132,7 @@
 #include "components/account_id/account_id.h"
 #include "components/account_manager_core/account.h"
 #include "components/account_manager_core/chromeos/account_manager.h"
+#include "components/arc/arc_prefs.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/flags_ui/flags_ui_metrics.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
@@ -216,6 +219,11 @@ constexpr char kEventInitUserDesktop[] = "InitUserDesktop";
 
 constexpr base::TimeDelta kActivityTimeBeforeOnboardingSurvey =
     base::TimeDelta::FromHours(1);
+
+// A special version used to backfill the OnboardingCompletedVersion for
+// existing users to indicate that they are already completed the onboarding
+// flow in unknown past version.
+constexpr char kOnboardingBackfillVersion[] = "0.0.0.0";
 
 base::TimeDelta GetActivityTimeBeforeOnboardingSurvey() {
   auto* command_line = base::CommandLine::ForCurrentProcess();
@@ -406,7 +414,7 @@ bool IsNewProfile(Profile* profile) {
 
 policy::MinimumVersionPolicyHandler* GetMinimumVersionPolicyHandler() {
   return g_browser_process->platform_part()
-      ->browser_policy_connector_chromeos()
+      ->browser_policy_connector_ash()
       ->GetMinimumVersionPolicyHandler();
 }
 
@@ -641,7 +649,7 @@ void UserSessionManager::StartSession(const UserContext& user_context,
   start_session_type_ = start_session_type;
 
   VLOG(1) << "Starting user session.";
-  PreStartSession();
+  PreStartSession(start_session_type);
   CreateUserSession(user_context, has_auth_cookies);
 
   if (!has_active_session)
@@ -1138,11 +1146,12 @@ void UserSessionManager::CreateUserSession(const UserContext& user_context,
       user_context.GetUserType() == user_manager::USER_TYPE_CHILD);
 }
 
-void UserSessionManager::PreStartSession() {
+void UserSessionManager::PreStartSession(StartSessionType start_session_type) {
   // Switch log file as soon as possible.
   logging::RedirectChromeLogging(*base::CommandLine::ForCurrentProcess());
 
-  UserSessionInitializer::Get()->PreStartSession();
+  UserSessionInitializer::Get()->PreStartSession(start_session_type ==
+                                                 StartSessionType::kPrimary);
 }
 
 void UserSessionManager::StoreUserContextDataBeforeProfileIsCreated() {
@@ -1288,9 +1297,6 @@ void UserSessionManager::OnProfileCreated(const UserContext& user_context,
                              user_context.GetAccountId());
       break;
     case Profile::CREATE_STATUS_LOCAL_FAIL:
-    case Profile::CREATE_STATUS_REMOTE_FAIL:
-    case Profile::CREATE_STATUS_CANCELED:
-    case Profile::MAX_CREATE_STATUS:
       NOTREACHED();
       break;
   }
@@ -1319,7 +1325,12 @@ void UserSessionManager::InitProfilePreferences(
   if (is_new_profile) {
     SetFirstLoginPrefs(profile, user_context.GetPublicSessionLocale(),
                        user_context.GetPublicSessionInputMethod());
+  }
 
+  absl::optional<base::Version> onboarding_completed_version =
+      user_manager::KnownUser(g_browser_process->local_state())
+          .GetOnboardingCompletedVersion(user->GetAccountId());
+  if (!onboarding_completed_version.has_value()) {
     // Kiosks do not have onboarding.
     if (user_manager->GetPrimaryUser() == user &&
         !user_manager->IsUserNonCryptohomeDataEphemeral(user->GetAccountId()) &&
@@ -1406,7 +1417,7 @@ void UserSessionManager::InitProfilePreferences(
         accounts_mutator->SeedAccountInfo(gaia_id, user->GetDisplayEmail());
 
     // 3. Set it as the Primary Account.
-    if (features::IsSplitSettingsSyncEnabled()) {
+    if (features::IsSyncConsentOptionalEnabled()) {
       // In theory this should only be done for new profiles. However, if user
       // profile prefs failed to save or the prefs are corrupted by a crash then
       // the IdentityManager will start up without a primary account. See test
@@ -1423,7 +1434,7 @@ void UserSessionManager::InitProfilePreferences(
           gaia_id);
     } else {
       // Set a primary account here because the profile might have been
-      // created with the feature SplitSettingsSync enabled. Then the
+      // created with the feature SyncConsentOptional enabled. Then the
       // profile might only have an unconsented primary account.
       identity_manager->GetPrimaryAccountMutator()->SetPrimaryAccount(
           account_id, ConsentLevel::kSync);
@@ -1778,6 +1789,9 @@ bool UserSessionManager::InitializeUserSession(Profile* profile) {
 
   ProfileHelper::Get()->ProfileStartup(profile);
 
+  PrefService* prefs = profile->GetPrefs();
+  arc::RecordPlayStoreLaunchWithinAWeek(prefs, /*launched=*/false);
+
   if (start_session_type_ == StartSessionType::kPrimary) {
     WizardController* wizard_controller =
         WizardController::default_controller();
@@ -1786,12 +1800,30 @@ bool UserSessionManager::InitializeUserSession(Profile* profile) {
         (wizard_controller && wizard_controller->skip_post_login_screens()) ||
         cmdline->HasSwitch(switches::kOobeSkipPostLogin);
 
+    user_manager::KnownUser known_user(g_browser_process->local_state());
+    const user_manager::User* user =
+        ProfileHelper::Get()->GetUserByProfile(profile);
+    std::string pending_screen =
+        known_user.GetPendingOnboardingScreen(user->GetAccountId());
+    absl::optional<base::Version> onboarding_completed_version =
+        known_user.GetOnboardingCompletedVersion(user->GetAccountId());
+
+    if (!user_manager->IsCurrentUserNew() && pending_screen.empty() &&
+        !onboarding_completed_version.has_value()) {
+      known_user.SetOnboardingCompletedVersion(
+          user->GetAccountId(), base::Version(kOnboardingBackfillVersion));
+      LoginDisplayHost::default_host()
+          ->GetSigninUI()
+          ->ClearOnboardingAuthSession();
+    }
+
     if (user_manager->IsCurrentUserNew() && !skip_post_login_screens) {
-      profile->GetPrefs()->SetTime(prefs::kOobeOnboardingTime,
-                                   base::Time::Now());
+      prefs->SetTime(prefs::kOobeOnboardingTime, base::Time::Now());
+      prefs->SetBoolean(arc::prefs::kArcPlayStoreLaunchMetricCanBeRecorded,
+                        true);
       // Don't specify start URLs if the administrator has configured the
       // start URLs via policy.
-      if (!SessionStartupPref::TypeIsManaged(profile->GetPrefs())) {
+      if (!SessionStartupPref::TypeIsManaged(prefs)) {
         if (child_service->IsChildAccountStatusKnown())
           MaybeLaunchHelpApp(profile);
         else
@@ -1808,17 +1840,23 @@ bool UserSessionManager::InitializeUserSession(Profile* profile) {
       OnboardingUserActivityCounter::MaybeMarkForStart(profile);
 
       return false;
-    } else if (!user_manager->IsCurrentUserNew() &&
-               arc::GetManagementTransition(profile) !=
-                   arc::ArcManagementTransition::NO_TRANSITION) {
+    }
+    if (!user_manager->IsCurrentUserNew() && !pending_screen.empty()) {
+      LoginDisplayHost::default_host()->GetSigninUI()->ResumeUserOnboarding(
+          chromeos::OobeScreenId(pending_screen));
+      return false;
+    }
+    if (!user_manager->IsCurrentUserNew() &&
+        arc::GetManagementTransition(profile) !=
+            arc::ArcManagementTransition::NO_TRANSITION) {
       LoginDisplayHost::default_host()
           ->GetSigninUI()
           ->StartManagementTransition();
       return false;
-    } else if (features::IsManagedTermsOfServiceEnabled() &&
-               !user_manager->IsCurrentUserNew() &&
-               profile->GetPrefs()->IsManagedPreference(
-                   ::prefs::kTermsOfServiceURL)) {
+    }
+    if (features::IsManagedTermsOfServiceEnabled() &&
+        !user_manager->IsCurrentUserNew() &&
+        profile->GetPrefs()->IsManagedPreference(::prefs::kTermsOfServiceURL)) {
       LoginDisplayHost::default_host()->GetSigninUI()->ShowTosForExistingUser();
       return false;
     }
@@ -1918,7 +1956,7 @@ void UserSessionManager::ShowNotificationsIfNeeded(Profile* profile) {
   }
 
   g_browser_process->platform_part()
-      ->browser_policy_connector_chromeos()
+      ->browser_policy_connector_ash()
       ->GetTPMAutoUpdateModePolicyHandler()
       ->ShowTPMAutoUpdateNotificationIfNeeded();
 
@@ -1926,7 +1964,7 @@ void UserSessionManager::ShowNotificationsIfNeeded(Profile* profile) {
 
   // Show a notification about ADB sideloading policy change if applicable.
   g_browser_process->platform_part()
-      ->browser_policy_connector_chromeos()
+      ->browser_policy_connector_ash()
       ->GetAdbSideloadingAllowanceModePolicyHandler()
       ->ShowAdbSideloadingPolicyChangeNotificationIfNeeded();
 }
@@ -2074,8 +2112,7 @@ void UserSessionManager::UpdateEasyUnlockKeys(const UserContext& user_context) {
     device_list = easy_unlock_service->IsChromeOSLoginEnabled()
                       ? easy_unlock_service->GetRemoteDevices()
                       : nullptr;
-    easy_unlock_service->SetHardlockState(
-        EasyUnlockScreenlockStateHandler::NO_HARDLOCK);
+    easy_unlock_service->SetHardlockState(SmartLockStateHandler::NO_HARDLOCK);
   }
 
   base::ListValue empty_list;

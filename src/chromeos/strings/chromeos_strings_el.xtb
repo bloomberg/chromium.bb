@@ -14,6 +14,7 @@
 <translation id="1204296502688602597">Λανθάνων χρόνος DNS</translation>
 <translation id="123124571410524056">Πιθανή ύπαρξη πύλης</translation>
 <translation id="1238612778414822719">Λανθάνων χρόνος HTTPS</translation>
+<translation id="1264369926465113395">Δείτε το νέο ψηφιακό περιοδικό του Chromebook για δημιουργούς</translation>
 <translation id="1270369111467284986">Η πύλη υποδοχής είναι ύποπτη</translation>
 <translation id="1290331692326790741">Ασθενές σήμα</translation>
 <translation id="1314565355471455267">Android VPN</translation>
@@ -34,7 +35,9 @@
 <translation id="1510238584712386396">Λειτουργία εκκίνησης</translation>
 <translation id="1600964289716072707">Τοποθετήστε μια άλλη σελίδα στον σαρωτή και επιλέξτε Σάρωση για να προσθέσετε τη σελίδα.</translation>
 <translation id="1621067168122174824">Εκτέλεση δοκιμής φόρτισης</translation>
+<translation id="1639239467298939599">Γίνεται φόρτωση</translation>
 <translation id="1641857168437328880">Τροφοδότης εγγράφων (Μίας όψης)</translation>
+<translation id="1643449475550628585">Καθημερινή αλλαγή εικόνας ταπετσαρίας</translation>
 <translation id="1644574205037202324">Ιστορικό</translation>
 <translation id="1662989795263954667">Διακοπή - Τελείωσε το μελάνι</translation>
 <translation id="1703835215927279855">Letter</translation>
@@ -65,7 +68,6 @@
 <translation id="2224337661447660594">Χωρίς σύνδεση στο διαδίκτυο</translation>
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="225692081236532131">Κατάσταση ενεργοποίησης</translation>
-<translation id="2294675138977897428">Δεν εντοπίστηκε σύνδεση Ethernet</translation>
 <translation id="2326139988748364651"><ph name="RESOLUTION_VALUE" /> dpi</translation>
 <translation id="2338501278241028356">Ενεργοποιήστε το Bluetooth, για να εντοπίσετε κοντινές συσκευές</translation>
 <translation id="2364498172489649528">Επιτυχία</translation>
@@ -75,9 +77,11 @@
 <translation id="2448312741937722512">Τύπος</translation>
 <translation id="2461822463642141190">Τρέχουσα</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
+<translation id="2505327257735685095">Ανανέωση της τρέχουσας εικόνας ταπετσαρίας</translation>
 <translation id="2517472476991765520">Σάρωση</translation>
 <translation id="2570743873672969996">Εκτέλεση δοκιμής <ph name="TEST_NAME" />…</translation>
 <translation id="2585245331261708204">Πληρ. ενημέρ. Chrome OS</translation>
+<translation id="2619761439309613843">Ημερήσια ανανέωση</translation>
 <translation id="2620436844016719705">Σύστημα</translation>
 <translation id="2740531572673183784">ΟK</translation>
 <translation id="2751739896257479635">2η φάση ελέγχου ταυτότητας EAP:</translation>
@@ -87,7 +91,6 @@
 <translation id="2862104018715411648">Τοποθετήστε το έγγραφο στον σαρωτή και επιλέξτε Σάρωση για να ξεκινήσετε.</translation>
 <translation id="2872961005593481000">Τερματισμός λειτουργίας</translation>
 <translation id="2878387241690264070">Εκφόρτιση <ph name="RATE" /> σε <ph name="NUM_SECONDS" /> δευτερόλεπτα.</translation>
-<translation id="2983662233540284543">Μάθετε από έναν δημιουργό περιεχομένου gaming, αποκτήστε εφαρμογές σχεδίασης παιχνιδιών κ.ά.</translation>
 <translation id="3008341117444806826">ΑΝΑΝΕΩΣΗ</translation>
 <translation id="3009958530611748826">Επιλέξτε έναν φάκελο στον οποίο θέλετε να γίνεται αποθήκευση.</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" /> mA</translation>
@@ -101,6 +104,7 @@
 <translation id="3188257591659621405">Τα αρχεία μου</translation>
 <translation id="3199982728237701504">Τροφοδότης εγγράφων (Διπλής όψης)</translation>
 <translation id="3226405216343213872">Αναζήτηση για σαρωτές</translation>
+<translation id="3228433892370472777">Προεπιλεγμένη σύνδεση</translation>
 <translation id="3246869037381808805">Οι εργασίες εκτύπωσης που είναι παλαιότερες της 1 ημέρας θα καταργηθούν.</translation>
 <translation id="3268178239013324452">Σφάλμα - Η θύρα είναι ανοικτή</translation>
 <translation id="3283504360622356314">{0,plural, =1{Επεξεργασία αρχείου}other{Επεξεργασία αρχείων}}</translation>
@@ -117,10 +121,13 @@
 <translation id="3488065109653206955">Μερικώς ενεργοποιημένο</translation>
 <translation id="3527036260304016759">Σφάλμα - Άγνωστο σφάλμα</translation>
 <translation id="3532980081107202182">Απομένουν περίπου <ph name="MIN_REMAINING" /> λεπτά</translation>
+<translation id="3540383942695635079">Διεύθυνση MAC</translation>
 <translation id="357889014807611375">Wi-Fi με ογκοχρέωση</translation>
+<translation id="3582041541988388905">Δεν εντοπίστηκε σύνδεση <ph name="NETWORK_NAME" /></translation>
 <translation id="3595596368722241419">Μπαταρία πλήρης</translation>
 <translation id="360565022852130722">Η ασφάλεια του δικτύου Wi-Fi βασίζεται σε αδύναμο πρωτόκολλο WEP 802.1x.</translation>
 <translation id="3689839747745352263">Δοκιμή <ph name="TEST_NAME" /></translation>
+<translation id="3708186454126126312">Συνδέθηκαν στο παρελθόν</translation>
 <translation id="373232531963562220">{PAGE_NUMBER,plural, =0{Επανάληψη σάρωσης σελίδας}=1{Επανάληψη σάρωσης σελίδας {PAGE_NUMBER}}other{Επανάληψη σάρωσης σελίδας {PAGE_NUMBER}}}</translation>
 <translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★ (<ph name="AGGREGATED_COUNT" /> αξιολογήσεις)</translation>
 <translation id="3748026146096797577">Εκτός σύνδεσης</translation>
@@ -163,6 +170,7 @@
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4483049906298469269">Αποτυχία ping της μη προεπιλεγμένης πύλης δικτύου.</translation>
 <translation id="4511264077854731334">Πύλη</translation>
+<translation id="4536864596629708641">Διαμόρφωση IP</translation>
 <translation id="4548483925627140043">Δεν βρέθηκε σήμα.</translation>
 <translation id="455835558791489930">Μπαταρία <ph name="CHARGE_VALUE" /> mAh</translation>
 <translation id="4562494484721939086">Εκτός υπηρεσίας</translation>
@@ -171,6 +179,7 @@
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> από <ph name="TOTAL_PAGE_NUMBER" />. Πατήστε enter, για να ακυρώσετε την εργασία εκτύπωσης.</translation>
 <translation id="4646949265910132906">Ασφαλής σύνδεση Wi-Fi</translation>
 <translation id="4652335678334611408">Αποθήκευση αρχείου καταγραφής περιόδου λειτουργίας</translation>
+<translation id="4654549501020883054">Αλλαγή καθημερινά</translation>
 <translation id="4665014895760275686">Κατασκευαστής</translation>
 <translation id="467510802200863975">Δεν ταιριάζουν οι κωδικοί πρόσβασης</translation>
 <translation id="467715984478005772">Πιθανή ύπαρξη τείχους προστασίας</translation>
@@ -194,6 +203,7 @@
 <translation id="4891842000192098784">Καταπόνηση</translation>
 <translation id="4917385247580444890">Ισχυρό</translation>
 <translation id="4917889632206600977">Διακοπή - Τελείωσε το χαρτί</translation>
+<translation id="491836528011451486">Τοποθετήστε το έγγραφο στον σαρωτή σας και επιλέξτε "Επανάληψη σάρωσης" για σάρωση και αντικατάσταση της σελίδας <ph name="CURRENT_PAGE" />.</translation>
 <translation id="4921665434385737356">Φόρτιση κατά <ph name="RATE" /> σε <ph name="NUM_SECONDS" /> δευτερόλεπτα.</translation>
 <translation id="4932733599132424254">Ημερομηνία</translation>
 <translation id="498186245079027698">Ελέγξτε τον σαρωτή και δοκιμάστε ξανά. Βεβαιωθείτε ότι υπάρχει αρκετός τοπικός αποθηκευτικός χώρος για την αποθήκευση των αρχείων που σαρώνονται.</translation>
@@ -209,10 +219,10 @@
 <translation id="5154917547274118687">Μνήμη</translation>
 <translation id="5168185087976003268">Κατάσταση μπαταρίας</translation>
 <translation id="5170568018924773124">Εμφάνιση στο φάκελο</translation>
-<translation id="519607504553633437">Σχεδιάστε και δημιουργήστε δικά σας παιχνίδια</translation>
 <translation id="5212543919916444558">Δεν βρέθηκε κάτι με το οποίο να μπορώ να σας βοηθήσω στην οθόνη σας.
 Πατήστε στο μικρόφωνο για να ρωτήσετε οτιδήποτε θέλετε.</translation>
 <translation id="5222676887888702881">Έξοδος</translation>
+<translation id="5234764350956374838">Παράβλεψη</translation>
 <translation id="5252456968953390977">Περιαγωγη</translation>
 <translation id="5264277876637023664">Εκτέλεση δοκιμής CPU</translation>
 <translation id="5267975978099728568"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="ERROR_STATUS" /></translation>
@@ -243,7 +253,6 @@
 <translation id="5691511426247308406">Οικογένεια</translation>
 <translation id="5701381305118179107">Κέντρο</translation>
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" /> από <ph name="TOTAL_PAGES" /></translation>
-<translation id="5752751666635965375">Δημιουργία παιχνιδιών</translation>
 <translation id="5760715441271661976">Κατάσταση πύλης</translation>
 <translation id="5832805196449965646">Προσθήκη ατόμου</translation>
 <translation id="583281660410589416">Άγνωστο</translation>
@@ -266,6 +275,7 @@
 <translation id="6106186594183574873">Για να τελειώσετε, εισαγάγετε τον παλιό κωδικό πρόσβασης</translation>
 <translation id="6108689792487843350">Μη προσβάσιμη πύλη</translation>
 <translation id="6122191549521593678">Συνδεδεμένο</translation>
+<translation id="6125438912510167220">Ταχύτητα συνδέσμου</translation>
 <translation id="6137767437444130246">Πιστοποιητικό χρήστη</translation>
 <translation id="6146993107019042706">Για να ολοκληρώσετε, εισαγάγετε τον νέο κωδικό πρόσβασης</translation>
 <translation id="6147514244879357420">PNG</translation>
@@ -292,6 +302,8 @@
 <translation id="65587193855025101">Επίπεδος</translation>
 <translation id="6564646048574748301">Σφάλμα - Δεν είναι δυνατή η πρόσβαση στον εκτυπωτή</translation>
 <translation id="6574762126505704998">Πλήρωση</translation>
+<translation id="6575134580692778371">Δεν διαμορφώθηκε</translation>
+<translation id="6596816719288285829">Διεύθυνση IP</translation>
 <translation id="6603230386432466813">Αντιμετωπίζετε προβλήματα κατά τη σύνδεση;</translation>
 <translation id="6618744767048954150">Σε εξέλιξη</translation>
 <translation id="6620487321149975369">Οι εργασίες εκτύπωσης θα εμφανίζονται στο ιστορικό, εκτός εάν καταργηθούν μη αυτόματα.</translation>
@@ -314,13 +326,16 @@
 <translation id="7059230779847288458">Φόρτιση, απομένουν <ph name="TIME_VALUE" /> μέχρι την ολοκλήρωση</translation>
 <translation id="708426984172631313">ΔΙΑΚΟΠΗΚΕ</translation>
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
+<translation id="7134436342991564651">{0,plural, =1{Διακομιστής ονομάτων}other{Διακομιστές ονομάτων}}</translation>
 <translation id="7143207342074048698">Σύνδεση</translation>
 <translation id="7144878232160441200">Επανάληψη</translation>
 <translation id="714876143603641390">Συνδεσιμότητα LAN</translation>
 <translation id="7162487448488904999">Gallery</translation>
 <translation id="7172721935181587524">1 εικόνα</translation>
 <translation id="7177485034254901881">Η διαχείριση της συσκευής <ph name="DEVICE_TYPE" /> γίνεται από τον τομέα <ph name="MANAGER" />. Οι διαχειριστές μπορούν να διαμορφώσουν τη συσκευή απομακρυσμένα.</translation>
+<translation id="7180611975245234373">Ανανέωση</translation>
 <translation id="7216409898977639127">Πάροχος δικτύου κινητής τηλεφωνίας</translation>
+<translation id="7257889006063274246">Είστε σίγουροι ότι θέλετε να καταργήσετε τη σελίδα <ph name="CURRENT_PAGE" />;</translation>
 <translation id="7271040990581020067">Ο σαρωτής χρησιμοποιείται αυτήν τη στιγμή. Δοκιμάστε ξανά αργότερα.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7287310195820267359">Συλλογές ταπετσαρίας</translation>
@@ -354,9 +369,11 @@
 <translation id="7835501727204647447">Εγκατάσταση CloudReady</translation>
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7882358943899516840">Τύπος παρόχου</translation>
+<translation id="7895471513946376273">Ανακαλύψτε εργαλεία σχεδίασης</translation>
 <translation id="7936303884198020182">Δεν βρέθηκαν διακομιστές ονομάτων.</translation>
 <translation id="7960831585769876809">Θερμοκρασία</translation>
 <translation id="7994702968232966508">Μέθοδος EAP</translation>
+<translation id="8020238979854764615">Παρουσιάστηκε σφάλμα. Δοκιμάστε ξανά επιλέγοντας άλλες εικόνες.</translation>
 <translation id="802154636333426148">Η λήψη απέτυχε</translation>
 <translation id="8041089156583427627">Αποστολή σχολίων</translation>
 <translation id="8075838845814659848">Υπόλοιπο φόρτισης</translation>
@@ -368,7 +385,9 @@
 <translation id="8214184102975786227">Σαρώστε πολλές σελίδες και δημιουργήστε ένα PDF</translation>
 <translation id="8230672074305416752">Αποτυχία ping της προεπιλεγμένης πύλης δικτύου.</translation>
 <translation id="8246209727385807362">Άγνωστη εταιρεία κινητής τηλεφωνίας</translation>
+<translation id="8286154143153872371">Συνδεθείτε σε ένα δίκτυο και επαναφορτώστε τη σελίδα για να δείτε την ταπετσαρία.</translation>
 <translation id="8291967909914612644">Χώρα παρόχου αρχικής σελίδας</translation>
+<translation id="829270796093605079">Δείτε εργαλεία σχεδίασης</translation>
 <translation id="8294431847097064396">Πηγή</translation>
 <translation id="8297006494302853456">Αδύναμο</translation>
 <translation id="8302368968391049045">Τείχος προστασίας HTTPS</translation>
@@ -392,6 +411,7 @@
 <translation id="8575298406870537639">Αυτή η επιλογή μπορεί να απαιτείται από την εταιρεία κινητής τηλεφωνίας σας για σύνδεση στο δίκτυό της. Επικοινωνήστε με την εταιρεία κινητής τηλεφωνίας που χρησιμοποιείτε για λεπτομέρειες.</translation>
 <translation id="8576249514688522074">Μη προετοιμασμένο</translation>
 <translation id="8620617069779373398">Κατάσταση περιαγωγής</translation>
+<translation id="8655295600908251630">Κανάλι</translation>
 <translation id="8660881923941176839">λίβρες</translation>
 <translation id="8675354002693747642">Ήδη κοινόχρηστο κλειδί</translation>
 <translation id="871560550817059752">Σφάλμα - Τελείωσε το μελάνι</translation>
@@ -404,6 +424,7 @@
 <translation id="8798441408945964110">Όνομα παρόχου</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8818152010000655963">Ταπετσαρία</translation>
+<translation id="8834539327799336565">Συνδεδεμένες αυτήν τη στιγμή</translation>
 <translation id="8845001906332463065">Λήψη βοήθειας</translation>
 <translation id="8868741746785112895">GUID</translation>
 <translation id="8881098542468797602">Επιτυχία δοκιμής</translation>

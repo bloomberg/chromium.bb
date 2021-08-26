@@ -20,7 +20,6 @@
 #include "net/base/mime_util.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
-#include "rename_handler.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 
@@ -174,6 +173,10 @@ void ProcessUploadSuccessResponse(
 }  // namespace
 
 namespace enterprise_connectors {
+
+const char kBoxEnterpriseIdFieldName[] = "enterprise.id";
+const char kBoxLoginFieldName[] = "login";
+const char kBoxNameFieldName[] = "name";
 
 // File size limit according to https://developer.box.com/guides/uploads/:
 // - Chucked upload APIs is only supported for file size >= 20 MB;
@@ -413,19 +416,17 @@ std::string BoxCreateUpstreamFolderApiCallFlow::CreateApiCallBody() {
 }
 
 bool BoxCreateUpstreamFolderApiCallFlow::IsExpectedSuccessCode(int code) const {
-  return code == net::HTTP_CREATED;
+  return code == net::HTTP_CREATED || code == net::HTTP_CONFLICT;
 }
 
 void BoxCreateUpstreamFolderApiCallFlow::ProcessApiCallSuccess(
     const network::mojom::URLResponseHead* head,
     std::unique_ptr<std::string> body) {
   auto response_code = head->headers->response_code();
-  CHECK_EQ(response_code, net::HTTP_CREATED);
-
   data_decoder::DataDecoder::ParseJsonIsolated(
       *body,
       base::BindOnce(&BoxCreateUpstreamFolderApiCallFlow::OnSuccessJsonParsed,
-                     weak_factory_.GetWeakPtr()));
+                     weak_factory_.GetWeakPtr(), response_code));
 }
 
 void BoxCreateUpstreamFolderApiCallFlow::ProcessFailure(Response response) {
@@ -433,15 +434,103 @@ void BoxCreateUpstreamFolderApiCallFlow::ProcessFailure(Response response) {
 }
 
 void BoxCreateUpstreamFolderApiCallFlow::OnSuccessJsonParsed(
+    int network_response_code,
     ParseResult result) {
+  DCHECK(result.value);
+  if (!result.value)
+    return OnFailureJsonParsed(network_response_code, std::move(result));
+
   std::string folder_id;
-  if (result.value) {
-    folder_id = ExtractId(*result.value);
+  absl::optional<base::Value> folder_info_dict;
+
+  if (network_response_code == net::HTTP_CREATED) {
+    folder_info_dict = std::move(result.value);
+  } else {
+    // Right after a folder was created with a previous upload, the folder may
+    // not be found via BoxFindUpstreamFolderApiCallFlow, therefore BoxUploader
+    // tries to create a folder again and gets a conflict. The conflicting
+    // folder is included in the response body so can also be extracted to
+    // return a folder_id.
+    DCHECK_EQ(network_response_code, net::HTTP_CONFLICT);
+    std::string* box_error_code = result.value->FindStringPath("code");
+    base::Value* conflict_folder_info;
+    base::ListValue* conflict_folders_list;
+    if (box_error_code && *box_error_code == "item_name_in_use" &&
+        (conflict_folder_info =
+             result.value->FindPath("context_info.conflicts")) &&
+        conflict_folder_info->GetAsList(&conflict_folders_list) &&
+        conflict_folders_list && conflict_folders_list->GetSize() > 0 &&
+        conflict_folders_list->Get(0, &conflict_folder_info) &&
+        conflict_folder_info) {
+      folder_info_dict =
+          absl::make_optional<base::Value>(conflict_folder_info->Clone());
+    }
   }
+
+  if (!folder_info_dict.has_value())
+    return OnFailureJsonParsed(network_response_code, std::move(result));
+
+  folder_id = ExtractId(*folder_info_dict);
   LOG_PARSE_FAIL_IF(folder_id.empty(), ERROR, "CreateUpstreamFolder", result);
-  std::move(callback_).Run(Response{!folder_id.empty(), net::HTTP_CREATED},
+  std::move(callback_).Run(Response{!folder_id.empty(), network_response_code},
                            folder_id);
   return;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// GetCurrentUser
+////////////////////////////////////////////////////////////////////////////////
+// BoxApiCallFlow interface.
+// API reference:
+// https://developer.box.com/reference/get-users-me/
+BoxGetCurrentUserApiCallFlow::BoxGetCurrentUserApiCallFlow(
+    base::OnceCallback<void(Response, base::Value)> callback)
+    : callback_(std::move(callback)) {}
+BoxGetCurrentUserApiCallFlow::~BoxGetCurrentUserApiCallFlow() = default;
+
+GURL BoxGetCurrentUserApiCallFlow::CreateApiCallUrl() {
+  return BoxApiCallFlow::CreateApiCallUrl().Resolve(
+      "2.0/users/me?fields=enterprise,login,name");
+}
+
+bool BoxGetCurrentUserApiCallFlow::IsExpectedSuccessCode(int code) const {
+  return code == net::HTTP_OK;
+}
+
+void BoxGetCurrentUserApiCallFlow::ProcessApiCallSuccess(
+    const network::mojom::URLResponseHead* head,
+    std::unique_ptr<std::string> body) {
+  auto response_code = head->headers->response_code();
+  DCHECK_EQ(response_code, net::HTTP_OK);
+  data_decoder::DataDecoder::ParseJsonIsolated(
+      *body, base::BindOnce(&BoxGetCurrentUserApiCallFlow::OnJsonParsed,
+                            weak_factory_.GetWeakPtr()));
+}
+
+void BoxGetCurrentUserApiCallFlow::OnJsonParsed(ParseResult result) {
+  if (!result.value.has_value()) {
+    LOG_PARSE_FAIL(ERROR, "GetCurrentUser", result);
+    std::move(callback_).Run(Response{false, net::HTTP_OK}, CreateEmptyDict());
+    return;
+  }
+  if (!result.value->is_dict() ||
+      !result.value->FindStringPath(kBoxEnterpriseIdFieldName) ||
+      !result.value->FindStringPath(kBoxLoginFieldName) ||
+      !result.value->FindStringPath(kBoxNameFieldName)) {
+    LOG(ERROR)
+        << "[BoxApiCallFlow] GetCurrentUser succeeded but "
+           "response does not include all of enterprise_id, login, and name: "
+        << *result.value;
+    std::move(callback_).Run(Response{false, net::HTTP_OK}, CreateEmptyDict());
+    return;
+  }
+  std::move(callback_).Run(Response{true, net::HTTP_OK},
+                           std::move(result.value.value()));
+}
+
+void BoxGetCurrentUserApiCallFlow::ProcessFailure(Response response) {
+  DCHECK(!response.success);
+  std::move(callback_).Run(response, CreateEmptyDict());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

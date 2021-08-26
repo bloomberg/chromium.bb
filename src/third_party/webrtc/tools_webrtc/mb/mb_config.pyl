@@ -539,14 +539,16 @@
       'gn_args': 'optimize_for_fuzzing=true',
     },
 
-    'pure_release_bot': {
-      'mixins': ['release', 'goma'],
-    },
-
     'release': {
       'gn_args': 'is_debug=false',
     },
 
+    # The 'pure_release_bot' configuration is for release bots that are doing a
+    # 100% release build without DCHECKs while 'release_bot' is a partial
+    # release configs since `dcheck_always_on` is set to true.
+    'pure_release_bot': {
+      'mixins': ['release', 'goma'],
+    },
     'release_bot': {
       'mixins': ['pure_release_bot', 'dcheck_always_on'],
     },

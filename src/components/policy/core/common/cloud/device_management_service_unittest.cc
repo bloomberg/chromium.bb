@@ -29,6 +29,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/network/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -1064,6 +1065,12 @@ TEST_F(DeviceManagementServiceTest, CancelDuringRetry) {
 
 // Tests that authorization data is correctly added to the request.
 class DeviceManagementRequestAuthTest : public DeviceManagementServiceTestBase {
+ public:
+  DeviceManagementRequestAuthTest(const DeviceManagementRequestAuthTest&) =
+      delete;
+  DeviceManagementRequestAuthTest& operator=(
+      const DeviceManagementRequestAuthTest&) = delete;
+
  protected:
   DeviceManagementRequestAuthTest() = default;
   ~DeviceManagementRequestAuthTest() override = default;
@@ -1097,9 +1104,6 @@ class DeviceManagementRequestAuthTest : public DeviceManagementServiceTestBase {
         request.request.headers.GetHeader(dm_protocol::kAuthHeader, &header);
     return result ? absl::optional<std::string>(header) : absl::nullopt;
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DeviceManagementRequestAuthTest);
 };
 
 TEST_F(DeviceManagementRequestAuthTest, OnlyOAuthToken) {

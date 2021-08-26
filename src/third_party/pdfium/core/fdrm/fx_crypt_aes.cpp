@@ -6,6 +6,8 @@
 
 #include "core/fdrm/fx_crypt.h"
 
+#include <string.h>
+
 #include "third_party/base/check.h"
 #include "third_party/base/check_op.h"
 
@@ -431,11 +433,10 @@ const unsigned int D3[256] = {
     0x3c498b28, 0x0d9541ff, 0xa8017139, 0x0cb3de08, 0xb4e49cd8, 0x56c19064,
     0xcb84617b, 0x32b670d5, 0x6c5c7448, 0xb85742d0,
 };
-#define ADD_ROUND_KEY_4                                                       \
+#define ADD_ROUND_KEY_4()                                                     \
   (block[0] ^= *keysched++, block[1] ^= *keysched++, block[2] ^= *keysched++, \
    block[3] ^= *keysched++)
 #define MOVEWORD(i) (block[i] = newstate[i])
-#undef MAKEWORD
 #define MAKEWORD(i)                                         \
   (newstate[i] = (E0[(block[i] >> 24) & 0xFF] ^             \
                   E1[(block[(i + C1) % Nb] >> 16) & 0xFF] ^ \
@@ -456,7 +457,7 @@ void aes_encrypt_nb_4(CRYPT_aes_context* ctx, unsigned int* block) {
   unsigned int* keysched = ctx->keysched;
   unsigned int newstate[4];
   for (i = 0; i < ctx->Nr - 1; i++) {
-    ADD_ROUND_KEY_4;
+    ADD_ROUND_KEY_4();
     MAKEWORD(0);
     MAKEWORD(1);
     MAKEWORD(2);
@@ -466,7 +467,7 @@ void aes_encrypt_nb_4(CRYPT_aes_context* ctx, unsigned int* block) {
     MOVEWORD(2);
     MOVEWORD(3);
   }
-  ADD_ROUND_KEY_4;
+  ADD_ROUND_KEY_4();
   LASTWORD(0);
   LASTWORD(1);
   LASTWORD(2);
@@ -475,7 +476,7 @@ void aes_encrypt_nb_4(CRYPT_aes_context* ctx, unsigned int* block) {
   MOVEWORD(1);
   MOVEWORD(2);
   MOVEWORD(3);
-  ADD_ROUND_KEY_4;
+  ADD_ROUND_KEY_4();
 }
 #undef MAKEWORD
 #undef LASTWORD
@@ -500,7 +501,7 @@ void aes_decrypt_nb_4(CRYPT_aes_context* ctx, unsigned int* block) {
   unsigned int* keysched = ctx->invkeysched;
   unsigned int newstate[4];
   for (i = 0; i < ctx->Nr - 1; i++) {
-    ADD_ROUND_KEY_4;
+    ADD_ROUND_KEY_4();
     MAKEWORD(0);
     MAKEWORD(1);
     MAKEWORD(2);
@@ -510,7 +511,7 @@ void aes_decrypt_nb_4(CRYPT_aes_context* ctx, unsigned int* block) {
     MOVEWORD(2);
     MOVEWORD(3);
   }
-  ADD_ROUND_KEY_4;
+  ADD_ROUND_KEY_4();
   LASTWORD(0);
   LASTWORD(1);
   LASTWORD(2);
@@ -519,7 +520,7 @@ void aes_decrypt_nb_4(CRYPT_aes_context* ctx, unsigned int* block) {
   MOVEWORD(1);
   MOVEWORD(2);
   MOVEWORD(3);
-  ADD_ROUND_KEY_4;
+  ADD_ROUND_KEY_4();
 }
 #undef MAKEWORD
 #undef LASTWORD

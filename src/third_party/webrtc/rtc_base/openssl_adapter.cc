@@ -271,7 +271,7 @@ int OpenSSLAdapter::StartSSL(const char* hostname) {
 
   ssl_host_name_ = hostname;
 
-  if (socket_->GetState() != Socket::CS_CONNECTED) {
+  if (GetSocket()->GetState() != Socket::CS_CONNECTED) {
     state_ = SSL_WAIT;
     return 0;
   }
@@ -294,7 +294,7 @@ int OpenSSLAdapter::BeginSSL() {
 
   // First set up the context. We should either have a factory, with its own
   // pre-existing context, or be running standalone, in which case we will
-  // need to create one, and specify |false| to disable session caching.
+  // need to create one, and specify `false` to disable session caching.
   if (ssl_session_cache_ == nullptr) {
     RTC_DCHECK(!ssl_ctx_);
     ssl_ctx_ = CreateContext(ssl_mode_, false);
@@ -308,7 +308,7 @@ int OpenSSLAdapter::BeginSSL() {
     return -1;
   }
 
-  std::unique_ptr<BIO, decltype(&::BIO_free)> bio{BIO_new_socket(socket_),
+  std::unique_ptr<BIO, decltype(&::BIO_free)> bio{BIO_new_socket(GetSocket()),
                                                   ::BIO_free};
   if (!bio) {
     return -1;
@@ -370,7 +370,7 @@ int OpenSSLAdapter::BeginSSL() {
     SSL_set1_curves_list(ssl_, rtc::join(elliptic_curves_, ':').c_str());
   }
 
-  // Now that the initial config is done, transfer ownership of |bio| to the
+  // Now that the initial config is done, transfer ownership of `bio` to the
   // SSL object. If ContinueSSL() fails, the bio will be freed in Cleanup().
   SSL_set_bio(ssl_, bio.get(), bio.get());
   bio.release();
@@ -578,8 +578,8 @@ int OpenSSLAdapter::Send(const void* pv, size_t cb) {
 int OpenSSLAdapter::SendTo(const void* pv,
                            size_t cb,
                            const SocketAddress& addr) {
-  if (socket_->GetState() == Socket::CS_CONNECTED &&
-      addr == socket_->GetRemoteAddress()) {
+  if (GetSocket()->GetState() == Socket::CS_CONNECTED &&
+      addr == GetSocket()->GetRemoteAddress()) {
     return Send(pv, cb);
   }
 
@@ -640,7 +640,7 @@ int OpenSSLAdapter::RecvFrom(void* pv,
                              size_t cb,
                              SocketAddress* paddr,
                              int64_t* timestamp) {
-  if (socket_->GetState() == Socket::CS_CONNECTED) {
+  if (GetSocket()->GetState() == Socket::CS_CONNECTED) {
     int ret = Recv(pv, cb, timestamp);
     *paddr = GetRemoteAddress();
     return ret;
@@ -657,7 +657,7 @@ int OpenSSLAdapter::Close() {
 }
 
 Socket::ConnState OpenSSLAdapter::GetState() const {
-  ConnState state = socket_->GetState();
+  ConnState state = GetSocket()->GetState();
   if ((state == CS_CONNECTED) &&
       ((state_ == SSL_WAIT) || (state_ == SSL_CONNECTING))) {
     state = CS_CONNECTING;

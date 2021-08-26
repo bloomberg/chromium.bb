@@ -1,8 +1,8 @@
 /*
   Copyright (c) 2009 Dave Gamble
-  Copyright (c) 2015-2016 The Khronos Group Inc.
-  Copyright (c) 2015-2016 Valve Corporation
-  Copyright (c) 2015-2016 LunarG, Inc.
+  Copyright (c) 2015-2017 The Khronos Group Inc.
+  Copyright (c) 2015-2017 Valve Corporation
+  Copyright (c) 2015-2017 LunarG, Inc.
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -98,8 +98,7 @@ static const char *parse_number(cJSON *item, const char *num) {
         while (*num >= '0' && *num <= '9'); /* Number? */
     if (*num == '.' && num[1] >= '0' && num[1] <= '9') {
         num++;
-        do
-            n = (n * 10.0) + (*num++ - '0'), scale--;
+        do n = (n * 10.0) + (*num++ - '0'), scale--;
         while (*num >= '0' && *num <= '9');
     }                               /* Fractional part? */
     if (*num == 'e' || *num == 'E') /* Exponent? */

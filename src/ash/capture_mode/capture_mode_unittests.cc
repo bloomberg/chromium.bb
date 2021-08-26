@@ -23,7 +23,6 @@
 #include "ash/capture_mode/stop_recording_button_tray.h"
 #include "ash/capture_mode/test_capture_mode_delegate.h"
 #include "ash/capture_mode/video_recording_watcher.h"
-#include "ash/constants/ash_features.h"
 #include "ash/display/cursor_window_controller.h"
 #include "ash/display/output_protection_delegate.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
@@ -43,13 +42,13 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/bind.h"
+#include "base/callback_forward.h"
 #include "base/callback_helpers.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
 #include "components/account_id/account_id.h"
@@ -70,8 +69,10 @@
 #include "ui/display/types/display_constants.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/image/image_unittest_util.h"
 #include "ui/gfx/native_widget_types.h"
@@ -118,8 +119,7 @@ void SendKey(ui::KeyboardCode key_code,
              int count = 1) {
   const int flags = shift_down ? ui::EF_SHIFT_DOWN : 0;
   for (int i = 0; i < count; ++i) {
-    event_generator->PressKey(key_code, flags);
-    event_generator->ReleaseKey(key_code, flags);
+    event_generator->PressAndReleaseKey(key_code, flags);
   }
 }
 
@@ -259,12 +259,6 @@ class CaptureModeTest : public AshTestBase {
   CaptureModeTest(const CaptureModeTest&) = delete;
   CaptureModeTest& operator=(const CaptureModeTest&) = delete;
   ~CaptureModeTest() override = default;
-
-  // AshTestBase:
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(features::kCaptureMode);
-    AshTestBase::SetUp();
-  }
 
   CaptureModeBarView* GetCaptureModeBarView() const {
     auto* session = CaptureModeController::Get()->capture_mode_session();
@@ -462,9 +456,6 @@ class CaptureModeTest : public AshTestBase {
             [&run_loop](const base::FilePath& path) { run_loop.Quit(); }));
     run_loop.Run();
   }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 class CaptureSessionWidgetObserver : public views::WidgetObserver {
@@ -526,6 +517,54 @@ TEST_F(CaptureModeTest, StartStop) {
   controller->Stop();
   EXPECT_TRUE(tracker.windows().empty());
   EXPECT_FALSE(controller->IsActive());
+}
+
+TEST_F(CaptureModeTest, CheckCursorVisibility) {
+  // Hide cursor before entering capture mode.
+  auto* cursor_manager = Shell::Get()->cursor_manager();
+  cursor_manager->SetCursor(ui::mojom::CursorType::kPointer);
+  cursor_manager->HideCursor();
+  cursor_manager->DisableMouseEvents();
+  EXPECT_FALSE(cursor_manager->IsCursorVisible());
+
+  auto* controller = CaptureModeController::Get();
+  controller->Start(CaptureModeEntryType::kQuickSettings);
+  // After capture mode initialization, cursor should be visible.
+  EXPECT_TRUE(cursor_manager->IsCursorVisible());
+  EXPECT_TRUE(cursor_manager->IsMouseEventsEnabled());
+
+  // Enter tablet mode.
+  TabletModeControllerTestApi tablet_mode_controller_test_api;
+  tablet_mode_controller_test_api.DetachAllMice();
+  tablet_mode_controller_test_api.EnterTabletMode();
+  // After entering tablet mode, cursor should be invisible and locked.
+  EXPECT_FALSE(cursor_manager->IsCursorVisible());
+  EXPECT_TRUE(cursor_manager->IsCursorLocked());
+
+  // Leave tablet mode, cursor should be visible again.
+  tablet_mode_controller_test_api.LeaveTabletMode();
+  EXPECT_TRUE(cursor_manager->IsCursorVisible());
+}
+
+TEST_F(CaptureModeTest, CheckCursorVisibilityOnTabletMode) {
+  auto* cursor_manager = Shell::Get()->cursor_manager();
+
+  // Enter tablet mode.
+  TabletModeControllerTestApi tablet_mode_controller_test_api;
+  tablet_mode_controller_test_api.DetachAllMice();
+  tablet_mode_controller_test_api.EnterTabletMode();
+  // After entering tablet mode, cursor should be invisible.
+  EXPECT_FALSE(cursor_manager->IsCursorVisible());
+
+  // Open capture mode.
+  auto* controller = CaptureModeController::Get();
+  controller->Start(CaptureModeEntryType::kQuickSettings);
+  // Cursor should be invisible since it's still in tablet mode.
+  EXPECT_FALSE(cursor_manager->IsCursorVisible());
+
+  // Leave tablet mode, cursor should be visible now.
+  tablet_mode_controller_test_api.LeaveTabletMode();
+  EXPECT_TRUE(cursor_manager->IsCursorVisible());
 }
 
 // Regression test for https://crbug.com/1172425.
@@ -1999,7 +2038,7 @@ TEST_F(CaptureModeTest, MultiDisplayWindowRecording) {
       static_cast<TestCaptureModeDelegate*>(controller->delegate_for_testing());
   EXPECT_EQ(roots[0]->GetFrameSinkId(), test_delegate->GetCurrentFrameSinkId());
   EXPECT_EQ(roots[0]->bounds().size(),
-            test_delegate->GetCurrentFrameSinkSize());
+            test_delegate->GetCurrentFrameSinkSizeInPixels());
   EXPECT_EQ(window->bounds().size(), test_delegate->GetCurrentVideoSize());
 
   // Moving a window to a different display should be propagated to the service,
@@ -2010,7 +2049,7 @@ TEST_F(CaptureModeTest, MultiDisplayWindowRecording) {
   ASSERT_EQ(window->GetRootWindow(), roots[1]);
   EXPECT_EQ(roots[1]->GetFrameSinkId(), test_delegate->GetCurrentFrameSinkId());
   EXPECT_EQ(roots[1]->bounds().size(),
-            test_delegate->GetCurrentFrameSinkSize());
+            test_delegate->GetCurrentFrameSinkSizeInPixels());
   EXPECT_EQ(window->bounds().size(), test_delegate->GetCurrentVideoSize());
 
   // The shield layer should move with the window, and maintain the stacking
@@ -2036,7 +2075,8 @@ TEST_F(CaptureModeTest, WindowResizing) {
   CaptureModeTestApi test_api;
   test_api.FlushRecordingServiceForTesting();
   EXPECT_EQ(gfx::Size(200, 200), test_delegate->GetCurrentVideoSize());
-  EXPECT_EQ(gfx::Size(700, 600), test_delegate->GetCurrentFrameSinkSize());
+  EXPECT_EQ(gfx::Size(700, 600),
+            test_delegate->GetCurrentFrameSinkSizeInPixels());
 
   // Multiple resize events should be throttled.
   window->SetBounds(gfx::Rect(250, 250));
@@ -2056,7 +2096,8 @@ TEST_F(CaptureModeTest, WindowResizing) {
   recording_watcher->SendThrottledWindowSizeChangedNowForTesting();
   test_api.FlushRecordingServiceForTesting();
   EXPECT_EQ(gfx::Size(300, 300), test_delegate->GetCurrentVideoSize());
-  EXPECT_EQ(gfx::Size(700, 600), test_delegate->GetCurrentFrameSinkSize());
+  EXPECT_EQ(gfx::Size(700, 600),
+            test_delegate->GetCurrentFrameSinkSizeInPixels());
 
   // Maximizing a window changes its size, and is pushed to the service with
   // throttling.
@@ -2085,7 +2126,8 @@ TEST_F(CaptureModeTest, RotateDisplayWhileRecording) {
   test_api.FlushRecordingServiceForTesting();
   auto* test_delegate =
       static_cast<TestCaptureModeDelegate*>(controller->delegate_for_testing());
-  EXPECT_EQ(gfx::Size(600, 800), test_delegate->GetCurrentFrameSinkSize());
+  EXPECT_EQ(gfx::Size(600, 800),
+            test_delegate->GetCurrentFrameSinkSizeInPixels());
   EXPECT_EQ(gfx::Size(100, 200), test_delegate->GetCurrentVideoSize());
 
   // Rotate by 90 degree, the frame sink size should be updated to match that.
@@ -2094,7 +2136,8 @@ TEST_F(CaptureModeTest, RotateDisplayWhileRecording) {
       WindowTreeHostManager::GetPrimaryDisplayId(), display::Display::ROTATE_90,
       display::Display::RotationSource::USER);
   test_api.FlushRecordingServiceForTesting();
-  EXPECT_EQ(gfx::Size(800, 600), test_delegate->GetCurrentFrameSinkSize());
+  EXPECT_EQ(gfx::Size(800, 600),
+            test_delegate->GetCurrentFrameSinkSizeInPixels());
   EXPECT_EQ(gfx::Size(100, 200), test_delegate->GetCurrentVideoSize());
 }
 
@@ -2196,6 +2239,226 @@ TEST_F(CaptureModeTest, VerifyWindowRecordingVideoFrames) {
 
   controller->EndVideoRecording(EndRecordingReason::kStopRecordingButton);
   EXPECT_FALSE(controller->is_recording_in_progress());
+}
+
+// Test fixture for verifying that the videos are recorded at the pixel size of
+// the targets being captured in all recording modes. This avoids having the
+// scaling in CopyOutputRequests when performing the capture at a different size
+// than that of the render pass (which is in pixels). This scaling causes a loss
+// of quality, and a blurry video frames. https://crbug.com/1215185.
+class CaptureModeRecordingSizeTest : public CaptureModeTest {
+ public:
+  CaptureModeRecordingSizeTest() = default;
+  ~CaptureModeRecordingSizeTest() override = default;
+
+  // CaptureModeTest:
+  void SetUp() override {
+    CaptureModeTest::SetUp();
+    window_ = CreateTestWindow(gfx::Rect(100, 50, 200, 200));
+    CaptureModeController::Get()->SetUserCaptureRegion(user_region_,
+                                                       /*by_user=*/true);
+    UpdateDisplay("800x600");
+  }
+
+  void TearDown() override {
+    window_.reset();
+    CaptureModeTest::TearDown();
+  }
+
+  // Converts the given |size| from DIPs to pixels based on the given value of
+  // |dsf|.
+  gfx::Size ToPixels(const gfx::Size& size, float dsf) const {
+    return gfx::ToFlooredSize(gfx::ConvertSizeToPixels(size, dsf));
+  }
+
+ protected:
+  // Verifies the size of the received video frame.
+  static void VerifyVideoFrame(const gfx::Size& expected_video_size,
+                               const media::VideoFrame& frame,
+                               const gfx::Rect& content_rect) {
+    // The I420 pixel format does not like odd dimensions, so the size of the
+    // visible rect in the video frame will be adjusted to be an even value.
+    const gfx::Size adjusted_size(expected_video_size.width() & ~1,
+                                  expected_video_size.height() & ~1);
+    EXPECT_EQ(adjusted_size, frame.visible_rect().size());
+  }
+
+  CaptureModeController* StartVideoRecording(CaptureModeSource source) {
+    auto* controller = StartCaptureSession(source, CaptureModeType::kVideo);
+    if (source == CaptureModeSource::kWindow)
+      GetEventGenerator()->MoveMouseToCenterOf(window_.get());
+    controller->StartVideoRecordingImmediatelyForTesting();
+    EXPECT_TRUE(controller->is_recording_in_progress());
+    CaptureModeTestApi().FlushRecordingServiceForTesting();
+    return controller;
+  }
+
+  void SetDeviceScaleFactor(float dsf) {
+    const auto display_id = display_manager()->GetDisplayAt(0).id();
+    display_manager()->UpdateZoomFactor(display_id, dsf);
+    EXPECT_EQ(dsf, window_->GetHost()->device_scale_factor());
+    auto* controller = CaptureModeController::Get();
+    if (controller->is_recording_in_progress()) {
+      CaptureModeTestApi().FlushRecordingServiceForTesting();
+      auto* test_delegate = static_cast<TestCaptureModeDelegate*>(
+          controller->delegate_for_testing());
+      // Consume any pending video frame from before changing the DSF prior to
+      // proceeding.
+      test_delegate->RequestAndWaitForVideoFrame();
+    }
+  }
+
+ protected:
+  const gfx::Rect user_region_{20, 50};
+  std::unique_ptr<aura::Window> window_;
+};
+
+TEST_F(CaptureModeRecordingSizeTest, CaptureAtPixelsFullscreen) {
+  float dsf = 1.6f;
+  SetDeviceScaleFactor(dsf);
+  auto* controller = StartVideoRecording(CaptureModeSource::kFullscreen);
+  auto* root = window_->GetRootWindow();
+  gfx::Size initial_root_window_size_pixels =
+      ToPixels(root->bounds().size(), dsf);
+  auto* test_delegate =
+      static_cast<TestCaptureModeDelegate*>(controller->delegate_for_testing());
+  ASSERT_TRUE(test_delegate->recording_service());
+  {
+    SCOPED_TRACE("Testing @ 1.6 device scale factor");
+    EXPECT_EQ(initial_root_window_size_pixels,
+              test_delegate->GetCurrentVideoSize());
+
+    EXPECT_EQ(
+        dsf, test_delegate->recording_service()->GetCurrentDeviceScaleFactor());
+
+    EXPECT_EQ(initial_root_window_size_pixels,
+              test_delegate->GetCurrentFrameSinkSizeInPixels());
+
+    test_delegate->recording_service()->RequestAndWaitForVideoFrame(
+        base::BindOnce(&CaptureModeRecordingSizeTest::VerifyVideoFrame,
+                       initial_root_window_size_pixels));
+  }
+
+  // Change the DSF and expect the video size will remain at the initial pixel
+  // size of the fullscreen.
+  dsf = 2.f;
+  SetDeviceScaleFactor(dsf);
+  {
+    SCOPED_TRACE("Testing @ 2.0 device scale factor");
+    EXPECT_EQ(initial_root_window_size_pixels,
+              test_delegate->GetCurrentVideoSize());
+
+    // The recording service still tracks the up-to-date DSF and frame sink
+    // pixel size even though it doesn't change the video size from its initial
+    // value.
+    EXPECT_EQ(
+        dsf, test_delegate->recording_service()->GetCurrentDeviceScaleFactor());
+
+    EXPECT_EQ(ToPixels(root->bounds().size(), dsf),
+              test_delegate->GetCurrentFrameSinkSizeInPixels());
+
+    test_delegate->recording_service()->RequestAndWaitForVideoFrame(
+        base::BindOnce(&CaptureModeRecordingSizeTest::VerifyVideoFrame,
+                       initial_root_window_size_pixels));
+  }
+
+  // When recording the fullscreen, the video size never changes, and remains at
+  // the initial pixel size of the recording. Hence, there should be no
+  // reconfigures.
+  EXPECT_EQ(0, test_delegate->recording_service()
+                   ->GetNumberOfVideoEncoderReconfigures());
+}
+
+TEST_F(CaptureModeRecordingSizeTest, CaptureAtPixelsRegion) {
+  float dsf = 1.6f;
+  SetDeviceScaleFactor(dsf);
+  auto* controller = StartVideoRecording(CaptureModeSource::kRegion);
+  auto* test_delegate =
+      static_cast<TestCaptureModeDelegate*>(controller->delegate_for_testing());
+  ASSERT_TRUE(test_delegate->recording_service());
+
+  {
+    SCOPED_TRACE("Testing @ 1.6 device scale factor");
+    const gfx::Size expected_video_size = ToPixels(user_region_.size(), dsf);
+    EXPECT_EQ(expected_video_size, test_delegate->GetCurrentVideoSize());
+
+    EXPECT_EQ(
+        dsf, test_delegate->recording_service()->GetCurrentDeviceScaleFactor());
+
+    test_delegate->recording_service()->RequestAndWaitForVideoFrame(
+        base::BindOnce(&CaptureModeRecordingSizeTest::VerifyVideoFrame,
+                       expected_video_size));
+  }
+
+  // Change the DSF and expect the video size to change to match the new pixel
+  // size of the recorded target.
+  dsf = 2.f;
+  SetDeviceScaleFactor(dsf);
+  {
+    SCOPED_TRACE("Testing @ 2.0 device scale factor");
+    const gfx::Size expected_video_size = ToPixels(user_region_.size(), dsf);
+    EXPECT_EQ(expected_video_size, test_delegate->GetCurrentVideoSize());
+
+    EXPECT_EQ(
+        dsf, test_delegate->recording_service()->GetCurrentDeviceScaleFactor());
+
+    test_delegate->recording_service()->RequestAndWaitForVideoFrame(
+        base::BindOnce(&CaptureModeRecordingSizeTest::VerifyVideoFrame,
+                       expected_video_size));
+  }
+
+  // Since the user chooses the capture region in DIPs, its corresponding pixel
+  // size will change when changing the device scale factor. Therefore, the
+  // encoder is expected to reconfigure once.
+  EXPECT_EQ(1, test_delegate->recording_service()
+                   ->GetNumberOfVideoEncoderReconfigures());
+}
+
+TEST_F(CaptureModeRecordingSizeTest, CaptureAtPixelsWindow) {
+  float dsf = 1.6f;
+  SetDeviceScaleFactor(dsf);
+  auto* controller = StartVideoRecording(CaptureModeSource::kWindow);
+  auto* test_delegate =
+      static_cast<TestCaptureModeDelegate*>(controller->delegate_for_testing());
+  ASSERT_TRUE(test_delegate->recording_service());
+
+  {
+    SCOPED_TRACE("Testing @ 1.6 device scale factor");
+    const gfx::Size expected_video_size =
+        ToPixels(window_->GetBoundsInRootWindow().size(), dsf);
+    EXPECT_EQ(expected_video_size, test_delegate->GetCurrentVideoSize());
+
+    EXPECT_EQ(
+        dsf, test_delegate->recording_service()->GetCurrentDeviceScaleFactor());
+
+    test_delegate->recording_service()->RequestAndWaitForVideoFrame(
+        base::BindOnce(&CaptureModeRecordingSizeTest::VerifyVideoFrame,
+                       expected_video_size));
+  }
+
+  // Change the DSF and expect the video size to change to match the new pixel
+  // size of the recorded target.
+  dsf = 2.f;
+  SetDeviceScaleFactor(dsf);
+  {
+    SCOPED_TRACE("Testing @ 2.0 device scale factor");
+    const gfx::Size expected_video_size =
+        ToPixels(window_->GetBoundsInRootWindow().size(), dsf);
+    EXPECT_EQ(expected_video_size, test_delegate->GetCurrentVideoSize());
+
+    EXPECT_EQ(
+        dsf, test_delegate->recording_service()->GetCurrentDeviceScaleFactor());
+
+    test_delegate->recording_service()->RequestAndWaitForVideoFrame(
+        base::BindOnce(&CaptureModeRecordingSizeTest::VerifyVideoFrame,
+                       expected_video_size));
+  }
+
+  // When changing the device scale factor, the DIPs size of the window doesn't
+  // change, but (like |kRegion|) its pixel size will. Hence, the
+  // reconfiguration.
+  EXPECT_EQ(1, test_delegate->recording_service()
+                   ->GetNumberOfVideoEncoderReconfigures());
 }
 
 // Tests the behavior of screen recording with the presence of HDCP secure
@@ -3215,14 +3478,14 @@ TEST_F(CaptureModeTest, ClipboardWrite) {
   auto* clipboard = ui::Clipboard::GetForCurrentThread();
   ASSERT_NE(clipboard, nullptr);
 
-  const uint64_t before_sequence_number =
+  const ui::ClipboardSequenceNumberToken before_sequence_number =
       clipboard->GetSequenceNumber(ui::ClipboardBuffer::kCopyPaste);
 
   CaptureNotificationWaiter waiter;
   CaptureModeController::Get()->CaptureScreenshotsOfAllDisplays();
   waiter.Wait();
 
-  const uint64_t after_sequence_number =
+  const ui::ClipboardSequenceNumberToken after_sequence_number =
       clipboard->GetSequenceNumber(ui::ClipboardBuffer::kCopyPaste);
 
   EXPECT_NE(before_sequence_number, after_sequence_number);

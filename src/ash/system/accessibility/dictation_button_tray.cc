@@ -5,6 +5,7 @@
 #include "ash/system/accessibility/dictation_button_tray.h"
 
 #include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/accessibility_controller_enums.h"
 #include "ash/public/cpp/shelf_config.h"
@@ -15,6 +16,8 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_container.h"
 #include "ash/system/tray/tray_utils.h"
+#include "components/prefs/pref_service.h"
+#include "ui/accessibility/accessibility_features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/border.h"
@@ -117,6 +120,19 @@ void DictationButtonTray::UpdateVisibility() {
 
 void DictationButtonTray::CheckDictationStatusAndUpdateIcon() {
   UpdateIcon(Shell::Get()->accessibility_controller()->dictation_active());
+}
+
+void DictationButtonTray::UpdateOnSpeechRecognitionDownloadChanged(
+    bool download_in_progress) {
+  if (!::features::IsExperimentalAccessibilityDictationOfflineEnabled() ||
+      !visible_preferred())
+    return;
+
+  SetEnabled(!download_in_progress);
+  icon_->SetTooltipText(l10n_util::GetStringUTF16(
+      download_in_progress
+          ? IDS_ASH_ACCESSIBILITY_DICTATION_BUTTON_TOOLTIP_SODA_DOWNLOADING
+          : IDS_ASH_STATUS_TRAY_ACCESSIBILITY_DICTATION));
 }
 
 }  // namespace ash

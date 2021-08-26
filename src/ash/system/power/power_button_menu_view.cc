@@ -7,16 +7,15 @@
 #include <memory>
 
 #include "ash/capture_mode/capture_mode_controller.h"
-#include "ash/constants/ash_features.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/login/login_screen_controller.h"
 #include "ash/public/cpp/new_window_delegate.h"
+#include "ash/public/cpp/style/scoped_light_mode_as_default.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
-#include "ash/style/scoped_light_mode_as_default.h"
 #include "ash/system/power/power_button_menu_item_view.h"
 #include "ash/system/power/power_button_menu_metrics_type.h"
 #include "ash/system/user/login_status.h"
@@ -180,9 +179,7 @@ void PowerButtonMenuView::RecreateItems() {
   const bool create_sign_out = login_status != LoginStatus::NOT_LOGGED_IN;
   const bool create_lock_screen = login_status != LoginStatus::LOCKED &&
                                   session_controller->CanLockScreen();
-  const bool capture_mode_enabled = features::IsCaptureModeEnabled();
   const bool create_capture_mode =
-      capture_mode_enabled &&
       Shell::Get()->tablet_mode_controller()->InTabletMode() &&
       !session_controller->IsUserSessionBlocked();
   const bool create_feedback = login_status != LoginStatus::LOCKED &&
@@ -213,11 +210,9 @@ void PowerButtonMenuView::RecreateItems() {
       &lock_screen_item_);
   add_remove_item(
       create_capture_mode, PowerButtonMenuActionType::kCaptureMode,
-      capture_mode_enabled
-          ? base::BindRepeating(&CaptureModeController::Start,
-                                base::Unretained(CaptureModeController::Get()),
-                                CaptureModeEntryType::kPowerMenu)
-          : base::DoNothing(),
+      base::BindRepeating(&CaptureModeController::Start,
+                          base::Unretained(CaptureModeController::Get()),
+                          CaptureModeEntryType::kPowerMenu),
       kCaptureModeIcon,
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_CAPTURE_MODE_BUTTON_LABEL),
       &capture_mode_item_);

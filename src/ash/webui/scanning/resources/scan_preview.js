@@ -5,10 +5,12 @@
 import './action_toolbar.js';
 import './scanning_fonts_css.js';
 import './scanning_shared_css.js';
+import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
 import 'chrome://resources/polymer/v3_0/paper-progress/paper-progress.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {afterNextRender, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {AppState} from './scanning_app_types.js';
@@ -109,6 +111,29 @@ Polymer({
       type: Number,
       value: -1,
     },
+
+    /**
+     * Set to true once the first scanned image from a scan is loaded. This is
+     * needed to prevent checking the dimensions of every scanned image. The
+     * assumption is that all scanned images share the same dimensions.
+     * @private {boolean}
+     */
+    scannedImagesLoaded_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /** @private {boolean} */
+    showActionToolbar_: {
+      type: Boolean,
+      computed: 'computeShowActionToolbar_(appState, multiPageScanChecked)',
+    },
+
+    /** @private {string} */
+    dialogText_: String,
+
+    /** @private {string} */
+    dialogConfirmationText_: String,
   },
 
   observers: [
@@ -128,16 +153,36 @@ Polymer({
   ready() {
     this.style.setProperty(
         '--scanned-image-margin-bottom', SCANNED_IMG_MARGIN_BOTTOM_PX + 'px');
+
+    // Only listen for window size changes during multi-page scan sessions so
+    // the position of the action toolbar can be updated.
+    if (this.multiPageScanChecked) {
+      window.addEventListener('resize', () => this.setActionToolbarPosition_());
+    }
+  },
+
+  /** @override */
+  detached() {
+    if (this.multiPageScanChecked) {
+      window.removeEventListener('resize', this.setActionToolbarPosition_);
+    }
   },
 
   /** @private */
   onAppStateChange_() {
     this.showScannedImages_ = this.appState === AppState.DONE ||
         this.appState === AppState.MULTI_PAGE_NEXT_ACTION;
-    this.showScanProgress_ = this.appState === AppState.SCANNING;
+    this.showScanProgress_ = this.appState === AppState.SCANNING ||
+        this.appState === AppState.MULTI_PAGE_SCANNING;
     this.showCancelingProgress_ = this.appState === AppState.CANCELING;
     this.showHelperText_ = !this.showScanProgress_ &&
         !this.showCancelingProgress_ && !this.showScannedImages_;
+
+    // If no longer showing the scanned images, reset |scannedImagesLoaded_| so
+    // it can be used again for the next scan job.
+    if (!this.showScannedImages_) {
+      this.scannedImagesLoaded_ = false;
+    }
   },
 
   /** @private */
@@ -222,7 +267,12 @@ Polymer({
    * @private
    */
   onScannedImagesScroll_() {
-    const imageHeight = this.$$('.scanned-image').height;
+    const scannedImage = this.$$('.scanned-image');
+    if (!scannedImage) {
+      return;
+    }
+
+    const imageHeight = scannedImage.height;
     const scrollTop = this.$$('#previewDiv').scrollTop - (imageHeight * .5);
     assert(this.currentPageInView_ > 0);
     this.previousPageInView_ = this.currentPageInView_;
@@ -261,5 +311,113 @@ Polymer({
       scannedImages[this.currentPageInView_ - 1].classList.add(
           'focused-scanned-image');
     });
+  },
+
+  /**
+   * Once the scanned images load, set the action toolbar position.
+   * @private
+   */
+  onScannedImagesLoaded_() {
+    if (!this.multiPageScanChecked) {
+      return;
+    }
+
+    this.forceScrollToBottom_();
+
+    // If the position was already set after the first scanned image loaded,
+    // there's no need to position it again.
+    if (this.scannedImagesLoaded_) {
+      return;
+    }
+
+    this.scannedImagesLoaded_ = true;
+    this.setActionToolbarPosition_();
+  },
+
+  /**
+   * Set the position of the action toolbar based on the size of the scanned
+   * images and the current size of the app window.
+   * @private
+   */
+  setActionToolbarPosition_() {
+    assert(this.multiPageScanChecked);
+
+    const scannedImage = this.$$('.scanned-image');
+    if (!scannedImage) {
+      return;
+    }
+
+    const scannedImageRect = scannedImage.getBoundingClientRect();
+    const topPosition = scannedImageRect.height * .85;
+    this.style.setProperty('--action-toolbar-top', topPosition + 'px');
+
+    const leftPosition = scannedImageRect.x + (scannedImageRect.width / 2) -
+        (this.$$('action-toolbar').offsetWidth / 2);
+    this.style.setProperty('--action-toolbar-left', leftPosition + 'px');
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeShowActionToolbar_() {
+    return this.multiPageScanChecked &&
+        this.appState == AppState.MULTI_PAGE_NEXT_ACTION;
+  },
+
+  /**
+   * Called when the "show-remove-page-dialog" event fires from the action
+   * toolbar button click.
+   * @param {Event} e
+   * @private
+   */
+  onShowRemovePageDialog_(e) {
+    this.showRemoveOrRescanDialog_(/* isRemovePageDialog */ true, e.detail);
+  },
+
+  /**
+   * Called when the "show-rescan-page-dialog" event fires from the action
+   * toolbar button click.
+   * @param {Event} e
+   * @private
+   */
+  onShowRescanPageDialog_(e) {
+    this.showRemoveOrRescanDialog_(/* isRemovePageDialog */ false, e.detail);
+  },
+
+  /**
+   * @param {boolean} isRemovePageDialog Determines whether to show the
+   *     'Remove Page' or 'Rescan Page' dialog.
+   * @param {number} pageNumber
+   * @private
+   */
+  showRemoveOrRescanDialog_(isRemovePageDialog, pageNumber) {
+    // Configure the dialog strings for the requested mode (Remove or Rescan).
+    const buttonLabelKey =
+        isRemovePageDialog ? 'removePageButtonLabel' : 'rescanPageButtonLabel';
+    const confirmationTextKey = isRemovePageDialog ?
+        'removePageConfirmationText' :
+        'rescanPageConfirmationText';
+    this.browserProxy_.getPluralString(buttonLabelKey, pageNumber)
+        .then(
+            /* @type {string} */ (pluralString) => {
+              this.dialogText_ = pluralString;
+              this.dialogConfirmationText_ =
+                  this.i18n(confirmationTextKey, pageNumber);
+
+              // Once strings are loaded, open the dialog.
+              this.$$('#scanPreviewDialog').showModal();
+            });
+  },
+
+  /**
+   * Scrolls down to the last scanned image in the viewport.
+   * @private
+   */
+  forceScrollToBottom_() {
+    assert(this.multiPageScanChecked);
+
+    const previewDiv = this.$$('#previewDiv');
+    previewDiv.scrollTop = previewDiv.scrollHeight;
   },
 });

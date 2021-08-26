@@ -318,10 +318,8 @@ GrBackendTexture GrDawnGpu::onCreateBackendTexture(SkISize dimensions,
     }
 
     wgpu::TextureDescriptor desc;
-    desc.usage =
-        wgpu::TextureUsage::Sampled |
-        wgpu::TextureUsage::CopySrc |
-        wgpu::TextureUsage::CopyDst;
+    desc.usage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopySrc |
+                 wgpu::TextureUsage::CopyDst;
 
     if (GrRenderable::kYes == renderable) {
         desc.usage |= wgpu::TextureUsage::RenderAttachment;
@@ -682,8 +680,7 @@ bool GrDawnGpu::onRegenerateMipMapLevels(GrTexture* tex) {
     // We have to do this even for renderable textures, since GrDawnRenderTarget currently only
     // contains a view, not a texture.
     wgpu::TextureDescriptor texDesc;
-    texDesc.usage = wgpu::TextureUsage::Sampled |
-                    wgpu::TextureUsage::CopySrc |
+    texDesc.usage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopySrc |
                     wgpu::TextureUsage::RenderAttachment;
     texDesc.size.width = (tex->width() + 1) / 2;
     texDesc.size.height = (tex->height() + 1) / 2;
@@ -737,12 +734,12 @@ bool GrDawnGpu::onRegenerateMipMapLevels(GrTexture* tex) {
     fragmentState.targetCount = 1;
     fragmentState.targets = &colorTargetState;
 
-    wgpu::RenderPipelineDescriptor2 renderPipelineDesc;
+    wgpu::RenderPipelineDescriptor renderPipelineDesc;
     renderPipelineDesc.vertex = vertexState;
     renderPipelineDesc.primitive.topology = wgpu::PrimitiveTopology::TriangleStrip;
     renderPipelineDesc.primitive.stripIndexFormat = wgpu::IndexFormat::Uint16;
     renderPipelineDesc.fragment = &fragmentState;
-    wgpu::RenderPipeline pipeline = fDevice.CreateRenderPipeline2(&renderPipelineDesc);
+    wgpu::RenderPipeline pipeline = fDevice.CreateRenderPipeline(&renderPipelineDesc);
 
     wgpu::BindGroupLayout bgl = pipeline.GetBindGroupLayout(0);
     wgpu::TextureViewDescriptor srcViewDesc;
@@ -772,7 +769,7 @@ bool GrDawnGpu::onRegenerateMipMapLevels(GrTexture* tex) {
         bgDesc.entries = bge;
         wgpu::BindGroup bindGroup = fDevice.CreateBindGroup(&bgDesc);
         wgpu::RenderPassColorAttachmentDescriptor colorAttachment;
-        colorAttachment.attachment = dstView;
+        colorAttachment.view = dstView;
         colorAttachment.clearColor = { 0.0f, 0.0f, 0.0f, 0.0f };
         colorAttachment.loadOp = wgpu::LoadOp::Load;
         colorAttachment.storeOp = wgpu::StoreOp::Store;

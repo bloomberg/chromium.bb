@@ -65,8 +65,10 @@ class BrowserURLLoaderThrottle::CheckerOnIO
         !url_checker_delegate ||
         !url_checker_delegate->GetDatabaseManager()->IsSupported() ||
         url_checker_delegate->ShouldSkipRequestCheck(
-            url, frame_tree_node_id_, -1 /* render_process_id */,
-            -1 /* render_frame_id */, originated_from_service_worker);
+            url, frame_tree_node_id_,
+            content::ChildProcessHost::kInvalidUniqueID /* render_process_id */,
+            MSG_ROUTING_NONE /* render_frame_id */,
+            originated_from_service_worker);
     if (skip_checks_) {
       content::GetUIThreadTaskRunner({})->PostTask(
           FROM_HERE,
@@ -76,7 +78,9 @@ class BrowserURLLoaderThrottle::CheckerOnIO
 
     url_checker_ = std::make_unique<SafeBrowsingUrlCheckerImpl>(
         headers, load_flags, request_destination, has_user_gesture,
-        url_checker_delegate, web_contents_getter_, real_time_lookup_enabled_,
+        url_checker_delegate, web_contents_getter_,
+        content::ChildProcessHost::kInvalidUniqueID, MSG_ROUTING_NONE,
+        frame_tree_node_id_, real_time_lookup_enabled_,
         can_rt_check_subresource_url_, can_check_db_,
         content::GetUIThreadTaskRunner({}), url_lookup_service_,
         WebUIInfoSingleton::GetInstance());
@@ -191,8 +195,10 @@ BrowserURLLoaderThrottle::BrowserURLLoaderThrottle(
 
 BrowserURLLoaderThrottle::~BrowserURLLoaderThrottle() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (deferred_)
-    TRACE_EVENT_ASYNC_END0("safe_browsing", "Deferred", this);
+  if (deferred_) {
+    TRACE_EVENT_NESTABLE_ASYNC_END0("safe_browsing", "Deferred",
+                                    TRACE_ID_LOCAL(this));
+  }
 
   DeleteCheckerOnIO();
 }
@@ -267,8 +273,9 @@ void BrowserURLLoaderThrottle::WillProcessResponse(
   deferred_ = true;
   defer_start_time_ = base::TimeTicks::Now();
   *defer = true;
-  TRACE_EVENT_ASYNC_BEGIN1("safe_browsing", "Deferred", this, "original_url",
-                           original_url_.spec());
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("safe_browsing", "Deferred",
+                                    TRACE_ID_LOCAL(this), "original_url",
+                                    original_url_.spec());
 }
 
 const char* BrowserURLLoaderThrottle::NameForLoggingWillProcessResponse() {
@@ -289,7 +296,6 @@ void BrowserURLLoaderThrottle::OnCompleteCheck(bool slow_check,
     pending_slow_checks_--;
   }
 
-  user_action_involved_ = user_action_involved_ || showed_interstitial;
   // If the resource load is currently deferred and is going to exit that state
   // (either being cancelled or resumed), record the total delay.
   if (deferred_ && (!proceed || pending_checks_ == 0))
@@ -301,7 +307,8 @@ void BrowserURLLoaderThrottle::OnCompleteCheck(bool slow_check,
 
     if (pending_checks_ == 0 && deferred_) {
       deferred_ = false;
-      TRACE_EVENT_ASYNC_END0("safe_browsing", "Deferred", this);
+      TRACE_EVENT_NESTABLE_ASYNC_END0("safe_browsing", "Deferred",
+                                      TRACE_ID_LOCAL(this));
       base::UmaHistogramTimes("SafeBrowsing.BrowserThrottle.TotalDelay",
                               total_delay_);
       delegate_->Resume();

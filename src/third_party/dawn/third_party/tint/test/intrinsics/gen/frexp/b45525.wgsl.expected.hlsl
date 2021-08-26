@@ -1,20 +1,34 @@
+intrinsics/gen/frexp/b45525.wgsl:29:24 warning: use of deprecated intrinsic
+  var res: vec4<f32> = frexp(vec4<f32>(), &arg_1);
+                       ^^^^^
+
+float4 tint_frexp(float4 param_0, inout int4 param_1) {
+  float4 float_exp;
+  float4 significand = frexp(param_0, float_exp);
+  param_1 = int4(float_exp);
+  return significand;
+}
+
 static int4 arg_1 = int4(0, 0, 0, 0);
 
 void frexp_b45525() {
-  float4 tint_tmp;
-  float4 tint_tmp_1 = frexp(float4(0.0f, 0.0f, 0.0f, 0.0f), tint_tmp);
-  arg_1 = int4(tint_tmp);
-  float4 res = tint_tmp_1;
+  float4 res = tint_frexp(float4(0.0f, 0.0f, 0.0f, 0.0f), arg_1);
 }
 
 struct tint_symbol {
   float4 value : SV_Position;
 };
 
-tint_symbol vertex_main() {
+float4 vertex_main_inner() {
   frexp_b45525();
-  const tint_symbol tint_symbol_1 = {float4(0.0f, 0.0f, 0.0f, 0.0f)};
-  return tint_symbol_1;
+  return float4(0.0f, 0.0f, 0.0f, 0.0f);
+}
+
+tint_symbol vertex_main() {
+  const float4 inner_result = vertex_main_inner();
+  tint_symbol wrapper_result = (tint_symbol)0;
+  wrapper_result.value = inner_result;
+  return wrapper_result;
 }
 
 void fragment_main() {

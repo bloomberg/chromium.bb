@@ -162,17 +162,18 @@ LayoutUnit TextFieldIntrinsicInlineSize(const HTMLInputElement& input,
     factor = 20;
 
   const float char_width = LayoutTextControl::GetAvgCharWidth(box.StyleRef());
-  LayoutUnit result = LayoutUnit::FromFloatCeil(char_width * factor);
+  float float_result = char_width * factor;
 
   float max_char_width = 0.f;
   const Font& font = box.StyleRef().GetFont();
   if (LayoutTextControl::HasValidAvgCharWidth(font))
-    max_char_width = roundf(font.PrimaryFont()->MaxCharWidth());
+    max_char_width = font.PrimaryFont()->MaxCharWidth();
 
   // For text inputs, IE adds some extra width.
   if (max_char_width > 0.f)
-    result += max_char_width - char_width;
+    float_result += max_char_width - char_width;
 
+  LayoutUnit result(ceilf(float_result));
   if (includes_decoration) {
     const auto* spin_button =
         To<HTMLElement>(input.UserAgentShadowRoot()->getElementById(
@@ -241,7 +242,7 @@ LayoutUnit FileUploadControlIntrinsicInlineSize(const HTMLInputElement& input,
   // characters (using "0" as the nominal character).
   constexpr int kDefaultWidthNumChars = 34;
   constexpr UChar kCharacter = '0';
-  const String character_as_string = String(&kCharacter, 1);
+  const String character_as_string = String(&kCharacter, 1u);
   const Font& font = box.StyleRef().GetFont();
   const float min_default_label_width =
       kDefaultWidthNumChars *
@@ -1628,11 +1629,11 @@ NGPhysicalBoxStrut LayoutBox::ComputeScrollbarsInternal(
         *this, kVerticalScrollbar, /* include_overlay_thickness */ true));
     if (ShouldPlaceVerticalScrollbarOnLeft()) {
       scrollbars.left = gutter_size;
-      if (StyleRef().IsScrollbarGutterMirror())
+      if (StyleRef().IsScrollbarGutterBothEdges())
         scrollbars.right = gutter_size;
     } else {
       scrollbars.right = gutter_size;
-      if (StyleRef().IsScrollbarGutterMirror())
+      if (StyleRef().IsScrollbarGutterBothEdges())
         scrollbars.left = gutter_size;
     }
   } else if (scrollable_area) {
@@ -1651,7 +1652,7 @@ NGPhysicalBoxStrut LayoutBox::ComputeScrollbarsInternal(
         HypotheticalScrollbarThickness(*this, kHorizontalScrollbar,
                                        /* include_overlay_thickness */ true));
     scrollbars.bottom = gutter_size;
-    if (StyleRef().IsScrollbarGutterMirror())
+    if (StyleRef().IsScrollbarGutterBothEdges())
       scrollbars.top = gutter_size;
   } else if (scrollable_area) {
     scrollbars.bottom = LayoutUnit(scrollable_area->HorizontalScrollbarHeight(
@@ -3548,8 +3549,7 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
     cache_status = NGLayoutCacheStatus::kNeedsSimplifiedLayout;
 
   // Only allow simplified layout for non-replaced boxes.
-  if (RuntimeEnabledFeatures::LayoutNGReplacedEnabled() &&
-      cache_status == NGLayoutCacheStatus::kNeedsSimplifiedLayout &&
+  if (cache_status == NGLayoutCacheStatus::kNeedsSimplifiedLayout &&
       IsLayoutReplaced())
     return nullptr;
 
@@ -4189,8 +4189,7 @@ bool LayoutBox::ShouldComputeLogicalWidthFromAspectRatio(
   if (StyleRef().AspectRatio().IsAuto())
     return false;
 
-  if (IsGridItem() &&
-      StyleRef().JustifySelf().GetPosition() == ItemPosition::kStretch)
+  if (IsGridItem() && HasStretchedLogicalWidth(StretchingMode::Explicit))
     return false;
 
   if (!HasOverrideLogicalHeight() &&
@@ -4510,7 +4509,7 @@ bool LayoutBox::IsStretchingColumnFlexItem() const {
 
 // TODO (lajava) Can/Should we move this inside specific layout classes (flex.
 // grid)? Can we refactor columnFlexItemHasStretchAlignment logic?
-bool LayoutBox::HasStretchedLogicalWidth() const {
+bool LayoutBox::HasStretchedLogicalWidth(StretchingMode stretchingMode) const {
   NOT_DESTROYED();
   const ComputedStyle& style = StyleRef();
   if (!style.LogicalWidth().IsAuto() || style.MarginStart().IsAuto() ||
@@ -4523,15 +4522,14 @@ bool LayoutBox::HasStretchedLogicalWidth() const {
     // Flexbox Items, which obviously should have a container.
     return false;
   }
+  auto defaultItemPosition = stretchingMode == StretchingMode::Any
+                                 ? cb->SelfAlignmentNormalBehavior(this)
+                                 : ItemPosition::kNormal;
   if (cb->IsHorizontalWritingMode() != IsHorizontalWritingMode()) {
-    return style
-               .ResolvedAlignSelf(cb->SelfAlignmentNormalBehavior(this),
-                                  cb->Style())
+    return style.ResolvedAlignSelf(defaultItemPosition, cb->Style())
                .GetPosition() == ItemPosition::kStretch;
   }
-  return style
-             .ResolvedJustifySelf(cb->SelfAlignmentNormalBehavior(this),
-                                  cb->Style())
+  return style.ResolvedJustifySelf(defaultItemPosition, cb->Style())
              .GetPosition() == ItemPosition::kStretch;
 }
 
@@ -5305,6 +5303,7 @@ LayoutUnit LayoutBox::ComputeReplacedLogicalWidthUsing(
     case Length::kExtendToZoom:
     case Length::kDeviceWidth:
     case Length::kDeviceHeight:
+    case Length::kContent:
       break;
   }
 

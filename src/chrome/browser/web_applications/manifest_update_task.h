@@ -5,20 +5,17 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_MANIFEST_UPDATE_TASK_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_MANIFEST_UPDATE_TASK_H_
 
-#include <map>
-
 #include "base/check_op.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/web_applications/components/app_icon_manager.h"
 #include "chrome/browser/web_applications/components/web_app_icon_downloader.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
 #include "components/services/app_service/public/cpp/protocol_handler_info.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/blink/public/common/manifest/manifest.h"
 
 struct WebApplicationInfo;
 
@@ -30,23 +27,10 @@ namespace web_app {
 enum class AppIdentityUpdate;
 struct IconDiff;
 
-// Checks for whether file handlers have changed. Ignores differences in names,
-// which aren't stored in the apps::FileHandlers, and ordering, which may
-// change after being inserted into a set or map.
-bool HaveFileHandlersChanged(
-    const apps::FileHandlers* old_handlers,
-    const std::vector<blink::Manifest::FileHandler>& new_handlers);
-
-// Checks whether protocol handlers have changed. Ignores differences in
-// ordering, which may change after being inserted into a set or map.
-bool HaveProtocolHandlersChanged(
-    const apps::ProtocolHandlers* old_handlers,
-    const std::vector<blink::Manifest::ProtocolHandler>& new_handlers);
-
-class AppIconManager;
+class WebAppIconManager;
 class WebAppRegistrar;
 class WebAppUiManager;
-class InstallManager;
+class WebAppInstallManager;
 class OsIntegrationManager;
 enum class InstallResultCode;
 
@@ -98,9 +82,9 @@ class ManifestUpdateTask final
                      StoppedCallback stopped_callback,
                      bool hang_for_testing,
                      const WebAppRegistrar& registrar,
-                     const AppIconManager& icon_manager,
+                     const WebAppIconManager& icon_manager,
                      WebAppUiManager* ui_manager,
-                     InstallManager* install_manager,
+                     WebAppInstallManager* install_manager,
                      OsIntegrationManager& os_integration_manager);
 
   ~ManifestUpdateTask() override;
@@ -154,9 +138,9 @@ class ManifestUpdateTask final
   void DestroySelf(ManifestUpdateResult result);
 
   const WebAppRegistrar& registrar_;
-  const AppIconManager& icon_manager_;
+  const WebAppIconManager& icon_manager_;
   WebAppUiManager& ui_manager_;
-  InstallManager& install_manager_;
+  WebAppInstallManager& install_manager_;
   OsIntegrationManager& os_integration_manager_;
 
   Stage stage_;

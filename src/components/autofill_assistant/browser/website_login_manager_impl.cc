@@ -189,7 +189,7 @@ class WebsiteLoginManagerImpl::PendingDeletePasswordRequest
                        std::move(notify_finished_callback)),
         login_(login),
         callback_(std::move(callback)),
-        store_(client->GetProfilePasswordStore()) {}
+        store_(client->GetProfilePasswordStoreInterface()) {}
 
  protected:
   // From PendingRequest:
@@ -229,7 +229,7 @@ class WebsiteLoginManagerImpl::PendingEditPasswordRequest
         new_password_(new_password),
         callback_(std::move(callback)),
         form_saver_(std::make_unique<password_manager::FormSaverImpl>(
-            client->GetProfilePasswordStore())) {}
+            client->GetProfilePasswordStoreInterface())) {}
 
  protected:
   // From PendingRequest:
@@ -432,6 +432,22 @@ void WebsiteLoginManagerImpl::CommitGeneratedPassword() {
   update_password_request_->CommitGeneratedPassword();
 
   update_password_request_.reset();
+}
+
+void WebsiteLoginManagerImpl::ResetPendingCredentials() {
+  client_->GetPasswordManager()->ResetPendingCredentials();
+}
+
+bool WebsiteLoginManagerImpl::ReadyToCommitSubmittedPassword() {
+  return client_->GetPasswordManager()->IsFormManagerPendingPasswordUpdate();
+}
+
+bool WebsiteLoginManagerImpl::SaveSubmittedPassword() {
+  if (!ReadyToCommitSubmittedPassword()) {
+    return false;
+  }
+  client_->GetPasswordManager()->SaveSubmittedManager();
+  return true;
 }
 
 void WebsiteLoginManagerImpl::OnRequestFinished(const PendingRequest* request) {

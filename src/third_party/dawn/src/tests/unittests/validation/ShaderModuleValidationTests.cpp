@@ -212,3 +212,284 @@ TEST_F(ShaderModuleValidationTest, GetCompilationMessages) {
 
     shaderModule.GetCompilationInfo(callback, nullptr);
 }
+
+// Validate the maximum location of effective inter-stage variables cannot be greater than 14
+// (kMaxInterStageShaderComponents / 4 - 1).
+TEST_F(ShaderModuleValidationTest, MaximumShaderIOLocations) {
+    auto generateShaderForTest = [](uint32_t maximumOutputLocation, wgpu::ShaderStage shaderStage) {
+        std::ostringstream stream;
+        stream << "struct ShaderIO {" << std::endl;
+        for (uint32_t location = 1; location <= maximumOutputLocation; ++location) {
+            stream << "[[location(" << location << ")]] var" << location << ": f32;" << std::endl;
+        }
+        switch (shaderStage) {
+            case wgpu::ShaderStage::Vertex: {
+                stream << R"(
+                    [[builtin(position)]] pos: vec4<f32>;
+                };
+                [[stage(vertex)]] fn main() -> ShaderIO {
+                    var shaderIO : ShaderIO;
+                    shaderIO.pos = vec4<f32>(0.0, 0.0, 0.0, 1.0);
+                    return shaderIO;
+                 })";
+            } break;
+
+            case wgpu::ShaderStage::Fragment: {
+                stream << R"(
+                };
+                [[stage(fragment)]] fn main(shaderIO: ShaderIO) -> [[location(0)]] vec4<f32> {
+                    return vec4<f32>(0.0, 0.0, 0.0, 1.0);
+                })";
+            } break;
+
+            case wgpu::ShaderStage::Compute:
+            default:
+                UNREACHABLE();
+        }
+
+        return stream.str();
+    };
+
+    constexpr uint32_t kMaxInterShaderIOLocation = kMaxInterStageShaderComponents / 4 - 1;
+
+    // It is allowed to create a shader module with the maximum active vertex output location == 14;
+    {
+        std::string vertexShader =
+            generateShaderForTest(kMaxInterShaderIOLocation, wgpu::ShaderStage::Vertex);
+        utils::CreateShaderModule(device, vertexShader.c_str());
+    }
+
+    // It isn't allowed to create a shader module with the maximum active vertex output location >
+    // 14;
+    {
+        std::string vertexShader =
+            generateShaderForTest(kMaxInterShaderIOLocation + 1, wgpu::ShaderStage::Vertex);
+        ASSERT_DEVICE_ERROR(utils::CreateShaderModule(device, vertexShader.c_str()));
+    }
+
+    // It is allowed to create a shader module with the maximum active fragment input location ==
+    // 14;
+    {
+        std::string fragmentShader =
+            generateShaderForTest(kMaxInterShaderIOLocation, wgpu::ShaderStage::Fragment);
+        utils::CreateShaderModule(device, fragmentShader.c_str());
+    }
+
+    // It is allowed to create a shader module with the maximum active vertex output location > 14;
+    {
+        std::string fragmentShader =
+            generateShaderForTest(kMaxInterShaderIOLocation + 1, wgpu::ShaderStage::Fragment);
+        ASSERT_DEVICE_ERROR(utils::CreateShaderModule(device, fragmentShader.c_str()));
+    }
+}
+
+// Validate the maximum number of total inter-stage user-defined variable component count and
+// built-in variables cannot exceed kMaxInterStageShaderComponents.
+TEST_F(ShaderModuleValidationTest, MaximumInterStageShaderComponents) {
+    auto generateShaderForTest = [](uint32_t totalUserDefinedInterStageShaderComponentCount,
+                                    wgpu::ShaderStage shaderStage,
+                                    const char* builtInDeclarations) {
+        std::ostringstream stream;
+        stream << "struct ShaderIO {" << std::endl << builtInDeclarations << std::endl;
+        uint32_t vec4InputLocations = totalUserDefinedInterStageShaderComponentCount / 4;
+
+        for (uint32_t location = 0; location < vec4InputLocations; ++location) {
+            stream << "[[location(" << location << ")]] var" << location << ": vec4<f32>;"
+                   << std::endl;
+        }
+
+        uint32_t lastComponentCount = totalUserDefinedInterStageShaderComponentCount % 4;
+        if (lastComponentCount > 0) {
+            stream << "[[location(" << vec4InputLocations << ")]] var" << vec4InputLocations
+                   << ": ";
+            if (lastComponentCount == 1) {
+                stream << "f32;";
+            } else {
+                stream << " vec" << lastComponentCount << "<f32>;";
+            }
+            stream << std::endl;
+        }
+
+        switch (shaderStage) {
+            case wgpu::ShaderStage::Vertex: {
+                stream << R"(
+                    [[builtin(position)]] pos: vec4<f32>;
+                };
+                [[stage(vertex)]] fn main() -> ShaderIO {
+                    var shaderIO : ShaderIO;
+                    shaderIO.pos = vec4<f32>(0.0, 0.0, 0.0, 1.0);
+                    return shaderIO;
+                 })";
+            } break;
+
+            case wgpu::ShaderStage::Fragment: {
+                stream << R"(
+                };
+                [[stage(fragment)]] fn main(shaderIO: ShaderIO) -> [[location(0)]] vec4<f32> {
+                    return vec4<f32>(0.0, 0.0, 0.0, 1.0);
+                })";
+            } break;
+
+            case wgpu::ShaderStage::Compute:
+            default:
+                UNREACHABLE();
+        }
+
+        return stream.str();
+    };
+
+    // Verify when there is no input builtin variable in a fragment shader, the total user-defined
+    // input component count must be less than kMaxInterStageShaderComponents.
+    {
+        constexpr uint32_t kInterStageShaderComponentCount = kMaxInterStageShaderComponents;
+        std::string correctFragmentShader =
+            generateShaderForTest(kInterStageShaderComponentCount, wgpu::ShaderStage::Fragment, "");
+        utils::CreateShaderModule(device, correctFragmentShader.c_str());
+
+        std::string errorFragmentShader = generateShaderForTest(kInterStageShaderComponentCount + 1,
+                                                                wgpu::ShaderStage::Fragment, "");
+        ASSERT_DEVICE_ERROR(utils::CreateShaderModule(device, errorFragmentShader.c_str()));
+    }
+
+    // [[position]] should be counted into the maximum inter-stage component count.
+    // Note that in vertex shader we always have [[position]] so we don't need to specify it
+    // again in the parameter "builtInDeclarations" of generateShaderForTest().
+    {
+        constexpr uint32_t kInterStageShaderComponentCount = kMaxInterStageShaderComponents - 4;
+        std::string vertexShader =
+            generateShaderForTest(kInterStageShaderComponentCount, wgpu::ShaderStage::Vertex, "");
+        utils::CreateShaderModule(device, vertexShader.c_str());
+
+        std::string fragmentShader =
+            generateShaderForTest(kInterStageShaderComponentCount, wgpu::ShaderStage::Fragment,
+                                  "[[builtin(position)]] fragCoord: vec4<f32>;");
+        utils::CreateShaderModule(device, fragmentShader.c_str());
+    }
+
+    {
+        constexpr uint32_t kInterStageShaderComponentCount = kMaxInterStageShaderComponents - 3;
+        std::string vertexShader =
+            generateShaderForTest(kInterStageShaderComponentCount, wgpu::ShaderStage::Vertex, "");
+        ASSERT_DEVICE_ERROR(utils::CreateShaderModule(device, vertexShader.c_str()));
+
+        std::string fragmentShader =
+            generateShaderForTest(kInterStageShaderComponentCount, wgpu::ShaderStage::Fragment,
+                                  "[[builtin(position)]] fragCoord: vec4<f32>;");
+        ASSERT_DEVICE_ERROR(utils::CreateShaderModule(device, fragmentShader.c_str()));
+    }
+
+    // [[front_facing]] should be counted into the maximum inter-stage component count.
+    {
+        const char* builtinDeclaration = "[[builtin(front_facing)]] frontFacing : bool;";
+
+        {
+            std::string fragmentShader =
+                generateShaderForTest(kMaxInterStageShaderComponents - 1,
+                                      wgpu::ShaderStage::Fragment, builtinDeclaration);
+            utils::CreateShaderModule(device, fragmentShader.c_str());
+        }
+
+        {
+            std::string fragmentShader = generateShaderForTest(
+                kMaxInterStageShaderComponents, wgpu::ShaderStage::Fragment, builtinDeclaration);
+            ASSERT_DEVICE_ERROR(utils::CreateShaderModule(device, fragmentShader.c_str()));
+        }
+    }
+
+    // [[sample_index]] should be counted into the maximum inter-stage component count.
+    {
+        const char* builtinDeclaration = "[[builtin(sample_index)]] sampleIndex: u32;";
+
+        {
+            std::string fragmentShader =
+                generateShaderForTest(kMaxInterStageShaderComponents - 1,
+                                      wgpu::ShaderStage::Fragment, builtinDeclaration);
+            utils::CreateShaderModule(device, fragmentShader.c_str());
+        }
+
+        {
+            std::string fragmentShader = generateShaderForTest(
+                kMaxInterStageShaderComponents, wgpu::ShaderStage::Fragment, builtinDeclaration);
+            ASSERT_DEVICE_ERROR(utils::CreateShaderModule(device, fragmentShader.c_str()));
+        }
+    }
+
+    // [[sample_mask]] should be counted into the maximum inter-stage component count.
+    {
+        const char* builtinDeclaration = "[[builtin(front_facing)]] frontFacing : bool;";
+
+        {
+            std::string fragmentShader =
+                generateShaderForTest(kMaxInterStageShaderComponents - 1,
+                                      wgpu::ShaderStage::Fragment, builtinDeclaration);
+            utils::CreateShaderModule(device, fragmentShader.c_str());
+        }
+
+        {
+            std::string fragmentShader = generateShaderForTest(
+                kMaxInterStageShaderComponents, wgpu::ShaderStage::Fragment, builtinDeclaration);
+            ASSERT_DEVICE_ERROR(utils::CreateShaderModule(device, fragmentShader.c_str()));
+        }
+    }
+}
+
+// Tests that we validate workgroup size limits.
+TEST_F(ShaderModuleValidationTest, ComputeWorkgroupSizeLimits) {
+    DAWN_SKIP_TEST_IF(!HasToggleEnabled("use_tint_generator"));
+
+    auto MakeShaderWithWorkgroupSize = [this](uint32_t x, uint32_t y, uint32_t z) {
+        std::ostringstream ss;
+        ss << "[[stage(compute), workgroup_size(" << x << "," << y << "," << z
+           << ")]] fn main() {}";
+        utils::CreateShaderModule(device, ss.str().c_str());
+    };
+
+    MakeShaderWithWorkgroupSize(1, 1, 1);
+    MakeShaderWithWorkgroupSize(kMaxComputeWorkgroupSizeX, 1, 1);
+    MakeShaderWithWorkgroupSize(1, kMaxComputeWorkgroupSizeY, 1);
+    MakeShaderWithWorkgroupSize(1, 1, kMaxComputeWorkgroupSizeZ);
+
+    ASSERT_DEVICE_ERROR(MakeShaderWithWorkgroupSize(kMaxComputeWorkgroupSizeX + 1, 1, 1));
+    ASSERT_DEVICE_ERROR(MakeShaderWithWorkgroupSize(1, kMaxComputeWorkgroupSizeY + 1, 1));
+    ASSERT_DEVICE_ERROR(MakeShaderWithWorkgroupSize(1, 1, kMaxComputeWorkgroupSizeZ + 1));
+
+    // No individual dimension exceeds its limit, but the combined size should definitely exceed the
+    // total invocation limit.
+    ASSERT_DEVICE_ERROR(MakeShaderWithWorkgroupSize(
+        kMaxComputeWorkgroupSizeX, kMaxComputeWorkgroupSizeY, kMaxComputeWorkgroupSizeZ));
+}
+
+// Tests that we validate workgroup storage size limits.
+TEST_F(ShaderModuleValidationTest, ComputeWorkgroupStorageSizeLimits) {
+    DAWN_SKIP_TEST_IF(!HasToggleEnabled("use_tint_generator"));
+
+    constexpr uint32_t kVec4Size = 16;
+    constexpr uint32_t kMaxVec4Count = kMaxComputeWorkgroupStorageSize / kVec4Size;
+    constexpr uint32_t kMat4Size = 64;
+    constexpr uint32_t kMaxMat4Count = kMaxComputeWorkgroupStorageSize / kMat4Size;
+
+    auto MakeShaderWithWorkgroupStorage = [this](uint32_t vec4_count, uint32_t mat4_count) {
+        std::ostringstream ss;
+        std::ostringstream body;
+        if (vec4_count > 0) {
+            ss << "var<workgroup> vec4_data: array<vec4<f32>, " << vec4_count << ">;";
+            body << "ignore(vec4_data);";
+        }
+        if (mat4_count > 0) {
+            ss << "var<workgroup> mat4_data: array<mat4x4<f32>, " << mat4_count << ">;";
+            body << "ignore(mat4_data);";
+        }
+        ss << "[[stage(compute), workgroup_size(1)]] fn main() { " << body.str() << " }";
+        utils::CreateShaderModule(device, ss.str().c_str());
+    };
+
+    MakeShaderWithWorkgroupStorage(1, 1);
+    MakeShaderWithWorkgroupStorage(kMaxVec4Count, 0);
+    MakeShaderWithWorkgroupStorage(0, kMaxMat4Count);
+    MakeShaderWithWorkgroupStorage(kMaxVec4Count - 4, 1);
+    MakeShaderWithWorkgroupStorage(4, kMaxMat4Count - 1);
+    ASSERT_DEVICE_ERROR(MakeShaderWithWorkgroupStorage(kMaxVec4Count + 1, 0));
+    ASSERT_DEVICE_ERROR(MakeShaderWithWorkgroupStorage(kMaxVec4Count - 3, 1));
+    ASSERT_DEVICE_ERROR(MakeShaderWithWorkgroupStorage(0, kMaxMat4Count + 1));
+    ASSERT_DEVICE_ERROR(MakeShaderWithWorkgroupStorage(4, kMaxMat4Count));
+}

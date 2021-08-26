@@ -23,7 +23,7 @@ if (!build_with_chromium) {
   ]
 
   shared_deps = [
-    "../../discovery:common",
+    "../../discovery:dnssd",
     "../../discovery:public",
     "../../platform:standalone_impl",
     "../common:public",

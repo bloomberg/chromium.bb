@@ -23,14 +23,13 @@
 #include "src/gpu/GrGpu.h"
 #include "src/gpu/GrMemoryPool.h"
 #include "src/gpu/GrOnFlushResourceProvider.h"
+#include "src/gpu/GrOpFlushState.h"
 #include "src/gpu/GrRecordingContextPriv.h"
 #include "src/gpu/GrRenderTargetProxy.h"
 #include "src/gpu/GrRenderTask.h"
 #include "src/gpu/GrRenderTaskCluster.h"
 #include "src/gpu/GrResourceAllocator.h"
 #include "src/gpu/GrResourceProvider.h"
-#include "src/gpu/GrSurfaceContext.h"
-#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/GrSurfaceProxyPriv.h"
 #include "src/gpu/GrTTopoSort.h"
 #include "src/gpu/GrTexture.h"
@@ -44,6 +43,7 @@
 #include "src/gpu/text/GrSDFTControl.h"
 #include "src/image/SkSurface_Gpu.h"
 
+#include "src/gpu/GrOpsTask.h"
 #if SK_GPU_V1
 #include "src/gpu/GrSoftwarePathRenderer.h"
 #endif
@@ -957,6 +957,14 @@ GrPathRenderer* GrDrawingManager::getSoftwarePathRenderer() {
                                            fOptionsForPathRendererChain.fAllowPathMaskCaching));
     }
     return fSoftwarePathRenderer.get();
+}
+
+GrAtlasPathRenderer* GrDrawingManager::getAtlasPathRenderer() {
+    if (!fPathRendererChain) {
+        fPathRendererChain = std::make_unique<GrPathRendererChain>(fContext,
+                                                                   fOptionsForPathRendererChain);
+    }
+    return fPathRendererChain->getAtlasPathRenderer();
 }
 
 GrTessellationPathRenderer* GrDrawingManager::getTessellationPathRenderer() {

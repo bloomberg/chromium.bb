@@ -40,6 +40,7 @@
 <translation id="1254117744268754948">選擇資料夾</translation>
 <translation id="1265739287306757398">操作說明</translation>
 <translation id="1272079795634619415">停止</translation>
+<translation id="1275718070701477396">已選取</translation>
 <translation id="1282311502488501110">不登入</translation>
 <translation id="1283524564873030414">過去 24 小時</translation>
 <translation id="1285320974508926690">一律不翻譯此網站</translation>
@@ -66,6 +67,7 @@
 <translation id="1509960214886564027">許多網站的功能可能無法正常運作</translation>
 <translation id="152234381334907219">永不儲存</translation>
 <translation id="1523341279170789507">允許所有 Cookie</translation>
+<translation id="1524563461097350801">不用了，謝謝</translation>
 <translation id="1535268707340844072">你目前的設定可能會導致某些網站無法正常運作。如要管理所有網站的 Cookie，請參閱 <ph name="BEGIN_LINK" />Cookie 設定<ph name="END_LINK" />。</translation>
 <translation id="1540800554400757039">地址 1</translation>
 <translation id="1545749641540134597">掃描 QR 圖碼</translation>
@@ -112,7 +114,6 @@
 <translation id="1989112275319619282">瀏覽</translation>
 <translation id="2015722694326466240">你必須先在裝置上設定螢幕解鎖密碼才能查看密碼。</translation>
 <translation id="2021670401941426298">如要瞭解如何刪除搜尋記錄，請查看搜尋引擎的操作說明 (如果有的話)。</translation>
-<translation id="2022352537516230970">專為 iPhone 量身打造</translation>
 <translation id="2073572773299281212">上次使用時間：<ph name="DAYS" /> 天前</translation>
 <translation id="2074131957428911366">你隨時可以在<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />中選擇要同步處理的資料。</translation>
 <translation id="2079545284768500474">復原</translation>
@@ -136,6 +137,7 @@
 <translation id="2320166752086256636">隱藏鍵盤</translation>
 <translation id="2339560363438331454">同步處理和 Google 服務</translation>
 <translation id="2351097562818989364">您的翻譯設定已重設。</translation>
+<translation id="235789365079050412">Google 隱私權政策</translation>
 <translation id="2359043044084662842">翻譯</translation>
 <translation id="2359808026110333948">繼續</translation>
 <translation id="2360196772093551345">切換為行動版網站</translation>
@@ -147,6 +149,7 @@
 <translation id="2421004566762153674">封鎖第三方 Cookie</translation>
 <translation id="2421044535038393232">繼續編輯</translation>
 <translation id="2435457462613246316">顯示密碼</translation>
+<translation id="2476359652512522418">未選取</translation>
 <translation id="2497852260688568942">你的管理員停用了同步功能</translation>
 <translation id="2500374554657206846">儲存密碼的選項</translation>
 <translation id="2523363575747517183">這個網站不斷嘗試開啟其他應用程式。</translation>
@@ -184,6 +187,7 @@
 <translation id="2834956026595107950"><ph name="TITLE" />，<ph name="STATE" />，<ph name="URL" /></translation>
 <translation id="2840687315230832938">尚未完成初始同步處理設定</translation>
 <translation id="2843803966603263712">重設翻譯設定</translation>
+<translation id="2848086008667475748">在「設定」中設為預設…</translation>
 <translation id="2858204748079866344">為保護個人隱私，Chrome 不會將你的密碼自動填入這個欄位。</translation>
 <translation id="285960592395650245">重新嘗試下載</translation>
 <translation id="2870560284913253234">網站</translation>
@@ -283,6 +287,7 @@
 <translation id="3691593122358196899">已將書籤加入「<ph name="FOLDER_TITLE" />」</translation>
 <translation id="3709582977625132201">標示為未讀取</translation>
 <translation id="3740397331642243698">在 Google Chrome 無痕模式中開啟輸入的網址。</translation>
+<translation id="3762232513783804601">專為 iPad 量身打造</translation>
 <translation id="3771033907050503522">無痕式分頁</translation>
 <translation id="3775743491439407556">同步功能無法正常運作</translation>
 <translation id="3779810277399252432">沒有網際網路連線。</translation>
@@ -322,7 +327,7 @@
 <translation id="4172051516777682613">一律顯示</translation>
 <translation id="418156467088430727">在新分頁中檢視離線版本</translation>
 <translation id="4181841719683918333">語言</translation>
-<translation id="4184011057600693970">專為 iPad 量身打造</translation>
+<translation id="4237377247299956313">輕觸 [預設的瀏覽器應用程式]<ph name="BEGIN_BOLD" /><ph name="END_BOLD" /></translation>
 <translation id="424315890655130736">輸入通關密語</translation>
 <translation id="4263576668337963058">顯示可用的網頁動作</translation>
 <translation id="4267380167363222949">下一個分頁</translation>
@@ -338,9 +343,10 @@
 <translation id="4375040482473363939">QR 圖碼搜尋</translation>
 <translation id="4378154925671717803">電話</translation>
 <translation id="4389019817280890563">輕觸即可變更語言。</translation>
-<translation id="441868831736628555">隱私權聲明</translation>
+<translation id="4442550905108052454">開啟「設定」<ph name="BEGIN_BOLD" /><ph name="END_BOLD" /></translation>
 <translation id="4454246407045105932">新增語言</translation>
 <translation id="4469418912670346607">繼續設定</translation>
+<translation id="4474494258097106883">專為 iPhone 量身打造</translation>
 <translation id="4476574785019001431">設定</translation>
 <translation id="4496373720959965247">新增分頁即可在各網頁之間自由切換</translation>
 <translation id="4502566650163919158">立即檢查</translation>
@@ -597,6 +603,7 @@
 <translation id="6730682669179532099">無法匯出密碼</translation>
 <translation id="6748108480210050150">寄件者</translation>
 <translation id="6760509555861141183">返回「最近」分頁</translation>
+<translation id="6762812039470893796">取消全選</translation>
 <translation id="6780034285637185932">郵遞區號</translation>
 <translation id="6785453220513215166">正在傳送當機報告...</translation>
 <translation id="6797885426782475225">語音搜尋</translation>
@@ -734,6 +741,7 @@
 <translation id="8073872304774253879">改善搜尋和瀏覽體驗</translation>
 <translation id="8076014560081431679">已儲存的網站設定不會遭到刪除，而且可能會反映您的瀏覽習慣。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="8079602123447022758">這項設定是由管理員控管，輕觸兩下即可查看更多資訊</translation>
+<translation id="8080028325999236607">關閉所有分頁</translation>
 <translation id="8105368624971345109">關閉</translation>
 <translation id="8114753159095730575">可下載檔案，相關選項位於畫面底部。</translation>
 <translation id="8131740175452115882">確認</translation>
@@ -749,7 +757,6 @@
 <translation id="8283172974887967105">設定…</translation>
 <translation id="8299417921174340354">你必須先在裝置上設定螢幕解鎖密碼才能使用密碼。</translation>
 <translation id="8299613349954694191">開啟無痕分頁就能以私密模式瀏覽網頁。</translation>
-<translation id="83100941411593607">登入功能已停用</translation>
 <translation id="8319076807703933069">新搜尋</translation>
 <translation id="8323906514956095947">輕觸並按住即可查看更多分頁選項</translation>
 <translation id="8328777765163860529">關閉全部</translation>

@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #include "jxl/encode.h"
 
@@ -40,42 +31,6 @@
 #endif  // JXL_CRASH_ON_ERROR
 
 namespace jxl {
-
-Status ConvertExternalToInternalColorEncoding(const JxlColorEncoding& external,
-                                              ColorEncoding* internal) {
-  internal->SetColorSpace(static_cast<ColorSpace>(external.color_space));
-
-  CIExy wp;
-  wp.x = external.white_point_xy[0];
-  wp.y = external.white_point_xy[1];
-  JXL_RETURN_IF_ERROR(internal->SetWhitePoint(wp));
-
-  if (external.color_space == JXL_COLOR_SPACE_RGB ||
-      external.color_space == JXL_COLOR_SPACE_UNKNOWN) {
-    internal->primaries = static_cast<Primaries>(external.primaries);
-    PrimariesCIExy primaries;
-    primaries.r.x = external.primaries_red_xy[0];
-    primaries.r.y = external.primaries_red_xy[1];
-    primaries.g.x = external.primaries_green_xy[0];
-    primaries.g.y = external.primaries_green_xy[1];
-    primaries.b.x = external.primaries_blue_xy[0];
-    primaries.b.y = external.primaries_blue_xy[1];
-    JXL_RETURN_IF_ERROR(internal->SetPrimaries(primaries));
-  }
-  CustomTransferFunction tf;
-  if (external.transfer_function == JXL_TRANSFER_FUNCTION_GAMMA) {
-    JXL_RETURN_IF_ERROR(tf.SetGamma(external.gamma));
-  } else {
-    tf.SetTransferFunction(
-        static_cast<TransferFunction>(external.transfer_function));
-  }
-  internal->tf = tf;
-
-  internal->rendering_intent =
-      static_cast<RenderingIntent>(external.rendering_intent);
-
-  return true;
-}
 
 }  // namespace jxl
 
@@ -344,21 +299,38 @@ JxlEncoderStatus JxlEncoderSetParallelRunner(JxlEncoder* enc,
 
 JxlEncoderStatus JxlEncoderAddJPEGFrame(const JxlEncoderOptions* options,
                                         const uint8_t* buffer, size_t size) {
-  if (!options->enc->basic_info_set || !options->enc->color_encoding_set) {
-    return JXL_ENC_ERROR;
-  }
-
   if (options->enc->input_closed) {
-    return JXL_ENC_ERROR;
-  }
-
-  if (options->enc->metadata.m.xyb_encoded) {
-    // Can't XYB encode a lossless JPEG.
     return JXL_ENC_ERROR;
   }
 
   jxl::CodecInOut io;
   if (!jxl::jpeg::DecodeImageJPG(jxl::Span<const uint8_t>(buffer, size), &io)) {
+    return JXL_ENC_ERROR;
+  }
+
+  if (!options->enc->color_encoding_set) {
+    if (!SetColorEncodingFromJpegData(
+            *io.Main().jpeg_data, &options->enc->metadata.m.color_encoding)) {
+      return JXL_ENC_ERROR;
+    }
+  }
+
+  if (!options->enc->basic_info_set) {
+    JxlBasicInfo basic_info;
+    basic_info.exponent_bits_per_sample = 0;
+    basic_info.bits_per_sample = 8;
+    basic_info.alpha_bits = 0;
+    basic_info.alpha_exponent_bits = 0;
+    basic_info.xsize = io.Main().jpeg_data->width;
+    basic_info.ysize = io.Main().jpeg_data->height;
+    basic_info.uses_original_profile = true;
+    if (JxlEncoderSetBasicInfo(options->enc, &basic_info) != JXL_ENC_SUCCESS) {
+      return JXL_ENC_ERROR;
+    }
+  }
+
+  if (options->enc->metadata.m.xyb_encoded) {
+    // Can't XYB encode a lossless JPEG.
     return JXL_ENC_ERROR;
   }
 

@@ -11,6 +11,7 @@
 <translation id="1546934824884762070">Došlo k neočekávané chybě. Nahlaste prosím tento problém vývojářům.</translation>
 <translation id="1697532407822776718">Vše je nastaveno!</translation>
 <translation id="1742469581923031760">Připojování...</translation>
+<translation id="177040763384871009">Aby bylo možné v prohlížeči klienta otevírat odkazy, na které kliknete na vzdáleném zařízení, bude nutné změnit webový prohlížeč systému na <ph name="URL_FORWARDER_NAME" />.</translation>
 <translation id="177096447311351977">IP adresa kanálu pro klienta: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1897488610212723051">Smazat</translation>
 <translation id="2009755455353575666">Připojení se nezdařilo</translation>
@@ -129,6 +130,7 @@ Pokud je položka <ph name="SERVICE_SCRIPT_NAME" /> již zaškrtnutá, zrušte j
 <translation id="6963936880795878952">Připojení ke vzdálenému počítači jsou dočasně zablokována, protože došlo k několika pokusům o připojení s nesprávným kódem PIN. Zkuste to znovu později.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Opravdu chcete zakázat vzdálená připojení k počítači <ph name="HOSTNAME" />? Pokud později své rozhodnutí změníte, bude nutné připojení povolit přímo z uvedeného počítače.</translation>
+<translation id="6998890551706945177">Uživatel <ph name="CLIENT_USERNAME" /> požádal o přístup k zobrazení a ovládání vašeho počítače. Pokud tohoto uživatele neznáte nebo před sdílením potřebujete provést změny, stiskněte <ph name="IDS_SHARE_CONFIRM_DIALOG_DECLINE" />.  Jinak připojení povolte stisknutím možnosti <ph name="IDS_SHARE_CONFIRM_DIALOG_CONFIRM" />.</translation>
 <translation id="7019153418965365059">Neznámá chyba hostitele: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Vzdálená pomoc</translation>
 <translation id="7026930240735156896">Postupujte podle pokynů k nastavení počítače pro vzdálený přístup</translation>
@@ -142,6 +144,7 @@ Pokud je položka <ph name="SERVICE_SCRIPT_NAME" /> již zaškrtnutá, zrušte j
 <translation id="7434397035092923453">Přístup klienta zamítnut: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">Klient připojen: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7526139040829362392">Změnit účet</translation>
+<translation id="7535110896613603182">Otevřít výchozí nastavení aplikací</translation>
 <translation id="7628469622942688817">Pamatovat si na tomto zařízení můj PIN.</translation>
 <translation id="7649070708921625228">Nápověda</translation>
 <translation id="7658239707568436148">Zrušit</translation>

@@ -343,17 +343,17 @@ std::unique_ptr<base::ListValue> TtsExtensionEngine::BuildSpeakArgs(
   std::unique_ptr<base::DictionaryValue> options = base::DictionaryValue::From(
       base::Value::ToUniquePtrValue(utterance->GetOptions()->Clone()));
   if (options->FindKey(constants::kRequiredEventTypesKey))
-    options->Remove(constants::kRequiredEventTypesKey, NULL);
+    options->RemoveKey(constants::kRequiredEventTypesKey);
   if (options->FindKey(constants::kDesiredEventTypesKey))
-    options->Remove(constants::kDesiredEventTypesKey, NULL);
+    options->RemoveKey(constants::kDesiredEventTypesKey);
   if (sends_end_event && options->FindKey(constants::kEnqueueKey))
-    options->Remove(constants::kEnqueueKey, NULL);
+    options->RemoveKey(constants::kEnqueueKey);
   if (options->FindKey(constants::kSrcIdKey))
-    options->Remove(constants::kSrcIdKey, NULL);
+    options->RemoveKey(constants::kSrcIdKey);
   if (options->FindKey(constants::kIsFinalEventKey))
-    options->Remove(constants::kIsFinalEventKey, NULL);
+    options->RemoveKey(constants::kIsFinalEventKey);
   if (options->FindKey(constants::kOnEventKey))
-    options->Remove(constants::kOnEventKey, NULL);
+    options->RemoveKey(constants::kOnEventKey);
 
   // Get the volume, pitch, and rate, but only if they weren't already in
   // the options. TODO(dmazzoni): these shouldn't be redundant.
@@ -412,11 +412,15 @@ ExtensionTtsEngineUpdateVoicesFunction::Run() {
 
 ExtensionFunction::ResponseAction
 ExtensionTtsEngineSendTtsEventFunction::Run() {
-  int utterance_id = 0;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &utterance_id));
+  const auto& list = args_->GetList();
+  EXTENSION_FUNCTION_VALIDATE(list.size() >= 2);
 
-  base::DictionaryValue* event = nullptr;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &event));
+  const auto& utterance_id_value = list[0];
+  EXTENSION_FUNCTION_VALIDATE(utterance_id_value.is_int());
+  int utterance_id = utterance_id_value.GetInt();
+
+  base::DictionaryValue* event;
+  EXTENSION_FUNCTION_VALIDATE(list[1].GetAsDictionary(&event));
 
   std::string event_type;
   EXTENSION_FUNCTION_VALIDATE(
@@ -488,11 +492,15 @@ ExtensionTtsEngineSendTtsEventFunction::Run() {
 ExtensionFunction::ResponseAction
 ExtensionTtsEngineSendTtsAudioFunction::Run() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  int utterance_id = 0;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &utterance_id));
+  const auto& list = args_->GetList();
+  EXTENSION_FUNCTION_VALIDATE(list.size() >= 2);
+
+  const auto& utterance_id_value = list[0];
+  EXTENSION_FUNCTION_VALIDATE(utterance_id_value.is_int());
+  int utterance_id = utterance_id_value.GetInt();
 
   base::DictionaryValue* audio = nullptr;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &audio));
+  EXTENSION_FUNCTION_VALIDATE(list[1].GetAsDictionary(&audio));
 
   const std::vector<uint8_t>* audio_buffer_blob =
       audio->FindBlobPath(tts_extension_api_constants::kAudioBufferKey);

@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as Common from '../common/common.js';
-import * as Host from '../host/host.js';  // eslint-disable-line no-unused-vars
+import * as Host from '../host/host.js';
 import * as i18n from '../i18n/i18n.js';
 import type * as Protocol from '../../generated/protocol.js';
 
@@ -14,7 +12,7 @@ import {IOModel} from './IOModel.js';
 import {MultitargetNetworkManager} from './NetworkManager.js';
 import {NetworkManager} from './NetworkManager.js';
 import type {ResourceTreeFrame} from './ResourceTreeModel.js';
-import {Events as ResourceTreeModelEvents, ResourceTreeModel} from './ResourceTreeModel.js';  // eslint-disable-line no-unused-vars
+import {Events as ResourceTreeModelEvents, ResourceTreeModel} from './ResourceTreeModel.js';
 import type {Target} from './Target.js';
 import {TargetManager} from './TargetManager.js';
 
@@ -51,29 +49,27 @@ export interface PageResource {
 
 let pageResourceLoader: PageResourceLoader|null = null;
 
+interface LoadQueueEntry {
+  resolve: () => void;
+  reject: (arg0: Error) => void;
+}
+
 /**
  * The page resource loader is a bottleneck for all DevTools-initiated resource loads. For each such load, it keeps a
  * `PageResource` object around that holds meta information. This can be as the basis for reporting to the user which
  * resources were loaded, and whether there was a load error.
  */
-export class PageResourceLoader extends Common.ObjectWrapper.ObjectWrapper {
-  _currentlyLoading: number;
-  _maxConcurrentLoads: number;
-  _pageResources: Map<string, PageResource>;
-  _queuedLoads: {
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolve: (arg0: any) => void,
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    reject: (arg0: any) => void,
-  }[];
-  _loadOverride: ((arg0: string) => Promise<{
-                    success: boolean,
-                    content: string,
-                    errorDescription: Host.ResourceLoader.LoadErrorDescription,
-                  }>)|null;
-  _loadTimeout: number;
+export class PageResourceLoader extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
+  private currentlyLoading: number;
+  private readonly maxConcurrentLoads: number;
+  private readonly pageResources: Map<string, PageResource>;
+  private queuedLoads: LoadQueueEntry[];
+  private readonly loadOverride: ((arg0: string) => Promise<{
+                                    success: boolean,
+                                    content: string,
+                                    errorDescription: Host.ResourceLoader.LoadErrorDescription,
+                                  }>)|null;
+  private readonly loadTimeout: number;
   constructor(
       loadOverride: ((arg0: string) => Promise<{
                        success: boolean,
@@ -82,14 +78,14 @@ export class PageResourceLoader extends Common.ObjectWrapper.ObjectWrapper {
                      }>)|null,
       maxConcurrentLoads: number, loadTimeout: number) {
     super();
-    this._currentlyLoading = 0;
-    this._maxConcurrentLoads = maxConcurrentLoads;
-    this._pageResources = new Map();
-    this._queuedLoads = [];
+    this.currentlyLoading = 0;
+    this.maxConcurrentLoads = maxConcurrentLoads;
+    this.pageResources = new Map();
+    this.queuedLoads = [];
     TargetManager.instance().addModelListener(
-        ResourceTreeModel, ResourceTreeModelEvents.MainFrameNavigated, this._onMainFrameNavigated, this);
-    this._loadOverride = loadOverride;
-    this._loadTimeout = loadTimeout;
+        ResourceTreeModel, ResourceTreeModelEvents.MainFrameNavigated, this.onMainFrameNavigated, this);
+    this.loadOverride = loadOverride;
+    this.loadTimeout = loadTimeout;
   }
 
   static instance({forceNew, loadOverride, maxConcurrentLoads, loadTimeout}: {
@@ -114,23 +110,21 @@ export class PageResourceLoader extends Common.ObjectWrapper.ObjectWrapper {
     return pageResourceLoader;
   }
 
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  _onMainFrameNavigated(event: any): void {
-    const mainFrame = (event.data as ResourceTreeFrame);
+  onMainFrameNavigated(event: Common.EventTarget.EventTargetEvent<ResourceTreeFrame>): void {
+    const mainFrame = event.data;
     if (!mainFrame.isTopFrame()) {
       return;
     }
-    for (const {reject} of this._queuedLoads) {
+    for (const {reject} of this.queuedLoads) {
       reject(new Error(i18nString(UIStrings.loadCanceledDueToReloadOf)));
     }
-    this._queuedLoads = [];
-    this._pageResources.clear();
+    this.queuedLoads = [];
+    this.pageResources.clear();
     this.dispatchEventToListeners(Events.Update);
   }
 
   getResourcesLoaded(): Map<string, PageResource> {
-    return this._pageResources;
+    return this.pageResources;
   }
 
   /**
@@ -143,38 +137,31 @@ export class PageResourceLoader extends Common.ObjectWrapper.ObjectWrapper {
     queued: number,
     resources: number,
   } {
-    return {loading: this._currentlyLoading, queued: this._queuedLoads.length, resources: this._pageResources.size};
+    return {loading: this.currentlyLoading, queued: this.queuedLoads.length, resources: this.pageResources.size};
   }
 
-  async _acquireLoadSlot(): Promise<void> {
-    this._currentlyLoading++;
-    if (this._currentlyLoading > this._maxConcurrentLoads) {
-      const pair: {
-        // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        resolve: (arg0: any) => void,
-        // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        reject: (arg0: any) => void,
-      } = {resolve: (): void => {}, reject: (): void => {}};
-      const waitForCapacity = new Promise((resolve, reject) => {
-        pair.resolve = resolve;
-        pair.reject = reject;
+  private async acquireLoadSlot(): Promise<void> {
+    this.currentlyLoading++;
+    if (this.currentlyLoading > this.maxConcurrentLoads) {
+      const entry: LoadQueueEntry = {resolve: (): void => {}, reject: (): void => {}};
+      const waitForCapacity = new Promise<void>((resolve, reject) => {
+        entry.resolve = resolve;
+        entry.reject = reject;
       });
-      this._queuedLoads.push(pair);
+      this.queuedLoads.push(entry);
       await waitForCapacity;
     }
   }
 
-  _releaseLoadSlot(): void {
-    this._currentlyLoading--;
-    const entry = this._queuedLoads.shift();
+  private releaseLoadSlot(): void {
+    this.currentlyLoading--;
+    const entry = this.queuedLoads.shift();
     if (entry) {
-      entry.resolve(undefined);
+      entry.resolve();
     }
   }
 
-  static async _withTimeout<T>(promise: Promise<T>, timeout: number): Promise<T> {
+  static async withTimeout<T>(promise: Promise<T>, timeout: number): Promise<T> {
     const timeoutPromise = new Promise<T>(
         (_, reject) => setTimeout(reject, timeout, new Error(i18nString(UIStrings.loadCanceledDueToLoadTimeout))));
     return Promise.race([promise, timeoutPromise]);
@@ -195,12 +182,12 @@ export class PageResourceLoader extends Common.ObjectWrapper.ObjectWrapper {
   }> {
     const key = PageResourceLoader.makeKey(url, initiator);
     const pageResource: PageResource = {success: null, size: null, errorMessage: undefined, url, initiator};
-    this._pageResources.set(key, pageResource);
+    this.pageResources.set(key, pageResource);
     this.dispatchEventToListeners(Events.Update);
     try {
-      await this._acquireLoadSlot();
-      const resultPromise = this._dispatchLoad(url, initiator);
-      const result = await PageResourceLoader._withTimeout(resultPromise, this._loadTimeout);
+      await this.acquireLoadSlot();
+      const resultPromise = this.dispatchLoad(url, initiator);
+      const result = await PageResourceLoader.withTimeout(resultPromise, this.loadTimeout);
       pageResource.errorMessage = result.errorDescription.message;
       pageResource.success = result.success;
       if (result.success) {
@@ -217,34 +204,34 @@ export class PageResourceLoader extends Common.ObjectWrapper.ObjectWrapper {
       }
       throw e;
     } finally {
-      this._releaseLoadSlot();
+      this.releaseLoadSlot();
       this.dispatchEventToListeners(Events.Update);
     }
   }
 
-  async _dispatchLoad(url: string, initiator: PageResourceLoadInitiator): Promise<{
+  private async dispatchLoad(url: string, initiator: PageResourceLoadInitiator): Promise<{
     success: boolean,
     content: string,
     errorDescription: Host.ResourceLoader.LoadErrorDescription,
   }> {
     let failureReason: string|null = null;
-    if (this._loadOverride) {
-      return this._loadOverride(url);
+    if (this.loadOverride) {
+      return this.loadOverride(url);
     }
     const parsedURL = new Common.ParsedURL.ParsedURL(url);
     const eligibleForLoadFromTarget = getLoadThroughTargetSetting().get() && parsedURL && parsedURL.isHttpOrHttps();
-    Host.userMetrics.developerResourceScheme(this._getDeveloperResourceScheme(parsedURL));
+    Host.userMetrics.developerResourceScheme(this.getDeveloperResourceScheme(parsedURL));
     if (eligibleForLoadFromTarget) {
       try {
         if (initiator.target) {
           Host.userMetrics.developerResourceLoaded(Host.UserMetrics.DeveloperResourceLoaded.LoadThroughPageViaTarget);
-          const result = await this._loadFromTarget(initiator.target, initiator.frameId, url);
+          const result = await this.loadFromTarget(initiator.target, initiator.frameId, url);
           return result;
         }
         const frame = FrameManager.instance().getFrame(initiator.frameId || '');
         if (frame) {
           Host.userMetrics.developerResourceLoaded(Host.UserMetrics.DeveloperResourceLoaded.LoadThroughPageViaFrame);
-          const result = await this._loadFromTarget(frame.resourceTreeModel().target(), initiator.frameId, url);
+          const result = await this.loadFromTarget(frame.resourceTreeModel().target(), initiator.frameId, url);
           return result;
         }
       } catch (e) {
@@ -273,7 +260,8 @@ export class PageResourceLoader extends Common.ObjectWrapper.ObjectWrapper {
     return result;
   }
 
-  _getDeveloperResourceScheme(parsedURL: Common.ParsedURL.ParsedURL|null): Host.UserMetrics.DeveloperResourceScheme {
+  private getDeveloperResourceScheme(parsedURL: Common.ParsedURL.ParsedURL|
+                                     null): Host.UserMetrics.DeveloperResourceScheme {
     if (!parsedURL || parsedURL.scheme === '') {
       return Host.UserMetrics.DeveloperResourceScheme.SchemeUnknown;
     }
@@ -295,7 +283,7 @@ export class PageResourceLoader extends Common.ObjectWrapper.ObjectWrapper {
     return Host.UserMetrics.DeveloperResourceScheme.SchemeOther;
   }
 
-  async _loadFromTarget(target: Target, frameId: string|null, url: string): Promise<{
+  private async loadFromTarget(target: Target, frameId: string|null, url: string): Promise<{
     success: boolean,
     content: string,
     errorDescription: {
@@ -342,3 +330,7 @@ export function getLoadThroughTargetSetting(): Common.Settings.Setting<boolean> 
 export enum Events {
   Update = 'Update',
 }
+
+export type EventTypes = {
+  [Events.Update]: void,
+};

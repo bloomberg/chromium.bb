@@ -6,16 +6,17 @@
 #include <vector>
 
 #include "http2/adapter/http2_protocol.h"
+#include "common/platform/api/quiche_export.h"
 #include "spdy/core/spdy_protocol.h"
 
 namespace http2 {
 namespace adapter {
 namespace test {
 
-std::vector<const Header> ToHeaders(
+std::vector<const Header> QUICHE_NO_EXPORT ToHeaders(
     absl::Span<const std::pair<absl::string_view, absl::string_view>> headers);
 
-class TestFrameSequence {
+class QUICHE_NO_EXPORT TestFrameSequence {
  public:
   TestFrameSequence() = default;
 
@@ -36,22 +37,25 @@ class TestFrameSequence {
   TestFrameSequence& Headers(
       Http2StreamId stream_id,
       absl::Span<const std::pair<absl::string_view, absl::string_view>> headers,
-      bool fin = false);
+      bool fin = false, bool add_continuation = false);
   TestFrameSequence& Headers(Http2StreamId stream_id,
-                             spdy::Http2HeaderBlock block,
-                             bool fin = false);
+                             spdy::Http2HeaderBlock block, bool fin = false,
+                             bool add_continuation = false);
   TestFrameSequence& Headers(Http2StreamId stream_id,
-                             absl::Span<const Header> headers,
-                             bool fin = false);
+                             absl::Span<const Header> headers, bool fin = false,
+                             bool add_continuation = false);
   TestFrameSequence& WindowUpdate(Http2StreamId stream_id, int32_t delta);
   TestFrameSequence& Priority(Http2StreamId stream_id,
                               Http2StreamId parent_stream_id,
                               int weight,
                               bool exclusive);
   TestFrameSequence& Metadata(Http2StreamId stream_id,
-                              absl::string_view payload);
+                              absl::string_view payload,
+                              bool multiple_frames = false);
 
   std::string Serialize();
+
+  static std::string MetadataBlockForPayload(absl::string_view);
 
  private:
   std::string preface_;

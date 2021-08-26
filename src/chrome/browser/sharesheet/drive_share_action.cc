@@ -9,6 +9,8 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sharesheet/sharesheet_controller.h"
 #include "chrome/browser/sharesheet/sharesheet_types.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
@@ -19,7 +21,9 @@
 #include "ui/chromeos/strings/grit/ui_chromeos_strings.h"
 #include "url/gurl.h"
 
-DriveShareAction::DriveShareAction() = default;
+namespace sharesheet {
+
+DriveShareAction::DriveShareAction(Profile* profile) : profile_(profile) {}
 
 DriveShareAction::~DriveShareAction() = default;
 
@@ -31,21 +35,19 @@ const gfx::VectorIcon& DriveShareAction::GetActionIcon() {
   return kPersonAddIcon;
 }
 
-void DriveShareAction::LaunchAction(
-    sharesheet::SharesheetController* controller,
-    views::View* root_view,
-    apps::mojom::IntentPtr intent) {
+void DriveShareAction::LaunchAction(SharesheetController* controller,
+                                    views::View* root_view,
+                                    apps::mojom::IntentPtr intent) {
   controller_ = controller;
   DCHECK(intent->drive_share_url.has_value());
-  NavigateParams params(controller_->GetProfile(),
-                        intent->drive_share_url.value(),
+  NavigateParams params(profile_, intent->drive_share_url.value(),
                         ui::PAGE_TRANSITION_LINK);
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   Navigate(&params);
-  controller_->CloseSharesheet(sharesheet::SharesheetResult::kSuccess);
+  controller_->CloseBubble(SharesheetResult::kSuccess);
 }
 
-void DriveShareAction::OnClosing(sharesheet::SharesheetController* controller) {
+void DriveShareAction::OnClosing(SharesheetController* controller) {
   controller_ = nullptr;
 }
 
@@ -54,3 +56,5 @@ bool DriveShareAction::ShouldShowAction(const apps::mojom::IntentPtr& intent,
   return intent->drive_share_url.has_value() &&
          !intent->drive_share_url->is_empty();
 }
+
+}  // namespace sharesheet

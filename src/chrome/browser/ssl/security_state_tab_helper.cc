@@ -18,7 +18,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/reputation/reputation_web_contents_observer.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/ssl/https_only_mode_tab_helper.h"
 #include "chrome/browser/ssl/known_interception_disclosure_infobar_delegate.h"
 #include "chrome/common/chrome_features.h"
@@ -31,6 +30,7 @@
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/buildflags.h"
+#include "components/safe_browsing/content/browser/ui_manager.h"
 #include "components/security_interstitials/core/features.h"
 #include "components/security_interstitials/core/pref_names.h"
 #include "components/security_state/content/content_utils.h"
@@ -186,17 +186,8 @@ void SecurityStateTabHelper::DidFinishNavigation(
     return;
   }
 
-  content::NavigationEntry* entry = navigation_handle->GetNavigationEntry();
-  if (entry) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "Security.CertificateTransparency.MainFrameNavigationCompliance",
-        entry->GetSSL().ct_policy_compliance,
-        net::ct::CTPolicyCompliance::CT_POLICY_COUNT);
-  }
-
-  std::unique_ptr<security_state::VisibleSecurityState> visible_security_state =
-      GetVisibleSecurityState();
-  if (net::IsCertStatusError(visible_security_state->cert_status) &&
+  net::CertStatus cert_status = GetVisibleSecurityState()->cert_status;
+  if (net::IsCertStatusError(cert_status) &&
       !navigation_handle->IsErrorPage()) {
     // Record each time a user visits a site after having clicked through a
     // certificate warning interstitial. This is used as a baseline for
@@ -206,8 +197,7 @@ void SecurityStateTabHelper::DidFinishNavigation(
     UMA_HISTOGRAM_BOOLEAN("interstitial.ssl.visited_site_after_warning", true);
   }
 
-  MaybeShowKnownInterceptionDisclosureDialog(
-      web_contents(), visible_security_state->cert_status);
+  MaybeShowKnownInterceptionDisclosureDialog(web_contents(), cert_status);
 }
 
 void SecurityStateTabHelper::DidChangeVisibleSecurityState() {

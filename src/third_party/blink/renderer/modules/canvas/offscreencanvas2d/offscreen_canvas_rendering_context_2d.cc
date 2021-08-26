@@ -34,6 +34,8 @@ namespace {
 const size_t kHardMaxCachedFonts = 250;
 const size_t kMaxCachedFonts = 25;
 const float kUMASampleProbability = 0.01;
+// Max delay to fire context lost for context in iframes.
+static const unsigned kMaxIframeContextLoseDelay = 100;
 
 class OffscreenFontCache {
  public:
@@ -97,6 +99,8 @@ OffscreenCanvasRenderingContext2D::OffscreenCanvasRenderingContext2D(
       random_generator_(static_cast<uint32_t>(base::RandUint64())),
       bernoulli_distribution_(kUMASampleProbability),
       color_params_(attrs.color_space, attrs.pixel_format, attrs.alpha) {
+  identifiability_study_helper_.SetExecutionContext(
+      canvas->GetTopExecutionContext());
   is_valid_size_ = IsValidImageSize(Host()->Size());
 
   // Clear the background transparent or opaque.
@@ -188,11 +192,15 @@ CanvasResourceProvider*
 OffscreenCanvasRenderingContext2D::GetCanvasResourceProvider() const {
   return Host()->ResourceProvider();
 }
+
 void OffscreenCanvasRenderingContext2D::Reset() {
   Host()->DiscardResourceProvider();
   BaseRenderingContext2D::reset();
   // Because the host may have changed to a zero size
   is_valid_size_ = IsValidImageSize(Host()->Size());
+  // We must resize the damage rect to avoid a potentially larger damage than
+  // actual canvas size. See: crbug.com/1227165
+  dirty_rect_for_commit_ = SkIRect::MakeWH(Width(), Height());
 }
 
 scoped_refptr<CanvasResource>
@@ -282,18 +290,17 @@ cc::PaintCanvas* OffscreenCanvasRenderingContext2D::GetPaintCanvas() const {
   return GetCanvasResourceProvider()->Canvas();
 }
 
-void OffscreenCanvasRenderingContext2D::DidDraw2D(
+cc::PaintCanvas* OffscreenCanvasRenderingContext2D::GetPaintCanvasForDraw(
     const SkIRect& dirty_rect,
     CanvasPerformanceMonitor::DrawType draw_type) {
+  if (!is_valid_size_ || !GetCanvasResourceProvider())
+    return nullptr;
   dirty_rect_for_commit_.join(dirty_rect);
   GetCanvasPerformanceMonitor().DidDraw(draw_type);
   Host()->DidDraw(dirty_rect_for_commit_);
   if (GetCanvasResourceProvider() && GetCanvasResourceProvider()->needs_flush())
     FinalizeFrame();
-}
-
-bool OffscreenCanvasRenderingContext2D::StateHasFilter() {
-  return GetState().HasFilterForOffscreenCanvas(Host()->Size(), this);
+  return GetCanvasResourceProvider()->Canvas();
 }
 
 sk_sp<PaintFilter> OffscreenCanvasRenderingContext2D::StateGetFilter() {
@@ -325,7 +332,9 @@ void OffscreenCanvasRenderingContext2D::LoseContext(LostContextMode lost_mode) {
   if (context_lost_mode_ == kSyntheticLostContext && Host()) {
     Host()->DiscardResourceProvider();
   }
-  dispatch_context_lost_event_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
+  uint32_t delay = base::RandInt(1, kMaxIframeContextLoseDelay);
+  dispatch_context_lost_event_timer_.StartOneShot(
+      base::TimeDelta::FromMilliseconds(delay), FROM_HERE);
 }
 
 bool OffscreenCanvasRenderingContext2D::IsPaintable() const {
@@ -397,8 +406,10 @@ String OffscreenCanvasRenderingContext2D::font() const {
 void OffscreenCanvasRenderingContext2D::setFont(const String& new_font) {
   if (GetState().HasRealizedFont() && new_font == GetState().UnparsedFont())
     return;
-  identifiability_study_helper_.MaybeUpdateBuilder(
-      CanvasOps::kSetFont, IdentifiabilityBenignStringToken(new_font));
+  if (identifiability_study_helper_.ShouldUpdateBuilder()) {
+    identifiability_study_helper_.UpdateBuilder(
+        CanvasOps::kSetFont, IdentifiabilityBenignStringToken(new_font));
+  }
 
   base::TimeTicks start_time = base::TimeTicks::Now();
   OffscreenFontCache& font_cache = GetOffscreenFontCache();
@@ -408,19 +419,8 @@ void OffscreenCanvasRenderingContext2D::setFont(const String& new_font) {
     GetState().SetFont(*cached_font, Host()->GetFontSelector());
   } else {
     auto* style =
-        MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLStandardMode);
+        CSSParser::ParseFont(new_font, Host()->GetTopExecutionContext());
     if (!style)
-      return;
-
-    CSSParser::ParseValue(style, CSSPropertyID::kFont, new_font, true,
-                          Host()->GetTopExecutionContext());
-
-    // According to
-    // http://lists.w3.org/Archives/Public/public-html/2009Jul/0947.html,
-    // the "inherit", "initial" and "unset" values must be ignored.
-    const CSSValue* font_value =
-        style->GetPropertyCSSValue(CSSPropertyID::kFontSize);
-    if (!font_value || font_value->IsCSSWideKeyword())
       return;
 
     FontDescription desc =
@@ -432,8 +432,8 @@ void OffscreenCanvasRenderingContext2D::setFont(const String& new_font) {
   GetState().SetUnparsedFont(new_font);
   if (bernoulli_distribution_(random_generator_)) {
     base::TimeDelta elapsed = base::TimeTicks::Now() - start_time;
-    base::UmaHistogramMicrosecondsTimesUnderTenMilliseconds(
-        "OffscreenCanvas.TextMetrics.SetFont", elapsed);
+    base::UmaHistogramMicrosecondsTimes("OffscreenCanvas.TextMetrics.SetFont2",
+                                        elapsed);
   }
 }
 
@@ -456,33 +456,38 @@ String OffscreenCanvasRenderingContext2D::direction() const {
              ? kRtlDirectionString
              : kLtrDirectionString;
 }
-void OffscreenCanvasRenderingContext2D::setTextLetterSpacing(
+void OffscreenCanvasRenderingContext2D::setLetterSpacing(
     const double letter_spacing) {
   if (UNLIKELY(!std::isfinite(letter_spacing)))
     return;
+  // TODO(crbug.com/1234113): Instrument new canvas APIs.
+  identifiability_study_helper_.set_encountered_skipped_ops();
 
   if (!GetState().HasRealizedFont())
     setFont(font());
 
   float letter_spacing_float = clampTo<float>(letter_spacing);
-  GetState().SetTextLetterSpacing(letter_spacing_float,
-                                  Host()->GetFontSelector());
+  GetState().SetLetterSpacing(letter_spacing_float, Host()->GetFontSelector());
 }
 
-void OffscreenCanvasRenderingContext2D::setTextWordSpacing(
+void OffscreenCanvasRenderingContext2D::setWordSpacing(
     const double word_spacing) {
   if (UNLIKELY(!std::isfinite(word_spacing)))
     return;
+  // TODO(crbug.com/1234113): Instrument new canvas APIs.
+  identifiability_study_helper_.set_encountered_skipped_ops();
 
   if (!GetState().HasRealizedFont())
     setFont(font());
 
   float word_spacing_float = clampTo<float>(word_spacing);
-  GetState().SetTextWordSpacing(word_spacing_float, Host()->GetFontSelector());
+  GetState().SetWordSpacing(word_spacing_float, Host()->GetFontSelector());
 }
 
 void OffscreenCanvasRenderingContext2D::setTextRendering(
     const String& text_rendering_string) {
+  // TODO(crbug.com/1234113): Instrument new canvas APIs.
+  identifiability_study_helper_.set_encountered_skipped_ops();
   if (!GetState().HasRealizedFont())
     setFont(font());
 
@@ -524,6 +529,8 @@ void OffscreenCanvasRenderingContext2D::setDirection(
 
 void OffscreenCanvasRenderingContext2D::setFontKerning(
     const String& font_kerning_string) {
+  // TODO(crbug.com/1234113): Instrument new canvas APIs.
+  identifiability_study_helper_.set_encountered_skipped_ops();
   if (!GetState().HasRealizedFont())
     setFont(font());
   FontDescription::Kerning kerning;
@@ -545,6 +552,8 @@ void OffscreenCanvasRenderingContext2D::setFontKerning(
 
 void OffscreenCanvasRenderingContext2D::setFontStretch(
     const String& font_stretch) {
+  // TODO(crbug.com/1234113): Instrument new canvas APIs.
+  identifiability_study_helper_.set_encountered_skipped_ops();
   if (!GetState().HasRealizedFont())
     setFont(font());
 
@@ -579,6 +588,8 @@ void OffscreenCanvasRenderingContext2D::setFontStretch(
 
 void OffscreenCanvasRenderingContext2D::setFontVariantCaps(
     const String& font_variant_caps_string) {
+  // TODO(crbug.com/1234113): Instrument new canvas APIs.
+  identifiability_study_helper_.set_encountered_skipped_ops();
   if (!GetState().HasRealizedFont())
     setFont(font());
   FontDescription::FontVariantCaps variant_caps;
@@ -649,13 +660,15 @@ void OffscreenCanvasRenderingContext2D::DrawTextInternal(
   if (max_width && (!std::isfinite(*max_width) || *max_width <= 0))
     return;
 
-  identifiability_study_helper_.MaybeUpdateBuilder(
-      paint_type == CanvasRenderingContext2DState::kFillPaintType
-          ? CanvasOps::kFillText
-          : CanvasOps::kStrokeText,
-      IdentifiabilitySensitiveStringToken(text), x, y,
-      max_width ? *max_width : -1);
-  identifiability_study_helper_.set_encountered_sensitive_ops();
+  if (identifiability_study_helper_.ShouldUpdateBuilder()) {
+    identifiability_study_helper_.UpdateBuilder(
+        paint_type == CanvasRenderingContext2DState::kFillPaintType
+            ? CanvasOps::kFillText
+            : CanvasOps::kStrokeText,
+        IdentifiabilitySensitiveStringToken(text), x, y,
+        max_width ? *max_width : -1);
+    identifiability_study_helper_.set_encountered_sensitive_ops();
+  }
 
   const Font& font = AccessFont();
   const SimpleFontData* font_data = font.PrimaryFont();

@@ -13,8 +13,10 @@
 #include "chrome/browser/ui/webui/nearby_share/nearby_share.mojom.h"
 #include "chrome/browser/ui/webui/nearby_share/public/mojom/nearby_share_settings.mojom.h"
 #include "chrome/browser/ui/webui/settings/chromeos/app_management/app_management_page_handler_factory.h"
+#include "chrome/browser/ui/webui/settings/chromeos/os_apps_page/mojom/app_notification_handler.mojom-forward.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/user_action_recorder.mojom-forward.h"
 #include "chrome/browser/ui/webui/webui_load_timer.h"
+#include "chromeos/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom-forward.h"
 #include "chromeos/services/cellular_setup/public/mojom/cellular_setup.mojom-forward.h"
 #include "chromeos/services/cellular_setup/public/mojom/esim_manager.mojom-forward.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom-forward.h"
@@ -64,6 +66,12 @@ class OSSettingsUI : public ui::MojoWebUIController {
   // passing the pending receiver that will be internally bound.
   void BindInterface(mojo::PendingReceiver<mojom::SearchHandler> receiver);
 
+  // Instantiates implementor of the mojom::AppNotificationsHandler mojo
+  // interface passing the pending receiver that will be internally bound.
+  void BindInterface(
+      mojo::PendingReceiver<app_notification::mojom::AppNotificationsHandler>
+          receiver);
+
   // Instantiates implementor of the mojom::PageHandlerFactory mojo interface
   // passing the pending receiver that will be internally bound.
   void BindInterface(
@@ -83,6 +91,12 @@ class OSSettingsUI : public ui::MojoWebUIController {
   // keyed service.
   void BindInterface(
       mojo::PendingReceiver<nearby_share::mojom::ContactManager> receiver);
+
+  // Instantiates implementor of the mojom::CrosBluetoothConfig mojo interface
+  // passing the pending receiver that will be internally bound.
+  void BindInterface(
+      mojo::PendingReceiver<bluetooth_config::mojom::CrosBluetoothConfig>
+          receiver);
 
  private:
   base::TimeTicks time_when_opened_;

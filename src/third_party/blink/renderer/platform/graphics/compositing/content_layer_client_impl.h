@@ -33,7 +33,7 @@ class PLATFORM_EXPORT ContentLayerClientImpl : public cc::ContentLayerClient,
 
   // cc::ContentLayerClient
   gfx::Rect PaintableRegion() const final {
-    return gfx::Rect(raster_invalidator_.LayerBounds().size());
+    return gfx::Rect(gfx::Size(raster_invalidator_.LayerBounds()));
   }
   scoped_refptr<cc::DisplayItemList> PaintContentsToDisplayList() final {
     return cc_display_item_list_;
@@ -54,7 +54,8 @@ class PLATFORM_EXPORT ContentLayerClientImpl : public cc::ContentLayerClient,
 
   scoped_refptr<cc::PictureLayer> UpdateCcPictureLayer(
       const PaintChunkSubset&,
-      const gfx::Rect& layer_bounds,
+      const FloatPoint& layer_offset,
+      const IntSize& layer_bounds,
       const PropertyTreeState&);
 
   RasterInvalidator& GetRasterInvalidator() { return raster_invalidator_; }
@@ -74,9 +75,9 @@ class PLATFORM_EXPORT ContentLayerClientImpl : public cc::ContentLayerClient,
   PropertyTreeState layer_state_;
 
   String debug_name_;
-#if DCHECK_IS_ON()
+#if EXPENSIVE_DCHECKS_ARE_ON()
   std::unique_ptr<JSONArray> paint_chunk_debug_data_;
-#endif
+#endif  // EXPENSIVE_DCHECKS_ARE_ON()
 };
 
 }  // namespace blink

@@ -30,9 +30,9 @@ class HasSecureWiFiConnectionRoutine : public NetworkDiagnosticsRoutine {
 
   // NetworkDiagnosticsRoutine:
   bool CanRun() override;
+  mojom::RoutineType Type() override;
+  void Run() override;
   void AnalyzeResultsAndExecuteCallback() override;
-
-  void RunRoutine(HasSecureWiFiConnectionRoutineCallback callback);
 
  private:
   void FetchActiveWiFiNetworks();
@@ -42,7 +42,6 @@ class HasSecureWiFiConnectionRoutine : public NetworkDiagnosticsRoutine {
 
   mojo::Remote<chromeos::network_config::mojom::CrosNetworkConfig>
       remote_cros_network_config_;
-  HasSecureWiFiConnectionRoutineCallback routine_completed_callback_;
   bool wifi_connected_ = false;
   chromeos::network_config::mojom::SecurityType wifi_security_ =
       chromeos::network_config::mojom::SecurityType::kNone;

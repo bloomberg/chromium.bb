@@ -20,7 +20,6 @@
 #include "aom_ports/aom_timer.h"
 #include "aom_ports/mem.h"
 #include "test/acm_random.h"
-#include "test/clear_system_state.h"
 #include "test/util.h"
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
@@ -44,7 +43,7 @@ class AV1FrameErrorTest : public ::testing::TestWithParam<FrameErrorParam> {
   virtual void SetUp() {
     rnd_.Reset(libaom_test::ACMRandom::DeterministicSeed());
   }
-  virtual void TearDown() { libaom_test::ClearSystemState(); }
+  virtual void TearDown() {}
 
  protected:
   void RandomValues(frame_error_func test_impl, int width, int height);

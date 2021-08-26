@@ -19,28 +19,14 @@
 namespace sh
 {
 
-TOutputVulkanGLSL::TOutputVulkanGLSL(TInfoSinkBase &objSink,
-                                     ShHashFunction64 hashFunction,
-                                     NameMap &nameMap,
-                                     TSymbolTable *symbolTable,
-                                     sh::GLenum shaderType,
-                                     int shaderVersion,
-                                     ShShaderOutput output,
-                                     bool forceHighp,
+TOutputVulkanGLSL::TOutputVulkanGLSL(TCompiler *compiler,
+                                     TInfoSinkBase &objSink,
                                      bool enablePrecision,
                                      ShCompileOptions compileOptions)
-    : TOutputGLSL(objSink,
-                  hashFunction,
-                  nameMap,
-                  symbolTable,
-                  shaderType,
-                  shaderVersion,
-                  output,
-                  compileOptions),
+    : TOutputGLSL(compiler, objSink, compileOptions),
       mNextUnusedBinding(0),
       mNextUnusedInputLocation(0),
       mNextUnusedOutputLocation(0),
-      mForceHighp(forceHighp),
       mEnablePrecision(enablePrecision)
 {}
 
@@ -185,10 +171,7 @@ bool TOutputVulkanGLSL::writeVariablePrecision(TPrecision precision)
         return false;
 
     TInfoSinkBase &out = objSink();
-    if (mForceHighp)
-        out << getPrecisionString(EbpHigh);
-    else
-        out << getPrecisionString(precision);
+    out << getPrecisionString(precision);
     return true;
 }
 

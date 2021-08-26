@@ -13,9 +13,9 @@
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/menu_item_constants.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/components/app_icon_manager.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/chrome_features.h"
@@ -31,20 +31,17 @@ namespace web_app {
 
 WebAppsPublisherHost::WebAppsPublisherHost(Profile* profile)
     : profile_(profile),
-      provider_(WebAppProvider::Get(profile)),
+      provider_(WebAppProvider::GetForWebApps(profile)),
       publisher_helper_(profile,
                         apps::mojom::AppType::kWeb,
                         this,
-                        /*observe_media_requests=*/true) {}
+                        /*observe_media_requests=*/true) {
+  DCHECK(provider_);
+}
 
 WebAppsPublisherHost::~WebAppsPublisherHost() = default;
 
 void WebAppsPublisherHost::Init() {
-  // Allow for web app migration tests.
-  if (!provider_->registrar().AsWebAppRegistrar()) {
-    return;
-  }
-
   if (!remote_publisher_) {
     auto* service = chromeos::LacrosService::Get();
     if (!service) {
@@ -73,7 +70,7 @@ void WebAppsPublisherHost::Shutdown() {
 }
 
 WebAppRegistrar& WebAppsPublisherHost::registrar() const {
-  return *provider_->registrar().AsWebAppRegistrar();
+  return provider_->registrar();
 }
 
 void WebAppsPublisherHost::SetPublisherForTesting(
@@ -136,13 +133,11 @@ content::WebContents* WebAppsPublisherHost::Launch(
 
 content::WebContents* WebAppsPublisherHost::LaunchAppWithFiles(
     const std::string& app_id,
-    apps::mojom::LaunchContainer container,
     int32_t event_flags,
     apps::mojom::LaunchSource launch_source,
     apps::mojom::FilePathsPtr file_paths) {
   return publisher_helper().LaunchAppWithFiles(
-      app_id, std::move(container), event_flags, std::move(launch_source),
-      std::move(file_paths));
+      app_id, event_flags, std::move(launch_source), std::move(file_paths));
 }
 
 content::WebContents* WebAppsPublisherHost::LaunchAppWithIntent(

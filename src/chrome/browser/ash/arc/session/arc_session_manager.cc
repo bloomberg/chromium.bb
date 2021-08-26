@@ -871,17 +871,6 @@ void ArcSessionManager::Initialize() {
   if (g_enable_check_android_management_in_tests.value_or(g_ui_enabled))
     ArcAndroidManagementChecker::StartClient();
 
-  // Request removing data if enabled for a regular->child transition.
-  if (GetManagementTransition(profile_) ==
-          ArcManagementTransition::REGULAR_TO_CHILD &&
-      base::FeatureList::IsEnabled(
-          kCleanArcDataOnRegularToChildTransitionFeature)) {
-    LOG(WARNING) << "User transited from regular to child, deleting ARC data";
-    // Since method below starts removal procedure automatically, return.
-    RequestArcDataRemoval();
-    return;
-  }
-
   // Chrome may be shut down before completing ARC data removal.
   // For such a case, start removing the data now, if necessary.
   MaybeStartArcDataRemoval();
@@ -1650,6 +1639,11 @@ void ArcSessionManager::StartMiniArc() {
 
 void ArcSessionManager::OnWindowClosed() {
   CancelAuthCode();
+
+  // If network-related error occured, collect UMA stats on user action.
+  if (support_host_ && support_host_->GetShouldShowRunNetworkTests())
+    UpdateOptInNetworkErrorActionUMA(
+        arc::OptInNetworkErrorActionType::WINDOW_CLOSED);
 }
 
 void ArcSessionManager::OnRetryClicked() {
@@ -1688,16 +1682,29 @@ void ArcSessionManager::OnRetryClicked() {
     // TODO(hidehiko): consider removing this case after fixing the bug.
     MaybeStartTermsOfServiceNegotiation();
   }
+
+  // If network-related error occured, collect UMA stats on user action.
+  if (support_host_ && support_host_->GetShouldShowRunNetworkTests())
+    UpdateOptInNetworkErrorActionUMA(arc::OptInNetworkErrorActionType::RETRY);
 }
 
 void ArcSessionManager::OnSendFeedbackClicked() {
   DCHECK(support_host_);
   chrome::OpenFeedbackDialog(nullptr, chrome::kFeedbackSourceArcApp);
+
+  // If network-related error occured, collect UMA stats on user action.
+  if (support_host_->GetShouldShowRunNetworkTests())
+    UpdateOptInNetworkErrorActionUMA(
+        arc::OptInNetworkErrorActionType::SEND_FEEDBACK);
 }
 
 void ArcSessionManager::OnRunNetworkTestsClicked() {
   DCHECK(support_host_);
   chromeos::DiagnosticsDialog::ShowDialog();
+
+  // Network-related error occured so collect UMA stats on user action.
+  UpdateOptInNetworkErrorActionUMA(
+      arc::OptInNetworkErrorActionType::CHECK_NETWORK);
 }
 
 void ArcSessionManager::SetArcSessionRunnerForTesting(

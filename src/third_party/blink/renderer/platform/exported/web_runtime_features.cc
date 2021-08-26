@@ -166,10 +166,6 @@ void WebRuntimeFeatures::EnableCacheInlineScriptCode(bool enable) {
   RuntimeEnabledFeatures::SetCacheInlineScriptCodeEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableCookiesWithoutSameSiteMustBeSecure(bool enable) {
-  RuntimeEnabledFeatures::SetCookiesWithoutSameSiteMustBeSecureEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableCanvas2dImageChromium(bool enable) {
   RuntimeEnabledFeatures::SetCanvas2dImageChromiumEnabled(enable);
 }
@@ -180,10 +176,6 @@ void WebRuntimeFeatures::EnableCompositedSelectionUpdate(bool enable) {
 
 void WebRuntimeFeatures::EnableCSSHexAlphaColor(bool enable) {
   RuntimeEnabledFeatures::SetCSSHexAlphaColorEnabled(enable);
-}
-
-void WebRuntimeFeatures::EnableSameSiteByDefaultCookies(bool enable) {
-  RuntimeEnabledFeatures::SetSameSiteByDefaultCookiesEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnableScrollTopLeftInterop(bool enable) {
@@ -208,6 +200,10 @@ void WebRuntimeFeatures::EnableDecodeJpeg420ImagesToYUV(bool enable) {
 
 void WebRuntimeFeatures::EnableDecodeLossyWebPImagesToYUV(bool enable) {
   RuntimeEnabledFeatures::SetDecodeLossyWebPImagesToYUVEnabled(enable);
+}
+
+void WebRuntimeFeatures::EnableDevicePosture(bool enable) {
+  RuntimeEnabledFeatures::SetDevicePostureEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnableRemoveMobileViewportDoubleTap(bool enable) {
@@ -376,6 +372,10 @@ void WebRuntimeFeatures::EnableSharedAutofill(bool enable) {
   RuntimeEnabledFeatures::SetSharedAutofillEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableSharedStorageAPI(bool enable) {
+  RuntimeEnabledFeatures::SetSharedStorageAPIEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableSharedWorker(bool enable) {
   RuntimeEnabledFeatures::SetSharedWorkerEnabled(enable);
 }
@@ -488,8 +488,8 @@ void WebRuntimeFeatures::EnableRestrictAutomaticLazyImageLoadingToDataSaver(
       SetRestrictAutomaticLazyImageLoadingToDataSaverEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableSecurePaymentConfirmationAPIV2(bool enable) {
-  RuntimeEnabledFeatures::SetSecurePaymentConfirmationAPIV2Enabled(enable);
+void WebRuntimeFeatures::EnableSecurePaymentConfirmationAPIV3(bool enable) {
+  RuntimeEnabledFeatures::SetSecurePaymentConfirmationAPIV3Enabled(enable);
 }
 
 void WebRuntimeFeatures::EnableSecurePaymentConfirmationDebug(bool enable) {
@@ -498,10 +498,6 @@ void WebRuntimeFeatures::EnableSecurePaymentConfirmationDebug(bool enable) {
 
 void WebRuntimeFeatures::EnableAutoLazyLoadOnReloads(bool enable) {
   RuntimeEnabledFeatures::SetAutoLazyLoadOnReloadsEnabled(enable);
-}
-
-void WebRuntimeFeatures::EnableExpensiveBackgroundTimerThrottling(bool enable) {
-  RuntimeEnabledFeatures::SetExpensiveBackgroundTimerThrottlingEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnableTimerThrottlingForBackgroundTabs(bool enable) {
@@ -522,6 +518,16 @@ void WebRuntimeFeatures::EnableSharedArrayBufferUnrestrictedAccessAllowed(
     bool enable) {
   RuntimeEnabledFeatures::SetSharedArrayBufferUnrestrictedAccessAllowedEnabled(
       enable);
+}
+
+void WebRuntimeFeatures::EnableCrossOriginWebAssemblyModuleSharingAllowed(
+    bool enable) {
+  RuntimeEnabledFeatures::SetCrossOriginWebAssemblyModuleSharingAllowedEnabled(
+      enable);
+}
+
+void WebRuntimeFeatures::EnableDisplayCapturePermissionsPolicy(bool enable) {
+  RuntimeEnabledFeatures::SetDisplayCapturePermissionsPolicyEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnableRemotePlaybackAPI(bool enable) {
@@ -588,10 +594,6 @@ void WebRuntimeFeatures::EnableBackgroundFetch(bool enable) {
 
 void WebRuntimeFeatures::EnableGetDisplayMedia(bool enable) {
   RuntimeEnabledFeatures::SetGetDisplayMediaEnabled(enable);
-}
-
-void WebRuntimeFeatures::EnableGetCurrentBrowsingContextMedia(bool enable) {
-  RuntimeEnabledFeatures::SetGetCurrentBrowsingContextMediaEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnableAllowSyncXHRInPageDismissal(bool enable) {

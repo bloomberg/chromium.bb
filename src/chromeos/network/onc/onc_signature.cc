@@ -57,6 +57,7 @@ const OncFieldSignature eap_fields[] = {
     {::onc::client_cert::kClientCertProvisioningProfileId, &kStringSignature},
     {::onc::client_cert::kClientCertRef, &kStringSignature},
     {::onc::client_cert::kClientCertType, &kStringSignature},
+    {::onc::eap::kDomainSuffixMatch, &kStringListSignature},
     {::onc::eap::kIdentity, &kStringSignature},
     {::onc::eap::kInner, &kStringSignature},
     {::onc::eap::kOuter, &kStringSignature},
@@ -306,6 +307,7 @@ const OncFieldSignature sim_lock_status_fields[] = {
 
 const OncFieldSignature cellular_fields[] = {
     {::onc::kRecommended, &kRecommendedSignature},
+    {::onc::cellular::kAllowRoaming, &kBoolSignature},
     {::onc::cellular::kAPN, &kCellularApnSignature},
     {::onc::cellular::kAPNList, &kCellularApnListSignature},
     {::onc::cellular::kAutoConnect, &kBoolSignature},
@@ -314,7 +316,6 @@ const OncFieldSignature cellular_fields[] = {
 const OncFieldSignature cellular_with_state_fields[] = {
     {::onc::cellular::kActivationType, &kStringSignature},
     {::onc::cellular::kActivationState, &kStringSignature},
-    {::onc::cellular::kAllowRoaming, &kBoolSignature},
     {::onc::cellular::kESN, &kStringSignature},
     {::onc::cellular::kFamily, &kStringSignature},
     {::onc::cellular::kFirmwareRevision, &kStringSignature},
@@ -339,6 +340,7 @@ const OncFieldSignature cellular_with_state_fields[] = {
     {::onc::cellular::kSignalStrength, &kIntegerSignature},
     {::onc::cellular::kSIMLockStatus, &kSIMLockStatusSignature},
     {::onc::cellular::kSIMPresent, &kBoolSignature},
+    {::onc::cellular::kSMDPAddress, &kStringSignature},
     {::onc::cellular::kSupportNetworkScan, &kBoolSignature},
     {nullptr}};
 
@@ -379,11 +381,13 @@ const OncFieldSignature network_with_state_fields[] = {
     {nullptr}};
 
 const OncFieldSignature global_network_configuration_fields[] = {
+    {::onc::global_network_config::kAllowOnlyPolicyCellularNetworks,
+     &kBoolSignature},
     {::onc::global_network_config::kAllowOnlyPolicyNetworksToAutoconnect,
      &kBoolSignature},
-    {::onc::global_network_config::kAllowOnlyPolicyNetworksToConnect,
+    {::onc::global_network_config::kAllowOnlyPolicyWiFiToConnect,
      &kBoolSignature},
-    {::onc::global_network_config::kAllowOnlyPolicyNetworksToConnectIfAvailable,
+    {::onc::global_network_config::kAllowOnlyPolicyWiFiToConnectIfAvailable,
      &kBoolSignature},
     {/* Deprecated */ ::onc::global_network_config::kBlacklistedHexSSIDs,
      &kStringListSignature},

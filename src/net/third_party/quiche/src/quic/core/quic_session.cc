@@ -13,6 +13,7 @@
 #include "absl/strings/string_view.h"
 #include "quic/core/frames/quic_ack_frequency_frame.h"
 #include "quic/core/quic_connection.h"
+#include "quic/core/quic_connection_context.h"
 #include "quic/core/quic_error_codes.h"
 #include "quic/core/quic_flow_controller.h"
 #include "quic/core/quic_types.h"
@@ -165,7 +166,12 @@ void QuicSession::Initialize() {
                    GetMutableCryptoStream()->id());
 }
 
-QuicSession::~QuicSession() {}
+QuicSession::~QuicSession() {
+  if (GetQuicRestartFlag(quic_alarm_add_permanent_cancel) &&
+      closed_streams_clean_up_alarm_ != nullptr) {
+    closed_streams_clean_up_alarm_->PermanentCancel();
+  }
+}
 
 void QuicSession::PendingStreamOnStreamFrame(const QuicStreamFrame& frame) {
   QUICHE_DCHECK(VersionUsesHttp3(transport_version()));
@@ -566,17 +572,14 @@ bool QuicSession::CheckStreamWriteBlocked(QuicStream* stream) const {
 }
 
 void QuicSession::OnCanWrite() {
-  if (connection_->donot_write_mid_packet_processing()) {
-    QUIC_RELOADABLE_FLAG_COUNT_N(quic_donot_write_mid_packet_processing, 1, 3);
-    if (connection_->framer().is_processing_packet()) {
-      // Do not write data in the middle of packet processing because rest
-      // frames in the packet may change the data to write. For example, lost
-      // data could be acknowledged. Also, connection is going to emit
-      // OnCanWrite signal post packet processing.
-      QUIC_BUG(session_write_mid_packet_processing)
-          << ENDPOINT << "Try to write mid packet processing.";
-      return;
-    }
+  if (connection_->framer().is_processing_packet()) {
+    // Do not write data in the middle of packet processing because rest
+    // frames in the packet may change the data to write. For example, lost
+    // data could be acknowledged. Also, connection is going to emit
+    // OnCanWrite signal post packet processing.
+    QUIC_BUG(session_write_mid_packet_processing)
+        << ENDPOINT << "Try to write mid packet processing.";
+    return;
   }
   if (!RetransmitLostData()) {
     // Cannot finish retransmitting lost data, connection is write blocked.
@@ -751,19 +754,17 @@ bool QuicSession::HasPendingHandshake() const {
 void QuicSession::ProcessUdpPacket(const QuicSocketAddress& self_address,
                                    const QuicSocketAddress& peer_address,
                                    const QuicReceivedPacket& packet) {
+  QuicConnectionContextSwitcher cs(connection_->context());
   connection_->ProcessUdpPacket(self_address, peer_address, packet);
 }
 
-QuicConsumedData QuicSession::WritevData(
-    QuicStreamId id,
-    size_t write_length,
-    QuicStreamOffset offset,
-    StreamSendingState state,
-    TransmissionType type,
-    absl::optional<EncryptionLevel> level) {
+QuicConsumedData QuicSession::WritevData(QuicStreamId id, size_t write_length,
+                                         QuicStreamOffset offset,
+                                         StreamSendingState state,
+                                         TransmissionType type,
+                                         EncryptionLevel level) {
   QUICHE_DCHECK(connection_->connected())
       << ENDPOINT << "Try to write stream data when connection is closed.";
-  QUICHE_DCHECK(!use_write_or_buffer_data_at_level_ || level.has_value());
   if (!IsEncryptionEstablished() &&
       !QuicUtils::IsCryptoStreamId(transport_version(), id)) {
     // Do not let streams write without encryption. The calling stream will end
@@ -771,11 +772,10 @@ QuicConsumedData QuicSession::WritevData(
     if (was_zero_rtt_rejected_ && !OneRttKeysAvailable()) {
       QUICHE_DCHECK(version().UsesTls() &&
                     perspective() == Perspective::IS_CLIENT);
-      QUIC_BUG_IF(quic_bug_12435_3, type == NOT_RETRANSMISSION)
-          << ENDPOINT << "Try to send new data on stream " << id
-          << "before 1-RTT keys are available while 0-RTT is rejected. "
-             "Version: "
-          << ParsedQuicVersionToString(version());
+      QUIC_DLOG(INFO) << ENDPOINT
+                      << "Suppress the write while 0-RTT gets rejected and "
+                         "1-RTT keys are not available. Version: "
+                      << ParsedQuicVersionToString(version());
     } else if (version().UsesTls() || perspective() == Perspective::IS_SERVER) {
       QUIC_BUG(quic_bug_10866_2)
           << ENDPOINT << "Try to send data of stream " << id
@@ -796,29 +796,13 @@ QuicConsumedData QuicSession::WritevData(
   }
 
   SetTransmissionType(type);
-  const auto current_level = connection()->encryption_level();
-  if (!use_encryption_level_context()) {
-    if (level.has_value()) {
-      connection()->SetDefaultEncryptionLevel(level.value());
-    }
-  }
-  QuicConnection::ScopedEncryptionLevelContext context(
-      use_encryption_level_context() ? connection() : nullptr,
-      use_encryption_level_context() ? level.value() : NUM_ENCRYPTION_LEVELS);
+  QuicConnection::ScopedEncryptionLevelContext context(connection(), level);
 
   QuicConsumedData data =
       connection_->SendStreamData(id, write_length, offset, state);
   if (type == NOT_RETRANSMISSION) {
     // This is new stream data.
     write_blocked_streams_.UpdateBytesForStream(id, data.bytes_consumed);
-  }
-
-  // Restore the encryption level.
-  if (!use_encryption_level_context()) {
-    // Restore the encryption level.
-    if (level.has_value()) {
-      connection()->SetDefaultEncryptionLevel(current_level);
-    }
   }
 
   return data;
@@ -840,18 +824,9 @@ size_t QuicSession::SendCryptoData(EncryptionLevel level,
     return 0;
   }
   SetTransmissionType(type);
-  const auto current_level = connection()->encryption_level();
-  if (!use_encryption_level_context()) {
-    connection_->SetDefaultEncryptionLevel(level);
-  }
-  QuicConnection::ScopedEncryptionLevelContext context(
-      use_encryption_level_context() ? connection() : nullptr, level);
+  QuicConnection::ScopedEncryptionLevelContext context(connection(), level);
   const auto bytes_consumed =
       connection_->SendCryptoData(level, write_length, offset);
-  if (!use_encryption_level_context()) {
-    // Restores encryption level.
-    connection_->SetDefaultEncryptionLevel(current_level);
-  }
   return bytes_consumed;
 }
 
@@ -867,17 +842,12 @@ bool QuicSession::WriteControlFrame(const QuicFrame& frame,
   QUICHE_DCHECK(connection()->connected())
       << ENDPOINT << "Try to write control frames when connection is closed.";
   if (!IsEncryptionEstablished()) {
-    QUIC_BUG(quic_bug_10866_4)
-        << ENDPOINT << "Tried to send control frame " << frame
-        << " before encryption is established. Last decrypted level: "
-        << EncryptionLevelToString(connection_->last_decrypted_level());
+    // Suppress the write before encryption gets established.
     return false;
   }
   SetTransmissionType(type);
   QuicConnection::ScopedEncryptionLevelContext context(
-      use_encryption_level_context() ? connection() : nullptr,
-      use_encryption_level_context() ? GetEncryptionLevelToSendApplicationData()
-                                     : NUM_ENCRYPTION_LEVELS);
+      connection(), GetEncryptionLevelToSendApplicationData());
   return connection_->SendControlFrame(frame);
 }
 
@@ -1329,8 +1299,7 @@ void QuicSession::OnConfigNegotiated() {
   // Or if this session is configured on TLS enabled QUIC versions,
   // attempt to retransmit 0-RTT data if there's any.
   // TODO(fayang): consider removing this OnCanWrite call.
-  if ((!connection_->donot_write_mid_packet_processing() ||
-       !connection_->framer().is_processing_packet()) &&
+  if (!connection_->framer().is_processing_packet() &&
       (connection_->version().AllowsLowFlowControlLimits() ||
        version().UsesTls())) {
     QUIC_CODE_COUNT(quic_session_on_can_write_on_config_negotiated);
@@ -1637,8 +1606,7 @@ void QuicSession::SetDefaultEncryptionLevel(EncryptionLevel level) {
         // Retransmit old 0-RTT data (if any) with the new 0-RTT keys, since
         // they can't be decrypted by the server.
         connection_->MarkZeroRttPacketsForRetransmission(0);
-        if (!connection_->donot_write_mid_packet_processing() ||
-            !connection_->framer().is_processing_packet()) {
+        if (!connection_->framer().is_processing_packet()) {
           // TODO(fayang): consider removing this OnCanWrite call.
           // Given any streams blocked by encryption a chance to write.
           QUIC_CODE_COUNT(
@@ -2481,9 +2449,7 @@ MessageResult QuicSession::SendMessage(absl::Span<QuicMemSlice> message,
     return {MESSAGE_STATUS_ENCRYPTION_NOT_ESTABLISHED, 0};
   }
   QuicConnection::ScopedEncryptionLevelContext context(
-      use_encryption_level_context() ? connection() : nullptr,
-      use_encryption_level_context() ? GetEncryptionLevelToSendApplicationData()
-                                     : NUM_ENCRYPTION_LEVELS);
+      connection(), GetEncryptionLevelToSendApplicationData());
   MessageStatus result =
       connection_->SendMessage(last_message_id_ + 1, message, flush);
   if (result == MESSAGE_STATUS_SUCCESS) {

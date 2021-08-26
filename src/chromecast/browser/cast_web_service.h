@@ -50,11 +50,17 @@ class CastWebService : public mojom::CastWebService {
   CastWebService& operator=(const CastWebService&) = delete;
   ~CastWebService() override;
 
-  CastWebView::Scoped CreateWebView(const CastWebView::CreateParams& params,
-                                    const GURL& initial_url);
+  // This is a temporary method to allow in-process embedders to directly own
+  // the CastWebView. This will be removed once the lifetime of CastWebview is
+  // scoped by the CastWebContents mojo::Remote.
+  CastWebView::Scoped CreateWebViewInternal(
+      const CastWebView::CreateParams& create_params,
+      mojom::CastWebViewParamsPtr params);
 
+  // This implementation varies by platform (Aura vs Android).
   std::unique_ptr<CastContentWindow> CreateWindow(
-      const CastContentWindow::CreateParams& params);
+      base::WeakPtr<CastContentWindow::Delegate> delegate,
+      mojom::CastWebViewParamsPtr params);
 
   content::BrowserContext* browser_context() { return browser_context_; }
   LRURendererCache* overlay_renderer_cache() {
@@ -68,6 +74,10 @@ class CastWebService : public mojom::CastWebService {
   void ClearLocalStorage(base::OnceClosure callback);
 
   // mojom::CastWebService implementation:
+  void CreateWebView(
+      mojom::CastWebViewParamsPtr params,
+      mojo::PendingReceiver<mojom::CastWebContents> web_contents,
+      mojo::PendingReceiver<mojom::CastContentWindow> window) override;
   void RegisterWebUiClient(mojo::PendingRemote<mojom::WebUiClient> client,
                            const std::vector<std::string>& hosts) override;
   void CreateSessionWithSubstitutions(
@@ -88,8 +98,8 @@ class CastWebService : public mojom::CastWebService {
                                       bool background_mode) override;
   void OnSessionDestroyed(const std::string& session_id) override;
 
-  CastURLLoaderThrottle::Delegate* GetURLLoaderThrottleDelegateForSession(
-      const std::string& session_id);
+  scoped_refptr<CastURLLoaderThrottle::Delegate>
+  GetURLLoaderThrottleDelegateForSession(const std::string& session_id);
 
   // Immediately deletes all owned CastWebViews. This should happen before
   // CastWebService is deleted, to prevent UAF of shared browser objects.
@@ -115,7 +125,7 @@ class CastWebService : public mojom::CastWebService {
   bool immediately_delete_webviews_ = false;
 
   base::flat_map<std::string /* session_id */,
-                 std::unique_ptr<IdentificationSettingsManager>>
+                 scoped_refptr<IdentificationSettingsManager>>
       settings_managers_;
 
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;

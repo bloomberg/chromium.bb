@@ -4,6 +4,8 @@
 
 /* eslint-disable rulesdir/no_underscored_properties */
 
+import * as Platform from '../../core/platform/platform.js';
+
 import * as ARIAUtils from './ARIAUtils.js';
 import {Keys} from './KeyboardShortcut.js';
 import {ElementFocusRestorer, markBeingEdited} from './UIUtils.js';
@@ -133,7 +135,7 @@ export class InplaceEditor<T> {
       if (event.key === 'Enter') {
         return 'commit';
       }
-      if (event.keyCode === Keys.Esc.code || event.key === 'Escape') {
+      if (event.keyCode === Keys.Esc.code || event.key === Platform.KeyboardUtilities.ESCAPE_KEY) {
         return 'cancel';
       }
       if (event.key === 'Tab') {

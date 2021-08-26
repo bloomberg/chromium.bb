@@ -139,6 +139,8 @@ class CONTENT_EXPORT ContentClient {
     // Registers a URL scheme as strictly empty documents, allowing them to
     // commit synchronously.
     std::vector<std::string> empty_document_schemes;
+    // Registers a URL scheme as extension scheme.
+    std::vector<std::string> extension_schemes;
 #if defined(OS_ANDROID)
     // Normally, non-standard schemes canonicalize to opaque origins. However,
     // Android WebView requires non-standard schemes to still be preserved.
@@ -157,8 +159,9 @@ class CONTENT_EXPORT ContentClient {
                                             const std::u16string& replacement);
 
   // Return the contents of a resource in a StringPiece given the resource id.
-  virtual base::StringPiece GetDataResource(int resource_id,
-                                            ui::ScaleFactor scale_factor);
+  virtual base::StringPiece GetDataResource(
+      int resource_id,
+      ui::ResourceScaleFactor scale_factor);
 
   // Returns the raw bytes of a scale independent data resource.
   virtual base::RefCountedMemory* GetDataResourceBytes(int resource_id);

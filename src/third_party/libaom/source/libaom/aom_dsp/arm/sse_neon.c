@@ -12,9 +12,9 @@
 
 #include "config/aom_dsp_rtcd.h"
 #include "aom/aom_integer.h"
+#include "aom_dsp/arm/mem_neon.h"
 #include "aom_dsp/arm/sum_neon.h"
-#include "av1/common/arm/mem_neon.h"
-#include "av1/common/arm/transpose_neon.h"
+#include "aom_dsp/arm/transpose_neon.h"
 
 static INLINE void sse_w16_neon(uint32x4_t *sum, const uint8_t *a,
                                 const uint8_t *b) {

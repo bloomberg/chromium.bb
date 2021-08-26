@@ -8,15 +8,16 @@ import android.content.Context;
 import android.net.Uri;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.blink.mojom.TextFragmentReceiver;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.share.ChromeShareExtras;
 import org.chromium.chrome.browser.share.share_sheet.ChromeOptionShareCallback;
+import org.chromium.chrome.browser.share.share_sheet.ShareSheetLinkToggleCoordinator.LinkToggleState;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabHidingType;
@@ -49,12 +50,14 @@ public class LinkToTextCoordinator extends EmptyTabObserver {
     private static final Set<String> AMP_VIEWER_DOMAINS =
             new HashSet<>(Arrays.asList("google.com/amp/", "bing.com/amp"));
     private static final int LENGTH_AMP_DOMAIN = 15;
+    private static final int PREVIEW_MAX_LENGTH = 35;
+    private static final int PREVIEW_SELECTED_TEXT_CUTOFF_LENGTH = 32;
+    private static final String PREVIEW_ELLIPSIS = "...";
     private final Context mContext;
     private final ChromeOptionShareCallback mChromeOptionShareCallback;
     private final Tab mTab;
     private final ChromeShareExtras mChromeShareExtras;
     private final long mShareStartTime;
-    private final long mRequestSelectorStartTime;
 
     private String mShareUrl;
     private TextFragmentReceiver mProducer;
@@ -63,78 +66,63 @@ public class LinkToTextCoordinator extends EmptyTabObserver {
     private ShareParams mShareLinkParams;
     private ShareParams mShareTextParams;
 
+    /**
+     * Constructor for selected link-to-text.
+     */
     public LinkToTextCoordinator(Context context, Tab tab,
             ChromeOptionShareCallback chromeOptionShareCallback, String visibleUrl,
             String selectedText) {
-        mContext = context;
-        mChromeOptionShareCallback = chromeOptionShareCallback;
-        mShareUrl = visibleUrl;
-        mSelectedText = selectedText;
-        mTab = tab;
-        mTab.addObserver(this);
-        mCancelRequest = false;
-        mChromeShareExtras = null;
-        mShareStartTime = 0;
-        mShareTextParams = null;
-        mRequestSelectorStartTime = System.currentTimeMillis();
-
-        startRequestSelector();
+        this(context, tab, chromeOptionShareCallback, /*chromeShareExtras=*/null,
+                /*shareStartTime=*/0, visibleUrl, selectedText);
     }
 
-    // Constructor for preemptive link-to-text generation.
+    /**
+     * Constructor for preemptive link-to-text generation.
+     */
     public LinkToTextCoordinator(ShareParams shareParams, Tab tab,
             ChromeOptionShareCallback chromeOptionShareCallback,
             ChromeShareExtras chromeShareExtras, long shareStartTime, String visibleUrl) {
-        mShareTextParams = shareParams;
+        this(/*context=*/null, tab, chromeOptionShareCallback, chromeShareExtras, shareStartTime,
+                visibleUrl, shareParams.getText());
+    }
+
+    private LinkToTextCoordinator(Context context, Tab tab,
+            ChromeOptionShareCallback chromeOptionShareCallback,
+            ChromeShareExtras chromeShareExtras, long shareStartTime, String visibleUrl,
+            String selectedText) {
+        mContext = context;
         mTab = tab;
         mChromeOptionShareCallback = chromeOptionShareCallback;
         mChromeShareExtras = chromeShareExtras;
         mShareStartTime = shareStartTime;
         mShareUrl = visibleUrl;
-        mSelectedText = shareParams.getText();
+        mSelectedText = selectedText;
 
         mTab.addObserver(this);
         mCancelRequest = false;
-        mContext = null;
-
-        mRequestSelectorStartTime = System.currentTimeMillis();
-        startRequestSelector();
     }
 
-    public ShareParams getShareParams(@LinkGeneration int linkGeneration) {
-        switch (linkGeneration) {
-            case LinkGeneration.LINK:
-                return mShareLinkParams;
-            default:
-                return mShareTextParams;
+    public ShareParams getShareParams(@LinkToggleState int linkToggleState) {
+        if (linkToggleState == LinkToggleState.LINK) {
+            return mShareLinkParams;
+        }
+        return mShareTextParams;
+    }
+
+    public void shareLinkToText() {
+        if (mChromeShareExtras.isReshareHighlightedText()) {
+            reshareHighlightedText();
+        } else {
+            startRequestSelector();
         }
     }
 
-    public void onSelectorReady(String selector) {
-        RecordHistogram.recordTimesHistogram(
-                "Sharing.SharingHubAndroid.SharedHighlights.TimeToGetLinkToText",
-                System.currentTimeMillis() - mRequestSelectorStartTime);
+    @VisibleForTesting
+    void onSelectorReady(String selector) {
         if (mCancelRequest) return;
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.PREEMPTIVE_LINK_TO_TEXT_GENERATION)) {
-            mShareLinkParams = selector.isEmpty()
-                    ? null
-                    : new ShareParams
-                              .Builder(mTab.getWindowAndroid(), /*title=*/"",
-                                      getUrlToShare(selector))
-                              .setText(mSelectedText, SHARE_TEXT_TEMPLATE)
-                              .setLinkToTextSuccessful(true)
-                              .build();
-            mShareTextParams =
-                    new ShareParams.Builder(mTab.getWindowAndroid(), /*title=*/"", /*url=*/"")
-                            .setText(mSelectedText)
-                            .setLinkToTextSuccessful(selector.isEmpty() ? false : true)
-                            .build();
-            mChromeOptionShareCallback.showShareSheet(
-                    getShareParams(
-                            selector.isEmpty() ? LinkGeneration.FAILURE : LinkGeneration.LINK),
-                    mChromeShareExtras, mShareStartTime);
-            cleanup();
+            showPreemptiveShareSheet(selector);
             return;
         }
 
@@ -142,6 +130,7 @@ public class LinkToTextCoordinator extends EmptyTabObserver {
                 new ShareParams
                         .Builder(mTab.getWindowAndroid(), /*title=*/"", getUrlToShare(selector))
                         .setText(mSelectedText, SHARE_TEXT_TEMPLATE)
+                        .setPreviewText(getPreviewText(), SHARE_TEXT_TEMPLATE)
                         .build();
 
         mChromeOptionShareCallback.showThirdPartyShareSheet(params,
@@ -163,13 +152,39 @@ public class LinkToTextCoordinator extends EmptyTabObserver {
         cleanup();
     }
 
-    public void startRequestSelector() {
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.PREEMPTIVE_LINK_TO_TEXT_GENERATION)
-                && mChromeShareExtras.isReshareHighlightedText()) {
-            PostTask.postDelayedTask(UiThreadTaskTraits.DEFAULT, () -> timeout(), TIMEOUT_MS);
-            reshareHighlightedText();
-            return;
+    @VisibleForTesting
+    String getPreviewText() {
+        if (mSelectedText.length() <= PREVIEW_MAX_LENGTH) {
+            return mSelectedText;
         }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(mSelectedText.substring(0, PREVIEW_SELECTED_TEXT_CUTOFF_LENGTH));
+        sb.append(PREVIEW_ELLIPSIS);
+        return sb.toString();
+    }
+
+    private void showPreemptiveShareSheet(String selector) {
+        mShareLinkParams = selector.isEmpty()
+                ? null
+                : new ShareParams
+                          .Builder(mTab.getWindowAndroid(), /*title=*/"", getUrlToShare(selector))
+                          .setText(mSelectedText, SHARE_TEXT_TEMPLATE)
+                          .setPreviewText(getPreviewText(), SHARE_TEXT_TEMPLATE)
+                          .setLinkToTextSuccessful(true)
+                          .build();
+        mShareTextParams =
+                new ShareParams.Builder(mTab.getWindowAndroid(), /*title=*/"", /*url=*/"")
+                        .setText(mSelectedText)
+                        .setLinkToTextSuccessful(!selector.isEmpty())
+                        .build();
+        mChromeOptionShareCallback.showShareSheet(
+                getShareParams(selector.isEmpty() ? LinkToggleState.NO_LINK : LinkToggleState.LINK),
+                mChromeShareExtras, mShareStartTime);
+        cleanup();
+    }
+
+    private void startRequestSelector() {
         if (!LinkToTextBridge.shouldOfferLinkToText(new GURL(mShareUrl))) {
             LinkToTextBridge.logGenerateErrorBlockList();
             onSelectorReady(INVALID_SELECTOR);
@@ -194,19 +209,31 @@ public class LinkToTextCoordinator extends EmptyTabObserver {
         requestSelectorForCanonicalUrl();
     }
 
-    public void reshareHighlightedText() {
+    private void reshareHighlightedText() {
+        PostTask.postDelayedTask(UiThreadTaskTraits.DEFAULT, () -> timeout(), TIMEOUT_MS);
         setTextFragmentReceiver();
         mProducer.extractTextFragmentsMatches(
                 new TextFragmentReceiver.ExtractTextFragmentsMatchesResponse() {
                     @Override
                     public void call(String[] matches) {
                         mSelectedText = String.join(",", matches);
-                        onSelectorReady(mShareUrl);
+                        onGetExistingSelectors();
                     }
                 });
     }
 
-    public String getUrlToShare(String selector) {
+    // Request text fragment selectors for existing highlights
+    public void onGetExistingSelectors() {
+        mProducer.getExistingSelectors(new TextFragmentReceiver.GetExistingSelectorsResponse() {
+            @Override
+            public void call(String[] text) {
+                onSelectorReady(String.join("", text));
+            }
+        });
+    }
+
+    @VisibleForTesting
+    String getUrlToShare(String selector) {
         String url = mShareUrl;
         if (!selector.isEmpty()) {
             // Set the fragment which will also remove existing fragment, including text fragments.

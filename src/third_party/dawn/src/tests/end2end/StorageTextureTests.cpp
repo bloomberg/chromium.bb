@@ -370,12 +370,17 @@ fn IsEqualTo(pixel : vec4<f32>, expected : vec4<f32>) -> bool {
                 UNREACHABLE();
                 break;
         }
-        auto workgroupSize = !strcmp(stage, "compute") ? ", workgroup_size(1)" : "";
+        const char* workgroupSize = !strcmp(stage, "compute") ? ", workgroup_size(1)" : "";
+        const bool isFragment = strcmp(stage, "fragment") == 0;
 
         std::ostringstream ostream;
         ostream << GetImageDeclaration(format, "write", dimension, 0) << "\n";
         ostream << "[[stage(" << stage << ")" << workgroupSize << "]]\n";
-        ostream << "fn main() {\n";
+        ostream << "fn main() ";
+        if (isFragment) {
+            ostream << "-> [[location(0)]] vec4<f32> ";
+        }
+        ostream << "{\n";
         ostream << "  let size : vec2<i32> = textureDimensions(storageImage0).xy;\n";
         ostream << "  let sliceCount : i32 = " << sliceCount << ";\n";
         ostream << "  for (var slice : i32 = 0; slice < sliceCount; slice = slice + 1) {\n";
@@ -388,6 +393,9 @@ fn IsEqualTo(pixel : vec4<f32>, expected : vec4<f32>) -> bool {
         ostream << "      }\n";
         ostream << "    }\n";
         ostream << "  }\n";
+        if (isFragment) {
+            ostream << "return vec4<f32>();\n";
+        }
         ostream << "}\n";
 
         return ostream.str();
@@ -511,9 +519,9 @@ fn IsEqualTo(pixel : vec4<f32>, expected : vec4<f32>) -> bool {
             utils::CreateBufferFromData(device, uploadBufferData.data(), uploadBufferSize,
                                         wgpu::BufferUsage::CopySrc | wgpu::BufferUsage::CopyDst);
 
-        wgpu::Texture outputTexture =
-            CreateTexture(format, wgpu::TextureUsage::Storage | wgpu::TextureUsage::CopyDst, kWidth,
-                          kHeight, sliceCount, utils::ViewDimensionToTextureDimension(dimension));
+        wgpu::Texture outputTexture = CreateTexture(
+            format, wgpu::TextureUsage::StorageBinding | wgpu::TextureUsage::CopyDst, kWidth,
+            kHeight, sliceCount, utils::ViewDimensionToTextureDimension(dimension));
 
         wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
 
@@ -616,11 +624,11 @@ fn IsEqualTo(pixel : vec4<f32>, expected : vec4<f32>) -> bool {
     }
 
     void WriteIntoStorageTextureInRenderPass(wgpu::Texture writeonlyStorageTexture,
-                                             const char* kVertexShader,
-                                             const char* kFragmentShader) {
+                                             const char* vertexShader,
+                                             const char* fragmentShader) {
         // Create a render pipeline that writes the expected pixel values into the storage texture
         // without fragment shader outputs.
-        wgpu::RenderPipeline pipeline = CreateRenderPipeline(kVertexShader, kFragmentShader);
+        wgpu::RenderPipeline pipeline = CreateRenderPipeline(vertexShader, fragmentShader);
         wgpu::BindGroup bindGroup = utils::MakeBindGroup(
             device, pipeline.GetBindGroupLayout(0), {{0, writeonlyStorageTexture.CreateView()}});
 
@@ -772,7 +780,10 @@ TEST_P(StorageTextureTests, ReadonlyStorageTextureInComputeShader) {
   }
 })";
 
-        CheckResultInStorageBuffer(readonlyStorageTexture, csStream.str());
+        // TODO(crbug.com/dawn/1025): Remove once ReadOnly storage texture deprecation period is
+        // passed.
+        EXPECT_DEPRECATION_WARNING(
+            CheckResultInStorageBuffer(readonlyStorageTexture, csStream.str()));
     }
 }
 
@@ -816,7 +827,10 @@ struct VertexOut {
 fn main([[location(0)]] color : vec4<f32>) -> [[location(0)]] vec4<f32> {
   return color;
 })";
-        CheckDrawsGreen(vsStream.str().c_str(), kFragmentShader, readonlyStorageTexture);
+        // TODO(crbug.com/dawn/1025): Remove once ReadOnly storage texture deprecation period is
+        // passed.
+        EXPECT_DEPRECATION_WARNING(
+            CheckDrawsGreen(vsStream.str().c_str(), kFragmentShader, readonlyStorageTexture));
     }
 }
 
@@ -850,7 +864,10 @@ TEST_P(StorageTextureTests, ReadonlyStorageTextureInFragmentShader) {
   }
   return vec4<f32>(1.0, 0.0, 0.0, 1.0);
 })";
-        CheckDrawsGreen(kSimpleVertexShader, fsStream.str().c_str(), readonlyStorageTexture);
+        // TODO(crbug.com/dawn/1025): Remove once ReadOnly storage texture deprecation period is
+        // passed.
+        EXPECT_DEPRECATION_WARNING(
+            CheckDrawsGreen(kSimpleVertexShader, fsStream.str().c_str(), readonlyStorageTexture));
     }
 }
 
@@ -877,7 +894,7 @@ TEST_P(StorageTextureTests, WriteonlyStorageTextureInComputeShader) {
 
         // Prepare the write-only storage texture.
         wgpu::Texture writeonlyStorageTexture =
-            CreateTexture(format, wgpu::TextureUsage::Storage | wgpu::TextureUsage::CopySrc);
+            CreateTexture(format, wgpu::TextureUsage::StorageBinding | wgpu::TextureUsage::CopySrc);
 
         // Write the expected pixel values into the write-only storage texture.
         const std::string computeShader = CommonWriteOnlyTestCode("compute", format);
@@ -915,12 +932,14 @@ TEST_P(StorageTextureTests, ReadWriteDifferentStorageTextureInOneDispatchInCompu
 
         // Prepare the write-only storage texture.
         wgpu::Texture writeonlyStorageTexture =
-            CreateTexture(format, wgpu::TextureUsage::Storage | wgpu::TextureUsage::CopySrc);
+            CreateTexture(format, wgpu::TextureUsage::StorageBinding | wgpu::TextureUsage::CopySrc);
 
         // Write the expected pixel values into the write-only storage texture.
         const std::string computeShader = CommonReadWriteTestCode(format);
-        ReadWriteIntoStorageTextureInComputePass(readonlyStorageTexture, writeonlyStorageTexture,
-                                                 computeShader.c_str());
+        // TODO(crbug.com/dawn/1025): Remove once ReadOnly storage texture deprecation period is
+        // passed.
+        EXPECT_DEPRECATION_WARNING(ReadWriteIntoStorageTextureInComputePass(
+            readonlyStorageTexture, writeonlyStorageTexture, computeShader.c_str()));
 
         // Verify the pixel data in the write-only storage texture is expected.
         CheckOutputStorageTexture(writeonlyStorageTexture, format);
@@ -954,7 +973,7 @@ TEST_P(StorageTextureTests, WriteonlyStorageTextureInFragmentShader) {
 
         // Prepare the write-only storage texture.
         wgpu::Texture writeonlyStorageTexture =
-            CreateTexture(format, wgpu::TextureUsage::Storage | wgpu::TextureUsage::CopySrc);
+            CreateTexture(format, wgpu::TextureUsage::StorageBinding | wgpu::TextureUsage::CopySrc);
 
         // Write the expected pixel values into the write-only storage texture.
         const std::string fragmentShader = CommonWriteOnlyTestCode("fragment", format);
@@ -1005,7 +1024,10 @@ TEST_P(StorageTextureTests, Readonly2DArrayOr3DStorageTexture) {
   }
 })";
 
-        CheckResultInStorageBuffer(readonlyStorageTexture, csStream.str(), dimension);
+        // TODO(crbug.com/dawn/1025): Remove once ReadOnly storage texture deprecation period is
+        // passed.
+        EXPECT_DEPRECATION_WARNING(
+            CheckResultInStorageBuffer(readonlyStorageTexture, csStream.str(), dimension));
     }
 }
 
@@ -1026,8 +1048,8 @@ TEST_P(StorageTextureTests, Writeonly2DArrayOr3DStorageTexture) {
     // Prepare the write-only storage texture.
     for (wgpu::TextureViewDimension dimension : dimensions) {
         wgpu::Texture writeonlyStorageTexture = CreateTexture(
-            kTextureFormat, wgpu::TextureUsage::Storage | wgpu::TextureUsage::CopySrc, kWidth,
-            kHeight, kSliceCount, utils::ViewDimensionToTextureDimension(dimension));
+            kTextureFormat, wgpu::TextureUsage::StorageBinding | wgpu::TextureUsage::CopySrc,
+            kWidth, kHeight, kSliceCount, utils::ViewDimensionToTextureDimension(dimension));
 
         // Write the expected pixel values into the write-only storage texture.
         const std::string computeShader =
@@ -1062,15 +1084,19 @@ TEST_P(StorageTextureTests, ReadWrite2DArrayOr3DStorageTexture) {
             CreateTextureWithTestData(initialTextureData, kTextureFormat, dimension);
         // Prepare the write-only storage texture.
         wgpu::Texture writeonlyStorageTexture = CreateTexture(
-            kTextureFormat, wgpu::TextureUsage::Storage | wgpu::TextureUsage::CopySrc, kWidth,
-            kHeight, kSliceCount, utils::ViewDimensionToTextureDimension(dimension));
+            kTextureFormat, wgpu::TextureUsage::StorageBinding | wgpu::TextureUsage::CopySrc,
+            kWidth, kHeight, kSliceCount, utils::ViewDimensionToTextureDimension(dimension));
 
         // Read values from read-only storage texture and write into the write-only storage texture.
         const std::string computeShader = CommonReadWriteTestCode(kTextureFormat, dimension);
-        ReadWriteIntoStorageTextureInComputePass(readonlyStorageTexture, writeonlyStorageTexture,
-                                                 computeShader.c_str(), dimension);
+        // TODO(crbug.com/dawn/1025): Remove once ReadOnly storage texture deprecation period is
+        // passed.
+        EXPECT_DEPRECATION_WARNING(ReadWriteIntoStorageTextureInComputePass(
+            readonlyStorageTexture, writeonlyStorageTexture, computeShader.c_str(), dimension));
 
         // Verify the data in the write-only storage texture is expected.
+        // TODO(crbug.com/dawn/1025): Remove once ReadOnly storage texture deprecation period is
+        // passed.
         CheckOutputStorageTexture(writeonlyStorageTexture, kTextureFormat, kSliceCount);
     }
 }
@@ -1083,9 +1109,9 @@ TEST_P(StorageTextureTests, ReadonlyAndWriteonlyStorageTexturePingPong) {
 
     constexpr wgpu::TextureFormat kTextureFormat = wgpu::TextureFormat::R32Uint;
     wgpu::Texture storageTexture1 = CreateTexture(
-        kTextureFormat, wgpu::TextureUsage::Storage | wgpu::TextureUsage::CopySrc, 1u, 1u);
+        kTextureFormat, wgpu::TextureUsage::StorageBinding | wgpu::TextureUsage::CopySrc, 1u, 1u);
     wgpu::Texture storageTexture2 = CreateTexture(
-        kTextureFormat, wgpu::TextureUsage::Storage | wgpu::TextureUsage::CopySrc, 1u, 1u);
+        kTextureFormat, wgpu::TextureUsage::StorageBinding | wgpu::TextureUsage::CopySrc, 1u, 1u);
 
     wgpu::ShaderModule module = utils::CreateShaderModule(device, R"(
 [[group(0), binding(0)]] var Src : texture_storage_2d<r32uint, read>;
@@ -1100,7 +1126,9 @@ TEST_P(StorageTextureTests, ReadonlyAndWriteonlyStorageTexturePingPong) {
     wgpu::ComputePipelineDescriptor pipelineDesc = {};
     pipelineDesc.compute.module = module;
     pipelineDesc.compute.entryPoint = "main";
-    wgpu::ComputePipeline pipeline = device.CreateComputePipeline(&pipelineDesc);
+    wgpu::ComputePipeline pipeline;
+    // TODO(crbug.com/dawn/1025): Remove once ReadOnly storage texture deprecation period is passed.
+    EXPECT_DEPRECATION_WARNING(pipeline = device.CreateComputePipeline(&pipelineDesc));
 
     // In bindGroupA storageTexture1 is bound as read-only storage texture and storageTexture2 is
     // bound as write-only storage texture.
@@ -1155,12 +1183,14 @@ TEST_P(StorageTextureTests, ReadonlyAndWriteonlyStorageTexturePingPong) {
 // a write-only storage texture are synchronized in one pass.
 TEST_P(StorageTextureTests, SampledAndWriteonlyStorageTexturePingPong) {
     constexpr wgpu::TextureFormat kTextureFormat = wgpu::TextureFormat::R32Uint;
-    wgpu::Texture storageTexture1 = CreateTexture(
-        kTextureFormat,
-        wgpu::TextureUsage::Sampled | wgpu::TextureUsage::Storage | wgpu::TextureUsage::CopySrc, 1u,
-        1u);
+    wgpu::Texture storageTexture1 =
+        CreateTexture(kTextureFormat,
+                      wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::StorageBinding |
+                          wgpu::TextureUsage::CopySrc,
+                      1u, 1u);
     wgpu::Texture storageTexture2 = CreateTexture(
-        kTextureFormat, wgpu::TextureUsage::Sampled | wgpu::TextureUsage::Storage, 1u, 1u);
+        kTextureFormat, wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::StorageBinding, 1u,
+        1u);
     wgpu::ShaderModule module = utils::CreateShaderModule(device, R"(
 [[group(0), binding(0)]] var Src : texture_2d<u32>;
 [[group(0), binding(1)]] var Dst : texture_storage_2d<r32uint, write>;
@@ -1263,8 +1293,9 @@ fn doTest() -> bool {
     const char* kCommonWriteOnlyZeroInitTestCodeFragment = R"(
 [[group(0), binding(0)]] var dstImage : texture_storage_2d<r32uint, write>;
 
-[[stage(fragment)]] fn main() {
+[[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
   textureStore(dstImage, vec2<i32>(0, 0), vec4<u32>(1u, 0u, 0u, 1u));
+  return vec4<f32>();
 })";
     const char* kCommonWriteOnlyZeroInitTestCodeCompute = R"(
 [[group(0), binding(0)]] var dstImage : texture_storage_2d<r32uint, write>;
@@ -1278,7 +1309,7 @@ fn doTest() -> bool {
 // texture in a render pass.
 TEST_P(StorageTextureZeroInitTests, ReadonlyStorageTextureClearsToZeroInRenderPass) {
     wgpu::Texture readonlyStorageTexture =
-        CreateTexture(wgpu::TextureFormat::R32Uint, wgpu::TextureUsage::Storage);
+        CreateTexture(wgpu::TextureFormat::R32Uint, wgpu::TextureUsage::StorageBinding);
 
     // Create a rendering pipeline that reads the pixels from the read-only storage texture and uses
     // green as the output color, otherwise uses red instead.
@@ -1293,14 +1324,16 @@ TEST_P(StorageTextureZeroInitTests, ReadonlyStorageTextureClearsToZeroInRenderPa
   }
   return vec4<f32>(1.0, 0.0, 0.0, 1.0);
 })";
-    CheckDrawsGreen(kVertexShader, kFragmentShader.c_str(), readonlyStorageTexture);
+    // TODO(crbug.com/dawn/1025): Remove once ReadOnly storage texture deprecation period is passed.
+    EXPECT_DEPRECATION_WARNING(
+        CheckDrawsGreen(kVertexShader, kFragmentShader.c_str(), readonlyStorageTexture));
 }
 
 // Verify that the texture is correctly cleared to 0 before its first usage as a read-only storage
 // texture in a compute pass.
 TEST_P(StorageTextureZeroInitTests, ReadonlyStorageTextureClearsToZeroInComputePass) {
     wgpu::Texture readonlyStorageTexture =
-        CreateTexture(wgpu::TextureFormat::R32Uint, wgpu::TextureUsage::Storage);
+        CreateTexture(wgpu::TextureFormat::R32Uint, wgpu::TextureUsage::StorageBinding);
 
     // Create a compute shader that reads the pixels from the read-only storage texture and writes 1
     // to DstBuffer if they all have the expected value.
@@ -1320,7 +1353,8 @@ TEST_P(StorageTextureZeroInitTests, ReadonlyStorageTextureClearsToZeroInComputeP
   }
 })";
 
-    CheckResultInStorageBuffer(readonlyStorageTexture, kComputeShader);
+    // TODO(crbug.com/dawn/1025): Remove once ReadOnly storage texture deprecation period is passed.
+    EXPECT_DEPRECATION_WARNING(CheckResultInStorageBuffer(readonlyStorageTexture, kComputeShader));
 }
 
 // Verify that the texture is correctly cleared to 0 before its first usage as a write-only storage
@@ -1328,8 +1362,9 @@ TEST_P(StorageTextureZeroInitTests, ReadonlyStorageTextureClearsToZeroInComputeP
 TEST_P(StorageTextureZeroInitTests, WriteonlyStorageTextureClearsToZeroInRenderPass) {
     // Prepare the write-only storage texture.
     constexpr uint32_t kTexelSizeR32Uint = 4u;
-    wgpu::Texture writeonlyStorageTexture = CreateTexture(
-        wgpu::TextureFormat::R32Uint, wgpu::TextureUsage::Storage | wgpu::TextureUsage::CopySrc);
+    wgpu::Texture writeonlyStorageTexture =
+        CreateTexture(wgpu::TextureFormat::R32Uint,
+                      wgpu::TextureUsage::StorageBinding | wgpu::TextureUsage::CopySrc);
 
     WriteIntoStorageTextureInRenderPass(writeonlyStorageTexture, kSimpleVertexShader,
                                         kCommonWriteOnlyZeroInitTestCodeFragment);
@@ -1341,8 +1376,9 @@ TEST_P(StorageTextureZeroInitTests, WriteonlyStorageTextureClearsToZeroInRenderP
 TEST_P(StorageTextureZeroInitTests, WriteonlyStorageTextureClearsToZeroInComputePass) {
     // Prepare the write-only storage texture.
     constexpr uint32_t kTexelSizeR32Uint = 4u;
-    wgpu::Texture writeonlyStorageTexture = CreateTexture(
-        wgpu::TextureFormat::R32Uint, wgpu::TextureUsage::Storage | wgpu::TextureUsage::CopySrc);
+    wgpu::Texture writeonlyStorageTexture =
+        CreateTexture(wgpu::TextureFormat::R32Uint,
+                      wgpu::TextureUsage::StorageBinding | wgpu::TextureUsage::CopySrc);
 
     WriteIntoStorageTextureInComputePass(writeonlyStorageTexture,
                                          kCommonWriteOnlyZeroInitTestCodeCompute);

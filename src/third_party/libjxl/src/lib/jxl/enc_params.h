@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #ifndef LIB_JXL_ENC_PARAMS_H_
 #define LIB_JXL_ENC_PARAMS_H_
@@ -45,12 +36,25 @@ enum class SpeedTier {
   // Turns on simple heuristics for AC strategy, quant field, and clustering;
   // also enables coefficient reordering.
   kCheetah = 6,
-  // Turns off most encoder features, for the fastest possible encoding time.
+  // Turns off most encoder features. Does context clustering.
+  // Modular: uses fixed tree with Weighted predictor.
   kFalcon = 7,
+  // Currently fastest possible setting for VarDCT.
+  // Modular: uses fixed tree with Gradient predictor.
+  kThunder = 8,
+  // VarDCT: same as kThunder.
+  // Modular: no tree, Gradient predictor, fast histograms
+  kLightning = 9
 };
 
 inline bool ParseSpeedTier(const std::string& s, SpeedTier* out) {
-  if (s == "falcon") {
+  if (s == "lightning") {
+    *out = SpeedTier::kLightning;
+    return true;
+  } else if (s == "thunder") {
+    *out = SpeedTier::kThunder;
+    return true;
+  } else if (s == "falcon") {
     *out = SpeedTier::kFalcon;
     return true;
   } else if (s == "cheetah") {
@@ -73,7 +77,7 @@ inline bool ParseSpeedTier(const std::string& s, SpeedTier* out) {
     return true;
   }
   size_t st = 10 - static_cast<size_t>(strtoull(s.c_str(), nullptr, 0));
-  if (st <= static_cast<size_t>(SpeedTier::kFalcon) &&
+  if (st <= static_cast<size_t>(SpeedTier::kLightning) &&
       st >= static_cast<size_t>(SpeedTier::kTortoise)) {
     *out = SpeedTier(st);
     return true;
@@ -83,6 +87,10 @@ inline bool ParseSpeedTier(const std::string& s, SpeedTier* out) {
 
 inline const char* SpeedTierName(SpeedTier speed_tier) {
   switch (speed_tier) {
+    case SpeedTier::kLightning:
+      return "lightning";
+    case SpeedTier::kThunder:
+      return "thunder";
     case SpeedTier::kFalcon:
       return "falcon";
     case SpeedTier::kCheetah:
@@ -145,10 +153,6 @@ struct CompressParams {
   Override gaborish = Override::kDefault;
   int epf = -1;
 
-  // TODO(deymo): Remove "gradient" once all clients stop setting this value.
-  // This flag is already deprecated and is unused in the encoder.
-  Override gradient = Override::kOff;
-
   // Progressive mode.
   bool progressive_mode = false;
 
@@ -156,12 +160,17 @@ struct CompressParams {
   bool qprogressive_mode = false;
 
   // Put center groups first in the bitstream.
-  bool middleout = false;
+  bool centerfirst = false;
+
+  // Pixel coordinates of the center. First group will contain that center.
+  size_t center_x = static_cast<size_t>(-1);
+  size_t center_y = static_cast<size_t>(-1);
 
   int progressive_dc = -1;
 
-  // Ensure invisible pixels are not set to 0.
-  bool keep_invisible = false;
+  // If on: preserve color of invisible pixels (if off: don't care)
+  // Default: on for lossless, off for lossy
+  Override keep_invisible = Override::kDefault;
 
   // Progressive-mode saliency.
   //
@@ -199,6 +208,10 @@ struct CompressParams {
   // allowing reconstruction of the original JPEG.
   bool force_cfl_jpeg_recompression = true;
 
+  // Set the noise to what it would approximately be if shooting at the nominal
+  // exposure for a given ISO setting on a 35mm camera.
+  float photon_noise_iso = 0;
+
   // modular mode options below
   ModularOptions options;
   int responsive = -1;
@@ -209,7 +222,6 @@ struct CompressParams {
   float channel_colors_pre_transform_percent = 95.f;
   // Use Local channel palette if #colors < this percentage of range
   float channel_colors_percent = 80.f;
-  int near_lossless = 0;
   int palette_colors = 1 << 10;  // up to 10-bit palette is probably worthwhile
   bool lossy_palette = false;
 
@@ -233,6 +245,8 @@ struct CompressParams {
   // Down/upsample the image before encoding / after decoding by this factor.
   size_t resampling = 1;
   size_t ec_resampling = 1;
+  // Skip the downsampling before encoding if this is true.
+  bool already_downsampled = false;
 };
 
 static constexpr float kMinButteraugliForDynamicAR = 0.5f;

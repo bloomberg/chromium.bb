@@ -33,6 +33,10 @@ enum class RendererType {
   kMaxValue = kCastStreaming,
 };
 
+// Get the name of the Renderer for `renderer_type`. The returned name could be
+// the actual Renderer class name or a descriptive name.
+std::string MEDIA_EXPORT GetRendererName(RendererType renderer_type);
+
 // RendererFactorySelector owns RendererFactory instances used within WMPI.
 // Its purpose is to aggregate the signals and centralize the logic behind
 // choosing which RendererFactory should be used when creating a new Renderer.

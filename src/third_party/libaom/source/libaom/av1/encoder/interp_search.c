@@ -453,19 +453,10 @@ static INLINE void find_best_non_dual_interp_filter(
         get_frame_update_type(&cpi->ppi->gf_group, cpi->gf_frame_index);
     const int ctx0 = av1_get_pred_context_switchable_interp(xd, 0);
     const int ctx1 = av1_get_pred_context_switchable_interp(xd, 1);
-    int *switchable_interp_p0;
-    int *switchable_interp_p1;
-#if CONFIG_FRAME_PARALLEL_ENCODE
-    switchable_interp_p0 = (int *)cpi->ppi->temp_frame_probs
-                               .switchable_interp_probs[update_type][ctx0];
-    switchable_interp_p1 = (int *)cpi->ppi->temp_frame_probs
-                               .switchable_interp_probs[update_type][ctx1];
-#else
-    switchable_interp_p0 =
-        (int *)cpi->frame_probs.switchable_interp_probs[update_type][ctx0];
-    switchable_interp_p1 =
-        (int *)cpi->frame_probs.switchable_interp_probs[update_type][ctx1];
-#endif
+    const int *switchable_interp_p0 =
+        cpi->ppi->frame_probs.switchable_interp_probs[update_type][ctx0];
+    const int *switchable_interp_p1 =
+        cpi->ppi->frame_probs.switchable_interp_probs[update_type][ctx1];
     static const int thr[7] = { 0, 8, 8, 8, 8, 0, 8 };
     const int thresh = thr[update_type];
     for (i = 0; i < SWITCHABLE_FILTERS; i++) {

@@ -17,6 +17,7 @@ import "third_party/blink/public/mojom/dom_storage/storage_area.mojom";
 import "third_party/blink/public/mojom/frame/policy_container.mojom";
 import "third_party/blink/public/mojom/loader/code_cache.mojom";
 import "third_party/blink/public/mojom/loader/referrer.mojom";
+import "third_party/blink/public/mojom/loader/same_document_navigation_type.mojom";
 import "third_party/blink/public/mojom/loader/transferrable_url_loader.mojom";
 import "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom";
 import "third_party/blink/public/mojom/navigation/navigation_params.mojom";
@@ -27,7 +28,6 @@ import "third_party/blink/public/mojom/permissions_policy/policy_value.mojom";
 import "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom";
 import "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom";
 import "third_party/blink/public/mojom/service_worker/service_worker_container.mojom";
-import "third_party/blink/public/mojom/storage_key/storage_key.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
 
@@ -176,9 +176,7 @@ struct DidCommitProvisionalLoadParams {
 struct DidCommitSameDocumentNavigationParams {
   // Will be true if the navigation is the result of history.pushState or
   // history.replaceState.
-  // TODO(crbug.com/1131832): Port SameDocumentNavigationSource enum to mojo
-  // and use that instead of bool here.
-  bool is_history_api_navigation = false;
+  blink.mojom.SameDocumentNavigationType same_document_navigation_type;
 
   // Whether the navigation is a result of a client redirect (e.g. a
   // script-initiated navigation) or not (e.g. a link click).
@@ -194,9 +192,6 @@ struct CookieManagerInfo {
 };
 
 struct StorageInfo {
-  // The storage key the storage areas are associated with.
-  blink.mojom.StorageKey storage_key;
-
   // A storage area which can be used for local storage.
   pending_remote<blink.mojom.StorageArea>? local_storage_area;
 

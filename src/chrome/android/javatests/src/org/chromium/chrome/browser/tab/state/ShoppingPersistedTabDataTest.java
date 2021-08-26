@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.tab.state;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
-import android.support.test.filters.SmallTest;
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -91,7 +91,8 @@ public class ShoppingPersistedTabDataTest {
                 mOptimizationGuideBridgeJniMock,
                 HintsProto.OptimizationType.SHOPPING_PAGE_PREDICTOR.getNumber(),
                 OptimizationGuideDecision.TRUE, null);
-        PersistedTabDataConfiguration.setUseTestConfig(true);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> PersistedTabDataConfiguration.setUseTestConfig(true));
         Profile.setLastUsedProfileForTesting(mProfileMock);
         doReturn(true).when(mNavigationHandle).isInPrimaryMainFrame();
     }
@@ -925,7 +926,7 @@ public class ShoppingPersistedTabDataTest {
             tab.getUserDataHost().setUserData(
                     ShoppingPersistedTabData.class, shoppingPersistedTabData);
             // Tab being destroyed should result in the public API from returning null
-            tab.setIsDestroyed(true);
+            tab.destroy();
             ShoppingPersistedTabData.from(tab, (sptdRes) -> {
                 Assert.assertNull(sptdRes);
                 semaphore.release();
@@ -946,7 +947,7 @@ public class ShoppingPersistedTabDataTest {
         // acquired from OptimizationGuide.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Tab being destroyed should result in the public API from returning null
-            tab.setIsDestroyed(true);
+            tab.destroy();
             ShoppingPersistedTabData.from(tab, (sptdRes) -> {
                 Assert.assertNull(sptdRes);
                 semaphore.release();
@@ -982,7 +983,7 @@ public class ShoppingPersistedTabDataTest {
             // Remove UserData to force acquisition from storage.
             tab.getUserDataHost().removeUserData(ShoppingPersistedTabData.class);
             // Tab being destroyed should result in the public API from returning null
-            tab.setIsDestroyed(true);
+            tab.destroy();
             ShoppingPersistedTabData.from(tab, (sptdRes) -> {
                 Assert.assertNull(sptdRes);
                 semaphore1.release();
@@ -1019,7 +1020,7 @@ public class ShoppingPersistedTabDataTest {
             // Remove UserData to force acquisition from storage.
             tab.getUserDataHost().removeUserData(ShoppingPersistedTabData.class);
             // Tab being destroyed should result in the public API from returning null
-            tab.setIsDestroyed(true);
+            tab.destroy();
             ShoppingPersistedTabData.from(tab, (sptdRes) -> {
                 Assert.assertNull(sptdRes);
                 semaphore1.release();

@@ -1055,11 +1055,12 @@ IN_PROC_BROWSER_TEST_F(PrintBrowserTest, PrintNup) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents);
-  content::RemoveWebContentsReceiverSet(web_contents,
-                                        mojom::PrintManagerHost::Name_);
   TestPrintViewManager print_view_manager(web_contents);
+  PrintViewManager::SetReceiverImplForTesting(&print_view_manager);
 
   PrintAndWaitUntilPreviewIsReady(/*print_only_selection=*/false);
+
+  PrintViewManager::SetReceiverImplForTesting(nullptr);
 }
 
 // Site per process version of PrintBrowserTest.PrintNup.
@@ -1071,11 +1072,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessPrintBrowserTest, PrintNup) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents);
-  content::RemoveWebContentsReceiverSet(web_contents,
-                                        mojom::PrintManagerHost::Name_);
   TestPrintViewManager print_view_manager(web_contents);
+  PrintViewManager::SetReceiverImplForTesting(&print_view_manager);
 
   PrintAndWaitUntilPreviewIsReady(/*print_only_selection=*/false);
+
+  PrintViewManager::SetReceiverImplForTesting(nullptr);
 }
 
 IN_PROC_BROWSER_TEST_F(PrintBrowserTest, MultipagePrint) {
@@ -1158,8 +1160,12 @@ class PrintPrerenderBrowserTest : public PrintBrowserTest {
     PrintBrowserTest::SetUpCommandLine(cmd_line);
   }
 
+  void SetUp() override {
+    prerender_helper_.SetUp(embedded_test_server());
+    PrintBrowserTest::SetUp();
+  }
+
   void SetUpOnMainThread() override {
-    prerender_helper_.SetUpOnMainThread(embedded_test_server());
     ASSERT_TRUE(embedded_test_server()->Start());
   }
 

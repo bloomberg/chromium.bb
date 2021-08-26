@@ -747,7 +747,7 @@ std::ostream& operator<<(std::ostream& os, const ConvolveTypeParam& param) {
 // simplify the members and test logic.
 template <int bitdepth, typename Pixel>
 class ConvolveTest
-    : public ::testing::TestWithParam<
+    : public testing::TestWithParam<
           std::tuple<ConvolveTestParam, ConvolveTypeParam, bool>> {
  public:
   ConvolveTest() = default;
@@ -760,8 +760,8 @@ class ConvolveTest
     ASSERT_NE(dsp, nullptr);
     GetConvolveFuncs(dsp, &base_convolve_func_, &base_convolve_scale_func_);
 
-    const ::testing::TestInfo* const test_info =
-        ::testing::UnitTest::GetInstance()->current_test_info();
+    const testing::TestInfo* const test_info =
+        testing::UnitTest::GetInstance()->current_test_info();
     const absl::string_view test_case = test_info->test_suite_name();
     if (absl::StartsWith(test_case, "C/")) {
       base_convolve_func_ = nullptr;
@@ -776,6 +776,9 @@ class ConvolveTest
       }
     } else if (absl::StartsWith(test_case, "NEON/")) {
       ConvolveInit_NEON();
+#if LIBGAV1_MAX_BITDEPTH >= 10
+      ConvolveInit10bpp_NEON();
+#endif
     } else {
       FAIL() << "Unrecognized architecture prefix in test case name: "
              << test_case;
@@ -1210,7 +1213,7 @@ void ShowRange() {
     assert(max > INT16_MAX && max < INT32_MAX);
   }
 
-  printf("  intermediate range:                [%8d, %8d]\n", min, max);
+  printf("  Horizontal upscaled range:         [%8d, %8d]\n", min, max);
 
   const int first_pass_min = RightShiftWithRounding(min, horizontal_bits);
   const int first_pass_max = RightShiftWithRounding(max, horizontal_bits);
@@ -1219,7 +1222,7 @@ void ShowRange() {
   assert(first_pass_min > INT16_MIN);
   assert(first_pass_max < INT16_MAX);
 
-  printf("  first pass output range:           [%8d, %8d]\n", first_pass_min,
+  printf("  Horizontal downscaled range:       [%8d, %8d]\n", first_pass_min,
          first_pass_max);
 
   // Second pass.
@@ -1230,14 +1233,14 @@ void ShowRange() {
   assert(min < INT16_MIN && min > INT32_MIN);
   assert(max > INT16_MAX && max < INT32_MAX);
 
-  printf("  intermediate range:                [%8d, %8d]\n", min, max);
+  printf("  Vertical upscaled range:           [%8d, %8d]\n", min, max);
 
   // Second pass non-compound output is clipped to Pixel values.
   const int second_pass_min =
       Clip3(RightShiftWithRounding(min, vertical_bits), 0, max_input);
   const int second_pass_max =
       Clip3(RightShiftWithRounding(max, vertical_bits), 0, max_input);
-  printf("  second pass output range:          [%8d, %8d]\n", second_pass_min,
+  printf("  Pixel output range:                [%8d, %8d]\n", second_pass_min,
          second_pass_max);
 
   // Output is Pixel so matches Pixel values.
@@ -1249,7 +1252,7 @@ void ShowRange() {
   const int compound_second_pass_max =
       RightShiftWithRounding(max, compound_vertical_bits) + compound_offset;
 
-  printf("  compound second pass output range: [%8d, %8d]\n",
+  printf("  Compound output range:             [%8d, %8d]\n",
          compound_second_pass_min, compound_second_pass_max);
 
   if (bitdepth == 8) {
@@ -1319,34 +1322,30 @@ const ConvolveTypeParam kConvolveTypeParam[] = {
     ConvolveTypeParam(true, true, true, true),
 };
 
-INSTANTIATE_TEST_SUITE_P(
-    C, ConvolveTest8bpp,
-    ::testing::Combine(::testing::ValuesIn(kConvolveParam),
-                       ::testing::ValuesIn(kConvolveTypeParam),
-                       ::testing::Bool()));
+INSTANTIATE_TEST_SUITE_P(C, ConvolveTest8bpp,
+                         testing::Combine(testing::ValuesIn(kConvolveParam),
+                                          testing::ValuesIn(kConvolveTypeParam),
+                                          testing::Bool()));
 
 #if LIBGAV1_ENABLE_NEON
-INSTANTIATE_TEST_SUITE_P(
-    NEON, ConvolveTest8bpp,
-    ::testing::Combine(::testing::ValuesIn(kConvolveParam),
-                       ::testing::ValuesIn(kConvolveTypeParam),
-                       ::testing::Bool()));
+INSTANTIATE_TEST_SUITE_P(NEON, ConvolveTest8bpp,
+                         testing::Combine(testing::ValuesIn(kConvolveParam),
+                                          testing::ValuesIn(kConvolveTypeParam),
+                                          testing::Bool()));
 #endif  // LIBGAV1_ENABLE_NEON
 
 #if LIBGAV1_ENABLE_SSE4_1
-INSTANTIATE_TEST_SUITE_P(
-    SSE41, ConvolveTest8bpp,
-    ::testing::Combine(::testing::ValuesIn(kConvolveParam),
-                       ::testing::ValuesIn(kConvolveTypeParam),
-                       ::testing::Bool()));
+INSTANTIATE_TEST_SUITE_P(SSE41, ConvolveTest8bpp,
+                         testing::Combine(testing::ValuesIn(kConvolveParam),
+                                          testing::ValuesIn(kConvolveTypeParam),
+                                          testing::Bool()));
 #endif  // LIBGAV1_ENABLE_SSE4_1
 
 #if LIBGAV1_ENABLE_AVX2
-INSTANTIATE_TEST_SUITE_P(
-    AVX2, ConvolveTest8bpp,
-    ::testing::Combine(::testing::ValuesIn(kConvolveParam),
-                       ::testing::ValuesIn(kConvolveTypeParam),
-                       ::testing::Bool()));
+INSTANTIATE_TEST_SUITE_P(AVX2, ConvolveTest8bpp,
+                         testing::Combine(testing::ValuesIn(kConvolveParam),
+                                          testing::ValuesIn(kConvolveTypeParam),
+                                          testing::Bool()));
 #endif  // LIBGAV1_ENABLE_AVX2
 
 #if LIBGAV1_MAX_BITDEPTH >= 10
@@ -1366,11 +1365,18 @@ TEST_P(ConvolveTest10bpp, DISABLED_Speed) {
   Test(false, 0, num_runs);
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    C, ConvolveTest10bpp,
-    ::testing::Combine(::testing::ValuesIn(kConvolveParam),
-                       ::testing::ValuesIn(kConvolveTypeParam),
-                       ::testing::Bool()));
+INSTANTIATE_TEST_SUITE_P(C, ConvolveTest10bpp,
+                         testing::Combine(testing::ValuesIn(kConvolveParam),
+                                          testing::ValuesIn(kConvolveTypeParam),
+                                          testing::Bool()));
+
+#if LIBGAV1_ENABLE_NEON
+INSTANTIATE_TEST_SUITE_P(NEON, ConvolveTest10bpp,
+                         testing::Combine(testing::ValuesIn(kConvolveParam),
+                                          testing::ValuesIn(kConvolveTypeParam),
+                                          testing::Bool()));
+#endif  // LIBGAV1_ENABLE_NEON
+
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
 
 }  // namespace

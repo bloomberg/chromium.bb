@@ -6,7 +6,6 @@
 <translation id="1124090076051167250">Bununla Əsas ekranda saytlar və ya tətbiqlər tərəfindən saxlanılan <ph name="DATASIZE" /> data və kuki silinəcək.</translation>
 <translation id="1178581264944972037">Durdurun</translation>
 <translation id="1181037720776840403">Silin</translation>
-<translation id="1195941046451948919">Bu vebsayt üçün bütün icazələri sıfırlamaq istədiyinizə əminsiniz?</translation>
 <translation id="1201402288615127009">Növbəti</translation>
 <translation id="1242008676835033345"><ph name="WEBSITE_URL" /> daxilində yerləşdirilib</translation>
 <translation id="1272079795634619415">Dayandırın</translation>
@@ -70,6 +69,7 @@
 <translation id="2687403674020088961">Bütün kukiləri bloklayın (tövsiyə edilmir)</translation>
 <translation id="2704606927547763573">Kopyalandı</translation>
 <translation id="2717722538473713889">E-poçt ünvanları</translation>
+<translation id="2785051990912111074">Bu seçim <ph name="WEBSITE" /> üçün kukiləri siləcək</translation>
 <translation id="2822354292072154809"><ph name="CHOSEN_OBJECT_NAME" /> üçün bütün sayt icazələrini sıfırlamaq istədiyinizə əminsiniz?</translation>
 <translation id="2870560284913253234">Sayt</translation>
 <translation id="2874939134665556319">Öncəki trek</translation>
@@ -130,7 +130,6 @@
 <translation id="4570913071927164677">Ətraflı</translation>
 <translation id="4645575059429386691">Valideyniniz tərəfindən idarə olunur</translation>
 <translation id="4670064810192446073">Virtual reallıq</translation>
-<translation id="4708011789095599544">Bu vebsayt üçün kukiləri və digər sayt datasını silmək istədiyinizə əminsiniz?</translation>
 <translation id="4751476147751820511">Hərəkət və ışıq sensorları</translation>
 <translation id="4836046166855586901">Sayt bu cihazdan nə zaman aktiv şəkildə istifadə etdiyinizi bilmək istədikdə icazə istəsin</translation>
 <translation id="4883854917563148705">İdarə edilən ayarlar sıfırlana bilməz</translation>
@@ -140,6 +139,7 @@
 <translation id="4976702386844183910">Son ziyarət: <ph name="DATE" /></translation>
 <translation id="4994033804516042629">Kontakt tapılmadı</translation>
 <translation id="4996978546172906250">Paylaşma vasitəsi:</translation>
+<translation id="5014906230196386306">Kukilər silinsin?</translation>
 <translation id="5039804452771397117">İcazə verin</translation>
 <translation id="5048398596102334565">Saytların hərəkət sensorlarınıza daxil olmasına icazə verin (tövsiyə edilir)</translation>
 <translation id="5050380848339752099">Bu sayt Anonim rejimdə olmayan tətbiqlə məlumat paylaşmaq üzrədir.</translation>
@@ -157,9 +157,9 @@
 <translation id="5335288049665977812">Saytlara JavaScript işlətməyə icazə verin (tövsiyə olunur)</translation>
 <translation id="534295439873310000">NFC cihazları</translation>
 <translation id="5354152178998424783">Bununla saytlar tərəfindən saxlanılan <ph name="DATASIZE" /> data və kuki silinəcək.</translation>
-<translation id="5391532827096253100">Bu sayta bağlantınız güvənli deyil. Sayt barədə məlumat</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+1)}other{(+ #)}}</translation>
 <translation id="5403592356182871684">Adlar</translation>
+<translation id="5438097262470833822">Bu seçim <ph name="WEBSITE" /> üçün icazələri sıfırlayacaq</translation>
 <translation id="5489227211564503167">Keçən vaxt: <ph name="ELAPSED_TIME" /> / <ph name="TOTAL_TIME" />.</translation>
 <translation id="5494752089476963479">İntruziv və aldadıcı reklamlar göstərən saytlardakı reklamları bloklayın</translation>
 <translation id="5502860503640766021"><ph name="PERMISSION_1" /> üçün icazə verilib, <ph name="PERMISSION_2" /> bloklanın</translation>
@@ -190,10 +190,10 @@
 <translation id="6064125863973209585">Tamamlanmış endirmələr</translation>
 <translation id="6165508094623778733">Ətraflı öyrənin</translation>
 <translation id="6177111841848151710">Cari axtarış sistemi üçün blok edildi</translation>
+<translation id="6177128806592000436">Bu sayta olan bağlantınız güvənli deyil</translation>
 <translation id="6181444274883918285">Sayt istisnası əlavə edin</translation>
 <translation id="6192792657125177640">İstisnalar</translation>
 <translation id="6196640612572343990">Üçüncü tərəf kukiləri blok edin</translation>
-<translation id="6206551242102657620">Bağlantınız güvənlidir. Sayt barədə məlumat</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> Seçimləri</translation>
 <translation id="6231752747840485235">"<ph name="APP_NAME" />" sistemdən silinsin?</translation>
 <translation id="6262279340360821358"><ph name="PERMISSION_1" /> və <ph name="PERMISSION_2" /> bloklanıb</translation>
@@ -202,7 +202,6 @@
 <translation id="6320088164292336938">Vibrasiya</translation>
 <translation id="6388207532828177975">Təmizləyin və sıfırlayın</translation>
 <translation id="6398765197997659313">Tam ekrandan çıxın</translation>
-<translation id="6423924377271166037">Kukiləri silin</translation>
 <translation id="6439114592976064011">Saytların virtual reallıq cihazınızı və datanızı istifadə etməsinin qarşısını alın</translation>
 <translation id="6447842834002726250">Kukilər</translation>
 <translation id="6527303717912515753">Paylaşın</translation>
@@ -217,6 +216,7 @@
 <translation id="6689172468748959065">Profil fotoları</translation>
 <translation id="6697925417670533197">Aktiv endirmələr</translation>
 <translation id="6746124502594467657">Aşağı köçürün</translation>
+<translation id="6749077623962119521">İcazələr sıfırlansın?</translation>
 <translation id="6766622839693428701">Bağlamaq üçün aşağı sürüşdürün.</translation>
 <translation id="6790428901817661496">Oxudun</translation>
 <translation id="6818926723028410516">Element seçin</translation>
@@ -224,7 +224,6 @@
 <translation id="6910211073230771657">Silinib</translation>
 <translation id="6912998170423641340">Saytların buferdəki mətn və şəkillərə girişini blok edin</translation>
 <translation id="6945221475159498467">Seçin</translation>
-<translation id="6963642900430330478">Bu səhifə təhlükəlidir. Sayt barədə məlumat</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6992289844737586249">Saytlara mikrofonunuzu istifadə etmək icazəsi verməmişdən əvvəl soruşun (tövsiyə olunur)</translation>
 <translation id="7000754031042624318">Android ayarlarında söndürülüb</translation>
@@ -232,7 +231,6 @@
 <translation id="7053983685419859001">Bloklayın</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 element seçildi}other{# element seçildi}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> seçildi. Seçimlər ekranın yuxarısında əlçatandır</translation>
-<translation id="7128222689758636196">Cari axtarış sistemi üçün icazə verin</translation>
 <translation id="7141896414559753902">Saytların popapları və yönləndirmələri göstərməyini blok edin (tövsiyə olunur)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="723171743924126238">Şəkil seçin</translation>
@@ -247,7 +245,6 @@
 <translation id="7561196759112975576">Həmişə</translation>
 <translation id="7572498721684305250">NFC cihazlarına toxunduqda saytların məlumat göndərməsi və almasının qarşısını alın</translation>
 <translation id="757524316907819857">Saytların qorunan kontenti oxutmasını blok edin</translation>
-<translation id="7589445247086920869">Cari axtarış sistemi üçün blok edin</translation>
 <translation id="7649070708921625228">Yardım</translation>
 <translation id="7658239707568436148">Ləğv edin</translation>
 <translation id="7781829728241885113">Dünən</translation>
@@ -270,10 +267,12 @@
 <translation id="8068648041423924542">Sertifikatı seçmək mümkün deyil.</translation>
 <translation id="8087000398470557479">Bu məzmun <ph name="DOMAIN_NAME" /> domenindəndir, Google tərəfindən çatdırılıb.</translation>
 <translation id="8116925261070264013">Səssiz</translation>
+<translation id="813082847718468539">Sayt məlumatına baxın</translation>
 <translation id="8131740175452115882">Təsdiq edin</translation>
 <translation id="8197286292360124385"><ph name="PERMISSION_1" /> üçün icazə verilib</translation>
 <translation id="8200772114523450471">Davam edin</translation>
 <translation id="8206354486702514201">Bu ayar administratorunuz tərəfindən icra olunur.</translation>
+<translation id="8211406090763984747">Bağlantı təhlükəsizdir</translation>
 <translation id="8249310407154411074">Ən yuxarı</translation>
 <translation id="8261506727792406068">Silin</translation>
 <translation id="8300705686683892304">Tədbiq tərəfindən idarə edilən</translation>
@@ -315,7 +314,7 @@
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9109747640384633967">{PERMISSIONS_SUMMARY_MIXED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> və daha <ph name="NUM_MORE" /> icazə}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> və daha <ph name="NUM_MORE" /> icazə}}</translation>
 <translation id="913657688200966289"><ph name="APP_NAME" /> üçün icazələri <ph name="BEGIN_LINK" />Android Ayarlarında<ph name="END_LINK" /> aktiv edin.</translation>
+<translation id="9162462602695099906">Bu səhifə təhlükəlidir</translation>
 <translation id="930525582205581608">Bu sayt unudulsun?</translation>
-<translation id="965817943346481315">Sayt inadçı və ya aldadıcı reklamlar göstərirsə, blok edin (tövsiyə olunur)</translation>
 <translation id="967624055006145463">Yadda saxlanmış data</translation>
 </translationbundle>

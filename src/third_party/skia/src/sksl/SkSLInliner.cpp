@@ -18,6 +18,7 @@
 #include "src/sksl/ir/SkSLBreakStatement.h"
 #include "src/sksl/ir/SkSLConstructor.h"
 #include "src/sksl/ir/SkSLConstructorArray.h"
+#include "src/sksl/ir/SkSLConstructorArrayCast.h"
 #include "src/sksl/ir/SkSLConstructorCompound.h"
 #include "src/sksl/ir/SkSLConstructorCompoundCast.h"
 #include "src/sksl/ir/SkSLConstructorDiagonalMatrix.h"
@@ -316,6 +317,12 @@ std::unique_ptr<Expression> Inliner::inlineExpression(int offset,
                                           *ctor.type().clone(symbolTableForExpression),
                                           argList(ctor.arguments()));
         }
+        case Expression::Kind::kConstructorArrayCast: {
+            const ConstructorArrayCast& ctor = expression.as<ConstructorArrayCast>();
+            return ConstructorArrayCast::Make(*fContext, offset,
+                                              *ctor.type().clone(symbolTableForExpression),
+                                              expr(ctor.argument()));
+        }
         case Expression::Kind::kConstructorCompound: {
             const ConstructorCompound& ctor = expression.as<ConstructorCompound>();
             return ConstructorCompound::Make(*fContext, offset,
@@ -523,8 +530,8 @@ std::unique_ptr<Statement> Inliner::inlineStatement(int offset,
             const SwitchStatement& ss = statement.as<SwitchStatement>();
             StatementArray cases;
             cases.reserve_back(ss.cases().size());
-            for (const std::unique_ptr<Statement>& statement : ss.cases()) {
-                const SwitchCase& sc = statement->as<SwitchCase>();
+            for (const std::unique_ptr<Statement>& switchCaseStmt : ss.cases()) {
+                const SwitchCase& sc = switchCaseStmt->as<SwitchCase>();
                 cases.push_back(std::make_unique<SwitchCase>(offset, expr(sc.value()),
                                                              stmt(sc.statement())));
             }
@@ -697,9 +704,9 @@ Inliner::InlinedCall Inliner::inlineCall(FunctionCall* call,
         // returned anything on any path! This should have been detected in the function finalizer.
         // Still, discard our output and generate an error.
         SkDEBUGFAIL("inliner found non-void function that fails to return a value on any path");
-        fContext->fErrors.error(function.fOffset, "inliner found non-void function '" +
-                                                  function.declaration().name() +
-                                                  "' that fails to return a value on any path");
+        fContext->errors().error(function.fOffset, "inliner found non-void function '" +
+                                                   function.declaration().name() +
+                                                   "' that fails to return a value on any path");
         inlinedCall = {};
     }
 
@@ -821,8 +828,8 @@ public:
                     fSymbolTableStack.push_back(block.symbolTable());
                 }
 
-                for (std::unique_ptr<Statement>& stmt : block.children()) {
-                    this->visitStatement(&stmt);
+                for (std::unique_ptr<Statement>& blockStmt : block.children()) {
+                    this->visitStatement(&blockStmt);
                 }
                 break;
             }
@@ -952,6 +959,7 @@ public:
                 break;
             }
             case Expression::Kind::kConstructorArray:
+            case Expression::Kind::kConstructorArrayCast:
             case Expression::Kind::kConstructorCompound:
             case Expression::Kind::kConstructorCompoundCast:
             case Expression::Kind::kConstructorDiagonalMatrix:
@@ -1173,7 +1181,8 @@ bool Inliner::analyze(const std::vector<std::unique_ptr<ProgramElement>>& elemen
         *enclosingStmt = std::move(inlinedCall.fInlinedBody);
 
         // Replace the candidate function call with our replacement expression.
-        usage->replace(candidate.fCandidateExpr->get(), inlinedCall.fReplacementExpr.get());
+        usage->remove(candidate.fCandidateExpr->get());
+        usage->add(inlinedCall.fReplacementExpr.get());
         *candidate.fCandidateExpr = std::move(inlinedCall.fReplacementExpr);
         madeChanges = true;
 

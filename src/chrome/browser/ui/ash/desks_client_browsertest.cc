@@ -9,9 +9,11 @@
 #include <memory>
 #include <string>
 
+#include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/desk_template.h"
 #include "ash/public/cpp/desks_helper.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/wm/desks/desks_test_util.h"
 #include "base/run_loop.h"
@@ -25,9 +27,13 @@
 #include "chrome/browser/ash/login/test/login_manager_mixin.h"
 #include "chrome/browser/ash/login/ui/user_adding_screen.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_keep_alive_types.h"
+#include "chrome/browser/profiles/scoped_profile_keep_alive.h"
 #include "chrome/browser/ui/ash/desk_template_app_launch_handler.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -43,6 +49,8 @@
 #include "components/full_restore/features.h"
 #include "components/full_restore/full_restore_utils.h"
 #include "components/full_restore/restore_data.h"
+#include "components/keep_alive_registry/keep_alive_types.h"
+#include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "content/public/test/browser_test.h"
 #include "extensions/common/constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -72,7 +80,7 @@ Browser* FindBrowser(int32_t window_id) {
   return nullptr;
 }
 
-aura::Window* FindAppWindow(int32_t window_id) {
+aura::Window* FindBrowserWindow(int32_t window_id) {
   Browser* browser = FindBrowser(window_id);
   return browser ? browser->window()->GetNativeWindow() : nullptr;
 }
@@ -90,14 +98,41 @@ std::unique_ptr<ash::DeskTemplate> CaptureActiveDeskAndSaveTemplate() {
   std::unique_ptr<ash::DeskTemplate> desk_template;
   DesksClient::Get()->CaptureActiveDeskAndSaveTemplate(
       base::BindLambdaForTesting(
-          [&](bool success,
-              std::unique_ptr<ash::DeskTemplate> captured_desk_template) {
+          [&](std::unique_ptr<ash::DeskTemplate> captured_desk_template,
+              std::string error_string) {
             run_loop.Quit();
             ASSERT_TRUE(captured_desk_template);
             desk_template = std::move(captured_desk_template);
           }));
   run_loop.Run();
   return desk_template;
+}
+
+void DeleteDeskTemplate(const base::GUID uuid) {
+  base::RunLoop run_loop;
+  DesksClient::Get()->DeleteDeskTemplate(
+      uuid.AsLowercaseString(),
+      base::BindLambdaForTesting(
+          [&](std::string error_string) { run_loop.Quit(); }));
+  run_loop.Run();
+}
+
+web_app::AppId CreateSettingsSystemWebApp(Profile* profile) {
+  web_app::WebAppProvider::Get(profile)
+      ->system_web_app_manager()
+      .InstallSystemAppsForTesting();
+  web_app::AppId settings_app_id = *web_app::GetAppIdForSystemWebApp(
+      profile, web_app::SystemAppType::SETTINGS);
+  apps::AppLaunchParams params(
+      settings_app_id, apps::mojom::LaunchContainer::kLaunchContainerWindow,
+      WindowOpenDisposition::NEW_WINDOW,
+      apps::mojom::AppLaunchSource::kSourceTest);
+  params.restore_id = kSettingsWindowId;
+  apps::AppServiceProxyFactory::GetForProfile(profile)
+      ->BrowserAppLauncher()
+      ->LaunchAppWithParams(std::move(params));
+  web_app::FlushSystemWebAppLaunchesForTesting(profile);
+  return settings_app_id;
 }
 
 class MockDeskTemplateAppLaunchHandler : public DeskTemplateAppLaunchHandler {
@@ -176,7 +211,7 @@ class DesksClientTest : public extensions::PlatformAppBrowserTest {
     DesksClient::Get()->launch_template_for_test_ = std::move(launch_template);
   }
 
-  void LaunchTemplate(const base::GUID uuid) {
+  void LaunchTemplate(const base::GUID& uuid) {
     ash::DeskSwitchAnimationWaiter waiter;
     DesksClient::Get()->LaunchDeskTemplate(uuid.AsLowercaseString(),
                                            base::DoNothing());
@@ -297,25 +332,13 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, CaptureActiveDeskAsTemplateTest) {
   const int32_t browser_window_id =
       window->GetProperty(::full_restore::kWindowIdKey);
 
-  // Create a Chrome settings app.
-  web_app::WebAppProvider::Get(profile())
-      ->system_web_app_manager()
-      .InstallSystemAppsForTesting();
-  web_app::AppId settings_app_id = *web_app::GetAppIdForSystemWebApp(
-      profile(), web_app::SystemAppType::SETTINGS);
-  apps::AppLaunchParams params(
-      settings_app_id, apps::mojom::LaunchContainer::kLaunchContainerWindow,
-      WindowOpenDisposition::NEW_WINDOW,
-      apps::mojom::AppLaunchSource::kSourceTest);
-  params.restore_id = kSettingsWindowId;
-  apps::AppServiceProxyFactory::GetForProfile(profile())
-      ->BrowserAppLauncher()
-      ->LaunchAppWithParams(std::move(params));
-  web_app::FlushSystemWebAppLaunchesForTesting(profile());
+  // Create the settings app, which is a system web app.
+  web_app::AppId settings_app_id =
+      CreateSettingsSystemWebApp(browser()->profile());
 
   // Change the Settings app's bounds too.
   const gfx::Rect settings_app_bounds = gfx::Rect(100, 100, 800, 300);
-  aura::Window* settings_window = FindAppWindow(kSettingsWindowId);
+  aura::Window* settings_window = FindBrowserWindow(kSettingsWindowId);
   const int32_t settings_window_id =
       settings_window->GetProperty(full_restore::kWindowIdKey);
   ASSERT_TRUE(settings_window);
@@ -390,6 +413,17 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, LaunchEmptyDeskTemplate) {
 
   EXPECT_EQ(1, desks_helper->GetActiveDeskIndex());
   EXPECT_EQ(kDeskName, desks_helper->GetDeskName(1));
+
+  // Verify that user prefs are updated with the correct desk names. This
+  // ensures that template created desk names are preserved on restart.
+  PrefService* primary_user_prefs =
+      ash::Shell::Get()->session_controller()->GetPrimaryUserPrefService();
+  ASSERT_TRUE(primary_user_prefs);
+  const base::ListValue* desks_names =
+      primary_user_prefs->GetList(ash::prefs::kDesksNamesList);
+  const auto& desks_names_list = desks_names->GetList();
+  EXPECT_EQ(2, desks_names->GetSize());
+  EXPECT_EQ(base::UTF16ToUTF8(kDeskName), desks_names_list[1].GetString());
 }
 
 // Tests that launching the same desk template multiple times creates desks with
@@ -444,22 +478,9 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, LaunchTemplateWithSystemApp) {
   ASSERT_TRUE(DesksClient::Get());
 
   // Create the settings app, which is a system web app.
-  web_app::WebAppProvider::Get(profile())
-      ->system_web_app_manager()
-      .InstallSystemAppsForTesting();
-  web_app::AppId settings_app_id = *web_app::GetAppIdForSystemWebApp(
-      profile(), web_app::SystemAppType::SETTINGS);
-  apps::AppLaunchParams params(
-      settings_app_id, apps::mojom::LaunchContainer::kLaunchContainerWindow,
-      WindowOpenDisposition::NEW_WINDOW,
-      apps::mojom::AppLaunchSource::kSourceTest);
-  params.restore_id = kSettingsWindowId;
-  apps::AppServiceProxyFactory::GetForProfile(profile())
-      ->BrowserAppLauncher()
-      ->LaunchAppWithParams(std::move(params));
-  web_app::FlushSystemWebAppLaunchesForTesting(profile());
+  CreateSettingsSystemWebApp(browser()->profile());
 
-  aura::Window* settings_window = FindAppWindow(kSettingsWindowId);
+  aura::Window* settings_window = FindBrowserWindow(kSettingsWindowId);
   ASSERT_TRUE(settings_window);
   const std::u16string settings_title = settings_window->GetTitle();
 
@@ -469,7 +490,7 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, LaunchTemplateWithSystemApp) {
   views::Widget* settings_widget =
       views::Widget::GetWidgetForNativeWindow(settings_window);
   settings_widget->CloseNow();
-  ASSERT_FALSE(FindAppWindow(kSettingsWindowId));
+  ASSERT_FALSE(FindBrowserWindow(kSettingsWindowId));
   settings_window = nullptr;
 
   ash::DesksHelper* desks_helper = ash::DesksHelper::Get();
@@ -481,7 +502,7 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, LaunchTemplateWithSystemApp) {
   // Verify that the settings window has been launched on the new desk (desk B).
   // TODO(sammiequon): Right now the app just launches, so verify the title
   // matches. We should verify the restore id and use
-  // `FindAppWindow(kSettingsWindowId)` once things are wired up properly.
+  // `FindBrowserWindow(kSettingsWindowId)` once things are wired up properly.
   EXPECT_EQ(1, desks_helper->GetActiveDeskIndex());
   for (auto* browser : *BrowserList::GetInstance()) {
     aura::Window* window = browser->window()->GetNativeWindow();
@@ -494,6 +515,42 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, LaunchTemplateWithSystemApp) {
   EXPECT_EQ(ash::Shell::GetContainer(settings_window->GetRootWindow(),
                                      ash::kShellWindowId_DeskContainerB),
             settings_window->parent());
+}
+
+// Tests that launching a template that contains a system web app will move the
+// existing instance of the system web app to the current desk.
+IN_PROC_BROWSER_TEST_F(DesksClientTest, LaunchTemplateWithSystemAppExisting) {
+  ASSERT_TRUE(DesksClient::Get());
+  Profile* profile = browser()->profile();
+
+  // Create the settings app, which is a system web app.
+  CreateSettingsSystemWebApp(profile);
+
+  aura::Window* settings_window = FindBrowserWindow(kSettingsWindowId);
+  ASSERT_TRUE(settings_window);
+  EXPECT_EQ(2u, BrowserList::GetInstance()->size());
+
+  base::RunLoop run_loop;
+  std::unique_ptr<ash::DeskTemplate> desk_template;
+  DesksClient::Get()->CaptureActiveDeskAndSaveTemplate(
+      base::BindLambdaForTesting(
+          [&](std::unique_ptr<ash::DeskTemplate> captured_desk_template,
+              std::string error_string) {
+            run_loop.Quit();
+            ASSERT_TRUE(captured_desk_template);
+            desk_template = std::move(captured_desk_template);
+          }));
+  run_loop.Run();
+
+  ash::DesksHelper* desks_helper = ash::DesksHelper::Get();
+  ASSERT_EQ(0, desks_helper->GetActiveDeskIndex());
+
+  // Set the template we created as the template we want to launch.
+  SetAndLaunchTemplate(std::move(desk_template));
+
+  // We launch a new browser window, but not a new settings app.
+  EXPECT_EQ(3u, BrowserList::GetInstance()->size());
+  EXPECT_TRUE(ash::DesksHelper::Get()->BelongsToActiveDesk(settings_window));
 }
 
 // Tests that launching a template that contains a chrome app works as expected.
@@ -597,6 +654,49 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, LaunchTemplateWithBrowserWindow) {
             browser_window->parent());
 }
 
+// Tests that browser session restore isn't triggered when we launch a template
+// that contains a browser window.
+IN_PROC_BROWSER_TEST_F(DesksClientTest, PreventBrowserSessionRestoreTest) {
+  ASSERT_TRUE(DesksClient::Get());
+
+  // Do not exit from test or delete the Profile* when last browser is closed.
+  ScopedKeepAlive keep_alive(KeepAliveOrigin::BROWSER,
+                             KeepAliveRestartOption::DISABLED);
+  ScopedProfileKeepAlive profile_keep_alive(
+      browser()->profile(), ProfileKeepAliveOrigin::kBrowserWindow);
+
+  // Enable session service.
+  SessionStartupPref pref(SessionStartupPref::LAST);
+  Profile* profile = browser()->profile();
+  SessionStartupPref::SetStartupPref(profile, pref);
+
+  const int expected_tab_count = 2;
+  chrome::AddTabAt(browser(), GURL(kExampleUrl2), /*index=*/-1,
+                   /*foreground=*/true);
+  EXPECT_EQ(expected_tab_count, browser()->tab_strip_model()->count());
+  const int32_t browser_window_id =
+      browser()->window()->GetNativeWindow()->GetProperty(
+          ::full_restore::kWindowIdKey);
+
+  std::unique_ptr<ash::DeskTemplate> desk_template =
+      CaptureActiveDeskAndSaveTemplate();
+  ASSERT_TRUE(desk_template);
+
+  // Close the browser and verify that all browser windows are closed.
+  CloseBrowserSynchronously(browser());
+  EXPECT_EQ(0u, chrome::GetTotalBrowserCount());
+
+  // Set the template we created and launch the template.
+  SetAndLaunchTemplate(std::move(desk_template));
+
+  // Verify that the browser was launched with the correct number of tabs, and
+  // that browser session restore did not restore any windows/tabs.
+  Browser* new_browser = FindBrowser(browser_window_id);
+  ASSERT_TRUE(new_browser);
+  EXPECT_EQ(expected_tab_count, GetURLsForBrowserWindow(new_browser).size());
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
+}
+
 // Tests that the windows and tabs count histogram is recorded properly.
 IN_PROC_BROWSER_TEST_F(DesksClientTest,
                        DeskTemplateWindowAndTabCountHistogram) {
@@ -604,21 +704,10 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest,
 
   base::HistogramTester histogram_tester;
 
-  // Create a Chrome settings app.
-  web_app::WebAppProvider::Get(profile())
-      ->system_web_app_manager()
-      .InstallSystemAppsForTesting();
-  web_app::AppId settings_app_id = *web_app::GetAppIdForSystemWebApp(
-      profile(), web_app::SystemAppType::SETTINGS);
-  apps::AppLaunchParams params(
-      settings_app_id, apps::mojom::LaunchContainer::kLaunchContainerWindow,
-      WindowOpenDisposition::NEW_WINDOW,
-      apps::mojom::AppLaunchSource::kSourceTest);
-  params.restore_id = kSettingsWindowId;
-  apps::AppServiceProxyFactory::GetForProfile(profile())
-      ->BrowserAppLauncher()
-      ->LaunchAppWithParams(std::move(params));
-  web_app::FlushSystemWebAppLaunchesForTesting(profile());
+  Profile* profile = browser()->profile();
+
+  // Create the settings app, which is a system web app.
+  CreateSettingsSystemWebApp(profile);
 
   CreateBrowser({GURL(kExampleUrl1), GURL(kExampleUrl2)});
   CreateBrowser({GURL(kExampleUrl1), GURL(kExampleUrl2), GURL(kExampleUrl3)});
@@ -667,6 +756,28 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest,
   constexpr char kLaunchFromTemplateHistogramName[] =
       "Ash.DeskTemplate.LaunchFromTemplate";
   histogram_tester.ExpectTotalCount(kLaunchFromTemplateHistogramName, launches);
+}
+
+// Tests that the template count histogram is recorded properly.
+IN_PROC_BROWSER_TEST_F(DesksClientTest,
+                       DeskTemplateUserTemplateCountHistogram) {
+  ASSERT_TRUE(DesksClient::Get());
+
+  base::HistogramTester histogram_tester;
+
+  // Verify that all template saves and deletes are captured by the histogram.
+  CaptureActiveDeskAndSaveTemplate();
+  CaptureActiveDeskAndSaveTemplate();
+  std::unique_ptr<ash::DeskTemplate> desk_template =
+      CaptureActiveDeskAndSaveTemplate();
+  DeleteDeskTemplate(desk_template->uuid());
+  CaptureActiveDeskAndSaveTemplate();
+
+  constexpr char kUserTemplateCountHistogramName[] =
+      "Ash.DeskTemplate.UserTemplateCount";
+  histogram_tester.ExpectBucketCount(kUserTemplateCountHistogramName, 1, 1);
+  histogram_tester.ExpectBucketCount(kUserTemplateCountHistogramName, 2, 2);
+  histogram_tester.ExpectBucketCount(kUserTemplateCountHistogramName, 3, 2);
 }
 
 // Tests that browser windows created from a template have the correct bounds
@@ -861,8 +972,8 @@ IN_PROC_BROWSER_TEST_F(DesksClientMultiProfileTest, MultiProfileTest) {
     base::RunLoop run_loop;
     int templates_num = 0;
     DesksClient::Get()->GetDeskTemplates(base::BindLambdaForTesting(
-        [&](bool success,
-            const std::vector<ash::DeskTemplate*>& desk_templates) {
+        [&](const std::vector<ash::DeskTemplate*>& desk_templates,
+            std::string error_string) {
           templates_num = desk_templates.size();
           run_loop.Quit();
         }));

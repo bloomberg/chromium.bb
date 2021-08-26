@@ -22,7 +22,6 @@
 -AutofillProviderBrowserTest.FrameDetachedOnFormlessSubmission
 -AutofillProviderBrowserTestWithSkipFlagOn.InferredLabelChangeNotImpactFormComparing
 -AutomationApiTest.ForceLayout
--AutomationManagerAuraBrowserTest.EventFromAction
 -AutoplayExtensionBrowserTest.AutoplayAllowedInIframe
 -BluetoothApiTest.*
 -BluetoothLowEnergyApiTest.*
@@ -37,7 +36,6 @@
 -BrowserViewTest.DevToolsUpdatesBrowserWindow
 -BrowserViewTest.F6CyclesThroughCaptionBubbleToo
 -BrowserViewTest.GetAccessibleTabModalDialogTitle
--BrowserViewTest.GetAccessibleTabModalDialogTree
 -BrowsingDataRemoverBrowserTest.StorageRemovedFromDisk
 -CaptivePortalBrowserTest.SecureDnsErrorTriggersCheck
 -CaptivePortalBrowserTest.SlowLoadSecureDnsErrorAfterLogin
@@ -49,23 +47,23 @@
 -ContentSettingsTest.AllowCookiesForASessionUsingExceptions
 -ContentVerifierTest.PolicyCorrupted
 -ContextMenuBrowserTest.*
--CrComponentsCertificateManagerV3Test.All
--CrComponentsManagedFootnoteV3Test.All
+-CrComponentsCertificateManagerTest.All
+-CrComponentsManagedFootnoteTest.All
 -CreativeOriginAdsPageLoadMetricsObserverBrowserTest.CreativeOriginStatusWithThrottlingNestedThrottled
--CrSettingsAdvancedPageV3Test.Load
--CrSettingsBasicPageV3Test.All
--CrSettingsClearBrowsingDataV3Test.ClearBrowsingDataAllPlatforms
--CrSettingsDownloadsPageV3Test.All
--CrSettingsLanguagesPageV3Test.AddLanguagesDialog
--CrSettingsLanguagesPageV3Test.LanguageMenu
--CrSettingsLanguagesPageV3Test.Spellcheck
--CrSettingsLanguagesV3Test.All
--CrSettingsMainPageV3Test.MainPageV3
--CrSettingsRouteV3Test.DynamicParameters
--CrSettingsRouteV3Test.NonExistentRoute
--CrSettingsSiteDetailsV3Test.SiteDetails
--CrSettingsSiteListEntryV3Test.All
--CrSettingsSyncAccountControlV3Test.All
+-CrSettingsAdvancedPageTest.Load
+-CrSettingsBasicPageTest.All
+-CrSettingsClearBrowsingDataTest.ClearBrowsingDataAllPlatforms
+-CrSettingsDownloadsPageTest.All
+-CrSettingsLanguagesPageTest.AddLanguagesDialog
+-CrSettingsLanguagesPageTest.LanguageMenu
+-CrSettingsLanguagesPageTest.Spellcheck
+-CrSettingsLanguagesTest.All
+-CrSettingsMainPageTest.MainPage
+-CrSettingsRouteTest.DynamicParameters
+-CrSettingsRouteTest.NonExistentRoute
+-CrSettingsSiteDetailsTest.SiteDetails
+-CrSettingsSiteListEntryTest.All
+-CrSettingsSyncAccountControlTest.All
 -CustomTabBarViewBrowserTest.BackToAppButtonIsNotVisibleInOutOfScopePopups
 -CustomTabBarViewBrowserTest.IsNotCreatedInPopup
 -CustomTabBarViewBrowserTest.RightClickMenuShowsCopyUrl
@@ -97,7 +95,6 @@
 -GlobalErrorBubbleTest.InvokeUi_ExtensionDisabledGlobalError
 -GlobalErrorBubbleTest.InvokeUi_ExtensionDisabledGlobalErrorRemote
 -GlobalErrorBubbleTest.InvokeUi_ExternalInstallBubbleAlert
--IconLoaderBrowserTest.LoadGroup
 -InlineLoginHelperBrowserTest.ForceSigninWithUserManager
 -KeepAliveDevToolsTest.KeepsAliveUntilBrowserClose
 -LiteVideoBrowserTest.SimplePlayback
@@ -218,7 +215,7 @@
 # Following tests fail when Mirror is enabled on Lacros. They try to update
 # credentials in Ash Account Manager, which is currently not possible in
 # browser_tests because of lack of crosapi.
--All/PasswordBubbleBrowserTest.InvokeUi_MoveToAccountStoreBubble*
+-PasswordBubbleBrowserTest.InvokeUi_MoveToAccountStoreBubble*
 -BookmarkBubble*
 -BrowsingDataCounterUtilsBrowserTest.ShouldShowCookieException
 -ComponentCloudPolicyTest.SignOutAndBackIn
@@ -232,7 +229,7 @@
 -LocalCardMigrationBrowserTest*
 -MetricsServiceUserDemographicsBrowserTest.*
 -NetworkOnOrOff/ProfileMenuViewSignoutTestWithNetwork.Signout*
--PageInfoBubbleViewSyncBrowserTest.VerifySignInPasswordReusePageInfoBubble
+-All/PageInfoBubbleViewSyncBrowserTest.VerifySignInPasswordReusePageInfoBubble*
 -PasswordManagerBrowserTestWithSigninInterception.*
 -PrivacyBudgetBrowserTest.UkmClientIdChangesResetStudyState
 -ProfileMenuViewSignoutTest.OpenLogoutTab
@@ -246,4 +243,5 @@
 -UkmConsentParamBrowserTests*
 -UserPolicySigninServiceTest.BasicSignin
 -UserPolicySigninServiceTest.*
+-UserPolicySigninServiceSyncNotRequiredTest.AcceptManagementDeclineSync
 -VariationsHttpHeadersBrowserTest.UserSignedIn

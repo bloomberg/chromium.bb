@@ -141,7 +141,7 @@ void MergeNodeRecurse(CXFA_Node* pDestNodeParent, CXFA_Node* pProtoNode) {
     if (pFormChild->GetElementType() == pProtoNode->GetElementType() &&
         pFormChild->GetNameHash() == pProtoNode->GetNameHash() &&
         pFormChild->IsUnusedNode()) {
-      pFormChild->ClearFlag(XFA_NodeFlag_UnusedNode);
+      pFormChild->ClearFlag(XFA_NodeFlag::kUnusedNode);
       pExistingNode = pFormChild;
       break;
     }
@@ -165,7 +165,7 @@ void MergeNode(CXFA_Node* pDestNode, CXFA_Node* pProtoNode) {
     CXFA_NodeIterator sIterator(pDestNode);
     for (CXFA_Node* pNode = sIterator.GetCurrent(); pNode;
          pNode = sIterator.MoveToNext()) {
-      pNode->SetFlag(XFA_NodeFlag_UnusedNode);
+      pNode->SetFlag(XFA_NodeFlag::kUnusedNode);
     }
   }
   pDestNode->SetTemplateNode(pProtoNode);
@@ -177,7 +177,7 @@ void MergeNode(CXFA_Node* pDestNode, CXFA_Node* pProtoNode) {
     CXFA_NodeIterator sIterator(pDestNode);
     for (CXFA_Node* pNode = sIterator.GetCurrent(); pNode;
          pNode = sIterator.MoveToNext()) {
-      pNode->ClearFlag(XFA_NodeFlag_UnusedNode);
+      pNode->ClearFlag(XFA_NodeFlag::kUnusedNode);
     }
   }
 }
@@ -214,7 +214,7 @@ CXFA_Node* CloneOrMergeInstanceManager(CXFA_Document* pDocument,
     }
     pFormParent->RemoveChildAndNotify(pExistingNode, true);
     pFormParent->InsertChildAndNotify(pExistingNode, nullptr);
-    pExistingNode->ClearFlag(XFA_NodeFlag_UnusedNode);
+    pExistingNode->ClearFlag(XFA_NodeFlag::kUnusedNode);
     pExistingNode->SetTemplateNode(pTemplateNode);
     return pExistingNode;
   }
@@ -346,11 +346,12 @@ CXFA_Node* FindDataRefDataNode(CXFA_Document* pDocument,
                                CXFA_Node* pTemplateNode,
                                bool bForceBind,
                                bool bUpLevel) {
-  XFA_ResolveNodeMask dwFlags =
-      XFA_RESOLVENODE_Children | XFA_RESOLVENODE_BindNew;
-  if (bUpLevel || !wsRef.EqualsASCII("name"))
-    dwFlags |= (XFA_RESOLVENODE_Parent | XFA_RESOLVENODE_Siblings);
-
+  Mask<XFA_ResolveFlag> dwFlags = {XFA_ResolveFlag::kChildren,
+                                   XFA_ResolveFlag::kBindNew};
+  if (bUpLevel || !wsRef.EqualsASCII("name")) {
+    dwFlags |= XFA_ResolveFlag::kParent;
+    dwFlags |= XFA_ResolveFlag::kSiblings;
+  }
   Optional<CFXJSE_Engine::ResolveResult> maybeResult =
       pDocument->GetScriptContext()->ResolveObjectsWithBindNode(
           pDataScope, wsRef.AsStringView(), dwFlags, pTemplateNode);
@@ -675,7 +676,7 @@ void CreateDataBinding(CXFA_Node* pFormNode,
     case XFA_FFWidgetType::kChoiceList:
       if (pFormNode->IsChoiceListMultiSelect()) {
         std::vector<CXFA_Node*> items = pDataNode->GetNodeListWithFilter(
-            XFA_NodeFilter_Children | XFA_NodeFilter_Properties);
+            {XFA_NodeFilter::kChildren, XFA_NodeFilter::kProperties});
         if (!items.empty()) {
           bool single = items.size() == 1;
           wsNormalizeValue.clear();
@@ -739,7 +740,7 @@ CXFA_Node* MaybeCreateDataNode(CXFA_Document* pDocument,
     pDataNode->JSObject()->SetCData(XFA_Attribute::Name, wsName);
     pDataNode->CreateXMLMappingNode();
     pDataParent->InsertChildAndNotify(pDataNode, nullptr);
-    pDataNode->SetFlag(XFA_NodeFlag_Initialized);
+    pDataNode->SetFlag(XFA_NodeFlag::kInitialized);
     return pDataNode;
   }
 
@@ -777,7 +778,7 @@ CXFA_Node* MaybeCreateDataNode(CXFA_Document* pDocument,
     }
     pDataParent->InsertChildAndNotify(pDataNode, nullptr);
     pDataNode->SetDataDescriptionNode(pDDNode);
-    pDataNode->SetFlag(XFA_NodeFlag_Initialized);
+    pDataNode->SetFlag(XFA_NodeFlag::kInitialized);
     return pDataNode;
   }
   return nullptr;
@@ -854,10 +855,10 @@ CXFA_Node* CopyContainer_SubformSet(CXFA_Document* pDocument,
       pOccurNode =
           pInstMgrNode->GetFirstChildByClass<CXFA_Occur>(XFA_Element::Occur);
       if (pOccurNode)
-        pOccurNode->ClearFlag(XFA_NodeFlag_UnusedNode);
+        pOccurNode->ClearFlag(XFA_NodeFlag::kUnusedNode);
     }
     if (pInstMgrNode) {
-      pInstMgrNode->SetFlagAndNotify(XFA_NodeFlag_Initialized);
+      pInstMgrNode->SetInitializedFlagAndNotify();
       pSearchArray = &subformArray;
       if (pFormParentNode->GetElementType() == XFA_Element::PageArea) {
         bOneInstance = true;
@@ -1198,8 +1199,8 @@ void UpdateBindingRelations(CXFA_Document* pDocument,
               pTemplateNodeBind
                   ? pTemplateNodeBind->JSObject()->GetCData(XFA_Attribute::Ref)
                   : WideString();
-          constexpr XFA_ResolveNodeMask kFlags =
-              XFA_RESOLVENODE_Children | XFA_RESOLVENODE_CreateNode;
+          const Mask<XFA_ResolveFlag> kFlags = {XFA_ResolveFlag::kChildren,
+                                                XFA_ResolveFlag::kCreateNode};
           Optional<CFXJSE_Engine::ResolveResult> maybeResult =
               pDocument->GetScriptContext()->ResolveObjectsWithBindNode(
                   pDataScope, wsRef.AsStringView(), kFlags, pTemplateNode);
@@ -1577,12 +1578,13 @@ void CXFA_Document::DoProtoMerge() {
 
     CXFA_Node* pProtoNode = nullptr;
     if (!wsSOM.IsEmpty()) {
-      constexpr uint32_t dwFlag =
-          XFA_RESOLVENODE_Children | XFA_RESOLVENODE_Attributes |
-          XFA_RESOLVENODE_Properties | XFA_RESOLVENODE_Parent |
-          XFA_RESOLVENODE_Siblings;
       Optional<CFXJSE_Engine::ResolveResult> maybeResult =
-          m_pScriptContext->ResolveObjects(pUseHrefNode, wsSOM, dwFlag);
+          m_pScriptContext->ResolveObjects(
+              pUseHrefNode, wsSOM,
+              Mask<XFA_ResolveFlag>{
+                  XFA_ResolveFlag::kChildren, XFA_ResolveFlag::kAttributes,
+                  XFA_ResolveFlag::kProperties, XFA_ResolveFlag::kParent,
+                  XFA_ResolveFlag::kSiblings});
       if (maybeResult.has_value()) {
         auto* pFirstObject = maybeResult.value().objects.front().Get();
         if (pFirstObject && pFirstObject->IsNode())
@@ -1744,7 +1746,7 @@ void CXFA_Document::DoDataMerge() {
         sIterator(pFormRoot);
     for (CXFA_Node* pNode = sIterator.MoveToNext(); pNode;
          pNode = sIterator.MoveToNext()) {
-      pNode->SetFlag(XFA_NodeFlag_UnusedNode);
+      pNode->SetFlag(XFA_NodeFlag::kUnusedNode);
     }
   }
 
@@ -1811,12 +1813,12 @@ void CXFA_Document::DoDataMerge() {
         pNode->GetParent()->RemoveChildAndNotify(pNode, true);
         pNode = pNext;
       } else {
-        pNode->ClearFlag(XFA_NodeFlag_UnusedNode);
-        pNode->SetFlagAndNotify(XFA_NodeFlag_Initialized);
+        pNode->ClearFlag(XFA_NodeFlag::kUnusedNode);
+        pNode->SetInitializedFlagAndNotify();
         pNode = sIterator.MoveToNext();
       }
     } else {
-      pNode->SetFlagAndNotify(XFA_NodeFlag_Initialized);
+      pNode->SetInitializedFlagAndNotify();
       pNode = sIterator.MoveToNext();
     }
   }
@@ -1873,7 +1875,7 @@ void CXFA_Document::SetPendingNodesUnusedAndUnbound() {
           pNode->SetBindingNode(nullptr);
         }
       }
-      pNode->SetFlag(XFA_NodeFlag_UnusedNode);
+      pNode->SetFlag(XFA_NodeFlag::kUnusedNode);
     }
   }
 }

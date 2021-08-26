@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <memory>
 
+#include "base/dcheck_is_on.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -201,6 +202,7 @@ Database::StatementRef::StatementRef(Database* database,
                                      sqlite3_stmt* stmt,
                                      bool was_valid)
     : database_(database), stmt_(stmt), was_valid_(was_valid) {
+  DCHECK_EQ(database == nullptr, stmt == nullptr);
   if (database)
     database_->StatementRefCreated(this);
 }
@@ -247,6 +249,9 @@ Database::Database(DatabaseOptions options)
   DCHECK_LE(options.page_size, 65536);
   DCHECK(!(options.page_size & (options.page_size - 1)))
       << "page_size must be a power of two";
+  DCHECK(!options_.mmap_alt_status_discouraged ||
+         options_.enable_views_discouraged)
+      << "mmap_alt_status requires views";
 }
 
 Database::~Database() {
@@ -488,7 +493,7 @@ std::string Database::CollectErrorInfo(int error, Statement* stmt) const {
   // SQLITE_ERROR often indicates some sort of mismatch between the statement
   // and the schema, possibly due to a failed schema migration.
   if (error == SQLITE_ERROR) {
-    static const char kVersionSql[] =
+    static constexpr char kVersionSql[] =
         "SELECT value FROM meta WHERE key='version'";
     sqlite3_stmt* sqlite_statement;
     // When the number of bytes passed to sqlite3_prepare_v3() includes the null
@@ -523,7 +528,7 @@ std::string Database::CollectErrorInfo(int error, Statement* stmt) const {
     // |rootpage| is not interesting for debugging, without the contents of the
     // database.  The COALESCE is because certain automatic elements will have a
     // |name| but no |sql|,
-    static const char kSchemaSql[] =
+    static constexpr char kSchemaSql[] =
         "SELECT COALESCE(sql,name) FROM sqlite_master";
     rc = sqlite3_prepare_v3(db_, kSchemaSql, sizeof(kSchemaSql),
                             SQLITE_PREPARE_NO_VTAB, &sqlite_statement,
@@ -741,6 +746,11 @@ size_t Database::GetAppropriateMmapSize() {
   return mmap_ofs;
 }
 
+int Database::SqlitePrepareFlags() const {
+  return options_.enable_virtual_tables_discouraged ? 0
+                                                    : SQLITE_PREPARE_NO_VTAB;
+}
+
 void Database::TrimMemory() {
   TRACE_EVENT0("sql", "Database::TrimMemory");
 
@@ -780,6 +790,9 @@ bool Database::Raze() {
       .exclusive_locking = true,
       .page_size = options_.page_size,
       .cache_size = 0,
+      .enable_views_discouraged = options_.enable_views_discouraged,
+      .enable_virtual_tables_discouraged =
+          options_.enable_virtual_tables_discouraged,
   });
   if (!null_db.OpenInMemory()) {
     DLOG(DCHECK) << "Unable to open in-memory database.";
@@ -1119,7 +1132,7 @@ int Database::ExecuteAndReturnErrorCode(const char* sql) {
   while ((rc == SQLITE_OK) && *sql) {
     sqlite3_stmt* sqlite_statement;
     const char* leftover_sql;
-    rc = sqlite3_prepare_v3(db_, sql, /* nByte= */ -1, /* prepFlags= */ 0,
+    rc = sqlite3_prepare_v3(db_, sql, /* nByte= */ -1, SqlitePrepareFlags(),
                             &sqlite_statement, &leftover_sql);
     // Stop if an error is encountered.
     if (rc != SQLITE_OK)
@@ -1202,6 +1215,45 @@ bool Database::ExecuteWithTimeout(const char* sql, base::TimeDelta timeout) {
   return Execute(sql);
 }
 
+bool Database::ExecuteScriptForTesting(const char* sql_script) {
+  DCHECK(sql_script);
+  if (!db_) {
+    DCHECK(poisoned_) << "Illegal use of Database without a db";
+    return false;
+  }
+
+  absl::optional<base::ScopedBlockingCall> scoped_blocking_call;
+  InitScopedBlockingCall(FROM_HERE, &scoped_blocking_call);
+
+  while (*sql_script) {
+    sqlite3_stmt* sqlite_statement;
+    int sqlite_error = sqlite3_prepare_v3(db_, sql_script, /* nByte= */ -1,
+                                          SqlitePrepareFlags(),
+                                          &sqlite_statement, &sql_script);
+    if (sqlite_error != SQLITE_OK)
+      return false;
+
+    if (!sqlite_statement) {
+      // Trailing comment or whitespace after the last semicolon.
+      return true;
+    }
+
+    // TODO(pwnall): Investigate restricting ExecuteScriptForTesting() to
+    //               statements that don't produce any result rows.
+    do {
+      sqlite_error = sqlite3_step(sqlite_statement);
+    } while (sqlite_error == SQLITE_ROW);
+
+    // sqlite3_finalize() returns SQLITE_OK if the most recent sqlite3_step()
+    // returned SQLITE_DONE or SQLITE_ROW, otherwise the error code.
+    sqlite_error = sqlite3_finalize(sqlite_statement);
+    if (sqlite_error != SQLITE_OK)
+      return false;
+  }
+
+  return true;
+}
+
 scoped_refptr<Database::StatementRef> Database::GetCachedStatement(
     StatementID id,
     const char* sql) {
@@ -1230,14 +1282,12 @@ scoped_refptr<Database::StatementRef> Database::GetCachedStatement(
 
 scoped_refptr<Database::StatementRef> Database::GetUniqueStatement(
     const char* sql) {
-  return GetStatementImpl(this, sql);
+  return GetStatementImpl(sql);
 }
 
 scoped_refptr<Database::StatementRef> Database::GetStatementImpl(
-    sql::Database* tracking_db,
-    const char* sql) const {
+    const char* sql) {
   DCHECK(sql);
-  DCHECK(!tracking_db || tracking_db == this);
 
   // Return inactive statement.
   if (!db_)
@@ -1246,11 +1296,17 @@ scoped_refptr<Database::StatementRef> Database::GetStatementImpl(
   absl::optional<base::ScopedBlockingCall> scoped_blocking_call;
   InitScopedBlockingCall(FROM_HERE, &scoped_blocking_call);
 
+#if DCHECK_IS_ON()
+  const char* unused_sql = nullptr;
+  const char** unused_sql_ptr = &unused_sql;
+#else
+  constexpr const char** unused_sql_ptr = nullptr;
+#endif  // DCHECK_IS_ON()
   // TODO(pwnall): Cached statements (but not unique statements) should be
   //               prepared with prepFlags set to SQLITE_PREPARE_PERSISTENT.
   sqlite3_stmt* sqlite_statement;
-  int rc = sqlite3_prepare_v3(db_, sql, /* nByte= */ -1, /* prepFlags= */ 0,
-                              &sqlite_statement, /* pzTail= */ nullptr);
+  int rc = sqlite3_prepare_v3(db_, sql, /* nByte= */ -1, SqlitePrepareFlags(),
+                              &sqlite_statement, unused_sql_ptr);
   if (rc != SQLITE_OK) {
     OnSqliteError(rc, nullptr, sql);
 
@@ -1271,22 +1327,25 @@ scoped_refptr<Database::StatementRef> Database::GetStatementImpl(
 
     return base::MakeRefCounted<StatementRef>(nullptr, nullptr, false);
   }
-  return base::MakeRefCounted<StatementRef>(tracking_db, sqlite_statement,
-                                            true);
+
+#if DCHECK_IS_ON()
+  DCHECK_EQ(unused_sql, sql + strlen(sql))
+      << "Unused text: " << std::string(unused_sql) << "\n"
+      << "in prepared SQL statement: " << std::string(sql);
+#endif  // DCHECK_IS_ON()
+
+  DCHECK(sqlite_statement) << "No SQL statement in string: " << sql;
+
+  return base::MakeRefCounted<StatementRef>(this, sqlite_statement, true);
 }
 
-scoped_refptr<Database::StatementRef> Database::GetUntrackedStatement(
-    const char* sql) const {
-  return GetStatementImpl(nullptr, sql);
-}
-
-std::string Database::GetSchema() const {
+std::string Database::GetSchema() {
   // The ORDER BY should not be necessary, but relying on organic
   // order for something like this is questionable.
   static const char kSql[] =
       "SELECT type, name, tbl_name, sql "
       "FROM sqlite_master ORDER BY 1, 2, 3, 4";
-  Statement statement(GetUntrackedStatement(kSql));
+  Statement statement(GetUniqueStatement(kSql));
 
   std::string schema;
   while (statement.Step()) {
@@ -1311,34 +1370,48 @@ bool Database::IsSQLValid(const char* sql) {
     return false;
   }
 
+#if DCHECK_IS_ON()
+  const char* unused_sql = nullptr;
+  const char** unused_sql_ptr = &unused_sql;
+#else
+  constexpr const char** unused_sql_ptr = nullptr;
+#endif  // DCHECK_IS_ON()
+
   sqlite3_stmt* sqlite_statement = nullptr;
-  if (sqlite3_prepare_v3(db_, sql, /* nByte= */ -1, /* prepFlags= */ 0,
-                         &sqlite_statement,
-                         /* pzTail= */ nullptr) != SQLITE_OK) {
+  if (sqlite3_prepare_v3(db_, sql, /* nByte= */ -1, SqlitePrepareFlags(),
+                         &sqlite_statement, unused_sql_ptr) != SQLITE_OK) {
     return false;
   }
+
+#if DCHECK_IS_ON()
+  DCHECK_EQ(unused_sql, sql + strlen(sql))
+      << "Unused text: " << std::string(unused_sql) << "\n"
+      << "in SQL statement: " << std::string(sql);
+#endif  // DCHECK_IS_ON()
+
+  DCHECK(sqlite_statement) << "No SQL statement in string: " << sql;
 
   sqlite3_finalize(sqlite_statement);
   return true;
 }
 
-bool Database::DoesIndexExist(base::StringPiece index_name) const {
+bool Database::DoesIndexExist(base::StringPiece index_name) {
   return DoesSchemaItemExist(index_name, "index");
 }
 
-bool Database::DoesTableExist(base::StringPiece table_name) const {
+bool Database::DoesTableExist(base::StringPiece table_name) {
   return DoesSchemaItemExist(table_name, "table");
 }
 
-bool Database::DoesViewExist(base::StringPiece view_name) const {
+bool Database::DoesViewExist(base::StringPiece view_name) {
   return DoesSchemaItemExist(view_name, "view");
 }
 
 bool Database::DoesSchemaItemExist(base::StringPiece name,
-                                   base::StringPiece type) const {
+                                   base::StringPiece type) {
   static const char kSql[] =
       "SELECT 1 FROM sqlite_master WHERE type=? AND name=?";
-  Statement statement(GetUntrackedStatement(kSql));
+  Statement statement(GetUniqueStatement(kSql));
 
   if (!statement.is_valid()) {
     // The database is corrupt.
@@ -1352,7 +1425,7 @@ bool Database::DoesSchemaItemExist(base::StringPiece name,
 }
 
 bool Database::DoesColumnExist(const char* table_name,
-                               const char* column_name) const {
+                               const char* column_name) {
   // sqlite3_table_column_metadata uses out-params to return column definition
   // details, such as the column type and whether it allows NULL values. These
   // aren't needed to compute the current method's result, so we pass in nullptr
@@ -1489,15 +1562,29 @@ bool Database::OpenInternal(const std::string& file_name,
   //
   // TODO(crbug.com/1120969): Remove support for non-exclusive mode.
   if (!options_.exclusive_locking) {
-    err = ExecuteAndReturnErrorCode("PRAGMA locking_mode=NORMAL");
-    if (err != SQLITE_OK)
+    if (!Execute("PRAGMA locking_mode=NORMAL"))
       return false;
   }
+
+  // The use of SQLite's non-standard string quoting is not allowed in Chrome.
+  //
+  // Allowing double-quoted string literals is now considered a misfeature by
+  // SQLite authors. See https://www.sqlite.org/quirks.html#dblquote
+  err = sqlite3_db_config(db_, SQLITE_DBCONFIG_DQS_DDL, 0, nullptr);
+  DCHECK_EQ(err, SQLITE_OK)
+      << "sqlite3_db_config(SQLITE_DBCONFIG_DQS_DDL) should not fail";
+  err = sqlite3_db_config(db_, SQLITE_DBCONFIG_DQS_DML, 0, nullptr);
+  DCHECK_EQ(err, SQLITE_OK)
+      << "sqlite3_db_config(SQLITE_DBCONFIG_DQS_DML) should not fail";
 
   // The use of triggers is discouraged for Chrome code. Thanks to this
   // configuration change, triggers are not executed. CREATE TRIGGER and DROP
   // TRIGGER still succeed.
   err = sqlite3_db_config(db_, SQLITE_DBCONFIG_ENABLE_TRIGGER, 0, nullptr);
+  DCHECK_EQ(err, SQLITE_OK) << "sqlite3_db_config() should not fail";
+
+  err = sqlite3_db_config(db_, SQLITE_DBCONFIG_ENABLE_VIEW,
+                          options_.enable_views_discouraged ? 1 : 0, nullptr);
   DCHECK_EQ(err, SQLITE_OK) << "sqlite3_db_config() should not fail";
 
   // Enable extended result codes to provide more color on I/O errors.
@@ -1718,11 +1805,9 @@ std::string Database::GetDiagnosticInfo(int extended_error,
   // The following queries must be executed after CollectErrorInfo() above, so
   // if they result in their own errors, they don't interfere with
   // CollectErrorInfo().
-  const bool has_valid_header =
-      (ExecuteAndReturnErrorCode("PRAGMA auto_vacuum") == SQLITE_OK);
+  const bool has_valid_header = Execute("PRAGMA auto_vacuum");
   const bool select_sqlite_master_result =
-      (ExecuteAndReturnErrorCode("SELECT COUNT(*) FROM sqlite_master") ==
-       SQLITE_OK);
+      Execute("SELECT COUNT(*) FROM sqlite_master");
 
   // Restore the original error callback.
   error_callback_ = std::move(original_callback);

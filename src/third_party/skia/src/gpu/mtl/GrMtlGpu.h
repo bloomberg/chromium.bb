@@ -48,6 +48,8 @@ public:
 
     GrMtlResourceProvider& resourceProvider() { return fResourceProvider; }
 
+    GrStagingBufferManager* stagingBufferManager() override { return &fStagingBufferManager; }
+
     GrMtlCommandBuffer* commandBuffer();
 
     enum SyncQueue {
@@ -124,7 +126,6 @@ private:
 
     void xferBarrier(GrRenderTarget*, GrXferBarrierType) override {}
 
-    GrStagingBufferManager* stagingBufferManager() override { return &fStagingBufferManager; }
     void takeOwnershipOfBuffer(sk_sp<GrGpuBuffer>) override;
 
     GrBackendTexture onCreateBackendTexture(SkISize dimensions,
@@ -215,7 +216,7 @@ private:
 
     void onResolveRenderTarget(GrRenderTarget* target, const SkIRect& resolveRect) override;
 
-    void resolveTexture(id<MTLTexture> colorTexture, id<MTLTexture> resolveTexture);
+    void resolve(GrMtlAttachment* resolveAttachment, GrMtlAttachment* msaaAttachment);
 
     void addFinishedProc(GrGpuFinishedProc finishedProc,
                          GrGpuFinishedContext finishedContext) override;
@@ -268,9 +269,7 @@ private:
     sk_sp<GrAttachment> makeMSAAAttachment(SkISize dimensions,
                                            const GrBackendFormat& format,
                                            int numSamples,
-                                           GrProtected isProtected) override {
-        return nullptr;
-    }
+                                           GrProtected isProtected) override;
 
     bool createMtlTextureForBackendSurface(MTLPixelFormat,
                                            SkISize dimensions,

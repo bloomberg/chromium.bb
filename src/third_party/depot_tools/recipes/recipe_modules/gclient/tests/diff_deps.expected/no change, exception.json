@@ -63,7 +63,7 @@
       "Traceback (most recent call last):",
       "  File \"RECIPE_REPO[depot_tools]/recipes/recipe_modules/gclient/tests/diff_deps.py\", line 33, in RunSteps",
       "    affected_files = api.gclient.diff_deps(api.path['cache'])",
-      "  File \"RECIPE_REPO[depot_tools]/recipes/recipe_modules/gclient/api.py\", line 419, in diff_deps",
+      "  File \"RECIPE_REPO[depot_tools]/recipes/recipe_modules/gclient/api.py\", line 428, in diff_deps",
       "    raise self.DepsDiffException(msg)",
       "DepsDiffException: Unexpected result: autoroll diff found 0 files changed"
     ]

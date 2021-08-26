@@ -20,7 +20,6 @@
 #include "config/aom_dsp_rtcd.h"
 
 #include "aom_dsp/ssim.h"
-#include "aom_ports/system_state.h"
 
 typedef struct fs_level fs_level;
 typedef struct fs_ctx fs_ctx;
@@ -468,7 +467,6 @@ double aom_calc_fastssim(const YV12_BUFFER_CONFIG *source,
                          uint32_t in_bd) {
   double ssimv;
   uint32_t bd_shift = 0;
-  aom_clear_system_state();
   assert(bd >= in_bd);
   assert(source->flags == dest->flags);
   int buf_is_hbd = source->flags & YV12_FLAG_HIGHBITDEPTH;

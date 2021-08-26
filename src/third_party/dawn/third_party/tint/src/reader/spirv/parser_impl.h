@@ -252,16 +252,39 @@ class ParserImpl : Reader {
                                      ast::DecorationList* ast_decos,
                                      bool transfer_pipeline_io);
 
-  /// Converts a SPIR-V struct member decoration. If the decoration is
-  /// recognized but deliberately dropped, then returns nullptr without a
-  /// diagnostic. On failure, emits a diagnostic and returns nullptr.
+  /// Converts SPIR-V decorations for pipeline IO into AST decorations.
+  /// @param store_type the store type for the variable or member
+  /// @param decorations the SPIR-V interpolation decorations
+  /// @param ast_decos the decoration list to populate.
+  /// @returns false if conversion fails
+  bool ConvertPipelineDecorations(const Type* store_type,
+                                  const DecorationList& decorations,
+                                  ast::DecorationList* ast_decos);
+
+  /// Updates the decoration list, placing a non-null location decoration into
+  /// the list, replacing an existing one if it exists. Does nothing if the
+  /// replacement is nullptr.
+  /// Assumes the list contains at most one Location decoration.
+  /// @param decos the decoration list to modify
+  /// @param replacement the location decoration to place into the list
+  /// @returns the location decoration that was replaced, if one was replaced,
+  /// or null otherwise.
+  ast::Decoration* SetLocation(ast::DecorationList* decos,
+                               ast::Decoration* replacement);
+
+  /// Converts a SPIR-V struct member decoration into a number of AST
+  /// decorations. If the decoration is recognized but deliberately dropped,
+  /// then returns an empty list without a diagnostic. On failure, emits a
+  /// diagnostic and returns an empty list.
   /// @param struct_type_id the ID of the struct type
   /// @param member_index the index of the member
+  /// @param member_ty the type of the member
   /// @param decoration an encoded SPIR-V Decoration
-  /// @returns the corresponding ast::StructuMemberDecoration
-  ast::Decoration* ConvertMemberDecoration(uint32_t struct_type_id,
-                                           uint32_t member_index,
-                                           const Decoration& decoration);
+  /// @returns the AST decorations
+  ast::DecorationList ConvertMemberDecoration(uint32_t struct_type_id,
+                                              uint32_t member_index,
+                                              const Type* member_ty,
+                                              const Decoration& decoration);
 
   /// Returns a string for the given type.  If the type ID is invalid,
   /// then the resulting string only names the type ID.
@@ -340,6 +363,11 @@ class ParserImpl : Reader {
   /// @returns true if parser is still successful.
   bool RegisterTypes();
 
+  /// Fail if there are any module-scope pointer values other than those
+  /// declared by OpVariable.
+  /// @returns true if parser is still successful.
+  bool RejectInvalidPointerRoots();
+
   /// Register sampler and texture usage for memory object declarations.
   /// This must be called after we've registered line numbers for all
   /// instructions. This is a no-op if the parser has already failed.
@@ -379,12 +407,13 @@ class ParserImpl : Reader {
   /// @returns the field name
   std::string GetMemberName(const Struct& struct_type, int member_index);
 
-  /// Returns the location decoration, if any on a struct member.
+  /// Returns the SPIR-V decorations for pipeline IO, if any, on a struct
+  /// member.
   /// @param struct_type the parser's structure type.
   /// @param member_index the member index
-  /// @returns a newly created location node, or nullptr
-  ast::Decoration* GetMemberLocation(const Struct& struct_type,
-                                     int member_index);
+  /// @returns a list of SPIR-V decorations.
+  DecorationList GetMemberPipelineDecorations(const Struct& struct_type,
+                                              int member_index);
 
   /// Creates an AST Variable node for a SPIR-V ID, including any attached
   /// decorations, unless it's an ignorable builtin variable.

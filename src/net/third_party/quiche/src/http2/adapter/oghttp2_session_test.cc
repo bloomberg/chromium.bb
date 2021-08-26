@@ -60,7 +60,7 @@ TEST(OgHttp2SessionTest, ClientHandlesFrames) {
   EXPECT_CALL(visitor, OnFrameHeader(0, 4, WINDOW_UPDATE, 0));
   EXPECT_CALL(visitor, OnWindowUpdate(0, 1000));
 
-  const ssize_t initial_result = session.ProcessBytes(initial_frames);
+  const size_t initial_result = session.ProcessBytes(initial_frames);
   EXPECT_EQ(initial_frames.size(), initial_result);
 
   EXPECT_EQ(session.GetRemoteWindowSize(),
@@ -76,8 +76,9 @@ TEST(OgHttp2SessionTest, ClientHandlesFrames) {
 
   // Submit a request to ensure the first stream is created.
   const char* kSentinel1 = "arbitrary pointer 1";
-  auto body1 = absl::make_unique<TestDataFrameSource>(
-      visitor, "This is an example request body.");
+  auto body1 = absl::make_unique<TestDataFrameSource>(visitor, true);
+  body1->AppendPayload("This is an example request body.");
+  body1->EndData();
   int stream_id =
       session.SubmitRequest(ToHeaders({{":method", "POST"},
                                        {":scheme", "http"},
@@ -115,7 +116,7 @@ TEST(OgHttp2SessionTest, ClientHandlesFrames) {
   EXPECT_CALL(visitor, OnCloseStream(3, Http2ErrorCode::INTERNAL_ERROR));
   EXPECT_CALL(visitor, OnFrameHeader(0, 19, GOAWAY, 0));
   EXPECT_CALL(visitor, OnGoAway(5, Http2ErrorCode::ENHANCE_YOUR_CALM, ""));
-  const ssize_t stream_result = session.ProcessBytes(stream_frames);
+  const size_t stream_result = session.ProcessBytes(stream_frames);
   EXPECT_EQ(stream_frames.size(), stream_result);
   EXPECT_EQ(3, session.GetHighestReceivedStreamId());
 
@@ -230,7 +231,7 @@ TEST(OgHttp2SessionTest, ClientSubmitRequest) {
   EXPECT_CALL(visitor, OnSettingsStart());
   EXPECT_CALL(visitor, OnSettingsEnd());
 
-  const ssize_t initial_result = session.ProcessBytes(initial_frames);
+  const size_t initial_result = session.ProcessBytes(initial_frames);
   EXPECT_EQ(initial_frames.size(), initial_result);
 
   // Session will want to write a SETTINGS ack.
@@ -247,8 +248,9 @@ TEST(OgHttp2SessionTest, ClientSubmitRequest) {
   EXPECT_EQ(0, session.GetHpackEncoderDynamicTableSize());
 
   const char* kSentinel1 = "arbitrary pointer 1";
-  auto body1 = absl::make_unique<TestDataFrameSource>(
-      visitor, "This is an example request body.");
+  auto body1 = absl::make_unique<TestDataFrameSource>(visitor, true);
+  body1->AppendPayload("This is an example request body.");
+  body1->EndData();
   int stream_id =
       session.SubmitRequest(ToHeaders({{":method", "POST"},
                                        {":scheme", "http"},
@@ -315,10 +317,8 @@ TEST(OgHttp2SessionTest, ClientSubmitRequestWithReadBlock) {
   EXPECT_FALSE(session.want_write());
 
   const char* kSentinel1 = "arbitrary pointer 1";
-  auto body1 = absl::make_unique<TestDataFrameSource>(
-      visitor, "This is an example request body.");
+  auto body1 = absl::make_unique<TestDataFrameSource>(visitor, true);
   TestDataFrameSource* body_ref = body1.get();
-  body_ref->set_is_data_available(false);
   int stream_id =
       session.SubmitRequest(ToHeaders({{":method", "POST"},
                                        {":scheme", "http"},
@@ -346,11 +346,66 @@ TEST(OgHttp2SessionTest, ClientSubmitRequestWithReadBlock) {
   visitor.Clear();
   EXPECT_FALSE(session.want_write());
 
-  body_ref->set_is_data_available(true);
+  body_ref->AppendPayload("This is an example request body.");
+  body_ref->EndData();
   EXPECT_TRUE(session.ResumeStream(stream_id));
   EXPECT_TRUE(session.want_write());
 
   EXPECT_CALL(visitor, OnFrameSent(DATA, stream_id, _, 0x1, 0));
+
+  result = session.Send();
+  EXPECT_EQ(0, result);
+  EXPECT_THAT(visitor.data(), EqualsFrames({SpdyFrameType::DATA}));
+  EXPECT_FALSE(session.want_write());
+
+  // Stream data is done, so this stream cannot be resumed.
+  EXPECT_FALSE(session.ResumeStream(stream_id));
+  EXPECT_FALSE(session.want_write());
+}
+
+// This test exercises the case where the client request body source is read
+// blocked, then ends with an empty DATA frame.
+TEST(OgHttp2SessionTest, ClientSubmitRequestEmptyDataWithFin) {
+  DataSavingVisitor visitor;
+  OgHttp2Session session(
+      visitor, OgHttp2Session::Options{.perspective = Perspective::kClient});
+  EXPECT_FALSE(session.want_write());
+
+  const char* kSentinel1 = "arbitrary pointer 1";
+  auto body1 = absl::make_unique<TestDataFrameSource>(visitor, true);
+  TestDataFrameSource* body_ref = body1.get();
+  int stream_id =
+      session.SubmitRequest(ToHeaders({{":method", "POST"},
+                                       {":scheme", "http"},
+                                       {":authority", "example.com"},
+                                       {":path", "/this/is/request/one"}}),
+                            std::move(body1), const_cast<char*>(kSentinel1));
+  EXPECT_GT(stream_id, 0);
+  EXPECT_TRUE(session.want_write());
+  EXPECT_EQ(kSentinel1, session.GetStreamUserData(stream_id));
+
+  EXPECT_CALL(visitor, OnBeforeFrameSent(SETTINGS, 0, _, 0x0));
+  EXPECT_CALL(visitor, OnFrameSent(SETTINGS, 0, _, 0x0, 0));
+  EXPECT_CALL(visitor, OnBeforeFrameSent(HEADERS, stream_id, _, 0x4));
+  EXPECT_CALL(visitor, OnFrameSent(HEADERS, stream_id, _, 0x4, 0));
+
+  int result = session.Send();
+  EXPECT_EQ(0, result);
+  absl::string_view serialized = visitor.data();
+  EXPECT_THAT(serialized,
+              testing::StartsWith(spdy::kHttp2ConnectionHeaderPrefix));
+  serialized.remove_prefix(strlen(spdy::kHttp2ConnectionHeaderPrefix));
+  EXPECT_THAT(serialized,
+              EqualsFrames({SpdyFrameType::SETTINGS, SpdyFrameType::HEADERS}));
+  // No data frame, as body1 was read blocked.
+  visitor.Clear();
+  EXPECT_FALSE(session.want_write());
+
+  body_ref->EndData();
+  EXPECT_TRUE(session.ResumeStream(stream_id));
+  EXPECT_TRUE(session.want_write());
+
+  EXPECT_CALL(visitor, OnFrameSent(DATA, stream_id, 0, 0x1, 0));
 
   result = session.Send();
   EXPECT_EQ(0, result);
@@ -371,8 +426,9 @@ TEST(OgHttp2SessionTest, ClientSubmitRequestWithWriteBlock) {
   EXPECT_FALSE(session.want_write());
 
   const char* kSentinel1 = "arbitrary pointer 1";
-  auto body1 = absl::make_unique<TestDataFrameSource>(
-      visitor, "This is an example request body.");
+  auto body1 = absl::make_unique<TestDataFrameSource>(visitor, true);
+  body1->AppendPayload("This is an example request body.");
+  body1->EndData();
   int stream_id =
       session.SubmitRequest(ToHeaders({{":method", "POST"},
                                        {":scheme", "http"},
@@ -514,7 +570,7 @@ TEST(OgHttp2SessionTest, ServerHandlesFrames) {
   EXPECT_CALL(visitor, OnFrameHeader(0, 8, PING, 0));
   EXPECT_CALL(visitor, OnPing(47, false));
 
-  const ssize_t result = session.ProcessBytes(frames);
+  const size_t result = session.ProcessBytes(frames);
   EXPECT_EQ(frames.size(), result);
 
   EXPECT_EQ(kSentinel1, session.GetStreamUserData(1));
@@ -633,7 +689,7 @@ TEST(OgHttp2SessionTest, ServerSubmitResponse) {
       }));
   EXPECT_CALL(visitor, OnEndStream(1));
 
-  const ssize_t result = session.ProcessBytes(frames);
+  const size_t result = session.ProcessBytes(frames);
   EXPECT_EQ(frames.size(), result);
 
   EXPECT_EQ(1, session.GetHighestReceivedStreamId());
@@ -655,9 +711,10 @@ TEST(OgHttp2SessionTest, ServerSubmitResponse) {
   visitor.Clear();
 
   EXPECT_FALSE(session.want_write());
-  auto body1 = absl::make_unique<TestDataFrameSource>(
-      visitor, "This is an example response body.",
-      /*has_fin=*/false);
+  // A data fin is not sent so that the stream remains open, and the flow
+  // control state can be verified.
+  auto body1 = absl::make_unique<TestDataFrameSource>(visitor, false);
+  body1->AppendPayload("This is an example response body.");
   int submit_result = session.SubmitResponse(
       1,
       ToHeaders({{":status", "404"},
@@ -684,6 +741,7 @@ TEST(OgHttp2SessionTest, ServerSubmitResponse) {
   // Some data was sent, so the remaining send window size should be less than
   // the default.
   EXPECT_LT(session.GetStreamSendWindowSize(1), kInitialFlowControlWindowSize);
+  EXPECT_GT(session.GetStreamSendWindowSize(1), 0);
   // Send window for a nonexistent stream is not available.
   EXPECT_EQ(session.GetStreamSendWindowSize(3), -1);
 
@@ -772,7 +830,7 @@ TEST(OgHttp2SessionTest, ServerSendsTrailers) {
   EXPECT_CALL(visitor, OnEndHeadersForStream(1));
   EXPECT_CALL(visitor, OnEndStream(1));
 
-  const ssize_t result = session.ProcessBytes(frames);
+  const size_t result = session.ProcessBytes(frames);
   EXPECT_EQ(frames.size(), result);
 
   // Server will want to send initial SETTINGS, and a SETTINGS ack.
@@ -793,9 +851,9 @@ TEST(OgHttp2SessionTest, ServerSendsTrailers) {
 
   // The body source must indicate that the end of the body is not the end of
   // the stream.
-  auto body1 = absl::make_unique<TestDataFrameSource>(
-      visitor, "This is an example response body.",
-      /*has_fin=*/false);
+  auto body1 = absl::make_unique<TestDataFrameSource>(visitor, false);
+  body1->AppendPayload("This is an example response body.");
+  body1->EndData();
   int submit_result = session.SubmitResponse(
       1, ToHeaders({{":status", "200"}, {"x-comment", "Sure, sounds good."}}),
       std::move(body1));
@@ -864,7 +922,7 @@ TEST(OgHttp2SessionTest, ServerQueuesTrailersWithResponse) {
   EXPECT_CALL(visitor, OnEndHeadersForStream(1));
   EXPECT_CALL(visitor, OnEndStream(1));
 
-  const ssize_t result = session.ProcessBytes(frames);
+  const size_t result = session.ProcessBytes(frames);
   EXPECT_EQ(frames.size(), result);
 
   // Server will want to send initial SETTINGS, and a SETTINGS ack.
@@ -885,9 +943,9 @@ TEST(OgHttp2SessionTest, ServerQueuesTrailersWithResponse) {
 
   // The body source must indicate that the end of the body is not the end of
   // the stream.
-  auto body1 = absl::make_unique<TestDataFrameSource>(
-      visitor, "This is an example response body.",
-      /*has_fin=*/false);
+  auto body1 = absl::make_unique<TestDataFrameSource>(visitor, false);
+  body1->AppendPayload("This is an example response body.");
+  body1->EndData();
   int submit_result = session.SubmitResponse(
       1, ToHeaders({{":status", "200"}, {"x-comment", "Sure, sounds good."}}),
       std::move(body1));

@@ -22,7 +22,6 @@
 
 #include "aom_dsp/psnr.h"
 #include "aom_dsp/ssim.h"
-#include "aom_ports/system_state.h"
 
 static void od_bin_fdct8x8(tran_low_t *y, int ystride, const int16_t *x,
                            int xstride) {
@@ -253,7 +252,6 @@ double aom_psnrhvs(const YV12_BUFFER_CONFIG *src, const YV12_BUFFER_CONFIG *dst,
   const double par = 1.0;
   const int step = 7;
   uint32_t bd_shift = 0;
-  aom_clear_system_state();
   assert(bd == 8 || bd == 10 || bd == 12);
   assert(bd >= in_bd);
   assert(src->flags == dst->flags);

@@ -34,14 +34,12 @@
 class AccountId;
 
 namespace ash {
+class LoginDisplayHostMojo;
+
 namespace mojom {
 enum class TrayActionState;
 }  // namespace mojom
 }  // namespace ash
-
-namespace base {
-class ListValue;
-}
 
 namespace chromeos {
 
@@ -145,16 +143,16 @@ class SigninScreenHandler
   bool GetKeyboardRemappedPrefValue(const std::string& pref_name, int* value);
 
  private:
+  friend class GaiaScreenHandler;
+  friend class ash::LoginDisplayHostMojo;
+  friend class ReportDnsCacheClearedOnUIThread;
+
   // TODO (crbug.com/1168114): check if it makes sense anymore, as we're always
   // showing GAIA
   enum UIState {
     UI_STATE_UNKNOWN = 0,
     UI_STATE_GAIA_SIGNIN,
   };
-
-  friend class GaiaScreenHandler;
-  friend class ReportDnsCacheClearedOnUIThread;
-  friend class LoginDisplayHostMojo;
 
   void ShowImpl();
 
@@ -193,7 +191,7 @@ class SigninScreenHandler
                               bool authenticated_by_pin);
   void HandleLaunchIncognito();
   void HandleLaunchSAMLPublicSession(const std::string& email);
-  void HandleOfflineLogin(const base::ListValue* args);
+  void HandleOfflineLogin();
   void HandleToggleEnrollmentScreen();
   void HandleToggleResetScreen();
   void HandleToggleKioskAutolaunchScreen();
@@ -311,7 +309,9 @@ class SigninScreenHandler
 
 // TODO(https://crbug.com/1164001): remove when moved to ash.
 namespace ash {
+using ::chromeos::LoginDisplayWebUIHandler;
 using ::chromeos::SigninScreenHandler;
-}
+using ::chromeos::SigninScreenHandlerDelegate;
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_SIGNIN_SCREEN_HANDLER_H_

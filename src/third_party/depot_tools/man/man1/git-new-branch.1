@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: git-new-branch
-.\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 08/10/2020
+.\"    Author: [FIXME: author] [see http://www.docbook.org/tdg5/en/html/author]
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 07/01/2021
 .\"    Manual: Chromium depot_tools Manual
-.\"    Source: depot_tools 8c3f7227
+.\"    Source: depot_tools 906b5026
 .\"  Language: English
 .\"
-.TH "GIT\-NEW\-BRANCH" "1" "08/10/2020" "depot_tools 8c3f7227" "Chromium depot_tools Manual"
+.TH "GIT\-NEW\-BRANCH" "1" "07/01/2021" "depot_tools 906b5026" "Chromium depot_tools Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -41,9 +41,9 @@ git-new-branch \- Create a new branch with correct tracking information\&.
 .sp
 .SH "DESCRIPTION"
 .sp
-Creates a new branch\&. By default the new branch will track the configured upstream for the repo (defaults to \fIorigin/master\fR)\&. If one of the other options is specified, it will track that other ref instead\&.
+Creates a new branch\&. By default the new branch will track the configured upstream for the repo (defaults to \fIorigin/main\fR)\&. If one of the other options is specified, it will track that other ref instead\&.
 .sp
-Conceptually, each branch in your repo represents one \fIChange List (CL)\fR\&. If you have many independent CLs (i\&.e\&. the changes in one do not interact with/depend on the changes in another), then you should create them as new branches tracking the default upstream (i\&.e\&. git new\-branch <branch_name>)\&. If you have features which depend on each other, you should create stacked branches using git new\-branch \-\-upstream_current <branch_name>\&.
+Conceptually, each branch in your repo represents one \fIChange List (CL)\fR\&. If you have many independent CLs (i\&.e\&. the changes in one do not interact with/depend on the changes in another), then you should create them as new branches tracking the default upstream (i\&.e\&. \fBgit new\-branch <branch_name>\fR)\&. If you have features which depend on each other, you should create stacked branches using \fBgit new\-branch \-\-upstream_current <branch_name>\fR\&.
 .SH "OPTIONS"
 .PP
 \-\-upstream_current
@@ -59,18 +59,23 @@ Set the tracking (upstream) branch to <REF>\&. <REF> may be a local branch, remo
 \-\-lkgr
 .RS 4
 Alias for
-\-\-upstream lkgr\&.
+\fB\-\-upstream lkgr\fR\&.
 .RE
 .PP
 \-\-inject_current
 .RS 4
 Set the tracking (upstream) branch of the newly\-created branch to the tracking (upstream) branch of the currently\-checked\-out branch and set the tracking (upstream) branch of the currently\-checked\-out branch to the newly\-created branch\&.
-.RE
+.sp
+.if n \{\
 .RS 4
+.\}
+.nf
 Before: current > upstream
-.RE
-.RS 4
 After: current > new > upstream
+.fi
+.if n \{\
+.RE
+.\}
 .RE
 .PP
 <branch_name>
@@ -80,7 +85,7 @@ The name for the new branch\&.
 .SH "CONFIGURATION VARIABLES"
 .SS "depot\-tools\&.upstream"
 .sp
-This configures the default \fIupstream\fR for all new branches\&. If it is unset, it defaults to \fIorigin\fR\*(Aqs default branch or \fIorigin/master\fR if that can\(cqt be found\&. This is considered to be the \fIroot\fR branch\&.
+This configures the default \fIupstream\fR for all new branches\&. If it is unset, it defaults to \fIorigin\fR\*(Aqs default branch or \fIorigin/main\fR if that can\(cqt be found\&. This is considered to be the \fIroot\fR branch\&.
 .SH "EXAMPLE"
 .sp
 
@@ -90,66 +95,65 @@ This configures the default \fIupstream\fR for all new branches\&. If it is unse
 .\}
 .nf
 \fB$ git map\-branches \-v\fR
-origin/master
-  cool_feature         [ ahead 4            ]
-    subfeature         [ ahead 2 | behind 1 ]
-  fixit                [ ahead 2            ]
-\fB    frozen_branch *    [ ahead 3            ]
+origin/main
+  cool_feature         [ 4 commits            ]
+    subfeature         [ 2 commits | behind 1 ]
+  fixit                [ 2 commits            ]
+\fB    frozen_branch *    [ 3 commits            ]
 $ git new\-branch independent_cl\fR
 \fB$ git map\-branches \-v\fR
-\fBorigin/master
-\fR  cool_feature        [ ahead 4            ]
-    subfeature        [ ahead 2 | behind 1 ]
-  fixit               [ ahead 2            ]
-    frozen_branch     [ ahead 3            ]
+\fBorigin/main
+\fR  cool_feature        [ 4 commits            ]
+    subfeature        [ 2 commits | behind 1 ]
+  fixit               [ 2 commits            ]
+    frozen_branch     [ 3 commits            ]
 \fB  independent_cl *
 $ vi foo && git add \-A && git commit \-m foo\fR
 \fB$ git map\-branches \-v\fR
-origin/master
-  cool_feature        [ ahead 4            ]
-    subfeature        [ ahead 2 | behind 1 ]
-  fixit               [ ahead 2            ]
-    frozen_branch     [ ahead 3            ]
-\fB  independent_cl *    [ ahead 1            ]
+origin/main
+  cool_feature        [ 4 commits            ]
+    subfeature        [ 2 commits | behind 1 ]
+  fixit               [ 2 commits            ]
+    frozen_branch     [ 3 commits            ]
+\fB  independent_cl *    [ 1 commit             ]
 $ git new\-branch \-\-upstream subfeature nested_cl\fR
 \fB$ git map\-branches \-v\fR
-origin/master
-  cool_feature       [ ahead 4            ]
-\fB    subfeature       [ ahead 2 | behind 1 ]  \fR\fB\fB(1)\fR\fR\fB
+origin/main
+  cool_feature       [ 4 commits            ]
+\fB    subfeature       [ 2 commits | behind 1 ]  \fR\fB\fB(1)\fR\fR\fB
       nested_cl *
-\fR  fixit              [ ahead 2            ]
-    frozen_branch    [ ahead 3            ]
-  independent_cl     [ ahead 1            ]
+\fR  fixit              [ 2 commits            ]
+    frozen_branch    [ 3 commits            ]
+  independent_cl     [ 1 commit             ]
 \fB$ git checkout cool_feature\fR
 Switched to branch \*(Aqcool_feature\*(Aq
-Your branch is ahead of \*(Aqorigin/master\*(Aq by 4 commits\&.
+Your branch is ahead of \*(Aqorigin/main\*(Aq by 4 commits\&.
   (use "git push" to publish your local commits)
 \fB$ git new\-branch \-\-upstream_current cl_depends_on_cool_feature\fR
 \fB$ git map\-branches \-v\fR
-origin/master
-\fB  cool_feature                      [ ahead 4            ]
+origin/main
+\fB  cool_feature                      [ 4 commits            ]
     cl_depends_on_cool_feature *
-\fR    subfeature                      [ ahead 2 | behind 1 ]
+\fR    subfeature                      [ 2 commits | behind 1 ]
       nested_cl
-  fixit                             [ ahead 2            ]
-    frozen_branch                   [ ahead 3            ]
-  independent_cl                    [ ahead 1            ]
+  fixit                             [ 2 commits            ]
+    frozen_branch                   [ 3 commits            ]
+  independent_cl                    [ 1 commit             ]
 \fB$ git checkout subfeature\fR
-Switched to branch \*(Aqsubfeature\*(Aq
 Your branch and \*(Aqcool_feature\*(Aq have diverged,
 and have 2 and 1 different commits each, respectively\&.
   (use "git pull" to merge the remote branch into yours)
 \fB$ git new\-branch \-\-inject_current injected_cl\fR
 \fB$ git map\-branches \-v\fR
-origin/master
-\fB  cool_feature                      [ ahead 4            ]  \fR\fB\fB(1)\fR\fR\fB
+origin/main
+\fB  cool_feature                    [ 4 commits            ]
     cl_depends_on_cool_feature
     injected_cl *
-\fR      subfeature                    [ ahead 2 | behind 1 ]
+\fR      subfeature                  [ 2 commits | behind 1 ]
         nested_cl
-  fixit                             [ ahead 2            ]
-    frozen_branch                   [ ahead 3            ]
-  independent_cl                    [ ahead 1            ]
+  fixit                           [ 2 commits            ]
+    frozen_branch                 [ 3 commits            ]
+  independent_cl                  [ 1 commit             ]
 .fi
 .if n \{\
 .RE

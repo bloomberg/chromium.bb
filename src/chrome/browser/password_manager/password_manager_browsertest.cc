@@ -40,12 +40,15 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
+#include "components/autofill/content/common/mojom/autofill_driver.mojom-test-utils.h"
+#include "components/autofill/content/common/mojom/autofill_driver.mojom.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/proto/api_v1.pb.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
 #include "components/autofill/core/common/unique_ids.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
@@ -54,6 +57,8 @@
 #include "components/password_manager/core/browser/http_auth_observer.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
+#include "components/password_manager/core/browser/password_manager_client.h"
+#include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_store_interface.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -153,10 +158,12 @@ class PasswordManagerBackForwardCacheBrowserTest
 
 class MockHttpAuthObserver : public password_manager::HttpAuthObserver {
  public:
-  MOCK_METHOD2(OnAutofillDataAvailable,
-               void(const std::u16string&, const std::u16string&));
+  MOCK_METHOD(void,
+              OnAutofillDataAvailable,
+              (const std::u16string& username, const std::u16string& password),
+              (override));
 
-  MOCK_METHOD0(OnLoginModelDestroying, void());
+  MOCK_METHOD(void, OnLoginModelDestroying, (), (override));
 };
 
 GURL GetFileURL(const char* filename) {
@@ -263,6 +270,24 @@ void InjectBlankFrameWithPasswordForm(content::WebContents* web_contents,
       "document.body.appendChild(frame);"
       "frame.contentDocument.body.innerHTML = \"" +
       form_html + "\"";
+  ASSERT_TRUE(content::ExecuteScript(web_contents,
+                                     inject_blank_frame_with_password_form));
+}
+
+// Inject an iframe with a password form that uses the specified action URL into
+// |web_contents|.
+void InjectFrameWithPasswordForm(content::WebContents* web_contents,
+                                 const GURL& action_url) {
+  std::string form_html = GeneratePasswordFormForAction(action_url);
+  std::string inject_blank_frame_with_password_form =
+      "var ifr = document.createElement('iframe');"
+      "ifr.setAttribute('id', 'iframeResult');"
+      "document.body.appendChild(ifr);"
+      "ifr.contentWindow.document.open();"
+      "ifr.contentWindow.document.write(\"" +
+      form_html +
+      "\");"
+      "ifr.contentWindow.document.close();";
   ASSERT_TRUE(content::ExecuteScript(web_contents,
                                      inject_blank_frame_with_password_form));
 }
@@ -2336,61 +2361,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   WaitForElementValue("iframe", "password_field", "pa55w0rd");
 }
 
-// The password manager driver will kill processes when they try to access
-// passwords of sites other than the site the process is dedicated to, under
-// site isolation.
-IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
-                       CrossSitePasswordEnforcement) {
-  // The code under test is only active under site isolation.
-  if (!content::AreAllSitesIsolatedForTesting()) {
-    return;
-  }
-
-  // Navigate the main frame.
-  GURL main_frame_url = embedded_test_server()->GetURL(
-      "/password/password_form_in_crosssite_iframe.html");
-  NavigationObserver observer(WebContents());
-  ui_test_utils::NavigateToURL(browser(), main_frame_url);
-  observer.Wait();
-
-  // Create an iframe and navigate cross-site.
-  NavigationObserver iframe_observer(WebContents());
-  iframe_observer.SetPathToWaitFor("/password/crossite_iframe_content.html");
-  GURL iframe_url = embedded_test_server()->GetURL(
-      "foo.com", "/password/crossite_iframe_content.html");
-  std::string create_iframe =
-      base::StringPrintf("create_iframe('%s');", iframe_url.spec().c_str());
-  ASSERT_TRUE(content::ExecuteScriptWithoutUserGesture(RenderFrameHost(),
-                                                       create_iframe));
-  iframe_observer.Wait();
-
-  // The iframe should get its own process.
-  content::RenderFrameHost* main_frame = WebContents()->GetMainFrame();
-  content::RenderFrameHost* iframe = iframe_observer.render_frame_host();
-  content::SiteInstance* main_site_instance = main_frame->GetSiteInstance();
-  content::SiteInstance* iframe_site_instance = iframe->GetSiteInstance();
-  EXPECT_NE(main_site_instance, iframe_site_instance);
-  EXPECT_NE(main_frame->GetProcess(), iframe->GetProcess());
-
-  content::RenderProcessHostWatcher iframe_killed(
-      iframe->GetProcess(),
-      content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-
-  // Try to get cross-site passwords from the subframe's process and wait for it
-  // to be killed.
-  std::vector<autofill::FormData> forms_data(1, autofill::FormData());
-  forms_data.back().url = main_frame_url;
-  ContentPasswordManagerDriverFactory* factory =
-      ContentPasswordManagerDriverFactory::FromWebContents(WebContents());
-  EXPECT_TRUE(factory);
-  autofill::mojom::PasswordManagerDriver* driver =
-      factory->GetDriverForFrame(iframe);
-  EXPECT_TRUE(driver);
-  driver->PasswordFormsParsed(forms_data);
-
-  iframe_killed.Wait();
-}
-
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, ChangePwdNoAccountStored) {
   NavigateToFile("/password/password_form.html");
 
@@ -4034,6 +4004,30 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBackForwardCacheBrowserTest,
   EXPECT_TRUE(IsGetCredentialsSuccessful());
 }
 
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
+                       DetectFormSubmissionOnIframe) {
+  // Start from a page without a password form.
+  NavigateToFile("/password/other.html");
+
+  // Add a blank iframe and then inject a password form into it.
+  BubbleObserver prompt_observer(WebContents());
+  GURL current_url(embedded_test_server()->GetURL("/password/other.html"));
+  GURL submit_url(embedded_test_server()->GetURL("/password/done.html"));
+  InjectFrameWithPasswordForm(WebContents(), submit_url);
+  content::RenderFrameHost* frame =
+      ChildFrameAt(WebContents()->GetMainFrame(), 0);
+  EXPECT_EQ(GURL(url::kAboutBlankURL), frame->GetLastCommittedURL());
+  EXPECT_EQ(submit_url.GetOrigin(), frame->GetLastCommittedOrigin().GetURL());
+  EXPECT_TRUE(frame->IsRenderFrameLive());
+  EXPECT_FALSE(prompt_observer.IsSavePromptAvailable());
+
+  // Fill in the password and submit the form. This should bring up a save
+  // password prompt and shouldn't result in a renderer kill.
+  SubmitInjectedPasswordForm(WebContents(), frame, submit_url);
+  EXPECT_TRUE(frame->IsRenderFrameLive());
+  EXPECT_TRUE(prompt_observer.IsSavePromptAvailable());
+}
+
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 // This test suite only applies to Gaia signin page, and checks that the
 // signin interception bubble and the password bubbles never conflict.
@@ -4232,6 +4226,203 @@ MATCHER_P(IsKeyEvent, type, std::string()) {
   return arg.GetType() == type;
 }
 
+// This is for checking that we don't make unexpected calls to the password
+// manager driver prior to activation and to permit checking that expected calls
+// do happen after activation.
+class MockPrerenderPasswordManagerDriver
+    : public autofill::mojom::PasswordManagerDriverInterceptorForTesting {
+ public:
+  explicit MockPrerenderPasswordManagerDriver(
+      password_manager::ContentPasswordManagerDriver* driver)
+      : impl_(driver->ReceiverForTesting().SwapImplForTesting(this)) {
+    DelegateToImpl();
+  }
+  MockPrerenderPasswordManagerDriver(
+      const MockPrerenderPasswordManagerDriver&) = delete;
+  MockPrerenderPasswordManagerDriver& operator=(
+      const MockPrerenderPasswordManagerDriver&) = delete;
+  ~MockPrerenderPasswordManagerDriver() override = default;
+
+  autofill::mojom::PasswordManagerDriver* GetForwardingInterface() override {
+    return impl_;
+  }
+
+  // autofill::mojom::PasswordManagerDriver
+  MOCK_METHOD(void,
+              PasswordFormsParsed,
+              (const std::vector<autofill::FormData>& form_data),
+              (override));
+  MOCK_METHOD(void,
+              PasswordFormsRendered,
+              (const std::vector<autofill::FormData>& visible_form_data,
+               bool load_completed),
+              (override));
+  MOCK_METHOD(void,
+              PasswordFormSubmitted,
+              (const autofill::FormData& form_data),
+              (override));
+  MOCK_METHOD(void,
+              InformAboutUserInput,
+              (const autofill::FormData& form_data),
+              (override));
+  MOCK_METHOD(
+      void,
+      DynamicFormSubmission,
+      (autofill::mojom::SubmissionIndicatorEvent submission_indication_event),
+      (override));
+  MOCK_METHOD(void,
+              PasswordFormCleared,
+              (const autofill::FormData& form_Data),
+              (override));
+  MOCK_METHOD(void,
+              RecordSavePasswordProgress,
+              (const std::string& log),
+              (override));
+  MOCK_METHOD(void, UserModifiedPasswordField, (), (override));
+  MOCK_METHOD(void,
+              UserModifiedNonPasswordField,
+              (autofill::FieldRendererId renderer_id,
+               const std::u16string& field_name,
+               const std::u16string& value),
+              (override));
+  MOCK_METHOD(void,
+              ShowPasswordSuggestions,
+              (base::i18n::TextDirection text_direction,
+               const std::u16string& typed_username,
+               int options,
+               const gfx::RectF& bounds),
+              (override));
+  MOCK_METHOD(void, ShowTouchToFill, (), (override));
+  MOCK_METHOD(void,
+              CheckSafeBrowsingReputation,
+              (const GURL& form_action, const GURL& frame_url),
+              (override));
+  MOCK_METHOD(void,
+              FocusedInputChanged,
+              (autofill::FieldRendererId focused_field_id,
+               autofill::mojom::FocusedFieldType focused_field_type),
+              (override));
+  MOCK_METHOD(void,
+              LogFirstFillingResult,
+              (autofill::FormRendererId form_renderer_id, int32_t result),
+              (override));
+
+  void DelegateToImpl() {
+    ON_CALL(*this, PasswordFormsParsed)
+        .WillByDefault(
+            [this](const std::vector<autofill::FormData>& form_data) {
+              impl_->PasswordFormsParsed(form_data);
+            });
+    ON_CALL(*this, PasswordFormsRendered)
+        .WillByDefault(
+            [this](const std::vector<autofill::FormData>& visible_form_data,
+                   bool load_completed) {
+              impl_->PasswordFormsRendered(visible_form_data, load_completed);
+            });
+    ON_CALL(*this, PasswordFormSubmitted)
+        .WillByDefault([this](const autofill::FormData& form_data) {
+          impl_->PasswordFormSubmitted(form_data);
+        });
+    ON_CALL(*this, InformAboutUserInput)
+        .WillByDefault([this](const autofill::FormData& form_data) {
+          impl_->InformAboutUserInput(form_data);
+        });
+    ON_CALL(*this, DynamicFormSubmission)
+        .WillByDefault([this](autofill::mojom::SubmissionIndicatorEvent
+                                  submission_indication_event) {
+          impl_->DynamicFormSubmission(submission_indication_event);
+        });
+    ON_CALL(*this, PasswordFormCleared)
+        .WillByDefault([this](const autofill::FormData& form_Data) {
+          impl_->PasswordFormCleared(form_Data);
+        });
+    ON_CALL(*this, RecordSavePasswordProgress)
+        .WillByDefault([this](const std::string& log) {
+          impl_->RecordSavePasswordProgress(log);
+        });
+    ON_CALL(*this, UserModifiedPasswordField).WillByDefault([this]() {
+      impl_->UserModifiedPasswordField();
+    });
+    ON_CALL(*this, UserModifiedNonPasswordField)
+        .WillByDefault([this](autofill::FieldRendererId renderer_id,
+                              const std::u16string& field_name,
+                              const std::u16string& value) {
+          impl_->UserModifiedNonPasswordField(renderer_id, field_name, value);
+        });
+    ON_CALL(*this, ShowPasswordSuggestions)
+        .WillByDefault([this](base::i18n::TextDirection text_direction,
+                              const std::u16string& typed_username, int options,
+                              const gfx::RectF& bounds) {
+          impl_->ShowPasswordSuggestions(text_direction, typed_username,
+                                         options, bounds);
+        });
+    ON_CALL(*this, ShowTouchToFill).WillByDefault([this]() {
+      impl_->ShowTouchToFill();
+    });
+    ON_CALL(*this, CheckSafeBrowsingReputation)
+        .WillByDefault([this](const GURL& form_action, const GURL& frame_url) {
+          impl_->CheckSafeBrowsingReputation(form_action, frame_url);
+        });
+    ON_CALL(*this, FocusedInputChanged)
+        .WillByDefault(
+            [this](autofill::FieldRendererId focused_field_id,
+                   autofill::mojom::FocusedFieldType focused_field_type) {
+              impl_->FocusedInputChanged(focused_field_id, focused_field_type);
+            });
+    ON_CALL(*this, LogFirstFillingResult)
+        .WillByDefault(
+            [this](autofill::FormRendererId form_renderer_id, int32_t result) {
+              impl_->LogFirstFillingResult(form_renderer_id, result);
+            });
+  }
+
+ private:
+  autofill::mojom::PasswordManagerDriver* impl_ = nullptr;
+};
+
+class MockPrerenderPasswordManagerDriverInjector
+    : public content::WebContentsObserver {
+ public:
+  explicit MockPrerenderPasswordManagerDriverInjector(
+      content::WebContents* web_contents)
+      : WebContentsObserver(web_contents) {}
+  ~MockPrerenderPasswordManagerDriverInjector() override = default;
+
+  MockPrerenderPasswordManagerDriver* GetMockForFrame(
+      content::RenderFrameHost* rfh) {
+    return static_cast<MockPrerenderPasswordManagerDriver*>(
+        GetDriverForFrame(rfh)->ReceiverForTesting().impl());
+  }
+
+ private:
+  password_manager::ContentPasswordManagerDriver* GetDriverForFrame(
+      content::RenderFrameHost* rfh) {
+    password_manager::ContentPasswordManagerDriverFactory* driver_factory =
+        password_manager::ContentPasswordManagerDriverFactory::FromWebContents(
+            web_contents());
+    return driver_factory->GetDriverForFrame(rfh);
+  }
+
+  // content::WebContentsObserver:
+  void ReadyToCommitNavigation(
+      content::NavigationHandle* navigation_handle) override {
+    auto* rfh = navigation_handle->GetRenderFrameHost();
+    if (navigation_handle->IsPrerenderedPageActivation() ||
+        navigation_handle->IsSameDocument() ||
+        rfh->GetLifecycleState() !=
+            content::RenderFrameHost::LifecycleState::kPrerendering) {
+      return;
+    }
+    mocks_.push_back(std::make_unique<
+                     testing::StrictMock<MockPrerenderPasswordManagerDriver>>(
+        GetDriverForFrame(navigation_handle->GetRenderFrameHost())));
+  }
+
+  std::vector<
+      std::unique_ptr<testing::StrictMock<MockPrerenderPasswordManagerDriver>>>
+      mocks_;
+};
+
 class PasswordManagerPrerenderBrowserTest : public PasswordManagerBrowserTest {
  public:
   PasswordManagerPrerenderBrowserTest()
@@ -4240,9 +4431,12 @@ class PasswordManagerPrerenderBrowserTest : public PasswordManagerBrowserTest {
             base::Unretained(this))) {}
   ~PasswordManagerPrerenderBrowserTest() override = default;
 
-  void SetUpOnMainThread() override {
-    prerender_helper_.SetUpOnMainThread(embedded_test_server());
+  void SetUp() override {
+    prerender_helper_.SetUp(embedded_test_server());
+    PasswordManagerBrowserTest::SetUp();
+  }
 
+  void SetUpOnMainThread() override {
     // Register requests handler before the server is started.
     embedded_test_server()->RegisterRequestHandler(
         base::BindRepeating(&HandleTestAuthRequest));
@@ -4318,6 +4512,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerPrerenderBrowserTest,
   LoginPromptBrowserTestObserver login_observer;
   login_observer.Register(
       content::Source<content::NavigationController>(nav_controller));
+  MockPrerenderPasswordManagerDriverInjector injector(WebContents());
 
   GURL url = embedded_test_server()->GetURL("/empty.html");
   ui_test_utils::NavigateToURL(browser(), url);
@@ -4369,6 +4564,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerPrerenderBrowserTest,
 // Tests that saving password doesn't work in the prerendering.
 IN_PROC_BROWSER_TEST_F(PasswordManagerPrerenderBrowserTest,
                        SavePasswordInPrerender) {
+  MockPrerenderPasswordManagerDriverInjector injector(WebContents());
   GURL url = embedded_test_server()->GetURL("/empty.html");
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -4386,7 +4582,10 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerPrerenderBrowserTest,
       "document.getElementById('input_submit_button').click()";
   ASSERT_TRUE(content::ExecuteScript(render_frame_host, fill_and_submit));
   // Since navigation from a prerendering page is disallowed, prerendering is
-  // canceled.
+  // canceled. This also means that we should never make any calls to the mocked
+  // driver. Since we've already set an expectation of no calls, this will be
+  // checked implicitly when the injector (and consequently, the mock) is
+  // destroyed.
   host_observer.WaitForDestroyed();
   BubbleObserver bubble_observer(WebContents());
   EXPECT_FALSE(bubble_observer.IsSavePromptShownAutomatically());
@@ -4412,6 +4611,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerPrerenderBrowserTest,
 // Tests that it defers to bind mojom::CredentialManager in the prerendering.
 IN_PROC_BROWSER_TEST_F(PasswordManagerPrerenderBrowserTest,
                        BindCredentialManagerInPrerender) {
+  MockPrerenderPasswordManagerDriverInjector injector(WebContents());
   GURL url = embedded_test_server()->GetURL("/empty.html");
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -4443,6 +4643,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerPrerenderBrowserTest,
 IN_PROC_BROWSER_TEST_F(PasswordManagerPrerenderBrowserTest,
                        InputWorksAfterPrerenderActivation) {
   GetNewTabWithTestPasswordManagerClient();
+  MockPrerenderPasswordManagerDriverInjector injector(web_contents());
 
   GURL url = embedded_test_server()->GetURL("/empty.html");
   ui_test_utils::NavigateToURL(browser(), url);
@@ -4455,12 +4656,21 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerPrerenderBrowserTest,
   content::RenderFrameHost* render_frame_host =
       prerender_helper()->GetPrerenderedMainFrameHost(host_id);
 
+  auto* mock = injector.GetMockForFrame(render_frame_host);
+  testing::Mock::VerifyAndClearExpectations(mock);
+
+  // We expect that messages will be sent to the driver, post-activation.
+  EXPECT_CALL(*mock, PasswordFormsParsed).Times(1);
+  EXPECT_CALL(*mock, PasswordFormsRendered).Times(1);
+
   // Navigates the primary page to the URL.
   prerender_helper()->NavigatePrimaryPage(prerender_url);
   // Makes sure that the page is activated from the prerendering.
   EXPECT_TRUE(host_observer.was_activated());
 
   base::RunLoop().RunUntilIdle();
+  testing::Mock::VerifyAndClearExpectations(mock);
+
   // Sets to ignore mouse events. Otherwise, OnInputEvent() could be called
   // multiple times if the mouse cursor is over on the test window during
   // testing.

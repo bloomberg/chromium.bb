@@ -54,9 +54,9 @@
 #include "chrome/browser/ui/views/web_apps/web_app_url_handler_intent_picker_dialog_view.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/webui/welcome/helpers.h"
-#include "chrome/browser/web_applications/components/os_integration_manager.h"
 #include "chrome/browser/web_applications/components/url_handler_manager.h"
 #include "chrome/browser/web_applications/components/url_handler_manager_impl.h"
+#include "chrome/browser/web_applications/os_integration_manager.h"
 #include "chrome/browser/web_applications/test/fake_web_app_origin_association_manager.h"
 #include "chrome/browser/web_applications/test/test_web_app_provider.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
@@ -143,7 +143,6 @@ void CreateProfileCallback(const base::RepeatingClosure& quit_closure,
   ASSERT_TRUE(out_profile);
   *out_profile = profile;
   EXPECT_NE(Profile::CREATE_STATUS_LOCAL_FAIL, status);
-  EXPECT_NE(Profile::CREATE_STATUS_REMOTE_FAIL, status);
   // This will be called multiple times. Wait until the profile is initialized
   // fully to quit the loop.
   if (status == Profile::CREATE_STATUS_INITIALIZED)
@@ -245,6 +244,66 @@ IN_PROC_BROWSER_TEST_F(AppControllerBrowserTest, CommandDuringShutdown) {
   // Let the run loop get flushed, during process cleanup and try not to crash.
 }
 
+// Regression test for https://crbug.com/1236073
+IN_PROC_BROWSER_TEST_F(AppControllerBrowserTest, DeleteEphemeralProfile) {
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
+  Profile* profile = browser()->profile();
+  // Activate the first profile.
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:NSWindowDidBecomeMainNotification
+                    object:browser()
+                               ->window()
+                               ->GetNativeWindow()
+                               .GetNativeNSWindow()];
+  AppController* ac = base::mac::ObjCCast<AppController>(
+      [[NSApplication sharedApplication] delegate]);
+  ASSERT_TRUE(ac);
+  ASSERT_EQ(profile, [ac lastProfile]);
+
+  // Mark the profile as ephemeral.
+  profile->GetPrefs()->SetBoolean(prefs::kForceEphemeralProfiles, true);
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  ProfileAttributesStorage& storage =
+      profile_manager->GetProfileAttributesStorage();
+  ProfileAttributesEntry* entry =
+      storage.GetProfileAttributesWithPath(profile->GetPath());
+  EXPECT_TRUE(entry->IsEphemeral());
+
+  // Add sentinel data to observe profile destruction. Ephemeral profiles are
+  // destroyed immediately upon browser close.
+  class ProfileDestroyedData : public base::SupportsUserData::Data {
+   public:
+    ProfileDestroyedData(base::OnceClosure callback)
+        : callback_(std::move(callback)) {}
+
+    ~ProfileDestroyedData() override { std::move(callback_).Run(); }
+
+   private:
+    base::OnceClosure callback_;
+  };
+  base::RunLoop loop;
+  const char kUserDataKey = 0;
+  profile->SetUserData(&kUserDataKey, std::make_unique<ProfileDestroyedData>(
+                                          loop.QuitClosure()));
+
+  // Close browser and wait for the profile to be deleted.
+  CloseBrowserSynchronously(browser());
+  loop.Run();
+  EXPECT_EQ(0u, chrome::GetTotalBrowserCount());
+
+  // Create a new profile and activate it.
+  Profile* profile2 = CreateAndWaitForProfile(
+      profile_manager->user_data_dir().AppendASCII("Profile 2"));
+  Browser* browser2 = CreateBrowser(profile2);
+  // This should not crash.
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:NSWindowDidBecomeMainNotification
+                    object:browser2->window()
+                               ->GetNativeWindow()
+                               .GetNativeNSWindow()];
+  ASSERT_EQ(profile2, [ac lastProfile]);
+}
+
 class AppControllerKeepAliveBrowserTest : public InProcessBrowserTest {
  protected:
   AppControllerKeepAliveBrowserTest() {
@@ -271,7 +330,7 @@ IN_PROC_BROWSER_TEST_F(AppControllerKeepAliveBrowserTest,
   Profile* profile1 = browser()->profile();
   Profile* profile2 = CreateAndWaitForProfile(
       profile_manager->user_data_dir().AppendASCII("Profile 2"));
-  [ac windowChangedToProfile:profile1];
+  [ac setLastProfile:profile1];
   ASSERT_EQ(profile1, [ac lastProfile]);
 
   // |profile1| is active.
@@ -282,7 +341,7 @@ IN_PROC_BROWSER_TEST_F(AppControllerKeepAliveBrowserTest,
       profile2, ProfileKeepAliveOrigin::kAppControllerMac));
 
   // Make |profile2| active.
-  [ac windowChangedToProfile:profile2];
+  [ac setLastProfile:profile2];
   ASSERT_EQ(profile2, [ac lastProfile]);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(profile_manager->HasKeepAliveForTesting(
@@ -550,11 +609,14 @@ IN_PROC_BROWSER_TEST_F(AppControllerProfilePickerBrowserTest,
   Browser* browser = active_browser_list()->get(0);
   EXPECT_FALSE(browser->profile()->IsGuestSession());
   // "About Chrome" is not available in the menu.
-  base::scoped_nsobject<NSMenuItem> about_menu_item(
-      [[[[NSApp mainMenu] itemWithTag:IDC_CHROME_MENU] submenu]
-          itemWithTag:IDC_ABOUT],
+  base::scoped_nsobject<NSMenu> chrome_submenu(
+      [[[NSApp mainMenu] itemWithTag:IDC_CHROME_MENU] submenu],
       base::scoped_policy::RETAIN);
+  base::scoped_nsobject<NSMenuItem> about_menu_item(
+      [chrome_submenu itemWithTag:IDC_ABOUT], base::scoped_policy::RETAIN);
   EXPECT_FALSE([ac validateUserInterfaceItem:about_menu_item]);
+  [chrome_submenu update];
+  EXPECT_FALSE([about_menu_item isEnabled]);
 }
 
 // Test that for a guest last profile, a reopen event opens the ProfilePicker.
@@ -612,6 +674,38 @@ IN_PROC_BROWSER_TEST_F(AppControllerProfilePickerBrowserTest,
   EXPECT_EQ(1u, active_browser_list()->size());
   EXPECT_TRUE(ProfilePicker::IsOpen());
   ProfilePicker::Hide();
+}
+
+// Checks that menu items and commands work when the profile picker is open.
+IN_PROC_BROWSER_TEST_F(AppControllerProfilePickerBrowserTest, MenuCommands) {
+  // Show the profile picker.
+  ProfilePicker::Show(ProfilePicker::EntryPoint::kProfileMenuManageProfiles);
+
+  AppController* ac = base::mac::ObjCCastStrict<AppController>(
+      [[NSApplication sharedApplication] delegate]);
+
+  // Unhandled menu items are disabled.
+  base::scoped_nsobject<NSMenu> file_submenu(
+      [[[NSApp mainMenu] itemWithTag:IDC_FILE_MENU] submenu],
+      base::scoped_policy::RETAIN);
+  base::scoped_nsobject<NSMenuItem> close_tab_menu_item(
+      [file_submenu itemWithTag:IDC_CLOSE_TAB], base::scoped_policy::RETAIN);
+  EXPECT_FALSE([ac validateUserInterfaceItem:close_tab_menu_item]);
+  [file_submenu update];
+  EXPECT_FALSE([close_tab_menu_item isEnabled]);
+
+  // Enabled menu items work.
+  base::scoped_nsobject<NSMenuItem> new_window_menu_item(
+      [file_submenu itemWithTag:IDC_NEW_WINDOW], base::scoped_policy::RETAIN);
+  EXPECT_TRUE([new_window_menu_item isEnabled]);
+  EXPECT_TRUE([ac validateUserInterfaceItem:new_window_menu_item]);
+  // Click on the item and checks that a new browser is opened.
+  ui_test_utils::BrowserChangeObserver browser_added_observer(
+      nullptr, ui_test_utils::BrowserChangeObserver::ChangeType::kAdded);
+  [file_submenu
+      performActionForItemAtIndex:[file_submenu
+                                      indexOfItemWithTag:IDC_NEW_WINDOW]];
+  EXPECT_TRUE(browser_added_observer.Wait());
 }
 
 class AppControllerOpenShortcutBrowserTest : public InProcessBrowserTest {
@@ -687,8 +781,9 @@ class AppControllerReplaceNTPBrowserTest : public InProcessBrowserTest {
 };
 
 // Tests that when a GURL is opened after startup, it replaces the NTP.
+// Flaky. See crbug.com/1234765.
 IN_PROC_BROWSER_TEST_F(AppControllerReplaceNTPBrowserTest,
-                       ReplaceNTPAfterStartup) {
+                       DISABLED_ReplaceNTPAfterStartup) {
   // Depending on network connectivity, the NTP URL can either be
   // chrome://newtab/ or chrome://new-tab-page-third-party. See
   // ntp_test_utils::GetFinalNtpUrl for more details.
@@ -778,12 +873,12 @@ IN_PROC_BROWSER_TEST_F(AppControllerMainMenuBrowserTest,
   ASSERT_TRUE(profile2);
 
   // Load profile1's History Service backend so it will be assigned to the
-  // HistoryMenuBridge when windowChangedToProfile is called, or else this test
-  // will fail flaky.
+  // HistoryMenuBridge when setLastProfile is called, or else this test will
+  // fail flaky.
   ui_test_utils::WaitForHistoryToLoad(HistoryServiceFactory::GetForProfile(
       profile1, ServiceAccessType::EXPLICIT_ACCESS));
   // Switch the controller to profile1.
-  [ac windowChangedToProfile:profile1];
+  [ac setLastProfile:profile1];
   base::RunLoop().RunUntilIdle();
 
   // Verify the controller's History Menu corresponds to profile1.
@@ -793,13 +888,13 @@ IN_PROC_BROWSER_TEST_F(AppControllerMainMenuBrowserTest,
                                            ServiceAccessType::EXPLICIT_ACCESS));
 
   // Load profile2's History Service backend so it will be assigned to the
-  // HistoryMenuBridge when windowChangedToProfile is called, or else this test
-  // will fail flaky.
+  // HistoryMenuBridge when setLastProfile is called, or else this test will
+  // fail flaky.
   ui_test_utils::WaitForHistoryToLoad(
       HistoryServiceFactory::GetForProfile(profile2,
                                            ServiceAccessType::EXPLICIT_ACCESS));
   // Switch the controller to profile2.
-  [ac windowChangedToProfile:profile2];
+  [ac setLastProfile:profile2];
   base::RunLoop().RunUntilIdle();
 
   // Verify the controller's History Menu has changed.
@@ -856,7 +951,7 @@ IN_PROC_BROWSER_TEST_F(AppControllerMainMenuBrowserTest,
       BookmarkModelFactory::GetForBrowserContext(profile2_ptr));
 
   // Switch to profile 1, create bookmark 1 and force the menu to build.
-  [ac windowChangedToProfile:profile1];
+  [ac setLastProfile:profile1];
   [ac bookmarkMenuBridge]->GetBookmarkModel()->AddURL(
       [ac bookmarkMenuBridge]->GetBookmarkModel()->bookmark_bar_node(),
       0, title1, url1);
@@ -864,7 +959,7 @@ IN_PROC_BROWSER_TEST_F(AppControllerMainMenuBrowserTest,
   [[profile1_submenu delegate] menuNeedsUpdate:profile1_submenu];
 
   // Switch to profile 2, create bookmark 2 and force the menu to build.
-  [ac windowChangedToProfile:profile2_ptr];
+  [ac setLastProfile:profile2_ptr];
   [ac bookmarkMenuBridge]->GetBookmarkModel()->AddURL(
       [ac bookmarkMenuBridge]->GetBookmarkModel()->bookmark_bar_node(),
       0, title2, url2);
@@ -879,7 +974,7 @@ IN_PROC_BROWSER_TEST_F(AppControllerMainMenuBrowserTest,
       SysUTF16ToNSString(title2)]);
 
   // Switch *back* to profile 1 and *don't* force the menu to build.
-  [ac windowChangedToProfile:profile1];
+  [ac setLastProfile:profile1];
 
   // Test that only bookmark 1 is shown in the restored menu.
   EXPECT_TRUE([[ac bookmarkMenuBridge]->BookmarkMenu() itemWithTitle:

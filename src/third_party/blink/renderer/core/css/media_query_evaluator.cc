@@ -29,9 +29,9 @@
 
 #include "third_party/blink/renderer/core/css/media_query_evaluator.h"
 
+#include "services/device/public/mojom/device_posture_provider.mojom-blink.h"
 #include "third_party/blink/public/common/css/forced_colors.h"
 #include "third_party/blink/public/common/css/navigation_controls.h"
-#include "third_party/blink/renderer/core/css/media_values.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
 #include "third_party/blink/public/mojom/webpreferences/web_preferences.mojom-blink.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/css/media_features.h"
 #include "third_party/blink/renderer/core/css/media_list.h"
 #include "third_party/blink/renderer/core/css/media_query.h"
+#include "third_party/blink/renderer/core/css/media_values.h"
 #include "third_party/blink/renderer/core/css/media_values_dynamic.h"
 #include "third_party/blink/renderer/core/css/resolver/media_query_result.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
@@ -57,6 +58,7 @@
 
 namespace blink {
 
+using device::mojom::blink::DevicePostureType;
 using mojom::blink::HoverType;
 using mojom::blink::PointerType;
 
@@ -323,6 +325,35 @@ static bool DeviceAspectRatioMediaFeatureEval(const MediaQueryExpValue& value,
   // ({,min-,max-}device-aspect-ratio)
   // assume if we have a device, its aspect ratio is non-zero.
   return true;
+}
+
+static bool DynamicRangeMediaFeatureEval(const MediaQueryExpValue& value,
+                                         MediaFeaturePrefix op,
+                                         const MediaValues& media_values) {
+  if (!value.is_id)
+    return false;
+
+  bool const supports_hdr = media_values.DeviceSupportsHDR();
+
+  switch (value.id) {
+    case CSSValueID::kStandard:
+      return !supports_hdr;
+
+    case CSSValueID::kHigh:
+      return supports_hdr;
+
+    default:
+      NOTREACHED();
+      return false;
+  }
+}
+
+static bool VideoDynamicRangeMediaFeatureEval(const MediaQueryExpValue& value,
+                                              MediaFeaturePrefix op,
+                                              const MediaValues& media_values) {
+  // For now, Chrome makes no distinction between video-dynamic-range and
+  // dynamic-range
+  return DynamicRangeMediaFeatureEval(value, op, media_values);
 }
 
 static bool EvalResolution(const MediaQueryExpValue& value,
@@ -877,27 +908,24 @@ static bool PrefersContrastMediaFeatureEval(const MediaQueryExpValue& value,
                     WebFeature::kPrefersContrastMediaFeature);
 
   auto preferred_contrast = media_values.GetPreferredContrast();
-  ForcedColors forced_colors = media_values.GetForcedColors();
 
   if (!value.IsValid()) {
-    return forced_colors != ForcedColors::kNone ||
-           preferred_contrast != mojom::blink::PreferredContrast::kNoPreference;
+    return preferred_contrast != mojom::blink::PreferredContrast::kNoPreference;
   }
 
   if (!value.is_id)
     return false;
 
   switch (value.id) {
-    case CSSValueID::kForced:
-      return forced_colors == ForcedColors::kActive;
     case CSSValueID::kMore:
       return preferred_contrast == mojom::blink::PreferredContrast::kMore;
     case CSSValueID::kLess:
       return preferred_contrast == mojom::blink::PreferredContrast::kLess;
     case CSSValueID::kNoPreference:
-      return forced_colors != ForcedColors::kActive &&
-             preferred_contrast ==
-                 mojom::blink::PreferredContrast::kNoPreference;
+      return preferred_contrast ==
+             mojom::blink::PreferredContrast::kNoPreference;
+    case CSSValueID::kCustom:
+      return preferred_contrast == mojom::blink::PreferredContrast::kCustom;
     default:
       NOTREACHED();
       return false;
@@ -975,20 +1003,14 @@ static bool DevicePostureMediaFeatureEval(const MediaQueryExpValue& value,
 
   DCHECK(value.is_id);
 
-  DevicePosture device_posture = media_values.GetDevicePosture();
+  DevicePostureType device_posture = media_values.GetDevicePosture();
   switch (value.id) {
-    case CSSValueID::kNoFold:
-      return device_posture == DevicePosture::kNoFold;
-    case CSSValueID::kLaptop:
-      return device_posture == DevicePosture::kLaptop;
-    case CSSValueID::kFlat:
-      return device_posture == DevicePosture::kFlat;
-    case CSSValueID::kTent:
-      return device_posture == DevicePosture::kTent;
-    case CSSValueID::kTablet:
-      return device_posture == DevicePosture::kTablet;
-    case CSSValueID::kBook:
-      return device_posture == DevicePosture::kBook;
+    case CSSValueID::kContinuous:
+      return device_posture == DevicePostureType::kContinuous;
+    case CSSValueID::kFolded:
+      return device_posture == DevicePostureType::kFolded;
+    case CSSValueID::kFoldedOver:
+      return device_posture == DevicePostureType::kFoldedOver;
     default:
       NOTREACHED();
       return false;

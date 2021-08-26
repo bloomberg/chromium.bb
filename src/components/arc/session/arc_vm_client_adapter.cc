@@ -55,8 +55,11 @@
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/arc/arc_features.h"
+#include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
+#include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/session/arc_session.h"
+#include "components/arc/session/connection_holder.h"
 #include "components/arc/session/file_system_status.h"
 #include "components/version_info/version_info.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -323,7 +326,9 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
     uint32_t cpus,
     const base::FilePath& demo_session_apps_path,
     const FileSystemStatus& file_system_status,
-    std::vector<std::string> kernel_cmdline) {
+    std::vector<std::string> kernel_cmdline,
+    base::OnceCallback<bool(base::SystemMemoryInfoKB*)>
+        get_system_memory_info_cb) {
   vm_tools::concierge::StartArcVmRequest request;
 
   request.set_name(kArcVmName);
@@ -384,7 +389,7 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
   // Specify VM Memory.
   if (base::FeatureList::IsEnabled(kVmMemorySize)) {
     base::SystemMemoryInfoKB info;
-    if (base::GetSystemMemoryInfo(&info)) {
+    if (std::move(get_system_memory_info_cb).Run(&info)) {
       const int ram_mib = info.total / 1024;
       const int shift_mib = kVmMemorySizeShiftMiB.Get();
       const int max_mib = kVmMemorySizeMaxMiB.Get();
@@ -492,9 +497,16 @@ bool SendUpgradePropsToArcVmBootNotificationServer(
 
 }  // namespace
 
+bool ArcVmClientAdapterDelegate::GetSystemMemoryInfo(
+    base::SystemMemoryInfoKB* info) {
+  // Call the base function by default.
+  return base::GetSystemMemoryInfo(info);
+}
+
 class ArcVmClientAdapter : public ArcClientAdapter,
                            public chromeos::ConciergeClient::VmObserver,
-                           public chromeos::ConciergeClient::Observer {
+                           public chromeos::ConciergeClient::Observer,
+                           public ConnectionObserver<arc::mojom::AppInstance> {
  public:
   // Initializing |is_host_on_vm_| and |is_dev_mode_| is not always very fast.
   // Try to initialize them in the constructor and in StartMiniArc respectively.
@@ -503,15 +515,24 @@ class ArcVmClientAdapter : public ArcClientAdapter,
 
   // For testing purposes and the internal use (by the other ctor) only.
   explicit ArcVmClientAdapter(const FileSystemStatusRewriter& rewriter)
-      : is_host_on_vm_(chromeos::system::StatisticsProvider::GetInstance()
+      : delegate_(std::make_unique<ArcVmClientAdapterDelegate>()),
+        is_host_on_vm_(chromeos::system::StatisticsProvider::GetInstance()
                            ->IsRunningOnVm()),
         file_system_status_rewriter_for_testing_(rewriter) {
     auto* client = GetConciergeClient();
     client->AddVmObserver(this);
     client->AddObserver(this);
+
+    auto* arc_service_manager = arc::ArcServiceManager::Get();
+    DCHECK(arc_service_manager);
+    arc_service_manager->arc_bridge_service()->app()->AddObserver(this);
   }
 
   ~ArcVmClientAdapter() override {
+    auto* arc_service_manager = arc::ArcServiceManager::Get();
+    if (arc_service_manager)
+      arc_service_manager->arc_bridge_service()->app()->RemoveObserver(this);
+
     auto* client = GetConciergeClient();
     client->RemoveObserver(this);
     client->RemoveVmObserver(this);
@@ -651,6 +672,27 @@ class ArcVmClientAdapter : public ArcClientAdapter,
   }
 
   void ConciergeServiceStarted() override {}
+
+  // ConnectionObserver<arc::mojom::AppInstance> overrides:
+  void OnConnectionReady() override {
+    VLOG(2) << "Enabling VM's RT vCPU";
+
+    auto* arc_service_manager = arc::ArcServiceManager::Get();
+    DCHECK(arc_service_manager);
+    arc_service_manager->arc_bridge_service()->app()->RemoveObserver(this);
+
+    vm_tools::concierge::MakeRtVcpuRequest request;
+    request.set_name(kArcVmName);
+    DCHECK(!user_id_hash_.empty());
+    request.set_owner_id(user_id_hash_);
+    GetConciergeClient()->MakeRtVcpu(
+        request, base::BindOnce(&ArcVmClientAdapter::OnMakeRtVcpu));
+  }
+
+  void set_delegate_for_testing(  // IN-TEST
+      std::unique_ptr<ArcVmClientAdapterDelegate> delegate) {
+    delegate_ = std::move(delegate);
+  }
 
  private:
   void OnArcBugReportBackedUp(base::TimeTicks arc_bug_report_backup_time,
@@ -808,19 +850,49 @@ class ArcVmClientAdapter : public ArcClientAdapter,
 
   void OnDemoResourcesLoaded(chromeos::VoidDBusMethodCallback callback,
                              FileSystemStatus file_system_status) {
+    VLOG(2) << "Checking number of vcpus to spin up";
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+        base::BindOnce(&ArcVmClientAdapter::GetNumVCPUsToStart,
+                       start_params_.num_cores_disabled),
+        base::BindOnce(&ArcVmClientAdapter::OnGetNumVCPUsToStart,
+                       weak_factory_.GetWeakPtr(), std::move(callback),
+                       std::move(file_system_status)));
+  }
+
+  static int32_t GetNumVCPUsToStart(uint32_t num_cores_disabled) {
+    // When the CPU has MDS or L1TF vulnerabilities, crosvm won't be allowed to
+    // run two vCPUs on the same physical core at the same time. This
+    // effectively disables SMT on crosvm. Because of this restriction, when the
+    // CPU has the vulnerabilities, set |cpus| to the number of physical cores.
+    // Otherwise, set the variable to the number of logical cores minus the ones
+    // disabled by chrome://flags/#scheduler-configuration.
+    // TODO(yusukes): Stop doing this on the other thread once we migrate to
+    // https://crrev.com/c/3063740.
+    const int32_t cpus =
+        IsCoreSchedulingAvailable()
+            ? NumberOfProcessorsForCoreScheduling()
+            : base::SysInfo::NumberOfProcessors() - num_cores_disabled;
+    DCHECK_LT(0, cpus);
+    return cpus;
+  }
+
+  void OnGetNumVCPUsToStart(chromeos::VoidDBusMethodCallback callback,
+                            FileSystemStatus file_system_status,
+                            int32_t cpus) {
     const base::FilePath demo_session_apps_path =
         demo_mode_delegate_->GetDemoAppsPath();
-
-    const int32_t cpus =
-        base::SysInfo::NumberOfProcessors() - start_params_.num_cores_disabled;
-    DCHECK_LT(0, cpus);
 
     std::vector<std::string> kernel_cmdline = GenerateKernelCmdline(
         start_params_, file_system_status, *is_dev_mode_, is_host_on_vm_,
         GetChromeOsChannelFromLsbRelease());
-    auto start_request =
-        CreateStartArcVmRequest(cpus, demo_session_apps_path,
-                                file_system_status, std::move(kernel_cmdline));
+    auto start_request = CreateStartArcVmRequest(
+        cpus, demo_session_apps_path, file_system_status,
+        std::move(kernel_cmdline),
+        base::BindOnce(&ArcVmClientAdapterDelegate::GetSystemMemoryInfo,
+                       // Unretained is safe because CreateStartArcVmRequest is
+                       // a synchronous function.
+                       base::Unretained(delegate_.get())));
 
     GetConciergeClient()->StartArcVm(
         start_request,
@@ -1047,6 +1119,27 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     std::move(callback).Run(success, failure_reason);
   }
 
+  static void OnMakeRtVcpu(
+      absl::optional<vm_tools::concierge::MakeRtVcpuResponse> reply) {
+    bool success = false;
+    std::string failure_reason;
+
+    if (!reply.has_value()) {
+      failure_reason = "Empty response";
+    } else {
+      const vm_tools::concierge::MakeRtVcpuResponse& response = reply.value();
+      success = response.success();
+      if (!success)
+        failure_reason = response.failure_reason();
+    }
+
+    VLOG(2) << "Enabling VM's RT vCPU: result=" << success;
+    if (!success)
+      LOG(WARNING) << "Failed to enable RT vCPU: reason=" << failure_reason;
+  }
+
+  std::unique_ptr<ArcVmClientAdapterDelegate> delegate_;
+
   absl::optional<bool> is_dev_mode_;
   // True when the *host* is running on a VM.
   const bool is_host_on_vm_;
@@ -1108,6 +1201,14 @@ std::vector<std::string> GenerateUpgradePropsForTesting(
     const std::string& serial_number,
     const std::string& prefix) {
   return GenerateUpgradeProps(upgrade_params, serial_number, prefix);
+}
+
+void SetArcVmClientAdapterDelegateForTesting(  // IN-TEST
+    ArcClientAdapter* adapter,
+    std::unique_ptr<ArcVmClientAdapterDelegate> delegate) {
+  static_cast<ArcVmClientAdapter*>(adapter)
+      ->set_delegate_for_testing(  // IN-TEST
+          std::move(delegate));
 }
 
 }  // namespace arc

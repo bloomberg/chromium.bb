@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "components/history/core/browser/history_types.h"
+#include "url/origin.h"
 
 namespace sql {
 class Database;
@@ -157,7 +158,8 @@ class VisitDatabase {
                             GURL* to_url);
 
   // Similar to the above function except finds a redirect going to a given
-  // `to_visit`.
+  // `to_visit`; or, if there is no such redirect, finds the referral going to
+  // the given `to_visit`.
   bool GetRedirectToVisit(VisitID to_visit,
                           VisitID* from_visit,
                           GURL* from_url);
@@ -187,10 +189,16 @@ class VisitDatabase {
   // visited in the given time range, this will return true and `last_visit`
   // will be set to base::Time(). False will be returned if the host is not a
   // valid HTTP or HTTPS url or for other database errors.
-  bool GetLastVisitToHost(const GURL& host,
+  bool GetLastVisitToHost(const std::string& host,
                           base::Time begin_time,
                           base::Time end_time,
                           base::Time* last_visit);
+
+  // Same as the above, but for the given origin instead of host.
+  bool GetLastVisitToOrigin(const url::Origin& origin,
+                            base::Time begin_time,
+                            base::Time end_time,
+                            base::Time* last_visit);
 
   // Gets the last time `url` was visited before `end_time`. If the given `url`
   // has no past visits, this will return true and `last_visit` will be set to

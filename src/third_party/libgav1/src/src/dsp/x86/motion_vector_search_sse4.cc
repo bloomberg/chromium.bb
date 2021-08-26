@@ -64,7 +64,7 @@ inline __m128i MvProjectionClip(const __m128i mvs[2],
 }
 
 inline __m128i MvProjectionCompoundClip(
-    const MotionVector* const temporal_mvs,
+    const MotionVector* LIBGAV1_RESTRICT const temporal_mvs,
     const int8_t temporal_reference_offsets[2],
     const int reference_offsets[2]) {
   const auto* const tmvs = reinterpret_cast<const int32_t*>(temporal_mvs);
@@ -83,8 +83,8 @@ inline __m128i MvProjectionCompoundClip(
 }
 
 inline __m128i MvProjectionSingleClip(
-    const MotionVector* const temporal_mvs,
-    const int8_t* const temporal_reference_offsets,
+    const MotionVector* LIBGAV1_RESTRICT const temporal_mvs,
+    const int8_t* LIBGAV1_RESTRICT const temporal_reference_offsets,
     const int reference_offset) {
   const auto* const tmvs = reinterpret_cast<const int16_t*>(temporal_mvs);
   const __m128i temporal_mv = LoadAligned16(tmvs);
@@ -126,9 +126,10 @@ inline void ForceInteger(const __m128i mv, void* const candidate_mvs) {
 }
 
 void MvProjectionCompoundLowPrecision_SSE4_1(
-    const MotionVector* temporal_mvs, const int8_t* temporal_reference_offsets,
+    const MotionVector* LIBGAV1_RESTRICT temporal_mvs,
+    const int8_t* LIBGAV1_RESTRICT temporal_reference_offsets,
     const int reference_offsets[2], const int count,
-    CompoundMotionVector* candidate_mvs) {
+    CompoundMotionVector* LIBGAV1_RESTRICT candidate_mvs) {
   // |reference_offsets| non-zero check usually equals true and is ignored.
   // To facilitate the compilers, make a local copy of |reference_offsets|.
   const int offsets[2] = {reference_offsets[0], reference_offsets[1]};
@@ -143,9 +144,10 @@ void MvProjectionCompoundLowPrecision_SSE4_1(
 }
 
 void MvProjectionCompoundForceInteger_SSE4_1(
-    const MotionVector* temporal_mvs, const int8_t* temporal_reference_offsets,
+    const MotionVector* LIBGAV1_RESTRICT temporal_mvs,
+    const int8_t* LIBGAV1_RESTRICT temporal_reference_offsets,
     const int reference_offsets[2], const int count,
-    CompoundMotionVector* candidate_mvs) {
+    CompoundMotionVector* LIBGAV1_RESTRICT candidate_mvs) {
   // |reference_offsets| non-zero check usually equals true and is ignored.
   // To facilitate the compilers, make a local copy of |reference_offsets|.
   const int offsets[2] = {reference_offsets[0], reference_offsets[1]};
@@ -160,9 +162,10 @@ void MvProjectionCompoundForceInteger_SSE4_1(
 }
 
 void MvProjectionCompoundHighPrecision_SSE4_1(
-    const MotionVector* temporal_mvs, const int8_t* temporal_reference_offsets,
+    const MotionVector* LIBGAV1_RESTRICT temporal_mvs,
+    const int8_t* LIBGAV1_RESTRICT temporal_reference_offsets,
     const int reference_offsets[2], const int count,
-    CompoundMotionVector* candidate_mvs) {
+    CompoundMotionVector* LIBGAV1_RESTRICT candidate_mvs) {
   // |reference_offsets| non-zero check usually equals true and is ignored.
   // To facilitate the compilers, make a local copy of |reference_offsets|.
   const int offsets[2] = {reference_offsets[0], reference_offsets[1]};
@@ -177,8 +180,10 @@ void MvProjectionCompoundHighPrecision_SSE4_1(
 }
 
 void MvProjectionSingleLowPrecision_SSE4_1(
-    const MotionVector* temporal_mvs, const int8_t* temporal_reference_offsets,
-    const int reference_offset, const int count, MotionVector* candidate_mvs) {
+    const MotionVector* LIBGAV1_RESTRICT temporal_mvs,
+    const int8_t* LIBGAV1_RESTRICT temporal_reference_offsets,
+    const int reference_offset, const int count,
+    MotionVector* LIBGAV1_RESTRICT candidate_mvs) {
   // Up to three more elements could be calculated.
   int i = 0;
   do {
@@ -190,8 +195,10 @@ void MvProjectionSingleLowPrecision_SSE4_1(
 }
 
 void MvProjectionSingleForceInteger_SSE4_1(
-    const MotionVector* temporal_mvs, const int8_t* temporal_reference_offsets,
-    const int reference_offset, const int count, MotionVector* candidate_mvs) {
+    const MotionVector* LIBGAV1_RESTRICT temporal_mvs,
+    const int8_t* LIBGAV1_RESTRICT temporal_reference_offsets,
+    const int reference_offset, const int count,
+    MotionVector* LIBGAV1_RESTRICT candidate_mvs) {
   // Up to three more elements could be calculated.
   int i = 0;
   do {
@@ -203,8 +210,10 @@ void MvProjectionSingleForceInteger_SSE4_1(
 }
 
 void MvProjectionSingleHighPrecision_SSE4_1(
-    const MotionVector* temporal_mvs, const int8_t* temporal_reference_offsets,
-    const int reference_offset, const int count, MotionVector* candidate_mvs) {
+    const MotionVector* LIBGAV1_RESTRICT temporal_mvs,
+    const int8_t* LIBGAV1_RESTRICT temporal_reference_offsets,
+    const int reference_offset, const int count,
+    MotionVector* LIBGAV1_RESTRICT candidate_mvs) {
   // Up to three more elements could be calculated.
   int i = 0;
   do {

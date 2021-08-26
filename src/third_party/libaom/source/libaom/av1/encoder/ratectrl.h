@@ -201,9 +201,6 @@ typedef struct {
 
   int ni_av_qi;
   int ni_tot_qi;
-  int ni_frames;
-  int avg_frame_qindex[FRAME_TYPES];
-  double tot_q;
   double avg_q;
 
   int64_t buffer_level;
@@ -355,12 +352,21 @@ typedef struct {
   int enable_scenecut_detection;
 
   int use_arf_in_this_kf_group;
+
+  int ni_frames;
+
+  double tot_q;
   /*!\endcond */
 
   /*!
    * Q used for last boosted (non leaf) frame
    */
   int last_kf_qindex;
+
+  /*!
+   * Average of q index of previous encoded frames in a sequence.
+   */
+  int avg_frame_qindex[FRAME_TYPES];
 
 #if CONFIG_FRAME_PARALLEL_ENCODE
   /*!
@@ -456,8 +462,8 @@ struct GF_GROUP;
 void av1_primary_rc_init(const struct AV1EncoderConfig *oxcf,
                          PRIMARY_RATE_CONTROL *p_rc);
 
-void av1_rc_init(const struct AV1EncoderConfig *oxcf, int pass,
-                 RATE_CONTROL *rc, const PRIMARY_RATE_CONTROL *const p_rc);
+void av1_rc_init(const struct AV1EncoderConfig *oxcf, RATE_CONTROL *rc,
+                 const PRIMARY_RATE_CONTROL *const p_rc);
 
 int av1_estimate_bits_at_q(FRAME_TYPE frame_kind, int q, int mbs,
                            double correction_factor, aom_bit_depth_t bit_depth,
@@ -517,7 +523,7 @@ void av1_rc_postencode_update_drop_frame(struct AV1_COMP *cpi);
 void av1_rc_update_rate_correction_factors(struct AV1_COMP *cpi,
 #if CONFIG_FRAME_PARALLEL_ENCODE
                                            int is_encode_stage,
-#endif
+#endif  // CONFIG_FRAME_PARALLEL_ENCODE
                                            int width, int height);
 /*!\cond */
 
@@ -701,21 +707,25 @@ void av1_get_one_pass_rt_params(struct AV1_COMP *cpi,
  */
 int av1_encodedframe_overshoot_cbr(struct AV1_COMP *cpi, int *q);
 
+#if !CONFIG_REALTIME_ONLY
 /*!\brief Compute the q_indices for the entire GOP.
- *
- * Intended to be used only with AOM_Q mode.
  *
  * \param[in]       gf_frame_index    Index of the current frame
  * \param[in]       base_q_index      Base q index
- * \param[in]       gfu_boost         GFU boost
+ * \param[in]       arf_qstep_ratio   The quantize step ratio between arf q
+ *                                    index and base q index
  * \param[in]       bit_depth         Bit depth
- * \param[in]       arf_boost_factor  ARF boost factor
- * \param[out]      gf_group          Pointer to the GOP
+ * \param[in]       gf_group          Pointer to the GOP
+ * \param[out]      q_index_list      An array to store output gop q indices.
+ *                                    the array size should be equal or
+ *                                    greater than gf_group.size()
  */
 void av1_q_mode_compute_gop_q_indices(int gf_frame_index, int base_q_index,
-                                      int gfu_boost, int bit_depth,
-                                      double arf_boost_factor,
-                                      struct GF_GROUP *gf_group);
+                                      double arf_qstep_ratio,
+                                      aom_bit_depth_t bit_depth,
+                                      const struct GF_GROUP *gf_group,
+                                      int *q_index_list);
+#endif  // !CONFIG_REALTIME_ONLY
 
 /*!\brief Compute the q_indices for a single frame.
  *

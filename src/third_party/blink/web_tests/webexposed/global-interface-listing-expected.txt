@@ -244,11 +244,16 @@ interface AppHistory : EventTarget
     method forward
     method goTo
     method navigate
+    method reload
+    method updateCurrent
     setter onnavigate
     setter onnavigateerror
     setter onnavigatesuccess
 interface AppHistoryDestination
     attribute @@toStringTag
+    getter id
+    getter index
+    getter key
     getter sameDocument
     getter url
     method constructor
@@ -269,6 +274,8 @@ interface AppHistoryNavigateEvent : Event
     getter formData
     getter hashChange
     getter info
+    getter navigationType
+    getter signal
     getter userInitiated
     method constructor
     method respondWith
@@ -1090,6 +1097,7 @@ interface CanvasRenderingContext2D
     getter globalCompositeOperation
     getter imageSmoothingEnabled
     getter imageSmoothingQuality
+    getter letterSpacing
     getter lineCap
     getter lineDashOffset
     getter lineJoin
@@ -1102,9 +1110,8 @@ interface CanvasRenderingContext2D
     getter strokeStyle
     getter textAlign
     getter textBaseline
-    getter textLetterSpacing
     getter textRendering
-    getter textWordSpacing
+    getter wordSpacing
     method addHitRegion
     method arc
     method arcTo
@@ -1172,6 +1179,7 @@ interface CanvasRenderingContext2D
     setter globalCompositeOperation
     setter imageSmoothingEnabled
     setter imageSmoothingQuality
+    setter letterSpacing
     setter lineCap
     setter lineDashOffset
     setter lineJoin
@@ -1184,9 +1192,8 @@ interface CanvasRenderingContext2D
     setter strokeStyle
     setter textAlign
     setter textBaseline
-    setter textLetterSpacing
     setter textRendering
-    setter textWordSpacing
+    setter wordSpacing
 interface CaptureHandleChangeEvent : Event
     attribute @@toStringTag
     method captureHandle
@@ -2490,6 +2497,7 @@ interface ElementInternals
 interface EncodedAudioChunk
     attribute @@toStringTag
     getter byteLength
+    getter duration
     getter timestamp
     getter type
     method constructor
@@ -3555,6 +3563,7 @@ interface HTMLIFrameElement : HTMLElement
     getter allow
     getter allowFullscreen
     getter allowPaymentRequest
+    getter anonymous
     getter contentDocument
     getter contentWindow
     getter csp
@@ -3579,6 +3588,7 @@ interface HTMLIFrameElement : HTMLElement
     setter allow
     setter allowFullscreen
     setter allowPaymentRequest
+    setter anonymous
     setter csp
     setter frameBorder
     setter height
@@ -5229,7 +5239,6 @@ interface MediaDevices : EventTarget
     getter ondevicechange
     method constructor
     method enumerateDevices
-    method getCurrentBrowsingContextMedia
     method getDisplayMedia
     method getSupportedConstraints
     method getUserMedia
@@ -5457,13 +5466,11 @@ interface MediaStreamTrackEvent : Event
     method constructor
 interface MediaStreamTrackGenerator : MediaStreamTrack
     attribute @@toStringTag
-    getter readableControl
     getter writable
     method constructor
 interface MediaStreamTrackProcessor
     attribute @@toStringTag
     getter readable
-    getter writableControl
     method constructor
 interface MerchantValidationEvent : Event
     attribute @@toStringTag
@@ -5725,6 +5732,7 @@ interface Navigator
     getter mediaSession
     getter mimeTypes
     getter onLine
+    getter pdfViewerEnabled
     getter permissions
     getter platform
     getter plugins
@@ -5944,6 +5952,7 @@ interface OffscreenCanvasRenderingContext2D
     getter globalCompositeOperation
     getter imageSmoothingEnabled
     getter imageSmoothingQuality
+    getter letterSpacing
     getter lineCap
     getter lineDashOffset
     getter lineJoin
@@ -5956,9 +5965,8 @@ interface OffscreenCanvasRenderingContext2D
     getter strokeStyle
     getter textAlign
     getter textBaseline
-    getter textLetterSpacing
     getter textRendering
-    getter textWordSpacing
+    getter wordSpacing
     method arc
     method arcTo
     method beginLayer
@@ -6020,6 +6028,7 @@ interface OffscreenCanvasRenderingContext2D
     setter globalCompositeOperation
     setter imageSmoothingEnabled
     setter imageSmoothingQuality
+    setter letterSpacing
     setter lineCap
     setter lineDashOffset
     setter lineJoin
@@ -6032,9 +6041,8 @@ interface OffscreenCanvasRenderingContext2D
     setter strokeStyle
     setter textAlign
     setter textBaseline
-    setter textLetterSpacing
     setter textRendering
-    setter textWordSpacing
+    setter wordSpacing
 interface Option
     attribute @@toStringTag
     getter defaultSelected
@@ -6759,9 +6767,7 @@ interface RTCRtpReceiver
     getter track
     getter transport
     method constructor
-    method createEncodedAudioStreams
     method createEncodedStreams
-    method createEncodedVideoStreams
     method getContributingSources
     method getParameters
     method getStats
@@ -6775,9 +6781,7 @@ interface RTCRtpSender
     getter track
     getter transport
     method constructor
-    method createEncodedAudioStreams
     method createEncodedStreams
-    method createEncodedVideoStreams
     method getParameters
     method getStats
     method replaceTrack
@@ -8369,6 +8373,16 @@ interface ShadowRoot : DocumentFragment
     setter adoptedStyleSheets
     setter fullscreenElement
     setter innerHTML
+interface SharedStorage
+    attribute @@toStringTag
+    getter worklet
+    method append
+    method clear
+    method constructor
+    method delete
+    method runOperation
+    method runURLSelectionOperation
+    method set
 interface SharedWorker : EventTarget
     attribute @@toStringTag
     getter onerror
@@ -8873,6 +8887,7 @@ interface URL
     setter search
     setter username
 interface URLPattern
+    static method compareComponent
     attribute @@toStringTag
     getter hash
     getter hostname
@@ -11441,6 +11456,7 @@ namespace CSS
     getter scrollbars
     getter self
     getter sessionStorage
+    getter sharedStorage
     getter speechSynthesis
     getter status
     getter statusbar

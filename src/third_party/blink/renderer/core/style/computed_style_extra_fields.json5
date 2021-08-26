@@ -652,6 +652,13 @@
       default_value: "false",
     },
     {
+      name: "HasCurrentClipPathAnimation",
+      field_template: "primitive",
+      type_name: "bool",
+      field_group: "*",
+      default_value: "false",
+    },
+    {
       name: "CompositablePaintAnimationChanged",
       field_template: "primitive",
       type_name: "bool",
@@ -730,6 +737,11 @@
     },
     {
       name: "HasAuthorBorder",
+      field_template: "monotonic_flag",
+      default_value: "false",
+    },
+    {
+      name: "HasAuthorBorderRadius",
       field_template: "monotonic_flag",
       default_value: "false",
     },
@@ -863,14 +875,14 @@
     {
       name: "NamedGridAreaRowCount",
       field_template: "primitive",
-      type_name: "size_t",
+      type_name: "wtf_size_t",
       field_group: "*->grid",
       default_value: "0",
     },
     {
       name: "NamedGridAreaColumnCount",
       field_template: "primitive",
-      type_name: "size_t",
+      type_name: "wtf_size_t",
       field_group: "*->grid",
       default_value: "0",
     },
@@ -895,14 +907,14 @@
     {
       name: "GridAutoRepeatColumnsInsertionPoint",
       field_template: "primitive",
-      type_name: "size_t",
+      type_name: "wtf_size_t",
       field_group: "*->grid",
       default_value: "0",
     },
     {
       name: "GridAutoRepeatRowsInsertionPoint",
       field_template: "primitive",
-      type_name: "size_t",
+      type_name: "wtf_size_t",
       field_group: "*->grid",
       default_value: "0",
     },
@@ -1111,6 +1123,23 @@
       field_template: "primitive",
       type_name: "bool",
       field_group: "*",
+      default_value: "false",
+    },
+    {
+      name: "BaseData",
+      inherited: false,
+      field_template: "external",
+      type_name: "StyleBaseData",
+      include_paths: ["third_party/blink/renderer/core/style/style_base_data.h"],
+      default_value: "nullptr",
+      wrapper_pointer_name: "scoped_refptr",
+      custom_compare: true,
+      custom_copy: true,
+    },
+    {
+      // https://drafts.csswg.org/css-contain-2/#skips-its-contents
+      name: "SkipsContents",
+      field_template: "monotonic_flag",
       default_value: "false",
     },
   ],

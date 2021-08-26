@@ -4,6 +4,7 @@
 #include "absl/strings/string_view.h"
 #include "http2/adapter/nghttp2_util.h"
 #include "third_party/nghttp2/src/lib/includes/nghttp2/nghttp2.h"
+#include "common/platform/api/quiche_export.h"
 #include "common/platform/api/quiche_test.h"
 
 namespace http2 {
@@ -12,7 +13,7 @@ namespace test {
 
 // This class provides a set of mock nghttp2 callbacks for use in unit test
 // expectations.
-class MockNghttp2Callbacks {
+class QUICHE_NO_EXPORT MockNghttp2Callbacks {
  public:
   MockNghttp2Callbacks() = default;
 
@@ -71,6 +72,9 @@ class MockNghttp2Callbacks {
               OnErrorCallback2,
               (int lib_error_code, const char* msg, size_t len),
               ());
+
+  MOCK_METHOD(ssize_t, OnPackExtension,
+              (uint8_t * buf, size_t len, const nghttp2_frame* frame), ());
 };
 
 }  // namespace test

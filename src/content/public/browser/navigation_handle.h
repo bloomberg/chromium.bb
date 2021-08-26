@@ -96,14 +96,14 @@ class CONTENT_EXPORT NavigationHandle : public base::SupportsUserData {
   // page, so consider whether you want to call IsInPrimaryMainFrame() instead.
   // See the documentation below for details. The return value remains constant
   // over the navigation lifetime.
-  virtual bool IsInMainFrame() = 0;
+  virtual bool IsInMainFrame() const = 0;
 
   // Whether the navigation is taking place in the main frame of the primary
   // frame tree. With MPArch (crbug.com/1164280), a WebContents may have
   // additional frame trees for prerendering pages in addition to the primary
   // frame tree (holding the page currently shown to the user). The return
   // value remains constant over the navigation lifetime.
-  virtual bool IsInPrimaryMainFrame() = 0;
+  virtual bool IsInPrimaryMainFrame() const = 0;
 
   // Prerender2:
   // Whether the navigation is taking place in the main frame of the
@@ -223,6 +223,10 @@ class CONTENT_EXPORT NavigationHandle : public base::SupportsUserData {
 
   // Whether the navigation is restoring a page from back-forward cache.
   virtual bool IsServedFromBackForwardCache() = 0;
+
+  // Whether this navigation is activating an existing page (e.g. served from
+  // the BackForwardCache or Prerender).
+  virtual bool IsPageActivation() const = 0;
 
   // Navigation control flow --------------------------------------------------
 
@@ -498,6 +502,7 @@ class CONTENT_EXPORT NavigationHandle : public base::SupportsUserData {
 
   // Returns whether this navigation is currently deferred.
   virtual bool IsDeferredForTesting() = 0;
+  virtual bool IsCommitDeferringConditionDeferredForTesting() = 0;
 };
 
 }  // namespace content

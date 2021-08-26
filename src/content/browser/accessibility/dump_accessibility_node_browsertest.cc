@@ -44,7 +44,9 @@ class DumpAccessibilityNodeTest : public DumpAccessibilityTestBase {
     return property_filters;
   }
 
-  std::vector<std::string> Dump(std::vector<std::string>& unused) override {
+  std::vector<std::string> Dump() override {
+    WaitForFinalTreeContents();
+
     std::unique_ptr<AXTreeFormatter> formatter(CreateFormatter());
 
     formatter->SetPropertyFilters(scenario_.property_filters,
@@ -249,6 +251,12 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityAccNameTest,
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityAccNameTest,
                        NameCheckboxCssBeforeInLabel) {
   RunAccNameTest(FILE_PATH_LITERAL("name-checkbox-css-before-in-label.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityAccNameTest,
+                       NameCheckboxCssBeforeAndAfterWithWhitespace) {
+  RunAccNameTest(FILE_PATH_LITERAL(
+      "name-checkbox-css-before-and-after-with-whitespace.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityAccNameTest, NameCheckboxInputInLabel) {
@@ -757,8 +765,20 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityAccNameTest,
   RunAccNameTest(FILE_PATH_LITERAL("name-text-label-embedded-spinbutton.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityAccNameTest,
+                       NameTextLabelInlineWithWhitespace) {
+  RunAccNameTest(
+      FILE_PATH_LITERAL("name-text-label-inline-with-whitespace.html"));
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityAccNameTest, NameTextLabel) {
   RunAccNameTest(FILE_PATH_LITERAL("name-text-label.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityAccNameTest,
+                       NameTextLabelledbyDynamicallyHidden) {
+  RunAccNameTest(
+      FILE_PATH_LITERAL("name-text-labelledby-dynamically-hidden.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityAccNameTest,

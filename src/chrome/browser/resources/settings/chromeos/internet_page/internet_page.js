@@ -6,7 +6,7 @@ import '//resources/cr_components/chromeos/cellular_setup/cellular_setup_icons.m
 import '//resources/cr_components/chromeos/network/sim_lock_dialogs.m.js';
 import '//resources/cr_elements/cr_expand_button/cr_expand_button.m.js';
 import '//resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
-import '//resources/cr_elements/cr_toast/cr_toast.m.js';
+import '//resources/cr_elements/cr_toast/cr_toast.js';
 import '//resources/cr_elements/icons.m.js';
 import '//resources/cr_elements/policy/cr_policy_indicator.m.js';
 import '//resources/polymer/v3_0/iron-icon/iron-icon.js';
@@ -259,14 +259,6 @@ Polymer({
       type: String,
       value: '',
     },
-
-    /** @private */
-    isUpdatedCellularUiEnabled_: {
-      type: Boolean,
-      value() {
-        return loadTimeData.getBoolean('updatedCellularActivationUi');
-      }
-    },
   },
 
   /**
@@ -370,8 +362,7 @@ Polymer({
       // update.
       this.pendingShowSimLockDialog_ = !oldRoute &&
           !!queryParams.get('showSimLockDialog') &&
-          this.subpageType_ === mojom.NetworkType.kCellular &&
-          this.isUpdatedCellularUiEnabled_;
+          this.subpageType_ === mojom.NetworkType.kCellular;
     } else if (route === routes.KNOWN_NETWORKS) {
       // Handle direct navigation to the known networks page,
       // e.g. chrome://settings/internet/knownNetworks?type=WiFi
@@ -826,8 +817,8 @@ Polymer({
       return true;
     }
 
-    return !globalPolicy.allowOnlyPolicyNetworksToConnect &&
-        (!globalPolicy.allowOnlyPolicyNetworksToConnectIfAvailable ||
+    return !globalPolicy.allowOnlyPolicyWifiNetworksToConnect &&
+        (!globalPolicy.allowOnlyPolicyWifiNetworksToConnectIfAvailable ||
          !managedNetworkAvailable);
   },
 

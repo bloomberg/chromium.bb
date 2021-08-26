@@ -316,7 +316,24 @@ class _PresubmitResult(object):
     """
     self._message = message
     self._items = items or []
-    self._long_text = long_text.rstrip()
+    self._long_text = _PresubmitResult._ensure_str(long_text.rstrip())
+
+  @staticmethod
+  def _ensure_str(val):
+    """
+    val: A "stringish" value. Can be any of str, unicode or bytes.
+    returns: A str after applying encoding/decoding as needed.
+    Assumes/uses UTF-8 for relevant inputs/outputs.
+
+    We'd prefer to use six.ensure_str but our copy of six is old :(
+    """
+    if isinstance(val, str):
+      return val
+    if six.PY2 and isinstance(val, unicode):
+      return val.encode()
+    elif six.PY3 and isinstance(val, bytes):
+      return val.decode()
+    raise ValueError("Unknown string type %s" % type(val))
 
   def handle(self):
     sys.stdout.write(self._message)

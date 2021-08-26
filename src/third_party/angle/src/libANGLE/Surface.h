@@ -49,6 +49,7 @@ struct SurfaceState final : private angle::NonCopyable
     ~SurfaceState();
 
     bool isRobustResourceInitEnabled() const;
+    bool hasProtectedContent() const;
 
     EGLLabelKHR label;
     const egl::Config *config;
@@ -132,6 +133,7 @@ class Surface : public LabeledObject, public gl::FramebufferAttachmentObject
     EGLint getHorizontalResolution() const;
     EGLint getVerticalResolution() const;
     EGLenum getMultisampleResolve() const;
+    bool hasProtectedContent() const override;
 
     gl::Texture *getBoundTexture() const { return mTexture; }
 
@@ -187,6 +189,8 @@ class Surface : public LabeledObject, public gl::FramebufferAttachmentObject
     const gl::Offset &getTextureOffset() const { return mTextureOffset; }
 
     Error getBufferAge(const gl::Context *context, EGLint *age) const;
+
+    void setRenderBuffer(EGLint value);
 
   protected:
     Surface(EGLint surfaceType,

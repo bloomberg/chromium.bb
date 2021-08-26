@@ -332,23 +332,23 @@ TEST_F(ParserImplErrorTest, FunctionDeclDecoWorkgroupSizeMissingRParen) {
 }
 
 TEST_F(ParserImplErrorTest, FunctionDeclDecoWorkgroupSizeXInvalid) {
-  EXPECT("[[workgroup_size(@)]] fn f() {}",
+  EXPECT("[[workgroup_size()]] fn f() {}",
          "test.wgsl:1:18 error: expected workgroup_size x parameter\n"
-         "[[workgroup_size(@)]] fn f() {}\n"
+         "[[workgroup_size()]] fn f() {}\n"
          "                 ^\n");
 }
 
 TEST_F(ParserImplErrorTest, FunctionDeclDecoWorkgroupSizeYInvalid) {
-  EXPECT("[[workgroup_size(1, @)]] fn f() {}",
+  EXPECT("[[workgroup_size(1, )]] fn f() {}",
          "test.wgsl:1:21 error: expected workgroup_size y parameter\n"
-         "[[workgroup_size(1, @)]] fn f() {}\n"
+         "[[workgroup_size(1, )]] fn f() {}\n"
          "                    ^\n");
 }
 
 TEST_F(ParserImplErrorTest, FunctionDeclDecoWorkgroupSizeZInvalid) {
-  EXPECT("[[workgroup_size(1, 2, @)]] fn f() {}",
+  EXPECT("[[workgroup_size(1, 2, )]] fn f() {}",
          "test.wgsl:1:24 error: expected workgroup_size z parameter\n"
-         "[[workgroup_size(1, 2, @)]] fn f() {}\n"
+         "[[workgroup_size(1, 2, )]] fn f() {}\n"
          "                       ^\n");
 }
 
@@ -422,12 +422,19 @@ TEST_F(ParserImplErrorTest, FunctionDeclMissingRBrace) {
          "        ^\n");
 }
 
+TEST_F(ParserImplErrorTest, FunctionScopeUnusedDecl) {
+  EXPECT("fn f(a:i32)->i32{return a;[[size(1)]]}",
+         "test.wgsl:1:29 error: unexpected decorations\n"
+         "fn f(a:i32)->i32{return a;[[size(1)]]}\n"
+         "                            ^^^^\n");
+}
+
 TEST_F(ParserImplErrorTest, FunctionMissingOpenLine) {
   EXPECT(R"(let bar : vec2<f32> = vec2<f32>(1., 2.);
   var a : f32 = bar[0];
   return;
 })",
-         "test.wgsl:2:17 error: unknown type 'bar'\n"
+         "test.wgsl:2:17 error: unable to parse const_expr\n"
          "  var a : f32 = bar[0];\n"
          "                ^^^\n"
          "\n"
@@ -466,9 +473,41 @@ TEST_F(ParserImplErrorTest, GlobalDeclConstMissingRParen) {
 
 TEST_F(ParserImplErrorTest, GlobalDeclConstBadConstLiteral) {
   EXPECT("let i : vec2<i32> = vec2<i32>(!);",
-         "test.wgsl:1:31 error: unable to parse constant literal\n"
+         "test.wgsl:1:31 error: unable to parse const_expr\n"
          "let i : vec2<i32> = vec2<i32>(!);\n"
          "                              ^\n");
+}
+
+TEST_F(ParserImplErrorTest, GlobalDeclConstBadConstLiteralSpaceLessThan) {
+  EXPECT("let i = 1 < 2;",
+         "test.wgsl:1:11 error: expected \';\' for let declaration\n"
+         "let i = 1 < 2;\n"
+         "          ^\n");
+}
+
+TEST_F(ParserImplErrorTest, GlobalDeclConstNotConstExpr) {
+  EXPECT(
+      "let a = 1;\n"
+      "let b = a;",
+      "test.wgsl:2:9 error: unable to parse const_expr\n"
+      "let b = a;\n"
+      "        ^\n");
+}
+
+TEST_F(ParserImplErrorTest, GlobalDeclConstNotConstExprWithParn) {
+  EXPECT(
+      "let a = 1;\n"
+      "let b = a();",
+      "test.wgsl:2:9 error: unable to parse const_expr\n"
+      "let b = a();\n"
+      "        ^\n");
+}
+
+TEST_F(ParserImplErrorTest, GlobalDeclConstConstExprRegisteredType) {
+  EXPECT("let a = S0(0);",
+         "test.wgsl:1:9 error: unable to parse const_expr\n"
+         "let a = S0(0);\n"
+         "        ^^\n");
 }
 
 TEST_F(ParserImplErrorTest, GlobalDeclConstExprMaxDepth) {

@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #include "lib/extras/codec_gif.h"
 
@@ -30,10 +21,7 @@
 #include "lib/jxl/image_bundle.h"
 #include "lib/jxl/image_ops.h"
 #include "lib/jxl/luminance.h"
-
-#ifdef MEMORY_SANITIZER
-#include "sanitizer/msan_interface.h"
-#endif
+#include "lib/jxl/sanitizers.h"
 
 namespace jxl {
 
@@ -93,16 +81,15 @@ Status DecodeImageGIF(Span<const uint8_t> bytes, ThreadPool* pool,
     return JXL_FAILURE("Failed to read GIF: %s", GifErrorString(gif->Error));
   }
 
-#ifdef MEMORY_SANITIZER
-  __msan_unpoison(gif.get(), sizeof(*gif));
+  msan::UnpoisonMemory(gif.get(), sizeof(*gif));
   if (gif->SColorMap) {
-    __msan_unpoison(gif->SColorMap, sizeof(*gif->SColorMap));
-    __msan_unpoison(gif->SColorMap->Colors, sizeof(*gif->SColorMap->Colors) *
-                                                gif->SColorMap->ColorCount);
+    msan::UnpoisonMemory(gif->SColorMap, sizeof(*gif->SColorMap));
+    msan::UnpoisonMemory(
+        gif->SColorMap->Colors,
+        sizeof(*gif->SColorMap->Colors) * gif->SColorMap->ColorCount);
   }
-  __msan_unpoison(gif->SavedImages,
-                  sizeof(*gif->SavedImages) * gif->ImageCount);
-#endif
+  msan::UnpoisonMemory(gif->SavedImages,
+                       sizeof(*gif->SavedImages) * gif->ImageCount);
 
   const SizeConstraints* constraints = &io->constraints;
 
@@ -176,11 +163,9 @@ Status DecodeImageGIF(Span<const uint8_t> bytes, ThreadPool* pool,
   bool last_base_was_none = true;
   for (int i = 0; i < gif->ImageCount; ++i) {
     const SavedImage& image = gif->SavedImages[i];
-#ifdef MEMORY_SANITIZER
-    __msan_unpoison(image.RasterBits, sizeof(*image.RasterBits) *
-                                          image.ImageDesc.Width *
-                                          image.ImageDesc.Height);
-#endif
+    msan::UnpoisonMemory(image.RasterBits, sizeof(*image.RasterBits) *
+                                               image.ImageDesc.Width *
+                                               image.ImageDesc.Height);
     const Rect image_rect(image.ImageDesc.Left, image.ImageDesc.Top,
                           image.ImageDesc.Width, image.ImageDesc.Height);
     io->dec_pixels += image_rect.xsize() * image_rect.ysize();
@@ -212,16 +197,12 @@ Status DecodeImageGIF(Span<const uint8_t> bytes, ThreadPool* pool,
     const ColorMapObject* const color_map =
         image.ImageDesc.ColorMap ? image.ImageDesc.ColorMap : gif->SColorMap;
     JXL_CHECK(color_map);
-#ifdef MEMORY_SANITIZER
-    __msan_unpoison(color_map, sizeof(*color_map));
-    __msan_unpoison(color_map->Colors,
-                    sizeof(*color_map->Colors) * color_map->ColorCount);
-#endif
+    msan::UnpoisonMemory(color_map, sizeof(*color_map));
+    msan::UnpoisonMemory(color_map->Colors,
+                         sizeof(*color_map->Colors) * color_map->ColorCount);
     GraphicsControlBlock gcb;
     DGifSavedExtensionToGCB(gif.get(), i, &gcb);
-#ifdef MEMORY_SANITIZER
-    __msan_unpoison(&gcb, sizeof(gcb));
-#endif
+    msan::UnpoisonMemory(&gcb, sizeof(gcb));
 
     ImageBundle bundle(&io->metadata.m);
     if (io->metadata.m.have_animation) {

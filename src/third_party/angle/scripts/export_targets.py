@@ -181,6 +181,7 @@ assert INCLUDE_REGEX.match(b'\n#include "foo"')
 # included, but not part of the source list.
 IGNORED_INCLUDES = {
     b'absl/container/flat_hash_map.h',
+    b'absl/container/flat_hash_set.h',
     b'compiler/translator/TranslatorESSL.h',
     b'compiler/translator/TranslatorGLSL.h',
     b'compiler/translator/TranslatorHLSL.h',
@@ -207,6 +208,7 @@ IGNORED_INCLUDES = {
     b'libANGLE/renderer/null/DisplayNULL.h',
     b'libANGLE/renderer/vulkan/android/AHBFunctions.h',
     b'libANGLE/renderer/vulkan/android/DisplayVkAndroid.h',
+    b'libANGLE/renderer/vulkan/DisplayVk_api.h',
     b'libANGLE/renderer/vulkan/fuchsia/DisplayVkFuchsia.h',
     b'libANGLE/renderer/vulkan/ggp/DisplayVkGGP.h',
     b'libANGLE/renderer/vulkan/mac/DisplayVkMac.h',
@@ -340,8 +342,8 @@ for (k,desc) in out.items():
     for dep_name in set(desc['deps']):
         dep = descs[dep_name]
         if dep['type'] in LIBRARY_TYPES:
-            dep_libs.add(dep_name[3:])
-    desc['deps'] = sortedi(dep_libs)
+            dep_libs.add(dep_name)
+    desc['dep_libs'] = sortedi(dep_libs)
 
 json.dump(out, sys.stdout, indent='  ')
 exit(0)

@@ -137,6 +137,18 @@ constexpr char kWebFilterTypeHistogramName[] = "FamilyUser.WebFilterType";
 // Reports ManualSiteListType which indicates approved list and blocked list
 // usage for current Family Link user on Chrome OS.
 constexpr char kManagedSiteListHistogramName[] = "FamilyUser.ManagedSiteList";
+
+// UMA histogram FamilyUser.ManagedSiteListCount.Approved
+// Reports the number of approved urls and domains for current Family Link user
+// on Chrome OS.
+constexpr char kApprovedSitesCountHistogramName[] =
+    "FamilyUser.ManagedSiteListCount.Approved";
+
+// UMA histogram FamilyUser.ManagedSiteListCount.Blocked
+// Reports the number of blocked urls and domains for current Family Link user
+// on Chrome OS.
+constexpr char kBlockedSitesCountHistogramName[] =
+    "FamilyUser.ManagedSiteListCount.Blocked";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // This class encapsulates all the state that is required during construction of
@@ -266,6 +278,18 @@ const char* SupervisedUserURLFilter::GetManagedSiteListHistogramNameForTest() {
   return kManagedSiteListHistogramName;
 }
 
+// static
+const char*
+SupervisedUserURLFilter::GetApprovedSitesCountHistogramNameForTest() {
+  return kApprovedSitesCountHistogramName;
+}
+
+// static
+const char*
+SupervisedUserURLFilter::GetBlockedSitesCountHistogramNameForTest() {
+  return kBlockedSitesCountHistogramName;
+}
+
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // static
@@ -301,20 +325,32 @@ bool SupervisedUserURLFilter::HasFilteredScheme(const GURL& url) {
 bool SupervisedUserURLFilter::HostMatchesPattern(
     const std::string& canonical_host,
     const std::string& pattern) {
-  // If |canonical_host| starts with |www.| but |pattern| starts with neither
-  // |www.| nor |*.| then trim |www.| part of canonical host.
-  bool is_host_www =
-      base::StartsWith(canonical_host, "www.", base::CompareCase::SENSITIVE);
-  bool patern_accepts =
-      base::StartsWith(pattern, "www.", base::CompareCase::SENSITIVE) ||
-      base::StartsWith(pattern, "*.", base::CompareCase::SENSITIVE);
-
+  std::string trimmed_pattern = pattern;
   std::string trimmed_host = canonical_host;
-  if (is_host_www && !patern_accepts) {
-    trimmed_host = url_formatter::StripWWW(canonical_host);
+
+  // If pattern starts with https:// or http:// trim it.
+  if (base::StartsWith(pattern, "https://", base::CompareCase::SENSITIVE)) {
+    trimmed_pattern = trimmed_pattern.substr(8);
+  } else if (base::StartsWith(pattern, "http://",
+                              base::CompareCase::SENSITIVE)) {
+    trimmed_pattern = trimmed_pattern.substr(7);
   }
 
-  std::string trimmed_pattern = pattern;
+  bool host_starts_with_www =
+      base::StartsWith(canonical_host, "www.", base::CompareCase::SENSITIVE);
+  bool pattern_starts_with_www =
+      base::StartsWith(trimmed_pattern, "www.", base::CompareCase::SENSITIVE);
+
+  // Trim the initial "www." if it appears on either the host or the pattern,
+  // but not if it appears on both.
+  if (host_starts_with_www != pattern_starts_with_www) {
+    if (host_starts_with_www) {
+      trimmed_host = trimmed_host.substr(4);
+    } else if (pattern_starts_with_www) {
+      trimmed_pattern = trimmed_pattern.substr(4);
+    }
+  }
+
   if (base::EndsWith(pattern, ".*", base::CompareCase::SENSITIVE)) {
     size_t registry_length = GetCanonicalHostRegistryLength(
         trimmed_host, EXCLUDE_UNKNOWN_REGISTRIES, EXCLUDE_PRIVATE_REGISTRIES);
@@ -725,39 +761,41 @@ void SupervisedUserURLFilter::ReportManagedSiteListMetrics() const {
   if (url_map_.empty() && host_map_.empty()) {
     base::UmaHistogramEnumeration(kManagedSiteListHistogramName,
                                   ManagedSiteList::kEmpty);
+    base::UmaHistogramCounts1000(kApprovedSitesCountHistogramName, 0);
+    base::UmaHistogramCounts1000(kBlockedSitesCountHistogramName, 0);
     return;
   }
 
   ManagedSiteList managed_site_list = ManagedSiteList::kMaxValue;
-  bool approved_list = false;
-  bool blocked_list = false;
+  int approved_count = 0;
+  int blocked_count = 0;
   for (const auto& it : url_map_) {
-    if (approved_list && blocked_list)
-      break;
     if (it.second) {
-      approved_list = true;
+      approved_count++;
     } else {
-      blocked_list = true;
+      blocked_count++;
     }
   }
 
   for (const auto& it : host_map_) {
-    if (approved_list && blocked_list)
-      break;
     if (it.second) {
-      approved_list = true;
+      approved_count++;
     } else {
-      blocked_list = true;
+      blocked_count++;
     }
   }
 
-  if (approved_list && blocked_list) {
+  if (approved_count > 0 && blocked_count > 0) {
     managed_site_list = ManagedSiteList::kBoth;
-  } else if (approved_list) {
+  } else if (approved_count > 0) {
     managed_site_list = ManagedSiteList::kApprovedListOnly;
   } else {
     managed_site_list = ManagedSiteList::kBlockedListOnly;
   }
+
+  base::UmaHistogramCounts1000(kApprovedSitesCountHistogramName,
+                               approved_count);
+  base::UmaHistogramCounts1000(kBlockedSitesCountHistogramName, blocked_count);
 
   base::UmaHistogramEnumeration(kManagedSiteListHistogramName,
                                 managed_site_list);

@@ -96,7 +96,7 @@ deps = {
 
   # WGSL support
   'third_party/tint': {
-    'url': '{dawn_git}/tint@9e0b3cceaf5f4fcbc916f05a6f7d8e226a479059',
+    'url': '{dawn_git}/tint@ceb70630922a8ce682f90b555e4d52be608e7a6b',
   },
 
   # GLFW for tests and samples
@@ -127,7 +127,7 @@ deps = {
   },
 
   'third_party/vulkan-deps': {
-    'url': '{chromium_git}/vulkan-deps@85e758a22b7aafedf96de10653fb3645872cac10',
+    'url': '{chromium_git}/vulkan-deps@df0528b581a1709ccad790c205d3c11d0b657ed6',
     'condition': 'dawn_standalone',
   },
 

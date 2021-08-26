@@ -342,6 +342,7 @@ NGPhysicalFragment::NGPhysicalFragment(NGContainerFragmentBuilder* builder,
       sub_type_(sub_type),
       style_variant_((unsigned)builder->style_variant_),
       is_hidden_for_paint_(builder->is_hidden_for_paint_),
+      is_opaque_(builder->is_opaque_),
       is_fieldset_container_(false),
       is_table_ng_part_(false),
       is_legacy_layout_root_(false),
@@ -399,6 +400,7 @@ NGPhysicalFragment::NGPhysicalFragment(const NGPhysicalFragment& other,
       sub_type_(other.sub_type_),
       style_variant_(other.style_variant_),
       is_hidden_for_paint_(other.is_hidden_for_paint_),
+      is_opaque_(other.is_opaque_),
       is_math_fraction_(other.is_math_fraction_),
       is_math_operator_(other.is_math_operator_),
       base_or_resolved_direction_(other.base_or_resolved_direction_),
@@ -772,31 +774,42 @@ void NGPhysicalFragment::AddOutlineRectsForCursor(
     const NGFragmentItem& item = *cursor->Current().Item();
     if (UNLIKELY(item.IsLayoutObjectDestroyedOrMoved()))
       continue;
-    if (item.Type() == NGFragmentItem::kLine) {
-      AddOutlineRectsForDescendant(
-          {item.LineBoxFragment(), item.OffsetInContainerFragment()},
-          outline_rects, additional_offset, outline_type, containing_block);
-      continue;
-    }
-    if (item.IsText()) {
-      if (outline_type == NGOutlineType::kDontIncludeBlockVisualOverflow)
-        continue;
-      PhysicalRect rect = item.RectInContainerFragment();
-      if (UNLIKELY(text_combine))
-        rect = text_combine->AdjustRectForBoundingBox(rect);
-      rect.Move(additional_offset);
-      outline_rects->push_back(rect);
-      continue;
-    }
-    if (item.Type() == NGFragmentItem::kBox) {
-      if (const NGPhysicalBoxFragment* child_box =
-              item.PostLayoutBoxFragment()) {
-        DCHECK(!child_box->IsOutOfFlowPositioned());
+    switch (item.Type()) {
+      case NGFragmentItem::kLine: {
         AddOutlineRectsForDescendant(
-            {child_box, item.OffsetInContainerFragment()}, outline_rects,
-            additional_offset, outline_type, containing_block);
+            {item.LineBoxFragment(), item.OffsetInContainerFragment()},
+            outline_rects, additional_offset, outline_type, containing_block);
+        break;
       }
-      continue;
+      case NGFragmentItem::kGeneratedText:
+      case NGFragmentItem::kText: {
+        if (outline_type == NGOutlineType::kDontIncludeBlockVisualOverflow)
+          break;
+        PhysicalRect rect = item.RectInContainerFragment();
+        if (UNLIKELY(text_combine))
+          rect = text_combine->AdjustRectForBoundingBox(rect);
+        rect.Move(additional_offset);
+        outline_rects->push_back(rect);
+        break;
+      }
+      case NGFragmentItem::kSvgText: {
+        PhysicalRect rect =
+            PhysicalRect::EnclosingRect(item.ObjectBoundingBox());
+        DCHECK(!text_combine);
+        rect.Move(additional_offset);
+        outline_rects->push_back(rect);
+        break;
+      }
+      case NGFragmentItem::kBox: {
+        if (const NGPhysicalBoxFragment* child_box =
+                item.PostLayoutBoxFragment()) {
+          DCHECK(!child_box->IsOutOfFlowPositioned());
+          AddOutlineRectsForDescendant(
+              {child_box, item.OffsetInContainerFragment()}, outline_rects,
+              additional_offset, outline_type, containing_block);
+        }
+        break;
+      }
     }
   }
 }

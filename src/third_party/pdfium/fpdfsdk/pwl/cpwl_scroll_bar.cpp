@@ -6,6 +6,8 @@
 
 #include "fpdfsdk/pwl/cpwl_scroll_bar.h"
 
+#include <math.h>
+
 #include <algorithm>
 #include <sstream>
 #include <utility>
@@ -182,7 +184,8 @@ void CPWL_ScrollBar::DrawThisAppearance(CFX_RenderDevice* pDevice,
   }
 }
 
-bool CPWL_ScrollBar::OnLButtonDown(uint32_t nFlag, const CFX_PointF& point) {
+bool CPWL_ScrollBar::OnLButtonDown(Mask<FWL_EVENTFLAG> nFlag,
+                                   const CFX_PointF& point) {
   CPWL_Wnd::OnLButtonDown(nFlag, point);
 
   if (HasFlag(PWS_AUTOTRANSPARENT)) {
@@ -224,12 +227,13 @@ bool CPWL_ScrollBar::OnLButtonDown(uint32_t nFlag, const CFX_PointF& point) {
   return true;
 }
 
-bool CPWL_ScrollBar::OnLButtonUp(uint32_t nFlag, const CFX_PointF& point) {
+bool CPWL_ScrollBar::OnLButtonUp(Mask<FWL_EVENTFLAG> nFlag,
+                                 const CFX_PointF& point) {
   CPWL_Wnd::OnLButtonUp(nFlag, point);
 
   if (HasFlag(PWS_AUTOTRANSPARENT)) {
-    if (GetTransparency() != PWL_SCROLLBAR_TRANSPARENCY) {
-      SetTransparency(PWL_SCROLLBAR_TRANSPARENCY);
+    if (GetTransparency() != kTransparency) {
+      SetTransparency(kTransparency);
       if (!InvalidateRect(nullptr))
         return true;
     }
@@ -318,10 +322,7 @@ void CPWL_ScrollBar::CreateButtons(const CreateParams& cp) {
 }
 
 float CPWL_ScrollBar::GetScrollBarWidth() const {
-  if (!IsVisible())
-    return 0;
-
-  return PWL_SCROLLBAR_WIDTH;
+  return IsVisible() ? kWidth : 0.0f;
 }
 
 void CPWL_ScrollBar::SetScrollRange(float fMin,

@@ -465,7 +465,8 @@ void CompilerGLSL::find_static_extensions()
 		// Need to figure out if we should target KHR or NV extension based on capabilities.
 		for (auto &cap : ir.declared_capabilities)
 		{
-			if (cap == CapabilityRayTracingKHR || cap == CapabilityRayQueryKHR)
+			if (cap == CapabilityRayTracingKHR || cap == CapabilityRayQueryKHR ||
+			    cap == CapabilityRayTraversalPrimitiveCullingKHR)
 			{
 				ray_tracing_is_khr = true;
 				break;
@@ -577,6 +578,20 @@ void CompilerGLSL::find_static_extensions()
 				if (get_execution_model() != ExecutionModelVertex)
 					SPIRV_CROSS_THROW("OVR_multiview2 can only be used with Vertex shaders.");
 			}
+			break;
+
+		case CapabilityRayQueryKHR:
+			if (options.es || options.version < 460 || !options.vulkan_semantics)
+				SPIRV_CROSS_THROW("RayQuery requires Vulkan GLSL 460.");
+			require_extension_internal("GL_EXT_ray_query");
+			ray_tracing_is_khr = true;
+			break;
+
+		case CapabilityRayTraversalPrimitiveCullingKHR:
+			if (options.es || options.version < 460 || !options.vulkan_semantics)
+				SPIRV_CROSS_THROW("RayQuery requires Vulkan GLSL 460.");
+			require_extension_internal("GL_EXT_ray_flags_primitive_culling");
+			ray_tracing_is_khr = true;
 			break;
 
 		default:
@@ -1060,6 +1075,10 @@ void CompilerGLSL::emit_header()
 	default:
 		break;
 	}
+
+	for (auto &cap : ir.declared_capabilities)
+		if (cap == CapabilityRayTraversalPrimitiveCullingKHR)
+			statement("layout(primitive_culling);");
 
 	if (!inputs.empty())
 		statement("layout(", merge(inputs), ") in;");
@@ -12525,7 +12544,64 @@ void CompilerGLSL::emit_instruction(const Instruction &instruction)
 		flush_control_dependent_expressions(current_emitting_block->self);
 		break;
 
+		// Don't bother forwarding temporaries. Avoids having to test expression invalidation with ray query objects.
+	case OpRayQueryInitializeKHR:
+		flush_variable_declaration(ops[0]);
+		statement("rayQueryInitializeEXT(",
+		          to_expression(ops[0]), ", ", to_expression(ops[1]), ", ",
+		          to_expression(ops[2]), ", ", to_expression(ops[3]), ", ",
+		          to_expression(ops[4]), ", ", to_expression(ops[5]), ", ",
+		          to_expression(ops[6]), ", ", to_expression(ops[7]), ");");
+		break;
+	case OpRayQueryProceedKHR:
+		flush_variable_declaration(ops[0]);
+		emit_op(ops[0], ops[1], join("rayQueryProceedEXT(", to_expression(ops[2]), ")"), false);
+		break;
+	case OpRayQueryTerminateKHR:
+		flush_variable_declaration(ops[0]);
+		statement("rayQueryTerminateEXT(", to_expression(ops[0]), ");");
+		break;
+	case OpRayQueryGenerateIntersectionKHR:
+		flush_variable_declaration(ops[0]);
+		statement("rayQueryGenerateIntersectionEXT(", to_expression(ops[0]), ", ", to_expression(ops[1]), ");");
+		break;
+	case OpRayQueryConfirmIntersectionKHR:
+		flush_variable_declaration(ops[0]);
+		statement("rayQueryConfirmIntersectionEXT(", to_expression(ops[0]), ");");
+		break;
+#define GLSL_RAY_QUERY_GET_OP(op) \
+	case OpRayQueryGet##op##KHR: \
+		flush_variable_declaration(ops[2]); \
+		emit_op(ops[0], ops[1], join("rayQueryGet" #op "EXT(", to_expression(ops[2]), ")"), false); \
+		break
+#define GLSL_RAY_QUERY_GET_OP2(op) \
+	case OpRayQueryGet##op##KHR: \
+		flush_variable_declaration(ops[2]); \
+		emit_op(ops[0], ops[1], join("rayQueryGet" #op "EXT(", to_expression(ops[2]), ", ", "bool(", to_expression(ops[3]), "))"), false); \
+		break
+	GLSL_RAY_QUERY_GET_OP(RayTMin);
+	GLSL_RAY_QUERY_GET_OP(RayFlags);
+	GLSL_RAY_QUERY_GET_OP(WorldRayOrigin);
+	GLSL_RAY_QUERY_GET_OP(WorldRayDirection);
+	GLSL_RAY_QUERY_GET_OP(IntersectionCandidateAABBOpaque);
+	GLSL_RAY_QUERY_GET_OP2(IntersectionType);
+	GLSL_RAY_QUERY_GET_OP2(IntersectionT);
+	GLSL_RAY_QUERY_GET_OP2(IntersectionInstanceCustomIndex);
+	GLSL_RAY_QUERY_GET_OP2(IntersectionInstanceId);
+	GLSL_RAY_QUERY_GET_OP2(IntersectionInstanceShaderBindingTableRecordOffset);
+	GLSL_RAY_QUERY_GET_OP2(IntersectionGeometryIndex);
+	GLSL_RAY_QUERY_GET_OP2(IntersectionPrimitiveIndex);
+	GLSL_RAY_QUERY_GET_OP2(IntersectionBarycentrics);
+	GLSL_RAY_QUERY_GET_OP2(IntersectionFrontFace);
+	GLSL_RAY_QUERY_GET_OP2(IntersectionObjectRayDirection);
+	GLSL_RAY_QUERY_GET_OP2(IntersectionObjectRayOrigin);
+	GLSL_RAY_QUERY_GET_OP2(IntersectionObjectToWorld);
+	GLSL_RAY_QUERY_GET_OP2(IntersectionWorldToObject);
+#undef GLSL_RAY_QUERY_GET_OP
+#undef GLSL_RAY_QUERY_GET_OP2
+
 	case OpConvertUToAccelerationStructureKHR:
+		require_extension_internal("GL_EXT_ray_tracing");
 		GLSL_UFOP(accelerationStructureEXT);
 		break;
 
@@ -12845,16 +12921,19 @@ string CompilerGLSL::flags_to_qualifiers_glsl(const SPIRType &type, const Bitset
 	if (flags.get(DecorationRestrictPointerEXT))
 		return "restrict ";
 
-	// Structs do not have precision qualifiers, neither do doubles (desktop only anyways, so no mediump/highp).
-	if (type.basetype != SPIRType::Float && type.basetype != SPIRType::Int && type.basetype != SPIRType::UInt &&
-	    type.basetype != SPIRType::Image && type.basetype != SPIRType::SampledImage &&
-	    type.basetype != SPIRType::Sampler)
-		return "";
-
 	string qual;
 
-	if (flags.get(DecorationNoContraction) && backend.support_precise_qualifier)
+	if (type_is_floating_point(type) && flags.get(DecorationNoContraction) && backend.support_precise_qualifier)
 		qual = "precise ";
+
+	// Structs do not have precision qualifiers, neither do doubles (desktop only anyways, so no mediump/highp).
+	bool type_supports_precision =
+			type.basetype == SPIRType::Float || type.basetype == SPIRType::Int || type.basetype == SPIRType::UInt ||
+			type.basetype == SPIRType::Image || type.basetype == SPIRType::SampledImage ||
+			type.basetype == SPIRType::Sampler;
+
+	if (!type_supports_precision)
+		return qual;
 
 	if (options.es)
 	{
@@ -13345,6 +13424,9 @@ string CompilerGLSL::type_to_glsl(const SPIRType &type, uint32_t id)
 
 	case SPIRType::AccelerationStructure:
 		return ray_tracing_is_khr ? "accelerationStructureEXT" : "accelerationStructureNV";
+
+	case SPIRType::RayQuery:
+		return "rayQueryEXT";
 
 	case SPIRType::Void:
 		return "void";

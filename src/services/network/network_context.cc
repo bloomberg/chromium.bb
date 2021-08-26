@@ -425,7 +425,7 @@ NetworkContext::NetworkContext(
   if (params_->cookie_path.has_value() ||
       params_->http_cache_path.has_value() ||
       params_->http_server_properties_path.has_value() ||
-      params_->transport_security_persister_path.has_value() ||
+      params_->transport_security_persister_file_path.has_value() ||
       params_->reporting_and_nel_store_path.has_value() ||
       params_->trust_token_path.has_value()) {
     DCHECK(params_->win_permissions_set)
@@ -649,7 +649,7 @@ void NetworkContext::GetRestrictedCookieManager(
   restricted_cookie_manager_receivers_.Add(
       std::make_unique<RestrictedCookieManager>(
           role, url_request_context_->cookie_store(),
-          &cookie_manager_->cookie_settings(), origin, isolation_info,
+          cookie_manager_->cookie_settings(), origin, isolation_info,
           std::move(cookie_observer)),
       std::move(receiver));
 }
@@ -1696,6 +1696,8 @@ void NetworkContext::PreconnectSockets(
     const GURL& original_url,
     bool allow_credentials,
     const net::NetworkIsolationKey& network_isolation_key) {
+  DCHECK(!require_network_isolation_key_ || !network_isolation_key.IsEmpty());
+
   GURL url = GetHSTSRedirect(original_url);
 
   // |PreconnectSockets| may receive arguments from the renderer, which is not
@@ -2166,9 +2168,9 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
             pref_service.get(), network_service_->network_quality_estimator());
   }
 
-  if (params_->transport_security_persister_path) {
-    builder.set_transport_security_persister_path(
-        *params_->transport_security_persister_path);
+  if (params_->transport_security_persister_file_path) {
+    builder.set_transport_security_persister_file_path(
+        *params_->transport_security_persister_file_path);
   }
   builder.set_hsts_policy_bypass_list(params_->hsts_policy_bypass_list);
 
@@ -2217,7 +2219,7 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
 
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
-  net::HttpNetworkSession::Params session_params;
+  net::HttpNetworkSessionParams session_params;
   bool is_quic_force_disabled = false;
   if (network_service_ && network_service_->quic_disabled())
     is_quic_force_disabled = true;
@@ -2382,7 +2384,7 @@ NetworkContext::MakeSessionCleanupCookieStore() const {
 
   net::CookieCryptoDelegate* crypto_delegate = nullptr;
   if (params_->enable_encrypted_cookies) {
-#if (defined(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) && \
+#if (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) && \
     !BUILDFLAG(IS_CHROMECAST)
     DCHECK(network_service_->os_crypt_config_set())
         << "NetworkService::SetCryptConfig must be called before creating a "

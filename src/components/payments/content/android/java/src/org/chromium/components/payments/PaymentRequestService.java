@@ -17,6 +17,7 @@ import org.chromium.base.supplier.Supplier;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.page_info.CertificateChainHelper;
 import org.chromium.components.payments.secure_payment_confirmation.SecurePaymentConfirmationAuthnController;
+import org.chromium.components.payments.secure_payment_confirmation.SecurePaymentConfirmationNoMatchingCredController;
 import org.chromium.components.url_formatter.SchemeDisplay;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.RenderFrameHost;
@@ -126,6 +127,10 @@ public class PaymentRequestService
     @Nullable
     private SecurePaymentConfirmationAuthnController mSpcAuthnUiController;
 
+    // mNoMatchingController is null when it is closed and before it is shown.
+    @Nullable
+    private SecurePaymentConfirmationNoMatchingCredController mNoMatchingController;
+
     /**
      * A mapping of the payment method names to the corresponding payment method specific data. If
      * STRICT_HAS_ENROLLED_AUTOFILL_INSTRUMENT is enabled, then the key "basic-card-payment-options"
@@ -177,6 +182,7 @@ public class PaymentRequestService
         void onAbortCalled();
         void onCompleteHandled();
         void onMinimalUIReady();
+        void onUiDisplayed();
         void onPaymentUiServiceCreated(PaymentUiServiceTestInterface uiService);
         void onClosed();
     }
@@ -834,6 +840,24 @@ public class PaymentRequestService
         assert mIsFinishedQueryingPaymentApps;
         assert mBrowserPaymentRequest != null;
 
+        if (PaymentFeatureList.isEnabled(PaymentFeatureList.SECURE_PAYMENT_CONFIRMATION_API_V3)
+                && PaymentFeatureList.isEnabledOrExperimentalFeaturesEnabled(
+                        PaymentFeatureList.SECURE_PAYMENT_CONFIRMATION)
+                && mSpec != null && !mSpec.isDestroyed()
+                && mSpec.isSecurePaymentConfirmationRequested()
+                && !mBrowserPaymentRequest.hasAvailableApps()) {
+            mNoMatchingController =
+                    SecurePaymentConfirmationNoMatchingCredController.create(mWebContents);
+            mNoMatchingController.show(() -> {
+                mJourneyLogger.setAborted(AbortReason.NO_MATCHING_PAYMENT_METHOD);
+                disconnectFromClientWithDebugMessage(
+                        ErrorStrings.WEB_AUTHN_OPERATION_TIMED_OUT_OR_NOT_ALLOWED,
+                        PaymentErrorReason.NOT_ALLOWED_ERROR);
+            });
+            if (sNativeObserverForTest != null) sNativeObserverForTest.onErrorDisplayed();
+            return null;
+        }
+
         PaymentNotShownError ensureError = ensureHasSupportedPaymentMethods();
         if (ensureError != null) return ensureError;
         // Send AppListReady signal when all apps are created and request.show() is called.
@@ -880,7 +904,8 @@ public class PaymentRequestService
                         } else {
                             mJourneyLogger.setAborted(AbortReason.ABORTED_BY_USER);
                             disconnectFromClientWithDebugMessage(
-                                    ErrorStrings.USER_CANCELLED, PaymentErrorReason.USER_CANCEL);
+                                    ErrorStrings.WEB_AUTHN_OPERATION_TIMED_OUT_OR_NOT_ALLOWED,
+                                    PaymentErrorReason.NOT_ALLOWED_ERROR);
                         }
 
                         mSpcAuthnUiController = null;
@@ -888,6 +913,9 @@ public class PaymentRequestService
 
             if (success) {
                 mJourneyLogger.setShown();
+                if (sNativeObserverForTest != null) {
+                    sNativeObserverForTest.onUiDisplayed();
+                }
                 return null;
             } else {
                 mSpcAuthnUiController = null;
@@ -1507,6 +1535,11 @@ public class PaymentRequestService
             mSpcAuthnUiController = null;
         }
 
+        if (mNoMatchingController != null) {
+            mNoMatchingController.hide();
+            mNoMatchingController = null;
+        }
+
         if (mBrowserPaymentRequest != null) {
             mBrowserPaymentRequest.close();
             mBrowserPaymentRequest = null;
@@ -1804,5 +1837,12 @@ public class PaymentRequestService
         mBrowserPaymentRequest.onInstrumentDetailsError(errorMessage);
         PaymentDetailsUpdateServiceHelper.getInstance().reset();
         if (sNativeObserverForTest != null) sNativeObserverForTest.onErrorDisplayed();
+    }
+
+    @VisibleForTesting
+    @Nullable
+    public static SecurePaymentConfirmationNoMatchingCredController
+    getSecurePaymentConfirmationNoMatchingCredUiForTesting() {
+        return sShowingPaymentRequest == null ? null : sShowingPaymentRequest.mNoMatchingController;
     }
 }

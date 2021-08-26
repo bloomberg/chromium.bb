@@ -424,6 +424,8 @@
 <translation id="3810838688059735925">Vídeo</translation>
 <translation id="3813387282697781382">Coral claro</translation>
 <translation id="3816633764618089385">Multimédia seguinte</translation>
+<translation id="3840823741487267909">Sigla</translation>
+<translation id="3841319830220785495">Voz natural predefinida</translation>
 <translation id="385383972552776628">Abrir página de opções</translation>
 <translation id="3856075812838139784">Apenas leitura</translation>
 <translation id="3857141338659865495">Azul-turquesa médio</translation>
@@ -451,6 +453,7 @@
 <translation id="4021716437419160885">Deslocar para baixo</translation>
 <translation id="4035381225449278841">Primavera</translation>
 <translation id="4047216625641135770">Mark</translation>
+<translation id="4047910800766704982">Pode utilizar uma voz natural e semelhante à de um ser humano quando o dispositivo está online. O texto será enviado para a Google para processamento. Pode desativar esta funcionalidade em qualquer altura nas Definições.</translation>
 <translation id="4053520724192563562">Verde-lima</translation>
 <translation id="4054936709456751127">sts</translation>
 <translation id="4058278702844053247">Um carregamento de página em curso</translation>
@@ -686,6 +689,7 @@
 <translation id="5748623122140342504">Título de nível 5 anterior</translation>
 <translation id="5760594853119905566">Apêndice</translation>
 <translation id="5761219715606611783">Muito bem! Aprendeu as noções básicas acerca do toque do ChromeVox. Pode voltar a assistir ao tutorial ou sair do mesmo com os botões abaixo.</translation>
+<translation id="5776001898637896684">Extensão de síntese de voz Google Enhanced Network</translation>
 <translation id="5805940204952508776">Tocar com dois dedos</translation>
 <translation id="5819072574982403430">Item de árvore</translation>
 <translation id="5822819874379903994">Azul-turquesa escuro</translation>
@@ -908,6 +912,7 @@
 <translation id="743783356331413498">Exemplo</translation>
 <translation id="7439060726180460871">Diretório</translation>
 <translation id="744163271241493234">pwded</translation>
+<translation id="7465123027577412805">Pretende utilizar a voz natural?</translation>
 <translation id="7484805699335881122">Altere o tom ao dizer tipos de elementos e texto citado, eliminado, a negrito, entre parênteses ou em maiúsculas.</translation>
 <translation id="7491962110804786152">tab</translation>
 <translation id="7492497529767769458">Avance para a secção seguinte. Os exemplos incluem o tabuleiro de estado e o Launcher.</translation>
@@ -978,6 +983,7 @@
 <translation id="7968340748835037139">Verde-escuro</translation>
 <translation id="7972507042926081808">Chocolate</translation>
 <translation id="7974390230414479278">Item de menu</translation>
+<translation id="7990863024647916394">Voz de <ph name="DISPLAY_NAME" /> <ph name="COUNT" /></translation>
 <translation id="8004507136466386272">Palavras</translation>
 <translation id="8004512796067398576">Aumentar</translation>
 <translation id="8007540374018858731">h3</translation>

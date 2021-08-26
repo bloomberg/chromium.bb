@@ -6,6 +6,7 @@
 
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
 const childProcess = require('child_process');
 const {
   nodePath,
@@ -38,9 +39,9 @@ const yargsObject =
               'Path to the node_modules directory for Node to use, relative to the current working directory. Defaults to local node_modules folder.'
         })
         .option('test-server-type', {
-          'choices': ['hosted-mode', 'component-docs'],
+          'choices': ['hosted-mode', 'component-docs', 'none'],
           'describe':
-              'The type of test-server to run for the tests. Will be set automatically if your test-suite-path ends with e2e or interactions, but you need to set it otherwise',
+              'The type of test-server to run for the tests. Will be set automatically if your test-suite-path ends with e2e or interactions, but you need to set it otherwise. If you do not need a test-server, you must explicitly pass the "none" option.',
         })
         .option('test-file-pattern', {
           type: 'string',
@@ -130,17 +131,28 @@ function setEnvValueIfValuePresent(name, value) {
   }
 }
 
-function setNodeModulesPath(nodeModulesPath) {
-  if (nodeModulesPath) {
-    // Node requires the path to be absolute
-    if (path.isAbsolute(nodeModulesPath)) {
-      validatePathExistsOrError('node-modules-path', nodeModulesPath);
-      setEnvValueIfValuePresent('NODE_PATH', nodeModulesPath);
-    } else {
-      const absolutePath = path.resolve(path.join(yargsObject['cwd'], nodeModulesPath));
-      validatePathExistsOrError('node-modules-path', absolutePath);
-      setEnvValueIfValuePresent('NODE_PATH', absolutePath);
-    }
+function setNodeModulesPath(nodeModulesPathsInput) {
+  if (nodeModulesPathsInput) {
+    /** You can provide multiple paths split by either ; (windows) or : (everywhere else)
+     * So we need to split our input, ensure each part is absolute, check it
+     * exists, and then set NODE_PATH again.
+     */
+    const delimiter = os.platform() === 'win32' ? ';' : ':';
+    const inputPaths = nodeModulesPathsInput.split(delimiter);
+    const outputPaths = [];
+    inputPaths.forEach(nodePath => {
+      if (path.isAbsolute(nodePath)) {
+        validatePathExistsOrError('node-modules-path', nodePath);
+        outputPaths.push(nodePath);
+        return;
+      }
+
+      // Node requires the path to be absolute
+      const absolutePath = path.resolve(path.join(yargsObject['cwd'], nodePath));
+      validatePathExistsOrError('node-modules-path', nodePath);
+      outputPaths.push(absolutePath);
+    });
+    setEnvValueIfValuePresent('NODE_PATH', outputPaths.join(delimiter));
   }
 }
 
@@ -214,16 +226,20 @@ function main() {
   const targetPath = path.join(yargsObject['cwd'], 'out', target);
   validatePathExistsOrError(`Target out/${target}`, targetPath);
 
+  /*
+   * Pull out all the configuration flags, ignoring the Yargs special $0 and _
+   * keys, which we can ignore.
+   */
   // eslint-disable-next-line no-unused-vars
-  const {$0, _, ...namedConfigFlags} = yargsObject;
+  const {$0, _, ...configurationFlags} = yargsObject;
 
-  if (!yargsObject['test-server-type']) {
-    if (yargsObject['test-suite-path'].match(/e2e\/?/)) {
-      yargsObject['test-server-type'] = 'hosted-mode';
-    } else if (yargsObject['test-suite-path'].match(/interactions\/?/)) {
-      yargsObject['test-server-type'] = 'component-docs';
+  if (!configurationFlags['test-server-type']) {
+    if (configurationFlags['test-suite-path'].match(/e2e\/?/)) {
+      configurationFlags['test-server-type'] = 'hosted-mode';
+    } else if (configurationFlags['test-suite-path'].match(/interactions\/?/)) {
+      configurationFlags['test-server-type'] = 'component-docs';
     } else {
-      err('test-server-type could not be intelligently set based on your test-suite-path, you must manually set --test-server-type.');
+      err('test-server-type could not be intelligently set based on your test-suite-path, you must manually set --test-server-type. Set it to "none" if you do not need a test-server to be run.');
       process.exit(1);
     }
   }
@@ -232,11 +248,11 @@ function main() {
    * Expose the configuration to any downstream test runners (Mocha, Conductor,
    * Test servers, etc).
    */
-  process.env.TEST_RUNNER_JSON_CONFIG = JSON.stringify(namedConfigFlags);
+  process.env.TEST_RUNNER_JSON_CONFIG = JSON.stringify(configurationFlags);
 
   log(`Using Chromium binary ${chromeBinaryPath}`);
-  if (yargsObject['chrome-features']) {
-    log(`with --enable-features=${yargsObject['chrome-features']}`);
+  if (configurationFlags['chrome-features']) {
+    log(`with --enable-features=${configurationFlags['chrome-features']}`);
   }
   log(`Using target ${target}`);
 
@@ -248,13 +264,13 @@ function main() {
     resultStatusCode = executeTestSuite({
       absoluteTestSuitePath: testSuitePath,
       chromeBinaryPath,
-      chromeFeatures: yargsObject['chrome-features'],
-      nodeModulesPath: yargsObject['node-modules-path'],
-      jobs: yargsObject['jobs'],
-      testFilePattern: yargsObject['test-file-pattern'],
-      coverage: yargsObject['coverage'] && '1',
+      chromeFeatures: configurationFlags['chrome-features'],
+      nodeModulesPath: configurationFlags['node-modules-path'],
+      jobs: configurationFlags['jobs'],
+      testFilePattern: configurationFlags['test-file-pattern'],
+      coverage: configurationFlags['coverage'] && '1',
       target,
-      cwd: yargsObject['cwd']
+      cwd: configurationFlags['cwd']
     });
   } catch (error) {
     log('Unexpected error when running test suite', error);

@@ -27,7 +27,6 @@ class GrProgramInfo;
 class GrProxyProvider;
 class GrRecordingContextPriv;
 class GrSubRunAllocator;
-class GrSurfaceContext;
 class GrSurfaceProxy;
 class GrTextBlobCache;
 class GrThreadSafeCache;
@@ -213,8 +212,8 @@ protected:
         void incNumPathMasksCacheHits() { fNumPathMaskCacheHits++; }
 
 #if GR_TEST_UTILS
-        void dump(SkString* out);
-        void dumpKeyValuePairs(SkTArray<SkString>* keys, SkTArray<double>* values);
+        void dump(SkString* out) const;
+        void dumpKeyValuePairs(SkTArray<SkString>* keys, SkTArray<double>* values) const;
 #endif
 
     private:
@@ -226,8 +225,8 @@ protected:
         void incNumPathMasksCacheHits() {}
 
 #if GR_TEST_UTILS
-        void dump(SkString*) {}
-        void dumpKeyValuePairs(SkTArray<SkString>* keys, SkTArray<double>* values) {}
+        void dump(SkString*) const {}
+        void dumpKeyValuePairs(SkTArray<SkString>* keys, SkTArray<double>* values) const {}
 #endif
 #endif // GR_GPU_STATS
     } fStats;

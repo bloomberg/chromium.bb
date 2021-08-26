@@ -15,7 +15,6 @@
 #include "base/location.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/user_metrics.h"
-#include "base/numerics/ranges.h"
 #include "base/one_shot_event.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
@@ -234,7 +233,7 @@ bool ThemeService::BrowserThemeProvider::HasCustomColor(int id) const {
 
 base::RefCountedMemory* ThemeService::BrowserThemeProvider::GetRawData(
     int id,
-    ui::ScaleFactor scale_factor) const {
+    ui::ResourceScaleFactor scale_factor) const {
   return theme_helper_.GetRawData(id, GetThemeSupplier(), scale_factor);
 }
 

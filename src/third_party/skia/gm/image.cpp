@@ -13,7 +13,6 @@
 #include "include/core/SkColorSpace.h"
 #include "include/core/SkData.h"
 #include "include/core/SkEncodedImageFormat.h"
-#include "include/core/SkFilterQuality.h"
 #include "include/core/SkFont.h"
 #include "include/core/SkImage.h"
 #include "include/core/SkImageEncoder.h"
@@ -40,7 +39,12 @@
 #include <functional>
 #include <utility>
 
-class GrSurfaceDrawContext;
+const SkSamplingOptions gSamplings[] = {
+    SkSamplingOptions(SkFilterMode::kNearest),
+    SkSamplingOptions(SkFilterMode::kLinear),
+    SkSamplingOptions(SkFilterMode::kLinear, SkMipmapMode::kLinear),
+    SkSamplingOptions(SkCubicResampler::Mitchell()),
+};
 
 static void drawContents(SkSurface* surface, SkColor fillC) {
     SkSize size = SkSize::Make(SkIntToScalar(surface->width()),
@@ -199,14 +203,11 @@ static void show_scaled_pixels(SkCanvas* canvas, SkImage* image) {
     const SkImage::CachingHint chints[] = {
         SkImage::kAllow_CachingHint, SkImage::kDisallow_CachingHint,
     };
-    const SkFilterQuality qualities[] = {
-        kNone_SkFilterQuality, kLow_SkFilterQuality, kMedium_SkFilterQuality, kHigh_SkFilterQuality,
-    };
 
     for (auto ch : chints) {
         canvas->save();
-        for (auto q : qualities) {
-            if (image->scalePixels(storage, SkSamplingOptions(q), ch)) {
+        for (auto s : gSamplings) {
+            if (image->scalePixels(storage, s, ch)) {
                 draw_pixmap(canvas, storage);
             }
             canvas->translate(70, 0);
@@ -303,9 +304,9 @@ DEF_GM( return new ScalePixelsGM; )
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-DEF_SIMPLE_GPU_GM(new_texture_image, context, rtc, canvas, 280, 60) {
-    auto direct = context->asDirectContext();
-    if (!direct) {
+DEF_SIMPLE_GPU_GM(new_texture_image, rContext, canvas, 280, 60) {
+    auto dContext = rContext->asDirectContext();
+    if (!dContext) {
         return;
     }
 
@@ -354,8 +355,8 @@ DEF_SIMPLE_GPU_GM(new_texture_image, context, rtc, canvas, 280, 60) {
                                             SkImage::BitDepth::kU8, srgbColorSpace);
         },
         // Create a texture image
-        [context, render_image]() -> sk_sp<SkImage> {
-            auto surface(SkSurface::MakeRenderTarget(context, SkBudgeted::kYes,
+        [rContext, render_image]() -> sk_sp<SkImage> {
+            auto surface(SkSurface::MakeRenderTarget(rContext, SkBudgeted::kYes,
                                                      SkImageInfo::MakeS32(kSize, kSize,
                                                                           kPremul_SkAlphaType)));
             if (!surface) {
@@ -371,7 +372,7 @@ DEF_SIMPLE_GPU_GM(new_texture_image, context, rtc, canvas, 280, 60) {
     for (const auto& factory : imageFactories) {
         sk_sp<SkImage> image(factory());
         if (image) {
-            sk_sp<SkImage> texImage(image->makeTextureImage(direct));
+            sk_sp<SkImage> texImage(image->makeTextureImage(dContext));
             if (texImage) {
                 canvas->drawImage(texImage, 0, 0);
             }
@@ -404,12 +405,8 @@ DEF_SIMPLE_GM(scalepixels_unpremul, canvas, 1080, 280) {
     SkAutoPixmapStorage pm2;
     pm2.alloc(SkImageInfo::MakeN32(256, 256, kUnpremul_SkAlphaType));
 
-    const SkFilterQuality qualities[] = {
-        kNone_SkFilterQuality, kLow_SkFilterQuality, kMedium_SkFilterQuality, kHigh_SkFilterQuality
-    };
-
-    for (auto fq : qualities) {
-        pm.scalePixels(pm2, SkSamplingOptions(fq));
+    for (auto s : gSamplings) {
+        pm.scalePixels(pm2, s);
         slam_ff(pm2);
         draw_pixmap(canvas, pm2, 10, 10);
         canvas->translate(pm2.width() + 10.0f, 0);

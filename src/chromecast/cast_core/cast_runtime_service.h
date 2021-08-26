@@ -21,6 +21,12 @@ namespace content {
 class BrowserContext;
 }  // namespace content
 
+namespace network {
+namespace mojom {
+class NetworkContext;
+}  // namespace mojom
+}  // namespace network
+
 namespace chromecast {
 
 class CastWindowManager;
@@ -41,11 +47,15 @@ class CastRuntimeService
     : public CastService,
       public media::CastRuntimeAudioChannelEndpointManager {
  public:
+  using NetworkContextGetter =
+      base::RepeatingCallback<network::mojom::NetworkContext*()>;
+
   static std::unique_ptr<CastRuntimeService> Create(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       content::BrowserContext* browser_context,
       CastWindowManager* window_manager,
       media::MediaPipelineBackendManager* media_pipeline_backend_manager,
+      NetworkContextGetter network_context_getter,
       PrefService* pref_service);
 
   // Returns current instance of CastRuntimeService in the browser process.

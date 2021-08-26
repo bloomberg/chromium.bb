@@ -152,7 +152,7 @@ H264BitstreamParser::Result H264BitstreamParser::ParseNonParameterSetNalu(
   // else
   {
     // ref_pic_list_modification():
-    // |slice_type| checks here don't use named constants as they aren't named
+    // `slice_type` checks here don't use named constants as they aren't named
     // in the spec for this segment. Keeping them consistent makes it easier to
     // verify that they are both the same.
     if (slice_type % 5 != 2 && slice_type % 5 != 4) {
@@ -288,6 +288,7 @@ void H264BitstreamParser::ParseSlice(const uint8_t* slice, size_t length) {
     }
     case H264::NaluType::kAud:
     case H264::NaluType::kSei:
+    case H264::NaluType::kPrefix:
       break;  // Ignore these nalus, as we don't care about their contents.
     default:
       Result res = ParseNonParameterSetNalu(slice, length, nalu_type);

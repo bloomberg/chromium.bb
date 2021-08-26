@@ -13,6 +13,8 @@ import {onboardingNetworkPageTest} from './onboarding_network_page_test.js';
 import {onboardingSelectComponentsPageTest} from './onboarding_select_components_page_test.js';
 import {onboardingUpdatePageTest} from './onboarding_update_page_test.js';
 import {onboardingWaitForManualWpDisablePageTest} from './onboarding_wait_for_manual_wp_disable_page_test.js';
+import {reimagingCalibrationPageTest} from './reimaging_calibration_page_test.js';
+import {reimagingDeviceInformationPageTest} from './reimaging_device_information_page_test.js';
 import {reimagingFirmwareUpdatePageTest} from './reimaging_firmware_update_page_test.js';
 import {reimagingProvisioningPageTest} from './reimaging_provisioning_page_test.js';
 import {shimlessRMAAppTest} from './shimless_rma_app_test.js';
@@ -42,7 +44,10 @@ runSuite('OnboardingUpdatePageTest', onboardingUpdatePageTest);
 runSuite(
     'OnboardingWaitForManualWpDisablePageTest',
     onboardingWaitForManualWpDisablePageTest);
+runSuite('ReimagingCalibrationPageTest', reimagingCalibrationPageTest);
 runSuite('ReimagingFirmwareUpdatePageTest', reimagingFirmwareUpdatePageTest);
+runSuite(
+    'ReimagingDeviceInformationPageTest', reimagingDeviceInformationPageTest);
 runSuite('ReimagingProvisioningPageTest', reimagingProvisioningPageTest);
 runSuite('ShimlessRMAAppTest', shimlessRMAAppTest);
 runSuite('WrapupRepairCompletePageTest', wrapupRepairCompletePageTest);

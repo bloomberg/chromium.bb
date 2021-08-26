@@ -6,7 +6,7 @@
 """Simple client for the Gerrit REST API.
 
 Example usage:
-  ./gerrit_client.py [command] [args]""
+  ./gerrit_client.py [command] [args]
 """
 
 from __future__ import print_function
@@ -39,6 +39,7 @@ def write_result(result, opt):
 
 @subcommand.usage('[args ...]')
 def CMDmovechanges(parser, args):
+  """Move changes to a different destination branch."""
   parser.add_option('-p', '--param', dest='params', action='append',
                     help='repeatable query parameter, format: -p key=value')
   parser.add_option('--destination_branch', dest='destination_branch',
@@ -67,6 +68,7 @@ def CMDmovechanges(parser, args):
 
 @subcommand.usage('[args ...]')
 def CMDbranchinfo(parser, args):
+  """Get information on a gerrit branch."""
   parser.add_option('--branch', dest='branch', help='branch name')
 
   (opt, args) = parser.parse_args(args)
@@ -80,6 +82,7 @@ def CMDbranchinfo(parser, args):
 
 @subcommand.usage('[args ...]')
 def CMDbranch(parser, args):
+  """Create a branch in a gerrit project."""
   parser.add_option('--branch', dest='branch', help='branch name')
   parser.add_option('--commit', dest='commit', help='commit hash')
 
@@ -99,6 +102,7 @@ def CMDbranch(parser, args):
 
 @subcommand.usage('[args ...]')
 def CMDhead(parser, args):
+  """Update which branch the project HEAD points to."""
   parser.add_option('--branch', dest='branch', help='branch name')
 
   (opt, args) = parser.parse_args(args)
@@ -115,6 +119,7 @@ def CMDhead(parser, args):
 
 @subcommand.usage('[args ...]')
 def CMDheadinfo(parser, args):
+  """Retrieves the current HEAD of the project."""
 
   (opt, args) = parser.parse_args(args)
   assert opt.project, "--project not defined"
@@ -128,6 +133,7 @@ def CMDheadinfo(parser, args):
 
 @subcommand.usage('[args ...]')
 def CMDchanges(parser, args):
+  """Queries gerrit for matching changes."""
   parser.add_option('-p', '--param', dest='params', action='append',
                     help='repeatable query parameter, format: -p key=value')
   parser.add_option('-o', '--o-param', dest='o_params', action='append',
@@ -155,6 +161,7 @@ def CMDchanges(parser, args):
 
 @subcommand.usage('[args ...]')
 def CMDrelatedchanges(parser, args):
+  """Gets related changes for a given change and revision."""
   parser.add_option('-c', '--change', type=str, help='change id')
   parser.add_option('-r', '--revision', type=str, help='revision id')
 
@@ -171,6 +178,7 @@ def CMDrelatedchanges(parser, args):
 
 @subcommand.usage('[args ...]')
 def CMDcreatechange(parser, args):
+  """Create a new change in gerrit."""
   parser.add_option('-s', '--subject', help='subject for change')
   parser.add_option('-b',
                     '--branch',
@@ -200,6 +208,7 @@ def CMDcreatechange(parser, args):
 
 @subcommand.usage('[args ...]')
 def CMDchangeedit(parser, args):
+  """Puts content of a file into a change edit."""
   parser.add_option('-c', '--change', type=int, help='change number')
   parser.add_option('--path', help='path for file')
   parser.add_option('--file', help='file to place at |path|')
@@ -216,6 +225,7 @@ def CMDchangeedit(parser, args):
 
 @subcommand.usage('[args ...]')
 def CMDpublishchangeedit(parser, args):
+  """Publish a Gerrit change edit."""
   parser.add_option('-c', '--change', type=int, help='change number')
   parser.add_option('--notify', help='whether to notify')
 
@@ -227,8 +237,45 @@ def CMDpublishchangeedit(parser, args):
   write_result(result, opt)
 
 
+@subcommand.usage('[args ...]')
+def CMDsubmitchange(parser, args):
+  """Submit a Gerrit change."""
+  parser.add_option('-c', '--change', type=int, help='change number')
+  (opt, args) = parser.parse_args(args)
+  result = gerrit_util.SubmitChange(
+      urlparse.urlparse(opt.host).netloc, opt.change)
+  logging.info(result)
+  write_result(result, opt)
+
+
+@subcommand.usage('[args ...]')
+def CMDgetcommitincludedin(parser, args):
+  """Retrieves the branches and tags for a given commit."""
+  parser.add_option('--commit', dest='commit', help='commit hash')
+  (opt, args) = parser.parse_args(args)
+  result = gerrit_util.GetCommitIncludedIn(
+      urlparse.urlparse(opt.host).netloc, opt.project, opt.commit)
+  logging.info(result)
+  write_result(result, opt)
+
+
+@subcommand.usage('[args ...]')
+def CMDsetbotcommit(parser, args):
+  """Sets bot-commit+1 to a bot generated change."""
+  parser.add_option('-c', '--change', type=int, help='change number')
+  (opt, args) = parser.parse_args(args)
+  result = gerrit_util.SetReview(
+      urlparse.urlparse(opt.host).netloc,
+      opt.change,
+      labels={'Bot-Commit': 1},
+      ready=True)
+  logging.info(result)
+  write_result(result, opt)
+
+
 @subcommand.usage('')
 def CMDabandon(parser, args):
+  """Abandons a Gerrit change."""
   parser.add_option('-c', '--change', type=int, help='change number')
   parser.add_option('-m', '--message', default='', help='reason for abandoning')
 
@@ -241,21 +288,21 @@ def CMDabandon(parser, args):
   write_result(result, opt)
 
 
-@subcommand.usage('''Mass abandon changes
-
-Mass abandon abandons CLs that match search criteria provided by user. Before
-any change is actually abandoned, user is presented with a list of CLs that
-will be affected if user confirms. User can skip confirmation by passing --force
-parameter.
-
-The script can abandon up to 100 CLs per invocation.
-
-Examples:
-gerrit_client.py mass-abandon --host https://HOST -p 'project=repo2'
-gerrit_client.py mass-abandon --host https://HOST -p 'message=testing'
-gerrit_client.py mass-abandon --host https://HOST -p 'is=wip' -p 'age=1y'
-''')
+@subcommand.usage('')
 def CMDmass_abandon(parser, args):
+  """Mass abandon changes
+
+  Abandons CLs that match search criteria provided by user. Before any change is
+  actually abandoned, user is presented with a list of CLs that will be affected
+  if user confirms. User can skip confirmation by passing --force parameter.
+
+  The script can abandon up to 100 CLs per invocation.
+
+  Examples:
+  gerrit_client.py mass-abandon --host https://HOST -p 'project=repo2'
+  gerrit_client.py mass-abandon --host https://HOST -p 'message=testing'
+  gerrit_client.py mass-abandon --host https://HOST -p 'is=wip' -p 'age=1y'
+  """
   parser.add_option('-p',
                     '--param',
                     dest='params',

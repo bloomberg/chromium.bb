@@ -1,3 +1,7 @@
+intrinsics/gen/textureLoad/9a7c90.wgsl:29:24 warning: use of deprecated intrinsic
+  var res: vec4<u32> = textureLoad(arg_0, vec3<i32>());
+                       ^^^^^^^^^^^
+
 Texture3D<uint4> arg_0 : register(t0, space1);
 
 void textureLoad_9a7c90() {
@@ -8,10 +12,16 @@ struct tint_symbol {
   float4 value : SV_Position;
 };
 
-tint_symbol vertex_main() {
+float4 vertex_main_inner() {
   textureLoad_9a7c90();
-  const tint_symbol tint_symbol_1 = {float4(0.0f, 0.0f, 0.0f, 0.0f)};
-  return tint_symbol_1;
+  return float4(0.0f, 0.0f, 0.0f, 0.0f);
+}
+
+tint_symbol vertex_main() {
+  const float4 inner_result = vertex_main_inner();
+  tint_symbol wrapper_result = (tint_symbol)0;
+  wrapper_result.value = inner_result;
+  return wrapper_result;
 }
 
 void fragment_main() {

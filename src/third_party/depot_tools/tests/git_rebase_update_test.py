@@ -54,18 +54,18 @@ class GitRebaseUpdateTest(git_test_utils.GitRepoReadWriteTestBase):
             J L
     """, self.getRepoContent)
     self.origin = origin_schema.reify()
-    self.origin.git('checkout', 'master')
+    self.origin.git('checkout', 'main')
     self.origin.git('branch', '-d', *['branch_'+l for l in 'KLG'])
 
     self.repo.git('remote', 'add', 'origin', self.origin.repo_path)
     self.repo.git('config', '--add', 'remote.origin.fetch',
                   '+refs/tags/*:refs/tags/*')
-    self.repo.git('update-ref', 'refs/remotes/origin/master', 'tag_E')
+    self.repo.git('update-ref', 'refs/remotes/origin/main', 'tag_E')
     self.repo.git('branch', '--set-upstream-to', 'branch_G', 'branch_K')
     self.repo.git('branch', '--set-upstream-to', 'branch_K', 'branch_L')
-    self.repo.git('branch', '--set-upstream-to', 'origin/master', 'branch_G')
+    self.repo.git('branch', '--set-upstream-to', 'origin/main', 'branch_G')
 
-    self.repo.to_schema_refs += ['origin/master']
+    self.repo.to_schema_refs += ['origin/main']
 
   def tearDown(self):
     self.origin.nuke()
@@ -76,7 +76,7 @@ class GitRebaseUpdateTest(git_test_utils.GitRepoReadWriteTestBase):
 
     self.repo.run(self.nb.main, ['foobar'])
     self.assertEqual(self.repo.git('rev-parse', 'HEAD').stdout,
-                     self.repo.git('rev-parse', 'origin/master').stdout)
+                     self.repo.git('rev-parse', 'origin/main').stdout)
 
     with self.repo.open('foobar', 'w') as f:
       f.write('this is the foobar file')
@@ -109,7 +109,7 @@ class GitRebaseUpdateTest(git_test_utils.GitRepoReadWriteTestBase):
     self.repo.git_commit('old_file')
     self.repo.git('config', 'branch.old_branch.dormant', 'true')
 
-    self.repo.git('checkout', 'origin/master')
+    self.repo.git('checkout', 'origin/main')
 
     self.assertSchema("""
     A B H I J K sub_K
@@ -144,7 +144,7 @@ class GitRebaseUpdateTest(git_test_utils.GitRepoReadWriteTestBase):
     self.assertIn('Deleted branch empty_branch2', output)
     self.assertIn('Deleted branch int1_foobar', output)
     self.assertIn('Deleted branch int2_foobar', output)
-    self.assertIn('Reparented branch_K to track origin/master', output)
+    self.assertIn('Reparented branch_K to track origin/main', output)
     self.assertIn('Reparented sub_foobar to track foobar', output)
 
     self.assertSchema("""
@@ -165,14 +165,14 @@ class GitRebaseUpdateTest(git_test_utils.GitRepoReadWriteTestBase):
 
     self.assertEqual(self.repo.git('status', '--porcelain').stdout, '?? bob\n')
 
-    self.repo.git('checkout', 'origin/master')
+    self.repo.git('checkout', 'origin/main')
     _, err = self.repo.capture_stdio(self.rp.main, [])
     self.assertIn('Must specify new parent somehow', err)
     _, err = self.repo.capture_stdio(self.rp.main, ['foobar'])
     self.assertIn('Must be on the branch', err)
 
     self.repo.git('checkout', 'branch_K')
-    _, err = self.repo.capture_stdio(self.rp.main, ['origin/master'])
+    _, err = self.repo.capture_stdio(self.rp.main, ['origin/main'])
     self.assertIn('Cannot reparent a branch to its existing parent', err)
     output, _ = self.repo.capture_stdio(self.rp.main, ['foobar'])
     self.assertIn('Rebasing: branch_K', output)
@@ -205,7 +205,7 @@ class GitRebaseUpdateTest(git_test_utils.GitRepoReadWriteTestBase):
     self.assertEqual(self.repo.git('status', '--porcelain').stdout, '?? bob\n')
 
     branches = self.repo.run(set, self.gc.branches())
-    self.assertEqual(branches, {'branch_K', 'master', 'sub_K', 'root_A',
+    self.assertEqual(branches, {'branch_K', 'main', 'sub_K', 'root_A',
                                 'branch_L', 'old_branch', 'foobar',
                                 'sub_foobar'})
 
@@ -213,18 +213,18 @@ class GitRebaseUpdateTest(git_test_utils.GitRepoReadWriteTestBase):
     self.repo.run(self.mv.main, ['special_K'])
 
     branches = self.repo.run(set, self.gc.branches())
-    self.assertEqual(branches, {'special_K', 'master', 'sub_K', 'root_A',
+    self.assertEqual(branches, {'special_K', 'main', 'sub_K', 'root_A',
                                 'branch_L', 'old_branch', 'foobar',
                                 'sub_foobar'})
 
-    self.repo.git('checkout', 'origin/master')
+    self.repo.git('checkout', 'origin/main')
     _, err = self.repo.capture_stdio(self.mv.main, ['special_K', 'cool branch'])
     self.assertIn('fatal: \'cool branch\' is not a valid branch name.', err)
 
     self.repo.run(self.mv.main, ['special_K', 'cool_branch'])
     branches = self.repo.run(set, self.gc.branches())
     # This check fails with git 2.4 (see crbug.com/487172)
-    self.assertEqual(branches, {'cool_branch', 'master', 'sub_K', 'root_A',
+    self.assertEqual(branches, {'cool_branch', 'main', 'sub_K', 'root_A',
                                 'branch_L', 'old_branch', 'foobar',
                                 'sub_foobar'})
 
@@ -234,7 +234,7 @@ class GitRebaseUpdateTest(git_test_utils.GitRepoReadWriteTestBase):
 
   def testRebaseConflicts(self):
     # Pretend that branch_L landed
-    self.origin.git('checkout', 'master')
+    self.origin.git('checkout', 'main')
     with self.origin.open('L', 'w') as f:
       f.write('L')
     self.origin.git('add', 'L')
@@ -276,11 +276,11 @@ class GitRebaseUpdateTest(git_test_utils.GitRepoReadWriteTestBase):
     self.assertIn('Deleted branch branch_G', output)
     self.assertIn('Deleted branch branch_L', output)
     self.assertIn('\'branch_G\' was merged', output)
-    self.assertIn('checking out \'origin/master\'', output)
+    self.assertIn('checking out \'origin/main\'', output)
 
   def testRebaseConflictsKeepGoing(self):
     # Pretend that branch_L landed
-    self.origin.git('checkout', 'master')
+    self.origin.git('checkout', 'main')
     with self.origin.open('L', 'w') as f:
       f.write('L')
     self.origin.git('add', 'L')
@@ -383,7 +383,7 @@ class GitRebaseUpdateTest(git_test_utils.GitRepoReadWriteTestBase):
     """)
 
     output, _ = self.repo.capture_stdio(self.rp.main, ['--root'])
-    self.assertIn('to track origin/master (was lkgr [tag])', output)
+    self.assertIn('to track origin/main (was lkgr [tag])', output)
 
     self.assertSchema("""
     A B C D E F G M N O foobar1 foobar2

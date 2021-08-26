@@ -38,8 +38,8 @@ import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 
 import type {PerformanceModel, Window} from './PerformanceModel.js';
-import {Events} from './PerformanceModel.js';                     // eslint-disable-line no-unused-vars
-import type {TimelineModeViewDelegate} from './TimelinePanel.js'; // eslint-disable-line no-unused-vars
+import {Events} from './PerformanceModel.js';
+import type {TimelineModeViewDelegate} from './TimelinePanel.js';
 
 const UIStrings = {
   /**
@@ -590,7 +590,7 @@ export class Calculator implements PerfUI.TimelineGrid.Calculator {
   }
 
   formatValue(value: number, precision?: number): string {
-    return i18n.i18n.preciseMillisToString(value - this.zeroTime(), precision);
+    return i18n.TimeUtilities.preciseMillisToString(value - this.zeroTime(), precision);
   }
 
   maximumBoundary(): number {

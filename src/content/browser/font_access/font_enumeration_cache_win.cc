@@ -4,15 +4,22 @@
 
 #include "content/browser/font_access/font_enumeration_cache_win.h"
 
+#include <dwrite.h>
+#include <wrl/client.h>
+
+#include <string>
+#include <vector>
+
 #include "base/feature_list.h"
 #include "base/i18n/rtl.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/no_destructor.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/timer/elapsed_timer.h"
+#include "content/browser/font_access/font_enumeration_cache.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
 #include "ui/gfx/win/direct_write.h"
 
@@ -251,17 +258,25 @@ ExtractNamesFromFamily(Microsoft::WRL::ComPtr<IDWriteFontCollection> collection,
 }
 }  // namespace
 
-FontEnumerationCacheWin::FontEnumerationCacheWin() = default;
+// static
+base::SequenceBound<FontEnumerationCache>
+FontEnumerationCache::CreateForTesting(
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    absl::optional<std::string> locale_override) {
+  return base::SequenceBound<FontEnumerationCacheWin>(
+      std::move(task_runner), std::move(locale_override),
+      base::PassKey<FontEnumerationCache>());
+}
+
+FontEnumerationCacheWin::FontEnumerationCacheWin(
+    absl::optional<std::string> locale_override,
+    base::PassKey<FontEnumerationCache>)
+    : FontEnumerationCache(std::move(locale_override)) {}
+
 FontEnumerationCacheWin::~FontEnumerationCacheWin() = default;
 
 FontEnumerationCacheWin::FamilyDataResult::~FamilyDataResult() = default;
 FontEnumerationCacheWin::FamilyDataResult::FamilyDataResult() = default;
-
-// static
-FontEnumerationCache* FontEnumerationCache::GetInstance() {
-  static base::NoDestructor<FontEnumerationCacheWin> instance;
-  return instance.get();
-}
 
 void FontEnumerationCacheWin::InitializeDirectWrite() {
   if (direct_write_initialized_)
@@ -274,7 +289,7 @@ void FontEnumerationCacheWin::InitializeDirectWrite() {
   if (factory == nullptr) {
     // We won't be able to load fonts, but we should still return messages so
     // renderers don't hang.
-    status_ = FontEnumerationStatus::kUnexpectedError;
+    status_ = blink::mojom::FontEnumerationStatus::kUnexpectedError;
     return;
   }
 
@@ -285,7 +300,7 @@ void FontEnumerationCacheWin::InitializeDirectWrite() {
     base::UmaHistogramSparse(
         "Fonts.AccessAPI.EnumerationCache.Dwrite.GetSystemFontCollectionResult",
         hr);
-    status_ = FontEnumerationStatus::kUnexpectedError;
+    status_ = blink::mojom::FontEnumerationStatus::kUnexpectedError;
     return;
   }
 }

@@ -580,6 +580,9 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_SHARING_HUB:
       SharingHubFromPageAction(browser_);
       break;
+    case IDC_SHARING_HUB_SCREENSHOT:
+      ScreenshotCaptureFromPageAction(browser_);
+      break;
 
     // Clipboard commands
     case IDC_CUT:
@@ -1070,11 +1073,11 @@ void BrowserCommandController::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_TAKE_SCREENSHOT, true);
   // Chrome OS uses the system tray menu to handle multi-profiles. Avatar menu
   // is only required in incognito mode.
-  if (profile()->IsIncognitoProfile())
-    command_updater_.UpdateCommandEnabled(IDC_SHOW_AVATAR_MENU, true);
+  command_updater_.UpdateCommandEnabled(
+      IDC_SHOW_AVATAR_MENU, /*state=*/profile()->IsIncognitoProfile());
 #else
-  if (normal_window)
-    command_updater_.UpdateCommandEnabled(IDC_SHOW_AVATAR_MENU, true);
+  command_updater_.UpdateCommandEnabled(IDC_SHOW_AVATAR_MENU,
+                                        /*state=*/normal_window);
 #endif
   command_updater_.UpdateCommandEnabled(
       IDC_SHOW_SAVE_LOCAL_CARD_SIGN_IN_PROMO_IF_APPLICABLE, true);
@@ -1405,6 +1408,8 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode() {
 #endif
   command_updater_.UpdateCommandEnabled(IDC_QRCODE_GENERATOR, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_SHARING_HUB, show_main_ui);
+  command_updater_.UpdateCommandEnabled(IDC_SHARING_HUB_SCREENSHOT,
+                                        show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_APP_MENU, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_SEND_TAB_TO_SELF, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_SEND_TAB_TO_SELF_SINGLE_TARGET,

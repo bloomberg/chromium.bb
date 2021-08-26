@@ -936,6 +936,16 @@ _BANNED_CPP_FUNCTIONS = (
       (),
     ),
     (
+      'RemoveAllChildViewsWithoutDeleting',
+      (
+        'RemoveAllChildViewsWithoutDeleting is deprecated.',
+        'This method is deemed dangerous as, unless raw pointers are re-added,',
+        'calls to this method introduce memory leaks.'
+      ),
+      False,
+      (),
+    ),
+    (
       r'/\bTRACE_EVENT_ASYNC_',
       (
           'Please use TRACE_EVENT_NESTABLE_ASYNC_.. macros instead',
@@ -1175,7 +1185,8 @@ _KNOWN_ROBOTS = set(
   ) | set('%s@developer.gserviceaccount.com' % s for s in ('3su6n15k.default',)
   ) | set('%s@chops-service-accounts.iam.gserviceaccount.com' % s
           for s in ('bling-autoroll-builder', 'v8-ci-autoroll-builder',
-                    'wpt-autoroller', 'chrome-weblayer-builder')
+                    'wpt-autoroller', 'chrome-weblayer-builder',
+                    'lacros-version-skew-roller', 'skylab-test-cros-roller')
   ) | set('%s@skia-public.iam.gserviceaccount.com' % s
           for s in ('chromium-autoroll', 'chromium-release-autoroll')
   ) | set('%s@skia-corp.google.com.iam.gserviceaccount.com' % s
@@ -1183,6 +1194,9 @@ _KNOWN_ROBOTS = set(
   ) | set('%s@owners-cleanup-prod.google.com.iam.gserviceaccount.com' % s
           for s in ('swarming-tasks',))
 
+_INVALID_GRD_FILE_LINE = [
+        (r'<file lang=.* path=.*', 'Path should come before lang in GRD files.')
+]
 
 def _IsCPlusPlusFile(input_api, file_path):
   """Returns True if this file contains C++-like code (and not Python,
@@ -5249,3 +5263,19 @@ def CheckDeprecationOfPreferences(input_api, output_api):
       potential_problems
     )]
   return []
+
+def CheckConsistentGrdChanges(input_api, output_api):
+  """Changes to GRD files must be consistent for tools to read them."""
+  changed_grds = input_api.AffectedFiles(
+      include_deletes=False,
+      file_filter=lambda f: f.LocalPath().endswith(('.grd')))
+  errors = []
+  invalid_file_regexes = [(input_api.re.compile(matcher), msg) for matcher, msg in _INVALID_GRD_FILE_LINE]
+  for grd in changed_grds:
+    for i, line in enumerate(grd.NewContents()):
+      for matcher, msg in invalid_file_regexes:
+        if matcher.search(line):
+          errors.append(output_api.PresubmitError('Problem on {grd}:{i} - {msg}'.format(grd=grd.LocalPath(), i=i + 1, msg=msg)))
+  return errors
+
+

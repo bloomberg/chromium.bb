@@ -71,7 +71,7 @@ TestRenderFrameHost::TestRenderFrameHost(
     const blink::LocalFrameToken& frame_token,
     RenderFrameHostImpl::LifecycleStateImpl lifecycle_state)
     : RenderFrameHostImpl(site_instance,
-                          std::move(render_view_host),
+                          render_view_host,
                           delegate,
                           frame_tree,
                           frame_tree_node,
@@ -80,8 +80,8 @@ TestRenderFrameHost::TestRenderFrameHost(
                           frame_token,
                           /*renderer_initiated_creation=*/false,
                           lifecycle_state),
-      child_creation_observer_(delegate ? delegate->GetAsWebContents()
-                                        : nullptr),
+      child_creation_observer_(
+          WebContents::FromRenderViewHost(render_view_host.get())),
       simulate_history_list_was_cleared_(false),
       last_commit_was_error_page_(false) {}
 
@@ -289,7 +289,8 @@ void TestRenderFrameHost::SendNavigateWithParamsAndInterfaceParams(
   last_commit_was_error_page_ = params->url_is_unreachable;
   if (was_within_same_document) {
     auto same_doc_params = mojom::DidCommitSameDocumentNavigationParams::New();
-    same_doc_params->is_history_api_navigation = false;
+    same_doc_params->same_document_navigation_type =
+        blink::mojom::SameDocumentNavigationType::kFragment;
     params->http_status_code = last_http_status_code();
     DidCommitSameDocumentNavigation(std::move(params),
                                     std::move(same_doc_params));

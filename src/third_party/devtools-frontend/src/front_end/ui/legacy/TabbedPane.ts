@@ -30,7 +30,7 @@
 
 /* eslint-disable rulesdir/no_underscored_properties */
 
-import type * as Common from '../../core/common/common.js'; // eslint-disable-line no-unused-vars
+import type * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as IconButton from '../components/icon_button/icon_button.js';
@@ -43,7 +43,7 @@ import {Toolbar} from './Toolbar.js';
 import {Tooltip} from './Tooltip.js';
 import {installDragHandle, invokeOnceAfterBatchUpdate} from './UIUtils.js';
 import type {Widget} from './Widget.js';
-import {VBox} from './Widget.js';  // eslint-disable-line no-unused-vars
+import {VBox} from './Widget.js';
 import {Events as ZoomManagerEvents, ZoomManager} from './ZoomManager.js';
 
 const UIStrings = {
@@ -537,9 +537,28 @@ export class TabbedPane extends VBox {
     }
 
     this._measureDropDownButton();
+    this._adjustToolbarWidth();
     this._updateWidths();
     this._updateTabsDropDown();
     this._updateTabSlider();
+  }
+
+  _adjustToolbarWidth(): void {
+    if (!this._rightToolbar || !this._measuredDropDownButtonWidth) {
+      return;
+    }
+    const leftToolbarWidth = this._leftToolbar?.element.getBoundingClientRect().width ?? 0;
+    const rightToolbarWidth = this._rightToolbar.element.getBoundingClientRect().width;
+    const totalWidth = this._headerElement.getBoundingClientRect().width;
+    if (!this._rightToolbar.hasCompactLayout() &&
+        totalWidth - rightToolbarWidth - leftToolbarWidth < this._measuredDropDownButtonWidth + 10) {
+      this._rightToolbar.setCompactLayout(true);
+    } else if (
+        this._rightToolbar.hasCompactLayout() &&
+        // Estimate the right toolbar size in non-compact mode as 2 times its compact size.
+        totalWidth - 2 * rightToolbarWidth - leftToolbarWidth > this._measuredDropDownButtonWidth + 10) {
+      this._rightToolbar.setCompactLayout(false);
+    }
   }
 
   _showTabElement(index: number, tab: TabbedPaneTab): void {
@@ -930,7 +949,6 @@ export enum Events {
   TabClosed = 'TabClosed',
   TabOrderChanged = 'TabOrderChanged',
 }
-
 
 export class TabbedPaneTab {
   _closeable: boolean;

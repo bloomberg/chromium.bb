@@ -1414,7 +1414,6 @@ NavigationSimulatorImpl::BuildDidCommitProvisionalLoadParams(
   }
   params->history_list_was_cleared = history_list_was_cleared_;
 
-  const bool is_history_navigation = (session_history_offset_ != 0);
   RenderFrameHostImpl* current_rfh = frame_tree_node_->current_frame_host();
 
   // See CalculateShouldReplaceCurrentEntry() in RenderFrameHostImpl on why we
@@ -1422,16 +1421,6 @@ NavigationSimulatorImpl::BuildDidCommitProvisionalLoadParams(
   params->should_replace_current_entry =
       should_replace_current_entry_ ||
       (request_ && request_->common_params().should_replace_current_entry);
-  if (same_document) {
-    params->should_replace_current_entry |=
-        (is_history_navigation ||
-         current_rfh->GetLastCommittedURL() == navigation_url_);
-  } else {
-    params->should_replace_current_entry |=
-        (!frame_tree_node_->IsMainFrame() &&
-         frame_tree_node_
-             ->is_on_initial_empty_document_or_subsequent_empty_documents());
-  }
 
   if (params->should_replace_current_entry &&
       PageTransitionCoreTypeIs(transition_,
@@ -1504,6 +1493,11 @@ NavigationSimulatorImpl::BuildDidCommitProvisionalLoadParams(
       request_ ? (request_->commit_params().is_overriding_user_agent &&
                   frame_tree_node_->IsMainFrame())
                : false;
+
+  params->insecure_request_policy = insecure_request_policy_;
+  params->insecure_navigations_set = insecure_navigations_set_;
+  params->has_potentially_trustworthy_unique_origin =
+      has_potentially_trustworthy_unique_origin_;
 
   return params;
 }

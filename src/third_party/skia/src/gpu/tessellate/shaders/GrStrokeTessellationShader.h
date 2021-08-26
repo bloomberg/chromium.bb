@@ -12,7 +12,6 @@
 
 #include "include/core/SkStrokeRec.h"
 #include "src/gpu/GrVx.h"
-#include "src/gpu/glsl/GrGLSLGeometryProcessor.h"
 #include "src/gpu/glsl/GrGLSLVarying.h"
 #include "src/gpu/tessellate/GrTessellationPathRenderer.h"
 
@@ -133,8 +132,8 @@ private:
         }
         SkUNREACHABLE;
     }
-    void getGLSLProcessorKey(const GrShaderCaps&, GrProcessorKeyBuilder* b) const override;
-    GrGLSLGeometryProcessor* createGLSLInstance(const GrShaderCaps&) const final;
+    void addToKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const override;
+    std::unique_ptr<ProgramImpl> makeProgramImpl(const GrShaderCaps&) const final;
 
     const Mode fMode;
     const ShaderFlags fShaderFlags;
@@ -158,7 +157,7 @@ GR_MAKE_BITFIELD_CLASS_OPS(GrStrokeTessellationShader::ShaderFlags)
 // This common base class emits shader code for our parametric/radial stroke tessellation algorithm
 // described above. The subclass emits its own specific setup code before calling into
 // emitTessellationCode and emitFragment code.
-class GrStrokeTessellationShader::Impl : public GrGLSLGeometryProcessor {
+class GrStrokeTessellationShader::Impl : public ProgramImpl {
 protected:
     // float cosine_between_vectors(float2 a, float2 b) { ...
     //

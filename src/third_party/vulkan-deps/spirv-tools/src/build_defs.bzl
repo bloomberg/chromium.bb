@@ -41,6 +41,7 @@ TEST_COPTS = COMMON_COPTS + select({
 
 DEBUGINFO_GRAMMAR_JSON_FILE = "@spirv_headers//:spirv_ext_inst_debuginfo_grammar_unified1"
 CLDEBUGINFO100_GRAMMAR_JSON_FILE = "@spirv_headers//:spirv_ext_inst_opencl_debuginfo_100_grammar_unified1"
+VKDEBUGINFO100_GRAMMAR_JSON_FILE = "source/extinst.nonsemantic.vulkan.debuginfo.100.grammar.json"
 
 def generate_core_tables(version = None):
     if not version:
@@ -164,6 +165,28 @@ def generate_vendor_tables(extension, operand_kind_prefix = ""):
         visibility = ["//visibility:private"],
     )
 
+def generate_vendor_tables_local(extension, operand_kind_prefix = ""):
+    if not extension:
+        fail("Must specify extension", "extension")
+    extension_rule = extension.replace("-", "_").replace(".", "_")
+    grammars = ["source/extinst.{}.grammar.json".format(extension)]
+    outs = ["{}.insts.inc".format(extension)]
+    prefices = [operand_kind_prefix]
+    fmtargs = grammars + outs + prefices
+    native.genrule(
+        name = "gen_vendor_tables_" + extension_rule,
+        srcs = grammars,
+        outs = outs,
+        cmd = (
+            "$(location :generate_grammar_tables) " +
+            "--extinst-vendor-grammar=$(location {0}) " +
+            "--vendor-insts-output=$(location {1}) " +
+            "--vendor-operand-kind-prefix={2}"
+        ).format(*fmtargs),
+        tools = [":generate_grammar_tables"],
+        visibility = ["//visibility:private"],
+    )
+
 def generate_extinst_lang_headers(name, grammar = None):
     if not grammar:
         fail("Must specify grammar", "grammar")
@@ -195,6 +218,23 @@ def base_test(name, srcs, deps = []):
         size = "large",
         deps = [
             ":test_common",
+            "@com_google_googletest//:gtest_main",
+            "@com_google_googletest//:gtest",
+            "@com_google_effcee//:effcee",
+        ] + deps,
+    )
+
+def lint_test(name, srcs, deps = []):
+    if name[-5:] != "_test":
+        name = name + "_test"
+    native.cc_test(
+        name = "lint_" + name,
+        srcs = srcs,
+        compatible_with = [],
+        copts = TEST_COPTS,
+        size = "large",
+        deps = [
+            ":spirv_tools_lint",
             "@com_google_googletest//:gtest_main",
             "@com_google_googletest//:gtest",
             "@com_google_effcee//:effcee",

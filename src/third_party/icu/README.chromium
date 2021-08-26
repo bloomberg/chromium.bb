@@ -274,3 +274,11 @@ D. Local Modifications
     https://unicode-org.atlassian.net/browse/ICU-21676
   - upstream PR:
     https://github.com/unicode-org/icu/pull/1767
+
+14. Patch loclikely.cpp and uloc.cpp for long locale bug.
+    patches/loclikely_uloc.patch
+  - upstream bug:
+    https://unicode-org.atlassian.net/browse/ICU-21639
+  - upstream PR:
+    https://github.com/unicode-org/icu/pull/1762
+

@@ -7,10 +7,12 @@
 
 #include "base/callback.h"
 #include "chrome/browser/ui/webui/signin/signin_web_dialog_ui.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 class Browser;
 class EnterpriseProfileWelcomeHandler;
+struct AccountInfo;
 
 namespace content {
 class WebUI;
@@ -36,8 +38,8 @@ class EnterpriseProfileWelcomeUI : public SigninWebDialogUI {
   // Initializes the EnterpriseProfileWelcomeUI.
   void Initialize(Browser* browser,
                   ScreenType type,
-                  const std::string& domain_name,
-                  SkColor profile_color,
+                  const AccountInfo& account_info,
+                  absl::optional<SkColor> profile_color,
                   base::OnceCallback<void(bool)> proceed_callback);
 
   // Allows tests to trigger page events.

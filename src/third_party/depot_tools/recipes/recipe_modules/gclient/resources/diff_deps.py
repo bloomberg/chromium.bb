@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+from __future__ import print_function
+
 import os
 import subprocess
 import sys
@@ -13,4 +15,4 @@ diff = subprocess.check_output("git diff --cached --name-only %s" % ref, shell=T
 dep_path = os.environ.get('GCLIENT_DEP_PATH', '')
 for line in diff.splitlines():
   if line:
-    print(os.path.join(dep_path,  line))
+    print(os.path.join(dep_path, line))

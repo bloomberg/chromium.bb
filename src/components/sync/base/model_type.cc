@@ -13,22 +13,7 @@
 #include "base/notreached.h"
 #include "base/strings/string_split.h"
 #include "base/values.h"
-#include "components/sync/protocol/app_setting_specifics.pb.h"
-#include "components/sync/protocol/app_specifics.pb.h"
-#include "components/sync/protocol/autofill_specifics.pb.h"
-#include "components/sync/protocol/bookmark_specifics.pb.h"
-#include "components/sync/protocol/extension_setting_specifics.pb.h"
-#include "components/sync/protocol/extension_specifics.pb.h"
-#include "components/sync/protocol/nigori_specifics.pb.h"
-#include "components/sync/protocol/password_specifics.pb.h"
-#include "components/sync/protocol/preference_specifics.pb.h"
-#include "components/sync/protocol/reading_list_specifics.pb.h"
-#include "components/sync/protocol/search_engine_specifics.pb.h"
-#include "components/sync/protocol/send_tab_to_self_specifics.pb.h"
-#include "components/sync/protocol/session_specifics.pb.h"
-#include "components/sync/protocol/sync.pb.h"
-#include "components/sync/protocol/theme_specifics.pb.h"
-#include "components/sync/protocol/typed_url_specifics.pb.h"
+#include "components/sync/protocol/entity_specifics.pb.h"
 
 namespace syncer {
 
@@ -575,14 +560,6 @@ bool IsTypeWithServerGeneratedRoot(ModelType model_type) {
 bool IsTypeWithClientGeneratedRoot(ModelType model_type) {
   return IsRealDataType(model_type) &&
          !IsTypeWithServerGeneratedRoot(model_type);
-}
-
-bool TypeSupportsHierarchy(ModelType model_type) {
-  return model_type == BOOKMARKS;
-}
-
-bool TypeSupportsOrdering(ModelType model_type) {
-  return model_type == BOOKMARKS;
 }
 
 }  // namespace syncer

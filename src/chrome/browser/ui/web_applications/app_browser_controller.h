@@ -80,7 +80,8 @@ class AppBrowserController : public TabStripModelObserver,
   // Returns the text to flash in the title bar on app launch.
   std::u16string GetLaunchFlashText() const;
 
-  // Returns whether this controller was created for an installed PWA.
+  // Returns whether this controller was created for a
+  // Chrome App (platform app or legacy packaged app).
   virtual bool IsHostedApp() const;
 
   // Whether the custom tab bar should be visible.
@@ -172,12 +173,7 @@ class AppBrowserController : public TabStripModelObserver,
     return system_app_type_;
   }
 
-  // Returns true if AppId is non-null
-  bool HasAppId() const { return app_id_.has_value(); }
-
-  // Returns AppId if it is defined, otherwise DCHECK.
-  // Should check HasAppId() before calling if unsure
-  const AppId& GetAppId() const { return app_id_.value(); }
+  const AppId& app_id() const { return app_id_; }
 
   Browser* browser() const { return browser_; }
 
@@ -216,8 +212,7 @@ class AppBrowserController : public TabStripModelObserver,
   void SetOnUpdateDraggableRegionForTesting(base::OnceClosure done);
 
  protected:
-  explicit AppBrowserController(Browser* browser,
-                                absl::optional<web_app::AppId> app_id);
+  explicit AppBrowserController(Browser* browser, web_app::AppId app_id);
 
   // Called once the app browser controller has determined its initial url.
   virtual void OnReceivedInitialURL();
@@ -235,7 +230,7 @@ class AppBrowserController : public TabStripModelObserver,
 
   void UpdateThemePack();
 
-  const absl::optional<AppId> app_id_;
+  const AppId app_id_;
   Browser* const browser_;
   GURL initial_url_;
 

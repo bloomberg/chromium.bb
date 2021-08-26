@@ -23,7 +23,7 @@ GPUSwapChain::GPUSwapChain(GPUCanvasContext* context,
                            GPUDevice* device,
                            WGPUTextureUsage usage,
                            WGPUTextureFormat format,
-                           SkFilterQuality filter_quality,
+                           cc::PaintFlags::FilterQuality filter_quality,
                            IntSize size)
     : DawnObjectImpl(device),
       context_(context),
@@ -59,7 +59,8 @@ cc::Layer* GPUSwapChain::CcLayer() {
   return swap_buffers_->CcLayer();
 }
 
-void GPUSwapChain::SetFilterQuality(SkFilterQuality filter_quality) {
+void GPUSwapChain::SetFilterQuality(
+    cc::PaintFlags::FilterQuality filter_quality) {
   DCHECK(swap_buffers_);
   if (swap_buffers_) {
     swap_buffers_->SetFilterQuality(filter_quality);
@@ -124,7 +125,8 @@ scoped_refptr<CanvasResource> GPUSwapChain::ExportCanvasResource() {
       IntSize(transferable_resource.size),
       transferable_resource.mailbox_holder.texture_target, resource_params,
       swap_buffers_->GetContextProviderWeakPtr(), /*resource_provider=*/nullptr,
-      kLow_SkFilterQuality, /*is_origin_top_left=*/kBottomLeft_GrSurfaceOrigin,
+      cc::PaintFlags::FilterQuality::kLow,
+      /*is_origin_top_left=*/kBottomLeft_GrSurfaceOrigin,
       transferable_resource.is_overlay_candidate);
 }
 
@@ -154,7 +156,11 @@ bool GPUSwapChain::CopyToResourceProvider(
 
   auto* ri = shared_context_wrapper->ContextProvider()->RasterInterface();
 
-  gpu::webgpu::WebGPUInterface* webgpu = GetDawnControlClient()->GetInterface();
+  if (!GetContextProviderWeakPtr()) {
+    return false;
+  }
+  gpu::webgpu::WebGPUInterface* webgpu =
+      GetContextProviderWeakPtr()->ContextProvider()->WebGPUInterface();
   gpu::webgpu::ReservedTexture reservation =
       webgpu->ReserveTexture(device_->GetHandle());
   DCHECK(reservation.texture);
@@ -208,10 +214,6 @@ bool GPUSwapChain::CopyToResourceProvider(
 
 // gpu_swap_chain.idl
 GPUTexture* GPUSwapChain::getCurrentTexture() {
-  if (!swap_buffers_) {
-    return GPUTexture::CreateError(device_);
-  }
-
   // As we are getting a new texture, we need to tell the canvas context that
   // there will be a need to send a new frame to the offscreencanvas.
   if (context_->IsOffscreenCanvas())
@@ -225,12 +227,20 @@ GPUTexture* GPUSwapChain::getCurrentTexture() {
     return texture_;
   }
 
+  if (!swap_buffers_) {
+    texture_ = GPUTexture::CreateError(device_);
+    return texture_;
+  }
+
   // A negative size indicates we're on the deprecated path which automatically
   // adjusts to the canvas width/height attributes.
   // TODO(bajones@chromium.org): Remove automatic path after deprecation period.
   IntSize texture_size = size_.Width() >= 0 ? size_ : context_->CanvasSize();
   WGPUTexture dawn_client_texture = swap_buffers_->GetNewTexture(texture_size);
-  DCHECK(dawn_client_texture);
+  if (!dawn_client_texture) {
+    texture_ = GPUTexture::CreateError(device_);
+    return texture_;
+  }
   // SwapChain buffer are 2d.
   texture_ = MakeGarbageCollected<GPUTexture>(
       device_, dawn_client_texture, WGPUTextureDimension_2D, format_, usage_);

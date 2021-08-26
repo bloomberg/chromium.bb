@@ -9,14 +9,14 @@
 #include <memory>
 #include <set>
 
-#include "chrome/browser/web_applications/components/install_finalizer.h"
+#include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 struct WebApplicationInfo;
 
 namespace web_app {
 
-class TestInstallFinalizer final : public InstallFinalizer {
+class TestInstallFinalizer final : public WebAppInstallFinalizer {
  public:
   // Returns what would be the AppId if an app is installed with |url|.
   static AppId GetAppIdForUrl(const GURL& url);
@@ -26,12 +26,10 @@ class TestInstallFinalizer final : public InstallFinalizer {
   TestInstallFinalizer& operator=(const TestInstallFinalizer&) = delete;
   ~TestInstallFinalizer() override;
 
-  // InstallFinalizer:
+  // WebAppInstallFinalizer:
   void FinalizeInstall(const WebApplicationInfo& web_app_info,
                        const FinalizeOptions& options,
                        InstallFinalizedCallback callback) override;
-  void FinalizeUninstallAfterSync(const AppId& app_id,
-                                  UninstallWebAppCallback callback) override;
   void FinalizeUpdate(const WebApplicationInfo& web_app_info,
                       content::WebContents* web_contents,
                       InstallFinalizedCallback callback) override;
@@ -43,6 +41,11 @@ class TestInstallFinalizer final : public InstallFinalizer {
       const GURL& app_url,
       webapps::WebappUninstallSource external_install_source,
       UninstallWebAppCallback callback) override;
+  void UninstallFromSyncBeforeRegistryUpdate(
+      std::vector<AppId> web_apps) override;
+  void UninstallFromSyncAfterRegistryUpdate(
+      std::vector<std::unique_ptr<WebApp>> web_apps,
+      RepeatingUninstallCallback callback) override;
   bool CanUserUninstallWebApp(const AppId& app_id) const override;
   void UninstallWebApp(const AppId& app_id,
                        webapps::WebappUninstallSource uninstall_source,
@@ -53,6 +56,8 @@ class TestInstallFinalizer final : public InstallFinalizer {
   void ReparentTab(const AppId& app_id,
                    bool shortcut_created,
                    content::WebContents* web_contents) override;
+  void SetRemoveSourceCallbackForTesting(
+      base::RepeatingCallback<void(const AppId&)>) override;
 
   void SetNextFinalizeInstallResult(const AppId& app_id,
                                     InstallResultCode code);
@@ -93,7 +98,6 @@ class TestInstallFinalizer final : public InstallFinalizer {
   std::set<AppId> user_uninstalled_external_apps_;
 
   int num_reparent_tab_calls_ = 0;
-
 };
 
 }  // namespace web_app

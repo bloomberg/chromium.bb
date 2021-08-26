@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #ifndef LIB_JXL_MODULAR_ENCODING_CONTEXT_PREDICT_H_
 #define LIB_JXL_MODULAR_ENCODING_CONTEXT_PREDICT_H_
@@ -191,7 +182,7 @@ struct State {
     size_t cur_row = y & 1 ? 0 : (xsize + 2);
     size_t prev_row = y & 1 ? (xsize + 2) : 0;
     val = AddBits(val);
-    error[cur_row + x] = ClampToRange<pixel_type>(pred - val);
+    error[cur_row + x] = pred - val;
     for (size_t i = 0; i < kNumPredictors; i++) {
       pixel_type_w err =
           (std::abs(prediction[i] - val) + kPredictionRound) >> kPredExtraBits;
@@ -466,6 +457,48 @@ enum PredictorMode {
   kAllPredictions = 8,
 };
 
+JXL_INLINE pixel_type_w PredictOne(Predictor p, pixel_type_w left,
+                                   pixel_type_w top, pixel_type_w toptop,
+                                   pixel_type_w topleft, pixel_type_w topright,
+                                   pixel_type_w leftleft,
+                                   pixel_type_w toprightright,
+                                   pixel_type_w wp_pred) {
+  switch (p) {
+    case Predictor::Zero:
+      return pixel_type_w{0};
+    case Predictor::Left:
+      return left;
+    case Predictor::Top:
+      return top;
+    case Predictor::Select:
+      return Select(left, top, topleft);
+    case Predictor::Weighted:
+      return wp_pred;
+    case Predictor::Gradient:
+      return pixel_type_w{ClampedGradient(left, top, topleft)};
+    case Predictor::TopLeft:
+      return topleft;
+    case Predictor::TopRight:
+      return topright;
+    case Predictor::LeftLeft:
+      return leftleft;
+    case Predictor::Average0:
+      return (left + top) / 2;
+    case Predictor::Average1:
+      return (left + topleft) / 2;
+    case Predictor::Average2:
+      return (topleft + top) / 2;
+    case Predictor::Average3:
+      return (top + topright) / 2;
+    case Predictor::Average4:
+      return (6 * top - 2 * toptop + 7 * left + 1 * leftleft +
+              1 * toprightright + 3 * topright + 8) /
+             16;
+    default:
+      return pixel_type_w{0};
+  }
+}
+
 template <int mode>
 inline PredictionResult Predict(
     Properties *p, size_t w, const pixel_type *JXL_RESTRICT pp,
@@ -528,28 +561,14 @@ inline PredictionResult Predict(
     result.multiplier = lr.multiplier;
     predictor = lr.predictor;
   }
-  pixel_type_w pred_storage[kNumModularPredictors];
-  if (!(mode & kAllPredictions)) {
-    predictions = pred_storage;
+  if (mode & kAllPredictions) {
+    for (size_t i = 0; i < kNumModularPredictors; i++) {
+      predictions[i] = PredictOne((Predictor)i, left, top, toptop, topleft,
+                                  topright, leftleft, toprightright, wp_pred);
+    }
   }
-  predictions[(int)Predictor::Zero] = 0;
-  predictions[(int)Predictor::Left] = left;
-  predictions[(int)Predictor::Top] = top;
-  predictions[(int)Predictor::Select] = Select(left, top, topleft);
-  predictions[(int)Predictor::Weighted] = wp_pred;
-  predictions[(int)Predictor::Gradient] = ClampedGradient(left, top, topleft);
-  predictions[(int)Predictor::TopLeft] = topleft;
-  predictions[(int)Predictor::TopRight] = topright;
-  predictions[(int)Predictor::LeftLeft] = leftleft;
-  predictions[(int)Predictor::Average0] = (left + top) / 2;
-  predictions[(int)Predictor::Average1] = (left + topleft) / 2;
-  predictions[(int)Predictor::Average2] = (topleft + top) / 2;
-  predictions[(int)Predictor::Average3] = (top + topright) / 2;
-  predictions[(int)Predictor::Average4] =
-      (6 * top - 2 * toptop + 7 * left + 1 * leftleft + 1 * toprightright +
-       3 * topright + 8) /
-      16;
-  result.guess += predictions[(int)predictor];
+  result.guess += PredictOne(predictor, left, top, toptop, topleft, topright,
+                             leftleft, toprightright, wp_pred);
   result.predictor = predictor;
 
   return result;

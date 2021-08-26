@@ -34,6 +34,7 @@
 #include "src/ast/unary_op_expression.h"
 #include "src/ast/variable_decl_statement.h"
 #include "src/sem/depth_texture_type.h"
+#include "src/sem/intrinsic_type.h"
 #include "src/sem/sampled_texture_type.h"
 
 // Terms:
@@ -212,7 +213,7 @@ ast::BinaryOp ConvertBinaryOp(SpvOp opcode) {
       return ast::BinaryOp::kDivide;
     case SpvOpUMod:
     case SpvOpSMod:
-    case SpvOpFMod:
+    case SpvOpFRem:
       return ast::BinaryOp::kModulo;
     case SpvOpLogicalEqual:
     case SpvOpIEqual:
@@ -229,9 +230,9 @@ ast::BinaryOp ConvertBinaryOp(SpvOp opcode) {
     case SpvOpBitwiseXor:
       return ast::BinaryOp::kXor;
     case SpvOpLogicalAnd:
-      return ast::BinaryOp::kLogicalAnd;
+      return ast::BinaryOp::kAnd;
     case SpvOpLogicalOr:
-      return ast::BinaryOp::kLogicalOr;
+      return ast::BinaryOp::kOr;
     case SpvOpUGreaterThan:
     case SpvOpSGreaterThan:
     case SpvOpFOrdGreaterThan:
@@ -398,8 +399,9 @@ std::string GetGlslStd450FuncName(uint32_t ext_opcode) {
       return "unpack2x16float";
 
     default:
-    // TODO(dneto) - The following are not implemented.
-    // They are grouped semantically, as in GLSL.std.450.h.
+      // TODO(dneto) - The following are not implemented.
+      // They are grouped semantically, as in GLSL.std.450.h.
+
     case GLSLstd450SSign:
 
     case GLSLstd450Radians:
@@ -949,6 +951,7 @@ bool FunctionEmitter::EmitPipelineInput(std::string var_name,
     tip_type = ref_type->type;
   }
 
+  // Recursively flatten matrices, arrays, and structures.
   if (auto* matrix_type = tip_type->As<Matrix>()) {
     index_prefix.push_back(0);
     const auto num_columns = static_cast<int>(matrix_type->columns);
@@ -980,14 +983,20 @@ bool FunctionEmitter::EmitPipelineInput(std::string var_name,
     index_prefix.push_back(0);
     for (int i = 0; i < static_cast<int>(members.size()); ++i) {
       index_prefix.back() = i;
-      auto* location = parser_impl_.GetMemberLocation(*struct_type, i);
-      auto* saved_location = SetLocation(decos, location);
-      if (!EmitPipelineInput(var_name, var_type, decos, index_prefix,
+      ast::DecorationList member_decos(*decos);
+      if (!parser_impl_.ConvertPipelineDecorations(
+              struct_type,
+              parser_impl_.GetMemberPipelineDecorations(*struct_type, i),
+              &member_decos)) {
+        return false;
+      }
+      if (!EmitPipelineInput(var_name, var_type, &member_decos, index_prefix,
                              members[i], forced_param_type, params,
                              statements)) {
         return false;
       }
-      SetLocation(decos, saved_location);
+      // Copy the location as updated by nested expansion of the member.
+      parser_impl_.SetLocation(decos, GetLocation(member_decos));
     }
     return success();
   }
@@ -999,7 +1008,7 @@ bool FunctionEmitter::EmitPipelineInput(std::string var_name,
   const auto param_name = namer_.MakeDerivedName(var_name + "_param");
   // Create the parameter.
   // TODO(dneto): Note: If the parameter has non-location decorations,
-  // then those decoration AST nodes  will be reused between multiple elements
+  // then those decoration AST nodes will be reused between multiple elements
   // of a matrix, array, or structure.  Normally that's disallowed but currently
   // the SPIR-V reader will make duplicates when the entire AST is cloned
   // at the top level of the SPIR-V reader flow.  Consider rewriting this
@@ -1055,23 +1064,13 @@ void FunctionEmitter::IncrementLocation(ast::DecorationList* decos) {
   }
 }
 
-ast::Decoration* FunctionEmitter::SetLocation(ast::DecorationList* decos,
-                                              ast::Decoration* replacement) {
-  if (!replacement) {
-    return nullptr;
-  }
-  for (auto*& deco : *decos) {
+ast::Decoration* FunctionEmitter::GetLocation(
+    const ast::DecorationList& decos) {
+  for (auto* const& deco : decos) {
     if (deco->Is<ast::LocationDecoration>()) {
-      // Replace this location decoration with a new one with one higher index.
-      // The old one doesn't leak because it's kept in the builder's AST node
-      // list.
-      ast::Decoration* result = deco;
-      deco = replacement;
-      return result;
+      return deco;
     }
   }
-  // The list didn't have a location. Add it.
-  decos->push_back(replacement);
   return nullptr;
 }
 
@@ -1083,12 +1082,12 @@ bool FunctionEmitter::EmitPipelineOutput(std::string var_name,
                                          const Type* forced_member_type,
                                          ast::StructMemberList* return_members,
                                          ast::ExpressionList* return_exprs) {
-  // TODO(dneto): Handle structs where the locations are annotated on members.
   tip_type = tip_type->UnwrapAlias();
   if (auto* ref_type = tip_type->As<Reference>()) {
     tip_type = ref_type->type;
   }
 
+  // Recursively flatten matrices, arrays, and structures.
   if (auto* matrix_type = tip_type->As<Matrix>()) {
     index_prefix.push_back(0);
     const auto num_columns = static_cast<int>(matrix_type->columns);
@@ -1122,14 +1121,20 @@ bool FunctionEmitter::EmitPipelineOutput(std::string var_name,
     index_prefix.push_back(0);
     for (int i = 0; i < static_cast<int>(members.size()); ++i) {
       index_prefix.back() = i;
-      auto* location = parser_impl_.GetMemberLocation(*struct_type, i);
-      auto* saved_location = SetLocation(decos, location);
-      if (!EmitPipelineOutput(var_name, var_type, decos, index_prefix,
+      ast::DecorationList member_decos(*decos);
+      if (!parser_impl_.ConvertPipelineDecorations(
+              struct_type,
+              parser_impl_.GetMemberPipelineDecorations(*struct_type, i),
+              &member_decos)) {
+        return false;
+      }
+      if (!EmitPipelineOutput(var_name, var_type, &member_decos, index_prefix,
                               members[i], forced_member_type, return_members,
                               return_exprs)) {
         return false;
       }
-      SetLocation(decos, saved_location);
+      // Copy the location as updated by nested expansion of the member.
+      parser_impl_.SetLocation(decos, GetLocation(member_decos));
     }
     return success();
   }
@@ -3851,6 +3856,10 @@ TypedExpression FunctionEmitter::MaybeEmitCombinatorialValue(
     return MakeIntrinsicCall(inst);
   }
 
+  if (opcode == SpvOpFMod) {
+    return MakeFMod(inst);
+  }
+
   if (opcode == SpvOpAccessChain || opcode == SpvOpInBoundsAccessChain) {
     return MakeAccessChain(inst);
   }
@@ -3977,14 +3986,132 @@ TypedExpression FunctionEmitter::EmitGlslStd450ExtInst(
     const spvtools::opt::Instruction& inst) {
   const auto ext_opcode = inst.GetSingleWordInOperand(1);
 
+  if (ext_opcode == GLSLstd450Ldexp) {
+    // WGSL requires the second argument to be signed.
+    // Use a type constructor to convert it, which is the same as a bitcast.
+    // If the value would go from very large positive to negative, then the
+    // original result would have been infinity.  And since WGSL
+    // implementations may assume that infinities are not present, then we
+    // don't have to worry about that case.
+    auto e1 = MakeOperand(inst, 2);
+    auto e2 = ToSignedIfUnsigned(MakeOperand(inst, 3));
+
+    return {e1.type, builder_.Call(Source{}, "ldexp",
+                                   ast::ExpressionList{e1.expr, e2.expr})};
+  }
+
   auto* result_type = parser_impl_.ConvertType(inst.type_id());
 
-  if ((ext_opcode == GLSLstd450Normalize) && result_type->IsScalar()) {
-    // WGSL does not have scalar form of the normalize builtin.
-    // The answer would be 1 anyway, so return that directly.
-    return {ty_.F32(),
-            create<ast::ScalarConstructorExpression>(
-                Source{}, create<ast::FloatLiteral>(Source{}, 1.0f))};
+  if (result_type->IsScalar()) {
+    // Some GLSLstd450 builtins have scalar forms not supported by WGSL.
+    // Emulate them.
+    switch (ext_opcode) {
+      case GLSLstd450Normalize:
+        // WGSL does not have scalar form of the normalize builtin.
+        // The answer would be 1 anyway, so return that directly.
+        return {ty_.F32(), builder_.Expr(1.0f)};
+
+      case GLSLstd450FaceForward: {
+        // If dot(Nref, Incident) < 0, the result is Normal, otherwise -Normal.
+        // Also: select(-normal,normal, Incident*Nref < 0)
+        // (The dot product of scalars is their product.)
+        // Use a multiply instead of comparing floating point signs. It should
+        // be among the fastest operations on a GPU.
+        auto normal = MakeOperand(inst, 2);
+        auto incident = MakeOperand(inst, 3);
+        auto nref = MakeOperand(inst, 4);
+        TINT_ASSERT(Reader, normal.type->Is<F32>());
+        TINT_ASSERT(Reader, incident.type->Is<F32>());
+        TINT_ASSERT(Reader, nref.type->Is<F32>());
+        return {ty_.F32(),
+                builder_.Call(
+                    Source{}, "select",
+                    ast::ExpressionList{
+                        create<ast::UnaryOpExpression>(
+                            Source{}, ast::UnaryOp::kNegation, normal.expr),
+                        normal.expr,
+                        create<ast::BinaryExpression>(
+                            Source{}, ast::BinaryOp::kLessThan,
+                            builder_.Mul({}, incident.expr, nref.expr),
+                            builder_.Expr(0.0f))})};
+      }
+
+      case GLSLstd450Reflect: {
+        // Compute  Incident - 2 * Normal * Normal * Incident
+        auto incident = MakeOperand(inst, 2);
+        auto normal = MakeOperand(inst, 3);
+        TINT_ASSERT(Reader, incident.type->Is<F32>());
+        TINT_ASSERT(Reader, normal.type->Is<F32>());
+        return {
+            ty_.F32(),
+            builder_.Sub(
+                incident.expr,
+                builder_.Mul(2.0f, builder_.Mul(normal.expr,
+                                                builder_.Mul(normal.expr,
+                                                             incident.expr))))};
+      }
+
+      case GLSLstd450Refract: {
+        // It's a complicated expression. Compute it in two dimensions, but
+        // with a 0-valued y component in both the incident and normal vectors,
+        // then take the x component of that result.
+        auto incident = MakeOperand(inst, 2);
+        auto normal = MakeOperand(inst, 3);
+        auto eta = MakeOperand(inst, 4);
+        TINT_ASSERT(Reader, incident.type->Is<F32>());
+        TINT_ASSERT(Reader, normal.type->Is<F32>());
+        TINT_ASSERT(Reader, eta.type->Is<F32>());
+        if (!success()) {
+          return {};
+        }
+        const Type* f32 = eta.type;
+        return {f32,
+                builder_.MemberAccessor(
+                    builder_.Call(
+                        Source{}, "refract",
+                        ast::ExpressionList{
+                            builder_.vec2<float>(incident.expr, 0.0f),
+                            builder_.vec2<float>(normal.expr, 0.0f), eta.expr}),
+                    "x")};
+      }
+      default:
+        break;
+    }
+  }
+
+  // Some GLSLStd450 builtins don't have a WGSL equivalent. Polyfill them.
+  switch (ext_opcode) {
+    case GLSLstd450Radians: {
+      auto degrees = MakeOperand(inst, 2);
+      TINT_ASSERT(Reader, degrees.type->IsFloatScalarOrVector());
+
+      constexpr auto kPiOver180 = static_cast<float>(3.141592653589793 / 180.0);
+      auto* factor = builder_.Expr(kPiOver180);
+      if (degrees.type->Is<F32>()) {
+        return {degrees.type, builder_.Mul(degrees.expr, factor)};
+      } else {
+        uint32_t size = degrees.type->As<Vector>()->size;
+        return {degrees.type,
+                builder_.Mul(degrees.expr,
+                             builder_.vec(builder_.ty.f32(), size, factor))};
+      }
+    }
+
+    case GLSLstd450Degrees: {
+      auto radians = MakeOperand(inst, 2);
+      TINT_ASSERT(Reader, radians.type->IsFloatScalarOrVector());
+
+      constexpr auto k180OverPi = static_cast<float>(180.0 / 3.141592653589793);
+      auto* factor = builder_.Expr(k180OverPi);
+      if (radians.type->Is<F32>()) {
+        return {radians.type, builder_.Mul(radians.expr, factor)};
+      } else {
+        uint32_t size = radians.type->As<Vector>()->size;
+        return {radians.type,
+                builder_.Mul(radians.expr,
+                             builder_.vec(builder_.ty.f32(), size, factor))};
+      }
+    }
   }
 
   const auto name = GetGlslStd450FuncName(ext_opcode);
@@ -4038,6 +4165,21 @@ ast::IdentifierExpression* FunctionEmitter::PrefixSwizzle(uint32_t n) {
   }
   Fail() << "invalid swizzle prefix count: " << n;
   return nullptr;
+}
+
+TypedExpression FunctionEmitter::MakeFMod(
+    const spvtools::opt::Instruction& inst) {
+  auto x = MakeOperand(inst, 0);
+  auto y = MakeOperand(inst, 1);
+  if (!x || !y) {
+    return {};
+  }
+  // Emulated with: x - y * floor(x / y)
+  auto* div = builder_.Div(x.expr, y.expr);
+  auto* floor = builder_.Call("floor", div);
+  auto* y_floor = builder_.Mul(y.expr, floor);
+  auto* res = builder_.Sub(x.expr, y_floor);
+  return {x.type, res};
 }
 
 TypedExpression FunctionEmitter::MakeAccessChain(
@@ -4257,6 +4399,10 @@ TypedExpression FunctionEmitter::MakeCompositeExtract(
   auto composite_index = 0;
   auto first_index_position = 1;
   TypedExpression current_expr(MakeOperand(inst, composite_index));
+  if (!current_expr) {
+    return {};
+  }
+
   const auto composite_id = inst.GetSingleWordInOperand(composite_index);
   auto current_type_id = def_use_mgr_->GetDef(composite_id)->type_id();
 
@@ -4332,6 +4478,7 @@ TypedExpression FunctionEmitter::MakeCompositeValueDecomposition(
         if (index_val >= kMaxVectorLen) {
           Fail() << "internal error: swizzle index " << index_val
                  << " is too big. Max handled index is " << kMaxVectorLen - 1;
+          return {};
         }
         next_expr = create<ast::MemberAccessorExpression>(
             Source{}, current_expr.expr, Swizzle(index_val));
@@ -4533,6 +4680,8 @@ bool FunctionEmitter::RegisterLocallyDefinedValues() {
           }
           switch (inst.opcode()) {
             case SpvOpUndef:
+              return Fail()
+                     << "undef pointer is not valid: " << inst.PrettyPrint();
             case SpvOpVariable:
               // Keep the default decision based on the result type.
               break;
@@ -4569,7 +4718,10 @@ bool FunctionEmitter::RegisterLocallyDefinedValues() {
 ast::StorageClass FunctionEmitter::GetStorageClassForPointerValue(uint32_t id) {
   auto where = def_info_.find(id);
   if (where != def_info_.end()) {
-    return where->second.get()->storage_class;
+    auto candidate = where->second.get()->storage_class;
+    if (candidate != ast::StorageClass::kInvalid) {
+      return candidate;
+    }
   }
   const auto type_id = def_use_mgr_->GetDef(id)->type_id();
   if (type_id) {
@@ -4597,18 +4749,37 @@ const Type* FunctionEmitter::RemapStorageClass(const Type* type,
 void FunctionEmitter::FindValuesNeedingNamedOrHoistedDefinition() {
   // Mark vector operands of OpVectorShuffle as needing a named definition,
   // but only if they are defined in this function as well.
+  auto require_named_const_def = [&](const spvtools::opt::Instruction& inst,
+                                     int in_operand_index) {
+    const auto id = inst.GetSingleWordInOperand(in_operand_index);
+    auto* const operand_def = GetDefInfo(id);
+    if (operand_def) {
+      operand_def->requires_named_const_def = true;
+    }
+  };
   for (auto& id_def_info_pair : def_info_) {
     const auto& inst = id_def_info_pair.second->inst;
     const auto opcode = inst.opcode();
     if ((opcode == SpvOpVectorShuffle) || (opcode == SpvOpOuterProduct)) {
       // We might access the vector operands multiple times. Make sure they
       // are evaluated only once.
-      for (auto vector_arg : std::array<uint32_t, 2>{0, 1}) {
-        auto id = inst.GetSingleWordInOperand(vector_arg);
-        auto* operand_def = GetDefInfo(id);
-        if (operand_def) {
-          operand_def->requires_named_const_def = true;
-        }
+      require_named_const_def(inst, 0);
+      require_named_const_def(inst, 1);
+    }
+    if (parser_impl_.IsGlslExtendedInstruction(inst)) {
+      // Some emulations of GLSLstd450 instructions evaluate certain operands
+      // multiple times. Ensure their expressions are evaluated only once.
+      switch (inst.GetSingleWordInOperand(1)) {
+        case GLSLstd450FaceForward:
+          // The "normal" operand expression is used twice in code generation.
+          require_named_const_def(inst, 2);
+          break;
+        case GLSLstd450Reflect:
+          require_named_const_def(inst, 2);  // Incident
+          require_named_const_def(inst, 3);  // Normal
+          break;
+        default:
+          break;
       }
     }
   }
@@ -4719,7 +4890,7 @@ void FunctionEmitter::FindValuesNeedingNamedOrHoistedDefinition() {
       // Avoid moving combinatorial values across constructs.  This is a
       // simple heuristic to avoid changing the cost of an operation
       // by moving it into or out of a loop, for example.
-      if ((def_info->storage_class == ast::StorageClass::kNone) &&
+      if ((def_info->storage_class == ast::StorageClass::kInvalid) &&
           def_info->used_in_another_construct) {
         should_hoist = true;
       }
@@ -4903,9 +5074,7 @@ bool FunctionEmitter::EmitControlBarrier(
 TypedExpression FunctionEmitter::MakeIntrinsicCall(
     const spvtools::opt::Instruction& inst) {
   const auto intrinsic = GetIntrinsic(inst.opcode());
-  std::ostringstream ss;
-  ss << intrinsic;
-  auto name = ss.str();
+  auto* name = sem::str(intrinsic);
   auto* ident = create<ast::IdentifierExpression>(
       Source{}, builder_.Symbols().Register(name));
 
@@ -4933,28 +5102,27 @@ TypedExpression FunctionEmitter::MakeIntrinsicCall(
 TypedExpression FunctionEmitter::MakeSimpleSelect(
     const spvtools::opt::Instruction& inst) {
   auto condition = MakeOperand(inst, 0);
-  auto operand1 = MakeOperand(inst, 1);
-  auto operand2 = MakeOperand(inst, 2);
+  auto true_value = MakeOperand(inst, 1);
+  auto false_value = MakeOperand(inst, 2);
 
   // SPIR-V validation requires:
   // - the condition to be bool or bool vector, so we don't check it here.
-  // - operand1, operand2, and result type to match.
+  // - true_value false_value, and result type to match.
   // - you can't select over pointers or pointer vectors, unless you also have
   //   a VariablePointers* capability, which is not allowed in by WebGPU.
-  auto* op_ty = operand1.type;
+  auto* op_ty = true_value.type;
   if (op_ty->Is<Vector>() || op_ty->IsFloatScalar() ||
       op_ty->IsIntegerScalar() || op_ty->Is<Bool>()) {
     ast::ExpressionList params;
-    params.push_back(operand1.expr);
-    params.push_back(operand2.expr);
+    params.push_back(false_value.expr);
+    params.push_back(true_value.expr);
     // The condition goes last.
     params.push_back(condition.expr);
-    return {operand1.type,
-            create<ast::CallExpression>(
-                Source{},
-                create<ast::IdentifierExpression>(
-                    Source{}, builder_.Symbols().Register("select")),
-                std::move(params))};
+    return {op_ty, create<ast::CallExpression>(
+                       Source{},
+                       create<ast::IdentifierExpression>(
+                           Source{}, builder_.Symbols().Register("select")),
+                       std::move(params))};
   }
   return {};
 }
@@ -5255,7 +5423,7 @@ bool FunctionEmitter::EmitImageAccess(const spvtools::opt::Instruction& inst) {
     //   dref gather         vec4  ImageFetch           vec4 TODO(dneto)
     // Construct a 4-element vector with the result from the builtin in the
     // first component.
-    if (texture_type->Is<DepthTexture>()) {
+    if (texture_type->IsAnyOf<DepthTexture, DepthMultisampledTexture>()) {
       if (is_non_dref_sample || (opcode == SpvOpImageFetch)) {
         value = create<ast::TypeConstructorExpression>(
             Source{},
@@ -5603,23 +5771,21 @@ TypedExpression FunctionEmitter::MakeArrayLength(
     return {};
   }
 
-  auto* member_ident = create<ast::IdentifierExpression>(
-      Source{}, builder_.Symbols().Register(field_name));
   auto member_expr = MakeExpression(struct_ptr_id);
   if (!member_expr) {
     return {};
   }
+  if (member_expr.type->Is<Pointer>()) {
+    member_expr = Dereference(member_expr);
+  }
+  auto* member_ident = create<ast::IdentifierExpression>(
+      Source{}, builder_.Symbols().Register(field_name));
   auto* member_access = create<ast::MemberAccessorExpression>(
       Source{}, member_expr.expr, member_ident);
 
   // Generate the intrinsic function call.
-  std::string call_ident_str = "arrayLength";
-  auto* call_ident = create<ast::IdentifierExpression>(
-      Source{}, builder_.Symbols().Register(call_ident_str));
-
-  ast::ExpressionList params{member_access};
   auto* call_expr =
-      create<ast::CallExpression>(Source{}, call_ident, std::move(params));
+      builder_.Call(Source{}, "arrayLength", builder_.AddressOf(member_access));
 
   return {parser_impl_.ConvertType(inst.type_id()), call_expr};
 }

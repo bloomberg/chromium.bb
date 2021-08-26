@@ -3,6 +3,8 @@
 <translationbundle lang="gu">
 <translation id="1175958423215084756">લિંકની જાણકારી મળી. <ph name="HOSTNAME" /></translation>
 <translation id="1276998909102132017">ગૅલેરી છબીઓ</translation>
+<translation id="1300209025925956156">તમારા દસ્તાવેજને સ્કૅન કરો</translation>
+<translation id="137991641490787891"><ph name="ASPECT_RATIO_WIDTH" />. ઍક્સેસ કરવા માટે, શોધ + ડાબી ઍરો કી.</translation>
 <translation id="1430915738399379752">પ્રિન્ટ</translation>
 <translation id="1467231725790366244"><ph name="CAMERA" /> અનપ્લગ કરેલું છે.</translation>
 <translation id="1473110567575736769">3 સેકન્ડનું ટાઇમર</translation>
@@ -31,7 +33,6 @@
 <translation id="2549985041256363841">રેકોર્ડિંગ શરૂ કરો</translation>
 <translation id="2599796128805996109">પાછળનો કૅમેરા</translation>
 <translation id="2879583609344924966"><ph name="CAMERA" /> પ્લગ-ઇન કરેલું છે.</translation>
-<translation id="2912439424121107408">આ ડિવાઇસ પર નિષ્ણાત મોડની સુવિધા નથી</translation>
 <translation id="2968794441791257519">કૅમેરા વડે લીધેલા ફોટા અને વીડિયો ડાઉનલોડ ફોલ્ડરમાં ખસેડવામાં આવશે. તમે તેઓને ફાઇલોમાં ઍક્સેસ કરી શકશો.
 
         સ્ટોરેજ માટે પરવાનગી ધરાવતી ઍપ તમારા ફોટા તથા વીડિયોને ઍક્સેસ કરી શકશે.</translation>
@@ -42,15 +43,16 @@
 <translation id="3227137524299004712">માઇક્રોફોન</translation>
 <translation id="3240426699337459095">લિંક કૉપિ કરી</translation>
 <translation id="3259149966178251584">કૅમેરાનું રિઝોલ્યુશન</translation>
+<translation id="3260401663013584785">કોઈ દસ્તાવેજની ભાળ મળી શકી નથી</translation>
 <translation id="3448774564454087943">વીડિયો ખૂબ જ ટૂંકો હોવાથી તે સાચવવામાં આવ્યો નથી</translation>
 <translation id="3517926952904427380">પોર્ટ્રેટ ફોટો લઈ શકાતો નથી</translation>
 <translation id="3569311554794739032">શું તમે ખરેખર <ph name="FILE" />ને કાઢી નાખવા માગો છો?</translation>
-<translation id="3733597664308256288">કૅમેરાના વધારાના નિયંત્રણો ઉપલબ્ધ છે. ઍક્સેસ કરવા માટે, શોધ + જમણી ઍરો કી પર ક્લિક કરો.</translation>
 <translation id="3810838688059735925">વીડિયો</translation>
 <translation id="3838931309141338733">બારકોડ સ્કૅન કરો</translation>
 <translation id="3892148308691398805">ટેક્સ્ટ કૉપિ કરો</translation>
 <translation id="4000398125663085899">હવે નવા ફોટા અને વીડિયો Files ઍપના કોઈ ફોલ્ડરમાં સાચવવામાં આવશે: મારી ફાઇલો &gt; કૅમેરા</translation>
 <translation id="4118525110028899586">રેકોર્ડિંગ થોભાવો</translation>
+<translation id="4121305183798804752">દસ્તાવેજની ભાળ મળી</translation>
 <translation id="4269820728363426813">લિંક સરનામું કૉપિ કરો</translation>
 <translation id="4279490309300973883">પ્રતિબિંબત થઈ રહ્યું છે</translation>
 <translation id="4329152592498422850">વર્ગાકાર ફોટો લેવા માટે સ્વિચ કરો</translation>
@@ -65,10 +67,13 @@
 <translation id="5057360777601936059">તમારો કૅમેરા હાલમાં ઉપલબ્ધ નથી.
 કૃપા કરીને તપાસો કે કૅમેરા યોગ્ય રીતે કનેક્ટ થયેલો છે.</translation>
 <translation id="5152121255775685072">ગૅલેરી પર જાઓ</translation>
+<translation id="520537883758714667">દસ્તાવેજ સ્કૅન કરવાની સુવિધા હવે ઉપલબ્ધ છે</translation>
 <translation id="5268823927180092501">બધા કૅમેરામાં 'દસ્તાવેજ મોડ' ચાલુ કરો</translation>
 <translation id="5422455049771430511">હવે તમારા ફોટા અને વીડિયો માટે નવું સ્થાન ઉપલબ્ધ છે</translation>
+<translation id="5444515100983837161">દસ્તાવેજના બધા ખૂણાઓને ફ્રેમની અંદર રાખો. જો દસ્તાવેજ અને બૅકગ્રાઉન્ડ અલગ-અલગ રંગોના હોય, તો સ્કૅન શ્રેષ્ઠ રીતે કામ કરે છે.</translation>
 <translation id="5671277269877808209">ચોરસ</translation>
 <translation id="5753488212459587150">નિષ્ણાત મોડ ચાલુ કરો</translation>
+<translation id="5759254179196327752">દસ્તાવેજને સ્કૅન કરો</translation>
 <translation id="5775960006311140197">નિષ્ણાત મોડ</translation>
 <translation id="5869546221129391014">ગ્રિડ</translation>
 <translation id="5975083100439434680">ઝૂમ ઘટાડો</translation>
@@ -82,6 +87,7 @@
 
 જો તમારો પ્રતિસાદ કોઈ છબી અથવા વીડિયો ક્વૉલિટી વિશે હોય, તો કૃપા કરીને ફોટો અથવા વીડિયોનો કોઈ નમૂનો શામેલ કરો અને સમસ્યાનું વર્ણન કરો. (ઉદાહરણ તરીકે, ફોટો ઘણા ઓછા પ્રકાશમાં લેવામાં આવ્યો છે અથવા તે ફોકસમાં નથી.)</translation>
 <translation id="6420689864531458495">(<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" /> - <ph name="WIDTH" />x<ph name="HEIGHT" />) <ph name="MEGAPIXEL" /> મેગાપિક્સેલ</translation>
+<translation id="667999046851023355">દસ્તાવેજ</translation>
 <translation id="6681668084120808868">ફોટો લો</translation>
 <translation id="6778482348691154169">ફોટો લઈ શકાતો નથી</translation>
 <translation id="695140971690006676">બધુ રીસેટ કરો</translation>
@@ -108,11 +114,13 @@
 <translation id="8425673304802773841">નીચે ટિલ્ટ કરો</translation>
 <translation id="8428213095426709021">સેટિંગ</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" />p (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
+<translation id="8712637175834984815">સમજાઈ ગયું</translation>
 <translation id="8732462232047530626">મેટાડેટાનું પ્રીવ્યૂ કરો</translation>
 <translation id="8815966864175525708">પોર્ટ્રેટ ફોટો લેવા માટે સ્વિચ કરો</translation>
 <translation id="8828441885228359828">રેકોર્ડિંગ ફરી શરૂ કરો</translation>
 <translation id="8870695351537079478">રેકોર્ડિંગ શરૂ કરી શકતાં નથી</translation>
 <translation id="8903921497873541725">ઝૂમ વધારો</translation>
+<translation id="9045010116236796332">દસ્તાવેજના બધા ખૂણાઓને ફ્રેમની અંદર રાખો</translation>
 <translation id="9045155556724273246">10 સેકન્ડ</translation>
 <translation id="945522503751344254">પ્રતિસાદ મોકલો</translation>
 </translationbundle>

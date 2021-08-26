@@ -736,11 +736,10 @@ def RestoreChange(host, change, msg=''):
   return ReadHttpJsonResponse(conn)
 
 
-def SubmitChange(host, change, wait_for_merge=True):
+def SubmitChange(host, change):
   """Submits a Gerrit change via Gerrit."""
   path = 'changes/%s/submit' % change
-  body = {'wait_for_merge': wait_for_merge}
-  conn = CreateHttpConn(host, path, reqtype='POST', body=body)
+  conn = CreateHttpConn(host, path, reqtype='POST')
   return ReadHttpJsonResponse(conn)
 
 
@@ -795,6 +794,19 @@ def SetCommitMessage(host, change, description, notify='ALL'):
         e.http_status,
         'Received unexpected http status while editing message '
         'in change %s' % change)
+
+
+def GetCommitIncludedIn(host, project, commit):
+  """Retrieves the branches and tags for a given commit.
+
+  https://gerrit-review.googlesource.com/Documentation/rest-api-projects.html#get-included-in
+
+  Returns:
+    A JSON object with keys of 'branches' and 'tags'.
+  """
+  path = 'projects/%s/commits/%s/in' % (urllib.parse.quote(project, ''), commit)
+  conn = CreateHttpConn(host, path, reqtype='GET')
+  return ReadHttpJsonResponse(conn, accept_statuses=[200])
 
 
 def IsCodeOwnersEnabledOnHost(host):
@@ -908,7 +920,7 @@ def SetReview(host, change, msg=None, labels=None, notify=None, ready=None):
           int(response['labels'][key] != int(val))):
         raise GerritError(200, 'Unable to set "%s" label on change %s.' % (
             key, change))
-
+  return response
 
 def ResetReviewLabels(host, change, label, value='0', message=None,
                       notify=None):
@@ -1030,20 +1042,17 @@ def UpdateHead(host, project, branch):
 
 
 def GetGerritBranch(host, project, branch):
-  """Gets a branch from given project and commit.
+  """Gets a branch info from given project and branch name.
 
   See:
   https://gerrit-review.googlesource.com/Documentation/rest-api-projects.html#get-branch
 
   Returns:
-    A JSON object with 'revision' key.
+    A JSON object with 'revision' key if the branch exists, otherwise None.
   """
   path = 'projects/%s/branches/%s' % (project, branch)
   conn = CreateHttpConn(host, path, reqtype='GET')
-  response = ReadHttpJsonResponse(conn)
-  if response:
-    return response
-  raise GerritError(200, 'Unable to get gerrit branch')
+  return ReadHttpJsonResponse(conn, accept_statuses=[200, 404])
 
 
 def GetProjectHead(host, project):

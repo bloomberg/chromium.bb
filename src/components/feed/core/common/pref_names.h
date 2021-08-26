@@ -72,6 +72,10 @@ extern const char kReliabilityLoggingIdSalt[];
 // Whether the Feed may have data stored, which should be deleted if the Feed
 // is ever turned off.
 extern const char kHasStoredData[];
+// `feed::ContentOrder` of the Web feed.
+extern const char kWebFeedContentOrder[];
+// The last feed type that the user was viewing.
+extern const char kLastSeenFeedType[];
 
 }  // namespace prefs
 

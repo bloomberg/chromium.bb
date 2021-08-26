@@ -43,6 +43,7 @@
 #include "third_party/blink/public/mojom/loader/code_cache.mojom.h"
 #include "third_party/blink/public/mojom/loader/content_security_notifier.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/mhtml_load_result.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/loader/same_document_navigation_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/page_state/page_state.mojom-blink.h"
 #include "third_party/blink/public/mojom/timing/worker_timing_container.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
@@ -75,6 +76,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/loader/fetch/source_keyed_cached_metadata_handler.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/storage/blink_storage_key.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
@@ -163,10 +165,13 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   void DidObserveInputDelay(base::TimeDelta input_delay);
   void DidObserveLoadingBehavior(LoadingBehaviorFlag);
 
+  void DidTriggerBackForwardNavigation();
+  void DidChangeScrollOffset();
+
   // https://html.spec.whatwg.org/multipage/history.html#url-and-history-update-steps
   void RunURLAndHistoryUpdateSteps(
       const KURL&,
-      SameDocumentNavigationSource same_document_navigation_source,
+      mojom::blink::SameDocumentNavigationType,
       scoped_refptr<SerializedScriptValue>,
       WebFrameLoadType = WebFrameLoadType::kReplaceCurrentItem,
       mojom::blink::ScrollRestorationType =
@@ -175,7 +180,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   // |is_synchronously_committed| is described in comment for
   // CommitSameDocumentNavigation.
   void UpdateForSameDocumentNavigation(const KURL&,
-                                       SameDocumentNavigationSource,
+                                       mojom::blink::SameDocumentNavigationType,
                                        scoped_refptr<SerializedScriptValue>,
                                        mojom::blink::ScrollRestorationType,
                                        WebFrameLoadType,
@@ -302,6 +307,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
 
   // UseCounter
   void CountUse(mojom::WebFeature) override;
+  void CountDeprecation(mojom::WebFeature) override;
 
   void SetApplicationCacheHostForTesting(ApplicationCacheHostForFrame* host) {
     application_cache_host_ = host;
@@ -409,7 +415,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
       const KURL&,
       WebFrameLoadType,
       HistoryItem*,
-      SameDocumentNavigationSource,
+      mojom::blink::SameDocumentNavigationType,
       ClientRedirectPolicy,
       bool has_transient_user_activation,
       const SecurityOrigin* initiator_origin,
@@ -537,6 +543,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
       content_security_notifier_;
 
   const scoped_refptr<SecurityOrigin> origin_to_commit_;
+  blink::BlinkStorageKey storage_key_;
   const network::mojom::WebSandboxFlags sandbox_flags_;
   WebNavigationType navigation_type_;
 
@@ -647,6 +654,11 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   mojo::Remote<blink::mojom::CodeCacheHost> code_cache_host_;
 
   HashSet<KURL> early_hints_preloaded_resources_;
+
+  // Tracks whether the scroll offset changed since the last time a history
+  // navigation was triggered from this document, so that we won't attempt to do
+  // scroll restoration when the navigation commits.
+  bool scroll_offset_changed_since_last_history_navigation_triggered_ = false;
 };
 
 DECLARE_WEAK_IDENTIFIER_MAP(DocumentLoader);

@@ -10,7 +10,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
-#include "components/network_session_configurator/common/network_switches.h"
 #include "components/web_package/test_support/web_bundle_builder.h"
 #include "components/web_package/web_bundle_utils.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -22,6 +21,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/content_mock_cert_verifier.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "net/dns/mock_host_resolver.h"
@@ -117,16 +117,20 @@ class LinkWebBundleBrowserTest : public ContentBrowserTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ContentBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
+    mock_cert_verifier_.SetUpCommandLine(command_line);
   }
 
   void SetUpOnMainThread() override {
     ContentBrowserTest::SetUpOnMainThread();
+    mock_cert_verifier_.mock_cert_verifier()->set_default_result(net::OK);
     original_client_ = SetBrowserClientForTesting(&browser_client_);
     host_resolver()->AddRule("*", "127.0.0.1");
     https_server_.RegisterRequestHandler(base::BindRepeating(
         &LinkWebBundleBrowserTest::HandleHugeWebBundleRequest,
         base::Unretained(this)));
+    https_server_.RegisterRequestHandler(
+        base::BindRepeating(&LinkWebBundleBrowserTest::InvalidResponseHandler,
+                            base::Unretained(this)));
     https_server_.ServeFilesFromSourceDirectory(GetTestDataFilePath());
     ASSERT_TRUE(https_server_.Start());
   }
@@ -134,6 +138,16 @@ class LinkWebBundleBrowserTest : public ContentBrowserTest {
   void TearDownOnMainThread() override {
     ContentBrowserTest::TearDownOnMainThread();
     SetBrowserClientForTesting(original_client_);
+  }
+
+  void SetUpInProcessBrowserTestFixture() override {
+    ContentBrowserTest::SetUpInProcessBrowserTestFixture();
+    mock_cert_verifier_.SetUpInProcessBrowserTestFixture();
+  }
+
+  void TearDownInProcessBrowserTestFixture() override {
+    ContentBrowserTest::TearDownInProcessBrowserTestFixture();
+    mock_cert_verifier_.TearDownInProcessBrowserTestFixture();
   }
 
   void CreateIframeAndWaitForOnload(const std::string& url) {
@@ -177,11 +191,20 @@ class LinkWebBundleBrowserTest : public ContentBrowserTest {
     return http_response;
   }
 
+  std::unique_ptr<net::test_server::HttpResponse> InvalidResponseHandler(
+      const net::test_server::HttpRequest& request) {
+    if (request.relative_url != "/web_bundle/invalid-response")
+      return nullptr;
+    return std::make_unique<net::test_server::RawHttpResponse>(
+        "", "Not a valid HTTP response.");
+  }
+
   GURL GetObservedUnknownSchemeUrl() { return browser_client_.observed_url(); }
 
   net::EmbeddedTestServer* https_server() { return &https_server_; }
 
  private:
+  content::ContentMockCertVerifier mock_cert_verifier_;
   ContentBrowserClient* original_client_ = nullptr;
   TestBrowserClient browser_client_;
   base::test::ScopedFeatureList feature_list_;
@@ -273,6 +296,35 @@ IN_PROC_BROWSER_TEST_F(LinkWebBundleBrowserTest, SubframeLoadError) {
   run_loop.Run();
   EXPECT_EQ(net::ERR_INVALID_WEB_BUNDLE,
             *finish_navigation_observer.error_code());
+}
+
+IN_PROC_BROWSER_TEST_F(LinkWebBundleBrowserTest, BundleFetchError) {
+  base::HistogramTester histogram_tester;
+
+  GURL url(https_server()->GetURL("/web_bundle/empty.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  // "/web_bundle/invalid-response" returns an invalid HTTP response which
+  // causes ERR_INVALID_HTTP_RESPONSE network error.
+  DOMMessageQueue dom_message_queue(shell()->web_contents());
+  ExecuteScriptAsync(shell(),
+                     R"HTML(
+        const link = document.createElement('link');
+        link.rel = 'webbundle';
+        link.href = '/web_bundle/invalid-response';
+        link.onload = () => window.domAutomationController.send('loaded');
+        link.onerror = () => window.domAutomationController.send('failed');
+        document.body.appendChild(link);
+      )HTML");
+  std::string message;
+  EXPECT_TRUE(dom_message_queue.WaitForMessage(&message));
+  EXPECT_EQ("\"failed\"", message);
+
+  // Check the metrics recorded in the network process.
+  FetchHistogramsFromChildProcesses();
+  histogram_tester.ExpectUniqueSample(
+      "SubresourceWebBundles.BundleFetchErrorCode",
+      -net::ERR_INVALID_HTTP_RESPONSE, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(LinkWebBundleBrowserTest, FollowLink) {

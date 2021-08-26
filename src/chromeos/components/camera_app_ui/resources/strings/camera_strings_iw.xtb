@@ -3,6 +3,8 @@
 <translationbundle lang="iw">
 <translation id="1175958423215084756">זוהה קישור. <ph name="HOSTNAME" /></translation>
 <translation id="1276998909102132017">תמונות מהגלריה</translation>
+<translation id="1300209025925956156">סריקת המסמך</translation>
+<translation id="137991641490787891"><ph name="ASPECT_RATIO_WIDTH" />. ניתן לגשת אליהם באמצעות חיפוש + חץ שמאלה.</translation>
 <translation id="1430915738399379752">הדפסה</translation>
 <translation id="1467231725790366244"><ph name="CAMERA" /> מנותקת.</translation>
 <translation id="1473110567575736769">טיימר ל-3 שניות</translation>
@@ -31,7 +33,6 @@
 <translation id="2549985041256363841">צילום סרטון</translation>
 <translation id="2599796128805996109">מצלמה אחורית</translation>
 <translation id="2879583609344924966"><ph name="CAMERA" /> מחוברת.</translation>
-<translation id="2912439424121107408">במכשיר הזה אין תמיכה במצב המתקדם</translation>
 <translation id="2968794441791257519">תמונות וסרטונים שצולמו בעזרת המצלמה יועברו אל התיקייה 'הורדות'. אפשר לגשת אליהם דרך 'קבצים'.
 
         אפליקציות עם הרשאות אחסון יוכלו לגשת אל התמונות והסרטונים שלך.</translation>
@@ -42,15 +43,16 @@
 <translation id="3227137524299004712">מיקרופון</translation>
 <translation id="3240426699337459095">הקישור הועתק</translation>
 <translation id="3259149966178251584">רזולוציית המצלמה</translation>
+<translation id="3260401663013584785">לא זוהה מסמך</translation>
 <translation id="3448774564454087943">הסרטון לא נשמר כי הוא קצר מדי</translation>
 <translation id="3517926952904427380">לא ניתן לצלם לאורך</translation>
 <translation id="3569311554794739032">להסיר את <ph name="FILE" />?</translation>
-<translation id="3733597664308256288">יש פקדים חדשים למצלמה. ניתן לגשת אליהם באמצעות חיפוש + חץ ימינה.</translation>
 <translation id="3810838688059735925">סרטון</translation>
 <translation id="3838931309141338733">סריקת ברקוד</translation>
 <translation id="3892148308691398805">העתקת הטקסט</translation>
 <translation id="4000398125663085899">מעכשיו, תמונות וסרטונים חדשים יישמרו בתיקייה באפליקציה 'קבצים': הקבצים שלי &gt; מצלמה.</translation>
 <translation id="4118525110028899586">השהיית ההקלטה</translation>
+<translation id="4121305183798804752">זוהה מסמך</translation>
 <translation id="4269820728363426813">העתקת כתובת של קישור</translation>
 <translation id="4279490309300973883">שיקוף</translation>
 <translation id="4329152592498422850">מעבר לצילום תמונה מרובעת</translation>
@@ -65,10 +67,13 @@
 <translation id="5057360777601936059">המצלמה אינה זמינה כרגע.
         יש לבדוק אם המצלמה מחוברת כראוי.</translation>
 <translation id="5152121255775685072">למעבר אל הגלריה</translation>
+<translation id="520537883758714667">התכונה 'סריקת מסמכים' זמינה עכשיו</translation>
 <translation id="5268823927180092501">הפעלת מצב מסמך בכל המצלמות</translation>
 <translation id="5422455049771430511">התמונות והסרטונים שלך עברו למקום חדש</translation>
+<translation id="5444515100983837161">יש למקם את כל קצות המסמך בתוך המסגרת. הסריקה תתבצע בצורה הטובה ביותר אם המסמך והרקע יהיו בצבעים שונים.</translation>
 <translation id="5671277269877808209">ריבוע</translation>
 <translation id="5753488212459587150">הפעלת מצב מתקדם</translation>
+<translation id="5759254179196327752">סריקת מסמך</translation>
 <translation id="5775960006311140197">מצב מתקדם</translation>
 <translation id="5869546221129391014">רשת</translation>
 <translation id="5975083100439434680">התרחקות</translation>
@@ -82,6 +87,7 @@
 
 אם המשוב מתייחס לאיכות התמונה או הסרטון, יש לצרף תמונה או סרטון לדוגמה ולתאר מה השתבש (לדוגמה, התמונה כהה מדי או שנושא התמונה לא בפוקוס).</translation>
 <translation id="6420689864531458495">‏(<ph name="ASPECT_RATIO_WIDTH" />:‏<ph name="ASPECT_RATIO_HEIGHT" /> - <ph name="WIDTH" />x<ph name="HEIGHT" />)‏ <ph name="MEGAPIXEL" /> מגה-פיקסל</translation>
+<translation id="667999046851023355">מסמך</translation>
 <translation id="6681668084120808868">צילום תמונה</translation>
 <translation id="6778482348691154169">לא ניתן לצלם תמונה</translation>
 <translation id="695140971690006676">איפוס של הכול</translation>
@@ -108,11 +114,13 @@
 <translation id="8425673304802773841">הטייה מטה</translation>
 <translation id="8428213095426709021">הגדרות</translation>
 <translation id="8687491812650032292">‏איכות HD ‏– ‎<ph name="HEIGHT" />p ‏(<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
+<translation id="8712637175834984815">הבנתי</translation>
 <translation id="8732462232047530626">תצוגה מקדימה של מטא-נתונים</translation>
 <translation id="8815966864175525708">מעבר לצילום תמונות לאורך</translation>
 <translation id="8828441885228359828">המשך הצילום</translation>
 <translation id="8870695351537079478">לא ניתן להתחיל בצילום סרטון</translation>
 <translation id="8903921497873541725">התקרבות לתצוגה</translation>
+<translation id="9045010116236796332">צריך למקם את כל קצות המסמך בתוך המסגרת</translation>
 <translation id="9045155556724273246">10 שניות</translation>
 <translation id="945522503751344254"> שליחת משוב</translation>
 </translationbundle>

@@ -11,7 +11,9 @@
 
 #include "base/memory/weak_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/password_manager/core/browser/insecure_credentials_helper.h"
 #include "components/password_manager/core/browser/password_reuse_detector.h"
+#include "components/password_manager/core/browser/password_store_interface.h"
 #include "components/safe_browsing/core/browser/password_protection/metrics_util.h"
 #include "components/safe_browsing/core/common/proto/csd.pb.h"
 #import "components/safe_browsing/ios/browser/password_protection/password_protection_service.h"
@@ -38,8 +40,16 @@ class ChromePasswordProtectionService
     : public safe_browsing::PasswordProtectionService,
       public KeyedService {
  public:
-  ChromePasswordProtectionService(SafeBrowsingService* sb_service,
-                                  ChromeBrowserState* browser_state);
+  using ChangePhishedCredentialsCallback = base::RepeatingCallback<void(
+      password_manager::PasswordStoreInterface*,
+      const password_manager::MatchingReusedCredential&)>;
+  ChromePasswordProtectionService(
+      SafeBrowsingService* sb_service,
+      ChromeBrowserState* browser_state,
+      ChangePhishedCredentialsCallback add_phished_credentials =
+          base::BindRepeating(&password_manager::AddPhishedCredentials),
+      ChangePhishedCredentialsCallback remove_phished_credentials =
+          base::BindRepeating(&password_manager::RemovePhishedCredentials));
   ~ChromePasswordProtectionService() override;
 
   // PasswordProtectionServiceBase:
@@ -123,7 +133,7 @@ class ChromePasswordProtectionService
 
   AccountInfo GetAccountInfo() const override;
 
-  AccountInfo GetSignedInNonSyncAccount(
+  AccountInfo GetAccountInfoForUsername(
       const std::string& username) const override;
 
   safe_browsing::LoginReputationClientRequest::PasswordReuseEvent::
@@ -153,9 +163,7 @@ class ChromePasswordProtectionService
 
   bool IsPrimaryAccountSignedIn() const override;
 
-  bool IsPrimaryAccountGmail() const override;
-
-  bool IsOtherGaiaAccountGmail(const std::string& username) const override;
+  bool IsAccountGmail(const std::string& username) const override;
 
   bool IsInExcludedCountry() override;
 
@@ -245,16 +253,16 @@ class ChromePasswordProtectionService
   // Removes all warning requests for |web_state|.
   void RemoveWarningRequestsByWebState(web::WebState* web_state);
 
-  password_manager::PasswordStore* GetStoreForReusedCredential(
+  password_manager::PasswordStoreInterface* GetStoreForReusedCredential(
       const password_manager::MatchingReusedCredential& reused_credential);
 
   // Returns the profile PasswordStore associated with this instance.
-  password_manager::PasswordStore* GetProfilePasswordStore() const;
+  password_manager::PasswordStoreInterface* GetProfilePasswordStore() const;
 
   // Returns the GAIA-account-scoped PasswordStore associated with this
   // instance. The account password store contains passwords stored in the
   // account and is accessible only when the user is signed in and non syncing.
-  password_manager::PasswordStore* GetAccountPasswordStore() const;
+  password_manager::PasswordStoreInterface* GetAccountPasswordStore() const;
 
   // Gets prefs associated with |browser_state_|.
   PrefService* GetPrefs() const;
@@ -268,6 +276,14 @@ class ChromePasswordProtectionService
       show_warning_callbacks_;
 
   ChromeBrowserState* browser_state_;
+
+  // Calls `password_manager::AddPhishedCredentials`. Used to facilitate
+  // testing.
+  ChangePhishedCredentialsCallback add_phished_credentials_;
+
+  // Calls `password_manager::RemovePhishedCredentials`. Used to facilitate
+  // testing.
+  ChangePhishedCredentialsCallback remove_phished_credentials_;
 
   base::WeakPtrFactory<ChromePasswordProtectionService> weak_factory_{this};
 };

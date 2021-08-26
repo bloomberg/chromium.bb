@@ -62,12 +62,11 @@ class MetricsServicesManager {
   // Returns the VariationsService, creating it if it hasn't been created yet.
   variations::VariationsService* GetVariationsService();
 
+  // Called when loading state changed.
+  void LoadingStateChanged(bool is_loading);
+
   // Should be called when a plugin loading error occurs.
   void OnPluginLoadingError(const base::FilePath& plugin_path);
-
-  // Some embedders use this method to notify the metrics system when a
-  // renderer process exits unexpectedly.
-  void OnRendererProcessCrash();
 
   // Update the managed services when permissions for uploading metrics change.
   void UpdateUploadPermissions(bool may_upload);

@@ -33,6 +33,7 @@ static void syntax(void)
     printf("    -c,--codec C      : AV1 codec to use (choose from versions list below)\n");
     printf("    -d,--depth D      : Output depth [8,16]. (PNG only; For y4m, depth is retained, and JPEG is always 8bpc)\n");
     printf("    -q,--quality Q    : Output quality [0-100]. (JPEG only, default: %d)\n", DEFAULT_JPEG_QUALITY);
+    printf("    --png-compress L  : Set PNG compression level (PNG only; 0-9, 0=none, 9=max). Defaults to libpng's builtin default.\n");
     printf("    -u,--upsampling U : Chroma upsampling (for 420/422). automatic (default), fastest, best, nearest, or bilinear\n");
     printf("    -r,--raw-color    : Output raw RGB values instead of multiplying by alpha when saving to opaque formats\n");
     printf("                        (JPEG only; not applicable to y4m)\n");
@@ -42,6 +43,8 @@ static void syntax(void)
     printf("    --no-strict       : Disable strict decoding, which disables strict validation checks and errors\n");
     printf("    -i,--info         : Decode all frames and display all image information instead of saving to disk\n");
     printf("    --ignore-icc      : If the input file contains an embedded ICC profile, ignore it (no-op if absent)\n");
+    printf("    --size-limit C    : Specifies the image size limit (in total pixels) that should be tolerated.\n");
+    printf("                        Default: %u, set to a smaller value to further restrict.\n", AVIF_DEFAULT_IMAGE_SIZE_LIMIT);
     printf("\n");
     avifPrintVersions();
 }
@@ -53,6 +56,7 @@ int main(int argc, char * argv[])
     int requestedDepth = 0;
     int jobs = 1;
     int jpegQuality = DEFAULT_JPEG_QUALITY;
+    int pngCompressionLevel = -1; // -1 is a sentinel to avifPNGWrite() to skip calling png_set_compression_level()
     avifCodecChoice codecChoice = AVIF_CODEC_CHOICE_AUTO;
     avifBool infoOnly = AVIF_FALSE;
     avifChromaUpsampling chromaUpsampling = AVIF_CHROMA_UPSAMPLING_AUTOMATIC;
@@ -61,6 +65,7 @@ int main(int argc, char * argv[])
     avifBool allowProgressive = AVIF_FALSE;
     avifStrictFlags strictFlags = AVIF_STRICT_ENABLED;
     uint32_t frameIndex = 0;
+    uint32_t imageSizeLimit = AVIF_DEFAULT_IMAGE_SIZE_LIMIT;
 
     if (argc < 2) {
         syntax();
@@ -115,6 +120,14 @@ int main(int argc, char * argv[])
             } else if (jpegQuality > 100) {
                 jpegQuality = 100;
             }
+        } else if (!strcmp(arg, "--png-compress")) {
+            NEXTARG();
+            pngCompressionLevel = atoi(arg);
+            if (pngCompressionLevel < 0) {
+                pngCompressionLevel = 0;
+            } else if (pngCompressionLevel > 9) {
+                pngCompressionLevel = 9;
+            }
         } else if (!strcmp(arg, "-u") || !strcmp(arg, "--upsampling")) {
             NEXTARG();
             if (!strcmp(arg, "automatic")) {
@@ -144,6 +157,13 @@ int main(int argc, char * argv[])
             infoOnly = AVIF_TRUE;
         } else if (!strcmp(arg, "--ignore-icc")) {
             ignoreICC = AVIF_TRUE;
+        } else if (!strcmp(arg, "--size-limit")) {
+            NEXTARG();
+            imageSizeLimit = strtoul(arg, NULL, 10);
+            if ((imageSizeLimit > AVIF_DEFAULT_IMAGE_SIZE_LIMIT) || (imageSizeLimit == 0)) {
+                fprintf(stderr, "ERROR: invalid image size limit: %s\n", arg);
+                return 1;
+            }
         } else {
             // Positional argument
             if (!inputFilename) {
@@ -174,6 +194,7 @@ int main(int argc, char * argv[])
         avifDecoder * decoder = avifDecoderCreate();
         decoder->maxThreads = jobs;
         decoder->codecChoice = codecChoice;
+        decoder->imageSizeLimit = imageSizeLimit;
         decoder->strictFlags = strictFlags;
         decoder->allowProgressive = allowProgressive;
         avifResult result = avifDecoderSetIOFile(decoder, inputFilename);
@@ -241,6 +262,7 @@ int main(int argc, char * argv[])
     avifDecoder * decoder = avifDecoderCreate();
     decoder->maxThreads = jobs;
     decoder->codecChoice = codecChoice;
+    decoder->imageSizeLimit = imageSizeLimit;
     decoder->strictFlags = strictFlags;
     decoder->allowProgressive = allowProgressive;
 
@@ -291,7 +313,7 @@ int main(int argc, char * argv[])
             returnCode = 1;
         }
     } else if (outputFormat == AVIF_APP_FILE_FORMAT_PNG) {
-        if (!avifPNGWrite(outputFilename, decoder->image, requestedDepth, chromaUpsampling)) {
+        if (!avifPNGWrite(outputFilename, decoder->image, requestedDepth, chromaUpsampling, pngCompressionLevel)) {
             returnCode = 1;
         }
     } else {

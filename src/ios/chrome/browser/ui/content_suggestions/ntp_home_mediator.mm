@@ -22,6 +22,8 @@
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/search_engines/search_engine_observer_bridge.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
+#import "ios/chrome/browser/signin/chrome_account_manager_service.h"
+#import "ios/chrome/browser/signin/chrome_account_manager_service_observer_bridge.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
@@ -42,7 +44,6 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_audience.h"
 #import "ios/chrome/browser/ui/content_suggestions/discover_feed_metrics_recorder.h"
-#import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_consumer.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_metrics.h"
 #import "ios/chrome/browser/ui/content_suggestions/user_account_image_update_delegate.h"
@@ -61,7 +62,7 @@
 #import "ios/chrome/common/ui/favicon/favicon_attributes.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#import "ios/public/provider/chrome/browser/signin/signin_resources_provider.h"
+#import "ios/public/provider/chrome/browser/signin/signin_resources_api.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #include "ios/web/public/navigation/referrer.h"
@@ -89,10 +90,13 @@ const char kNTPHelpURL[] =
     "https://support.google.com/chrome/?p=ios_new_tab&ios=1";
 }  // namespace
 
-@interface NTPHomeMediator () <CRWWebStateObserver,
+@interface NTPHomeMediator () <ChromeAccountManagerServiceObserver,
+                               CRWWebStateObserver,
                                IdentityManagerObserverBridgeDelegate,
                                SearchEngineObserving,
                                VoiceSearchAvailabilityObserver> {
+  std::unique_ptr<ChromeAccountManagerServiceObserverBridge>
+      _accountManagerServiceObserver;
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
   // Listen for default search engine changes.
   std::unique_ptr<SearchEngineObserverBridge> _searchEngineObserver;
@@ -103,6 +107,7 @@ const char kNTPHelpURL[] =
   UrlLoadingBrowserAgent* _URLLoader;
 }
 
+@property(nonatomic, assign) ChromeAccountManagerService* accountManagerService;
 @property(nonatomic, strong) AlertCoordinator* alertCoordinator;
 // TemplateURL used to get the search engine.
 @property(nonatomic, assign) TemplateURLService* templateURLService;
@@ -121,20 +126,25 @@ const char kNTPHelpURL[] =
 
 @implementation NTPHomeMediator
 
-- (instancetype)initWithWebState:(web::WebState*)webState
-              templateURLService:(TemplateURLService*)templateURLService
-                       URLLoader:(UrlLoadingBrowserAgent*)URLLoader
-                     authService:(AuthenticationService*)authService
-                 identityManager:(signin::IdentityManager*)identityManager
-                      logoVendor:(id<LogoVendor>)logoVendor
-         voiceSearchAvailability:
-             (VoiceSearchAvailability*)voiceSearchAvailability {
+- (instancetype)
+           initWithWebState:(web::WebState*)webState
+         templateURLService:(TemplateURLService*)templateURLService
+                  URLLoader:(UrlLoadingBrowserAgent*)URLLoader
+                authService:(AuthenticationService*)authService
+            identityManager:(signin::IdentityManager*)identityManager
+      accountManagerService:(ChromeAccountManagerService*)accountManagerService
+                 logoVendor:(id<LogoVendor>)logoVendor
+    voiceSearchAvailability:(VoiceSearchAvailability*)voiceSearchAvailability {
   self = [super init];
   if (self) {
     _webState = webState;
     _templateURLService = templateURLService;
     _URLLoader = URLLoader;
     _authService = authService;
+    _accountManagerService = accountManagerService;
+    _accountManagerServiceObserver =
+        std::make_unique<ChromeAccountManagerServiceObserverBridge>(
+            self, _accountManagerService);
     _identityObserverBridge.reset(
         new signin::IdentityManagerObserverBridge(identityManager, self));
     // Listen for default search engine changes.
@@ -185,6 +195,8 @@ const char kNTPHelpURL[] =
     _voiceSearchAvailability = nullptr;
   }
   _identityObserverBridge.reset();
+  _accountManagerServiceObserver.reset();
+  self.accountManagerService = nil;
 }
 
 - (void)locationBarDidBecomeFirstResponder {
@@ -543,6 +555,12 @@ const char kNTPHelpURL[] =
   [self showMostVisitedUndoForURL:item.URL];
 }
 
+#pragma mark - ChromeAccountManagerServiceObserver
+
+- (void)identityChanged:(ChromeIdentity*)identity {
+  [self updateAccountImage];
+}
+
 #pragma mark - ContentSuggestionsHeaderViewControllerDelegate
 
 - (BOOL)isContextMenuVisible {
@@ -734,43 +752,16 @@ const char kNTPHelpURL[] =
 // Fetches and update user's avatar on NTP, or use default avatar if user is
 // not signed in.
 - (void)updateAccountImage {
-  UIImage* image;
+  UIImage* image = nil;
   // Fetches user's identity from Authentication Service.
   ChromeIdentity* identity =
       self.authService->GetPrimaryIdentity(signin::ConsentLevel::kSignin);
   if (identity) {
-    // Fetches user's avatar from Authentication Service. Use cached version if
-    // one is available. If not, use the default avatar and initiate a fetch
-    // in the background. When background fetch completes, all observers will
-    // be notified to refresh the user's avatar.
-    ios::ChromeIdentityService* identityService =
-        ios::GetChromeBrowserProvider().GetChromeIdentityService();
-    image = identityService->GetCachedAvatarForIdentity(identity);
-    if (!image) {
-      image = [self defaultAvatar];
-      identityService->GetAvatarForIdentity(identity, nil);
-    }
-  } else {
-    // User is not signed in, don't show any avatar.
-    image = nil;
-  }
-  // TODO(crbug.com/965962): Use ResizedAvatarCache when it accepts the
-  // specification of different image sizes.
-  CGFloat dimension = ntp_home::kIdentityAvatarDimension;
-  if (image &&
-      (image.size.width != dimension || image.size.height != dimension)) {
-    image = ResizeImage(image, CGSizeMake(dimension, dimension),
-                        ProjectionMode::kAspectFit);
+    // Only show an avatar if the user is signed in.
+    image = self.accountManagerService->GetIdentityAvatarWithIdentity(
+        identity, IdentityAvatarSize::SmallSize);
   }
   [self.imageUpdater updateAccountImage:image];
-}
-
-// Returns the default avatar image for users who are not signed in or signed
-// in but avatar image is not available yet.
-- (UIImage*)defaultAvatar {
-  return ios::GetChromeBrowserProvider()
-      .GetSigninResourcesProvider()
-      ->GetDefaultAvatar();
 }
 
 @end

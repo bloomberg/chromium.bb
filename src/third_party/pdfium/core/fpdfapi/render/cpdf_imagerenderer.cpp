@@ -6,6 +6,8 @@
 
 #include "core/fpdfapi/render/cpdf_imagerenderer.h"
 
+#include <math.h>
+
 #include <algorithm>
 #include <memory>
 
@@ -36,8 +38,8 @@
 #include "core/fxge/dib/cfx_imagestretcher.h"
 #include "core/fxge/dib/cfx_imagetransformer.h"
 #include "third_party/base/check.h"
+#include "third_party/base/cxx17_backports.h"
 #include "third_party/base/notreached.h"
-#include "third_party/base/numerics/ranges.h"
 
 #if defined(_SKIA_SUPPORT_)
 #include "core/fxge/skia/fx_skia_device.h"

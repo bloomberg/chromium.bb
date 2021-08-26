@@ -141,6 +141,7 @@ typedef WIN32_FIND_DATAW WIN32_FIND_DATA;
 // declare the Windows types so we declare our types and cast to the Windows
 // types in a few places. The sizes must match the Windows types so we verify
 // that with static asserts in win_includes_unittest.cc.
+// ChromeToWindowsType functions are provided for pointer conversions.
 
 struct CHROME_SRWLOCK {
   PVOID Ptr;
@@ -148,6 +149,11 @@ struct CHROME_SRWLOCK {
 
 struct CHROME_CONDITION_VARIABLE {
   PVOID Ptr;
+};
+
+struct CHROME_LUID {
+  DWORD LowPart;
+  LONG HighPart;
 };
 
 // _WIN32_FIND_DATAW is 592 bytes and the largest built-in type in it is a
@@ -285,6 +291,28 @@ WINBASEAPI HLOCAL WINAPI LocalFree(_In_ HLOCAL hMem);
 
 #ifdef __cplusplus
 }
+
+// Helper functions for converting between Chrome and Windows native versions of
+// type pointers.
+// Overloaded functions must be declared outside of the extern "C" block.
+
+inline WIN32_FIND_DATA* ChromeToWindowsType(CHROME_WIN32_FIND_DATA* p) {
+  return reinterpret_cast<WIN32_FIND_DATA*>(p);
+}
+
+inline const WIN32_FIND_DATA* ChromeToWindowsType(
+    const CHROME_WIN32_FIND_DATA* p) {
+  return reinterpret_cast<const WIN32_FIND_DATA*>(p);
+}
+
+inline FORMATETC* ChromeToWindowsType(CHROME_FORMATETC* p) {
+  return reinterpret_cast<FORMATETC*>(p);
+}
+
+inline const FORMATETC* ChromeToWindowsType(const CHROME_FORMATETC* p) {
+  return reinterpret_cast<const FORMATETC*>(p);
+}
+
 #endif
 
 // These macros are all defined by windows.h and are also used as the names of

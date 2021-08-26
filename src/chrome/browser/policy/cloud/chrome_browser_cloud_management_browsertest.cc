@@ -27,7 +27,6 @@
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/cloud/chrome_browser_cloud_management_browsertest_delegate.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
@@ -64,6 +63,7 @@
 #if !defined(OS_ANDROID)
 #include "chrome/browser/device_identity/device_oauth2_token_service.h"
 #include "chrome/browser/device_identity/device_oauth2_token_service_factory.h"
+#include "chrome/browser/ui/browser_finder.h"
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_MAC)
@@ -90,7 +90,7 @@ constexpr char kEnrollmentResultMetrics[] =
 const char kUnenrollmentSuccessMetrics[] =
     "Enterprise.MachineLevelUserCloudPolicyEnrollment.UnenrollSuccess";
 
-std::unique_ptr<PolicyStorage> CreatePolicyStorage() {
+void UpdatePolicyStorage(PolicyStorage* policy_storage) {
   em::CloudPolicySettings settings;
   em::BooleanPolicyProto* saving_browser_history_disabled =
       settings.mutable_savingbrowserhistorydisabled();
@@ -98,7 +98,6 @@ std::unique_ptr<PolicyStorage> CreatePolicyStorage() {
       em::PolicyOptions::MANDATORY);
   saving_browser_history_disabled->set_value(true);
 
-  auto policy_storage = std::make_unique<PolicyStorage>();
   policy_storage->SetPolicyPayload(
       dm_protocol::kChromeMachineLevelUserCloudPolicyType,
       settings.SerializeAsString());
@@ -107,7 +106,6 @@ std::unique_ptr<PolicyStorage> CreatePolicyStorage() {
       settings.SerializeAsString());
   policy_storage->set_robot_api_auth_code("fake_auth_code");
   policy_storage->set_service_account_identity("foo@bar.com");
-  return policy_storage;
 }
 
 ClientStorage::ClientInfo CreateTestClientInfo() {
@@ -167,6 +165,8 @@ class ChromeBrowserExtraSetUp : public ChromeBrowserMainExtraParts {
   explicit ChromeBrowserExtraSetUp(
       ChromeBrowserCloudManagementControllerObserver* observer)
       : observer_(observer) {}
+  ChromeBrowserExtraSetUp(const ChromeBrowserExtraSetUp&) = delete;
+  ChromeBrowserExtraSetUp& operator=(const ChromeBrowserExtraSetUp&) = delete;
   void PreCreateMainMessageLoop() override {
     g_browser_process->browser_policy_connector()
         ->chrome_browser_cloud_management_controller()
@@ -175,8 +175,6 @@ class ChromeBrowserExtraSetUp : public ChromeBrowserMainExtraParts {
 
  private:
   ChromeBrowserCloudManagementControllerObserver* observer_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeBrowserExtraSetUp);
 };
 
 // Two observers that quit run_loop when policy is fetched and stored or in case
@@ -188,6 +186,8 @@ class PolicyFetchStoreObserver : public CloudPolicyStore::Observer {
       : store_(store), quit_closure_(std::move(quit_closure)) {
     store_->AddObserver(this);
   }
+  PolicyFetchStoreObserver(const PolicyFetchStoreObserver&) = delete;
+  PolicyFetchStoreObserver& operator=(const PolicyFetchStoreObserver&) = delete;
   ~PolicyFetchStoreObserver() override { store_->RemoveObserver(this); }
 
   void OnStoreLoaded(CloudPolicyStore* store) override {
@@ -200,7 +200,6 @@ class PolicyFetchStoreObserver : public CloudPolicyStore::Observer {
  private:
   CloudPolicyStore* store_;
   base::OnceClosure quit_closure_;
-  DISALLOW_COPY_AND_ASSIGN(PolicyFetchStoreObserver);
 };
 
 class PolicyFetchCoreObserver : public CloudPolicyCore::Observer {
@@ -404,7 +403,10 @@ INSTANTIATE_TEST_SUITE_P(
 
 class CloudPolicyStoreObserverStub : public CloudPolicyStore::Observer {
  public:
-  CloudPolicyStoreObserverStub() {}
+  CloudPolicyStoreObserverStub() = default;
+  CloudPolicyStoreObserverStub(const CloudPolicyStoreObserverStub&) = delete;
+  CloudPolicyStoreObserverStub& operator=(const CloudPolicyStoreObserverStub&) =
+      delete;
 
   bool was_called() const { return on_loaded_ || on_error_; }
 
@@ -415,8 +417,6 @@ class CloudPolicyStoreObserverStub : public CloudPolicyStore::Observer {
 
   bool on_loaded_ = false;
   bool on_error_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(CloudPolicyStoreObserverStub);
 };
 
 class MachineLevelUserCloudPolicyManagerTest : public PlatformBrowserTest {
@@ -488,6 +488,10 @@ class ChromeBrowserCloudManagementEnrollmentTest
           chrome::RESULT_CODE_CLOUD_POLICY_ENROLLMENT_FAILED);
     }
   }
+  ChromeBrowserCloudManagementEnrollmentTest(
+      const ChromeBrowserCloudManagementEnrollmentTest&) = delete;
+  ChromeBrowserCloudManagementEnrollmentTest& operator=(
+      const ChromeBrowserCloudManagementEnrollmentTest&) = delete;
 
   void SetUpInProcessBrowserTestFixture() override {
     ASSERT_TRUE(test_server_.Start());
@@ -560,8 +564,6 @@ class ChromeBrowserCloudManagementEnrollmentTest
   EmbeddedPolicyTestServer test_server_;
   FakeBrowserDMTokenStorage storage_;
   ChromeBrowserCloudManagementControllerObserver observer_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeBrowserCloudManagementEnrollmentTest);
 };
 
 // Consistently timing out on Windows. http://crbug.com/1025220
@@ -641,6 +643,10 @@ class MachineLevelUserCloudPolicyPolicyFetchTest
     if (!dm_token().empty())
       storage_.SetDMToken(dm_token());
   }
+  MachineLevelUserCloudPolicyPolicyFetchTest(
+      const MachineLevelUserCloudPolicyPolicyFetchTest&) = delete;
+  MachineLevelUserCloudPolicyPolicyFetchTest& operator=(
+      const MachineLevelUserCloudPolicyPolicyFetchTest&) = delete;
 
   void SetUpOnMainThread() override {
     g_browser_process->browser_policy_connector()
@@ -672,8 +678,8 @@ class MachineLevelUserCloudPolicyPolicyFetchTest
 #endif
 
   void SetUpTestServer() {
-    test_server_ = std::make_unique<EmbeddedPolicyTestServer>(
-        std::make_unique<ClientStorage>(), CreatePolicyStorage());
+    test_server_ = std::make_unique<EmbeddedPolicyTestServer>();
+    UpdatePolicyStorage(test_server_->policy_storage());
     test_server_->client_storage()->RegisterClient(CreateTestClientInfo());
   }
 
@@ -693,8 +699,6 @@ class MachineLevelUserCloudPolicyPolicyFetchTest
   std::unique_ptr<EmbeddedPolicyTestServer> test_server_;
   FakeBrowserDMTokenStorage storage_;
   base::ScopedTempDir temp_dir_;
-
-  DISALLOW_COPY_AND_ASSIGN(MachineLevelUserCloudPolicyPolicyFetchTest);
 };
 
 IN_PROC_BROWSER_TEST_P(MachineLevelUserCloudPolicyPolicyFetchTest, Test) {
@@ -833,8 +837,8 @@ class MachineLevelUserCloudPolicyRobotAuthTest : public PlatformBrowserTest {
 #endif
 
   void SetUpTestServer() {
-    test_server_ = std::make_unique<EmbeddedPolicyTestServer>(
-        std::make_unique<ClientStorage>(), CreatePolicyStorage());
+    test_server_ = std::make_unique<EmbeddedPolicyTestServer>();
+    UpdatePolicyStorage(test_server_->policy_storage());
     test_server_->client_storage()->RegisterClient(CreateTestClientInfo());
   }
 

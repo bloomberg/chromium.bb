@@ -28,11 +28,14 @@
  *              TODOs:
  * add sane pulse detection
  ***********************************/
+#include <float.h>
 
+#include "libavutil/channel_layout.h"
 #include "libavutil/libm.h"
 #include "libavutil/float_dsp.h"
 #include "libavutil/opt.h"
 #include "avcodec.h"
+#include "encode.h"
 #include "put_bits.h"
 #include "internal.h"
 #include "mpeg4audio.h"
@@ -675,7 +678,7 @@ static int aac_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
         }
         start_ch += chans;
     }
-    if ((ret = ff_alloc_packet2(avctx, avpkt, 8192 * s->channels, 0)) < 0)
+    if ((ret = ff_alloc_packet(avctx, avpkt, 8192 * s->channels)) < 0)
         return ret;
     frame_bits = its = 0;
     do {
@@ -852,7 +855,7 @@ static int aac_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
                 /* Not so fast though */
                 ratio = sqrtf(ratio);
             }
-            s->lambda = FFMIN(s->lambda * ratio, 65536.f);
+            s->lambda = av_clipf(s->lambda * ratio, FLT_EPSILON, 65536.f);
 
             /* Keep iterating if we must reduce and lambda is in the sky */
             if (ratio > 0.9f && ratio < 1.1f) {
@@ -897,7 +900,7 @@ static av_cold int aac_encode_end(AVCodecContext *avctx)
 {
     AACEncContext *s = avctx->priv_data;
 
-    av_log(avctx, AV_LOG_INFO, "Qavg: %.3f\n", s->lambda_sum / s->lambda_count);
+    av_log(avctx, AV_LOG_INFO, "Qavg: %.3f\n", s->lambda_count ? s->lambda_sum / s->lambda_count : NAN);
 
     ff_mdct_end(&s->mdct1024);
     ff_mdct_end(&s->mdct128);
@@ -1103,7 +1106,7 @@ static av_cold int aac_encode_init(AVCodecContext *avctx)
 
 #define AACENC_FLAGS AV_OPT_FLAG_ENCODING_PARAM | AV_OPT_FLAG_AUDIO_PARAM
 static const AVOption aacenc_options[] = {
-    {"aac_coder", "Coding algorithm", offsetof(AACEncContext, options.coder), AV_OPT_TYPE_INT, {.i64 = AAC_CODER_FAST}, 0, AAC_CODER_NB-1, AACENC_FLAGS, "coder"},
+    {"aac_coder", "Coding algorithm", offsetof(AACEncContext, options.coder), AV_OPT_TYPE_INT, {.i64 = AAC_CODER_TWOLOOP}, 0, AAC_CODER_NB-1, AACENC_FLAGS, "coder"},
         {"anmr",     "ANMR method",               0, AV_OPT_TYPE_CONST, {.i64 = AAC_CODER_ANMR},    INT_MIN, INT_MAX, AACENC_FLAGS, "coder"},
         {"twoloop",  "Two loop searching method", 0, AV_OPT_TYPE_CONST, {.i64 = AAC_CODER_TWOLOOP}, INT_MIN, INT_MAX, AACENC_FLAGS, "coder"},
         {"fast",     "Default fast search",       0, AV_OPT_TYPE_CONST, {.i64 = AAC_CODER_FAST},    INT_MIN, INT_MAX, AACENC_FLAGS, "coder"},

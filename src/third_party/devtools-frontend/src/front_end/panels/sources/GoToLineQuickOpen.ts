@@ -6,12 +6,12 @@
 
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
-import type * as Workspace from '../../models/workspace/workspace.js'; // eslint-disable-line no-unused-vars
+import type * as Workspace from '../../models/workspace/workspace.js';
 import * as QuickOpen from '../../ui/legacy/components/quick_open/quick_open.js';
 import * as UI from '../../ui/legacy/legacy.js';
 
 import {SourcesView} from './SourcesView.js';
-import type {UISourceCodeFrame} from './UISourceCodeFrame.js'; // eslint-disable-line no-unused-vars
+import type {UISourceCodeFrame} from './UISourceCodeFrame.js';
 
 const UIStrings = {
   /**
@@ -104,7 +104,7 @@ export class GoToLineQuickOpen extends QuickOpen.FilteredListWidget.Provider {
         });
       }
       const linesCount = sourceFrame.textEditor.linesCount;
-      return i18nString(UIStrings.currentLineSTypeALineNumber, {PH1: currentLineNumber, PH2: linesCount});
+      return i18nString(UIStrings.currentLineSTypeALineNumber, {PH1: currentLineNumber + 1, PH2: linesCount});
     }
 
     if (sourceFrame && sourceFrame.wasmDisassembly) {

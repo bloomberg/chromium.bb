@@ -163,6 +163,8 @@ cast_source_set("browser_base") {
     "media/media_caps_impl.h",
     "media/supported_codec_finder.cc",
     "media/supported_codec_finder.h",
+    "metrics/metrics_helper_impl.cc",
+    "metrics/metrics_helper_impl.h",
     "renderer_prelauncher.cc",
     "renderer_prelauncher.h",
     "service/cast_service_simple.cc",
@@ -192,6 +194,7 @@ cast_source_set("browser_base") {
     ":prefs",
     ":public",
     "//chromecast/browser/metrics",
+    "//chromecast/browser/mojom",
     "//chromecast/metrics",
     "//components/media_control/mojom",
   ]
@@ -215,12 +218,13 @@ cast_source_set("browser_base") {
     "//chromecast/bindings/public/mojom",
     "//chromecast/browser/bluetooth/public/mojom",
     "//chromecast/browser/general_audience_browsing/mojom",
-    "//chromecast/browser/mojom",
     "//chromecast/browser/webui/mojom",
     "//chromecast/common",
     "//chromecast/common:queryable_data",
     "//chromecast/common/media",
     "//chromecast/common/mojom",
+    "//chromecast/external_mojo/broker_service",
+    "//chromecast/external_mojo/external_service_support:external_service",
     "//chromecast/graphics",
     "//chromecast/media",
     "//chromecast/media:libcast_media",
@@ -509,6 +513,7 @@ cast_source_set("browser_base") {
       "webview/webview_window_manager.h",
     ]
     deps += [
+      ":base_types",
       ":web_contents_provider",
       "//chromecast/browser/webview/proto",
       "//chromecast/ui:back_gesture_router",
@@ -548,6 +553,17 @@ cast_source_set("simple_client") {
   deps = [ "//base" ]
 }
 
+cast_source_set("base_types") {
+  public = [
+    "visibility_types.h",
+    "web_types.h",
+  ]
+
+  sources = [ "web_types.cc" ]
+
+  public_deps = [ "//chromecast/browser/webview/proto" ]
+}
+
 # Lightweight target for Cast interfaces that wrap //content/public/browser.
 # This target should only include interfaces which are required for unit tests.
 cast_source_set("public") {
@@ -562,6 +578,8 @@ cast_source_set("public") {
 
   # Need to expose this so that internal public_configs are propagated.
   public_deps = [
+    ":base_types",
+    "//chromecast/browser/mojom",
     "//chromecast/common/mojom",
     "//content/public/browser",
   ]
@@ -715,7 +733,7 @@ if (is_android) {
   }
 
   java_cpp_enum("java_enums") {
-    sources = [ "cast_content_window.h" ]
+    sources = [ "visibility_types.h" ]
   }
 }
 

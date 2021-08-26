@@ -20,7 +20,6 @@
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#import "ios/public/provider/chrome/browser/images/branded_image_provider.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -144,26 +143,6 @@
        forControlEvents:UIControlEventTouchUpInside];
   stopButton.visibilityMask = self.visibilityConfiguration.stopButtonVisibility;
   return stopButton;
-}
-
-- (ToolbarButton*)bookmarkButton {
-  ToolbarButton* bookmarkButton = [ToolbarButton
-      toolbarButtonWithImage:[UIImage imageNamed:@"toolbar_bookmark"]];
-  [bookmarkButton setImage:[UIImage imageNamed:@"toolbar_bookmark_active"]
-                  forState:kControlStateSpotlighted];
-  [self configureButton:bookmarkButton width:kAdaptiveToolbarButtonWidth];
-  bookmarkButton.adjustsImageWhenHighlighted = NO;
-  [bookmarkButton
-      setImage:[bookmarkButton imageForState:UIControlStateHighlighted]
-      forState:UIControlStateSelected];
-  bookmarkButton.accessibilityLabel = l10n_util::GetNSString(IDS_TOOLTIP_STAR);
-  [bookmarkButton addTarget:self.actionHandler
-                     action:@selector(bookmarkAction)
-           forControlEvents:UIControlEventTouchUpInside];
-
-  bookmarkButton.visibilityMask =
-      self.visibilityConfiguration.bookmarkButtonVisibility;
-  return bookmarkButton;
 }
 
 - (ToolbarButton*)openNewTabButton {

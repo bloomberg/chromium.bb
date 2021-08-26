@@ -45,6 +45,7 @@ int GetNumTapsInFilter(const int filter_index) {
   return 4;
 }
 
-constexpr int kIntermediateStride = kMaxSuperBlockSizeInPixels;
+constexpr int kIntermediateAllocWidth = kMaxSuperBlockSizeInPixels;
+constexpr int kIntermediateStride = 8;
 constexpr int kHorizontalOffset = 3;
 constexpr int kFilterIndexShift = 6;

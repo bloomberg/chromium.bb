@@ -16,10 +16,11 @@ import '//resources/polymer/v3_0/iron-icon/iron-icon.js';
 import '//resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import './sync_account_control.js';
 import './sync_encryption_options.js';
+import '../privacy_page/personalization_options.js';
 import '../settings_shared_css.js';
 import '../settings_vars_css.js';
 // <if expr="not chromeos">
-import '//resources/cr_elements/cr_toast/cr_toast.m.js';
+import '//resources/cr_elements/cr_toast/cr_toast.js';
 // </if>
 
 import {assert, assertNotReached} from '//resources/js/assert.m.js';
@@ -313,6 +314,16 @@ export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
     return /** @type {?SettingsPersonalizationOptionsElement} */ (
         this.shadowRoot.querySelector('settings-personalization-options'));
   }
+
+  // <if expr="chromeos or lacros">
+  /**
+   * @returns {boolean}
+   * @private
+   */
+  shouldShowLacrosSideBySideWarning_() {
+    return loadTimeData.getBoolean('shouldShowLacrosSideBySideWarning');
+  }
+  // </if>
 
   /**
    * @return {boolean}

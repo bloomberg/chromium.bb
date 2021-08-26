@@ -55,17 +55,19 @@ class ASH_EXPORT DictationButtonTray : public TrayBackgroundView,
   // views::View:
   const char* GetClassName() const override;
 
+  // Updates this button's state when speech recognition file download state
+  // changes.
+  void UpdateOnSpeechRecognitionDownloadChanged(bool download_in_progress);
+
  private:
   friend class DictationButtonTrayTest;
+
+  // Updates the visibility of the button.
+  void UpdateVisibility();
 
   // Sets the icon when Dictation is activated / deactiviated.
   // Also updates visibility when Dictation is enabled / disabled.
   void UpdateIcon(bool dictation_active);
-
-  // Updates the visibility of the button.
-  // Currently the button is visible iff experimental accessibility
-  // features are enabled.
-  void UpdateVisibility();
 
   // Actively looks up dictation status and calls UpdateIcon.
   void CheckDictationStatusAndUpdateIcon();

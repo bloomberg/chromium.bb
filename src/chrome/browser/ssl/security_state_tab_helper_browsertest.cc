@@ -1176,47 +1176,6 @@ IN_PROC_BROWSER_TEST_F(
   // have any impact here.
 }
 
-// TODO(https://crbug.com/333943): Remove these tests when FTP support is
-// removed.
-class SecurityStateTabHelperTestWithFtpEnabled
-    : public SecurityStateTabHelperTest {
- public:
-  SecurityStateTabHelperTestWithFtpEnabled() {
-    scoped_feature_list_.InitAndEnableFeature(network::features::kFtpProtocol);
-  }
-  ~SecurityStateTabHelperTestWithFtpEnabled() override = default;
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-// Tests that the security level of ftp: URLs is always downgraded to
-// WARNING.
-IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTestWithFtpEnabled,
-                       SecurityLevelDowngradedOnFtpUrl) {
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(contents);
-
-  SecurityStyleTestObserver observer(contents);
-
-  SecurityStateTabHelper* helper =
-      SecurityStateTabHelper::FromWebContents(contents);
-  ASSERT_TRUE(helper);
-
-  ui_test_utils::NavigateToURL(browser(), GURL("ftp://example.test/"));
-  EXPECT_EQ(security_state::WARNING, helper->GetSecurityLevel());
-
-  // Ensure that WebContentsObservers don't show an incorrect Form Not Secure
-  // explanation. Regression test for https://crbug.com/691412.
-  EXPECT_EQ(0u, observer.latest_explanations().neutral_explanations.size());
-  EXPECT_EQ(blink::SecurityStyle::kInsecure, observer.latest_security_style());
-
-  content::NavigationEntry* entry = contents->GetController().GetVisibleEntry();
-  ASSERT_TRUE(entry);
-  EXPECT_EQ(content::SSLStatus::NORMAL_CONTENT, entry->GetSSL().content_status);
-}
-
 class PKPModelClientTest : public SecurityStateTabHelperTest {
  public:
   static constexpr const char* kPKPHost = "example.test";
@@ -1778,20 +1737,6 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTestWithAutoupgradesDisabled,
   }
 }
 
-// Tests that the Certificate Transparency compliance of the main resource is
-// recorded in a histogram.
-IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, CTComplianceHistogram) {
-  const char kHistogramName[] =
-      "Security.CertificateTransparency.MainFrameNavigationCompliance";
-  SetUpMockCertVerifierForHttpsServer(0, net::OK);
-  base::HistogramTester histograms;
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL("/ssl/google.html"));
-  histograms.ExpectUniqueSample(
-      kHistogramName, net::ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS,
-      1);
-}
-
 // Tests that the security level form submission histogram is logged correctly.
 IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, FormSecurityLevelHistogram) {
   const char kHistogramName[] = "Security.SecurityLevel.FormSubmission";
@@ -2078,9 +2023,8 @@ class SecurityStateTabHelperPrerenderTest : public SecurityStateTabHelperTest {
     // Disable mixed content autoupgrading to allow mixed content to load and
     // test that mixed content is recorded correctly on the prerender navigation
     // entry.
-    scoped_feature_list_.InitWithFeatures(
-        {blink::features::kPrerender2},
-        {blink::features::kMixedContentAutoupgrade});
+    scoped_feature_list_.InitAndDisableFeature(
+        blink::features::kMixedContentAutoupgrade);
   }
   ~SecurityStateTabHelperPrerenderTest() override = default;
   SecurityStateTabHelperPrerenderTest(
@@ -2088,9 +2032,13 @@ class SecurityStateTabHelperPrerenderTest : public SecurityStateTabHelperTest {
   SecurityStateTabHelperPrerenderTest& operator=(
       const SecurityStateTabHelperPrerenderTest&) = delete;
 
+  void SetUp() override {
+    prerender_helper_.SetUp(&https_server_);
+    SecurityStateTabHelperTest::SetUp();
+  }
+
   void SetUpOnMainThread() override {
     web_contents_ = browser()->tab_strip_model()->GetActiveWebContents();
-    prerender_helper_.SetUpOnMainThread(&https_server_);
     SecurityStateTabHelperTest::SetUpOnMainThread();
   }
 
@@ -2174,7 +2122,6 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperPrerenderTest, InvalidPrerender) {
   host_observer.WaitForDestroyed();
   EXPECT_EQ(content::RenderFrameHost::kNoFrameTreeNodeId,
             prerender_helper_.GetHostForUrl(prerender_url));
-  EXPECT_EQ(net::ERR_CERT_DATE_INVALID, nav_observer.net_error_code());
 
   // Navigate to prerender_url and expect cert error.
   prerender_helper_.NavigatePrimaryPage(prerender_url);

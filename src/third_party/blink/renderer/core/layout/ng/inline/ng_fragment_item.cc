@@ -294,6 +294,14 @@ bool NGFragmentItem::IsAtomicInline() const {
   return false;
 }
 
+bool NGFragmentItem::IsBlockInInline() const {
+  if (Type() != kBox)
+    return false;
+  if (const NGPhysicalBoxFragment* box = BoxFragment())
+    return box->IsBlockInInline();
+  return false;
+}
+
 bool NGFragmentItem::IsFloating() const {
   if (const NGPhysicalBoxFragment* box = BoxFragment())
     return box->IsFloating();
@@ -370,6 +378,13 @@ PhysicalOffset NGFragmentItem::MapPointInContainer(
           .Inverse()
           .MapPoint(FloatPoint(point).ScaledBy(scaling_factor))
           .ScaledBy(1 / scaling_factor));
+}
+
+float NGFragmentItem::ScaleInlineOffset(LayoutUnit inline_offset) const {
+  if (Type() != kSvgText)
+    return inline_offset.ToFloat();
+  return inline_offset.ToFloat() * SvgScalingFactor() /
+         SvgFragmentData()->length_adjust_scale;
 }
 
 bool NGFragmentItem::Contains(const FloatPoint& position) const {
@@ -1011,8 +1026,7 @@ unsigned NGFragmentItem::TextOffsetForPoint(
   const LayoutUnit& point_in_line_direction =
       style.IsHorizontalWritingMode() ? point.left : point.top;
   if (const ShapeResultView* shape_result = TextShapeResult()) {
-    float scaled_offset = point_in_line_direction.ToFloat();
-    scaled_offset *= SvgScalingFactor();
+    float scaled_offset = ScaleInlineOffset(point_in_line_direction);
     // TODO(layout-dev): Move caret logic out of ShapeResult into separate
     // support class for code health and to avoid this copy.
     return shape_result->CreateShapeResult()->CaretOffsetForHitTest(

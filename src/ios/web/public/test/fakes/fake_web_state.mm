@@ -18,6 +18,7 @@
 #import "ios/web/public/session/crw_navigation_item_storage.h"
 #import "ios/web/public/session/crw_session_storage.h"
 #import "ios/web/public/session/serializable_user_data_manager.h"
+#import "ios/web/session/session_certificate_policy_cache_impl.h"
 #import "ios/web/web_state/policy_decision_state_tracker.h"
 #include "ui/gfx/image/image.h"
 
@@ -354,23 +355,34 @@ void FakeWebState::OnWebFrameWillBecomeUnavailable(WebFrame* frame) {
   }
 }
 
-WebStatePolicyDecider::PolicyDecision FakeWebState::ShouldAllowRequest(
+void FakeWebState::ShouldAllowRequest(
     NSURLRequest* request,
-    const WebStatePolicyDecider::RequestInfo& request_info) {
+    const WebStatePolicyDecider::RequestInfo& request_info,
+    WebStatePolicyDecider::PolicyDecisionCallback callback) {
+  auto request_state_tracker =
+      std::make_unique<PolicyDecisionStateTracker>(std::move(callback));
+  PolicyDecisionStateTracker* request_state_tracker_ptr =
+      request_state_tracker.get();
+  auto policy_decider_callback = base::BindRepeating(
+      &PolicyDecisionStateTracker::OnSinglePolicyDecisionReceived,
+      base::Owned(std::move(request_state_tracker)));
+  int num_decisions_requested = 0;
   for (auto& policy_decider : policy_deciders_) {
-    WebStatePolicyDecider::PolicyDecision result =
-        policy_decider.ShouldAllowRequest(request, request_info);
-    if (result.ShouldCancelNavigation()) {
-      return result;
-    }
+    policy_decider.ShouldAllowRequest(request, request_info,
+                                      policy_decider_callback);
+    num_decisions_requested++;
+    if (request_state_tracker_ptr->DeterminedFinalResult())
+      break;
   }
-  return WebStatePolicyDecider::PolicyDecision::Allow();
+
+  request_state_tracker_ptr->FinishedRequestingDecisions(
+      num_decisions_requested);
 }
 
 void FakeWebState::ShouldAllowResponse(
     NSURLResponse* response,
     bool for_main_frame,
-    base::OnceCallback<void(WebStatePolicyDecider::PolicyDecision)> callback) {
+    WebStatePolicyDecider::PolicyDecisionCallback callback) {
   auto response_state_tracker =
       std::make_unique<PolicyDecisionStateTracker>(std::move(callback));
   PolicyDecisionStateTracker* response_state_tracker_ptr =
@@ -476,6 +488,25 @@ bool FakeWebState::SetSessionStateData(NSData* data) {
 
 NSData* FakeWebState::SessionStateData() {
   return nil;
+}
+
+FakeWebStateWithPolicyCache::FakeWebStateWithPolicyCache(
+    BrowserState* browser_state)
+    : FakeWebState(),
+      certificate_policy_cache_(
+          std::make_unique<web::SessionCertificatePolicyCacheImpl>(
+              browser_state)) {}
+
+FakeWebStateWithPolicyCache::~FakeWebStateWithPolicyCache() {}
+
+const SessionCertificatePolicyCache*
+FakeWebStateWithPolicyCache::GetSessionCertificatePolicyCache() const {
+  return certificate_policy_cache_.get();
+}
+
+SessionCertificatePolicyCache*
+FakeWebStateWithPolicyCache::GetSessionCertificatePolicyCache() {
+  return certificate_policy_cache_.get();
 }
 
 }  // namespace web

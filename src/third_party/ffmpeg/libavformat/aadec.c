@@ -25,6 +25,7 @@
 
 #include "avformat.h"
 #include "internal.h"
+#include "libavutil/avstring.h"
 #include "libavutil/dict.h"
 #include "libavutil/intreadwrite.h"
 #include "libavutil/tea.h"
@@ -175,10 +176,8 @@ static int aa_read_header(AVFormatContext *s)
 
     /* decoder setup */
     st = avformat_new_stream(s, NULL);
-    if (!st) {
-        av_freep(&c->tea_ctx);
+    if (!st)
         return AVERROR(ENOMEM);
-    }
     st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
     if (!strcmp(codec_name, "mp332")) {
         st->codecpar->codec_id = AV_CODEC_ID_MP3;
@@ -230,15 +229,13 @@ static int aa_read_header(AVFormatContext *s)
         avio_skip(pb, 4 + chapter_size);
         if (!avpriv_new_chapter(s, chapter_idx, st->time_base,
                                 chapter_pos * TIMEPREC,
-                                (chapter_pos + chapter_size) * TIMEPREC, NULL)) {
-            av_freep(&c->tea_ctx);
+                                (chapter_pos + chapter_size) * TIMEPREC, NULL))
             return AVERROR(ENOMEM);
-        }
     }
 
     st->duration = (largest_size - CHAPTER_HEADER_SIZE * s->nb_chapters) * TIMEPREC;
 
-    ff_update_cur_dts(s, st, 0);
+    avpriv_update_cur_dts(s, st, 0);
     avio_seek(pb, start, SEEK_SET);
     c->current_chapter_size = 0;
     c->seek_offset = 0;
@@ -365,7 +362,7 @@ static int aa_read_seek(AVFormatContext *s,
         c->seek_offset = (MP3_FRAME_SIZE - chapter_pos % MP3_FRAME_SIZE) % MP3_FRAME_SIZE;
     }
 
-    ff_update_cur_dts(s, s->streams[0], ch->start + (chapter_pos + c->seek_offset) * TIMEPREC);
+    avpriv_update_cur_dts(s, s->streams[0], ch->start + (chapter_pos + c->seek_offset) * TIMEPREC);
 
     return 1;
 }
@@ -418,4 +415,5 @@ const AVInputFormat ff_aa_demuxer = {
     .read_seek      = aa_read_seek,
     .read_close     = aa_read_close,
     .flags          = AVFMT_NO_BYTE_SEEK | AVFMT_NOGENSEARCH,
+    .flags_internal = FF_FMT_INIT_CLEANUP,
 };

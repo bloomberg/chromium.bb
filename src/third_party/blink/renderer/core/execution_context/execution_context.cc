@@ -35,6 +35,7 @@
 #include "third_party/blink/public/mojom/permissions_policy/policy_disposition.mojom-blink.h"
 #include "third_party/blink/public/mojom/permissions_policy/policy_value.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
@@ -43,7 +44,10 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_state_observer.h"
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
 #include "third_party/blink/renderer/core/frame/csp/execution_context_csp_delegate.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/script/fetch_client_settings_object_impl.h"
@@ -120,6 +124,29 @@ ExecutionContext* ExecutionContext::ForRelevantRealm(
   return ToExecutionContext(ctx);
 }
 
+// static
+blink::mojom::CodeCacheHost* ExecutionContext::GetCodeCacheHostFromContext(
+    ExecutionContext* execution_context) {
+  DCHECK_NE(execution_context, nullptr);
+  if (execution_context->IsWindow()) {
+    auto* window = To<LocalDOMWindow>(execution_context);
+    if (!window->GetFrame() ||
+        !window->GetFrame()->Loader().GetDocumentLoader()) {
+      return nullptr;
+    }
+    return window->GetFrame()->Loader().GetDocumentLoader()->GetCodeCacheHost();
+  }
+
+  if (execution_context->IsWorkerGlobalScope()) {
+    auto* global_scope =
+        DynamicTo<WorkerOrWorkletGlobalScope>(execution_context);
+    return global_scope->GetCodeCacheHost();
+  }
+
+  DCHECK(execution_context->IsWorkletGlobalScope());
+  return nullptr;
+}
+
 void ExecutionContext::SetIsInBackForwardCache(bool value) {
   is_in_back_forward_cache_ = value;
 }
@@ -151,6 +178,10 @@ void ExecutionContext::SetLifecycleState(mojom::FrameLifecycleState state) {
 void ExecutionContext::NotifyContextDestroyed() {
   is_context_destroyed_ = true;
   ContextLifecycleNotifier::NotifyContextDestroyed();
+}
+
+void ExecutionContext::CountDeprecation(WebFeature feature) {
+  Deprecation::CountDeprecation(this, feature);
 }
 
 HeapObserverSet<ContextLifecycleObserver>&

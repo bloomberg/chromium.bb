@@ -72,6 +72,8 @@
 #include "chrome/browser/profiles/scoped_profile_keep_alive.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/share/share_history.h"
+#include "chrome/browser/share/share_ranking.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
@@ -111,6 +113,7 @@
 #include "components/password_manager/core/browser/password_manager_features_util.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/common/password_manager_features.h"
+#include "components/payments/content/payment_manifest_web_data_service.h"
 #include "components/permissions/permission_decision_auto_blocker.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url_service.h"
@@ -278,7 +281,7 @@ ChromeBrowsingDataRemoverDelegate::ChromeBrowsingDataRemoverDelegate(
     : profile_(Profile::FromBrowserContext(browser_context))
 #if defined(OS_ANDROID)
       ,
-      webapp_registry_(new WebappRegistry())
+      webapp_registry_(std::make_unique<WebappRegistry>())
 #endif
 {
   domain_reliability_clearer_ = base::BindRepeating(
@@ -640,6 +643,13 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
 
     FindBarStateFactory::GetForBrowserContext(profile_)->SetLastSearchText(
         std::u16string());
+
+#if defined(OS_ANDROID)
+    if (auto* share_history = sharing::ShareHistory::Get(profile_))
+      share_history->Clear(delete_begin_, delete_end_);
+    if (auto* share_ranking = sharing::ShareRanking::Get(profile_))
+      share_ranking->Clear(delete_begin_, delete_end_);
+#endif
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -814,7 +824,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
   // Password manager
   if (remove_mask & constants::DATA_TYPE_PASSWORDS) {
     base::RecordAction(UserMetricsAction("ClearBrowsingData_Passwords"));
-    auto password_store = PasswordStoreFactory::GetForProfile(
+    auto password_store = PasswordStoreFactory::GetInterfaceForProfile(
         profile_, ServiceAccessType::EXPLICIT_ACCESS);
 
     if (password_store) {
@@ -832,6 +842,18 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
             delete_end_.is_null() ? base::Time::Max() : delete_end_,
             CreateTaskCompletionClosureForMojo(
                 TracingDataType::kHttpAuthCache));
+
+    scoped_refptr<payments::PaymentManifestWebDataService> web_data_service =
+        webdata_services::WebDataServiceWrapperFactory::
+            GetPaymentManifestWebDataServiceForBrowserContext(
+                profile_, ServiceAccessType::EXPLICIT_ACCESS);
+    if (web_data_service) {
+      web_data_service->ClearSecurePaymentConfirmationInstruments(
+          delete_begin_, delete_end_,
+          CreateTaskCompletionClosure(
+              TracingDataType::kSecurePaymentConfirmationInstruments));
+    }
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     if (chromeos::SystemProxyManager::Get()) {
       // Sends a request to the System-proxy daemon to clear the proxy user
@@ -854,7 +876,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
   }
 
   if (remove_mask & constants::DATA_TYPE_ACCOUNT_PASSWORDS) {
-    auto account_store = AccountPasswordStoreFactory::GetForProfile(
+    auto account_store = AccountPasswordStoreFactory::GetInterfaceForProfile(
         profile_, ServiceAccessType::EXPLICIT_ACCESS);
 
     if (account_store) {
@@ -869,9 +891,9 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
   }
 
   if (remove_mask & content::BrowsingDataRemover::DATA_TYPE_COOKIES) {
-    password_manager::PasswordStore* password_store =
-        PasswordStoreFactory::GetForProfile(profile_,
-                                            ServiceAccessType::EXPLICIT_ACCESS)
+    password_manager::PasswordStoreInterface* password_store =
+        PasswordStoreFactory::GetInterfaceForProfile(
+            profile_, ServiceAccessType::EXPLICIT_ACCESS)
             .get();
 
     if (password_store) {
@@ -882,9 +904,9 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
   }
 
   if (remove_mask & constants::DATA_TYPE_HISTORY) {
-    password_manager::PasswordStore* password_store =
-        PasswordStoreFactory::GetForProfile(profile_,
-                                            ServiceAccessType::EXPLICIT_ACCESS)
+    password_manager::PasswordStoreInterface* password_store =
+        PasswordStoreFactory::GetInterfaceForProfile(
+            profile_, ServiceAccessType::EXPLICIT_ACCESS)
             .get();
 
     if (password_store) {
@@ -895,9 +917,13 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
             nullable_filter, delete_begin_, delete_end_,
             CreateTaskCompletionClosure(TracingDataType::kPasswordsStatistics));
       }
-      password_store->RemoveFieldInfoByTime(
-          delete_begin_, delete_end_,
-          CreateTaskCompletionClosure(TracingDataType::kFieldInfo));
+      password_manager::FieldInfoStore* field_store =
+          password_store->GetFieldInfoStore();
+      if (field_store) {
+        field_store->RemoveFieldInfoByTime(
+            delete_begin_, delete_end_,
+            CreateTaskCompletionClosure(TracingDataType::kFieldInfo));
+      }
     }
   }
 

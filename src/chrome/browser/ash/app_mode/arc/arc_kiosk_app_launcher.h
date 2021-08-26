@@ -22,20 +22,20 @@ class ArcKioskAppLauncher : public ArcAppListPrefs::Observer,
   class Delegate {
    public:
     Delegate() = default;
+    Delegate(const Delegate&) = delete;
+    Delegate& operator=(const Delegate&) = delete;
     virtual void OnAppWindowLaunched() = 0;
 
    protected:
     virtual ~Delegate() = default;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Delegate);
   };
 
   ArcKioskAppLauncher(content::BrowserContext* context,
                       ArcAppListPrefs* prefs,
                       const std::string& app_id,
                       Delegate* delegate);
-
+  ArcKioskAppLauncher(const ArcKioskAppLauncher&) = delete;
+  ArcKioskAppLauncher& operator=(const ArcKioskAppLauncher&) = delete;
   ~ArcKioskAppLauncher() override;
 
   // ArcAppListPrefs::Observer overrides.
@@ -65,8 +65,6 @@ class ArcKioskAppLauncher : public ArcAppListPrefs::Observer,
   std::set<aura::Window*> windows_;
   // Not owning the delegate, delegate owns this class.
   Delegate* const delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(ArcKioskAppLauncher);
 };
 
 }  // namespace ash

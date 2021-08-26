@@ -27,23 +27,30 @@
 
 #include <stdio.h>
 
+#include "subset-options.hh"
+#include "output-options.hh"
+#include "face-options.hh"
+#include "text-options.hh"
+#include "batch.hh"
 #include "main-font-text.hh"
-#include "hb-subset.h"
 
 /*
  * Command line interface to the harfbuzz font subsetter.
  */
 
-struct subset_consumer_t
-{
-  subset_consumer_t (option_parser_t *parser)
-      : failed (false), options (parser), subset_options (parser), font (nullptr), input (nullptr) {}
 
-  void init (hb_buffer_t  *buffer_,
-	     const font_options_t *font_opts)
+struct subset_consumer_t : subset_options_t, output_options_t
+{
+  void add_options (option_parser_t *parser)
   {
-    font = hb_font_reference (font_opts->get_font ());
-    input = hb_subset_input_reference (subset_options.input);
+    subset_options_t::add_options (parser);
+    output_options_t::add_options (parser);
+  }
+
+  void init (const face_options_t *face_opts)
+  {
+    face = hb_face_reference (face_opts->get_face ());
+    input = hb_subset_input_reference (get_input ());
   }
 
   void consume_line (const char   *text,
@@ -51,11 +58,10 @@ struct subset_consumer_t
 		     const char   *text_before,
 		     const char   *text_after)
   {
-    // TODO(Q1) does this only get called with at least 1 codepoint?
+    // TODO does this only get called with at least 1 codepoint?
     hb_set_t *codepoints = hb_subset_input_unicode_set (input);
     if (0 == strcmp (text, "*"))
     {
-      hb_face_t *face = hb_font_get_face (font);
       hb_face_collect_unicodes (face, codepoints);
       return;
     }
@@ -94,40 +100,38 @@ struct subset_consumer_t
     return true;
   }
 
-  void finish (const font_options_t *font_opts)
+  void finish (const face_options_t *face_opts)
   {
-    hb_face_t *face = hb_font_get_face (font);
-
     hb_face_t *new_face = nullptr;
-    for (unsigned i = 0; i < subset_options.num_iterations; i++) {
+    for (unsigned i = 0; i < num_iterations; i++)
+    {
       hb_face_destroy (new_face);
-      new_face = hb_subset (face, input);
+      new_face = hb_subset_or_fail (face, input);
     }
-    hb_blob_t *result = hb_face_reference_blob (new_face);
 
-    failed = !hb_blob_get_length (result);
+    failed = !new_face;
     if (!failed)
-      write_file (options.output_file, result);
+    {
+      hb_blob_t *result = hb_face_reference_blob (new_face);
+      write_file (output_file, result);
+      hb_blob_destroy (result);
+    }
 
     hb_subset_input_destroy (input);
-    hb_blob_destroy (result);
     hb_face_destroy (new_face);
-    hb_font_destroy (font);
+    hb_face_destroy (face);
   }
 
   public:
-  bool failed;
+  bool failed = false;
 
-  private:
-  output_options_t options;
-  subset_options_t subset_options;
-  hb_font_t *font;
-  hb_subset_input_t *input;
+  hb_face_t *face = nullptr;
+  hb_subset_input_t *input = nullptr;
 };
 
 int
 main (int argc, char **argv)
 {
-  main_font_text_t<subset_consumer_t, 10, 0> driver;
-  return driver.main (argc, argv);
+  auto main_func = main_font_text<subset_consumer_t, face_options_t, text_options_t>;
+  return batch_main<true> (main_func, argc, argv);
 }

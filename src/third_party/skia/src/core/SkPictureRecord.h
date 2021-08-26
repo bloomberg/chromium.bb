@@ -80,7 +80,7 @@ protected:
 
 private:
     void handleOptimization(int opt);
-    size_t recordRestoreOffsetPlaceholder(SkClipOp);
+    size_t recordRestoreOffsetPlaceholder();
     void fillRestoreOffsetPlaceholdersForCurrentStackLevel(uint32_t restoreOffset);
 
     SkTDArray<int32_t> fRestoreOffsetStack;
@@ -204,6 +204,7 @@ protected:
     void onClipPath(const SkPath&, SkClipOp, ClipEdgeStyle) override;
     void onClipShader(sk_sp<SkShader>, SkClipOp) override;
     void onClipRegion(const SkRegion&, SkClipOp) override;
+    void onResetClip() override;
 
     void onDrawPicture(const SkPicture*, const SkMatrix*, const SkPaint*) override;
 

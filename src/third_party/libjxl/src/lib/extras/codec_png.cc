@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #include "lib/extras/codec_png.h"
 
@@ -357,6 +348,7 @@ class ColorEncodingReaderPNG {
   Status DecodeSRGB(const unsigned char* payload, const size_t payload_size) {
     if (payload_size != 1) return JXL_FAILURE("Wrong sRGB size");
     // (PNG uses the same values as ICC.)
+    if (payload[0] >= 4) return JXL_FAILURE("Invalid Rendering Intent");
     rendering_intent_ = static_cast<RenderingIntent>(payload[0]);
     have_srgb_ = true;
     return true;
@@ -518,7 +510,9 @@ class ColorEncodingWriterPNG {
     if (c.IsSRGB()) {
       JXL_RETURN_IF_ERROR(AddSRGB(c, info));
       // PNG recommends not including both sRGB and iCCP, so skip the latter.
-    } else {
+    } else if (!c.HaveFields() || !c.tf.IsGamma()) {
+      // Having a gamma value means that the source was a PNG with gAMA and
+      // without iCCP.
       JXL_ASSERT(!c.ICC().empty());
       JXL_RETURN_IF_ERROR(AddICC(c.ICC(), info));
     }
@@ -577,8 +571,16 @@ class ColorEncodingWriterPNG {
 
   static Status MaybeAddGAMA(const ColorEncoding& c,
                              LodePNGInfo* JXL_RESTRICT info) {
-    if (!c.tf.IsGamma()) return true;
-    const double gamma = c.tf.GetGamma();
+    double gamma;
+    if (c.tf.IsGamma()) {
+      gamma = c.tf.GetGamma();
+    } else if (c.tf.IsLinear()) {
+      gamma = 1;
+    } else if (c.tf.IsSRGB()) {
+      gamma = 0.45455;
+    } else {
+      return true;
+    }
 
     PaddedBytes payload(4);
     StoreBE32(U32FromF64(gamma), payload.data());
@@ -587,20 +589,30 @@ class ColorEncodingWriterPNG {
 
   static Status MaybeAddCHRM(const ColorEncoding& c,
                              LodePNGInfo* JXL_RESTRICT info) {
-    // TODO(lode): remove this, PNG can also have cHRM for P3, sRGB, ...
-    if (c.white_point != WhitePoint::kCustom &&
-        c.primaries != Primaries::kCustom) {
-      return true;
-    }
-
-    const CIExy white_point = c.GetWhitePoint();
+    CIExy white_point = c.GetWhitePoint();
     // A PNG image stores both whitepoint and primaries in the cHRM chunk, but
     // for grayscale images we don't have primaries. It does not matter what
     // values are stored in the PNG though (all colors are a multiple of the
     // whitepoint), so choose default ones. See
     // http://www.libpng.org/pub/png/spec/1.2/PNG-Chunks.html section 4.2.2.1.
-    const PrimariesCIExy primaries =
+    PrimariesCIExy primaries =
         c.IsGray() ? ColorEncoding().GetPrimaries() : c.GetPrimaries();
+
+    if (c.primaries == Primaries::kSRGB && c.white_point == WhitePoint::kD65) {
+      // For sRGB, the cHRM chunk is supposed to have very specific values which
+      // don't quite match the pre-quantized ones we have (red is off by
+      // 0.00010). Technically, this is only required for full sRGB, but for
+      // consistency, we might as well use them whenever the primaries and white
+      // point are sRGB's.
+      white_point.x = 0.31270;
+      white_point.y = 0.32900;
+      primaries.r.x = 0.64000;
+      primaries.r.y = 0.33000;
+      primaries.g.x = 0.30000;
+      primaries.g.y = 0.60000;
+      primaries.b.x = 0.15000;
+      primaries.b.y = 0.06000;
+    }
 
     PaddedBytes payload(32);
     StoreBE32(U32FromF64(white_point.x), &payload[0]);
@@ -638,7 +650,7 @@ Status CheckGray(const LodePNGColorMode& mode, bool has_icc, bool* is_gray) {
     case LCT_PALETTE: {
       if (has_icc) {
         // If an ICC profile is present, the PNG specification requires
-        // palette to be intepreted as RGB colored, not grayscale, so we must
+        // palette to be interpreted as RGB colored, not grayscale, so we must
         // output color in that case and unfortunately can't optimize it to
         // gray if the palette only has gray entries.
         *is_gray = false;
@@ -790,6 +802,7 @@ Status DecodeImagePNG(const Span<const uint8_t> bytes, ThreadPool* pool,
   JXL_RETURN_IF_ERROR(ok);
   io->dec_pixels = w * h;
   io->metadata.m.bit_depth.bits_per_sample = io->Main().DetectRealBitdepth();
+  io->metadata.m.xyb_encoded = false;
   SetIntensityTarget(io);
   if (!reader.HaveColorProfile()) {
     JXL_RETURN_IF_ERROR(ApplyHints(is_gray, io));

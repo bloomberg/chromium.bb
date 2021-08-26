@@ -10,7 +10,6 @@
 
 #include "include/core/SkBlendMode.h"
 #include "include/core/SkColor.h"
-#include "include/core/SkFilterQuality.h"
 #include "include/core/SkRefCnt.h"
 #include "include/private/SkTOptional.h"
 #include "include/private/SkTo.h"
@@ -175,18 +174,6 @@ public:
         @param dither  setting for ditering
     */
     void setDither(bool dither) { fBitfields.fDither = static_cast<unsigned>(dither); }
-
-#ifdef SK_SUPPORT_LEGACY_SETFILTERQUALITY
-    // DEPRECATED -- this field is unused.
-    SkFilterQuality getFilterQuality() const {
-        return (SkFilterQuality)fBitfields.fFilterQuality;
-    }
-
-    // DEPRECATED -- this field is unused.
-    void setFilterQuality(SkFilterQuality fq) {
-        fBitfields.fFilterQuality = fq;
-    }
-#endif
 
     /** \enum SkPaint::Style
         Set Style to fill, stroke, or both fill and stroke geometry.
@@ -491,17 +478,6 @@ public:
      */
     SkBlendMode getBlendMode_or(SkBlendMode defaultMode) const;
 
-#ifdef SK_SUPPORT_LEGACY_GETBLENDMODE
-    /** DEPRECATED
-     *  Use asBlendMode() or getBlendMode_or() instead.
-     *
-     *  This attempts to inspect the current blender, and if it claims to be equivalent to
-     *  one of the predefiend SkBlendMode enums, returns that mode. If the blender does not,
-     *  this returns kSrcOver.
-     */
-    SkBlendMode getBlendMode() const { return this->getBlendMode_or(SkBlendMode::kSrcOver); }
-#endif
-
     /** Returns true iff the current blender claims to be equivalent to SkBlendMode::kSrcOver.
      *
      *  Also returns true of the current blender is nullptr.
@@ -733,8 +709,7 @@ private:
             unsigned    fCapType : 2;
             unsigned    fJoinType : 2;
             unsigned    fStyle : 2;
-            unsigned    fFilterQuality : 2;
-            unsigned    fPadding : 22;  // 22 == 32 -1-1-2-2-2-2
+            unsigned    fPadding : 24;  // 24 == 32 -1-1-2-2-2
         } fBitfields;
         uint32_t fBitfieldsUInt;
     };

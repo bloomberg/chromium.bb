@@ -20,9 +20,12 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/test_event_waiter.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/test/browser_test.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/test/ui_controls.h"
+#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/test/widget_test.h"
 
 namespace autofill {
@@ -77,28 +80,6 @@ class VirtualCardManualFallbackBubbleViewsInteractiveUiTest
     ResetEventWaiterForSequence({BubbleEvent::BUBBLE_SHOWN});
     GetController()->ReshowBubble();
     event_waiter_->Wait();
-  }
-
-  void ClickOnViewAndWaitForBubbleDismissal(views::View* view) {
-    views::test::WidgetDestroyedWaiter destroyed_waiter(
-        GetBubbleViews()->GetWidget());
-    GetBubbleViews()->ResetViewShownTimeStampForTesting();
-    views::BubbleFrameView* bubble_frame_view =
-        static_cast<views::BubbleFrameView*>(
-            GetBubbleViews()->GetWidget()->non_client_view()->frame_view());
-    bubble_frame_view->ResetViewShownTimeStampForTesting();
-    ClickOnView(view);
-    destroyed_waiter.Wait();
-    EXPECT_FALSE(GetBubbleViews());
-    EXPECT_TRUE(IsIconVisible());
-  }
-
-  void ClickOnView(views::View* view) {
-    base::RunLoop closure_loop;
-    ui_test_utils::MoveMouseToCenterAndPress(
-        view, ui_controls::LEFT, ui_controls::DOWN | ui_controls::UP,
-        closure_loop.QuitClosure());
-    closure_loop.Run();
   }
 
   bool IsIconVisible() { return GetIconView() && GetIconView()->GetVisible(); }
@@ -259,16 +240,8 @@ IN_PROC_BROWSER_TEST_F(VirtualCardManualFallbackBubbleViewsInteractiveUiTest,
       1);
 }
 
-// Disabled on Mac due to flakiness: crbug.com/1223042
-#if defined(OS_MAC)
-#define MAYBE_Metrics_BubbleShownAndClosedByUser \
-  DISABLED_Metrics_BubbleShownAndClosedByUser
-#else
-#define MAYBE_Metrics_BubbleShownAndClosedByUser \
-  Metrics_BubbleShownAndClosedByUser
-#endif
 IN_PROC_BROWSER_TEST_F(VirtualCardManualFallbackBubbleViewsInteractiveUiTest,
-                       MAYBE_Metrics_BubbleShownAndClosedByUser) {
+                       Metrics_BubbleShownAndClosedByUser) {
   base::HistogramTester histogram_tester;
 
   ShowBubble();
@@ -278,13 +251,15 @@ IN_PROC_BROWSER_TEST_F(VirtualCardManualFallbackBubbleViewsInteractiveUiTest,
   histogram_tester.ExpectBucketCount(
       "Autofill.VirtualCardManualFallbackBubble.Shown", false, 1);
 
-  // Dismiss the bubble by clicking the close button.
-  auto* close_button =
-      GetBubbleViews()->GetBubbleFrameView()->GetCloseButtonForTesting();
-  EXPECT_TRUE(close_button);
-  ClickOnViewAndWaitForBubbleDismissal(close_button);
+  // Mock deactivation due to clicking the close button.
+  views::test::WidgetDestroyedWaiter destroyed_waiter1(
+      GetBubbleViews()->GetWidget());
+  GetBubbleViews()->GetWidget()->CloseWithReason(
+      views::Widget::ClosedReason::kCloseButtonClicked);
+  destroyed_waiter1.Wait();
 
-  histogram_tester.ExpectBucketCount(
+  // Confirm .FirstShow metrics.
+  histogram_tester.ExpectUniqueSample(
       "Autofill.VirtualCardManualFallbackBubble.Result.FirstShow",
       AutofillMetrics::VirtualCardManualFallbackBubbleResultMetric::
           VIRTUAL_CARD_MANUAL_FALLBACK_BUBBLE_CLOSED,
@@ -296,19 +271,23 @@ IN_PROC_BROWSER_TEST_F(VirtualCardManualFallbackBubbleViewsInteractiveUiTest,
   histogram_tester.ExpectBucketCount(
       "Autofill.VirtualCardManualFallbackBubble.Shown", true, 1);
 
-  // Dismiss the bubble by clicking the close button.
-  close_button =
-      GetBubbleViews()->GetBubbleFrameView()->GetCloseButtonForTesting();
-  EXPECT_TRUE(close_button);
-  ClickOnViewAndWaitForBubbleDismissal(close_button);
+  // Mock deactivation due to clicking the close button.
+  views::test::WidgetDestroyedWaiter destroyed_waiter2(
+      GetBubbleViews()->GetWidget());
+  GetBubbleViews()->GetWidget()->CloseWithReason(
+      views::Widget::ClosedReason::kCloseButtonClicked);
+  destroyed_waiter2.Wait();
 
-  histogram_tester.ExpectBucketCount(
+  // Confirm .Reshows metrics.
+  histogram_tester.ExpectUniqueSample(
       "Autofill.VirtualCardManualFallbackBubble.Result.Reshows",
       AutofillMetrics::VirtualCardManualFallbackBubbleResultMetric::
           VIRTUAL_CARD_MANUAL_FALLBACK_BUBBLE_CLOSED,
       1);
 
-  // Bubble is reshown by the user.
+  // Bubble is reshown by the user. Closing a reshown bubble makes the browser
+  // inactive for some reason, so we must reactivate it first.
+  browser()->window()->Activate();
   ReshowBubble();
 
   histogram_tester.ExpectBucketCount(
@@ -377,6 +356,49 @@ IN_PROC_BROWSER_TEST_F(VirtualCardManualFallbackBubbleViewsInteractiveUiTest,
       AutofillMetrics::VirtualCardManualFallbackBubbleResultMetric::
           VIRTUAL_CARD_MANUAL_FALLBACK_BUBBLE_LOST_FOCUS,
       1);
+}
+
+IN_PROC_BROWSER_TEST_F(VirtualCardManualFallbackBubbleViewsInteractiveUiTest,
+                       TooltipAndAccessibleName) {
+  ShowBubble();
+  ASSERT_TRUE(GetBubbleViews());
+  ASSERT_TRUE(IsIconVisible());
+
+  EXPECT_EQ(5U, GetBubbleViews()->fields_to_buttons_map_.size());
+  std::u16string normal_button_tooltip = l10n_util::GetStringUTF16(
+      IDS_AUTOFILL_VIRTUAL_CARD_MANUAL_FALLBACK_BUBBLE_BUTTON_TOOLTIP_NORMAL);
+  std::u16string clicked_button_tooltip = l10n_util::GetStringUTF16(
+      IDS_AUTOFILL_VIRTUAL_CARD_MANUAL_FALLBACK_BUBBLE_BUTTON_TOOLTIP_CLICKED);
+  for (auto& pair : GetBubbleViews()->fields_to_buttons_map_) {
+    EXPECT_EQ(normal_button_tooltip, pair.second->GetTooltipText());
+    EXPECT_EQ(pair.second->GetText() + u" " + normal_button_tooltip,
+              pair.second->GetAccessibleName());
+  }
+
+  auto* card_number_button =
+      GetBubbleViews()->fields_to_buttons_map_
+          [VirtualCardManualFallbackBubbleField::kCardNumber];
+  auto* cardholder_name_button =
+      GetBubbleViews()->fields_to_buttons_map_
+          [VirtualCardManualFallbackBubbleField::kCardholderName];
+
+  GetBubbleViews()->OnFieldClicked(
+      VirtualCardManualFallbackBubbleField::kCardNumber);
+  EXPECT_EQ(clicked_button_tooltip, card_number_button->GetTooltipText());
+  EXPECT_EQ(u"4111 1111 1111 1111 " + clicked_button_tooltip,
+            card_number_button->GetAccessibleName());
+  EXPECT_EQ(normal_button_tooltip, cardholder_name_button->GetTooltipText());
+  EXPECT_EQ(u"Full Carter " + normal_button_tooltip,
+            cardholder_name_button->GetAccessibleName());
+
+  GetBubbleViews()->OnFieldClicked(
+      VirtualCardManualFallbackBubbleField::kCardholderName);
+  EXPECT_EQ(normal_button_tooltip, card_number_button->GetTooltipText());
+  EXPECT_EQ(u"4111 1111 1111 1111 " + normal_button_tooltip,
+            card_number_button->GetAccessibleName());
+  EXPECT_EQ(clicked_button_tooltip, cardholder_name_button->GetTooltipText());
+  EXPECT_EQ(u"Full Carter " + clicked_button_tooltip,
+            cardholder_name_button->GetAccessibleName());
 }
 
 }  // namespace autofill

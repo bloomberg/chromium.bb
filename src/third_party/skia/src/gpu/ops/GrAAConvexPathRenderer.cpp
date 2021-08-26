@@ -5,6 +5,8 @@
  * found in the LICENSE file.
  */
 
+#include "src/gpu/ops/GrAAConvexPathRenderer.h"
+
 #include "include/core/SkString.h"
 #include "include/core/SkTypes.h"
 #include "src/core/SkGeometry.h"
@@ -17,19 +19,17 @@
 #include "src/gpu/GrGeometryProcessor.h"
 #include "src/gpu/GrProcessor.h"
 #include "src/gpu/GrProgramInfo.h"
-#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/GrVertexWriter.h"
 #include "src/gpu/geometry/GrPathUtils.h"
 #include "src/gpu/geometry/GrStyledShape.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
-#include "src/gpu/glsl/GrGLSLGeometryProcessor.h"
 #include "src/gpu/glsl/GrGLSLProgramDataManager.h"
 #include "src/gpu/glsl/GrGLSLUniformHandler.h"
 #include "src/gpu/glsl/GrGLSLVarying.h"
 #include "src/gpu/glsl/GrGLSLVertexGeoBuilder.h"
-#include "src/gpu/ops/GrAAConvexPathRenderer.h"
 #include "src/gpu/ops/GrMeshDrawOp.h"
 #include "src/gpu/ops/GrSimpleMeshDrawOpHelperWithStencil.h"
+#include "src/gpu/v1/SurfaceDrawContext_v1.h"
 
 GrAAConvexPathRenderer::GrAAConvexPathRenderer() {
 }
@@ -561,10 +561,51 @@ public:
 
     const char* name() const override { return "QuadEdge"; }
 
-    class GLSLProcessor : public GrGLSLGeometryProcessor {
-    public:
-        GLSLProcessor() {}
+    void addToKey(const GrShaderCaps& caps, GrProcessorKeyBuilder* b) const override {
+        b->addBool(fUsesLocalCoords, "usesLocalCoords");
+        b->addBits(ProgramImpl::kMatrixKeyBits,
+                   ProgramImpl::ComputeMatrixKey(caps, fLocalMatrix),
+                   "localMatrixType");
+    }
 
+    std::unique_ptr<ProgramImpl> makeProgramImpl(const GrShaderCaps&) const override;
+
+private:
+    QuadEdgeEffect(const SkMatrix& localMatrix, bool usesLocalCoords, bool wideColor)
+            : INHERITED(kQuadEdgeEffect_ClassID)
+            , fLocalMatrix(localMatrix)
+            , fUsesLocalCoords(usesLocalCoords) {
+        fInPosition = {"inPosition", kFloat2_GrVertexAttribType, kFloat2_GrSLType};
+        fInColor = MakeColorAttribute("inColor", wideColor);
+        // GL on iOS 14 needs more precision for the quadedge attributes
+        fInQuadEdge = {"inQuadEdge", kFloat4_GrVertexAttribType, kFloat4_GrSLType};
+        this->setVertexAttributes(&fInPosition, 3);
+    }
+
+    Attribute fInPosition;
+    Attribute fInColor;
+    Attribute fInQuadEdge;
+
+    SkMatrix fLocalMatrix;
+    bool fUsesLocalCoords;
+
+    GR_DECLARE_GEOMETRY_PROCESSOR_TEST
+
+    using INHERITED = GrGeometryProcessor;
+};
+
+std::unique_ptr<GrGeometryProcessor::ProgramImpl> QuadEdgeEffect::makeProgramImpl(
+        const GrShaderCaps&) const {
+    class Impl : public ProgramImpl {
+    public:
+        void setData(const GrGLSLProgramDataManager& pdman,
+                     const GrShaderCaps& shaderCaps,
+                     const GrGeometryProcessor& geomProc) override {
+            const QuadEdgeEffect& qe = geomProc.cast<QuadEdgeEffect>();
+            SetTransform(pdman, shaderCaps, fLocalMatrixUniform, qe.fLocalMatrix, &fLocalMatrix);
+        }
+
+    private:
         void onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) override {
             const QuadEdgeEffect& qe = args.fGeomProc.cast<QuadEdgeEffect>();
             GrGLSLVertexBuilder* vertBuilder = args.fVertBuilder;
@@ -583,7 +624,7 @@ public:
 
             // Setup pass through color
             fragBuilder->codeAppendf("half4 %s;", args.fOutputColor);
-            varyingHandler->addPassThroughAttribute(qe.fInColor, args.fOutputColor);
+            varyingHandler->addPassThroughAttribute(qe.fInColor.asShaderVar(), args.fOutputColor);
 
             // Setup position
             WriteOutputPosition(vertBuilder, gpArgs, qe.fInPosition.name());
@@ -618,61 +659,14 @@ public:
             fragBuilder->codeAppendf("half4 %s = half4(edgeAlpha);", args.fOutputCoverage);
         }
 
-        static inline void GenKey(const GrGeometryProcessor& gp,
-                                  const GrShaderCaps& shaderCaps,
-                                  GrProcessorKeyBuilder* b) {
-            const QuadEdgeEffect& qee = gp.cast<QuadEdgeEffect>();
-            b->addBool(qee.fUsesLocalCoords, "usesLocalCoords");
-            b->addBits(kMatrixKeyBits,
-                       ComputeMatrixKey(shaderCaps, qee.fLocalMatrix),
-                       "localMatrixType");
-        }
-
-        void setData(const GrGLSLProgramDataManager& pdman,
-                     const GrShaderCaps& shaderCaps,
-                     const GrGeometryProcessor& geomProc) override {
-            const QuadEdgeEffect& qe = geomProc.cast<QuadEdgeEffect>();
-            SetTransform(pdman, shaderCaps, fLocalMatrixUniform, qe.fLocalMatrix, &fLocalMatrix);
-        }
-
     private:
-        using INHERITED = GrGLSLGeometryProcessor;
+        SkMatrix fLocalMatrix = SkMatrix::InvalidMatrix();
 
-        SkMatrix      fLocalMatrix = SkMatrix::InvalidMatrix();
         UniformHandle fLocalMatrixUniform;
     };
 
-    void getGLSLProcessorKey(const GrShaderCaps& caps, GrProcessorKeyBuilder* b) const override {
-        GLSLProcessor::GenKey(*this, caps, b);
-    }
-
-    GrGLSLGeometryProcessor* createGLSLInstance(const GrShaderCaps&) const override {
-        return new GLSLProcessor();
-    }
-
-private:
-    QuadEdgeEffect(const SkMatrix& localMatrix, bool usesLocalCoords, bool wideColor)
-            : INHERITED(kQuadEdgeEffect_ClassID)
-            , fLocalMatrix(localMatrix)
-            , fUsesLocalCoords(usesLocalCoords) {
-        fInPosition = {"inPosition", kFloat2_GrVertexAttribType, kFloat2_GrSLType};
-        fInColor = MakeColorAttribute("inColor", wideColor);
-        // GL on iOS 14 needs more precision for the quadedge attributes
-        fInQuadEdge = {"inQuadEdge", kFloat4_GrVertexAttribType, kFloat4_GrSLType};
-        this->setVertexAttributes(&fInPosition, 3);
-    }
-
-    Attribute fInPosition;
-    Attribute fInColor;
-    Attribute fInQuadEdge;
-
-    SkMatrix fLocalMatrix;
-    bool fUsesLocalCoords;
-
-    GR_DECLARE_GEOMETRY_PROCESSOR_TEST
-
-    using INHERITED = GrGeometryProcessor;
-};
+    return std::make_unique<Impl>();
+}
 
 GR_DEFINE_GEOMETRY_PROCESSOR_TEST(QuadEdgeEffect);
 

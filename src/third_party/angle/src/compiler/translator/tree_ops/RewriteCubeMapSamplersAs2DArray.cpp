@@ -6,7 +6,7 @@
 // RewriteCubeMapSamplersAs2DArray: Change samplerCube samplers to sampler2DArray for seamful cube
 // map emulation.
 //
-// Relies on MonomorphizeUnsupportedFunctionsInVulkanGLSL to ensure samplerCube variables are not
+// Relies on MonomorphizeUnsupportedFunctions to ensure samplerCube variables are not
 // passed to functions (for simplicity).
 //
 
@@ -255,7 +255,7 @@ class RewriteCubeMapSamplersAs2DArrayTraverser : public TIntermTraverser
         }
 
         // AST functions don't require modification as samplerCube function parameters are removed
-        // by MonomorphizeUnsupportedFunctionsInVulkanGLSL.
+        // by MonomorphizeUnsupportedFunctions.
         return true;
     }
 
@@ -396,7 +396,7 @@ class RewriteCubeMapSamplersAs2DArrayTraverser : public TIntermTraverser
         //                                 out vec2 dUVdx, out vec2 dUVdy
         const TType *vec3Type = StaticType::GetBasic<EbtFloat, 3>();
         TType *inVec3Type     = new TType(*vec3Type);
-        inVec3Type->setQualifier(EvqIn);
+        inVec3Type->setQualifier(EvqParamIn);
 
         TVariable *pVar    = new TVariable(mSymbolTable, ImmutableString("P"), inVec3Type,
                                         SymbolType::AngleInternal);
@@ -407,7 +407,7 @@ class RewriteCubeMapSamplersAs2DArrayTraverser : public TIntermTraverser
 
         const TType *vec2Type = StaticType::GetBasic<EbtFloat, 2>();
         TType *outVec2Type    = new TType(*vec2Type);
-        outVec2Type->setQualifier(EvqOut);
+        outVec2Type->setQualifier(EvqParamOut);
 
         TVariable *dUVdxVar = new TVariable(mSymbolTable, ImmutableString("dUVdx"), outVec2Type,
                                             SymbolType::AngleInternal);
@@ -951,12 +951,10 @@ class RewriteCubeMapSamplersAs2DArrayTraverser : public TIntermTraverser
     TIntermFunctionDefinition *mCoordTranslationFunctionImplicitDecl;
 };
 
-}  // anonymous namespace
-
-bool RewriteCubeMapSamplersAs2DArray(TCompiler *compiler,
-                                     TIntermBlock *root,
-                                     TSymbolTable *symbolTable,
-                                     bool isFragmentShader)
+bool RewriteCubeMapSamplersAs2DArrayImpl(TCompiler *compiler,
+                                         TIntermBlock *root,
+                                         TSymbolTable *symbolTable,
+                                         bool isFragmentShader)
 {
     RewriteCubeMapSamplersAs2DArrayTraverser traverser(symbolTable, isFragmentShader);
     root->traverse(&traverser);
@@ -979,8 +977,24 @@ bool RewriteCubeMapSamplersAs2DArray(TCompiler *compiler,
         root->insertChildNodes(firstFunctionIndex,
                                TIntermSequence({coordTranslationFunctionDeclImplicit}));
     }
+    return true;
+}
+}  // anonymous namespace
 
-    return compiler->validateAST(root);
+bool RewriteCubeMapSamplersAs2DArray(TCompiler *compiler,
+                                     TIntermBlock *root,
+                                     TSymbolTable *symbolTable,
+                                     bool isFragmentShader)
+{
+    // This transformation adds function declarations after the fact and so some validation is
+    // momentarily disabled.
+    bool enableValidateFunctionCall = compiler->disableValidateFunctionCall();
+
+    bool result =
+        RewriteCubeMapSamplersAs2DArrayImpl(compiler, root, symbolTable, isFragmentShader);
+
+    compiler->restoreValidateFunctionCall(enableValidateFunctionCall);
+    return result && compiler->validateAST(root);
 }
 
 }  // namespace sh

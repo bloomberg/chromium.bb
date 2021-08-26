@@ -5,20 +5,23 @@
 #ifndef COMPONENTS_SYNC_ENGINE_ENTITY_DATA_H_
 #define COMPONENTS_SYNC_ENGINE_ENTITY_DATA_H_
 
+#include <iosfwd>
 #include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "base/values.h"
 #include "components/sync/base/client_tag_hash.h"
-#include "components/sync/base/unique_position.h"
-#include "components/sync/protocol/sync.pb.h"
+#include "components/sync/protocol/entity_specifics.pb.h"
 
 // TODO(crbug.com/947443): Code outside components/sync depends on this file
 // to implement new datatypes, so components/sync/engine can't be hidden while
 // this file lives there. Consider moving to components/sync/protocol or
 // elsewhere.
+
+namespace base {
+class DictionaryValue;
+}
 
 namespace syncer {
 
@@ -75,18 +78,11 @@ struct EntityData {
   // hierarchical datatypes (e.g. Bookmarks).
   std::string parent_id;
 
-  // Indicate whether this is a folder or not. Relevant only for bookmarks.
-  bool is_folder = false;
-
-  // Indicate whether bookmark GUID was missing in the original specifics during
-  // GetUpdates. If the GUID in specifics was evaluated by
-  // AdaptGuidForBookmark(), this field will be set to true. Relevant only for
-  // bookmarks.
-  bool is_bookmark_guid_in_specifics_preprocessed = false;
-
-  // Unique position of an entity among its siblings. This is supposed to be
-  // set only for datatypes that support positioning (e.g. Bookmarks).
-  UniquePosition unique_position;
+  // Indicate whether bookmark's |unique_position| was missing in the original
+  // specifics during GetUpdates. If the |unique_position| in specifics was
+  // evaluated by AdaptUniquePositionForBookmark(), this field will be set to
+  // true. Relevant only for bookmarks.
+  bool is_bookmark_unique_position_in_specifics_preprocessed = false;
 
   // True if EntityData represents deleted entity; otherwise false.
   // Note that EntityData would be considered to represent a deletion if its

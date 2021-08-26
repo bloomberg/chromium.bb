@@ -14,6 +14,8 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/check.h"
+#include "base/check_op.h"
 #include "base/lazy_instance.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -34,6 +36,8 @@
 #include "printing/mojom/print.mojom.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/crosapi/crosapi_ash.h"
+#include "chrome/browser/ash/crosapi/crosapi_manager.h"
 #include "chrome/browser/ash/crosapi/local_printer_ash.h"
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chromeos/lacros/lacros_service.h"
@@ -108,7 +112,9 @@ class PrintPreviewHandlerChromeOS::AccessTokenService
 
 PrintPreviewHandlerChromeOS::PrintPreviewHandlerChromeOS() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  local_printer_ = std::make_unique<crosapi::LocalPrinterAsh>();
+  DCHECK(crosapi::CrosapiManager::IsInitialized());
+  local_printer_ =
+      crosapi::CrosapiManager::Get()->crosapi_ash()->local_printer_ash();
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
   chromeos::LacrosService* service = chromeos::LacrosService::Get();
   if (!service->IsAvailable<crosapi::mojom::LocalPrinter>()) {
@@ -253,37 +259,36 @@ void PrintPreviewHandlerChromeOS::SendEulaUrl(const std::string& callback_id,
   ResolveJavascriptCallback(base::Value(callback_id), base::Value(eula_url));
 }
 
-// Resolves the callback (via ResolveJavascriptCallback) with a
-// PrinterSetupResponse object (defined in
-// chrome/browser/resources/print_preview/native_layer_cros.js).
-// destination_info is a CapabilitiesResponse object (defined in
+// Resolves the callback with a PrinterSetupResponse object (defined in
+// chrome/browser/resources/print_preview/native_layer_cros.js) or rejects it
+// if `destination_info` does not contain a capabilities dictionary.
+// `destination_info` is a CapabilitiesResponse object (defined in
 // chrome/browser/resources/print_preview/native_layer.js).
 void PrintPreviewHandlerChromeOS::SendPrinterSetup(
     const std::string& callback_id,
     const std::string& printer_name,
     base::Value destination_info) {
-  base::Value response(base::Value::Type::DICTIONARY);
   base::Value* caps_value =
       destination_info.is_dict()
           ? destination_info.FindKeyOfType(kSettingCapabilities,
                                            base::Value::Type::DICTIONARY)
           : nullptr;
+  if (!caps_value) {
+    VLOG(1) << "Printer setup failed";
+    RejectJavascriptCallback(base::Value(callback_id), base::Value());
+    return;
+  }
+
+  base::Value response(base::Value::Type::DICTIONARY);
   response.SetKey("printerId", base::Value(printer_name));
-  response.SetKey("success", base::Value(!!caps_value));
-  response.SetKey("capabilities",
-                  caps_value ? std::move(*caps_value)
-                             : base::Value(base::Value::Type::DICTIONARY));
-  if (caps_value) {
-    base::Value* printer =
-        destination_info.FindKeyOfType(kPrinter, base::Value::Type::DICTIONARY);
-    if (printer) {
-      base::Value* policies_value = printer->FindKeyOfType(
-          kSettingPolicies, base::Value::Type::DICTIONARY);
-      if (policies_value)
-        response.SetKey("policies", std::move(*policies_value));
-    }
-  } else {
-    LOG(WARNING) << "Printer setup failed";
+  response.SetKey("capabilities", std::move(*caps_value));
+  base::Value* printer =
+      destination_info.FindKeyOfType(kPrinter, base::Value::Type::DICTIONARY);
+  if (printer) {
+    base::Value* policies_value =
+        printer->FindKeyOfType(kSettingPolicies, base::Value::Type::DICTIONARY);
+    if (policies_value)
+      response.SetKey("policies", std::move(*policies_value));
   }
   ResolveJavascriptCallback(base::Value(callback_id), response);
 }

@@ -4,10 +4,28 @@
 
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
+import * as i18n from '../../core/i18n/i18n.js';
 import type * as SDK from '../../core/sdk/sdk.js';
 import type * as Protocol from '../../generated/protocol.js';
 
 import type {MarkdownIssueDescription} from './MarkdownIssueDescription.js';
+
+const UIStrings = {
+  /**
+   *@description A description for a kind of issue we display in the issues tab.
+   */
+  pageErrorIssue: 'A page error issue: the page is not working correctly',
+  /**
+   *@description A description for a kind of issue we display in the issues tab.
+   */
+  breakingChangeIssue: 'A breaking change issue: the page may stop working in an upcoming version of Chrome',
+  /**
+   *@description A description for a kind of issue we display in the issues tab.
+   */
+  improvementIssue: 'An improvement issue: there is an opportunity to improve the page',
+};
+const str_ = i18n.i18n.registerUIStrings('models/issues_manager/Issue.ts', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 
 // eslint-disable-next-line rulesdir/const_enum
 export enum IssueCategory {
@@ -45,6 +63,17 @@ export enum IssueKind {
   Improvement = 'Improvement',
 }
 
+export function getIssueKindDescription(issueKind: IssueKind): Common.UIString.LocalizedString {
+  switch (issueKind) {
+    case IssueKind.PageError:
+      return i18nString(UIStrings.pageErrorIssue);
+    case IssueKind.BreakingChange:
+      return i18nString(UIStrings.breakingChangeIssue);
+    case IssueKind.Improvement:
+      return i18nString(UIStrings.improvementIssue);
+  }
+}
+
 /**
  * Union two issue kinds for issue aggregation. The idea is to show the most
  * important kind on aggregated issues that union issues of different kinds.
@@ -69,19 +98,20 @@ export interface AffectedElement {
   target: SDK.Target.Target|null;
 }
 
-export abstract class Issue<IssueCode extends string = string> extends Common.ObjectWrapper.ObjectWrapper {
+export abstract class Issue<IssueCode extends string = string> {
   private issueCode: IssueCode;
   private issuesModel: SDK.IssuesModel.IssuesModel|null;
-  protected issueId: string|undefined = undefined;
+  protected issueId: Protocol.Audits.IssueId|undefined = undefined;
+  private hidden: boolean;
 
   constructor(
       code: IssueCode|{code: IssueCode, umaCode: string}, issuesModel: SDK.IssuesModel.IssuesModel|null = null,
-      issueId?: string) {
-    super();
+      issueId?: Protocol.Audits.IssueId) {
     this.issueCode = typeof code === 'object' ? code.code : code;
     this.issuesModel = issuesModel;
     this.issueId = issueId;
     Host.userMetrics.issueCreated(typeof code === 'string' ? code : code.umaCode);
+    this.hidden = false;
   }
 
   code(): IssueCode {
@@ -98,6 +128,10 @@ export abstract class Issue<IssueCode extends string = string> extends Common.Ob
   }
 
   cookies(): Iterable<Protocol.Audits.AffectedCookie> {
+    return [];
+  }
+
+  rawCookieLines(): Iterable<string> {
     return [];
   }
 
@@ -133,8 +167,16 @@ export abstract class Issue<IssueCode extends string = string> extends Common.Ob
     return false;
   }
 
-  getIssueId(): string|undefined {
+  getIssueId(): Protocol.Audits.IssueId|undefined {
     return this.issueId;
+  }
+
+  isHidden(): boolean {
+    return this.hidden;
+  }
+
+  setHidden(hidden: boolean): void {
+    this.hidden = hidden;
   }
 }
 

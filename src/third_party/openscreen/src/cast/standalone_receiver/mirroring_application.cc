@@ -57,6 +57,8 @@ bool MirroringApplication::Launch(const std::string& app_id,
       std::make_unique<StreamingPlaybackController>(task_runner_, this);
 
   ReceiverSession::Preferences preferences;
+  preferences.video_codecs.insert(preferences.video_codecs.end(),
+                                  {VideoCodec::kVp9, VideoCodec::kAv1});
   preferences.remoting =
       std::make_unique<ReceiverSession::RemotingPreferences>();
   current_session_ =

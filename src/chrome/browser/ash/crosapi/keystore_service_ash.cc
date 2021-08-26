@@ -20,6 +20,7 @@
 #include "chrome/browser/platform_keys/platform_keys.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/crosapi/cpp/keystore_service_util.h"
+#include "chromeos/crosapi/mojom/keystore_error.mojom.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/cert/x509_certificate.h"
@@ -193,14 +194,90 @@ KeyPermissionsService* KeystoreServiceAsh::GetKeyPermissions() {
 //------------------------------------------------------------------------------
 
 void KeystoreServiceAsh::ChallengeAttestationOnlyKeystore(
-    const std::string& challenge,
     mojom::KeystoreType type,
+    const std::vector<uint8_t>& challenge,
     bool migrate,
     ChallengeAttestationOnlyKeystoreCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!crosapi::mojom::IsKnownEnumValue(type)) {
     std::move(callback).Run(
-        mojom::KeystoreStringResult::NewErrorMessage(kUnsupportedKeystoreType));
+        mojom::ChallengeAttestationOnlyKeystoreResult::NewErrorMessage(
+            kUnsupportedKeystoreType));
+    return;
+  }
+
+  chromeos::attestation::AttestationKeyType key_type;
+  switch (type) {
+    case mojom::KeystoreType::kUser:
+      key_type = chromeos::attestation::KEY_USER;
+      break;
+    case mojom::KeystoreType::kDevice:
+      key_type = chromeos::attestation::KEY_DEVICE;
+      break;
+  }
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+
+  std::string key_name_for_spkac;
+  if (migrate && (key_type == chromeos::attestation::KEY_DEVICE)) {
+    key_name_for_spkac = base::StrCat(
+        {ash::attestation::kEnterpriseMachineKeyForSpkacPrefix, "keystore-",
+         base::UnguessableToken::Create().ToString()});
+  }
+
+  // The lifetime of this object is bound to the callback.
+  std::unique_ptr<ash::attestation::TpmChallengeKey> challenge_key =
+      ash::attestation::TpmChallengeKeyFactory::Create();
+  ash::attestation::TpmChallengeKey* challenge_key_ptr = challenge_key.get();
+  outstanding_challenges_.push_back(std::move(challenge_key));
+  challenge_key_ptr->BuildResponse(
+      key_type, profile,
+      base::BindOnce(&KeystoreServiceAsh::DidChallengeAttestationOnlyKeystore,
+                     weak_factory_.GetWeakPtr(), std::move(callback),
+                     challenge_key_ptr),
+      std::string(challenge.begin(), challenge.end()),
+      /*register_key=*/migrate, key_name_for_spkac);
+}
+
+void KeystoreServiceAsh::DidChallengeAttestationOnlyKeystore(
+    ChallengeAttestationOnlyKeystoreCallback callback,
+    void* challenge_key_ptr,
+    const ash::attestation::TpmChallengeKeyResult& result) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  crosapi::mojom::ChallengeAttestationOnlyKeystoreResultPtr result_ptr =
+      mojom::ChallengeAttestationOnlyKeystoreResult::New();
+  if (result.IsSuccess()) {
+    result_ptr->set_challenge_response(std::vector<uint8_t>(
+        result.challenge_response.begin(), result.challenge_response.end()));
+  } else {
+    result_ptr->set_error_message(result.GetErrorMessage());
+  }
+  std::move(callback).Run(std::move(result_ptr));
+
+  // Remove the outstanding challenge_key object.
+  bool found = false;
+  for (auto it = outstanding_challenges_.begin();
+       it != outstanding_challenges_.end(); ++it) {
+    if (it->get() == challenge_key_ptr) {
+      outstanding_challenges_.erase(it);
+      found = true;
+      break;
+    }
+  }
+  DCHECK(found);
+}
+
+//------------------------------------------------------------------------------
+
+void KeystoreServiceAsh::DEPRECATED_ChallengeAttestationOnlyKeystore(
+    const std::string& challenge,
+    mojom::KeystoreType type,
+    bool migrate,
+    DEPRECATED_ChallengeAttestationOnlyKeystoreCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (!crosapi::mojom::IsKnownEnumValue(type)) {
+    std::move(callback).Run(
+        mojom::DEPRECATED_KeystoreStringResult::NewErrorMessage(
+            kUnsupportedKeystoreType));
     return;
   }
 
@@ -228,20 +305,20 @@ void KeystoreServiceAsh::ChallengeAttestationOnlyKeystore(
   outstanding_challenges_.push_back(std::move(challenge_key));
   challenge_key_ptr->BuildResponse(
       key_type, profile,
-      base::BindOnce(&KeystoreServiceAsh::DidChallengeAttestationOnlyKeystore,
-                     weak_factory_.GetWeakPtr(), std::move(callback),
-                     challenge_key_ptr),
+      base::BindOnce(
+          &KeystoreServiceAsh::DEPRECATED_DidChallengeAttestationOnlyKeystore,
+          weak_factory_.GetWeakPtr(), std::move(callback), challenge_key_ptr),
       challenge,
       /*register_key=*/migrate, key_name_for_spkac);
 }
 
-void KeystoreServiceAsh::DidChallengeAttestationOnlyKeystore(
-    ChallengeAttestationOnlyKeystoreCallback callback,
+void KeystoreServiceAsh::DEPRECATED_DidChallengeAttestationOnlyKeystore(
+    DEPRECATED_ChallengeAttestationOnlyKeystoreCallback callback,
     void* challenge_key_ptr,
     const ash::attestation::TpmChallengeKeyResult& result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  crosapi::mojom::KeystoreStringResultPtr result_ptr =
-      mojom::KeystoreStringResult::New();
+  crosapi::mojom::DEPRECATED_KeystoreStringResultPtr result_ptr =
+      mojom::DEPRECATED_KeystoreStringResult::New();
   if (result.IsSuccess()) {
     result_ptr->set_challenge_response(result.challenge_response);
   } else {
@@ -266,9 +343,7 @@ void KeystoreServiceAsh::DidChallengeAttestationOnlyKeystore(
 
 void KeystoreServiceAsh::GetKeyStores(GetKeyStoresCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  PlatformKeysService* platform_keys_service = GetPlatformKeys();
-
-  platform_keys_service->GetTokens(base::BindOnce(
+  GetPlatformKeys()->GetTokens(base::BindOnce(
       &KeystoreServiceAsh::DidGetKeyStores, std::move(callback)));
 }
 
@@ -280,6 +355,48 @@ void KeystoreServiceAsh::DidGetKeyStores(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   mojom::GetKeyStoresResultPtr result_ptr = mojom::GetKeyStoresResult::New();
+
+  if (status == chromeos::platform_keys::Status::kSuccess) {
+    std::vector<mojom::KeystoreType> key_stores;
+    for (auto token_id : *platform_keys_token_ids) {
+      switch (token_id) {
+        case TokenId::kUser:
+          key_stores.push_back(mojom::KeystoreType::kUser);
+          break;
+        case TokenId::kSystem:
+          key_stores.push_back(mojom::KeystoreType::kDevice);
+          break;
+      }
+    }
+    result_ptr->set_key_stores(std::move(key_stores));
+  } else {
+    result_ptr->set_error(
+        chromeos::platform_keys::StatusToKeystoreError(status));
+  }
+
+  std::move(callback).Run(std::move(result_ptr));
+}
+
+//------------------------------------------------------------------------------
+
+void KeystoreServiceAsh::DEPRECATED_GetKeyStores(
+    DEPRECATED_GetKeyStoresCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  PlatformKeysService* platform_keys_service = GetPlatformKeys();
+
+  platform_keys_service->GetTokens(base::BindOnce(
+      &KeystoreServiceAsh::DEPRECATED_DidGetKeyStores, std::move(callback)));
+}
+
+// static
+void KeystoreServiceAsh::DEPRECATED_DidGetKeyStores(
+    DEPRECATED_GetKeyStoresCallback callback,
+    std::unique_ptr<std::vector<TokenId>> platform_keys_token_ids,
+    chromeos::platform_keys::Status status) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  mojom::DEPRECATED_GetKeyStoresResultPtr result_ptr =
+      mojom::DEPRECATED_GetKeyStoresResult::New();
 
   if (status == chromeos::platform_keys::Status::kSuccess) {
     std::vector<mojom::KeystoreType> key_stores;
@@ -357,8 +474,8 @@ void KeystoreServiceAsh::GetCertificates(mojom::KeystoreType keystore,
   PlatformKeysService* platform_keys_service = GetPlatformKeys();
   absl::optional<TokenId> token_id = KeystoreToToken(keystore);
   if (!token_id) {
-    std::move(callback).Run(mojom::GetCertificatesResult::NewErrorMessage(
-        kUnsupportedKeystoreType));
+    std::move(callback).Run(mojom::GetCertificatesResult::NewError(
+        mojom::KeystoreError::kUnsupportedKeystoreType));
     return;
   }
 
@@ -388,6 +505,55 @@ void KeystoreServiceAsh::DidGetCertificates(
     }
     result_ptr->set_certificates(std::move(output));
   } else {
+    result_ptr->set_error(
+        chromeos::platform_keys::StatusToKeystoreError(status));
+  }
+
+  std::move(callback).Run(std::move(result_ptr));
+}
+
+//------------------------------------------------------------------------------
+
+void KeystoreServiceAsh::DEPRECATED_GetCertificates(
+    mojom::KeystoreType keystore,
+    DEPRECATED_GetCertificatesCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  PlatformKeysService* platform_keys_service = GetPlatformKeys();
+  absl::optional<TokenId> token_id = KeystoreToToken(keystore);
+  if (!token_id) {
+    std::move(callback).Run(
+        mojom::DEPRECATED_GetCertificatesResult::NewErrorMessage(
+            kUnsupportedKeystoreType));
+    return;
+  }
+
+  platform_keys_service->GetCertificates(
+      token_id.value(),
+      base::BindOnce(&KeystoreServiceAsh::DEPRECATED_DidGetCertificates,
+                     std::move(callback)));
+}
+
+// static
+void KeystoreServiceAsh::DEPRECATED_DidGetCertificates(
+    DEPRECATED_GetCertificatesCallback callback,
+    std::unique_ptr<net::CertificateList> certs,
+    chromeos::platform_keys::Status status) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  mojom::DEPRECATED_GetCertificatesResultPtr result_ptr =
+      mojom::DEPRECATED_GetCertificatesResult::New();
+
+  if (status == chromeos::platform_keys::Status::kSuccess) {
+    std::vector<std::vector<uint8_t>> output;
+    for (scoped_refptr<net::X509Certificate> cert : *certs) {
+      CRYPTO_BUFFER* der_buffer = cert->cert_buffer();
+      const uint8_t* data = CRYPTO_BUFFER_data(der_buffer);
+      std::vector<uint8_t> der_x509_certificate(
+          data, data + CRYPTO_BUFFER_len(der_buffer));
+      output.push_back(std::move(der_x509_certificate));
+    }
+    result_ptr->set_certificates(std::move(output));
+  } else {
     result_ptr->set_error_message(
         chromeos::platform_keys::StatusToString(status));
   }
@@ -403,12 +569,14 @@ void KeystoreServiceAsh::AddCertificate(mojom::KeystoreType keystore,
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   scoped_refptr<net::X509Certificate> cert_x509 = ParseCertificate(certificate);
   if (!cert_x509.get()) {
-    std::move(callback).Run(kEnterprisePlatformErrorInvalidX509Cert);
+    std::move(callback).Run(/*is_error=*/true,
+                            mojom::KeystoreError::kCertificateInvalid);
     return;
   }
   absl::optional<TokenId> token_id = KeystoreToToken(keystore);
   if (!token_id) {
-    std::move(callback).Run(kUnsupportedKeystoreType);
+    std::move(callback).Run(/*is_error=*/true,
+                            mojom::KeystoreError::kUnsupportedKeystoreType);
     return;
   }
 
@@ -421,6 +589,44 @@ void KeystoreServiceAsh::AddCertificate(mojom::KeystoreType keystore,
 
 void KeystoreServiceAsh::DidImportCertificate(
     AddCertificateCallback callback,
+    chromeos::platform_keys::Status status) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (status == chromeos::platform_keys::Status::kSuccess) {
+    std::move(callback).Run(/*is_error=*/false, mojom::KeystoreError::kUnknown);
+  } else {
+    std::move(callback).Run(
+        /*is_error=*/true,
+        chromeos::platform_keys::StatusToKeystoreError(status));
+  }
+}
+
+//------------------------------------------------------------------------------
+
+void KeystoreServiceAsh::DEPRECATED_AddCertificate(
+    mojom::KeystoreType keystore,
+    const std::vector<uint8_t>& certificate,
+    DEPRECATED_AddCertificateCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  scoped_refptr<net::X509Certificate> cert_x509 = ParseCertificate(certificate);
+  if (!cert_x509.get()) {
+    std::move(callback).Run(kEnterprisePlatformErrorInvalidX509Cert);
+    return;
+  }
+  absl::optional<TokenId> token_id = KeystoreToToken(keystore);
+  if (!token_id) {
+    std::move(callback).Run(kUnsupportedKeystoreType);
+    return;
+  }
+
+  PlatformKeysService* platform_keys_service = GetPlatformKeys();
+  platform_keys_service->ImportCertificate(
+      token_id.value(), cert_x509,
+      base::BindOnce(&KeystoreServiceAsh::DEPRECATED_DidImportCertificate,
+                     std::move(callback)));
+}
+
+void KeystoreServiceAsh::DEPRECATED_DidImportCertificate(
+    DEPRECATED_AddCertificateCallback callback,
     chromeos::platform_keys::Status status) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (status == chromeos::platform_keys::Status::kSuccess)
@@ -438,12 +644,14 @@ void KeystoreServiceAsh::RemoveCertificate(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   scoped_refptr<net::X509Certificate> cert_x509 = ParseCertificate(certificate);
   if (!cert_x509.get()) {
-    std::move(callback).Run(kEnterprisePlatformErrorInvalidX509Cert);
+    std::move(callback).Run(/*is_error=*/true,
+                            mojom::KeystoreError::kCertificateInvalid);
     return;
   }
   absl::optional<TokenId> token_id = KeystoreToToken(keystore);
   if (!token_id) {
-    std::move(callback).Run(kUnsupportedKeystoreType);
+    std::move(callback).Run(/*is_error=*/true,
+                            mojom::KeystoreError::kUnsupportedKeystoreType);
     return;
   }
 
@@ -456,6 +664,44 @@ void KeystoreServiceAsh::RemoveCertificate(
 
 void KeystoreServiceAsh::DidRemoveCertificate(
     RemoveCertificateCallback callback,
+    chromeos::platform_keys::Status status) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (status == chromeos::platform_keys::Status::kSuccess) {
+    std::move(callback).Run(/*is_error=*/false, mojom::KeystoreError::kUnknown);
+  } else {
+    std::move(callback).Run(
+        /*is_error=*/true,
+        chromeos::platform_keys::StatusToKeystoreError(status));
+  }
+}
+
+//------------------------------------------------------------------------------
+
+void KeystoreServiceAsh::DEPRECATED_RemoveCertificate(
+    mojom::KeystoreType keystore,
+    const std::vector<uint8_t>& certificate,
+    DEPRECATED_RemoveCertificateCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  scoped_refptr<net::X509Certificate> cert_x509 = ParseCertificate(certificate);
+  if (!cert_x509.get()) {
+    std::move(callback).Run(kEnterprisePlatformErrorInvalidX509Cert);
+    return;
+  }
+  absl::optional<TokenId> token_id = KeystoreToToken(keystore);
+  if (!token_id) {
+    std::move(callback).Run(kUnsupportedKeystoreType);
+    return;
+  }
+
+  PlatformKeysService* platform_keys_service = GetPlatformKeys();
+  platform_keys_service->RemoveCertificate(
+      token_id.value(), cert_x509,
+      base::BindOnce(&KeystoreServiceAsh::DEPRECATED_DidRemoveCertificate,
+                     std::move(callback)));
+}
+
+void KeystoreServiceAsh::DEPRECATED_DidRemoveCertificate(
+    DEPRECATED_RemoveCertificateCallback callback,
     chromeos::platform_keys::Status status) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (status == chromeos::platform_keys::Status::kSuccess)
@@ -474,10 +720,8 @@ void KeystoreServiceAsh::GetPublicKey(
   absl::optional<std::string> name =
       StringFromSigningAlgorithmName(algorithm_name);
   if (!name) {
-    std::move(callback).Run(mojom::GetPublicKeyResult::NewErrorMessage(
-        chromeos::platform_keys::StatusToString(
-            chromeos::platform_keys::Status::
-                kErrorAlgorithmNotPermittedByCertificate)));
+    std::move(callback).Run(mojom::GetPublicKeyResult::NewError(
+        mojom::KeystoreError::kAlgorithmNotPermittedByCertificate));
     return;
   }
 
@@ -486,6 +730,53 @@ void KeystoreServiceAsh::GetPublicKey(
                                                         name.value());
 
   mojom::GetPublicKeyResultPtr result_ptr = mojom::GetPublicKeyResult::New();
+  if (output.status == chromeos::platform_keys::Status::kSuccess) {
+    absl::optional<crosapi::mojom::KeystoreSigningAlgorithmPtr>
+        signing_algorithm =
+            crosapi::keystore_service_util::SigningAlgorithmFromDictionary(
+                output.algorithm);
+    if (signing_algorithm) {
+      mojom::GetPublicKeySuccessResultPtr success_result_ptr =
+          mojom::GetPublicKeySuccessResult::New();
+      success_result_ptr->public_key = std::move(output.public_key);
+      success_result_ptr->algorithm_properties =
+          std::move(signing_algorithm.value());
+      result_ptr->set_success_result(std::move(success_result_ptr));
+    } else {
+      result_ptr->set_error(
+          crosapi::mojom::KeystoreError::kUnsupportedAlgorithmType);
+    }
+  } else {
+    result_ptr->set_error(
+        chromeos::platform_keys::StatusToKeystoreError(output.status));
+  }
+  std::move(callback).Run(std::move(result_ptr));
+}
+
+//------------------------------------------------------------------------------
+
+void KeystoreServiceAsh::DEPRECATED_GetPublicKey(
+    const std::vector<uint8_t>& certificate,
+    mojom::KeystoreSigningAlgorithmName algorithm_name,
+    DEPRECATED_GetPublicKeyCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  absl::optional<std::string> name =
+      StringFromSigningAlgorithmName(algorithm_name);
+  if (!name) {
+    std::move(callback).Run(
+        mojom::DEPRECATED_GetPublicKeyResult::NewErrorMessage(
+            chromeos::platform_keys::StatusToString(
+                chromeos::platform_keys::Status::
+                    kErrorAlgorithmNotPermittedByCertificate)));
+    return;
+  }
+
+  chromeos::platform_keys::GetPublicKeyAndAlgorithmOutput output =
+      chromeos::platform_keys::GetPublicKeyAndAlgorithm(certificate,
+                                                        name.value());
+
+  mojom::DEPRECATED_GetPublicKeyResultPtr result_ptr =
+      mojom::DEPRECATED_GetPublicKeyResult::New();
   if (output.status == chromeos::platform_keys::Status::kSuccess) {
     absl::optional<crosapi::mojom::KeystoreSigningAlgorithmPtr>
         signing_algorithm =
@@ -510,15 +801,15 @@ void KeystoreServiceAsh::GetPublicKey(
 
 //------------------------------------------------------------------------------
 
-void KeystoreServiceAsh::ExtensionGenerateKey(
+void KeystoreServiceAsh::DEPRECATED_ExtensionGenerateKey(
     mojom::KeystoreType keystore,
     mojom::KeystoreSigningAlgorithmPtr algorithm,
     const absl::optional<std::string>& extension_id,
-    ExtensionGenerateKeyCallback callback) {
+    DEPRECATED_ExtensionGenerateKeyCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!extension_id) {
     std::move(callback).Run(
-        mojom::ExtensionKeystoreBinaryResult::NewErrorMessage(
+        mojom::DEPRECATED_ExtensionKeystoreBinaryResult::NewErrorMessage(
             kUnsupportedLacrosVersion));
     return;
   }
@@ -528,23 +819,25 @@ void KeystoreServiceAsh::ExtensionGenerateKey(
   absl::optional<TokenId> token_id = KeystoreToToken(keystore);
   if (!token_id) {
     std::move(callback).Run(
-        mojom::ExtensionKeystoreBinaryResult::NewErrorMessage(
+        mojom::DEPRECATED_ExtensionKeystoreBinaryResult::NewErrorMessage(
             kUnsupportedKeystoreType));
     return;
   }
 
   switch (algorithm->which()) {
     case mojom::KeystoreSigningAlgorithm::Tag::PKCS115: {
-      auto c = base::BindOnce(&KeystoreServiceAsh::DidExtensionGenerateKey,
-                              std::move(callback));
+      auto c = base::BindOnce(
+          &KeystoreServiceAsh::DEPRECATED_DidExtensionGenerateKey,
+          std::move(callback));
       ext_platform_keys_service->GenerateRSAKey(
           token_id.value(), algorithm->get_pkcs115()->modulus_length,
           *extension_id, std::move(c));
       break;
     }
     case mojom::KeystoreSigningAlgorithm::Tag::ECDSA: {
-      auto c = base::BindOnce(&KeystoreServiceAsh::DidExtensionGenerateKey,
-                              std::move(callback));
+      auto c = base::BindOnce(
+          &KeystoreServiceAsh::DEPRECATED_DidExtensionGenerateKey,
+          std::move(callback));
       ext_platform_keys_service->GenerateECKey(
           token_id.value(), algorithm->get_ecdsa()->named_curve, *extension_id,
           std::move(c));
@@ -552,7 +845,7 @@ void KeystoreServiceAsh::ExtensionGenerateKey(
     }
     default: {
       std::move(callback).Run(
-          mojom::ExtensionKeystoreBinaryResult::NewErrorMessage(
+          mojom::DEPRECATED_ExtensionKeystoreBinaryResult::NewErrorMessage(
               chromeos::platform_keys::StatusToString(
                   chromeos::platform_keys::Status::
                       kErrorAlgorithmNotSupported)));
@@ -562,13 +855,13 @@ void KeystoreServiceAsh::ExtensionGenerateKey(
 }
 
 // static
-void KeystoreServiceAsh::DidExtensionGenerateKey(
-    ExtensionGenerateKeyCallback callback,
+void KeystoreServiceAsh::DEPRECATED_DidExtensionGenerateKey(
+    DEPRECATED_ExtensionGenerateKeyCallback callback,
     const std::string& public_key,
     absl::optional<crosapi::mojom::KeystoreError> error) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  crosapi::mojom::ExtensionKeystoreBinaryResultPtr result_ptr =
-      mojom::ExtensionKeystoreBinaryResult::New();
+  crosapi::mojom::DEPRECATED_ExtensionKeystoreBinaryResultPtr result_ptr =
+      mojom::DEPRECATED_ExtensionKeystoreBinaryResult::New();
   if (!error) {
     result_ptr->set_blob(
         std::vector<uint8_t>(public_key.begin(), public_key.end()));
@@ -581,17 +874,18 @@ void KeystoreServiceAsh::DidExtensionGenerateKey(
 
 //------------------------------------------------------------------------------
 
-void KeystoreServiceAsh::ExtensionSign(KeystoreType keystore,
-                                       const std::vector<uint8_t>& public_key,
-                                       SigningScheme scheme,
-                                       const std::vector<uint8_t>& data,
-                                       const std::string& extension_id,
-                                       ExtensionSignCallback callback) {
+void KeystoreServiceAsh::DEPRECATED_ExtensionSign(
+    KeystoreType keystore,
+    const std::vector<uint8_t>& public_key,
+    SigningScheme scheme,
+    const std::vector<uint8_t>& data,
+    const std::string& extension_id,
+    DEPRECATED_ExtensionSignCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   absl::optional<TokenId> token_id = KeystoreToToken(keystore);
   if (!token_id) {
     std::move(callback).Run(
-        mojom::ExtensionKeystoreBinaryResult::NewErrorMessage(
+        mojom::DEPRECATED_ExtensionKeystoreBinaryResult::NewErrorMessage(
             kUnsupportedKeystoreType));
     return;
   }
@@ -602,14 +896,14 @@ void KeystoreServiceAsh::ExtensionSign(KeystoreType keystore,
   switch (scheme) {
     case SigningScheme::kUnknown:
       std::move(callback).Run(
-          mojom::ExtensionKeystoreBinaryResult::NewErrorMessage(
+          mojom::DEPRECATED_ExtensionKeystoreBinaryResult::NewErrorMessage(
               kUnsupportedAlgorithmType));
       return;
     case SigningScheme::kRsassaPkcs1V15None:
       service->SignRSAPKCS1Raw(
           token_id, std::string(data.begin(), data.end()),
           std::string(public_key.begin(), public_key.end()), extension_id,
-          base::BindOnce(&KeystoreServiceAsh::DidExtensionSign,
+          base::BindOnce(&KeystoreServiceAsh::DEPRECATED_DidExtensionSign,
                          std::move(callback)));
       return;
     case SigningScheme::kRsassaPkcs1V15Sha1:
@@ -646,26 +940,28 @@ void KeystoreServiceAsh::ExtensionSign(KeystoreType keystore,
       break;
   }
 
-  service->SignDigest(token_id, std::string(data.begin(), data.end()),
-                      std::string(public_key.begin(), public_key.end()),
-                      key_type, hash_algorithm, extension_id,
-                      base::BindOnce(&KeystoreServiceAsh::DidExtensionSign,
-                                     std::move(callback)));
+  service->SignDigest(
+      token_id, std::string(data.begin(), data.end()),
+      std::string(public_key.begin(), public_key.end()), key_type,
+      hash_algorithm, extension_id,
+      base::BindOnce(&KeystoreServiceAsh::DEPRECATED_DidExtensionSign,
+                     std::move(callback)));
 }
 
 // static
-void KeystoreServiceAsh::DidExtensionSign(
-    ExtensionSignCallback callback,
+void KeystoreServiceAsh::DEPRECATED_DidExtensionSign(
+    DEPRECATED_ExtensionSignCallback callback,
     const std::string& signature,
     absl::optional<mojom::KeystoreError> error) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (!error) {
-    std::move(callback).Run(mojom::ExtensionKeystoreBinaryResult::NewBlob(
-        std::vector<uint8_t>(signature.begin(), signature.end())));
+    std::move(callback).Run(
+        mojom::DEPRECATED_ExtensionKeystoreBinaryResult::NewBlob(
+            std::vector<uint8_t>(signature.begin(), signature.end())));
   } else {
     std::move(callback).Run(
-        mojom::ExtensionKeystoreBinaryResult::NewErrorMessage(
+        mojom::DEPRECATED_ExtensionKeystoreBinaryResult::NewErrorMessage(
             chromeos::platform_keys::KeystoreErrorToString(error.value())));
   }
 }

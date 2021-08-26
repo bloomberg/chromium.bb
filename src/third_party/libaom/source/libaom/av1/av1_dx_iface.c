@@ -715,7 +715,7 @@ static aom_image_t *add_grain_if_needed(aom_codec_alg_priv_t *ctx,
 
   grain_img->user_priv = img->user_priv;
   grain_img->fb_priv = fb->priv;
-  if (av1_add_film_grain(grain_params, img, grain_img)) {
+  if (aom_add_film_grain(grain_params, img, grain_img)) {
     pool->release_fb_cb(pool->cb_priv, fb);
     return NULL;
   }

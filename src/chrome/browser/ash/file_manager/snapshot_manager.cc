@@ -17,7 +17,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "google_apis/drive/task_util.h"
+#include "google_apis/common/task_util.h"
 #include "storage/browser/blob/shareable_file_reference.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "third_party/cros_system_api/constants/cryptohome.h"
@@ -200,7 +200,8 @@ void SnapshotManager::CreateManagedSnapshot(
     std::move(callback).Run(base::FilePath());
     return;
   }
-  storage::FileSystemURL filesystem_url = context->CrackURL(url);
+  storage::FileSystemURL filesystem_url =
+      context->CrackURLInFirstPartyContext(url);
 
   ComputeSpaceNeedToBeFreed(
       profile_, context, filesystem_url,

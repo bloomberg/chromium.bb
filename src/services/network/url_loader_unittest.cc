@@ -57,6 +57,7 @@
 #include "net/cookies/cookie_inclusion_status.h"
 #include "net/cookies/cookie_util.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/http/http_network_session.h"
 #include "net/http/http_response_info.h"
 #include "net/http/http_transaction_test_util.h"
 #include "net/proxy_resolution/configured_proxy_resolution_service.h"
@@ -108,6 +109,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
+
+#if defined(OS_ANDROID)
+#include "base/android/radio_utils.h"
+#include "services/network/radio_monitor_android.h"
+#endif
 
 namespace network {
 
@@ -560,14 +566,17 @@ class URLLoaderTest : public testing::Test {
     net::QuicSimpleTestServer::Start();
     net::URLRequestFailedJob::AddUrlHandler();
 
-    scoped_feature_list_.InitAndEnableFeature(features::kAcceptCHFrame);
+    scoped_feature_list_.InitWithFeatures(
+        /*enabled_features=*/{features::kAcceptCHFrame,
+                              features::kRecordRadioWakeupTrigger},
+        /*disabled_features=*/{});
   }
   ~URLLoaderTest() override {
     net::URLRequestFilter::GetInstance()->ClearHandlers();
   }
 
   void SetUp() override {
-    net::HttpNetworkSession::Params params;
+    net::HttpNetworkSessionParams params;
     auto quic_context = std::make_unique<net::QuicContext>();
     quic_context->params()->origins_to_force_quic_on.insert(
         net::HostPortPair(net::QuicSimpleTestServer::GetHost(),
@@ -4895,7 +4904,8 @@ TEST_F(URLLoaderTest, RawRequestCookies) {
 
     GURL cookie_url = test_server()->GetURL("/");
     auto cookie = net::CanonicalCookie::Create(
-        cookie_url, "a=b", base::Time::Now(), absl::nullopt /* server_time */);
+        cookie_url, "a=b", base::Time::Now(), absl::nullopt /* server_time */,
+        absl::nullopt /* cookie_partition_key */);
     context()->cookie_store()->SetCanonicalCookieAsync(
         std::move(cookie), cookie_url, net::CookieOptions::MakeAllInclusive(),
         base::DoNothing());
@@ -4927,6 +4937,7 @@ TEST_F(URLLoaderTest, RawRequestCookies) {
     EXPECT_EQ(net::OK, loader_client.completion_status().error_code);
 
     devtools_observer.WaitUntilRawRequest(1u);
+    EXPECT_EQ(200, devtools_observer.raw_response_http_status_code());
     EXPECT_EQ("a", devtools_observer.raw_request_cookies()[0].cookie.Name());
     EXPECT_EQ("b", devtools_observer.raw_request_cookies()[0].cookie.Value());
     EXPECT_TRUE(devtools_observer.raw_request_cookies()[0]
@@ -4949,7 +4960,8 @@ TEST_F(URLLoaderTest, RawRequestCookiesFlagged) {
     GURL cookie_url = test_server()->GetURL("/");
     auto cookie = net::CanonicalCookie::Create(
         cookie_url, "a=b;Path=/something-else", base::Time::Now(),
-        absl::nullopt /* server_time */);
+        absl::nullopt /* server_time */,
+        absl::nullopt /* cookie_partition_key */);
     context()->cookie_store()->SetCanonicalCookieAsync(
         std::move(cookie), cookie_url, net::CookieOptions::MakeAllInclusive(),
         base::DoNothing());
@@ -4981,6 +4993,7 @@ TEST_F(URLLoaderTest, RawRequestCookiesFlagged) {
     EXPECT_EQ(net::OK, loader_client.completion_status().error_code);
 
     devtools_observer.WaitUntilRawRequest(1u);
+    EXPECT_EQ(200, devtools_observer.raw_response_http_status_code());
     EXPECT_EQ("a", devtools_observer.raw_request_cookies()[0].cookie.Name());
     EXPECT_EQ("b", devtools_observer.raw_request_cookies()[0].cookie.Value());
     EXPECT_TRUE(devtools_observer.raw_request_cookies()[0]
@@ -5027,6 +5040,7 @@ TEST_F(URLLoaderTest, RawResponseCookies) {
     EXPECT_EQ(net::OK, loader_client.completion_status().error_code);
 
     devtools_observer.WaitUntilRawResponse(1u);
+    EXPECT_EQ(200, devtools_observer.raw_response_http_status_code());
     EXPECT_EQ("a", devtools_observer.raw_response_cookies()[0].cookie->Name());
     EXPECT_EQ("b", devtools_observer.raw_response_cookies()[0].cookie->Value());
     EXPECT_TRUE(devtools_observer.raw_response_cookies()[0]
@@ -5076,6 +5090,7 @@ TEST_F(URLLoaderTest, RawResponseCookiesInvalid) {
     EXPECT_EQ(net::OK, loader_client.completion_status().error_code);
 
     devtools_observer.WaitUntilRawResponse(1u);
+    EXPECT_EQ(200, devtools_observer.raw_response_http_status_code());
     // On these failures the cookie object is not created
     EXPECT_FALSE(devtools_observer.raw_response_cookies()[0].cookie);
     EXPECT_TRUE(
@@ -5136,6 +5151,7 @@ TEST_F(URLLoaderTest, RawResponseCookiesRedirect) {
     EXPECT_EQ(net::OK, loader_client.completion_status().error_code);
 
     devtools_observer.WaitUntilRawResponse(1u);
+    EXPECT_EQ(204, devtools_observer.raw_response_http_status_code());
     EXPECT_EQ("server-redirect",
               devtools_observer.raw_response_cookies()[0].cookie->Name());
     EXPECT_EQ("true",
@@ -5188,6 +5204,7 @@ TEST_F(URLLoaderTest, RawResponseCookiesRedirect) {
     EXPECT_EQ(net::OK, loader_client.completion_status().error_code);
 
     devtools_observer.WaitUntilRawResponse(1u);
+    EXPECT_EQ(204, devtools_observer.raw_response_http_status_code());
     // On these failures the cookie object is created but not included.
     EXPECT_TRUE(devtools_observer.raw_response_cookies()[0].cookie->IsSecure());
     EXPECT_TRUE(devtools_observer.raw_response_cookies()[0]
@@ -5238,6 +5255,7 @@ TEST_F(URLLoaderTest, RawResponseCookiesAuth) {
     EXPECT_EQ(net::OK, loader_client.completion_status().error_code);
 
     devtools_observer.WaitUntilRawResponse(1u);
+    EXPECT_EQ(401, devtools_observer.raw_response_http_status_code());
     EXPECT_EQ("got_challenged",
               devtools_observer.raw_response_cookies()[0].cookie->Name());
     EXPECT_EQ("true",
@@ -5287,6 +5305,7 @@ TEST_F(URLLoaderTest, RawResponseCookiesAuth) {
     loader_client.RunUntilComplete();
     delete_run_loop.Run();
     EXPECT_EQ(net::OK, loader_client.completion_status().error_code);
+    EXPECT_EQ(401, devtools_observer.raw_response_http_status_code());
     devtools_observer.WaitUntilRawResponse(1u);
     // On these failures the cookie object is created but not included.
     EXPECT_TRUE(devtools_observer.raw_response_cookies()[0].cookie->IsSecure());
@@ -5335,6 +5354,7 @@ TEST_F(URLLoaderTest, RawResponseQUIC) {
     ASSERT_EQ(net::OK, loader_client.completion_status().error_code);
 
     devtools_observer.WaitUntilRawResponse(0u);
+    EXPECT_EQ(404, devtools_observer.raw_response_http_status_code());
     EXPECT_EQ("TEST", devtools_observer.devtools_request_id());
 
     // QUIC responses don't have raw header text, so there shouldn't be any here
@@ -5400,7 +5420,6 @@ TEST_F(URLLoaderTest, EarlyHints) {
 }
 
 TEST_F(URLLoaderTest, CookieReportingCategories) {
-
   net::test_server::EmbeddedTestServer https_server(
       net::test_server::EmbeddedTestServer::TYPE_HTTPS);
   https_server.SetSSLConfig(
@@ -5409,7 +5428,7 @@ TEST_F(URLLoaderTest, CookieReportingCategories) {
       base::FilePath(FILE_PATH_LITERAL("services/test/data")));
   ASSERT_TRUE(https_server.Start());
 
-  // Upcoming deprecation warning.
+  // SameSite-by-default deprecation warning.
   {
     MockCookieObserver cookie_observer;
     TestURLLoaderClient loader_client;
@@ -5454,15 +5473,11 @@ TEST_F(URLLoaderTest, CookieReportingCategories) {
                 testing::ElementsAre(MatchesCookieDetails(
                     CookieAccessType::kChange,
                     CookieOrLine("a=b", mojom::CookieOrLine::Tag::COOKIE),
-                    !net::cookie_util::IsSameSiteByDefaultCookiesEnabled())));
-    // This is either included or rejected as implicitly-cross-site, depending
-    // on flags.
-    if (net::cookie_util::IsSameSiteByDefaultCookiesEnabled()) {
-      EXPECT_TRUE(cookie_observer.observed_cookies()[0]
-                      .status.HasExactlyExclusionReasonsForTesting(
-                          {net::CookieInclusionStatus::
-                               EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX}));
-    }
+                    false /* is_included */)));
+    EXPECT_TRUE(cookie_observer.observed_cookies()[0]
+                    .status.HasExactlyExclusionReasonsForTesting(
+                        {net::CookieInclusionStatus::
+                             EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX}));
     EXPECT_TRUE(cookie_observer.observed_cookies()[0].status.HasWarningReason(
         net::CookieInclusionStatus::WarningReason::
             WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT));
@@ -6903,4 +6918,48 @@ TEST_F(URLLoaderFakeTransportInfoTest, AcceptCHFrameIgnoreMalformed) {
   EXPECT_THAT(Load(url), IsError(net::OK));
   EXPECT_FALSE(accept_ch_frame_observer.called());
 }
+
+#if defined(OS_ANDROID)
+
+TEST_F(URLLoaderTest, RecordRadioWakeupTrigger_Record) {
+  base::HistogramTester histograms;
+
+  RadioMonitorAndroid::GetInstance().OverrideRadioActivityForTesting(
+      base::android::RadioDataActivity::kDormant);
+  RadioMonitorAndroid::GetInstance().OverrideRadioTypeForTesting(
+      base::android::RadioConnectionType::kCell);
+
+  LoadAndCompareFile("simple_page.html");
+
+  histograms.ExpectTotalCount(kUmaNamePossibleWakeupTriggerURLLoader, 1);
+}
+
+TEST_F(URLLoaderTest, RecordRadioWakeupTrigger_RadioTypeIsNotCell) {
+  base::HistogramTester histograms;
+
+  RadioMonitorAndroid::GetInstance().OverrideRadioActivityForTesting(
+      base::android::RadioDataActivity::kDormant);
+  RadioMonitorAndroid::GetInstance().OverrideRadioTypeForTesting(
+      base::android::RadioConnectionType::kWifi);
+
+  LoadAndCompareFile("simple_page.html");
+
+  histograms.ExpectTotalCount(kUmaNamePossibleWakeupTriggerURLLoader, 0);
+}
+
+TEST_F(URLLoaderTest, RecordRadioWakeupTrigger_RadioActivityIsNotDormant) {
+  base::HistogramTester histograms;
+
+  RadioMonitorAndroid::GetInstance().OverrideRadioActivityForTesting(
+      base::android::RadioDataActivity::kInOut);
+  RadioMonitorAndroid::GetInstance().OverrideRadioTypeForTesting(
+      base::android::RadioConnectionType::kCell);
+
+  LoadAndCompareFile("simple_page.html");
+
+  histograms.ExpectTotalCount(kUmaNamePossibleWakeupTriggerURLLoader, 0);
+}
+
+#endif  // defined(OS_ANDROID)
+
 }  // namespace network

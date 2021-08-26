@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
@@ -66,14 +67,23 @@ class MetricsStateManager final {
     return &clean_exit_beacon_;
   }
 
-  // Signals whether the session has shutdown cleanly. Passing `false` means
-  // that Chrome has launched and has not yet shut down safely. Passing `true`
-  // signals that Chrome has shut down safely.
+  // Signals whether the session has shutdown cleanly if |update_beacon| is
+  // true. Passing `false` for |has_session_shutdown_cleanly| means that Chrome
+  // has launched and has not yet shut down safely. Passing `true` signals that
+  // Chrome has shut down safely.
   //
   // Seeing a call with `false` without a matching call with `true` suggests
   // that Chrome crashed or otherwise did not shut down cleanly, e.g. maybe the
   // OS crashed.
-  void LogHasSessionShutdownCleanly(bool has_session_shutdown_cleanly);
+  //
+  // If |write_synchronously| is true, then |has_session_shutdown_cleanly| is
+  // written to disk synchronously; otherwise, a write is scheduled.
+  //
+  // Note: |write_synchronously| should be true only for the extended variations
+  // safe mode experiment.
+  void LogHasSessionShutdownCleanly(bool has_session_shutdown_cleanly,
+                                    bool write_synchronously = false,
+                                    bool update_beacon = true);
 
   // Forces the client ID to be generated. This is useful in case it's needed
   // before recording.
@@ -107,12 +117,18 @@ class MetricsStateManager final {
 
   // Creates the MetricsStateManager, enforcing that only a single instance
   // of the class exists at a time. Returns nullptr if an instance exists
-  // already. On Windows, |backup_registry_key| is used to store a backup of the
-  // clean exit beacon. It is ignored on other platforms.
+  // already.
+  //
+  // On Windows, |backup_registry_key| is used to store a backup of the clean
+  // exit beacon. It is ignored on other platforms.
+  //
+  // |user_data_dir| is the path to the client's user data directory. If empty,
+  // a separate file will not be used for Variations Safe Mode prefs.
   static std::unique_ptr<MetricsStateManager> Create(
       PrefService* local_state,
       EnabledStateProvider* enabled_state_provider,
       const std::wstring& backup_registry_key,
+      const base::FilePath& user_data_dir,
       StoreClientInfoCallback store_client_info,
       LoadClientInfoCallback load_client_info);
 
@@ -121,6 +137,9 @@ class MetricsStateManager final {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MetricsStateManagerTest, CheckProviderResetIds);
+  FRIEND_TEST_ALL_PREFIXES(
+      MetricsStateManagerTest,
+      CheckProviderResetIds_PreviousIdOnlyReportInResetSession);
   FRIEND_TEST_ALL_PREFIXES(MetricsStateManagerTest, EntropySourceUsed_Low);
   FRIEND_TEST_ALL_PREFIXES(MetricsStateManagerTest, EntropySourceUsed_High);
   FRIEND_TEST_ALL_PREFIXES(MetricsStateManagerTest,
@@ -170,6 +189,7 @@ class MetricsStateManager final {
   MetricsStateManager(PrefService* local_state,
                       EnabledStateProvider* enabled_state_provider,
                       const std::wstring& backup_registry_key,
+                      const base::FilePath& user_data_dir,
                       StoreClientInfoCallback store_client_info,
                       LoadClientInfoCallback load_client_info);
 

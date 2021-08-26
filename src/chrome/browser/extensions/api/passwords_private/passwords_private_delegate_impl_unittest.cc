@@ -166,11 +166,6 @@ password_manager::PasswordForm CreateSampleForm() {
   form.url = GURL("http://abc1.com");
   form.username_value = u"test@gmail.com";
   form.password_value = u"test";
-  // TODO(crbug.com/1223022): Once all places that operate changes on forms
-  // via UpdateLogin properly set |password_issues|, setting them to an empty
-  // map should be part of the default constructor.
-  form.password_issues = base::flat_map<password_manager::InsecureType,
-                                        password_manager::InsecurityMetadata>();
   return form;
 }
 
@@ -597,11 +592,11 @@ TEST_F(PasswordsPrivateDelegateImplTest, TestReauthOnGetPlaintextCompPassword) {
   PasswordsPrivateDelegateImpl delegate(&profile_);
 
   password_manager::PasswordForm form = CreateSampleForm();
-  password_manager::InsecureCredential compromised_credentials;
-  compromised_credentials.signon_realm = form.signon_realm;
-  compromised_credentials.username = form.username_value;
+  form.password_issues = {
+      {password_manager::InsecureType::kLeaked,
+       password_manager::InsecurityMetadata(base::Time::FromTimeT(1),
+                                            password_manager::IsMuted(false))}};
   store_->AddLogin(form);
-  store_->AddInsecureCredential(compromised_credentials);
   base::RunLoop().RunUntilIdle();
 
   api::passwords_private::InsecureCredential credential =

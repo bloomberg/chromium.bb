@@ -47,7 +47,7 @@
 #include <inttypes.h>
 
 #include "libavutil/aes.h"
-#include "libavutil/avassert.h"
+#include "libavutil/avstring.h"
 #include "libavutil/mastering_display_metadata.h"
 #include "libavutil/mathematics.h"
 #include "libavcodec/bytestream.h"
@@ -313,8 +313,6 @@ typedef struct MXFMetadataReadTableEntry {
     enum MXFMetadataSetType type;
 } MXFMetadataReadTableEntry;
 
-static int mxf_read_close(AVFormatContext *s);
-
 /* partial keys to match */
 static const uint8_t mxf_header_partition_pack_key[]       = { 0x06,0x0e,0x2b,0x34,0x02,0x05,0x01,0x01,0x0d,0x01,0x02,0x01,0x01,0x02 };
 static const uint8_t mxf_essence_element_key[]             = { 0x06,0x0e,0x2b,0x34,0x01,0x02,0x01,0x01,0x0d,0x01,0x03,0x01 };
@@ -330,7 +328,7 @@ static const uint8_t mxf_encrypted_triplet_key[]           = { 0x06,0x0e,0x2b,0x
 static const uint8_t mxf_encrypted_essence_container[]     = { 0x06,0x0e,0x2b,0x34,0x04,0x01,0x01,0x07,0x0d,0x01,0x03,0x01,0x02,0x0b,0x01,0x00 };
 static const uint8_t mxf_sony_mpeg4_extradata[]            = { 0x06,0x0e,0x2b,0x34,0x04,0x01,0x01,0x01,0x0e,0x06,0x06,0x02,0x02,0x01,0x00,0x00 };
 static const uint8_t mxf_avid_project_name[]               = { 0xa5,0xfb,0x7b,0x25,0xf6,0x15,0x94,0xb9,0x62,0xfc,0x37,0x17,0x49,0x2d,0x42,0xbf };
-static const uint8_t mxf_jp2k_rsiz[]                       = { 0x06,0x0e,0x2b,0x34,0x02,0x05,0x01,0x01,0x0d,0x01,0x02,0x01,0x01,0x02,0x01,0x00 };
+static const uint8_t mxf_jp2k_rsiz[]                       = { 0x06,0x0e,0x2b,0x34,0x01,0x01,0x01,0x0a,0x04,0x01,0x06,0x03,0x01,0x00,0x00,0x00 };
 static const uint8_t mxf_indirect_value_utf16le[]          = { 0x4c,0x00,0x02,0x10,0x01,0x00,0x00,0x00,0x00,0x06,0x0e,0x2b,0x34,0x01,0x04,0x01,0x01 };
 static const uint8_t mxf_indirect_value_utf16be[]          = { 0x42,0x01,0x10,0x02,0x00,0x00,0x00,0x00,0x00,0x06,0x0e,0x2b,0x34,0x01,0x04,0x01,0x01 };
 static const uint8_t mxf_apple_coll_max_cll[]              = { 0x06,0x0e,0x2b,0x34,0x01,0x01,0x01,0x0e,0x0e,0x20,0x04,0x01,0x05,0x03,0x01,0x01 };
@@ -624,7 +622,7 @@ static int mxf_decrypt_triplet(AVFormatContext *s, AVPacket *pkt, KLVPacket *klv
         return AVERROR_INVALIDDATA;
     // enc. code
     size = klv_decode_ber_length(pb);
-    if (size < 32 || size - 32 < orig_size)
+    if (size < 32 || size - 32 < orig_size || (int)orig_size != orig_size)
         return AVERROR_INVALIDDATA;
     avio_read(pb, ivec, 16);
     avio_read(pb, tmpbuf, 16);
@@ -1413,7 +1411,7 @@ static void *mxf_resolve_strong_ref(MXFContext *mxf, UID *strong_ref, enum MXFMe
 
 static const MXFCodecUL mxf_picture_essence_container_uls[] = {
     // video essence container uls
-    { { 0x06,0x0e,0x2b,0x34,0x04,0x01,0x01,0x07,0x0d,0x01,0x03,0x01,0x02,0x0c,0x01,0x00 }, 14,   AV_CODEC_ID_JPEG2000, NULL, 14 },
+    { { 0x06,0x0e,0x2b,0x34,0x04,0x01,0x01,0x07,0x0d,0x01,0x03,0x01,0x02,0x0c,0x01,0x00 }, 14,   AV_CODEC_ID_JPEG2000, NULL, 14, J2KWrap },
     { { 0x06,0x0e,0x2b,0x34,0x04,0x01,0x01,0x02,0x0d,0x01,0x03,0x01,0x02,0x10,0x60,0x01 }, 14,       AV_CODEC_ID_H264, NULL, 15 }, /* H.264 */
     { { 0x06,0x0e,0x2b,0x34,0x04,0x01,0x01,0x02,0x0d,0x01,0x03,0x01,0x02,0x11,0x01,0x00 }, 14,      AV_CODEC_ID_DNXHD, NULL, 14 }, /* VC-3 */
     { { 0x06,0x0e,0x2b,0x34,0x04,0x01,0x01,0x02,0x0d,0x01,0x03,0x01,0x02,0x12,0x01,0x00 }, 14,        AV_CODEC_ID_VC1, NULL, 14 }, /* VC-1 */
@@ -1495,6 +1493,10 @@ static MXFWrappingScheme mxf_get_wrapping_kind(UID *essence_container_ul)
             break;
         case D10D11Wrap:
             if (val == 0x02)
+                val = 0x01;
+            break;
+        case J2KWrap:
+            if (val != 0x02)
                 val = 0x01;
             break;
     }
@@ -1766,7 +1768,7 @@ static int mxf_compute_ptses_fake_index(MXFContext *mxf, MXFIndexTable *index_ta
      * 6:  5   5
      *
      * We do this by bucket sorting x by x+TemporalOffset[x] into mxf->ptses,
-     * then settings mxf->first_dts = -max(TemporalOffset[x]).
+     * then settings mxf->internal->first_dts = -max(TemporalOffset[x]).
      * The latter makes DTS <= PTS.
      */
     for (i = x = 0; i < index_table->nb_segments; i++) {
@@ -3343,7 +3345,6 @@ static int mxf_read_header(AVFormatContext *s)
 
     if (!mxf_read_sync(s->pb, mxf_header_partition_pack_key, 14)) {
         av_log(s, AV_LOG_ERROR, "could not find header partition pack key\n");
-        //goto fail should not be needed as no metadata sets will have been parsed yet
         return AVERROR_INVALIDDATA;
     }
     avio_seek(s->pb, -14, SEEK_CUR);
@@ -3374,8 +3375,7 @@ static int mxf_read_header(AVFormatContext *s)
 
             if (!mxf->current_partition) {
                 av_log(mxf->fc, AV_LOG_ERROR, "found essence prior to first PartitionPack\n");
-                ret = AVERROR_INVALIDDATA;
-                goto fail;
+                return AVERROR_INVALIDDATA;
             }
 
             if (!mxf->current_partition->first_essence_klv.offset)
@@ -3400,7 +3400,7 @@ static int mxf_read_header(AVFormatContext *s)
         for (metadata = mxf_metadata_read_table; metadata->read; metadata++) {
             if (IS_KLV_KEY(klv.key, metadata->key)) {
                 if ((ret = mxf_parse_klv(mxf, klv, metadata->read, metadata->ctx_size, metadata->type)) < 0)
-                    goto fail;
+                    return ret;
                 break;
             }
         }
@@ -3413,21 +3413,20 @@ static int mxf_read_header(AVFormatContext *s)
     /* FIXME avoid seek */
     if (!essence_offset)  {
         av_log(s, AV_LOG_ERROR, "no essence\n");
-        ret = AVERROR_INVALIDDATA;
-        goto fail;
+        return AVERROR_INVALIDDATA;
     }
     avio_seek(s->pb, essence_offset, SEEK_SET);
 
     /* we need to do this before computing the index tables
      * to be able to fill in zero IndexDurations with st->duration */
     if ((ret = mxf_parse_structural_metadata(mxf)) < 0)
-        goto fail;
+        return ret;
 
     for (int i = 0; i < s->nb_streams; i++)
         mxf_handle_missing_index_segment(mxf, s->streams[i]);
 
     if ((ret = mxf_compute_index_tables(mxf)) < 0)
-        goto fail;
+        return ret;
 
     if (mxf->nb_index_tables > 1) {
         /* TODO: look up which IndexSID to use via EssenceContainerData */
@@ -3435,8 +3434,7 @@ static int mxf_read_header(AVFormatContext *s)
                mxf->nb_index_tables, mxf->index_tables[0].index_sid);
     } else if (mxf->nb_index_tables == 0 && mxf->op == OPAtom && (s->error_recognition & AV_EF_EXPLODE)) {
         av_log(mxf->fc, AV_LOG_ERROR, "cannot demux OPAtom without an index\n");
-        ret = AVERROR_INVALIDDATA;
-        goto fail;
+        return AVERROR_INVALIDDATA;
     }
 
     mxf_compute_essence_containers(s);
@@ -3445,10 +3443,6 @@ static int mxf_read_header(AVFormatContext *s)
         mxf_compute_edit_units_per_packet(mxf, s->streams[i]);
 
     return 0;
-fail:
-    mxf_read_close(s);
-
-    return ret;
 }
 
 /* Get the edit unit of the next packet from current_offset in a track. The returned edit unit can be original_duration as well! */
@@ -3815,7 +3809,7 @@ static int mxf_read_seek(AVFormatContext *s, int stream_index, int64_t sample_ti
         if (seekpos < 0)
             return seekpos;
 
-        ff_update_cur_dts(s, st, sample_time);
+        avpriv_update_cur_dts(s, st, sample_time);
         mxf->current_klv_data = (KLVPacket){{0}};
     } else {
         MXFPartition *partition;
@@ -3868,7 +3862,7 @@ static int mxf_read_seek(AVFormatContext *s, int stream_index, int64_t sample_ti
         if ((ret = mxf_edit_unit_absolute_offset(mxf, t, sample_time, source_track->edit_rate, &sample_time, &seekpos, &partition, 1)) < 0)
             return ret;
 
-        ff_update_cur_dts(s, st, sample_time);
+        avpriv_update_cur_dts(s, st, sample_time);
         if (source_track->wrapping == ClipWrapped) {
             KLVPacket klv = partition->first_essence_klv;
             if (seekpos < klv.next_klv - klv.length || seekpos >= klv.next_klv) {
@@ -3916,6 +3910,7 @@ const AVInputFormat ff_mxf_demuxer = {
     .long_name      = NULL_IF_CONFIG_SMALL("MXF (Material eXchange Format)"),
     .flags          = AVFMT_SEEK_TO_PTS,
     .priv_data_size = sizeof(MXFContext),
+    .flags_internal = FF_FMT_INIT_CLEANUP,
     .read_probe     = mxf_probe,
     .read_header    = mxf_read_header,
     .read_packet    = mxf_read_packet,

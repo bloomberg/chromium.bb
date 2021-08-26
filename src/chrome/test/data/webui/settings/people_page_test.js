@@ -13,7 +13,7 @@ import {pageVisibility, ProfileInfoBrowserProxyImpl, Router, routes, StatusActio
 import {simulateStoredAccounts, simulateSyncStatus} from 'chrome://test/settings/sync_test_util.js';
 import {TestProfileInfoBrowserProxy} from 'chrome://test/settings/test_profile_info_browser_proxy.js';
 import {TestSyncBrowserProxy} from 'chrome://test/settings/test_sync_browser_proxy.js';
-import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.js';
 import {flushTasks, waitBeforeNextRender} from 'chrome://test/test_util.m.js';
 // clang-format on
 
@@ -53,7 +53,7 @@ suite('ProfileInfoTests', function() {
     ProfileInfoBrowserProxyImpl.instance_ = profileInfoBrowserProxy;
 
     syncBrowserProxy = new TestSyncBrowserProxy();
-    SyncBrowserProxyImpl.instance_ = syncBrowserProxy;
+    SyncBrowserProxyImpl.setInstance(syncBrowserProxy);
 
     PolymerTest.clearBody();
     peoplePage = document.createElement('settings-people-page');
@@ -100,7 +100,7 @@ if (!isChromeOS) {
       loadTimeData.overrideValues({signinAllowed: false});
 
       syncBrowserProxy = new TestSyncBrowserProxy();
-      SyncBrowserProxyImpl.instance_ = syncBrowserProxy;
+      SyncBrowserProxyImpl.setInstance(syncBrowserProxy);
 
       profileInfoBrowserProxy = new TestProfileInfoBrowserProxy();
       ProfileInfoBrowserProxyImpl.instance_ = profileInfoBrowserProxy;
@@ -137,7 +137,7 @@ if (!isChromeOS) {
     setup(async function() {
       loadTimeData.overrideValues({signinAllowed: true});
       syncBrowserProxy = new TestSyncBrowserProxy();
-      SyncBrowserProxyImpl.instance_ = syncBrowserProxy;
+      SyncBrowserProxyImpl.setInstance(syncBrowserProxy);
 
       profileInfoBrowserProxy = new TestProfileInfoBrowserProxy();
       ProfileInfoBrowserProxyImpl.instance_ = profileInfoBrowserProxy;
@@ -412,7 +412,7 @@ if (!isChromeOS) {
 suite('SyncSettings', function() {
   setup(async function() {
     syncBrowserProxy = new TestSyncBrowserProxy();
-    SyncBrowserProxyImpl.instance_ = syncBrowserProxy;
+    SyncBrowserProxyImpl.setInstance(syncBrowserProxy);
 
     profileInfoBrowserProxy = new TestProfileInfoBrowserProxy();
     ProfileInfoBrowserProxyImpl.instance_ = profileInfoBrowserProxy;

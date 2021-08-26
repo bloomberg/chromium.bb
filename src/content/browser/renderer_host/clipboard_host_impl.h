@@ -113,7 +113,7 @@ class CONTENT_EXPORT ClipboardHostImpl
   // already been checked. |data| and |seqno| should corresponds to the same
   // clipboard data.
   void PerformPasteIfContentAllowed(
-      uint64_t seqno,
+      const ui::ClipboardSequenceNumberToken& seqno,
       const ui::ClipboardFormatType& data_type,
       std::string data,
       IsClipboardPasteContentAllowedCallback callback);
@@ -127,10 +127,12 @@ class CONTENT_EXPORT ClipboardHostImpl
 
   // Completion callback of PerformPasteIfContentAllowed(). Sets the allowed
   // status for the clipboard data corresponding to sequence number |seqno|.
-  void FinishPasteIfContentAllowed(uint64_t seqno,
-                                   ClipboardPasteContentAllowed allowed);
+  void FinishPasteIfContentAllowed(
+      const ui::ClipboardSequenceNumberToken& seqno,
+      ClipboardPasteContentAllowed allowed);
 
-  const std::map<uint64_t, IsPasteContentAllowedRequest>&
+  const std::map<ui::ClipboardSequenceNumberToken,
+                 IsPasteContentAllowedRequest>&
   is_paste_allowed_requests_for_testing() {
     return is_allowed_requests_;
   }
@@ -174,6 +176,13 @@ class CONTENT_EXPORT ClipboardHostImpl
   void ReadCustomData(ui::ClipboardBuffer clipboard_buffer,
                       const std::u16string& type,
                       ReadCustomDataCallback callback) override;
+  void ReadAvailableCustomAndStandardFormats(
+      ReadAvailableCustomAndStandardFormatsCallback callback) override;
+  void ReadUnsanitizedCustomFormat(
+      const std::u16string& format,
+      ReadUnsanitizedCustomFormatCallback callback) override;
+  void WriteUnsanitizedCustomFormat(const std::u16string& format,
+                                    mojo_base::BigBuffer data) override;
   void WriteText(const std::u16string& text) override;
   void WriteHtml(const std::u16string& markup, const GURL& url) override;
   void WriteSvg(const std::u16string& markup) override;
@@ -188,10 +197,14 @@ class CONTENT_EXPORT ClipboardHostImpl
   void WriteStringToFindPboard(const std::u16string& text) override;
 #endif
 
+  // Returns true if custom format is allowed to be read/written from/to the
+  // clipboard, else, fails.
+  bool IsUnsanitizedCustomFormatContentAllowed();
+
   // Called by PerformPasteIfContentAllowed() when an is allowed request is
   // needed. Virtual to be overridden in tests.
   virtual void StartIsPasteContentAllowedRequest(
-      uint64_t seqno,
+      const ui::ClipboardSequenceNumberToken& seqno,
       const ui::ClipboardFormatType& data_type,
       std::string data);
 
@@ -218,7 +231,8 @@ class CONTENT_EXPORT ClipboardHostImpl
 
   // Outstanding is allowed requests per clipboard contents.  Maps a clipboard
   // sequence number to an outstanding request.
-  std::map<uint64_t, IsPasteContentAllowedRequest> is_allowed_requests_;
+  std::map<ui::ClipboardSequenceNumberToken, IsPasteContentAllowedRequest>
+      is_allowed_requests_;
 
   base::WeakPtrFactory<ClipboardHostImpl> weak_ptr_factory_{this};
 };

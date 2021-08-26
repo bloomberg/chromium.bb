@@ -54,8 +54,10 @@ inline __m128i ComputeWeightedAverage8(const __m128i& pred0,
 
 template <int height>
 inline void DistanceWeightedBlend4xH_SSE4_1(
-    const int16_t* pred_0, const int16_t* pred_1, const uint8_t weight_0,
-    const uint8_t weight_1, void* const dest, const ptrdiff_t dest_stride) {
+    const int16_t* LIBGAV1_RESTRICT pred_0,
+    const int16_t* LIBGAV1_RESTRICT pred_1, const uint8_t weight_0,
+    const uint8_t weight_1, void* LIBGAV1_RESTRICT const dest,
+    const ptrdiff_t dest_stride) {
   auto* dst = static_cast<uint8_t*>(dest);
   const __m128i weights = _mm_set1_epi32(weight_0 | (weight_1 << 16));
 
@@ -98,8 +100,10 @@ inline void DistanceWeightedBlend4xH_SSE4_1(
 
 template <int height>
 inline void DistanceWeightedBlend8xH_SSE4_1(
-    const int16_t* pred_0, const int16_t* pred_1, const uint8_t weight_0,
-    const uint8_t weight_1, void* const dest, const ptrdiff_t dest_stride) {
+    const int16_t* LIBGAV1_RESTRICT pred_0,
+    const int16_t* LIBGAV1_RESTRICT pred_1, const uint8_t weight_0,
+    const uint8_t weight_1, void* LIBGAV1_RESTRICT const dest,
+    const ptrdiff_t dest_stride) {
   auto* dst = static_cast<uint8_t*>(dest);
   const __m128i weights = _mm_set1_epi32(weight_0 | (weight_1 << 16));
 
@@ -125,9 +129,10 @@ inline void DistanceWeightedBlend8xH_SSE4_1(
 }
 
 inline void DistanceWeightedBlendLarge_SSE4_1(
-    const int16_t* pred_0, const int16_t* pred_1, const uint8_t weight_0,
-    const uint8_t weight_1, const int width, const int height, void* const dest,
-    const ptrdiff_t dest_stride) {
+    const int16_t* LIBGAV1_RESTRICT pred_0,
+    const int16_t* LIBGAV1_RESTRICT pred_1, const uint8_t weight_0,
+    const uint8_t weight_1, const int width, const int height,
+    void* LIBGAV1_RESTRICT const dest, const ptrdiff_t dest_stride) {
   auto* dst = static_cast<uint8_t*>(dest);
   const __m128i weights = _mm_set1_epi32(weight_0 | (weight_1 << 16));
 
@@ -154,11 +159,12 @@ inline void DistanceWeightedBlendLarge_SSE4_1(
   } while (--y != 0);
 }
 
-void DistanceWeightedBlend_SSE4_1(const void* prediction_0,
-                                  const void* prediction_1,
+void DistanceWeightedBlend_SSE4_1(const void* LIBGAV1_RESTRICT prediction_0,
+                                  const void* LIBGAV1_RESTRICT prediction_1,
                                   const uint8_t weight_0,
                                   const uint8_t weight_1, const int width,
-                                  const int height, void* const dest,
+                                  const int height,
+                                  void* LIBGAV1_RESTRICT const dest,
                                   const ptrdiff_t dest_stride) {
   const auto* pred_0 = static_cast<const int16_t*>(prediction_0);
   const auto* pred_1 = static_cast<const int16_t*>(prediction_1);
@@ -257,8 +263,10 @@ inline __m128i ComputeWeightedAverage8(const __m128i& pred0,
 
 template <int height>
 inline void DistanceWeightedBlend4xH_SSE4_1(
-    const uint16_t* pred_0, const uint16_t* pred_1, const uint8_t weight_0,
-    const uint8_t weight_1, void* const dest, const ptrdiff_t dest_stride) {
+    const uint16_t* LIBGAV1_RESTRICT pred_0,
+    const uint16_t* LIBGAV1_RESTRICT pred_1, const uint8_t weight_0,
+    const uint8_t weight_1, void* LIBGAV1_RESTRICT const dest,
+    const ptrdiff_t dest_stride) {
   auto* dst = static_cast<uint16_t*>(dest);
   const __m128i weight0 = _mm_set1_epi32(weight_0);
   const __m128i weight1 = _mm_set1_epi32(weight_1);
@@ -301,8 +309,10 @@ inline void DistanceWeightedBlend4xH_SSE4_1(
 
 template <int height>
 inline void DistanceWeightedBlend8xH_SSE4_1(
-    const uint16_t* pred_0, const uint16_t* pred_1, const uint8_t weight_0,
-    const uint8_t weight_1, void* const dest, const ptrdiff_t dest_stride) {
+    const uint16_t* LIBGAV1_RESTRICT pred_0,
+    const uint16_t* LIBGAV1_RESTRICT pred_1, const uint8_t weight_0,
+    const uint8_t weight_1, void* LIBGAV1_RESTRICT const dest,
+    const ptrdiff_t dest_stride) {
   auto* dst = static_cast<uint16_t*>(dest);
   const __m128i weight0 = _mm_set1_epi32(weight_0);
   const __m128i weight1 = _mm_set1_epi32(weight_1);
@@ -332,9 +342,10 @@ inline void DistanceWeightedBlend8xH_SSE4_1(
 }
 
 inline void DistanceWeightedBlendLarge_SSE4_1(
-    const uint16_t* pred_0, const uint16_t* pred_1, const uint8_t weight_0,
-    const uint8_t weight_1, const int width, const int height, void* const dest,
-    const ptrdiff_t dest_stride) {
+    const uint16_t* LIBGAV1_RESTRICT pred_0,
+    const uint16_t* LIBGAV1_RESTRICT pred_1, const uint8_t weight_0,
+    const uint8_t weight_1, const int width, const int height,
+    void* LIBGAV1_RESTRICT const dest, const ptrdiff_t dest_stride) {
   auto* dst = static_cast<uint16_t*>(dest);
   const __m128i weight0 = _mm_set1_epi32(weight_0);
   const __m128i weight1 = _mm_set1_epi32(weight_1);
@@ -364,11 +375,12 @@ inline void DistanceWeightedBlendLarge_SSE4_1(
   } while (--y != 0);
 }
 
-void DistanceWeightedBlend_SSE4_1(const void* prediction_0,
-                                  const void* prediction_1,
+void DistanceWeightedBlend_SSE4_1(const void* LIBGAV1_RESTRICT prediction_0,
+                                  const void* LIBGAV1_RESTRICT prediction_1,
                                   const uint8_t weight_0,
                                   const uint8_t weight_1, const int width,
-                                  const int height, void* const dest,
+                                  const int height,
+                                  void* LIBGAV1_RESTRICT const dest,
                                   const ptrdiff_t dest_stride) {
   const auto* pred_0 = static_cast<const uint16_t*>(prediction_0);
   const auto* pred_1 = static_cast<const uint16_t*>(prediction_1);

@@ -23,6 +23,7 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.Robolectric;
 
+import org.chromium.base.FeatureList;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
@@ -32,6 +33,8 @@ import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.prefs.PrefService;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.components.user_prefs.UserPrefsJni;
+
+import java.util.HashMap;
 
 /** Test for the WebFeedFollowIntroView class. */
 @RunWith(BaseRobolectricTestRunner.class)
@@ -54,10 +57,6 @@ public final class WebFeedFollowIntroViewTest {
     @Mock
     private UserEducationHelper mHelper;
 
-    View.OnTouchListener mOnTouchListenerStub = (view, motionEvent) -> {
-        return true;
-    };
-
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
@@ -68,9 +67,14 @@ public final class WebFeedFollowIntroViewTest {
         mMenuButtonAnchorView = new View(mActivity);
         TrackerFactory.setTrackerForTests(mTracker);
 
+        // This empty setTestFeatures call below is needed to enable the field trial param calls.
+        FeatureList.setTestFeatures(new HashMap<String, Boolean>());
+
         // Build the class under test.
-        mWebFeedFollowIntroView =
-                new WebFeedFollowIntroView(mActivity, null, mMenuButtonAnchorView);
+        Runnable noOp = () -> {};
+        mWebFeedFollowIntroView = new WebFeedFollowIntroView(mActivity, null, mMenuButtonAnchorView,
+                mTracker, /*introShownCallback=*/noOp, /*introNotShownCallback=*/noOp,
+                /*introDismissedCallback=*/noOp);
     }
 
     @After
@@ -80,8 +84,8 @@ public final class WebFeedFollowIntroViewTest {
 
     @Test
     @SmallTest
-    public void showAcceleratorIPHTest() {
-        mWebFeedFollowIntroView.showAcceleratorIPH(mOnTouchListenerStub, mTracker, mHelper);
+    public void showIPHTest() {
+        mWebFeedFollowIntroView.showIPH(mHelper);
         verify(mHelper, times(1)).requestShowIPH(any());
     }
 }

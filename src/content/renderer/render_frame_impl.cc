@@ -1035,6 +1035,7 @@ void FillMiscNavigationParams(
     navigation_params->origin_to_commit =
         commit_params.origin_to_commit.value();
   }
+  navigation_params->storage_key = std::move(commit_params.storage_key);
   navigation_params->sandbox_flags = commit_params.sandbox_flags;
 
   navigation_params->appcache_host_id =
@@ -2152,7 +2153,7 @@ void RenderFrameImpl::Unload(
   auto& agent_scheduling_group = agent_scheduling_group_;
   blink::LocalFrameToken frame_token = frame_->GetLocalFrameToken();
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      GetTaskRunner(blink::TaskType::kPostedMessage);
+      GetTaskRunner(blink::TaskType::kInternalPostMessageForwarding);
 
   // Important: |this| is deleted after this call!
   if (!SwapOutAndDeleteThis(
@@ -2918,17 +2919,15 @@ void RenderFrameImpl::CommitNavigationWithParams(
                 new_loader_factories->CloneWithoutAppCacheFactory()));
   }
 
-  if (base::FeatureList::IsEnabled(features::kServiceWorkerSubresourceFilter)) {
-    WebString subresource_filter = navigation_params->response.HttpHeaderField(
-        WebString::FromUTF8("Service-Worker-Subresource-Filter"));
-    if (!subresource_filter.IsEmpty()) {
-      ServiceWorkerNetworkProviderForFrame* provider =
-          static_cast<ServiceWorkerNetworkProviderForFrame*>(
-              navigation_params->service_worker_network_provider.get());
-      DCHECK(provider);
+  WebString subresource_filter = navigation_params->response.HttpHeaderField(
+      WebString::FromUTF8("Service-Worker-Subresource-Filter"));
+  if (!subresource_filter.IsEmpty()) {
+    ServiceWorkerNetworkProviderForFrame* provider =
+        static_cast<ServiceWorkerNetworkProviderForFrame*>(
+            navigation_params->service_worker_network_provider.get());
+    DCHECK(provider);
 
-      provider->context()->SetSubresourceFilter(subresource_filter.Utf8());
-    }
+    provider->context()->SetSubresourceFilter(subresource_filter.Utf8());
   }
 
   DCHECK(!pending_loader_factories_);
@@ -2936,6 +2935,7 @@ void RenderFrameImpl::CommitNavigationWithParams(
   pending_code_cache_host_ = std::move(code_cache_host);
   pending_cookie_manager_info_ = std::move(cookie_manager_info);
   pending_storage_info_ = std::move(storage_info);
+  original_storage_key_ = navigation_params->storage_key;
 
   base::WeakPtr<RenderFrameImpl> weak_self = weak_factory_.GetWeakPtr();
   frame_->CommitNavigation(std::move(navigation_params),
@@ -3027,24 +3027,6 @@ void RenderFrameImpl::CommitFailedNavigation(
     NotifyObserversOfFailedProvisionalLoad();
   }
 
-  // Replace the current history entry in reloads, and loads of the same url.
-  // This corresponds to Blink's notion of a standard commit.
-  // Also replace the current history entry if the browser asked for it
-  // specifically.
-  // TODO(clamy): see if initial commits in subframes should be handled
-  // separately.
-  bool is_reload_or_history =
-      NavigationTypeUtils::IsReload(common_params->navigation_type) ||
-      NavigationTypeUtils::IsHistory(common_params->navigation_type);
-  bool replace = is_reload_or_history ||
-                 common_params->url == GetLoadingUrl() ||
-                 common_params->should_replace_current_entry;
-  std::unique_ptr<blink::WebHistoryEntry> history_entry;
-  auto page_state =
-      blink::PageState::CreateFromEncodedData(commit_params->page_state);
-  if (page_state.IsValid())
-    history_entry = PageStateToHistoryEntry(page_state);
-
   std::string error_html;
   std::string* error_html_ptr = &error_html;
   if (error_code == net::ERR_HTTP_RESPONSE_CODE_FAILURE) {
@@ -3067,10 +3049,15 @@ void RenderFrameImpl::CommitFailedNavigation(
   // Make sure we never show errors in view source mode.
   frame_->EnableViewSourceMode(false);
 
+  std::unique_ptr<blink::WebHistoryEntry> history_entry;
+  auto page_state =
+      blink::PageState::CreateFromEncodedData(commit_params->page_state);
+  if (page_state.IsValid())
+    history_entry = PageStateToHistoryEntry(page_state);
   if (history_entry) {
     navigation_params->frame_load_type = WebFrameLoadType::kBackForward;
     navigation_params->history_item = history_entry->root();
-  } else if (replace) {
+  } else if (common_params->should_replace_current_entry) {
     navigation_params->frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
   }
   navigation_params->service_worker_network_provider =
@@ -3881,10 +3868,14 @@ void RenderFrameImpl::DidCommitNavigation(
   ui::PageTransition transition =
       GetTransitionType(frame_->GetDocumentLoader(), IsMainFrame());
 
-  if (pending_code_cache_host_) {
-    frame_->GetDocumentLoader()->SetCodeCacheHost(
-        std::move(pending_code_cache_host_));
-  }
+  // When NavigationThreadingOptimizations feature is not enabled
+  // pending_code_cache_host_ could be nullptr. In such cases the code cache
+  // host interface is requested lazily via BrowserInterfaceBroker when
+  // required. When pending_code_cache_host_ is nullptr this method just resets
+  // any earlier code cache host interface. Since we are committing a new
+  // navigation any interfaces requested prior to this point should not be used.
+  frame_->GetDocumentLoader()->SetCodeCacheHost(
+      std::move(pending_code_cache_host_));
 
   // TODO(crbug.com/888079): Turn this into a DCHECK for origin equality when
   // the linked bug is fixed. Currently sometimes the browser and renderer
@@ -3899,7 +3890,7 @@ void RenderFrameImpl::DidCommitNavigation(
   // TODO(crbug.com/888079): Turn this into a DCHECK for origin equality when
   // the linked bug is fixed. Currently sometimes the browser and renderer
   // disagree on the origin during commit navigation.
-  if (pending_storage_info_ && pending_storage_info_->storage_key.origin() ==
+  if (pending_storage_info_ && original_storage_key_.origin() ==
                                    frame_->GetDocument().GetSecurityOrigin()) {
     if (pending_storage_info_->local_storage_area) {
       frame_->SetLocalStorageArea(
@@ -3987,19 +3978,21 @@ void RenderFrameImpl::RunScriptsAtDocumentElementAvailable() {
 
 void RenderFrameImpl::DidReceiveTitle(const blink::WebString& title) {
   // Ignore all but top level navigations.
-  if (!frame_->Parent()) {
+  if (!frame_->Parent() && !title.IsEmpty()) {
     base::trace_event::TraceLog::GetInstance()->UpdateProcessLabel(
         routing_id_, title.Utf8());
   } else {
-    // Set process title for sub-frames in traces.
+    // Set process title for sub-frames and title-less frames in traces.
     GURL loading_url = GetLoadingUrl();
     if (!loading_url.host().empty() &&
         loading_url.scheme() != url::kFileScheme) {
-      std::string subframe_title = "Subframe: " + loading_url.scheme() +
-                                   url::kStandardSchemeSeparator +
-                                   loading_url.host();
+      std::string frame_title;
+      if (frame_->Parent()) {
+        frame_title += "Subframe: ";
+      }
+      frame_title += loading_url.GetOrigin().spec();
       base::trace_event::TraceLog::GetInstance()->UpdateProcessLabel(
-          routing_id_, subframe_title);
+          routing_id_, frame_title);
     }
   }
 
@@ -4058,7 +4051,7 @@ void RenderFrameImpl::DidFinishLoad() {
 void RenderFrameImpl::DidFinishSameDocumentNavigation(
     blink::WebHistoryCommitType commit_type,
     bool is_synchronously_committed,
-    bool is_history_api_navigation,
+    blink::mojom::SameDocumentNavigationType same_document_navigation_type,
     bool is_client_redirect) {
   TRACE_EVENT1("navigation,rail",
                "RenderFrameImpl::didFinishSameDocumentNavigation", "id",
@@ -4074,7 +4067,8 @@ void RenderFrameImpl::DidFinishSameDocumentNavigation(
       GetTransitionType(frame_->GetDocumentLoader(), IsMainFrame());
   auto same_document_params =
       mojom::DidCommitSameDocumentNavigationParams::New();
-  same_document_params->is_history_api_navigation = is_history_api_navigation;
+  same_document_params->same_document_navigation_type =
+      same_document_navigation_type;
   same_document_params->is_client_redirect = is_client_redirect;
   DidCommitNavigationInternal(
       commit_type, transition,
@@ -4554,8 +4548,8 @@ void RenderFrameImpl::PostAccessibilityEvent(const ui::AXEvent& event) {
   if (!IsAccessibilityEnabled())
     return;
 
-  render_accessibility_manager_->GetRenderAccessibilityImpl()
-      ->HandleWebAccessibilityEvent(event);
+  render_accessibility_manager_->GetRenderAccessibilityImpl()->HandleAXEvent(
+      event);
 }
 
 void RenderFrameImpl::MarkWebAXObjectDirty(
@@ -5326,6 +5320,7 @@ void RenderFrameImpl::SynchronouslyCommitAboutBlankForBug778318(
 
   // TODO(dgozman): should we follow the RFI::CommitNavigation path instead?
   auto navigation_params = WebNavigationParams::CreateFromInfo(*info);
+  navigation_params->is_synchronous_commit_for_bug_778318 = true;
   // We need the provider to be non-null, otherwise Blink crashes, even
   // though the provider should not be used for any actual networking.
   navigation_params->service_worker_network_provider =

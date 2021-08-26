@@ -22,7 +22,7 @@
 
 namespace {
 
-const BarCodeInfo g_BarCodeData[] = {
+const BarCodeInfo kBarCodeData[] = {
     {0x7fb4a18, "ean13", BarcodeType::ean13, BC_EAN13},
     {0x8d13a3d, "code11", BarcodeType::code11, BC_UNKNOWN},
     {0x8d149a8, "code49", BarcodeType::code49, BC_UNKNOWN},
@@ -123,11 +123,11 @@ const BarCodeInfo* CXFA_FFBarcode::GetBarcodeTypeByName(
     return nullptr;
 
   auto* it = std::lower_bound(
-      std::begin(g_BarCodeData), std::end(g_BarCodeData),
+      std::begin(kBarCodeData), std::end(kBarCodeData),
       FX_HashCode_GetLoweredW(wsName.AsStringView()),
       [](const BarCodeInfo& arg, uint32_t hash) { return arg.uHash < hash; });
 
-  if (it != std::end(g_BarCodeData) && wsName.EqualsASCII(it->pName))
+  if (it != std::end(kBarCodeData) && wsName.EqualsASCII(it->pName))
     return it;
 
   return nullptr;
@@ -254,14 +254,16 @@ void CXFA_FFBarcode::UpdateWidgetProperty() {
   }
 }
 
-bool CXFA_FFBarcode::AcceptsFocusOnButtonDown(uint32_t dwFlags,
-                                              const CFX_PointF& point,
-                                              FWL_MouseCommand command) {
+bool CXFA_FFBarcode::AcceptsFocusOnButtonDown(
+    Mask<XFA_FWL_KeyFlag> dwFlags,
+    const CFX_PointF& point,
+    CFWL_MessageMouse::MouseCommand command) {
   auto* pBarCodeWidget = static_cast<CFWL_Barcode*>(GetNormalWidget());
   if (!pBarCodeWidget || pBarCodeWidget->IsProtectedType())
     return false;
-  if (command == FWL_MouseCommand::LeftButtonDown && !m_pNode->IsOpenAccess())
+  if (command == CFWL_MessageMouse::MouseCommand::kLeftButtonDown &&
+      !m_pNode->IsOpenAccess()) {
     return false;
-
+  }
   return CXFA_FFTextEdit::AcceptsFocusOnButtonDown(dwFlags, point, command);
 }

@@ -98,6 +98,8 @@ aom_ext_part_status_t ext_part_create_model_test(
   (void)priv;
   (void)ext_part_model;
   EXPECT_EQ(part_config->superblock_size, BLOCK_64X64);
+  // Return status indicates it's a encoder test. It lets the encoder
+  // set a flag and write partition features to text files.
   return AOM_EXT_PART_TEST;
 }
 
@@ -144,6 +146,8 @@ aom_ext_part_status_t ext_part_get_partition_decision(
     aom_partition_decision_t *ext_part_decision) {
   (void)ext_part_model;
   (void)ext_part_decision;
+  // Return an invalid decision such that the encoder doesn't take any
+  // partition decision from the ml model.
   return AOM_EXT_PART_ERROR;
 }
 
@@ -249,7 +253,7 @@ class ExternalPartitionTest
 // Encode twice and expect the same psnr value.
 // The first run is the baseline without external partition.
 // The second run is to get partition decisions from the toy model we defined.
-// Here, we let the partition decision return true for all stages.
+// Here, we let the partition decision return invalid for all stages.
 // In this case, the external partition doesn't alter the original encoder
 // behavior. So we expect the same encoding results.
 TEST_P(ExternalPartitionTest, EncodeMatch) {

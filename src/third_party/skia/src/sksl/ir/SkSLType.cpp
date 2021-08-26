@@ -10,6 +10,7 @@
 #include "src/sksl/SkSLConstantFolder.h"
 #include "src/sksl/SkSLContext.h"
 #include "src/sksl/ir/SkSLConstructor.h"
+#include "src/sksl/ir/SkSLConstructorArrayCast.h"
 #include "src/sksl/ir/SkSLConstructorCompoundCast.h"
 #include "src/sksl/ir/SkSLConstructorScalarCast.h"
 #include "src/sksl/ir/SkSLFunctionReference.h"
@@ -23,8 +24,8 @@ class ArrayType final : public Type {
 public:
     static constexpr TypeKind kTypeKind = TypeKind::kArray;
 
-    ArrayType(String name, const char* abbrev, const Type& componentType, int count)
-        : INHERITED(std::move(name), abbrev, kTypeKind)
+    ArrayType(skstd::string_view name, const char* abbrev, const Type& componentType, int count)
+        : INHERITED(name, abbrev, kTypeKind)
         , fComponentType(componentType)
         , fCount(count) {
         // Allow either explicitly-sized or unsized arrays.
@@ -170,9 +171,9 @@ class MatrixType final : public Type {
 public:
     static constexpr TypeKind kTypeKind = TypeKind::kMatrix;
 
-    MatrixType(String name, const char* abbrev, const Type& componentType, int8_t columns,
-               int8_t rows)
-        : INHERITED(std::move(name), abbrev, kTypeKind)
+    MatrixType(skstd::string_view name, const char* abbrev, const Type& componentType,
+               int8_t columns, int8_t rows)
+        : INHERITED(name, abbrev, kTypeKind)
         , fComponentType(componentType.as<ScalarType>())
         , fColumns(columns)
         , fRows(rows) {
@@ -293,7 +294,7 @@ class StructType final : public Type {
 public:
     static constexpr TypeKind kTypeKind = TypeKind::kStruct;
 
-    StructType(int offset, String name, std::vector<Field> fields)
+    StructType(int offset, skstd::string_view name, std::vector<Field> fields)
         : INHERITED(std::move(name), "S", kTypeKind, offset)
         , fFields(std::move(fields)) {}
 
@@ -315,8 +316,9 @@ class VectorType final : public Type {
 public:
     static constexpr TypeKind kTypeKind = TypeKind::kVector;
 
-    VectorType(String name, const char* abbrev, const Type& componentType, int8_t columns)
-        : INHERITED(std::move(name), abbrev, kTypeKind)
+    VectorType(skstd::string_view name, const char* abbrev, const Type& componentType,
+               int8_t columns)
+        : INHERITED(name, abbrev, kTypeKind)
         , fComponentType(componentType.as<ScalarType>())
         , fColumns(columns) {
         SkASSERT(columns >= 2 && columns <= 4);
@@ -349,7 +351,15 @@ private:
     int8_t fColumns;
 };
 
-std::unique_ptr<Type> Type::MakeArrayType(String name, const Type& componentType, int columns) {
+String Type::getArrayName(int arraySize) const {
+    skstd::string_view name = this->name();
+    return (arraySize != kUnsizedArray)
+                   ? String::printf("%.*s[%d]", (int)name.size(), name.data(), arraySize)
+                   : String::printf("%.*s[]", (int)name.size(), name.data());
+}
+
+std::unique_ptr<Type> Type::MakeArrayType(skstd::string_view name, const Type& componentType,
+                                          int columns) {
     return std::make_unique<ArrayType>(std::move(name), componentType.abbreviatedName(),
                                        componentType, columns);
 }
@@ -384,8 +394,9 @@ std::unique_ptr<Type> Type::MakeScalarType(const char* name, const char* abbrev,
 
 }
 
-std::unique_ptr<Type> Type::MakeStructType(int offset, String name, std::vector<Field> fields) {
-    return std::make_unique<StructType>(offset, std::move(name), std::move(fields));
+std::unique_ptr<Type> Type::MakeStructType(int offset, skstd::string_view name,
+                                           std::vector<Field> fields) {
+    return std::make_unique<StructType>(offset, name, std::move(fields));
 }
 
 std::unique_ptr<Type> Type::MakeTextureType(const char* name, SpvDim_ dimensions, bool isDepth,
@@ -404,17 +415,16 @@ CoercionCost Type::coercionCost(const Type& other) const {
     if (*this == other) {
         return CoercionCost::Free();
     }
-    if (this->isVector() && other.isVector()) {
-        if (this->columns() == other.columns()) {
-            return this->componentType().coercionCost(other.componentType());
+    if (this->typeKind() == other.typeKind() &&
+        (this->isVector() || this->isMatrix() || this->isArray())) {
+        // Vectors/matrices/arrays of the same size can be coerced if their component type can be.
+        if (this->isMatrix() && (this->rows() != other.rows())) {
+            return CoercionCost::Impossible();
         }
-        return CoercionCost::Impossible();
-    }
-    if (this->isMatrix()) {
-        if (this->columns() == other.columns() && this->rows() == other.rows()) {
-            return this->componentType().coercionCost(other.componentType());
+        if (this->columns() != other.columns()) {
+            return CoercionCost::Impossible();
         }
-        return CoercionCost::Impossible();
+        return this->componentType().coercionCost(other.componentType());
     }
     if (this->isNumber() && other.isNumber()) {
         if (this->isLiteral() && this->isInteger()) {
@@ -436,6 +446,72 @@ CoercionCost Type::coercionCost(const Type& other) const {
         }
     }
     return CoercionCost::Impossible();
+}
+
+const Type* Type::applyPrecisionQualifiers(const Context& context,
+                                           const Modifiers& modifiers,
+                                           SymbolTable* symbols,
+                                           int offset) const {
+    // SkSL doesn't support low precision, so `lowp` is interpreted as medium precision.
+    bool highp   = modifiers.fFlags & Modifiers::kHighp_Flag;
+    bool mediump = modifiers.fFlags & Modifiers::kMediump_Flag;
+    bool lowp    = modifiers.fFlags & Modifiers::kLowp_Flag;
+
+    if (!lowp && !mediump && !highp) {
+        // No precision qualifiers here. Return the type as-is.
+        return this;
+    }
+
+    if (!ProgramConfig::IsRuntimeEffect(context.fConfig->fKind)) {
+        // We want to discourage precision modifiers internally. Instead, use the type that
+        // corresponds to the precision you need. (e.g. half vs float, short vs int)
+        context.errors().error(offset, "precision qualifiers are not allowed");
+        return nullptr;
+    }
+
+    if ((int(lowp) + int(mediump) + int(highp)) != 1) {
+        context.errors().error(offset, "only one precision qualifier can be used");
+        return nullptr;
+    }
+
+    const Type& component = this->componentType();
+    if (component.highPrecision()) {
+        if (highp) {
+            // Type is already high precision, and we are requesting high precision. Return as-is.
+            return this;
+        }
+
+        // Ascertain the mediump equivalent type for this type, if any.
+        const Type* mediumpType;
+        switch (component.numberKind()) {
+            case Type::NumberKind::kFloat:
+                mediumpType = context.fTypes.fHalf.get();
+                break;
+
+            case Type::NumberKind::kSigned:
+                mediumpType = context.fTypes.fShort.get();
+                break;
+
+            case Type::NumberKind::kUnsigned:
+                mediumpType = context.fTypes.fUShort.get();
+                break;
+
+            default:
+                mediumpType = nullptr;
+                break;
+        }
+
+        if (mediumpType) {
+            // Convert the mediump component type into the final vector/matrix/array type as needed.
+            return this->isArray()
+                           ? symbols->addArrayDimension(mediumpType, this->columns())
+                           : &mediumpType->toCompound(context, this->columns(), this->rows());
+        }
+    }
+
+    context.errors().error(offset, "type '" + this->displayName() +
+                                   "' does not support precision qualifiers");
+    return nullptr;
 }
 
 const Type& Type::toCompound(const Context& context, int columns, int rows) const {
@@ -588,15 +664,13 @@ const Type* Type::clone(SymbolTable* symbolTable) const {
     }
     // This type actually needs to be cloned into the destination SymbolTable.
     switch (this->typeKind()) {
-        case TypeKind::kArray:
-            return symbolTable->add(Type::MakeArrayType(String(this->name()), this->componentType(),
-                                                               this->columns()));
-
-        case TypeKind::kStruct:
-            return symbolTable->add(std::make_unique<StructType>(this->fOffset,
-                                                                 String(this->name()),
-                                                                 this->fields()));
-
+        case TypeKind::kArray: {
+            return symbolTable->addArrayDimension(&this->componentType(), this->columns());
+        }
+        case TypeKind::kStruct: {
+            const String* name = symbolTable->takeOwnershipOfString(String(this->name()));
+            return symbolTable->add(Type::MakeStructType(this->fOffset, *name, this->fields()));
+        }
         default:
             SkDEBUGFAILF("don't know how to clone type '%s'", this->description().c_str());
             return nullptr;
@@ -610,11 +684,11 @@ std::unique_ptr<Expression> Type::coerceExpression(std::unique_ptr<Expression> e
     }
     const int offset = expr->fOffset;
     if (expr->is<FunctionReference>()) {
-        context.fErrors.error(offset, "expected '(' to begin function call");
+        context.errors().error(offset, "expected '(' to begin function call");
         return nullptr;
     }
     if (expr->is<TypeReference>()) {
-        context.fErrors.error(offset, "expected '(' to begin constructor invocation");
+        context.errors().error(offset, "expected '(' to begin constructor invocation");
         return nullptr;
     }
     if (expr->type() == *this) {
@@ -623,8 +697,8 @@ std::unique_ptr<Expression> Type::coerceExpression(std::unique_ptr<Expression> e
 
     const Program::Settings& settings = context.fConfig->fSettings;
     if (!expr->coercionCost(*this).isPossible(settings.fAllowNarrowingConversions)) {
-        context.fErrors.error(offset, "expected '" + this->displayName() + "', but found '" +
-                                      expr->type().displayName() + "'");
+        context.errors().error(offset, "expected '" + this->displayName() + "', but found '" +
+                                       expr->type().displayName() + "'");
         return nullptr;
     }
 
@@ -634,7 +708,10 @@ std::unique_ptr<Expression> Type::coerceExpression(std::unique_ptr<Expression> e
     if (this->isVector() || this->isMatrix()) {
         return ConstructorCompoundCast::Make(context, offset, *this, std::move(expr));
     }
-    context.fErrors.error(offset, "cannot construct '" + this->displayName() + "'");
+    if (this->isArray()) {
+        return ConstructorArrayCast::Make(context, offset, *this, std::move(expr));
+    }
+    context.errors().error(offset, "cannot construct '" + this->displayName() + "'");
     return nullptr;
 }
 
@@ -669,9 +746,9 @@ bool Type::checkForOutOfRangeLiteral(const Context& context, const Expression& e
             SKSL_INT value = subexpr->as<IntLiteral>().value();
             if (value < baseType.minimumValue() || value > baseType.maximumValue()) {
                 // We found a value that can't fit in the type. Flag it as an error.
-                context.fErrors.error(expr.fOffset,
-                                      String("integer is out of range for type '") +
-                                      this->displayName().c_str() + "': " + to_string(value));
+                context.errors().error(expr.fOffset,
+                                       String("integer is out of range for type '") +
+                                       this->displayName().c_str() + "': " + to_string(value));
                 foundError = true;
             }
         }

@@ -361,21 +361,20 @@ class WebContents : public PageNavigator,
   // if nothing is focused.
   virtual RenderFrameHost* GetFocusedFrame() = 0;
 
-  // Returns the current RenderFrameHost for a given FrameTreeNode ID if it is
-  // part of this frame tree, not including frames in any inner WebContents.
-  // Returns nullptr if |process_id| does not match the current
-  // RenderFrameHost's process ID, to avoid security bugs where callers do not
-  // realize a cross-process navigation (and thus privilege change) has taken
-  // place. See RenderFrameHost::GetFrameTreeNodeId for documentation on
-  // frame_tree_node_id.
-  virtual RenderFrameHost* FindFrameByFrameTreeNodeId(int frame_tree_node_id,
-                                                      int process_id) = 0;
+  // Returns true if |frame_tree_node_id| refers to a frame in a prerendered
+  // page.
+  // TODO(1196715, 1232528): This will be extended to also return true if it is
+  // in an inner page of a prerendered page.
+  virtual bool IsPrerenderedFrame(int frame_tree_node_id) = 0;
 
-  // NOTE: This is generally unsafe to use. Use FindFrameByFrameTreeNodeId
-  // instead.
-  // Returns the current RenderFrameHost for a given FrameTreeNode ID if it is
-  // part of this frame tree. This may not match the caller's expectation, if a
-  // cross-process navigation (and thus privilege change) has taken place.
+  // NOTE: This is generally unsafe to use. A frame's RenderFrameHost may
+  // change over its lifetime, such as during cross-process navigation (and
+  // thus privilege change). Use RenderFrameHost::FromID instead wherever
+  // possible.
+  //
+  // Given a FrameTreeNode ID that belongs to this WebContents, returns the
+  // current RenderFrameHost regardless of which FrameTree it is in.
+  //
   // See RenderFrameHost::GetFrameTreeNodeId for documentation on this ID.
   virtual RenderFrameHost* UnsafeFindFrameByFrameTreeNodeId(
       int frame_tree_node_id) = 0;
@@ -462,9 +461,8 @@ class WebContents : public PageNavigator,
   // understand.
   virtual void SetPageBaseBackgroundColor(absl::optional<SkColor> color) = 0;
 
-  // Returns the committed WebUI if one exists, otherwise the pending one.
+  // Returns the committed WebUI if one exists.
   virtual WebUI* GetWebUI() = 0;
-  virtual WebUI* GetCommittedWebUI() = 0;
 
   // Sets the user-agent that may be used for navigations in this WebContents.
   // The user-agent is *only* used when
@@ -994,11 +992,13 @@ class WebContents : public PageNavigator,
   // Returns false if the request is no longer valid, otherwise true.
   virtual bool GotResponseToKeyboardLockRequest(bool allowed) = 0;
 
+#if defined(OS_ANDROID)
   // Called when the user has selected a color in the color chooser.
   virtual void DidChooseColorInColorChooser(SkColor color) = 0;
 
   // Called when the color chooser has ended.
   virtual void DidEndColorChooser() = 0;
+#endif
 
   // Returns true if the location bar should be focused by default rather than
   // the page contents. The view calls this function when the tab is focused
@@ -1262,6 +1262,14 @@ class WebContents : public PageNavigator,
 
   // Serialise this object into a trace.
   virtual void WriteIntoTrace(perfetto::TracedValue context) = 0;
+
+  // Disallows navigations that activate a prerendered page or a back/forward
+  // cached page in this WebContents. Such pages will be ignored and normal
+  // navigation will occur instead.
+  // TODO(https://crbug.com/1234857): Remove this. This is a temporary
+  // workaround to avoid breaking features that must be taught to deal with
+  // activation navigations.
+  virtual void DisallowActivationNavigationsForBug1234857() = 0;
 
  private:
   // This interface should only be implemented inside content.

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright (c) 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -91,11 +91,11 @@ def get_available_tools():
   """Returns a tuple of (list of infra tools, list of cipd tools)"""
   infra_tools = []
   cipd_tools = []
-  starting = os.path.join(TARGET_DIR, 'infra', 'infra', 'tools')
+  starting = os.path.join(INFRA_DIR, 'infra', 'tools')
   for root, _, files in os.walk(starting):
     if '__main__.py' in files:
       infra_tools.append(root[len(starting)+1:].replace(os.path.sep, '.'))
-  cipd = os.path.join(TARGET_DIR, 'infra', 'cipd')
+  cipd = os.path.join(INFRA_DIR, 'cipd')
   for fn in os.listdir(cipd):
     if is_exe(os.path.join(cipd, fn)):
       cipd_tools.append(fn)
@@ -107,7 +107,7 @@ def usage():
   print("""usage: cit.py <name of tool> [args for tool]
 
   Wrapper for maintaining and calling tools in:
-    "infra.git/run.py infra.tools.*"
+    "infra.git, infra.tools.*"
     "infra.git/cipd/*"
 
   Available infra tools are:""")
@@ -124,18 +124,24 @@ def run(args):
   if not args:
     return usage()
 
+  env = os.environ
   tool_name = args[0]
   # Check to see if it is a infra tool first.
-  infra_dir = os.path.join(
-    TARGET_DIR, 'infra', 'infra', 'tools', *tool_name.split('.'))
-  cipd_file = os.path.join(TARGET_DIR, 'infra', 'cipd', tool_name)
+  tool_dir = os.path.join(
+    INFRA_DIR, 'infra', 'tools', *tool_name.split('.'))
+  cipd_file = os.path.join(INFRA_DIR, 'cipd', tool_name)
   if sys.platform.startswith('win'):
     cipd_file += '.exe'
-  if (os.path.isdir(infra_dir)
-      and os.path.isfile(os.path.join(infra_dir, '__main__.py'))):
+  if (os.path.isdir(tool_dir)
+      and os.path.isfile(os.path.join(tool_dir, '__main__.py'))):
     cmd = [
-        sys.executable, os.path.join(TARGET_DIR, 'infra', 'run.py'),
-        'infra.tools.%s' % tool_name]
+        'vpython', '-vpython-spec', os.path.join(INFRA_DIR, '.vpython'),
+        '-m', 'infra.tools.%s' % tool_name]
+
+    # Augment PYTHONPATH so that infra.tools.<tool_name> can be found without
+    # running from that directory, which would mess up any relative paths passed
+    # to the tool.
+    env['PYTHONPATH'] = INFRA_DIR + os.pathsep + env['PYTHONPATH']
   elif os.path.isfile(cipd_file) and is_exe(cipd_file):
     cmd = [cipd_file]
   else:
@@ -144,7 +150,7 @@ def run(args):
 
   # Add the remaining arguments.
   cmd.extend(args[1:])
-  return subprocess.call(cmd)
+  return subprocess.call(cmd, env=env)
 
 
 def main():

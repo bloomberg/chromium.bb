@@ -720,6 +720,7 @@
         'DeviceLoginScreenShowOptionsInSystemTrayMenu',
         'DeviceLoginScreenAccessibilityShortcutsEnabled',
         'FloatingAccessibilityMenuEnabled',
+        'EnhancedNetworkVoicesInSelectToSpeakAllowed',
       ],
     },
     {
@@ -755,6 +756,20 @@
       'policies': [
         'EnableMediaRouter',
         'ShowCastIconInToolbar',
+      ],
+    },
+    {
+      'name': 'ScreenCapture',
+      'type': 'group',
+      'caption': '''Allow or deny screen capture''',
+      'desc': '''Configure policies to control the level of screen-share APIs (e.g., getDisplayMedia() or the Desktop Capture extension API)
+      that a site may capture (e.g. tab, window or desktop capture).''',
+      'policies': [
+        'ScreenCaptureAllowed',
+        'ScreenCaptureAllowedByOrigins',
+        'WindowCaptureAllowedByOrigins',
+        'TabCaptureAllowedByOrigins',
+        'SameOriginTabCaptureAllowedByOrigins',
       ],
     },
 
@@ -1107,6 +1122,8 @@
         'DeviceExternalPrintServersAllowlist',
         'PrinterTypeDenyList',
         'PrintRasterizationMode',
+        'PrintPdfAsImageAvailability',
+        'PrintRasterizePdfDpi',
         'DeletePrintJobHistoryAllowed',
         'CloudPrintWarningsSuppressed',
       ]
@@ -1141,6 +1158,7 @@
         'ArcLocationServiceEnabled',
         'AppRecommendationZeroStateEnabled',
         'DeviceArcDataSnapshotHours',
+        'ArcAppToWebAppSharingEnabled',
       ]
     },
     {
@@ -1286,6 +1304,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Use New Tab Page as homepage',
+        },
+        {
+          'value': False,
+          'caption': 'Do not use New Tab Page as homepage',
+        },
+      ],
       'example_value': True,
       'id': 2,
       'caption': '''Use New Tab Page as homepage''',
@@ -1333,6 +1361,16 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable the default browser check on startup',
+        },
+        {
+          'value': False,
+          'caption': 'Disable the default browser check on startup',
+        },
+      ],
       'example_value': True,
       'id': 3,
       'caption': '''Set <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> as Default Browser''',
@@ -1382,6 +1420,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable alternate error pages',
+        },
+        {
+          'value': False,
+          'caption': 'Disable alternate error pages',
+        },
+      ],
       'example_value': True,
       'id': 5,
       'caption': '''Enable alternate error pages''',
@@ -1406,6 +1454,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable search suggestions',
+        },
+        {
+          'value': False,
+          'caption': 'Disable search suggestions',
+        },
+      ],
       'example_value': True,
       'id': 6,
       'caption': '''Enable search suggestions''',
@@ -1427,6 +1485,16 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Detect covered window and suspend its painting',
+        },
+        {
+          'value': False,
+          'caption': 'Do not detect covered window',
+        },
+      ],
       'deprecated': True,
       'example_value': True,
       'id': 675,
@@ -1637,6 +1705,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable globally scoped HTTP authentication cache',
+        },
+        {
+          'value': False,
+          'caption': 'Disable globally scoped HTTP authentication cache',
+        },
+      ],
       'example_value': False,
       'id': 643,
       'caption': '''Enable globally scoped HTTP auth cache''',
@@ -1740,6 +1818,16 @@
         'dynamic_refresh': False,
         'per_profile': False,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable HTTP/0.9 support on non-default ports',
+        },
+        {
+          'value': False,
+          'caption': 'Disable HTTP/0.9 support on non-default ports',
+        },
+      ],
       'example_value': False,
       'id': 345,
       'caption': '''Enable HTTP/0.9 support on non-default ports''',
@@ -3663,6 +3751,7 @@
         'items': {'type': 'string'},
       },
       'supported_on': ['chrome.*:79-','android:79-','chrome_os:79-'],
+      'future_on': ['ios'],
       'features': {
         'per_profile': True,
         'dynamic_refresh': False,
@@ -6449,7 +6538,7 @@
         'type': 'array',
         'items': { 'type': 'string' },
       },
-      'future_on': ['chrome_os', 'chrome.*'],
+      'supported_on': ['chrome_os:94-', 'chrome.*:94-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -6461,6 +6550,8 @@
       'desc': '''Setting the policy allows you to list sites which are automatically granted permission to access all available serial ports.
 
       The URLs must be valid, otherwise the policy is ignored. Only the origin (scheme, host and port) of the URL is considered.
+
+      On Chrome OS, this policy only applies to affiliated users.
 
       This policy overrides <ph name="DEFAULT_SERIAL_GUARD_SETTING_POLICY_NAME">DefaultSerialGuardSetting</ph>, <ph name="SERIAL_ASK_FOR_URLS_POLICY_NAME">SerialAskForUrls</ph>, <ph name="SERIAL_BLOCKED_FOR_URLS_POLICY_NAME">SerialBlockedForUrls</ph> and the user's preferences.''',
     },
@@ -6492,7 +6583,7 @@
           'required': ['devices', 'urls']
         }
       },
-      'future_on': ['chrome_os', 'chrome.*'],
+      'supported_on': ['chrome_os:94-', 'chrome.*:94-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -6514,13 +6605,15 @@
 
       The URLs must be valid, otherwise the policy is ignored. Only the origin (scheme, host and port) of the URL is considered.
 
+      On Chrome OS, this policy only applies to affiliated users.
+
       This policy overrides <ph name="DEFAULT_SERIAL_GUARD_SETTING_POLICY_NAME">DefaultSerialGuardSetting</ph>, <ph name="SERIAL_ASK_FOR_URLS_POLICY_NAME">SerialAskForUrls</ph>, <ph name="SERIAL_BLOCKED_FOR_URLS_POLICY_NAME">SerialBlockedForUrls</ph> and the user's preferences.
 
       This policy only affects access to USB devices through the Web Serial API. To grant access to USB devices through the WebUSB API see the <ph name="WEB_USB_ALLOW_DEVICES_FOR_URLS_POLICY_NAME">WebUsbAllowDevicesForUrls</ph> policy.''',
     },
     {
       'name': 'DefaultFileHandlingGuardSetting',
-      'owners': ['huangdarwin@chromium.org', 'cmp@chromium.org'],
+      'owners': ['estade@chromium.org', 'cmp@chromium.org'],
       'type': 'int-enum',
       'schema': {
         'type': 'integer',
@@ -6554,7 +6647,7 @@
     },
     {
       'name': 'FileHandlingAllowedForUrls',
-      'owners': ['huangdarwin@chromium.org', 'cmp@chromium.org'],
+      'owners': ['estade@chromium.org', 'cmp@chromium.org'],
       'type': 'list',
       'schema': {
         'type': 'array',
@@ -6581,7 +6674,7 @@
     },
     {
       'name': 'FileHandlingBlockedForUrls',
-      'owners': ['huangdarwin@chromium.org', 'cmp@chromium.org'],
+      'owners': ['estade@chromium.org', 'cmp@chromium.org'],
       'type': 'list',
       'schema': {
         'type': 'array',
@@ -7126,7 +7219,7 @@
     },
     {
       'name': 'LegacySameSiteCookieBehaviorEnabled',
-      'owners': [ 'chlily@chromium.org', ],
+      'owners': [ 'bingler@chromium.org', 'file://net/cookies/OWNERS', ],
       'type': 'int-enum',
       'schema': {
         'type': 'integer',
@@ -7164,7 +7257,7 @@
     },
     {
       'name': 'LegacySameSiteCookieBehaviorEnabledForDomainList',
-      'owners': [ 'chlily@chromium.org', ],
+      'owners': [ 'bingler@chromium.org', 'file://net/cookies/OWNERS', ],
       'type': 'list',
       'schema': {
         'type': 'array',
@@ -7219,6 +7312,33 @@
       'desc': '''Leaving the policy unset or setting it to Enabled allows users to search with their cameras using <ph name="GOOGLE_LENS_PRODUCT_NAME">Google Lens</ph>. Setting the policy to Disabled means users can't see the <ph name="GOOGLE_LENS_PRODUCT_NAME">Google Lens</ph> button in the search box when <ph name="GOOGLE_LENS_PRODUCT_NAME">Google Lens</ph> camera assisted search is supported.''',
     },
     {
+      'name': 'LensRegionSearchEnabled',
+      'owners': [ 'juanmojica@google.com', 'benwgold@google.com', 'lens-chrome@google.com'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:94-', 'chrome_os:94-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable <ph name="GOOGLE_LENS_PRODUCT_NAME">Google Lens</ph> region search.',
+        },
+        {
+          'value': False,
+          'caption': 'Disable <ph name="GOOGLE_LENS_PRODUCT_NAME">Google Lens</ph> region search.',
+        },
+      ],
+      'example_value': True,
+      'default': True,
+      'id': 886,
+      'caption': '''Allow <ph name="GOOGLE_LENS_PRODUCT_NAME">Google Lens</ph> region search menu item to be shown in context menu if supported.''',
+      'tags': [],
+      'desc': '''Leaving the policy unset or setting it to Enabled allows users to view and use the <ph name="GOOGLE_LENS_PRODUCT_NAME">Google Lens</ph> region search menu item in the context menu. Setting the policy to Disabled means users will not see the <ph name="GOOGLE_LENS_PRODUCT_NAME">Google Lens</ph> region search menu item in the context menu when <ph name="GOOGLE_LENS_PRODUCT_NAME">Google Lens</ph> region search is supported.''',
+    },
+    {
       'name': 'InsecurePrivateNetworkRequestsAllowed',
       'owners': [
         'titouan@chromium.org',
@@ -7243,7 +7363,7 @@
       'tags': ['system-security'],
       'desc': '''Controls whether insecure websites are allowed to make requests to more-private network endpoints.
 
-          This policy relates to the CORS-RFC1918 specification. See https://wicg.github.io/cors-rfc1918 for more details.
+          This policy relates to the Private Network Access specification. See https://wicg.github.io/private-network-access/ for more details.
 
           A network endpoint is more private than another if:
           1) Its IP address is localhost and the other is not.
@@ -8679,6 +8799,7 @@
         'items': { 'type': 'string' },
       },
       'supported_on': ['chrome.*:75-', 'chrome_os:75-'],
+      'future_on': ['android'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -9104,7 +9225,7 @@
       'features': {
         'can_be_recommended': True,
         'dynamic_refresh': True,
-        'per_profile': False,
+        'per_profile': True,
       },
       'example_value': False,
       'id': 480,
@@ -11750,7 +11871,7 @@
         {
           'name': 'google_news',
           'value': 'google_news',
-          'caption': '''Google News (supported since version 91)''',
+          'caption': '''Unsupported''',
         },
         {
           'name': 'explore',
@@ -11766,7 +11887,7 @@
       },
       'example_value': ['camera', 'browser_settings', 'os_settings', 'scanning', 'web_store', 'canvas'],
       'id': 689,
-      'caption': '''Configure the camera, browser settings, os settings, scanning, web store, canvas, Google news and explore features to be disabled''',
+      'caption': '''Configure the camera, browser settings, os settings, scanning, web store, canvas and explore features to be disabled''',
       'tags': [],
       'desc': '''Allows you to set a list of <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> features to be disabled.
 
@@ -12987,10 +13108,11 @@
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:81-'],
+      'device_only': True,
       'features': {
         'can_be_recommended': True,
         'dynamic_refresh': True,
-        'per_profile': True,
+        'per_profile': False,
       },
       'example_value': True,
       'id': 661,
@@ -18323,6 +18445,94 @@
       cross-origin isolated.''',
     },
     {
+      'name': 'CrossOriginWebAssemblyModuleSharingEnabled',
+      'owners': ['ahaas@chromium.org', 'clamy@chromium.org', 'vahl@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:94-', 'chrome_os:94-'],
+      'device_only': False,
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow WebAssembly modules to be sent cross-origin',
+        },
+        {
+          'value': False,
+          'caption': 'Prevent WebAssembly modules to be sent cross-origin',
+        },
+      ],
+      'example_value': True,
+      'default': True,
+      'id': 878,
+      'caption': '''Specifies whether WebAssembly modules can be sent cross-origin''',
+      'tags': ['system-security'],
+      'desc': '''
+      Specifies whether WebAssembly modules can be sent to another window or
+      worker cross-origin. Cross-origin WebAssembly module sharing will be
+      deprecated as part of the efforts to deprecate document.domain, see
+      https://github.com/mikewest/deprecating-document-domain. This policy
+      allows to re-enable cross-origin WebAssembly module sharing to offer a
+      longer transition period in the deprecation process.
+
+      When set to True, sites can send WebAssembly modules also cross-origin
+      without restrictions.
+
+      When set to False, sites can only send WebAssembly modules to windows
+      and workers in the same origin.''',
+    },
+    {
+      'name': 'DisplayCapturePermissionsPolicyEnabled',
+      'owners': ['eladalon@chromium.org', 'guidou@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:94-', 'chrome_os:94-'],
+      'device_only': False,
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': '''
+          Calls to getDisplayMedia originating from non-allowlisted contexts
+          are denied.''',
+        },
+        {
+          'value': False,
+          'caption': '''
+          Calls are not denied on account of originating from non-allowlisted
+          contexts. (Calls may still be denied for other reasons.)''',
+        },
+      ],
+      'example_value': True,
+      'default': True,
+      'id': 880,
+      'caption': 'Specifies whether the display-capture permissions-policy is checked or skipped.',
+      'tags': ['system-security'],
+      'desc': '''
+      The display-capture permissions-policy gates access to getDisplayMedia(),
+      as per this spec:
+      https://www.w3.org/TR/screen-capture/#feature-policy-integration
+      However, if this policy is Disabled, this requirement is not enforced,
+      and getDisplayMedia() is allowed from contexts that would otherwise be
+      forbidden. This Enterprise policy is temporary; it's intended to be
+      removed after <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 100.
+      It is intended to unblock Enterprise users whose application is non-spec compliant,
+      but needs time to be fixed.
+
+      When enabled or not set, sites can only call getDisplayMedia() from
+      contexts which are allowlisted by the display-capture permissions-policy.
+
+      When disabled, sites can call getDisplayMedia() even from contexts
+      which are not allowlisted by the display-capture permissions policy.
+      Note that other restrictions may still apply.''',
+    },
+    {
       'name': 'WebDriverOverridesIncompatiblePolicies',
       'owners': ['file://components/policy/resources/OWNERS', 'pastarmovj@chromium.org'],
       'type': 'main',
@@ -18614,9 +18824,7 @@
       'tags': [],
       'desc': '''Setting the policy to Enabled or leaving it unset prevents third-party software from injecting executable code into <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s processes.
 
-      Setting the policy to Disabled allows this software to inject such code into <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s processes.
-
-      Regardless of the value of this policy, the browser won't block third-party software from injecting executable code into its processes on a machine that's joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain.''',
+      Setting the policy to Disabled allows this software to inject such code into <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s processes.'''
     },
     {
       'name': 'SpellcheckEnabled',
@@ -18697,6 +18905,7 @@
         'items': { 'type': 'string' }
       },
       'supported_on': ['android:65-'],
+      'future_on': ['ios'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -19563,7 +19772,7 @@
       'id': 456,
       'caption': '''Configure the allowed input methods in a user session''',
       'tags': [],
-      'desc': '''Setting the policy lets users choose one of the input methods (keyboard layouts) for <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> sessions that you specify.
+      'desc': '''Setting the policy lets users choose one of the input methods for <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> sessions that you specify.
 
        If you leave it unset or set to an empty list, users can select all supported input methods.
 
@@ -19969,13 +20178,13 @@
     {
       'id': 454,
       'name': 'PromotionalTabsEnabled',
-      'owners': ['grt@chromium.org'],
+      'owners': ['grt@chromium.org', 'rbpotter@chromium.org'],
       'tags': [],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
       },
-      'supported_on': ['chrome.*:69-'],
+      'supported_on': ['chrome.*:69-', 'chrome_os:93-'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'caption': '''Enable showing full-tab promotional content''',
@@ -22194,7 +22403,7 @@
         },
         'required': ['reboot_time', 'frequency']
       },
-      'future_on': ['chrome_os'],
+      'supported_on': ['chrome_os:94-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -23833,6 +24042,65 @@
       When this policy is not set, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will be in Full mode.'''
     },
     {
+      'name': 'PrintPdfAsImageAvailability',
+      'owners': ['awscreen@chromium.org', 'file://printing/OWNERS'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Print as image option available to user to allow PDF rasterization prior to sending print job to destination.',
+        },
+        {
+          'value': False,
+          'caption': 'Print as image option not available for user selection.',
+        },
+      ],
+      'supported_on': ['chrome.win:94-', 'chrome.mac:94-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'default': False,
+      'id': 889,
+      'caption': '''Print PDF as Image Available''',
+      'tags': [],
+      'desc': '''Controls how <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> makes the Print as image option available on <ph name="MS_WIN_NAME">Microsoft® Windows®</ph> and <ph name="MAC_OS_NAME">macOS</ph> when printing PDFs.
+
+      When printing a PDF on <ph name="MS_WIN_NAME">Microsoft® Windows®</ph> or <ph name="MAC_OS_NAME">macOS</ph>, sometimes print jobs need to be rasterized to an image for certain printers to get correct looking output.
+
+      When this policy is set to Enabled, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will make the Print as image option available in the Print Preview when printing a PDF.
+
+      When this policy is set to Disabled or not set <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> the Print as image option will not be available to users in Print Preview and PDFs will be printed as usual without being rasterized to an image before being sent to the destination.'''
+    },
+    {
+      'name': 'PrintRasterizePdfDpi',
+      'owners': ['awscreen@chromium.org', 'file://printing/OWNERS'],
+      'type': 'int',
+      'schema': {
+        'type': 'integer',
+        'minimum': 0,
+      },
+      'supported_on': ['chrome.*:94-', 'chrome_os:94-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': 300,
+      'default': 0,
+      'id': 890,
+      'caption': '''Print Rasterize PDF DPI''',
+      'tags': [],
+      'desc': '''Controls print image resolution when <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> prints PDFs with rasterization.
+
+      When printing a PDF using the Print to image option, it can be beneficial to specify a print resolution other than a device's printer setting or the PDF default.  A high resolution will significantly increase the processing and printing time while a low resolution can lead to poor imaging quality.
+
+      This policy allows a particular resolution to be specified for use when rasterizing PDFs for printing.
+
+      If this policy is set to zero or not set at all then the system default resolution will be used during rasterization of page images.'''
+    },
+    {
       'name': 'DeletePrintJobHistoryAllowed',
       'owners': ['jimmyxgong@chromium.org', 'file://printing/OWNERS'],
       'type': 'main',
@@ -24150,7 +24418,128 @@
       to prompt the user to select a tab, window or desktop to capture.
 
       When this policy is disabled, any calls to screen-share APIs will fail
-      with an error.''',
+      with an error; however this policy is not considered (and a site will be
+      allowed to use screen-share APIs) if the site matches an origin pattern in
+      any of the following policies:
+      <ph name="SCREEN_CAPTURE_ALLOWED_BY_ORIGINS_POLICY_NAME">ScreenCaptureAllowedByOrigins</ph>,
+      <ph name="WINDOW_CAPTURE_ALLOWED_BY_ORIGINS_POLICY_NAME">WindowCaptureAllowedByOrigins</ph>,
+      <ph name="TAB_CAPTURE_ALLOWED_BY_ORIGINS_POLICY_NAME">TabCaptureAllowedByOrigins</ph>,
+      <ph name="SAME_ORIGIN_TAB_CAPTURE_ALLOWED_BY_ORIGINS_POLICY_NAME">SameOriginTabCaptureAllowedByOrigins</ph>.
+      ''',
+    },
+    {
+      'name': 'ScreenCaptureAllowedByOrigins',
+      'owners': ['alcooper@chromium.org', 'mfoltz@chromium.org'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'future_on': ['chrome.*'],
+      'supported_on': ['chrome_os:94-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': ['https://www.example.com', '[*.]example.edu'],
+      'id': 881,
+      'caption': '''Allow Desktop, Window, and Tab capture by these origins''',
+      'tags': [],
+      'desc': '''Setting the policy lets you set a list of URL patterns that can use Desktop, Window, and Tab Capture.
+
+      Leaving the policy unset means that sites will not be considered for an override at this level of Capture.
+
+      This policy is not considered if a site matches a URL pattern in any of the following policies: <ph name="WINDOW_CAPTURE_ALLOWED_BY_ORIGINS_POLICY_NAME">WindowCaptureAllowedByOrigins</ph>, <ph name="TAB_CAPTURE_ALLOWED_BY_ORIGINS_POLICY_NAME">TabCaptureAllowedByOrigins</ph>, <ph name="SAME_ORIGIN_TAB_CAPTURE_ALLOWED_BY_ORIGINS_POLICY_NAME">SameOriginTabCaptureAllowedByOrigins</ph>.
+
+      If a site matches a URL pattern in this policy, the <ph name="SCREEN_CAPTURE_ALLOWED_POLICY_NAME">ScreenCaptureAllowed</ph> will not be considered.
+
+      For detailed information on valid <ph name="URL_LABEL">url</ph> patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.  This policy only matches based on origin, so any path in the URL pattern is ignored.''',
+    },
+    {
+      'name': 'WindowCaptureAllowedByOrigins',
+      'owners': ['alcooper@chromium.org', 'mfoltz@chromium.org'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'future_on': ['chrome.*'],
+      'supported_on': ['chrome_os:94-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': ['https://www.example.com', '[*.]example.edu'],
+      'id': 882,
+      'caption': '''Allow Window and Tab capture by these origins''',
+      'tags': [],
+      'desc': '''Setting the policy lets you set a list of URL patterns that can use Window and Tab Capture.
+
+      Leaving the policy unset means that sites will not be considered for an override at this level of Capture.
+
+      This policy is not considered if a site matches a URL pattern in any of the following policies: <ph name="TAB_CAPTURE_ALLOWED_BY_ORIGINS_POLICY_NAME">TabCaptureAllowedByOrigins</ph>, <ph name="SAME_ORIGIN_TAB_CAPTURE_ALLOWED_BY_ORIGINS_POLICY_NAME">SameOriginTabCaptureAllowedByOrigins</ph>.
+
+      If a site matches a URL pattern in this policy, the following policies will not be considered: <ph name="SCREEN_CAPTURE_ALLOWED_BY_ORIGINS_POLICY_NAME">ScreenCaptureAllowedByOrigins</ph>, <ph name="SCREEN_CAPTURE_ALLOWED_POLICY_NAME">ScreenCaptureAllowed</ph>.
+
+      For detailed information on valid <ph name="URL_LABEL">url</ph> patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.  This policy only matches based on origin, so any path in the URL pattern is ignored.''',
+    },
+    {
+      'name': 'TabCaptureAllowedByOrigins',
+      'owners': ['alcooper@chromium.org', 'mfoltz@chromium.org'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'future_on': ['chrome.*'],
+      'supported_on': ['chrome_os:94-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': ['https://www.example.com', '[*.]example.edu'],
+      'id': 883,
+      'caption': '''Allow Tab capture by these origins''',
+      'tags': [],
+      'desc': '''Setting the policy lets you set a list of URL patterns that can use Tab Capture.
+
+      Leaving the policy unset means that sites will not be considered for an override at this level of capture.
+
+      Note that windowed Chrome Apps will still be allowed to be captured.
+
+      This policy is not considered if a site matches a URL pattern in the <ph name="SAME_ORIGIN_TAB_CAPTURE_ALLOWED_BY_ORIGINS_POLICY_NAME">SameOriginTabCaptureAllowedByOrigins</ph> policy.
+
+      If a site matches a URL pattern in this policy, the following policies will not be considered: <ph name="WINDOW_CAPTURE_ALLOWED_BY_ORIGINS_POLICY_NAME">WindowCaptureAllowedByOrigins</ph>, <ph name="SCREEN_CAPTURE_ALLOWED_BY_ORIGINS_POLICY_NAME">ScreenCaptureAllowedByOrigins</ph>, <ph name="SCREEN_CAPTURE_ALLOWED_POLICY_NAME">ScreenCaptureAllowed</ph>.
+
+      For detailed information on valid <ph name="URL_LABEL">url</ph> patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.  This policy only matches based on origin, so any path in the URL pattern is ignored.''',
+    },
+    {
+      'name': 'SameOriginTabCaptureAllowedByOrigins',
+      'owners': ['alcooper@chromium.org', 'mfoltz@chromium.org'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'future_on': ['chrome.*'],
+      'supported_on': ['chrome_os:94-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': ['https://www.example.com', '[*.]example.edu'],
+      'id': 884,
+      'caption': '''Allow Same Origin Tab capture by these origins''',
+      'tags': [],
+      'desc': '''Setting the policy lets you set a list of URL patterns that can capture tabs with their same Origin.
+
+      Leaving the policy unset means that sites will not be considered for an override at this level of capture.
+
+      Note that windowed Chrome Apps with the same origin as this site will still be allowed to be captured.
+
+      If a site matches a URL pattern in this policy, the following policies will not be considered: <ph name="TAB_CAPTURE_ALLOWED_BY_ORIGINS_POLICY_NAME">TabCaptureAllowedByOrigins</ph>, <ph name="WINDOW_CAPTURE_ALLOWED_BY_ORIGINS_POLICY_NAME">WindowCaptureAllowedByOrigins</ph>, <ph name="SCREEN_CAPTURE_ALLOWED_BY_ORIGINS_POLICY_NAME">ScreenCaptureAllowedByOrigins</ph>, <ph name="SCREEN_CAPTURE_ALLOWED_POLICY_NAME">ScreenCaptureAllowed</ph>.
+
+      For detailed information on valid <ph name="URL_LABEL">url</ph> patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.  This policy only matches based on origin, so any path in the URL pattern is ignored.''',
     },
     {
       'name': 'AdvancedProtectionDeepScanningEnabled',
@@ -24672,7 +25061,7 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       'owners': ['file://components/client_hints/OWNERS', 'yoavweiss@google.com', 'aarontag@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome_os:84-', 'chrome.*:84-', 'android:84-'],
+      'supported_on': ['chrome_os:84-93', 'chrome.*:84-93', 'android:84-93'],
       'features': {
         'per_profile': False,
         'dynamic_refresh': True,
@@ -24683,13 +25072,11 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       'id': 725,
       'caption': '''Control the <ph name="PRODUCT_NAME">User-Agent Client Hints</ph> feature.''',
       'tags': [],
-      'desc': '''When enabled the <ph name="PRODUCT_NAME">User-Agent Client Hints</ph> feature sends granular request headers providing information about the user browser and environment.
+      'desc': '''Note that this policy was removed in M94.  This policy was intended for short-term adaptation purposes only.
 
+      When enabled the <ph name="PRODUCT_NAME">User-Agent Client Hints</ph> feature sends granular request headers providing information about the user browser and environment.
       This is an additive feature, but the new headers may break some websites that restrict the characters that requests may contain.
-
-      If this policy is enabled or not set the <ph name="PRODUCT_NAME">User-Agent Client Hints</ph> feature is enabled. If the policy is disabled the feature is unavailable.
-
-      This enterprise policy is for short-term adaptation purposes and will be removed in Chrome 94.''',
+      If this policy is enabled or not set the <ph name="PRODUCT_NAME">User-Agent Client Hints</ph> feature is enabled. If the policy is disabled the feature is unavailable.''',
     },
     {
       'name': 'SuggestedContentEnabled',
@@ -24890,6 +25277,7 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:89-93', 'chrome_os:89-93'],
+      'deprecated': True,
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -25449,11 +25837,12 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       'owners': ['acostinas@chromium.org', 'pmarko@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome_os:89-'],
+      'supported_on': ['chrome_os:89-93'],
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
       },
+      'deprecated': True,
       'items': [
         {
           'value': True,
@@ -25469,11 +25858,7 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       'default': False,
       'caption': '''Allow reusing the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> login credentials for network authentication''',
       'tags': [],
-      'desc': '''This setting allows users to authenticate to a managed proxy secured with NTLM authentication using the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> login credentials.
-
-      If this policy is set to False or unset, the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> login credentials will not be used for network authentication.
-
-      If this policy is set to True, the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> login credentials will be used for network authentication to a managed proxy. In case the authentication with the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> login credentials fails, the user will be prompted for credentials.''',
+      'desc': ''' This policy is deprecated, please configure Kerberos policies to reuse the login password instead.''',
     },
     {
       'name': 'ClearBrowsingDataOnExitList',
@@ -25904,7 +26289,7 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       'id': 829,
       'caption': '''Suppress JavaScript Dialogs triggered from different origin subframes''',
       'tags': [],
-      'desc': '''As described in https://www.chromestatus.com/feature/5148698084376576 , JavaScript modal dialogs, triggered by <ph name="JS_ALERT">$6<ex>window.alert</ex></ph>, <ph name="JS_CONFIRM">$6<ex>window.confirm</ex></ph>, and <ph name="JS_PROMPT">$6<ex>window.prompt</ex></ph>, will be blocked in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> if triggered from a subframe whose origin is different from the main frame origin.
+      'desc': '''As described in https://www.chromestatus.com/feature/5148698084376576 , JavaScript modal dialogs, triggered by <ph name="JS_ALERT">window.alert</ph>, <ph name="JS_CONFIRM">window.confirm</ph>, and <ph name="JS_PROMPT">window.prompt</ph>, will be blocked in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> if triggered from a subframe whose origin is different from the main frame origin.
        This policy allows overriding that change.
        If the policy is set to enabled or unset, JavaScript dialogs triggered from a different origin subframe will be blocked.
        If the policy is set to disabled, JavaScript dialogs triggered from a different origin subframe will not be blocked.
@@ -26361,7 +26746,10 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex><
           'none',
         ]
       },
-      'future_on': ['chrome_os', 'chrome.*'],
+      'supported_on': [
+        'chrome.*:94-',
+      ],
+      'future_on': ['chrome_os'],
       'features': {
         'dynamic_refresh': False,
         'per_profile': True,
@@ -26376,11 +26764,6 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex><
           'name': 'PrimaryAccountStrict',
           'value': 'primary_account_strict',
           'caption': 'A Managed account must be a primary account and have no secondary accounts',
-        },
-        {
-          'name': 'AffiliatedDevice',
-          'value': 'affiliated_device',
-          'caption': 'Managed accounts must be on an affiliated managed device',
         },
         {
           'name': 'None',
@@ -26630,6 +27013,91 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex><
       'desc': '''The policy only applies to managed guest sessions. It has to be enabled for Imprivata's shared workstation mode to allow in-session user switches.
       Setting the policy to True will forcefully override certain policies for features, which persist sensitive user data and are not handled by the clean-up mechanism used for in-session user switches with Imprivata shared workstation mode.
       Setting the policy to False or leaving it unset will not override any policies.''',
+    },
+    {
+      'name': 'RestrictedManagedGuestSessionExtensionCleanupExemptList',
+      'owners': ['mpetrisor@chromium.org', 'hendrich@chromium.org'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': {
+          'type': 'string',
+          'pattern': '^[a-p]{32}$',
+        },
+      },
+      'future_on': ['chrome_os'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': ['abcdefghijklmnopabcdefghijklmnop', 'bcdefghijklmnopabcdefghijklmnopa'],
+      'id': 879,
+      'caption': '''Configure the list of extension IDs exempt from the restricted managed guest session clean-up procedure''',
+      'tags': [],
+      'desc': '''The policy only applies to managed guest sessions.
+      Setting the policy specifies a list of extension IDs that are exempt from the restricted managed guest session clean-up procedure (see <ph name="RESTRICTED_MANAGED_GUEST_SESSION_ENABLED_POLICY_NAME">RestrictedManagedGuestSessionEnabled</ph>).
+      Leaving the policy unset means no extensions are exempt from the reset procedure.''',
+    },
+    {
+      'name': 'ArcAppToWebAppSharingEnabled',
+      'owners': ['tsergeant@chromium.org', 'chromeos-apps-foundation-team@google.com'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'future_on': ['chrome_os'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable Android to Web App sharing.',
+        },
+        {
+          'value': False,
+          'caption': 'Disable Android to Web App sharing.',
+        },
+      ],
+      'default': True,
+      'example_value': True,
+      'id': 887,
+      'caption': '''Enable sharing from Android apps to Web apps''',
+      'tags': ['google-sharing'],
+      'desc': '''Setting the policy to True enables sharing text/files from Android apps to supported Web Apps, using the built-in Android sharing system.
+      When enabled, this will send metadata for installed Web Apps to Google to generate and install a shim Android app.
+      Setting the policy to False disables this functionality.'''
+    },
+    {
+      'name': 'EnhancedNetworkVoicesInSelectToSpeakAllowed',
+      'owners': ['file://ui/accessibility/OWNERS'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:94-'],
+      'features': {
+        'can_be_recommended': True,
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow enhanced network text-to-speech voices when using Select-to-Speak',
+        },
+        {
+          'value': False,
+          'caption': 'Disallow enhanced network text-to-speech voices when using Select-to-Speak',
+        },
+      ],
+      'default': True,
+      'example_value': True,
+      'id': 888,
+      'caption': '''Allow the enhanced network text-to-speech voices in Select-to-speak''',
+      'tags': [],
+      'desc': '''Allow the enhanced network text-to-speech voices in Select-to-speak accessibility feature. These voices send text to Google's servers to synthesize natural-sounding speech.
+
+          If this policy is set to false, the enhanced network text-to-speech voices feature in Select-to-speak will always be disabled.
+
+          If this policy is set to true or unset, the enhanced network text-to-speech voices feature in Select-to-speak can be enabled or disabled by the user.''',
     },
   ],
   'messages': {
@@ -27568,10 +28036,22 @@ The recommended way to configure policy on Windows is via GPO, although provisio
         'InsecurePrivateNetworkRequestsAllowedForUrls',
       ],
     },
+    {
+      'id': 41,
+      'name': 'ScreenCaptureSettings',
+      'caption': '''Screen Capture settings''',
+      'policies': [
+        'ScreenCaptureAllowed',
+        'ScreenCaptureAllowedByOrigins',
+        'WindowCaptureAllowedByOrigins',
+        'TabCaptureAllowedByOrigins',
+        'SameOriginTabCaptureAllowedByOrigins',
+      ],
+    },
   ],
   'placeholders': [],
-  'deleted_policy_ids': [114, 115, 204, 205, 206, 412, 476, 544, 546, 562, 569, 578, 583, 585, 586, 587, 588, 589, 590, 591, 600, 668, 669, 878, 879, 880, 881, 882, 883, 884],
+  'deleted_policy_ids': [114, 115, 204, 205, 206, 412, 476, 544, 546, 562, 569, 578, 583, 585, 586, 587, 588, 589, 590, 591, 600, 668, 669],
   'deleted_atomic_policy_group_ids': [19],
-  'highest_id_currently_used': 885,
-  'highest_atomic_group_id_currently_used': 40
+  'highest_id_currently_used': 890,
+  'highest_atomic_group_id_currently_used': 41
 }

@@ -926,15 +926,11 @@ void SiteSettingsHandler::OnStorageFetched() {
 
 void SiteSettingsHandler::HandleGetFormattedBytes(const base::ListValue* args) {
   AllowJavascript();
-
-  CHECK_EQ(2U, args->GetSize());
-  const base::Value* callback_id;
-  CHECK(args->Get(0, &callback_id));
-  double num_bytes;
-  CHECK(args->GetDouble(1, &num_bytes));
-
-  const std::u16string string = ui::FormatBytes(int64_t(num_bytes));
-  ResolveJavascriptCallback(*callback_id, base::Value(string));
+  base::Value::ConstListView list = args->GetList();
+  CHECK_EQ(2U, list.size());
+  int64_t num_bytes = static_cast<int64_t>(list[1].GetDouble());
+  ResolveJavascriptCallback(/*callback_id=*/list[0],
+                            base::Value(ui::FormatBytes(num_bytes)));
 }
 
 void SiteSettingsHandler::HandleGetExceptionList(const base::ListValue* args) {
@@ -1599,9 +1595,9 @@ void SiteSettingsHandler::HandleClearEtldPlus1DataAndCookies(
 }
 
 void SiteSettingsHandler::HandleRecordAction(const base::ListValue* args) {
-  CHECK_EQ(1U, args->GetSize());
-  int action;
-  CHECK(args->GetInteger(0, &action));
+  const auto& list = args->GetList();
+  CHECK_EQ(1U, list.size());
+  int action = list[0].GetInt();
   DCHECK_LE(action, static_cast<int>(AllSitesAction2::kMaxValue));
   DCHECK_GE(action, static_cast<int>(AllSitesAction2::kLoadPage));
 

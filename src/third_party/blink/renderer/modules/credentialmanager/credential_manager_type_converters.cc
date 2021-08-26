@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_arraybuffer_arraybufferview.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_authentication_extensions_client_inputs.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_authentication_extensions_large_blob_inputs.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_authentication_extensions_payment_inputs.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_authenticator_selection_criteria.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_cable_authentication_data.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_cable_registration_data.h"
@@ -172,6 +173,10 @@ TypeConverter<CredentialManagerError, AuthenticatorStatus>::Convert(
     case blink::mojom::blink::AuthenticatorStatus::
         INVALID_ALLOW_CREDENTIALS_FOR_LARGE_BLOB:
       return CredentialManagerError::INVALID_ALLOW_CREDENTIALS_FOR_LARGE_BLOB;
+    case blink::mojom::blink::AuthenticatorStatus::
+        FAILED_TO_SAVE_CREDENTIAL_ID_FOR_PAYMENT_EXTENSION:
+      return CredentialManagerError::
+          FAILED_TO_SAVE_CREDENTIAL_ID_FOR_PAYMENT_EXTENSION;
     case blink::mojom::blink::AuthenticatorStatus::SUCCESS:
       NOTREACHED();
       break;
@@ -584,6 +589,10 @@ TypeConverter<PublicKeyCredentialCreationOptionsPtr,
     if (extensions->hasGoogleLegacyAppidSupport()) {
       mojo_options->google_legacy_app_id_support =
           extensions->googleLegacyAppidSupport();
+    }
+    if (extensions->hasPayment() && extensions->payment()->hasIsPayment() &&
+        extensions->payment()->isPayment()) {
+      mojo_options->is_payment_credential_creation = true;
     }
   }
 

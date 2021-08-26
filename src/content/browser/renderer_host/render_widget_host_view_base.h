@@ -138,6 +138,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
       bool show_reason_unoccluded,
       bool show_reason_bfcache_restore) final;
   bool ShouldVirtualKeyboardOverlayContent() override;
+  void NotifyVirtualKeyboardOverlayRect(
+      const gfx::Rect& keyboard_rect) override {}
 
   // This only needs to be overridden by RenderWidgetHostViewBase subclasses
   // that handle content embedded within other RenderWidgetHostViews.
@@ -169,7 +171,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
   virtual const std::vector<display::Display>& GetDisplays() const;
 
   // Called when screen information or native widget bounds change.
-  virtual void UpdateScreenInfo(gfx::NativeView view);
+  virtual void UpdateScreenInfo();
 
   // Get the device scale factor of the associated display.
   float GetCurrentDeviceScaleFactor() const;

@@ -15,20 +15,13 @@
 #include "base/macros.h"
 #include "base/scoped_observation.h"
 #include "content/browser/bad_message.h"
-#include "content/browser/bluetooth/bluetooth_allowed_devices.h"
 #include "content/browser/bluetooth/web_bluetooth_pairing_manager.h"
 #include "content/browser/bluetooth/web_bluetooth_pairing_manager_delegate.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/bluetooth_delegate.h"
 #include "content/public/browser/bluetooth_scanning_prompt.h"
-#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "device/bluetooth/bluetooth_adapter.h"
-#include "device/bluetooth/bluetooth_discovery_session.h"
-#include "device/bluetooth/bluetooth_gatt_connection.h"
-#include "device/bluetooth/bluetooth_gatt_notify_session.h"
-#include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
-#include "device/bluetooth/bluetooth_remote_gatt_service.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -40,14 +33,22 @@ namespace url {
 class Origin;
 }  // namespace url
 
+namespace device {
+class BluetoothDiscoverySession;
+class BluetoothGattConnection;
+class BluetoothGattNotifySession;
+class BluetoothRemoteGattCharacteristic;
+class BluetoothUUID;
+}  // namespace device
+
 namespace content {
 
+class BluetoothAllowedDevices;
 class BluetoothDeviceChooserController;
 class BluetoothDeviceScanningPromptController;
 struct CacheQueryResult;
 class FrameConnectedBluetoothDevices;
 struct GATTNotifySessionAndCharacteristicClient;
-class RenderFrameHost;
 class RenderProcessHost;
 
 bool HasValidFilter(
@@ -125,6 +126,8 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
                            ReadCharacteristicValueErrorWithValueIgnored);
   FRIEND_TEST_ALL_PREFIXES(WebBluetoothServiceImplBrowserTest,
                            NoShowBluetoothScanningPromptInPrerendering);
+  FRIEND_TEST_ALL_PREFIXES(WebBluetoothServiceImplTest,
+                           DeferredStartNotifySession);
 
   friend class FrameConnectedBluetoothDevicesTest;
   friend class WebBluetoothServiceImplTest;
@@ -135,6 +138,7 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
   class AdvertisementClient;
   class WatchAdvertisementsClient;
   class ScanningClient;
+  struct DeferredStartNotificationData;
 
   // WebContentsObserver:
   // These functions should always check that the affected RenderFrameHost
@@ -316,12 +320,11 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
 
   // Callbacks for BluetoothRemoteGattCharacteristic::StartNotifySession.
   void OnStartNotifySessionSuccess(
-      mojo::AssociatedRemote<blink::mojom::WebBluetoothCharacteristicClient>
-          client,
       RemoteCharacteristicStartNotificationsCallback callback,
       std::unique_ptr<device::BluetoothGattNotifySession> notify_session);
   void OnStartNotifySessionFailed(
       RemoteCharacteristicStartNotificationsCallback callback,
+      const std::string& characteristic_instance_id,
       device::BluetoothGattService::GattErrorCode error_code);
 
   // Callback for BluetoothGattNotifySession::Stop.
@@ -439,6 +442,11 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
   std::unordered_map<std::string,
                      std::unique_ptr<GATTNotifySessionAndCharacteristicClient>>
       characteristic_id_to_notify_session_;
+  // Map characteristic instance ID to deferred startNotification data.
+  std::unordered_map<
+      std::string,
+      base::queue<std::unique_ptr<DeferredStartNotificationData>>>
+      characteristic_id_to_deferred_start_;
 
   // The RFH that owns this instance.
   RenderFrameHost* render_frame_host_;

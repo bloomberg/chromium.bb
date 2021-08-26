@@ -221,6 +221,7 @@ CompositorAnimations::CompositorElementNamespaceForProperty(
     case CSSPropertyID::kFilter:
       return CompositorElementIdNamespace::kEffectFilter;
     case CSSPropertyID::kBackgroundColor:
+    case CSSPropertyID::kClipPath:
     case CSSPropertyID::kVariable:
       // TODO(crbug.com/883721): Variables and background color should not
       // require the target element to have any composited property tree nodes -
@@ -359,6 +360,13 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
               layout_object->IsLayoutTableCol() ||
               layout_object->IsTableRow() || background_transfers_to_view ||
               !compositable_animation) {
+            DefaultToUnsupportedProperty(unsupported_properties, property,
+                                         &reasons);
+          }
+          break;
+        }
+        case CSSPropertyID::kClipPath: {
+          if (!RuntimeEnabledFeatures::CompositeClipPathAnimationEnabled()) {
             DefaultToUnsupportedProperty(unsupported_properties, property,
                                          &reasons);
           }
@@ -830,9 +838,6 @@ void CompositorAnimations::GetAnimationOnCompositor(
   PropertyHandleSet properties = effect.Properties();
   DCHECK(!properties.IsEmpty());
   for (const auto& property : properties) {
-    AtomicString custom_property_name = "";
-    CompositorPaintWorkletInput::NativePropertyType native_property_type =
-        CompositorPaintWorkletInput::NativePropertyType::kInvalid;
     // If the animation duration is infinite, it doesn't make sense to scale
     // the keyframe offset, so use a scale of 1.0. This is connected to
     // the known issue of how the Web Animations spec handles infinite
@@ -843,31 +848,32 @@ void CompositorAnimations::GetAnimationOnCompositor(
     const PropertySpecificKeyframeVector& values =
         *effect.GetPropertySpecificKeyframes(property);
 
-    compositor_target_property::Type target_property;
     std::unique_ptr<CompositorAnimationCurve> curve;
     DCHECK(timing.timing_function);
+    absl::optional<CompositorKeyframeModel::TargetPropertyId>
+        target_property_id = absl::nullopt;
     switch (property.GetCSSProperty().PropertyID()) {
       case CSSPropertyID::kOpacity: {
-        target_property = compositor_target_property::OPACITY;
         auto float_curve = std::make_unique<CompositorFloatAnimationCurve>();
         AddKeyframesToCurve(*float_curve, values);
         float_curve->SetTimingFunction(*timing.timing_function);
         float_curve->SetScaledDuration(scale);
         curve = std::move(float_curve);
+        target_property_id = CompositorKeyframeModel::TargetPropertyId(
+            compositor_target_property::OPACITY);
         break;
       }
       case CSSPropertyID::kFilter:
       case CSSPropertyID::kBackdropFilter: {
-        target_property = compositor_target_property::FILTER;
-        if (property.GetCSSProperty().PropertyID() ==
-            CSSPropertyID::kBackdropFilter) {
-          target_property = compositor_target_property::BACKDROP_FILTER;
-        }
         auto filter_curve = std::make_unique<CompositorFilterAnimationCurve>();
         AddKeyframesToCurve(*filter_curve, values);
         filter_curve->SetTimingFunction(*timing.timing_function);
         filter_curve->SetScaledDuration(scale);
         curve = std::move(filter_curve);
+        target_property_id = CompositorKeyframeModel::TargetPropertyId(
+            property.GetCSSProperty().PropertyID() == CSSPropertyID::kFilter
+                ? compositor_target_property::FILTER
+                : compositor_target_property::BACKDROP_FILTER);
         break;
       }
       case CSSPropertyID::kRotate:
@@ -877,31 +883,35 @@ void CompositorAnimations::GetAnimationOnCompositor(
         FloatSize box_size = ComputedStyleUtils::ReferenceBoxForTransform(
                                  *target_element.GetLayoutObject())
                                  .Size();
-        target_property = compositor_target_property::TRANSFORM;
         auto transform_curve =
             std::make_unique<CompositorTransformAnimationCurve>();
         AddKeyframesToCurve(*transform_curve, values, box_size);
         transform_curve->SetTimingFunction(*timing.timing_function);
         transform_curve->SetScaledDuration(scale);
         curve = std::move(transform_curve);
+        target_property_id = CompositorKeyframeModel::TargetPropertyId(
+            compositor_target_property::TRANSFORM);
         break;
       }
-      case CSSPropertyID::kBackgroundColor: {
-        native_property_type =
-            CompositorPaintWorkletInput::NativePropertyType::kBackgroundColor;
+      case CSSPropertyID::kBackgroundColor:
+      case CSSPropertyID::kClipPath: {
+        CompositorPaintWorkletInput::NativePropertyType native_property_type =
+            property.GetCSSProperty().PropertyID() ==
+                    CSSPropertyID::kBackgroundColor
+                ? CompositorPaintWorkletInput::NativePropertyType::
+                      kBackgroundColor
+                : CompositorPaintWorkletInput::NativePropertyType::kClipPath;
         auto float_curve = std::make_unique<CompositorFloatAnimationCurve>();
-        target_property = compositor_target_property::NATIVE_PROPERTY;
         AddKeyframesToCurve(*float_curve, values);
         float_curve->SetTimingFunction(*timing.timing_function);
         float_curve->SetScaledDuration(scale);
         curve = std::move(float_curve);
+        target_property_id = CompositorKeyframeModel::TargetPropertyId(
+            compositor_target_property::NATIVE_PROPERTY, native_property_type);
         break;
       }
       case CSSPropertyID::kVariable: {
         DCHECK(RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled());
-        custom_property_name = property.CustomPropertyName();
-        target_property = compositor_target_property::CSS_CUSTOM_PROPERTY;
-
         // Create curve based on the keyframe value type
         if (values.front()->GetCompositorKeyframeValue()->IsColor()) {
           auto color_curve = std::make_unique<CompositorColorAnimationCurve>();
@@ -916,6 +926,9 @@ void CompositorAnimations::GetAnimationOnCompositor(
           float_curve->SetScaledDuration(scale);
           curve = std::move(float_curve);
         }
+        target_property_id = CompositorKeyframeModel::TargetPropertyId(
+            compositor_target_property::CSS_CUSTOM_PROPERTY,
+            property.CustomPropertyName().Utf8().data());
         break;
       }
       default:
@@ -923,19 +936,10 @@ void CompositorAnimations::GetAnimationOnCompositor(
         continue;
     }
     DCHECK(curve.get());
-
-    std::unique_ptr<CompositorKeyframeModel> keyframe_model;
-    if (!custom_property_name.IsEmpty()) {
-      keyframe_model = std::make_unique<CompositorKeyframeModel>(
-          *curve, target_property, 0, group, std::move(custom_property_name));
-    } else if (native_property_type !=
-               CompositorPaintWorkletInput::NativePropertyType::kInvalid) {
-      keyframe_model = std::make_unique<CompositorKeyframeModel>(
-          *curve, target_property, 0, group, native_property_type);
-    } else {
-      keyframe_model = std::make_unique<CompositorKeyframeModel>(
-          *curve, target_property, 0, group);
-    }
+    DCHECK(target_property_id.has_value());
+    std::unique_ptr<CompositorKeyframeModel> keyframe_model =
+        std::make_unique<CompositorKeyframeModel>(
+            *curve, 0, group, std::move(target_property_id.value()));
 
     if (start_time)
       keyframe_model->SetStartTime(start_time.value());

@@ -77,10 +77,6 @@ bool SupportsSharedWorker() {
 #endif
 }
 
-bool CoepForSharedWorker() {
-  return base::FeatureList::IsEnabled(blink::features::kCOEPForSharedWorker);
-}
-
 }  // namespace
 
 // These tests are parameterized on following options:
@@ -205,7 +201,8 @@ class WorkerTest : public ContentBrowserTest,
     GURL cookie_url = ssl_server_.GetURL(host, "/");
     std::unique_ptr<net::CanonicalCookie> cookie = net::CanonicalCookie::Create(
         cookie_url, std::string(kSameSiteCookie) + "; SameSite=Lax; Secure",
-        base::Time::Now(), absl::nullopt /* server_time */);
+        base::Time::Now(), absl::nullopt /* server_time */,
+        absl::nullopt /* cookie_partition_key */);
     base::RunLoop run_loop;
     cookie_manager->SetCanonicalCookie(
         *cookie, cookie_url, options,
@@ -388,8 +385,7 @@ IN_PROC_BROWSER_TEST_P(WorkerTest, SharedWorkerInCOEPRequireCorpDocument) {
   // outside of the worker.onerror message.
   // Without CoepForSharedWorker: the worker isn't blocked, but it should at
   // least not be loaded in the cross-origin isolated process.
-  EXPECT_EQ(CoepForSharedWorker() ? "Worker blocked." : "Worker connected.",
-            EvalJs(shell(), R"(
+  EXPECT_EQ("Worker connected.", EvalJs(shell(), R"(
     new Promise(resolve => {
       const worker =
         new SharedWorker("/workers/messageport_worker.js");
@@ -472,8 +468,7 @@ IN_PROC_BROWSER_TEST_P(WorkerTest, SharedWorkerInCOEPCredentiallessDocument) {
   // outside of the worker.onerror message.
   // Without CoepForSharedWorker: the worker isn't blocked, but it should at
   // least not be loaded in the cross-origin isolated process.
-  EXPECT_EQ(CoepForSharedWorker() ? "Worker blocked." : "Worker connected.",
-            EvalJs(shell(), R"(
+  EXPECT_EQ("Worker connected.", EvalJs(shell(), R"(
     new Promise(resolve => {
       const worker =
         new SharedWorker("/workers/messageport_worker.js");
@@ -819,7 +814,7 @@ IN_PROC_BROWSER_TEST_P(WorkerTest,
   navigation_observer.Wait();
 
   RenderFrameHost* subframe_rfh = FrameMatchingPredicate(
-      shell()->web_contents(),
+      shell()->web_contents()->GetPrimaryPage(),
       base::BindRepeating(&FrameMatchesName, kSubframeName));
   ASSERT_TRUE(subframe_rfh);
   EXPECT_EQ(kNoCookie,
@@ -861,7 +856,7 @@ IN_PROC_BROWSER_TEST_P(WorkerTest,
   navigation_observer.Wait();
 
   RenderFrameHost* subframe_rfh = FrameMatchingPredicate(
-      shell()->web_contents(),
+      shell()->web_contents()->GetPrimaryPage(),
       base::BindRepeating(&FrameMatchesName, kSubframeName));
   ASSERT_TRUE(subframe_rfh);
   EXPECT_EQ(kNoCookie,

@@ -7,8 +7,9 @@
 #include <memory>
 #include <set>
 
+#include "ash/constants/ash_features.h"
+#include "chrome/browser/ash/input_method/mock_input_method_engine.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/input_method/mock_input_method_engine.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -40,14 +41,17 @@ class TestAccessibilityHandler : public AccessibilityHandler {
 class AccessibilityHandlerTest : public InProcessBrowserTest {
  public:
   AccessibilityHandlerTest()
-      : mock_ime_engine_handler_(std::make_unique<MockInputMethodEngine>()) {}
+      : mock_ime_engine_handler_(
+            std::make_unique<input_method::MockInputMethodEngine>()) {}
   AccessibilityHandlerTest(const AccessibilityHandlerTest&) = delete;
   AccessibilityHandlerTest& operator=(const AccessibilityHandlerTest&) = delete;
   ~AccessibilityHandlerTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kExperimentalAccessibilityDictationOffline);
+    scoped_feature_list_.InitWithFeatures(
+        {::features::kExperimentalAccessibilityDictationOffline,
+         features::kOnDeviceSpeechRecognition},
+        {});
   }
 
   void SetUpOnMainThread() override {
@@ -119,7 +123,7 @@ class AccessibilityHandlerTest : public InProcessBrowserTest {
 
   void MaybeAddDictationLocales() { handler_->MaybeAddDictationLocales(); }
 
-  std::unique_ptr<MockInputMethodEngine> mock_ime_engine_handler_;
+  std::unique_ptr<input_method::MockInputMethodEngine> mock_ime_engine_handler_;
 
  private:
   std::unique_ptr<TestingProfile> profile_;

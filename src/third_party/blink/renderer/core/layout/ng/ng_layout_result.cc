@@ -90,9 +90,6 @@ NGLayoutResult::NGLayoutResult(
 
     rare_data->has_violating_break = builder->has_violating_break_;
 
-    if (builder->column_spanner_)
-      rare_data->column_spanner = builder->column_spanner_;
-
     bitfields_.initial_break_before = static_cast<unsigned>(
         builder->initial_break_before_.value_or(EBreakBetween::kAuto));
     bitfields_.final_break_after =
@@ -112,16 +109,20 @@ NGLayoutResult::NGLayoutResult(
     scoped_refptr<const NGPhysicalFragment> physical_fragment,
     NGLineBoxFragmentBuilder* builder)
     : NGLayoutResult(std::move(physical_fragment),
-                     static_cast<NGContainerFragmentBuilder*>(builder)) {}
-
-NGLayoutResult::NGLayoutResult(NGBoxFragmentBuilderPassKey key,
-                               EStatus status,
-                               NGBoxFragmentBuilder* builder)
-    : NGLayoutResult(/* physical_fragment */ nullptr,
                      static_cast<NGContainerFragmentBuilder*>(builder)) {
+  DCHECK_EQ(builder->bfc_block_offset_.has_value(),
+            builder->line_box_bfc_block_offset_.has_value());
+  if (builder->bfc_block_offset_ != builder->line_box_bfc_block_offset_) {
+    EnsureRareData()->line_box_bfc_block_offset =
+        builder->line_box_bfc_block_offset_;
+  }
+}
+
+NGLayoutResult::NGLayoutResult(NGContainerFragmentBuilderPassKey key,
+                               EStatus status,
+                               NGContainerFragmentBuilder* builder)
+    : NGLayoutResult(/* physical_fragment */ nullptr, builder) {
   bitfields_.status = status;
-  if (builder->lines_until_clamp_)
-    EnsureRareData()->lines_until_clamp = *builder->lines_until_clamp_;
   DCHECK_NE(status, kSuccess)
       << "Use the other constructor for successful layout";
 }
@@ -243,6 +244,9 @@ NGLayoutResult::NGLayoutResult(
     rare_data->early_break = builder->early_break_;
     rare_data->early_break_appeal = builder->break_appeal_;
   }
+
+  if (builder->column_spanner_)
+    EnsureRareData()->column_spanner = builder->column_spanner_;
 
   if (HasRareData()) {
     rare_data_->bfc_line_offset = builder->bfc_line_offset_;

@@ -16,10 +16,12 @@
 #define SRC_SEM_INTRINSIC_H_
 
 #include <string>
+#include <vector>
 
 #include "src/sem/call_target.h"
 #include "src/sem/intrinsic_type.h"
 #include "src/sem/pipeline_stage_set.h"
+#include "src/utils/hash.h"
 
 namespace tint {
 namespace sem {
@@ -87,7 +89,7 @@ class Intrinsic : public Castable<Intrinsic, CallTarget> {
   /// deprecated
   Intrinsic(IntrinsicType type,
             sem::Type* return_type,
-            const ParameterList& parameters,
+            std::vector<Parameter*> parameters,
             PipelineStageSet supported_stages,
             bool is_deprecated);
 
@@ -143,11 +145,23 @@ class Intrinsic : public Castable<Intrinsic, CallTarget> {
   bool const is_deprecated_;
 };
 
-/// Emits the name of the intrinsic function type. The spelling, including case,
-/// matches the name in the WGSL spec.
-std::ostream& operator<<(std::ostream& out, IntrinsicType i);
-
 }  // namespace sem
 }  // namespace tint
+
+namespace std {
+
+/// Custom std::hash specialization for tint::sem::Intrinsic
+template <>
+class hash<tint::sem::Intrinsic> {
+ public:
+  /// @param i the Intrinsic to create a hash for
+  /// @return the hash value
+  inline std::size_t operator()(const tint::sem::Intrinsic& i) const {
+    return tint::utils::Hash(i.Type(), i.SupportedStages(), i.ReturnType(),
+                             i.Parameters(), i.IsDeprecated());
+  }
+};
+
+}  // namespace std
 
 #endif  // SRC_SEM_INTRINSIC_H_

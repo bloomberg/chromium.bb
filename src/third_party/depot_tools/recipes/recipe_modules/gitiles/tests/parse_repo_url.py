@@ -25,7 +25,7 @@ def RunSteps(api):
 
   invalid_urls = [
     'https://host/a/path/to/project?a=b',
-    'https://host/path/to/project/+/master',
+    'https://host/path/to/project/+/main',
   ]
   for repo_url in invalid_urls:
     host, project = api.gitiles.parse_repo_url(repo_url)

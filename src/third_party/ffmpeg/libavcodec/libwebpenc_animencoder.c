@@ -25,6 +25,7 @@
  */
 
 #include "config.h"
+#include "encode.h"
 #include "libwebpenc_common.h"
 
 #include <webp/mux.h>
@@ -67,7 +68,7 @@ static int libwebp_anim_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
             WebPData assembled_data = { 0 };
             ret = WebPAnimEncoderAssemble(s->enc, &assembled_data);
             if (ret) {
-                ret = ff_alloc_packet2(avctx, pkt, assembled_data.size, assembled_data.size);
+                ret = ff_get_encode_buffer(avctx, pkt, assembled_data.size, 0);
                 if (ret < 0)
                     return ret;
                 memcpy(pkt->data, assembled_data.bytes, assembled_data.size);
@@ -124,29 +125,18 @@ static int libwebp_anim_encode_close(AVCodecContext *avctx)
     return 0;
 }
 
-static const AVClass class = {
-    .class_name = "libwebp_anim",
-    .item_name  = av_default_item_name,
-    .option     = options,
-    .version    = LIBAVUTIL_VERSION_INT,
-};
-
 const AVCodec ff_libwebp_anim_encoder = {
     .name           = "libwebp_anim",
     .long_name      = NULL_IF_CONFIG_SMALL("libwebp WebP image"),
     .type           = AVMEDIA_TYPE_VIDEO,
     .id             = AV_CODEC_ID_WEBP,
+    .capabilities   = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_DELAY,
+    .pix_fmts       = ff_libwebpenc_pix_fmts,
+    .priv_class     = &ff_libwebpenc_class,
     .priv_data_size = sizeof(LibWebPAnimContext),
+    .defaults       = ff_libwebp_defaults,
     .init           = libwebp_anim_encode_init,
     .encode2        = libwebp_anim_encode_frame,
     .close          = libwebp_anim_encode_close,
-    .capabilities   = AV_CODEC_CAP_DELAY,
-    .pix_fmts       = (const enum AVPixelFormat[]) {
-        AV_PIX_FMT_RGB32,
-        AV_PIX_FMT_YUV420P, AV_PIX_FMT_YUVA420P,
-        AV_PIX_FMT_NONE
-    },
-    .priv_class     = &class,
-    .defaults       = libwebp_defaults,
     .wrapper_name   = "libwebp",
 };

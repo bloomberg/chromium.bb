@@ -79,6 +79,8 @@ out/Default/browser_tests --gtest_filter="PDFExtensionAccessibilityTreeDumpTest*
 Supported platforms are:
 * `android` -- expected Android AccessibilityNodeInfo output
 * `auralinux` -- expected Linux ATK output
+* `auralinux-trusty` -- expected Linux ATK output (Version Specific Expected File)
+* `auralinux-xenial` -- expected Linux ATK output (Version Specific Expected File)
 * `blink` -- representation of internal accessibility tree
 * `mac` -- expected Mac NSAccessibility output
 * `win` -- expected Win IAccessible/IAccessible2 output
@@ -112,6 +114,23 @@ tree formatter will look for a version specific expected file first:
 does not exist, the normal expected file will be used instead:
 "`foo-expected-uia-win.txt`". There is no concept of version
 specific filters.
+
+In the case of Linux, the tests are run on several LTS
+[releases](https://releases.ubuntu.com/) of Ubuntu:
+
+* "Trusty Tahr": Ubuntu 14.04 LTS, ATK version 2.10 (bot: "linux-trusty-rel")
+* "Xenial Xerus": Ubuntu 16.04, ATK version 2.18 (bot: "linux-xenial-rel")
+* "Bionic Beaver": Ubuntu 18.04, ATK version 2.28 (runs on multiple bots)
+
+In many cases the expected results for `foo.html` will be the same for all
+versions of Ubuntu, in which case `foo-expected-auralinux.txt` is all that is
+needed. However, if the `foo.html` test passes on the Linux release build
+("linux-rel"), but fails on "linux-trusty-rel", you will need an additional
+`foo-expected-auralinux-trusty.txt` file. If it also fails on "linux-xenial-rel",
+create `foo-expected-auralinux-xenial.txt`.
+
+At the present time there is no version-specific support for Bionic Beaver,
+which is the current version run on "linux-rel".
 
 ## Directives
 
@@ -272,22 +291,6 @@ wait for. If a string is not returned, the tree dumper will not wait.
 `@EXECUTE-AND-WAIT-FOR:` directives are executed in order, after the document is
 ready and all `@WAIT-FOR:` strings have been found.
 Example: `@EXECUTE-AND-WAIT-FOR: foo()`
-
-#### -RUN-UNTIL-EVENT
-
-Indicates event recording should continue at least until a specific event has
-been received. This is a platform-dependent directive.
-
-You may need to write an event test that keeps dumping events until a
-specific event line. In this case, use `@WIN-RUN-UNTIL-EVENT` (or similar for
-other platforms) with a substring that should occur in the event log, e.g.,
-`@WIN-RUN-UNTIL-EVENT:IA2_EVENT_TEXT_CARET_MOVED`.
-Note that `@*-RUN-UNTIL-EVENT` is only used in dump events tests, and not used
-in dump tree tests.
-
-If you add multiple `@*-RUN-UNTIL-EVENT` directives, the test will finish once
-any of them are satisfied. Note that any other events that come along with the
-last event will also be logged.
 
 #### @DEFAULT-ACTION-ON
 

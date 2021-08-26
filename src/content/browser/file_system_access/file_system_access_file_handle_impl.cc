@@ -9,12 +9,14 @@
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
+#include "content/browser/file_system_access/file_system_access_access_handle_host_impl.h"
 #include "content/browser/file_system_access/file_system_access_error.h"
 #include "content/browser/file_system_access/file_system_access_handle_base.h"
 #include "content/browser/file_system_access/file_system_access_transfer_token_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_features.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/mime_util.h"
 #include "storage/browser/blob/blob_data_builder.h"
@@ -32,7 +34,6 @@ using storage::BlobDataHandle;
 using storage::BlobImpl;
 using storage::FileSystemOperation;
 using storage::FileSystemOperationRunner;
-using storage::IsolatedContext;
 
 namespace content {
 
@@ -154,11 +155,11 @@ void FileSystemAccessFileHandleImpl::OpenAccessHandle(
 
   if (!IsAccessHandleEnabled()) {
     mojo::ReportBadMessage("File System Access Access Handle not enabled");
-    std::move(callback).Run(
-        file_system_access_error::FromStatus(
-            FileSystemAccessStatus::kInvalidState,
-            "File System Access Access Handle not enabled"),
-        blink::mojom::FileSystemAccessAccessHandleFilePtr());
+    std::move(callback).Run(file_system_access_error::FromStatus(
+                                FileSystemAccessStatus::kInvalidState,
+                                "File System Access Access Handle not enabled"),
+                            blink::mojom::FileSystemAccessAccessHandleFilePtr(),
+                            mojo::NullRemote());
     return;
   }
 
@@ -167,46 +168,81 @@ void FileSystemAccessFileHandleImpl::OpenAccessHandle(
         file_system_access_error::FromStatus(
             FileSystemAccessStatus::kInvalidState,
             "Access handles may only be created on temporary file systems"),
-        blink::mojom::FileSystemAccessAccessHandleFilePtr());
+        blink::mojom::FileSystemAccessAccessHandleFilePtr(),
+        mojo::NullRemote());
+    return;
+  }
+
+  // Create a file delegate for use in incognito mode.
+  mojo::PendingRemote<blink::mojom::FileSystemAccessFileDelegateHost>
+      file_delegate_host_remote;
+  mojo::PendingReceiver<blink::mojom::FileSystemAccessFileDelegateHost>
+      file_delegate_host_receiver = mojo::NullReceiver();
+  if (file_system_context()->is_incognito()) {
+    file_delegate_host_receiver =
+        file_delegate_host_remote.InitWithNewPipeAndPassReceiver();
+  }
+
+  //  Attempt to grab an exclusive lock on the file and create the access
+  //  handle host. This leads to slightly more complicated error handling,
+  //  since we have to make sure that the lock is released if we cannot
+  //  callback with a valid file, but preserves the invariant of only having
+  //  one open file descriptor per URL as well as avoiding an unnecessary IO
+  //  operation if there is a lock in place.
+  mojo::PendingRemote<blink::mojom::FileSystemAccessAccessHandleHost>
+      access_handle_host_remote = manager()->CreateAccessHandleHost(
+          url(), std::move(file_delegate_host_receiver));
+  if (!access_handle_host_remote.is_valid()) {
+    std::move(callback).Run(file_system_access_error::FromStatus(
+                                FileSystemAccessStatus::kInvalidState,
+                                "There may only be one open Access Handle per "
+                                "file at any given time"),
+                            blink::mojom::FileSystemAccessAccessHandleFilePtr(),
+                            mojo::NullRemote());
     return;
   }
 
   auto open_file_callback =
       file_system_context()->is_incognito()
           ? base::BindOnce(&FileSystemAccessFileHandleImpl::DoOpenIncognitoFile,
-                           weak_factory_.GetWeakPtr())
+                           weak_factory_.GetWeakPtr(),
+                           std::move(access_handle_host_remote),
+                           std::move(file_delegate_host_remote))
           : base::BindOnce(&FileSystemAccessFileHandleImpl::DoOpenFile,
-                           weak_factory_.GetWeakPtr());
+                           weak_factory_.GetWeakPtr(),
+                           std::move(access_handle_host_remote));
   RunWithWritePermission(
       std::move(open_file_callback),
       base::BindOnce([](blink::mojom::FileSystemAccessErrorPtr result,
                         OpenAccessHandleCallback callback) {
         std::move(callback).Run(
             std::move(result),
-            blink::mojom::FileSystemAccessAccessHandleFilePtr());
+            blink::mojom::FileSystemAccessAccessHandleFilePtr(),
+            mojo::NullRemote());
       }),
       std::move(callback));
 }
 
 void FileSystemAccessFileHandleImpl::DoOpenIncognitoFile(
+    mojo::PendingRemote<blink::mojom::FileSystemAccessAccessHandleHost>
+        access_handle_host_remote,
+    mojo::PendingRemote<blink::mojom::FileSystemAccessFileDelegateHost>
+        file_delegate_host_remote,
     OpenAccessHandleCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(GetWritePermissionStatus(),
             blink::mojom::PermissionStatus::GRANTED);
-  // TODO(crbug.com/1225653): Actually do something with the receiver.
-  mojo::PendingRemote<blink::mojom::FileSystemAccessFileDelegateHost>
-      file_delegate_host_remote;
-  mojo::PendingReceiver<blink::mojom::FileSystemAccessFileDelegateHost>
-      file_delegate_host_receiver =
-          file_delegate_host_remote.InitWithNewPipeAndPassReceiver();
 
   std::move(callback).Run(
       file_system_access_error::Ok(),
       blink::mojom::FileSystemAccessAccessHandleFile::NewIncognitoFileDelegate(
-          std::move(file_delegate_host_remote)));
+          std::move(file_delegate_host_remote)),
+      std::move(access_handle_host_remote));
 }
 
 void FileSystemAccessFileHandleImpl::DoOpenFile(
+    mojo::PendingRemote<blink::mojom::FileSystemAccessAccessHandleHost>
+        access_handle_host_remote,
     OpenAccessHandleCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(GetWritePermissionStatus(),
@@ -215,23 +251,32 @@ void FileSystemAccessFileHandleImpl::DoOpenFile(
   DoFileSystemOperation(
       FROM_HERE, &FileSystemOperationRunner::OpenFile,
       base::BindOnce(&FileSystemAccessFileHandleImpl::DidOpenFile,
-                     weak_factory_.GetWeakPtr(), std::move(callback)),
+                     weak_factory_.GetWeakPtr(), std::move(callback),
+                     std::move(access_handle_host_remote)),
       url(),
       base::File::FLAG_OPEN | base::File::FLAG_READ | base::File::FLAG_WRITE);
 }
 
 void FileSystemAccessFileHandleImpl::DidOpenFile(
     OpenAccessHandleCallback callback,
+    mojo::PendingRemote<blink::mojom::FileSystemAccessAccessHandleHost>
+        access_handle_host_remote,
     base::File file,
     base::OnceClosure /*on_close_callback*/) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   blink::mojom::FileSystemAccessErrorPtr result =
       file_system_access_error::FromFileError(file.error_details());
+  if (result->status != FileSystemAccessStatus::kOk) {
+    // Opening the file failed, release the access handle and associated lock.
+    manager()->RemoveAccessHandleHost(url());
+  }
+
   std::move(callback).Run(
       std::move(result),
       blink::mojom::FileSystemAccessAccessHandleFile::NewRegularFile(
-          std::move(file)));
+          std::move(file)),
+      std::move(access_handle_host_remote));
 }
 
 void FileSystemAccessFileHandleImpl::IsSameEntry(
@@ -365,7 +410,6 @@ void FileSystemAccessFileHandleImpl::CreateSwapFile(
 
   auto swap_path =
       base::FilePath(url().virtual_path()).AddExtensionASCII(".crswap");
-  auto swap_file_system = file_system();
 
   if (count >= max_swap_files_) {
     DLOG(ERROR) << "Error Creating Swap File, count: " << count
@@ -387,34 +431,14 @@ void FileSystemAccessFileHandleImpl::CreateSwapFile(
   // file.
   storage::FileSystemURL swap_url =
       manager()->context()->CreateCrackedFileSystemURL(
-          url().origin(), url().mount_type(), swap_path);
-
-  // If that failed, it means this file was part of an isolated file system,
-  // and specifically, a single file isolated file system. In that case we'll
-  // need to register a new isolated file system for the swap file, and use that
-  // for the writer.
-  if (!swap_url.is_valid()) {
-    DCHECK_EQ(url().mount_type(), storage::kFileSystemTypeIsolated);
-
-    swap_path = base::FilePath(url().path()).AddExtensionASCII(".crswap");
-    if (count > 0) {
-      swap_path = swap_path.InsertBeforeExtensionASCII(
-          base::StringPrintf(".%d", count));
-    }
-
-    auto handle = manager()->CreateFileSystemURLFromPath(
-        context().origin, FileSystemAccessEntryFactory::PathType::kLocal,
-        swap_path);
-    swap_url = std::move(handle.url);
-    swap_file_system = std::move(handle.file_system);
-  }
+          url().storage_key(), url().mount_type(), swap_path);
+  DCHECK(swap_url.is_valid());
 
   DoFileSystemOperation(
       FROM_HERE, &FileSystemOperationRunner::CreateFile,
       base::BindOnce(&FileSystemAccessFileHandleImpl::DidCreateSwapFile,
                      weak_factory_.GetWeakPtr(), count, swap_url,
-                     swap_file_system, keep_existing_data, auto_close,
-                     std::move(callback)),
+                     keep_existing_data, auto_close, std::move(callback)),
       swap_url,
       /*exclusive=*/true);
 }
@@ -422,7 +446,6 @@ void FileSystemAccessFileHandleImpl::CreateSwapFile(
 void FileSystemAccessFileHandleImpl::DidCreateSwapFile(
     int count,
     const storage::FileSystemURL& swap_url,
-    storage::IsolatedContext::ScopedFSHandle swap_file_system,
     bool keep_existing_data,
     bool auto_close,
     CreateFileWriterCallback callback,
@@ -451,8 +474,7 @@ void FileSystemAccessFileHandleImpl::DidCreateSwapFile(
         manager()->CreateFileWriter(
             context(), url(), swap_url,
             FileSystemAccessManagerImpl::SharedHandleState(
-                handle_state().read_grant, handle_state().write_grant,
-                swap_file_system),
+                handle_state().read_grant, handle_state().write_grant),
             auto_close));
     return;
   }
@@ -460,8 +482,8 @@ void FileSystemAccessFileHandleImpl::DidCreateSwapFile(
   DoFileSystemOperation(
       FROM_HERE, &FileSystemOperationRunner::Copy,
       base::BindOnce(&FileSystemAccessFileHandleImpl::DidCopySwapFile,
-                     weak_factory_.GetWeakPtr(), swap_url, swap_file_system,
-                     auto_close, std::move(callback)),
+                     weak_factory_.GetWeakPtr(), swap_url, auto_close,
+                     std::move(callback)),
       url(), swap_url,
       storage::FileSystemOperation::OPTION_PRESERVE_LAST_MODIFIED,
       storage::FileSystemOperation::ERROR_BEHAVIOR_ABORT,
@@ -470,7 +492,6 @@ void FileSystemAccessFileHandleImpl::DidCreateSwapFile(
 
 void FileSystemAccessFileHandleImpl::DidCopySwapFile(
     const storage::FileSystemURL& swap_url,
-    storage::IsolatedContext::ScopedFSHandle swap_file_system,
     bool auto_close,
     CreateFileWriterCallback callback,
     base::File::Error result) {
@@ -484,13 +505,13 @@ void FileSystemAccessFileHandleImpl::DidCopySwapFile(
                             mojo::NullRemote());
     return;
   }
-  std::move(callback).Run(file_system_access_error::Ok(),
-                          manager()->CreateFileWriter(
-                              context(), url(), swap_url,
-                              FileSystemAccessManagerImpl::SharedHandleState(
-                                  handle_state().read_grant,
-                                  handle_state().write_grant, swap_file_system),
-                              auto_close));
+  std::move(callback).Run(
+      file_system_access_error::Ok(),
+      manager()->CreateFileWriter(
+          context(), url(), swap_url,
+          FileSystemAccessManagerImpl::SharedHandleState(
+              handle_state().read_grant, handle_state().write_grant),
+          auto_close));
 }
 
 base::WeakPtr<FileSystemAccessHandleBase>

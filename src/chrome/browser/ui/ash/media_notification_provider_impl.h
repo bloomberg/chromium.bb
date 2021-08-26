@@ -16,6 +16,7 @@
 class MediaNotificationService;
 class MediaNotificationListView;
 class MediaNotificationContainerImplView;
+class Profile;
 
 class MediaNotificationProviderImpl
     : public ash::MediaNotificationProvider,
@@ -48,6 +49,7 @@ class MediaNotificationProviderImpl
   std::unique_ptr<OverlayMediaNotification> PopOut(const std::string& id,
                                                    gfx::Rect bounds) override;
   void HideMediaDialog() override {}
+  void Focus() override {}
 
   // MediaNotificationServiceObserver implementations.
   void OnNotificationListChanged() override;
@@ -75,6 +77,8 @@ class MediaNotificationProviderImpl
   base::ObserverList<ash::MediaNotificationProviderObserver> observers_;
 
   MediaNotificationListView* active_session_view_ = nullptr;
+
+  Profile* profile_ = nullptr;
 
   MediaNotificationService* service_ = nullptr;
 

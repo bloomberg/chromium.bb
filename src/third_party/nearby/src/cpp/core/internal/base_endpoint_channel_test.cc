@@ -14,8 +14,16 @@
 
 #include "core/internal/base_endpoint_channel.h"
 
+#include <functional>
+#include <string>
 #include <utility>
 
+#include "securegcm/d2d_connection_context_v1.h"
+#include "securegcm/ukey2_handshake.h"
+#include "gmock/gmock.h"
+#include "gtest/gtest.h"
+#include "absl/synchronization/mutex.h"
+#include "absl/time/time.h"
 #include "core/internal/encryption_runner.h"
 #include "core/internal/offline_frames.h"
 #include "platform/base/byte_array.h"
@@ -28,12 +36,6 @@
 #include "platform/public/pipe.h"
 #include "platform/public/single_thread_executor.h"
 #include "proto/connections_enums.pb.h"
-#include "securegcm/d2d_connection_context_v1.h"
-#include "securegcm/ukey2_handshake.h"
-#include "gmock/gmock.h"
-#include "gtest/gtest.h"
-#include "absl/synchronization/mutex.h"
-#include "absl/time/time.h"
 
 namespace location {
 namespace nearby {

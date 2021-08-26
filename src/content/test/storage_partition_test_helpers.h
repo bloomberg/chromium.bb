@@ -6,9 +6,11 @@
 #define CONTENT_TEST_STORAGE_PARTITION_TEST_HELPERS_H_
 
 #include "base/callback.h"
+#include "content/test/test_content_browser_client.h"
 
 namespace content {
 class StoragePartition;
+class StoragePartitionConfig;
 
 // Replaces the SharedWorkerService implementation with a test-specific one that
 // tracks running shared workers.
@@ -19,6 +21,29 @@ void InjectTestSharedWorkerService(StoragePartition* storage_partition);
 // has stopped. Can only be used if InjectTestSharedWorkerService() was called.
 void TerminateAllSharedWorkers(StoragePartition* storage_partition,
                                base::OnceClosure callback);
+
+StoragePartitionConfig CreateStoragePartitionConfigForTesting(
+    bool in_memory = false,
+    const std::string& partition_domain = "",
+    const std::string& partition_name = "");
+
+// Class that requests that all pages belonging to the provided site get loaded
+// in a non-default StoragePartition.
+class CustomStoragePartitionForSomeSites : public TestContentBrowserClient {
+ public:
+  explicit CustomStoragePartitionForSomeSites(const GURL& site_to_isolate);
+
+  StoragePartitionConfig GetStoragePartitionConfigForSite(
+      BrowserContext* browser_context,
+      const GURL& site) override;
+
+  StoragePartitionId GetStoragePartitionIdForSite(
+      BrowserContext* browser_context,
+      const GURL& site) override;
+
+ private:
+  GURL site_to_isolate_;
+};
 
 }  // namespace content
 

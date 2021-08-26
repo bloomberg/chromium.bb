@@ -39,30 +39,41 @@ TEST(RatectrlTest, QModeGetQIndexTest) {
   EXPECT_EQ(q_index, base_q_index);
 }
 
+#if !CONFIG_REALTIME_ONLY
+// TODO(angiebird): Move this test to tpl_mode_test.cc
 TEST(RatectrlTest, QModeComputeGOPQIndicesTest) {
-  int base_q_index = 36;
-  int gfu_boost = 500;
-  int bit_depth = AOM_BITS_8;
-  double arf_boost_factor = 0.20;
+  const int base_q_index = 80;
+  const double arf_qstep_ratio = 0.5;
+  const aom_bit_depth_t bit_depth = AOM_BITS_8;
 
-  int gf_frame_index = 0;
+  const int gf_frame_index = 0;
   GF_GROUP gf_group = {};
   gf_group.size = 5;
-  int layer_depth[5] = { 1, 3, 2, 3, 1 };
-  int update_type[5] = { KF_UPDATE, INTNL_ARF_UPDATE, INTNL_OVERLAY_UPDATE,
-                         INTNL_ARF_UPDATE, ARF_UPDATE };
+  const int layer_depth[5] = { 1, 3, 2, 3, 1 };
+  const int update_type[5] = { KF_UPDATE, INTNL_ARF_UPDATE,
+                               INTNL_OVERLAY_UPDATE, INTNL_ARF_UPDATE,
+                               ARF_UPDATE };
 
   for (int i = 0; i < gf_group.size; i++) {
     gf_group.layer_depth[i] = layer_depth[i];
     gf_group.update_type[i] = update_type[i];
   }
 
-  av1_q_mode_compute_gop_q_indices(gf_frame_index, base_q_index, gfu_boost,
-                                   bit_depth, arf_boost_factor, &gf_group);
+  const int arf_q = av1_get_q_index_from_qstep_ratio(
+      base_q_index, arf_qstep_ratio, bit_depth);
+
+  av1_q_mode_compute_gop_q_indices(gf_frame_index, base_q_index,
+                                   arf_qstep_ratio, bit_depth, &gf_group,
+                                   gf_group.q_val);
 
   for (int i = 0; i < gf_group.size; i++) {
-    EXPECT_LE(gf_group.q_val[i], base_q_index);
+    if (layer_depth[i] == 1) {
+      EXPECT_EQ(gf_group.q_val[i], arf_q);
+    } else {
+      EXPECT_GT(gf_group.q_val[i], arf_q);
+    }
   }
 }
+#endif  // !CONFIG_REALTIME_ONLY
 
 }  // namespace

@@ -1991,7 +1991,7 @@ void RenderWidgetHostViewAura::OnHostMovedInPixels(
   TRACE_EVENT1("ui", "RenderWidgetHostViewAura::OnHostMovedInPixels",
                "new_origin_in_pixels", new_origin_in_pixels.ToString());
 
-  UpdateScreenInfo(window_);
+  UpdateScreenInfo();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2027,6 +2027,8 @@ RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
   // Ask the RWH to drop reference to us.
   host()->ViewDestroyed();
 
+  // Dismiss any visible touch selection handles or touch selection menu.
+  selection_controller_->HideAndDisallowShowingAutomatically();
   selection_controller_.reset();
   selection_controller_client_.reset();
 
@@ -2245,7 +2247,9 @@ void RenderWidgetHostViewAura::NotifyVirtualKeyboardOverlayRect(
   RenderFrameHostImpl* frame = host()->frame_tree()->GetMainFrame();
   if (!frame)
     return;
-  frame->NotifyVirtualKeyboardOverlayRect(keyboard_rect);
+  if (ShouldVirtualKeyboardOverlayContent()) {
+    frame->NotifyVirtualKeyboardOverlayRect(keyboard_rect);
+  }
 }
 
 bool RenderWidgetHostViewAura::FocusedFrameHasStickyActivation() const {
@@ -2357,7 +2361,7 @@ void RenderWidgetHostViewAura::AddedToRootWindow() {
   DCHECK(delegated_frame_host_) << "Cannot be invoked during destruction.";
 
   window_->GetHost()->AddObserver(this);
-  UpdateScreenInfo(window_);
+  UpdateScreenInfo();
 
   aura::client::CursorClient* cursor_client =
       aura::client::GetCursorClient(window_->GetRootWindow());
@@ -2702,7 +2706,7 @@ void RenderWidgetHostViewAura::InvalidateLocalSurfaceIdOnEviction() {
 void RenderWidgetHostViewAura::ProcessDisplayMetricsChanged() {
   // TODO(crbug.com/1169291): Unify per-platform DisplayObserver instances.
   needs_to_update_display_metrics_ = false;
-  UpdateScreenInfo(window_);
+  UpdateScreenInfo();
   current_cursor_.SetDisplayInfo(
       display::Screen::GetScreen()->GetDisplayNearestWindow(window_));
   UpdateCursorIfOverSelf();

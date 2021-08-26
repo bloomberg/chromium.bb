@@ -26,6 +26,10 @@ import static org.chromium.content.browser.accessibility.AccessibilityContentShe
 import static org.chromium.content.browser.accessibility.AccessibilityContentShellTestUtils.sRangeInfoMatcher;
 import static org.chromium.content.browser.accessibility.AccessibilityContentShellTestUtils.sTextMatcher;
 import static org.chromium.content.browser.accessibility.AccessibilityContentShellTestUtils.sTextOrContentDescriptionMatcher;
+import static org.chromium.content.browser.accessibility.WebContentsAccessibilityImpl.EXTRAS_KEY_CHROME_ROLE;
+import static org.chromium.content.browser.accessibility.WebContentsAccessibilityImpl.EXTRAS_KEY_OFFSCREEN;
+import static org.chromium.content.browser.accessibility.WebContentsAccessibilityImpl.EXTRAS_KEY_UNCLIPPED_BOTTOM;
+import static org.chromium.content.browser.accessibility.WebContentsAccessibilityImpl.EXTRAS_KEY_UNCLIPPED_TOP;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
@@ -50,13 +54,15 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.UrlUtils;
+import org.chromium.content_public.browser.test.ContentJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -67,7 +73,7 @@ import java.util.concurrent.ExecutionException;
  * Tests for WebContentsAccessibility. Actually tests WebContentsAccessibilityImpl that
  * implements the interface.
  */
-@RunWith(BaseJUnit4ClassRunner.class)
+@RunWith(ContentJUnit4ClassRunner.class)
 @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 @SuppressLint("VisibleForTests")
@@ -106,9 +112,13 @@ public class WebContentsAccessibilityTest {
             "Expected bounding box to change after web contents was resized.";
     private static final String ONDEMAND_HISTOGRAM_ERROR =
             "Expected histogram for OnDemand AT feature to be recorded.";
+    private static final String VISIBLE_TO_USER_ERROR =
+            "AccessibilityNodeInfo object has incorrect visibleToUser value";
+    private static final String OFFSCREEN_BUNDLE_EXTRA_ERROR =
+            "AccessibilityNodeInfo object has incorrect Bundle extras for offscreen boolean.";
 
     // Constant values for unit tests
-    private static final int UNSUPPRESSED_EXPECTED_COUNT = 25;
+    private static final int UNSUPPRESSED_EXPECTED_COUNT = 15;
 
     private AccessibilityNodeInfo mNodeInfo;
     private AccessibilityContentShellTestData mTestData;
@@ -377,9 +387,9 @@ public class WebContentsAccessibilityTest {
      * Ensure we throttle TYPE_WINDOW_CONTENT_CHANGED events for large tree updates.
      */
     @Test
-    @FlakyTest(message = "https://crbug.com/1161533")
     @SmallTest
-    @MinAndroidSdkLevel(Build.VERSION_CODES.M)
+    @MinAndroidSdkLevel(Build.VERSION_CODES.N)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     public void testMaxContentChangedEventsFired_default() throws Throwable {
         // Build a simple web page with complex visibility change.
         setupTestFromFile("content/test/data/android/type_window_content_changed_events.html");
@@ -393,18 +403,18 @@ public class WebContentsAccessibilityTest {
         // Signal end of test
         mActivityTestRule.sendEndOfTestSignal();
 
-        // Verify number of events processed
+        // Verify number of events processed, allow for multiple atomic updates.
         int eventCount = mTestData.getTypeWindowContentChangedCount();
-        Assert.assertTrue(thresholdError(eventCount, maxEvents), eventCount <= maxEvents);
+        Assert.assertTrue(thresholdError(eventCount, maxEvents), eventCount <= (maxEvents * 3));
     }
 
     /**
      * Ensure we need to throttle TYPE_WINDOW_CONTENT_CHANGED events for some large tree updates.
      */
     @Test
-    @FlakyTest(message = "https://crbug.com/1161533")
     @SmallTest
-    @MinAndroidSdkLevel(Build.VERSION_CODES.M)
+    @MinAndroidSdkLevel(Build.VERSION_CODES.N)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     public void testMaxContentChangedEventsFired_largeLimit() throws Throwable {
         // Build a simple web page with complex visibility change.
         setupTestFromFile("content/test/data/android/type_window_content_changed_events.html");
@@ -1037,7 +1047,7 @@ public class WebContentsAccessibilityTest {
         Assert.assertEquals(result[0], result[3]);
 
         // The role string should be a camel cased programmatic identifier.
-        CharSequence roleString = extras.getCharSequence("AccessibilityNodeInfo.chromeRole");
+        CharSequence roleString = extras.getCharSequence(EXTRAS_KEY_CHROME_ROLE);
         Assert.assertEquals("paragraph", roleString.toString());
 
         // The data needed for text character locations loads asynchronously. Block until
@@ -1106,9 +1116,9 @@ public class WebContentsAccessibilityTest {
         // Check that the container has unclipped values set.
         Assert.assertNotNull(NODE_EXTRAS_UNCLIPPED_ERROR, mNodeInfo.getExtras());
         Assert.assertTrue(NODE_EXTRAS_UNCLIPPED_ERROR,
-                mNodeInfo.getExtras().getInt("AccessibilityNodeInfo.unclippedTop") < 0);
+                mNodeInfo.getExtras().getInt(EXTRAS_KEY_UNCLIPPED_TOP) < 0);
         Assert.assertTrue(NODE_EXTRAS_UNCLIPPED_ERROR,
-                mNodeInfo.getExtras().getInt("AccessibilityNodeInfo.unclippedBottom") > 0);
+                mNodeInfo.getExtras().getInt(EXTRAS_KEY_UNCLIPPED_BOTTOM) > 0);
     }
 
     /**
@@ -1453,6 +1463,47 @@ public class WebContentsAccessibilityTest {
         Assert.assertEquals(ONDEMAND_HISTOGRAM_ERROR, 1,
                 RecordHistogram.getHistogramTotalCountForTesting(
                         "Accessibility.Android.OnDemand.EventsDropped"));
+    }
+
+    /**
+     * Test that isVisibleToUser and offscreen extra are properly reflecting obscured views.
+     */
+    @Test
+    @SmallTest
+    public void testNodeInfo_isVisibleToUser_offscreenCSS() {
+        // Build a simple web page with nodes that are clipped by CSS.
+        setupTestFromFile("content/test/data/android/hide_visible_elements_with_css.html");
+
+        // Find relevant nodes in the list.
+        int vvIdText1 = waitForNodeMatching(sTextMatcher, "1");
+        int vvIdText2 = waitForNodeMatching(sTextMatcher, "6");
+        int vvIdText3 = waitForNodeMatching(sTextMatcher, "9");
+        AccessibilityNodeInfo mNodeInfo1 = createAccessibilityNodeInfo(vvIdText1);
+        AccessibilityNodeInfo mNodeInfo2 = createAccessibilityNodeInfo(vvIdText2);
+        AccessibilityNodeInfo mNodeInfo3 = createAccessibilityNodeInfo(vvIdText3);
+        Assert.assertNotNull(NODE_TIMEOUT_ERROR, mNodeInfo1);
+        Assert.assertNotNull(NODE_TIMEOUT_ERROR, mNodeInfo2);
+        Assert.assertNotNull(NODE_TIMEOUT_ERROR, mNodeInfo3);
+
+        // Signal end of test.
+        mActivityTestRule.sendEndOfTestSignal();
+
+        // Check visibility of each element, all text nodes should be visible.
+        Assert.assertTrue(VISIBLE_TO_USER_ERROR, mNodeInfo1.isVisibleToUser());
+        Assert.assertTrue(VISIBLE_TO_USER_ERROR, mNodeInfo2.isVisibleToUser());
+        Assert.assertTrue(VISIBLE_TO_USER_ERROR, mNodeInfo3.isVisibleToUser());
+
+        // Check for offscreen Bundle extra, the second two texts should contain.
+        Assert.assertFalse(OFFSCREEN_BUNDLE_EXTRA_ERROR,
+                mNodeInfo1.getExtras().containsKey(EXTRAS_KEY_OFFSCREEN));
+        Assert.assertTrue(OFFSCREEN_BUNDLE_EXTRA_ERROR,
+                mNodeInfo2.getExtras().containsKey(EXTRAS_KEY_OFFSCREEN));
+        Assert.assertTrue(OFFSCREEN_BUNDLE_EXTRA_ERROR,
+                mNodeInfo2.getExtras().getBoolean(EXTRAS_KEY_OFFSCREEN));
+        Assert.assertTrue(OFFSCREEN_BUNDLE_EXTRA_ERROR,
+                mNodeInfo3.getExtras().containsKey(EXTRAS_KEY_OFFSCREEN));
+        Assert.assertTrue(OFFSCREEN_BUNDLE_EXTRA_ERROR,
+                mNodeInfo3.getExtras().getBoolean(EXTRAS_KEY_OFFSCREEN));
     }
 
     @MinAndroidSdkLevel(Build.VERSION_CODES.M)

@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/messages/android/message_dispatcher_bridge.h"
+#include "components/messages/android/messages_feature.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
@@ -108,10 +109,16 @@ void SavePasswordMessageDelegate::CreateMessage(bool update_password) {
   messages::MessageIdentifier message_id =
       update_password ? messages::MessageIdentifier::UPDATE_PASSWORD
                       : messages::MessageIdentifier::SAVE_PASSWORD;
+  base::OnceClosure callback =
+      update_password
+          ? base::BindOnce(
+                &SavePasswordMessageDelegate::HandleUpdateButtonClicked,
+                base::Unretained(this))
+          : base::BindOnce(
+                &SavePasswordMessageDelegate::HandleSaveButtonClicked,
+                base::Unretained(this));
   message_ = std::make_unique<messages::MessageWrapper>(
-      message_id,
-      base::BindOnce(&SavePasswordMessageDelegate::HandleSaveButtonClicked,
-                     base::Unretained(this)),
+      message_id, std::move(callback),
       base::BindOnce(&SavePasswordMessageDelegate::HandleMessageDismissed,
                      base::Unretained(this)));
 
@@ -135,10 +142,15 @@ void SavePasswordMessageDelegate::CreateMessage(bool update_password) {
       std::u16string(pending_credentials.password_value.size(), L'•');
   std::u16string description;
   if (!account_email_.empty()) {
-    description = l10n_util::GetStringFUTF16(
-        IDS_SAVE_PASSWORD_SIGNED_IN_MESSAGE_DESCRIPTION_GOOGLE_ACCOUNT,
-        pending_credentials.username_value, masked_password,
-        base::UTF8ToUTF16(account_email_));
+    if (update_password) {
+      description = l10n_util::GetStringFUTF16(
+          IDS_UPDATE_PASSWORD_SIGNED_IN_MESSAGE_DESCRIPTION_GOOGLE_ACCOUNT,
+          base::UTF8ToUTF16(account_email_));
+    } else {
+      description = l10n_util::GetStringFUTF16(
+          IDS_SAVE_PASSWORD_SIGNED_IN_MESSAGE_DESCRIPTION_GOOGLE_ACCOUNT,
+          base::UTF8ToUTF16(account_email_));
+    }
   } else {
     description.append(pending_credentials.username_value)
         .append(u" ")
@@ -146,33 +158,39 @@ void SavePasswordMessageDelegate::CreateMessage(bool update_password) {
   }
   message_->SetDescription(description);
 
-  int primary_button_message_id = update_password
-                                      ? IDS_PASSWORD_MANAGER_UPDATE_BUTTON
-                                      : IDS_PASSWORD_MANAGER_SAVE_BUTTON;
-  message_->SetPrimaryButtonText(
-      l10n_util::GetStringUTF16(primary_button_message_id));
+  bool use_followup_button_text = false;
+  if (update_password) {
+    std::vector<std::u16string> usernames;
+    GetDisplayUsernames(&usernames);
+    use_followup_button_text = usernames.size() > 1;
+  }
+  message_->SetPrimaryButtonText(l10n_util::GetStringUTF16(
+      GetPrimaryButtonTextId(update_password, use_followup_button_text)));
 
   message_->SetIconResourceId(
       ResourceMapper::MapToJavaDrawableId(IDR_ANDROID_INFOBAR_SAVE_PASSWORD));
 
-  message_->SetSecondaryIconResourceId(
-      ResourceMapper::MapToJavaDrawableId(IDR_ANDROID_AUTOFILL_SETTINGS));
   if (!update_password) {
+    message_->SetSecondaryIconResourceId(
+        ResourceMapper::MapToJavaDrawableId(IDR_ANDROID_AUTOFILL_SETTINGS));
     message_->SetSecondaryButtonMenuText(
         l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_BLOCKLIST_BUTTON));
+    message_->SetSecondaryActionCallback(
+        base::BindOnce(&SavePasswordMessageDelegate::HandleNeverSaveClicked,
+                       base::Unretained(this)));
   }
-  // TODO(crbug.com/1188971): Currently only update password message triggers
-  // password edit dialog in response to tap on the gear icon. Update password
-  // edit dialog for save password scenario and switch save password message
-  // behavior to match update password message.
-  base::OnceClosure secondary_action_callback =
-      update_password
-          ? base::BindOnce(
-                &SavePasswordMessageDelegate::HandleDisplayEditDialog,
-                base::Unretained(this))
-          : base::BindOnce(&SavePasswordMessageDelegate::HandleNeverSaveClicked,
-                           base::Unretained(this));
-  message_->SetSecondaryActionCallback(std::move(secondary_action_callback));
+}
+
+int SavePasswordMessageDelegate::GetPrimaryButtonTextId(
+    bool update_password,
+    bool use_followup_button_text) {
+  if (!update_password)
+    return IDS_PASSWORD_MANAGER_SAVE_BUTTON;
+  if (!use_followup_button_text)
+    return IDS_PASSWORD_MANAGER_UPDATE_BUTTON;
+  if (messages::UseFollowupButtonTextForUpdatePasswordButton())
+    return IDS_PASSWORD_MANAGER_UPDATE_WITH_FOLLOWUP_BUTTON;
+  return IDS_PASSWORD_MANAGER_CONTINUE_BUTTON;
 }
 
 void SavePasswordMessageDelegate::HandleMessageDismissed(
@@ -198,7 +216,19 @@ void SavePasswordMessageDelegate::HandleNeverSaveClicked() {
   DismissSavePasswordMessage(messages::DismissReason::SECONDARY_ACTION);
 }
 
-void SavePasswordMessageDelegate::HandleDisplayEditDialog() {
+void SavePasswordMessageDelegate::HandleUpdateButtonClicked() {
+  std::vector<std::u16string> usernames;
+  int selected_username_index = GetDisplayUsernames(&usernames);
+  if (usernames.size() > 1) {
+    DisplayUsernameConfirmDialog(std::move(usernames), selected_username_index);
+  } else {
+    passwords_state_.form_manager()->Save();
+  }
+}
+
+void SavePasswordMessageDelegate::DisplayUsernameConfirmDialog(
+    std::vector<std::u16string> usernames,
+    int selected_username_index) {
   // Binding with base::Unretained(this) is safe here because
   // SavePasswordMessageDelegate owns password_edit_dialog_. Callbacks won't be
   // called after the SavePasswordMessageDelegate object is destroyed.
@@ -208,18 +238,11 @@ void SavePasswordMessageDelegate::HandleDisplayEditDialog() {
                      base::Unretained(this)),
       base::BindOnce(&SavePasswordMessageDelegate::HandleDialogDismissed,
                      base::Unretained(this)));
-  // It is important to dismiss the message after the dialog is created. The
-  // code in HandleMessageDismissed checks password_edit_dialog_ to decide
-  // whether to clear state.
-  DismissSavePasswordMessage(messages::DismissReason::SECONDARY_ACTION);
 
   // Password edit dialog factory method can return nullptr when web_contents
   // is not attached to a window. See crbug.com/1049090 for details.
   if (!password_edit_dialog_)
     return;
-
-  std::vector<std::u16string> usernames;
-  int selected_username_index = GetDisplayUsernames(&usernames);
 
   std::u16string origin = url_formatter::FormatOriginForSecurityDisplay(
       url::Origin::Create(passwords_state_.form_manager()->GetURL()),
@@ -227,7 +250,7 @@ void SavePasswordMessageDelegate::HandleDisplayEditDialog() {
   password_edit_dialog_->Show(
       usernames, selected_username_index,
       passwords_state_.form_manager()->GetPendingCredentials().password_value,
-      origin, account_email_);
+      origin, std::string());
 }
 
 unsigned int SavePasswordMessageDelegate::GetDisplayUsernames(

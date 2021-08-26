@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+licenses(["notice"])
 
 cc_library(
     name = "core",
@@ -20,19 +21,20 @@ cc_library(
     hdrs = [
         "core.h",
     ],
+    compatible_with = ["//buildenv/target:non_prod"],
     visibility = [
-        "//googlemac/iPhone/Shared/Nearby/Connections_v2:__subpackages__",
-        "//location/nearby/connections/windows:__subpackages__",
+        "//googlemac/iPhone/Shared/Nearby/Connections:__subpackages__",
+        "//third_party/nearby_connections/windows:__subpackages__",
     ],
     deps = [
         ":core_types",
+        "//absl/strings",
+        "//absl/time",
+        "//absl/types:span",
         "//core/internal",
         "//platform/base",
         "//platform/public:logging",
         "//platform/public:types",
-        "//absl/strings",
-        "//absl/time",
-        "//absl/types:span",
     ],
 )
 
@@ -49,16 +51,18 @@ cc_library(
         "status.h",
         "strategy.h",
     ],
+    compatible_with = ["//buildenv/target:non_prod"],
     visibility = [
+        "//googlemac/iPhone/Shared/Nearby/Connections:__subpackages__",
         "//core:__subpackages__",
     ],
     deps = [
+        "//absl/strings",
+        "//absl/types:variant",
         "//platform/base",
         "//platform/base:util",
         "//platform/public:types",
         "//proto:connections_enums_portable_proto",
-        "//absl/strings",
-        "//absl/types:variant",
     ],
 )
 
@@ -76,15 +80,15 @@ cc_test(
     deps = [
         ":core",
         ":core_types",
+        "//testing/base/public:gunit_main",
+        "//absl/strings",
+        "//absl/time",
+        "//absl/types:variant",
         "//core/internal",
         "//core/internal:internal_test",
         "//platform/base",
         "//platform/impl/g3",  # build_cleaner: keep
         "//platform/public:logging",
         "//platform/public:types",
-        "//testing/base/public:gunit_main",
-        "//absl/strings",
-        "//absl/time",
-        "//absl/types:variant",
     ],
 )

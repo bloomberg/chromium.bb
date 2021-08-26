@@ -14,7 +14,12 @@ import("//ui/webui/webui_features.gni")
 js_type_check("closure_compile") {
   is_polymer3 = true
 
-  closure_flags = default_closure_args + mojom_js_args
+  closure_flags = default_closure_args + mojom_js_args + [
+                    "js_module_root=" + rebase_path(".", root_build_dir),
+                    "js_module_root=" + rebase_path(
+                            "$root_gen_dir/mojom-webui/chrome/browser/promo_browser_command",
+                            root_build_dir),
+                  ]
 
   deps = [
     ":app",
@@ -87,6 +92,7 @@ js_library("app") {
     ":window_proxy",
     "modules:module_registry",
     "realbox:realbox",
+    "//chrome/browser/promo_browser_command:mojo_bindings_webui_js",
     "//skia/public/mojom:mojom_webui_js",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements/cr_button:cr_button.m",
@@ -96,13 +102,14 @@ js_library("app") {
 }
 
 js_library("promo_browser_command_proxy") {
-  deps = [ "//chrome/browser/promo_browser_command:mojo_bindings_js_library_for_compile" ]
+  deps = [ "//chrome/browser/promo_browser_command:mojo_bindings_webui_js" ]
 }
 
 js_library("middle_slot_promo") {
   deps = [
     ":new_tab_page_proxy",
     ":window_proxy",
+    "//chrome/browser/promo_browser_command:mojo_bindings_webui_js",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
 }
@@ -320,10 +327,11 @@ generate_grd("build_new_tab_page_mojo_grdp") {
 generate_grd("build_promo_browser_command_mojo_grdp") {
   grd_prefix = grd_prefix
   out_grd = "$target_gen_dir/promo_browser_command_mojo_resources.grdp"
-  input_files = [ "promo_browser_command.mojom-lite.js" ]
+  input_files = [ "promo_browser_command.mojom-webui.js" ]
   input_files_base_dir =
-      rebase_path("$root_gen_dir/chrome/browser/promo_browser_command",
-                  root_build_dir)
+      rebase_path(
+          "$root_gen_dir/mojom-webui/chrome/browser/promo_browser_command",
+          root_build_dir)
 }
 
 generate_grd("build_drive_mojo_grdp") {
@@ -334,6 +342,16 @@ generate_grd("build_drive_mojo_grdp") {
       rebase_path("$root_gen_dir/chrome/browser/new_tab_page/modules/drive",
                   root_build_dir)
   resource_path_prefix = "modules/drive"
+}
+
+generate_grd("build_photos_mojo_grdp") {
+  grd_prefix = grd_prefix
+  out_grd = "$target_gen_dir/photos_mojo_resources.grdp"
+  input_files = [ "photos.mojom-lite.js" ]
+  input_files_base_dir =
+      rebase_path("$root_gen_dir/chrome/browser/new_tab_page/modules/photos",
+                  root_build_dir)
+  resource_path_prefix = "modules/photos"
 }
 
 generate_grd("build_task_module_mojo_grdp") {
@@ -380,11 +398,13 @@ generate_grd("build_grd") {
     "$target_gen_dir/task_module_mojo_resources.grdp",
     "$target_gen_dir/chrome_cart_mojo_resources.grdp",
     "$target_gen_dir/drive_mojo_resources.grdp",
+    "$target_gen_dir/photos_mojo_resources.grdp",
   ]
   deps = [
     ":build_chrome_cart_mojo_grdp",
     ":build_drive_mojo_grdp",
     ":build_new_tab_page_mojo_grdp",
+    ":build_photos_mojo_grdp",
     ":build_promo_browser_command_mojo_grdp",
     ":build_task_module_mojo_grdp",
     "icons:build_grdp",
@@ -428,6 +448,7 @@ grit("resources") {
     ":build_grd",
     "//chrome/browser/cart:mojo_bindings_js",
     "//chrome/browser/new_tab_page/modules/drive:mojo_bindings_js",
+    "//chrome/browser/new_tab_page/modules/photos:mojo_bindings_js",
     "//chrome/browser/new_tab_page/modules/task_module:mojo_bindings_js",
     "//chrome/browser/promo_browser_command:mojo_bindings_js",
     "//chrome/browser/ui/webui/new_tab_page:mojo_bindings_js",
@@ -490,8 +511,9 @@ if (optimize_webui) {
       "chrome://resources/mojo/url/mojom/url.mojom-webui.js",
       "new_tab_page.mojom-lite.js",
       "realbox/realbox.mojom-lite.js",
-      "promo_browser_command.mojom-lite.js",
+      "promo_browser_command.mojom-webui.js",
       "modules/drive/drive.mojom-lite.js",
+      "modules/photos/photos.mojom-lite.js",
       "modules/task_module/task_module.mojom-lite.js",
       "foo.mojom-lite.js",
       "modules/cart/chrome_cart.mojom-lite.js",

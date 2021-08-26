@@ -20,6 +20,7 @@
 #include "components/feed/core/proto/v2/wire/response.pb.h"
 #include "components/feed/core/v2/enums.h"
 #include "components/feed/core/v2/launch_reliability_logger.h"
+#include "components/feed/core/v2/metrics_reporter.h"
 #include "components/feed/core/v2/persistent_key_value_store_impl.h"
 #include "components/feed/core/v2/protocol_translator.h"
 #include "components/feed/core/v2/public/feed_api.h"
@@ -57,6 +58,7 @@ class SurfaceUpdater;
 // needed by other classes within the Feed component.
 class FeedStream : public FeedApi,
                    public offline_pages::TaskQueue::Delegate,
+                   public MetricsReporter::Delegate,
                    public StreamModel::StoreObserver {
  public:
   class Delegate {
@@ -110,7 +112,7 @@ class FeedStream : public FeedApi,
   PersistentKeyValueStoreImpl& GetPersistentKeyValueStore() override;
   void LoadMore(const FeedStreamSurface& surface,
                 base::OnceCallback<void(bool)> callback) override;
-  void ManualRefresh(const FeedStreamSurface& surface,
+  void ManualRefresh(const StreamType& stream_type,
                      base::OnceCallback<void(bool)> callback) override;
   void ExecuteOperations(
       const StreamType& stream_type,
@@ -152,9 +154,15 @@ class FeedStream : public FeedApi,
   void ReportOtherUserAction(const StreamType& stream_type,
                              FeedUserActionType action_type) override;
   base::Time GetLastFetchTime(const StreamType& stream_type) override;
+  void SetContentOrder(const StreamType& stream_type,
+                       ContentOrder content_order) override;
+  ContentOrder GetContentOrderFromPrefs(const StreamType& stream_type) override;
 
   // offline_pages::TaskQueue::Delegate.
   void OnTaskQueueIsIdle() override;
+
+  // MetricsReporter::Delegate.
+  void SubscribedWebFeedCount(base::OnceCallback<void(int)> callback) override;
 
   // StreamModel::StoreObserver.
   void OnStoreChange(StreamModel::StoreUpdate update) override;
@@ -324,6 +332,7 @@ class FeedStream : public FeedApi,
   // A single function task to delete stored feed data and force a refresh.
   // To only be called from within a |Task|.
   void ForceRefreshForDebuggingTask();
+  void ForceRefreshTask(const StreamType& stream_type);
 
   void ScheduleModelUnloadIfNoSurfacesAttached(const StreamType& stream_type);
   void AddUnloadModelIfNoSurfacesAttachedTask(const StreamType& stream_type,

@@ -16,9 +16,9 @@
 #include "ash/system/network/network_icon_animation_observer.h"
 #include "ash/system/tray/tray_constants.h"
 #include "base/containers/flat_map.h"
+#include "base/cxx17_backports.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/numerics/ranges.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_util.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
@@ -195,7 +195,7 @@ gfx::ImageSkia* ConnectingWirelessImage(ImageType image_type,
 
   int index =
       animation * nextafter(static_cast<float>(kNumConnectingImages), 0);
-  index = base::ClampToRange(index, 0, kNumConnectingImages - 1);
+  index = base::clamp(index, 0, kNumConnectingImages - 1);
 
   auto map_key = std::make_tuple(is_bars_image, icon_type, index);
 
@@ -566,12 +566,7 @@ std::u16string GetLabelForNetworkList(const NetworkStateProperties* network) {
     }
     if (activation_state == ActivationStateType::kNotActivated ||
         activation_state == ActivationStateType::kPartiallyActivated) {
-      if (chromeos::features::IsCellularActivationUiEnabled())
-        return base::UTF8ToUTF16(network->name);
-
-      return l10n_util::GetStringFUTF16(
-          IDS_ASH_STATUS_TRAY_NETWORK_LIST_ACTIVATE,
-          base::UTF8ToUTF16(network->name));
+      return base::UTF8ToUTF16(network->name);
     }
   }
   // Otherwise just show the network name or 'Ethernet'.

@@ -32,6 +32,7 @@
 #include "base/test/test_switches.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/typed_macros.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "cc/test/pixel_test_utils.h"
@@ -1829,10 +1830,10 @@ void AddToSetIfFrameMatchesPredicate(
 }
 
 RenderFrameHost* FrameMatchingPredicate(
-    WebContents* web_contents,
+    Page& page,
     base::RepeatingCallback<bool(RenderFrameHost*)> predicate) {
   std::set<RenderFrameHost*> frame_set;
-  web_contents->ForEachFrame(base::BindRepeating(
+  page.GetMainDocument().ForEachRenderFrameHost(base::BindRepeating(
       &AddToSetIfFrameMatchesPredicate, &frame_set, predicate));
   EXPECT_EQ(1U, frame_set.size());
   return frame_set.size() == 1 ? *frame_set.begin() : nullptr;
@@ -1985,7 +1986,8 @@ bool SetCookie(BrowserContext* browser_context,
       ->GetNetworkContext()
       ->GetCookieManager(cookie_manager.BindNewPipeAndPassReceiver());
   std::unique_ptr<net::CanonicalCookie> cc(net::CanonicalCookie::Create(
-      url, value, base::Time::Now(), absl::nullopt /* server_time */));
+      url, value, base::Time::Now(), absl::nullopt /* server_time */,
+      absl::nullopt /* cookie_partition_key */));
   DCHECK(cc.get());
 
   net::CookieOptions options;
@@ -2082,12 +2084,6 @@ bool WaitForRenderFrameReady(RenderFrameHost* rfh) {
       &result));
   EXPECT_EQ("pageLoadComplete", result);
   return "pageLoadComplete" == result;
-}
-
-void RemoveWebContentsReceiverSet(WebContents* web_contents,
-                                  const std::string& interface_name) {
-  static_cast<WebContentsImpl*>(web_contents)
-      ->RemoveReceiverSetForTesting(interface_name);
 }
 
 void EnableAccessibilityForWebContents(WebContents* web_contents) {
@@ -2957,6 +2953,9 @@ TestNavigationManager::~TestNavigationManager() {
 }
 
 void TestNavigationManager::WaitForFirstYieldAfterDidStartNavigation() {
+  TRACE_EVENT(
+      "test",
+      "TestNavigationManager::WaitForFirstYieldAfterDidStartNavigation");
   if (current_state_ >= NavigationState::WILL_START)
     return;
 
@@ -2965,11 +2964,13 @@ void TestNavigationManager::WaitForFirstYieldAfterDidStartNavigation() {
 }
 
 bool TestNavigationManager::WaitForRequestStart() {
+  TRACE_EVENT("test", "TestNavigationManager::WaitForRequestStart");
   desired_state_ = NavigationState::STARTED;
   return WaitForDesiredState();
 }
 
 void TestNavigationManager::ResumeNavigation() {
+  TRACE_EVENT("test", "TestNavigationManager::ResumeNavigation");
   DCHECK(current_state_ == NavigationState::STARTED ||
          current_state_ == NavigationState::RESPONSE);
   DCHECK_EQ(current_state_, desired_state_);
@@ -2982,11 +2983,13 @@ NavigationHandle* TestNavigationManager::GetNavigationHandle() {
 }
 
 bool TestNavigationManager::WaitForResponse() {
+  TRACE_EVENT("test", "TestNavigationManager::WaitForResponse");
   desired_state_ = NavigationState::RESPONSE;
   return WaitForDesiredState();
 }
 
 void TestNavigationManager::WaitForNavigationFinished() {
+  TRACE_EVENT("test", "TestNavigationManager::WaitForNavigationFinished");
   desired_state_ = NavigationState::FINISHED;
   WaitForDesiredState();
 }
@@ -3350,16 +3353,21 @@ void VerifyStaleContentOnFrameEviction(
 
 #endif  // defined(USE_AURA)
 
-ContextMenuInterceptor::ContextMenuInterceptor(ShowBehavior behavior)
-    : run_loop_(std::make_unique<base::RunLoop>()),
+ContextMenuInterceptor::ContextMenuInterceptor(
+    content::RenderFrameHost* render_frame_host,
+    ShowBehavior behavior)
+    : render_frame_host_impl_(
+          static_cast<RenderFrameHostImpl*>(render_frame_host)),
+      run_loop_(std::make_unique<base::RunLoop>()),
       quit_closure_(run_loop_->QuitClosure()),
-      show_behavior_(behavior) {}
-
-void ContextMenuInterceptor::Init(content::RenderFrameHost* render_frame_host) {
-  render_frame_host_ = render_frame_host;
-  impl_ = static_cast<RenderFrameHostImpl*>(render_frame_host_)
-              ->local_frame_host_receiver_for_testing()
+      show_behavior_(behavior) {
+  impl_ = render_frame_host_impl_->local_frame_host_receiver_for_testing()
               .SwapImplForTesting(this);
+}
+
+ContextMenuInterceptor::~ContextMenuInterceptor() {
+  render_frame_host_impl_->local_frame_host_receiver_for_testing()
+      .SwapImplForTesting(impl_);
 }
 
 void ContextMenuInterceptor::Wait() {
@@ -3373,8 +3381,6 @@ void ContextMenuInterceptor::Reset() {
   run_loop_ = std::make_unique<base::RunLoop>();
   quit_closure_ = run_loop_->QuitClosure();
 }
-
-ContextMenuInterceptor::~ContextMenuInterceptor() = default;
 
 blink::mojom::LocalFrameHost* ContextMenuInterceptor::GetForwardingInterface() {
   return impl_;
@@ -3395,18 +3401,17 @@ void ContextMenuInterceptor::ShowContextMenu(
                                             params);
 }
 
-UpdateUserActivationStateInterceptor::UpdateUserActivationStateInterceptor() =
-    default;
-
-UpdateUserActivationStateInterceptor::~UpdateUserActivationStateInterceptor() =
-    default;
-
-void UpdateUserActivationStateInterceptor::Init(
-    content::RenderFrameHost* render_frame_host) {
-  render_frame_host_ = render_frame_host;
-  impl_ = static_cast<RenderFrameHostImpl*>(render_frame_host_)
-              ->local_frame_host_receiver_for_testing()
+UpdateUserActivationStateInterceptor::UpdateUserActivationStateInterceptor(
+    content::RenderFrameHost* render_frame_host)
+    : render_frame_host_impl_(
+          static_cast<RenderFrameHostImpl*>(render_frame_host)) {
+  impl_ = render_frame_host_impl_->local_frame_host_receiver_for_testing()
               .SwapImplForTesting(this);
+}
+
+UpdateUserActivationStateInterceptor::~UpdateUserActivationStateInterceptor() {
+  render_frame_host_impl_->local_frame_host_receiver_for_testing()
+      .SwapImplForTesting(impl_);
 }
 
 void UpdateUserActivationStateInterceptor::set_quit_handler(

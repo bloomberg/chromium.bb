@@ -11,11 +11,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
-#include "base/util/timer/wall_clock_timer.h"
+#include "base/timer/wall_clock_timer.h"
 #include "base/version.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/upgrade_detector/build_state_observer.h"
-#include "chromeos/dbus/update_engine_client.h"
+#include "chromeos/dbus/update_engine/update_engine_client.h"
 #include "chromeos/network/network_state_handler_observer.h"
 
 class PrefRegistrySimple;
@@ -62,7 +62,8 @@ class MinimumVersionPolicyHandler
    public:
     virtual ~Delegate() {}
 
-    // Checks if the user is logged in as any kiosk app.
+    // Checks if the user is logged in as any kiosk app or this is an
+    // auto-launch kiosk device.
     virtual bool IsKioskMode() const = 0;
 
     // Checks if the device is enterprise managed.
@@ -288,10 +289,10 @@ class MinimumVersionPolicyHandler
   base::Time update_required_deadline_;
 
   // Fires when the deadline to update the device has reached or passed.
-  util::WallClockTimer update_required_deadline_timer_;
+  base::WallClockTimer update_required_deadline_timer_;
 
   // Fires when next update required notification is to be shown.
-  util::WallClockTimer notification_timer_;
+  base::WallClockTimer notification_timer_;
 
   // Non-owning reference to CrosSettings. This class have shorter lifetime than
   // CrosSettings.

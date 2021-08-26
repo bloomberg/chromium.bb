@@ -69,6 +69,7 @@ class CastPixmap : public gfx::NativePixmap {
       const gfx::Rect& display_bounds,
       const gfx::RectF& crop_rect,
       bool enable_blend,
+      const gfx::Rect& damage_rect,
       std::vector<gfx::GpuFence> acquire_fences,
       std::vector<gfx::GpuFence> release_fences) override {
     return false;
@@ -97,11 +98,12 @@ SurfaceFactoryCast::SurfaceFactoryCast(
 
 SurfaceFactoryCast::~SurfaceFactoryCast() {}
 
-std::vector<gl::GLImplementation>
+std::vector<gl::GLImplementationParts>
 SurfaceFactoryCast::GetAllowedGLImplementations() {
-  std::vector<gl::GLImplementation> impls;
+  std::vector<gl::GLImplementationParts> impls;
   if (egl_implementation_)
-    impls.push_back(gl::kGLImplementationEGLGLES2);
+    impls.emplace_back(
+        gl::GLImplementationParts(gl::kGLImplementationEGLGLES2));
   return impls;
 }
 

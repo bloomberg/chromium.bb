@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #include "lib/extras/codec_psd.h"
 
@@ -358,6 +349,7 @@ Status DecodeImagePSD(const Span<const uint8_t> bytes, ThreadPool* pool,
             return JXL_FAILURE("PSD: Invalid layer count");
           }
           JXL_DEBUG_V(PSD_VERBOSITY, "Real layer count: %i", layercount);
+          if (layercount > 1) have_alpha = true;
           break;
         }
         if (!safe_strncmp(tpos, maxpos, "Mtrn", 4) ||
@@ -365,7 +357,6 @@ Status DecodeImagePSD(const Span<const uint8_t> bytes, ThreadPool* pool,
             !safe_strncmp(tpos, maxpos, "Mt32", 4)) {
           JXL_DEBUG_V(PSD_VERBOSITY, "Merged layer has transparency channel");
           if (nb_channels > real_nb_channels) {
-            real_nb_channels++;
             have_alpha = true;
             merged_has_alpha = true;
           }
@@ -375,14 +366,12 @@ Status DecodeImagePSD(const Span<const uint8_t> bytes, ThreadPool* pool,
     } else if (layercount < 0) {
       // negative layer count indicates merged has alpha and it is to be shown
       if (nb_channels > real_nb_channels) {
-        real_nb_channels++;
         have_alpha = true;
         merged_has_alpha = true;
       }
       layercount = -layercount;
     } else {
       // multiple layers implies there is alpha
-      real_nb_channels++;
       have_alpha = true;
     }
 
@@ -396,6 +385,7 @@ Status DecodeImagePSD(const Span<const uint8_t> bytes, ThreadPool* pool,
     }
     if (have_alpha) {
       JXL_DEBUG_V(PSD_VERBOSITY, "Have alpha");
+      real_nb_channels++;
       info.type = ExtraChannel::kAlpha;
       info.alpha_associated =
           false;  // true? PSD is not consistent with this, need to check
@@ -579,18 +569,26 @@ Status DecodeImagePSD(const Span<const uint8_t> bytes, ThreadPool* pool,
     std::vector<int> chan_id(real_nb_channels);
     std::iota(chan_id.begin(), chan_id.end(), 0);
     std::vector<bool> invert(real_nb_channels, false);
+    if (static_cast<int>(spotcolor.size()) + colormodel + 1 <
+        real_nb_channels) {
+      return JXL_FAILURE("Inconsistent layer configuration");
+    }
     if (!merged_has_alpha) {
+      if (colormodel >= real_nb_channels) {
+        return JXL_FAILURE("Inconsistent layer configuration");
+      }
       chan_id.erase(chan_id.begin() + colormodel);
       invert.erase(invert.begin() + colormodel);
-    } else
+    } else {
       colormodel++;
+    }
     for (size_t i = colormodel; i < invert.size(); i++) {
       if (spotcolor[i - colormodel][5] == 2) invert[i] = true;
       if (spotcolor[i - colormodel][5] == 0) invert[i] = true;
     }
-    JXL_RETURN_IF_ERROR(decode_layer(pos, maxpos, layer, chan_id, invert,
-                                     layer.xsize(), layer.ysize(), version,
-                                     (have_only_merged ? 0 : colormodel), false, bitdepth));
+    JXL_RETURN_IF_ERROR(decode_layer(
+        pos, maxpos, layer, chan_id, invert, layer.xsize(), layer.ysize(),
+        version, (have_only_merged ? 0 : colormodel), false, bitdepth));
   }
 
   if (io->frames.empty()) return JXL_FAILURE("PSD: no layers");

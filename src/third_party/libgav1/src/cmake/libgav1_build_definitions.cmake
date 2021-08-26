@@ -21,7 +21,24 @@ macro(libgav1_set_build_definitions)
   string(TOLOWER "${CMAKE_BUILD_TYPE}" build_type_lowercase)
 
   libgav1_load_version_info()
-  set(LIBGAV1_SOVERSION 0)
+
+  # Library version info. See the libtool docs for updating the values:
+  # https://www.gnu.org/software/libtool/manual/libtool.html#Updating-version-info
+  #
+  # c=<current>, r=<revision>, a=<age>
+  #
+  # libtool generates a .so file as .so.[c-a].a.r, while -version-info c:r:a is
+  # passed to libtool.
+  #
+  # We set LIBGAV1_SOVERSION = [c-a].a.r
+  set(LT_CURRENT 0)
+  set(LT_REVISION 0)
+  set(LT_AGE 0)
+  math(EXPR LIBGAV1_SOVERSION_MAJOR "${LT_CURRENT} - ${LT_AGE}")
+  set(LIBGAV1_SOVERSION "${LIBGAV1_SOVERSION_MAJOR}.${LT_AGE}.${LT_REVISION}")
+  unset(LT_CURRENT)
+  unset(LT_REVISION)
+  unset(LT_AGE)
 
   list(APPEND libgav1_include_paths "${libgav1_root}" "${libgav1_root}/src"
               "${libgav1_build}" "${libgav1_root}/third_party/abseil-cpp")

@@ -538,7 +538,7 @@ struct Anchor
     switch (u.format) {
     case 1: return_trace (bool (reinterpret_cast<Anchor *> (u.format1.copy (c->serializer))));
     case 2:
-      if (c->plan->drop_hints)
+      if (c->plan->flags & HB_SUBSET_FLAGS_NO_HINTING)
       {
         // AnchorFormat 2 just containins extra hinting information, so
         // if hints are being dropped convert to format 1.
@@ -805,7 +805,7 @@ struct SinglePosFormat1
 		  ValueFormat newFormat,
 		  const hb_map_t *layout_variation_idx_map)
   {
-    if (unlikely (!c->extend_min (*this))) return;
+    if (unlikely (!c->extend_min (this))) return;
     if (unlikely (!c->check_assign (valueFormat,
                                     newFormat,
                                     HB_SERIALIZE_ERROR_INT_OVERFLOW))) return;
@@ -925,7 +925,7 @@ struct SinglePosFormat2
 		  ValueFormat newFormat,
 		  const hb_map_t *layout_variation_idx_map)
   {
-    auto out = c->extend_min (*this);
+    auto out = c->extend_min (this);
     if (unlikely (!out)) return;
     if (unlikely (!c->check_assign (valueFormat, newFormat, HB_SERIALIZE_ERROR_INT_OVERFLOW))) return;
     if (unlikely (!c->check_assign (valueCount, it.len (), HB_SERIALIZE_ERROR_ARRAY_OVERFLOW))) return;
@@ -1373,7 +1373,7 @@ struct PairPosFormat1
     out->format = format;
     out->valueFormat[0] = valueFormat[0];
     out->valueFormat[1] = valueFormat[1];
-    if (c->plan->drop_hints)
+    if (c->plan->flags & HB_SUBSET_FLAGS_NO_HINTING)
     {
       hb_pair_t<unsigned, unsigned> newFormats = compute_effective_value_formats (glyphset);
       out->valueFormat[0] = newFormats.first;
@@ -1591,7 +1591,7 @@ struct PairPosFormat2
     unsigned len2 = valueFormat2.get_len ();
 
     hb_pair_t<unsigned, unsigned> newFormats = hb_pair (valueFormat1, valueFormat2);
-    if (c->plan->drop_hints)
+    if (c->plan->flags & HB_SUBSET_FLAGS_NO_HINTING)
       newFormats = compute_effective_value_formats (klass1_map, klass2_map);
 
     out->valueFormat1 = newFormats.first;
@@ -1880,7 +1880,7 @@ struct CursivePosFormat1
     else
       pos[child].x_offset = x_offset;
 
-    /* If parent was attached to child, break them free.
+    /* If parent was attached to child, separate them.
      * https://github.com/harfbuzz/harfbuzz/issues/2469
      */
     if (unlikely (pos[parent].attach_chain() == -pos[child].attach_chain()))

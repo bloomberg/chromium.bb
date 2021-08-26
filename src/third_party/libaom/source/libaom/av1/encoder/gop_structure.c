@@ -18,8 +18,6 @@
 #include "aom/aom_codec.h"
 #include "aom/aom_encoder.h"
 
-#include "aom_ports/system_state.h"
-
 #include "av1/common/av1_common_int.h"
 
 #include "av1/encoder/encoder.h"
@@ -411,9 +409,10 @@ static AOM_INLINE void set_multi_layer_params_for_gf14(
 
 // Set parameters for frames between 'start' and 'end' (excluding both).
 static void set_multi_layer_params(
-    const TWO_PASS *twopass, GF_GROUP *const gf_group,
-    const PRIMARY_RATE_CONTROL *p_rc, RATE_CONTROL *rc, FRAME_INFO *frame_info,
-    int start, int end, int *cur_frame_idx, int *frame_ind,
+    const TWO_PASS *twopass, const TWO_PASS_FRAME *twopass_frame,
+    GF_GROUP *const gf_group, const PRIMARY_RATE_CONTROL *p_rc,
+    RATE_CONTROL *rc, FRAME_INFO *frame_info, int start, int end,
+    int *cur_frame_idx, int *frame_ind,
 #if CONFIG_FRAME_PARALLEL_ENCODE
     int *parallel_frame_count, int max_parallel_frames,
     int do_frame_parallel_encode, int *first_frame_index,
@@ -431,8 +430,9 @@ static void set_multi_layer_params(
       gf_group->arf_src_offset[*frame_ind] = 0;
       gf_group->cur_frame_idx[*frame_ind] = *cur_frame_idx;
       gf_group->layer_depth[*frame_ind] = MAX_ARF_LAYERS;
-      gf_group->arf_boost[*frame_ind] = av1_calc_arf_boost(
-          twopass, p_rc, rc, frame_info, start, end - start, 0, NULL, NULL, 0);
+      gf_group->arf_boost[*frame_ind] =
+          av1_calc_arf_boost(twopass, twopass_frame, p_rc, frame_info, start,
+                             end - start, 0, NULL, NULL, 0);
       gf_group->frame_type[*frame_ind] = INTER_FRAME;
       gf_group->refbuf_state[*frame_ind] = REFBUF_UPDATE;
       gf_group->max_layer_depth =
@@ -476,13 +476,14 @@ static void set_multi_layer_params(
 #endif  // CONFIG_FRAME_PARALLEL_ENCODE
 
     // Get the boost factor for intermediate ARF frames.
-    gf_group->arf_boost[*frame_ind] = av1_calc_arf_boost(
-        twopass, p_rc, rc, frame_info, m, end - m, m - start, NULL, NULL, 0);
+    gf_group->arf_boost[*frame_ind] =
+        av1_calc_arf_boost(twopass, twopass_frame, p_rc, frame_info, m, end - m,
+                           m - start, NULL, NULL, 0);
     ++(*frame_ind);
 
     // Frames displayed before this internal ARF.
-    set_multi_layer_params(twopass, gf_group, p_rc, rc, frame_info, start, m,
-                           cur_frame_idx, frame_ind,
+    set_multi_layer_params(twopass, twopass_frame, gf_group, p_rc, rc,
+                           frame_info, start, m, cur_frame_idx, frame_ind,
 #if CONFIG_FRAME_PARALLEL_ENCODE
                            parallel_frame_count, max_parallel_frames,
                            do_frame_parallel_encode, first_frame_index,
@@ -505,8 +506,8 @@ static void set_multi_layer_params(
     ++(*cur_frame_idx);
 
     // Frames displayed after this internal ARF.
-    set_multi_layer_params(twopass, gf_group, p_rc, rc, frame_info, m + 1, end,
-                           cur_frame_idx, frame_ind,
+    set_multi_layer_params(twopass, twopass_frame, gf_group, p_rc, rc,
+                           frame_info, m + 1, end, cur_frame_idx, frame_ind,
 #if CONFIG_FRAME_PARALLEL_ENCODE
                            parallel_frame_count, max_parallel_frames,
                            do_frame_parallel_encode, first_frame_index,
@@ -718,9 +719,9 @@ static int construct_multi_layer_gf_structure(
 
   // Rest of the frames.
   if (!is_multi_layer_configured)
-    set_multi_layer_params(twopass, gf_group, p_rc, rc, frame_info,
-                           cur_frame_index, gf_interval, &cur_frame_index,
-                           &frame_index,
+    set_multi_layer_params(twopass, &cpi->twopass_frame, gf_group, p_rc, rc,
+                           frame_info, cur_frame_index, gf_interval,
+                           &cur_frame_index, &frame_index,
 #if CONFIG_FRAME_PARALLEL_ENCODE
                            &parallel_frame_count, cpi->ppi->num_fp_contexts,
                            do_frame_parallel_encode, &first_frame_index,

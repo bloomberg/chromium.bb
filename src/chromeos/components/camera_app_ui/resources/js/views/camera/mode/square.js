@@ -56,9 +56,9 @@ class SquarePhotoHandler {
   /**
    * @override
    */
-  async handleResultPhoto(result, ...args) {
+  async handleResultPhoto(result, name) {
     result.blob = await cropSquare(result.blob);
-    await this.handler_.handleResultPhoto(result, ...args);
+    await this.handler_.handleResultPhoto(result, name);
   }
 
   /**
@@ -66,13 +66,6 @@ class SquarePhotoHandler {
    */
   playShutterEffect() {
     this.handler_.playShutterEffect();
-  }
-
-  /**
-   * @override
-   */
-  getPreviewFrame() {
-    return this.handler_.getPreviewFrame();
   }
 
   /**
@@ -105,7 +98,7 @@ export class SquareFactory extends PhotoFactory {
   /**
    * @override
    */
-  produce_() {
+  produce() {
     return new Square(
         this.previewStream_, this.facing_, this.captureResolution_,
         this.handler_);

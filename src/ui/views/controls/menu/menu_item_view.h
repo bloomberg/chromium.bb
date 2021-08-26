@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -25,6 +26,10 @@
 #if defined(OS_WIN)
 #include <windows.h>
 #endif
+
+namespace gfx {
+class FontList;
+}  // namespace gfx
 
 namespace views {
 
@@ -134,8 +139,8 @@ class VIEWS_EXPORT MenuItemView : public View {
   // Returns if a given |anchor| is a bubble or not.
   static bool IsBubble(MenuAnchorPosition anchor);
 
-  // Returns the accessible name to be used with screen readers. Mnemonics are
-  // removed and the menu item accelerator text is appended.
+  // Returns the default accessible name to be used with screen readers.
+  // Mnemonics are removed and the menu item accelerator text is appended.
   static std::u16string GetAccessibleNameForMenuItem(
       const std::u16string& item_text,
       const std::u16string& accelerator_text,
@@ -274,6 +279,11 @@ class VIEWS_EXPORT MenuItemView : public View {
   }
   bool may_have_mnemonics() const { return may_have_mnemonics_; }
 
+  void set_accessible_name(std::u16string accessible_name) {
+    accessible_name_ = std::move(accessible_name);
+  }
+  const std::u16string& accessible_name() const { return accessible_name_; }
+
   // Paints the menu item.
   void OnPaint(gfx::Canvas* canvas) override;
 
@@ -402,8 +412,9 @@ class VIEWS_EXPORT MenuItemView : public View {
   // Returns the flags passed to DrawStringRect.
   int GetDrawStringFlags();
 
-  // Returns the style for the menu text.
-  void GetLabelStyle(MenuDelegate::LabelStyle* style) const;
+  // Returns the font list and font color to use for menu text.
+  const gfx::FontList GetFontList() const;
+  const absl::optional<SkColor> GetMenuLabelColor() const;
 
   // If this menu item has no children a child is added showing it has no
   // children. Otherwise AddEmtpyMenus is recursively invoked on child menu
@@ -428,8 +439,7 @@ class VIEWS_EXPORT MenuItemView : public View {
                        bool render_selection);
 
   // Paints the right-side icon and text.
-  void PaintMinorIconAndText(gfx::Canvas* canvas,
-                             const MenuDelegate::LabelStyle& style);
+  void PaintMinorIconAndText(gfx::Canvas* canvas, SkColor color);
 
   // Destroys the window used to display this menu and recursively destroys
   // the windows used to display all descendants.
@@ -445,6 +455,9 @@ class VIEWS_EXPORT MenuItemView : public View {
   // Returns the text color for the current state.  |minor| specifies if the
   // minor text or the normal text is desired.
   SkColor GetTextColor(bool minor, bool render_selection) const;
+
+  // Returns the accessible name for this menu item.
+  std::u16string GetAccessibleName() const;
 
   // Calculates and returns the MenuItemDimensions.
   MenuItemDimensions CalculateDimensions() const;
@@ -466,7 +479,6 @@ class VIEWS_EXPORT MenuItemView : public View {
   void set_actual_menu_position(MenuPosition actual_menu_position) {
     actual_menu_position_ = actual_menu_position;
   }
-
   void set_controller(MenuController* controller) {
     if (controller)
       controller_ = controller->AsWeakPtr();
@@ -493,9 +505,6 @@ class VIEWS_EXPORT MenuItemView : public View {
 
   void invalidate_dimensions() { dimensions_.height = 0; }
   bool is_dimensions_valid() const { return dimensions_.height > 0; }
-
-  SkColor GetMinorIconColor(
-      const MenuDelegate::LabelStyle& default_style) const;
 
   // The delegate. This is only valid for the root menu item. You shouldn't
   // use this directly, instead use GetDelegate() which walks the tree as
@@ -538,6 +547,7 @@ class VIEWS_EXPORT MenuItemView : public View {
   std::u16string secondary_title_;
   std::u16string minor_text_;
   ui::ImageModel minor_icon_;
+  std::u16string accessible_name_;
 
   // Does the title have a mnemonic? Only useful on the root menu item.
   bool has_mnemonics_ = false;

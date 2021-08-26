@@ -13,6 +13,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/notreached.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
@@ -60,15 +61,24 @@ CastWebService::CastWebService(content::BrowserContext* browser_context,
 
 CastWebService::~CastWebService() = default;
 
-CastWebView::Scoped CastWebService::CreateWebView(
-    const CastWebView::CreateParams& params,
-    const GURL& initial_url) {
+CastWebView::Scoped CastWebService::CreateWebViewInternal(
+    const CastWebView::CreateParams& create_params,
+    mojom::CastWebViewParamsPtr params) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  auto web_view = web_view_factory_->CreateWebView(params, this, initial_url);
+  auto web_view =
+      web_view_factory_->CreateWebView(create_params, std::move(params), this);
   CastWebView::Scoped scoped(web_view.release(), [this](CastWebView* web_view) {
     OwnerDestroyed(web_view);
   });
   return scoped;
+}
+
+void CastWebService::CreateWebView(
+    mojom::CastWebViewParamsPtr params,
+    mojo::PendingReceiver<mojom::CastWebContents> web_contents,
+    mojo::PendingReceiver<mojom::CastContentWindow> window) {
+  // TODO(b/149041392): Implement this.
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void CastWebService::FlushDomLocalStorage() {
@@ -150,7 +160,7 @@ void CastWebService::CreateSessionWithSubstitutions(
     std::vector<mojom::SubstitutableParameterPtr> params) {
   DCHECK(settings_managers_.find(session_id) == settings_managers_.end());
   auto settings_manager_it = settings_managers_.insert_or_assign(
-      session_id, std::make_unique<IdentificationSettingsManager>());
+      session_id, base::MakeRefCounted<IdentificationSettingsManager>());
   settings_manager_it.first->second->SetSubstitutableParameters(
       std::move(params));
   LOG(INFO) << "Added session: " << session_id;
@@ -197,14 +207,14 @@ void CastWebService::OnSessionDestroyed(const std::string& session_id) {
   LOG(ERROR) << "Failed to erase session: " << session_id;
 }
 
-CastURLLoaderThrottle::Delegate*
+scoped_refptr<CastURLLoaderThrottle::Delegate>
 CastWebService::GetURLLoaderThrottleDelegateForSession(
     const std::string& session_id) {
   auto delegate_it = settings_managers_.find(session_id);
   if (delegate_it == settings_managers_.end()) {
     return nullptr;
   }
-  return delegate_it->second.get();
+  return delegate_it->second;
 }
 
 IdentificationSettingsManager* CastWebService::GetSessionManager(

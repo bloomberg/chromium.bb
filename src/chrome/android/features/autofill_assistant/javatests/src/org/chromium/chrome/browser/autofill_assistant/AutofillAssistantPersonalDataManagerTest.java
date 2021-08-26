@@ -47,23 +47,20 @@ import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUi
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.withTextId;
 import static org.chromium.chrome.browser.autofill_assistant.ProtoTestUtil.toCssSelector;
 
-import android.os.Build.VERSION_CODES;
-import android.support.test.InstrumentationRegistry;
 import android.widget.RadioButton;
 
 import androidx.test.espresso.Espresso;
 import androidx.test.espresso.matcher.ViewMatchers.Visibility;
 import androidx.test.filters.MediumTest;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisableIf;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
@@ -82,7 +79,6 @@ import org.chromium.chrome.browser.autofill_assistant.proto.UseAddressProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ValueExpression;
 import org.chromium.chrome.browser.autofill_assistant.proto.ValueExpression.Chunk;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
-import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.WebContents;
@@ -98,14 +94,11 @@ import java.util.Collections;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @RunWith(ChromeJUnit4ClassRunner.class)
 public class AutofillAssistantPersonalDataManagerTest {
+    private final CustomTabActivityTestRule mTestRule = new CustomTabActivityTestRule();
+
     @Rule
-    public CustomTabActivityTestRule mTestRule = new CustomTabActivityTestRule();
-
-    private final AutofillAssistantScreenOrientationHelper<CustomTabActivityTestRule>
-            mScreenOrientationHelper = new AutofillAssistantScreenOrientationHelper<>(mTestRule);
-
-    private static final String TEST_PAGE = "/components/test/data/autofill_assistant/html/"
-            + "form_target_website.html";
+    public final TestRule mRulesChain = RuleChain.outerRule(mTestRule).around(
+            new AutofillAssistantCustomTabTestRule(mTestRule, "form_target_website.html"));
 
     private AutofillAssistantCollectUserDataTestHelper mHelper;
     private AutofillTestHelper mAutofillHelper;
@@ -116,18 +109,8 @@ public class AutofillAssistantPersonalDataManagerTest {
 
     @Before
     public void setUp() throws Exception {
-        AutofillAssistantPreferencesUtil.setInitialPreferences(true);
-        mTestRule.startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
-                InstrumentationRegistry.getTargetContext(),
-                mTestRule.getTestServer().getURL(TEST_PAGE)));
-        mScreenOrientationHelper.setPortraitOrientation();
         mHelper = new AutofillAssistantCollectUserDataTestHelper();
         mAutofillHelper = new AutofillTestHelper();
-    }
-
-    @After
-    public void tearDown() {
-        mScreenOrientationHelper.restoreOrientation();
     }
 
     /**
@@ -223,7 +206,7 @@ public class AutofillAssistantPersonalDataManagerTest {
                 allOf(hasSibling(withId(R.id.contact_full)), withId(R.id.incomplete_error)),
                 allOf(anyOf(withText("Requires first name"), withText("Requires last name")),
                         isDisplayed()));
-        onView(withContentDescription("Edit contact info")).perform(click());
+        onView(withContentDescription("Edit contact info")).perform(scrollTo(), click());
         waitUntilViewMatchesCondition(
                 withContentDescription("Name*"), allOf(isDisplayed(), isEnabled()));
         onView(withContentDescription("Name*")).perform(typeText(" Doe"));
@@ -485,8 +468,6 @@ public class AutofillAssistantPersonalDataManagerTest {
      */
     @Test
     @MediumTest
-    @DisableIf.Build(message = "https://crbug.com/1225378", supported_abis_includes = "x86",
-        sdk_is_greater_than = VERSION_CODES.O_MR1, sdk_is_less_than = VERSION_CODES.Q)
     public void testEditOfSelectedProfile() throws Exception {
         String profileIdA = mHelper.addDummyProfile("Adam West", "adamwest@google.com");
         mAutofillHelper.setProfileUseStatsForTesting(profileIdA, /* count= */ 1, /* date= */ 1000);
@@ -909,7 +890,6 @@ public class AutofillAssistantPersonalDataManagerTest {
      */
     @Test
     @MediumTest
-    @DisabledTest(message = "https://crbug.com/1219046")
     public void testCreateShippingAddressAndCreditCard() {
         ArrayList<ActionProto> list = new ArrayList<>();
         list.add(ActionProto.newBuilder()

@@ -13,7 +13,6 @@
 #include <memory>
 #include <set>
 #include <utility>
-#include <vector>
 
 #include "base/base64.h"
 #include "base/bind.h"
@@ -337,8 +336,8 @@ void CronetURLRequestContext::NetworkTasks::Initialize(
 
   // Explicitly disable the persister for Cronet to avoid persistence of dynamic
   // HPKP. This is a safety measure ensuring that nobody enables the persistence
-  // of HPKP by specifying transport_security_persister_path in the future.
-  context_builder.set_transport_security_persister_path(base::FilePath());
+  // of HPKP by specifying transport_security_persister_file_path in the future.
+  context_builder.set_transport_security_persister_file_path(base::FilePath());
 
   // Disable net::CookieStore.
   context_builder.SetCookieStore(nullptr);

@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/cxx17_backports.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
@@ -174,7 +175,7 @@ bool SurfacelessGlRenderer::Initialize() {
     base::StringToInt(
         command_line->GetSwitchValueASCII("enable-overlay").c_str(),
         &requested_overlay_cnt);
-    overlay_cnt_ = std::max(1, std::min(kMaxLayers, requested_overlay_cnt));
+    overlay_cnt_ = base::clamp(requested_overlay_cnt, 1, kMaxLayers);
 
     const gfx::Size overlay_size =
         gfx::Size(size_.width() / 8, size_.height() / 8);
@@ -267,6 +268,7 @@ void SurfacelessGlRenderer::RenderFrame() {
     gl_surface_->ScheduleOverlayPlane(
         0, gfx::OVERLAY_TRANSFORM_NONE, buffers_[back_buffer_]->image(),
         primary_plane_rect_, unity_rect, false,
+        gfx::Rect(buffers_[back_buffer_]->size()),
         gl_fence ? gl_fence->GetGpuFence() : nullptr);
   }
 
@@ -275,7 +277,9 @@ void SurfacelessGlRenderer::RenderFrame() {
       gl_surface_->ScheduleOverlayPlane(
           1, gfx::OVERLAY_TRANSFORM_NONE,
           overlay_buffers_[i][back_buffer_]->image(), overlay_rect[i],
-          unity_rect, false, /* gpu_fence */ nullptr);
+          unity_rect, false,
+          gfx::Rect(overlay_buffers_[i][back_buffer_]->size()),
+          /* gpu_fence */ nullptr);
     }
   }
 

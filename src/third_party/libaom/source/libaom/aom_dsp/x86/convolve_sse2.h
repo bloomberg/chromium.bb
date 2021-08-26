@@ -9,16 +9,13 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#include "av1/common/resize.h"
-#include "config/av1_rtcd.h"
-#include "config/aom_scale_rtcd.h"
-
 #ifndef AOM_AOM_DSP_X86_CONVOLVE_SSE2_H_
 #define AOM_AOM_DSP_X86_CONVOLVE_SSE2_H_
 
+#include "config/aom_scale_rtcd.h"
+
 // Note:
 //  This header file should be put below any x86 intrinsics head file
-
 static INLINE void prepare_coeffs(const InterpFilterParams *const filter_params,
                                   const int subpel_q4,
                                   __m128i *const coeffs /* [4] */) {

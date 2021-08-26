@@ -19,7 +19,7 @@ DESCRIPTION
 -----------
 
 Creates a new branch. By default the new branch will track the configured
-upstream for the repo (defaults to 'origin/master'). If one of the other options
+upstream for the repo (defaults to 'origin/main'). If one of the other options
 is specified, it will track that other ref instead.
 
 Conceptually, each branch in your repo represents one 'Change List (CL)'. If you
@@ -62,7 +62,7 @@ depot-tools.upstream
 ~~~~~~~~~~~~~~~~~~~~
 
 This configures the default 'upstream' for all new branches. If it is unset, it
-defaults to 'origin''s default branch or 'origin/master' if that can't be found.
+defaults to 'origin''s default branch or 'origin/main' if that can't be found.
 This is considered to be the 'root' branch.
 
 EXAMPLE

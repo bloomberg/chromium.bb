@@ -128,6 +128,12 @@ public class IntentHandler {
             "com.android.chrome.invoked_from_shortcut";
 
     /**
+     * An extra to indicate that the intent was triggered from am app widget.
+     */
+    public static final String EXTRA_INVOKED_FROM_APP_WIDGET =
+            "com.android.chrome.invoked_from_app_widget";
+
+    /**
      * An extra to indicate that the intent was triggered by the launch new incognito tab feature.
      * See {@link org.chromium.chrome.browser.incognito.IncognitoTabLauncher}.
      */
@@ -158,7 +164,9 @@ public class IntentHandler {
     private static final String EXTRA_TIMESTAMP_MS = "org.chromium.chrome.browser.timestamp";
 
     /**
-     * For multi-window, passes the id of the window.
+     * For multi-window, passes the id of the window. On Android S, this is synonymous with
+     * the id of 'activity instance' among multiple instances that can be chosen on instance
+     * switcher UI, ranging from 0 ~ max_instances - 1. -1 for an invalid id.
      */
     public static final String EXTRA_WINDOW_ID = "org.chromium.chrome.browser.window_id";
 
@@ -195,6 +203,12 @@ public class IntentHandler {
      */
     public static final String EXTRA_FROM_OPEN_IN_BROWSER =
             "com.android.chrome.from_open_in_browser";
+
+    /**
+     * A boolean to indicate that the Intent prefer a fresh new Chrome instance, not with tabs
+     * from one of the existing disk files.
+     */
+    public static final String EXTRA_PREFER_NEW = "com.android.chrome.prefer_new";
 
     /**
      * Interested entities within Chrome relying on launching Incognito CCT should set this in their
@@ -1059,7 +1073,11 @@ public class IntentHandler {
         // OMNIBOX_FOCUSED_ON_NEW_TAB is enabled, a new Tab with omnibox focused will be shown on
         // Startup.
         final boolean isCanonicalizedNTPUrl = UrlUtilities.isCanonicalizedNTPUrl(intentUrl);
-        return isCanonicalizedNTPUrl && IntentHandler.isTabOpenAsNewTabFromLauncher(intent)
+
+        final boolean isFromShortcutOrWidget = IntentHandler.isTabOpenAsNewTabFromLauncher(intent)
+                || IntentHandler.isTabOpenAsNewTabFromAppWidget(intent);
+
+        return isCanonicalizedNTPUrl && isFromShortcutOrWidget
                 && StartSurfaceConfiguration.OMNIBOX_FOCUSED_ON_NEW_TAB.getValue()
                 && IntentHandler.wasIntentSenderChrome(intent);
     }
@@ -1072,6 +1090,16 @@ public class IntentHandler {
         return IntentUtils.safeGetBooleanExtra(intent, Browser.EXTRA_CREATE_NEW_TAB, false)
                 && IntentUtils.safeGetBooleanExtra(
                         intent, IntentHandler.EXTRA_INVOKED_FROM_SHORTCUT, false);
+    }
+
+    /**
+     * @param intent The {@link Intent} to extract the info from.
+     * @return Whether the Intent specifies to create a new Tab from an app widget.
+     */
+    public static boolean isTabOpenAsNewTabFromAppWidget(Intent intent) {
+        return IntentUtils.safeGetBooleanExtra(intent, Browser.EXTRA_CREATE_NEW_TAB, false)
+                && IntentUtils.safeGetBooleanExtra(
+                        intent, IntentHandler.EXTRA_INVOKED_FROM_APP_WIDGET, false);
     }
 
     /*

@@ -148,6 +148,7 @@ ONC_EXPORT extern const char kServingOperator[];
 ONC_EXPORT extern const char kSignalStrength[];
 ONC_EXPORT extern const char kSIMLockStatus[];
 ONC_EXPORT extern const char kSIMPresent[];
+ONC_EXPORT extern const char kSMDPAddress[];
 ONC_EXPORT extern const char kSupportNetworkScan[];
 ONC_EXPORT extern const char kTechnologyCdma1Xrtt[];
 ONC_EXPORT extern const char kTechnologyEdge[];
@@ -318,6 +319,7 @@ ONC_EXPORT extern const char kStretch[];
 namespace eap {
 ONC_EXPORT extern const char kAnonymousIdentity[];
 ONC_EXPORT extern const char kAutomatic[];
+ONC_EXPORT extern const char kDomainSuffixMatch[];
 ONC_EXPORT extern const char kEAP_AKA[];
 ONC_EXPORT extern const char kEAP_FAST[];
 ONC_EXPORT extern const char kEAP_SIM[];
@@ -504,9 +506,10 @@ ONC_EXPORT extern const char kWPAD[];
 }  // namespace proxy
 
 namespace global_network_config {
+ONC_EXPORT extern const char kAllowOnlyPolicyCellularNetworks[];
 ONC_EXPORT extern const char kAllowOnlyPolicyNetworksToAutoconnect[];
-ONC_EXPORT extern const char kAllowOnlyPolicyNetworksToConnect[];
-ONC_EXPORT extern const char kAllowOnlyPolicyNetworksToConnectIfAvailable[];
+ONC_EXPORT extern const char* kAllowOnlyPolicyWiFiToConnect;
+ONC_EXPORT extern const char* kAllowOnlyPolicyWiFiToConnectIfAvailable;
 ONC_EXPORT extern const char kBlacklistedHexSSIDs[];  // Deprecated
 ONC_EXPORT extern const char kBlockedHexSSIDs[];
 ONC_EXPORT extern const char kDisableNetworkTypes[];

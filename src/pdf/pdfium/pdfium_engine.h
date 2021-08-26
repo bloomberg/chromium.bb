@@ -13,6 +13,8 @@
 #include <string>
 #include <vector>
 
+#include "base/check.h"
+#include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -81,8 +83,12 @@ class PDFiumEngine : public PDFEngine,
   // Returns the FontMappingMode set during PDFium SDK initialization.
   static FontMappingMode GetFontMappingMode();
 
+  // Starts loading the document from `loader`. Follow-up requests (such as for
+  // partial loading) will use `original_url`.
+  bool HandleDocumentLoad(std::unique_ptr<UrlLoader> loader,
+                          const std::string& original_url);
+
   // PDFEngine:
-  bool New(const char* url, const char* headers) override;
   void PageOffsetUpdated(const gfx::Vector2d& page_offset) override;
   void PluginSizeUpdated(const gfx::Size& size) override;
   void ScrolledToXPosition(int position) override;
@@ -93,7 +99,6 @@ class PDFiumEngine : public PDFEngine,
              std::vector<gfx::Rect>& ready,
              std::vector<gfx::Rect>& pending) override;
   void PostPaint() override;
-  bool HandleDocumentLoad(std::unique_ptr<UrlLoader> loader) override;
   bool HandleInputEvent(const blink::WebInputEvent& event) override;
   void PrintBegin() override;
   std::vector<uint8_t> PrintPages(
@@ -197,6 +202,10 @@ class PDFiumEngine : public PDFEngine,
   FPDF_DOCUMENT doc() const;
   FPDF_FORMHANDLE form() const;
 
+  // Returns the PDFiumPage pointer of a given index. Returns nullptr if `index`
+  // is out of range.
+  PDFiumPage* GetPage(size_t index);
+
   bool IsValidLink(const std::string& url);
 
  private:
@@ -251,6 +260,12 @@ class PDFiumEngine : public PDFEngine,
   friend class PDFiumTestBase;
   friend class SelectionChangeInvalidator;
 
+  gfx::Size plugin_size() const {
+    // TODO(crbug.com/1237952): Just use .value() after fixing call sites.
+    DCHECK(plugin_size_.has_value());
+    return plugin_size_.value_or(gfx::Size());
+  }
+
   // We finished getting the pdf file, so load it. This will complete
   // asynchronously (due to password fetching) and may be run multiple times.
   void LoadDocument();
@@ -278,7 +293,7 @@ class PDFiumEngine : public PDFEngine,
   // This should only be called after `doc_` has been loaded and the document is
   // fully downloaded.
   // If this has been run once, it will not notify the client again.
-  void FinishLoadingDocument();
+  void FinishLoadingDocument(int32_t /*unused_but_required*/);
 
   // Loads information about the pages in the document and performs layout.
   void LoadPageInfo();
@@ -631,6 +646,10 @@ class PDFiumEngine : public PDFEngine,
   void UpdateLinkUnderCursor(const std::string& target_url);
   void SetLinkUnderCursorForAnnotation(FPDF_ANNOTATION annot, int page_index);
 
+  // Checks whether a given `page_index` exists in `pending_thumbnails_`. If so,
+  // requests the thumbnail for that page.
+  void MaybeRequestPendingThumbnail(int page_index);
+
   // Keeps track of the most recently used plugin instance.
   // TODO(crbug.com/702993): Remove when PPAPI is gone.
   void SetLastInstance();
@@ -648,13 +667,13 @@ class PDFiumEngine : public PDFEngine,
   // The offset of the page into the viewport.
   gfx::Vector2d page_offset_;
   // The plugin size in screen coordinates.
-  gfx::Size plugin_size_;
+  absl::optional<gfx::Size> plugin_size_;
   double current_zoom_ = 1.0;
+  // The caret position and bound in plugin viewport coordinates.
+  gfx::Rect caret_rect_;
 
   std::unique_ptr<DocumentLoader> doc_loader_;  // Main document's loader.
   bool doc_loader_set_for_testing_ = false;
-  std::string url_;
-  std::string headers_;
 
   // Set to true if the user is being prompted for their password. Will be set
   // to false after the user finishes getting their password.
@@ -666,6 +685,7 @@ class PDFiumEngine : public PDFEngine,
   PDFiumFormFiller form_filler_;
 
   std::unique_ptr<PDFiumDocument> document_;
+  bool document_pending_ = false;
   bool document_loaded_ = false;
 
   // The page(s) of the document.
@@ -811,6 +831,20 @@ class PDFiumEngine : public PDFEngine,
 
   // Shadow matrix for generating the page shadow bitmap.
   std::unique_ptr<draw_utils::ShadowMatrix> page_shadow_;
+
+  // Pending thumbnail requests.
+  struct PendingThumbnail {
+    PendingThumbnail();
+    PendingThumbnail(PendingThumbnail&& that);
+    PendingThumbnail& operator=(PendingThumbnail&& that);
+    ~PendingThumbnail();
+
+    float device_pixel_ratio = 1.0f;
+    SendThumbnailCallback send_callback;
+  };
+
+  // Map of page indices to pending thumbnail requests.
+  base::flat_map<int, PendingThumbnail> pending_thumbnails_;
 
   // A list of information of document attachments.
   std::vector<DocumentAttachmentInfo> doc_attachment_info_list_;

@@ -125,7 +125,7 @@ class BlendA64Mask1DTest8B : public BlendA64Mask1DTest<F8B, uint8_t> {
     params_.ref_func(dst_ref_ + dst_offset_, dst_stride_, p_src0 + src0_offset_,
                      src0_stride_, p_src1 + src1_offset_, src1_stride_, mask_,
                      w_, h_);
-    ASM_REGISTER_STATE_CHECK(params_.tst_func(
+    API_REGISTER_STATE_CHECK(params_.tst_func(
         dst_tst_ + dst_offset_, dst_stride_, p_src0 + src0_offset_,
         src0_stride_, p_src1 + src1_offset_, src1_stride_, mask_, w_, h_));
   }
@@ -232,7 +232,7 @@ class BlendA64Mask1DTestHBD : public BlendA64Mask1DTest<FHBD, uint16_t> {
                      CONVERT_TO_BYTEPTR(p_src0 + src0_offset_), src0_stride_,
                      CONVERT_TO_BYTEPTR(p_src1 + src1_offset_), src1_stride_,
                      mask_, w_, h_, bit_depth_);
-    ASM_REGISTER_STATE_CHECK(params_.tst_func(
+    API_REGISTER_STATE_CHECK(params_.tst_func(
         CONVERT_TO_BYTEPTR(dst_tst_ + dst_offset_), dst_stride_,
         CONVERT_TO_BYTEPTR(p_src0 + src0_offset_), src0_stride_,
         CONVERT_TO_BYTEPTR(p_src1 + src1_offset_), src1_stride_, mask_, w_, h_,

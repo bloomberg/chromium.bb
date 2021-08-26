@@ -63,6 +63,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_variable_parser.h"
 #include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
+#include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
 #include "third_party/blink/renderer/core/css/property_registry.h"
 #include "third_party/blink/renderer/core/css/resolver/css_to_style_map.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
@@ -86,7 +87,7 @@
 
 namespace blink {
 
-using PropertySet = HashSet<const CSSProperty*>;
+using PropertySet = HashSet<CSSPropertyName>;
 
 namespace {
 
@@ -116,11 +117,12 @@ StringKeyframeVector ProcessKeyframesRule(
     keyframe->SetEasing(default_timing_function);
     const CSSPropertyValueSet& properties = style_keyframe->Properties();
     for (unsigned j = 0; j < properties.PropertyCount(); j++) {
-      // TODO(crbug.com/980160): Remove access to static Variable instance.
-      const CSSProperty& property =
-          CSSProperty::Get(properties.PropertyAt(j).Id());
+      CSSPropertyValueSet::PropertyReference property_reference =
+          properties.PropertyAt(j);
+      CSSPropertyRef ref(property_reference.Name(), document);
+      const CSSProperty& property = ref.GetProperty();
       if (property.PropertyID() == CSSPropertyID::kAnimationTimingFunction) {
-        const CSSValue& value = properties.PropertyAt(j).Value();
+        const CSSValue& value = property_reference.Value();
         scoped_refptr<TimingFunction> timing_function;
         if (value.IsInheritedValue() && parent_style->Animations()) {
           timing_function = parent_style->Animations()->TimingFunctionList()[0];
@@ -137,8 +139,8 @@ StringKeyframeVector ProcessKeyframesRule(
         const CSSProperty& physical_property =
             property.ResolveDirectionAwareProperty(text_direction,
                                                    writing_mode);
-        keyframe->SetCSSPropertyValue(physical_property,
-                                      properties.PropertyAt(j).Value());
+        const CSSPropertyName& name = physical_property.GetCSSPropertyName();
+        keyframe->SetCSSPropertyValue(name, property_reference.Value());
       }
     }
     keyframes.push_back(keyframe);
@@ -315,25 +317,26 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
     //     to animated properties.
     StringKeyframe* keyframe = keyframes[target_index];
     for (const auto& property : rule_keyframe->Properties()) {
-      const CSSProperty& css_property = property.GetCSSProperty();
+      CSSPropertyName property_name = property.GetCSSPropertyName();
 
       // Since processing keyframes in reverse order, skipping properties that
       // have already been inserted prevents overwriting a later merged
       // keyframe.
-      if (current_offset_properties.Contains(&css_property))
+      if (current_offset_properties.Contains(property_name))
         continue;
 
       if (source_index != target_index) {
         keyframe->SetCSSPropertyValue(
-            css_property, rule_keyframe->CssPropertyValue(property));
+            property.GetCSSPropertyName(),
+            rule_keyframe->CssPropertyValue(property));
       }
 
-      current_offset_properties.insert(&css_property);
-      animated_properties.insert(&css_property);
+      current_offset_properties.insert(property_name);
+      animated_properties.insert(property_name);
       if (keyframe_offset == 0)
-        start_properties.insert(&css_property);
+        start_properties.insert(property_name);
       else if (keyframe_offset == 1)
-        end_properties.insert(&css_property);
+        end_properties.insert(property_name);
     }
   }
 
@@ -1098,24 +1101,14 @@ void CSSAnimations::CalculateTransitionUpdateForPropertyHandle(
   // Lazy evaluation of the before change style. We only need to update where
   // we are transitioning from if the final destination is changing.
   if (!state.before_change_style) {
-    ElementAnimations* element_animations =
-        state.animating_element.GetElementAnimations();
-    if (element_animations) {
-      const ComputedStyle* base_style = element_animations->BaseComputedStyle();
-      if (base_style) {
-        state.before_change_style =
-            CalculateBeforeChangeStyle(state.animating_element, *base_style);
-      }
-    }
-    // Use the style from the previous frame if no base style is found.
-    // Elements that have not been animated will not have a base style.
-    // Elements that were previously animated, but where all previously running
-    // animations have stopped may also be missing a base style. In both cases,
-    // the old style is equivalent to the base computed style.
-    if (!state.before_change_style) {
-      state.before_change_style =
-          CalculateBeforeChangeStyle(state.animating_element, state.old_style);
-    }
+    // By calling GetBaseComputedStyleOrThis, we're using the style from the
+    // previous frame if no base style is found. Elements that have not been
+    // animated will not have a base style. Elements that were previously
+    // animated, but where all previously running animations have stopped may
+    // also be missing a base style. In both cases, the old style is equivalent
+    // to the base computed style.
+    state.before_change_style = CalculateBeforeChangeStyle(
+        state.animating_element, *state.old_style.GetBaseComputedStyleOrThis());
   }
 
   if (ComputedValuesEqual(property, *state.before_change_style, state.style)) {

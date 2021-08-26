@@ -13,8 +13,8 @@
 #include "base/no_destructor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/shell_integration_linux.h"
-#include "chrome/browser/web_applications/components/os_integration_manager.h"
 #include "chrome/browser/web_applications/components/web_app_shortcut.h"
+#include "chrome/browser/web_applications/os_integration_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 
@@ -87,19 +87,14 @@ void OnShortcutInfoReceived(base::OnceCallback<void(bool)> callback,
 void UpdateFileHandlerRegistrationInOs(
     const AppId& app_id,
     Profile* profile,
-    std::unique_ptr<ShortcutInfo> info,
     base::OnceCallback<void(bool)> callback) {
-  if (info) {
-    // `info` may be prepopulated for unregistration, to avoid updating file
-    // handler registrations based on deleted shortcuts.
-    OnShortcutInfoReceived(std::move(callback), std::move(info));
-    return;
-  }
   // On Linux, file associations are managed through shortcuts in the app menu,
   // so after enabling or disabling file handling for an app its shortcuts
   // need to be recreated.
-  WebAppProvider::Get(profile)->os_integration_manager().GetShortcutInfoForApp(
-      app_id, base::BindOnce(&OnShortcutInfoReceived, std::move(callback)));
+  WebAppProvider::GetForWebApps(profile)
+      ->os_integration_manager()
+      .GetShortcutInfoForApp(
+          app_id, base::BindOnce(&OnShortcutInfoReceived, std::move(callback)));
 }
 
 void OnRegisterMimeTypes(bool registration_succeeded) {
@@ -159,28 +154,24 @@ void RegisterFileHandlersWithOs(const AppId& app_id,
                              std::move(callback));
   }
 
-  UpdateFileHandlerRegistrationInOs(app_id, profile, nullptr,
-                                    base::DoNothing());
+  UpdateFileHandlerRegistrationInOs(app_id, profile, base::DoNothing());
 }
 
 void UnregisterFileHandlersWithOs(const AppId& app_id,
                                   Profile* profile,
-                                  std::unique_ptr<ShortcutInfo> info,
                                   base::OnceCallback<void(bool)> callback) {
   // If this was triggered as part of the uninstallation process, nothing more
   // is needed. Uninstalling already cleans up shortcuts (and thus, file
   // handlers).
-  auto* provider = WebAppProvider::Get(profile);
+  auto* provider = WebAppProvider::GetForWebApps(profile);
   DCHECK(provider->registrar().IsInstalled(app_id));
   if (provider->registrar().IsUninstalling(app_id)) {
     std::move(callback).Run(true);
     return;
   }
 
-  // Otherwise, simply update the .desktop file with the new list of file
-  // associations, which should be empty.
-  UpdateFileHandlerRegistrationInOs(app_id, profile, std::move(info),
-                                    std::move(callback));
+  // Otherwise, simply recreate the .desktop file.
+  UpdateFileHandlerRegistrationInOs(app_id, profile, std::move(callback));
 }
 
 void RegisterMimeTypesOnLinux(const AppId& app_id,

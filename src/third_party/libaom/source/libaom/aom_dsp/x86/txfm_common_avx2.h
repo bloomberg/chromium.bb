@@ -246,21 +246,19 @@ static INLINE void round_shift_16bit_w16_avx2(__m256i *in, int size, int bit) {
   }
 }
 
-static INLINE __m256i av1_round_shift_32_avx2(__m256i vec, int bit) {
+static INLINE __m256i round_shift_32_avx2(__m256i vec, int bit) {
   __m256i tmp, round;
   round = _mm256_set1_epi32(1 << (bit - 1));
   tmp = _mm256_add_epi32(vec, round);
   return _mm256_srai_epi32(tmp, bit);
 }
 
-static INLINE void av1_round_shift_array_32_avx2(__m256i *input,
-                                                 __m256i *output,
-                                                 const int size,
-                                                 const int bit) {
+static INLINE void round_shift_array_32_avx2(__m256i *input, __m256i *output,
+                                             const int size, const int bit) {
   if (bit > 0) {
     int i;
     for (i = 0; i < size; i++) {
-      output[i] = av1_round_shift_32_avx2(input[i], bit);
+      output[i] = round_shift_32_avx2(input[i], bit);
     }
   } else {
     int i;
@@ -270,25 +268,24 @@ static INLINE void av1_round_shift_array_32_avx2(__m256i *input,
   }
 }
 
-static INLINE void av1_round_shift_rect_array_32_avx2(__m256i *input,
-                                                      __m256i *output,
-                                                      const int size,
-                                                      const int bit,
-                                                      const int val) {
+static INLINE void round_shift_rect_array_32_avx2(__m256i *input,
+                                                  __m256i *output,
+                                                  const int size, const int bit,
+                                                  const int val) {
   const __m256i sqrt2 = _mm256_set1_epi32(val);
   if (bit > 0) {
     int i;
     for (i = 0; i < size; i++) {
-      const __m256i r0 = av1_round_shift_32_avx2(input[i], bit);
+      const __m256i r0 = round_shift_32_avx2(input[i], bit);
       const __m256i r1 = _mm256_mullo_epi32(sqrt2, r0);
-      output[i] = av1_round_shift_32_avx2(r1, NewSqrt2Bits);
+      output[i] = round_shift_32_avx2(r1, NewSqrt2Bits);
     }
   } else {
     int i;
     for (i = 0; i < size; i++) {
       const __m256i r0 = _mm256_slli_epi32(input[i], -bit);
       const __m256i r1 = _mm256_mullo_epi32(sqrt2, r0);
-      output[i] = av1_round_shift_32_avx2(r1, NewSqrt2Bits);
+      output[i] = round_shift_32_avx2(r1, NewSqrt2Bits);
     }
   }
 }

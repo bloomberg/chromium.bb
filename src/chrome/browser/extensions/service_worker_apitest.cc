@@ -83,6 +83,7 @@
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "url/url_constants.h"
 
@@ -234,13 +235,13 @@ class ServiceWorkerTest : public ExtensionApiTest {
     return ExtractInnerText(Navigate(url));
   }
 
-  size_t GetWorkerRefCount(const url::Origin& origin) {
+  size_t GetWorkerRefCount(const blink::StorageKey& key) {
     content::ServiceWorkerContext* sw_context =
         browser()
             ->profile()
             ->GetDefaultStoragePartition()
             ->GetServiceWorkerContext();
-    return sw_context->CountExternalRequestsForTest(origin);
+    return sw_context->CountExternalRequestsForTest(key);
   }
 
  private:
@@ -342,6 +343,23 @@ class ServiceWorkerBasedBackgroundTestWithNotification
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerBasedBackgroundTestWithNotification);
+};
+
+enum class ManifestVersion { kTwo, kThree };
+class ServiceWorkerWithManifestVersionTest
+    : public ServiceWorkerBasedBackgroundTest,
+      public testing::WithParamInterface<ManifestVersion> {
+ public:
+  ServiceWorkerWithManifestVersionTest() = default;
+  ~ServiceWorkerWithManifestVersionTest() override = default;
+
+  const Extension* LoadExtensionInternal(const base::FilePath& path) {
+    LoadOptions options;
+    if (GetParam() == ManifestVersion::kThree)
+      options.load_as_manifest_version_3 = true;
+
+    return LoadExtension(path, options);
+  }
 };
 
 // Tests that Service Worker based background pages can be loaded and they can
@@ -2263,10 +2281,11 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, WorkerRefCount) {
       browser()->tab_strip_model()->GetActiveWebContents();
 
   url::Origin extension_origin = url::Origin::Create(extension->url());
+  blink::StorageKey extension_key(extension_origin);
 
   // Service worker should have no pending requests because it hasn't performed
   // any extension API request yet.
-  EXPECT_EQ(0u, GetWorkerRefCount(extension_origin));
+  EXPECT_EQ(0u, GetWorkerRefCount(extension_key));
 
   ExtensionTestMessageListener worker_listener("CHECK_REF_COUNT", true);
   worker_listener.set_failure_message("FAILURE");
@@ -2275,7 +2294,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, WorkerRefCount) {
 
   // Service worker should have exactly one pending request because
   // chrome.test.sendMessage() API call is in-flight.
-  EXPECT_EQ(1u, GetWorkerRefCount(extension_origin));
+  EXPECT_EQ(1u, GetWorkerRefCount(extension_key));
 
   // Perform another extension API request while one is ongoing.
   {
@@ -2286,7 +2305,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, WorkerRefCount) {
     ASSERT_TRUE(listener.WaitUntilSatisfied());
 
     // Service worker currently has two extension API requests in-flight.
-    EXPECT_EQ(2u, GetWorkerRefCount(extension_origin));
+    EXPECT_EQ(2u, GetWorkerRefCount(extension_key));
     // Finish executing the nested chrome.test.sendMessage() first.
     listener.Reply("Hello world");
   }
@@ -2313,11 +2332,19 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, WorkerRefCount) {
   }
 
   // The ref count should drop to 0.
-  EXPECT_EQ(0u, GetWorkerRefCount(extension_origin));
+  EXPECT_EQ(0u, GetWorkerRefCount(extension_key));
 }
 
+// Disabled on Ozone due to flakiness: https://crbug.com/1236184.
+#if defined(USE_OZONE)
+#define MAYBE_PRE_EventsAfterRestart DISABLED_PRE_EventsAfterRestart
+#define MAYBE_EventsAfterRestart DISABLED_EventsAfterRestart
+#else
+#define MAYBE_PRE_EventsAfterRestart PRE_EventsAfterRestart
+#define MAYBE_EventsAfterRestart EventsAfterRestart
+#endif
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
-                       PRE_EventsAfterRestart) {
+                       MAYBE_PRE_EventsAfterRestart) {
   ExtensionTestMessageListener event_added_listener("ready", false);
 
   base::ScopedAllowBlockingForTesting allow_blocking;
@@ -2347,7 +2374,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
 // tabs.onCreated event listener to the extension without explicitly loading the
 // extension. This is because the extension registered a listener for
 // tabs.onMoved before browser restarted in PRE_EventsAfterRestart.
-IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, EventsAfterRestart) {
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
+                       MAYBE_EventsAfterRestart) {
   // Verify there is no RenderProcessHost for the extension.
   EXPECT_FALSE(ExtensionHasRenderProcessHost(kTestExtensionId));
 
@@ -2515,19 +2543,22 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, PermissionsAPI) {
       mojom::APIPermissionID::kStorage));
 }
 
-// Tests that a Manifest V3 extension's service worker can't be used to relax
-// the extension CSP.
-IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
-                       ExtensionCSPModification_MV3) {
+// Tests that an extension's service worker can't be used to relax the extension
+// CSP.
+IN_PROC_BROWSER_TEST_P(ServiceWorkerWithManifestVersionTest,
+                       ExtensionCSPModification) {
   ExtensionTestMessageListener worker_listener("ready", false);
-  const Extension* extension = LoadExtension(test_data_dir_.AppendASCII(
+  const Extension* extension = LoadExtensionInternal(test_data_dir_.AppendASCII(
       "service_worker/worker_based_background/extension_csp_modification"));
   ASSERT_TRUE(extension);
   const ExtensionId extension_id = extension->id();
   ASSERT_TRUE(worker_listener.WaitUntilSatisfied());
 
-  ExtensionTestMessageListener csp_modified_listener(
-      "script-src 'self'; object-src 'self';", false);
+  const char* kDefaultCSP = GetParam() == ManifestVersion::kTwo
+                                ? "script-src 'self' blob: filesystem:; "
+                                  "object-src 'self' blob: filesystem:;"
+                                : "script-src 'self'; object-src 'self';";
+  ExtensionTestMessageListener csp_modified_listener(kDefaultCSP, false);
   csp_modified_listener.set_extension_id(extension_id);
   ui_test_utils::NavigateToURL(
       browser(), extension->GetResourceURL("extension_page.html"));
@@ -2564,6 +2595,11 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(iframe, kScript, &result));
   EXPECT_EQ("PASS", result);
 }
+
+INSTANTIATE_TEST_SUITE_P(,
+                         ServiceWorkerWithManifestVersionTest,
+                         ::testing::Values(ManifestVersion::kTwo,
+                                           ManifestVersion::kThree));
 
 // Tests that console messages logged by extension service workers, both via
 // the typical console.* methods and via our custom bindings console, are

@@ -17,11 +17,11 @@ static_library("desks_storage") {
   deps = [
     "//ash/public/cpp",
     "//base",
-    "//base/util/values:values_util",
     "//components/full_restore",
     "//components/sync",
     "//components/sync/model",
     "//components/sync/protocol",
+    "//third_party/re2",
   ]
 
   defines = [ "IS_DESKS_STORAGE_IMPL" ]

@@ -26,7 +26,9 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "storage/browser/file_system/file_system_url.h"
+#include "third_party/blink/public/mojom/file_system_access/file_system_access_access_handle_host.mojom.h"
 #include "third_party/blink/public/mojom/file_system_access/file_system_access_data_transfer_token.mojom.h"
+#include "third_party/blink/public/mojom/file_system_access/file_system_access_file_delegate_host.mojom.h"
 #include "third_party/blink/public/mojom/file_system_access/file_system_access_file_writer.mojom.h"
 #include "third_party/blink/public/mojom/file_system_access/file_system_access_manager.mojom.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
@@ -42,6 +44,7 @@ class FileSystemAccessDirectoryHandleImpl;
 class FileSystemAccessTransferTokenImpl;
 class FileSystemAccessDataTransferTokenImpl;
 class FileSystemAccessFileWriterImpl;
+class FileSystemAccessAccessHandleHostImpl;
 class StoragePartitionImpl;
 
 // This is the browser side implementation of the
@@ -71,8 +74,7 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
   struct CONTENT_EXPORT SharedHandleState {
     SharedHandleState(
         scoped_refptr<FileSystemAccessPermissionGrant> read_grant,
-        scoped_refptr<FileSystemAccessPermissionGrant> write_grant,
-        storage::IsolatedContext::ScopedFSHandle file_system);
+        scoped_refptr<FileSystemAccessPermissionGrant> write_grant);
     SharedHandleState(const SharedHandleState& other);
     ~SharedHandleState();
 
@@ -80,11 +82,9 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
     // handle.
     const scoped_refptr<FileSystemAccessPermissionGrant> read_grant;
     const scoped_refptr<FileSystemAccessPermissionGrant> write_grant;
-    // Can be empty, if this handle is not backed by an isolated file system.
-    const storage::IsolatedContext::ScopedFSHandle file_system;
   };
 
-  // The caller is responsible for ensuring that |permission_context| outlives
+  // The caller is responsible for ensuring that `permission_context` outlives
   // this instance.
   FileSystemAccessManagerImpl(
       scoped_refptr<storage::FileSystemContext> context,
@@ -176,6 +176,15 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
       bool auto_close,
       download::QuarantineConnectionCallback quarantine_connection_callback);
 
+  // Creates a new FileSystemAccessHandleHost for a given URL. If there is
+  // already an access handle assigned to `url`, returns an invalid pending
+  // remote. The `file_delegate_receiver` is only valid in incognito mode.
+  mojo::PendingRemote<blink::mojom::FileSystemAccessAccessHandleHost>
+  CreateAccessHandleHost(
+      const storage::FileSystemURL& url,
+      mojo::PendingReceiver<blink::mojom::FileSystemAccessFileDelegateHost>
+          file_delegate_receiver);
+
   // Create a transfer token for a specific file or directory.
   void CreateTransferToken(
       const FileSystemAccessFileHandleImpl& file,
@@ -230,11 +239,16 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
     auto_file_picker_result_for_test_ = result_entry;
   }
 
-  // Remove |writer| from |writer_receivers|. It is an error to try to remove
+  // Remove `writer` from `writer_receivers_`. It is an error to try to remove
   // a writer that doesn't exist.
   void RemoveFileWriter(FileSystemAccessFileWriterImpl* writer);
 
-  // Remove |token| from |transfer_tokens_|. It is an error to try to remove
+  // Releases the exclusive lock on `url` and removes the associated access
+  // handle host. It is an error to try to remove an access
+  // handle host that doesn't exist.
+  void RemoveAccessHandleHost(const storage::FileSystemURL& url);
+
+  // Remove `token` from `transfer_tokens_`. It is an error to try to remove
   // a token that doesn't exist.
   void RemoveToken(const base::UnguessableToken& token);
 
@@ -245,18 +259,11 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
   SharedHandleState GetSharedHandleStateForPath(
       const base::FilePath& path,
       const url::Origin& origin,
-      storage::IsolatedContext::ScopedFSHandle file_system,
       FileSystemAccessPermissionContext::HandleType handle_type,
       FileSystemAccessPermissionContext::UserAction user_action);
 
   // Creates a FileSystemURL which corresponds to a FilePath and Origin.
-  struct FileSystemURLAndFSHandle {
-    storage::FileSystemURL url;
-    std::string base_name;
-    storage::IsolatedContext::ScopedFSHandle file_system;
-  };
-  FileSystemURLAndFSHandle CreateFileSystemURLFromPath(
-      const url::Origin& origin,
+  storage::FileSystemURL CreateFileSystemURLFromPath(
       PathType path_type,
       const base::FilePath& path);
 
@@ -300,7 +307,7 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
       FileSystemAccessPermissionContext::SensitiveDirectoryResult result);
   void DidCreateAndTruncateSaveFile(const BindingContext& binding_context,
                                     const FileSystemChooser::ResultEntry& entry,
-                                    FileSystemURLAndFSHandle url,
+                                    const storage::FileSystemURL& url,
                                     ChooseEntriesCallback callback,
                                     bool success);
   void DidChooseDirectory(
@@ -354,9 +361,56 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
   void ResolveDataTransferTokenWithFileType(
       const BindingContext& binding_context,
       const base::FilePath& file_path,
-      FileSystemURLAndFSHandle url,
+      const storage::FileSystemURL& url,
       GetEntryFromDataTransferTokenCallback token_resolved_callback,
       FileSystemAccessPermissionContext::HandleType file_type);
+
+  // Owns receivers that have write access to files (i.e., AccessHandleHost and
+  // FileWriter), ensuring that the right locks are taken.
+  //
+  // Adding an access handle takes an exclusive lock, preventing the addition
+  // of other access handles or file writers that operate on the same URL.
+  //
+  // Adding a file writer takes a shared lock, allowing the addition of other
+  // file writers that operate on the same URL, but preventing it for similar
+  // access handles.
+  //
+  // This class should only handle kFileSystemTypeTemporary URLs, since it
+  // relies on a 1-to-1 URL to file mapping.
+  class WriteLockManager {
+   public:
+    WriteLockManager();
+    ~WriteLockManager();
+
+    // Attempts to take an exclusive lock on `url` and takes ownsership of
+    // `access_handle`. Returns true if successful, false otherwise.
+    bool AddAccessHandle(
+        const storage::FileSystemURL& url,
+        std::unique_ptr<FileSystemAccessAccessHandleHostImpl> access_handle);
+    // Attempts to take a shared lock on `url` and takes ownsership of
+    // `writer`. Returns true if successful, false otherwise.
+    bool AddWriter(const storage::FileSystemURL& url,
+                   std::unique_ptr<FileSystemAccessFileWriterImpl> writer);
+    // Releases the exclusive lock on `url` and the ownership over the
+    // associated access handle. It is is a error to call this method if
+    // there is no exclusive lock on the URL.
+    void RemoveAccessHandle(const storage::FileSystemURL& url);
+    // Releases the shared lock on `url` and the ownership over the
+    // associated writer. It is is a error to call this method if
+    // there is no shared lock on the URL.
+    void RemoveWriter(const storage::FileSystemURL& url);
+
+   private:
+    std::map<storage::FileSystemURL,
+             base::flat_set<std::unique_ptr<FileSystemAccessFileWriterImpl>,
+                            base::UniquePtrComparator>,
+             storage::FileSystemURL::Comparator>
+        writer_receivers_;
+    std::map<storage::FileSystemURL,
+             std::unique_ptr<FileSystemAccessAccessHandleHostImpl>,
+             storage::FileSystemURL::Comparator>
+        access_handle_receivers_;
+  };
 
   SEQUENCE_CHECKER(sequence_checker_);
 
@@ -384,6 +438,7 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
   base::flat_set<std::unique_ptr<FileSystemAccessFileWriterImpl>,
                  base::UniquePtrComparator>
       writer_receivers_;
+  WriteLockManager write_lock_manager_;
 
   bool off_the_record_;
 

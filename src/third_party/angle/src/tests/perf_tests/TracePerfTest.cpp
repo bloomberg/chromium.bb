@@ -987,6 +987,18 @@ TracePerfTest::TracePerfTest(const TracePerfParams &params)
         }
     }
 
+    if (mParams.testID == RestrictedTraceID::pubg_mobile_skydive ||
+        mParams.testID == RestrictedTraceID::pubg_mobile_battle_royale)
+    {
+        addExtensionPrerequisite("GL_EXT_texture_buffer");
+
+        // TODO: http://anglebug.com/6240 Internal errors on Windows using Intel or Nvida
+        if (IsWindows() && (IsIntel() || IsNVIDIA()) && mParams.driver == GLESDriverType::SystemWGL)
+        {
+            mSkipTest = true;
+        }
+    }
+
     // We already swap in TracePerfTest::drawBenchmark, no need to swap again in the harness.
     disableTestHarnessSwap();
 
@@ -1612,6 +1624,7 @@ TracePerfParams CombineTestID(const TracePerfParams &in, RestrictedTraceID id)
     out.minorVersion    = traceInfo.contextClientMinorVersion;
     out.windowWidth     = traceInfo.drawSurfaceWidth;
     out.windowHeight    = traceInfo.drawSurfaceHeight;
+    out.colorSpace      = traceInfo.drawSurfaceColorSpace;
     return out;
 }
 

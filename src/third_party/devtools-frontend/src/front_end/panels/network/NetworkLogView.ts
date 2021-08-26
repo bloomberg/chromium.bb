@@ -53,13 +53,21 @@ import * as UI from '../../ui/legacy/legacy.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
 
 import type {NetworkLogViewInterface, NetworkNode} from './NetworkDataGridNode.js';
-import {Events, NetworkGroupNode, NetworkRequestNode} from './NetworkDataGridNode.js';  // eslint-disable-line no-unused-vars
+import {Events, NetworkGroupNode, NetworkRequestNode} from './NetworkDataGridNode.js';
 import {NetworkFrameGrouper} from './NetworkFrameGrouper.js';
 import {NetworkLogViewColumns} from './NetworkLogViewColumns.js';
 import type {NetworkTimeCalculator} from './NetworkTimeCalculator.js';
-import {NetworkTimeBoundary, NetworkTransferDurationCalculator, NetworkTransferTimeCalculator} from './NetworkTimeCalculator.js';  // eslint-disable-line no-unused-vars
+import {NetworkTimeBoundary, NetworkTransferDurationCalculator, NetworkTransferTimeCalculator} from './NetworkTimeCalculator.js';
 
 const UIStrings = {
+  /**
+  *@description Text in Network Log View of the Network panel
+  */
+  invertFilter: 'Invert',
+  /**
+  *@description Tooltip for the 'invert' checkbox in the Network panel.
+  */
+  invertsFilter: 'Inverts the search filter',
   /**
   *@description Text in Network Log View of the Network panel
   */
@@ -339,13 +347,12 @@ const str_ = i18n.i18n.registerUIStrings('panels/network/NetworkLogView.ts', UIS
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class NetworkLogView extends UI.Widget.VBox implements
     SDK.TargetManager.SDKModelObserver<SDK.NetworkManager.NetworkManager>, NetworkLogViewInterface {
+  _networkInvertFilterSetting: Common.Settings.Setting<boolean>;
   _networkHideDataURLSetting: Common.Settings.Setting<boolean>;
   _networkShowIssuesOnlySetting: Common.Settings.Setting<boolean>;
   _networkOnlyBlockedRequestsSetting: Common.Settings.Setting<boolean>;
   _networkOnlyThirdPartySetting: Common.Settings.Setting<boolean>;
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  _networkResourceTypeFiltersSetting: Common.Settings.Setting<any>;
+  _networkResourceTypeFiltersSetting: Common.Settings.Setting<{[key: string]: boolean}>;
   _rawRowHeight: number;
   _progressBarContainer: Element;
   _networkLogLargeRowsSetting: Common.Settings.Setting<boolean>;
@@ -357,9 +364,6 @@ export class NetworkLogView extends UI.Widget.VBox implements
   _staleRequests: Set<SDK.NetworkRequest.NetworkRequest>;
   _mainRequestLoadTime: number;
   _mainRequestDOMContentLoadedTime: number;
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  _highlightedSubstringChanges: any;
   _filters: Filter[];
   _timeFilter: Filter|null;
   _hoveredNode: NetworkNode|null;
@@ -373,6 +377,7 @@ export class NetworkLogView extends UI.Widget.VBox implements
   _groupLookups: Map<string, GroupLookupInterface>;
   _activeGroupLookup: GroupLookupInterface|null;
   _textFilterUI: UI.FilterBar.TextFilterUI;
+  _invertFilterUI: UI.FilterBar.CheckboxFilterUI;
   _dataURLFilterUI: UI.FilterBar.CheckboxFilterUI;
   _resourceCategoryFilterUI: UI.FilterBar.NamedBitSetFilterUI;
   _onlyIssuesFilterUI: UI.FilterBar.CheckboxFilterUI;
@@ -395,6 +400,7 @@ export class NetworkLogView extends UI.Widget.VBox implements
     this.element.id = 'network-container';
     this.element.classList.add('no-node-selected');
 
+    this._networkInvertFilterSetting = Common.Settings.Settings.instance().createSetting('networkInvertFilter', false);
     this._networkHideDataURLSetting = Common.Settings.Settings.instance().createSetting('networkHideDataURL', false);
     this._networkShowIssuesOnlySetting =
         Common.Settings.Settings.instance().createSetting('networkShowIssuesOnly', false);
@@ -423,15 +429,12 @@ export class NetworkLogView extends UI.Widget.VBox implements
     this._calculator = this._timeCalculator;
 
     this._columns =
-        // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-        // @ts-expect-error
         new NetworkLogViewColumns(this, this._timeCalculator, this._durationCalculator, networkLogLargeRowsSetting);
     this._columns.show(this.element);
 
     this._staleRequests = new Set();
     this._mainRequestLoadTime = -1;
     this._mainRequestDOMContentLoadedTime = -1;
-    this._highlightedSubstringChanges = [];
 
     this._filters = [];
     this._timeFilter = null;
@@ -453,13 +456,20 @@ export class NetworkLogView extends UI.Widget.VBox implements
     this._activeGroupLookup = null;
 
     this._textFilterUI = new UI.FilterBar.TextFilterUI();
-    this._textFilterUI.addEventListener(UI.FilterBar.FilterUI.Events.FilterChanged, this._filterChanged, this);
+    this._textFilterUI.addEventListener(UI.FilterBar.FilterUIEvents.FilterChanged, this._filterChanged, this);
     filterBar.addFilter(this._textFilterUI);
+
+    this._invertFilterUI = new UI.FilterBar.CheckboxFilterUI(
+        'invert-filter', i18nString(UIStrings.invertFilter), true, this._networkInvertFilterSetting);
+    this._invertFilterUI.addEventListener(
+        UI.FilterBar.FilterUIEvents.FilterChanged, this._filterChanged.bind(this), this);
+    UI.Tooltip.Tooltip.install(this._invertFilterUI.element(), i18nString(UIStrings.invertsFilter));
+    filterBar.addFilter(this._invertFilterUI);
 
     this._dataURLFilterUI = new UI.FilterBar.CheckboxFilterUI(
         'hide-data-url', i18nString(UIStrings.hideDataUrls), true, this._networkHideDataURLSetting);
     this._dataURLFilterUI.addEventListener(
-        UI.FilterBar.FilterUI.Events.FilterChanged, this._filterChanged.bind(this), this);
+        UI.FilterBar.FilterUIEvents.FilterChanged, this._filterChanged.bind(this), this);
     UI.Tooltip.Tooltip.install(this._dataURLFilterUI.element(), i18nString(UIStrings.hidesDataAndBlobUrls));
     filterBar.addFilter(this._dataURLFilterUI);
 
@@ -473,13 +483,13 @@ export class NetworkLogView extends UI.Widget.VBox implements
     UI.ARIAUtils.setAccessibleName(
         this._resourceCategoryFilterUI.element(), i18nString(UIStrings.resourceTypesToInclude));
     this._resourceCategoryFilterUI.addEventListener(
-        UI.FilterBar.FilterUI.Events.FilterChanged, this._filterChanged.bind(this), this);
+        UI.FilterBar.FilterUIEvents.FilterChanged, this._filterChanged.bind(this), this);
     filterBar.addFilter(this._resourceCategoryFilterUI);
 
     this._onlyIssuesFilterUI = new UI.FilterBar.CheckboxFilterUI(
         'only-show-issues', i18nString(UIStrings.hasBlockedCookies), true, this._networkShowIssuesOnlySetting);
     this._onlyIssuesFilterUI.addEventListener(
-        UI.FilterBar.FilterUI.Events.FilterChanged, this._filterChanged.bind(this), this);
+        UI.FilterBar.FilterUIEvents.FilterChanged, this._filterChanged.bind(this), this);
     UI.Tooltip.Tooltip.install(this._onlyIssuesFilterUI.element(), i18nString(UIStrings.onlyShowRequestsWithBlocked));
     filterBar.addFilter(this._onlyIssuesFilterUI);
 
@@ -487,21 +497,21 @@ export class NetworkLogView extends UI.Widget.VBox implements
         'only-show-blocked-requests', i18nString(UIStrings.blockedRequests), true,
         this._networkOnlyBlockedRequestsSetting);
     this._onlyBlockedRequestsUI.addEventListener(
-        UI.FilterBar.FilterUI.Events.FilterChanged, this._filterChanged.bind(this), this);
+        UI.FilterBar.FilterUIEvents.FilterChanged, this._filterChanged.bind(this), this);
     UI.Tooltip.Tooltip.install(this._onlyBlockedRequestsUI.element(), i18nString(UIStrings.onlyShowBlockedRequests));
     filterBar.addFilter(this._onlyBlockedRequestsUI);
 
     this._onlyThirdPartyFilterUI = new UI.FilterBar.CheckboxFilterUI(
         'only-show-third-party', i18nString(UIStrings.thirdParty), true, this._networkOnlyThirdPartySetting);
     this._onlyThirdPartyFilterUI.addEventListener(
-        UI.FilterBar.FilterUI.Events.FilterChanged, this._filterChanged.bind(this), this);
+        UI.FilterBar.FilterUIEvents.FilterChanged, this._filterChanged.bind(this), this);
     UI.Tooltip.Tooltip.install(
         this._onlyThirdPartyFilterUI.element(), i18nString(UIStrings.onlyShowThirdPartyRequests));
     filterBar.addFilter(this._onlyThirdPartyFilterUI);
 
-    this._filterParser = new TextUtils.TextUtils.FilterParser(_searchKeys);
+    this._filterParser = new TextUtils.TextUtils.FilterParser(searchKeys);
     this._suggestionBuilder =
-        new UI.FilterSuggestionBuilder.FilterSuggestionBuilder(_searchKeys, NetworkLogView._sortSearchValues);
+        new UI.FilterSuggestionBuilder.FilterSuggestionBuilder(searchKeys, NetworkLogView._sortSearchValues);
     this._resetSuggestionBuilder();
 
     this._dataGrid = this._columns.dataGrid();
@@ -610,6 +620,12 @@ export class NetworkLogView extends UI.Widget.VBox implements
     return request.responseHeaderValue(value) !== undefined;
   }
 
+  static _requestResponseHeaderSetCookieFilter(value: string, request: SDK.NetworkRequest.NetworkRequest): boolean {
+    // Multiple Set-Cookie headers in the request are concatenated via space. Only
+    // filter via `includes` instead of strict equality.
+    return Boolean(request.responseHeaderValue('Set-Cookie')?.includes(value));
+  }
+
   static _requestMethodFilter(value: string, request: SDK.NetworkRequest.NetworkRequest): boolean {
     return request.requestMethod === value;
   }
@@ -680,9 +696,7 @@ export class NetworkLogView extends UI.Widget.VBox implements
     return (String(request.statusCode)) === value;
   }
 
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  static HTTPRequestsFilter(request: SDK.NetworkRequest.NetworkRequest): boolean {
+  static getHTTPRequestsFilter(request: SDK.NetworkRequest.NetworkRequest): boolean {
     return request.parsedURL.isValid && (request.scheme in HTTPSchemas);
   }
 
@@ -745,9 +759,7 @@ export class NetworkLogView extends UI.Widget.VBox implements
     if (!success) {
       const error = reader.error();
       if (error) {
-        // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        this._harLoadFailed((error as any).message);
+        this._harLoadFailed(error.message);
       }
       return;
     }
@@ -853,7 +865,7 @@ export class NetworkLogView extends UI.Widget.VBox implements
 
   _filterChanged(_event: Common.EventTarget.EventTargetEvent): void {
     this.removeAllNodeHighlights();
-    this._parseFilterQuery(this._textFilterUI.value());
+    this._parseFilterQuery(this._textFilterUI.value(), this._invertFilterUI.checked());
     this._filterRequests();
     this._textFilterSetting.set(this._textFilterUI.value());
   }
@@ -1066,18 +1078,18 @@ export class NetworkLogView extends UI.Widget.VBox implements
 
     if (baseTime !== -1 && maxTime !== -1) {
       this._summaryToolbar.appendSeparator();
-      appendChunk(i18nString(UIStrings.finishS, {PH1: i18n.i18n.secondsToString(maxTime - baseTime)}));
+      appendChunk(i18nString(UIStrings.finishS, {PH1: i18n.TimeUtilities.secondsToString(maxTime - baseTime)}));
       if (this._mainRequestDOMContentLoadedTime !== -1 && this._mainRequestDOMContentLoadedTime > baseTime) {
         this._summaryToolbar.appendSeparator();
         const domContentLoadedText = i18nString(
             UIStrings.domcontentloadedS,
-            {PH1: i18n.i18n.secondsToString(this._mainRequestDOMContentLoadedTime - baseTime)});
+            {PH1: i18n.TimeUtilities.secondsToString(this._mainRequestDOMContentLoadedTime - baseTime)});
         appendChunk(domContentLoadedText).style.color = NetworkLogView.getDCLEventColor();
       }
       if (this._mainRequestLoadTime !== -1) {
         this._summaryToolbar.appendSeparator();
-        const loadText =
-            i18nString(UIStrings.loadS, {PH1: i18n.i18n.secondsToString(this._mainRequestLoadTime - baseTime)});
+        const loadText = i18nString(
+            UIStrings.loadS, {PH1: i18n.TimeUtilities.secondsToString(this._mainRequestLoadTime - baseTime)});
         appendChunk(loadText).style.color = NetworkLogView.getLoadEventColor();
       }
     }
@@ -1150,23 +1162,25 @@ export class NetworkLogView extends UI.Widget.VBox implements
     this._invalidateAllItems();
   }
 
-  _loadEventFired(event: Common.EventTarget.EventTargetEvent): void {
+  _loadEventFired(
+      event: Common.EventTarget
+          .EventTargetEvent<{resourceTreeModel: SDK.ResourceTreeModel.ResourceTreeModel, loadTime: number}>): void {
     if (!this._recording) {
       return;
     }
 
-    const time = (event.data.loadTime as number);
+    const time = event.data.loadTime;
     if (time) {
       this._mainRequestLoadTime = time;
       this._columns.addEventDividers([time], 'network-load-divider');
     }
   }
 
-  _domContentLoadedEventFired(event: Common.EventTarget.EventTargetEvent): void {
+  _domContentLoadedEventFired(event: Common.EventTarget.EventTargetEvent<number>): void {
     if (!this._recording) {
       return;
     }
-    const data = (event.data as number);
+    const {data} = event;
     if (data) {
       this._mainRequestDOMContentLoadedTime = data;
       this._columns.addEventDividers([data], 'network-dcl-divider');
@@ -1423,8 +1437,11 @@ export class NetworkLogView extends UI.Widget.VBox implements
     }
 
     const responseHeaders = request.responseHeaders;
-    for (let i = 0, l = responseHeaders.length; i < l; ++i) {
-      this._suggestionBuilder.addItem(NetworkForward.UIFilter.FilterType.HasResponseHeader, responseHeaders[i].name);
+    for (const responseHeader of responseHeaders) {
+      this._suggestionBuilder.addItem(NetworkForward.UIFilter.FilterType.HasResponseHeader, responseHeader.name);
+      if (responseHeader.name === 'Set-Cookie') {
+        this._suggestionBuilder.addItem(NetworkForward.UIFilter.FilterType.ResponseHeaderValueSetCookie);
+      }
     }
 
     for (const cookie of request.responseCookies) {
@@ -1581,7 +1598,7 @@ export class NetworkLogView extends UI.Widget.VBox implements
   _harRequests(): SDK.NetworkRequest.NetworkRequest[] {
     return Logs.NetworkLog.NetworkLog.instance()
         .requests()
-        .filter(NetworkLogView.HTTPRequestsFilter)
+        .filter(NetworkLogView.getHTTPRequestsFilter)
         .filter(request => {
           return request.finished ||
               (request.resourceType() === Common.ResourceType.resourceTypes.WebSocket && request.responseReceivedTime);
@@ -1658,10 +1675,6 @@ export class NetworkLogView extends UI.Widget.VBox implements
 
   _removeAllHighlights(): void {
     this.removeAllNodeHighlights();
-    for (let i = 0; i < this._highlightedSubstringChanges.length; ++i) {
-      UI.UIUtils.revertDomChanges(this._highlightedSubstringChanges[i]);
-    }
-    this._highlightedSubstringChanges = [];
   }
 
   _applyFilter(node: NetworkRequestNode): boolean {
@@ -1694,7 +1707,11 @@ export class NetworkLogView extends UI.Widget.VBox implements
     return true;
   }
 
-  _parseFilterQuery(query: string): void {
+  _parseFilterQuery(query: string, invert: boolean): void {
+    // A query string can have multiple filters, some of them regular
+    // expressions, some not. Each one of those filters can be negated with a
+    // "-" prefix, including the regular expressions. The top-level `invert`
+    // checkbox therefore inverts each one of those individual filters.
     const descriptors = this._filterParser.parse(query);
     this._filters = descriptors.map(descriptor => {
       const key = descriptor.key;
@@ -1711,7 +1728,10 @@ export class NetworkLogView extends UI.Widget.VBox implements
         filter = NetworkLogView._requestPathFilter.bind(
             null, new RegExp(Platform.StringUtilities.escapeForRegExp(text), 'i'));
       }
-      return descriptor.negative ? NetworkLogView._negativeFilter.bind(null, filter) : filter;
+      if ((descriptor.negative && !invert) || (!descriptor.negative && invert)) {
+        return NetworkLogView._negativeFilter.bind(null, filter);
+      }
+      return filter;
     });
   }
 
@@ -1722,6 +1742,9 @@ export class NetworkLogView extends UI.Widget.VBox implements
 
       case NetworkForward.UIFilter.FilterType.HasResponseHeader:
         return NetworkLogView._requestResponseHeaderFilter.bind(null, value);
+
+      case NetworkForward.UIFilter.FilterType.ResponseHeaderValueSetCookie:
+        return NetworkLogView._requestResponseHeaderSetCookieFilter.bind(null, value);
 
       case NetworkForward.UIFilter.FilterType.Is:
         if (value.toLowerCase() === NetworkForward.UIFilter.IsFilterType.Running) {
@@ -2227,10 +2250,7 @@ export const HTTPSchemas = {
   'wss': true,
 };
 
-
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export const _searchKeys: string[] = Object.values(NetworkForward.UIFilter.FilterType);
+const searchKeys: string[] = Object.values(NetworkForward.UIFilter.FilterType);
 
 export interface GroupLookupInterface {
   groupNodeForRequest(request: SDK.NetworkRequest.NetworkRequest): NetworkGroupNode|null;

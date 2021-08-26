@@ -19,7 +19,6 @@
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_password_cell.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_password_mediator.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/password_view_controller.h"
-#import "ios/chrome/browser/ui/autofill/save_card_infobar_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
@@ -596,9 +595,9 @@ UIWindow* WindowWithAccessibilityIdentifier(NSString* accessibility_id) {
 }
 
 + (id<GREYMatcher>)googleServicesSettingsButton {
-  return grey_allOf(
-      grey_kindOfClass([UITableViewCell class]), grey_sufficientlyVisible(),
-      grey_accessibilityID(kSettingsGoogleSyncAndServicesCellId), nil);
+  return grey_allOf(grey_kindOfClass([UITableViewCell class]),
+                    grey_sufficientlyVisible(),
+                    grey_accessibilityID(kSettingsGoogleServicesCellId), nil);
 }
 
 + (id<GREYMatcher>)googleServicesSettingsView {
@@ -662,7 +661,8 @@ UIWindow* WindowWithAccessibilityIdentifier(NSString* accessibility_id) {
 }
 
 + (id<GREYMatcher>)settingsCollectionView {
-  return grey_accessibilityID(kSettingsTableViewId);
+  return grey_allOf(grey_accessibilityID(kSettingsTableViewId),
+                    grey_sufficientlyVisible(), nil);
 }
 
 + (id<GREYMatcher>)clearBrowsingHistoryButton {
@@ -967,14 +967,6 @@ UIWindow* WindowWithAccessibilityIdentifier(NSString* accessibility_id) {
                                               descriptionBlock:describe];
 }
 
-+ (id<GREYMatcher>)autofillSaveCardLocallyInfobar {
-  return grey_accessibilityID(kSaveCardInfobarViewLocalAccessibilityID);
-}
-
-+ (id<GREYMatcher>)autofillUploadCardInfobar {
-  return grey_accessibilityID(kSaveCardInfobarViewUploadAccessibilityID);
-}
-
 + (id<GREYMatcher>)historyEntryForURL:(NSString*)URL title:(NSString*)title {
   GREYMatchesBlock matches = ^BOOL(TableViewURLCell* cell) {
     return [cell.titleLabel.text isEqual:title] &&
@@ -1130,10 +1122,17 @@ UIWindow* WindowWithAccessibilityIdentifier(NSString* accessibility_id) {
       grey_interactable(), nullptr);
 }
 
-#pragma mark - Tab Grid Edit Mode
+#pragma mark - Tab Grid Selection Mode
 + (id<GREYMatcher>)tabGridEditButton {
   return grey_allOf(grey_accessibilityID(kTabGridEditButtonIdentifier),
                     grey_sufficientlyVisible(), nil);
+}
+
++ (id<GREYMatcher>)tabGridSelectTabsMenuButton {
+  return grey_allOf(
+      [ChromeMatchersAppInterface
+          buttonWithAccessibilityLabelID:(IDS_IOS_CONTENT_CONTEXT_SELECTTABS)],
+      grey_sufficientlyVisible(), nil);
 }
 
 + (id<GREYMatcher>)tabGridEditAddToButton {
@@ -1148,6 +1147,11 @@ UIWindow* WindowWithAccessibilityIdentifier(NSString* accessibility_id) {
 
 + (id<GREYMatcher>)tabGridEditSelectAllButton {
   return grey_allOf(grey_accessibilityID(kTabGridEditSelectAllButtonIdentifier),
+                    grey_sufficientlyVisible(), nil);
+}
+
++ (id<GREYMatcher>)tabGridEditShareButton {
+  return grey_allOf(grey_accessibilityID(kTabGridEditShareButtonIdentifier),
                     grey_sufficientlyVisible(), nil);
 }
 

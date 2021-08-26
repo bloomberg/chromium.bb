@@ -197,7 +197,31 @@ message DeviceRegisterRequest {
   // Identification of the device that is not already available.
   optional DeviceRegisterIdentification device_register_identification = 18;
 
-  // Next id: 19.
+  // Indicates all possible PSM (Private Set Membership) protocol final results
+  // without specifying the root cause in case of an error.
+  enum PsmExecutionResult {
+    // PSM protocol started and it neither finished successfully nor
+    // terminated due to a protocol's error.
+    PSM_RESULT_UNKNOWN = 0;
+
+    // PSM finished successfully and there was server-backed state for the
+    // device.
+    PSM_RESULT_SUCCESSFUL_WITH_STATE = 1;
+
+    // PSM finished successfully and there was no server-backed state for the
+    // device.
+    PSM_RESULT_SUCCESSFUL_WITHOUT_STATE = 2;
+
+    // PSM terminated due to an error.
+    PSM_RESULT_ERROR = 3;
+  }
+  optional PsmExecutionResult psm_execution_result = 19;
+
+  // Timestamp of PSM retrieving the device's determination successfully in
+  // milliseconds since Epoch in UTC timezone (Java time).
+  optional int64 psm_determination_timestamp_ms = 20;
+
+  // Next id: 21.
 }
 
 // Identification of a device used during its registration.
@@ -1199,7 +1223,7 @@ message LogicalCpuInfo {
   // Current frequency the CPU is running at.
   optional uint32 scaling_current_frequency_khz = 2;
   // Idle time since last boot.
-  optional uint32 idle_time_seconds = 3;
+  optional uint64 idle_time_seconds = 3;
   // Information about the logical CPU's time in various C-states.
   repeated CpuCStateInfo c_states = 4;
 }
@@ -1961,8 +1985,9 @@ message ChromeDesktopReportRequest {
   // The name of the machine within its local network. The string is a JSON
   // encoded structure with a single computername field.
   // This field is replaced by computer_name and only used by old Chrome
-  // browser.
-  optional string machine_name = 1;
+  // browser using the JSON legacy browser.
+  // TODO(b/189584065): Remove when usage goes to zero.
+  optional string machine_name = 1 [deprecated = true];
   // OS info. The string is a an encoded JSON object as returned by
   // chrome.runtime.getPlatformInfo.
   // This field is replaced by OSReport and only used by old Chrome browser.
@@ -1974,10 +1999,14 @@ message ChromeDesktopReportRequest {
   // Browser related info.
   optional BrowserReport browser_report = 4;
   // The device serial number (this might differ with the client ID, depending
-  // on the platform)
-  optional string serial_number = 5;
-  // A string represents the name of computer.
-  optional string computer_name = 6;
+  // on the platform). Deprecated: Please use
+  // ChromeDesktopReportProtoProcessor.getBrowserDeviceIdentifier().getSerialNumber
+  // to extract the Serial Number from the Report Request.
+  optional string serial_number = 5 [deprecated = true];
+  // A string represents the name of computer. Deprecated: Please use
+  // ChromeDesktopReportProtoProcessor.getBrowserDeviceIdentifier().getSerialNumber
+  // to extract the Computer Name from the Report Request.
+  optional string computer_name = 6 [deprecated = true];
   // Operating system related information.
   optional OSReport os_report = 7;
   // A string contains OS user name.
@@ -3788,6 +3817,39 @@ message ClientCertificateProvisioningResponse {
   }
 }
 
+// Request from browser to server to upload public key.
+// GoogleDMToken MUST be in HTTP Authorization header.
+message BrowserPublicKeyUploadRequest {
+  enum KeyTrustLevel {
+    // UNSPECIFIED.
+    KEY_TRUST_LEVEL_UNSPECIFIED = 0;
+    // Chrome Browser with the key stored in TPM.
+    CHROME_BROWSER_TPM_KEY = 1;
+    // Chrome Browser with the key stored at OS level.
+    CHROME_BROWSER_OS_KEY = 2;
+  }
+
+  // Public key in EC_NID_X9_62_PRIME256V1_PUBLIC_DER format.
+  optional bytes public_key = 1;
+  // Signature of the new public key signed using the existing key, empty for
+  // initial upload.
+  optional bytes signature = 2;
+  // Trust Level of the key.
+  optional KeyTrustLevel key_trust_level = 3;
+}
+
+// Response from server to device for cert upload request.
+message BrowserPublicKeyUploadResponse {
+  enum ResponseCode {
+    UNDEFINED = 0;
+    // The new key is uploaded successfully.
+    SUCCESS = 1;
+    // The signature could not be verified.
+    INVALID_SIGNATURE = 2;
+  }
+  optional ResponseCode response_code = 1;
+}
+
 // Request from the DMAgent on the device to the DMServer.  This is
 // container for all requests from device to server.  The overall HTTP
 // request MUST be in the following format:
@@ -3825,6 +3887,7 @@ message ClientCertificateProvisioningResponse {
 //     * device_initial_enrollment_state
 //     * refresh_account
 //     * client_cert_provisioning
+//     * browser_public_key_upload
 //   * devicetype: MUST BE "1" for Android, "2" for Chrome OS or "3" for Chrome
 //     browser.
 //   * apptype: MUST BE Android or Chrome.
@@ -4000,7 +4063,10 @@ message DeviceManagementRequest {
   // for ZTE/LP device initial enrollment state check.
   optional PrivateSetMembershipRequest private_set_membership_request = 37;
 
-  // Next id: 38.
+  // Request from browser to upload public key.
+  optional BrowserPublicKeyUploadRequest browser_public_key_upload_request = 38;
+
+  // Next id: 39.
 }
 
 // Response from server to device.
@@ -4136,7 +4202,11 @@ message DeviceManagementResponse {
   // Response to a client private set membership request.
   optional PrivateSetMembershipResponse private_set_membership_response = 35;
 
-  // Next id: 36.
+  // Response to browser public key upload request.
+  optional BrowserPublicKeyUploadResponse browser_public_key_upload_response =
+      36;
+
+  // Next id: 37.
 }
 
 // Device State Information stored in the server is retrieval at

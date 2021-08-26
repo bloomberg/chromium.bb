@@ -62,16 +62,16 @@
 #include "ash/constants/ash_pref_names.h"  // nogncheck
 #include "ash/public/cpp/ambient/ambient_prefs.h"
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
+#include "chrome/browser/ash/full_restore/full_restore_prefs.h"
 #include "chrome/browser/ash/guest_os/guest_os_pref_names.h"
 #include "chrome/browser/ash/ownership/owner_settings_service_ash.h"
 #include "chrome/browser/ash/ownership/owner_settings_service_ash_factory.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_pref_names.h"
-#include "chrome/browser/ash/policy/core/browser_policy_connector_chromeos.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/settings/supervised_user_cros_settings_provider.h"
 #include "chrome/browser/ash/system/timezone_util.h"
-#include "chrome/browser/chromeos/full_restore/full_restore_prefs.h"
 #include "chrome/browser/extensions/api/settings_private/chromeos_resolve_time_zone_by_geolocation_method_short.h"
 #include "chrome/browser/extensions/api/settings_private/chromeos_resolve_time_zone_by_geolocation_on_off.h"
 #include "chromeos/components/quick_answers/public/cpp/quick_answers_prefs.h"
@@ -318,17 +318,17 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::PREF_TYPE_LIST;
   (*s_allowlist)[spellcheck::prefs::kSpellCheckUseSpellingService] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_allowlist)[::prefs::kOfferTranslateEnabled] =
+  (*s_allowlist)[translate::prefs::kOfferTranslateEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_allowlist)[language::prefs::kFluentLanguages] =
+  (*s_allowlist)[translate::prefs::kBlockedLanguages] =
       settings_api::PrefType::PREF_TYPE_LIST;
   (*s_allowlist)[language::prefs::kSelectedLanguages] =
       settings_api::PrefType::PREF_TYPE_STRING;
   (*s_allowlist)[language::prefs::kForcedLanguages] =
       settings_api::PrefType::PREF_TYPE_LIST;
-  (*s_allowlist)[::prefs::kPrefTranslateRecentTarget] =
+  (*s_allowlist)[translate::prefs::kPrefTranslateRecentTarget] =
       settings_api::PrefType::PREF_TYPE_STRING;
-  (*s_allowlist)[prefs::kPrefAlwaysTranslateList] =
+  (*s_allowlist)[translate::prefs::kPrefAlwaysTranslateList] =
       settings_api::PrefType::PREF_TYPE_LIST;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   (*s_allowlist)[::prefs::kLanguageImeMenuActivated] =
@@ -540,6 +540,9 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[ash::prefs::kAccessibilityMonoAudioEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_allowlist)
+      [ash::prefs::kAccessibilityEnhancedNetworkVoicesInSelectToSpeakAllowed] =
+          settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
   // Text to Speech.
   (*s_allowlist)[::prefs::kTextToSpeechLangToVoiceName] =
@@ -668,7 +671,7 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
   // Restore apps and pages on startup
-  (*s_allowlist)[chromeos::full_restore::kRestoreAppsAndPagesPrefName] =
+  (*s_allowlist)[ash::full_restore::kRestoreAppsAndPagesPrefName] =
       settings_api::PrefType::PREF_TYPE_NUMBER;
 
   // Timezone settings.
@@ -1157,8 +1160,8 @@ bool PrefsUtil::IsPrefTypeURL(const std::string& pref_name) {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 bool PrefsUtil::IsPrefEnterpriseManaged(const std::string& pref_name) {
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  policy::BrowserPolicyConnectorAsh* connector =
+      g_browser_process->platform_part()->browser_policy_connector_ash();
   if (!connector->IsDeviceEnterpriseManaged())
     return false;
   if (IsPrivilegedCrosSetting(pref_name))

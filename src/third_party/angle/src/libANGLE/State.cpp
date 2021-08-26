@@ -293,10 +293,12 @@ State::State(const State *shareContextState,
              bool clientArraysEnabled,
              bool robustResourceInit,
              bool programBinaryCacheEnabled,
-             EGLenum contextPriority)
+             EGLenum contextPriority,
+             bool hasProtectedContent)
     : mID({gIDCounter++}),
       mClientType(clientType),
       mContextPriority(contextPriority),
+      mHasProtectedContent(hasProtectedContent),
       mClientVersion(clientVersion),
       mShareGroup(shareGroup),
       mBufferManager(AllocateOrGetSharedResourceManager(shareContextState, &State::mBufferManager)),
@@ -358,7 +360,15 @@ State::State(const State *shareContextState,
       mMaxShaderCompilerThreads(std::numeric_limits<GLuint>::max()),
       mPatchVertices(3),
       mOverlay(overlay),
-      mNoSimultaneousConstantColorAndAlphaBlendFunc(false)
+      mNoSimultaneousConstantColorAndAlphaBlendFunc(false),
+      mBoundingBoxMinX(-1.0f),
+      mBoundingBoxMinY(-1.0f),
+      mBoundingBoxMinZ(-1.0f),
+      mBoundingBoxMinW(1.0f),
+      mBoundingBoxMaxX(1.0f),
+      mBoundingBoxMaxY(1.0f),
+      mBoundingBoxMaxZ(1.0f),
+      mBoundingBoxMaxW(1.0f)
 {}
 
 State::~State() {}
@@ -3626,6 +3636,16 @@ void State::onUniformBufferStateChange(size_t uniformBufferIndex)
 {
     // This could be represented by a different dirty bit. Using the same one keeps it simple.
     mDirtyBits.set(DIRTY_BIT_UNIFORM_BUFFER_BINDINGS);
+}
+
+void State::onAtomicCounterBufferStateChange(size_t atomicCounterBufferIndex)
+{
+    mDirtyBits.set(DIRTY_BIT_ATOMIC_COUNTER_BUFFER_BINDING);
+}
+
+void State::onShaderStorageBufferStateChange(size_t shaderStorageBufferIndex)
+{
+    mDirtyBits.set(DIRTY_BIT_SHADER_STORAGE_BUFFER_BINDING);
 }
 
 AttributesMask State::getAndResetDirtyCurrentValues() const

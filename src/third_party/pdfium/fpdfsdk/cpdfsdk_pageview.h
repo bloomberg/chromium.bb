@@ -7,11 +7,13 @@
 #ifndef FPDFSDK_CPDFSDK_PAGEVIEW_H_
 #define FPDFSDK_CPDFSDK_PAGEVIEW_H_
 
+#include <stdint.h>
+
 #include <memory>
 #include <vector>
 
 #include "core/fpdfapi/page/cpdf_page.h"
-#include "core/fxcrt/fx_system.h"
+#include "core/fxcrt/mask.h"
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxcrt/unowned_ptr.h"
 #include "fpdfsdk/cpdfsdk_annot.h"
@@ -65,17 +67,17 @@ class CPDFSDK_PageView final : public CPDF_Page::View {
   bool Undo();
   bool Redo();
 
-  bool OnFocus(uint32_t nFlag, const CFX_PointF& point);
-  bool OnLButtonDown(uint32_t nFlag, const CFX_PointF& point);
-  bool OnLButtonUp(uint32_t nFlag, const CFX_PointF& point);
-  bool OnLButtonDblClk(uint32_t nFlag, const CFX_PointF& point);
-  bool OnRButtonDown(uint32_t nFlag, const CFX_PointF& point);
-  bool OnRButtonUp(uint32_t nFlag, const CFX_PointF& point);
-  bool OnChar(int nChar, uint32_t nFlag);
-  bool OnKeyDown(int nKeyCode, int nFlag);
-  bool OnKeyUp(int nKeyCode, int nFlag);
-  bool OnMouseMove(int nFlag, const CFX_PointF& point);
-  bool OnMouseWheel(int nFlag,
+  bool OnFocus(Mask<FWL_EVENTFLAG> nFlag, const CFX_PointF& point);
+  bool OnLButtonDown(Mask<FWL_EVENTFLAG> nFlag, const CFX_PointF& point);
+  bool OnLButtonUp(Mask<FWL_EVENTFLAG> nFlag, const CFX_PointF& point);
+  bool OnLButtonDblClk(Mask<FWL_EVENTFLAG> nFlag, const CFX_PointF& point);
+  bool OnRButtonDown(Mask<FWL_EVENTFLAG> nFlag, const CFX_PointF& point);
+  bool OnRButtonUp(Mask<FWL_EVENTFLAG> nFlag, const CFX_PointF& point);
+  bool OnChar(uint32_t nChar, Mask<FWL_EVENTFLAG> nFlag);
+  bool OnKeyDown(FWL_VKEYCODE nKeyCode, Mask<FWL_EVENTFLAG> nFlag);
+  bool OnKeyUp(FWL_VKEYCODE nKeyCode, Mask<FWL_EVENTFLAG> nFlag);
+  bool OnMouseMove(Mask<FWL_EVENTFLAG> nFlag, const CFX_PointF& point);
+  bool OnMouseWheel(Mask<FWL_EVENTFLAG> nFlag,
                     const CFX_PointF& point,
                     const CFX_Vector& delta);
 
@@ -103,10 +105,10 @@ class CPDFSDK_PageView final : public CPDF_Page::View {
 
   void EnterWidget(CPDFSDK_AnnotHandlerMgr* pAnnotHandlerMgr,
                    ObservedPtr<CPDFSDK_Annot>* pAnnot,
-                   uint32_t nFlag);
+                   Mask<FWL_EVENTFLAG> nFlag);
   void ExitWidget(CPDFSDK_AnnotHandlerMgr* pAnnotHandlerMgr,
                   bool callExitCallback,
-                  uint32_t nFlag);
+                  Mask<FWL_EVENTFLAG> nFlag);
 
   CFX_Matrix m_curMatrix;
   UnownedPtr<IPDF_Page> const m_page;

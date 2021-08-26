@@ -37,6 +37,7 @@
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Logs from '../../models/logs/logs.js';
@@ -50,13 +51,13 @@ import * as Search from '../search/search.js';
 
 import {BlockedURLsPane} from './BlockedURLsPane.js';
 import {Events} from './NetworkDataGridNode.js';
-
-import {NetworkItemView} from './NetworkItemView.js';  // eslint-disable-line no-unused-vars
-import {NetworkLogView} from './NetworkLogView.js';  // eslint-disable-line no-unused-vars
+import {NetworkItemView} from './NetworkItemView.js';
+import {NetworkLogView} from './NetworkLogView.js';
 import {NetworkOverview} from './NetworkOverview.js';
-import {NetworkSearchScope} from './NetworkSearchScope.js';  // eslint-disable-line no-unused-vars
+import {NetworkSearchScope} from './NetworkSearchScope.js';
+
 import type {NetworkTimeCalculator} from './NetworkTimeCalculator.js';
-import {NetworkTransferTimeCalculator} from './NetworkTimeCalculator.js';  // eslint-disable-line no-unused-vars
+import {NetworkTransferTimeCalculator} from './NetworkTimeCalculator.js';
 
 const UIStrings = {
   /**
@@ -221,7 +222,7 @@ export class NetworkPanel extends UI.Panel.Panel implements UI.ContextMenu.Provi
 
     this._filterBar = new UI.FilterBar.FilterBar('networkPanel', true);
     this._filterBar.show(panel.contentElement);
-    this._filterBar.addEventListener(UI.FilterBar.FilterBar.Events.Changed, this._handleFilterChanged.bind(this));
+    this._filterBar.addEventListener(UI.FilterBar.FilterBarEvents.Changed, this._handleFilterChanged.bind(this));
 
     this._settingsPane = new UI.Widget.HBox();
     this._settingsPane.element.classList.add('network-settings-pane');
@@ -263,7 +264,7 @@ export class NetworkPanel extends UI.Panel.Panel implements UI.ContextMenu.Provi
     tabbedPane.setMinimumSize(100, 25);
     tabbedPane.element.classList.add('network-tabbed-pane');
     tabbedPane.element.addEventListener('keydown', event => {
-      if (event.key !== 'Escape') {
+      if (event.key !== Platform.KeyboardUtilities.ESCAPE_KEY) {
         return;
       }
       splitWidget.hideSidebar();
@@ -527,7 +528,7 @@ export class NetworkPanel extends UI.Panel.Panel implements UI.ContextMenu.Provi
     }
   }
 
-  _willReloadPage(_event: Common.EventTarget.EventTargetEvent): void {
+  _willReloadPage(): void {
     if (this._pendingStopTimer) {
       clearTimeout(this._pendingStopTimer);
       delete this._pendingStopTimer;
@@ -537,7 +538,7 @@ export class NetworkPanel extends UI.Panel.Panel implements UI.ContextMenu.Provi
     }
   }
 
-  _load(_event: Common.EventTarget.EventTargetEvent): void {
+  _load(): void {
     if (this._filmStripRecorder && this._filmStripRecorder.isRecording()) {
       this._pendingStopTimer = window.setTimeout(this._stopFilmStripRecording.bind(this), displayScreenshotDelay);
     }

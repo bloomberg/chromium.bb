@@ -16,20 +16,12 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/services/app_service/public/cpp/crosapi_utils.h"
 #include "components/services/app_service/public/cpp/instance_registry.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "extensions/common/constants.h"
 
 namespace {
-
-std::vector<apps::mojom::AppPtr> CloneApps(
-    const std::vector<apps::mojom::AppPtr>& clone_from) {
-  std::vector<apps::mojom::AppPtr> clone_to;
-  for (const auto& app : clone_from) {
-    clone_to.push_back(app->Clone());
-  }
-  return clone_to;
-}
 
 std::vector<apps::mojom::CapabilityAccessPtr> CloneCapabilityAccesses(
     const std::vector<apps::mojom::CapabilityAccessPtr>& clone_from) {
@@ -139,7 +131,7 @@ void WebAppsCrosapi::GetMenuModel(const std::string& app_id,
   }
 
   if (menu_type == apps::mojom::MenuType::kShelf &&
-      !proxy->InstanceRegistry().GetWindows(app_id).empty()) {
+      proxy->InstanceRegistry().ContainsAppId(app_id)) {
     apps::AddCommandItem(ash::MENU_CLOSE, IDS_SHELF_CONTEXT_MENU_CLOSE,
                          &menu_items);
   }
@@ -191,9 +183,7 @@ void WebAppsCrosapi::OnGetMenuModelFromCrosapi(
 
     auto& icon_image = crosapi_menu_item->image;
 
-    if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
-      icon_image = apps::ApplyBackgroundAndMask(icon_image);
-    }
+    icon_image = apps::ApplyBackgroundAndMask(icon_image);
 
     apps::AddShortcutCommandItem(command_id, shortcut_id,
                                  crosapi_menu_item->label, icon_image,
@@ -215,11 +205,16 @@ void WebAppsCrosapi::OpenNativeSettings(const std::string& app_id) {
   controller_->OpenNativeSettings(app_id);
 }
 
+void WebAppsCrosapi::SetWindowMode(const std::string& app_id,
+                                   apps::mojom::WindowMode window_mode) {
+  controller_->SetWindowMode(app_id, window_mode);
+}
+
 void WebAppsCrosapi::OnApps(std::vector<apps::mojom::AppPtr> deltas) {
   if (!base::FeatureList::IsEnabled(features::kWebAppsCrosapi))
     return;
   for (auto& subscriber : subscribers_) {
-    subscriber->OnApps(CloneApps(deltas), apps::mojom::AppType::kWeb,
+    subscriber->OnApps(apps_util::CloneApps(deltas), apps::mojom::AppType::kWeb,
                        false /* should_notify_initialized */);
   }
 }

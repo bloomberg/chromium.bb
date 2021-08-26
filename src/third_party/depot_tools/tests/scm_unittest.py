@@ -250,18 +250,18 @@ class RealGitTest(fake_repos.FakeReposTestBase):
     scm.GIT.SetBranchConfig(self.cwd, branch, 'remote')
 
   def testGetBranchRef(self):
-    self.assertEqual('refs/heads/master', scm.GIT.GetBranchRef(self.cwd))
+    self.assertEqual('refs/heads/main', scm.GIT.GetBranchRef(self.cwd))
     HEAD = scm.GIT.Capture(['rev-parse', 'HEAD'], cwd=self.cwd)
     scm.GIT.Capture(['checkout', HEAD], cwd=self.cwd)
     self.assertIsNone(scm.GIT.GetBranchRef(self.cwd))
-    scm.GIT.Capture(['checkout', 'master'], cwd=self.cwd)
+    scm.GIT.Capture(['checkout', 'main'], cwd=self.cwd)
 
   def testGetBranch(self):
-    self.assertEqual('master', scm.GIT.GetBranch(self.cwd))
+    self.assertEqual('main', scm.GIT.GetBranch(self.cwd))
     HEAD = scm.GIT.Capture(['rev-parse', 'HEAD'], cwd=self.cwd)
     scm.GIT.Capture(['checkout', HEAD], cwd=self.cwd)
     self.assertIsNone(scm.GIT.GetBranchRef(self.cwd))
-    scm.GIT.Capture(['checkout', 'master'], cwd=self.cwd)
+    scm.GIT.Capture(['checkout', 'main'], cwd=self.cwd)
 
 
 if __name__ == '__main__':

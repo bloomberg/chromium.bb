@@ -236,8 +236,8 @@ TEST_P(GpuMemorySyncTests, SampledAndROStorageTextureInComputePass) {
     wgpu::TextureDescriptor texDesc;
     texDesc.format = wgpu::TextureFormat::R32Uint;
     texDesc.size = {1, 1, 1};
-    texDesc.usage =
-        wgpu::TextureUsage::Storage | wgpu::TextureUsage::Sampled | wgpu::TextureUsage::CopyDst;
+    texDesc.usage = wgpu::TextureUsage::StorageBinding | wgpu::TextureUsage::TextureBinding |
+                    wgpu::TextureUsage::CopyDst;
     wgpu::Texture tex = device.CreateTexture(&texDesc);
 
     wgpu::ImageCopyTexture copyDst;
@@ -264,7 +264,9 @@ TEST_P(GpuMemorySyncTests, SampledAndROStorageTextureInComputePass) {
             output.storageOut = textureLoad(storageTex, vec2<i32>(0, 0)).x;
         }
     )");
-    wgpu::ComputePipeline pipeline = device.CreateComputePipeline(&pipelineDesc);
+    wgpu::ComputePipeline pipeline;
+    // TODO(crbug.com/dawn/1025): Remove once ReadOnly storage texture deprecation period is passed.
+    EXPECT_DEPRECATION_WARNING(pipeline = device.CreateComputePipeline(&pipelineDesc));
 
     // Run the compute pipeline and store the result in the buffer.
     wgpu::BufferDescriptor outputDesc;

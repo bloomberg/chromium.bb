@@ -14,6 +14,7 @@
 #include "cc/paint/paint_image.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "pdf/mojom/pdf.mojom.h"
+#include "pdf/pdf_accessibility_action_handler.h"
 #include "pdf/pdf_view_plugin_base.h"
 #include "pdf/post_message_receiver.h"
 #include "pdf/post_message_sender.h"
@@ -46,12 +47,15 @@ class MetafileSkia;
 
 namespace chrome_pdf {
 
+class PdfAccessibilityDataHandler;
+
 // Skeleton for a `blink::WebPlugin` to replace `OutOfProcessInstance`.
 class PdfViewWebPlugin final : public PdfViewPluginBase,
                                public blink::WebPlugin,
                                public BlinkUrlLoader::Client,
                                public PostMessageReceiver::Client,
-                               public SkiaGraphics::Client {
+                               public SkiaGraphics::Client,
+                               public PdfAccessibilityActionHandler {
  public:
   class ContainerWrapper {
    public:
@@ -71,7 +75,7 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
     virtual void ReportFindInPageSelection(int identifier, int index) = 0;
 
     // Returns the device scale factor.
-    virtual float DeviceScaleFactor() const = 0;
+    virtual float DeviceScaleFactor() = 0;
 
     // Calls underlying WebLocalFrame::SetReferrerForRequest().
     virtual void SetReferrerForRequest(blink::WebURLRequest& request,
@@ -100,6 +104,9 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
     // Notifies the frame widget about the text input type change.
     virtual void UpdateTextInputState() = 0;
 
+    // Notifies the frame widget about the selection bound change.
+    virtual void UpdateSelectionBounds() = 0;
+
     // Returns the local frame to which the web plugin container belongs.
     virtual blink::WebLocalFrame* GetFrame() = 0;
 
@@ -112,16 +119,32 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
     virtual blink::WebPluginContainer* Container() = 0;
   };
 
-  class PrintClient {
+  // Allows for dependency injections into `PdfViewWebPlugin`.
+  class Client {
    public:
-    virtual ~PrintClient() = default;
+    virtual ~Client() = default;
 
-    virtual void Print(const blink::WebElement& element) = 0;
+    // Prints the given `element`.
+    virtual void Print(const blink::WebElement& element) {}
+
+    // Sends over a string to be recorded by user metrics as a computed action.
+    // When you use this, you need to also update the rules for extracting known
+    // actions in tools/metrics/actions/extract_actions.py.
+    virtual void RecordComputedAction(const std::string& action) {}
+
+    // Creates an implementation of `PdfAccessibilityDataHandler` catered to the
+    // client.
+    virtual std::unique_ptr<PdfAccessibilityDataHandler>
+    CreateAccessibilityDataHandler(
+        PdfAccessibilityActionHandler* action_handler);
+
+    // Indicates whether to use zoom for DSF (device scale factor).
+    virtual bool IsUseZoomForDSFEnabled() const;
   };
 
   PdfViewWebPlugin(
+      std::unique_ptr<Client> client,
       mojo::AssociatedRemote<pdf::mojom::PdfService> pdf_service_remote,
-      std::unique_ptr<PrintClient> print_client,
       const blink::WebPluginParams& params);
   PdfViewWebPlugin(const PdfViewWebPlugin& other) = delete;
   PdfViewWebPlugin& operator=(const PdfViewWebPlugin& other) = delete;
@@ -131,6 +154,7 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   void Destroy() override;
   blink::WebPluginContainer* Container() const override;
   v8::Local<v8::Object> V8ScriptableObject(v8::Isolate* isolate) override;
+  bool SupportsKeyboardFocus() const override;
   void UpdateAllLifecyclePhases(blink::DocumentUpdateReason reason) override;
   void Paint(cc::PaintCanvas* canvas, const gfx::Rect& rect) override;
   void UpdateGeometry(const gfx::Rect& window_rect,
@@ -210,6 +234,10 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   // SkiaGraphics::Client:
   void UpdateSnapshot(sk_sp<SkImage> snapshot) override;
 
+  // PdfAccessibilityActionHandler:
+  void HandleAccessibilityAction(
+      const AccessibilityActionData& action_data) override;
+
   // Initializes the plugin using the `container_wrapper` provided by tests.
   bool InitializeForTesting(
       std::unique_ptr<ContainerWrapper> container_wrapper);
@@ -275,6 +303,11 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
 
   blink::WebString selected_text_;
 
+  std::unique_ptr<Client> const client_;
+
+  // May be unbound in unit tests.
+  mojo::AssociatedRemote<pdf::mojom::PdfService> const pdf_service_remote_;
+
   // The id of the current find operation, or -1 if no current operation is
   // present.
   int find_identifier_ = -1;
@@ -282,11 +315,8 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   blink::WebTextInputType text_input_type_ =
       blink::WebTextInputType::kWebTextInputTypeNone;
 
-  // May be unbound in unit tests.
-  mojo::AssociatedRemote<pdf::mojom::PdfService> const pdf_service_remote_;
-
-  // May be null in unit tests, or if there is no printing support.
-  std::unique_ptr<PrintClient> const print_client_;
+  // Whether the plugin element currently has focus.
+  bool has_focus_ = false;
 
   blink::WebPluginParams initial_params_;
 
@@ -296,6 +326,13 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   PostMessageSender post_message_sender_;
 
   cc::PaintImage snapshot_;
+
+  // The viewport coordinates to DIP (device-independent pixel) ratio.
+  float viewport_to_dip_scale_ = 1.0f;
+
+  // May be null in unit tests.
+  std::unique_ptr<PdfAccessibilityDataHandler> const
+      pdf_accessibility_data_handler_;
 
   // The metafile in which to save the printed output. Assigned a value only
   // between `PrintBegin()` and `PrintEnd()` calls.

@@ -28,6 +28,7 @@
 #include "libavutil/channel_layout.h"
 #include "libavutil/dict.h"
 #include "libavutil/opt.h"
+#include "libavutil/internal.h"
 #include "libavutil/intfloat.h"
 #include "libavutil/mathematics.h"
 #include "libavutil/time_internal.h"
@@ -681,15 +682,14 @@ static int amf_parse_object(AVFormatContext *s, AVStream *astream,
             av_dict_set(&s->metadata, key, str_val, 0);
         } else if (amf_type == AMF_DATA_TYPE_STRING) {
             av_dict_set(&s->metadata, key, str_val, 0);
-        } else if (amf_type == AMF_DATA_TYPE_DATE) {
-            time_t time;
-            struct tm t;
-            char datestr[128];
-            time =  date.milliseconds / 1000; // to seconds
-            localtime_r(&time, &t);
-            strftime(datestr, sizeof(datestr), "%a, %d %b %Y %H:%M:%S %z", &t);
-
-            av_dict_set(&s->metadata, key, datestr, 0);
+        } else if (   amf_type == AMF_DATA_TYPE_DATE
+                   && isfinite(date.milliseconds)
+                   && date.milliseconds > INT64_MIN/1000
+                   && date.milliseconds < INT64_MAX/1000
+                  ) {
+            // timezone is ignored, since there is no easy way to offset the UTC
+            // timestamp into the specified timezone
+            avpriv_dict_set_timestamp(&s->metadata, key, 1000 * (int64_t)date.milliseconds);
         }
     }
 
@@ -1365,8 +1365,8 @@ static const AVOption options[] = {
     { NULL }
 };
 
-static const AVClass flv_class = {
-    .class_name = "flvdec",
+static const AVClass flv_kux_class = {
+    .class_name = "(live) flv/kux demuxer",
     .item_name  = av_default_item_name,
     .option     = options,
     .version    = LIBAVUTIL_VERSION_INT,
@@ -1382,14 +1382,7 @@ const AVInputFormat ff_flv_demuxer = {
     .read_seek      = flv_read_seek,
     .read_close     = flv_read_close,
     .extensions     = "flv",
-    .priv_class     = &flv_class,
-};
-
-static const AVClass live_flv_class = {
-    .class_name = "live_flvdec",
-    .item_name  = av_default_item_name,
-    .option     = options,
-    .version    = LIBAVUTIL_VERSION_INT,
+    .priv_class     = &flv_kux_class,
 };
 
 const AVInputFormat ff_live_flv_demuxer = {
@@ -1402,15 +1395,8 @@ const AVInputFormat ff_live_flv_demuxer = {
     .read_seek      = flv_read_seek,
     .read_close     = flv_read_close,
     .extensions     = "flv",
-    .priv_class     = &live_flv_class,
+    .priv_class     = &flv_kux_class,
     .flags          = AVFMT_TS_DISCONT
-};
-
-static const AVClass kux_class = {
-    .class_name = "kuxdec",
-    .item_name  = av_default_item_name,
-    .option     = options,
-    .version    = LIBAVUTIL_VERSION_INT,
 };
 
 const AVInputFormat ff_kux_demuxer = {
@@ -1423,5 +1409,5 @@ const AVInputFormat ff_kux_demuxer = {
     .read_seek      = flv_read_seek,
     .read_close     = flv_read_close,
     .extensions     = "kux",
-    .priv_class     = &kux_class,
+    .priv_class     = &flv_kux_class,
 };

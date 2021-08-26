@@ -26,7 +26,8 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/main/browser.h"
-#import "ios/chrome/browser/signin/chrome_identity_service_observer_bridge.h"
+#import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
+#import "ios/chrome/browser/signin/chrome_account_manager_service_observer_bridge.h"
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/ui/elements/home_waiting_view.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_check_cell.h"
@@ -165,7 +166,7 @@ std::vector<std::unique_ptr<password_manager::PasswordForm>> CopyOf(
 
 @interface PasswordsTableViewController () <
     BooleanObserver,
-    ChromeIdentityServiceObserver,
+    ChromeAccountManagerServiceObserver,
     PasswordExporterDelegate,
     PasswordExportActivityViewControllerDelegate,
     PasswordsConsumer,
@@ -195,8 +196,9 @@ std::vector<std::unique_ptr<password_manager::PasswordForm>> CopyOf(
   Browser* _browser;
   // The current Chrome browser state.
   ChromeBrowserState* _browserState;
-  // Authentication Service Observer.
-  std::unique_ptr<ChromeIdentityServiceObserverBridge> _identityServiceObserver;
+  // AcountManagerService Observer.
+  std::unique_ptr<ChromeAccountManagerServiceObserverBridge>
+      _accountManagerServiceObserver;
   // Boolean containing whether the export operation is ready. This implies that
   // the exporter is idle and there is at least one saved passwords to export.
   BOOL _exportReady;
@@ -244,6 +246,11 @@ std::vector<std::unique_ptr<password_manager::PasswordForm>> CopyOf(
   if (self) {
     _browser = browser;
     _browserState = browser->GetBrowserState();
+    _accountManagerServiceObserver =
+        std::make_unique<ChromeAccountManagerServiceObserverBridge>(
+            self, ChromeAccountManagerServiceFactory::GetForBrowserState(
+                      _browser->GetBrowserState()));
+
     self.exampleHeaders = [[NSMutableDictionary alloc] init];
     self.title = l10n_util::GetNSString(IDS_IOS_PASSWORDS);
     self.shouldHideDoneButton = YES;
@@ -252,6 +259,7 @@ std::vector<std::unique_ptr<password_manager::PasswordForm>> CopyOf(
         initWithPrefService:_browserState->GetPrefs()
                    prefName:password_manager::prefs::kCredentialsEnableService];
     [_passwordManagerEnabled setObserver:self];
+
     [self updateUIForEditState];
     [self updateExportPasswordsButton];
   }
@@ -364,6 +372,14 @@ std::vector<std::unique_ptr<password_manager::PasswordForm>> CopyOf(
     }
     [self setSearchBarEnabled:YES];
   }
+  [self updatePasswordCheckButtonWithState:self.passwordCheckState];
+  [self updatePasswordCheckStatusLabelWithState:self.passwordCheckState];
+  if (_checkForProblemsItem) {
+    [self reconfigureCellsForItems:@[ _checkForProblemsItem ]];
+  }
+  if (_passwordProblemsItem) {
+    [self reconfigureCellsForItems:@[ _passwordProblemsItem ]];
+  }
   [self updateUIForEditState];
 }
 
@@ -383,8 +399,7 @@ std::vector<std::unique_ptr<password_manager::PasswordForm>> CopyOf(
   if (!self.navigationItem.searchController.active) {
     [model addSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
 
-    if (base::FeatureList::IsEnabled(kEnableIOSManagedSettingsUI) &&
-        _browserState->GetPrefs()->IsManagedPreference(
+    if (_browserState->GetPrefs()->IsManagedPreference(
             password_manager::prefs::kCredentialsEnableService)) {
       // TODO(crbug.com/1082827): observe the managing status of the pref.
       // Show managed settings UI when the pref is managed by the policy.
@@ -1081,6 +1096,15 @@ std::vector<std::unique_ptr<password_manager::PasswordForm>> CopyOf(
   if (!_checkForProblemsItem)
     return;
 
+  _checkForProblemsItem.text =
+      l10n_util::GetNSString(IDS_IOS_CHECK_PASSWORDS_NOW_BUTTON);
+
+  if (self.editing) {
+    _checkForProblemsItem.textColor = UIColor.cr_secondaryLabelColor;
+    _checkForProblemsItem.accessibilityTraits |= UIAccessibilityTraitNotEnabled;
+    return;
+  }
+
   switch (state) {
     case PasswordCheckStateSafe:
     case PasswordCheckStateUnSafe:
@@ -1089,14 +1113,10 @@ std::vector<std::unique_ptr<password_manager::PasswordForm>> CopyOf(
       _checkForProblemsItem.textColor = [UIColor colorNamed:kBlueColor];
       _checkForProblemsItem.accessibilityTraits &=
           ~UIAccessibilityTraitNotEnabled;
-      _checkForProblemsItem.text =
-          l10n_util::GetNSString(IDS_IOS_CHECK_PASSWORDS_NOW_BUTTON);
       break;
     case PasswordCheckStateRunning:
     // Fall through.
     case PasswordCheckStateDisabled:
-      _checkForProblemsItem.text =
-          l10n_util::GetNSString(IDS_IOS_CHECK_PASSWORDS_NOW_BUTTON);
       _checkForProblemsItem.textColor = UIColor.cr_secondaryLabelColor;
       _checkForProblemsItem.accessibilityTraits |=
           UIAccessibilityTraitNotEnabled;
@@ -1110,7 +1130,7 @@ std::vector<std::unique_ptr<password_manager::PasswordForm>> CopyOf(
     return;
 
   _passwordProblemsItem.trailingImage = nil;
-  _passwordProblemsItem.enabled = YES;
+  _passwordProblemsItem.enabled = !self.editing;
   _passwordProblemsItem.indicatorHidden = YES;
   _passwordProblemsItem.infoButtonHidden = YES;
   _passwordProblemsItem.accessoryType = UITableViewCellAccessoryNone;
@@ -1570,16 +1590,10 @@ std::vector<std::unique_ptr<password_manager::PasswordForm>> CopyOf(
   }
 }
 
-#pragma mark - Testing
-
-#pragma mark - ChromeIdentityServiceObserver
+#pragma mark - ChromeAccountManagerServiceObserver
 
 - (void)identityListChanged {
   [self reloadData];
-}
-
-- (void)chromeIdentityServiceWillBeDestroyed {
-  _identityServiceObserver.reset();
 }
 
 #pragma mark - UIAdaptivePresentationControllerDelegate

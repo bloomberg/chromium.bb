@@ -12,8 +12,8 @@
 #import "base/test/ios/wait_util.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/password_form.h"
-#include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
+#include "components/password_manager/core/browser/password_store_interface.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -33,13 +33,13 @@ using chrome_test_util::SetUpAndReturnMockReauthenticationModuleForExport;
 
 namespace {
 
-scoped_refptr<password_manager::PasswordStore> GetPasswordStore() {
+scoped_refptr<password_manager::PasswordStoreInterface> GetPasswordStore() {
   // ServiceAccessType governs behaviour in Incognito: only modifications with
   // EXPLICIT_ACCESS, which correspond to user's explicit gesture, succeed.
   // This test does not deal with Incognito, and should not run in Incognito
   // context. Therefore IMPLICIT_ACCESS is used to let the test fail if in
   // Incognito context.
-  return IOSChromePasswordStoreFactory::GetForBrowserState(
+  return IOSChromePasswordStoreFactory::GetInterfaceForBrowserState(
       chrome_test_util::GetOriginalBrowserState(),
       ServiceAccessType::IMPLICIT_ACCESS);
 }
@@ -104,12 +104,7 @@ bool SaveToPasswordStore(const PasswordForm& form) {
   // When we retrieve the form from the store, |in_store| should be set.
   password_manager::PasswordForm expected_form = form;
   expected_form.in_store = password_manager::PasswordForm::Store::kProfileStore;
-  // TODO(crbug.com/1223022): Once all places that operate changes on forms
-  // via UpdateLogin properly set |password_issues|, setting them to an empty
-  // map should be part of the default constructor.
-  expected_form.password_issues =
-      base::flat_map<password_manager::InsecureType,
-                     password_manager::InsecurityMetadata>();
+
   // Check the result and ensure PasswordStore processed this.
   FakeStoreConsumer consumer;
   if (!consumer.FetchStoreResults()) {
@@ -188,6 +183,19 @@ static MockReauthenticationModule* _mockReauthenticationModule;
   example.password_value = base::SysNSStringToUTF16(password);
   example.url = GURL(base::SysNSStringToUTF16(origin));
   example.signon_realm = example.url.spec();
+  return SaveToPasswordStore(example);
+}
+
++ (BOOL)saveInsecurePassword:(NSString*)password
+                    userName:(NSString*)userName
+                      origin:(NSString*)origin {
+  PasswordForm example;
+  example.username_value = base::SysNSStringToUTF16(userName);
+  example.password_value = base::SysNSStringToUTF16(password);
+  example.url = GURL(base::SysNSStringToUTF16(origin));
+  example.signon_realm = example.url.spec();
+  example.password_issues.insert({password_manager::InsecureType::kLeaked,
+                                  password_manager::InsecurityMetadata()});
   return SaveToPasswordStore(example);
 }
 

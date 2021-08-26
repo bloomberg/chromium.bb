@@ -14,7 +14,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class Profile;
 class Browser;
@@ -29,7 +28,7 @@ class WebAppDialogManager;
 // this class serves a wide range of Web Applications <-> Browser purposes.
 class WebAppUiManagerImpl : public BrowserListObserver, public WebAppUiManager {
  public:
-  static WebAppUiManagerImpl* Get(Profile* profile);
+  static WebAppUiManagerImpl* Get(WebAppProvider* provider);
 
   explicit WebAppUiManagerImpl(Profile* profile);
   WebAppUiManagerImpl(const WebAppUiManagerImpl&) = delete;

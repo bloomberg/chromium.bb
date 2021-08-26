@@ -187,6 +187,8 @@ CSSValue* ConsumeDescriptor(StyleRule::RuleType rule_type,
     case StyleRule::kPage:
     case StyleRule::kKeyframes:
     case StyleRule::kKeyframe:
+    case StyleRule::kLayerBlock:
+    case StyleRule::kLayerStatement:
     case StyleRule::kNamespace:
     case StyleRule::kSupports:
     case StyleRule::kViewport:
@@ -313,8 +315,7 @@ CSSValue* AtRuleDescriptorParser::ParseAtPropertyDescriptor(
     case AtRuleDescriptorID::InitialValue: {
       // Note that we must retain leading whitespace here.
       return CSSVariableParser::ParseDeclarationValue(
-          g_null_atom, tokenized_value, false /* is_animation_tainted */,
-          context);
+          tokenized_value, false /* is_animation_tainted */, context);
     }
     case AtRuleDescriptorID::Inherits:
       range.ConsumeWhitespace();

@@ -18,6 +18,8 @@
 #include "test/i420_video_source.h"
 #include "test/util.h"
 
+#define NUM_LAG_VALUES 3
+
 namespace {
 typedef struct {
   const unsigned int min_kf_dist;
@@ -194,6 +196,10 @@ class ForcedKeyTestLarge
     return AOM_CODEC_OK == res_dec;
   }
 
+  void Frame1IsKey();
+  void ForcedFrameIsKey();
+  void ForcedFrameIsKeyCornerCases();
+
   ::libaom_test::TestMode encoding_mode_;
   int auto_alt_ref_;
   int fwd_kf_enabled_;
@@ -204,14 +210,18 @@ class ForcedKeyTestLarge
   bool is_kf_placement_violated_;
 };
 
-TEST_P(ForcedKeyTestLarge, Frame1IsKey) {
+void ForcedKeyTestLarge::Frame1IsKey() {
   const aom_rational timebase = { 1, 30 };
-  const int lag_values[] = { 3, 15, 25, -1 };
+  // 1st element of this 2D array is for good encoding mode and 2nd element
+  // is for RT encoding mode.
+  const int lag_values[2][NUM_LAG_VALUES] = { { 3, 15, 25 }, { 0, -1, -1 } };
+  int is_realtime = (encoding_mode_ == ::libaom_test::kRealTime);
 
   forced_kf_frame_num_ = 1;
-  for (int i = 0; lag_values[i] != -1; ++i) {
+  for (int i = 0; i < NUM_LAG_VALUES; ++i) {
+    if (lag_values[is_realtime][i] == -1) continue;
     frame_num_ = 0;
-    cfg_.g_lag_in_frames = lag_values[i];
+    cfg_.g_lag_in_frames = lag_values[is_realtime][i];
     is_kf_placement_violated_ = false;
     libaom_test::I420VideoSource video(
         TestFileName(), TestFileWidth(), TestFileHeight(), timebase.den,
@@ -224,7 +234,7 @@ TEST_P(ForcedKeyTestLarge, Frame1IsKey) {
 
 // This class checks the presence and placement of application
 // forced key frames.
-TEST_P(ForcedKeyTestLarge, ForcedFrameIsKey) {
+void ForcedKeyTestLarge::ForcedFrameIsKey() {
   const aom_rational timebase = { 1, 30 };
   const int lag_values[] = { 3, 15, 25, -1 };
 
@@ -253,10 +263,11 @@ TEST_P(ForcedKeyTestLarge, ForcedFrameIsKey) {
   }
 }
 
-TEST_P(ForcedKeyTestLarge, ForcedFrameIsKeyCornerCases) {
+void ForcedKeyTestLarge::ForcedFrameIsKeyCornerCases() {
   const aom_rational timebase = { 1, 30 };
   const int kf_offsets[] = { -2, -1, 1, 2, 0 };
   cfg_.g_lag_in_frames = 35;
+  if (encoding_mode_ == ::libaom_test::kRealTime) cfg_.g_lag_in_frames = 0;
 
   for (int i = 0; kf_offsets[i] != 0; ++i) {
     frame_num_ = 0;
@@ -278,6 +289,18 @@ AV1_INSTANTIATE_TEST_SUITE(KeyFrameIntervalTestLarge,
                            ::testing::ValuesIn(kfTestParams),
                            ::testing::Values(AOM_Q, AOM_VBR, AOM_CBR, AOM_CQ));
 
+TEST_P(ForcedKeyTestLarge, Frame1IsKey) { Frame1IsKey(); }
+TEST_P(ForcedKeyTestLarge, ForcedFrameIsKey) { ForcedFrameIsKey(); }
+TEST_P(ForcedKeyTestLarge, ForcedFrameIsKeyCornerCases) {
+  ForcedFrameIsKeyCornerCases();
+}
+
+class ForcedKeyRTTestLarge : public ForcedKeyTestLarge {};
+
+TEST_P(ForcedKeyRTTestLarge, Frame1IsKey) { Frame1IsKey(); }
+TEST_P(ForcedKeyRTTestLarge, ForcedFrameIsKeyCornerCases) {
+  ForcedFrameIsKeyCornerCases();
+}
 // TODO(anyone): Add CBR to list of rc_modes once forced kf placement after
 // lag in frames bug is fixed.
 AV1_INSTANTIATE_TEST_SUITE(ForcedKeyTestLarge,
@@ -286,4 +309,9 @@ AV1_INSTANTIATE_TEST_SUITE(ForcedKeyTestLarge,
                            ::testing::Values(0, 1), ::testing::Values(0, 1),
                            ::testing::Values(2, 5),
                            ::testing::Values(AOM_Q, AOM_VBR, AOM_CQ));
+AV1_INSTANTIATE_TEST_SUITE(ForcedKeyRTTestLarge,
+                           ::testing::Values(::libaom_test::kRealTime),
+                           ::testing::Values(0), ::testing::Values(0),
+                           ::testing::Values(7, 9),
+                           ::testing::Values(AOM_Q, AOM_VBR, AOM_CBR));
 }  // namespace

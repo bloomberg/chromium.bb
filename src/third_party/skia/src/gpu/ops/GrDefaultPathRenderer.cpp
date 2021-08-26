@@ -28,6 +28,7 @@
 #include "src/gpu/geometry/GrStyledShape.h"
 #include "src/gpu/ops/GrMeshDrawOp.h"
 #include "src/gpu/ops/GrSimpleMeshDrawOpHelperWithStencil.h"
+#include "src/gpu/v1/SurfaceDrawContext_v1.h"
 
 GrDefaultPathRenderer::GrDefaultPathRenderer() {
 }
@@ -591,7 +592,7 @@ private:
 
 }  // anonymous namespace
 
-bool GrDefaultPathRenderer::internalDrawPath(GrSurfaceDrawContext* surfaceDrawContext,
+bool GrDefaultPathRenderer::internalDrawPath(skgpu::v1::SurfaceDrawContext* sdc,
                                              GrPaint&& paint,
                                              GrAAType aaType,
                                              const GrUserStencilSettings& userStencilSettings,
@@ -599,7 +600,7 @@ bool GrDefaultPathRenderer::internalDrawPath(GrSurfaceDrawContext* surfaceDrawCo
                                              const SkMatrix& viewMatrix,
                                              const GrStyledShape& shape,
                                              bool stencilOnly) {
-    auto context = surfaceDrawContext->recordingContext();
+    auto context = sdc->recordingContext();
 
     SkASSERT(GrAAType::kCoverage != aaType);
     SkPath path;
@@ -687,7 +688,7 @@ bool GrDefaultPathRenderer::internalDrawPath(GrSurfaceDrawContext* surfaceDrawCo
     SkScalar srcSpaceTol = GrPathUtils::scaleToleranceToSrc(tol, viewMatrix, path.getBounds());
 
     SkRect devBounds;
-    GetPathDevBounds(path, surfaceDrawContext->asRenderTargetProxy()->backingStoreDimensions(),
+    GetPathDevBounds(path, sdc->asRenderTargetProxy()->backingStoreDimensions(),
                      viewMatrix, &devBounds);
 
     for (int p = 0; p < passCount; ++p) {
@@ -713,9 +714,9 @@ bool GrDefaultPathRenderer::internalDrawPath(GrSurfaceDrawContext* surfaceDrawCo
                                                                                viewMatrix;
             // This is a non-coverage aa rect op since we assert aaType != kCoverage at the start
             assert_alive(paint);
-            surfaceDrawContext->stencilRect(clip, passes[p], std::move(paint),
-                                            GrAA(aaType == GrAAType::kMSAA), viewM, bounds,
-                                            &localMatrix);
+            sdc->stencilRect(clip, passes[p], std::move(paint),
+                             GrAA(aaType == GrAAType::kMSAA), viewM, bounds,
+                             &localMatrix);
         } else {
             bool stencilPass = stencilOnly || passCount > 1;
             GrOp::Owner op;
@@ -730,7 +731,7 @@ bool GrDefaultPathRenderer::internalDrawPath(GrSurfaceDrawContext* surfaceDrawCo
                 op = DefaultPathOp::Make(context, std::move(paint), path, srcSpaceTol, newCoverage,
                                          viewMatrix, isHairline, aaType, devBounds, passes[p]);
             }
-            surfaceDrawContext->addDrawOp(clip, std::move(op));
+            sdc->addDrawOp(clip, std::move(op));
         }
     }
     return true;

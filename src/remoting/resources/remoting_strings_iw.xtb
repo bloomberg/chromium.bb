@@ -11,6 +11,7 @@
 <translation id="1546934824884762070">אירעה שגיאה לא צפויה. דיווח על בעיה זו למפתחים.</translation>
 <translation id="1697532407822776718">הכול מוכן!</translation>
 <translation id="1742469581923031760">ההתחברות מתבצעת…</translation>
+<translation id="177040763384871009">כדי שקישורים שנלחצים במכשיר מרוחק ייפתחו בדפדפן הלקוח, צריך להחליף את דפדפן האינטרנט של המערכת ולהתקין במקומו את "<ph name="URL_FORWARDER_NAME" />".</translation>
 <translation id="177096447311351977">‏IP הערוץ של הלקוח: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' ערוץ='<ph name="CHANNEL_TYPE" />' חיבור='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1897488610212723051">מחיקה</translation>
 <translation id="2009755455353575666">החיבור נכשל</translation>
@@ -129,6 +130,7 @@
 <translation id="6963936880795878952">החיבורים למחשב המרוחק חסומים באופן זמני משום שמישהו ניסה להתחבר אליו עם קוד אימות לא חוקי. יש לנסות שוב מאוחר יותר.</translation>
 <translation id="6965382102122355670">אישור</translation>
 <translation id="6985691951107243942">ברצונך באמת להשבית את החיבורים המרוחקים אל <ph name="HOSTNAME" />? אם דעתך תשתנה, יהיה עליך להיכנס למחשב זה כדי להפעיל מחדש את החיבורים.</translation>
+<translation id="6998890551706945177">התקבלה בקשת גישה מאת <ph name="CLIENT_USERNAME" /> לצורך הצגת המחשב שלך ושליטה בו. עליך להקיש על ''<ph name="IDS_SHARE_CONFIRM_DIALOG_DECLINE" />'' אם המשתמש הזה לא מוכר לך או במקרה שברצונך לבצע שינויים לפני השיתוף.  אחרת, יש להקיש על ''<ph name="IDS_SHARE_CONFIRM_DIALOG_CONFIRM" />'' כדי לאשר את החיבור.</translation>
 <translation id="7019153418965365059">שגיאת מארח לא מזוהה: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">סיוע מרחוק</translation>
 <translation id="7026930240735156896">יש להגדיר את המחשב לגישה מרחוק בהתאם להוראות</translation>
@@ -142,6 +144,7 @@
 <translation id="7434397035092923453">נדחתה גישה עבור לקוח: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">לקוח שהתחבר: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7526139040829362392">החלפת חשבון</translation>
+<translation id="7535110896613603182">פתיחת ההגדרות של אפליקציות ברירת המחדל</translation>
 <translation id="7628469622942688817">אני רוצה לזכור את קוד האימות שלי במכשיר הזה.</translation>
 <translation id="7649070708921625228">עזרה</translation>
 <translation id="7658239707568436148">ביטול</translation>

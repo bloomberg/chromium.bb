@@ -125,11 +125,6 @@ _OS_SPECIFIC_FILTER['mac'] = [
     'ChromeDriverTestLegacy.testContextMenuEventFired',
     # Flaky: https://crbug.com/1157533.
     'ChromeDriverTest.testShadowDomFindElement',
-    # Failing: https://crbug.com/1223643.
-    'ChromeDriverSecureContextTest.testRemoveCredential',
-    'ChromeDriverSecureContextTest.testRemoveAllCredentials',
-    'ChromeDriverSecureContextTest.testAddVirtualAuthenticatorDefaultParams',
-    'ChromeDriverSecureContextTest.testSetUserVerified',
 ]
 
 _DESKTOP_NEGATIVE_FILTER = [
@@ -828,6 +823,7 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self._driver.SwitchToFrame('id')
     self.assertTrue(self._driver.ExecuteScript('return window.top != window'))
     self._driver.ExecuteScript('parent.postMessage("remove", "*");')
+    self._driver.SwitchToMainFrame()
     self.assertTrue(self._driver.ExecuteScript('return window.top == window'))
 
   def testSwitchToStaleFrame(self):

@@ -124,6 +124,7 @@ static_library("metrics") {
     "//build:chromeos_buildflags",
     "//components/prefs",
     "//components/variations",
+    "//components/variations/service:constants",
     "//components/version_info:version_info",
     "//crypto",
     "//extensions/buildflags",
@@ -139,7 +140,10 @@ static_library("metrics") {
   }
 
   if (is_ios) {
-    sources += [ "drive_metrics_provider_ios.mm" ]
+    sources += [
+      "clean_exit_beacon_ios.mm",
+      "drive_metrics_provider_ios.mm",
+    ]
   }
 
   if (is_linux || is_chromeos) {
@@ -282,7 +286,8 @@ static_library("net") {
     "//components/encrypted_messages:encrypted_messages",
     "//components/variations",
     "//net",
-    "//services/network/public/cpp:cpp",
+    "//services/network/public/cpp",
+    "//services/network/public/mojom",
     "//third_party/metrics_proto",
     "//third_party/zlib/google:compression_utils",
     "//url",
@@ -469,12 +474,14 @@ source_set("unit_tests") {
     "//components/sync/base",
     "//components/sync/driver:test_support",
     "//components/variations",
+    "//components/variations/service:constants",
     "//extensions/buildflags",
     "//mojo/public/cpp/bindings",
     "//net:test_support",
     "//services/network:test_support",
     "//services/network/public/cpp:cpp",
     "//services/service_manager/public/cpp",
+    "//testing/gmock",
     "//testing/gtest",
     "//third_party/metrics_proto",
     "//third_party/zlib/google:compression_utils",

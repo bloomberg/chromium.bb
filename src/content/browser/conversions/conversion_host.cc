@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/check.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -18,6 +17,7 @@
 #include "content/browser/conversions/conversion_manager_impl.h"
 #include "content/browser/conversions/conversion_page_metrics.h"
 #include "content/browser/conversions/conversion_policy.h"
+#include "content/browser/conversions/storable_conversion.h"
 #include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
@@ -40,6 +40,8 @@
 namespace content {
 
 namespace {
+
+ConversionHost* g_receiver_for_testing = nullptr;
 
 // Abstraction that wraps an iterator to a map. When this goes out of the scope,
 // the underlying iterator is erased from the map. This is useful for control
@@ -72,7 +74,7 @@ void RecordRegisterImpressionAllowed(bool allowed) {
   base::UmaHistogramBoolean("Conversions.RegisterImpressionAllowed", allowed);
 }
 
-bool IsAndroidAppOrigin(absl::optional<url::Origin> origin) {
+bool IsAndroidAppOrigin(const absl::optional<url::Origin>& origin) {
 #if defined(OS_ANDROID)
   return origin && origin->scheme() == kAndroidAppScheme;
 #else
@@ -91,9 +93,7 @@ ConversionHost::ConversionHost(
     std::unique_ptr<ConversionManager::Provider> conversion_manager_provider)
     : WebContentsObserver(web_contents),
       conversion_manager_provider_(std::move(conversion_manager_provider)),
-      receiver_(web_contents,
-                this,
-                content::WebContentsFrameReceiverSetPassKey()) {
+      receivers_(web_contents, this) {
   // TODO(csharrison): When https://crbug.com/1051334 is resolved, add a DCHECK
   // that the kConversionMeasurement feature is enabled.
 }
@@ -162,44 +162,72 @@ void ConversionHost::DidStartNavigation(NavigationHandle* navigation_handle) {
 }
 
 void ConversionHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
+  // Observe only navigation toward a new document in the main frame.
+  // Impressions should never be attached to same-document navigations but can
+  // be the result of a bad renderer.
+  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+  // frames. This caller was converted automatically to the primary main frame
+  // to preserve its semantics. Follow up to confirm correctness.
+  if (!navigation_handle->IsInPrimaryMainFrame() ||
+      navigation_handle->IsSameDocument()) {
+    return;
+  }
+
   ConversionManager* conversion_manager =
       conversion_manager_provider_->GetManager(web_contents());
   if (!conversion_manager) {
     DCHECK(navigation_impression_origins_.empty());
+    DCHECK(!pending_attribution_);
     if (navigation_handle->GetImpression())
       RecordRegisterImpressionAllowed(false);
     return;
   }
 
-  ScopedMapDeleter<NavigationImpressionOriginMap> it(
-      &navigation_impression_origins_, navigation_handle->GetNavigationId());
+  ScopedMapDeleter<NavigationImpressionOriginMap>
+      navigation_impression_origin_it(&navigation_impression_origins_,
+                                      navigation_handle->GetNavigationId());
 
-  // If an impression is not associated with a main frame navigation, ignore it.
-  // If the navigation did not commit, committed to a Chrome error page, or was
-  // same document, ignore it. Impressions should never be attached to
-  // same-document navigations but can be the result of a bad renderer.
-  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
-  // frames. This caller was converted automatically to the primary main frame
-  // to preserve its semantics. Follow up to confirm correctness.
-  if (!navigation_handle->IsInPrimaryMainFrame() ||
-      !navigation_handle->HasCommitted() || navigation_handle->IsErrorPage() ||
-      navigation_handle->IsSameDocument()) {
+  absl::optional<PendingAttribution> pending_attribution =
+      std::move(pending_attribution_);
+  pending_attribution_ = absl::nullopt;
+
+  // Separate from above because we need to clear the navigation related state
+  if (!navigation_handle->HasCommitted())
+    return;
+
+  // Don't observe error page navs, and don't let impressions be registered for
+  // error pages.
+  if (navigation_handle->IsErrorPage()) {
+    last_navigation_allows_attribution_ = false;
     return;
   }
 
+  // We have a new cross-document navigation.
+  last_navigation_allows_attribution_ = true;
+
   conversion_page_metrics_ = std::make_unique<ConversionPageMetrics>();
   bool is_android_app_origin =
-      IsAndroidAppOrigin(navigation_handle->GetInitiatorOrigin());
+      IsAndroidAppOrigin(navigation_handle->GetInitiatorOrigin()) ||
+      (pending_attribution &&
+       IsAndroidAppOrigin(pending_attribution->initiator_origin));
 
   // If we were not able to access the impression origin, ignore the
   // navigation.
-  if (!it && !is_android_app_origin)
+  if (!navigation_impression_origin_it && !pending_attribution &&
+      !is_android_app_origin) {
     return;
-  url::Origin impression_origin = is_android_app_origin
-                                      ? *navigation_handle->GetInitiatorOrigin()
-                                      : std::move((*it.get())->second);
-  DCHECK(navigation_handle->GetImpression());
-  const blink::Impression& impression = *(navigation_handle->GetImpression());
+  }
+  const url::Origin& impression_origin =
+      pending_attribution
+          ? pending_attribution->initiator_origin
+          : (is_android_app_origin
+                 ? *navigation_handle->GetInitiatorOrigin()
+                 : (*navigation_impression_origin_it.get())->second);
+
+  DCHECK(navigation_handle->GetImpression() || pending_attribution);
+  const blink::Impression& impression =
+      pending_attribution ? pending_attribution->impression
+                          : *(navigation_handle->GetImpression());
 
   // If the impression's conversion destination does not match the final top
   // frame origin of this new navigation ignore it.
@@ -263,7 +291,7 @@ void ConversionHost::VerifyAndStoreImpression(
 void ConversionHost::RegisterConversion(
     blink::mojom::ConversionPtr conversion) {
   content::RenderFrameHost* render_frame_host =
-      receiver_.GetCurrentTargetFrame();
+      receivers_.GetCurrentTargetFrame();
 
   // If there is no conversion manager available, ignore any conversion
   // registrations.
@@ -309,10 +337,13 @@ void ConversionHost::RegisterConversion(
       conversion_manager->GetConversionPolicy()
           .GetSanitizedEventSourceTriggerData(
               conversion->event_source_trigger_data),
-      conversion->priority);
+      conversion->priority,
+      conversion->dedup_key.is_null()
+          ? absl::nullopt
+          : absl::make_optional(conversion->dedup_key->value));
 
   if (conversion_page_metrics_)
-    conversion_page_metrics_->OnConversion(storable_conversion);
+    conversion_page_metrics_->OnConversion();
   conversion_manager->HandleConversion(std::move(storable_conversion));
 }
 
@@ -328,11 +359,64 @@ void ConversionHost::RegisterImpression(const blink::Impression& impression) {
       conversion_manager_provider_->GetManager(web_contents());
   if (!conversion_manager)
     return;
-  const url::Origin& impression_origin = receiver_.GetCurrentTargetFrame()
+  const url::Origin& impression_origin = receivers_.GetCurrentTargetFrame()
                                              ->GetMainFrame()
                                              ->GetLastCommittedOrigin();
   VerifyAndStoreImpression(StorableImpression::SourceType::kEvent,
                            impression_origin, impression, *conversion_manager);
+}
+
+void ConversionHost::ReportAttributionForCurrentNavigation(
+    const url::Origin& impression_origin,
+    const blink::Impression& impression) {
+  ConversionManager* conversion_manager =
+      conversion_manager_provider_->GetManager(web_contents());
+  if (!conversion_manager)
+    return;
+  // If a navigation is ongoing, add the attribution to that navigation.
+  if (web_contents()->GetController().GetPendingEntry()) {
+    pending_attribution_ = {impression_origin, impression};
+    return;
+  }
+
+  // The navigation has already committed, so add the attribution to the last
+  // committed navigation.
+
+  if (!last_navigation_allows_attribution_)
+    return;
+  // Prevent multiple attributions using the same navigation.
+  last_navigation_allows_attribution_ = false;
+
+  // Ensure the committed origin matches the destination for the conversion,
+  // but allow subdomains to differ.
+  if (net::SchemefulSite(
+          web_contents()->GetMainFrame()->GetLastCommittedOrigin()) !=
+      net::SchemefulSite(impression.conversion_destination)) {
+    return;
+  }
+
+  // No navigation in progress and we've already committed the destination for
+  // the conversion, so just store the impression.
+  VerifyAndStoreImpression(StorableImpression::SourceType::kNavigation,
+                           impression_origin, impression, *conversion_manager);
+}
+
+// static
+void ConversionHost::BindReceiver(
+    mojo::PendingAssociatedReceiver<blink::mojom::ConversionHost> receiver,
+    RenderFrameHost* rfh) {
+  if (g_receiver_for_testing) {
+    g_receiver_for_testing->receivers_.Bind(rfh, std::move(receiver));
+    return;
+  }
+
+  auto* web_contents = WebContents::FromRenderFrameHost(rfh);
+  if (!web_contents)
+    return;
+  auto* conversion_host = ConversionHost::FromWebContents(web_contents);
+  if (!conversion_host)
+    return;
+  conversion_host->receivers_.Bind(rfh, std::move(receiver));
 }
 
 // static
@@ -372,6 +456,11 @@ blink::mojom::ImpressionPtr ConversionHost::MojoImpressionFromImpression(
   return blink::mojom::Impression::New(
       impression.conversion_destination, impression.reporting_origin,
       impression.impression_data, impression.expiry, impression.priority);
+}
+
+// static
+void ConversionHost::SetReceiverImplForTesting(ConversionHost* impl) {
+  g_receiver_for_testing = impl;
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(ConversionHost)

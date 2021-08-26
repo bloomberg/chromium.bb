@@ -4,6 +4,11 @@
 
 
 ------------------------------------------------------------------
+
+Affects:
+    libavcodec/h263dec.c
+
+------------------------------------------------------------------
 commit 35a9efdd9ee40dff4a5e45f0039328cd893c1264
 Author: Dale Curtis <dalecurtis@chromium.org>
 Date:   Fri Feb 3 16:12:21 2012 -0800
@@ -54,7 +59,6 @@ Date:   Fri Feb 3 16:12:21 2012 -0800
     TEST=ffmpeg_regression_tests
 
 Affects:
-    libavcodec/h263dec.c
     libavcodec/h264_cabac.c
     libavcodec/h264_cavlc.c
     libavcodec/h264_parser.c
@@ -971,27 +975,105 @@ Affects:
     libavcodec/h2645_parse.c
 
 ------------------------------------------------------------------
-commit 45705ea1ee868ee1ebe7f0c0fb68e037c93d021a
+commit 8bc09e53d14bc76f69b7397253f174a4e5431059
 Author: Ted Meyer <tmathmeyer@google.com>
-Date:   Mon May 10 19:17:07 2021 -0700
+Date:   Sat May 15 08:13:34 2021 -0700
 
-    Re-add rotation metadata tag in mov.c
+    Update FFMpeg
 
-    in ffmpeg_common.c in chromium, specifically the
-    AVStreamToVideoDecoderConfig function, there's no way to get the
-    rotation matrix from the AVStream alone. FFMpeg used to set this
-    metadata tag, but it was removed in version 59. This patch just re-adds
-    it so that we don't lose our ability to render rotated videos properly.
+    changes including:
+     - Re-add rotation metadata tag in mov.c - AVStreamToVideoDecoderConfig
+       needs rotation metadata from ffmpeg, since it only has access to the
+       metadata dict, and not to the raw matrix in the private data section.
+     - No more mips on linux
+
+    > git diff origin/master configure | grep '\+.*\[autodetect\]'
+     - no output -
+
+
+    Bug: 1208571
+    Change-Id: I40fe02f1c16de9b76d355f3ad92dd65b02b6c421
+    Reviewed-on: https://chromium-review.googlesource.com/c/chromium/third_party/ffmpeg/+/2885985
+    Reviewed-by: Frank Liberato <liberato@chromium.org>
+    Reviewed-by: Matthew Wolenetz <wolenetz@chromium.org>
 
 Affects:
     libavformat/mov.c
 
 ------------------------------------------------------------------
-commit aa56606640e56158e412b55eb1bde1b9af5f5770
+commit e058e9eb798cc07b52de90deda4b2d377578a7b8
 Author: Ted Meyer <tmathmeyer@google.com>
-Date:   Fri Jun 4 12:10:16 2021 -0700
+Date:   Fri Jun 4 12:19:40 2021 -0700
 
     Initialize variables to fix compilation warning
 
+    Bug:1208571
+    Change-Id: Id35eee47d18ffcd58293fa2cbd1c8fd9c93ba1a4
+    Reviewed-on: https://chromium-review.googlesource.com/c/chromium/third_party/ffmpeg/+/2939635
+    Reviewed-by: Frank Liberato <liberato@chromium.org>
+
 Affects:
     libavutil/x86/tx_float_init.c
+
+------------------------------------------------------------------
+commit bab99aeaa95b74391a3c06db97da3d350cb39fe4
+Author: liberato@chromium.org <liberato@chromium.org>
+Date:   Wed Jul 7 17:36:34 2021 -0700
+
+    Removed UNCHECKED_BITSTREAM_READER from jpeglsenc.c
+
+Affects:
+    libavcodec/jpeglsenc.c
+
+------------------------------------------------------------------
+commit 95aab0fd83619408995720ce53d7a74790580220
+Author: liberato@chromium.org <liberato@chromium.org>
+Date:   Wed Jul 7 19:01:22 2021 -0700
+
+    Add av_stream_get_first_dts for Chromium
+
+Affects:
+    libavformat/avformat.h
+    libavformat/utils.c
+
+------------------------------------------------------------------
+commit bc096b909c50e184cc1712f4fbcb6e59e5832515
+Merge: cfc3c73207 b9176dbfb7
+Author: liberato@chromium.org <liberato@chromium.org>
+Date:   Fri Jul 30 14:53:37 2021 -0700
+
+    Merge remote-tracking branch 'upstream/master' into sushi-2021-07-30-14-52-49
+
+     Conflicts:
+            libavcodec/h263dec.c -- UNCHECKED_BITSTREAM_READER
+
+Affects:
+    libavcodec/h263dec.c
+
+------------------------------------------------------------------
+commit 628f5287515a4359354922763fabb93f86c00324
+Author: liberato@chromium.org <liberato@chromium.org>
+Date:   Fri Jul 30 14:56:01 2021 -0700
+
+    Delete GPL'd macos_kperf.* before merge with chromium
+
+Affects:
+    libavutil/macos_kperf.c
+    libavutil/macos_kperf.h
+
+------------------------------------------------------------------
+commit d67214044b87280d6537d60717de1f20ba2d0741
+Author: liberato@chromium.org <liberato@chromium.org>
+Date:   Fri Jul 30 18:40:25 2021 -0700
+
+    Un-fix ogg vorbis to match previous behavior.
+
+    Rather than change chrome's longstanding behavior as part of the m94
+    roll, undo (comment out) the small patch that causes it.  We can
+    revisit this behavior change separately from the roll.
+
+    Bug: 1234960
+
+Affects:
+    libavformat/oggparsevorbis.c
+

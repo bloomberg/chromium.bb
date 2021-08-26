@@ -55,9 +55,12 @@ using net::test_server::HttpResponse;
 
 const base::FilePath::CharType kTestName[] = FILE_PATH_LITERAL("heuristics");
 
-const std::set<base::FilePath::StringType>& GetFailingTestNames() {
-  static auto* failing_test_names = new std::set<base::FilePath::StringType>{};
-  return *failing_test_names;
+// To disable a data driven test, please add the name of the test file
+// (i.e., "NNN_some_site.html") as a literal to the initializer_list given
+// to the failing_test_names constructor.
+const auto& GetFailingTestNames() {
+  static std::set<base::FilePath::StringType> failing_test_names{};
+  return failing_test_names;
 }
 
 const base::FilePath& GetTestDataDir() {
@@ -174,7 +177,9 @@ FormStructureBrowserTest::FormStructureBrowserTest()
     : DataDrivenTest(GetTestDataDir()) {
   feature_list_.InitWithFeatures(
       // Enabled
-      {// TODO(crbug.com/1098943): Remove once experiment is over.
+      {// TODO(crbug.com/1187842): Remove once experiment is over.
+       features::kAutofillAcrossIframes,
+       // TODO(crbug.com/1098943): Remove once experiment is over.
        features::kAutofillEnableSupportForMoreStructureInNames,
        // TODO(crbug.com/1125978): Remove once launched.
        features::kAutofillEnableSupportForMoreStructureInAddresses,
@@ -254,8 +259,7 @@ std::unique_ptr<HttpResponse> FormStructureBrowserTest::HandleRequest(
   return std::move(response);
 }
 
-// Times out on all platforms.  http://crbug.com/1216328
-IN_PROC_BROWSER_TEST_P(FormStructureBrowserTest, DISABLED_DataDrivenHeuristics) {
+IN_PROC_BROWSER_TEST_P(FormStructureBrowserTest, DataDrivenHeuristics) {
   // Prints the path of the test to be executed.
   LOG(INFO) << GetParam().MaybeAsASCII();
   bool is_expected_to_pass =

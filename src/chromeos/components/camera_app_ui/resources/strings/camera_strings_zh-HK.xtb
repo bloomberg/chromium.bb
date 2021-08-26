@@ -3,6 +3,8 @@
 <translationbundle lang="zh-HK">
 <translation id="1175958423215084756">已偵測到連結。<ph name="HOSTNAME" /></translation>
 <translation id="1276998909102132017">相片集嘅相</translation>
+<translation id="1300209025925956156">掃瞄文件</translation>
+<translation id="137991641490787891"><ph name="ASPECT_RATIO_WIDTH" />。按下搜尋鍵 + 向左箭咀即可使用。</translation>
 <translation id="1430915738399379752">列印</translation>
 <translation id="1467231725790366244">抆走咗 <ph name="CAMERA" />。</translation>
 <translation id="1473110567575736769">3 秒計時器</translation>
@@ -31,7 +33,6 @@
 <translation id="2549985041256363841">開始錄影</translation>
 <translation id="2599796128805996109">後置鏡頭</translation>
 <translation id="2879583609344924966">插入咗 <ph name="CAMERA" />。</translation>
-<translation id="2912439424121107408">此裝置不支援專業模式</translation>
 <translation id="2968794441791257519">使用相機拍攝的相片和影片將會移至「下載」資料夾，您可以在「檔案」中存取這些相片和影片。
 
         擁有儲存空間權限的應用程式可以存取您的相片和影片。</translation>
@@ -42,15 +43,16 @@
 <translation id="3227137524299004712">麥克風</translation>
 <translation id="3240426699337459095">連結已複製</translation>
 <translation id="3259149966178251584">相機解像度</translation>
+<translation id="3260401663013584785">無法偵測文件</translation>
 <translation id="3448774564454087943">影片太短，因此系統並未儲存影片</translation>
 <translation id="3517926952904427380">無法拍攝肖像相片</translation>
 <translation id="3569311554794739032">您確定要移除「<ph name="FILE" />」嗎？</translation>
-<translation id="3733597664308256288">推出咗新嘅相機控制項。㩒搜尋鍵 + 向右箭咀就可以用。</translation>
 <translation id="3810838688059735925">影片</translation>
 <translation id="3838931309141338733">掃描條碼</translation>
 <translation id="3892148308691398805">複製文字</translation>
 <translation id="4000398125663085899">新相片和影片現在會儲存在「檔案」應用程式內的資料夾：[我的檔案] &gt; [相機]</translation>
 <translation id="4118525110028899586">暫停錄影</translation>
+<translation id="4121305183798804752">偵測到文件</translation>
 <translation id="4269820728363426813">複製連結網址</translation>
 <translation id="4279490309300973883">鏡像</translation>
 <translation id="4329152592498422850">切換至正方形相片拍攝模式</translation>
@@ -65,10 +67,13 @@
 <translation id="5057360777601936059">您的相機目前無法使用。
         請檢查相機是否正確連接。</translation>
 <translation id="5152121255775685072">前往相片集</translation>
+<translation id="520537883758714667">文件掃瞄功能現已推出</translation>
 <translation id="5268823927180092501">在所有相機上啟用文件模式</translation>
 <translation id="5422455049771430511">您的相片和影片都放在新的位置</translation>
+<translation id="5444515100983837161">將鏡頭對準文件，確認各邊都在方框內。如要獲得最佳的掃瞄效果，請將文件與背景的顏色區分起來。</translation>
 <translation id="5671277269877808209">正方形</translation>
 <translation id="5753488212459587150">啟用專業模式</translation>
+<translation id="5759254179196327752">掃瞄文件</translation>
 <translation id="5775960006311140197">專業模式</translation>
 <translation id="5869546221129391014">網格</translation>
 <translation id="5975083100439434680">縮小</translation>
@@ -82,6 +87,7 @@
 
 如果您的意見和圖片或影片品質有關，請附上範例相片或影片並說明問題 (例如相片太暗或無法聚焦)。</translation>
 <translation id="6420689864531458495">(<ph name="ASPECT_RATIO_WIDTH" />：<ph name="ASPECT_RATIO_HEIGHT" /> - <ph name="WIDTH" />x<ph name="HEIGHT" />) <ph name="MEGAPIXEL" /> 百萬像素</translation>
+<translation id="667999046851023355">文件</translation>
 <translation id="6681668084120808868">拍攝相片</translation>
 <translation id="6778482348691154169">無法拍照</translation>
 <translation id="695140971690006676">全部重設</translation>
@@ -108,11 +114,13 @@
 <translation id="8425673304802773841">向下傾斜</translation>
 <translation id="8428213095426709021">設定</translation>
 <translation id="8687491812650032292">高清畫質 <ph name="HEIGHT" />p (<ph name="WIDTH" />：<ph name="HEIGHT" />)</translation>
+<translation id="8712637175834984815">我知道了</translation>
 <translation id="8732462232047530626">預覽元數據</translation>
 <translation id="8815966864175525708">切換至肖像相片拍攝模式</translation>
 <translation id="8828441885228359828">恢復錄影</translation>
 <translation id="8870695351537079478">無法開始錄影</translation>
 <translation id="8903921497873541725">放大</translation>
+<translation id="9045010116236796332">將鏡頭對準文件，確認各邊都在方框內</translation>
 <translation id="9045155556724273246">10 秒</translation>
 <translation id="945522503751344254">提供意見反映</translation>
 </translationbundle>

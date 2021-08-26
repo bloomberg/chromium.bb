@@ -420,6 +420,12 @@ bool GeneratorImpl::EmitType(std::ostream& out, const ast::Type* ty) {
     if (!EmitType(out, ptr->type())) {
       return false;
     }
+    if (ptr->access() != ast::Access::kUndefined) {
+      out << ", ";
+      if (!EmitAccess(out, ptr->access())) {
+        return false;
+      }
+    }
     out << ">";
   } else if (auto* atomic = ty->As<ast::Atomic>()) {
     out << "atomic<";
@@ -434,11 +440,13 @@ bool GeneratorImpl::EmitType(std::ostream& out, const ast::Type* ty) {
       out << "_comparison";
     }
   } else if (ty->Is<ast::ExternalTexture>()) {
-    out << "external_texture";
+    out << "texture_external";
   } else if (auto* texture = ty->As<ast::Texture>()) {
     out << "texture_";
     if (texture->Is<ast::DepthTexture>()) {
       out << "depth_";
+    } else if (texture->Is<ast::DepthMultisampledTexture>()) {
+      out << "depth_multisampled_";
     } else if (texture->Is<ast::SampledTexture>()) {
       /* nothing to emit */
     } else if (texture->Is<ast::MultisampledTexture>()) {
@@ -688,6 +696,8 @@ bool GeneratorImpl::EmitDecorations(std::ostream& out,
       out << "size(" << size->size() << ")";
     } else if (auto* align = deco->As<ast::StructMemberAlignDecoration>()) {
       out << "align(" << align->align() << ")";
+    } else if (auto* stride = deco->As<ast::StrideDecoration>()) {
+      out << "stride(" << stride->stride() << ")";
     } else if (auto* internal = deco->As<ast::InternalDecoration>()) {
       out << "internal(" << internal->InternalName() << ")";
     } else {
@@ -1034,17 +1044,20 @@ bool GeneratorImpl::EmitForLoop(ast::ForLoopStatement* stmt) {
       ScopedParen sp(out);
       switch (init_buf.lines.size()) {
         case 0:  // No initializer
-          out << ";";
           break;
         case 1:  // Single line initializer statement
-          out << init_buf.lines[0].content;
+          out << TrimSuffix(init_buf.lines[0].content, ";");
           break;
         default:  // Block initializer statement
-          current_buffer_->Append(init_buf);
+          for (size_t i = 1; i < init_buf.lines.size(); i++) {
+            // Indent all by the first line
+            init_buf.lines[i].indent += current_buffer_->current_indent;
+          }
+          out << TrimSuffix(init_buf.String(), "\n");
           break;
       }
 
-      out << " ";
+      out << "; ";
 
       if (auto* cond = stmt->condition()) {
         if (!EmitExpression(out, cond)) {
@@ -1056,13 +1069,16 @@ bool GeneratorImpl::EmitForLoop(ast::ForLoopStatement* stmt) {
 
       switch (cont_buf.lines.size()) {
         case 0:  // No continuing
-          out << ";";
           break;
         case 1:  // Single line continuing statement
           out << TrimSuffix(cont_buf.lines[0].content, ";");
           break;
         default:  // Block continuing statement
-          current_buffer_->Append(cont_buf);
+          for (size_t i = 1; i < cont_buf.lines.size(); i++) {
+            // Indent all by the first line
+            cont_buf.lines[i].indent += current_buffer_->current_indent;
+          }
+          out << TrimSuffix(cont_buf.String(), "\n");
           break;
       }
     }

@@ -285,7 +285,7 @@ try_.chromium_android_builder(
 )
 
 try_.chromium_android_builder(
-    name = "android-11-x86-fyi-rel",
+    name = "android-11-x86-rel",
 )
 
 try_.chromium_android_builder(
@@ -809,9 +809,7 @@ try_.chromium_chromiumos_builder(
     name = "lacros-arm-generic-rel",
     builderless = not settings.is_main,
     main_list_view = "try",
-    tryjob = try_.job(
-        experiment_percentage = 20,
-    ),
+    tryjob = try_.job(),
     os = os.LINUX_BIONIC_REMOVE,
 )
 
@@ -886,6 +884,9 @@ try_.chromium_chromiumos_builder(
             ".+/[+]/chromeos/dbus/chromebox_for_meetings/.+",
             ".+/[+]/chromeos/services/chromebox_for_meetings/.+",
             ".+/[+]/chrome/browser/chromeos/chromebox_for_meetings/.+",
+            ".+/[+]/chrome/browser/resources/chromeos/chromebox_for_meetings/.+",
+            ".+/[+]/chrome/browser/ui/webui/chromeos/chromebox_for_meetings/.+",
+            ".+/[+]/chrome/test/data/webui/chromeos/chromebox_for_meetings/.+",
         ],
     ),
 )
@@ -1239,6 +1240,10 @@ try_.chromium_linux_builder(
     builderless = not settings.is_main,
     main_list_view = "try",
     tryjob = try_.job(),
+    # TODO(crbug.com/1143122): remove this after migration.
+    experiments = {
+        "chromium.chromium_tests.use_rbe_cas": 50,
+    },
 )
 
 try_.chromium_linux_builder(
@@ -1276,10 +1281,11 @@ try_.chromium_linux_builder(
     properties = {
         "compilator": "linux-rel-compilator",
     },
-    service_account = "chromium-mini-orchestrator@chops-service-accounts.iam.gserviceaccount.com",
-    tryjob = try_.job(
-        experiment_percentage = 20,
-    ),
+    service_account = "chromium-orchestrator@chops-service-accounts.iam.gserviceaccount.com",
+    # TODO (kimstephanie): Turn back on when Aug 9 pending tasks go back down
+    #tryjob = try_.job(
+    #    experiment_percentage = 100,
+    #),
 )
 
 try_.chromium_linux_builder(
@@ -1360,6 +1366,10 @@ try_.chromium_linux_builder(
     ssd = True,
     main_list_view = "try",
     tryjob = try_.job(),
+    # TODO(crbug.com/1143122): remove this after migration.
+    experiments = {
+        "chromium.chromium_tests.use_rbe_cas": 50,
+    },
 )
 
 try_.chromium_linux_builder(
@@ -1433,16 +1443,6 @@ try_.chromium_linux_builder(
 try_.chromium_linux_builder(
     name = "linux_chromium_msan_rel_ng",
     goma_jobs = goma.jobs.J150,
-)
-
-# TODO(crbug.com/1200904): Remove after migration
-try_.chromium_linux_builder(
-    name = "linux_chromium_tsan_rel_ng_bionic",
-    branch_selector = branches.STANDARD_MILESTONE,
-    builderless = not settings.is_main,
-    goma_jobs = goma.jobs.J150,
-    os = os.LINUX_BIONIC,
-    main_list_view = "try",
 )
 
 try_.chromium_linux_builder(
@@ -1689,7 +1689,7 @@ try_.chromium_mac_ios_builder(
 
 try_.chromium_mac_ios_builder(
     name = "ios-simulator-noncq",
-    xcode = xcode.x13latestbeta,
+    xcode = xcode.x13main,
 )
 
 try_.chromium_mac_ios_builder(
@@ -1857,30 +1857,30 @@ try_.chromium_win_builder(
 
 try_.chromium_win_builder(
     name = "win10-rel-orchestrator",
-    branch_selector = branches.STANDARD_MILESTONE,
     builderless = False,
     cores = 2,
     os = os.LINUX_BIONIC,
     executable = "recipe:chromium/orchestrator",
-    use_clang_coverage = True,
-    coverage_test_types = ["unit", "overall"],
+    # TODO (kimstephanie): turn coverage back on when crbug.com/1233609 is done
+    # use_clang_coverage = True,
+    # coverage_test_types = ["unit", "overall"],
     properties = {
         "compilator": "win10-rel-compilator",
     },
     service_account = "chromium-orchestrator@chops-service-accounts.iam.gserviceaccount.com",
+    tryjob = try_.job(
+        experiment_percentage = 15,
+    ),
 )
 
 try_.chromium_win_builder(
     name = "win10-rel-compilator",
-    branch_selector = branches.STANDARD_MILESTONE,
     builderless = False,
-    cores = 16,
     os = os.WINDOWS_10,
+    cores = None,
     ssd = True,
     goma_jobs = goma.jobs.J300,
     executable = "recipe:chromium/compilator",
-    use_clang_coverage = True,
-    coverage_test_types = ["unit", "overall"],
     properties = {
         "orchestrator": {
             "builder_name": "win10-rel-orchestrator",
@@ -2175,7 +2175,7 @@ try_.presubmit_builder(
                 "branch_types": [branch_type.DESKTOP_EXTENDED_STABLE, branch_type.CROS_LTS],
             },
         ],
-        "verification_scripts": ["infra/config/main.star", "infra/config/dev.star"],
+        "starlark_entry_points": ["infra/config/main.star", "infra/config/dev.star"],
     },
     tryjob = try_.job(
         location_regexp = [r".+/[+]/infra/config/.+"],
@@ -2269,6 +2269,11 @@ chrome_internal_verifier(
 )
 
 chrome_internal_verifier(
+    builder = "linux-pgo",
+    branch_selector = branches.STANDARD_MILESTONE,
+)
+
+chrome_internal_verifier(
     builder = "mac-chrome",
     branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
 )
@@ -2276,6 +2281,11 @@ chrome_internal_verifier(
 chrome_internal_verifier(
     builder = "mac-chrome-stable",
     branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
+)
+
+chrome_internal_verifier(
+    builder = "mac-pgo",
+    branch_selector = branches.STANDARD_MILESTONE,
 )
 
 chrome_internal_verifier(
@@ -2289,6 +2299,11 @@ chrome_internal_verifier(
 )
 
 chrome_internal_verifier(
+    builder = "win32-pgo",
+    branch_selector = branches.STANDARD_MILESTONE,
+)
+
+chrome_internal_verifier(
     builder = "win64-chrome",
     branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
 )
@@ -2296,4 +2311,9 @@ chrome_internal_verifier(
 chrome_internal_verifier(
     builder = "win64-chrome-stable",
     branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
+)
+
+chrome_internal_verifier(
+    builder = "win64-pgo",
+    branch_selector = branches.STANDARD_MILESTONE,
 )

@@ -64,7 +64,7 @@ std::unique_ptr<permissions::PermissionPrompt> CreatePermissionPrompt(
   }
 
   if (delegate->Requests().size() == 1U &&
-      delegate->Requests()[0]->GetRequestType() ==
+      delegate->Requests()[0]->request_type() ==
           permissions::RequestType::kFileHandling) {
     return FileHandlingPermissionPrompt::Create(web_contents, delegate);
   }
@@ -214,6 +214,14 @@ PermissionPromptImpl::GetPromptDisposition() const {
   }
 }
 
+views::Widget* PermissionPromptImpl::GetPromptBubbleWidgetForTesting() {
+  if (prompt_bubble_) {
+    return prompt_bubble_->GetWidget();
+  }
+  return chip_ ? chip_->GetPromptBubbleWidgetForTesting()  // IN-TEST
+               : nullptr;
+}
+
 void PermissionPromptImpl::OnWidgetClosing(views::Widget* widget) {
   DCHECK_EQ(widget, prompt_bubble_->GetWidget());
   widget->RemoveObserver(this);
@@ -309,9 +317,9 @@ bool PermissionPromptImpl::ShouldCurrentRequestUseQuietChip() {
 
   std::vector<permissions::PermissionRequest*> requests = delegate_->Requests();
   return std::all_of(requests.begin(), requests.end(), [](auto* request) {
-    return request->GetRequestType() ==
+    return request->request_type() ==
                permissions::RequestType::kNotifications ||
-           request->GetRequestType() == permissions::RequestType::kGeolocation;
+           request->request_type() == permissions::RequestType::kGeolocation;
   });
 }
 

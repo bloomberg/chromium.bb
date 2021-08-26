@@ -260,6 +260,28 @@ bool HasTextureBufferSupport(const RendererVk *rendererVk)
 
     return true;
 }
+
+bool CanSupportYuvInternalFormat(const RendererVk *rendererVk)
+{
+    // The following formats are not mandatory in Vulkan, even when VK_KHR_sampler_ycbcr_conversion
+    // is supported. GL_ANGLE_yuv_internal_format requires support for sampling only the
+    // 8-bit 2-plane YUV format (VK_FORMAT_G8_B8R8_2PLANE_420_UNORM), if the ICD supports that we
+    // can expose the extension.
+    //
+    // Various test cases need multiple YUV formats. It would be preferrable to have support for the
+    // 3 plane 8 bit YUV format (VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM) as well.
+
+    const Format &twoPlane8bitYuvFormat = rendererVk->getFormat(GL_G8_B8R8_2PLANE_420_UNORM_ANGLE);
+    bool twoPlane8bitYuvFormatSupported = rendererVk->hasImageFormatFeatureBits(
+        twoPlane8bitYuvFormat.actualImageFormatID, VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT);
+
+    const Format &threePlane8bitYuvFormat =
+        rendererVk->getFormat(GL_G8_B8_R8_3PLANE_420_UNORM_ANGLE);
+    bool threePlane8bitYuvFormatSupported = rendererVk->hasImageFormatFeatureBits(
+        threePlane8bitYuvFormat.actualImageFormatID, VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT);
+
+    return twoPlane8bitYuvFormatSupported && threePlane8bitYuvFormatSupported;
+}
 }  // namespace
 }  // namespace vk
 
@@ -322,6 +344,7 @@ void RendererVk::ensureCapsInitialized() const
     mNativeExtensions.drawBuffers            = true;
     mNativeExtensions.fragDepth              = true;
     mNativeExtensions.framebufferBlitANGLE   = true;
+    mNativeExtensions.framebufferBlitNV      = true;
     mNativeExtensions.framebufferMultisample = true;
     mNativeExtensions.multisampledRenderToTexture =
         getFeatures().enableMultisampledRenderToTexture.enabled;
@@ -507,8 +530,15 @@ void RendererVk::ensureCapsInitialized() const
     // minInterpolationOffset, but its limit for maxInterpolationOffset is 0.5-(1/ULP).
     // OES_shader_multisample_interpolation is therefore only supported if
     // maxInterpolationOffset is at least 0.5.
+    //
+    // It's suspected that the GL spec is not as precise as Vulkan's in this regard and that the
+    // requirements really meant to match.  The extension is exposed as non-conformant either way to
+    // increase testing coverage).  Discussion with the GL working group ongoing at
+    // https://gitlab.khronos.org/opengl/API/-/issues/149
     mNativeExtensions.multisampleInterpolationOES =
-        mNativeExtensions.sampleVariablesOES && mNativeCaps.maxInterpolationOffset >= 0.5;
+        mNativeExtensions.sampleVariablesOES &&
+        (mNativeCaps.maxInterpolationOffset >= 0.5 ||
+         mFeatures.exposeNonConformantExtensionsAndVersions.enabled);
 
     // https://vulkan.lunarg.com/doc/view/1.0.30.0/linux/vkspec.chunked/ch31s02.html
     mNativeCaps.maxElementIndex  = std::numeric_limits<GLuint>::max() - 1;
@@ -1039,6 +1069,16 @@ void RendererVk::ensureCapsInitialized() const
         mMultiviewFeatures.multiview && mFeatures.bresenhamLineRasterization.enabled;
     mNativeExtensions.multiview2 = mNativeExtensions.multiview;
     mNativeExtensions.maxViews   = mMultiviewProperties.maxMultiviewViewCount;
+
+    // GL_ANGLE_yuv_internal_format
+    mNativeExtensions.yuvInternalFormatANGLE =
+        getFeatures().supportsYUVSamplerConversion.enabled && vk::CanSupportYuvInternalFormat(this);
+
+    // GL_EXT_primitive_bounding_box
+    mNativeExtensions.primitiveBoundingBoxEXT = true;
+
+    // GL_EXT_protected_textures
+    mNativeExtensions.protectedTexturesEXT = mFeatures.supportsProtectedMemory.enabled;
 }
 
 namespace vk

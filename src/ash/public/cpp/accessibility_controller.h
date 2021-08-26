@@ -111,6 +111,12 @@ class ASH_PUBLIC_EXPORT AccessibilityController {
   // Starts or stops dictation. Records metrics for toggling via SwitchAccess.
   virtual void ToggleDictationFromSource(DictationToggleSource source) = 0;
 
+  // Shows a nudge explaining that a user's dictation language was upgraded to
+  // work offline.
+  virtual void ShowDictationLanguageUpgradedNudge(
+      const std::string& dictation_locale,
+      const std::string& application_locale) = 0;
+
   // Called when the Automatic Clicks extension finds scrollable bounds.
   virtual void HandleAutoclickScrollableBoundsFound(
       gfx::Rect& bounds_in_screen) = 0;
@@ -160,6 +166,18 @@ class ASH_PUBLIC_EXPORT AccessibilityController {
                                       base::OnceClosure on_accept_callback,
                                       base::OnceClosure on_cancel_callback,
                                       base::OnceClosure on_close_callback) {}
+
+  // Updates the enabled state and tooltip of the dictation button in the status
+  // tray when speech recognition file download state changes.
+  virtual void UpdateDictationButtonOnSpeechRecognitionDownloadChanged(
+      bool download_in_progress) = 0;
+
+  // Shows a notification card in the message center informing the user that
+  // speech recognition files have either downloaded successfully or failed.
+  // Specific to the Dictation feature.
+  virtual void ShowSpeechRecognitionDownloadNotificationForDictation(
+      bool succeeded,
+      const std::u16string& display_language) = 0;
 
  protected:
   AccessibilityController();

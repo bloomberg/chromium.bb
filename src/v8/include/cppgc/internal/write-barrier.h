@@ -11,6 +11,7 @@
 #include "cppgc/heap-state.h"
 #include "cppgc/internal/api-constants.h"
 #include "cppgc/internal/atomic-entry-flag.h"
+#include "cppgc/platform.h"
 #include "cppgc/sentinel-pointer.h"
 #include "cppgc/trace-trait.h"
 #include "v8config.h"  // NOLINT(build/include_directory)
@@ -167,6 +168,9 @@ class V8_EXPORT WriteBarrierTypeForCagedHeapPolicy final {
 
   static V8_INLINE bool TryGetCagedHeap(const void* slot, const void* value,
                                         WriteBarrier::Params& params) {
+    // TODO(chromium:1056170): Check if the null check can be folded in with
+    // the rest of the write barrier.
+    if (!value) return false;
     params.start = reinterpret_cast<uintptr_t>(value) &
                    ~(api_constants::kCagedHeapReservationAlignment - 1);
     const uintptr_t slot_offset =

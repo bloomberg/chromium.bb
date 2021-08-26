@@ -345,10 +345,6 @@ void URLRequestHttpJob::NotifyHeadersComplete() {
   DCHECK(!response_info_);
   DCHECK_EQ(0, num_cookie_lines_left_);
   DCHECK(request_->maybe_stored_cookies().empty());
-  request_->net_log().AddEntryWithBoolParams(
-      NetLogEventType::URL_REQUEST_HTTP_JOB_NOTIFY_HEADERS_COMPLETE,
-      NetLogEventPhase::NONE, "ready_to_restart_for_auth",
-      transaction_->IsReadyToRestartForAuth());
 
   response_info_ = transaction_->GetResponseInfo();
 
@@ -679,21 +675,6 @@ void URLRequestHttpJob::SetCookieHeaderAndStart(
       std::make_move_iterator(maybe_included_cookies.end()));
   maybe_included_cookies.clear();
 
-  // If the cookie was excluded due to the fix for crbug.com/1166211, this
-  // applies a warning to the status that will show up in the netlog.
-  // TODO(crbug.com/1166211): Remove once no longer needed.
-  if (options.same_site_cookie_context().AffectedByBugfix1166211()) {
-    for (auto& cookie_with_access_result : maybe_sent_cookies) {
-      if (!cookie_with_access_result.access_result.status
-               .HasOnlyExclusionReason(CookieInclusionStatus::ExclusionReason::
-                                           EXCLUDE_USER_PREFERENCES)) {
-        options.same_site_cookie_context()
-            .MaybeApplyBugfix1166211WarningToStatusAndLogHistogram(
-                cookie_with_access_result.access_result.status);
-      }
-    }
-  }
-
   if (request_->net_log().IsCapturing()) {
     for (const auto& cookie_with_access_result : maybe_sent_cookies) {
       request_->net_log().AddEvent(
@@ -794,6 +775,8 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
 
     std::unique_ptr<CanonicalCookie> cookie = net::CanonicalCookie::Create(
         request_->url(), cookie_string, base::Time::Now(), server_time,
+        net::CookiePartitionKey::FromNetworkIsolationKey(
+            request_->isolation_info().network_isolation_key()),
         &returned_status);
 
     absl::optional<CanonicalCookie> cookie_to_return = absl::nullopt;
@@ -843,14 +826,6 @@ void URLRequestHttpJob::OnSetCookieResult(
                                  });
   }
 
-  // If the cookie was excluded due to the fix for crbug.com/1166211, this
-  // applies a warning to the status that will show up in the netlog.
-  // TODO(crbug.com/1166211): Remove once no longer needed.
-  if (options.same_site_cookie_context().AffectedByBugfix1166211()) {
-    options.same_site_cookie_context()
-        .MaybeApplyBugfix1166211WarningToStatusAndLogHistogram(
-            access_result.status);
-  }
   set_cookie_access_result_list_.emplace_back(
       std::move(cookie), std::move(cookie_string), access_result);
 
@@ -906,7 +881,10 @@ void URLRequestHttpJob::ProcessExpectCTHeader() {
 
   HttpResponseHeaders* headers = GetResponseHeaders();
   std::string value;
-  if (headers->GetNormalizedHeader("Expect-CT", &value)) {
+  bool has_expect_ct_header = headers->GetNormalizedHeader("Expect-CT", &value);
+  base::UmaHistogramBoolean("Net.ExpectCT.HeaderPresentOnResponse",
+                            has_expect_ct_header);
+  if (has_expect_ct_header) {
     security_state->ProcessExpectCTHeader(
         value, HostPortPair::FromURL(request_info_.url), ssl_info,
         request_->isolation_info().network_isolation_key());

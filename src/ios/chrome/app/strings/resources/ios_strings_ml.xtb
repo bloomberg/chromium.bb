@@ -40,6 +40,7 @@
 <translation id="1254117744268754948">ഫോൾഡർ തിരഞ്ഞെടുക്കുക</translation>
 <translation id="1265739287306757398">എങ്ങനെയെന്നറിയുക</translation>
 <translation id="1272079795634619415">നിര്‍ത്തുക</translation>
+<translation id="1275718070701477396">തിരഞ്ഞെടുത്തു</translation>
 <translation id="1282311502488501110">സൈൻ ഇൻ ചെയ്യരുത്</translation>
 <translation id="1283524564873030414">അവസാന 24 മണിക്കൂർ</translation>
 <translation id="1285320974508926690">ഈ സൈറ്റ് ഒരിക്കലും വിവര്‍‌ത്തനം ചെയ്യരുത്</translation>
@@ -66,6 +67,7 @@
 <translation id="1509960214886564027">നിരവധി സൈറ്റുകളിലെ ഫീച്ചറുകൾക്ക് പ്രവർത്തനം നടത്താനായേക്കില്ല</translation>
 <translation id="152234381334907219">ഒരിക്കലും സംരക്ഷിച്ചില്ല</translation>
 <translation id="1523341279170789507">എല്ലാ കുക്കികളും അനുവദിക്കുക</translation>
+<translation id="1524563461097350801">വേണ്ട</translation>
 <translation id="1535268707340844072">നിങ്ങളുടെ നിലവിലെ ക്രമീകരണം ചില സൈറ്റുകൾ ലോഡ് ചെയ്യുന്നതിന് തടസമായേക്കാം. എല്ലാ സൈറ്റുകൾക്കുമുള്ള കുക്കികൾ മാനേജ് ചെയ്യാൻ, <ph name="BEGIN_LINK" />കുക്കി ക്രമീകരണം<ph name="END_LINK" /> കാണുക.</translation>
 <translation id="1540800554400757039">വിലാസം 1</translation>
 <translation id="1545749641540134597">QR കോഡ് സ്‌കാൻ ചെയ്യുക</translation>
@@ -112,7 +114,6 @@
 <translation id="1989112275319619282">ബ്രൗസ് ചെയ്യുക</translation>
 <translation id="2015722694326466240">പാസ്‍വേഡുകൾ കാണാൻ, ആദ്യം നിങ്ങളുടെ ഉപകരണത്തിൽ പാസ്‌കോഡ് സജ്ജീകരിക്കുക.</translation>
 <translation id="2021670401941426298">ബാധകമെങ്കിൽ, നിങ്ങളുടെ തിരയൽ ചരിത്രം ഇല്ലാതാക്കാനുള്ള തിരയൽ യന്ത്രത്തിന്റെ നിർദ്ദേശങ്ങൾ കാണുക.</translation>
-<translation id="2022352537516230970">നിങ്ങളുടെ iPhone-നായി സൃഷ്‌ടിച്ചിരിക്കുന്നത്</translation>
 <translation id="2073572773299281212"><ph name="DAYS" /> ദിവസം മുമ്പ് സജീവമായിരുന്നു</translation>
 <translation id="2074131957428911366">എന്തൊക്കെ സമന്വയിക്കണമെന്നത് <ph name="BEGIN_LINK" />ക്രമീകരണത്തിൽ<ph name="END_LINK" /> നിങ്ങൾക്ക് എപ്പോഴും തിരഞ്ഞെടുക്കാം.</translation>
 <translation id="2079545284768500474">പഴയപടിയാക്കുക</translation>
@@ -136,6 +137,7 @@
 <translation id="2320166752086256636">കീബോർഡ് മറയ്‌ക്കുക</translation>
 <translation id="2339560363438331454">സമന്വയവും Google സേവനങ്ങളും</translation>
 <translation id="2351097562818989364">നിങ്ങളുടെ വിവർത്തന ക്രമീകരണം റീസെറ്റ് ചെയ്‌തു.</translation>
+<translation id="235789365079050412">Google സ്വകാര്യതാ നയം</translation>
 <translation id="2359043044084662842">Translate</translation>
 <translation id="2359808026110333948">തുടരുക</translation>
 <translation id="2360196772093551345">മൊബൈൽ സൈറ്റ് അഭ്യർത്ഥിക്കുക</translation>
@@ -147,6 +149,7 @@
 <translation id="2421004566762153674">മൂന്നാം കക്ഷി കുക്കികളെ ബ്ലോക്ക് ചെയ്യുന്നു</translation>
 <translation id="2421044535038393232">എഡിറ്റ് ചെയ്യുന്നത് തുടരുക</translation>
 <translation id="2435457462613246316">പാസ്‌വേഡ് കാണിക്കുക</translation>
+<translation id="2476359652512522418">തിരഞ്ഞെടുത്തിട്ടില്ല</translation>
 <translation id="2497852260688568942">നിങ്ങളുടെ അഡ്‌മിനിസ്‌ട്രേറ്റർ സമന്വയിപ്പിക്കൽ പ്രവർത്തനരഹിതമാക്കി</translation>
 <translation id="2500374554657206846">പാസ്‌വേഡ് സംരക്ഷിക്കാനുള്ള ഓപ്‌ഷനുകൾ</translation>
 <translation id="2523363575747517183">മറ്റൊരു ആപ്പ് തുറക്കാൻ ഈ വെബ്‌സൈറ്റ് ആവർത്തിച്ച് ശ്രമിക്കുന്നു.</translation>
@@ -184,6 +187,7 @@
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2840687315230832938">പ്രാഥമിക സമന്വയ സജ്ജീകരണം പൂർത്തിയാക്കിയിട്ടില്ല</translation>
 <translation id="2843803966603263712">വിവർത്തന ക്രമീകരണം റീസെറ്റ് ചെയ്യുക</translation>
+<translation id="2848086008667475748">ക്രമീകരണത്തിൽ ഡിഫോൾട്ട് ആക്കുക…</translation>
 <translation id="2858204748079866344">നിങ്ങളുടെ സ്വകാര്യത പരിരക്ഷിക്കാൻ, Chrome ഈ ഫീൽഡിൽ പാസ്‌വേഡ് സ്വമേധയാ പൂരിപ്പിക്കില്ല.</translation>
 <translation id="285960592395650245">വീണ്ടും ഡൗൺലോഡ് ചെയ്യാൻ ശ്രമിക്കുക</translation>
 <translation id="2870560284913253234">സൈറ്റ്</translation>
@@ -283,6 +287,7 @@
 <translation id="3691593122358196899"><ph name="FOLDER_TITLE" /> ഫോൾഡറിലേക്ക് ബുക്ക്മാർക്ക് ചെയ്‌തു</translation>
 <translation id="3709582977625132201">വായിച്ചില്ലെന്ന് അടയാളപ്പെടുത്തുക</translation>
 <translation id="3740397331642243698">Google Chrome-ൽ നൽകിയിട്ടുള്ള URL-കൾ അദൃശ്യ മോഡിൽ തുറക്കുന്നു.</translation>
+<translation id="3762232513783804601">നിങ്ങളുടെ iPad-നായി നിർമ്മിച്ചത്</translation>
 <translation id="3771033907050503522">ആൾമാറാട്ട ടാബുകൾ</translation>
 <translation id="3775743491439407556">സമന്വയം പ്രവർത്തിക്കുന്നില്ല</translation>
 <translation id="3779810277399252432">ഇന്റർനെറ്റ് കണക്ഷനില്ല.</translation>
@@ -322,7 +327,7 @@
 <translation id="4172051516777682613">എല്ലായ്പ്പോഴും ദൃശ്യമാക്കുക</translation>
 <translation id="418156467088430727">പുതിയ ടാബിൽ ഓഫ്‌ലൈൻ പതിപ്പ് കാണുക</translation>
 <translation id="4181841719683918333">ഭാഷകൾ‌</translation>
-<translation id="4184011057600693970">നിങ്ങളുടെ iPad-നായി സൃഷ്‌ടിച്ചിരിക്കുന്നത്</translation>
+<translation id="4237377247299956313"><ph name="BEGIN_BOLD" />ഡിഫോൾട്ട് ബ്രൗസർ ആപ്പ്<ph name="END_BOLD" /> ടാപ്പ് ചെയ്യുക</translation>
 <translation id="424315890655130736">പാസ്‌ഫ്രെയ്‌സ് നൽകുക</translation>
 <translation id="4263576668337963058">ലഭ്യമായ പേജ് പ്രവർത്തനങ്ങൾ കാണിക്കുക</translation>
 <translation id="4267380167363222949">അടുത്ത ടാബ്</translation>
@@ -338,9 +343,10 @@
 <translation id="4375040482473363939">QR കോഡ് തിരയൽ</translation>
 <translation id="4378154925671717803">ഫോൺ</translation>
 <translation id="4389019817280890563">ഭാഷ മാറ്റാൻ ടാപ്പ് ചെയ്യുക.</translation>
-<translation id="441868831736628555">സ്വകാര്യത അറിയിപ്പ്</translation>
+<translation id="4442550905108052454"><ph name="BEGIN_BOLD" />ക്രമീകരണം<ph name="END_BOLD" /> തുറക്കുക</translation>
 <translation id="4454246407045105932">ഭാഷ ചേർക്കുക</translation>
 <translation id="4469418912670346607">സജ്ജീകരണം തുടരുക</translation>
+<translation id="4474494258097106883">നിങ്ങളുടെ iPhone-നായി നിർമ്മിച്ചത്</translation>
 <translation id="4476574785019001431">ക്രമീകരണം</translation>
 <translation id="4496373720959965247">ടാബുകൾ ചേർക്കുക, പേജുകൾക്കിടയിൽ മാറുക</translation>
 <translation id="4502566650163919158">ഇപ്പോൾ പരിശോധിക്കുക</translation>
@@ -597,6 +603,7 @@
 <translation id="6730682669179532099">പാസ്‌വേഡുകൾ എക്‌സ്‌പോർട്ട് ചെയ്യാനാവുന്നില്ല</translation>
 <translation id="6748108480210050150">പ്രേഷിതന്‍</translation>
 <translation id="6760509555861141183">ഏറ്റവും അവസാനം തുറന്ന ടാബിലേക്ക് മടങ്ങുക</translation>
+<translation id="6762812039470893796">എല്ലാം തിരഞ്ഞെടുത്തത് മാറ്റുക</translation>
 <translation id="6780034285637185932">തപാൽ കോഡ്</translation>
 <translation id="6785453220513215166">ക്രാഷ് റിപ്പോർട്ട് അയയ്‌ക്കുന്നു...</translation>
 <translation id="6797885426782475225">ശബ്ദ തിരയൽ</translation>
@@ -734,6 +741,7 @@
 <translation id="8073872304774253879">തിരയലുകളും ബ്രൗസിംഗും മികച്ചതാക്കൂ</translation>
 <translation id="8076014560081431679">സംരക്ഷിച്ച സൈറ്റ് ക്രമീകരണം ഇല്ലാതാക്കപ്പെടില്ല, ഇത് നിങ്ങളുടെ ബ്രൗസിംഗ് രീതികളെ പ്രതിഫലിപ്പിക്കാനുമിടയുണ്ട്. <ph name="BEGIN_LINK" />കൂടുതലറിയുക<ph name="END_LINK" /></translation>
 <translation id="8079602123447022758">ഈ ക്രമീകരണം അഡ്‌മിൻ മാനേജ് ചെയ്യുന്നതാണ്, കൂടുതൽ വിവരങ്ങൾക്ക് ഡബിൾ ടാപ്പ് ചെയ്യുക</translation>
+<translation id="8080028325999236607">എല്ലാ ടാബുകളും അടയ്‌ക്കുക</translation>
 <translation id="8105368624971345109">ഓഫാക്കുക</translation>
 <translation id="8114753159095730575">ഫയൽ ഡൗൺലോഡ് ചെയ്യൽ ലഭ്യമാണ്. സ്ക്രീനിന്റെ ചുവടെ ഓപ്ഷനുകളുണ്ട്.</translation>
 <translation id="8131740175452115882">സ്ഥിരീകരിക്കുക</translation>
@@ -749,7 +757,6 @@
 <translation id="8283172974887967105">സജ്ജീകരിക്കുക…</translation>
 <translation id="8299417921174340354">പാസ്‍വേഡുകൾ ഉപയോഗിക്കാൻ, ആദ്യം നിങ്ങളുടെ ഉപകരണത്തിൽ പാസ്‌കോഡ് സജ്ജീകരിക്കുക.</translation>
 <translation id="8299613349954694191">സ്വകാര്യമായി വെബ് ബ്രൗസ് ചെയ്യാൻ അദൃശ്യ ടാബ് തുറക്കുക.</translation>
-<translation id="83100941411593607">സൈൻ ഇൻ ചെയ്യൽ പ്രവർത്തനരഹിതമാക്കി</translation>
 <translation id="8319076807703933069">പുതിയ തിരയൽ</translation>
 <translation id="8323906514956095947">കൂടുതൽ ടാബ് ഓപ്‌ഷനുകൾക്കായി സ്‌പർശിച്ച് പിടിക്കുക</translation>
 <translation id="8328777765163860529">എല്ലാം അടയ്‌ക്കുക</translation>

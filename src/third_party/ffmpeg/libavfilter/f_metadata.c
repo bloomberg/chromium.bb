@@ -61,12 +61,16 @@ enum MetadataFunction {
 static const char *const var_names[] = {
     "VALUE1",
     "VALUE2",
+    "FRAMEVAL",
+    "USERVAL",
     NULL
 };
 
 enum var_name {
     VAR_VALUE1,
     VAR_VALUE2,
+    VAR_FRAMEVAL,
+    VAR_USERVAL,
     VAR_VARS_NB
 };
 
@@ -172,8 +176,8 @@ static int parse_expr(MetadataContext *s, const char *value1, const char *value2
     if (sscanf(value1, "%lf", &f1) + sscanf(value2, "%lf", &f2) != 2)
         return 0;
 
-    s->var_values[VAR_VALUE1] = f1;
-    s->var_values[VAR_VALUE2] = f2;
+    s->var_values[VAR_VALUE1] = s->var_values[VAR_FRAMEVAL] = f1;
+    s->var_values[VAR_VALUE2] = s->var_values[VAR_USERVAL]  = f2;
 
     return av_expr_eval(s->expr, s->var_values, NULL);
 }
@@ -303,9 +307,6 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
     MetadataContext *s = ctx->priv;
     AVDictionary **metadata = &frame->metadata;
     AVDictionaryEntry *e;
-
-    if (!*metadata && s->mode != METADATA_ADD)
-        return ff_filter_frame(outlink, frame);
 
     e = av_dict_get(*metadata, !s->key ? "" : s->key, NULL,
                     !s->key ? AV_DICT_IGNORE_SUFFIX: 0);

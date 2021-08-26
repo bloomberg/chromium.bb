@@ -33,6 +33,7 @@
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_layer.h"
+#include "net/http/http_network_session.h"
 #include "net/http/http_server_properties.h"
 #include "net/http/http_server_properties_manager.h"
 #include "net/http/transport_security_persister.h"
@@ -131,7 +132,7 @@ URLRequestContextBuilder::~URLRequestContextBuilder() = default;
 
 void URLRequestContextBuilder::SetHttpNetworkSessionComponents(
     const URLRequestContext* request_context,
-    HttpNetworkSession::Context* session_context) {
+    HttpNetworkSessionContext* session_context) {
   session_context->host_resolver = request_context->host_resolver();
   session_context->cert_verifier = request_context->cert_verifier();
   session_context->transport_security_state =
@@ -377,7 +378,7 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
 
   storage->set_transport_security_state(
       std::make_unique<TransportSecurityState>(hsts_policy_bypass_list_));
-  if (!transport_security_persister_path_.empty()) {
+  if (!transport_security_persister_file_path_.empty()) {
     // Use a low priority because saving this should not block anything
     // user-visible. Block shutdown to ensure it does get persisted to disk,
     // since it contains security-relevant information.
@@ -388,8 +389,8 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
 
     context->set_transport_security_persister(
         std::make_unique<TransportSecurityPersister>(
-            context->transport_security_state(),
-            transport_security_persister_path_, task_runner));
+            context->transport_security_state(), task_runner,
+            transport_security_persister_file_path_));
   }
 
   if (http_server_properties_) {
@@ -485,7 +486,7 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
     storage->set_proxy_delegate(std::move(proxy_delegate_));
   }
 
-  HttpNetworkSession::Context network_session_context;
+  HttpNetworkSessionContext network_session_context;
   SetHttpNetworkSessionComponents(context.get(), &network_session_context);
   // Unlike the other fields of HttpNetworkSession::Context,
   // |client_socket_factory| is not mirrored in URLRequestContext.

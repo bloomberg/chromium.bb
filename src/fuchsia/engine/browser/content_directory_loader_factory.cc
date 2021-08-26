@@ -37,6 +37,7 @@
 #include "net/base/parse_number.h"
 #include "net/http/http_byte_range.h"
 #include "net/http/http_util.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 
@@ -110,10 +111,10 @@ bool GetRangeForRequest(const net::HttpRequestHeaders& headers,
 }
 
 // Copies data from a fuchsia.io.Node file into a URL response stream.
-class ContentDirectoryURLLoader : public network::mojom::URLLoader {
+class ContentDirectoryURLLoader final : public network::mojom::URLLoader {
  public:
   ContentDirectoryURLLoader() = default;
-  ~ContentDirectoryURLLoader() final = default;
+  ~ContentDirectoryURLLoader() override = default;
 
   ContentDirectoryURLLoader(const ContentDirectoryURLLoader&) = delete;
   ContentDirectoryURLLoader& operator=(const ContentDirectoryURLLoader&) =

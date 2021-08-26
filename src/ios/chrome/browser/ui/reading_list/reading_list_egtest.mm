@@ -500,18 +500,6 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 @synthesize serverRespondsWithContent = _serverRespondsWithContent;
 @synthesize serverResponseDelay = _serverResponseDelay;
 
-- (AppLaunchConfiguration)appConfigurationForTestCase {
-  AppLaunchConfiguration config;
-
-  // Error page Workflow Feature is enabled by test name. This is done because
-  // it is inefficient to use ensureAppLaunchedWithConfiguration for each test.
-  // This should be removed once test config is modified.
-  if ([self isRunningTest:@selector(testNavigateBackToDistilledPage)]) {
-    config.features_enabled.push_back(web::features::kUseJSForErrorPage);
-  }
-  return config;
-}
-
 - (void)setUp {
   [super setUp];
   GREYAssertNil([ReadingListAppInterface clearEntries],
@@ -876,12 +864,14 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 
   AddEntriesAndOpenReadingList();
 
-  [[EarlGrey
+  [[[EarlGrey
       selectElementWithMatcher:
           grey_allOf(
               chrome_test_util::StaticTextWithAccessibilityLabel(kReadTitle),
               grey_ancestor(grey_kindOfClassName(@"TableViewURLCell")),
               grey_sufficientlyVisible(), nil)]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 100)
+      onElementWithMatcher:grey_accessibilityID(kReadingListViewID)]
       performAction:grey_swipeFastInDirection(kGREYDirectionLeft)];
 
   [[EarlGrey
@@ -1287,19 +1277,15 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
                                             kTableViewIllustratedEmptyViewID)]
         assertWithMatcher:grey_notNil()];
 
-    id<GREYMatcher> noReadingListTitleMatcher = grey_allOf(
-        grey_text(
-            l10n_util::GetNSString(IDS_IOS_READING_LIST_NO_ENTRIES_TITLE)),
-        grey_sufficientlyVisible(), nil);
-    [[EarlGrey selectElementWithMatcher:noReadingListTitleMatcher]
-        assertWithMatcher:grey_notNil()];
+    // The dimiss animation takes 2 steps, and without the two waits below this
+    // test will flake.
+    [ChromeEarlGrey waitForSufficientlyVisibleElementWithMatcher:
+                        grey_text(l10n_util::GetNSString(
+                            IDS_IOS_READING_LIST_NO_ENTRIES_TITLE))];
 
-    id<GREYMatcher> emptyReadingListMatcher = grey_allOf(
-        grey_text(
-            l10n_util::GetNSString(IDS_IOS_READING_LIST_NO_ENTRIES_MESSAGE)),
-        grey_sufficientlyVisible(), /*nil_termination*/ nil);
-    [[EarlGrey selectElementWithMatcher:emptyReadingListMatcher]
-        assertWithMatcher:grey_notNil()];
+    [ChromeEarlGrey waitForSufficientlyVisibleElementWithMatcher:
+                        grey_text(l10n_util::GetNSString(
+                            IDS_IOS_READING_LIST_NO_ENTRIES_MESSAGE))];
 }
 
 - (void)addURLToReadingList:(const GURL&)URL {

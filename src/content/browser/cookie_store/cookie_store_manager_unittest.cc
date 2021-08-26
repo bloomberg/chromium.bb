@@ -9,7 +9,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/test/bind.h"
-#include "content/browser/cookie_store/cookie_store_context.h"
 #include "content/browser/cookie_store/cookie_store_manager.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/fake_embedded_worker_instance_client.h"
@@ -19,6 +18,7 @@
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/test/fake_mojo_message_dispatch_context.h"
+#include "content/test/storage_partition_test_helpers.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "net/cookies/cookie_access_result.h"
 #include "net/cookies/cookie_constants.h"
@@ -339,15 +339,14 @@ class CookieStoreManagerTest
     worker_test_helper_ = std::make_unique<CookieStoreWorkerTestHelper>(
         user_data_directory_.GetPath());
 
-    cookie_store_context_ = base::MakeRefCounted<CookieStoreContext>();
-    cookie_store_context_->Initialize(worker_test_helper_->context_wrapper(),
-                                      base::BindOnce([](bool success) {
-                                        CHECK(success) << "Initialize failed";
-                                      }));
+    cookie_store_manager_ = std::make_unique<CookieStoreManager>(
+        worker_test_helper_->context_wrapper());
+    cookie_store_manager_->LoadAllSubscriptions(base::BindOnce(
+        [](bool success) { CHECK(success) << "Initialize failed"; }));
     storage_partition_impl_ = StoragePartitionImpl::Create(
-        worker_test_helper_->browser_context(), true /* in_memory */,
-        base::FilePath() /* relative_partition_path */,
-        std::string() /* partition_domain */);
+        worker_test_helper_->browser_context(),
+        CreateStoragePartitionConfigForTesting(/*in_memory=*/true),
+        base::FilePath() /* relative_partition_path */);
     storage_partition_impl_->Initialize();
     ::network::mojom::NetworkContext* network_context =
         storage_partition_impl_->GetNetworkContext();
@@ -355,26 +354,26 @@ class CookieStoreManagerTest
         cookie_manager_.BindNewPipeAndPassReceiver());
     if (cookie_store_initializer_)
       cookie_store_initializer_.Run();
-    cookie_store_context_->ListenToCookieChanges(
+    cookie_store_manager_->ListenToCookieChanges(
         network_context, base::BindOnce([](bool success) {
           CHECK(success) << "ListenToCookieChanges failed";
         }));
 
-    cookie_store_context_->CreateServiceForTesting(
-        url::Origin::Create(GURL(kExampleScope)),
-        example_service_remote_.BindNewPipeAndPassReceiver());
+    cookie_store_manager_->BindReceiver(
+        example_service_remote_.BindNewPipeAndPassReceiver(),
+        url::Origin::Create(GURL(kExampleScope)));
     example_service_ =
         std::make_unique<CookieStoreSync>(example_service_remote_.get());
 
-    cookie_store_context_->CreateServiceForTesting(
-        url::Origin::Create(GURL(kGoogleScope)),
-        google_service_remote_.BindNewPipeAndPassReceiver());
+    cookie_store_manager_->BindReceiver(
+        google_service_remote_.BindNewPipeAndPassReceiver(),
+        url::Origin::Create(GURL(kGoogleScope)));
     google_service_ =
         std::make_unique<CookieStoreSync>(google_service_remote_.get());
 
-    cookie_store_context_->CreateServiceForTesting(
-        url::Origin::Create(GURL(kLegacyScope)),
-        legacy_service_remote_.BindNewPipeAndPassReceiver());
+    cookie_store_manager_->BindReceiver(
+        legacy_service_remote_.BindNewPipeAndPassReceiver(),
+        url::Origin::Create(GURL(kLegacyScope)));
     legacy_service_ =
         std::make_unique<CookieStoreSync>(legacy_service_remote_.get());
 
@@ -406,7 +405,7 @@ class CookieStoreManagerTest
     google_service_remote_.reset();
     legacy_service_remote_.reset();
     cookie_manager_.reset();
-    cookie_store_context_.reset();
+    cookie_store_manager_.reset();
     storage_partition_impl_.reset();
     worker_test_helper_.reset();
   }
@@ -415,7 +414,7 @@ class CookieStoreManagerTest
   base::ScopedTempDir user_data_directory_;
   std::unique_ptr<CookieStoreWorkerTestHelper> worker_test_helper_;
   std::unique_ptr<StoragePartitionImpl> storage_partition_impl_;
-  scoped_refptr<CookieStoreContext> cookie_store_context_;
+  std::unique_ptr<CookieStoreManager> cookie_store_manager_;
   mojo::Remote<::network::mojom::CookieManager> cookie_manager_;
   base::RepeatingClosure cookie_store_initializer_;
 
@@ -1227,7 +1226,7 @@ TEST_P(CookieStoreManagerTest, OneCookieChange) {
   EXPECT_EQ(net::CookieChangeCause::INSERTED,
             worker_test_helper_->changes()[0].cause);
   // example.com does not have a custom access semantics setting, so it defaults
-  // to NONLEGACY, because the FeatureList has SameSiteByDefaultCookies enabled.
+  // to NONLEGACY.
   EXPECT_EQ(net::CookieAccessSemantics::NONLEGACY,
             worker_test_helper_->changes()[0].access_result.access_semantics);
 }
@@ -1312,7 +1311,7 @@ TEST_P(CookieStoreManagerTest, CookieChangeNameStartsWith) {
   EXPECT_EQ(net::CookieChangeCause::INSERTED,
             worker_test_helper_->changes()[0].cause);
   // example.com does not have a custom access semantics setting, so it defaults
-  // to NONLEGACY, because the FeatureList has SameSiteByDefaultCookies enabled.
+  // to NONLEGACY.
   EXPECT_EQ(net::CookieAccessSemantics::NONLEGACY,
             worker_test_helper_->changes()[0].access_result.access_semantics);
 
@@ -1330,7 +1329,7 @@ TEST_P(CookieStoreManagerTest, CookieChangeNameStartsWith) {
   EXPECT_EQ(net::CookieChangeCause::INSERTED,
             worker_test_helper_->changes()[0].cause);
   // example.com does not have a custom access semantics setting, so it defaults
-  // to NONLEGACY, because the FeatureList has SameSiteByDefaultCookies enabled.
+  // to NONLEGACY.
   EXPECT_EQ(net::CookieAccessSemantics::NONLEGACY,
             worker_test_helper_->changes()[0].access_result.access_semantics);
 }
@@ -1444,7 +1443,7 @@ TEST_P(CookieStoreManagerTest, CookieChangeUrl) {
   EXPECT_EQ(net::CookieChangeCause::INSERTED,
             worker_test_helper_->changes()[0].cause);
   // example.com does not have a custom access semantics setting, so it defaults
-  // to NONLEGACY, because the FeatureList has SameSiteByDefaultCookies enabled.
+  // to NONLEGACY.
   EXPECT_EQ(net::CookieAccessSemantics::NONLEGACY,
             worker_test_helper_->changes()[0].access_result.access_semantics);
 
@@ -1461,7 +1460,7 @@ TEST_P(CookieStoreManagerTest, CookieChangeUrl) {
   EXPECT_EQ(net::CookieChangeCause::INSERTED,
             worker_test_helper_->changes()[0].cause);
   // example.com does not have a custom access semantics setting, so it defaults
-  // to NONLEGACY, because the FeatureList has SameSiteByDefaultCookies enabled.
+  // to NONLEGACY.
   EXPECT_EQ(net::CookieAccessSemantics::NONLEGACY,
             worker_test_helper_->changes()[0].access_result.access_semantics);
 }
@@ -1584,7 +1583,7 @@ TEST_P(CookieStoreManagerTest, HttpOnlyCookieChange) {
   EXPECT_EQ(net::CookieChangeCause::INSERTED,
             worker_test_helper_->changes()[0].cause);
   // example.com does not have a custom access semantics setting, so it defaults
-  // to NONLEGACY, because the FeatureList has SameSiteByDefaultCookies enabled.
+  // to NONLEGACY.
   EXPECT_EQ(net::CookieAccessSemantics::NONLEGACY,
             worker_test_helper_->changes()[0].access_result.access_semantics);
 }
@@ -1760,9 +1759,9 @@ TEST_F(CookieStoreManagerTest, UnTrustworthyOrigin) {
   FakeMojoMessageDispatchContext fake_dispatch_context;
   mojo::test::BadMessageObserver bad_mesage_observer;
 
-  cookie_store_context_->CreateServiceForTesting(
-      url::Origin::Create(GURL("http://insecure.com")),
-      untrustworthy_service_remote.BindNewPipeAndPassReceiver());
+  cookie_store_manager_->BindReceiver(
+      untrustworthy_service_remote.BindNewPipeAndPassReceiver(),
+      url::Origin::Create(GURL("http://insecure.com")));
 
   untrustworthy_service_remote.FlushForTesting();
   EXPECT_FALSE(untrustworthy_service_remote.is_connected());

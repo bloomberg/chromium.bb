@@ -1343,8 +1343,8 @@ class CORE_EXPORT Document : public ContainerNode,
 
   int RequestAnimationFrame(FrameCallback*);
   void CancelAnimationFrame(int id);
-  void ServiceScriptedAnimations(
-      base::TimeTicks monotonic_animation_start_time);
+  void ServiceScriptedAnimations(base::TimeTicks monotonic_animation_start_time,
+                                 bool can_throttle = false);
 
   int RequestIdleCallback(IdleTask*, const IdleRequestOptions*);
   void CancelIdleCallback(int id);
@@ -1611,6 +1611,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   // Use counter related functions.
   void CountUse(mojom::WebFeature feature) final;
+  void CountDeprecation(mojom::WebFeature feature) final;
   void CountUse(mojom::WebFeature feature) const;
   void CountProperty(CSSPropertyID property_id) const;
   void CountAnimatedProperty(CSSPropertyID property_id) const;
@@ -1677,9 +1678,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void IncrementAsyncScriptCount() { async_script_count_++; }
   void RecordAsyncScriptCount();
-
-  void MarkFirstPaint();
-  void MaybeExecuteDelayedAsyncScripts();
 
   enum class DeclarativeShadowRootAllowState : uint8_t {
     kNotSet,
@@ -2292,7 +2290,6 @@ class CORE_EXPORT Document : public ContainerNode,
   Member<FontPreloadManager> font_preload_manager_;
 
   int async_script_count_ = 0;
-  bool first_paint_recorded_ = false;
 
   DeclarativeShadowRootAllowState declarative_shadow_root_allow_state_ =
       DeclarativeShadowRootAllowState::kNotSet;

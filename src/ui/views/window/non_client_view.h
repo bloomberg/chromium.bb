@@ -24,8 +24,8 @@ enum class CloseRequestResult;
 //
 //  An object that subclasses NonClientFrameView is a View that renders and
 //  responds to events within the frame portions of the non-client area of a
-//  window. This view does _not_ contain the ClientView, but rather is a sibling
-//  of it.
+//  window. This view contains the ClientView (see NonClientView comments for
+//  details on View hierarchy).
 class VIEWS_EXPORT NonClientFrameView : public View,
                                         public ViewTargeterDelegate {
  public:
@@ -101,6 +101,12 @@ class VIEWS_EXPORT NonClientFrameView : public View,
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void OnThemeChanged() override;
   void Layout() override;
+  Views GetChildrenInZOrder() override;
+
+  // Inserts the passed client view into this NonClientFrameView. Subclasses can
+  // override this method to indicate a specific insertion spot for the client
+  // view.
+  virtual void InsertClientView(ClientView* client_view);
 
  private:
 #if defined(OS_WIN)
@@ -136,7 +142,7 @@ class VIEWS_EXPORT NonClientFrameView : public View,
 //  | | | | | << all painting and event       >> | | | | |
 //  | | | | | << receiving of the client      >> | | | | |
 //  | | | | | << areas of a views::Widget.    >> | | | | |
-//  | | | | +----------------------------------+ | | | | |
+//  | | | | +------------------------------------+ | | | |
 //  | | | +----------------------------------------+ | | |
 //  | | +--------------------------------------------+ | |
 //  | +------------------------------------------------+ |

@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/device_name_store.h"
 
 #include "ash/constants/ash_features.h"
+#include "chrome/browser/chromeos/device_name_store_impl.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -13,14 +14,10 @@
 namespace chromeos {
 namespace {
 
-const char kDefaultDeviceName[] = "ChromeOS";
-
 // This will point to the singleton instance upon initialization.
 DeviceNameStore* g_instance = nullptr;
 
 }  // namespace
-
-DeviceNameStore::~DeviceNameStore() = default;
 
 // static
 DeviceNameStore* DeviceNameStore::GetInstance() {
@@ -36,11 +33,12 @@ void DeviceNameStore::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
 }
 
 // static
-void DeviceNameStore::Initialize(PrefService* prefs) {
+void DeviceNameStore::Initialize(PrefService* prefs,
+                                 policy::DeviceNamePolicyHandler* handler) {
   CHECK(base::FeatureList::IsEnabled(features::kEnableHostnameSetting));
   CHECK(!g_instance);
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  g_instance = new DeviceNameStore(prefs);
+  g_instance = new DeviceNameStoreImpl(prefs, handler);
 }
 
 // static
@@ -51,18 +49,22 @@ void DeviceNameStore::Shutdown() {
   }
 }
 
-DeviceNameStore::DeviceNameStore(PrefService* prefs) : prefs_(prefs) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(prefs_);
-  if (prefs_->GetString(prefs::kDeviceName).empty()) {
-    prefs_->SetString(prefs::kDeviceName, kDefaultDeviceName);
-  }
+DeviceNameStore::DeviceNameStore() = default;
+
+DeviceNameStore::~DeviceNameStore() = default;
+
+void DeviceNameStore::AddObserver(Observer* observer) {
+  observer_list_.AddObserver(observer);
 }
 
-std::string DeviceNameStore::GetDeviceName() const {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(prefs_);
-  return prefs_->GetString(prefs::kDeviceName);
+void DeviceNameStore::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
+void DeviceNameStore::NotifyDeviceNameMetadataChanged() {
+  for (auto& observer : observer_list_) {
+    observer.OnDeviceNameMetadataChanged();
+  }
 }
 
 }  // namespace chromeos

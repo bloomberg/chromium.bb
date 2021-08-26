@@ -204,13 +204,13 @@ class QuicTimeWaitListManagerTest : public QuicTest {
 
 bool ValidPublicResetPacketPredicate(
     QuicConnectionId expected_connection_id,
-    const testing::tuple<const char*, int>& packet_buffer) {
+    const std::tuple<const char*, int>& packet_buffer) {
   FramerVisitorCapturingPublicReset visitor(expected_connection_id);
   QuicFramer framer(AllSupportedVersions(), QuicTime::Zero(),
                     Perspective::IS_CLIENT, kQuicDefaultConnectionIdLength);
   framer.set_visitor(&visitor);
-  QuicEncryptedPacket encrypted(testing::get<0>(packet_buffer),
-                                testing::get<1>(packet_buffer));
+  QuicEncryptedPacket encrypted(std::get<0>(packet_buffer),
+                                std::get<1>(packet_buffer));
   framer.ProcessPacket(encrypted);
   QuicPublicResetPacket packet = visitor.public_reset_packet();
   bool public_reset_is_valid =
@@ -230,10 +230,10 @@ bool ValidPublicResetPacketPredicate(
   return public_reset_is_valid || stateless_reset_is_valid;
 }
 
-Matcher<const testing::tuple<const char*, int>> PublicResetPacketEq(
+Matcher<const std::tuple<const char*, int>> PublicResetPacketEq(
     QuicConnectionId connection_id) {
   return Truly(
-      [connection_id](const testing::tuple<const char*, int> packet_buffer) {
+      [connection_id](const std::tuple<const char*, int> packet_buffer) {
         return ValidPublicResetPacketPredicate(connection_id, packet_buffer);
       });
 }

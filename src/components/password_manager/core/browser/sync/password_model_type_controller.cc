@@ -49,7 +49,7 @@ PasswordModelTypeController::PasswordModelTypeController(
         delegate_for_full_sync_mode,
     std::unique_ptr<syncer::ModelTypeControllerDelegate>
         delegate_for_transport_mode,
-    scoped_refptr<PasswordStore> account_password_store_for_cleanup,
+    scoped_refptr<PasswordStoreInterface> account_password_store_for_cleanup,
     PrefService* pref_service,
     signin::IdentityManager* identity_manager,
     syncer::SyncService* sync_service,
@@ -70,7 +70,7 @@ PasswordModelTypeController::PasswordModelTypeController(
   identity_manager_->AddObserver(this);
 
   DCHECK_EQ(
-      !!base::FeatureList::IsEnabled(features::kEnablePasswordsAccountStorage),
+      base::FeatureList::IsEnabled(features::kEnablePasswordsAccountStorage),
       !!account_password_store_for_cleanup);
   if (base::FeatureList::IsEnabled(features::kEnablePasswordsAccountStorage)) {
     // Note: Right now, we're still in the middle of SyncService initialization,
@@ -81,10 +81,6 @@ PasswordModelTypeController::PasswordModelTypeController(
         FROM_HERE, base::BindOnce(&PasswordModelTypeController::MaybeClearStore,
                                   weak_ptr_factory_.GetWeakPtr(),
                                   account_password_store_for_cleanup));
-  } else {
-    // If the feature flag is disabled, clear any related prefs that might still
-    // be around.
-    features_util::ClearAccountStorageSettingsForAllUsers(pref_service_);
   }
 }
 
@@ -113,11 +109,11 @@ void PasswordModelTypeController::Stop(syncer::ShutdownReason shutdown_reason,
   // in the account DB).
   if (sync_mode_ == syncer::SyncMode::kTransportOnly) {
     switch (shutdown_reason) {
-      case syncer::STOP_SYNC:
-        shutdown_reason = syncer::DISABLE_SYNC;
+      case syncer::ShutdownReason::STOP_SYNC_AND_KEEP_DATA:
+        shutdown_reason = syncer::ShutdownReason::DISABLE_SYNC_AND_CLEAR_DATA;
         break;
-      case syncer::DISABLE_SYNC:
-      case syncer::BROWSER_SHUTDOWN:
+      case syncer::ShutdownReason::DISABLE_SYNC_AND_CLEAR_DATA:
+      case syncer::ShutdownReason::BROWSER_SHUTDOWN_AND_KEEP_DATA:
         break;
     }
   }
@@ -205,7 +201,7 @@ void PasswordModelTypeController::OnOptInStateMaybeChanged() {
 }
 
 void PasswordModelTypeController::MaybeClearStore(
-    scoped_refptr<PasswordStore> account_password_store_for_cleanup) {
+    scoped_refptr<PasswordStoreInterface> account_password_store_for_cleanup) {
   DCHECK(account_password_store_for_cleanup);
   if (features_util::IsOptedInForAccountStorage(pref_service_, sync_service_)) {
     RecordClearedOnStartup(ClearedOnStartup::kOptedInSoNoNeedToClear);

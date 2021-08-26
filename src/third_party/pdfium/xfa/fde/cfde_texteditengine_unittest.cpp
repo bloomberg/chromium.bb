@@ -4,6 +4,8 @@
 
 #include "xfa/fde/cfde_texteditengine.h"
 
+#include "core/fxcrt/fx_codepage.h"
+#include "core/fxcrt/fx_extension.h"
 #include "core/fxge/text_char_pos.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/xfa_test_environment.h"
@@ -37,7 +39,7 @@ class CFDE_TextEditEngineTest : public testing::Test {
   ~CFDE_TextEditEngineTest() override = default;
 
   void SetUp() override {
-    font_ = CFGAS_GEFont::LoadFont(L"Arial Black", 0, 0);
+    font_ = CFGAS_GEFont::LoadFont(L"Arial Black", 0, FX_CodePage::kDefANSI);
     ASSERT_TRUE(font_);
 
     engine_ = std::make_unique<CFDE_TextEditEngine>();
@@ -500,6 +502,64 @@ TEST_F(CFDE_TextEditEngineTest, GetIndexForPointLineBreaks) {
   EXPECT_EQ(11U, engine()->GetIndexForPoint({999999.0f, 9999999.0f}));
 }
 
+TEST_F(CFDE_TextEditEngineTest, CanGenerateCharacterInfo) {
+  RetainPtr<CFGAS_GEFont> font = engine()->GetFont();
+  ASSERT_TRUE(font);
+
+  // Has font but no text.
+  EXPECT_FALSE(engine()->CanGenerateCharacterInfo());
+
+  // Has font and text.
+  engine()->Insert(0, L"Hi!");
+  EXPECT_TRUE(engine()->CanGenerateCharacterInfo());
+
+  // Has text but no font.
+  engine()->SetFont(nullptr);
+  EXPECT_FALSE(engine()->CanGenerateCharacterInfo());
+
+  // Has no text and no font.
+  engine()->Clear();
+  EXPECT_FALSE(engine()->CanGenerateCharacterInfo());
+}
+
+TEST_F(CFDE_TextEditEngineTest, GetCharacterInfo) {
+  std::pair<int32_t, CFX_RectF> char_info;
+
+  engine()->Insert(0, L"Hi!");
+  ASSERT_EQ(3U, engine()->GetLength());
+
+  char_info = engine()->GetCharacterInfo(0);
+  EXPECT_EQ(0, char_info.first);
+  EXPECT_FLOAT_EQ(0.0f, char_info.second.Left());
+  EXPECT_FLOAT_EQ(0.0f, char_info.second.Top());
+  EXPECT_FLOAT_EQ(9.996f, char_info.second.Width());
+  EXPECT_FLOAT_EQ(12.0f, char_info.second.Height());
+
+  char_info = engine()->GetCharacterInfo(1);
+  EXPECT_EQ(0, char_info.first);
+  EXPECT_FLOAT_EQ(9.996f, char_info.second.Left());
+  EXPECT_FLOAT_EQ(0.0f, char_info.second.Top());
+  EXPECT_FLOAT_EQ(3.996f, char_info.second.Width());
+  EXPECT_FLOAT_EQ(12.0f, char_info.second.Height());
+
+  char_info = engine()->GetCharacterInfo(2);
+  EXPECT_EQ(0, char_info.first);
+  EXPECT_FLOAT_EQ(13.992f, char_info.second.Left());
+  EXPECT_FLOAT_EQ(0.0f, char_info.second.Top());
+  EXPECT_FLOAT_EQ(3.996f, char_info.second.Width());
+  EXPECT_FLOAT_EQ(12.0f, char_info.second.Height());
+
+  // Allow retrieving the character info for the end of the text, as that
+  // information can be used to determine where to draw a cursor positioned at
+  // the end.
+  char_info = engine()->GetCharacterInfo(3);
+  EXPECT_EQ(0, char_info.first);
+  EXPECT_FLOAT_EQ(17.988f, char_info.second.Left());
+  EXPECT_FLOAT_EQ(0.0f, char_info.second.Top());
+  EXPECT_FLOAT_EQ(0.0f, char_info.second.Width());
+  EXPECT_FLOAT_EQ(12.0f, char_info.second.Height());
+}
+
 TEST_F(CFDE_TextEditEngineTest, BoundsForWordAt) {
   size_t start_idx;
   size_t count;
@@ -664,21 +724,26 @@ TEST_F(CFDE_TextEditEngineTest, CursorMovement) {
   EXPECT_EQ(2U, engine()->GetIndexUp(2));
   EXPECT_EQ(2U, engine()->GetIndexDown(2));
   EXPECT_EQ(1U, engine()->GetIndexLeft(2));
-  EXPECT_EQ(1U, engine()->GetIndexBefore(2));
   EXPECT_EQ(3U, engine()->GetIndexRight(2));
   EXPECT_EQ(0U, engine()->GetIndexAtStartOfLine(2));
   EXPECT_EQ(5U, engine()->GetIndexAtEndOfLine(2));
 
   engine()->Clear();
   engine()->Insert(0, L"The book is \"مدخل إلى C++\"");
-  EXPECT_EQ(2U, engine()->GetIndexBefore(3));    // Before is to left.
-  EXPECT_EQ(16U, engine()->GetIndexBefore(15));  // Before is to right.
-  EXPECT_EQ(22U, engine()->GetIndexBefore(23));  // Before is to left.
+  EXPECT_FALSE(FX_IsOdd(engine()->GetCharacterInfo(3).first));
+  EXPECT_EQ(2U, engine()->GetIndexLeft(3));
+  EXPECT_EQ(4U, engine()->GetIndexRight(3));
+  EXPECT_TRUE(FX_IsOdd(engine()->GetCharacterInfo(15).first));
+  EXPECT_EQ(14U, engine()->GetIndexLeft(15));
+  EXPECT_EQ(16U, engine()->GetIndexRight(15));
+  EXPECT_FALSE(FX_IsOdd(engine()->GetCharacterInfo(23).first));
+  EXPECT_EQ(22U, engine()->GetIndexLeft(23));
+  EXPECT_EQ(24U, engine()->GetIndexRight(23));
 
   engine()->Clear();
   engine()->Insert(0, L"Hello\r\nWorld\r\nTest");
   // Move to end of Hello from start of World.
-  engine()->SetSelection(engine()->GetIndexBefore(7U), 7);
+  engine()->SetSelection(engine()->GetIndexLeft(7U), 7);
   EXPECT_STREQ(L"\r\nWorld", engine()->GetSelectedText().c_str());
 
   // Second letter in Hello from second letter in World.
@@ -718,7 +783,7 @@ TEST_F(CFDE_TextEditEngineTest, CursorMovement) {
   engine()->Clear();
   engine()->Insert(0, L"Hello\rWorld\rTest");
   // Move to end of Hello from start of World.
-  engine()->SetSelection(engine()->GetIndexBefore(6U), 6);
+  engine()->SetSelection(engine()->GetIndexLeft(6U), 6);
   EXPECT_STREQ(L"\rWorld", engine()->GetSelectedText().c_str());
 
   // Second letter in Hello from second letter in World.
@@ -749,7 +814,7 @@ TEST_F(CFDE_TextEditEngineTest, CursorMovement) {
   engine()->Clear();
   engine()->Insert(0, L"Hello\nWorld\nTest");
   // Move to end of Hello from start of World.
-  engine()->SetSelection(engine()->GetIndexBefore(6U), 6);
+  engine()->SetSelection(engine()->GetIndexLeft(6U), 6);
   EXPECT_STREQ(L"\nWorld", engine()->GetSelectedText().c_str());
 
   // Second letter in Hello from second letter in World.

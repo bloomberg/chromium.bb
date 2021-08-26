@@ -11,6 +11,7 @@
 #include "ash/public/cpp/holding_space/holding_space_model_observer.h"
 #include "ash/public/cpp/holding_space/holding_space_progress.h"
 #include "ash/style/ash_color_provider.h"
+#include "ash/system/holding_space/holding_space_progress_ring_indeterminate_animation.h"
 #include "base/scoped_observation.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkPathBuilder.h"
@@ -102,7 +103,8 @@ class HoldingSpaceControllerProgressRing
  public:
   explicit HoldingSpaceControllerProgressRing(
       HoldingSpaceController* controller)
-      : controller_(controller) {
+      : HoldingSpaceProgressRing(/*animation_key=*/controller),
+        controller_(controller) {
     controller_observation_.Observe(controller_);
     if (controller_->model())
       OnHoldingSpaceModelAttached(controller_->model());
@@ -110,7 +112,7 @@ class HoldingSpaceControllerProgressRing
 
  private:
   // HoldingSpaceProgressRing:
-  absl::optional<float> GetProgress() const override {
+  absl::optional<float> CalculateProgress() const override {
     // If there is no `model` attached, then there are no in-progress holding
     // space items. Return `1.f` to prevent the progress ring from painting.
     const HoldingSpaceModel* model = controller_->model();
@@ -122,10 +124,12 @@ class HoldingSpaceControllerProgressRing
     // Iterate over all holding space items.
     for (const auto& item : model->items()) {
       // Ignore any holding space items that are not yet initialized, since
-      // they are not visible to the user, or items that are not in-progress,
-      // since they do not contribute to `cumulative_progress`.
-      if (item->IsInitialized() && !item->progress().IsComplete())
+      // they are not visible to the user, or items that are not visibly
+      // in-progress, since they do not contribute to `cumulative_progress`.
+      if (item->IsInitialized() && !item->progress().IsHidden() &&
+          !item->progress().IsComplete()) {
         cumulative_progress += item->progress();
+      }
     }
 
     return cumulative_progress.GetValue();
@@ -163,7 +167,8 @@ class HoldingSpaceControllerProgressRing
     }
   }
 
-  void OnHoldingSpaceItemUpdated(const HoldingSpaceItem* item) override {
+  void OnHoldingSpaceItemUpdated(const HoldingSpaceItem* item,
+                                 uint32_t updated_fields) override {
     if (item->IsInitialized())
       InvalidateLayer();
   }
@@ -194,20 +199,23 @@ class HoldingSpaceItemProgressRing : public HoldingSpaceProgressRing,
                                      public HoldingSpaceModelObserver {
  public:
   explicit HoldingSpaceItemProgressRing(const HoldingSpaceItem* item)
-      : item_(item) {
+      : HoldingSpaceProgressRing(/*animation_key=*/item), item_(item) {
     model_observation_.Observe(HoldingSpaceController::Get()->model());
   }
 
  private:
   // HoldingSpaceProgressRing:
-  absl::optional<float> GetProgress() const override {
+  absl::optional<float> CalculateProgress() const override {
     // If `item_` is `nullptr` it is being destroyed. Return `1.f` in that case
-    // so that no progress ring will be painted.
-    return item_ ? item_->progress().GetValue() : 1.f;
+    // so that no progress ring will be painted. Similarly, return `1.f` to
+    // prevent painting a progress ring when progress is hidden.
+    return item_ && !item_->progress().IsHidden() ? item_->progress().GetValue()
+                                                  : 1.f;
   }
 
   // HoldingSpaceModelObserver:
-  void OnHoldingSpaceItemUpdated(const HoldingSpaceItem* item) override {
+  void OnHoldingSpaceItemUpdated(const HoldingSpaceItem* item,
+                                 uint32_t updated_fields) override {
     if (item_ == item)
       InvalidateLayer();
   }
@@ -234,10 +242,30 @@ class HoldingSpaceItemProgressRing : public HoldingSpaceProgressRing,
 
 // HoldingSpaceProgressRing ----------------------------------------------------
 
-HoldingSpaceProgressRing::HoldingSpaceProgressRing()
-    : ui::LayerOwner(std::make_unique<ui::Layer>(ui::LAYER_TEXTURED)) {
+HoldingSpaceProgressRing::HoldingSpaceProgressRing(const void* animation_key)
+    : ui::LayerOwner(std::make_unique<ui::Layer>(ui::LAYER_TEXTURED)),
+      animation_key_(animation_key) {
   layer()->set_delegate(this);
   layer()->SetFillsBoundsOpaquely(false);
+
+  HoldingSpaceAnimationRegistry* animation_registry =
+      HoldingSpaceAnimationRegistry::GetInstance();
+
+  // Register to be notified of changes to the animation associated with this
+  // progress ring's `animation_key_`. Note that it is safe to use a raw pointer
+  // here since `this` owns the subscription.
+  animation_changed_subscription_ =
+      animation_registry->AddProgressRingAnimationChangedCallbackForKey(
+          animation_key_,
+          base::BindRepeating(
+              &HoldingSpaceProgressRing::OnProgressRingAnimationChanged,
+              base::Unretained(this)));
+
+  // If an `animation` is already registered, perform additional initialization.
+  HoldingSpaceProgressRingAnimation* animation =
+      animation_registry->GetProgressRingAnimationForKey(animation_key_);
+  if (animation)
+    OnProgressRingAnimationChanged(animation);
 }
 
 HoldingSpaceProgressRing::~HoldingSpaceProgressRing() = default;
@@ -264,14 +292,33 @@ void HoldingSpaceProgressRing::OnDeviceScaleFactorChanged(float old_scale,
   InvalidateLayer();
 }
 
-// TODO(crbug.com/1184438): Handle indeterminate progress.
 void HoldingSpaceProgressRing::OnPaintLayer(const ui::PaintContext& context) {
-  const absl::optional<float> progress(GetProgress());
-  if (!progress.has_value() || progress.value() == 1.f)
+  // Look up the associated `animation` (if one exists).
+  HoldingSpaceProgressRingAnimation* animation =
+      HoldingSpaceAnimationRegistry::GetInstance()
+          ->GetProgressRingAnimationForKey(animation_key_);
+
+  // Unless `this` is animating, nothing will paint if `progress_` is complete.
+  if (progress_ == 1.f && !animation)
     return;
 
-  DCHECK_GE(progress.value(), 0.f);
-  DCHECK_LT(progress.value(), 1.f);
+  float start, end, opacity;
+  if (animation) {
+    start = animation->start_position();
+    end = animation->end_position();
+    opacity = animation->opacity();
+  } else {
+    start = 0.f;
+    end = progress_.value();
+    opacity = 1.f;
+  }
+
+  DCHECK_GE(start, 0.f);
+  DCHECK_LE(start, 1.f);
+  DCHECK_GE(end, 0.f);
+  DCHECK_LE(end, 1.f);
+  DCHECK_GE(opacity, 0.f);
+  DCHECK_LE(opacity, 1.f);
 
   ui::PaintRecorder recorder(context, layer()->size());
   gfx::Canvas* canvas = recorder.canvas();
@@ -296,12 +343,42 @@ void HoldingSpaceProgressRing::OnPaintLayer(const ui::PaintContext& context) {
       AshColorProvider::ControlsLayerType::kFocusRingColor);
 
   // Track.
-  flags.setColor(SkColorSetA(color, 0xFF * kTrackOpacity));
+  flags.setColor(SkColorSetA(color, 0xFF * kTrackOpacity * opacity));
   canvas->DrawPath(path, flags);
 
   // Ring.
-  flags.setColor(color);
-  canvas->DrawPath(CreatePathSegment(path, 0.f, progress.value()), flags);
+  flags.setColor(SkColorSetA(color, 0xFF * opacity));
+  if (start <= end) {
+    // If `start` <= `end`, only a single path segment is necessary.
+    canvas->DrawPath(CreatePathSegment(path, start, end), flags);
+  } else {
+    // If `start` > `end`, two path segments are used to give the illusion of a
+    // single progress ring. This works around limitations of `SkPathMeasure`
+    // which require that `start` be <= `end`.
+    canvas->DrawPath(CreatePathSegment(path, start, 1.f), flags);
+    canvas->DrawPath(CreatePathSegment(path, 0.f, end), flags);
+  }
+}
+
+void HoldingSpaceProgressRing::UpdateVisualState() {
+  // Cache `progress_`.
+  progress_ = CalculateProgress();
+  if (progress_.has_value()) {
+    DCHECK_GE(progress_.value(), 0.f);
+    DCHECK_LE(progress_.value(), 1.f);
+  }
+}
+
+void HoldingSpaceProgressRing::OnProgressRingAnimationChanged(
+    HoldingSpaceProgressRingAnimation* animation) {
+  // Trigger repaint of this progress ring on `animation` updates. Note that it
+  // is safe to use a raw pointer here since `this` owns the subscription.
+  if (animation) {
+    animation_updated_subscription_ = animation->AddAnimationUpdatedCallback(
+        base::BindRepeating(&HoldingSpaceProgressRing::InvalidateLayer,
+                            base::Unretained(this)));
+  }
+  InvalidateLayer();
 }
 
 }  // namespace ash

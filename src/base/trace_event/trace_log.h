@@ -198,6 +198,9 @@ class BASE_EXPORT TraceLog :
       const MetadataFilterPredicate& metadata_filter_predicate);
   MetadataFilterPredicate GetMetadataFilterPredicate() const;
 
+  void SetRecordHostAppPackageName(bool record_host_app_package_name);
+  bool ShouldRecordHostAppPackageName() const;
+
   // Flush all collected events to the given output callback. The callback will
   // be called one or more times either synchronously or asynchronously from
   // the current thread with IPC-bite-size chunks. The string format is
@@ -375,10 +378,7 @@ class BASE_EXPORT TraceLog :
   void SetProcessSortIndex(int sort_index);
 
   // Sets the name of the process.
-  void set_process_name(const std::string& process_name) {
-    AutoLock lock(lock_);
-    process_name_ = process_name;
-  }
+  void set_process_name(const std::string& process_name);
 
   bool IsProcessNameEmpty() const {
     AutoLock lock(lock_);
@@ -606,6 +606,7 @@ class BASE_EXPORT TraceLog :
   scoped_refptr<SequencedTaskRunner> flush_task_runner_;
   ArgumentFilterPredicate argument_filter_predicate_;
   MetadataFilterPredicate metadata_filter_predicate_;
+  bool record_host_app_package_name_{false};
   subtle::AtomicWord generation_;
   bool use_worker_thread_;
   std::atomic<AddTraceEventOverrideFunction> add_trace_event_override_{nullptr};

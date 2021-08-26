@@ -2205,9 +2205,9 @@ TEST_F(ControllerTest, SetAdditionalValues) {
             value2.mutable_strings()->add_values("");
             ValueProto value3;
             value3.mutable_strings()->add_values("");
-            user_data->additional_values_["key1"] = value1;
-            user_data->additional_values_["key2"] = value2;
-            user_data->additional_values_["key3"] = value3;
+            user_data->SetAdditionalValue("key1", value1);
+            user_data->SetAdditionalValue("key2", value2);
+            user_data->SetAdditionalValue("key3", value3);
             *change = UserData::FieldChange::ADDITIONAL_VALUES;
           });
 
@@ -2234,9 +2234,9 @@ TEST_F(ControllerTest, SetAdditionalValues) {
   value5.mutable_strings()->add_values("value3");
   controller_->SetAdditionalValue("key2", value4);
   controller_->SetAdditionalValue("key3", value5);
-  EXPECT_EQ(controller_->GetUserData()->additional_values_.at("key1"), value1);
-  EXPECT_EQ(controller_->GetUserData()->additional_values_.at("key2"), value4);
-  EXPECT_EQ(controller_->GetUserData()->additional_values_.at("key3"), value5);
+  EXPECT_EQ(*controller_->GetUserData()->GetAdditionalValue("key1"), value1);
+  EXPECT_EQ(*controller_->GetUserData()->GetAdditionalValue("key2"), value4);
+  EXPECT_EQ(*controller_->GetUserData()->GetAdditionalValue("key3"), value5);
 
   ValueProto value6;
   value6.mutable_strings()->add_values("someValue");
@@ -2258,6 +2258,34 @@ TEST_F(ControllerTest, SetOverlayColors) {
                              std::map<std::string, std::string>{
                                  {"OVERLAY_COLORS", "#FF000000:#FFFFFFFF"}}),
                          TriggerContext::Options()));
+}
+
+TEST_F(ControllerTest, AddParametersToUserData) {
+  auto script_parameters = std::make_unique<ScriptParameters>(
+      std::map<std::string, std::string>{{"PARAM_A", "a"}});
+  script_parameters->UpdateDeviceOnlyParameters(
+      std::map<std::string, std::string>{{"PARAM_B", "b"}});
+  GURL url("http://a.example.com/path");
+  controller_->Start(
+      url, std::make_unique<TriggerContext>(std::move(script_parameters),
+                                            TriggerContext::Options()));
+
+  EXPECT_EQ(controller_->GetUserData()
+                ->GetAdditionalValue("param:PARAM_A")
+                ->strings()
+                .values(0),
+            "a");
+  EXPECT_FALSE(controller_->GetUserData()
+                   ->GetAdditionalValue("param:PARAM_A")
+                   ->is_client_side_only());
+  EXPECT_EQ(controller_->GetUserData()
+                ->GetAdditionalValue("param:PARAM_B")
+                ->strings()
+                .values(0),
+            "b");
+  EXPECT_TRUE(controller_->GetUserData()
+                  ->GetAdditionalValue("param:PARAM_B")
+                  ->is_client_side_only());
 }
 
 TEST_F(ControllerTest, SetDateTimeRange) {

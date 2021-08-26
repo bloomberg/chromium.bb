@@ -270,9 +270,9 @@ class ReusingTextShaper final {
     DCHECK_LT(start_offset, end_offset);
     const TextDirection direction = start_item.Direction();
     if (data_.segments) {
-      return data_.segments->ShapeText(&shaper_, &font, direction, start_offset,
-                                       end_offset,
-                                       &start_item - data_.items.begin());
+      return data_.segments->ShapeText(
+          &shaper_, &font, direction, start_offset, end_offset,
+          base::checked_cast<unsigned>(&start_item - data_.items.begin()));
     }
     RunSegmenter::RunSegmenterRange range =
         start_item.CreateRunSegmenterRange();
@@ -1086,6 +1086,14 @@ const SvgTextChunkOffsets* NGInlineNode::FindSvgTextChunks(
           ifc_text_view.NextCodePointOffset(text_content_offset);
     }
     const auto* unit = mapping->GetLastMappingUnit(text_content_offset);
+    // |text_content_offset| might point a control character not in any
+    // DOM nodes.
+    while (!unit) {
+      text_content_offset =
+          ifc_text_view.NextCodePointOffset(text_content_offset);
+      DCHECK_LT(text_content_offset, ifc_text_view.length());
+      unit = mapping->GetLastMappingUnit(text_content_offset);
+    }
     auto result = data.svg_node_data_->chunk_offsets.insert(
         To<LayoutText>(&unit->GetLayoutObject()), Vector<unsigned>());
     result.stored_value->value.push_back(
@@ -1719,7 +1727,6 @@ static LayoutUnit ComputeContentSize(
         is_after_break = false;
       }
 
-      bool has_forced_break = false;
       for (const NGInlineItemResult& result : line_info.Results()) {
         const NGInlineItem& item = *result.item;
         if (item.Type() == NGInlineItem::kText) {
@@ -1728,22 +1735,24 @@ static LayoutUnit ComputeContentSize(
           // NGInlineItem.
           continue;
         }
-        if (item.Type() == NGInlineItem::kAtomicInline) {
+#if DCHECK_IS_ON()
+        if (item.Type() == NGInlineItem::kBlockInInline)
+          DCHECK(line_info.HasForcedBreak());
+#endif
+        if (item.Type() == NGInlineItem::kAtomicInline ||
+            item.Type() == NGInlineItem::kBlockInInline) {
           // The max-size for atomic inlines are cached in |max_size_cache|.
-          unsigned item_index = &item - items_data.items.begin();
+          unsigned item_index =
+              base::checked_cast<unsigned>(&item - items_data.items.begin());
           position += max_size_cache[item_index];
           continue;
         }
         if (item.Type() == NGInlineItem::kControl) {
           UChar c = items_data.text_content[item.StartOffset()];
-          if (c == kNewlineCharacter) {
-            // Compute the forced break after all results were handled, because
-            // when close tags appear after a forced break, they are included in
-            // the line, and they may have inline sizes. crbug.com/991320.
-            DCHECK(!has_forced_break);
-            has_forced_break = true;
-            continue;
-          }
+#if DCHECK_IS_ON()
+          if (c == kNewlineCharacter)
+            DCHECK(line_info.HasForcedBreak());
+#endif
           // Tabulation characters change the widths by their positions, so
           // their widths for the max size may be different from the widths for
           // the min size. Fall back to 2 pass for now.
@@ -1754,7 +1763,10 @@ static LayoutUnit ComputeContentSize(
         }
         position += result.inline_size;
       }
-      if (has_forced_break)
+      // Compute the forced break after all results were handled, because
+      // when close tags appear after a forced break, they are included in
+      // the line, and they may have inline sizes. crbug.com/991320.
+      if (line_info.HasForcedBreak())
         ForceLineBreak(line_info);
     }
   };

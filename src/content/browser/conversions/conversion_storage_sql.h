@@ -13,17 +13,19 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/thread_annotations.h"
-#include "base/time/clock.h"
-#include "content/browser/conversions/conversion_report.h"
 #include "content/browser/conversions/conversion_storage.h"
 #include "content/browser/conversions/rate_limit_table.h"
 #include "content/common/content_export.h"
-#include "sql/database.h"
 #include "sql/meta_table.h"
 
 namespace base {
 class Clock;
 }  // namespace base
+
+namespace sql {
+class Database;
+class Statement;
+}  // namespace sql
 
 namespace content {
 
@@ -39,6 +41,8 @@ class CONTENT_EXPORT ConversionStorageSql : public ConversionStorage {
                        const base::Clock* clock);
   ConversionStorageSql(const ConversionStorageSql& other) = delete;
   ConversionStorageSql& operator=(const ConversionStorageSql& other) = delete;
+  ConversionStorageSql(ConversionStorageSql&& other) = delete;
+  ConversionStorageSql& operator=(ConversionStorageSql&& other) = delete;
   ~ConversionStorageSql() override;
 
   void set_ignore_errors_for_testing(bool ignore_for_testing) {
@@ -99,8 +103,9 @@ class CONTENT_EXPORT ConversionStorageSql : public ConversionStorage {
       VALID_CONTEXT_REQUIRED(sequence_checker_) WARN_UNUSED_RESULT;
 
   // Deletes all impressions that have expired and have no pending conversion
-  // reports.
-  void DeleteExpiredImpressions() VALID_CONTEXT_REQUIRED(sequence_checker_);
+  // reports. Returns false on failure.
+  bool DeleteExpiredImpressions()
+      VALID_CONTEXT_REQUIRED(sequence_checker_) WARN_UNUSED_RESULT;
 
   // Deletes the conversion with `conversion_id` without checking the the DB
   // initialization status or the number of deleted rows. Returns false on
@@ -110,7 +115,10 @@ class CONTENT_EXPORT ConversionStorageSql : public ConversionStorage {
 
   bool HasCapacityForStoringImpression(const std::string& serialized_origin)
       VALID_CONTEXT_REQUIRED(sequence_checker_) WARN_UNUSED_RESULT;
-  int GetCapacityForStoringConversion(const std::string& serialized_origin)
+  bool IsReportAlreadyStored(int64_t impression_id,
+                             absl::optional<int64_t> dedup_key)
+      VALID_CONTEXT_REQUIRED(sequence_checker_) WARN_UNUSED_RESULT;
+  bool HasCapacityForStoringConversion(const std::string& serialized_origin)
       VALID_CONTEXT_REQUIRED(sequence_checker_) WARN_UNUSED_RESULT;
 
   enum class MaybeReplaceLowerPriorityReportResult {
@@ -120,10 +128,9 @@ class CONTENT_EXPORT ConversionStorageSql : public ConversionStorage {
     kReplaceOldReport,
   };
   MaybeReplaceLowerPriorityReportResult MaybeReplaceLowerPriorityReport(
-      const StorableImpression& impression,
+      const ConversionReport& report,
       int num_conversions,
-      int64_t conversion_priority,
-      base::Time report_time)
+      int64_t conversion_priority)
       VALID_CONTEXT_REQUIRED(sequence_checker_) WARN_UNUSED_RESULT;
 
   // When storing an event-source impression, deletes active event-source
@@ -184,6 +191,11 @@ class CONTENT_EXPORT ConversionStorageSql : public ConversionStorage {
   const base::Clock* clock_;
 
   std::unique_ptr<Delegate> delegate_ GUARDED_BY_CONTEXT(sequence_checker_);
+
+  // Time at which `DeleteExpiredImpressions()` was last called. Initialized to
+  // the NULL time.
+  base::Time last_deleted_expired_impressions_
+      GUARDED_BY_CONTEXT(sequence_checker_);
 
   SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<ConversionStorageSql> weak_factory_;

@@ -69,12 +69,9 @@ extern const base::Feature kSettingsLandingPageRedesign;
 // TODO(pbos): Once kReadLater is cleaned up on Desktop, move definition into
 // ui_features.cc. This is currently temporarily in reading_list_switches.h.
 extern const base::Feature kSidePanel;
+extern const base::Feature kSidePanelDragAndDrop;
 
 extern const base::Feature kSyncConfirmationUpdatedText;
-
-extern const base::Feature kSignInProfileCreation;
-
-extern const base::Feature kSignInProfileCreationEnterprise;
 
 extern const base::Feature kTabGroupsAutoCreate;
 
@@ -91,6 +88,8 @@ extern const char kTabHoverCardImagesNotReadyDelayParameterName[];
 extern const char kTabHoverCardImagesLoadingDelayParameterName[];
 extern const char kTabHoverCardImagesLoadedDelayParameterName[];
 extern const char kTabHoverCardImagesCrossfadePreviewAtParameterName[];
+extern const char kTabHoverCardAdditionalMaxWidthDelay[];
+extern const char kTabHoverCardAlternateFormat[];
 
 extern const base::Feature kTabOutlinesInLowContrastThemes;
 
@@ -166,9 +165,15 @@ extern const base::Feature kWebUIDownloadShelf;
 
 extern const base::Feature kWebUITabStrip;
 
-extern const base::Feature kWebUITabStripNewTabButtonInTabStrip;
+// Controls whether the context menu is shown on a touch press or a touch
+// tap gesture on the WebUI Tab Strip.
+extern const base::Feature kWebUITabStripContextMenuAfterTap;
 
 extern const base::Feature kWebUIFeedback;
+
+#if defined(OS_CHROMEOS)
+extern const base::Feature kChromeOSTabSearchCaptionButton;
+#endif
 
 // Cocoa to views migration.
 #if defined(OS_MAC)

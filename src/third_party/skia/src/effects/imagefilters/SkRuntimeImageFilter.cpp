@@ -17,6 +17,8 @@
 #include "src/core/SkWriteBuffer.h"
 #include "src/effects/imagefilters/SkRuntimeImageFilter.h"
 
+#ifdef SK_ENABLE_SKSL
+
 namespace {
 
 class SkRuntimeImageFilter final : public SkImageFilter_Base {
@@ -28,7 +30,7 @@ public:
             , fEffect(std::move(effect))
             , fUniforms(std::move(uniforms)) {}
 
-    bool affectsTransparentBlack() const override { return true; }
+    bool onAffectsTransparentBlack() const override { return true; }
     MatrixCapability onGetCTMCapability() const override { return MatrixCapability::kTranslate; }
 
 protected:
@@ -137,3 +139,5 @@ sk_sp<SkSpecialImage> SkRuntimeImageFilter::onFilterImage(const Context& ctx,
     *offset = outputBounds.topLeft();
     return surf->makeImageSnapshot();
 }
+
+#endif  // SK_ENABLE_SKSL

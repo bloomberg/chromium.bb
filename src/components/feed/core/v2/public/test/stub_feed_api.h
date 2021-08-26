@@ -43,7 +43,7 @@ class StubFeedApi : public FeedApi {
   void ExecuteRefreshTask(RefreshTaskId task_id) override {}
   void LoadMore(const FeedStreamSurface& surface,
                 base::OnceCallback<void(bool)> callback) override {}
-  void ManualRefresh(const FeedStreamSurface& surface,
+  void ManualRefresh(const StreamType& stream_type,
                      base::OnceCallback<void(bool)> callback) override {}
   ImageFetchId FetchImage(
       const GURL& url,
@@ -89,6 +89,9 @@ class StubFeedApi : public FeedApi {
   void SetForcedStreamUpdateForDebugging(
       const feedui::StreamUpdate& stream_update) override {}
   base::Time GetLastFetchTime(const StreamType& stream_type) override;
+  void SetContentOrder(const StreamType& stream_type,
+                       ContentOrder content_order) override {}
+  ContentOrder GetContentOrderFromPrefs(const StreamType& stream_type) override;
 
  private:
   StubWebFeedSubscriptions web_feed_subscriptions_;

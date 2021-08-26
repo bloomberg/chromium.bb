@@ -92,7 +92,7 @@
       'gn_args': 'is_clang=false',
     },
     'perf': {
-      'gn_args': 'is_debug=false symbol_level=1',
+      'gn_args': 'is_debug=false dcheck_always_on=false symbol_level=1',
     },
     'release': {
       'gn_args': 'is_debug=false dcheck_always_on=true symbol_level=1',

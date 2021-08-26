@@ -13,12 +13,13 @@
 #include "src/gpu/GrColorInfo.h"
 #include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/SkGr.h"
-#include "src/gpu/ops/GrAtlasTextOp.h"
 #include "src/gpu/text/GrSDFTControl.h"
 #include "src/gpu/text/GrTextBlobCache.h"
-#endif
+#if SK_GPU_V1
+#include "src/gpu/v1/SurfaceDrawContext_v1.h"
+#endif // SK_GPU_V1
+#endif // SK_SUPPORT_GPU
 
 #include "include/core/SkColorFilter.h"
 #include "include/core/SkMaskFilter.h"
@@ -73,10 +74,12 @@ SkGlyphRunListPainter::SkGlyphRunListPainter(const SkSurfaceProps& props, const 
                                 compute_scaler_context_flags(csi.colorSpace()),
                                 SkStrikeCache::GlobalStrikeCache()) {}
 
-SkGlyphRunListPainter::SkGlyphRunListPainter(const GrSurfaceDrawContext& rtc)
-        : SkGlyphRunListPainter{rtc.surfaceProps(), rtc.colorInfo()} {}
+#if SK_GPU_V1
+SkGlyphRunListPainter::SkGlyphRunListPainter(const skgpu::v1::SurfaceDrawContext& sdc)
+        : SkGlyphRunListPainter{sdc.surfaceProps(), sdc.colorInfo()} {}
+#endif // SK_GPU_V1
 
-#endif
+#endif // SK_SUPPORT_GPU
 
 void SkGlyphRunListPainter::drawForBitmapDevice(
         const SkGlyphRunList& glyphRunList, const SkPaint& paint, const SkMatrix& deviceMatrix,
@@ -231,6 +234,7 @@ void SkGlyphRunListPainter::processGlyphRun(const SkGlyphRun& glyphRun,
                                             const GrSDFTControl& control,
                                             SkGlyphRunPainterInterface* process,
                                             const char* tag) {
+#if SK_GPU_V1
     #if defined(SK_TRACE_GLYPH_RUN_PROCESS)
         SkString msg;
         msg.appendf("\nStart glyph run processing");
@@ -366,6 +370,7 @@ void SkGlyphRunListPainter::processGlyphRun(const SkGlyphRun& glyphRun,
         }
         SkDebugf("%s\n", msg.c_str());
     #endif
+#endif // SK_GPU_V1
 }
 #endif  // SK_SUPPORT_GPU
 

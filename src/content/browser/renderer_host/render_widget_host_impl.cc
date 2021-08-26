@@ -37,6 +37,7 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
+#include "base/trace_event/optional_trace_event.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
@@ -61,7 +62,6 @@
 #include "content/browser/renderer_host/data_transfer_util.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/display_feature.h"
-#include "content/browser/renderer_host/display_util.h"
 #include "content/browser/renderer_host/frame_token_message_queue.h"
 #include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/renderer_host/input/fling_scheduler.h"
@@ -83,6 +83,7 @@
 #include "content/browser/storage_partition_impl.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/cursors/webcursor.h"
+#include "content/common/frame.mojom.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/device_service.h"
@@ -114,6 +115,7 @@
 #include "storage/browser/file_system/isolated_context.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "third_party/blink/public/common/widget/visual_properties.h"
 #include "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom.h"
@@ -125,6 +127,7 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/display_switches.h"
+#include "ui/display/display_util.h"
 #include "ui/display/screen.h"
 #include "ui/events/blink/web_input_event_traits.h"
 #include "ui/events/event.h"
@@ -285,7 +288,8 @@ class UnboundWidgetInputHandler : public blink::mojom::WidgetInputHandler {
                          const std::vector<ui::ImeTextSpan>& ime_text_spans,
                          const gfx::Range& range,
                          int32_t start,
-                         int32_t end) override {
+                         int32_t end,
+                         ImeSetCompositionCallback callback) override {
     DLOG(WARNING) << "Input request on unbound interface";
   }
   void ImeCommitText(const std::u16string& text,
@@ -1266,6 +1270,8 @@ void RenderWidgetHostImpl::FlushForTesting() {
 }
 
 void RenderWidgetHostImpl::SetPageFocus(bool focused) {
+  OPTIONAL_TRACE_EVENT1("content", "RenderWidgetHostImpl::SetPageFocus",
+                        "is_focused", focused);
   is_focused_ = focused;
 
   // Portals should never get page focus.
@@ -1291,13 +1297,14 @@ void RenderWidgetHostImpl::SetPageFocus(bool focused) {
 
   // Also send page-level focus state to other SiteInstances involved in
   // rendering the current FrameTree, if this widget is for a main frame.
-  // TODO(crbug.com/689777): We should be telling the delegate which
+  // TODO(crbug.com/689777): We should be telling `frame_tree_` which
   // RenderWidgetHost was focused (if we send it to the focused one instead
   // of the main frame in order to order it correctly with other input events),
-  // so that the delegate can propagate it to all other WebViews based on
+  // so that `frame_tree_` can propagate it to all other WebViews based on
   // where this RenderWidgetHost lives.
-  if (owner_delegate_ && delegate_)
-    delegate_->ReplicatePageFocus(focused);
+  if (owner_delegate_ && frame_tree_) {
+    frame_tree_->ReplicatePageFocus(focused);
+  }
 }
 
 void RenderWidgetHostImpl::LostCapture() {
@@ -1863,7 +1870,7 @@ void RenderWidgetHostImpl::GetScreenInfo(display::ScreenInfo* result) {
   if (view_)
     view_->GetScreenInfo(result);
   else
-    DisplayUtil::GetDefaultScreenInfo(result);
+    display::DisplayUtil::GetDefaultScreenInfo(result);
 
   if (display::Display::HasForceRasterColorProfile()) {
     result->display_color_spaces = gfx::DisplayColorSpaces(
@@ -2133,7 +2140,7 @@ display::ScreenInfos RenderWidgetHostImpl::GetScreenInfos() {
       continue;
     }
     display::ScreenInfo screen_info;
-    DisplayUtil::DisplayToScreenInfo(&screen_info, display);
+    display::DisplayUtil::DisplayToScreenInfo(&screen_info, display);
     if (display::Display::HasForceRasterColorProfile()) {
       screen_info.display_color_spaces = gfx::DisplayColorSpaces(
           display::Display::GetForcedRasterColorProfile());
@@ -2297,8 +2304,10 @@ void RenderWidgetHostImpl::ImeSetComposition(
     const gfx::Range& replacement_range,
     int selection_start,
     int selection_end) {
+  // Passing null callback since it is only needed for Devtools
   GetWidgetInputHandler()->ImeSetComposition(
-      text, ime_text_spans, replacement_range, selection_start, selection_end);
+      text, ime_text_spans, replacement_range, selection_start, selection_end,
+      base::OnceClosure());
 #if defined(OS_ANDROID)
   for (auto& observer : ime_input_event_observers_) {
     observer.OnImeSetComposingTextEvent(text);
@@ -2311,6 +2320,7 @@ void RenderWidgetHostImpl::ImeCommitText(
     const std::vector<ui::ImeTextSpan>& ime_text_spans,
     const gfx::Range& replacement_range,
     int relative_cursor_pos) {
+  // Passing null callback since it is only needed for Devtools
   GetWidgetInputHandler()->ImeCommitText(text, ime_text_spans,
                                          replacement_range, relative_cursor_pos,
                                          base::OnceClosure());
@@ -2331,9 +2341,10 @@ void RenderWidgetHostImpl::ImeFinishComposingText(bool keep_selection) {
 }
 
 void RenderWidgetHostImpl::ImeCancelComposition() {
-  GetWidgetInputHandler()->ImeSetComposition(std::u16string(),
-                                             std::vector<ui::ImeTextSpan>(),
-                                             gfx::Range::InvalidRange(), 0, 0);
+  // Passing null callback since it is only needed for Devtools
+  GetWidgetInputHandler()->ImeSetComposition(
+      std::u16string(), std::vector<ui::ImeTextSpan>(),
+      gfx::Range::InvalidRange(), 0, 0, base::OnceClosure());
 }
 
 void RenderWidgetHostImpl::RejectMouseLockOrUnlockIfNecessary(
@@ -2811,17 +2822,28 @@ void RenderWidgetHostImpl::StartDragging(
   storage::FileSystemContext* file_system_context =
       GetProcess()->GetStoragePartition()->GetFileSystemContext();
   filtered_data.file_system_files.clear();
+  // TODO(https://crbug.com/1221308): determine whether StorageKey should be
+  // replaced with a non-first-party value
   for (const auto& file_system_file : drop_data.file_system_files) {
-    storage::FileSystemURL file_system_url =
-        file_system_context->CrackURL(file_system_file.url);
+    storage::FileSystemURL file_system_url = file_system_context->CrackURL(
+        file_system_file.url,
+        blink::StorageKey(url::Origin::Create(file_system_file.url)));
     if (policy->CanReadFileSystemFile(GetProcess()->GetID(), file_system_url))
       filtered_data.file_system_files.push_back(file_system_file);
   }
 
   float scale = GetScaleFactorForView(GetView());
   gfx::ImageSkia image = gfx::ImageSkia::CreateFromBitmap(bitmap, scale);
-  view->StartDragging(filtered_data, drag_operations_mask, image,
-                      bitmap_offset_in_dip, *event_info, this);
+  gfx::Vector2d offset = bitmap_offset_in_dip;
+#if defined(OS_WIN)
+  // On Windows, scale the offset by device scale factor, otherwise the drag
+  // image location doesn't line up with the drop location (drag destination).
+  gfx::Vector2dF scaled_offset = gfx::Vector2dF(offset);
+  scaled_offset.Scale(scale);
+  offset = gfx::ToRoundedVector2d(scaled_offset);
+#endif
+  view->StartDragging(filtered_data, drag_operations_mask, image, offset,
+                      *event_info, this);
 }
 
 bool RenderWidgetHostImpl::IsAutoscrollInProgress() {

@@ -244,8 +244,7 @@ bool ShouldShowAccountStorageOptIn(const PrefService* pref_service,
 
   // Show the opt-in if the user is eligible, but not yet opted in.
   return IsUserEligibleForAccountStorage(sync_service) &&
-         !IsOptedInForAccountStorage(pref_service, sync_service) &&
-         !sync_service->IsSyncFeatureEnabled();
+         !IsOptedInForAccountStorage(pref_service, sync_service);
 }
 
 void OptInToAccountStorage(PrefService* pref_service,
@@ -264,18 +263,6 @@ void OptInToAccountStorage(PrefService* pref_service,
   ScopedAccountStorageSettingsUpdate(pref_service,
                                      GaiaIdHash::FromGaiaId(gaia_id))
       .SetOptedIn();
-
-  // Potentially also set the default store to the account one, based on a
-  // feature param.
-  bool save_to_account_store = base::GetFieldTrialParamByFeatureAsBool(
-      features::kEnablePasswordsAccountStorage,
-      features::kSaveToAccountStoreOnOptIn,
-      features::kSaveToAccountStoreOnOptInDefaultValue);
-  if (save_to_account_store) {
-    ScopedAccountStorageSettingsUpdate(pref_service,
-                                       GaiaIdHash::FromGaiaId(gaia_id))
-        .SetDefaultStore(PasswordForm::Store::kAccountStore);
-  }
 
   // Record the total number of (now) opted-in accounts.
   base::UmaHistogramExactLinear(
@@ -327,6 +314,24 @@ bool ShouldShowAccountStorageBubbleUi(const PrefService* pref_service,
           IsUserEligibleForAccountStorage(sync_service));
 }
 
+bool IsDefaultPasswordStoreSet(const PrefService* pref_service,
+                               const syncer::SyncService* sync_service) {
+  DCHECK(pref_service);
+
+  if (!sync_service)
+    return false;
+
+  std::string gaia_id = sync_service->GetAuthenticatedAccountInfo().gaia;
+  if (gaia_id.empty())
+    return false;
+
+  PasswordForm::Store default_store =
+      AccountStorageSettingsReader(pref_service,
+                                   GaiaIdHash::FromGaiaId(gaia_id))
+          .GetDefaultStore();
+  return default_store != PasswordForm::Store::kNotSet;
+}
+
 PasswordForm::Store GetDefaultPasswordStore(
     const PrefService* pref_service,
     const syncer::SyncService* sync_service) {
@@ -347,12 +352,17 @@ PasswordForm::Store GetDefaultPasswordStore(
   // account store in principle (though the user might not have opted in to that
   // yet).
   if (default_store == PasswordForm::Store::kNotSet) {
-    // If the user hasn't made a choice about the default store yet, retrieve it
-    // from a feature param.
-    bool save_to_profile_store = base::GetFieldTrialParamByFeatureAsBool(
-        features::kEnablePasswordsAccountStorage,
-        features::kSaveToProfileStoreByDefault,
-        features::kSaveToProfileStoreByDefaultDefaultValue);
+    // In the original flow: Always default to saving to the account if the user
+    //   hasn't made an explicit choice yet. (If they haven't opted in, they'll
+    //   be asked to before the save actually happens.)
+    // In the revised flow: The default store depends on the opt-in state. If
+    //   the user has not opted in, then saves go to the profile store by
+    //   default. If the user *has* opted in, then they've chosen to save to the
+    //   account, so that becomes the default.
+    bool save_to_profile_store =
+        base::FeatureList::IsEnabled(
+            features::kPasswordsAccountStorageRevisedOptInFlow) &&
+        !IsOptedInForAccountStorage(pref_service, sync_service);
     return save_to_profile_store ? PasswordForm::Store::kProfileStore
                                  : PasswordForm::Store::kAccountStore;
   }

@@ -14,8 +14,8 @@
 #include "base/allocator/partition_allocator/partition_root.h"
 #include "base/base_export.h"
 #include "base/compiler_specific.h"
+#include "base/cxx17_backports.h"
 #include "base/dcheck_is_on.h"
-#include "base/numerics/ranges.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/base_tracing.h"
 #include "build/build_config.h"
@@ -33,20 +33,6 @@ ThreadCacheRegistry g_instance;
 BASE_EXPORT PartitionTlsKey g_thread_cache_key;
 #if defined(PA_THREAD_CACHE_FAST_TLS)
 BASE_EXPORT
-// On ARM Chrome OS, libwidevinecdm.so is loaded dynamically. It includes a
-// static relocation added by tcmalloc. This relocation requests an alignment of
-// 64 bytes, which is not provided by glibc by default, contrary to x86_64 for
-// instance.  This makes the library load fail, and in turn Chrome fails to play
-// any DRM'd content. A very hacky solution is to make sure that glibc supports
-// a 64 byte alignment in its static TLS block, which is what the directive
-// below achieves. See b/191314803 for details.
-//
-// TODO(lizeb): This is a temporary hack. It will be removed as soon as
-// libwidevinecdm.so is changed. This is intended to provide bot coverage on ARM
-// Chrome OS in the meantime.
-#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
-ALIGNAS(64)
-#endif
 thread_local ThreadCache* g_thread_cache;
 #endif
 
@@ -377,7 +363,7 @@ void ThreadCache::SetGlobalLimits(PartitionRoot<ThreadSafe>* root,
     // |PutInBucket()| is called on a full bucket, which should not overflow.
     constexpr size_t kMaxLimit = std::numeric_limits<uint8_t>::max() - 1;
     global_limits_[index] =
-        static_cast<uint8_t>(base::ClampToRange(value, kMinLimit, kMaxLimit));
+        static_cast<uint8_t>(base::clamp(value, kMinLimit, kMaxLimit));
     PA_DCHECK(global_limits_[index] >= kMinLimit);
     PA_DCHECK(global_limits_[index] <= kMaxLimit);
   }
@@ -580,6 +566,19 @@ void ThreadCache::ClearBucket(ThreadCache::Bucket& bucket, size_t limit) {
   if (!bucket.count || bucket.count <= limit)
     return;
 
+  // This serves two purposes: error checking and avoiding stalls when grabbing
+  // the lock:
+  // 1. Error checking: this is pretty clear. Since this path is taken
+  //    infrequently, and is going to walk the entire freelist anyway, its
+  //    incremental cost should be very small. Indeed, we free from the tail of
+  //    the list, so all calls here will end up walking the entire freelist, and
+  //    incurring the same amount of cache misses.
+  // 2. Avoiding stalls: If one of the freelist accesses in |FreeAfter()|
+  //    triggers a major page fault, and we are running on a low-priority
+  //    thread, we don't want the thread to be blocked while holding the lock,
+  //    causing a priority inversion.
+  bucket.freelist_head->CheckFreeList(bucket.slot_size);
+
   uint8_t count_before = bucket.count;
   if (limit == 0) {
     FreeAfter(bucket.freelist_head, bucket.slot_size);
@@ -663,7 +662,6 @@ void ThreadCache::AccumulateStats(ThreadCacheStats* stats) const {
 
 #if defined(PA_THREAD_CACHE_ALLOC_STATS)
   for (size_t i = 0; i < kNumBuckets + 1; i++) {
-    stats->bucket_size_[i] = root_->buckets[i].slot_size;
     stats->allocs_per_bucket_[i] += stats_.allocs_per_bucket_[i];
   }
 #endif  // defined(PA_THREAD_CACHE_ALLOC_STATS)

@@ -16,16 +16,16 @@
 #include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/GrDrawOpTest.h"
 #include "src/gpu/GrDrawingManager.h"
+#include "src/gpu/GrFragmentProcessor.h"
 #include "src/gpu/GrPipeline.h"
 #include "src/gpu/GrProxyProvider.h"
-#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/GrXferProcessor.h"
 #include "src/gpu/effects/GrBlendFragmentProcessor.h"
 #include "src/gpu/effects/GrPorterDuffXferProcessor.h"
-#include "src/gpu/glsl/GrGLSLFragmentProcessor.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
 #include "src/gpu/glsl/GrGLSLProgramBuilder.h"
 #include "src/gpu/ops/GrDrawOp.h"
+#include "src/gpu/v1/SurfaceDrawContext_v1.h"
 #include "tests/Test.h"
 #include "tools/gpu/GrContextFactory.h"
 
@@ -39,22 +39,7 @@
  */
 static const uint32_t kMaxKeySize = 1024;
 
-class GLBigKeyProcessor : public GrGLSLFragmentProcessor {
-public:
-    void emitCode(EmitArgs& args) override {
-        args.fFragBuilder->codeAppendf("return half4(1);\n");
-    }
-
-    static void GenKey(const GrProcessor&, const GrShaderCaps&, GrProcessorKeyBuilder* b) {
-        for (uint32_t i = 0; i < kMaxKeySize; i++) {
-            b->add32(i);
-        }
-    }
-
-private:
-    using INHERITED = GrGLSLFragmentProcessor;
-};
-
+namespace {
 class BigKeyProcessor : public GrFragmentProcessor {
 public:
     static std::unique_ptr<GrFragmentProcessor> Make() {
@@ -63,16 +48,25 @@ public:
 
     const char* name() const override { return "Big_Ole_Key"; }
 
-    std::unique_ptr<GrGLSLFragmentProcessor> onMakeProgramImpl() const override {
-        return std::make_unique<GLBigKeyProcessor>();
+    std::unique_ptr<ProgramImpl> onMakeProgramImpl() const override {
+        class Impl : public ProgramImpl {
+        public:
+            void emitCode(EmitArgs& args) override {
+                args.fFragBuilder->codeAppendf("return half4(1);\n");
+            }
+        };
+
+        return std::make_unique<Impl>();
     }
 
     std::unique_ptr<GrFragmentProcessor> clone() const override { return Make(); }
 
 private:
-    BigKeyProcessor() : INHERITED(kBigKeyProcessor_ClassID, kNone_OptimizationFlags) { }
-    void onGetGLSLProcessorKey(const GrShaderCaps& caps, GrProcessorKeyBuilder* b) const override {
-        GLBigKeyProcessor::GenKey(*this, caps, b);
+    BigKeyProcessor() : INHERITED(kBigKeyProcessor_ClassID, kNone_OptimizationFlags) {}
+    void onAddToKey(const GrShaderCaps& caps, GrProcessorKeyBuilder* b) const override {
+        for (uint32_t i = 0; i < kMaxKeySize; i++) {
+            b->add32(i);
+        }
     }
     bool onIsEqual(const GrFragmentProcessor&) const override { return true; }
 
@@ -80,6 +74,7 @@ private:
 
     using INHERITED = GrFragmentProcessor;
 };
+}  // anonymous namespace
 
 GR_DEFINE_FRAGMENT_PROCESSOR_TEST(BigKeyProcessor);
 
@@ -99,7 +94,7 @@ public:
 
     const char* name() const override { return "Block_Input"; }
 
-    std::unique_ptr<GrGLSLFragmentProcessor> onMakeProgramImpl() const override {
+    std::unique_ptr<ProgramImpl> onMakeProgramImpl() const override {
         return std::make_unique<GLFP>();
     }
 
@@ -108,7 +103,7 @@ public:
     }
 
 private:
-    class GLFP : public GrGLSLFragmentProcessor {
+    class GLFP : public ProgramImpl {
     public:
         void emitCode(EmitArgs& args) override {
             SkString temp = this->invokeChild(0, args);
@@ -116,7 +111,7 @@ private:
         }
 
     private:
-        using INHERITED = GrGLSLFragmentProcessor;
+        using INHERITED = ProgramImpl;
     };
 
     BlockInputFragmentProcessor(std::unique_ptr<GrFragmentProcessor> child)
@@ -124,7 +119,7 @@ private:
         this->registerChild(std::move(child));
     }
 
-    void onGetGLSLProcessorKey(const GrShaderCaps& caps, GrProcessorKeyBuilder* b) const override {}
+    void onAddToKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const override {}
 
     bool onIsEqual(const GrFragmentProcessor&) const override { return true; }
 
@@ -139,7 +134,7 @@ private:
 static const int kRenderTargetHeight = 1;
 static const int kRenderTargetWidth = 1;
 
-static std::unique_ptr<GrSurfaceDrawContext> random_surface_draw_context(
+static std::unique_ptr<skgpu::v1::SurfaceDrawContext> random_surface_draw_context(
         GrRecordingContext* rContext,
         SkRandom* random,
         const GrCaps* caps) {
@@ -153,7 +148,7 @@ static std::unique_ptr<GrSurfaceDrawContext> random_surface_draw_context(
     // Above could be 0 if msaa isn't supported.
     sampleCnt = std::max(1, sampleCnt);
 
-    return GrSurfaceDrawContext::Make(
+    return skgpu::v1::SurfaceDrawContext::Make(
             rContext, GrColorType::kRGBA_8888, nullptr, SkBackingFit::kExact,
             {kRenderTargetWidth, kRenderTargetHeight}, SkSurfaceProps(), sampleCnt,
             GrMipmapped::kNo, GrProtected::kNo, origin);
@@ -300,10 +295,10 @@ bool GrDrawingManager::ProgramUnitTest(GrDirectContext* direct, int maxStages, i
     direct->submit(false);
 
     // Validate that GrFPs work correctly without an input.
-    auto surfaceDrawContext = GrSurfaceDrawContext::Make(
+    auto sdc = skgpu::v1::SurfaceDrawContext::Make(
             direct, GrColorType::kRGBA_8888, nullptr, SkBackingFit::kExact,
             {kRenderTargetWidth, kRenderTargetHeight}, SkSurfaceProps());
-    if (!surfaceDrawContext) {
+    if (!sdc) {
         SkDebugf("Could not allocate a surfaceDrawContext");
         return false;
     }
@@ -320,7 +315,7 @@ bool GrDrawingManager::ProgramUnitTest(GrDirectContext* direct, int maxStages, i
             auto fp = GrFragmentProcessorTestFactory::MakeIdx(i, &ptd);
             auto blockFP = BlockInputFragmentProcessor::Make(std::move(fp));
             paint.setColorFragmentProcessor(std::move(blockFP));
-            GrDrawRandomOp(&random, surfaceDrawContext.get(), std::move(paint));
+            GrDrawRandomOp(&random, sdc.get(), std::move(paint));
 
             direct->flush(GrFlushInfo());
             direct->submit(false);

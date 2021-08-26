@@ -155,7 +155,7 @@ TEST(TPLModelTest, EstimateFrameRateTest) {
    */
   const int txfm_size = 256;  // 16x16
   const int frame_count = 16;
-  unsigned char q_index_list[16];
+  int q_index_list[16];
   TplTxfmStats stats_list[16];
 
   for (int i = 0; i < frame_count; i++) {
@@ -227,6 +227,190 @@ TEST(TPLModelTest, TxfmStatsRecordTest) {
   for (int i = 0; i < 256; ++i) {
     EXPECT_DOUBLE_EQ(stats2.abs_coeff_sum[i], 2 * stats1.abs_coeff_sum[i]);
   }
+}
+
+/*
+ * Helper method to brute-force search for the closest q_index
+ * that achieves the specified bit budget.
+ */
+int find_gop_q_iterative(double bit_budget, double arf_qstep_ratio,
+                         GF_GROUP gf_group, TplTxfmStats *stats_list,
+                         int gf_frame_index, aom_bit_depth_t bit_depth) {
+  // Brute force iterative method to find the optimal q.
+  // Use the result to test against the binary search result.
+
+  // Initial estimate when q = 255
+  av1_q_mode_compute_gop_q_indices(gf_frame_index, 255, arf_qstep_ratio,
+                                   bit_depth, &gf_group, gf_group.q_val);
+  double curr_estimate =
+      av1_estimate_gop_bitrate(gf_group.q_val, gf_group.size, stats_list);
+  double best_estimate_budget_distance = fabs(curr_estimate - bit_budget);
+  int best_q = 255;
+
+  // Start at q = 254 because we already have an estimate for q = 255.
+  for (int q = 254; q >= 0; q--) {
+    av1_q_mode_compute_gop_q_indices(gf_frame_index, q, arf_qstep_ratio,
+                                     bit_depth, &gf_group, gf_group.q_val);
+    curr_estimate =
+        av1_estimate_gop_bitrate(gf_group.q_val, gf_group.size, stats_list);
+    double curr_estimate_budget_distance = fabs(curr_estimate - bit_budget);
+    if (curr_estimate_budget_distance <= best_estimate_budget_distance) {
+      best_estimate_budget_distance = curr_estimate_budget_distance;
+      best_q = q;
+    }
+  }
+  return best_q;
+}
+
+TEST(TplModelTest, QModeEstimateBaseQTest) {
+  GF_GROUP gf_group = {};
+  gf_group.size = 25;
+  TplTxfmStats stats_list[25];
+  const int gf_group_update_types[25] = { 0, 3, 6, 6, 6, 1, 5, 1, 5, 6, 1, 5, 1,
+                                          5, 6, 6, 1, 5, 1, 5, 6, 1, 5, 1, 4 };
+  const int gf_frame_index = 0;
+  const double arf_qstep_ratio = 2;
+  const aom_bit_depth_t bit_depth = AOM_BITS_8;
+  const double scale_factor = 1.0;
+
+  for (int i = 0; i < gf_group.size; i++) {
+    gf_group.update_type[i] = gf_group_update_types[i];
+    stats_list[i].txfm_block_count = 8;
+
+    for (int j = 0; j < 256; j++) {
+      stats_list[i].abs_coeff_sum[j] = 1000 + j;
+    }
+  }
+
+  // Test multiple bit budgets.
+  const std::vector<double> bit_budgets = { 0,      100,    1000,   10000,
+                                            100000, 300000, 500000, 750000,
+                                            800000, DBL_MAX };
+
+  for (double bit_budget : bit_budgets) {
+    // Binary search method to find the optimal q.
+    const int result = av1_q_mode_estimate_base_q(
+        &gf_group, stats_list, bit_budget, gf_frame_index, arf_qstep_ratio,
+        bit_depth, scale_factor, gf_group.q_val);
+    const int test_result =
+        find_gop_q_iterative(bit_budget, arf_qstep_ratio, gf_group, stats_list,
+                             gf_frame_index, bit_depth);
+
+    if (bit_budget == 0) {
+      EXPECT_EQ(result, 255);
+    } else if (bit_budget == DBL_MAX) {
+      EXPECT_EQ(result, 0);
+    }
+
+    EXPECT_EQ(result, test_result);
+  }
+}
+
+TEST(TplModelTest, ComputeMVDifferenceTest) {
+  TplDepFrame tpl_frame_small;
+  tpl_frame_small.is_valid = true;
+  tpl_frame_small.mi_rows = 4;
+  tpl_frame_small.mi_cols = 4;
+  tpl_frame_small.stride = 1;
+  uint8_t right_shift_small = 1;
+  int step_small = 1 << right_shift_small;
+
+  // Test values for motion vectors.
+  int mv_vals_small[4] = { 1, 2, 3, 4 };
+  int index = 0;
+
+  // 4x4 blocks means we need to allocate a 4 size array.
+  // According to av1_tpl_ptr_pos:
+  // (row >> right_shift) * stride + (col >> right_shift)
+  // (4 >> 1) * 1 + (4 >> 1) = 4
+  TplDepStats stats_buf_small[4];
+  tpl_frame_small.tpl_stats_ptr = stats_buf_small;
+
+  for (int row = 0; row < tpl_frame_small.mi_rows; row += step_small) {
+    for (int col = 0; col < tpl_frame_small.mi_cols; col += step_small) {
+      TplDepStats tpl_stats;
+      tpl_stats.ref_frame_index[0] = 0;
+      int_mv mv;
+      mv.as_mv.row = mv_vals_small[index];
+      mv.as_mv.col = mv_vals_small[index];
+      index++;
+      tpl_stats.mv[0] = mv;
+      tpl_frame_small.tpl_stats_ptr[av1_tpl_ptr_pos(
+          row, col, tpl_frame_small.stride, right_shift_small)] = tpl_stats;
+    }
+  }
+
+  int_mv result_mv =
+      av1_compute_mv_difference(&tpl_frame_small, 1, 1, step_small,
+                                tpl_frame_small.stride, right_shift_small);
+
+  // Expect the result to be exactly equal to 1 because this is the difference
+  // between neighboring motion vectors in this instance.
+  EXPECT_EQ(result_mv.as_mv.row, 1);
+  EXPECT_EQ(result_mv.as_mv.col, 1);
+}
+
+TEST(TplModelTest, ComputeMVBitsTest) {
+  TplDepFrame tpl_frame;
+  tpl_frame.is_valid = true;
+  tpl_frame.mi_rows = 16;
+  tpl_frame.mi_cols = 16;
+  tpl_frame.stride = 24;
+  uint8_t right_shift = 2;
+  int step = 1 << right_shift;
+  // Test values for motion vectors.
+  int mv_vals_ordered[16] = { 1, 2,  3,  4,  5,  6,  7,  8,
+                              9, 10, 11, 12, 13, 14, 15, 16 };
+  int mv_vals[16] = { 1, 16, 2, 15, 3, 14, 4, 13, 5, 12, 6, 11, 7, 10, 8, 9 };
+  int index = 0;
+
+  // 16x16 blocks means we need to allocate a 100 size array.
+  // According to av1_tpl_ptr_pos:
+  // (row >> right_shift) * stride + (col >> right_shift)
+  // (16 >> 2) * 24 + (16 >> 2) = 100
+  TplDepStats stats_buf[100];
+  tpl_frame.tpl_stats_ptr = stats_buf;
+
+  for (int row = 0; row < tpl_frame.mi_rows; row += step) {
+    for (int col = 0; col < tpl_frame.mi_cols; col += step) {
+      TplDepStats tpl_stats;
+      tpl_stats.ref_frame_index[0] = 0;
+      int_mv mv;
+      mv.as_mv.row = mv_vals_ordered[index];
+      mv.as_mv.col = mv_vals_ordered[index];
+      index++;
+      tpl_stats.mv[0] = mv;
+      tpl_frame.tpl_stats_ptr[av1_tpl_ptr_pos(row, col, tpl_frame.stride,
+                                              right_shift)] = tpl_stats;
+    }
+  }
+
+  double result = av1_tpl_compute_frame_mv_entropy(&tpl_frame, right_shift);
+
+  // Expect the result to be low because the motion vectors are ordered.
+  // The estimation algorithm takes this into account and reduces the cost.
+  EXPECT_NEAR(result, 20, 5);
+
+  index = 0;
+  for (int row = 0; row < tpl_frame.mi_rows; row += step) {
+    for (int col = 0; col < tpl_frame.mi_cols; col += step) {
+      TplDepStats tpl_stats;
+      tpl_stats.ref_frame_index[0] = 0;
+      int_mv mv;
+      mv.as_mv.row = mv_vals[index];
+      mv.as_mv.col = mv_vals[index];
+      index++;
+      tpl_stats.mv[0] = mv;
+      tpl_frame.tpl_stats_ptr[av1_tpl_ptr_pos(row, col, tpl_frame.stride,
+                                              right_shift)] = tpl_stats;
+    }
+  }
+
+  result = av1_tpl_compute_frame_mv_entropy(&tpl_frame, right_shift);
+
+  // Expect the result to be higher because the vectors are not ordered.
+  // Neighboring vectors will have different values, increasing the cost.
+  EXPECT_NEAR(result, 70, 5);
 }
 
 }  // namespace

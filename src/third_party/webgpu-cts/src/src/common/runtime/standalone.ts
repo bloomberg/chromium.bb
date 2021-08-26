@@ -1,5 +1,6 @@
 // Implements the standalone test runner (see also: /standalone/index.html).
 
+import { setBaseResourcePath } from '../framework/resources.js';
 import { DefaultTestFileLoader } from '../internal/file_loader.js';
 import { Logger } from '../internal/logging/logger.js';
 import { LiveTestCaseResult } from '../internal/logging/result.js';
@@ -24,13 +25,41 @@ const debug = optionEnabled('debug');
 Logger.globalDebugMode = debug;
 const logger = new Logger();
 
+setBaseResourcePath('../out/resources');
+
 const worker = optionEnabled('worker') ? new TestWorker(debug) : undefined;
 
 const resultsVis = document.getElementById('resultsVis')!;
 
+interface SubtreeResult {
+  pass: number;
+  fail: number;
+  warn: number;
+  skip: number;
+  total: number;
+  timems: number;
+}
+
+function emptySubtreeResult() {
+  return { pass: 0, fail: 0, warn: 0, skip: 0, total: 0, timems: 0 };
+}
+
+function mergeSubtreeResults(...results: SubtreeResult[]) {
+  const target = emptySubtreeResult();
+  for (const result of results) {
+    target.pass += result.pass;
+    target.fail += result.fail;
+    target.warn += result.warn;
+    target.skip += result.skip;
+    target.total += result.total;
+    target.timems += result.timems;
+  }
+  return target;
+}
+
 type SetCheckedRecursively = () => void;
 type GenerateSubtreeHTML = (parent: HTMLElement) => SetCheckedRecursively;
-type RunSubtree = () => Promise<void>;
+type RunSubtree = () => Promise<SubtreeResult>;
 
 interface VisualizedSubtree {
   generateSubtreeHTML: GenerateSubtreeHTML;
@@ -70,10 +99,15 @@ function makeCaseHTML(t: TestTreeLeaf): VisualizedSubtree {
   let caseResult: LiveTestCaseResult | undefined;
 
   // Becomes set once the DOM for this case exists.
+  let clearRenderedResult: (() => void) | undefined;
   let updateRenderedResult: (() => void) | undefined;
 
   const name = t.query.toString();
   const runSubtree = async () => {
+    if (clearRenderedResult) clearRenderedResult();
+
+    const result: SubtreeResult = emptySubtreeResult();
+
     haveSomeResults = true;
     const [rec, res] = logger.record(name);
     caseResult = res;
@@ -83,7 +117,26 @@ function makeCaseHTML(t: TestTreeLeaf): VisualizedSubtree {
       await t.run(rec);
     }
 
+    result.total++;
+    result.timems += caseResult.timems;
+    switch (caseResult.status) {
+      case 'pass':
+        result.pass++;
+        break;
+      case 'fail':
+        result.fail++;
+        break;
+      case 'skip':
+        result.skip++;
+        break;
+      case 'warn':
+        result.warn++;
+        break;
+    }
+
     if (updateRenderedResult) updateRenderedResult();
+
+    return result;
   };
 
   const generateSubtreeHTML = (div: HTMLElement) => {
@@ -96,6 +149,12 @@ function makeCaseHTML(t: TestTreeLeaf): VisualizedSubtree {
     const casetime = $('<div>').addClass('testcasetime').html('ms').appendTo(casehead);
     div.appendChild(casehead);
     div.appendChild(caselogs[0]);
+
+    clearRenderedResult = () => {
+      div.removeAttribute('data-status');
+      casetime.text('ms');
+      caselogs.empty();
+    };
 
     updateRenderedResult = () => {
       if (caseResult) {
@@ -130,10 +189,22 @@ function makeCaseHTML(t: TestTreeLeaf): VisualizedSubtree {
 }
 
 function makeSubtreeHTML(n: TestSubtree, parentLevel: TestQueryLevel): VisualizedSubtree {
+  let subtreeResult: SubtreeResult = emptySubtreeResult();
+  // Becomes set once the DOM for this case exists.
+  let clearRenderedResult: (() => void) | undefined;
+  let updateRenderedResult: (() => void) | undefined;
+
   const { runSubtree, generateSubtreeHTML } = makeSubtreeChildrenHTML(
     n.children.values(),
     n.query.level
   );
+
+  const runMySubtree = async () => {
+    if (clearRenderedResult) clearRenderedResult();
+    subtreeResult = await runSubtree();
+    if (updateRenderedResult) updateRenderedResult();
+    return subtreeResult;
+  };
 
   const generateMyHTML = (div: HTMLElement) => {
     const subtreeHTML = $('<div>').addClass('subtreechildren');
@@ -141,7 +212,7 @@ function makeSubtreeHTML(n: TestSubtree, parentLevel: TestQueryLevel): Visualize
 
     // Hide subtree - it's not generated yet.
     subtreeHTML.hide();
-    const [header, setChecked] = makeTreeNodeHeaderHTML(n, runSubtree, parentLevel, checked => {
+    const [header, setChecked] = makeTreeNodeHeaderHTML(n, runMySubtree, parentLevel, checked => {
       if (checked) {
         // Make sure the subtree is generated and then show it.
         generateSubtree();
@@ -156,6 +227,23 @@ function makeSubtreeHTML(n: TestSubtree, parentLevel: TestQueryLevel): Visualize
     div.appendChild(header);
     div.appendChild(subtreeHTML[0]);
 
+    clearRenderedResult = () => {
+      div.removeAttribute('data-status');
+    };
+
+    updateRenderedResult = () => {
+      let status = '';
+      if (subtreeResult.pass > 0) {
+        status += 'pass';
+      }
+      if (subtreeResult.fail > 0) {
+        status += 'fail';
+      }
+      div.setAttribute('data-status', status);
+    };
+
+    updateRenderedResult();
+
     return () => {
       setChecked();
       const setChildrenChecked = generateSubtree();
@@ -163,7 +251,7 @@ function makeSubtreeHTML(n: TestSubtree, parentLevel: TestQueryLevel): Visualize
     };
   };
 
-  return { runSubtree, generateSubtreeHTML: generateMyHTML };
+  return { runSubtree: runMySubtree, generateSubtreeHTML: generateMyHTML };
 }
 
 function makeSubtreeChildrenHTML(
@@ -173,9 +261,11 @@ function makeSubtreeChildrenHTML(
   const childFns = Array.from(children, subtree => makeTreeNodeHTML(subtree, parentLevel));
 
   const runMySubtree = async () => {
+    const results: SubtreeResult[] = [];
     for (const { runSubtree } of childFns) {
-      await runSubtree();
+      results.push(await runSubtree());
     }
+    return mergeSubtreeResults(...results);
   };
   const generateMyHTML = (div: HTMLElement) => {
     const setChildrenChecked = Array.from(childFns, ({ generateSubtreeHTML }) =>
@@ -238,7 +328,7 @@ function makeTreeNodeHeaderHTML(
     .attr('alt', runtext)
     .attr('title', runtext)
     .on('click', async () => {
-      await runSubtree();
+      runSubtree();
     })
     .appendTo(header);
   $('<a>')

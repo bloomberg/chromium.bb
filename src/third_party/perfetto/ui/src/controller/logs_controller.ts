@@ -20,8 +20,9 @@ import {
   LogEntriesKey,
   LogExistsKey
 } from '../common/logs';
-import {NUM, slowlyCountRows} from '../common/query_iterator';
+import {NUM, STR} from '../common/query_result';
 import {fromNs, TimeSpan, toNsCeil, toNsFloor} from '../common/time';
+import {publishTrackData} from '../frontend/publish';
 
 import {Controller} from './controller';
 import {App} from './globals';
@@ -75,26 +76,30 @@ async function updateLogEntries(
   const vizEndNs = toNsCeil(span.end);
   const vizSqlBounds = `ts >= ${vizStartNs} and ts <= ${vizEndNs}`;
 
-  const rowsResult =
-      await engine.query(`select ts, prio, tag, msg from android_logs
+  const rowsResult = await engine.queryV2(`
+        select
+          ts,
+          prio,
+          ifnull(tag, '[NULL]') as tag,
+          msg
+        from android_logs
         where ${vizSqlBounds}
         order by ts
-        limit ${pagination.start}, ${pagination.count}`);
+        limit ${pagination.start}, ${pagination.count}
+    `);
 
-  if (!slowlyCountRows(rowsResult)) {
-    return {
-      offset: pagination.start,
-      timestamps: [],
-      priorities: [],
-      tags: [],
-      messages: [],
-    };
+  const timestamps = [];
+  const priorities = [];
+  const tags = [];
+  const messages = [];
+
+  const it = rowsResult.iter({ts: NUM, prio: NUM, tag: STR, msg: STR});
+  for (; it.valid(); it.next()) {
+    timestamps.push(it.ts);
+    priorities.push(it.prio);
+    tags.push(it.tag);
+    messages.push(it.msg);
   }
-
-  const timestamps = rowsResult.columns[0].longValues!;
-  const priorities = rowsResult.columns[1].longValues!;
-  const tags = rowsResult.columns[2].stringValues!;
-  const messages = rowsResult.columns[3].stringValues!;
 
   return {
     offset: pagination.start,
@@ -165,7 +170,7 @@ export class LogsController extends Controller<'main'> {
     this.pagination = new Pagination(0, 0);
     this.hasAnyLogs().then(exists => {
       this.hasLogs = exists;
-      this.app.publish('TrackData', {
+      publishTrackData({
         id: LogExistsKey,
         data: {
           exists,
@@ -209,7 +214,7 @@ export class LogsController extends Controller<'main'> {
       this.span = newSpan;
       updateLogBounds(this.engine, newSpan).then(data => {
         if (!newSpan.equals(this.span)) return;
-        this.app.publish('TrackData', {
+        publishTrackData({
           id: LogBoundsKey,
           data,
         });
@@ -223,7 +228,7 @@ export class LogsController extends Controller<'main'> {
 
       updateLogEntries(this.engine, newSpan, this.pagination).then(data => {
         if (!this.pagination.contains(requestedPagination)) return;
-        this.app.publish('TrackData', {
+        publishTrackData({
           id: LogEntriesKey,
           data,
         });

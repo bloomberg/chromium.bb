@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/device_posture/device_posture.h"
 
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 
@@ -11,35 +12,70 @@ namespace blink {
 
 namespace {
 
-String PostureToString(
-    mojom::blink::DevicePostureType posture) {
+String PostureToString(device::mojom::blink::DevicePostureType posture) {
   switch (posture) {
-    case mojom::blink::DevicePostureType::kNoFold:
-      return "no-fold";
-    case mojom::blink::DevicePostureType::kLaptop:
-      return "laptop";
-    case mojom::blink::DevicePostureType::kFlat:
-      return "flat";
-    case mojom::blink::DevicePostureType::kTent:
-      return "tent";
-    case mojom::blink::DevicePostureType::kTablet:
-      return "tablet";
-    case mojom::blink::DevicePostureType::kBook:
-      return "book";
+    case device::mojom::blink::DevicePostureType::kContinuous:
+      return "continuous";
+    case device::mojom::blink::DevicePostureType::kFolded:
+      return "folded";
+    case device::mojom::blink::DevicePostureType::kFoldedOver:
+      return "folded-over";
   }
-  NOTREACHED();
-  return "no-fold";
 }
 
 }  // namespace
 
 DevicePosture::DevicePosture(LocalDOMWindow* window)
-    : ExecutionContextClient(window) {}
+    : ExecutionContextClient(window),
+      service_(GetExecutionContext()),
+      receiver_(this, GetExecutionContext()) {}
 
 DevicePosture::~DevicePosture() = default;
 
-String DevicePosture::type() const {
+String DevicePosture::type() {
+  EnsureServiceConnection();
   return PostureToString(posture_);
+}
+
+void DevicePosture::OnPostureChanged(
+    device::mojom::blink::DevicePostureType posture) {
+  if (posture_ == posture)
+    return;
+
+  posture_ = posture;
+  DispatchEvent(*Event::CreateBubble(event_type_names::kChange));
+}
+
+void DevicePosture::EnsureServiceConnection() {
+  auto* context = GetExecutionContext();
+  if (!context)
+    return;
+
+  if (service_.is_bound())
+    return;
+
+  auto task_runner =
+      GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
+  GetExecutionContext()->GetBrowserInterfaceBroker().GetInterface(
+      service_.BindNewPipeAndPassReceiver(task_runner));
+
+  service_->AddListenerAndGetCurrentPosture(
+      receiver_.BindNewPipeAndPassRemote(task_runner),
+      WTF::Bind(&DevicePosture::OnPostureChanged, WrapPersistent(this)));
+}
+
+void DevicePosture::AddedEventListener(const AtomicString& event_type,
+                                       RegisteredEventListener& listener) {
+  EventTargetWithInlineData::AddedEventListener(event_type, listener);
+
+  if (event_type != event_type_names::kChange)
+    return;
+
+  ExecutionContext* context = GetExecutionContext();
+  if (!context)
+    return;
+
+  EnsureServiceConnection();
 }
 
 ExecutionContext* DevicePosture::GetExecutionContext() const {
@@ -51,6 +87,8 @@ const AtomicString& DevicePosture::InterfaceName() const {
 }
 
 void DevicePosture::Trace(blink::Visitor* visitor) const {
+  visitor->Trace(service_);
+  visitor->Trace(receiver_);
   EventTargetWithInlineData::Trace(visitor);
   ExecutionContextClient::Trace(visitor);
 }

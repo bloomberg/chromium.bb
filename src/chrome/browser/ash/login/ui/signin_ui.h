@@ -5,11 +5,12 @@
 #define CHROME_BROWSER_ASH_LOGIN_UI_SIGNIN_UI_H_
 
 #include "base/callback.h"
+#include "chrome/browser/ash/login/oobe_screen.h"
 #include "chrome/browser/ash/login/screens/encryption_migration_mode.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/account_id/account_id.h"
 
-namespace chromeos {
+namespace ash {
 
 enum class SigninError {
   kCaptivePortalError,
@@ -43,6 +44,8 @@ class SigninUI {
 
   // Starts user onboarding after successful sign-in for new users.
   virtual void StartUserOnboarding() = 0;
+  // Resumes user onboarding after successful sign-in for returning users.
+  virtual void ResumeUserOnboarding(OobeScreenId screen_id) = 0;
   // Show UI for management transition flow.
   virtual void StartManagementTransition() = 0;
   // Show additional terms of service on login.
@@ -57,6 +60,9 @@ class SigninUI {
   // added during user onboarding.
   virtual void SetAuthSessionForOnboarding(const UserContext& user_context) = 0;
 
+  // Clears authentication data that were stored for user onboarding.
+  virtual void ClearOnboardingAuthSession() = 0;
+
   // Show password changed dialog. If `show_password_error` is true, user
   // already tried to enter old password but it turned out to be incorrect.
   virtual void ShowPasswordChangedDialog(const AccountId& account_id,
@@ -69,13 +75,12 @@ class SigninUI {
   virtual void StartBrowserDataMigration() = 0;
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
 // TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
 // source migration is finished.
-namespace ash {
-using ::chromeos::SigninError;
-using ::chromeos::SigninUI;
+namespace chromeos {
+using ::ash::SigninError;
 }
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_UI_SIGNIN_UI_H_

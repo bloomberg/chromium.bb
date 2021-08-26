@@ -11,6 +11,7 @@
 
 #include <TargetConditionals.h>
 
+#include "GLSLANG/ShaderLang.h"
 #include "common/debug.h"
 #include "libANGLE/TransformFeedback.h"
 #include "libANGLE/renderer/metal/BufferMtl.h"
@@ -1121,7 +1122,9 @@ const gl::Limitations &ContextMtl::getNativeLimitations() const
 // Shader creation
 CompilerImpl *ContextMtl::createCompiler()
 {
-    return new CompilerMtl();
+    ShShaderOutput outputType =
+        getDisplay()->useDirectToMetalCompiler() ? SH_MSL_METAL_OUTPUT : SH_SPIRV_METAL_OUTPUT;
+    return new CompilerMtl(outputType);
 }
 ShaderImpl *ContextMtl::createShader(const gl::ShaderState &state)
 {
@@ -2176,6 +2179,11 @@ angle::Result ContextMtl::handleDirtyDriverUniforms(const gl::Context *context,
     mDriverUniforms.depthRange[3] = NeedToInvertDepthRange(depthRangeNear, depthRangeFar) ? -1 : 1;
 
     // NOTE(hqle): preRotation & fragRotation are unused.
+
+    // Emulated gl_InstanceID
+    // TODO(anglebug.com/5505): these code paths differ significantly from
+    // Apple's fork; there is no place currently to set the emulatedInstanceID.
+    mDriverUniforms.emulatedInstanceID = 0;
 
     // Sample coverage mask
     uint32_t sampleBitCount = mDrawFramebuffer->getSamples();

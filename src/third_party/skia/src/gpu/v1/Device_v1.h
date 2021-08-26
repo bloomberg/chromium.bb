@@ -14,21 +14,14 @@
 #include "include/core/SkSurface.h"
 #include "include/gpu/GrTypes.h"
 #include "src/gpu/BaseDevice.h"
-#include "src/gpu/GrSurfaceDrawContext.h"
+#include "src/gpu/GrClipStack.h"
 #include "src/gpu/SkGr.h"
+#include "src/gpu/v1/SurfaceDrawContext_v1.h"
 
 class SkSpecialImage;
 class SkSurface;
 class SkSurface_Gpu;
 class SkVertices;
-
-#if !defined(SK_DISABLE_NEW_GR_CLIP_STACK)
-    #include "src/gpu/GrClipStack.h"
-    #define GR_CLIP_STACK GrClipStack
-#else
-    #include "src/gpu/GrClipStackClip.h"
-    #define GR_CLIP_STACK GrClipStackClip
-#endif
 
 namespace skgpu::v1 {
 
@@ -104,8 +97,9 @@ public:
 
     ~Device() override {}
 
-    GrSurfaceDrawContext* surfaceDrawContext() override;
-    const GrSurfaceDrawContext* surfaceDrawContext() const;
+    SurfaceDrawContext* surfaceDrawContext() override;
+    const SurfaceDrawContext* surfaceDrawContext() const;
+    skgpu::SurfaceFillContext* surfaceFillContext() override;
 
     // set all pixels to 0
     void clearAll();
@@ -158,7 +152,6 @@ protected:
     bool onReadPixels(const SkPixmap&, int, int) override;
     bool onWritePixels(const SkPixmap&, int, int) override;
 
-#if !defined(SK_DISABLE_NEW_GR_CLIP_STACK)
     void onSave() override { fClip.save(); }
     void onRestore() override { fClip.restore(); }
 
@@ -184,19 +177,15 @@ protected:
     ClipType onGetClipType() const override;
     bool onClipIsAA() const override;
 
-    void onSetDeviceClipRestriction(SkIRect* mutableClipRestriction) override {
-        SkASSERT(mutableClipRestriction->isEmpty());
-    }
     bool onClipIsWideOpen() const override {
         return fClip.clipState() == GrClipStack::ClipState::kWideOpen;
     }
     SkIRect onDevClipBounds() const override { return fClip.getConservativeBounds(); }
-#endif
 
 private:
-    std::unique_ptr<GrSurfaceDrawContext> fSurfaceDrawContext;
+    std::unique_ptr<SurfaceDrawContext> fSurfaceDrawContext;
 
-    GR_CLIP_STACK fClip;
+    GrClipStack fClip;
 
     enum Flags {
         kNeedClear_Flag = 1 << 0,  //!< Surface requires an initial clear
@@ -206,11 +195,11 @@ private:
     static bool CheckAlphaTypeAndGetFlags(const SkImageInfo* info, InitContents init,
                                           unsigned* flags);
 
-    static sk_sp<BaseDevice> Make(std::unique_ptr<GrSurfaceDrawContext>,
+    static sk_sp<BaseDevice> Make(std::unique_ptr<SurfaceDrawContext>,
                                   const SkImageInfo*,
                                   InitContents);
 
-    Device(std::unique_ptr<GrSurfaceDrawContext>, unsigned flags);
+    Device(std::unique_ptr<SurfaceDrawContext>, unsigned flags);
 
     SkBaseDevice* onCreateDevice(const CreateInfo&, const SkPaint*) override;
 
@@ -238,15 +227,15 @@ private:
                          SkFilterMode,
                          const SkPaint&);
 
-    static std::unique_ptr<GrSurfaceDrawContext> MakeSurfaceDrawContext(GrRecordingContext*,
-                                                                        SkBudgeted,
-                                                                        const SkImageInfo&,
-                                                                        SkBackingFit,
-                                                                        int sampleCount,
-                                                                        GrMipmapped,
-                                                                        GrProtected,
-                                                                        GrSurfaceOrigin,
-                                                                        const SkSurfaceProps&);
+    static std::unique_ptr<SurfaceDrawContext> MakeSurfaceDrawContext(GrRecordingContext*,
+                                                                      SkBudgeted,
+                                                                      const SkImageInfo&,
+                                                                      SkBackingFit,
+                                                                      int sampleCount,
+                                                                      GrMipmapped,
+                                                                      GrProtected,
+                                                                      GrSurfaceOrigin,
+                                                                      const SkSurfaceProps&);
 
     friend class ::SkSurface_Gpu;      // for access to surfaceProps
     using INHERITED = BaseDevice;

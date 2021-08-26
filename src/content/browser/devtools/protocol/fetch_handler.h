@@ -11,7 +11,6 @@
 #include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/fetch.h"
 #include "services/network/public/mojom/network_service.mojom.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace network {
 namespace mojom {
@@ -74,6 +73,7 @@ class FetchHandler : public DevToolsDomainHandler, public Fetch::Backend {
       Maybe<String> method,
       Maybe<protocol::Binary> postData,
       Maybe<Array<Fetch::HeaderEntry>> headers,
+      Maybe<bool> interceptResponse,
       std::unique_ptr<ContinueRequestCallback> callback) override;
   void ContinueWithAuth(
       const String& fetchId,

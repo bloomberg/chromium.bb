@@ -51,8 +51,6 @@
 #include "build/chromeos_buildflags.h"
 #include "cc/base/math_util.h"
 #include "cc/input/touch_action.h"
-#include "components/network_session_configurator/common/network_switches.h"
-#include "components/viz/common/features.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/agent_scheduling_group_host.h"
@@ -101,6 +99,7 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/content_mock_cert_verifier.h"
 #include "content/public/test/hit_test_region_observer.h"
 #include "content/public/test/navigation_handle_observer.h"
 #include "content/public/test/policy_container_utils.h"
@@ -679,10 +678,28 @@ class SitePerProcessIgnoreCertErrorsBrowserTest
   SitePerProcessIgnoreCertErrorsBrowserTest() {}
 
  protected:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    SitePerProcessBrowserTestBase::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
+  void SetUpOnMainThread() override {
+    SitePerProcessBrowserTest::SetUpOnMainThread();
+    mock_cert_verifier_.mock_cert_verifier()->set_default_result(net::OK);
   }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    SitePerProcessBrowserTest::SetUpCommandLine(command_line);
+    mock_cert_verifier_.SetUpCommandLine(command_line);
+  }
+
+  void SetUpInProcessBrowserTestFixture() override {
+    SitePerProcessBrowserTest::SetUpInProcessBrowserTestFixture();
+    mock_cert_verifier_.SetUpInProcessBrowserTestFixture();
+  }
+
+  void TearDownInProcessBrowserTestFixture() override {
+    SitePerProcessBrowserTest::TearDownInProcessBrowserTestFixture();
+    mock_cert_verifier_.TearDownInProcessBrowserTestFixture();
+  }
+
+ private:
+  content::ContentMockCertVerifier mock_cert_verifier_;
 };
 
 // SitePerProcessAutoplayBrowserTest
@@ -711,17 +728,14 @@ class SitePerProcessAutoplayBrowserTest : public SitePerProcessBrowserTest {
 
 // SitePerProcessWebBundleBrowserTest.
 
-class SitePerProcessWebBundleBrowserTest : public SitePerProcessBrowserTest {
+class SitePerProcessWebBundleBrowserTest
+    : public SitePerProcessIgnoreCertErrorsBrowserTest {
  public:
   SitePerProcessWebBundleBrowserTest() {
     feature_list_.InitAndEnableFeature(features::kSubresourceWebBundles);
   }
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    SitePerProcessBrowserTestBase::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
-  }
   void SetUpOnMainThread() override {
-    SitePerProcessBrowserTestBase::SetUpOnMainThread();
+    SitePerProcessIgnoreCertErrorsBrowserTest::SetUpOnMainThread();
     https_server_.ServeFilesFromSourceDirectory(GetTestDataFilePath());
     ASSERT_TRUE(https_server_.Start());
   }
@@ -11698,6 +11712,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   TestNavigationObserver back_load_observer(shell()->web_contents());
   shell()->web_contents()->GetController().GoBack();
   back_load_observer.Wait();
+  new_shell->web_contents()->WasHidden();
   EXPECT_EQ(1, popup_process->VisibleClientCount());
   EXPECT_EQ(1u, popup_process->GetFrameDepth());
 
@@ -13061,9 +13076,6 @@ IN_PROC_BROWSER_TEST_F(
   cc::TouchAction expected_touch_action = cc::TouchAction::kPan;
   GetTouchActionsForChild(router, rwhv_root, rwhv_child, point_inside_child,
                           effective_touch_action, allowed_touch_action);
-  cc::TouchAction effective_touch_action_result =
-      effective_touch_action.has_value() ? effective_touch_action.value()
-                                         : cc::TouchAction::kAuto;
   if (allowed_touch_action.has_value())
     EXPECT_EQ(expected_touch_action, allowed_touch_action.value());
 
@@ -13076,9 +13088,6 @@ IN_PROC_BROWSER_TEST_F(
                             child_thread_observer.get());
   GetTouchActionsForChild(router, rwhv_root, rwhv_child, point_inside_child,
                           effective_touch_action, allowed_touch_action);
-  effective_touch_action_result = effective_touch_action.has_value()
-                                      ? effective_touch_action.value()
-                                      : cc::TouchAction::kAuto;
   if (allowed_touch_action.has_value())
     EXPECT_EQ(expected_touch_action, allowed_touch_action.value());
 
@@ -13091,9 +13100,6 @@ IN_PROC_BROWSER_TEST_F(
   expected_touch_action = cc::TouchAction::kAuto;
   GetTouchActionsForChild(router, rwhv_root, rwhv_child, point_inside_child,
                           effective_touch_action, allowed_touch_action);
-  effective_touch_action_result = effective_touch_action.has_value()
-                                      ? effective_touch_action.value()
-                                      : cc::TouchAction::kAuto;
   if (allowed_touch_action.has_value())
     EXPECT_EQ(expected_touch_action, allowed_touch_action.value());
 }

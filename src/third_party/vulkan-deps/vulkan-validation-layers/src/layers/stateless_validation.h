@@ -110,6 +110,7 @@ class StatelessValidation : public ValidationObject {
         VkPhysicalDeviceAccelerationStructurePropertiesKHR acc_structure_props;
         VkPhysicalDeviceTransformFeedbackPropertiesEXT transform_feedback_props;
         VkPhysicalDeviceVertexAttributeDivisorPropertiesEXT vertex_attribute_divisor_props;
+        VkPhysicalDeviceBlendOperationAdvancedPropertiesEXT blend_operation_advanced_props;
     };
     DeviceExtensionProperties phys_dev_ext_props = {};
 
@@ -1405,6 +1406,9 @@ class StatelessValidation : public ValidationObject {
     bool manual_PreCallValidateCreatePipelineLayout(VkDevice device, const VkPipelineLayoutCreateInfo *pCreateInfo,
                                                     const VkAllocationCallbacks *pAllocator,
                                                     VkPipelineLayout *pPipelineLayout) const;
+
+    bool ValidatePipelineShaderStageCreateInfo(const char *func_name, const char *msg,
+                                                const VkPipelineShaderStageCreateInfo *pCreateInfo) const;
     bool manual_PreCallValidateCreateGraphicsPipelines(VkDevice device, VkPipelineCache pipelineCache, uint32_t createInfoCount,
                                                        const VkGraphicsPipelineCreateInfo *pCreateInfos,
                                                        const VkAllocationCallbacks *pAllocator, VkPipeline *pPipelines) const;
@@ -1496,6 +1500,11 @@ class StatelessValidation : public ValidationObject {
                                                                       VkImageType type, VkImageTiling tiling,
                                                                       VkImageUsageFlags usage, VkImageCreateFlags flags,
                                                                       VkImageFormatProperties *pImageFormatProperties) const;
+
+    bool manual_PreCallValidateGetPhysicalDeviceVideoFormatPropertiesKHR(VkPhysicalDevice physicalDevice,
+                                                                         const VkPhysicalDeviceVideoFormatInfoKHR *pVideoFormatInfo,
+                                                                         uint32_t *pVideoFormatPropertyCount,
+                                                                         VkVideoFormatPropertiesKHR *pVideoFormatProperties) const;
 
     bool manual_PreCallValidateCmdCopyBuffer(VkCommandBuffer commandBuffer, VkBuffer srcBuffer, VkBuffer dstBuffer,
                                              uint32_t regionCount, const VkBufferCopy *pRegions) const;
@@ -1747,5 +1756,24 @@ class StatelessValidation : public ValidationObject {
     bool manual_PreCallValidateCmdPushConstants(VkCommandBuffer commandBuffer, VkPipelineLayout layout,
                                                 VkShaderStageFlags stageFlags, uint32_t offset, uint32_t size,
                                                 const void *pValues) const;
+
+    bool manual_PreCallValidateMergePipelineCaches(VkDevice device, VkPipelineCache dstCache, uint32_t srcCacheCount,
+                                                   const VkPipelineCache *pSrcCaches) const;
+
+    bool manual_PreCallValidateCmdClearColorImage(VkCommandBuffer commandBuffer, VkImage image, VkImageLayout imageLayout,
+                                                  const VkClearColorValue *pColor, uint32_t rangeCount,
+                                                  const VkImageSubresourceRange *pRanges) const;
+
+    bool ValidateCmdBeginRenderPass(const char *const func_name, const VkRenderPassBeginInfo *const rp_begin) const;
+    bool manual_PreCallValidateCmdBeginRenderPass(VkCommandBuffer, const VkRenderPassBeginInfo *pRenderPassBegin,
+                                                  VkSubpassContents) const;
+    bool manual_PreCallValidateCmdBeginRenderPass2KHR(VkCommandBuffer, const VkRenderPassBeginInfo *pRenderPassBegin,
+                                                      const VkSubpassBeginInfo *) const;
+    bool manual_PreCallValidateCmdBeginRenderPass2(VkCommandBuffer, const VkRenderPassBeginInfo *pRenderPassBegin,
+                                                   const VkSubpassBeginInfo *) const;
+
+    bool manual_PreCallValidateCmdSetDiscardRectangleEXT(VkCommandBuffer commandBuffer, uint32_t firstDiscardRectangle,
+                                                         uint32_t discardRectangleCount, const VkRect2D *pDiscardRectangles) const;
+
 #include "parameter_validation.h"
 };  // Class StatelessValidation

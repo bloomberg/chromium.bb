@@ -474,6 +474,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
   std::unordered_map<uint32_t, WGPUBackendType> device_backend_types_;
 
   bool has_polling_work_ = false;
+  bool destroyed_ = false;
 
   scoped_refptr<gl::GLContext> gl_context_;
   scoped_refptr<gl::GLSurface> gl_surface_;
@@ -554,7 +555,11 @@ WebGPUDecoderImpl::~WebGPUDecoderImpl() {
 
 void WebGPUDecoderImpl::Destroy(bool have_context) {
   associated_shared_image_map_.clear();
+  known_devices_.clear();
+  device_backend_types_.clear();
   wire_server_ = nullptr;
+
+  destroyed_ = true;
 }
 
 ContextResult WebGPUDecoderImpl::Initialize() {
@@ -679,6 +684,9 @@ void WebGPUDecoderImpl::DiscoverAdapters() {
 
   std::vector<dawn_native::Adapter> adapters = dawn_instance_->GetAdapters();
   for (const dawn_native::Adapter& adapter : adapters) {
+    if (!adapter.SupportsExternalImages()) {
+      continue;
+    }
     if (force_webgpu_compat_) {
       if (adapter.GetBackendType() == dawn_native::BackendType::OpenGLES) {
         dawn_adapters_.push_back(adapter);
@@ -777,6 +785,12 @@ error::Error WebGPUDecoderImpl::DoCommands(unsigned int num_commands,
     const unsigned int arg_count = size - 1;
     unsigned int command_index = command - kFirstWebGPUCommand;
     if (command_index < base::size(command_info)) {
+      // Prevent all further WebGPU commands from being processed if the server
+      // is destroyed.
+      if (destroyed_) {
+        result = error::kLostContext;
+        break;
+      }
       const CommandInfo& info = command_info[command_index];
       unsigned int info_arg_count = static_cast<unsigned int>(info.arg_count);
       if ((info.arg_flags == cmd::kFixed && arg_count == info_arg_count) ||
@@ -822,7 +836,21 @@ void WebGPUDecoderImpl::SendAdapterProperties(
   size_t serialized_adapter_properties_size = 0;
 
   if (adapter) {
+    // Only allow unsafe APIs if the disallow_unsafe_apis toggle is explicitly
+    // disabled.
+    const bool allow_unsafe_apis =
+        std::find(force_disabled_toggles_.begin(),
+                  force_disabled_toggles_.end(),
+                  "disallow_unsafe_apis") != force_disabled_toggles_.end();
+
     adapter_properties = adapter.GetAdapterProperties();
+
+    // Don't surface extensions that are unsafe. A malicious client could still
+    // request them, so Dawn must also validate they cannot be used if
+    // DisallowUnsafeAPIs is enabled.
+    adapter_properties.timestampQuery &= allow_unsafe_apis;
+    adapter_properties.pipelineStatisticsQuery &= allow_unsafe_apis;
+
     serialized_adapter_properties_size =
         dawn_wire::SerializedWGPUDevicePropertiesSize(&adapter_properties);
   } else {
@@ -903,12 +931,12 @@ error::Error WebGPUDecoderImpl::HandleRequestAdapter(
       static_cast<DawnRequestAdapterSerial>(c.request_adapter_serial);
 
   if (gr_context_type_ != GrContextType::kVulkan) {
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if defined(OS_LINUX)
     SendAdapterProperties(request_adapter_serial, -1, nullptr,
                           "WebGPU on Linux requires command-line flag "
                           "--enable-features=Vulkan,UseSkiaRenderer");
     return error::kNoError;
-#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
+#endif  // defined(OS_LINUX)
   }
 
   int32_t requested_adapter_index = GetPreferredAdapterIndex(power_preference);
@@ -1038,7 +1066,7 @@ error::Error WebGPUDecoderImpl::HandleAssociateMailboxImmediate(
 
   static constexpr uint32_t kAllowedTextureUsages = static_cast<uint32_t>(
       WGPUTextureUsage_CopySrc | WGPUTextureUsage_CopyDst |
-      WGPUTextureUsage_Sampled | WGPUTextureUsage_RenderAttachment);
+      WGPUTextureUsage_TextureBinding | WGPUTextureUsage_RenderAttachment);
   if (usage & ~kAllowedTextureUsages) {
     DLOG(ERROR) << "AssociateMailbox: Invalid usage";
     return error::kInvalidArguments;

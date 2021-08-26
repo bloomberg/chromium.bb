@@ -69,9 +69,12 @@ BlobURLStoreImpl::~BlobURLStoreImpl() {
   }
 }
 
-void BlobURLStoreImpl::Register(mojo::PendingRemote<blink::mojom::Blob> blob,
-                                const GURL& url,
-                                RegisterCallback callback) {
+void BlobURLStoreImpl::Register(
+    mojo::PendingRemote<blink::mojom::Blob> blob,
+    const GURL& url,
+    // TODO(https://crbug.com/1224926): Remove this once experiment is over.
+    const base::UnguessableToken& unsafe_agent_cluster_id,
+    RegisterCallback callback) {
   if (!url.SchemeIsBlob()) {
     mojo::ReportBadMessage("Invalid scheme passed to BlobURLStore::Register");
     std::move(callback).Run();
@@ -91,7 +94,7 @@ void BlobURLStoreImpl::Register(mojo::PendingRemote<blink::mojom::Blob> blob,
   }
 
   if (registry_)
-    registry_->AddUrlMapping(url, std::move(blob));
+    registry_->AddUrlMapping(url, std::move(blob), unsafe_agent_cluster_id);
   urls_.insert(url);
   std::move(callback).Run();
 }
@@ -118,30 +121,39 @@ void BlobURLStoreImpl::Revoke(const GURL& url) {
 
 void BlobURLStoreImpl::Resolve(const GURL& url, ResolveCallback callback) {
   if (!registry_) {
-    std::move(callback).Run(mojo::NullRemote());
+    std::move(callback).Run(mojo::NullRemote(), absl::nullopt);
     return;
   }
   mojo::PendingRemote<blink::mojom::Blob> blob = registry_->GetBlobFromUrl(url);
-  std::move(callback).Run(std::move(blob));
+  std::move(callback).Run(std::move(blob),
+                          registry_->GetUnsafeAgentClusterID(url));
 }
 
 void BlobURLStoreImpl::ResolveAsURLLoaderFactory(
     const GURL& url,
-    mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) {
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
+    ResolveAsURLLoaderFactoryCallback callback) {
   BlobURLLoaderFactory::Create(
       registry_ ? registry_->GetBlobFromUrl(url) : mojo::NullRemote(), url,
       std::move(receiver));
+  std::move(callback).Run(registry_->GetUnsafeAgentClusterID(url));
 }
 
 void BlobURLStoreImpl::ResolveForNavigation(
     const GURL& url,
-    mojo::PendingReceiver<blink::mojom::BlobURLToken> token) {
-  if (!registry_)
+    mojo::PendingReceiver<blink::mojom::BlobURLToken> token,
+    ResolveForNavigationCallback callback) {
+  if (!registry_) {
+    std::move(callback).Run(absl::nullopt);
     return;
+  }
   mojo::PendingRemote<blink::mojom::Blob> blob = registry_->GetBlobFromUrl(url);
-  if (!blob)
+  if (!blob) {
+    std::move(callback).Run(absl::nullopt);
     return;
+  }
   new BlobURLTokenImpl(registry_, url, std::move(blob), std::move(token));
+  std::move(callback).Run(registry_->GetUnsafeAgentClusterID(url));
 }
 
 }  // namespace storage

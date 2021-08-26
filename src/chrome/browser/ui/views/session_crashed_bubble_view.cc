@@ -168,7 +168,9 @@ class SessionCrashedBubbleView::BrowserRemovalObserver
 };
 
 // static
-void SessionCrashedBubble::ShowIfNotOffTheRecordProfile(Browser* browser) {
+void SessionCrashedBubble::ShowIfNotOffTheRecordProfile(
+    Browser* browser,
+    bool skip_tab_checking) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (browser->profile()->IsOffTheRecord())
     return;
@@ -183,15 +185,17 @@ void SessionCrashedBubble::ShowIfNotOffTheRecordProfile(Browser* browser) {
         GoogleUpdateSettings::CollectStatsConsentTaskRunner(), FROM_HERE,
         base::BindOnce(&GoogleUpdateSettings::GetCollectStatsConsent),
         base::BindOnce(&SessionCrashedBubbleView::Show,
-                       std::move(browser_observer)));
+                       std::move(browser_observer), skip_tab_checking));
   } else {
-    SessionCrashedBubbleView::Show(std::move(browser_observer), false);
+    SessionCrashedBubbleView::Show(std::move(browser_observer),
+                                   skip_tab_checking, false);
   }
 }
 
 // static
 void SessionCrashedBubbleView::Show(
     std::unique_ptr<BrowserRemovalObserver> browser_observer,
+    bool skip_tab_checking,
     bool uma_opted_in_already) {
   // Determine whether or not the UMA opt-in option should be offered. It is
   // offered only when it is a Google chrome build, user hasn't opted in yet,
@@ -203,15 +207,16 @@ void SessionCrashedBubbleView::Show(
 
   Browser* browser = browser_observer->browser();
 
-  if (!browser || !browser->tab_strip_model()->GetActiveWebContents()) {
-    RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_ERROR);
+  if (browser && (skip_tab_checking ||
+                  browser->tab_strip_model()->GetActiveWebContents())) {
+    ShowBubble(browser, uma_opted_in_already, offer_uma_optin);
     return;
   }
 
-  ShowBubble(browser, uma_opted_in_already, offer_uma_optin);
+  RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_ERROR);
 }
 
-views::BubbleDialogDelegateView* SessionCrashedBubbleView::ShowBubble(
+views::BubbleDialogDelegate* SessionCrashedBubbleView::ShowBubble(
     Browser* browser,
     bool uma_opted_in_already,
     bool offer_uma_optin) {
@@ -266,8 +271,8 @@ views::BubbleDialogDelegateView* SessionCrashedBubbleView::ShowBubble(
   auto bubble = std::make_unique<views::BubbleDialogModelHost>(
       dialog_builder.Build(), anchor_view, views::BubbleBorder::TOP_RIGHT);
 
-  views::BubbleDialogDelegateView* bubble_ptr = bubble.get();
-  views::BubbleDialogDelegateView::CreateBubble(bubble.release())->Show();
+  views::BubbleDialogDelegate* bubble_ptr = bubble.get();
+  views::BubbleDialogDelegate::CreateBubble(std::move(bubble))->Show();
 
   RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_SHOWN);
   if (uma_opted_in_already)

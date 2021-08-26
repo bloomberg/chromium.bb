@@ -105,11 +105,11 @@
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/test/browser_task_environment.h"
+#include "extensions/browser/blocklist_extension_prefs.h"
 #include "extensions/browser/blocklist_state.h"
 #include "extensions/browser/disable_reason.h"
 #include "extensions/browser/extension_creator.h"
@@ -169,6 +169,10 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
+#if BUILDFLAG(ENABLE_PLUGINS)
+#include "content/public/browser/plugin_service.h"
+#endif
+
 // The blocklist tests rely on the safe-browsing database.
 #if BUILDFLAG(SAFE_BROWSING_DB_LOCAL)
 #define ENABLE_BLOCKLIST_TESTS
@@ -177,7 +181,6 @@
 using content::BrowserContext;
 using content::BrowserThread;
 using content::DOMStorageContext;
-using content::PluginService;
 using extensions::mojom::APIPermissionID;
 using extensions::mojom::ManifestLocation;
 
@@ -204,8 +207,6 @@ const char updates_from_webstore[] = "akjooamlhcgeopfifcmlggaebeocgokj";
 const char updates_from_webstore2[] = "oolblhbomdbcpmafphaodhjfcgbihcdg";
 const char updates_from_webstore3[] = "bmfoocgfinpmkmlbjhcbofejhkhlbchk";
 const char permissions_blocklist[] = "noffkehfcaggllbcojjbopcmlhcnhcdn";
-const char cast_stable[] = "boadgeojelhgndaghljhdicfkmllpafd";
-const char cast_beta[] = "dliochdbjfkdbacpmhlcpmleaejidimm";
 const char video_player_app[] = "jcgeabjmjgoblfofpppfkcoakmfobdko";
 const char kPrefBlocklist[] = "blacklist";
 
@@ -733,7 +734,7 @@ class ExtensionServiceTest : public ExtensionServiceTestWithInstall {
 
   void InitPluginService() {
 #if BUILDFLAG(ENABLE_PLUGINS)
-    PluginService::GetInstance()->Init();
+    content::PluginService::GetInstance()->Init();
 #endif
   }
 
@@ -3441,10 +3442,6 @@ TEST_F(ExtensionServiceTest, SetUnsetBlocklistInPrefs) {
 // re-enabled if it's not present in the Safe Browsing blocklist.
 // Regression test for https://crbug.com/1107040.
 TEST_F(ExtensionServiceTest, NoUnsetBlocklistInPrefs) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      extensions_features::kDisableMalwareExtensionsRemotely);
-
   TestBlocklist test_blocklist;
   // A profile with 3 extensions installed: good0, good1, and good2.
   // We really only care about good0 for this test since the other
@@ -3528,8 +3525,10 @@ TEST_F(ExtensionServiceTest, RemoveExtensionFromBlocklist) {
   // prefs should be set.
   auto* prefs = ExtensionPrefs::Get(profile());
   EXPECT_FALSE(registry()->enabled_extensions().Contains(good0));
-  EXPECT_TRUE(prefs->IsExtensionBlocklisted(good0));
-  EXPECT_EQ(BLOCKLISTED_MALWARE, prefs->GetExtensionBlocklistState(good0));
+  EXPECT_TRUE(blocklist_prefs::IsExtensionBlocklisted(good0, prefs));
+  EXPECT_EQ(
+      BitMapBlocklistState::BLOCKLISTED_MALWARE,
+      blocklist_prefs::GetSafeBrowsingExtensionBlocklistState(good0, prefs));
 
   // Remove the extension from the blocklist.
   test_blocklist.SetBlocklistState(good0, NOT_BLOCKLISTED, true);
@@ -3538,8 +3537,10 @@ TEST_F(ExtensionServiceTest, RemoveExtensionFromBlocklist) {
   // The extension should be enabled, both "blocklist" and "blocklist_state"
   // should be cleared.
   EXPECT_TRUE(registry()->enabled_extensions().Contains(good0));
-  EXPECT_FALSE(prefs->IsExtensionBlocklisted(good0));
-  EXPECT_EQ(NOT_BLOCKLISTED, prefs->GetExtensionBlocklistState(good0));
+  EXPECT_FALSE(blocklist_prefs::IsExtensionBlocklisted(good0, prefs));
+  EXPECT_EQ(
+      BitMapBlocklistState::NOT_BLOCKLISTED,
+      blocklist_prefs::GetSafeBrowsingExtensionBlocklistState(good0, prefs));
 }
 #endif  // defined(ENABLE_BLOCKLIST_TESTS)
 
@@ -3609,10 +3610,12 @@ TEST_F(ExtensionServiceTest, BlocklistedInPrefsFromStartup) {
 
   InitializeGoodInstalledExtensionService();
   test_blocklist.Attach(service()->blocklist_);
-  ExtensionPrefs::Get(profile())->SetExtensionBlocklistState(
-      good0, BLOCKLISTED_MALWARE);
-  ExtensionPrefs::Get(profile())->SetExtensionBlocklistState(
-      good1, BLOCKLISTED_MALWARE);
+  blocklist_prefs::SetSafeBrowsingExtensionBlocklistState(
+      good0, BitMapBlocklistState::BLOCKLISTED_MALWARE,
+      ExtensionPrefs::Get(profile()));
+  blocklist_prefs::SetSafeBrowsingExtensionBlocklistState(
+      good1, BitMapBlocklistState::BLOCKLISTED_MALWARE,
+      ExtensionPrefs::Get(profile()));
 
   test_blocklist.SetBlocklistState(good1, BLOCKLISTED_MALWARE, false);
 
@@ -4666,10 +4669,6 @@ TEST_F(ExtensionServiceTest, DisableExtension) {
 // Tests the malware Omaha attributes to remotely disable an extension for
 // malware.
 TEST_F(ExtensionServiceTest, DisableRemotelyForMalware) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      extensions_features::kDisableMalwareExtensionsRemotely);
-
   InitializeEmptyExtensionService();
 
   InstallCRX(data_dir().AppendASCII("good.crx"), INSTALL_NEW);
@@ -4683,22 +4682,18 @@ TEST_F(ExtensionServiceTest, DisableRemotelyForMalware) {
   service()->PerformActionBasedOnOmahaAttributes(good_crx, attributes);
   EXPECT_EQ(disable_reason::DISABLE_REMOTELY_FOR_MALWARE,
             prefs->GetDisableReasons(good_crx));
-  EXPECT_TRUE(prefs->IsExtensionBlocklisted(good_crx));
+  EXPECT_TRUE(blocklist_prefs::IsExtensionBlocklisted(good_crx, prefs));
 
   attributes.SetKey("_malware", base::Value(false));
   service()->PerformActionBasedOnOmahaAttributes(good_crx, attributes);
   EXPECT_EQ(1u, registry()->enabled_extensions().size());
   EXPECT_EQ(0, prefs->GetDisableReasons(good_crx));
-  EXPECT_FALSE(prefs->IsExtensionBlocklisted(good_crx));
+  EXPECT_FALSE(blocklist_prefs::IsExtensionBlocklisted(good_crx, prefs));
 }
 
 // Tests not re-enabling previously remotely disabled extension if it's not the
 // only reason but the disable reasons should be gone.
 TEST_F(ExtensionServiceTest, NoEnableRemotelyDisabledExtension) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      extensions_features::kDisableMalwareExtensionsRemotely);
-
   InitializeEmptyExtensionService();
 
   InstallCRX(data_dir().AppendASCII("good.crx"), INSTALL_NEW);
@@ -4710,14 +4705,14 @@ TEST_F(ExtensionServiceTest, NoEnableRemotelyDisabledExtension) {
                                   disable_reason::DISABLE_USER_ACTION);
   EXPECT_TRUE(registry()->disabled_extensions().GetByID(good_crx));
   service()->BlocklistExtensionForTest(good_crx);
-  EXPECT_TRUE(prefs->IsExtensionBlocklisted(good_crx));
+  EXPECT_TRUE(blocklist_prefs::IsExtensionBlocklisted(good_crx, prefs));
 
   base::Value empty_attr(base::Value::Type::DICTIONARY);
   service()->PerformActionBasedOnOmahaAttributes(good_crx, empty_attr);
   EXPECT_TRUE(registry()->disabled_extensions().GetByID(good_crx));
   EXPECT_FALSE(prefs->GetDisableReasons(good_crx) &
                disable_reason::DISABLE_REMOTELY_FOR_MALWARE);
-  EXPECT_FALSE(prefs->IsExtensionBlocklisted(good_crx));
+  EXPECT_FALSE(blocklist_prefs::IsExtensionBlocklisted(good_crx, prefs));
 }
 
 TEST_F(ExtensionServiceTest, CanAddDisableReasonToBlocklistedExtension) {
@@ -4731,8 +4726,8 @@ TEST_F(ExtensionServiceTest, CanAddDisableReasonToBlocklistedExtension) {
   blocklist.SetBlocklistState(good0, BLOCKLISTED_MALWARE, true);
   blocklist.SetBlocklistState(good1, BLOCKLISTED_MALWARE, true);
   task_environment()->RunUntilIdle();
-  EXPECT_TRUE(prefs->IsExtensionBlocklisted(good0));
-  EXPECT_TRUE(prefs->IsExtensionBlocklisted(good1));
+  EXPECT_TRUE(blocklist_prefs::IsExtensionBlocklisted(good0, prefs));
+  EXPECT_TRUE(blocklist_prefs::IsExtensionBlocklisted(good1, prefs));
 
   // Test that a disable reason can be added to a blocklisted extension.
   prefs->AddDisableReason(good0, disable_reason::DISABLE_REMOTELY_FOR_MALWARE);
@@ -4743,7 +4738,7 @@ TEST_F(ExtensionServiceTest, CanAddDisableReasonToBlocklistedExtension) {
   service()->DisableExtension(good1, disable_reason::DISABLE_BLOCKED_BY_POLICY);
   EXPECT_TRUE(prefs->HasDisableReason(
       good1, disable_reason::DISABLE_BLOCKED_BY_POLICY));
-  EXPECT_TRUE(prefs->IsExtensionBlocklisted(good1));
+  EXPECT_TRUE(blocklist_prefs::IsExtensionBlocklisted(good1, prefs));
   // Even though the extension was disabled with a new disable reason, it should
   // remain in the blocklisted set (which can't be re-enabled by the user).
   EXPECT_TRUE(registry()->blocklisted_extensions().Contains(good1));
@@ -4755,14 +4750,14 @@ TEST_F(ExtensionServiceTest, CanAddDisableReasonToBlocklistedExtension) {
   service()->ReloadExtensionsForTest();
   EXPECT_TRUE(prefs->HasDisableReason(
       good1, disable_reason::DISABLE_BLOCKED_BY_POLICY));
-  EXPECT_TRUE(prefs->IsExtensionBlocklisted(good1));
+  EXPECT_TRUE(blocklist_prefs::IsExtensionBlocklisted(good1, prefs));
   EXPECT_TRUE(registry()->blocklisted_extensions().Contains(good1));
   EXPECT_FALSE(registry()->disabled_extensions().Contains(good1));
 
   // Test that the extension is disabled when unblocklisted.
   blocklist.SetBlocklistState(good1, NOT_BLOCKLISTED, true);
   task_environment()->RunUntilIdle();
-  EXPECT_FALSE(prefs->IsExtensionBlocklisted(good1));
+  EXPECT_FALSE(blocklist_prefs::IsExtensionBlocklisted(good1, prefs));
   EXPECT_TRUE(prefs->IsExtensionDisabled(good1));
   EXPECT_FALSE(registry()->blocklisted_extensions().Contains(good1));
   EXPECT_TRUE(registry()->disabled_extensions().Contains(good1));
@@ -5084,7 +5079,8 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
   ASSERT_TRUE(cookie_store);
   auto cookie =
       net::CanonicalCookie::Create(ext_url, "dummy=value", base::Time::Now(),
-                                   absl::nullopt /* server_time */);
+                                   absl::nullopt /* server_time */,
+                                   absl::nullopt /* cookie_partition_key */);
   cookie_store->SetCanonicalCookieAsync(
       std::move(cookie), ext_url, net::CookieOptions::MakeAllInclusive(),
       base::BindOnce(&ExtensionCookieCallback::SetCookieCallback,
@@ -5111,8 +5107,9 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
   auto* local_storage_control =
       profile()->GetDefaultStoragePartition()->GetLocalStorageControl();
   mojo::Remote<blink::mojom::StorageArea> area;
-  local_storage_control->BindStorageArea(url::Origin::Create(ext_url),
-                                         area.BindNewPipeAndPassReceiver());
+  local_storage_control->BindStorageArea(
+      blink::StorageKey(url::Origin::Create(ext_url)),
+      area.BindNewPipeAndPassReceiver());
   {
     bool success = false;
     base::RunLoop run_loop;
@@ -5136,8 +5133,6 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
   base::FilePath idb_path;
   {
     base::RunLoop run_loop;
-    // TODO(https://crbug.com/1199077): Pass the real StorageKey into this
-    // function directly.
     idb_control_test->GetFilePathForTesting(
         blink::StorageKey(url::Origin::Create(ext_url)),
         base::BindLambdaForTesting([&](const base::FilePath& path) {
@@ -5251,7 +5246,8 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
 
   std::unique_ptr<net::CanonicalCookie> cc(
       net::CanonicalCookie::Create(origin1, "dummy=value", base::Time::Now(),
-                                   absl::nullopt /* server_time */));
+                                   absl::nullopt /* server_time */,
+                                   absl::nullopt /* cookie_partition_key */));
   ASSERT_TRUE(cc.get());
 
   {
@@ -5288,8 +5284,9 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
   auto* local_storage_control =
       profile()->GetDefaultStoragePartition()->GetLocalStorageControl();
   mojo::Remote<blink::mojom::StorageArea> area;
-  local_storage_control->BindStorageArea(url::Origin::Create(origin1),
-                                         area.BindNewPipeAndPassReceiver());
+  local_storage_control->BindStorageArea(
+      blink::StorageKey(url::Origin::Create(origin1)),
+      area.BindNewPipeAndPassReceiver());
   {
     bool success = false;
     base::RunLoop run_loop;
@@ -5313,8 +5310,6 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
   base::FilePath idb_path;
   {
     base::RunLoop run_loop;
-    // TODO(https://crbug.com/1199077): Pass the real StorageKey into this
-    // function directly.
     idb_control_test->GetFilePathForTesting(
         blink::StorageKey(url::Origin::Create(origin1)),
         base::BindLambdaForTesting([&](const base::FilePath& path) {
@@ -6574,8 +6569,7 @@ TEST_F(ExtensionServiceTest, InstallPriorityExternalLocalFile) {
   EXPECT_TRUE(pending->IsIdPending(kGoodId));
 }
 
-// TODO(crbug.com/1227104): This test fails when run by TSan buildbots.
-TEST_F(ExtensionServiceTest, DISABLED_ConcurrentExternalLocalFile) {
+TEST_F(ExtensionServiceTest, ConcurrentExternalLocalFile) {
   base::Version kVersion123("1.2.3");
   base::Version kVersion124("1.2.4");
   base::Version kVersion125("1.2.5");
@@ -7484,7 +7478,8 @@ TEST_F(ExtensionServiceTest, InstallBlocklistedExtension) {
   EXPECT_FALSE(registry()->enabled_extensions().Contains(id));
   EXPECT_TRUE(registry()->blocklisted_extensions().Contains(id));
 
-  EXPECT_TRUE(ExtensionPrefs::Get(profile())->IsExtensionBlocklisted(id));
+  EXPECT_TRUE(blocklist_prefs::IsExtensionBlocklisted(
+      id, ExtensionPrefs::Get(profile())));
   EXPECT_TRUE(
       ExtensionPrefs::Get(profile())->IsBlocklistedExtensionAcknowledged(id));
 }
@@ -7504,13 +7499,15 @@ TEST_F(ExtensionServiceTest, CannotEnableBlocklistedExtension) {
   EXPECT_FALSE(registry()->enabled_extensions().Contains(id));
   EXPECT_FALSE(registry()->disabled_extensions().Contains(id));
   EXPECT_TRUE(registry()->blocklisted_extensions().Contains(id));
-  EXPECT_TRUE(ExtensionPrefs::Get(profile())->IsExtensionBlocklisted(id));
+  EXPECT_TRUE(blocklist_prefs::IsExtensionBlocklisted(
+      id, ExtensionPrefs::Get(profile())));
 
   service()->DisableExtension(id, disable_reason::DISABLE_USER_ACTION);
   EXPECT_FALSE(registry()->enabled_extensions().Contains(id));
   EXPECT_FALSE(registry()->disabled_extensions().Contains(id));
   EXPECT_TRUE(registry()->blocklisted_extensions().Contains(id));
-  EXPECT_TRUE(ExtensionPrefs::Get(profile())->IsExtensionBlocklisted(id));
+  EXPECT_TRUE(blocklist_prefs::IsExtensionBlocklisted(
+      id, ExtensionPrefs::Get(profile())));
 }
 
 // Test that calls to disable Shared Modules do not work.
@@ -7651,49 +7648,6 @@ TEST_F(ExtensionServiceTest, ReloadSharedModule) {
   EXPECT_TRUE(registry()->enabled_extensions().Contains(kExtensionId));
 }
 
-// Tests that extensions that have been migrated to component extensions can be
-// uninstalled.
-TEST_F(ExtensionServiceTest, UninstallMigratedExtensions) {
-  InitializeEmptyExtensionService();
-
-  scoped_refptr<const Extension> cast_extension =
-      ExtensionBuilder("stable")
-          .SetID(cast_stable)
-          .SetLocation(ManifestLocation::kInternal)
-          .Build();
-  scoped_refptr<const Extension> cast_beta_extension =
-      ExtensionBuilder("beta")
-          .SetID(cast_beta)
-          .SetLocation(ManifestLocation::kInternal)
-          .Build();
-  service()->AddExtension(cast_extension.get());
-  service()->AddExtension(cast_beta_extension.get());
-  ASSERT_TRUE(registry()->enabled_extensions().Contains(cast_stable));
-  ASSERT_TRUE(registry()->enabled_extensions().Contains(cast_beta));
-
-  service()->UninstallMigratedExtensionsForTest();
-  EXPECT_FALSE(registry()->GetInstalledExtension(cast_stable));
-  EXPECT_FALSE(registry()->GetInstalledExtension(cast_beta));
-}
-
-// Tests that extensions that have been migrated to component extensions can be
-// uninstalled even when they are disabled.
-TEST_F(ExtensionServiceTest, UninstallDisabledMigratedExtension) {
-  InitializeEmptyExtensionService();
-
-  scoped_refptr<const Extension> cast_extension =
-      ExtensionBuilder("stable")
-          .SetID(cast_stable)
-          .SetLocation(ManifestLocation::kInternal)
-          .Build();
-  service()->AddExtension(cast_extension.get());
-  service()->DisableExtension(cast_stable, disable_reason::DISABLE_USER_ACTION);
-  ASSERT_TRUE(registry()->disabled_extensions().Contains(cast_stable));
-
-  service()->UninstallMigratedExtensionsForTest();
-  EXPECT_FALSE(registry()->GetInstalledExtension(cast_stable));
-}
-
 // Tests that component extensions that have been migrated can be uninstalled.
 TEST_F(ExtensionServiceTest, UninstallMigratedComponentExtensions) {
   InitializeEmptyExtensionServiceWithTestingPrefs();
@@ -7739,23 +7693,16 @@ TEST_F(ExtensionServiceTest, UninstallMigratedExtensionsKeepsGoodComponents) {
 TEST_F(ExtensionServiceTest, UninstallMigratedExtensionsMultipleCalls) {
   InitializeEmptyExtensionServiceWithTestingPrefs();
 
-  scoped_refptr<const Extension> cast_extension =
-      ExtensionBuilder("stable")
-          .SetID(cast_stable)
-          .SetLocation(ManifestLocation::kInternal)
-          .Build();
   scoped_refptr<const Extension> video_player_extension =
       ExtensionBuilder("video player")
           .SetID(video_player_app)
           .SetLocation(ManifestLocation::kInternal)
           .Build();
-  service()->AddExtension(cast_extension.get());
   service()->AddComponentExtension(video_player_extension.get());
 
   service()->UninstallMigratedExtensionsForTest();
   service()->UninstallMigratedExtensionsForTest();
   service()->UninstallMigratedExtensionsForTest();
-  EXPECT_FALSE(registry()->GetInstalledExtension(cast_stable));
   EXPECT_FALSE(registry()->GetInstalledExtension(video_player_app));
 }
 
@@ -7921,6 +7868,7 @@ TEST_F(ExtensionServiceTest, InstallingUnacknowledgedExternalExtension) {
   EXPECT_FALSE(prefs->IsExtensionDisabled(good_crx));
 }
 
+#if BUILDFLAG(ENABLE_PLUGINS)
 // Regression test for crbug.com/460699. Ensure PluginManager doesn't crash even
 // if OnExtensionUnloaded is invoked twice in succession.
 TEST_F(ExtensionServiceTest, PluginManagerCrash) {
@@ -7937,6 +7885,7 @@ TEST_F(ExtensionServiceTest, PluginManagerCrash) {
   // redundantly for a disabled extension.
   service()->BlockAllExtensions();
 }
+#endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 class ExternalExtensionPriorityTest
     : public ExtensionServiceTest,

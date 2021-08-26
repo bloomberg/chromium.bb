@@ -15,6 +15,7 @@ component("common") {
   sources = [
     "account_key_failure.cc",
     "account_key_failure.h",
+    "constants.cc",
     "constants.h",
     "device.cc",
     "device.h",
@@ -28,9 +29,14 @@ component("common") {
     "pair_failure.h",
     "protocol.cc",
     "protocol.h",
+    "quick_pair_browser_delegate.cc",
+    "quick_pair_browser_delegate.h",
   ]
 
-  deps = [ "//base" ]
+  deps = [
+    "//base",
+    "//device/bluetooth/public/cpp",
+  ]
 }
 
 source_set("unit_tests") {

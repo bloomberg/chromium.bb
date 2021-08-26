@@ -125,23 +125,36 @@ int main(int argc, char** argv) {
   base::FilePath cpp_path = command_line.GetSwitchValuePath("write-cpp");
   if ((proto_path.empty() && cpp_path.empty()) ||
       command_line.HasSwitch("help")) {
-    std::cerr << "Usage: root_store_tool [--write-proto=PROTO_FILE] "
+    std::cerr << "Usage: root_store_tool "
+                 "[--root-store-dir=<relative-path>]
+                 "[--write-proto=PROTO_FILE] "
                  "[--write-cpp=CPP_FILE]"
               << std::endl;
     return 1;
   }
 
+  // Find root store directory. Assumptions:
+  //  - Root store directory is relative to base::DIR_SOURCE_ROOT
+  //
+  //  - $(ROOT_STORE_DIR)/root_store.textproto contains the textproto definition
+  //    of the root store
+  //
+  //  - Any certificate files referenced in
+  //    $(ROOT_STORE_DIR)/root_store.textproto exist in the
+  //    $(ROOT_STORE_DIR)/certs/ subdirectory.
   base::FilePath root_store_dir =
       command_line.GetSwitchValuePath("root-store-dir");
+  base::FilePath source_root;
+  CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &source_root));
   if (root_store_dir.empty()) {
-    base::FilePath source_root;
-    CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &source_root));
     root_store_dir = source_root.AppendASCII("net")
                          .AppendASCII("data")
                          .AppendASCII("ssl")
-                         .AppendASCII("chrome_root_store");
+                         .AppendASCII("chrome_root_store")
+                         .AppendASCII("base");
+  } else {
+    root_store_dir = source_root.Append(root_store_dir);
   }
-
   absl::optional<RootStore> root_store = ReadTextRootStore(root_store_dir);
   if (!root_store) {
     return 1;

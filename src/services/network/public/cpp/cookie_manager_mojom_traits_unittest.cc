@@ -22,7 +22,7 @@ TEST(CookieManagerTraitsTest, Roundtrips_CanonicalCookie) {
   auto original = net::CanonicalCookie::CreateUnsafeCookieForTesting(
       "A", "B", "x.y", "/path", base::Time(), base::Time(), base::Time(), false,
       false, net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_LOW,
-      false, net::CookieSourceScheme::kSecure, 8433);
+      false, absl::nullopt, net::CookieSourceScheme::kSecure, 8433);
 
   net::CanonicalCookie copied;
 
@@ -41,6 +41,7 @@ TEST(CookieManagerTraitsTest, Roundtrips_CanonicalCookie) {
   EXPECT_EQ(original->SameSite(), copied.SameSite());
   EXPECT_EQ(original->Priority(), copied.Priority());
   EXPECT_EQ(original->IsSameParty(), copied.IsSameParty());
+  EXPECT_EQ(absl::nullopt, copied.PartitionKey());
   EXPECT_EQ(original->SourceScheme(), copied.SourceScheme());
   EXPECT_EQ(original->SourcePort(), copied.SourcePort());
 
@@ -49,8 +50,8 @@ TEST(CookieManagerTraitsTest, Roundtrips_CanonicalCookie) {
       net::CanonicalCookie::CreateUnsafeCookieForTesting(
           "A", "B", "x.y", "/path", base::Time(), base::Time(), base::Time(),
           false, false, net::CookieSameSite::NO_RESTRICTION,
-          net::COOKIE_PRIORITY_LOW, false, net::CookieSourceScheme::kSecure,
-          url::PORT_UNSPECIFIED);
+          net::COOKIE_PRIORITY_LOW, false, absl::nullopt,
+          net::CookieSourceScheme::kSecure, url::PORT_UNSPECIFIED);
   net::CanonicalCookie copied_unspecified;
 
   EXPECT_TRUE(mojo::test::SerializeAndDeserialize<mojom::CanonicalCookie>(
@@ -63,7 +64,8 @@ TEST(CookieManagerTraitsTest, Roundtrips_CanonicalCookie) {
   auto original_invalid = net::CanonicalCookie::CreateUnsafeCookieForTesting(
       "A", "B", "x.y", "/path", base::Time(), base::Time(), base::Time(), false,
       false, net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_LOW,
-      false, net::CookieSourceScheme::kSecure, url::PORT_INVALID);
+      false, absl::nullopt, net::CookieSourceScheme::kSecure,
+      url::PORT_INVALID);
   net::CanonicalCookie copied_invalid;
 
   EXPECT_TRUE(mojo::test::SerializeAndDeserialize<mojom::CanonicalCookie>(
@@ -311,7 +313,6 @@ TEST(CookieManagerTraitsTest, Roundtrips_CookieSameSiteContextMetadata) {
           metadata, roundtrip));
   EXPECT_EQ(metadata, roundtrip);
 
-  metadata.affected_by_bugfix_1166211 = true;
   metadata.cross_site_redirect_downgrade =
       net::CookieOptions::SameSiteCookieContext::ContextMetadata::
           ContextDowngradeType::kStrictToLax;
@@ -331,17 +332,13 @@ TEST(CookieManagerTraitsTest, Roundtrips_CookieSameSiteContext) {
       ContextType::SAME_SITE_LAX, ContextType::SAME_SITE_STRICT};
 
   ContextMetadata metadata1;
-  metadata1.affected_by_bugfix_1166211 = true;
+  metadata1.cross_site_redirect_downgrade =
+      ContextMetadata::ContextDowngradeType::kStrictToLax;
   ContextMetadata metadata2;
   metadata2.cross_site_redirect_downgrade =
-      ContextMetadata::ContextDowngradeType::kStrictToLax;
-  ContextMetadata metadata3;
-  metadata3.affected_by_bugfix_1166211 = true;
-  metadata3.cross_site_redirect_downgrade =
       ContextMetadata::ContextDowngradeType::kLaxToCross;
 
-  const ContextMetadata metadatas[]{ContextMetadata(), metadata1, metadata2,
-                                    metadata3};
+  const ContextMetadata metadatas[]{ContextMetadata(), metadata1, metadata2};
 
   for (ContextType context_type : all_context_types) {
     for (ContextType schemeful_context_type : all_context_types) {
@@ -378,6 +375,22 @@ TEST(CookieManagerTraitsTest, Roundtrips_SamePartyCookieContextType) {
             context_type, roundtrip));
     EXPECT_EQ(context_type, roundtrip);
   }
+}
+
+TEST(CookieManagerTraitsTest, Roundtrips_PartitionKey) {
+  auto original = net::CanonicalCookie::CreateUnsafeCookieForTesting(
+      "__Host-A", "B", "x.y", "/", base::Time(), base::Time(), base::Time(),
+      true, false, net::CookieSameSite::NO_RESTRICTION,
+      net::COOKIE_PRIORITY_LOW, false,
+      absl::make_optional(net::CookiePartitionKey::FromURLForTesting(
+          GURL("https://toplevelsite.com"))),
+      net::CookieSourceScheme::kSecure, 8433);
+
+  net::CanonicalCookie copied;
+
+  EXPECT_TRUE(mojo::test::SerializeAndDeserialize<mojom::CanonicalCookie>(
+      *original, copied));
+  EXPECT_EQ(original->PartitionKey(), copied.PartitionKey());
 }
 
 TEST(CookieManagerTraitsTest, Roundtrips_CookieOptions) {

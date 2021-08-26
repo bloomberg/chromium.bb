@@ -63,15 +63,20 @@ mojom("mojom") {
   }
 
   if (is_win) {
-    sources += [ "media_foundation_service.mojom" ]
+    sources += [
+      "dcomp_surface_registry.mojom",
+      "media_foundation_service.mojom",
+    ]
   }
 
   public_deps = [
     "//gpu/ipc/common:interfaces",
     "//media/learning/mojo/public/mojom",
     "//mojo/public/mojom/base",
+    "//sandbox/policy/mojom",
     "//services/media_session/public/mojom",
     "//services/network/public/mojom",
+    "//services/network/public/mojom:cookies_mojom",
     "//services/service_manager/public/mojom",
     "//ui/gfx/geometry/mojom",
     "//ui/gfx/mojom",
@@ -614,6 +619,23 @@ mojom("mojom") {
           "speech_recognition_result_mojom_traits.cc",
         ]
         traits_public_deps = [ "//base" ]
+      },
+    ]
+  }
+
+  if (is_win) {
+    cpp_typemaps += [
+      {
+        types = [
+          {
+            mojom = "media.mojom.CdmPreferenceData"
+            cpp = "::std::unique_ptr<::media::CdmPreferenceData>"
+            move_only = true
+          },
+        ]
+        traits_headers = [ "cdm_preference_data_mojom_traits.h" ]
+        traits_sources = [ "cdm_preference_data_mojom_traits.cc" ]
+        traits_public_deps = [ "//media" ]
       },
     ]
   }

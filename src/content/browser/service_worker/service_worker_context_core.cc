@@ -663,7 +663,7 @@ void ServiceWorkerContextCore::RegistrationComplete(
   // persisted anything to storage yet.
   observer_list_->Notify(
       FROM_HERE, &ServiceWorkerContextCoreObserver::OnRegistrationCompleted,
-      registration->id(), scope);
+      registration->id(), scope, key);
 }
 
 void ServiceWorkerContextCore::UpdateComplete(
@@ -692,7 +692,7 @@ void ServiceWorkerContextCore::UnregistrationComplete(
   if (status == blink::ServiceWorkerStatusCode::kOk) {
     observer_list_->Notify(
         FROM_HERE, &ServiceWorkerContextCoreObserver::OnRegistrationDeleted,
-        registration_id, scope);
+        registration_id, scope, key);
   }
 }
 
@@ -734,7 +734,7 @@ void ServiceWorkerContextCore::AddLiveRegistration(
   live_registrations_[registration->id()] = registration;
   observer_list_->Notify(
       FROM_HERE, &ServiceWorkerContextCoreObserver::OnNewLiveRegistration,
-      registration->id(), registration->scope());
+      registration->id(), registration->scope(), registration->key());
 }
 
 void ServiceWorkerContextCore::RemoveLiveRegistration(int64_t id) {
@@ -915,12 +915,14 @@ int ServiceWorkerContextCore::GetVersionFailureCount(int64_t version_id) {
   return it->second.count;
 }
 
-void ServiceWorkerContextCore::NotifyRegistrationStored(int64_t registration_id,
-                                                        const GURL& scope) {
+void ServiceWorkerContextCore::NotifyRegistrationStored(
+    int64_t registration_id,
+    const GURL& scope,
+    const blink::StorageKey& key) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   observer_list_->Notify(
       FROM_HERE, &ServiceWorkerContextCoreObserver::OnRegistrationStored,
-      registration_id, scope);
+      registration_id, scope, key);
 }
 
 void ServiceWorkerContextCore::NotifyAllRegistrationsDeletedForStorageKey(
@@ -972,9 +974,9 @@ void ServiceWorkerContextCore::OnNoControllees(ServiceWorkerVersion* version) {
   if (registration)
     registration->OnNoControllees(version);
 
-  observer_list_->Notify(FROM_HERE,
-                         &ServiceWorkerContextCoreObserver::OnNoControllees,
-                         version->version_id(), version->scope());
+  observer_list_->Notify(
+      FROM_HERE, &ServiceWorkerContextCoreObserver::OnNoControllees,
+      version->version_id(), version->scope(), version->key());
 }
 
 void ServiceWorkerContextCore::OnControlleeNavigationCommitted(
@@ -1008,7 +1010,7 @@ void ServiceWorkerContextCore::OnRunningStateChanged(
           FROM_HERE, &ServiceWorkerContextCoreObserver::OnStarted,
           version->version_id(), version->scope(),
           version->embedded_worker()->process_id(), version->script_url(),
-          version->embedded_worker()->token().value());
+          version->embedded_worker()->token().value(), version->key());
       break;
     case EmbeddedWorkerStatus::STOPPING:
       observer_list_->Notify(FROM_HERE,
@@ -1023,7 +1025,8 @@ void ServiceWorkerContextCore::OnVersionStateChanged(
   DCHECK_EQ(this, version->context().get());
   observer_list_->Notify(
       FROM_HERE, &ServiceWorkerContextCoreObserver::OnVersionStateChanged,
-      version->version_id(), version->scope(), version->status());
+      version->version_id(), version->scope(), version->key(),
+      version->status());
 }
 
 void ServiceWorkerContextCore::OnDevToolsRoutingIdChanged(
@@ -1047,7 +1050,7 @@ void ServiceWorkerContextCore::OnErrorReported(
   DCHECK_EQ(this, version->context().get());
   observer_list_->Notify(
       FROM_HERE, &ServiceWorkerContextCoreObserver::OnErrorReported,
-      version->version_id(), version->scope(),
+      version->version_id(), version->scope(), version->key(),
       ServiceWorkerContextObserver::ErrorInfo(error_message, line_number,
                                               column_number, source_url));
 }
@@ -1074,7 +1077,7 @@ void ServiceWorkerContextCore::OnReportConsoleMessage(
 
   observer_list_->Notify(
       FROM_HERE, &ServiceWorkerContextCoreObserver::OnReportConsoleMessage,
-      version->version_id(), version->scope(),
+      version->version_id(), version->scope(), version->key(),
       ConsoleMessage(source, message_level, message, line_number, source_url));
 }
 

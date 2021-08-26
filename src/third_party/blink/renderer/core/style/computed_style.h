@@ -31,6 +31,7 @@
 #include "base/types/pass_key.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
+#include "third_party/blink/renderer/core/css/properties/css_bitset.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/css/style_auto_color.h"
 #include "third_party/blink/renderer/core/css/style_color.h"
@@ -395,6 +396,22 @@ class ComputedStyle : public ComputedStyleBase,
   const ComputedStyle* AddCachedPseudoElementStyle(
       scoped_refptr<const ComputedStyle>) const;
   void ClearCachedPseudoElementStyles() const;
+
+  // If this ComputedStyle is affected by animation/transitions, then the
+  // unanimated "base" style can be retrieved with this function.
+  //
+  // If this function returns nullptr, then this ComputedStyle is not
+  // affected by animations, and *is* the base style.
+  CORE_EXPORT const ComputedStyle* GetBaseComputedStyle() const;
+
+  // Indicates which properties are !important in the base style.
+  CORE_EXPORT const CSSBitset* GetBaseImportantSet() const;
+
+  CORE_EXPORT const ComputedStyle* GetBaseComputedStyleOrThis() const {
+    if (auto* base = GetBaseComputedStyle())
+      return base;
+    return this;
+  }
 
   /**
    * ComputedStyle properties
@@ -849,8 +866,8 @@ class ComputedStyle : public ComputedStyleBase,
   inline bool IsScrollbarGutterStable() const {
     return ScrollbarGutter() & kScrollbarGutterStable;
   }
-  inline bool IsScrollbarGutterMirror() const {
-    return ScrollbarGutter() & kScrollbarGutterMirror;
+  inline bool IsScrollbarGutterBothEdges() const {
+    return ScrollbarGutter() & kScrollbarGutterBothEdges;
   }
 
   // ignore non-standard ::-webkit-scrollbar when standard properties are in use
@@ -1160,7 +1177,7 @@ class ComputedStyle : public ComputedStyleBase,
 
   // Variables.
   bool HasVariables() const;
-  CORE_EXPORT size_t GetVariableNamesCount() const;
+  CORE_EXPORT wtf_size_t GetVariableNamesCount() const;
   CORE_EXPORT const Vector<AtomicString>& GetVariableNames() const;
   CORE_EXPORT const StyleInheritedVariables* InheritedVariables() const;
   CORE_EXPORT const StyleNonInheritedVariables* NonInheritedVariables() const;
@@ -1933,7 +1950,10 @@ class ComputedStyle : public ComputedStyleBase,
     return OutlineWidth() > 0 && OutlineStyle() > EBorderStyle::kHidden;
   }
   CORE_EXPORT int OutlineOutsetExtent() const;
-  CORE_EXPORT float GetOutlineStrokeWidthForFocusRing() const;
+  CORE_EXPORT float FocusRingOuterStrokeWidth() const;
+  CORE_EXPORT float FocusRingInnerStrokeWidth() const;
+  CORE_EXPORT float FocusRingStrokeWidth() const;
+  CORE_EXPORT int FocusRingOffset() const;
   bool HasOutlineWithCurrentColor() const {
     return HasOutline() && OutlineColor().IsCurrentColor();
   }
@@ -2050,22 +2070,28 @@ class ComputedStyle : public ComputedStyleBase,
   // type. See |LayoutObject::IsEligibleForSizeContainment| and similar
   // functions.
 
-  bool ContainsPaint() const { return Contain() & kContainsPaint; }
+  bool ContainsPaint() const {
+    return (Contain() & kContainsPaint) || !IsContentVisibilityVisible();
+  }
   bool ContainsStyle() const {
-    return (Contain() & kContainsStyle) || IsInlineOrBlockSizeContainer();
+    return (Contain() & kContainsStyle) || IsInlineOrBlockSizeContainer() ||
+           !IsContentVisibilityVisible();
   }
   bool ContainsLayout() const {
-    return (Contain() & kContainsLayout) || IsInlineOrBlockSizeContainer();
+    return (Contain() & kContainsLayout) || IsInlineOrBlockSizeContainer() ||
+           !IsContentVisibilityVisible();
   }
   bool ContainsSize() const {
     return ((Contain() & kContainsSize) == kContainsSize) ||
-           IsInlineAndBlockSizeContainer();
+           IsInlineAndBlockSizeContainer() || SkipsContents();
   }
   bool ContainsInlineSize() const {
-    return (Contain() & kContainsInlineSize) || IsInlineSizeContainer();
+    return (Contain() & kContainsInlineSize) || IsInlineSizeContainer() ||
+           SkipsContents();
   }
   bool ContainsBlockSize() const {
-    return (Contain() & kContainsBlockSize) || IsBlockSizeContainer();
+    return (Contain() & kContainsBlockSize) || IsBlockSizeContainer() ||
+           SkipsContents();
   }
   CORE_EXPORT bool ShouldApplyAnyContainment(const Element& element) const;
 
@@ -2690,6 +2716,9 @@ class ComputedStyle : public ComputedStyleBase,
   bool IsInlineAndBlockSizeContainer() const {
     const unsigned both = (kContainerTypeInlineSize | kContainerTypeBlockSize);
     return (ContainerType() & both) == both;
+  }
+  bool IsContentVisibilityVisible() const {
+    return ContentVisibility() == EContentVisibility::kVisible;
   }
 
   void SetInternalVisitedColor(const StyleColor& v) {

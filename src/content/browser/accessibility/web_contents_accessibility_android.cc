@@ -13,11 +13,11 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/containers/contains.h"
+#include "base/cxx17_backports.h"
 #include "base/debug/crash_logging.h"
 #include "base/feature_list.h"
 #include "base/hash/hash.h"
 #include "base/macros.h"
-#include "base/numerics/ranges.h"
 #include "content/browser/accessibility/browser_accessibility_android.h"
 #include "content/browser/accessibility/browser_accessibility_manager_android.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl_android.h"
@@ -733,10 +733,12 @@ void WebContentsAccessibilityAndroid::UpdateAccessibilityNodeInfoBoundsRect(
   if (!root_manager)
     return;
 
+  ui::AXOffscreenResult offscreen_result = ui::AXOffscreenResult::kOnscreen;
   float dip_scale =
       use_zoom_for_dsf_enabled_ ? 1 / root_manager->device_scale_factor() : 1.0;
   gfx::Rect absolute_rect = gfx::ScaleToEnclosingRect(
-      node->GetUnclippedRootFrameBoundsRect(), dip_scale, dip_scale);
+      node->GetUnclippedRootFrameBoundsRect(&offscreen_result), dip_scale,
+      dip_scale);
   gfx::Rect parent_relative_rect = absolute_rect;
   bool is_root = node->PlatformGetParent() == nullptr;
   if (!is_root) {
@@ -745,10 +747,12 @@ void WebContentsAccessibilityAndroid::UpdateAccessibilityNodeInfoBoundsRect(
         dip_scale);
     parent_relative_rect.Offset(-parent_rect.OffsetFromOrigin());
   }
+  bool is_offscreen = offscreen_result == ui::AXOffscreenResult::kOffscreen;
+
   Java_WebContentsAccessibilityImpl_setAccessibilityNodeInfoLocation(
       env, obj, info, unique_id, absolute_rect.x(), absolute_rect.y(),
       parent_relative_rect.x(), parent_relative_rect.y(), absolute_rect.width(),
-      absolute_rect.height(), is_root);
+      absolute_rect.height(), is_root, is_offscreen);
 }
 
 jboolean WebContentsAccessibilityAndroid::UpdateCachedAccessibilityNodeInfo(
@@ -1064,7 +1068,7 @@ jboolean WebContentsAccessibilityAndroid::AdjustSlider(
   // Add/Subtract based on |increment| boolean, then clamp to range.
   float original_value = value;
   value += (increment ? delta : -delta);
-  value = base::ClampToRange(value, min, max);
+  value = base::clamp(value, min, max);
   if (value != original_value) {
     node->manager()->SetValue(*node, base::NumberToString(value));
     return true;
@@ -1362,7 +1366,7 @@ bool WebContentsAccessibilityAndroid::SetRangeValue(
   if (max <= min)
     return false;
 
-  value = base::ClampToRange(value, min, max);
+  value = base::clamp(value, min, max);
   node->manager()->SetValue(*node, base::NumberToString(value));
   return true;
 }

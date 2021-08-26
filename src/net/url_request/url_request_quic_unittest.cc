@@ -44,6 +44,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace net {
 
@@ -124,8 +125,7 @@ class URLRequestQuicTest
     QuicEnableVersion(version());
     StartQuicServer(version());
 
-    std::unique_ptr<HttpNetworkSession::Params> params(
-        new HttpNetworkSession::Params);
+    auto params = std::make_unique<HttpNetworkSessionParams>();
     CertVerifyResult verify_result;
     verify_result.verified_cert = ImportCertFromFile(
         GetTestCertsDirectory(), "quic-chain.pem");
@@ -396,15 +396,23 @@ TEST_P(URLRequestQuicTest, TestTwoRequests) {
       run_loop.QuitClosure(), /*num_expected_requests=*/2);
   SetNetworkDelegate(&network_delegate);
   Init();
+
+  GURL url = GURL(UrlFromPath(kHelloPath));
+  auto isolation_info =
+      IsolationInfo::CreateForInternalRequest(url::Origin::Create(url));
+
   CheckLoadTimingDelegate delegate(false);
   delegate.set_on_complete(base::DoNothing());
   std::unique_ptr<URLRequest> request =
-      CreateRequest(GURL(UrlFromPath(kHelloPath)), DEFAULT_PRIORITY, &delegate);
+      CreateRequest(url, DEFAULT_PRIORITY, &delegate);
+  request->set_isolation_info(isolation_info);
 
   CheckLoadTimingDelegate delegate2(true);
   delegate2.set_on_complete(base::DoNothing());
-  std::unique_ptr<URLRequest> request2 = CreateRequest(
-      GURL(UrlFromPath(kHelloPath)), DEFAULT_PRIORITY, &delegate2);
+  std::unique_ptr<URLRequest> request2 =
+      CreateRequest(url, DEFAULT_PRIORITY, &delegate2);
+  request2->set_isolation_info(isolation_info);
+
   request->Start();
   request2->Start();
   ASSERT_TRUE(request->is_pending());

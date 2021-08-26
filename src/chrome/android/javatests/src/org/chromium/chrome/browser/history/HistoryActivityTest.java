@@ -78,6 +78,7 @@ import java.util.concurrent.TimeUnit;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
 public class HistoryActivityTest {
+    // TODO(crbug.com/1238144): Migrate to BaseActivityTestRule.
     @Rule
     public final IntentsTestRule<HistoryActivity> mActivityTestRule =
             new IntentsTestRule<>(HistoryActivity.class, false, false);
@@ -129,8 +130,10 @@ public class HistoryActivityTest {
         mAdapter = mHistoryManager.getContentManagerForTests().getAdapter();
         mRecyclerView = mHistoryManager.getContentManagerForTests().getRecyclerView();
         mTestObserver = new TestObserver();
-        mHistoryManager.getSelectionDelegateForTests().addObserver(mTestObserver);
-        mAdapter.registerAdapterDataObserver(mTestObserver);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mHistoryManager.getSelectionDelegateForTests().addObserver(mTestObserver);
+            mAdapter.registerAdapterDataObserver(mTestObserver);
+        });
     }
 
     @Test

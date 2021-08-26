@@ -38,6 +38,10 @@ To run the preference mapping tests, use `browser_tests` command with a
 - `PolicyTest.AllPoliciesHaveATestCase` (iOS only)
 - `PolicyTest.PolicyToPrefMappings` (iOS only)
 
+Individual policies for PolicyPrefsTest.PolicyToPrefsMapping could be filtered
+by `--test_policy_to_pref_mappings_filter` flag. The flag accepts policy names
+(with the .optionalTestNameSuffix) separated by colon.
+
 ## Example
 
 The following example tests the `IdleAction` policy, i.e. its mapping to two
@@ -48,7 +52,7 @@ separate preferences, their default values, and that either `IdleActionAC` or
 {
   ...
   "IdleAction": {
-    "os": ["chromeos"],
+    "os": ["chromeos_ash"],
     "policy_pref_mapping_tests": [
       {
         "note": "Check default values (no policies set)",
@@ -138,7 +142,8 @@ needs to have at least one test case. Valid values are:
 - `win`
 - `linux`
 - `mac`
-- `chromeos`
+- `chromeos_ash`
+- `chromeos_lacros`
 - `android`
 - `ios` (tested via separate [policy_test_cases.json](https://cs.chromium.org/chromium/src/ios/chrome/test/data/policy/policy_test_cases.json))
 
@@ -245,7 +250,7 @@ use the `PolicyTestCase`'s `can_be_recommended` though.
 ```
 {
   "${policy_name}[.optionalTestNameSuffix]": {
-    "os": array<string>, // subset of ["win", "linux", "mac", "chromeos", "android", "ios"]
+    "os": array<string>, // subset of ["win", "linux", "mac", "chromeos_ash", "chromeos_lacros", "android", "ios"]
     "official_only": boolean, // optional, defaults to false
     "can_be_recommended": boolean, // optional, defaults to false
     "reason_for_missing_test": string // optional, should be only field then

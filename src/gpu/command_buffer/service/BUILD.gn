@@ -67,8 +67,6 @@ target(link_target_type, "service_sources") {
   ]
 
   configs += [
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    "//build/config/compiler:no_size_t_to_int_warning",
     "//build/config:precompiled_headers",
     "//gpu:gpu_implementation",
     "//third_party/khronos:khronos_headers",
@@ -451,6 +449,8 @@ target(link_target_type, "gles2_sources") {
       "ahardwarebuffer_utils.h",
       "image_reader_gl_owner.cc",
       "image_reader_gl_owner.h",
+      "ref_counted_lock.cc",
+      "ref_counted_lock.h",
       "shared_image_backing_android.cc",
       "shared_image_backing_android.h",
       "shared_image_backing_egl_image.cc",

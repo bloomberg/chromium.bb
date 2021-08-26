@@ -12,8 +12,8 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/intent_picker_tab_helper.h"
-#include "chrome/browser/web_applications/components/app_icon_manager.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_contents.h"
@@ -54,7 +54,7 @@ bool ShouldCheckAppsForUrl(content::WebContents* web_contents) {
   // find a browser at this moment, skip the check and this will be handled
   // in later stage.
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-  if (browser && browser->deprecated_is_app())
+  if (browser && (browser->is_type_app() || browser->is_type_app_popup()))
     return false;
 
   return true;
@@ -75,7 +75,7 @@ std::vector<IntentPickerAppInfo> FindPwaForUrl(
   if (!app_id)
     return apps;
 
-  auto* const provider = web_app::WebAppProvider::Get(profile);
+  auto* const provider = web_app::WebAppProvider::GetForWebApps(profile);
   if (provider->registrar().GetAppUserDisplayMode(*app_id) ==
       web_app::DisplayMode::kBrowser) {
     return apps;
@@ -116,7 +116,7 @@ void ShowIntentPickerBubbleForApps(content::WebContents* web_contents,
 
 bool InAppBrowser(content::WebContents* web_contents) {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-  return !browser || browser->deprecated_is_app();
+  return !browser || browser->is_type_app() || browser->is_type_app_popup();
 }
 
 // Compares the host name of the referrer and target URL to decide whether

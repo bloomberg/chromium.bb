@@ -29,10 +29,11 @@
 #include "components/autofill_assistant/browser/actions/presave_generated_password_action.h"
 #include "components/autofill_assistant/browser/actions/prompt_action.h"
 #include "components/autofill_assistant/browser/actions/release_elements_action.h"
+#include "components/autofill_assistant/browser/actions/reset_pending_credentials_action.h"
 #include "components/autofill_assistant/browser/actions/save_generated_password_action.h"
+#include "components/autofill_assistant/browser/actions/save_submitted_password_action.h"
 #include "components/autofill_assistant/browser/actions/select_option_action.h"
 #include "components/autofill_assistant/browser/actions/set_attribute_action.h"
-#include "components/autofill_assistant/browser/actions/set_form_field_value_action.h"
 #include "components/autofill_assistant/browser/actions/set_persistent_ui_action.h"
 #include "components/autofill_assistant/browser/actions/set_touchable_area_action.h"
 #include "components/autofill_assistant/browser/actions/show_cast_action.h"
@@ -202,8 +203,6 @@ std::unique_ptr<Action> ProtocolUtils::CreateAction(ActionDelegate* delegate,
       return std::make_unique<ShowDetailsAction>(delegate, action);
     case ActionProto::ActionInfoCase::kCollectUserData:
       return std::make_unique<CollectUserDataAction>(delegate, action);
-    case ActionProto::ActionInfoCase::kSetFormValue:
-      return std::make_unique<SetFormFieldValueAction>(delegate, action);
     case ActionProto::ActionInfoCase::kShowProgressBar:
       return std::make_unique<ShowProgressBarAction>(delegate, action);
     case ActionProto::ActionInfoCase::kSetAttribute:
@@ -401,6 +400,15 @@ std::unique_ptr<Action> ProtocolUtils::CreateAction(ActionDelegate* delegate,
       return std::make_unique<DeletePasswordAction>(delegate, action);
     case ActionProto::ActionInfoCase::kEditPassword:
       return std::make_unique<EditPasswordAction>(delegate, action);
+    case ActionProto::ActionInfoCase::kBlurField:
+      return PerformOnSingleElementAction::WithClientId(
+          delegate, action, action.blur_field().client_id(),
+          base::BindOnce(&WebController::BlurField,
+                         delegate->GetWebController()->GetWeakPtr()));
+    case ActionProto::ActionInfoCase::kResetPendingCredentials:
+      return std::make_unique<ResetPendingCredentialsAction>(delegate, action);
+    case ActionProto::ActionInfoCase::kSaveSubmittedPassword:
+      return std::make_unique<SaveSubmittedPasswordAction>(delegate, action);
     case ActionProto::ActionInfoCase::ACTION_INFO_NOT_SET: {
       VLOG(1) << "Encountered action with ACTION_INFO_NOT_SET";
       return std::make_unique<UnsupportedAction>(delegate, action);

@@ -3762,11 +3762,9 @@ TEST_P(QuicConnectionTest, OnCanWrite) {
 
 TEST_P(QuicConnectionTest, RetransmitOnNack) {
   QuicPacketNumber last_packet;
-  QuicByteCount second_packet_size;
-  SendStreamDataToPeer(3, "foo", 0, NO_FIN, &last_packet);  // Packet 1
-  second_packet_size =
-      SendStreamDataToPeer(3, "foos", 3, NO_FIN, &last_packet);  // Packet 2
-  SendStreamDataToPeer(3, "fooos", 7, NO_FIN, &last_packet);     // Packet 3
+  SendStreamDataToPeer(3, "foo", 0, NO_FIN, &last_packet);
+  SendStreamDataToPeer(3, "foos", 3, NO_FIN, &last_packet);
+  SendStreamDataToPeer(3, "fooos", 7, NO_FIN, &last_packet);
 
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
 
@@ -12075,7 +12073,7 @@ TEST_P(QuicConnectionTest, PathValidationReceivesStatelessReset) {
 // writer.
 TEST_P(QuicConnectionTest, SendPathChallengeUsingBlockedNewSocket) {
   if (!VersionHasIetfQuicFrames(connection_.version().transport_version) ||
-      !connection_.use_path_validator()) {
+      !connection_.connection_migration_use_new_cid()) {
     return;
   }
   PathProbeTestInit(Perspective::IS_CLIENT);
@@ -12724,10 +12722,6 @@ TEST_P(QuicConnectionTest, ZeroRttRejectionAndMissingInitialKeys) {
           connection_.SetEncrypter(ENCRYPTION_FORWARD_SECURE,
                                    std::make_unique<TaggingEncrypter>(0x04));
           connection_.SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
-          if (!GetQuicReloadableFlag(quic_donot_write_mid_packet_processing)) {
-            // Retransmit rejected 0-RTT packets.
-            connection_.OnCanWrite();
-          }
           // Advance INITIAL ack delay to trigger initial ACK to be sent AFTER
           // the retransmission of rejected 0-RTT packets while the HANDSHAKE
           // packet is still in the coalescer, such that the INITIAL key gets
@@ -14996,23 +14990,13 @@ TEST_P(QuicConnectionTest, LostDataThenGetAcknowledged) {
           InvokeWithoutArgs(&notifier_, &SimpleSessionNotifier::OnCanWrite));
   QuicIpAddress ip_address;
   ASSERT_TRUE(ip_address.FromString("127.0.52.223"));
-  if (GetQuicReloadableFlag(quic_donot_write_mid_packet_processing)) {
-    EXPECT_QUIC_BUG(
-        ProcessFramesPacketWithAddresses(frames, kSelfAddress,
-                                         QuicSocketAddress(ip_address, 1000),
-                                         ENCRYPTION_FORWARD_SECURE),
-        "Try to write mid packet processing");
-    EXPECT_EQ(1u, writer_->path_challenge_frames().size());
-    // Verify stream frame will not be retransmitted.
-    EXPECT_TRUE(writer_->stream_frames().empty());
-  } else {
-    ProcessFramesPacketWithAddresses(frames, kSelfAddress,
-                                     QuicSocketAddress(ip_address, 1000),
-                                     ENCRYPTION_FORWARD_SECURE);
-    // In prod, this would cause FAILED_TO_SERIALIZE_PACKET since the stream
-    // data has been freed, but simple_data_producer does not free data.
-    EXPECT_EQ(1u, writer_->stream_frames().size());
-  }
+  EXPECT_QUIC_BUG(ProcessFramesPacketWithAddresses(
+                      frames, kSelfAddress, QuicSocketAddress(ip_address, 1000),
+                      ENCRYPTION_FORWARD_SECURE),
+                  "Try to write mid packet processing");
+  EXPECT_EQ(1u, writer_->path_challenge_frames().size());
+  // Verify stream frame will not be retransmitted.
+  EXPECT_TRUE(writer_->stream_frames().empty());
 }
 
 TEST_P(QuicConnectionTest, PtoSendStreamData) {
@@ -15053,13 +15037,8 @@ TEST_P(QuicConnectionTest, PtoSendStreamData) {
 
   ASSERT_TRUE(connection_.GetRetransmissionAlarm()->IsSet());
   connection_.GetRetransmissionAlarm()->Fire();
-  if (GetQuicReloadableFlag(quic_donot_pto_half_rtt_data)) {
-    // Verify INITIAL and HANDSHAKE get retransmitted.
-    EXPECT_EQ(0x02020202u, writer_->final_bytes_of_last_packet());
-  } else {
-    // Application data preempts handshake data when PTO fires.
-    EXPECT_EQ(0x03030303u, writer_->final_bytes_of_last_packet());
-  }
+  // Verify INITIAL and HANDSHAKE get retransmitted.
+  EXPECT_EQ(0x02020202u, writer_->final_bytes_of_last_packet());
 }
 
 TEST_P(QuicConnectionTest, SendingZeroRttPacketsDoesNotPostponePTO) {

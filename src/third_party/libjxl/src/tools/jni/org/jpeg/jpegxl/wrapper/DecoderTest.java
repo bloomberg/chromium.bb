@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 package org.jpeg.jpegxl.wrapper;
 
@@ -33,19 +24,102 @@ public class DecoderTest {
     }
   }
 
-  // Simple executable to avoid extra dependencies.
-  public static void main(String[] args) {
-    byte[] jxl = Base64.getDecoder().decode("/wr6H0GRCAYBAGAASzgkunkeVbaSBu95EXDn0e7ABz2ShAMA");
-    ByteBuffer jxlData = ByteBuffer.allocateDirect(jxl.length);
-    jxlData.put(jxl);
-    ImageData imageData = Decoder.decode(jxlData);
-    if (imageData.width != 1024)
+  private static final int SIMPLE_IMAGE_DIM = 1024;
+  private static final byte[] SIMPLE_IMAGE_BYTES =
+      Base64.getDecoder().decode("/wr6H0GRCAYBAGAASzgkunkeVbaSBu95EXDn0e7ABz2ShAMA");
+
+  private static final int PIXEL_IMAGE_DIM = 1;
+  private static final byte[] PIXEL_IMAGE_BYTES =
+      Base64.getDecoder().decode("/woAELASCBAQABwASxLFgoUkDA==");
+
+  static ByteBuffer makeByteBuffer(byte[] src, int length) {
+    ByteBuffer buffer = ByteBuffer.allocateDirect(length);
+    buffer.put(src, 0, length);
+    return buffer;
+  }
+
+  static ByteBuffer makeSimpleImage() {
+    return makeByteBuffer(SIMPLE_IMAGE_BYTES, SIMPLE_IMAGE_BYTES.length);
+  }
+
+  static void checkSimpleImageData(ImageData imageData) {
+    if (imageData.width != SIMPLE_IMAGE_DIM) {
       throw new IllegalStateException("invalid width");
-    if (imageData.height != 1024)
+    }
+    if (imageData.height != SIMPLE_IMAGE_DIM) {
       throw new IllegalStateException("invalid height");
+    }
     int iccSize = imageData.icc.capacity();
     // Do not expect ICC profile to be some exact size; currently it is 732
-    if (iccSize < 300 || iccSize > 1000)
+    if (iccSize < 300 || iccSize > 1000) {
       throw new IllegalStateException("unexpected ICC profile size");
+    }
+  }
+
+  static void checkPixelFormat(PixelFormat pixelFormat, int bytesPerPixel) {
+    ImageData imageData = Decoder.decode(makeSimpleImage(), pixelFormat);
+    checkSimpleImageData(imageData);
+    if (imageData.pixels.limit() != SIMPLE_IMAGE_DIM * SIMPLE_IMAGE_DIM * bytesPerPixel) {
+      throw new IllegalStateException("Unexpected pixels size");
+    }
+  }
+
+  static void testRgba() {
+    checkPixelFormat(PixelFormat.RGBA_8888, 4);
+  }
+
+  static void testRgbaF16() {
+    checkPixelFormat(PixelFormat.RGBA_F16, 8);
+  }
+
+  static void testRgb() {
+    checkPixelFormat(PixelFormat.RGB_888, 3);
+  }
+
+  static void testRgbF16() {
+    checkPixelFormat(PixelFormat.RGB_F16, 6);
+  }
+
+  static void checkGetInfo(ByteBuffer data, int dim, int alphaBits) {
+    StreamInfo streamInfo = Decoder.decodeInfo(data);
+    if (streamInfo.status != Status.OK) {
+      throw new IllegalStateException("Unexpected decoding error");
+    }
+    if (streamInfo.width != dim || streamInfo.height != dim) {
+      throw new IllegalStateException("Invalid width / height");
+    }
+    if (streamInfo.alphaBits != alphaBits) {
+      throw new IllegalStateException("Invalid alphaBits");
+    }
+  }
+
+  static void testGetInfoNoAlpha() {
+    checkGetInfo(makeSimpleImage(), SIMPLE_IMAGE_DIM, 0);
+  }
+
+  static void testGetInfoAlpha() {
+    checkGetInfo(makeByteBuffer(PIXEL_IMAGE_BYTES, PIXEL_IMAGE_BYTES.length), PIXEL_IMAGE_DIM, 8);
+  }
+
+  static void testNotEnoughInput() {
+    for (int i = 0; i < 6; ++i) {
+      ByteBuffer jxlData = makeByteBuffer(SIMPLE_IMAGE_BYTES, i);
+      StreamInfo streamInfo = Decoder.decodeInfo(jxlData);
+      if (streamInfo.status != Status.NOT_ENOUGH_INPUT) {
+        throw new IllegalStateException(
+            "Expected 'not enough input', but got " + streamInfo.status + " " + i);
+      }
+    }
+  }
+
+  // Simple executable to avoid extra dependencies.
+  public static void main(String[] args) {
+    testRgba();
+    testRgbaF16();
+    testRgb();
+    testRgbF16();
+    testGetInfoNoAlpha();
+    testGetInfoAlpha();
+    testNotEnoughInput();
   }
 }

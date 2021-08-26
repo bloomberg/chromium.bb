@@ -103,8 +103,10 @@
 #include "storage/browser/file_system/file_system_operation.h"
 #include "storage/browser/file_system/file_system_operation_runner.h"
 #include "storage/browser/file_system/isolated_context.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "url/gurl.h"
 #include "url/origin.h"
 
 namespace extensions {
@@ -1413,7 +1415,7 @@ ExtensionFunction::ResponseAction DeveloperPrivateLoadDirectoryFunction::Run() {
   // Directory url is non empty only for syncfilesystem.
   if (!directory_url_str.empty()) {
     storage::FileSystemURL directory_url =
-        context_->CrackURL(GURL(directory_url_str));
+        context_->CrackURLInFirstPartyContext(GURL(directory_url_str));
     if (!directory_url.is_valid() ||
         directory_url.type() != storage::kFileSystemTypeSyncable) {
       return RespondNow(Error("DirectoryEntry of unsupported filesystem."));
@@ -1440,8 +1442,8 @@ ExtensionFunction::ResponseAction DeveloperPrivateLoadDirectoryFunction::Run() {
           ->CreateVirtualRootPath(filesystem_id)
           .Append(base::FilePath::FromUTF8Unsafe(filesystem_path));
   storage::FileSystemURL directory_url = context_->CreateCrackedFileSystemURL(
-      url::Origin::Create(
-          extensions::Extension::GetBaseURLFromExtensionId(extension_id())),
+      blink::StorageKey(url::Origin::Create(
+          extensions::Extension::GetBaseURLFromExtensionId(extension_id()))),
       storage::kFileSystemTypeIsolated, virtual_path);
 
   if (directory_url.is_valid() &&
@@ -1514,7 +1516,8 @@ void DeveloperPrivateLoadDirectoryFunction::ReadDirectoryByFileSystemAPI(
     const base::FilePath& project_path,
     const base::FilePath& destination_path) {
   GURL project_url = GURL(project_base_url_ + destination_path.AsUTF8Unsafe());
-  storage::FileSystemURL url = context_->CrackURL(project_url);
+  storage::FileSystemURL url =
+      context_->CrackURLInFirstPartyContext(project_url);
 
   context_->operation_runner()->ReadDirectory(
       url, base::BindRepeating(&DeveloperPrivateLoadDirectoryFunction::
@@ -1551,7 +1554,8 @@ void DeveloperPrivateLoadDirectoryFunction::ReadDirectoryByFileSystemAPICb(
 
     GURL project_url = GURL(project_base_url_ +
         destination_path.Append(file_list[i].name).AsUTF8Unsafe());
-    storage::FileSystemURL url = context_->CrackURL(project_url);
+    storage::FileSystemURL url =
+        context_->CrackURLInFirstPartyContext(project_url);
 
     base::FilePath target_path = project_path;
     target_path = target_path.Append(file_list[i].name);

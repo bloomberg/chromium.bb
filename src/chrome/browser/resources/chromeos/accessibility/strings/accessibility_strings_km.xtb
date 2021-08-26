@@ -424,6 +424,8 @@
 <translation id="3810838688059735925">វីដេអូ</translation>
 <translation id="3813387282697781382">ស៊ីជំពូ</translation>
 <translation id="3816633764618089385">ការកំសាន្តបន្ទាប់</translation>
+<translation id="3840823741487267909">អក្សរកាត់</translation>
+<translation id="3841319830220785495">សំឡេងធម្មជាតិ​លំនាំដើម</translation>
 <translation id="385383972552776628">បើកទំព័រជម្រើស</translation>
 <translation id="3856075812838139784">អានប៉ុណ្ណោះ</translation>
 <translation id="3857141338659865495">ស៊ីលៀប</translation>
@@ -451,6 +453,7 @@
 <translation id="4021716437419160885">រំកិលចុះក្រោម</translation>
 <translation id="4035381225449278841">រដូវ​ផ្ការីក</translation>
 <translation id="4047216625641135770">សញ្ញា</translation>
+<translation id="4047910800766704982">អ្នកអាច​ប្រើសំឡេង​ធម្មជាតិដូចមនុស្ស នៅពេល​ឧបករណ៍​របស់អ្នក​មានអ៊ីនធឺណិត។ អត្ថបទនឹងត្រូវបានបញ្ជូនទៅ Google សម្រាប់ដំណើរការ។ អ្នក​អាច​បិទ​វា​បាន​គ្រប់​ពេល​នៅ​ក្នុង​ការកំណត់។</translation>
 <translation id="4053520724192563562">បៃតងខ្ចី</translation>
 <translation id="4054936709456751127">sts</translation>
 <translation id="4058278702844053247">ការផ្ទុកទំព័រកំពុងដំណើរការ</translation>
@@ -686,6 +689,7 @@
 <translation id="5748623122140342504">ផ្នែកក្បាលកម្រិត 5 ពីមុន</translation>
 <translation id="5760594853119905566">ឧបសម្ពន្ធ</translation>
 <translation id="5761219715606611783">ល្អណាស់! អ្នកបាន​ស្វែងយល់​អំពីចំណុច​មូលដ្ឋាន​នៃការចុច​របស់ ChromeVox ហើយ។ អ្នកអាចមើល​មេរៀន​ម្ដងទៀត ឬ​ចាកចេញពី​មេរៀននេះ ដោយប្រើ​ប៊ូតុង​ខាងក្រោម។</translation>
+<translation id="5776001898637896684">កម្មវិធីបន្ថែម​សម្រាប់​ការបំប្លែង​អត្ថបទ​ទៅជា​ការនិយាយ​នៃ Google Enhanced Network</translation>
 <translation id="5805940204952508776">ចុច​ដោយប្រើម្រាមដៃពីរ</translation>
 <translation id="5819072574982403430">មែកធាងធាតុ</translation>
 <translation id="5822819874379903994">ស៊ីលៀប​ចាស់</translation>
@@ -908,6 +912,7 @@
 <translation id="743783356331413498">ឧទាហរណ៍</translation>
 <translation id="7439060726180460871">ថតឯកសារ</translation>
 <translation id="744163271241493234">pwded</translation>
+<translation id="7465123027577412805">ប្រើ​សំឡេងធម្មជាតិឬ?</translation>
 <translation id="7484805699335881122">ប្ដូរកម្រិតសំឡេង នៅពេលអានប្រភេទធាតុ និងអត្ថបទដែលសរសេរជាអក្សរធំ ក្នុងវង់ក្រចក ដិត លុប ឬនៅក្នុងអព្ភន្តរសញ្ញា។</translation>
 <translation id="7491962110804786152">ផ្ទាំង</translation>
 <translation id="7492497529767769458">ទៅ​កាន់​ផ្នែក​បន្ទាប់។ ឧទាហរណ៍រួមបញ្ចូលកម្មវិធី​ចាប់ផ្ដើម និងរបារស្ថានភាព។</translation>
@@ -978,6 +983,7 @@
 <translation id="7968340748835037139">បៃតង​ចាស់</translation>
 <translation id="7972507042926081808">សូកូឡា</translation>
 <translation id="7974390230414479278">ធាតុម៉ឺនុយ</translation>
+<translation id="7990863024647916394">សំឡេងជាភាសា<ph name="DISPLAY_NAME" /> ទី <ph name="COUNT" /></translation>
 <translation id="8004507136466386272">ពាក្យ</translation>
 <translation id="8004512796067398576">ការបន្ថែម</translation>
 <translation id="8007540374018858731">h3</translation>

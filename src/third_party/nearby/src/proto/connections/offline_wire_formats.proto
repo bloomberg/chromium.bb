@@ -58,6 +58,7 @@ message V1Frame {
 
 message ConnectionRequestFrame {
   // Should always match cs/symbol:location.nearby.proto.connections.Medium
+  // LINT.IfChange
   enum Medium {
     UNKNOWN_MEDIUM = 0;
     MDNS = 1 [deprecated = true];
@@ -69,7 +70,9 @@ message ConnectionRequestFrame {
     NFC = 7;
     WIFI_DIRECT = 8;
     WEB_RTC = 9;
+    BLE_L2CAP = 10;
   }
+  // LINT.ThenChange(//depot/google3/third_party/nearby_connections/proto/connections_enums.proto)
 
   optional string endpoint_id = 1;
   optional string endpoint_name = 2;
@@ -285,7 +288,7 @@ message PairedKeyEncryptionFrame {
 message MediumMetadata {
   // True if local device supports 5GHz.
   optional bool supports_5_ghz = 1;
-  // WiFi Lan BSSID
+  // WiFi LAN BSSID
   optional string bssid = 2;
   // IP address
   optional bytes ip_address = 3;
@@ -293,6 +296,23 @@ message MediumMetadata {
   optional bool supports_6_ghz = 4;
   // True if local device has mobile radio.
   optional bool mobile_radio = 5;
+  // The frequency of the WiFi LAN AP (or -1 is not associated to an AP over
+  // WiFi).
+  optional int32 ap_frequency = 6 [default = -1];
+  // Available channels on the local device.
+  optional AvailableChannels available_channels = 7;
+  // Usable WiFi Direct client channels on the local device.
+  optional WifiDirectCliUsableChannels wifi_direct_cli_usable_channels = 8;
+}
+
+// Available channels on the local device.
+message AvailableChannels {
+  repeated int32 channels = 1 [packed = true];
+}
+
+// Usable WiFi Direct client channels on the local device.
+message WifiDirectCliUsableChannels {
+  repeated int32 channels = 1 [packed = true];
 }
 
 // LocationHint is used to specify a location as well as format.

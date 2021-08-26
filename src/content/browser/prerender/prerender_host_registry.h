@@ -78,6 +78,9 @@ class CONTENT_EXPORT PrerenderHostRegistry {
   void CancelHost(int frame_tree_node_id,
                   PrerenderHost::FinalStatus final_status);
 
+  // Applies CancelHost for all existing PrerenderHost.
+  void CancelAllHosts(PrerenderHost::FinalStatus final_status);
+
   // For activators.
   // Finds the host to activate for a navigation for the given
   // NavigationRequest. Returns the root frame tree node id of the prerendered
@@ -102,9 +105,9 @@ class CONTENT_EXPORT PrerenderHostRegistry {
 
   // For activators.
   // Activates the host reserved by ReserveHostToActivate() and returns the
-  // BackForwardCacheImpl::Entry containing the page that was activated on
-  // success, or nullptr on failure.
-  std::unique_ptr<BackForwardCacheImpl::Entry> ActivateReservedHost(
+  // StoredPage containing the page that was activated on success, or nullptr
+  // on failure.
+  std::unique_ptr<StoredPage> ActivateReservedHost(
       int frame_tree_node_id,
       NavigationRequest& navigation_request);
 
@@ -166,20 +169,7 @@ class CONTENT_EXPORT PrerenderHostRegistry {
       prerender_host_by_frame_tree_node_id_;
 
   // Hosts that are reserved for activation.
-  // TODO(https://crbug.com/1195751): Remove ReservationInfo by reverting
-  // https://crrev.com/c/2982683. This is no longer necessary as cancellation
-  // during activation never happens in the current implementation.
-  struct ReservationInfo {
-    ReservationInfo(std::unique_ptr<PrerenderHost> prerender_host,
-                    int activator_frame_tree_node_id);
-    ReservationInfo(ReservationInfo&& info);
-    ReservationInfo& operator=(ReservationInfo&& info) = default;
-    ~ReservationInfo();
-
-    std::unique_ptr<PrerenderHost> prerender_host;
-    int activator_frame_tree_node_id;
-  };
-  base::flat_map<int, ReservationInfo>
+  base::flat_map<int, std::unique_ptr<PrerenderHost>>
       reserved_prerender_host_by_frame_tree_node_id_;
 
   // Hosts that are scheduled to be deleted asynchronously.

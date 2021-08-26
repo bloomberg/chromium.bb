@@ -30,7 +30,6 @@
 #include "chrome/browser/ui/views/overlay/toggle_microphone_button.h"
 #include "chrome/browser/ui/views/overlay/track_image_button.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/url_formatter/url_formatter.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/picture_in_picture_window_controller.h"
 #include "content/public/browser/web_contents.h"
@@ -854,16 +853,6 @@ void OverlayWindowViews::Close() {
 }
 
 void OverlayWindowViews::ShowInactive() {
-  if (back_to_tab_label_button_) {
-    back_to_tab_label_button_->SetText(url_formatter::FormatUrl(
-        controller_->GetWebContents()->GetLastCommittedURL(),
-        url_formatter::kFormatUrlOmitDefaults |
-            url_formatter::kFormatUrlOmitHTTPS |
-            url_formatter::kFormatUrlOmitTrivialSubdomains |
-            url_formatter::kFormatUrlTrimAfterHost,
-        net::UnescapeRule::SPACES, nullptr, nullptr, nullptr));
-  }
-
   views::Widget::ShowInactive();
   views::Widget::SetVisibleOnAllWorkspaces(true);
 

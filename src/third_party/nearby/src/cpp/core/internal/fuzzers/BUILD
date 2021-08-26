@@ -11,16 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 load("//security/fuzzing/blaze:cc_fuzz_target.bzl", "cc_fuzz_target")
+
+licenses(["notice"])
 
 cc_fuzz_target(
     name = "offline_frames_fuzzer",
     srcs = ["offline_frames_fuzzer.cc"],
     componentid = 148515,
     deps = [
+        "//security/fuzzing/blaze:default_init_google_for_cc_fuzz_target",
         "//core/internal",
         "//platform/base",
-        "//security/fuzzing/blaze:default_init_google_for_cc_fuzz_target",
     ],
 )

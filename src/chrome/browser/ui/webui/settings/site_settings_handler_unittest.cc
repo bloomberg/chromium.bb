@@ -66,6 +66,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "services/device/public/cpp/test/fake_usb_device_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/bytes_formatting.h"
 #include "ui/webui/webui_allowlist.h"
@@ -180,10 +181,7 @@ class SiteSettingsHandlerTest : public testing::Test {
     // AllowJavascript() adds a callback to create leveldb_env::ChromiumEnv
     // which reads the FeatureList. Wait for the callback to be finished so that
     // we won't destruct |feature_list_| before the callback is executed.
-    // We also want to let the storage system finish setting up, to avoid test
-    // flakiness caused by the quota storage system shutting down at test end,
-    // while still being set up.
-    task_environment_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     web_ui()->ClearTrackedCalls();
   }
 
@@ -449,11 +447,15 @@ class SiteSettingsHandlerTest : public testing::Test {
     auto mock_cookies_tree_model = std::make_unique<CookiesTreeModel>(
         std::move(container), profile()->GetExtensionSpecialStoragePolicy());
 
-    mock_browsing_data_local_storage_helper->AddLocalStorageForOrigin(
-        url::Origin::Create(GURL("https://www.example.com/")), 2);
+    mock_browsing_data_local_storage_helper->AddLocalStorageForStorageKey(
+        blink::StorageKey::CreateFromStringForTesting(
+            "https://www.example.com/"),
+        2);
 
-    mock_browsing_data_local_storage_helper->AddLocalStorageForOrigin(
-        url::Origin::Create(GURL("https://www.google.com/")), 50000000000);
+    mock_browsing_data_local_storage_helper->AddLocalStorageForStorageKey(
+        blink::StorageKey::CreateFromStringForTesting(
+            "https://www.google.com/"),
+        50000000000);
     mock_browsing_data_local_storage_helper->Notify();
 
     mock_browsing_data_cookie_helper->AddCookieSamples(

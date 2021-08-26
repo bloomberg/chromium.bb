@@ -508,12 +508,6 @@ id<GREYMatcher> AutofillSuggestionViewMatcher();
 // smaller than the scroll view bounds.
 id<GREYMatcher> ContentViewSmallerThanScrollView();
 
-// Returns a matcher for the infobar asking to save a credit card locally.
-id<GREYMatcher> AutofillSaveCardLocallyInfobar();
-
-// Returns a matcher for the infobar asking to upload a credit card.
-id<GREYMatcher> AutofillUploadCardInfobar();
-
 // Returns a matcher for a history entry with |url| and |title|.
 id<GREYMatcher> HistoryEntry(const std::string& url, const std::string& title);
 
@@ -594,8 +588,12 @@ id<GREYMatcher> UseSuggestedPasswordMatcher();
 
 #pragma mark - Tab Grid Edit Mode
 
-// Returns a matcher for the button to enter the tab grid tab edit mode.
+// Returns a matcher for the button to open the context menu for edit actions.
 id<GREYMatcher> TabGridEditButton();
+
+// Returns a matcher for the context menu button to enter the tab grid tab
+// selection mode.
+id<GREYMatcher> TabGridSelectTabsMenuButton();
 
 // Returns a matcher for the button to act on the selected tabs.
 id<GREYMatcher> TabGridEditAddToButton();
@@ -605,6 +603,9 @@ id<GREYMatcher> TabGridEditCloseTabsButton();
 
 // Returns a matcher for the button to select all tabs.
 id<GREYMatcher> TabGridEditSelectAllButton();
+
+// Returns a matcher for the button to share tabs.
+id<GREYMatcher> TabGridEditShareButton();
 
 }  // namespace chrome_test_util
 

@@ -325,6 +325,10 @@ scoped_refptr<VideoFrame> VideoFrame::CreateVideoHoleFrame(
     const gfx::Size& natural_size,
     base::TimeDelta timestamp) {
   auto layout = VideoFrameLayout::Create(PIXEL_FORMAT_UNKNOWN, natural_size);
+  if (!layout) {
+    DLOG(ERROR) << "Invalid layout.";
+    return nullptr;
+  }
   scoped_refptr<VideoFrame> frame = new VideoFrame(
       *layout, StorageType::STORAGE_OPAQUE, gfx::Rect(natural_size),
       natural_size, timestamp, FrameControlType::kVideoHole);
@@ -1306,6 +1310,22 @@ gpu::SyncToken VideoFrame::UpdateReleaseSyncToken(SyncTokenClient* client) {
     client->WaitSyncToken(release_sync_token_);
   client->GenerateSyncToken(&release_sync_token_);
   return release_sync_token_;
+}
+
+gpu::SyncToken VideoFrame::UpdateMailboxHolderSyncToken(
+    size_t plane,
+    SyncTokenClient* client) {
+  DCHECK(HasOneRef());
+  DCHECK(HasTextures());
+  DCHECK(!wrapped_frame_);
+  DCHECK_LT(plane, kMaxPlanes);
+
+  // No lock is required due to the HasOneRef() check.
+  auto& token = mailbox_holders_[plane].sync_token;
+  if (token.HasData())
+    client->WaitSyncToken(token);
+  client->GenerateSyncToken(&token);
+  return token;
 }
 
 std::string VideoFrame::AsHumanReadableString() const {

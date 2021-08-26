@@ -382,7 +382,7 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryWithMultiProfileBrowserTest,
   }
 
   // Log in as the user2. The clipboard history should be non-empty.
-  chromeos::UserAddingScreen::Get()->Start();
+  ash::UserAddingScreen::Get()->Start();
   AddUser(account_id2_);
   EXPECT_FALSE(GetClipboardItems().empty());
 
@@ -881,8 +881,7 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryBrowserTest,
   // history shows, the process of HTML rendering starts.
   auto event_generator = std::make_unique<ui::test::EventGenerator>(
       ash::Shell::GetPrimaryRootWindow());
-  event_generator->PressKey(ui::KeyboardCode::VKEY_V, ui::EF_COMMAND_DOWN);
-  event_generator->ReleaseKey(ui::KeyboardCode::VKEY_V, ui::EF_COMMAND_DOWN);
+  event_generator->PressAndReleaseKey(ui::VKEY_V, ui::EF_COMMAND_DOWN);
 
   // Render HTML with auto-resize mode enabled. Wait until the rendering
   // finishes.
@@ -903,8 +902,7 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryBrowserTest,
 
   // Verify that the clipboard history menu shows. Then close the menu.
   EXPECT_TRUE(GetClipboardHistoryController()->IsMenuShowing());
-  event_generator->PressKey(ui::KeyboardCode::VKEY_ESCAPE, ui::EF_NONE);
-  event_generator->ReleaseKey(ui::KeyboardCode::VKEY_ESCAPE, ui::EF_NONE);
+  event_generator->PressAndReleaseKey(ui::VKEY_ESCAPE, ui::EF_NONE);
   EXPECT_FALSE(GetClipboardHistoryController()->IsMenuShowing());
 
   // Select another part. Wait until the selection region updates. Then copy
@@ -921,8 +919,7 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryBrowserTest,
   }
 
   // Show the clipboard history menu.
-  event_generator->PressKey(ui::KeyboardCode::VKEY_V, ui::EF_COMMAND_DOWN);
-  event_generator->ReleaseKey(ui::KeyboardCode::VKEY_V, ui::EF_COMMAND_DOWN);
+  event_generator->PressAndReleaseKey(ui::VKEY_V, ui::EF_COMMAND_DOWN);
 
   // Render HTML with auto-resize mode disabled. Wait until the rendering
   // finishes.
@@ -1178,7 +1175,7 @@ class FakeDataTransferPolicyController
   void PasteIfAllowed(const ui::DataTransferEndpoint* const data_src,
                       const ui::DataTransferEndpoint* const data_dst,
                       const absl::optional<size_t> size,
-                      content::WebContents* web_contents,
+                      content::RenderFrameHost* rfh,
                       base::OnceCallback<void(bool)> callback) override {}
 
   bool IsDragDropAllowed(const ui::DataTransferEndpoint* const data_src,

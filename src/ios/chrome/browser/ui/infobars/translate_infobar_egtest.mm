@@ -266,6 +266,12 @@ void TestResponseProvider::GetLanguageResponse(
 
 // Tests that different language signals are detected correctly.
 - (void)testLanguageDetection {
+// TODO(crbug.com/1235979): test failing on ipad device
+#if !TARGET_IPHONE_SIMULATOR
+  if ([ChromeEarlGrey isIPadIdiom]) {
+    EARL_GREY_TEST_SKIPPED(@"This test doesn't pass on iPad device.");
+  }
+#endif
   const GURL URL =
       web::test::HttpServer::MakeUrl("http://scenarioLanguageDetection");
   std::map<GURL, std::string> responses;
@@ -487,7 +493,8 @@ void TestResponseProvider::GetLanguageResponse(
   // Disable translate.
   [ChromeEarlGreyAppInterface
       setBoolValue:NO
-       forUserPref:base::SysUTF8ToNSString(prefs::kOfferTranslateEnabled)];
+       forUserPref:base::SysUTF8ToNSString(
+                       translate::prefs::kOfferTranslateEnabled)];
 
   // Open some webpage.
   [ChromeEarlGrey loadURL:URL];
@@ -498,7 +505,8 @@ void TestResponseProvider::GetLanguageResponse(
   // Enable translate.
   [ChromeEarlGreyAppInterface
       setBoolValue:YES
-       forUserPref:base::SysUTF8ToNSString(prefs::kOfferTranslateEnabled)];
+       forUserPref:base::SysUTF8ToNSString(
+                       translate::prefs::kOfferTranslateEnabled)];
 }
 
 // Tests that the infobar banner persists as the page scrolls mode and that the

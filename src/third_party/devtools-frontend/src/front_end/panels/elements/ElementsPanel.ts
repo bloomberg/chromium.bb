@@ -49,10 +49,10 @@ import {AccessibilityTreeView} from './AccessibilityTreeView.js';
 import * as ElementsComponents from './components/components.js';
 import {ComputedStyleWidget} from './ComputedStyleWidget.js';
 
-import type {ElementsTreeElement} from './ElementsTreeElement.js'; // eslint-disable-line no-unused-vars
+import type {ElementsTreeElement} from './ElementsTreeElement.js';
 import {ElementsTreeElementHighlighter} from './ElementsTreeElementHighlighter.js';
 import {ElementsTreeOutline} from './ElementsTreeOutline.js';
-import type {MarkerDecorator} from './MarkerDecorator.js'; // eslint-disable-line no-unused-vars
+import type {MarkerDecorator} from './MarkerDecorator.js';
 import {MetricsSidebarPane} from './MetricsSidebarPane.js';
 import {Events as StylesSidebarPaneEvents, StylesSidebarPane} from './StylesSidebarPane.js';
 
@@ -161,7 +161,6 @@ export class ElementsPanel extends UI.Panel.Panel implements UI.SearchableView.S
   _metricsWidget: MetricsSidebarPane;
   _treeOutlines: Set<ElementsTreeOutline>;
   _treeOutlineHeaders: Map<ElementsTreeOutline, Element>;
-  _gridStyleTrackerByCSSModel: Map<SDK.CSSModel.CSSModel, SDK.CSSModel.CSSPropertyTracker>;
   _searchResults!: {
     domModel: SDK.DOMModel.DOMModel,
     index: number,
@@ -181,6 +180,8 @@ export class ElementsPanel extends UI.Panel.Panel implements UI.SearchableView.S
   _notFirstInspectElement?: boolean;
   sidebarPaneView?: UI.View.TabbedViewLocation;
   _stylesViewToReveal?: UI.View.SimpleView;
+
+  private cssStyleTrackerByCSSModel: Map<SDK.CSSModel.CSSModel, SDK.CSSModel.CSSPropertyTracker>;
 
   constructor() {
     super('elements');
@@ -220,7 +221,7 @@ export class ElementsPanel extends UI.Panel.Panel implements UI.SearchableView.S
       this._accessibilityTreeView = new AccessibilityTreeView(this.domTreeButton);
     }
     this._breadcrumbs = new ElementsComponents.ElementsBreadcrumbs.ElementsBreadcrumbs();
-    this._breadcrumbs.addEventListener('breadcrumbsnodeselected', (event: Common.EventTarget.EventTargetEvent) => {
+    this._breadcrumbs.addEventListener('breadcrumbsnodeselected', event => {
       this._crumbNodeSelected(event);
     });
 
@@ -237,10 +238,10 @@ export class ElementsPanel extends UI.Panel.Panel implements UI.SearchableView.S
 
     this._treeOutlines = new Set();
     this._treeOutlineHeaders = new Map();
-    this._gridStyleTrackerByCSSModel = new Map();
+    this.cssStyleTrackerByCSSModel = new Map();
     SDK.TargetManager.TargetManager.instance().observeModels(SDK.DOMModel.DOMModel, this);
     SDK.TargetManager.TargetManager.instance().addEventListener(
-        SDK.TargetManager.Events.NameChanged, event => this._targetNameChanged((event.data as SDK.Target.Target)));
+        SDK.TargetManager.Events.NameChanged, event => this._targetNameChanged(event.data));
     Common.Settings.Settings.instance()
         .moduleSetting('showUAShadowDOM')
         .addChangeListener(this._showUAShadowDOMChanged.bind(this));
@@ -314,9 +315,8 @@ export class ElementsPanel extends UI.Panel.Panel implements UI.SearchableView.S
 
     // Different frames will have different DOMModels, we only want to add the accessibility model
     // for the top level frame, as the accessibility tree does not yet support exploring IFrames.
-    if (!parentModel && this._accessibilityTreeView) {
-      this._accessibilityTreeView.setAccessibilityModel(
-          domModel.target().model(SDK.AccessibilityModel.AccessibilityModel));
+    if (this._accessibilityTreeView) {
+      this._accessibilityTreeView.wireToDOMModel(domModel);
     }
     let treeOutline: ElementsTreeOutline|null = parentModel ? ElementsTreeOutline.forDOMModel(parentModel) : null;
     if (!treeOutline) {
@@ -519,8 +519,8 @@ export class ElementsPanel extends UI.Panel.Panel implements UI.SearchableView.S
     }
   }
 
-  _documentUpdatedEvent(event: Common.EventTarget.EventTargetEvent): void {
-    const domModel = (event.data as SDK.DOMModel.DOMModel);
+  _documentUpdatedEvent(event: Common.EventTarget.EventTargetEvent<SDK.DOMModel.DOMModel>): void {
+    const domModel = event.data;
     this._documentUpdated(domModel);
     this._removeStyleTracking(domModel.cssModel());
     this._setupStyleTracking(domModel.cssModel());
@@ -809,9 +809,8 @@ export class ElementsPanel extends UI.Panel.Panel implements UI.SearchableView.S
     };
   }
 
-  _crumbNodeSelected(event: Common.EventTarget.EventTargetEvent): void {
-    const node = (event.data as SDK.DOMModel.DOMNode);
-    this.selectDOMNode(node, true);
+  _crumbNodeSelected(event: ElementsComponents.ElementsBreadcrumbs.NodeSelectedEvent): void {
+    this.selectDOMNode(event.data, true);
   }
 
   _treeOutlineForNode(node: SDK.DOMModel.DOMNode|null): ElementsTreeOutline|null {
@@ -1059,22 +1058,22 @@ export class ElementsPanel extends UI.Panel.Panel implements UI.SearchableView.S
   }
 
   _setupStyleTracking(cssModel: SDK.CSSModel.CSSModel): void {
-    const gridStyleTracker = cssModel.createCSSPropertyTracker(TrackedCSSGridProperties);
-    gridStyleTracker.start();
-    this._gridStyleTrackerByCSSModel.set(cssModel, gridStyleTracker);
-    gridStyleTracker.addEventListener(
+    const cssPropertyTracker = cssModel.createCSSPropertyTracker(TrackedCSSProperties);
+    cssPropertyTracker.start();
+    this.cssStyleTrackerByCSSModel.set(cssModel, cssPropertyTracker);
+    cssPropertyTracker.addEventListener(
         SDK.CSSModel.CSSPropertyTrackerEvents.TrackedCSSPropertiesUpdated, this._trackedCSSPropertiesUpdated, this);
   }
 
   _removeStyleTracking(cssModel: SDK.CSSModel.CSSModel): void {
-    const gridStyleTracker = this._gridStyleTrackerByCSSModel.get(cssModel);
-    if (!gridStyleTracker) {
+    const cssPropertyTracker = this.cssStyleTrackerByCSSModel.get(cssModel);
+    if (!cssPropertyTracker) {
       return;
     }
 
-    gridStyleTracker.stop();
-    this._gridStyleTrackerByCSSModel.delete(cssModel);
-    gridStyleTracker.removeEventListener(
+    cssPropertyTracker.stop();
+    this.cssStyleTrackerByCSSModel.delete(cssModel);
+    cssPropertyTracker.removeEventListener(
         SDK.CSSModel.CSSPropertyTrackerEvents.TrackedCSSPropertiesUpdated, this._trackedCSSPropertiesUpdated, this);
   }
 
@@ -1158,7 +1157,7 @@ export const enum _splitMode {
   Horizontal = 'Horizontal',
 }
 
-const TrackedCSSGridProperties = [
+const TrackedCSSProperties = [
   {
     name: 'display',
     value: 'grid',
@@ -1174,6 +1173,18 @@ const TrackedCSSGridProperties = [
   {
     name: 'display',
     value: 'inline-flex',
+  },
+  {
+    name: 'container-type',
+    value: 'inline-size',
+  },
+  {
+    name: 'container-type',
+    value: 'block-size',
+  },
+  {
+    name: 'container-type',
+    value: 'inline-size block-size',
   },
 ];
 

@@ -1124,8 +1124,10 @@ void VTTCue::ParseSettings(const VTTRegionMap* region_map,
         break;
       }
       case kRegionId:
-        if (region_map)
-          region_ = region_map->at(input.ExtractString(value_run));
+        if (region_map) {
+          auto it = region_map->find(input.ExtractString(value_run));
+          region_ = it != region_map->end() ? it->value : nullptr;
+        }
         break;
       case kNone:
         break;

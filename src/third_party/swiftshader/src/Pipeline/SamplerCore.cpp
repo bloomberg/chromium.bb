@@ -54,12 +54,14 @@ Vector4f SamplerCore::sampleTexture(Pointer<Byte> &texture, Float4 uvwa[4], Floa
 		w = As<Float4>(face);
 	}
 
-	bool singleMipLevel = (state.minLod == state.maxLod) && (function != Query) && (function != Fetch);
+	// Determine if we can skip the LOD computation. This is the case when the mipmap has only one level, except for LOD query,
+	// where we have to return the computed value. Anisotropic filtering requires computing the anisotropy factor even for a single mipmap level.
+	bool singleMipLevel = (state.minLod == state.maxLod);
+	bool requiresLodComputation = (function == Query) || (state.textureFilter == FILTER_ANISOTROPIC);
+	bool skipLodComputation = singleMipLevel && !requiresLodComputation;
 
-	// We can't skip the LOD computation for LOD query, where we have to return the proper value
-	if(singleMipLevel)
+	if(skipLodComputation)
 	{
-		// Skip costly LOD computation if there's only 1 possible outcome
 		lod = state.minLod;
 	}
 	else if(function == Implicit || function == Bias || function == Grad || function == Query)
@@ -116,7 +118,7 @@ Vector4f SamplerCore::sampleTexture(Pointer<Byte> &texture, Float4 uvwa[4], Floa
 			c.y = Float4(lod);  // Unclamped LOD.
 		}
 
-		if (!singleMipLevel)
+		if(!skipLodComputation)
 		{
 			lod = Max(lod, state.minLod);
 			lod = Min(lod, state.maxLod);
@@ -1240,6 +1242,8 @@ void SamplerCore::computeLod2D(Pointer<Byte> &texture, Float &lod, Float &anisot
 		anisotropy = lod * Rcp(det, Precision::Relaxed);
 		anisotropy = Min(anisotropy, state.maxAnisotropy);
 
+		// TODO(b/151263485): While we always need `lod` above, when there's only
+		// a single mipmap level the following calculations could be skipped.
 		lod *= Rcp(anisotropy * anisotropy, Precision::Relaxed);
 	}
 
@@ -2116,45 +2120,69 @@ Vector4f SamplerCore::sampleTexel(Int4 &uuuu, Int4 &vvvv, Int4 &wwww, Float4 &dR
 
 Vector4f SamplerCore::replaceBorderTexel(const Vector4f &c, Int4 valid)
 {
-	Int4 borderRGB;
-	Int4 borderA;
+	Vector4i border;
 
 	bool scaled = !hasFloatTexture() && !hasUnnormalizedIntegerTexture() && !state.compareEnable;
 	bool sign = !hasUnsignedTextureComponent(0);
-	Int4 float_one = scaled ? As<Int4>(Float4(static_cast<float>(sign ? 0x7FFF : 0xFFFF))) : As<Int4>(Float4(1.0f));
+	float scale = scaled ? static_cast<float>(sign ? 0x7FFF : 0xFFFF) : 1.0f;
+	Int4 float_one = As<Int4>(Float4(scale));
 
 	switch(state.border)
 	{
 	case VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK:
 	case VK_BORDER_COLOR_INT_TRANSPARENT_BLACK:
-		borderRGB = Int4(0);
-		borderA = Int4(0);
+		border.x = Int4(0);
+		border.y = Int4(0);
+		border.z = Int4(0);
+		border.w = Int4(0);
 		break;
 	case VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK:
-		borderRGB = Int4(0);
-		borderA = float_one;
+		border.x = Int4(0);
+		border.y = Int4(0);
+		border.z = Int4(0);
+		border.w = float_one;
 		break;
 	case VK_BORDER_COLOR_INT_OPAQUE_BLACK:
-		borderRGB = Int4(0);
-		borderA = Int4(1);
+		border.x = Int4(0);
+		border.y = Int4(0);
+		border.z = Int4(0);
+		border.w = Int4(1);
 		break;
 	case VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE:
-		borderRGB = float_one;
-		borderA = float_one;
+		border.x = float_one;
+		border.y = float_one;
+		border.z = float_one;
+		border.w = float_one;
 		break;
 	case VK_BORDER_COLOR_INT_OPAQUE_WHITE:
-		borderRGB = Int4(1);
-		borderA = Int4(1);
+		border.x = Int4(1);
+		border.y = Int4(1);
+		border.z = Int4(1);
+		border.w = Int4(1);
+		break;
+	case VK_BORDER_COLOR_FLOAT_CUSTOM_EXT:
+		// This bit-casts from float to int in C++ code instead of Reactor code
+		// because Reactor does not guarantee preserving infinity (b/140302841).
+		border.x = Int4(bit_cast<int>(scale * state.customBorder.float32[0]));
+		border.y = Int4(bit_cast<int>(scale * state.customBorder.float32[1]));
+		border.z = Int4(bit_cast<int>(scale * state.customBorder.float32[2]));
+		border.w = Int4(bit_cast<int>(scale * state.customBorder.float32[3]));
+		break;
+	case VK_BORDER_COLOR_INT_CUSTOM_EXT:
+		border.x = Int4(state.customBorder.int32[0]);
+		border.y = Int4(state.customBorder.int32[1]);
+		border.z = Int4(state.customBorder.int32[2]);
+		border.w = Int4(state.customBorder.int32[3]);
 		break;
 	default:
 		UNSUPPORTED("sint/uint/sfloat border: %u", state.border);
 	}
 
 	Vector4f out;
-	out.x = As<Float4>((valid & As<Int4>(c.x)) | (~valid & borderRGB));  // TODO: IfThenElse()
-	out.y = As<Float4>((valid & As<Int4>(c.y)) | (~valid & borderRGB));
-	out.z = As<Float4>((valid & As<Int4>(c.z)) | (~valid & borderRGB));
-	out.w = As<Float4>((valid & As<Int4>(c.w)) | (~valid & borderA));
+	out.x = As<Float4>((valid & As<Int4>(c.x)) | (~valid & border.x));  // TODO: IfThenElse()
+	out.y = As<Float4>((valid & As<Int4>(c.y)) | (~valid & border.y));
+	out.z = As<Float4>((valid & As<Int4>(c.z)) | (~valid & border.z));
+	out.w = As<Float4>((valid & As<Int4>(c.w)) | (~valid & border.w));
 
 	return out;
 }

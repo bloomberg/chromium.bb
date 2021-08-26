@@ -3,6 +3,8 @@
 <translationbundle lang="is">
 <translation id="1175958423215084756">Tengill greindist. <ph name="HOSTNAME" /></translation>
 <translation id="1276998909102132017">Myndir úr galleríi</translation>
+<translation id="1300209025925956156">Skannaðu skjalið</translation>
+<translation id="137991641490787891"><ph name="ASPECT_RATIO_WIDTH" />. Leit + Vinstri ör til að opna.</translation>
 <translation id="1430915738399379752">Prenta</translation>
 <translation id="1467231725790366244"><ph name="CAMERA" /> er ekki í sambandi.</translation>
 <translation id="1473110567575736769">3 sekúndna teljari</translation>
@@ -31,7 +33,6 @@
 <translation id="2549985041256363841">Hefja upptöku</translation>
 <translation id="2599796128805996109">Aftari myndavél</translation>
 <translation id="2879583609344924966"><ph name="CAMERA" /> er í sambandi.</translation>
-<translation id="2912439424121107408">Ítarlegar stillingar eru ekki studdar í þessu tæki</translation>
 <translation id="2968794441791257519">Myndir og myndskeið sem tekin eru með myndavélinni verða flutt í niðurhalsmöppuna. Þú getur fengið aðgang að þeim í „Skrár“.
 
         Forrit sem hafa heimild fyrir aðgangi að geymslu hafa aðgang að myndunum þínum og myndskeiðum.</translation>
@@ -42,15 +43,16 @@
 <translation id="3227137524299004712">Hljóðnemi</translation>
 <translation id="3240426699337459095">Tengill afritaður</translation>
 <translation id="3259149966178251584">Upplausn myndavélar</translation>
+<translation id="3260401663013584785">Skjal greindist ekki</translation>
 <translation id="3448774564454087943">Ekki er hægt að vista myndskeiðið því það er of stutt</translation>
 <translation id="3517926952904427380">Ekki tókst að taka andlitsmynd</translation>
 <translation id="3569311554794739032">Viltu örugglega fjarlægja <ph name="FILE" />?</translation>
-<translation id="3733597664308256288">Viðbótarstýringar tiltækar fyrir myndavél. Leit + ör til hægri til að fá aðgang.</translation>
 <translation id="3810838688059735925">Myndskeið</translation>
 <translation id="3838931309141338733">Skanna strikamerki</translation>
 <translation id="3892148308691398805">Afrita texta</translation>
 <translation id="4000398125663085899">Nýjar myndir og myndskeið verða nú vistuð í möppu í forritinu Files: Skrárnar mínar &gt; Myndavél.</translation>
 <translation id="4118525110028899586">Gera hlé á upptöku</translation>
+<translation id="4121305183798804752">Skjal greindist</translation>
 <translation id="4269820728363426813">Afrita slóð tengils</translation>
 <translation id="4279490309300973883">Speglun</translation>
 <translation id="4329152592498422850">Skipta yfir í töku ferningslaga mynda</translation>
@@ -65,10 +67,13 @@
 <translation id="5057360777601936059">Ekki er hægt að nota myndavélina eins og er.
         Athugaðu hvort myndavélin er rétt tengd.</translation>
 <translation id="5152121255775685072">Opna safn</translation>
+<translation id="520537883758714667">Nú er skjalaskönnun í boði</translation>
 <translation id="5268823927180092501">Virkja skjalastillingu í öllum myndavélum</translation>
 <translation id="5422455049771430511">Myndirnar þínar og myndskeiðin eru komin á nýjan stað</translation>
+<translation id="5444515100983837161">Settu öll horn skjalsins í rammann. Skönnun virkar betur ef skjalið og bakgrunnurinn eru í mismunandi litum.</translation>
 <translation id="5671277269877808209">Ferningur</translation>
 <translation id="5753488212459587150">Nota ítarlegar stillingar</translation>
+<translation id="5759254179196327752">Skanna skjal</translation>
 <translation id="5775960006311140197">Ítarlegar stillingar</translation>
 <translation id="5869546221129391014">Tafla</translation>
 <translation id="5975083100439434680">Minnka aðdrátt</translation>
@@ -82,6 +87,7 @@
 
 Ef ábendingin þín snýr að gæðum mynda eða myndskeiða máttu hengja við sýnishorn af mynd eða myndskeiði og lýsa því sem er að. (Til dæmis: myndin er of dökk eða myndefnið er ekki í fókus.)</translation>
 <translation id="6420689864531458495">(<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" /> - <ph name="WIDTH" />x<ph name="HEIGHT" />) <ph name="MEGAPIXEL" /> megapixlar</translation>
+<translation id="667999046851023355">Skjal</translation>
 <translation id="6681668084120808868">Taka mynd</translation>
 <translation id="6778482348691154169">Ekki tókst að taka mynd</translation>
 <translation id="695140971690006676">Endurstilla allt</translation>
@@ -108,11 +114,13 @@ Ef ábendingin þín snýr að gæðum mynda eða myndskeiða máttu hengja við
 <translation id="8425673304802773841">Halla niður</translation>
 <translation id="8428213095426709021">Stillingar</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" />p (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
+<translation id="8712637175834984815">Ég skil</translation>
 <translation id="8732462232047530626">Forskoða lýsigögn</translation>
 <translation id="8815966864175525708">Skipta yfir í töku andlitsmynda</translation>
 <translation id="8828441885228359828">Halda upptöku áfram</translation>
 <translation id="8870695351537079478">Ekki tókst að hefja upptöku</translation>
 <translation id="8903921497873541725">Auka aðdrátt</translation>
+<translation id="9045010116236796332">Hafðu öll horn skjalsins innan rammans</translation>
 <translation id="9045155556724273246">10 sekúndur</translation>
 <translation id="945522503751344254">Senda ábendingu</translation>
 </translationbundle>

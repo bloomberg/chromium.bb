@@ -13,6 +13,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
+#include "net/cookies/cookie_partition_key.h"
 #include "net/cookies/cookie_util.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 
@@ -41,6 +42,9 @@ void OnCookiesFetchFinished(const net::CookieList& cookies) {
 
   int index = 0;
   for (auto i = cookies.cbegin(); i != cookies.cend(); ++i) {
+    std::string pk;
+    if (!net::CookiePartitionKey::Serialize(i->PartitionKey(), pk))
+      continue;
     ScopedJavaLocalRef<jobject> java_cookie = Java_CookiesFetcher_createCookie(
         env, base::android::ConvertUTF8ToJavaString(env, i->Name()),
         base::android::ConvertUTF8ToJavaString(env, i->Value()),
@@ -50,8 +54,9 @@ void OnCookiesFetchFinished(const net::CookieList& cookies) {
         i->ExpiryDate().ToDeltaSinceWindowsEpoch().InMicroseconds(),
         i->LastAccessDate().ToDeltaSinceWindowsEpoch().InMicroseconds(),
         i->IsSecure(), i->IsHttpOnly(), static_cast<int>(i->SameSite()),
-        i->Priority(), i->IsSameParty(), static_cast<int>(i->SourceScheme()),
-        i->SourcePort());
+        i->Priority(), i->IsSameParty(),
+        base::android::ConvertUTF8ToJavaString(env, pk),
+        static_cast<int>(i->SourceScheme()), i->SourcePort());
     env->SetObjectArrayElement(joa.obj(), index++, java_cookie.obj());
   }
 
@@ -91,6 +96,7 @@ static void JNI_CookiesFetcher_RestoreCookies(
     jint same_site,
     jint priority,
     jboolean same_party,
+    const JavaParamRef<jstring>& partition_key,
     jint source_scheme,
     jint source_port) {
   if (!ProfileManager::GetPrimaryUserProfile()->HasPrimaryOTRProfile())
@@ -98,6 +104,12 @@ static void JNI_CookiesFetcher_RestoreCookies(
 
   std::string domain_str(base::android::ConvertJavaStringToUTF8(env, domain));
   std::string path_str(base::android::ConvertJavaStringToUTF8(env, path));
+
+  absl::optional<net::CookiePartitionKey> pk;
+  if (!net::CookiePartitionKey::Deserialize(
+          base::android::ConvertJavaStringToUTF8(env, partition_key), pk)) {
+    return;
+  }
 
   std::unique_ptr<net::CanonicalCookie> cookie =
       net::CanonicalCookie::FromStorage(
@@ -111,7 +123,7 @@ static void JNI_CookiesFetcher_RestoreCookies(
           base::Time::FromDeltaSinceWindowsEpoch(
               base::TimeDelta::FromMicroseconds(last_access)),
           secure, httponly, static_cast<net::CookieSameSite>(same_site),
-          static_cast<net::CookiePriority>(priority), same_party,
+          static_cast<net::CookiePriority>(priority), same_party, pk,
           static_cast<net::CookieSourceScheme>(source_scheme), source_port);
   if (!cookie)
     return;

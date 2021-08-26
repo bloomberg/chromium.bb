@@ -12,8 +12,9 @@ namespace test {
 std::vector<const Header> ToHeaders(
     absl::Span<const std::pair<absl::string_view, absl::string_view>> headers) {
   std::vector<const Header> out;
-  for (auto [name, value] : headers) {
-    out.push_back(std::make_pair(HeaderRep(name), HeaderRep(value)));
+  for (const auto& header : headers) {
+    out.push_back(
+        std::make_pair(HeaderRep(header.first), HeaderRep(header.second)));
   }
   return out;
 }
@@ -89,24 +90,45 @@ TestFrameSequence& TestFrameSequence::GoAway(Http2StreamId last_good_stream_id,
 TestFrameSequence& TestFrameSequence::Headers(
     Http2StreamId stream_id,
     absl::Span<const std::pair<absl::string_view, absl::string_view>> headers,
-    bool fin) {
-  return Headers(stream_id, ToHeaders(headers), fin);
+    bool fin, bool add_continuation) {
+  return Headers(stream_id, ToHeaders(headers), fin, add_continuation);
 }
 
 TestFrameSequence& TestFrameSequence::Headers(Http2StreamId stream_id,
                                               spdy::Http2HeaderBlock block,
-                                              bool fin) {
-  auto headers =
-      absl::make_unique<spdy::SpdyHeadersIR>(stream_id, std::move(block));
-  headers->set_fin(fin);
-  frames_.push_back(std::move(headers));
+                                              bool fin, bool add_continuation) {
+  if (add_continuation) {
+    // The normal intermediate representations don't allow you to represent a
+    // nonterminal HEADERS frame explicitly, so we'll need to use
+    // SpdyUnknownIRs. For simplicity, and in order not to mess up HPACK state,
+    // the payload will be uncompressed.
+    std::string encoded_block;
+    spdy::HpackEncoder encoder;
+    encoder.DisableCompression();
+    encoder.EncodeHeaderSet(block, &encoded_block);
+    const size_t pos = encoded_block.size() / 2;
+    const uint8_t flags = fin ? 0x1 : 0x0;
+    frames_.push_back(absl::make_unique<spdy::SpdyUnknownIR>(
+        stream_id, static_cast<uint8_t>(spdy::SpdyFrameType::HEADERS), flags,
+        encoded_block.substr(0, pos)));
+
+    auto continuation = absl::make_unique<spdy::SpdyContinuationIR>(stream_id);
+    continuation->set_end_headers(true);
+    continuation->take_encoding(encoded_block.substr(pos));
+    frames_.push_back(std::move(continuation));
+  } else {
+    auto headers =
+        absl::make_unique<spdy::SpdyHeadersIR>(stream_id, std::move(block));
+    headers->set_fin(fin);
+    frames_.push_back(std::move(headers));
+  }
   return *this;
 }
 
 TestFrameSequence& TestFrameSequence::Headers(Http2StreamId stream_id,
                                               absl::Span<const Header> headers,
-                                              bool fin) {
-  return Headers(stream_id, ToHeaderBlock(headers), fin);
+                                              bool fin, bool add_continuation) {
+  return Headers(stream_id, ToHeaderBlock(headers), fin, add_continuation);
 }
 
 TestFrameSequence& TestFrameSequence::WindowUpdate(Http2StreamId stream_id,
@@ -126,17 +148,21 @@ TestFrameSequence& TestFrameSequence::Priority(Http2StreamId stream_id,
 }
 
 TestFrameSequence& TestFrameSequence::Metadata(Http2StreamId stream_id,
-                                               absl::string_view payload) {
-  // Encode the payload using a header block.
-  spdy::SpdyHeaderBlock block;
-  block["example-payload"] = payload;
-  spdy::HpackEncoder encoder;
-  encoder.DisableCompression();
-  std::string encoded_payload;
-  encoder.EncodeHeaderSet(block, &encoded_payload);
-  frames_.push_back(absl::make_unique<spdy::SpdyUnknownIR>(
-      stream_id, kMetadataFrameType, kMetadataEndFlag,
-      std::move(encoded_payload)));
+                                               absl::string_view payload,
+                                               bool multiple_frames) {
+  const std::string encoded_payload = MetadataBlockForPayload(payload);
+  if (multiple_frames) {
+    const size_t pos = encoded_payload.size() / 2;
+    frames_.push_back(absl::make_unique<spdy::SpdyUnknownIR>(
+        stream_id, kMetadataFrameType, 0, encoded_payload.substr(0, pos)));
+    frames_.push_back(absl::make_unique<spdy::SpdyUnknownIR>(
+        stream_id, kMetadataFrameType, kMetadataEndFlag,
+        encoded_payload.substr(pos)));
+  } else {
+    frames_.push_back(absl::make_unique<spdy::SpdyUnknownIR>(
+        stream_id, kMetadataFrameType, kMetadataEndFlag,
+        std::move(encoded_payload)));
+  }
   return *this;
 }
 
@@ -151,6 +177,18 @@ std::string TestFrameSequence::Serialize() {
     absl::StrAppend(&result, absl::string_view(f));
   }
   return result;
+}
+
+std::string TestFrameSequence::MetadataBlockForPayload(
+    absl::string_view payload) {
+  // Encode the payload using a header block.
+  spdy::SpdyHeaderBlock block;
+  block["example-payload"] = payload;
+  spdy::HpackEncoder encoder;
+  encoder.DisableCompression();
+  std::string encoded_payload;
+  encoder.EncodeHeaderSet(block, &encoded_payload);
+  return encoded_payload;
 }
 
 }  // namespace test

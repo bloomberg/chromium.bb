@@ -33,14 +33,14 @@ typedef struct {
   double *value;
 } SPARSE_MTX;
 
-void av1_init_sparse_mtx(const int *rows, const int *cols, const double *values,
-                         int num_elem, int num_rows, int num_cols,
-                         SPARSE_MTX *sm);
-void av1_init_combine_sparse_mtx(const SPARSE_MTX *sm1, const SPARSE_MTX *sm2,
-                                 SPARSE_MTX *sm, int row_offset1,
-                                 int col_offset1, int row_offset2,
-                                 int col_offset2, int new_n_rows,
-                                 int new_n_cols);
+int av1_init_sparse_mtx(const int *rows, const int *cols, const double *values,
+                        int num_elem, int num_rows, int num_cols,
+                        SPARSE_MTX *sm);
+int av1_init_combine_sparse_mtx(const SPARSE_MTX *sm1, const SPARSE_MTX *sm2,
+                                SPARSE_MTX *sm, int row_offset1,
+                                int col_offset1, int row_offset2,
+                                int col_offset2, int new_n_rows,
+                                int new_n_cols);
 void av1_free_sparse_mtx_elems(SPARSE_MTX *sm);
 
 void av1_mtx_vect_multi_right(const SPARSE_MTX *sm, const double *srcv,
@@ -50,13 +50,13 @@ void av1_mtx_vect_multi_left(const SPARSE_MTX *sm, const double *srcv,
 double av1_vect_vect_multi(const double *src1, int src1l, const double *src2);
 void av1_constant_multiply_sparse_matrix(SPARSE_MTX *sm, double c);
 
-void av1_conjugate_gradient_sparse(const SPARSE_MTX *A, const double *b, int bl,
-                                   double *x);
-void av1_bi_conjugate_gradient_sparse(const SPARSE_MTX *A, const double *b,
-                                      int bl, double *x);
-void av1_jacobi_sparse(const SPARSE_MTX *A, const double *b, int bl, double *x);
-void av1_steepest_descent_sparse(const SPARSE_MTX *A, const double *b, int bl,
-                                 double *x);
+int av1_conjugate_gradient_sparse(const SPARSE_MTX *A, const double *b, int bl,
+                                  double *x);
+int av1_bi_conjugate_gradient_sparse(const SPARSE_MTX *A, const double *b,
+                                     int bl, double *x);
+int av1_jacobi_sparse(const SPARSE_MTX *A, const double *b, int bl, double *x);
+int av1_steepest_descent_sparse(const SPARSE_MTX *A, const double *b, int bl,
+                                double *x);
 
 #endif  // CONFIG_OPTICAL_FLOW_API
 

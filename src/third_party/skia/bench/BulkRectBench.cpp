@@ -13,8 +13,9 @@
 #include "include/gpu/GrDirectContext.h"
 #include "include/utils/SkRandom.h"
 #include "src/core/SkCanvasPriv.h"
-#include "src/gpu/GrSurfaceDrawContext.h"
+#include "src/gpu/GrOpsTypes.h"
 #include "src/gpu/SkGr.h"
+#include "src/gpu/v1/SurfaceDrawContext_v1.h"
 
 // Benchmarks that exercise the bulk image and solid color quad APIs, under a variety of patterns:
 enum class ImageMode {
@@ -50,7 +51,7 @@ public:
 
     bool isSuitableFor(Backend backend) override {
         if (kDrawMode == DrawMode::kBatch && kImageMode == ImageMode::kNone) {
-            // Currently the bulk color quad API is only available on GrSurfaceDrawContext
+            // Currently the bulk color quad API is only available on skgpu::v1::SurfaceDrawContext
             return backend == kGPU_Backend;
         } else {
             return this->INHERITED::isSuitableFor(backend);
@@ -133,7 +134,7 @@ protected:
         auto context = canvas->recordingContext();
         SkASSERT(context);
 
-        GrSurfaceDrawContext::QuadSetEntry batch[kRectCount];
+        GrQuadSetEntry batch[kRectCount];
         for (int i = 0; i < kRectCount; ++i) {
             batch[i].fRect = fRects[i];
             batch[i].fColor = fColors[i].premul();
@@ -145,7 +146,7 @@ protected:
         paint.setColor(SK_ColorWHITE);
         paint.setAntiAlias(true);
 
-        GrSurfaceDrawContext* sdc = SkCanvasPriv::TopDeviceSurfaceDrawContext(canvas);
+        auto sdc = SkCanvasPriv::TopDeviceSurfaceDrawContext(canvas);
         SkMatrix view = canvas->getLocalToDeviceAs3x3();
         SkSimpleMatrixProvider matrixProvider(view);
         GrPaint grPaint;

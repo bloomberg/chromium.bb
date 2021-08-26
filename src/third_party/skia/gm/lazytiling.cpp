@@ -13,14 +13,15 @@
 #include "include/core/SkString.h"
 #include "include/gpu/GrDirectContext.h"
 
+#include "src/core/SkCanvasPriv.h"
 #include "src/core/SkConvertPixels.h"
 #include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/GrPaint.h"
 #include "src/gpu/GrProxyProvider.h"
 #include "src/gpu/GrResourceProvider.h"
-#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/SkGr.h"
 #include "src/gpu/effects/GrTextureEffect.h"
+#include "src/gpu/v1/SurfaceDrawContext_v1.h"
 
 #include "tools/gpu/ProxyUtils.h"
 
@@ -138,7 +139,7 @@ static SkBitmap create_bitmap(SkIRect contentRect, SkISize fullSize, GrSurfaceOr
 }
 
 static void draw_texture(const GrCaps* caps,
-                         GrSurfaceDrawContext* sdc,
+                         skgpu::v1::SurfaceDrawContext* sdc,
                          const GrSurfaceProxyView& src,
                          const SkIRect& srcRect,
                          const SkIRect& drawRect,
@@ -198,10 +199,15 @@ protected:
         return DrawResult::kOk;
     }
 
-    void onDraw(GrRecordingContext* rContext, GrSurfaceDrawContext* sdc,
-                SkCanvas* canvas) override {
+    DrawResult onDraw(GrRecordingContext* rContext, SkCanvas* canvas, SkString* errorMsg) override {
         SkSamplingOptions sampling(SkFilterMode::kNearest, SkMipmapMode::kNone);
         SkPaint p;
+
+        auto sdc = SkCanvasPriv::TopDeviceSurfaceDrawContext(canvas);
+        if (!sdc) {
+            *errorMsg = kErrorMsg_DrawSkippedGpuOnly;
+            return DrawResult::kSkip;
+        }
 
         int y = kPad;
         for (auto yMode : { SkTileMode::kClamp, SkTileMode::kRepeat,
@@ -230,6 +236,7 @@ protected:
             y += 2*kContentSize+kPad;
         }
 
+        return DrawResult::kOk;
     }
 
 private:

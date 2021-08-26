@@ -78,6 +78,10 @@ struct DeviceFeatures {
     VkPhysicalDeviceInheritedViewportScissorFeaturesNV inherited_viewport_scissor_features;
     VkPhysicalDeviceProvokingVertexFeaturesEXT provoking_vertex_features;
     VkPhysicalDeviceMultiDrawFeaturesEXT multi_draw_features;
+    VkPhysicalDeviceColorWriteEnableFeaturesEXT color_write_features;
+    VkPhysicalDeviceShaderAtomicFloat2FeaturesEXT shader_atomic_float2_features;
+    VkPhysicalDevicePresentIdFeaturesKHR present_id_features;
+    VkPhysicalDevicePresentWaitFeaturesKHR present_wait_features;
     // If a new feature is added here that involves a SPIR-V capability add also in spirv_validation_generator.py
     // This is known by checking the table in the spec or if the struct is in a <spirvcapability> in vk.xml
 };
@@ -104,36 +108,6 @@ class PHYSICAL_DEVICE_STATE {
     // TODO These are currently used by CoreChecks, but should probably be refactored
     bool vkGetPhysicalDeviceSurfaceCapabilitiesKHR_called = false;
     bool vkGetPhysicalDeviceDisplayPlanePropertiesKHR_called = false;
-};
-
-struct GpuQueue {
-    VkPhysicalDevice gpu;
-    uint32_t queue_family_index;
-};
-
-inline bool operator==(GpuQueue const& lhs, GpuQueue const& rhs) {
-    return (lhs.gpu == rhs.gpu && lhs.queue_family_index == rhs.queue_family_index);
-}
-
-namespace std {
-template <>
-struct hash<GpuQueue> {
-    size_t operator()(GpuQueue gq) const throw() {
-        return hash<uint64_t>()((uint64_t)(gq.gpu)) ^ hash<uint32_t>()(gq.queue_family_index);
-    }
-};
-}  // namespace std
-
-class SWAPCHAIN_NODE;
-
-class SURFACE_STATE : public BASE_NODE {
-  public:
-    SWAPCHAIN_NODE* swapchain = nullptr;
-    layer_data::unordered_map<GpuQueue, bool> gpu_queue_support;
-
-    SURFACE_STATE(VkSurfaceKHR s) : BASE_NODE(s, kVulkanObjectTypeSurfaceKHR) {}
-
-    VkSurfaceKHR surface() const { return handle_.Cast<VkSurfaceKHR>(); }
 };
 
 class DISPLAY_MODE_STATE : public BASE_NODE {

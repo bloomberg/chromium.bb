@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "base/notreached.h"
 #include "components/pdf/browser/pdf_web_contents_helper_client.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -29,13 +30,24 @@ void PDFWebContentsHelper::CreateForWebContentsWithClient(
       base::WrapUnique(new PDFWebContentsHelper(contents, std::move(client))));
 }
 
+// static
+void PDFWebContentsHelper::BindPdfService(
+    mojo::PendingAssociatedReceiver<mojom::PdfService> pdf_service,
+    content::RenderFrameHost* rfh) {
+  auto* web_contents = content::WebContents::FromRenderFrameHost(rfh);
+  if (!web_contents)
+    return;
+  auto* pdf_helper = PDFWebContentsHelper::FromWebContents(web_contents);
+  if (!pdf_helper)
+    return;
+  pdf_helper->pdf_service_receivers_.Bind(rfh, std::move(pdf_service));
+}
+
 PDFWebContentsHelper::PDFWebContentsHelper(
     content::WebContents* web_contents,
     std::unique_ptr<PDFWebContentsHelperClient> client)
     : content::WebContentsObserver(web_contents),
-      pdf_service_receivers_(web_contents,
-                             this,
-                             content::WebContentsFrameReceiverSetPassKey()),
+      pdf_service_receivers_(web_contents, this),
       client_(std::move(client)) {}
 
 PDFWebContentsHelper::~PDFWebContentsHelper() {
@@ -159,11 +171,17 @@ void PDFWebContentsHelper::SelectBetweenCoordinates(const gfx::PointF& base,
                                          ConvertFromRoot(extent));
 }
 
-void PDFWebContentsHelper::OnSelectionEvent(ui::SelectionEventType event) {}
+void PDFWebContentsHelper::OnSelectionEvent(ui::SelectionEventType event) {
+  // Should be handled by `TouchSelectionControllerClientAura`.
+  NOTREACHED();
+}
 
 void PDFWebContentsHelper::OnDragUpdate(
     const ui::TouchSelectionDraggable::Type type,
-    const gfx::PointF& position) {}
+    const gfx::PointF& position) {
+  // Should be handled by `TouchSelectionControllerClientAura`.
+  NOTREACHED();
+}
 
 std::unique_ptr<ui::TouchHandleDrawable>
 PDFWebContentsHelper::CreateDrawable() {
@@ -176,6 +194,10 @@ void PDFWebContentsHelper::OnManagerWillDestroy(
   DCHECK_EQ(touch_selection_controller_client_manager_, manager);
   manager->RemoveObserver(this);
   touch_selection_controller_client_manager_ = nullptr;
+}
+
+const char* PDFWebContentsHelper::GetType() {
+  return "PDFWebContentsHelper";
 }
 
 bool PDFWebContentsHelper::IsCommandIdEnabled(int command_id) const {

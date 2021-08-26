@@ -19,6 +19,7 @@
 #include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "components/sync/base/time.h"
 #include "third_party/blink/public/common/manifest/manifest_util.h"
+#include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
 #include "ui/gfx/color_utils.h"
 
 namespace {
@@ -89,6 +90,10 @@ bool WebApp::IsPolicyInstalledApp() const {
 
 bool WebApp::IsSystemApp() const {
   return sources_[Source::kSystem];
+}
+
+bool WebApp::IsWebAppStoreInstalledApp() const {
+  return sources_[Source::kWebAppStore];
 }
 
 bool WebApp::CanUserUninstallWebApp() const {
@@ -194,8 +199,10 @@ void WebApp::SetIsLocallyInstalled(bool is_locally_installed) {
   is_locally_installed_ = is_locally_installed;
 }
 
-void WebApp::SetIsInSyncInstall(bool is_in_sync_install) {
-  is_in_sync_install_ = is_in_sync_install;
+void WebApp::SetIsFromSyncAndPendingInstallation(
+    bool is_from_sync_and_pending_installation) {
+  is_from_sync_and_pending_installation_ =
+      is_from_sync_and_pending_installation;
 }
 
 void WebApp::SetIsUninstalling(bool is_uninstalling) {
@@ -317,6 +324,10 @@ void WebApp::SetStorageIsolated(bool is_storage_isolated) {
   is_storage_isolated_ = is_storage_isolated;
 }
 
+void WebApp::SetLaunchHandler(absl::optional<LaunchHandler> launch_handler) {
+  launch_handler_ = std::move(launch_handler);
+}
+
 WebApp::ClientData::ClientData() = default;
 
 WebApp::ClientData::~ClientData() = default;
@@ -375,7 +386,7 @@ bool WebApp::operator==(const WebApp& other) const {
         app.user_launch_ordinal_,
         app.chromeos_data_,
         app.is_locally_installed_,
-        app.is_in_sync_install_,
+        app.is_from_sync_and_pending_installation_,
         app.is_uninstalling_,
         app.icon_infos_,
         app.downloaded_icon_sizes_any_,
@@ -402,7 +413,8 @@ bool WebApp::operator==(const WebApp& other) const {
         app.client_data_.system_web_app_data,
         app.file_handler_permission_blocked_,
         app.window_controls_overlay_enabled_,
-        app.is_storage_isolated_
+        app.is_storage_isolated_,
+        app.launch_handler_
         // clang-format on
     );
   };
@@ -503,7 +515,8 @@ base::Value WebApp::AsDebugValue() const {
 
   root.SetBoolKey("is_generated_icon", is_generated_icon_);
 
-  root.SetBoolKey("is_in_sync_install", is_in_sync_install_);
+  root.SetBoolKey("is_from_sync_and_pending_installation",
+                  is_from_sync_and_pending_installation_);
 
   root.SetBoolKey("is_locally_installed", is_locally_installed_);
 
@@ -514,6 +527,18 @@ base::Value WebApp::AsDebugValue() const {
   root.SetStringKey("last_badging_time", ConvertToString(last_badging_time_));
 
   root.SetStringKey("last_launch_time", ConvertToString(last_launch_time_));
+
+  if (launch_handler_) {
+    base::Value& launch_handler_json = *root.SetKey(
+        "launch_handler", base::Value(base::Value::Type::DICTIONARY));
+    launch_handler_json.SetStringKey(
+        "route_to", ConvertToString(launch_handler_->route_to));
+    launch_handler_json.SetStringKey(
+        "navigate_existing_client",
+        ConvertToString(launch_handler_->navigate_existing_client));
+  } else {
+    root.SetKey("launch_handler", base::Value());
+  }
 
   root.SetKey("launch_query_params", ConvertOptional(launch_query_params_));
 

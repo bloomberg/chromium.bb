@@ -120,7 +120,6 @@ copy_to_gen("legacy_css") {
     "textPrompt.css",
     "themeColors.css",
     "toolbar.css",
-    "tooltip.css",
     "treeoutline.css",
     "viewContainers.css",
   ]
@@ -139,6 +138,7 @@ devtools_entrypoint("bundle") {
     "./*",
 
     # TODO(crbug.com/1202788): Remove invalid dependents
+    "../../models/emulation:*",
     "../../models/extensions:*",
     "../../models/persistence:*",
     "../components/data_grid:*",

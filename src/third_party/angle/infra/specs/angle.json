@@ -44,6 +44,44 @@
         "args": [
           "angle_deqp_gles2_tests",
           "--use-angle=vulkan",
+          "--direct-spirv-gen",
+          "-v",
+          "--shard-timeout=500"
+        ],
+        "merge": {
+          "script": "//scripts/angle_deqp_test_merge.py"
+        },
+        "name": "angle_deqp_gles2_vulkan_spirvgen_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "device_os": "R",
+              "device_os_type": "userdebug",
+              "device_type": "flame",
+              "os": "Android",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 4
+        },
+        "test": "angle_deqp_gles2_tests",
+        "test_id_prefix": "ninja://src/tests:angle_deqp_gles2_tests/",
+        "use_isolated_scripts_api": true
+      },
+      {
+        "args": [
+          "angle_deqp_gles2_tests",
+          "--use-angle=vulkan",
           "-v",
           "--shard-timeout=500"
         ],
@@ -81,6 +119,44 @@
         "args": [
           "angle_deqp_gles31_tests",
           "--use-angle=vulkan",
+          "--direct-spirv-gen",
+          "-v",
+          "--shard-timeout=500"
+        ],
+        "merge": {
+          "script": "//scripts/angle_deqp_test_merge.py"
+        },
+        "name": "angle_deqp_gles31_vulkan_spirvgen_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "device_os": "R",
+              "device_os_type": "userdebug",
+              "device_type": "flame",
+              "os": "Android",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 20
+        },
+        "test": "angle_deqp_gles31_tests",
+        "test_id_prefix": "ninja://src/tests:angle_deqp_gles31_tests/",
+        "use_isolated_scripts_api": true
+      },
+      {
+        "args": [
+          "angle_deqp_gles31_tests",
+          "--use-angle=vulkan",
           "-v",
           "--shard-timeout=500"
         ],
@@ -112,6 +188,44 @@
         },
         "test": "angle_deqp_gles31_tests",
         "test_id_prefix": "ninja://src/tests:angle_deqp_gles31_tests/",
+        "use_isolated_scripts_api": true
+      },
+      {
+        "args": [
+          "angle_deqp_gles3_tests",
+          "--use-angle=vulkan",
+          "--direct-spirv-gen",
+          "-v",
+          "--shard-timeout=500"
+        ],
+        "merge": {
+          "script": "//scripts/angle_deqp_test_merge.py"
+        },
+        "name": "angle_deqp_gles3_vulkan_spirvgen_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "device_os": "R",
+              "device_os_type": "userdebug",
+              "device_type": "flame",
+              "os": "Android",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 12
+        },
+        "test": "angle_deqp_gles3_tests",
+        "test_id_prefix": "ninja://src/tests:angle_deqp_gles3_tests/",
         "use_isolated_scripts_api": true
       },
       {
@@ -191,6 +305,44 @@
         "args": [
           "angle_deqp_khr_gles31_tests",
           "--use-angle=vulkan",
+          "--direct-spirv-gen",
+          "-v",
+          "--shard-timeout=500"
+        ],
+        "merge": {
+          "script": "//scripts/angle_deqp_test_merge.py"
+        },
+        "name": "angle_deqp_khr_gles31_vulkan_spirvgen_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "device_os": "R",
+              "device_os_type": "userdebug",
+              "device_type": "flame",
+              "os": "Android",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
+        },
+        "test": "angle_deqp_khr_gles31_tests",
+        "test_id_prefix": "ninja://src/tests:angle_deqp_khr_gles31_tests/",
+        "use_isolated_scripts_api": true
+      },
+      {
+        "args": [
+          "angle_deqp_khr_gles31_tests",
+          "--use-angle=vulkan",
           "-v",
           "--shard-timeout=500"
         ],
@@ -228,6 +380,43 @@
         "args": [
           "angle_deqp_khr_gles32_tests",
           "--use-angle=vulkan",
+          "--direct-spirv-gen",
+          "-v",
+          "--shard-timeout=500"
+        ],
+        "merge": {
+          "script": "//scripts/angle_deqp_test_merge.py"
+        },
+        "name": "angle_deqp_khr_gles32_vulkan_spirvgen_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "device_os": "R",
+              "device_os_type": "userdebug",
+              "device_type": "flame",
+              "os": "Android",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "angle_deqp_khr_gles32_tests",
+        "test_id_prefix": "ninja://src/tests:angle_deqp_khr_gles32_tests/",
+        "use_isolated_scripts_api": true
+      },
+      {
+        "args": [
+          "angle_deqp_khr_gles32_tests",
+          "--use-angle=vulkan",
           "-v",
           "--shard-timeout=500"
         ],
@@ -258,6 +447,44 @@
         },
         "test": "angle_deqp_khr_gles32_tests",
         "test_id_prefix": "ninja://src/tests:angle_deqp_khr_gles32_tests/",
+        "use_isolated_scripts_api": true
+      },
+      {
+        "args": [
+          "angle_deqp_khr_gles3_tests",
+          "--use-angle=vulkan",
+          "--direct-spirv-gen",
+          "-v",
+          "--shard-timeout=500"
+        ],
+        "merge": {
+          "script": "//scripts/angle_deqp_test_merge.py"
+        },
+        "name": "angle_deqp_khr_gles3_vulkan_spirvgen_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "device_os": "R",
+              "device_os_type": "userdebug",
+              "device_type": "flame",
+              "os": "Android",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
+        },
+        "test": "angle_deqp_khr_gles3_tests",
+        "test_id_prefix": "ninja://src/tests:angle_deqp_khr_gles3_tests/",
         "use_isolated_scripts_api": true
       },
       {
@@ -372,21 +599,15 @@
     "isolated_scripts": [
       {
         "args": [
-          "angle_perftests",
-          "--non-telemetry=true",
-          "--gtest-benchmark-name=angle_perftests",
-          "-v",
-          "--one-frame-only",
-          "--test-timeout=100",
-          "--gtest_filter=-TracePerfTest.*",
-          "--test-launcher-batch-limit=1"
+          "--log=debug",
+          "--smoke-test-mode"
         ],
         "isolate_name": "angle_perftests",
         "merge": {
           "args": [
             "--smoke-test-mode"
           ],
-          "script": "//tools/perf/process_perf_results.py"
+          "script": "//scripts/process_angle_perf_results.py"
         },
         "name": "angle_perftests",
         "swarming": {
@@ -409,7 +630,7 @@
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 6
+          "shards": 20
         },
         "test_id_prefix": "ninja://src/tests:angle_perftests/"
       },
@@ -461,16 +682,11 @@
     "isolated_scripts": [
       {
         "args": [
-          "angle_perftests",
-          "--non-telemetry=true",
-          "--gtest-benchmark-name=angle_perftests",
-          "-v",
-          "--test-timeout=100",
-          "--test-launcher-batch-limit=1"
+          "--log=debug"
         ],
         "isolate_name": "angle_perftests",
         "merge": {
-          "script": "//tools/perf/process_perf_results.py"
+          "script": "//scripts/process_angle_perf_results.py"
         },
         "name": "angle_perftests",
         "swarming": {
@@ -493,7 +709,7 @@
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 12
+          "shards": 20
         },
         "test_id_prefix": "ninja://src/tests:angle_perftests/"
       }
@@ -610,24 +826,15 @@
     "isolated_scripts": [
       {
         "args": [
-          "angle_perftests",
-          "--non-telemetry=true",
-          "--gtest-benchmark-name=angle_perftests",
-          "-v",
-          "--one-frame-only",
-          "--test-timeout=100",
-          "--gtest_filter=-TracePerfTest.*",
-          "--batch-size=1",
-          "--bot-mode",
-          "--max-processes=1",
-          "--print-test-stdout"
+          "--log=debug",
+          "--smoke-test-mode"
         ],
         "isolate_name": "angle_perftests",
         "merge": {
           "args": [
             "--smoke-test-mode"
           ],
-          "script": "//tools/perf/process_perf_results.py"
+          "script": "//scripts/process_angle_perf_results.py"
         },
         "name": "angle_perftests",
         "swarming": {
@@ -683,19 +890,11 @@
     "isolated_scripts": [
       {
         "args": [
-          "angle_perftests",
-          "--non-telemetry=true",
-          "--gtest-benchmark-name=angle_perftests",
-          "-v",
-          "--test-timeout=100",
-          "--batch-size=1",
-          "--bot-mode",
-          "--max-processes=1",
-          "--print-test-stdout"
+          "--log=debug"
         ],
         "isolate_name": "angle_perftests",
         "merge": {
-          "script": "//tools/perf/process_perf_results.py"
+          "script": "//scripts/process_angle_perf_results.py"
         },
         "name": "angle_perftests",
         "swarming": {
@@ -781,6 +980,33 @@
           "script": "//scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles2_gl_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "angle_deqp_gles2_tests",
+        "test_id_prefix": "ninja://src/tests:angle_deqp_gles2_tests/",
+        "use_isolated_scripts_api": true
+      },
+      {
+        "args": [
+          "angle_deqp_gles2_tests",
+          "--use-angle=vulkan",
+          "--direct-spirv-gen",
+          "--bot-mode"
+        ],
+        "merge": {
+          "script": "//scripts/angle_deqp_test_merge.py"
+        },
+        "name": "angle_deqp_gles2_vulkan_spirvgen_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "containment_type": "AUTO",
@@ -911,6 +1137,34 @@
           "script": "//scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles31_gl_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
+        },
+        "test": "angle_deqp_gles31_tests",
+        "test_id_prefix": "ninja://src/tests:angle_deqp_gles31_tests/",
+        "use_isolated_scripts_api": true
+      },
+      {
+        "args": [
+          "angle_deqp_gles31_tests",
+          "--use-angle=vulkan",
+          "--direct-spirv-gen",
+          "--bot-mode"
+        ],
+        "merge": {
+          "script": "//scripts/angle_deqp_test_merge.py"
+        },
+        "name": "angle_deqp_gles31_vulkan_spirvgen_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "containment_type": "AUTO",
@@ -1067,6 +1321,34 @@
         "args": [
           "angle_deqp_gles3_tests",
           "--use-angle=vulkan",
+          "--direct-spirv-gen",
+          "--bot-mode"
+        ],
+        "merge": {
+          "script": "//scripts/angle_deqp_test_merge.py"
+        },
+        "name": "angle_deqp_gles3_vulkan_spirvgen_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 4
+        },
+        "test": "angle_deqp_gles3_tests",
+        "test_id_prefix": "ninja://src/tests:angle_deqp_gles3_tests/",
+        "use_isolated_scripts_api": true
+      },
+      {
+        "args": [
+          "angle_deqp_gles3_tests",
+          "--use-angle=vulkan",
           "--bot-mode"
         ],
         "merge": {
@@ -1120,6 +1402,33 @@
         "args": [
           "angle_deqp_khr_gles31_tests",
           "--use-angle=vulkan",
+          "--direct-spirv-gen",
+          "--bot-mode"
+        ],
+        "merge": {
+          "script": "//scripts/angle_deqp_test_merge.py"
+        },
+        "name": "angle_deqp_khr_gles31_vulkan_spirvgen_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "angle_deqp_khr_gles31_tests",
+        "test_id_prefix": "ninja://src/tests:angle_deqp_khr_gles31_tests/",
+        "use_isolated_scripts_api": true
+      },
+      {
+        "args": [
+          "angle_deqp_khr_gles31_tests",
+          "--use-angle=vulkan",
           "--bot-mode"
         ],
         "merge": {
@@ -1146,6 +1455,33 @@
         "args": [
           "angle_deqp_khr_gles32_tests",
           "--use-angle=vulkan",
+          "--direct-spirv-gen",
+          "--bot-mode"
+        ],
+        "merge": {
+          "script": "//scripts/angle_deqp_test_merge.py"
+        },
+        "name": "angle_deqp_khr_gles32_vulkan_spirvgen_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "angle_deqp_khr_gles32_tests",
+        "test_id_prefix": "ninja://src/tests:angle_deqp_khr_gles32_tests/",
+        "use_isolated_scripts_api": true
+      },
+      {
+        "args": [
+          "angle_deqp_khr_gles32_tests",
+          "--use-angle=vulkan",
           "--bot-mode"
         ],
         "merge": {
@@ -1166,6 +1502,33 @@
         },
         "test": "angle_deqp_khr_gles32_tests",
         "test_id_prefix": "ninja://src/tests:angle_deqp_khr_gles32_tests/",
+        "use_isolated_scripts_api": true
+      },
+      {
+        "args": [
+          "angle_deqp_khr_gles3_tests",
+          "--use-angle=vulkan",
+          "--direct-spirv-gen",
+          "--bot-mode"
+        ],
+        "merge": {
+          "script": "//scripts/angle_deqp_test_merge.py"
+        },
+        "name": "angle_deqp_khr_gles3_vulkan_spirvgen_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "angle_deqp_khr_gles3_tests",
+        "test_id_prefix": "ninja://src/tests:angle_deqp_khr_gles3_tests/",
         "use_isolated_scripts_api": true
       },
       {
@@ -1275,24 +1638,15 @@
     "isolated_scripts": [
       {
         "args": [
-          "angle_perftests",
-          "--non-telemetry=true",
-          "--gtest-benchmark-name=angle_perftests",
-          "-v",
-          "--one-frame-only",
-          "--test-timeout=100",
-          "--gtest_filter=-TracePerfTest.*",
-          "--batch-size=1",
-          "--bot-mode",
-          "--max-processes=1",
-          "--print-test-stdout"
+          "--log=debug",
+          "--smoke-test-mode"
         ],
         "isolate_name": "angle_perftests",
         "merge": {
           "args": [
             "--smoke-test-mode"
           ],
-          "script": "//tools/perf/process_perf_results.py"
+          "script": "//scripts/process_angle_perf_results.py"
         },
         "name": "angle_perftests",
         "swarming": {
@@ -1347,19 +1701,11 @@
     "isolated_scripts": [
       {
         "args": [
-          "angle_perftests",
-          "--non-telemetry=true",
-          "--gtest-benchmark-name=angle_perftests",
-          "-v",
-          "--test-timeout=100",
-          "--batch-size=1",
-          "--bot-mode",
-          "--max-processes=1",
-          "--print-test-stdout"
+          "--log=debug"
         ],
         "isolate_name": "angle_perftests",
         "merge": {
-          "script": "//tools/perf/process_perf_results.py"
+          "script": "//scripts/process_angle_perf_results.py"
         },
         "name": "angle_perftests",
         "swarming": {
@@ -1401,7 +1747,7 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.6|Mac-11.4",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -1430,7 +1776,7 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.6|Mac-11.4",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -1459,7 +1805,7 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.6|Mac-11.4",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -1488,7 +1834,7 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.6|Mac-11.4",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -1517,7 +1863,7 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.6|Mac-11.4",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -1548,7 +1894,7 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.6|Mac-11.4",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -1578,7 +1924,7 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.6|Mac-11.4",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -1606,7 +1952,7 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.14.6|Mac-11.4",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -2038,24 +2384,15 @@
     "isolated_scripts": [
       {
         "args": [
-          "angle_perftests",
-          "--non-telemetry=true",
-          "--gtest-benchmark-name=angle_perftests",
-          "-v",
-          "--one-frame-only",
-          "--test-timeout=100",
-          "--gtest_filter=-TracePerfTest.*",
-          "--batch-size=1",
-          "--bot-mode",
-          "--max-processes=1",
-          "--print-test-stdout"
+          "--log=debug",
+          "--smoke-test-mode"
         ],
         "isolate_name": "angle_perftests",
         "merge": {
           "args": [
             "--smoke-test-mode"
           ],
-          "script": "//tools/perf/process_perf_results.py"
+          "script": "//scripts/process_angle_perf_results.py"
         },
         "name": "angle_perftests",
         "swarming": {
@@ -2111,19 +2448,11 @@
     "isolated_scripts": [
       {
         "args": [
-          "angle_perftests",
-          "--non-telemetry=true",
-          "--gtest-benchmark-name=angle_perftests",
-          "-v",
-          "--test-timeout=100",
-          "--batch-size=1",
-          "--bot-mode",
-          "--max-processes=1",
-          "--print-test-stdout"
+          "--log=debug"
         ],
         "isolate_name": "angle_perftests",
         "merge": {
-          "script": "//tools/perf/process_perf_results.py"
+          "script": "//scripts/process_angle_perf_results.py"
         },
         "name": "angle_perftests",
         "swarming": {
@@ -2281,6 +2610,33 @@
         "args": [
           "angle_deqp_gles2_tests",
           "--use-angle=vulkan",
+          "--direct-spirv-gen",
+          "--bot-mode"
+        ],
+        "merge": {
+          "script": "//scripts/angle_deqp_test_merge.py"
+        },
+        "name": "angle_deqp_gles2_vulkan_spirvgen_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-27.21.14.5148",
+              "os": "Windows-10-18363",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "angle_deqp_gles2_tests",
+        "test_id_prefix": "ninja://src/tests:angle_deqp_gles2_tests/",
+        "use_isolated_scripts_api": true
+      },
+      {
+        "args": [
+          "angle_deqp_gles2_tests",
+          "--use-angle=vulkan",
           "--bot-mode"
         ],
         "merge": {
@@ -2418,6 +2774,34 @@
           "script": "//scripts/angle_deqp_test_merge.py"
         },
         "name": "angle_deqp_gles31_gl_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-27.21.14.5148",
+              "os": "Windows-10-18363",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
+        },
+        "test": "angle_deqp_gles31_tests",
+        "test_id_prefix": "ninja://src/tests:angle_deqp_gles31_tests/",
+        "use_isolated_scripts_api": true
+      },
+      {
+        "args": [
+          "angle_deqp_gles31_tests",
+          "--use-angle=vulkan",
+          "--direct-spirv-gen",
+          "--bot-mode"
+        ],
+        "merge": {
+          "script": "//scripts/angle_deqp_test_merge.py"
+        },
+        "name": "angle_deqp_gles31_vulkan_spirvgen_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "containment_type": "AUTO",
@@ -2601,6 +2985,34 @@
         "args": [
           "angle_deqp_gles3_tests",
           "--use-angle=vulkan",
+          "--direct-spirv-gen",
+          "--bot-mode"
+        ],
+        "merge": {
+          "script": "//scripts/angle_deqp_test_merge.py"
+        },
+        "name": "angle_deqp_gles3_vulkan_spirvgen_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-27.21.14.5148",
+              "os": "Windows-10-18363",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 4
+        },
+        "test": "angle_deqp_gles3_tests",
+        "test_id_prefix": "ninja://src/tests:angle_deqp_gles3_tests/",
+        "use_isolated_scripts_api": true
+      },
+      {
+        "args": [
+          "angle_deqp_gles3_tests",
+          "--use-angle=vulkan",
           "--bot-mode"
         ],
         "merge": {
@@ -2654,6 +3066,33 @@
         "args": [
           "angle_deqp_khr_gles31_tests",
           "--use-angle=vulkan",
+          "--direct-spirv-gen",
+          "--bot-mode"
+        ],
+        "merge": {
+          "script": "//scripts/angle_deqp_test_merge.py"
+        },
+        "name": "angle_deqp_khr_gles31_vulkan_spirvgen_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-27.21.14.5148",
+              "os": "Windows-10-18363",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "angle_deqp_khr_gles31_tests",
+        "test_id_prefix": "ninja://src/tests:angle_deqp_khr_gles31_tests/",
+        "use_isolated_scripts_api": true
+      },
+      {
+        "args": [
+          "angle_deqp_khr_gles31_tests",
+          "--use-angle=vulkan",
           "--bot-mode"
         ],
         "merge": {
@@ -2680,6 +3119,33 @@
         "args": [
           "angle_deqp_khr_gles32_tests",
           "--use-angle=vulkan",
+          "--direct-spirv-gen",
+          "--bot-mode"
+        ],
+        "merge": {
+          "script": "//scripts/angle_deqp_test_merge.py"
+        },
+        "name": "angle_deqp_khr_gles32_vulkan_spirvgen_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-27.21.14.5148",
+              "os": "Windows-10-18363",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "angle_deqp_khr_gles32_tests",
+        "test_id_prefix": "ninja://src/tests:angle_deqp_khr_gles32_tests/",
+        "use_isolated_scripts_api": true
+      },
+      {
+        "args": [
+          "angle_deqp_khr_gles32_tests",
+          "--use-angle=vulkan",
           "--bot-mode"
         ],
         "merge": {
@@ -2700,6 +3166,33 @@
         },
         "test": "angle_deqp_khr_gles32_tests",
         "test_id_prefix": "ninja://src/tests:angle_deqp_khr_gles32_tests/",
+        "use_isolated_scripts_api": true
+      },
+      {
+        "args": [
+          "angle_deqp_khr_gles3_tests",
+          "--use-angle=vulkan",
+          "--direct-spirv-gen",
+          "--bot-mode"
+        ],
+        "merge": {
+          "script": "//scripts/angle_deqp_test_merge.py"
+        },
+        "name": "angle_deqp_khr_gles3_vulkan_spirvgen_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-27.21.14.5148",
+              "os": "Windows-10-18363",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "angle_deqp_khr_gles3_tests",
+        "test_id_prefix": "ninja://src/tests:angle_deqp_khr_gles3_tests/",
         "use_isolated_scripts_api": true
       },
       {
@@ -2834,24 +3327,15 @@
     "isolated_scripts": [
       {
         "args": [
-          "angle_perftests",
-          "--non-telemetry=true",
-          "--gtest-benchmark-name=angle_perftests",
-          "-v",
-          "--one-frame-only",
-          "--test-timeout=100",
-          "--gtest_filter=-TracePerfTest.*",
-          "--batch-size=1",
-          "--bot-mode",
-          "--max-processes=1",
-          "--print-test-stdout"
+          "--log=debug",
+          "--smoke-test-mode"
         ],
         "isolate_name": "angle_perftests",
         "merge": {
           "args": [
             "--smoke-test-mode"
           ],
-          "script": "//tools/perf/process_perf_results.py"
+          "script": "//scripts/process_angle_perf_results.py"
         },
         "name": "angle_perftests",
         "swarming": {
@@ -2906,19 +3390,11 @@
     "isolated_scripts": [
       {
         "args": [
-          "angle_perftests",
-          "--non-telemetry=true",
-          "--gtest-benchmark-name=angle_perftests",
-          "-v",
-          "--test-timeout=100",
-          "--batch-size=1",
-          "--bot-mode",
-          "--max-processes=1",
-          "--print-test-stdout"
+          "--log=debug"
         ],
         "isolate_name": "angle_perftests",
         "merge": {
-          "script": "//tools/perf/process_perf_results.py"
+          "script": "//scripts/process_angle_perf_results.py"
         },
         "name": "angle_perftests",
         "swarming": {

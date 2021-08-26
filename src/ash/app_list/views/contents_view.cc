@@ -26,8 +26,8 @@
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "base/bind.h"
 #include "base/check_op.h"
+#include "base/cxx17_backports.h"
 #include "base/notreached.h"
-#include "base/numerics/ranges.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -61,6 +61,14 @@ constexpr int kSearchBarMinWidth = 440;
 constexpr float kSearchBoxOpacityStartProgress = 0.11f;
 constexpr float kSearchBoxOpacityEndProgress = 1.0f;
 
+// Duration for page transition.
+constexpr base::TimeDelta kPageTransitionDuration =
+    base::TimeDelta::FromMilliseconds(250);
+
+// Duration for overscroll page transition.
+constexpr base::TimeDelta kOverscrollPageTransitionDuration =
+    base::TimeDelta::FromMilliseconds(50);
+
 // Calculates opacity value for the current app list progress.
 // |progress| - The target app list view progress - a value in [0.0, 2.0]
 //              interval that describes the app list view position relative to
@@ -70,7 +78,7 @@ constexpr float kSearchBoxOpacityEndProgress = 1.0f;
 float GetOpacityForProgress(float progress,
                             float transition_start,
                             float transition_end) {
-  return base::ClampToRange(
+  return base::clamp(
       (progress - transition_start) / (transition_end - transition_start), 0.0f,
       1.0f);
 }
@@ -79,9 +87,8 @@ float GetOpacityForProgress(float progress,
 
 ContentsView::ContentsView(AppListView* app_list_view)
     : app_list_view_(app_list_view) {
-  pagination_model_.SetTransitionDurations(
-      GetAppListConfig().page_transition_duration(),
-      GetAppListConfig().overscroll_page_transition_duration());
+  pagination_model_.SetTransitionDurations(kPageTransitionDuration,
+                                           kOverscrollPageTransitionDuration);
   pagination_model_.AddObserver(this);
 }
 
@@ -169,11 +176,11 @@ void ContentsView::ResetForShow() {
 }
 
 void ContentsView::CancelDrag() {
-  if (apps_container_view_->apps_grid_view()->has_dragged_view())
+  if (apps_container_view_->apps_grid_view()->has_dragged_item())
     apps_container_view_->apps_grid_view()->EndDrag(true);
   if (apps_container_view_->app_list_folder_view()
           ->items_grid_view()
-          ->has_dragged_view()) {
+          ->has_dragged_item()) {
     apps_container_view_->app_list_folder_view()->items_grid_view()->EndDrag(
         true);
   }
@@ -199,7 +206,7 @@ void ContentsView::OnTabletModeChanged(bool started) {
   apps_container_view_->OnTabletModeChanged(started);
 
   UpdateExpandArrowOpacity(GetActiveState(), target_view_state(),
-                           GetAppListConfig().page_transition_duration());
+                           kPageTransitionDuration);
 }
 
 void ContentsView::SetActiveState(AppListState state) {
@@ -265,9 +272,9 @@ gfx::Size ContentsView::AdjustSearchBoxSizeToFitMargins(
   const int padded_width =
       GetContentsBounds().width() -
       2 * GetAppListConfig().GetIdealHorizontalMargin(GetContentsBounds());
-  return gfx::Size(base::ClampToRange(padded_width, kSearchBarMinWidth,
-                                      preferred_size.width()),
-                   preferred_size.height());
+  return gfx::Size(
+      base::clamp(padded_width, kSearchBarMinWidth, preferred_size.width()),
+      preferred_size.height());
 }
 
 void ContentsView::SetActiveStateInternal(int page_index, bool animate) {
@@ -294,10 +301,9 @@ void ContentsView::SetActiveStateInternal(int page_index, bool animate) {
   }
   pagination_model_.SelectPage(page_index, should_animate);
   ActivePageChanged();
-  UpdateExpandArrowOpacity(GetActiveState(), target_view_state(),
-                           should_animate
-                               ? GetAppListConfig().page_transition_duration()
-                               : base::TimeDelta());
+  UpdateExpandArrowOpacity(
+      GetActiveState(), target_view_state(),
+      should_animate ? kPageTransitionDuration : base::TimeDelta());
 
   if (!should_animate)
     Layout();

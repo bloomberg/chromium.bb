@@ -90,6 +90,7 @@ js_type_check("closure_compile") {
     #":prefs_test_cases",
     #":prefs_tests",
     ":privacy_page_test",
+    ":privacy_review_page_test",
     ":privacy_sandbox_test",
 
     #":protocol_handlers_tests",
@@ -98,11 +99,10 @@ js_type_check("closure_compile") {
     #":reset_page_test",
     #":reset_profile_banner_test",
     #":route_tests",
-    ":safety_check_chrome_cleaner_test",
     ":safety_check_page_test",
 
     #":search_engines_page_test",
-    ":search_page_test",
+    #":search_page_test",
 
     #":search_settings_test",
     #":secure_dns_interactive_test",
@@ -123,7 +123,7 @@ js_type_check("closure_compile") {
     #":settings_textarea_tests",
     #":settings_toggle_button_tests",
 
-    ":settings_ui_tests",
+    #":settings_ui_tests",
 
     #":site_data_details_subpage_tests",
     #":site_data_test",
@@ -144,7 +144,7 @@ js_type_check("closure_compile") {
     ":test_about_page_browser_proxy",
 
     #":test_android_info_browser_proxy",
-    ":test_clear_browsing_data_browser_proxy",
+    #":test_clear_browsing_data_browser_proxy",
 
     #":test_extension_control_browser_proxy",
     ":test_hats_browser_proxy",
@@ -157,13 +157,17 @@ js_type_check("closure_compile") {
 
     #":test_profile_info_browser_proxy",
     #":test_reset_browser_proxy",
-    ":test_search_engines_browser_proxy",
+    #":test_search_engines_browser_proxy",
     ":test_site_settings_prefs_browser_proxy",
     ":test_sync_browser_proxy",
     ":test_util",
 
     #":zoom_levels_tests",
   ]
+
+  if (is_win) {
+    deps += [ ":safety_check_chrome_cleaner_test" ]
+  }
 
   if (!is_chromeos_ash) {
     deps += [
@@ -233,7 +237,7 @@ js_library("fake_language_settings_private") {
   deps = [
     "..:chai_assert",
     "..:fake_chrome_event.m",
-    "..:test_browser_proxy.m",
+    "..:test_browser_proxy",
     "//ui/webui/resources/js:cr.m",
   ]
 }
@@ -274,9 +278,9 @@ js_library("passwords_and_autofill_fake_data") {
     "$externs_path/passwords_private.js",
   ]
 }
+
 js_library("privacy_page_test") {
   deps = [
-    ":test_clear_browsing_data_browser_proxy",
     ":test_hats_browser_proxy",
     ":test_metrics_browser_proxy",
     ":test_privacy_page_browser_proxy",
@@ -288,6 +292,16 @@ js_library("privacy_page_test") {
     "//chrome/browser/resources/settings:settings",
     "//ui/webui/resources/js:cr.m",
     "//ui/webui/resources/js:load_time_data.m",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
+}
+
+js_library("privacy_review_page_test") {
+  deps = [
+    "..:chai_assert",
+    "..:test_util.m",
+    "//chrome/browser/resources/settings:lazy_load",
+    "//chrome/browser/resources/settings:settings",
   ]
   externs_list = [ "$externs_path/mocha-2.5.js" ]
 }
@@ -322,7 +336,7 @@ js_library("safety_check_chrome_cleaner_test") {
   deps = [
     ":test_metrics_browser_proxy",
     "..:chai_assert",
-    "..:test_browser_proxy.m",
+    "..:test_browser_proxy",
     "//chrome/browser/resources/settings:lazy_load",
     "//chrome/browser/resources/settings:settings",
   ]
@@ -337,7 +351,7 @@ js_library("safety_check_page_test") {
     ":test_open_window_proxy",
     ":test_password_manager_proxy",
     "..:chai_assert",
-    "..:test_browser_proxy.m",
+    "..:test_browser_proxy",
     "//chrome/browser/resources/settings:settings",
     "//ui/webui/resources/js:load_time_data.m",
   ]
@@ -346,14 +360,14 @@ js_library("safety_check_page_test") {
 
 js_library("test_metrics_browser_proxy") {
   deps = [
-    "..:test_browser_proxy.m",
+    "..:test_browser_proxy",
     "//chrome/browser/resources/settings:settings",
   ]
 }
 
 js_library("test_open_window_proxy") {
   deps = [
-    "..:test_browser_proxy.m",
+    "..:test_browser_proxy",
     "//chrome/browser/resources/settings:settings",
   ]
 }
@@ -362,7 +376,7 @@ js_library("test_password_manager_proxy") {
   deps = [
     ":passwords_and_autofill_fake_data",
     "..:chai_assert",
-    "..:test_browser_proxy.m",
+    "..:test_browser_proxy",
     "//chrome/browser/resources/settings:settings",
   ]
 }
@@ -370,7 +384,7 @@ js_library("test_password_manager_proxy") {
 js_library("test_privacy_page_browser_proxy") {
   deps = [
     "..:chai_assert",
-    "..:test_browser_proxy.m",
+    "..:test_browser_proxy",
     "//chrome/browser/resources/settings:settings",
   ]
 }
@@ -459,23 +473,15 @@ js_library("site_settings_page_test") {
 
 js_library("test_about_page_browser_proxy") {
   deps = [
-    "..:test_browser_proxy.m",
+    "..:test_browser_proxy",
     "//chrome/browser/resources/settings:settings",
-    "//ui/webui/resources/js:cr.m",
-  ]
-}
-
-js_library("test_clear_browsing_data_browser_proxy") {
-  deps = [
-    "..:test_browser_proxy.m",
-    "//chrome/browser/resources/settings:lazy_load",
     "//ui/webui/resources/js:cr.m",
   ]
 }
 
 js_library("test_hats_browser_proxy") {
   deps = [
-    "..:test_browser_proxy.m",
+    "..:test_browser_proxy",
     "//chrome/browser/resources/settings:settings",
   ]
 }
@@ -484,7 +490,7 @@ js_library("test_languages_browser_proxy") {
   deps = [
     ":fake_input_method_private",
     ":fake_language_settings_private",
-    "..:test_browser_proxy.m",
+    "..:test_browser_proxy",
     "//chrome/browser/resources/settings:lazy_load",
     "//ui/webui/resources/js:cr.m",
   ]
@@ -492,21 +498,21 @@ js_library("test_languages_browser_proxy") {
 
 js_library("test_lifetime_browser_proxy") {
   deps = [
-    "..:test_browser_proxy.m",
+    "..:test_browser_proxy",
     "//chrome/browser/resources/settings:settings",
   ]
 }
 
 js_library("test_local_data_browser_proxy") {
   deps = [
-    "..:test_browser_proxy.m",
+    "..:test_browser_proxy",
     "//chrome/browser/resources/settings:lazy_load",
   ]
 }
 
 js_library("test_search_engines_browser_proxy") {
   deps = [
-    "..:test_browser_proxy.m",
+    "..:test_browser_proxy",
     "//chrome/browser/resources/settings:settings",
   ]
 }
@@ -514,14 +520,14 @@ js_library("test_search_engines_browser_proxy") {
 js_library("test_site_settings_prefs_browser_proxy") {
   deps = [
     ":test_util",
-    "..:test_browser_proxy.m",
+    "..:test_browser_proxy",
     "//chrome/browser/resources/settings:lazy_load",
   ]
 }
 
 js_library("test_sync_browser_proxy") {
   deps = [
-    "..:test_browser_proxy.m",
+    "..:test_browser_proxy",
     "//chrome/browser/resources/settings:settings",
   ]
 }

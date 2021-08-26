@@ -4,8 +4,10 @@
 
 #include "chrome/browser/enterprise/connectors/file_system/signin_confirmation_modal.h"
 
+#include "chrome/browser/enterprise/connectors/file_system/signin_experience.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/vector_icons/vector_icons.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/models/image_model.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -26,25 +28,29 @@ namespace enterprise_connectors {
 
 // static
 void FileSystemConfirmationModal::Show(gfx::NativeWindow context,
-                                       std::u16string title,
-                                       std::u16string message,
-                                       std::u16string cancel_button,
-                                       std::u16string accept_button,
-                                       Callback callback) {
+                                       const std::u16string& title,
+                                       const std::u16string& message,
+                                       const std::u16string& cancel_button,
+                                       const std::u16string& accept_button,
+                                       Callback callback,
+                                       SigninExperienceTestObserver* observer) {
+  auto* confirmation_modal = new FileSystemConfirmationModal(
+      title, message, cancel_button, accept_button, std::move(callback));
   auto* modal_view = constrained_window::CreateBrowserModalDialogViews(
-      new FileSystemConfirmationModal(title, message, cancel_button,
-                                      accept_button, std::move(callback)),
-      context);
+      confirmation_modal, context);
+
+  if (observer)
+    observer->OnConfirmationDialogCreated(confirmation_modal);
   // The naked new is OK here because CreateBrowserModalDialogViews() takes
   // ownership.
   modal_view->Show();
 }
 
 FileSystemConfirmationModal::FileSystemConfirmationModal(
-    std::u16string title,
-    std::u16string message,
-    std::u16string cancel_button,
-    std::u16string accept_button,
+    const std::u16string& title,
+    const std::u16string& message,
+    const std::u16string& cancel_button,
+    const std::u16string& accept_button,
     Callback callback)
     : title_(title), message_(message), callback_(std::move(callback)) {
   SetShowIcon(true);
@@ -60,6 +66,17 @@ FileSystemConfirmationModal::FileSystemConfirmationModal(
   SetAcceptCallback(base::BindOnce(&FileSystemConfirmationModal::OnConfirmation,
                                    weak_factory_.GetWeakPtr()));
   SetButtonLabel(ui::DialogButton::DIALOG_BUTTON_OK, accept_button);
+  // Set the message to be shown.
+  std::unique_ptr<views::Label> view = std::make_unique<views::Label>(message_);
+  view->SetBorder(
+      views::CreateEmptyBorder(kMessageMarginHorizontal, kMessageMarginLeft,
+                               kMessageMarginHorizontal, kMessageMarginRight));
+  view->SetMultiLine(true);
+  view->SizeToFit(kModalWidth);
+  view->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_TO_HEAD);
+  SetContentsView(std::move(view));
+  // For accessiblity features. This role will read title + message on pop up.
+  SetAccessibleRole(ax::mojom::Role::kAlertDialog);
 }
 
 FileSystemConfirmationModal::~FileSystemConfirmationModal() = default;
@@ -73,17 +90,6 @@ ui::ImageModel FileSystemConfirmationModal::GetWindowIcon() {
   return ui::ImageModel::FromImageSkia(gfx::CreateVectorIcon(
       gfx::IconDescription(vector_icons::kBusinessIcon, kBusinessIconSize,
                            gfx::kGoogleBlue500)));
-}
-
-views::View* FileSystemConfirmationModal::GetContentsView() {
-  auto* view = new views::Label(message_);
-  view->SetBorder(
-      views::CreateEmptyBorder(kMessageMarginHorizontal, kMessageMarginLeft,
-                               kMessageMarginHorizontal, kMessageMarginRight));
-  view->SetMultiLine(true);
-  view->SizeToFit(kModalWidth);
-  view->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_TO_HEAD);
-  return view;
 }
 
 ui::ModalType FileSystemConfirmationModal::GetModalType() const {

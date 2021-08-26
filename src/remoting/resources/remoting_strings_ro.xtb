@@ -11,6 +11,7 @@
 <translation id="1546934824884762070">A apărut o eroare neașteptată. Raportați această problemă dezvoltatorilor.</translation>
 <translation id="1697532407822776718">Ești gata!</translation>
 <translation id="1742469581923031760">Se conectează…</translation>
+<translation id="177040763384871009">Pentru a permite deschiderea linkurilor pe care dai clic de pe dispozitivul la distanță în browserul clientului, trebuie să schimbi browserul web al sistemului cu <ph name="URL_FORWARDER_NAME" />.</translation>
 <translation id="177096447311351977">IP canal pentru client: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip=„<ph name="CLIENT_IP_ADDRESS_AND_PORT" />” host_ip=„<ph name="HOST_IP_ADDRESS_AND_PORT" />” channel=„<ph name="CHANNEL_TYPE" />” connection=„<ph name="CONNECTION_TYPE" />”.</translation>
 <translation id="1897488610212723051">Șterge</translation>
 <translation id="2009755455353575666">Nu s-a conectat</translation>
@@ -129,6 +130,7 @@ Dacă opțiunea „<ph name="SERVICE_SCRIPT_NAME" />” este deja bifată, debif
 <translation id="6963936880795878952">Conexiunile cu computerul la distanță sunt blocate temporar, deoarece cineva a încercat să se conecteze la acesta folosind un cod PIN nevalid. Încearcă din nou mai târziu.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Sigur doriți să dezactivați conexiunile la distanță la <ph name="HOSTNAME" />? Dacă vă răzgândiți, va trebui să accesați computerul respectiv pentru a reactiva conexiunile.</translation>
+<translation id="6998890551706945177"><ph name="CLIENT_USERNAME" /> a solicitat acces să vadă și să îți controleze computerul. Apasă pe <ph name="IDS_SHARE_CONFIRM_DIALOG_DECLINE" /> dacă nu cunoști persoana sau dacă vrei să faci modificări înainte de a permite accesul.  Sau selectează <ph name="IDS_SHARE_CONFIRM_DIALOG_CONFIRM" /> pentru a permite conectarea.</translation>
 <translation id="7019153418965365059">Eroare nerecunoscută a gazdei: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Asistență la distanță</translation>
 <translation id="7026930240735156896">Urmează instrucțiunile ca să configurezi computerul pentru accesul la distanță</translation>
@@ -142,6 +144,7 @@ Dacă opțiunea „<ph name="SERVICE_SCRIPT_NAME" />” este deja bifată, debif
 <translation id="7434397035092923453">Acces interzis pentru clientul: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">Client conectat: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7526139040829362392">Schimbă contul</translation>
+<translation id="7535110896613603182">Deschide setările aplicațiilor prestabilite</translation>
 <translation id="7628469622942688817">Reține codul meu PIN pe acest dispozitiv.</translation>
 <translation id="7649070708921625228">Ajutor</translation>
 <translation id="7658239707568436148">Anulează</translation>

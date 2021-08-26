@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.js';
 
 /** @implements {ResetBrowserProxy} */
 export class TestResetBrowserProxy extends TestBrowserProxy {
@@ -14,7 +14,6 @@ export class TestResetBrowserProxy extends TestBrowserProxy {
       'onShowResetProfileDialog',
       'showReportedSettings',
       'getTriggeredResetToolName',
-      'onPowerwashDialogShow',
     ]);
   }
 
@@ -48,10 +47,5 @@ export class TestResetBrowserProxy extends TestBrowserProxy {
   getTriggeredResetToolName() {
     this.methodCalled('getTriggeredResetToolName');
     return Promise.resolve('WonderfulAV');
-  }
-
-  /** @override */
-  onPowerwashDialogShow() {
-    this.methodCalled('onPowerwashDialogShow');
   }
 }

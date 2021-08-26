@@ -9,7 +9,6 @@
 #include <memory>
 #include <set>
 #include <string>
-#include <vector>
 
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -60,8 +59,6 @@ class EmbeddedPolicyTestServer {
   };
 
   EmbeddedPolicyTestServer();
-  EmbeddedPolicyTestServer(std::unique_ptr<ClientStorage> client_storage,
-                           std::unique_ptr<PolicyStorage> policy_storage);
   EmbeddedPolicyTestServer(const EmbeddedPolicyTestServer&) = delete;
   EmbeddedPolicyTestServer& operator=(const EmbeddedPolicyTestServer&) = delete;
   virtual ~EmbeddedPolicyTestServer();

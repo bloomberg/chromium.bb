@@ -8,6 +8,8 @@
 #include "include/core/SkBBHFactory.h"
 #include "include/core/SkImage.h"
 #include "src/core/SkCanvasPriv.h"
+#include "src/core/SkColorFilterBase.h"
+#include "src/core/SkImageFilter_Base.h"
 #include "src/core/SkRecordDraw.h"
 #include "src/utils/SkPatchUtils.h"
 
@@ -104,6 +106,10 @@ DRAW(ClipRRect, clipRRect(r.rrect, r.opAA.op(), r.opAA.aa()));
 DRAW(ClipRect, clipRect(r.rect, r.opAA.op(), r.opAA.aa()));
 DRAW(ClipRegion, clipRegion(r.region, r.op));
 DRAW(ClipShader, clipShader(r.shader, r.op));
+
+template <> void Draw::draw(const ResetClip& r) {
+    SkCanvasPriv::ResetClip(fCanvas);
+}
 
 DRAW(DrawArc, drawArc(r.oval, r.startAngle, r.sweepAngle, r.useCenter, r.paint));
 DRAW(DrawDRRect, drawDRRect(r.outer, r.inner, r.paint));
@@ -270,7 +276,7 @@ private:
 
     void trackBounds(const MarkCTM&)           { this->pushControl(); }
     void trackBounds(const SetMatrix&)         { this->pushControl(); }
-    void trackBounds(const SetM44&)         { this->pushControl(); }
+    void trackBounds(const SetM44&)            { this->pushControl(); }
     void trackBounds(const Concat&)            { this->pushControl(); }
     void trackBounds(const Concat44&)          { this->pushControl(); }
     void trackBounds(const Scale&)             { this->pushControl(); }
@@ -280,6 +286,7 @@ private:
     void trackBounds(const ClipPath&)          { this->pushControl(); }
     void trackBounds(const ClipRegion&)        { this->pushControl(); }
     void trackBounds(const ClipShader&)        { this->pushControl(); }
+    void trackBounds(const ResetClip&)         { this->pushControl(); }
 
 
     // For all other ops, we can calculate and store the bounds directly now.
@@ -307,7 +314,10 @@ private:
     static bool PaintMayAffectTransparentBlack(const SkPaint* paint) {
         if (paint) {
             // FIXME: this is very conservative
-            if (paint->getImageFilter() || paint->getColorFilter()) {
+            if ((paint->getImageFilter() &&
+                 as_IFB(paint->getImageFilter())->affectsTransparentBlack()) ||
+                (paint->getColorFilter() &&
+                 as_CFB(paint->getColorFilter())->affectsTransparentBlack())) {
                 return true;
             }
             const auto bm = paint->asBlendMode();
@@ -550,4 +560,3 @@ void SkRecordFillBounds(const SkRect& cullRect, const SkRecord& record,
         }
     }
 }
-

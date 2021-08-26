@@ -11,7 +11,6 @@ source_set("public") {
     "endpoint_request_ids.cc",
     "endpoint_request_ids.h",
     "mdns_service_listener_factory.h",
-    "mdns_service_publisher_factory.h",
     "message_demuxer.h",
     "network_metrics.h",
     "network_service_manager.h",
@@ -35,6 +34,7 @@ source_set("public") {
     "service_listener.h",
     "service_publisher.cc",
     "service_publisher.h",
+    "service_publisher_factory.h",
     "timestamp.h",
   ]
 

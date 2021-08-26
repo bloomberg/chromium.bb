@@ -32,34 +32,34 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_collator.h"
 
+namespace translate {
+
 namespace {
 
 using ::testing::ElementsAreArray;
 using ::testing::IsEmpty;
 using ::testing::UnorderedElementsAreArray;
 
-}  // namespace
-
-namespace translate {
-
 static void ExpectEqualLanguageLists(
-    const base::ListValue& language_values,
+    const base::Value& language_values,
     const std::vector<std::string>& languages) {
   const int input_size = languages.size();
-  ASSERT_EQ(input_size, static_cast<int>(language_values.GetSize()));
+  base::Value::ConstListView language_values_view = language_values.GetList();
+  ASSERT_EQ(input_size, static_cast<int>(language_values_view.size()));
   for (int i = 0; i < input_size; ++i) {
-    std::string value;
-    language_values.GetString(i, &value);
-    EXPECT_EQ(languages[i], value);
+    ASSERT_TRUE(language_values_view[i].is_string());
+    EXPECT_EQ(languages[i], language_values_view[i].GetString());
   }
 }
+
+}  // namespace
 
 class TranslatePrefsTest : public testing::Test {
  protected:
   TranslatePrefsTest() {
     language::LanguagePrefs::RegisterProfilePrefs(prefs_.registry());
     TranslatePrefs::RegisterProfilePrefs(prefs_.registry());
-    translate_prefs_ = std::make_unique<translate::TranslatePrefs>(&prefs_);
+    translate_prefs_ = std::make_unique<TranslatePrefs>(&prefs_);
     accept_languages_tester_ =
         std::make_unique<language::test::LanguagePrefTester>(&prefs_);
     now_ = base::Time::Now();
@@ -78,8 +78,8 @@ class TranslatePrefsTest : public testing::Test {
 
   void ExpectBlockedLanguageListContent(
       const std::vector<std::string>& list) const {
-    const base::ListValue* const never_prompt_list =
-        prefs_.GetList(language::prefs::kFluentLanguages);
+    const base::Value* const never_prompt_list =
+        prefs_.GetList(prefs::kBlockedLanguages);
     ExpectEqualLanguageLists(*never_prompt_list, list);
   }
 
@@ -121,7 +121,7 @@ class TranslatePrefsTest : public testing::Test {
   }
 
   sync_preferences::TestingPrefServiceSyncable prefs_;
-  std::unique_ptr<translate::TranslatePrefs> translate_prefs_;
+  std::unique_ptr<TranslatePrefs> translate_prefs_;
   std::unique_ptr<language::test::LanguagePrefTester> accept_languages_tester_;
 
   // Shared time constants.
@@ -332,6 +332,41 @@ TEST_F(TranslatePrefsTest, UnblockLanguage) {
   translate_prefs_->BlockLanguage("zh-CN");
   translate_prefs_->UnblockLanguage("zh-CN");
   ExpectBlockedLanguageListContent({"en", "zh-TW"});
+}
+
+TEST_F(TranslatePrefsTest, ResetEmptyBlockedLanguagesToDefaultTest) {
+  ExpectBlockedLanguageListContent({"en"});
+
+  translate_prefs_->ResetEmptyBlockedLanguagesToDefaults();
+  ExpectBlockedLanguageListContent({"en"});
+
+  translate_prefs_->BlockLanguage("fr");
+  translate_prefs_->ResetEmptyBlockedLanguagesToDefaults();
+  ExpectBlockedLanguageListContent({"en", "fr"});
+
+  prefs_.Set(translate::prefs::kBlockedLanguages,
+             base::Value(base::Value::Type::LIST));
+  ExpectBlockedLanguageListContent({});
+  translate_prefs_->ResetEmptyBlockedLanguagesToDefaults();
+  ExpectBlockedLanguageListContent({"en"});
+}
+
+TEST_F(TranslatePrefsTest, GetNeverTranslateLanguagesTest) {
+  // Default Fluent language is "en".
+  EXPECT_THAT(translate_prefs_->GetNeverTranslateLanguages(),
+              ElementsAreArray({"en"}));
+
+  // Add two languages with the same base.
+  translate_prefs_->BlockLanguage("fr-FR");
+  translate_prefs_->BlockLanguage("fr-CA");
+  EXPECT_THAT(translate_prefs_->GetNeverTranslateLanguages(),
+              ElementsAreArray({"en", "fr"}));
+
+  // Add language that comes before English alphabetically. It should be
+  // appended to the list.
+  translate_prefs_->BlockLanguage("af");
+  EXPECT_THAT(translate_prefs_->GetNeverTranslateLanguages(),
+              ElementsAreArray({"en", "fr", "af"}));
 }
 
 TEST_F(TranslatePrefsTest, AddToLanguageList) {

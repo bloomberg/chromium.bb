@@ -186,7 +186,7 @@ class MockVideoEncoderFactory : public VideoEncoderFactory {
   int32_t init_encode_return_value_ = 0;
   std::vector<MockVideoEncoder*> encoders_;
   std::vector<const char*> encoder_names_;
-  // Keep number of entries in sync with |kMaxSimulcastStreams|.
+  // Keep number of entries in sync with `kMaxSimulcastStreams`.
   std::vector<int> requested_resolution_alignments_ = {1, 1, 1};
   bool supports_simulcast_ = false;
 };
@@ -241,6 +241,7 @@ class MockVideoEncoder : public VideoEncoder {
     info.has_internal_source = has_internal_source_;
     info.fps_allocation[0] = fps_allocation_;
     info.supports_simulcast = supports_simulcast_;
+    info.is_qp_trusted = is_qp_trusted_;
     return info;
   }
 
@@ -308,6 +309,10 @@ class MockVideoEncoder : public VideoEncoder {
     video_format_ = video_format;
   }
 
+  void set_is_qp_trusted(absl::optional<bool> is_qp_trusted) {
+    is_qp_trusted_ = is_qp_trusted;
+  }
+
   bool supports_simulcast() const { return supports_simulcast_; }
 
   SdpVideoFormat video_format() const { return video_format_; }
@@ -326,6 +331,7 @@ class MockVideoEncoder : public VideoEncoder {
   VideoEncoder::RateControlParameters last_set_rates_;
   FramerateFractions fps_allocation_;
   bool supports_simulcast_ = false;
+  absl::optional<bool> is_qp_trusted_;
   SdpVideoFormat video_format_;
 
   VideoCodec codec_;
@@ -387,7 +393,7 @@ class TestSimulcastEncoderAdapterFakeHelper {
         video_format_(video_format) {}
 
   // Can only be called once as the SimulcastEncoderAdapter will take the
-  // ownership of |factory_|.
+  // ownership of `factory_`.
   VideoEncoder* CreateMockEncoderAdapter() {
     return new SimulcastEncoderAdapter(primary_factory_.get(),
                                        fallback_factory_.get(), video_format_);
@@ -433,8 +439,8 @@ class TestSimulcastEncoderAdapterFake : public ::testing::Test,
   void ReSetUp() {
     if (adapter_) {
       adapter_->Release();
-      // |helper_| owns factories which |adapter_| needs to destroy encoders.
-      // Release |adapter_| before |helper_| (released in SetUp()).
+      // `helper_` owns factories which `adapter_` needs to destroy encoders.
+      // Release `adapter_` before `helper_` (released in SetUp()).
       adapter_.reset();
     }
     SetUp();
@@ -755,7 +761,7 @@ TEST_F(TestSimulcastEncoderAdapterFake, DoesNotLeakEncoders) {
   EXPECT_EQ(3u, helper_->factory()->encoders().size());
 
   // The adapter should destroy all encoders it has allocated. Since
-  // |helper_->factory()| is owned by |adapter_|, however, we need to rely on
+  // `helper_->factory()` is owned by `adapter_`, however, we need to rely on
   // lsan to find leaks here.
   EXPECT_EQ(0, adapter_->Release());
   adapter_.reset();
@@ -1385,6 +1391,28 @@ TEST_F(TestSimulcastEncoderAdapterFake, ReportsInternalSource) {
   helper_->factory()->encoders()[2]->set_has_internal_source(false);
   EXPECT_EQ(0, adapter_->InitEncode(&codec_, kSettings));
   EXPECT_FALSE(adapter_->GetEncoderInfo().has_internal_source);
+}
+
+TEST_F(TestSimulcastEncoderAdapterFake, ReportsIsQpTrusted) {
+  SimulcastTestFixtureImpl::DefaultSettings(
+      &codec_, static_cast<const int*>(kTestTemporalLayerProfile),
+      kVideoCodecVP8);
+  codec_.numberOfSimulcastStreams = 3;
+  adapter_->RegisterEncodeCompleteCallback(this);
+  EXPECT_EQ(0, adapter_->InitEncode(&codec_, kSettings));
+  ASSERT_EQ(3u, helper_->factory()->encoders().size());
+
+  // All encoders have internal source, simulcast adapter reports true.
+  for (MockVideoEncoder* encoder : helper_->factory()->encoders()) {
+    encoder->set_is_qp_trusted(true);
+  }
+  EXPECT_EQ(0, adapter_->InitEncode(&codec_, kSettings));
+  EXPECT_TRUE(adapter_->GetEncoderInfo().is_qp_trusted.value_or(false));
+
+  // One encoder reports QP not trusted, simulcast adapter reports false.
+  helper_->factory()->encoders()[2]->set_is_qp_trusted(false);
+  EXPECT_EQ(0, adapter_->InitEncode(&codec_, kSettings));
+  EXPECT_FALSE(adapter_->GetEncoderInfo().is_qp_trusted.value_or(true));
 }
 
 TEST_F(TestSimulcastEncoderAdapterFake, ReportsFpsAllocation) {

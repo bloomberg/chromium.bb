@@ -77,13 +77,34 @@ list(APPEND libgav1_convolve_test_sources
 list(APPEND libgav1_distance_weighted_blend_test_sources
             "${libgav1_source}/dsp/distance_weighted_blend_test.cc")
 list(APPEND libgav1_dsp_test_sources "${libgav1_source}/dsp/dsp_test.cc")
+list(APPEND libgav1_intra_edge_test_sources
+            "${libgav1_source}/dsp/intra_edge_test.cc")
+list(APPEND libgav1_intrapred_cfl_test_sources
+            "${libgav1_source}/dsp/intrapred_cfl_test.cc")
+list(APPEND libgav1_intrapred_directional_test_sources
+            "${libgav1_source}/dsp/intrapred_directional_test.cc")
+list(APPEND libgav1_intrapred_filter_test_sources
+            "${libgav1_source}/dsp/intrapred_filter_test.cc")
 list(APPEND libgav1_intrapred_test_sources
             "${libgav1_source}/dsp/intrapred_test.cc")
+list(APPEND libgav1_inverse_transform_test_sources
+            "${libgav1_source}/dsp/inverse_transform_test.cc")
+list(APPEND libgav1_loop_filter_test_sources
+            "${libgav1_source}/dsp/loop_filter_test.cc")
+list(APPEND libgav1_loop_restoration_test_sources
+            "${libgav1_source}/dsp/loop_restoration_test.cc")
 list(APPEND libgav1_mask_blend_test_sources
             "${libgav1_source}/dsp/mask_blend_test.cc")
+list(APPEND libgav1_motion_field_projection_test_sources
+            "${libgav1_source}/dsp/motion_field_projection_test.cc")
+list(APPEND libgav1_motion_vector_search_test_sources
+            "${libgav1_source}/dsp/motion_vector_search_test.cc")
+list(APPEND libgav1_super_res_test_sources
+            "${libgav1_source}/dsp/super_res_test.cc")
 list(APPEND libgav1_weight_mask_test_sources
             "${libgav1_source}/dsp/weight_mask_test.cc")
 list(APPEND libgav1_obmc_test_sources "${libgav1_source}/dsp/obmc_test.cc")
+list(APPEND libgav1_warp_test_sources "${libgav1_source}/dsp/warp_test.cc")
 
 macro(libgav1_add_tests_targets)
   if(NOT LIBGAV1_ENABLE_TESTS)
@@ -193,7 +214,6 @@ macro(libgav1_add_tests_targets)
                          libgav1_tests_utils
                          libgav1_utils
                          LIB_DEPS
-                         absl::str_format_internal
                          absl::strings
                          absl::time
                          ${libgav1_common_test_absl_deps}
@@ -258,7 +278,7 @@ macro(libgav1_add_tests_targets)
                          libgav1_tests_utils
                          libgav1_utils
                          LIB_DEPS
-                         absl::str_format_internal
+                         absl::strings
                          absl::time
                          ${libgav1_common_test_absl_deps}
                          libgav1_gtest
@@ -287,9 +307,157 @@ macro(libgav1_add_tests_targets)
 
   libgav1_add_executable(TEST
                          NAME
+                         intrapred_cfl_test
+                         SOURCES
+                         ${libgav1_intrapred_cfl_test_sources}
+                         DEFINES
+                         ${libgav1_defines}
+                         INCLUDES
+                         ${libgav1_test_include_paths}
+                         OBJLIB_DEPS
+                         libgav1_decoder
+                         libgav1_dsp
+                         libgav1_tests_block_utils
+                         libgav1_tests_utils
+                         libgav1_utils
+                         LIB_DEPS
+                         absl::time
+                         ${libgav1_common_test_absl_deps}
+                         libgav1_gtest
+                         libgav1_gtest_main)
+
+  libgav1_add_executable(TEST
+                         NAME
+                         intrapred_directional_test
+                         SOURCES
+                         ${libgav1_intrapred_directional_test_sources}
+                         DEFINES
+                         ${libgav1_defines}
+                         INCLUDES
+                         ${libgav1_test_include_paths}
+                         OBJLIB_DEPS
+                         libgav1_decoder
+                         libgav1_dsp
+                         libgav1_tests_block_utils
+                         libgav1_tests_utils
+                         libgav1_utils
+                         LIB_DEPS
+                         absl::time
+                         ${libgav1_common_test_absl_deps}
+                         libgav1_gtest
+                         libgav1_gtest_main)
+
+  libgav1_add_executable(TEST
+                         NAME
+                         intrapred_filter_test
+                         SOURCES
+                         ${libgav1_intrapred_filter_test_sources}
+                         DEFINES
+                         ${libgav1_defines}
+                         INCLUDES
+                         ${libgav1_test_include_paths}
+                         OBJLIB_DEPS
+                         libgav1_decoder
+                         libgav1_dsp
+                         libgav1_tests_block_utils
+                         libgav1_tests_utils
+                         libgav1_utils
+                         LIB_DEPS
+                         absl::time
+                         ${libgav1_common_test_absl_deps}
+                         libgav1_gtest
+                         libgav1_gtest_main)
+
+  libgav1_add_executable(TEST
+                         NAME
                          intrapred_test
                          SOURCES
                          ${libgav1_intrapred_test_sources}
+                         DEFINES
+                         ${libgav1_defines}
+                         INCLUDES
+                         ${libgav1_test_include_paths}
+                         OBJLIB_DEPS
+                         libgav1_decoder
+                         libgav1_dsp
+                         libgav1_tests_block_utils
+                         libgav1_tests_utils
+                         libgav1_utils
+                         LIB_DEPS
+                         absl::time
+                         ${libgav1_common_test_absl_deps}
+                         libgav1_gtest
+                         libgav1_gtest_main)
+
+  libgav1_add_executable(TEST
+                         NAME
+                         intra_edge_test
+                         SOURCES
+                         ${libgav1_intra_edge_test_sources}
+                         DEFINES
+                         ${libgav1_defines}
+                         INCLUDES
+                         ${libgav1_test_include_paths}
+                         OBJLIB_DEPS
+                         libgav1_decoder
+                         libgav1_tests_utils
+                         libgav1_dsp
+                         libgav1_utils
+                         LIB_DEPS
+                         absl::strings
+                         absl::time
+                         ${libgav1_common_test_absl_deps}
+                         libgav1_gtest
+                         libgav1_gtest_main)
+
+  libgav1_add_executable(TEST
+                         NAME
+                         inverse_transform_test
+                         SOURCES
+                         ${libgav1_inverse_transform_test_sources}
+                         DEFINES
+                         ${libgav1_defines}
+                         INCLUDES
+                         ${libgav1_test_include_paths}
+                         OBJLIB_DEPS
+                         libgav1_decoder
+                         libgav1_tests_block_utils
+                         libgav1_tests_utils
+                         libgav1_dsp
+                         libgav1_utils
+                         LIB_DEPS
+                         absl::strings
+                         absl::time
+                         ${libgav1_common_test_absl_deps}
+                         libgav1_gtest
+                         libgav1_gtest_main)
+
+  libgav1_add_executable(TEST
+                         NAME
+                         loop_filter_test
+                         SOURCES
+                         ${libgav1_loop_filter_test_sources}
+                         DEFINES
+                         ${libgav1_defines}
+                         INCLUDES
+                         ${libgav1_test_include_paths}
+                         OBJLIB_DEPS
+                         libgav1_decoder
+                         libgav1_dsp
+                         libgav1_tests_block_utils
+                         libgav1_tests_utils
+                         libgav1_utils
+                         LIB_DEPS
+                         absl::time
+                         ${libgav1_common_test_absl_deps}
+                         libgav1_gtest
+                         libgav1_gtest_main)
+
+  libgav1_add_executable(TEST
+                         NAME
+                         loop_restoration_test
+                         SOURCES
+                         ${libgav1_loop_restoration_test_sources}
                          DEFINES
                          ${libgav1_defines}
                          INCLUDES
@@ -321,6 +489,48 @@ macro(libgav1_add_tests_targets)
                          libgav1_tests_utils
                          libgav1_utils
                          LIB_DEPS
+                         absl::strings
+                         absl::time
+                         ${libgav1_common_test_absl_deps}
+                         libgav1_gtest
+                         libgav1_gtest_main)
+
+  libgav1_add_executable(TEST
+                         NAME
+                         motion_field_projection_test
+                         SOURCES
+                         ${libgav1_motion_field_projection_test_sources}
+                         DEFINES
+                         ${libgav1_defines}
+                         INCLUDES
+                         ${libgav1_test_include_paths}
+                         OBJLIB_DEPS
+                         libgav1_decoder
+                         libgav1_dsp
+                         libgav1_tests_utils
+                         libgav1_utils
+                         LIB_DEPS
+                         absl::str_format_internal
+                         absl::time
+                         ${libgav1_common_test_absl_deps}
+                         libgav1_gtest
+                         libgav1_gtest_main)
+
+  libgav1_add_executable(TEST
+                         NAME
+                         motion_vector_search_test
+                         SOURCES
+                         ${libgav1_motion_vector_search_test_sources}
+                         DEFINES
+                         ${libgav1_defines}
+                         INCLUDES
+                         ${libgav1_test_include_paths}
+                         OBJLIB_DEPS
+                         libgav1_decoder
+                         libgav1_dsp
+                         libgav1_tests_utils
+                         libgav1_utils
+                         LIB_DEPS
                          absl::str_format_internal
                          absl::time
                          ${libgav1_common_test_absl_deps}
@@ -332,6 +542,49 @@ macro(libgav1_add_tests_targets)
                          obmc_test
                          SOURCES
                          ${libgav1_obmc_test_sources}
+                         DEFINES
+                         ${libgav1_defines}
+                         INCLUDES
+                         ${libgav1_test_include_paths}
+                         OBJLIB_DEPS
+                         libgav1_decoder
+                         libgav1_dsp
+                         libgav1_tests_block_utils
+                         libgav1_tests_utils
+                         libgav1_utils
+                         LIB_DEPS
+                         absl::str_format_internal
+                         absl::time
+                         ${libgav1_common_test_absl_deps}
+                         libgav1_gtest
+                         libgav1_gtest_main)
+
+  libgav1_add_executable(TEST
+                         NAME
+                         super_res_test
+                         SOURCES
+                         ${libgav1_super_res_test_sources}
+                         DEFINES
+                         ${libgav1_defines}
+                         INCLUDES
+                         ${libgav1_test_include_paths}
+                         OBJLIB_DEPS
+                         libgav1_decoder
+                         libgav1_dsp
+                         libgav1_tests_utils
+                         libgav1_utils
+                         LIB_DEPS
+                         absl::str_format_internal
+                         absl::time
+                         ${libgav1_common_test_absl_deps}
+                         libgav1_gtest
+                         libgav1_gtest_main)
+
+  libgav1_add_executable(TEST
+                         NAME
+                         warp_test
+                         SOURCES
+                         ${libgav1_warp_test_sources}
                          DEFINES
                          ${libgav1_defines}
                          INCLUDES

@@ -7,7 +7,7 @@
 
 #include <cstdint>
 #include <limits>
-#include "ash/hud_display/cpu_status.h"
+#include "ash/hud_display/cpu_stats.h"
 
 namespace ash {
 namespace hud_display {
@@ -18,6 +18,7 @@ class DataSource {
   struct Snapshot {
     Snapshot();
     Snapshot(const Snapshot&);
+    Snapshot& operator=(const Snapshot&);
 
     // All memory sizes are in bytes.
     // Separate non-zero-initialized members from zero-initialized.

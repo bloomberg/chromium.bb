@@ -962,6 +962,8 @@ const char* ToString(ax::mojom::FloatAttribute float_attribute) {
       return "fontWeight";
     case ax::mojom::FloatAttribute::kTextIndent:
       return "textIndent";
+    case ax::mojom::FloatAttribute::kChildTreeScale:
+      return "childTreeScale";
   }
 
   return "";
@@ -1259,6 +1261,8 @@ const char* ToString(ax::mojom::TextBoundary text_boundary) {
       return "paragraphEnd";
     case ax::mojom::TextBoundary::kParagraphStart:
       return "paragraphStart";
+    case ax::mojom::TextBoundary::kParagraphStartSkippingEmptyParagraphs:
+      return "paragraphStartSkippingEmptyParagraphs";
     case ax::mojom::TextBoundary::kParagraphStartOrEnd:
       return "paragraphStartOrEnd";
     case ax::mojom::TextBoundary::kSentenceEnd:

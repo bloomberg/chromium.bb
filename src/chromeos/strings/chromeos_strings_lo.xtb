@@ -14,6 +14,7 @@
 <translation id="1204296502688602597">ການຕອບສະໜອງຂອງ DNS</translation>
 <translation id="123124571410524056">ສົງໄສວ່າເປັນໜ້າເວັບ</translation>
 <translation id="1238612778414822719">ເວລາແຝງ HTTPS</translation>
+<translation id="1264369926465113395">ກວດເບິ່ງວາລະສານດິຈິຕອນໃໝ່ຂອງ Chromebook ສຳລັບຜູ້ສ້າງ</translation>
 <translation id="1270369111467284986">ສົງໄສວ່າເປັນຊ່ອງທາງເຂົ້າຮັກສາໄວ້</translation>
 <translation id="1290331692326790741">ສັນຍານອ່ອນ</translation>
 <translation id="1314565355471455267">Android VPN</translation>
@@ -34,7 +35,9 @@
 <translation id="1510238584712386396">ຕົວ​ເປີດ​ໃຊ້</translation>
 <translation id="1600964289716072707">ວາງໜ້າອື່ນໃສ່ເຄື່ອງສະແກນແລ້ວເລືອກສະແກນເພື່ອເພີ່ມໜ້າ.</translation>
 <translation id="1621067168122174824">ເອີ້ນໃຊ້ການທົດສອບການສາກ</translation>
+<translation id="1639239467298939599">ກໍາລັງໂຫຼດ</translation>
 <translation id="1641857168437328880">ຕົວປ້ອນເອກະສານ (ດ້ານດຽວ)</translation>
+<translation id="1643449475550628585">ປ່ຽນຮູບພື້ນຫຼັງທຸກມື້</translation>
 <translation id="1644574205037202324">ປະຫວັດ</translation>
 <translation id="1662989795263954667">ຢຸດພິມ, ນໍ້າໝຶກໝົດ</translation>
 <translation id="1703835215927279855">Letter</translation>
@@ -65,7 +68,6 @@
 <translation id="2224337661447660594">ບໍ່ມີອິນເຕີເນັດ</translation>
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="225692081236532131">ສະຖານະການເປີດນຳໃຊ້</translation>
-<translation id="2294675138977897428">ບໍ່ພົບການເຊື່ອມຕໍ່ອີເທີເນັດ</translation>
 <translation id="2326139988748364651"><ph name="RESOLUTION_VALUE" /> dpi</translation>
 <translation id="2338501278241028356">ເປີດ Bluetooth ເພື່ອຊອກຫາອຸປະກອນທີ່ຢູ່ໃກ້ຄຽງ</translation>
 <translation id="2364498172489649528">ຜ່ານແລ້ວ</translation>
@@ -75,9 +77,11 @@
 <translation id="2448312741937722512">ປະ​ເພດ</translation>
 <translation id="2461822463642141190">ປັດຈຸບັນ</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
+<translation id="2505327257735685095">ໂຫຼດຂໍ້ມູນຮູບພື້ນຫຼັງປັດຈຸບັນຄືນໃໝ່</translation>
 <translation id="2517472476991765520">ສະແກນ</translation>
 <translation id="2570743873672969996">ກຳລັງເອີ້ນໃຊ້ການທົດສອບ <ph name="TEST_NAME" />...</translation>
 <translation id="2585245331261708204">ມີຫຍັງໃໝ່ກັບ Chrome OS</translation>
+<translation id="2619761439309613843">ການໂຫຼດຂໍ້ມູນໃໝ່ປະຈຳວັນ</translation>
 <translation id="2620436844016719705">ລະ​ບົບ</translation>
 <translation id="2740531572673183784">ຕົກລົງ</translation>
 <translation id="2751739896257479635">ການຮັບຮອງຄວາມຖືກຕ້ອງ EAP ໄລຍະທີ 2</translation>
@@ -87,7 +91,6 @@
 <translation id="2862104018715411648">ວາງເອກະສານຂອງທ່ານໃສ່ເຄື່ອງສະແກນ ແລ້ວເລືອກສະແກນເພື່ອເລີ່ມຕົ້ນ</translation>
 <translation id="2872961005593481000">ມອດ</translation>
 <translation id="2878387241690264070">ຄາຍປະຈຸ <ph name="RATE" /> ໃນ <ph name="NUM_SECONDS" /> ວິນາທີ.</translation>
-<translation id="2983662233540284543">ສຶກສາຈາກຜູ້ສ້າງເນື້ອຫາເກມ, ດາວໂຫຼດແອັບອອກແບບເກມ ແລະ ອື່ນໆ</translation>
 <translation id="3008341117444806826">ໂຫຼດຂໍ້ມູນໃໝ່</translation>
 <translation id="3009958530611748826">ເລືອກໂຟນເດີທີ່ຈະບັນທຶກໄວ້ໃນ</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" />mA</translation>
@@ -101,6 +104,7 @@
 <translation id="3188257591659621405">ໄຟລ໌ຂອງຂ້ອຍ</translation>
 <translation id="3199982728237701504">ຕົວປ້ອນເອກະສານ (ສອງດ້ານ)</translation>
 <translation id="3226405216343213872">ກຳລັງຊອກຫາເຄື່ອງສະແກນ</translation>
+<translation id="3228433892370472777">ການເຊື່ອມຕໍ່ເລີ່ມຕົ້ນ</translation>
 <translation id="3246869037381808805">ວຽກພິມທີ່ເກົ່າກວ່າ 1 ມື້ຈະຖືກລຶບອອກ</translation>
 <translation id="3268178239013324452">ບໍ່ສຳເລັດ, ຝາເປີດຢູ່</translation>
 <translation id="3283504360622356314">{0,plural, =1{ແກ້ໄຂໄຟລ໌}other{ແກ້ໄຂໄຟລ໌}}</translation>
@@ -117,10 +121,13 @@
 <translation id="3488065109653206955">ເປີດ​​ໃຊ້ງານ​ບາງ​ສ່ວນເທົ່ານັ້ນ</translation>
 <translation id="3527036260304016759">ບໍ່ສຳເລັດ, ບໍ່ຮູ້ຈັກຂໍ້ຜິດພາດ</translation>
 <translation id="3532980081107202182">ຍັງເຫຼືອອີກປະມານ <ph name="MIN_REMAINING" /> ນາທີ</translation>
+<translation id="3540383942695635079">ທີ່ຢູ່ MAC</translation>
 <translation id="357889014807611375">Wi-Fi ທີ່ວັດແທກການໃຊ້ອິນເຕີເນັດ</translation>
+<translation id="3582041541988388905">ບໍ່ພົບການເຊື່ອມຕໍ່ <ph name="NETWORK_NAME" /></translation>
 <translation id="3595596368722241419">ແບັດເຕີຣີເຕັມ</translation>
 <translation id="360565022852130722">ເຄືອຂ່າຍ WiFi ມີການຮັກສາຄວາມປອດໄພດ້ວຍໂປຣໂຕຄໍ WEP 802.1x ທີ່ບໍ່ຮັດກຸມ</translation>
 <translation id="3689839747745352263">ການທົດສອບ <ph name="TEST_NAME" /></translation>
+<translation id="3708186454126126312">ເຊື່ອມຕໍ່ກ່ອນໜ້ານີ້</translation>
 <translation id="373232531963562220">{PAGE_NUMBER,plural, =0{ສະແກນໜ້າຄືນໃໝ່}=1{ສະແກນ {PAGE_NUMBER} ໜ້າຄືນໃໝ່}other{ສະແກນ {PAGE_NUMBER} ໜ້າຄືນໃໝ່}}</translation>
 <translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★ (<ph name="AGGREGATED_COUNT" /> ຄຳຕິຊົມ)</translation>
 <translation id="3748026146096797577">ບໍ່​ໄດ້​ເຊື່ອມ​ຕໍ່</translation>
@@ -163,6 +170,7 @@
 <translation id="4479639480957787382">ອີເທີເນັດ</translation>
 <translation id="4483049906298469269">ໃຊ້ຄຳສັ່ງ ping ກັບເກດເວເຄືອຂ່າຍທີ່ບໍ່ແມ່ນຄ່າເລີ່ມຕົ້ນບໍ່ໄດ້</translation>
 <translation id="4511264077854731334">ໜ້າເວັບ</translation>
+<translation id="4536864596629708641">ການຕັ້ງຄ່າ IP</translation>
 <translation id="4548483925627140043">ບໍ່ພົບສັນຍານ</translation>
 <translation id="455835558791489930">ແບັດເຕີຣີ <ph name="CHARGE_VALUE" />mAh</translation>
 <translation id="4562494484721939086">ບໍ່ມີການບໍລິການ</translation>
@@ -171,6 +179,7 @@
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> ຈາກທັງໝົດ <ph name="TOTAL_PAGE_NUMBER" />. ກົດ Enter ເພື່ອຍົກເລີກວຽກພິມ.</translation>
 <translation id="4646949265910132906">ການເຊື່ອມຕໍ່ WiFi ທີ່ປອດໄພ</translation>
 <translation id="4652335678334611408">ເກັບບັນທຶກເຊດຊັນໄວ້</translation>
+<translation id="4654549501020883054">ປ່ຽນທຸກມື້</translation>
 <translation id="4665014895760275686">ຜູ້​ຜະ​ລິດ</translation>
 <translation id="467510802200863975">ລະຫັດຜ່ານບໍ່ກົງກັນ</translation>
 <translation id="467715984478005772">ສົງໄສວ່າເປັນ Firewall</translation>
@@ -194,6 +203,7 @@
 <translation id="4891842000192098784">ປະສິດທິພາບເມື່ອເພີ່ມແຮງກົດດັນ</translation>
 <translation id="4917385247580444890">ແຮງ</translation>
 <translation id="4917889632206600977">ຢຸດພິມ, ເຈ້ຍໝົດ</translation>
+<translation id="491836528011451486">ວາງເອກະສານຂອງທ່ານໃສ່ຕົວສະແກນແລ້ວເລືອກສະແກນຄືນໃໝ່ເພື່ອສະແກນໜ້າ ແລະ ແທນທີ່ໜ້າ <ph name="CURRENT_PAGE" />.</translation>
 <translation id="4921665434385737356">ສາກ <ph name="RATE" /> ໃນ <ph name="NUM_SECONDS" /> ວິນາທີ.</translation>
 <translation id="4932733599132424254">ວັນ​ທີ</translation>
 <translation id="498186245079027698">ກວດເບິ່ງເຄື່ອງສະແກນ ແລ້ວລອງໃໝ່. ກວດໃຫ້ແນ່ໃຈວ່າມີພື້ນທີ່ໃນເຄື່ອງຢ່າງພຽງພໍເພື່ອບັນທຶກໄຟລ໌ທີ່ສະແກນແລ້ວໄວ້.</translation>
@@ -209,10 +219,10 @@
 <translation id="5154917547274118687">ຄວາມ​ຈໍາ</translation>
 <translation id="5168185087976003268">ສະຖານະແບັດເຕີຣີ</translation>
 <translation id="5170568018924773124">ສະ​ແດງ​ຢູ່​ໃນ​ໂຟລ​ເດີ</translation>
-<translation id="519607504553633437">ອອກແບບ ແລະ ສ້າງເກມຂອງທ່ານເອງ</translation>
 <translation id="5212543919916444558">ຂ້ອຍບໍ່ສາມາດຊອກເຫັນອັນໃດຢູ່ໃນໜ້າຈໍຂອງທ່ານທີ່ຂ້ອຍສາມາດຊ່ວຍໄດ້.
 ລອງແຕະໄມເພື່ອຖາມຂ້ອຍອັນໃດກໍໄດ້.</translation>
 <translation id="5222676887888702881">ອອກຈາກລະບົບ</translation>
+<translation id="5234764350956374838">ປ່ອຍໄປ</translation>
 <translation id="5252456968953390977">ໂຣມມິງ</translation>
 <translation id="5264277876637023664">ດຳເນີນການທົດສອບ CPU</translation>
 <translation id="5267975978099728568"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="ERROR_STATUS" /></translation>
@@ -243,7 +253,6 @@
 <translation id="5691511426247308406">ຄອບຄົວ</translation>
 <translation id="5701381305118179107">ໃຈກາງ</translation>
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" /> ຈາກທັງໝົດ <ph name="TOTAL_PAGES" /></translation>
-<translation id="5752751666635965375">ສ້າງເກມຂອງທ່ານ</translation>
 <translation id="5760715441271661976">ສະຖານະຜອດໂທລ</translation>
 <translation id="5832805196449965646">ເພີ່ມບຸກຄົນ</translation>
 <translation id="583281660410589416">ບໍ່​ຮູ້ຈັກ</translation>
@@ -266,6 +275,7 @@
 <translation id="6106186594183574873">ເພື່ອສຳເລັດ, ກະລຸນາປ້ອນລະຫັດຜ່ານເກົ່າຂອງທ່ານ</translation>
 <translation id="6108689792487843350">ບໍ່ສາມາດຕິດຕໍ່ເກດເວໄດ້</translation>
 <translation id="6122191549521593678">ອອນ​ລາຍ</translation>
+<translation id="6125438912510167220">​ຄວາມ​ໄວ​ການ​ເຊື່ອມ​ຕໍ່</translation>
 <translation id="6137767437444130246">ໃບຮັບຮອງຜູ້ໃຊ້</translation>
 <translation id="6146993107019042706">ເພື່ອດຳເນີນການໃຫ້ສຳເລັດ, ກະລຸນາປ້ອນລະຫັດຜ່ານໃໝ່ຂອງທ່ານ</translation>
 <translation id="6147514244879357420">PNG</translation>
@@ -292,6 +302,8 @@
 <translation id="65587193855025101">ແບບແທ່ນນອນ</translation>
 <translation id="6564646048574748301">ບໍ່ສຳເລັດ, ບໍ່ສາມາດຕິດຕໍ່ເຄື່ອງພິມໄດ້</translation>
 <translation id="6574762126505704998">ຕື່ມສີ</translation>
+<translation id="6575134580692778371">ບໍ່ໄດ້ປັບຕັ້ງຄ່າ</translation>
+<translation id="6596816719288285829">ທີ່​ຢູ່ IP</translation>
 <translation id="6603230386432466813">ກຳລັງມີບັນຫາໃນການເຊື່ອມຕໍ່ບໍ?</translation>
 <translation id="6618744767048954150">ກຳລັງເປີດ</translation>
 <translation id="6620487321149975369">ວຽກພິມຈະປາກົດໃນປະຫວັດ ເວັ້ນເສຍແຕ່ຜູ້ໃຊ້ຈະລຶບພວກມັນອອກດ້ວຍຕົນເອງ</translation>
@@ -315,13 +327,16 @@
 <ph name="TIME_VALUE" />: ຈົນເຕັມ</translation>
 <translation id="708426984172631313">ຢຸດແລ້ວ</translation>
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
+<translation id="7134436342991564651">{0,plural, =1{Name server}other{Name servers}}</translation>
 <translation id="7143207342074048698">ກຳ​ລັງ​ເຊື່ອມ​ຕໍ່</translation>
 <translation id="7144878232160441200">ລອງໃໝ່ອີກ</translation>
 <translation id="714876143603641390">ການເຊື່ອມຕໍ່ LAN</translation>
 <translation id="7162487448488904999">ຄັງຮູບ</translation>
 <translation id="7172721935181587524">1 ຮູບ</translation>
 <translation id="7177485034254901881"><ph name="DEVICE_TYPE" /> ນີ້ຈັດການໂດຍ <ph name="MANAGER" />. ຜູ້ເບິ່ງແຍງລະບົບອາດຈະຕັ້ງຄ່າອຸປະກອນຈາກທາງໄກໄດ້.</translation>
+<translation id="7180611975245234373">ຣີເຟຣຊ</translation>
 <translation id="7216409898977639127">ຜູ້ໃຫ້ບໍລິການມືຖື</translation>
+<translation id="7257889006063274246">ທ່ານແນ່ໃຈບໍ່ວ່າທ່ານຕ້ອງການລຶບໜ້າ <ph name="CURRENT_PAGE" /> ອອກ?</translation>
 <translation id="7271040990581020067">ຕອນນີ້ມີຄົນໃຊ້ເຄື່ອງສະແກນຢູ່. ກະລຸນາລອງໃໝ່ໃນພາຍຫຼັງ.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7287310195820267359">ຄໍເລັກຊັນຮູບພື້ນຫຼັງ</translation>
@@ -355,9 +370,11 @@
 <translation id="7835501727204647447">ຕິດຕັ້ງ CloudReady</translation>
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7882358943899516840">ປະ​ເພດ​ຜູ້ໃຫ້​ບໍ​ລິ​ການ​</translation>
+<translation id="7895471513946376273">ຄົ້ນພົບເຄື່ອງມືການແຕ້ມ ແລະ ການອອກແບບຕ່າງໆ</translation>
 <translation id="7936303884198020182">ບໍ່ພົບເຊີບເວີຊື່</translation>
 <translation id="7960831585769876809">ອຸນຫະພູມ</translation>
 <translation id="7994702968232966508">ວິທີການ EAP</translation>
+<translation id="8020238979854764615">ເກີດຄວາມຜິດພາດຂຶ້ນ. ກະລຸນາລອງໃໝ່ໂດຍການເລືອກຮູບອື່ນ.</translation>
 <translation id="802154636333426148">ການດາວໂຫຼດບໍ່ສຳເລັດ</translation>
 <translation id="8041089156583427627">ສົ່ງຄຳຕິຊົມ</translation>
 <translation id="8075838845814659848">ການສາກທີ່ເຫຼືອ</translation>
@@ -369,7 +386,9 @@
 <translation id="8214184102975786227">ສະແກນຫຼາຍໜ້າເປັນໄຟລ໌ PDF ດຽວ</translation>
 <translation id="8230672074305416752">ໃຊ້ຄຳສັ່ງ ping ກັບເກດເວເຄືອຂ່າຍຄ່າເລີ່ມຕົ້ນບໍ່ໄດ້</translation>
 <translation id="8246209727385807362">ຜູ້ໃຫ້ບໍລິການທີ່ບໍ່ຮູ້ຈັກ</translation>
+<translation id="8286154143153872371">ກະລຸນາເຊື່ອມຕໍ່ຫາເຄືອຂ່າຍແລ້ວໂຫຼດໜ້າຄືນໃໝ່ເພື່ອເບິ່ງຮູບພື້ນຫຼັງ.</translation>
 <translation id="8291967909914612644">ປະເທດຜູ້ໃຫ້ບໍລິການ Home</translation>
+<translation id="829270796093605079">ຄົ້ນພົບເຄື່ອງມືການອອກແບບ</translation>
 <translation id="8294431847097064396">ແຫຼ່ງທີ່ມາ</translation>
 <translation id="8297006494302853456">ອ່ອນ</translation>
 <translation id="8302368968391049045">HTTPS Firewall</translation>
@@ -393,6 +412,7 @@
 <translation id="8575298406870537639">ຜູ້ໃຫ້ບໍລິການຂອງທ່ານອາດຕ້ອງໃຊ້ຕົວເລືອກນີ້ເພື່ອເຊື່ອມຕໍ່ຫາເຄືອຂ່າຍຂອງເຂົາເຈົ້າ. ກະລຸນາຕິດຕໍ່ຫາຜູ້ໃຫ້ບໍລິການຂອງທ່ານສຳລັບລາຍລະອຽດ.</translation>
 <translation id="8576249514688522074">ບໍ່ໄດ້ລິເລີ່ມ</translation>
 <translation id="8620617069779373398">ສະຖານະການໂຣມມິງ</translation>
+<translation id="8655295600908251630">ຊ່ອງ</translation>
 <translation id="8660881923941176839">ພາວ</translation>
 <translation id="8675354002693747642">ລະຫັດທີ່ແບ່ງປັນລ່ວງໜ້າ</translation>
 <translation id="871560550817059752">ບໍ່ສຳເລັດ, ນໍ້າໝຶກໝົດ</translation>
@@ -405,6 +425,7 @@
 <translation id="8798441408945964110">ຊື່ຜູ້ໃຫ້ບໍລິການ</translation>
 <translation id="8814190375133053267">Wi​-Fi</translation>
 <translation id="8818152010000655963">ພາບພື້ນຫຼັງ</translation>
+<translation id="8834539327799336565">ຕອນນີ້ເຊື່ອມຕໍ່ແລ້ວ</translation>
 <translation id="8845001906332463065">ຂໍການຊ່ວຍເຫຼືອ</translation>
 <translation id="8868741746785112895">GUID</translation>
 <translation id="8881098542468797602">ສຳເລັດການທົດສອບແລ້ວ</translation>

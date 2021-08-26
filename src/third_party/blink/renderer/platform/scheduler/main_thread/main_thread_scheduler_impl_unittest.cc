@@ -2728,8 +2728,7 @@ TEST_F(
     SYNCHRONIZED_GESTURE_ThrottleableTaskThrottling_ThrottleableQueuesStopped) {
   SimulateCompositorGestureStart(TouchEventPolicy::kSendTouchStart);
 
-  base::TimeTicks first_throttled_run_time =
-      TaskQueueThrottler::AlignedThrottledRunTime(Now());
+  base::TimeTicks first_run_time = Now();
 
   size_t count = 0;
   // With the compositor task taking 10ms, there is not enough time to run this
@@ -2762,7 +2761,7 @@ TEST_F(
 
     // Before the policy is updated the queue will be enabled. Subsequently it
     // will be disabled until the throttled queue is pumped.
-    bool expect_queue_enabled = (i == 0) || (Now() > first_throttled_run_time);
+    bool expect_queue_enabled = (i == 0) || (Now() > first_run_time);
     if (paused)
       expect_queue_enabled = false;
     EXPECT_EQ(expect_queue_enabled,
@@ -3130,8 +3129,7 @@ TEST_F(
 
 TEST_F(MainThreadSchedulerImplTest, EnableVirtualTime) {
   EXPECT_FALSE(scheduler_->IsVirtualTimeEnabled());
-  scheduler_->EnableVirtualTime(
-      MainThreadSchedulerImpl::BaseTimeOverridePolicy::DO_NOT_OVERRIDE);
+  scheduler_->EnableVirtualTime();
   EXPECT_TRUE(scheduler_->IsVirtualTimeEnabled());
   scoped_refptr<MainThreadTaskQueue> loading_tq =
       scheduler_->NewLoadingTaskQueue(
@@ -3206,16 +3204,14 @@ TEST_F(MainThreadSchedulerImplTest, EnableVirtualTimeAfterThrottling) {
   frame_scheduler->SetFrameVisible(false);
   EXPECT_TRUE(throttleable_tq->IsThrottled());
 
-  scheduler_->EnableVirtualTime(
-      MainThreadSchedulerImpl::BaseTimeOverridePolicy::DO_NOT_OVERRIDE);
+  scheduler_->EnableVirtualTime();
   EXPECT_EQ(throttleable_tq->GetTaskQueue()->GetTimeDomain(),
             scheduler_->GetVirtualTimeDomain());
-  EXPECT_FALSE(throttleable_tq->IsThrottled());
+  EXPECT_TRUE(throttleable_tq->IsThrottled());
 }
 
 TEST_F(MainThreadSchedulerImplTest, DisableVirtualTimeForTesting) {
-  scheduler_->EnableVirtualTime(
-      MainThreadSchedulerImpl::BaseTimeOverridePolicy::DO_NOT_OVERRIDE);
+  scheduler_->EnableVirtualTime();
   scheduler_->DisableVirtualTimeForTesting();
   EXPECT_EQ(scheduler_->DefaultTaskQueue()->GetTaskQueue()->GetTimeDomain(),
             scheduler_->real_time_domain());
@@ -3233,8 +3229,7 @@ TEST_F(MainThreadSchedulerImplTest, DisableVirtualTimeForTesting) {
 }
 
 TEST_F(MainThreadSchedulerImplTest, VirtualTimePauser) {
-  scheduler_->EnableVirtualTime(
-      MainThreadSchedulerImpl::BaseTimeOverridePolicy::DO_NOT_OVERRIDE);
+  scheduler_->EnableVirtualTime();
   scheduler_->SetVirtualTimePolicy(
       PageSchedulerImpl::VirtualTimePolicy::kDeterministicLoading);
 
@@ -3254,8 +3249,7 @@ TEST_F(MainThreadSchedulerImplTest, VirtualTimePauser) {
 }
 
 TEST_F(MainThreadSchedulerImplTest, VirtualTimePauserNonInstantTask) {
-  scheduler_->EnableVirtualTime(
-      MainThreadSchedulerImpl::BaseTimeOverridePolicy::DO_NOT_OVERRIDE);
+  scheduler_->EnableVirtualTime();
   scheduler_->SetVirtualTimePolicy(
       PageSchedulerImpl::VirtualTimePolicy::kDeterministicLoading);
 
@@ -3274,8 +3268,7 @@ TEST_F(MainThreadSchedulerImplTest, VirtualTimeWithOneQueueWithoutVirtualTime) {
   // This test ensures that we do not do anything strange like stopping
   // processing task queues after we encountered one task queue with
   // DoNotUseVirtualTime trait.
-  scheduler_->EnableVirtualTime(
-      MainThreadSchedulerImpl::BaseTimeOverridePolicy::DO_NOT_OVERRIDE);
+  scheduler_->EnableVirtualTime();
   scheduler_->SetVirtualTimePolicy(
       PageSchedulerImpl::VirtualTimePolicy::kDeterministicLoading);
 
@@ -3333,11 +3326,11 @@ TEST_F(MainThreadSchedulerImplTest, Tracing) {
       CreatePageScheduler(nullptr, scheduler_.get(), *agent_group_scheduler_);
   scheduler_->AddPageScheduler(page_scheduler2.get());
 
-  CPUTimeBudgetPool* time_budget_pool =
-      scheduler_->task_queue_throttler()->CreateCPUTimeBudgetPool("test");
+  std::unique_ptr<CPUTimeBudgetPool> time_budget_pool =
+      scheduler_->CreateCPUTimeBudgetPoolForTesting("test");
 
-  time_budget_pool->AddQueue(base::TimeTicks(),
-                             throttleable_task_queue()->GetTaskQueue());
+  throttleable_task_queue()->AddToBudgetPool(base::TimeTicks(),
+                                             time_budget_pool.get());
 
   throttleable_task_runner_->PostTask(FROM_HERE, base::BindOnce(NullTask));
 
@@ -3592,8 +3585,7 @@ TEST_F(MainThreadSchedulerImplTest, TaskQueueReferenceClearedOnShutdown) {
 
   scheduler_->OnShutdownTaskQueue(queue1);
 
-  scheduler_->EnableVirtualTime(
-      MainThreadSchedulerImpl::BaseTimeOverridePolicy::DO_NOT_OVERRIDE);
+  scheduler_->EnableVirtualTime();
 
   // Virtual time should be enabled for queue2, as it is a regular queue and
   // nothing should change for queue1 because it was shut down.

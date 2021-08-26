@@ -66,7 +66,7 @@ describe('Source Tab', async () => {
       assert.deepEqual(formattedValues, [
         'functions: Functions\xA0{$foo: ƒ}',
         'globals: Globals\xA0{$imports.global: i32}',
-        'instance: Instance\xA0{}',
+        'instance: Instance\xA0{exports: {…}}',
         'memories: Memories',
         '$memory0: Memory(1)',
         'module: Module\xA0{}',

@@ -320,7 +320,7 @@ class Tile : public Allocable {
   bool ReadSegmentId(const Block& block);       // 5.11.9.
   bool ReadIntraSegmentId(const Block& block);  // 5.11.8.
   void ReadSkip(const Block& block);            // 5.11.11.
-  void ReadSkipMode(const Block& block);        // 5.11.10.
+  bool ReadSkipMode(const Block& block);        // 5.11.10.
   void ReadCdef(const Block& block);            // 5.11.56.
   // Returns the new value. |cdf| is an array of size kDeltaSymbolCount + 1.
   int ReadAndClipDelta(uint16_t* cdf, int delta_small, int scale, int min_value,
@@ -330,6 +330,7 @@ class Tile : public Allocable {
   // Populates |BlockParameters::deblock_filter_level| for the given |block|
   // using |deblock_filter_levels_|.
   void PopulateDeblockFilterLevel(const Block& block);
+  void PopulateCdefSkip(const Block& block);
   void ReadPredictionModeY(const Block& block, bool intra_y_mode);
   void ReadIntraAngleInfo(const Block& block,
                           PlaneType plane_type);  // 5.11.42 and 5.11.43.
@@ -346,36 +347,41 @@ class Tile : public Allocable {
   bool DecodeIntraModeInfo(const Block& block);                // 5.11.7.
   int8_t ComputePredictedSegmentId(const Block& block) const;  // 5.11.21.
   bool ReadInterSegmentId(const Block& block, bool pre_skip);  // 5.11.19.
-  void ReadIsInter(const Block& block);                        // 5.11.20.
+  void ReadIsInter(const Block& block, bool skip_mode);        // 5.11.20.
   bool ReadIntraBlockModeInfo(const Block& block,
                               bool intra_y_mode);  // 5.11.22.
   CompoundReferenceType ReadCompoundReferenceType(const Block& block);
   template <bool is_single, bool is_backward, int index>
   uint16_t* GetReferenceCdf(const Block& block, CompoundReferenceType type =
                                                     kNumCompoundReferenceTypes);
-  void ReadReferenceFrames(const Block& block);  // 5.11.25.
+  void ReadReferenceFrames(const Block& block, bool skip_mode);  // 5.11.25.
   void ReadInterPredictionModeY(const Block& block,
-                                const MvContexts& mode_contexts);
+                                const MvContexts& mode_contexts,
+                                bool skip_mode);
   void ReadRefMvIndex(const Block& block);
-  void ReadInterIntraMode(const Block& block, bool is_compound);  // 5.11.28.
+  void ReadInterIntraMode(const Block& block, bool is_compound,
+                          bool skip_mode);        // 5.11.28.
   bool IsScaled(ReferenceFrameType type) const {  // Part of 5.11.27.
     const int index =
         frame_header_.reference_frame_index[type - kReferenceFrameLast];
     return reference_frames_[index]->upscaled_width() != frame_header_.width ||
            reference_frames_[index]->frame_height() != frame_header_.height;
   }
-  void ReadMotionMode(const Block& block, bool is_compound);  // 5.11.27.
+  void ReadMotionMode(const Block& block, bool is_compound,
+                      bool skip_mode);  // 5.11.27.
   uint16_t* GetIsExplicitCompoundTypeCdf(const Block& block);
   uint16_t* GetIsCompoundTypeAverageCdf(const Block& block);
-  void ReadCompoundType(const Block& block, bool is_compound);  // 5.11.29.
+  void ReadCompoundType(const Block& block, bool is_compound, bool skip_mode,
+                        bool* is_explicit_compound_type,
+                        bool* is_compound_type_average);  // 5.11.29.
   uint16_t* GetInterpolationFilterCdf(const Block& block, int direction);
-  void ReadInterpolationFilter(const Block& block);
-  bool ReadInterBlockModeInfo(const Block& block);             // 5.11.23.
-  bool DecodeInterModeInfo(const Block& block);                // 5.11.18.
-  bool DecodeModeInfo(const Block& block);                     // 5.11.6.
-  bool IsMvValid(const Block& block, bool is_compound) const;  // 6.10.25.
-  bool AssignInterMv(const Block& block, bool is_compound);    // 5.11.26.
-  bool AssignIntraMv(const Block& block);                      // 5.11.26.
+  void ReadInterpolationFilter(const Block& block, bool skip_mode);
+  bool ReadInterBlockModeInfo(const Block& block, bool skip_mode);  // 5.11.23.
+  bool DecodeInterModeInfo(const Block& block);                     // 5.11.18.
+  bool DecodeModeInfo(const Block& block);                          // 5.11.6.
+  bool IsMvValid(const Block& block, bool is_compound) const;       // 6.10.25.
+  bool AssignInterMv(const Block& block, bool is_compound);         // 5.11.26.
+  bool AssignIntraMv(const Block& block);                           // 5.11.26.
   int GetTopTransformWidth(const Block& block, int row4x4, int column4x4,
                            bool ignore_skip);
   int GetLeftTransformHeight(const Block& block, int row4x4, int column4x4,
@@ -541,7 +547,6 @@ class Tile : public Allocable {
                        bool has_left, bool has_top, bool has_top_right,
                        bool has_bottom_left, PredictionMode mode,
                        TransformSize tx_size);
-  bool IsSmoothPrediction(int row, int column, Plane plane) const;
   int GetIntraEdgeFilterType(const Block& block,
                              Plane plane) const;  // 7.11.2.8.
   template <typename Pixel>
@@ -563,6 +568,17 @@ class Tile : public Allocable {
   // for the given |block| and stores them into |current_frame_|.
   void StoreMotionFieldMvsIntoCurrentFrame(const Block& block);
 
+  // SetCdfContext*() functions will populate the |left_context_| and
+  // |top_context_| for the |block|.
+  void SetCdfContextUsePredictedSegmentId(const Block& block,
+                                          bool use_predicted_segment_id);
+  void SetCdfContextCompoundType(const Block& block,
+                                 bool is_explicit_compound_type,
+                                 bool is_compound_type_average);
+  void SetCdfContextSkipMode(const Block& block, bool skip_mode);
+  void SetCdfContextPaletteSize(const Block& block);
+  void SetCdfContextUVMode(const Block& block);
+
   // Returns the zero-based index of the super block that contains |row4x4|
   // relative to the start of this tile.
   int SuperBlockRowIndex(int row4x4) const {
@@ -575,6 +591,16 @@ class Tile : public Allocable {
   int SuperBlockColumnIndex(int column4x4) const {
     return (column4x4 - column4x4_start_) >>
            (sequence_header_.use_128x128_superblock ? 5 : 4);
+  }
+
+  // Returns the zero-based index of the block that starts at row4x4 or
+  // column4x4 relative to the start of the superblock that contains the block.
+  // This is used to index into the members of |left_context_| and
+  // |top_context_|.
+  int CdfContextIndex(int row_or_column4x4) const {
+    return row_or_column4x4 -
+           (row_or_column4x4 &
+            (sequence_header_.use_128x128_superblock ? ~31 : ~15));
   }
 
   BlockSize SuperBlockSize() const {
@@ -600,8 +626,6 @@ class Tile : public Allocable {
   bool read_deltas_;
   const int8_t subsampling_x_[kMaxPlanes];
   const int8_t subsampling_y_[kMaxPlanes];
-  int deblock_row_limit_[kMaxPlanes];
-  int deblock_column_limit_[kMaxPlanes];
 
   // The dimensions (in order) are: segment_id, level_index (based on plane and
   // direction), reference_frame and mode_id.
@@ -649,7 +673,7 @@ class Tile : public Allocable {
   const std::array<uint8_t, kNumReferenceFrameTypes>& reference_order_hint_;
   const WedgeMaskArray& wedge_masks_;
   const QuantizerMatrix& quantizer_matrix_;
-  DaalaBitReader reader_;
+  EntropyDecoder reader_;
   SymbolDecoderContext symbol_decoder_context_;
   SymbolDecoderContext* const saved_symbol_decoder_context_;
   const SegmentationMap* prev_segment_ids_;
@@ -712,7 +736,8 @@ class Tile : public Allocable {
   Array2DView<uint8_t> buffer_[kMaxPlanes];
   RefCountedBuffer& current_frame_;
 
-  Array2D<int16_t>& cdef_index_;
+  Array2D<int8_t>& cdef_index_;
+  Array2D<uint8_t>& cdef_skip_;
   Array2D<TransformSize>& inter_transform_sizes_;
   std::array<RestorationUnitInfo, kMaxPlanes> reference_unit_info_;
   // If |thread_pool_| is nullptr, the calling thread will do the parsing and
@@ -746,12 +771,19 @@ class Tile : public Allocable {
   // Stores the progress of the reference frames. This will be used to avoid
   // unnecessary calls into RefCountedBuffer::WaitUntil().
   std::array<int, kNumReferenceFrameTypes> reference_frame_progress_cache_;
+  // Stores the CDF contexts necessary for the "left" block.
+  BlockCdfContext left_context_;
+  // Stores the CDF contexts necessary for the "top" block. The size of this
+  // buffer is the number of superblock columns in this tile. For each block,
+  // the access index will be the corresponding SuperBlockColumnIndex()'th
+  // entry.
+  DynamicBuffer<BlockCdfContext> top_context_;
 };
 
 struct Tile::Block {
-  Block(const Tile& tile, BlockSize size, int row4x4, int column4x4,
+  Block(Tile* tile_ptr, BlockSize size, int row4x4, int column4x4,
         TileScratchBuffer* const scratch_buffer, ResidualPtr* residual)
-      : tile(tile),
+      : tile(*tile_ptr),
         size(size),
         row4x4(row4x4),
         column4x4(column4x4),
@@ -760,7 +792,11 @@ struct Tile::Block {
         width4x4(width >> 2),
         height4x4(height >> 2),
         scratch_buffer(scratch_buffer),
-        residual(residual) {
+        residual(residual),
+        top_context(tile.top_context_.get() +
+                    tile.SuperBlockColumnIndex(column4x4)),
+        top_context_index(tile.CdfContextIndex(column4x4)),
+        left_context_index(tile.CdfContextIndex(row4x4)) {
     assert(size != kBlockInvalid);
     residual_size[kPlaneY] = kPlaneResidualSize[size][0][0];
     residual_size[kPlaneU] = residual_size[kPlaneV] =
@@ -881,7 +917,7 @@ struct Tile::Block {
     return false;
   }
 
-  const Tile& tile;
+  Tile& tile;
   bool has_chroma;
   const BlockSize size;
   bool top_available[kMaxPlanes];
@@ -898,6 +934,9 @@ struct Tile::Block {
   BlockParameters* bp;
   TileScratchBuffer* const scratch_buffer;
   ResidualPtr* const residual;
+  BlockCdfContext* const top_context;
+  const int top_context_index;
+  const int left_context_index;
 };
 
 extern template bool

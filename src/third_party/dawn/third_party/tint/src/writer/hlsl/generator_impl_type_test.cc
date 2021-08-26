@@ -19,6 +19,7 @@
 #include "src/sem/depth_texture_type.h"
 #include "src/sem/multisampled_texture_type.h"
 #include "src/sem/sampled_texture_type.h"
+#include "src/sem/sampler_type.h"
 #include "src/sem/storage_texture_type.h"
 #include "src/writer/hlsl/test_helper.h"
 
@@ -172,9 +173,10 @@ TEST_F(HlslGeneratorImplTest_Type, EmitType_StructDecl) {
 
   GeneratorImpl& gen = Build();
 
+  TextGenerator::TextBuffer buf;
   auto* sem_s = program->TypeOf(s)->As<sem::Struct>();
-  ASSERT_TRUE(gen.EmitStructType(sem_s)) << gen.error();
-  EXPECT_EQ(gen.result(), R"(struct S {
+  ASSERT_TRUE(gen.EmitStructType(&buf, sem_s)) << gen.error();
+  EXPECT_EQ(buf.String(), R"(struct S {
   int a;
   float b;
 };
@@ -196,9 +198,8 @@ TEST_F(HlslGeneratorImplTest_Type, EmitType_StructDecl_OmittedIfStorageBuffer) {
 
   GeneratorImpl& gen = Build();
 
-  auto* sem_s = program->TypeOf(s)->As<sem::Struct>();
-  ASSERT_TRUE(gen.EmitStructType(sem_s)) << gen.error();
-  EXPECT_EQ(gen.result(), "");
+  ASSERT_TRUE(gen.Generate()) << gen.error();
+  EXPECT_EQ(gen.result(), "RWByteAddressBuffer g : register(u0, space0);\n");
 }
 
 TEST_F(HlslGeneratorImplTest_Type, EmitType_Struct) {
@@ -233,6 +234,27 @@ TEST_F(HlslGeneratorImplTest_Type, EmitType_Struct_NameCollision) {
   float tint_symbol_1;
 };
 )"));
+}
+
+TEST_F(HlslGeneratorImplTest_Type, EmitType_Struct_WithOffsetAttributes) {
+  auto* s = Structure("S",
+                      {
+                          Member("a", ty.i32(), {MemberOffset(0)}),
+                          Member("b", ty.f32(), {MemberOffset(8)}),
+                      },
+                      {create<ast::StructBlockDecoration>()});
+  Global("g", ty.Of(s), ast::StorageClass::kPrivate);
+
+  GeneratorImpl& gen = Build();
+
+  TextGenerator::TextBuffer buf;
+  auto* sem_s = program->TypeOf(s)->As<sem::Struct>();
+  ASSERT_TRUE(gen.EmitStructType(&buf, sem_s)) << gen.error();
+  EXPECT_EQ(buf.String(), R"(struct S {
+  int a;
+  float b;
+};
+)");
 }
 
 TEST_F(HlslGeneratorImplTest_Type, EmitType_U32) {
@@ -336,6 +358,26 @@ INSTANTIATE_TEST_SUITE_P(
                              "TextureCube tex : register(t1, space2);"},
         HlslDepthTextureData{ast::TextureDimension::kCubeArray,
                              "TextureCubeArray tex : register(t1, space2);"}));
+
+using HlslDepthMultisampledTexturesTest = TestHelper;
+TEST_F(HlslDepthMultisampledTexturesTest, Emit) {
+  auto* t = ty.depth_multisampled_texture(ast::TextureDimension::k2d);
+
+  Global("tex", t,
+         ast::DecorationList{
+             create<ast::BindingDecoration>(1),
+             create<ast::GroupDecoration>(2),
+         });
+
+  Func("main", {}, ty.void_(), {Ignore(Call("textureDimensions", "tex"))},
+       {Stage(ast::PipelineStage::kFragment)});
+
+  GeneratorImpl& gen = Build();
+
+  ASSERT_TRUE(gen.Generate()) << gen.error();
+  EXPECT_THAT(gen.result(),
+              HasSubstr("Texture2DMS<float4> tex : register(t1, space2);"));
+}
 
 enum class TextureDataType { F32, U32, I32 };
 struct HlslSampledTextureData {

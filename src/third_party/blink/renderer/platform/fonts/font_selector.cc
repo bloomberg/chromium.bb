@@ -27,7 +27,7 @@ AtomicString FontSelector::FamilyNameFromSettings(
     return FontCache::GetGenericFamilyNameForScript(generic_family_name,
                                                     font_description);
   }
-#else
+#else   // !defined(OS_ANDROID)
   UScriptCode script = font_description.GetScript();
   if (font_description.GenericFamily() == FontDescription::kStandardFamily)
     return settings.Standard(script);
@@ -45,7 +45,7 @@ AtomicString FontSelector::FamilyNameFromSettings(
     return settings.Pictograph(script);
   if (generic_family_name == font_family_names::kWebkitStandard)
     return settings.Standard(script);
-#endif
+#endif  // !defined(OS_ANDROID)
   return g_empty_atom;
 }
 

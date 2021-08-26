@@ -15,10 +15,12 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "content/browser/conversions/conversion_report.h"
 #include "content/browser/conversions/sent_report_info.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
+#include "net/base/schemeful_site.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
@@ -27,7 +29,6 @@
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
-#include "url/origin.h"
 #include "url/url_canon.h"
 
 namespace content {
@@ -54,16 +55,13 @@ void LogMetricsOnReportSend(const ConversionReport& report) {
   // Use a large time range to capture users that might not open the browser for
   // a long time while a conversion report is pending. Revisit this range if it
   // is non-ideal for real world data.
-  // Add |extra_delay| to the reported time which will include the amount of
-  // time since the report was originally scheduled, for reports at startup
-  // whose |report_time| changes due to additional startup delay.
   base::Time now = base::Time::Now();
   base::TimeDelta time_since_original_report_time =
-      (now - report.report_time) + report.extra_delay;
-  base::UmaHistogramCustomTimes("Conversions.ExtraReportDelay",
+      (now - report.original_report_time);
+  base::UmaHistogramCustomTimes("Conversions.ExtraReportDelay2",
                                 time_since_original_report_time,
                                 base::TimeDelta::FromSeconds(1),
-                                base::TimeDelta::FromDays(7), /*buckets=*/100);
+                                base::TimeDelta::FromDays(24), /*buckets=*/100);
 
   base::TimeDelta time_from_conversion_to_report_send =
       report.report_time - report.conversion_time;
@@ -174,6 +172,8 @@ void ConversionNetworkSenderImpl::SendReport(const ConversionReport& report,
                    network::SimpleURLLoader::RETRY_ON_NAME_NOT_RESOLVED;
   simple_url_loader_ptr->SetRetryOptions(/*max_retries=*/1, retry_mode);
 
+  DCHECK(report.conversion_id);
+
   // Unretained is safe because the URLLoader is owned by |this| and will be
   // deleted before |this|.
   simple_url_loader_ptr->DownloadHeadersOnly(
@@ -181,7 +181,8 @@ void ConversionNetworkSenderImpl::SendReport(const ConversionReport& report,
       base::BindOnce(&ConversionNetworkSenderImpl::OnReportSent,
                      base::Unretained(this), std::move(it),
                      std::move(report_url), std::move(report_body),
-                     std::move(sent_callback)));
+                     std::move(sent_callback), *report.conversion_id,
+                     report.original_report_time));
   LogMetricsOnReportSend(report);
 }
 
@@ -195,14 +196,10 @@ void ConversionNetworkSenderImpl::OnReportSent(
     GURL report_url,
     std::string report_body,
     ReportSentCallback sent_callback,
+    int64_t conversion_id,
+    base::Time original_report_time,
     scoped_refptr<net::HttpResponseHeaders> headers) {
   network::SimpleURLLoader* loader = it->get();
-
-  SentReportInfo sent_report_info = {
-      .report_url = std::move(report_url),
-      .report_body = std::move(report_body),
-      .http_response_code = headers ? headers->response_code() : 0,
-  };
 
   // Consider a non-200 HTTP code as a non-internal error.
   int net_error = loader->NetError();
@@ -228,7 +225,24 @@ void ConversionNetworkSenderImpl::OnReportSent(
   }
 
   loaders_in_progress_.erase(it);
-  std::move(sent_callback).Run(std::move(sent_report_info));
+
+  // Retry reports that have not received headers and failed with one of the
+  // specified error codes. These codes are chosen from the
+  // "Conversions.Report.HttpResponseOrNetErrorCode" histogram. HTTP errors
+  // should not be retried to prevent over requesting servers.
+  bool should_retry =
+      !headers && (net_error == net::ERR_INTERNET_DISCONNECTED ||
+                   net_error == net::ERR_NAME_NOT_RESOLVED ||
+                   net_error == net::ERR_TIMED_OUT ||
+                   net_error == net::ERR_CONNECTION_TIMED_OUT ||
+                   net_error == net::ERR_CONNECTION_ABORTED ||
+                   net_error == net::ERR_CONNECTION_RESET);
+
+  std::move(sent_callback)
+      .Run(SentReportInfo(conversion_id, original_report_time,
+                          std::move(report_url), std::move(report_body),
+                          headers ? headers->response_code() : 0,
+                          should_retry));
 }
 
 }  // namespace content

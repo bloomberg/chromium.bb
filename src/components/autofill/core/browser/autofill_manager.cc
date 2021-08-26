@@ -167,9 +167,9 @@ void AutofillManager::OnTranslateDriverDestroyed(
   translate_observation_.Reset();
 }
 
-LanguageCode AutofillManager::GetCurrentPageLanguage() const {
-  DCHECK(client_);
-  const translate::LanguageState* language_state = client_->GetLanguageState();
+LanguageCode AutofillManager::GetCurrentPageLanguage() {
+  DCHECK(client());
+  const translate::LanguageState* language_state = client()->GetLanguageState();
   if (!language_state)
     return LanguageCode();
   return LanguageCode(language_state->current_language());
@@ -310,17 +310,16 @@ void AutofillManager::OnSelectControlDidChange(const FormData& form,
   OnSelectControlDidChangeImpl(form, field, bounding_box);
 }
 
-void AutofillManager::OnQueryFormFieldAutofill(
-    int query_id,
-    const FormData& form,
-    const FormFieldData& field,
-    const gfx::RectF& bounding_box,
-    bool autoselect_first_suggestion) {
+void AutofillManager::OnAskForValuesToFill(int query_id,
+                                           const FormData& form,
+                                           const FormFieldData& field,
+                                           const gfx::RectF& bounding_box,
+                                           bool autoselect_first_suggestion) {
   if (!IsValidFormData(form) || !IsValidFormFieldData(field))
     return;
 
-  OnQueryFormFieldAutofillImpl(query_id, form, field, bounding_box,
-                               autoselect_first_suggestion);
+  OnAskForValuesToFillImpl(query_id, form, field, bounding_box,
+                           autoselect_first_suggestion);
 }
 
 void AutofillManager::OnFocusOnFormField(const FormData& form,
@@ -376,11 +375,11 @@ bool AutofillManager::GetCachedFormAndField(const FormData& form,
 
 std::unique_ptr<AutofillMetrics::FormInteractionsUkmLogger>
 AutofillManager::CreateFormInteractionsUkmLogger() {
-  if (!client())
+  if (!unsafe_client())
     return nullptr;
 
   return std::make_unique<AutofillMetrics::FormInteractionsUkmLogger>(
-      client()->GetUkmRecorder(), client()->GetUkmSourceId());
+      unsafe_client()->GetUkmRecorder(), unsafe_client()->GetUkmSourceId());
 }
 
 size_t AutofillManager::FindCachedFormsBySignature(
@@ -452,6 +451,7 @@ FormStructure* AutofillManager::ParseForm(const FormData& form,
 }
 
 void AutofillManager::Reset() {
+  query_result_delay_task_.Cancel();
   form_structures_.clear();
   form_interactions_ukm_logger_ = CreateFormInteractionsUkmLogger();
 }

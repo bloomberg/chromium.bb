@@ -143,6 +143,10 @@ class TestBrowserWindow : public BrowserWindow {
       qrcode_generator::QRCodeGeneratorBubbleController* controller,
       const GURL& url) override;
 #if !defined(OS_ANDROID)
+  sharing_hub::ScreenshotCapturedBubble* ShowScreenshotCapturedBubble(
+      content::WebContents* contents,
+      const gfx::Image& image,
+      sharing_hub::ScreenshotCapturedBubbleController* controller) override;
   void ShowIntentPickerBubble(
       std::vector<apps::IntentPickerAppInfo> app_info,
       bool show_stay_in_chrome,
@@ -193,14 +197,16 @@ class TestBrowserWindow : public BrowserWindow {
   void MaybeShowProfileSwitchIPH() override {}
 
 #if defined(OS_CHROMEOS) || defined(OS_MAC) || defined(OS_WIN) || \
-    defined(OS_LINUX)
+    defined(OS_LINUX) || defined(OS_FUCHSIA)
   void ShowHatsDialog(
       const std::string& site_id,
       base::OnceClosure success_callback,
       base::OnceClosure failure_callback,
-      const std::map<std::string, bool>& product_specific_data) override {}
+      const SurveyBitsData& product_specific_bits_data,
+      const SurveyStringData& product_specific_string_data) override {}
 
   void ShowIncognitoClearBrowsingDataDialog() override {}
+  void ShowIncognitoHistoryDisclaimerDialog() override {}
 #endif
 
   ExclusiveAccessContext* GetExclusiveAccessContext() override;

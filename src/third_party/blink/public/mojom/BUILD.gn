@@ -40,7 +40,6 @@ mojom("mojom_platform") {
     "choosers/file_chooser.mojom",
     "choosers/popup_menu.mojom",
     "clipboard/clipboard.mojom",
-    "clipboard/raw_clipboard.mojom",
     "commit_result/commit_result.mojom",
     "compute_pressure/compute_pressure.mojom",
     "content_index/content_index.mojom",
@@ -54,7 +53,6 @@ mojom("mojom_platform") {
     "css/preferred_contrast.mojom",
     "data_transfer/data_transfer.mojom",
     "device/device.mojom",
-    "device_posture/device_posture.mojom",
     "devtools/console_message.mojom",
     "devtools/devtools_agent.mojom",
     "devtools/devtools_frontend.mojom",
@@ -66,9 +64,11 @@ mojom("mojom_platform") {
     "fetch/fetch_api_request.mojom",
     "fetch/fetch_api_response.mojom",
     "file/file_utilities.mojom",
+    "file_system_access/file_system_access_access_handle_host.mojom",
     "file_system_access/file_system_access_data_transfer_token.mojom",
     "file_system_access/file_system_access_directory_handle.mojom",
     "file_system_access/file_system_access_error.mojom",
+    "file_system_access/file_system_access_file_delegate_host.mojom",
     "file_system_access/file_system_access_file_handle.mojom",
     "file_system_access/file_system_access_file_writer.mojom",
     "file_system_access/file_system_access_manager.mojom",
@@ -105,6 +105,7 @@ mojom("mojom_platform") {
     "loader/request_context_frame_type.mojom",
     "loader/resource_load_info.mojom",
     "loader/resource_load_info_notifier.mojom",
+    "loader/same_document_navigation_type.mojom",
     "loader/transferrable_url_loader.mojom",
     "loader/url_loader_factory_bundle.mojom",
     "locks/lock_manager.mojom",
@@ -129,7 +130,6 @@ mojom("mojom_platform") {
     "notifications/notification.mojom",
     "notifications/notification_service.mojom",
     "oom_intervention/oom_intervention.mojom",
-    "optimization_guide/optimization_guide.mojom",
     "page/display_cutout.mojom",
     "page/drag.mojom",
     "page/page.mojom",
@@ -176,6 +176,7 @@ mojom("mojom_platform") {
     "service_worker/service_worker_stream_handle.mojom",
     "service_worker/service_worker_worker_client.mojom",
     "service_worker/service_worker_worker_client_registry.mojom",
+    "shared_storage/shared_storage.mojom",
     "site_engagement/site_engagement.mojom",
     "sms/webotp_service.mojom",
     "speculation_rules/speculation_rules.mojom",
@@ -187,6 +188,7 @@ mojom("mojom_platform") {
     "speech/speech_synthesis.mojom",
     "storage_access/storage_access_automation.mojom",
     "storage_key/storage_key.mojom",
+    "subapps/sub_apps_provider.mojom",
     "timing/performance_mark_or_measure.mojom",
     "timing/resource_timing.mojom",
     "timing/worker_timing_container.mojom",
@@ -553,14 +555,33 @@ mojom("mojom_platform") {
     {
       types = [
         {
-          mojom = "blink.mojom.Manifest"
-          cpp = "::blink::Manifest"
-          nullable_is_same_type = true
+          mojom = "blink.mojom.InterestGroup"
+          cpp = "::blink::InterestGroup"
         },
-
+      ]
+      traits_headers = [ "//third_party/blink/public/common/interest_group/interest_group_mojom_traits.h" ]
+      traits_public_deps = [ "//url/mojom:mojom_traits" ]
+    },
+    {
+      types = [
+        {
+          mojom = "blink.mojom.InterestGroupAd"
+          cpp = "::blink::InterestGroup::Ad"
+        },
+      ]
+      traits_headers = [ "//third_party/blink/public/common/interest_group/interest_group_mojom_traits.h" ]
+      traits_public_deps = [ "//url/mojom:mojom_traits" ]
+    },
+    {
+      types = [
         {
           mojom = "blink.mojom.ManifestImageResource"
           cpp = "::blink::Manifest::ImageResource"
+        },
+
+        {
+          mojom = "blink.mojom.ManifestLaunchHandler"
+          cpp = "::blink::Manifest::LaunchHandler"
         },
 
         {

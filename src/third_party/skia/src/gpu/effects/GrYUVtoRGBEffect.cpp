@@ -13,7 +13,6 @@
 #include "src/gpu/GrYUVATextureProxies.h"
 #include "src/gpu/effects/GrMatrixEffect.h"
 #include "src/gpu/effects/GrTextureEffect.h"
-#include "src/gpu/glsl/GrGLSLFragmentProcessor.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
 #include "src/gpu/glsl/GrGLSLProgramBuilder.h"
 #include "src/sksl/SkSLUtil.h"
@@ -238,11 +237,9 @@ SkString GrYUVtoRGBEffect::onDumpInfo() const {
 }
 #endif
 
-std::unique_ptr<GrGLSLFragmentProcessor> GrYUVtoRGBEffect::onMakeProgramImpl() const {
-    class GrGLSLYUVtoRGBEffect : public GrGLSLFragmentProcessor {
+std::unique_ptr<GrFragmentProcessor::ProgramImpl> GrYUVtoRGBEffect::onMakeProgramImpl() const {
+    class Impl : public ProgramImpl {
     public:
-        GrGLSLYUVtoRGBEffect() {}
-
         void emitCode(EmitArgs& args) override {
             GrGLSLFPFragmentBuilder* fragBuilder = args.fFragBuilder;
             const GrYUVtoRGBEffect& yuvEffect = args.fFp.cast<GrYUVtoRGBEffect>();
@@ -336,10 +333,10 @@ std::unique_ptr<GrGLSLFragmentProcessor> GrYUVtoRGBEffect::onMakeProgramImpl() c
         UniformHandle fColorSpaceTranslateVar;
     };
 
-    return std::make_unique<GrGLSLYUVtoRGBEffect>();
+    return std::make_unique<Impl>();
 }
-void GrYUVtoRGBEffect::onGetGLSLProcessorKey(const GrShaderCaps& caps,
-                                             GrProcessorKeyBuilder* b) const {
+
+void GrYUVtoRGBEffect::onAddToKey(const GrShaderCaps& caps, GrProcessorKeyBuilder* b) const {
     uint32_t packed = 0;
     int i = 0;
     for (auto [plane, channel] : fLocations) {
@@ -374,14 +371,9 @@ bool GrYUVtoRGBEffect::onIsEqual(const GrFragmentProcessor& other) const {
 }
 
 GrYUVtoRGBEffect::GrYUVtoRGBEffect(const GrYUVtoRGBEffect& src)
-        : GrFragmentProcessor(kGrYUVtoRGBEffect_ClassID, src.optimizationFlags())
+        : GrFragmentProcessor(src)
         , fLocations((src.fLocations))
         , fYUVColorSpace(src.fYUVColorSpace) {
-    this->cloneAndRegisterAllChildProcessors(src);
-    if (src.fSnap[0] || src.fSnap[1]) {
-        this->setUsesSampleCoordsDirectly();
-    }
-
     std::copy_n(src.fSnap, 2, fSnap);
 }
 

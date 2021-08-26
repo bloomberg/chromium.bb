@@ -86,85 +86,6 @@ void ScriptRunner::ScheduleReadyInOrderScripts() {
   }
 }
 
-void ScriptRunner::DelayAsyncScript(PendingScript* pending_script) {
-  DCHECK(!delay_async_script_milestone_reached_ ||
-         async_script_execution_paused_);
-  SECURITY_CHECK(pending_async_scripts_.Contains(pending_script));
-  pending_async_scripts_.erase(pending_script);
-
-  // When the ScriptRunner is notified via
-  // |NotifyDelayedAsyncScriptsMilestoneReached()|, the scripts in
-  // |pending_delayed_async_scripts_| will be scheduled for execution.
-  pending_delayed_async_scripts_.push_back(pending_script);
-}
-
-void ScriptRunner::ScheduleDelayedAsyncScripts() {
-  DCHECK(delay_async_script_milestone_reached_ ||
-         !async_script_execution_paused_);
-  while (!pending_delayed_async_scripts_.IsEmpty()) {
-    PendingScript* pending_script = pending_delayed_async_scripts_.TakeFirst();
-    DCHECK_EQ(pending_script->GetSchedulingType(),
-              ScriptSchedulingType::kAsync);
-
-    async_scripts_to_execute_soon_.push_back(pending_script);
-    PostTask(FROM_HERE);
-  }
-}
-
-void ScriptRunner::NotifyDelayedAsyncScriptsMilestoneReached() {
-  delay_async_script_milestone_reached_ = true;
-  ScheduleDelayedAsyncScripts();
-}
-
-bool ScriptRunner::CanDelayAsyncScripts() {
-  if (delay_async_script_milestone_reached_)
-    return false;
-
-  // We first check to see if the base::Feature is enabled, before the
-  // RuntimeEnabledFeatures. This is because the RuntimeEnabledFeatures simply
-  // exist for testing, so if they are enabled *and* the base::Feature is
-  // enabled, we should log UKM via DocumentLoader::DidObserveLoadingBehavior,
-  // which is associated with the experiment running the base::Feature flag.
-  static bool feature_enabled =
-      base::FeatureList::IsEnabled(features::kDelayAsyncScriptExecution);
-  bool optimization_guide_hints_unknown =
-      !document_->GetFrame() ||
-      !document_->GetFrame()->GetOptimizationGuideHints() ||
-      !document_->GetFrame()
-           ->GetOptimizationGuideHints()
-           ->delay_async_script_execution_hints ||
-      document_->GetFrame()
-              ->GetOptimizationGuideHints()
-              ->delay_async_script_execution_hints->delay_type ==
-          mojom::blink::DelayAsyncScriptExecutionDelayType::kUnknown;
-  if (feature_enabled) {
-    if (document_->Parsing() && document_->Loader()) {
-      document_->Loader()->DidObserveLoadingBehavior(
-          kLoadingBehaviorAsyncScriptReadyBeforeDocumentFinishedParsing);
-    }
-
-    // If the base::Feature is enabled, we always want to delay async scripts,
-    // unless we delegate to the OptimizationGuide, but the hints aren't
-    // available.
-    if (features::kDelayAsyncScriptExecutionDelayParam.Get() !=
-            features::DelayAsyncScriptDelayType::kUseOptimizationGuide ||
-        !optimization_guide_hints_unknown) {
-      return true;
-    }
-  }
-
-  // Delay milestone has not been reached yet. We have to check the feature flag
-  // configuration to see if we are able to delay async scripts or not:
-  if (RuntimeEnabledFeatures::
-          DelayAsyncScriptExecutionUntilFinishedParsingEnabled() ||
-      RuntimeEnabledFeatures::
-          DelayAsyncScriptExecutionUntilFirstPaintOrFinishedParsingEnabled()) {
-    return true;
-  }
-
-  return false;
-}
-
 void ScriptRunner::NotifyScriptReady(PendingScript* pending_script) {
   SECURITY_CHECK(pending_script);
 
@@ -175,12 +96,6 @@ void ScriptRunner::NotifyScriptReady(PendingScript* pending_script) {
       // (otherwise we'd cause a use-after-free in ~ScriptRunner when it tries
       // to detach).
       SECURITY_CHECK(pending_async_scripts_.Contains(pending_script));
-
-      if ((pending_script->IsEligibleForDelay() && CanDelayAsyncScripts()) ||
-          async_script_execution_paused_) {
-        DelayAsyncScript(pending_script);
-        return;
-      }
 
       pending_async_scripts_.erase(pending_script);
       async_scripts_to_execute_soon_.push_back(pending_script);
@@ -274,8 +189,7 @@ bool ScriptRunner::ExecuteInOrderTask() {
 
 bool ScriptRunner::ExecuteAsyncTask() {
   TRACE_EVENT0("blink", "ScriptRunner::ExecuteAsyncTask");
-  if (async_script_execution_paused_ ||
-      async_scripts_to_execute_soon_.IsEmpty())
+  if (async_scripts_to_execute_soon_.IsEmpty())
     return false;
 
   // Remove the async script loader from the ready-to-exec set and execute.
@@ -305,29 +219,10 @@ void ScriptRunner::ExecuteTask() {
     return;
 }
 
-void ScriptRunner::PauseAsyncScriptExecution() {
-  if (async_script_execution_paused_)
-    return;
-  TRACE_EVENT0("blink", "ScriptRunner::PauseAsyncScriptExecution");
-  async_script_execution_paused_ = true;
-}
-
-void ScriptRunner::ResumeAsyncScriptExecution() {
-  if (!async_script_execution_paused_)
-    return;
-  TRACE_EVENT0("blink", "ScriptRunner::ResumeAsyncScriptExecution");
-  async_script_execution_paused_ = false;
-  for (wtf_size_t i = 0; i < async_scripts_to_execute_soon_.size(); i++) {
-    PostTask(FROM_HERE);
-  }
-  ScheduleDelayedAsyncScripts();
-}
-
 void ScriptRunner::Trace(Visitor* visitor) const {
   visitor->Trace(document_);
   visitor->Trace(pending_in_order_scripts_);
   visitor->Trace(pending_async_scripts_);
-  visitor->Trace(pending_delayed_async_scripts_);
   visitor->Trace(async_scripts_to_execute_soon_);
   visitor->Trace(in_order_scripts_to_execute_soon_);
 }

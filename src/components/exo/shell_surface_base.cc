@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ash/constants/ash_constants.h"
 #include "ash/constants/ash_features.h"
 #include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/public/cpp/ash_constants.h"
@@ -14,6 +15,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
+#include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/window_resizer.h"
@@ -530,6 +532,18 @@ void ShellSurfaceBase::UnsetPip() {
   window->SetProperty(aura::client::kZOrderingKey, ui::ZOrderLevel::kNormal);
 }
 
+void ShellSurfaceBase::MoveToDesk(int desk_index) {
+  if (widget_) {
+    ash::DesksController::Get()->SendToDeskAtIndex(widget_->GetNativeWindow(),
+                                                   desk_index);
+  }
+}
+
+void ShellSurfaceBase::SetVisibleOnAllWorkspaces() {
+  if (widget_)
+    widget_->SetVisibleOnAllWorkspaces(true);
+}
+
 void ShellSurfaceBase::SetChildAxTreeId(ui::AXTreeID child_ax_tree_id) {
   GetViewAccessibility().OverrideChildTreeID(child_ax_tree_id);
   this->NotifyAccessibilityEvent(ax::mojom::Event::kChildrenChanged, false);
@@ -575,7 +589,6 @@ void ShellSurfaceBase::SetContainer(int container) {
 void ShellSurfaceBase::SetMaximumSize(const gfx::Size& size) {
   TRACE_EVENT1("exo", "ShellSurfaceBase::SetMaximumSize", "size",
                size.ToString());
-
   pending_maximum_size_ = size;
 }
 
@@ -609,8 +622,16 @@ void ShellSurfaceBase::DisableMovement() {
     widget_->set_movement_disabled(true);
 }
 
-void ShellSurfaceBase::UpdateCanResize() {
+void ShellSurfaceBase::UpdateResizability() {
   SetCanResize(CalculateCanResize());
+  auto max_size = GetMaximumSize();
+
+  // Allow maximizeing if the max size is bigger than 32k resolution.
+  SetCanMaximize(CanResize() && !parent_ &&
+                 ash::desks_util::IsDeskContainerId(container_) &&
+                 (max_size.IsEmpty() ||
+                  (max_size.width() > ash::kAllowMaximizeThreshold &&
+                   max_size.height() > ash::kAllowMaximizeThreshold)));
 }
 
 void ShellSurfaceBase::RebindRootSurface(Surface* root_surface,
@@ -689,7 +710,7 @@ void ShellSurfaceBase::AddOverlay(OverlayParams&& overlay_params) {
   }
 
   UpdateWidgetBounds();
-  UpdateCanResize();
+  UpdateResizability();
 }
 
 void ShellSurfaceBase::RemoveOverlay() {
@@ -699,7 +720,7 @@ void ShellSurfaceBase::RemoveOverlay() {
     GetWidget()->GetNativeWindow()->SetProperty(
         aura::client::kSkipImeProcessing, true);
   }
-  UpdateCanResize();
+  UpdateResizability();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -994,12 +1015,20 @@ void ShellSurfaceBase::OnWindowPropertyChanged(aura::Window* window,
     } else if (key == chromeos::kFrameRestoreLookKey) {
       root_surface()->SetFrameLocked(
           window->GetProperty(chromeos::kFrameRestoreLookKey));
+    } else if (key == aura::client::kVisibleOnAllWorkspacesKey ||
+               key == aura::client::kWindowWorkspaceKey) {
+      root_surface()->OnDeskChanged(GetWindowDeskStateChanged(window));
     }
   }
 }
 
 void ShellSurfaceBase::OnWindowAddedToRootWindow(aura::Window* window) {
   UpdateDisplayOnTree();
+}
+
+void ShellSurfaceBase::OnWindowParentChanged(aura::Window* window,
+                                             aura::Window* parent) {
+  root_surface()->OnDeskChanged(GetWindowDeskStateChanged(window));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1166,6 +1195,8 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
     SetPip();
     pending_pip_ = false;
   }
+
+  root_surface()->OnDeskChanged(GetWindowDeskStateChanged(window));
 }
 
 ShellSurfaceBase::OverlayParams::OverlayParams(
@@ -1370,8 +1401,7 @@ void ShellSurfaceBase::SetContainerInternal(int container) {
 void ShellSurfaceBase::SetParentInternal(aura::Window* parent) {
   parent_ = parent;
   WidgetDelegate::SetCanMinimize(!parent_ && can_minimize_);
-  WidgetDelegate::SetCanMaximize(
-      !parent_ && ash::desks_util::IsDeskContainerId(container_));
+  UpdateResizability();
   if (widget_)
     widget_->OnSizeConstraintsChanged();
 }
@@ -1393,7 +1423,7 @@ void ShellSurfaceBase::CommitWidget() {
                                  maximum_size_ != pending_maximum_size_;
   minimum_size_ = pending_minimum_size_;
   maximum_size_ = pending_maximum_size_;
-  UpdateCanResize();
+  UpdateResizability();
 
   if (!widget_)
     return;

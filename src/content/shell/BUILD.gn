@@ -195,9 +195,6 @@ static_library("content_shell_lib") {
   configs += [
     ":content_shell_lib_warnings",
     "//build/config:precompiled_headers",
-
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    "//build/config/compiler:no_size_t_to_int_warning",
   ]
 
   defines = [
@@ -541,9 +538,11 @@ if (is_android) {
       }
     }
 
-    if (is_win || is_linux || is_chromeos) {
+    if (is_win) {
       data_deps +=
           [ "//third_party/crashpad/crashpad/handler:crashpad_handler" ]
+    } else if (is_linux || is_chromeos) {
+      data_deps += [ "//components/crash/core/app:chrome_crashpad_handler" ]
     }
 
     if ((is_linux || is_chromeos) && !is_component_build) {

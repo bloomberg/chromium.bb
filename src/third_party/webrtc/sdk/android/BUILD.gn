@@ -202,7 +202,9 @@ if (is_android) {
       ":base_java",
       "//rtc_base:base_java",
       "//third_party/android_deps:com_android_support_support_annotations_java",
+      "//third_party/androidx:androidx_annotation_annotation_java",
     ]
+    srcjar_deps = [ "//api/video:video_frame_enums" ]
   }
 
   rtc_android_library("video_java") {
@@ -323,7 +325,6 @@ if (is_android) {
     ]
     srcjar_deps = [
       "//api:priority_enums",
-      "//api/video:video_frame_enums",
       "//rtc_base:network_monitor_enums",
     ]
   }
@@ -1455,6 +1456,7 @@ if (is_android) {
         "//third_party/android_deps:guava_android_java",
         "//third_party/android_support_test_runner:rules_java",
         "//third_party/android_support_test_runner:runner_java",
+        "//third_party/androidx:androidx_test_runner_java",
         "//third_party/google-truth:google_truth_java",
         "//third_party/hamcrest:hamcrest_java",
         "//third_party/hamcrest:hamcrest_library_java",
@@ -1487,11 +1489,16 @@ if (is_android) {
 
   rtc_library("instrumentationtests_jni") {
     testonly = true
-    sources = [ "instrumentationtests/loggable_test.cc" ]
+    sources = [
+      "instrumentationtests/loggable_test.cc",
+      "instrumentationtests/video_frame_buffer_test.cc",
+    ]
 
     deps = [
       ":base_jni",
       ":native_api_jni",
+      ":videoframe_jni",
+      "../../api/video:video_frame",
       "../../rtc_base:rtc_base_approved",
     ]
   }
@@ -1581,6 +1588,7 @@ if (is_android) {
       ":video_java",
       "../../rtc_base:base_java",
       "//third_party/android_support_test_runner:runner_java",
+      "//third_party/androidx:androidx_test_runner_java",
     ]
   }
 

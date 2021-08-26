@@ -3,6 +3,8 @@
 <translationbundle lang="zh-CN">
 <translation id="1175958423215084756">检测到链接。<ph name="HOSTNAME" /></translation>
 <translation id="1276998909102132017">图库图片</translation>
+<translation id="1300209025925956156">扫描您的文件</translation>
+<translation id="137991641490787891"><ph name="ASPECT_RATIO_WIDTH" />。按搜索键 + 向左键即可访问。</translation>
 <translation id="1430915738399379752">打印</translation>
 <translation id="1467231725790366244"><ph name="CAMERA" />已拔出。</translation>
 <translation id="1473110567575736769">3 秒计时器</translation>
@@ -31,7 +33,6 @@
 <translation id="2549985041256363841">开始录制</translation>
 <translation id="2599796128805996109">后置摄像头</translation>
 <translation id="2879583609344924966"><ph name="CAMERA" />已插入。</translation>
-<translation id="2912439424121107408">此设备不支持专家模式</translation>
 <translation id="2968794441791257519">使用此相机拍摄的照片和视频将被移至“下载内容”文件夹。您可在“文件”中访问它们。
 
         具有存储权限的应用将有权访问您的照片和视频。</translation>
@@ -42,15 +43,16 @@
 <translation id="3227137524299004712">麦克风</translation>
 <translation id="3240426699337459095">已复制链接</translation>
 <translation id="3259149966178251584">摄像头分辨率</translation>
+<translation id="3260401663013584785">检测不到文件</translation>
 <translation id="3448774564454087943">未能保存此视频，因为它太短了</translation>
 <translation id="3517926952904427380">无法拍摄纵向照片</translation>
 <translation id="3569311554794739032">确定要移除“<ph name="FILE" />”吗？</translation>
-<translation id="3733597664308256288">已推出新的相机控件。使用搜索键 + 向右键即可访问这些控件。</translation>
 <translation id="3810838688059735925">视频</translation>
 <translation id="3838931309141338733">扫描条形码</translation>
 <translation id="3892148308691398805">复制文字</translation>
 <translation id="4000398125663085899">现在，新照片和视频会保存到“文件”应用中的文件夹：“我的文件”&gt;“相机”</translation>
 <translation id="4118525110028899586">暂停录制</translation>
+<translation id="4121305183798804752">检测到文件</translation>
 <translation id="4269820728363426813">复制链接地址</translation>
 <translation id="4279490309300973883">正在镜像</translation>
 <translation id="4329152592498422850">切换到正方形照片拍摄模式</translation>
@@ -65,10 +67,13 @@
 <translation id="5057360777601936059">您的摄像头目前不可用。
         请检查此摄像头是否连接正确。</translation>
 <translation id="5152121255775685072">打开图库</translation>
+<translation id="520537883758714667">文件扫描功能现已推出</translation>
 <translation id="5268823927180092501">为所有摄像头启用文档模式</translation>
 <translation id="5422455049771430511">您的照片和视频有新家了</translation>
+<translation id="5444515100983837161">请将文件的各个边置于框内。当文件的颜色与背景的颜色不同时，扫描效果最佳。</translation>
 <translation id="5671277269877808209">方形</translation>
 <translation id="5753488212459587150">启用专家模式</translation>
+<translation id="5759254179196327752">扫描文件</translation>
 <translation id="5775960006311140197">专家模式</translation>
 <translation id="5869546221129391014">网格</translation>
 <translation id="5975083100439434680">缩小</translation>
@@ -82,6 +87,7 @@
 
 如果您的反馈是关于图片或视频的画质，请附上示例照片或视频，并说明问题所在（例如照片太暗或摄像头无法聚焦）。</translation>
 <translation id="6420689864531458495">(<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" /> - <ph name="WIDTH" />x<ph name="HEIGHT" />) <ph name="MEGAPIXEL" /> 百万像素</translation>
+<translation id="667999046851023355">文档</translation>
 <translation id="6681668084120808868">拍照</translation>
 <translation id="6778482348691154169">无法拍照</translation>
 <translation id="695140971690006676">全部重置</translation>
@@ -108,11 +114,13 @@
 <translation id="8425673304802773841">向下倾斜</translation>
 <translation id="8428213095426709021">设置</translation>
 <translation id="8687491812650032292">高清 <ph name="HEIGHT" />p (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
+<translation id="8712637175834984815">知道了</translation>
 <translation id="8732462232047530626">预览元数据</translation>
 <translation id="8815966864175525708">切换到纵向照片拍摄模式</translation>
 <translation id="8828441885228359828">继续录制</translation>
 <translation id="8870695351537079478">无法开始录制</translation>
 <translation id="8903921497873541725">放大</translation>
+<translation id="9045010116236796332">请将文件的各个边置于框内</translation>
 <translation id="9045155556724273246">10 秒</translation>
 <translation id="945522503751344254">发送反馈</translation>
 </translationbundle>

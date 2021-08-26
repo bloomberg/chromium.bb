@@ -15,6 +15,17 @@ rmhasan@google.com
 per-file chromium.android.*=chrome-weblayer-builder@chops-service-accounts.iam.gserviceaccount.com
 per-file variants.pyl=chrome-weblayer-builder@chops-service-accounts.iam.gserviceaccount.com
 
+# For Lacros version skew tests related reviews
+per-file variants.pyl=svenzheng@chromium.org
+per-file chromium.chromiumos.json=svenzheng@chromium.org
+per-file chromium.fyi.json=svenzheng@chromium.org
+per-file variants.pyl=lacros-version-skew-roller@chops-service-accounts.iam.gserviceaccount.com
+per-file chromium.chromiumos.json=lacros-version-skew-roller@chops-service-accounts.iam.gserviceaccount.com
+per-file chromium.fyi.json=lacros-version-skew-roller@chops-service-accounts.iam.gserviceaccount.com
+# TODO(crbug.com/1234067) Remove the following 2 lines when the conversion is done.
+per-file chromium.fyi.json=chrome-weblayer-builder@chops-service-accounts.iam.gserviceaccount.com
+per-file chromium.chromiumos.json=chrome-weblayer-builder@chops-service-accounts.iam.gserviceaccount.com
+
 # For V8 and DevTools related reviews.
 machenbach@chromium.org
 

@@ -3,6 +3,8 @@
 <translationbundle lang="or">
 <translation id="1175958423215084756">ଲିଙ୍କଟି ଚିହ୍ନଟ କରାଯାଇଛି। <ph name="HOSTNAME" /></translation>
 <translation id="1276998909102132017">ଗ୍ୟାଲେରୀ ଛବିଗୁଡ଼ିକ</translation>
+<translation id="1300209025925956156">ଆପଣଙ୍କ ଡକ୍ୟୁମେଣ୍ଟ ସ୍କାନ୍ କରନ୍ତୁ</translation>
+<translation id="137991641490787891"><ph name="ASPECT_RATIO_WIDTH" />। ଆକ୍ସେସ୍ କରିବାକୁ ସନ୍ଧାନ କରନ୍ତୁ + ବାମ ତୀର କୀ ଦବାନ୍ତୁ।</translation>
 <translation id="1430915738399379752">ପ୍ରିଣ୍ଟ କରନ୍ତୁ</translation>
 <translation id="1467231725790366244"><ph name="CAMERA" />କୁ ଅନପ୍ଲଗ୍ କରାଯାଇଛି।</translation>
 <translation id="1473110567575736769">3 ସେକେଣ୍ଡର ଟାଇମର୍</translation>
@@ -31,7 +33,6 @@
 <translation id="2549985041256363841">ରେକର୍ଡିଂ ଆରମ୍ଭ କରନ୍ତୁ</translation>
 <translation id="2599796128805996109">ପଛ କ୍ୟାମେରା</translation>
 <translation id="2879583609344924966"><ph name="CAMERA" />କୁ ପ୍ଲଗ୍ ଇନ୍ କରାଯାଇଛି।</translation>
-<translation id="2912439424121107408">ଏହି ଡିଭାଇସ୍‍‍ରେ ଏକ୍ସପାର୍ଟ ମୋଡ୍ ସମର୍ଥନ କରେ ନାହିଁ</translation>
 <translation id="2968794441791257519">କ୍ୟାମେରାରେ ଉଠାଯାଇଥିବା ଫଟୋ ଏବଂ ଭିଡିଓଗୁଡ଼ିକ ଡାଉନ୍‌ଲୋଡ୍ ଫୋଲ୍ଡର୍‍କୁ ନିଆଯିବ। ଆପଣ ସେଗୁଡ଼ିକ ଫାଇଲ୍‌ଗୁଡ଼ିକରେ ଆକ୍ସେସ୍ କରାଯାଇପାରିବ।
 
         ଆପଣଙ୍କର ଫଟୋ ଓ ଭିଡିଓଗୁଡ଼ିକୁ ଷ୍ଟୋରେଜ୍ ଅନୁମତିଗୁଡ଼ିକ ଥିବା ଆପ୍ସ ଆକ୍ସେସ୍ କରିପାରିବେ।</translation>
@@ -42,15 +43,16 @@
 <translation id="3227137524299004712">ମାଇକ୍ରୋଫୋନ୍</translation>
 <translation id="3240426699337459095">ଲିଙ୍କ୍ କପି ହୋଇଛି</translation>
 <translation id="3259149966178251584">କ୍ୟାମେରା ରିଜୋଲ୍ୟୁଶନ୍</translation>
+<translation id="3260401663013584785">କୌଣସି ଡକ୍ୟୁମେଣ୍ଟ ଚିହ୍ନଟ କରାଯାଇପାରିଲା ନାହିଁ</translation>
 <translation id="3448774564454087943">ଭିଡିଓଟି ବହୁତ ଛୋଟ ହୋଇଥିବା ଯୋଗୁଁ ଏହା ସେଭ୍ ହୋଇନାହିଁ</translation>
 <translation id="3517926952904427380">ପୋଟ୍ରେଟ୍ ଫଟୋ ଉଠାଇବା ପାଇଁ ଅକ୍ଷମ</translation>
 <translation id="3569311554794739032">ଆପଣ କ'ଣ ପ୍ରକୃତରେ <ph name="FILE" />କୁ କାଢ଼ି ଦେବାକୁ ଚାହୁଁଛନ୍ତି?</translation>
-<translation id="3733597664308256288">ଅତିରିକ୍ତ କ୍ୟାମେରା ନିୟନ୍ତ୍ରଣଗୁଡ଼ିକ ଉପଲବ୍ଧ ଅଛି। ଆକ୍ସେସ୍ କରିବା ପାଇଁ ସନ୍ଧାନ + ଡାହାଣ ତୀର କୀ ଦବାନ୍ତୁ।</translation>
 <translation id="3810838688059735925">ଭିଡିଓ</translation>
 <translation id="3838931309141338733">ବାରକୋଡ୍ ସ୍କାନ୍ କରନ୍ତୁ</translation>
 <translation id="3892148308691398805">ଟେକ୍ସଟ୍ କପି କରନ୍ତୁ</translation>
 <translation id="4000398125663085899">ନୂଆ ଫଟୋ ଏବଂ ଭିଡିଓଗୁଡ଼ିକ ବର୍ତ୍ତମାନ Files ଆପରେ ଏକ ଫୋଲ୍ଡରରେ ସେଭ୍ କରାଯିବ: ମୋ ଫାଇଲ୍ &gt; କ୍ୟାମେରା</translation>
 <translation id="4118525110028899586">ରେକର୍ଡିଂ ବିରତ କରନ୍ତୁ</translation>
+<translation id="4121305183798804752">ଡକ୍ୟୁମେଣ୍ଟ ଚିହ୍ନଟ କରାଯାଇଛି</translation>
 <translation id="4269820728363426813">ଲିଙ୍କ୍ ଠିକଣା କପି କରନ୍ତୁ</translation>
 <translation id="4279490309300973883">ପ୍ରତିଫଳନ</translation>
 <translation id="4329152592498422850">ବର୍ଗାକାର ଫଟୋ ଉଠାଇବା ପାଇଁ ସ୍ୱିଚ୍ କରନ୍ତୁ</translation>
@@ -65,10 +67,13 @@
 <translation id="5057360777601936059">ସମ୍ପ୍ରତି, ଆପଣଙ୍କର କ୍ୟାମେରା ଉପଲବ୍ଧ ନାହିଁ।
         କ୍ୟାମେରା ଠିକ୍ ଭାବରେ ସଂଯୁକ୍ତ ଅଛି କି ନାହିଁ ଦୟାକରି ଯାଞ୍ଚ କରନ୍ତୁ।</translation>
 <translation id="5152121255775685072">ଗ୍ୟାଲେରୀକୁ ଯାଆନ୍ତୁ</translation>
+<translation id="520537883758714667">ଡକ୍ୟୁମେଣ୍ଟ ସ୍କାନ୍ କରିବା ସୁବିଧା ବର୍ତ୍ତମାନ ଉପଲବ୍ଧ ଅଛି</translation>
 <translation id="5268823927180092501">ସବୁ କ୍ୟାମେରାରେ ଡକ୍ୟୁମେଣ୍ଟ ମୋଡ୍ ସକ୍ଷମ କରନ୍ତୁ</translation>
 <translation id="5422455049771430511">ବର୍ତ୍ତମାନ ଆପଣଙ୍କ ଫଟୋ ଏବଂ ଭିଡିଓଗୁଡ଼ିକ ପାଇଁ ଏକ ନୂଆ ସ୍ଥାନ ଉପଲବ୍ଧ ଅଛି</translation>
+<translation id="5444515100983837161">ଡକ୍ୟୁମେଣ୍ଟର ସମସ୍ତ ଧାରକୁ ଫ୍ରେମ୍ ଭିତରେ ରଖନ୍ତୁ। ଯଦି ଡକ୍ୟୁମେଣ୍ଟ ଏବଂ ପୃଷ୍ଠପଟ ଭିନ୍ନ ରଙ୍ଗର ହୋଇଥାଏ ତେବେ ସ୍କାନିଂ ଭଲ କାମ କରେ।</translation>
 <translation id="5671277269877808209">ବର୍ଗାକାର</translation>
 <translation id="5753488212459587150">ଏକ୍ସପର୍ଟ ମୋଡ୍ ସକ୍ଷମ କରନ୍ତୁ</translation>
+<translation id="5759254179196327752">ଡକ୍ୟୁମେଣ୍ଟକୁ ସ୍କାନ୍ କରନ୍ତୁ</translation>
 <translation id="5775960006311140197">ଏକ୍ସପାର୍ଟ ମୋଡ୍</translation>
 <translation id="5869546221129391014">ଗ୍ରିଡ୍</translation>
 <translation id="5975083100439434680">ଜୁମ୍ କମାନ୍ତୁ</translation>
@@ -82,6 +87,7 @@
 
 ଯଦି ଆପଣଙ୍କ ମତାମତ ଛବି କିମ୍ବା ଭିଡିଓର ଗୁଣବତ୍ତା ବିଷୟରେ ହୋଇଥାଏ, ତେବେ ଦୟାକରି ଏକ ନମୁନା ଫଟୋ କିମ୍ବା ଭିଡିଓ ଆଟାଚ୍ କରନ୍ତୁ ଏବଂ କଣ ସମସ୍ୟା ହୋଇଛି ତାହା ବର୍ଣ୍ଣନା କରନ୍ତୁ। (ଉଦାହରଣ ସ୍ୱରୂପ, ଫଟୋଟି ଅତ୍ୟଧିକ ଗାଢ଼ା ଅଛି କିମ୍ବା ଫଟୋ ନିଆଯାଉଥିବା ବସ୍ତୁଟି ଉପରେ ଫୋକସ୍ କରାଯାଇ ନାହିଁ।)</translation>
 <translation id="6420689864531458495">(<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" /> - <ph name="WIDTH" />x<ph name="HEIGHT" />) <ph name="MEGAPIXEL" /> ମେଗା ପିକ୍ସେଲ୍</translation>
+<translation id="667999046851023355">ଡକ୍ୟୁମେଣ୍ଟ</translation>
 <translation id="6681668084120808868">ଫଟୋ ଉଠାନ୍ତୁ</translation>
 <translation id="6778482348691154169">ଫଟୋ ଉଠାଇବାରେ ଅକ୍ଷମ</translation>
 <translation id="695140971690006676">ସବୁ ରିସେଟ୍ କରନ୍ତୁ</translation>
@@ -108,11 +114,13 @@
 <translation id="8425673304802773841">ତଳକୁ ଟିଲ୍ଟ କରନ୍ତୁ</translation>
 <translation id="8428213095426709021">ସେଟିଂସ୍</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" />p (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
+<translation id="8712637175834984815">ବୁଝିଗଲି</translation>
 <translation id="8732462232047530626">ମେଟାଡାଟା ପ୍ରିଭ୍ୟୁ କରନ୍ତୁ</translation>
 <translation id="8815966864175525708">ପୋଟ୍ରେଟ୍ ଫଟୋ ଉଠାଇବା ପାଇଁ ସ୍ୱିଚ୍ କରନ୍ତୁ</translation>
 <translation id="8828441885228359828">ରେକର୍ଡିଂ ପୁଣି ଆରମ୍ଭ କରନ୍ତୁ</translation>
 <translation id="8870695351537079478">ରେକର୍ଡିଂ ଆରମ୍ଭ କରିବା ପାଇଁ ଅକ୍ଷମ</translation>
 <translation id="8903921497873541725">ଜୁମ୍ ବଢ଼ାନ୍ତୁ</translation>
+<translation id="9045010116236796332">ଡକ୍ୟୁମେଣ୍ଟର ସମସ୍ତ ଧାରକୁ ଫ୍ରେମ୍ ଭିତରେ ରଖନ୍ତୁ</translation>
 <translation id="9045155556724273246">10 ସେକେଣ୍ଡ</translation>
 <translation id="945522503751344254">ମତାମତ ପଠାନ୍ତୁ</translation>
 </translationbundle>

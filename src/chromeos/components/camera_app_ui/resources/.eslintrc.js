@@ -357,6 +357,9 @@ const googleRules = {
   'yield-star-spacing': ['error', 'after'],
 };
 
+const typescriptEslintDir =
+    '../../../../third_party/node/node_modules/@typescript-eslint';
+
 /* global module */
 module.exports = {
   'root': true,
@@ -378,6 +381,7 @@ module.exports = {
     'BarcodeDetector': 'readable',
     'FileSystemFileHandle': 'readable',
     'FileSystemDirectoryHandle': 'readable',
+    'IdleDetector': 'readable',
 
     // TODO(b/172879638): Remove this once we have
     // https://github.com/sindresorhus/globals/pull/171 merged in ESLint and
@@ -388,6 +392,16 @@ module.exports = {
     // https://github.com/sindresorhus/globals/pull/175 merged in ESlint and
     // Chromium.
     'OverconstrainedError': 'readable',
+
+    // TODO(b/190689433): Remove this once we have
+    // https://github.com/sindresorhus/globals/pull/178 merged in ESlint and
+    // Chromium.
+    'CSSNumericValue': 'readable',
+    'CSSRotate': 'readable',
+    'CSSScale': 'readable',
+    'CSSTransformValue': 'readable',
+    'CSSTranslate': 'readable',
+    'CSSUnitValue': 'readable',
   },
   // Generally, the rules should be compatible to both bundled and the newest
   // stable eslint, so it's easier to upgrade and develop without the full
@@ -403,4 +417,10 @@ module.exports = {
     // `git cl format --js` before uploading.
     'indent': 'off',
   }),
+  'overrides': [{
+    'files': ['**/*.ts'],
+    'plugins': ['@typescript-eslint'],
+    'parser': `${typescriptEslintDir}/parser`,
+    'extends': ['eslint:recommended', 'plugin:@typescript-eslint/recommended'],
+  }],
 };

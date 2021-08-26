@@ -488,7 +488,9 @@ Developer options (useful when working on FFmpeg itself):
   --ignore-tests=TESTS     comma-separated list (without "fate-" prefix
                            in the name) of tests whose result is ignored
   --enable-linux-perf      enable Linux Performance Monitor API
+  --enable-macos-kperf     enable macOS kperf (private) API
   --disable-large-tests    disable tests that use a large amount of memory
+  --disable-ptx-compression don't compress CUDA PTX code even when possible
 
 NOTE: Object files are built at the place where configure is launched.
 EOF
@@ -534,7 +536,7 @@ die(){
 
 If you think configure made a mistake, make sure you are using the latest
 version from Git.  If the latest version fails, report the problem to the
-ffmpeg-user@ffmpeg.org mailing list or IRC #ffmpeg on irc.freenode.net.
+ffmpeg-user@ffmpeg.org mailing list or IRC #ffmpeg on irc.libera.chat.
 EOF
     if disabled logging; then
         cat <<EOF
@@ -1976,10 +1978,12 @@ CONFIG_LIST="
     fontconfig
     large_tests
     linux_perf
+    macos_kperf
     memory_poisoning
     neon_clobber_test
     ossfuzz
     pic
+    ptx_compression
     thumb
     valgrind_backtrace
     xmm_clobber_test
@@ -2355,6 +2359,7 @@ HAVE_LIST="
     $THREADS_LIST
     $TOOLCHAIN_FEATURES
     $TYPES_LIST
+    gzip
     libdrm_getfb2
     makeinfo
     makeinfo_html
@@ -2367,6 +2372,8 @@ HAVE_LIST="
     perl
     pod2man
     texi2html
+    xmllint
+    zlib_gzip
 "
 
 # options emitted with CONFIG_ prefix but not available on the command line
@@ -2945,7 +2952,7 @@ d3d11va_deps="dxva_h ID3D11VideoDecoder ID3D11VideoContext"
 dxva2_deps="dxva2api_h DXVA2_ConfigPictureDecode ole32 user32"
 ffnvcodec_deps_any="libdl LoadLibrary"
 nvdec_deps="ffnvcodec"
-vaapi_x11_deps="xlib"
+vaapi_x11_deps="xlib_x11"
 videotoolbox_hwaccel_deps="videotoolbox pthreads"
 videotoolbox_hwaccel_extralibs="-framework QuartzCore"
 vulkan_deps_any="libdl LoadLibrary"
@@ -3312,7 +3319,7 @@ libwebp_anim_encoder_deps="libwebp"
 libx262_encoder_deps="libx262"
 libx264_encoder_deps="libx264"
 libx264_encoder_select="atsc_a53"
-libx264rgb_encoder_deps="libx264 x264_csp_bgr"
+libx264rgb_encoder_deps="libx264"
 libx264rgb_encoder_select="libx264_encoder"
 libx265_encoder_deps="libx265"
 libxavs_encoder_deps="libxavs"
@@ -3466,7 +3473,7 @@ v4l2_outdev_suggest="libv4l2"
 vfwcap_indev_deps="vfw32 vfwcap_defines"
 xcbgrab_indev_deps="libxcb"
 xcbgrab_indev_suggest="libxcb_shm libxcb_shape libxcb_xfixes"
-xv_outdev_deps="xlib"
+xv_outdev_deps="xlib_xv xlib_x11 xlib_xext"
 
 # protocols
 async_protocol_deps="threads"
@@ -3535,8 +3542,6 @@ libzmq_protocol_deps="libzmq"
 libzmq_protocol_select="network"
 
 # filters
-afftdn_filter_deps="avcodec"
-afftdn_filter_select="fft"
 afftfilt_filter_deps="avcodec"
 afftfilt_filter_select="fft"
 afir_filter_deps="avcodec"
@@ -3601,8 +3606,6 @@ freezedetect_filter_select="scene_sad"
 frei0r_filter_deps="frei0r libdl"
 frei0r_src_filter_deps="frei0r libdl"
 fspp_filter_deps="gpl"
-headphone_filter_deps="avcodec"
-headphone_filter_select="fft"
 histeq_filter_deps="gpl"
 hqdn3d_filter_deps="gpl"
 interlace_filter_deps="gpl"
@@ -3649,24 +3652,16 @@ scale_qsv_filter_deps="libmfx"
 scdet_filter_select="scene_sad"
 select_filter_select="scene_sad"
 sharpness_vaapi_filter_deps="vaapi"
-showcqt_filter_deps="avcodec avformat swscale"
+showcqt_filter_deps="avformat swscale"
 showcqt_filter_suggest="libfontconfig libfreetype"
-showcqt_filter_select="fft"
-showfreqs_filter_deps="avcodec"
-showfreqs_filter_select="fft"
 showspatial_filter_deps="avcodec"
 showspatial_filter_select="fft"
-showspectrum_filter_deps="avcodec"
-showspectrum_filter_select="fft"
-showspectrumpic_filter_deps="avcodec"
-showspectrumpic_filter_select="fft"
 signature_filter_deps="gpl avcodec avformat"
 sinc_filter_deps="avcodec"
 sinc_filter_select="rdft"
 smartblur_filter_deps="gpl swscale"
 sobel_opencl_filter_deps="opencl"
-sofalizer_filter_deps="libmysofa avcodec"
-sofalizer_filter_select="fft"
+sofalizer_filter_deps="libmysofa"
 spectrumsynth_filter_deps="avcodec"
 spectrumsynth_filter_select="fft"
 spp_filter_deps="gpl avcodec"
@@ -3836,6 +3831,7 @@ enable doc
 enable faan faandct faanidct
 enable large_tests
 enable optimizations
+enable ptx_compression
 enable runtime_cpudetect
 enable safe_bitstream_reader
 enable static
@@ -4388,8 +4384,16 @@ else
     NVCC_C=""
 fi
 
+set_default nvcc
+
+if enabled cuda_nvcc; then
+    if $nvcc $nvccflags_default 2>&1 | grep -qi unsupported; then
+        nvccflags_default="-gencode arch=compute_60,code=sm_60 -O2"
+    fi
+fi
+
 set_default arch cc cxx doxygen pkg_config ranlib strip sysinclude \
-    target_exec x86asmexe nvcc
+    target_exec x86asmexe
 enabled cross_compile || host_cc_default=$cc
 set_default host_cc
 
@@ -4409,7 +4413,7 @@ fi
 
 exesuf() {
     case $1 in
-        mingw32*|mingw64*|win32|win64|cygwin*|*-dos|freedos|opendos|os/2*|symbian) echo .exe ;;
+        mingw32*|mingw64*|msys*|win32|win64|cygwin*|*-dos|freedos|opendos|os/2*|symbian) echo .exe ;;
     esac
 }
 
@@ -6129,7 +6133,6 @@ check_builtin MemoryBarrier windows.h "MemoryBarrier()"
 check_builtin sync_val_compare_and_swap "" "int *ptr; int oldval, newval; __sync_val_compare_and_swap(ptr, oldval, newval)"
 check_builtin gmtime_r time.h "time_t *time; struct tm *tm; gmtime_r(time, tm)"
 check_builtin localtime_r time.h "time_t *time; struct tm *tm; localtime_r(time, tm)"
-check_builtin x264_csp_bgr "stdint.h x264.h" "X264_CSP_BGR"
 
 case "$custom_allocator" in
     jemalloc)
@@ -6190,8 +6193,20 @@ check_func_headers windows.h SetDllDirectory
 check_func_headers windows.h Sleep
 check_func_headers windows.h VirtualAlloc
 check_func_headers glob.h glob
-enabled xlib &&
-    check_lib xlib "X11/Xlib.h X11/extensions/Xvlib.h" XvGetPortAttribute -lXv -lX11 -lXext
+
+if enabled xlib; then
+    check_pkg_config xlib_x11 x11 "X11/Xlib.h" XPending ||
+    check_lib xlib_x11 "X11/Xlib.h" XPending -lX11 ||
+        disable xlib
+
+    check_pkg_config xlib_xext xext "X11/Xlib.h X11/extensions/XShm.h" XShmAttach ||
+    check_lib xlib_xext "X11/Xlib.h X11/extensions/XShm.h" XShmAttach -lXext ||
+        disable xlib
+
+    check_pkg_config xlib_xv xv "X11/Xlib.h X11/extensions/Xvlib.h" XvGetPortAttribute ||
+    check_lib xlib_xv "X11/Xlib.h X11/extensions/Xvlib.h" XvGetPortAttribute -lXv ||
+        disable xlib
+fi
 
 check_headers direct.h
 check_headers dirent.h
@@ -6280,6 +6295,8 @@ if [ -z "$nvccflags" ]; then
     nvccflags=$nvccflags_default
 fi
 
+nvccflags="$nvccflags -std=c++11"
+
 if enabled x86_64 || enabled ppc64 || enabled aarch64; then
     nvccflags="$nvccflags -m64"
 else
@@ -6347,6 +6364,18 @@ enabled  zlib && { check_pkg_config zlib zlib "zlib.h" zlibVersion ||
                    check_lib zlib   zlib.h      zlibVersion    -lz; }
 enabled bzlib && check_lib bzlib bzlib.h BZ2_bzlibVersion    -lbz2
 enabled  lzma && check_lib lzma   lzma.h lzma_version_number -llzma
+
+enabled zlib && test_exec $zlib_extralibs <<EOF && enable zlib_gzip
+#include <zlib.h>
+int main(void) {
+    if (zlibCompileFlags() & (1 << 17)) return 1;
+    return 0;
+}
+EOF
+
+[ -x "$(command -v gzip)" ] && enable gzip
+
+enabled zlib_gzip && enabled gzip || disable ptx_compression
 
 # On some systems dynamic loading requires no extra linker flags
 check_lib libdl dlfcn.h "dlopen dlsym" || check_lib libdl dlfcn.h "dlopen dlsym" -ldl
@@ -6639,6 +6668,7 @@ disabled makeinfo_html && texi2html --help 2> /dev/null | grep -q 'init-file' &&
 perl -v            > /dev/null 2>&1 && enable perl      || disable perl
 pod2man --help     > /dev/null 2>&1 && enable pod2man   || disable pod2man
 rsync --help 2> /dev/null | grep -q 'contimeout' && enable rsync_contimeout || disable rsync_contimeout
+xmllint --version  > /dev/null 2>&1 && enable xmllint   || disable xmllint
 
 # check V4L2 codecs available in the API
 if enabled v4l2_m2m; then
@@ -6734,7 +6764,7 @@ enabled vaapi &&
 if enabled vaapi; then
     check_pkg_config vaapi_drm "libva-drm" "va/va_drm.h" vaGetDisplayDRM
 
-    if enabled xlib; then
+    if enabled xlib_x11; then
         check_pkg_config vaapi_x11 "libva-x11" "va/va_x11.h" vaGetDisplay
     fi
 
@@ -7237,7 +7267,6 @@ done
 enabled zlib && add_cppflags -DZLIB_CONST
 
 # conditional library dependencies, in any order
-enabled afftdn_filter       && prepend avfilter_deps "avcodec"
 enabled afftfilt_filter     && prepend avfilter_deps "avcodec"
 enabled afir_filter         && prepend avfilter_deps "avcodec"
 enabled amovie_filter       && prepend avfilter_deps "avformat avcodec"
@@ -7260,10 +7289,7 @@ enabled removelogo_filter   && prepend avfilter_deps "avformat avcodec swscale"
 enabled sab_filter          && prepend avfilter_deps "swscale"
 enabled scale_filter    && prepend avfilter_deps "swscale"
 enabled scale2ref_filter    && prepend avfilter_deps "swscale"
-enabled sofalizer_filter    && prepend avfilter_deps "avcodec"
-enabled showcqt_filter      && prepend avfilter_deps "avformat avcodec swscale"
-enabled showfreqs_filter    && prepend avfilter_deps "avcodec"
-enabled showspectrum_filter && prepend avfilter_deps "avcodec"
+enabled showcqt_filter      && prepend avfilter_deps "avformat swscale"
 enabled signature_filter    && prepend avfilter_deps "avcodec avformat"
 enabled smartblur_filter    && prepend avfilter_deps "swscale"
 enabled spectrumsynth_filter && prepend avfilter_deps "avcodec"
@@ -7402,6 +7428,7 @@ echo "perl enabled              ${perl-no}"
 echo "pod2man enabled           ${pod2man-no}"
 echo "makeinfo enabled          ${makeinfo-no}"
 echo "makeinfo supports HTML    ${makeinfo_html-no}"
+echo "xmllint enabled           ${xmllint-no}"
 test -n "$random_seed" &&
     echo "random seed               ${random_seed}"
 echo
@@ -7538,7 +7565,6 @@ LD_LIB=$LD_LIB
 LD_PATH=$LD_PATH
 DLLTOOL=$dlltool
 WINDRES=$windres
-DEPWINDRES=$dep_cc
 DOXYGEN=$doxygen
 LDFLAGS=$LDFLAGS
 LDEXEFLAGS=$LDEXEFLAGS

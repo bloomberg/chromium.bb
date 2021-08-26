@@ -13,6 +13,7 @@
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/threading/hang_watcher.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/aura/client/capture_client.h"
@@ -172,10 +173,18 @@ DragOperation DragDropController::StartDragAndDrop(
     return DragOperation::kNone;
 
   const ui::OSExchangeDataProvider* provider = &data->provider();
-  // We do not support touch drag/drop without a drag image.
+  // We do not support touch drag/drop without a drag image, unless it is a tab
+  // drag/drop.
   if (source == ui::mojom::DragEventSource::kTouch &&
-      provider->GetDragImage().size().IsEmpty())
+      provider->GetDragImage().size().IsEmpty() &&
+      !toplevel_window_drag_delegate_) {
     return DragOperation::kNone;
+  }
+
+  // Never consider the current scope as hung. The hang watching deadline (if
+  // any) is not valid since the user can take unbounded time to complete the
+  // drag.
+  base::HangWatcher::InvalidateActiveExpectations();
 
   operation_ = DragOperation::kNone;
   current_drag_event_source_ = source;
@@ -371,34 +380,33 @@ void DragDropController::OnGestureEvent(ui::GestureEvent* event) {
   if (!IsDragDropInProgress())
     return;
 
-  // No one else should handle gesture events when in drag drop. Note that it is
-  // not enough to just set ER_HANDLED because the dispatcher only stops
-  // dispatching when the event has ER_CONSUMED. If we just set ER_HANDLED, the
-  // event will still be dispatched to other handlers and we depend on
-  // individual handlers' kindness to not touch events marked ER_HANDLED (not
-  // all handlers are so kind and may cause bugs like crbug.com/236493).
-  event->StopPropagation();
-
-  // If current drag session was not started by touch, dont process this event.
-  if (current_drag_event_source_ != ui::mojom::DragEventSource::kTouch)
+  // If current drag session was not started by touch, dont process this event
+  // but consume it so it does not interfere with current drag session.
+  if (current_drag_event_source_ != ui::mojom::DragEventSource::kTouch) {
+    event->StopPropagation();
     return;
+  }
 
-  // Apply kTouchDragImageVerticalOffset to the location.
+  // Apply kTouchDragImageVerticalOffset to the location, if it is not a tab
+  // drag/drop.
   ui::GestureEvent touch_offset_event(*event,
                                       static_cast<aura::Window*>(nullptr),
                                       static_cast<aura::Window*>(nullptr));
-  gfx::PointF touch_offset_location = touch_offset_event.location_f();
-  gfx::PointF touch_offset_root_location = touch_offset_event.root_location_f();
-  touch_offset_location.Offset(0, kTouchDragImageVerticalOffset);
-  touch_offset_root_location.Offset(0, kTouchDragImageVerticalOffset);
-  touch_offset_event.set_location_f(touch_offset_location);
-  touch_offset_event.set_root_location_f(touch_offset_root_location);
+  if (!toplevel_window_drag_delegate_) {
+    gfx::PointF touch_offset_location = touch_offset_event.location_f();
+    gfx::PointF touch_offset_root_location =
+        touch_offset_event.root_location_f();
+    touch_offset_location.Offset(0, kTouchDragImageVerticalOffset);
+    touch_offset_root_location.Offset(0, kTouchDragImageVerticalOffset);
+    touch_offset_event.set_location_f(touch_offset_location);
+    touch_offset_event.set_root_location_f(touch_offset_root_location);
+  }
 
   aura::Window* translated_target =
       drag_drop_tracker_->GetTarget(touch_offset_event);
   if (!translated_target) {
     DragCancel();
-    event->SetHandled();
+    event->StopPropagation();
     return;
   }
   std::unique_ptr<ui::LocatedEvent> translated_event(
@@ -427,7 +435,11 @@ void DragDropController::OnGestureEvent(ui::GestureEvent* event) {
     default:
       break;
   }
-  event->SetHandled();
+
+  if (toplevel_window_drag_delegate_)
+    toplevel_window_drag_delegate_->OnToplevelWindowDragEvent(event);
+
+  event->StopPropagation();
 }
 
 void DragDropController::OnWindowDestroyed(aura::Window* window) {

@@ -221,10 +221,12 @@ void GrGLCaps::init(const GrContextOptions& contextOptions,
         fClientCanDisableMultisample = ctxInfo.hasExtension("GL_EXT_multisample_compatibility");
     } // no WebGL support
 
+#if 0
 #ifdef SK_BUILD_FOR_MAC
     fMultisampleDisableSupport = false;
 #else
     fMultisampleDisableSupport = fClientCanDisableMultisample;
+#endif
 #endif
 
     if (GR_IS_GR_GL(standard)) {
@@ -755,6 +757,15 @@ void GrGLCaps::init(const GrContextOptions& contextOptions,
     if (ctxInfo.vendor() == GrGLVendor::kARM) {
         fShouldCollapseSrcOverToSrcWhenAble = true;
     }
+
+#ifdef SK_BUILD_FOR_ANDROID_FRAMEWORK
+    if (ctxInfo.renderer() == GrGLRenderer::kPowerVRRogue) {
+        // https://b/195281495
+        // The TecnoSpark 3 Pro with a PowerVR GE8300 seems to have a steep dithering performance
+        // cliff in the Android Framework
+        fAvoidDithering = true;
+    }
+#endif
 
     FormatWorkarounds formatWorkarounds;
 
@@ -4212,7 +4223,7 @@ void GrGLCaps::applyDriverCorrectnessWorkarounds(const GrGLContextInfo& ctxInfo,
         shaderCaps->fUseNodePools = false;
     }
 
-    // skbug.com/11204. Avoid recursion issue in GrSurfaceContext::writePixels.
+    // skbug.com/11204. Avoid recursion issue in SurfaceContext::writePixels.
     if (fDisallowTexSubImageForUnormConfigTexturesEverBoundToFBO) {
         fReuseScratchTextures = false;
     }
@@ -4491,13 +4502,12 @@ int GrGLCaps::getRenderTargetSampleCount(int requestedCount, GrGLFormat format) 
         return info.fColorSampleCounts[0] == 1 ? 1 : 0;
     }
 
-    for (int i = 0; i < count; ++i) {
-        if (info.fColorSampleCounts[i] >= requestedCount) {
-            int count = info.fColorSampleCounts[i];
+    for (int sampleCount : info.fColorSampleCounts) {
+        if (sampleCount >= requestedCount) {
             if (fDriverBugWorkarounds.max_msaa_sample_count_4) {
-                count = std::min(count, 4);
+                sampleCount = std::min(sampleCount, 4);
             }
-            return count;
+            return sampleCount;
         }
     }
     return 0;

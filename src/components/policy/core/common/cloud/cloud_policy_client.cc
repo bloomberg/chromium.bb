@@ -25,11 +25,15 @@
 #include "components/policy/core/common/cloud/realtime_reporting_job_configuration.h"
 #include "components/policy/core/common/cloud/signing_service.h"
 #include "components/policy/core/common/features.h"
+#include "components/policy/proto/device_management_backend.pb.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace em = enterprise_management;
+
+// An enum for PSM execution result values.
+using PsmExecutionResult = em::DeviceRegisterRequest::PsmExecutionResult;
 
 // The type for variables containing an error from DM Server response.
 using CertProvisioningResponseErrorType =
@@ -131,6 +135,18 @@ CloudPolicyClient::RegistrationParameters::RegistrationParameters(
 
 CloudPolicyClient::RegistrationParameters::~RegistrationParameters() = default;
 
+void CloudPolicyClient::RegistrationParameters::SetPsmExecutionResult(
+    absl::optional<
+        enterprise_management::DeviceRegisterRequest::PsmExecutionResult>
+        new_psm_result) {
+  psm_execution_result = new_psm_result;
+}
+
+void CloudPolicyClient::RegistrationParameters::SetPsmDeterminationTimestamp(
+    absl::optional<int64_t> new_psm_timestamp) {
+  psm_determination_timestamp = new_psm_timestamp;
+}
+
 CloudPolicyClient::Observer::~Observer() {}
 
 CloudPolicyClient::CloudPolicyClient(
@@ -141,7 +157,6 @@ CloudPolicyClient::CloudPolicyClient(
     const std::string& ethernet_mac_address,
     const std::string& dock_mac_address,
     const std::string& manufacture_date,
-    SigningService* signing_service,
     DeviceManagementService* service,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     DeviceDMTokenCallback device_dm_token_callback)
@@ -152,7 +167,6 @@ CloudPolicyClient::CloudPolicyClient(
       ethernet_mac_address_(ethernet_mac_address),
       dock_mac_address_(dock_mac_address),
       manufacture_date_(manufacture_date),
-      signing_service_(signing_service),
       service_(service),  // Can be null for unit tests.
       device_dm_token_callback_(device_dm_token_callback),
       url_loader_factory_(url_loader_factory) {}
@@ -232,9 +246,10 @@ void CloudPolicyClient::RegisterWithCertificate(
     const std::string& client_id,
     DMAuth auth,
     const std::string& pem_certificate_chain,
-    const std::string& sub_organization) {
+    const std::string& sub_organization,
+    SigningService* signing_service) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(signing_service_);
+  DCHECK(signing_service);
   DCHECK(service_);
   DCHECK(!is_registered());
 
@@ -253,7 +268,7 @@ void CloudPolicyClient::RegisterWithCertificate(
     configuration->set_device_owner(sub_organization);
   }
 
-  signing_service_->SignData(
+  signing_service->SignData(
       data.SerializeAsString(),
       base::BindOnce(&CloudPolicyClient::OnRegisterWithCertificateRequestSigned,
                      weak_ptr_factory_.GetWeakPtr(), std::move(auth)));
@@ -348,6 +363,11 @@ void CloudPolicyClient::FetchPolicy() {
 
   CHECK(is_registered());
   CHECK(!types_to_fetch_.empty());
+
+  VLOG(2) << "Policy fetch starting";
+  for (const auto& type : types_to_fetch_) {
+    VLOG(2) << "Fetching policy type: " << type.first << " -> " << type.second;
+  }
 
   std::unique_ptr<DMServerJobConfiguration> config =
       std::make_unique<DMServerJobConfiguration>(
@@ -1163,8 +1183,12 @@ void CloudPolicyClient::OnPolicyFetchCompleted(
     }
     state_keys_to_upload_.clear();
     NotifyPolicyFetched();
+
+    VLOG(2) << "Policy fetch success";
   } else {
     NotifyClientError();
+
+    VLOG(2) << "Policy fetch error: " << status;
 
     if (status == DM_STATUS_SERVICE_DEVICE_NOT_FOUND) {
       // Mark as unregistered and initialize re-registration flow.
@@ -1616,6 +1640,12 @@ void CloudPolicyClient::CreateDeviceRegisterRequest(
     request->set_requisition(params.requisition);
   if (!params.current_state_key.empty())
     request->set_server_backed_state_key(params.current_state_key);
+  if (params.psm_execution_result.has_value())
+    request->set_psm_execution_result(params.psm_execution_result.value());
+  if (params.psm_determination_timestamp.has_value()) {
+    request->set_psm_determination_timestamp_ms(
+        params.psm_determination_timestamp.value());
+  }
 }
 
 }  // namespace policy

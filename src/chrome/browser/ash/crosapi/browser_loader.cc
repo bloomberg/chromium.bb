@@ -294,8 +294,7 @@ void BrowserLoader::LoadStatefulLacros(LoadCompletionCallback callback) {
   // Unmount the rootfs lacros-chrome if we want to use stateful lacros-chrome.
   // This will keep stateful lacros-chrome only mounted and not hold the rootfs
   // lacros-chrome mount until a `Unload`.
-  if (callback && base::PathExists(base::FilePath(kRootfsLacrosMountPoint)
-                                       .Append(kLacrosChromeBinary))) {
+  if (callback) {
     // Ignore the unmount result.
     upstart_client_->StartJob(kLacrosUnmounterUpstartJob, {},
                               base::BindOnce([](bool) {}));

@@ -82,7 +82,7 @@ Revert Example
 demo:2[]
 
 If your cherrypick onto a release branch gets reverted, do not create a new
-cherrypick from master onto that release branch. Instead, use the "Reland"
+cherrypick from main onto that release branch. Instead, use the "Reland"
 button on the original cherrypick CL.
 
 Manual Merge Example

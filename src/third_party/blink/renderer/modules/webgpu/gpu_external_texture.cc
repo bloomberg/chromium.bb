@@ -98,7 +98,7 @@ GPUExternalTexture* GPUExternalTexture::FromVideo(
   scoped_refptr<WebGPUMailboxTexture> mailbox_texture =
       WebGPUMailboxTexture::FromCanvasResource(
           device->GetDawnControlClient(), device->GetHandle(),
-          WGPUTextureUsage::WGPUTextureUsage_Sampled,
+          WGPUTextureUsage::WGPUTextureUsage_TextureBinding,
           std::move(recyclable_canvas_resource));
 
   WGPUTextureViewDescriptor viewDesc = {};
@@ -132,8 +132,11 @@ GPUExternalTexture::GPUExternalTexture(
       mailbox_texture_(mailbox_texture) {}
 
 void GPUExternalTexture::Destroy() {
-  GetProcs().textureDestroy(mailbox_texture_->GetTexture());
+  WGPUTexture texture = mailbox_texture_->GetTexture();
+  GetProcs().textureReference(texture);
   mailbox_texture_.reset();
+  GetProcs().textureDestroy(texture);
+  GetProcs().textureRelease(texture);
 }
 
 }  // namespace blink

@@ -260,10 +260,11 @@ void LoopingFileCastAgent::CreateAndStartSession() {
   AudioCaptureConfig audio_config;
   // Opus does best at 192kbps, so we cap that here.
   audio_config.bit_rate = 192 * 1000;
-  VideoCaptureConfig video_config;
-  // The video config is allowed to use whatever is left over after audio.
-  video_config.max_bit_rate =
-      connection_settings_->max_bitrate - audio_config.bit_rate;
+  VideoCaptureConfig video_config = {
+      .codec = connection_settings_->codec,
+      // The video config is allowed to use whatever is left over after audio.
+      .max_bit_rate =
+          connection_settings_->max_bitrate - audio_config.bit_rate};
   // Use default display resolution of 1080P.
   video_config.resolutions.emplace_back(Resolution{1920, 1080});
 
@@ -271,8 +272,8 @@ void LoopingFileCastAgent::CreateAndStartSession() {
   Error negotiation_error;
   if (connection_settings_->use_remoting) {
     remoting_sender_ = std::make_unique<RemotingSender>(
-        current_session_->rpc_messenger(), AudioCodec::kOpus, VideoCodec::kVp8,
-        [this]() { OnRemotingReceiverReady(); });
+        current_session_->rpc_messenger(), AudioCodec::kOpus,
+        connection_settings_->codec, this);
 
     negotiation_error =
         current_session_->NegotiateRemoting(audio_config, video_config);
@@ -320,11 +321,15 @@ void LoopingFileCastAgent::OnError(const SenderSession* session, Error error) {
   Shutdown();
 }
 
-void LoopingFileCastAgent::OnRemotingReceiverReady() {
+void LoopingFileCastAgent::OnReady() {
   is_ready_for_remoting_ = true;
   if (current_negotiation_) {
     StartRemotingSenders();
   }
+}
+
+void LoopingFileCastAgent::OnPlaybackRateChange(double rate) {
+  file_sender_->SetPlaybackRate(rate);
 }
 
 void LoopingFileCastAgent::StartRemotingSenders() {

@@ -14,13 +14,18 @@
 #include "base/files/file_path.h"
 #include "base/notreached.h"
 #include "base/run_loop.h"
+#include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "content/browser/interest_group/auction_process_manager.h"
+#include "content/browser/interest_group/debuggable_auction_worklet.h"
+#include "content/browser/interest_group/debuggable_auction_worklet_tracker.h"
 #include "content/browser/interest_group/interest_group_manager.h"
+#include "content/browser/interest_group/interest_group_storage.h"
+#include "content/public/test/test_renderer_host.h"
 #include "content/services/auction_worklet/auction_worklet_service_impl.h"
 #include "content/services/auction_worklet/public/mojom/auction_worklet_service.mojom.h"
 #include "content/services/auction_worklet/public/mojom/bidder_worklet.mojom.h"
@@ -32,6 +37,7 @@
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/interest_group/interest_group.h"
 
 namespace content {
 namespace {
@@ -529,10 +535,10 @@ class MockAuctionProcessManager
     // Make sure this request came over the right pipe.
     EXPECT_EQ(receiver_display_name_map_[receiver_set_.current_receiver()],
               ComputeDisplayName(AuctionProcessManager::WorkletType::kBidder,
-                                 bidding_interest_group->group->owner));
+                                 bidding_interest_group->group.owner));
 
-    InterestGroupId interest_group_id(bidding_interest_group->group->owner,
-                                      bidding_interest_group->group->name);
+    InterestGroupId interest_group_id(bidding_interest_group->group.owner,
+                                      bidding_interest_group->group.name);
     EXPECT_EQ(0u, bidder_worklets_.count(interest_group_id));
     bidder_worklets_.emplace(std::make_pair(
         interest_group_id,
@@ -660,7 +666,9 @@ class SameThreadAuctionProcessManager : public AuctionProcessManager {
       auction_worklet_services_;
 };
 
-class AuctionRunnerTest : public testing::Test, public AuctionRunner::Delegate {
+class AuctionRunnerTest : public testing::Test,
+                          public AuctionRunner::Delegate,
+                          public DebuggableAuctionWorkletTracker::Observer {
  protected:
   // Output of the RunAuctionCallback passed to AuctionRunner::CreateAndStart().
   struct Result {
@@ -688,13 +696,19 @@ class AuctionRunnerTest : public testing::Test, public AuctionRunner::Delegate {
       : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {
     mojo::SetDefaultProcessErrorHandler(base::BindRepeating(
         &AuctionRunnerTest::OnBadMessage, base::Unretained(this)));
+    DebuggableAuctionWorkletTracker::GetInstance()->AddObserver(this);
   }
 
   ~AuctionRunnerTest() override {
+    DebuggableAuctionWorkletTracker::GetInstance()->RemoveObserver(this);
+
     // Any bad message should have been inspected and cleared before the end of
     // the test.
     EXPECT_EQ(std::string(), bad_message_);
     mojo::SetDefaultProcessErrorHandler(base::NullCallback());
+
+    // Give off-thread things a chance to delete.
+    task_environment_.RunUntilIdle();
   }
 
   void OnBadMessage(const std::string& reason) {
@@ -719,11 +733,10 @@ class AuctionRunnerTest : public testing::Test, public AuctionRunner::Delegate {
   // InterestGroupManager automatically attaches the current time, though their
   // wins will be added in order, with chronologically increasing times within
   // each InterestGroup.
-  void StartAuction(
-      const GURL& seller_decision_logic_url,
-      std::vector<auction_worklet::mojom::BiddingInterestGroupPtr> bidders,
-      const std::string& auction_signals_json,
-      auction_worklet::mojom::BrowserSignalsPtr browser_signals) {
+  void StartAuction(const GURL& seller_decision_logic_url,
+                    std::vector<BiddingInterestGroup> bidders,
+                    const std::string& auction_signals_json,
+                    auction_worklet::mojom::BrowserSignalsPtr browser_signals) {
     auction_complete_ = false;
 
     blink::mojom::AuctionAdConfigPtr auction_config =
@@ -744,7 +757,8 @@ class AuctionRunnerTest : public testing::Test, public AuctionRunner::Delegate {
     auction_config->per_buyer_signals = std::move(per_buyer_signals);
 
     interest_group_manager_ = std::make_unique<InterestGroupManager>(
-        base::FilePath(), true /* in_memory */);
+        base::FilePath(), true /* in_memory */,
+        /* url_loader_factory */ nullptr);
     if (auction_process_manager_) {
       interest_group_manager_->set_auction_process_manager_for_testing(
           std::move(auction_process_manager_));
@@ -757,16 +771,18 @@ class AuctionRunnerTest : public testing::Test, public AuctionRunner::Delegate {
 
     // Add previous wins and bids to the interest group manager.
     for (auto& bidder : bidders) {
-      for (int i = 0; i < bidder->signals->join_count; i++) {
-        interest_group_manager_->JoinInterestGroup(bidder->group.Clone());
+      for (int i = 0; i < bidder.group->signals->join_count; i++) {
+        interest_group_manager_->JoinInterestGroup(
+            bidder.group->group, bidder.group->group.owner.GetURL());
       }
-      for (int i = 0; i < bidder->signals->bid_count; i++) {
-        interest_group_manager_->RecordInterestGroupBid(bidder->group->owner,
-                                                        bidder->group->name);
+      for (int i = 0; i < bidder.group->signals->bid_count; i++) {
+        interest_group_manager_->RecordInterestGroupBid(
+            bidder.group->group.owner, bidder.group->group.name);
       }
-      for (const auto& prev_win : bidder->signals->prev_wins) {
+      for (const auto& prev_win : bidder.group->signals->prev_wins) {
         interest_group_manager_->RecordInterestGroupWin(
-            bidder->group->owner, bidder->group->name, prev_win->ad_json);
+            bidder.group->group.owner, bidder.group->group.name,
+            prev_win->ad_json);
         // Add some time between interest group wins, so that they'll be added
         // to the database in the order they appear. Their times will *not*
         // match those in `prev_wins`.
@@ -785,7 +801,7 @@ class AuctionRunnerTest : public testing::Test, public AuctionRunner::Delegate {
 
   const Result& RunAuctionAndWait(
       const GURL& seller_decision_logic_url,
-      std::vector<auction_worklet::mojom::BiddingInterestGroupPtr> bidders,
+      std::vector<BiddingInterestGroup> bidders,
       const std::string& auction_signals_json,
       auction_worklet::mojom::BrowserSignalsPtr browser_signals) {
     StartAuction(seller_decision_logic_url, std::move(bidders),
@@ -820,13 +836,12 @@ class AuctionRunnerTest : public testing::Test, public AuctionRunner::Delegate {
   }
 
   void OnBidder1GroupsRetrieved(
-      std::vector<auction_worklet::mojom::BiddingInterestGroupPtr>
-          bidding_interest_groups) {
+      std::vector<BiddingInterestGroup> bidding_interest_groups) {
     for (auto& bidder : bidding_interest_groups) {
-      if (bidder->group->owner == kBidder1 &&
-          bidder->group->name == kBidder1Name) {
-        result_.bidder1_bid_count = bidder->signals->bid_count;
-        result_.bidder1_prev_wins = std::move(bidder->signals->prev_wins);
+      if (bidder.group->group.owner == kBidder1 &&
+          bidder.group->group.name == kBidder1Name) {
+        result_.bidder1_bid_count = bidder.group->signals->bid_count;
+        result_.bidder1_prev_wins = std::move(bidder.group->signals->prev_wins);
         SortPrevWins(result_.bidder1_prev_wins);
         break;
       }
@@ -837,13 +852,12 @@ class AuctionRunnerTest : public testing::Test, public AuctionRunner::Delegate {
   }
 
   void OnBidder2GroupsRetrieved(
-      std::vector<auction_worklet::mojom::BiddingInterestGroupPtr>
-          bidding_interest_groups) {
+      std::vector<BiddingInterestGroup> bidding_interest_groups) {
     for (auto& bidder : bidding_interest_groups) {
-      if (bidder->group->owner == kBidder2 &&
-          bidder->group->name == kBidder2Name) {
-        result_.bidder2_bid_count = bidder->signals->bid_count;
-        result_.bidder2_prev_wins = std::move(bidder->signals->prev_wins);
+      if (bidder.group->group.owner == kBidder2 &&
+          bidder.group->group.name == kBidder2Name) {
+        result_.bidder2_bid_count = bidder.group->signals->bid_count;
+        result_.bidder2_prev_wins = std::move(bidder.group->signals->prev_wins);
         SortPrevWins(result_.bidder2_prev_wins);
         break;
       }
@@ -853,20 +867,19 @@ class AuctionRunnerTest : public testing::Test, public AuctionRunner::Delegate {
   }
 
   auction_worklet::mojom::BiddingInterestGroupPtr MakeInterestGroup(
-      const url::Origin& owner,
-      const std::string& name,
-      const GURL& bidding_url,
-      const absl::optional<GURL>& trusted_bidding_signals_url,
-      const std::vector<std::string>& trusted_bidding_signals_keys,
-      const GURL& ad_url) {
-    std::vector<blink::mojom::InterestGroupAdPtr> ads;
+      url::Origin owner,
+      std::string name,
+      GURL bidding_url,
+      absl::optional<GURL> trusted_bidding_signals_url,
+      std::vector<std::string> trusted_bidding_signals_keys,
+      GURL ad_url) {
+    std::vector<blink::InterestGroup::Ad> ads;
     // Give only kBidder1 an InterestGroupAd ad with non-empty metadata, to
     // better test the `ad_metadata` output.
     if (owner == kBidder1) {
-      ads.push_back(
-          blink::mojom::InterestGroupAd::New(ad_url, R"({"ads": true})"));
+      ads.emplace_back(blink::InterestGroup::Ad(ad_url, R"({"ads": true})"));
     } else {
-      ads.push_back(blink::mojom::InterestGroupAd::New(ad_url, absl::nullopt));
+      ads.emplace_back(blink::InterestGroup::Ad(ad_url, absl::nullopt));
     }
 
     // Create fake previous wins. The time of these wins is ignored, since the
@@ -880,22 +893,24 @@ class AuctionRunnerTest : public testing::Test, public AuctionRunner::Delegate {
         base::Time::Now(), R"({"winner": -2})"));
 
     return auction_worklet::mojom::BiddingInterestGroup::New(
-        blink::mojom::InterestGroup::New(
-            base::Time::Max(), owner, name, bidding_url,
-            GURL() /* update_url */, trusted_bidding_signals_url,
-            trusted_bidding_signals_keys, absl::nullopt, std::move(ads)),
+        blink::InterestGroup(base::Time::Max(), std::move(owner),
+                             std::move(name), std::move(bidding_url),
+                             /* update_url = */ GURL(),
+                             std::move(trusted_bidding_signals_url),
+                             std::move(trusted_bidding_signals_keys),
+                             absl::nullopt, std::move(ads)),
         auction_worklet::mojom::BiddingBrowserSignals::New(
             3, 5, std::move(previous_wins)));
   }
 
   void StartStandardAuction() {
-    std::vector<auction_worklet::mojom::BiddingInterestGroupPtr> bidders;
-    bidders.push_back(MakeInterestGroup(kBidder1, kBidder1Name, kBidder1Url,
-                                        kBidder1TrustedSignalsUrl, {"k1", "k2"},
-                                        GURL("https://ad1.com")));
-    bidders.push_back(MakeInterestGroup(kBidder2, kBidder2Name, kBidder2Url,
-                                        kBidder2TrustedSignalsUrl, {"l1", "l2"},
-                                        GURL("https://ad2.com")));
+    std::vector<BiddingInterestGroup> bidders;
+    bidders.emplace_back(MakeInterestGroup(
+        kBidder1, kBidder1Name, kBidder1Url, kBidder1TrustedSignalsUrl,
+        {"k1", "k2"}, GURL("https://ad1.com")));
+    bidders.emplace_back(MakeInterestGroup(
+        kBidder2, kBidder2Name, kBidder2Url, kBidder2TrustedSignalsUrl,
+        {"l1", "l2"}, GURL("https://ad2.com")));
 
     StartAuction(kSellerUrl, std::move(bidders),
                  R"({"isAuctionSignals": true})", /* auction_signals_json */
@@ -924,6 +939,28 @@ class AuctionRunnerTest : public testing::Test, public AuctionRunner::Delegate {
   }
   network::mojom::URLLoaderFactory* GetTrustedURLLoaderFactory() override {
     return &url_loader_factory_;
+  }
+  RenderFrameHostImpl* GetFrame() override { return nullptr; }
+
+  // DebuggableAuctionWorkletTracker::Observer implementation
+  void AuctionWorkletCreated(DebuggableAuctionWorklet* worklet,
+                             bool& should_pause_on_start) override {
+    should_pause_on_start = false;  // Should be a no-op.
+    observer_log_.push_back(base::StrCat({"Create ", worklet->url().spec()}));
+  }
+
+  void AuctionWorkletDestroyed(DebuggableAuctionWorklet* worklet) override {
+    observer_log_.push_back(base::StrCat({"Destroy ", worklet->url().spec()}));
+  }
+
+  // Gets script URLs of currently live DebuggableAuctionWorklet.
+  std::vector<std::string> LiveDebuggables() {
+    std::vector<std::string> result;
+    for (DebuggableAuctionWorklet* debuggable :
+         DebuggableAuctionWorkletTracker::GetInstance()->GetAll()) {
+      result.push_back(debuggable->url().spec());
+    }
+    return result;
   }
 
   // Enables use of a mock AuctionProcessManager when the next auction is run.
@@ -1002,18 +1039,18 @@ class AuctionRunnerTest : public testing::Test, public AuctionRunner::Delegate {
   std::string bad_message_;
 
   std::unique_ptr<base::HistogramTester> histogram_tester_;
+
+  std::vector<std::string> observer_log_;
 };
 
 // Runs the standard auction, but without adding any interest groups to the
 // manager.
 TEST_F(AuctionRunnerTest, NoInterestGroups) {
-  RunAuctionAndWait(
-      kSellerUrl,
-      std::vector<auction_worklet::mojom::BiddingInterestGroupPtr>(),
-      R"({"isAuctionSignals": true})" /* auction_signals_json */,
-      auction_worklet::mojom::BrowserSignals::New(
-          url::Origin::Create(GURL("https://publisher1.com")),
-          url::Origin::Create(kSellerUrl)));
+  RunAuctionAndWait(kSellerUrl, std::vector<BiddingInterestGroup>(),
+                    R"({"isAuctionSignals": true})" /* auction_signals_json */,
+                    auction_worklet::mojom::BrowserSignals::New(
+                        url::Origin::Create(GURL("https://publisher1.com")),
+                        url::Origin::Create(kSellerUrl)));
 
   EXPECT_FALSE(result_.ad_url);
   EXPECT_FALSE(result_.seller_report_url);
@@ -1041,10 +1078,10 @@ TEST_F(AuctionRunnerTest, OneInterestGroup) {
                                         "?hostname=publisher1.com&keys=k1,k2"),
                                    R"({"k1":"a", "k2": "b", "extra": "c"})");
 
-  std::vector<auction_worklet::mojom::BiddingInterestGroupPtr> bidders;
-  bidders.push_back(MakeInterestGroup(kBidder1, kBidder1Name, kBidder1Url,
-                                      kBidder1TrustedSignalsUrl, {"k1", "k2"},
-                                      GURL("https://ad1.com")));
+  std::vector<BiddingInterestGroup> bidders;
+  bidders.emplace_back(MakeInterestGroup(
+      kBidder1, kBidder1Name, kBidder1Url, kBidder1TrustedSignalsUrl,
+      {"k1", "k2"}, GURL("https://ad1.com")));
 
   RunAuctionAndWait(kSellerUrl, std::move(bidders),
                     R"({"isAuctionSignals": true})" /* auction_signals_json */,
@@ -1065,6 +1102,12 @@ TEST_F(AuctionRunnerTest, OneInterestGroup) {
   EXPECT_THAT(result_.errors, testing::ElementsAre());
   CheckHistograms(AuctionRunner::AuctionResult::kSuccess,
                   1 /* expected_interest_groups */, 1 /* expected_owners */);
+  EXPECT_THAT(observer_log_,
+              testing::UnorderedElementsAre(
+                  "Create https://adstuff.publisher1.com/auction.js",
+                  "Create https://adplatform.com/offers.js",
+                  "Destroy https://adplatform.com/offers.js",
+                  "Destroy https://adstuff.publisher1.com/auction.js"));
 }
 
 // An auction with two successful bids.
@@ -1102,6 +1145,14 @@ TEST_F(AuctionRunnerTest, Basic) {
   EXPECT_THAT(res.errors, testing::ElementsAre());
   CheckHistograms(AuctionRunner::AuctionResult::kSuccess,
                   2 /* expected_interest_groups */, 2 /* expected_owners */);
+  EXPECT_THAT(observer_log_,
+              testing::UnorderedElementsAre(
+                  "Create https://adstuff.publisher1.com/auction.js",
+                  "Create https://adplatform.com/offers.js",
+                  "Create https://anotheradthing.com/bids.js",
+                  "Destroy https://adplatform.com/offers.js",
+                  "Destroy https://anotheradthing.com/bids.js",
+                  "Destroy https://adstuff.publisher1.com/auction.js"));
 }
 
 // An auction where one bid is successful, another's script 404s.
@@ -1139,6 +1190,17 @@ TEST_F(AuctionRunnerTest, OneBidOne404) {
                            "HTTP status = 404 Not Found."));
   CheckHistograms(AuctionRunner::AuctionResult::kSuccess,
                   2 /* expected_interest_groups */, 2 /* expected_owners */);
+
+  // 404 is detected after the worklet is created, so there are still events
+  // for it.
+  EXPECT_THAT(observer_log_,
+              testing::UnorderedElementsAre(
+                  "Create https://adstuff.publisher1.com/auction.js",
+                  "Create https://adplatform.com/offers.js",
+                  "Create https://anotheradthing.com/bids.js",
+                  "Destroy https://adplatform.com/offers.js",
+                  "Destroy https://anotheradthing.com/bids.js",
+                  "Destroy https://adstuff.publisher1.com/auction.js"));
 }
 
 // An auction where one bid is successful, another's script does not provide a
@@ -1364,13 +1426,13 @@ TEST_F(AuctionRunnerTest, NoTrustedBiddingSignals) {
   auction_worklet::AddJavascriptResponse(&url_loader_factory_, kSellerUrl,
                                          MakeAuctionScript());
 
-  std::vector<auction_worklet::mojom::BiddingInterestGroupPtr> bidders;
-  bidders.push_back(MakeInterestGroup(kBidder1, kBidder1Name, kBidder1Url,
-                                      absl::nullopt, {"k1", "k2"},
-                                      GURL("https://ad1.com")));
-  bidders.push_back(MakeInterestGroup(kBidder2, kBidder2Name, kBidder2Url,
-                                      absl::nullopt, {"l1", "l2"},
-                                      GURL("https://ad2.com")));
+  std::vector<BiddingInterestGroup> bidders;
+  bidders.emplace_back(MakeInterestGroup(kBidder1, kBidder1Name, kBidder1Url,
+                                         absl::nullopt, {"k1", "k2"},
+                                         GURL("https://ad1.com")));
+  bidders.emplace_back(MakeInterestGroup(kBidder2, kBidder2Name, kBidder2Url,
+                                         absl::nullopt, {"l1", "l2"},
+                                         GURL("https://ad2.com")));
 
   const Result& res = RunAuctionAndWait(
       kSellerUrl, std::move(bidders),
@@ -1694,6 +1756,7 @@ TEST_F(AuctionRunnerTest, ProcessManagerDelaysAuction) {
 
 TEST_F(AuctionRunnerTest, AllBiddersCrashBeforeBidding) {
   for (bool seller_worklet_loads_first : {false, true}) {
+    observer_log_.clear();
     SCOPED_TRACE(seller_worklet_loads_first);
 
     StartStandardAuctionWithMockService();
@@ -1712,6 +1775,18 @@ TEST_F(AuctionRunnerTest, AllBiddersCrashBeforeBidding) {
     }
     EXPECT_FALSE(auction_complete_);
 
+    EXPECT_THAT(observer_log_,
+                testing::UnorderedElementsAre(
+                    "Create https://adstuff.publisher1.com/auction.js",
+                    "Create https://adplatform.com/offers.js",
+                    "Create https://anotheradthing.com/bids.js"));
+
+    EXPECT_THAT(LiveDebuggables(),
+                testing::UnorderedElementsAre(
+                    "https://adplatform.com/offers.js",
+                    "https://anotheradthing.com/bids.js",
+                    "https://adstuff.publisher1.com/auction.js"));
+
     // Have to keep the callbacks around, since the AuctionWorkletService is
     // still live. Closing it here causes more issues than its worth (seller
     // worklet can't complete loading if it hasn't already). In production,
@@ -1723,6 +1798,18 @@ TEST_F(AuctionRunnerTest, AllBiddersCrashBeforeBidding) {
     bidder2_worklet.reset();
 
     base::RunLoop().RunUntilIdle();
+
+    EXPECT_THAT(observer_log_,
+                testing::UnorderedElementsAre(
+                    "Create https://adstuff.publisher1.com/auction.js",
+                    "Create https://adplatform.com/offers.js",
+                    "Create https://anotheradthing.com/bids.js",
+                    "Destroy https://adplatform.com/offers.js",
+                    "Destroy https://anotheradthing.com/bids.js",
+                    "Destroy https://adstuff.publisher1.com/auction.js"));
+
+    EXPECT_THAT(LiveDebuggables(), testing::ElementsAre());
+
     // The auction isn't failed until the seller worklet has completed loading.
     if (!seller_worklet_loads_first)
       seller_worklet->CompleteLoading();
@@ -1759,6 +1846,7 @@ TEST_F(AuctionRunnerTest, BidderCrashBeforeBidding) {
     SCOPED_TRACE(other_bidder_finishes_first);
     for (bool seller_worklet_loads_first : {false, true}) {
       SCOPED_TRACE(seller_worklet_loads_first);
+      observer_log_.clear();
       StartStandardAuctionWithMockService();
       auto seller_worklet = mock_auction_process_manager_->TakeSellerWorklet();
       ASSERT_TRUE(seller_worklet);
@@ -1786,6 +1874,18 @@ TEST_F(AuctionRunnerTest, BidderCrashBeforeBidding) {
       // Can't flush the closed pipe without reaching into AuctionRunner, so use
       // RunUntilIdle() instead.
       base::RunLoop().RunUntilIdle();
+
+      EXPECT_THAT(observer_log_,
+                  testing::ElementsAre(
+                      "Create https://adstuff.publisher1.com/auction.js",
+                      "Create https://adplatform.com/offers.js",
+                      "Create https://anotheradthing.com/bids.js",
+                      "Destroy https://adplatform.com/offers.js"));
+
+      EXPECT_THAT(LiveDebuggables(),
+                  testing::UnorderedElementsAre(
+                      "https://adstuff.publisher1.com/auction.js",
+                      "https://anotheradthing.com/bids.js"));
 
       if (!seller_worklet_loads_first)
         seller_worklet->CompleteLoading();
@@ -1865,6 +1965,20 @@ TEST_F(AuctionRunnerTest, LosingBidderCrashWhileScoring) {
 
   // Finish the auction.
   seller_worklet->WaitForReportResult();
+
+  // Still expect bidder2 and seller around for reporting.
+  EXPECT_THAT(observer_log_,
+              testing::UnorderedElementsAre(
+                  "Create https://adstuff.publisher1.com/auction.js",
+                  "Create https://adplatform.com/offers.js",
+                  "Create https://anotheradthing.com/bids.js",
+                  "Destroy https://adplatform.com/offers.js"));
+
+  EXPECT_THAT(
+      LiveDebuggables(),
+      testing::UnorderedElementsAre("https://adstuff.publisher1.com/auction.js",
+                                    "https://anotheradthing.com/bids.js"));
+
   seller_worklet->InvokeReportResultCallback();
   bidder2_worklet->WaitForReportWin();
   bidder2_worklet->InvokeReportWinCallback();
@@ -1884,6 +1998,18 @@ TEST_F(AuctionRunnerTest, LosingBidderCrashWhileScoring) {
   EXPECT_THAT(result_.errors, testing::ElementsAre());
   CheckHistograms(AuctionRunner::AuctionResult::kSuccess,
                   2 /* expected_interest_groups */, 2 /* expected_owners */);
+
+  // Everything cleaned up at the end.
+  EXPECT_THAT(observer_log_,
+              testing::UnorderedElementsAre(
+                  "Create https://adstuff.publisher1.com/auction.js",
+                  "Create https://adplatform.com/offers.js",
+                  "Create https://anotheradthing.com/bids.js",
+                  "Destroy https://adplatform.com/offers.js",
+                  "Destroy https://anotheradthing.com/bids.js",
+                  "Destroy https://adstuff.publisher1.com/auction.js"));
+
+  EXPECT_THAT(LiveDebuggables(), testing::UnorderedElementsAre());
 }
 
 // If the winning bidder crashes while scoring, the auction should fail.
@@ -1918,6 +2044,19 @@ TEST_F(AuctionRunnerTest, WinningBidderCrashWhileScoring) {
 
   // Finish the auction.
   seller_worklet->WaitForReportResult();
+
+  EXPECT_THAT(
+      observer_log_,
+      testing::ElementsAre("Create https://adstuff.publisher1.com/auction.js",
+                           "Create https://adplatform.com/offers.js",
+                           "Create https://anotheradthing.com/bids.js",
+                           "Destroy https://anotheradthing.com/bids.js"));
+
+  EXPECT_THAT(LiveDebuggables(),
+              testing::UnorderedElementsAre(
+                  "https://adplatform.com/offers.js",
+                  "https://adstuff.publisher1.com/auction.js"));
+
   seller_worklet->InvokeReportResultCallback();
   // AuctionRunner discovered Bidder1 crashed before calling its ReportWin
   // method.
@@ -1936,6 +2075,18 @@ TEST_F(AuctionRunnerTest, WinningBidderCrashWhileScoring) {
                   "%s crashed while idle.", kBidder1Url.spec().c_str())));
   CheckHistograms(AuctionRunner::AuctionResult::kWinningBidderWorkletCrashed,
                   2 /* expected_interest_groups */, 2 /* expected_owners */);
+
+  // Everything cleaned up at the end.
+  EXPECT_THAT(observer_log_,
+              testing::UnorderedElementsAre(
+                  "Create https://adstuff.publisher1.com/auction.js",
+                  "Create https://adplatform.com/offers.js",
+                  "Create https://anotheradthing.com/bids.js",
+                  "Destroy https://adplatform.com/offers.js",
+                  "Destroy https://anotheradthing.com/bids.js",
+                  "Destroy https://adstuff.publisher1.com/auction.js"));
+
+  EXPECT_THAT(LiveDebuggables(), testing::UnorderedElementsAre());
 }
 
 // If the winning bidder crashes while coming up with the reporting URL, the
@@ -1956,7 +2107,7 @@ TEST_F(AuctionRunnerTest, WinningBidderCrashWhileReporting) {
   bidder1_worklet->CompleteLoadingAndBid(7 /* bid */, GURL("https://ad1.com/"));
   bidder2_worklet->CompleteLoadingAndBid(5 /* bid */, GURL("https://ad2.com/"));
 
-  // Bidder1 crashes while scoring its bid.
+  // Score Bidder1's bid.
   auto score_ad_params = seller_worklet->WaitForScoreAd();
   EXPECT_EQ(kBidder1, score_ad_params->interest_group_owner);
   EXPECT_EQ(7, score_ad_params->bid);
@@ -1968,6 +2119,7 @@ TEST_F(AuctionRunnerTest, WinningBidderCrashWhileReporting) {
   EXPECT_EQ(5, score_ad_params->bid);
   seller_worklet->InvokeScoreAdCallback(10 /* score */);
 
+  // Bidder1 crashes while running ReportWin.
   seller_worklet->WaitForReportResult();
   seller_worklet->InvokeReportResultCallback();
   bidder1_worklet->WaitForReportWin();
@@ -2465,6 +2617,19 @@ TEST_F(AuctionRunnerTest, DestroyLosingBidderWorkletFirstBidderLoses) {
   // still be the winning bid.
   EXPECT_FALSE(bidder1_worklet->PipeIsClosed());
 
+  // The debug peers are also around.
+  EXPECT_THAT(
+      observer_log_,
+      testing::ElementsAre("Create https://adstuff.publisher1.com/auction.js",
+                           "Create https://adplatform.com/offers.js",
+                           "Create https://anotheradthing.com/bids.js"));
+
+  EXPECT_THAT(LiveDebuggables(),
+              testing::UnorderedElementsAre(
+                  "https://adplatform.com/offers.js",
+                  "https://anotheradthing.com/bids.js",
+                  "https://adstuff.publisher1.com/auction.js"));
+
   // Bidder2 returns a bid, which is then scored.
   bidder2_worklet->CompleteLoadingAndBid(7 /* bid */, GURL("https://ad2.com/"));
   score_ad_params = seller_worklet->WaitForScoreAd();
@@ -2476,6 +2641,18 @@ TEST_F(AuctionRunnerTest, DestroyLosingBidderWorkletFirstBidderLoses) {
   seller_worklet->Flush();
   // The losing bidder should now be destroyed.
   EXPECT_TRUE(bidder1_worklet->PipeIsClosed());
+
+  EXPECT_THAT(
+      observer_log_,
+      testing::ElementsAre("Create https://adstuff.publisher1.com/auction.js",
+                           "Create https://adplatform.com/offers.js",
+                           "Create https://anotheradthing.com/bids.js",
+                           "Destroy https://adplatform.com/offers.js"));
+
+  EXPECT_THAT(LiveDebuggables(),
+              testing::UnorderedElementsAre(
+                  "https://anotheradthing.com/bids.js",
+                  "https://adstuff.publisher1.com/auction.js"));
 
   // Finish the auction.
   seller_worklet->WaitForReportResult();
@@ -2522,6 +2699,18 @@ TEST_F(AuctionRunnerTest, DestroyLosingBidderWorkletLastBidderLoses) {
   EXPECT_EQ(5, score_ad_params->bid);
   seller_worklet->InvokeScoreAdCallback(11 /* score */);
 
+  EXPECT_THAT(
+      observer_log_,
+      testing::ElementsAre("Create https://adstuff.publisher1.com/auction.js",
+                           "Create https://adplatform.com/offers.js",
+                           "Create https://anotheradthing.com/bids.js"));
+
+  EXPECT_THAT(LiveDebuggables(),
+              testing::UnorderedElementsAre(
+                  "https://adplatform.com/offers.js",
+                  "https://anotheradthing.com/bids.js",
+                  "https://adstuff.publisher1.com/auction.js"));
+
   // Bidder2 returns a bid, which is then scored.
   bidder2_worklet->CompleteLoadingAndBid(7 /* bid */, GURL("https://ad2.com/"));
   score_ad_params = seller_worklet->WaitForScoreAd();
@@ -2533,6 +2722,18 @@ TEST_F(AuctionRunnerTest, DestroyLosingBidderWorkletLastBidderLoses) {
   seller_worklet->Flush();
   // The losing bidder should now be destroyed.
   EXPECT_TRUE(bidder2_worklet->PipeIsClosed());
+
+  EXPECT_THAT(
+      observer_log_,
+      testing::ElementsAre("Create https://adstuff.publisher1.com/auction.js",
+                           "Create https://adplatform.com/offers.js",
+                           "Create https://anotheradthing.com/bids.js",
+                           "Destroy https://anotheradthing.com/bids.js"));
+
+  EXPECT_THAT(LiveDebuggables(),
+              testing::UnorderedElementsAre(
+                  "https://adplatform.com/offers.js",
+                  "https://adstuff.publisher1.com/auction.js"));
 
   // Finish the auction.
   seller_worklet->WaitForReportResult();

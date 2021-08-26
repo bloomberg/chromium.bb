@@ -62,13 +62,13 @@ declare_args() {
 
   # Enables the compilation of Dawn's OpenGL backend
   # (best effort, non-conformant)
-  dawn_enable_desktop_gl = is_linux && !is_chromeos
+  dawn_enable_desktop_gl = !build_with_chromium && (is_linux && !is_chromeos)
 
   # Enables the compilation of Dawn's OpenGLES backend
   # (WebGPU/Compat subset)
   # Disables OpenGLES when compiling for UWP, since UWP only supports d3d
-  dawn_enable_opengles =
-      (is_linux && !is_chromeos) || (is_win && !dawn_is_winuwp)
+  dawn_enable_opengles = !build_with_chromium && ((is_linux && !is_chromeos) ||
+                                                  (is_win && !dawn_is_winuwp))
 
   # Enables the compilation of Dawn's Vulkan backend
   # Disables vulkan when compiling for UWP, since UWP only supports d3d
@@ -104,5 +104,9 @@ declare_args() {
 dawn_supports_glfw_for_windowing =
     (is_win && !dawn_is_winuwp) || (is_linux && !is_chromeos) || is_mac
 
-# Much of the backend code is shared, so define a convenience var.
+# Much of the GL backend code is shared, so define a convenience var.
 dawn_enable_opengl = dawn_enable_opengles || dawn_enable_desktop_gl
+
+# The GL backends are the last to use SPIRV-Cross, so only compile it in
+# if they are enabled.
+dawn_use_spirv_cross = dawn_enable_opengl

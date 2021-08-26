@@ -19,13 +19,13 @@ namespace {
 
 bool ExtractStrings(const base::Value& json,
                     AutofillAssistantOnboardingFetcher::StringMap& string_map) {
-  for (const auto& intent_it : json.DictItems()) {
+  for (const auto intent_it : json.DictItems()) {
     const auto& intent = intent_it.first;
     if (!intent_it.second.is_dict()) {
       return false;
     }
     base::flat_map<std::string, std::string> strings;
-    for (const auto& string_it : intent_it.second.DictItems()) {
+    for (const auto string_it : intent_it.second.DictItems()) {
       const auto& string_id = string_it.first;
       if (!string_it.second.is_string()) {
         return false;
@@ -43,23 +43,6 @@ constexpr char kDefaultOnboardingDataUrlPattern[] =
     "https://www.gstatic.com/autofill_assistant/$1/onboarding_definition.json";
 
 constexpr int kMaxDownloadSizeInBytes = 10 * 1024;
-constexpr char kTrafficAnnotationId[] = "gstatic_onboarding_definition";
-constexpr char kTrafficAnnotationDefinition[] = R"(
-        semantics {
-          sender: "Autofill Assistant"
-          description:
-            "A JSON file hosted by gstatic containing a definition of "
-            "content for onboarding."
-          trigger:
-            "When Autofill Assistant starts for a user that has not previously "
-            "accepted the onboarding."
-          data:
-            "The request body is empty. No user data is included."
-          destination: GOOGLE_OWNED_SERVICE
-        }
-        policy {
-          cookies_allowed: NO
-        })";
 
 AutofillAssistantOnboardingFetcher::AutofillAssistantOnboardingFetcher(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
@@ -92,8 +75,24 @@ void AutofillAssistantOnboardingFetcher::StartFetch(const std::string& locale,
       kDefaultOnboardingDataUrlPattern, {locale}, /* offset= */ nullptr));
   resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   net::NetworkTrafficAnnotationTag traffic_annotation =
-      net::DefineNetworkTrafficAnnotation(kTrafficAnnotationId,
-                                          kTrafficAnnotationDefinition);
+      net::DefineNetworkTrafficAnnotation("gstatic_onboarding_definition",
+                                          R"(
+          semantics {
+            sender: "Autofill Assistant"
+            description:
+              "A JSON file hosted by gstatic containing a definition of "
+              "content for onboarding."
+            trigger:
+              "When Autofill Assistant starts for a user that has not "
+              "previously accepted the onboarding."
+            data:
+              "The request body is empty. No user data is included."
+            destination: GOOGLE_OWNED_SERVICE
+          }
+          policy {
+            cookies_allowed: NO
+          }
+      )");
   url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
                                                  traffic_annotation);
   url_loader_->SetTimeoutDuration(kFetchTimeout);

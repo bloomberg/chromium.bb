@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "components/page_load_metrics/browser/observers/core/largest_contentful_paint_handler.h"
-#include "components/page_load_metrics/browser/page_load_metrics_event.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer_delegate.h"
 #include "components/page_load_metrics/browser/page_load_metrics_update_dispatcher.h"
@@ -269,7 +268,7 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   void PageHidden();
   void PageShown();
   void RenderFrameDeleted(content::RenderFrameHost* rfh);
-  void FrameDeleted(int frame_tree_node_id);
+  void SubFrameDeleted(int frame_tree_node_id);
 
   void OnInputEvent(const blink::WebInputEvent& event);
 
@@ -375,8 +374,7 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
       const content::WebContentsObserver::MediaPlayerInfo& video_type,
       content::RenderFrameHost* render_frame_host);
 
-  // Informs the observers that |event| has occurred.
-  void BroadcastEventToObservers(PageLoadMetricsEvent event);
+  void OnPrefetchLikely();
 
   void OnEnterBackForwardCache();
   void OnRestoreFromBackForwardCache(
@@ -495,7 +493,7 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
 
   PageLoadMetricsUpdateDispatcher metrics_update_dispatcher_;
 
-  const ukm::SourceId source_id_;
+  ukm::SourceId source_id_ = ukm::kInvalidSourceId;
 
   content::WebContents* const web_contents_;
 

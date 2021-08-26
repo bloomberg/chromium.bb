@@ -1,16 +1,7 @@
-/* Copyright (c) the JPEG XL Project
+/* Copyright (c) the JPEG XL Project Authors. All rights reserved.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Use of this source code is governed by a BSD-style
+ * license that can be found in the LICENSE file.
  */
 
 /** @file encode.h
@@ -151,6 +142,14 @@ JXL_EXPORT JxlEncoderStatus JxlEncoderProcessOutput(JxlEncoder* enc,
 /**
  * Sets the buffer to read JPEG encoded bytes from for the next frame to encode.
  *
+ * If JxlEncoderSetBasicInfo has not yet been called, calling
+ * JxlEncoderAddJPEGFrame will implicitly call it with the parameters of the
+ * added JPEG frame.
+ *
+ * If JxlEncoderSetColorEncoding or JxlEncoderSetICCProfile has not yet been
+ * called, calling JxlEncoderAddJPEGFrame will implicitly call it with the
+ * parameters of the added JPEG frame.
+ *
  * If the encoder is set to store JPEG reconstruction metadata using @ref
  * JxlEncoderStoreJPEGMetadata and a single JPEG frame is added, it will be
  * possible to losslessly reconstruct the JPEG codestream.
@@ -166,7 +165,7 @@ JXL_EXPORT JxlEncoderStatus JxlEncoderAddJPEGFrame(
 
 /**
  * Sets the buffer to read pixels from for the next image to encode. Must call
- * JxlEncoderSetDimensions before JxlEncoderAddImageFrame.
+ * JxlEncoderSetBasicInfo before JxlEncoderAddImageFrame.
  *
  * Currently only some pixel formats are supported:
  * - JXL_TYPE_UINT8

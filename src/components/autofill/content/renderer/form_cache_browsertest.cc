@@ -8,6 +8,7 @@
 #include "components/autofill/content/renderer/focus_test_utils.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/content/renderer/form_cache.h"
+#include "components/autofill/content/renderer/form_cache_test_api.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "content/public/test/render_view_test.h"
@@ -73,7 +74,24 @@ class FormCacheBrowserTest : public content::RenderViewTest {
   std::unique_ptr<test::FocusTestUtils> focus_test_utils_;
 };
 
-TEST_F(FormCacheBrowserTest, ExtractForms) {
+class ParameterizedFormCacheBrowserTest
+    : public FormCacheBrowserTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  ParameterizedFormCacheBrowserTest() {
+    bool use_new_form_extraction = GetParam();
+    std::vector<base::Feature> enabled;
+    std::vector<base::Feature> disabled;
+    (use_new_form_extraction ? &enabled : &disabled)
+        ->push_back(features::kAutofillUseNewFormExtraction);
+    scoped_features_.InitWithFeatures(enabled, disabled);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_features_;
+};
+
+TEST_P(ParameterizedFormCacheBrowserTest, ExtractForms) {
   LoadHTML(R"(
     <form id="form1">
       <input type="text" name="foo1">
@@ -99,7 +117,7 @@ TEST_F(FormCacheBrowserTest, ExtractForms) {
   EXPECT_TRUE(unowned_form->child_frames.empty());
 }
 
-class FormCacheIframeBrowserTest : public FormCacheBrowserTest {
+class FormCacheIframeBrowserTest : public ParameterizedFormCacheBrowserTest {
  public:
   FormCacheIframeBrowserTest() {
     scoped_feature_list_.InitAndEnableFeature(features::kAutofillAcrossIframes);
@@ -110,7 +128,7 @@ class FormCacheIframeBrowserTest : public FormCacheBrowserTest {
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-TEST_F(FormCacheIframeBrowserTest, ExtractFrames) {
+TEST_P(FormCacheIframeBrowserTest, ExtractFrames) {
   LoadHTML(R"(
     <form id="form1">
       <iframe id="frame1"></iframe>
@@ -145,7 +163,7 @@ TEST_F(FormCacheIframeBrowserTest, ExtractFrames) {
                         Field(&FrameTokenWithPredecessor::predecessor, -1))));
 }
 
-TEST_F(FormCacheBrowserTest, ExtractFormsTwice) {
+TEST_P(ParameterizedFormCacheBrowserTest, ExtractFormsTwice) {
   LoadHTML(R"(
     <form id="form1">
       <input type="text" name="foo1">
@@ -164,7 +182,7 @@ TEST_F(FormCacheBrowserTest, ExtractFormsTwice) {
   EXPECT_TRUE(forms.empty());
 }
 
-TEST_F(FormCacheIframeBrowserTest, ExtractFramesTwice) {
+TEST_P(FormCacheIframeBrowserTest, ExtractFramesTwice) {
   LoadHTML(R"(
     <form id="form1">
       <iframe></iframe>
@@ -181,7 +199,7 @@ TEST_F(FormCacheIframeBrowserTest, ExtractFramesTwice) {
   EXPECT_TRUE(forms.empty());
 }
 
-TEST_F(FormCacheIframeBrowserTest, ExtractFramesAfterVisibilityChange) {
+TEST_P(FormCacheIframeBrowserTest, ExtractFramesAfterVisibilityChange) {
   LoadHTML(R"(
     <form id="form1">
       <iframe id="frame1" style="display: none;"></iframe>
@@ -232,7 +250,7 @@ TEST_F(FormCacheIframeBrowserTest, ExtractFramesAfterVisibilityChange) {
   EXPECT_EQ(forms.front().name, u"form1");
 }
 
-TEST_F(FormCacheBrowserTest, ExtractFormsAfterModification) {
+TEST_P(ParameterizedFormCacheBrowserTest, ExtractFormsAfterModification) {
   LoadHTML(R"(
     <form id="form1">
       <input type="text" name="foo1">
@@ -271,7 +289,7 @@ TEST_F(FormCacheBrowserTest, ExtractFormsAfterModification) {
   EXPECT_EQ(2u, unowned_form->fields.size());
 }
 
-TEST_F(FormCacheBrowserTest, FillAndClear) {
+TEST_P(ParameterizedFormCacheBrowserTest, FillAndClear) {
   LoadHTML(R"(
     <input type="text" name="text" id="text">
     <input type="checkbox" checked name="checkbox" id="checkbox">
@@ -299,7 +317,8 @@ TEST_F(FormCacheBrowserTest, FillAndClear) {
   auto checkbox = doc.GetElementById("checkbox").To<WebInputElement>();
   auto select_element = doc.GetElementById("select").To<WebSelectElement>();
 
-  form_util::FillForm(values_to_fill, text);
+  form_util::FillOrPreviewForm(values_to_fill, text,
+                               mojom::RendererFormDataAction::kFill);
 
   EXPECT_EQ("test", text.Value().Ascii());
   EXPECT_FALSE(checkbox.IsChecked());
@@ -316,7 +335,7 @@ TEST_F(FormCacheBrowserTest, FillAndClear) {
 
 // Tests that correct focus, change and blur events are emitted during the
 // autofilling and clearing of the form with an initially focused element.
-TEST_F(FormCacheBrowserTest,
+TEST_P(ParameterizedFormCacheBrowserTest,
        VerifyFocusAndBlurEventsAfterAutofillAndClearingWithFocusElement) {
   // Load a form.
   LoadHTML(
@@ -344,7 +363,8 @@ TEST_F(FormCacheBrowserTest,
                    .To<WebInputElement>();
 
   // Simulate filling the form using Autofill.
-  form_util::FillForm(values_to_fill, fname);
+  form_util::FillOrPreviewForm(values_to_fill, fname,
+                               mojom::RendererFormDataAction::kFill);
 
   // Simulate clearing the form.
   form_cache.ClearSectionWithElement(fname);
@@ -367,7 +387,7 @@ TEST_F(FormCacheBrowserTest,
   EXPECT_EQ(GetFocusLog(), "c0b0f1c1b1f0c0b0f1c1b1f0");
 }
 
-TEST_F(FormCacheBrowserTest, FreeDataOnElementRemoval) {
+TEST_P(ParameterizedFormCacheBrowserTest, FreeDataOnElementRemoval) {
   LoadHTML(R"(
     <div id="container">
       <input type="text" name="text" id="text">
@@ -382,8 +402,8 @@ TEST_F(FormCacheBrowserTest, FreeDataOnElementRemoval) {
   FormCache form_cache(GetMainFrame());
   form_cache.ExtractNewForms(nullptr);
 
-  EXPECT_EQ(1u, form_cache.initial_select_values_.size());
-  EXPECT_EQ(1u, form_cache.initial_checked_state_.size());
+  EXPECT_EQ(1u, FormCacheTestApi(&form_cache).initial_select_values_size());
+  EXPECT_EQ(1u, FormCacheTestApi(&form_cache).initial_checked_state_size());
 
   ExecuteJavaScriptForTests(R"(
     const container = document.getElementById('container');
@@ -394,13 +414,14 @@ TEST_F(FormCacheBrowserTest, FreeDataOnElementRemoval) {
 
   std::vector<FormData> forms = form_cache.ExtractNewForms(nullptr);
   EXPECT_EQ(0u, forms.size());
-  EXPECT_EQ(0u, form_cache.initial_select_values_.size());
-  EXPECT_EQ(0u, form_cache.initial_checked_state_.size());
+  EXPECT_EQ(0u, FormCacheTestApi(&form_cache).initial_select_values_size());
+  EXPECT_EQ(0u, FormCacheTestApi(&form_cache).initial_checked_state_size());
 }
 
 // Test that the select element's user edited field state is set
 // to false after clearing the form.
-TEST_F(FormCacheBrowserTest, ClearFormSelectElementEditedStateReset) {
+TEST_P(ParameterizedFormCacheBrowserTest,
+       ClearFormSelectElementEditedStateReset) {
   LoadHTML(R"(
     <input type="text" name="text" id="text">
     <select name="date" id="date">
@@ -432,7 +453,8 @@ TEST_F(FormCacheBrowserTest, ClearFormSelectElementEditedStateReset) {
   auto select_date = doc.GetElementById("date").To<WebSelectElement>();
   auto select_month = doc.GetElementById("month").To<WebSelectElement>();
 
-  form_util::FillForm(values_to_fill, text);
+  form_util::FillOrPreviewForm(values_to_fill, text,
+                               mojom::RendererFormDataAction::kFill);
 
   EXPECT_EQ("test", text.Value().Ascii());
   EXPECT_EQ("first", select_date.Value().Ascii());
@@ -455,7 +477,8 @@ TEST_F(FormCacheBrowserTest, ClearFormSelectElementEditedStateReset) {
   values_to_fill.fields[1].is_autofilled = true;
   values_to_fill.fields[2].value = u"february";
   values_to_fill.fields[2].is_autofilled = true;
-  form_util::FillForm(values_to_fill, text);
+  form_util::FillOrPreviewForm(values_to_fill, text,
+                               mojom::RendererFormDataAction::kFill);
 
   // Ensure the form is filled correctly, including the select elements.
   EXPECT_EQ("test", text.Value().Ascii());
@@ -467,7 +490,8 @@ TEST_F(FormCacheBrowserTest, ClearFormSelectElementEditedStateReset) {
   EXPECT_TRUE(select_month.UserHasEditedTheField());
 }
 
-TEST_F(FormCacheBrowserTest, IsFormElementEligibleForManualFilling) {
+TEST_P(ParameterizedFormCacheBrowserTest,
+       IsFormElementEligibleForManualFilling) {
   // Load a form.
   LoadHTML(
       "<html><form id='myForm'>"
@@ -496,18 +520,18 @@ TEST_F(FormCacheBrowserTest, IsFormElementEligibleForManualFilling) {
   form_cache.SetFieldsEligibleForManualFilling(
       fields_eligible_for_manual_filling);
 
-  EXPECT_TRUE(
-      form_cache.IsFormElementEligibleForManualFilling(first_name_element));
-  EXPECT_FALSE(
-      form_cache.IsFormElementEligibleForManualFilling(middle_name_element));
-  EXPECT_TRUE(
-      form_cache.IsFormElementEligibleForManualFilling(last_name_element));
+  EXPECT_TRUE(FormCacheTestApi(&form_cache)
+                  .IsFormElementEligibleForManualFilling(first_name_element));
+  EXPECT_FALSE(FormCacheTestApi(&form_cache)
+                   .IsFormElementEligibleForManualFilling(middle_name_element));
+  EXPECT_TRUE(FormCacheTestApi(&form_cache)
+                  .IsFormElementEligibleForManualFilling(last_name_element));
 }
 
 // Test that after adding an input element to an already extracted non-synthetic
-// form, the form (has the same renderer ID) is not added twice to the extracted
+// form, the form (has the same rendererId) is not added twice to the extracted
 // forms.
-TEST_F(FormCacheBrowserTest,
+TEST_P(ParameterizedFormCacheBrowserTest,
        RemoveReextractedModifiedNonSyntheticFormsWithSameRendererID) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
@@ -535,14 +559,18 @@ TEST_F(FormCacheBrowserTest,
   ASSERT_TRUE(form1);
   EXPECT_EQ(2u, form1->fields.size());
 
-  // Check if the modified form with the same rendererID was not added again.
-  EXPECT_EQ(1u, form_cache.parsed_forms_.size());
+  // Check if the modified form with the same rendererId was not added again.
+  if (base::FeatureList::IsEnabled(features::kAutofillUseNewFormExtraction)) {
+    EXPECT_EQ(1u, FormCacheTestApi(&form_cache).parsed_forms_rendererid_size());
+  } else {
+    EXPECT_EQ(1u, FormCacheTestApi(&form_cache).parsed_forms_size());
+  }
 }
 
 // Test that after adding an unowned input element to an already extracted
-// synthetic form, the form (has the same renderer ID) is not added twice to the
+// synthetic form, the form (has the same rendererId) is not added twice to the
 // extracted forms.
-TEST_F(FormCacheBrowserTest,
+TEST_P(ParameterizedFormCacheBrowserTest,
        RemoveReextractedModifiedSyntheticFormsWithSameRendererID) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
@@ -568,9 +596,57 @@ TEST_F(FormCacheBrowserTest,
   ASSERT_TRUE(unowned_form);
   EXPECT_EQ(2u, unowned_form->fields.size());
 
-  // Check if the modified form with the same rendererID was not added again.
-  // (We expect that all the unowned fields have the same rendererID.)
-  EXPECT_EQ(1u, form_cache.parsed_forms_.size());
+  // Check if the modified form with the same rendererId was not added again.
+  // (We expect that all the unowned fields have the same rendererId.)
+  if (base::FeatureList::IsEnabled(features::kAutofillUseNewFormExtraction)) {
+    EXPECT_EQ(1u, FormCacheTestApi(&form_cache).parsed_forms_rendererid_size());
+  } else {
+    EXPECT_EQ(1u, FormCacheTestApi(&form_cache).parsed_forms_size());
+  }
 }
+
+// Test that the FormCache does not contain empty forms.
+TEST_F(FormCacheBrowserTest, DoNotStoreEmptyForms) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kAutofillUseNewFormExtraction);
+
+  LoadHTML(R"(<form></form>)");
+
+  FormCache form_cache(GetMainFrame());
+  form_cache.ExtractNewForms(nullptr);
+
+  EXPECT_EQ(1u, GetMainFrame()->GetDocument().Forms().size());
+  EXPECT_EQ(0u, FormCacheTestApi(&form_cache).parsed_forms_rendererid_size());
+}
+
+// Test that the FormCache never contains more than |kMaxParseableFields|
+// non-empty parsed forms.
+TEST_F(FormCacheBrowserTest, FormCacheSizeUpperBound) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kAutofillUseNewFormExtraction);
+
+  // Create a HTML page that contains `kMaxParseableFields + 1` non-empty
+  // forms.
+  std::string html;
+  for (unsigned int i = 0; i < kMaxParseableFields + 1; i++) {
+    html += "<form><input></form>";
+  }
+  LoadHTML(html.c_str());
+
+  FormCache form_cache(GetMainFrame());
+  form_cache.ExtractNewForms(nullptr);
+
+  EXPECT_EQ(kMaxParseableFields + 1,
+            GetMainFrame()->GetDocument().Forms().size());
+  EXPECT_EQ(kMaxParseableFields,
+            FormCacheTestApi(&form_cache).parsed_forms_rendererid_size());
+}
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         ParameterizedFormCacheBrowserTest,
+                         testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, FormCacheIframeBrowserTest, testing::Bool());
 
 }  // namespace autofill

@@ -263,6 +263,7 @@ viz_component("common") {
     "skia_helper.h",
     "surfaces/child_local_surface_id_allocator.cc",
     "surfaces/child_local_surface_id_allocator.h",
+    "surfaces/frame_sink_bundle_id.h",
     "surfaces/frame_sink_id.cc",
     "surfaces/frame_sink_id.h",
     "surfaces/frame_sink_id_allocator.cc",
@@ -296,7 +297,6 @@ viz_component("common") {
 
   deps = [
     "//base",
-    "//base/util/values:values_util",
     "//build:chromeos_buildflags",
 
     # TODO(staraz): cc/base was added because SharedQuadState includes

@@ -31,7 +31,6 @@
 #import "content/browser/accessibility/browser_accessibility_mac.h"
 #include "content/browser/accessibility/browser_accessibility_manager_mac.h"
 #include "content/browser/renderer_host/cursor_manager.h"
-#include "content/browser/renderer_host/display_util.h"
 #include "content/browser/renderer_host/input/motion_event_web.h"
 #import "content/browser/renderer_host/input/synthetic_gesture_target_mac.h"
 #include "content/browser/renderer_host/input/web_input_event_builders_mac.h"
@@ -60,6 +59,7 @@
 #include "ui/base/mojom/attributed_string.mojom.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
+#include "ui/display/display_util.h"
 #include "ui/display/screen.h"
 #include "ui/events/cocoa/cocoa_event_utils.h"
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
@@ -417,7 +417,7 @@ void RenderWidgetHostViewMac::GetScreenInfo(display::ScreenInfo* screen_info) {
   const display::DisplayList& displays = browser_compositor_->display_list();
   DCHECK(displays.IsValidAndHasPrimaryAndCurrentDisplays());
   const display::Display& display = displays.GetCurrentDisplay();
-  DisplayUtil::DisplayToScreenInfo(screen_info, display);
+  display::DisplayUtil::DisplayToScreenInfo(screen_info, display);
   // Recalculate some ScreenInfo properties from the cached screen info, which
   // may originate from a remote process that hosts the associated NSWindow.
   // DisplayToScreenInfo derives some properties from the latest display::Screen
@@ -747,7 +747,7 @@ const std::vector<display::Display>& RenderWidgetHostViewMac::GetDisplays()
   return browser_compositor_->display_list().displays();
 }
 
-void RenderWidgetHostViewMac::UpdateScreenInfo(gfx::NativeView view) {
+void RenderWidgetHostViewMac::UpdateScreenInfo() {
   // Update the size, scale factor, color profile, vsync parameters, and any
   // other properties of the NSView or pertinent NSScreens. Propagate these to
   // the RenderWidgetHostImpl as well.
@@ -1549,7 +1549,7 @@ void RenderWidgetHostViewMac::OnBoundsInWindowChanged(
   }
 
   if (view_size_changed)
-    UpdateScreenInfo(GetNativeView());
+    UpdateScreenInfo();
 }
 
 void RenderWidgetHostViewMac::OnWindowFrameInScreenChanged(
@@ -1573,7 +1573,7 @@ void RenderWidgetHostViewMac::OnDisplaysChanged(
   // cached screen info during auto-resize.
   // TODO(crbug.com/1169291): Unify screen info plumbing, caching, etc.
   display_list_ = display_list;
-  UpdateScreenInfo(GetNativeView());
+  UpdateScreenInfo();
 }
 
 void RenderWidgetHostViewMac::BeginKeyboardEvent() {

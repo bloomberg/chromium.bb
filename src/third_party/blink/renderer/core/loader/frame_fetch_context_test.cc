@@ -35,6 +35,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/web_client_hints_types.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -44,7 +45,6 @@
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
-#include "third_party/blink/public/platform/web_client_hints_type.h"
 #include "third_party/blink/public/platform/web_document_subresource_filter.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/ad_tracker.h"
@@ -541,7 +541,14 @@ TEST_F(FrameFetchContextModifyRequestTest, SendUpgradeInsecureRequestHeader) {
 
 class FrameFetchContextHintsTest : public FrameFetchContextTest {
  public:
-  FrameFetchContextHintsTest() = default;
+  FrameFetchContextHintsTest() {
+    scoped_feature_list_.InitWithFeatures(
+        /*enabled_features=*/{blink::features::kUserAgentClientHint,
+                              blink::features::kLangClientHintHeader,
+                              blink::features::
+                                  kPrefersColorSchemeClientHintHeader},
+        /*disabled_features=*/{});
+  }
 
   void SetUp() override {
     // Set the document URL to a secure document.
@@ -584,6 +591,9 @@ class FrameFetchContextHintsTest : public FrameFetchContextTest {
         hints_preferences, resource_width, resource_request);
     return resource_request.HttpHeaderField(header_name);
   }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // Verify that the client hints should be attached for subresources fetched
@@ -1324,7 +1334,7 @@ TEST_F(FrameFetchContextTest, SetFirstPartyCookieWhenDetached) {
 }
 
 TEST_F(FrameFetchContextTest,
-       SendConversionRequestInsteadOfRedirecting_RecordsMetric) {
+       SendConversionRequestInsteadOfRedirecting_RecordsDetachedMetric) {
   const bool kDetach = true;
   const bool kNoDetach = false;
 
@@ -1336,7 +1346,7 @@ TEST_F(FrameFetchContextTest,
   struct {
     KURL url;
     bool detach;
-    int want;
+    int expected_bucket;
   } test_cases[] = {
       {KURL(kNoTriggerURL), kNoDetach, 0},
       {KURL(kTriggerURL), kNoDetach, 1},
@@ -1351,12 +1361,55 @@ TEST_F(FrameFetchContextTest,
     HistogramTester histograms;
     GetFetchContext()->SendConversionRequestInsteadOfRedirecting(
         test_case.url, /*redirect_info=*/absl::nullopt,
-        ReportingDisposition::kReport, /*devtools_request_id=*/"abc");
+        ReportingDisposition::kReport, /*devtools_request_id=*/"");
     histograms.ExpectUniqueSample(
         "Conversions.RedirectInterceptedFrameDetached", test_case.detach,
-        test_case.want);
+        test_case.expected_bucket);
 
     RecreateFetchContext();
+  }
+}
+
+TEST_F(FrameFetchContextTest,
+       SendConversionRequestInsteadOfRedirecting_RecordsFeaturePolicyMetric) {
+  const bool kEnabled = true;
+  const bool kDisabled = false;
+
+  const char kTriggerURL[] =
+      "https://www.example.com/.well-known/attribution-reporting/"
+      "trigger-attribution";
+  const char kNoTriggerURL[] = "https://www.example.com/";
+
+  // The feature policy is only checked if the URL is same-origin with the
+  // previous URL.
+  const ResourceRequest::RedirectInfo redirect_info(
+      /*original_url=*/KURL(),
+      /*previous_url=*/KURL("https://www.example.com/"));
+
+  struct {
+    KURL url;
+    bool enabled;
+    int expected_bucket;
+  } test_cases[] = {
+      {KURL(kNoTriggerURL), kDisabled, 0},
+      {KURL(kTriggerURL), kDisabled, 1},
+      {KURL(kNoTriggerURL), kEnabled, 0},
+      {KURL(kTriggerURL), kEnabled, 1},
+  };
+
+  for (const auto& test_case : test_cases) {
+    RecreateFetchContext(redirect_info.previous_url,
+                         /*permissions_policy_header=*/test_case.enabled
+                             ? ""
+                             : "attribution-reporting 'none'");
+
+    HistogramTester histograms;
+    GetFetchContext()->SendConversionRequestInsteadOfRedirecting(
+        test_case.url, redirect_info, ReportingDisposition::kReport,
+        /*devtools_request_id=*/"");
+    histograms.ExpectUniqueSample(
+        "Conversions.ConversionIgnoredByFeaturePolicy", !test_case.enabled,
+        test_case.expected_bucket);
   }
 }
 

@@ -23,7 +23,6 @@
 #include "aom_dsp/binary_codes_writer.h"
 #include "aom_ports/mem.h"
 #include "aom_ports/aom_timer.h"
-#include "aom_ports/system_state.h"
 
 #if CONFIG_MISMATCH_DEBUG
 #include "aom_util/debug_util.h"
@@ -44,6 +43,7 @@
 #include "av1/common/tile_common.h"
 #include "av1/common/warped_motion.h"
 
+#include "av1/encoder/allintra_vis.h"
 #include "av1/encoder/aq_complexity.h"
 #include "av1/encoder/aq_cyclicrefresh.h"
 #include "av1/encoder/aq_variance.h"
@@ -170,37 +170,6 @@ unsigned int av1_high_get_sby_perpixel_variance(const AV1_COMP *cpi,
   return ROUND_POWER_OF_TWO(var, num_pels_log2_lookup[bs]);
 }
 
-static unsigned int get_sby_perpixel_diff_variance(const AV1_COMP *const cpi,
-                                                   const struct buf_2d *ref,
-                                                   int mi_row, int mi_col,
-                                                   BLOCK_SIZE bs) {
-  unsigned int sse, var;
-  uint8_t *last_y;
-  const YV12_BUFFER_CONFIG *last =
-      get_ref_frame_yv12_buf(&cpi->common, LAST_FRAME);
-
-  assert(last != NULL);
-  last_y =
-      &last->y_buffer[mi_row * MI_SIZE * last->y_stride + mi_col * MI_SIZE];
-  var = cpi->ppi->fn_ptr[bs].vf(ref->buf, ref->stride, last_y, last->y_stride,
-                                &sse);
-  return ROUND_POWER_OF_TWO(var, num_pels_log2_lookup[bs]);
-}
-
-static BLOCK_SIZE get_rd_var_based_fixed_partition(AV1_COMP *cpi, MACROBLOCK *x,
-                                                   int mi_row, int mi_col) {
-  unsigned int var = get_sby_perpixel_diff_variance(
-      cpi, &x->plane[0].src, mi_row, mi_col, BLOCK_64X64);
-  if (var < 8)
-    return BLOCK_64X64;
-  else if (var < 128)
-    return BLOCK_32X32;
-  else if (var < 2048)
-    return BLOCK_16X16;
-  else
-    return BLOCK_8X8;
-}
-
 void av1_setup_src_planes(MACROBLOCK *x, const YV12_BUFFER_CONFIG *src,
                           int mi_row, int mi_col, const int num_planes,
                           BLOCK_SIZE bsize) {
@@ -268,23 +237,13 @@ static AOM_INLINE void setup_delta_q(AV1_COMP *const cpi, ThreadData *td,
     // Setup deltaq based on tpl stats
     current_qindex =
         av1_get_q_for_deltaq_objective(cpi, sb_size, mi_row, mi_col);
-    current_qindex = clamp(current_qindex, delta_q_res, 256 - delta_q_res);
   } else if (cpi->oxcf.q_cfg.deltaq_mode == DELTA_Q_PERCEPTUAL_AI) {
     current_qindex = av1_get_sbq_perceptual_ai(cpi, sb_size, mi_row, mi_col);
-    current_qindex = clamp(current_qindex, delta_q_res, 256 - delta_q_res);
   }
 
   MACROBLOCKD *const xd = &x->e_mbd;
-  const int sign_deltaq_index =
-      current_qindex - xd->current_base_qindex >= 0 ? 1 : -1;
-  const int deltaq_deadzone = delta_q_res / 4;
-  const int qmask = ~(delta_q_res - 1);
-  int abs_deltaq_index = abs(current_qindex - xd->current_base_qindex);
-  abs_deltaq_index = (abs_deltaq_index + deltaq_deadzone) & qmask;
-  current_qindex =
-      xd->current_base_qindex + sign_deltaq_index * abs_deltaq_index;
-  current_qindex = AOMMAX(current_qindex, MINQ + 1);
-  assert(current_qindex > 0);
+  current_qindex = av1_adjust_q_from_delta_q_res(
+      delta_q_res, xd->current_base_qindex, current_qindex);
 
   x->delta_qindex = current_qindex - cm->quant_params.base_qindex;
   av1_set_offsets(cpi, tile_info, x, mi_row, mi_col, sb_size);
@@ -298,7 +257,7 @@ static AOM_INLINE void setup_delta_q(AV1_COMP *const cpi, ThreadData *td,
     const int delta_lf_res = delta_q_info->delta_lf_res;
     const int lfmask = ~(delta_lf_res - 1);
     const int delta_lf_from_base =
-        ((x->delta_qindex / 2 + delta_lf_res / 2) & lfmask);
+        ((x->delta_qindex / 4 + delta_lf_res / 2) & lfmask);
     const int8_t delta_lf =
         (int8_t)clamp(delta_lf_from_base, -MAX_LOOP_FILTER, MAX_LOOP_FILTER);
     const int frame_lf_count =
@@ -310,9 +269,9 @@ static AOM_INLINE void setup_delta_q(AV1_COMP *const cpi, ThreadData *td,
     for (int j = 0; j < AOMMIN(mib_size, mi_params->mi_rows - mi_row); j++) {
       for (int k = 0; k < AOMMIN(mib_size, mi_params->mi_cols - mi_col); k++) {
         const int grid_idx = get_mi_grid_idx(mi_params, mi_row + j, mi_col + k);
-        mi_params->mi_grid_base[grid_idx]->delta_lf_from_base = delta_lf;
+        mi_params->mi_alloc[grid_idx].delta_lf_from_base = delta_lf;
         for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id) {
-          mi_params->mi_grid_base[grid_idx]->delta_lf[lf_id] = delta_lf;
+          mi_params->mi_alloc[grid_idx].delta_lf[lf_id] = delta_lf;
         }
       }
     }
@@ -536,41 +495,48 @@ static AOM_INLINE void encode_nonrd_sb(AV1_COMP *cpi, ThreadData *td,
     const BLOCK_SIZE bsize =
         seg_skip ? sb_size : sf->part_sf.fixed_partition_size;
     av1_set_fixed_partitioning(cpi, tile_info, mi, mi_row, mi_col, bsize);
-  } else if (cpi->partition_search_skippable_frame) {
-    // set a fixed-size partition for which the size is determined by the source
-    // variance
-    av1_set_offsets(cpi, tile_info, x, mi_row, mi_col, sb_size);
-    const BLOCK_SIZE bsize =
-        get_rd_var_based_fixed_partition(cpi, x, mi_row, mi_col);
-    av1_set_fixed_partitioning(cpi, tile_info, mi, mi_row, mi_col, bsize);
   } else if (sf->part_sf.partition_search_type == VAR_BASED_PARTITION) {
     // set a variance-based partition
     av1_set_offsets(cpi, tile_info, x, mi_row, mi_col, sb_size);
     av1_choose_var_based_partitioning(cpi, tile_info, td, x, mi_row, mi_col);
   }
   assert(sf->part_sf.partition_search_type == FIXED_PARTITION || seg_skip ||
-         cpi->partition_search_skippable_frame ||
          sf->part_sf.partition_search_type == VAR_BASED_PARTITION);
   set_cb_offsets(td->mb.cb_offset, 0, 0);
 
-  // Initialize the flag to skip cdef for 64x64 blocks: if color sensitivy is
-  // on, set to 0 (don't skip).
+  // Adjust and encode the superblock
+  PC_TREE *const pc_root = av1_alloc_pc_tree_node(sb_size);
+
+  // Initialize the flag to skip cdef to 1.
   if (sf->rt_sf.skip_cdef_sb) {
+    // If 128x128 block is used, we need to set the flag for all 4 64x64 sub
+    // "blocks".
     const int block64_in_sb = (sb_size == BLOCK_128X128) ? 2 : 1;
     for (int r = 0; r < block64_in_sb; ++r) {
       for (int c = 0; c < block64_in_sb; ++c) {
         const int idx_in_sb =
             r * MI_SIZE_64X64 * cm->mi_params.mi_stride + c * MI_SIZE_64X64;
-        if (mi[idx_in_sb])
-          mi[idx_in_sb]->skip_cdef_curr_sb =
-              !(x->color_sensitivity_sb[0] || x->color_sensitivity_sb[1]);
+        if (mi[idx_in_sb]) mi[idx_in_sb]->skip_cdef_curr_sb = 1;
       }
     }
   }
-  // Adjust and encode the superblock
-  PC_TREE *const pc_root = av1_alloc_pc_tree_node(sb_size);
+
   av1_nonrd_use_partition(cpi, td, tile_data, mi, tp, mi_row, mi_col, sb_size,
                           pc_root);
+
+  if (sf->rt_sf.skip_cdef_sb) {
+    // If 128x128 block is used, we need to set the flag for all 4 64x64 sub
+    // "blocks".
+    const int block64_in_sb = (sb_size == BLOCK_128X128) ? 2 : 1;
+    const int skip = mi[0]->skip_cdef_curr_sb;
+    for (int r = 0; r < block64_in_sb; ++r) {
+      for (int c = 0; c < block64_in_sb; ++c) {
+        const int idx_in_sb =
+            r * MI_SIZE_64X64 * cm->mi_params.mi_stride + c * MI_SIZE_64X64;
+        if (mi[idx_in_sb]) mi[idx_in_sb]->skip_cdef_curr_sb = skip;
+      }
+    }
+  }
   av1_free_pc_tree_recursive(pc_root, av1_num_planes(cm), 0, 0);
 }
 
@@ -592,7 +558,8 @@ static INLINE void init_encode_rd_sb(AV1_COMP *cpi, ThreadData *td,
        sf->part_sf.ml_early_term_after_part_split_level) &&
       !frame_is_intra_only(cm);
   if (use_simple_motion_search) {
-    init_simple_motion_search_mvs(sms_root);
+    av1_init_simple_motion_search_mvs_for_sb(cpi, tile_info, x, sms_root,
+                                             mi_row, mi_col);
   }
 
 #if !CONFIG_REALTIME_ONLY
@@ -678,17 +645,6 @@ static AOM_INLINE void encode_rd_sb(AV1_COMP *cpi, ThreadData *td,
     av1_set_offsets(cpi, tile_info, x, mi_row, mi_col, sb_size);
     const BLOCK_SIZE bsize =
         seg_skip ? sb_size : sf->part_sf.fixed_partition_size;
-    av1_set_fixed_partitioning(cpi, tile_info, mi, mi_row, mi_col, bsize);
-    PC_TREE *const pc_root = av1_alloc_pc_tree_node(sb_size);
-    av1_rd_use_partition(cpi, td, tile_data, mi, tp, mi_row, mi_col, sb_size,
-                         &dummy_rate, &dummy_dist, 1, pc_root);
-    av1_free_pc_tree_recursive(pc_root, num_planes, 0, 0);
-  } else if (cpi->partition_search_skippable_frame) {
-    // partition search by adjusting a fixed-size partition for which the size
-    // is determined by the source variance
-    av1_set_offsets(cpi, tile_info, x, mi_row, mi_col, sb_size);
-    const BLOCK_SIZE bsize =
-        get_rd_var_based_fixed_partition(cpi, x, mi_row, mi_col);
     av1_set_fixed_partitioning(cpi, tile_info, mi, mi_row, mi_col, bsize);
     PC_TREE *const pc_root = av1_alloc_pc_tree_node(sb_size);
     av1_rd_use_partition(cpi, td, tile_data, mi, tp, mi_row, mi_col, sb_size,
@@ -1271,10 +1227,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
   FeatureFlags *const features = &cm->features;
   MACROBLOCKD *const xd = &x->e_mbd;
   RD_COUNTS *const rdc = &cpi->td.rd_counts;
-  FrameProbInfo *const frame_probs = &cpi->frame_probs;
-#if CONFIG_FRAME_PARALLEL_ENCODE
-  FrameProbInfo *const temp_frame_probs = &cpi->ppi->temp_frame_probs;
-#endif  // CONFIG_FRAME_PARALLEL_ENCODE
+  FrameProbInfo *const frame_probs = &cpi->ppi->frame_probs;
   IntraBCHashInfo *const intrabc_hash_info = &x->intrabc_hash_info;
   MultiThreadInfo *const mt_info = &cpi->mt_info;
   AV1EncRowMultiThreadInfo *const enc_row_mt = &mt_info->enc_row_mt;
@@ -1307,13 +1260,8 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
       cpi->sf.inter_sf.prune_warped_prob_thresh > 0) {
     const FRAME_UPDATE_TYPE update_type =
         get_frame_update_type(&cpi->ppi->gf_group, cpi->gf_frame_index);
-    int warped_probability;
-#if CONFIG_FRAME_PARALLEL_ENCODE
-    warped_probability = temp_frame_probs->warped_probs[update_type];
-#else
-    warped_probability = frame_probs->warped_probs[update_type];
-#endif
-    if (warped_probability < cpi->sf.inter_sf.prune_warped_prob_thresh)
+    if (frame_probs->warped_probs[update_type] <
+        cpi->sf.inter_sf.prune_warped_prob_thresh)
       features->allow_warped_motion = 0;
   }
 
@@ -1480,6 +1428,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
 #if CONFIG_COLLECT_COMPONENT_TIMING
   start_timing(cpi, av1_setup_motion_field_time);
 #endif
+  av1_calculate_ref_frame_side(cm);
   if (features->allow_ref_frame_mvs) av1_setup_motion_field(cm);
 #if CONFIG_COLLECT_COMPONENT_TIMING
   end_timing(cpi, av1_setup_motion_field_time);
@@ -1534,7 +1483,28 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
   assert(oxcf->txfm_cfg.enable_tx64 || tx_search_type != USE_LARGESTALL);
   features->tx_mode = select_tx_mode(cm, tx_search_type);
 
-  if (cpi->sf.tx_sf.tx_type_search.prune_tx_type_using_stats) {
+#if CONFIG_FRAME_PARALLEL_ENCODE
+  // Retain the frame level probability update conditions for parallel frames.
+  // These conditions will be consumed during postencode stage to update the
+  // probability.
+  if (cpi->ppi->gf_group.frame_parallel_level[cpi->gf_frame_index] > 0) {
+    cpi->do_update_frame_probs_txtype[cpi->num_frame_recode] =
+        cpi->sf.tx_sf.tx_type_search.prune_tx_type_using_stats;
+    cpi->do_update_frame_probs_obmc[cpi->num_frame_recode] =
+        (cpi->sf.inter_sf.prune_obmc_prob_thresh > 0 &&
+         cpi->sf.inter_sf.prune_obmc_prob_thresh < INT_MAX);
+    cpi->do_update_frame_probs_warp[cpi->num_frame_recode] =
+        (features->allow_warped_motion &&
+         cpi->sf.inter_sf.prune_warped_prob_thresh > 0);
+    cpi->do_update_frame_probs_interpfilter[cpi->num_frame_recode] =
+        (cm->current_frame.frame_type != KEY_FRAME &&
+         cpi->sf.interp_sf.adaptive_interp_filter_search == 2 &&
+         features->interp_filter == SWITCHABLE);
+  }
+#endif
+
+  if (cpi->sf.tx_sf.tx_type_search.prune_tx_type_using_stats ||
+      (cpi->sf.tx_sf.tx_type_search.fast_inter_tx_type_search == 1)) {
     const FRAME_UPDATE_TYPE update_type =
         get_frame_update_type(&cpi->ppi->gf_group, cpi->gf_frame_index);
     for (i = 0; i < TX_SIZES_ALL; i++) {
@@ -1546,33 +1516,26 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
         sum += cpi->td.rd_counts.tx_type_used[i][j];
 
       for (j = TX_TYPES - 1; j >= 0; j--) {
+        int update_txtype_frameprobs = 1;
         const int new_prob =
             sum ? 1024 * cpi->td.rd_counts.tx_type_used[i][j] / sum
                 : (j ? 0 : 1024);
-        int prob =
-            (frame_probs->tx_type_probs[update_type][i][j] + new_prob) >> 1;
-        left -= prob;
-        if (j == 0) prob += left;
-        frame_probs->tx_type_probs[update_type][i][j] = prob;
 #if CONFIG_FRAME_PARALLEL_ENCODE
-        /* TODO(FPMT): The current update is happening in cpi->frame_probs,
-         * this need to be taken care appropriately in final FPMT implementation
-         * to carry these values to subsequent frames. The frame_probs update is
-         * accumulated across frames, so the values from all individual parallel
-         * frames need to be taken into account after all the parallel frames
-         * are encoded.
-         *
-         * Only for quality simulation purpose - Update the accumulated frame
-         * probabilities in ppi->temp_variable based on the update flag.
-         */
-        if (cpi->do_frame_data_update) {
-          for (int update_type_idx = 0; update_type_idx < FRAME_UPDATE_TYPES;
-               update_type_idx++) {
-            temp_frame_probs->tx_type_probs[update_type_idx][i][j] =
-                frame_probs->tx_type_probs[update_type_idx][i][j];
-          }
+        // Track the frame probabilities of parallel encode frames to update
+        // during postencode stage.
+        if (cpi->ppi->gf_group.frame_parallel_level[cpi->gf_frame_index] > 0) {
+          update_txtype_frameprobs = 0;
+          cpi->frame_new_probs[cpi->num_frame_recode]
+              .tx_type_probs[update_type][i][j] = new_prob;
         }
 #endif  // CONFIG_FRAME_PARALLEL_ENCODE
+        if (update_txtype_frameprobs) {
+          int prob =
+              (frame_probs->tx_type_probs[update_type][i][j] + new_prob) >> 1;
+          left -= prob;
+          if (j == 0) prob += left;
+          frame_probs->tx_type_probs[update_type][i][j] = prob;
+        }
       }
     }
   }
@@ -1584,31 +1547,24 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
 
     for (i = 0; i < BLOCK_SIZES_ALL; i++) {
       int sum = 0;
+      int update_obmc_frameprobs = 1;
       for (int j = 0; j < 2; j++) sum += cpi->td.rd_counts.obmc_used[i][j];
 
       const int new_prob =
           sum ? 128 * cpi->td.rd_counts.obmc_used[i][1] / sum : 0;
-      frame_probs->obmc_probs[update_type][i] =
-          (frame_probs->obmc_probs[update_type][i] + new_prob) >> 1;
 #if CONFIG_FRAME_PARALLEL_ENCODE
-      /* TODO(FPMT): The current update is happening in cpi->frame_probs,
-       * this need to be taken care appropriately in final FPMT
-       * implementation to carry these values to subsequent frames.
-       * The frame_probs update is accumulated across frames, so the
-       * values from all individual parallel frames need to be taken
-       * into account after all the parallel frames are encoded.
-       *
-       * Only for quality simulation purpose - Update the accumulated frame
-       * probabilities in ppi->temp_variable based on the update flag.
-       */
-      if (cpi->do_frame_data_update) {
-        for (int update_type_idx = 0; update_type_idx < FRAME_UPDATE_TYPES;
-             update_type_idx++) {
-          temp_frame_probs->obmc_probs[update_type_idx][i] =
-              frame_probs->obmc_probs[update_type_idx][i];
-        }
+      // Track the frame probabilities of parallel encode frames to update
+      // during postencode stage.
+      if (cpi->ppi->gf_group.frame_parallel_level[cpi->gf_frame_index] > 0) {
+        update_obmc_frameprobs = 0;
+        cpi->frame_new_probs[cpi->num_frame_recode].obmc_probs[update_type][i] =
+            new_prob;
       }
 #endif  // CONFIG_FRAME_PARALLEL_ENCODE
+      if (update_obmc_frameprobs) {
+        frame_probs->obmc_probs[update_type][i] =
+            (frame_probs->obmc_probs[update_type][i] + new_prob) >> 1;
+      }
     }
   }
 
@@ -1616,30 +1572,23 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
       cpi->sf.inter_sf.prune_warped_prob_thresh > 0) {
     const FRAME_UPDATE_TYPE update_type =
         get_frame_update_type(&cpi->ppi->gf_group, cpi->gf_frame_index);
+    int update_warp_frameprobs = 1;
     int sum = 0;
     for (i = 0; i < 2; i++) sum += cpi->td.rd_counts.warped_used[i];
     const int new_prob = sum ? 128 * cpi->td.rd_counts.warped_used[1] / sum : 0;
-    frame_probs->warped_probs[update_type] =
-        (frame_probs->warped_probs[update_type] + new_prob) >> 1;
 #if CONFIG_FRAME_PARALLEL_ENCODE
-    /* TODO(FPMT): The current update is happening in cpi->frame_probs,
-     * this need to be taken care appropriately in final FPMT
-     * implementation to carry these values to subsequent frames.
-     * The frame_probs update is accumulated across frames, so the
-     * values from all individual parallel frames need to be taken
-     * into account after all the parallel frames are encoded.
-     *
-     * Only for quality simulation purpose - Update the accumulated frame
-     * probabilities in ppi->temp_variable based on the update flag.
-     */
-    if (cpi->do_frame_data_update) {
-      for (int update_type_idx = 0; update_type_idx < FRAME_UPDATE_TYPES;
-           update_type_idx++) {
-        temp_frame_probs->warped_probs[update_type_idx] =
-            frame_probs->warped_probs[update_type_idx];
-      }
+    // Track the frame probabilities of parallel encode frames to update
+    // during postencode stage.
+    if (cpi->ppi->gf_group.frame_parallel_level[cpi->gf_frame_index] > 0) {
+      update_warp_frameprobs = 0;
+      cpi->frame_new_probs[cpi->num_frame_recode].warped_probs[update_type] =
+          new_prob;
     }
 #endif  // CONFIG_FRAME_PARALLEL_ENCODE
+    if (update_warp_frameprobs) {
+      frame_probs->warped_probs[update_type] =
+          (frame_probs->warped_probs[update_type] + new_prob) >> 1;
+    }
   }
 
   if (cm->current_frame.frame_type != KEY_FRAME &&
@@ -1658,34 +1607,27 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
       }
 
       for (j = SWITCHABLE_FILTERS - 1; j >= 0; j--) {
+        int update_interpfilter_frameprobs = 1;
         const int new_prob =
             sum ? 1536 * cpi->td.counts->switchable_interp[i][j] / sum
                 : (j ? 0 : 1536);
-        int prob = (frame_probs->switchable_interp_probs[update_type][i][j] +
-                    new_prob) >>
-                   1;
-        left -= prob;
-        if (j == 0) prob += left;
-        frame_probs->switchable_interp_probs[update_type][i][j] = prob;
 #if CONFIG_FRAME_PARALLEL_ENCODE
-        /* TODO(FPMT): The current update is happening in cpi->frame_probs,
-         * this need to be taken care appropriately in final FPMT
-         * implementation to carry these values to subsequent frames.
-         * The frame_probs update is accumulated across frames, so the
-         * values from all individual parallel frames need to be taken
-         * into account after all the parallel frames are encoded.
-         *
-         * Only for quality simulation purpose - Update the accumulated frame
-         * probabilities in ppi->temp_variable based on the update flag.
-         */
-        if (cpi->do_frame_data_update) {
-          for (int update_type_idx = 0; update_type_idx < FRAME_UPDATE_TYPES;
-               update_type_idx++) {
-            temp_frame_probs->switchable_interp_probs[update_type_idx][i][j] =
-                frame_probs->switchable_interp_probs[update_type_idx][i][j];
-          }
+        // Track the frame probabilities of parallel encode frames to update
+        // during postencode stage.
+        if (cpi->ppi->gf_group.frame_parallel_level[cpi->gf_frame_index] > 0) {
+          update_interpfilter_frameprobs = 0;
+          cpi->frame_new_probs[cpi->num_frame_recode]
+              .switchable_interp_probs[update_type][i][j] = new_prob;
         }
 #endif  // CONFIG_FRAME_PARALLEL_ENCODE
+        if (update_interpfilter_frameprobs) {
+          int prob = (frame_probs->switchable_interp_probs[update_type][i][j] +
+                      new_prob) >>
+                     1;
+          left -= prob;
+          if (j == 0) prob += left;
+          frame_probs->switchable_interp_probs[update_type][i][j] = prob;
+        }
       }
     }
   }

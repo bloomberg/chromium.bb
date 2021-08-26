@@ -11,6 +11,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/icon_key_util.h"
@@ -150,7 +151,6 @@ class WebAppPublisherHelper : public AppRegistrarObserver,
 
   content::WebContents* LaunchAppWithFiles(
       const std::string& app_id,
-      apps::mojom::LaunchContainer container,
       int32_t event_flags,
       apps::mojom::LaunchSource launch_source,
       apps::mojom::FilePathsPtr file_paths);

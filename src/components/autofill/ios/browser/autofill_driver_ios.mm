@@ -74,6 +74,10 @@ bool AutofillDriverIOS::IsInMainFrame() const {
   return web_frame ? web_frame->IsMainFrame() : true;
 }
 
+bool AutofillDriverIOS::IsPrerendering() const {
+  return false;
+}
+
 bool AutofillDriverIOS::CanShowAutofillUi() const {
   return true;
 }
@@ -93,9 +97,9 @@ bool AutofillDriverIOS::RendererIsAvailable() {
   return true;
 }
 
-void AutofillDriverIOS::SendFormDataToRenderer(
+void AutofillDriverIOS::FillOrPreviewForm(
     int query_id,
-    RendererFormDataAction action,
+    mojom::RendererFormDataAction action,
     const FormData& data,
     const url::Origin& triggered_origin,
     const base::flat_map<FieldGlobalId, ServerFieldType>& field_type_map) {

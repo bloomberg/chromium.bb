@@ -35,10 +35,10 @@ namespace {
      !defined(LIBGAV1_Dsp10bpp_MotionVectorSearch))
 
 void MvProjectionCompoundLowPrecision_C(
-    const MotionVector* const temporal_mvs,
-    const int8_t* const temporal_reference_offsets,
+    const MotionVector* LIBGAV1_RESTRICT const temporal_mvs,
+    const int8_t* LIBGAV1_RESTRICT const temporal_reference_offsets,
     const int reference_offsets[2], const int count,
-    CompoundMotionVector* const candidate_mvs) {
+    CompoundMotionVector* LIBGAV1_RESTRICT const candidate_mvs) {
   // To facilitate the compilers, make a local copy of |reference_offsets|.
   const int offsets[2] = {reference_offsets[0], reference_offsets[1]};
   int index = 0;
@@ -62,10 +62,10 @@ void MvProjectionCompoundLowPrecision_C(
 }
 
 void MvProjectionCompoundForceInteger_C(
-    const MotionVector* const temporal_mvs,
-    const int8_t* const temporal_reference_offsets,
+    const MotionVector* LIBGAV1_RESTRICT const temporal_mvs,
+    const int8_t* LIBGAV1_RESTRICT const temporal_reference_offsets,
     const int reference_offsets[2], const int count,
-    CompoundMotionVector* const candidate_mvs) {
+    CompoundMotionVector* LIBGAV1_RESTRICT const candidate_mvs) {
   // To facilitate the compilers, make a local copy of |reference_offsets|.
   const int offsets[2] = {reference_offsets[0], reference_offsets[1]};
   int index = 0;
@@ -91,10 +91,10 @@ void MvProjectionCompoundForceInteger_C(
 }
 
 void MvProjectionCompoundHighPrecision_C(
-    const MotionVector* const temporal_mvs,
-    const int8_t* const temporal_reference_offsets,
+    const MotionVector* LIBGAV1_RESTRICT const temporal_mvs,
+    const int8_t* LIBGAV1_RESTRICT const temporal_reference_offsets,
     const int reference_offsets[2], const int count,
-    CompoundMotionVector* const candidate_mvs) {
+    CompoundMotionVector* LIBGAV1_RESTRICT const candidate_mvs) {
   // To facilitate the compilers, make a local copy of |reference_offsets|.
   const int offsets[2] = {reference_offsets[0], reference_offsets[1]};
   int index = 0;
@@ -113,9 +113,10 @@ void MvProjectionCompoundHighPrecision_C(
 }
 
 void MvProjectionSingleLowPrecision_C(
-    const MotionVector* const temporal_mvs,
-    const int8_t* const temporal_reference_offsets, const int reference_offset,
-    const int count, MotionVector* const candidate_mvs) {
+    const MotionVector* LIBGAV1_RESTRICT const temporal_mvs,
+    const int8_t* LIBGAV1_RESTRICT const temporal_reference_offsets,
+    const int reference_offset, const int count,
+    MotionVector* LIBGAV1_RESTRICT const candidate_mvs) {
   int index = 0;
   do {
     GetMvProjection(
@@ -131,9 +132,10 @@ void MvProjectionSingleLowPrecision_C(
 }
 
 void MvProjectionSingleForceInteger_C(
-    const MotionVector* const temporal_mvs,
-    const int8_t* const temporal_reference_offsets, const int reference_offset,
-    const int count, MotionVector* const candidate_mvs) {
+    const MotionVector* LIBGAV1_RESTRICT const temporal_mvs,
+    const int8_t* LIBGAV1_RESTRICT const temporal_reference_offsets,
+    const int reference_offset, const int count,
+    MotionVector* LIBGAV1_RESTRICT const candidate_mvs) {
   int index = 0;
   do {
     GetMvProjection(
@@ -151,9 +153,10 @@ void MvProjectionSingleForceInteger_C(
 }
 
 void MvProjectionSingleHighPrecision_C(
-    const MotionVector* const temporal_mvs,
-    const int8_t* const temporal_reference_offsets, const int reference_offset,
-    const int count, MotionVector* const candidate_mvs) {
+    const MotionVector* LIBGAV1_RESTRICT const temporal_mvs,
+    const int8_t* LIBGAV1_RESTRICT const temporal_reference_offsets,
+    const int reference_offset, const int count,
+    MotionVector* LIBGAV1_RESTRICT const candidate_mvs) {
   int index = 0;
   do {
     GetMvProjection(

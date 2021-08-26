@@ -45,6 +45,10 @@ namespace OT {
  */
 #define HB_OT_TAG_loca HB_TAG('l','o','c','a')
 
+#ifndef HB_MAX_COMPOSITE_OPERATIONS
+#define HB_MAX_COMPOSITE_OPERATIONS 1000000
+#endif
+
 
 struct loca
 {
@@ -98,7 +102,7 @@ struct glyf
     unsigned num_offsets = padded_offsets.len () + 1;
     bool use_short_loca = max_offset < 0x1FFFF;
     unsigned entry_size = use_short_loca ? 2 : 4;
-    char *loca_prime_data = (char *) calloc (entry_size, num_offsets);
+    char *loca_prime_data = (char *) hb_calloc (entry_size, num_offsets);
 
     if (unlikely (!loca_prime_data)) return false;
 
@@ -115,7 +119,7 @@ struct glyf
 					   entry_size * num_offsets,
 					   HB_MEMORY_MODE_WRITABLE,
 					   loca_prime_data,
-					   free);
+					   hb_free);
 
     bool result = plan->add_table (HB_OT_TAG_loca, loca_blob)
 	       && _add_head_and_set_loca_version (plan, use_short_loca);
@@ -209,13 +213,15 @@ struct glyf
 		if (!plan->old_gid_for_new_gid (new_gid, &subset_glyph.old_gid))
 		  return subset_glyph;
 
-		if (new_gid == 0 && !plan->notdef_outline)
+		if (new_gid == 0 &&
+                    !(plan->flags & HB_SUBSET_FLAGS_NOTDEF_OUTLINE))
 		  subset_glyph.source_glyph = Glyph ();
 		else
 		  subset_glyph.source_glyph = glyf.glyph_for_gid (subset_glyph.old_gid, true);
-		if (plan->drop_hints) subset_glyph.drop_hints_bytes ();
-		else subset_glyph.dest_start = subset_glyph.source_glyph.get_bytes ();
-
+		if (plan->flags & HB_SUBSET_FLAGS_NO_HINTING)
+                  subset_glyph.drop_hints_bytes ();
+		else
+                  subset_glyph.dest_start = subset_glyph.source_glyph.get_bytes ();
 		return subset_glyph;
 	      })
     | hb_sink (glyphs)
@@ -503,8 +509,8 @@ struct glyf
       const Glyph trim_padding () const
       {
 	/* based on FontTools _g_l_y_f.py::trim */
-	const char *glyph = bytes.arrayZ;
-	const char *glyph_end = glyph + bytes.length;
+	const uint8_t *glyph = (uint8_t*) bytes.arrayZ;
+	const uint8_t *glyph_end = glyph + bytes.length;
 	/* simple glyph w/contours, possibly trimmable */
 	glyph += instruction_len_offset ();
 
@@ -920,7 +926,7 @@ struct glyf
     {
       if (gid >= num_glyphs) return false;
 
-      /* Making this alloc free is not that easy
+      /* Making this allocfree is not that easy
 	 https://github.com/harfbuzz/harfbuzz/issues/2095
 	 mostly because of gvar handling in VF fonts,
 	 perhaps a separate path for non-VF fonts can be considered */
@@ -1079,18 +1085,24 @@ struct glyf
       return needs_padding_removal ? glyph.trim_padding () : glyph;
     }
 
-    void
-    add_gid_and_children (hb_codepoint_t gid, hb_set_t *gids_to_retain,
-			  unsigned int depth = 0) const
+    unsigned
+    add_gid_and_children (hb_codepoint_t gid,
+			  hb_set_t *gids_to_retain,
+			  unsigned depth = 0,
+			  unsigned operation_count = 0) const
     {
-      if (unlikely (depth++ > HB_MAX_NESTING_LEVEL)) return;
+      if (unlikely (depth++ > HB_MAX_NESTING_LEVEL)) return operation_count;
+      if (unlikely (operation_count++ > HB_MAX_COMPOSITE_OPERATIONS)) return operation_count;
       /* Check if is already visited */
-      if (gids_to_retain->has (gid)) return;
+      if (gids_to_retain->has (gid)) return operation_count;
 
       gids_to_retain->add (gid);
 
       for (auto &item : glyph_for_gid (gid).get_composite_iterator ())
-	add_gid_and_children (item.get_glyph_index (), gids_to_retain, depth);
+	operation_count +=
+	    add_gid_and_children (item.get_glyph_index (), gids_to_retain, depth, operation_count);
+
+      return operation_count;
     }
 
 #ifdef HB_EXPERIMENTAL_API
@@ -1264,9 +1276,10 @@ struct glyf
 	  const_cast<CompositeGlyphChain &> (_).set_glyph_index (new_gid);
       }
 
-      if (plan->drop_hints) Glyph (dest_glyph).drop_hints ();
+      if (plan->flags & HB_SUBSET_FLAGS_NO_HINTING)
+        Glyph (dest_glyph).drop_hints ();
 
-      if (plan->overlaps_flag)
+      if (plan->flags & HB_SUBSET_FLAGS_SET_OVERLAPS_FLAG)
         Glyph (dest_glyph).set_overlaps_flag ();
 
       return_trace (true);

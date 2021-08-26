@@ -8,7 +8,12 @@ import base64
 import gzip
 import json
 import os
-import StringIO
+try:
+  from StringIO import StringIO
+except ImportError:
+  from io import StringIO
+
+import six
 
 from systrace import tracing_controller
 from systrace import trace_result
@@ -96,7 +101,7 @@ def GenerateHTMLOutput(trace_results, output_file_name):
 
   # Open the file in binary mode to prevent python from changing the
   # line endings, then write the prefix.
-  html_file = open(output_file_name, 'wb')
+  html_file = open(output_file_name, 'w')
   html_file.write(html_output.replace('{{SYSTRACE_TRACE_VIEWER_HTML}}',
                                       trace_viewer_html))
 
@@ -127,8 +132,10 @@ def _ConvertToHtmlString(result):
   """
   if isinstance(result, dict) or isinstance(result, list):
     return json.dumps(result)
-  elif isinstance(result, str):
+  elif isinstance(result, six.string_types):
     return result
+  elif isinstance(result, bytes):
+    return result.decode('utf-8')
   else:
     raise ValueError('Invalid trace result format for HTML output')
 
@@ -189,7 +196,7 @@ def MergeTraceResultsIfNeeded(trace_results):
               + other_results)
 
 def _EncodeTraceData(trace_string):
-  compressed_trace = StringIO.StringIO()
+  compressed_trace = StringIO()
   with gzip.GzipFile(fileobj=compressed_trace, mode='w') as f:
     f.write(trace_string)
   b64_content = base64.b64encode(compressed_trace.getvalue())

@@ -1,0 +1,7 @@
+include_rules = [
+  "+ash/public/cpp/projector",
+  "-chrome",
+  "+content/public/browser",
+  "+content/public/common",
+  "+ui/webui",
+]

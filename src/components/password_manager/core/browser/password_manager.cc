@@ -896,7 +896,7 @@ void PasswordManager::OnPasswordFormsRendered(
     return;
   }
 
-  if (!driver->IsMainFrame() &&
+  if (!driver->IsInPrimaryMainFrame() &&
       submitted_manager->driver_id() != driver->GetId()) {
     // Frames different from the main frame and the frame of the submitted form
     // are unlikely relevant to success of submission.
@@ -975,7 +975,7 @@ void PasswordManager::OnLoginSuccessful() {
     logger->LogSuccessfulSubmissionIndicatorEvent(submission_event);
 
   bool able_to_save_passwords =
-      client_->GetProfilePasswordStore()->IsAbleToSavePasswords();
+      client_->GetProfilePasswordStoreInterface()->IsAbleToSavePasswords();
   UMA_HISTOGRAM_BOOLEAN("PasswordManager.AbleToSavePasswordsOnSuccessfulLogin",
                         able_to_save_passwords);
   if (!able_to_save_passwords)
@@ -1162,6 +1162,12 @@ PasswordFormManager* PasswordManager::GetSubmittedManager() const {
   return nullptr;
 }
 
+void PasswordManager::SaveSubmittedManager() {
+  PasswordFormManager* submitted_manager = GetSubmittedManager();
+  DCHECK(submitted_manager);
+  submitted_manager->Save();
+}
+
 void PasswordManager::ResetSubmittedManager() {
   if (owned_submitted_form_manager_) {
     owned_submitted_form_manager_.reset();
@@ -1229,8 +1235,9 @@ void PasswordManager::ReportSubmittedFormFrameMetric(
     const PasswordForm& form) {
   if (!driver)
     return;
+
   metrics_util::SubmittedFormFrame frame;
-  if (driver->IsMainFrame()) {
+  if (driver->IsInPrimaryMainFrame()) {
     frame = metrics_util::SubmittedFormFrame::MAIN_FRAME;
   } else if (form.url == client()->GetLastCommittedURL()) {
     frame =
@@ -1278,7 +1285,7 @@ void PasswordManager::ShowManualFallbackForSaving(
   if (!form_manager->is_submitted())
     return;
 
-  if (!client_->GetProfilePasswordStore()->IsAbleToSavePasswords() ||
+  if (!client_->GetProfilePasswordStoreInterface()->IsAbleToSavePasswords() ||
       !client_->IsSavingAndFillingEnabled(form_data.url) ||
       ShouldBlockPasswordForSameOriginButDifferentScheme(form_data.url)) {
     return;

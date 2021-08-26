@@ -65,9 +65,8 @@ FileHandlerUpdateAction FileHandlersPermissionHelper::WillUpdateApp(
 
   // Omit file handler removal and permission downgrade for the ChromeOS Media
   // and Camera System Web Apps (SWAs), which have permissions granted by
-  // default.
-  // TODO(huangdarwin): Find a better architecture to structure this exception
-  // and check relevant only in ChromeOS (outside of LaCrOS).
+  // default. This exception and check is only relevant in ChromeOS, the only
+  // platform where SWAs are in use.
   if (url == kChromeUIMediaAppURL || url == kChromeUICameraAppURL) {
     return FileHandlerUpdateAction::kUpdate;
   }
@@ -86,13 +85,13 @@ FileHandlerUpdateAction FileHandlersPermissionHelper::WillUpdateApp(
   if (content_setting == CONTENT_SETTING_BLOCK)
     return FileHandlerUpdateAction::kNoUpdate;
 
-  // TODO(https://crbug.com/1197013): Consider trying to re-use
-  // HaveFileHandlersChanged() results from the ManifestUpdateTask.
-  if (!HaveFileHandlersChanged(
-          /*old_handlers=*/finalizer_->registrar().GetAppFileHandlers(app_id),
-          /*new_handlers=*/web_app_info.file_handlers)) {
+  // TODO(https://crbug.com/1197013): Consider trying to re-use the comparison
+  // results from the ManifestUpdateTask.
+  const apps::FileHandlers* old_handlers =
+      finalizer_->registrar().GetAppFileHandlers(app_id);
+  DCHECK(old_handlers);
+  if (*old_handlers == web_app_info.file_handlers)
     return FileHandlerUpdateAction::kNoUpdate;
-  }
 
   return FileHandlerUpdateAction::kUpdate;
 }
@@ -178,6 +177,8 @@ ContentSetting FileHandlersPermissionHelper::MaybeResetPermission(
 
 void FileHandlersPermissionHelper::UpdateAppsMatchingPattern(
     const ContentSettingsPattern& pattern) {
+  ScopedRegistryUpdate update(
+      finalizer_->registry_controller().AsWebAppSyncBridge());
   for (const AppId& app_id : finalizer_->registrar().GetAppIds()) {
     const WebApp* app = finalizer_->GetWebAppRegistrar().GetAppById(app_id);
     if (!app || !app->is_locally_installed())
@@ -191,8 +192,6 @@ void FileHandlersPermissionHelper::UpdateAppsMatchingPattern(
     if (permission_blocked == app->file_handler_permission_blocked())
       continue;
 
-    ScopedRegistryUpdate update(
-        finalizer_->registry_controller().AsWebAppSyncBridge());
     WebApp* app_to_update = update->UpdateApp(app_id);
     app_to_update->SetFileHandlerPermissionBlocked(permission_blocked);
     FileHandlerUpdateAction file_handlers_need_os_update =

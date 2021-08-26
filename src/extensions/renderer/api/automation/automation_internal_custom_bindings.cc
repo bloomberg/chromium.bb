@@ -2250,13 +2250,6 @@ ui::AXNode* AutomationInternalCustomBindings::GetPreviousInTreeOrder(
   return walker;
 }
 
-float AutomationInternalCustomBindings::GetDeviceScaleFactor() const {
-  // |context| and/or its RenderFrame might be nullptr in tests.
-  if (device_scale_factor_for_test_)
-    return *device_scale_factor_for_test_;
-  return context()->GetRenderFrame()->GetDeviceScaleFactor();
-}
-
 void AutomationInternalCustomBindings::RouteTreeIDFunction(
     const std::string& name,
     TreeIDFunction callback) {
@@ -2377,11 +2370,11 @@ void AutomationInternalCustomBindings::OnAccessibilityEvents(
 
   if (!tree_wrapper->OnAccessibilityEvents(event_bundle, is_active_profile)) {
     DLOG(ERROR) << tree_wrapper->tree()->error();
-    base::ListValue args;
-    args.AppendString(tree_id.ToString());
+    base::Value args(base::Value::Type::LIST);
+    args.Append(tree_id.ToString());
     bindings_system_->DispatchEventInContext(
-        "automationInternal.onAccessibilityTreeSerializationError", &args,
-        nullptr, context());
+        "automationInternal.onAccessibilityTreeSerializationError",
+        &base::Value::AsListValue(args), nullptr, context());
     return;
   }
 }
@@ -2485,13 +2478,14 @@ bool AutomationInternalCustomBindings::SendTreeChangeEvent(
     }
 
     did_send_event = true;
-    base::ListValue args;
-    args.AppendInteger(observer.id);
-    args.AppendString(tree_id.ToString());
-    args.AppendInteger(node->id());
-    args.AppendString(ToString(change_type));
+    base::Value args(base::Value::Type::LIST);
+    args.Append(observer.id);
+    args.Append(tree_id.ToString());
+    args.Append(node->id());
+    args.Append(ToString(change_type));
     bindings_system_->DispatchEventInContext("automationInternal.onTreeChange",
-                                             &args, nullptr, context());
+                                             &base::Value::AsListValue(args),
+                                             nullptr, context());
   }
 
   return did_send_event;
@@ -2566,10 +2560,11 @@ void AutomationInternalCustomBindings::SendAutomationEvent(
 
   event_params.SetKey("intents", std::move(value_intents));
 
-  base::ListValue args;
+  base::Value args(base::Value::Type::LIST);
   args.Append(std::move(event_params));
   bindings_system_->DispatchEventInContext(
-      "automationInternal.onAccessibilityEvent", &args, nullptr, context());
+      "automationInternal.onAccessibilityEvent",
+      &base::Value::AsListValue(args), nullptr, context());
 }
 
 void AutomationInternalCustomBindings::MaybeSendFocusAndBlur(
@@ -2696,10 +2691,11 @@ void AutomationInternalCustomBindings::SendAccessibilityFocusedLocationChange(
 
 void AutomationInternalCustomBindings::SendChildTreeIDEvent(
     ui::AXTreeID child_tree_id) {
-  base::ListValue args;
-  args.AppendString(child_tree_id.ToString());
+  base::Value args(base::Value::Type::LIST);
+  args.Append(child_tree_id.ToString());
   bindings_system_->DispatchEventInContext("automationInternal.onChildTreeID",
-                                           &args, nullptr, context());
+                                           &base::Value::AsListValue(args),
+                                           nullptr, context());
 }
 
 void AutomationInternalCustomBindings::SendNodesRemovedEvent(
@@ -2711,17 +2707,18 @@ void AutomationInternalCustomBindings::SendNodesRemovedEvent(
 
   ui::AXTreeID tree_id = iter->second->GetTreeID();
 
-  base::ListValue args;
-  args.AppendString(tree_id.ToString());
+  base::Value args(base::Value::Type::LIST);
+  args.Append(tree_id.ToString());
   {
-    auto nodes = std::make_unique<base::ListValue>();
+    base::Value nodes(base::Value::Type::LIST);
     for (auto id : ids)
-      nodes->AppendInteger(id);
+      nodes.Append(id);
     args.Append(std::move(nodes));
   }
 
   bindings_system_->DispatchEventInContext("automationInternal.onNodesRemoved",
-                                           &args, nullptr, context());
+                                           &base::Value::AsListValue(args),
+                                           nullptr, context());
 }
 
 std::string
@@ -2868,7 +2865,10 @@ gfx::Rect AutomationInternalCustomBindings::ComputeGlobalNodeBounds(
     // that does not, unscale by the device scale factor.
     if (previous_tree_wrapper->HasDeviceScaleFactor() &&
         !tree_wrapper->HasDeviceScaleFactor()) {
-      float scale_factor = GetDeviceScaleFactor();
+      // TODO(crbug/1234225): This calculation should be included in
+      // |AXRelativeBounds::transform|.
+      const float scale_factor = parent_of_root->data().GetFloatAttribute(
+          ax::mojom::FloatAttribute::kChildTreeScale);
       if (scale_factor > 0)
         bounds.Scale(1.0 / scale_factor);
     }

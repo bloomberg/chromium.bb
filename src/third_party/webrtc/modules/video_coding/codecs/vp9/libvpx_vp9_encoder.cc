@@ -26,10 +26,10 @@
 #include "common_video/include/video_frame_buffer.h"
 #include "common_video/libyuv/include/webrtc_libyuv.h"
 #include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"
-#include "modules/video_coding/codecs/vp9/svc_rate_allocator.h"
 #include "modules/video_coding/svc/create_scalability_structure.h"
 #include "modules/video_coding/svc/scalable_video_controller.h"
 #include "modules/video_coding/svc/scalable_video_controller_no_layering.h"
+#include "modules/video_coding/svc/svc_rate_allocator.h"
 #include "modules/video_coding/utility/vp9_uncompressed_header_parser.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/experiments/field_trial_list.h"
@@ -1041,7 +1041,7 @@ int LibvpxVp9Encoder::Encode(const VideoFrame& input_image,
   // doing this.
   input_image_ = &input_image;
 
-  // In case we need to map the buffer, |mapped_buffer| is used to keep it alive
+  // In case we need to map the buffer, `mapped_buffer` is used to keep it alive
   // through reference counting until after encoding has finished.
   rtc::scoped_refptr<const VideoFrameBuffer> mapped_buffer;
   const I010BufferInterface* i010_buffer;
@@ -1851,17 +1851,21 @@ LibvpxVp9Encoder::ParsePerformanceFlagsFromTrials(
 LibvpxVp9Encoder::PerformanceFlags
 LibvpxVp9Encoder::GetDefaultPerformanceFlags() {
   PerformanceFlags flags;
-  flags.use_per_layer_speed = false;
+  flags.use_per_layer_speed = true;
 #if defined(WEBRTC_ARCH_ARM) || defined(WEBRTC_ARCH_ARM64) || defined(ANDROID)
   // Speed 8 on all layers for all resolutions.
   flags.settings_by_resolution[0] = {8, 8, 0};
 #else
-  // For smaller resolutions, use lower speed setting (get some coding gain at
-  // the cost of increased encoding complexity).
-  flags.settings_by_resolution[0] = {5, 5, 0};
+  // For smaller resolutions, use lower speed setting for the temporal base
+  // layer (get some coding gain at the cost of increased encoding complexity).
+  // Set encoder Speed 5 for TL0, encoder Speed 8 for upper temporal layers, and
+  // disable deblocking for upper-most temporal layers.
+  flags.settings_by_resolution[0] = {5, 8, 1};
 
   // Use speed 7 for QCIF and above.
-  flags.settings_by_resolution[352 * 288] = {7, 7, 0};
+  // Set encoder Speed 7 for TL0, encoder Speed 8 for upper temporal layers, and
+  // enable deblocking for all temporal layers.
+  flags.settings_by_resolution[352 * 288] = {7, 8, 0};
 #endif
   return flags;
 }
@@ -1888,7 +1892,7 @@ rtc::scoped_refptr<VideoFrameBuffer> LibvpxVp9Encoder::PrepareBufferForProfile0(
 
   rtc::scoped_refptr<VideoFrameBuffer> mapped_buffer;
   if (buffer->type() != VideoFrameBuffer::Type::kNative) {
-    // |buffer| is already mapped.
+    // `buffer` is already mapped.
     mapped_buffer = buffer;
   } else {
     // Attempt to map to one of the supported formats.
@@ -1907,28 +1911,14 @@ rtc::scoped_refptr<VideoFrameBuffer> LibvpxVp9Encoder::PrepareBufferForProfile0(
                         << " image to I420. Can't encode frame.";
       return {};
     }
-    // The buffer should now be a mapped I420 or I420A format, but some buffer
-    // implementations incorrectly return the wrong buffer format, such as
-    // kNative. As a workaround to this, we perform ToI420() a second time.
-    // TODO(https://crbug.com/webrtc/12602): When Android buffers have a correct
-    // ToI420() implementaion, remove his workaround.
-    if (converted_buffer->type() != VideoFrameBuffer::Type::kI420 &&
-        converted_buffer->type() != VideoFrameBuffer::Type::kI420A) {
-      converted_buffer = converted_buffer->ToI420();
-      if (!converted_buffer) {
-        RTC_LOG(LS_ERROR) << "Failed to convert "
-                          << VideoFrameBufferTypeToString(buffer->type())
-                          << " image to I420. Can't encode frame.";
-        return {};
-      }
-      RTC_CHECK(converted_buffer->type() == VideoFrameBuffer::Type::kI420 ||
-                converted_buffer->type() == VideoFrameBuffer::Type::kI420A);
-    }
-    // Because |buffer| had to be converted, use |converted_buffer| instead.
+    RTC_CHECK(converted_buffer->type() == VideoFrameBuffer::Type::kI420 ||
+              converted_buffer->type() == VideoFrameBuffer::Type::kI420A);
+
+    // Because `buffer` had to be converted, use `converted_buffer` instead.
     buffer = mapped_buffer = converted_buffer;
   }
 
-  // Prepare |raw_| from |mapped_buffer|.
+  // Prepare `raw_` from `mapped_buffer`.
   switch (mapped_buffer->type()) {
     case VideoFrameBuffer::Type::kI420:
     case VideoFrameBuffer::Type::kI420A: {

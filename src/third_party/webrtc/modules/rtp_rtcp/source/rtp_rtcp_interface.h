@@ -124,12 +124,12 @@ class RtpRtcpInterface : public RtcpFeedbackSenderInterface {
     // done by RTCP RR acking.
     bool always_send_mid_and_rid = false;
 
-    // If set, field trials are read from |field_trials|, otherwise
+    // If set, field trials are read from `field_trials`, otherwise
     // defaults to  webrtc::FieldTrialBasedConfig.
     const WebRtcKeyValueConfig* field_trials = nullptr;
 
     // SSRCs for media and retransmission, respectively.
-    // FlexFec SSRC is fetched from |flexfec_sender|.
+    // FlexFec SSRC is fetched from `flexfec_sender`.
     uint32_t local_media_ssrc = 0;
     absl::optional<uint32_t> rtx_send_ssrc;
 
@@ -145,6 +145,10 @@ class RtpRtcpInterface : public RtcpFeedbackSenderInterface {
     // Estimate RTT as non-sender as described in
     // https://tools.ietf.org/html/rfc3611#section-4.4 and #section-4.5
     bool non_sender_rtt_measurement = false;
+
+    // If true, sequence numbers are not assigned until after the pacer stage,
+    // in RtpSenderEgress.
+    bool use_deferred_sequencing = false;
 
    private:
     RTC_DISALLOW_COPY_AND_ASSIGN(Configuration);
@@ -199,7 +203,7 @@ class RtpRtcpInterface : public RtcpFeedbackSenderInterface {
                                             int payload_frequency) = 0;
 
   // Unregisters a send payload.
-  // |payload_type| - payload type of codec
+  // `payload_type` - payload type of codec
   // Returns -1 on failure else 0.
   virtual int32_t DeRegisterSendPayload(int8_t payload_type) = 0;
 
@@ -237,6 +241,9 @@ class RtpRtcpInterface : public RtcpFeedbackSenderInterface {
   virtual RtpState GetRtpState() const = 0;
   virtual RtpState GetRtxState() const = 0;
 
+  // This can be used to enable/disable receive-side RTT.
+  virtual void SetNonSenderRttMeasurement(bool enabled) = 0;
+
   // Returns SSRC.
   virtual uint32_t SSRC() const = 0;
 
@@ -252,7 +259,7 @@ class RtpRtcpInterface : public RtcpFeedbackSenderInterface {
   virtual void SetMid(const std::string& mid) = 0;
 
   // Sets CSRC.
-  // |csrcs| - vector of CSRCs
+  // `csrcs` - vector of CSRCs
   virtual void SetCsrcs(const std::vector<uint32_t>& csrcs) = 0;
 
   // Turns on/off sending RTX (RFC 4588). The modes can be set as a combination
@@ -348,7 +355,7 @@ class RtpRtcpInterface : public RtcpFeedbackSenderInterface {
   virtual RtcpMode RTCP() const = 0;
 
   // Sets RTCP status i.e on(compound or non-compound)/off.
-  // |method| - RTCP method to use.
+  // `method` - RTCP method to use.
   virtual void SetRTCPStatus(RtcpMode method) = 0;
 
   // Sets RTCP CName (i.e unique identifier).

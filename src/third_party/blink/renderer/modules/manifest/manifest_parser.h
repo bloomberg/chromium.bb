@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom-blink.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
@@ -104,6 +103,20 @@ class MODULES_EXPORT ManifestParser {
                 const String& key,
                 const KURL& base_url,
                 ParseURLRestrictions origin_restriction);
+
+  // Helper function to parse "enum" fields that accept a single value or a
+  // list of values to allow sites to be backwards compatible with browsers that
+  // don't support the latest spec.
+  // Example:
+  //  - Spec specifies valid field values are A, B and C.
+  //  - Browser supports only A and B.
+  //  - Site specifies "field": ["C", "B"].
+  //  - Browser will fail to parse C and fallback to B.
+  template <typename Enum>
+  Enum ParseFirstValidEnum(const JSONObject* object,
+                           const String& key,
+                           Enum (*parse_enum)(const std::string&),
+                           Enum invalid_value);
 
   // Parses the 'name' field of the manifest, as defined in:
   // https://w3c.github.io/manifest/#dfn-steps-for-processing-the-name-member
@@ -408,6 +421,12 @@ class MODULES_EXPORT ManifestParser {
   // partition.
   // Returns true iff the field could be parsed as the boolean true.
   bool ParseIsolatedStorage(const JSONObject* object);
+
+  // Parses the 'launch_handler' field of the manifest as defined in:
+  // https://github.com/WICG/sw-launch/blob/main/launch_handler.md
+  // Returns default values if parsing fails.
+  mojom::blink::ManifestLaunchHandlerPtr ParseLaunchHandler(
+      const JSONObject* object);
 
   void AddErrorInfo(const String& error_msg,
                     bool critical = false,

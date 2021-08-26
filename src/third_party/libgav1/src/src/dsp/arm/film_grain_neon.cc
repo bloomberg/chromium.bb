@@ -34,6 +34,7 @@
 #include "src/utils/common.h"
 #include "src/utils/compiler_attributes.h"
 #include "src/utils/logging.h"
+#include "src/utils/memory.h"
 
 namespace libgav1 {
 namespace dsp {
@@ -84,8 +85,10 @@ inline int32x4x2_t AccumulateWeightedGrain(const int16x8_t grain_lo,
 // compute pixels that come after in the row, we have to finish the calculations
 // one at a time.
 template <int bitdepth, int auto_regression_coeff_lag, int lane>
-inline void WriteFinalAutoRegression(int8_t* grain_cursor, int32x4x2_t sum,
-                                     const int8_t* coeffs, int pos, int shift) {
+inline void WriteFinalAutoRegression(int8_t* LIBGAV1_RESTRICT grain_cursor,
+                                     int32x4x2_t sum,
+                                     const int8_t* LIBGAV1_RESTRICT coeffs,
+                                     int pos, int shift) {
   int32_t result = vgetq_lane_s32(sum.val[lane >> 2], lane & 3);
 
   for (int delta_col = -auto_regression_coeff_lag; delta_col < 0; ++delta_col) {
@@ -99,8 +102,10 @@ inline void WriteFinalAutoRegression(int8_t* grain_cursor, int32x4x2_t sum,
 
 #if LIBGAV1_MAX_BITDEPTH >= 10
 template <int bitdepth, int auto_regression_coeff_lag, int lane>
-inline void WriteFinalAutoRegression(int16_t* grain_cursor, int32x4x2_t sum,
-                                     const int8_t* coeffs, int pos, int shift) {
+inline void WriteFinalAutoRegression(int16_t* LIBGAV1_RESTRICT grain_cursor,
+                                     int32x4x2_t sum,
+                                     const int8_t* LIBGAV1_RESTRICT coeffs,
+                                     int pos, int shift) {
   int32_t result = vgetq_lane_s32(sum.val[lane >> 2], lane & 3);
 
   for (int delta_col = -auto_regression_coeff_lag; delta_col < 0; ++delta_col) {
@@ -117,12 +122,11 @@ inline void WriteFinalAutoRegression(int16_t* grain_cursor, int32x4x2_t sum,
 // compute pixels that come after in the row, we have to finish the calculations
 // one at a time.
 template <int bitdepth, int auto_regression_coeff_lag, int lane>
-inline void WriteFinalAutoRegressionChroma(int8_t* u_grain_cursor,
-                                           int8_t* v_grain_cursor,
-                                           int32x4x2_t sum_u, int32x4x2_t sum_v,
-                                           const int8_t* coeffs_u,
-                                           const int8_t* coeffs_v, int pos,
-                                           int shift) {
+inline void WriteFinalAutoRegressionChroma(
+    int8_t* LIBGAV1_RESTRICT u_grain_cursor,
+    int8_t* LIBGAV1_RESTRICT v_grain_cursor, int32x4x2_t sum_u,
+    int32x4x2_t sum_v, const int8_t* LIBGAV1_RESTRICT coeffs_u,
+    const int8_t* LIBGAV1_RESTRICT coeffs_v, int pos, int shift) {
   WriteFinalAutoRegression<bitdepth, auto_regression_coeff_lag, lane>(
       u_grain_cursor, sum_u, coeffs_u, pos, shift);
   WriteFinalAutoRegression<bitdepth, auto_regression_coeff_lag, lane>(
@@ -131,12 +135,11 @@ inline void WriteFinalAutoRegressionChroma(int8_t* u_grain_cursor,
 
 #if LIBGAV1_MAX_BITDEPTH >= 10
 template <int bitdepth, int auto_regression_coeff_lag, int lane>
-inline void WriteFinalAutoRegressionChroma(int16_t* u_grain_cursor,
-                                           int16_t* v_grain_cursor,
-                                           int32x4x2_t sum_u, int32x4x2_t sum_v,
-                                           const int8_t* coeffs_u,
-                                           const int8_t* coeffs_v, int pos,
-                                           int shift) {
+inline void WriteFinalAutoRegressionChroma(
+    int16_t* LIBGAV1_RESTRICT u_grain_cursor,
+    int16_t* LIBGAV1_RESTRICT v_grain_cursor, int32x4x2_t sum_u,
+    int32x4x2_t sum_v, const int8_t* LIBGAV1_RESTRICT coeffs_u,
+    const int8_t* LIBGAV1_RESTRICT coeffs_v, int pos, int shift) {
   WriteFinalAutoRegression<bitdepth, auto_regression_coeff_lag, lane>(
       u_grain_cursor, sum_u, coeffs_u, pos, shift);
   WriteFinalAutoRegression<bitdepth, auto_regression_coeff_lag, lane>(
@@ -224,12 +227,11 @@ inline uint16x8_t GetAverageLuma(const uint16_t* const luma,
 
 template <int bitdepth, typename GrainType, int auto_regression_coeff_lag,
           bool use_luma>
-void ApplyAutoRegressiveFilterToChromaGrains_NEON(const FilmGrainParams& params,
-                                                  const void* luma_grain_buffer,
-                                                  int subsampling_x,
-                                                  int subsampling_y,
-                                                  void* u_grain_buffer,
-                                                  void* v_grain_buffer) {
+void ApplyAutoRegressiveFilterToChromaGrains_NEON(
+    const FilmGrainParams& params,
+    const void* LIBGAV1_RESTRICT luma_grain_buffer, int subsampling_x,
+    int subsampling_y, void* LIBGAV1_RESTRICT u_grain_buffer,
+    void* LIBGAV1_RESTRICT v_grain_buffer) {
   static_assert(auto_regression_coeff_lag <= 3, "Invalid autoregression lag.");
   const auto* luma_grain = static_cast<const GrainType*>(luma_grain_buffer);
   auto* u_grain = static_cast<GrainType*>(u_grain_buffer);
@@ -558,49 +560,93 @@ void ApplyAutoRegressiveFilterToLumaGrain_NEON(const FilmGrainParams& params,
 #undef ACCUMULATE_WEIGHTED_GRAIN
 }
 
-void InitializeScalingLookupTable_NEON(
-    int num_points, const uint8_t point_value[], const uint8_t point_scaling[],
-    uint8_t scaling_lut[kScalingLookupTableSize]) {
+template <int bitdepth>
+void InitializeScalingLookupTable_NEON(int num_points,
+                                       const uint8_t point_value[],
+                                       const uint8_t point_scaling[],
+                                       int16_t* scaling_lut,
+                                       const int scaling_lut_length) {
+  static_assert(bitdepth < kBitdepth12,
+                "NEON Scaling lookup table only supports 8bpp and 10bpp.");
   if (num_points == 0) {
-    memset(scaling_lut, 0, sizeof(scaling_lut[0]) * kScalingLookupTableSize);
+    memset(scaling_lut, 0, sizeof(scaling_lut[0]) * scaling_lut_length);
     return;
   }
-  static_assert(sizeof(scaling_lut[0]) == 1, "");
-  memset(scaling_lut, point_scaling[0], point_value[0]);
-  const uint32x4_t steps = vmovl_u16(vcreate_u16(0x0003000200010000));
-  const uint32x4_t offset = vdupq_n_u32(32768);
+  static_assert(sizeof(scaling_lut[0]) == 2, "");
+  Memset(scaling_lut, point_scaling[0],
+         std::max(static_cast<int>(point_value[0]), 1)
+             << (bitdepth - kBitdepth8));
+  const int32x4_t steps = vmovl_s16(vcreate_s16(0x0003000200010000));
+  const int32x4_t rounding = vdupq_n_s32(32768);
   for (int i = 0; i < num_points - 1; ++i) {
     const int delta_y = point_scaling[i + 1] - point_scaling[i];
     const int delta_x = point_value[i + 1] - point_value[i];
+    // |delta| corresponds to b, for the function y = a + b*x.
     const int delta = delta_y * ((65536 + (delta_x >> 1)) / delta_x);
     const int delta4 = delta << 2;
-    const uint8x8_t base_point = vdup_n_u8(point_scaling[i]);
-    uint32x4_t upscaled_points0 = vmlaq_n_u32(offset, steps, delta);
-    const uint32x4_t line_increment4 = vdupq_n_u32(delta4);
+    // vmull_n_u16 will not work here because |delta| typically exceeds the
+    // range of uint16_t.
+    int32x4_t upscaled_points0 = vmlaq_n_s32(rounding, steps, delta);
+    const int32x4_t line_increment4 = vdupq_n_s32(delta4);
     // Get the second set of 4 points by adding 4 steps to the first set.
-    uint32x4_t upscaled_points1 = vaddq_u32(upscaled_points0, line_increment4);
+    int32x4_t upscaled_points1 = vaddq_s32(upscaled_points0, line_increment4);
     // We obtain the next set of 8 points by adding 8 steps to each of the
     // current 8 points.
-    const uint32x4_t line_increment8 = vshlq_n_u32(line_increment4, 1);
+    const int32x4_t line_increment8 = vshlq_n_s32(line_increment4, 1);
+    const int16x8_t base_point = vdupq_n_s16(point_scaling[i]);
     int x = 0;
+    // Derive and write 8 values (or 32 values, for 10bpp).
     do {
-      const uint16x4_t interp_points0 = vshrn_n_u32(upscaled_points0, 16);
-      const uint16x4_t interp_points1 = vshrn_n_u32(upscaled_points1, 16);
-      const uint8x8_t interp_points =
-          vmovn_u16(vcombine_u16(interp_points0, interp_points1));
+      const int16x4_t interp_points0 = vshrn_n_s32(upscaled_points0, 16);
+      const int16x4_t interp_points1 = vshrn_n_s32(upscaled_points1, 16);
+      const int16x8_t interp_points =
+          vcombine_s16(interp_points0, interp_points1);
       // The spec guarantees that the max value of |point_value[i]| + x is 255.
-      // Writing 8 bytes starting at the final table byte, leaves 7 bytes of
+      // Writing 8 values starting at the final table byte, leaves 7 values of
       // required padding.
-      vst1_u8(&scaling_lut[point_value[i] + x],
-              vadd_u8(interp_points, base_point));
-      upscaled_points0 = vaddq_u32(upscaled_points0, line_increment8);
-      upscaled_points1 = vaddq_u32(upscaled_points1, line_increment8);
+      const int16x8_t full_interp = vaddq_s16(interp_points, base_point);
+      const int x_base = (point_value[i] + x) << (bitdepth - kBitdepth8);
+      if (bitdepth == kBitdepth10) {
+        const int16x8_t next_val = vaddq_s16(
+            base_point,
+            vdupq_n_s16((vgetq_lane_s32(upscaled_points1, 3) + delta) >> 16));
+        const int16x8_t start = full_interp;
+        const int16x8_t end = vextq_s16(full_interp, next_val, 1);
+        // lut[i << 2] = start;
+        // lut[(i << 2) + 1] = start + RightShiftWithRounding(start - end, 2)
+        // lut[(i << 2) + 2] = start +
+        //                      RightShiftWithRounding(2 * (start - end), 2)
+        // lut[(i << 2) + 3] = start +
+        //                      RightShiftWithRounding(3 * (start - end), 2)
+        const int16x8_t delta = vsubq_s16(end, start);
+        const int16x8_t double_delta = vshlq_n_s16(delta, 1);
+        const int16x8_t delta2 = vrshrq_n_s16(double_delta, 2);
+        const int16x8_t delta3 =
+            vrshrq_n_s16(vaddq_s16(delta, double_delta), 2);
+        const int16x8x4_t result = {
+            start, vaddq_s16(start, vrshrq_n_s16(delta, 2)),
+            vaddq_s16(start, delta2), vaddq_s16(start, delta3)};
+        vst4q_s16(&scaling_lut[x_base], result);
+      } else {
+        vst1q_s16(&scaling_lut[x_base], full_interp);
+      }
+      upscaled_points0 = vaddq_s32(upscaled_points0, line_increment8);
+      upscaled_points1 = vaddq_s32(upscaled_points1, line_increment8);
       x += 8;
     } while (x < delta_x);
   }
-  const uint8_t last_point_value = point_value[num_points - 1];
-  memset(&scaling_lut[last_point_value], point_scaling[num_points - 1],
-         kScalingLookupTableSize - last_point_value);
+  const int16_t last_point_value = point_value[num_points - 1];
+  const int x_base = last_point_value << (bitdepth - kBitdepth8);
+  Memset(&scaling_lut[x_base], point_scaling[num_points - 1],
+         scaling_lut_length - x_base);
+  if (bitdepth == kBitdepth10 && x_base > 0) {
+    const int start = scaling_lut[x_base - 4];
+    const int end = point_scaling[num_points - 1];
+    const int delta = end - start;
+    scaling_lut[x_base - 3] = start + RightShiftWithRounding(delta, 2);
+    scaling_lut[x_base - 2] = start + RightShiftWithRounding(2 * delta, 2);
+    scaling_lut[x_base - 1] = start + RightShiftWithRounding(3 * delta, 2);
+  }
 }
 
 inline int16x8_t Clip3(const int16x8_t value, const int16x8_t low,
@@ -611,85 +657,42 @@ inline int16x8_t Clip3(const int16x8_t value, const int16x8_t low,
 
 template <int bitdepth, typename Pixel>
 inline int16x8_t GetScalingFactors(
-    const uint8_t scaling_lut[kScalingLookupTableSize], const Pixel* source) {
+    const int16_t scaling_lut[kScalingLookupTableSize], const Pixel* source) {
   int16_t start_vals[8];
-  if (bitdepth == 8) {
-    start_vals[0] = scaling_lut[source[0]];
-    start_vals[1] = scaling_lut[source[1]];
-    start_vals[2] = scaling_lut[source[2]];
-    start_vals[3] = scaling_lut[source[3]];
-    start_vals[4] = scaling_lut[source[4]];
-    start_vals[5] = scaling_lut[source[5]];
-    start_vals[6] = scaling_lut[source[6]];
-    start_vals[7] = scaling_lut[source[7]];
-    return vld1q_s16(start_vals);
-  }
-  int16_t end_vals[8];
-  // TODO(petersonab): Precompute this into a larger table for direct lookups.
-  int index = source[0] >> 2;
-  start_vals[0] = scaling_lut[index];
-  end_vals[0] = scaling_lut[index + 1];
-  index = source[1] >> 2;
-  start_vals[1] = scaling_lut[index];
-  end_vals[1] = scaling_lut[index + 1];
-  index = source[2] >> 2;
-  start_vals[2] = scaling_lut[index];
-  end_vals[2] = scaling_lut[index + 1];
-  index = source[3] >> 2;
-  start_vals[3] = scaling_lut[index];
-  end_vals[3] = scaling_lut[index + 1];
-  index = source[4] >> 2;
-  start_vals[4] = scaling_lut[index];
-  end_vals[4] = scaling_lut[index + 1];
-  index = source[5] >> 2;
-  start_vals[5] = scaling_lut[index];
-  end_vals[5] = scaling_lut[index + 1];
-  index = source[6] >> 2;
-  start_vals[6] = scaling_lut[index];
-  end_vals[6] = scaling_lut[index + 1];
-  index = source[7] >> 2;
-  start_vals[7] = scaling_lut[index];
-  end_vals[7] = scaling_lut[index + 1];
-  const int16x8_t start = vld1q_s16(start_vals);
-  const int16x8_t end = vld1q_s16(end_vals);
-  int16x8_t remainder = GetSignedSource8(source);
-  remainder = vandq_s16(remainder, vdupq_n_s16(3));
-  const int16x8_t delta = vmulq_s16(vsubq_s16(end, start), remainder);
-  return vaddq_s16(start, vrshrq_n_s16(delta, 2));
+  static_assert(bitdepth <= kBitdepth10,
+                "NEON Film Grain is not yet implemented for 12bpp.");
+  start_vals[0] = scaling_lut[source[0]];
+  start_vals[1] = scaling_lut[source[1]];
+  start_vals[2] = scaling_lut[source[2]];
+  start_vals[3] = scaling_lut[source[3]];
+  start_vals[4] = scaling_lut[source[4]];
+  start_vals[5] = scaling_lut[source[5]];
+  start_vals[6] = scaling_lut[source[6]];
+  start_vals[7] = scaling_lut[source[7]];
+  return vld1q_s16(start_vals);
 }
 
+template <int bitdepth>
 inline int16x8_t ScaleNoise(const int16x8_t noise, const int16x8_t scaling,
                             const int16x8_t scaling_shift_vect) {
-  const int16x8_t upscaled_noise = vmulq_s16(noise, scaling);
-  return vrshlq_s16(upscaled_noise, scaling_shift_vect);
+  if (bitdepth == kBitdepth8) {
+    const int16x8_t upscaled_noise = vmulq_s16(noise, scaling);
+    return vrshlq_s16(upscaled_noise, scaling_shift_vect);
+  }
+  // Scaling shift is in the range [8, 11]. The doubling multiply returning high
+  // half is equivalent to a right shift by 15, so |scaling_shift_vect| should
+  // provide a left shift equal to 15 - s, where s is the original shift
+  // parameter.
+  const int16x8_t scaling_up = vshlq_s16(scaling, scaling_shift_vect);
+  return vqrdmulhq_s16(noise, scaling_up);
 }
-
-#if LIBGAV1_MAX_BITDEPTH >= 10
-inline int16x8_t ScaleNoise(const int16x8_t noise, const int16x8_t scaling,
-                            const int32x4_t scaling_shift_vect) {
-  // TODO(petersonab): Try refactoring scaling lookup table to int16_t and
-  // upscaling by 7 bits to permit high half multiply. This would eliminate
-  // the intermediate 32x4 registers. Also write the averaged values directly
-  // into the table so it doesn't have to be done for every pixel in
-  // the frame.
-  const int32x4_t upscaled_noise_lo =
-      vmull_s16(vget_low_s16(noise), vget_low_s16(scaling));
-  const int32x4_t upscaled_noise_hi =
-      vmull_s16(vget_high_s16(noise), vget_high_s16(scaling));
-  const int16x4_t noise_lo =
-      vmovn_s32(vrshlq_s32(upscaled_noise_lo, scaling_shift_vect));
-  const int16x4_t noise_hi =
-      vmovn_s32(vrshlq_s32(upscaled_noise_hi, scaling_shift_vect));
-  return vcombine_s16(noise_lo, noise_hi);
-}
-#endif  // LIBGAV1_MAX_BITDEPTH >= 10
 
 template <int bitdepth, typename GrainType, typename Pixel>
 void BlendNoiseWithImageLuma_NEON(
-    const void* noise_image_ptr, int min_value, int max_luma, int scaling_shift,
-    int width, int height, int start_height,
-    const uint8_t scaling_lut_y[kScalingLookupTableSize],
-    const void* source_plane_y, ptrdiff_t source_stride_y, void* dest_plane_y,
+    const void* LIBGAV1_RESTRICT noise_image_ptr, int min_value, int max_luma,
+    int scaling_shift, int width, int height, int start_height,
+    const int16_t* scaling_lut_y, const void* LIBGAV1_RESTRICT source_plane_y,
+    ptrdiff_t source_stride_y, void* LIBGAV1_RESTRICT dest_plane_y,
     ptrdiff_t dest_stride_y) {
   const auto* noise_image =
       static_cast<const Array2D<GrainType>*>(noise_image_ptr);
@@ -702,10 +705,8 @@ void BlendNoiseWithImageLuma_NEON(
   // In 8bpp, the maximum upscaled noise is 127*255 = 0x7E81, which is safe
   // for 16 bit signed integers. In higher bitdepths, however, we have to
   // expand to 32 to protect the sign bit.
-  const int16x8_t scaling_shift_vect16 = vdupq_n_s16(-scaling_shift);
-#if LIBGAV1_MAX_BITDEPTH >= 10
-  const int32x4_t scaling_shift_vect32 = vdupq_n_s32(-scaling_shift);
-#endif  // LIBGAV1_MAX_BITDEPTH >= 10
+  const int16x8_t scaling_shift_vect = vdupq_n_s16(
+      (bitdepth == kBitdepth10) ? 15 - scaling_shift : -scaling_shift);
 
   int y = 0;
   do {
@@ -713,25 +714,35 @@ void BlendNoiseWithImageLuma_NEON(
     do {
       // This operation on the unsigned input is safe in 8bpp because the vector
       // is widened before it is reinterpreted.
-      const int16x8_t orig = GetSignedSource8(&in_y_row[x]);
-      const int16x8_t scaling =
+      const int16x8_t orig0 = GetSignedSource8(&in_y_row[x]);
+      const int16x8_t scaling0 =
           GetScalingFactors<bitdepth, Pixel>(scaling_lut_y, &in_y_row[x]);
       int16x8_t noise =
           GetSignedSource8(&(noise_image[kPlaneY][y + start_height][x]));
 
-      if (bitdepth == 8) {
-        noise = ScaleNoise(noise, scaling, scaling_shift_vect16);
-      } else {
-#if LIBGAV1_MAX_BITDEPTH >= 10
-        noise = ScaleNoise(noise, scaling, scaling_shift_vect32);
-#endif  // LIBGAV1_MAX_BITDEPTH >= 10
-      }
-      const int16x8_t combined = vaddq_s16(orig, noise);
+      noise = ScaleNoise<bitdepth>(noise, scaling0, scaling_shift_vect);
+      const int16x8_t combined0 = vaddq_s16(orig0, noise);
       // In 8bpp, when params_.clip_to_restricted_range == false, we can replace
       // clipping with vqmovun_s16, but it's not likely to be worth copying the
       // function for just that case, though the gain would be very small.
       StoreUnsigned8(&out_y_row[x],
-                     vreinterpretq_u16_s16(Clip3(combined, floor, ceiling)));
+                     vreinterpretq_u16_s16(Clip3(combined0, floor, ceiling)));
+      x += 8;
+
+      // This operation on the unsigned input is safe in 8bpp because the vector
+      // is widened before it is reinterpreted.
+      const int16x8_t orig1 = GetSignedSource8(&in_y_row[x]);
+      const int16x8_t scaling1 = GetScalingFactors<bitdepth, Pixel>(
+          scaling_lut_y, &in_y_row[std::min(x, width)]);
+      noise = GetSignedSource8(&(noise_image[kPlaneY][y + start_height][x]));
+
+      noise = ScaleNoise<bitdepth>(noise, scaling1, scaling_shift_vect);
+      const int16x8_t combined1 = vaddq_s16(orig1, noise);
+      // In 8bpp, when params_.clip_to_restricted_range == false, we can replace
+      // clipping with vqmovun_s16, but it's not likely to be worth copying the
+      // function for just that case, though the gain would be very small.
+      StoreUnsigned8(&out_y_row[x],
+                     vreinterpretq_u16_s16(Clip3(combined1, floor, ceiling)));
       x += 8;
     } while (x < width);
     in_y_row += source_stride_y;
@@ -741,20 +752,16 @@ void BlendNoiseWithImageLuma_NEON(
 
 template <int bitdepth, typename GrainType, typename Pixel>
 inline int16x8_t BlendChromaValsWithCfl(
-    const Pixel* average_luma_buffer,
-    const uint8_t scaling_lut[kScalingLookupTableSize],
-    const Pixel* chroma_cursor, const GrainType* noise_image_cursor,
-    const int16x8_t scaling_shift_vect16,
-    const int32x4_t scaling_shift_vect32) {
+    const Pixel* LIBGAV1_RESTRICT average_luma_buffer,
+    const int16_t* LIBGAV1_RESTRICT scaling_lut,
+    const Pixel* LIBGAV1_RESTRICT chroma_cursor,
+    const GrainType* LIBGAV1_RESTRICT noise_image_cursor,
+    const int16x8_t scaling_shift_vect) {
   const int16x8_t scaling =
       GetScalingFactors<bitdepth, Pixel>(scaling_lut, average_luma_buffer);
   const int16x8_t orig = GetSignedSource8(chroma_cursor);
   int16x8_t noise = GetSignedSource8(noise_image_cursor);
-  if (bitdepth == 8) {
-    noise = ScaleNoise(noise, scaling, scaling_shift_vect16);
-  } else {
-    noise = ScaleNoise(noise, scaling, scaling_shift_vect32);
-  }
+  noise = ScaleNoise<bitdepth>(noise, scaling, scaling_shift_vect);
   return vaddq_s16(orig, noise);
 }
 
@@ -763,10 +770,10 @@ LIBGAV1_ALWAYS_INLINE void BlendChromaPlaneWithCfl_NEON(
     const Array2D<GrainType>& noise_image, int min_value, int max_chroma,
     int width, int height, int start_height, int subsampling_x,
     int subsampling_y, int scaling_shift,
-    const uint8_t scaling_lut[kScalingLookupTableSize], const Pixel* in_y_row,
-    ptrdiff_t source_stride_y, const Pixel* in_chroma_row,
-    ptrdiff_t source_stride_chroma, Pixel* out_chroma_row,
-    ptrdiff_t dest_stride) {
+    const int16_t* LIBGAV1_RESTRICT scaling_lut,
+    const Pixel* LIBGAV1_RESTRICT in_y_row, ptrdiff_t source_stride_y,
+    const Pixel* LIBGAV1_RESTRICT in_chroma_row, ptrdiff_t source_stride_chroma,
+    Pixel* LIBGAV1_RESTRICT out_chroma_row, ptrdiff_t dest_stride) {
   const int16x8_t floor = vdupq_n_s16(min_value);
   const int16x8_t ceiling = vdupq_n_s16(max_chroma);
   Pixel luma_buffer[16];
@@ -774,8 +781,8 @@ LIBGAV1_ALWAYS_INLINE void BlendChromaPlaneWithCfl_NEON(
   // In 8bpp, the maximum upscaled noise is 127*255 = 0x7E81, which is safe
   // for 16 bit signed integers. In higher bitdepths, however, we have to
   // expand to 32 to protect the sign bit.
-  const int16x8_t scaling_shift_vect16 = vdupq_n_s16(-scaling_shift);
-  const int32x4_t scaling_shift_vect32 = vdupq_n_s32(-scaling_shift);
+  const int16x8_t scaling_shift_vect = vdupq_n_s16(
+      (bitdepth == kBitdepth10) ? 15 - scaling_shift : -scaling_shift);
 
   const int chroma_height = (height + subsampling_y) >> subsampling_y;
   const int chroma_width = (width + subsampling_x) >> subsampling_x;
@@ -791,8 +798,6 @@ LIBGAV1_ALWAYS_INLINE void BlendChromaPlaneWithCfl_NEON(
     int x = 0;
     do {
       const int luma_x = x << subsampling_x;
-      // TODO(petersonab): Consider specializing by subsampling_x. In the 444
-      // case &in_y_row[x] can be passed to GetScalingFactors directly.
       const uint16x8_t average_luma =
           GetAverageLuma(&in_y_row[luma_x], subsampling_x);
       StoreUnsigned8(average_luma_buffer, average_luma);
@@ -800,8 +805,7 @@ LIBGAV1_ALWAYS_INLINE void BlendChromaPlaneWithCfl_NEON(
       const int16x8_t blended =
           BlendChromaValsWithCfl<bitdepth, GrainType, Pixel>(
               average_luma_buffer, scaling_lut, &in_chroma_row[x],
-              &(noise_image[y + start_height][x]), scaling_shift_vect16,
-              scaling_shift_vect32);
+              &(noise_image[y + start_height][x]), scaling_shift_vect);
 
       // In 8bpp, when params_.clip_to_restricted_range == false, we can replace
       // clipping with vqmovun_s16, but it's not likely to be worth copying the
@@ -823,8 +827,7 @@ LIBGAV1_ALWAYS_INLINE void BlendChromaPlaneWithCfl_NEON(
       const int16x8_t blended =
           BlendChromaValsWithCfl<bitdepth, GrainType, Pixel>(
               average_luma_buffer, scaling_lut, &in_chroma_row[x],
-              &(noise_image[y + start_height][x]), scaling_shift_vect16,
-              scaling_shift_vect32);
+              &(noise_image[y + start_height][x]), scaling_shift_vect);
       // In 8bpp, when params_.clip_to_restricted_range == false, we can replace
       // clipping with vqmovun_s16, but it's not likely to be worth copying the
       // function for just that case.
@@ -842,13 +845,13 @@ LIBGAV1_ALWAYS_INLINE void BlendChromaPlaneWithCfl_NEON(
 // This further implies that scaling_lut_u == scaling_lut_v == scaling_lut_y.
 template <int bitdepth, typename GrainType, typename Pixel>
 void BlendNoiseWithImageChromaWithCfl_NEON(
-    Plane plane, const FilmGrainParams& params, const void* noise_image_ptr,
-    int min_value, int max_chroma, int width, int height, int start_height,
-    int subsampling_x, int subsampling_y,
-    const uint8_t scaling_lut[kScalingLookupTableSize],
-    const void* source_plane_y, ptrdiff_t source_stride_y,
-    const void* source_plane_uv, ptrdiff_t source_stride_uv,
-    void* dest_plane_uv, ptrdiff_t dest_stride_uv) {
+    Plane plane, const FilmGrainParams& params,
+    const void* LIBGAV1_RESTRICT noise_image_ptr, int min_value, int max_chroma,
+    int width, int height, int start_height, int subsampling_x,
+    int subsampling_y, const int16_t* LIBGAV1_RESTRICT scaling_lut,
+    const void* LIBGAV1_RESTRICT source_plane_y, ptrdiff_t source_stride_y,
+    const void* LIBGAV1_RESTRICT source_plane_uv, ptrdiff_t source_stride_uv,
+    void* LIBGAV1_RESTRICT dest_plane_uv, ptrdiff_t dest_stride_uv) {
   const auto* noise_image =
       static_cast<const Array2D<GrainType>*>(noise_image_ptr);
   const auto* in_y = static_cast<const Pixel*>(source_plane_y);
@@ -872,8 +875,9 @@ namespace low_bitdepth {
 namespace {
 
 inline int16x8_t BlendChromaValsNoCfl(
-    const uint8_t scaling_lut[kScalingLookupTableSize],
-    const uint8_t* chroma_cursor, const int8_t* noise_image_cursor,
+    const int16_t* LIBGAV1_RESTRICT scaling_lut,
+    const uint8_t* LIBGAV1_RESTRICT chroma_cursor,
+    const int8_t* LIBGAV1_RESTRICT noise_image_cursor,
     const int16x8_t& average_luma, const int16x8_t& scaling_shift_vect,
     const int16x8_t& offset, int luma_multiplier, int chroma_multiplier) {
   uint8_t merged_buffer[8];
@@ -887,9 +891,9 @@ inline int16x8_t BlendChromaValsNoCfl(
   const uint8x8_t merged = vqshrun_n_s16(vhaddq_s16(offset, combined), 4);
   vst1_u8(merged_buffer, merged);
   const int16x8_t scaling =
-      GetScalingFactors<8, uint8_t>(scaling_lut, merged_buffer);
+      GetScalingFactors<kBitdepth8, uint8_t>(scaling_lut, merged_buffer);
   int16x8_t noise = GetSignedSource8(noise_image_cursor);
-  noise = ScaleNoise(noise, scaling, scaling_shift_vect);
+  noise = ScaleNoise<kBitdepth8>(noise, scaling, scaling_shift_vect);
   return vaddq_s16(orig, noise);
 }
 
@@ -898,9 +902,10 @@ LIBGAV1_ALWAYS_INLINE void BlendChromaPlane8bpp_NEON(
     int width, int height, int start_height, int subsampling_x,
     int subsampling_y, int scaling_shift, int chroma_offset,
     int chroma_multiplier, int luma_multiplier,
-    const uint8_t scaling_lut[kScalingLookupTableSize], const uint8_t* in_y_row,
-    ptrdiff_t source_stride_y, const uint8_t* in_chroma_row,
-    ptrdiff_t source_stride_chroma, uint8_t* out_chroma_row,
+    const int16_t* LIBGAV1_RESTRICT scaling_lut,
+    const uint8_t* LIBGAV1_RESTRICT in_y_row, ptrdiff_t source_stride_y,
+    const uint8_t* LIBGAV1_RESTRICT in_chroma_row,
+    ptrdiff_t source_stride_chroma, uint8_t* LIBGAV1_RESTRICT out_chroma_row,
     ptrdiff_t dest_stride) {
   const int16x8_t floor = vdupq_n_s16(min_value);
   const int16x8_t ceiling = vdupq_n_s16(max_chroma);
@@ -963,13 +968,13 @@ LIBGAV1_ALWAYS_INLINE void BlendChromaPlane8bpp_NEON(
 
 // This function is for the case params_.chroma_scaling_from_luma == false.
 void BlendNoiseWithImageChroma8bpp_NEON(
-    Plane plane, const FilmGrainParams& params, const void* noise_image_ptr,
-    int min_value, int max_chroma, int width, int height, int start_height,
-    int subsampling_x, int subsampling_y,
-    const uint8_t scaling_lut[kScalingLookupTableSize],
-    const void* source_plane_y, ptrdiff_t source_stride_y,
-    const void* source_plane_uv, ptrdiff_t source_stride_uv,
-    void* dest_plane_uv, ptrdiff_t dest_stride_uv) {
+    Plane plane, const FilmGrainParams& params,
+    const void* LIBGAV1_RESTRICT noise_image_ptr, int min_value, int max_chroma,
+    int width, int height, int start_height, int subsampling_x,
+    int subsampling_y, const int16_t* LIBGAV1_RESTRICT scaling_lut,
+    const void* LIBGAV1_RESTRICT source_plane_y, ptrdiff_t source_stride_y,
+    const void* LIBGAV1_RESTRICT source_plane_uv, ptrdiff_t source_stride_uv,
+    void* LIBGAV1_RESTRICT dest_plane_uv, ptrdiff_t dest_stride_uv) {
   assert(plane == kPlaneU || plane == kPlaneV);
   const auto* noise_image =
       static_cast<const Array2D<int8_t>*>(noise_image_ptr);
@@ -989,12 +994,11 @@ void BlendNoiseWithImageChroma8bpp_NEON(
                             in_uv, source_stride_uv, out_uv, dest_stride_uv);
 }
 
-inline void WriteOverlapLine8bpp_NEON(const int8_t* noise_stripe_row,
-                                      const int8_t* noise_stripe_row_prev,
-                                      int plane_width,
-                                      const int8x8_t grain_coeff,
-                                      const int8x8_t old_coeff,
-                                      int8_t* noise_image_row) {
+inline void WriteOverlapLine8bpp_NEON(
+    const int8_t* LIBGAV1_RESTRICT noise_stripe_row,
+    const int8_t* LIBGAV1_RESTRICT noise_stripe_row_prev, int plane_width,
+    const int8x8_t grain_coeff, const int8x8_t old_coeff,
+    int8_t* LIBGAV1_RESTRICT noise_image_row) {
   int x = 0;
   do {
     // Note that these reads may exceed noise_stripe_row's width by up to 7
@@ -1009,10 +1013,10 @@ inline void WriteOverlapLine8bpp_NEON(const int8_t* noise_stripe_row,
   } while (x < plane_width);
 }
 
-void ConstructNoiseImageOverlap8bpp_NEON(const void* noise_stripes_buffer,
-                                         int width, int height,
-                                         int subsampling_x, int subsampling_y,
-                                         void* noise_image_buffer) {
+void ConstructNoiseImageOverlap8bpp_NEON(
+    const void* LIBGAV1_RESTRICT noise_stripes_buffer, int width, int height,
+    int subsampling_x, int subsampling_y,
+    void* LIBGAV1_RESTRICT noise_image_buffer) {
   const auto* noise_stripes =
       static_cast<const Array2DView<int8_t>*>(noise_stripes_buffer);
   auto* noise_image = static_cast<Array2D<int8_t>*>(noise_image_buffer);
@@ -1077,41 +1081,45 @@ void Init8bpp() {
 
   // LumaAutoRegressionFunc
   dsp->film_grain.luma_auto_regression[0] =
-      ApplyAutoRegressiveFilterToLumaGrain_NEON<8, int8_t, 1>;
+      ApplyAutoRegressiveFilterToLumaGrain_NEON<kBitdepth8, int8_t, 1>;
   dsp->film_grain.luma_auto_regression[1] =
-      ApplyAutoRegressiveFilterToLumaGrain_NEON<8, int8_t, 2>;
+      ApplyAutoRegressiveFilterToLumaGrain_NEON<kBitdepth8, int8_t, 2>;
   dsp->film_grain.luma_auto_regression[2] =
-      ApplyAutoRegressiveFilterToLumaGrain_NEON<8, int8_t, 3>;
+      ApplyAutoRegressiveFilterToLumaGrain_NEON<kBitdepth8, int8_t, 3>;
 
   // ChromaAutoRegressionFunc[use_luma][auto_regression_coeff_lag]
   // Chroma autoregression should never be called when lag is 0 and use_luma
   // is false.
   dsp->film_grain.chroma_auto_regression[0][0] = nullptr;
   dsp->film_grain.chroma_auto_regression[0][1] =
-      ApplyAutoRegressiveFilterToChromaGrains_NEON<8, int8_t, 1, false>;
+      ApplyAutoRegressiveFilterToChromaGrains_NEON<kBitdepth8, int8_t, 1,
+                                                   false>;
   dsp->film_grain.chroma_auto_regression[0][2] =
-      ApplyAutoRegressiveFilterToChromaGrains_NEON<8, int8_t, 2, false>;
+      ApplyAutoRegressiveFilterToChromaGrains_NEON<kBitdepth8, int8_t, 2,
+                                                   false>;
   dsp->film_grain.chroma_auto_regression[0][3] =
-      ApplyAutoRegressiveFilterToChromaGrains_NEON<8, int8_t, 3, false>;
+      ApplyAutoRegressiveFilterToChromaGrains_NEON<kBitdepth8, int8_t, 3,
+                                                   false>;
   dsp->film_grain.chroma_auto_regression[1][0] =
-      ApplyAutoRegressiveFilterToChromaGrains_NEON<8, int8_t, 0, true>;
+      ApplyAutoRegressiveFilterToChromaGrains_NEON<kBitdepth8, int8_t, 0, true>;
   dsp->film_grain.chroma_auto_regression[1][1] =
-      ApplyAutoRegressiveFilterToChromaGrains_NEON<8, int8_t, 1, true>;
+      ApplyAutoRegressiveFilterToChromaGrains_NEON<kBitdepth8, int8_t, 1, true>;
   dsp->film_grain.chroma_auto_regression[1][2] =
-      ApplyAutoRegressiveFilterToChromaGrains_NEON<8, int8_t, 2, true>;
+      ApplyAutoRegressiveFilterToChromaGrains_NEON<kBitdepth8, int8_t, 2, true>;
   dsp->film_grain.chroma_auto_regression[1][3] =
-      ApplyAutoRegressiveFilterToChromaGrains_NEON<8, int8_t, 3, true>;
+      ApplyAutoRegressiveFilterToChromaGrains_NEON<kBitdepth8, int8_t, 3, true>;
 
   dsp->film_grain.construct_noise_image_overlap =
       ConstructNoiseImageOverlap8bpp_NEON;
 
-  dsp->film_grain.initialize_scaling_lut = InitializeScalingLookupTable_NEON;
+  dsp->film_grain.initialize_scaling_lut =
+      InitializeScalingLookupTable_NEON<kBitdepth8>;
 
   dsp->film_grain.blend_noise_luma =
-      BlendNoiseWithImageLuma_NEON<8, int8_t, uint8_t>;
+      BlendNoiseWithImageLuma_NEON<kBitdepth8, int8_t, uint8_t>;
   dsp->film_grain.blend_noise_chroma[0] = BlendNoiseWithImageChroma8bpp_NEON;
   dsp->film_grain.blend_noise_chroma[1] =
-      BlendNoiseWithImageChromaWithCfl_NEON<8, int8_t, uint8_t>;
+      BlendNoiseWithImageChromaWithCfl_NEON<kBitdepth8, int8_t, uint8_t>;
 }
 
 }  // namespace
@@ -1121,43 +1129,272 @@ void Init8bpp() {
 namespace high_bitdepth {
 namespace {
 
+inline void WriteOverlapLine10bpp_NEON(
+    const int16_t* LIBGAV1_RESTRICT noise_stripe_row,
+    const int16_t* LIBGAV1_RESTRICT noise_stripe_row_prev, int plane_width,
+    const int16x8_t grain_coeff, const int16x8_t old_coeff,
+    int16_t* LIBGAV1_RESTRICT noise_image_row) {
+  int x = 0;
+  do {
+    // Note that these reads may exceed noise_stripe_row's width by up to 7
+    // values.
+    const int16x8_t source_grain = vld1q_s16(noise_stripe_row + x);
+    const int16x8_t source_old = vld1q_s16(noise_stripe_row_prev + x);
+    // Maximum product is 511 * 27 = 0x35E5.
+    const int16x8_t weighted_grain = vmulq_s16(grain_coeff, source_grain);
+    // Maximum sum is 511 * (22 + 23) = 0x59D3.
+    const int16x8_t grain_sum =
+        vmlaq_s16(weighted_grain, old_coeff, source_old);
+    // Note that this write may exceed noise_image_row's width by up to 7
+    // values.
+    const int16x8_t grain = Clip3S16(vrshrq_n_s16(grain_sum, 5),
+                                     vdupq_n_s16(GetGrainMin<kBitdepth10>()),
+                                     vdupq_n_s16(GetGrainMax<kBitdepth10>()));
+    vst1q_s16(noise_image_row + x, grain);
+    x += 8;
+  } while (x < plane_width);
+}
+
+void ConstructNoiseImageOverlap10bpp_NEON(
+    const void* LIBGAV1_RESTRICT noise_stripes_buffer, int width, int height,
+    int subsampling_x, int subsampling_y,
+    void* LIBGAV1_RESTRICT noise_image_buffer) {
+  const auto* noise_stripes =
+      static_cast<const Array2DView<int16_t>*>(noise_stripes_buffer);
+  auto* noise_image = static_cast<Array2D<int16_t>*>(noise_image_buffer);
+  const int plane_width = (width + subsampling_x) >> subsampling_x;
+  const int plane_height = (height + subsampling_y) >> subsampling_y;
+  const int stripe_height = 32 >> subsampling_y;
+  const int stripe_mask = stripe_height - 1;
+  int y = stripe_height;
+  int luma_num = 1;
+  if (subsampling_y == 0) {
+    const int16x8_t first_row_grain_coeff = vdupq_n_s16(17);
+    const int16x8_t first_row_old_coeff = vdupq_n_s16(27);
+    const int16x8_t second_row_grain_coeff = first_row_old_coeff;
+    const int16x8_t second_row_old_coeff = first_row_grain_coeff;
+    for (; y < (plane_height & ~stripe_mask); ++luma_num, y += stripe_height) {
+      const int16_t* noise_stripe = (*noise_stripes)[luma_num];
+      const int16_t* noise_stripe_prev = (*noise_stripes)[luma_num - 1];
+      WriteOverlapLine10bpp_NEON(
+          noise_stripe, &noise_stripe_prev[32 * plane_width], plane_width,
+          first_row_grain_coeff, first_row_old_coeff, (*noise_image)[y]);
+
+      WriteOverlapLine10bpp_NEON(&noise_stripe[plane_width],
+                                 &noise_stripe_prev[(32 + 1) * plane_width],
+                                 plane_width, second_row_grain_coeff,
+                                 second_row_old_coeff, (*noise_image)[y + 1]);
+    }
+    // Either one partial stripe remains (remaining_height > 0),
+    // OR image is less than one stripe high (remaining_height < 0),
+    // OR all stripes are completed (remaining_height == 0).
+    const int remaining_height = plane_height - y;
+    if (remaining_height <= 0) {
+      return;
+    }
+    const int16_t* noise_stripe = (*noise_stripes)[luma_num];
+    const int16_t* noise_stripe_prev = (*noise_stripes)[luma_num - 1];
+    WriteOverlapLine10bpp_NEON(
+        noise_stripe, &noise_stripe_prev[32 * plane_width], plane_width,
+        first_row_grain_coeff, first_row_old_coeff, (*noise_image)[y]);
+
+    if (remaining_height > 1) {
+      WriteOverlapLine10bpp_NEON(&noise_stripe[plane_width],
+                                 &noise_stripe_prev[(32 + 1) * plane_width],
+                                 plane_width, second_row_grain_coeff,
+                                 second_row_old_coeff, (*noise_image)[y + 1]);
+    }
+  } else {  // subsampling_y == 1
+    const int16x8_t first_row_grain_coeff = vdupq_n_s16(22);
+    const int16x8_t first_row_old_coeff = vdupq_n_s16(23);
+    for (; y < plane_height; ++luma_num, y += stripe_height) {
+      const int16_t* noise_stripe = (*noise_stripes)[luma_num];
+      const int16_t* noise_stripe_prev = (*noise_stripes)[luma_num - 1];
+      WriteOverlapLine10bpp_NEON(
+          noise_stripe, &noise_stripe_prev[16 * plane_width], plane_width,
+          first_row_grain_coeff, first_row_old_coeff, (*noise_image)[y]);
+    }
+  }
+}
+
+inline int16x8_t BlendChromaValsNoCfl(
+    const int16_t* LIBGAV1_RESTRICT scaling_lut,
+    const uint16_t* LIBGAV1_RESTRICT chroma_cursor,
+    const int16_t* LIBGAV1_RESTRICT noise_image_cursor,
+    const int16x8_t& average_luma, const int16x8_t& scaling_shift_vect,
+    const int32x4_t& offset, int luma_multiplier, int chroma_multiplier) {
+  uint16_t merged_buffer[8];
+  const int16x8_t orig = GetSignedSource8(chroma_cursor);
+  const int32x4_t weighted_luma_low =
+      vmull_n_s16(vget_low_s16(average_luma), luma_multiplier);
+  const int32x4_t weighted_luma_high =
+      vmull_n_s16(vget_high_s16(average_luma), luma_multiplier);
+  // Maximum value of combined is 127 * 1023 = 0x1FB81.
+  const int32x4_t combined_low =
+      vmlal_n_s16(weighted_luma_low, vget_low_s16(orig), chroma_multiplier);
+  const int32x4_t combined_high =
+      vmlal_n_s16(weighted_luma_high, vget_high_s16(orig), chroma_multiplier);
+  // Maximum value of offset is (255 << 8) = 0xFF00. Offset may be negative.
+  const uint16x4_t merged_low =
+      vqshrun_n_s32(vaddq_s32(offset, combined_low), 6);
+  const uint16x4_t merged_high =
+      vqshrun_n_s32(vaddq_s32(offset, combined_high), 6);
+  const uint16x8_t max_pixel = vdupq_n_u16((1 << kBitdepth10) - 1);
+  vst1q_u16(merged_buffer,
+            vminq_u16(vcombine_u16(merged_low, merged_high), max_pixel));
+  const int16x8_t scaling =
+      GetScalingFactors<kBitdepth10, uint16_t>(scaling_lut, merged_buffer);
+  const int16x8_t noise = GetSignedSource8(noise_image_cursor);
+  const int16x8_t scaled_noise =
+      ScaleNoise<kBitdepth10>(noise, scaling, scaling_shift_vect);
+  return vaddq_s16(orig, scaled_noise);
+}
+
+LIBGAV1_ALWAYS_INLINE void BlendChromaPlane10bpp_NEON(
+    const Array2D<int16_t>& noise_image, int min_value, int max_chroma,
+    int width, int height, int start_height, int subsampling_x,
+    int subsampling_y, int scaling_shift, int chroma_offset,
+    int chroma_multiplier, int luma_multiplier,
+    const int16_t* LIBGAV1_RESTRICT scaling_lut,
+    const uint16_t* LIBGAV1_RESTRICT in_y_row, ptrdiff_t source_stride_y,
+    const uint16_t* LIBGAV1_RESTRICT in_chroma_row,
+    ptrdiff_t source_stride_chroma, uint16_t* LIBGAV1_RESTRICT out_chroma_row,
+    ptrdiff_t dest_stride) {
+  const int16x8_t floor = vdupq_n_s16(min_value);
+  const int16x8_t ceiling = vdupq_n_s16(max_chroma);
+  const int16x8_t scaling_shift_vect = vdupq_n_s16(15 - scaling_shift);
+
+  const int chroma_height = (height + subsampling_y) >> subsampling_y;
+  const int chroma_width = (width + subsampling_x) >> subsampling_x;
+  const int safe_chroma_width = chroma_width & ~7;
+  uint16_t luma_buffer[16];
+  // Offset is added before downshifting in order to take advantage of
+  // saturation, so it has to be upscaled by 6 bits, plus 2 bits for 10bpp.
+  const int32x4_t offset = vdupq_n_s32(chroma_offset << (6 + 2));
+
+  start_height >>= subsampling_y;
+  int y = 0;
+  do {
+    int x = 0;
+    do {
+      const int luma_x = x << subsampling_x;
+      const int16x8_t average_luma = vreinterpretq_s16_u16(
+          GetAverageLuma(&in_y_row[luma_x], subsampling_x));
+      const int16x8_t blended = BlendChromaValsNoCfl(
+          scaling_lut, &in_chroma_row[x], &(noise_image[y + start_height][x]),
+          average_luma, scaling_shift_vect, offset, luma_multiplier,
+          chroma_multiplier);
+      StoreUnsigned8(&out_chroma_row[x],
+                     vreinterpretq_u16_s16(Clip3(blended, floor, ceiling)));
+
+      x += 8;
+    } while (x < safe_chroma_width);
+
+    if (x < chroma_width) {
+      // Begin right edge iteration. Same as the normal iterations, but the
+      // |average_luma| computation requires a duplicated luma value at the
+      // end.
+      const int luma_x = x << subsampling_x;
+      const int valid_range = width - luma_x;
+      memcpy(luma_buffer, &in_y_row[luma_x], valid_range * sizeof(in_y_row[0]));
+      luma_buffer[valid_range] = in_y_row[width - 1];
+
+      const int16x8_t average_luma =
+          vreinterpretq_s16_u16(GetAverageLuma(luma_buffer, subsampling_x));
+      const int16x8_t blended = BlendChromaValsNoCfl(
+          scaling_lut, &in_chroma_row[x], &(noise_image[y + start_height][x]),
+          average_luma, scaling_shift_vect, offset, luma_multiplier,
+          chroma_multiplier);
+      StoreUnsigned8(&out_chroma_row[x],
+                     vreinterpretq_u16_s16(Clip3(blended, floor, ceiling)));
+      // End of right edge iteration.
+    }
+
+    in_y_row = AddByteStride(in_y_row, source_stride_y << subsampling_y);
+    in_chroma_row = AddByteStride(in_chroma_row, source_stride_chroma);
+    out_chroma_row = AddByteStride(out_chroma_row, dest_stride);
+  } while (++y < chroma_height);
+}
+
+// This function is for the case params_.chroma_scaling_from_luma == false.
+void BlendNoiseWithImageChroma10bpp_NEON(
+    Plane plane, const FilmGrainParams& params,
+    const void* LIBGAV1_RESTRICT noise_image_ptr, int min_value, int max_chroma,
+    int width, int height, int start_height, int subsampling_x,
+    int subsampling_y, const int16_t* LIBGAV1_RESTRICT scaling_lut,
+    const void* LIBGAV1_RESTRICT source_plane_y, ptrdiff_t source_stride_y,
+    const void* LIBGAV1_RESTRICT source_plane_uv, ptrdiff_t source_stride_uv,
+    void* LIBGAV1_RESTRICT dest_plane_uv, ptrdiff_t dest_stride_uv) {
+  assert(plane == kPlaneU || plane == kPlaneV);
+  const auto* noise_image =
+      static_cast<const Array2D<int16_t>*>(noise_image_ptr);
+  const auto* in_y = static_cast<const uint16_t*>(source_plane_y);
+  const auto* in_uv = static_cast<const uint16_t*>(source_plane_uv);
+  auto* out_uv = static_cast<uint16_t*>(dest_plane_uv);
+
+  const int offset = (plane == kPlaneU) ? params.u_offset : params.v_offset;
+  const int luma_multiplier =
+      (plane == kPlaneU) ? params.u_luma_multiplier : params.v_luma_multiplier;
+  const int multiplier =
+      (plane == kPlaneU) ? params.u_multiplier : params.v_multiplier;
+  BlendChromaPlane10bpp_NEON(
+      noise_image[plane], min_value, max_chroma, width, height, start_height,
+      subsampling_x, subsampling_y, params.chroma_scaling, offset, multiplier,
+      luma_multiplier, scaling_lut, in_y, source_stride_y, in_uv,
+      source_stride_uv, out_uv, dest_stride_uv);
+}
+
 void Init10bpp() {
   Dsp* const dsp = dsp_internal::GetWritableDspTable(kBitdepth10);
   assert(dsp != nullptr);
 
   // LumaAutoRegressionFunc
   dsp->film_grain.luma_auto_regression[0] =
-      ApplyAutoRegressiveFilterToLumaGrain_NEON<10, int16_t, 1>;
+      ApplyAutoRegressiveFilterToLumaGrain_NEON<kBitdepth10, int16_t, 1>;
   dsp->film_grain.luma_auto_regression[1] =
-      ApplyAutoRegressiveFilterToLumaGrain_NEON<10, int16_t, 2>;
+      ApplyAutoRegressiveFilterToLumaGrain_NEON<kBitdepth10, int16_t, 2>;
   dsp->film_grain.luma_auto_regression[2] =
-      ApplyAutoRegressiveFilterToLumaGrain_NEON<10, int16_t, 3>;
+      ApplyAutoRegressiveFilterToLumaGrain_NEON<kBitdepth10, int16_t, 3>;
 
   // ChromaAutoRegressionFunc[use_luma][auto_regression_coeff_lag][subsampling]
   // Chroma autoregression should never be called when lag is 0 and use_luma
   // is false.
   dsp->film_grain.chroma_auto_regression[0][0] = nullptr;
   dsp->film_grain.chroma_auto_regression[0][1] =
-      ApplyAutoRegressiveFilterToChromaGrains_NEON<10, int16_t, 1, false>;
+      ApplyAutoRegressiveFilterToChromaGrains_NEON<kBitdepth10, int16_t, 1,
+                                                   false>;
   dsp->film_grain.chroma_auto_regression[0][2] =
-      ApplyAutoRegressiveFilterToChromaGrains_NEON<10, int16_t, 2, false>;
+      ApplyAutoRegressiveFilterToChromaGrains_NEON<kBitdepth10, int16_t, 2,
+                                                   false>;
   dsp->film_grain.chroma_auto_regression[0][3] =
-      ApplyAutoRegressiveFilterToChromaGrains_NEON<10, int16_t, 3, false>;
+      ApplyAutoRegressiveFilterToChromaGrains_NEON<kBitdepth10, int16_t, 3,
+                                                   false>;
   dsp->film_grain.chroma_auto_regression[1][0] =
-      ApplyAutoRegressiveFilterToChromaGrains_NEON<10, int16_t, 0, true>;
+      ApplyAutoRegressiveFilterToChromaGrains_NEON<kBitdepth10, int16_t, 0,
+                                                   true>;
   dsp->film_grain.chroma_auto_regression[1][1] =
-      ApplyAutoRegressiveFilterToChromaGrains_NEON<10, int16_t, 1, true>;
+      ApplyAutoRegressiveFilterToChromaGrains_NEON<kBitdepth10, int16_t, 1,
+                                                   true>;
   dsp->film_grain.chroma_auto_regression[1][2] =
-      ApplyAutoRegressiveFilterToChromaGrains_NEON<10, int16_t, 2, true>;
+      ApplyAutoRegressiveFilterToChromaGrains_NEON<kBitdepth10, int16_t, 2,
+                                                   true>;
   dsp->film_grain.chroma_auto_regression[1][3] =
-      ApplyAutoRegressiveFilterToChromaGrains_NEON<10, int16_t, 3, true>;
+      ApplyAutoRegressiveFilterToChromaGrains_NEON<kBitdepth10, int16_t, 3,
+                                                   true>;
 
-  dsp->film_grain.initialize_scaling_lut = InitializeScalingLookupTable_NEON;
+  dsp->film_grain.construct_noise_image_overlap =
+      ConstructNoiseImageOverlap10bpp_NEON;
 
-  dsp->film_grain.blend_noise_luma =
-      BlendNoiseWithImageLuma_NEON<10, int16_t, uint16_t>;
+  dsp->film_grain.initialize_scaling_lut =
+      InitializeScalingLookupTable_NEON<kBitdepth10>;
+
+  // TODO(b/194442742): reenable this function after segfault under armv7 ASan
+  // is fixed.
+  // dsp->film_grain.blend_noise_luma =
+  //     BlendNoiseWithImageLuma_NEON<kBitdepth10, int16_t, uint16_t>;
+  dsp->film_grain.blend_noise_chroma[0] = BlendNoiseWithImageChroma10bpp_NEON;
   dsp->film_grain.blend_noise_chroma[1] =
-      BlendNoiseWithImageChromaWithCfl_NEON<10, int16_t, uint16_t>;
+      BlendNoiseWithImageChromaWithCfl_NEON<kBitdepth10, int16_t, uint16_t>;
 }
 
 }  // namespace

@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #include <stdio.h>
 
@@ -37,15 +28,14 @@ int CompressJpegXlMain(int argc, const char* argv[]) {
   }
 
   if (args.version) {
-    fprintf(stdout, "cjxl [%s]\n",
+    fprintf(stdout, "cjxl %s\n",
             CodecConfigString(JxlEncoderVersion()).c_str());
     fprintf(stdout, "Copyright (c) the JPEG XL Project\n");
     return 0;
   }
 
   if (!args.quiet) {
-    fprintf(stderr, "  J P E G   \\/ |\n");
-    fprintf(stderr, "            /\\ |_   e n c o d e r    [%s]\n\n",
+    fprintf(stderr, "JPEG XL encoder %s\n",
             CodecConfigString(JxlEncoderVersion()).c_str());
   }
 
@@ -111,6 +101,14 @@ int CompressJpegXlMain(int argc, const char* argv[]) {
       return 1;
     }
     compressed.swap(container_file);
+    if (!args.quiet) {
+      const size_t pixels = io.xsize() * io.ysize();
+      const double bpp =
+          static_cast<double>(compressed.size() * jxl::kBitsPerByte) / pixels;
+      fprintf(stderr, "Including container: %llu bytes (%.3f bpp%s).\n",
+              static_cast<long long unsigned>(compressed.size()),
+              bpp / io.frames.size(), io.frames.size() == 1 ? "" : "/frame");
+    }
   }
   if (args.file_out) {
     if (!jxl::WriteFile(compressed, args.file_out)) {

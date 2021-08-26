@@ -18,6 +18,7 @@
 #include "chrome/browser/apps/app_service/uninstall_dialog.h"
 #include "chrome/browser/ash/child_accounts/time_limits/app_time_limit_interface.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
+#include "chrome/browser/ash/full_restore/full_restore_service.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -327,6 +328,8 @@ void AppServiceProxyChromeOs::OnUninstallDialogClosed(
 
     app_service_->Uninstall(app_type, app_id, uninstall_source, clear_site_data,
                             report_abuse);
+
+    PerformPostUninstallTasks(app_type, app_id, uninstall_source);
   }
 
   DCHECK(uninstall_dialog);
@@ -385,10 +388,7 @@ void AppServiceProxyChromeOs::LoadIconForDialog(
   apps::mojom::IconKeyPtr icon_key = update.IconKey();
   constexpr bool kAllowPlaceholderIcon = false;
   constexpr int32_t kIconSize = 48;
-  auto icon_type =
-      (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon))
-          ? apps::mojom::IconType::kStandard
-          : apps::mojom::IconType::kUncompressed;
+  auto icon_type = apps::mojom::IconType::kStandard;
 
   // For browser tests, load the app icon, because there is no family link
   // logo for browser tests.
@@ -412,10 +412,7 @@ void AppServiceProxyChromeOs::LoadIconForDialog(
 void AppServiceProxyChromeOs::OnLoadIconForBlockDialog(
     const std::string& app_name,
     apps::mojom::IconValuePtr icon_value) {
-  auto icon_type =
-      (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon))
-          ? apps::mojom::IconType::kStandard
-          : apps::mojom::IconType::kUncompressed;
+  auto icon_type = apps::mojom::IconType::kStandard;
   if (icon_value->icon_type != icon_type) {
     return;
   }
@@ -435,10 +432,7 @@ void AppServiceProxyChromeOs::OnLoadIconForPauseDialog(
     const std::string& app_name,
     const PauseData& pause_data,
     apps::mojom::IconValuePtr icon_value) {
-  auto icon_type =
-      (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon))
-          ? apps::mojom::IconType::kStandard
-          : apps::mojom::IconType::kUncompressed;
+  auto icon_type = apps::mojom::IconType::kStandard;
   if (icon_value->icon_type != icon_type) {
     OnPauseDialogClosed(app_type, app_id);
     return;
@@ -495,6 +489,24 @@ void AppServiceProxyChromeOs::InitAppPlatformMetrics() {
   if (app_platform_metrics_service_) {
     app_platform_metrics_service_->Start(app_registry_cache_,
                                          instance_registry_);
+  }
+}
+
+void AppServiceProxyChromeOs::PerformPostUninstallTasks(
+    apps::mojom::AppType app_type,
+    const std::string& app_id,
+    apps::mojom::UninstallSource uninstall_source) {
+  if (app_platform_metrics_service_ &&
+      app_platform_metrics_service_->AppPlatformMetrics()) {
+    app_platform_metrics_service_->AppPlatformMetrics()->RecordAppUninstallUkm(
+        app_type, app_id, uninstall_source);
+  }
+}
+
+void AppServiceProxyChromeOs::PerformPostLaunchTasks(
+    apps::mojom::LaunchSource launch_source) {
+  if (apps_util::IsHumanLaunch(launch_source)) {
+    ash::full_restore::FullRestoreService::MaybeCloseNotification(profile_);
   }
 }
 

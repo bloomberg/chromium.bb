@@ -1,19 +1,33 @@
+intrinsics/gen/frexp/41e931.wgsl:29:18 warning: use of deprecated intrinsic
+  var res: f32 = frexp(1.0, &arg_1);
+                 ^^^^^
+
+float tint_frexp(float param_0, inout int param_1) {
+  float float_exp;
+  float significand = frexp(param_0, float_exp);
+  param_1 = int(float_exp);
+  return significand;
+}
+
 void frexp_41e931() {
   int arg_1 = 0;
-  float tint_tmp;
-  float tint_tmp_1 = frexp(1.0f, tint_tmp);
-  arg_1 = int(tint_tmp);
-  float res = tint_tmp_1;
+  float res = tint_frexp(1.0f, arg_1);
 }
 
 struct tint_symbol {
   float4 value : SV_Position;
 };
 
-tint_symbol vertex_main() {
+float4 vertex_main_inner() {
   frexp_41e931();
-  const tint_symbol tint_symbol_1 = {float4(0.0f, 0.0f, 0.0f, 0.0f)};
-  return tint_symbol_1;
+  return float4(0.0f, 0.0f, 0.0f, 0.0f);
+}
+
+tint_symbol vertex_main() {
+  const float4 inner_result = vertex_main_inner();
+  tint_symbol wrapper_result = (tint_symbol)0;
+  wrapper_result.value = inner_result;
+  return wrapper_result;
 }
 
 void fragment_main() {

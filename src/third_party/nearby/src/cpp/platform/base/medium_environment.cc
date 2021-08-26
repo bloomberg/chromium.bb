@@ -16,8 +16,11 @@
 
 #include <atomic>
 #include <cinttypes>
+#include <functional>
 #include <new>
+#include <string>
 #include <type_traits>
+#include <utility>
 
 #include "platform/api/ble.h"
 #include "platform/api/bluetooth_adapter.h"
@@ -95,8 +98,10 @@ void MediumEnvironment::OnBluetoothAdapterChangedState(
     api::BluetoothAdapter& adapter, api::BluetoothDevice& adapter_device,
     std::string name, bool enabled, api::BluetoothAdapter::ScanMode mode) {
   if (!enabled_) return;
+  CountDownLatch latch(1);
   RunOnMediumEnvironmentThread([this, &adapter, &adapter_device,
-                                name = std::move(name), enabled, mode]() {
+                                name = std::move(name), enabled, mode,
+                                &latch]() {
     NEARBY_LOG(INFO,
                "[adapter=%p, device=%p] update: name=%s, enabled=%d, mode=%d",
                &adapter, &adapter_device, name.c_str(), enabled, mode);
@@ -112,8 +117,14 @@ void MediumEnvironment::OnBluetoothAdapterChangedState(
     // pointer. Pointer must remain valid for the duration of a Core session
     // (since it is owned by the correspoinding Medium, and mediums lifetime
     // matches Core lifetime).
-    bluetooth_adapters_.emplace(&adapter, &adapter_device);
+    if (enabled) {
+      bluetooth_adapters_.emplace(&adapter, &adapter_device);
+    } else {
+      bluetooth_adapters_.erase(&adapter);
+    }
+    latch.CountDown();
   });
+  latch.Await();
 }
 
 void MediumEnvironment::OnBluetoothDeviceStateChanged(
@@ -446,17 +457,15 @@ void MediumEnvironment::RegisterWebRtcSignalingMessenger(
     absl::string_view self_id, OnSignalingMessageCallback message_callback,
     OnSignalingCompleteCallback complete_callback) {
   if (!enabled_) return;
-  RunOnMediumEnvironmentThread(
-      [this, self_id{std::string(self_id)},
-       message_callback{std::move(message_callback)},
-       complete_callback{std::move(complete_callback)}]() {
-        webrtc_signaling_message_callback_[self_id] =
-            std::move(message_callback);
-        webrtc_signaling_complete_callback_[self_id] =
-            std::move(complete_callback);
-        NEARBY_LOG(INFO, "Registered signaling message callback for id = %s",
-                   self_id.c_str());
-      });
+  RunOnMediumEnvironmentThread([this, self_id{std::string(self_id)},
+                                message_callback{std::move(message_callback)},
+                                complete_callback{
+                                    std::move(complete_callback)}]() {
+    webrtc_signaling_message_callback_[self_id] = std::move(message_callback);
+    webrtc_signaling_complete_callback_[self_id] = std::move(complete_callback);
+    NEARBY_LOG(INFO, "Registered signaling message callback for id = %s",
+               self_id.c_str());
+  });
 }
 
 void MediumEnvironment::UnregisterWebRtcSignalingMessenger(

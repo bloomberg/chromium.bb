@@ -50,6 +50,10 @@ service CoreApplicationService {
   // Connects to a binding returned by GetAll.
   rpc Connect(cast.bindings.ConnectRequest)
       returns (cast.bindings.ConnectResponse);
+
+  // GetWebUIResource request
+  rpc GetWebUIResource(GetWebUIResourceRequest)
+      returns (GetWebUIResourceResponse);
 }
 
 message GetConfigRequest {
@@ -100,3 +104,13 @@ message ApplicationStatusRequest {
 }
 
 message ApplicationStatusResponse {}
+
+message GetWebUIResourceRequest {
+  // Resource identifier. It can either be name of the resource or a url.
+  string resource_id = 1;
+}
+
+message GetWebUIResourceResponse {
+  // Path to the resource file on device.
+  string resource_path = 1;
+}

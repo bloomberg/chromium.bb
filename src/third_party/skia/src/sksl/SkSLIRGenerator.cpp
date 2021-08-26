@@ -265,8 +265,7 @@ void IRGenerator::checkVarDeclaration(int offset, const Modifiers& modifiers, co
     if ((modifiers.fFlags & Modifiers::kIn_Flag) && (modifiers.fFlags & Modifiers::kUniform_Flag)) {
         this->errorReporter().error(offset, "'in uniform' variables not permitted");
     }
-    if (this->programKind() == ProgramKind::kRuntimeColorFilter ||
-        this->programKind() == ProgramKind::kRuntimeShader) {
+    if (this->isRuntimeEffect()) {
         if (modifiers.fFlags & Modifiers::kIn_Flag) {
             this->errorReporter().error(offset, "'in' variables not permitted in runtime effects");
         }
@@ -276,8 +275,7 @@ void IRGenerator::checkVarDeclaration(int offset, const Modifiers& modifiers, co
                 offset, "variables of type '" + baseType->displayName() + "' must be uniform");
     }
     if (modifiers.fLayout.fFlags & Layout::kSRGBUnpremul_Flag) {
-        if (this->programKind() != ProgramKind::kRuntimeColorFilter &&
-            this->programKind() != ProgramKind::kRuntimeShader) {
+        if (!this->isRuntimeEffect()) {
             this->errorReporter().error(offset,
                                         "'srgb_unpremul' is only permitted in runtime effects");
         }
@@ -296,7 +294,8 @@ void IRGenerator::checkVarDeclaration(int offset, const Modifiers& modifiers, co
                                         "float3, or float4 variables");
         }
     }
-    int permitted = Modifiers::kConst_Flag;
+    int permitted = Modifiers::kConst_Flag | Modifiers::kHighp_Flag | Modifiers::kMediump_Flag |
+                    Modifiers::kLowp_Flag;
     if (storage == Variable::Storage::kGlobal) {
         permitted |= Modifiers::kIn_Flag | Modifiers::kOut_Flag | Modifiers::kUniform_Flag |
                      Modifiers::kFlat_Flag | Modifiers::kNoPerspective_Flag;
@@ -331,7 +330,8 @@ std::unique_ptr<Variable> IRGenerator::convertVar(int offset, const Modifiers& m
 }
 
 std::unique_ptr<Statement> IRGenerator::convertVarDeclaration(std::unique_ptr<Variable> var,
-                                                              std::unique_ptr<Expression> value) {
+                                                              std::unique_ptr<Expression> value,
+                                                              bool addToSymbolTable) {
     std::unique_ptr<Statement> varDecl = VarDeclaration::Convert(fContext, var.get(),
                                                                  std::move(value));
     if (!varDecl) {
@@ -360,7 +360,11 @@ std::unique_ptr<Statement> IRGenerator::convertVarDeclaration(std::unique_ptr<Va
         fRTAdjust = var.get();
     }
 
-    fSymbolTable->add(std::move(var));
+    if (addToSymbolTable) {
+        fSymbolTable->add(std::move(var));
+    } else {
+        fSymbolTable->takeOwnershipOfSymbol(std::move(var));
+    }
     return varDecl;
 }
 
@@ -387,6 +391,11 @@ StatementArray IRGenerator::convertVarDeclarations(const ASTNode& decls,
     const Modifiers& modifiers = declarationsIter++->getModifiers();
     const ASTNode& rawType = *(declarationsIter++);
     const Type* baseType = this->convertType(rawType);
+    if (!baseType) {
+        return {};
+    }
+    baseType = baseType->applyPrecisionQualifiers(fContext, modifiers, fSymbolTable.get(),
+                                                  decls.fOffset);
     if (!baseType) {
         return {};
     }
@@ -720,53 +729,59 @@ void IRGenerator::CheckModifiers(const Context& context,
                                  const Modifiers& modifiers,
                                  int permittedModifierFlags,
                                  int permittedLayoutFlags) {
-    ErrorReporter& errorReporter = context.fErrors;
-    int flags = modifiers.fFlags;
-    auto checkModifier = [&](Modifiers::Flag flag, const char* name) {
-        if (flags & flag) {
-            if (!(permittedModifierFlags & flag)) {
-                errorReporter.error(offset, "'" + String(name) + "' is not permitted here");
-            }
-            flags &= ~flag;
-        }
+    static constexpr struct { Modifiers::Flag flag; const char* name; } kModifierFlags[] = {
+        { Modifiers::kConst_Flag,          "const" },
+        { Modifiers::kIn_Flag,             "in" },
+        { Modifiers::kOut_Flag,            "out" },
+        { Modifiers::kUniform_Flag,        "uniform" },
+        { Modifiers::kFlat_Flag,           "flat" },
+        { Modifiers::kNoPerspective_Flag,  "noperspective" },
+        { Modifiers::kHasSideEffects_Flag, "sk_has_side_effects" },
+        { Modifiers::kInline_Flag,         "inline" },
+        { Modifiers::kNoInline_Flag,       "noinline" },
+        { Modifiers::kHighp_Flag,          "highp" },
+        { Modifiers::kMediump_Flag,        "mediump" },
+        { Modifiers::kLowp_Flag,           "lowp" },
     };
 
-    checkModifier(Modifiers::kConst_Flag,          "const");
-    checkModifier(Modifiers::kIn_Flag,             "in");
-    checkModifier(Modifiers::kOut_Flag,            "out");
-    checkModifier(Modifiers::kUniform_Flag,        "uniform");
-    checkModifier(Modifiers::kFlat_Flag,           "flat");
-    checkModifier(Modifiers::kNoPerspective_Flag,  "noperspective");
-    checkModifier(Modifiers::kHasSideEffects_Flag, "sk_has_side_effects");
-    checkModifier(Modifiers::kInline_Flag,         "inline");
-    checkModifier(Modifiers::kNoInline_Flag,       "noinline");
-    SkASSERT(flags == 0);
+    int modifierFlags = modifiers.fFlags;
+    for (const auto& f : kModifierFlags) {
+        if (modifierFlags & f.flag) {
+            if (!(permittedModifierFlags & f.flag)) {
+                context.errors().error(offset, "'" + String(f.name) + "' is not permitted here");
+            }
+            modifierFlags &= ~f.flag;
+        }
+    }
+    SkASSERT(modifierFlags == 0);
+
+    static constexpr struct { Layout::Flag flag; const char* name; } kLayoutFlags[] = {
+        { Layout::kOriginUpperLeft_Flag,          "origin_upper_left"},
+        { Layout::kPushConstant_Flag,             "push_constant"},
+        { Layout::kBlendSupportAllEquations_Flag, "blend_support_all_equations"},
+        { Layout::kSRGBUnpremul_Flag,             "srgb_unpremul"},
+        { Layout::kLocation_Flag,                 "location"},
+        { Layout::kOffset_Flag,                   "offset"},
+        { Layout::kBinding_Flag,                  "binding"},
+        { Layout::kIndex_Flag,                    "index"},
+        { Layout::kSet_Flag,                      "set"},
+        { Layout::kBuiltin_Flag,                  "builtin"},
+        { Layout::kInputAttachmentIndex_Flag,     "input_attachment_index"},
+        { Layout::kPrimitive_Flag,                "primitive-type"},
+        { Layout::kMaxVertices_Flag,              "max_vertices"},
+        { Layout::kInvocations_Flag,              "invocations"},
+    };
 
     int layoutFlags = modifiers.fLayout.fFlags;
-    auto checkLayout = [&](Layout::Flag flag, const char* name) {
-        if (layoutFlags & flag) {
-            if (!(permittedLayoutFlags & flag)) {
-                errorReporter.error(offset, "layout qualifier '" + String(name) +
-                                            "' is not permitted here");
+    for (const auto& lf : kLayoutFlags) {
+        if (layoutFlags & lf.flag) {
+            if (!(permittedLayoutFlags & lf.flag)) {
+                context.errors().error(
+                        offset, "layout qualifier '" + String(lf.name) + "' is not permitted here");
             }
-            layoutFlags &= ~flag;
+            layoutFlags &= ~lf.flag;
         }
-    };
-
-    checkLayout(Layout::kOriginUpperLeft_Flag,          "origin_upper_left");
-    checkLayout(Layout::kPushConstant_Flag,             "push_constant");
-    checkLayout(Layout::kBlendSupportAllEquations_Flag, "blend_support_all_equations");
-    checkLayout(Layout::kSRGBUnpremul_Flag,             "srgb_unpremul");
-    checkLayout(Layout::kLocation_Flag,                 "location");
-    checkLayout(Layout::kOffset_Flag,                   "offset");
-    checkLayout(Layout::kBinding_Flag,                  "binding");
-    checkLayout(Layout::kIndex_Flag,                    "index");
-    checkLayout(Layout::kSet_Flag,                      "set");
-    checkLayout(Layout::kBuiltin_Flag,                  "builtin");
-    checkLayout(Layout::kInputAttachmentIndex_Flag,     "input_attachment_index");
-    checkLayout(Layout::kPrimitive_Flag,                "primitive-type");
-    checkLayout(Layout::kMaxVertices_Flag,              "max_vertices");
-    checkLayout(Layout::kInvocations_Flag,              "invocations");
+    }
     SkASSERT(layoutFlags == 0);
 }
 
@@ -1038,7 +1053,7 @@ std::unique_ptr<SkSL::InterfaceBlock> IRGenerator::convertInterfaceBlock(const A
         }
     }
     const Type* type = old->takeOwnershipOfSymbol(Type::MakeStructType(intf.fOffset,
-                                                                       String(id.fTypeName),
+                                                                       id.fTypeName,
                                                                        fields));
     int arraySize = 0;
     if (id.fIsArray) {
@@ -1075,8 +1090,8 @@ std::unique_ptr<SkSL::InterfaceBlock> IRGenerator::convertInterfaceBlock(const A
     }
     return std::make_unique<SkSL::InterfaceBlock>(intf.fOffset,
                                                   var,
-                                                  String(id.fTypeName),
-                                                  String(id.fInstanceName),
+                                                  id.fTypeName,
+                                                  id.fInstanceName,
                                                   arraySize,
                                                   symbols);
 }
@@ -1421,30 +1436,20 @@ std::unique_ptr<Expression> IRGenerator::convertIndexExpression(const ASTNode& i
     if (!base) {
         return nullptr;
     }
-    if (base->is<TypeReference>()) {
-        // Convert an index expression starting with a type name: `int[12]`
-        if (iter == index.end()) {
-            this->errorReporter().error(index.fOffset, "array must have a size");
-            return nullptr;
-        }
-        const Type* type = &base->as<TypeReference>().value();
-        int arraySize = this->convertArraySize(*type, index.fOffset, *iter);
-        if (!arraySize) {
-            return nullptr;
-        }
-        type = fSymbolTable->addArrayDimension(type, arraySize);
-        return std::make_unique<TypeReference>(fContext, base->fOffset, type);
-    }
-
     if (iter == index.end()) {
-        this->errorReporter().error(base->fOffset, "missing index in '[]'");
+        if (base->is<TypeReference>()) {
+            this->errorReporter().error(index.fOffset, "array must have a size");
+        } else {
+            this->errorReporter().error(base->fOffset, "missing index in '[]'");
+        }
         return nullptr;
     }
     std::unique_ptr<Expression> converted = this->convertExpression(*(iter++));
     if (!converted) {
         return nullptr;
     }
-    return IndexExpression::Convert(fContext, std::move(base), std::move(converted));
+    return IndexExpression::Convert(fContext, *fSymbolTable, std::move(base),
+                                    std::move(converted));
 }
 
 std::unique_ptr<Expression> IRGenerator::convertCallExpression(const ASTNode& callNode) {
@@ -1623,9 +1628,7 @@ void IRGenerator::start(const ParsedModule& base,
         }
     }
 
-    if (!fContext.fConfig->fSettings.fEnforceES2Restrictions &&
-        (this->programKind() == ProgramKind::kRuntimeColorFilter ||
-         this->programKind() == ProgramKind::kRuntimeShader)) {
+    if (this->isRuntimeEffect() && !fContext.fConfig->fSettings.fEnforceES2Restrictions) {
         // We're compiling a runtime effect, but we're not enforcing ES2 restrictions. Add various
         // non-ES2 types to our symbol table to allow them to be tested.
         fSymbolTable->addAlias("mat2x2", fContext.fTypes.fFloat2x2.get());
@@ -1656,6 +1659,16 @@ void IRGenerator::start(const ParsedModule& base,
         fSymbolTable->addAlias("uint2", fContext.fTypes.fUInt2.get());
         fSymbolTable->addAlias("uint3", fContext.fTypes.fUInt3.get());
         fSymbolTable->addAlias("uint4", fContext.fTypes.fUInt4.get());
+
+        fSymbolTable->addAlias("short", fContext.fTypes.fShort.get());
+        fSymbolTable->addAlias("short2", fContext.fTypes.fShort2.get());
+        fSymbolTable->addAlias("short3", fContext.fTypes.fShort3.get());
+        fSymbolTable->addAlias("short4", fContext.fTypes.fShort4.get());
+
+        fSymbolTable->addAlias("ushort", fContext.fTypes.fUShort.get());
+        fSymbolTable->addAlias("ushort2", fContext.fTypes.fUShort2.get());
+        fSymbolTable->addAlias("ushort3", fContext.fTypes.fUShort3.get());
+        fSymbolTable->addAlias("ushort4", fContext.fTypes.fUShort4.get());
     }
 }
 
@@ -1690,6 +1703,10 @@ IRGenerator::IRBundle IRGenerator::finish() {
         for (const auto& pe : *fProgramElements) {
             Analysis::ValidateIndexingForES2(*pe, this->errorReporter());
         }
+    }
+
+    if (this->strictES2Mode()) {
+        Analysis::DetectStaticRecursion(SkMakeSpan(*fProgramElements), this->errorReporter());
     }
 
     return IRBundle{std::move(*fProgramElements),

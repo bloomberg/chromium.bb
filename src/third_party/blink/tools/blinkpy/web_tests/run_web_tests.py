@@ -150,7 +150,7 @@ def parse_args(args):
                              default=True,
                              help=('Do not log Zircon debug messages.')),
         optparse.make_option('--device',
-                             choices=['aemu', 'qemu', 'device'],
+                             choices=['aemu', 'qemu', 'device', 'fvdl'],
                              default='aemu',
                              help=('Choose device to launch Fuchsia with. '
                                    'Defaults to AEMU.')),
@@ -550,6 +550,10 @@ def parse_args(args):
                 'positional arguments.'),
             optparse.make_option('--time-out-ms',
                                  help='Set the timeout for each test'),
+            optparse.make_option(
+                '--initialize-webgpu-adapter-at-startup-timeout-ms',
+                type='float',
+                help='Initialize WebGPU adapter before running any tests.'),
             optparse.make_option(
                 '--wrapper',
                 help=

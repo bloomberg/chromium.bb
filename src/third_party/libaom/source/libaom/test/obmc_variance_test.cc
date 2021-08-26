@@ -60,7 +60,7 @@ TEST_P(ObmcVarianceTest, RandomValues) {
     const unsigned int ref_res =
         params_.ref_func(pre, pre_stride, wsrc, mask, &ref_sse);
     unsigned int tst_res;
-    ASM_REGISTER_STATE_CHECK(
+    API_REGISTER_STATE_CHECK(
         tst_res = params_.tst_func(pre, pre_stride, wsrc, mask, &tst_sse));
 
     ASSERT_EQ(ref_res, tst_res);
@@ -86,7 +86,7 @@ TEST_P(ObmcVarianceTest, ExtremeValues) {
     const unsigned int ref_res =
         params_.ref_func(pre, pre_stride, wsrc, mask, &ref_sse);
     unsigned int tst_res;
-    ASM_REGISTER_STATE_CHECK(
+    API_REGISTER_STATE_CHECK(
         tst_res = params_.tst_func(pre, pre_stride, wsrc, mask, &tst_sse));
 
     ASSERT_EQ(ref_res, tst_res);
@@ -219,7 +219,7 @@ TEST_P(ObmcVarianceHBDTest, RandomValues) {
     const unsigned int ref_res = params_.ref_func(
         CONVERT_TO_BYTEPTR(pre), pre_stride, wsrc, mask, &ref_sse);
     unsigned int tst_res;
-    ASM_REGISTER_STATE_CHECK(tst_res = params_.tst_func(CONVERT_TO_BYTEPTR(pre),
+    API_REGISTER_STATE_CHECK(tst_res = params_.tst_func(CONVERT_TO_BYTEPTR(pre),
                                                         pre_stride, wsrc, mask,
                                                         &tst_sse));
 
@@ -246,7 +246,7 @@ TEST_P(ObmcVarianceHBDTest, ExtremeValues) {
     const unsigned int ref_res = params_.ref_func(
         CONVERT_TO_BYTEPTR(pre), pre_stride, wsrc, mask, &ref_sse);
     unsigned int tst_res;
-    ASM_REGISTER_STATE_CHECK(tst_res = params_.tst_func(CONVERT_TO_BYTEPTR(pre),
+    API_REGISTER_STATE_CHECK(tst_res = params_.tst_func(CONVERT_TO_BYTEPTR(pre),
                                                         pre_stride, wsrc, mask,
                                                         &tst_sse));
 

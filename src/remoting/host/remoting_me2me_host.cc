@@ -15,7 +15,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/debug/alias.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
@@ -23,7 +22,6 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_util.h"
 #include "base/strings/stringize_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_executor.h"
@@ -55,6 +53,7 @@
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/config_file_watcher.h"
 #include "remoting/host/config_watcher.h"
+#include "remoting/host/crash_process.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/desktop_environment_options.h"
 #include "remoting/host/desktop_session_connector.h"
@@ -133,6 +132,7 @@
 #include <commctrl.h>
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
+#include "base/win/windows_version.h"
 #include "remoting/host/pairing_registry_delegate_win.h"
 #include "remoting/host/win/session_desktop_environment.h"
 #endif  // defined(OS_WIN)
@@ -1579,6 +1579,19 @@ void HostProcess::StartHost() {
         enable_user_interface_);
   }
 
+  // Remote open URL is fully supported on Linux and still in development for
+  // Windows.
+#if defined(OS_LINUX)
+  desktop_environment_options_.set_enable_remote_open_url(true);
+#elif !defined(NDEBUG) && defined(OS_WIN)
+  // The modern default apps settings dialog is only available to Windows 8+.
+  // Given older Windows versions are EOL, we only advertise the feature on
+  // Windows 8+.
+  if (base::win::GetVersion() >= base::win::Version::WIN8) {
+    desktop_environment_options_.set_enable_remote_open_url(true);
+  }
+#endif
+
   host_ = std::make_unique<ChromotingHost>(
       desktop_environment_factory_.get(), std::move(session_manager),
       transport_context, context_->audio_task_runner(),
@@ -1751,14 +1764,8 @@ void HostProcess::OnHostOfflineReasonAck(bool success) {
 void HostProcess::OnCrash(const std::string& function_name,
                           const std::string& file_name,
                           const int& line_number) {
-  char message[1024];
-  base::snprintf(message, sizeof(message),
-                 "Requested by %s at %s, line %d.",
-                 function_name.c_str(), file_name.c_str(), line_number);
-  base::debug::Alias(message);
-
   // The daemon requested us to crash the process.
-  CHECK(false) << message;
+  CrashProcess(function_name, file_name, line_number);
 }
 
 int HostProcessMain() {

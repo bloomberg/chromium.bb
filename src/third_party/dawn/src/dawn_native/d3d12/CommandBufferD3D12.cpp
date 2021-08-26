@@ -16,6 +16,8 @@
 
 #include "dawn_native/BindGroupTracker.h"
 #include "dawn_native/CommandValidation.h"
+#include "dawn_native/DynamicUploader.h"
+#include "dawn_native/Error.h"
 #include "dawn_native/RenderBundle.h"
 #include "dawn_native/d3d12/BindGroupD3D12.h"
 #include "dawn_native/d3d12/BindGroupLayoutD3D12.h"
@@ -27,6 +29,7 @@
 #include "dawn_native/d3d12/RenderPassBuilderD3D12.h"
 #include "dawn_native/d3d12/RenderPipelineD3D12.h"
 #include "dawn_native/d3d12/ShaderVisibleDescriptorAllocatorD3D12.h"
+#include "dawn_native/d3d12/StagingBufferD3D12.h"
 #include "dawn_native/d3d12/StagingDescriptorAllocatorD3D12.h"
 #include "dawn_native/d3d12/UtilsD3D12.h"
 
@@ -91,6 +94,63 @@ namespace dawn_native { namespace d3d12 {
             ASSERT(D3D12QueryType(querySet->GetQueryType()) == D3D12_QUERY_TYPE_TIMESTAMP);
             commandList->EndQuery(querySet->GetQueryHeap(), D3D12_QUERY_TYPE_TIMESTAMP,
                                   cmd->queryIndex);
+        }
+
+        void RecordResolveQuerySetCmd(ID3D12GraphicsCommandList* commandList,
+                                      Device* device,
+                                      QuerySet* querySet,
+                                      uint32_t firstQuery,
+                                      uint32_t queryCount,
+                                      Buffer* destination,
+                                      uint64_t destinationOffset) {
+            const std::vector<bool>& availability = querySet->GetQueryAvailability();
+
+            auto currentIt = availability.begin() + firstQuery;
+            auto lastIt = availability.begin() + firstQuery + queryCount;
+
+            // Traverse available queries in the range of [firstQuery, firstQuery +  queryCount - 1]
+            while (currentIt != lastIt) {
+                auto firstTrueIt = std::find(currentIt, lastIt, true);
+                // No available query found for resolving
+                if (firstTrueIt == lastIt) {
+                    break;
+                }
+                auto nextFalseIt = std::find(firstTrueIt, lastIt, false);
+
+                // The query index of firstTrueIt where the resolving starts
+                uint32_t resolveQueryIndex = std::distance(availability.begin(), firstTrueIt);
+                // The queries count between firstTrueIt and nextFalseIt need to be resolved
+                uint32_t resolveQueryCount = std::distance(firstTrueIt, nextFalseIt);
+
+                // Calculate destinationOffset based on the current resolveQueryIndex and firstQuery
+                uint32_t resolveDestinationOffset =
+                    destinationOffset + (resolveQueryIndex - firstQuery) * sizeof(uint64_t);
+
+                // Resolve the queries between firstTrueIt and nextFalseIt (which is at most lastIt)
+                commandList->ResolveQueryData(
+                    querySet->GetQueryHeap(), D3D12QueryType(querySet->GetQueryType()),
+                    resolveQueryIndex, resolveQueryCount, destination->GetD3D12Resource(),
+                    resolveDestinationOffset);
+
+                // Set current iterator to next false
+                currentIt = nextFalseIt;
+            }
+        }
+
+        MaybeError ClearBufferToZero(Device* device,
+                                     Buffer* destination,
+                                     uint64_t destinationOffset,
+                                     uint64_t size) {
+            DynamicUploader* uploader = device->GetDynamicUploader();
+            UploadHandle uploadHandle;
+            DAWN_TRY_ASSIGN(uploadHandle,
+                            uploader->Allocate(size, device->GetPendingCommandSerial(),
+                                               kCopyBufferToBufferOffsetAlignment));
+            memset(uploadHandle.mappedBuffer, 0u, size);
+
+            return device->CopyFromStagingToBuffer(uploadHandle.stagingBuffer,
+                                                   uploadHandle.startOffset, destination,
+                                                   destinationOffset, size);
         }
 
         void RecordFirstIndexOffset(ID3D12GraphicsCommandList* commandList,
@@ -246,7 +306,7 @@ namespace dawn_native { namespace d3d12 {
             }
 
             return (bufferUsages & wgpu::BufferUsage::Storage ||
-                    textureUsages & wgpu::TextureUsage::Storage);
+                    textureUsages & wgpu::TextureUsage::StorageBinding);
         }
 
     }  // anonymous namespace
@@ -266,18 +326,12 @@ namespace dawn_native { namespace d3d12 {
             mInCompute = inCompute_;
         }
 
-        void OnSetPipeline(PipelineBase* pipeline) {
-            // Invalidate the root sampler tables previously set in the root signature.
-            // This is because changing the pipeline layout also changes the root signature.
-            const PipelineLayout* pipelineLayout = ToBackend(pipeline->GetLayout());
-            if (mLastAppliedPipelineLayout != pipelineLayout) {
-                mBoundRootSamplerTables = {};
-            }
-
-            Base::OnSetPipeline(pipeline);
-        }
-
         MaybeError Apply(CommandRecordingContext* commandContext) {
+            BeforeApply();
+
+            ID3D12GraphicsCommandList* commandList = commandContext->GetCommandList();
+            UpdateRootSignatureIfNecessary(commandList);
+
             // Bindgroups are allocated in shader-visible descriptor heaps which are managed by a
             // ringbuffer. There can be a single shader-visible descriptor heap of each type bound
             // at any given time. This means that when we switch heaps, all other currently bound
@@ -295,8 +349,6 @@ namespace dawn_native { namespace d3d12 {
                     break;
                 }
             }
-
-            ID3D12GraphicsCommandList* commandList = commandContext->GetCommandList();
 
             if (!didCreateBindGroupViews || !didCreateBindGroupSamplers) {
                 if (!didCreateBindGroupViews) {
@@ -329,7 +381,7 @@ namespace dawn_native { namespace d3d12 {
                                mDynamicOffsetCounts[index], mDynamicOffsets[index].data());
             }
 
-            DidApply();
+            AfterApply();
 
             return {};
         }
@@ -344,6 +396,20 @@ namespace dawn_native { namespace d3d12 {
         }
 
       private:
+        void UpdateRootSignatureIfNecessary(ID3D12GraphicsCommandList* commandList) {
+            if (mLastAppliedPipelineLayout != mPipelineLayout) {
+                if (mInCompute) {
+                    commandList->SetComputeRootSignature(
+                        ToBackend(mPipelineLayout)->GetRootSignature());
+                } else {
+                    commandList->SetGraphicsRootSignature(
+                        ToBackend(mPipelineLayout)->GetRootSignature());
+                }
+                // Invalidate the root sampler tables previously set in the root signature.
+                mBoundRootSamplerTables = {};
+            }
+        }
+
         void ApplyBindGroup(ID3D12GraphicsCommandList* commandList,
                             const PipelineLayout* pipelineLayout,
                             BindGroupIndex index,
@@ -840,18 +906,31 @@ namespace dawn_native { namespace d3d12 {
                 case Command::ResolveQuerySet: {
                     ResolveQuerySetCmd* cmd = mCommands.NextCommand<ResolveQuerySetCmd>();
                     QuerySet* querySet = ToBackend(cmd->querySet.Get());
+                    uint32_t firstQuery = cmd->firstQuery;
+                    uint32_t queryCount = cmd->queryCount;
                     Buffer* destination = ToBackend(cmd->destination.Get());
+                    uint64_t destinationOffset = cmd->destinationOffset;
 
                     DAWN_TRY(destination->EnsureDataInitializedAsDestination(
-                        commandContext, cmd->destinationOffset,
-                        cmd->queryCount * sizeof(uint64_t)));
-                    destination->TrackUsageAndTransitionNow(commandContext,
-                                                            wgpu::BufferUsage::CopyDst);
+                        commandContext, destinationOffset, queryCount * sizeof(uint64_t)));
 
-                    commandList->ResolveQueryData(
-                        querySet->GetQueryHeap(), D3D12QueryType(querySet->GetQueryType()),
-                        cmd->firstQuery, cmd->queryCount, destination->GetD3D12Resource(),
-                        cmd->destinationOffset);
+                    // Resolving unavailable queries is undefined behaviour on D3D12, we only can
+                    // resolve the available part of sparse queries. In order to resolve the
+                    // unavailables as 0s, we need to clear the resolving region of the destination
+                    // buffer to 0s.
+                    auto startIt = querySet->GetQueryAvailability().begin() + firstQuery;
+                    auto endIt = querySet->GetQueryAvailability().begin() + firstQuery + queryCount;
+                    bool hasUnavailableQueries = std::find(startIt, endIt, false) != endIt;
+                    if (hasUnavailableQueries) {
+                        DAWN_TRY(ClearBufferToZero(device, destination, destinationOffset,
+                                                   queryCount * sizeof(uint64_t)));
+                    }
+
+                    destination->TrackUsageAndTransitionNow(commandContext,
+                                                            wgpu::BufferUsage::QueryResolve);
+
+                    RecordResolveQuerySetCmd(commandList, device, querySet, firstQuery, queryCount,
+                                             destination, destinationOffset);
 
                     break;
                 }
@@ -914,7 +993,6 @@ namespace dawn_native { namespace d3d12 {
                                                 BindGroupStateTracker* bindingTracker,
                                                 const ComputePassResourceUsage& resourceUsages) {
         uint64_t currentDispatch = 0;
-        PipelineLayout* lastLayout = nullptr;
         ID3D12GraphicsCommandList* commandList = commandContext->GetCommandList();
 
         Command type;
@@ -922,6 +1000,12 @@ namespace dawn_native { namespace d3d12 {
             switch (type) {
                 case Command::Dispatch: {
                     DispatchCmd* dispatch = mCommands.NextCommand<DispatchCmd>();
+
+                    // Skip noop dispatches, it can cause D3D12 warning from validation layers and
+                    // leads to device lost.
+                    if (dispatch->x == 0 || dispatch->y == 0 || dispatch->z == 0) {
+                        break;
+                    }
 
                     TransitionAndClearForSyncScope(commandContext,
                                                    resourceUsages.dispatchUsages[currentDispatch]);
@@ -956,14 +1040,10 @@ namespace dawn_native { namespace d3d12 {
                 case Command::SetComputePipeline: {
                     SetComputePipelineCmd* cmd = mCommands.NextCommand<SetComputePipelineCmd>();
                     ComputePipeline* pipeline = ToBackend(cmd->pipeline).Get();
-                    PipelineLayout* layout = ToBackend(pipeline->GetLayout());
 
-                    commandList->SetComputeRootSignature(layout->GetRootSignature());
                     commandList->SetPipelineState(pipeline->GetPipelineState());
 
                     bindingTracker->OnSetPipeline(pipeline);
-
-                    lastLayout = layout;
                     break;
                 }
 
@@ -1227,7 +1307,6 @@ namespace dawn_native { namespace d3d12 {
         }
 
         RenderPipeline* lastPipeline = nullptr;
-        PipelineLayout* lastLayout = nullptr;
         VertexBufferTracker vertexBufferTracker = {};
 
         auto EncodeRenderBundleCommand = [&](CommandIterator* iter, Command type) -> MaybeError {
@@ -1325,16 +1404,13 @@ namespace dawn_native { namespace d3d12 {
                 case Command::SetRenderPipeline: {
                     SetRenderPipelineCmd* cmd = iter->NextCommand<SetRenderPipelineCmd>();
                     RenderPipeline* pipeline = ToBackend(cmd->pipeline).Get();
-                    PipelineLayout* layout = ToBackend(pipeline->GetLayout());
 
-                    commandList->SetGraphicsRootSignature(layout->GetRootSignature());
                     commandList->SetPipelineState(pipeline->GetPipelineState());
                     commandList->IASetPrimitiveTopology(pipeline->GetD3D12PrimitiveTopology());
 
                     bindingTracker->OnSetPipeline(pipeline);
 
                     lastPipeline = pipeline;
-                    lastLayout = layout;
                     break;
                 }
 

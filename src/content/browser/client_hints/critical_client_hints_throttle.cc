@@ -21,10 +21,12 @@
 #include "services/network/public/mojom/parsed_headers.mojom-forward.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/client_hints/client_hints.h"
+#include "third_party/blink/public/common/client_hints/enabled_client_hints.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
-#include "third_party/blink/public/platform/web_client_hints_type.h"
 
 namespace {
+
+using ::network::mojom::WebClientHintsType;
 
 void LogCriticalCHStatus(CriticalCHRestart status) {
   base::UmaHistogramEnumeration("ClientHints.CriticalCHRestart", status);
@@ -61,19 +63,14 @@ void CriticalClientHintsThrottle::BeforeWillProcessResponse(
     return;
 
   // Ensure that only hints in the accept-ch header are examined
-  blink::WebEnabledClientHints hints;
-  auto filtered_hints = blink::FilterAcceptCH(
-      response_head.parsed_headers->accept_ch,
-      base::FeatureList::IsEnabled(features::kLangClientHintHeader),
-      base::FeatureList::IsEnabled(features::kUserAgentClientHint),
-      base::FeatureList::IsEnabled(
-          features::kPrefersColorSchemeClientHintHeader));
+  blink::EnabledClientHints hints;
+  for (const WebClientHintsType hint :
+       response_head.parsed_headers->accept_ch.value())
+    hints.SetIsEnabled(response_url, response_head.headers.get(), hint, true);
 
-  for (const auto& hint : filtered_hints.value())
-    hints.SetIsEnabled(hint, true);
-
-  std::vector<network::mojom::WebClientHintsType> critical_hints;
-  for (const auto& hint : response_head.parsed_headers->critical_ch.value())
+  std::vector<WebClientHintsType> critical_hints;
+  for (const WebClientHintsType hint :
+       response_head.parsed_headers->critical_ch.value())
     if (hints.IsEnabled(hint))
       critical_hints.push_back(hint);
 
@@ -88,8 +85,8 @@ void CriticalClientHintsThrottle::BeforeWillProcessResponse(
   if (ShouldRestartWithHints(response_url, critical_hints, modified_headers)) {
     LogCriticalCHStatus(CriticalCHRestart::kNavigationRestarted);
     ParseAndPersistAcceptCHForNavigation(
-        response_url, response_head.parsed_headers, context_,
-        client_hint_delegate_,
+        response_url, response_head.parsed_headers, response_head.headers.get(),
+        context_, client_hint_delegate_,
         FrameTreeNode::GloballyFindByID(frame_tree_node_id_));
     delegate_->RestartWithURLResetAndFlags(/*additional_load_flags=*/0);
   }
@@ -97,7 +94,7 @@ void CriticalClientHintsThrottle::BeforeWillProcessResponse(
 
 void CriticalClientHintsThrottle::HandleAcceptCHFrameReceived(
     const GURL& url,
-    const std::vector<network::mojom::WebClientHintsType>& accept_ch_frame) {
+    const std::vector<WebClientHintsType>& accept_ch_frame) {
   if (accept_ch_frame_redirect_ ||
       !base::FeatureList::IsEnabled(network::features::kAcceptCHFrame)) {
     return;
@@ -116,7 +113,7 @@ void CriticalClientHintsThrottle::HandleAcceptCHFrameReceived(
 
 bool CriticalClientHintsThrottle::ShouldRestartWithHints(
     const GURL& response_url,
-    const std::vector<network::mojom::WebClientHintsType>& hints,
+    const std::vector<WebClientHintsType>& hints,
     net::HttpRequestHeaders& modified_headers) {
   FrameTreeNode* frame_tree_node =
       FrameTreeNode::GloballyFindByID(frame_tree_node_id_);

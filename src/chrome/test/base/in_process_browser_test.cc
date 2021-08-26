@@ -101,8 +101,8 @@
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/shell.h"
 #include "base/system/sys_info.h"
-#include "chrome/browser/chromeos/full_restore/full_restore_app_launch_handler.h"
-#include "chrome/browser/chromeos/input_method/input_method_configuration.h"
+#include "chrome/browser/ash/full_restore/full_restore_app_launch_handler.h"
+#include "chrome/browser/ash/input_method/input_method_configuration.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/services/device_sync/device_sync_impl.h"
 #include "chromeos/services/device_sync/fake_device_sync.h"
@@ -270,7 +270,7 @@ void InProcessBrowserTest::Initialize() {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   launch_browser_for_testing_ =
-      std::make_unique<chromeos::full_restore::ScopedLaunchBrowserForTesting>();
+      std::make_unique<ash::full_restore::ScopedLaunchBrowserForTesting>();
 #endif
 }
 
@@ -312,7 +312,7 @@ void InProcessBrowserTest::SetUp() {
   command_line->AppendSwitch(switches::kDisableLoggingRedirect);
 
   // Disable IME extension loading to avoid many browser tests failures.
-  chromeos::input_method::DisableExtensionLoading();
+  ash::input_method::DisableExtensionLoading();
 
   if (!command_line->HasSwitch(switches::kHostWindowBounds) &&
       !base::SysInfo::IsRunningOnChromeOS()) {

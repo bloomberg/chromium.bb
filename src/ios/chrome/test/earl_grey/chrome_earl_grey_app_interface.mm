@@ -223,8 +223,8 @@ base::test::ScopedFeatureList closeAllTabsScopedFeatureList;
   return chrome_test_util::GetEvictedMainTabCount();
 }
 
-+ (void)evictOtherTabModelTabs {
-  chrome_test_util::EvictOtherTabModelTabs();
++ (void)evictOtherBrowserTabs {
+  chrome_test_util::EvictOtherBrowserTabs();
 }
 
 + (NSError*)simulateTabsBackgrounding {
@@ -1071,6 +1071,12 @@ base::test::ScopedFeatureList closeAllTabsScopedFeatureList;
 
 + (void)setBoolValue:(BOOL)value forUserPref:(NSString*)prefName {
   chrome_test_util::SetBooleanUserPref(
+      chrome_test_util::GetOriginalBrowserState(),
+      base::SysNSStringToUTF8(prefName).c_str(), value);
+}
+
++ (void)setIntegerValue:(int)value forUserPref:(NSString*)prefName {
+  chrome_test_util::SetIntegerUserPref(
       chrome_test_util::GetOriginalBrowserState(),
       base::SysNSStringToUTF8(prefName).c_str(), value);
 }

@@ -6,7 +6,6 @@
 
 #include "base/containers/contains.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "chrome/browser/web_applications/components/app_shortcut_manager.h"
 #include "chrome/browser/web_applications/components/file_handler_manager.h"
 #include "chrome/browser/web_applications/components/protocol_handler_manager.h"
 #include "chrome/browser/web_applications/components/url_handler_manager.h"
@@ -15,11 +14,12 @@
 #include "chrome/browser/web_applications/test/fake_protocol_handler_manager.h"
 #include "chrome/browser/web_applications/test/fake_url_handler_manager.h"
 #include "chrome/browser/web_applications/test/test_file_handler_manager.h"
+#include "chrome/browser/web_applications/web_app_shortcut_manager.h"
 
 namespace web_app {
 TestOsIntegrationManager::TestOsIntegrationManager(
     Profile* profile,
-    std::unique_ptr<AppShortcutManager> shortcut_manager,
+    std::unique_ptr<WebAppShortcutManager> shortcut_manager,
     std::unique_ptr<FileHandlerManager> file_handler_manager,
     std::unique_ptr<ProtocolHandlerManager> protocol_handler_manager,
     std::unique_ptr<UrlHandlerManager> url_handler_manager)
@@ -107,14 +107,14 @@ void TestOsIntegrationManager::UninstallOsHooks(
 void TestOsIntegrationManager::UninstallAllOsHooks(
     const AppId& app_id,
     UninstallOsHooksCallback callback) {
-  OsHooksResults os_hooks_results{true};
+  OsHooksResults os_hooks_results;
+  os_hooks_results.set();
   UninstallOsHooks(app_id, os_hooks_results, std::move(callback));
 }
 
 void TestOsIntegrationManager::UpdateOsHooks(
     const AppId& app_id,
     base::StringPiece old_name,
-    std::unique_ptr<ShortcutInfo> old_shortcut,
     FileHandlerUpdateAction file_handlers_need_os_update,
     const WebApplicationInfo& web_app_info) {
   if (file_handlers_need_os_update != FileHandlerUpdateAction::kNoUpdate)
@@ -142,7 +142,7 @@ TestOsIntegrationManager::AsTestOsIntegrationManager() {
 }
 
 TestShortcutManager::TestShortcutManager(Profile* profile)
-    : AppShortcutManager(profile) {}
+    : WebAppShortcutManager(profile, nullptr, nullptr, nullptr) {}
 
 TestShortcutManager::~TestShortcutManager() = default;
 

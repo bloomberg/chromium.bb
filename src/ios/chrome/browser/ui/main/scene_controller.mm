@@ -66,6 +66,7 @@
 #include "ios/chrome/browser/policy/policy_watcher_browser_agent.h"
 #import "ios/chrome/browser/policy/policy_watcher_browser_agent_observer_bridge.h"
 #include "ios/chrome/browser/screenshot/screenshot_delegate.h"
+#import "ios/chrome/browser/sessions/session_saving_scene_agent.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service.h"
@@ -141,13 +142,6 @@ namespace {
 // animation. It's used to temporarily disable mutally exclusive chrome
 // commands that trigger a view controller presentation.
 const int64_t kExpectedTransitionDurationInNanoSeconds = 0.2 * NSEC_PER_SEC;
-
-// Maximum delay to wait for fetching the account capabilities before showing
-// the sign-in upgrade promo. If fetching the account capabilities takes more
-// than the delay, then the promo is suppressed - it may be shown on the next
-// start-up.
-constexpr base::TimeDelta kShowSigninUpgradePromoMaxDelay =
-    base::TimeDelta::FromMilliseconds(200);
 
 // Possible results of snapshotting at the moment the user enters the tab
 // switcher. These values are persisted to logs. Entries should not be
@@ -306,6 +300,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
     [_sceneState addAgent:[[StartSurfaceSceneAgent alloc] init]];
     [_sceneState
         addAgent:[[ReadingListBackgroundSessionSceneAgent alloc] init]];
+    [_sceneState addAgent:[[SessionSavingSceneAgent alloc] init]];
   }
   return self;
 }
@@ -787,7 +782,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
             "Signin.AccountCapabilities.GetFromSystemLibraryDuration."
             "SigninUpgradePromo",
             fetch_delay);
-        if (fetch_delay > kShowSigninUpgradePromoMaxDelay ||
+        if (fetch_delay > signin::GetWaitThresholdForCapabilities() ||
             result != ios::ChromeIdentityCapabilityResult::kTrue) {
           return;
         }
@@ -1142,6 +1137,8 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   // agent).
   self.sceneState.UIEnabled = NO;
 
+  [[SessionSavingSceneAgent agentFromScene:self.sceneState]
+      saveSessionsIfNeeded];
   [self.browserViewWrangler shutdown];
   self.browserViewWrangler = nil;
 
@@ -2786,22 +2783,11 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 
         switch (info.signinCompletionAction) {
           case SigninCompletionActionNone:
-            DCHECK(!info.completionURL.is_valid());
             break;
           case SigninCompletionActionShowAdvancedSettingsSignin:
             // Case only for first run.
             NOTREACHED();
             break;
-          case SigninCompletionActionOpenCompletionURL: {
-            DCHECK(info.completionURL.is_valid());
-            id<ApplicationCommands> handler = HandlerForProtocol(
-                strongSelf.currentInterface.browser->GetCommandDispatcher(),
-                ApplicationCommands);
-            OpenNewTabCommand* command =
-                [OpenNewTabCommand commandWithURLFromChrome:info.completionURL];
-            [handler closeSettingsUIAndOpenURL:command];
-            break;
-          }
         }
       };
 

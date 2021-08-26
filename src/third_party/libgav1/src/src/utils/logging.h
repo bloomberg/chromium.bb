@@ -35,13 +35,13 @@
 // setting LIBGAV1_ENABLE_LOGGING.
 // Severity is given as an all-caps version of enum LogSeverity with the
 // leading 'k' removed: LIBGAV1_DLOG(INFO, "...");
-#define LIBGAV1_DLOG(severity, ...)                                       \
-  do {                                                                    \
-    constexpr const char* libgav1_logging_internal_basename =             \
-        ::libgav1::internal::Basename(__FILE__, sizeof(__FILE__) - 1);    \
-    ::libgav1::internal::Log(LIBGAV1_LOGGING_INTERNAL_##severity,         \
-                             libgav1_logging_internal_basename, __LINE__, \
-                             __VA_ARGS__);                                \
+#define LIBGAV1_DLOG(severity, ...)                                     \
+  do {                                                                  \
+    constexpr const char* libgav1_logging_internal_basename =           \
+        libgav1::internal::Basename(__FILE__, sizeof(__FILE__) - 1);    \
+    libgav1::internal::Log(LIBGAV1_LOGGING_INTERNAL_##severity,         \
+                           libgav1_logging_internal_basename, __LINE__, \
+                           __VA_ARGS__);                                \
   } while (0)
 #else
 #define LIBGAV1_DLOG(severity, ...) \
@@ -49,10 +49,10 @@
   } while (0)
 #endif  // LIBGAV1_ENABLE_LOGGING
 
-#define LIBGAV1_LOGGING_INTERNAL_ERROR ::libgav1::internal::LogSeverity::kError
+#define LIBGAV1_LOGGING_INTERNAL_ERROR libgav1::internal::LogSeverity::kError
 #define LIBGAV1_LOGGING_INTERNAL_WARNING \
-  ::libgav1::internal::LogSeverity::kWarning
-#define LIBGAV1_LOGGING_INTERNAL_INFO ::libgav1::internal::LogSeverity::kInfo
+  libgav1::internal::LogSeverity::kWarning
+#define LIBGAV1_LOGGING_INTERNAL_INFO libgav1::internal::LogSeverity::kInfo
 
 namespace libgav1 {
 namespace internal {

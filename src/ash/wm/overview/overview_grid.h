@@ -213,6 +213,9 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   // with this grid.
   void OnDisplayMetricsChanged();
 
+  // Called by |OverviewSession::OnUserWorkAreaInsetsChanged|.
+  void OnUserWorkAreaInsetsChanged(aura::Window* root_window);
+
   // SplitViewObserver:
   void OnSplitViewStateChanged(SplitViewController::State previous_state,
                                SplitViewController::State state) override;
@@ -495,7 +498,7 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
 
   // Value to clamp |scroll_offset| so scrolling stays limited to windows that
   // are visible in tablet overview mode.
-  float scroll_offset_min_ = 0;
+  float scroll_offset_min_ = 0.f;
 
   // Handles events that are not handled by the OverviewItems.
   std::unique_ptr<OverviewGridEventHandler> grid_event_handler_;

@@ -11,9 +11,8 @@
 #include "src/gpu/GrCaps.h"
 #include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/GrImageInfo.h"
-#include "src/gpu/GrSurfaceContext.h"
-#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/SkGr.h"
+#include "src/gpu/SurfaceContext.h"
 #include "tests/Test.h"
 
 // using anonymous namespace because these functions are used as template params.
@@ -122,7 +121,7 @@ typedef bool (*CheckFn) (uint32_t orig, uint32_t actual, float error);
 
 void read_and_check_pixels(skiatest::Reporter* reporter,
                            GrDirectContext* dContext,
-                           GrSurfaceContext* sContext,
+                           skgpu::SurfaceContext* sc,
                            uint32_t* origData,
                            const SkImageInfo& dstInfo, CheckFn checker, float error,
                            const char* subtestName) {
@@ -130,7 +129,7 @@ void read_and_check_pixels(skiatest::Reporter* reporter,
     GrPixmap readPM = GrPixmap::Allocate(dstInfo);
     memset(readPM.addr(), 0, sizeof(uint32_t)*w*h);
 
-    if (!sContext->readPixels(dContext, readPM, {0, 0})) {
+    if (!sc->readPixels(dContext, readPM, {0, 0})) {
         ERRORF(reporter, "Could not read pixels for %s.", subtestName);
         return;
     }
@@ -188,17 +187,23 @@ static std::unique_ptr<uint32_t[]> make_data() {
     return data;
 }
 
-static std::unique_ptr<GrSurfaceContext> make_surface_context(Encoding contextEncoding,
-                                                              GrRecordingContext* rContext,
-                                                              skiatest::Reporter* reporter) {
-    auto surfaceContext = GrSurfaceDrawContext::Make(
-            rContext, GrColorType::kRGBA_8888, encoding_as_color_space(contextEncoding),
-            SkBackingFit::kExact, {kW, kH}, SkSurfaceProps(), 1, GrMipmapped::kNo, GrProtected::kNo,
-            kBottomLeft_GrSurfaceOrigin, SkBudgeted::kNo);
-    if (!surfaceContext) {
+static std::unique_ptr<skgpu::SurfaceContext> make_surface_context(Encoding contextEncoding,
+                                                                   GrRecordingContext* rContext,
+                                                                   skiatest::Reporter* reporter) {
+    GrImageInfo info(GrColorType::kRGBA_8888,
+                     kPremul_SkAlphaType,
+                     encoding_as_color_space(contextEncoding),
+                     kW, kH);
+
+    auto sc = skgpu::SurfaceContext::Make(rContext,
+                                          info,
+                                          SkBackingFit::kExact,
+                                          kBottomLeft_GrSurfaceOrigin,
+                                          GrRenderable::kYes);
+    if (!sc) {
         ERRORF(reporter, "Could not create %s surface context.", encoding_as_str(contextEncoding));
     }
-    return std::move(surfaceContext);
+    return sc;
 }
 
 static void test_write_read(Encoding contextEncoding, Encoding writeEncoding, Encoding readEncoding,

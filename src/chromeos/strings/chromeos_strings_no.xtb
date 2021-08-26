@@ -14,6 +14,7 @@
 <translation id="1204296502688602597">DNS-tidsforsinkelse</translation>
 <translation id="123124571410524056">Mistanke om portal</translation>
 <translation id="1238612778414822719">HTTPS-tidsforsinkelse</translation>
+<translation id="1264369926465113395">Ta en kikk på Chromebooks nye digitale magasin for skapere</translation>
 <translation id="1270369111467284986">Mistanke om obligatorisk side</translation>
 <translation id="1290331692326790741">Svakt signal</translation>
 <translation id="1314565355471455267">Android VPN</translation>
@@ -34,7 +35,9 @@
 <translation id="1510238584712386396">Appoversikt</translation>
 <translation id="1600964289716072707">Legg en ny side på skanneren, og trykk på Skann for å legge til siden.</translation>
 <translation id="1621067168122174824">Kjør ladetest</translation>
+<translation id="1639239467298939599">Laster inn</translation>
 <translation id="1641857168437328880">Dokumentmater (ensidig)</translation>
+<translation id="1643449475550628585">Endre bakgrunnsbilde daglig</translation>
 <translation id="1644574205037202324">Logg</translation>
 <translation id="1662989795263954667">Stoppet – tom for blekk</translation>
 <translation id="1703835215927279855">Letter</translation>
@@ -65,7 +68,6 @@
 <translation id="2224337661447660594">Ingen nettilkobling</translation>
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="225692081236532131">Aktiveringsstatus</translation>
-<translation id="2294675138977897428">Finner ingen Ethernet-tilkobling</translation>
 <translation id="2326139988748364651"><ph name="RESOLUTION_VALUE" /> DPI</translation>
 <translation id="2338501278241028356">Slå på Bluetooth for å finne enheter i nærheten</translation>
 <translation id="2364498172489649528">Bestått</translation>
@@ -75,9 +77,11 @@
 <translation id="2448312741937722512">Type</translation>
 <translation id="2461822463642141190">Nåværende</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
+<translation id="2505327257735685095">Last inn det nåværende bakgrunnsbildet på nytt</translation>
 <translation id="2517472476991765520">Skann</translation>
 <translation id="2570743873672969996">Kjører test av <ph name="TEST_NAME" /> …</translation>
 <translation id="2585245331261708204">Dette er nytt i Chrome OS</translation>
+<translation id="2619761439309613843">Daglig oppdatering</translation>
 <translation id="2620436844016719705">System</translation>
 <translation id="2740531572673183784">OK</translation>
 <translation id="2751739896257479635">Fase 2-autentisering av EAP</translation>
@@ -87,7 +91,6 @@
 <translation id="2862104018715411648">Legg dokumentet på skanneren, og velg Skann for å komme i gang</translation>
 <translation id="2872961005593481000">Slå av</translation>
 <translation id="2878387241690264070">Ladet ut <ph name="RATE" /> på <ph name="NUM_SECONDS" /> sekunder.</translation>
-<translation id="2983662233540284543">Lær av en spillskaper, hent apper for spilldesign med mer</translation>
 <translation id="3008341117444806826">OPPDATER</translation>
 <translation id="3009958530611748826">Velg mappen du vil lagre i</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" /> mA</translation>
@@ -101,6 +104,7 @@
 <translation id="3188257591659621405">Mine filer</translation>
 <translation id="3199982728237701504">Dokumentmater (tosidig)</translation>
 <translation id="3226405216343213872">Ser etter skannere</translation>
+<translation id="3228433892370472777">Standardtilkobling</translation>
 <translation id="3246869037381808805">Utskriftsjobber som er eldre enn 1 dag, blir fjernet</translation>
 <translation id="3268178239013324452">Mislykket – luken er åpen</translation>
 <translation id="3283504360622356314">{0,plural, =1{Rediger filen}other{Rediger filene}}</translation>
@@ -117,10 +121,13 @@
 <translation id="3488065109653206955">Delvis aktivert</translation>
 <translation id="3527036260304016759">Mislykket – ukjent feil</translation>
 <translation id="3532980081107202182">Omtrent <ph name="MIN_REMAINING" /> minutter igjen</translation>
+<translation id="3540383942695635079">MAC-adresse</translation>
 <translation id="357889014807611375">Wi-Fi med datamåling</translation>
+<translation id="3582041541988388905">Fant ingen <ph name="NETWORK_NAME" />-tilkobling</translation>
 <translation id="3595596368722241419">Batteriet er fullt</translation>
 <translation id="360565022852130722">Wi-Fi-nettverket er sikret med den svake protokollen WEP 802.1x</translation>
 <translation id="3689839747745352263"><ph name="TEST_NAME" />test</translation>
+<translation id="3708186454126126312">Tidligere tilkoblet</translation>
 <translation id="373232531963562220">{PAGE_NUMBER,plural, =0{Skann siden på nytt}=1{Skann side {PAGE_NUMBER} på nytt}other{Skann side {PAGE_NUMBER} på nytt}}</translation>
 <translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★ (<ph name="AGGREGATED_COUNT" /> anmeldelser)</translation>
 <translation id="3748026146096797577">Ikke tilkoblet</translation>
@@ -163,6 +170,7 @@
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4483049906298469269">Kunne ikke pinge gatewayen for ikke-standardnettverket</translation>
 <translation id="4511264077854731334">Portal</translation>
+<translation id="4536864596629708641">IP-konfigurasjon</translation>
 <translation id="4548483925627140043">Fant ikke noe signal</translation>
 <translation id="455835558791489930"><ph name="CHARGE_VALUE" /> mAh-batteri</translation>
 <translation id="4562494484721939086">Ingen tjeneste</translation>
@@ -171,6 +179,7 @@
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> av <ph name="TOTAL_PAGE_NUMBER" />. Trykk på Enter for å avbryte utskriftsjobben.</translation>
 <translation id="4646949265910132906">Sikker Wi-Fi-tilkobling</translation>
 <translation id="4652335678334611408">Lagre øktlogg</translation>
+<translation id="4654549501020883054">Endre daglig</translation>
 <translation id="4665014895760275686">Produsent</translation>
 <translation id="467510802200863975">Passordene er ikke like</translation>
 <translation id="467715984478005772">Mistanke om brannmur</translation>
@@ -194,6 +203,7 @@
 <translation id="4891842000192098784">Stress</translation>
 <translation id="4917385247580444890">Sterkt</translation>
 <translation id="4917889632206600977">Stoppet – tom for papir</translation>
+<translation id="491836528011451486">Legg dokumentet på skanneren, og velg Skann på nytt for å skanne og erstatte side <ph name="CURRENT_PAGE" />.</translation>
 <translation id="4921665434385737356">Ladet <ph name="RATE" /> på <ph name="NUM_SECONDS" /> sekunder.</translation>
 <translation id="4932733599132424254">Dato</translation>
 <translation id="498186245079027698">Sjekk skanneren, og prøv på nytt. Sørg for at det er nok lokal lagringsplass til å lagre skannede filer.</translation>
@@ -209,10 +219,10 @@
 <translation id="5154917547274118687">Minne</translation>
 <translation id="5168185087976003268">Batterihelse</translation>
 <translation id="5170568018924773124">Vis i mappen</translation>
-<translation id="519607504553633437">Design og utvikle dine egne spill</translation>
 <translation id="5212543919916444558">Jeg finner ikke noe på skjermen jeg kan hjelpe deg med. 
 Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="5222676887888702881">Logg av</translation>
+<translation id="5234764350956374838">Lukk</translation>
 <translation id="5252456968953390977">Datastreifing</translation>
 <translation id="5264277876637023664">Kjør prosessortest</translation>
 <translation id="5267975978099728568"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="ERROR_STATUS" /></translation>
@@ -243,7 +253,6 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="5691511426247308406">Familie</translation>
 <translation id="5701381305118179107">Midtstill</translation>
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" /> av <ph name="TOTAL_PAGES" /></translation>
-<translation id="5752751666635965375">Lag ditt eget spill</translation>
 <translation id="5760715441271661976">Portaltilstand</translation>
 <translation id="5832805196449965646">Legg til person</translation>
 <translation id="583281660410589416">Ukjent</translation>
@@ -266,6 +275,7 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="6106186594183574873">For å fullføre passordendringen, skriv inn det gamle passordet</translation>
 <translation id="6108689792487843350">Gatewayen er utilgjengelig</translation>
 <translation id="6122191549521593678">Pålogget</translation>
+<translation id="6125438912510167220">Tilkoblingsfart</translation>
 <translation id="6137767437444130246">Brukersertifikat</translation>
 <translation id="6146993107019042706">For å fullføre passordendringen, skriv inn det nye passordet</translation>
 <translation id="6147514244879357420">PNG</translation>
@@ -292,6 +302,8 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="65587193855025101">Planskanner</translation>
 <translation id="6564646048574748301">Mislykket – skriveren kan ikke nås</translation>
 <translation id="6574762126505704998">Fyll</translation>
+<translation id="6575134580692778371">Ikke konfigurert</translation>
+<translation id="6596816719288285829">IP-adresse</translation>
 <translation id="6603230386432466813">Har du problemer med å koble til?</translation>
 <translation id="6618744767048954150">Kjører</translation>
 <translation id="6620487321149975369">Utskriftsjobber vises i loggen med mindre de fjernes manuelt</translation>
@@ -314,13 +326,16 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="7059230779847288458">Lader – fulladet om <ph name="TIME_VALUE" /></translation>
 <translation id="708426984172631313">STOPPET</translation>
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
+<translation id="7134436342991564651">{0,plural, =1{Navnetjener}other{Navnetjenere}}</translation>
 <translation id="7143207342074048698">Kobler til</translation>
 <translation id="7144878232160441200">Prøv på nytt</translation>
 <translation id="714876143603641390">LAN-tilkobling</translation>
 <translation id="7162487448488904999">Galleri</translation>
 <translation id="7172721935181587524">1 bilde</translation>
 <translation id="7177485034254901881"><ph name="DEVICE_TYPE" /> administreres av <ph name="MANAGER" />. Administratorer kan konfigurere enheten eksternt.</translation>
+<translation id="7180611975245234373">Last inn på nytt</translation>
 <translation id="7216409898977639127">Mobiloperatør</translation>
+<translation id="7257889006063274246">Er du sikker på at du vil fjerne siden <ph name="CURRENT_PAGE" />?</translation>
 <translation id="7271040990581020067">Skanneren er i bruk for øyeblikket. Prøv igjen senere.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7287310195820267359">Samlinger av bakgrunnsbilder</translation>
@@ -354,9 +369,11 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="7835501727204647447">Installer CloudReady</translation>
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7882358943899516840">Leverandørtype</translation>
+<translation id="7895471513946376273">Utforsk tegne- og designverktøy</translation>
 <translation id="7936303884198020182">Fant ingen navnetjenere</translation>
 <translation id="7960831585769876809">Temperatur</translation>
 <translation id="7994702968232966508">EAP-metode</translation>
+<translation id="8020238979854764615">Det oppsto en feil. Prøv på nytt ved å velge andre bilder.</translation>
 <translation id="802154636333426148">Nedlastingen mislyktes</translation>
 <translation id="8041089156583427627">Send tilbakemelding</translation>
 <translation id="8075838845814659848">Gjenværende batteri</translation>
@@ -368,7 +385,9 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="8214184102975786227">Skann flere sider til én PDF-fil</translation>
 <translation id="8230672074305416752">Kunne ikke pinge gatewayen for standardnettverket</translation>
 <translation id="8246209727385807362">Ukjent operatør</translation>
+<translation id="8286154143153872371">Koble til et nettverk og last inn siden på nytt for å se bakgrunnsbildet.</translation>
 <translation id="8291967909914612644">Land for leverandøren av hjemmeenheten</translation>
+<translation id="829270796093605079">Oppdag designverktøy</translation>
 <translation id="8294431847097064396">Kilde</translation>
 <translation id="8297006494302853456">Svakt</translation>
 <translation id="8302368968391049045">HTTPS-brannmur</translation>
@@ -392,6 +411,7 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="8575298406870537639">Det kan hende operatøren din krever dette alternativet for at du skal kunne koble til nettverket deres Kontakt operatøren for mer informasjon.</translation>
 <translation id="8576249514688522074">Ikke initialisert</translation>
 <translation id="8620617069779373398">Status for roaming</translation>
+<translation id="8655295600908251630">Kanal</translation>
 <translation id="8660881923941176839">pund</translation>
 <translation id="8675354002693747642">Forhåndsdelt nøkkel</translation>
 <translation id="871560550817059752">Mislykket – tom for blekk</translation>
@@ -404,6 +424,7 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="8798441408945964110">Leverandørnavn</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8818152010000655963">Bakgrunn</translation>
+<translation id="8834539327799336565">Tilkoblet nå</translation>
 <translation id="8845001906332463065">Få hjelp</translation>
 <translation id="8868741746785112895">GUID</translation>
 <translation id="8881098542468797602">Testen er fullført</translation>

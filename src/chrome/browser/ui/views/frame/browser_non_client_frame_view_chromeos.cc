@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/containers/cxx20_erase.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
+#include "chrome/browser/ui/views/frame/tab_search_frame_caption_button.h"
 #include "chrome/browser/ui/views/frame/tab_strip_region_view.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
@@ -116,12 +118,19 @@ BrowserNonClientFrameViewChromeOS::~BrowserNonClientFrameViewChromeOS() {
 }
 
 void BrowserNonClientFrameViewChromeOS::Init() {
-  caption_button_container_ =
-      new chromeos::FrameCaptionButtonContainerView(frame());
-  caption_button_container_->UpdateCaptionButtonState(false /*=animate*/);
-  AddChildView(caption_button_container_);
-
   Browser* browser = browser_view()->browser();
+
+  std::unique_ptr<TabSearchFrameCaptionButton> tab_search_button;
+  if (TabSearchFrameCaptionButton::IsTabSearchCaptionButtonEnabled(browser)) {
+    tab_search_button =
+        std::make_unique<TabSearchFrameCaptionButton>(browser->profile());
+    tab_search_bubble_host_ = tab_search_button->tab_search_bubble_host();
+  }
+
+  caption_button_container_ =
+      AddChildView(std::make_unique<chromeos::FrameCaptionButtonContainerView>(
+          frame(), std::move(tab_search_button)));
+  caption_button_container_->UpdateCaptionButtonState(false /*=animate*/);
 
   // Initializing the TabIconView is expensive, so only do it if we need to.
   if (browser_view()->ShouldShowWindowIcon()) {
@@ -242,6 +251,11 @@ SkColor BrowserNonClientFrameViewChromeOS::GetCaptionColor(
   const float inactive_alpha_ratio =
       views::FrameCaptionButton::GetInactiveButtonColorAlphaRatio();
   return SkColorSetA(active_color, inactive_alpha_ratio * SK_AlphaOPAQUE);
+}
+
+TabSearchBubbleHost*
+BrowserNonClientFrameViewChromeOS::GetTabSearchBubbleHost() {
+  return tab_search_bubble_host_;
 }
 
 gfx::Rect BrowserNonClientFrameViewChromeOS::GetBoundsForClientView() const {
@@ -424,6 +438,13 @@ bool BrowserNonClientFrameViewChromeOS::DoesIntersectRect(
   return !should_leave_to_top_container;
 }
 
+views::View::Views BrowserNonClientFrameViewChromeOS::GetChildrenInZOrder() {
+  if (frame()->ShouldDrawFrameHeader() && frame_header_)
+    return frame_header_->GetAdjustedChildrenInZOrder(this);
+
+  return BrowserNonClientFrameView::GetChildrenInZOrder();
+}
+
 SkColor BrowserNonClientFrameViewChromeOS::GetTitleColor() {
   return browser_view()->GetRegularOrGuestSession()
              ? kNormalWindowTitleTextColor
@@ -584,12 +605,19 @@ void BrowserNonClientFrameViewChromeOS::OnImmersiveRevealStarted() {
 }
 
 void BrowserNonClientFrameViewChromeOS::OnImmersiveRevealEnded() {
-  // Ensure the WebAppFrameToolbarView and FrameCaptionButtonContainerView
-  // receive events before the BrowserView by appending instead of inserting
-  // the child views.
-  if (web_app_frame_toolbar())
-    AddChildView(web_app_frame_toolbar());
-  AddChildView(caption_button_container_);
+  AddChildViewAt(caption_button_container_, 0);
+
+  if (web_app_frame_toolbar()) {
+    views::ClientView* client_view =
+        GetWidget() ? GetWidget()->client_view() : nullptr;
+
+    // Add the web app frame toolbar at the end, but before the client view if
+    // it exists.
+    if (client_view && GetIndexOf(client_view) >= 0)
+      AddChildViewAt(web_app_frame_toolbar(), GetIndexOf(client_view));
+    else
+      AddChildView(web_app_frame_toolbar());
+  }
   Layout();
 }
 

@@ -35,14 +35,6 @@ READLINE_TIMEOUT = 180
 
 # TODO(crbug.com/1077277): Move commonly used error classes to
 # test_runner_errors module.
-class OtoolError(test_runner_errors.Error):
-  """OTool non-zero error code"""
-
-  def __init__(self, code):
-    super(OtoolError,
-          self).__init__('otool returned a non-zero return code: %s' % code)
-
-
 class TestRunnerError(test_runner_errors.Error):
   """Base class for TestRunner-related errors."""
   pass
@@ -270,6 +262,9 @@ def print_process_output(proc,
     LOGGER.info(line)
     sys.stdout.flush()
   LOGGER.debug('Finished print_process_output.')
+  if sys.version_info.major == 3:
+    for index in range(len(out)):
+      out[index] = out[index].decode('utf-8')
   return out
 
 
@@ -299,24 +294,16 @@ def get_current_xcode_info():
 class TestRunner(object):
   """Base class containing common functionality."""
 
-  def __init__(
-    self,
-    app_path,
-    out_dir,
-    env_vars=None,
-    retries=None,
-    shards=None,
-    test_args=None,
-    test_cases=None,
-    xctest=False,
-  ):
+  def __init__(self, app_path, out_dir, **kwargs):
     """Initializes a new instance of this class.
 
     Args:
       app_path: Path to the compiled .app to run.
       out_dir: Directory to emit test data into.
+      (Following are potential args in **kwargs)
       env_vars: List of environment variables to pass to the test itself.
-      retries: Number of times to retry failed test cases.
+      repeat_count: Number of times to run each test case (passed to test app).
+      retries: Number of times to retry failed test cases in test runner.
       test_args: List of strings to pass as arguments to the test when
         launching.
       test_cases: List of tests to be included in the test run. None or [] to
@@ -345,15 +332,16 @@ class TestRunner(object):
     self.app_name = os.path.splitext(os.path.split(app_path)[-1])[0]
     self.app_path = app_path
     self.cfbundleid = test_apps.get_bundle_id(app_path)
-    self.env_vars = env_vars or []
+    self.env_vars = kwargs.get('env_vars') or []
     self.logs = collections.OrderedDict()
     self.out_dir = out_dir
-    self.retries = retries or 0
-    self.shards = shards or 1
-    self.test_args = test_args or []
-    self.test_cases = test_cases or []
+    self.repeat_count = kwargs.get('repeat_count') or 1
+    self.retries = kwargs.get('retries') or 0
+    self.shards = kwargs.get('shards') or 1
+    self.test_args = kwargs.get('test_args') or []
+    self.test_cases = kwargs.get('test_cases') or []
     self.xctest_path = ''
-    self.xctest = xctest
+    self.xctest = kwargs.get('xctest') or False
 
     self.test_results = {}
     self.test_results['version'] = 3
@@ -567,12 +555,7 @@ class TestRunner(object):
 
     LOGGER.debug('Processing test results.')
     for test in parser.FailedTests(include_flaky=True):
-      # Test cases are named as <test group>.<test case>. If the test case
-      # is prefixed with "FLAKY_", it should be reported as flaked not failed.
-      if '.' in test and test.split('.', 1)[1].startswith('FLAKY_'):
-        result.flaked_tests[test] = parser.FailureDescription(test)
-      else:
-        result.failed_tests[test] = parser.FailureDescription(test)
+      result.failed_tests[test] = parser.FailureDescription(test)
 
     result.passed_tests.extend(parser.PassedTests(include_flaky=True))
 
@@ -702,22 +685,8 @@ class TestRunner(object):
 class SimulatorTestRunner(TestRunner):
   """Class for running tests on iossim."""
 
-  def __init__(
-      self,
-      app_path,
-      iossim_path,
-      platform,
-      version,
-      out_dir,
-      env_vars=None,
-      retries=None,
-      shards=None,
-      test_args=None,
-      test_cases=None,
-      use_clang_coverage=False,
-      wpr_tools_path='',
-      xctest=False,
-  ):
+  def __init__(self, app_path, iossim_path, platform, version, out_dir,
+               **kwargs):
     """Initializes a new instance of this class.
 
     Args:
@@ -728,7 +697,9 @@ class SimulatorTestRunner(TestRunner):
       version: Version of iOS the platform should be running. Supported values
         can be found by running "iossim -l". e.g. "9.3", "8.2", "7.1".
       out_dir: Directory to emit test data into.
+      (Following are potential args in **kwargs)
       env_vars: List of environment variables to pass to the test itself.
+      repeat_count: Number of times to run each test case (passed to test app).
       retries: Number of times to retry failed test cases.
       test_args: List of strings to pass as arguments to the test when
         launching.
@@ -744,15 +715,7 @@ class SimulatorTestRunner(TestRunner):
       XcodeVersionNotFoundError: If the given Xcode version does not exist.
       XCTestPlugInNotFoundError: If the .xctest PlugIn does not exist.
     """
-    super(SimulatorTestRunner, self).__init__(
-        app_path,
-        out_dir,
-        env_vars=env_vars,
-        retries=retries,
-        test_args=test_args,
-        test_cases=test_cases,
-        xctest=xctest,
-    )
+    super(SimulatorTestRunner, self).__init__(app_path, out_dir, **kwargs)
 
     iossim_path = os.path.abspath(iossim_path)
     if not os.path.exists(iossim_path):
@@ -763,10 +726,9 @@ class SimulatorTestRunner(TestRunner):
     self.platform = platform
     self.start_time = None
     self.version = version
-    self.shards = shards
-    self.wpr_tools_path = wpr_tools_path
+    self.shards = kwargs.get('shards') or 1
     self.udid = iossim_util.get_simulator(self.platform, self.version)
-    self.use_clang_coverage = use_clang_coverage
+    self.use_clang_coverage = kwargs.get('use_clang_coverage') or False
 
   @staticmethod
   def kill_simulators():
@@ -952,36 +914,29 @@ class SimulatorTestRunner(TestRunner):
           self.app_path,
           included_tests=self.test_cases,
           env_vars=self.env_vars,
+          repeat_count=self.repeat_count,
           test_args=self.test_args)
 
     return test_apps.SimulatorXCTestUnitTestsApp(
         self.app_path,
         included_tests=self.test_cases,
         env_vars=self.env_vars,
+        repeat_count=self.repeat_count,
         test_args=self.test_args)
 
 
 class DeviceTestRunner(TestRunner):
   """Class for running tests on devices."""
 
-  def __init__(
-    self,
-    app_path,
-    out_dir,
-    env_vars=None,
-    restart=False,
-    retries=None,
-    shards=None,
-    test_args=None,
-    test_cases=None,
-    xctest=False,
-  ):
+  def __init__(self, app_path, out_dir, **kwargs):
     """Initializes a new instance of this class.
 
     Args:
       app_path: Path to the compiled .app to run.
       out_dir: Directory to emit test data into.
+      (Following are potential args in **kwargs)
       env_vars: List of environment variables to pass to the test itself.
+      repeat_count: Number of times to run each test case (passed to test app).
       restart: Whether or not restart device when test app crashes on startup.
       retries: Number of times to retry failed test cases.
       test_args: List of strings to pass as arguments to the test when
@@ -996,21 +951,13 @@ class DeviceTestRunner(TestRunner):
       XcodeVersionNotFoundError: If the given Xcode version does not exist.
       XCTestPlugInNotFoundError: If the .xctest PlugIn does not exist.
     """
-    super(DeviceTestRunner, self).__init__(
-      app_path,
-      out_dir,
-      env_vars=env_vars,
-      retries=retries,
-      test_args=test_args,
-      test_cases=test_cases,
-      xctest=xctest,
-    )
+    super(DeviceTestRunner, self).__init__(app_path, out_dir, **kwargs)
 
     self.udid = subprocess.check_output(['idevice_id', '--list']).rstrip()
     if len(self.udid.splitlines()) != 1:
       raise DeviceDetectionError(self.udid)
 
-    self.restart = restart
+    self.restart = kwargs.get('restart') or False
 
   def uninstall_apps(self):
     """Uninstalls all apps found on the device."""
@@ -1113,21 +1060,14 @@ class DeviceTestRunner(TestRunner):
     ]
     args = []
     gtest_filter = []
-    kif_filter = []
 
     if test_app.included_tests:
-      kif_filter = test_apps.get_kif_test_filter(test_app.included_tests,
-                                                 invert=False)
       gtest_filter = test_apps.get_gtest_filter(test_app.included_tests,
                                                 invert=False)
     elif test_app.excluded_tests:
-      kif_filter = test_apps.get_kif_test_filter(test_app.excluded_tests,
-                                                 invert=True)
       gtest_filter = test_apps.get_gtest_filter(test_app.excluded_tests,
                                                 invert=True)
 
-    if kif_filter:
-      cmd.extend(['-D', 'GKIF_SCENARIO_FILTER=%s' % kif_filter])
     if gtest_filter:
       args.append('--gtest_filter=%s' % gtest_filter)
 
@@ -1169,10 +1109,12 @@ class DeviceTestRunner(TestRunner):
           self.app_path,
           included_tests=self.test_cases,
           env_vars=self.env_vars,
+          repeat_count=self.repeat_count,
           test_args=self.test_args)
 
     return test_apps.DeviceXCTestUnitTestsApp(
         self.app_path,
         included_tests=self.test_cases,
         env_vars=self.env_vars,
+        repeat_count=self.repeat_count,
         test_args=self.test_args)

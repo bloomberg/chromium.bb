@@ -226,8 +226,8 @@ void Tile::IntraPrediction(const Block& block, Plane plane, int x, int y,
                            bool has_left, bool has_top, bool has_top_right,
                            bool has_bottom_left, PredictionMode mode,
                            TransformSize tx_size) {
-  const int width = 1 << kTransformWidthLog2[tx_size];
-  const int height = 1 << kTransformHeightLog2[tx_size];
+  const int width = kTransformWidth[tx_size];
+  const int height = kTransformHeight[tx_size];
   const int x_shift = subsampling_x_[plane];
   const int y_shift = subsampling_y_[plane];
   const int max_x = (MultiplyBy4(frame_header_.columns4x4) >> x_shift) - 1;
@@ -386,36 +386,21 @@ template void Tile::IntraPrediction<uint16_t>(const Block& block, Plane plane,
                                               TransformSize tx_size);
 #endif
 
-constexpr BitMaskSet kPredictionModeSmoothMask(kPredictionModeSmooth,
-                                               kPredictionModeSmoothHorizontal,
-                                               kPredictionModeSmoothVertical);
-
-bool Tile::IsSmoothPrediction(int row, int column, Plane plane) const {
-  const BlockParameters& bp = *block_parameters_holder_.Find(row, column);
-  PredictionMode mode;
-  if (plane == kPlaneY) {
-    mode = bp.y_mode;
-  } else {
-    if (bp.reference_frame[0] > kReferenceFrameIntra) return false;
-    mode = bp.uv_mode;
-  }
-  return kPredictionModeSmoothMask.Contains(mode);
-}
-
 int Tile::GetIntraEdgeFilterType(const Block& block, Plane plane) const {
-  const int subsampling_x = subsampling_x_[plane];
-  const int subsampling_y = subsampling_y_[plane];
-  if (block.top_available[plane]) {
-    const int row = block.row4x4 - 1 - (block.row4x4 & subsampling_y);
-    const int column = block.column4x4 + (~block.column4x4 & subsampling_x);
-    if (IsSmoothPrediction(row, column, plane)) return 1;
+  bool top;
+  bool left;
+  if (plane == kPlaneY) {
+    top = block.top_available[kPlaneY] &&
+          kPredictionModeSmoothMask.Contains(block.bp_top->y_mode);
+    left = block.left_available[kPlaneY] &&
+           kPredictionModeSmoothMask.Contains(block.bp_left->y_mode);
+  } else {
+    top = block.top_available[plane] &&
+          block.bp->prediction_parameters->chroma_top_uses_smooth_prediction;
+    left = block.left_available[plane] &&
+           block.bp->prediction_parameters->chroma_left_uses_smooth_prediction;
   }
-  if (block.left_available[plane]) {
-    const int row = block.row4x4 + (~block.row4x4 & subsampling_y);
-    const int column = block.column4x4 - 1 - (block.column4x4 & subsampling_x);
-    if (IsSmoothPrediction(row, column, plane)) return 1;
-  }
-  return 0;
+  return static_cast<int>(top || left);
 }
 
 template <typename Pixel>
@@ -510,7 +495,8 @@ void Tile::PalettePrediction(const Block& block, const Plane plane,
                              const int y, const TransformSize tx_size) {
   const int tx_width = kTransformWidth[tx_size];
   const int tx_height = kTransformHeight[tx_size];
-  const uint16_t* const palette = block.bp->palette_mode_info.color[plane];
+  const uint16_t* const palette =
+      block.bp->prediction_parameters->palette_mode_info.color[plane];
   const PlaneType plane_type = GetPlaneType(plane);
   const int x4 = MultiplyBy4(x);
   const int y4 = MultiplyBy4(y);
@@ -695,7 +681,7 @@ GlobalMotion* Tile::GetWarpParams(
             ? global_motion_params->type
             : kNumGlobalMotionTransformationTypes;
     const bool is_global_valid =
-        IsGlobalMvBlock(block.bp->is_global_mv_block, global_motion_type) &&
+        IsGlobalMvBlock(*block.bp, global_motion_type) &&
         SetupShear(global_motion_params);
     // Valid global motion type implies reference type can't be intra.
     assert(!is_global_valid || reference_type != kReferenceFrameIntra);

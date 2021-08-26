@@ -3511,6 +3511,13 @@ TEST_F(VkPositiveLayerTest, ShaderDrawParametersWithFeature) {
 
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
 
+    // Devsim won't read in values like maxDescriptorSetUpdateAfterBindUniformBuffers which cause OneshotTest to fail pipeline
+    // layout creation if using 1.2 devsim as it enables VK_EXT_descriptor_indexing
+    if (IsPlatform(kMockICD) || DeviceSimulation()) {
+        printf("%sNot suppored by MockICD, skipping tests\n", kSkipPrefix);
+        return;
+    }
+
     if (DeviceValidationVersion() < VK_API_VERSION_1_2) {
         printf("%s Tests requires Vulkan 1.2+, skipping test\n", kSkipPrefix);
         return;
@@ -3616,6 +3623,13 @@ TEST_F(VkPositiveLayerTest, DrawIndirectCountWithoutFeature12) {
     SetTargetApiVersion(VK_API_VERSION_1_2);
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
 
+    // Devsim won't read in values like maxDescriptorSetUpdateAfterBindUniformBuffers which cause OneshotTest to fail pipeline
+    // layout creation if using 1.2 devsim as it enables VK_EXT_descriptor_indexing
+    if (IsPlatform(kMockICD) || DeviceSimulation()) {
+        printf("%sNot suppored by MockICD, skipping tests\n", kSkipPrefix);
+        return;
+    }
+
     if (DeviceValidationVersion() < VK_API_VERSION_1_2) {
         printf("%s Tests requires Vulkan 1.2+, skipping test\n", kSkipPrefix);
         return;
@@ -3671,6 +3685,13 @@ TEST_F(VkPositiveLayerTest, DrawIndirectCountWithFeature) {
     SetTargetApiVersion(VK_API_VERSION_1_2);
 
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+
+    // Devsim won't read in values like maxDescriptorSetUpdateAfterBindUniformBuffers which cause OneshotTest to fail pipeline
+    // layout creation if using 1.2 devsim as it enables VK_EXT_descriptor_indexing
+    if (IsPlatform(kMockICD) || DeviceSimulation()) {
+        printf("%sNot suppored by MockICD, skipping tests\n", kSkipPrefix);
+        return;
+    }
 
     if (DeviceValidationVersion() < VK_API_VERSION_1_2) {
         printf("%s Tests requires Vulkan 1.2+, skipping test\n", kSkipPrefix);
@@ -8910,6 +8931,28 @@ TEST_F(VkPositiveLayerTest, Vulkan12Features) {
     vk::FreeMemory(m_device->device(), buffer_mem, NULL);
 }
 
+TEST_F(VkPositiveLayerTest, CreateSurface) {
+    TEST_DESCRIPTION("Create and destroy a surface without ever creating a swapchain");
+
+    if (!AddSurfaceInstanceExtension()) {
+        printf("%s surface extensions not supported, skipping CreateSurface  test\n", kSkipPrefix);
+        return;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+
+
+    ASSERT_NO_FATAL_FAILURE(InitState());
+
+    m_errorMonitor->ExpectSuccess();
+    if (!InitSurface()) {
+        printf("%s Cannot create surface, skipping test\n", kSkipPrefix);
+        return;
+    }
+    DestroySwapchain(); // cleans up both surface and swapchain, if they were created
+    m_errorMonitor->VerifyNotFound();
+}
+
 TEST_F(VkPositiveLayerTest, CmdCopySwapchainImage) {
     TEST_DESCRIPTION("Run vkCmdCopyImage with a swapchain image");
 
@@ -10687,7 +10730,7 @@ TEST_F(VkPositiveLayerTest, SeparateDepthStencilSubresourceLayout) {
     VkImageViewCreateInfo view_info = { VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO };
     view_info.image = image.handle();
     view_info.subresourceRange = depth_stencil_range;
-    view_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    view_info.viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
     view_info.format = ds_format;
     view.init(*m_device, view_info);
 
@@ -11289,7 +11332,7 @@ TEST_F(VkPositiveLayerTest, SwapchainExclusiveModeQueueFamilyPropertiesReference
     swapchain_create_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
     swapchain_create_info.preTransform = preTransform;
     swapchain_create_info.compositeAlpha = m_surface_composite_alpha;
-    swapchain_create_info.presentMode = m_surface_present_modes[0];
+    swapchain_create_info.presentMode = m_surface_non_shared_present_mode;
     swapchain_create_info.clipped = VK_FALSE;
     swapchain_create_info.oldSwapchain = 0;
 
@@ -12030,32 +12073,23 @@ TEST_F(VkPositiveLayerTest, AndroidHardwareBufferMemoryRequirements) {
     ahb_desc.stride = 1;
     AHardwareBuffer_allocate(&ahb_desc, &ahb);
 
-    VkExternalMemoryBufferCreateInfo ext_buf_info = {};
-    ext_buf_info.sType = VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_BUFFER_CREATE_INFO_KHR;
+    VkExternalMemoryBufferCreateInfo ext_buf_info = LvlInitStruct<VkExternalMemoryBufferCreateInfo>();
     ext_buf_info.handleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_ANDROID_HARDWARE_BUFFER_BIT_ANDROID;
 
-    VkBufferCreateInfo buffer_create_info = {};
-    buffer_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    buffer_create_info.pNext = &ext_buf_info;
+    VkBufferCreateInfo buffer_create_info = LvlInitStruct<VkBufferCreateInfo>(&ext_buf_info);
     buffer_create_info.size = 512;
     buffer_create_info.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 
     VkBuffer buffer = VK_NULL_HANDLE;
     vk::CreateBuffer(m_device->device(), &buffer_create_info, nullptr, &buffer);
 
-    VkImportAndroidHardwareBufferInfoANDROID import_ahb_Info = {};
-    import_ahb_Info.sType = VK_STRUCTURE_TYPE_IMPORT_ANDROID_HARDWARE_BUFFER_INFO_ANDROID;
-    import_ahb_Info.pNext = nullptr;
+    VkImportAndroidHardwareBufferInfoANDROID import_ahb_Info = LvlInitStruct<VkImportAndroidHardwareBufferInfoANDROID>();
     import_ahb_Info.buffer = ahb;
 
-    VkAndroidHardwareBufferPropertiesANDROID ahb_props = {};
-    ahb_props.sType = VK_STRUCTURE_TYPE_ANDROID_HARDWARE_BUFFER_PROPERTIES_ANDROID;
-    ahb_props.pNext = nullptr;
+    VkAndroidHardwareBufferPropertiesANDROID ahb_props = LvlInitStruct<VkAndroidHardwareBufferPropertiesANDROID>();
     pfn_GetAHBProps(m_device->device(), ahb, &ahb_props);
 
-    VkMemoryAllocateInfo memory_allocate_info = {};
-    memory_allocate_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    memory_allocate_info.pNext = &import_ahb_Info;
+    VkMemoryAllocateInfo memory_allocate_info = LvlInitStruct<VkMemoryAllocateInfo>(&import_ahb_Info);
     memory_allocate_info.allocationSize = ahb_props.allocationSize;
 
     // Set index to match one of the bits in ahb_props that is also only Device Local
@@ -12134,24 +12168,17 @@ TEST_F(VkPositiveLayerTest, AndroidHardwareBufferDepthStencil) {
     ahb_desc.stride = 1;
     AHardwareBuffer_allocate(&ahb_desc, &ahb);
 
-    VkAndroidHardwareBufferFormatPropertiesANDROID ahb_fmt_props = {};
-    ahb_fmt_props.sType = VK_STRUCTURE_TYPE_ANDROID_HARDWARE_BUFFER_FORMAT_PROPERTIES_ANDROID;
+    VkAndroidHardwareBufferFormatPropertiesANDROID ahb_fmt_props = LvlInitStruct<VkAndroidHardwareBufferFormatPropertiesANDROID>();
 
-    VkAndroidHardwareBufferPropertiesANDROID ahb_props = {};
-    ahb_props.sType = VK_STRUCTURE_TYPE_ANDROID_HARDWARE_BUFFER_PROPERTIES_ANDROID;
-    ahb_props.pNext = &ahb_fmt_props;
+    VkAndroidHardwareBufferPropertiesANDROID ahb_props = LvlInitStruct<VkAndroidHardwareBufferPropertiesANDROID>(&ahb_fmt_props);
     pfn_GetAHBProps(m_device->device(), ahb, &ahb_props);
 
-    VkExternalMemoryImageCreateInfo ext_image_info = {};
-    ext_image_info.sType = VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO;
-    ext_image_info.pNext = nullptr;
+    VkExternalMemoryImageCreateInfo ext_image_info = LvlInitStruct<VkExternalMemoryImageCreateInfo>();
     ext_image_info.handleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_ANDROID_HARDWARE_BUFFER_BIT_ANDROID;
 
     // Create a Depth/Stencil image
     VkImage dsImage;
-    VkImageCreateInfo image_create_info = {};
-    image_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    image_create_info.pNext = &ext_image_info;
+    VkImageCreateInfo image_create_info = LvlInitStruct<VkImageCreateInfo>(&ext_image_info);
     image_create_info.flags = 0;
     image_create_info.imageType = VK_IMAGE_TYPE_2D;
     image_create_info.format = ahb_fmt_props.format;
@@ -12165,20 +12192,15 @@ TEST_F(VkPositiveLayerTest, AndroidHardwareBufferDepthStencil) {
     image_create_info.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
     vk::CreateImage(m_device->device(), &image_create_info, nullptr, &dsImage);
 
-    VkMemoryDedicatedAllocateInfo memory_dedicated_info = {};
-    memory_dedicated_info.sType = VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO;
-    memory_dedicated_info.pNext = nullptr;
+    VkMemoryDedicatedAllocateInfo memory_dedicated_info = LvlInitStruct<VkMemoryDedicatedAllocateInfo>();
     memory_dedicated_info.image = dsImage;
     memory_dedicated_info.buffer = VK_NULL_HANDLE;
 
-    VkImportAndroidHardwareBufferInfoANDROID import_ahb_Info = {};
-    import_ahb_Info.sType = VK_STRUCTURE_TYPE_IMPORT_ANDROID_HARDWARE_BUFFER_INFO_ANDROID;
-    import_ahb_Info.pNext = &memory_dedicated_info;
+    VkImportAndroidHardwareBufferInfoANDROID import_ahb_Info =
+        LvlInitStruct<VkImportAndroidHardwareBufferInfoANDROID>(&memory_dedicated_info);
     import_ahb_Info.buffer = ahb;
 
-    VkMemoryAllocateInfo memory_allocate_info = {};
-    memory_allocate_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    memory_allocate_info.pNext = &import_ahb_Info;
+    VkMemoryAllocateInfo memory_allocate_info = LvlInitStruct<VkMemoryAllocateInfo>(&import_ahb_Info);
     memory_allocate_info.allocationSize = ahb_props.allocationSize;
 
     // Set index to match one of the bits in ahb_props that is also only Device Local
@@ -12256,13 +12278,10 @@ TEST_F(VkPositiveLayerTest, AndroidHardwareBufferBindBufferMemory) {
     ahb_desc.stride = 1;
     AHardwareBuffer_allocate(&ahb_desc, &ahb);
 
-    VkExternalMemoryBufferCreateInfo ext_buf_info = {};
-    ext_buf_info.sType = VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_BUFFER_CREATE_INFO_KHR;
+    VkExternalMemoryBufferCreateInfo ext_buf_info = LvlInitStruct<VkExternalMemoryBufferCreateInfo>();
     ext_buf_info.handleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_ANDROID_HARDWARE_BUFFER_BIT_ANDROID;
 
-    VkBufferCreateInfo buffer_create_info = {};
-    buffer_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    buffer_create_info.pNext = &ext_buf_info;
+    VkBufferCreateInfo buffer_create_info = LvlInitStruct<VkBufferCreateInfo>(&ext_buf_info);
     buffer_create_info.size = 8192;  // greater than the 4k AHB usually are
     buffer_create_info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 
@@ -12275,23 +12294,15 @@ TEST_F(VkPositiveLayerTest, AndroidHardwareBufferBindBufferMemory) {
     vk::GetBufferMemoryRequirements(m_device->device(), buffer, &mem_reqs);
 
     // Test bind memory 2 extension
-    VkBufferMemoryRequirementsInfo2 buffer_mem_reqs2 = {};
-    buffer_mem_reqs2.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_REQUIREMENTS_INFO_2;
-    buffer_mem_reqs2.pNext = nullptr;
+    VkBufferMemoryRequirementsInfo2 buffer_mem_reqs2 = LvlInitStruct<VkBufferMemoryRequirementsInfo2>();
     buffer_mem_reqs2.buffer = buffer;
-    VkMemoryRequirements2 mem_reqs2;
-    mem_reqs2.sType = VK_STRUCTURE_TYPE_MEMORY_REQUIREMENTS_2;
-    mem_reqs2.pNext = nullptr;
+    VkMemoryRequirements2 mem_reqs2 = LvlInitStruct<VkMemoryRequirements2>();
     vk::GetBufferMemoryRequirements2(m_device->device(), &buffer_mem_reqs2, &mem_reqs2);
 
-    VkImportAndroidHardwareBufferInfoANDROID import_ahb_Info = {};
-    import_ahb_Info.sType = VK_STRUCTURE_TYPE_IMPORT_ANDROID_HARDWARE_BUFFER_INFO_ANDROID;
-    import_ahb_Info.pNext = nullptr;
+    VkImportAndroidHardwareBufferInfoANDROID import_ahb_Info = LvlInitStruct<VkImportAndroidHardwareBufferInfoANDROID>();
     import_ahb_Info.buffer = ahb;
 
-    VkMemoryAllocateInfo memory_info = {};
-    memory_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    memory_info.pNext = &import_ahb_Info;
+    VkMemoryAllocateInfo memory_info = LvlInitStruct<VkMemoryAllocateInfo>(&import_ahb_Info);
     memory_info.allocationSize = mem_reqs.size + mem_reqs.alignment;  // save room for offset
     bool has_memtype = m_device->phy().set_memory_type(mem_reqs.memoryTypeBits, &memory_info, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     if (!has_memtype) {
@@ -12345,14 +12356,10 @@ TEST_F(VkPositiveLayerTest, AndroidHardwareBufferExportBuffer) {
 
     // Create VkBuffer to be exported to an AHB
     VkBuffer buffer = VK_NULL_HANDLE;
-    VkExternalMemoryBufferCreateInfo ext_buf_info = {};
-    ext_buf_info.sType = VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_BUFFER_CREATE_INFO_KHR;
-    ext_buf_info.pNext = nullptr;
+    VkExternalMemoryBufferCreateInfo ext_buf_info = LvlInitStruct<VkExternalMemoryBufferCreateInfo>();
     ext_buf_info.handleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_ANDROID_HARDWARE_BUFFER_BIT_ANDROID;
 
-    VkBufferCreateInfo buffer_create_info = {};
-    buffer_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    buffer_create_info.pNext = &ext_buf_info;
+    VkBufferCreateInfo buffer_create_info = LvlInitStruct<VkBufferCreateInfo>(&ext_buf_info);
     buffer_create_info.size = 4096;
     buffer_create_info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
     vk::CreateBuffer(device(), &buffer_create_info, nullptr, &buffer);
@@ -12360,14 +12367,10 @@ TEST_F(VkPositiveLayerTest, AndroidHardwareBufferExportBuffer) {
     VkMemoryRequirements mem_reqs;
     vk::GetBufferMemoryRequirements(device(), buffer, &mem_reqs);
 
-    VkExportMemoryAllocateInfo export_memory_info = {};
-    export_memory_info.sType = VK_STRUCTURE_TYPE_EXPORT_MEMORY_ALLOCATE_INFO;
-    export_memory_info.pNext = nullptr;
+    VkExportMemoryAllocateInfo export_memory_info = LvlInitStruct<VkExportMemoryAllocateInfo>();
     export_memory_info.handleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_ANDROID_HARDWARE_BUFFER_BIT_ANDROID;
 
-    VkMemoryAllocateInfo memory_info = {};
-    memory_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    memory_info.pNext = &export_memory_info;
+    VkMemoryAllocateInfo memory_info = LvlInitStruct<VkMemoryAllocateInfo>(&export_memory_info);
     memory_info.allocationSize = mem_reqs.size;
 
     bool has_memtype = m_device->phy().set_memory_type(mem_reqs.memoryTypeBits, &memory_info, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
@@ -12378,16 +12381,13 @@ TEST_F(VkPositiveLayerTest, AndroidHardwareBufferExportBuffer) {
     }
 
     VkDeviceMemory memory = VK_NULL_HANDLE;
-    ;
     vk::AllocateMemory(device(), &memory_info, NULL, &memory);
     vk::BindBufferMemory(device(), buffer, memory, 0);
 
     // Export memory to AHB
     AHardwareBuffer *ahb = nullptr;
 
-    VkMemoryGetAndroidHardwareBufferInfoANDROID get_ahb_info = {};
-    get_ahb_info.sType = VK_STRUCTURE_TYPE_MEMORY_GET_ANDROID_HARDWARE_BUFFER_INFO_ANDROID;
-    get_ahb_info.pNext = nullptr;
+    VkMemoryGetAndroidHardwareBufferInfoANDROID get_ahb_info = LvlInitStruct<VkMemoryGetAndroidHardwareBufferInfoANDROID>();
     get_ahb_info.memory = memory;
     vkGetMemoryAndroidHardwareBufferANDROID(device(), &get_ahb_info, &ahb);
 
@@ -12430,15 +12430,11 @@ TEST_F(VkPositiveLayerTest, AndroidHardwareBufferExportImage) {
     m_errorMonitor->ExpectSuccess();
 
     // Create VkImage to be exported to an AHB
-    VkExternalMemoryImageCreateInfo ext_image_info = {};
-    ext_image_info.sType = VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO;
-    ext_image_info.pNext = nullptr;
+    VkExternalMemoryImageCreateInfo ext_image_info = LvlInitStruct<VkExternalMemoryImageCreateInfo>();
     ext_image_info.handleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_ANDROID_HARDWARE_BUFFER_BIT_ANDROID;
 
     VkImage image = VK_NULL_HANDLE;
-    VkImageCreateInfo image_create_info = {};
-    image_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    image_create_info.pNext = &ext_image_info;
+    VkImageCreateInfo image_create_info = LvlInitStruct<VkImageCreateInfo>(&ext_image_info);
     image_create_info.flags = 0;
     image_create_info.imageType = VK_IMAGE_TYPE_2D;
     image_create_info.format = VK_FORMAT_R8G8B8A8_UNORM;
@@ -12452,20 +12448,14 @@ TEST_F(VkPositiveLayerTest, AndroidHardwareBufferExportImage) {
     image_create_info.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
     vk::CreateImage(device(), &image_create_info, nullptr, &image);
 
-    VkMemoryDedicatedAllocateInfo memory_dedicated_info = {};
-    memory_dedicated_info.sType = VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO;
-    memory_dedicated_info.pNext = nullptr;
+    VkMemoryDedicatedAllocateInfo memory_dedicated_info = LvlInitStruct<VkMemoryDedicatedAllocateInfo>();
     memory_dedicated_info.image = image;
     memory_dedicated_info.buffer = VK_NULL_HANDLE;
 
-    VkExportMemoryAllocateInfo export_memory_info = {};
-    export_memory_info.sType = VK_STRUCTURE_TYPE_EXPORT_MEMORY_ALLOCATE_INFO;
-    export_memory_info.pNext = &memory_dedicated_info;
+    VkExportMemoryAllocateInfo export_memory_info = LvlInitStruct<VkExportMemoryAllocateInfo>(&memory_dedicated_info);
     export_memory_info.handleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_ANDROID_HARDWARE_BUFFER_BIT_ANDROID;
 
-    VkMemoryAllocateInfo memory_info = {};
-    memory_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    memory_info.pNext = &export_memory_info;
+    VkMemoryAllocateInfo memory_info = LvlInitStruct<VkMemoryAllocateInfo>(&export_memory_info);
 
     // "When allocating new memory for an image that can be exported to an Android hardware buffer, the memory’s allocationSize must
     // be zero":
@@ -12486,9 +12476,7 @@ TEST_F(VkPositiveLayerTest, AndroidHardwareBufferExportImage) {
     // Export memory to AHB
     AHardwareBuffer *ahb = nullptr;
 
-    VkMemoryGetAndroidHardwareBufferInfoANDROID get_ahb_info = {};
-    get_ahb_info.sType = VK_STRUCTURE_TYPE_MEMORY_GET_ANDROID_HARDWARE_BUFFER_INFO_ANDROID;
-    get_ahb_info.pNext = nullptr;
+    VkMemoryGetAndroidHardwareBufferInfoANDROID get_ahb_info = LvlInitStruct<VkMemoryGetAndroidHardwareBufferInfoANDROID>();
     get_ahb_info.memory = memory;
     vkGetMemoryAndroidHardwareBufferANDROID(device(), &get_ahb_info, &ahb);
 
@@ -12498,6 +12486,134 @@ TEST_F(VkPositiveLayerTest, AndroidHardwareBufferExportImage) {
     AHardwareBuffer_release(ahb);
     vk::FreeMemory(device(), memory, NULL);
     vk::DestroyImage(device(), image, nullptr);
+}
+
+TEST_F(VkPositiveLayerTest, AndroidHardwareBufferExternalImage) {
+    TEST_DESCRIPTION("Verify AndroidHardwareBuffer can import AHB with external format");
+
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+
+    if (IsPlatform(kGalaxyS10)) {
+        printf("%s This test should not run on Galaxy S10\n", kSkipPrefix);
+        return;
+    }
+
+    if ((DeviceExtensionSupported(gpu(), nullptr, VK_ANDROID_EXTERNAL_MEMORY_ANDROID_HARDWARE_BUFFER_EXTENSION_NAME)) &&
+        // Also skip on devices that advertise AHB, but not the pre-requisite foreign_queue extension
+        (DeviceExtensionSupported(gpu(), nullptr, VK_EXT_QUEUE_FAMILY_FOREIGN_EXTENSION_NAME))) {
+        m_device_extension_names.push_back(VK_ANDROID_EXTERNAL_MEMORY_ANDROID_HARDWARE_BUFFER_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_KHR_MAINTENANCE1_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_KHR_BIND_MEMORY_2_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_EXT_QUEUE_FAMILY_FOREIGN_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME);
+    } else {
+        printf("%s %s extension not supported, skipping tests\n", kSkipPrefix,
+               VK_ANDROID_EXTERNAL_MEMORY_ANDROID_HARDWARE_BUFFER_EXTENSION_NAME);
+        return;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitState());
+
+    PFN_vkGetAndroidHardwareBufferPropertiesANDROID pfn_GetAHBProps =
+        (PFN_vkGetAndroidHardwareBufferPropertiesANDROID)vk::GetDeviceProcAddr(m_device->device(),
+                                                                               "vkGetAndroidHardwareBufferPropertiesANDROID");
+    ASSERT_TRUE(pfn_GetAHBProps != nullptr);
+
+    // FORMAT_Y8Cb8Cr8_420 is a known/public valid AHB Format but does not have a Vulkan mapping to it
+    // Will use the external image feature to get access to it
+    AHardwareBuffer *ahb;
+    AHardwareBuffer_Desc ahb_desc = {};
+    ahb_desc.format = AHARDWAREBUFFER_FORMAT_Y8Cb8Cr8_420;
+    ahb_desc.usage = AHARDWAREBUFFER_USAGE_GPU_SAMPLED_IMAGE;
+    ahb_desc.width = 64;
+    ahb_desc.height = 64;
+    ahb_desc.layers = 1;
+    ahb_desc.stride = 1;
+    int result = AHardwareBuffer_allocate(&ahb_desc, &ahb);
+    if (result != 0) {
+        printf("%s could not allocate AHARDWAREBUFFER_FORMAT_Y8Cb8Cr8_420, skipping tests\n", kSkipPrefix);
+        return;
+    }
+
+    VkAndroidHardwareBufferFormatPropertiesANDROID ahb_fmt_props = LvlInitStruct<VkAndroidHardwareBufferFormatPropertiesANDROID>();
+
+    VkAndroidHardwareBufferPropertiesANDROID ahb_props = LvlInitStruct<VkAndroidHardwareBufferPropertiesANDROID>(&ahb_fmt_props);
+    pfn_GetAHBProps(m_device->device(), ahb, &ahb_props);
+
+    // The spec says the driver must not return zero, even if a VkFormat is returned with it, some older drivers do as a driver bug
+    if (ahb_fmt_props.externalFormat == 0) {
+        printf("%s externalFormat was zero which is not valid, skipping tests\n", kSkipPrefix);
+        return;
+    }
+
+    // Create an image w/ external format
+    VkExternalFormatANDROID ext_format = LvlInitStruct<VkExternalFormatANDROID>();
+    ext_format.externalFormat = ahb_fmt_props.externalFormat;
+
+    VkExternalMemoryImageCreateInfo ext_image_info = LvlInitStruct<VkExternalMemoryImageCreateInfo>(&ext_format);
+    ext_image_info.handleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_ANDROID_HARDWARE_BUFFER_BIT_ANDROID;
+
+    VkImage image = VK_NULL_HANDLE;
+    VkImageCreateInfo image_create_info = LvlInitStruct<VkImageCreateInfo>(&ext_image_info);
+    image_create_info.flags = 0;
+    image_create_info.imageType = VK_IMAGE_TYPE_2D;
+    image_create_info.format = VK_FORMAT_UNDEFINED;
+    image_create_info.extent = {64, 64, 1};
+    image_create_info.mipLevels = 1;
+    image_create_info.arrayLayers = 1;
+    image_create_info.samples = VK_SAMPLE_COUNT_1_BIT;
+    image_create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
+    image_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    image_create_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    image_create_info.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
+    vk::CreateImage(m_device->device(), &image_create_info, nullptr, &image);
+    if (image == VK_NULL_HANDLE) {
+        printf("%s could not create image with external format, skipping tests\n", kSkipPrefix);
+        return;
+    }
+
+    VkMemoryDedicatedAllocateInfo memory_dedicated_info = LvlInitStruct<VkMemoryDedicatedAllocateInfo>();
+    memory_dedicated_info.image = image;
+    memory_dedicated_info.buffer = VK_NULL_HANDLE;
+
+    VkImportAndroidHardwareBufferInfoANDROID import_ahb_Info =
+        LvlInitStruct<VkImportAndroidHardwareBufferInfoANDROID>(&memory_dedicated_info);
+    import_ahb_Info.buffer = ahb;
+
+    VkMemoryAllocateInfo memory_allocate_info = LvlInitStruct<VkMemoryAllocateInfo>(&import_ahb_Info);
+    memory_allocate_info.allocationSize = ahb_props.allocationSize;
+
+    // Set index to match one of the bits in ahb_props that is also only Device Local
+    // Android implemenetations "should have" a DEVICE_LOCAL only index designed for AHB
+    VkMemoryPropertyFlagBits property = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+    VkPhysicalDeviceMemoryProperties gpu_memory_props;
+    vk::GetPhysicalDeviceMemoryProperties(gpu(), &gpu_memory_props);
+    memory_allocate_info.memoryTypeIndex = gpu_memory_props.memoryTypeCount + 1;
+    for (uint32_t i = 0; i < gpu_memory_props.memoryTypeCount; i++) {
+        if ((ahb_props.memoryTypeBits & (1 << i)) && ((gpu_memory_props.memoryTypes[i].propertyFlags & property) == property)) {
+            memory_allocate_info.memoryTypeIndex = i;
+            break;
+        }
+    }
+
+    if (memory_allocate_info.memoryTypeIndex >= gpu_memory_props.memoryTypeCount) {
+        printf("%s No invalid memory type index could be found; skipped.\n", kSkipPrefix);
+        AHardwareBuffer_release(ahb);
+        vk::DestroyImage(m_device->device(), image, nullptr);
+        return;
+    }
+
+    VkDeviceMemory memory;
+    m_errorMonitor->ExpectSuccess();
+    vk::AllocateMemory(m_device->device(), &memory_allocate_info, nullptr, &memory);
+    vk::BindImageMemory(m_device->device(), image, memory, 0);
+    m_errorMonitor->VerifyNotFound();
+
+    vk::DestroyImage(m_device->device(), image, nullptr);
+    vk::FreeMemory(m_device->device(), memory, nullptr);
 }
 
 #endif  // AHB_VALIDATION_SUPPORT
@@ -12689,6 +12805,67 @@ TEST_F(VkPositiveLayerTest, InitSwapchain) {
     m_errorMonitor->VerifyNotFound();
 }
 
+TEST_F(VkPositiveLayerTest, DestroySwapchainWithBoundImages) {
+    TEST_DESCRIPTION("Try destroying a swapchain which has multiple images");
+
+    if (!AddSurfaceInstanceExtension()) return;
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+    // Check for VK_KHR_get_memory_requirements2 extension
+    if (DeviceExtensionSupported(gpu(), nullptr, VK_KHR_BIND_MEMORY_2_EXTENSION_NAME)) {
+        m_device_extension_names.push_back(VK_KHR_BIND_MEMORY_2_EXTENSION_NAME);
+    } else {
+        printf("%s %s not supported, skipping test\n", kSkipPrefix, VK_KHR_BIND_MEMORY_2_EXTENSION_NAME);
+        return;
+    }
+
+    if (!AddSwapchainDeviceExtension()) return;
+    ASSERT_NO_FATAL_FAILURE(InitState());
+    if (!InitSwapchain()) {
+        printf("%s Cannot create surface or swapchain, skipping test\n", kSkipPrefix);
+        return;
+    }
+
+    auto vkBindImageMemory2KHR =
+        reinterpret_cast<PFN_vkBindImageMemory2KHR>(vk::GetDeviceProcAddr(m_device->device(), "vkBindImageMemory2KHR"));
+
+    auto image_create_info = LvlInitStruct<VkImageCreateInfo>();
+    image_create_info.imageType = VK_IMAGE_TYPE_2D;
+    image_create_info.format = m_surface_formats[0].format;
+    image_create_info.extent.width = m_surface_capabilities.minImageExtent.width;
+    image_create_info.extent.height = m_surface_capabilities.minImageExtent.height;
+    image_create_info.extent.depth = 1;
+    image_create_info.mipLevels = 1;
+    image_create_info.arrayLayers = 1;
+    image_create_info.samples = VK_SAMPLE_COUNT_1_BIT;
+    image_create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
+    image_create_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    image_create_info.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+    image_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+    auto image_swapchain_create_info = LvlInitStruct<VkImageSwapchainCreateInfoKHR>();
+    image_swapchain_create_info.swapchain = m_swapchain;
+
+    image_create_info.pNext = &image_swapchain_create_info;
+    std::array<VkImage, 3> images;
+
+    m_errorMonitor->ExpectSuccess();
+    for (auto &image : images) {
+        vk::CreateImage(m_device->device(), &image_create_info, NULL, &image);
+        auto bind_swapchain_info = LvlInitStruct<VkBindImageMemorySwapchainInfoKHR>();
+        bind_swapchain_info.swapchain = m_swapchain;
+        bind_swapchain_info.imageIndex = 0;
+
+        auto bind_info = LvlInitStruct<VkBindImageMemoryInfo>(&bind_swapchain_info);
+        bind_info.image = image;
+        bind_info.memory = VK_NULL_HANDLE;
+        bind_info.memoryOffset = 0;
+
+        vkBindImageMemory2KHR(m_device->device(), 1, &bind_info);
+    }
+    DestroySwapchain();
+    m_errorMonitor->VerifyNotFound();
+}
+
 TEST_F(VkPositiveLayerTest, ProtectedSwapchainImageColorAttachment) {
     TEST_DESCRIPTION(
         "Make sure images from protected swapchain are considered protected image when writing to it as a color attachment");
@@ -12776,7 +12953,7 @@ TEST_F(VkPositiveLayerTest, ProtectedSwapchainImageColorAttachment) {
     swapchain_create_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
     swapchain_create_info.preTransform = preTransform;
     swapchain_create_info.compositeAlpha = m_surface_composite_alpha;
-    swapchain_create_info.presentMode = m_surface_present_modes[0];
+    swapchain_create_info.presentMode = m_surface_non_shared_present_mode;
     swapchain_create_info.clipped = VK_FALSE;
     swapchain_create_info.oldSwapchain = 0;
     swapchain_create_info.queueFamilyIndexCount = 4094967295;  // This SHOULD get ignored
@@ -13354,6 +13531,11 @@ TEST_F(VkPositiveLayerTest, ImageDescriptor3D2DSubresourceLayout) {
     m_errorMonitor->ExpectSuccess();
     SetTargetApiVersion(VK_API_VERSION_1_1);
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+    if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
+        printf("%s Tests requires Vulkan 1.1+, skipping test\n", kSkipPrefix);
+        return;
+    }
+
     ASSERT_NO_FATAL_FAILURE(InitState(nullptr, nullptr, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT));
 
     ASSERT_NO_FATAL_FAILURE(InitViewport());
@@ -13656,7 +13838,7 @@ TEST_F(VkPositiveLayerTest, SpecializationUnused) {
         )";
 
     VkSpecializationMapEntry entries[4] = {
-        {0, 0, 0},  // usued
+        {0, 0, 1},  // unused
         {1, 0, 1},  // usued
         {2, 0, 4},  // OpTypeInt 32
         {3, 0, 4},  // usued
@@ -13682,4 +13864,273 @@ TEST_F(VkPositiveLayerTest, SpecializationUnused) {
     // try another random unused value other than zero
     entries[0].constantID = 100;
     CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit | kWarningBit, "", true);
+}
+
+TEST_F(VkPositiveLayerTest, ShaderAtomicInt64) {
+    TEST_DESCRIPTION("Test VK_KHR_shader_atomic_int64.");
+    SetTargetApiVersion(VK_API_VERSION_1_1);
+
+    if (InstanceExtensionSupported(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
+        m_instance_extension_names.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+    } else {
+        printf("%s Did not find required instance extension %s; skipped.\n", kSkipPrefix,
+               VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+        return;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+
+    if (DeviceExtensionSupported(gpu(), nullptr, VK_KHR_SHADER_ATOMIC_INT64_EXTENSION_NAME)) {
+        m_device_extension_names.push_back(VK_KHR_SHADER_ATOMIC_INT64_EXTENSION_NAME);
+    } else {
+        printf("%s Extension %s is not supported.\n", kSkipPrefix, VK_KHR_SHADER_ATOMIC_INT64_EXTENSION_NAME);
+        return;
+    }
+
+    PFN_vkGetPhysicalDeviceFeatures2KHR vkGetPhysicalDeviceFeatures2KHR =
+        (PFN_vkGetPhysicalDeviceFeatures2KHR)vk::GetInstanceProcAddr(instance(), "vkGetPhysicalDeviceFeatures2KHR");
+    ASSERT_TRUE(vkGetPhysicalDeviceFeatures2KHR != nullptr);
+
+    auto atomic_int64_features = lvl_init_struct<VkPhysicalDeviceShaderAtomicInt64Features>();
+    auto features2 = lvl_init_struct<VkPhysicalDeviceFeatures2KHR>(&atomic_int64_features);
+    vkGetPhysicalDeviceFeatures2KHR(gpu(), &features2);
+
+    if (features2.features.shaderInt64 == VK_FALSE) {
+        printf("%s shaderInt64 feature not supported, skipping tests\n", kSkipPrefix);
+        return;
+    }
+
+    // at least shaderBufferInt64Atomics is guaranteed to be supported
+    if (atomic_int64_features.shaderBufferInt64Atomics == VK_FALSE) {
+        printf(
+            "%s shaderBufferInt64Atomics feature is required for VK_KHR_shader_atomic_int64 but not expose, likely driver bug, "
+            "skipping tests\n",
+            kSkipPrefix);
+        return;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2));
+
+    if (m_device->props.apiVersion < VK_API_VERSION_1_1) {
+        printf("%s At least Vulkan version 1.1 is required for SPIR-V 1.3, skipping test.\n", kSkipPrefix);
+        return;
+    }
+
+    std::string cs_base = R"glsl(
+        #version 450
+        #extension GL_EXT_shader_explicit_arithmetic_types_int64 : enable
+        #extension GL_EXT_shader_atomic_int64 : enable
+        #extension GL_KHR_memory_scope_semantics : enable
+        shared uint64_t x;
+        layout(set = 0, binding = 0) buffer ssbo { uint64_t y; };
+        layout(set = 0, binding = 1) uniform ubo { uint64_t z; };
+        void main() {
+    )glsl";
+
+    // clang-format off
+    // StorageBuffer storage class
+    std::string cs_storage_buffer = cs_base + R"glsl(
+           atomicAdd(y, 1);
+        }
+    )glsl";
+
+    // StorageBuffer storage class using AtomicStore
+    // atomicStore is slightly different than other atomics, so good edge case
+    std::string cs_store = cs_base + R"glsl(
+           atomicStore(y, z, gl_ScopeDevice, gl_StorageSemanticsBuffer, gl_SemanticsRelaxed);
+        }
+    )glsl";
+
+    // Uniform storage class
+    std::string cs_uniform = cs_base + R"glsl(
+           uint64_t a = atomicLoad(z, gl_ScopeDevice, gl_StorageSemanticsBuffer, gl_SemanticsRelaxed);
+           barrier();
+           y = a + 1;
+        }
+    )glsl";
+
+    // Workgroup storage class
+    std::string cs_workgroup = cs_base + R"glsl(
+           atomicAdd(x, 1);
+           barrier();
+           y = x + 1;
+        }
+    )glsl";
+    // clang-format on
+
+    const char *current_shader = nullptr;
+    const auto set_info = [&](CreateComputePipelineHelper &helper) {
+        // Requires SPIR-V 1.3 for SPV_KHR_storage_buffer_storage_class
+        helper.cs_.reset(
+            new VkShaderObj(m_device, current_shader, VK_SHADER_STAGE_COMPUTE_BIT, this, "main", false, nullptr, /*SPIR-V 1.3*/ 3));
+        helper.dsl_bindings_ = {{0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_ALL, nullptr},
+                                {1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_ALL, nullptr}};
+    };
+
+    current_shader = cs_storage_buffer.c_str();
+    CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+
+    current_shader = cs_store.c_str();
+    CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+
+    current_shader = cs_uniform.c_str();
+    CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+
+    if (atomic_int64_features.shaderSharedInt64Atomics == VK_TRUE) {
+        current_shader = cs_workgroup.c_str();
+        CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+    }
+}
+
+TEST_F(VkPositiveLayerTest, ValidationInstanceExtensions) {
+    ASSERT_NO_FATAL_FAILURE(Init());
+
+    std::string layer_name = "VK_LAYER_KHRONOS_validation";
+    std::vector<std::string> extensions = {VK_EXT_DEBUG_UTILS_EXTENSION_NAME, VK_EXT_DEBUG_REPORT_EXTENSION_NAME,
+                                           VK_EXT_VALIDATION_FEATURES_EXTENSION_NAME};
+    uint32_t property_count;
+    vk::EnumerateInstanceExtensionProperties(layer_name.c_str(), &property_count, NULL);
+    std::vector<VkExtensionProperties> properties(property_count);
+    vk::EnumerateInstanceExtensionProperties(layer_name.c_str(), &property_count, properties.data());
+    for (size_t i = 0; i < extensions.size(); i++) {
+        bool found = false;
+        for (auto props : properties) {
+            if (!strcmp(props.extensionName, extensions[i].c_str())) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            FAIL() << "Validation layer is missing extension " << extensions[i].c_str();
+        }
+    }
+}
+TEST_F(VkPositiveLayerTest, ShaderImageAtomicInt64) {
+    TEST_DESCRIPTION("Test VK_EXT_shader_image_atomic_int64.");
+    SetTargetApiVersion(VK_API_VERSION_1_1);
+
+    if (InstanceExtensionSupported(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
+        m_instance_extension_names.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+    } else {
+        printf("%s Did not find required instance extension %s; skipped.\n", kSkipPrefix,
+               VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+        return;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+    if (DeviceExtensionSupported(gpu(), nullptr, VK_EXT_SHADER_IMAGE_ATOMIC_INT64_EXTENSION_NAME)) {
+        m_device_extension_names.push_back(VK_EXT_SHADER_IMAGE_ATOMIC_INT64_EXTENSION_NAME);
+    } else {
+        printf("%s Extension %s is not supported.\n", kSkipPrefix, VK_EXT_SHADER_IMAGE_ATOMIC_INT64_EXTENSION_NAME);
+        return;
+    }
+
+    PFN_vkGetPhysicalDeviceFeatures2KHR vkGetPhysicalDeviceFeatures2KHR =
+        (PFN_vkGetPhysicalDeviceFeatures2KHR)vk::GetInstanceProcAddr(instance(), "vkGetPhysicalDeviceFeatures2KHR");
+    ASSERT_TRUE(vkGetPhysicalDeviceFeatures2KHR != nullptr);
+
+    auto image_atomic_int64_features = lvl_init_struct<VkPhysicalDeviceShaderImageAtomicInt64FeaturesEXT>();
+    auto features2 = lvl_init_struct<VkPhysicalDeviceFeatures2KHR>(&image_atomic_int64_features);
+    vkGetPhysicalDeviceFeatures2KHR(gpu(), &features2);
+
+    if (features2.features.shaderInt64 == VK_FALSE) {
+        printf("%s shaderInt64 feature not supported, skipping tests\n", kSkipPrefix);
+        return;
+    } else if (image_atomic_int64_features.shaderImageInt64Atomics == VK_FALSE) {
+        printf("%s shaderImageInt64Atomics feature not supported, skipping tests\n", kSkipPrefix);
+        return;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2));
+
+    if (m_device->props.apiVersion < VK_API_VERSION_1_1) {
+        printf("%s At least Vulkan version 1.1 is required for SPIR-V 1.3, skipping test.\n", kSkipPrefix);
+        return;
+    }
+
+    // clang-format off
+    std::string cs_image_base = R"glsl(
+        #version 450
+        #extension GL_EXT_shader_explicit_arithmetic_types_int64 : enable
+        #extension GL_EXT_shader_image_int64 : enable
+        #extension GL_KHR_memory_scope_semantics : enable
+        layout(set = 0, binding = 0) buffer ssbo { uint64_t y; };
+        layout(set = 0, binding = 1, r64ui) uniform u64image2D z;
+        void main() {
+    )glsl";
+
+    std::string cs_image_load = cs_image_base + R"glsl(
+           y = imageAtomicLoad(z, ivec2(1, 1), gl_ScopeDevice, gl_StorageSemanticsImage, gl_SemanticsRelaxed);
+        }
+    )glsl";
+
+    std::string cs_image_store = cs_image_base + R"glsl(
+           imageAtomicStore(z, ivec2(1, 1), y, gl_ScopeDevice, gl_StorageSemanticsImage, gl_SemanticsRelaxed);
+        }
+    )glsl";
+
+    std::string cs_image_exchange = cs_image_base + R"glsl(
+           imageAtomicExchange(z, ivec2(1, 1), y, gl_ScopeDevice, gl_StorageSemanticsImage, gl_SemanticsRelaxed);
+        }
+    )glsl";
+
+    std::string cs_image_add = cs_image_base + R"glsl(
+           y = imageAtomicAdd(z, ivec2(1, 1), y);
+        }
+    )glsl";
+    // clang-format on
+
+    const char *current_shader = nullptr;
+    const auto set_info = [&](CreateComputePipelineHelper &helper) {
+        // Requires SPIR-V 1.3 for SPV_KHR_storage_buffer_storage_class
+        helper.cs_.reset(
+            new VkShaderObj(m_device, current_shader, VK_SHADER_STAGE_COMPUTE_BIT, this, "main", false, nullptr, /*SPIR-V 1.3*/ 3));
+        helper.dsl_bindings_ = {{0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_ALL, nullptr},
+                                {1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_ALL, nullptr}};
+    };
+
+    //  shaderImageInt64Atomics
+    current_shader = cs_image_load.c_str();
+    CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+
+    current_shader = cs_image_store.c_str();
+    CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+
+    current_shader = cs_image_exchange.c_str();
+    CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+
+    current_shader = cs_image_add.c_str();
+    CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
+}
+
+TEST_F(VkPositiveLayerTest, ValidateComputeShaderSharedMemory) {
+    TEST_DESCRIPTION("Validate compute shader shared memory does not exceed maxComputeSharedMemorySize");
+
+    ASSERT_NO_FATAL_FAILURE(Init());
+
+    // Make sure compute pipeline has a compute shader stage set
+    char const *csSource = R"glsl(
+        #version 450
+        shared uint a;
+        shared float b;
+        shared vec2 c;
+        shared mat3 d;
+        shared mat4 e[3];
+        struct A {
+            int f;
+            float g;
+            uint h;
+        };
+        shared A f;
+        void main(){
+        }
+    )glsl";
+
+    CreateComputePipelineHelper pipe(*this);
+    pipe.InitInfo();
+    pipe.cs_.reset(new VkShaderObj(m_device, csSource, VK_SHADER_STAGE_COMPUTE_BIT, this));
+    pipe.InitState();
+    m_errorMonitor->ExpectSuccess();
+    pipe.CreateComputePipeline();
+    m_errorMonitor->VerifyNotFound();
 }

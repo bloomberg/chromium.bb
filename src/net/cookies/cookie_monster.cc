@@ -795,16 +795,13 @@ void CookieMonster::StoreLoadedCookies(
   // removed, and sync'd.
   CookieItVector cookies_with_control_chars;
 
-  bool dispatch_change = !base::FeatureList::IsEnabled(
-      features::kNoCookieChangeNotificationOnLoad);
-
   for (auto& cookie : cookies) {
     CanonicalCookie* cookie_ptr = cookie.get();
     CookieAccessResult access_result;
     access_result.access_semantics = CookieAccessSemantics::UNKNOWN;
     auto inserted = InternalInsertCookie(
         GetKey(cookie_ptr->Domain()), std::move(cookie),
-        false /* sync_to_store */, access_result, dispatch_change);
+        false /* sync_to_store */, access_result, false /* dispatch_change */);
     const Time cookie_access_time(cookie_ptr->LastAccessDate());
     if (earliest_access_time_.is_null() ||
         cookie_access_time < earliest_access_time_) {
@@ -944,12 +941,14 @@ void CookieMonster::TrimDuplicateCookiesForKey(const std::string& key,
     // duplicates.
     dupes.erase(dupes.begin());
 
+    // TODO(crbug.com/1225444) Include cookie partition key in this log
+    // statement as well if needed.
     LOG(ERROR) << base::StringPrintf(
         "Found %d duplicate cookies for key='%s', "
         "with {name='%s', domain='%s', path='%s'}",
         static_cast<int>(dupes.size()), key.c_str(),
-        std::get<0>(signature).c_str(), std::get<1>(signature).c_str(),
-        std::get<2>(signature).c_str());
+        std::get<1>(signature).c_str(), std::get<2>(signature).c_str(),
+        std::get<3>(signature).c_str());
 
     // Remove all the cookies identified by |dupes|. It is valid to delete our
     // list of iterators one at a time, since |cookies_| is a multimap (they

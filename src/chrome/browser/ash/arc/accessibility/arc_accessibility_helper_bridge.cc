@@ -106,10 +106,7 @@ void DispatchFocusChange(arc::mojom::AccessibilityNodeInfoData* node_data,
       display::Screen::GetScreen()->GetDisplayNearestView(active_window);
   bounds_in_screen.Offset(display.bounds().x(), display.bounds().y());
 
-  bool is_editable = arc::GetBooleanProperty(
-      node_data, arc::mojom::AccessibilityBooleanProperty::EDITABLE);
-
-  accessibility_manager->OnViewFocusedInArc(bounds_in_screen, is_editable);
+  accessibility_manager->OnViewFocusedInArc(bounds_in_screen);
 }
 
 // Singleton factory for ArcAccessibilityHelperBridge.
@@ -257,9 +254,8 @@ void ArcAccessibilityHelperBridge::SetNativeChromeVoxArcSupport(bool enabled) {
   tree_tracker_.SetNativeChromeVoxArcSupport(enabled);
 }
 
-bool ArcAccessibilityHelperBridge::RefreshTreeIfInActiveWindow(
-    const ui::AXTreeID& tree_id) {
-  return tree_tracker_.RefreshTreeIfInActiveWindow(tree_id);
+bool ArcAccessibilityHelperBridge::EnableTree(const ui::AXTreeID& tree_id) {
+  return tree_tracker_.EnableTree(tree_id);
 }
 
 void ArcAccessibilityHelperBridge::Shutdown() {
@@ -454,7 +450,11 @@ ArcAccessibilityHelperBridge::OnGetTextLocationDataResultInternal(
   if (!result_rect)
     return absl::nullopt;
 
-  aura::Window* window = FindWindowFromChildAXTreeId(ax_tree_id);
+  AXTreeSourceArc* tree_source = tree_tracker_.GetFromTreeId(ax_tree_id);
+  if (!tree_source)
+    return absl::nullopt;
+
+  aura::Window* window = tree_source->window();
   if (!window)
     return absl::nullopt;
 

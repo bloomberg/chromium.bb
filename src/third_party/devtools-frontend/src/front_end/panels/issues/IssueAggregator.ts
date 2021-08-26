@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 import * as Common from '../../core/common/common.js';
-import type * as SDK from '../../core/sdk/sdk.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import type * as Protocol from '../../generated/protocol.js';
 
@@ -17,6 +16,7 @@ export class AggregatedIssue extends IssuesManager.Issue.Issue {
     cookie: Protocol.Audits.AffectedCookie,
     hasRequest: boolean,
   }>();
+  private affectedRawCookieLines = new Map<string, {rawCookieLine: string, hasRequest: boolean}>();
   private affectedRequests = new Map<string, Protocol.Audits.AffectedRequest>();
   private affectedLocations = new Map<string, Protocol.Audits.SourceCodeLocation>();
   private heavyAdIssues = new Set<IssuesManager.HeavyAdIssue.HeavyAdIssue>();
@@ -45,6 +45,10 @@ export class AggregatedIssue extends IssuesManager.Issue.Issue {
 
   cookies(): Iterable<Protocol.Audits.AffectedCookie> {
     return Array.from(this.affectedCookies.values()).map(x => x.cookie);
+  }
+
+  getRawCookieLines(): Iterable<{rawCookieLine: string, hasRequest: boolean}> {
+    return this.affectedRawCookieLines.values();
   }
 
   sources(): Iterable<Protocol.Audits.SourceCodeLocation> {
@@ -149,6 +153,11 @@ export class AggregatedIssue extends IssuesManager.Issue.Issue {
         this.affectedCookies.set(key, {cookie, hasRequest});
       }
     }
+    for (const rawCookieLine of issue.rawCookieLines()) {
+      if (!this.affectedRawCookieLines.has(rawCookieLine)) {
+        this.affectedRawCookieLines.set(rawCookieLine, {rawCookieLine, hasRequest});
+      }
+    }
     for (const location of issue.sources()) {
       const key = JSON.stringify(location);
       if (!this.affectedLocations.has(key)) {
@@ -194,11 +203,19 @@ export class AggregatedIssue extends IssuesManager.Issue.Issue {
   getKind(): IssuesManager.Issue.IssueKind {
     return this.issueKind;
   }
+
+  isHidden(): boolean {
+    return this.representative?.isHidden() || false;
+  }
+
+  setHidden(_value: boolean): void {
+    throw new Error('Should not call setHidden on aggregatedIssue');
+  }
 }
 
-export class IssueAggregator extends Common.ObjectWrapper.ObjectWrapper {
+export class IssueAggregator extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
   private readonly aggregatedIssuesByCode = new Map<string, AggregatedIssue>();
-
+  private readonly hiddenAggregatedIssuesByCode = new Map<string, AggregatedIssue>();
   constructor(private readonly issuesManager: IssuesManager.IssuesManager.IssuesManager) {
     super();
     this.issuesManager.addEventListener(IssuesManager.IssuesManager.Events.IssueAdded, this.onIssueAdded, this);
@@ -209,16 +226,13 @@ export class IssueAggregator extends Common.ObjectWrapper.ObjectWrapper {
     }
   }
 
-  private onIssueAdded(event: Common.EventTarget.EventTargetEvent): void {
-    const {issue} = (event.data as {
-      issuesModel: SDK.IssuesModel.IssuesModel,
-      issue: IssuesManager.Issue.Issue,
-    });
-    this.aggregateIssue(issue);
+  private onIssueAdded(event: Common.EventTarget.EventTargetEvent<IssuesManager.IssuesManager.IssueAddedEvent>): void {
+    this.aggregateIssue(event.data.issue);
   }
 
   private onFullUpdateRequired(): void {
     this.aggregatedIssuesByCode.clear();
+    this.hiddenAggregatedIssuesByCode.clear();
     for (const issue of this.issuesManager.issues()) {
       this.aggregateIssue(issue);
     }
@@ -226,13 +240,20 @@ export class IssueAggregator extends Common.ObjectWrapper.ObjectWrapper {
   }
 
   private aggregateIssue(issue: IssuesManager.Issue.Issue): AggregatedIssue {
-    let aggregatedIssue = this.aggregatedIssuesByCode.get(issue.code());
+    const map = issue.isHidden() ? this.hiddenAggregatedIssuesByCode : this.aggregatedIssuesByCode;
+    const aggregatedIssue = this.aggregateIssueByStatus(map, issue);
+    this.dispatchEventToListeners(Events.AggregatedIssueUpdated, aggregatedIssue);
+    return aggregatedIssue;
+  }
+
+  private aggregateIssueByStatus(aggregatedIssuesMap: Map<string, AggregatedIssue>, issue: IssuesManager.Issue.Issue):
+      AggregatedIssue {
+    let aggregatedIssue = aggregatedIssuesMap.get(issue.code());
     if (!aggregatedIssue) {
       aggregatedIssue = new AggregatedIssue(issue.code());
-      this.aggregatedIssuesByCode.set(issue.code(), aggregatedIssue);
+      aggregatedIssuesMap.set(issue.code(), aggregatedIssue);
     }
     aggregatedIssue.addInstance(issue);
-    this.dispatchEventToListeners(Events.AggregatedIssueUpdated, aggregatedIssue);
     return aggregatedIssue;
   }
 
@@ -240,8 +261,28 @@ export class IssueAggregator extends Common.ObjectWrapper.ObjectWrapper {
     return this.aggregatedIssuesByCode.values();
   }
 
+  hiddenAggregatedIssues(): Iterable<AggregatedIssue> {
+    return this.hiddenAggregatedIssuesByCode.values();
+  }
+
+  aggregatedIssueCodes(): Set<string> {
+    return new Set(this.aggregatedIssuesByCode.keys());
+  }
+
+  aggregatedIssueCategories(): Set<IssuesManager.Issue.IssueCategory> {
+    const result = new Set<IssuesManager.Issue.IssueCategory>();
+    for (const issue of this.aggregatedIssuesByCode.values()) {
+      result.add(issue.getCategory());
+    }
+    return result;
+  }
+
   numberOfAggregatedIssues(): number {
     return this.aggregatedIssuesByCode.size;
+  }
+
+  numberOfHiddenAggregatedIssues(): number {
+    return this.hiddenAggregatedIssuesByCode.size;
   }
 }
 
@@ -249,3 +290,8 @@ export const enum Events {
   AggregatedIssueUpdated = 'AggregatedIssueUpdated',
   FullUpdateRequired = 'FullUpdateRequired',
 }
+
+export type EventTypes = {
+  [Events.AggregatedIssueUpdated]: AggregatedIssue,
+  [Events.FullUpdateRequired]: void,
+};

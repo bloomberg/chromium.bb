@@ -48,10 +48,12 @@ class FakePdfPrinterHandler : public PdfPrinterHandler {
   }
 
   bool StartPrintToPdf() {
-    if (!base::CreateTemporaryFileInDir(save_to_dir_.GetPath(),
-                                        &save_to_pdf_file_)) {
+    // Want the PDF file to get printed into our temporary directory, and ensure
+    // that it is a new and unique file there.
+    save_to_pdf_file_ =
+        base::GetUniquePath(save_to_dir_.GetPath().Append("print-to-pdf"));
+    if (save_to_pdf_file_.empty())
       return false;
-    }
     SetPrintToPdfPathForTesting(save_to_pdf_file_);
 
     run_loop_ = std::make_unique<base::RunLoop>();
@@ -118,10 +120,9 @@ TEST_F(PdfPrinterHandlerPosixTest, SaveAsPdfFilePermissions) {
   // for the user.  It should also have group readable permissions to match the
   // behavior seen for downloaded files.  Note that this is the desired case
   // regardless of the directory permissions.
-  // TODO(crbug.com/1035572) `kExpectedFileMode` should be owner
-  // readable/writable and group readable, but POSIX `base::File()` internal
-  // details are such that files are created with user-only access.
-  constexpr int kExpectedFileMode = 0600;
+  // `base::WriteFile()` creates files permissions of read/write for user and
+  // read for everyone.
+  constexpr int kExpectedFileMode = 0644;
 
   // Test against directories with varying permissions, to illustrate that this
   // does not impact the saved PDF's permissions.

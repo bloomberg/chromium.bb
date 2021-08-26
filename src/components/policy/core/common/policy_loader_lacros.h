@@ -12,7 +12,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
-#include "chromeos/lacros/lacros_chrome_service_impl.h"
+#include "chromeos/lacros/lacros_service.h"
 #include "components/policy/core/common/async_policy_loader.h"
 #include "components/policy/core/common/policy_proto_decoders.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -23,7 +23,7 @@ namespace policy {
 // data is trusted, since they have been validated by Ash.
 class POLICY_EXPORT PolicyLoaderLacros
     : public AsyncPolicyLoader,
-      public chromeos::LacrosChromeServiceImpl::Observer {
+      public chromeos::LacrosService::Observer {
  public:
   // Creates the policy loader, saving the task_runner internally. Later
   // task_runner is used to have in sequence the process of policy parsing and

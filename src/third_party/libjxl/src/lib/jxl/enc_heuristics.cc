@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #include "lib/jxl/enc_heuristics.h"
 
@@ -29,6 +20,7 @@
 #include "lib/jxl/enc_modular.h"
 #include "lib/jxl/enc_noise.h"
 #include "lib/jxl/enc_patch_dictionary.h"
+#include "lib/jxl/enc_photon_noise.h"
 #include "lib/jxl/enc_quant_weights.h"
 #include "lib/jxl/enc_splines.h"
 #include "lib/jxl/enc_xyb.h"
@@ -54,7 +46,7 @@ void FindBestBlockEntropyModel(PassesEncoderState& enc_state) {
     bcm.num_dc_ctxs = 1;
     return;
   }
-  if (enc_state.cparams.speed_tier == SpeedTier::kFalcon) {
+  if (enc_state.cparams.speed_tier >= SpeedTier::kFalcon) {
     return;
   }
   const ImageI& rqf = enc_state.shared.raw_quant_field;
@@ -133,8 +125,9 @@ void FindBestBlockEntropyModel(PassesEncoderState& enc_state) {
   std::vector<uint8_t> remap((qft.size() + 1) * kNumOrders);
   std::iota(remap.begin(), remap.end(), 0);
   std::vector<uint8_t> clusters(remap);
+  size_t nb_clusters = Clamp1((int)(tot / size_for_ctx_model / 2), 4, 8);
   // This is O(n^2 log n), but n <= 14.
-  while (clusters.size() > 5) {
+  while (clusters.size() > nb_clusters) {
     std::sort(clusters.begin(), clusters.end(),
               [&](int a, int b) { return counts[a] > counts[b]; });
     counts[clusters[clusters.size() - 2]] += counts[clusters.back()];
@@ -226,33 +219,38 @@ Status DefaultEncoderHeuristics::LossyFrameHeuristics(
   // Compute parameters for noise synthesis.
   if (shared.frame_header.flags & FrameHeader::kNoise) {
     PROFILER_ZONE("enc GetNoiseParam");
-    // Don't start at zero amplitude since adding noise is expensive -- it
-    // significantly slows down decoding, and this is unlikely to
-    // completely go away even with advanced optimizations. After the
-    // kNoiseModelingRampUpDistanceRange we have reached the full level,
-    // i.e. noise is no longer represented by the compressed image, so we
-    // can add full noise by the noise modeling itself.
-    static const float kNoiseModelingRampUpDistanceRange = 0.6;
-    static const float kNoiseLevelAtStartOfRampUp = 0.25;
-    static const float kNoiseRampupStart = 1.0;
-    // TODO(user) test and properly select quality_coef with smooth
-    // filter
-    float quality_coef = 1.0f;
-    const float rampup = (cparams.butteraugli_distance - kNoiseRampupStart) /
-                         kNoiseModelingRampUpDistanceRange;
-    if (rampup < 1.0f) {
-      quality_coef = kNoiseLevelAtStartOfRampUp +
-                     (1.0f - kNoiseLevelAtStartOfRampUp) * rampup;
-    }
-    if (rampup < 0.0f) {
-      quality_coef = kNoiseRampupStart;
-    }
-    if (!GetNoiseParameter(*opsin, &shared.image_features.noise_params,
-                           quality_coef)) {
-      shared.frame_header.flags &= ~FrameHeader::kNoise;
+    if (cparams.photon_noise_iso > 0) {
+      shared.image_features.noise_params = SimulatePhotonNoise(
+          opsin->xsize(), opsin->ysize(), cparams.photon_noise_iso);
+    } else {
+      // Don't start at zero amplitude since adding noise is expensive -- it
+      // significantly slows down decoding, and this is unlikely to
+      // completely go away even with advanced optimizations. After the
+      // kNoiseModelingRampUpDistanceRange we have reached the full level,
+      // i.e. noise is no longer represented by the compressed image, so we
+      // can add full noise by the noise modeling itself.
+      static const float kNoiseModelingRampUpDistanceRange = 0.6;
+      static const float kNoiseLevelAtStartOfRampUp = 0.25;
+      static const float kNoiseRampupStart = 1.0;
+      // TODO(user) test and properly select quality_coef with smooth
+      // filter
+      float quality_coef = 1.0f;
+      const float rampup = (cparams.butteraugli_distance - kNoiseRampupStart) /
+                           kNoiseModelingRampUpDistanceRange;
+      if (rampup < 1.0f) {
+        quality_coef = kNoiseLevelAtStartOfRampUp +
+                       (1.0f - kNoiseLevelAtStartOfRampUp) * rampup;
+      }
+      if (rampup < 0.0f) {
+        quality_coef = kNoiseRampupStart;
+      }
+      if (!GetNoiseParameter(*opsin, &shared.image_features.noise_params,
+                             quality_coef)) {
+        shared.frame_header.flags &= ~FrameHeader::kNoise;
+      }
     }
   }
-  if (enc_state->shared.frame_header.upsampling != 1) {
+  if (enc_state->shared.frame_header.upsampling != 1 && !cparams.already_downsampled) {
     // In VarDCT mode, LossyFrameHeuristics takes care of running downsampling
     // after noise, if necessary.
     DownsampleImage(opsin, cparams.resampling);
@@ -329,12 +327,10 @@ Status DefaultEncoderHeuristics::LossyFrameHeuristics(
   if (cparams.speed_tier > SpeedTier::kHare || cparams.uniform_quant > 0) {
     enc_state->initial_quant_field =
         ImageF(shared.frame_dim.xsize_blocks, shared.frame_dim.ysize_blocks);
-    if (cparams.speed_tier == SpeedTier::kFalcon || cparams.uniform_quant > 0) {
-      float q = cparams.uniform_quant > 0
-                    ? cparams.uniform_quant
-                    : kAcQuant / cparams.butteraugli_distance;
-      FillImage(q, &enc_state->initial_quant_field);
-    }
+    float q = cparams.uniform_quant > 0
+        ? cparams.uniform_quant
+        : kAcQuant / cparams.butteraugli_distance;
+    FillImage(q, &enc_state->initial_quant_field);
   } else {
     // Call this here, as it relies on pre-gaborish values.
     float butteraugli_distance_for_iqf = cparams.butteraugli_distance;
@@ -428,7 +424,7 @@ Status DefaultEncoderHeuristics::LossyFrameHeuristics(
   FindBestQuantizer(original_pixels, *opsin, enc_state, pool, aux_out);
 
   // Choose a context model that depends on the amount of quantization for AC.
-  if (cparams.speed_tier != SpeedTier::kFalcon) {
+  if (cparams.speed_tier < SpeedTier::kFalcon) {
     FindBestBlockEntropyModel(*enc_state);
   }
   return true;

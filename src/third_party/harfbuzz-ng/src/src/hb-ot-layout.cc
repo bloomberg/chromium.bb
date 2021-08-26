@@ -1388,7 +1388,8 @@ hb_ot_layout_has_substitution (hb_face_t *face)
  * @lookup_index: The index of the lookup to query
  * @glyphs: The sequence of glyphs to query for substitution
  * @glyphs_length: The length of the glyph sequence
- * @zero_context: #hb_bool_t indicating whether substitutions should be context-free
+ * @zero_context: #hb_bool_t indicating whether pre-/post-context are disallowed
+ * in substitutions
  *
  * Tests whether a specified lookup in the specified face would
  * trigger a substitution on the given glyph sequence.
@@ -1885,27 +1886,20 @@ apply_string (OT::hb_ot_apply_context_t *c,
   if (likely (!lookup.is_reverse ()))
   {
     /* in/out forward substitution/positioning */
-    if (Proxy::table_index == 0u)
+    if (!Proxy::inplace)
       buffer->clear_output ();
-    buffer->idx = 0;
 
-    bool ret;
-    ret = apply_forward (c, accel);
-    if (ret)
-    {
-      if (!Proxy::inplace)
-	buffer->swap_buffers ();
-      else
-	assert (!buffer->has_separate_output ());
-    }
+    buffer->idx = 0;
+    apply_forward (c, accel);
+
+    if (!Proxy::inplace)
+      buffer->swap_buffers ();
   }
   else
   {
     /* in-place backward substitution/positioning */
-    if (Proxy::table_index == 0u)
-      buffer->remove_output ();
+    assert (!buffer->have_output);
     buffer->idx = buffer->len - 1;
-
     apply_backward (c, accel);
   }
 }
@@ -1921,7 +1915,8 @@ inline void hb_ot_map_t::apply (const Proxy &proxy,
   OT::hb_ot_apply_context_t c (table_index, font, buffer);
   c.set_recurse_func (Proxy::Lookup::apply_recurse_func);
 
-  for (unsigned int stage_index = 0; stage_index < stages[table_index].length; stage_index++) {
+  for (unsigned int stage_index = 0; stage_index < stages[table_index].length; stage_index++)
+  {
     const stage_map_t *stage = &stages[table_index][stage_index];
     for (; i < stage->last_lookup; i++)
     {
@@ -1931,11 +1926,8 @@ inline void hb_ot_map_t::apply (const Proxy &proxy,
       c.set_lookup_mask (lookups[table_index][i].mask);
       c.set_auto_zwj (lookups[table_index][i].auto_zwj);
       c.set_auto_zwnj (lookups[table_index][i].auto_zwnj);
-      if (lookups[table_index][i].random)
-      {
-	c.set_random (true);
-	buffer->unsafe_to_break_all ();
-      }
+      c.set_random (lookups[table_index][i].random);
+
       apply_string<Proxy> (&c,
 			   proxy.table.get_lookup (lookup_index),
 			   proxy.accels[lookup_index]);
@@ -1943,10 +1935,7 @@ inline void hb_ot_map_t::apply (const Proxy &proxy,
     }
 
     if (stage->pause_func)
-    {
-      buffer->clear_output ();
       stage->pause_func (plan, font, buffer);
-    }
   }
 }
 

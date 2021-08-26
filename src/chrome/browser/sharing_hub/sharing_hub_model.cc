@@ -24,6 +24,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/browser_context.h"
+#include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image.h"
@@ -34,15 +35,15 @@ namespace sharing_hub {
 
 namespace {
 
+const char kUrlReplace[] = "%(escaped_url)";
+const char kTitleReplace[] = "%(escaped_title)";
+
 gfx::Image DecodeIcon(std::string str) {
   std::string icon_str;
   base::Base64Decode(str, &icon_str);
   return gfx::Image::CreateFrom1xPNGBytes(
       reinterpret_cast<const unsigned char*>(icon_str.data()), icon_str.size());
 }
-
-const char kUrlReplace[] = "%(escaped_url)";
-const char kTitleReplace[] = "%(escaped_title)";
 
 }  // namespace
 
@@ -102,34 +103,39 @@ void SharingHubModel::GetThirdPartyActionList(
   }
 }
 
-void SharingHubModel::ExecuteThirdPartyAction(Profile* profile,
-                                              int id,
-                                              const std::string& url,
-                                              const std::u16string& title) {
+void SharingHubModel::ExecuteThirdPartyAction(
+    content::WebContents* web_contents,
+    int id) {
+  const std::string& url = web_contents->GetLastCommittedURL().spec();
+  const std::u16string& title = web_contents->GetTitle();
+
   auto url_it = third_party_action_urls_.find(id);
   if (url_it == third_party_action_urls_.end())
     return;
   std::string url_found = url_it->second.spec();
   size_t location_shared_url = url_found.find(kUrlReplace);
   if (location_shared_url != std::string::npos) {
-    url_found.replace(location_shared_url, strlen(kUrlReplace), url);
+    std::string escaped_url = net::EscapeUrlEncodedData(url, false);
+    url_found.replace(location_shared_url, strlen(kUrlReplace), escaped_url);
   } else {
     LOG(ERROR) << "Third Party Share API did not contain URL param.";
   }
 
   size_t location_title = url_found.find(kTitleReplace);
   if (location_title != std::string::npos) {
-    std::string title_utf8 = base::UTF16ToUTF8(title);
-    url_found.replace(location_title, strlen(kTitleReplace), title_utf8);
+    std::string escaped_title =
+        net::EscapeQueryParamValue(base::UTF16ToUTF8(title), false);
+    url_found.replace(location_title, strlen(kTitleReplace), escaped_title);
   }
 
   // TODO (crbug.com/1229421) support descriptions in third party targets.
 
   GURL share_url = GURL(url_found);
   if (share_url.is_valid()) {
-    NavigateParams params(profile, share_url, ui::PAGE_TRANSITION_LINK);
+    NavigateParams params(
+        Profile::FromBrowserContext(web_contents->GetBrowserContext()),
+        share_url, ui::PAGE_TRANSITION_LINK);
     params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
-    params.tabstrip_add_types = TabStripModel::ADD_ACTIVE;
     Navigate(&params);
     base::RecordAction(
         base::UserMetricsAction("SharingHubDesktop.ThirdPartyAppSelected"));

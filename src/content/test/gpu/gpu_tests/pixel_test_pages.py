@@ -509,6 +509,10 @@ class PixelTestPages(object):
             base_name + '_CanvasDisplaySRGBUnaccelerated2DGPUCompositing',
             test_rect=[0, 0, 140, 140],
             browser_args=browser_args + [cba.DISABLE_ACCELERATED_2D_CANVAS]),
+        PixelTestPage('pixel_webgl_webcodecs_breakoutbox_displays_frame.html',
+                      base_name + '_WebGLWebCodecsBreakoutBoxDisplaysFrame',
+                      test_rect=[0, 0, 300, 300],
+                      browser_args=browser_args)
     ]
 
   @staticmethod
@@ -614,7 +618,7 @@ class PixelTestPages(object):
     # portions of the image are prone to noise, hence the large max different
     # pixels value.
     filter_effect_fuzzy_algo = algo.FuzzyMatchingAlgorithm(
-        max_different_pixels=57500, pixel_delta_threshold=10)
+        max_different_pixels=57500, pixel_delta_threshold=15)
 
     return [
         # On macOS, test the IOSurface 2D Canvas compositing path.

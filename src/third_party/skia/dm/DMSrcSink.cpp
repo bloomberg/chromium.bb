@@ -30,6 +30,7 @@
 #include "include/private/SkTLogic.h"
 #include "include/third_party/skcms/skcms.h"
 #include "include/utils/SkNullCanvas.h"
+#include "include/utils/SkPaintFilterCanvas.h"
 #include "include/utils/SkRandom.h"
 #include "modules/skottie/utils/SkottieUtils.h"
 #include "src/codec/SkCodecImageGenerator.h"
@@ -50,6 +51,7 @@
 #include "tools/DDLPromiseImageHelper.h"
 #include "tools/DDLTileHelper.h"
 #include "tools/Resources.h"
+#include "tools/RuntimeBlendUtils.h"
 #include "tools/debugger/DebugCanvas.h"
 #include "tools/gpu/BackendSurfaceFactory.h"
 #include "tools/gpu/MemoryCache.h"
@@ -1560,8 +1562,8 @@ Result GPUSink::onDraw(const Src& src, SkBitmap* dst, SkWStream*, SkString* log,
     if (FLAGS_preAbandonGpuContext) {
         factory.abandonContexts();
     }
-    SkCanvas* canvas = surface->getCanvas();
-    Result result = src.draw(direct, canvas);
+
+    Result result = src.draw(direct, surface->getCanvas());
     if (!result.isOk()) {
         return result;
     }
@@ -2113,18 +2115,21 @@ Result RasterSink::draw(const Src& src, SkBitmap* dst, SkWStream*, SkString*) co
 // passing the Sink draw() arguments, a size, and a function draws into an SkCanvas.
 // Several examples below.
 
-template <typename Fn>
-static Result draw_to_canvas(Sink* sink, SkBitmap* bitmap, SkWStream* stream, SkString* log,
-                             SkISize size, const Fn& draw) {
+using DrawToCanvasFn = std::function<DM::Result(GrDirectContext*, SkCanvas*)>;
+
+static Result draw_to_canvas(Sink* sink, SkBitmap* bitmap, SkWStream* stream,
+                             SkString* log, SkISize size, const DrawToCanvasFn& draw) {
     class ProxySrc : public Src {
     public:
-        ProxySrc(SkISize size, const Fn& draw) : fSize(size), fDraw(draw) {}
-        Result  draw(GrDirectContext*, SkCanvas* canvas) const override { return fDraw(canvas); }
+        ProxySrc(SkISize size, const DrawToCanvasFn& draw) : fSize(size), fDraw(draw) {}
+        Result draw(GrDirectContext* context, SkCanvas* canvas) const override {
+            return fDraw(context, canvas);
+        }
         Name    name() const override { return "ProxySrc"; }
         SkISize size() const override { return fSize; }
     private:
-        SkISize   fSize;
-        const Fn& fDraw;
+        SkISize               fSize;
+        const DrawToCanvasFn& fDraw;
     };
     return sink->draw(ProxySrc(size, draw), bitmap, stream, log);
 }
@@ -2166,10 +2171,11 @@ ViaMatrix::ViaMatrix(SkMatrix matrix, Sink* sink) : Via(sink), fMatrix(matrix) {
 Result ViaMatrix::draw(const Src& src, SkBitmap* bitmap, SkWStream* stream, SkString* log) const {
     SkMatrix matrix = fMatrix;
     SkISize size = auto_compute_translate(&matrix, src.size().width(), src.size().height());
-    return draw_to_canvas(fSink.get(), bitmap, stream, log, size, [&](SkCanvas* canvas) {
-        canvas->concat(matrix);
-        return src.draw(nullptr, canvas);
-    });
+    return draw_to_canvas(fSink.get(), bitmap, stream, log, size,
+                          [&](GrDirectContext* context, SkCanvas* canvas) {
+                              canvas->concat(matrix);
+                              return src.draw(context, canvas);
+                          });
 }
 
 // Undoes any flip or 90 degree rotate without changing the scale of the bitmap.
@@ -2223,10 +2229,11 @@ Result ViaSerialization::draw(
     // Serialize it and then deserialize it.
     sk_sp<SkPicture> deserialized(SkPicture::MakeFromData(pic->serialize().get()));
 
-    result = draw_to_canvas(fSink.get(), bitmap, stream, log, size, [&](SkCanvas* canvas) {
-        canvas->drawPicture(deserialized);
-        return Result::Ok();
-    });
+    result = draw_to_canvas(fSink.get(), bitmap, stream, log, size,
+                            [&](GrDirectContext*, SkCanvas* canvas) {
+                                canvas->drawPicture(deserialized);
+                                return Result::Ok();
+                            });
     if (!result.isOk()) {
         return result;
     }
@@ -2238,10 +2245,11 @@ Result ViaSerialization::draw(
 
 Result ViaPicture::draw(const Src& src, SkBitmap* bitmap, SkWStream* stream, SkString* log) const {
     auto size = src.size();
-    Result result = draw_to_canvas(fSink.get(), bitmap, stream, log, size, [&](SkCanvas* canvas) {
+    Result result = draw_to_canvas(fSink.get(), bitmap, stream, log, size,
+                                   [&](GrDirectContext* context, SkCanvas* canvas) {
         SkPictureRecorder recorder;
         sk_sp<SkPicture> pic;
-        Result result = src.draw(nullptr, recorder.beginRecording(SkIntToScalar(size.width()),
+        Result result = src.draw(context, recorder.beginRecording(SkIntToScalar(size.width()),
                                                                   SkIntToScalar(size.height())));
         if (!result.isOk()) {
             return result;
@@ -2259,6 +2267,35 @@ Result ViaPicture::draw(const Src& src, SkBitmap* bitmap, SkWStream* stream, SkS
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
+Result ViaRuntimeBlend::draw(const Src& src,
+                             SkBitmap* bitmap,
+                             SkWStream* stream,
+                             SkString* log) const {
+    class RuntimeBlendFilterCanvas : public SkPaintFilterCanvas {
+    public:
+        RuntimeBlendFilterCanvas(SkCanvas* canvas) : INHERITED(canvas) { }
+
+    protected:
+        bool onFilter(SkPaint& paint) const override {
+            if (skstd::optional<SkBlendMode> mode = paint.asBlendMode()) {
+                paint.setBlender(GetRuntimeBlendForBlendMode(*mode));
+            }
+            return true;
+        }
+
+    private:
+        using INHERITED = SkPaintFilterCanvas;
+    };
+
+    return draw_to_canvas(fSink.get(), bitmap, stream, log, src.size(),
+                          [&](GrDirectContext* context, SkCanvas* canvas) {
+        RuntimeBlendFilterCanvas runtimeBlendCanvas{canvas};
+        return src.draw(context, &runtimeBlendCanvas);
+    });
+}
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
 #ifdef TEST_VIA_SVG
 #include "include/svg/SkSVGCanvas.h"
 #include "modules/svg/include/SkSVGDOM.h"
@@ -2266,7 +2303,8 @@ Result ViaPicture::draw(const Src& src, SkBitmap* bitmap, SkWStream* stream, SkS
 
 Result ViaSVG::draw(const Src& src, SkBitmap* bitmap, SkWStream* stream, SkString* log) const {
     auto size = src.size();
-    return draw_to_canvas(fSink.get(), bitmap, stream, log, size, [&](SkCanvas* canvas) -> Result {
+    return draw_to_canvas(fSink.get(), bitmap, stream, log, size,
+                          [&](GrDirectContext*, SkCanvas* canvas) -> Result {
         SkDynamicMemoryWStream wstream;
         SkXMLStreamWriter writer(&wstream);
         Result result = src.draw(SkSVGCanvas::Make(SkRect::Make(size), &writer).get());

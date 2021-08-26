@@ -8,7 +8,6 @@
 #ifndef GrPathTessellationShader_DEFINED
 #define GrPathTessellationShader_DEFINED
 
-#include "src/gpu/glsl/GrGLSLGeometryProcessor.h"
 #include "src/gpu/tessellate/GrTessellationPathRenderer.h"
 #include "src/gpu/tessellate/shaders/GrTessellationShader.h"
 
@@ -169,7 +168,7 @@ protected:
     }
 
     // Default path tessellation shader implementation that manages a uniform matrix and color.
-    class Impl : public GrGLSLGeometryProcessor {
+    class Impl : public ProgramImpl {
     public:
         void onEmitCode(EmitArgs&, GrGPArgs*) final;
         void setData(const GrGLSLProgramDataManager&, const GrShaderCaps&,

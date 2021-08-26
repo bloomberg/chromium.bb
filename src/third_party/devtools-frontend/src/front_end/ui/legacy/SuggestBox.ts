@@ -32,14 +32,14 @@
 
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
-import type * as TextUtils from '../../models/text_utils/text_utils.js'; // eslint-disable-line no-unused-vars
+import type * as TextUtils from '../../models/text_utils/text_utils.js';
 
 import * as ARIAUtils from './ARIAUtils.js';
 import {Size} from './Geometry.js';
 import {AnchorBehavior, GlassPane} from './GlassPane.js';
 import {Icon} from './Icon.js';
 import type {ListDelegate} from './ListControl.js';
-import {ListControl, ListMode} from './ListControl.js';  // eslint-disable-line no-unused-vars
+import {ListControl, ListMode} from './ListControl.js';
 import {ListModel} from './ListModel.js';
 import {measurePreferredSize} from './UIUtils.js';
 import {createShadowRootWithCoreStyles} from './utils/create-shadow-root-with-core-styles.js';

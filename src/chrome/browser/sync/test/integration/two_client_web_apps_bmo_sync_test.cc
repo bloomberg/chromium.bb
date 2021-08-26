@@ -17,17 +17,17 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/components/app_registry_controller.h"
-#include "chrome/browser/web_applications/components/app_shortcut_manager.h"
-#include "chrome/browser/web_applications/components/install_manager.h"
-#include "chrome/browser/web_applications/components/os_integration_manager.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/os_integration_manager.h"
 #include "chrome/browser/web_applications/test/test_os_integration_manager.h"
 #include "chrome/browser/web_applications/test/test_web_app_provider.h"
 #include "chrome/browser/web_applications/test/web_app_install_observer.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/browser/web_applications/web_app_shortcut_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
@@ -160,10 +160,7 @@ class TwoClientWebAppsBMOSyncTest : public SyncTest {
   }
 
   const WebAppRegistrar& GetRegistrar(Profile* profile) {
-    auto* web_app_registrar =
-        WebAppProvider::Get(profile)->registrar().AsWebAppRegistrar();
-    EXPECT_TRUE(web_app_registrar);
-    return *web_app_registrar;
+    return WebAppProvider::Get(profile)->registrar();
   }
 
   TestOsIntegrationManager& GetOsIntegrationManager(Profile* profile) {

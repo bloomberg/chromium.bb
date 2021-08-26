@@ -6,6 +6,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_proto_converter.h"
 
 // TODO(metzman): Figure out how to remove this include and use DCHECK.
+#include "base/notreached.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/core/css/parser/css.pb.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -190,6 +191,8 @@ const std::string Converter::kMfNameLookupTable[] = {
     "scan",
     "shape",
     "immersive",
+    "dynamic-range",
+    "video-dynamic-range",
     "INVALID_NAME"};
 
 const std::string Converter::kImportLookupTable[] = {
@@ -964,6 +967,8 @@ const std::string Converter::kValueLookupTable[] = {
     "no-drag",
     "jis-b5",
     "jis-b4",
+    "standard",
+    "high",
     "INVALID_VALUE",
 };
 

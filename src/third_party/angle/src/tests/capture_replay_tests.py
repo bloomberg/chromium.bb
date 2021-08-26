@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#! /usr/bin/env vpython3
 #
 # Copyright 2020 The ANGLE Project Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -29,6 +29,7 @@ import logging
 import math
 import multiprocessing
 import os
+import psutil
 import queue
 import re
 import shutil
@@ -154,6 +155,14 @@ def info(str):
     logging.info('%s: %s' % (multiprocessing.current_process().name, str))
 
 
+def winext(name, ext):
+    return ("%s.%s" % (name, ext)) if platform == "win32" else name
+
+
+def AutodetectGoma():
+    return winext('compiler_proxy', 'exe') in (p.name() for p in psutil.process_iter())
+
+
 class SubProcess():
 
     def __init__(self, command, env=os.environ, pipe_stdout=PIPE_STDOUT):
@@ -189,10 +198,6 @@ class ChildProcessesManager():
 
     @classmethod
     def _GetGnAndNinjaAbsolutePaths(self):
-
-        def winext(name, ext):
-            return ("%s.%s" % (name, ext)) if platform == "win32" else name
-
         path = os.path.join('third_party', 'depot_tools')
         return os.path.join(path, winext('gn', 'bat')), os.path.join(path, winext('ninja', 'exe'))
 
@@ -203,6 +208,7 @@ class ChildProcessesManager():
         self.workers = []
 
         self._gn_path, self._ninja_path = self._GetGnAndNinjaAbsolutePaths()
+        self._use_goma = AutodetectGoma()
 
     def RunSubprocess(self, command, env=None, pipe_stdout=True, timeout=None):
         proc = SubProcess(command, env, pipe_stdout)
@@ -258,11 +264,15 @@ class ChildProcessesManager():
         return count
 
     def RunGNGen(self, args, build_dir, pipe_stdout, extra_gn_args=[]):
-        gn_args = [('use_goma', str(args.use_goma).lower()),
-                   ('angle_with_capture_by_default', 'true'),
-                   ('is_debug', 'false')] + extra_gn_args
-        if args.goma_dir:
-            gn_args.append(('goma_dir', '"%s"' % args.goma_dir))
+        gn_args = [('angle_with_capture_by_default', 'true')] + extra_gn_args
+        if self._use_goma:
+            gn_args.append(('use_goma', 'true'))
+            if args.goma_dir:
+                gn_args.append(('goma_dir', '"%s"' % args.goma_dir))
+        if not args.debug:
+            gn_args.append(('is_debug', 'false'))
+            gn_args.append(('symbol_level', '1'))
+            gn_args.append(('angle_assert_always_on', 'true'))
         if args.asan:
             gn_args.append(('is_asan', 'true'))
         debug('Calling GN gen with %s' % str(gn_args))
@@ -274,7 +284,7 @@ class ChildProcessesManager():
         cmd = [self._ninja_path]
 
         # This code is taken from depot_tools/autoninja.py
-        if args.use_goma:
+        if self._use_goma:
             num_cores = multiprocessing.cpu_count()
             cmd.append('-j')
             core_multiplier = 40
@@ -303,42 +313,98 @@ def GetTestsListForFilter(args, test_path, filter):
     return subprocess.check_output(cmd, text=True)
 
 
-def GetSkippedTestPatterns():
-    skipped_test_patterns = []
-    test_expectations_filename = "capture_replay_expectations.txt"
-    test_expectations_path = os.path.join(REPLAY_SAMPLE_FOLDER, test_expectations_filename)
-    with open(test_expectations_path, "rt") as f:
-        for line in f:
-            l = line.strip()
-            if l != "" and not l.startswith("#"):
-                skipped_test_patterns.append(l)
-    return skipped_test_patterns
+class TestExpectation():
+    # tests that must not be run as list
+    disabled_tests = []
 
+    # test expectations for tests that do not pass
+    non_pass_results = {}
 
-def ParseTestNamesFromTestList(output):
-    def SkipTest(skipped_test_patterns, test):
-        for skipped_test_pattern in skipped_test_patterns:
-            if fnmatch.fnmatch(test, skipped_test_pattern):
+    flaky_tests = []
+
+    non_pass_re = {}
+
+    # yapf: disable
+    # we want each pair on one line
+    result_map = { "FAIL" : "Fail",
+                   "TIMEOUT" : "Timeout",
+                   "CRASHED" : "Crashed",
+                   "COMPILE_FAILED" : "CompileFailed",
+                   "SKIPPED_BY_GTEST" : "Skipped",
+                   "PASS" : "Pass"}
+    # yapf: enable
+
+    def __init__(self, platform):
+        expected_results_filename = "capture_replay_expectations.txt"
+        expected_results_path = os.path.join(REPLAY_SAMPLE_FOLDER, expected_results_filename)
+        with open(expected_results_path, "rt") as f:
+            for line in f:
+                l = line.strip()
+                if l != "" and not l.startswith("#"):
+                    self.ReadOneExpectation(l, platform)
+
+    def ReadOneExpectation(self, line, platform):
+        (testpattern, result) = line.split('=')
+        (test_info_string, test_name_string) = testpattern.split(':')
+        test_name = test_name_string.strip()
+        test_info = test_info_string.strip().split()
+        result_stripped = result.strip()
+
+        platforms = [platform]
+        if len(test_info) > 1:
+            platforms = test_info[1:]
+
+        if platform in platforms:
+            test_name_regex = re.compile('^' + test_name.replace('*', '.*') + '$')
+            if result_stripped == 'SKIP_FOR_CAPTURE':
+                self.disabled_tests.append(test_name_regex)
+            elif result_stripped == 'FLAKY':
+                self.flaky_tests.append(test_name_regex)
+            else:
+                self.non_pass_results[test_name] = self.result_map[result_stripped]
+                self.non_pass_re[test_name] = test_name_regex
+
+    def TestIsDisabled(self, test_name):
+        for p in self.disabled_tests:
+            m = p.match(test_name)
+            if m is not None:
                 return True
         return False
 
+    def Filter(self, test_list):
+        result = {}
+        for t in test_list:
+            for key in self.non_pass_results.keys():
+                if self.non_pass_re[key].match(t) is not None:
+                    result[t] = self.non_pass_results[key]
+        return result
+
+    def IsFlaky(self, test_name):
+        for flaky in self.flaky_tests:
+            if flaky.match(test_name) is not None:
+                return True
+        return False
+
+
+def ParseTestNamesFromTestList(output, test_expectation, ignore_exclude_from_run):
     output_lines = output.splitlines()
     tests = []
-    skipped_test_patterns = GetSkippedTestPatterns()
     seen_start_of_tests = False
-    skips = 0
+    disabled = 0
     for line in output_lines:
         l = line.strip()
-        if l == "Tests list:":
+        if l == 'Tests list:':
             seen_start_of_tests = True
+        elif l == 'End tests list.':
+            break
         elif not seen_start_of_tests:
             pass
-        elif not SkipTest(skipped_test_patterns, l):
+        elif not test_expectation.TestIsDisabled(l) or ignore_exclude_from_run:
             tests.append(l)
         else:
-            skips += 1
+            disabled += 1
 
-    info('Found %s tests and %d skipped tests.' % (len(tests), skips))
+    info('Found %s tests and %d disabled tests.' % (len(tests), disabled))
     return tests
 
 
@@ -474,8 +540,8 @@ class Test():
                 source_txt_count += 1
             elif f.endswith(".h"):
                 context_header_count += 1
-                context = f.split(TRACE_FILE_SUFFIX)[1][:-2]
-                if context != "_shared":
+                if TRACE_FILE_SUFFIX in f:
+                    context = f.split(TRACE_FILE_SUFFIX)[1][:-2]
                     context_id = int(context)
             elif f.endswith(".cpp"):
                 context_source_count += 1
@@ -526,6 +592,8 @@ class TestBatch():
 
         returncode, output = child_processes_manager.RunSubprocess(
             cmd, env, timeout=SUBPROCESS_TIMEOUT)
+        if args.show_capture_stdout:
+            info("Capture stdout: %s" % output)
         if returncode == -1:
             self.results.append(GroupedResult(GroupedResult.Crashed, "", output, self.tests))
             return False
@@ -557,7 +625,7 @@ class TestBatch():
         # CaptureReplayTests.cpp
         self.CreateTestsCompositeFiles(composite_file_id, tests)
 
-        gn_args = [('angle_build_capture_replay_tests', 'true'), ('symbol_level', '1'),
+        gn_args = [('angle_build_capture_replay_tests', 'true'),
                    ('angle_capture_replay_test_trace_dir', '"%s"' % self.trace_dir),
                    ('angle_capture_replay_composite_file_id', str(composite_file_id))]
         returncode, output = child_processes_manager.RunGNGen(self.args, replay_build_dir, True,
@@ -660,7 +728,7 @@ class TestBatch():
                 files = f.readlines()
                 f.close()
             files = ['"%s/%s"' % (self.trace_dir, file.strip()) for file in files]
-            angledata = "%s%s_shared.angledata.gz" % (label, TRACE_FILE_SUFFIX)
+            angledata = "%s%s.angledata.gz" % (label, TRACE_FILE_SUFFIX)
             test_list += [
                 '["%s", %s, [%s], "%s"]' % (label, test.context_id, ','.join(files), angledata)
             ]
@@ -810,7 +878,16 @@ def DeleteTraceFolders(folder_num):
             SafeDeleteFolder(folder_path)
 
 
-def main(args):
+def GetPlatformForSkip(platform):
+    # yapf: disable
+    # we want each pair on one line
+    platform_map = { "win32" : "WIN",
+                     "linux" : "LINUX" }
+    # yapf: enable
+    return platform_map.get(platform, "UNKNOWN")
+
+
+def main(args, platform):
     child_processes_manager = ChildProcessesManager()
     try:
         start_time = time.time()
@@ -837,7 +914,10 @@ def main(args):
         # get a list of tests
         test_path = os.path.join(capture_build_dir, args.test_suite)
         test_list = GetTestsListForFilter(args, test_path, args.gtest_filter)
-        test_names = ParseTestNamesFromTestList(test_list)
+        test_expectation = TestExpectation(platform)
+        test_names = ParseTestNamesFromTestList(test_list, test_expectation,
+                                                args.force_run_capture)
+        test_expectation_for_list = test_expectation.Filter(test_names)
         # objects created by manager can be shared by multiple processes. We use it to create
         # collections that are shared by multiple processes such as job queue or result list.
         manager = multiprocessing.Manager()
@@ -910,6 +990,10 @@ def main(args):
         # print out results
         logging.info("\n\n\n")
         logging.info("Results:")
+
+        test_results = {}
+        flaky_results = []
+
         for test_batch_result in result_list:
             debug(str(test_batch_result))
             passed_count += len(test_batch_result.passes)
@@ -921,14 +1005,45 @@ def main(args):
 
             for failed_test in test_batch_result.fails:
                 failed_tests.append(failed_test)
+                test_results[failed_test] = "Fail"
+
             for timeout_test in test_batch_result.timeouts:
                 timed_out_tests.append(timeout_test)
+                test_results[timeout_test] = "Timeout"
+
             for crashed_test in test_batch_result.crashes:
                 crashed_tests.append(crashed_test)
+                test_results[crashed_test] = "Crashed"
+
             for compile_failed_test in test_batch_result.compile_fails:
                 compile_failed_tests.append(compile_failed_test)
+                test_results[compile_failed_test] = "CompileFailed"
+
             for skipped_test in test_batch_result.skips:
                 skipped_tests.append(skipped_test)
+                test_results[skipped_test] = "Skipped"
+
+            for passed_test in test_batch_result.passes:
+                if test_expectation.IsFlaky(passed_test):
+                    flaky_results.append("  {} (Pass)".format(passed_test))
+
+        test_result = []
+        for test, result in sorted(test_results.items()):
+            if not test_expectation.IsFlaky(test):
+                test_result.append("{} {}\n".format(test, result))
+            else:
+                flaky_results.append("  {} ({})".format(test, result))
+
+        expected_result = []
+        expected_result_map = sorted(test_expectation_for_list.items())
+        for test, result in expected_result_map:
+            if test in test_names:
+                expected_result.append("{} {}\n".format(test, result))
+
+        if len(flaky_results):
+            logging.info("\n\nFlaky test(s):")
+            for line in flaky_results:
+                logging.info(line)
 
         logging.info("\n\n")
         logging.info("Elapsed time: %.2lf seconds" % (end_time - start_time))
@@ -937,31 +1052,23 @@ def main(args):
             % (passed_count, failed_count, crashed_count, compile_failed_count, skipped_count,
                timedout_count))
 
-        retval = EXIT_SUCCESS
+        result_diff = difflib.unified_diff(
+            expected_result,
+            test_result,
+            fromfile="expected result",
+            tofile="obtained result",
+            n=0)
 
-        if len(failed_tests):
-            logging.info("Comparison Failed tests:")
-            for failed_test in sorted(failed_tests):
-                logging.info("  " + failed_test)
-            retval = EXIT_FAILURE
-        if len(crashed_tests):
-            logging.info("Crashed tests:")
-            for crashed_test in sorted(crashed_tests):
-                logging.info("  " + crashed_test)
-            retval = EXIT_FAILURE
-        if len(compile_failed_tests):
-            logging.info("Compile failed tests:")
-            for compile_failed_test in sorted(compile_failed_tests):
-                logging.info("  " + compile_failed_test)
-            retval = EXIT_FAILURE
-        if len(skipped_tests):
-            logging.info("Skipped tests:")
-            for skipped_test in sorted(skipped_tests):
-                logging.info("  " + skipped_test)
-        if len(timed_out_tests):
-            logging.info("Timeout tests:")
-            for timeout_test in sorted(timed_out_tests):
-                logging.info("  " + timeout_test)
+        diff_lines = 0
+        for line in result_diff:
+            if line is not None:
+                logging.info(line.rstrip("\n"))
+                diff_lines = diff_lines + 1
+
+        if diff_lines == 0:
+            retval = EXIT_SUCCESS
+        else:
+            logging.info("\nFailure: Obtained results differed from expectation")
             retval = EXIT_FAILURE
 
         # delete generated folders if --keep_temp_files flag is set to false
@@ -988,6 +1095,7 @@ if __name__ == "__main__":
         default=DEFAULT_OUT_DIR,
         help='Where to build ANGLE for capture and replay. Relative to the ANGLE folder. Default is "%s".'
         % DEFAULT_OUT_DIR)
+    # TODO(jmadill): Remove this argument. http://anglebug.com/6102
     parser.add_argument(
         '--use-goma',
         action='store_true',
@@ -1035,10 +1143,19 @@ if __name__ == "__main__":
         default=DEFAULT_MAX_JOBS,
         type=int,
         help='Maximum number of test processes. Default is %d.' % DEFAULT_MAX_JOBS)
+    parser.add_argument(
+        '-f',
+        '--force-run-capture',
+        action='store_true',
+        help='Also run tests that are disabled in the expectations by SKIP_FOR_CAPTURE')
+
     # TODO(jmadill): Remove this argument. http://anglebug.com/6102
     parser.add_argument('--depot-tools-path', default=None, help='Path to depot tools')
     parser.add_argument('--xvfb', action='store_true', help='Run with xvfb.')
     parser.add_argument('--asan', action='store_true', help='Build with ASAN.')
+    parser.add_argument(
+        '--show-capture-stdout', action='store_true', help='Print test stdout during capture.')
+    parser.add_argument('--debug', action='store_true', help='Debug builds (default is Release).')
     args = parser.parse_args()
     if platform == "win32":
         args.test_suite += ".exe"
@@ -1046,4 +1163,5 @@ if __name__ == "__main__":
         logging.basicConfig(level=args.log.upper(), filename=args.result_file)
     else:
         logging.basicConfig(level=args.log.upper())
-    sys.exit(main(args))
+
+    sys.exit(main(args, GetPlatformForSkip(platform)))

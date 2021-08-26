@@ -3,6 +3,8 @@
 <translationbundle lang="ur">
 <translation id="1175958423215084756">لنک کا پتہ چلا۔ <ph name="HOSTNAME" /></translation>
 <translation id="1276998909102132017">گیلری کی تصاویر</translation>
+<translation id="1300209025925956156">اپنی دستاویز اسکین کریں</translation>
+<translation id="137991641490787891"><ph name="ASPECT_RATIO_WIDTH" />۔ رسائی حاصل کرنے کے لیے تلاش پلس بائیں تیر کا نشان۔</translation>
 <translation id="1430915738399379752">پرنٹ کریں</translation>
 <translation id="1467231725790366244"><ph name="CAMERA" /> ان پلگ ہے۔</translation>
 <translation id="1473110567575736769">3 سیکنڈ کا ٹائمر</translation>
@@ -31,7 +33,6 @@
 <translation id="2549985041256363841">ریکارڈنگ شروع کریں</translation>
 <translation id="2599796128805996109">پیچھے کا کیمرہ</translation>
 <translation id="2879583609344924966"><ph name="CAMERA" /> پلگ ان ہے</translation>
-<translation id="2912439424121107408">اس آلے پر ماہر وضع تعاون یافتہ نہیں ہے</translation>
 <translation id="2968794441791257519">کیمرا سے لی گئی تصاویر اور ویڈیوز ڈاؤن لوڈز فولڈر میں منتقل کر دی جائیں گی۔ آپ فائلز میں ان تک رسائی حاصل کر سکتے ہیں۔
 
         اسٹوریج کی اجازتوں والی ایپس کو آپ کی تصاویر اور ویڈیوز تک رسائی حاصل ہوگی۔</translation>
@@ -42,15 +43,16 @@
 <translation id="3227137524299004712">مائیکروفون</translation>
 <translation id="3240426699337459095">لنک کاپی ہوگیا</translation>
 <translation id="3259149966178251584">کیمرہ ریزولیوشن</translation>
+<translation id="3260401663013584785">دستاویز کا پتا نہیں لگ سکا</translation>
 <translation id="3448774564454087943">ویڈیو بہت چھوٹی ہونے کی وجہ سے محفوظ نہیں ہوئی</translation>
 <translation id="3517926952904427380">پورٹریٹ تصویر لینے سے قاصر</translation>
 <translation id="3569311554794739032">کیا آپ واقعی <ph name="FILE" /> کو ہٹانا چاہتے ہیں؟</translation>
-<translation id="3733597664308256288">‏کیمرا کے اضافی کنٹرولز دستیاب ہیں۔ رسائی حاصل کرنے کے لیے Search +‎ بائیں تیر کا نشان دبائیں</translation>
 <translation id="3810838688059735925">ویڈیو</translation>
 <translation id="3838931309141338733">بارکوڈ اسکین کریں</translation>
 <translation id="3892148308691398805">ٹیکسٹ کاپی کریں</translation>
 <translation id="4000398125663085899">نئی تصاویر اور ویڈیوز کو فائلز ایپ میں ایک فولڈر میں محفوظ کیا جائے گا: میری فائلیں &gt; کیمرا۔</translation>
 <translation id="4118525110028899586">ریکارڈنگ موقوف کریں</translation>
+<translation id="4121305183798804752">دستاویز کا پتہ چلا</translation>
 <translation id="4269820728363426813">لنک کا پتہ کاپی کریں</translation>
 <translation id="4279490309300973883">مررنگ</translation>
 <translation id="4329152592498422850">مربع تصویر لینے کی وضع پر سوئچ کریں</translation>
@@ -65,10 +67,13 @@
 <translation id="5057360777601936059">آپ کا کیمرا فی الحال دستیاب نہیں ہے۔
         چیک کریں کہ کیمرا ٹھیک سے منسلک ہے۔</translation>
 <translation id="5152121255775685072">گیلری میں جائیں</translation>
+<translation id="520537883758714667">دستاویز کو اسکین کرنے کی خصوصیت اب دستیاب ہے</translation>
 <translation id="5268823927180092501">سبھی کیمروں پر دستاویز وضع فعال کریں</translation>
 <translation id="5422455049771430511">آپ کی تصاویر اور ویڈیوز کیلئے ایک نئی جگہ</translation>
+<translation id="5444515100983837161">دستاویز کے سبھی کناروں کو فریم میں رکھیں۔ اگر دستاویز اور پس منظر کے رنگ مختلف ہوں تو اسکیننگ بہترین کام کرتا ہے۔</translation>
 <translation id="5671277269877808209">مربع</translation>
 <translation id="5753488212459587150">ماہر وضع کو فعال کریں</translation>
+<translation id="5759254179196327752">دستاویز اسکین کریں</translation>
 <translation id="5775960006311140197">ماہر وضع</translation>
 <translation id="5869546221129391014">گرڈ</translation>
 <translation id="5975083100439434680">زوم آؤٹ کریں</translation>
@@ -82,6 +87,7 @@
 
 اگر آپ کے تاثرات تصویر یا ویڈیو کے معیار کے بارے میں ہیں تو براہ کرم نمونہ کی تصویر یا ویڈیو منسلک کریں اور وضاحت کریں کہ کیا غلط ہے۔ (مثال کے طور پر، تصویر بہت گہری ہے یا مضمون فوکس میں نہیں ہے۔)</translation>
 <translation id="6420689864531458495">‏‎(<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" /> - <ph name="WIDTH" />x<ph name="HEIGHT" />)‎ <ph name="MEGAPIXEL" /> میگا پکسل</translation>
+<translation id="667999046851023355">دستاویز</translation>
 <translation id="6681668084120808868">تصویر لیں</translation>
 <translation id="6778482348691154169">تصویر لینے سے قاصر</translation>
 <translation id="695140971690006676">تمام کو ری سیٹ کریں</translation>
@@ -108,11 +114,13 @@
 <translation id="8425673304802773841">نیچے کی طرف جھکائیں</translation>
 <translation id="8428213095426709021">ترتیبات</translation>
 <translation id="8687491812650032292">‏‎HD‏ <ph name="HEIGHT" />p ‎‏ (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
+<translation id="8712637175834984815">سمجھ آ گئی</translation>
 <translation id="8732462232047530626">میٹا ڈیٹا کا پیش منظر</translation>
 <translation id="8815966864175525708">پورٹریٹ تصویر لینے کی وضع پر سوئچ کریں</translation>
 <translation id="8828441885228359828">ریکارڈنگ دوبارہ شروع کریں</translation>
 <translation id="8870695351537079478">ریکارڈنگ شروع کرنے سے قاصر</translation>
 <translation id="8903921497873541725">زوم ان کریں</translation>
+<translation id="9045010116236796332">دستاویز کے سبھی کناروں کو فریم کے اندر رکھیں</translation>
 <translation id="9045155556724273246">10 سیکنڈ</translation>
 <translation id="945522503751344254">تاثرات بھیجیں</translation>
 </translationbundle>

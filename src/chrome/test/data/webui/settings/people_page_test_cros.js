@@ -10,7 +10,7 @@ import {AccountManagerBrowserProxyImpl, pageVisibility, ProfileInfoBrowserProxyI
 import {simulateSyncStatus} from 'chrome://test/settings/sync_test_util.js';
 import {TestProfileInfoBrowserProxy} from 'chrome://test/settings/test_profile_info_browser_proxy.js';
 import {TestSyncBrowserProxy} from 'chrome://test/settings/test_sync_browser_proxy.js';
-import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.js';
 // clang-format on
 
 /** @implements {AccountManagerBrowserProxy} */
@@ -95,7 +95,7 @@ suite('Chrome OS', function() {
 
   setup(async function() {
     syncBrowserProxy = new TestSyncBrowserProxy();
-    SyncBrowserProxyImpl.instance_ = syncBrowserProxy;
+    SyncBrowserProxyImpl.setInstance(syncBrowserProxy);
 
     profileInfoBrowserProxy = new TestProfileInfoBrowserProxy();
     ProfileInfoBrowserProxyImpl.instance_ = profileInfoBrowserProxy;
@@ -156,7 +156,7 @@ suite('Chrome OS with account manager disabled', function() {
 
   setup(async function() {
     syncBrowserProxy = new TestSyncBrowserProxy();
-    SyncBrowserProxyImpl.instance_ = syncBrowserProxy;
+    SyncBrowserProxyImpl.setInstance(syncBrowserProxy);
 
     profileInfoBrowserProxy = new TestProfileInfoBrowserProxy();
     ProfileInfoBrowserProxyImpl.instance_ = profileInfoBrowserProxy;
@@ -210,7 +210,7 @@ suite('Chrome OS with UseBrowserSyncConsent', function() {
 
   setup(async function() {
     syncBrowserProxy = new TestSyncBrowserProxy();
-    SyncBrowserProxyImpl.instance_ = syncBrowserProxy;
+    SyncBrowserProxyImpl.setInstance(syncBrowserProxy);
 
     profileInfoBrowserProxy = new TestProfileInfoBrowserProxy();
     ProfileInfoBrowserProxyImpl.instance_ = profileInfoBrowserProxy;

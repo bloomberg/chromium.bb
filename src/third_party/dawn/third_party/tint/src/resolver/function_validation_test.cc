@@ -28,13 +28,13 @@ class ResolverFunctionValidationTest : public resolver::TestHelper,
 TEST_F(ResolverFunctionValidationTest, FunctionNamesMustBeUnique_fail) {
   // fn func -> i32 { return 2; }
   // fn func -> i32 { return 2; }
-  Func("func", ast::VariableList{}, ty.i32(),
+  Func(Source{{56, 78}}, "func", ast::VariableList{}, ty.i32(),
        ast::StatementList{
            Return(2),
        },
        ast::DecorationList{});
 
-  Func(Source{Source::Location{12, 34}}, "func", ast::VariableList{}, ty.i32(),
+  Func(Source{{12, 34}}, "func", ast::VariableList{}, ty.i32(),
        ast::StatementList{
            Return(2),
        },
@@ -42,8 +42,34 @@ TEST_F(ResolverFunctionValidationTest, FunctionNamesMustBeUnique_fail) {
 
   EXPECT_FALSE(r()->Resolve());
   EXPECT_EQ(r()->error(),
-            "12:34 error: redefinition of 'func'\nnote: previous definition "
-            "is here");
+            R"(12:34 error: redefinition of 'func'
+56:78 note: previous definition is here)");
+}
+
+TEST_F(ResolverFunctionValidationTest, ParameterNamesMustBeUnique_fail) {
+  // fn func(common_name : f32, x : i32, common_name : u32) { }
+  Func("func",
+       {
+           Param(Source{{56, 78}}, "common_name", ty.f32()),
+           Param("x", ty.i32()),
+           Param(Source{{12, 34}}, "common_name", ty.u32()),
+       },
+       ty.void_(), {});
+
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(r()->error(),
+            R"(12:34 error: redefinition of 'common_name'
+56:78 note: previous definition is here)");
+}
+
+TEST_F(ResolverFunctionValidationTest, ParameterNamesMustBeUnique_pass) {
+  // fn func_a(common_name : f32) { }
+  // fn func_b(common_name : f32) { }
+  Func("func_a", {Param("common_name", ty.f32())}, ty.void_(), {});
+  Func("func_b", {Param("common_name", ty.f32())}, ty.void_(), {});
+
+  EXPECT_TRUE(r()->Resolve());
+  EXPECT_EQ(r()->error(), "");
 }
 
 TEST_F(ResolverFunctionValidationTest,
@@ -214,6 +240,20 @@ TEST_F(ResolverFunctionValidationTest,
   EXPECT_EQ(r()->error(),
             "12:34 error: return statement type must match its function return "
             "type, returned 'i32', expected 'void'");
+}
+
+TEST_F(ResolverFunctionValidationTest,
+       FunctionTypeMustMatchReturnStatementType_void_fail) {
+  // fn v { return; }
+  // fn func { return v(); }
+  Func("v", {}, ty.void_(), {Return()});
+  Func("func", {}, ty.void_(),
+       {
+           Return(Call(Source{Source::Location{12, 34}}, "v")),
+       });
+
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(r()->error(), "12:34 error: function 'v' does not return a value");
 }
 
 TEST_F(ResolverFunctionValidationTest,
@@ -642,6 +682,28 @@ TEST_F(ResolverFunctionValidationTest, ParameterSotreType_AtomicFree) {
   Func("f", ast::VariableList{bar}, ty.void_(), {});
 
   EXPECT_TRUE(r()->Resolve()) << r()->error();
+}
+
+TEST_F(ResolverFunctionValidationTest, ParametersAtLimit) {
+  ast::VariableList params;
+  for (int i = 0; i < 255; i++) {
+    params.emplace_back(Param("param_" + std::to_string(i), ty.i32()));
+  }
+  Func(Source{{12, 34}}, "f", params, ty.void_(), {});
+
+  EXPECT_TRUE(r()->Resolve()) << r()->error();
+}
+
+TEST_F(ResolverFunctionValidationTest, ParametersOverLimit) {
+  ast::VariableList params;
+  for (int i = 0; i < 256; i++) {
+    params.emplace_back(Param("param_" + std::to_string(i), ty.i32()));
+  }
+  Func(Source{{12, 34}}, "f", params, ty.void_(), {});
+
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(r()->error(),
+            "12:34 error: functions may declare at most 255 parameters");
 }
 
 struct TestParams {

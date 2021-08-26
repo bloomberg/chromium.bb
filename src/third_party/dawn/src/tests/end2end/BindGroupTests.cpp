@@ -289,7 +289,7 @@ TEST_P(BindGroupTests, UBOSamplerAndTexture) {
     descriptor.sampleCount = 1;
     descriptor.format = wgpu::TextureFormat::RGBA8Unorm;
     descriptor.mipLevelCount = 1;
-    descriptor.usage = wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::Sampled;
+    descriptor.usage = wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::TextureBinding;
     wgpu::Texture texture = device.CreateTexture(&descriptor);
     wgpu::TextureView textureView = texture.CreateView();
 
@@ -755,6 +755,108 @@ TEST_P(BindGroupTests, DrawThenChangePipelineAndBindGroup) {
     EXPECT_PIXEL_RGBA8_EQ(notFilled, renderPass.color, max, max);
 }
 
+// Test for crbug.com/dawn/1049, where setting a pipeline without drawing can prevent
+// bind groups from being applied later
+TEST_P(BindGroupTests, DrawThenChangePipelineTwiceAndBindGroup) {
+    utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
+
+    // Create a bind group layout which uses a single dynamic uniform buffer.
+    wgpu::BindGroupLayout uniformLayout = utils::MakeBindGroupLayout(
+        device, {{0, wgpu::ShaderStage::Fragment, wgpu::BufferBindingType::Uniform, true}});
+
+    // Create a pipeline with pipeline layout (uniform, uniform, uniform).
+    wgpu::RenderPipeline pipeline0 =
+        MakeTestPipeline(renderPass,
+                         {wgpu::BufferBindingType::Uniform, wgpu::BufferBindingType::Uniform,
+                          wgpu::BufferBindingType::Uniform},
+                         {uniformLayout, uniformLayout, uniformLayout});
+
+    // Create a pipeline with pipeline layout (uniform).
+    wgpu::RenderPipeline pipeline1 = MakeTestPipeline(
+        renderPass, {wgpu::BufferBindingType::Uniform, wgpu::BufferBindingType::Uniform},
+        {uniformLayout, uniformLayout});
+
+    // Prepare color data.
+    // The first draw will use { color0, color1, color2 }.
+    // The second draw will use { color0, color1, color3 }.
+    // The pipeline uses additive color and alpha so the result of two draws should be
+    // { 2 * color0 + 2 * color1 + color2 + color3} = RGBAunorm(1, 1, 1, 1)
+    std::array<float, 4> color0 = {0.501, 0, 0, 0};
+    std::array<float, 4> color1 = {0, 0.501, 0, 0};
+    std::array<float, 4> color2 = {0, 0, 1, 0};
+    std::array<float, 4> color3 = {0, 0, 0, 1};
+
+    size_t color0Offset = 0;
+    size_t color1Offset = Align(color0Offset + sizeof(color0), kMinUniformBufferOffsetAlignment);
+    size_t color2Offset = Align(color1Offset + sizeof(color1), kMinUniformBufferOffsetAlignment);
+    size_t color3Offset = Align(color2Offset + sizeof(color2), kMinUniformBufferOffsetAlignment);
+
+    std::vector<uint8_t> data(color3Offset + sizeof(color3), 0);
+    memcpy(data.data(), color0.data(), sizeof(color0));
+    memcpy(data.data() + color1Offset, color1.data(), sizeof(color1));
+    memcpy(data.data() + color2Offset, color2.data(), sizeof(color2));
+    memcpy(data.data() + color3Offset, color3.data(), sizeof(color3));
+
+    // Create a uniform and storage buffer bind groups to bind the color data.
+    wgpu::Buffer uniformBuffer =
+        utils::CreateBufferFromData(device, data.data(), data.size(), wgpu::BufferUsage::Uniform);
+
+    wgpu::BindGroup uniformBindGroup =
+        utils::MakeBindGroup(device, uniformLayout, {{0, uniformBuffer, 0, 4 * sizeof(float)}});
+
+    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+    wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
+
+    // Set the pipeline to (uniform, uniform, uniform)
+    pass.SetPipeline(pipeline0);
+
+    // Set the first bind group to color0 in the dynamic uniform buffer.
+    uint32_t dynamicOffset = color0Offset;
+    pass.SetBindGroup(0, uniformBindGroup, 1, &dynamicOffset);
+
+    // Set the first bind group to color1 in the dynamic uniform buffer.
+    dynamicOffset = color1Offset;
+    pass.SetBindGroup(1, uniformBindGroup, 1, &dynamicOffset);
+
+    // Set the first bind group to color2 in the dynamic uniform buffer.
+    dynamicOffset = color2Offset;
+    pass.SetBindGroup(2, uniformBindGroup, 1, &dynamicOffset);
+
+    // This draw will internally apply bind groups for pipeline 0.
+    pass.Draw(3);
+
+    // When we set pipeline 1, which has no bind group at index 2 in its layout, it
+    // should not prevent bind group 2 from being used after reverting to pipeline 0.
+    // More specifically, internally the pipeline 1 layout should not be saved,
+    // because we never applied the bind groups via a Draw or Dispatch.
+    pass.SetPipeline(pipeline1);
+
+    // Set the second bind group to color3 in the dynamic uniform buffer.
+    dynamicOffset = color3Offset;
+    pass.SetBindGroup(2, uniformBindGroup, 1, &dynamicOffset);
+
+    // Revert to pipeline 0
+    pass.SetPipeline(pipeline0);
+
+    // Internally this should re-apply bind group 2. Because we already
+    // drew with this pipeline, and setting pipeline 1 did not dirty the bind groups,
+    // bind groups 0 and 1 should still be valid.
+    pass.Draw(3);
+
+    pass.EndPass();
+
+    wgpu::CommandBuffer commands = encoder.Finish();
+    queue.Submit(1, &commands);
+
+    RGBA8 filled(255, 255, 255, 255);
+    RGBA8 notFilled(0, 0, 0, 0);
+    uint32_t min = 1, max = kRTSize - 3;
+    EXPECT_PIXEL_RGBA8_EQ(filled, renderPass.color, min, min);
+    EXPECT_PIXEL_RGBA8_EQ(filled, renderPass.color, max, min);
+    EXPECT_PIXEL_RGBA8_EQ(filled, renderPass.color, min, max);
+    EXPECT_PIXEL_RGBA8_EQ(notFilled, renderPass.color, max, max);
+}
+
 // Regression test for crbug.com/dawn/408 where dynamic offsets were applied in the wrong order.
 // Dynamic offsets should be applied in increasing order of binding number.
 TEST_P(BindGroupTests, DynamicOffsetOrder) {
@@ -1154,7 +1256,7 @@ TEST_P(BindGroupTests, ReallyLargeBindGroup) {
                   "Please update this test");
     for (uint32_t i = 0; i < kMaxSampledTexturesPerShaderStage; ++i) {
         wgpu::Texture texture = CreateTextureWithRedData(
-            wgpu::TextureFormat::R8Unorm, expectedValue, wgpu::TextureUsage::Sampled);
+            wgpu::TextureFormat::R8Unorm, expectedValue, wgpu::TextureUsage::TextureBinding);
         bgEntries.push_back({nullptr, binding, nullptr, 0, 0, nullptr, texture.CreateView()});
 
         interface << "[[group(0), binding(" << binding++ << ")]] "
@@ -1173,7 +1275,7 @@ TEST_P(BindGroupTests, ReallyLargeBindGroup) {
     }
     for (uint32_t i = 0; i < kMaxStorageTexturesPerShaderStage; ++i) {
         wgpu::Texture texture = CreateTextureWithRedData(
-            wgpu::TextureFormat::R32Uint, expectedValue, wgpu::TextureUsage::Storage);
+            wgpu::TextureFormat::R32Uint, expectedValue, wgpu::TextureUsage::StorageBinding);
         bgEntries.push_back({nullptr, binding, nullptr, 0, 0, nullptr, texture.CreateView()});
 
         interface << "[[group(0), binding(" << binding++ << ")]] "
@@ -1237,7 +1339,9 @@ TEST_P(BindGroupTests, ReallyLargeBindGroup) {
     wgpu::ComputePipelineDescriptor cpDesc;
     cpDesc.compute.module = utils::CreateShaderModule(device, shader.c_str());
     cpDesc.compute.entryPoint = "main";
-    wgpu::ComputePipeline cp = device.CreateComputePipeline(&cpDesc);
+    wgpu::ComputePipeline cp;
+    // TODO(crbug.com/dawn/1025): Remove once ReadOnly storage texture deprecation period is passed.
+    EXPECT_DEPRECATION_WARNINGS(cp = device.CreateComputePipeline(&cpDesc), 4);
 
     wgpu::BindGroupDescriptor bgDesc = {};
     bgDesc.layout = cp.GetBindGroupLayout(0);
@@ -1285,33 +1389,59 @@ TEST_P(BindGroupTests, CreateWithDestroyedResource) {
             device, {{0, wgpu::ShaderStage::Fragment, wgpu::TextureSampleType::Float}});
 
         wgpu::TextureDescriptor textureDesc;
-        textureDesc.usage = wgpu::TextureUsage::Sampled;
+        textureDesc.usage = wgpu::TextureUsage::TextureBinding;
         textureDesc.size = {1, 1, 1};
         textureDesc.format = wgpu::TextureFormat::BGRA8Unorm;
 
-        wgpu::Texture texture = device.CreateTexture(&textureDesc);
-        wgpu::TextureView textureView = texture.CreateView();
+        // Create view, then destroy.
+        {
+            wgpu::Texture texture = device.CreateTexture(&textureDesc);
+            wgpu::TextureView textureView = texture.CreateView();
 
-        texture.Destroy();
-        wgpu::BindGroup bg = utils::MakeBindGroup(device, bgl, {{0, textureView}});
+            texture.Destroy();
+            wgpu::BindGroup bg = utils::MakeBindGroup(device, bgl, {{0, textureView}});
+        }
+        // Destroy, then create view.
+        {
+            wgpu::Texture texture = device.CreateTexture(&textureDesc);
+            texture.Destroy();
+            wgpu::TextureView textureView = texture.CreateView();
+
+            wgpu::BindGroup bg = utils::MakeBindGroup(device, bgl, {{0, textureView}});
+        }
     }
 
     // Test a storage texture.
     {
-        wgpu::BindGroupLayout bgl = utils::MakeBindGroupLayout(
-            device, {{0, wgpu::ShaderStage::Fragment, wgpu::StorageTextureAccess::ReadOnly,
-                      wgpu::TextureFormat::R32Uint}});
+        wgpu::BindGroupLayout bgl;
+        // TODO(crbug.com/dawn/1025): Remove once ReadOnly storage texture deprecation period is
+        // passed.
+        EXPECT_DEPRECATION_WARNING(
+            bgl = utils::MakeBindGroupLayout(
+                device, {{0, wgpu::ShaderStage::Fragment, wgpu::StorageTextureAccess::ReadOnly,
+                          wgpu::TextureFormat::R32Uint}}));
 
         wgpu::TextureDescriptor textureDesc;
-        textureDesc.usage = wgpu::TextureUsage::Storage;
+        textureDesc.usage = wgpu::TextureUsage::StorageBinding;
         textureDesc.size = {1, 1, 1};
         textureDesc.format = wgpu::TextureFormat::R32Uint;
 
-        wgpu::Texture texture = device.CreateTexture(&textureDesc);
-        wgpu::TextureView textureView = texture.CreateView();
+        // Create view, then destroy.
+        {
+            wgpu::Texture texture = device.CreateTexture(&textureDesc);
+            wgpu::TextureView textureView = texture.CreateView();
 
-        texture.Destroy();
-        wgpu::BindGroup bg = utils::MakeBindGroup(device, bgl, {{0, textureView}});
+            texture.Destroy();
+            wgpu::BindGroup bg = utils::MakeBindGroup(device, bgl, {{0, textureView}});
+        }
+        // Destroy, then create view.
+        {
+            wgpu::Texture texture = device.CreateTexture(&textureDesc);
+            texture.Destroy();
+            wgpu::TextureView textureView = texture.CreateView();
+
+            wgpu::BindGroup bg = utils::MakeBindGroup(device, bgl, {{0, textureView}});
+        }
     }
 }
 

@@ -115,6 +115,20 @@ class ReceiverSession final : public Environment::SocketSubscriber {
     // of reported here.
     virtual void OnError(const ReceiverSession* session, Error error) = 0;
 
+    // Called to verify whether a given codec parameter is supported by
+    // this client. If not overriden, this always assumes true.
+    // This method is used only for secondary matching, e.g.
+    // if you don't add VideoCodec::kHevc to the VideoCaptureConfig, then
+    // supporting codec parameter "hev1.1.6.L153.B0" does not matter.
+    //
+    // The codec parameter support callback is optional, however if provided
+    // then any offered streams that have a non-empty codec parameter field must
+    // match. If a stream does not have a codec parameter, this callback will
+    // not be called.
+    virtual bool SupportsCodecParameter(const std::string& parameter) {
+      return true;
+    }
+
    protected:
     virtual ~Client();
   };

@@ -8,7 +8,6 @@ import android.app.Activity;
 import android.graphics.Canvas;
 import android.os.Build;
 import android.view.LayoutInflater;
-import android.widget.TextView;
 
 import androidx.annotation.VisibleForTesting;
 import androidx.core.view.ViewCompat;
@@ -117,16 +116,16 @@ public class IncognitoNewTabPage
             }
         };
 
-        mTitle = host.getContext().getResources().getString(R.string.button_new_tab);
+        mTitle = host.getContext().getResources().getString(R.string.new_incognito_tab_title);
 
         LayoutInflater inflater = LayoutInflater.from(host.getContext());
         mIncognitoNewTabPageView =
                 (IncognitoNewTabPageView) inflater.inflate(R.layout.new_tab_page_incognito, null);
         mIncognitoNewTabPageView.initialize(mIncognitoNewTabPageManager);
 
-        TextView newTabIncognitoHeader =
-                mIncognitoNewTabPageView.findViewById(R.id.new_tab_incognito_title);
-        newTabIncognitoHeader.setText(R.string.new_tab_otr_title);
+        String newTabPageHeader =
+                mIncognitoNewTabPageView.getContext().getString(R.string.new_tab_otr_title);
+        mIncognitoNewTabPageView.setIncognitoNewTabHeader(newTabPageHeader);
 
         // Work around https://crbug.com/943873 and https://crbug.com/963385 where default focus
         // highlight shows up after toggling dark mode.

@@ -45,6 +45,17 @@ TEST_F('CrModuleTest', 'WebUIListeners', function() {
   mocha.fgrep('CrModuleWebUIListenersTest').run();
 });
 
+var IconModuleTest = class extends WebUIResourceModuleAsyncTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://test/test_loader.html?module=js/icon_test.js';
+  }
+};
+
+TEST_F('IconModuleTest', 'All', function() {
+  mocha.run();
+});
+
 var PromiseResolverModuleTest = class extends WebUIResourceModuleAsyncTest {
   /** @override */
   get browsePreload() {
@@ -93,7 +104,7 @@ TEST_F('UtilModuleTest', 'All', function() {
 var LoadTimeDataModuleTest = class extends WebUIResourceModuleAsyncTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://test/test_loader.html?module=js/load_time_data_test.m.js';
+    return 'chrome://test/test_loader.html?module=js/load_time_data_test.js';
   }
 };
 

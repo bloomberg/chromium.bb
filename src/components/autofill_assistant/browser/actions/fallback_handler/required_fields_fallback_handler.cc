@@ -15,6 +15,7 @@
 #include "components/autofill_assistant/browser/batch_element_checker.h"
 #include "components/autofill_assistant/browser/client_status.h"
 #include "components/autofill_assistant/browser/field_formatter.h"
+#include "components/autofill_assistant/browser/web/element_action_util.h"
 #include "components/autofill_assistant/browser/web/element_finder.h"
 #include "components/autofill_assistant/browser/web/web_controller.h"
 #include "third_party/re2/src/re2/re2.h"
@@ -70,11 +71,12 @@ ClientStatus& ErrorStatusWithDefault(ClientStatus& status) {
   return status;
 }
 
-ClientStatus GetRe2Value(const RequiredField& required_field,
-                         const std::map<std::string, std::string>& mappings,
-                         bool use_contains,
-                         std::string* re2_value,
-                         bool* case_sensitive) {
+ClientStatus GetRe2Value(
+    const RequiredField& required_field,
+    const std::map<field_formatter::Key, std::string>& mappings,
+    bool use_contains,
+    std::string* re2_value,
+    bool* case_sensitive) {
   if (required_field.proto.has_option_comparison_value_expression_re2()) {
     ClientStatus status = field_formatter::FormatExpression(
         required_field.proto.option_comparison_value_expression_re2()
@@ -123,7 +125,7 @@ RequiredFieldsFallbackHandler::~RequiredFieldsFallbackHandler() = default;
 
 RequiredFieldsFallbackHandler::RequiredFieldsFallbackHandler(
     const std::vector<RequiredField>& required_fields,
-    const std::map<std::string, std::string>& fallback_values,
+    const std::map<field_formatter::Key, std::string>& fallback_values,
     ActionDelegate* delegate)
     : required_fields_(required_fields),
       fallback_values_(fallback_values),
@@ -423,12 +425,16 @@ void RequiredFieldsFallbackHandler::FillJsDrivenDropdown(
     // default: TAP
     click_type = ClickType::TAP;
   }
-  action_delegate_util::ClickOrTapElement(
-      action_delegate_, required_field.selector, click_type,
+  action_delegate_->FindElement(
+      required_field.selector,
       base::BindOnce(
-          &RequiredFieldsFallbackHandler::OnClickOrTapFallbackElement,
-          weak_ptr_factory_.GetWeakPtr(), re2_value, case_sensitive,
-          required_field, std::move(set_next_field)));
+          &element_action_util::TakeElementAndPerform,
+          base::BindOnce(&action_delegate_util::PerformClickOrTapElement,
+                         action_delegate_, click_type),
+          base::BindOnce(
+              &RequiredFieldsFallbackHandler::OnClickOrTapFallbackElement,
+              weak_ptr_factory_.GetWeakPtr(), re2_value, case_sensitive,
+              required_field, std::move(set_next_field))));
 }
 
 void RequiredFieldsFallbackHandler::OnClickOrTapFallbackElement(
@@ -481,12 +487,16 @@ void RequiredFieldsFallbackHandler::OnShortWaitForElement(
     // default: TAP
     click_type = ClickType::TAP;
   }
-  action_delegate_util::ClickOrTapElement(
-      action_delegate_, selector_to_click, click_type,
-      base::BindOnce(&RequiredFieldsFallbackHandler::OnSetFallbackFieldValue,
-                     weak_ptr_factory_.GetWeakPtr(), required_field,
-                     std::move(set_next_field),
-                     /* element= */ nullptr));
+  action_delegate_->FindElement(
+      selector_to_click,
+      base::BindOnce(
+          &element_action_util::TakeElementAndPerform,
+          base::BindOnce(&action_delegate_util::PerformClickOrTapElement,
+                         action_delegate_, click_type),
+          base::BindOnce(
+              &RequiredFieldsFallbackHandler::OnSetFallbackFieldValue,
+              weak_ptr_factory_.GetWeakPtr(), required_field,
+              std::move(set_next_field), /* element= */ nullptr)));
 }
 
 void RequiredFieldsFallbackHandler::OnSetFallbackFieldValue(

@@ -64,7 +64,7 @@ public:
         SetErrorHandler(nullptr);
     }
 
-    void handleError(const char* msg, PositionInfo* pos) override {
+    void handleError(const char* msg, PositionInfo pos) override {
         REPORTER_ASSERT(fReporter, !strcmp(msg, fMsg),
                         "Error mismatch: expected:\n%sbut received:\n%s", fMsg, msg);
         fMsg = nullptr;
@@ -556,6 +556,16 @@ DEF_GPUTEST_FOR_MOCK_CONTEXT(DSLType, r, ctxInfo) {
     DSLExpression e = x + 1;
     REPORTER_ASSERT(r, e.type().isFloat());
     e.release();
+
+    {
+        ExpectError error(r, "error: array size must be positive\n");
+        Array(kFloat_Type, -1);
+    }
+
+    {
+        ExpectError error(r, "error: multidimensional arrays are not permitted\n");
+        Array(Array(kFloat_Type, 2), 2);
+    }
 }
 
 DEF_GPUTEST_FOR_MOCK_CONTEXT(DSLMatrices, r, ctxInfo) {
@@ -1037,6 +1047,18 @@ DEF_GPUTEST_FOR_MOCK_CONTEXT(DSLLogicalOr, r, ctxInfo) {
     }
 }
 
+DEF_GPUTEST_FOR_MOCK_CONTEXT(DSLLogicalXor, r, ctxInfo) {
+    AutoDSLContext context(ctxInfo.directContext()->priv().getGpu());
+    Var a(kBool_Type, "a"), b(kBool_Type, "b");
+    Expression e1 = LogicalXor(a, b);
+    EXPECT_EQUAL(e1, "(a ^^ b)");
+
+    {
+        ExpectError error(r, "error: type mismatch: '^^' cannot operate on 'bool', 'int'\n");
+        DSLExpression(LogicalXor(a, 5)).release();
+    }
+}
+
 DEF_GPUTEST_FOR_MOCK_CONTEXT(DSLComma, r, ctxInfo) {
     AutoDSLContext context(ctxInfo.directContext()->priv().getGpu());
     Var a(kInt_Type, "a"), b(kInt_Type, "b");
@@ -1297,29 +1319,63 @@ DEF_GPUTEST_FOR_MOCK_CONTEXT(DSLContinue, r, ctxInfo) {
 
 DEF_GPUTEST_FOR_MOCK_CONTEXT(DSLDeclare, r, ctxInfo) {
     AutoDSLContext context(ctxInfo.directContext()->priv().getGpu(), no_mark_vars_declared());
-    Var a(kHalf4_Type, "a"), b(kHalf4_Type, "b", Half4(1));
-    Statement x = Declare(a);
-    EXPECT_EQUAL(x, "half4 a;");
-    Statement y = Declare(b);
-    EXPECT_EQUAL(y, "half4 b = half4(1.0);");
+    {
+        Var a(kHalf4_Type, "a"), b(kHalf4_Type, "b", Half4(1));
+        EXPECT_EQUAL(Declare(a), "half4 a;");
+        EXPECT_EQUAL(Declare(b), "half4 b = half4(1.0);");
+    }
 
     {
-        Var c(kHalf4_Type, "c", 1);
+        DSLWriter::Reset();
+        SkTArray<Var> vars;
+        vars.push_back(Var(kBool_Type, "a", true));
+        vars.push_back(Var(kFloat_Type, "b"));
+        EXPECT_EQUAL(Declare(vars), "bool a = true; float b;");
+    }
+
+    {
+        DSLWriter::Reset();
+        REPORTER_ASSERT(r, DSLWriter::ProgramElements().empty());
+        GlobalVar a(kHalf4_Type, "a"), b(kHalf4_Type, "b", Half4(1));
+        Declare(a);
+        Declare(b);
+        REPORTER_ASSERT(r, DSLWriter::ProgramElements().size() == 2);
+        EXPECT_EQUAL(*DSLWriter::ProgramElements()[0], "half4 a;");
+        EXPECT_EQUAL(*DSLWriter::ProgramElements()[1], "half4 b = half4(1.0);");
+    }
+
+    {
+        DSLWriter::Reset();
+        REPORTER_ASSERT(r, DSLWriter::ProgramElements().empty());
+        SkTArray<GlobalVar> vars;
+        vars.push_back(GlobalVar(kHalf4_Type, "a"));
+        vars.push_back(GlobalVar(kHalf4_Type, "b", Half4(1)));
+        Declare(vars);
+        REPORTER_ASSERT(r, DSLWriter::ProgramElements().size() == 2);
+        EXPECT_EQUAL(*DSLWriter::ProgramElements()[0], "half4 a;");
+        EXPECT_EQUAL(*DSLWriter::ProgramElements()[1], "half4 b = half4(1.0);");
+    }
+
+    {
+        DSLWriter::Reset();
+        Var a(kHalf4_Type, "a", 1);
         ExpectError error(r, "error: expected 'half4', but found 'int'\n");
-        Declare(c).release();
+        Declare(a).release();
     }
 
     {
-        Var d(kInt_Type, "d");
-        Declare(d).release();
+        DSLWriter::Reset();
+        Var a(kInt_Type, "a");
+        Declare(a).release();
         ExpectError error(r, "error: variable has already been declared\n");
-        Declare(d).release();
+        Declare(a).release();
     }
 
     {
-        Var e(kUniform_Modifier, kInt_Type, "e");
+        DSLWriter::Reset();
+        Var a(kUniform_Modifier, kInt_Type, "a");
         ExpectError error(r, "error: 'uniform' is not permitted here\n");
-        Declare(e).release();
+        Declare(a).release();
     }
 }
 
@@ -1615,8 +1671,8 @@ DEF_GPUTEST_FOR_MOCK_CONTEXT(DSLSwitch, r, ctxInfo) {
 
     {
         ExpectError error(r, "error: case value must be a constant integer\n");
-        Var b(kInt_Type);
-        DSLStatement(Switch(0, Case(b))).release();
+        Var c(kInt_Type);
+        DSLStatement(Switch(0, Case(c))).release();
     }
 }
 
@@ -1974,7 +2030,8 @@ DEF_GPUTEST_FOR_MOCK_CONTEXT(DSLInlining, r, ctxInfo) {
     DSLFunction(kVoid_Type, "main").define(
         sk_FragColor() = (sqr(2), Half4(sqr(3)))
     );
-    std::unique_ptr<SkSL::Program> program = ReleaseProgram();
+    const char* source = "source test";
+    std::unique_ptr<SkSL::Program> program = ReleaseProgram(std::make_unique<SkSL::String>(source));
     EXPECT_EQUAL(*program,
                  "layout(location = 0, index = 0, builtin = 10001) out half4 sk_FragColor;"
                  "layout(builtin = 17)in bool sk_Clockwise;"
@@ -1983,4 +2040,56 @@ DEF_GPUTEST_FOR_MOCK_CONTEXT(DSLInlining, r, ctxInfo) {
                  "/* inlined: sqr */;"
                  "(sk_FragColor = (4.0 , half4(half(9.0))));"
                  "}");
+    REPORTER_ASSERT(r, *program->fSource == source);
+}
+
+DEF_GPUTEST_FOR_MOCK_CONTEXT(DSLReleaseUnused, r, ctxInfo) {
+    SkSL::ProgramSettings settings = default_settings();
+    settings.fAssertDSLObjectsReleased = false;
+    AutoDSLContext context(ctxInfo.directContext()->priv().getGpu(), settings);
+    If(Sqrt(1) > 0, Discard());
+    // Ensure that we can safely destroy statements and expressions despite being unused while
+    // settings.fAssertDSLObjectsReleased is disabled.
+}
+
+DEF_GPUTEST_FOR_MOCK_CONTEXT(DSLPrototypes, r, ctxInfo) {
+    AutoDSLContext context(ctxInfo.directContext()->priv().getGpu(), no_mark_vars_declared());
+    {
+        DSLParameter x(kFloat_Type, "x");
+        DSLFunction sqr(kFloat_Type, "sqr", x);
+        REPORTER_ASSERT(r, DSLWriter::ProgramElements().size() == 1);
+        EXPECT_EQUAL(*DSLWriter::ProgramElements()[0], "float sqr(float x);");
+        sqr.define(
+            Return(x * x)
+        );
+        REPORTER_ASSERT(r, DSLWriter::ProgramElements().size() == 1);
+        EXPECT_EQUAL(*DSLWriter::ProgramElements()[0], "float sqr(float x) { return (x * x); }");
+    }
+
+    {
+        DSLWriter::Reset();
+            DSLParameter x(kFloat_Type, "x");
+        DSLFunction sqr(kFloat_Type, "sqr", x);
+        REPORTER_ASSERT(r, DSLWriter::ProgramElements().size() == 1);
+        EXPECT_EQUAL(*DSLWriter::ProgramElements()[0], "float sqr(float x);");
+        DSLFunction(kVoid_Type, "main").define(sqr(5));
+        REPORTER_ASSERT(r, DSLWriter::ProgramElements().size() == 2);
+        EXPECT_EQUAL(*DSLWriter::ProgramElements()[0], "float sqr(float x);");
+        EXPECT_EQUAL(*DSLWriter::ProgramElements()[1], "void main() { sqr(5.0); }");
+        sqr.define(
+            Return(x * x)
+        );
+        REPORTER_ASSERT(r, DSLWriter::ProgramElements().size() == 3);
+        EXPECT_EQUAL(*DSLWriter::ProgramElements()[2], "float sqr(float x) { return (x * x); }");
+
+        const char* source = "source test";
+        std::unique_ptr<SkSL::Program> p = ReleaseProgram(std::make_unique<SkSL::String>(source));
+        EXPECT_EQUAL(*p,
+            "layout (builtin = 17) in bool sk_Clockwise;"
+            "float sqr(float x);"
+            "void main() {"
+            "/* inlined: sqr */;"
+            "25.0;"
+            "}");
+    }
 }

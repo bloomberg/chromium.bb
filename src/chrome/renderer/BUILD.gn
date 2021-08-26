@@ -164,11 +164,13 @@ static_library("renderer") {
     "//components/content_settings/common:mojom",
     "//components/content_settings/renderer",
     "//components/contextual_search/content:renderer",
+    "//components/continuous_search/renderer",
     "//components/data_reduction_proxy/core/common",
     "//components/dom_distiller/content/renderer",
     "//components/feed:buildflags",
     "//components/feed:feature_list",
     "//components/feed/content/renderer:feed_renderer",
+    "//components/history_clusters/core",
     "//components/network_hints/renderer",
     "//components/no_state_prefetch/common",
     "//components/no_state_prefetch/renderer",
@@ -277,6 +279,11 @@ static_library("renderer") {
   }
 
   if (enable_pdf) {
+    sources += [
+      "pdf/chrome_pdf_internal_plugin_delegate.cc",
+      "pdf/chrome_pdf_internal_plugin_delegate.h",
+    ]
+
     deps += [
       "//components/pdf/common",
       "//components/pdf/renderer",
@@ -288,7 +295,10 @@ static_library("renderer") {
   }
 
   if (is_chromeos_ash) {
-    deps += [ "//ash/constants" ]
+    deps += [
+      "//ash/constants",
+      "//ash/webui/file_manager:constants",
+    ]
   }
 
   if (enable_widevine_cdm_component) {
@@ -364,14 +374,6 @@ static_library("renderer") {
         "pepper/chrome_pdf_print_client.h",
       ]
     }
-    if (enable_pdf) {
-      sources += [
-        "pdf/chrome_pdf_internal_plugin_delegate.cc",
-        "pdf/chrome_pdf_internal_plugin_delegate.h",
-        "pdf/chrome_pdf_view_web_plugin_print_client.cc",
-        "pdf/chrome_pdf_view_web_plugin_print_client.h",
-      ]
-    }
   }
 
   if (enable_paint_preview) {
@@ -435,7 +437,6 @@ static_library("renderer") {
       "sandbox_status_extension_android.cc",
       "sandbox_status_extension_android.h",
     ]
-    deps += [ "//components/continuous_search/renderer" ]
   }
 
   if (is_chromeos_ash) {
@@ -451,15 +452,21 @@ static_library("renderer") {
     sources += [
       "performance_manager/mechanisms/tcmalloc_tunables_impl.cc",
       "performance_manager/mechanisms/tcmalloc_tunables_impl.h",
-      "performance_manager/mechanisms/userspace_swap_impl_chromeos.cc",
-      "performance_manager/mechanisms/userspace_swap_impl_chromeos.h",
     ]
 
-    deps += [
-      "//chrome/common/performance_manager/mojom",
-      "//chromeos/memory/userspace_swap",
-      "//chromeos/memory/userspace_swap:mojom",
-    ]
+    deps += [ "//chrome/common/performance_manager/mojom" ]
+
+    if (target_cpu == "x64") {
+      sources += [
+        "performance_manager/mechanisms/userspace_swap_impl_chromeos.cc",
+        "performance_manager/mechanisms/userspace_swap_impl_chromeos.h",
+      ]
+
+      deps += [
+        "//chromeos/memory/userspace_swap",
+        "//chromeos/memory/userspace_swap:mojom",
+      ]
+    }
   }
 }
 

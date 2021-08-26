@@ -54,13 +54,11 @@ bool GatewayCanBePingedRoutine::CanRun() {
   return true;
 }
 
-void GatewayCanBePingedRoutine::RunRoutine(
-    GatewayCanBePingedRoutineCallback callback) {
-  if (!CanRun()) {
-    std::move(callback).Run(verdict(), std::move(problems_));
-    return;
-  }
-  routine_completed_callback_ = std::move(callback);
+mojom::RoutineType GatewayCanBePingedRoutine::Type() {
+  return mojom::RoutineType::kGatewayCanBePinged;
+}
+
+void GatewayCanBePingedRoutine::Run() {
   FetchActiveNetworks();
 }
 
@@ -88,7 +86,10 @@ void GatewayCanBePingedRoutine::AnalyzeResultsAndExecuteCallback() {
   } else {
     set_verdict(mojom::RoutineVerdict::kNoProblem);
   }
-  std::move(routine_completed_callback_).Run(verdict(), std::move(problems_));
+
+  set_problems(
+      mojom::RoutineProblems::NewGatewayCanBePingedProblems(problems_));
+  ExecuteCallback();
 }
 
 bool GatewayCanBePingedRoutine::BelowLatencyThreshold() {

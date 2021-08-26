@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/extensions/convert_web_app.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/extensions/manifest_handlers/app_icon_color_info.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -16,8 +15,8 @@
 #include "components/crx_file/id_util.h"
 #include "components/sync/model/sync_data.h"
 #include "components/sync/protocol/app_specifics.pb.h"
+#include "components/sync/protocol/entity_specifics.pb.h"
 #include "components/sync/protocol/extension_specifics.pb.h"
-#include "components/sync/protocol/sync.pb.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_url_handlers.h"
 
@@ -122,9 +121,10 @@ ExtensionSyncData::ExtensionSyncData(const Extension& extension,
       page_ordinal_(page_ordinal),
       launch_type_(launch_type) {
   if (is_app_ && extension.from_bookmark()) {
+    // TODO(crbug/1065748): remove this dead code.
+    NOTREACHED();
     bookmark_app_description_ = extension.description();
     bookmark_app_url_ = AppLaunchInfo::GetLaunchWebURL(&extension).spec();
-    bookmark_app_scope_ = GetScopeURLFromBookmarkApp(&extension).spec();
     bookmark_app_icon_color_ = AppIconColorInfo::GetIconColorString(&extension);
     bookmark_app_theme_color_ = AppThemeColorInfo::GetThemeColor(&extension);
     extensions::LinkedAppIcons icons =

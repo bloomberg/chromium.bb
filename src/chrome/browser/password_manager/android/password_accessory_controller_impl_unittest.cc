@@ -31,11 +31,11 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/autofill/core/common/signatures.h"
+#include "components/device_reauth/biometric_authenticator.h"
+#include "components/device_reauth/mock_biometric_authenticator.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
-#include "components/password_manager/core/browser/biometric_authenticator.h"
 #include "components/password_manager/core/browser/credential_cache.h"
-#include "components/password_manager/core/browser/mock_biometric_authenticator.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/origin_credential_store.h"
 #include "components/password_manager/core/browser/password_form.h"
@@ -58,14 +58,17 @@
 namespace {
 using autofill::AccessoryAction;
 using autofill::AccessorySheetData;
+using autofill::AccessorySheetField;
 using autofill::AccessoryTabType;
 using autofill::FooterCommand;
 using autofill::UserInfo;
 using autofill::mojom::FocusedFieldType;
 using base::test::RunOnceCallback;
+using device_reauth::BiometricAuthRequester;
+using device_reauth::BiometricsAvailability;
+using device_reauth::MockBiometricAuthenticator;
 using password_manager::CreateEntry;
 using password_manager::CredentialCache;
-using password_manager::MockBiometricAuthenticator;
 using password_manager::MockPasswordStore;
 using password_manager::OriginCredentialStore;
 using password_manager::PasswordForm;
@@ -130,7 +133,7 @@ class MockPasswordManagerClient
               (const GURL&),
               (const, override));
 
-  MOCK_METHOD(scoped_refptr<password_manager::BiometricAuthenticator>,
+  MOCK_METHOD(scoped_refptr<device_reauth::BiometricAuthenticator>,
               GetBiometricAuthenticator,
               (),
               (override));
@@ -897,7 +900,7 @@ TEST_F(PasswordAccessoryControllerTest, FillsUsername) {
       FocusedFieldType::kFillableUsernameField,
       /*is_manual_generation_available=*/false);
 
-  UserInfo::Field selected_field(u"Ben", u"Ben", false, true);
+  AccessorySheetField selected_field(u"Ben", u"Ben", false, true);
   EXPECT_CALL(*driver(),
               FillIntoFocusedField(selected_field.is_obfuscated(),
                                    Eq(selected_field.display_text())));
@@ -922,11 +925,11 @@ TEST_F(PasswordAccessoryControllerTest, FillsPasswordIfNoAuthAvailable) {
       FocusedFieldType::kFillableUsernameField,
       /*is_manual_generation_available=*/false);
 
-  UserInfo::Field selected_field(u"S3cur3", u"S3cur3", true, true);
+  AccessorySheetField selected_field(u"S3cur3", u"S3cur3", true, true);
   EXPECT_CALL(*password_client(), GetBiometricAuthenticator)
       .WillOnce(Return(mock_authenticator_));
   EXPECT_CALL(*mock_authenticator_.get(), CanAuthenticate)
-      .WillOnce(Return(password_manager::BiometricsAvailability::kNotEnrolled));
+      .WillOnce(Return(BiometricsAvailability::kNotEnrolled));
   EXPECT_CALL(*driver(),
               FillIntoFocusedField(selected_field.is_obfuscated(),
                                    Eq(selected_field.display_text())));
@@ -951,14 +954,13 @@ TEST_F(PasswordAccessoryControllerTest, FillsPasswordIfAuthSuccessful) {
       FocusedFieldType::kFillableUsernameField,
       /*is_manual_generation_available=*/false);
 
-  UserInfo::Field selected_field(u"S3cur3", u"S3cur3", true, true);
+  AccessorySheetField selected_field(u"S3cur3", u"S3cur3", true, true);
   ON_CALL(*password_client(), GetBiometricAuthenticator)
       .WillByDefault(Return(mock_authenticator_));
   EXPECT_CALL(*mock_authenticator_.get(), CanAuthenticate)
-      .WillOnce(Return(password_manager::BiometricsAvailability::kAvailable));
-  EXPECT_CALL(
-      *mock_authenticator_.get(),
-      Authenticate(password_manager::BiometricAuthRequester::kFallbackSheet, _))
+      .WillOnce(Return(BiometricsAvailability::kAvailable));
+  EXPECT_CALL(*mock_authenticator_.get(),
+              Authenticate(BiometricAuthRequester::kFallbackSheet, _))
       .WillOnce(RunOnceCallback<1>(/*auth_succeeded=*/true));
   EXPECT_CALL(*driver(),
               FillIntoFocusedField(selected_field.is_obfuscated(),
@@ -984,14 +986,13 @@ TEST_F(PasswordAccessoryControllerTest, DoesntFillPasswordIfAuthFails) {
       FocusedFieldType::kFillableUsernameField,
       /*is_manual_generation_available=*/false);
 
-  UserInfo::Field selected_field(u"S3cur3", u"S3cur3", true, true);
+  AccessorySheetField selected_field(u"S3cur3", u"S3cur3", true, true);
   ON_CALL(*password_client(), GetBiometricAuthenticator)
       .WillByDefault(Return(mock_authenticator_));
   EXPECT_CALL(*mock_authenticator_.get(), CanAuthenticate)
-      .WillOnce(Return(password_manager::BiometricsAvailability::kAvailable));
-  EXPECT_CALL(
-      *mock_authenticator_.get(),
-      Authenticate(password_manager::BiometricAuthRequester::kFallbackSheet, _))
+      .WillOnce(Return(BiometricsAvailability::kAvailable));
+  EXPECT_CALL(*mock_authenticator_.get(),
+              Authenticate(BiometricAuthRequester::kFallbackSheet, _))
       .WillOnce(RunOnceCallback<1>(/*auth_succeeded=*/false));
   EXPECT_CALL(*driver(),
               FillIntoFocusedField(selected_field.is_obfuscated(),
@@ -1018,14 +1019,13 @@ TEST_F(PasswordAccessoryControllerTest, CancelsOngoingAuthIfDestroyed) {
       FocusedFieldType::kFillableUsernameField,
       /*is_manual_generation_available=*/false);
 
-  UserInfo::Field selected_field(u"S3cur3", u"S3cur3", true, true);
+  AccessorySheetField selected_field(u"S3cur3", u"S3cur3", true, true);
   ON_CALL(*password_client(), GetBiometricAuthenticator)
       .WillByDefault(Return(mock_authenticator_));
   EXPECT_CALL(*mock_authenticator_.get(), CanAuthenticate)
-      .WillOnce(Return(password_manager::BiometricsAvailability::kAvailable));
+      .WillOnce(Return(BiometricsAvailability::kAvailable));
   EXPECT_CALL(*mock_authenticator_.get(),
-              Authenticate(
-                  password_manager::BiometricAuthRequester::kFallbackSheet, _));
+              Authenticate(BiometricAuthRequester::kFallbackSheet, _));
 
   EXPECT_CALL(*driver(),
               FillIntoFocusedField(selected_field.is_obfuscated(),
@@ -1034,7 +1034,7 @@ TEST_F(PasswordAccessoryControllerTest, CancelsOngoingAuthIfDestroyed) {
   controller()->OnFillingTriggered(autofill::FieldGlobalId(), selected_field);
 
   EXPECT_CALL(*mock_authenticator_.get(),
-              Cancel(password_manager::BiometricAuthRequester::kFallbackSheet));
+              Cancel(BiometricAuthRequester::kFallbackSheet));
 }
 
 class PasswordAccessoryControllerWithTestStoreTest

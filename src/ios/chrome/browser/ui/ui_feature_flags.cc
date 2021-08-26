@@ -19,20 +19,17 @@ const base::Feature kForceUnstackedTabstrip{"ForceUnstackedTabstrip",
 const base::Feature kTestFeature{"TestFeature",
                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kEnableIOSManagedSettingsUI{
-    "EnableIOSManagedSettingsUI", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kSharedHighlightingIOS{"SharedHighlightingIOS",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kEnableFREDefaultBrowserScreen{
+    "EnableFREDefaultBrowserScreen", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kEnableFREUIModuleIOS{"EnableFREUIModuleIOS",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kEnableFullPageScreenshot{
     "EnableFullPageScreenshot", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kDefaultBrowserSettings{"DefaultBrowserSettings",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 // TODO(crbug.com/1128242): Remove this flag after the refactoring work is
 // finished.
@@ -50,10 +47,6 @@ const base::Feature kLocationPermissionsPrompt{
 
 const base::Feature kDefaultBrowserFullscreenPromoExperiment{
     "DefaultBrowserFullscreenPromoExperiment",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kDefaultBrowserFullscreenPromoCTAExperiment{
-    "DefaultBrowserFullscreenPromoCTAExperiment",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kDefaultPromoNonModal{"DefaultPromoNonModal",

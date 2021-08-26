@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/browser_window_state.h"
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
+#include "chrome/browser/ui/tabs/tab_menu_model_delegate.h"
 #include "chrome/browser/ui/tabs/tab_menu_model_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
@@ -83,6 +84,7 @@ class TerminalTabMenuModelFactory : public TabMenuModelFactory {
  public:
   std::unique_ptr<ui::SimpleMenuModel> Create(
       ui::SimpleMenuModel::Delegate* delegate,
+      TabMenuModelDelegate* tab_menu_model_delegate,
       TabStripModel*,
       int) override {
     return std::make_unique<TerminalTabMenuModel>(delegate);
@@ -106,7 +108,7 @@ AppBrowserController::MaybeCreateWebAppController(Browser* browser) {
   std::unique_ptr<AppBrowserController> controller;
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   const AppId app_id = GetAppIdFromApplicationName(browser->app_name());
-  auto* provider = WebAppProvider::Get(browser->profile());
+  auto* provider = WebAppProvider::GetForLocalApps(browser->profile());
   if (provider && provider->registrar().IsInstalled(app_id))
     controller = std::make_unique<WebAppBrowserController>(browser);
   if (!controller) {
@@ -134,8 +136,7 @@ bool AppBrowserController::IsWebApp(const Browser* browser) {
 // static
 bool AppBrowserController::IsForWebApp(const Browser* browser,
                                        const AppId& app_id) {
-  return IsWebApp(browser) && browser->app_controller()->HasAppId() &&
-         browser->app_controller()->GetAppId() == app_id;
+  return IsWebApp(browser) && browser->app_controller()->app_id() == app_id;
 }
 
 // static
@@ -152,28 +153,24 @@ const ui::ThemeProvider* AppBrowserController::GetThemeProvider() const {
   return theme_provider_.get();
 }
 
-AppBrowserController::AppBrowserController(
-    Browser* browser,
-    absl::optional<web_app::AppId> app_id)
+AppBrowserController::AppBrowserController(Browser* browser,
+                                           web_app::AppId app_id)
     : content::WebContentsObserver(nullptr),
       app_id_(std::move(app_id)),
       browser_(browser),
       theme_provider_(
           ThemeService::CreateBoundThemeProvider(browser_->profile(), this)),
-      system_app_type_(HasAppId() ? WebAppProvider::Get(browser->profile())
-                                        ->system_web_app_manager()
-                                        .GetSystemAppTypeForAppId(GetAppId())
-                                  : absl::nullopt),
+      system_app_type_(
+          GetSystemWebAppTypeForAppId(browser_->profile(), app_id_)),
       has_tab_strip_(
           (system_app_type_.has_value() &&
            WebAppProvider::Get(browser->profile())
                ->system_web_app_manager()
                .ShouldHaveTabStrip(system_app_type_.value())) ||
           (base::FeatureList::IsEnabled(features::kDesktopPWAsTabStrip) &&
-           HasAppId() &&
            WebAppProvider::Get(browser->profile())
                ->registrar()
-               .IsTabbedWindowModeEnabled(GetAppId()))) {
+               .IsTabbedWindowModeEnabled(app_id_))) {
   browser->tab_strip_model()->AddObserver(this);
 }
 
@@ -467,7 +464,7 @@ std::u16string AppBrowserController::GetTitle() const {
   std::u16string app_name =
       base::UTF8ToUTF16(WebAppProvider::Get(browser()->profile())
                             ->registrar()
-                            .GetAppShortName(GetAppId()));
+                            .GetAppShortName(app_id()));
   if (base::StartsWith(raw_title, app_name)) {
     return raw_title;
   } else if (raw_title.empty()) {
@@ -536,10 +533,8 @@ ui::ImageModel AppBrowserController::GetFallbackAppIcon() const {
   gfx::ImageSkia page_icon = browser()->GetCurrentPageIcon().AsImageSkia();
   if (!page_icon.isNull()) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
-      return ui::ImageModel::FromImageSkia(
-          apps::CreateStandardIconImage(page_icon));
-    }
+    return ui::ImageModel::FromImageSkia(
+        apps::CreateStandardIconImage(page_icon));
 #endif
     return ui::ImageModel::FromImageSkia(page_icon);
   }

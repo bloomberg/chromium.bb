@@ -45,26 +45,20 @@ public:
 
     const char* name() const override { return "BitmapText"; }
 
-    const Attribute& inPosition() const { return fInPosition; }
-    const Attribute& inColor() const { return fInColor; }
-    const Attribute& inTextureCoords() const { return fInTextureCoords; }
-    GrMaskFormat maskFormat() const { return fMaskFormat; }
-    const SkPMColor4f& color() const { return fColor; }
-    bool hasVertexColor() const { return fInColor.isInitialized(); }
-    const SkMatrix& localMatrix() const { return fLocalMatrix; }
-    bool usesW() const { return fUsesW; }
-    const SkISize& atlasDimensions() const { return fAtlasDimensions; }
-
     void addNewViews(const GrSurfaceProxyView*, int numActiveViews, GrSamplerState);
 
-    void getGLSLProcessorKey(const GrShaderCaps& caps, GrProcessorKeyBuilder* b) const override;
+    void addToKey(const GrShaderCaps& caps, GrProcessorKeyBuilder* b) const override;
 
-    GrGLSLGeometryProcessor* createGLSLInstance(const GrShaderCaps& caps) const override;
+    std::unique_ptr<ProgramImpl> makeProgramImpl(const GrShaderCaps& caps) const override;
 
 private:
+    class Impl;
+
     GrBitmapTextGeoProc(const GrShaderCaps&, const SkPMColor4f&, bool wideColor,
                         const GrSurfaceProxyView* views, int numViews, GrSamplerState params,
                         GrMaskFormat format, const SkMatrix& localMatrix, bool usesW);
+
+    bool hasVertexColor() const { return fInColor.isInitialized(); }
 
     const TextureSampler& onTextureSampler(int i) const override { return fTextureSamplers[i]; }
 

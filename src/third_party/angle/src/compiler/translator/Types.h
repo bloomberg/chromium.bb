@@ -229,6 +229,8 @@ class TType
     void toArrayBaseType();
     // Turns a matrix into a column of it.
     void toMatrixColumnType();
+    // Turns a matrix or vector into a component of it.
+    void toComponentType();
 
     const TInterfaceBlock *getInterfaceBlock() const { return mInterfaceBlock; }
     void setInterfaceBlock(const TInterfaceBlock *interfaceBlockIn);
@@ -333,6 +335,7 @@ class TType
     bool isStructureContainingMatrices() const;
     bool isStructureContainingType(TBasicType t) const;
     bool isStructureContainingSamplers() const;
+    bool isInterfaceBlockContainingType(TBasicType t) const;
 
     bool isStructSpecifier() const { return mIsStructSpecifier; }
 

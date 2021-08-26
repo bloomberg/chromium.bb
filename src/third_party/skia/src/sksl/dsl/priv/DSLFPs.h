@@ -12,14 +12,14 @@
 
 #if !defined(SKSL_STANDALONE) && SK_SUPPORT_GPU
 
-#include "src/gpu/glsl/GrGLSLFragmentProcessor.h"
+#include "src/gpu/GrFragmentProcessor.h"
 
 namespace SkSL {
 
 namespace dsl {
 
-void StartFragmentProcessor(GrGLSLFragmentProcessor* processor,
-                            GrGLSLFragmentProcessor::EmitArgs* emitArgs);
+void StartFragmentProcessor(GrFragmentProcessor::ProgramImpl* processor,
+                            GrFragmentProcessor::ProgramImpl::EmitArgs* emitArgs);
 
 void EndFragmentProcessor();
 

@@ -304,9 +304,8 @@ private:
 // If a caller doesn't care about errors, we can use this trivial reporter that just counts up.
 class TrivialErrorReporter : public ErrorReporter {
 public:
-    void error(int offset, String) override { ++fErrorCount; }
+    void handleError(const char*, dsl::PositionInfo) override { ++fErrorCount; }
     int errorCount() override { return fErrorCount; }
-    void setErrorCount(int c) override { fErrorCount = c; }
 
 private:
     int fErrorCount = 0;
@@ -522,10 +521,10 @@ public:
                 const SwitchStatement& s = stmt.as<SwitchStatement>();
                 bool foundDefault = false;
                 bool fellThrough = false;
-                for (const std::unique_ptr<Statement>& stmt : s.cases()) {
+                for (const std::unique_ptr<Statement>& switchStmt : s.cases()) {
                     // The default case is indicated by a null value. A switch without a default
                     // case cannot definitively return, as its value might not be in the cases list.
-                    const SwitchCase& sc = stmt->as<SwitchCase>();
+                    const SwitchCase& sc = switchStmt->as<SwitchCase>();
                     if (!sc.value()) {
                         foundDefault = true;
                     }
@@ -619,6 +618,126 @@ bool Analysis::CallsSampleOutsideMain(const Program& program) {
     return visitor.visit(program);
 }
 
+bool Analysis::DetectStaticRecursion(SkSpan<std::unique_ptr<ProgramElement>> programElements,
+                                     ErrorReporter& errors) {
+    using Function = const FunctionDeclaration;
+    using CallSet = std::unordered_set<Function*>;
+    using CallGraph = std::unordered_map<Function*, CallSet>;
+
+    class CallGraphVisitor : public ProgramVisitor {
+    public:
+        CallGraphVisitor(CallGraph* calls) : fCallGraph(calls), fCurrentFunctionCalls(nullptr) {}
+
+        bool visitExpression(const Expression& e) override {
+            if (e.is<FunctionCall>()) {
+                fCurrentFunctionCalls->insert(&e.as<FunctionCall>().function());
+            }
+            return INHERITED::visitExpression(e);
+        }
+
+        bool visitProgramElement(const ProgramElement& p) override {
+            if (p.is<FunctionDefinition>()) {
+                Function* fn = &p.as<FunctionDefinition>().declaration();
+                SkASSERT(fCallGraph->count(fn) == 0);
+
+                SkASSERT(fCurrentFunctionCalls == nullptr);
+                CallSet currentFunctionCalls;
+                fCurrentFunctionCalls = &currentFunctionCalls;
+
+                INHERITED::visitProgramElement(p);
+
+                fCurrentFunctionCalls = nullptr;
+                fCallGraph->insert({fn, std::move(currentFunctionCalls)});
+            }
+            return false;
+        }
+
+        CallGraph* fCallGraph;
+        CallSet*   fCurrentFunctionCalls;
+
+        using INHERITED = ProgramVisitor;
+    };
+
+    CallGraph callGraph;
+    CallGraphVisitor visitor{&callGraph};
+    for (const auto& pe : programElements) {
+        visitor.visitProgramElement(*pe);
+    }
+
+    class CycleFinder {
+    public:
+        CycleFinder(CallGraph* calls) : fCallGraph(calls) {}
+
+        bool containsCycle() {
+            for (const auto& [caller, callees] : *fCallGraph) {
+                SkASSERT(fStack.empty());
+                if (this->dfsHelper(caller)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        const std::vector<Function*>& cycle() const { return fStack; }
+
+    private:
+        bool dfsHelper(Function* fn) {
+            SkASSERT(std::find(fStack.begin(), fStack.end(), fn) == fStack.end());
+
+            auto iter = fCallGraph->find(fn);
+            if (iter != fCallGraph->end()) {
+                fStack.push_back(fn);
+
+                for (Function* calledFn : iter->second) {
+                    auto it = std::find(fStack.begin(), fStack.end(), calledFn);
+                    if (it != fStack.end()) {
+                        // Cycle detected. It includes the functions from 'it' to the end of fStack
+                        fStack.erase(fStack.begin(), it);
+                        return true;
+                    }
+                    if (this->dfsHelper(calledFn)) {
+                        return true;
+                    }
+                }
+
+                fStack.pop_back();
+            }
+
+            return false;
+        }
+
+        const CallGraph*       fCallGraph;
+        std::vector<Function*> fStack;
+    };
+
+    CycleFinder cycleFinder{&callGraph};
+    if (cycleFinder.containsCycle()) {
+        // Get the description of each function participating in the cycle
+        std::vector<String> fnNames;
+        for (Function* fn : cycleFinder.cycle()) {
+            fnNames.push_back(fn->description());
+        }
+
+        // Find the lexicographically first function description, so we generate stable errors
+        std::vector<String>::iterator cycleStart = std::min_element(fnNames.begin(), fnNames.end());
+        ptrdiff_t startIndex = std::distance(fnNames.begin(), cycleStart);
+
+        // Construct a list of the functions participating in the cycle (including the "start"
+        // at both the beginning and end):
+        String cycleDescription;
+        for (size_t i = 0; i <= fnNames.size(); ++i) {
+            cycleDescription += "\n\t" + fnNames[(i + startIndex) % fnNames.size()];
+        }
+
+        // Go back to the original data to find the offset of the cycle start's declaration
+        Function* cycleStartFn = cycleFinder.cycle()[startIndex];
+        errors.error(cycleStartFn->fOffset,
+                     "potential recursion (function call cycle) not allowed:" + cycleDescription);
+        return true;
+    }
+    return false;
+}
+
 int Analysis::NodeCountUpToLimit(const FunctionDefinition& function, int limit) {
     return NodeCountVisitor{limit}.visit(*function.body());
 }
@@ -670,20 +789,19 @@ int ProgramUsage::get(const FunctionDeclaration& f) const {
     return count ? *count : 0;
 }
 
-void ProgramUsage::replace(const Expression* oldExpr, const Expression* newExpr) {
-    if (oldExpr) {
-        ProgramUsageVisitor subRefs(this, /*delta=*/-1);
-        subRefs.visitExpression(*oldExpr);
-    }
-    if (newExpr) {
-        ProgramUsageVisitor addRefs(this, /*delta=*/+1);
-        addRefs.visitExpression(*newExpr);
-    }
+void ProgramUsage::add(const Expression* expr) {
+    ProgramUsageVisitor addRefs(this, /*delta=*/+1);
+    addRefs.visitExpression(*expr);
 }
 
 void ProgramUsage::add(const Statement* stmt) {
     ProgramUsageVisitor addRefs(this, /*delta=*/+1);
     addRefs.visitStatement(*stmt);
+}
+
+void ProgramUsage::add(const ProgramElement& element) {
+    ProgramUsageVisitor addRefs(this, /*delta=*/+1);
+    addRefs.visitProgramElement(element);
 }
 
 void ProgramUsage::remove(const Expression* expr) {
@@ -785,6 +903,7 @@ bool Analysis::IsSameExpressionTree(const Expression& left, const Expression& ri
             return left.as<BoolLiteral>().value() == right.as<BoolLiteral>().value();
 
         case Expression::Kind::kConstructorArray:
+        case Expression::Kind::kConstructorArrayCast:
         case Expression::Kind::kConstructorCompound:
         case Expression::Kind::kConstructorCompoundCast:
         case Expression::Kind::kConstructorDiagonalMatrix:
@@ -1065,6 +1184,7 @@ public:
             // ... expressions composed of both of the above
             case Expression::Kind::kBinary:
             case Expression::Kind::kConstructorArray:
+            case Expression::Kind::kConstructorArrayCast:
             case Expression::Kind::kConstructorCompound:
             case Expression::Kind::kConstructorCompoundCast:
             case Expression::Kind::kConstructorDiagonalMatrix:
@@ -1196,6 +1316,7 @@ template <typename T> bool TProgramVisitor<T>::visitExpression(typename T::Expre
                    (b.right() && this->visitExpressionPtr(b.right()));
         }
         case Expression::Kind::kConstructorArray:
+        case Expression::Kind::kConstructorArrayCast:
         case Expression::Kind::kConstructorCompound:
         case Expression::Kind::kConstructorCompoundCast:
         case Expression::Kind::kConstructorDiagonalMatrix:

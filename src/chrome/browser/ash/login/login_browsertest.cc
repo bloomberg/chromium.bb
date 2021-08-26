@@ -31,6 +31,7 @@
 #include "chrome/browser/ash/login/test/test_predicate_waiter.h"
 #include "chrome/browser/ash/login/test/user_adding_screen_utils.h"
 #include "chrome/browser/ash/login/ui/login_display_host_webui.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
@@ -43,6 +44,7 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chromeos/dbus/userdataauth/fake_userdataauth_client.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/user_manager/user_names.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
@@ -89,7 +91,7 @@ class LoginOfflineTest : public LoginManagerTest {
     login_manager_.AppendRegularUsers(1);
     test_account_id_ = login_manager_.users()[0].account_id;
   }
-  ~LoginOfflineTest() override {}
+  ~LoginOfflineTest() override = default;
 
   void SetUpOnMainThread() override {
     // Wait for OOBE to load.
@@ -178,7 +180,7 @@ class LoginOfflineManagedTest : public LoginManagerTest {
     managed_user_id_ = login_manager_.users()[0].account_id;
   }
 
-  ~LoginOfflineManagedTest() override {}
+  ~LoginOfflineManagedTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     LoginManagerTest::SetUpCommandLine(command_line);
@@ -391,9 +393,7 @@ IN_PROC_BROWSER_TEST_F(LoginOfflineManagedTest, LoginAllowlistedUser) {
 
 class UserAddingScreenTrayTest : public LoginManagerTest {
  public:
-  UserAddingScreenTrayTest() : LoginManagerTest() {
-    login_mixin_.AppendRegularUsers(3);
-  }
+  UserAddingScreenTrayTest() { login_mixin_.AppendRegularUsers(3); }
 
  protected:
   LoginManagerMixin login_mixin_{&mixin_host_};
@@ -403,6 +403,11 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTrayTest, TrayVisible) {
   LoginUser(login_mixin_.users()[0].account_id);
   test::ShowUserAddingScreen();
   TestSystemTrayIsVisible();
+}
+
+IN_PROC_BROWSER_TEST_F(LoginManagerTest, SafeBrowsingDisabledForSigninProfile) {
+  ASSERT_FALSE(ash::ProfileHelper::GetSigninProfile()->GetPrefs()->GetBoolean(
+      prefs::kSafeBrowsingEnabled));
 }
 
 }  // namespace chromeos

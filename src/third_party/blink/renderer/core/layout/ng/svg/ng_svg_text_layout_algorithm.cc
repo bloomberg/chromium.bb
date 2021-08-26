@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/layout/ng/svg/ng_svg_text_layout_algorithm.h"
 
 #include "base/trace_event/trace_event.h"
+#include "third_party/blink/renderer/core/layout/ng/svg/resolved_text_layout_attributes_iterator.h"
 #include "third_party/blink/renderer/core/layout/ng/svg/svg_inline_node_data.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_inline_text.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_text_path.h"
@@ -13,54 +14,6 @@
 #include "third_party/blink/renderer/core/svg/svg_text_content_element.h"
 
 namespace blink {
-
-namespace {
-
-// This class wraps a sparse list, |Vector<std::pair<unsigned,
-// NGSvgCharacterData>>|, so that it looks to have NGSvgCharacterData for
-// any index.
-//
-// For example, if |resolved| contains the following pairs:
-//     resolved[0]: (0, NGSvgCharacterData)
-//     resolved[1]: (10, NGSvgCharacterData)
-//     resolved[2]: (42, NGSvgCharacterData)
-//
-// AdvanceTo(0) returns the NGSvgCharacterData at [0].
-// AdvanceTo(1 - 9) returns the default NGSvgCharacterData, which has no data.
-// AdvanceTo(10) returns the NGSvgCharacterData at [1].
-// AdvanceTo(11 - 41) returns the default NGSvgCharacterData.
-// AdvanceTo(42) returns the NGSvgCharacterData at [2].
-// AdvanceTo(43 or greater) returns the default NGSvgCharacterData.
-class ResolvedIterator final {
- public:
-  explicit ResolvedIterator(
-      const Vector<std::pair<unsigned, NGSvgCharacterData>>& resolved)
-      : resolved_(resolved) {}
-  ResolvedIterator(const ResolvedIterator&) = delete;
-  ResolvedIterator& operator=(const ResolvedIterator&) = delete;
-
-  const NGSvgCharacterData& AdvanceTo(unsigned addressable_index) {
-    if (index_ >= resolved_.size())
-      return default_data_;
-    if (addressable_index < resolved_[index_].first)
-      return default_data_;
-    if (addressable_index == resolved_[index_].first)
-      return resolved_[index_].second;
-    auto* it = std::find_if(resolved_.begin() + index_, resolved_.end(),
-                            [addressable_index](const auto& pair) {
-                              return addressable_index <= pair.first;
-                            });
-    index_ = std::distance(resolved_.begin(), it);
-    return AdvanceTo(addressable_index);
-  }
-
- private:
-  const NGSvgCharacterData default_data_;
-  const Vector<std::pair<unsigned, NGSvgCharacterData>>& resolved_;
-  unsigned index_ = 0u;
-};
-
-}  // anonymous namespace
 
 // See https://svgwg.org/svg2-draft/text.html#TextLayoutAlgorithm
 
@@ -96,7 +49,8 @@ void NGSvgTextLayoutAlgorithm::Layout(
   // This was already done in PrepareLayout() step. See
   // NGSvgTextLayoutAttributesBuilder.
   // Copy |rotate| and |anchored_chunk| fields.
-  ResolvedIterator iterator(inline_node_.SvgCharacterDataList());
+  ResolvedTextLayoutAttributesIterator iterator(
+      inline_node_.SvgCharacterDataList());
   for (wtf_size_t i = 0; i < result_.size(); ++i) {
     const NGSvgCharacterData& resolve = iterator.AdvanceTo(i);
     if (resolve.HasRotate())
@@ -120,58 +74,7 @@ void NGSvgTextLayoutAlgorithm::Layout(
   // 8. Position on path
   PositionOnPath(items);
 
-  // Write back the result to NGFragmentItems.
-  FloatRect unscaled_visual_rect;
-  for (const SvgPerCharacterInfo& info : result_) {
-    if (info.middle)
-      continue;
-    NGFragmentItemsBuilder::ItemWithOffset& item = items[info.item_index];
-    const auto* layout_object =
-        To<LayoutSVGInlineText>(item->GetLayoutObject());
-    const auto font_baseline = item->Style().GetFontBaseline();
-    const auto& font_metrics =
-        layout_object->ScaledFont().PrimaryFont()->GetFontMetrics();
-    float x = *info.x;
-    float y = *info.y;
-    float width;
-    float height;
-    if (horizontal_) {
-      y -= font_metrics.FixedAscent(font_baseline);
-      width = info.inline_size;
-      height = item->Size().height;
-    } else {
-      x -= font_metrics.FixedDescent(font_baseline);
-      width = item->Size().width;
-      height = info.inline_size;
-    }
-    FloatRect scaled_rect(x, y, width, height);
-    const float scaling_factor = layout_object->ScalingFactor();
-    DCHECK_NE(scaling_factor, 0.0f);
-    FloatRect unscaled_rect = scaled_rect;
-    unscaled_rect.Scale(1 / scaling_factor);
-    auto data = std::make_unique<NGSvgFragmentData>();
-    data->shape_result = item->TextShapeResult();
-    data->text_offset = item->TextOffset();
-    data->rect = scaled_rect;
-    data->length_adjust_scale = info.length_adjust_scale;
-    data->angle = info.rotate.value_or(0.0f);
-    data->baseline_shift = info.baseline_shift;
-    data->in_text_path = info.in_text_path;
-    item.item.ConvertToSvgText(std::move(data),
-                               PhysicalRect::EnclosingRect(unscaled_rect),
-                               info.hidden);
-    unscaled_visual_rect.Unite(item.item.ObjectBoundingBox());
-  }
-  if (items[0]->Type() == NGFragmentItem::kLine) {
-    items[0].item.SetSvgLineLocalRect(
-        PhysicalRect(EnclosingIntRect(unscaled_visual_rect)));
-  }
-  // |items| should not have kLine items other than the first one.
-  DCHECK_EQ(std::find_if(items.begin() + 1, items.end(),
-                         [](const auto& item) {
-                           return item->Type() == NGFragmentItem::kLine;
-                         }),
-            items.end());
+  WriteBackToFragmentItems(items);
 }
 
 bool NGSvgTextLayoutAlgorithm::Setup(wtf_size_t approximate_count) {
@@ -271,7 +174,8 @@ void NGSvgTextLayoutAlgorithm::AdjustPositionsDxDy(
   // attributes".
   FloatPoint shift;
   // 2. For each array element with index i in result:
-  ResolvedIterator iterator(inline_node_.SvgCharacterDataList());
+  ResolvedTextLayoutAttributesIterator iterator(
+      inline_node_.SvgCharacterDataList());
   for (wtf_size_t i = 0; i < addressable_count_; ++i) {
     const NGSvgCharacterData& resolve = iterator.AdvanceTo(i);
     // https://github.com/w3c/svgwg/issues/846
@@ -487,7 +391,8 @@ void NGSvgTextLayoutAlgorithm::AdjustPositionsXY(
   // 2. Set index = 1.
   // 3. While index < count:
   // 3.5. Set index to index + 1.
-  ResolvedIterator iterator(inline_node_.SvgCharacterDataList());
+  ResolvedTextLayoutAttributesIterator iterator(
+      inline_node_.SvgCharacterDataList());
   for (wtf_size_t i = 0; i < result_.size(); ++i) {
     const float scaling_factor = ScalingFactorAt(items, i);
     const NGSvgCharacterData& resolve = iterator.AdvanceTo(i);
@@ -551,7 +456,8 @@ void NGSvgTextLayoutAlgorithm::ApplyAnchoring(
     auto* next_anchor =
         std::find_if(result_.begin() + i + 1, result_.end(),
                      [](const auto& info) { return info.anchored_chunk; });
-    wtf_size_t j = std::distance(result_.begin(), next_anchor) - 1;
+    wtf_size_t j = static_cast<wtf_size_t>(
+        std::distance(result_.begin(), next_anchor) - 1);
 
     const auto& text_path_ranges = inline_node_.SvgTextPathRangeList();
     const auto* text_path_iter =
@@ -559,9 +465,7 @@ void NGSvgTextLayoutAlgorithm::ApplyAnchoring(
                      [i](const auto& range) {
                        return range.start_index <= i && i <= range.end_index;
                      });
-    bool in_text_path = false;
     if (text_path_iter != text_path_ranges.end()) {
-      in_text_path = true;
       // Anchoring should be scoped within the <textPath>.
       // Non-anchored text following <textPath> will be handled in
       // PositionOnPath().
@@ -828,6 +732,61 @@ void NGSvgTextLayoutAlgorithm::PositionOnPath(
     if (range_index < ranges.size() && index == ranges[range_index].end_index)
       ++range_index;
   }
+}
+
+void NGSvgTextLayoutAlgorithm::WriteBackToFragmentItems(
+    NGFragmentItemsBuilder::ItemWithOffsetList& items) {
+  FloatRect unscaled_visual_rect;
+  for (const SvgPerCharacterInfo& info : result_) {
+    if (info.middle)
+      continue;
+    NGFragmentItemsBuilder::ItemWithOffset& item = items[info.item_index];
+    const auto* layout_object =
+        To<LayoutSVGInlineText>(item->GetLayoutObject());
+    const auto font_baseline = item->Style().GetFontBaseline();
+    const auto& font_metrics =
+        layout_object->ScaledFont().PrimaryFont()->GetFontMetrics();
+    float x = *info.x;
+    float y = *info.y;
+    float width;
+    float height;
+    if (horizontal_) {
+      y -= font_metrics.FixedAscent(font_baseline);
+      width = info.inline_size;
+      height = item->Size().height;
+    } else {
+      x -= font_metrics.FixedDescent(font_baseline);
+      width = item->Size().width;
+      height = info.inline_size;
+    }
+    FloatRect scaled_rect(x, y, width, height);
+    const float scaling_factor = layout_object->ScalingFactor();
+    DCHECK_NE(scaling_factor, 0.0f);
+    FloatRect unscaled_rect = scaled_rect;
+    unscaled_rect.Scale(1 / scaling_factor);
+    auto data = std::make_unique<NGSvgFragmentData>();
+    data->shape_result = item->TextShapeResult();
+    data->text_offset = item->TextOffset();
+    data->rect = scaled_rect;
+    data->length_adjust_scale = info.length_adjust_scale;
+    data->angle = info.rotate.value_or(0.0f);
+    data->baseline_shift = info.baseline_shift;
+    data->in_text_path = info.in_text_path;
+    item.item.ConvertToSvgText(std::move(data),
+                               PhysicalRect::EnclosingRect(unscaled_rect),
+                               info.hidden);
+    unscaled_visual_rect.Unite(item.item.ObjectBoundingBox());
+  }
+  if (items[0]->Type() == NGFragmentItem::kLine) {
+    items[0].item.SetSvgLineLocalRect(
+        PhysicalRect(EnclosingIntRect(unscaled_visual_rect)));
+  }
+  // |items| should not have kLine items other than the first one.
+  DCHECK_EQ(std::find_if(items.begin() + 1, items.end(),
+                         [](const auto& item) {
+                           return item->Type() == NGFragmentItem::kLine;
+                         }),
+            items.end());
 }
 
 float NGSvgTextLayoutAlgorithm::ScalingFactorAt(

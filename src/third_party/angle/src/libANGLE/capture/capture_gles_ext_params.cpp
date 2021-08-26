@@ -2346,7 +2346,7 @@ void CaptureDiscardFramebufferEXT_attachments(const State &glState,
                                               const GLenum *attachments,
                                               ParamCapture *paramCapture)
 {
-    CaptureMemory(attachments, sizeof(GLenum) * numAttachments, paramCapture);
+    CaptureArray(attachments, numAttachments, paramCapture);
 }
 
 void CaptureDeleteQueriesEXT_idsPacked(const State &glState,
@@ -2355,7 +2355,7 @@ void CaptureDeleteQueriesEXT_idsPacked(const State &glState,
                                        const QueryID *ids,
                                        ParamCapture *paramCapture)
 {
-    CaptureMemory(ids, sizeof(QueryID) * n, paramCapture);
+    CaptureArray(ids, n, paramCapture);
 }
 
 void CaptureGenQueriesEXT_idsPacked(const State &glState,
@@ -2483,7 +2483,7 @@ void CaptureDeleteMemoryObjectsEXT_memoryObjectsPacked(const State &glState,
                                                        const MemoryObjectID *memoryObjects,
                                                        ParamCapture *paramCapture)
 {
-    CaptureMemory(memoryObjects, sizeof(MemoryObjectID) * n, paramCapture);
+    CaptureArray(memoryObjects, n, paramCapture);
 }
 
 void CaptureGetMemoryObjectParameterivEXT_params(const State &glState,
@@ -2568,7 +2568,7 @@ void CaptureDeleteSemaphoresEXT_semaphoresPacked(const State &glState,
                                                  const SemaphoreID *semaphores,
                                                  ParamCapture *paramCapture)
 {
-    CaptureMemory(semaphores, sizeof(SemaphoreID) * n, paramCapture);
+    CaptureArray(semaphores, n, paramCapture);
 }
 
 void CaptureGenSemaphoresEXT_semaphoresPacked(const State &glState,
@@ -2610,7 +2610,7 @@ void CaptureSignalSemaphoreEXT_buffersPacked(const State &glState,
                                              const GLenum *dstLayouts,
                                              ParamCapture *paramCapture)
 {
-    UNIMPLEMENTED();
+    CaptureArray(buffers, numBufferBarriers, paramCapture);
 }
 
 void CaptureSignalSemaphoreEXT_texturesPacked(const State &glState,
@@ -2623,7 +2623,7 @@ void CaptureSignalSemaphoreEXT_texturesPacked(const State &glState,
                                               const GLenum *dstLayouts,
                                               ParamCapture *paramCapture)
 {
-    UNIMPLEMENTED();
+    CaptureArray(textures, numTextureBarriers, paramCapture);
 }
 
 void CaptureSignalSemaphoreEXT_dstLayouts(const State &glState,
@@ -2636,7 +2636,8 @@ void CaptureSignalSemaphoreEXT_dstLayouts(const State &glState,
                                           const GLenum *dstLayouts,
                                           ParamCapture *paramCapture)
 {
-    UNIMPLEMENTED();
+    CaptureArray(dstLayouts, (numBufferBarriers + numTextureBarriers) * sizeof(GLenum),
+                 paramCapture);
 }
 
 void CaptureWaitSemaphoreEXT_buffersPacked(const State &glState,
@@ -2649,7 +2650,7 @@ void CaptureWaitSemaphoreEXT_buffersPacked(const State &glState,
                                            const GLenum *srcLayouts,
                                            ParamCapture *paramCapture)
 {
-    UNIMPLEMENTED();
+    CaptureArray(buffers, numBufferBarriers, paramCapture);
 }
 
 void CaptureWaitSemaphoreEXT_texturesPacked(const State &glState,
@@ -2662,7 +2663,7 @@ void CaptureWaitSemaphoreEXT_texturesPacked(const State &glState,
                                             const GLenum *srcLayouts,
                                             ParamCapture *paramCapture)
 {
-    UNIMPLEMENTED();
+    CaptureArray(textures, numTextureBarriers, paramCapture);
 }
 
 void CaptureWaitSemaphoreEXT_srcLayouts(const State &glState,
@@ -2675,7 +2676,7 @@ void CaptureWaitSemaphoreEXT_srcLayouts(const State &glState,
                                         const GLenum *srcLayouts,
                                         ParamCapture *paramCapture)
 {
-    UNIMPLEMENTED();
+    CaptureArray(srcLayouts, (numBufferBarriers + numTextureBarriers), paramCapture);
 }
 
 void CaptureGetSamplerParameterIivEXT_params(const State &glState,
@@ -3032,7 +3033,7 @@ void CaptureDeleteFencesNV_fencesPacked(const State &glState,
                                         const FenceNVID *fences,
                                         ParamCapture *paramCapture)
 {
-    UNIMPLEMENTED();
+    CaptureMemory(fences, n * sizeof(FenceNVID), paramCapture);
 }
 
 void CaptureGenFencesNV_fencesPacked(const State &glState,
@@ -3041,7 +3042,7 @@ void CaptureGenFencesNV_fencesPacked(const State &glState,
                                      FenceNVID *fences,
                                      ParamCapture *paramCapture)
 {
-    UNIMPLEMENTED();
+    CaptureGenHandles(n, fences, paramCapture);
 }
 
 void CaptureGetFenceivNV_params(const State &glState,
@@ -3051,7 +3052,7 @@ void CaptureGetFenceivNV_params(const State &glState,
                                 GLint *params,
                                 ParamCapture *paramCapture)
 {
-    UNIMPLEMENTED();
+    CaptureMemory(params, sizeof(GLint), paramCapture);
 }
 
 void CaptureDrawTexfvOES_coords(const State &glState,
@@ -3092,7 +3093,7 @@ void CaptureDeleteFramebuffersOES_framebuffersPacked(const State &glState,
                                                      const FramebufferID *framebuffers,
                                                      ParamCapture *paramCapture)
 {
-    CaptureMemory(framebuffers, n * sizeof(GLuint), paramCapture);
+    CaptureArray(framebuffers, n, paramCapture);
 }
 
 void CaptureDeleteRenderbuffersOES_renderbuffersPacked(const State &glState,
@@ -3101,7 +3102,7 @@ void CaptureDeleteRenderbuffersOES_renderbuffersPacked(const State &glState,
                                                        const RenderbufferID *renderbuffers,
                                                        ParamCapture *paramCapture)
 {
-    CaptureMemory(renderbuffers, n * sizeof(GLuint), paramCapture);
+    CaptureArray(renderbuffers, n, paramCapture);
 }
 
 void CaptureGenFramebuffersOES_framebuffersPacked(const State &glState,

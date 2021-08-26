@@ -1198,6 +1198,10 @@ void Controller::InitFromParameters() {
   if (details->UpdateFromParameters(trigger_context_->GetScriptParameters()))
     SetDetails(std::move(details), base::TimeDelta());
 
+  if (user_data_ != nullptr) {
+    trigger_context_->GetScriptParameters().WriteToUserData(user_data_.get());
+  }
+
   const absl::optional<std::string> overlay_color =
       trigger_context_->GetScriptParameters().GetOverlayColors();
   if (overlay_color) {
@@ -1531,12 +1535,11 @@ void Controller::SetAdditionalValue(const std::string& client_memory_key,
                                     const ValueProto& value) {
   if (!user_data_)
     return;
-  auto it = user_data_->additional_values_.find(client_memory_key);
-  if (it == user_data_->additional_values_.end()) {
+  if (!user_data_->HasAdditionalValue(client_memory_key)) {
     NOTREACHED() << client_memory_key << " not found";
     return;
   }
-  it->second = value;
+  user_data_->SetAdditionalValue(client_memory_key, value);
   UpdateCollectUserDataActions();
   for (ControllerObserver& observer : observers_) {
     observer.OnUserDataChanged(user_data_.get(),
@@ -1884,7 +1887,10 @@ void Controller::OnNavigationShutdownOrError(const GURL& url,
 
 void Controller::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame() ||
+  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+  // frames. This caller was converted automatically to the primary main frame
+  // to preserve its semantics. Follow up to confirm correctness.
+  if (!navigation_handle->IsInPrimaryMainFrame() ||
       navigation_handle->IsSameDocument()) {
     return;
   }
@@ -1960,7 +1966,10 @@ void Controller::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   // TODO(b/159871774): Rethink how we handle navigation events. The early
   // return here may prevent us from updating |navigating_to_new_document_|.
-  if (!navigation_handle->IsInMainFrame() ||
+  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+  // frames. This caller was converted automatically to the primary main frame
+  // to preserve its semantics. Follow up to confirm correctness.
+  if (!navigation_handle->IsInPrimaryMainFrame() ||
       navigation_handle->IsSameDocument() ||
       !navigation_handle->HasCommitted() || !IsNavigatingToNewDocument()) {
     return;

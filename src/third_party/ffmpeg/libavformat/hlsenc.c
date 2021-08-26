@@ -37,6 +37,7 @@
 #include "libavutil/mathematics.h"
 #include "libavutil/parseutils.h"
 #include "libavutil/avstring.h"
+#include "libavutil/bprint.h"
 #include "libavutil/intreadwrite.h"
 #include "libavutil/random_seed.h"
 #include "libavutil/opt.h"
@@ -178,7 +179,7 @@ typedef struct VariantStream {
     unsigned int nb_streams;
     int m3u8_created; /* status of media play-list creation */
     int is_default; /* default status of audio group */
-    const char *language; /* audio lauguage name */
+    const char *language; /* audio language name */
     const char *agroup;   /* audio group name */
     const char *sgroup;   /* subtitle group name */
     const char *ccgroup;  /* closed caption group name */
@@ -188,7 +189,7 @@ typedef struct VariantStream {
 typedef struct ClosedCaptionsStream {
     const char *ccgroup;    /* closed caption group name */
     const char *instreamid; /* closed captions INSTREAM-ID */
-    const char *language;   /* closed captions langauge */
+    const char *language;   /* closed captions language */
 } ClosedCaptionsStream;
 
 typedef struct HLSContext {
@@ -2650,14 +2651,13 @@ static int hls_write_packet(AVFormatContext *s, AVPacket *pkt)
 
     vs->packets_written++;
     if (oc->pb) {
-        int64_t keyframe_pre_pos = avio_tell(oc->pb);
         ret = ff_write_chained(oc, stream_index, pkt, s, 0);
-        if ((st->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) &&
-            (pkt->flags & AV_PKT_FLAG_KEY) && !keyframe_pre_pos) {
-            av_write_frame(oc, NULL); /* Flush any buffered data */
-            vs->video_keyframe_size = avio_tell(oc->pb) - keyframe_pre_pos;
+        vs->video_keyframe_size += pkt->size;
+        if ((st->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) && (pkt->flags & AV_PKT_FLAG_KEY)) {
+            vs->video_keyframe_size = avio_tell(oc->pb);
+        } else {
+            vs->video_keyframe_pos = avio_tell(vs->out);
         }
-        vs->video_keyframe_pos = vs->start_pos;
         if (hls->ignore_io_errors)
             ret = 0;
     }

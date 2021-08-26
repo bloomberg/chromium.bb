@@ -502,12 +502,6 @@
 // smaller than the scroll view bounds.
 + (id<GREYMatcher>)contentViewSmallerThanScrollView;
 
-// Returns a matcher for the infobar asking to save a credit card locally.
-+ (id<GREYMatcher>)autofillSaveCardLocallyInfobar;
-
-// Returns a matcher for the infobar asking to upload a credit card.
-+ (id<GREYMatcher>)autofillUploadCardInfobar;
-
 // Returns a matcher for a history entry with |url| and |title|.
 + (id<GREYMatcher>)historyEntryForURL:(NSString*)URL title:(NSString*)title;
 
@@ -586,8 +580,12 @@
 
 #pragma mark - Tab Grid Edit Mode
 
-// Returns a matcher for the button to enter the tab grid tab edit mode.
+// Returns a matcher for the button to open the context menu for edit actions.
 + (id<GREYMatcher>)tabGridEditButton;
+
+// Returns a matcher for the context menu button to enter the tab grid tab
+// selection mode.
++ (id<GREYMatcher>)tabGridSelectTabsMenuButton;
 
 // Returns a matcher for the button to act on the selected tabs.
 + (id<GREYMatcher>)tabGridEditAddToButton;
@@ -597,6 +595,9 @@
 
 // Returns a matcher for the button to select all tabs.
 + (id<GREYMatcher>)tabGridEditSelectAllButton;
+
+// Returns a matcher for the button to share tabs.
++ (id<GREYMatcher>)tabGridEditShareButton;
 
 @end
 

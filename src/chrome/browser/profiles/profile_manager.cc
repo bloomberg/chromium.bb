@@ -22,6 +22,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/json/values_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -32,7 +33,6 @@
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/trace_event/trace_event.h"
-#include "base/util/values/values_util.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/accessibility/accessibility_labels_service.h"
@@ -85,7 +85,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/browser/password_store_interface.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/search_engines/default_search_manager.h"
@@ -283,7 +283,7 @@ void MarkProfileDirectoryForDeletion(const base::FilePath& path) {
   // on shutdown. In case of a crash remaining files are removed on next start.
   ListPrefUpdate deleted_profiles(g_browser_process->local_state(),
                                   prefs::kProfilesDeleted);
-  deleted_profiles->Append(util::FilePathToValue(path));
+  deleted_profiles->Append(base::FilePathToValue(path));
 }
 
 // Cancel a scheduling deletion, so ScheduleProfileDirectoryForDeletion can be
@@ -1126,7 +1126,7 @@ void ProfileManager::CleanUpDeletedProfiles() {
   DCHECK(deleted_profiles);
 
   for (const base::Value& value : deleted_profiles->GetList()) {
-    absl::optional<base::FilePath> profile_path = util::ValueToFilePath(value);
+    absl::optional<base::FilePath> profile_path = base::ValueToFilePath(value);
     // Although it should never happen, make sure this is a valid path in the
     // user_data_dir, so we don't accidentally delete something else.
     if (profile_path && IsAllowedProfilePath(*profile_path)) {
@@ -1920,9 +1920,9 @@ void ProfileManager::OnLoadProfileForProfileDeletion(
     DCHECK(entry);
     ProfileMetrics::LogProfileDelete(entry->IsAuthenticated());
     // Some platforms store passwords in keychains. They should be removed.
-    scoped_refptr<password_manager::PasswordStore> password_store =
-        PasswordStoreFactory::GetForProfile(profile,
-                                            ServiceAccessType::EXPLICIT_ACCESS)
+    scoped_refptr<password_manager::PasswordStoreInterface> password_store =
+        PasswordStoreFactory::GetInterfaceForProfile(
+            profile, ServiceAccessType::EXPLICIT_ACCESS)
             .get();
     if (password_store.get()) {
       password_store->RemoveLoginsCreatedBetween(
@@ -2077,7 +2077,7 @@ void ProfileManager::AddProfileToStorage(Profile* profile) {
         storage.GetProfileAttributesWithPath(profile->GetPath());
     if (entry) {
 #if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
-      bool was_authenticated_status = entry->IsAuthenticated();
+      bool could_be_managed_status = entry->CanBeManaged();
 #endif
       // The ProfileAttributesStorage's info must match the Identity Manager.
       entry->SetAuthInfo(account_info.gaia, username,
@@ -2090,10 +2090,10 @@ void ProfileManager::AddProfileToStorage(Profile* profile) {
       // Sign out if force-sign-in policy is enabled and profile is not signed
       // in.
       VLOG(1) << "ForceSigninCheck: " << signin_util::IsForceSigninEnabled()
-              << ", " << was_authenticated_status << ", "
-              << !entry->IsAuthenticated();
-      if (signin_util::IsForceSigninEnabled() && was_authenticated_status &&
-          !entry->IsAuthenticated()) {
+              << ", " << could_be_managed_status << ", "
+              << !entry->CanBeManaged();
+      if (signin_util::IsForceSigninEnabled() && could_be_managed_status &&
+          !entry->CanBeManaged()) {
         auto* account_mutator = identity_manager->GetPrimaryAccountMutator();
 
         // GetPrimaryAccountMutator() returns nullptr on ChromeOS only.
@@ -2342,8 +2342,7 @@ void ProfileManager::OnNewActiveProfileLoaded(
     ProfileLoadedCallback* callback,
     Profile* loaded_profile,
     Profile::CreateStatus status) {
-  DCHECK(status != Profile::CREATE_STATUS_LOCAL_FAIL &&
-         status != Profile::CREATE_STATUS_REMOTE_FAIL);
+  DCHECK_NE(status, Profile::CREATE_STATUS_LOCAL_FAIL);
 
   // Only run the code if the profile initialization has finished completely.
   if (status != Profile::CREATE_STATUS_INITIALIZED)

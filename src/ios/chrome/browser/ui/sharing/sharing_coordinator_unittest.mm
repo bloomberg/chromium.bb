@@ -22,7 +22,7 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_edit_coordinator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_edit_view_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_ios_unittest.h"
-#import "ios/chrome/browser/ui/commands/bookmark_page_command.h"
+#import "ios/chrome/browser/ui/commands/bookmark_add_command.h"
 #import "ios/chrome/browser/ui/commands/bookmarks_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/generate_qr_code_command.h"
@@ -84,6 +84,11 @@ class SharingCoordinatorTest : public BookmarkIOSUnitTest {
     [browser_->GetCommandDispatcher()
         startDispatchingToTarget:snackbar_handler_
                      forProtocol:@protocol(SnackbarCommands)];
+
+    [browser_->GetCommandDispatcher()
+        startDispatchingToTarget:OCMStrictProtocolMock(
+                                     @protocol(BookmarksCommands))
+                     forProtocol:@protocol(BookmarksCommands)];
 
     SceneStateBrowserAgent::CreateForBrowser(browser_.get(), scene_state_);
   }
@@ -187,8 +192,6 @@ TEST_F(SharingCoordinatorTest, Start_ShareCurrentPage) {
 
   [coordinator start];
 
-  [vc_partial_mock verify];
-
   // Verify that the positioning is correct.
   auto activityHandler =
       static_cast<id<ActivityServicePositioner, ActivityServicePresentation>>(
@@ -198,13 +201,11 @@ TEST_F(SharingCoordinatorTest, Start_ShareCurrentPage) {
       CGRectEqualToRect(fake_origin_view_.bounds, activityHandler.sourceRect));
 
   // Verify that the presentation protocol works too.
-  id activity_vc_partial_mock = OCMPartialMock(activityViewController);
-  [[activity_vc_partial_mock expect] dismissViewControllerAnimated:YES
-                                                        completion:nil];
+  [[vc_partial_mock expect] dismissViewControllerAnimated:YES completion:nil];
 
   [activityHandler activityServiceDidEndPresenting];
 
-  [activity_vc_partial_mock verify];
+  [vc_partial_mock verify];
 }
 
 // Tests that the coordinator handles the QRGenerationCommands protocol.
@@ -269,88 +270,4 @@ TEST_F(SharingCoordinatorTest, Start_ShareURL) {
   [coordinator start];
 
   [vc_partial_mock verify];
-}
-
-// Tests that the coordinator can handle adding a new bookmark, and the edit
-// action is hooked-up properly.
-TEST_F(SharingCoordinatorTest, AddBookmark_EditViaSnackbar) {
-  @autoreleasepool {
-    ActivityParams* params =
-        [[ActivityParams alloc] initWithScenario:test_scenario_];
-    SharingCoordinator* coordinator = [[SharingCoordinator alloc]
-        initWithBaseViewController:base_view_controller_
-                           browser:browser_.get()
-                            params:params
-                        originView:fake_origin_view_];
-
-    __block ProceduralBlock edit_action = nil;
-    [[snackbar_handler_ expect]
-        showSnackbarMessage:[OCMArg checkWithBlock:^BOOL(
-                                        MDCSnackbarMessage* message) {
-          edit_action = message.action.handler;
-          return YES;
-        }]];
-
-    GURL test_url("https://wwww.chromium.org");
-    NSString* test_title = @"Test Title";
-    BookmarkPageCommand* command =
-        [[BookmarkPageCommand alloc] initWithURL:test_url title:test_title];
-
-    ASSERT_EQ(nil,
-              bookmark_model_->GetMostRecentlyAddedUserNodeForURL(command.URL));
-
-    auto handler = static_cast<id<BookmarksCommands>>(coordinator);
-    [handler bookmarkPage:command];
-
-    const BookmarkNode* bookmark =
-        bookmark_model_->GetMostRecentlyAddedUserNodeForURL(command.URL);
-
-    ASSERT_NE(nil, bookmark);
-    EXPECT_EQ(test_url, bookmark->url());
-    EXPECT_EQ(base::SysNSStringToUTF16(test_title), bookmark->GetTitle());
-
-    [snackbar_handler_ verify];
-    ASSERT_NE(nil, edit_action);
-
-    // Verify snackbar message's Edit action.
-    auto bookmark_delegate =
-        static_cast<id<BookmarkEditCoordinatorDelegate>>(coordinator);
-
-    ValidateEditBookmark(edit_action, bookmark_delegate);
-  }
-}
-
-// Tests that the coordinator can handle editing an existing bookmark via the
-// bookmarkPage command.
-TEST_F(SharingCoordinatorTest, EditExistingBookmark) {
-  @autoreleasepool {
-    ActivityParams* params =
-        [[ActivityParams alloc] initWithScenario:test_scenario_];
-    SharingCoordinator* coordinator = [[SharingCoordinator alloc]
-        initWithBaseViewController:base_view_controller_
-                           browser:browser_.get()
-                            params:params
-                        originView:fake_origin_view_];
-
-    const BookmarkNode* bookmark =
-        AddBookmark(bookmark_model_->mobile_node(), @"Some Other Title");
-
-    NSString* test_title = @"Test Title";
-    BookmarkPageCommand* command =
-        [[BookmarkPageCommand alloc] initWithURL:bookmark->url()
-                                           title:test_title];
-
-    ASSERT_EQ(bookmark,
-              bookmark_model_->GetMostRecentlyAddedUserNodeForURL(command.URL));
-
-    auto handler = static_cast<id<BookmarksCommands>>(coordinator);
-
-    ProceduralBlock trigger = ^{
-      [handler bookmarkPage:command];
-    };
-    auto bookmark_delegate =
-        static_cast<id<BookmarkEditCoordinatorDelegate>>(coordinator);
-
-    ValidateEditBookmark(trigger, bookmark_delegate);
-  }
 }

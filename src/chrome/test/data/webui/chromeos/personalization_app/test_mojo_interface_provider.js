@@ -4,7 +4,7 @@
 
 import {unguessableTokenToString} from 'chrome://personalization/common/utils.js';
 import {assertTrue} from '../../chai_assert.js';
-import {TestBrowserProxy} from '../../test_browser_proxy.m.js';
+import {TestBrowserProxy} from '../../test_browser_proxy.js';
 
 /**
  * @implements {chromeos.personalizationApp.mojom.WallpaperProviderInterface}
@@ -19,6 +19,9 @@ export class TestWallpaperProvider extends TestBrowserProxy {
       'getLocalImageThumbnail',
       'getCurrentWallpaper',
       'selectWallpaper',
+      'setDailyRefreshCollectionId',
+      'getDailyRefreshCollectionId',
+      'updateDailyRefreshWallpaper',
     ]);
 
     /**
@@ -77,14 +80,22 @@ export class TestWallpaperProvider extends TestBrowserProxy {
 
     /**
      * @public
-     * @type {!chromeos.personalizationApp.mojom.CurrentWallpaper}
+     * @type {?chromeos.personalizationApp.mojom.CurrentWallpaper}
      */
-    this.currentWallpaper = this.images_[1];
+    this.currentWallpaper = {
+      attribution: ['Image 0'],
+      layout: chromeos.personalizationApp.mojom.WallpaperLayout.kCenter,
+      key: '1',
+      type: chromeos.personalizationApp.mojom.WallpaperType.kOnline,
+      url: {url: 'https://images.googleusercontent.com/0'},
+    };
 
     /** @public */
     this.selectWallpaperResponse = true;
 
     this.selectLocalImageResponse = true;
+
+    this.updateDailyRefreshWallpaperResponse = true;
   }
 
   /**
@@ -151,6 +162,23 @@ export class TestWallpaperProvider extends TestBrowserProxy {
   /** @override */
   setCustomWallpaperLayout(layout) {
     this.methodCalled('selectCustomWallpaperLayout', layout);
+  }
+
+  /** @override */
+  setDailyRefreshCollectionId(collectionId) {
+    this.methodCalled('setDailyRefreshCollectionId', collectionId);
+  }
+
+  /** @override */
+  getDailyRefreshCollectionId() {
+    this.methodCalled('getDailyRefreshCollectionId');
+    return Promise.resolve({collectionId: this.collections_[0].id});
+  }
+
+  /** @override */
+  updateDailyRefreshWallpaper() {
+    this.methodCalled('updateDailyRefreshWallpaper');
+    return Promise.resolve({success: this.updateDailyRefreshWallpaperResponse});
   }
 
   /**

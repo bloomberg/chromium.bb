@@ -1,16 +1,26 @@
+float2 tint_unpack2x16float(uint param_0) {
+  uint i = param_0;
+  return f16tof32(uint2(i & 0xffff, i >> 16));
+}
+
 void unpack2x16float_32a5cf() {
-  uint tint_tmp = 1u;
-  float2 res = f16tof32(uint2(tint_tmp & 0xffff, tint_tmp >> 16));
+  float2 res = tint_unpack2x16float(1u);
 }
 
 struct tint_symbol {
   float4 value : SV_Position;
 };
 
-tint_symbol vertex_main() {
+float4 vertex_main_inner() {
   unpack2x16float_32a5cf();
-  const tint_symbol tint_symbol_1 = {float4(0.0f, 0.0f, 0.0f, 0.0f)};
-  return tint_symbol_1;
+  return float4(0.0f, 0.0f, 0.0f, 0.0f);
+}
+
+tint_symbol vertex_main() {
+  const float4 inner_result = vertex_main_inner();
+  tint_symbol wrapper_result = (tint_symbol)0;
+  wrapper_result.value = inner_result;
+  return wrapper_result;
 }
 
 void fragment_main() {

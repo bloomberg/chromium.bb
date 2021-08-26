@@ -8,7 +8,6 @@
 #include "ash/public/cpp/ash_public_export.h"
 #include "base/time/time.h"
 #include "media/mojo/mojom/speech_recognition_service.mojom.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash {
 
@@ -53,7 +52,6 @@ class ASH_PUBLIC_EXPORT ProjectorController {
 
   // Sets Projector toolbar visibility.
   virtual void SetProjectorToolsVisible(bool is_visible) = 0;
-  virtual bool AreProjectorToolsVisible() const = 0;
 
   // Returns true if Projector is eligible to start a new session.
   // TODO(yilkal): Rename to something more descriptive, like CanStart().

@@ -5,15 +5,19 @@
 #include "chrome/browser/ash/policy/dlp/dlp_notification_helper.h"
 
 #include "ash/public/cpp/notification_utils.h"
+#include "chrome/browser/ash/policy/dlp/dlp_warn_dialog.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_types.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
+#include "ui/views/widget/widget.h"
+#include "ui/views/window/dialog_delegate.h"
 #include "url/gurl.h"
 
 namespace policy {
@@ -63,6 +67,14 @@ void ShowDlpPrintDisabledNotification() {
       kPrintBlockedNotificationId,
       l10n_util::GetStringUTF16(IDS_POLICY_DLP_PRINTING_BLOCKED_TITLE),
       l10n_util::GetStringUTF16(IDS_POLICY_DLP_PRINTING_BLOCKED_MESSAGE));
+}
+
+void ShowDlpPrintWarningDialog(base::OnceClosure continue_cb,
+                               base::OnceClosure cancel_cb) {
+  views::Widget* widget = views::DialogDelegate::CreateDialogWidget(
+      new PrintWarnDialog(std::move(continue_cb), std::move(cancel_cb)),
+      nullptr, nullptr);
+  widget->Show();
 }
 
 void HideDlpScreenCapturePausedNotification(const std::string& capture_id) {

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/public/web/modules/media/webmediaplayer_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 
@@ -46,14 +47,14 @@ TEST(GetMediaURLScheme, Android) {
 }
 
 TEST(GetMediaURLScheme, Chrome) {
-  SchemeRegistry::RegisterURLSchemeAsWebUI("chrome");
-  SchemeRegistry::RegisterURLSchemeAsExtension("chrome-extension");
+  SchemeRegistry::RegisterURLSchemeAsWebUIForTest("chrome");
+  CommonSchemeRegistry::RegisterURLSchemeAsExtension("chrome-extension");
   EXPECT_EQ(media::mojom::MediaURLScheme::kChrome,
             GetMediaURLScheme(KURL("chrome://abc.123")));
   EXPECT_EQ(media::mojom::MediaURLScheme::kChromeExtension,
             GetMediaURLScheme(KURL("chrome-extension://abc.123")));
-  SchemeRegistry::RemoveURLSchemeAsExtension("chrome-extension");
-  SchemeRegistry::RemoveURLSchemeAsWebUI("chrome");
+  CommonSchemeRegistry::RemoveURLSchemeAsExtensionForTest("chrome-extension");
+  SchemeRegistry::RemoveURLSchemeAsWebUIForTest("chrome");
 }
 
 }  // namespace blink

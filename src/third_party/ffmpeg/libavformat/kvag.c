@@ -19,6 +19,8 @@
  * License along with FFmpeg; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
+
+#include "libavutil/channel_layout.h"
 #include "avformat.h"
 #include "internal.h"
 #include "rawenc.h"
@@ -80,7 +82,6 @@ static int kvag_read_header(AVFormatContext *s)
 
     par->sample_rate            = hdr.sample_rate;
     par->bits_per_coded_sample  = 4;
-    par->bits_per_raw_sample    = 16;
     par->block_align            = 1;
     par->bit_rate               = par->channels *
                                   (uint64_t)par->sample_rate *

@@ -18,32 +18,14 @@
 #include <vector>
 
 #include "src/sem/node.h"
-#include "src/sem/parameter_usage.h"
 #include "src/sem/sampler_type.h"
+#include "src/sem/variable.h"
+#include "src/utils/hash.h"
 
 namespace tint {
-
 namespace sem {
 // Forward declarations
 class Type;
-
-/// Parameter describes a single parameter of a call target
-struct Parameter {
-  /// Parameter type
-  sem::Type* const type;
-  /// Parameter usage
-  ParameterUsage const usage = ParameterUsage::kNone;
-};
-
-std::ostream& operator<<(std::ostream& out, Parameter parameter);
-
-/// Comparison operator for Parameters
-static inline bool operator==(const Parameter& a, const Parameter& b) {
-  return a.type == b.type && a.usage == b.usage;
-}
-
-/// ParameterList is a list of Parameter
-using ParameterList = std::vector<Parameter>;
 
 /// @param parameters the list of parameters
 /// @param usage the parameter usage to find
@@ -58,6 +40,9 @@ class CallTarget : public Castable<CallTarget, Node> {
   /// @param return_type the return type of the call target
   /// @param parameters the parameters for the call target
   CallTarget(sem::Type* return_type, const ParameterList& parameters);
+
+  /// Copy constructor
+  CallTarget(const CallTarget&);
 
   /// @return the return type of the call target
   sem::Type* ReturnType() const { return return_type_; }

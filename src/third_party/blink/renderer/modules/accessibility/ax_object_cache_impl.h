@@ -190,7 +190,10 @@ class MODULES_EXPORT AXObjectCacheImpl
 
   void OnTouchAccessibilityHover(const IntPoint&) override;
 
-  AXObject* ObjectFromAXID(AXID id) const { return objects_.at(id); }
+  AXObject* ObjectFromAXID(AXID id) const {
+    auto it = objects_.find(id);
+    return it != objects_.end() ? it->value : nullptr;
+  }
   AXObject* Root();
 
   // Used for objects without backing DOM nodes, layout objects, etc.
@@ -230,8 +233,13 @@ class MODULES_EXPORT AXObjectCacheImpl
   void ChildrenChangedWithCleanLayout(Node* optional_node_for_relation_update,
                                       AXObject*);
 
+  void MarkAXObjectDirty(AXObject*);
   void MarkAXObjectDirtyWithCleanLayout(AXObject*);
   void MarkAXSubtreeDirtyWithCleanLayout(AXObject*);
+
+  // Set the parent of |child|. If no parent is possible, this means the child
+  // can no longer be in the AXTree, so remove the child.
+  AXObject* RestoreParentOrPrune(AXObject* child);
 
   // When an object is created or its id changes, this must be called so that
   // the relation cache is updated.
@@ -434,10 +442,16 @@ class MODULES_EXPORT AXObjectCacheImpl
   ax::mojom::blink::EventFrom ComputeEventFrom();
 
   void MarkAXObjectDirtyWithCleanLayoutHelper(AXObject* obj, bool subtree);
-  void MarkAXObjectDirty(AXObject*);
   void MarkAXSubtreeDirty(AXObject*);
   void MarkElementDirty(const Node*);
   void MarkElementDirtyWithCleanLayout(const Node*);
+
+  // Given an object to mark dirty or fire an event on, return an object
+  // included in the tree that can be used with the serializer, or null if there
+  // is no relevant object to use. Objects that are not included in the tree,
+  // and have no ancestor object included in the tree, are pruned from the tree,
+  // in which case there is nothing to be serialized.
+  AXObject* GetSerializationTarget(AXObject* obj);
 
   // Helper that clears children up to the first included ancestor and returns
   // the ancestor if a children changed notification should be fired on it.
@@ -575,7 +589,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   // setting enabled, or where there is no active ancestral aria-modal dialog.
   AXObject* AncestorAriaModalDialog(Node* node);
 
-  void ScheduleVisualUpdate();
+  void ScheduleVisualUpdate(Document& document);
   void FireTreeUpdatedEventImmediately(
       Document& document,
       ax::mojom::blink::EventFrom event_from,

@@ -22,26 +22,30 @@
 #include "src/gpu/GrRenderTargetProxy.h"
 #include "src/gpu/GrResourceCache.h"
 #include "src/gpu/GrSemaphore.h"
-#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/GrTexture.h"
 #include "src/gpu/SkGr.h"
 #include "src/gpu/text/GrStrikeCache.h"
 #include "src/gpu/text/GrTextBlobCache.h"
+#include "src/gpu/v1/SurfaceDrawContext_v1.h"
 #include "src/image/SkImage_Gpu.h"
 
 #include <algorithm>
 
 //////////////////////////////////////////////////////////////////////////////
 
-#define DRAW_OP_TEST_EXTERN(Op) \
-    extern GrOp::Owner Op##__Test(GrPaint&&, SkRandom*, \
-                                  GrRecordingContext*, GrSurfaceDrawContext*, int)
+#define DRAW_OP_TEST_EXTERN(Op)                                                                 \
+    extern GrOp::Owner Op##__Test(GrPaint&&,                                                    \
+                                  SkRandom*,                                                    \
+                                  GrRecordingContext*,                                          \
+                                  skgpu::v1::SurfaceDrawContext*,                               \
+                                  int)
 #define DRAW_OP_TEST_ENTRY(Op) Op##__Test
 
 DRAW_OP_TEST_EXTERN(AAConvexPathOp);
 DRAW_OP_TEST_EXTERN(AAFlatteningConvexPathOp);
 DRAW_OP_TEST_EXTERN(AAHairlineOp);
 DRAW_OP_TEST_EXTERN(AAStrokeRectOp);
+DRAW_OP_TEST_EXTERN(ButtCapDashedCircleOp);
 DRAW_OP_TEST_EXTERN(CircleOp);
 DRAW_OP_TEST_EXTERN(DashOp);
 DRAW_OP_TEST_EXTERN(DefaultPathOp);
@@ -60,15 +64,19 @@ DRAW_OP_TEST_EXTERN(SmallPathOp);
 DRAW_OP_TEST_EXTERN(TextureOp);
 DRAW_OP_TEST_EXTERN(TriangulatingPathOp);
 
-void GrDrawRandomOp(SkRandom* random, GrSurfaceDrawContext* surfaceDrawContext, GrPaint&& paint) {
-    auto context = surfaceDrawContext->recordingContext();
-    using MakeDrawOpFn = GrOp::Owner (GrPaint&&, SkRandom*,
-                                      GrRecordingContext*, GrSurfaceDrawContext*, int numSamples);
+void GrDrawRandomOp(SkRandom* random, skgpu::v1::SurfaceDrawContext* sdc, GrPaint&& paint) {
+    auto rContext = sdc->recordingContext();
+    using MakeDrawOpFn = GrOp::Owner (GrPaint&&,
+                                      SkRandom*,
+                                      GrRecordingContext*,
+                                      skgpu::v1::SurfaceDrawContext*,
+                                      int numSamples);
     static constexpr MakeDrawOpFn* gFactories[] = {
             DRAW_OP_TEST_ENTRY(AAConvexPathOp),
             DRAW_OP_TEST_ENTRY(AAFlatteningConvexPathOp),
             DRAW_OP_TEST_ENTRY(AAHairlineOp),
             DRAW_OP_TEST_ENTRY(AAStrokeRectOp),
+            DRAW_OP_TEST_ENTRY(ButtCapDashedCircleOp),
             DRAW_OP_TEST_ENTRY(CircleOp),
             DRAW_OP_TEST_ENTRY(DashOp),
             DRAW_OP_TEST_ENTRY(DefaultPathOp),
@@ -92,13 +100,13 @@ void GrDrawRandomOp(SkRandom* random, GrSurfaceDrawContext* surfaceDrawContext, 
     uint32_t index = random->nextULessThan(static_cast<uint32_t>(kTotal));
     auto op = gFactories[index](std::move(paint),
                                 random,
-                                context,
-                                surfaceDrawContext,
-                                surfaceDrawContext->numSamples());
+                                rContext,
+                                sdc,
+                                sdc->numSamples());
 
     // Creating a GrAtlasTextOp my not produce an op if for example, it is totally outside the
     // render target context.
     if (op) {
-        surfaceDrawContext->addDrawOp(std::move(op));
+        sdc->addDrawOp(std::move(op));
     }
 }

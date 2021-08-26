@@ -26,6 +26,7 @@ import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.ChildAccountStatus;
 import org.chromium.components.signin.ChildAccountStatus.Status;
 import org.chromium.components.signin.base.CoreAccountInfo;
+import org.chromium.components.signin.identitymanager.AccountInfoServiceProvider;
 import org.chromium.components.signin.identitymanager.AccountTrackerService;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
@@ -92,7 +93,10 @@ public class SigninChecker
      */
     private void validatePrimaryAccountExists(List<Account> accounts) {
         final CoreAccountInfo oldAccount =
-                mSigninManager.getIdentityManager().getPrimaryAccountInfo(ConsentLevel.SYNC);
+                mSigninManager.getIdentityManager().getPrimaryAccountInfo(ConsentLevel.SIGNIN);
+        boolean oldSyncConsent =
+                mSigninManager.getIdentityManager().getPrimaryAccountInfo(ConsentLevel.SYNC)
+                != null;
         if (oldAccount == null
                 || AccountUtils.findAccountByName(accounts, oldAccount.getEmail()) != null) {
             // Do nothing if user is not signed in or if the primary account is still on device
@@ -103,27 +107,36 @@ public class SigninChecker
                 .getNewNameOfRenamedAccountAsync(oldAccount.getEmail(), accounts)
                 .then(newAccountName -> {
                     if (newAccountName != null) {
-                        // Sign in to the new account if the current primary account is renamed
-                        // to a new account
-                        mSigninManager.signOut(SignoutReason.USER_CLICKED_SIGNOUT_SETTINGS, () -> {
-                            mSigninManager.signinAndEnableSync(SigninAccessPoint.ACCOUNT_RENAMED,
-                                    AccountUtils.createAccountFromName(newAccountName),
-                                    new SignInCallback() {
-                                        @Override
-                                        public void onSignInComplete() {
-                                            SyncService.get().setFirstSetupComplete(
-                                                    SyncFirstSetupCompleteSource.BASIC_FLOW);
-                                        }
-
-                                        @Override
-                                        public void onSignInAborted() {}
-                                    });
-                        }, false);
+                        // Sign in to the new account if the current primary account is renamed to
+                        // a new account.
+                        resigninAfterAccountRename(newAccountName, oldSyncConsent);
                     } else {
                         // Sign out if the current primary account is not renamed
                         mSigninManager.signOut(SignoutReason.ACCOUNT_REMOVED_FROM_DEVICE);
                     }
                 });
+    }
+
+    private void resigninAfterAccountRename(String newAccountName, boolean shouldEnableSync) {
+        mSigninManager.signOut(SignoutReason.USER_CLICKED_SIGNOUT_SETTINGS, () -> {
+            if (shouldEnableSync) {
+                mSigninManager.signinAndEnableSync(SigninAccessPoint.ACCOUNT_RENAMED,
+                        AccountUtils.createAccountFromName(newAccountName), new SignInCallback() {
+                            @Override
+                            public void onSignInComplete() {
+                                SyncService.get().setFirstSetupComplete(
+                                        SyncFirstSetupCompleteSource.BASIC_FLOW);
+                            }
+
+                            @Override
+                            public void onSignInAborted() {}
+                        });
+            } else {
+                AccountInfoServiceProvider.get()
+                        .getAccountInfoByEmail(newAccountName)
+                        .then(accountInfo -> { mSigninManager.signin(accountInfo, null); });
+            }
+        }, false);
     }
 
     private void checkChildAccount(List<Account> accounts) {
@@ -156,13 +169,17 @@ public class SigninChecker
                     @Override
                     public void onSignInAborted() {}
                 };
-                boolean shouldWipeData = ChromeFeatureList.isEnabled(
-                        ChromeFeatureList.WIPE_DATA_ON_CHILD_ACCOUNT_SIGNIN);
-                SyncUserDataWiper.wipeSyncUserDataIfRequired(shouldWipeData).then((Void v) -> {
-                    RecordUserAction.record("Signin_Signin_WipeDataOnChildAccountSignin");
+                if (ChromeFeatureList.isEnabled(
+                            ChromeFeatureList.WIPE_DATA_ON_CHILD_ACCOUNT_SIGNIN)) {
+                    SyncUserDataWiper.wipeSyncUserData().then((Void v) -> {
+                        RecordUserAction.record("Signin_Signin_WipeDataOnChildAccountSignin2");
+                        mSigninManager.signinAndEnableSync(
+                                SigninAccessPoint.FORCED_SIGNIN, account, signInCallback);
+                    });
+                } else {
                     mSigninManager.signinAndEnableSync(
                             SigninAccessPoint.FORCED_SIGNIN, account, signInCallback);
-                });
+                }
                 return;
             }
         }

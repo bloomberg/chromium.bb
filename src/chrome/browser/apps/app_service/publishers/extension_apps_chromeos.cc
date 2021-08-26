@@ -210,7 +210,7 @@ void ExtensionAppsChromeOs::PauseApp(const std::string& app_id) {
                                              app_id, kPaused),
           subscribers());
 
-  if (instance_registry_->GetWindows(app_id).empty()) {
+  if (!instance_registry_->ContainsAppId(app_id)) {
     return;
   }
 
@@ -271,7 +271,7 @@ void ExtensionAppsChromeOs::GetMenuModel(const std::string& app_id,
   }
 
   if (menu_type == apps::mojom::MenuType::kShelf &&
-      !instance_registry_->GetWindows(app_id).empty()) {
+      instance_registry_->ContainsAppId(app_id)) {
     AddCommandItem(ash::MENU_CLOSE, IDS_SHELF_CONTEXT_MENU_CLOSE, &menu_items);
   }
 
@@ -676,13 +676,9 @@ IconEffects ExtensionAppsChromeOs::GetIconEffects(
     const extensions::Extension* extension,
     bool paused) {
   IconEffects icon_effects = IconEffects::kNone;
-  if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
-    icon_effects =
-        static_cast<IconEffects>(icon_effects | IconEffects::kCrOsStandardIcon);
-  } else {
-    icon_effects =
-        static_cast<IconEffects>(icon_effects | IconEffects::kResizeAndPad);
-  }
+  icon_effects =
+      static_cast<IconEffects>(icon_effects | IconEffects::kCrOsStandardIcon);
+
   if (extensions::util::ShouldApplyChromeBadge(profile(), extension->id())) {
     icon_effects =
         static_cast<IconEffects>(icon_effects | IconEffects::kChromeBadge);
@@ -763,8 +759,7 @@ void ExtensionAppsChromeOs::RegisterInstance(extensions::AppWindow* app_window,
   }
   std::vector<std::unique_ptr<apps::Instance>> deltas;
   auto instance = std::make_unique<apps::Instance>(
-      app_window->extension_id(),
-      std::make_unique<apps::Instance::InstanceKey>(window));
+      app_window->extension_id(), apps::Instance::InstanceKey(window));
   instance->SetLaunchId(GetLaunchId(app_window));
   instance->UpdateState(new_state, base::Time::Now());
   instance->SetBrowserContext(app_window->browser_context());

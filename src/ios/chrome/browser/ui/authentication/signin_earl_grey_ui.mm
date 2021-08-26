@@ -5,14 +5,17 @@
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
 
 #include "base/mac/foundation_util.h"
+#import "base/test/ios/wait_util.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_app_interface.h"
+#import "ios/chrome/browser/ui/authentication/signin_matchers.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_constants.h"
 #import "ios/chrome/browser/ui/authentication/views/views_constants.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_constants.h"
 #import "ios/chrome/browser/ui/settings/google_services/accounts_table_view_controller_constants.h"
+#import "ios/chrome/browser/ui/settings/google_services/google_services_settings_constants.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -34,6 +37,7 @@ using chrome_test_util::SecondarySignInButton;
 using chrome_test_util::SettingsAccountButton;
 using chrome_test_util::SettingsDoneButton;
 using chrome_test_util::SignOutAccountsButton;
+using chrome_test_util::IdentityCellMatcherForEmail;
 
 namespace {
 
@@ -69,7 +73,9 @@ void CloseSigninManagedAccountDialogIfAny(FakeChromeIdentity* fakeIdentity) {
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
                                           kIdentityButtonControlIdentifier)]
       performAction:grey_tap()];
-  [self selectIdentityWithEmail:fakeIdentity.userEmail];
+  [[EarlGrey selectElementWithMatcher:IdentityCellMatcherForEmail(
+                                          fakeIdentity.userEmail)]
+      performAction:grey_tap()];
   [self tapSigninConfirmationDialog];
   CloseSigninManagedAccountDialogIfAny(fakeIdentity);
 
@@ -119,22 +125,6 @@ void CloseSigninManagedAccountDialogIfAny(FakeChromeIdentity* fakeIdentity) {
   }
   [self signOutWithButton:SignOutAccountsButton()
       confirmationLabelID:confirmationLabelID];
-}
-
-+ (void)selectIdentityWithEmail:(NSString*)userEmail {
-  // Assumes that the identity chooser is visible.
-  [[EarlGrey
-      selectElementWithMatcher:[SigninEarlGreyAppInterface
-                                   identityCellMatcherForEmail:userEmail]]
-      performAction:grey_tap()];
-}
-
-+ (void)tapSettingsLink {
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(grey_accessibilityLabel(@"settings"),
-                                          grey_accessibilityTrait(
-                                              UIAccessibilityTraitLink),
-                                          nil)] performAction:grey_tap()];
 }
 
 + (void)tapSigninConfirmationDialog {
@@ -318,6 +308,24 @@ void CloseSigninManagedAccountDialogIfAny(FakeChromeIdentity* fakeIdentity) {
       assertWithMatcher:visibilityMatcher];
 }
 
++ (void)submitSyncPassphrase:(NSString*)passphrase {
+  [[EarlGrey selectElementWithMatcher:
+                 grey_accessibilityID(
+                     kSyncEncryptionPassphraseTextFieldAccessibilityIdentifier)]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:
+                 grey_accessibilityID(
+                     kSyncEncryptionPassphraseTextFieldAccessibilityIdentifier)]
+      performAction:grey_typeText(passphrase)];
+
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(
+                                   grey_kindOfClassName(@"_UIButtonBarButton"),
+                                   ButtonWithAccessibilityLabel(
+                                       l10n_util::GetNSString(
+                                           IDS_IOS_SYNC_DECRYPT_BUTTON)),
+                                   nil)] performAction:grey_tap()];
+}
 #pragma mark - Private
 
 + (void)signOutWithButton:(id<GREYMatcher>)buttonMatcher
@@ -331,8 +339,14 @@ void CloseSigninManagedAccountDialogIfAny(FakeChromeIdentity* fakeIdentity) {
   [[EarlGrey selectElementWithMatcher:grey_allOf(confirmationButtonMatcher,
                                                  grey_not(buttonMatcher), nil)]
       performAction:grey_tap()];
-  // Wait until the user is signed out.
-  [ChromeEarlGreyUI waitForAppToIdle];
+
+  // Wait until the user is signed out. Use a longer timeout for cases where
+  // sign out also triggers a clear browsing data.
+  [ChromeEarlGrey
+      waitForUIElementToAppearWithMatcher:SettingsDoneButton()
+                                  timeout:base::test::ios::
+                                              kWaitForClearBrowsingDataTimeout];
+
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
   [SigninEarlGrey verifySignedOut];

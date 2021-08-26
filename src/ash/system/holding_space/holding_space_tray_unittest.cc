@@ -28,6 +28,7 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
+#include "ash/test/view_drawn_waiter.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_item_view.h"
@@ -106,13 +107,10 @@ void LongPress(const views::View* view) {
   event_generator.Dispatch(&gesture_end);
 }
 
-void PressAndReleaseKey(const views::View* view,
-                        ui::KeyboardCode key_code,
-                        int flags = ui::EF_NONE) {
+void MoveMouseTo(const views::View* view) {
   auto* root_window = view->GetWidget()->GetNativeWindow()->GetRootWindow();
   ui::test::EventGenerator event_generator(root_window);
-  event_generator.PressKey(key_code, flags);
-  event_generator.ReleaseKey(key_code, flags);
+  event_generator.MoveMouseTo(view->GetBoundsInScreen().CenterPoint(), 10);
 }
 
 bool PressTabUntilFocused(const views::View* view, int max_count = 10) {
@@ -330,19 +328,23 @@ class HoldingSpaceTrayTest : public AshTestBase {
     AshTestBase::TearDown();
   }
 
-  HoldingSpaceItem* AddItem(HoldingSpaceItem::Type type,
-                            const base::FilePath& path) {
-    return AddItemToModel(model(), type, path);
+  HoldingSpaceItem* AddItem(
+      HoldingSpaceItem::Type type,
+      const base::FilePath& path,
+      const HoldingSpaceProgress& progress = HoldingSpaceProgress()) {
+    return AddItemToModel(model(), type, path, progress);
   }
 
-  HoldingSpaceItem* AddItemToModel(HoldingSpaceModel* target_model,
-                                   HoldingSpaceItem::Type type,
-                                   const base::FilePath& path) {
+  HoldingSpaceItem* AddItemToModel(
+      HoldingSpaceModel* target_model,
+      HoldingSpaceItem::Type type,
+      const base::FilePath& path,
+      const HoldingSpaceProgress& progress = HoldingSpaceProgress()) {
     GURL file_system_url(
         base::StrCat({"filesystem:", path.BaseName().value()}));
     std::unique_ptr<HoldingSpaceItem> item =
         HoldingSpaceItem::CreateFileBackedItem(
-            type, path, file_system_url,
+            type, path, file_system_url, progress,
             base::BindOnce(&CreateStubHoldingSpaceImage));
     HoldingSpaceItem* item_ptr = item.get();
     target_model->AddItem(std::move(item));
@@ -2000,7 +2002,7 @@ TEST_F(HoldingSpaceTrayTest, EnterKeyOpensDownloads) {
   // app. There should be *no* attempts to open an holding space items.
   EXPECT_CALL(*client(), OpenItems).Times(0);
   EXPECT_CALL(*client(), OpenDownloads);
-  PressAndReleaseKey(downloads_section_header, ui::KeyboardCode::VKEY_RETURN);
+  PressAndReleaseKey(ui::KeyboardCode::VKEY_RETURN);
 }
 
 // User should be able to launch selected holding space items by pressing the
@@ -2027,7 +2029,7 @@ TEST_F(HoldingSpaceTrayTest, EnterKeyOpensSelectedFiles) {
 
   // Press the enter key. The client should *not* attempt to open any items.
   EXPECT_CALL(*client(), OpenItems).Times(0);
-  PressAndReleaseKey(item_views[0], ui::KeyboardCode::VKEY_RETURN);
+  PressAndReleaseKey(ui::KeyboardCode::VKEY_RETURN);
   testing::Mock::VerifyAndClearExpectations(client());
 
   // Click an item. The view should be selected.
@@ -2039,7 +2041,7 @@ TEST_F(HoldingSpaceTrayTest, EnterKeyOpensSelectedFiles) {
   // Press the enter key. We expect the client to open the selected item.
   EXPECT_CALL(*client(), OpenItems(testing::ElementsAre(item_views[0]->item()),
                                    testing::_));
-  PressAndReleaseKey(item_views[0], ui::KeyboardCode::VKEY_RETURN);
+  PressAndReleaseKey(ui::KeyboardCode::VKEY_RETURN);
   testing::Mock::VerifyAndClearExpectations(client());
 
   // Shift-click on the second item. Both views should be selected.
@@ -2051,7 +2053,7 @@ TEST_F(HoldingSpaceTrayTest, EnterKeyOpensSelectedFiles) {
   EXPECT_CALL(*client(), OpenItems(testing::ElementsAre(item_views[0]->item(),
                                                         item_views[1]->item()),
                                    testing::_));
-  PressAndReleaseKey(item_views[1], ui::KeyboardCode::VKEY_RETURN);
+  PressAndReleaseKey(ui::KeyboardCode::VKEY_RETURN);
   testing::Mock::VerifyAndClearExpectations(client());
 
   // Tab traverse to the last item.
@@ -2061,7 +2063,7 @@ TEST_F(HoldingSpaceTrayTest, EnterKeyOpensSelectedFiles) {
   // it was *not* selected prior to pressing the enter key.
   EXPECT_CALL(*client(), OpenItems(testing::ElementsAre(item_views[2]->item()),
                                    testing::_));
-  PressAndReleaseKey(item_views[2], ui::KeyboardCode::VKEY_RETURN);
+  PressAndReleaseKey(ui::KeyboardCode::VKEY_RETURN);
   EXPECT_FALSE(item_views[0]->selected());
   EXPECT_FALSE(item_views[1]->selected());
   EXPECT_TRUE(item_views[2]->selected());
@@ -2278,7 +2280,7 @@ TEST_F(HoldingSpaceTrayTest, MultiselectInTouchMode) {
 
   // Close the context menu. The view that was long pressed should still be
   // selected.
-  PressAndReleaseKey(item_views[0], ui::KeyboardCode::VKEY_ESCAPE);
+  PressAndReleaseKey(ui::KeyboardCode::VKEY_ESCAPE);
   EXPECT_FALSE(views::MenuController::GetActiveInstance());
   EXPECT_TRUE(item_views[0]->selected());
   EXPECT_FALSE(item_views[1]->selected());
@@ -2294,7 +2296,7 @@ TEST_F(HoldingSpaceTrayTest, MultiselectInTouchMode) {
 
   // Close the context menu. Both views that were long pressed should still be
   // selected.
-  PressAndReleaseKey(item_views[0], ui::KeyboardCode::VKEY_ESCAPE);
+  PressAndReleaseKey(ui::KeyboardCode::VKEY_ESCAPE);
   EXPECT_FALSE(views::MenuController::GetActiveInstance());
   EXPECT_TRUE(item_views[0]->selected());
   EXPECT_TRUE(item_views[1]->selected());
@@ -2465,6 +2467,108 @@ TEST_F(HoldingSpaceTrayTest, SelectionUi) {
   EXPECT_TRUE(item_views[0]->selected());
   expect_checkmark_visible(item_views[0], false);
   expect_image_visible(item_views[0], true);
+}
+
+// Verifies selection state after pressing primary/secondary actions.
+TEST_F(HoldingSpaceTrayTest, SelectionWithPrimaryAndSecondaryActions) {
+  ui::ScopedAnimationDurationScaleMode scoped_animation_duration_scale_mode(
+      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
+
+  StartSession();
+
+  // Add multiple in-progress holding space items.
+  AddItem(HoldingSpaceItem::Type::kDownload, base::FilePath("/tmp/fake1"),
+          HoldingSpaceProgress(0, 100));
+  AddItem(HoldingSpaceItem::Type::kDownload, base::FilePath("/tmp/fake2"),
+          HoldingSpaceProgress(0, 100));
+
+  // Show UI.
+  test_api()->Show();
+  ASSERT_TRUE(test_api()->IsShowing());
+
+  // Cache views.
+  const std::vector<views::View*> views = test_api()->GetDownloadChips();
+  ASSERT_EQ(views.size(), 2u);
+  const std::vector<HoldingSpaceItemView*> item_views = {
+      HoldingSpaceItemView::Cast(views[0]),
+      HoldingSpaceItemView::Cast(views[1])};
+
+  // Verify initial selection state.
+  EXPECT_FALSE(item_views[0]->selected());
+  EXPECT_FALSE(item_views[1]->selected());
+
+  // Move mouse to the 1st item.
+  MoveMouseTo(item_views[0]);
+  EXPECT_FALSE(item_views[0]->selected());
+  EXPECT_FALSE(item_views[1]->selected());
+
+  // Select the 1st item.
+  Click(item_views[0]);
+  EXPECT_TRUE(item_views[0]->selected());
+  EXPECT_FALSE(item_views[1]->selected());
+
+  {
+    auto* primary_action =
+        item_views[0]->GetViewByID(kHoldingSpaceItemPrimaryActionContainerId);
+    ViewDrawnWaiter().Wait(primary_action);
+
+    // Click the 1st item's primary action. Selection state shouldn't change.
+    EXPECT_CALL(*client(), CancelItems(ElementsAre(item_views[0]->item())));
+    Click(primary_action);
+    EXPECT_TRUE(item_views[0]->selected());
+    EXPECT_FALSE(item_views[1]->selected());
+  }
+
+  // Move mouse to the 2nd item.
+  MoveMouseTo(item_views[1]);
+  EXPECT_TRUE(item_views[0]->selected());
+  EXPECT_FALSE(item_views[1]->selected());
+
+  {
+    auto* primary_action =
+        item_views[1]->GetViewByID(kHoldingSpaceItemPrimaryActionContainerId);
+    ViewDrawnWaiter().Wait(primary_action);
+
+    // Click the 2nd item's primary action. Selection state should change.
+    EXPECT_CALL(*client(), CancelItems(ElementsAre(item_views[1]->item())));
+    Click(primary_action);
+    EXPECT_FALSE(item_views[0]->selected());
+    EXPECT_FALSE(item_views[1]->selected());
+  }
+
+  // Select the 2nd item.
+  Click(item_views[1]);
+  EXPECT_FALSE(item_views[0]->selected());
+  EXPECT_TRUE(item_views[1]->selected());
+
+  {
+    auto* secondary_action =
+        item_views[1]->GetViewByID(kHoldingSpaceItemSecondaryActionContainerId);
+    ViewDrawnWaiter().Wait(secondary_action);
+
+    // Click the 2nd item's secondary action. Selection state shouldn't change.
+    EXPECT_CALL(*client(), PauseItems(ElementsAre(item_views[1]->item())));
+    Click(secondary_action);
+    EXPECT_FALSE(item_views[0]->selected());
+    EXPECT_TRUE(item_views[1]->selected());
+  }
+
+  // Move mouse to the 1st item.
+  MoveMouseTo(item_views[0]);
+  EXPECT_FALSE(item_views[0]->selected());
+  EXPECT_TRUE(item_views[1]->selected());
+
+  {
+    auto* secondary_action =
+        item_views[0]->GetViewByID(kHoldingSpaceItemSecondaryActionContainerId);
+    ViewDrawnWaiter().Wait(secondary_action);
+
+    // Click the 1st item's secondary action. Selection state should change.
+    EXPECT_CALL(*client(), PauseItems(ElementsAre(item_views[0]->item())));
+    Click(secondary_action);
+    EXPECT_FALSE(item_views[0]->selected());
+    EXPECT_FALSE(item_views[1]->selected());
+  }
 }
 
 // Verifies that attempting to open holding space items via double click works

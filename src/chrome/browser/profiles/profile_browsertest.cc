@@ -94,7 +94,7 @@
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
-#include "chromeos/lacros/lacros_chrome_service_impl.h"
+#include "chromeos/lacros/lacros_service.h"
 #include "components/account_id/account_id.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
@@ -428,7 +428,13 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, CreateNewProfileAsynchronous) {
 
 // Test OnProfileCreate is called with is_new_profile set to false when
 // creating a profile asynchronously with an existing prefs file.
-IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, CreateOldProfileAsynchronous) {
+// TODO(1232030): Flakily crashes on ChromeOS.
+#if defined(OS_CHROMEOS)
+#define MAYBE_CreateOldProfileAsynchronous DISABLED_CreateOldProfileAsynchronous
+#else
+#define MAYBE_CreateOldProfileAsynchronous CreateOldProfileAsynchronous
+#endif
+IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, MAYBE_CreateOldProfileAsynchronous) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
@@ -1058,9 +1064,42 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
     crosapi::mojom::BrowserInitParamsPtr init_params =
         crosapi::mojom::BrowserInitParams::New();
     init_params->session_type = crosapi::mojom::SessionType::kPublicSession;
-    chromeos::LacrosChromeServiceImpl::Get()->SetInitParamsForTests(
+    chromeos::LacrosService::Get()->SetInitParamsForTests(
         std::move(init_params));
 
+    EXPECT_EQ(chromeos::LacrosService::Get()->init_params()->session_type,
+              crosapi::mojom::SessionType::kPublicSession);
+    EXPECT_TRUE(profile->IsMainProfile());
+
+    // Creating a profile causes an implicit connection attempt to a Mojo
+    // service, which occurs as part of a new task. Before deleting |profile|,
+    // ensure this task runs to prevent a crash.
+    FlushIoTaskRunnerAndSpinThreads();
+  }
+  FlushIoTaskRunnerAndSpinThreads();
+}
+
+IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
+                       IsMainProfileReturnsTrueForWebKioskSession) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  {
+    base::FilePath profile_path =
+        temp_dir.GetPath().Append(chrome::kInitialProfile);
+    std::unique_ptr<Profile> profile(
+        CreateProfile(profile_path, /* delegate= */ nullptr,
+                      Profile::CREATE_MODE_SYNCHRONOUS));
+
+    crosapi::mojom::BrowserInitParamsPtr init_params =
+        crosapi::mojom::BrowserInitParams::New();
+    init_params->session_type = crosapi::mojom::SessionType::kWebKioskSession;
+    chromeos::LacrosService::Get()->SetInitParamsForTests(
+        std::move(init_params));
+
+    EXPECT_EQ(chromeos::LacrosService::Get()->init_params()->session_type,
+              crosapi::mojom::SessionType::kWebKioskSession);
     EXPECT_TRUE(profile->IsMainProfile());
 
     // Creating a profile causes an implicit connection attempt to a Mojo
@@ -1090,9 +1129,11 @@ IN_PROC_BROWSER_TEST_F(
     init_params->session_type = crosapi::mojom::SessionType::kRegularSession;
     init_params->device_mode =
         crosapi::mojom::DeviceMode::kEnterpriseActiveDirectory;
-    chromeos::LacrosChromeServiceImpl::Get()->SetInitParamsForTests(
+    chromeos::LacrosService::Get()->SetInitParamsForTests(
         std::move(init_params));
 
+    EXPECT_EQ(chromeos::LacrosService::Get()->init_params()->session_type,
+              crosapi::mojom::SessionType::kRegularSession);
     EXPECT_TRUE(profile->IsMainProfile());
 
     // Creating a profile causes an implicit connection attempt to a Mojo

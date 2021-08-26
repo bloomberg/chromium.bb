@@ -34,8 +34,11 @@ class WaylandOutputManager : public WaylandOutput::Delegate {
   void AddWaylandOutput(const uint32_t output_id, wl_output* output);
   void RemoveWaylandOutput(const uint32_t output_id);
 
-  // Creates a platform screen and feeds it with existing outputs.
+  // Creates a platform screen.
   std::unique_ptr<WaylandScreen> CreateWaylandScreen();
+
+  // Feeds a new platform screen with existing outputs.
+  void InitWaylandScreen(WaylandScreen* screen);
 
   WaylandOutput* GetOutput(uint32_t id) const;
   WaylandOutput* GetPrimaryOutput() const;
@@ -46,7 +49,8 @@ class WaylandOutputManager : public WaylandOutput::Delegate {
   // WaylandOutput::Delegate:
   void OnOutputHandleMetrics(uint32_t output_id,
                              const gfx::Rect& new_bounds,
-                             int32_t scale_factor) override;
+                             int32_t scale_factor,
+                             int32_t transform) override;
 
   using OutputList = std::vector<std::unique_ptr<WaylandOutput>>;
 

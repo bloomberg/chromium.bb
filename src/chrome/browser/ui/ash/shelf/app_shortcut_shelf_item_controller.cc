@@ -183,10 +183,10 @@ class AppMatcher {
                 web_contents, app_id_));
   }
 
-  // Returns true if this web app matches the given |web_contents|. If
-  // |deprecated_is_app| is true, the application gets first checked against its
-  // original URL since a windowed app might have navigated away from its app
-  // domain.
+  // Returns true if this web app matches the given |web_contents|. If the
+  // browser has an app controller, the application gets first checked against
+  // its original URL since a windowed app might have navigated away from its
+  // app domain.
   bool WebContentMatchesWebApp(content::WebContents* web_contents,
                                Browser* browser) const {
     DCHECK(registrar_);
@@ -194,8 +194,8 @@ class AppMatcher {
 
     // If the browser is a web app window, and the window app id matches,
     // then the contents match the app.
-    if (browser->app_controller() && browser->app_controller()->HasAppId())
-      return browser->app_controller()->GetAppId() == app_id_;
+    if (browser->app_controller())
+      return browser->app_controller()->app_id() == app_id_;
 
     // There are three ways to identify the association of a URL with this
     // web app:
@@ -362,8 +362,7 @@ void AppShortcutShelfItemController::ExecuteCommand(bool from_context_menu,
                                                     int64_t command_id,
                                                     int32_t event_flags,
                                                     int64_t display_id) {
-  if (from_context_menu && ExecuteContextMenuCommand(command_id, event_flags))
-    return;
+  DCHECK(!from_context_menu);
 
   if (static_cast<size_t>(command_id) >= AppMenuSize()) {
     ClearAppMenu();

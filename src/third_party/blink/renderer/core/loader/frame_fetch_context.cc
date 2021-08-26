@@ -827,8 +827,12 @@ bool FrameFetchContext::SendConversionRequestInsteadOfRedirecting(
     return false;
   }
 
-  if (!document_->domWindow()->IsFeatureEnabled(
-          mojom::blink::PermissionsPolicyFeature::kAttributionReporting)) {
+  const bool feature_policy_enabled = document_->domWindow()->IsFeatureEnabled(
+      mojom::blink::PermissionsPolicyFeature::kAttributionReporting);
+  UMA_HISTOGRAM_BOOLEAN("Conversions.ConversionIgnoredByFeaturePolicy",
+                        !feature_policy_enabled);
+
+  if (!feature_policy_enabled) {
     AuditsIssue::ReportAttributionIssue(
         document_->domWindow(),
         AttributionReportingIssueType::kPermissionPolicyDisabled,
@@ -891,6 +895,7 @@ bool FrameFetchContext::SendConversionRequestInsteadOfRedirecting(
   conversion->reporting_origin = SecurityOrigin::Create(url);
   conversion->conversion_data = 0UL;
   conversion->event_source_trigger_data = 0UL;
+  conversion->dedup_key = nullptr;
 
   const char kTriggerDataParam[] = "trigger-data";
   URLSearchParams* search_params = URLSearchParams::Create(url.Query());
@@ -914,6 +919,7 @@ bool FrameFetchContext::SendConversionRequestInsteadOfRedirecting(
         AttributionReportingIssueType::kInvalidAttributionData, absl::nullopt,
         nullptr, devtools_request_id);
   }
+
   // Defaulting to 0 means that it is not possible to selectively convert only
   // event sources or navigation sources.
   const char kEventSourceTriggerDataParam[] = "event-source-trigger-data";
@@ -934,6 +940,15 @@ bool FrameFetchContext::SendConversionRequestInsteadOfRedirecting(
 
     // Default invalid params to 0.
     conversion->priority = is_valid_integer ? priority : 0;
+  }
+
+  const char kDedupKeyParam[] = "dedup-key";
+  if (search_params->has(kDedupKeyParam)) {
+    bool is_valid_integer = false;
+    int64_t dedup_key =
+        search_params->get(kDedupKeyParam).ToInt64Strict(&is_valid_integer);
+    conversion->dedup_key =
+        is_valid_integer ? mojom::blink::DedupKey::New(dedup_key) : nullptr;
   }
 
   mojo::AssociatedRemote<mojom::blink::ConversionHost> conversion_host;

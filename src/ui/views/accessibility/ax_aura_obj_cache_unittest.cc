@@ -208,12 +208,14 @@ TEST_F(AXAuraObjCacheTest, GetFocusIsUnignoredAncestor) {
 
   // Note that AXAuraObjCache::GetFocusedView has some logic to force focus on
   // the first child of the client view when one cannot be found from the
-  // FocusManager.
+  // FocusManager if it has a child tree id.
   auto* client = widget->non_client_view()->client_view();
   ASSERT_NE(nullptr, client);
   auto* client_child = client->children().front();
   ASSERT_NE(nullptr, client_child);
   client_child->GetViewAccessibility().OverrideRole(ax::mojom::Role::kDialog);
+  client_child->GetViewAccessibility().OverrideChildTreeID(
+      ui::AXTreeID::CreateNewAXTreeID());
 
   View* parent = new View();
   widget->GetRootView()->AddChildView(parent);
@@ -247,11 +249,13 @@ TEST_F(AXAuraObjCacheTest, GetFocusIsUnignoredAncestor) {
   ASSERT_EQ(ax::mojom::Role::kGroup, GetData(cache.GetFocus()).role);
   ASSERT_EQ(ax_child, cache.GetFocus());
 
+  // Ignore should cause focus to move upwards.
   child->GetViewAccessibility().OverrideIsIgnored(true);
   ASSERT_EQ(ax::mojom::Role::kTextField, GetData(cache.GetFocus()).role);
   ASSERT_EQ(ax_parent, cache.GetFocus());
 
-  parent->GetViewAccessibility().OverrideIsIgnored(true);
+  // Propagate focus to ancestor should also cause focus to move upward.
+  parent->GetViewAccessibility().set_propagate_focus_to_ancestor(true);
   ASSERT_EQ(ax::mojom::Role::kWindow, GetData(cache.GetFocus()).role);
   ASSERT_EQ(cache.GetOrCreate(widget->GetRootView()), cache.GetFocus());
 

@@ -686,6 +686,30 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   web_contents()->SetJavaScriptDialogManagerForTesting(nullptr);
 }
 
+// Tests that requesting a before unload confirm dialog on a non-active
+// does not show a dialog.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       BeforeUnloadConfirmOnNonActive) {
+  TestJavaScriptDialogManager dialog_manager;
+  web_contents()->SetDelegate(&dialog_manager);
+
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = root_frame_host();
+  LeaveInPendingDeletionState(rfh_a);
+
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  rfh_a->RunBeforeUnloadConfirm(true, base::DoNothing());
+
+  // We should not have seen a dialog because the page isn't active anymore.
+  EXPECT_EQ(0, dialog_manager.num_beforeunload_dialogs_seen());
+
+  web_contents()->SetDelegate(nullptr);
+  web_contents()->SetJavaScriptDialogManagerForTesting(nullptr);
+}
+
 // Test for crbug.com/80401.  Canceling a beforeunload dialog should reset
 // the URL to the previous page's URL.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
@@ -2610,7 +2634,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   renderer_process->Shutdown(0);
   crash_observer.Wait();
 
-  main_frame->GetCanonicalUrlForSharing(base::DoNothing());
+  main_frame->GetCanonicalUrl(base::DoNothing());
 }
 
 // This test makes sure that when a blocked frame commits with a different URL,
@@ -5900,6 +5924,42 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   WaitForLoadStop(web_contents());
   EXPECT_EQ(1U, main_rfh->child_count());
   EXPECT_FALSE(main_rfh->child_at(0)->anonymous());
+}
+
+// Check that a page's anonymous_iframes_nonce is re-initialized after
+// navigations.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       NewAnonymousNonceOnNavigation) {
+  GURL main_url = embedded_test_server()->GetURL("/title1.html");
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  base::UnguessableToken first_nonce =
+      web_contents()->GetMainFrame()->GetPage().anonymous_iframes_nonce();
+  EXPECT_TRUE(first_nonce);
+
+  // Same-document navigation does not change the nonce.
+  EXPECT_TRUE(NavigateToURL(shell(), main_url.Resolve("#here")));
+  EXPECT_EQ(
+      first_nonce,
+      web_contents()->GetMainFrame()->GetPage().anonymous_iframes_nonce());
+
+  // Cross-document same-site navigation creates a new nonce.
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title2.html")));
+  base::UnguessableToken second_nonce =
+      web_contents()->GetMainFrame()->GetPage().anonymous_iframes_nonce();
+  EXPECT_TRUE(second_nonce);
+  EXPECT_NE(first_nonce, second_nonce);
+
+  // Cross-document cross-site navigation creates a new nonce.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("b.com", "/title1.html")));
+  EXPECT_NE(
+      first_nonce,
+      web_contents()->GetMainFrame()->GetPage().anonymous_iframes_nonce());
+  EXPECT_NE(
+      second_nonce,
+      web_contents()->GetMainFrame()->GetPage().anonymous_iframes_nonce());
 }
 
 }  // namespace content

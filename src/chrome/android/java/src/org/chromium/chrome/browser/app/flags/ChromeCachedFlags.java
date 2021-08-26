@@ -14,7 +14,6 @@ import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.CachedFieldTrialParameter;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.lens.LensFeature;
-import org.chromium.chrome.browser.merchant_viewer.MerchantViewerConfig;
 import org.chromium.chrome.browser.notifications.chime.ChimeFeatures;
 import org.chromium.chrome.browser.page_annotations.PageAnnotationsServiceConfig;
 import org.chromium.chrome.browser.paint_preview.StartupPaintPreviewHelper;
@@ -23,6 +22,7 @@ import org.chromium.chrome.browser.tasks.ConditionalTabStripUtils;
 import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
 import org.chromium.chrome.browser.tasks.tab_management.PriceTrackingUtilities;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
+import org.chromium.chrome.browser.theme.ThemeUtils;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 
 import java.util.ArrayList;
@@ -86,6 +86,7 @@ public class ChromeCachedFlags {
                 add(ChromeFeatureList.ELASTIC_OVERSCROLL);
                 add(ChromeFeatureList.IMMERSIVE_UI_MODE);
                 add(ChromeFeatureList.INSTANT_START);
+                add(ChromeFeatureList.INSTANCE_SWITCHER);
                 add(ChromeFeatureList.INTEREST_FEED_V2);
                 add(ChromeFeatureList.LENS_CAMERA_ASSISTED_SEARCH);
                 add(ChromeFeatureList.NEW_WINDOW_APP_MENU);
@@ -117,17 +118,7 @@ public class ChromeCachedFlags {
                         add(ConditionalTabStripUtils.CONDITIONAL_TAB_STRIP_INFOBAR_LIMIT);
                         add(ConditionalTabStripUtils.CONDITIONAL_TAB_STRIP_INFOBAR_PERIOD);
                         add(ConditionalTabStripUtils.CONDITIONAL_TAB_STRIP_SESSION_TIME_MS);
-                        add(LensFeature.DISABLE_LENS_CAMERA_ASSISTED_SEARCH_ON_INCOGNITO);
-                        add(LensFeature.ENABLE_LENS_CAMERA_ASSISTED_SEARCH_ON_LOW_END_DEVICE);
-                        add(LensFeature.ENABLE_LENS_CAMERA_ASSISTED_SEARCH_ON_TABLET);
-                        add(LensFeature.MIN_AGSA_VERSION_LENS_CAMERA_ASSISTED_SEARCH);
                         add(LensFeature.SEARCH_BOX_START_VARIANT_LENS_CAMERA_ASSISTED_SEARCH);
-                        add(LensFeature.SKIP_AGSA_VERSION_CHECK);
-                        add(LensFeature.SKIP_LENS_ELIGIBILITY_CHECKS);
-                        add(MerchantViewerConfig.DEFAULT_TRUST_SIGNALS_MESSAGE_DELAY);
-                        add(MerchantViewerConfig.TRUST_SIGNALS_MESSAGE_USE_RATING_BAR);
-                        add(MerchantViewerConfig.TRUST_SIGNALS_MESSAGE_WINDOW_DURATION_SECONDS);
-                        add(MerchantViewerConfig.TRUST_SIGNALS_SHEET_USE_PAGE_TITLE);
                         add(PageAnnotationsServiceConfig.PAGE_ANNOTATIONS_BASE_URL);
                         add(ReturnToChromeExperimentsUtil.TAB_SWITCHER_ON_RETURN_MS);
                         add(StartSurfaceConfiguration.HOME_BUTTON_ON_GRID_TAB_SWITCHER);
@@ -141,6 +132,7 @@ public class ChromeCachedFlags {
                         add(StartSurfaceConfiguration.SHOW_NTP_TILES_ON_OMNIBOX);
                         add(StartSurfaceConfiguration.START_SURFACE_VARIATION);
                         add(StartSurfaceConfiguration.SUPPORT_ACCESSIBILITY);
+                        add(StartSurfaceConfiguration.FINALE_ANIMATION_ENABLED);
                         add(StartupPaintPreviewHelper.ACCESSIBILITY_SUPPORT_PARAM);
                         add(CommerceSubscriptionsServiceConfig.STALE_TAB_LOWER_BOUND_SECONDS);
                         add(CommerceSubscriptionsServiceConfig.SUBSCRIPTIONS_SERVICE_BASE_URL);
@@ -157,6 +149,7 @@ public class ChromeCachedFlags {
                         add(TabUiFeatureUtilities.SKIP_SLOW_ZOOMING);
                         add(TabUiFeatureUtilities.TAB_GRID_LAYOUT_ANDROID_NEW_TAB_TILE);
                         add(TabUiFeatureUtilities.THUMBNAIL_ASPECT_RATIO);
+                        add(ThemeUtils.ENABLE_FULL_DYNAMIC_COLORS);
                     }
                 };
         tryToCatchMissingParameters(fieldTrialsToCache);

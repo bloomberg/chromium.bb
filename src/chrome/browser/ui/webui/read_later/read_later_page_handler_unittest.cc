@@ -47,6 +47,8 @@ class MockPage : public read_later::mojom::Page {
 
   MOCK_METHOD1(ItemsChanged,
                void(read_later::mojom::ReadLaterEntriesByStatusPtr));
+  MOCK_METHOD1(CurrentPageActionButtonStateChanged,
+               void(read_later::mojom::CurrentPageActionButtonState));
 };
 
 void ExpectNewReadLaterEntry(const read_later::mojom::ReadLaterEntry* entry,
@@ -179,7 +181,7 @@ TEST_F(TestReadLaterPageHandlerTest, OpenURLOnNTP) {
 
   // Check that OpenURL from the NTP does not open a new tab.
   EXPECT_EQ(browser()->tab_strip_model()->count(), 5);
-  handler()->OpenURL(GURL(kTabUrl3), true);
+  handler()->OpenURL(GURL(kTabUrl3), true, {});
   EXPECT_EQ(browser()->tab_strip_model()->count(), 5);
 
   // Expect ItemsChanged to be called 3 times.
@@ -198,7 +200,7 @@ TEST_F(TestReadLaterPageHandlerTest, OpenURLOnNTP) {
 TEST_F(TestReadLaterPageHandlerTest, OpenURLNotOnNTP) {
   // Check that OpenURL opens a new tab when not on the NTP.
   EXPECT_EQ(browser()->tab_strip_model()->count(), 4);
-  handler()->OpenURL(GURL(kTabUrl3), true);
+  handler()->OpenURL(GURL(kTabUrl3), true, {});
   EXPECT_EQ(browser()->tab_strip_model()->count(), 5);
 
   // Expect ItemsChanged to be called 3 times.
@@ -248,7 +250,7 @@ TEST_F(TestReadLaterPageHandlerTest, RemoveEntry) {
 
 TEST_F(TestReadLaterPageHandlerTest, UpdateAndRemoveEntry) {
   EXPECT_FALSE(model()->IsPerformingBatchUpdates());
-  handler()->OpenURL(GURL(kTabUrl3), true);
+  handler()->OpenURL(GURL(kTabUrl3), true, {});
   handler()->RemoveEntry(GURL(kTabUrl3));
   EXPECT_FALSE(model()->IsPerformingBatchUpdates());
 
@@ -269,7 +271,7 @@ TEST_F(TestReadLaterPageHandlerTest, UpdateAndRemoveEntry) {
 TEST_F(TestReadLaterPageHandlerTest, PostBatchUpdate) {
   auto token = model()->BeginBatchUpdates();
   EXPECT_TRUE(model()->IsPerformingBatchUpdates());
-  handler()->OpenURL(GURL(kTabUrl3), true);
+  handler()->OpenURL(GURL(kTabUrl3), true, {});
   handler()->RemoveEntry(GURL(kTabUrl3));
   token.reset();
   EXPECT_FALSE(model()->IsPerformingBatchUpdates());
@@ -296,7 +298,7 @@ TEST_F(TestReadLaterPageHandlerTest, NoUpdateWhenHidden) {
       content::WebContents::Create(params);
   handler()->set_web_contents_for_testing(web_contents.get());
 
-  handler()->OpenURL(GURL(kTabUrl3), true);
+  handler()->OpenURL(GURL(kTabUrl3), true, {});
   handler()->RemoveEntry(GURL(kTabUrl3));
 
   // Expect ItemsChanged to be called twice from the two AddEntry calls in
@@ -309,6 +311,31 @@ TEST_F(TestReadLaterPageHandlerTest, NoUpdateWhenHidden) {
       /* unread_size= */ 1u, /* read_size= */ 0u,
       /* expected_unread_data= */
       {std::make_pair(GURL(kTabUrl1), kTabName1)},
+      /* expected_read_data= */ {});
+}
+
+TEST_F(TestReadLaterPageHandlerTest, OpenURLAndReadd) {
+  // Check that OpenURL opens a new tab when not on the NTP.
+  EXPECT_EQ(browser()->tab_strip_model()->count(), 4);
+  handler()->OpenURL(GURL(kTabUrl3), true, {});
+  EXPECT_EQ(browser()->tab_strip_model()->count(), 5);
+  model()->AddEntry(GURL(kTabUrl3), kTabName3,
+                    reading_list::EntrySource::ADDED_VIA_CURRENT_APP);
+
+  // Expect ItemsChanged to be called 4 times.
+  // Twice for the two AddEntry calls in SetUp().
+  // Once for the OpenURL call above, and once for the AddEntry call above.
+  EXPECT_CALL(page_, ItemsChanged(testing::_)).Times(4);
+  // Expect CurrentPageActionButtonStateChanged to be called once when the
+  // current page is added while on that page.
+  EXPECT_CALL(page_, CurrentPageActionButtonStateChanged(testing::_)).Times(1);
+
+  // Get Read later entries.
+  GetAndVerifyReadLaterEntries(
+      /* unread_size= */ 2u, /* read_size= */ 0u,
+      /* expected_unread_data= */
+      {std::make_pair(GURL(kTabUrl3), kTabName3),
+       std::make_pair(GURL(kTabUrl1), kTabName1)},
       /* expected_read_data= */ {});
 }
 

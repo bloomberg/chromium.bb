@@ -1594,3 +1594,208 @@ TEST_F(VkLayerTest, ImagelessFramebufferRenderPassBeginImageView3D) {
     vk::DestroyFramebuffer(m_device->device(), framebuffer, nullptr);
     vk::DestroyImageView(m_device->device(), imageView3D, nullptr);
 }
+
+TEST_F(VkLayerTest, FramebufferAttachmentImageInfoPNext) {
+    TEST_DESCRIPTION("Begin render pass with missing framebuffer attachment");
+
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+    if (!DeviceExtensionSupported(VK_KHR_IMAGELESS_FRAMEBUFFER_EXTENSION_NAME)) {
+        printf("%s test requires VK_KHR_imageless_framebuffer, not available.  Skipping.\n", kSkipPrefix);
+        return;
+    }
+    m_device_extension_names.push_back(VK_KHR_IMAGELESS_FRAMEBUFFER_EXTENSION_NAME);
+    ASSERT_NO_FATAL_FAILURE(InitState());
+    ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
+
+    VkFormat attachment_format = VK_FORMAT_R8G8B8A8_UNORM;
+    VkFramebufferAttachmentImageInfo fb_fdm = LvlInitStruct<VkFramebufferAttachmentImageInfo>();
+    fb_fdm.pNext = &fb_fdm;
+    fb_fdm.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
+    fb_fdm.width = 64;
+    fb_fdm.height = 64;
+    fb_fdm.layerCount = 1;
+    fb_fdm.viewFormatCount = 1;
+    fb_fdm.pViewFormats = &attachment_format;
+
+    VkFramebufferAttachmentsCreateInfo fb_aci_fdm = LvlInitStruct<VkFramebufferAttachmentsCreateInfo>();
+    fb_aci_fdm.attachmentImageInfoCount = 1;
+    fb_aci_fdm.pAttachmentImageInfos = &fb_fdm;
+
+    VkFramebufferCreateInfo framebufferCreateInfo = LvlInitStruct<VkFramebufferCreateInfo>(&fb_aci_fdm);
+    framebufferCreateInfo.width = 64;
+    framebufferCreateInfo.height = 64;
+    framebufferCreateInfo.layers = 1;
+    framebufferCreateInfo.renderPass = m_renderPass;
+    framebufferCreateInfo.attachmentCount = static_cast<uint32_t>(m_framebuffer_attachments.size());
+    framebufferCreateInfo.pAttachments = m_framebuffer_attachments.data();
+
+    VkFramebuffer framebuffer;
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkFramebufferAttachmentImageInfo-pNext-pNext");
+    vk::CreateFramebuffer(m_device->device(), &framebufferCreateInfo, nullptr, &framebuffer);
+    m_errorMonitor->VerifyFound();
+}
+
+TEST_F(VkLayerTest, DescriptorUpdateTemplateEntryWithInlineUniformBlock) {
+    TEST_DESCRIPTION("Test VkDescriptorUpdateTemplateEntry with descriptor type VK_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK_EXT");
+
+    // GPDDP2 needed for push descriptors support below
+    bool gpdp2_support = InstanceExtensionSupported(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME,
+                                                    VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_SPEC_VERSION);
+    if (gpdp2_support) {
+        m_instance_extension_names.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+    }
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+    if (!DeviceExtensionSupported(gpu(), nullptr, VK_KHR_DESCRIPTOR_UPDATE_TEMPLATE_EXTENSION_NAME)) {
+        printf("%s Descriptor Update Template Extensions not supported, skipped.\n", kSkipPrefix);
+        return;
+    }
+    if (!DeviceExtensionSupported(gpu(), nullptr, VK_EXT_INLINE_UNIFORM_BLOCK_EXTENSION_NAME)) {
+        printf("%s %s not supported, skipped.\n", kSkipPrefix, VK_EXT_INLINE_UNIFORM_BLOCK_EXTENSION_NAME);
+        return;
+    }
+    m_device_extension_names.push_back(VK_KHR_DESCRIPTOR_UPDATE_TEMPLATE_EXTENSION_NAME);
+    m_device_extension_names.push_back(VK_EXT_INLINE_UNIFORM_BLOCK_EXTENSION_NAME);
+
+    // Note: Includes workaround for some implementations which incorrectly return 0 maxPushDescriptors
+    bool push_descriptor_support = gpdp2_support &&
+                                   DeviceExtensionSupported(gpu(), nullptr, VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME) &&
+                                   (GetPushDescriptorProperties(instance(), gpu()).maxPushDescriptors > 0);
+    if (push_descriptor_support) {
+        m_device_extension_names.push_back(VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME);
+    } else {
+        printf("%s Push Descriptor Extension not supported, push descriptor cases skipped.\n", kSkipPrefix);
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, nullptr, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT));
+
+    std::vector<VkDescriptorSetLayoutBinding> ds_bindings = {
+        {0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_ALL, nullptr}};
+    OneOffDescriptorSet descriptor_set(m_device, ds_bindings);
+
+    // Create a buffer to be used for invalid updates
+    VkBufferCreateInfo buff_ci = LvlInitStruct<VkBufferCreateInfo>();
+    buff_ci.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+    buff_ci.size = m_device->props.limits.minUniformBufferOffsetAlignment;
+    buff_ci.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    VkBufferObj buffer;
+    buffer.init(*m_device, buff_ci);
+
+    // Relying on the "return nullptr for non-enabled extensions
+    auto vkCreateDescriptorUpdateTemplateKHR =
+        (PFN_vkCreateDescriptorUpdateTemplateKHR)vk::GetDeviceProcAddr(m_device->device(), "vkCreateDescriptorUpdateTemplateKHR");
+    auto vkDestroyDescriptorUpdateTemplateKHR =
+        (PFN_vkDestroyDescriptorUpdateTemplateKHR)vk::GetDeviceProcAddr(m_device->device(), "vkDestroyDescriptorUpdateTemplateKHR");
+    auto vkUpdateDescriptorSetWithTemplateKHR =
+        (PFN_vkUpdateDescriptorSetWithTemplateKHR)vk::GetDeviceProcAddr(m_device->device(), "vkUpdateDescriptorSetWithTemplateKHR");
+
+    ASSERT_NE(vkCreateDescriptorUpdateTemplateKHR, nullptr);
+    ASSERT_NE(vkDestroyDescriptorUpdateTemplateKHR, nullptr);
+    ASSERT_NE(vkUpdateDescriptorSetWithTemplateKHR, nullptr);
+
+    struct SimpleTemplateData {
+        VkDescriptorBufferInfo buff_info;
+    };
+
+    VkDescriptorUpdateTemplateEntry update_template_entry = {};
+    update_template_entry.dstBinding = 0;
+    update_template_entry.dstArrayElement = 2;
+    update_template_entry.descriptorCount = 1;
+    update_template_entry.descriptorType = VK_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK_EXT;
+    update_template_entry.offset = offsetof(SimpleTemplateData, buff_info);
+    update_template_entry.stride = sizeof(SimpleTemplateData);
+
+    auto update_template_ci = LvlInitStruct<VkDescriptorUpdateTemplateCreateInfoKHR>();
+    update_template_ci.descriptorUpdateEntryCount = 1;
+    update_template_ci.pDescriptorUpdateEntries = &update_template_entry;
+    update_template_ci.templateType = VK_DESCRIPTOR_UPDATE_TEMPLATE_TYPE_DESCRIPTOR_SET;
+    update_template_ci.descriptorSetLayout = descriptor_set.layout_.handle();
+
+    VkDescriptorUpdateTemplate update_template = VK_NULL_HANDLE;
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkDescriptorUpdateTemplateEntry-descriptor-02226");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkDescriptorUpdateTemplateEntry-descriptor-02227");
+    vkCreateDescriptorUpdateTemplateKHR(m_device->device(), &update_template_ci, nullptr, &update_template);
+    m_errorMonitor->VerifyFound();
+}
+
+TEST_F(VkLayerTest, RenderPassCreateFragmentDensityMapReferenceToInvalidAttachment) {
+    TEST_DESCRIPTION(
+        "Test creating a framebuffer with fragment density map reference to an attachment with layer count different from 1");
+
+    if (!InstanceExtensionSupported(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
+        return;
+    }
+    m_instance_extension_names.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+
+    ASSERT_NO_FATAL_FAILURE(InitFramework());
+    if (!DeviceExtensionSupported(gpu(), nullptr, VK_EXT_FRAGMENT_DENSITY_MAP_EXTENSION_NAME)) {
+        printf("%s %s extension not supported skipped.\n", kSkipPrefix, VK_EXT_FRAGMENT_DENSITY_MAP_EXTENSION_NAME);
+        return;
+    }
+    m_device_extension_names.push_back(VK_EXT_FRAGMENT_DENSITY_MAP_EXTENSION_NAME);
+    VkPhysicalDeviceFragmentDensityMapFeaturesEXT fdm_features = LvlInitStruct<VkPhysicalDeviceFragmentDensityMapFeaturesEXT>();
+    VkPhysicalDeviceFeatures2 features2 = LvlInitStruct<VkPhysicalDeviceFeatures2>(&fdm_features);
+    fdm_features.fragmentDensityMap = true;
+
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2, 0));
+    ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
+
+    VkAttachmentReference ref;
+    ref.attachment = 0;
+    ref.layout = VK_IMAGE_LAYOUT_FRAGMENT_DENSITY_MAP_OPTIMAL_EXT;
+    VkRenderPassFragmentDensityMapCreateInfoEXT rpfdmi = LvlInitStruct<VkRenderPassFragmentDensityMapCreateInfoEXT>();
+    rpfdmi.fragmentDensityMapAttachment = ref;
+
+    VkAttachmentDescription attach = {};
+    attach.format = VK_FORMAT_R8G8_UNORM;
+    attach.samples = VK_SAMPLE_COUNT_1_BIT;
+    attach.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+    attach.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    attach.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    attach.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    attach.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    attach.finalLayout = VK_IMAGE_LAYOUT_FRAGMENT_DENSITY_MAP_OPTIMAL_EXT;
+
+    VkSubpassDescription subpass = {};
+    subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    subpass.inputAttachmentCount = 1;
+    subpass.pInputAttachments = &ref;
+
+    VkRenderPassCreateInfo rpci = LvlInitStruct<VkRenderPassCreateInfo>(&rpfdmi);
+    rpci.attachmentCount = 1;
+    rpci.pAttachments = &attach;
+    rpci.subpassCount = 1;
+    rpci.pSubpasses = &subpass;
+
+    VkRenderPass renderPass;
+    vk::CreateRenderPass(device(), &rpci, nullptr, &renderPass);
+
+    VkImageCreateInfo image_create_info = LvlInitStruct<VkImageCreateInfo>();
+    image_create_info.imageType = VK_IMAGE_TYPE_2D;
+    image_create_info.format = VK_FORMAT_R8G8_UNORM;
+    image_create_info.extent.width = 32;
+    image_create_info.extent.height = 32;
+    image_create_info.extent.depth = 1;
+    image_create_info.mipLevels = 1;
+    image_create_info.arrayLayers = 4;
+    image_create_info.samples = VK_SAMPLE_COUNT_1_BIT;
+    image_create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
+    image_create_info.usage = VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
+    image_create_info.flags = 0;
+
+    VkImageObj image(m_device);
+    image.Init(image_create_info);
+    VkImageView imageView = image.targetView(VK_FORMAT_R8G8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 4);
+
+    VkFramebufferCreateInfo fb_info = LvlInitStruct<VkFramebufferCreateInfo>();
+    fb_info.renderPass = renderPass;
+    fb_info.attachmentCount = 1;
+    fb_info.pAttachments = &imageView;
+    fb_info.width = 32;
+    fb_info.height = 32;
+    fb_info.layers = 1;
+
+    VkFramebuffer framebuffer;
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkFramebufferCreateInfo-pAttachments-02744");
+    vk::CreateFramebuffer(device(), &fb_info, nullptr, &framebuffer);
+    m_errorMonitor->VerifyFound();
+}

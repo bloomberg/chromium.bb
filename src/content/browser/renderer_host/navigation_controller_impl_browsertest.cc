@@ -26,7 +26,6 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/renderer_host/display_util.h"
 #include "content/browser/renderer_host/frame_navigation_entry.h"
 #include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/renderer_host/navigation_controller_impl.h"
@@ -82,6 +81,7 @@
 #include "third_party/blink/public/common/renderer_preferences/renderer_preferences.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-test-utils.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
+#include "ui/display/display_util.h"
 
 namespace content {
 namespace {
@@ -1783,7 +1783,7 @@ class LoadCommittedCapturer : public WebContentsObserver {
   // Observes the load commit for the specified |node|.
   explicit LoadCommittedCapturer(FrameTreeNode* node)
       : WebContentsObserver(
-            node->current_frame_host()->delegate()->GetAsWebContents()),
+            WebContents::FromRenderFrameHost(node->current_frame_host())),
         frame_tree_node_id_(node->frame_tree_node_id()),
         message_loop_runner_(new MessageLoopRunner) {}
 
@@ -2500,6 +2500,8 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
                             ->GetFrameTree()
                             ->root();
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
 
   {
     // Simple load.
@@ -2516,6 +2518,10 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
     EXPECT_FALSE(capturer.is_same_document());
   }
 
+  NavigationEntryImpl* previous_entry = controller.GetLastCommittedEntry();
+  scoped_refptr<FrameNavigationEntry> previous_root_entry =
+      previous_entry->root_node()->frame_entry.get();
+
   {
     // Load via a fragment link click.
     FrameNavigateParamsCapturer capturer(root);
@@ -2526,6 +2532,14 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
         capturer.transition(), ui::PAGE_TRANSITION_LINK));
     EXPECT_EQ(NAVIGATION_TYPE_NEW_ENTRY, capturer.navigation_type());
     EXPECT_TRUE(capturer.is_same_document());
+
+    // The FrameNavigationEntry and NavigationEntry are not reused.
+    EXPECT_NE(
+        previous_root_entry,
+        controller.GetLastCommittedEntry()->root_node()->frame_entry.get());
+    EXPECT_NE(previous_entry, controller.GetLastCommittedEntry());
+    previous_entry = controller.GetLastCommittedEntry();
+    previous_root_entry = previous_entry->root_node()->frame_entry.get();
   }
 
   {
@@ -2538,6 +2552,14 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
         capturer.transition(), ui::PAGE_TRANSITION_LINK));
     EXPECT_EQ(NAVIGATION_TYPE_NEW_ENTRY, capturer.navigation_type());
     EXPECT_FALSE(capturer.is_same_document());
+
+    // The FrameNavigationEntry and NavigationEntry are not reused.
+    EXPECT_NE(
+        previous_root_entry,
+        controller.GetLastCommittedEntry()->root_node()->frame_entry.get());
+    EXPECT_NE(previous_entry, controller.GetLastCommittedEntry());
+    previous_entry = controller.GetLastCommittedEntry();
+    previous_root_entry = previous_entry->root_node()->frame_entry.get();
   }
 
   {
@@ -2554,6 +2576,14 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                                   ui::PAGE_TRANSITION_CLIENT_REDIRECT)));
     EXPECT_EQ(NAVIGATION_TYPE_NEW_ENTRY, capturer.navigation_type());
     EXPECT_FALSE(capturer.is_same_document());
+
+    // The FrameNavigationEntry and NavigationEntry are not reused.
+    EXPECT_NE(
+        previous_root_entry,
+        controller.GetLastCommittedEntry()->root_node()->frame_entry.get());
+    EXPECT_NE(previous_entry, controller.GetLastCommittedEntry());
+    previous_entry = controller.GetLastCommittedEntry();
+    previous_root_entry = previous_entry->root_node()->frame_entry.get();
   }
 
   {
@@ -2569,22 +2599,38 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                                   ui::PAGE_TRANSITION_CLIENT_REDIRECT)));
     EXPECT_EQ(NAVIGATION_TYPE_NEW_ENTRY, capturer.navigation_type());
     EXPECT_TRUE(capturer.is_same_document());
+
+    // The FrameNavigationEntry and NavigationEntry are not reused.
+    EXPECT_NE(
+        previous_root_entry,
+        controller.GetLastCommittedEntry()->root_node()->frame_entry.get());
+    EXPECT_NE(previous_entry, controller.GetLastCommittedEntry());
+    previous_entry = controller.GetLastCommittedEntry();
+    previous_root_entry = previous_entry->root_node()->frame_entry.get();
   }
 
   // location.replace().
-  FrameNavigateParamsCapturer capturer(root);
-  GURL frame_url(embedded_test_server()->GetURL(
-      "foo.com", "/navigation_controller/simple_page_1.html"));
-  std::string script = JsReplace("location.replace($1);", frame_url);
-  EXPECT_TRUE(ExecJs(root, script));
-  capturer.Wait();
-  EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
-      capturer.transition(),
-      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
-                                ui::PAGE_TRANSITION_CLIENT_REDIRECT)));
-  EXPECT_EQ(NAVIGATION_TYPE_NEW_ENTRY, capturer.navigation_type());
-  EXPECT_TRUE(capturer.did_replace_entry());
-  EXPECT_FALSE(capturer.is_same_document());
+  {
+    FrameNavigateParamsCapturer capturer(root);
+    GURL frame_url(embedded_test_server()->GetURL(
+        "foo.com", "/navigation_controller/simple_page_1.html"));
+    std::string script = JsReplace("location.replace($1);", frame_url);
+    EXPECT_TRUE(ExecJs(root, script));
+    capturer.Wait();
+    EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+        capturer.transition(),
+        ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
+                                  ui::PAGE_TRANSITION_CLIENT_REDIRECT)));
+    EXPECT_EQ(NAVIGATION_TYPE_NEW_ENTRY, capturer.navigation_type());
+    EXPECT_TRUE(capturer.did_replace_entry());
+    EXPECT_FALSE(capturer.is_same_document());
+
+    // The FrameNavigationEntry and NavigationEntry are not reused.
+    EXPECT_NE(
+        previous_root_entry,
+        controller.GetLastCommittedEntry()->root_node()->frame_entry.get());
+    EXPECT_NE(previous_entry, controller.GetLastCommittedEntry());
+  }
 }
 
 // Verify that navigations for NAVIGATION_TYPE_EXISTING_ENTRY are correctly
@@ -2863,6 +2909,9 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
 
   // Now, various same document navigations.
 
+  scoped_refptr<FrameNavigationEntry> previous_root_entry =
+      previous_entry->root_node()->frame_entry.get();
+
   {
     // Same-document location.replace().
     FrameNavigateParamsCapturer capturer(root);
@@ -2873,9 +2922,20 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
         capturer.transition(),
         ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
                                   ui::PAGE_TRANSITION_CLIENT_REDIRECT)));
+    // Different from cross-document replacement which would be classified as
+    // NAVIGATION_TYPE_NEW_ENTRY, same-document replacement is classified as
+    // NAVIGATION_TYPE_EXISTING_ENTRY.
     EXPECT_EQ(NAVIGATION_TYPE_EXISTING_ENTRY, capturer.navigation_type());
     EXPECT_TRUE(capturer.did_replace_entry());
     EXPECT_TRUE(capturer.is_same_document());
+
+    // The FrameNavigationEntry and NavigationEntry are reused.
+    EXPECT_EQ(
+        previous_root_entry,
+        controller.GetLastCommittedEntry()->root_node()->frame_entry.get());
+    EXPECT_EQ(previous_entry, controller.GetLastCommittedEntry());
+    previous_entry = controller.GetLastCommittedEntry();
+    previous_root_entry = previous_entry->root_node()->frame_entry.get();
   }
 
   {
@@ -2889,8 +2949,20 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
         capturer.transition(),
         ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
                                   ui::PAGE_TRANSITION_CLIENT_REDIRECT)));
+    // Different from history.pushState() which would be classified as
+    // NAVIGATION_TYPE_NEW_ENTRY, replaceState() will be classified as
+    // NAVIGATION_TYPE_EXISTING_ENTRY.
     EXPECT_EQ(NAVIGATION_TYPE_EXISTING_ENTRY, capturer.navigation_type());
+    EXPECT_TRUE(capturer.did_replace_entry());
     EXPECT_TRUE(capturer.is_same_document());
+
+    // The FrameNavigationEntry and NavigationEntry are reused.
+    EXPECT_EQ(
+        previous_root_entry,
+        controller.GetLastCommittedEntry()->root_node()->frame_entry.get());
+    EXPECT_EQ(previous_entry, controller.GetLastCommittedEntry());
+
+    previous_entry = controller.GetLastCommittedEntry();
   }
 
   // Back and forward across a fragment navigation.
@@ -3790,21 +3862,12 @@ IN_PROC_BROWSER_TEST_P(InitialEmptyDocNavigationControllerBrowserTest,
     EXPECT_EQ(expected_entry_count, controller.GetEntryCount());
 
     // Do a navigation on the "child1" subframe to about:blank#foo, creating a
-    // same-document navigation. If it's a renderer-initiated navigation, the
-    // navigation will be classified as "auto", so we won't append a new
-    // NavigationEntry, and instead update the current NavigationEntry. However,
-    // if it's a browser-initiated navigation, the navigation is classified as
-    // "new" and will create a new entry instead.
-    // TODO(rakina): Make the browser-initiated and renderer-initiated
-    // navigation case have the same behavior, once the discussion in
-    // https://github.com/whatwg/html/issues/6491 converges.
+    // same-document navigation. The navigation will do a replacement and get
+    // classified as "auto", so we won't append a new NavigationEntry, and
+    // instead update the current NavigationEntry.
     NavigateSubframeAndCheckNavigationType(
         contents(), root->child_at(subframe_index), "child2",
-        GURL("about:blank#foo"),
-        renderer_initiated() ? NAVIGATION_TYPE_AUTO_SUBFRAME
-                             : NAVIGATION_TYPE_NEW_SUBFRAME);
-    if (!renderer_initiated())
-      expected_entry_count++;
+        GURL("about:blank#foo"), NAVIGATION_TYPE_AUTO_SUBFRAME);
     EXPECT_EQ(expected_entry_count, controller.GetEntryCount());
 
     // Do a navigation on the "child2" subframe to |url_2|.
@@ -9833,6 +9896,309 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
             cloned_previous_entry->root_node()->frame_entry->url());
 }
 
+// Tests the value of history.state after same-document replacement, in all
+// affected entries.
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
+                       StateAfterSameDocumentReplacement) {
+  // Start at a page with an iframe.
+  GURL url1(embedded_test_server()->GetURL(
+      "/navigation_controller/page_with_iframe_simple.html"));
+  GURL url1_foo(url1.spec() + "#foo");
+  GURL url1_bar(url1.spec() + "#bar");
+  GURL frame_url2(embedded_test_server()->GetURL("/title2.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url1));
+
+  NavigationControllerImpl& controller =
+      static_cast<NavigationControllerImpl&>(contents()->GetController());
+  EXPECT_EQ(1, controller.GetEntryCount());
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  ASSERT_EQ(1U, root->child_count());
+
+  NavigationEntryImpl* previous_entry = controller.GetLastCommittedEntry();
+  scoped_refptr<FrameNavigationEntry> previous_root_entry =
+      previous_entry->root_node()->frame_entry.get();
+
+  {
+    // pushState "foo" in the main frame.
+    FrameNavigateParamsCapturer capturer(root);
+    EXPECT_TRUE(ExecJs(root, "history.pushState('foo', '', '#foo')"));
+    capturer.Wait();
+    EXPECT_FALSE(capturer.did_replace_entry());
+    EXPECT_TRUE(capturer.is_same_document());
+    // Current history state:
+    //  [url1(frame_url1), *url1_foo(frame_url1)]
+    EXPECT_EQ(url1_foo, contents()->GetLastCommittedURL());
+    EXPECT_EQ(2, controller.GetEntryCount());
+    EXPECT_EQ(1, controller.GetCurrentEntryIndex());
+
+    // The main frame's history.state is now "foo".
+    EXPECT_EQ("foo", EvalJs(root, "history.state"));
+
+    // The root FrameNavigationEntry and NavigationEntry are not reused.
+    EXPECT_NE(
+        previous_root_entry,
+        controller.GetLastCommittedEntry()->root_node()->frame_entry.get());
+    EXPECT_NE(previous_entry, controller.GetLastCommittedEntry());
+
+    previous_entry = controller.GetLastCommittedEntry();
+    previous_root_entry = previous_entry->root_node()->frame_entry.get();
+  }
+
+  {
+    // Navigate in the iframe. The main frame should stay the same.
+    FrameNavigateParamsCapturer capturer(root->child_at(0));
+    EXPECT_TRUE(NavigateToURLFromRenderer(root->child_at(0), frame_url2));
+    capturer.Wait();
+    EXPECT_EQ(NAVIGATION_TYPE_NEW_SUBFRAME, capturer.navigation_type());
+
+    // Current history state:
+    //  [url1(frame_url1), url1_foo(frame_url1), *url1_foo(frame_url2)]
+    EXPECT_EQ(url1_foo, contents()->GetLastCommittedURL());
+    EXPECT_EQ(3, controller.GetEntryCount());
+    EXPECT_EQ(2, controller.GetCurrentEntryIndex());
+
+    // The main frame's history.state stays the same.
+    EXPECT_EQ("foo", EvalJs(root, "history.state"));
+
+    // The root FrameNavigationEntry is reused in the new NavigationEntry.
+    EXPECT_EQ(
+        previous_root_entry,
+        controller.GetLastCommittedEntry()->root_node()->frame_entry.get());
+    EXPECT_NE(previous_entry, controller.GetLastCommittedEntry());
+
+    previous_entry = controller.GetLastCommittedEntry();
+    previous_root_entry = previous_entry->root_node()->frame_entry.get();
+  }
+
+  {
+    // Do a location.replace() to a same-document URL in the main frame.
+    FrameNavigateParamsCapturer capturer(root);
+    EXPECT_TRUE(ExecJs(root, "location.replace('#bar');"));
+    capturer.Wait();
+    EXPECT_TRUE(capturer.did_replace_entry());
+    EXPECT_TRUE(capturer.is_same_document());
+    // This gets classified as EXISTING_ENTRY since it's a same-document
+    // replacement. Note that a cross-document location.replace() would've been
+    // classified as NEW_ENTRY instead.
+    EXPECT_EQ(NAVIGATION_TYPE_EXISTING_ENTRY, capturer.navigation_type());
+
+    EXPECT_EQ(url1_bar, contents()->GetLastCommittedURL());
+    EXPECT_EQ(3, controller.GetEntryCount());
+    EXPECT_EQ(2, controller.GetCurrentEntryIndex());
+    // Current history state:
+    //  [url1(frame_url1), url1_bar(frame_url1), *url1_bar(frame_url2)]
+    // Notice the middle entry is updated to url1_bar too because the FNE is
+    // shared with the replaced/updated entry.
+    // TODO(https://crbug.com/1226489): Don't share the FNE so that we won't
+    // update the middle entry.
+    NavigationEntryImpl* current_entry = controller.GetLastCommittedEntry();
+    EXPECT_EQ(url1_bar, current_entry->GetURL());
+    EXPECT_EQ(url1_bar, controller.GetEntryAtIndex(1)->GetURL());
+    EXPECT_NE(current_entry, controller.GetEntryAtIndex(1));
+    EXPECT_EQ(current_entry->GetFrameEntry(root),
+              controller.GetEntryAtIndex(1)->GetFrameEntry(root));
+
+    // The main frame's history.state is reset
+    EXPECT_EQ(nullptr, EvalJs(root, "history.state"));
+
+    // The root FrameNavigationEntry and NavigationEntry are both reused. This
+    // means the previous pushState FrameNavigationEntry is shared with the
+    // current FrameNavigationEntry.
+    EXPECT_EQ(
+        previous_root_entry,
+        controller.GetLastCommittedEntry()->root_node()->frame_entry.get());
+    EXPECT_EQ(previous_entry, controller.GetLastCommittedEntry());
+
+    previous_entry = controller.GetLastCommittedEntry();
+    previous_root_entry = previous_entry->root_node()->frame_entry.get();
+  }
+
+  {
+    // Go back. This will navigate the subframe.
+    FrameNavigateParamsCapturer capturer(root->child_at(0));
+    controller.GoBack();
+    capturer.Wait();
+    // Current history state:
+    //  [url1(frame_url1), *url1_bar(frame_url1), url1_bar(frame_url2)]
+    // The main frame stays at the same URL, url1_bar (?!)
+    EXPECT_EQ(url1_bar, contents()->GetLastCommittedURL());
+    EXPECT_EQ(3, controller.GetEntryCount());
+    EXPECT_EQ(1, controller.GetCurrentEntryIndex());
+
+    // The main frame's history.state stays as null instead of being restored
+    // to "foo", since the location.replace() call also affected other entries
+    // that share the FrameNavigatonEntry.
+    // TODO(https://crbug.com/1226489): We should probably restore "foo" here,
+    // as location.replace() shouldn't affect entries other than the one it
+    // replaced.
+    EXPECT_EQ(nullptr, EvalJs(root, "history.state"));
+
+    // The root FrameNavigationEntry is reused since it is shared with the
+    // traversed NavigationEntry.
+    EXPECT_EQ(
+        previous_root_entry,
+        controller.GetLastCommittedEntry()->root_node()->frame_entry.get());
+    EXPECT_NE(previous_entry, controller.GetLastCommittedEntry());
+
+    previous_entry = controller.GetLastCommittedEntry();
+    previous_root_entry = previous_entry->root_node()->frame_entry.get();
+  }
+
+  {
+    // Go back. This will navigate the main frame.
+    FrameNavigateParamsCapturer capturer(root);
+    controller.GoBack();
+    capturer.Wait();
+    EXPECT_TRUE(capturer.is_same_document());
+
+    // Current history state:
+    //  [*url1(frame_url1), url1_bar(frame_url1), url1_bar(frame_url2)]
+    // The main frame is back to url1.
+    EXPECT_EQ(url1, contents()->GetLastCommittedURL());
+    EXPECT_EQ(3, controller.GetEntryCount());
+    EXPECT_TRUE(capturer.is_same_document());
+
+    // The main frame's history.state stays as null.
+    EXPECT_EQ(nullptr, EvalJs(root, "history.state"));
+
+    // The root FrameNavigationEntry and NavigationEntry are not reused.
+    EXPECT_NE(
+        previous_root_entry,
+        controller.GetLastCommittedEntry()->root_node()->frame_entry.get());
+    EXPECT_NE(previous_entry, controller.GetLastCommittedEntry());
+  }
+}
+
+// Tests the value of history.state after cross-document replacement, in all
+// affected entries.
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
+                       StateAfterCrossDocumentReplacement) {
+  // Start at a page with an iframe.
+  GURL url1(embedded_test_server()->GetURL(
+      "/navigation_controller/page_with_data_iframe.html"));
+  GURL url1_foo(url1.spec() + "#foo");
+  GURL url2(embedded_test_server()->GetURL("/title2.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url1));
+
+  NavigationControllerImpl& controller =
+      static_cast<NavigationControllerImpl&>(contents()->GetController());
+  EXPECT_EQ(1, controller.GetEntryCount());
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  ASSERT_EQ(1U, root->child_count());
+
+  NavigationEntryImpl* previous_entry = controller.GetLastCommittedEntry();
+  scoped_refptr<FrameNavigationEntry> previous_root_entry =
+      previous_entry->root_node()->frame_entry.get();
+
+  {
+    // pushState "foo" in the main frame.
+    FrameNavigateParamsCapturer capturer(root);
+    EXPECT_TRUE(ExecJs(root, "history.pushState('foo', '', '#foo')"));
+    capturer.Wait();
+    EXPECT_FALSE(capturer.did_replace_entry());
+    EXPECT_TRUE(capturer.is_same_document());
+
+    // Current history state:
+    //  [url1(frame_url1), *url1_foo(frame_url1)]
+    EXPECT_EQ(url1_foo, contents()->GetLastCommittedURL());
+    EXPECT_EQ(2, controller.GetEntryCount());
+    EXPECT_EQ(1, controller.GetCurrentEntryIndex());
+
+    // The main frame's history.state is now "foo".
+    EXPECT_EQ("foo", EvalJs(root, "history.state"));
+
+    // The root FrameNavigationEntry and NavigationEntry are not reused.
+    EXPECT_NE(
+        previous_root_entry,
+        controller.GetLastCommittedEntry()->root_node()->frame_entry.get());
+    EXPECT_NE(previous_entry, controller.GetLastCommittedEntry());
+
+    previous_entry = controller.GetLastCommittedEntry();
+    previous_root_entry = previous_entry->root_node()->frame_entry.get();
+  }
+
+  {
+    // Navigate in the iframe.
+    FrameNavigateParamsCapturer capturer(root->child_at(0));
+    GURL frame_url2(embedded_test_server()->GetURL("/title1.html"));
+    EXPECT_TRUE(NavigateToURLFromRenderer(root->child_at(0), frame_url2));
+    capturer.Wait();
+    EXPECT_EQ(NAVIGATION_TYPE_NEW_SUBFRAME, capturer.navigation_type());
+
+    // Current history state:
+    //  [url1(frame_url1), url1_foo(frame_url1), *url1_foo(frame_url2)]
+    EXPECT_EQ(url1_foo, contents()->GetLastCommittedURL());
+    EXPECT_EQ(3, controller.GetEntryCount());
+    EXPECT_EQ(2, controller.GetCurrentEntryIndex());
+
+    // The main frame's history.state stays the same.
+    EXPECT_EQ("foo", EvalJs(root, "history.state"));
+
+    // The root FrameNavigationEntry is reused in the new NavigationEntry.
+    EXPECT_EQ(
+        previous_root_entry,
+        controller.GetLastCommittedEntry()->root_node()->frame_entry.get());
+    EXPECT_NE(previous_entry, controller.GetLastCommittedEntry());
+
+    previous_entry = controller.GetLastCommittedEntry();
+    previous_root_entry = previous_entry->root_node()->frame_entry.get();
+  }
+
+  {
+    // Do a location.replace() to a cross-document URL in the main frame.
+    FrameNavigateParamsCapturer capturer(root);
+    EXPECT_TRUE(ExecJs(root, JsReplace("location.replace($1);", url2)));
+    capturer.Wait();
+    EXPECT_TRUE(capturer.did_replace_entry());
+    EXPECT_FALSE(capturer.is_same_document());
+
+    // Current history state:
+    //  [url1(frame_url1), url1_foo(frame_url1), *url2]
+    EXPECT_EQ(url2, contents()->GetLastCommittedURL());
+    EXPECT_EQ(3, controller.GetEntryCount());
+    EXPECT_EQ(2, controller.GetCurrentEntryIndex());
+
+    // The main frame's history.state is reset
+    EXPECT_EQ(nullptr, EvalJs(root, "history.state"));
+
+    // The root FrameNavigationEntry and NavigationEntry are not reused.
+    EXPECT_NE(
+        previous_root_entry,
+        controller.GetLastCommittedEntry()->root_node()->frame_entry.get());
+    EXPECT_NE(previous_entry, controller.GetLastCommittedEntry());
+
+    previous_entry = controller.GetLastCommittedEntry();
+    previous_root_entry = previous_entry->root_node()->frame_entry.get();
+  }
+
+  {
+    // Go back. This will navigate the main frame and recreate the subframe.
+    FrameNavigateParamsCapturer capturer(root);
+    controller.GoBack();
+    capturer.Wait();
+    EXPECT_FALSE(capturer.is_same_document());
+
+    // Current history state:
+    //  [url1(frame_url1), *url1_foo(frame_url1), url2]
+    EXPECT_EQ(url1_foo, contents()->GetLastCommittedURL());
+    EXPECT_EQ(3, controller.GetEntryCount());
+    EXPECT_EQ(1, controller.GetCurrentEntryIndex());
+
+    // The main frame's history.state is restored to "foo".
+    EXPECT_EQ("foo", EvalJs(root, "history.state"));
+
+    // The root FrameNavigationEntry and NavigationEntry are not reused.
+    EXPECT_NE(
+        previous_root_entry,
+        controller.GetLastCommittedEntry()->root_node()->frame_entry.get());
+    EXPECT_NE(previous_entry, controller.GetLastCommittedEntry());
+  }
+}
+
 namespace {
 
 class FailureWatcher : public WebContentsObserver {
@@ -9840,7 +10206,7 @@ class FailureWatcher : public WebContentsObserver {
   // Observes failure for the specified |node|.
   explicit FailureWatcher(FrameTreeNode* node)
       : WebContentsObserver(
-            node->current_frame_host()->delegate()->GetAsWebContents()),
+            WebContents::FromRenderFrameHost(node->current_frame_host())),
         frame_tree_node_id_(node->frame_tree_node_id()),
         message_loop_runner_(new MessageLoopRunner) {}
 
@@ -10635,18 +11001,13 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest, NavigateTo304) {
 
 // Ensure that we do not corrupt a NavigationEntry's PageState if two forward
 // navigations compete in different frames.  See https://crbug.com/623319.
-// Currently flaking on Android, Linux and Mac, see https://crbug.com/1101292.
-// Currently flaking on ChromeOS, see https://crbug.com/1227088.
-#if defined(OS_ANDROID) || defined(OS_MAC) || defined(OS_LINUX) || \
-    defined(OS_CHROMEOS)
-#define MAYBE_PageStateAfterForwardInCompetingFrames \
-  DISABLED_PageStateAfterForwardInCompetingFrames
-#else
-#define MAYBE_PageStateAfterForwardInCompetingFrames \
-  PageStateAfterForwardInCompetingFrames
-#endif
 IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
-                       MAYBE_PageStateAfterForwardInCompetingFrames) {
+                       PageStateAfterForwardInCompetingFrames) {
+  // This test might trigger the "undo commit" path in the renderer, that does
+  // not work with RenderDocument, causing flakiness.
+  // TODO(https://crbug.com/1220337): Fix this.
+  if (ShouldCreateNewHostForSameSiteSubframe())
+    return;
   // Navigate to a page with an iframe.
   GURL url_a(embedded_test_server()->GetURL(
       "/navigation_controller/page_with_data_iframe.html"));

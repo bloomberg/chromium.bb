@@ -21,6 +21,15 @@
 #include "src/sem/expression.h"
 
 namespace tint {
+namespace {
+
+std::string DefaultPrinter(const Program*) {
+  return "<no program printer assigned>";
+}
+
+}  // namespace
+
+Program::Printer Program::printer = DefaultPrinter;
 
 Program::Program() = default;
 
@@ -74,6 +83,7 @@ Program::~Program() = default;
 Program& Program::operator=(Program&& program) {
   program.AssertNotMoved();
   program.moved_ = true;
+  moved_ = false;
   id_ = std::move(program.id_);
   types_ = std::move(program.types_);
   ast_nodes_ = std::move(program.ast_nodes_);

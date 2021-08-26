@@ -22,6 +22,7 @@
 #include "libavutil/pixdesc.h"
 #include "libavutil/opt.h"
 #include "dirac.h"
+#include "encode.h"
 #include "put_bits.h"
 #include "internal.h"
 #include "version.h"
@@ -914,9 +915,8 @@ static int encode_frame(VC2EncContext *s, AVPacket *avpkt, const AVFrame *frame,
     max_frame_bytes = header_size + calc_slice_sizes(s);
 
     if (field < 2) {
-        ret = ff_alloc_packet2(s->avctx, avpkt,
-                               max_frame_bytes << s->interlaced,
-                               max_frame_bytes << s->interlaced);
+        ret = ff_get_encode_buffer(s->avctx, avpkt,
+                                   max_frame_bytes << s->interlaced, 0);
         if (ret) {
             av_log(s->avctx, AV_LOG_ERROR, "Error getting output packet.\n");
             return ret;
@@ -982,6 +982,8 @@ static av_cold int vc2_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
     }
 
     s->slice_min_bytes = s->slice_max_bytes - s->slice_max_bytes*(s->tolerance/100.0f);
+    if (s->slice_min_bytes < 0)
+        return AVERROR(EINVAL);
 
     ret = encode_frame(s, avpkt, frame, aux_data, header_size, s->interlaced);
     if (ret)
@@ -1231,10 +1233,10 @@ const AVCodec ff_vc2_encoder = {
     .long_name      = NULL_IF_CONFIG_SMALL("SMPTE VC-2"),
     .type           = AVMEDIA_TYPE_VIDEO,
     .id             = AV_CODEC_ID_DIRAC,
+    .capabilities   = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_SLICE_THREADS,
     .priv_data_size = sizeof(VC2EncContext),
     .init           = vc2_encode_init,
     .close          = vc2_encode_end,
-    .capabilities   = AV_CODEC_CAP_SLICE_THREADS,
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
     .encode2        = vc2_encode_frame,
     .priv_class     = &vc2enc_class,

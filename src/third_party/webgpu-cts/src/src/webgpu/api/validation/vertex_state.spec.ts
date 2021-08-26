@@ -513,14 +513,17 @@ g.test('vertex_attribute_offset_alignment')
       .expand('offset', p => {
         const { bytesPerComponent, componentCount } = kVertexFormatInfo[p.format];
         const formatSize = bytesPerComponent * componentCount;
-        const halfAlignment = Math.floor(bytesPerComponent / 2);
 
         return new Set([
           0,
-          halfAlignment,
-          bytesPerComponent,
+          Math.floor(formatSize / 2),
+          formatSize,
+          2,
+          4,
           p.arrayStride - formatSize,
-          p.arrayStride - formatSize - halfAlignment,
+          p.arrayStride - formatSize - Math.floor(formatSize / 2),
+          p.arrayStride - formatSize - 4,
+          p.arrayStride - formatSize - 2,
         ]);
       })
       .beginSubcases()
@@ -549,7 +552,10 @@ g.test('vertex_attribute_offset_alignment')
     const vertexBuffers = [];
     vertexBuffers[vertexBufferIndex] = { arrayStride, attributes };
 
-    const success = offset % kVertexFormatInfo[format].bytesPerComponent === 0;
+    const formatInfo = kVertexFormatInfo[format];
+    const formatSize = formatInfo.bytesPerComponent * formatInfo.componentCount;
+    const success = offset % Math.min(4, formatSize) === 0;
+
     t.testVertexState(success, vertexBuffers);
   });
 
@@ -577,17 +583,20 @@ g.test('vertex_attribute_contained_in_stride')
         const { bytesPerComponent, componentCount } = kVertexFormatInfo[p.format];
         const formatSize = bytesPerComponent * componentCount;
         yield 0;
-        yield bytesPerComponent;
+        yield 4;
 
         // arrayStride = 0 is a special case because for the offset validation it acts the same
-        // as arrayStride = kMaxVertexBufferArrayStride. We branch so as to avoid adding negative
-        // offsets that would cause an IDL exception to be thrown instead of a validation error.
-        if (p.arrayStride === 0) {
-          yield kMaxVertexBufferArrayStride - formatSize;
-          yield kMaxVertexBufferArrayStride - formatSize + bytesPerComponent;
-        } else {
-          yield p.arrayStride - formatSize;
-          yield p.arrayStride - formatSize + bytesPerComponent;
+        // as arrayStride = kMaxVertexBufferArrayStride. We special case here so as to avoid adding
+        // negative offsets that would cause an IDL exception to be thrown instead of a validation
+        // error.
+        const stride = p.arrayStride !== 0 ? p.arrayStride : kMaxVertexBufferArrayStride;
+        yield stride - formatSize;
+        yield stride - formatSize + 4;
+
+        // Avoid adding duplicate cases when formatSize == 4 (it is already tested above)
+        if (formatSize !== 4) {
+          yield formatSize;
+          yield stride;
         }
       })
       .combine('vertexBufferIndex', [0, 1, kMaxVertexBuffers - 1])

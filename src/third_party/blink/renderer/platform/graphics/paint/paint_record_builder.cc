@@ -27,7 +27,6 @@ PaintRecordBuilder::~PaintRecordBuilder() = default;
 sk_sp<PaintRecord> PaintRecordBuilder::EndRecording(
     const PropertyTreeState& replay_state) {
   paint_controller_->CommitNewDisplayItems();
-  paint_controller_->FinishCycle();
   return paint_controller_->GetPaintArtifact().GetPaintRecord(replay_state);
 }
 

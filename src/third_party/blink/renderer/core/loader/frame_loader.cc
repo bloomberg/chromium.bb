@@ -293,8 +293,15 @@ void FrameLoader::SaveScrollState() {
   // scroll offsets. In order to avoid keeping around a stale anchor, we clear
   // it when the saved scroll offset changes.
   history_item->SetScrollAnchorData(ScrollAnchorData());
-  if (ScrollableArea* layout_scrollable_area = frame_->View()->LayoutViewport())
+  if (ScrollableArea* layout_scrollable_area =
+          frame_->View()->LayoutViewport()) {
+    if (!history_item->GetViewState() ||
+        layout_scrollable_area->GetScrollOffset() !=
+            history_item->GetViewState()->scroll_offset_) {
+      document_loader_->DidChangeScrollOffset();
+    }
     history_item->SetScrollOffset(layout_scrollable_area->GetScrollOffset());
+  }
   history_item->SetVisualViewportScrollOffset(ToScrollOffset(
       frame_->GetPage()->GetVisualViewport().VisibleRect().Location()));
 
@@ -422,7 +429,8 @@ void FrameLoader::DetachDocumentLoader(Member<DocumentLoader>& loader,
 void FrameLoader::DidFinishSameDocumentNavigation(
     const KURL& url,
     WebFrameLoadType frame_load_type,
-    HistoryItem* history_item) {
+    HistoryItem* history_item,
+    bool may_restore_scroll_offset) {
   // If we have a state object, we cannot also be a new navigation.
   scoped_refptr<SerializedScriptValue> state_object =
       history_item ? history_item->StateObject() : nullptr;
@@ -438,7 +446,7 @@ void FrameLoader::DidFinishSameDocumentNavigation(
                                        ? std::move(state_object)
                                        : SerializedScriptValue::NullValue());
 
-  if (view_state) {
+  if (view_state && may_restore_scroll_offset) {
     RestoreScrollPositionAndViewState(frame_load_type, *view_state,
                                       history_item->ScrollRestorationType());
   }
@@ -450,22 +458,27 @@ void FrameLoader::DidFinishSameDocumentNavigation(
   TakeObjectSnapshot();
 }
 
-WebFrameLoadType FrameLoader::DetermineFrameLoadType(
+WebFrameLoadType FrameLoader::HandleInitialEmptyDocumentReplacementIfNeeded(
     const KURL& url,
     WebFrameLoadType frame_load_type) {
-  // TODO(dgozman): this method is rewriting the load type, which makes it hard
-  // to reason about various navigations and their desired load type. We should
-  // untangle it and detect the load type at the proper place. See, for example,
-  // location.assign() block below.
-  // Achieving that is complicated due to similar conditions in many places
-  // both in the renderer and in the browser.
+  // Converts navigations from the initial empty document to do replacement if
+  // needed.
   if (frame_load_type == WebFrameLoadType::kStandard ||
       frame_load_type == WebFrameLoadType::kReplaceCurrentItem) {
     if (frame_->Tree().Parent() &&
         empty_document_status_ == EmptyDocumentStatus::kOnlyEmpty) {
+      // Subframe navigations from the initial empty document should always do
+      // replacement.
       return WebFrameLoadType::kReplaceCurrentItem;
     }
     if (!frame_->Tree().Parent() && !Client()->BackForwardLength()) {
+      // For main frames, currently only empty-URL navigations will be converted
+      // to do replacement. Note that this will cause the navigation to be
+      // ignored in the browser side, so no NavigationEntry will be added.
+      // TODO(https://crbug.com/1215096, https://crbug.com/524208): Make the
+      // main frame case follow the behavior of subframes (always replace when
+      // navigating from the initial empty document), and that a NavigationEntry
+      // will always be created.
       if (Opener() && url.IsEmpty())
         return WebFrameLoadType::kReplaceCurrentItem;
       return WebFrameLoadType::kStandard;
@@ -626,8 +639,8 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
     return;
   }
 
-  frame_load_type =
-      DetermineFrameLoadType(resource_request.Url(), frame_load_type);
+  frame_load_type = HandleInitialEmptyDocumentReplacementIfNeeded(
+      resource_request.Url(), frame_load_type);
 
   bool same_document_navigation =
       request.GetNavigationPolicy() == kNavigationPolicyCurrentTab &&
@@ -940,9 +953,6 @@ void FrameLoader::CommitNavigation(
   if (frame_owner)
     frame_owner->CancelPendingLazyLoad();
 
-  navigation_params->frame_load_type = DetermineFrameLoadType(
-      navigation_params->url, navigation_params->frame_load_type);
-
   // Note: we might actually classify this navigation as same document
   // right here in the following circumstances:
   // - the loader has already committed a navigation and notified the browser
@@ -1083,6 +1093,8 @@ void FrameLoader::StopAllLoaders(bool abort_client) {
   }
 
   frame_->GetDocument()->CancelParsing();
+  if (auto* app_history = AppHistory::appHistory(*frame_->DomWindow()))
+    app_history->InformAboutCanceledNavigation();
   if (document_loader_)
     document_loader_->StopLoading();
   if (abort_client)
@@ -1242,6 +1254,13 @@ void FrameLoader::RestoreScrollPositionAndViewState(
 
 String FrameLoader::UserAgent() const {
   String user_agent = Client()->UserAgent();
+  probe::ApplyUserAgentOverride(probe::ToCoreProbeSink(frame_->GetDocument()),
+                                &user_agent);
+  return user_agent;
+}
+
+String FrameLoader::ReducedUserAgent() const {
+  String user_agent = Client()->ReducedUserAgent();
   probe::ApplyUserAgentOverride(probe::ToCoreProbeSink(frame_->GetDocument()),
                                 &user_agent);
   return user_agent;

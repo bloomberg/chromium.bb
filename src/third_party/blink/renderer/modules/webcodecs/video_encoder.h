@@ -28,6 +28,7 @@ namespace blink {
 class VideoEncoderConfig;
 class VideoEncoderInit;
 class VideoEncoderEncodeOptions;
+class WebGraphicsContext3DVideoFramePool;
 
 class MODULES_EXPORT VideoEncoderTraits {
  public:
@@ -90,7 +91,9 @@ class MODULES_EXPORT VideoEncoder final
   void ResetInternal() override;
 
   void UpdateEncoderLog(std::string encoder_name, bool is_hw_accelerated);
-
+  static std::unique_ptr<media::VideoEncoder> CreateSoftwareVideoEncoder(
+      VideoEncoder* self,
+      media::VideoCodec codec);
 
   ParsedConfig* ParseConfig(const VideoEncoderConfig*,
                             ExceptionState&) override;
@@ -108,6 +111,7 @@ class MODULES_EXPORT VideoEncoder final
       scoped_refptr<media::VideoFrame> txt_frame);
 
   media::VideoFramePool readback_frame_pool_;
+  std::unique_ptr<WebGraphicsContext3DVideoFramePool> accelerated_frame_pool_;
 
   // The number of encoding requests currently handled by |media_encoder_|
   // Should not exceed |kMaxActiveEncodes|.

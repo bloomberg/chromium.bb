@@ -630,6 +630,17 @@ const av1_codec_arg_definitions_t g_av1_codec_arg_defs = {
       NULL, "enable-tx-size-search", 1,
       "Enable transform size search to find the best size for each block. "
       "If false, transforms always have the largest possible size "
-      "(0: false, 1: true (default))")
+      "(0: false, 1: true (default))"),
+
+  .two_pass_input =
+      ARG_DEF(NULL, "two-pass-input", 1,
+              "The input file for the second pass for three-pass encoding."),
+  .two_pass_output = ARG_DEF(
+      NULL, "two-pass-output", 1,
+      "The output file for the first two passes for three-pass encoding."),
+  .two_pass_width =
+      ARG_DEF(NULL, "two-pass-width", 1, "The width of two-pass-input."),
+  .two_pass_height =
+      ARG_DEF(NULL, "two-pass-height", 1, "The height of two-pass-input."),
 #endif  // CONFIG_AV1_ENCODER
 };

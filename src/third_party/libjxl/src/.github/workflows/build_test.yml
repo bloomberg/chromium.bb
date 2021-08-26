@@ -1,16 +1,7 @@
-# Copyright (c) the JPEG XL Project
+# Copyright (c) the JPEG XL Project Authors. All rights reserved.
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
 
 # Workflow for building and running tests.
 
@@ -54,6 +45,12 @@ jobs:
               -DJPEGXL_ENABLE_TRANSCODE_JPEG=OFF
               -DJPEGXL_ENABLE_PLUGINS=OFF
               -DJPEGXL_ENABLE_VIEWERS=OFF
+          # Builds with gcc in release mode
+          - name: release:gcc8
+            mode: release
+            apt_pkgs: gcc-8 g++-8
+            cmake_args: >-
+              -DCMAKE_C_COMPILER=gcc-8 -DCMAKE_CXX_COMPILER=g++-8
 
     env:
       CCACHE_DIR: ${{ github.workspace }}/.ccache
@@ -76,6 +73,7 @@ jobs:
           libwebp-dev \
           ninja-build \
           pkg-config \
+          ${{ matrix.apt_pkgs }} \
         #
         echo "CC=clang-7" >> $GITHUB_ENV
         echo "CXX=clang++-7" >> $GITHUB_ENV

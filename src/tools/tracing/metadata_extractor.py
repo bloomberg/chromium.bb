@@ -82,9 +82,16 @@ class MetadataExtractor:
                 version_code=self.version_code,
                 modules=self.modules))
 
+  @property
+  def trace_file(self):
+    return self._trace_file
+
   def Initialize(self):
     """Extracts metadata from perfetto system trace.
     """
+    # TODO(rhuckleberry): Implement Trace Processor method to run multiple
+    # SQL queries without processing trace for every query.
+
     if self._initialized:
       return
     self._initialized = True
@@ -98,6 +105,9 @@ class MetadataExtractor:
       self.version_number = version_number.split('/')[1]
     else:
       self.version_number = version_number
+    # Mac 64 traces add '-64' after the version number.
+    if self.version_number is not None and self.version_number.endswith('-64'):
+      self.version_number = self.version_number[:-3]
 
     raw_os_name = self._GetStringValueFromQuery(OS_NAME_QUERY)
     self.os_name = self._ParseOSName(raw_os_name)
@@ -138,7 +148,8 @@ class MetadataExtractor:
     elif raw_os_name == 'Fuschia':
       return OSName.FUSCHIA
     else:
-      raise Exception('OS name %s not recognized.' % (raw_os_name))
+      raise Exception('OS name "%s" not recognized: %s' %
+                      (raw_os_name, self._trace_file))
 
   def InitializeForTesting(self,
                            version_number=None,
@@ -166,7 +177,7 @@ class MetadataExtractor:
     try:
       return trace_processor.RunQuery(self._trace_processor_path,
                                       self._trace_file, sql)[0]['str_value']
-    except:
+    except Exception:
       return None
 
   def _GetIntValueFromQuery(self, sql):
@@ -175,7 +186,7 @@ class MetadataExtractor:
     try:
       return trace_processor.RunQuery(self._trace_processor_path,
                                       self._trace_file, sql)[0]['int_value']
-    except:
+    except Exception:
       return None
 
   def _ExtractValidModuleMap(self):
@@ -198,5 +209,5 @@ class MetadataExtractor:
         return None
       return module_map
 
-    except:
+    except Exception:
       return None

@@ -44,7 +44,8 @@ AudioStream CreateStream(int index,
                             GenerateRandomBytes16(),
                             false /* receiver_rtcp_event_log */,
                             {} /* receiver_rtcp_dscp */,
-                            config.sample_rate},
+                            config.sample_rate,
+                            config.codec_parameter},
                      config.codec,
                      std::max(config.bit_rate, kDefaultAudioMinBitRate)};
 }
@@ -64,7 +65,8 @@ VideoStream CreateStream(int index,
              GenerateRandomBytes16(),
              false /* receiver_rtcp_event_log */,
              {} /* receiver_rtcp_dscp */,
-             kRtpVideoTimebase},
+             kRtpVideoTimebase,
+             config.codec_parameter},
       config.codec,
       config.max_frame_rate,
       (config.max_bit_rate >= kDefaultVideoMinBitRate)
@@ -183,6 +185,9 @@ RemotingCapabilities ToCapabilities(const ReceiverCapability& capability) {
         break;
       case MediaCapability::kHevc:
         out.video.push_back(VideoCapability::kHevc);
+        break;
+      case MediaCapability::kAv1:
+        out.video.push_back(VideoCapability::kAv1);
         break;
       case MediaCapability::kVideo:
         // noop, as "video" is ignored by Chrome remoting.

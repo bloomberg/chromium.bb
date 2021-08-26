@@ -102,9 +102,17 @@ class PrerenderOriginTrialBrowserTest
         feature_list_.InitAndDisableFeature(blink::features::kPrerender2);
         break;
       case FeatureEnabledType::kEnabled:
-        feature_list_.InitAndEnableFeature(blink::features::kPrerender2);
+        // Enable prerendering with no physical memory requirement so the test
+        // can run on any bot.
+        feature_list_.InitWithFeatures(
+            {blink::features::kPrerender2},
+            {blink::features::kPrerender2MemoryControls});
         break;
       case FeatureEnabledType::kDefault:
+        // Keep the default state for blink::features::kPrerender2, but disable
+        // the physical memory requirement so the test can run on any bot.
+        feature_list_.InitAndDisableFeature(
+            blink::features::kPrerender2MemoryControls);
         break;
     }
   }
@@ -270,7 +278,7 @@ INSTANTIATE_TEST_SUITE_P(
 //                | disabled  | enabled   | default   |
 // ---------------|-----------|-----------|-----------|
 //     | disabled | false     | false     | false     |
-// REF | enabled  | false     | true      | false     |
+// REF | enabled  | false     | true      | IsAndroid |
 //     | default  | false     | true      | false     |
 IN_PROC_BROWSER_TEST_P(PrerenderOriginTrialBrowserTest, WithoutTrialToken) {
   LoadPageWithoutTrialToken();
@@ -286,7 +294,17 @@ IN_PROC_BROWSER_TEST_P(PrerenderOriginTrialBrowserTest, WithoutTrialToken) {
       }
       break;
     case FeatureEnabledType::kDefault:
+      // Currently blink::features::kPrerender2 is default-enabled only on
+      // Android.
+#ifdef OS_ANDROID
+      if (testing::get<1>(GetParam()) == BlinkFeatureEnabledType::kEnabled) {
+        CheckFeatureEnabled(true);
+      } else {
+        CheckFeatureDisabled();
+      }
+#else   // OS_ANDROID
       CheckFeatureDisabled();
+#endif  // OS_ANDROID
       break;
   }
 }
@@ -294,13 +312,13 @@ IN_PROC_BROWSER_TEST_P(PrerenderOriginTrialBrowserTest, WithoutTrialToken) {
 // Check the availability of Prerender 2 related APIs on a page with a valid
 // Origin Trial token. The following table shows the expected availability:
 // (The expected availability on the prerendered page should be same as the
-// availability on a page without a valid Oritin Trial token listed above.)
+// availability on a page without a valid Origin Trial token listed above.)
 //                |    blink::features::kPrerender2   |
 //                | disabled  | enabled   | default   |
 // ---------------|-----------|-----------|-----------|
-//     | disabled | false     | IsAndroid | false     |
-// REF | enabled  | false     | true      | false     |
-//     | default  | false     | true      | false     |
+//     | disabled | false     | IsAndroid | IsAndroid |
+// REF | enabled  | false     | true      | IsAndroid |
+//     | default  | false     | true      | IsAndroid |
 IN_PROC_BROWSER_TEST_P(PrerenderOriginTrialBrowserTest, WithTrialToken) {
   LoadPageWithTrialToken();
   switch (testing::get<0>(GetParam())) {
@@ -320,7 +338,16 @@ IN_PROC_BROWSER_TEST_P(PrerenderOriginTrialBrowserTest, WithTrialToken) {
       }
       break;
     case FeatureEnabledType::kDefault:
+      // Currently Origin Trial for Prerender2 is available only on Android.
+#ifdef OS_ANDROID
+      if (testing::get<1>(GetParam()) == BlinkFeatureEnabledType::kEnabled) {
+        CheckFeatureEnabled(true);
+      } else {
+        CheckFeatureEnabled(false);
+      }
+#else   // OS_ANDROID
       CheckFeatureDisabled();
+#endif  // OS_ANDROID
       break;
   }
 }

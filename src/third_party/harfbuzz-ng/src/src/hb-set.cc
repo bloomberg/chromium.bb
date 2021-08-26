@@ -109,7 +109,7 @@ hb_set_destroy (hb_set_t *set)
 
   set->fini_shallow ();
 
-  free (set);
+  hb_free (set);
 }
 
 /**
@@ -180,7 +180,7 @@ hb_set_allocation_successful (const hb_set_t  *set)
  *
  * Return value: Newly-allocated set.
  *
- * Since: REPLACEME
+ * Since: 2.8.2
  **/
 hb_set_t *
 hb_set_copy (const hb_set_t *set)
@@ -300,6 +300,9 @@ hb_set_del (hb_set_t       *set,
  *
  * Removes all of the elements from @first to @last
  * (inclusive) from @set.
+ *
+ * If @last is #HB_SET_VALUE_INVALID, then all values
+ * greater than or equal to @first are removed.
  *
  * Since: 0.9.7
  **/

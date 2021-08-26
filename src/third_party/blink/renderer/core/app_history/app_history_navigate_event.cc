@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_app_history_navigate_event_init.h"
 #include "third_party/blink/renderer/core/app_history/app_history_destination.h"
+#include "third_party/blink/renderer/core/dom/abort_signal.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/event_interface_names.h"
 #include "third_party/blink/renderer/core/event_type_names.h"
@@ -20,10 +21,12 @@ AppHistoryNavigateEvent::AppHistoryNavigateEvent(
     AppHistoryNavigateEventInit* init)
     : Event(type, init),
       ExecutionContextClient(context),
+      navigation_type_(init->navigationType()),
+      destination_(init->destination()),
       can_respond_(init->canRespond()),
       user_initiated_(init->userInitiated()),
       hash_change_(init->hashChange()),
-      destination_(init->destination()),
+      signal_(init->signal()),
       form_data_(init->formData()),
       info_(init->hasInfo()
                 ? init->info()
@@ -65,12 +68,7 @@ void AppHistoryNavigateEvent::respondWith(ScriptState* script_state,
     return;
   }
 
-  preventDefault();
-  navigation_action_promise_ = newNavigationAction;
-}
-
-void AppHistoryNavigateEvent::ClearNavigationActionPromise() {
-  navigation_action_promise_ = ScriptPromise();
+  navigation_action_promises_list_.push_back(newNavigationAction);
 }
 
 const AtomicString& AppHistoryNavigateEvent::InterfaceName() const {
@@ -81,9 +79,10 @@ void AppHistoryNavigateEvent::Trace(Visitor* visitor) const {
   Event::Trace(visitor);
   ExecutionContextClient::Trace(visitor);
   visitor->Trace(destination_);
+  visitor->Trace(signal_);
   visitor->Trace(form_data_);
   visitor->Trace(info_);
-  visitor->Trace(navigation_action_promise_);
+  visitor->Trace(navigation_action_promises_list_);
 }
 
 }  // namespace blink

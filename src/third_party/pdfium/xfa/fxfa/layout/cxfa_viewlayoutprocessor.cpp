@@ -105,25 +105,25 @@ class TraverseStrategy_PageSet {
 using PageSetIterator =
     CXFA_NodeIteratorTemplate<CXFA_ViewLayoutItem, TraverseStrategy_PageSet>;
 
-XFA_WidgetStatusMask GetRelevant(CXFA_Node* pFormItem,
-                                 XFA_WidgetStatusMask dwParentRelvant) {
-  XFA_WidgetStatusMask dwRelevant =
-      XFA_WidgetStatus_Viewable | XFA_WidgetStatus_Printable;
+Mask<XFA_WidgetStatus> GetRelevant(CXFA_Node* pFormItem,
+                                   Mask<XFA_WidgetStatus> dwParentRelvant) {
+  Mask<XFA_WidgetStatus> dwRelevant = {XFA_WidgetStatus::kViewable,
+                                       XFA_WidgetStatus::kPrintable};
   WideString wsRelevant =
       pFormItem->JSObject()->GetCData(XFA_Attribute::Relevant);
   if (!wsRelevant.IsEmpty()) {
     if (wsRelevant.EqualsASCII("+print") || wsRelevant.EqualsASCII("print"))
-      dwRelevant &= ~XFA_WidgetStatus_Viewable;
+      dwRelevant.Clear(XFA_WidgetStatus::kViewable);
     else if (wsRelevant.EqualsASCII("-print"))
-      dwRelevant &= ~XFA_WidgetStatus_Printable;
+      dwRelevant.Clear(XFA_WidgetStatus::kPrintable);
   }
-  if (!(dwParentRelvant & XFA_WidgetStatus_Viewable) &&
-      (dwRelevant != XFA_WidgetStatus_Viewable)) {
-    dwRelevant &= ~XFA_WidgetStatus_Viewable;
+  if (!(dwParentRelvant & XFA_WidgetStatus::kViewable) &&
+      (dwRelevant != XFA_WidgetStatus::kViewable)) {
+    dwRelevant.Clear(XFA_WidgetStatus::kViewable);
   }
-  if (!(dwParentRelvant & XFA_WidgetStatus_Printable) &&
-      (dwRelevant != XFA_WidgetStatus_Printable)) {
-    dwRelevant &= ~XFA_WidgetStatus_Printable;
+  if (!(dwParentRelvant & XFA_WidgetStatus::kPrintable) &&
+      (dwRelevant != XFA_WidgetStatus::kPrintable)) {
+    dwRelevant.Clear(XFA_WidgetStatus::kPrintable);
   }
   return dwRelevant;
 }
@@ -131,12 +131,12 @@ XFA_WidgetStatusMask GetRelevant(CXFA_Node* pFormItem,
 void SyncContainer(CXFA_FFNotify* pNotify,
                    CXFA_LayoutProcessor* pDocLayout,
                    CXFA_LayoutItem* pViewItem,
-                   XFA_WidgetStatusMask dwRelevant,
+                   Mask<XFA_WidgetStatus> dwRelevant,
                    bool bVisible,
                    int32_t nPageIndex) {
   bool bVisibleItem = false;
-  XFA_WidgetStatusMask dwStatus = 0;
-  XFA_WidgetStatusMask dwRelevantContainer = 0;
+  Mask<XFA_WidgetStatus> dwStatus;
+  Mask<XFA_WidgetStatus> dwRelevantContainer;
   if (bVisible) {
     XFA_AttributeValue eAttributeValue =
         pViewItem->GetFormNode()
@@ -147,8 +147,9 @@ void SyncContainer(CXFA_FFNotify* pNotify,
       bVisibleItem = true;
 
     dwRelevantContainer = GetRelevant(pViewItem->GetFormNode(), dwRelevant);
-    dwStatus =
-        (bVisibleItem ? XFA_WidgetStatus_Visible : 0) | dwRelevantContainer;
+    dwStatus = dwRelevantContainer;
+    if (bVisibleItem)
+      dwStatus |= XFA_WidgetStatus::kVisible;
   }
   pNotify->OnLayoutItemAdded(pDocLayout, pViewItem, nPageIndex, dwStatus);
   for (CXFA_LayoutItem* pChild = pViewItem->GetFirstChild(); pChild;
@@ -209,13 +210,13 @@ CXFA_Node* ResolveBreakTarget(CXFA_Node* pPageSetRoot,
       if (wsExpr.First(4).EqualsASCII("som(") && wsExpr.Back() == L')')
         wsProcessedTarget = wsExpr.Substr(4, wsExpr.GetLength() - 5);
 
-      constexpr XFA_ResolveNodeMask kFlags =
-          XFA_RESOLVENODE_Children | XFA_RESOLVENODE_Properties |
-          XFA_RESOLVENODE_Attributes | XFA_RESOLVENODE_Siblings |
-          XFA_RESOLVENODE_Parent;
       Optional<CFXJSE_Engine::ResolveResult> maybeResult =
           pDocument->GetScriptContext()->ResolveObjects(
-              pPageSetRoot, wsProcessedTarget.AsStringView(), kFlags);
+              pPageSetRoot, wsProcessedTarget.AsStringView(),
+              Mask<XFA_ResolveFlag>{
+                  XFA_ResolveFlag::kChildren, XFA_ResolveFlag::kProperties,
+                  XFA_ResolveFlag::kAttributes, XFA_ResolveFlag::kSiblings,
+                  XFA_ResolveFlag::kParent});
       if (maybeResult.has_value() &&
           maybeResult.value().objects.front()->IsNode()) {
         return maybeResult.value().objects.front()->AsNode();
@@ -227,8 +228,8 @@ CXFA_Node* ResolveBreakTarget(CXFA_Node* pPageSetRoot,
 }
 
 void SetLayoutGeneratedNodeFlag(CXFA_Node* pNode) {
-  pNode->SetFlag(XFA_NodeFlag_LayoutGeneratedNode);
-  pNode->ClearFlag(XFA_NodeFlag_UnusedNode);
+  pNode->SetFlag(XFA_NodeFlag::kLayoutGeneratedNode);
+  pNode->ClearFlag(XFA_NodeFlag::kUnusedNode);
 }
 
 // Note: Returning nullptr is not the same as returning pdfium::nullopt.
@@ -428,7 +429,7 @@ bool CXFA_ViewLayoutProcessor::InitLayoutPage(CXFA_Node* pFormNode) {
       return false;
 
     m_pPageSetNode->InsertChildAndNotify(pPageArea, nullptr);
-    pPageArea->SetFlagAndNotify(XFA_NodeFlag_Initialized);
+    pPageArea->SetInitializedFlagAndNotify();
   }
   CXFA_ContentArea* pContentArea =
       pPageArea->GetChild<CXFA_ContentArea>(0, XFA_Element::ContentArea, false);
@@ -439,7 +440,7 @@ bool CXFA_ViewLayoutProcessor::InitLayoutPage(CXFA_Node* pFormNode) {
       return false;
 
     pPageArea->InsertChildAndNotify(pContentArea, nullptr);
-    pContentArea->SetFlagAndNotify(XFA_NodeFlag_Initialized);
+    pContentArea->SetInitializedFlagAndNotify();
     pContentArea->JSObject()->SetMeasure(
         XFA_Attribute::X, CXFA_Measurement(0.25f, XFA_Unit::In), false);
     pContentArea->JSObject()->SetMeasure(
@@ -458,7 +459,7 @@ bool CXFA_ViewLayoutProcessor::InitLayoutPage(CXFA_Node* pFormNode) {
       return false;
 
     pPageArea->InsertChildAndNotify(pMedium, nullptr);
-    pMedium->SetFlagAndNotify(XFA_NodeFlag_Initialized);
+    pMedium->SetInitializedFlagAndNotify();
     pMedium->JSObject()->SetMeasure(
         XFA_Attribute::Short, CXFA_Measurement(8.5f, XFA_Unit::In), false);
     pMedium->JSObject()->SetMeasure(
@@ -1704,7 +1705,7 @@ void CXFA_ViewLayoutProcessor::MergePageSetContents() {
       pRootPageSetViewItem->GetFormNode()->JSObject()->SetLayoutItem(nullptr);
     }
     pRootPageSetViewItem->SetFormNode(pPendingPageSet);
-    pPendingPageSet->ClearFlag(XFA_NodeFlag_UnusedNode);
+    pPendingPageSet->ClearFlag(XFA_NodeFlag::kUnusedNode);
     for (CXFA_ViewLayoutItem* pViewItem = iterator.MoveToNext(); pViewItem;
          pViewItem = iterator.MoveToNext()) {
       CXFA_Node* pNode = pViewItem->GetFormNode();
@@ -1803,7 +1804,7 @@ void CXFA_ViewLayoutProcessor::MergePageSetContents() {
       }
     }
     pDocument->DataMerge_UpdateBindingRelations(pPendingPageSet);
-    pPendingPageSet->SetFlagAndNotify(XFA_NodeFlag_Initialized);
+    pPendingPageSet->SetInitializedFlagAndNotify();
   }
 
   CXFA_Node* pPageSet = GetRootLayoutItem()->GetFormNode();
@@ -1839,12 +1840,12 @@ void CXFA_ViewLayoutProcessor::MergePageSetContents() {
           pNode->GetParent()->RemoveChildAndNotify(pNode, true);
           pNode = pNext;
         } else {
-          pNode->ClearFlag(XFA_NodeFlag_UnusedNode);
-          pNode->SetFlagAndNotify(XFA_NodeFlag_Initialized);
+          pNode->ClearFlag(XFA_NodeFlag::kUnusedNode);
+          pNode->SetInitializedFlagAndNotify();
           pNode = sIterator.MoveToNext();
         }
       } else {
-        pNode->SetFlagAndNotify(XFA_NodeFlag_Initialized);
+        pNode->SetInitializedFlagAndNotify();
         pNode = sIterator.MoveToNext();
       }
     }
@@ -1885,8 +1886,8 @@ void CXFA_ViewLayoutProcessor::SyncLayoutData() {
         continue;
 
       nPageIdx++;
-      XFA_WidgetStatusMask dwRelevant =
-          XFA_WidgetStatus_Viewable | XFA_WidgetStatus_Printable;
+      Mask<XFA_WidgetStatus> dwRelevant = {XFA_WidgetStatus::kViewable,
+                                           XFA_WidgetStatus::kPrintable};
       CXFA_LayoutItemIterator iterator(pViewItem);
       CXFA_LayoutItem* pChildLayoutItem = iterator.GetCurrent();
       while (pChildLayoutItem) {
@@ -1903,7 +1904,7 @@ void CXFA_ViewLayoutProcessor::SyncLayoutData() {
                 ->TryEnum(XFA_Attribute::Presence, true)
                 .value_or(XFA_AttributeValue::Visible);
         bool bVisible = presence == XFA_AttributeValue::Visible;
-        XFA_WidgetStatusMask dwRelevantChild =
+        Mask<XFA_WidgetStatus> dwRelevantChild =
             GetRelevant(pContentItem->GetFormNode(), dwRelevant);
         SyncContainer(pNotify, m_pLayoutProcessor, pContentItem,
                       dwRelevantChild, bVisible, nPageIdx);

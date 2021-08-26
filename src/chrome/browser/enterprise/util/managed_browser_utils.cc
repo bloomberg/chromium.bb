@@ -11,6 +11,9 @@
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "components/certificate_matching/certificate_principal_pattern.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/pref_names.h"
@@ -28,7 +31,7 @@
 #endif  // defined(OS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/ash/policy/core/browser_policy_connector_chromeos.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "components/user_manager/user_manager.h"
@@ -60,7 +63,7 @@ bool HasBrowserPoliciesApplied(Profile* profile) {
 
   // The machine may be enrolled, via Google Cloud or Active Directory.
   auto* browser_connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+      g_browser_process->platform_part()->browser_policy_connector_ash();
   if (browser_connector->IsDeviceEnterpriseManaged())
     return true;
 #else
@@ -144,6 +147,40 @@ bool IsMachinePolicyPref(const std::string& pref_name) {
 
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(prefs::kManagedAutoSelectCertificateForUrls);
+}
+
+void SetUserAcceptedAccountManagement(Profile* profile, bool accepted) {
+  // Some tests do not have a profile manager.
+  if (!g_browser_process->profile_manager())
+    return;
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  ProfileAttributesEntry* entry =
+      profile_manager->GetProfileAttributesStorage()
+          .GetProfileAttributesWithPath(profile->GetPath());
+  if (entry)
+    entry->SetUserAcceptedAccountManagement(accepted);
+}
+
+bool UserAcceptedAccountManagement(Profile* profile) {
+  // Some tests do not have a profile manager.
+  if (!g_browser_process->profile_manager())
+    return false;
+  ProfileAttributesEntry* entry =
+      g_browser_process->profile_manager()
+          ->GetProfileAttributesStorage()
+          .GetProfileAttributesWithPath(profile->GetPath());
+  return entry && entry->UserAcceptedAccountManagement();
+}
+
+bool ProfileCanBeManaged(Profile* profile) {
+  // Some tests do not have a profile manager.
+  if (!g_browser_process->profile_manager())
+    return false;
+  ProfileAttributesEntry* entry =
+      g_browser_process->profile_manager()
+          ->GetProfileAttributesStorage()
+          .GetProfileAttributesWithPath(profile->GetPath());
+  return entry && entry->CanBeManaged();
 }
 
 }  // namespace enterprise_util

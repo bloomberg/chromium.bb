@@ -33,7 +33,7 @@
 
 /* eslint-disable rulesdir/no_underscored_properties */
 
-import type * as Common from '../../core/common/common.js'; // eslint-disable-line no-unused-vars
+import type * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
@@ -172,7 +172,8 @@ export class PropertiesWidget extends UI.ThrottledWidget.ThrottledWidget {
     return section;
   }
 
-  _onNodeChange(event: Common.EventTarget.EventTargetEvent): void {
+  _onNodeChange(event: Common.EventTarget
+                    .EventTargetEvent<{node: SDK.DOMModel.DOMNode, name: string}|SDK.DOMModel.DOMNode>): void {
     if (!this._node) {
       return;
     }

@@ -216,7 +216,7 @@ class GIT(object):
     except subprocess2.CalledProcessError:
       pass
     # Return default branch
-    return 'refs/remotes/%s/master' % remote
+    return 'refs/remotes/%s/main' % remote
 
   @staticmethod
   def GetBranch(cwd):

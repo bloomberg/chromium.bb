@@ -1,3 +1,4 @@
+import { ErrorWithExtra } from '../../../common/util/util.js';
 import { GPUTest } from '../../gpu_test.js';
 
 /**
@@ -13,61 +14,63 @@ export class ShaderValidationTest extends GPUTest {
    * t.expectCompileResult(false, `wgsl code`); // Expect validation error with any error string
    * t.expectCompileResult('substr', `wgsl code`); // Expect validation error containing 'substr'
    * ```
+   *
+   * TODO(gpuweb/gpuweb#1813): Remove the "string" overload if there are no standard error codes.
    */
-  expectCompileResult(result: boolean | string, code: string) {
-    // If an error is expected, push an error scope to catch it.
-    // Otherwise, the test harness will catch unexpected errors.
-    if (result !== true) {
-      this.device.pushErrorScope('validation');
-    }
+  expectCompileResult(expectedResult: boolean | string, code: string) {
+    let shaderModule: GPUShaderModule;
+    this.expectGPUError(
+      'validation',
+      () => {
+        shaderModule = this.device.createShaderModule({ code });
+      },
+      expectedResult !== true
+    );
 
-    const shaderModule = this.device.createShaderModule({ code });
+    const error = new ErrorWithExtra('', () => ({ shaderModule }));
+    (async () => {
+      const compilationInfo = await shaderModule!.compilationInfo();
 
-    if (result !== true) {
-      const promise = this.device.popErrorScope();
+      // TODO: Pretty-print error messages with source context.
+      const messagesLog = compilationInfo.messages
+        .map(m => `${m.lineNum}:${m.linePos}: ${m.type}: ${m.message}`)
+        .join('\n');
+      error.extra.compilationInfo = compilationInfo;
 
-      this.eventualAsyncExpectation(async niceStack => {
-        // TODO: This is a non-compliant fallback path for Chrome, which doesn't
-        // implement .compilationInfo() yet. Remove it.
-        if (!shaderModule.compilationInfo) {
-          const gpuValidationError = await promise;
-          if (!gpuValidationError) {
-            niceStack.message = 'Compilation succeeded unexpectedly.';
-            this.rec.validationFailed(niceStack);
-          } else if (gpuValidationError instanceof GPUValidationError) {
-            if (typeof result === 'string' && gpuValidationError.message.indexOf(result) === -1) {
-              niceStack.message = `Compilation failed, but message missing expected substring \
-«${result}» - ${gpuValidationError.message}`;
-              this.rec.validationFailed(niceStack);
-            } else {
-              niceStack.message = `Compilation failed, as expected - ${gpuValidationError.message}`;
-              this.rec.debug(niceStack);
-            }
+      if (typeof expectedResult === 'string') {
+        for (const msg of compilationInfo.messages) {
+          if (msg.type === 'error' && msg.message.indexOf(expectedResult) !== -1) {
+            error.message =
+              `Found expected compilationInfo message substring «${expectedResult}».\n` +
+              messagesLog;
+            this.rec.debug(error);
+            return;
           }
-          return;
         }
 
-        if (typeof result === 'string') {
-          const info = await shaderModule.compilationInfo();
-          for (const message of info.messages) {
-            if (message.type === 'error' && message.message.indexOf(result) !== -1) {
-              niceStack.message = `Compilation failed, as expected - \
-${message.lineNum}:${message.linePos}: ${message.message}`;
-              this.rec.debug(niceStack);
-              return;
-            }
-          }
-          // Here, the expected string was not found.
+        // Here, no error message was found, but one was expected.
+        error.message = `Missing expected substring «${expectedResult}».\n` + messagesLog;
+        this.rec.validationFailed(error);
+        return;
+      }
 
-          // TODO: Pretty-print error messages, with source context.
-          const messagesLog = info.messages
-            .map(m => `${m.lineNum}:${m.linePos}: ${m.type}: ${m.message}`)
-            .join('\n');
-          niceStack.message = `Compilation failed, but no error message with expected substring \
-«${result}»\n${messagesLog}`;
-          this.rec.validationFailed(niceStack);
+      if (compilationInfo.messages.some(m => m.type === 'error')) {
+        if (expectedResult) {
+          error.message = `Unexpected compilationInfo 'error' message.\n` + messagesLog;
+          this.rec.validationFailed(error);
+        } else {
+          error.message = `Found expected compilationInfo 'error' message.\n` + messagesLog;
+          this.rec.debug(error);
         }
-      });
-    }
+      } else {
+        if (!expectedResult) {
+          error.message = `Missing expected compilationInfo 'error' message.\n` + messagesLog;
+          this.rec.validationFailed(error);
+        } else {
+          error.message = `No compilationInfo 'error' messages, as expected.\n` + messagesLog;
+          this.rec.debug(error);
+        }
+      }
+    })();
   }
 }

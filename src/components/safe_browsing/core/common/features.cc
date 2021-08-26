@@ -7,7 +7,6 @@
 #include <stddef.h>
 #include <algorithm>
 #include <utility>
-#include <vector>
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/system/sys_info.h"
@@ -30,7 +29,7 @@ const base::Feature kAdSamplerTriggerFeature{"SafeBrowsingAdSamplerTrigger",
 
 const base::Feature kBetterTelemetryAcrossReports{
     "SafeBrowsingBetterTelemetryAcrossReports",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kClientSideDetectionForAndroid{
     "ClientSideDetectionModelOnAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -69,6 +68,10 @@ const base::FeatureParam<bool> kDelayedWarningsEnableMouseClicks{
 const base::Feature kSimplifiedUrlDisplay{"SimplifiedUrlDisplay",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kOmitNonUserGesturesFromReferrerChain{
+    "SafeBrowsingOmitNonUserGesturesFromReferrerChain",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kPasswordProtectionForSignedInUsers {
   "SafeBrowsingPasswordProtectionForSignedInUsers",
 #if BUILDFLAG(FULL_SAFE_BROWSING)
@@ -97,6 +100,10 @@ const base::Feature kSafeBrowsingDisableConsumerCsdForEnterprise{
 
 const base::Feature kRealTimeUrlLookupReferrerChain{
     "SafeBrowsingRealTimeUrlLookupReferrerChain",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kRealTimeUrlLookupReferrerChainForEnterprise{
+    "SafeBrowsingRealTimeUrlLookupReferrerChainForEnterprise",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature
@@ -164,9 +171,11 @@ constexpr struct {
     {&kClientSideDetectionWithToken, true},
     {&kDelayedWarnings, true},
     {&kSafeBrowsingPasswordCheckIntegrationForSavedPasswordsAndroid, true},
+    {&kOmitNonUserGesturesFromReferrerChain, true},
     {&kPasswordProtectionForSignedInUsers, true},
     {&kPasswordProtectionWithToken, true},
     {&kRealTimeUrlLookupReferrerChain, true},
+    {&kRealTimeUrlLookupReferrerChainForEnterprise, true},
     {&kSafeBrowsingSeparateNetworkContexts, true},
     {&kSuspiciousSiteTriggerQuotaFeature, true},
     {&kThreatDomDetailsTagAndAttributeFeature, false},

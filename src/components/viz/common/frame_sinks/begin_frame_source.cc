@@ -97,10 +97,12 @@ void BeginFrameObserverBase::OnBeginFrame(const BeginFrameArgs& args) {
 }
 
 void BeginFrameObserverBase::AsProtozeroInto(
+    perfetto::EventContext& ctx,
     perfetto::protos::pbzero::BeginFrameObserverState* state) const {
   state->set_dropped_begin_frame_args(dropped_begin_frame_args_);
 
-  last_begin_frame_args_.AsProtozeroInto(state->set_last_begin_frame_args());
+  last_begin_frame_args_.AsProtozeroInto(ctx,
+                                         state->set_last_begin_frame_args());
 }
 
 BeginFrameArgs
@@ -186,6 +188,7 @@ bool BeginFrameSource::RequestCallbackOnGpuAvailable() {
 }
 
 void BeginFrameSource::AsProtozeroInto(
+    perfetto::EventContext&,
     perfetto::protos::pbzero::BeginFrameSourceState* state) const {
   // The lower 32 bits of source_id are the interesting piece of |source_id_|.
   state->set_source_id(static_cast<uint32_t>(source_id_));
@@ -194,10 +197,6 @@ void BeginFrameSource::AsProtozeroInto(
 // StubBeginFrameSource ---------------------------------------------------
 StubBeginFrameSource::StubBeginFrameSource()
     : BeginFrameSource(kNotRestartableId) {}
-
-bool StubBeginFrameSource::IsThrottled() const {
-  return true;
-}
 
 // SyntheticBeginFrameSource ----------------------------------------------
 SyntheticBeginFrameSource::SyntheticBeginFrameSource(uint32_t restart_id)
@@ -242,10 +241,6 @@ void BackToBackBeginFrameSource::DidFinishFrame(BeginFrameObserver* obs) {
     pending_begin_frame_observers_.insert(obs);
     time_source_->SetActive(true);
   }
-}
-
-bool BackToBackBeginFrameSource::IsThrottled() const {
-  return false;
 }
 
 void BackToBackBeginFrameSource::OnGpuNoLongerBusy() {
@@ -338,10 +333,6 @@ void DelayBasedBeginFrameSource::RemoveObserver(BeginFrameObserver* obs) {
     time_source_->SetActive(false);
 }
 
-bool DelayBasedBeginFrameSource::IsThrottled() const {
-  return true;
-}
-
 void DelayBasedBeginFrameSource::OnGpuNoLongerBusy() {
   OnTimerTick();
 }
@@ -387,12 +378,14 @@ ExternalBeginFrameSource::~ExternalBeginFrameSource() {
 }
 
 void ExternalBeginFrameSource::AsProtozeroInto(
+    perfetto::EventContext& ctx,
     perfetto::protos::pbzero::BeginFrameSourceState* state) const {
-  BeginFrameSource::AsProtozeroInto(state);
+  BeginFrameSource::AsProtozeroInto(ctx, state);
 
   state->set_paused(paused_);
   state->set_num_observers(observers_.size());
-  last_begin_frame_args_.AsProtozeroInto(state->set_last_begin_frame_args());
+  last_begin_frame_args_.AsProtozeroInto(ctx,
+                                         state->set_last_begin_frame_args());
 }
 
 void ExternalBeginFrameSource::AddObserver(BeginFrameObserver* obs) {
@@ -420,10 +413,6 @@ void ExternalBeginFrameSource::RemoveObserver(BeginFrameObserver* obs) {
   observers_.erase(obs);
   if (observers_.empty())
     client_->OnNeedsBeginFrames(false);
-}
-
-bool ExternalBeginFrameSource::IsThrottled() const {
-  return true;
 }
 
 void ExternalBeginFrameSource::OnGpuNoLongerBusy() {

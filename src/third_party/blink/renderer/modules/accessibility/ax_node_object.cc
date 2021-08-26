@@ -1885,10 +1885,12 @@ AXObject* AXNodeObject::InPageLinkTarget() const {
   DCHECK(ax_target->IsWebArea() || ax_target->GetElement())
       << "The link target is expected to be a document or an element: "
       << ax_target->ToString(true, true) << "\n* URL fragment = " << fragment;
-  DCHECK(!ax_target->AccessibilityIsIgnored())
-      << "The link target cannot be ignored: "
-      << ax_target->ToString(true, true) << "\n* URL fragment = " << fragment;
 #endif
+
+  // Usually won't be ignored, but could be e.g. if aria-hidden.
+  if (ax_target->AccessibilityIsIgnored())
+    return nullptr;
+
   return ax_target;
 }
 
@@ -2014,7 +2016,36 @@ ax::mojom::blink::WritingDirection AXNodeObject::GetTextDirection() const {
   return AXNodeObject::GetTextDirection();
 }
 
+ax::mojom::blink::TextPosition AXNodeObject::GetTextPositionFromAria() const {
+  // Check for role="subscript" or role="superscript" on the element, or if
+  // static text, on the containing element.
+  AXObject* obj = nullptr;
+  if (RoleValue() == ax::mojom::blink::Role::kStaticText)
+    obj = ParentObject();
+  else if (RoleValue() == ax::mojom::blink::Role::kGenericContainer)
+    obj = const_cast<AXNodeObject*>(this);  // May have role=sub/superscript.
+
+  if (obj) {
+    const AtomicString& aria_role =
+        obj->GetAOMPropertyOrARIAAttribute(AOMStringProperty::kRole);
+    if (aria_role == "subscript")
+      return ax::mojom::blink::TextPosition::kSubscript;
+    if (aria_role == "superscript")
+      return ax::mojom::blink::TextPosition::kSuperscript;
+  }
+
+  return ax::mojom::blink::TextPosition::kNone;
+}
+
 ax::mojom::blink::TextPosition AXNodeObject::GetTextPosition() const {
+  if (GetNode()) {
+    // role="subscript" and role="superscript" don't use an internal role, they
+    // just return a TextPosition here.
+    const auto& text_position = GetTextPositionFromAria();
+    if (text_position != ax::mojom::blink::TextPosition::kNone)
+      return text_position;
+  }
+
   if (!GetLayoutObject())
     return AXObject::GetTextPosition();
 
@@ -2468,8 +2499,10 @@ bool AXNodeObject::MaxValueForRange(float* out_value) const {
   }
 
   // In ARIA 1.1, default value of scrollbar, separator and slider
-  // for aria-valuemax were changed to 100.
+  // for aria-valuemax were changed to 100. This change was made for
+  // progressbar in ARIA 1.2.
   switch (AriaRoleAttribute()) {
+    case ax::mojom::blink::Role::kProgressIndicator:
     case ax::mojom::blink::Role::kScrollBar:
     case ax::mojom::blink::Role::kSplitter:
     case ax::mojom::blink::Role::kSlider: {
@@ -2501,8 +2534,10 @@ bool AXNodeObject::MinValueForRange(float* out_value) const {
   }
 
   // In ARIA 1.1, default value of scrollbar, separator and slider
-  // for aria-valuemin were changed to 0.
+  // for aria-valuemin were changed to 0. This change was made for
+  // progressbar in ARIA 1.2.
   switch (AriaRoleAttribute()) {
+    case ax::mojom::blink::Role::kProgressIndicator:
     case ax::mojom::blink::Role::kScrollBar:
     case ax::mojom::blink::Role::kSplitter:
     case ax::mojom::blink::Role::kSlider: {
@@ -4450,6 +4485,9 @@ void AXNodeObject::HandleActiveDescendantChanged() {
 }
 
 AXObject* AXNodeObject::ErrorMessage() const {
+  if (GetInvalidState() == ax::mojom::blink::InvalidState::kFalse)
+    return nullptr;
+
   // Check for aria-errormessage.
   Element* existing_error_message =
       GetAOMPropertyOrARIAAttribute(AOMRelationProperty::kErrorMessage);

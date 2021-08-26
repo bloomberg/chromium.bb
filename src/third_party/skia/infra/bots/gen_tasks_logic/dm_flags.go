@@ -178,7 +178,7 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 	sampleCount := 0
 	glPrefix := ""
 	if b.extraConfig("SwiftShader") {
-		configs = append(configs, "gles", "glesdft")
+		configs = append(configs, "gles", "glesdft", "glesdmsaa")
 	} else if b.cpu() {
 		args = append(args, "--nogpu")
 
@@ -192,8 +192,8 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 			configs = []string{
 				"g8", "565",
 				"pic-8888", "serialize-8888",
-				"f16", "srgb", "esrgb", "narrow", "enarrow",
-				"p3", "ep3", "rec2020", "erec2020"}
+				"linear-f16", "srgb-rgba", "srgb-f16", "narrow-rgba", "narrow-f16",
+				"p3-rgba", "p3-f16", "rec2020-rgba", "rec2020-f16"}
 		}
 
 		if b.extraConfig("PDF") {
@@ -230,11 +230,11 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 		if b.extraConfig("NativeFonts") {
 			configs = append(configs, glPrefix)
 		} else {
-			configs = append(configs, glPrefix, glPrefix+"dft", glPrefix+"srgb")
+			configs = append(configs, glPrefix, glPrefix+"dft", "srgb-"+glPrefix)
 			if sampleCount > 0 {
 				configs = append(configs, fmt.Sprintf("%smsaa%d", glPrefix, sampleCount))
 				// Temporarily limit the bots we test dynamic MSAA on.
-				if b.gpu("QuadroP400", "MaliG77", "AppleM1") {
+				if b.gpu("QuadroP400", "MaliG77") || b.matchOs("Mac") {
 					configs = append(configs, fmt.Sprintf("%sdmsaa", glPrefix))
 				}
 			}
@@ -254,7 +254,7 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 		// Also do the Ganesh threading verification test (render with and without
 		// worker threads, using only the SW path renderer, and compare the results).
 		if b.matchGpu("Intel") && b.isLinux() {
-			configs = append(configs, "gles", "glesdft", "glessrgb", "gltestthreading")
+			configs = append(configs, "gles", "glesdft", "srgb-gles", "gltestthreading")
 			// skbug.com/6333, skbug.com/6419, skbug.com/6702
 			skip("gltestthreading gm _ lcdblendmodes")
 			skip("gltestthreading gm _ lcdoverlap")
@@ -285,6 +285,8 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 
 		// Dawn bot *only* runs the dawn config
 		if b.extraConfig("Dawn") {
+			// tint:1045: Tint doesn't implement MatrixInverse yet.
+			skip("_", "gm", "_", "runtime_intrinsics_matrix")
 			configs = []string{"dawn"}
 		}
 
@@ -295,14 +297,20 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 				"angle_d3d11_es3"}
 			if sampleCount > 0 {
 				configs = append(configs, fmt.Sprintf("angle_d3d11_es2_msaa%d", sampleCount))
+				configs = append(configs, fmt.Sprintf("angle_d3d11_es2_dmsaa"))
+				configs = append(configs, fmt.Sprintf("angle_gl_es2_dmsaa"))
 				configs = append(configs, fmt.Sprintf("angle_d3d11_es3_msaa%d", sampleCount))
+				configs = append(configs, fmt.Sprintf("angle_d3d11_es3_dmsaa"))
+				configs = append(configs, fmt.Sprintf("angle_gl_es3_dmsaa"))
 			}
 			if b.matchGpu("GTX", "Quadro") {
 				// See skia:7823 and chromium:693090.
 				configs = append(configs, "angle_gl_es3")
 				if sampleCount > 0 {
 					configs = append(configs, fmt.Sprintf("angle_gl_es2_msaa%d", sampleCount))
+					configs = append(configs, fmt.Sprintf("angle_gl_es2_dmsaa"))
 					configs = append(configs, fmt.Sprintf("angle_gl_es3_msaa%d", sampleCount))
+					configs = append(configs, fmt.Sprintf("angle_gl_es3_dmsaa"))
 				}
 			}
 			if !b.matchGpu("GTX", "Quadro", "GT610") {
@@ -417,14 +425,17 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 			skip("mtltestprecompile gm _ glyph_pos_h_b")
 			skip("mtltestprecompile gm _ glyph_pos_h_f")
 			skip("mtltestprecompile gm _ glyph_pos_n_f")
+			skip("mtltestprecompile gm _ persp_images")
 			skip("mtltestprecompile gm _ strokedlines")
 			skip("mtltestprecompile gm _ strokes3")
 			skip("mtltestprecompile gm _ texel_subset_linear_mipmap_nearest_down")
 			skip("mtltestprecompile gm _ texel_subset_linear_mipmap_linear_down")
 			skip("mtltestprecompile gm _ textblobmixedsizes_df")
+			skip("mtltestprecompile gm _ yuv420_odd_dim_repeat")
 			skip("mtltestprecompile svg _ A_large_blank_world_map_with_oceans_marked_in_blue.svg")
 			skip("mtltestprecompile svg _ Chalkboard.svg")
 			skip("mtltestprecompile svg _ Ghostscript_Tiger.svg")
+			skip("mtltestprecompile svg _ Seal_of_American_Samoa.svg")
 			skip("mtltestprecompile svg _ Seal_of_Illinois.svg")
 		}
 		// Test reduced shader mode on iPhone 11 as representative iOS device
@@ -446,9 +457,9 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 		}
 
 		// Test rendering to wrapped dsts on a few bots
-		// Also test "glenarrow", which hits F16 surfaces and F16 vertex colors.
+		// Also test "narrow-glf16", which hits F16 surfaces and F16 vertex colors.
 		if b.extraConfig("BonusConfigs") {
-			configs = []string{"glbetex", "glbert", "glenarrow", "glreducedshaders"}
+			configs = []string{"glbetex", "glbert", "narrow-glf16", "glreducedshaders"}
 		}
 
 		if b.os("ChromeOS") {
@@ -462,7 +473,8 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 			// Use hardware tessellation as much as possible for testing. Use 16 segments max to
 			// verify the chopping logic.
 			args = append(args,
-				"--pr", "tess", "--hwtess", "--alwaysHwTess", "--maxTessellationSegments", "16")
+				"--pr", "atlas", "tess", "--hwtess", "--alwaysHwTess",
+				"--maxTessellationSegments", "16")
 		}
 
 		// DDL is a GPU-only feature
@@ -558,8 +570,8 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 
 	// TODO: ???
 	skip("f16 _ _ dstreadshuffle")
-	skip("glsrgb image _ _")
-	skip("glessrgb image _ _")
+	skip("srgb-gl image _ _")
+	skip("srgb-gles image _ _")
 
 	// --src image --config g8 means "decode into Gray8", which isn't supported.
 	skip("g8 image _ _")
@@ -850,6 +862,8 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 
 	if b.matchGpu("Adreno[3456][0-9][0-9]") { // disable broken tests on Adreno 3/4/5/6xx
 		skip("_", "tests", "_", "DSLFPTest_SwitchStatement")  // skia:11891
+		skip("_", "tests", "_", "SkSLArrayCast_GPU")          // skia:12332
+		skip("_", "tests", "_", "SkSLArrayComparison_GPU")    // skia:12332
 		skip("_", "tests", "_", "SkSLMatrixToVectorCast_GPU") // skia:12192
 		skip("_", "tests", "_", "SkSLStructsInFunctions_GPU") // skia:11929
 	}

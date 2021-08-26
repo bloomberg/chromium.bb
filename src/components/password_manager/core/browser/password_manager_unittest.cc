@@ -33,13 +33,14 @@
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check_factory.h"
 #include "components/password_manager/core/browser/leak_detection/mock_leak_detection_check_factory.h"
 #include "components/password_manager/core/browser/mock_password_reuse_manager.h"
-#include "components/password_manager/core/browser/mock_password_store.h"
+#include "components/password_manager/core/browser/mock_password_store_interface.h"
+#include "components/password_manager/core/browser/mock_smart_bubble_stats_store.h"
 #include "components/password_manager/core/browser/password_autofill_manager.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
-#include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/browser/password_store_interface.h"
 #include "components/password_manager/core/browser/statistics_table.h"
 #include "components/password_manager/core/browser/stub_credentials_filter.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
@@ -161,8 +162,14 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
               AutofillHttpAuth,
               (const PasswordForm&, const PasswordFormManagerForUI*),
               (override));
-  MOCK_METHOD(PasswordStore*, GetProfilePasswordStore, (), (const, override));
-  MOCK_METHOD(PasswordStore*, GetAccountPasswordStore, (), (const, override));
+  MOCK_METHOD(PasswordStoreInterface*,
+              GetProfilePasswordStoreInterface,
+              (),
+              (const, override));
+  MOCK_METHOD(PasswordStoreInterface*,
+              GetAccountPasswordStoreInterface,
+              (),
+              (const, override));
   MOCK_METHOD(PasswordReuseManager*,
               GetPasswordReuseManager,
               (),
@@ -239,17 +246,25 @@ class MockPasswordManagerDriver : public StubPasswordManagerDriver {
  public:
   MockPasswordManagerDriver() {
     ON_CALL(*this, GetId()).WillByDefault(Return(0));
-    ON_CALL(*this, IsMainFrame()).WillByDefault(Return(true));
+    ON_CALL(*this, IsInPrimaryMainFrame()).WillByDefault(Return(true));
   }
 
-  MOCK_CONST_METHOD0(GetId, int());
-  MOCK_METHOD1(FormEligibleForGenerationFound,
-               void(const autofill::PasswordFormGenerationData&));
-  MOCK_METHOD1(FillPasswordForm, void(const autofill::PasswordFormFillData&));
-  MOCK_METHOD0(GetPasswordManager, PasswordManager*());
-  MOCK_METHOD0(GetPasswordAutofillManager, PasswordAutofillManager*());
-  MOCK_CONST_METHOD0(IsMainFrame, bool());
-  MOCK_CONST_METHOD0(GetLastCommittedURL, const GURL&());
+  MOCK_METHOD(int, GetId, (), (const, override));
+  MOCK_METHOD(void,
+              FormEligibleForGenerationFound,
+              (const autofill::PasswordFormGenerationData&),
+              (override));
+  MOCK_METHOD(void,
+              FillPasswordForm,
+              (const autofill::PasswordFormFillData&),
+              (override));
+  MOCK_METHOD(PasswordManager*, GetPasswordManager, (), (override));
+  MOCK_METHOD(PasswordAutofillManager*,
+              GetPasswordAutofillManager,
+              (),
+              (override));
+  MOCK_METHOD(bool, IsInPrimaryMainFrame, (), (const, override));
+  MOCK_METHOD(const GURL&, GetLastCommittedURL, (), (const, override));
 };
 
 // Invokes the password store consumer with a single copy of |form|.
@@ -368,19 +383,19 @@ class PasswordManagerTest : public testing::TestWithParam<bool> {
 
  protected:
   void SetUp() override {
-    store_ = new MockPasswordStore;
-    ASSERT_TRUE(store_->Init(/*prefs=*/nullptr));
+    store_ = new MockPasswordStoreInterface;
 
-    ON_CALL(client_, GetProfilePasswordStore())
+    ON_CALL(client_, GetProfilePasswordStoreInterface())
         .WillByDefault(Return(store_.get()));
-    EXPECT_CALL(*store_, GetSiteStatsImpl(_)).Times(AnyNumber());
+
+    ON_CALL(*store_, GetSmartBubbleStatsStore)
+        .WillByDefault(Return(&smart_bubble_stats_store_));
 
     if (base::FeatureList::IsEnabled(
             features::kEnablePasswordsAccountStorage)) {
-      account_store_ = new MockPasswordStore;
-      ASSERT_TRUE(account_store_->Init(/*prefs=*/nullptr));
+      account_store_ = new MockPasswordStoreInterface;
 
-      ON_CALL(client_, GetAccountPasswordStore())
+      ON_CALL(client_, GetAccountPasswordStoreInterface())
           .WillByDefault(Return(account_store_.get()));
 
       // Most tests don't really need the account store, but it'll still get
@@ -622,11 +637,12 @@ class PasswordManagerTest : public testing::TestWithParam<bool> {
 
   const GURL test_url_{"https://www.example.com"};
   base::test::SingleThreadTaskEnvironment task_environment_;
-  scoped_refptr<MockPasswordStore> store_;
-  scoped_refptr<MockPasswordStore> account_store_;
+  scoped_refptr<MockPasswordStoreInterface> store_;
+  scoped_refptr<MockPasswordStoreInterface> account_store_;
   MockPasswordReuseManager reuse_manager_;
   testing::NiceMock<MockPasswordManagerClient> client_;
   MockPasswordManagerDriver driver_;
+  testing::NiceMock<MockSmartBubbleStatsStore> smart_bubble_stats_store_;
   std::unique_ptr<TestingPrefServiceSimple> prefs_;
   std::unique_ptr<PasswordAutofillManager> password_autofill_manager_;
   std::unique_ptr<PasswordManager> manager_;
@@ -3668,7 +3684,7 @@ TEST_P(PasswordManagerTest, UsernameFirstFlowFilling) {
 }
 #endif
 
-TEST_P(PasswordManagerTest, FormSubmittedOnMainFrame) {
+TEST_P(PasswordManagerTest, FormSubmittedOnPrimaryMainFrame) {
   EXPECT_CALL(client_, IsSavingAndFillingEnabled).WillRepeatedly(Return(true));
   EXPECT_CALL(*store_, GetLogins(_, _))
       .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms(store_.get())));
@@ -3680,7 +3696,8 @@ TEST_P(PasswordManagerTest, FormSubmittedOnMainFrame) {
 
   // Simulate finish loading of some iframe.
   MockPasswordManagerDriver iframe_driver;
-  EXPECT_CALL(iframe_driver, IsMainFrame()).WillRepeatedly(Return(false));
+  EXPECT_CALL(iframe_driver, IsInPrimaryMainFrame())
+      .WillRepeatedly(Return(false));
   EXPECT_CALL(iframe_driver, GetId()).WillRepeatedly(Return(123));
   manager()->OnPasswordFormsRendered(&iframe_driver, {} /* observed */, true);
   EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_)).Times(0);
@@ -3701,14 +3718,14 @@ TEST_P(PasswordManagerTest, FormSubmittedOnIFrame) {
 
   // Submit |form| on an iframe.
   MockPasswordManagerDriver iframe_driver;
-  ON_CALL(iframe_driver, IsMainFrame()).WillByDefault(Return(false));
+  ON_CALL(iframe_driver, IsInPrimaryMainFrame()).WillByDefault(Return(false));
   ON_CALL(iframe_driver, GetId()).WillByDefault(Return(123));
   manager()->OnPasswordFormsParsed(&iframe_driver, {form_data});
   manager()->OnPasswordFormSubmitted(&iframe_driver, form_data);
 
   // Simulate finish loading of another iframe.
   MockPasswordManagerDriver another_iframe_driver;
-  EXPECT_CALL(another_iframe_driver, IsMainFrame())
+  EXPECT_CALL(another_iframe_driver, IsInPrimaryMainFrame())
       .WillRepeatedly(Return(false));
   EXPECT_CALL(another_iframe_driver, GetId()).WillRepeatedly(Return(456));
   manager()->OnPasswordFormsRendered(&another_iframe_driver, {} /* observed */,
@@ -3724,7 +3741,7 @@ TEST_P(PasswordManagerTest, FormSubmittedOnIFrame) {
                                      true /* did stop loading */);
 }
 
-TEST_P(PasswordManagerTest, FormSubmittedOnIFrameMainFrameLoaded) {
+TEST_P(PasswordManagerTest, FormSubmittedOnIFramePrimaryMainFrameLoaded) {
   EXPECT_CALL(client_, IsSavingAndFillingEnabled).WillRepeatedly(Return(true));
   EXPECT_CALL(*store_, GetLogins(_, _))
       .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms(store_.get())));
@@ -3732,7 +3749,7 @@ TEST_P(PasswordManagerTest, FormSubmittedOnIFrameMainFrameLoaded) {
 
   // Simulate a form submission on an iframe.
   MockPasswordManagerDriver iframe_driver;
-  ON_CALL(iframe_driver, IsMainFrame()).WillByDefault(Return(false));
+  ON_CALL(iframe_driver, IsInPrimaryMainFrame()).WillByDefault(Return(false));
   ON_CALL(iframe_driver, GetId()).WillByDefault(Return(123));
   manager()->OnPasswordFormsParsed(&iframe_driver, {form_data});
   manager()->OnPasswordFormSubmitted(&iframe_driver, form_data);
@@ -4127,6 +4144,39 @@ TEST_P(PasswordManagerTest, IsFormManagerPendingPasswordUpdate) {
   EXPECT_TRUE(manager()->IsFormManagerPendingPasswordUpdate());
 }
 
+TEST_P(PasswordManagerTest, SaveSubmittedManager) {
+  PasswordForm form(MakeSimpleForm());
+  std::vector<FormData> observed = {form.form_data};
+  EXPECT_CALL(client_, IsSavingAndFillingEnabled).WillRepeatedly(Return(true));
+  EXPECT_CALL(*store_, GetLogins)
+      .WillOnce(WithArg<1>(InvokeConsumer(store_.get(), form)));
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+
+  // Password was not updated yet.
+  EXPECT_FALSE(manager()->IsFormManagerPendingPasswordUpdate());
+
+  // The user updates the password.
+  FormData updated_data(form.form_data);
+  updated_data.fields[1].value = u"new_password";
+  manager()->OnInformAboutUserInput(&driver_, updated_data);
+  EXPECT_TRUE(manager()->IsFormManagerPendingPasswordUpdate());
+
+  // The user submits the form.
+  OnPasswordFormSubmitted(updated_data);
+  EXPECT_TRUE(manager()->GetSubmittedManagerForTest());
+
+  PasswordForm saved_form;
+  EXPECT_CALL(*store_, AddLogin(_)).Times(0);
+  EXPECT_CALL(*store_, UpdateLoginWithPrimaryKey).Times(0);
+  PasswordForm expected_form(form);
+  // The expected form with a new password.
+  expected_form.password_value = updated_data.fields[1].value;
+  EXPECT_CALL(*store_, UpdateLogin(FormMatches(expected_form)));
+  // The form is saved.
+  manager()->SaveSubmittedManager();
+}
+
 // Test submission of "PasswordManager.FormVisited.PerProfileType" and
 // "PasswordManager.FormSubmission.PerProfileType" for Incognito mode.
 TEST_P(PasswordManagerTest, IncognitoProfileTypeMetricSubmission) {
@@ -4240,19 +4290,15 @@ TEST_P(PasswordManagerTest, DontStartLeakDetectionWhenMuted) {
       std::make_unique<testing::StrictMock<MockLeakDetectionCheckFactory>>();
   manager()->set_leak_factory(std::move(mock_factory));
 
-  const PasswordForm form = MakeSimpleForm();
+  PasswordForm form = MakeSimpleForm();
+  form.password_issues.insert(
+      {InsecureType::kLeaked, InsecurityMetadata(base::Time(), IsMuted(true))});
   std::vector<FormData> observed = {form.form_data};
   EXPECT_CALL(*store_, GetLogins)
-      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms(store_.get())));
+      .WillRepeatedly(WithArg<1>(InvokeConsumer(store_.get(), form)));
   manager()->OnPasswordFormsParsed(&driver_, observed);
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
 
-  // Add muted insecure credentials.
-  std::vector<InsecureCredential> insecure_credentials = {InsecureCredential(
-      form.signon_realm, form.username_value, base::Time::FromTimeT(1),
-      InsecureType::kLeaked, IsMuted(true))};
-  EXPECT_CALL(*store_, GetMatchingInsecureCredentialsImpl(form.signon_realm))
-      .WillOnce(Return(insecure_credentials));
   task_environment_.RunUntilIdle();
 
   EXPECT_CALL(client_, IsSavingAndFillingEnabled).WillRepeatedly(Return(true));
@@ -4279,19 +4325,18 @@ TEST_P(PasswordManagerTest, StartLeakCheckWhenForUsernameNotMuted) {
   MockLeakDetectionCheckFactory* weak_factory = mock_factory.get();
   manager()->set_leak_factory(std::move(mock_factory));
 
-  const PasswordForm form = MakeSimpleForm();
+  PasswordForm form = MakeSimpleForm();
   std::vector<FormData> observed = {form.form_data};
+
+  form.username_value = u"different_username";
+  form.password_issues.insert(
+      {InsecureType::kLeaked, InsecurityMetadata(base::Time(), IsMuted(true))});
+
   EXPECT_CALL(*store_, GetLogins)
-      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms(store_.get())));
+      .WillRepeatedly(WithArg<1>(InvokeConsumer(store_.get(), form)));
   manager()->OnPasswordFormsParsed(&driver_, observed);
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
 
-  // Add muted insecure credentials.
-  std::vector<InsecureCredential> insecure_credentials = {InsecureCredential(
-      form.signon_realm, u"different_username", base::Time::FromTimeT(1),
-      InsecureType::kLeaked, IsMuted(true))};
-  EXPECT_CALL(*store_, GetMatchingInsecureCredentialsImpl(form.signon_realm))
-      .WillOnce(Return(insecure_credentials));
   task_environment_.RunUntilIdle();
 
   EXPECT_CALL(client_, IsSavingAndFillingEnabled).WillRepeatedly(Return(true));

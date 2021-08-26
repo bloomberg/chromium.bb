@@ -93,6 +93,7 @@
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "third_party/blink/renderer/platform/network/parsed_content_type.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -133,7 +134,7 @@ void FindCharsetInMediaType(const String& media_type,
                             unsigned& charset_len) {
   charset_len = 0;
 
-  size_t pos = charset_pos;
+  unsigned pos = charset_pos;
   unsigned length = media_type.length();
 
   while (pos < length) {
@@ -799,7 +800,8 @@ void XMLHttpRequest::send(const V8UnionDocumentOrXMLHttpRequestBodyInit* body,
 
 bool XMLHttpRequest::AreMethodAndURLValidForSend() {
   return method_ != http_names::kGET && method_ != http_names::kHEAD &&
-         url_.ProtocolIsInHTTPFamily();
+         SchemeRegistry::ShouldTreatURLSchemeAsSupportingFetchAPI(
+             url_.Protocol());
 }
 
 void XMLHttpRequest::send(Document* document, ExceptionState& exception_state) {
@@ -942,7 +944,8 @@ void XMLHttpRequest::SendBytesData(const void* data,
   scoped_refptr<EncodedFormData> http_body;
 
   if (AreMethodAndURLValidForSend()) {
-    http_body = EncodedFormData::Create(data, length);
+    http_body =
+        EncodedFormData::Create(data, base::checked_cast<wtf_size_t>(length));
   }
 
   CreateRequest(std::move(http_body), exception_state);

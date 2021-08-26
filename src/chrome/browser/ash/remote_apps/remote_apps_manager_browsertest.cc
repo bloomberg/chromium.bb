@@ -8,6 +8,7 @@
 #include "ash/app_list/model/app_list_item.h"
 #include "ash/app_list/model/app_list_model.h"
 #include "ash/constants/ash_switches.h"
+#include "ash/public/cpp/accelerators.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/image_downloader.h"
 #include "ash/public/cpp/shelf_item.h"
@@ -29,9 +30,9 @@
 #include "chrome/browser/ash/remote_apps/remote_apps_manager_factory.h"
 #include "chrome/browser/ash/remote_apps/remote_apps_model.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
-#include "chrome/common/chrome_features.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/account_id/account_id.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
@@ -278,6 +279,14 @@ class RemoteAppsManagerBrowsertest
     run_loop.Run();
   }
 
+  void ShowLauncherAppsGrid() {
+    AppListClientImpl* client = AppListClientImpl::GetInstance();
+    EXPECT_FALSE(client->GetAppListWindow());
+    ash::AcceleratorController::Get()->PerformActionIfEnabled(
+        ash::TOGGLE_APP_LIST_FULLSCREEN, {});
+    EXPECT_TRUE(client->GetAppListWindow());
+  }
+
  protected:
   RemoteAppsManager* manager_ = nullptr;
   MockImageDownloader* image_downloader_ = nullptr;
@@ -286,6 +295,9 @@ class RemoteAppsManagerBrowsertest
 };
 
 IN_PROC_BROWSER_TEST_F(RemoteAppsManagerBrowsertest, AddApp) {
+  // Show launcher UI so that app icons are loaded.
+  ShowLauncherAppsGrid();
+
   std::string name = "name";
   GURL icon_url("icon_url");
   gfx::ImageSkia icon = CreateTestIcon(32, SK_ColorRED);
@@ -298,10 +310,7 @@ IN_PROC_BROWSER_TEST_F(RemoteAppsManagerBrowsertest, AddApp) {
   EXPECT_FALSE(item->is_folder());
   EXPECT_EQ(name, item->name());
   // kShared uses size hint 64 dip.
-  apps::IconEffects icon_effects =
-      base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)
-          ? apps::IconEffects::kCrOsStandardIcon
-          : apps::IconEffects::kResizeAndPad;
+  apps::IconEffects icon_effects = apps::IconEffects::kCrOsStandardIcon;
 
   base::RunLoop run_loop;
   apps::mojom::IconValuePtr output_data = apps::mojom::IconValue::New();

@@ -10,7 +10,6 @@
  */
 
 #include "aom_dsp/binary_codes_writer.h"
-#include "aom_ports/system_state.h"
 
 #include "av1/encoder/corner_detect.h"
 #include "av1/encoder/encoder.h"
@@ -101,8 +100,6 @@ static AOM_INLINE void compute_global_motion_for_ref_frame(
   int inliers_by_motion[RANSAC_NUM_MOTIONS];
   assert(ref_buf[frame] != NULL);
   TransformationType model;
-
-  aom_clear_system_state();
 
   // TODO(sarahparker, debargha): Explore do_adaptive_gm_estimation = 1
   const int do_adaptive_gm_estimation = 0;
@@ -197,8 +194,6 @@ static AOM_INLINE void compute_global_motion_for_ref_frame(
 
     if (cm->global_motion[frame].wmtype != IDENTITY) break;
   }
-
-  aom_clear_system_state();
 }
 
 // Computes global motion for the given reference frame.

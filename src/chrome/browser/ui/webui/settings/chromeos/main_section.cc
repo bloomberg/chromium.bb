@@ -11,7 +11,7 @@
 #include "base/i18n/number_formatting.h"
 #include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/ash/policy/core/browser_policy_connector_chromeos.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/policy/handlers/minimum_version_policy_handler.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
@@ -50,20 +50,11 @@ void AddSearchInSettingsStrings(content::WebUIDataSource* html_source) {
       {"clearSearch", IDS_CLEAR_SEARCH},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
-
-  html_source->AddString(
-      "searchNoOsResultsHelp",
-      l10n_util::GetStringFUTF16(
-          IDS_SETTINGS_SEARCH_NO_RESULTS_HELP,
-          base::ASCIIToUTF16(chrome::kOsSettingsSearchHelpURL)));
-
-  // TODO(crbug/1080777): Remove this flag and JS codepaths effected.
-  html_source->AddBoolean("newOsSettingsSearch", true);
 }
 
 void AddUpdateRequiredEolStrings(content::WebUIDataSource* html_source) {
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  policy::BrowserPolicyConnectorAsh* connector =
+      g_browser_process->platform_part()->browser_policy_connector_ash();
   policy::MinimumVersionPolicyHandler* handler =
       connector->GetMinimumVersionPolicyHandler();
   bool device_managed = connector->IsDeviceEnterpriseManaged();

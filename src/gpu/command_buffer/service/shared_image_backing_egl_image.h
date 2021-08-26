@@ -8,6 +8,8 @@
 #include "base/memory/scoped_refptr.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/service/shared_image_backing.h"
+#include "gpu/command_buffer/service/shared_image_backing_factory_gl_common.h"
+#include "gpu/command_buffer/service/shared_image_backing_gl_common.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gl/gl_bindings.h"
 
@@ -43,11 +45,12 @@ class SharedImageBackingEglImage : public ClearTrackingSharedImageBacking {
       SkAlphaType alpha_type,
       uint32_t usage,
       size_t estimated_size,
-      GLuint gl_format,
-      GLuint gl_type,
+      const SharedImageBackingFactoryGLCommon::FormatInfo format_into,
       SharedImageBatchAccessManager* batch_access_manager,
       const GpuDriverBugWorkarounds& workarounds,
-      bool use_passthrough);
+      const SharedImageBackingGLCommon::UnpackStateAttribs& attribs,
+      bool use_passthrough,
+      base::span<const uint8_t> pixel_data);
 
   ~SharedImageBackingEglImage() override;
 
@@ -86,12 +89,14 @@ class SharedImageBackingEglImage : public ClearTrackingSharedImageBacking {
   void EndRead(const RepresentationGLShared* reader);
 
   // Use to create EGLImage texture target from the same EGLImage object.
-  scoped_refptr<TextureHolder> GenEGLImageSibling();
+  // Optional |pixel_data| to initialize a texture with before EGLImage object
+  // is created from it.
+  scoped_refptr<TextureHolder> GenEGLImageSibling(
+      base::span<const uint8_t> pixel_data);
 
   void SetEndReadFence(scoped_refptr<gl::SharedGLFenceEGL> shared_egl_fence);
 
-  const GLuint gl_format_;
-  const GLuint gl_type_;
+  const SharedImageBackingFactoryGLCommon::FormatInfo format_info_;
   scoped_refptr<TextureHolder> source_texture_holder_;
   gl::GLApi* created_on_context_;
 
@@ -115,6 +120,7 @@ class SharedImageBackingEglImage : public ClearTrackingSharedImageBacking {
       GUARDED_BY(lock_);
   SharedImageBatchAccessManager* batch_access_manager_ = nullptr;
 
+  const SharedImageBackingGLCommon::UnpackStateAttribs gl_unpack_attribs_;
   const bool use_passthrough_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedImageBackingEglImage);

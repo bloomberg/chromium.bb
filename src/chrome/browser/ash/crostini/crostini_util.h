@@ -15,7 +15,6 @@
 #include "base/values.h"
 #include "chrome/browser/ash/crostini/crostini_simple_types.h"
 #include "storage/browser/file_system/file_system_url.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 
 namespace aura {
@@ -43,12 +42,14 @@ extern const char kCrostiniDeletedTerminalId[];
 //     GURL("chrome-untrusted://terminal/html/terminal.html"))
 extern const char kCrostiniTerminalSystemAppId[];
 
+extern const char kCrostiniImageAliasPattern[];
+extern const char kCrostiniContainerDefaultVersion[];
+extern const char kCrostiniContainerFlag[];
+
 extern const char kCrostiniDefaultVmName[];
 extern const char kCrostiniDefaultContainerName[];
 extern const char kCrostiniDefaultUsername[];
 extern const char kCrostiniDefaultImageServerUrl[];
-extern const char kCrostiniStretchImageAlias[];
-extern const char kCrostiniBusterImageAlias[];
 extern const char kCrostiniDlcName[];
 
 extern const base::FilePath::CharType kHomeDirectory[];

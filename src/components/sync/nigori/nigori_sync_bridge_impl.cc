@@ -25,7 +25,6 @@
 #include "components/sync/nigori/pending_local_nigori_commit.h"
 #include "components/sync/protocol/encryption.pb.h"
 #include "components/sync/protocol/nigori_local_data.pb.h"
-#include "components/sync/protocol/nigori_specifics.pb.h"
 
 namespace syncer {
 
@@ -412,12 +411,10 @@ class NigoriSyncBridgeImpl::BroadcastingObserver
 NigoriSyncBridgeImpl::NigoriSyncBridgeImpl(
     std::unique_ptr<NigoriLocalChangeProcessor> processor,
     std::unique_ptr<NigoriStorage> storage,
-    const base::RepeatingCallback<std::string()>& random_salt_generator,
     const std::string& packed_explicit_passphrase_key,
     const std::string& packed_keystore_keys)
     : processor_(std::move(processor)),
       storage_(std::move(storage)),
-      random_salt_generator_(random_salt_generator),
       explicit_passphrase_key_(
           UnpackExplicitPassphraseKey(packed_explicit_passphrase_key)),
       broadcasting_observer_(std::make_unique<BroadcastingObserver>(
@@ -549,8 +546,8 @@ void NigoriSyncBridgeImpl::SetEncryptionPassphrase(
     const std::string& passphrase) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  QueuePendingLocalCommit(PendingLocalNigoriCommit::ForSetCustomPassphrase(
-      passphrase, random_salt_generator_));
+  QueuePendingLocalCommit(
+      PendingLocalNigoriCommit::ForSetCustomPassphrase(passphrase));
 }
 
 void NigoriSyncBridgeImpl::SetDecryptionPassphrase(
@@ -998,7 +995,6 @@ std::unique_ptr<EntityData> NigoriSyncBridgeImpl::GetData() {
   auto entity_data = std::make_unique<EntityData>();
   *entity_data->specifics.mutable_nigori() = std::move(specifics);
   entity_data->name = kNigoriNonUniqueName;
-  entity_data->is_folder = true;
   return entity_data;
 }
 

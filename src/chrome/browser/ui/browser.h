@@ -65,6 +65,7 @@ class ScopedProfileKeepAlive;
 class StatusBubble;
 class TabStripModel;
 class TabStripModelDelegate;
+class TabMenuModelDelegate;
 
 namespace blink {
 enum class ProtocolHandlerSecurityLevel;
@@ -212,6 +213,7 @@ class Browser : public TabStripModelObserver,
     explicit CreateParams(Profile* profile, bool user_gesture);
     CreateParams(Type type, Profile* profile, bool user_gesture);
     CreateParams(const CreateParams& other);
+    CreateParams& operator=(const CreateParams& other);
 
     static CreateParams CreateForApp(const std::string& app_name,
                                      bool trusted_source,
@@ -239,6 +241,12 @@ class Browser : public TabStripModelObserver,
     // Specifies the browser `omit_from_session_restore_` value, whether the new
     // Browser should be omitted from being saved/restored by session restore.
     bool omit_from_session_restore = false;
+
+    // Specifies the browser `should_trigger_session_restore` value. If true, a
+    // new window opening should be treated like the start of a session (with
+    // potential session restore, startup URLs, etc.). Otherwise, don't restore
+    // the session.
+    bool should_trigger_session_restore = true;
 
     // The bounds of the window to open.
     gfx::Rect initial_bounds;
@@ -379,11 +387,24 @@ class Browser : public TabStripModelObserver,
   // Never nullptr.
   TabStripModel* tab_strip_model() const { return tab_strip_model_.get(); }
 
+  // Never nullptr.
+  TabStripModelDelegate* tab_strip_model_delegate() const {
+    return tab_strip_model_delegate_.get();
+  }
+
+  // Never nullptr.
+  TabMenuModelDelegate* tab_menu_model_delegate() const {
+    return tab_menu_model_delegate_.get();
+  }
+
   chrome::BrowserCommandController* command_controller() {
     return command_controller_.get();
   }
   const SessionID& session_id() const { return session_id_; }
   bool omit_from_session_restore() const { return omit_from_session_restore_; }
+  bool should_trigger_session_restore() const {
+    return should_trigger_session_restore_;
+  }
   BrowserContentSettingBubbleModelDelegate*
   content_setting_bubble_model_delegate() {
     return content_setting_bubble_model_delegate_.get();
@@ -556,10 +577,6 @@ class Browser : public TabStripModelObserver,
 
   void UpdateDownloadShelfVisibility(bool visible);
 
-  // Whether the specified WebContents can be reloaded.
-  // Reloading can be disabled e.g. for the DevTools window.
-  bool CanReloadContents(content::WebContents* web_contents) const;
-
   // Whether the specified WebContents can be saved.
   // Saving can be disabled e.g. for the DevTools window.
   bool CanSaveContents(content::WebContents* web_contents) const;
@@ -671,15 +688,6 @@ class Browser : public TabStripModelObserver,
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   bool is_type_custom_tab() const { return type_ == TYPE_CUSTOM_TAB; }
 #endif
-  // TODO(crbug.com/990158): |deprecated_is_app()| is added for backwards
-  // compatibility for previous callers to |is_app()| which returned true when
-  // |app_name_| is non-empty.  This includes TYPE_APP, TYPE_DEVTOOLS and
-  // TYPE_APP_POPUP. Existing callers should change to use the appropriate
-  // is_type_* functions.
-  bool deprecated_is_app() const {
-    return type_ == TYPE_APP || type_ == TYPE_DEVTOOLS ||
-           type_ == TYPE_APP_POPUP;
-  }
 
   // True when the mouse cursor is locked.
   bool IsMouseLocked() const;
@@ -726,10 +734,6 @@ class Browser : public TabStripModelObserver,
   FRIEND_TEST_ALL_PREFIXES(ExclusiveAccessTest,
                            TabEntersPresentationModeFromWindowed);
   FRIEND_TEST_ALL_PREFIXES(BrowserCloseTest, LastGuest);
-  FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorTest, OpenAppShortcutNoPref);
-  FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorTest,
-                           OpenAppShortcutWindowPref);
-  FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorTest, OpenAppShortcutTabPref);
 
   // Used to describe why a tab is being detached. This is used by
   // TabDetachedAtImpl.
@@ -831,16 +835,11 @@ class Browser : public TabStripModelObserver,
   void RendererResponsive(
       content::WebContents* source,
       content::RenderWidgetHost* render_widget_host) override;
-  void DidNavigateMainFramePostCommit(
+  void DidNavigatePrimaryMainFramePostCommit(
       content::WebContents* web_contents) override;
   content::JavaScriptDialogManager* GetJavaScriptDialogManager(
       content::WebContents* source) override;
   bool GuestSaveFrame(content::WebContents* guest_web_contents) override;
-  std::unique_ptr<content::ColorChooser> OpenColorChooser(
-      content::WebContents* web_contents,
-      SkColor color,
-      const std::vector<blink::mojom::ColorSuggestionPtr>& suggestions)
-      override;
   std::unique_ptr<content::EyeDropper> OpenEyeDropper(
       content::RenderFrameHost* frame,
       content::EyeDropperListener* listener) override;
@@ -1121,6 +1120,8 @@ class Browser : public TabStripModelObserver,
   std::unique_ptr<TabStripModelDelegate> const tab_strip_model_delegate_;
   std::unique_ptr<TabStripModel> const tab_strip_model_;
 
+  std::unique_ptr<TabMenuModelDelegate> const tab_menu_model_delegate_;
+
   // The application name that is also the name of the window to the shell.
   // This name should be set when:
   // 1) we launch an application via an application shortcut or extension API.
@@ -1140,6 +1141,11 @@ class Browser : public TabStripModelObserver,
   // Whether this Browser should be omitted from being saved/restored by session
   // restore.
   bool omit_from_session_restore_ = false;
+
+  // If true, a new window opening should be treated like the start of a session
+  // (with potential session restore, startup URLs, etc.). Otherwise, don't
+  // restore the session.
+  const bool should_trigger_session_restore_;
 
   // The model for the toolbar view.
   std::unique_ptr<LocationBarModel> location_bar_model_;

@@ -19,7 +19,6 @@
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 #include "test/acm_random.h"
 #include "test/util.h"
-#include "test/clear_system_state.h"
 #include "test/register_state_check.h"
 #include "av1/common/common_data.h"
 #include "aom_ports/aom_timer.h"
@@ -92,7 +91,6 @@ class AV1DISTWTDCOMPAVGTest
  public:
   ~AV1DISTWTDCOMPAVGTest() {}
   void SetUp() { rnd_.Reset(ACMRandom::DeterministicSeed()); }
-  void TearDown() { libaom_test::ClearSystemState(); }
 
  protected:
   void RunCheckOutput(distwtdcompavg_func test_impl) {
@@ -196,7 +194,6 @@ class AV1DISTWTDCOMPAVGUPSAMPLEDTest
  public:
   ~AV1DISTWTDCOMPAVGUPSAMPLEDTest() {}
   void SetUp() { rnd_.Reset(ACMRandom::DeterministicSeed()); }
-  void TearDown() { libaom_test::ClearSystemState(); }
 
  protected:
   void RunCheckOutput(distwtdcompavgupsampled_func test_impl) {
@@ -325,8 +322,6 @@ class AV1HighBDDISTWTDCOMPAVGTest
   ~AV1HighBDDISTWTDCOMPAVGTest() {}
   void SetUp() { rnd_.Reset(ACMRandom::DeterministicSeed()); }
 
-  void TearDown() { libaom_test::ClearSystemState(); }
-
  protected:
   void RunCheckOutput(distwtdcompavg_func test_impl) {
     const int w = kMaxSize, h = kMaxSize;
@@ -435,7 +430,6 @@ class AV1HighBDDISTWTDCOMPAVGUPSAMPLEDTest
  public:
   ~AV1HighBDDISTWTDCOMPAVGUPSAMPLEDTest() {}
   void SetUp() { rnd_.Reset(ACMRandom::DeterministicSeed()); }
-  void TearDown() { libaom_test::ClearSystemState(); }
 
  protected:
   void RunCheckOutput(highbddistwtdcompavgupsampled_func test_impl) {

@@ -18,6 +18,7 @@
 #include "components/feed/core/proto/v2/wire/reliability_logging_enums.pb.h"
 #include "components/feed/core/proto/v2/wire/request.pb.h"
 #include "components/feed/core/v2/config.h"
+#include "components/feed/core/v2/enums.h"
 #include "components/feed/core/v2/feed_network.h"
 #include "components/feed/core/v2/feed_stream.h"
 #include "components/feed/core/v2/feedstore_util.h"
@@ -96,7 +97,6 @@ void LoadStreamTask::Run() {
 
 bool LoadStreamTask::CheckPreconditions() {
   if (stream_.ClearAllInProgress()) {
-    // TODO(iwells): add a DiscoverLaunchResult for this case?
     Done({LoadStreamStatus::kAbortWithPendingClearAll,
           feedwire::DiscoverLaunchResult::CLEAR_ALL_IN_PROGRESS});
     return false;
@@ -119,7 +119,6 @@ bool LoadStreamTask::CheckPreconditions() {
 
   if (options_.abort_if_unread_content &&
       stream_.HasUnreadContent(options_.stream_type)) {
-    // TODO(iwells): add a DiscoverLaunchResult for this case
     Done({LoadStreamStatus::kAlreadyHaveUnreadContent,
           feedwire::DiscoverLaunchResult::CARDS_UNSPECIFIED});
     return false;
@@ -131,7 +130,7 @@ bool LoadStreamTask::CheckPreconditions() {
 void LoadStreamTask::CheckIfSubscriberComplete(bool is_web_feed_subscriber) {
   if (!is_web_feed_subscriber) {
     Done({LoadStreamStatus::kNotAWebFeedSubscriber,
-          feedwire::DiscoverLaunchResult::CARDS_UNSPECIFIED});
+          feedwire::DiscoverLaunchResult::NOT_A_WEB_FEED_SUBSCRIBER});
     return;
   }
 
@@ -147,7 +146,8 @@ void LoadStreamTask::ResumeAtStart() {
 }
 
 void LoadStreamTask::PassedPreconditions() {
-  launch_reliability_logger_.LogCacheReadStart();
+  if (options_.load_type != LoadType::kBackgroundRefresh)
+    launch_reliability_logger_.LogCacheReadStart();
 
   if (options_.load_type == LoadType::kManualRefresh) {
     std::vector<feedstore::StoredAction> empty_pending_actions;
@@ -175,7 +175,9 @@ void LoadStreamTask::LoadFromStoreComplete(
   latencies_->StepComplete(LoadLatencyTimes::kLoadFromStore);
   stored_content_age_ = result.content_age;
   content_ids_ = result.content_ids;
-  launch_reliability_logger_.LogCacheReadEnd(result.reliability_result);
+
+  if (options_.load_type != LoadType::kBackgroundRefresh)
+    launch_reliability_logger_.LogCacheReadEnd(result.reliability_result);
 
   // Phase 2. Process the result of `LoadStreamFromStoreTask`.
 
@@ -235,7 +237,12 @@ void LoadStreamTask::UploadActionsComplete(UploadActionsTask::Result result) {
       std::make_unique<UploadActionsTask::Result>(std::move(result));
   latencies_->StepComplete(LoadLatencyTimes::kUploadActions);
 
-  network_request_id_ = launch_reliability_logger_.LogFeedRequestStart();
+  if (options_.load_type != LoadType::kBackgroundRefresh) {
+    if (options_.stream_type.IsForYou())
+      network_request_id_ = launch_reliability_logger_.LogFeedRequestStart();
+    else if (options_.stream_type.IsWebFeed())
+      network_request_id_ = launch_reliability_logger_.LogWebFeedRequestStart();
+  }
 
   feedwire::Request request = CreateFeedQueryRefreshRequest(
       options_.stream_type,
@@ -302,8 +309,11 @@ void LoadStreamTask::ProcessNetworkResponse(
     std::unique_ptr<feedwire::Response> response_body,
     NetworkResponseInfo response_info) {
   latencies_->StepComplete(LoadLatencyTimes::kQueryRequest);
-  launch_reliability_logger_.LogRequestSent(
-      network_request_id_, response_info.loader_start_time_ticks);
+
+  if (options_.load_type != LoadType::kBackgroundRefresh) {
+    launch_reliability_logger_.LogRequestSent(
+        network_request_id_, response_info.loader_start_time_ticks);
+  }
 
   network_response_info_ = response_info;
 
@@ -358,6 +368,10 @@ void LoadStreamTask::ProcessNetworkResponse(
   auto updated_metadata = stream_.GetMetadata();
   SetLastFetchTime(updated_metadata, options_.stream_type, base::Time::Now());
   feedstore::MaybeUpdateSessionId(updated_metadata, response_data.session_id);
+  if (response_data.content_lifetime) {
+    feedstore::SetContentLifetime(updated_metadata, options_.stream_type,
+                                  *response_data.content_lifetime);
+  }
   stream_.SetMetadata(std::move(updated_metadata));
   if (response_data.experiments)
     experiments_ = *response_data.experiments;
@@ -372,14 +386,15 @@ void LoadStreamTask::ProcessNetworkResponse(
 }
 
 void LoadStreamTask::RequestFinished(LaunchResult result) {
-  if (network_response_info_->status_code > 0) {
-    launch_reliability_logger_.LogResponseReceived(
-        network_request_id_, server_receive_timestamp_ns_,
-        server_send_timestamp_ns_, network_response_info_->fetch_time_ticks);
+  if (options_.load_type != LoadType::kBackgroundRefresh) {
+    if (network_response_info_->status_code > 0) {
+      launch_reliability_logger_.LogResponseReceived(
+          network_request_id_, server_receive_timestamp_ns_,
+          server_send_timestamp_ns_, network_response_info_->fetch_time_ticks);
+    }
+    launch_reliability_logger_.LogRequestFinished(
+        network_request_id_, network_response_info_->status_code);
   }
-
-  launch_reliability_logger_.LogRequestFinished(
-      network_request_id_, network_response_info_->status_code);
   Done(result);
 }
 

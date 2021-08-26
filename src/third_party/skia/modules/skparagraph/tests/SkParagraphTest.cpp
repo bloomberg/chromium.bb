@@ -6320,12 +6320,12 @@ DEF_TEST(SkParagraph_RTLGlyphPositionsForTrailingSpaces, reporter) {
 
         for (int i = 0; i < SkToInt(str.size()); ++i) {
             auto pointX = (whitespaces + i) * 10.0f;
-            auto res = paragraph->getGlyphPositionAtCoordinate(pointX, 2);
+            auto pos = paragraph->getGlyphPositionAtCoordinate(pointX, 2);
             //SkDebugf("@%f[%d]: %d %s\n", pointX, i, res.position, res.affinity == Affinity::kDownstream ? "D" : "U");
             // At the beginning there is a control codepoint that makes the string RTL
-            REPORTER_ASSERT(reporter, (res.position + i) == SkToInt(str.size() - (res.position > 0 ? 0 : 1)));
+            REPORTER_ASSERT(reporter, (pos.position + i) == SkToInt(str.size() - (pos.position > 0 ? 0 : 1)));
             // The ending looks slightly different...
-            REPORTER_ASSERT(reporter, res.affinity == (i == 0 ? Affinity::kUpstream : Affinity::kDownstream));
+            REPORTER_ASSERT(reporter, pos.affinity == (i == 0 ? Affinity::kUpstream : Affinity::kDownstream));
         }
     };
 
@@ -6348,10 +6348,10 @@ DEF_TEST(SkParagraph_LTRLineMetricsDoesNotIncludeNewLine, reporter) {
     text_style.setFontSize(20);
     text_style.setColor(SK_ColorBLACK);
     builder.pushStyle(text_style);
-    builder.addText("one two\n\nthree four\nwith spaces     \n    ");
+    builder.addText("one two\n\nthree four\nwith spaces     \n    \n______________________");
     builder.pop();
     auto paragraph = builder.Build();
-    paragraph->layout(500);
+    paragraph->layout(190);
     paragraph->paint(canvas.get(), 0, 0);
 
     std::vector<std::tuple<size_t, size_t, size_t, size_t>> expected = {
@@ -6359,7 +6359,9 @@ DEF_TEST(SkParagraph_LTRLineMetricsDoesNotIncludeNewLine, reporter) {
             { 8, 8, 8, 9 },             // \n
             { 9, 19, 19, 20 },          // three four\n
             { 20, 31, 36, 37 },         // with spaces    \n
-            { 37, 37, 41, 41 },         //      { just spaces }
+            { 37, 37, 41, 42 },         //      { just spaces }\n
+            { 42, 63, 63, 63 },         // _____________________
+            { 63, 64, 64, 64 },         // _
     };
     std::vector<LineMetrics> metrics;
     paragraph->getLineMetrics(metrics);
@@ -6390,10 +6392,10 @@ DEF_TEST(SkParagraph_RTLLineMetricsDoesNotIncludeNewLine, reporter) {
     text_style.setFontSize(20);
     text_style.setColor(SK_ColorBLACK);
     builder.pushStyle(text_style);
-    builder.addText(mirror("one two\n\nthree four\nwith spaces     \n    "));
+    builder.addText(mirror("______________________\none two\n\nthree four\nwith spaces     \n    "));
     builder.pop();
     auto paragraph = builder.Build();
-    paragraph->layout(500);
+    paragraph->layout(190);
     paragraph->paint(canvas.get(), 0, 0);
     //auto impl = static_cast<ParagraphImpl*>(paragraph.get());
 
@@ -6428,7 +6430,9 @@ DEF_TEST(SkParagraph_RTLLineMetricsDoesNotIncludeNewLine, reporter) {
             { 5, 21, 21, 22 },              // with spaces    \n
             { 22, 32, 32, 33 },             // three four\n
             { 33, 33, 33, 34 },             // \n
-            { 34, 41, 41, 41 },             // one two\n
+            { 34, 41, 41, 42 },             // one two\n
+            { 42, 63, 63, 63 },             // _____________________
+            { 63, 64, 64, 64 }              // _
     };
 
     std::vector<LineMetrics> metrics;

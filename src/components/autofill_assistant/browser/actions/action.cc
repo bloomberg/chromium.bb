@@ -84,9 +84,6 @@ std::ostream& operator<<(std::ostream& out,
   return out;
 #else
   switch (action_case) {
-    case ActionProto::ActionInfoCase::kSetFormValue:
-      out << "KeyboardInput";
-      break;
     case ActionProto::ActionInfoCase::kSelectOption:
       out << "SelectOption";
       break;
@@ -251,6 +248,15 @@ std::ostream& operator<<(std::ostream& out,
       break;
     case ActionProto::ActionInfoCase::kEditPassword:
       out << "EditPassword";
+      break;
+    case ActionProto::ActionInfoCase::kBlurField:
+      out << "BlurField";
+      break;
+    case ActionProto::ActionInfoCase::kResetPendingCredentials:
+      out << "ResetPendingCredentials";
+      break;
+    case ActionProto::ActionInfoCase::kSaveSubmittedPassword:
+      out << "SaveSubmittedPassword";
       break;
     case ActionProto::ActionInfoCase::ACTION_INFO_NOT_SET:
       out << "ACTION_INFO_NOT_SET";

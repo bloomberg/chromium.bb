@@ -567,9 +567,16 @@ export class Page {
       chrome.send('reloadPolicies');
     };
 
-    $('export-policies').onclick = () => {
-      chrome.send('exportPoliciesJSON');
-    };
+    const exportButton = $('export-policies');
+    const hideExportButton = loadTimeData.valueExists('hideExportButton') &&
+        loadTimeData.getBoolean('hideExportButton');
+    if (hideExportButton) {
+      exportButton.style.display = 'none';
+    } else {
+      exportButton.onclick = () => {
+        chrome.send('exportPoliciesJSON');
+      };
+    }
 
     $('copy-policies').onclick = () => {
       chrome.send('copyPoliciesJSON');
@@ -586,6 +593,7 @@ export class Page {
     addWebUIListener(
         'policies-updated',
         (names, values) => this.onPoliciesReceived_(names, values));
+    addWebUIListener('download-json', json => this.downloadJson(json));
   }
 
   /**
@@ -625,6 +633,26 @@ export class Page {
     policyGroups.forEach(group => this.createOrUpdatePolicyTable(group));
 
     this.reloadPoliciesDone();
+  }
+
+  /**
+   * Triggers the download of the policies as a JSON file.
+   * @param {String} json The policies as a JSON string.
+   */
+  downloadJson(json) {
+    const blob = new Blob([json], {type: 'application/json'});
+    const blobUrl = URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = 'policies.json';
+
+    document.body.appendChild(link);
+
+    link.dispatchEvent(new MouseEvent(
+        'click', {bubbles: true, cancelable: true, view: window}));
+
+    document.body.removeChild(link);
   }
 
   /** @param {PolicyTableModel} dataModel */

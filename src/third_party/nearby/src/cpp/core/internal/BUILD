@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+licenses(["notice"])
 
 cc_library(
     name = "internal",
@@ -82,26 +83,13 @@ cc_library(
         "wifi_lan_endpoint_channel.h",
         "wifi_lan_service_info.h",
     ],
+    compatible_with = ["//buildenv/target:non_prod"],
     visibility = [
         "//core:__pkg__",
         "//core/internal/fuzzers:__pkg__",
     ],
     deps = [
         ":message_lite",
-        "//core:core_types",
-        "//core/internal/mediums",
-        "//core/internal/mediums:utils",
-        "//core/internal/mediums/webrtc",
-        "//proto/connections:offline_wire_formats_portable_proto",
-        "//platform/api:comm",
-        "//platform/base",
-        "//platform/base:cancellation_flag",
-        "//platform/base:util",
-        "//platform/public:comm",
-        "//platform/public:logging",
-        "//platform/public:types",
-        "//proto:connections_enums_portable_proto",
-        "//securegcm:ukey2",
         "//absl/base:core_headers",
         "//absl/container:btree",
         "//absl/container:flat_hash_map",
@@ -111,6 +99,20 @@ cc_library(
         "//absl/strings",
         "//absl/time",
         "//absl/types:span",
+        "//core:core_types",
+        "//core/internal/mediums",
+        "//core/internal/mediums:utils",
+        "//core/internal/mediums/webrtc",
+        "//platform/api:comm",
+        "//platform/base",
+        "//platform/base:cancellation_flag",
+        "//platform/base:util",
+        "//platform/public:comm",
+        "//platform/public:logging",
+        "//platform/public:types",
+        "//proto:connections_enums_portable_proto",
+        "//proto/connections:offline_wire_formats_portable_proto",
+        "//securegcm:ukey2",
     ],
 )
 
@@ -119,6 +121,7 @@ cc_library(
     hdrs = [
         "message_lite.h",
     ],
+    compatible_with = ["//buildenv/target:non_prod"],
     visibility = [
         "//core:__subpackages__",
     ],
@@ -144,13 +147,13 @@ cc_library(
     ],
     deps = [
         ":internal",
+        "//testing/base/public:gunit",
+        "//absl/functional:bind_front",
+        "//absl/strings",
         "//core:core_types",
         "//platform/base",
         "//platform/base:test_util",
         "//platform/public:types",
-        "//testing/base/public:gunit",
-        "//absl/functional:bind_front",
-        "//absl/strings",
     ],
 )
 
@@ -183,18 +186,6 @@ cc_test(
     deps = [
         ":internal",
         ":internal_test",
-        "//core:core_types",
-        "//core/internal/mediums",
-        "//core/internal/mediums:utils",
-        "//proto/connections:offline_wire_formats_portable_proto",
-        "//platform/base",
-        "//platform/base:test_util",
-        "//platform/impl/g3",  # build_cleaner: keep
-        "//platform/public:comm",
-        "//platform/public:logging",
-        "//platform/public:types",
-        "//proto:connections_enums_portable_proto",
-        "//securegcm:ukey2",
         "//testing/base/public:gunit",
         "//testing/base/public:gunit_main",
         "//absl/container:flat_hash_set",
@@ -202,5 +193,17 @@ cc_test(
         "//absl/synchronization",
         "//absl/time",
         "//absl/types:span",
+        "//core:core_types",
+        "//core/internal/mediums",
+        "//core/internal/mediums:utils",
+        "//platform/base",
+        "//platform/base:test_util",
+        "//platform/impl/g3",  # build_cleaner: keep
+        "//platform/public:comm",
+        "//platform/public:logging",
+        "//platform/public:types",
+        "//proto:connections_enums_portable_proto",
+        "//proto/connections:offline_wire_formats_portable_proto",
+        "//securegcm:ukey2",
     ],
 )

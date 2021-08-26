@@ -11,6 +11,7 @@
 #include "ash/public/cpp/app_types_util.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/apps/app_service/intent_util.h"
@@ -47,7 +48,7 @@ constexpr base::FilePath::CharType kArcNearbyShareDirname[] =
 
 NearbyShareSessionImpl::NearbyShareSessionImpl(
     Profile* profile,
-    int32_t task_id,
+    uint32_t task_id,
     mojom::ShareIntentInfoPtr share_info,
     mojo::PendingRemote<mojom::NearbyShareSessionInstance> session_instance,
     mojo::PendingReceiver<mojom::NearbyShareSessionHost> session_receiver,
@@ -75,7 +76,7 @@ NearbyShareSessionImpl::NearbyShareSessionImpl(
         FROM_HERE, base::BindOnce(&NearbyShareSessionImpl::OnArcWindowFound,
                                   weak_ptr_factory_.GetWeakPtr(), arc_window));
   } else {
-    VLOG(1) << "No ARC window found for task ID " << task_id_;
+    VLOG(1) << "No ARC window found for task ID: " << task_id_;
     env_observation_.Observe(aura::Env::GetInstance());
     window_initialization_timer_.Start(FROM_HERE, kWindowInitializationTimeout,
                                        this,
@@ -120,7 +121,10 @@ void NearbyShareSessionImpl::OnWindowVisibilityChanged(
     bool visible) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (visible && (arc::GetWindowTaskId(window) == task_id_)) {
+  absl::optional<int> task_id = arc::GetWindowTaskId(window);
+  DCHECK(task_id.has_value());
+  DCHECK_GE(task_id.value(), 0);
+  if (visible && (base::checked_cast<uint32_t>(task_id.value()) == task_id_)) {
     VLOG(1) << "ARC Window is visible";
     if (window_initialization_timer_.IsRunning()) {
       window_initialization_timer_.Stop();

@@ -95,11 +95,16 @@ async function createPaymentCredential(icon) { // eslint-disable-line no-unused-
 /**
  * Creates a secure payment confirmation credential and returns its identifier.
  * @param {string} icon - The URL of the icon for the credential.
- * @return {string} - The base64 encoded identifier of the new credential.
+ * @return {string} - The base64 encoded identifier of the new credential,
+ * or the error message.
  */
 async function createCredentialAndReturnItsIdentifier(icon) { // eslint-disable-line no-unused-vars, max-len
-  const credential = await createAndReturnPaymentCredential(icon);
-  return btoa(String.fromCharCode(...new Uint8Array(credential.rawId)));
+  try {
+    const credential = await createAndReturnPaymentCredential(icon);
+    return btoa(String.fromCharCode(...new Uint8Array(credential.rawId)));
+  } catch (e) {
+    return e.toString();
+  }
 }
 
 /**
@@ -149,6 +154,41 @@ async function createAndReturnPaymentCredential(icon) {
       pubKeyCredParams: publicKeyParameters,
   };
   return navigator.credentials.create({payment});
+}
+
+/**
+ * Creates a public key credential with 'payment' extension and returns its
+ * identifier in base64 encoding.
+ * @return {DOMString} - The new credential's identifier in base64 encoding.
+ */
+async function createPublicKeyCredentialWithPaymentExtensionAndReturnItsId() { // eslint-disable-line no-unused-vars, max-len
+  try {
+    const textEncoder = new TextEncoder();
+    const credential = await navigator.credentials.create({
+      publicKey: {
+        challenge: textEncoder.encode('climb a mountain'),
+        rp: {
+          id: 'a.com',
+          name: 'Acme',
+        },
+        user: {
+          displayName: 'User',
+          id: textEncoder.encode('user_123'),
+          name: 'user@acme.com',
+        },
+        pubKeyCredParams: [{
+          alg: -7,
+          type: 'public-key',
+        }],
+        timeout: 60000,
+        attestation: 'direct',
+        extensions: {payment: {isPayment: true}},
+      },
+    });
+    return btoa(String.fromCharCode(...new Uint8Array(credential.rawId)));
+  } catch (e) {
+    return e.toString();
+  }
 }
 
 /**

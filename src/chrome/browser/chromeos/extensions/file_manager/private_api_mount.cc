@@ -28,7 +28,7 @@
 #include "chromeos/disks/disk_mount_manager.h"
 #include "components/drive/event_logger.h"
 #include "content/public/browser/browser_thread.h"
-#include "google_apis/drive/task_util.h"
+#include "google_apis/common/task_util.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 
@@ -69,7 +69,7 @@ ExtensionFunction::ResponseAction FileManagerPrivateAddMountFunction::Run() {
 
     std::vector<storage::FileSystemURL> urls;
     const storage::FileSystemURL url =
-        file_system_context->CrackURL(GURL(params->source));
+        file_system_context->CrackURLInFirstPartyContext(GURL(params->source));
     urls.push_back(url);
 
     notifier->NotifyFileTasks(urls);

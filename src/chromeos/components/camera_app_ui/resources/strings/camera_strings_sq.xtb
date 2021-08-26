@@ -3,6 +3,8 @@
 <translationbundle lang="sq">
 <translation id="1175958423215084756">U zbulua një lidhje. <ph name="HOSTNAME" /></translation>
 <translation id="1276998909102132017">Imazhet e galerisë</translation>
+<translation id="1300209025925956156">Skano dokumentin tënd</translation>
+<translation id="137991641490787891"><ph name="ASPECT_RATIO_WIDTH" />. Kërko + Shigjeta majtas për t'u qasur.</translation>
 <translation id="1430915738399379752">Printo</translation>
 <translation id="1467231725790366244"><ph name="CAMERA" /> është shkëputur.</translation>
 <translation id="1473110567575736769">Kohëmatësi me 3 sekonda</translation>
@@ -31,7 +33,6 @@
 <translation id="2549985041256363841">Nis regjistrimin</translation>
 <translation id="2599796128805996109">Kamera e pasme</translation>
 <translation id="2879583609344924966"><ph name="CAMERA" /> është lidhur.</translation>
-<translation id="2912439424121107408">Modaliteti i ekspertit nuk mbështetet në këtë pajisje.</translation>
 <translation id="2968794441791257519">Fotografitë dhe videot e nxjerra me kamerën do të zhvendosen te dosja "Shkarkimet". Mund të qasesh tek ato te "Skedarët".
 
 Aplikacionet që kanë leje për hapësirën ruajtëse do të kenë qasje te fotografitë dhe videot e tua.</translation>
@@ -42,15 +43,16 @@ Aplikacionet që kanë leje për hapësirën ruajtëse do të kenë qasje te fot
 <translation id="3227137524299004712">Mikrofoni</translation>
 <translation id="3240426699337459095">Lidhja u kopjua</translation>
 <translation id="3259149966178251584">Rezolucioni i kamerës</translation>
+<translation id="3260401663013584785">Nuk mund të zbulohej një dokument</translation>
 <translation id="3448774564454087943">Videoja nuk është ruajtur duke qenë se është shumë e shkurtër</translation>
 <translation id="3517926952904427380">Nuk mund të nxjerrësh një fotografi portret</translation>
 <translation id="3569311554794739032">Vërtet dëshiron të heqësh <ph name="FILE" />?</translation>
-<translation id="3733597664308256288">Ofrohen kontrolle shtesë të kamerës. Kërko + Shigjeta djathtas për të pasur qasje.</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3838931309141338733">Skano bardkodin</translation>
 <translation id="3892148308691398805">Kopjo tekstin</translation>
 <translation id="4000398125663085899">Fotografitë dhe videot e reja tani do të ruhen në një dosje në aplikacionin "Skedarët": Skedarët e mi &gt; Kamera</translation>
 <translation id="4118525110028899586">Vendose në pauzë regjistrimin</translation>
+<translation id="4121305183798804752">U zbulua një dokument</translation>
 <translation id="4269820728363426813">Kopjo adresën e lidhjes</translation>
 <translation id="4279490309300973883">Pasqyrim</translation>
 <translation id="4329152592498422850">Ndërroje për të nxjerrë një fotografi katrore</translation>
@@ -65,10 +67,13 @@ Aplikacionet që kanë leje për hapësirën ruajtëse do të kenë qasje te fot
 <translation id="5057360777601936059">Kamera jote nuk ofrohet aktualisht.
         Kontrollo nëse kamera është lidhur si duhet.</translation>
 <translation id="5152121255775685072">Shko te galeria</translation>
+<translation id="520537883758714667">Skanimi i dokumenteve ofrohet tani</translation>
 <translation id="5268823927180092501">Aktivizo modalitetin e dokumenteve në të gjitha kamerat</translation>
 <translation id="5422455049771430511">Fotografitë dhe videot e tua kanë një shtëpi të re</translation>
+<translation id="5444515100983837161">Vendos të gjitha anët e dokumentit brenda kuadrit Skanimi funksionon më mirë nëse dokumenti dhe sfondi kanë ngjyra të ndryshme.</translation>
 <translation id="5671277269877808209">Katror</translation>
 <translation id="5753488212459587150">Aktivizo modalitetin e ekspertit</translation>
+<translation id="5759254179196327752">Skano dokumentin</translation>
 <translation id="5775960006311140197">Modaliteti i ekspertëve</translation>
 <translation id="5869546221129391014">Rrjetë</translation>
 <translation id="5975083100439434680">Zvogëlo</translation>
@@ -82,6 +87,7 @@ Aplikacionet që kanë leje për hapësirën ruajtëse do të kenë qasje te fot
 
 Nëse komentet e tua janë për cilësinë e imazhit ose të videos, bashkëngjit një fotografi ose video shembull dhe përshkruaj problemin. (Për shembull, fotografia është shumë e errët ose subjekti nuk është në fokus.)</translation>
 <translation id="6420689864531458495">(<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" /> - <ph name="WIDTH" />x<ph name="HEIGHT" />) <ph name="MEGAPIXEL" /> megapiksel</translation>
+<translation id="667999046851023355">Dokument</translation>
 <translation id="6681668084120808868">Nxirr një fotografi</translation>
 <translation id="6778482348691154169">Fotografia nuk mund të nxirret</translation>
 <translation id="695140971690006676">Rivendos të gjitha</translation>
@@ -108,11 +114,13 @@ Nëse komentet e tua janë për cilësinë e imazhit ose të videos, bashkëngji
 <translation id="8425673304802773841">Ano për poshtë</translation>
 <translation id="8428213095426709021">Cilësimet</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" />p (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
+<translation id="8712637175834984815">E kuptova</translation>
 <translation id="8732462232047530626">Shiko paraprakisht të dhënat meta</translation>
 <translation id="8815966864175525708">Kalo te nxjerrja e fotografisë portret</translation>
 <translation id="8828441885228359828">Rifillo regjistrimin</translation>
 <translation id="8870695351537079478">Regjistrimi nuk mund të fillojë</translation>
 <translation id="8903921497873541725">Zmadho</translation>
+<translation id="9045010116236796332">Vendos të gjitha anët e dokumentit brenda kuadrit</translation>
 <translation id="9045155556724273246">10 sekonda</translation>
 <translation id="945522503751344254">Dërgo komente</translation>
 </translationbundle>

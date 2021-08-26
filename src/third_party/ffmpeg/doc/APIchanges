@@ -14,6 +14,43 @@ libavutil:     2021-04-27
 
 API changes, most recent first:
 
+2021-07-23 - xxxxxxxxxx - lavu 57.3.100 - common.h macros.h
+  Move several macros (AV_NE, FFDIFFSIGN, FFMAX, FFMAX3, FFMIN, FFMIN3,
+  FFSWAP, FF_ARRAY_ELEMS, MKTAG, MKBETAG) from common.h to macros.h.
+
+2021-07-22 - xxxxxxxxxx - lavu 57.2.100 - film_grain_params.h
+  Add AV_FILM_GRAIN_PARAMS_H274, AVFilmGrainH274Params
+
+2021-07-19 - xxxxxxxxxx - lavu 57.1.100 - cpu.h
+  Add av_cpu_force_count()
+
+2021-06-17 - xxxxxxxxxx - lavc 59.2.100 - packet.h
+  Add AV_PKT_DATA_DYNAMIC_HDR10_PLUS
+
+2021-06-09 - xxxxxxxxxx - lavf 59.3.100 - avformat.h
+  Add pts_wrap_bits to AVStream
+
+2021-xx-xx - xxxxxxxxxx - lavc 59.1.100 - avcodec.h codec.h
+  Move av_get_profile_name() from avcodec.h to codec.h.
+
+2021-xx-xx - xxxxxxxxxx - lavc 59.1.100 - avcodec.h codec_par.h
+  Move av_get_audio_frame_duration2() from avcodec.h to codec_par.h.
+
+2021-xx-xx - xxxxxxxxxx - lavc 59.1.100 - avcodec.h codec_id.h
+  Move av_get_bits_per_sample(), av_get_exact_bits_per_sample(),
+  avcodec_profile_name(), and av_get_pcm_codec() from avcodec.h
+  to codec_id.h.
+
+2021-xx-xx - xxxxxxxxxx - lavc 59.1.100 - avcodec.h defs.h
+  Add new installed header defs.h. The following definitions are moved
+  into it from avcodec.h:
+    - AVDiscard
+    - AVAudioServiceType
+    - AVPanScan
+    - AVCPBProperties and av_cpb_properties_alloc()
+    - AVProducerReferenceTime
+    - av_xiphlacing()
+
 2021-04-27 - cb3ac722f4 - lavc 59.0.100 - avcodec.h
   Constified AVCodecParserContext.parser.
 

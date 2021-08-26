@@ -352,6 +352,7 @@ INSTANTIATE_TEST_SUITE_P(
         "spv.functionParameterTypes.frag",
         "spv.GeometryShaderPassthrough.geom",
         "spv.funcall.array.frag",
+        "spv.load.bool.array.interface.block.frag",
         "spv.interpOps.frag",
         "spv.int64.frag",
         "spv.intcoopmat.comp",
@@ -363,6 +364,7 @@ INSTANTIATE_TEST_SUITE_P(
         "spv.intrinsicsSpirvLiteral.vert",
         "spv.intrinsicsSpirvStorageClass.rchit",
         "spv.intrinsicsSpirvType.rgen",
+        "spv.invariantAll.vert",
         "spv.layer.tese",
         "spv.layoutNested.vert",
         "spv.length.frag",
@@ -465,6 +467,7 @@ INSTANTIATE_TEST_SUITE_P(
         "spv.smBuiltins.frag",
         "spv.builtin.PrimitiveShadingRateEXT.vert",
         "spv.builtin.ShadingRateEXT.frag",
+        "spv.atomicAdd.bufferReference.comp"
     })),
     FileNameAsCustomTestSuffix
 );
@@ -565,6 +568,7 @@ INSTANTIATE_TEST_SUITE_P(
         "spv.1.4.OpCopyLogicalBool.comp",
         "spv.1.4.OpCopyLogical.funcall.frag",
         "spv.1.4.funcall.array.frag",
+        "spv.1.4.load.bool.array.interface.block.frag",
         "spv.1.4.image.frag",
         "spv.1.4.sparseTexture.frag",
         "spv.1.4.texture.frag",

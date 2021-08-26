@@ -9,15 +9,14 @@
 #define GrGLSLProgramBuilder_DEFINED
 
 #include "src/gpu/GrCaps.h"
+#include "src/gpu/GrFragmentProcessor.h"
 #include "src/gpu/GrGeometryProcessor.h"
 #include "src/gpu/GrProgramInfo.h"
-#include "src/gpu/glsl/GrGLSLFragmentProcessor.h"
+#include "src/gpu/GrXferProcessor.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
-#include "src/gpu/glsl/GrGLSLGeometryProcessor.h"
 #include "src/gpu/glsl/GrGLSLProgramDataManager.h"
 #include "src/gpu/glsl/GrGLSLUniformHandler.h"
 #include "src/gpu/glsl/GrGLSLVertexGeoBuilder.h"
-#include "src/gpu/glsl/GrGLSLXferProcessor.h"
 #include "src/sksl/SkSLCompiler.h"
 
 #include <vector>
@@ -88,6 +87,12 @@ public:
      */
     GrShaderVar varyingCoordsForFragmentProcessor(const GrFragmentProcessor*);
 
+    /**
+     * If the FP's coords are unused or all uses have been lifted to interpolated varyings then
+     * don't put coords in the FP's function signature or call sites.
+     */
+    bool fragmentProcessorHasCoordsParam(const GrFragmentProcessor*);
+
     virtual GrGLSLUniformHandler* uniformHandler() = 0;
     virtual const GrGLSLUniformHandler* uniformHandler() const = 0;
     virtual GrGLSLVaryingHandler* varyingHandler() = 0;
@@ -111,9 +116,9 @@ public:
 
     GrGLSLBuiltinUniformHandles  fUniformHandles;
 
-    std::unique_ptr<GrGLSLGeometryProcessor> fGeometryProcessor;
-    std::unique_ptr<GrGLSLXferProcessor>     fXferProcessor;
-    std::vector<std::unique_ptr<GrGLSLFragmentProcessor>> fFPImpls;
+    std::unique_ptr<GrGeometryProcessor::ProgramImpl>               fGPImpl;
+    std::unique_ptr<GrXferProcessor::ProgramImpl>                   fXPImpl;
+    std::vector<std::unique_ptr<GrFragmentProcessor::ProgramImpl>>  fFPImpls;
 
     SamplerHandle fDstTextureSamplerHandle;
     GrSurfaceOrigin fDstTextureOrigin;
@@ -159,7 +164,7 @@ private:
     bool emitAndInstallDstTexture();
     bool emitAndInstallFragProcs(SkString* colorInOut, SkString* coverageInOut);
     SkString emitFragProc(const GrFragmentProcessor&,
-                          GrGLSLFragmentProcessor&,
+                          GrFragmentProcessor::ProgramImpl&,
                           const SkString& input,
                           SkString output);
     bool emitAndInstallXferProc(const SkString& colorIn, const SkString& coverageIn);
@@ -176,7 +181,7 @@ private:
 
     // These are used to check that we don't excede the allowable number of resources in a shader.
     int fNumFragmentSamplers;
-    GrGLSLGeometryProcessor::FPToVaryingCoordsMap fFPCoordVaryings;
+    GrGeometryProcessor::ProgramImpl::FPCoordsMap fFPCoordsMap;
 };
 
 #endif

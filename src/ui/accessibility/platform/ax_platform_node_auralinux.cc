@@ -14,15 +14,13 @@
 #include <utility>
 #include <vector>
 
-#include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/cxx17_backports.h"
 #include "base/debug/leak_annotations.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
-#include "base/numerics/ranges.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversion_utils.h"
 #include "base/strings/utf_string_conversions.h"
@@ -31,14 +29,11 @@
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_enums.mojom.h"
-#include "ui/accessibility/ax_mode_observer.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_role_properties.h"
-#include "ui/accessibility/ax_tree_data.h"
 #include "ui/accessibility/platform/atk_util_auralinux.h"
 #include "ui/accessibility/platform/ax_platform_atk_hyperlink.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
-#include "ui/accessibility/platform/ax_platform_node_delegate_base.h"
 #include "ui/accessibility/platform/ax_platform_text_boundary.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
@@ -352,24 +347,6 @@ const char* BuildDescriptionFromHeaders(AXPlatformNodeDelegate* delegate,
 #endif
 
   return g_strdup(result.c_str());
-}
-
-gfx::Point FindAtkObjectParentCoords(AtkObject* atk_object) {
-  if (!atk_object)
-    return gfx::Point(0, 0);
-
-  AXPlatformNodeAuraLinux* node =
-      AXPlatformNodeAuraLinux::FromAtkObject(atk_object);
-  if (node->GetAtkRole() == ATK_ROLE_FRAME) {
-    int x, y;
-    atk_component_get_extents(ATK_COMPONENT(atk_object), &x, &y, nullptr,
-                              nullptr, ATK_XY_WINDOW);
-    gfx::Point window_coords(x, y);
-    return window_coords;
-  }
-  atk_object = node->GetParent();
-
-  return FindAtkObjectParentCoords(atk_object);
 }
 
 AtkAttributeSet* PrependAtkAttributeToAtkAttributeSet(
@@ -980,8 +957,8 @@ gchar* GetText(AtkText* atk_text, gint start_offset, gint end_offset) {
     end_offset = text.size();
   } else {
     end_offset = obj->UnicodeToUTF16OffsetInText(end_offset);
-    end_offset = base::ClampToRange(static_cast<int>(text.size()), start_offset,
-                                    end_offset);
+    end_offset =
+        base::clamp(static_cast<int>(text.size()), start_offset, end_offset);
   }
 
   DCHECK_GE(start_offset, 0);
@@ -1017,7 +994,7 @@ gunichar GetCharacterAtOffset(AtkText* atk_text, int offset) {
   int32_t text_length = text.length();
 
   offset = obj->UnicodeToUTF16OffsetInText(offset);
-  int32_t limited_offset = base::ClampToRange(offset, 0, text_length);
+  int32_t limited_offset = base::clamp(offset, 0, text_length);
 
   uint32_t code_point;
   base::ReadUnicodeCharacter(text.c_str(), text_length + 1, &limited_offset,

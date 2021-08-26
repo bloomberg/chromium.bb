@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/power_monitor/power_observer.h"
 #include "base/time/time.h"
-#include "base/util/timer/wall_clock_timer.h"
+#include "base/timer/wall_clock_timer.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -22,7 +22,7 @@ namespace base {
 class Clock;
 }
 
-namespace chromeos {
+namespace ash {
 
 // Enforces a limit on the length of time for which a user authenticated via
 // Gaia without SAML or with SAML can use offline authentication against a
@@ -36,7 +36,7 @@ class OfflineSigninLimiter : public KeyedService,
   // the type of authentication flow that the user went through.
   void SignedIn(UserContext::AuthFlow auth_flow);
 
-  util::WallClockTimer* GetTimerForTesting();
+  base::WallClockTimer* GetTimerForTesting();
 
   // KeyedService:
   void Shutdown() override;
@@ -90,19 +90,13 @@ class OfflineSigninLimiter : public KeyedService,
 
   PrefChangeRegistrar pref_change_registrar_;
 
-  std::unique_ptr<util::WallClockTimer> offline_signin_limit_timer_;
+  std::unique_ptr<base::WallClockTimer> offline_signin_limit_timer_;
 
-  std::unique_ptr<util::WallClockTimer> offline_lock_screen_signin_limit_timer_;
+  std::unique_ptr<base::WallClockTimer> offline_lock_screen_signin_limit_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(OfflineSigninLimiter);
 };
 
-}  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
-// source migration is finished.
-namespace ash {
-using ::chromeos::OfflineSigninLimiter;
-}
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_SIGNIN_OFFLINE_SIGNIN_LIMITER_H_

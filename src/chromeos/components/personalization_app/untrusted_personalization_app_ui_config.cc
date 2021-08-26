@@ -16,7 +16,7 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/url_constants.h"
 #include "services/network/public/mojom/content_security_policy.mojom-shared.h"
-#include "ui/chromeos/colors/cros_colors.h"
+#include "ui/chromeos/styles/cros_styles.h"
 #include "ui/resources/grit/webui_generated_resources.h"
 #include "ui/resources/grit/webui_generated_resources_map.h"
 #include "ui/resources/grit/webui_resources.h"
@@ -31,7 +31,8 @@ void AddStrings(content::WebUIDataSource* source) {
       {"myImagesLabel", IDS_PERSONALIZATION_APP_MY_IMAGES},
       {"zeroImages", IDS_PERSONALIZATION_APP_NO_IMAGES},
       {"oneImage", IDS_PERSONALIZATION_APP_ONE_IMAGE},
-      {"multipleImages", IDS_PERSONALIZATION_APP_MULTIPLE_IMAGES}};
+      {"multipleImages", IDS_PERSONALIZATION_APP_MULTIPLE_IMAGES},
+      {"ariaLabelLoading", IDS_PERSONALIZATION_APP_ARIA_LABEL_LOADING}};
   source->AddLocalizedStrings(kLocalizedStrings);
   // Add load_time_data manually because it is not available at
   // chrome-untrusted://resources/load_time_data.js. Specifically add
@@ -42,13 +43,13 @@ void AddStrings(content::WebUIDataSource* source) {
 }
 
 void AddCrosColors(content::WebUIDataSource* source) {
-  source->AddResourcePath("chromeos/colors/cros_colors.generated.css",
+  source->AddResourcePath("chromeos/colors/cros_styles.css",
                           IDR_WEBUI_CROS_COLORS_CSS);
 
   source->AddString(
       "crosColorsDebugOverrides",
       base::FeatureList::IsEnabled(ash::features::kSemanticColorsDebugOverride)
-          ? cros_colors::kDebugOverrideCssString
+          ? cros_styles::kDebugOverrideCssString
           : std::string());
 }
 
@@ -87,7 +88,7 @@ class UntrustedPersonalizationAppUI : public ui::UntrustedWebUIController {
     // Allow images only from this url.
     source->OverrideContentSecurityPolicy(
         network::mojom::CSPDirectiveName::ImgSrc,
-        "img-src data: https://*.googleusercontent.com;");
+        "img-src 'self' data: https://*.googleusercontent.com;");
 
     source->OverrideContentSecurityPolicy(
         network::mojom::CSPDirectiveName::ScriptSrc, "script-src 'self';");

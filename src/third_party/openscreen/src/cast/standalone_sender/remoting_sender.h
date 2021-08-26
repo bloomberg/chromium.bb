@@ -26,19 +26,29 @@ namespace cast {
 // the public APIs.
 class RemotingSender {
  public:
-  using ReadyCallback = std::function<void()>;
+  // The remoting sender expects a valid client to handle received messages.
+  class Client {
+   public:
+    virtual ~Client();
+
+    // Executed when we receive the initialize message from the receiver.
+    virtual void OnReady() = 0;
+
+    // Executed when we receive a playback rate message from the receiver.
+    virtual void OnPlaybackRateChange(double rate) = 0;
+  };
+
   RemotingSender(RpcMessenger* messenger,
                  AudioCodec audio_codec,
                  VideoCodec video_codec,
-                 ReadyCallback ready_cb);
+                 Client* client);
   ~RemotingSender();
 
  private:
-  // When the receiver indicates that it is ready for initialization, it will
-  // The receiver sends us an "initialization" message that we respond to
-  // here with an "initialization callback" message that contains codec
-  // information.
+  // Helper for parsing any received RPC messages.
+  void OnMessage(const RpcMessage& message);
   void OnInitializeMessage(const RpcMessage& message);
+  void OnPlaybackRateMessage(const RpcMessage& message);
 
   // The messenger is the only caller of OnInitializeMessage, so there are no
   // lifetime concerns. However, if this class outlives |messenger_|, it will
@@ -52,9 +62,7 @@ class RemotingSender {
   const AudioCodec audio_codec_;
   const VideoCodec video_codec_;
 
-  // The callback method to be called once we get the initialization message
-  // from the receiver.
-  ReadyCallback ready_cb_;
+  Client* client_;
 
   // The initialization message from the receiver contains the handle the
   // callback should go to.

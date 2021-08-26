@@ -23,6 +23,12 @@ const char kAutofillEnableOffersInDownstreamDescription[] =
     "When enabled, offer data will be retrieved during downstream and shown in "
     "the dropdown list.";
 
+const char kAutofillFillMerchantPromoCodeFieldsName[] =
+    "Enable Autofill of promo code fields in forms";
+const char kAutofillFillMerchantPromoCodeFieldsDescription[] =
+    "When enabled, Autofill will attempt to fill merchant promo/coupon/gift "
+    "code fields when data is available.";
+
 const char kAutofillIOSDelayBetweenFieldsName[] = "Autofill delay";
 const char kAutofillIOSDelayBetweenFieldsDescription[] =
     "Delay between the different fields of a form being autofilled. In "
@@ -91,11 +97,6 @@ const char kDcheckIsFatalDescription[] =
     "rather than crashing. If enabled, DCHECKs will crash the calling process.";
 #endif  // defined(DCHECK_IS_CONFIGURABLE)
 
-const char kDefaultBrowserSettingsName[] = "Setting to change Default Browser";
-const char kDefaultBrowserSettingsDescription[] =
-    "When enabled, adds a button in the settings to allow changing the default "
-    "browser in the Settings.app.";
-
 const char kDefaultPromoNonModalName[] = "Default Browser Non-Modal Promo";
 const char kDefaultPromoNonModalDescription[] =
     "When enabled non-modal default browser promos can be triggered.";
@@ -116,11 +117,11 @@ const char kDefaultBrowserFullscreenPromoExperimentDescription[] =
     "When enabled, will show a modified default browser fullscreen modal promo "
     "UI.";
 
-const char kDefaultBrowserFullscreenPromoCTAExperimentName[] =
-    "Default Browser Fullscreen modal experiment with different CTA";
-const char kDefaultBrowserFullscreenPromoCTAExperimentDescription[] =
-    "When enabled, will show a modified default browser fullscreen modal promo "
-    "UI.";
+const char kDefaultWebViewContextMenuName[] =
+    "Use the default WebKit context menus";
+const char kDefaultWebViewContextMenuDescription[] =
+    "When enabled, the default context menus from WebKit will be used in web "
+    "content.";
 
 const char kDelayThresholdMinutesToUpdateGaiaCookieName[] =
     "Delay for polling (in minutes) to verify the existence of GAIA cookies.";
@@ -195,6 +196,13 @@ const char kEnableExtendedSyncPromosCapabilityDescription[] =
     "When enabled, starts reading the account capability to decide whether "
     "or not Chrome should display an extended sync promo";
 
+const char kEnableFREDefaultBrowserScreenName[] =
+    "Enable FRE default browser screen";
+const char kEnableFREDefaultBrowserScreenDescription[] =
+    "When enabled, displays the 'default browser' screen in the new FRE which "
+    "suggests changing the default browser in the Settings.app with a button "
+    "to go directly to it.";
+
 const char kEnableFREUIModuleIOSName[] = "Enable FRE UI module";
 const char kEnableFREUIModuleIOSDescription[] =
     "Enable the option of using new FRE UI module to show first run screens.";
@@ -203,11 +211,6 @@ const char kEnableFullPageScreenshotName[] = "Enable fullpage screenshots";
 const char kEnableFullPageScreenshotDescription[] =
     "Enables the option of capturing an entire webpage as a PDF when a "
     "screenshot is taken.";
-
-const char kEnableIOSManagedSettingsUIName[] = "Enable IOS Managed Settings UI";
-const char kEnableIOSManagedSettingsUIDescription[] =
-    "Enable showing a different UI when the setting is managed by an "
-    "enterprise policy on iOS.";
 
 const char kEnableManualPasswordGenerationName[] =
     "Enable manual password generation.";
@@ -506,9 +509,11 @@ const char kURLBlocklistIOSDescription[] =
     "When enabled, URLs can be blocked/allowed by the URLBlocklist/URLAllowlist"
     "enterprise policies.";
 
-const char kUseJSForErrorPageName[] = "Enable new error page workflow";
-const char kUseJSForErrorPageDescription[] =
-    "Use JavaScript for the error pages";
+const char kWaitThresholdMillisecondsForCapabilitiesApiName[] =
+    "Maximum wait time (in seconds) for a response from the Account "
+    "Capabilities API";
+const char kWaitThresholdMillisecondsForCapabilitiesApiDescription[] =
+    "Used for testing purposes to test waiting thresholds in dev.";
 
 const char kWalletServiceUseSandboxName[] = "Use Google Payments sandbox";
 const char kWalletServiceUseSandboxDescription[] =
@@ -536,6 +541,18 @@ const char kWebViewNativeContextMenuName[] =
 const char kWebViewNativeContextMenuDescription[] =
     "When enabled, the native context menu are displayed when the user long "
     "press on a link or an image.";
+
+const char kWebViewNativeContextMenuPhase2Name[] =
+    "Context Menu with non-live preview";
+const char kWebViewNativeContextMenuPhase2Description[] =
+    "When enabled, the context menu displayed when long pressing on a link or "
+    "an image has a non-live preview.";
+
+const char kWebViewNativeContextMenuPhase3Name[] =
+    "Context Menu with live preview";
+const char kWebViewNativeContextMenuPhase3Description[] =
+    "When enabled, the context menu displayed when long pressing on a link or "
+    "an image has a live preview.";
 
 const char kRecordSnapshotSizeName[] =
     "Record the size of image and PDF snapshots in UMA histograms";

@@ -29,7 +29,6 @@
 #define COMPONENTS_SAFE_BROWSING_CONTENT_BROWSER_SAFE_BROWSING_BLOCKING_PAGE_H_
 
 #include <map>
-#include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -42,6 +41,10 @@ class HistoryService;
 
 namespace network {
 class SharedURLLoaderFactory;
+}
+
+namespace weblayer {
+class WebLayerSafeBrowsingBlockingPageFactory;
 }
 
 namespace safe_browsing {
@@ -67,6 +70,7 @@ class SafeBrowsingBlockingPage : public BaseBlockingPage {
 
  protected:
   friend class ChromeSafeBrowsingBlockingPageFactory;
+  friend class weblayer::WebLayerSafeBrowsingBlockingPageFactory;
   friend class SafeBrowsingBlockingPageTestBase;
   friend class SafeBrowsingBlockingPageBrowserTest;
   friend class SafeBrowsingBlockingQuietPageFactoryImpl;

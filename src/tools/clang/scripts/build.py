@@ -355,14 +355,16 @@ def VerifyZlibSupport():
   clang = os.path.join(LLVM_BUILD_DIR, 'bin', 'clang')
   test_file = '/dev/null'
   if sys.platform == 'win32':
-    clang += '-cl.exe'
+    clang += '.exe'
     test_file = 'nul'
 
   print('Checking for zlib support')
   clang_out = subprocess.check_output([
-      clang, '--driver-mode=gcc', '-target', 'x86_64-unknown-linux-gnu', '-gz',
-      '-c', '-###', '-x', 'c', test_file ],
-      stderr=subprocess.STDOUT, universal_newlines=True)
+      clang, '-target', 'x86_64-unknown-linux-gnu', '-gz', '-c', '-###', '-x',
+      'c', test_file
+  ],
+                                      stderr=subprocess.STDOUT,
+                                      universal_newlines=True)
   if (re.search(r'--compress-debug-sections', clang_out)):
     print('OK')
   else:
@@ -467,6 +469,8 @@ def main():
                       default=sys.platform in ('linux2', 'darwin'))
   args = parser.parse_args()
 
+  global CLANG_REVISION, PACKAGE_VERSION, LLVM_BUILD_DIR
+
   if (args.pgo or args.thinlto) and not args.bootstrap:
     print('--pgo/--thinlto requires --bootstrap')
     return 1
@@ -522,8 +526,6 @@ def main():
   if sys.platform == 'darwin':
     isysroot = subprocess.check_output(['xcrun', '--show-sdk-path'],
                                        universal_newlines=True).rstrip()
-
-  global CLANG_REVISION, PACKAGE_VERSION, LLVM_BUILD_DIR
 
   if args.build_dir:
     LLVM_BUILD_DIR = args.build_dir

@@ -6,13 +6,17 @@
 #define CONTENT_BROWSER_CONVERSIONS_CONVERSION_STORAGE_DELEGATE_IMPL_H_
 
 #include "base/sequence_checker.h"
-#include "base/time/time.h"
-#include "content/browser/conversions/conversion_report.h"
 #include "content/browser/conversions/conversion_storage.h"
 #include "content/browser/conversions/storable_impression.h"
 #include "content/common/content_export.h"
 
+namespace base {
+class Time;
+}  // namespace base
+
 namespace content {
+
+struct ConversionReport;
 
 // Implementation of the storage delegate. This class handles assigning
 // report times to newly created conversion reports. It
@@ -27,6 +31,9 @@ class CONTENT_EXPORT ConversionStorageDelegateImpl
       delete;
   ConversionStorageDelegateImpl& operator=(
       const ConversionStorageDelegateImpl& other) = delete;
+  ConversionStorageDelegateImpl(ConversionStorageDelegateImpl&& other) = delete;
+  ConversionStorageDelegateImpl& operator=(
+      ConversionStorageDelegateImpl&& other) = delete;
   ~ConversionStorageDelegateImpl() override = default;
 
   // ConversionStorageDelegate:
@@ -40,11 +47,13 @@ class CONTENT_EXPORT ConversionStorageDelegateImpl
   StorableImpression::AttributionLogic SelectAttributionLogic(
       const StorableImpression& impression) const override;
   uint64_t GetFakeEventSourceTriggerData() const override;
+  base::TimeDelta GetDeleteExpiredImpressionsFrequency() const override;
+  base::TimeDelta GetDeleteExpiredRateLimitsFrequency() const override;
 
  private:
   // Whether the API is running in debug mode, meaning that there should be
   // no delays or noise added to reports.
-  bool debug_mode_ = false;
+  const bool debug_mode_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 };

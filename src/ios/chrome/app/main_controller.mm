@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/feature_list.h"
 #include "base/ios/ios_util.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
@@ -102,6 +103,7 @@
 #include "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/webui/chrome_web_ui_ios_controller_factory.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
+#import "ios/chrome/browser/web/certificate_policy_app_agent.h"
 #import "ios/chrome/browser/web/session_state/web_session_state_cache.h"
 #import "ios/chrome/browser/web/session_state/web_session_state_cache_factory.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -109,8 +111,8 @@
 #include "ios/chrome/common/app_group/app_group_utils.h"
 #include "ios/net/cookies/cookie_store_ios.h"
 #import "ios/net/empty_nsurlcache.h"
+#include "ios/public/provider/chrome/browser/app_distribution/app_distribution_api.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#include "ios/public/provider/chrome/browser/distribution/app_distribution_provider.h"
 #include "ios/public/provider/chrome/browser/mailto/mailto_handler_provider.h"
 #import "ios/public/provider/chrome/browser/overrides_provider.h"
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_provider.h"
@@ -120,6 +122,7 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if BUILDFLAG(IOS_CREDENTIAL_PROVIDER_ENABLED)
+#import "ios/chrome/app/credential_provider_migrator_app_agent.h"
 #include "ios/chrome/browser/credential_provider/credential_provider_service_factory.h"
 #include "ios/chrome/browser/credential_provider/credential_provider_support.h"
 #endif
@@ -420,9 +423,21 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // Initialize the ChromeBrowserProvider.
   ios::GetChromeBrowserProvider().Initialize();
 
-  // If the user is interacting, crashes affect the user experience. Start
-  // reporting as soon as possible.
-  // TODO(crbug.com/507633): Call this even sooner.
+  // If the user has interacted with the app, then start (or continue) watching
+  // for crashes. Otherwise, do not watch for crashes.
+  //
+  // Depending on the client's ExtendedVariationsSafeMode experiment group (see
+  // MaybeExtendVariationsSafeMode() in variations_field_trial_creator.cc for
+  // more info), the signal to start watching for crashes may have occurred
+  // earlier.
+  //
+  // TODO(b/184937096): Remove the below call to OnAppEnterForeground() if this
+  // call is moved earlier for all clients. It is is being kept here for the
+  // time being for the control group of the extended Variations Safe Mode
+  // experiment.
+  //
+  // TODO(crbug/1232027): Stop watching for a crash if this is a background
+  // fetch.
   if (_appState.userInteracted)
     GetApplicationContext()->GetMetricsService()->OnAppEnterForeground();
 
@@ -559,6 +574,9 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 }
 
 - (void)startUpBrowserForegroundInitialization {
+  // TODO(crbug/1232027): Determine whether Chrome needs to resume watching for
+  // crashes.
+
   self.appState.postCrashLaunch = [self mustShowRestoreInfobar];
   self.appState.sessionRestorationRequired =
       [self startUpBeforeFirstWindowCreatedAndPrepareForRestorationPostCrash:
@@ -640,8 +658,9 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   [self.appState addAgent:[[ContentSuggestionsSchedulerAppAgent alloc] init]];
   [self.appState addAgent:[[EnterpriseAppAgent alloc] init]];
   [self.appState addAgent:[[IncognitoUsageAppStateAgent alloc] init]];
-
   [self.appState addAgent:[[FirstRunAppAgent alloc] init]];
+  [self.appState addAgent:[[CertificatePolicyAppAgent alloc] init]];
+  [self.appState addAgent:[[CredentialProviderAppAgent alloc] init]];
 }
 
 #pragma mark - Property implementation.
@@ -817,19 +836,17 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
                   block:^{
                     auto URLLoaderFactory = self.appState.mainBrowserState
                                                 ->GetSharedURLLoaderFactory();
+
                     const bool is_first_run = FirstRun::IsChromeFirstRun();
-                    ios::GetChromeBrowserProvider()
-                        .GetAppDistributionProvider()
-                        ->ScheduleDistributionNotifications(URLLoaderFactory,
-                                                            is_first_run);
+                    ios::provider::ScheduleAppDistributionNotifications(
+                        URLLoaderFactory, is_first_run);
 
                     const base::Time install_date = base::Time::FromTimeT(
                         GetApplicationContext()->GetLocalState()->GetInt64(
                             metrics::prefs::kInstallDate));
 
-                    ios::GetChromeBrowserProvider()
-                        .GetAppDistributionProvider()
-                        ->InitializeFirebase(install_date, is_first_run);
+                    ios::provider::InitializeFirebase(install_date,
+                                                      is_first_run);
                   }];
 }
 

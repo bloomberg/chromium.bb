@@ -11,7 +11,7 @@
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "services/network/public/mojom/url_request.mojom.h"
+#include "services/network/public/mojom/devtools_observer.mojom.h"
 
 namespace content {
 
@@ -45,7 +45,8 @@ class CONTENT_EXPORT NetworkServiceDevToolsObserver
       const net::CookieAndLineAccessResultList& response_cookie_list,
       std::vector<network::mojom::HttpRawHeaderPairPtr> response_headers,
       const absl::optional<std::string>& response_headers_text,
-      network::mojom::IPAddressSpace resource_address_space) override;
+      network::mojom::IPAddressSpace resource_address_space,
+      int32_t http_status_code) override;
   void OnTrustTokenOperationDone(
       const std::string& devtools_request_id,
       network::mojom::TrustTokenOperationResultPtr result) override;
@@ -57,7 +58,8 @@ class CONTENT_EXPORT NetworkServiceDevToolsObserver
       network::mojom::ClientSecurityStatePtr client_security_state) override;
   void OnCorsPreflightRequest(
       const base::UnguessableToken& devtools_request_id,
-      const network::ResourceRequest& request,
+      const net::HttpRequestHeaders& request_headers,
+      network::mojom::URLRequestDevToolsInfoPtr request_info,
       const GURL& initiator_url,
       const std::string& initiator_devtools_request_id) override;
   void OnCorsPreflightResponse(

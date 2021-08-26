@@ -33,6 +33,7 @@ include(GNUInstallDirs)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_CXX_STANDARD 11)
 
+option(ENABLE_RTTI "Enables RTTI" OFF)
 option(SPIRV_ALLOW_TIMERS "Allow timers via clock_gettime on supported platforms" ON)
 
 if("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
@@ -82,6 +83,8 @@ if(SPIRV_BUILD_COMPRESSION)
 endif(SPIRV_BUILD_COMPRESSION)
 
 option(SPIRV_BUILD_FUZZER "Build spirv-fuzz" OFF)
+
+option(SPIRV_BUILD_LIBFUZZER_TARGETS "Build libFuzzer targets" OFF)
 
 option(SPIRV_WERROR "Enable error on warning" ON)
 if(("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU") OR (("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang") AND (NOT CMAKE_CXX_SIMULATE_ID STREQUAL "MSVC")))
@@ -178,11 +181,14 @@ function(spvtools_default_compile_options TARGET)
   target_compile_options(${TARGET} PRIVATE ${SPIRV_WARNINGS})
 
   if (${COMPILER_IS_LIKE_GNU})
-    target_compile_options(${TARGET} PRIVATE
-      -std=c++11 -fno-exceptions -fno-rtti)
+    target_compile_options(${TARGET} PRIVATE -std=c++11 -fno-exceptions)
     target_compile_options(${TARGET} PRIVATE
       -Wall -Wextra -Wno-long-long -Wshadow -Wundef -Wconversion
       -Wno-sign-conversion)
+
+    if(NOT ENABLE_RTTI)
+        add_compile_options(-fno-rtti)
+    endif()
     # For good call stacks in profiles, keep the frame pointers.
     if(NOT "${SPIRV_PERF}" STREQUAL "")
       target_compile_options(${TARGET} PRIVATE -fno-omit-frame-pointer)

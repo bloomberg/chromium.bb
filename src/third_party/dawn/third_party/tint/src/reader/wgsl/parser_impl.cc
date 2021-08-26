@@ -98,6 +98,9 @@ ast::Builtin ident_to_builtin(const std::string& str) {
   if (str == "workgroup_id") {
     return ast::Builtin::kWorkgroupId;
   }
+  if (str == "num_workgroups") {
+    return ast::Builtin::kNumWorkgroups;
+  }
   if (str == "sample_index") {
     return ast::Builtin::kSampleIndex;
   }
@@ -721,21 +724,25 @@ Maybe<ast::TextureDimension> ParserImpl::storage_texture_type() {
 //  | TEXTURE_DEPTH_2D_ARRAY
 //  | TEXTURE_DEPTH_CUBE
 //  | TEXTURE_DEPTH_CUBE_ARRAY
+//  | TEXTURE_DEPTH_MULTISAMPLED_2D
 Maybe<ast::Type*> ParserImpl::depth_texture_type() {
   Source source;
-
-  if (match(Token::Type::kTextureDepth2d, &source))
+  if (match(Token::Type::kTextureDepth2d, &source)) {
     return builder_.ty.depth_texture(source, ast::TextureDimension::k2d);
-
-  if (match(Token::Type::kTextureDepth2dArray, &source))
+  }
+  if (match(Token::Type::kTextureDepth2dArray, &source)) {
     return builder_.ty.depth_texture(source, ast::TextureDimension::k2dArray);
-
-  if (match(Token::Type::kTextureDepthCube, &source))
+  }
+  if (match(Token::Type::kTextureDepthCube, &source)) {
     return builder_.ty.depth_texture(source, ast::TextureDimension::kCube);
-
-  if (match(Token::Type::kTextureDepthCubeArray, &source))
+  }
+  if (match(Token::Type::kTextureDepthCubeArray, &source)) {
     return builder_.ty.depth_texture(source, ast::TextureDimension::kCubeArray);
-
+  }
+  if (match(Token::Type::kTextureDepthMultisampled2d, &source)) {
+    return builder_.ty.depth_multisampled_texture(source,
+                                                  ast::TextureDimension::k2d);
+  }
   return Failure::kNoMatch;
 }
 
@@ -1023,13 +1030,15 @@ Maybe<ast::Type*> ParserImpl::type_decl() {
     return Failure::kErrored;
 
   auto type = type_decl(decos.value);
-  if (type.errored)
+  if (type.errored) {
     return Failure::kErrored;
-  if (!type.matched)
+  }
+  if (!expect_decorations_consumed(decos.value)) {
+    return Failure::kErrored;
+  }
+  if (!type.matched) {
     return Failure::kNoMatch;
-
-  if (!expect_decorations_consumed(decos.value))
-    return Failure::kErrored;
+  }
 
   return type;
 }
@@ -2109,11 +2118,11 @@ Maybe<ast::CallStatement*> ParserImpl::func_call_stmt() {
     return Failure::kErrored;
 
   return create<ast::CallStatement>(
-      Source{}, create<ast::CallExpression>(
-                    source,
-                    create<ast::IdentifierExpression>(
-                        source, builder_.Symbols().Register(name)),
-                    std::move(params.value)));
+      source, create<ast::CallExpression>(
+                  source,
+                  create<ast::IdentifierExpression>(
+                      source, builder_.Symbols().Register(name)),
+                  std::move(params.value)));
 }
 
 // break_stmt
@@ -2224,42 +2233,57 @@ Maybe<ast::Expression*> ParserImpl::postfix_expression(
     ast::Expression* prefix) {
   Source source;
 
-  if (match(Token::Type::kPlusPlus, &source) ||
-      match(Token::Type::kMinusMinus, &source)) {
-    add_error(source,
-              "postfix increment and decrement operators are reserved for a "
-              "future WGSL version");
-    return Failure::kErrored;
-  }
-
-  if (match(Token::Type::kBracketLeft, &source)) {
-    return sync(Token::Type::kBracketRight, [&]() -> Maybe<ast::Expression*> {
-      auto param = logical_or_expression();
-      if (param.errored)
-        return Failure::kErrored;
-      if (!param.matched)
-        return add_error(peek(), "unable to parse expression inside []");
-
-      if (!expect("array accessor", Token::Type::kBracketRight))
-        return Failure::kErrored;
-
-      return postfix_expression(
-          create<ast::ArrayAccessorExpression>(source, prefix, param.value));
-    });
-  }
-
-  if (match(Token::Type::kPeriod)) {
-    auto ident = expect_ident("member accessor");
-    if (ident.errored)
+  while (continue_parsing()) {
+    if (match(Token::Type::kPlusPlus, &source) ||
+        match(Token::Type::kMinusMinus, &source)) {
+      add_error(source,
+                "postfix increment and decrement operators are reserved for a "
+                "future WGSL version");
       return Failure::kErrored;
+    }
 
-    return postfix_expression(create<ast::MemberAccessorExpression>(
-        ident.source, prefix,
-        create<ast::IdentifierExpression>(
-            ident.source, builder_.Symbols().Register(ident.value))));
+    if (match(Token::Type::kBracketLeft, &source)) {
+      auto res =
+          sync(Token::Type::kBracketRight, [&]() -> Maybe<ast::Expression*> {
+            auto param = logical_or_expression();
+            if (param.errored)
+              return Failure::kErrored;
+            if (!param.matched) {
+              return add_error(peek(), "unable to parse expression inside []");
+            }
+
+            if (!expect("array accessor", Token::Type::kBracketRight)) {
+              return Failure::kErrored;
+            }
+
+            return create<ast::ArrayAccessorExpression>(source, prefix,
+                                                        param.value);
+          });
+
+      if (res.errored) {
+        return res;
+      }
+      prefix = res.value;
+      continue;
+    }
+
+    if (match(Token::Type::kPeriod)) {
+      auto ident = expect_ident("member accessor");
+      if (ident.errored) {
+        return Failure::kErrored;
+      }
+
+      prefix = create<ast::MemberAccessorExpression>(
+          ident.source, prefix,
+          create<ast::IdentifierExpression>(
+              ident.source, builder_.Symbols().Register(ident.value)));
+      continue;
+    }
+
+    return prefix;
   }
 
-  return prefix;
+  return Failure::kErrored;
 }
 
 // singular_expression
@@ -2795,6 +2819,9 @@ Maybe<ast::AssignmentStatement*> ParserImpl::assignment_stmt() {
 //   | FALSE
 Maybe<ast::Literal*> ParserImpl::const_literal() {
   auto t = peek();
+  if (t.IsError()) {
+    return add_error(t.source(), t.to_str());
+  }
   if (match(Token::Type::kTrue)) {
     return create<ast::BoolLiteral>(t.source(), true);
   }
@@ -2811,7 +2838,8 @@ Maybe<ast::Literal*> ParserImpl::const_literal() {
     auto p = peek();
     if (p.IsIdentifier() && p.to_str() == "f") {
       next();  // Consume 'f'
-      add_error(p.source(), "float literals must not be suffixed with 'f'");
+      return add_error(p.source(),
+                       "float literals must not be suffixed with 'f'");
     }
     return create<ast::FloatLiteral>(t.source(), t.to_f32());
   }
@@ -2823,48 +2851,51 @@ Maybe<ast::Literal*> ParserImpl::const_literal() {
 //   | const_literal
 Expect<ast::ConstructorExpression*> ParserImpl::expect_const_expr() {
   auto t = peek();
-
   auto source = t.source();
-
-  auto type = type_decl();
-  if (type.errored)
-    return Failure::kErrored;
-  if (type.matched) {
-    auto params = expect_paren_block(
-        "type constructor", [&]() -> Expect<ast::ExpressionList> {
-          ast::ExpressionList list;
-          while (continue_parsing()) {
-            if (peek_is(Token::Type::kParenRight)) {
-              break;
-            }
-
-            auto arg = expect_const_expr();
-            if (arg.errored) {
-              return Failure::kErrored;
-            }
-            list.emplace_back(arg.value);
-
-            if (!match(Token::Type::kComma)) {
-              break;
-            }
-          }
-          return list;
-        });
-
-    if (params.errored)
+  if (t.IsLiteral()) {
+    auto lit = const_literal();
+    if (lit.errored)
       return Failure::kErrored;
+    if (!lit.matched)
+      return add_error(peek(), "unable to parse constant literal");
 
-    return create<ast::TypeConstructorExpression>(source, type.value,
-                                                  params.value);
+    return create<ast::ScalarConstructorExpression>(source, lit.value);
+  } else if (!t.IsIdentifier() || get_type(t.to_str())) {
+    if (peek_is(Token::Type::kParenLeft, 1) ||
+        peek_is(Token::Type::kLessThan, 1)) {
+      auto type = expect_type("const_expr");
+      if (type.errored)
+        return Failure::kErrored;
+
+      auto params = expect_paren_block(
+          "type constructor", [&]() -> Expect<ast::ExpressionList> {
+            ast::ExpressionList list;
+            while (continue_parsing()) {
+              if (peek_is(Token::Type::kParenRight)) {
+                break;
+              }
+
+              auto arg = expect_const_expr();
+              if (arg.errored) {
+                return Failure::kErrored;
+              }
+              list.emplace_back(arg.value);
+
+              if (!match(Token::Type::kComma)) {
+                break;
+              }
+            }
+            return list;
+          });
+
+      if (params.errored)
+        return Failure::kErrored;
+
+      return create<ast::TypeConstructorExpression>(source, type.value,
+                                                    params.value);
+    }
   }
-
-  auto lit = const_literal();
-  if (lit.errored)
-    return Failure::kErrored;
-  if (!lit.matched)
-    return add_error(peek(), "unable to parse constant literal");
-
-  return create<ast::ScalarConstructorExpression>(source, lit.value);
+  return add_error(peek(), "unable to parse const_expr");
 }
 
 Maybe<ast::DecorationList> ParserImpl::decoration_list() {

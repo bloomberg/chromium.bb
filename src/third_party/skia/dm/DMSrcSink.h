@@ -86,18 +86,18 @@ struct SinkFlags {
 
 struct Src {
     virtual ~Src() {}
-    virtual Result SK_WARN_UNUSED_RESULT draw(GrDirectContext*, SkCanvas*) const = 0;
+    virtual Result SK_WARN_UNUSED_RESULT draw(GrDirectContext* context, SkCanvas* canvas) const = 0;
     virtual SkISize size() const = 0;
     virtual Name name() const = 0;
     virtual void modifyGrContextOptions(GrContextOptions* options) const {}
     virtual bool veto(SinkFlags) const { return false; }
 
     virtual int pageCount() const { return 1; }
-    virtual Result SK_WARN_UNUSED_RESULT draw(int, GrDirectContext* context,
+    virtual Result SK_WARN_UNUSED_RESULT draw([[maybe_unused]] int page, GrDirectContext* context,
                                               SkCanvas* canvas) const {
         return this->draw(context, canvas);
     }
-    virtual SkISize size(int) const { return this->size(); }
+    virtual SkISize size([[maybe_unused]] int page) const { return this->size(); }
     // Force Tasks using this Src to run on the main thread?
     virtual bool serial() const { return false; }
 
@@ -112,6 +112,9 @@ struct Sink {
     // You may write to either the bitmap or stream.  If you write to log, we'll print that out.
     virtual Result SK_WARN_UNUSED_RESULT draw(const Src&, SkBitmap*, SkWStream*, SkString* log)
         const = 0;
+
+    // Override the color space of this Sink, after creation
+    virtual void setColorSpace(sk_sp<SkColorSpace>) {}
 
     // Force Tasks using this Sink to run on the main thread?
     virtual bool serial() const { return false; }
@@ -401,6 +404,7 @@ public:
         return SinkFlags{ SinkFlags::kGPU, SinkFlags::kDirect, ms };
     }
     const GrContextOptions& baseContextOptions() const { return fBaseContextOptions; }
+    void setColorSpace(sk_sp<SkColorSpace> colorSpace) override { fColorSpace = colorSpace; }
     SkColorInfo colorInfo() const override {
         return SkColorInfo(fColorType, fAlphaType, fColorSpace);
     }
@@ -540,6 +544,7 @@ public:
     Result draw(const Src&, SkBitmap*, SkWStream*, SkString*) const override;
     const char* fileExtension() const override { return "png"; }
     SinkFlags flags() const override { return SinkFlags{ SinkFlags::kRaster, SinkFlags::kDirect }; }
+    void setColorSpace(sk_sp<SkColorSpace> colorSpace) override { fColorSpace = colorSpace; }
 
 private:
     SkColorType         fColorType;
@@ -593,6 +598,9 @@ public:
         flags.approach = SinkFlags::kIndirect;
         return flags;
     }
+    void setColorSpace(sk_sp<SkColorSpace> colorSpace) override {
+        fSink->setColorSpace(colorSpace);
+    }
 protected:
     std::unique_ptr<Sink> fSink;
 };
@@ -622,6 +630,12 @@ public:
 class ViaPicture : public Via {
 public:
     explicit ViaPicture(Sink* sink) : Via(sink) {}
+    Result draw(const Src&, SkBitmap*, SkWStream*, SkString*) const override;
+};
+
+class ViaRuntimeBlend : public Via {
+public:
+    explicit ViaRuntimeBlend(Sink* sink) : Via(sink) {}
     Result draw(const Src&, SkBitmap*, SkWStream*, SkString*) const override;
 };
 

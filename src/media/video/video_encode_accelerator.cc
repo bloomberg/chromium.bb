@@ -13,6 +13,10 @@
 
 namespace media {
 
+H264Metadata::H264Metadata() = default;
+H264Metadata::~H264Metadata() = default;
+H264Metadata::H264Metadata(const H264Metadata&) = default;
+
 Vp8Metadata::Vp8Metadata()
     : non_reference(false), temporal_idx(0), layer_sync(false) {}
 
@@ -187,13 +191,17 @@ void VideoEncodeAccelerator::RequestEncodingParametersChange(
       Bitrate::ConstantBitrate(bitrate_allocation.GetSumBps()), framerate);
 }
 
+bool operator==(const H264Metadata& l, const H264Metadata& r) {
+  return l.temporal_idx == r.temporal_idx && l.layer_sync == r.layer_sync;
+}
+
 bool operator==(const Vp8Metadata& l, const Vp8Metadata& r) {
   return l.non_reference == r.non_reference &&
          l.temporal_idx == r.temporal_idx && l.layer_sync == r.layer_sync;
 }
 
 bool operator==(const Vp9Metadata& l, const Vp9Metadata& r) {
-  return l.has_reference == r.has_reference &&
+  return l.inter_pic_predicted == r.inter_pic_predicted &&
          l.temporal_up_switch == r.temporal_up_switch &&
          l.referenced_by_upper_spatial_layers ==
              r.referenced_by_upper_spatial_layers &&

@@ -83,16 +83,9 @@ g.test('depth_compare_func')
       vertex: {
         module: t.device.createShaderModule({
           code: `
-            struct Output {
-              [[builtin(position)]] Position : vec4<f32>;
-              [[location(0)]] color : vec4<f32>;
-            };
-
             [[stage(vertex)]] fn main(
-              [[builtin(vertex_index)]] VertexIndex : u32) -> Output {
-              var output : Output;
-              output.Position = vec4<f32>(0.5, 0.5, 0.5, 1.0);
-              return output;
+              [[builtin(vertex_index)]] VertexIndex : u32) -> [[builtin(position)]] vec4<f32> {
+              return vec4<f32>(0.5, 0.5, 0.5, 1.0);
             }
             `,
         }),

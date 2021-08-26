@@ -52,6 +52,9 @@ static int parse_modifier_token(Token::Kind token) {
         case Token::Kind::TK_HASSIDEEFFECTS: return Modifiers::kHasSideEffects_Flag;
         case Token::Kind::TK_INLINE:         return Modifiers::kInline_Flag;
         case Token::Kind::TK_NOINLINE:       return Modifiers::kNoInline_Flag;
+        case Token::Kind::TK_HIGHP:          return Modifiers::kHighp_Flag;
+        case Token::Kind::TK_MEDIUMP:        return Modifiers::kMediump_Flag;
+        case Token::Kind::TK_LOWP:           return Modifiers::kLowp_Flag;
         default:                             return 0;
     }
 }
@@ -113,7 +116,7 @@ Parser::Parser(skstd::string_view text, SymbolTable& symbols, ErrorReporter& err
 : fText(text)
 , fPushback(Token::Kind::TK_NONE, -1, -1)
 , fSymbols(symbols)
-, fErrors(errors) {
+, fErrors(&errors) {
     fLexer.start(text);
     static const bool layoutMapInitialized = []{ return (void)InitLayoutMap(), true; }();
     (void) layoutMapInitialized;
@@ -149,7 +152,7 @@ std::unique_ptr<ASTFile> Parser::compilationUnit() {
                 return std::move(fFile);
             case Token::Kind::TK_DIRECTIVE: {
                 ASTNode::ID dir = this->directive();
-                if (fErrors.errorCount()) {
+                if (fErrors->errorCount()) {
                     return nullptr;
                 }
                 if (dir) {
@@ -163,7 +166,7 @@ std::unique_ptr<ASTFile> Parser::compilationUnit() {
             }
             default: {
                 ASTNode::ID decl = this->declaration();
-                if (fErrors.errorCount()) {
+                if (fErrors->errorCount()) {
                     return nullptr;
                 }
                 if (decl) {
@@ -257,7 +260,7 @@ void Parser::error(Token token, String msg) {
 }
 
 void Parser::error(int offset, String msg) {
-    fErrors.error(offset, msg);
+    fErrors->error(offset, msg);
 }
 
 bool Parser::isType(skstd::string_view name) {
@@ -387,13 +390,17 @@ ASTNode::ID Parser::varDeclarationsOrExpressionStatement() {
         return this->varDeclarations();
     }
 
-    if (this->isType(this->text(nextToken))) {
+    if (nextToken.fKind == Token::Kind::TK_HIGHP ||
+        nextToken.fKind == Token::Kind::TK_MEDIUMP ||
+        nextToken.fKind == Token::Kind::TK_LOWP ||
+        this->isType(this->text(nextToken))) {
         // Statements that begin with a typename are most often variable declarations, but
         // occasionally the type is part of a constructor, and these are actually expression-
         // statements in disguise. First, attempt the common case: parse it as a vardecl.
         Checkpoint checkpoint(this);
         VarDeclarationsPrefix prefix;
         if (this->varDeclarationsPrefix(&prefix)) {
+            checkpoint.accept();
             return this->varDeclarationEnd(prefix.modifiers, prefix.type, this->text(prefix.name));
         }
 
@@ -494,8 +501,7 @@ ASTNode::ID Parser::structDeclaration() {
                     "struct '" + this->text(name) + "' must contain at least one field");
         return ASTNode::ID::Invalid();
     }
-    std::unique_ptr<Type> newType = Type::MakeStructType(name.fOffset, String(this->text(name)),
-                                                         fields);
+    std::unique_ptr<Type> newType = Type::MakeStructType(name.fOffset, this->text(name), fields);
     if (struct_is_too_deeply_nested(*newType, kMaxStructDepth)) {
         this->error(name.fOffset, "struct '" + this->text(name) + "' is too deeply nested");
         return ASTNode::ID::Invalid();
@@ -850,6 +856,9 @@ ASTNode::ID Parser::statement() {
         case Token::Kind::TK_SEMICOLON:
             this->nextToken();
             return this->createNode(start.fOffset, ASTNode::Kind::kBlock);
+        case Token::Kind::TK_HIGHP:
+        case Token::Kind::TK_MEDIUMP:
+        case Token::Kind::TK_LOWP:
         case Token::Kind::TK_CONST:
         case Token::Kind::TK_IDENTIFIER:
             return this->varDeclarationsOrExpressionStatement();

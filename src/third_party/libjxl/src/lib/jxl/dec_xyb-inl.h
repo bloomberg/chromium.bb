@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 // XYB -> linear sRGB helper function.
 
@@ -164,15 +155,15 @@ static inline HWY_MAYBE_UNUSED void FastXYBTosRGB8(
     uint8x16_t pow_low =
         TableLookupBytes(
             Vec128<uint8_t, 16>(vld1q_u8(k2to512powersm1div32_low)),
-            Vec128<uint8_t, 16>(vreinterpretq_s16_u8(exp16)))
+            Vec128<uint8_t, 16>(vreinterpretq_u8_s16(exp16)))
             .raw;
     uint8x16_t pow_high =
         TableLookupBytes(
             Vec128<uint8_t, 16>(vld1q_u8(k2to512powersm1div32_high)),
-            Vec128<uint8_t, 16>(vreinterpretq_s16_u8(exp16)))
+            Vec128<uint8_t, 16>(vreinterpretq_u8_s16(exp16)))
             .raw;
-    int16x8_t pow16 = vreinterpretq_u16_s16(vsliq_n_u16(
-        vreinterpretq_u8_s16(pow_low), vreinterpretq_u8_s16(pow_high), 8));
+    int16x8_t pow16 = vreinterpretq_s16_u16(vsliq_n_u16(
+        vreinterpretq_u16_u8(pow_low), vreinterpretq_u16_u8(pow_high), 8));
 
     // approximation of v * 12.92, divided by 2
     // Note that our input is using 13 mantissa bits instead of 15.
@@ -297,9 +288,9 @@ static inline HWY_MAYBE_UNUSED void FastXYBTosRGB8(
       linear_b16 = vqaddq_s16(linear_b16, vqrdmulhq_n_s16(mixed_rmg16, -6525));
 
       // Apply SRGB transfer function.
-      uint16x8_t r = srgb_tf(linear_r16);
-      uint16x8_t g = srgb_tf(linear_g16);
-      uint16x8_t b = srgb_tf(linear_b16);
+      int16x8_t r = srgb_tf(linear_r16);
+      int16x8_t g = srgb_tf(linear_g16);
+      int16x8_t b = srgb_tf(linear_b16);
 
       uint8x8_t r8 =
           vqmovun_s16(vrshrq_n_s16(vsubq_s16(r, vshrq_n_s16(r, 8)), 6));

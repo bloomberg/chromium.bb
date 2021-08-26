@@ -33,10 +33,10 @@
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
 #include "chrome/browser/web_applications/components/app_registry_controller.h"
-#include "chrome/browser/web_applications/components/os_integration_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
+#include "chrome/browser/web_applications/os_integration_manager.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
@@ -98,7 +98,8 @@ content::WebContents* NavigateWebAppUsingParams(const std::string& app_id,
     auto* user_manager = user_manager::UserManager::Get();
     bool is_kiosk = user_manager && user_manager->IsLoggedInAsAnyKioskApp();
     AppBrowserController* app_controller = browser->app_controller();
-    WebAppProvider* web_app_provider = WebAppProvider::Get(browser->profile());
+    WebAppProvider* web_app_provider =
+        WebAppProvider::GetForLocalApps(browser->profile());
     TRACE_EVENT_INSTANT(
         "system_apps", "BadNavigate", [&](perfetto::EventContext ctx) {
           auto* bad_navigate =
@@ -182,6 +183,13 @@ bool DoesCommandLineContainProtocolUrl(const base::CommandLine& command_line) {
   return false;
 }
 
+WebAppLaunchManager::OpenApplicationCallback&
+GetOpenApplicationCallbackForTesting() {
+  static base::NoDestructor<WebAppLaunchManager::OpenApplicationCallback>
+      callback;
+  return *callback;
+}
+
 }  // namespace
 
 Browser* CreateWebApplicationWindow(Profile* profile,
@@ -222,7 +230,7 @@ content::WebContents* NavigateWebApplicationWindow(
 }
 
 WebAppLaunchManager::WebAppLaunchManager(Profile* profile)
-    : profile_(profile), provider_(WebAppProvider::Get(profile)) {}
+    : profile_(profile), provider_(WebAppProvider::GetForLocalApps(profile)) {}
 
 WebAppLaunchManager::~WebAppLaunchManager() = default;
 
@@ -237,8 +245,8 @@ content::WebContents* WebAppLaunchManager::OpenApplication(
   if (params.container == apps::mojom::LaunchContainer::kLaunchContainerWindow)
     RecordAppWindowLaunch(profile_, params.app_id);
 
-  if (GetOpenApplicationCallback())
-    return GetOpenApplicationCallback().Run(std::move(params));
+  if (GetOpenApplicationCallbackForTesting())
+    return GetOpenApplicationCallbackForTesting().Run(std::move(params));
 
   // Determine the launch URL.
   bool is_share_intent =
@@ -425,12 +433,8 @@ void WebAppLaunchManager::LaunchApplication(
   }
   params.url_handler_launch_url = url_handler_launch_url;
   params.protocol_handler_launch_url = protocol_handler_launch_url;
-
-  if (base::FeatureList::IsEnabled(
-          features::kDesktopPWAsAppIconShortcutsMenu)) {
-    params.override_url = GURL(command_line.GetSwitchValueASCII(
-        switches::kAppLaunchUrlForShortcutsMenuItem));
-  }
+  params.override_url = GURL(command_line.GetSwitchValueASCII(
+      switches::kAppLaunchUrlForShortcutsMenuItem));
 
   // Wait for the web applications database to load.
   // If the profile and WebAppLaunchManager are destroyed,
@@ -444,7 +448,7 @@ void WebAppLaunchManager::LaunchApplication(
 // static
 void WebAppLaunchManager::SetOpenApplicationCallbackForTesting(
     OpenApplicationCallback callback) {
-  GetOpenApplicationCallback() = std::move(callback);
+  GetOpenApplicationCallbackForTesting() = std::move(callback);
 }
 
 void WebAppLaunchManager::LaunchWebApplication(
@@ -473,16 +477,8 @@ void WebAppLaunchManager::LaunchWebApplication(
   std::move(callback).Run(browser, container);
 }
 
-// static
-WebAppLaunchManager::OpenApplicationCallback&
-WebAppLaunchManager::GetOpenApplicationCallback() {
-  static base::NoDestructor<OpenApplicationCallback> callback;
-
-  return *callback;
-}
-
 void RecordAppWindowLaunch(Profile* profile, const std::string& app_id) {
-  WebAppProvider* provider = WebAppProvider::Get(profile);
+  WebAppProvider* provider = WebAppProvider::GetForLocalApps(profile);
   if (!provider)
     return;
 

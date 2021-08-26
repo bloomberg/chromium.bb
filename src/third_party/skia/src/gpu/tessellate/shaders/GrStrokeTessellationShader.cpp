@@ -8,7 +8,6 @@
 #include "src/gpu/tessellate/shaders/GrStrokeTessellationShader.h"
 
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
-#include "src/gpu/glsl/GrGLSLGeometryProcessor.h"
 #include "src/gpu/glsl/GrGLSLVarying.h"
 #include "src/gpu/glsl/GrGLSLVertexGeoBuilder.h"
 #include "src/gpu/tessellate/GrStrokeTessellator.h"
@@ -388,8 +387,7 @@ void GrStrokeTessellationShader::Impl::setData(const GrGLSLProgramDataManager& p
     }
 }
 
-void GrStrokeTessellationShader::getGLSLProcessorKey(const GrShaderCaps&,
-                                                     GrProcessorKeyBuilder* b) const {
+void GrStrokeTessellationShader::addToKey(const GrShaderCaps&, GrProcessorKeyBuilder* b) const {
     bool keyNeedsJoin = (fMode != Mode::kHardwareTessellation) &&
                         !(fShaderFlags & ShaderFlags::kDynamicStroke);
     SkASSERT((int)fMode >> 2 == 0);
@@ -404,13 +402,14 @@ void GrStrokeTessellationShader::getGLSLProcessorKey(const GrShaderCaps&,
     b->add32(key);
 }
 
-GrGLSLGeometryProcessor* GrStrokeTessellationShader::createGLSLInstance(const GrShaderCaps&) const {
+std::unique_ptr<GrGeometryProcessor::ProgramImpl> GrStrokeTessellationShader::makeProgramImpl(
+        const GrShaderCaps&) const {
     switch (fMode) {
         case Mode::kHardwareTessellation:
-            return new HardwareImpl;
+            return std::make_unique<HardwareImpl>();
         case Mode::kLog2Indirect:
         case Mode::kFixedCount:
-            return new InstancedImpl;
+            return std::make_unique<InstancedImpl>();
     }
     SkUNREACHABLE;
 }

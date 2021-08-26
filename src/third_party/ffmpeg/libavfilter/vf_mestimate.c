@@ -20,7 +20,6 @@
 
 #include "motion_estimation.h"
 #include "libavcodec/mathops.h"
-#include "libavutil/avassert.h"
 #include "libavutil/common.h"
 #include "libavutil/imgutils.h"
 #include "libavutil/opt.h"
@@ -99,6 +98,9 @@ static int config_input(AVFilterLink *inlink)
     s->b_width  = inlink->w >> s->log2_mb_size;
     s->b_height = inlink->h >> s->log2_mb_size;
     s->b_count = s->b_width * s->b_height;
+
+    if (s->b_count == 0)
+        return AVERROR(EINVAL);
 
     for (i = 0; i < 3; i++) {
         s->mv_table[i] = av_mallocz_array(s->b_count, sizeof(*s->mv_table[0]));

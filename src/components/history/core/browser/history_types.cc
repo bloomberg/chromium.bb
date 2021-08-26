@@ -156,6 +156,16 @@ void QueryResults::AdjustResultMap(size_t begin, size_t end, ptrdiff_t delta) {
 
 QueryOptions::QueryOptions() = default;
 
+QueryOptions::~QueryOptions() = default;
+
+QueryOptions::QueryOptions(const QueryOptions&) = default;
+
+QueryOptions::QueryOptions(QueryOptions&&) noexcept = default;
+
+QueryOptions& QueryOptions::operator=(const QueryOptions&) = default;
+
+QueryOptions& QueryOptions::operator=(QueryOptions&&) noexcept = default;
+
 void QueryOptions::SetRecentDayRange(int days_ago) {
   end_time = base::Time::Now();
   begin_time = end_time - base::TimeDelta::FromDays(days_ago);
@@ -364,11 +374,14 @@ AnnotatedVisit::AnnotatedVisit() = default;
 AnnotatedVisit::AnnotatedVisit(URLRow url_row,
                                VisitRow visit_row,
                                VisitContextAnnotations context_annotations,
-                               VisitContentAnnotations content_annotations)
+                               VisitContentAnnotations content_annotations,
+                               VisitID referring_visit_of_redirect_chain_start)
     : url_row(url_row),
       visit_row(visit_row),
       context_annotations(context_annotations),
-      content_annotations(content_annotations) {}
+      content_annotations(content_annotations),
+      referring_visit_of_redirect_chain_start(
+          referring_visit_of_redirect_chain_start) {}
 AnnotatedVisit::AnnotatedVisit(const AnnotatedVisit&) = default;
 AnnotatedVisit& AnnotatedVisit::operator=(const AnnotatedVisit&) = default;
 AnnotatedVisit::~AnnotatedVisit() = default;

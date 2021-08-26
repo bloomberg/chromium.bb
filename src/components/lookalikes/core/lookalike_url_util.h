@@ -54,9 +54,12 @@ enum class LookalikeUrlMatchType {
   // you mean <url>?".
   kFailedSpoofChecks = 9,
 
+  kCharacterSwapSiteEngagement = 10,
+  kCharacterSwapTop500 = 11,
+
   // Append new items to the end of the list above; do not modify or replace
   // existing values. Comment out obsolete items.
-  kMaxValue = kFailedSpoofChecks,
+  kMaxValue = kCharacterSwapTop500,
 };
 
 // Used for UKM. There is only a single LookalikeUrlBlockingPageUserAction per
@@ -88,10 +91,12 @@ enum class NavigationSuggestionEvent {
   kMatchSkeletonTop5k = 9,
   kMatchTargetEmbeddingForSafetyTips = 10,
   kFailedSpoofChecks = 11,
+  kMatchCharacterSwapSiteEngagement = 12,
+  kMatchCharacterSwapTop500 = 13,
 
   // Append new items to the end of the list above; do not modify or
   // replace existing values. Comment out obsolete items.
-  kMaxValue = kFailedSpoofChecks,
+  kMaxValue = kMatchCharacterSwapTop500,
 };
 
 struct DomainInfo {
@@ -203,5 +208,10 @@ bool IsAllowedByEnterprisePolicy(const PrefService* pref_service,
 // Add the given hosts to the allowlist policy setting.
 void SetEnterpriseAllowlistForTesting(PrefService* pref_service,
                                       const std::vector<std::string>& hosts);
+
+// Returns true if |str1| and |str2| are identical except that two adjacent
+// characters are swapped. E.g. example.com vs exapmle.com.
+bool HasOneCharacterSwap(const std::u16string& str1,
+                         const std::u16string& str2);
 
 #endif  // COMPONENTS_LOOKALIKES_CORE_LOOKALIKE_URL_UTIL_H_

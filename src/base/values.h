@@ -466,7 +466,7 @@ class BASE_EXPORT Value {
   // exist, this operation fails, leaves underlying Values untouched and returns
   // `false`. In case intermediate dictionaries become empty as a result of this
   // path removal, they will be removed as well.
-  // Note: If there is only one component in the path, use `ExtractKey()`
+  // Note: If there is only one component in the path, use `RemoveKey()`
   // instead.
   //
   // Example:
@@ -532,8 +532,6 @@ class BASE_EXPORT Value {
   // otherwise, false is returned and `out_value` is unchanged.
   // DEPRECATED, use `GetIfBool()` instead.
   bool GetAsBoolean(bool* out_value) const;
-  // DEPRECATED, use `GetIfDouble()` instead.
-  bool GetAsDouble(double* out_value) const;
   // DEPRECATED, use `GetIfString()` instead.
   bool GetAsString(std::string* out_value) const;
   bool GetAsString(std::u16string* out_value) const;
@@ -736,12 +734,6 @@ class BASE_EXPORT DictionaryValue : public Value {
 
   // Like `Get()`, but without special treatment of '.'.  This allows e.g. URLs
   // to be used as paths.
-  // DEPRECATED, use `Value::FindStringKey(key)` instead.
-  bool GetStringWithoutPathExpansion(StringPiece key,
-                                     std::string* out_value) const;
-  // DEPRECATED, use `Value::FindStringKey(key)` and UTF8ToUTF16() instead.
-  bool GetStringWithoutPathExpansion(StringPiece key,
-                                     std::u16string* out_value) const;
   // DEPRECATED, use `Value::FindDictKey(key)` instead.
   bool GetDictionaryWithoutPathExpansion(
       StringPiece key,
@@ -754,23 +746,6 @@ class BASE_EXPORT DictionaryValue : public Value {
                                    const ListValue** out_value) const;
   // DEPRECATED, use `Value::FindListKey(key)` instead.
   bool GetListWithoutPathExpansion(StringPiece key, ListValue** out_value);
-
-  // Removes the Value with the specified path from this dictionary (or one
-  // of its child dictionaries, if the path is more than just a local key).
-  // If `out_value` is non-NULL, the removed Value will be passed out via
-  // `out_value`.  If `out_value` is NULL, the removed value will be deleted.
-  // This method returns true if `path` is a valid path; otherwise it will
-  // return false and the DictionaryValue object will be unchanged.
-  // DEPRECATED, use `Value::RemovePath(path)` or `Value::ExtractPath(path)`
-  // instead.
-  bool Remove(StringPiece path, std::unique_ptr<Value>* out_value);
-
-  // Like Remove(), but without special treatment of '.'.  This allows e.g. URLs
-  // to be used as paths.
-  // DEPRECATED, use `Value::RemoveKey(key)` or `Value::ExtractKey(key)`
-  // instead.
-  bool RemoveWithoutPathExpansion(StringPiece key,
-                                  std::unique_ptr<Value>* out_value);
 
   // Makes a copy of `this` but doesn't include empty dictionaries and lists in
   // the copy.  This never returns NULL, even if `this` itself is empty.
@@ -847,12 +822,6 @@ class BASE_EXPORT ListValue : public Value {
   // `out_value` is optional and will only be set if non-NULL.
   // DEPRECATED, use `GetList()::operator[]::GetBool()` instead.
   bool GetBoolean(size_t index, bool* out_value) const;
-  // DEPRECATED, use `GetList()::operator[]::GetInt()` instead.
-  bool GetInteger(size_t index, int* out_value) const;
-  // Values of both type Type::INTEGER and Type::DOUBLE can be obtained as
-  // doubles.
-  // DEPRECATED, use `GetList()::operator[]::GetDouble()` instead.
-  bool GetDouble(size_t index, double* out_value) const;
   // DEPRECATED, use `GetList()::operator[]::GetString()` instead.
   bool GetString(size_t index, std::string* out_value) const;
   bool GetString(size_t index, std::u16string* out_value) const;
@@ -888,9 +857,6 @@ class BASE_EXPORT ListValue : public Value {
   //      it != list_value.GetList().end(); ++it) {
   //   ...
 
-  // DEPRECATED, use `Value::Clone()` instead.
-  // TODO(crbug.com/646113): Delete this and migrate callsites.
-  ListValue* DeepCopy() const;
   // DEPRECATED, use `Value::Clone()` instead.
   // TODO(crbug.com/646113): Delete this and migrate callsites.
   std::unique_ptr<ListValue> CreateDeepCopy() const;

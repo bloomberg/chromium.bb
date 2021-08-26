@@ -7,7 +7,6 @@
 
 #include <stddef.h>
 
-#include "base/time/time.h"
 #include "build/build_config.h"
 
 class Profile;
@@ -62,7 +61,7 @@ class ProfileMetrics {
     kConsumerSyncSettings = 2,
     kEnterpriseSync = 3,
     kEnterpriseSigninOnly = 4,
-    kEnterpriseSigninOnlyNotLinked = 5,
+    // DEPRECATED: kEnterpriseSigninOnlyNotLinked = 5,
     kEnterpriseSyncSettings = 6,
     kEnterpriseSyncDisabled = 7,
     // Includes the case that the account is already syncing in another profile.
@@ -170,7 +169,6 @@ class ProfileMetrics {
   static void LogProfileSwitchGaia(ProfileGaia metric);
   static void LogProfileSyncInfo(ProfileSync metric);
   static void LogProfileDelete(bool profile_was_signed_in);
-  static void LogTimeToOpenUserManager(const base::TimeDelta& time_to_open);
 
 #if defined(OS_ANDROID)
   static void LogProfileAndroidAccountManagementMenu(

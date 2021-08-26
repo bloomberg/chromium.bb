@@ -41,6 +41,7 @@
 #include "content/public/test/fake_frame_widget.h"
 #include "ipc/message_filter.h"
 #include "net/base/load_flags.h"
+#include "net/cookies/cookie_options.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "storage/common/file_system/file_system_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -110,6 +111,7 @@ class BrowserContext;
 class FrameTreeNode;
 class NavigationHandle;
 class NavigationRequest;
+class RenderFrameHostImpl;
 class RenderFrameMetadataProviderImpl;
 class RenderFrameProxyHost;
 class RenderWidgetHost;
@@ -855,12 +857,12 @@ EvalJsResult EvalJsAfterLifecycleUpdate(
                                   int32_t world_id = ISOLATED_WORLD_ID_GLOBAL)
     WARN_UNUSED_RESULT;
 
-// Walks the frame tree of the specified WebContents and returns the sole
-// frame that matches the specified predicate function. This function will
-// DCHECK if no frames match the specified predicate, or if more than one
-// frame matches.
+// Walks the frame tree of the specified `page`, also descending into any inner
+// frame-trees (e.g. GuestView), and returns the sole frame that matches the
+// specified predicate function. This function will DCHECK if no frames match
+// the specified predicate, or if more than one frame matches.
 RenderFrameHost* FrameMatchingPredicate(
-    WebContents* web_contents,
+    Page& page,
     base::RepeatingCallback<bool(RenderFrameHost*)> predicate);
 
 // Predicates for use with FrameMatchingPredicate.
@@ -943,11 +945,6 @@ void SetupCrossSiteRedirector(net::EmbeddedTestServer* embedded_test_server);
 // via domAutomationController. The caller should make sure this extra
 // message is handled properly.
 bool WaitForRenderFrameReady(RenderFrameHost* rfh) WARN_UNUSED_RESULT;
-
-// Removes the interface from the associated interface receiver sets attached to
-// the WebContents.
-void RemoveWebContentsReceiverSet(WebContents* web_contents,
-                                  const std::string& interface_name);
 
 // Enable accessibility support for all of the frames in this WebContents
 void EnableAccessibilityForWebContents(WebContents* web_contents);
@@ -1766,10 +1763,12 @@ class ContextMenuInterceptor
   // its default action, preventing the context menu from showing.
   enum ShowBehavior { kShow, kPreventShow };
 
-  explicit ContextMenuInterceptor(ShowBehavior behavior = ShowBehavior::kShow);
+  explicit ContextMenuInterceptor(content::RenderFrameHost* render_frame_host,
+                                  ShowBehavior behavior = ShowBehavior::kShow);
+  ContextMenuInterceptor(const ContextMenuInterceptor&) = delete;
+  ContextMenuInterceptor& operator=(const ContextMenuInterceptor&) = delete;
   ~ContextMenuInterceptor() override;
 
-  void Init(content::RenderFrameHost* render_frame_host);
   blink::mojom::LocalFrameHost* GetForwardingInterface() override;
 
   void ShowContextMenu(
@@ -1783,23 +1782,25 @@ class ContextMenuInterceptor
   blink::UntrustworthyContextMenuParams get_params() { return last_params_; }
 
  private:
-  content::RenderFrameHost* render_frame_host_;
+  content::RenderFrameHostImpl* render_frame_host_impl_;
   blink::mojom::LocalFrameHost* impl_;
   std::unique_ptr<base::RunLoop> run_loop_;
   base::OnceClosure quit_closure_;
   blink::UntrustworthyContextMenuParams last_params_;
   const ShowBehavior show_behavior_;
-
-  DISALLOW_COPY_AND_ASSIGN(ContextMenuInterceptor);
 };
 
 class UpdateUserActivationStateInterceptor
     : public blink::mojom::LocalFrameHostInterceptorForTesting {
  public:
-  UpdateUserActivationStateInterceptor();
+  explicit UpdateUserActivationStateInterceptor(
+      content::RenderFrameHost* render_frame_host);
+  UpdateUserActivationStateInterceptor(
+      const UpdateUserActivationStateInterceptor&) = delete;
+  UpdateUserActivationStateInterceptor& operator=(
+      const UpdateUserActivationStateInterceptor&) = delete;
   ~UpdateUserActivationStateInterceptor() override;
 
-  void Init(content::RenderFrameHost* render_frame_host);
   void set_quit_handler(base::OnceClosure handler);
   bool update_user_activation_state() { return update_user_activation_state_; }
 
@@ -1809,7 +1810,7 @@ class UpdateUserActivationStateInterceptor
       blink::mojom::UserActivationNotificationType notification_type) override;
 
  private:
-  content::RenderFrameHost* render_frame_host_;
+  content::RenderFrameHostImpl* render_frame_host_impl_;
   blink::mojom::LocalFrameHost* impl_;
   base::OnceClosure quit_handler_;
   bool update_user_activation_state_ = false;

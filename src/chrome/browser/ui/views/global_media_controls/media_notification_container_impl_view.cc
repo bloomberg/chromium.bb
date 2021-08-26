@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/global_media_controls/media_toolbar_button_controller.h"
 #include "chrome/browser/ui/views/global_media_controls/media_dialog_view.h"
 #include "chrome/browser/ui/views/global_media_controls/media_notification_device_selector_view.h"
+#include "chrome/browser/ui/views/global_media_controls/media_notification_footer_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/media_message_center/media_notification_item.h"
 #include "components/media_message_center/media_notification_view_modern_impl.h"
@@ -101,6 +102,7 @@ MediaNotificationContainerImplView::MediaNotificationContainerImplView(
     base::WeakPtr<media_message_center::MediaNotificationItem> item,
     MediaNotificationService* service,
     GlobalMediaControlsEntryPoint entry_point,
+    Profile* profile,
     absl::optional<media_message_center::NotificationTheme> theme)
     : views::Button(base::BindRepeating(
           [](MediaNotificationContainerImplView* view) {
@@ -115,7 +117,8 @@ MediaNotificationContainerImplView::MediaNotificationContainerImplView(
       background_color_(kDefaultBackgroundColor),
       service_(service),
       is_cros_(theme.has_value()),
-      entry_point_(entry_point) {
+      entry_point_(entry_point),
+      profile_(profile) {
   DCHECK(item);
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
@@ -173,10 +176,19 @@ MediaNotificationContainerImplView::MediaNotificationContainerImplView(
 
   std::unique_ptr<media_message_center::MediaNotificationView> view;
   if (base::FeatureList::IsEnabled(media::kGlobalMediaControlsModernUI)) {
+    auto footer_view = std::make_unique<MediaNotificationFooterView>(
+        is_cast_notification,
+        is_cast_notification
+            ? base::BindRepeating(
+                  &MediaNotificationContainerImplView::StopCasting,
+                  base::Unretained(this), base::Unretained(cast_item))
+            : views::Button::PressedCallback());
+    footer_view_ = footer_view.get();
+
     view =
         std::make_unique<media_message_center::MediaNotificationViewModernImpl>(
             this, std::move(item), std::move(dismiss_button_placeholder),
-            kModernUIWidth);
+            std::move(footer_view), kModernUIWidth);
     SetPreferredSize(kModernUISize);
   } else {
     view = std::make_unique<media_message_center::MediaNotificationViewImpl>(
@@ -185,19 +197,28 @@ MediaNotificationContainerImplView::MediaNotificationContainerImplView(
     SetPreferredSize(kNormalSize);
   }
   view_ = swipeable_container_->AddChildView(std::move(view));
-
+  bool gmc_cast_start_stop_enabled =
+      media_router::GlobalMediaControlsCastStartStopEnabled() &&
+      media_router::MediaRouterEnabled(profile_);
   // Show a stop cast button for cast notifications.
-  if (is_cast_notification &&
-      media_router::GlobalMediaControlsCastStartStopEnabled()) {
+  if (is_cast_notification && gmc_cast_start_stop_enabled &&
+      !base::FeatureList::IsEnabled(media::kGlobalMediaControlsModernUI)) {
     AddStopCastButton(cast_item);
   }
 
   // Show a device selector view for media and supplemental notifications.
   if (!is_cast_notification &&
-      (media_router::GlobalMediaControlsCastStartStopEnabled() ||
+      (gmc_cast_start_stop_enabled ||
        base::FeatureList::IsEnabled(
            media::kGlobalMediaControlsSeamlessTransfer))) {
-    AddDeviceSelectorView(is_local_media_session);
+    AddDeviceSelectorView(
+        is_local_media_session,
+        /* show_expand_button */ !base::FeatureList::IsEnabled(
+            media::kGlobalMediaControlsModernUI));
+    if (device_selector_view_ && footer_view_) {
+      footer_view_->SetDelegate(device_selector_view_);
+      device_selector_view_->AddObserver(footer_view_);
+    }
   }
 
   ForceExpandedState();
@@ -405,6 +426,9 @@ void MediaNotificationContainerImplView::OnColorsChanged(SkColor foreground,
     UpdateDismissButtonBackground();
     UpdateStopCastButtonBackground();
   }
+  if (footer_view_)
+    footer_view_->OnColorChanged(foreground);
+
   if (device_selector_view_)
     device_selector_view_->OnColorsChanged(foreground, background);
 }
@@ -525,9 +549,11 @@ void MediaNotificationContainerImplView::AddStopCastButton(
 }
 
 void MediaNotificationContainerImplView::AddDeviceSelectorView(
-    bool is_local_media_session) {
+    bool is_local_media_session,
+    bool show_expand_button) {
   std::unique_ptr<media_router::CastDialogController> cast_controller;
-  if (media_router::GlobalMediaControlsCastStartStopEnabled()) {
+  if (media_router::GlobalMediaControlsCastStartStopEnabled() &&
+      media_router::MediaRouterEnabled(profile_)) {
     cast_controller =
         is_local_media_session
             ? service_->CreateCastDialogControllerForSession(id_)
@@ -537,7 +563,8 @@ void MediaNotificationContainerImplView::AddDeviceSelectorView(
       std::make_unique<MediaNotificationDeviceSelectorView>(
           this, std::move(cast_controller),
           /* has_audio_output */ is_local_media_session, audio_sink_id_,
-          foreground_color_, background_color_, entry_point_);
+          foreground_color_, background_color_, entry_point_,
+          show_expand_button);
   device_selector_view_ = AddChildView(std::move(device_selector_view));
   view_->UpdateCornerRadius(message_center::kNotificationCornerRadius, 0);
 }
@@ -547,6 +574,10 @@ void MediaNotificationContainerImplView::StopCasting(
   media_router::MediaRouterFactory::GetApiForBrowserContext(
       cast_item->profile())
       ->TerminateRoute(cast_item->route_id());
+
+  // |service_| is nullptr in MediaNotificationContainerImplViewTest.
+  if (service_)
+    service_->FocusOnDialog();
 
   GlobalMediaControlsCastActionAndEntryPoint action;
   switch (entry_point_) {

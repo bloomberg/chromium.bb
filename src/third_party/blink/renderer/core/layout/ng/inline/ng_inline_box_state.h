@@ -174,6 +174,8 @@ class CORE_EXPORT NGInlineLayoutStateStack {
 
   bool HasBoxFragments() const { return !box_data_list_.IsEmpty(); }
 
+  wtf_size_t NumBoxFragments() const { return box_data_list_.size(); }
+
   // Notify when child is inserted at |index| to adjust child indexes.
   void ChildInserted(unsigned index);
 
@@ -188,13 +190,22 @@ class CORE_EXPORT NGInlineLayoutStateStack {
   void UpdateAfterReorder(NGLogicalLineItems*);
 
   // Compute inline positions of fragments and boxes.
-  LayoutUnit ComputeInlinePositions(NGLogicalLineItems*, LayoutUnit position);
+  LayoutUnit ComputeInlinePositions(NGLogicalLineItems*,
+                                    LayoutUnit position,
+                                    bool ignore_box_margin_border_padding);
 
-  void ApplyRelativePositioning(const NGConstraintSpace&, NGLogicalLineItems*);
-
+  // |oof_relative_offsets| is an output variable for the accumulated
+  // relative positioning offsets to be applied to OOF positioned descendants.
+  void ApplyRelativePositioning(
+      const NGConstraintSpace&,
+      NGLogicalLineItems*,
+      Vector<LogicalOffset, 32>* oof_relative_offsets);
   // Create box fragments. This function turns a flat list of children into
   // a box tree.
-  void CreateBoxFragments(const NGConstraintSpace&, NGLogicalLineItems*);
+  void CreateBoxFragments(const NGConstraintSpace&,
+                          NGLogicalLineItems*,
+                          bool is_opaque,
+                          Vector<LogicalOffset, 32>* oof_relative_offsets);
 
 #if DCHECK_IS_ON()
   void CheckSame(const NGInlineLayoutStateStack&) const;
@@ -283,7 +294,9 @@ class CORE_EXPORT NGInlineLayoutStateStack {
 
     scoped_refptr<const NGLayoutResult> CreateBoxFragment(
         const NGConstraintSpace&,
-        NGLogicalLineItems*);
+        NGLogicalLineItems*,
+        bool is_opaque = false,
+        LogicalOffset oof_relative_offset = LogicalOffset());
   };
 
   // Update start/end of the first BoxData found at |index|.

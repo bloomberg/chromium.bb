@@ -57,6 +57,7 @@
 #include "chrome/browser/ui/views/toolbar/browser_app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/chrome_labs_bubble_view_model.h"
 #include "chrome/browser/ui/views/toolbar/chrome_labs_button.h"
+#include "chrome/browser/ui/views/toolbar/chrome_labs_utils.h"
 #include "chrome/browser/ui/views/toolbar/home_button.h"
 #include "chrome/browser/ui/views/toolbar/read_later_toolbar_button.h"
 #include "chrome/browser/ui/views/toolbar/reload_button.h"
@@ -307,6 +308,8 @@ void ToolbarView::Init() {
 
   if (base::FeatureList::IsEnabled(features::kChromeLabs)) {
     chrome_labs_model_ = std::make_unique<ChromeLabsBubbleViewModel>();
+    UpdateChromeLabsNewBadgePrefs(browser_->profile(),
+                                  chrome_labs_model_.get());
     if (ChromeLabsButton::ShouldShowButton(chrome_labs_model_.get(),
                                            browser_->profile())) {
       chrome_labs_button_ = AddChildView(std::make_unique<ChromeLabsButton>(
@@ -447,10 +450,8 @@ void ToolbarView::UpdateForWebUITabStrip() {
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
   if (browser_view_->webui_tab_strip() && app_menu_button_) {
     const int insertion_index = GetIndexOf(app_menu_button_);
-    if (!base::FeatureList::IsEnabled(
-            features::kWebUITabStripNewTabButtonInTabStrip))
-      AddChildViewAt(browser_view_->webui_tab_strip()->CreateNewTabButton(),
-                     insertion_index);
+    AddChildViewAt(browser_view_->webui_tab_strip()->CreateNewTabButton(),
+                   insertion_index);
     AddChildViewAt(browser_view_->webui_tab_strip()->CreateTabCounter(),
                    insertion_index);
     LoadImages();

@@ -35,7 +35,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/shell.h"
-#include "ui/display/test/display_manager_test_api.h"
+#include "ui/display/test/display_manager_test_api.h"  // nogncheck
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if defined(OS_LINUX) && defined(USE_OZONE)
@@ -246,9 +246,10 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   ASSERT_FALSE(browser()->window()->IsFullscreen());
 }
 
+// Test is flaky on all platforms: https://crbug.com/1234337
 // Tests fullscreen is exited when navigating back.
 IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
-                       TestTabExitsFullscreenOnGoBack) {
+                       DISABLED_TestTabExitsFullscreenOnGoBack) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
@@ -276,10 +277,11 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   ASSERT_TRUE(IsWindowFullscreenForTabOrPending());
 }
 
+// Test is flaky on all platforms: https://crbug.com/1234337
 // Tests tab fullscreen exits, but browser fullscreen remains, on navigation.
 IN_PROC_BROWSER_TEST_F(
     FullscreenControllerInteractiveTest,
-    TestFullscreenFromTabWhenAlreadyInBrowserFullscreenWorks) {
+    DISABLED_TestFullscreenFromTabWhenAlreadyInBrowserFullscreenWorks) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
@@ -294,21 +296,23 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_FALSE(IsWindowFullscreenForTabOrPending());
 }
 
-#if defined(OS_MAC)
-// http://crbug.com/100467
-IN_PROC_BROWSER_TEST_F(ExclusiveAccessTest,
-                       DISABLED_TabEntersPresentationModeFromWindowed) {
+// TODO(crbug.com/1230771) Flaky on Linux-ozone
+#if defined(OS_LINUX) && defined(USE_OZONE)
+#define MAYBE_TabEntersPresentationModeFromWindowed \
+  DISABLED_TabEntersPresentationModeFromWindowed
+#else
+#define MAYBE_TabEntersPresentationModeFromWindowed \
+  TabEntersPresentationModeFromWindowed
+#endif
+IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
+                       MAYBE_TabEntersPresentationModeFromWindowed) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   AddTabAtIndex(0, GURL(url::kAboutBlankURL), PAGE_TRANSITION_TYPED);
 
-  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-
   {
-    FullscreenNotificationObserver fullscreen_observer(browser());
     EXPECT_FALSE(browser()->window()->IsFullscreen());
-    browser()->EnterFullscreenModeForTab(tab->GetMainFrame(), {});
-    fullscreen_observer.Wait();
+    ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreenNoRetries(true));
     EXPECT_TRUE(browser()->window()->IsFullscreen());
   }
 
@@ -328,7 +332,6 @@ IN_PROC_BROWSER_TEST_F(ExclusiveAccessTest,
     EXPECT_TRUE(browser()->window()->IsFullscreen());
   }
 }
-#endif
 
 // Tests mouse lock can be escaped with ESC key.
 IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest, EscapingMouseLock) {

@@ -25,7 +25,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html_element_type_helpers.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
-#include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
@@ -131,7 +130,10 @@ void DisplayLockContext::SetRequestedState(EContentVisibility state) {
       break;
     case EContentVisibility::kHidden:
       UseCounter::Count(document_, WebFeature::kContentVisibilityHidden);
-      RequestLock(0u);
+      RequestLock(
+          for_details_element_
+              ? static_cast<uint16_t>(DisplayLockActivationReason::kFindInPage)
+              : 0u);
       break;
     case EContentVisibility::kHiddenMatchable:
       UseCounter::Count(document_,
@@ -167,14 +169,8 @@ void DisplayLockContext::SetRequestedState(EContentVisibility state) {
 void DisplayLockContext::AdjustElementStyle(ComputedStyle* style) const {
   if (state_ == EContentVisibility::kVisible)
     return;
-  // If not visible, element gains style, layout, and paint containment. If
-  // skipped, it also gains size containment.
-  // https://wicg.github.io/display-locking/#content-visibility
-  auto contain =
-      style->Contain() | kContainsStyle | kContainsLayout | kContainsPaint;
   if (IsLocked())
-    contain |= kContainsSize;
-  style->SetContain(contain);
+    style->SetSkipsContents();
 }
 
 void DisplayLockContext::RequestLock(uint16_t activation_mask) {

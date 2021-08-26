@@ -10,6 +10,7 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -22,7 +23,10 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
+import androidx.core.widget.ImageViewCompat;
 
+import com.google.android.material.badge.BadgeDrawable;
+import com.google.android.material.badge.BadgeUtils;
 import com.google.android.material.tabs.TabLayout;
 
 import org.chromium.chrome.R;
@@ -45,6 +49,8 @@ import org.chromium.ui.widget.ViewRectProvider;
 /**
  * View for the header of the personalized feed that has a context menu to
  * manage the feed.
+ *
+ * This view can be inflated from one of two layouts, hence many @Nullables.
  */
 public class SectionHeaderView extends LinearLayout {
     private static final String TAG = "SectionHeaderView";
@@ -73,17 +79,22 @@ public class SectionHeaderView extends LinearLayout {
     }
 
     // Views in the header layout that are set during inflate.
-    private @Nullable ImageView mVisibilityIndicator;
+    private @Nullable ImageView mLeadingStatusIndicator;
     private @Nullable TabLayout mTabLayout;
-    private @Nullable TextView mTitleView;
+    private TextView mTitleView;
     private ListMenuButton mMenuView;
 
     private @Nullable SectionHeaderTabListener mTabListener;
     private boolean mAnimatePaddingWhenDisabled;
+    private @Nullable View mDivider;
+    private LinearLayout mContent;
 
     // Cached the indicator drawables for easy swapping.
     private Drawable mEnabledIndicatorDrawable;
     private Drawable mNoIndicatorDrawable;
+
+    // BadgeDrawable for badging.
+    private @Nullable BadgeDrawable mBadge;
 
     public SectionHeaderView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -104,8 +115,10 @@ public class SectionHeaderView extends LinearLayout {
 
         mTitleView = findViewById(R.id.header_title);
         mMenuView = findViewById(R.id.header_menu);
-        mVisibilityIndicator = findViewById(R.id.visibility_indicator);
+        mLeadingStatusIndicator = findViewById(R.id.status_indicator);
         mTabLayout = findViewById(R.id.tab_list_view);
+        mDivider = findViewById(R.id.divider);
+        mContent = findViewById(R.id.main_content);
 
         if (mTabLayout != null) {
             mTabListener = new SectionHeaderTabListener();
@@ -136,9 +149,7 @@ public class SectionHeaderView extends LinearLayout {
 
     /** Updates header text for this view. */
     void setHeaderText(String text) {
-        if (mTitleView != null) {
-            mTitleView.setText(text);
-        }
+        mTitleView.setText(text);
     }
 
     /** Adds a blank tab. */
@@ -176,13 +187,24 @@ public class SectionHeaderView extends LinearLayout {
     void setHeaderAt(String text, boolean hasUnreadContent, int index) {
         TabLayout.Tab tab = getTabAt(index);
         if (tab != null) {
-            tab.setText(text);
-            ImageView badgeView = tab.getCustomView().findViewById(R.id.badge);
             if (hasUnreadContent) {
-                badgeView.setVisibility(View.VISIBLE);
+                if (mBadge == null) {
+                    mBadge = BadgeDrawable.createFromResource(getContext(), R.xml.tab_layout_badge);
+                    mBadge.setContentDescriptionNumberless(getResources().getString(
+                            R.string.accessibility_ntp_following_unread_content));
+                }
+                mBadge.setVisible(true);
+                tab.setTag(mBadge);
+
+                BadgeUtils.attachBadgeDrawable(mBadge, tab.getCustomView());
             } else {
-                badgeView.setVisibility(View.GONE);
+                if (mBadge != null) {
+                    mBadge.setVisible(false);
+                    tab.setTag(null);
+                    BadgeUtils.detachBadgeDrawable(mBadge, tab.getCustomView());
+                }
             }
+            tab.setText(text);
         }
     }
 
@@ -213,19 +235,69 @@ public class SectionHeaderView extends LinearLayout {
         mMenuView.setOnClickListener((v) -> { displayMenu(listItems, listMenuDelegate); });
     }
 
+    /**
+     * Sets whether to show tabs or normal title view.
+     *
+     * Only works if there is both a tab and title view.
+     */
+    void setTabMode(boolean isTabMode) {
+        if (mTabLayout != null) {
+            mTitleView.setVisibility(isTabMode ? GONE : VISIBLE);
+            mTabLayout.setVisibility(isTabMode ? VISIBLE : GONE);
+        }
+    }
+
+    /**
+     * Sets whether to have logo or a visibility indicator.
+     */
+    void setIsLogo(boolean isLogo) {
+        if (mLeadingStatusIndicator == null) return;
+        if (isLogo) {
+            mLeadingStatusIndicator.setImageResource(R.drawable.ic_logo_googleg_24dp);
+            // No tint if Google logo.
+            ImageViewCompat.setImageTintMode(mLeadingStatusIndicator, PorterDuff.Mode.DST);
+        } else {
+            mLeadingStatusIndicator.setImageResource(R.drawable.ic_visibility_off_black);
+            // Grey tint if visibility indicator.
+            ImageViewCompat.setImageTintMode(mLeadingStatusIndicator, PorterDuff.Mode.MULTIPLY);
+        }
+    }
+
+    /** Sets the visibility of the indicator. */
+    void setIndicatorVisibility(SectionHeaderListProperties.ViewVisibility visibility) {
+        if (mLeadingStatusIndicator != null) {
+            int viewVisibility = View.GONE;
+            switch (visibility) {
+                case INVISIBLE:
+                    viewVisibility = View.INVISIBLE;
+                    break;
+                case VISIBLE:
+                    viewVisibility = View.VISIBLE;
+                    break;
+                case GONE:
+                    viewVisibility = View.GONE;
+                    break;
+            }
+            mLeadingStatusIndicator.setVisibility(viewVisibility);
+        }
+    }
+
     /** Expand the header to indicate the section has been enabled. */
     void expandHeader() {
         if (mAnimatePaddingWhenDisabled) {
             int finalHorizontalPadding = 0;
             setMaterialCardBackground(false);
-            if (mVisibilityIndicator != null) {
-                mVisibilityIndicator.setVisibility(View.INVISIBLE);
-            }
+
             if (mTabLayout != null) {
                 // Re-enable indicator to cached indicator.
                 mTabLayout.setSelectedTabIndicator(mEnabledIndicatorDrawable);
-                setTabsEnabled(true);
+                setTextsEnabled(true);
             }
+
+            if (mDivider != null) {
+                mDivider.setVisibility(VISIBLE);
+            }
+
             ValueAnimator animator = ValueAnimator.ofInt(getPaddingLeft(), finalHorizontalPadding);
             animator.addUpdateListener((ValueAnimator animation) -> {
                 int horizontalPadding = (Integer) animation.getAnimatedValue();
@@ -255,9 +327,6 @@ public class SectionHeaderView extends LinearLayout {
                 public void onAnimationEnd(Animator animation) {
                     // Add the card background after animation.
                     setMaterialCardBackground(true);
-                    if (mVisibilityIndicator != null) {
-                        mVisibilityIndicator.setVisibility(View.VISIBLE);
-                    }
                     if (mTabLayout != null) {
                         // Don't show the selected tab indicator if feed is off.
                         // We use a TRANSPARENT drawable because setting indicator to null defaults
@@ -267,7 +336,10 @@ public class SectionHeaderView extends LinearLayout {
                             mNoIndicatorDrawable = new ColorDrawable(Color.TRANSPARENT);
                         }
                         mTabLayout.setSelectedTabIndicator(mNoIndicatorDrawable);
-                        setTabsEnabled(false);
+                        setTextsEnabled(false);
+                    }
+                    if (mDivider != null) {
+                        mDivider.setVisibility(INVISIBLE);
                     }
                 }
             });
@@ -285,21 +357,25 @@ public class SectionHeaderView extends LinearLayout {
      */
     private void setMaterialCardBackground(boolean hasBackground) {
         if (!hasBackground) {
-            setBackgroundResource(0);
+            mContent.setBackgroundResource(0);
             return;
         }
-        setBackgroundResource(R.drawable.card_with_corners_background);
-        GradientDrawable gradientDrawable = (GradientDrawable) getBackground();
+        mContent.setBackgroundResource(R.drawable.card_with_corners_background);
+        GradientDrawable gradientDrawable = (GradientDrawable) mContent.getBackground();
         gradientDrawable.setColor(
-                ChromeColors.getSurfaceColor(getContext(), R.dimen.default_elevation_1));
+                ChromeColors.getSurfaceColor(getContext(), R.dimen.card_elevation));
     }
 
-    private void setTabsEnabled(boolean enabled) {
+    private void setTextsEnabled(boolean enabled) {
         for (int i = 0; i < mTabLayout.getTabCount(); i++) {
             TabLayout.Tab tab = mTabLayout.getTabAt(i);
             tab.view.setClickable(enabled);
             tab.view.setEnabled(enabled);
+            if (tab.getTag() != null) {
+                mBadge.setVisible(enabled);
+            }
         }
+        mTitleView.setEnabled(enabled);
     }
 
     /** Shows an IPH on the feed header menu button. */
@@ -348,8 +424,14 @@ public class SectionHeaderView extends LinearLayout {
                         .setViewRectProvider(rectProvider)
                         // Set clipChildren is important to make sure the bubble does not get
                         // clipped. Set back for better performance during layout.
-                        .setOnShowCallback(() -> setClipChildren(false))
-                        .setOnDismissCallback(() -> setClipChildren(true))
+                        .setOnShowCallback(() -> {
+                            mContent.setClipChildren(false);
+                            mContent.setClipToPadding(false);
+                        })
+                        .setOnDismissCallback(() -> {
+                            mContent.setClipChildren(true);
+                            mContent.setClipToPadding(true);
+                        })
                         .setHighlightParams(params)
                         .build());
     }

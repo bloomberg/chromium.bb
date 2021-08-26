@@ -14,12 +14,16 @@
 
 #include "base/time/time.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/engine/entity_data.h"
 #include "components/sync/protocol/entity_metadata.pb.h"
+
+namespace sync_pb {
+class EntitySpecifics;
+}  // namespace sync_pb
 
 namespace syncer {
 
 class ClientTagHash;
+struct EntityData;
 struct CommitRequestData;
 struct CommitResponseData;
 struct UpdateResponseData;

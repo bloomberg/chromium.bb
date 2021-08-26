@@ -14,6 +14,7 @@
 <translation id="1204296502688602597">ការពន្យារ DNS</translation>
 <translation id="123124571410524056">បានសន្មតថាជាច្រក</translation>
 <translation id="1238612778414822719">ការពន្យារ HTTPS</translation>
+<translation id="1264369926465113395">ពិនិត្យមើល​ទស្សនាវដ្ដី​ឌីជីថលថ្មី​របស់ Chromebook សម្រាប់​អ្នកបង្កើត</translation>
 <translation id="1270369111467284986">បានសន្មតថាជាច្រកចូលប្រើបណ្ដាញ</translation>
 <translation id="1290331692326790741">សេវាខ្សោយ</translation>
 <translation id="1314565355471455267">Android VPN</translation>
@@ -34,7 +35,9 @@
 <translation id="1510238584712386396">ឡាន់ឆ័រ</translation>
 <translation id="1600964289716072707">ដាក់ទំព័រមួយផ្សេងទៀតនៅលើម៉ាស៊ីនស្កេន រួចជ្រើសរើស "ស្កេន" ដើម្បីបញ្ចូលទំព័រ។</translation>
 <translation id="1621067168122174824">ដំណើរការតេស្តសាកថ្ម</translation>
+<translation id="1639239467298939599">កំពុងដំណើរការ</translation>
 <translation id="1641857168437328880">ឧបករណ៍​បញ្ចូល​ឯកសារ (ម្ខាង)</translation>
+<translation id="1643449475550628585">ប្ដូរផ្ទាំងរូបភាព​ជារៀងរាល់ថ្ងៃ</translation>
 <translation id="1644574205037202324">ប្រវត្តិ</translation>
 <translation id="1662989795263954667">បានឈប់ - អស់​ទឹកថ្នាំ</translation>
 <translation id="1703835215927279855">សំបុត្រ</translation>
@@ -65,7 +68,6 @@
 <translation id="2224337661447660594">គ្មាន​អ៊ីនធឺណិតទេ</translation>
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="225692081236532131">ស្ថានភាពនៃការធ្វើឲ្យសកម្ម</translation>
-<translation id="2294675138977897428">រកមិនឃើញ​ការតភ្ជាប់​អ៊ីសឺរណិតទេ</translation>
 <translation id="2326139988748364651"><ph name="RESOLUTION_VALUE" /> dpi</translation>
 <translation id="2338501278241028356">បើកប៊្លូធូស​ដើម្បី​ស្វែងរក​ឧបករណ៍​ដែល​នៅជិត</translation>
 <translation id="2364498172489649528">ជាប់</translation>
@@ -75,9 +77,11 @@
 <translation id="2448312741937722512">ប្រភេទ</translation>
 <translation id="2461822463642141190">បច្ចុប្បន្ន</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
+<translation id="2505327257735685095">ផ្ទុក​ផ្ទាំងរូបភាព​បច្ចុប្បន្ន​ឡើងវិញ</translation>
 <translation id="2517472476991765520">ស្កេន</translation>
 <translation id="2570743873672969996">កំពុងដំណើរការតេស្ត <ph name="TEST_NAME" />...</translation>
 <translation id="2585245331261708204">អ្វីដែលថ្មីសម្រាប់ Chrome OS</translation>
+<translation id="2619761439309613843">ការផ្ទុក​ឡើងវិញ​ប្រចាំថ្ងៃ</translation>
 <translation id="2620436844016719705">ប្រព័ន្ធ</translation>
 <translation id="2740531572673183784">យល់ព្រម</translation>
 <translation id="2751739896257479635">ការផ្ទៀងផ្ទាត់ EAP ដំណាក់កាលទី 2</translation>
@@ -87,7 +91,6 @@
 <translation id="2862104018715411648">ដាក់​ឯកសារ​របស់អ្នក​នៅលើ​ម៉ាស៊ីនស្កេន រួច​ជ្រើសរើស "ស្កេន" ដើម្បី​ចាប់ផ្ដើម</translation>
 <translation id="2872961005593481000">បិទ</translation>
 <translation id="2878387241690264070">បានឈប់សាកថ្ម <ph name="RATE" /> ក្នុងរយៈពេល <ph name="NUM_SECONDS" /> វិនាទី។</translation>
-<translation id="2983662233540284543">ស្វែងយល់ពី​អ្នកបង្កើតហ្គេម យកកម្មវិធីរចនាហ្គេម និងអ្វីៗ​ជាច្រើនទៀត</translation>
 <translation id="3008341117444806826">ផ្ទុក​ឡើង​វិញ</translation>
 <translation id="3009958530611748826">ជ្រើសរើសថត ដើម្បីរក្សាទុកឯកសារស្កេន</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" />mA</translation>
@@ -101,6 +104,7 @@
 <translation id="3188257591659621405">ឯកសារ​របស់ខ្ញុំ​</translation>
 <translation id="3199982728237701504">ឧបករណ៍​បញ្ចូល​ឯកសារ (សងខាង)</translation>
 <translation id="3226405216343213872">កំពុងរកមើលម៉ាស៊ីនស្កេន</translation>
+<translation id="3228433892370472777">ការ​តភ្ជាប់លំនាំដើម</translation>
 <translation id="3246869037381808805">កិច្ចការបោះពុម្ពដែលចាស់ជាង 1 ថ្ងៃនឹងត្រូវលុបចេញ</translation>
 <translation id="3268178239013324452">មិនបានសម្រេច - ​​​ទ្វារចំហ</translation>
 <translation id="3283504360622356314">{0,plural, =1{កែ​ឯកសារ}other{កែ​ឯកសារ}}</translation>
@@ -117,10 +121,13 @@
 <translation id="3488065109653206955">បានធ្វើសកម្មភាពតាមផ្នែក</translation>
 <translation id="3527036260304016759">មិនបានសម្រេច - មានបញ្ហា​ដែលមិនស្គាល់</translation>
 <translation id="3532980081107202182">នៅសល់ប្រហែល <ph name="MIN_REMAINING" /> នាទីទៀត</translation>
+<translation id="3540383942695635079">អាសយដ្ឋាន MAC</translation>
 <translation id="357889014807611375">Wi-Fi តាមកម្រិត</translation>
+<translation id="3582041541988388905">រកមិនឃើញ​ការតភ្ជាប់ <ph name="NETWORK_NAME" /> ទេ</translation>
 <translation id="3595596368722241419">ថ្មពេញ</translation>
 <translation id="360565022852130722">បណ្ដាញ WiFi មានសុវត្ថិភាពជាមួយ WEP 802.1x ប្រូតូកូលខ្សោយ</translation>
 <translation id="3689839747745352263">តេស្ត <ph name="TEST_NAME" /></translation>
+<translation id="3708186454126126312">បាន​ភ្ជាប់​ពីមុន​</translation>
 <translation id="373232531963562220">{PAGE_NUMBER,plural, =0{ស្កេនទំព័រឡើងវិញ}=1{ស្កេនទំព័រទី {PAGE_NUMBER} ឡើងវិញ}other{ស្កេនទំព័រទី {PAGE_NUMBER} ឡើងវិញ}}</translation>
 <translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★ (ការវាយតម្លៃចំនួន <ph name="AGGREGATED_COUNT" />)</translation>
 <translation id="3748026146096797577">មិនបានភ្ជាប់ទេ</translation>
@@ -163,6 +170,7 @@
 <translation id="4479639480957787382">ខ្សែអ៊ីនធឺណិត</translation>
 <translation id="4483049906298469269">មិនអាចភីងច្រកបណ្ដាញមិនមែនលំនាំដើមបានទេ</translation>
 <translation id="4511264077854731334">ច្រក</translation>
+<translation id="4536864596629708641">ការកំណត់​រចនាសម្ព័ន្ធ IP</translation>
 <translation id="4548483925627140043">រកមិនឃើញរលកសញ្ញាទេ</translation>
 <translation id="455835558791489930">ថ្ម <ph name="CHARGE_VALUE" />mAh</translation>
 <translation id="4562494484721939086">គ្មានសេវាទេ</translation>
@@ -171,6 +179,7 @@
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> ក្នុង​ចំណោម <ph name="TOTAL_PAGE_NUMBER" />។ ចុច enter ដើម្បីបោះបង់​ការងារបោះពុម្ព។</translation>
 <translation id="4646949265910132906">ការតភ្ជាប់ WiFi មានសុវត្ថិភាព</translation>
 <translation id="4652335678334611408">រក្សាទុកកំណត់ហេតុវគ្គ</translation>
+<translation id="4654549501020883054">ប្ដូរ​រាល់ថ្ងៃ</translation>
 <translation id="4665014895760275686">ក្រុមហ៊ុនផលិត</translation>
 <translation id="467510802200863975">ពាក្យសម្ងាត់​មិនត្រូវគ្នាទេ</translation>
 <translation id="467715984478005772">បានសន្មតថា​ជាជញ្ជាំងភ្លើង</translation>
@@ -194,6 +203,7 @@
 <translation id="4891842000192098784">ស្ត្រេស</translation>
 <translation id="4917385247580444890">ខ្លាំង</translation>
 <translation id="4917889632206600977">បានឈប់ - អស់​ក្រដាស</translation>
+<translation id="491836528011451486">ដាក់ឯកសាររបស់អ្នកនៅលើម៉ាស៊ីនស្កេន រួចជ្រើសរើស "ស្កេនឡើងវិញ" ដើម្បីស្កេន និងជំនួសទំព័រទី <ph name="CURRENT_PAGE" />។</translation>
 <translation id="4921665434385737356">បានសាកថ្ម <ph name="RATE" /> ក្នុងរយៈពេល <ph name="NUM_SECONDS" /> វិនាទី។</translation>
 <translation id="4932733599132424254">កាលបរិច្ឆេទ</translation>
 <translation id="498186245079027698">ពិនិត្យមើល​កម្មវិធីស្កេន រួចព្យាយាមម្ដងទៀត។ ត្រូវប្រាកដថា មានទំហំផ្ទុក​ក្នុងឧបករណ៍​គ្រប់គ្រាន់ ដើម្បីរក្សាទុក​ឯកសារដែលបានស្កេន។</translation>
@@ -209,9 +219,9 @@
 <translation id="5154917547274118687">មេម៉ូរី</translation>
 <translation id="5168185087976003268">គុណភាព​ថ្ម</translation>
 <translation id="5170568018924773124">បង្ហាញនៅក្នុងថតឯកសារ</translation>
-<translation id="519607504553633437">រចនា និងបង្កើតហ្គេម​របស់អ្នក</translation>
 <translation id="5212543919916444558">ខ្ញុំរកមិនឃើញអ្វីដែលខ្ញុំអាចជួយបាននៅលើអេក្រង់របស់អ្នកទេ។ សាកល្បងចុចមីក្រូហ្វូន ដើម្បីសួរខ្ញុំអំពីអ្វីម្យ៉ាង។</translation>
 <translation id="5222676887888702881">ចាកចេញ</translation>
+<translation id="5234764350956374838">ច្រានចោល</translation>
 <translation id="5252456968953390977">រ៉ូមីង</translation>
 <translation id="5264277876637023664">ដំណើរការតេស្ត CPU</translation>
 <translation id="5267975978099728568"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="ERROR_STATUS" /></translation>
@@ -242,7 +252,6 @@
 <translation id="5691511426247308406">គ្រួសារ</translation>
 <translation id="5701381305118179107">កណ្តាល</translation>
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" /> នៃ <ph name="TOTAL_PAGES" /></translation>
-<translation id="5752751666635965375">បង្កើត​ហ្គេមរបស់អ្នក</translation>
 <translation id="5760715441271661976">ស្ថានភាពច្រក</translation>
 <translation id="5832805196449965646">បន្ថែមបុគ្គល</translation>
 <translation id="583281660410589416">មិនស្គាល់</translation>
@@ -265,6 +274,7 @@
 <translation id="6106186594183574873">ដើម្បី​បញ្ចប់ សូម​បញ្ចូល​ពាក្យសម្ងាត់​ចាស់​របស់អ្នក</translation>
 <translation id="6108689792487843350">មិនអាចភ្ជាប់ជាមួយច្រកបានទេ</translation>
 <translation id="6122191549521593678">លើអ៊ីនធឺណិត</translation>
+<translation id="6125438912510167220">ល្បឿន​ភ្ជាប់</translation>
 <translation id="6137767437444130246">វិញ្ញាបនបត្រ​អ្នក​ប្រើប្រាស់</translation>
 <translation id="6146993107019042706">ដើម្បី​បញ្ចប់ សូម​បញ្ចូល​ពាក្យសម្ងាត់​ថ្មីរបស់អ្នក</translation>
 <translation id="6147514244879357420">PNG</translation>
@@ -291,6 +301,8 @@
 <translation id="65587193855025101">ផ្ទៃ​កញ្ចក់</translation>
 <translation id="6564646048574748301">មិនបានសម្រេច - ​​មិនអាចភ្ជាប់​ម៉ាស៊ីនបោះពុម្ព​បាន</translation>
 <translation id="6574762126505704998">បំពេញ</translation>
+<translation id="6575134580692778371">មិនត្រូវបានតំឡើងទេ</translation>
+<translation id="6596816719288285829">អាសយដ្ឋាន IP</translation>
 <translation id="6603230386432466813">មានបញ្ហា​ក្នុងការភ្ជាប់​មែនទេ?</translation>
 <translation id="6618744767048954150">កំពុងដំណើរការ</translation>
 <translation id="6620487321149975369">កិច្ចការបោះពុម្ពនឹងបង្ហាញនៅក្នុងប្រវត្តិ ប្រសិនបើអ្នកមិនលុបវាដោយដៃទេ</translation>
@@ -313,13 +325,16 @@
 <translation id="7059230779847288458">កំពុងសាកថ្ម <ph name="TIME_VALUE" /> ទៀត​ទើបពេញ</translation>
 <translation id="708426984172631313">បានឈប់</translation>
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
+<translation id="7134436342991564651">{0,plural, =1{ដាក់ឈ្មោះ​ម៉ាស៊ីនមេ}other{ដាក់ឈ្មោះ​ម៉ាស៊ីនមេ}}</translation>
 <translation id="7143207342074048698">កំពុងភ្ជាប់...</translation>
 <translation id="7144878232160441200">ព្យាយាមម្តងទៀត</translation>
 <translation id="714876143603641390">ការតភ្ជាប់ Lan</translation>
 <translation id="7162487448488904999">សាល​រូបភាព</translation>
 <translation id="7172721935181587524">រូបភាព 1</translation>
 <translation id="7177485034254901881"><ph name="DEVICE_TYPE" /> នេះស្ថិតក្រោម​ការគ្រប់គ្រងរបស់ <ph name="MANAGER" />។ អ្នកគ្រប់គ្រង​អាចកំណត់រចនាសម្ព័ន្ធ​ឧបករណ៍​នេះពីចម្ងាយបាន។</translation>
+<translation id="7180611975245234373">ធ្វើឲ្យថ្មីឡើងវិញ…</translation>
 <translation id="7216409898977639127">ក្រុមហ៊ុន​ផ្តល់សេវា​ទូរសព្ទ</translation>
+<translation id="7257889006063274246">តើអ្នក​ពិតជាចង់​លុបទំព័រទី <ph name="CURRENT_PAGE" /> មែនឬ?</translation>
 <translation id="7271040990581020067">បច្ចុប្បន្ននេះ ម៉ាស៊ីនស្កេន​កំពុងស្ថិតក្នុង​ការប្រើប្រាស់។ សូមព្យាយាមម្ដងទៀតនៅពេលក្រោយ។</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7287310195820267359">បណ្ដុំ​ផ្ទាំងរូបភាព</translation>
@@ -353,9 +368,11 @@
 <translation id="7835501727204647447">ដំឡើង CloudReady</translation>
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7882358943899516840">ប្រភេទអ្នកផ្តល់សេវាកម្ម</translation>
+<translation id="7895471513946376273">ស្វែងយល់អំពី​ឧបករណ៍​រចនា និងគូរ</translation>
 <translation id="7936303884198020182">រកមិនឃើញ DNS ទេ</translation>
 <translation id="7960831585769876809">សីតុណ្ហភាព</translation>
 <translation id="7994702968232966508">វិធីសាស្ត្រ EAP</translation>
+<translation id="8020238979854764615">មាន​បញ្ហា​បានកើតឡើង។ សូមព្យាយាម​ម្ដងទៀត ដោយជ្រើសរើស​រូបភាពផ្សេងទៀត។</translation>
 <translation id="802154636333426148">បានបរាជ័យក្នុងការទាញយក</translation>
 <translation id="8041089156583427627">ផ្ញើមតិ</translation>
 <translation id="8075838845814659848">ការសាកថ្ម​ដែលនៅសល់</translation>
@@ -367,7 +384,9 @@
 <translation id="8214184102975786227">ស្កេនទំព័រច្រើន​ទៅជា PDF មួយ</translation>
 <translation id="8230672074305416752">មិនអាចភីងច្រកបណ្ដាញលំនាំដើមបានទេ</translation>
 <translation id="8246209727385807362">ក្រុមហ៊ុនបម្រើសេវាទូរសព្ទ​ដែលមិនស្គាល់</translation>
+<translation id="8286154143153872371">សូមភ្ជាប់​បណ្ដាញ រួចផ្ទុកទំព័រ​ឡើងវិញ ដើម្បីមើល​ផ្ទាំងរូបភាព។</translation>
 <translation id="8291967909914612644">ប្រទេសនៃអ្នកផ្តល់សេវាកម្មនៅផ្ទះ</translation>
+<translation id="829270796093605079">ស្វែងយល់​អំពីឧបករណ៍​រចនា</translation>
 <translation id="8294431847097064396">ប្រភព</translation>
 <translation id="8297006494302853456">ខ្សោយ</translation>
 <translation id="8302368968391049045">ជញ្ជាំងភ្លើង HTTPS</translation>
@@ -391,6 +410,7 @@
 <translation id="8575298406870537639">ក្រុមហ៊ុនសេវាទូរសព្ទ​របស់អ្នកអាច​តម្រូវឱ្យមានជម្រើសនេះ ដើម្បីភ្ជាប់ជាមួយ​បណ្ដាញរបស់ក្រុមហ៊ុននោះ។ សូមទាក់ទងក្រុមហ៊ុន​សេវាទូរសព្ទរបស់អ្នក ដើម្បីទទួលបាន​ព័ត៌មានលម្អិត។</translation>
 <translation id="8576249514688522074">មិនបាន​ចាប់​ផ្ដើម</translation>
 <translation id="8620617069779373398">ស្ថានភាពរ៉ូមីង</translation>
+<translation id="8655295600908251630">បណ្តាញ</translation>
 <translation id="8660881923941176839">ផោន</translation>
 <translation id="8675354002693747642">កូនសោ​ដែលបាន​ចែករំលែក​ជាមុន</translation>
 <translation id="871560550817059752">មិនបានសម្រេច - ​​អស់ទឹកថ្នាំ</translation>
@@ -403,6 +423,7 @@
 <translation id="8798441408945964110">ឈ្មោះក្រុមហ៊ុនផ្តល់សេវា</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8818152010000655963">ផ្ទាំងរូបភាព</translation>
+<translation id="8834539327799336565">កំពុងភ្ជាប់​បច្ចុប្បន្ននេះ</translation>
 <translation id="8845001906332463065">ទទួលជំនួយ</translation>
 <translation id="8868741746785112895">GUID</translation>
 <translation id="8881098542468797602">ការធ្វើតេស្តបានជោគជ័យ</translation>

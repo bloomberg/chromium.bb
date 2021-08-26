@@ -24,6 +24,8 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "cc/animation/animation_host.h"
+#include "cc/animation/scroll_offset_animations.h"
 #include "cc/base/features.h"
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/layers/scrollbar_layer_base.h"
@@ -33,6 +35,7 @@
 #include "cc/trees/sticky_position_constraint.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
+#include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_cache.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/web/web_settings.h"
@@ -1986,8 +1989,9 @@ TEST_P(ScrollingTest, MainThreadScrollAndDeltaFromImplSide) {
 
   EXPECT_EQ(gfx::ScrollOffset(), CurrentScrollOffset(element_id));
 
-  // Simulate a direct scroll update out of document lifecycle update.
-  scroller->scrollTo(0, 200);
+  // Simulate an anchoring scroll update out of document lifecycle update.
+  scrollable_area->SetScrollOffset(blink::ScrollOffset(0, 200),
+                                   mojom::blink::ScrollType::kAnchoring);
   EXPECT_EQ(FloatPoint(0, 200), scrollable_area->ScrollPosition());
   EXPECT_EQ(gfx::ScrollOffset(0, 200), CurrentScrollOffset(element_id));
 
@@ -1999,6 +2003,15 @@ TEST_P(ScrollingTest, MainThreadScrollAndDeltaFromImplSide) {
   RootCcLayer()->layer_tree_host()->ApplyCompositorChanges(&commit_data);
   EXPECT_EQ(FloatPoint(0, 210), scrollable_area->ScrollPosition());
   EXPECT_EQ(gfx::ScrollOffset(0, 210), CurrentScrollOffset(element_id));
+
+  // Simulate a programmatic scroll update out of document lifecycle update.
+  scroller->scrollTo(0, 200);
+  RootCcLayer()->layer_tree_host()->ApplyCompositorChanges(&commit_data);
+
+  // The programmatic scroll is prioritized over the impl-side update.
+  EXPECT_EQ(FloatPoint(0, 200), scrollable_area->ScrollPosition());
+  ForceFullCompositingUpdate();
+  EXPECT_EQ(gfx::ScrollOffset(0, 200), CurrentScrollOffset(element_id));
 }
 
 TEST_P(ScrollingTest, ThumbInvalidatesLayer) {
@@ -2025,6 +2038,25 @@ TEST_P(ScrollingTest, ThumbInvalidatesLayer) {
   }
 }
 
+TEST_P(ScrollingTest, ProgrammaticScrollCancelsImplAnimation) {
+  LoadHTML(R"HTML(
+    <div id='scroller' style='overflow: scroll; width: 100px; height: 100px'>
+      <div style='height: 1000px'></div>
+    </div>
+  )HTML");
+  ForceFullCompositingUpdate();
+
+  auto* scroller = GetFrame()->GetDocument()->getElementById("scroller");
+  auto* scrollable_area = scroller->GetLayoutBox()->GetScrollableArea();
+  auto& scroll_offset_animations =
+      scrollable_area->GetCompositorAnimationHost()->scroll_offset_animations();
+  cc::ElementId element_id = scrollable_area->GetScrollElementId();
+
+  EXPECT_FALSE(scroll_offset_animations.HasPendingCancelUpdate(element_id));
+  scroller->scrollTo(0, 200);
+  EXPECT_TRUE(scroll_offset_animations.HasPendingCancelUpdate(element_id));
+}
+
 class UnifiedScrollingSimTest : public SimTest, public PaintTestConfigurations {
  public:
   UnifiedScrollingSimTest() : scroll_unification_enabled_(true) {}
@@ -2039,7 +2071,7 @@ class UnifiedScrollingSimTest : public SimTest, public PaintTestConfigurations {
 
   void RunIdleTasks() {
     auto* scheduler =
-        ThreadScheduler::Current()->GetWebMainThreadSchedulerForTest();
+        blink::scheduler::WebThreadScheduler::MainThreadScheduler();
     blink::scheduler::RunIdleTasksForTesting(scheduler,
                                              base::BindOnce([]() {}));
     test::RunPendingTasks();

@@ -8,7 +8,8 @@ import re
 import stat
 import subprocess
 import sys
-import urllib2
+from six.moves.urllib.request import urlopen  # pylint: disable=import-error
+from six.moves.urllib.error import URLError   # pylint: disable=import-error
 
 import py_utils
 
@@ -18,9 +19,9 @@ from systrace.tracing_agents import atrace_agent
 
 
 # ADB sends this text to indicate the beginning of the trace data.
-TRACE_START_REGEXP = r'TRACE\:'
+TRACE_START_REGEXP = br'TRACE\:'
 # Text that ADB sends, but does not need to be displayed to the user.
-ADB_IGNORE_REGEXP = r'^capturing trace\.\.\. done|^capturing trace\.\.\.'
+ADB_IGNORE_REGEXP = br'^capturing trace\.\.\. done|^capturing trace\.\.\.'
 
 T2T_OUTPUT = 'trace.systrace'
 
@@ -42,10 +43,10 @@ def convert_perfetto_trace(in_file):
   traceconv_path = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                           '../traceconv'))
   try:
-    traceconv = urllib2.urlopen('https://get.perfetto.dev/traceconv')
+    traceconv = urlopen('https://get.perfetto.dev/traceconv')
     with open(traceconv_path, 'w') as out:
       out.write(traceconv.read())
-  except urllib2.URLError:
+  except URLError:
     print('Could not download traceconv to convert the Perfetto trace.')
     sys.exit(1)
   os.chmod(traceconv_path, stat.S_IXUSR | stat.S_IRUSR | stat.S_IWUSR)

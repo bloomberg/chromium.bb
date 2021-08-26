@@ -12,6 +12,7 @@
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_inclusion_status.h"
 #include "net/cookies/cookie_options.h"
+#include "net/cookies/cookie_partition_key.h"
 #include "net/cookies/same_party_context.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -95,10 +96,6 @@ template <>
 struct StructTraits<
     network::mojom::CookieSameSiteContextMetadataDataView,
     net::CookieOptions::SameSiteCookieContext::ContextMetadata> {
-  static bool affected_by_bugfix_1166211(
-      const net::CookieOptions::SameSiteCookieContext::ContextMetadata& m) {
-    return m.affected_by_bugfix_1166211;
-  }
   static net::CookieOptions::SameSiteCookieContext::ContextMetadata::
       ContextDowngradeType
       cross_site_redirect_downgrade(
@@ -180,6 +177,16 @@ struct StructTraits<network::mojom::CookieOptionsDataView, net::CookieOptions> {
 };
 
 template <>
+struct StructTraits<network::mojom::CookiePartitionKeyDataView,
+                    net::CookiePartitionKey> {
+  static const net::SchemefulSite& site(const net::CookiePartitionKey& pk) {
+    return pk.site_;
+  }
+  static bool Read(network::mojom::CookiePartitionKeyDataView partition_key,
+                   net::CookiePartitionKey* out);
+};
+
+template <>
 struct StructTraits<network::mojom::CanonicalCookieDataView,
                     net::CanonicalCookie> {
   static const std::string& name(const net::CanonicalCookie& c) {
@@ -216,6 +223,10 @@ struct StructTraits<network::mojom::CanonicalCookieDataView,
   }
   static bool same_party(const net::CanonicalCookie& c) {
     return c.IsSameParty();
+  }
+  static absl::optional<net::CookiePartitionKey> partition_key(
+      const net::CanonicalCookie& c) {
+    return c.PartitionKey();
   }
   static int source_port(const net::CanonicalCookie& c) {
     return c.SourcePort();

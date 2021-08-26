@@ -707,7 +707,6 @@ export function addScriptForFrame(url, content, frame) {
 
 export const formatters = {
 
-
   /**
  * @param {*} value
  * @return {string}
@@ -1306,7 +1305,7 @@ export function dumpLoadedModules(relativeTo) {
     if (previous.has(module)) {
       continue;
     }
-    addResult('    ' + module._descriptor.name);
+    addResult('    ' + module.descriptor.name);
   }
   return sortedLoadedModules;
 }

@@ -4,6 +4,7 @@
 
 #include "ash/wm/desks/desks_controller.h"
 
+#include <memory>
 #include <utility>
 
 #include "ash/accessibility/accessibility_controller_impl.h"
@@ -41,11 +42,11 @@
 #include "base/check_op.h"
 #include "base/containers/contains.h"
 #include "base/containers/unique_ptr_adapters.h"
+#include "base/cxx17_backports.h"
 #include "base/i18n/number_formatting.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
-#include "base/numerics/ranges.h"
 #include "base/timer/timer.h"
 #include "components/full_restore/app_launch_info.h"
 #include "components/full_restore/full_restore_utils.h"
@@ -891,7 +892,7 @@ std::unique_ptr<DeskTemplate> DesksController::CaptureActiveDeskAsTemplate()
   auto mru_windows =
       shell->mru_window_tracker()->BuildMruWindowList(kActiveDesk);
   for (auto* window : mru_windows) {
-    std::unique_ptr<full_restore::AppLaunchInfo> app_launch_info =
+    std::unique_ptr<::full_restore::AppLaunchInfo> app_launch_info =
         shell->shell_delegate()->GetAppLaunchDataForDeskTemplate(window);
     if (!app_launch_info)
       continue;
@@ -943,9 +944,63 @@ void DesksController::CreateAndActivateNewDeskForTemplate(
   NewDesk(DesksCreationRemovalSource::kLaunchTemplate);
   Desk* desk = desks().back().get();
   desk->SetName(desk_name, /*set_by_user=*/true);
+  // Force update user prefs because `SetName()` does not trigger it.
+  desks_restore_util::UpdatePrimaryUserDeskNamesPrefs();
   new DeskSwitchAnimationObserver(std::move(callback));
   ActivateDesk(desk, DesksSwitchSource::kLaunchTemplate);
   DCHECK(animation_);
+}
+
+bool DesksController::OnSingleInstanceAppLaunchingFromTemplate(
+    const std::string& app_id) {
+  // Iterate through the windows on each desk to see if there is an existing app
+  // window instance.
+  aura::Window* existing_app_instance_window = nullptr;
+  Desk* src_desk = nullptr;
+  for (auto& desk : desks()) {
+    if (desk->is_active())
+      continue;
+
+    for (aura::Window* window : desk->windows()) {
+      const std::string* const app_id_ptr = window->GetProperty(kAppIDKey);
+      if (app_id_ptr && *app_id_ptr == app_id) {
+        existing_app_instance_window = window;
+        src_desk = desk.get();
+        break;
+      }
+    }
+
+    // We can break the first loop once we found an existing app window
+    // instance.
+    if (existing_app_instance_window)
+      break;
+  }
+
+  if (!existing_app_instance_window)
+    return true;
+
+  // No need to shift a window that is visible on all desks.
+  // TODO(sammiequon): Remove this property if the window on the new desk should
+  // not be visible on all desks.
+  if (existing_app_instance_window->GetProperty(
+          aura::client::kVisibleOnAllWorkspacesKey)) {
+    return false;
+  }
+
+  DCHECK(src_desk);
+  DCHECK_NE(src_desk, active_desk_);
+  DCHECK(!Shell::Get()->overview_controller()->InOverviewSession());
+  base::AutoReset<bool> in_progress(&are_desks_being_modified_, true);
+  src_desk->MoveWindowToDesk(existing_app_instance_window, active_desk_,
+                             existing_app_instance_window->GetRootWindow());
+  MaybeUpdateShelfItems(
+      /*windows_on_inactive_desk=*/{},
+      /*windows_on_active_desk=*/{existing_app_instance_window});
+  ReportNumberOfWindowsPerDeskHistogram();
+
+  // TODO(sammiequon): Read something for chromevox, either here or when the
+  // whole template launches.
+  return false;
 }
 
 void DesksController::UpdateDesksDefaultNames() {
@@ -1011,8 +1066,8 @@ void DesksController::OnActiveUserSessionChanged(const AccountId& account_id) {
   int new_user_active_desk_index =
       /* This is a default initialized index to 0 if the id doesn't exist. */
       user_to_active_desk_index_[current_account_id_];
-  new_user_active_desk_index = base::ClampToRange(
-      new_user_active_desk_index, 0, static_cast<int>(desks_.size()) - 1);
+  new_user_active_desk_index = base::clamp(new_user_active_desk_index, 0,
+                                           static_cast<int>(desks_.size()) - 1);
 
   ActivateDesk(desks_[new_user_active_desk_index].get(),
                DesksSwitchSource::kUserSwitch);

@@ -10,8 +10,6 @@
 
 #include "modules/remote_bitrate_estimator/inter_arrival.h"
 
-#include <cassert>
-
 #include "modules/include/module_common_types_public.h"
 #include "rtc_base/logging.h"
 
@@ -121,8 +119,8 @@ bool InterArrival::PacketInOrder(uint32_t timestamp) {
   }
 }
 
-// Assumes that |timestamp| is not reordered compared to
-// |current_timestamp_group_|.
+// Assumes that `timestamp` is not reordered compared to
+// `current_timestamp_group_`.
 bool InterArrival::NewTimestampGroup(int64_t arrival_time_ms,
                                      uint32_t timestamp) const {
   if (current_timestamp_group_.IsFirstPacket()) {

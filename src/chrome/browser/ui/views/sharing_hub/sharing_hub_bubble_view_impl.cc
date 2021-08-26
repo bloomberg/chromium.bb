@@ -51,6 +51,7 @@ SharingHubBubbleViewImpl::SharingHubBubbleViewImpl(
   SetButtons(ui::DIALOG_BUTTON_NONE);
   set_fixed_width(views::LayoutProvider::Get()->GetDistanceMetric(
       views::DISTANCE_BUBBLE_PREFERRED_WIDTH));
+  SetEnableArrowKeyTraversal(true);
   DCHECK(controller);
 }
 
@@ -77,6 +78,10 @@ void SharingHubBubbleViewImpl::WindowClosing() {
     controller_->OnBubbleClosed();
     controller_ = nullptr;
   }
+}
+
+std::u16string SharingHubBubbleViewImpl::GetAccessibleWindowTitle() const {
+  return l10n_util::GetStringUTF16(IDS_SHARING_HUB_TOOLTIP);
 }
 
 void SharingHubBubbleViewImpl::OnPaint(gfx::Canvas* canvas) {

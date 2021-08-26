@@ -14,7 +14,6 @@
 #include "src/gpu/geometry/GrQuadUtils.h"
 #include "src/gpu/glsl/GrGLSLColorSpaceXformHelper.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
-#include "src/gpu/glsl/GrGLSLGeometryProcessor.h"
 #include "src/gpu/glsl/GrGLSLVarying.h"
 #include "src/gpu/glsl/GrGLSLVertexGeoBuilder.h"
 
@@ -546,8 +545,6 @@ size_t VertexSpec::vertexSize() const {
 
 class QuadPerEdgeAAGeometryProcessor : public GrGeometryProcessor {
 public:
-    using Saturate = GrTextureOp::Saturate;
-
     static GrGeometryProcessor* Make(SkArenaAlloc* arena, const VertexSpec& spec) {
         return arena->make([&](void* ptr) {
             return new (ptr) QuadPerEdgeAAGeometryProcessor(spec);
@@ -571,7 +568,7 @@ public:
 
     const char* name() const override { return "QuadPerEdgeAAGeometryProcessor"; }
 
-    void getGLSLProcessorKey(const GrShaderCaps&, GrProcessorKeyBuilder* b) const override {
+    void addToKey(const GrShaderCaps&, GrProcessorKeyBuilder* b) const override {
         // texturing, device-dimensions are single bit flags
         b->addBool(fTexSubset.isInitialized(),    "subset");
         b->addBool(fSampler.isInitialized(),      "textured");
@@ -602,8 +599,8 @@ public:
         b->add32(GrColorSpaceXform::XformKey(fTextureColorSpaceXform.get()), "colorSpaceXform");
     }
 
-    GrGLSLGeometryProcessor* createGLSLInstance(const GrShaderCaps& caps) const override {
-        class GLSLProcessor : public GrGLSLGeometryProcessor {
+    std::unique_ptr<ProgramImpl> makeProgramImpl(const GrShaderCaps&) const override {
+        class Impl : public ProgramImpl {
         public:
             void setData(const GrGLSLProgramDataManager& pdman,
                          const GrShaderCaps&,
@@ -652,9 +649,12 @@ public:
                     SkASSERT(gp.fCoverageMode != CoverageMode::kWithColor || !gp.fNeedsPerspective);
                     // The color cannot be flat if the varying coverage has been modulated into it
                     args.fFragBuilder->codeAppendf("half4 %s;", args.fOutputColor);
-                    args.fVaryingHandler->addPassThroughAttribute(gp.fColor, args.fOutputColor,
-                            gp.fCoverageMode == CoverageMode::kWithColor ?
-                            Interpolation::kInterpolated : Interpolation::kCanBeFlat);
+                    args.fVaryingHandler->addPassThroughAttribute(
+                            gp.fColor.asShaderVar(),
+                            args.fOutputColor,
+                            gp.fCoverageMode == CoverageMode::kWithColor
+                                    ? Interpolation::kInterpolated
+                                    : Interpolation::kCanBeFlat);
                     blendDst = args.fOutputColor;
                 } else {
                     // Output color must be initialized to something
@@ -677,13 +677,15 @@ public:
                         args.fFragBuilder->codeAppendf("texCoord = %s.xy / %s.z;",
                                                        v.fsIn(), v.fsIn());
                     } else {
-                        args.fVaryingHandler->addPassThroughAttribute(gp.fLocalCoord, "texCoord");
+                        args.fVaryingHandler->addPassThroughAttribute(gp.fLocalCoord.asShaderVar(),
+                                                                      "texCoord");
                     }
 
                     // Clamp the now 2D localCoordName variable by the subset if it is provided
                     if (gp.fTexSubset.isInitialized()) {
                         args.fFragBuilder->codeAppend("float4 subset;");
-                        args.fVaryingHandler->addPassThroughAttribute(gp.fTexSubset, "subset",
+                        args.fVaryingHandler->addPassThroughAttribute(gp.fTexSubset.asShaderVar(),
+                                                                      "subset",
                                                                       Interpolation::kCanBeFlat);
                         args.fFragBuilder->codeAppend(
                                 "texCoord = clamp(texCoord, subset.LT, subset.RB);");
@@ -728,8 +730,9 @@ public:
                         // coverage. This only has to be done in the exterior triangles, the
                         // interior of the quad geometry can never be clipped by the subset box.
                         args.fFragBuilder->codeAppend("float4 geoSubset;");
-                        args.fVaryingHandler->addPassThroughAttribute(gp.fGeomSubset, "geoSubset",
-                                        Interpolation::kCanBeFlat);
+                        args.fVaryingHandler->addPassThroughAttribute(gp.fGeomSubset.asShaderVar(),
+                                                                      "geoSubset",
+                                                                      Interpolation::kCanBeFlat);
 #ifdef SK_USE_LEGACY_AA_QUAD_SUBSET
                         args.fFragBuilder->codeAppend(
                                 "if (coverage < 0.5) {"
@@ -760,12 +763,16 @@ public:
                                                    args.fOutputCoverage);
                 }
             }
+
             GrGLSLColorSpaceXformHelper fTextureColorSpaceXformHelper;
         };
-        return new GLSLProcessor;
+
+        return std::make_unique<Impl>();
     }
 
 private:
+    using Saturate = GrTextureOp::Saturate;
+
     QuadPerEdgeAAGeometryProcessor(const VertexSpec& spec)
             : INHERITED(kQuadPerEdgeAAGeometryProcessor_ClassID)
             , fTextureColorSpaceXform(nullptr) {

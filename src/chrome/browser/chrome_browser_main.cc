@@ -13,6 +13,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/constants/ash_features.h"
 #include "base/at_exit.h"
 #include "base/base_switches.h"
 #include "base/bind.h"
@@ -88,6 +89,7 @@
 #include "chrome/browser/startup_data.h"
 #include "chrome/browser/tracing/background_tracing_field_trial.h"
 #include "chrome/browser/tracing/trace_event_system_stats_monitor.h"
+#include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/translate_service.h"
 #include "chrome/browser/ui/javascript_dialogs/chrome_javascript_app_modal_dialog_view_factory.h"
 #include "chrome/browser/ui/profile_error_dialog.h"
@@ -142,6 +144,7 @@
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "components/translate/core/browser/translate_download_manager.h"
+#include "components/translate/core/browser/translate_metrics_logger_impl.h"
 #include "components/variations/field_trial_config/field_trial_util.h"
 #include "components/variations/pref_names.h"
 #include "components/variations/service/variations_service.h"
@@ -316,7 +319,6 @@
 
 #if defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
-#include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "components/spellcheck/browser/pref_names.h"
 #include "components/spellcheck/common/spellcheck_features.h"
 #endif  // defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
@@ -499,11 +501,8 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
     StartupData* startup_data)
     : parameters_(parameters),
       parsed_command_line_(parameters.command_line),
-      result_code_(content::RESULT_CODE_NORMAL_EXIT),
       should_call_pre_main_loop_start_startup_on_variations_service_(
           !parameters.ui_task),
-      profile_(nullptr),
-      run_message_loop_(true),
       startup_data_(startup_data) {
   DCHECK(startup_data_);
   // If we're running tests (ui_task is non-null).
@@ -616,11 +615,9 @@ void ChromeBrowserMainParts::SetupOriginTrialsCommandLine(
             embedder_support::prefs::kOriginTrialDisabledFeatures);
     if (override_disabled_feature_list) {
       std::vector<base::StringPiece> disabled_features;
-      base::StringPiece disabled_feature;
       for (const auto& item : override_disabled_feature_list->GetList()) {
-        if (item.GetAsString(&disabled_feature)) {
-          disabled_features.push_back(disabled_feature);
-        }
+        if (item.is_string())
+          disabled_features.push_back(item.GetString());
       }
       if (!disabled_features.empty()) {
         const std::string override_disabled_features =
@@ -637,11 +634,9 @@ void ChromeBrowserMainParts::SetupOriginTrialsCommandLine(
         embedder_support::prefs::kOriginTrialDisabledTokens);
     if (disabled_token_list) {
       std::vector<base::StringPiece> disabled_tokens;
-      base::StringPiece disabled_token;
       for (const auto& item : disabled_token_list->GetList()) {
-        if (item.GetAsString(&disabled_token)) {
-          disabled_tokens.push_back(disabled_token);
-        }
+        if (item.is_string())
+          disabled_tokens.push_back(item.GetString());
       }
       if (!disabled_tokens.empty()) {
         const std::string disabled_token_switch =
@@ -1408,30 +1403,16 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   StartupProfileInfo profile_info = CreatePrimaryProfile(
       parameters(), /*cur_dir=*/base::FilePath(), parsed_command_line());
 
-  switch (profile_info.mode) {
-    case StartupProfileMode::kBrowserWindow:
-    case StartupProfileMode::kProfilePicker:
-      profile_ = profile_info.profile;
-      break;
-    case StartupProfileMode::kError:
-      return content::RESULT_CODE_NORMAL_EXIT;
-  }
+  profile_ = profile_info.profile;
+  if (profile_info.mode == StartupProfileMode::kError)
+    return content::RESULT_CODE_NORMAL_EXIT;
 
 #if defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
-  if (first_run::IsChromeFirstRun()) {
-    // The installed Windows language packs aren't determined until
-    // the spellcheck service is initialized. Make sure the primary
-    // preferred language is enabled for spellchecking until the user
-    // opts out later. If there is no dictionary support for the language
-    // then it will later be automatically disabled.
-    SpellcheckService::EnableFirstUserLanguageForSpellcheck(
-        profile_->GetPrefs());
-  }
-
   // Create the spellcheck service. This will asynchronously retrieve the
   // Windows platform spellcheck dictionary language tags used to populate the
   // context menu for editable content.
-  if (spellcheck::UseBrowserSpellChecker() &&
+  if (profile_info.mode == StartupProfileMode::kBrowserWindow &&
+      spellcheck::UseBrowserSpellChecker() &&
       profile_->GetPrefs()->GetBoolean(spellcheck::prefs::kSpellCheckEnable) &&
       !base::FeatureList::IsEnabled(
           spellcheck::kWinDelaySpellcheckServiceInit)) {
@@ -1576,6 +1557,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
       profile_->GetPrefs()->GetString(language::prefs::kAcceptLanguages));
   language::LanguageUsageMetrics::RecordApplicationLanguage(
       browser_process_->GetApplicationLocale());
+  translate::TranslateMetricsLoggerImpl::LogApplicationStartMetrics(
+      ChromeTranslateClient::CreateTranslatePrefs(profile_->GetPrefs()));
 // On ChromeOS results in a crash. https://crbug.com/1151558
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
   language::LanguageUsageMetrics::RecordPageLanguages(
@@ -1610,23 +1593,12 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   CloudPrintProxyServiceFactory::GetForProfile(profile_);
 #endif
 
-  // Two different types of hang detection cannot attempt to upload crashes at
-  // the same time or they would interfere with each other.
-  if (!base::HangWatcher::IsCrashReportingEnabled()) {
-    // Start watching all browser threads for responsiveness.
-    ThreadWatcherList::StartWatchingAll(parsed_command_line());
-  }
-
   // This has to come before the first GetInstance() call. PreBrowserStart()
   // seems like a reasonable place to put this, except on Android,
   // OfflinePageInfoHandler::Register() below calls GetInstance().
   // TODO(thestig): See if the Android code below can be moved to later.
   sessions::ContentSerializedNavigationDriver::SetInstance(
       ChromeSerializedNavigationDriver::GetInstance());
-
-#if defined(OS_ANDROID)
-  ThreadWatcherAndroid::RegisterApplicationStatusListener();
-#endif  // defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   offline_pages::OfflinePageInfoHandler::Register();
@@ -1657,8 +1629,10 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  speech::SodaInstaller::GetInstance()->Init(profile_->GetPrefs(),
-                                             browser_process_->local_state());
+  if (base::FeatureList::IsEnabled(ash::features::kOnDeviceSpeechRecognition)) {
+    speech::SodaInstaller::GetInstance()->Init(profile_->GetPrefs(),
+                                               browser_process_->local_state());
+  }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   variations::VariationsService* variations_service =
@@ -1841,9 +1815,6 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
 
   if (notify_result_ == ProcessSingleton::PROCESS_NONE)
     process_singleton_->Cleanup();
-
-  // Stop all tasks that might run on WatchDogThread.
-  ThreadWatcherList::StopWatchingAll();
 
   browser_process_->metrics_service()->Stop();
 

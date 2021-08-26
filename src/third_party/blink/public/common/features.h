@@ -47,11 +47,16 @@ BLINK_COMMON_EXPORT extern const base::Feature kLayoutNG;
 BLINK_COMMON_EXPORT extern const base::Feature kLayoutNGTable;
 BLINK_COMMON_EXPORT extern const base::Feature kMixedContentAutoupgrade;
 BLINK_COMMON_EXPORT extern const base::Feature kNavigationPredictor;
-BLINK_COMMON_EXPORT extern const base::Feature kNavigatorPluginsEmpty;
+BLINK_COMMON_EXPORT extern const base::Feature kNavigatorPluginsFixed;
 BLINK_COMMON_EXPORT extern const base::Feature kPlzDedicatedWorker;
 BLINK_COMMON_EXPORT extern const base::Feature kPortals;
 BLINK_COMMON_EXPORT extern const base::Feature kPortalsCrossOrigin;
 BLINK_COMMON_EXPORT extern const base::Feature kFencedFrames;
+BLINK_COMMON_EXPORT extern const base::Feature kUserAgentClientHint;
+BLINK_COMMON_EXPORT extern const base::Feature kLangClientHintHeader;
+BLINK_COMMON_EXPORT extern const base::Feature
+    kPrefersColorSchemeClientHintHeader;
+
 enum class FencedFramesImplementationType {
   kShadowDOM,
   kMPArch,
@@ -60,9 +65,24 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<
     FencedFramesImplementationType>
     kFencedFramesImplementationTypeParam;
 
-// Prerender2:
-BLINK_COMMON_EXPORT extern const base::Feature kPrerender2;
+BLINK_COMMON_EXPORT extern const base::Feature kSharedStorageAPI;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kSharedStorageURLSelectionOperationInputURLSizeLimit;
 
+// Prerender2:
+// Enables the Prerender2 feature: https://crbug.com/1126305
+// But see comments in the .cc file also.
+BLINK_COMMON_EXPORT extern const base::Feature kPrerender2;
+// Enables restrictions on how much memory is required on a device to use
+// Prerender2. This is a separate feature from kPrerender2 so that the
+// restrictions can be disabled entirely to allow bots to run the tests without
+// needing to explicitly enable Prerender2, which some tests do not want to do
+// because they want to test the default behavior.
+BLINK_COMMON_EXPORT extern const base::Feature kPrerender2MemoryControls;
+// A field trial param that controls how much physical memory is required on a
+// device to use Prerender2. If the device's physical memory does not exceed
+// this value, pages will not be prerendered even when kPrerender2 is enabled.
+BLINK_COMMON_EXPORT extern const char kPrerender2MemoryThresholdParamName[];
 // Returns true when Prerender2 feature is enabled.
 BLINK_COMMON_EXPORT bool IsPrerender2Enabled();
 
@@ -73,9 +93,6 @@ BLINK_COMMON_EXPORT extern const base::Feature
     kPreviewsResourceLoadingHintsSpecificResourceTypes;
 BLINK_COMMON_EXPORT extern const base::Feature
     kPurgeRendererMemoryWhenBackgrounded;
-BLINK_COMMON_EXPORT extern const base::Feature kRawClipboard;
-BLINK_COMMON_EXPORT extern const base::Feature
-    kRTCGetCurrentBrowsingContextMedia;
 BLINK_COMMON_EXPORT extern const base::Feature kRTCUnifiedPlanByDefault;
 BLINK_COMMON_EXPORT extern const base::Feature
     kRTCDisallowPlanBOutsideDeprecationTrial;
@@ -162,9 +179,6 @@ BLINK_COMMON_EXPORT extern const base::Feature
 BLINK_COMMON_EXPORT extern const base::Feature
     kBlinkCompositorUseDisplayThreadPriority;
 
-BLINK_COMMON_EXPORT extern const base::Feature
-    kIgnoreCrossOriginWindowWhenNamedAccessOnWindow;
-
 BLINK_COMMON_EXPORT extern const base::Feature kTransformInterop;
 BLINK_COMMON_EXPORT extern const base::Feature kBackfaceVisibilityInterop;
 
@@ -199,34 +213,6 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kFontPreloadingDelaysRenderingParam;
 
 BLINK_COMMON_EXPORT extern const base::Feature kKeepScriptResourceAlive;
-
-BLINK_COMMON_EXPORT extern const base::Feature kDelayAsyncScriptExecution;
-enum class DelayAsyncScriptDelayType {
-  kFinishedParsing,
-  kFirstPaintOrFinishedParsing,
-  kUseOptimizationGuide,
-};
-BLINK_COMMON_EXPORT extern const base::FeatureParam<DelayAsyncScriptDelayType>
-    kDelayAsyncScriptExecutionDelayParam;
-
-BLINK_COMMON_EXPORT extern const base::Feature
-    kDelayCompetingLowPriorityRequests;
-enum class DelayCompetingLowPriorityRequestsDelayType {
-  kFirstPaint,
-  kFirstContentfulPaint,
-  kAlways,
-  kUseOptimizationGuide,
-};
-BLINK_COMMON_EXPORT extern const base::FeatureParam<
-    DelayCompetingLowPriorityRequestsDelayType>
-    kDelayCompetingLowPriorityRequestsDelayParam;
-enum class DelayCompetingLowPriorityRequestsThreshold {
-  kMedium,
-  kHigh,
-};
-BLINK_COMMON_EXPORT extern const base::FeatureParam<
-    DelayCompetingLowPriorityRequestsThreshold>
-    kDelayCompetingLowPriorityRequestsThresholdParam;
 
 BLINK_COMMON_EXPORT extern const base::Feature kAppCache;
 BLINK_COMMON_EXPORT extern const base::Feature kAppCacheRequireOriginTrial;
@@ -338,6 +324,8 @@ BLINK_COMMON_EXPORT extern const base::Feature
 
 BLINK_COMMON_EXPORT extern const base::Feature kWebAppEnableIsolatedStorage;
 
+BLINK_COMMON_EXPORT extern const base::Feature kWebAppEnableLaunchHandler;
+
 BLINK_COMMON_EXPORT extern const base::Feature kWebAppEnableLinkCapturing;
 
 BLINK_COMMON_EXPORT extern const base::Feature kWebAppEnableManifestId;
@@ -440,6 +428,19 @@ BLINK_COMMON_EXPORT extern const base::Feature kUACHPlatformEnabledByDefault;
 BLINK_COMMON_EXPORT extern const base::Feature kAllowDropAlphaForMediaStream;
 
 BLINK_COMMON_EXPORT extern const base::Feature kThirdPartyStoragePartitioning;
+
+BLINK_COMMON_EXPORT extern const base::Feature kDesktopPWAsSubApps;
+
+// When enabled, we report all JavaScript frameworks via a manual traversal to
+// detect the properties and attributes required.
+BLINK_COMMON_EXPORT extern const base::Feature kReportAllJavascriptFrameworks;
+
+// Suppresses console errors for CORS problems which report an associated
+// inspector issue anyway.
+BLINK_COMMON_EXPORT extern const base::Feature kCORSErrorsIssueOnly;
+
+BLINK_COMMON_EXPORT extern const base::Feature
+    kDeprecateThirdPartyContextWebSQL;
 
 }  // namespace features
 }  // namespace blink

@@ -224,6 +224,7 @@
 
   // Opens second window and loads url.
   [ChromeEarlGrey openNewWindow];
+  [ChromeEarlGrey waitUntilReadyWindowWithNumber:1];
   [ChromeEarlGrey waitForForegroundWindowCount:2];
   [ChromeEarlGrey loadURL:secondURL inWindowWithNumber:1];
 
@@ -242,6 +243,7 @@
 
   // Opens a 'new' second window.
   [ChromeEarlGrey openNewWindow];
+  [ChromeEarlGrey waitUntilReadyWindowWithNumber:1];
   [ChromeEarlGrey waitForForegroundWindowCount:2];
 
   // Loads urls in both windows, and verifies.

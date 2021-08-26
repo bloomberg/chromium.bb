@@ -23,6 +23,7 @@
 #include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/browser/password_store_backend.h"
 #include "components/password_manager/core/browser/password_store_factory_util.h"
 #include "components/password_manager/core/browser/password_store_impl.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -37,20 +38,35 @@
 #if defined(OS_WIN)
 #include "chrome/browser/password_manager/password_manager_util_win.h"
 #endif
+#if defined(OS_ANDROID)
+#include "chrome/browser/password_manager/android/password_store_android_backend_bridge_impl.h"
+#endif
 
 using password_manager::PasswordStore;
+using password_manager::PasswordStoreInterface;
 
+// TODO(crbug.com/1218413): Delete this method when the migration to
+// PasswordStoreInterface is complete and rename the method below to
+// GetForProfile.
 // static
 scoped_refptr<PasswordStore> PasswordStoreFactory::GetForProfile(
     Profile* profile,
     ServiceAccessType access_type) {
+  return base::WrapRefCounted(static_cast<PasswordStore*>(
+      GetInterfaceForProfile(profile, access_type).get()));
+}
+
+// static
+scoped_refptr<PasswordStoreInterface>
+PasswordStoreFactory::GetInterfaceForProfile(Profile* profile,
+                                             ServiceAccessType access_type) {
   // |profile| gets always redirected to a non-Incognito profile below, so
   // Incognito & IMPLICIT_ACCESS means that incognito browsing session would
   // result in traces in the normal profile without the user knowing it.
   if (access_type == ServiceAccessType::IMPLICIT_ACCESS &&
       profile->IsOffTheRecord())
     return nullptr;
-  return base::WrapRefCounted(static_cast<password_manager::PasswordStore*>(
+  return base::WrapRefCounted(static_cast<PasswordStoreInterface*>(
       GetInstance()->GetServiceForBrowserContext(profile, true).get()));
 }
 
@@ -100,7 +116,16 @@ PasswordStoreFactory::BuildServiceInstanceFor(
   scoped_refptr<PasswordStore> ps;
 #if defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_ANDROID) || \
     defined(OS_MAC) || defined(USE_X11) || defined(USE_OZONE)
-  ps = new password_manager::PasswordStoreImpl(std::move(login_db));
+
+  // TODO(crbug.com/1217071): Remove feature-guard once PasswordStoreImpl does
+  // not implement the PasswordStore abstract class anymore.
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kUnifiedPasswordManagerAndroid)) {
+    ps = new password_manager::PasswordStore(
+        password_manager::PasswordStoreBackend::Create(std::move(login_db)));
+  } else {
+    ps = new password_manager::PasswordStoreImpl(std::move(login_db));
+  }
 #else
   NOTIMPLEMENTED();
 #endif

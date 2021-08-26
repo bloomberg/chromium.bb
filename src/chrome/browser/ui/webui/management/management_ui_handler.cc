@@ -44,19 +44,19 @@
 #include "chrome/browser/ash/crostini/crostini_features.h"
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_pref_names.h"
-#include "chrome/browser/ash/policy/core/browser_policy_connector_chromeos.h"
-#include "chrome/browser/ash/policy/core/device_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
+#include "chrome/browser/ash/policy/core/device_cloud_policy_manager_ash.h"
 #include "chrome/browser/ash/policy/dlp/dlp_rules_manager.h"
 #include "chrome/browser/ash/policy/dlp/dlp_rules_manager_factory.h"
 #include "chrome/browser/ash/policy/handlers/minimum_version_policy_handler.h"
 #include "chrome/browser/ash/policy/networking/policy_cert_service.h"
 #include "chrome/browser/ash/policy/networking/policy_cert_service_factory.h"
+#include "chrome/browser/ash/policy/status_collector/device_status_collector.h"
+#include "chrome/browser/ash/policy/status_collector/status_collector.h"
+#include "chrome/browser/ash/policy/uploading/status_uploader.h"
+#include "chrome/browser/ash/policy/uploading/system_log_uploader.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
-#include "chrome/browser/chromeos/policy/status_collector/device_status_collector.h"
-#include "chrome/browser/chromeos/policy/status_collector/status_collector.h"
-#include "chrome/browser/chromeos/policy/uploading/status_uploader.h"
-#include "chrome/browser/chromeos/policy/uploading/system_log_uploader.h"
 #include "chrome/browser/ui/webui/management/management_ui_handler_chromeos.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/grit/chromium_strings.h"
@@ -525,14 +525,14 @@ void ManagementUIHandler::AddReportingInfo(base::Value* report_sources) {
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-const policy::DeviceCloudPolicyManagerChromeOS*
+const policy::DeviceCloudPolicyManagerAsh*
 ManagementUIHandler::GetDeviceCloudPolicyManager() const {
   // Only check for report status in managed environment.
   if (!device_managed_)
     return nullptr;
 
-  const policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  const policy::BrowserPolicyConnectorAsh* connector =
+      g_browser_process->platform_part()->browser_policy_connector_ash();
   return connector->GetDeviceCloudPolicyManager();
 }
 
@@ -637,8 +637,8 @@ void ManagementUIHandler::AddDeviceReportingInfo(
 }
 
 bool ManagementUIHandler::IsUpdateRequiredEol() const {
-  const policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  const policy::BrowserPolicyConnectorAsh* connector =
+      g_browser_process->platform_part()->browser_policy_connector_ash();
   policy::MinimumVersionPolicyHandler* handler =
       connector->GetMinimumVersionPolicyHandler();
   return handler && handler->ShouldShowUpdateRequiredEolBanner();
@@ -859,8 +859,8 @@ policy::PolicyService* ManagementUIHandler::GetPolicyService() {
 
 void ManagementUIHandler::AsyncUpdateLogo() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  policy::BrowserPolicyConnectorAsh* connector =
+      g_browser_process->platform_part()->browser_policy_connector_ash();
   const auto url = connector->GetCustomerLogoURL();
   if (!url.empty() && GURL(url) != logo_url_) {
     icon_fetcher_ = std::make_unique<BitmapFetcher>(
@@ -919,8 +919,8 @@ void AddStatusOverviewManagedDeviceAndAccount(
 
 const std::string ManagementUIHandler::GetDeviceManager() const {
   std::string device_domain;
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  policy::BrowserPolicyConnectorAsh* connector =
+      g_browser_process->platform_part()->browser_policy_connector_ash();
   if (device_managed_)
     device_domain = connector->GetEnterpriseDomainManager();
   if (device_domain.empty() && connector->IsActiveDirectoryManaged())
@@ -1001,7 +1001,7 @@ void ManagementUIHandler::HandleGetDeviceReportingInfo(
   base::Value report_sources(base::Value::Type::LIST);
   AllowJavascript();
 
-  const policy::DeviceCloudPolicyManagerChromeOS* manager =
+  const policy::DeviceCloudPolicyManagerAsh* manager =
       GetDeviceCloudPolicyManager();
   policy::StatusUploader* uploader = nullptr;
   policy::SystemLogUploader* syslog_uploader = nullptr;

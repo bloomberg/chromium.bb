@@ -56,7 +56,7 @@ class TestPDFiumEngine : public PDFiumEngine {
 
   ~TestPDFiumEngine() override = default;
 
-  bool HasPermission(PDFEngine::DocumentPermission permission) const override {
+  bool HasPermission(DocumentPermission permission) const override {
     return base::Contains(permissions_, permission);
   }
 
@@ -90,8 +90,7 @@ class TestPDFiumEngine : public PDFiumEngine {
     return std::vector<uint8_t>(std::begin(kSaveData), std::end(kSaveData));
   }
 
-  void SetPermissions(
-      const std::vector<PDFEngine::DocumentPermission>& permissions) {
+  void SetPermissions(const std::vector<DocumentPermission>& permissions) {
     permissions_.clear();
 
     for (auto& permission : permissions)
@@ -110,7 +109,7 @@ class TestPDFiumEngine : public PDFiumEngine {
 
   DocumentMetadata metadata_;
 
-  base::flat_set<PDFEngine::DocumentPermission> permissions_;
+  base::flat_set<DocumentPermission> permissions_;
 };
 
 class TestPDFiumEngineWithDocInfo : public TestPDFiumEngine {
@@ -225,7 +224,7 @@ class FakePdfViewPluginBase : public PdfViewPluginBase {
               (const char16_t*, const char16_t*, bool),
               (override));
 
-  MOCK_METHOD(bool, IsPrintPreview, (), (override));
+  MOCK_METHOD(bool, IsPrintPreview, (), (const override));
 
   MOCK_METHOD(void, SetSelectedText, (const std::string&), (override));
 
@@ -245,7 +244,9 @@ class FakePdfViewPluginBase : public PdfViewPluginBase {
               (const base::Location&, ResultCallback, int32_t, base::TimeDelta),
               (override));
 
-  MOCK_METHOD(base::WeakPtr<PdfViewPluginBase>, GetWeakPtr, (), (override));
+  base::WeakPtr<PdfViewPluginBase> GetWeakPtr() override {
+    return weak_factory_.GetWeakPtr();
+  }
 
   MOCK_METHOD(std::unique_ptr<UrlLoader>,
               CreateUrlLoaderInternal,
@@ -307,6 +308,8 @@ class FakePdfViewPluginBase : public PdfViewPluginBase {
 
  private:
   std::vector<base::Value> sent_messages_;
+
+  base::WeakPtrFactory<FakePdfViewPluginBase> weak_factory_{this};
 };
 
 base::Value CreateExpectedFormTextFieldFocusChangeResponse() {
@@ -426,7 +429,7 @@ base::Value CreateExpectedSaveToFileResponse(const std::string& token) {
 
 class PdfViewPluginBaseTest : public testing::Test {
  protected:
-  FakePdfViewPluginBase fake_plugin_;
+  testing::NiceMock<FakePdfViewPluginBase> fake_plugin_;
 };
 
 class PdfViewPluginBaseWithEngineTest : public PdfViewPluginBaseTest {
@@ -885,14 +888,14 @@ TEST_F(PdfViewPluginBaseWithEngineTest, GetContentRestrictions) {
             content_restrictions);
 
   // Test engine with only copy permission.
-  engine->SetPermissions({PDFEngine::PERMISSION_COPY});
+  engine->SetPermissions({DocumentPermission::kCopy});
 
   content_restrictions = fake_plugin_.GetContentRestrictions();
   EXPECT_EQ(kContentRestrictionCutPaste | kContentRestrictionPrint,
             content_restrictions);
 
   // Test engine with only print low quality permission.
-  engine->SetPermissions({PDFEngine::PERMISSION_PRINT_LOW_QUALITY});
+  engine->SetPermissions({DocumentPermission::kPrintLowQuality});
 
   content_restrictions = fake_plugin_.GetContentRestrictions();
   EXPECT_EQ(kContentRestrictionCutPaste | kContentRestrictionCopy,
@@ -900,23 +903,23 @@ TEST_F(PdfViewPluginBaseWithEngineTest, GetContentRestrictions) {
 
   // Test engine with both copy and print low quality permissions.
   engine->SetPermissions(
-      {PDFEngine::PERMISSION_COPY, PDFEngine::PERMISSION_PRINT_LOW_QUALITY});
+      {DocumentPermission::kCopy, DocumentPermission::kPrintLowQuality});
 
   content_restrictions = fake_plugin_.GetContentRestrictions();
   EXPECT_EQ(kContentRestrictionCutPaste, content_restrictions);
 
   // Test engine with print high and low quality permissions.
-  engine->SetPermissions({PDFEngine::PERMISSION_PRINT_HIGH_QUALITY,
-                          PDFEngine::PERMISSION_PRINT_LOW_QUALITY});
+  engine->SetPermissions({DocumentPermission::kPrintHighQuality,
+                          DocumentPermission::kPrintLowQuality});
 
   content_restrictions = fake_plugin_.GetContentRestrictions();
   EXPECT_EQ(kContentRestrictionCutPaste | kContentRestrictionCopy,
             content_restrictions);
 
   // Test engine with copy, print high and low quality permissions.
-  engine->SetPermissions({PDFEngine::PERMISSION_COPY,
-                          PDFEngine::PERMISSION_PRINT_HIGH_QUALITY,
-                          PDFEngine::PERMISSION_PRINT_LOW_QUALITY});
+  engine->SetPermissions({DocumentPermission::kCopy,
+                          DocumentPermission::kPrintHighQuality,
+                          DocumentPermission::kPrintLowQuality});
 
   content_restrictions = fake_plugin_.GetContentRestrictions();
   EXPECT_EQ(kContentRestrictionCutPaste, content_restrictions);
@@ -934,7 +937,7 @@ TEST_F(PdfViewPluginBaseWithEngineTest, GetAccessibilityDocInfo) {
   EXPECT_FALSE(doc_info.text_copyable);
 
   // Test engine with only copy permission.
-  engine->SetPermissions({PDFEngine::PERMISSION_COPY});
+  engine->SetPermissions({DocumentPermission::kCopy});
 
   doc_info = fake_plugin_.GetAccessibilityDocInfo();
   EXPECT_EQ(kPageNumber, doc_info.page_count);
@@ -942,7 +945,7 @@ TEST_F(PdfViewPluginBaseWithEngineTest, GetAccessibilityDocInfo) {
   EXPECT_TRUE(doc_info.text_copyable);
 
   // Test engine with only copy accessible permission.
-  engine->SetPermissions({PDFEngine::PERMISSION_COPY_ACCESSIBLE});
+  engine->SetPermissions({DocumentPermission::kCopyAccessible});
 
   doc_info = fake_plugin_.GetAccessibilityDocInfo();
   EXPECT_EQ(kPageNumber, doc_info.page_count);
@@ -951,7 +954,7 @@ TEST_F(PdfViewPluginBaseWithEngineTest, GetAccessibilityDocInfo) {
 
   // Test engine with both copy and copy accessible permission.
   engine->SetPermissions(
-      {PDFEngine::PERMISSION_COPY, PDFEngine::PERMISSION_COPY_ACCESSIBLE});
+      {DocumentPermission::kCopy, DocumentPermission::kCopyAccessible});
 
   doc_info = fake_plugin_.GetAccessibilityDocInfo();
   EXPECT_EQ(kPageNumber, doc_info.page_count);

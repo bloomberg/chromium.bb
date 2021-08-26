@@ -137,8 +137,16 @@ def test(args):
 
 
 def lint(args):
+    cmd = [
+        'eslint/bin/eslint.js',
+        'js',
+        '--resolve-plugins-relative-to',
+        os.path.join(get_chromium_root(), 'third_party/node'),
+    ]
+    if args.fix:
+        cmd.append('--fix')
     try:
-        run_node(['eslint/bin/eslint.js', 'js'])
+        run_node(cmd)
     except subprocess.CalledProcessError as e:
         print('ESLint check failed, return code =', e.returncode)
 
@@ -179,6 +187,7 @@ def parse_args(args):
         'lint',
         help='check code with eslint',
         description='Check coding styles with eslint.')
+    lint_parser.add_argument('--fix', action='store_true')
     lint_parser.set_defaults(func=lint)
 
     tsc_parser = subparsers.add_parser('tsc',

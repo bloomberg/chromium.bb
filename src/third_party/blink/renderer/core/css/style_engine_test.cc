@@ -1588,7 +1588,6 @@ TEST_F(StyleEngineTest, MediaQueriesChangePrefersContrast) {
   ColorSchemeHelper color_scheme_helper(GetDocument());
   color_scheme_helper.SetPreferredContrast(
       mojom::blink::PreferredContrast::kNoPreference);
-  color_scheme_helper.SetForcedColors(GetDocument(), ForcedColors::kNone);
 
   GetDocument().body()->setInnerHTML(R"HTML(
     <style>
@@ -1622,7 +1621,8 @@ TEST_F(StyleEngineTest, MediaQueriesChangePrefersContrast) {
             GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
                 GetCSSPropertyColor()));
 
-  color_scheme_helper.SetForcedColors(GetDocument(), ForcedColors::kActive);
+  color_scheme_helper.SetPreferredContrast(
+      mojom::blink::PreferredContrast::kCustom);
   UpdateAllLifecyclePhases();
   EXPECT_EQ(MakeRGB(0, 0, 255),
             GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
@@ -1636,7 +1636,6 @@ TEST_F(StyleEngineTest, MediaQueriesChangeSpecificPrefersContrast) {
   ColorSchemeHelper color_scheme_helper(GetDocument());
   color_scheme_helper.SetPreferredContrast(
       mojom::blink::PreferredContrast::kNoPreference);
-  color_scheme_helper.SetForcedColors(GetDocument(), ForcedColors::kNone);
 
   GetDocument().body()->setInnerHTML(R"HTML(
     <style>
@@ -1647,14 +1646,8 @@ TEST_F(StyleEngineTest, MediaQueriesChangeSpecificPrefersContrast) {
       @media (prefers-contrast: less) {
         body { color: orange }
       }
-      @media (prefers-contrast: forced) {
+      @media (prefers-contrast: custom) {
         body { color: yellow }
-      }
-      @media (prefers-contrast: forced) and (prefers-contrast: more) {
-        body { color: green }
-      }
-      @media (prefers-contrast: forced) and (prefers-contrast: less) {
-        body { color: purple }
       }
     </style>
     <body></body>
@@ -1679,23 +1672,77 @@ TEST_F(StyleEngineTest, MediaQueriesChangeSpecificPrefersContrast) {
             GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
                 GetCSSPropertyColor()));
 
-  color_scheme_helper.SetForcedColors(GetDocument(), ForcedColors::kActive);
-  UpdateAllLifecyclePhases();
-  EXPECT_EQ(MakeRGB(128, 0, 128),
-            GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
-                GetCSSPropertyColor()));
-
   color_scheme_helper.SetPreferredContrast(
-      mojom::blink::PreferredContrast::kMore);
-  UpdateAllLifecyclePhases();
-  EXPECT_EQ(MakeRGB(0, 128, 0),
-            GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
-                GetCSSPropertyColor()));
-
-  color_scheme_helper.SetPreferredContrast(
-      mojom::blink::PreferredContrast::kNoPreference);
+      mojom::blink::PreferredContrast::kCustom);
   UpdateAllLifecyclePhases();
   EXPECT_EQ(MakeRGB(255, 255, 0),
+            GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
+                GetCSSPropertyColor()));
+}
+
+TEST_F(StyleEngineTest, MediaQueriesChangePrefersContrastOverride) {
+  ScopedForcedColorsForTest forced_scoped_feature(true);
+  ScopedPrefersContrastForTest contrast_scoped_feature(true);
+
+  ColorSchemeHelper color_scheme_helper(GetDocument());
+  color_scheme_helper.SetPreferredContrast(
+      mojom::blink::PreferredContrast::kNoPreference);
+
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <style>
+      body { color: red; forced-color-adjust: none; }
+      @media (prefers-contrast: more) {
+        body { color: blue }
+      }
+      @media (prefers-contrast: less) {
+        body { color: orange }
+      }
+      @media (prefers-contrast: custom) {
+        body { color: yellow }
+      }
+    </style>
+    <body></body>
+  )HTML");
+
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(MakeRGB(255, 0, 0),
+            GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
+                GetCSSPropertyColor()));
+
+  GetDocument().GetPage()->SetMediaFeatureOverride("prefers-contrast", "more");
+
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(MakeRGB(0, 0, 255),
+            GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
+                GetCSSPropertyColor()));
+
+  GetDocument().GetPage()->SetMediaFeatureOverride("prefers-contrast",
+                                                   "no-preference");
+
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(MakeRGB(255, 0, 0),
+            GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
+                GetCSSPropertyColor()));
+
+  GetDocument().GetPage()->SetMediaFeatureOverride("prefers-contrast", "less");
+
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(MakeRGB(255, 165, 0),
+            GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
+                GetCSSPropertyColor()));
+
+  GetDocument().GetPage()->SetMediaFeatureOverride("prefers-contrast",
+                                                   "custom");
+
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(MakeRGB(255, 255, 0),
+            GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
+                GetCSSPropertyColor()));
+
+  GetDocument().GetPage()->ClearMediaFeatureOverrides();
+
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(MakeRGB(255, 0, 0),
             GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
                 GetCSSPropertyColor()));
 }
@@ -2533,18 +2580,21 @@ TEST_F(StyleEngineTest, PseudoElementBaseComputedStyle) {
   before->SetNeedsAnimationStyleRecalc();
   UpdateAllLifecyclePhases();
 
-  scoped_refptr<ComputedStyle> base_computed_style =
-      animations->base_computed_style_;
+  ASSERT_TRUE(before->GetComputedStyle());
+  const ComputedStyle* base_computed_style =
+      before->GetComputedStyle()->GetBaseComputedStyle();
   EXPECT_TRUE(base_computed_style);
 
   before->SetNeedsAnimationStyleRecalc();
   UpdateAllLifecyclePhases();
 
-  EXPECT_TRUE(animations->base_computed_style_);
+  ASSERT_TRUE(before->GetComputedStyle());
+  EXPECT_TRUE(before->GetComputedStyle()->GetBaseComputedStyle());
 #if !DCHECK_IS_ON()
   // When DCHECK is enabled, BaseComputedStyle() returns null and we repeatedly
   // create new instances which means the pointers will be different here.
-  EXPECT_EQ(base_computed_style, animations->base_computed_style_);
+  EXPECT_EQ(base_computed_style,
+            before->GetComputedStyle()->GetBaseComputedStyle());
 #endif
 }
 
@@ -2580,6 +2630,22 @@ TEST_F(StyleEngineTest, ForceReattachLayoutTreeStyleRecalcRoot) {
   inner->SetInlineStyleProperty(CSSPropertyID::kColor, "blue");
 
   EXPECT_EQ(outer, GetStyleRecalcRoot());
+}
+
+TEST_F(StyleEngineTest, ForceReattachNoStyleForElement) {
+  GetDocument().body()->setInnerHTML(R"HTML(<div id="reattach"></div>)HTML");
+
+  auto* reattach = GetDocument().getElementById("reattach");
+
+  UpdateAllLifecyclePhases();
+
+  unsigned initial_count = GetStyleEngine().StyleForElementCount();
+
+  reattach->SetForceReattachLayoutTree();
+  EXPECT_EQ(reattach, GetStyleRecalcRoot());
+
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(GetStyleEngine().StyleForElementCount(), initial_count);
 }
 
 TEST_F(StyleEngineTest, RecalcPropagatedWritingMode) {

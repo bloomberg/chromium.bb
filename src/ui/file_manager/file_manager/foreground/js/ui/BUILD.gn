@@ -162,7 +162,7 @@ js_library("banners") {
 }
 
 js_library("breadcrumb") {
-  deps = [ "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu.m" ]
+  deps = [ "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu" ]
 }
 
 js_unittest("breadcrumb_unittest.m") {
@@ -355,6 +355,7 @@ js_library("file_manager_ui") {
     "//ui/file_manager/file_manager/foreground/elements:files_password_dialog",
     "//ui/file_manager/file_manager/foreground/elements:files_toast",
     "//ui/file_manager/file_manager/foreground/elements:files_tooltip",
+    "//ui/file_manager/file_manager/foreground/js:banner_controller",
     "//ui/file_manager/file_manager/foreground/js:dialog_type",
     "//ui/file_manager/file_manager/foreground/js:launch_param",
     "//ui/file_manager/file_manager/foreground/js:providers_model",

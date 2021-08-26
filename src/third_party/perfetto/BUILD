@@ -190,10 +190,13 @@ perfetto_cc_binary(
 perfetto_cc_binary(
     name = "proto_merger",
     srcs = [
+        "tools/proto_merger/allowlist.cc",
         "tools/proto_merger/allowlist.h",
         "tools/proto_merger/main.cc",
         "tools/proto_merger/proto_file.cc",
         "tools/proto_merger/proto_file.h",
+        "tools/proto_merger/proto_file_serializer.cc",
+        "tools/proto_merger/proto_file_serializer.h",
         "tools/proto_merger/proto_merger.cc",
         "tools/proto_merger/proto_merger.h",
     ],
@@ -4159,5 +4162,31 @@ perfetto_py_library(
         ":protobuf_descriptor_pb2_noop",
         ":pyglib_noop",
     ],
+    imports = [
+        "src/trace_processor/python",
+    ],
     visibility = PERFETTO_CONFIG.public_visibility,
+)
+
+perfetto_py_library(
+    name = "experimental_slice_breakdown_lib",
+    srcs = glob(["tools/slice_breakdown/perfetto/slice_breakdown/*.py"]),
+    deps = [
+        ":trace_processor_py",
+    ],
+    imports = [
+        "tools/slice_breakdown",
+    ],
+)
+
+perfetto_py_binary(
+    name = "experimental_slice_breakdown_bin",
+    srcs = glob(["tools/slice_breakdown/main.py"]),
+    main = "tools/slice_breakdown/main.py",
+    deps = [
+        ":experimental_slice_breakdown_lib",
+        ":trace_processor_py",
+    ],
+    python_version = "PY3",
+    legacy_create_init = 0,
 )

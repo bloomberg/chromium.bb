@@ -25,7 +25,6 @@
 #include "device/gamepad/public/cpp/gamepad_features.h"
 #include "gpu/config/gpu_switches.h"
 #include "media/base/media_switches.h"
-#include "net/base/features.h"
 #include "services/device/public/cpp/device_features.h"
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/features.h"
@@ -232,15 +231,13 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnableCLSScrollAnchoring, blink::features::kCLSScrollAnchoring},
     {wf::EnableCompositeBGColorAnimation, features::kCompositeBGColorAnimation},
     {wf::EnableConsolidatedMovementXY, features::kConsolidatedMovementXY},
-    {wf::EnableCookiesWithoutSameSiteMustBeSecure,
-     net::features::kCookiesWithoutSameSiteMustBeSecure},
     {wf::EnableCooperativeScheduling, features::kCooperativeScheduling},
+    {wf::EnableDevicePosture, features::kDevicePosture},
     {wf::EnableDocumentPolicy, features::kDocumentPolicy},
     {wf::EnableDocumentPolicyNegotiation, features::kDocumentPolicyNegotiation},
-    {wf::EnableExpensiveBackgroundTimerThrottling,
-     features::kExpensiveBackgroundTimerThrottling},
     {wf::EnableFencedFrames, blink::features::kFencedFrames,
      kSetOnlyIfOverridden},
+    {wf::EnableSharedStorageAPI, blink::features::kSharedStorageAPI},
     {wf::EnableForcedColors, features::kForcedColors},
     {wf::EnableFractionalScrollOffsets, features::kFractionalScrollOffsets},
     {wf::EnableGenericSensorExtraClasses, features::kGenericSensorExtraClasses},
@@ -281,11 +278,9 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnablePushSubscriptionChangeEvent,
      features::kPushSubscriptionChangeEvent},
     {wf::EnableRestrictGamepadAccess, features::kRestrictGamepadAccess},
-    {wf::EnableSameSiteByDefaultCookies,
-     net::features::kSameSiteByDefaultCookies},
     {wf::EnableScrollUnification, features::kScrollUnification},
-    {wf::EnableSecurePaymentConfirmationAPIV2,
-     features::kSecurePaymentConfirmationAPIV2},
+    {wf::EnableSecurePaymentConfirmationAPIV3,
+     features::kSecurePaymentConfirmationAPIV3},
     {wf::EnableSecurePaymentConfirmationDebug,
      features::kSecurePaymentConfirmationDebug},
     {wf::EnableSendBeaconThrowForBlobWithNonSimpleType,
@@ -353,6 +348,7 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {"ComputePressure", blink::features::kComputePressure,
            kSetOnlyIfOverridden},
           {"DeclarativeShadowDOM", blink::features::kDeclarativeShadowDOM},
+          {"DesktopPWAsSubApps", blink::features::kDesktopPWAsSubApps},
           {"DocumentTransition", blink::features::kDocumentTransition},
           // TODO(crbug.com/649162): Remove DialogFocusNewSpecBehavior after
           // the feature is in stable with no issues.
@@ -370,16 +366,15 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {"FledgeInterestGroupAPI", blink::features::kFledgeInterestGroupAPI},
           {"ForceSynchronousHTMLParsing",
            blink::features::kForceSynchronousHTMLParsing},
-          {"IgnoreCrossOriginWindowWhenNamedAccessOnWindow",
-           blink::features::kIgnoreCrossOriginWindowWhenNamedAccessOnWindow},
           {"InterestCohortFeaturePolicy",
            blink::features::kInterestCohortFeaturePolicy},
-          {"LangClientHintHeader", features::kLangClientHintHeader},
+          {"LangClientHintHeader", blink::features::kLangClientHintHeader},
           {"LayoutNG", blink::features::kLayoutNG},
           {"LayoutNGTable", blink::features::kLayoutNGTable},
           {"LegacyWindowsDWriteFontFallback",
            features::kLegacyWindowsDWriteFontFallback},
           {"ManagedConfiguration", blink::features::kManagedConfiguration},
+          {"NavigatorPluginsFixed", blink::features::kNavigatorPluginsFixed},
           // TODO(crbug.com/920069): Remove OffsetParentNewSpecBehavior after
           // the feature is in stable with no issues.
           {"OffsetParentNewSpecBehavior",
@@ -387,8 +382,7 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {"OriginPolicy", features::kOriginPolicy},
           {"OriginIsolationHeader", features::kOriginIsolationHeader},
           {"PrefersColorSchemeClientHintHeader",
-           features::kPrefersColorSchemeClientHintHeader},
-          {"RawClipboard", blink::features::kRawClipboard},
+           blink::features::kPrefersColorSchemeClientHintHeader},
           {"SanitizerAPI", blink::features::kSanitizerAPI},
           {"StorageAccessAPI", blink::features::kStorageAccessAPI},
           {"TargetBlankImpliesNoOpener",
@@ -399,7 +393,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            blink::features::
                kThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes},
           {"TrustedDOMTypes", features::kTrustedDOMTypes},
-          {"UserAgentClientHint", features::kUserAgentClientHint},
+          {"UserAgentClientHint", blink::features::kUserAgentClientHint},
+          {"WebAppLaunchHandler", blink::features::kWebAppEnableLaunchHandler},
           {"WebAppLinkCapturing", blink::features::kWebAppEnableLinkCapturing},
           {"WebAppTabStrip", features::kDesktopPWAsTabStrip},
           {"WebAppWindowControlsOverlay",

@@ -298,7 +298,7 @@ void SyncEngineImpl::Shutdown(ShutdownReason reason) {
   DCHECK(!host_);
 
   if (invalidation_handler_registered_) {
-    if (reason != BROWSER_SHUTDOWN) {
+    if (reason != ShutdownReason::BROWSER_SHUTDOWN_AND_KEEP_DATA) {
       bool success = invalidator_->UpdateInterestedTopics(this, /*topics=*/{});
       DCHECK(success);
     }
@@ -328,12 +328,14 @@ void SyncEngineImpl::Shutdown(ShutdownReason reason) {
   // one.
   sync_task_runner_->ReleaseSoon(FROM_HERE, std::move(backend_));
 
-  if (reason == DISABLE_SYNC) {
+  if (reason == ShutdownReason::DISABLE_SYNC_AND_CLEAR_DATA) {
     ClearLocalTransportDataAndNotify();
   }
 }
 
 void SyncEngineImpl::ConfigureDataTypes(ConfigureParams params) {
+  DCHECK(Intersection(params.to_download, ProxyTypes()).Empty());
+
   sync_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&SyncEngineBackend::DoPurgeDisabledTypes,
                                 backend_, params.to_purge));
@@ -342,22 +344,19 @@ void SyncEngineImpl::ConfigureDataTypes(ConfigureParams params) {
                                 std::move(params)));
 }
 
-void SyncEngineImpl::ActivateDataType(
+void SyncEngineImpl::ConnectDataType(
     ModelType type,
     std::unique_ptr<DataTypeActivationResponse> activation_response) {
+  DCHECK(!IsProxyType(type));
   model_type_connector_->ConnectDataType(type, std::move(activation_response));
 }
 
-void SyncEngineImpl::DeactivateDataType(ModelType type) {
+void SyncEngineImpl::DisconnectDataType(ModelType type) {
   model_type_connector_->DisconnectDataType(type);
 }
 
-void SyncEngineImpl::ActivateProxyDataType(ModelType type) {
-  model_type_connector_->ConnectProxyType(type);
-}
-
-void SyncEngineImpl::DeactivateProxyDataType(ModelType type) {
-  model_type_connector_->DisconnectProxyType(type);
+void SyncEngineImpl::SetProxyTabsDatatypeEnabled(bool enabled) {
+  model_type_connector_->SetProxyTabsDatatypeEnabled(enabled);
 }
 
 const SyncEngineImpl::Status& SyncEngineImpl::GetDetailedStatus() const {
@@ -408,16 +407,11 @@ void SyncEngineImpl::DisableProtocolEventForwarding() {
 
 void SyncEngineImpl::FinishConfigureDataTypesOnFrontendLoop(
     const ModelTypeSet enabled_types,
-    const ModelTypeSet succeeded_configuration_types,
-    const ModelTypeSet failed_configuration_types,
-    base::OnceCallback<void(ModelTypeSet, ModelTypeSet)> ready_task) {
+    base::OnceClosure ready_task) {
   last_enabled_types_ = enabled_types;
   SendInterestedTopicsToInvalidator();
 
-  if (!ready_task.is_null()) {
-    std::move(ready_task)
-        .Run(succeeded_configuration_types, failed_configuration_types);
-  }
+  std::move(ready_task).Run();
 }
 
 void SyncEngineImpl::HandleInitializationSuccessOnFrontendLoop(

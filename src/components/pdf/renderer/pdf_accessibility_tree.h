@@ -10,10 +10,8 @@
 #include <vector>
 
 #include "content/public/renderer/plugin_ax_tree_source.h"
-#include "ppapi/c/pp_instance.h"
-#include "ppapi/c/private/ppb_pdf.h"
-#include "ppapi/c/private/ppp_pdf.h"
-#include "ppapi/shared_impl/pdf_accessibility_shared.h"
+#include "content/public/renderer/render_frame_observer.h"
+#include "pdf/pdf_accessibility_data_handler.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_tree.h"
@@ -22,14 +20,21 @@
 #include "ui/gfx/geometry/vector2d_f.h"
 
 namespace chrome_pdf {
+class PdfAccessibilityActionHandler;
+struct AccessibilityActionData;
+struct AccessibilityCharInfo;
 struct AccessibilityDocInfo;
+struct AccessibilityPageInfo;
+struct AccessibilityPageObjects;
+struct AccessibilityTextRunInfo;
 struct AccessibilityViewportInfo;
+struct PageCharacterIndex;
 }  // namespace chrome_pdf
 
 namespace content {
 class RenderAccessibility;
-class RendererPpapiHost;
-}
+class RenderFrame;
+}  // namespace content
 
 namespace gfx {
 class Transform;
@@ -37,16 +42,19 @@ class Transform;
 
 namespace pdf {
 
-class PdfAccessibilityTree : public content::PluginAXTreeSource {
+class PdfAccessibilityTree : public content::PluginAXTreeSource,
+                             public content::RenderFrameObserver,
+                             public chrome_pdf::PdfAccessibilityDataHandler {
  public:
-  PdfAccessibilityTree(content::RendererPpapiHost* host,
-                       PP_Instance instance);
+  PdfAccessibilityTree(
+      content::RenderFrame* render_frame,
+      chrome_pdf::PdfAccessibilityActionHandler* action_handler);
   ~PdfAccessibilityTree() override;
 
   static bool IsDataFromPluginValid(
-      const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs,
-      const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
-      const ppapi::PdfAccessibilityPageObjects& page_objects);
+      const std::vector<chrome_pdf::AccessibilityTextRunInfo>& text_runs,
+      const std::vector<chrome_pdf::AccessibilityCharInfo>& chars,
+      const chrome_pdf::AccessibilityPageObjects& page_objects);
 
   // Stores the page index and annotation index in the page.
   struct AnnotationInfo {
@@ -58,28 +66,31 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource {
     uint32_t annotation_index;
   };
 
+  // chrome_pdf::PdfAccessibilityDataHandler:
   void SetAccessibilityViewportInfo(
-      const chrome_pdf::AccessibilityViewportInfo& viewport_info);
+      const chrome_pdf::AccessibilityViewportInfo& viewport_info) override;
   void SetAccessibilityDocInfo(
-      const chrome_pdf::AccessibilityDocInfo& doc_info);
+      const chrome_pdf::AccessibilityDocInfo& doc_info) override;
   void SetAccessibilityPageInfo(
-      const PP_PrivateAccessibilityPageInfo& page_info,
-      const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs,
-      const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
-      const ppapi::PdfAccessibilityPageObjects& page_objects);
-  void HandleAction(const PP_PdfAccessibilityActionData& action_data);
+      const chrome_pdf::AccessibilityPageInfo& page_info,
+      const std::vector<chrome_pdf::AccessibilityTextRunInfo>& text_runs,
+      const std::vector<chrome_pdf::AccessibilityCharInfo>& chars,
+      const chrome_pdf::AccessibilityPageObjects& page_objects) override;
+
+  void HandleAction(const chrome_pdf::AccessibilityActionData& action_data);
   absl::optional<AnnotationInfo> GetPdfAnnotationInfoFromAXNode(
       int32_t ax_node_id) const;
 
   // Given the AXNode and the character offset within the AXNode, finds the
   // respective page index and character index within the page. Returns
-  // false if the |node| is not a valid static text or inline text box
+  // false if the `node` is not a valid static text or inline text box
   // AXNode. Used to find the character offsets of selection.
-  bool FindCharacterOffset(const ui::AXNode& node,
-                           uint32_t char_offset_in_node,
-                           PP_PdfPageCharacterIndex* page_char_index) const;
+  bool FindCharacterOffset(
+      const ui::AXNode& node,
+      uint32_t char_offset_in_node,
+      chrome_pdf::PageCharacterIndex& page_char_index) const;
 
-  // PluginAXTreeSource implementation.
+  // content::PluginAXTreeSource:
   bool GetTreeData(ui::AXTreeData* tree_data) const override;
   ui::AXNode* GetRoot() const override;
   ui::AXNode* GetFromId(int32_t id) const override;
@@ -95,6 +106,9 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource {
       const override;
   std::unique_ptr<ui::AXActionTarget> CreateActionTarget(
       const ui::AXNode& target_node) override;
+
+  // content::RenderFrameObserver:
+  void OnDestruct() override;
 
   bool ShowContextMenu();
 
@@ -120,10 +134,9 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource {
       ui::AXNodeData* page_node,
       const gfx::RectF& page_bounds,
       uint32_t page_index,
-      const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs,
-      const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
-      const ppapi::PdfAccessibilityPageObjects& page_objects,
-      content::RenderAccessibility* render_accessibility);
+      const std::vector<chrome_pdf::AccessibilityTextRunInfo>& text_runs,
+      const std::vector<chrome_pdf::AccessibilityCharInfo>& chars,
+      const chrome_pdf::AccessibilityPageObjects& page_objects);
 
   // Clears the local cache of node data used to create the tree so that
   // replacement node data can be introduced.
@@ -136,19 +149,18 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource {
   ui::AXTreeData tree_data_;
   ui::AXTree tree_;
 
-  // Unowned. Must outlive |this|.
-  content::RendererPpapiHost* const host_;
+  // Unowned. Must outlive `this`.
+  chrome_pdf::PdfAccessibilityActionHandler* const action_handler_;
 
-  const PP_Instance instance_;
-  // |zoom_| signifies the zoom level set in for the browser content.
-  // |scale_| signifies the scale level set by user. Scale is applied
+  // `zoom_` signifies the zoom level set in for the browser content.
+  // `scale_` signifies the scale level set by user. Scale is applied
   // by the OS while zoom is applied by the application. Higher scale
   // values are usually set to increase the size of everything on screen.
-  // Preferred by people with blurry/low vision. |zoom_| and |scale_|
+  // Preferred by people with blurry/low vision. `zoom_` and `scale_`
   // both help us increase/descrease the size of content on screen.
   // From PDF plugin we receive all the data in logical pixels. Which is
-  // without the zoom and scale factor applied. We apply the |zoom_| and
-  // |scale_| to generate the final bounding boxes of elements in accessibility
+  // without the zoom and scale factor applied. We apply the `zoom_` and
+  // `scale_` to generate the final bounding boxes of elements in accessibility
   // tree.
   double zoom_ = 1.0;
   double scale_ = 1.0;
@@ -166,7 +178,7 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource {
   // AXNode to the page index and index of the character within its
   // page. Used to find the node associated with the start or end of
   // a selection and vice-versa.
-  std::map<int32_t, PP_PdfPageCharacterIndex> node_id_to_page_char_index_;
+  std::map<int32_t, chrome_pdf::PageCharacterIndex> node_id_to_page_char_index_;
 
   // Map between AXNode id to annotation object. Used to find the annotation
   // object to which an action can be passed.

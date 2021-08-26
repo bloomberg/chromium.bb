@@ -31,6 +31,7 @@ class GetBindGroupLayoutTests : public ValidationTest {
         descriptor.layout = nullptr;
         descriptor.vertex.module = vsModule;
         descriptor.cFragment.module = fsModule;
+        descriptor.cTargets[0].writeMask = wgpu::ColorWriteMask::None;
 
         return device.CreateRenderPipeline(&descriptor);
     }
@@ -77,6 +78,7 @@ TEST_F(GetBindGroupLayoutTests, SameObject) {
     descriptor.layout = nullptr;
     descriptor.vertex.module = vsModule;
     descriptor.cFragment.module = fsModule;
+    descriptor.cTargets[0].writeMask = wgpu::ColorWriteMask::None;
 
     wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&descriptor);
 
@@ -213,6 +215,7 @@ TEST_F(GetBindGroupLayoutTests, DefaultTextureSampleType) {
         utils::ComboRenderPipelineDescriptor descriptor;
         descriptor.vertex.module = vertexModule;
         descriptor.cFragment.module = fragmentModule;
+        descriptor.cTargets[0].writeMask = wgpu::ColorWriteMask::None;
         return device.CreateRenderPipeline(&descriptor).GetBindGroupLayout(0);
     };
 
@@ -384,16 +387,15 @@ TEST_F(GetBindGroupLayoutTests, BindingType) {
             [[group(0), binding(0)]] var mySampler: sampler;
 
             [[stage(fragment)]] fn main() {
-                let s : sampler = mySampler;
+                ignore(mySampler);
             })");
         EXPECT_EQ(device.CreateBindGroupLayout(&desc).Get(), pipeline.GetBindGroupLayout(0).Get());
     }
 }
 
-// Test that an external texture binding type matches a shader using texture_external.
-// TODO(dawn:728) Enable this test once Dawn no longer relies on SPIRV-Cross to extract shader info.
-// Consider combining with the similar test above.
-TEST_F(GetBindGroupLayoutTests, DISABLED_ExternalTextureBindingType) {
+// Tests that the external texture binding type matches with a texture_external declared in the
+// shader.
+TEST_F(GetBindGroupLayoutTests, ExternalTextureBindingType) {
     // This test works assuming Dawn Native's object deduplication.
     // Getting the same pointer to equivalent bind group layouts is an implementation detail of Dawn
     // Native.
@@ -412,7 +414,7 @@ TEST_F(GetBindGroupLayoutTests, DISABLED_ExternalTextureBindingType) {
             [[group(0), binding(0)]] var myExternalTexture: texture_external;
 
             [[stage(fragment)]] fn main() {
-               textureDimensions(myExternalTexture);
+               ignore(myExternalTexture);
             })");
     EXPECT_EQ(device.CreateBindGroupLayout(&desc).Get(), pipeline.GetBindGroupLayout(0).Get());
 }
@@ -638,6 +640,7 @@ TEST_F(GetBindGroupLayoutTests, DuplicateBinding) {
     descriptor.layout = nullptr;
     descriptor.vertex.module = vsModule;
     descriptor.cFragment.module = fsModule;
+    descriptor.cTargets[0].writeMask = wgpu::ColorWriteMask::None;
 
     device.CreateRenderPipeline(&descriptor);
 }
@@ -708,6 +711,7 @@ TEST_F(GetBindGroupLayoutTests, MinBufferSize) {
 
     utils::ComboRenderPipelineDescriptor descriptor;
     descriptor.layout = nullptr;
+    descriptor.cTargets[0].writeMask = wgpu::ColorWriteMask::None;
 
     // Check with both stages using 4 bytes.
     {
@@ -749,7 +753,7 @@ TEST_F(GetBindGroupLayoutTests, StageAggregation) {
     wgpu::ShaderModule vsModuleSampler = utils::CreateShaderModule(device, R"(
         [[group(0), binding(0)]] var mySampler: sampler;
         [[stage(vertex)]] fn main() -> [[builtin(position)]] vec4<f32> {
-            let s : sampler = mySampler;
+            ignore(mySampler);
             return vec4<f32>();
         })");
 
@@ -760,7 +764,7 @@ TEST_F(GetBindGroupLayoutTests, StageAggregation) {
     wgpu::ShaderModule fsModuleSampler = utils::CreateShaderModule(device, R"(
         [[group(0), binding(0)]] var mySampler: sampler;
         [[stage(fragment)]] fn main() {
-            let s : sampler = mySampler;
+            ignore(mySampler);
         })");
 
     // Create BGLs with minBufferBindingSize 4 and 64.
@@ -774,6 +778,7 @@ TEST_F(GetBindGroupLayoutTests, StageAggregation) {
 
     utils::ComboRenderPipelineDescriptor descriptor;
     descriptor.layout = nullptr;
+    descriptor.cTargets[0].writeMask = wgpu::ColorWriteMask::None;
 
     // Check with only the vertex shader using the sampler
     {
@@ -1000,6 +1005,7 @@ TEST_F(GetBindGroupLayoutTests, Reflection) {
     pipelineDesc.layout = pipelineLayout;
     pipelineDesc.vertex.module = vsModule;
     pipelineDesc.cFragment.module = fsModule;
+    pipelineDesc.cTargets[0].writeMask = wgpu::ColorWriteMask::None;
 
     wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&pipelineDesc);
 

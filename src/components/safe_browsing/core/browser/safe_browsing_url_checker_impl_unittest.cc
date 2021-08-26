@@ -18,11 +18,14 @@
 #include "components/safe_browsing/core/browser/safe_browsing_token_fetcher.h"
 #include "components/safe_browsing/core/browser/url_checker_delegate.h"
 #include "components/safe_browsing/core/common/proto/csd.pb.h"
+#include "components/security_interstitials/core/unsafe_resource.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
+using security_interstitials::UnsafeResource;
 using ::testing::_;
 
 namespace safe_browsing {
@@ -167,22 +170,15 @@ class MockUrlCheckerDelegate : public UrlCheckerDelegate {
   SBThreatTypeSet threat_types_;
 };
 
-class MockRealTimeUrlLookupService : public RealTimeUrlLookupService {
+class MockRealTimeUrlLookupService : public RealTimeUrlLookupServiceBase {
  public:
   MockRealTimeUrlLookupService()
-      : RealTimeUrlLookupService(
+      : RealTimeUrlLookupServiceBase(
             /*url_loader_factory=*/nullptr,
             /*cache_manager=*/nullptr,
             /*get_user_population_callback=*/base::BindRepeating([]() {
               return ChromeUserPopulation();
             }),
-            /*pref_service=*/nullptr,
-            /*token_fetcher=*/nullptr,
-            /*client_token_config_callback=*/base::BindRepeating([](bool) {
-              return false;
-            }),
-            /*is_off_the_record=*/false,
-            /*variations_service=*/nullptr,
             /*referrer_chain_provider=*/nullptr) {}
   // Returns the threat type previously set by |SetThreatTypeForUrl|. It crashes
   // if the threat type for the |gurl| is not set in advance.
@@ -231,7 +227,32 @@ class MockRealTimeUrlLookupService : public RealTimeUrlLookupService {
     is_cached_response_ = is_cached_response;
   }
 
+  // RealTimeUrlLookupServiceBase:
+  bool CanPerformFullURLLookup() const override { return true; }
+  bool CanCheckSubresourceURL() const override { return false; }
+  bool CanCheckSafeBrowsingDb() const override { return true; }
+
  private:
+  // RealTimeUrlLookupServiceBase:
+  GURL GetRealTimeLookupUrl() const override { return GURL(); }
+  net::NetworkTrafficAnnotationTag GetTrafficAnnotationTag() const override {
+    return TRAFFIC_ANNOTATION_FOR_TESTS;
+  }
+  bool CanPerformFullURLLookupWithToken() const override { return false; }
+  bool CanAttachReferrerChain() const override { return false; }
+  int GetReferrerUserGestureLimit() const override { return 0; }
+  void GetAccessToken(
+      const GURL& url,
+      RTLookupRequestCallback request_callback,
+      RTLookupResponseCallback response_callback,
+      scoped_refptr<base::SequencedTaskRunner> callback_task_runner) override {}
+  absl::optional<std::string> GetDMTokenString() const override {
+    return absl::nullopt;
+  }
+  std::string GetMetricSuffix() const override { return ""; }
+  bool ShouldIncludeCredentials() const override { return false; }
+  double GetMinAllowedTimestampForReferrerChains() const override { return 0; }
+
   base::flat_map<std::string, SBThreatType> urls_threat_type_;
   bool is_cached_response_ = false;
 };
@@ -258,7 +279,9 @@ class SafeBrowsingUrlCheckerTest : public PlatformTest {
         net::HttpRequestHeaders(), /*load_flags=*/0,
         network::mojom::RequestDestination::kDocument,
         /*has_user_gesture=*/false, url_checker_delegate_,
-        mock_web_contents_getter.Get(), real_time_lookup_enabled,
+        mock_web_contents_getter.Get(), UnsafeResource::kNoRenderProcessId,
+        UnsafeResource::kNoRenderFrameId, UnsafeResource::kNoFrameTreeNodeId,
+        real_time_lookup_enabled,
         /*can_rt_check_subresource_url=*/false, can_check_safe_browsing_db,
         base::SequencedTaskRunnerHandle::Get(),
         real_time_lookup_enabled ? url_lookup_service_->GetWeakPtr() : nullptr,

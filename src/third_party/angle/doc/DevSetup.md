@@ -22,11 +22,11 @@ On Windows:
  * Install the [Windows 10 SDK, latest version](https://developer.microsoft.com/en-us/windows/downloads/windows-10-sdk).
    * You can install it through Visual Studio Installer if available.
    * Required for GN-generated Visual Studio projects, the Debug runtime for D3D11, and the D3D Compiler DLL.
- * (optional) See the [Chromium Windows build instructions](https://chromium.googlesource.com/chromium/src/+/master/docs/windows_build_instructions.md) for more info.
+ * (optional) See the [Chromium Windows build instructions](https://chromium.googlesource.com/chromium/src/+/main/docs/windows_build_instructions.md) for more info.
 
 On Linux:
 
- * Install package dependencies by running `install-build-deps.sh` later on.
+ * Dependencies will be handled later (see `install-build-deps.sh` below).
 
 On MacOS:
 
@@ -39,7 +39,7 @@ git clone https://chromium.googlesource.com/angle/angle
 cd angle
 python scripts/bootstrap.py
 gclient sync
-git checkout master
+git checkout main
 ```
 
 On Linux only, you need to install all the necessary dependencies before going further by running this command:
@@ -56,15 +56,19 @@ On Windows only, ensure you **set `DEPOT_TOOLS_WIN_TOOLCHAIN=0` in your environm
 
 GN will generate ninja files. To change the default build options run `gn args out/Debug`.  Some commonly used options are:
 ```
-target_cpu = "x86"        (default is "x64")
-is_clang = false          (to use system default compiler instead of clang)
-is_debug = true           (enable debugging, true is the default)
-dcheck_always_on = true   (enable release asserts and debug layers)
+is_component_build = false      (links dependencies into the build targets)
+target_cpu = "x86"              (default is "x64")
+is_clang = false                (to use system default compiler instead of clang)
+is_debug = false                (for release builds. is_debug = true is the default)
+angle_assert_always_on = true   (enable release asserts and debug layers)
 ```
 
 For a release build run `gn args out/Release` and set `is_debug = false`.
 
 On Windows, you can build for the Universal Windows Platform (UWP) by setting `target_os = "winuwp"` in the args.
+Setting `is_component_build = false` is highly recommended to support moving libEGL.dll and libGLESv2.dll to an
+application's directory and being self-contained, instead of depending on other DLLs (d3dcompiler_47.dll is still
+needed for the Direct3D backend).
 
 For more information on GN run `gn help`.
 

@@ -54,9 +54,6 @@ static_library("renderer") {
     "//third_party/re2",
     "//ui/base",
   ]
-
-  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 }
 
 static_library("test_support") {
@@ -64,6 +61,7 @@ static_library("test_support") {
   sources = [
     "focus_test_utils.cc",
     "focus_test_utils.h",
+    "form_cache_test_api.h",
     "test_password_autofill_agent.cc",
     "test_password_autofill_agent.h",
   ]

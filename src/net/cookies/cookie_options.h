@@ -14,7 +14,6 @@
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_inclusion_status.h"
 #include "net/cookies/same_party_context.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -61,11 +60,6 @@ class NET_EXPORT CookieOptions {
         // Context was originally laxly same-site, was downgraded to cross-site.
         kLaxToCross,
       };
-
-      // Whether the ContextType calculation was affected by the bugfix for
-      // crbug.com/1166211.
-      // TODO(crbug.com/1166211): Remove once no longer needed.
-      bool affected_by_bugfix_1166211 = false;
 
       // Records the type of any context downgrade due to a cross-site redirect,
       // i.e. whether the spec change in
@@ -146,23 +140,6 @@ class NET_EXPORT CookieOptions {
     // schemeful context. Does not touch the metadata.
     void SetContextTypesForTesting(ContextType context_type,
                                    ContextType schemeful_context_type);
-
-    // Whether the request was affected by the bugfix, either schemefully or
-    // schemelessly. This only takes the current Schemeful Same-Site Feature
-    // status into account, and does not take into account the access semantics
-    // used to access the cookie. (This is fine, because the call sites only
-    // look at cookies which were actually excluded due to SameSite=Lax or
-    // unspecified-Lax, which means that cookies with access semantics not
-    // matching the Feature state will be ignored.)
-    // TODO(crbug.com/1166211): Remove once no longer needed.
-    bool AffectedByBugfix1166211() const;
-
-    // If the cookie was excluded solely due to the bugfix, this applies a
-    // warning to the status that will show up in the netlog. Also logs a
-    // histogram showing whether the warning was applied.
-    // TODO(crbug.com/1166211): Remove once no longer needed.
-    void MaybeApplyBugfix1166211WarningToStatusAndLogHistogram(
-        CookieInclusionStatus& status) const;
 
     // Returns whether the context types and all fields of the metadata structs
     // are the same.
@@ -299,8 +276,6 @@ inline void PrintTo(
     const CookieOptions::SameSiteCookieContext::ContextMetadata& m,
     std::ostream* os) {
   *os << "{";
-  if (m.affected_by_bugfix_1166211)
-    *os << " affected_by_bugfix_1166211,";
   *os << " cross_site_redirect_downgrade: "
       << static_cast<int>(m.cross_site_redirect_downgrade);
   *os << " }";

@@ -341,6 +341,25 @@ g.test('getMappedRange,state,mappedAtCreation')
     t.expect(data.byteLength === 0);
   });
 
+g.test('getMappedRange,state,invalid_mappedAtCreation')
+  .desc(
+    `mappedAtCreation should return a mapped buffer, even if the buffer is invalid.
+Like VRAM allocation (see map_oom), validation can be performed asynchronously (in the GPU process)
+so the Content process doesn't necessarily know the buffer is invalid.`
+  )
+  .fn(async t => {
+    const buffer = t.expectGPUError('validation', () =>
+      t.device.createBuffer({
+        mappedAtCreation: true,
+        size: 16,
+        usage: 0xffff_ffff, // Invalid usage
+      })
+    );
+
+    // Should still be valid.
+    buffer.getMappedRange();
+  });
+
 g.test('getMappedRange,state,mappedAgain')
   .desc(
     'Test that it is valid to call getMappedRange in the mapped state, even if there is a duplicate mapAsync before'

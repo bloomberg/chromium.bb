@@ -914,7 +914,7 @@ static void hor_boundary_overlap(int *top_block, int top_stride,
   }
 }
 
-int av1_add_film_grain(const aom_film_grain_t *params, const aom_image_t *src,
+int aom_add_film_grain(const aom_film_grain_t *params, const aom_image_t *src,
                        aom_image_t *dst) {
   uint8_t *luma, *cb, *cr;
   int height, width, luma_stride, chroma_stride;
@@ -1015,12 +1015,12 @@ int av1_add_film_grain(const aom_film_grain_t *params, const aom_image_t *src,
   luma_stride = dst->stride[AOM_PLANE_Y] >> use_high_bit_depth;
   chroma_stride = dst->stride[AOM_PLANE_U] >> use_high_bit_depth;
 
-  return av1_add_film_grain_run(
+  return aom_add_film_grain_run(
       params, luma, cb, cr, height, width, luma_stride, chroma_stride,
       use_high_bit_depth, chroma_subsamp_y, chroma_subsamp_x, mc_identity);
 }
 
-int av1_add_film_grain_run(const aom_film_grain_t *params, uint8_t *luma,
+int aom_add_film_grain_run(const aom_film_grain_t *params, uint8_t *luma,
                            uint8_t *cb, uint8_t *cr, int height, int width,
                            int luma_stride, int chroma_stride,
                            int use_high_bit_depth, int chroma_subsamp_y,

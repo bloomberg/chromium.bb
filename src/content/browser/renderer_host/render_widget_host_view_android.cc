@@ -51,7 +51,6 @@
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/renderer_host/compositor_impl_android.h"
 #include "content/browser/renderer_host/delegated_frame_host_client_android.h"
-#include "content/browser/renderer_host/display_util.h"
 #include "content/browser/renderer_host/input/input_router.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target_android.h"
 #include "content/browser/renderer_host/input/touch_selection_controller_client_manager_android.h"
@@ -87,6 +86,7 @@
 #include "ui/android/window_android_compositor.h"
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/display/display_util.h"
 #include "ui/events/android/gesture_event_android.h"
 #include "ui/events/android/gesture_event_type.h"
 #include "ui/events/android/motion_event_android.h"
@@ -648,11 +648,18 @@ void RenderWidgetHostViewAndroid::OnRenderFrameMetadataChangedAfterActivation(
                             activation_time - rotation_target.first);
         rotation_metrics_.pop_front();
       } else {
-        // Activation from a previous surface that is early than our rotation
-        // target.
-        // TODO(jonross): Switch to an early break when
-        // viz::LocalSurfaceId::IsNewerThan can properly handle mixed changes of
-        // sequence numbers. (crbug.com/1180188)
+        // The embedded surface may have updated the
+        // LocalSurfaceId::child_sequence_number while we were updating the
+        // parent_sequence_number for `rotation_target`. For example starting
+        // from (6, 2) the child advances to (6, 3), and the parent advances to
+        // (7, 2). viz::LocalSurfaceId::IsNewerThan will return false in these
+        // mixed sequence advancements.
+        //
+        // Subsequently we would merge the two into (7, 3) which will become the
+        // actually submitted surface to Viz.
+        //
+        // As such we have now received a surface that is not for our target, so
+        // we break here and await the next frame from the child.
         break;
       }
     }
@@ -2525,8 +2532,8 @@ void RenderWidgetHostViewAndroid::GetScreenInfo(
     RenderWidgetHostViewBase::GetScreenInfo(screen_info);
     return;
   }
-  DisplayUtil::DisplayToScreenInfo(screen_info,
-                                   window->GetDisplayWithWindowColorSpace());
+  display::DisplayUtil::DisplayToScreenInfo(
+      screen_info, window->GetDisplayWithWindowColorSpace());
 }
 
 std::vector<std::unique_ptr<ui::TouchEvent>>

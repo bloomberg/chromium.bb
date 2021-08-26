@@ -15,6 +15,7 @@ import android.support.test.InstrumentationRegistry;
 import androidx.test.filters.MediumTest;
 
 import org.hamcrest.Description;
+import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeMatcher;
 import org.junit.Assert;
 import org.junit.Before;
@@ -28,12 +29,16 @@ import org.chromium.android_webview.common.AwFeatures;
 import org.chromium.android_webview.common.PlatformServiceBridge;
 import org.chromium.android_webview.metrics.AwMetricsServiceClient;
 import org.chromium.base.Callback;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.compat.ApiHelperForM;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.Criteria;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Feature;
+import org.chromium.components.metrics.AndroidMetricsServiceClient;
 import org.chromium.components.metrics.ChromeUserMetricsExtensionProtos.ChromeUserMetricsExtension;
 import org.chromium.components.metrics.MetricsSwitches;
 import org.chromium.components.metrics.StabilityEventType;
@@ -407,6 +412,36 @@ public class AwMetricsIntegrationTest {
                         "Accessibility.Android.ScreenReader.EveryReport"));
     }
 
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView"})
+    @CommandLineFlags.Add({"enable-features=" + AwFeatures.WEBVIEW_APPS_PACKAGE_NAMES_ALLOWLIST})
+    public void testMetadata_appPackageName() throws Throwable {
+        final String appPackageName = ContextUtils.getApplicationContext().getPackageName();
+
+        mRule.runOnUiThread(() -> {
+            AwBrowserProcess.setWebViewPackageName(appPackageName);
+            AndroidMetricsServiceClient.setCanRecordPackageNameForAppTypeForTesting(true);
+            // A valid version string and non expired date means the app package name should be
+            // recorded.
+            AwMetricsServiceClient.setAppPackageNameLoggingRuleForTesting(
+                    /* allowlistComponentVersion= */ "123.456.78.9",
+                    /* allowlistExpiryDateMs= */ System.currentTimeMillis()
+                            + TimeUnit.DAYS.toMillis(1));
+        });
+
+        // Disregard the first UMA log because it's recorded before loading the allowlist.
+        mPlatformServiceBridge.waitForNextMetricsLog();
+
+        // Load a blank page to indicate to the MetricsService that the app is "in use" and
+        // it's OK to upload the next record.
+        mRule.loadUrlAsync(mAwContents, "about:blank");
+
+        ChromeUserMetricsExtension log = mPlatformServiceBridge.waitForNextMetricsLog();
+        SystemProfileProto systemProfile = log.getSystemProfile();
+        Assert.assertEquals(appPackageName, systemProfile.getAppPackageName());
+    }
+
     private static TypeSafeMatcher<ChromeComponent> matchesChromeComponent(
             ChromeComponent expected) {
         return new TypeSafeMatcher<ChromeComponent>() {
@@ -558,12 +593,21 @@ public class AwMetricsIntegrationTest {
             // MetricsProvider::ProvideCurrentSessionData().
             mPlatformServiceBridge.waitForNextMetricsLog();
 
-            final String histogramName = "Android.WebView.WebViewOpenWebVisible.ScreenPortion";
-            int totalSamples = RecordHistogram.getHistogramTotalCountForTesting(histogramName);
-            Assert.assertNotEquals("There should be at least one sample recorded", 0, totalSamples);
+            final String histogramName = "Android.WebView.WebViewOpenWebVisible.ScreenPortion2";
 
-            int zeroBucketSamples =
-                    RecordHistogram.getHistogramValueCountForTesting(histogramName, 0);
+            // The histogram records whole seconds that the WebView has been on screen, we need to
+            // leave enough time for something to be recorded.
+            CriteriaHelper.pollUiThread(() -> {
+                int totalSamples = RecordHistogram.getHistogramTotalCountForTesting(histogramName);
+                Criteria.checkThat("There were no samples recorded", totalSamples, Matchers.not(0));
+            });
+
+            int totalSamples = RecordHistogram.getHistogramTotalCountForTesting(histogramName);
+
+            // Based on VisibilityMetricsLogger::WebViewOpenWebScreenPortion.
+            final int histogramZeroBucket = 11;
+            int zeroBucketSamples = RecordHistogram.getHistogramValueCountForTesting(
+                    histogramName, histogramZeroBucket);
             Assert.assertNotEquals("There should be at least one sample in a non-zero bucket",
                     zeroBucketSamples, totalSamples);
         } finally {

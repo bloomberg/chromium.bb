@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: git-nav-downstream
-.\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 08/10/2020
+.\"    Author: [FIXME: author] [see http://www.docbook.org/tdg5/en/html/author]
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 07/01/2021
 .\"    Manual: Chromium depot_tools Manual
-.\"    Source: depot_tools 8c3f7227
+.\"    Source: depot_tools 906b5026
 .\"  Language: English
 .\"
-.TH "GIT\-NAV\-DOWNSTREAM" "1" "08/10/2020" "depot_tools 8c3f7227" "Chromium depot_tools Manual"
+.TH "GIT\-NAV\-DOWNSTREAM" "1" "07/01/2021" "depot_tools 906b5026" "Chromium depot_tools Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -47,7 +47,7 @@ git-nav-downstream \- Checkout a downstream branch of the currently checked out 
 .\}
 .nf
 \fB$ git map\-branches\fR
-\fBorigin/master
+\fBorigin/main
 \fR  cool_feature
     subfeature
   fixit
@@ -55,14 +55,14 @@ git-nav-downstream \- Checkout a downstream branch of the currently checked out 
 \fB$ git nav\-downstream\fR
 Previous HEAD position was beec6f4 Make ReflectorImpl use mailboxes
 Switched to branch \*(Aqcool_feature\*(Aq
-Your branch is ahead of \*(Aqorigin/master\*(Aq by 4 commits\&.
+Your branch is ahead of \*(Aqorigin/main\*(Aq by 4 commits\&.
   (use "git push" to publish your local commits)
 Please select a downstream branch
   0\&. cool_feature
   1\&. fixit
 Selection (0\-1)[0]: 0
 \fB$ git map\-branches\fR
-origin/master
+origin/main
 \fB  cool_feature *
 \fR    subfeature
   fixit
@@ -73,7 +73,7 @@ Your branch and \*(Aqcool_feature\*(Aq have diverged,
 and have 2 and 1 different commits each, respectively\&.
   (use "git pull" to merge the remote branch into yours)
 \fB$ git map\-branches\fR
-origin/master
+origin/main
   cool_feature
 \fB    subfeature *
 \fR  fixit

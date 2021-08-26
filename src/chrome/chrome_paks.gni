@@ -6,6 +6,7 @@ import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/locales.gni")
 import("//chrome/browser/buildflags.gni")
 import("//chrome/common/features.gni")
+import("//chromeos/components/chromebox_for_meetings/buildflags/buildflags.gni")
 import("//extensions/buildflags/buildflags.gni")
 import("//pdf/features.gni")
 import("//ui/base/ui_features.gni")
@@ -139,7 +140,6 @@ template("chrome_extra_paks") {
         "$root_gen_dir/chrome/downloads_resources.pak",
         "$root_gen_dir/chrome/feedback_resources.pak",
         "$root_gen_dir/chrome/gaia_auth_host_resources.pak",
-        "$root_gen_dir/chrome/history_clusters_resources.pak",
         "$root_gen_dir/chrome/history_resources.pak",
         "$root_gen_dir/chrome/management_resources.pak",
         "$root_gen_dir/chrome/new_tab_page_instant_resources.pak",
@@ -147,6 +147,7 @@ template("chrome_extra_paks") {
         "$root_gen_dir/chrome/new_tab_page_third_party_resources.pak",
         "$root_gen_dir/chrome/read_later_resources.pak",
         "$root_gen_dir/chrome/settings_resources.pak",
+        "$root_gen_dir/chrome/signin_resources.pak",
         "$root_gen_dir/chrome/tab_search_resources.pak",
         "$root_gen_dir/chrome/webid_resources_100_percent.pak",
         "$root_gen_dir/chrome/whats_new_resources.pak",
@@ -167,12 +168,12 @@ template("chrome_extra_paks") {
         "//chrome/browser/resources/gaia_auth_host:resources",
         "//chrome/browser/resources/history:resources",
         "//chrome/browser/resources/management:resources",
-        "//chrome/browser/resources/memories:resources",
         "//chrome/browser/resources/new_tab_page:resources",
         "//chrome/browser/resources/new_tab_page_instant:resources",
         "//chrome/browser/resources/new_tab_page_third_party:resources",
         "//chrome/browser/resources/read_later:resources",
         "//chrome/browser/resources/settings:resources",
+        "//chrome/browser/resources/signin:resources",
         "//chrome/browser/resources/tab_search:resources",
         "//chrome/browser/resources/whats_new:resources",
         "//content/browser/devtools:devtools_resources",
@@ -199,9 +200,12 @@ template("chrome_extra_paks") {
         "$root_gen_dir/ash/ash_shortcut_customization_app_resources.pak",
         "$root_gen_dir/ash/public/cpp/resources/ash_public_unscaled_resources.pak",
         "$root_gen_dir/ash/webui/file_manager/resources/file_manager_swa_resources.pak",
+        "$root_gen_dir/chrome/audio_resources.pak",
         "$root_gen_dir/chrome/bluetooth_pairing_dialog_resources.pak",
         "$root_gen_dir/chrome/browser/supervised_user/supervised_user_unscaled_resources.pak",
+        "$root_gen_dir/chrome/common/chromeos/extensions/chromeos_system_extensions_resources.pak",
         "$root_gen_dir/chrome/emoji_picker_resources.pak",
+        "$root_gen_dir/chrome/enterprise_casting_resources.pak",
         "$root_gen_dir/chrome/internet_config_dialog_resources.pak",
         "$root_gen_dir/chrome/internet_detail_dialog_resources.pak",
         "$root_gen_dir/chrome/launcher_internals_resources.pak",
@@ -223,35 +227,38 @@ template("chrome_extra_paks") {
         "$root_gen_dir/chromeos/chromeos_media_app_resources.pak",
         "$root_gen_dir/chromeos/chromeos_personalization_app_resources.pak",
         "$root_gen_dir/chromeos/chromeos_print_management_resources.pak",
+        "$root_gen_dir/chromeos/chromeos_projector_app_trusted_resources.pak",
+        "$root_gen_dir/chromeos/chromeos_projector_app_untrusted_resources.pak",
         "$root_gen_dir/chromeos/chromeos_resources.pak",
         "$root_gen_dir/chromeos/connectivity_diagnostics_resources.pak",
-        "$root_gen_dir/chromeos/projector/projector_resources.pak",
         "$root_gen_dir/ui/file_manager/file_manager_gen_resources.pak",
         "$root_gen_dir/ui/file_manager/file_manager_resources.pak",
       ]
       deps += [
-        "//ash/components/resources:diagnostics_app_resources",
-        "//ash/components/resources:os_feedback_resources",
-        "//ash/components/resources:scanning_app_resources",
-        "//ash/components/resources:shimless_rma_resources",
-        "//ash/components/resources:shortcut_customization_app_resources",
         "//ash/public/cpp/resources:ash_public_unscaled_resources",
         "//ash/webui/file_manager/resources:file_manager_swa_resources",
+        "//ash/webui/resources:diagnostics_app_resources",
+        "//ash/webui/resources:os_feedback_resources",
+        "//ash/webui/resources:scanning_app_resources",
+        "//ash/webui/resources:shimless_rma_resources",
+        "//ash/webui/resources:shortcut_customization_app_resources",
         "//chrome/browser/resources:bluetooth_pairing_dialog_resources",
         "//chrome/browser/resources:internet_config_dialog_resources",
         "//chrome/browser/resources:internet_detail_dialog_resources",
         "//chrome/browser/resources/chromeos:multidevice_setup_resources",
+        "//chrome/browser/resources/chromeos/audio:resources",
         "//chrome/browser/resources/chromeos/emoji_picker:resources",
+        "//chrome/browser/resources/chromeos/enterprise_casting:resources",
         "//chrome/browser/resources/chromeos/launcher_internals:resources",
         "//chrome/browser/resources/chromeos/login:modulized_resources",
         "//chrome/browser/resources/chromeos/login:resources",
         "//chrome/browser/resources/chromeos/multidevice_internals:resources",
         "//chrome/browser/resources/chromeos/network_ui:resources",
-        "//chrome/browser/resources/chromeos/projector:resources",
         "//chrome/browser/resources/nearby_internals:resources",
         "//chrome/browser/resources/nearby_share:resources",
         "//chrome/browser/resources/settings/chromeos:resources",
         "//chrome/browser/supervised_user:supervised_user_unscaled_resources",
+        "//chrome/common/chromeos/extensions:resources",
         "//chromeos/resources",
         "//chromeos/resources:camera_app_resources",
         "//chromeos/resources:connectivity_diagnostics_resources",
@@ -264,21 +271,23 @@ template("chrome_extra_paks") {
         "//chromeos/resources:media_app_resources",
         "//chromeos/resources:personalization_app_resources",
         "//chromeos/resources:print_management_resources",
+        "//chromeos/resources:projector_app_trusted_resources",
+        "//chromeos/resources:projector_app_untrusted_resources",
         "//ui/file_manager:file_manager_gen_resources",
         "//ui/file_manager:resources",
       ]
 
       if (!is_official_build) {
         sources += [
+          "$root_gen_dir/ash/ash_sample_system_web_app_resources.pak",
+          "$root_gen_dir/ash/ash_sample_system_web_app_untrusted_resources.pak",
           "$root_gen_dir/chromeos/chromeos_demo_mode_app_resources.pak",
-          "$root_gen_dir/chromeos/chromeos_sample_system_web_app_resources.pak",
-          "$root_gen_dir/chromeos/chromeos_sample_system_web_app_untrusted_resources.pak",
           "$root_gen_dir/chromeos/chromeos_telemetry_extension_resources.pak",
         ]
         deps += [
+          "//ash/webui/resources:sample_system_web_app_resources",
+          "//ash/webui/resources:sample_system_web_app_untrusted_resources",
           "//chromeos/resources:demo_mode_app_resources",
-          "//chromeos/resources:sample_system_web_app_resources",
-          "//chromeos/resources:sample_system_web_app_untrusted_resources",
           "//chromeos/resources:telemetry_extension_resources",
         ]
       }
@@ -300,7 +309,7 @@ template("chrome_extra_paks") {
       ]
     }
 
-    if (is_win || is_mac || is_linux || is_chromeos_lacros) {
+    if (is_win || is_mac || is_linux || is_chromeos_lacros || is_fuchsia) {
       sources += [ "$root_gen_dir/chrome/browser_switch_resources.pak" ]
       deps += [ "//chrome/browser/resources/browser_switch:resources" ]
     }
@@ -329,6 +338,12 @@ template("chrome_extra_paks") {
     if (enable_webui_tab_strip) {
       sources += [ "$root_gen_dir/chrome/tab_strip_resources.pak" ]
       deps += [ "//chrome/browser/resources/tab_strip:resources" ]
+    }
+    if (is_cfm) {
+      sources += [ "$root_gen_dir/chrome/cfm_network_settings_resources.pak" ]
+      deps += [
+        "//chrome/browser/resources/chromeos/chromebox_for_meetings:resources",
+      ]
     }
   }
 }

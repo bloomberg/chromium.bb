@@ -64,7 +64,7 @@ public class ContentLanguagesPreference extends Preference {
                         : R.drawable.ic_check_googblue_24dp;
                 ListItem item = buildMenuListItemWithEndIcon(
                         R.string.languages_item_option_offer_to_translate, 0, endIconResId,
-                        info.isSupported());
+                        info.isTranslateSupported());
                 item.model.set(
                         ListMenuItemProperties.TINT_COLOR_ID, R.color.default_icon_color_blue);
 
@@ -139,7 +139,7 @@ public class ContentLanguagesPreference extends Preference {
     private TextView mAddLanguageButton;
     private RecyclerView mRecyclerView;
     private LanguageListAdapter mAdapter;
-    private AddLanguageFragment.Launcher mLauncher;
+    private SelectLanguageFragment.Launcher mLauncher;
 
     public ContentLanguagesPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -181,10 +181,10 @@ public class ContentLanguagesPreference extends Preference {
     }
 
     /**
-     * Register a launcher for AddLanguageFragment. Preference's host fragment should call
+     * Register a launcher for SelectLanguageFragment. Preference's host fragment should call
      * this in its onCreate().
      */
-    void registerActivityLauncher(AddLanguageFragment.Launcher launcher) {
+    void registerActivityLauncher(SelectLanguageFragment.Launcher launcher) {
         mLauncher = launcher;
     }
 

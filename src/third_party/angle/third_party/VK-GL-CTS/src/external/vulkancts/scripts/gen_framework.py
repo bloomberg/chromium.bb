@@ -52,12 +52,12 @@ DEFINITIONS			= [
 	("VK_MAX_MEMORY_HEAPS",					"size_t"),
 	("VK_MAX_DESCRIPTION_SIZE",				"size_t"),
 	("VK_MAX_DEVICE_GROUP_SIZE",			"size_t"),
-	("VK_ATTACHMENT_UNUSED",				"deUint32"),
-	("VK_SUBPASS_EXTERNAL",					"deUint32"),
-	("VK_QUEUE_FAMILY_IGNORED",				"deUint32"),
-	("VK_QUEUE_FAMILY_EXTERNAL",			"deUint32"),
-	("VK_REMAINING_MIP_LEVELS",				"deUint32"),
-	("VK_REMAINING_ARRAY_LAYERS",			"deUint32"),
+	("VK_ATTACHMENT_UNUSED",				"uint32_t"),
+	("VK_SUBPASS_EXTERNAL",					"uint32_t"),
+	("VK_QUEUE_FAMILY_IGNORED",				"uint32_t"),
+	("VK_QUEUE_FAMILY_EXTERNAL",			"uint32_t"),
+	("VK_REMAINING_MIP_LEVELS",				"uint32_t"),
+	("VK_REMAINING_ARRAY_LAYERS",			"uint32_t"),
 	("VK_WHOLE_SIZE",						"vk::VkDeviceSize"),
 	("VK_TRUE",								"vk::VkBool32"),
 	("VK_FALSE",							"vk::VkBool32"),
@@ -66,13 +66,13 @@ DEFINITIONS			= [
 PLATFORM_TYPES		= [
 	# VK_KHR_xlib_surface
 	(["Display","*"],						["XlibDisplayPtr"],				"void*"),
-	(["Window"],							["XlibWindow"],					"deUintptr",),
-	(["VisualID"],							["XlibVisualID"],				"deUint32"),
+	(["Window"],							["XlibWindow"],					"uintptr_t",),
+	(["VisualID"],							["XlibVisualID"],				"uint32_t"),
 
 	# VK_KHR_xcb_surface
 	(["xcb_connection_t", "*"],				["XcbConnectionPtr"],			"void*"),
-	(["xcb_window_t"],						["XcbWindow"],					"deUintptr"),
-	(["xcb_visualid_t"],					["XcbVisualid"],				"deUint32"),
+	(["xcb_window_t"],						["XcbWindow"],					"uintptr_t"),
+	(["xcb_visualid_t"],					["XcbVisualid"],				"uint32_t"),
 
 	# VK_KHR_wayland_surface
 	(["struct", "wl_display","*"],			["WaylandDisplayPtr"],			"void*"),
@@ -97,28 +97,17 @@ PLATFORM_TYPES		= [
 	# VK_EXT_acquire_xlib_display
 	(["RROutput"],							["RROutput"],					"void*"),
 
-	(["zx_handle_t"],						["zx_handle_t"],				"deInt32"),
-	(["GgpFrameToken"],						["GgpFrameToken"],				"deInt32"),
-	(["GgpStreamDescriptor"],				["GgpStreamDescriptor"],		"deInt32"),
+	(["zx_handle_t"],						["zx_handle_t"],				"int32_t"),
+	(["GgpFrameToken"],						["GgpFrameToken"],				"int32_t"),
+	(["GgpStreamDescriptor"],				["GgpStreamDescriptor"],		"int32_t"),
 	(["CAMetalLayer"],						["CAMetalLayer"],				"void*"),
 ]
 
 PLATFORM_TYPE_NAMESPACE	= "pt"
 
 TYPE_SUBSTITUTIONS		= [
-	("uint8_t",		"deUint8"),
-	("uint16_t",	"deUint16"),
-	("uint32_t",	"deUint32"),
-	("uint64_t",	"deUint64"),
-	("int8_t",		"deInt8"),
-	("int16_t",		"deInt16"),
-	("int32_t",		"deInt32"),
-	("int64_t",		"deInt64"),
-	("bool32_t",	"deUint32"),
-	("size_t",		"deUintptr"),
-
 	# Platform-specific
-	("DWORD",		"deUint32"),
+	("DWORD",		"uint32_t"),
 	("HANDLE*",		PLATFORM_TYPE_NAMESPACE + "::" + "Win32Handle*"),
 ]
 
@@ -647,6 +636,7 @@ def parseDefinitions (extensionName, src):
 		extNameUpper = extNameUpper.replace("VK_INTEL_SHADER_INTEGER_FUNCTIONS2", "VK_INTEL_SHADER_INTEGER_FUNCTIONS_2")
 		extNameUpper = extNameUpper.replace("VK_EXT_ROBUSTNESS2", "VK_EXT_ROBUSTNESS_2")
 		extNameUpper = extNameUpper.replace("VK_EXT_FRAGMENT_DENSITY_MAP2", "VK_EXT_FRAGMENT_DENSITY_MAP_2")
+		extNameUpper = extNameUpper.replace("VK_EXT_SHADER_ATOMIC_FLOAT2", "VK_EXT_SHADER_ATOMIC_FLOAT_2")
 		extNameUpper = extNameUpper.replace("VK_AMD_SHADER_CORE_PROPERTIES2", "VK_AMD_SHADER_CORE_PROPERTIES_2")
 		extNameUpper = extNameUpper.replace("VK_EXT_EXTENDED_DYNAMIC_STATE2", "VK_EXT_EXTENDED_DYNAMIC_STATE_2")
 		# SPEC_VERSION enums
@@ -695,7 +685,7 @@ def parseExtensions (src, versions, allFunctions, allCompositeTypes, allEnums, a
 	definitionsByName		= {definition.name: definition for definition in allDefinitions}
 
 	for extensionName, extensionSrc in splitSrc:
-		definitions			= [Definition("deUint32", v.getInHex(), parsePreprocDefinedValueOptional(extensionSrc, v.getInHex())) for v in versions]
+		definitions			= [Definition("uint32_t", v.getInHex(), parsePreprocDefinedValueOptional(extensionSrc, v.getInHex())) for v in versions]
 		definitions.extend([Definition(type, name, parsePreprocDefinedValueOptional(extensionSrc, name)) for name, type in DEFINITIONS])
 		definitions			= [definition for definition in definitions if definition.value != None]
 		additionalDefinitions = parseDefinitions(extensionName, extensionSrc)
@@ -750,7 +740,7 @@ def parse64bitBitfieldValues (src, bitfieldNamesList):
 def parseAPI (src):
 	versionsData	= parseVersions(src)
 	versions		= [Version((v[2], v[3], 0)) for v in versionsData]
-	definitions		= [Definition("deUint32", v.getInHex(), parsePreprocDefinedValue(src, v.getInHex())) for v in versions] +\
+	definitions		= [Definition("uint32_t", v.getInHex(), parsePreprocDefinedValue(src, v.getInHex())) for v in versions] +\
 					  [Definition(type, name, parsePreprocDefinedValue(src, name)) for name, type in DEFINITIONS]
 
 	handles				= parseHandles(src)
@@ -872,16 +862,23 @@ def genEnumSrc (enum):
 	yield "enum %s" % enum.name
 	yield "{"
 
-	lines = ["\t%s\t= %s," % v for v in enum.values]
+	lines = []
 	if areEnumValuesLinear(enum):
-		lastItem = "\t%s_LAST," % getEnumValuePrefix(enum)
-		if parseInt(enum.values[-1][1]) == 0x7FFFFFFF:
-			# if last enum item is *_MAX_ENUM then we need to make sure
-			# it stays last entry also if we append *_LAST to generated
-			# source (without this value of *_LAST won't be correct)
-			lines.insert(-1, lastItem)
-		else:
-			lines.append(lastItem)
+		hasMaxItem	= parseInt(enum.values[-1][1]) == 0x7FFFFFFF
+
+		values		= enum.values[:-1] if hasMaxItem else enum.values
+		lastItem	= "\t%s_LAST," % getEnumValuePrefix(enum)
+
+		# linear values first, followed by *_LAST
+		lines		+= ["\t%s\t= %s," % v for v in values if v[1][:2] != "VK"]
+		lines.append(lastItem)
+
+		# equivalence enums and *_MAX_ENUM
+		lines		+= ["\t%s\t= %s," % v for v in values if v[1][:2] == "VK"]
+		if hasMaxItem:
+			lines.append("\t%s\t= %s," % enum.values[-1])
+	else:
+		lines		+= ["\t%s\t= %s," % v for v in enum.values]
 
 	for line in indentLines(lines):
 		yield line
@@ -895,10 +892,10 @@ def genBitfieldSrc (bitfield):
 		for line in indentLines(["\t%s\t= %s," % v for v in bitfield.values]):
 			yield line
 		yield "};"
-	yield "typedef deUint32 %s;" % bitfield.name
+	yield "typedef uint32_t %s;" % bitfield.name
 
 def genBitfield64Src (bitfield64):
-	yield "typedef deUint64 %s;" % bitfield64.name
+	yield "typedef uint64_t %s;" % bitfield64.name
 	if len(bitfield64.values) > 0:
 		ptrn = "static const " + bitfield64.name + " %s\t= %s;"
 		for line in indentLines([ptrn % v for v in bitfield64.values]):
@@ -1187,7 +1184,7 @@ def writeStrUtilImpl (api, filename):
 						singleDimensional = not '][' in member.arraySize
 						if member.name in ["extensionName", "deviceName", "layerName", "description"]:
 							valFmt = "(const char*)value.%s" % member.name
-						elif singleDimensional and (member.getType() == 'char' or member.getType() == 'deUint8'):
+						elif singleDimensional and (member.getType() == 'char' or member.getType() == 'uint8_t'):
 							newLine = "'\\n' << "
 							valFmt	= "tcu::formatArray(tcu::Format::HexIterator<%s>(DE_ARRAY_BEGIN(value.%s)), tcu::Format::HexIterator<%s>(DE_ARRAY_END(value.%s)))" % (member.getType(), member.name, member.getType(), member.name)
 						else:
@@ -1527,7 +1524,7 @@ def writeDriverIds(filename):
 	driverIdsString.append("static const struct\n"
 					 "{\n"
 					 "\tstd::string driver;\n"
-					 "\tdeUint32 id;\n"
+					 "\tuint32_t id;\n"
 					 "} driverIds [] =\n"
 					 "{")
 
@@ -1588,11 +1585,11 @@ def writeSupportedExtenions(api, filename):
 
 	lines = addVersionDefines(versionSet) + [
 	"",
-	"void getCoreDeviceExtensionsImpl (deUint32 coreVersion, ::std::vector<const char*>&%s)" % (" dst" if len(deviceMap) != 0 else ""),
+	"void getCoreDeviceExtensionsImpl (uint32_t coreVersion, ::std::vector<const char*>&%s)" % (" dst" if len(deviceMap) != 0 else ""),
 	"{"] + writeExtensionsForVersions(deviceMap) + [
 	"}",
 	"",
-	"void getCoreInstanceExtensionsImpl (deUint32 coreVersion, ::std::vector<const char*>&%s)" % (" dst" if len(instanceMap) != 0 else ""),
+	"void getCoreInstanceExtensionsImpl (uint32_t coreVersion, ::std::vector<const char*>&%s)" % (" dst" if len(instanceMap) != 0 else ""),
 	"{"] + writeExtensionsForVersions(instanceMap) + [
 	"}",
 	""] + removeVersionDefines(versionSet)
@@ -1641,10 +1638,10 @@ def writeExtensionFunctions (api, filename):
 		isFirstWrite = True
 		dg_list = []	# Device groups functions need special casing, as Vulkan 1.0 keeps them in VK_KHR_device_groups whereas 1.1 moved them into VK_KHR_swapchain
 		if functionType == Function.TYPE_INSTANCE:
-			yield 'void getInstanceExtensionFunctions (deUint32 apiVersion, ::std::string extName, ::std::vector<const char*>& functions)\n{'
+			yield 'void getInstanceExtensionFunctions (uint32_t apiVersion, ::std::string extName, ::std::vector<const char*>& functions)\n{'
 			dg_list = ["vkGetPhysicalDevicePresentRectanglesKHR"]
 		elif functionType == Function.TYPE_DEVICE:
-			yield 'void getDeviceExtensionFunctions (deUint32 apiVersion, ::std::string extName, ::std::vector<const char*>& functions)\n{'
+			yield 'void getDeviceExtensionFunctions (uint32_t apiVersion, ::std::string extName, ::std::vector<const char*>& functions)\n{'
 			dg_list = ["vkGetDeviceGroupPresentCapabilitiesKHR", "vkGetDeviceGroupSurfacePresentModesKHR", "vkAcquireNextImage2KHR"]
 		for ext in api.extensions:
 			funcNames = []
@@ -1699,12 +1696,12 @@ def writeCoreFunctionalities(api, filename):
 	"",
 	"typedef ::std::pair<const char*, FunctionOrigin> FunctionInfo;",
 	"typedef ::std::vector<FunctionInfo> FunctionInfosList;",
-	"typedef ::std::map<deUint32, FunctionInfosList> ApisMap;",
+	"typedef ::std::map<uint32_t, FunctionInfosList> ApisMap;",
 	"",
 	"void initApisMap (ApisMap& apis)",
 	"{",
 	"	apis.clear();"] + [
-	"	apis.insert(::std::pair<deUint32, FunctionInfosList>(" + str(v) + ", FunctionInfosList()));" for v in api.versions] + [
+	"	apis.insert(::std::pair<uint32_t, FunctionInfosList>(" + str(v) + ", FunctionInfosList()));" for v in api.versions] + [
 	""]
 
 	apiVersions = []

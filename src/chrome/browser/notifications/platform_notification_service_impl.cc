@@ -437,8 +437,11 @@ PlatformNotificationServiceImpl::CreateNotificationFromData(
   if (base::FeatureList::IsEnabled(
           features::kDesktopPWAsNotificationIconAndTitle)) {
     web_app_icon_and_title = FindWebAppIconAndTitle(web_app_hint_url);
-    if (web_app_icon_and_title) {
+    if (web_app_icon_and_title && notification_resources.badge.isNull()) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+      // ChromeOS: Enables web app theme color only if monochrome web app icon
+      // has been specified. `badge` Notifications API icons must be masked with
+      // the accent color.
       optional_fields.ignore_accent_color_for_small_image = true;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
     }
@@ -542,9 +545,8 @@ PlatformNotificationServiceImpl::FindWebAppIconAndTitle(
 
       icon_and_title->title = base::UTF8ToUTF16(
           web_app_provider->registrar().GetAppShortName(*app_id));
-      icon_and_title->icon = web_app_provider->icon_manager()
-                                 .AsWebAppIconManager()
-                                 ->GetMonochromeFavicon(*app_id);
+      icon_and_title->icon =
+          web_app_provider->icon_manager().GetMonochromeFavicon(*app_id);
       return icon_and_title;
     }
   }

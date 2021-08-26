@@ -48,11 +48,8 @@ namespace dawn_native { namespace vulkan {
         ityp::stack_vec<uint32_t, VkDescriptorImageInfo, kMaxOptimalBindingsPerGroup>
             writeImageInfo(bindingCount);
 
-        bool useBindingIndex = device->IsToggleEnabled(Toggle::UseTintGenerator);
-
         uint32_t numWrites = 0;
         for (const auto& it : GetLayout()->GetBindingMap()) {
-            BindingNumber bindingNumber = it.first;
             BindingIndex bindingIndex = it.second;
             const BindingInfo& bindingInfo = GetLayout()->GetBindingInfo(bindingIndex);
 
@@ -60,8 +57,7 @@ namespace dawn_native { namespace vulkan {
             write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
             write.pNext = nullptr;
             write.dstSet = GetHandle();
-            write.dstBinding = useBindingIndex ? static_cast<uint32_t>(bindingIndex)
-                                               : static_cast<uint32_t>(bindingNumber);
+            write.dstBinding = static_cast<uint32_t>(bindingIndex);
             write.dstArrayElement = 0;
             write.descriptorCount = 1;
             write.descriptorType = VulkanDescriptorType(bindingInfo);
@@ -95,11 +91,21 @@ namespace dawn_native { namespace vulkan {
                 case BindingInfoType::Texture: {
                     TextureView* view = ToBackend(GetBindingAsTextureView(bindingIndex));
 
-                    writeImageInfo[numWrites].imageView = view->GetHandle();
+                    VkImageView handle = view->GetHandle();
+                    if (handle == VK_NULL_HANDLE) {
+                        // The Texture was destroyed before the TextureView was created.
+                        // Skip this descriptor write since it would be
+                        // a Vulkan Validation Layers error. This bind group won't be used as it
+                        // is an error to submit a command buffer that references destroyed
+                        // resources.
+                        continue;
+                    }
+                    writeImageInfo[numWrites].imageView = handle;
+
                     // The layout may be GENERAL here because of interactions between the Sampled
                     // and ReadOnlyStorage usages. See the logic in VulkanImageLayout.
                     writeImageInfo[numWrites].imageLayout = VulkanImageLayout(
-                        ToBackend(view->GetTexture()), wgpu::TextureUsage::Sampled);
+                        ToBackend(view->GetTexture()), wgpu::TextureUsage::TextureBinding);
 
                     write.pImageInfo = &writeImageInfo[numWrites];
                     break;
@@ -108,7 +114,16 @@ namespace dawn_native { namespace vulkan {
                 case BindingInfoType::StorageTexture: {
                     TextureView* view = ToBackend(GetBindingAsTextureView(bindingIndex));
 
-                    writeImageInfo[numWrites].imageView = view->GetHandle();
+                    VkImageView handle = view->GetHandle();
+                    if (handle == VK_NULL_HANDLE) {
+                        // The Texture was destroyed before the TextureView was created.
+                        // Skip this descriptor write since it would be
+                        // a Vulkan Validation Layers error. This bind group won't be used as it
+                        // is an error to submit a command buffer that references destroyed
+                        // resources.
+                        continue;
+                    }
+                    writeImageInfo[numWrites].imageView = handle;
                     writeImageInfo[numWrites].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
 
                     write.pImageInfo = &writeImageInfo[numWrites];
@@ -128,7 +143,7 @@ namespace dawn_native { namespace vulkan {
 
                     writeImageInfo[numWrites].imageView = view->GetHandle();
                     writeImageInfo[numWrites].imageLayout = VulkanImageLayout(
-                        ToBackend(view->GetTexture()), wgpu::TextureUsage::Sampled);
+                        ToBackend(view->GetTexture()), wgpu::TextureUsage::TextureBinding);
 
                     write.pImageInfo = &writeImageInfo[numWrites];
                     break;

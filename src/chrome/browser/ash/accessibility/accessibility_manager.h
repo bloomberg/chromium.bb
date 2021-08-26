@@ -24,6 +24,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_observer.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "components/soda/soda_installer.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -108,7 +109,8 @@ class AccessibilityManager
       public user_manager::UserManager::UserSessionStateObserver,
       public chromeos::input_method::InputMethodManager::Observer,
       public CrasAudioHandler::AudioObserver,
-      public ProfileObserver {
+      public ProfileObserver,
+      public speech::SodaInstaller::Observer {
  public:
   // Creates an instance of AccessibilityManager, this should be called once,
   // because only one instance should exist at the same time.
@@ -141,6 +143,10 @@ class AccessibilityManager
   // Enables or disables spoken feedback. Enabling spoken feedback installs the
   // ChromeVox component extension.
   void EnableSpokenFeedback(bool enabled);
+
+  // Enables spoken feedback. Automatically opens the tutorial once ChromeVox
+  // loads.
+  void EnableSpokenFeedbackWithTutorial();
 
   // Returns true if spoken feedback is enabled, or false if not.
   bool IsSpokenFeedbackEnabled() const;
@@ -264,7 +270,7 @@ class AccessibilityManager
   bool PlaySpokenFeedbackToggleCountdown(int tick_count);
 
   // Update when a view is focused in ARC++.
-  void OnViewFocusedInArc(const gfx::Rect& bounds_in_screen, bool is_editable);
+  void OnViewFocusedInArc(const gfx::Rect& bounds_in_screen);
 
   // Plays an earcon. Earcons are brief and distinctive sounds that indicate
   // the their mapped event has occurred. The |sound_key| enums can be found in
@@ -346,6 +352,16 @@ class AccessibilityManager
   void OnSelectToSpeakPanelAction(SelectToSpeakPanelAction action,
                                   double value);
 
+  // SodaInstaller::Observer:
+  void OnSodaInstalled() override;
+  void OnSodaLanguagePackInstalled(speech::LanguageCode language_code) override;
+  void OnSodaError() override;
+  void OnSodaLanguagePackError(speech::LanguageCode language_code) override;
+  void OnSodaProgress(int combined_progress) override {}
+  void OnSodaLanguagePackProgress(int language_progress,
+                                  speech::LanguageCode language_code) override {
+  }
+
   // Test helpers:
   void SetProfileForTest(Profile* profile);
   static void SetBrailleControllerForTest(
@@ -397,8 +413,12 @@ class AccessibilityManager
   void OnFocusChangedInPage(const content::FocusedNodeDetails& details);
   // |triggered_by_user| is false when Dictation pref is changed at startup,
   // and true if Dictation enabled changed because the user changed their
-  // setting in Chrome OS settings or using the tray quick settings menu.
+  // Dictation enabled setting in Chrome OS settings or in the tray quick
+  // settings menu.
   void OnDictationChanged(bool triggered_by_user);
+  // Called after Dictation is enabled by the user or the Dictation locale pref
+  // changes.
+  void MaybeShowNetworkDictationDialogOrInstallSoda();
 
   void CheckBrailleState();
   void ReceiveBrailleDisplayState(
@@ -444,6 +464,24 @@ class AccessibilityManager
   // ProfileObserver:
   void OnProfileWillBeDestroyed(Profile* profile) override;
 
+  // Dictation dialog methods.
+  bool ShouldShowNetworkDictationDialog(const std::string& locale);
+  void ShowNetworkDictationDialog();
+  void OnNetworkDictationDialogAccepted();
+  void OnNetworkDictationDialogDismissed();
+
+  // SODA-related methods.
+  void MaybeInstallSoda(const std::string& locale);
+  void OnSodaInstallSucceeded();
+  void OnSodaInstallError(speech::LanguageCode language_code);
+  void OnSodaInstallUpdated();
+  bool ShouldShowSodaSucceededNotificationForDictation();
+  bool ShouldShowSodaFailedNotificationForDictation(
+      speech::LanguageCode language_code);
+  void ShowSodaDownloadNotificationForDictation(bool succeeded);
+
+  void ShowDictationLanguageUpgradedNudge(const std::string& locale);
+
   // Profile which has the current a11y context.
   Profile* profile_ = nullptr;
   base::ScopedObservation<Profile, ProfileObserver> profile_observation_{this};
@@ -456,6 +494,8 @@ class AccessibilityManager
   bool select_to_speak_enabled_ = false;
   bool switch_access_enabled_ = false;
 
+  bool start_chromevox_with_tutorial_ = false;
+
   // A set of pref names of enabled accessibility features using the
   // accessibility common extension.
   std::set<std::string> accessibility_common_enabled_features_;
@@ -467,6 +507,10 @@ class AccessibilityManager
       extensions::api::braille_display_private::BrailleController,
       extensions::api::braille_display_private::BrailleObserver>
       scoped_braille_observation_{this};
+
+  base::ScopedObservation<speech::SodaInstaller,
+                          speech::SodaInstaller::Observer>
+      soda_observation_{this};
 
   bool braille_ime_current_ = false;
 
@@ -501,6 +545,8 @@ class AccessibilityManager
 
   std::unique_ptr<Dictation> dictation_;
   bool dictation_active_ = false;
+  bool network_dictation_dialog_is_showing_ = false;
+  bool dictation_triggered_by_user_ = false;
 
   base::RepeatingCallback<void()> focus_ring_observer_for_test_;
   base::RepeatingCallback<void()> select_to_speak_state_observer_for_test_;
@@ -519,6 +565,10 @@ class AccessibilityManager
 
   friend class DictationTest;
   friend class SwitchAccessTest;
+  friend class AccessibilityManagerTest;
+  friend class AccessibilityManagerSodaTest;
+  friend class AccessibilityManagerDictationDialogTest;
+  friend class AccessibilityManagerNoOnDeviceSpeechRecognitionTest;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityManager);
 };

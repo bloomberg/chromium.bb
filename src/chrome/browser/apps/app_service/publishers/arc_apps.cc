@@ -50,6 +50,7 @@
 #include "components/full_restore/full_restore_save_handler.h"
 #include "components/full_restore/full_restore_utils.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
+#include "components/services/app_service/public/cpp/types_util.h"
 #include "extensions/grit/extensions_browser_resources.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -80,8 +81,7 @@ void CompleteWithCompressed(apps::mojom::Publisher::LoadIconCallback callback,
 
 void UpdateIconImage(apps::mojom::Publisher::LoadIconCallback callback,
                      apps::mojom::IconValuePtr iv) {
-  if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon) &&
-      iv->icon_type == apps::mojom::IconType::kCompressed) {
+  if (iv->icon_type == apps::mojom::IconType::kCompressed) {
     iv->uncompressed.MakeThreadSafe();
     base::ThreadPool::PostTaskAndReplyWithResult(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
@@ -110,36 +110,16 @@ void OnArcAppIconCompletelyLoaded(
 
   switch (icon_type) {
     case apps::mojom::IconType::kCompressed:
-      if (!base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
-        auto& compressed_images = icon->compressed_images();
-        auto iter =
-            compressed_images.find(apps_util::GetPrimaryDisplayUIScaleFactor());
-        if (iter == compressed_images.end()) {
-          std::move(callback).Run(apps::mojom::IconValue::New());
-          return;
-        }
-        const std::string& data = iter->second;
-        iv->compressed = std::vector<uint8_t>(data.begin(), data.end());
-        if (icon_effects != apps::IconEffects::kNone) {
-          // TODO(crbug.com/988321): decompress the image, apply icon effects
-          // then re-compress.
-        }
-        break;
-      }
       FALLTHROUGH;
     case apps::mojom::IconType::kUncompressed:
       FALLTHROUGH;
     case apps::mojom::IconType::kStandard: {
-      if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
-        iv->uncompressed =
-            icon->is_adaptive_icon()
-                ? apps::CompositeImagesAndApplyMask(
-                      icon->foreground_image_skia(),
-                      icon->background_image_skia())
-                : apps::ApplyBackgroundAndMask(icon->image_skia());
-      } else {
-        iv->uncompressed = icon->image_skia();
-      }
+      iv->uncompressed =
+          icon->is_adaptive_icon()
+              ? apps::CompositeImagesAndApplyMask(icon->foreground_image_skia(),
+                                                  icon->background_image_skia())
+              : apps::ApplyBackgroundAndMask(icon->image_skia());
+
       if (icon_effects != apps::IconEffects::kNone) {
         apps::ApplyIconEffects(
             icon_effects, size_hint_in_dip, std::move(iv),
@@ -535,10 +515,8 @@ ArcApps::ArcApps(Profile* profile, apps::AppServiceProxyChromeOs* proxy)
   auto* intent_helper_bridge =
       arc::ArcIntentHelperBridge::GetForBrowserContext(profile_);
   if (intent_helper_bridge) {
-    if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
-      intent_helper_bridge->SetAdaptiveIconDelegate(
-          &arc_activity_adaptive_icon_impl_);
-    }
+    intent_helper_bridge->SetAdaptiveIconDelegate(
+        &arc_activity_adaptive_icon_impl_);
     arc_intent_helper_observation_.Observe(intent_helper_bridge);
   }
 
@@ -591,8 +569,7 @@ void ArcApps::Shutdown() {
 
   auto* intent_helper_bridge =
       arc::ArcIntentHelperBridge::GetForBrowserContext(profile_);
-  if (intent_helper_bridge &&
-      base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
+  if (intent_helper_bridge) {
     intent_helper_bridge->SetAdaptiveIconDelegate(nullptr);
   }
 
@@ -670,6 +647,12 @@ void ArcApps::Launch(const std::string& app_id,
     return;
   }
 
+  if (app_id == arc::kPlayStoreAppId &&
+      apps_util::IsHumanLaunch(launch_source)) {
+    arc::RecordPlayStoreLaunchWithinAWeek(profile_->GetPrefs(),
+                                          /*launched=*/true);
+  }
+
   auto new_window_info = SetSessionId(std::move(window_info));
   int32_t session_id = new_window_info->window_id;
   int64_t display_id = new_window_info->display_id;
@@ -690,6 +673,12 @@ void ArcApps::LaunchAppWithIntent(const std::string& app_id,
   auto user_interaction_type = GetUserInterationType(launch_source);
   if (!user_interaction_type.has_value()) {
     return;
+  }
+
+  if (app_id == arc::kPlayStoreAppId &&
+      apps_util::IsHumanLaunch(launch_source)) {
+    arc::RecordPlayStoreLaunchWithinAWeek(profile_->GetPrefs(),
+                                          /*launched=*/true);
   }
 
   arc::ArcMetricsService::RecordArcUserInteraction(
@@ -1388,8 +1377,16 @@ apps::mojom::AppPtr ArcApps::Convert(ArcAppListPrefs* prefs,
   // persisted.
   app->show_in_shelf = apps::mojom::OptionalBool::kTrue;
   app->show_in_launcher = show;
-  app->show_in_search = show;
-  app->show_in_management = show;
+
+  if (app_id == arc::kPlayGamesAppId &&
+      show == apps::mojom::OptionalBool::kFalse) {
+    // Play Games should only be hidden in the launcher.
+    app->show_in_search = apps::mojom::OptionalBool::kTrue;
+    app->show_in_management = apps::mojom::OptionalBool::kTrue;
+  } else {
+    app->show_in_search = show;
+    app->show_in_management = show;
+  }
 
   app->has_badge = app_notifications_.HasNotification(app_id)
                        ? apps::mojom::OptionalBool::kTrue

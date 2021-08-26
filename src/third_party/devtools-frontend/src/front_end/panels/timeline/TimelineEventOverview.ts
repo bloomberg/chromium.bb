@@ -32,16 +32,16 @@
 
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
-import type * as SDK from '../../core/sdk/sdk.js'; // eslint-disable-line no-unused-vars
+import type * as SDK from '../../core/sdk/sdk.js';
 import * as TimelineModel from '../../models/timeline_model/timeline_model.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Coverage from '../coverage/coverage.js';
 import * as Protocol from '../../generated/protocol.js';
 
-import type {PerformanceModel} from './PerformanceModel.js'; // eslint-disable-line no-unused-vars
+import type {PerformanceModel} from './PerformanceModel.js';
 import type {EventDispatchTypeDescriptor, TimelineCategory} from './TimelineUIUtils.js';
-import {TimelineUIUtils} from './TimelineUIUtils.js';  // eslint-disable-line no-unused-vars
+import {TimelineUIUtils} from './TimelineUIUtils.js';
 
 const UIStrings = {
   /**
@@ -487,7 +487,6 @@ export class TimelineFilmStripOverview extends TimelineEventOverview {
   static readonly Padding = 2;
 }
 
-
 export class TimelineEventOverviewFrames extends TimelineEventOverview {
   constructor() {
     super('framerate', i18nString(UIStrings.fps));
@@ -735,7 +734,7 @@ export class TimelineEventOverviewCoverage extends TimelineEventOverview {
     const totalByTimestamp = new Map<number, Set<Coverage.CoverageModel.CoverageInfo>>();
     for (const urlInfo of this._coverageModel.entries()) {
       for (const info of urlInfo.entries()) {
-        total += info.size();
+        total += info.getSize();
         for (const [stamp, used] of info.usedByTimestamp()) {
           total_used += used;
 
@@ -770,7 +769,7 @@ export class TimelineEventOverviewCoverage extends TimelineEventOverview {
         }
 
         seen.add(info);
-        sumTotal += info.size();
+        sumTotal += info.getSize();
       }
       sumUsed += usedByTimestamp.get(stamp) || 0;
       coverageByTimestamp.set(stamp, sumUsed / sumTotal);
@@ -802,7 +801,7 @@ export class TimelineEventOverviewCoverage extends TimelineEventOverview {
     ctx.lineTo(-lineWidth, height - yOffset);
 
     let previous: (number|null)|null = null;
-    for (const stamp of this._coverageModel.coverageUpdateTimes()) {
+    for (const stamp of this._coverageModel.getCoverageUpdateTimes()) {
       const coverage: number|null = coverageByTimestamp.get(stamp) || previous;
       previous = coverage;
       if (!coverage) {
@@ -830,7 +829,7 @@ export class TimelineEventOverviewCoverage extends TimelineEventOverview {
     ctx.stroke();
 
     previous = null;
-    for (const stamp of this._coverageModel.coverageUpdateTimes()) {
+    for (const stamp of this._coverageModel.getCoverageUpdateTimes()) {
       const coverage: number|null = coverageByTimestamp.get(stamp) || previous;
       previous = coverage;
       if (!coverage) {

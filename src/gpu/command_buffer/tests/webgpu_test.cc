@@ -123,7 +123,7 @@ void WebGPUTest::Initialize(const Options& options) {
     RunPendingTasks();
   }
 
-  DawnProcTable procs = webgpu()->GetProcs();
+  DawnProcTable procs = webgpu()->GetAPIChannel()->GetProcs();
   dawnProcSetProcs(&procs);
 }
 

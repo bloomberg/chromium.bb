@@ -144,13 +144,13 @@ export class ConsoleContextSelector implements SDK.TargetManager.SDKModelObserve
     }
   }
 
-  _onExecutionContextCreated(event: Common.EventTarget.EventTargetEvent): void {
-    const executionContext = (event.data as SDK.RuntimeModel.ExecutionContext);
+  _onExecutionContextCreated(event: Common.EventTarget.EventTargetEvent<SDK.RuntimeModel.ExecutionContext>): void {
+    const executionContext = event.data;
     this._executionContextCreated(executionContext);
   }
 
-  _onExecutionContextChanged(event: Common.EventTarget.EventTargetEvent): void {
-    const executionContext = (event.data as SDK.RuntimeModel.ExecutionContext);
+  _onExecutionContextChanged(event: Common.EventTarget.EventTargetEvent<SDK.RuntimeModel.ExecutionContext>): void {
+    const executionContext = event.data;
     if (this._items.indexOf(executionContext) === -1) {
       return;
     }
@@ -166,8 +166,8 @@ export class ConsoleContextSelector implements SDK.TargetManager.SDKModelObserve
     this._items.remove(index);
   }
 
-  _onExecutionContextDestroyed(event: Common.EventTarget.EventTargetEvent): void {
-    const executionContext = (event.data as SDK.RuntimeModel.ExecutionContext);
+  _onExecutionContextDestroyed(event: Common.EventTarget.EventTargetEvent<SDK.RuntimeModel.ExecutionContext>): void {
+    const executionContext = event.data;
     this._executionContextDestroyed(executionContext);
   }
 
@@ -267,8 +267,8 @@ export class ConsoleContextSelector implements SDK.TargetManager.SDKModelObserve
     }
   }
 
-  _callFrameSelectedInModel(event: Common.EventTarget.EventTargetEvent): void {
-    const debuggerModel = (event.data as SDK.DebuggerModel.DebuggerModel);
+  _callFrameSelectedInModel(event: Common.EventTarget.EventTargetEvent<SDK.DebuggerModel.DebuggerModel>): void {
+    const debuggerModel = event.data;
     for (const executionContext of this._items) {
       if (executionContext.debuggerModel === debuggerModel) {
         this._dropDown.refreshItem(executionContext);
@@ -276,8 +276,8 @@ export class ConsoleContextSelector implements SDK.TargetManager.SDKModelObserve
     }
   }
 
-  _frameNavigated(event: Common.EventTarget.EventTargetEvent): void {
-    const frame = (event.data as SDK.ResourceTreeModel.ResourceTreeFrame);
+  _frameNavigated(event: Common.EventTarget.EventTargetEvent<SDK.ResourceTreeModel.ResourceTreeFrame>): void {
+    const frame = event.data;
     const runtimeModel = frame.resourceTreeModel().target().model(SDK.RuntimeModel.RuntimeModel);
     if (!runtimeModel) {
       return;

@@ -23,6 +23,7 @@
 #include "components/sync/nigori/nigori_local_change_processor.h"
 #include "components/sync/nigori/nigori_state.h"
 #include "components/sync/nigori/nigori_sync_bridge.h"
+#include "components/sync/protocol/nigori_specifics.pb.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace sync_pb {
@@ -50,7 +51,6 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
   NigoriSyncBridgeImpl(
       std::unique_ptr<NigoriLocalChangeProcessor> processor,
       std::unique_ptr<NigoriStorage> storage,
-      const base::RepeatingCallback<std::string()>& random_salt_generator,
       const std::string& packed_explicit_passphrase_key,
       const std::string& packed_keystore_keys);
   ~NigoriSyncBridgeImpl() override;
@@ -172,10 +172,6 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
 
   const std::unique_ptr<NigoriLocalChangeProcessor> processor_;
   const std::unique_ptr<NigoriStorage> storage_;
-
-  // Used for generation of random salt for deriving keys from custom
-  // passphrase if SCRYPT is enabled.
-  const base::RepeatingCallback<std::string()> random_salt_generator_;
 
   // Stores a key derived from explicit passphrase and loaded from the prefs.
   // Empty (i.e. default value) if prefs doesn't contain this key or in case of

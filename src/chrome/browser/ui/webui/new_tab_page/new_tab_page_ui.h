@@ -8,13 +8,18 @@
 #include "base/macros.h"
 #include "chrome/browser/cart/chrome_cart.mojom.h"
 #include "chrome/browser/new_tab_page/modules/drive/drive.mojom.h"
+#include "chrome/browser/new_tab_page/modules/photos/photos.mojom.h"
 #include "chrome/browser/new_tab_page/modules/task_module/task_module.mojom.h"
-#include "chrome/browser/promo_browser_command/promo_browser_command.mojom-forward.h"
-#include "chrome/browser/search/instant_service_observer.h"
+#include "chrome/browser/promo_browser_command/promo_browser_command.mojom.h"
 #if !defined(OFFICIAL_BUILD)
 #include "chrome/browser/ui/webui/new_tab_page/foo/foo.mojom.h"  // nogncheck crbug.com/1125897
 #endif
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observation.h"
+#include "chrome/browser/search/background/ntp_custom_background_service.h"
+#include "chrome/browser/search/background/ntp_custom_background_service_observer.h"
+#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_service_observer.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page.mojom.h"
 #include "chrome/browser/ui/webui/realbox/realbox.mojom-forward.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -23,6 +28,8 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "ui/base/resource/scale_factor.h"
+#include "ui/native_theme/native_theme.h"
+#include "ui/native_theme/native_theme_observer.h"
 #include "ui/webui/mojo_web_ui_controller.h"
 #include "ui/webui/resources/cr_components/customize_themes/customize_themes.mojom.h"
 #include "ui/webui/resources/cr_components/most_visited/most_visited.mojom.h"
@@ -42,7 +49,6 @@ class ChromeCustomizeThemesHandler;
 class FooHandler;
 #endif
 class GURL;
-class InstantService;
 class MostVisitedHandler;
 class NewTabPageHandler;
 class PrefRegistrySimple;
@@ -53,13 +59,17 @@ class RealboxHandler;
 class TaskModuleHandler;
 class CartHandler;
 class DriveHandler;
+class PhotosHandler;
 
 class NewTabPageUI
     : public ui::MojoWebUIController,
       public new_tab_page::mojom::PageHandlerFactory,
       public customize_themes::mojom::CustomizeThemesHandlerFactory,
       public most_visited::mojom::MostVisitedPageHandlerFactory,
-      public InstantServiceObserver,
+      public promo_browser_command::mojom::CommandHandlerFactory,
+      public ui::NativeThemeObserver,
+      public ThemeServiceObserver,
+      public NtpCustomBackgroundServiceObserver,
       content::WebContentsObserver {
  public:
   explicit NewTabPageUI(content::WebUI* web_ui);
@@ -82,10 +92,10 @@ class NewTabPageUI
       mojo::PendingReceiver<realbox::mojom::PageHandler> pending_page_handler);
 
   // Instantiates the implementor of the
-  // promo_browser_command::mojom::CommandHandler mojo interface passing the
-  // pending receiver that will be internally bound.
+  // promo_browser_command::mojom::CommandHandlerFactory mojo interface passing
+  // the pending receiver that will be internally bound.
   void BindInterface(
-      mojo::PendingReceiver<promo_browser_command::mojom::CommandHandler>
+      mojo::PendingReceiver<promo_browser_command::mojom::CommandHandlerFactory>
           pending_receiver);
 
   // Instantiates the implementor of the
@@ -113,6 +123,11 @@ class NewTabPageUI
   // passing the pending receiver that will be internally bound.
   void BindInterface(
       mojo::PendingReceiver<drive::mojom::DriveHandler> pending_receiver);
+
+  // Instantiates the implementor of photos::mojom::PhotosHandler mojo interface
+  // passing the pending receiver that will be internally bound.
+  void BindInterface(
+      mojo::PendingReceiver<photos::mojom::PhotosHandler> pending_receiver);
 
 #if !defined(OFFICIAL_BUILD)
   // Instantiates the implementor of the foo::mojom::FooHandler mojo interface
@@ -143,24 +158,30 @@ class NewTabPageUI
       mojo::PendingReceiver<customize_themes::mojom::CustomizeThemesHandler>
           pending_handler) override;
 
+  // promo_browser_command::mojom::CommandHandlerFactory
+  void CreateBrowserCommandHandler(
+      mojo::PendingReceiver<promo_browser_command::mojom::CommandHandler>
+          pending_handler) override;
+
   // most_visited::mojom::MostVisitedPageHandlerFactory:
   void CreatePageHandler(
       mojo::PendingRemote<most_visited::mojom::MostVisitedPage> pending_page,
       mojo::PendingReceiver<most_visited::mojom::MostVisitedPageHandler>
           pending_page_handler) override;
 
-  // InstantServiceObserver:
-  void NtpThemeChanged(const NtpTheme& theme) override;
-  void MostVisitedInfoChanged(const InstantMostVisitedInfo& info) override;
+  // ui::NativeThemeObserver:
+  void OnNativeThemeUpdated(ui::NativeTheme* observed_theme) override;
+
+  // ThemeServiceObserver:
+  void OnThemeChanged() override;
+
+  // NtpCustomBackgroundServiceObserver:
+  void OnCustomBackgroundImageUpdated() override;
+  void OnNtpCustomBackgroundServiceShuttingDown() override;
 
   // content::WebContentsObserver:
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;
-
-  // Updates the load time data with the current theme's background color. That
-  // way the background color is available as soon as the page loads and we
-  // prevent a potential white flicker.
-  void UpdateBackgroundColor(const NtpTheme& theme);
 
   bool IsCustomLinksEnabled() const;
   bool IsShortcutsVisible() const;
@@ -181,13 +202,23 @@ class NewTabPageUI
   mojo::Receiver<most_visited::mojom::MostVisitedPageHandlerFactory>
       most_visited_page_factory_receiver_;
   std::unique_ptr<PromoBrowserCommandHandler> promo_browser_command_handler_;
+  mojo::Receiver<promo_browser_command::mojom::CommandHandlerFactory>
+      browser_command_factory_receiver_;
   std::unique_ptr<RealboxHandler> realbox_handler_;
 #if !defined(OFFICIAL_BUILD)
   std::unique_ptr<FooHandler> foo_handler_;
 #endif
   std::unique_ptr<CartHandler> cart_handler_;
   Profile* profile_;
-  InstantService* instant_service_;
+  ThemeService* theme_service_;
+  NtpCustomBackgroundService* ntp_custom_background_service_;
+  base::ScopedObservation<ui::NativeTheme, ui::NativeThemeObserver>
+      native_theme_observation_{this};
+  base::ScopedObservation<ThemeService, ThemeServiceObserver>
+      theme_service_observation_{this};
+  base::ScopedObservation<NtpCustomBackgroundService,
+                          NtpCustomBackgroundServiceObserver>
+      ntp_custom_background_service_observation_{this};
   content::WebContents* web_contents_;
   // Time the NTP started loading. Used for logging the WebUI NTP's load
   // performance.
@@ -196,6 +227,7 @@ class NewTabPageUI
   // Mojo implementations for modules:
   std::unique_ptr<TaskModuleHandler> task_module_handler_;
   std::unique_ptr<DriveHandler> drive_handler_;
+  std::unique_ptr<PhotosHandler> photos_handler_;
 
   PrefChangeRegistrar pref_change_registrar_;
 

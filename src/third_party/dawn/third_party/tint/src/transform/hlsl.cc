@@ -31,6 +31,7 @@
 #include "src/transform/zero_init_workgroup_memory.h"
 
 TINT_INSTANTIATE_TYPEINFO(tint::transform::Hlsl);
+TINT_INSTANTIATE_TYPEINFO(tint::transform::Hlsl::Config);
 
 namespace tint {
 namespace transform {
@@ -38,18 +39,22 @@ namespace transform {
 Hlsl::Hlsl() = default;
 Hlsl::~Hlsl() = default;
 
-Output Hlsl::Run(const Program* in, const DataMap&) {
+Output Hlsl::Run(const Program* in, const DataMap& inputs) {
   Manager manager;
   DataMap data;
+
+  auto* cfg = inputs.Get<Config>();
 
   // Attempt to convert `loop`s into for-loops. This is to try and massage the
   // output into something that will not cause FXC to choke or misbehave.
   manager.Add<FoldTrivialSingleUseLets>();
   manager.Add<LoopToForLoop>();
 
-  // ZeroInitWorkgroupMemory must come before CanonicalizeEntryPointIO as
-  // ZeroInitWorkgroupMemory may inject new builtin parameters.
-  manager.Add<ZeroInitWorkgroupMemory>();
+  if (!cfg || !cfg->disable_workgroup_init) {
+    // ZeroInitWorkgroupMemory must come before CanonicalizeEntryPointIO as
+    // ZeroInitWorkgroupMemory may inject new builtin parameters.
+    manager.Add<ZeroInitWorkgroupMemory>();
+  }
   manager.Add<CanonicalizeEntryPointIO>();
   manager.Add<InlinePointerLets>();
   // Simplify cleans up messy `*(&(expr))` expressions from InlinePointerLets.
@@ -67,11 +72,8 @@ Output Hlsl::Run(const Program* in, const DataMap&) {
   manager.Add<PromoteInitializersToConstVar>();
   manager.Add<PadArrayElements>();
 
-  ZeroInitWorkgroupMemory::Config zero_init_cfg;
-  zero_init_cfg.init_arrays_with_loop_size_threshold = 32;  // 8 scalars
-  data.Add<ZeroInitWorkgroupMemory::Config>(zero_init_cfg);
   data.Add<CanonicalizeEntryPointIO::Config>(
-      CanonicalizeEntryPointIO::BuiltinStyle::kStructMember);
+      CanonicalizeEntryPointIO::ShaderStyle::kHlsl);
   auto out = manager.Run(in, data);
   if (!out.program.IsValid()) {
     return out;
@@ -96,6 +98,10 @@ void Hlsl::AddEmptyEntryPoint(CloneContext& ctx) const {
                 {ctx.dst->Stage(ast::PipelineStage::kCompute),
                  ctx.dst->WorkgroupSize(1)});
 }
+
+Hlsl::Config::Config(bool disable_wi) : disable_workgroup_init(disable_wi) {}
+Hlsl::Config::Config(const Config&) = default;
+Hlsl::Config::~Config() = default;
 
 }  // namespace transform
 }  // namespace tint

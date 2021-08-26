@@ -55,8 +55,6 @@ extern const base::Feature kAppManagementIntentSettings;
 
 #if !defined(OS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kAppServiceAdaptiveIcon;
-COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kAppServiceExternalProtocol;
 #endif  // !defined(OS_ANDROID)
 
@@ -80,6 +78,11 @@ COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kBorealis;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kChangePictureVideoMode;
+
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kChromeAppsDeprecation;
+#endif
 
 #if defined(OS_WIN)
 COMPONENT_EXPORT(CHROME_FEATURES)
@@ -155,13 +158,7 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDefaultPinnedAppsUpdate2021Q2;
 #endif
 
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kDesktopCaptureTabSharingInfobar;
-
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kDesktopPWAsAppIconShortcutsMenu;
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_MAC) || defined(OS_LINUX)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDesktopPWAsAppIconShortcutsMenuUI;
 #endif
@@ -329,6 +326,12 @@ extern const base::Feature kHappinessTrackingSystem;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kHappinessTrackingSystemOnboarding;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kHappinessTrackingSystemUnlock;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kHappinessTrackingSystemSmartLock;
 #endif
 
 COMPONENT_EXPORT(CHROME_FEATURES)
@@ -356,10 +359,16 @@ extern const base::Feature kIncompatibleApplicationsWarning;
 #if defined(OS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kIncognitoBrandConsistencyForAndroid;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kIncognitoReauthenticationForAndroid;
 #endif
 
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kIncognitoNtpRevamp;
+
 #if defined(OS_MAC) || defined(OS_WIN) || defined(OS_LINUX) || \
-    defined(OS_CHROMEOS)
+    defined(OS_CHROMEOS) || defined(OS_FUCHSIA)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kIncognitoBrandConsistencyForDesktop;
 
@@ -450,11 +459,6 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kNotificationDurationLongForRequireInteraction;
 #endif
 
-#if defined(OS_MAC)
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kNotificationsViaHelperApp;
-#endif
-
 #if defined(OS_POSIX)
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kNtlmV2Enabled;
 #endif
@@ -488,6 +492,12 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kPermissionPredictions;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::FeatureParam<double> kPermissionPredictionsHoldbackChance;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kPermissionGeolocationPredictions;
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::FeatureParam<double>
+    kPermissionGeolocationPredictionsHoldbackChance;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 COMPONENT_EXPORT(CHROME_FEATURES)
@@ -701,6 +711,11 @@ extern const base::Feature kWebAppManifestPolicyAppIdentityUpdate;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kWebAppsCrosapi;
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kWebKioskEnableLacros;
 #endif
 
 #if !defined(OS_ANDROID)

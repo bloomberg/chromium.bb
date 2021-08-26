@@ -81,6 +81,9 @@ usage: %s <options> addr[:port] media_file
       -v, --verbose: Enable verbose logging.
 
       -h, --help: Show this help message.
+
+      -c, --codec: Specifies the video codec to be used. Can be one of:
+                   vp8, vp9, av1. Defaults to vp8 if not specified.
 )";
 
   std::cerr << StringPrintf(kTemplate, argv0, argv0, kDefaultCastPort,
@@ -122,6 +125,7 @@ int StandaloneSenderMain(int argc, char* argv[]) {
     {"tracing", no_argument, nullptr, 't'},
     {"verbose", no_argument, nullptr, 'v'},
     {"help", no_argument, nullptr, 'h'},
+    {"codec", required_argument, nullptr, 'c'},
     {nullptr, 0, nullptr, 0}
   };
 
@@ -131,9 +135,10 @@ int StandaloneSenderMain(int argc, char* argv[]) {
   bool use_android_rtp_hack = false;
   bool use_remoting = false;
   bool is_verbose = false;
+  VideoCodec codec = VideoCodec::kVp8;
   std::unique_ptr<TextTraceLoggingPlatform> trace_logger;
   int ch = -1;
-  while ((ch = getopt_long(argc, argv, "m:nd:artvh", kArgumentOptions,
+  while ((ch = getopt_long(argc, argv, "m:nd:artvhc:", kArgumentOptions,
                            nullptr)) != -1) {
     switch (ch) {
       case 'm':
@@ -168,6 +173,20 @@ int StandaloneSenderMain(int argc, char* argv[]) {
       case 'h':
         LogUsage(argv[0]);
         return 1;
+      case 'c':
+        auto specified_codec = StringToVideoCodec(optarg);
+        if (specified_codec.is_value() &&
+            (specified_codec.value() == VideoCodec::kVp8 ||
+             specified_codec.value() == VideoCodec::kVp9 ||
+             specified_codec.value() == VideoCodec::kAv1)) {
+          codec = specified_codec.value();
+        } else {
+          OSP_LOG_ERROR << "Invalid --codec specified: " << optarg
+                        << " is not one of: vp8, vp9, av1.";
+          LogUsage(argv[0]);
+          return 1;
+        }
+        break;
     }
   }
 
@@ -228,7 +247,8 @@ int StandaloneSenderMain(int argc, char* argv[]) {
                          .should_include_video = true,
                          .use_android_rtp_hack = use_android_rtp_hack,
                          .use_remoting = use_remoting,
-                         .should_loop_video = should_loop_video});
+                         .should_loop_video = should_loop_video,
+                         .codec = codec});
   });
 
   // Run the event loop until SIGINT (e.g., CTRL-C at the console) or

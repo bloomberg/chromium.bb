@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/check.h"
+#include "base/containers/contains.h"
 #include "base/json/json_writer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -386,6 +387,49 @@ ValidateContentScriptsResult ValidateParsedScriptsOnFileThread(
   return std::make_pair(std::move(scripts), are_script_files_valid
                                                 ? absl::nullopt
                                                 : absl::make_optional(error));
+}
+
+// Converts a UserScript object to a api::scripting::RegisteredContentScript
+// object, used for getRegisteredContentScripts.
+api::scripting::RegisteredContentScript CreateRegisteredContentScriptInfo(
+    const UserScript& script) {
+  api::scripting::RegisteredContentScript script_info;
+  script_info.id = script.id();
+
+  script_info.matches.reserve(script.url_patterns().size());
+  for (const URLPattern& pattern : script.url_patterns())
+    script_info.matches.push_back(pattern.GetAsString());
+
+  if (!script.exclude_url_patterns().is_empty()) {
+    script_info.exclude_matches = std::make_unique<std::vector<std::string>>();
+    script_info.exclude_matches->reserve(script.exclude_url_patterns().size());
+    for (const URLPattern& pattern : script.exclude_url_patterns())
+      script_info.exclude_matches->push_back(pattern.GetAsString());
+  }
+
+  // File paths may be normalized in the returned object and can differ slightly
+  // compared to what was originally passed into registerContentScripts.
+  if (!script.js_scripts().empty()) {
+    script_info.js = std::make_unique<std::vector<std::string>>();
+    script_info.js->reserve(script.js_scripts().size());
+    for (const auto& js_script : script.js_scripts())
+      script_info.js->push_back(js_script->relative_path().AsUTF8Unsafe());
+  }
+
+  if (!script.css_scripts().empty()) {
+    script_info.css = std::make_unique<std::vector<std::string>>();
+    script_info.css->reserve(script.css_scripts().size());
+    for (const auto& css_script : script.css_scripts())
+      script_info.css->push_back(css_script->relative_path().AsUTF8Unsafe());
+  }
+
+  script_info.all_frames = std::make_unique<bool>(script.match_all_frames());
+  script_info.match_origin_as_fallback =
+      std::make_unique<bool>(script.match_origin_as_fallback() ==
+                             MatchOriginAsFallbackBehavior::kAlways);
+  script_info.run_at = ConvertRunLocationForAPI(script.run_location());
+
+  return script_info;
 }
 
 }  // namespace
@@ -832,6 +876,100 @@ void ScriptingRegisterContentScriptsFunction::OnContentScriptsRegistered(
   else
     Respond(NoArguments());
   Release();  // Matches the `AddRef()` in `Run()`.
+}
+
+ScriptingGetRegisteredContentScriptsFunction::
+    ScriptingGetRegisteredContentScriptsFunction() = default;
+ScriptingGetRegisteredContentScriptsFunction::
+    ~ScriptingGetRegisteredContentScriptsFunction() = default;
+
+ExtensionFunction::ResponseAction
+ScriptingGetRegisteredContentScriptsFunction::Run() {
+  std::unique_ptr<api::scripting::GetRegisteredContentScripts::Params> params(
+      api::scripting::GetRegisteredContentScripts::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  const api::scripting::ContentScriptFilter* filter = params->filter.get();
+  std::set<std::string> id_filter;
+  if (filter && filter->ids) {
+    id_filter.insert(std::make_move_iterator(filter->ids->begin()),
+                     std::make_move_iterator(filter->ids->end()));
+  }
+
+  ExtensionUserScriptLoader* loader =
+      ExtensionSystem::Get(browser_context())
+          ->user_script_manager()
+          ->GetUserScriptLoaderForExtension(extension()->id());
+  const UserScriptList& dynamic_scripts = loader->GetLoadedDynamicScripts();
+
+  std::vector<api::scripting::RegisteredContentScript> script_infos;
+  for (const std::unique_ptr<UserScript>& script : dynamic_scripts) {
+    if (id_filter.empty() || base::Contains(id_filter, script->id()))
+      script_infos.push_back(CreateRegisteredContentScriptInfo(*script));
+  }
+
+  return RespondNow(
+      ArgumentList(api::scripting::GetRegisteredContentScripts::Results::Create(
+          script_infos)));
+}
+
+ScriptingUnregisterContentScriptsFunction::
+    ScriptingUnregisterContentScriptsFunction() = default;
+ScriptingUnregisterContentScriptsFunction::
+    ~ScriptingUnregisterContentScriptsFunction() = default;
+
+ExtensionFunction::ResponseAction
+ScriptingUnregisterContentScriptsFunction::Run() {
+  auto params(api::scripting::UnregisterContentScripts::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  std::unique_ptr<api::scripting::ContentScriptFilter>& filter = params->filter;
+  std::set<std::string> ids_to_remove;
+
+  ExtensionUserScriptLoader* loader =
+      ExtensionSystem::Get(browser_context())
+          ->user_script_manager()
+          ->GetUserScriptLoaderForExtension(extension()->id());
+  std::set<std::string> existing_script_ids = loader->GetDynamicScriptIDs();
+  if (filter && filter->ids) {
+    for (const auto& id : *filter->ids) {
+      if (UserScript::IsIDGenerated(id)) {
+        return RespondNow(Error(base::StringPrintf(
+            "Content script's ID '%s' must not start with '%c'", id.c_str(),
+            UserScript::kGeneratedIDPrefix)));
+      }
+
+      if (!base::Contains(existing_script_ids, id)) {
+        return RespondNow(Error(
+            base::StringPrintf("Nonexistent script ID '%s'", id.c_str())));
+      }
+
+      ids_to_remove.insert(id);
+    }
+  }
+
+  if (ids_to_remove.empty()) {
+    loader->ClearDynamicScripts(
+        base::BindOnce(&ScriptingUnregisterContentScriptsFunction::
+                           OnContentScriptsUnregistered,
+                       this));
+  } else {
+    loader->RemoveDynamicScripts(
+        std::move(ids_to_remove),
+        base::BindOnce(&ScriptingUnregisterContentScriptsFunction::
+                           OnContentScriptsUnregistered,
+                       this));
+  }
+
+  return RespondLater();
+}
+
+void ScriptingUnregisterContentScriptsFunction::OnContentScriptsUnregistered(
+    const absl::optional<std::string>& error) {
+  if (error.has_value())
+    Respond(Error(*error));
+  else
+    Respond(NoArguments());
 }
 
 }  // namespace extensions

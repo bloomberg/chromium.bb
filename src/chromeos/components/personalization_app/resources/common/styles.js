@@ -17,34 +17,20 @@ styles.innerHTML = `
       --personalization-app-text-shadow-elevation-1: 0 1px 3px
           rgba(0, 0, 0, 15%), 0 1px 2px rgba(0, 0, 0, 30%);
 
-      --personalization-app-font-google-sans: 'Google Sans', 'Noto Sans',
-          sans-serif;
-      --personalization-app-font-roboto: Roboto, 'Noto Sans', sans-serif;
-
-      --personalization-app-typeface-headline-1: {
-        font-family: var(--personalization-app-font-google-sans);
-        font-weight: 500;
-        font-size: 15px;
-        line-height: 22px;
-      };
-      --personalization-app-typeface-body-2: {
-        font-family: var(--personalization-app-font-roboto);
-        font-weight: 400;
-        font-size: 13px;
-        line-height: 20px;
-      };
-      --personalization-app-typeface-display-6: {
-        font-family: var(--personalization-app-font-google-sans);
-        font-weight: 500;
-        font-size: 22px;
-        line-height: 28px;
-      };
-      --personalization-app-typeface-annotation-2: {
-        font-family: var(--personalization-app-font-roboto);
-        font-weight: 400;
-        font-size: 11px;
-        line-height: 16px;
-      };
+      /* copied from |AshColorProvider| |kSecondToneOpacity| constant. */
+      --personalization-app-second-tone-opacity: 0.3;
+    }
+    @media (prefers-color-scheme: light) {
+      .placeholder,
+      .photo-images-container {
+        background-color: var(--google-grey-100);
+      }
+    }
+    @media (prefers-color-scheme: dark) {
+      .placeholder,
+      .photo-images-container {
+        background-color: rgba(var(--google-grey-700-rgb), 0.3);
+      }
     }
     iron-list {
       height: 100%;
@@ -56,24 +42,79 @@ styles.innerHTML = `
       overflow: hidden;
       padding: 8px;
       /* Media queries in trusted and untrusted code will resize to 25% at
-         correct widths */
-      width: calc(100% / 3);
+       * correct widths.
+       * Subtract 0.1px to fix subpixel rounding issue with iron-list. */
+      width: calc(100% / 3 - 0.1px);
+    }
+    .photo-container:focus-visible {
+      outline: none;
     }
     /* This extra position: relative element corrects for absolutely positioned
        elements ignoring parent interior padding. */
-    .photo-container .photo-inner-container {
+    .photo-inner-container {
+      align-items: center;
       border-radius: 12px;
+      display: flex;
+      cursor: pointer;
       height: 100%;
-      /* stop img and gradient-mask from ignoring above border-radius. */
+      justify-content: center;
       overflow: hidden;
       position: relative;
       width: 100%;
     }
+    .photo-inner-container.photo-loading-failure {
+      cursor: default;
+      filter: grayscale(100%);
+      opacity: 0.3;
+    }
+    .photo-inner-container.photo-empty {
+      cursor: default;
+    }
+    @keyframes ripple {
+      /* 0 ms */
+      from {
+        opacity: 1;
+      }
+      /* 200 ms */
+      9% {
+        opacity: 0.15;
+      }
+      /* 350 ms */
+      15.8% {
+        opacity: 0.15;
+      }
+      /* 550 ms, hold for 83ms * 20 and then restart */
+      24.9% {
+        opacity: 1;
+      }
+      /* 2210 ms */
+      to {
+        opacity: 1;
+      }
+    }
+    .placeholder {
+      animation: 2210ms linear var(--animation-delay, 1s) infinite ripple;
+    }
+    .photo-inner-container:focus-visible,
+    .photo-loading-placeholder:focus-visible {
+      border: 2px solid var(--cros-focus-ring-color);
+      border-radius: 14px;
+      outline: none;
+    }
     .photo-images-container {
+      border-radius: 12px;
+      box-sizing: border-box;
       display: flex;
       flex-flow: row wrap;
       height: 100%;
+      /* stop img and gradient-mask from ignoring above border-radius. */
+      overflow: hidden;
       width: 100%;
+    }
+    .photo-images-container.photo-images-container-0 {
+      background-color: var(--cros-highlight-color);
+      justify-content: center;
+      align-items: flex-start;
     }
     .photo-images-container img {
       flex: 1 1 0;
@@ -85,6 +126,58 @@ styles.innerHTML = `
     .photo-images-container.photo-images-container-3 img {
       height: 50%;
     }
+    .photo-images-container.photo-images-container-0 img {
+      object-fit: scale-down;
+      flex: 0 1 0;
+      height: initial;
+      width: initial;
+      min-width: initial;
+      margin: 12px;
+    }
+    @keyframes scale-up {
+      from {
+        transform: scale(0);
+      }
+      to {
+        transform: scale(1);
+      }
+    }
+    .photo-container iron-icon[icon='personalization:checkmark'] {
+      --iron-icon-height: 20px;
+      --iron-icon-width: 20px;
+      left: 8px;
+      position: absolute;
+      top: 8px;
+      animation-name: scale-up;
+      animation-duration: 200ms;
+      animation-timing-functino: cubic-bezier(0.40, 0.00, 0.20, 1.00);
+    }
+    .photo-inner-container:not([aria-selected='true'])
+    iron-icon[icon='personalization:checkmark'] {
+      display: none;
+    }
+    .photo-inner-container[aria-selected='true'] {
+      background-color: rgba(var(--cros-icon-color-prominent-rgb),
+          var(--personalization-app-second-tone-opacity));
+      border-radius: 16px;
+    }
+    @keyframes resize {
+      100% {
+        height: calc(100% - 8px);
+        width: calc(100% - 8px);
+      }
+    }
+    .photo-inner-container[aria-selected='true'] .photo-images-container {
+      animation-name: resize;
+      animation-duration: 200ms;
+      animation-fill-mode: forwards;
+      animation-timing-function: cubic-bezier(0.40, 0.00, 0.20, 1.00);
+    }
+    .photo-inner-container:focus-visible:not([aria-selected='true'])
+    .photo-images-container {
+      height: calc(100% - 4px);
+      width: calc(100% - 4px);
+    }
     .photo-text-container {
       box-sizing: border-box;
       bottom: 8px;
@@ -93,8 +186,8 @@ styles.innerHTML = `
       z-index: 2;
     }
     .photo-text-container > p {
-      @apply --personalization-app-typeface-annotation-2;
       color: white;
+      font: var(--cros-annotation-2-font);
       margin: 0;
       max-width: 100%;
       overflow: hidden;
@@ -104,9 +197,14 @@ styles.innerHTML = `
       white-space: nowrap;
     }
     .photo-text-container > p:first-child {
-      @apply --personalization-app-typeface-headline-1;
+      font: var(--cros-headline-1-font);
+    }
+    .photo-empty .photo-text-container > p {
+      color: var(--cros-button-label-color-secondary);
+      text-shadow: none;
     }
     .photo-gradient-mask {
+      border-radius: 12px;
       position: absolute;
       top: 50%;
       left: 0;

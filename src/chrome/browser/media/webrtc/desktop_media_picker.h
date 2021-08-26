@@ -15,7 +15,6 @@
 #include "content/public/browser/desktop_media_id.h"
 #include "content/public/browser/media_stream_request.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -26,9 +25,7 @@ class WebContents;
 }
 
 // Base class for desktop media picker UI. It's used by Desktop Media API, and
-// by ARC to let user choose a desktop media source. It is also used by
-// getCurrentBrowsingContextMedia API to request user's permission to share the
-// current browser context.
+// by ARC to let user choose a desktop media source.
 //
 // TODO(crbug.com/987001): Rename this class.
 class DesktopMediaPicker {
@@ -70,6 +67,10 @@ class DesktopMediaPicker {
     // user select a desktop, the desktop picker also serves to prevent the
     // screen screen from being shared without the user's explicit consent.
     bool select_only_screen = false;
+    // Indicates that the caller of this picker is subject to enterprise
+    // policies that may restrict the available choices, and a suitable warning
+    // should be shown to the user.
+    bool restricted_by_policy = false;
   };
 
   // Creates a picker dialog/confirmation box depending on the value of

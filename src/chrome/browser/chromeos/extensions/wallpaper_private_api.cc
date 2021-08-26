@@ -25,7 +25,6 @@
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "base/values.h"
-#include "chrome/browser/ash/backdrop_wallpaper_handlers/backdrop_wallpaper.pb.h"
 #include "chrome/browser/ash/backdrop_wallpaper_handlers/backdrop_wallpaper_handlers.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/wallpaper/wallpaper_enumerator.h"
@@ -36,6 +35,7 @@
 #include "chrome/browser/ui/webui/settings/chromeos/pref_names.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/components/personalization_app/proto/backdrop_wallpaper.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/base/pref_names.h"
@@ -317,14 +317,17 @@ WallpaperPrivateSetWallpaperIfExistsFunction::Run() {
       params = set_wallpaper_if_exists::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  // Convert asset_id from string to optional uint64_t. Empty string results in
-  // nullopt.
+  // Convert |asset_id| from string to optional uint64_t. Empty string results
+  // in nullopt. |from_user| is true when the request is from a user's
+  // action i.e. |asset_id| is not nullopt.
   absl::optional<uint64_t> asset_id;
+  bool from_user = false;
   if (!params->asset_id.empty()) {
     uint64_t value = 0;
     if (!base::StringToUint64(params->asset_id, &value))
       return RespondNow(Error("Failed to parse asset_id."));
     asset_id = value;
+    from_user = true;
   }
 
   WallpaperControllerClientImpl::Get()->SetOnlineWallpaperIfExists(
@@ -333,7 +336,7 @@ WallpaperPrivateSetWallpaperIfExistsFunction::Run() {
           asset_id, GURL(params->url), params->collection_id,
           wallpaper_api_util::GetLayoutEnum(
               wallpaper_base::ToString(params->layout)),
-          params->preview_mode),
+          params->preview_mode, from_user),
       base::BindOnce(&WallpaperPrivateSetWallpaperIfExistsFunction::
                          OnSetOnlineWallpaperIfExistsCallback,
                      this));
@@ -365,6 +368,9 @@ ExtensionFunction::ResponseAction WallpaperPrivateSetWallpaperFunction::Run() {
       params = set_wallpaper::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
+  // |from_user| is false as this method is called after
+  // |WallpaperPrivateSetWallpaperIfExistsFunction| which has already handled
+  // extra logic tied with |from_user|.
   WallpaperControllerClientImpl::Get()->SetOnlineWallpaperFromData(
       ash::OnlineWallpaperParams(
           GetUserFromBrowserContext(browser_context())->GetAccountId(),
@@ -372,7 +378,7 @@ ExtensionFunction::ResponseAction WallpaperPrivateSetWallpaperFunction::Run() {
           /*collection_id=*/std::string(),
           wallpaper_api_util::GetLayoutEnum(
               wallpaper_base::ToString(params->layout)),
-          params->preview_mode),
+          params->preview_mode, /*from_user=*/false),
       std::string(params->wallpaper.begin(), params->wallpaper.end()),
       base::BindOnce(
           &WallpaperPrivateSetWallpaperFunction::OnSetWallpaperCallback, this));
@@ -419,8 +425,6 @@ WallpaperPrivateSetCustomWallpaperFunction::Run() {
   // Gets account id from the caller, ensuring multiprofile compatibility.
   const user_manager::User* user = GetUserFromBrowserContext(browser_context());
   account_id_ = user->GetAccountId();
-  wallpaper_files_id_ =
-      WallpaperControllerClientImpl::Get()->GetFilesId(account_id_);
 
   StartDecode(params->wallpaper);
 
@@ -436,8 +440,7 @@ void WallpaperPrivateSetCustomWallpaperFunction::OnWallpaperDecoded(
   const std::string file_name =
       base::FilePath(params->file_name).BaseName().value();
   WallpaperControllerClientImpl::Get()->SetCustomWallpaper(
-      account_id_, wallpaper_files_id_, file_name, layout, image,
-      params->preview_mode);
+      account_id_, file_name, layout, image, params->preview_mode);
   unsafe_wallpaper_decoder_ = nullptr;
 
   if (params->generate_thumbnail) {

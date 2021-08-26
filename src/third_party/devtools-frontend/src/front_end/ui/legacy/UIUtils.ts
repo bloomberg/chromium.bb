@@ -50,9 +50,9 @@ import {Icon} from './Icon.js';
 import {KeyboardShortcut} from './KeyboardShortcut.js';
 import * as ThemeSupport from './theme_support/theme_support.js';  // eslint-disable-line rulesdir/es_modules_import
 import type {ToolbarButton} from './Toolbar.js';
-import {Toolbar} from './Toolbar.js';  // eslint-disable-line no-unused-vars
+import {Toolbar} from './Toolbar.js';
 import {Tooltip} from './Tooltip.js';
-import type {TreeOutline} from './Treeoutline.js'; // eslint-disable-line no-unused-vars
+import type {TreeOutline} from './Treeoutline.js';
 import {createShadowRootWithCoreStyles} from './utils/create-shadow-root-with-core-styles.js';
 import {focusChanged} from './utils/focus-changed.js';
 import {injectCoreStyles} from './utils/inject-core-styles.js';
@@ -1168,17 +1168,15 @@ export function createSlider(min: number, max: number, tabIndex: number): Elemen
   return element;
 }
 
-export function setTitle(element: HTMLElement, title: string, actionId: string|undefined = undefined): void {
+export function setTitle(element: HTMLElement, title: string): void {
   ARIAUtils.setAccessibleName(element, title);
-  Tooltip.install(element, title, actionId, {
-    anchorTooltipAtElement: true,
-  });
+  Tooltip.install(element, title);
 }
 
 export class CheckboxLabel extends HTMLSpanElement {
   _shadowRoot!: DocumentFragment;
   checkboxElement!: HTMLInputElement;
-  textElement!: Element;
+  textElement!: HTMLElement;
 
   constructor() {
     super();
@@ -1189,7 +1187,7 @@ export class CheckboxLabel extends HTMLSpanElement {
     this.checkboxElement = (this._shadowRoot.createChild('input') as HTMLInputElement);
     this.checkboxElement.type = 'checkbox';
     this.checkboxElement.setAttribute('id', id);
-    this.textElement = this._shadowRoot.createChild('label', 'dt-checkbox-text');
+    this.textElement = this._shadowRoot.createChild('label', 'dt-checkbox-text') as HTMLElement;
     this.textElement.setAttribute('for', id);
     this._shadowRoot.createChild('slot');
   }

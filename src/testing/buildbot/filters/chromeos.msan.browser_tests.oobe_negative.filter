@@ -91,16 +91,18 @@
 -MarketingOptInExtendedContries/MarketingOptInScreenTest.*
 -MarketingOptInScreenTestDisabled.*
 -NetworkErrorScreenTest.*
+-NoOobeTestApiTest.*
 -OAuth2Test.*
 -OnboardingUserActivityTest.*
 -OobeBaseTest.*
 -OobeCompletedUnownedTest.*
 -OobeConfigurationEnrollmentTest.*
 -OobeConfigurationTest.*
--OobeConfigurationTestNoHID.*
 -OobeDisplayChooserTest.*
 -OobeSpokenFeedbackTest.*
 -OobeTest.*
+-OobeTestApiRemoraRequisitionTest.*
+-OobeTestApiTest.*
 -OobeZeroTouchInteractiveUITest.*
 -OsInstallScreenTest.*
 -PackagedLicenseScreenTest.*
@@ -129,8 +131,8 @@
 -SigninToUserProfileSwitchTest.*
 -SiteIsolationFlagHandlingTest.*
 -StartupBrowserWindowLaunchSuppressedTest.*
+-SyncConsentOptionalTest.*
 -SyncConsentRecorderTest.*
--SyncConsentSplitSettingsSyncTest.*
 -SyncConsentTest.*
 -SyncConsentTimezoneOverride.*
 -SystemWebDialogOobeTest.*
@@ -166,6 +168,7 @@
 -WizardControllerEnableDebuggingTest.*
 -WizardControllerFlowTest.*
 -WizardControllerKioskFlowTest.*
+-WizardControllerOnboardingResumeTest.*
 -WizardControllerOobeConfigurationTest.*
 -WizardControllerOobeResumeTest.*
 -WizardControllerProxyAuthOnSigninTest.*

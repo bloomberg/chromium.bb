@@ -208,8 +208,14 @@ static bool detect_shader_settings(const SkSL::String& text,
                     static auto s_version450CoreCaps = Factory::Version450Core();
                     *caps = s_version450CoreCaps.get();
                 }
+                if (settingsText.consumeSuffix(" AllowNarrowingConversions")) {
+                    settings->fAllowNarrowingConversions = true;
+                }
                 if (settingsText.consumeSuffix(" ForceHighPrecision")) {
                     settings->fForceHighPrecision = true;
+                }
+                if (settingsText.consumeSuffix(" NoES2Restrictions")) {
+                    settings->fEnforceES2Restrictions = false;
                 }
                 if (settingsText.consumeSuffix(" NoInline")) {
                     settings->fInlineThreshold = 0;
@@ -421,16 +427,22 @@ ResultCode processCommand(std::vector<SkSL::String>& args) {
                             fOutput += declaration;
                         }
 
-                        String sampleChild(int index, String coords, String color) override {
+                        String sampleShader(int index, String coords) override {
+                            return "sample(child_" + SkSL::to_string(index) + ", " + coords + ")";
+                        }
+
+                        String sampleColorFilter(int index, String color) override {
                             String result = "sample(child_" + SkSL::to_string(index);
-                            if (!coords.empty()) {
-                                result += ", " + coords;
-                            }
                             if (!color.empty()) {
                                 result += ", " + color;
                             }
                             result += ")";
                             return result;
+                        }
+
+                        String sampleBlender(int index, String src, String dst) override {
+                            return "sample(child_" + SkSL::to_string(index) + ", " + src + ", " +
+                                   dst + ")";
                         }
 
                         String fOutput;

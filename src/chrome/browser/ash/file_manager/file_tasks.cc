@@ -219,8 +219,7 @@ Profile* GetProfileForExtensionTask(Profile* profile,
 }
 
 GURL GetIconURL(Profile* profile, const Extension& extension) {
-  if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon) &&
-      apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile) &&
+  if (apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile) &&
       apps::AppServiceProxyFactory::GetForProfile(profile)
               ->AppRegistryCache()
               .GetAppType(extension.id()) != apps::mojom::AppType::kUnknown) {
@@ -388,6 +387,9 @@ FullTaskDescriptor::FullTaskDescriptor(const TaskDescriptor& in_task_descriptor,
 
 FullTaskDescriptor::FullTaskDescriptor(const FullTaskDescriptor& other) =
     default;
+
+FullTaskDescriptor& FullTaskDescriptor::operator=(
+    const FullTaskDescriptor& other) = default;
 
 void UpdateDefaultTask(PrefService* pref_service,
                        const TaskDescriptor& task_descriptor,

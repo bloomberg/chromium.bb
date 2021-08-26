@@ -17,9 +17,11 @@
 #include "gmock/gmock.h"
 
 #include "src/ast/struct_block_decoration.h"
+#include "src/sem/depth_multisampled_texture_type.h"
 #include "src/sem/depth_texture_type.h"
 #include "src/sem/multisampled_texture_type.h"
 #include "src/sem/sampled_texture_type.h"
+#include "src/sem/sampler_type.h"
 #include "src/sem/storage_texture_type.h"
 #include "src/writer/msl/test_helper.h"
 
@@ -218,9 +220,10 @@ TEST_F(MslGeneratorImplTest, EmitType_StructDecl) {
 
   GeneratorImpl& gen = Build();
 
+  TextGenerator::TextBuffer buf;
   auto* sem_s = program->TypeOf(s)->As<sem::Struct>();
-  ASSERT_TRUE(gen.EmitStructType(sem_s)) << gen.error();
-  EXPECT_EQ(gen.result(), R"(struct S {
+  ASSERT_TRUE(gen.EmitStructType(&buf, sem_s)) << gen.error();
+  EXPECT_EQ(buf.String(), R"(struct S {
   int a;
   float b;
 };
@@ -268,8 +271,9 @@ TEST_F(MslGeneratorImplTest, EmitType_Struct_Layout_NonComposites) {
 
   GeneratorImpl& gen = Build();
 
+  TextGenerator::TextBuffer buf;
   auto* sem_s = program->TypeOf(s)->As<sem::Struct>();
-  ASSERT_TRUE(gen.EmitStructType(sem_s)) << gen.error();
+  ASSERT_TRUE(gen.EmitStructType(&buf, sem_s)) << gen.error();
 
   // ALL_FIELDS() calls the macro FIELD(ADDR, TYPE, NAME, SUFFIX)
   // for each field of the structure s.
@@ -319,7 +323,7 @@ TEST_F(MslGeneratorImplTest, EmitType_Struct_Layout_NonComposites) {
   "  /* " #ADDR " */ " #TYPE " " #NAME #SUFFIX ";\n"
   auto* expect = "struct S {\n" ALL_FIELDS() "};\n";
 #undef FIELD
-  EXPECT_EQ(gen.result(), expect);
+  EXPECT_EQ(buf.String(), expect);
 
   // 1.4 Metal and C++14
   // The Metal programming language is a C++14-based Specification with
@@ -377,8 +381,9 @@ TEST_F(MslGeneratorImplTest, EmitType_Struct_Layout_Structures) {
 
   GeneratorImpl& gen = Build();
 
+  TextGenerator::TextBuffer buf;
   auto* sem_s = program->TypeOf(s)->As<sem::Struct>();
-  ASSERT_TRUE(gen.EmitStructType(sem_s)) << gen.error();
+  ASSERT_TRUE(gen.EmitStructType(&buf, sem_s)) << gen.error();
 
   // ALL_FIELDS() calls the macro FIELD(ADDR, TYPE, NAME, SUFFIX)
   // for each field of the structure s.
@@ -396,7 +401,7 @@ TEST_F(MslGeneratorImplTest, EmitType_Struct_Layout_Structures) {
   "  /* " #ADDR " */ " #TYPE " " #NAME #SUFFIX ";\n"
   auto* expect = "struct S {\n" ALL_FIELDS() "};\n";
 #undef FIELD
-  EXPECT_EQ(gen.result(), expect);
+  EXPECT_EQ(buf.String(), expect);
 
   // 1.4 Metal and C++14
   // The Metal programming language is a C++14-based Specification with
@@ -471,8 +476,9 @@ TEST_F(MslGeneratorImplTest, EmitType_Struct_Layout_ArrayDefaultStride) {
 
   GeneratorImpl& gen = Build();
 
+  TextGenerator::TextBuffer buf;
   auto* sem_s = program->TypeOf(s)->As<sem::Struct>();
-  ASSERT_TRUE(gen.EmitStructType(sem_s)) << gen.error();
+  ASSERT_TRUE(gen.EmitStructType(&buf, sem_s)) << gen.error();
 
   // ALL_FIELDS() calls the macro FIELD(ADDR, TYPE, NAME, SUFFIX)
   // for each field of the structure s.
@@ -491,7 +497,7 @@ TEST_F(MslGeneratorImplTest, EmitType_Struct_Layout_ArrayDefaultStride) {
   "  /* " #ADDR " */ " #TYPE " " #NAME #SUFFIX ";\n"
   auto* expect = "struct S {\n" ALL_FIELDS() "};\n";
 #undef FIELD
-  EXPECT_EQ(gen.result(), expect);
+  EXPECT_EQ(buf.String(), expect);
 
   // 1.4 Metal and C++14
   // The Metal programming language is a C++14-based Specification with
@@ -556,8 +562,9 @@ TEST_F(MslGeneratorImplTest, EmitType_Struct_Layout_ArrayVec3DefaultStride) {
 
   GeneratorImpl& gen = Build();
 
+  TextGenerator::TextBuffer buf;
   auto* sem_s = program->TypeOf(s)->As<sem::Struct>();
-  ASSERT_TRUE(gen.EmitStructType(sem_s)) << gen.error();
+  ASSERT_TRUE(gen.EmitStructType(&buf, sem_s)) << gen.error();
 
   // ALL_FIELDS() calls the macro FIELD(ADDR, TYPE, NAME, SUFFIX)
   // for each field of the structure s.
@@ -573,7 +580,7 @@ TEST_F(MslGeneratorImplTest, EmitType_Struct_Layout_ArrayVec3DefaultStride) {
   "  /* " #ADDR " */ " #TYPE " " #NAME #SUFFIX ";\n"
   auto* expect = "struct S {\n" ALL_FIELDS() "};\n";
 #undef FIELD
-  EXPECT_EQ(gen.result(), expect);
+  EXPECT_EQ(buf.String(), expect);
 }
 
 TEST_F(MslGeneratorImplTest, AttemptTintPadSymbolCollision) {
@@ -618,9 +625,10 @@ TEST_F(MslGeneratorImplTest, AttemptTintPadSymbolCollision) {
 
   GeneratorImpl& gen = Build();
 
+  TextGenerator::TextBuffer buf;
   auto* sem_s = program->TypeOf(s)->As<sem::Struct>();
-  ASSERT_TRUE(gen.EmitStructType(sem_s)) << gen.error();
-  EXPECT_EQ(gen.result(), R"(struct S {
+  ASSERT_TRUE(gen.EmitStructType(&buf, sem_s)) << gen.error();
+  EXPECT_EQ(buf.String(), R"(struct S {
   /* 0x0000 */ int tint_pad_2;
   /* 0x0004 */ int8_t tint_pad_10[124];
   /* 0x0080 */ float tint_pad_20;
@@ -772,6 +780,17 @@ INSTANTIATE_TEST_SUITE_P(
                     MslDepthTextureData{
                         ast::TextureDimension::kCubeArray,
                         "depthcube_array<float, access::sample>"}));
+
+using MslDepthMultisampledTexturesTest = TestHelper;
+TEST_F(MslDepthMultisampledTexturesTest, Emit) {
+  sem::DepthMultisampledTexture s(ast::TextureDimension::k2d);
+
+  GeneratorImpl& gen = Build();
+
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitType(out, &s, "")) << gen.error();
+  EXPECT_EQ(out.str(), "depth2d_ms<float, access::read>");
+}
 
 struct MslTextureData {
   ast::TextureDimension dim;

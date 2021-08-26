@@ -736,8 +736,8 @@ LIBGAV1_ALWAYS_INLINE void Dct16_NEON(void* dest, int32_t step, bool is_row,
 
   if (is_row) {
     const int16x8_t v_row_shift = vdupq_n_s16(-row_shift);
-    for (int i = 0; i < 16; ++i) {
-      s[i] = vqrshlq_s16(s[i], v_row_shift);
+    for (auto& i : s) {
+      i = vqrshlq_s16(i, v_row_shift);
     }
   }
 
@@ -914,8 +914,8 @@ LIBGAV1_ALWAYS_INLINE void Dct32_NEON(void* dest, const int32_t step,
     for (int idx = 0; idx < 32; idx += 8) {
       int16x8_t output[8];
       Transpose8x8(&s[idx], output);
-      for (int i = 0; i < 8; ++i) {
-        output[i] = vqrshlq_s16(output[i], v_row_shift);
+      for (auto& o : output) {
+        o = vqrshlq_s16(o, v_row_shift);
       }
       StoreDst<16, 8>(dst, step, idx, output);
     }
@@ -1135,8 +1135,8 @@ void Dct64_NEON(void* dest, int32_t step, bool is_row, int row_shift) {
     for (int idx = 0; idx < 64; idx += 8) {
       int16x8_t output[8];
       Transpose8x8(&s[idx], output);
-      for (int i = 0; i < 8; ++i) {
-        output[i] = vqrshlq_s16(output[i], v_row_shift);
+      for (auto& o : output) {
+        o = vqrshlq_s16(o, v_row_shift);
       }
       StoreDst<16, 8>(dst, step, idx, output);
     }
@@ -1611,13 +1611,13 @@ LIBGAV1_ALWAYS_INLINE void Adst16_NEON(void* dest, int32_t step, bool is_row,
       const int16x8_t v_row_shift = vdupq_n_s16(-row_shift);
       int16x8_t output[4];
       Transpose4x8To8x4(x, output);
-      for (int i = 0; i < 4; ++i) {
-        output[i] = vqrshlq_s16(output[i], v_row_shift);
+      for (auto& o : output) {
+        o = vqrshlq_s16(o, v_row_shift);
       }
       StoreDst<16, 4>(dst, step, 0, output);
       Transpose4x8To8x4(&x[8], output);
-      for (int i = 0; i < 4; ++i) {
-        output[i] = vqrshlq_s16(output[i], v_row_shift);
+      for (auto& o : output) {
+        o = vqrshlq_s16(o, v_row_shift);
       }
       StoreDst<16, 4>(dst, step, 8, output);
     } else {
@@ -1629,8 +1629,8 @@ LIBGAV1_ALWAYS_INLINE void Adst16_NEON(void* dest, int32_t step, bool is_row,
       for (int idx = 0; idx < 16; idx += 8) {
         int16x8_t output[8];
         Transpose8x8(&x[idx], output);
-        for (int i = 0; i < 8; ++i) {
-          output[i] = vqrshlq_s16(output[i], v_row_shift);
+        for (auto& o : output) {
+          o = vqrshlq_s16(o, v_row_shift);
         }
         StoreDst<16, 8>(dst, step, idx, output);
       }
@@ -1805,9 +1805,10 @@ LIBGAV1_ALWAYS_INLINE bool Identity4DcOnly(void* dest, int adjusted_tx_height,
 template <int identity_size>
 LIBGAV1_ALWAYS_INLINE void IdentityColumnStoreToFrame(
     Array2DView<uint8_t> frame, const int start_x, const int start_y,
-    const int tx_width, const int tx_height, const int16_t* source) {
+    const int tx_width, const int tx_height,
+    const int16_t* LIBGAV1_RESTRICT source) {
   const int stride = frame.columns();
-  uint8_t* dst = frame[start_y] + start_x;
+  uint8_t* LIBGAV1_RESTRICT dst = frame[start_y] + start_x;
 
   if (identity_size < 32) {
     if (tx_width == 4) {
@@ -1891,9 +1892,10 @@ LIBGAV1_ALWAYS_INLINE void IdentityColumnStoreToFrame(
 
 LIBGAV1_ALWAYS_INLINE void Identity4RowColumnStoreToFrame(
     Array2DView<uint8_t> frame, const int start_x, const int start_y,
-    const int tx_width, const int tx_height, const int16_t* source) {
+    const int tx_width, const int tx_height,
+    const int16_t* LIBGAV1_RESTRICT source) {
   const int stride = frame.columns();
-  uint8_t* dst = frame[start_y] + start_x;
+  uint8_t* LIBGAV1_RESTRICT dst = frame[start_y] + start_x;
 
   if (tx_width == 4) {
     uint8x8_t frame_data = vdup_n_u8(0);
@@ -2106,8 +2108,9 @@ LIBGAV1_ALWAYS_INLINE void TransposeAndPermute4x4WideInput(
 }
 
 // Process 4 wht4 rows and columns.
-LIBGAV1_ALWAYS_INLINE void Wht4_NEON(uint8_t* dst, const int dst_stride,
-                                     const void* source,
+LIBGAV1_ALWAYS_INLINE void Wht4_NEON(uint8_t* LIBGAV1_RESTRICT dst,
+                                     const int dst_stride,
+                                     const void* LIBGAV1_RESTRICT source,
                                      const int adjusted_tx_height) {
   const auto* const src = static_cast<const int16_t*>(source);
   int16x4_t s[4];
@@ -2273,11 +2276,12 @@ LIBGAV1_ALWAYS_INLINE void RowShift(int16_t* source, int num_rows,
 template <int tx_height, bool enable_flip_rows = false>
 LIBGAV1_ALWAYS_INLINE void StoreToFrameWithRound(
     Array2DView<uint8_t> frame, const int start_x, const int start_y,
-    const int tx_width, const int16_t* source, TransformType tx_type) {
+    const int tx_width, const int16_t* LIBGAV1_RESTRICT source,
+    TransformType tx_type) {
   const bool flip_rows =
       enable_flip_rows ? kTransformFlipRowsMask.Contains(tx_type) : false;
   const int stride = frame.columns();
-  uint8_t* dst = frame[start_y] + start_x;
+  uint8_t* LIBGAV1_RESTRICT dst = frame[start_y] + start_x;
 
   // Enable for 4x4, 4x8, 4x16
   if (tx_height < 32 && tx_width == 4) {
@@ -2338,7 +2342,7 @@ void Dct4TransformLoopRow_NEON(TransformType /*tx_type*/, TransformSize tx_size,
   auto* src = static_cast<int16_t*>(src_buffer);
   const int tx_height = kTransformHeight[tx_size];
   const bool should_round = (tx_height == 8);
-  const int row_shift = (tx_height == 16);
+  const int row_shift = static_cast<int>(tx_height == 16);
 
   if (DctDcOnly<4>(src, adjusted_tx_height, should_round, row_shift)) {
     return;
@@ -2368,8 +2372,10 @@ void Dct4TransformLoopRow_NEON(TransformType /*tx_type*/, TransformSize tx_size,
 }
 
 void Dct4TransformLoopColumn_NEON(TransformType tx_type, TransformSize tx_size,
-                                  int adjusted_tx_height, void* src_buffer,
-                                  int start_x, int start_y, void* dst_frame) {
+                                  int adjusted_tx_height,
+                                  void* LIBGAV1_RESTRICT src_buffer,
+                                  int start_x, int start_y,
+                                  void* LIBGAV1_RESTRICT dst_frame) {
   auto* src = static_cast<int16_t*>(src_buffer);
   const int tx_width = kTransformWidth[tx_size];
 
@@ -2435,8 +2441,10 @@ void Dct8TransformLoopRow_NEON(TransformType /*tx_type*/, TransformSize tx_size,
 }
 
 void Dct8TransformLoopColumn_NEON(TransformType tx_type, TransformSize tx_size,
-                                  int adjusted_tx_height, void* src_buffer,
-                                  int start_x, int start_y, void* dst_frame) {
+                                  int adjusted_tx_height,
+                                  void* LIBGAV1_RESTRICT src_buffer,
+                                  int start_x, int start_y,
+                                  void* LIBGAV1_RESTRICT dst_frame) {
   auto* src = static_cast<int16_t*>(src_buffer);
   const int tx_width = kTransformWidth[tx_size];
 
@@ -2497,8 +2505,10 @@ void Dct16TransformLoopRow_NEON(TransformType /*tx_type*/,
 }
 
 void Dct16TransformLoopColumn_NEON(TransformType tx_type, TransformSize tx_size,
-                                   int adjusted_tx_height, void* src_buffer,
-                                   int start_x, int start_y, void* dst_frame) {
+                                   int adjusted_tx_height,
+                                   void* LIBGAV1_RESTRICT src_buffer,
+                                   int start_x, int start_y,
+                                   void* LIBGAV1_RESTRICT dst_frame) {
   auto* src = static_cast<int16_t*>(src_buffer);
   const int tx_width = kTransformWidth[tx_size];
 
@@ -2551,8 +2561,10 @@ void Dct32TransformLoopRow_NEON(TransformType /*tx_type*/,
 }
 
 void Dct32TransformLoopColumn_NEON(TransformType tx_type, TransformSize tx_size,
-                                   int adjusted_tx_height, void* src_buffer,
-                                   int start_x, int start_y, void* dst_frame) {
+                                   int adjusted_tx_height,
+                                   void* LIBGAV1_RESTRICT src_buffer,
+                                   int start_x, int start_y,
+                                   void* LIBGAV1_RESTRICT dst_frame) {
   auto* src = static_cast<int16_t*>(src_buffer);
   const int tx_width = kTransformWidth[tx_size];
 
@@ -2594,8 +2606,10 @@ void Dct64TransformLoopRow_NEON(TransformType /*tx_type*/,
 }
 
 void Dct64TransformLoopColumn_NEON(TransformType tx_type, TransformSize tx_size,
-                                   int adjusted_tx_height, void* src_buffer,
-                                   int start_x, int start_y, void* dst_frame) {
+                                   int adjusted_tx_height,
+                                   void* LIBGAV1_RESTRICT src_buffer,
+                                   int start_x, int start_y,
+                                   void* LIBGAV1_RESTRICT dst_frame) {
   auto* src = static_cast<int16_t*>(src_buffer);
   const int tx_width = kTransformWidth[tx_size];
 
@@ -2645,8 +2659,10 @@ void Adst4TransformLoopRow_NEON(TransformType /*tx_type*/,
 }
 
 void Adst4TransformLoopColumn_NEON(TransformType tx_type, TransformSize tx_size,
-                                   int adjusted_tx_height, void* src_buffer,
-                                   int start_x, int start_y, void* dst_frame) {
+                                   int adjusted_tx_height,
+                                   void* LIBGAV1_RESTRICT src_buffer,
+                                   int start_x, int start_y,
+                                   void* LIBGAV1_RESTRICT dst_frame) {
   auto* src = static_cast<int16_t*>(src_buffer);
   const int tx_width = kTransformWidth[tx_size];
 
@@ -2707,8 +2723,10 @@ void Adst8TransformLoopRow_NEON(TransformType /*tx_type*/,
 }
 
 void Adst8TransformLoopColumn_NEON(TransformType tx_type, TransformSize tx_size,
-                                   int adjusted_tx_height, void* src_buffer,
-                                   int start_x, int start_y, void* dst_frame) {
+                                   int adjusted_tx_height,
+                                   void* LIBGAV1_RESTRICT src_buffer,
+                                   int start_x, int start_y,
+                                   void* LIBGAV1_RESTRICT dst_frame) {
   auto* src = static_cast<int16_t*>(src_buffer);
   const int tx_width = kTransformWidth[tx_size];
 
@@ -2771,8 +2789,10 @@ void Adst16TransformLoopRow_NEON(TransformType /*tx_type*/,
 
 void Adst16TransformLoopColumn_NEON(TransformType tx_type,
                                     TransformSize tx_size,
-                                    int adjusted_tx_height, void* src_buffer,
-                                    int start_x, int start_y, void* dst_frame) {
+                                    int adjusted_tx_height,
+                                    void* LIBGAV1_RESTRICT src_buffer,
+                                    int start_x, int start_y,
+                                    void* LIBGAV1_RESTRICT dst_frame) {
   auto* src = static_cast<int16_t*>(src_buffer);
   const int tx_width = kTransformWidth[tx_size];
 
@@ -2844,9 +2864,10 @@ void Identity4TransformLoopRow_NEON(TransformType tx_type,
 
 void Identity4TransformLoopColumn_NEON(TransformType tx_type,
                                        TransformSize tx_size,
-                                       int adjusted_tx_height, void* src_buffer,
+                                       int adjusted_tx_height,
+                                       void* LIBGAV1_RESTRICT src_buffer,
                                        int start_x, int start_y,
-                                       void* dst_frame) {
+                                       void* LIBGAV1_RESTRICT dst_frame) {
   auto& frame = *static_cast<Array2DView<uint8_t>*>(dst_frame);
   auto* src = static_cast<int16_t*>(src_buffer);
   const int tx_width = kTransformWidth[tx_size];
@@ -2919,9 +2940,10 @@ void Identity8TransformLoopRow_NEON(TransformType tx_type,
 
 void Identity8TransformLoopColumn_NEON(TransformType tx_type,
                                        TransformSize tx_size,
-                                       int adjusted_tx_height, void* src_buffer,
+                                       int adjusted_tx_height,
+                                       void* LIBGAV1_RESTRICT src_buffer,
                                        int start_x, int start_y,
-                                       void* dst_frame) {
+                                       void* LIBGAV1_RESTRICT dst_frame) {
   auto* src = static_cast<int16_t*>(src_buffer);
   const int tx_width = kTransformWidth[tx_size];
 
@@ -2960,8 +2982,9 @@ void Identity16TransformLoopRow_NEON(TransformType /*tx_type*/,
 void Identity16TransformLoopColumn_NEON(TransformType tx_type,
                                         TransformSize tx_size,
                                         int adjusted_tx_height,
-                                        void* src_buffer, int start_x,
-                                        int start_y, void* dst_frame) {
+                                        void* LIBGAV1_RESTRICT src_buffer,
+                                        int start_x, int start_y,
+                                        void* LIBGAV1_RESTRICT dst_frame) {
   auto* src = static_cast<int16_t*>(src_buffer);
   const int tx_width = kTransformWidth[tx_size];
 
@@ -3007,8 +3030,9 @@ void Identity32TransformLoopRow_NEON(TransformType /*tx_type*/,
 void Identity32TransformLoopColumn_NEON(TransformType /*tx_type*/,
                                         TransformSize tx_size,
                                         int adjusted_tx_height,
-                                        void* src_buffer, int start_x,
-                                        int start_y, void* dst_frame) {
+                                        void* LIBGAV1_RESTRICT src_buffer,
+                                        int start_x, int start_y,
+                                        void* LIBGAV1_RESTRICT dst_frame) {
   auto& frame = *static_cast<Array2DView<uint8_t>*>(dst_frame);
   auto* src = static_cast<int16_t*>(src_buffer);
   const int tx_width = kTransformWidth[tx_size];
@@ -3029,8 +3053,10 @@ void Wht4TransformLoopRow_NEON(TransformType tx_type, TransformSize tx_size,
 }
 
 void Wht4TransformLoopColumn_NEON(TransformType tx_type, TransformSize tx_size,
-                                  int adjusted_tx_height, void* src_buffer,
-                                  int start_x, int start_y, void* dst_frame) {
+                                  int adjusted_tx_height,
+                                  void* LIBGAV1_RESTRICT src_buffer,
+                                  int start_x, int start_y,
+                                  void* LIBGAV1_RESTRICT dst_frame) {
   assert(tx_type == kTransformTypeDctDct);
   assert(tx_size == kTransformSize4x4);
   static_cast<void>(tx_type);
@@ -3050,63 +3076,63 @@ void Init8bpp() {
   Dsp* const dsp = dsp_internal::GetWritableDspTable(kBitdepth8);
   assert(dsp != nullptr);
   // Maximum transform size for Dct is 64.
-  dsp->inverse_transforms[k1DTransformDct][k1DTransformSize4][kRow] =
+  dsp->inverse_transforms[kTransform1dDct][kTransform1dSize4][kRow] =
       Dct4TransformLoopRow_NEON;
-  dsp->inverse_transforms[k1DTransformDct][k1DTransformSize4][kColumn] =
+  dsp->inverse_transforms[kTransform1dDct][kTransform1dSize4][kColumn] =
       Dct4TransformLoopColumn_NEON;
-  dsp->inverse_transforms[k1DTransformDct][k1DTransformSize8][kRow] =
+  dsp->inverse_transforms[kTransform1dDct][kTransform1dSize8][kRow] =
       Dct8TransformLoopRow_NEON;
-  dsp->inverse_transforms[k1DTransformDct][k1DTransformSize8][kColumn] =
+  dsp->inverse_transforms[kTransform1dDct][kTransform1dSize8][kColumn] =
       Dct8TransformLoopColumn_NEON;
-  dsp->inverse_transforms[k1DTransformDct][k1DTransformSize16][kRow] =
+  dsp->inverse_transforms[kTransform1dDct][kTransform1dSize16][kRow] =
       Dct16TransformLoopRow_NEON;
-  dsp->inverse_transforms[k1DTransformDct][k1DTransformSize16][kColumn] =
+  dsp->inverse_transforms[kTransform1dDct][kTransform1dSize16][kColumn] =
       Dct16TransformLoopColumn_NEON;
-  dsp->inverse_transforms[k1DTransformDct][k1DTransformSize32][kRow] =
+  dsp->inverse_transforms[kTransform1dDct][kTransform1dSize32][kRow] =
       Dct32TransformLoopRow_NEON;
-  dsp->inverse_transforms[k1DTransformDct][k1DTransformSize32][kColumn] =
+  dsp->inverse_transforms[kTransform1dDct][kTransform1dSize32][kColumn] =
       Dct32TransformLoopColumn_NEON;
-  dsp->inverse_transforms[k1DTransformDct][k1DTransformSize64][kRow] =
+  dsp->inverse_transforms[kTransform1dDct][kTransform1dSize64][kRow] =
       Dct64TransformLoopRow_NEON;
-  dsp->inverse_transforms[k1DTransformDct][k1DTransformSize64][kColumn] =
+  dsp->inverse_transforms[kTransform1dDct][kTransform1dSize64][kColumn] =
       Dct64TransformLoopColumn_NEON;
 
   // Maximum transform size for Adst is 16.
-  dsp->inverse_transforms[k1DTransformAdst][k1DTransformSize4][kRow] =
+  dsp->inverse_transforms[kTransform1dAdst][kTransform1dSize4][kRow] =
       Adst4TransformLoopRow_NEON;
-  dsp->inverse_transforms[k1DTransformAdst][k1DTransformSize4][kColumn] =
+  dsp->inverse_transforms[kTransform1dAdst][kTransform1dSize4][kColumn] =
       Adst4TransformLoopColumn_NEON;
-  dsp->inverse_transforms[k1DTransformAdst][k1DTransformSize8][kRow] =
+  dsp->inverse_transforms[kTransform1dAdst][kTransform1dSize8][kRow] =
       Adst8TransformLoopRow_NEON;
-  dsp->inverse_transforms[k1DTransformAdst][k1DTransformSize8][kColumn] =
+  dsp->inverse_transforms[kTransform1dAdst][kTransform1dSize8][kColumn] =
       Adst8TransformLoopColumn_NEON;
-  dsp->inverse_transforms[k1DTransformAdst][k1DTransformSize16][kRow] =
+  dsp->inverse_transforms[kTransform1dAdst][kTransform1dSize16][kRow] =
       Adst16TransformLoopRow_NEON;
-  dsp->inverse_transforms[k1DTransformAdst][k1DTransformSize16][kColumn] =
+  dsp->inverse_transforms[kTransform1dAdst][kTransform1dSize16][kColumn] =
       Adst16TransformLoopColumn_NEON;
 
   // Maximum transform size for Identity transform is 32.
-  dsp->inverse_transforms[k1DTransformIdentity][k1DTransformSize4][kRow] =
+  dsp->inverse_transforms[kTransform1dIdentity][kTransform1dSize4][kRow] =
       Identity4TransformLoopRow_NEON;
-  dsp->inverse_transforms[k1DTransformIdentity][k1DTransformSize4][kColumn] =
+  dsp->inverse_transforms[kTransform1dIdentity][kTransform1dSize4][kColumn] =
       Identity4TransformLoopColumn_NEON;
-  dsp->inverse_transforms[k1DTransformIdentity][k1DTransformSize8][kRow] =
+  dsp->inverse_transforms[kTransform1dIdentity][kTransform1dSize8][kRow] =
       Identity8TransformLoopRow_NEON;
-  dsp->inverse_transforms[k1DTransformIdentity][k1DTransformSize8][kColumn] =
+  dsp->inverse_transforms[kTransform1dIdentity][kTransform1dSize8][kColumn] =
       Identity8TransformLoopColumn_NEON;
-  dsp->inverse_transforms[k1DTransformIdentity][k1DTransformSize16][kRow] =
+  dsp->inverse_transforms[kTransform1dIdentity][kTransform1dSize16][kRow] =
       Identity16TransformLoopRow_NEON;
-  dsp->inverse_transforms[k1DTransformIdentity][k1DTransformSize16][kColumn] =
+  dsp->inverse_transforms[kTransform1dIdentity][kTransform1dSize16][kColumn] =
       Identity16TransformLoopColumn_NEON;
-  dsp->inverse_transforms[k1DTransformIdentity][k1DTransformSize32][kRow] =
+  dsp->inverse_transforms[kTransform1dIdentity][kTransform1dSize32][kRow] =
       Identity32TransformLoopRow_NEON;
-  dsp->inverse_transforms[k1DTransformIdentity][k1DTransformSize32][kColumn] =
+  dsp->inverse_transforms[kTransform1dIdentity][kTransform1dSize32][kColumn] =
       Identity32TransformLoopColumn_NEON;
 
   // Maximum transform size for Wht is 4.
-  dsp->inverse_transforms[k1DTransformWht][k1DTransformSize4][kRow] =
+  dsp->inverse_transforms[kTransform1dWht][kTransform1dSize4][kRow] =
       Wht4TransformLoopRow_NEON;
-  dsp->inverse_transforms[k1DTransformWht][k1DTransformSize4][kColumn] =
+  dsp->inverse_transforms[kTransform1dWht][kTransform1dSize4][kColumn] =
       Wht4TransformLoopColumn_NEON;
 }
 

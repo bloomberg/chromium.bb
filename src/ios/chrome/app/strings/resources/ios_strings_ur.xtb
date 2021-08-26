@@ -40,6 +40,7 @@
 <translation id="1254117744268754948">فولڈر کا انتخاب کریں</translation>
 <translation id="1265739287306757398">طریقہ جانیں</translation>
 <translation id="1272079795634619415">روکیں</translation>
+<translation id="1275718070701477396">منتخب</translation>
 <translation id="1282311502488501110">سائن ان نہ کریں</translation>
 <translation id="1283524564873030414">گزشتہ 24 گھنٹے</translation>
 <translation id="1285320974508926690">اس سائٹ کا ترجمہ کبھی نہ کریں</translation>
@@ -66,6 +67,7 @@
 <translation id="1509960214886564027">بہت سی سائٹس پر خصوصیات میں خلل ہو سکتا ہے</translation>
 <translation id="152234381334907219">کبھی محفوظ نہیں ہوئے</translation>
 <translation id="1523341279170789507">سبھی کوکیز کی اجازت دیں</translation>
+<translation id="1524563461097350801">نہیں شکریہ</translation>
 <translation id="1535268707340844072">آپ کی موجودہ ترتیب کی وجہ سے ممکن ہے کچھ سائٹس کام نہ کریں۔ سبھی سائٹس کی خاطر کوکیز کا نظم کرنے کے لیے، <ph name="BEGIN_LINK" />کوکی کی ترتیبات<ph name="END_LINK" /> دیکھیں۔</translation>
 <translation id="1540800554400757039">پتہ 1</translation>
 <translation id="1545749641540134597">‏QR کوڈ اسکین کریں</translation>
@@ -112,7 +114,6 @@
 <translation id="1989112275319619282">براؤز کریں</translation>
 <translation id="2015722694326466240">پاسورڈز دیکھنے کے لیے، آپ کو اپنے آلے پر پہلے پاس کوڈ سیٹ کرنا چاہئے۔</translation>
 <translation id="2021670401941426298">اگر قابل اطلاق ہو تو اپنی تلاش کی سرگزشت کو حذف کرنے کے لیے اپنے سرچ انجن کی ہدایات دیکھیں۔</translation>
-<translation id="2022352537516230970">‏آپ کے iPhone کیلئے بنایا گیا</translation>
 <translation id="2073572773299281212"><ph name="DAYS" /> دن پہلے فعال تھا</translation>
 <translation id="2074131957428911366">آپ <ph name="BEGIN_LINK" />ترتیبات<ph name="END_LINK" /> میں کسی بھی وقت اس بات کا انتخاب کر سکتے ہیں کہ کس چیز کی مطابقت پذیری کرنی ہے۔</translation>
 <translation id="2079545284768500474">کالعدم کریں</translation>
@@ -136,6 +137,7 @@
 <translation id="2320166752086256636">کی بورڈ چھپائیں</translation>
 <translation id="2339560363438331454">‏مطابقت پذیری اور Google سروسز</translation>
 <translation id="2351097562818989364">ترجمہ کی آپ کی ترتیبات دوبارہ ترتیب دی گئیں ہیں۔</translation>
+<translation id="235789365079050412">‏Google کی رازداری کی پالیسی</translation>
 <translation id="2359043044084662842">ترجمہ کریں</translation>
 <translation id="2359808026110333948">جاری رکھیں</translation>
 <translation id="2360196772093551345">موبائل سائٹ کی درخواست کریں</translation>
@@ -147,6 +149,7 @@
 <translation id="2421004566762153674">فریق ثالث کوکیز کو مسدود کیا جا رہا ہے</translation>
 <translation id="2421044535038393232">ترمیم جاری رکھیں</translation>
 <translation id="2435457462613246316">پاس ورڈ دکھائیں</translation>
+<translation id="2476359652512522418">انتخاب نہیں کیا گیا</translation>
 <translation id="2497852260688568942">مطابقت پذیری کو آپ کے منتظم نے غیر فعال کر دیا ہے</translation>
 <translation id="2500374554657206846">پاس ورڈ محفوظ کرنے کے اختیارات</translation>
 <translation id="2523363575747517183">یہ ویب سائٹ بار بار ایک اور ایپلیکیشن کھولنے کی کوشش کر رہی ہے۔</translation>
@@ -184,6 +187,7 @@
 <translation id="2834956026595107950"><ph name="TITLE" />، <ph name="STATE" />، <ph name="URL" /></translation>
 <translation id="2840687315230832938">مطابقت پذیری کا ابتدائی سیٹ اپ مکمل نہیں ہوا</translation>
 <translation id="2843803966603263712">‏Translate کی ترتیبات کو دوبارہ ترتیب دیں</translation>
+<translation id="2848086008667475748">ترتیبات میں ڈیفالٹ بنائیں…</translation>
 <translation id="2858204748079866344">‏آپ کی رازداری کے تحفظ کے لیے، Chrome اس فیلڈ میں آپ کا پاس ورڈ آٹو فل نہیں کرے گا۔</translation>
 <translation id="285960592395650245">ڈاؤن لوڈ کی دوبارہ کوشش کریں</translation>
 <translation id="2870560284913253234">سائٹ</translation>
@@ -283,6 +287,7 @@
 <translation id="3691593122358196899"><ph name="FOLDER_TITLE" /> میں بُک مارک کردہ</translation>
 <translation id="3709582977625132201">بغیر پڑھا ہوا کے بطور نشان زد کریں</translation>
 <translation id="3740397331642243698">‏درج کردہ URLs کو Google Chrome میں پوشیدگی میں کھولتا ہے۔</translation>
+<translation id="3762232513783804601">‏آپ کے iPad کے لیے بنایا گیا</translation>
 <translation id="3771033907050503522">پوشیدگی ٹیبز</translation>
 <translation id="3775743491439407556">مطابقت پذیری کام نہیں کر رہی ہے</translation>
 <translation id="3779810277399252432">کوئی انٹرنیٹ کنکشن نہیں ہے۔</translation>
@@ -322,7 +327,7 @@
 <translation id="4172051516777682613">ہمیشہ دکھائیں</translation>
 <translation id="418156467088430727">نئے ٹیب میں آف لائن ورژن دیکھیں</translation>
 <translation id="4181841719683918333">زبانیں</translation>
-<translation id="4184011057600693970">‏آپ کے iPad کیلئے بنایا گیا</translation>
+<translation id="4237377247299956313"><ph name="BEGIN_BOLD" />ڈیفالٹ براؤزر ایپ<ph name="END_BOLD" /> پر تھپتھپائیں</translation>
 <translation id="424315890655130736">پاس فریز درج کریں</translation>
 <translation id="4263576668337963058">دستیاب صفحہ کی کارروائیاں دکھائیں</translation>
 <translation id="4267380167363222949">اگلا ٹیب</translation>
@@ -338,9 +343,10 @@
 <translation id="4375040482473363939">‏QR کوڈ کی تلاش</translation>
 <translation id="4378154925671717803">فون</translation>
 <translation id="4389019817280890563">زبان تبدیل کرنے کے لیے تھپتھپائیں۔</translation>
-<translation id="441868831736628555">رازداری نوٹس</translation>
+<translation id="4442550905108052454"><ph name="BEGIN_BOLD" />ترتیبات<ph name="END_BOLD" /> کھولیں</translation>
 <translation id="4454246407045105932">زبان شامل کریں</translation>
 <translation id="4469418912670346607">سیٹ اپ جاری رکھیں</translation>
+<translation id="4474494258097106883">‏آپ کے iPhone کے لیے بنایا گیا</translation>
 <translation id="4476574785019001431">ترتیبات</translation>
 <translation id="4496373720959965247">ٹیبز شامل کریں اور صفحات کے درمیان سوئچ کریں</translation>
 <translation id="4502566650163919158">ابھی چیک کریں</translation>
@@ -597,6 +603,7 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="6730682669179532099">پاسورڈز برآمد نہیں ہو سکے</translation>
 <translation id="6748108480210050150">منجانب</translation>
 <translation id="6760509555861141183">حالیہ ٹیب میں واپس جائیں</translation>
+<translation id="6762812039470893796">سبھی غیر منتخب کریں</translation>
 <translation id="6780034285637185932">زپ کوڈ</translation>
 <translation id="6785453220513215166">کریش رپورٹ بھیج رہا ہے…</translation>
 <translation id="6797885426782475225">صوتی تلاش</translation>
@@ -734,6 +741,7 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="8073872304774253879">تلاشوں اور براؤزنگ کو بہتر بنائیں</translation>
 <translation id="8076014560081431679">محفوظ کردہ سائٹ کی ترتیبات حذف نہیں کی جائیں گی اور یہ آپ کے براؤزنگ کی عادات کی عکاسی کر سکتی ہے۔ <ph name="BEGIN_LINK" />مزید جانیں<ph name="END_LINK" /></translation>
 <translation id="8079602123447022758">یہ ترتیب نظم کردہ ہے، مزید معلومات کیلئے دوبار تھپتھپائیں</translation>
+<translation id="8080028325999236607">سبھی ٹیبز بند کریں</translation>
 <translation id="8105368624971345109">آف کریں</translation>
 <translation id="8114753159095730575">فائل ڈاؤن لوڈ دستیاب ہے۔ اختیارات اسکرین کے نچلے حصے کے قریب دستیاب ہیں۔</translation>
 <translation id="8131740175452115882">تصدیق کریں</translation>
@@ -749,7 +757,6 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="8283172974887967105">سیٹ کریں…</translation>
 <translation id="8299417921174340354">پاس ورڈز استعمال کرنے کے ليے، آپ کو اپنے آلے پر پہلے پاس کوڈ سیٹ کرنا ہوگا۔</translation>
 <translation id="8299613349954694191">ویب کو نجی طور پر براؤز کرنے کے لیے ایک پوشیدگی ٹیب کھولیں۔</translation>
-<translation id="83100941411593607">سائن ان کی خصوصیت غیر فعال ہے</translation>
 <translation id="8319076807703933069">نئی تلاش</translation>
 <translation id="8323906514956095947">ٹیب کے مزید اختیارات کیلئے ٹچ کریں اور دبائے رکھیں</translation>
 <translation id="8328777765163860529">تمام بند کریں</translation>

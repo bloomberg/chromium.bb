@@ -8,7 +8,7 @@ import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min
 import {SystemPageBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
 import {LifetimeBrowserProxyImpl} from 'chrome://settings/settings.js';
 import {TestLifetimeBrowserProxy} from 'chrome://test/settings/test_lifetime_browser_proxy.js';
-import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.js';
 // clang-format on
 
 /** @const {boolean} */
@@ -44,9 +44,9 @@ suite('settings system page', function() {
   setup(function() {
     PolymerTest.clearBody();
     lifetimeBrowserProxy = new TestLifetimeBrowserProxy();
-    LifetimeBrowserProxyImpl.instance_ = lifetimeBrowserProxy;
+    LifetimeBrowserProxyImpl.setInstance(lifetimeBrowserProxy);
     systemBrowserProxy = new TestSystemPageBrowserProxy();
-    SystemPageBrowserProxyImpl.instance_ = systemBrowserProxy;
+    SystemPageBrowserProxyImpl.setInstance(systemBrowserProxy);
 
     systemPage = document.createElement('settings-system-page');
     systemPage.set('prefs', {

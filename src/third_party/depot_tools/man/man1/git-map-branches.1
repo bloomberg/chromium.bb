@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: git-map-branches
-.\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 08/10/2020
+.\"    Author: [FIXME: author] [see http://www.docbook.org/tdg5/en/html/author]
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 07/01/2021
 .\"    Manual: Chromium depot_tools Manual
-.\"    Source: depot_tools 8c3f7227
+.\"    Source: depot_tools 906b5026
 .\"  Language: English
 .\"
-.TH "GIT\-MAP\-BRANCHES" "1" "08/10/2020" "depot_tools 8c3f7227" "Chromium depot_tools Manual"
+.TH "GIT\-MAP\-BRANCHES" "1" "07/01/2021" "depot_tools 906b5026" "Chromium depot_tools Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -58,7 +58,7 @@ cyan\&.
 .sp -1
 .IP \(bu 2.3
 .\}
-The branch which will be modified with git\-commit is denoted with an asterisk (*) after the name\&.
+The branch which will be modified with git\-commit is denoted with an asterisk (\fB*\fR) after the name\&.
 .RE
 .RE
 .sp
@@ -108,7 +108,7 @@ blue\&.
 .sp -1
 .IP \(bu 2.3
 .\}
-{NO UPSTREAM}
+\fB{NO UPSTREAM}\fR
 is a special placeholder in
 magenta\&.
 .sp
@@ -152,7 +152,7 @@ Be more verbose\&. Pass once to show tracking info, twice for hash and review UR
 .RE
 .SH "EXAMPLE"
 .sp
-Given the hypothetical demo repo in \fBgit-map\fR(1)\*(Aqs EXAMPLE section, and assuming that the frozen_changes branch was currently checked out, running \fIgit map\-branches\fR would result in an output like:
+Given the hypothetical demo repo in \fBgit-map\fR(1)\*(Aqs EXAMPLE section, and assuming that the \fBfrozen_changes\fR branch was currently checked out, running \fIgit map\-branches\fR would result in an output like:
 .sp
 
 .sp
@@ -163,7 +163,7 @@ Given the hypothetical demo repo in \fBgit-map\fR(1)\*(Aqs EXAMPLE section, and 
 \fB$ git map\-branches\fR
 {NO_UPSTREAM}
   no_upstream
-origin/master
+origin/main
   cool_feature
     subfeature
   fixit
@@ -171,7 +171,7 @@ origin/master
 $ git map\-branches \-v\fR
 {NO_UPSTREAM}
   no_upstream
-origin/master
+origin/main
   cool_feature         [ 4 commits            ]
     subfeature         [ 2 commits | behind 1 ]
   fixit                [ 2 commits            ]

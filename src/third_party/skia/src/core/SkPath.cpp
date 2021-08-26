@@ -139,6 +139,8 @@ private:
 ////////////////////////////////////////////////////////////////////////////
 
 // flag to require a moveTo if we begin with something else, like lineTo etc.
+// This will also be the value of lastMoveToIndex for a single contour
+// ending with close, so countVerbs needs to be checked against 0.
 #define INITIAL_LASTMOVETOINDEX_VALUE   ~0
 
 SkPath::SkPath()
@@ -626,8 +628,15 @@ SkPath& SkPath::moveTo(SkScalar x, SkScalar y) {
 }
 
 SkPath& SkPath::rMoveTo(SkScalar x, SkScalar y) {
-    SkPoint pt;
-    this->getLastPt(&pt);
+    SkPoint pt = {0,0};
+    int count = fPathRef->countPoints();
+    if (count > 0) {
+        if (fLastMoveToIndex >= 0) {
+            pt = fPathRef->atPoint(count - 1);
+        } else {
+            pt = fPathRef->atPoint(~fLastMoveToIndex);
+        }
+    }
     return this->moveTo(pt.fX + x, pt.fY + y);
 }
 
@@ -1397,8 +1406,7 @@ SkPath& SkPath::addPath(const SkPath& srcPath, const SkMatrix& matrix, AddPathMo
             SkPoint mappedPts[3];
             case SkPathVerb::kMove:
                 mapPtsProc(matrix, mappedPts, &pts[0], 1);
-                if (firstVerb && !isEmpty()) {
-                    SkASSERT(mode == kExtend_AddPathMode);
+                if (firstVerb && mode == kExtend_AddPathMode && !isEmpty()) {
                     injectMoveToIfNeeded(); // In case last contour is closed
                     SkPoint lastPt;
                     // don't add lineTo if it is degenerate

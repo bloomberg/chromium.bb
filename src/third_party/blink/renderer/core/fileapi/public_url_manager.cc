@@ -27,9 +27,11 @@
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom-blink.h"
+#include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fileapi/url_registry.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
@@ -77,7 +79,8 @@ String PublicURLManager::RegisterURL(URLRegistrable* registrable) {
     mojo::PendingRemote<mojom::blink::Blob> blob_remote;
     mojo::PendingReceiver<mojom::blink::Blob> blob_receiver =
         blob_remote.InitWithNewPipeAndPassReceiver();
-    url_store_->Register(std::move(blob_remote), url);
+    url_store_->Register(std::move(blob_remote), url,
+                         GetExecutionContext()->GetAgentClusterID());
     mojo_urls_.insert(url_string);
     registrable->CloneMojoBlob(std::move(blob_receiver));
   } else {
@@ -122,7 +125,20 @@ void PublicURLManager::Resolve(
     return;
 
   DCHECK(url.ProtocolIs("blob"));
-  url_store_->ResolveAsURLLoaderFactory(url, std::move(factory_receiver));
+  url_store_->ResolveAsURLLoaderFactory(
+      url, std::move(factory_receiver),
+      WTF::Bind(
+          [](ExecutionContext* execution_context,
+             const absl::optional<base::UnguessableToken>&
+                 unsafe_agent_cluster_id) {
+            if (execution_context->GetAgentClusterID() !=
+                unsafe_agent_cluster_id) {
+              execution_context->CountUse(
+                  WebFeature::
+                      kBlobStoreAccessAcrossAgentClustersInResolveAsURLLoaderFactory);
+            }
+          },
+          WrapPersistent(GetExecutionContext())));
 }
 
 void PublicURLManager::Resolve(
@@ -132,7 +148,20 @@ void PublicURLManager::Resolve(
     return;
 
   DCHECK(url.ProtocolIs("blob"));
-  url_store_->ResolveForNavigation(url, std::move(token_receiver));
+  url_store_->ResolveForNavigation(
+      url, std::move(token_receiver),
+      WTF::Bind(
+          [](ExecutionContext* execution_context,
+             const absl::optional<base::UnguessableToken>&
+                 unsafe_agent_cluster_id) {
+            if (execution_context->GetAgentClusterID() !=
+                unsafe_agent_cluster_id) {
+              execution_context->CountUse(
+                  WebFeature::
+                      kBlobStoreAccessAcrossAgentClustersInResolveForNavigation);
+            }
+          },
+          WrapPersistent(GetExecutionContext())));
 }
 
 void PublicURLManager::ContextDestroyed() {

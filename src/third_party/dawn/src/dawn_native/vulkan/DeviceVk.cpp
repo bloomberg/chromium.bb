@@ -16,6 +16,7 @@
 
 #include "common/Platform.h"
 #include "dawn_native/BackendConnection.h"
+#include "dawn_native/ChainUtils_autogen.h"
 #include "dawn_native/Error.h"
 #include "dawn_native/ErrorData.h"
 #include "dawn_native/VulkanBackend.h"
@@ -321,6 +322,7 @@ namespace dawn_native { namespace vulkan {
         usedKnobs.features.fullDrawIndexUint32 = VK_TRUE;
         usedKnobs.features.imageCubeArray = VK_TRUE;
         usedKnobs.features.independentBlend = VK_TRUE;
+        usedKnobs.features.sampleRateShading = VK_TRUE;
 
         if (IsRobustnessEnabled()) {
             usedKnobs.features.robustBufferAccess = VK_TRUE;
@@ -563,8 +565,22 @@ namespace dawn_native { namespace vulkan {
         if (!mUnusedCommands.empty()) {
             CommandPoolAndBuffer commands = mUnusedCommands.back();
             mUnusedCommands.pop_back();
-            DAWN_TRY(CheckVkSuccess(fn.ResetCommandPool(mVkDevice, commands.pool, 0),
-                                    "vkResetCommandPool"));
+            DAWN_TRY_WITH_CLEANUP(CheckVkSuccess(fn.ResetCommandPool(mVkDevice, commands.pool, 0),
+                                                 "vkResetCommandPool"),
+                                  {
+                                      // vkResetCommandPool failed (it may return out-of-memory).
+                                      // Free the commands in the cleanup step before returning to
+                                      // reclaim memory.
+
+                                      // The VkCommandBuffer memory should be wholly owned by the
+                                      // pool and freed when it is destroyed, but that's not the
+                                      // case in some drivers and they leak memory. So we call
+                                      // FreeCommandBuffers before DestroyCommandPool to be safe.
+                                      // TODO(enga): Only do this on a known list of bad drivers.
+                                      fn.FreeCommandBuffers(mVkDevice, commands.pool, 1,
+                                                            &commands.commandBuffer);
+                                      fn.DestroyCommandPool(mVkDevice, commands.pool, nullptr);
+                                  });
 
             mRecordingContext.commandBuffer = commands.commandBuffer;
             mRecordingContext.commandPool = commands.pool;
@@ -698,6 +714,14 @@ namespace dawn_native { namespace vulkan {
         const TextureDescriptor* textureDescriptor =
             reinterpret_cast<const TextureDescriptor*>(descriptor->cTextureDescriptor);
 
+        const DawnTextureInternalUsageDescriptor* internalUsageDesc = nullptr;
+        FindInChain(textureDescriptor->nextInChain, &internalUsageDesc);
+
+        wgpu::TextureUsage usage = textureDescriptor->usage;
+        if (internalUsageDesc != nullptr) {
+            usage |= internalUsageDesc->internalUsage;
+        }
+
         // Check services support this combination of handle type / image info
         if (!mExternalSemaphoreService->Supported()) {
             return DAWN_VALIDATION_ERROR("External semaphore usage not supported");
@@ -705,8 +729,7 @@ namespace dawn_native { namespace vulkan {
         if (!mExternalMemoryService->SupportsImportMemory(
                 VulkanImageFormat(this, textureDescriptor->format), VK_IMAGE_TYPE_2D,
                 VK_IMAGE_TILING_OPTIMAL,
-                VulkanImageUsage(textureDescriptor->usage,
-                                 GetValidInternalFormat(textureDescriptor->format)),
+                VulkanImageUsage(usage, GetValidInternalFormat(textureDescriptor->format)),
                 VK_IMAGE_CREATE_ALIAS_BIT_KHR)) {
             return DAWN_VALIDATION_ERROR("External memory usage not supported");
         }
@@ -845,11 +868,12 @@ namespace dawn_native { namespace vulkan {
                     INJECT_ERROR_OR_RUN(fn.WaitForFences(mVkDevice, 1, &*fence, true, UINT64_MAX),
                                         VK_ERROR_DEVICE_LOST));
             } while (result == VK_TIMEOUT);
+            // Ignore errors from vkWaitForFences: it can be either OOM which we can't do anything
+            // about (and we need to keep going with the destruction of all fences), or device
+            // loss, which means the workload on the GPU is no longer accessible and we can
+            // safely destroy the fence.
 
-            // TODO: Handle errors
-            ASSERT(result == VK_SUCCESS);
             fn.DestroyFence(mVkDevice, fence, nullptr);
-
             mFencesInFlight.pop();
         }
         return {};

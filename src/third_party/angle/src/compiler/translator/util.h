@@ -54,6 +54,7 @@ GLenum GLVariablePrecision(const TType &type);
 bool IsVaryingIn(TQualifier qualifier);
 bool IsVaryingOut(TQualifier qualifier);
 bool IsVarying(TQualifier qualifier);
+bool IsMatrixGLType(GLenum type);
 bool IsGeometryShaderInput(GLenum shaderType, TQualifier qualifier);
 bool IsTessellationControlShaderInput(GLenum shaderType, TQualifier qualifier);
 bool IsTessellationControlShaderOutput(GLenum shaderType, TQualifier qualifier);
@@ -93,6 +94,12 @@ bool IsSpecWithFunctionBodyNewScope(ShShaderSpec shaderSpec, int shaderVersion);
 ImplicitTypeConversion GetConversion(TBasicType t1, TBasicType t2);
 
 bool IsValidImplicitConversion(ImplicitTypeConversion conversion, TOperator op);
+
+// Whether the given basic type requires precision.
+bool IsPrecisionApplicableToType(TBasicType type);
+
+// Whether this is the name of a built-in that can be redeclared by the shader.
+bool IsRedeclarableBuiltIn(const ImmutableString &name);
 
 size_t FindFieldIndex(const TFieldList &fieldList, const char *fieldName);
 }  // namespace sh

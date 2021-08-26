@@ -91,7 +91,7 @@ void UmaHistogramEnumeration(const char* name, T sample) {
                                  static_cast<int>(T::kMaxValue) + 1);
 }
 
-// Some legacy histograms may manually specify a max value, with a kCount,
+// Some legacy histograms may manually specify the enum size, with a kCount,
 // COUNT, kMaxValue, or MAX_VALUE sentinel like so:
 //   // These values are persisted to logs. Entries should not be renumbered and
 //   // numeric values should never be reused.
@@ -100,12 +100,12 @@ void UmaHistogramEnumeration(const char* name, T sample) {
 //     kClickTitle = 1,
 //     // kUseSearchbox = 2,  // no longer used, combined into omnibox
 //     kOpenBookmark = 3,
-//     kMaxValue,
+//     kCount,
 //   };
 //   base::UmaHistogramEnumeration("My.Enumeration",
 //                                 NewTabPageAction::kUseSearchbox,
-//                                 kMaxValue);
-// Note: The value in |sample| must be strictly less than |kMaxValue|. This is
+//                                 kCount);
+// Note: The value in |sample| must be strictly less than |enum_size|. This is
 // otherwise functionally equivalent to the above.
 template <typename T>
 void UmaHistogramEnumeration(const std::string& name, T sample, T enum_size) {
@@ -218,16 +218,6 @@ BASE_EXPORT void UmaHistogramMicrosecondsTimes(const std::string& name,
 BASE_EXPORT void UmaHistogramMicrosecondsTimes(const char* name,
                                                TimeDelta sample);
 
-// For microseconds timings from 1 microsecond up to 10 ms (50 buckets).
-// TODO(crbug.com/983261) Remove this method after moving to
-// UmaHistogramMicrosecondsTimes.
-BASE_EXPORT void UmaHistogramMicrosecondsTimesUnderTenMilliseconds(
-    const std::string& name,
-    TimeDelta sample);
-BASE_EXPORT void UmaHistogramMicrosecondsTimesUnderTenMilliseconds(
-    const char* name,
-    TimeDelta sample);
-
 // For recording memory related histograms.
 // Used to measure common KB-granularity memory stats. Range is up to 500M.
 BASE_EXPORT void UmaHistogramMemoryKB(const std::string& name, int sample);
@@ -265,7 +255,7 @@ BASE_EXPORT void UmaHistogramMemoryLargeMB(const char* name, int sample);
 // many distinct values to the server (across all users). Concretely, keep the
 // number of distinct values <= 100 ideally, definitely <= 1000. If you have no
 // guarantees on the range of your data, use clamping, e.g.:
-//   UmaHistogramSparse("My.Histogram", ClampToRange(value, 0, 200));
+//   UmaHistogramSparse("My.Histogram", base::clamp(value, 0, 200));
 BASE_EXPORT void UmaHistogramSparse(const std::string& name, int sample);
 BASE_EXPORT void UmaHistogramSparse(const char* name, int sample);
 

@@ -69,6 +69,18 @@ class COMPONENT_EXPORT(UI_BASE) InteractionSequence {
     kHidden
   };
 
+  // Details why a sequence was aborted.
+  enum class AbortedReason {
+    // External code destructed this object before the sequence could complete.
+    kSequenceDestroyed,
+    // The starting element was hidden before the sequence started.
+    kElementHiddenBeforeSequenceStart,
+    // An element should have been visible at the start of a step but was not.
+    kElementNotVisibleAtStartOfStep,
+    // An element should have remained visible during a step but did not.
+    kElementHiddenDuringStep
+  };
+
   // Callback when a step happens in the sequence, or when a step ends. If
   // |element| is no longer available, it will be null.
   using StepCallback = base::OnceCallback<void(TrackedElement* element,
@@ -79,9 +91,11 @@ class COMPONENT_EXPORT(UI_BASE) InteractionSequence {
   // sequence of steps, or if this object is deleted after the sequence starts.
   // The most recent event is described by the parameters; if the target element
   // is no longer available it will be null.
-  using AbortedCallback = base::OnceCallback<void(TrackedElement* last_element,
-                                                  ElementIdentifier last_id,
-                                                  StepType last_step_type)>;
+  using AbortedCallback =
+      base::OnceCallback<void(TrackedElement* last_element,
+                              ElementIdentifier last_id,
+                              StepType last_step_type,
+                              AbortedReason aborted_reason)>;
 
   using CompletedCallback = base::OnceClosure;
 
@@ -219,6 +233,15 @@ class COMPONENT_EXPORT(UI_BASE) InteractionSequence {
   // associated with that window).
   void Start();
 
+  // Starts the sequence and does not return until the sequence either
+  // completes or aborts. Events on the current thread continue to be processed
+  // while the method is waiting, so this will not e.g. block the browser UI
+  // thread from handling inputs.
+  //
+  // This is a test-only method since production code applications should
+  // always run asynchronously.
+  void RunSynchronouslyForTesting();
+
  private:
   explicit InteractionSequence(std::unique_ptr<Configuration> configuration);
 
@@ -246,7 +269,7 @@ class COMPONENT_EXPORT(UI_BASE) InteractionSequence {
   void StageNextStep();
 
   // Cancels the sequence and cleans up.
-  void Abort();
+  void Abort(AbortedReason reason);
 
   // Returns true (and does some sanity checking) if the sequence was aborted
   // during the most recent callback.
@@ -267,6 +290,7 @@ class COMPONENT_EXPORT(UI_BASE) InteractionSequence {
   bool processing_step_ = false;
   std::unique_ptr<Step> current_step_;
   std::unique_ptr<Configuration> configuration_;
+  base::OnceClosure quit_run_loop_closure_for_testing_;
 
   // This is necessary because this object could be deleted during any callback,
   // and we don't want to risk a UAF if that happens.

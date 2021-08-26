@@ -9,6 +9,7 @@
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/refcounted_browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/service_access_type.h"
+#include "components/password_manager/core/browser/password_store_interface.h"
 
 class Profile;
 
@@ -25,6 +26,9 @@ class AccountPasswordStoreFactory
       Profile* profile,
       ServiceAccessType set);
 
+  static scoped_refptr<password_manager::PasswordStoreInterface>
+  GetInterfaceForProfile(Profile* profile, ServiceAccessType set);
+
   static AccountPasswordStoreFactory* GetInstance();
 
  private:
@@ -34,8 +38,6 @@ class AccountPasswordStoreFactory
   ~AccountPasswordStoreFactory() override;
 
   // RefcountedBrowserContextKeyedServiceFactory:
-  void RegisterProfilePrefs(
-      user_prefs::PrefRegistrySyncable* registry) override;
   scoped_refptr<RefcountedKeyedService> BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
   content::BrowserContext* GetBrowserContextToUse(

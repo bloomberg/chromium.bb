@@ -25,6 +25,12 @@
 #include "components/sync/engine/cycle/status_controller.h"
 #include "components/sync/engine/model_type_processor.h"
 #include "components/sync/engine/sync_engine_switches.h"
+#include "components/sync/protocol/autofill_specifics.pb.h"
+#include "components/sync/protocol/entity_specifics.pb.h"
+#include "components/sync/protocol/model_type_state.pb.h"
+#include "components/sync/protocol/password_specifics.pb.h"
+#include "components/sync/protocol/sync.pb.h"
+#include "components/sync/protocol/sync_entity.pb.h"
 #include "components/sync/test/engine/fake_cryptographer.h"
 #include "components/sync/test/engine/mock_model_type_processor.h"
 #include "components/sync/test/engine/mock_nudge_handler.h"
@@ -34,7 +40,6 @@
 
 using base::Time;
 using base::TimeDelta;
-using sync_pb::BookmarkSpecifics;
 using sync_pb::EntitySpecifics;
 using sync_pb::ModelTypeState;
 using sync_pb::SyncEntity;
@@ -1513,7 +1518,6 @@ TEST(ModelTypeWorkerPopulateUpdateResponseDataTest,
   const EntityData& data = response_data.entity;
   EXPECT_FALSE(data.id.empty());
   EXPECT_FALSE(data.parent_id.empty());
-  EXPECT_FALSE(data.is_folder);
   EXPECT_EQ("CLIENT_TAG", data.client_tag_hash.value());
   EXPECT_EQ("SERVER_TAG", data.server_defined_unique_tag);
   EXPECT_FALSE(data.is_deleted());
@@ -1548,14 +1552,14 @@ TEST(ModelTypeWorkerPopulateUpdateResponseDataTest, BookmarkTombstone) {
 }
 
 TEST(ModelTypeWorkerPopulateUpdateResponseDataTest,
-     BookmarkWithUniquePosition) {
+     BookmarkWithUniquePositionInSyncEntity) {
+  const UniquePosition kUniquePosition =
+      UniquePosition::InitialPosition(UniquePosition::RandomSuffix());
   sync_pb::SyncEntity entity;
-
-  *entity.mutable_unique_position() =
-      UniquePosition::InitialPosition(UniquePosition::RandomSuffix()).ToProto();
+  *entity.mutable_unique_position() = kUniquePosition.ToProto();
   entity.set_client_defined_unique_tag("CLIENT_TAG");
   entity.set_server_defined_unique_tag("SERVER_TAG");
-  *entity.mutable_specifics() = GenerateSpecifics(kTag1, kValue1);
+  entity.mutable_specifics()->mutable_bookmark();
 
   UpdateResponseData response_data;
 
@@ -1563,17 +1567,18 @@ TEST(ModelTypeWorkerPopulateUpdateResponseDataTest,
             ModelTypeWorker::PopulateUpdateResponseData(
                 FakeCryptographer(), BOOKMARKS, entity, &response_data));
   const EntityData& data = response_data.entity;
-  EXPECT_TRUE(data.unique_position.IsValid());
+  EXPECT_TRUE(syncer::UniquePosition::FromProto(
+                  data.specifics.bookmark().unique_position())
+                  .Equals(kUniquePosition));
 }
 
 TEST(ModelTypeWorkerPopulateUpdateResponseDataTest,
      BookmarkWithPositionInParent) {
   sync_pb::SyncEntity entity;
-
   entity.set_position_in_parent(5);
   entity.set_client_defined_unique_tag("CLIENT_TAG");
   entity.set_server_defined_unique_tag("SERVER_TAG");
-  *entity.mutable_specifics() = GenerateSpecifics(kTag1, kValue1);
+  entity.mutable_specifics()->mutable_bookmark();
 
   UpdateResponseData response_data;
 
@@ -1581,17 +1586,18 @@ TEST(ModelTypeWorkerPopulateUpdateResponseDataTest,
             ModelTypeWorker::PopulateUpdateResponseData(
                 FakeCryptographer(), BOOKMARKS, entity, &response_data));
   const EntityData& data = response_data.entity;
-  EXPECT_TRUE(data.unique_position.IsValid());
+  EXPECT_TRUE(syncer::UniquePosition::FromProto(
+                  data.specifics.bookmark().unique_position())
+                  .IsValid());
 }
 
 TEST(ModelTypeWorkerPopulateUpdateResponseDataTest,
      BookmarkWithInsertAfterItemId) {
   sync_pb::SyncEntity entity;
-
   entity.set_insert_after_item_id("ITEM_ID");
   entity.set_client_defined_unique_tag("CLIENT_TAG");
   entity.set_server_defined_unique_tag("SERVER_TAG");
-  *entity.mutable_specifics() = GenerateSpecifics(kTag1, kValue1);
+  entity.mutable_specifics()->mutable_bookmark();
 
   UpdateResponseData response_data;
 
@@ -1599,19 +1605,17 @@ TEST(ModelTypeWorkerPopulateUpdateResponseDataTest,
             ModelTypeWorker::PopulateUpdateResponseData(
                 FakeCryptographer(), BOOKMARKS, entity, &response_data));
   const EntityData& data = response_data.entity;
-  EXPECT_TRUE(data.unique_position.IsValid());
+  EXPECT_TRUE(syncer::UniquePosition::FromProto(
+                  data.specifics.bookmark().unique_position())
+                  .IsValid());
 }
 
 TEST(ModelTypeWorkerPopulateUpdateResponseDataTest,
-     BookmarkWithMissingPosition) {
+     BookmarkWithMissingPositionFallsBackToRandom) {
   sync_pb::SyncEntity entity;
-
   entity.set_client_defined_unique_tag("CLIENT_TAG");
   entity.set_server_defined_unique_tag("SERVER_TAG");
-  EntitySpecifics specifics;
-  specifics.mutable_bookmark()->set_url("http://www.url.com");
-
-  *entity.mutable_specifics() = specifics;
+  entity.mutable_specifics()->mutable_bookmark();
 
   UpdateResponseData response_data;
 
@@ -1619,22 +1623,9 @@ TEST(ModelTypeWorkerPopulateUpdateResponseDataTest,
             ModelTypeWorker::PopulateUpdateResponseData(
                 FakeCryptographer(), BOOKMARKS, entity, &response_data));
   const EntityData& data = response_data.entity;
-  EXPECT_FALSE(data.unique_position.IsValid());
-}
-
-TEST(ModelTypeWorkerPopulateUpdateResponseDataTest, NonBookmarkWithNoPosition) {
-  sync_pb::SyncEntity entity;
-
-  EntitySpecifics specifics;
-  *entity.mutable_specifics() = GenerateSpecifics(kTag1, kValue1);
-
-  UpdateResponseData response_data;
-
-  EXPECT_EQ(ModelTypeWorker::SUCCESS,
-            ModelTypeWorker::PopulateUpdateResponseData(
-                FakeCryptographer(), PREFERENCES, entity, &response_data));
-  const EntityData& data = response_data.entity;
-  EXPECT_FALSE(data.unique_position.IsValid());
+  EXPECT_TRUE(syncer::UniquePosition::FromProto(
+                  data.specifics.bookmark().unique_position())
+                  .IsValid());
 }
 
 TEST(ModelTypeWorkerPopulateUpdateResponseDataTest, BookmarkWithGUID) {
@@ -1667,6 +1658,7 @@ TEST(ModelTypeWorkerPopulateUpdateResponseDataTest, BookmarkWithMissingGUID) {
   sync_pb::SyncEntity entity;
 
   // Generate specifics without a GUID.
+  entity.mutable_specifics()->mutable_bookmark();
   entity.set_originator_client_item_id(kGuid1);
   *entity.mutable_unique_position() =
       UniquePosition::InitialPosition(UniquePosition::RandomSuffix()).ToProto();
@@ -1691,6 +1683,7 @@ TEST(ModelTypeWorkerPopulateUpdateResponseDataTest,
 
   // Generate specifics without a GUID and with an invalid
   // originator_client_item_id.
+  entity.mutable_specifics()->mutable_bookmark();
   entity.set_originator_client_item_id(kInvalidOCII);
   *entity.mutable_unique_position() =
       UniquePosition::InitialPosition(UniquePosition::RandomSuffix()).ToProto();
@@ -2223,8 +2216,7 @@ TEST_F(ModelTypeWorkerBookmarksTest,
                                                 .guid()));
 }
 
-TEST_F(ModelTypeWorkerBookmarksTest,
-       ShouldNotHaveLocalChangesOnSuccessfulLastCommit) {
+TEST_F(ModelTypeWorkerTest, ShouldNotHaveLocalChangesOnSuccessfulLastCommit) {
   const size_t kMaxEntities = 5;
 
   NormalInitialize();
@@ -2247,7 +2239,7 @@ TEST_F(ModelTypeWorkerBookmarksTest,
   EXPECT_FALSE(worker()->HasLocalChangesForTest());
 }
 
-TEST_F(ModelTypeWorkerBookmarksTest, ShouldHaveLocalChangesOnCommitFailure) {
+TEST_F(ModelTypeWorkerTest, ShouldHaveLocalChangesOnCommitFailure) {
   NormalInitialize();
 
   ASSERT_FALSE(worker()->HasLocalChangesForTest());
@@ -2259,15 +2251,17 @@ TEST_F(ModelTypeWorkerBookmarksTest, ShouldHaveLocalChangesOnCommitFailure) {
   EXPECT_TRUE(worker()->HasLocalChangesForTest());
 }
 
-TEST_F(ModelTypeWorkerBookmarksTest,
-       ShouldHaveLocalChangesOnSuccessfulNotLastCommit) {
+TEST_F(ModelTypeWorkerTest, ShouldHaveLocalChangesOnSuccessfulNotLastCommit) {
   const size_t kMaxEntities = 2;
   NormalInitialize();
 
+  sync_pb::EntitySpecifics specifics;
+  specifics.mutable_bookmark();
+
   ASSERT_FALSE(worker()->HasLocalChangesForTest());
-  processor()->AppendCommitRequest(kHash1, GenerateSpecifics(kTag1, kValue1));
-  processor()->AppendCommitRequest(kHash2, GenerateSpecifics(kTag2, kValue2));
-  processor()->AppendCommitRequest(kHash3, GenerateSpecifics(kTag3, kValue3));
+  processor()->AppendCommitRequest(kHash1, specifics);
+  processor()->AppendCommitRequest(kHash2, specifics);
+  processor()->AppendCommitRequest(kHash3, specifics);
   worker()->NudgeForCommit();
   ASSERT_TRUE(worker()->HasLocalChangesForTest());
 
@@ -2285,8 +2279,7 @@ TEST_F(ModelTypeWorkerBookmarksTest,
   EXPECT_FALSE(worker()->HasLocalChangesForTest());
 }
 
-TEST_F(ModelTypeWorkerBookmarksTest,
-       ShouldHaveLocalChangesWhenNudgedWhileInFlight) {
+TEST_F(ModelTypeWorkerTest, ShouldHaveLocalChangesWhenNudgedWhileInFlight) {
   const size_t kMaxEntities = 5;
   NormalInitialize();
 
@@ -2317,8 +2310,7 @@ TEST_F(ModelTypeWorkerBookmarksTest,
   EXPECT_FALSE(worker()->HasLocalChangesForTest());
 }
 
-TEST_F(ModelTypeWorkerBookmarksTest,
-       ShouldHaveLocalChangesWhenContributedMaxEntities) {
+TEST_F(ModelTypeWorkerTest, ShouldHaveLocalChangesWhenContributedMaxEntities) {
   const size_t kMaxEntities = 2;
   NormalInitialize();
   ASSERT_FALSE(worker()->HasLocalChangesForTest());

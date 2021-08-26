@@ -9,6 +9,7 @@
 #include <tuple>
 #include <utility>
 
+#include "base/callback_helpers.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/strcat.h"
@@ -17,6 +18,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "components/reporting/compression/compression_module.h"
+#include "components/reporting/compression/test_compression_module.h"
 #include "components/reporting/encryption/decryption.h"
 #include "components/reporting/encryption/encryption.h"
 #include "components/reporting/encryption/encryption_module.h"
@@ -54,8 +56,6 @@ using ::testing::WithoutArgs;
 
 namespace reporting {
 namespace {
-
-constexpr size_t kCompressionThreshold = 512;
 
 // Context of single decryption. Self-destructs upon completion or failure.
 class SingleDecryptionContext {
@@ -532,6 +532,8 @@ class StorageTest
       scoped_feature_list_.InitFromCommandLine(
           {}, {EncryptionModuleInterface::kEncryptedReporting});
     }
+    test_compression_module_ =
+        base::MakeRefCounted<test::TestCompressionModule>();
   }
 
   void TearDown() override {
@@ -545,14 +547,13 @@ class StorageTest
 
   StatusOr<scoped_refptr<Storage>> CreateTestStorage(
       const StorageOptions& options,
-      scoped_refptr<EncryptionModuleInterface> encryption_module,
-      scoped_refptr<CompressionModule> compression_module) {
+      scoped_refptr<EncryptionModuleInterface> encryption_module) {
     // Initialize Storage with no key.
     test::TestEvent<StatusOr<scoped_refptr<Storage>>> e;
     Storage::Create(options,
                     base::BindRepeating(&StorageTest::AsyncStartMockUploader,
                                         base::Unretained(this)),
-                    encryption_module, compression_module, e.cb());
+                    encryption_module, test_compression_module_, e.cb());
     ASSIGN_OR_RETURN(auto storage, e.result());
 
     if (expect_to_need_key_) {
@@ -574,14 +575,11 @@ class StorageTest
       const StorageOptions& options,
       scoped_refptr<EncryptionModuleInterface> encryption_module =
           EncryptionModule::Create(
-              /*renew_encryption_key_period=*/base::TimeDelta::FromMinutes(30)),
-      scoped_refptr<CompressionModule> compression_module =
-          CompressionModule::Create(
-              kCompressionThreshold,
-              CompressionInformation::COMPRESSION_SNAPPY)) {
+              /*renew_encryption_key_period=*/base::TimeDelta::FromMinutes(
+                  30))) {
     ASSERT_FALSE(storage_) << "StorageTest already assigned";
     StatusOr<scoped_refptr<Storage>> storage_result =
-        CreateTestStorage(options, encryption_module, compression_module);
+        CreateTestStorage(options, encryption_module);
     ASSERT_OK(storage_result)
         << "Failed to create StorageTest, error=" << storage_result.status();
     storage_ = std::move(storage_result.ValueOrDie());
@@ -601,18 +599,15 @@ class StorageTest
       const StorageOptions& options,
       scoped_refptr<EncryptionModuleInterface> encryption_module =
           EncryptionModule::Create(
-              /*renew_encryption_key_period=*/base::TimeDelta::FromMinutes(30)),
-      scoped_refptr<CompressionModule> compression_module =
-          CompressionModule::Create(
-              kCompressionThreshold,
-              CompressionInformation::COMPRESSION_SNAPPY)) {
+              /*renew_encryption_key_period=*/base::TimeDelta::FromMinutes(
+                  30))) {
     // Initialize Storage with no key.
     test::TestEvent<StatusOr<scoped_refptr<Storage>>> e;
     Storage::Create(
         options,
         base::BindRepeating(&StorageTest::AsyncStartMockUploaderFailing,
                             base::Unretained(this)),
-        encryption_module, compression_module, e.cb());
+        encryption_module, test_compression_module_, e.cb());
     ASSIGN_OR_RETURN(auto storage, e.result());
     return storage;
   }
@@ -635,9 +630,10 @@ class StorageTest
       UploaderInterface::UploaderInterfaceResultCb start_uploader_cb) {
     auto uploader = std::make_unique<MockUploadClient>(
         &last_record_digest_map_, sequenced_task_runner_,
-        base::BindOnce(&Storage::UpdateEncryptionKey,
-                       base::Unretained(storage_.get()),
-                       signed_encryption_key_),
+        need_encryption_key ? base::BindOnce(&Storage::UpdateEncryptionKey,
+                                             base::Unretained(storage_.get()),
+                                             signed_encryption_key_)
+                            : base::DoNothing(),
         decryptor_);
     const auto status = set_mock_uploader_expectations_.Call(
         need_encryption_key, uploader.get());
@@ -745,6 +741,7 @@ class StorageTest
   SignedEncryptionInfo signed_encryption_key_;
   bool expect_to_need_key_{false};
   std::atomic<bool> key_delivery_failure_{false};
+  scoped_refptr<test::TestCompressionModule> test_compression_module_;
 
   // Test-wide global mapping of <generation id, sequencing id> to record
   // digest. Serves all MockUploadClients created by test fixture.

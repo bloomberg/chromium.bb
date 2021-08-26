@@ -181,12 +181,14 @@ void WebContentsDelegate::RequestKeyboardLock(WebContents* web_contents,
   web_contents->GotResponseToKeyboardLockRequest(false);
 }
 
+#if defined(OS_ANDROID)
 std::unique_ptr<ColorChooser> WebContentsDelegate::OpenColorChooser(
     WebContents* web_contents,
     SkColor color,
     const std::vector<blink::mojom::ColorSuggestionPtr>& suggestions) {
   return nullptr;
 }
+#endif
 
 std::unique_ptr<EyeDropper> WebContentsDelegate::OpenEyeDropper(
     RenderFrameHost* frame,
@@ -232,6 +234,11 @@ std::string WebContentsDelegate::GetDefaultMediaDeviceID(
     WebContents* web_contents,
     blink::mojom::MediaStreamType type) {
   return std::string();
+}
+
+std::string WebContentsDelegate::GetTitleForMediaControls(
+    WebContents* web_contents) {
+  return {};
 }
 
 #if defined(OS_ANDROID)

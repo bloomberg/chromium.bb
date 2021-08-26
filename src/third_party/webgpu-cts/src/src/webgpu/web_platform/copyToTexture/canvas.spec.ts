@@ -5,13 +5,14 @@ TODO: consider whether external_texture and copyToTexture video tests should be 
 `;
 
 import { makeTestGroup } from '../../../common/framework/test_group.js';
-import { unreachable, assert } from '../../../common/util/util.js';
+import { unreachable, assert, memcpy } from '../../../common/util/util.js';
 import {
   RegularTextureFormat,
   kTextureFormatInfo,
-  kValidTextureFormatsForCopyIB2T,
+  kValidTextureFormatsForCopyE2T,
 } from '../../capability_info.js';
-import { CopyToTextureUtils } from '../../util/copyToTexture.js';
+import { CopyToTextureUtils } from '../../util/copy_to_texture.js';
+import { canvasTypes, allCanvasTypes, createCanvas } from '../../util/create_elements.js';
 import { kTexelRepresentationInfo } from '../../util/texture/texel_data.js';
 
 /**
@@ -27,32 +28,6 @@ function formatForExpectedPixels(format: RegularTextureFormat): RegularTextureFo
 }
 
 class F extends CopyToTextureUtils {
-  createCanvas(
-    canvasType: 'onscreen' | 'offscreen',
-    width: number,
-    height: number
-  ): HTMLCanvasElement | OffscreenCanvas | null {
-    let canvas: HTMLCanvasElement | OffscreenCanvas | null = null;
-    if (canvasType === 'onscreen') {
-      if (typeof document !== 'undefined') {
-        canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-      } else {
-        this.skip('Cannot create HTMLCanvasElement');
-      }
-    } else if (canvasType === 'offscreen') {
-      if (typeof OffscreenCanvas === 'undefined') {
-        this.skip('OffscreenCanvas is not supported');
-      }
-      canvas = new OffscreenCanvas(width, height);
-    } else {
-      unreachable();
-    }
-
-    return canvas;
-  }
-
   // TODO: Cache the generated canvas to avoid duplicated initialization.
   init2DCanvasContent({
     canvasType,
@@ -60,7 +35,7 @@ class F extends CopyToTextureUtils {
     height,
     paintOpaqueRects,
   }: {
-    canvasType: 'onscreen' | 'offscreen';
+    canvasType: canvasTypes;
     width: number;
     height: number;
     paintOpaqueRects: boolean;
@@ -68,10 +43,7 @@ class F extends CopyToTextureUtils {
     canvas: HTMLCanvasElement | OffscreenCanvas;
     canvasContext: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
   } {
-    const canvas = this.createCanvas(canvasType, width, height);
-    if (canvas === null) {
-      this.skip('Cannot create canvas');
-    }
+    const canvas = createCanvas(this, canvasType, width, height);
 
     let canvasContext = null;
     canvasContext = canvas.getContext('2d') as
@@ -116,7 +88,7 @@ class F extends CopyToTextureUtils {
     premultiplied,
     paintOpaqueRects,
   }: {
-    canvasType: 'onscreen' | 'offscreen';
+    canvasType: canvasTypes;
     contextName: 'webgl' | 'webgl2';
     width: number;
     height: number;
@@ -126,13 +98,9 @@ class F extends CopyToTextureUtils {
     canvas: HTMLCanvasElement | OffscreenCanvas;
     canvasContext: WebGLRenderingContext | WebGL2RenderingContext;
   } {
-    const canvas = this.createCanvas(canvasType, width, height);
-    if (canvas === null) {
-      this.skip('Cannot create canvas');
-    }
+    const canvas = createCanvas(this, canvasType, width, height);
 
-    let gl = null;
-    gl = canvas.getContext(contextName, { premultipliedAlpha: premultiplied }) as
+    const gl = canvas.getContext(contextName, { premultipliedAlpha: premultiplied }) as
       | WebGLRenderingContext
       | WebGL2RenderingContext
       | null;
@@ -140,6 +108,7 @@ class F extends CopyToTextureUtils {
     if (gl === null) {
       this.skip(canvasType + ' canvas ' + contextName + ' context not available');
     }
+    this.trackForCleanup(gl);
 
     const rectWidth = Math.floor(width / 2);
     const rectHeight = Math.floor(height / 2);
@@ -236,8 +205,10 @@ class F extends CopyToTextureUtils {
           rgba.B /= rgba.A;
         }
 
-        const pixelData = new Uint8Array(rep.pack(rep.encode(rgba)));
-        expectedPixels.set(pixelData, pixelPos * bytesPerPixel);
+        memcpy(
+          { src: rep.pack(rep.encode(rgba)) },
+          { dst: expectedPixels, start: pixelPos * bytesPerPixel }
+        );
       }
     }
 
@@ -271,8 +242,8 @@ g.test('copy_contents_from_2d_context_canvas')
   )
   .params(u =>
     u
-      .combine('canvasType', ['onscreen', 'offscreen'] as const)
-      .combine('dstColorFormat', kValidTextureFormatsForCopyIB2T)
+      .combine('canvasType', allCanvasTypes)
+      .combine('dstColorFormat', kValidTextureFormatsForCopyE2T)
       .combine('dstPremultiplied', [true, false])
       .beginSubcases()
       .combine('width', [1, 2, 4, 15, 255, 256])
@@ -349,7 +320,7 @@ g.test('copy_contents_from_gl_context_canvas')
   for top-right, blue rect for bottom-left and white for bottom-right.
   And do premultiply alpha in advance if the webgl/webgl2 context is created
   with premultipliedAlpha : true.
-  
+
   Then call copyExternalImageToTexture() to do a full copy to the 0 mipLevel
   of dst texture, and read the contents out to compare with the canvas contents.
 
@@ -364,9 +335,9 @@ g.test('copy_contents_from_gl_context_canvas')
   )
   .params(u =>
     u
-      .combine('canvasType', ['onscreen', 'offscreen'] as const)
+      .combine('canvasType', allCanvasTypes)
       .combine('contextName', ['webgl', 'webgl2'] as const)
-      .combine('dstColorFormat', kValidTextureFormatsForCopyIB2T)
+      .combine('dstColorFormat', kValidTextureFormatsForCopyE2T)
       .combine('srcPremultiplied', [true, false])
       .combine('dstPremultiplied', [true, false])
       .beginSubcases()

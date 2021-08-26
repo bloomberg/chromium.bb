@@ -18,59 +18,68 @@ GrGLSLFragmentShaderBuilder::GrGLSLFragmentShaderBuilder(GrGLSLProgramBuilder* p
     fSubstageIndices.push_back(0);
 }
 
-SkString GrGLSLFPFragmentBuilder::writeProcessorFunction(GrGLSLFragmentProcessor* fp,
-                                                         GrGLSLFragmentProcessor::EmitArgs& args) {
+void GrGLSLFPFragmentBuilder::writeProcessorFunction(
+        GrFragmentProcessor::ProgramImpl* fp,
+        GrFragmentProcessor::ProgramImpl::EmitArgs& args) {
     this->onBeforeChildProcEmitCode();
     this->nextStage();
 
-    // An FP's function signature is theoretically always main(half4 color, float2 _coords).
-    // However, if it is only sampled by a chain of uniform matrix expressions (or legacy coord
-    // transforms), the value that would have been passed to _coords is lifted to the vertex shader
-    // and stored in a unique varying. In that case it uses that variable and does not have a
-    // second actual argument for _coords.
-    // FIXME: An alternative would be to have all FP functions have a float2 argument, and the
-    // parent FP invokes it with the varying reference when it's been lifted to the vertex shader.
-    size_t paramCount = 2;
-    GrShaderVar params[] = { GrShaderVar(args.fInputColor, kHalf4_GrSLType),
-                             GrShaderVar(args.fSampleCoord, kFloat2_GrSLType) };
+    // Conceptually, an FP is always sampled at a particular coordinate. However, if it is only
+    // sampled by a chain of uniform matrix expressions (or legacy coord transforms), the value that
+    // would have been passed to _coords is lifted to the vertex shader and stored in a unique
+    // varying. In that case it uses that variable and we do not pass a second argument for _coords.
+    GrShaderVar params[3];
+    int numParams = 0;
 
-    if (!args.fFp.isSampledWithExplicitCoords()) {
-        // Sampled with a uniform matrix expression and/or a legacy coord transform. The actual
-        // transformation code is emitted in the vertex shader, so this only has to access it.
-        // Add a float2 _coords variable that maps to the associated varying and replaces the
-        // absent 2nd argument to the fp's function.
-        paramCount = 1;
+    params[numParams++] = GrShaderVar(args.fInputColor, kHalf4_GrSLType);
 
-        if (args.fFp.referencesSampleCoords()) {
-            GrShaderVar varying = fProgramBuilder->varyingCoordsForFragmentProcessor(&args.fFp);
-            switch(varying.getType()) {
-                case kFloat2_GrSLType:
-                    // Just point the local coords to the varying
-                    args.fSampleCoord = varying.getName().c_str();
-                    break;
-                case kFloat3_GrSLType:
-                    // Must perform the perspective divide in the frag shader based on the varying,
-                    // and since we won't actually have a function parameter for local coords, add
-                    // it as a local variable.
-                    this->codeAppendf("float2 %s = %s.xy / %s.z;\n", args.fSampleCoord,
-                                      varying.getName().c_str(), varying.getName().c_str());
-                    break;
-                default:
-                    SkDEBUGFAILF("Unexpected varying type for coord: %s %d\n",
-                                 varying.getName().c_str(), (int) varying.getType());
-                    break;
-            }
+    if (args.fFp.isBlendFunction()) {
+        // Blend functions take a dest color as input.
+        params[numParams++] = GrShaderVar(args.fDestColor, kHalf4_GrSLType);
+    }
+
+    if (fProgramBuilder->fragmentProcessorHasCoordsParam(&args.fFp)) {
+        params[numParams++] = GrShaderVar(args.fSampleCoord, kFloat2_GrSLType);
+    } else {
+        // Either doesn't use coords at all or sampled through a chain of passthrough/matrix
+        // samples usages. In the latter case the coords are emitted in the vertex shader as a
+        // varying, so this only has to access it. Add a float2 _coords variable that maps to the
+        // associated varying and replaces the absent 2nd argument to the fp's function.
+        GrShaderVar varying = fProgramBuilder->varyingCoordsForFragmentProcessor(&args.fFp);
+        switch(varying.getType()) {
+            case kVoid_GrSLType:
+                SkASSERT(!args.fFp.usesSampleCoordsDirectly());
+                break;
+            case kFloat2_GrSLType:
+                // Just point the local coords to the varying
+                args.fSampleCoord = varying.getName().c_str();
+                break;
+            case kFloat3_GrSLType:
+                // Must perform the perspective divide in the frag shader based on the varying, and
+                // since we won't actually have a function parameter for local coords, add it as a
+                // local variable.
+                this->codeAppendf("float2 %s = %s.xy / %s.z;\n", args.fSampleCoord,
+                                  varying.getName().c_str(), varying.getName().c_str());
+                break;
+            default:
+                SkDEBUGFAILF("Unexpected varying type for coord: %s %d\n",
+                             varying.getName().c_str(), (int) varying.getType());
+                break;
         }
-    } // else the function keeps its two arguments
+    }
 
+    SkASSERT(numParams <= (int)SK_ARRAY_COUNT(params));
+
+    // First, emit every child's function. This needs to happen (even for children that aren't
+    // sampled), so that all of the expected uniforms are registered.
+    fp->emitChildFunctions(args);
     fp->emitCode(args);
+    fp->setFunctionName(this->getMangledFunctionName(args.fFp.name()));
 
-    SkString funcName = this->getMangledFunctionName(args.fFp.name());
-    this->emitFunction(kHalf4_GrSLType, funcName.c_str(), {params, paramCount},
+    this->emitFunction(kHalf4_GrSLType, fp->functionName(), SkMakeSpan(params, numParams),
                        this->code().c_str());
     this->deleteStage();
     this->onAfterChildProcEmitCode();
-    return funcName;
 }
 
 const char* GrGLSLFragmentShaderBuilder::dstColor() {

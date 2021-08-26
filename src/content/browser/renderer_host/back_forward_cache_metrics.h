@@ -110,7 +110,9 @@ class BackForwardCacheMetrics
     kCacheControlNoStore = 53,
     kCacheControlNoStoreCookieModified = 54,
     kCacheControlNoStoreHTTPOnlyCookieModified = 55,
-    kMaxValue = kCacheControlNoStoreHTTPOnlyCookieModified,
+    kNoResponseHead = 56,
+    kActivationNavigationsDisallowedForBug1234857 = 57,
+    kMaxValue = kActivationNavigationsDisallowedForBug1234857,
   };
 
   using NotRestoredReasons =

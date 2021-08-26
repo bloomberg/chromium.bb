@@ -26,7 +26,7 @@
 #include "content/browser/background_fetch/background_fetch_context.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/code_cache/generated_code_cache_context.h"
-#include "content/browser/cookie_store/cookie_store_context.h"
+#include "content/browser/cookie_store/cookie_store_manager.h"
 #include "content/browser/file_system/browser_file_system_helper.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
 #include "content/browser/resource_context_impl.h"
@@ -346,16 +346,15 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
                                   : nullptr;
 
   std::unique_ptr<StoragePartitionImpl> partition_ptr(
-      StoragePartitionImpl::Create(
-          browser_context_, partition_config.in_memory(),
-          relative_partition_path, partition_config.partition_domain()));
+      StoragePartitionImpl::Create(browser_context_, partition_config,
+                                   relative_partition_path));
   StoragePartitionImpl* partition = partition_ptr.get();
   partitions_[partition_config] = std::move(partition_ptr);
   partition->Initialize(fallback_for_blob_urls);
 
   // Arm the serviceworker cookie change observation API.
-  partition->GetCookieStoreContext()->ListenToCookieChanges(
-      partition->GetNetworkContext(), /*success_callback=*/base::DoNothing());
+  partition->GetCookieStoreManager()->ListenToCookieChanges(
+      partition->GetNetworkContext(), base::DoNothing());
 
   PostCreateInitialization(partition, partition_config.in_memory());
 
@@ -465,29 +464,7 @@ void StoragePartitionImplMap::PostCreateInitialization(
             partition->GetPath().Append(kAppCacheDirname)));
   }
 
-  // Check first to avoid memory leak in unittests.
-  if (BrowserThread::IsThreadInitialized(BrowserThread::IO)) {
-    // Use PostTask() instead of RunOrPostTaskOnThread() because not posting a
-    // task causes it to run before the CacheStorageManager has been
-    // initialized, and then CacheStorageContextImpl::CacheManager() ends up
-    // returning null instead of using the CrossSequenceCacheStorageManager in
-    // unit tests that don't use a real IO thread, violating the DCHECK in
-    // BackgroundFetchDataManager::InitializeOnCoreThread().
-    // TODO(crbug.com/960012): This workaround should be unnecessary after
-    // CacheStorage moves off the IO thread to the thread pool.
-    BrowserThread::GetTaskRunnerForThread(
-        ServiceWorkerContext::GetCoreThreadId())
-        ->PostTask(
-            FROM_HERE,
-            base::BindOnce(&BackgroundFetchContext::InitializeOnCoreThread,
-                           partition->GetBackgroundFetchContext()));
-
-    // We do not call InitializeURLRequestContext() for media contexts because,
-    // other than the HTTP cache, the media contexts share the same backing
-    // objects as their associated "normal" request context.  Thus, the previous
-    // call serves to initialize the media request context for this storage
-    // partition as well.
-  }
+  partition->GetBackgroundFetchContext()->Initialize();
 }
 
 }  // namespace content

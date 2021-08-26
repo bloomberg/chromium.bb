@@ -15,7 +15,6 @@
 #include "include/core/SkColorSpace.h"
 #include "include/core/SkData.h"
 #include "include/core/SkEncodedImageFormat.h"
-#include "include/core/SkFilterQuality.h"
 #include "include/core/SkImage.h"
 #include "include/core/SkImageFilter.h"
 #include "include/core/SkImageInfo.h"
@@ -326,6 +325,14 @@ bool ApplyPathOp(SkPath& pathOne, const SkPath& pathTwo, SkPathOp op) {
 SkPathOrNull MakePathFromOp(const SkPath& pathOne, const SkPath& pathTwo, SkPathOp op) {
     SkPath out;
     if (Op(pathOne, pathTwo, op, &out)) {
+        return emscripten::val(out);
+    }
+    return emscripten::val::null();
+}
+
+SkPathOrNull MakeAsWinding(const SkPath& self) {
+    SkPath out;
+    if (AsWinding(self, &out)) {
         return emscripten::val(out);
     }
     return emscripten::val::null();
@@ -1342,12 +1349,17 @@ EMSCRIPTEN_BINDINGS(Skia) {
             return SkImageFilters::ColorFilter(cf, input);
         }))
         .class_function("MakeCompose", &SkImageFilters::Compose)
-        .class_function("_MakeMatrixTransform", optional_override([](WASMPointerF32 mPtr, SkFilterQuality fq,
-                                                                   sk_sp<SkImageFilter> input)->sk_sp<SkImageFilter> {
+        .class_function("_MakeMatrixTransformCubic",
+                        optional_override([](WASMPointerF32 mPtr, float B, float C,
+                                             sk_sp<SkImageFilter> input)->sk_sp<SkImageFilter> {
             OptionalMatrix matr(mPtr);
-            // TODO(kjlubick): pass in sampling directly from client
-            auto sampling = SkSamplingOptions(fq, SkSamplingOptions::kMedium_asMipmapLinear);
-            return SkImageFilters::MatrixTransform(matr, sampling, input);
+            return SkImageFilters::MatrixTransform(matr, SkSamplingOptions({B, C}), input);
+        }))
+        .class_function("_MakeMatrixTransformOptions",
+                        optional_override([](WASMPointerF32 mPtr, SkFilterMode fm, SkMipmapMode mm,
+                                             sk_sp<SkImageFilter> input)->sk_sp<SkImageFilter> {
+            OptionalMatrix matr(mPtr);
+            return SkImageFilters::MatrixTransform(matr, SkSamplingOptions(fm, mm), input);
         }));
 
     class_<SkMaskFilter>("MaskFilter")
@@ -1507,6 +1519,7 @@ EMSCRIPTEN_BINDINGS(Skia) {
         // PathOps
         .function("_simplify", &ApplySimplify)
         .function("_op", &ApplyPathOp)
+        .function("makeAsWinding", &MakeAsWinding)
 #endif
         // Exporting
         .function("toSVGString", &ToSVGString)
@@ -1966,12 +1979,6 @@ EMSCRIPTEN_BINDINGS(Skia) {
     enum_<SkFilterMode>("FilterMode")
         .value("Nearest",   SkFilterMode::kNearest)
         .value("Linear",    SkFilterMode::kLinear);
-
-    enum_<SkFilterQuality>("FilterQuality")
-        .value("None",   SkFilterQuality::kNone_SkFilterQuality)
-        .value("Low",    SkFilterQuality::kLow_SkFilterQuality)
-        .value("Medium", SkFilterQuality::kMedium_SkFilterQuality)
-        .value("High",   SkFilterQuality::kHigh_SkFilterQuality);
 
     // Only used to control the encode function.
     // TODO(kjlubick): compile these out when the appropriate encoder is disabled.

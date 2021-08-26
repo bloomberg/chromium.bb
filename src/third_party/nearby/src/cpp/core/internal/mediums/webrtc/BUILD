@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+licenses(["notice"])
 
 cc_library(
     name = "webrtc",
@@ -30,21 +31,23 @@ cc_library(
         "webrtc_socket.h",
         "webrtc_socket_wrapper.h",
     ],
+    compatible_with = ["//buildenv/target:non_prod"],
     visibility = [
         "//core/internal:__subpackages__",
     ],
     deps = [
+        "//absl/memory",
+        "//absl/strings",
+        "//absl/time",
         "//core:core_types",
         "//core/internal/mediums:utils",
         "//platform/base",
         "//platform/public:comm",
         "//platform/public:logging",
         "//platform/public:types",
-        "//location/nearby/mediums/proto:web_rtc_signaling_frames_cc_proto",
-        "//absl/memory",
-        "//absl/strings",
-        "//absl/time",
+        "//proto/mediums:web_rtc_signaling_frames_cc_proto",
         "//webrtc/api:libjingle_peerconnection_api",
+        "//third_party/webrtc/files/stable/webrtc/pc:peerconnection",
     ],
 )
 
@@ -60,14 +63,14 @@ cc_test(
     tags = ["notsan"],  # NOTE(b/139734036): known data race in usrsctplib.
     deps = [
         ":webrtc",
+        "//net/proto2/compat/public:proto2",
+        "//testing/base/public:gunit_main",
+        "//absl/time",
         "//platform/base",
         "//platform/base:test_util",
         "//platform/impl/g3",  # buildcleaner: keep
         "//platform/public:comm",
         "//platform/public:types",
-        "//net/proto2/public:proto2",
-        "//testing/base/public:gunit_main",
-        "//absl/time",
         "//webrtc/api:libjingle_peerconnection_api",
         "//webrtc/api:rtc_error",
         "//webrtc/api:scoped_refptr",

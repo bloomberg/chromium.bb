@@ -135,17 +135,6 @@ static void output_stats(FIRSTPASS_STATS *stats) {
 #endif
 }
 
-#if CONFIG_FP_MB_STATS
-static void output_fpmb_stats(uint8_t *this_frame_mb_stats, VP9_COMMON *cm,
-                              struct vpx_codec_pkt_list *pktlist) {
-  struct vpx_codec_cx_pkt pkt;
-  pkt.kind = VPX_CODEC_FPMB_STATS_PKT;
-  pkt.data.firstpass_mb_stats.buf = this_frame_mb_stats;
-  pkt.data.firstpass_mb_stats.sz = cm->initial_mbs * sizeof(uint8_t);
-  vpx_codec_pkt_list_add(pktlist, &pkt);
-}
-#endif
-
 static void zero_stats(FIRSTPASS_STATS *section) {
   section->frame = 0.0;
   section->weight = 0.0;
@@ -953,10 +942,6 @@ void vp9_first_pass_encode_tile_mb_row(VP9_COMP *cpi, ThreadData *td,
     int level_sample;
     const int mb_index = mb_row * cm->mb_cols + mb_col;
 
-#if CONFIG_FP_MB_STATS
-    const int mb_index = mb_row * cm->mb_cols + mb_col;
-#endif
-
     (*(cpi->row_mt_sync_read_ptr))(&tile_data->row_mt_sync, mb_row, c);
 
     // Adjust to the next column of MBs.
@@ -1091,13 +1076,6 @@ void vp9_first_pass_encode_tile_mb_row(VP9_COMP *cpi, ThreadData *td,
 
     // Accumulate the intra error.
     fp_acc_data->intra_error += (int64_t)this_error;
-
-#if CONFIG_FP_MB_STATS
-    if (cpi->use_fp_mb_stats) {
-      // initialization
-      cpi->twopass.frame_mb_stats_buf[mb_index] = 0;
-    }
-#endif
 
     // Set up limit values for motion vectors to prevent them extending
     // outside the UMV borders.
@@ -1244,20 +1222,6 @@ void vp9_first_pass_encode_tile_mb_row(VP9_COMP *cpi, ThreadData *td,
       best_ref_mv->row = 0;
       best_ref_mv->col = 0;
 
-#if CONFIG_FP_MB_STATS
-      if (cpi->use_fp_mb_stats) {
-        // intra prediction statistics
-        cpi->twopass.frame_mb_stats_buf[mb_index] = 0;
-        cpi->twopass.frame_mb_stats_buf[mb_index] |= FPMB_DCINTRA_MASK;
-        cpi->twopass.frame_mb_stats_buf[mb_index] |= FPMB_MOTION_ZERO_MASK;
-        if (this_error > FPMB_ERROR_LARGE_TH) {
-          cpi->twopass.frame_mb_stats_buf[mb_index] |= FPMB_ERROR_LARGE_MASK;
-        } else if (this_error < FPMB_ERROR_SMALL_TH) {
-          cpi->twopass.frame_mb_stats_buf[mb_index] |= FPMB_ERROR_SMALL_MASK;
-        }
-      }
-#endif
-
       if (motion_error <= this_error) {
         vpx_clear_system_state();
 
@@ -1302,47 +1266,9 @@ void vp9_first_pass_encode_tile_mb_row(VP9_COMP *cpi, ThreadData *td,
 
         *best_ref_mv = mv;
 
-#if CONFIG_FP_MB_STATS
-        if (cpi->use_fp_mb_stats) {
-          // inter prediction statistics
-          cpi->twopass.frame_mb_stats_buf[mb_index] = 0;
-          cpi->twopass.frame_mb_stats_buf[mb_index] &= ~FPMB_DCINTRA_MASK;
-          cpi->twopass.frame_mb_stats_buf[mb_index] |= FPMB_MOTION_ZERO_MASK;
-          if (this_error > FPMB_ERROR_LARGE_TH) {
-            cpi->twopass.frame_mb_stats_buf[mb_index] |= FPMB_ERROR_LARGE_MASK;
-          } else if (this_error < FPMB_ERROR_SMALL_TH) {
-            cpi->twopass.frame_mb_stats_buf[mb_index] |= FPMB_ERROR_SMALL_MASK;
-          }
-        }
-#endif
-
         if (!is_zero_mv(&mv)) {
           ++(fp_acc_data->mvcount);
 
-#if CONFIG_FP_MB_STATS
-          if (cpi->use_fp_mb_stats) {
-            cpi->twopass.frame_mb_stats_buf[mb_index] &= ~FPMB_MOTION_ZERO_MASK;
-            // check estimated motion direction
-            if (mv.as_mv.col > 0 && mv.as_mv.col >= abs(mv.as_mv.row)) {
-              // right direction
-              cpi->twopass.frame_mb_stats_buf[mb_index] |=
-                  FPMB_MOTION_RIGHT_MASK;
-            } else if (mv.as_mv.row < 0 &&
-                       abs(mv.as_mv.row) >= abs(mv.as_mv.col)) {
-              // up direction
-              cpi->twopass.frame_mb_stats_buf[mb_index] |= FPMB_MOTION_UP_MASK;
-            } else if (mv.as_mv.col < 0 &&
-                       abs(mv.as_mv.col) >= abs(mv.as_mv.row)) {
-              // left direction
-              cpi->twopass.frame_mb_stats_buf[mb_index] |=
-                  FPMB_MOTION_LEFT_MASK;
-            } else {
-              // down direction
-              cpi->twopass.frame_mb_stats_buf[mb_index] |=
-                  FPMB_MOTION_DOWN_MASK;
-            }
-          }
-#endif
           // Does the row vector point inwards or outwards?
           if (mb_row < cm->mb_rows / 2) {
             if (mv.row > 0)
@@ -1459,12 +1385,6 @@ void vp9_first_pass(VP9_COMP *cpi, const struct lookahead_entry *source) {
   assert(new_yv12 != NULL);
   assert(frame_is_intra_only(cm) || (lst_yv12 != NULL));
 
-#if CONFIG_FP_MB_STATS
-  if (cpi->use_fp_mb_stats) {
-    vp9_zero_array(cpi->twopass.frame_mb_stats_buf, cm->initial_mbs);
-  }
-#endif
-
   set_first_pass_params(cpi);
   vp9_set_quantizer(cpi, find_fp_qindex(cm->bit_depth));
 
@@ -1525,12 +1445,6 @@ void vp9_first_pass(VP9_COMP *cpi, const struct lookahead_entry *source) {
     twopass->this_frame_stats = fps;
     output_stats(&twopass->this_frame_stats);
     accumulate_stats(&twopass->total_stats, &fps);
-
-#if CONFIG_FP_MB_STATS
-    if (cpi->use_fp_mb_stats) {
-      output_fpmb_stats(twopass->frame_mb_stats_buf, cm, cpi->output_pkt_list);
-    }
-#endif
   }
 
   // Copy the previous Last Frame back into gf and and arf buffers if
@@ -3477,25 +3391,6 @@ static void find_next_key_frame(VP9_COMP *cpi, int kf_show_idx) {
   }
 }
 
-static int is_skippable_frame(const VP9_COMP *cpi) {
-  // If the current frame does not have non-zero motion vector detected in the
-  // first  pass, and so do its previous and forward frames, then this frame
-  // can be skipped for partition check, and the partition size is assigned
-  // according to the variance
-  const TWO_PASS *const twopass = &cpi->twopass;
-
-  return (!frame_is_intra_only(&cpi->common) &&
-          twopass->stats_in - 2 > twopass->stats_in_start &&
-          twopass->stats_in < twopass->stats_in_end &&
-          (twopass->stats_in - 1)->pcnt_inter -
-                  (twopass->stats_in - 1)->pcnt_motion ==
-              1 &&
-          (twopass->stats_in - 2)->pcnt_inter -
-                  (twopass->stats_in - 2)->pcnt_motion ==
-              1 &&
-          twopass->stats_in->pcnt_inter - twopass->stats_in->pcnt_motion == 1);
-}
-
 // Configure image size specific vizier parameters.
 // Later these will be set via additional command line options
 void vp9_init_vizier_params(TWO_PASS *const twopass, int screen_area) {
@@ -3593,13 +3488,6 @@ void vp9_rc_get_second_pass_params(VP9_COMP *cpi) {
 
     cm->frame_type = INTER_FRAME;
 
-    // Do the firstpass stats indicate that this frame is skippable for the
-    // partition search?
-    if (cpi->sf.allow_partition_search_skip && cpi->oxcf.pass == 2 &&
-        !cpi->use_svc) {
-      cpi->partition_search_skippable_frame = is_skippable_frame(cpi);
-    }
-
     // The multiplication by 256 reverses a scaling factor of (>> 8)
     // applied when combining MB error values for the frame.
     twopass->mb_av_energy = log((this_frame.intra_error * 256.0) + 1.0);
@@ -3681,13 +3569,6 @@ void vp9_rc_get_second_pass_params(VP9_COMP *cpi) {
   }
 
   vp9_configure_buffer_updates(cpi, gf_group->index);
-
-  // Do the firstpass stats indicate that this frame is skippable for the
-  // partition search?
-  if (cpi->sf.allow_partition_search_skip && cpi->oxcf.pass == 2 &&
-      !cpi->use_svc) {
-    cpi->partition_search_skippable_frame = is_skippable_frame(cpi);
-  }
 
   rc->base_frame_target = gf_group->bit_allocation[gf_group->index];
 

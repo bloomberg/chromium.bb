@@ -14,6 +14,7 @@
 <translation id="1204296502688602597">تأخیر ساناد</translation>
 <translation id="123124571410524056">احتمالاً درگاهی وجود دارد</translation>
 <translation id="1238612778414822719">‏تأخیر در HTTPS</translation>
+<translation id="1264369926465113395">‏مجله دیجیتال جدید Chromebook برای سازندگان محتوا را بررسی کنید</translation>
 <translation id="1270369111467284986">احتمالاً درگاه مهمان وجود دارد</translation>
 <translation id="1290331692326790741">سیگنال ضعیف</translation>
 <translation id="1314565355471455267">Android VPN</translation>
@@ -34,7 +35,9 @@
 <translation id="1510238584712386396">راه‌انداز</translation>
 <translation id="1600964289716072707">صفحه دیگری را روی اسکنر قرار دهید و «اسکن» را انتخاب کنید تا صفحه اضافه شود.</translation>
 <translation id="1621067168122174824">اجرای آزمایش شارژ</translation>
+<translation id="1639239467298939599">بارگیری</translation>
 <translation id="1641857168437328880">تغذیه‌کننده سند (یک‌رو)</translation>
+<translation id="1643449475550628585">تغییر روزانه کاغذدیواری</translation>
 <translation id="1644574205037202324">سابقه</translation>
 <translation id="1662989795263954667">متوقف شد - جوهر تمام شده است</translation>
 <translation id="1703835215927279855">Letter</translation>
@@ -65,7 +68,6 @@
 <translation id="2224337661447660594">اتصال اینترنت وجود ندارد</translation>
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="225692081236532131">وضعیت فعال‌سازی</translation>
-<translation id="2294675138977897428">اتصال اترنتی شناسایی نشد</translation>
 <translation id="2326139988748364651"><ph name="RESOLUTION_VALUE" /> نقطه در اینچ</translation>
 <translation id="2338501278241028356">برای کاوش دستگاه‌های همین اطراف، بلوتوث را روشن کنید</translation>
 <translation id="2364498172489649528">موفق</translation>
@@ -75,9 +77,11 @@
 <translation id="2448312741937722512">نوع</translation>
 <translation id="2461822463642141190">فعلی</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
+<translation id="2505327257735685095">بازخوانی کاغذدیواری کنونی</translation>
 <translation id="2517472476991765520">اسکن</translation>
 <translation id="2570743873672969996">درحال اجرای آزمایش <ph name="TEST_NAME" />…</translation>
 <translation id="2585245331261708204">‏ویژگی‌های جدید Chrome OS</translation>
+<translation id="2619761439309613843">بازخوانی روزانه</translation>
 <translation id="2620436844016719705">سیستم</translation>
 <translation id="2740531572673183784">تأیید</translation>
 <translation id="2751739896257479635">‏اصالت‌سنجی مرحله ۲ EAP</translation>
@@ -87,7 +91,6 @@
 <translation id="2862104018715411648">برای شروع به کار، سندتان را روی اسکنر قرار دهید و «اسکن» را انتخاب کنید</translation>
 <translation id="2872961005593481000">خاموش کردن</translation>
 <translation id="2878387241690264070"><ph name="RATE" /> در <ph name="NUM_SECONDS" /> ثانیه تخلیه شد.</translation>
-<translation id="2983662233540284543">نکاتی را از محتواساز بازی یاد بگیرید، برنامه‌های طراحی را دریافت کنید، و از امکانات دیگر استفاده کنید</translation>
 <translation id="3008341117444806826">بازخوانی</translation>
 <translation id="3009958530611748826">پوشه‌ای را برای ذخیره در آن انتخاب کنید</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" /> میلی‌آمپر</translation>
@@ -101,6 +104,7 @@
 <translation id="3188257591659621405">فایل‌های من</translation>
 <translation id="3199982728237701504">تغذیه‌کننده سند (دورو)</translation>
 <translation id="3226405216343213872">درحال جستجوی اسکنرها</translation>
+<translation id="3228433892370472777">اتصال پیش‌فرض</translation>
 <translation id="3246869037381808805">کارهای چاپ قدیمی‌تر از ۱ روز برداشته می‌شوند</translation>
 <translation id="3268178239013324452">انجام نشد - در باز است</translation>
 <translation id="3283504360622356314">{0,plural, =1{ویرایش فایل}one{ویرایش فایل}other{ویرایش فایل‌ها}}</translation>
@@ -117,10 +121,13 @@
 <translation id="3488065109653206955">به‌طور نسبی فعال شده است</translation>
 <translation id="3527036260304016759">انجام نشد - خطای نامشخص</translation>
 <translation id="3532980081107202182">تقریباً <ph name="MIN_REMAINING" /> دقیقه باقی مانده است</translation>
+<translation id="3540383942695635079">‏نشانی MAC</translation>
 <translation id="357889014807611375">‏Wi-Fi کنتوردار</translation>
+<translation id="3582041541988388905">اتصال <ph name="NETWORK_NAME" /> شناسایی نشد</translation>
 <translation id="3595596368722241419">باتری پر است</translation>
 <translation id="360565022852130722">‏شبکه Wi-Fi با پروتکل ضعیف WEP 802.1x ایمن شده است</translation>
 <translation id="3689839747745352263">آزمایش <ph name="TEST_NAME" /></translation>
+<translation id="3708186454126126312">قبلاً متصل‌شده</translation>
 <translation id="373232531963562220">{PAGE_NUMBER,plural, =0{اسکن مجدد صفحه}=1{اسکن مجدد صفحه {PAGE_NUMBER}}one{اسکن مجدد صفحه {PAGE_NUMBER}}other{اسکن مجدد صفحه {PAGE_NUMBER}}}</translation>
 <translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★ (<ph name="AGGREGATED_COUNT" /> مرور)</translation>
 <translation id="3748026146096797577">متصل نیست</translation>
@@ -163,6 +170,7 @@
 <translation id="4479639480957787382">اترنت</translation>
 <translation id="4483049906298469269">پینگ کردن دروازه شبکه غیر پیش‌فرض انجام نشد</translation>
 <translation id="4511264077854731334">پورتال</translation>
+<translation id="4536864596629708641">‏پیکربندی IP</translation>
 <translation id="4548483925627140043">سیگنال پیدا نشد</translation>
 <translation id="455835558791489930">باتری <ph name="CHARGE_VALUE" /> میلی‌آمپرساعت</translation>
 <translation id="4562494484721939086">بدون سرویس</translation>
@@ -171,6 +179,7 @@
 <translation id="4627232916386272576">‏<ph name="DOCUMENT_TITLE" />، <ph name="PRINTER_NAME" />، <ph name="CREATION_TIME" />، <ph name="PRINTED_PAGE_NUMBER" /> از مجموع <ph name="TOTAL_PAGE_NUMBER" />. برای لغو کار چاپ، Enter را فشار دهید.</translation>
 <translation id="4646949265910132906">‏اتصال Wi-Fi امن</translation>
 <translation id="4652335678334611408">ذخیره گزارش جلسه</translation>
+<translation id="4654549501020883054">تغییر روزانه</translation>
 <translation id="4665014895760275686">سازنده</translation>
 <translation id="467510802200863975">گذرواژه‌ها با هم مطابقت ندارند</translation>
 <translation id="467715984478005772">احتمال وجود مشکل در دیوار آتش</translation>
@@ -194,6 +203,7 @@
 <translation id="4891842000192098784">استرس</translation>
 <translation id="4917385247580444890">قوی</translation>
 <translation id="4917889632206600977">متوقف شد - کاغذ تمام شده است</translation>
+<translation id="491836528011451486">سندتان را روی اسکنر قرار دهید و «اسکن مجدد» را انتخاب کنید تا سند جدید اسکن و جایگزین صفحه <ph name="CURRENT_PAGE" /> شود.</translation>
 <translation id="4921665434385737356">در <ph name="NUM_SECONDS" /> ثانیه <ph name="RATE" /> شارژ شد.</translation>
 <translation id="4932733599132424254">تاریخ</translation>
 <translation id="498186245079027698">اسکنر را بررسی کنید و دوباره امتحان کنید. مطمئن شوید فضای کافی برای ذخیره کردن فایل‌های اسکن‌شده در دستگاه وجود داشته باشد.</translation>
@@ -209,10 +219,10 @@
 <translation id="5154917547274118687">حافظه</translation>
 <translation id="5168185087976003268">سلامت باتری</translation>
 <translation id="5170568018924773124">نمایش در پوشه</translation>
-<translation id="519607504553633437">خودتان بازی طراحی کنید و بسازید</translation>
 <translation id="5212543919916444558">در صفحه‌‌تان چیزی پیدا نمی‌کنم تا درمورد آن کمکتان کنم.
 برای درخواست از من، روی میکروفون ضربه بزنید.</translation>
 <translation id="5222676887888702881">خروج از سیستم</translation>
+<translation id="5234764350956374838">رد کردن</translation>
 <translation id="5252456968953390977">فراگردی</translation>
 <translation id="5264277876637023664">اجرای آزمایش واحد پردازش مرکزی</translation>
 <translation id="5267975978099728568"><ph name="DOCUMENT_TITLE" />، <ph name="PRINTER_NAME" />، <ph name="CREATION_TIME" />، <ph name="ERROR_STATUS" /></translation>
@@ -243,7 +253,6 @@
 <translation id="5691511426247308406">خانواده</translation>
 <translation id="5701381305118179107">مرکز</translation>
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" /> از <ph name="TOTAL_PAGES" /></translation>
-<translation id="5752751666635965375">بازی خودتان را بسازید</translation>
 <translation id="5760715441271661976">وضعیت درگاه</translation>
 <translation id="5832805196449965646">افزودن شخص</translation>
 <translation id="583281660410589416">ناشناس</translation>
@@ -266,6 +275,7 @@
 <translation id="6106186594183574873">برای تکمیل کار، گذرواژه قدیمی‌تان را وارد کنید</translation>
 <translation id="6108689792487843350">دروازه قابل دسترسی نیست</translation>
 <translation id="6122191549521593678">آنلاین</translation>
+<translation id="6125438912510167220">سرعت پیوند</translation>
 <translation id="6137767437444130246">گواهی کاربر</translation>
 <translation id="6146993107019042706">برای تکمیل کار،‌ گذرواژه جدیدتان را وارد کنید</translation>
 <translation id="6147514244879357420">PNG</translation>
@@ -292,6 +302,8 @@
 <translation id="65587193855025101">صفحه مسطح</translation>
 <translation id="6564646048574748301">انجام نشد - دسترسی به چاپگر ممکن نیست</translation>
 <translation id="6574762126505704998">پر کردن</translation>
+<translation id="6575134580692778371">پیکربندی نشده</translation>
+<translation id="6596816719288285829">‏نشانی IP</translation>
 <translation id="6603230386432466813">هنگام متصل شدن با مشکل روبه‌رو هستید؟</translation>
 <translation id="6618744767048954150">درحال اجرا</translation>
 <translation id="6620487321149975369">کارهای چاپ تا زمانی‌که به‌طور دستی برداشته نشوند در سابقه نشان داده می‌شوند</translation>
@@ -314,13 +326,16 @@
 <translation id="7059230779847288458">درحال شارژ، <ph name="TIME_VALUE" /> تا شارژ کامل</translation>
 <translation id="708426984172631313">متوقف شده است</translation>
 <translation id="7086440545492620869"><ph name="VALUE" /><ph name="DISPLAY_NAME" /></translation>
+<translation id="7134436342991564651">{0,plural, =1{سرور نام}one{سرور نام}other{سرورهای نام}}</translation>
 <translation id="7143207342074048698">در حال اتصال</translation>
 <translation id="7144878232160441200">سعی مجدد</translation>
 <translation id="714876143603641390">‏اتصال LAN</translation>
 <translation id="7162487448488904999">گالری</translation>
 <translation id="7172721935181587524">یک تصویر</translation>
 <translation id="7177485034254901881">این <ph name="DEVICE_TYPE" /> توسط <ph name="MANAGER" /> مدیریت می‌شود. سرپرستان می‌توانند این دستگاه را ازراه‌دور پیکربندی کنند.</translation>
+<translation id="7180611975245234373">بازخوانی</translation>
 <translation id="7216409898977639127">ارائه‌دهنده شبکه تلفن همراه</translation>
+<translation id="7257889006063274246">مطمئنید می‌خواهید <ph name="CURRENT_PAGE" /> را بردارید؟</translation>
 <translation id="7271040990581020067">اسکنر درحال استفاده است. بعداً دوباره امتحان کنید.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7287310195820267359">مجموعه کاغذدیواری</translation>
@@ -354,9 +369,11 @@
 <translation id="7835501727204647447">‏نصب CloudReady</translation>
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7882358943899516840">نوع ارائه‌دهنده</translation>
+<translation id="7895471513946376273">کاوش ابزارهای ترسیم و طراحی</translation>
 <translation id="7936303884198020182">سرور نام دامنه پیدا نشد</translation>
 <translation id="7960831585769876809">دما</translation>
 <translation id="7994702968232966508">‏روش EAP</translation>
+<translation id="8020238979854764615">خطایی وجود داشت. لطفاً تصاویر دیگری انتخاب کنید و دوباره امتحان کنید.</translation>
 <translation id="802154636333426148">بارگیری نشد</translation>
 <translation id="8041089156583427627">ارسال بازخورد</translation>
 <translation id="8075838845814659848">شارژ باقی‌مانده</translation>
@@ -368,7 +385,9 @@
 <translation id="8214184102975786227">‏چند صفحه را در یک PDF اسکن کنید</translation>
 <translation id="8230672074305416752">پینگ کردن دروازه شبکه پیش‌فرض انجام نشد</translation>
 <translation id="8246209727385807362">شرکت مخابراتی ناشناس</translation>
+<translation id="8286154143153872371">لطفاً برای مشاهده کاغذدیواری، به شبکه متصل شوید و صفحه را تازه‌سازی کنید.</translation>
 <translation id="8291967909914612644">کشور ارائه‌دهنده اصلی</translation>
+<translation id="829270796093605079">کاوش ابزارهای طراحی</translation>
 <translation id="8294431847097064396">منبع</translation>
 <translation id="8297006494302853456">ضعیف</translation>
 <translation id="8302368968391049045">‏دیواره آتش HTTPS</translation>
@@ -392,6 +411,7 @@
 <translation id="8575298406870537639">ممکن است شرکت مخابراتی‌تان برای اتصال به شبکه خود به این گزینه نیاز داشته باشد. برای اطلاع از جزئیات با شرکت مخابراتی تماس بگیرید.</translation>
 <translation id="8576249514688522074">راه‌اندازی‌نشده</translation>
 <translation id="8620617069779373398">وضعیت فراگردی</translation>
+<translation id="8655295600908251630">کانال</translation>
 <translation id="8660881923941176839">پوند</translation>
 <translation id="8675354002693747642">کلید ازپیش هم‌رسانی‌شده</translation>
 <translation id="871560550817059752">انجام نشد - جوهر تمام شده است</translation>
@@ -404,6 +424,7 @@
 <translation id="8798441408945964110">نام ارائه‌دهنده</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8818152010000655963">کاغذ دیواری</translation>
+<translation id="8834539327799336565">درحال‌حاضر متصل</translation>
 <translation id="8845001906332463065">دریافت راهنمایی</translation>
 <translation id="8868741746785112895">شناسه منحصربه‌فرد جهانی</translation>
 <translation id="8881098542468797602">آزمایش موفق بود</translation>

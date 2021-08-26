@@ -46,13 +46,7 @@
 -org.chromium.chrome.browser.password_manager.settings.PasswordSettingsTest.testExportMenuDisabled
 
 # crbug.com/1036556
--org.chromium.chrome.browser.usage_stats.TabSuspensionTest.testEagerSuspension
 -org.chromium.chrome.browser.usage_stats.TabSuspensionTest.testMediaSuspension
--org.chromium.chrome.browser.usage_stats.TabSuspensionTest.testMultiWindow
--org.chromium.chrome.browser.usage_stats.TabSuspensionTest.testNavigationFromSuspendedTabToInterstitial
--org.chromium.chrome.browser.usage_stats.TabSuspensionTest.testRendererCrashOnSuspendedTab
--org.chromium.chrome.browser.usage_stats.TabSuspensionTest.testTabAddedFromCustomTab
--org.chromium.chrome.browser.usage_stats.TabSuspensionTest.testTabUnsuspendedInBackground
 
 # crbug.com/1195097
 -org.chromium.chrome.browser.permissions.RuntimePermissionTest.testDenyRuntimeDownload
@@ -76,3 +70,25 @@
 
 # crbug.com/1225754
 -org.chromium.chrome.browser.offlinepages.OfflinePageBridgeTest.testGetLoadUrlParamsForOpeningMhtmlFileUrl
+
+# crbug.com/1231219
+-org.chromium.chrome.browser.bookmarks.BookmarkTest.testMoveDownMenuItem
+-org.chromium.chrome.browser.bookmarks.BookmarkTest.testReadingListDeletion
+-org.chromium.chrome.browser.bookmarks.BookmarkTest.testSearchReadingList_Deletion
+-org.chromium.chrome.browser.bookmarks.BookmarkTest.testShowInFolder_*
+
+# crbug.com/1231227
+-org.chromium.chrome.browser.webapps.WebappDisplayModeTest.*
+
+# crbug.com/1231259
+-org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AddressAccessoryIntegrationTest.testFillsSuggestionOnClick
+-org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.CreditCardAccessoryIntegrationTest.testFillsSuggestionOnClick
+
+# crbug.com/1231646
+-org.chromium.chrome.browser.share.long_screenshots.LongScreenshotsMediatorTest.testShowAreaSelectionDone
+
+# crbug.com/1231652
+-org.chromium.chrome.browser.autofill.settings.AutofillProfilesFragmentTest.testKeyboardShownOnDpadCenter
+
+# crbug.com/1231656
+-org.chromium.chrome.browser.language.settings.LanguageSettingsTest.testToggleOfferToTranslate

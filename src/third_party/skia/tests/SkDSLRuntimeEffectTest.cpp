@@ -14,6 +14,7 @@
 #include "include/effects/SkRuntimeEffect.h"
 #include "include/gpu/GrDirectContext.h"
 #include "include/sksl/DSLRuntimeEffects.h"
+#include "src/core/SkRuntimeEffectPriv.h"
 #include "src/core/SkTLazy.h"
 #include "src/gpu/GrColor.h"
 #include "src/sksl/SkSLCompiler.h"
@@ -37,7 +38,9 @@ public:
     }
 
     void end(bool expectSuccess = true) {
-        sk_sp<SkRuntimeEffect> effect = EndRuntimeShader();
+        SkRuntimeEffect::Options options;
+        SkRuntimeEffectPriv::EnableFragCoord(&options);
+        sk_sp<SkRuntimeEffect> effect = EndRuntimeShader(options);
         REPORTER_ASSERT(fReporter, effect ? expectSuccess : !expectSuccess);
         if (effect) {
             fBuilder.init(std::move(effect));
@@ -136,9 +139,9 @@ static void test_RuntimeEffect_Shaders(skiatest::Reporter* r, GrRecordingContext
             Return(Half4(gColor))
         );
         effect.end();
-        effect.uniform(gColor.name()) = float4{ 0.0f, 0.25f, 0.75f, 1.0f };
+        effect.uniform(SkString(gColor.name()).c_str()) = float4{ 0.0f, 0.25f, 0.75f, 1.0f };
         effect.test(0xFFBF4000);
-        effect.uniform(gColor.name()) = float4{ 1.0f, 0.0f, 0.0f, 0.498f };
+        effect.uniform(SkString(gColor.name()).c_str()) = float4{ 1.0f, 0.0f, 0.0f, 0.498f };
         effect.test(0x7F00007F);  // Tests that we clamp to valid premul
     }
 
@@ -152,9 +155,9 @@ static void test_RuntimeEffect_Shaders(skiatest::Reporter* r, GrRecordingContext
             Return(Half4(gColor) / 255)
         );
         effect.end();
-        effect.uniform(gColor.name()) = int4{ 0x00, 0x40, 0xBF, 0xFF };
+        effect.uniform(SkString(gColor.name()).c_str()) = int4{ 0x00, 0x40, 0xBF, 0xFF };
         effect.test(0xFFBF4000);
-        effect.uniform(gColor.name()) = int4{ 0xFF, 0x00, 0x00, 0x7F };
+        effect.uniform(SkString(gColor.name()).c_str()) = int4{ 0xFF, 0x00, 0x00, 0x7F };
         effect.test(0x7F00007F);  // Tests that we clamp to valid premul
     }
 
@@ -199,7 +202,7 @@ static void test_RuntimeEffect_Shaders(skiatest::Reporter* r, GrRecordingContext
     {
         class SimpleErrorHandler : public ErrorHandler {
         public:
-            void handleError(const char* msg, PositionInfo* pos) override {
+            void handleError(const char* msg, PositionInfo pos) override {
                 fMsg = msg;
             }
 

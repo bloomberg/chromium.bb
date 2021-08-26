@@ -13,13 +13,12 @@
 #include "base/strings/utf_string_conversion_utils.h"
 #include "components/pdf/renderer/pdf_ax_action_target.h"
 #include "components/strings/grit/components_strings.h"
-#include "content/public/renderer/pepper_plugin_instance.h"
 #include "content/public/renderer/render_accessibility.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
-#include "content/public/renderer/renderer_ppapi_host.h"
 #include "pdf/accessibility_structs.h"
+#include "pdf/pdf_accessibility_action_handler.h"
 #include "pdf/pdf_features.h"
 #include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -49,14 +48,6 @@ const float kHeadingFontSizeRatio = 1.2f;
 // page for that line spacing to be considered a paragraph break.
 const float kParagraphLineSpacingRatio = 1.2f;
 
-gfx::RectF PpFloatRectToGfxRectF(const PP_FloatRect& r) {
-  return gfx::RectF(r.point.x, r.point.y, r.size.width, r.size.height);
-}
-
-gfx::RectF PPRectToGfxRectF(const PP_Rect& r) {
-  return gfx::RectF(r.point.x, r.point.y, r.size.width, r.size.height);
-}
-
 // This class is used as part of our heuristic to determine which text runs live
 // on the same "line".  As we process runs, we keep a weighted average of the
 // top and bottom coordinates of the line, and if a new run falls within that
@@ -64,7 +55,7 @@ gfx::RectF PPRectToGfxRectF(const PP_Rect& r) {
 class LineHelper {
  public:
   explicit LineHelper(
-      const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs)
+      const std::vector<chrome_pdf::AccessibilityTextRunInfo>& text_runs)
       : text_runs_(text_runs) {
     StartNewLine(0);
   }
@@ -95,16 +86,16 @@ class LineHelper {
 
     // Look at the next run, and determine how much it overlaps the line.
     const auto& run_bounds = text_runs_[run_index].bounds;
-    if (run_bounds.size.height == 0.0f)
+    if (run_bounds.height() == 0.0f)
       return false;
 
-    float clamped_top = std::max(line_top, run_bounds.point.y);
+    float clamped_top = std::max(line_top, run_bounds.y());
     float clamped_bottom =
-        std::min(line_bottom, run_bounds.point.y + run_bounds.size.height);
+        std::min(line_bottom, run_bounds.y() + run_bounds.height());
     if (clamped_bottom < clamped_top)
       return false;
 
-    float coverage = (clamped_bottom - clamped_top) / (run_bounds.size.height);
+    float coverage = (clamped_bottom - clamped_top) / (run_bounds.height());
 
     // See if it falls within the line (within our threshold).
     constexpr float kLineCoverageThreshold = 0.25f;
@@ -112,20 +103,20 @@ class LineHelper {
   }
 
  private:
-  void AddRun(const PP_FloatRect& run_bounds) {
-    float run_width = fabsf(run_bounds.size.width);
+  void AddRun(const gfx::RectF& run_bounds) {
+    float run_width = fabsf(run_bounds.width());
     accumulated_width_ += run_width;
-    accumulated_weight_top_ += run_bounds.point.y * run_width;
+    accumulated_weight_top_ += run_bounds.y() * run_width;
     accumulated_weight_bottom_ +=
-        (run_bounds.point.y + run_bounds.size.height) * run_width;
+        (run_bounds.y() + run_bounds.height()) * run_width;
   }
 
-  void RemoveRun(const PP_FloatRect& run_bounds) {
-    float run_width = fabsf(run_bounds.size.width);
+  void RemoveRun(const gfx::RectF& run_bounds) {
+    float run_width = fabsf(run_bounds.width());
     accumulated_width_ -= run_width;
-    accumulated_weight_top_ -= run_bounds.point.y * run_width;
+    accumulated_weight_top_ -= run_bounds.y() * run_width;
     accumulated_weight_bottom_ -=
-        (run_bounds.point.y + run_bounds.size.height) * run_width;
+        (run_bounds.y() + run_bounds.height()) * run_width;
   }
 
   void RemoveOldRunsUpTo(size_t stop_index) {
@@ -134,7 +125,7 @@ class LineHelper {
     // from unduly influencing future lines.
     constexpr float kBoxRemoveWidthThreshold = 3.0f;
     while (start_index_ < stop_index &&
-           accumulated_width_ > text_runs_[start_index_].bounds.size.width *
+           accumulated_width_ > text_runs_[start_index_].bounds.width() *
                                     kBoxRemoveWidthThreshold) {
       const auto& old_bounds = text_runs_[start_index_].bounds;
       RemoveRun(old_bounds);
@@ -142,7 +133,7 @@ class LineHelper {
     }
   }
 
-  const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs_;
+  const std::vector<chrome_pdf::AccessibilityTextRunInfo>& text_runs_;
   size_t start_index_;
   float accumulated_weight_top_;
   float accumulated_weight_bottom_;
@@ -152,7 +143,7 @@ class LineHelper {
 };
 
 void ComputeParagraphAndHeadingThresholds(
-    const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs,
+    const std::vector<chrome_pdf::AccessibilityTextRunInfo>& text_runs,
     float* out_heading_font_size_threshold,
     float* out_paragraph_spacing_threshold) {
   // Scan over the font sizes and line spacing within this page and
@@ -166,8 +157,8 @@ void ComputeParagraphAndHeadingThresholds(
     if (i > 0) {
       const auto& cur = text_runs[i].bounds;
       const auto& prev = text_runs[i - 1].bounds;
-      if (cur.point.y > prev.point.y + prev.size.height / 2)
-        line_spacings.push_back(cur.point.y - prev.point.y);
+      if (cur.y() > prev.y() + prev.height() / 2)
+        line_spacings.push_back(cur.y() - prev.y());
     }
   }
   if (font_sizes.size() > 2) {
@@ -209,24 +200,24 @@ void ConnectPreviousAndNextOnLine(ui::AXNodeData* previous_on_line_node,
 }
 
 bool BreakParagraph(
-    const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs,
+    const std::vector<chrome_pdf::AccessibilityTextRunInfo>& text_runs,
     uint32_t text_run_index,
     float paragraph_spacing_threshold) {
   // Check to see if its also a new paragraph, i.e., if the distance between
   // lines is greater than the threshold.  If there's no threshold, that
   // means there weren't enough lines to compute an accurate median, so
   // we compare against the line size instead.
-  float line_spacing = fabsf(text_runs[text_run_index + 1].bounds.point.y -
-                             text_runs[text_run_index].bounds.point.y);
+  float line_spacing = fabsf(text_runs[text_run_index + 1].bounds.y() -
+                             text_runs[text_run_index].bounds.y());
   return ((paragraph_spacing_threshold > 0 &&
            line_spacing > paragraph_spacing_threshold) ||
           (paragraph_spacing_threshold == 0 &&
            line_spacing > kParagraphLineSpacingRatio *
-                              text_runs[text_run_index].bounds.size.height));
+                              text_runs[text_run_index].bounds.height()));
 }
 
 ui::AXNode* GetStaticTextNodeFromNode(ui::AXNode* node) {
-  // Returns the appropriate static text node given |node|'s type.
+  // Returns the appropriate static text node given `node`'s type.
   // Returns nullptr if there is no appropriate static text node.
   if (!node)
     return nullptr;
@@ -248,8 +239,8 @@ ui::AXNode* GetStaticTextNodeFromNode(ui::AXNode* node) {
 }
 
 std::string GetTextRunCharsAsUTF8(
-    const ppapi::PdfAccessibilityTextRunInfo& text_run,
-    const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
+    const chrome_pdf::AccessibilityTextRunInfo& text_run,
+    const std::vector<chrome_pdf::AccessibilityCharInfo>& chars,
     int char_index) {
   std::string chars_utf8;
   for (uint32_t i = 0; i < text_run.len; ++i) {
@@ -260,8 +251,8 @@ std::string GetTextRunCharsAsUTF8(
 }
 
 std::vector<int32_t> GetTextRunCharOffsets(
-    const ppapi::PdfAccessibilityTextRunInfo& text_run,
-    const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
+    const chrome_pdf::AccessibilityTextRunInfo& text_run,
+    const std::vector<chrome_pdf::AccessibilityCharInfo>& chars,
     int char_index) {
   std::vector<int32_t> char_offsets(text_run.len);
   double offset = 0.0;
@@ -278,11 +269,24 @@ bool CompareTextRuns(const T& a, const T& b) {
 }
 
 template <typename T>
+bool CompareTextRunsWithRange(const T& a, const T& b) {
+  return a.text_range.index < b.text_range.index;
+}
+
+template <typename T>
 bool IsObjectInTextRun(const std::vector<T>& objects,
                        uint32_t object_index,
                        size_t text_run_index) {
   return (object_index < objects.size() &&
           objects[object_index].text_run_index <= text_run_index);
+}
+
+template <typename T>
+bool IsObjectWithRangeInTextRun(const std::vector<T>& objects,
+                                uint32_t object_index,
+                                size_t text_run_index) {
+  return (object_index < objects.size() &&
+          objects[object_index].text_range.index <= text_run_index);
 }
 
 size_t NormalizeTextRunIndex(uint32_t object_end_text_run_index,
@@ -292,24 +296,25 @@ size_t NormalizeTextRunIndex(uint32_t object_end_text_run_index,
       current_text_run_index ? current_text_run_index - 1 : 0);
 }
 
-bool IsTextRenderModeFill(const PP_TextRenderingMode& mode) {
+bool IsTextRenderModeFill(const chrome_pdf::AccessibilityTextRenderMode& mode) {
   switch (mode) {
-    case PP_TEXTRENDERINGMODE_FILL:
-    case PP_TEXTRENDERINGMODE_FILLSTROKE:
-    case PP_TEXTRENDERINGMODE_FILLCLIP:
-    case PP_TEXTRENDERINGMODE_FILLSTROKECLIP:
+    case chrome_pdf::AccessibilityTextRenderMode::kFill:
+    case chrome_pdf::AccessibilityTextRenderMode::kFillStroke:
+    case chrome_pdf::AccessibilityTextRenderMode::kFillClip:
+    case chrome_pdf::AccessibilityTextRenderMode::kFillStrokeClip:
       return true;
     default:
       return false;
   }
 }
 
-bool IsTextRenderModeStroke(const PP_TextRenderingMode& mode) {
+bool IsTextRenderModeStroke(
+    const chrome_pdf::AccessibilityTextRenderMode& mode) {
   switch (mode) {
-    case PP_TEXTRENDERINGMODE_STROKE:
-    case PP_TEXTRENDERINGMODE_FILLSTROKE:
-    case PP_TEXTRENDERINGMODE_STROKECLIP:
-    case PP_TEXTRENDERINGMODE_FILLSTROKECLIP:
+    case chrome_pdf::AccessibilityTextRenderMode::kStroke:
+    case chrome_pdf::AccessibilityTextRenderMode::kFillStroke:
+    case chrome_pdf::AccessibilityTextRenderMode::kStrokeClip:
+    case chrome_pdf::AccessibilityTextRenderMode::kFillStrokeClip:
       return true;
     default:
       return false;
@@ -339,32 +344,30 @@ ui::AXNodeData* CreateNode(
   return node_ptr;
 }
 
-ax::mojom::Role GetRoleForButtonType(PP_PrivateButtonType button_type) {
+ax::mojom::Role GetRoleForButtonType(chrome_pdf::ButtonType button_type) {
   switch (button_type) {
-    case PP_PrivateButtonType::PP_PRIVATEBUTTON_RADIOBUTTON:
+    case chrome_pdf::ButtonType::kRadioButton:
       return ax::mojom::Role::kRadioButton;
-    case PP_PrivateButtonType::PP_PRIVATEBUTTON_CHECKBOX:
+    case chrome_pdf::ButtonType::kCheckBox:
       return ax::mojom::Role::kCheckBox;
-    case PP_PrivateButtonType::PP_PRIVATEBUTTON_PUSHBUTTON:
+    case chrome_pdf::ButtonType::kPushButton:
       return ax::mojom::Role::kButton;
-    default:
-      NOTREACHED();
-      return ax::mojom::Role::kNone;
   }
 }
 
 class PdfAccessibilityTreeBuilder {
  public:
   explicit PdfAccessibilityTreeBuilder(
-      const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs,
-      const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
-      const ppapi::PdfAccessibilityPageObjects& page_objects,
+      const std::vector<chrome_pdf::AccessibilityTextRunInfo>& text_runs,
+      const std::vector<chrome_pdf::AccessibilityCharInfo>& chars,
+      const chrome_pdf::AccessibilityPageObjects& page_objects,
       const gfx::RectF& page_bounds,
       uint32_t page_index,
       ui::AXNodeData* page_node,
       content::RenderAccessibility* render_accessibility,
       std::vector<std::unique_ptr<ui::AXNodeData>>* nodes,
-      std::map<int32_t, PP_PdfPageCharacterIndex>* node_id_to_page_char_index,
+      std::map<int32_t, chrome_pdf::PageCharacterIndex>*
+          node_id_to_page_char_index,
       std::map<int32_t, PdfAccessibilityTree::AnnotationInfo>*
           node_id_to_annotation_info)
       : text_runs_(text_runs),
@@ -414,16 +417,17 @@ class PdfAccessibilityTreeBuilder {
         page_node_->child_ids.push_back(para_node->id);
       }
 
-      // If the |text_run_index| is less than or equal to the link's
-      // text_run_index, then push the link node in the paragraph.
-      if (IsObjectInTextRun(links_, current_link_index_, text_run_index)) {
+      // If the `text_run_index` is less than or equal to the link's
+      // `text_run_index`, then push the link node in the paragraph.
+      if (IsObjectWithRangeInTextRun(links_, current_link_index_,
+                                     text_run_index)) {
         FinishStaticNode(&static_text_node, &static_text);
-        const ppapi::PdfAccessibilityLinkInfo& link =
+        const chrome_pdf::AccessibilityLinkInfo& link =
             links_[current_link_index_++];
         AddLinkToParaNode(link, para_node, &previous_on_line_node,
                           &text_run_index);
 
-        if (link.text_run_count == 0)
+        if (link.text_range.count == 0)
           continue;
 
       } else if (IsObjectInTextRun(images_, current_image_index_,
@@ -432,8 +436,8 @@ class PdfAccessibilityTreeBuilder {
         AddImageToParaNode(images_[current_image_index_++], para_node,
                            &text_run_index);
         continue;
-      } else if (IsObjectInTextRun(highlights_, current_highlight_index_,
-                                   text_run_index)) {
+      } else if (IsObjectWithRangeInTextRun(
+                     highlights_, current_highlight_index_, text_run_index)) {
         FinishStaticNode(&static_text_node, &static_text);
         AddHighlightToParaNode(highlights_[current_highlight_index_++],
                                para_node, &previous_on_line_node,
@@ -460,7 +464,7 @@ class PdfAccessibilityTreeBuilder {
                                  para_node, &text_run_index);
         continue;
       } else {
-        PP_PdfPageCharacterIndex page_char_index = {
+        chrome_pdf::PageCharacterIndex page_char_index = {
             page_index_, text_run_start_indices_[text_run_index]};
 
         // This node is for the text inside the paragraph, it includes
@@ -470,7 +474,7 @@ class PdfAccessibilityTreeBuilder {
           para_node->child_ids.push_back(static_text_node->id);
         }
 
-        const ppapi::PdfAccessibilityTextRunInfo& text_run =
+        const chrome_pdf::AccessibilityTextRunInfo& text_run =
             text_runs_[text_run_index];
         // Add this text run to the current static text node.
         ui::AXNodeData* inline_text_box_node =
@@ -550,7 +554,7 @@ class PdfAccessibilityTreeBuilder {
     para_node->AddBoolAttribute(ax::mojom::BoolAttribute::kIsLineBreakingObject,
                                 true);
 
-    // If font size exceeds the |heading_font_size_threshold_|, then classify
+    // If font size exceeds the `heading_font_size_threshold_`, then classify
     // it as a Heading.
     if (heading_font_size_threshold_ > 0 &&
         font_size > heading_font_size_threshold_) {
@@ -564,7 +568,7 @@ class PdfAccessibilityTreeBuilder {
   }
 
   ui::AXNodeData* CreateStaticTextNode(
-      const PP_PdfPageCharacterIndex& page_char_index) {
+      const chrome_pdf::PageCharacterIndex& page_char_index) {
     ui::AXNodeData* static_text_node = CreateNode(
         ax::mojom::Role::kStaticText, ax::mojom::Restriction::kReadOnly,
         render_accessibility_, nodes_);
@@ -574,8 +578,8 @@ class PdfAccessibilityTreeBuilder {
   }
 
   ui::AXNodeData* CreateInlineTextBoxNode(
-      const ppapi::PdfAccessibilityTextRunInfo& text_run,
-      const PP_PdfPageCharacterIndex& page_char_index) {
+      const chrome_pdf::AccessibilityTextRunInfo& text_run,
+      const chrome_pdf::PageCharacterIndex& page_char_index) {
     ui::AXNodeData* inline_text_box_node = CreateNode(
         ax::mojom::Role::kInlineTextBox, ax::mojom::Restriction::kReadOnly,
         render_accessibility_, nodes_);
@@ -586,7 +590,8 @@ class PdfAccessibilityTreeBuilder {
     inline_text_box_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
                                              chars__utf8);
     inline_text_box_node->AddIntAttribute(
-        ax::mojom::IntAttribute::kTextDirection, text_run.direction);
+        ax::mojom::IntAttribute::kTextDirection,
+        static_cast<uint32_t>(text_run.direction));
     inline_text_box_node->AddStringAttribute(
         ax::mojom::StringAttribute::kFontFamily, text_run.style.font_name);
     inline_text_box_node->AddFloatAttribute(
@@ -606,8 +611,7 @@ class PdfAccessibilityTreeBuilder {
     }
 
     inline_text_box_node->relative_bounds.bounds =
-        PpFloatRectToGfxRectF(text_run.bounds) +
-        page_bounds_.OffsetFromOrigin();
+        text_run.bounds + page_bounds_.OffsetFromOrigin();
     std::vector<int32_t> char_offsets =
         GetTextRunCharOffsets(text_run, chars_, page_char_index.char_index);
     inline_text_box_node->AddIntListAttribute(
@@ -618,7 +622,8 @@ class PdfAccessibilityTreeBuilder {
     return inline_text_box_node;
   }
 
-  ui::AXNodeData* CreateLinkNode(const ppapi::PdfAccessibilityLinkInfo& link) {
+  ui::AXNodeData* CreateLinkNode(
+      const chrome_pdf::AccessibilityLinkInfo& link) {
     ui::AXNodeData* link_node =
         CreateNode(ax::mojom::Role::kLink, ax::mojom::Restriction::kReadOnly,
                    render_accessibility_, nodes_);
@@ -626,7 +631,7 @@ class PdfAccessibilityTreeBuilder {
     link_node->AddStringAttribute(ax::mojom::StringAttribute::kUrl, link.url);
     link_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
                                   std::string());
-    link_node->relative_bounds.bounds = PpFloatRectToGfxRectF(link.bounds);
+    link_node->relative_bounds.bounds = link.bounds;
     node_id_to_annotation_info_->emplace(
         link_node->id,
         PdfAccessibilityTree::AnnotationInfo(page_index_, link.index_in_page));
@@ -635,7 +640,7 @@ class PdfAccessibilityTreeBuilder {
   }
 
   ui::AXNodeData* CreateImageNode(
-      const ppapi::PdfAccessibilityImageInfo& image) {
+      const chrome_pdf::AccessibilityImageInfo& image) {
     ui::AXNodeData* image_node =
         CreateNode(ax::mojom::Role::kImage, ax::mojom::Restriction::kReadOnly,
                    render_accessibility_, nodes_);
@@ -648,12 +653,12 @@ class PdfAccessibilityTreeBuilder {
       image_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
                                      image.alt_text);
     }
-    image_node->relative_bounds.bounds = PpFloatRectToGfxRectF(image.bounds);
+    image_node->relative_bounds.bounds = image.bounds;
     return image_node;
   }
 
   ui::AXNodeData* CreateHighlightNode(
-      const ppapi::PdfAccessibilityHighlightInfo& highlight) {
+      const chrome_pdf::AccessibilityHighlightInfo& highlight) {
     ui::AXNodeData* highlight_node = CreateNode(
         ax::mojom::Role::kPdfActionableHighlight,
         ax::mojom::Restriction::kReadOnly, render_accessibility_, nodes_);
@@ -663,8 +668,7 @@ class PdfAccessibilityTreeBuilder {
         l10n_util::GetStringUTF8(IDS_AX_ROLE_DESCRIPTION_PDF_HIGHLIGHT));
     highlight_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
                                        std::string());
-    highlight_node->relative_bounds.bounds =
-        PpFloatRectToGfxRectF(highlight.bounds);
+    highlight_node->relative_bounds.bounds = highlight.bounds;
     highlight_node->AddIntAttribute(ax::mojom::IntAttribute::kBackgroundColor,
                                     highlight.color);
 
@@ -672,7 +676,7 @@ class PdfAccessibilityTreeBuilder {
   }
 
   ui::AXNodeData* CreatePopupNoteNode(
-      const ppapi::PdfAccessibilityHighlightInfo& highlight) {
+      const chrome_pdf::AccessibilityHighlightInfo& highlight) {
     ui::AXNodeData* popup_note_node =
         CreateNode(ax::mojom::Role::kNote, ax::mojom::Restriction::kReadOnly,
                    render_accessibility_, nodes_);
@@ -680,8 +684,7 @@ class PdfAccessibilityTreeBuilder {
     popup_note_node->AddStringAttribute(
         ax::mojom::StringAttribute::kRoleDescription,
         l10n_util::GetStringUTF8(IDS_AX_ROLE_DESCRIPTION_PDF_POPUP_NOTE));
-    popup_note_node->relative_bounds.bounds =
-        PpFloatRectToGfxRectF(highlight.bounds);
+    popup_note_node->relative_bounds.bounds = highlight.bounds;
 
     ui::AXNodeData* static_popup_note_text_node = CreateNode(
         ax::mojom::Role::kStaticText, ax::mojom::Restriction::kReadOnly,
@@ -690,8 +693,7 @@ class PdfAccessibilityTreeBuilder {
     static_popup_note_text_node->SetNameFrom(ax::mojom::NameFrom::kContents);
     static_popup_note_text_node->AddStringAttribute(
         ax::mojom::StringAttribute::kName, highlight.note_text);
-    static_popup_note_text_node->relative_bounds.bounds =
-        PpFloatRectToGfxRectF(highlight.bounds);
+    static_popup_note_text_node->relative_bounds.bounds = highlight.bounds;
 
     popup_note_node->child_ids.push_back(static_popup_note_text_node->id);
 
@@ -699,7 +701,7 @@ class PdfAccessibilityTreeBuilder {
   }
 
   ui::AXNodeData* CreateTextFieldNode(
-      const ppapi::PdfAccessibilityTextFieldInfo& text_field) {
+      const chrome_pdf::AccessibilityTextFieldInfo& text_field) {
     ax::mojom::Restriction restriction = text_field.is_read_only
                                              ? ax::mojom::Restriction::kReadOnly
                                              : ax::mojom::Restriction::kNone;
@@ -716,13 +718,12 @@ class PdfAccessibilityTreeBuilder {
       text_field_node->AddState(ax::mojom::State::kRequired);
     if (text_field.is_password)
       text_field_node->AddState(ax::mojom::State::kProtected);
-    text_field_node->relative_bounds.bounds =
-        PpFloatRectToGfxRectF(text_field.bounds);
+    text_field_node->relative_bounds.bounds = text_field.bounds;
     return text_field_node;
   }
 
   ui::AXNodeData* CreateButtonNode(
-      const ppapi::PdfAccessibilityButtonInfo& button) {
+      const chrome_pdf::AccessibilityButtonInfo& button) {
     ax::mojom::Restriction restriction = button.is_read_only
                                              ? ax::mojom::Restriction::kReadOnly
                                              : ax::mojom::Restriction::kNone;
@@ -733,8 +734,8 @@ class PdfAccessibilityTreeBuilder {
                                     button.name);
     button_node->AddState(ax::mojom::State::kFocusable);
 
-    if (button.type == PP_PRIVATEBUTTON_RADIOBUTTON ||
-        button.type == PP_PRIVATEBUTTON_CHECKBOX) {
+    if (button.type == chrome_pdf::ButtonType::kRadioButton ||
+        button.type == chrome_pdf::ButtonType::kCheckBox) {
       ax::mojom::CheckedState checkedState =
           button.is_checked ? ax::mojom::CheckedState::kTrue
                             : ax::mojom::CheckedState::kNone;
@@ -747,12 +748,12 @@ class PdfAccessibilityTreeBuilder {
                                    button.control_index + 1);
     }
 
-    button_node->relative_bounds.bounds = PpFloatRectToGfxRectF(button.bounds);
+    button_node->relative_bounds.bounds = button.bounds;
     return button_node;
   }
 
   ui::AXNodeData* CreateListboxOptionNode(
-      const ppapi::PdfAccessibilityChoiceFieldOptionInfo& choice_field_option,
+      const chrome_pdf::AccessibilityChoiceFieldOptionInfo& choice_field_option,
       ax::mojom::Restriction restriction) {
     ui::AXNodeData* listbox_option_node =
         CreateNode(ax::mojom::Role::kListBoxOption, restriction,
@@ -767,7 +768,7 @@ class PdfAccessibilityTreeBuilder {
   }
 
   ui::AXNodeData* CreateListboxNode(
-      const ppapi::PdfAccessibilityChoiceFieldInfo& choice_field,
+      const chrome_pdf::AccessibilityChoiceFieldInfo& choice_field,
       ui::AXNodeData* control_node) {
     ax::mojom::Restriction restriction = choice_field.is_read_only
                                              ? ax::mojom::Restriction::kReadOnly
@@ -775,13 +776,13 @@ class PdfAccessibilityTreeBuilder {
     ui::AXNodeData* listbox_node = CreateNode(
         ax::mojom::Role::kListBox, restriction, render_accessibility_, nodes_);
 
-    if (choice_field.type != PP_PRIVATECHOICEFIELD_COMBOBOX) {
+    if (choice_field.type != chrome_pdf::ChoiceFieldType::kComboBox) {
       listbox_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
                                        choice_field.name);
     }
 
     ui::AXNodeData* first_selected_option = nullptr;
-    for (const ppapi::PdfAccessibilityChoiceFieldOptionInfo& option :
+    for (const chrome_pdf::AccessibilityChoiceFieldOptionInfo& option :
          choice_field.options) {
       ui::AXNodeData* listbox_option_node =
           CreateListboxOptionNode(option, restriction);
@@ -789,9 +790,9 @@ class PdfAccessibilityTreeBuilder {
                                         ax::mojom::BoolAttribute::kSelected)) {
         first_selected_option = listbox_option_node;
       }
-      // TODO(bug 1030242): add |listbox_option_node| specific bounds here.
-      listbox_option_node->relative_bounds.bounds =
-          PpFloatRectToGfxRectF(choice_field.bounds);
+      // TODO(crbug.com/1030242): Add `listbox_option_node` specific bounds
+      // here.
+      listbox_option_node->relative_bounds.bounds = choice_field.bounds;
       listbox_node->child_ids.push_back(listbox_option_node->id);
     }
 
@@ -804,13 +805,12 @@ class PdfAccessibilityTreeBuilder {
     if (choice_field.is_multi_select)
       listbox_node->AddState(ax::mojom::State::kMultiselectable);
     listbox_node->AddState(ax::mojom::State::kFocusable);
-    listbox_node->relative_bounds.bounds =
-        PpFloatRectToGfxRectF(choice_field.bounds);
+    listbox_node->relative_bounds.bounds = choice_field.bounds;
     return listbox_node;
   }
 
   ui::AXNodeData* CreateComboboxInputNode(
-      const ppapi::PdfAccessibilityChoiceFieldInfo& choice_field,
+      const chrome_pdf::AccessibilityChoiceFieldInfo& choice_field,
       ax::mojom::Restriction restriction) {
     ax::mojom::Role input_role = choice_field.has_editable_text_box
                                      ? ax::mojom::Role::kTextFieldWithComboBox
@@ -819,7 +819,7 @@ class PdfAccessibilityTreeBuilder {
         CreateNode(input_role, restriction, render_accessibility_, nodes_);
     combobox_input_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
                                             choice_field.name);
-    for (const ppapi::PdfAccessibilityChoiceFieldOptionInfo& option :
+    for (const chrome_pdf::AccessibilityChoiceFieldOptionInfo& option :
          choice_field.options) {
       if (option.is_selected) {
         combobox_input_node->AddStringAttribute(
@@ -829,13 +829,12 @@ class PdfAccessibilityTreeBuilder {
     }
 
     combobox_input_node->AddState(ax::mojom::State::kFocusable);
-    combobox_input_node->relative_bounds.bounds =
-        PpFloatRectToGfxRectF(choice_field.bounds);
+    combobox_input_node->relative_bounds.bounds = choice_field.bounds;
     return combobox_input_node;
   }
 
   ui::AXNodeData* CreateComboboxNode(
-      const ppapi::PdfAccessibilityChoiceFieldInfo& choice_field) {
+      const chrome_pdf::AccessibilityChoiceFieldInfo& choice_field) {
     ax::mojom::Restriction restriction = choice_field.is_read_only
                                              ? ax::mojom::Restriction::kReadOnly
                                              : ax::mojom::Restriction::kNone;
@@ -852,24 +851,25 @@ class PdfAccessibilityTreeBuilder {
     combobox_node->child_ids.push_back(input_element->id);
     combobox_node->child_ids.push_back(list_element->id);
     combobox_node->AddState(ax::mojom::State::kFocusable);
-    combobox_node->relative_bounds.bounds =
-        PpFloatRectToGfxRectF(choice_field.bounds);
+    combobox_node->relative_bounds.bounds = choice_field.bounds;
     return combobox_node;
   }
 
   ui::AXNodeData* CreateChoiceFieldNode(
-      const ppapi::PdfAccessibilityChoiceFieldInfo& choice_field) {
-    if (choice_field.type == PP_PRIVATECHOICEFIELD_LISTBOX)
-      return CreateListboxNode(choice_field, nullptr);
-
-    return CreateComboboxNode(choice_field);
+      const chrome_pdf::AccessibilityChoiceFieldInfo& choice_field) {
+    switch (choice_field.type) {
+      case chrome_pdf::ChoiceFieldType::kListBox:
+        return CreateListboxNode(choice_field, /*control_node=*/nullptr);
+      case chrome_pdf::ChoiceFieldType::kComboBox:
+        return CreateComboboxNode(choice_field);
+    }
   }
 
   void AddTextToAXNode(size_t start_text_run_index,
                        uint32_t end_text_run_index,
                        ui::AXNodeData* ax_node,
                        ui::AXNodeData** previous_on_line_node) {
-    PP_PdfPageCharacterIndex page_char_index = {
+    chrome_pdf::PageCharacterIndex page_char_index = {
         page_index_, text_run_start_indices_[start_text_run_index]};
     ui::AXNodeData* ax_static_text_node = CreateStaticTextNode(page_char_index);
     ax_node->child_ids.push_back(ax_static_text_node->id);
@@ -879,7 +879,7 @@ class PdfAccessibilityTreeBuilder {
 
     for (size_t text_run_index = start_text_run_index;
          text_run_index <= end_text_run_index; ++text_run_index) {
-      const ppapi::PdfAccessibilityTextRunInfo& text_run =
+      const chrome_pdf::AccessibilityTextRunInfo& text_run =
           text_runs_[text_run_index];
       page_char_index.char_index = text_run_start_indices_[text_run_index];
       // Add this text run to the current static text node.
@@ -946,7 +946,7 @@ class PdfAccessibilityTreeBuilder {
     // present. In the tree for both overlapping scenarios, link `A` would
     // appear first in the tree and link `B` after it.
 
-    // If |object_text_run_count| > 0, then the object is part of the page text.
+    // If `object_text_run_count` > 0, then the object is part of the page text.
     // Make the text runs contained by the object children of the object node.
     size_t end_text_run_index = object_text_run_index + object_text_run_count;
     uint32_t object_end_text_run_index =
@@ -961,30 +961,30 @@ class PdfAccessibilityTreeBuilder {
         NormalizeTextRunIndex(object_end_text_run_index, *text_run_index);
   }
 
-  void AddLinkToParaNode(const ppapi::PdfAccessibilityLinkInfo& link,
+  void AddLinkToParaNode(const chrome_pdf::AccessibilityLinkInfo& link,
                          ui::AXNodeData* para_node,
                          ui::AXNodeData** previous_on_line_node,
                          size_t* text_run_index) {
     ui::AXNodeData* link_node = CreateLinkNode(link);
     para_node->child_ids.push_back(link_node->id);
 
-    // If |link.text_run_count| == 0, then the link is not part of the page
+    // If `link.text_range.count` == 0, then the link is not part of the page
     // text. Push it ahead of the current text run.
-    if (link.text_run_count == 0) {
+    if (link.text_range.count == 0) {
       --(*text_run_index);
       return;
     }
 
     // Make the text runs contained by the link children of
     // the link node.
-    AddTextToObjectNode(link.text_run_index, link.text_run_count, link_node,
+    AddTextToObjectNode(link.text_range.index, link.text_range.count, link_node,
                         para_node, previous_on_line_node, text_run_index);
   }
 
-  void AddImageToParaNode(const ppapi::PdfAccessibilityImageInfo& image,
+  void AddImageToParaNode(const chrome_pdf::AccessibilityImageInfo& image,
                           ui::AXNodeData* para_node,
                           size_t* text_run_index) {
-    // If the |text_run_index| is less than or equal to the image's text run
+    // If the `text_run_index` is less than or equal to the image's text run
     // index, then push the image ahead of the current text run.
     ui::AXNodeData* image_node = CreateImageNode(image);
     para_node->child_ids.push_back(image_node->id);
@@ -992,7 +992,7 @@ class PdfAccessibilityTreeBuilder {
   }
 
   void AddHighlightToParaNode(
-      const ppapi::PdfAccessibilityHighlightInfo& highlight,
+      const chrome_pdf::AccessibilityHighlightInfo& highlight,
       ui::AXNodeData* para_node,
       ui::AXNodeData** previous_on_line_node,
       size_t* text_run_index) {
@@ -1001,7 +1001,7 @@ class PdfAccessibilityTreeBuilder {
 
     // Make the text runs contained by the highlight children of
     // the highlight node.
-    AddTextToObjectNode(highlight.text_run_index, highlight.text_run_count,
+    AddTextToObjectNode(highlight.text_range.index, highlight.text_range.count,
                         highlight_node, para_node, previous_on_line_node,
                         text_run_index);
 
@@ -1012,20 +1012,20 @@ class PdfAccessibilityTreeBuilder {
   }
 
   void AddTextFieldToParaNode(
-      const ppapi::PdfAccessibilityTextFieldInfo& text_field,
+      const chrome_pdf::AccessibilityTextFieldInfo& text_field,
       ui::AXNodeData* para_node,
       size_t* text_run_index) {
-    // If the |text_run_index| is less than or equal to the text_field's text
+    // If the `text_run_index` is less than or equal to the text_field's text
     // run index, then push the text_field ahead of the current text run.
     ui::AXNodeData* text_field_node = CreateTextFieldNode(text_field);
     para_node->child_ids.push_back(text_field_node->id);
     --(*text_run_index);
   }
 
-  void AddButtonToParaNode(const ppapi::PdfAccessibilityButtonInfo& button,
+  void AddButtonToParaNode(const chrome_pdf::AccessibilityButtonInfo& button,
                            ui::AXNodeData* para_node,
                            size_t* text_run_index) {
-    // If the |text_run_index| is less than or equal to the button's text
+    // If the `text_run_index` is less than or equal to the button's text
     // run index, then push the button ahead of the current text run.
     ui::AXNodeData* button_node = CreateButtonNode(button);
     para_node->child_ids.push_back(button_node->id);
@@ -1033,10 +1033,10 @@ class PdfAccessibilityTreeBuilder {
   }
 
   void AddChoiceFieldToParaNode(
-      const ppapi::PdfAccessibilityChoiceFieldInfo& choice_field,
+      const chrome_pdf::AccessibilityChoiceFieldInfo& choice_field,
       ui::AXNodeData* para_node,
       size_t* text_run_index) {
-    // If the |text_run_index| is less than or equal to the choice_field's text
+    // If the `text_run_index` is less than or equal to the choice_field's text
     // run index, then push the choice_field ahead of the current text run.
     ui::AXNodeData* choice_field_node = CreateChoiceFieldNode(choice_field);
     para_node->child_ids.push_back(choice_field_node->id);
@@ -1100,26 +1100,27 @@ class PdfAccessibilityTreeBuilder {
   }
 
   std::vector<uint32_t> text_run_start_indices_;
-  const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs_;
-  const std::vector<PP_PrivateAccessibilityCharInfo>& chars_;
-  const std::vector<ppapi::PdfAccessibilityLinkInfo>& links_;
+  const std::vector<chrome_pdf::AccessibilityTextRunInfo>& text_runs_;
+  const std::vector<chrome_pdf::AccessibilityCharInfo>& chars_;
+  const std::vector<chrome_pdf::AccessibilityLinkInfo>& links_;
   uint32_t current_link_index_ = 0;
-  const std::vector<ppapi::PdfAccessibilityImageInfo>& images_;
+  const std::vector<chrome_pdf::AccessibilityImageInfo>& images_;
   uint32_t current_image_index_ = 0;
-  const std::vector<ppapi::PdfAccessibilityHighlightInfo>& highlights_;
+  const std::vector<chrome_pdf::AccessibilityHighlightInfo>& highlights_;
   uint32_t current_highlight_index_ = 0;
-  const std::vector<ppapi::PdfAccessibilityTextFieldInfo>& text_fields_;
+  const std::vector<chrome_pdf::AccessibilityTextFieldInfo>& text_fields_;
   uint32_t current_text_field_index_ = 0;
-  const std::vector<ppapi::PdfAccessibilityButtonInfo>& buttons_;
+  const std::vector<chrome_pdf::AccessibilityButtonInfo>& buttons_;
   uint32_t current_button_index_ = 0;
-  const std::vector<ppapi::PdfAccessibilityChoiceFieldInfo>& choice_fields_;
+  const std::vector<chrome_pdf::AccessibilityChoiceFieldInfo>& choice_fields_;
   uint32_t current_choice_field_index_ = 0;
   const gfx::RectF& page_bounds_;
   uint32_t page_index_;
   ui::AXNodeData* page_node_;
   content::RenderAccessibility* render_accessibility_;
   std::vector<std::unique_ptr<ui::AXNodeData>>* nodes_;
-  std::map<int32_t, PP_PdfPageCharacterIndex>* node_id_to_page_char_index_;
+  std::map<int32_t, chrome_pdf::PageCharacterIndex>*
+      node_id_to_page_char_index_;
   std::map<int32_t, PdfAccessibilityTree::AnnotationInfo>*
       node_id_to_annotation_info_;
   float heading_font_size_threshold_ = 0;
@@ -1128,9 +1129,13 @@ class PdfAccessibilityTreeBuilder {
 
 }  // namespace
 
-PdfAccessibilityTree::PdfAccessibilityTree(content::RendererPpapiHost* host,
-                                           PP_Instance instance)
-    : host_(host), instance_(instance) {}
+PdfAccessibilityTree::PdfAccessibilityTree(
+    content::RenderFrame* render_frame,
+    chrome_pdf::PdfAccessibilityActionHandler* action_handler)
+    : content::RenderFrameObserver(render_frame),
+      action_handler_(action_handler) {
+  DCHECK(action_handler_);
+}
 
 PdfAccessibilityTree::~PdfAccessibilityTree() {
   // Even if `render_accessibility` is disabled, still let it know `this` is
@@ -1142,126 +1147,140 @@ PdfAccessibilityTree::~PdfAccessibilityTree() {
 
 // static
 bool PdfAccessibilityTree::IsDataFromPluginValid(
-    const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs,
-    const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
-    const ppapi::PdfAccessibilityPageObjects& page_objects) {
+    const std::vector<chrome_pdf::AccessibilityTextRunInfo>& text_runs,
+    const std::vector<chrome_pdf::AccessibilityCharInfo>& chars,
+    const chrome_pdf::AccessibilityPageObjects& page_objects) {
   base::CheckedNumeric<uint32_t> char_length = 0;
-  for (const ppapi::PdfAccessibilityTextRunInfo& text_run : text_runs)
+  for (const chrome_pdf::AccessibilityTextRunInfo& text_run : text_runs)
     char_length += text_run.len;
 
   if (!char_length.IsValid() || char_length.ValueOrDie() != chars.size())
     return false;
 
-  const std::vector<ppapi::PdfAccessibilityLinkInfo>& links =
+  const std::vector<chrome_pdf::AccessibilityLinkInfo>& links =
       page_objects.links;
-  if (!std::is_sorted(links.begin(), links.end(),
-                      CompareTextRuns<ppapi::PdfAccessibilityLinkInfo>)) {
+  if (!std::is_sorted(
+          links.begin(), links.end(),
+          CompareTextRunsWithRange<chrome_pdf::AccessibilityLinkInfo>)) {
     return false;
   }
-  // Text run index of a |link| is out of bounds if it exceeds the size of
-  // |text_runs|. The index denotes the position of the link relative to the
-  // text runs. The index value equal to the size of |text_runs| indicates that
+  // Text run index of a `link` is out of bounds if it exceeds the size of
+  // `text_runs`. The index denotes the position of the link relative to the
+  // text runs. The index value equal to the size of `text_runs` indicates that
   // the link should be after the last text run.
-  // |index_in_page| of every |link| should be with in the range of total number
-  // of links, which is size of |links|.
-  for (const ppapi::PdfAccessibilityLinkInfo& link : links) {
-    base::CheckedNumeric<size_t> index = link.text_run_index;
-    index += link.text_run_count;
+  // `index_in_page` of every `link` should be with in the range of total number
+  // of links, which is size of `links`.
+  for (const chrome_pdf::AccessibilityLinkInfo& link : links) {
+    base::CheckedNumeric<size_t> index = link.text_range.index;
+    index += link.text_range.count;
     if (!index.IsValid() || index.ValueOrDie() > text_runs.size() ||
         link.index_in_page >= links.size()) {
       return false;
     }
   }
 
-  const std::vector<ppapi::PdfAccessibilityImageInfo>& images =
+  const std::vector<chrome_pdf::AccessibilityImageInfo>& images =
       page_objects.images;
   if (!std::is_sorted(images.begin(), images.end(),
-                      CompareTextRuns<ppapi::PdfAccessibilityImageInfo>)) {
+                      CompareTextRuns<chrome_pdf::AccessibilityImageInfo>)) {
     return false;
   }
-  // Text run index of an |image| works on the same logic as the text run index
-  // of a |link| as mentioned above.
-  for (const ppapi::PdfAccessibilityImageInfo& image : images) {
+  // Text run index of an `image` works on the same logic as the text run index
+  // of a `link` as described above.
+  for (const chrome_pdf::AccessibilityImageInfo& image : images) {
     if (image.text_run_index > text_runs.size())
       return false;
   }
 
-  const std::vector<ppapi::PdfAccessibilityHighlightInfo>& highlights =
+  const std::vector<chrome_pdf::AccessibilityHighlightInfo>& highlights =
       page_objects.highlights;
-  if (!std::is_sorted(highlights.begin(), highlights.end(),
-                      CompareTextRuns<ppapi::PdfAccessibilityHighlightInfo>)) {
+  if (!std::is_sorted(
+          highlights.begin(), highlights.end(),
+          CompareTextRunsWithRange<chrome_pdf::AccessibilityHighlightInfo>)) {
     return false;
   }
 
   // Since highlights also span across text runs similar to links, the
   // validation method is the same.
-  // |index_in_page| of a |highlight| follows the same index validation rules
+  // `index_in_page` of a `highlight` follows the same index validation rules
   // as of links.
   for (const auto& highlight : highlights) {
-    base::CheckedNumeric<size_t> index = highlight.text_run_index;
-    index += highlight.text_run_count;
+    base::CheckedNumeric<size_t> index = highlight.text_range.index;
+    index += highlight.text_range.count;
     if (!index.IsValid() || index.ValueOrDie() > text_runs.size() ||
         highlight.index_in_page >= highlights.size()) {
       return false;
     }
   }
 
-  const std::vector<ppapi::PdfAccessibilityTextFieldInfo>& text_fields =
+  const std::vector<chrome_pdf::AccessibilityTextFieldInfo>& text_fields =
       page_objects.form_fields.text_fields;
-  if (!std::is_sorted(text_fields.begin(), text_fields.end(),
-                      CompareTextRuns<ppapi::PdfAccessibilityTextFieldInfo>)) {
+  if (!std::is_sorted(
+          text_fields.begin(), text_fields.end(),
+          CompareTextRuns<chrome_pdf::AccessibilityTextFieldInfo>)) {
     return false;
   }
-  // Text run index of an |text_field| works on the same logic as the text run
-  // index of a |link| as mentioned above.
-  // |index_in_page| of a |text_field| follows the same index validation rules
+  // Text run index of an `text_field` works on the same logic as the text run
+  // index of a `link` as mentioned above.
+  // `index_in_page` of a `text_field` follows the same index validation rules
   // as of links.
-  for (const ppapi::PdfAccessibilityTextFieldInfo& text_field : text_fields) {
+  for (const chrome_pdf::AccessibilityTextFieldInfo& text_field : text_fields) {
     if (text_field.text_run_index > text_runs.size() ||
         text_field.index_in_page >= text_fields.size()) {
       return false;
     }
   }
 
-  const std::vector<ppapi::PdfAccessibilityChoiceFieldInfo>& choice_fields =
+  const std::vector<chrome_pdf::AccessibilityChoiceFieldInfo>& choice_fields =
       page_objects.form_fields.choice_fields;
   if (!std::is_sorted(
           choice_fields.begin(), choice_fields.end(),
-          CompareTextRuns<ppapi::PdfAccessibilityChoiceFieldInfo>)) {
+          CompareTextRuns<chrome_pdf::AccessibilityChoiceFieldInfo>)) {
     return false;
   }
-  // Text run index of an |choice_field| works on the same logic as the text run
-  // index of a |link| as mentioned above.
-  // |index_in_page| of a |choice_field| follows the same index validation rules
-  // as of links.
   for (const auto& choice_field : choice_fields) {
+    // Text run index of an `choice_field` works on the same logic as the text
+    // run index of a `link` as mentioned above.
+    // `index_in_page` of a `choice_field` follows the same index validation
+    // rules as of links.
     if (choice_field.text_run_index > text_runs.size() ||
         choice_field.index_in_page >= choice_fields.size()) {
       return false;
     }
+
+    // The type should be valid.
+    if (choice_field.type < chrome_pdf::ChoiceFieldType::kMinValue ||
+        choice_field.type > chrome_pdf::ChoiceFieldType::kMaxValue) {
+      return false;
+    }
   }
 
-  const std::vector<ppapi::PdfAccessibilityButtonInfo>& buttons =
+  const std::vector<chrome_pdf::AccessibilityButtonInfo>& buttons =
       page_objects.form_fields.buttons;
-  if (!std::is_sorted(
-          buttons.begin(), buttons.end(),
-          CompareTextRuns<ppapi::PdfAccessibilityButtonInfo>)) {
+  if (!std::is_sorted(buttons.begin(), buttons.end(),
+                      CompareTextRuns<chrome_pdf::AccessibilityButtonInfo>)) {
     return false;
   }
-  for (const ppapi::PdfAccessibilityButtonInfo& button :
-       buttons) {
-    // Text run index of an |button| works on the same logic as the text run
-    // index of a |link| as mentioned above.
-    // |index_in_page| of a |button| follows the same index validation rules as
+  for (const chrome_pdf::AccessibilityButtonInfo& button : buttons) {
+    // Text run index of an `button` works on the same logic as the text run
+    // index of a `link` as mentioned above.
+    // `index_in_page` of a `button` follows the same index validation rules as
     // of links.
     if (button.text_run_index > text_runs.size() ||
         button.index_in_page >= buttons.size()) {
       return false;
     }
-    // For radio button or checkbox, value of |button.control_index| should
-    // always be less than |button.control_count|.
-    if ((button.type == PP_PrivateButtonType::PP_PRIVATEBUTTON_CHECKBOX ||
-         button.type == PP_PrivateButtonType::PP_PRIVATEBUTTON_RADIOBUTTON) &&
+
+    // The type should be valid.
+    if (button.type < chrome_pdf::ButtonType::kMinValue ||
+        button.type > chrome_pdf::ButtonType::kMaxValue) {
+      return false;
+    }
+
+    // For radio button or checkbox, value of `button.control_index` should
+    // always be less than `button.control_count`.
+    if ((button.type == chrome_pdf::ButtonType::kCheckBox ||
+         button.type == chrome_pdf::ButtonType::kRadioButton) &&
         (button.control_index >= button.control_count)) {
       return false;
     }
@@ -1320,10 +1339,10 @@ void PdfAccessibilityTree::SetAccessibilityDocInfo(
 }
 
 void PdfAccessibilityTree::SetAccessibilityPageInfo(
-    const PP_PrivateAccessibilityPageInfo& page_info,
-    const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs,
-    const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
-    const ppapi::PdfAccessibilityPageObjects& page_objects) {
+    const chrome_pdf::AccessibilityPageInfo& page_info,
+    const std::vector<chrome_pdf::AccessibilityTextRunInfo>& text_runs,
+    const std::vector<chrome_pdf::AccessibilityCharInfo>& chars,
+    const chrome_pdf::AccessibilityPageObjects& page_objects) {
   // Outdated calls are ignored.
   uint32_t page_index = page_info.page_index;
   if (page_index != next_page_index_)
@@ -1334,8 +1353,8 @@ void PdfAccessibilityTree::SetAccessibilityPageInfo(
   if (!render_accessibility)
     return;
 
-  // If unsanitized data is found, don't trust the PPAPI process sending it and
-  // stop creation of the accessibility tree.
+  // If unsanitized data is found, don't trust it and stop creation of the
+  // accessibility tree.
   if (!invalid_plugin_message_received_) {
     invalid_plugin_message_received_ =
         !IsDataFromPluginValid(text_runs, chars, page_objects);
@@ -1355,13 +1374,13 @@ void PdfAccessibilityTree::SetAccessibilityPageInfo(
   page_node->AddBoolAttribute(ax::mojom::BoolAttribute::kIsPageBreakingObject,
                               true);
 
-  gfx::RectF page_bounds = PPRectToGfxRectF(page_info.bounds);
+  gfx::RectF page_bounds(page_info.bounds);
   page_node->relative_bounds.bounds = page_bounds;
   doc_node_->relative_bounds.bounds.Union(page_node->relative_bounds.bounds);
   doc_node_->child_ids.push_back(page_node->id);
 
   AddPageContent(page_node, page_bounds, page_index, text_runs, chars,
-                 page_objects, render_accessibility);
+                 page_objects);
 
   if (page_index == page_count_ - 1)
     Finish();
@@ -1371,11 +1390,13 @@ void PdfAccessibilityTree::AddPageContent(
     ui::AXNodeData* page_node,
     const gfx::RectF& page_bounds,
     uint32_t page_index,
-    const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs,
-    const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
-    const ppapi::PdfAccessibilityPageObjects& page_objects,
-    content::RenderAccessibility* render_accessibility) {
+    const std::vector<chrome_pdf::AccessibilityTextRunInfo>& text_runs,
+    const std::vector<chrome_pdf::AccessibilityCharInfo>& chars,
+    const chrome_pdf::AccessibilityPageObjects& page_objects) {
   DCHECK(page_node);
+  content::RenderAccessibility* render_accessibility =
+      GetRenderAccessibilityIfEnabled();
+  DCHECK(render_accessibility);
   PdfAccessibilityTreeBuilder tree_builder(
       text_runs, chars, page_objects, page_bounds, page_index, page_node,
       render_accessibility, &nodes_, &node_id_to_page_char_index_,
@@ -1458,12 +1479,12 @@ void PdfAccessibilityTree::FindNodeOffset(uint32_t page_index,
 bool PdfAccessibilityTree::FindCharacterOffset(
     const ui::AXNode& node,
     uint32_t char_offset_in_node,
-    PP_PdfPageCharacterIndex* page_char_index) const {
+    chrome_pdf::PageCharacterIndex& page_char_index) const {
   auto iter = node_id_to_page_char_index_.find(GetId(&node));
   if (iter == node_id_to_page_char_index_.end())
     return false;
-  page_char_index->char_index = iter->second.char_index + char_offset_in_node;
-  page_char_index->page_index = iter->second.page_index;
+  page_char_index.char_index = iter->second.char_index + char_offset_in_node;
+  page_char_index.page_index = iter->second.page_index;
   return true;
 }
 
@@ -1475,9 +1496,7 @@ void PdfAccessibilityTree::ClearAccessibilityNodes() {
 }
 
 content::RenderAccessibility* PdfAccessibilityTree::GetRenderAccessibility() {
-  content::RenderFrame* render_frame =
-      host_->GetRenderFrameForInstance(instance_);
-  return render_frame ? render_frame->GetRenderAccessibility() : nullptr;
+  return render_frame() ? render_frame()->GetRenderAccessibility() : nullptr;
 }
 
 content::RenderAccessibility*
@@ -1500,7 +1519,7 @@ PdfAccessibilityTree::MakeTransformFromViewInfo() const {
   double applicable_scale_factor =
       content::RenderThread::Get()->IsUseZoomForDSF() ? scale_ : 1;
   auto transform = std::make_unique<gfx::Transform>();
-  // |scroll_| represents the offset from which PDF content starts. It is the
+  // `scroll_` represents the offset from which PDF content starts. It is the
   // height of the PDF toolbar and the width of sidenav in pixels if it is open.
   // Sizes of PDF toolbar and sidenav do not change with zoom.
   transform->Scale(applicable_scale_factor, applicable_scale_factor);
@@ -1582,6 +1601,8 @@ std::unique_ptr<ui::AXActionTarget> PdfAccessibilityTree::CreateActionTarget(
   return std::make_unique<PdfAXActionTarget>(target_node, this);
 }
 
+void PdfAccessibilityTree::OnDestruct() {}
+
 bool PdfAccessibilityTree::ShowContextMenu() {
   content::RenderAccessibility* render_accessibility =
       GetRenderAccessibilityIfEnabled();
@@ -1593,12 +1614,8 @@ bool PdfAccessibilityTree::ShowContextMenu() {
 }
 
 void PdfAccessibilityTree::HandleAction(
-    const PP_PdfAccessibilityActionData& action_data) {
-  content::PepperPluginInstance* plugin_instance =
-      host_->GetPluginInstance(instance_);
-  if (plugin_instance) {
-    plugin_instance->HandleAccessibilityAction(action_data);
-  }
+    const chrome_pdf::AccessibilityActionData& action_data) {
+  action_handler_->HandleAccessibilityAction(action_data);
 }
 
 absl::optional<PdfAccessibilityTree::AnnotationInfo>

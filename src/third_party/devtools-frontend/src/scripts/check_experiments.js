@@ -29,7 +29,6 @@ function isClassNameDeclaration(node, className) {
   return isClassDeclaration;
 }
 
-
 /**
  * Determines if a node is an typescript enum declaration.
  * If enumName is provided, node must also match enum name.
@@ -125,7 +124,7 @@ function getMainImplExperimentList(mainImplFile, experimentNames) {
   }
 
   // Find function in MainImpl Class
-  const initializeExperimentNode = findFunctionInClass(mainImplClassNode, '_initializeExperiments');
+  const initializeExperimentNode = findFunctionInClass(mainImplClassNode, 'initializeExperiments');
   if (!initializeExperimentNode) {
     return null;
   }

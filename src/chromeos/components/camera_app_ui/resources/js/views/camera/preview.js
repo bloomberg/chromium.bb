@@ -3,10 +3,18 @@
 // found in the LICENSE file.
 
 import {assert, assertInstanceof} from '../../chrome_util.js';
+import {
+  StreamConstraints,  // eslint-disable-line no-unused-vars
+  toMediaStreamConstraints,
+} from '../../device/stream_constraints.js';
 import * as dom from '../../dom.js';
 import {reportError} from '../../error.js';
 import {FaceOverlay} from '../../face.js';
 import {DeviceOperator, parseMetadata} from '../../mojo/device_operator.js';
+import {
+  closeEndpoint,
+  MojoEndpoint,  // eslint-disable-line no-unused-vars
+} from '../../mojo/util.js';
 import * as nav from '../../nav.js';
 import * as state from '../../state.js';
 import {
@@ -43,11 +51,11 @@ export class Preview {
     this.video_ = dom.get('#preview-video', HTMLVideoElement);
 
     /**
-     * The observer id for preview metadata.
-     * @type {?number}
+     * The observer endpoint for preview metadata.
+     * @type {?MojoEndpoint}
      * @private
      */
-    this.metadataObserverId_ = null;
+    this.metadataObserver_ = null;
 
     /**
      * The face overlay for showing faces over preview.
@@ -103,7 +111,13 @@ export class Preview {
     this.deviceDefaultPTZ_ = new Map();
 
     /**
-     * @type {?function()}
+     * @type {?StreamConstraints}
+     * @private
+     */
+    this.constraints_ = null;
+
+    /**
+     * @type {?function(): void}
      * @private
      */
     this.cancelWaitReadyForTakePhoto_ = null;
@@ -126,18 +140,17 @@ export class Preview {
 
   /**
    * Current active stream.
-   * @return {?MediaStream}
+   * @return {!MediaStream}
    */
   get stream() {
-    return this.stream_;
+    return assertInstanceof(this.stream_, MediaStream);
   }
 
   /**
    * @return {!MediaStreamTrack}
    */
   getVideoTrack_() {
-    const stream = assertInstanceof(this.stream, MediaStream);
-    return stream.getVideoTracks()[0];
+    return this.stream.getVideoTracks()[0];
   }
 
   /**
@@ -154,6 +167,14 @@ export class Preview {
    */
   getVidPid() {
     return this.vidPid_;
+  }
+
+  /**
+   * @return {!StreamConstraints}
+   */
+  getConstraits() {
+    assert(this.constraints_ !== null);
+    return this.constraints_;
   }
 
   /**
@@ -307,11 +328,13 @@ export class Preview {
 
   /**
    * Opens preview stream.
-   * @param {!MediaStreamConstraints} constraints Constraints of preview stream.
+   * @param {!StreamConstraints} constraints Constraints of preview stream.
    * @return {!Promise<!MediaStream>} Promise resolved to opened preview stream.
    */
   async open(constraints) {
-    this.stream_ = await navigator.mediaDevices.getUserMedia(constraints);
+    this.constraints_ = constraints;
+    this.stream_ = await navigator.mediaDevices.getUserMedia(
+        toMediaStreamConstraints(constraints));
     try {
       await this.setSource_(this.stream_);
       // Use a watchdog since the stream.onended event is unreliable in the
@@ -505,6 +528,7 @@ export class Preview {
         'ANDROID_CONTROL_AE_ANTIBANDING_MODE_');
 
     const tag = cros.mojom.CameraMetadataTag;
+    /** @type {!Object<string, function(!Array<number>): void>} */
     const metadataEntryHandlers = {
       [tag.ANDROID_LENS_FOCUS_DISTANCE]: ([value]) => {
         if (value === 0) {
@@ -662,7 +686,7 @@ export class Preview {
       updateFace(faceMode, faceRects);
     };
 
-    this.metadataObserverId_ = await deviceOperator.addMetadataObserver(
+    this.metadataObserver_ = await deviceOperator.addMetadataObserver(
         deviceId, callback, cros.mojom.StreamType.PREVIEW_OUTPUT);
   }
 
@@ -672,7 +696,7 @@ export class Preview {
    * @private
    */
   async disableShowMetadata_() {
-    if (!this.stream_ || this.metadataObserverId_ === null) {
+    if (!this.stream_ || this.metadataObserver_ === null) {
       return;
     }
 
@@ -681,16 +705,8 @@ export class Preview {
       return;
     }
 
-    const {deviceId} = this.getVideoTrack_().getSettings();
-    const isSuccess = await deviceOperator.removeMetadataObserver(
-        deviceId, this.metadataObserverId_);
-    if (!isSuccess) {
-      reportError(
-          ErrorType.REMOVE_METADATA_OBSERVER_FAILURE, ErrorLevel.ERROR,
-          new Error(`Failed to remove metadata observer with id: ${
-              this.metadataObserverId_}`));
-    }
-    this.metadataObserverId_ = null;
+    closeEndpoint(this.metadataObserver_);
+    this.metadataObserver_ = null;
 
     if (this.faceOverlay_ !== null) {
       this.faceOverlay_.clear();
@@ -743,7 +759,7 @@ export class Preview {
         return;  // Focus was cancelled.
       }
       const aim = dom.get('#preview-focus-aim', HTMLObjectElement);
-      const clone = aim.cloneNode(true);
+      const clone = assertInstanceof(aim.cloneNode(true), HTMLObjectElement);
       clone.style.left = `${event.offsetX + this.video_.offsetLeft}px`;
       clone.style.top = `${event.offsetY + this.video_.offsetTop}px`;
       clone.hidden = false;

@@ -106,6 +106,7 @@ class CORE_EXPORT NGFragmentItem {
   bool IsContainer() const { return Type() == kBox || Type() == kLine; }
   bool IsInlineBox() const;
   bool IsAtomicInline() const;
+  bool IsBlockInInline() const;
   bool IsFloating() const;
   bool IsEmptyLineBox() const;
   bool IsHiddenForPaint() const { return is_hidden_for_paint_; }
@@ -191,6 +192,10 @@ class CORE_EXPORT NGFragmentItem {
   // BuildSvgTransformForBoundingBox(). The return value can be compared with
   // untransformed RectInContainerFragment().
   PhysicalOffset MapPointInContainer(const PhysicalOffset& point) const;
+
+  // For kSvgText type, convert the specified inline offset in this item so
+  // that the result can be used with ShapeResult.
+  float ScaleInlineOffset(LayoutUnit inline_offset) const;
 
   // Returns true if |position|, which is a point in the IFC's coordinate
   // system, is in the transformed rectangle of this item.

@@ -3,10 +3,10 @@ API Validation Tests for RenderPass StoreOp.
 
 Test Coverage:
   - Tests that when depthReadOnly is true, depthStoreOp must be 'store'.
-    - When depthReadOnly is true and depthStoreOp is 'clear', an error should be generated.
+    - When depthReadOnly is true and depthStoreOp is 'discard', an error should be generated.
 
   - Tests that when stencilReadOnly is true, stencilStoreOp must be 'store'.
-    - When stencilReadOnly is true and stencilStoreOp is 'clear', an error should be generated.
+    - When stencilReadOnly is true and stencilStoreOp is 'discard', an error should be generated.
 
   - Tests that the depthReadOnly value matches the stencilReadOnly value.
     - When depthReadOnly does not match stencilReadOnly, an error should be generated.
@@ -24,10 +24,10 @@ export const g = makeTestGroup(ValidationTest);
 g.test('store_op_and_read_only')
   .paramsSimple([
     { readonly: true, _valid: true },
-    // Using depthReadOnly=true and depthStoreOp='clear' should cause a validation error.
-    { readonly: true, depthStoreOp: 'clear', _valid: false },
-    // Using stencilReadOnly=true and stencilStoreOp='clear' should cause a validation error.
-    { readonly: true, stencilStoreOp: 'clear', _valid: false },
+    // Using depthReadOnly=true and depthStoreOp='discard' should cause a validation error.
+    { readonly: true, depthStoreOp: 'discard', _valid: false },
+    // Using stencilReadOnly=true and stencilStoreOp='discard' should cause a validation error.
+    { readonly: true, stencilStoreOp: 'discard', _valid: false },
     // Mismatched depthReadOnly and stencilReadOnly values should cause a validation error.
     { readonly: false, _valid: true },
     { readonly: false, depthReadOnly: true, _valid: false },

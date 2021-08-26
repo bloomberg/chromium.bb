@@ -9,7 +9,7 @@ import "services/network/public/mojom/address_list.mojom";
 import "services/network/public/mojom/ip_endpoint.mojom";
 import "services/network/public/mojom/network_isolation_key.mojom";
 import "services/network/public/mojom/network_param.mojom";
-import "services/network/public/mojom/url_request.mojom";
+import "services/network/public/mojom/request_priority.mojom";
 
 // An HTTPS server to send DNS queries to, per the DNS Queries over HTTPS spec.
 // spec:  https://tools.ietf.org/html/draft-ietf-doh-dns-over-https-12
@@ -253,6 +253,19 @@ struct ResolveHostParameters {
 
   // Controls the resolver's Secure DNS behavior for this request.
   SecureDnsPolicy secure_dns_policy = SecureDnsPolicy.ALLOW;
+
+  // Enumeration for specifying the purpose of a host resolve request.
+  // These values are used for UMA. Entries should not be reordered. Keep this
+  // in sync with tools/metrics/histograms/enums.xml.
+  // TODO(crbug.com/1232623): Consider adding more values if kPreconnect isn't
+  // a majority of the purpose of host resolve requests.
+  enum Purpose {
+    kUnspecified,
+    kPreconnect,
+  };
+
+  // Specifies the purpose of the request.
+  Purpose purpose = Purpose.kUnspecified;
 };
 
 // Response interface used to receive notifications from

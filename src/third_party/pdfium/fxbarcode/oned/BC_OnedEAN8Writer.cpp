@@ -22,8 +22,9 @@
 
 #include "fxbarcode/oned/BC_OnedEAN8Writer.h"
 
+#include <math.h>
+
 #include <algorithm>
-#include <cwctype>
 #include <memory>
 #include <vector>
 

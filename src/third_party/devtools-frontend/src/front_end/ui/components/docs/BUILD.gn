@@ -9,6 +9,7 @@ group("docs") {
   public_deps = [
     ":bundle",
     "../../../Images",
+    "./button",
     "./color_swatch",
     "./computed_style_property",
     "./computed_style_trace",
@@ -18,6 +19,7 @@ group("docs") {
     "./expandable_list",
     "./icon_button",
     "./icon_component",
+    "./input",
     "./issue_counter",
     "./issue_link_icon",
     "./layout_pane",
@@ -46,6 +48,7 @@ ts_library("bundle") {
     "component_docs.ts",
     "create_breadcrumbs.ts",
     "toggle_dark_mode.ts",
+    "toggle_fonts.ts",
   ]
 
   deps = [ "../../../ui/lit-html:bundle" ]

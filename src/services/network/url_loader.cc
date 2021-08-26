@@ -18,6 +18,7 @@
 #include "base/files/file.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
@@ -27,6 +28,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/isolation_info.h"
@@ -72,8 +74,10 @@
 #include "services/network/public/mojom/cookie_access_observer.mojom-forward.h"
 #include "services/network/public/mojom/cookie_access_observer.mojom.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
+#include "services/network/public/mojom/devtools_observer.mojom.h"
 #include "services/network/public/mojom/early_hints.mojom.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
+#include "services/network/public/mojom/http_raw_headers.mojom.h"
 #include "services/network/public/mojom/origin_policy_manager.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
@@ -84,6 +88,10 @@
 #include "services/network/url_loader_factory.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/origin.h"
+
+#if defined(OS_ANDROID)
+#include "services/network/radio_monitor_android.h"
+#endif
 
 namespace network {
 
@@ -331,57 +339,6 @@ bool ShouldNotifyAboutCookie(net::CookieInclusionStatus status) {
              net::CookieInclusionStatus::EXCLUDE_INVALID_SAMEPARTY);
 }
 
-mojom::HttpRawRequestResponseInfoPtr BuildRawRequestResponseInfo(
-    const net::URLRequest& request,
-    const net::HttpRawRequestHeaders& raw_request_headers,
-    const net::HttpResponseHeaders* raw_response_headers) {
-  auto info = mojom::HttpRawRequestResponseInfo::New();
-
-  const net::HttpResponseInfo& response_info = request.response_info();
-  // Unparsed headers only make sense if they were sent as text, i.e. HTTP 1.x.
-  bool report_headers_text =
-      !response_info.DidUseQuic() && !response_info.was_fetched_via_spdy;
-
-  for (const auto& pair : raw_request_headers.headers()) {
-    info->request_headers.push_back(
-        mojom::HttpRawHeaderPair::New(pair.first, pair.second));
-  }
-  std::string request_line = raw_request_headers.request_line();
-  if (report_headers_text && !request_line.empty()) {
-    std::string text = std::move(request_line);
-    for (const auto& pair : raw_request_headers.headers()) {
-      if (!pair.second.empty()) {
-        base::StringAppendF(&text, "%s: %s\r\n", pair.first.c_str(),
-                            pair.second.c_str());
-      } else {
-        base::StringAppendF(&text, "%s:\r\n", pair.first.c_str());
-      }
-    }
-    info->request_headers_text = std::move(text);
-  }
-
-  if (!raw_response_headers)
-    raw_response_headers = request.response_headers();
-  if (raw_response_headers) {
-    info->http_status_code = raw_response_headers->response_code();
-    info->http_status_text = raw_response_headers->GetStatusText();
-
-    std::string name;
-    std::string value;
-    for (size_t it = 0;
-         raw_response_headers->EnumerateHeaderLines(&it, &name, &value);) {
-      info->response_headers.push_back(
-          mojom::HttpRawHeaderPair::New(name, value));
-    }
-    if (report_headers_text) {
-      info->response_headers_text =
-          net::HttpUtil::ConvertHeadersBackToHTTPResponse(
-              raw_response_headers->raw_headers());
-    }
-  }
-  return info;
-}
-
 // Concerning headers that consumers probably shouldn't be allowed to set.
 // Gathering numbers on these before adding them to kUnsafeHeaders.
 const struct {
@@ -531,7 +488,6 @@ URLLoader::URLLoader(
       peer_closed_handle_watcher_(FROM_HERE,
                                   mojo::SimpleWatcher::ArmingPolicy::MANUAL,
                                   base::SequencedTaskRunnerHandle::Get()),
-      want_raw_headers_(request.report_raw_headers),
       devtools_request_id_(request.devtools_request_id),
       request_mode_(request.mode),
       request_credentials_mode_(request.credentials_mode),
@@ -568,7 +524,7 @@ URLLoader::URLLoader(
     header_client_.set_disconnect_handler(
         base::BindOnce(&URLLoader::OnMojoDisconnect, base::Unretained(this)));
   }
-  if (want_raw_headers_) {
+  if (devtools_request_id()) {
     options_ |= mojom::kURLLoadOptionSendSSLInfoWithResponse |
                 mojom::kURLLoadOptionSendSSLInfoForCertificateError;
   }
@@ -669,7 +625,7 @@ URLLoader::URLLoader(
   url_request_->SetRequestHeadersCallback(base::BindRepeating(
       &URLLoader::SetRawRequestHeadersAndNotify, base::Unretained(this)));
 
-  if (want_raw_headers_) {
+  if (devtools_request_id()) {
     url_request_->SetResponseHeadersCallback(base::BindRepeating(
         &URLLoader::SetRawResponseHeaders, base::Unretained(this)));
   }
@@ -681,6 +637,13 @@ URLLoader::URLLoader(
     keepalive_statistics_recorder_->OnLoadStarted(
         *factory_params_->top_frame_id, keepalive_request_size_);
   }
+
+#if defined(OS_ANDROID)
+  if (base::FeatureList::IsEnabled(features::kRecordRadioWakeupTrigger)) {
+    RadioMonitorAndroid::GetInstance().MaybeRecordURLLoaderAnnotationId(
+        traffic_annotation);
+  }
+#endif
 
   // Resolve elements from request_body and prepare upload data.
   if (request.request_body.get()) {
@@ -1151,12 +1114,6 @@ void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,
   auto response = network::mojom::URLResponseHead::New();
   PopulateResourceResponse(url_request_.get(), is_load_timing_enabled_,
                            options_, response.get());
-  if (report_raw_headers_) {
-    response->raw_request_response_info = BuildRawRequestResponseInfo(
-        *url_request_, raw_request_headers_, raw_response_headers_.get());
-    raw_request_headers_ = net::HttpRawRequestHeaders();
-    raw_response_headers_ = nullptr;
-  }
 
   ReportFlaggedResponseCookies();
 
@@ -1301,12 +1258,6 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
   response_ = network::mojom::URLResponseHead::New();
   PopulateResourceResponse(url_request_.get(), is_load_timing_enabled_,
                            options_, response_.get());
-  if (report_raw_headers_) {
-    response_->raw_request_response_info = BuildRawRequestResponseInfo(
-        *url_request_, raw_request_headers_, raw_response_headers_.get());
-    raw_request_headers_ = net::HttpRawRequestHeaders();
-    raw_response_headers_ = nullptr;
-  }
 
   // Parse and remove the Trust Tokens response headers, if any are expected,
   // potentially failing the request if an error occurs.
@@ -1702,8 +1653,8 @@ int32_t URLLoader::GetProcessId() const {
   return factory_params_->process_id;
 }
 
-void URLLoader::SetAllowReportingRawHeaders(bool allow) {
-  report_raw_headers_ = want_raw_headers_ && allow;
+void URLLoader::SetEnableReportingRawHeaders(bool allow) {
+  enable_reporting_raw_headers_ = allow;
 }
 
 uint32_t URLLoader::GetResourceType() const {
@@ -1930,8 +1881,17 @@ void URLLoader::NotifyEarlyResponse(
   mojom::IPAddressSpace ip_address_space =
       CalculateClientAddressSpace(url_request_->url(), params);
 
+  // Populate origin trial tokens.
+  std::vector<std::string> origin_trial_tokens;
+  size_t iter = 0;
+  std::string value;
+  while (headers->EnumerateHeader(&iter, "Origin-Trial", &value)) {
+    origin_trial_tokens.push_back(value);
+  }
+
   url_loader_client_->OnReceiveEarlyHints(
-      mojom::EarlyHints::New(std::move(parsed_headers), ip_address_space));
+      mojom::EarlyHints::New(std::move(parsed_headers), ip_address_space,
+                             std::move(origin_trial_tokens)));
 }
 
 void URLLoader::SetRawRequestHeadersAndNotify(
@@ -1981,7 +1941,7 @@ void URLLoader::SetRawRequestHeadersAndNotify(
     }
   }
 
-  if (want_raw_headers_)
+  if (devtools_request_id())
     raw_request_headers_.Assign(std::move(headers));
 }
 
@@ -2153,10 +2113,23 @@ void URLLoader::ReportFlaggedResponseCookies() {
       url_request_->response_headers()) {
     std::vector<network::mojom::HttpRawHeaderPairPtr> header_array;
 
+    // This is gated by enable_reporting_raw_headers_ to be backwards compatible
+    // with the old report_raw_headers behavior, where we wouldn't even send
+    // raw_response_headers_ to the trusted browser process based devtools
+    // instrumentation. This is observed in the case of HSTS redirects, where
+    // url_request_->response_headers has the HSTS redirect headers, like
+    // Non-Authoritative-Reason, but raw_response_headers_ has something else
+    // which doesn't include HSTS information. This is tested by
+    // DevToolsTest.TestRawHeadersWithRedirectAndHSTS.
+    // TODO(crbug.com/1234823): Remove enable_reporting_raw_headers_
+    const net::HttpResponseHeaders* response_headers =
+        raw_response_headers_ && enable_reporting_raw_headers_
+            ? raw_response_headers_.get()
+            : url_request_->response_headers();
+
     size_t iterator = 0;
     std::string name, value;
-    while (url_request_->response_headers()->EnumerateHeaderLines(
-        &iterator, &name, &value)) {
+    while (response_headers->EnumerateHeaderLines(&iterator, &name, &value)) {
       network::mojom::HttpRawHeaderPairPtr pair =
           network::mojom::HttpRawHeaderPair::New();
       pair->key = name;
@@ -2173,13 +2146,14 @@ void URLLoader::ReportFlaggedResponseCookies() {
     if (!response_info.DidUseQuic() && !response_info.was_fetched_via_spdy) {
       raw_response_headers =
           absl::make_optional(net::HttpUtil::ConvertHeadersBackToHTTPResponse(
-              url_request_->response_headers()->raw_headers()));
+              response_headers->raw_headers()));
     }
 
     devtools_observer->OnRawResponse(
         devtools_request_id().value(), url_request_->maybe_stored_cookies(),
         std::move(header_array), raw_response_headers,
-        IPEndPointToIPAddressSpace(response_info.remote_endpoint));
+        IPEndPointToIPAddressSpace(response_info.remote_endpoint),
+        response_headers->response_code());
   }
 
   if (auto* cookie_observer = GetCookieAccessObserver()) {

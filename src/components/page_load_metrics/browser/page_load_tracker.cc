@@ -242,8 +242,6 @@ PageLoadTracker::PageLoadTracker(
       aborted_chain_size_same_url_(aborted_chain_size_same_url),
       embedder_interface_(embedder_interface),
       metrics_update_dispatcher_(this, navigation_handle, embedder_interface),
-      source_id_(ukm::ConvertToSourceId(navigation_handle->GetNavigationId(),
-                                        ukm::SourceIdType::NAVIGATION_ID)),
       web_contents_(navigation_handle->GetWebContents()),
       is_first_navigation_in_web_contents_(
           is_first_navigation_in_web_contents) {
@@ -257,6 +255,8 @@ PageLoadTracker::PageLoadTracker(
         internal::kPageLoadPrerender2Event,
         internal::PageLoadPrerenderEvent::kNavigationInPrerenderedMainFrame);
   } else {
+    source_id_ = ukm::ConvertToSourceId(navigation_handle->GetNavigationId(),
+                                        ukm::SourceIdType::NAVIGATION_ID);
     INVOKE_AND_PRUNE_OBSERVERS(observers_, OnStart, navigation_handle,
                                currently_committed_url, started_in_foreground_);
   }
@@ -413,11 +413,11 @@ void PageLoadTracker::PageShown() {
   INVOKE_AND_PRUNE_OBSERVERS(observers_, OnShown);
 }
 
-void PageLoadTracker::FrameDeleted(int frame_tree_node_id) {
-  metrics_update_dispatcher_.OnFrameDeleted(frame_tree_node_id);
-  largest_contentful_paint_handler_.OnFrameDeleted(frame_tree_node_id);
+void PageLoadTracker::SubFrameDeleted(int frame_tree_node_id) {
+  metrics_update_dispatcher_.OnSubFrameDeleted(frame_tree_node_id);
+  largest_contentful_paint_handler_.OnSubFrameDeleted(frame_tree_node_id);
   for (const auto& observer : observers_) {
-    observer->OnFrameDeleted(frame_tree_node_id);
+    observer->OnSubFrameDeleted(frame_tree_node_id);
   }
 }
 
@@ -456,6 +456,9 @@ void PageLoadTracker::Commit(content::NavigationHandle* navigation_handle) {
 
 void PageLoadTracker::DidActivatePrerenderedPage(
     content::NavigationHandle* navigation_handle) {
+  source_id_ = ukm::ConvertToSourceId(navigation_handle->GetNavigationId(),
+                                      ukm::SourceIdType::NAVIGATION_ID);
+
   if (GetWebContents()->GetVisibility() == content::Visibility::VISIBLE) {
     was_prerendered_then_activated_in_foreground_ = true;
     PageShown();
@@ -817,9 +820,9 @@ void PageLoadTracker::OnSubFrameMobileFriendlinessChanged(
   }
 }
 
-void PageLoadTracker::BroadcastEventToObservers(PageLoadMetricsEvent event) {
+void PageLoadTracker::OnPrefetchLikely() {
   for (const auto& observer : observers_) {
-    observer->OnEventOccurred(event);
+    observer->OnPrefetchLikely();
   }
 }
 
@@ -1032,6 +1035,10 @@ void PageLoadTracker::OnRestoreFromBackForwardCache(
     observer->OnRestoreFromBackForwardCache(metrics_update_dispatcher_.timing(),
                                             navigation_handle);
   }
+
+  // Reset the page end reason to END_NONE. The page has been restored, its
+  // previous end reason is no longer relevant.
+  page_end_reason_ = END_NONE;
 }
 
 void PageLoadTracker::OnV8MemoryChanged(

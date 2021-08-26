@@ -28,22 +28,23 @@ import (
 )
 
 const (
-	CAS_CANVASKIT    = "canvaskit"
-	CAS_COMPILE      = "compile"
-	CAS_EMPTY        = "empty" // TODO(borenet): It'd be nice if this wasn't necessary.
-	CAS_LOTTIE_CI    = "lottie-ci"
-	CAS_LOTTIE_WEB   = "lottie-web"
-	CAS_PATHKIT      = "pathkit"
-	CAS_PERF         = "perf"
-	CAS_PUPPETEER    = "puppeteer"
-	CAS_RUN_RECIPE   = "run-recipe"
-	CAS_RECIPES      = "recipes"
-	CAS_SKOTTIE_WASM = "skottie-wasm"
-	CAS_SKPBENCH     = "skpbench"
-	CAS_TASK_DRIVERS = "task-drivers"
-	CAS_TEST         = "test"
-	CAS_WASM_GM      = "wasm-gm"
-	CAS_WHOLE_REPO   = "whole-repo"
+	CAS_CANVASKIT     = "canvaskit"
+	CAS_COMPILE       = "compile"
+	CAS_EMPTY         = "empty" // TODO(borenet): It'd be nice if this wasn't necessary.
+	CAS_LOTTIE_CI     = "lottie-ci"
+	CAS_LOTTIE_WEB    = "lottie-web"
+	CAS_PATHKIT       = "pathkit"
+	CAS_PERF          = "perf"
+	CAS_PUPPETEER     = "puppeteer"
+	CAS_RUN_RECIPE    = "run-recipe"
+	CAS_RECIPES       = "recipes"
+	CAS_RECREATE_SKPS = "recreate-skps"
+	CAS_SKOTTIE_WASM  = "skottie-wasm"
+	CAS_SKPBENCH      = "skpbench"
+	CAS_TASK_DRIVERS  = "task-drivers"
+	CAS_TEST          = "test"
+	CAS_WASM_GM       = "wasm-gm"
+	CAS_WHOLE_REPO    = "whole-repo"
 
 	BUILD_TASK_DRIVERS_PREFIX  = "Housekeeper-PerCommit-BuildTaskDrivers"
 	BUNDLE_RECIPES_NAME        = "Housekeeper-PerCommit-BundleRecipes"
@@ -515,6 +516,18 @@ func GenTasks(cfg *Config) {
 		Excludes: []string{rbe.ExcludeGitDir},
 	})
 	b.MustAddCasSpec(CAS_WHOLE_REPO, CAS_SPEC_WHOLE_REPO)
+	b.MustAddCasSpec(CAS_RECREATE_SKPS, &specs.CasSpec{
+		Root: "..",
+		Paths: []string{
+			"skia/DEPS",
+			"skia/bin/fetch-sk",
+			"skia/infra/bots/assets/skp",
+			"skia/infra/bots/utils.py",
+			"skia/infra/config/recipes.cfg",
+			"skia/tools/skp",
+		},
+		Excludes: []string{rbe.ExcludeGitDir},
+	})
 	generateCompileCAS(b, cfg)
 
 	builder.MustFinish()
@@ -986,7 +999,7 @@ func (b *jobBuilder) buildTaskDrivers(goos, goarch string) string {
 			goos,
 			goarch)
 		b.linuxGceDimensions(MACHINE_TYPE_SMALL)
-		b.addToPATH("cipd_bin_packages", "cipd_bin_packages/bin", "go/go/bin")
+		b.addToPATH("cipd_bin_packages", "cipd_bin_packages/bin")
 		b.idempotent()
 		b.cas(CAS_TASK_DRIVERS)
 	})
@@ -1015,7 +1028,7 @@ func (b *jobBuilder) updateGoDeps() {
 		)
 		b.dep(b.buildTaskDrivers("linux", "amd64"))
 		b.linuxGceDimensions(MACHINE_TYPE_MEDIUM)
-		b.addToPATH("cipd_bin_packages", "cipd_bin_packages/bin", "go/go/bin")
+		b.addToPATH("cipd_bin_packages", "cipd_bin_packages/bin")
 		b.cas(CAS_EMPTY)
 		b.serviceAccount(b.cfg.ServiceAccountRecreateSKPs)
 	})
@@ -1056,6 +1069,7 @@ func (b *jobBuilder) createDockerImage(wasm bool) string {
 			"--alsologtostderr",
 		)
 		b.dep(b.buildTaskDrivers("linux", "amd64"))
+		// TODO(borenet): Does this task need go/go/bin in PATH?
 		b.addToPATH("cipd_bin_packages", "cipd_bin_packages/bin", "go/go/bin")
 		b.cas(CAS_EMPTY)
 		b.serviceAccount(b.cfg.ServiceAccountCompile)
@@ -1089,6 +1103,7 @@ func (b *jobBuilder) createPushAppsFromSkiaDockerImage() {
 		)
 		b.dep(b.buildTaskDrivers("linux", "amd64"))
 		b.dep(b.createDockerImage(false))
+		// TODO(borenet): Does this task need go/go/bin in PATH?
 		b.addToPATH("cipd_bin_packages", "cipd_bin_packages/bin", "go/go/bin")
 		b.cas(CAS_EMPTY)
 		b.serviceAccount(b.cfg.ServiceAccountCompile)
@@ -1121,6 +1136,7 @@ func (b *jobBuilder) createPushAppsFromWASMDockerImage() {
 		)
 		b.dep(b.buildTaskDrivers("linux", "amd64"))
 		b.dep(b.createDockerImage(true))
+		// TODO(borenet): Does this task need go/go/bin in PATH?
 		b.addToPATH("cipd_bin_packages", "cipd_bin_packages/bin", "go/go/bin")
 		b.cas(CAS_EMPTY)
 		b.serviceAccount(b.cfg.ServiceAccountCompile)
@@ -1258,9 +1274,26 @@ func (b *jobBuilder) compile() string {
 
 // recreateSKPs generates a RecreateSKPs task.
 func (b *jobBuilder) recreateSKPs() {
+	cmd := []string{
+		"./recreate_skps",
+		"--local=false",
+		"--project_id", "skia-swarming-bots",
+		"--task_id", specs.PLACEHOLDER_TASK_ID,
+		"--task_name", b.Name,
+		"--skia_revision", specs.PLACEHOLDER_REVISION,
+		"--patch_ref", specs.PLACEHOLDER_PATCH_REF,
+		"--git_cache", "cache/git",
+		"--checkout_root", "cache/work",
+		"--alsologtostderr",
+	}
+	if b.matchExtraConfig("DryRun") {
+		cmd = append(cmd, "--dry_run")
+	}
 	b.addTask(b.Name, func(b *taskBuilder) {
-		b.recipeProps(EXTRA_PROPS)
-		b.kitchenTask("recreate_skps", OUTPUT_NONE)
+		b.cas(CAS_RECREATE_SKPS)
+		b.dep(b.buildTaskDrivers("linux", "amd64"))
+		b.cmd(cmd...)
+		b.cipd(CIPD_PKG_LUCI_AUTH)
 		b.serviceAccount(b.cfg.ServiceAccountRecreateSKPs)
 		b.dimension(
 			"pool:SkiaCT",
@@ -1268,7 +1301,10 @@ func (b *jobBuilder) recreateSKPs() {
 		)
 		b.usesGo()
 		b.cache(CACHES_WORKDIR...)
-		b.timeout(4 * time.Hour)
+		b.timeout(6 * time.Hour)
+		b.usesPython()
+		b.addToPATH("cipd_bin_packages", "cipd_bin_packages/bin")
+		b.attempts(2)
 	})
 }
 
@@ -1751,32 +1787,6 @@ func (b *jobBuilder) puppeteer() {
 		b.linuxGceDimensions(MACHINE_TYPE_SMALL)
 		b.cipd(specs.CIPD_PKGS_GSUTIL...)
 		b.dep(depName)
-	})
-}
-
-func (b *jobBuilder) cifuzz() {
-	b.addTask(b.Name, func(b *taskBuilder) {
-		b.attempts(1)
-		b.usesDocker()
-		b.linuxGceDimensions(MACHINE_TYPE_MEDIUM)
-		b.cipd(CIPD_PKG_LUCI_AUTH)
-		b.cipd(specs.CIPD_PKGS_GIT_LINUX_AMD64...)
-		b.dep(b.buildTaskDrivers("linux", "amd64"))
-		b.output("cifuzz_out")
-		b.timeout(60 * time.Minute)
-		b.cas(CAS_WHOLE_REPO)
-		b.serviceAccount(b.cfg.ServiceAccountCompile)
-		b.cmd(
-			"./cifuzz",
-			"--project_id", "skia-swarming-bots",
-			"--task_id", specs.PLACEHOLDER_TASK_ID,
-			"--task_name", b.Name,
-			"--git_exe_path", "./cipd_bin_packages/git",
-			"--out_path", "./cifuzz_out",
-			"--skia_path", "./skia",
-			"--work_path", "./cifuzz_work",
-			"--alsologtostderr",
-		)
 	})
 }
 

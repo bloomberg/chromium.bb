@@ -26,7 +26,10 @@
 #include "content/public/browser/xr_runtime_manager.h"
 #include "device/vr/public/mojom/vr_service.mojom-forward.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
+
+#if defined(OS_WIN)
+#include "base/win/windows_types.h"
+#endif
 
 namespace content {
 class XRRuntimeManagerTest;
@@ -137,7 +140,7 @@ class CONTENT_EXPORT XRRuntimeManagerImpl
 
   bool xr_compatible_restarted_gpu_ = false;
 #if defined(OS_WIN)
-  LUID default_gpu_ = {0, 0};
+  CHROME_LUID default_gpu_ = {0, 0};
 #endif
 
   std::set<VRServiceImpl*> services_;

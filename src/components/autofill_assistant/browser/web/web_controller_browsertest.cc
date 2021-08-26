@@ -366,17 +366,19 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
   }
 
   ClientStatus GetOuterHtml(const Selector& selector,
+                            bool include_all_inner_text,
                             std::string* html_output) {
-    const ClientStatus& result =
-        FindElementAndGetString(selector,
-                                base::BindOnce(&WebController::GetOuterHtml,
-                                               web_controller_->GetWeakPtr()),
-                                html_output);
+    const ClientStatus& result = FindElementAndGetString(
+        selector,
+        base::BindOnce(&WebController::GetOuterHtml,
+                       web_controller_->GetWeakPtr(), include_all_inner_text),
+        html_output);
     EXPECT_EQ(ACTION_APPLIED, result.proto_status());
     return result;
   }
 
   ClientStatus GetOuterHtmls(const Selector& selector,
+                             bool include_all_inner_text,
                              std::vector<std::string>* htmls_output) {
     base::RunLoop run_loop;
     ClientStatus result;
@@ -386,7 +388,7 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
         base::BindOnce(
             &WebControllerBrowserTest::OnFindAllElementsForGetOuterHtmls,
             base::Unretained(this), run_loop.QuitClosure(), &result,
-            htmls_output));
+            htmls_output, include_all_inner_text));
 
     run_loop.Run();
     return result;
@@ -396,6 +398,7 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
       base::OnceClosure done_callback,
       ClientStatus* client_status_output,
       std::vector<std::string>* htmls_output,
+      bool include_all_inner_text,
       const ClientStatus& client_status,
       std::unique_ptr<ElementFinder::Result> elements) {
     EXPECT_EQ(ACTION_APPLIED, client_status.proto_status());
@@ -403,7 +406,7 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
 
     const ElementFinder::Result* elements_ptr = elements.get();
     web_controller_->GetOuterHtmls(
-        *elements_ptr,
+        include_all_inner_text, *elements_ptr,
         base::BindOnce(&WebControllerBrowserTest::OnGetOuterHtmls,
                        base::Unretained(this), std::move(elements),
                        std::move(done_callback), client_status_output,
@@ -1802,20 +1805,28 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetOuterHtml) {
 
   // Div.
   Selector div_selector({"#testOuterHtml"});
-  ASSERT_EQ(ACTION_APPLIED, GetOuterHtml(div_selector, &html).proto_status());
+  ASSERT_EQ(ACTION_APPLIED,
+            GetOuterHtml(div_selector,
+                         /* include_all_inner_text*/ true, &html)
+                .proto_status());
   EXPECT_EQ(
       R"(<div id="testOuterHtml"><span>Span</span><p>Paragraph</p></div>)",
       html);
 
   // IFrame.
   Selector iframe_selector({"#iframe", "#input"});
-  ASSERT_EQ(ACTION_APPLIED,
-            GetOuterHtml(iframe_selector, &html).proto_status());
+  ASSERT_EQ(
+      ACTION_APPLIED,
+      GetOuterHtml(iframe_selector, /* include_all_inner_text*/ true, &html)
+          .proto_status());
   EXPECT_EQ(R"(<input id="input" type="text">)", html);
 
   // OOPIF.
   Selector oopif_selector({"#iframeExternal", "#divToRemove"});
-  ASSERT_EQ(ACTION_APPLIED, GetOuterHtml(oopif_selector, &html).proto_status());
+  ASSERT_EQ(
+      ACTION_APPLIED,
+      GetOuterHtml(oopif_selector, /* include_all_inner_text*/ true, &html)
+          .proto_status());
   EXPECT_EQ(R"(<div id="divToRemove">Text</div>)", html);
 }
 
@@ -1823,12 +1834,58 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetOuterHtmls) {
   std::vector<std::string> htmls;
 
   Selector div_selector({".label"});
-  ASSERT_EQ(ACTION_APPLIED, GetOuterHtmls(div_selector, &htmls).proto_status());
+  ASSERT_EQ(
+      ACTION_APPLIED,
+      GetOuterHtmls(div_selector, /* include_all_inner_text*/ true, &htmls)
+          .proto_status());
 
   EXPECT_THAT(htmls,
               testing::ElementsAre(R"(<div class="label">Label 1</div>)",
                                    R"(<div class="label">Label 2</div>)",
                                    R"(<div class="label">Label 3</div>)"));
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
+                       GetOuterHtmlWithRedactedInnerText) {
+  std::string html;
+
+  // Div.
+  Selector div_selector({"#testOuterHtml"});
+  ASSERT_EQ(ACTION_APPLIED,
+            GetOuterHtml(div_selector, /* include_all_inner_text*/ false, &html)
+                .proto_status());
+  EXPECT_EQ(R"(<div id="testOuterHtml"><span></span><p></p></div>)", html);
+
+  // IFrame.
+  Selector iframe_selector({"#iframe", "#input"});
+  ASSERT_EQ(
+      ACTION_APPLIED,
+      GetOuterHtml(iframe_selector, /* include_all_inner_text*/ false, &html)
+          .proto_status());
+  EXPECT_EQ(R"(<input id="input" type="text">)", html);
+
+  // OOPIF.
+  Selector oopif_selector({"#iframeExternal", "#divToRemove"});
+  ASSERT_EQ(
+      ACTION_APPLIED,
+      GetOuterHtml(oopif_selector, /* include_all_inner_text*/ false, &html)
+          .proto_status());
+  EXPECT_EQ(R"(<div id="divToRemove"></div>)", html);
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
+                       GetOuterHtmlsWithRedactedInnerText) {
+  std::vector<std::string> htmls;
+
+  Selector div_selector({".label"});
+  ASSERT_EQ(
+      ACTION_APPLIED,
+      GetOuterHtmls(div_selector, /* include_all_inner_text*/ false, &htmls)
+          .proto_status());
+
+  EXPECT_THAT(htmls, testing::ElementsAre(R"(<div class="label"></div>)",
+                                          R"(<div class="label"></div>)",
+                                          R"(<div class="label"></div>)"));
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetElementTag) {
@@ -2509,10 +2566,10 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SendDuplexwebEvent) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, WaitForElementToBecomeStable) {
-  ClientStatus status;
+  ClientStatus element_status;
   ElementFinder::Result element;
-  FindElement(Selector({"#touch_area_one"}), &status, &element);
-  ASSERT_TRUE(status.ok());
+  FindElement(Selector({"#touch_area_one"}), &element_status, &element);
+  ASSERT_TRUE(element_status.ok());
 
   // Move the element indefinitely.
   EXPECT_TRUE(ExecJs(shell(), R"(
@@ -2524,27 +2581,52 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, WaitForElementToBecomeStable) {
             `${10 * i++}px`;
         }, 100);
       })())"));
-  status = WaitUntilElementIsStable(element, 10,
-                                    base::TimeDelta::FromMilliseconds(100));
-  EXPECT_EQ(ELEMENT_UNSTABLE, status.proto_status());
+  EXPECT_EQ(ELEMENT_UNSTABLE,
+            WaitUntilElementIsStable(element, 10,
+                                     base::TimeDelta::FromMilliseconds(100))
+                .proto_status());
 
   // Stop moving the element.
   EXPECT_TRUE(ExecJs(shell(), "clearInterval(document.browserTestInterval);"));
-  status = WaitUntilElementIsStable(element, 10,
-                                    base::TimeDelta::FromMilliseconds(100));
-  EXPECT_TRUE(status.ok());
+  EXPECT_TRUE(WaitUntilElementIsStable(element, 10,
+                                       base::TimeDelta::FromMilliseconds(100))
+                  .ok());
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
+                       WaitForElementToBecomeStableForEmptyBoxModel) {
+  ClientStatus element_status;
+
+  // The element has an empty box model.
+  ElementFinder::Result empty_element;
+  FindElement(Selector({"#emptydiv"}), &element_status, &empty_element);
+  ASSERT_TRUE(element_status.ok());
+  EXPECT_EQ(ELEMENT_POSITION_NOT_FOUND,
+            WaitUntilElementIsStable(empty_element, 10,
+                                     base::TimeDelta::FromMilliseconds(10))
+                .proto_status());
+
+  // The element is always hidden and has no box model.
+  ElementFinder::Result hidden_element;
+  FindElement(Selector({"#hidden"}), &element_status, &hidden_element);
+  ASSERT_TRUE(element_status.ok());
+  EXPECT_EQ(ELEMENT_POSITION_NOT_FOUND,
+            WaitUntilElementIsStable(hidden_element, 10,
+                                     base::TimeDelta::FromMilliseconds(10))
+                .proto_status());
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
                        WaitForElementToBecomeStableDevtoolsFailure) {
-  // This makes devtools action fail.
+  // This makes the devtools action fail.
   ElementFinder::Result element;
   element.dom_object.object_data.node_frame_id = "doesnotexist";
   element.container_frame_host = web_contents()->GetMainFrame();
 
-  ClientStatus status = WaitUntilElementIsStable(
-      element, 10, base::TimeDelta::FromMilliseconds(100));
-  EXPECT_EQ(UNEXPECTED_JS_ERROR, status.proto_status());
+  EXPECT_EQ(ELEMENT_POSITION_NOT_FOUND,
+            WaitUntilElementIsStable(element, 10,
+                                     base::TimeDelta::FromMilliseconds(100))
+                .proto_status());
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ElementQueryIndex) {
@@ -2860,6 +2942,39 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, KeyMappings) {
             "< 60 60");
   EXPECT_EQ(content::EvalJs(shell(), "lastKeyupEvent").ExtractString(),
             "< 188 188");
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, FocusAndBlur) {
+  ClientStatus element_status;
+  ElementFinder::Result element;
+  FindElement(Selector({"#input1"}), &element_status, &element);
+  EXPECT_EQ(ACTION_APPLIED, element_status.proto_status());
+
+  ClientStatus focus_status;
+  base::RunLoop focus_run_loop;
+  web_controller_->FocusField(
+      element, base::BindOnce(&WebControllerBrowserTest::OnClientStatus,
+                              base::Unretained(this),
+                              focus_run_loop.QuitClosure(), &focus_status));
+  focus_run_loop.Run();
+  EXPECT_EQ(ACTION_APPLIED, focus_status.proto_status());
+  EXPECT_TRUE(
+      content::EvalJs(
+          shell(),
+          R"(document.activeElement === document.getElementById('input1'))")
+          .ExtractBool());
+
+  ClientStatus blur_status;
+  base::RunLoop blur_run_loop;
+  web_controller_->BlurField(
+      element, base::BindOnce(&WebControllerBrowserTest::OnClientStatus,
+                              base::Unretained(this),
+                              blur_run_loop.QuitClosure(), &blur_status));
+  blur_run_loop.Run();
+  EXPECT_EQ(ACTION_APPLIED, blur_status.proto_status());
+  EXPECT_TRUE(
+      content::EvalJs(shell(), R"(document.activeElement === document.body)")
+          .ExtractBool());
 }
 
 }  // namespace autofill_assistant

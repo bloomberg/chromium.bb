@@ -65,7 +65,7 @@ std::unique_ptr<CPWL_Wnd> CFFL_ComboBox::NewPWLWindow(
 
 bool CFFL_ComboBox::OnChar(CPDFSDK_Annot* pAnnot,
                            uint32_t nChar,
-                           uint32_t nFlags) {
+                           Mask<FWL_EVENTFLAG> nFlags) {
   return CFFL_TextObject::OnChar(pAnnot, nChar, nFlags);
 }
 
@@ -238,7 +238,7 @@ bool CFFL_ComboBox::IsFieldFull(const CPDFSDK_PageView* pPageView) {
 #endif  // PDF_ENABLE_XFA
 
 void CFFL_ComboBox::OnSetFocus(CPWL_Edit* pEdit) {
-  pEdit->SetCharSet(FX_CHARSET_ChineseSimplified);
+  pEdit->SetCharSet(FX_Charset::kChineseSimplified);
   pEdit->SetReadyToInput();
 
   WideString wsText = pEdit->GetText();

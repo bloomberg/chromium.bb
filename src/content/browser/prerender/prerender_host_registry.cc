@@ -8,11 +8,13 @@
 #include "base/check.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/system/sys_info.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/common/trace_event_common.h"
 #include "base/trace_event/trace_conversion_helper.h"
+#include "build/build_config.h"
 #include "content/browser/prerender/prerender_metrics.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/navigation_request.h"
@@ -21,6 +23,34 @@
 #include "third_party/blink/public/common/features.h"
 
 namespace content {
+
+namespace {
+
+bool DeviceHasEnoughMemoryForPrerender() {
+  // This method disallows prerendering on low-end devices if the
+  // kPrerender2MemoryControls feature is enabled.
+  if (!base::FeatureList::IsEnabled(blink::features::kPrerender2MemoryControls))
+    return true;
+
+  // Use the same default threshold as the back/forward cache. See comments in
+  // DeviceHasEnoughMemoryForBackForwardCache().
+  static constexpr int kDefaultMemoryThresholdMb =
+#if defined(OS_ANDROID)
+      1700;
+#else
+      0;
+#endif
+
+  // The default is overridable by field trial param.
+  int memory_threshold_mb = base::GetFieldTrialParamByFeatureAsInt(
+      blink::features::kPrerender2MemoryControls,
+      blink::features::kPrerender2MemoryThresholdParamName,
+      kDefaultMemoryThresholdMb);
+
+  return base::SysInfo::AmountOfPhysicalMemoryMB() > memory_threshold_mb;
+}
+
+}  // namespace
 
 PrerenderHostRegistry::PrerenderHostRegistry() {
   DCHECK(blink::features::IsPrerender2Enabled());
@@ -61,8 +91,8 @@ int PrerenderHostRegistry::CreateAndStartHost(
 
   // Don't prerender on low-end devices.
   // TODO(https://crbug.com/1176120): Fallback to NoStatePrefetch
-  // if the memory requirements are different.
-  if (base::SysInfo::IsLowEndDevice()) {
+  // since the memory requirements are different.
+  if (!DeviceHasEnoughMemoryForPrerender()) {
     base::UmaHistogramEnumeration(
         "Prerender.Experimental.PrerenderHostFinalStatus",
         PrerenderHost::FinalStatus::kLowEndDevice);
@@ -134,6 +164,18 @@ void PrerenderHostRegistry::CancelHost(
   ScheduleToDeleteAbandonedHost(std::move(prerender_host), final_status);
 }
 
+void PrerenderHostRegistry::CancelAllHosts(
+    PrerenderHost::FinalStatus final_status) {
+  // Should not have an activating host. See comments in CancelHost.
+  CHECK(reserved_prerender_host_by_frame_tree_node_id_.empty());
+
+  auto prerender_host_map = std::move(prerender_host_by_frame_tree_node_id_);
+  for (auto& iter : prerender_host_map) {
+    std::unique_ptr<PrerenderHost> prerender_host = std::move(iter.second);
+    ScheduleToDeleteAbandonedHost(std::move(prerender_host), final_status);
+  }
+}
+
 int PrerenderHostRegistry::FindPotentialHostToActivate(
     NavigationRequest& navigation_request) {
   TRACE_EVENT2(
@@ -176,9 +218,8 @@ int PrerenderHostRegistry::ReserveHostToActivate(
   DCHECK_EQ(host_id, host->frame_tree_node_id());
 
   // Reserve the host for activation.
-  auto result = reserved_prerender_host_by_frame_tree_node_id_.try_emplace(
-      host_id, std::move(host),
-      navigation_request.frame_tree_node()->frame_tree_node_id());
+  auto result = reserved_prerender_host_by_frame_tree_node_id_.emplace(
+      host_id, std::move(host));
   DCHECK(result.second);
 
   return host_id;
@@ -191,18 +232,16 @@ RenderFrameHostImpl* PrerenderHostRegistry::GetRenderFrameHostForReservedHost(
   if (iter == reserved_prerender_host_by_frame_tree_node_id_.end()) {
     return nullptr;
   }
-  return iter->second.prerender_host->GetPrerenderedMainFrameHost();
+  return iter->second->GetPrerenderedMainFrameHost();
 }
 
-std::unique_ptr<BackForwardCacheImpl::Entry>
-PrerenderHostRegistry::ActivateReservedHost(
+std::unique_ptr<StoredPage> PrerenderHostRegistry::ActivateReservedHost(
     int frame_tree_node_id,
     NavigationRequest& navigation_request) {
   auto iter =
       reserved_prerender_host_by_frame_tree_node_id_.find(frame_tree_node_id);
   CHECK(iter != reserved_prerender_host_by_frame_tree_node_id_.end());
-  std::unique_ptr<PrerenderHost> prerender_host =
-      std::move(iter->second.prerender_host);
+  std::unique_ptr<PrerenderHost> prerender_host = std::move(iter->second);
   reserved_prerender_host_by_frame_tree_node_id_.erase(iter);
   return prerender_host->Activate(navigation_request);
 }
@@ -256,7 +295,7 @@ PrerenderHost* PrerenderHostRegistry::FindReservedHostById(
       reserved_prerender_host_by_frame_tree_node_id_.find(frame_tree_node_id);
   if (iter == reserved_prerender_host_by_frame_tree_node_id_.end())
     return nullptr;
-  return iter->second.prerender_host.get();
+  return iter->second.get();
 }
 
 std::vector<RenderFrameHostImpl*>
@@ -266,7 +305,7 @@ PrerenderHostRegistry::GetPrerenderedMainFrames() {
     result.push_back(i.second->GetPrerenderedMainFrameHost());
   }
   for (auto& i : reserved_prerender_host_by_frame_tree_node_id_) {
-    result.push_back(i.second.prerender_host->GetPrerenderedMainFrameHost());
+    result.push_back(i.second->GetPrerenderedMainFrameHost());
   }
   return result;
 }
@@ -347,6 +386,10 @@ int PrerenderHostRegistry::FindHostToActivateInternal(
     return RenderFrameHost::kNoFrameTreeNodeId;
   }
 
+  if (!host->IsFramePolicyCompatibleWithPrimaryFrameTree()) {
+    return RenderFrameHost::kNoFrameTreeNodeId;
+  }
+
   return host->frame_tree_node_id();
 }
 
@@ -370,17 +413,5 @@ void PrerenderHostRegistry::NotifyTrigger(const GURL& url) {
   for (Observer& obs : observers_)
     obs.OnTrigger(url);
 }
-
-PrerenderHostRegistry::ReservationInfo::ReservationInfo(
-    std::unique_ptr<PrerenderHost> prerender_host,
-    int activator_frame_tree_node_id)
-    : prerender_host(std::move(prerender_host)),
-      activator_frame_tree_node_id(activator_frame_tree_node_id) {}
-
-PrerenderHostRegistry::ReservationInfo::ReservationInfo(ReservationInfo&& info)
-    : ReservationInfo(std::move(info.prerender_host),
-                      info.activator_frame_tree_node_id) {}
-
-PrerenderHostRegistry::ReservationInfo::~ReservationInfo() = default;
 
 }  // namespace content

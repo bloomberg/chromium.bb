@@ -47,6 +47,8 @@ ReadLaterUI::ReadLaterUI(content::WebUI* web_ui)
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"addCurrentTab", IDS_READ_LATER_ADD_CURRENT_TAB},
       {"bookmarksTabTitle", IDS_BOOKMARK_MANAGER_TITLE},
+      {"emptyStateAddFromDialogSubheader",
+       IDS_READ_LATER_MENU_EMPTY_STATE_ADD_FROM_DIALOG_SUBHEADER},
       {"emptyStateHeader", IDS_READ_LATER_MENU_EMPTY_STATE_HEADER},
       {"emptyStateSubheader", IDS_READ_LATER_MENU_EMPTY_STATE_SUBHEADER},
       {"readHeader", IDS_READ_LATER_MENU_READ_HEADER},
@@ -64,7 +66,7 @@ ReadLaterUI::ReadLaterUI(content::WebUI* web_ui)
       base::FeatureList::IsEnabled(features::kSidePanel);
 
   source->AddBoolean(
-      "addButtonEnabled",
+      "currentPageActionButtonEnabled",
       base::FeatureList::IsEnabled(features::kReadLaterAddFromDialog) ||
           show_side_panel);
   source->AddBoolean("useRipples", views::PlatformStyle::kUseRipples);
@@ -110,4 +112,9 @@ void ReadLaterUI::CreateBookmarksPageHandler(
     mojo::PendingReceiver<side_panel::mojom::BookmarksPageHandler> receiver) {
   bookmarks_page_handler_ =
       std::make_unique<BookmarksPageHandler>(std::move(receiver), this);
+}
+
+void ReadLaterUI::SetActiveTabURL(const GURL& url) {
+  if (page_handler_)
+    page_handler_->SetActiveTabURL(url);
 }

@@ -85,6 +85,12 @@ macro(AddVkLayer target LAYER_COMPILE_DEFINITIONS)
     target_compile_definitions(VkLayer_${target} PUBLIC ${LAYER_COMPILE_DEFINITIONS})
     target_link_libraries(VkLayer_${target} PRIVATE VkLayer_utils)
 
+    if (VVL_ENABLE_ASAN)
+        target_compile_options(VkLayer_${target} PRIVATE -fsanitize=address)
+        # NOTE: Use target_link_options when cmake 3.13 is available on CI
+        target_link_libraries(VkLayer_${target} PRIVATE "-fsanitize=address")
+    endif()
+
     if(WIN32)
         target_sources(VkLayer_${target} PRIVATE VkLayer_${target}.def)
         target_compile_definitions(VkLayer_${target} PUBLIC NOMINMAX)
@@ -285,7 +291,7 @@ if(BUILD_LAYERS)
     endif()
 
     # Khronos validation additional dependencies
-    target_include_directories(VkLayer_khronos_validation PRIVATE ${GLSLANG_SPIRV_INCLUDE_DIR})
+    target_include_directories(VkLayer_khronos_validation PRIVATE ${GLSLANG_INCLUDE_DIR})
     target_include_directories(VkLayer_khronos_validation PRIVATE ${SPIRV_TOOLS_INCLUDE_DIR})
     target_include_directories(VkLayer_khronos_validation PRIVATE ${SPIRV_HEADERS_INCLUDE_DIR})
     if(INSTRUMENT_OPTICK)

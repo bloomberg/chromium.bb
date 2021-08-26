@@ -14,14 +14,13 @@
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
-#include "components/page_load_metrics/browser/page_load_metrics_event.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "components/page_load_metrics/common/page_load_metrics.mojom.h"
 #include "components/page_load_metrics/common/page_load_timing.h"
+#include "content/public/browser/render_frame_host_receiver_set.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/browser/web_contents_receiver_set.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "net/cookies/canonical_cookie.h"
 #include "services/network/public/mojom/fetch_api.mojom-forward.h"
@@ -104,6 +103,11 @@ class MetricsWebContentsObserver
       std::unique_ptr<PageLoadMetricsEmbedderInterface> embedder_interface);
   ~MetricsWebContentsObserver() override;
 
+  // Binds a Mojo receiver to the instance associated with the RenderFrameHost.
+  static void BindPageLoadMetrics(
+      mojo::PendingAssociatedReceiver<mojom::PageLoadMetrics> receiver,
+      content::RenderFrameHost* rfh);
+
   // Any visibility changes that occur after this method should be ignored since
   // they are just clean up prior to destroying the WebContents instance.
   void WebContentsWillSoonBeDestroyed();
@@ -180,10 +184,10 @@ class MetricsWebContentsObserver
       mojom::InputTimingPtr input_timing_delta,
       const blink::MobileFriendliness& mobile_friendliness);
 
-  // Informs the observers of the currently committed load that |event| has
-  // occurred. This should not be called within
-  // WebContentsObserver::DidFinishNavigation methods.
-  void BroadcastEventToObservers(PageLoadMetricsEvent event);
+  // Informs the observers of the currently committed primary page load that
+  // it's likely that prefetch will occur in this WebContents. This should
+  // not be called within WebContentsObserver::DidFinishNavigation methods.
+  void OnPrefetchLikely();
 
   // Called when V8 per-frame memory usage updates are available. Virtual for
   // test classes to override.
@@ -349,8 +353,8 @@ class MetricsWebContentsObserver
   bool has_navigated_;
 
   base::ObserverList<TestingObserver>::Unchecked testing_observers_;
-  content::WebContentsFrameReceiverSet<mojom::PageLoadMetrics>
-      page_load_metrics_receiver_;
+  content::RenderFrameHostReceiverSet<mojom::PageLoadMetrics>
+      page_load_metrics_receivers_;
 
   bool web_contents_will_soon_be_destroyed_ = false;
 

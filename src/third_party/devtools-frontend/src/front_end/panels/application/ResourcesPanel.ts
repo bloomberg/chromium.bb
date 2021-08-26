@@ -4,18 +4,18 @@
 
 /* eslint-disable rulesdir/no_underscored_properties */
 
-import * as Common from '../../core/common/common.js';  // eslint-disable-line no-unused-vars
+import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
 
 import type {CookieTreeElement} from './ApplicationPanelSidebar.js';
-import {ApplicationPanelSidebar, StorageCategoryView} from './ApplicationPanelSidebar.js';  // eslint-disable-line no-unused-vars
+import {ApplicationPanelSidebar, StorageCategoryView} from './ApplicationPanelSidebar.js';
 import {CookieItemsView} from './CookieItemsView.js';
 import {DatabaseQueryView} from './DatabaseQueryView.js';
 import {DatabaseTableView} from './DatabaseTableView.js';
 import {DOMStorageItemsView} from './DOMStorageItemsView.js';
-import type {DOMStorage} from './DOMStorageModel.js'; // eslint-disable-line no-unused-vars
+import type {DOMStorage} from './DOMStorageModel.js';
 import {StorageItemsView} from './StorageItemsView.js';
 
 let resourcesPanelInstance: ResourcesPanel;

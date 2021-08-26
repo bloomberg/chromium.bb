@@ -216,8 +216,6 @@ component("gpu") {
       "windows/supported_profile_helpers.h",
     ]
     configs += [
-      # TODO(https://crbug.com/167187): Fix size_t to int truncations.
-      "//build/config/compiler:no_size_t_to_int_warning",
       "//third_party/khronos:khronos_headers",
     ]
     public_deps += [ "//media/base/win:media_foundation_util" ]
@@ -276,7 +274,7 @@ source_set("common") {
     "vp9_reference_frame_vector.h",
   ]
 
-  if (proprietary_codecs && enable_platform_hevc) {
+  if (enable_platform_hevc_decoding) {
     sources += [
       "h265_decoder.cc",
       "h265_decoder.h",
@@ -400,7 +398,6 @@ if (is_android) {
       "//testing/gtest",
       "//ui/android:ui_java",
       "//ui/base",
-      "//ui/display/manager",
       "//ui/gfx",
       "//ui/gfx:test_support",
       "//ui/gfx/geometry",
@@ -488,7 +485,7 @@ source_set("unit_tests") {
     "//ui/gl:test_support",
   ]
   sources = [ "h264_decoder_unittest.cc" ]
-  if (proprietary_codecs && enable_platform_hevc) {
+  if (enable_platform_hevc_decoding) {
     sources += [ "h265_decoder_unittest.cc" ]
   }
   if (is_chromeos_ash && (use_v4l2_codec || use_vaapi)) {
@@ -605,7 +602,7 @@ if (use_v4l2_codec || use_vaapi) {
   }
 }
 
-if (proprietary_codecs && enable_platform_hevc) {
+if (enable_platform_hevc_decoding) {
   fuzzer_test("media_h265_decoder_fuzzer") {
     sources = [ "h265_decoder_fuzzertest.cc" ]
     deps = [

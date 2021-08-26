@@ -61,6 +61,12 @@ interface ProbeService {
   //                      will be non-null.
   ProbeTelemetryInfo(array<ProbeCategoryEnum> categories)
       => (TelemetryInfo telemetry_info);
+
+  // Returns OEM data.
+  //
+  // The response:
+  // * |oem_data| - OEM data.
+  GetOemData() => (OemData oem_data);
 };
 
 // An enumeration of each category of information that cros_healthd can report.
@@ -226,6 +232,8 @@ union NonRemovableBlockDeviceResult {
 
 // Cached VPD read from sysfs.
 struct CachedVpdInfo {
+  // Contents of /sys/firmware/vpd/rw/ActivateDate, if the device supports it.
+  string? first_power_date;
   // Contents of /sys/firmware/vpd/ro/sku_number, if the device supports it.
   string? sku_number;
   // Contents of /sys/firmware/vpd/ro/serial_number, if the device supports it.
@@ -454,4 +462,9 @@ struct TelemetryInfo {
   // Information about the device's Bluetooth adapters and devices. Only present
   // when kBluetooth was included in the categories input to ProbeTelemetryInfo.
   BluetoothResult? bluetooth_result;
+};
+
+// Result of running /usr/share/cros/oemdata.sh script.
+struct OemData {
+  string? oem_data;
 };

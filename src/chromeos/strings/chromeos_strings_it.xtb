@@ -14,6 +14,7 @@
 <translation id="1204296502688602597">Latenza DNS</translation>
 <translation id="123124571410524056">Portale sospetto</translation>
 <translation id="1238612778414822719">Latenza HTTPS</translation>
+<translation id="1264369926465113395">Dai un'occhiata alla nuova rivista digitale di Chromebook per gli artisti</translation>
 <translation id="1270369111467284986">Il sistema sospetta la presenza di un captive portal</translation>
 <translation id="1290331692326790741">Segnale debole</translation>
 <translation id="1314565355471455267">VPN Android</translation>
@@ -34,7 +35,9 @@
 <translation id="1510238584712386396">Avvio app</translation>
 <translation id="1600964289716072707">Posiziona sullo scanner un'altra pagina e seleziona Scansiona per aggiungerla.</translation>
 <translation id="1621067168122174824">Esegui test ricarica</translation>
+<translation id="1639239467298939599">Caricamento</translation>
 <translation id="1641857168437328880">Alimentatore di documenti (solo fronte)</translation>
+<translation id="1643449475550628585">Cambia l'immagine di sfondo ogni giorno</translation>
 <translation id="1644574205037202324">Cronologia</translation>
 <translation id="1662989795263954667">Operazione interrotta - Inchiostro esaurito</translation>
 <translation id="1703835215927279855">Letter</translation>
@@ -65,7 +68,6 @@
 <translation id="2224337661447660594">Nessuna connessione a Internet</translation>
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="225692081236532131">Stato attivazione</translation>
-<translation id="2294675138977897428">Nessuna connessione Ethernet rilevata</translation>
 <translation id="2326139988748364651"><ph name="RESOLUTION_VALUE" /> DPI</translation>
 <translation id="2338501278241028356">Attiva il Bluetooth per trovare dispositivi nelle vicinanze</translation>
 <translation id="2364498172489649528">Superato</translation>
@@ -75,9 +77,11 @@
 <translation id="2448312741937722512">Tipo</translation>
 <translation id="2461822463642141190">Attuale</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
+<translation id="2505327257735685095">Aggiorna l'immagine di sfondo corrente</translation>
 <translation id="2517472476991765520">Scansiona</translation>
 <translation id="2570743873672969996">Esecuzione del test <ph name="TEST_NAME" /> in corso…</translation>
 <translation id="2585245331261708204">Novità di Chrome OS</translation>
+<translation id="2619761439309613843">Aggiornam. quotidiano</translation>
 <translation id="2620436844016719705">Sistema</translation>
 <translation id="2740531572673183784">OK</translation>
 <translation id="2751739896257479635">Autenticazione fase 2 di tipo EAP</translation>
@@ -87,7 +91,6 @@
 <translation id="2862104018715411648">Posiziona il documento sullo scanner e seleziona Scansiona per iniziare</translation>
 <translation id="2872961005593481000">Spegni</translation>
 <translation id="2878387241690264070">Riduzione della carica: <ph name="RATE" /> in <ph name="NUM_SECONDS" /> secondi.</translation>
-<translation id="2983662233540284543">Impara da un creatore di giochi, ricevi app per la progettazione di giochi e tanto altro ancora</translation>
 <translation id="3008341117444806826">AGGIORNA</translation>
 <translation id="3009958530611748826">Seleziona una cartella in cui salvare i file</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" /> mA</translation>
@@ -101,6 +104,7 @@
 <translation id="3188257591659621405">I miei file</translation>
 <translation id="3199982728237701504">Alimentatore di documenti (fronte e retro)</translation>
 <translation id="3226405216343213872">Ricerca di scanner in corso…</translation>
+<translation id="3228433892370472777">Connessione predefinita</translation>
 <translation id="3246869037381808805">I processi di stampa risalenti a oltre 1 giorno fa verranno rimossi</translation>
 <translation id="3268178239013324452">Operazione non riuscita - Sportello aperto</translation>
 <translation id="3283504360622356314">{0,plural, =1{Modifica file}other{Modifica file}}</translation>
@@ -117,10 +121,13 @@
 <translation id="3488065109653206955">Attivato parzialmente</translation>
 <translation id="3527036260304016759">Operazione non riuscita - Errore sconosciuto</translation>
 <translation id="3532980081107202182">Mancano circa <ph name="MIN_REMAINING" /> minuti</translation>
+<translation id="3540383942695635079">Indirizzo MAC</translation>
 <translation id="357889014807611375">Wi-Fi a consumo</translation>
+<translation id="3582041541988388905">Nessuna connessione <ph name="NETWORK_NAME" /> rilevata</translation>
 <translation id="3595596368722241419">Batteria carica</translation>
 <translation id="360565022852130722">la rete Wi-Fi è protetta con un protocollo WEP 802.1x inefficace</translation>
 <translation id="3689839747745352263">Test <ph name="TEST_NAME" /></translation>
+<translation id="3708186454126126312">Connessi in precedenza</translation>
 <translation id="373232531963562220">{PAGE_NUMBER,plural, =0{Scansiona di nuovo la pagina}=1{Scansiona di nuovo pagina {PAGE_NUMBER}}other{Scansiona di nuovo pagina {PAGE_NUMBER}}}</translation>
 <translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★ (<ph name="AGGREGATED_COUNT" /> recensioni)</translation>
 <translation id="3748026146096797577">Non connesso</translation>
@@ -163,6 +170,7 @@
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4483049906298469269">impossibile eseguire il ping del gateway di rete non predefinito</translation>
 <translation id="4511264077854731334">Portale</translation>
+<translation id="4536864596629708641">Configurazione IP</translation>
 <translation id="4548483925627140043">segnale non trovato</translation>
 <translation id="455835558791489930">Batteria da <ph name="CHARGE_VALUE" /> mAh</translation>
 <translation id="4562494484721939086">Nessun servizio</translation>
@@ -171,6 +179,7 @@
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> di <ph name="TOTAL_PAGE_NUMBER" />. Premi Invio per annullare il processo di stampa.</translation>
 <translation id="4646949265910132906">Connessione Wi-Fi protetta</translation>
 <translation id="4652335678334611408">Salva log sessione</translation>
+<translation id="4654549501020883054">Cambia ogni giorno</translation>
 <translation id="4665014895760275686">Produttore</translation>
 <translation id="467510802200863975">Le password non corrispondono</translation>
 <translation id="467715984478005772">Il sistema sospetta la presenza di un firewall</translation>
@@ -194,6 +203,7 @@
 <translation id="4891842000192098784">Stress</translation>
 <translation id="4917385247580444890">Forte</translation>
 <translation id="4917889632206600977">Operazione interrotta - Carta esaurita</translation>
+<translation id="491836528011451486">Posiziona il documento sullo scanner e seleziona Ripeti scansione per scansionarlo e sostituire la pagina <ph name="CURRENT_PAGE" />.</translation>
 <translation id="4921665434385737356">Ricarica del <ph name="RATE" /> in <ph name="NUM_SECONDS" /> secondi.</translation>
 <translation id="4932733599132424254">Data</translation>
 <translation id="498186245079027698">Controlla lo scanner e riprova. Assicurati di avere spazio locale sufficiente per salvare i file sottoposti a scansione.</translation>
@@ -209,10 +219,10 @@
 <translation id="5154917547274118687">Memoria</translation>
 <translation id="5168185087976003268">Condizioni batteria</translation>
 <translation id="5170568018924773124">Mostra nella cartella</translation>
-<translation id="519607504553633437">Progetta e realizza i tuoi giochi</translation>
 <translation id="5212543919916444558">Non riesco a trovare nulla sullo schermo per cui poterti essere utile.
 Prova a toccare il microfono per chiedermi qualcosa.</translation>
 <translation id="5222676887888702881">Esci</translation>
+<translation id="5234764350956374838">Ignora</translation>
 <translation id="5252456968953390977">Roaming</translation>
 <translation id="5264277876637023664">Esegui test CPU</translation>
 <translation id="5267975978099728568"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="ERROR_STATUS" /></translation>
@@ -243,7 +253,6 @@ Prova a toccare il microfono per chiedermi qualcosa.</translation>
 <translation id="5691511426247308406">Famiglia</translation>
 <translation id="5701381305118179107">Centra</translation>
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" /> di <ph name="TOTAL_PAGES" /></translation>
-<translation id="5752751666635965375">Crea il tuo gioco</translation>
 <translation id="5760715441271661976">Stato portale</translation>
 <translation id="5832805196449965646">Aggiungi persona</translation>
 <translation id="583281660410589416">Sconosciuto</translation>
@@ -266,6 +275,7 @@ Prova a toccare il microfono per chiedermi qualcosa.</translation>
 <translation id="6106186594183574873">Per terminare, inserisci la vecchia password</translation>
 <translation id="6108689792487843350">gateway non raggiungibile</translation>
 <translation id="6122191549521593678">Online</translation>
+<translation id="6125438912510167220">Velocità di collegamento</translation>
 <translation id="6137767437444130246">Certificato utente</translation>
 <translation id="6146993107019042706">Per terminare, inserisci la nuova password</translation>
 <translation id="6147514244879357420">PNG</translation>
@@ -292,6 +302,8 @@ Prova a toccare il microfono per chiedermi qualcosa.</translation>
 <translation id="65587193855025101">Flatbed</translation>
 <translation id="6564646048574748301">Operazione non riuscita - Stampante non raggiungibile</translation>
 <translation id="6574762126505704998">Riempi</translation>
+<translation id="6575134580692778371">Non configurata</translation>
+<translation id="6596816719288285829">Indirizzo IP</translation>
 <translation id="6603230386432466813">Hai problemi di connessione?</translation>
 <translation id="6618744767048954150">In corso</translation>
 <translation id="6620487321149975369">I processi di stampa verranno mostrati nella cronologia a meno che non vengano rimossi manualmente</translation>
@@ -314,13 +326,16 @@ Prova a toccare il microfono per chiedermi qualcosa.</translation>
 <translation id="7059230779847288458">In carica, <ph name="TIME_VALUE" /> al completamento della ricarica</translation>
 <translation id="708426984172631313">INTERROTTO</translation>
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
+<translation id="7134436342991564651">{0,plural, =1{Server dei nomi}other{Server dei nomi}}</translation>
 <translation id="7143207342074048698">Connessione</translation>
 <translation id="7144878232160441200">Riprova</translation>
 <translation id="714876143603641390">Connettività LAN</translation>
 <translation id="7162487448488904999">Galleria</translation>
 <translation id="7172721935181587524">1 immagine</translation>
 <translation id="7177485034254901881">Questo dispositivo <ph name="DEVICE_TYPE" /> è gestito da <ph name="MANAGER" />. Gli amministratori possono configurarlo da remoto.</translation>
+<translation id="7180611975245234373">Aggiorna</translation>
 <translation id="7216409898977639127">Fornitore del servizio di telefonia mobile</translation>
+<translation id="7257889006063274246">Vuoi rimuovere la pagina <ph name="CURRENT_PAGE" />?</translation>
 <translation id="7271040990581020067">Lo scanner è attualmente in uso. Riprova più tardi.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7287310195820267359">Raccolte di sfondi</translation>
@@ -354,9 +369,11 @@ Prova a toccare il microfono per chiedermi qualcosa.</translation>
 <translation id="7835501727204647447">Installa CloudReady</translation>
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7882358943899516840">Tipo di provider</translation>
+<translation id="7895471513946376273">Scopri gli strumenti di disegno e design</translation>
 <translation id="7936303884198020182">nessun server dei nomi trovato</translation>
 <translation id="7960831585769876809">Temperatura</translation>
 <translation id="7994702968232966508">Metodo EAP</translation>
+<translation id="8020238979854764615">Si è verificato un errore. Riprova scegliendo altre immagini.</translation>
 <translation id="802154636333426148">Download non riuscito</translation>
 <translation id="8041089156583427627">Invia feedback</translation>
 <translation id="8075838845814659848">Carica rimanente</translation>
@@ -368,7 +385,9 @@ Prova a toccare il microfono per chiedermi qualcosa.</translation>
 <translation id="8214184102975786227">Scansiona più pagine creando un solo PDF</translation>
 <translation id="8230672074305416752">impossibile eseguire il ping del gateway di rete predefinito</translation>
 <translation id="8246209727385807362">Operatore sconosciuto</translation>
+<translation id="8286154143153872371">Connettiti a una rete e ricarica la pagina per visualizzare lo sfondo.</translation>
 <translation id="8291967909914612644">Paese del provider principale</translation>
+<translation id="829270796093605079">Strumenti per il design</translation>
 <translation id="8294431847097064396">Origine</translation>
 <translation id="8297006494302853456">Debole</translation>
 <translation id="8302368968391049045">Firewall HTTPS</translation>
@@ -392,6 +411,7 @@ Prova a toccare il microfono per chiedermi qualcosa.</translation>
 <translation id="8575298406870537639">Il tuo operatore potrebbe richiedere questa opzione per consentire di collegarsi alla sua rete. Contatta l'operatore per avere informazioni dettagliate.</translation>
 <translation id="8576249514688522074">Non inizializzato</translation>
 <translation id="8620617069779373398">Stato roaming</translation>
+<translation id="8655295600908251630">Canale</translation>
 <translation id="8660881923941176839">libbre</translation>
 <translation id="8675354002693747642">Chiave precondivisa</translation>
 <translation id="871560550817059752">Operazione non riuscita - Inchiostro esaurito</translation>
@@ -404,6 +424,7 @@ Prova a toccare il microfono per chiedermi qualcosa.</translation>
 <translation id="8798441408945964110">Nome provider</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8818152010000655963">Sfondo</translation>
+<translation id="8834539327799336565">Attualmente connesso</translation>
 <translation id="8845001906332463065">Richiedi assistenza</translation>
 <translation id="8868741746785112895">GUID</translation>
 <translation id="8881098542468797602">Test effettuato correttamente</translation>

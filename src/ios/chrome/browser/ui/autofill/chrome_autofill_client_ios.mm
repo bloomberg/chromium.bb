@@ -12,6 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
 #include "base/strings/string_util.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_save_update_address_profile_delegate_ios.h"
 #include "components/autofill/core/browser/form_data_importer.h"
@@ -47,12 +48,9 @@
 #include "ios/chrome/browser/ui/autofill/card_expiration_date_fix_flow_view_bridge.h"
 #include "ios/chrome/browser/ui/autofill/card_name_fix_flow_view_bridge.h"
 #include "ios/chrome/browser/ui/autofill/card_unmask_prompt_view_bridge.h"
-#include "ios/chrome/browser/ui/autofill/save_card_infobar_controller.h"
-#import "ios/chrome/browser/ui/infobars/coordinators/infobar_save_card_coordinator.h"
-#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #include "ios/chrome/browser/webdata_services/web_data_service_factory.h"
 #include "ios/chrome/common/channel_info.h"
-#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#import "ios/public/provider/chrome/browser/risk_data/risk_data_api.h"
 #import "ios/web/public/web_state.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -68,9 +66,8 @@ namespace {
 // Creates and returns an infobar for saving credit cards.
 std::unique_ptr<infobars::InfoBar> CreateSaveCardInfoBarMobile(
     std::unique_ptr<AutofillSaveCardInfoBarDelegateMobile> delegate) {
-  InfobarSaveCardCoordinator* coordinator = [[InfobarSaveCardCoordinator alloc]
-      initWithInfoBarDelegate:delegate.get()];
-  return std::make_unique<InfoBarIOS>(coordinator, std::move(delegate));
+  return std::make_unique<InfoBarIOS>(InfobarType::kInfobarTypeSaveCard,
+                                      std::move(delegate));
 }
 
 CardUnmaskPromptView* CreateCardUnmaskPromptViewBridge(
@@ -349,7 +346,6 @@ void ChromeAutofillClientIOS::ConfirmSaveAddressProfile(
     AddressProfileSavePromptCallback callback) {
   DCHECK(base::FeatureList::IsEnabled(
       features::kAutofillAddressProfileSavePrompt));
-  if (IsInfobarOverlayUIEnabled()) {
     // TODO(crbug.com/1167062): Respect SaveAddressProfilePromptOptions.
     auto delegate =
         std::make_unique<AutofillSaveUpdateAddressProfileDelegateIOS>(
@@ -359,12 +355,6 @@ void ChromeAutofillClientIOS::ConfirmSaveAddressProfile(
     infobar_manager_->AddInfoBar(std::make_unique<InfoBarIOS>(
         InfobarType::kInfobarTypeSaveAutofillAddressProfile,
         std::move(delegate)));
-  } else {
-    // Fallback to the default behavior to saving without the confirmation.
-    std::move(callback).Run(
-        AutofillClient::SaveAddressProfileOfferUserDecision::kUserNotAsked,
-        profile);
-  }
 }
 
 bool ChromeAutofillClientIOS::HasCreditCardScanFeature() {
@@ -450,7 +440,8 @@ void ChromeAutofillClientIOS::ExecuteCommand(int id) {
 
 void ChromeAutofillClientIOS::LoadRiskData(
     base::OnceCallback<void(const std::string&)> callback) {
-  std::move(callback).Run(ios::GetChromeBrowserProvider().GetRiskData());
+  std::move(callback).Run(
+      base::SysNSStringToUTF8(ios::provider::GetRiskData()));
 }
 
 LogManager* ChromeAutofillClientIOS::GetLogManager() const {

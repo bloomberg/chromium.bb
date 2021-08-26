@@ -17,6 +17,14 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/web_applications/extension_status_utils.h"
+#include "chrome/common/webui_url_constants.h"
+#endif  // defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
+
 namespace apps {
 
 namespace {
@@ -76,6 +84,9 @@ bool OpenExtensionApplicationWindow(Profile* profile,
   if (launch_container == extensions::LaunchContainer::kLaunchContainerTab)
     return false;
 
+  if (app->from_bookmark())
+    return false;
+
   RecordCmdLineAppHistogram(app->GetType());
 
   apps::AppLaunchParams params(app_id, launch_container,
@@ -83,9 +94,7 @@ bool OpenExtensionApplicationWindow(Profile* profile,
                                extensions::AppLaunchSource::kSourceCommandLine);
   params.command_line = command_line;
   params.current_directory = current_directory;
-  if (app->from_bookmark()) {
-    params.launch_files = GetLaunchFilesFromCommandLine(command_line);
-  }
+
   content::WebContents* tab_in_app_window =
       ::OpenApplication(profile, std::move(params));
 
@@ -112,6 +121,28 @@ bool OpenExtensionApplicationTab(Profile* profile, const std::string& app_id) {
                    extensions::AppLaunchSource::kSourceCommandLine));
   return app_tab != nullptr;
 }
+
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
+bool OpenDeprecatedApplicationPrompt(Profile* profile,
+                                     const std::string& app_id) {
+  if (!extensions::IsExtensionUnsupportedDeprecatedApp(profile, app_id))
+    return false;
+
+  Browser::CreateParams create_params(profile, /*user_gesture=*/false);
+  Browser* browser = Browser::Create(create_params);
+
+  NavigateParams params(browser, GURL(chrome::kChromeUIAppsURL),
+                        ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
+  params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+  params.tabstrip_add_types = TabStripModel::ADD_ACTIVE;
+  Navigate(&params);
+
+  browser->window()->Show();
+
+  // TODO(crbug.com/1225779): Show the deprecated apps dialog.
+  return true;
+}
+#endif  // defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
 
 bool OpenExtensionApplicationWithReenablePrompt(
     Profile* profile,

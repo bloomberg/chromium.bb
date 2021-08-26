@@ -225,21 +225,35 @@ bool PaintLayerPainter::ShouldUseInfiniteCullRectInternal(
 
   if (const auto* properties =
           paint_layer_.GetLayoutObject().FirstFragment().PaintProperties()) {
+    // Cull rect mapping doesn't work under perspective in some cases.
+    // See http://crbug.com/887558 for details.
     if (properties->Perspective())
       return true;
     if (for_cull_rect_update) {
-      // A CSS transform can also have perspective like
-      // "transform: perspective(100px) rotateY(45deg)".
       if (const auto* transform = properties->Transform()) {
+        // A CSS transform can also have perspective like
+        // "transform: perspective(100px) rotateY(45deg)". In these cases, we
+        // also want to skip cull rect mapping. See http://crbug.com/887558 for
+        // details.
         if (!transform->IsIdentityOr2DTranslation() &&
-            transform->Matrix().HasPerspective())
+            transform->Matrix().HasPerspective()) {
           return true;
+        }
 
         // Ensure content under animating transforms is not culled out, even if
         // the initial matrix is non-invertible.
         if (transform->HasActiveTransformAnimation() &&
             !transform->IsIdentityOr2DTranslation() &&
             !transform->Matrix().IsInvertible()) {
+          return true;
+        }
+
+        // As an optimization, skip cull rect updating for non-composited
+        // transforms which have already been painted. This is because the cull
+        // rect update, which needs to do complex mapping of the cull rect, can
+        // be more expensive than over-painting.
+        if (!transform->HasDirectCompositingReasons() &&
+            paint_layer_.PreviousPaintResult() == kFullyPainted) {
           return true;
         }
       }
@@ -458,8 +472,14 @@ PaintResult PaintLayerPainter::PaintLayerContents(
         cull_rect_intersects_contents = cull_rect_intersects_self;
       }
 
-      if (!cull_rect_intersects_self && !cull_rect_intersects_contents)
+      if (!cull_rect_intersects_self && !cull_rect_intersects_contents) {
+        if (!is_painting_overflow_contents &&
+            paint_layer_.KnownToClipSubtree()) {
+          paint_layer_.SetPreviousPaintResult(kMayBeClippedByCullRect);
+          return kMayBeClippedByCullRect;
+        }
         should_paint_content = false;
+      }
 
       // The above doesn't consider clips on non-self-painting contents.
       // Will update in ScopedBoxContentsPaintState.

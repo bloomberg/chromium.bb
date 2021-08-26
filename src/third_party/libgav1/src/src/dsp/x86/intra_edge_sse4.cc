@@ -41,7 +41,8 @@ constexpr int kMaxEdgeBufferSize = 129;
 // This function applies the kernel [0, 4, 8, 4, 0] to 12 values.
 // Assumes |edge| has 16 packed byte values. Produces 12 filter outputs to
 // write as overlapping sets of 8-bytes.
-inline void ComputeKernel1Store12(uint8_t* dest, const uint8_t* source) {
+inline void ComputeKernel1Store12(uint8_t* LIBGAV1_RESTRICT dest,
+                                  const uint8_t* LIBGAV1_RESTRICT source) {
   const __m128i edge_lo = LoadUnaligned16(source);
   const __m128i edge_hi = _mm_srli_si128(edge_lo, 6);
   // Samples matched with the '4' tap, expanded to 16-bit.
@@ -77,7 +78,8 @@ inline void ComputeKernel1Store12(uint8_t* dest, const uint8_t* source) {
 // This function applies the kernel [0, 5, 6, 5, 0] to 12 values.
 // Assumes |edge| has 8 packed byte values, and that the 2 invalid values will
 // be overwritten or safely discarded.
-inline void ComputeKernel2Store12(uint8_t* dest, const uint8_t* source) {
+inline void ComputeKernel2Store12(uint8_t* LIBGAV1_RESTRICT dest,
+                                  const uint8_t* LIBGAV1_RESTRICT source) {
   const __m128i edge_lo = LoadUnaligned16(source);
   const __m128i edge_hi = _mm_srli_si128(edge_lo, 6);
   const __m128i outers_lo = _mm_cvtepu8_epi16(edge_lo);
@@ -115,7 +117,8 @@ inline void ComputeKernel2Store12(uint8_t* dest, const uint8_t* source) {
 }
 
 // This function applies the kernel [2, 4, 4, 4, 2] to 8 values.
-inline void ComputeKernel3Store8(uint8_t* dest, const uint8_t* source) {
+inline void ComputeKernel3Store8(uint8_t* LIBGAV1_RESTRICT dest,
+                                 const uint8_t* LIBGAV1_RESTRICT source) {
   const __m128i edge_lo = LoadUnaligned16(source);
   const __m128i edge_hi = _mm_srli_si128(edge_lo, 4);
   // Finish |edge_lo| life cycle quickly.

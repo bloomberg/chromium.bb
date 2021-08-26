@@ -70,7 +70,8 @@ class LoopingFileCastAgent final
       public VirtualConnectionRouter::SocketErrorHandler,
       public ConnectionNamespaceHandler::VirtualConnectionPolicy,
       public CastMessageHandler,
-      public SenderSession::Client {
+      public SenderSession::Client,
+      public RemotingSender::Client {
  public:
   using ShutdownCallback = std::function<void()>;
 
@@ -107,6 +108,10 @@ class LoopingFileCastAgent final
                  CastSocket* socket,
                  ::cast::channel::CastMessage message) override;
 
+  // RemotingSender::Client overrides.
+  void OnReady() override;
+  void OnPlaybackRateChange(double rate) override;
+
   // Returns the Cast application ID for either A/V mirroring or audio-only
   // mirroring, as configured by the ConnectionSettings.
   const char* GetMirroringAppId() const;
@@ -134,10 +139,6 @@ class LoopingFileCastAgent final
       const SenderSession* session,
       SenderSession::RemotingNegotiation negotiation) override;
   void OnError(const SenderSession* session, Error error) override;
-
-  // Callback for when the RemotingSender indicates that the receiver
-  // is ready.
-  void OnRemotingReceiverReady();
 
   // Starts the remoting sender. This may occur when remoting is "ready" if the
   // session is already negotiated, or upon session negotiation if the receiver

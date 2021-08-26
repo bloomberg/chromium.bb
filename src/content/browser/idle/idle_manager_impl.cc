@@ -9,9 +9,9 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/idle_manager.h"
 #include "content/public/browser/permission_controller.h"
 #include "content/public/browser/permission_type.h"
+#include "content/public/browser/render_frame_host.h"
 #include "ui/base/idle/idle.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -24,49 +24,12 @@ using blink::mojom::IdleManagerError;
 using blink::mojom::IdleState;
 using blink::mojom::PermissionStatus;
 
-constexpr base::TimeDelta kPollInterval = base::TimeDelta::FromSeconds(1);
-
 constexpr base::TimeDelta kMinimumThreshold = base::TimeDelta::FromSeconds(60);
-
-// Default provider implementation. Everything is delegated to
-// ui::CalculateIdleTime and ui::CheckIdleStateIsLocked.
-class DefaultIdleProvider : public IdleManager::IdleTimeProvider {
- public:
-  DefaultIdleProvider() = default;
-  ~DefaultIdleProvider() override = default;
-
-  base::TimeDelta CalculateIdleTime() override {
-    return base::TimeDelta::FromSeconds(ui::CalculateIdleTime());
-  }
-
-  bool CheckIdleStateIsLocked() override {
-    return ui::CheckIdleStateIsLocked();
-  }
-};
-
-blink::mojom::IdleStatePtr IdleTimeToIdleState(bool locked,
-                                               base::TimeDelta idle_time,
-                                               base::TimeDelta idle_threshold) {
-  blink::mojom::UserIdleState user;
-  if (idle_time >= idle_threshold)
-    user = blink::mojom::UserIdleState::kIdle;
-  else
-    user = blink::mojom::UserIdleState::kActive;
-
-  blink::mojom::ScreenIdleState screen;
-  if (locked)
-    screen = blink::mojom::ScreenIdleState::kLocked;
-  else
-    screen = blink::mojom::ScreenIdleState::kUnlocked;
-
-  return IdleState::New(user, screen);
-}
 
 }  // namespace
 
-IdleManagerImpl::IdleManagerImpl(BrowserContext* browser_context)
-    : idle_time_provider_(new DefaultIdleProvider()),
-      browser_context_(browser_context) {}
+IdleManagerImpl::IdleManagerImpl(RenderFrameHost* render_frame_host)
+    : render_frame_host_(render_frame_host) {}
 
 IdleManagerImpl::~IdleManagerImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -79,23 +42,22 @@ IdleManagerImpl::~IdleManagerImpl() {
 }
 
 void IdleManagerImpl::CreateService(
-    mojo::PendingReceiver<blink::mojom::IdleManager> receiver,
-    const url::Origin& origin) {
+    mojo::PendingReceiver<blink::mojom::IdleManager> receiver) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  receivers_.Add(this, std::move(receiver), origin);
+  receivers_.Add(this, std::move(receiver));
 }
 
 void IdleManagerImpl::SetIdleOverride(
     blink::mojom::UserIdleState user_state,
     blink::mojom::ScreenIdleState screen_state) {
   state_override_ = IdleState::New(user_state, screen_state);
-  UpdateIdleState();
+  OnIdleStateChange(IdlePollingService::GetInstance()->GetIdleState());
 }
 
 void IdleManagerImpl::ClearIdleOverride() {
   state_override_ = nullptr;
-  UpdateIdleState();
+  OnIdleStateChange(IdlePollingService::GetInstance()->GetIdleState());
 }
 
 void IdleManagerImpl::AddMonitor(
@@ -108,10 +70,13 @@ void IdleManagerImpl::AddMonitor(
     return;
   }
 
-  const url::Origin& origin = receivers_.current_context();
-  if (!HasPermission(origin)) {
+  if (!HasPermission()) {
     std::move(callback).Run(IdleManagerError::kPermissionDisabled, nullptr);
     return;
+  }
+
+  if (monitors_.empty()) {
+    observer_.Observe(IdlePollingService::GetInstance());
   }
 
   blink::mojom::IdleStatePtr current_state = CheckIdleState(threshold);
@@ -126,18 +91,17 @@ void IdleManagerImpl::AddMonitor(
 
   monitors_.Append(monitor.release());
 
-  StartPolling();
-
   std::move(callback).Run(IdleManagerError::kSuccess,
                           std::move(response_state));
 }
 
-bool IdleManagerImpl::HasPermission(const url::Origin& origin) {
+bool IdleManagerImpl::HasPermission() {
   PermissionController* permission_controller =
-      browser_context_->GetPermissionController();
+      render_frame_host_->GetBrowserContext()->GetPermissionController();
   DCHECK(permission_controller);
-  PermissionStatus status = permission_controller->GetPermissionStatus(
-      PermissionType::IDLE_DETECTION, origin.GetURL(), origin.GetURL());
+  PermissionStatus status = permission_controller->GetPermissionStatusForFrame(
+      PermissionType::IDLE_DETECTION, render_frame_host_,
+      render_frame_host_->GetMainFrame()->GetLastCommittedURL().GetOrigin());
   return status == PermissionStatus::GRANTED;
 }
 
@@ -148,33 +112,8 @@ void IdleManagerImpl::RemoveMonitor(IdleMonitor* monitor) {
   delete monitor;
 
   if (monitors_.empty()) {
-    StopPolling();
+    observer_.Reset();
   }
-}
-
-void IdleManagerImpl::SetIdleTimeProviderForTest(
-    std::unique_ptr<IdleTimeProvider> idle_time_provider) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  idle_time_provider_ = std::move(idle_time_provider);
-}
-
-bool IdleManagerImpl::IsPollingForTest() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return poll_timer_.IsRunning();
-}
-
-void IdleManagerImpl::StartPolling() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!poll_timer_.IsRunning()) {
-    poll_timer_.Start(FROM_HERE, kPollInterval,
-                      base::BindRepeating(&IdleManagerImpl::UpdateIdleState,
-                                          base::Unretained(this)));
-  }
-}
-
-void IdleManagerImpl::StopPolling() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  poll_timer_.Stop();
 }
 
 blink::mojom::IdleStatePtr IdleManagerImpl::CheckIdleState(
@@ -182,13 +121,29 @@ blink::mojom::IdleStatePtr IdleManagerImpl::CheckIdleState(
   if (state_override_) {
     return state_override_->Clone();
   }
-  base::TimeDelta idle_time = idle_time_provider_->CalculateIdleTime();
-  bool locked = idle_time_provider_->CheckIdleStateIsLocked();
 
-  return IdleTimeToIdleState(locked, idle_time, threshold);
+  const IdlePollingService::State& state =
+      IdlePollingService::GetInstance()->GetIdleState();
+
+  blink::mojom::UserIdleState user;
+  if (state.idle_time >= threshold) {
+    user = blink::mojom::UserIdleState::kIdle;
+  } else {
+    user = blink::mojom::UserIdleState::kActive;
+  }
+
+  blink::mojom::ScreenIdleState screen;
+  if (state.locked) {
+    screen = blink::mojom::ScreenIdleState::kLocked;
+  } else {
+    screen = blink::mojom::ScreenIdleState::kUnlocked;
+  }
+
+  return IdleState::New(user, screen);
 }
 
-void IdleManagerImpl::UpdateIdleState() {
+void IdleManagerImpl::OnIdleStateChange(
+    const IdlePollingService::State& state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   for (auto* node = monitors_.head(); node != monitors_.end();

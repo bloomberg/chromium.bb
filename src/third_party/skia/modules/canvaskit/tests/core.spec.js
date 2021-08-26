@@ -764,7 +764,8 @@ describe('Core canvas behavior', () => {
 
         // rotate 10 degrees centered on 200, 200
         const m = CanvasKit.Matrix.rotated(Math.PI/18, 200, 200);
-        const rotated = CanvasKit.ImageFilter.MakeMatrixTransform(m, CanvasKit.FilterQuality.Medium, combined);
+        const filtering = { filter: CanvasKit.FilterMode.Linear };
+        const rotated = CanvasKit.ImageFilter.MakeMatrixTransform(m, filtering, combined);
         paint.setImageFilter(rotated);
 
         //canvas.rotate(10, 200, 200);
@@ -865,10 +866,10 @@ describe('Core canvas behavior', () => {
 
     gm('drawImage_skp', (canvas, fetchedByteBuffers) => {
         const pic = CanvasKit.MakePicture(fetchedByteBuffers[0]);
-        expect(pic).toBeTruthy();
-
         canvas.clear(CanvasKit.TRANSPARENT);
         canvas.drawPicture(pic);
+        // The asset below can be re-downloaded from
+        // https://fiddle.skia.org/c/cbb8dee39e9f1576cd97c2d504db8eee
     }, '/assets/red_line.skp');
 
     it('can draw once using drawOnce utility method', (done) => {
@@ -1030,7 +1031,7 @@ describe('Core canvas behavior', () => {
             path, mZPlane, mLight, lightRadius,
             CanvasKit.ShadowTransparentOccluder | CanvasKit.ShadowGeometricOnly | CanvasKit.ShadowDirectionalLight,
             outBounds);
-        expectTypedArraysToEqual(outBounds, Float32Array.of(1.52207, -6.35035, 264.03445, 261.83294));
+        expectTypedArraysToEqual(outBounds, Float32Array.of(-31.6630249, -15.24227, 245.5, 252.94101));
 
         CanvasKit.Free(mZPlane);
         CanvasKit.Free(mLight);

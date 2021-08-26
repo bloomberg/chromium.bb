@@ -9,7 +9,9 @@ import android.animation.PropertyValuesHolder;
 import android.app.Activity;
 import android.util.TypedValue;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.ViewParent;
+import android.widget.FrameLayout;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
@@ -31,6 +33,7 @@ import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.feed.FeedReliabilityLoggingBridge;
 import org.chromium.chrome.browser.feed.FeedServiceBridge;
 import org.chromium.chrome.browser.feed.FeedSurfaceMediator;
+import org.chromium.chrome.browser.feed.FeedUma;
 import org.chromium.chrome.browser.feed.NtpListContentManager;
 import org.chromium.chrome.browser.feed.shared.ScrollTracker;
 import org.chromium.chrome.browser.feed.shared.stream.Stream;
@@ -411,6 +414,9 @@ public class FeedStream implements Stream {
     private int mHeaderCount;
     private boolean mIsPlaceholderShown;
 
+    // Placeholder view that simply takes up space.
+    private NtpListContentManager.NativeViewContent mSpacerViewContent;
+
     // Bottomsheet.
     private final BottomSheetController mBottomSheetController;
     private BottomSheetContent mBottomSheetContent;
@@ -498,7 +504,8 @@ public class FeedStream implements Stream {
     @Override
     public void bind(RecyclerView rootView, NtpListContentManager manager,
             FeedSurfaceMediator.ScrollState savedInstanceState, SurfaceScope surfaceScope,
-            HybridListRenderer renderer, FeedLaunchReliabilityLogger launchReliabilityLogger) {
+            HybridListRenderer renderer, FeedLaunchReliabilityLogger launchReliabilityLogger,
+            int headerCount) {
         launchReliabilityLogger.sendPendingEvents(
                 mIsInterestFeed ? StreamType.FOR_YOU : StreamType.WEB_FEED,
                 FeedStreamJni.get().getSurfaceId(mNativeFeedStream, FeedStream.this));
@@ -517,7 +524,7 @@ public class FeedStream implements Stream {
         mContentManager = manager;
         mSurfaceScope = surfaceScope;
         mRenderer = renderer;
-        mHeaderCount = manager.getItemCount();
+        mHeaderCount = headerCount;
         if (mWindowAndroid.getDisplay() != null) {
             mWindowAndroid.getDisplay().addObserver(mRotationObserver);
         }
@@ -539,24 +546,31 @@ public class FeedStream implements Stream {
     }
 
     @Override
-    public void unbind() {
+    public void unbind(boolean shouldPlaceSpacer) {
         mSliceViewTracker.destroy();
         mSliceViewTracker = null;
         mSurfaceScope = null;
         mAccumulatedDySinceLastLoadMore = 0;
         mScrollReporter.onUnbind();
 
-        // Clear handlers and all feed views.
-        // Remove Feed content from the content manager.
-        int feedCount = mContentManager.getItemCount() - mHeaderCount;
-        if (feedCount > 0) {
-            mContentManager.removeContents(mHeaderCount, feedCount);
-            notifyContentChange();
+        // Remove Feed content from the content manager. Add spacer if needed.
+        ArrayList<NtpListContentManager.FeedContent> list = new ArrayList<>();
+        if (shouldPlaceSpacer) {
+            if (mSpacerViewContent == null) {
+                FrameLayout spacerView = new FrameLayout(mActivity);
+                mSpacerViewContent =
+                        new NtpListContentManager.NativeViewContent("Spacer", spacerView);
+                spacerView.setLayoutParams(new FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+            }
+            list.add(mSpacerViewContent);
         }
+        updateContentsInPlace(list);
 
         // Dismiss bottomsheet if any is shown.
         dismissBottomSheet();
 
+        // Clear handlers.
         mContentManager.setHandlers(new HashMap<>());
         mContentManager = null;
 
@@ -622,7 +636,9 @@ public class FeedStream implements Stream {
     @Override
     public void triggerRefresh(Callback<Boolean> callback) {
         PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
-            mRenderer.onPullToRefreshStarted();
+            if (mRenderer != null) {
+                mRenderer.onPullToRefreshStarted();
+            }
             FeedStreamJni.get().manualRefresh(mNativeFeedStream, FeedStream.this, callback);
         });
     }
@@ -698,9 +714,23 @@ public class FeedStream implements Stream {
 
     /**
      * Attempts to load more content if it can be triggered.
+     *
+     * <p>This method uses the default or Finch configured load more lookahead trigger.
+     *
      * @return true if loading more content can be triggered.
      */
     boolean maybeLoadMore() {
+        return maybeLoadMore(mLoadMoreTriggerLookahead);
+    }
+
+    /**
+     * Attempts to load more content if it can be triggered.
+     * @param lookaheadTrigger The threshold of off-screen cards below which the feed should attempt
+     *         to load more content. I.e., if there are less than or equal to |lookaheadTrigger|
+     *         cards left to show the user, then the feed should load more cards.
+     * @return true if loading more content can be triggered.
+     */
+    private boolean maybeLoadMore(int lookaheadTrigger) {
         // Checks if we've been unbinded.
         if (mRecyclerView == null) {
             return false;
@@ -710,15 +740,23 @@ public class FeedStream implements Stream {
         if (layoutManager == null) {
             return false;
         }
+
+        // Check if the layout manager is initialized.
         int totalItemCount = layoutManager.getItemCount();
+        if (totalItemCount < 0) {
+            return false;
+        }
+
         int lastVisibleItem = layoutManager.findLastVisibleItemPosition();
-        if (totalItemCount - lastVisibleItem > mLoadMoreTriggerLookahead) {
+        int numItemsRemaining = totalItemCount - lastVisibleItem;
+        if (numItemsRemaining > lookaheadTrigger) {
             return false;
         }
 
         // Starts to load more content if not yet.
         if (!mIsLoadingMoreContent) {
             mIsLoadingMoreContent = true;
+            FeedUma.recordFeedLoadMoreTrigger(getSectionType(), totalItemCount, numItemsRemaining);
             // The native loadMore() call may immediately result in onStreamUpdated(), which can
             // result in a crash if maybeLoadMore() is being called in response to certain events.
             // Use postTask to avoid this.
@@ -757,9 +795,6 @@ public class FeedStream implements Stream {
         // * existing headers
         // * both new and existing contents
         ArrayList<NtpListContentManager.FeedContent> newContentList = new ArrayList<>();
-        for (int i = 0; i < mHeaderCount; ++i) {
-            newContentList.add(mContentManager.getContent(i));
-        }
         for (FeedUiProto.StreamUpdate.SliceUpdate sliceUpdate :
                 streamUpdate.getUpdatedSlicesList()) {
             if (sliceUpdate.hasSlice()) {
@@ -776,11 +811,15 @@ public class FeedStream implements Stream {
                 }
             }
         }
-
         updateContentsInPlace(newContentList);
 
         // TODO(iwells): Look into alternatives to View.post() that specifically wait for rendering.
         mRecyclerView.post(mReliabilityLoggingBridge::onStreamUpdateFinished);
+
+        // If all of the cards fit on the screen, load more content. The view
+        // may not be scrollable, preventing the user from otherwise triggering
+        // load more.
+        maybeLoadMore(/*lookaheadTrigger=*/0);
     }
 
     private NtpListContentManager.FeedContent createContentFromSlice(FeedUiProto.Slice slice) {
@@ -819,22 +858,21 @@ public class FeedStream implements Stream {
         boolean hasContentChange = false;
 
         // 1) Builds the hash set based on keys of new contents.
-        HashSet<String> newContentKeySet = new HashSet<String>();
+        HashSet<String> newContentKeySet = new HashSet<>();
         for (int i = 0; i < newContentList.size(); ++i) {
             hasContentChange = true;
             newContentKeySet.add(newContentList.get(i).getKey());
         }
 
-        // 2) Builds the hash map of existing content list for fast look up by key.
-        HashMap<String, NtpListContentManager.FeedContent> existingContentMap =
-                new HashMap<String, NtpListContentManager.FeedContent>();
-        for (int i = 0; i < mContentManager.getItemCount(); ++i) {
+        // 2) Builds the hash map of existing content list for fast look up by key. Ignores headers.
+        HashMap<String, NtpListContentManager.FeedContent> existingContentMap = new HashMap<>();
+        for (int i = mHeaderCount; i < mContentManager.getItemCount(); ++i) {
             NtpListContentManager.FeedContent content = mContentManager.getContent(i);
             existingContentMap.put(content.getKey(), content);
         }
 
-        // 3) Removes those existing contents that do not appear in the new list.
-        for (int i = mContentManager.getItemCount() - 1; i >= 0; --i) {
+        // 3) Removes those existing contents that do not appear in the new list. Ignores headers.
+        for (int i = mContentManager.getItemCount() - 1; i >= mHeaderCount; --i) {
             String key = mContentManager.getContent(i).getKey();
             if (!newContentKeySet.contains(key)) {
                 hasContentChange = true;
@@ -849,11 +887,12 @@ public class FeedStream implements Stream {
         while (i < newContentList.size()) {
             NtpListContentManager.FeedContent content = newContentList.get(i);
 
-            // If this is an existing content, moves it to new position.
+            // If this is an existing content, moves it to new position, offset by header count.
             if (existingContentMap.containsKey(content.getKey())) {
                 hasContentChange = true;
                 mContentManager.moveContent(
-                        mContentManager.findContentPositionByKey(content.getKey()), i);
+                        mContentManager.findContentPositionByKey(content.getKey()),
+                        i + mHeaderCount);
                 ++i;
                 continue;
             }
@@ -865,7 +904,9 @@ public class FeedStream implements Stream {
                 ++i;
             }
             hasContentChange = true;
-            mContentManager.addContents(startIndex, newContentList.subList(startIndex, i));
+            // Account for headers when inserting contents.
+            mContentManager.addContents(
+                    startIndex + mHeaderCount, newContentList.subList(startIndex, i));
         }
 
         if (hasContentChange) {

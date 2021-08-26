@@ -23,11 +23,13 @@
 
 GR_NORETAIN_BEGIN
 
-GrMtlOpsRenderPass::GrMtlOpsRenderPass(GrMtlGpu* gpu, GrRenderTarget* rt, GrSurfaceOrigin origin,
+GrMtlOpsRenderPass::GrMtlOpsRenderPass(GrMtlGpu* gpu, GrRenderTarget* rt,
+                                       sk_sp<GrMtlFramebuffer> framebuffer, GrSurfaceOrigin origin,
                                        const GrOpsRenderPass::LoadAndStoreInfo& colorInfo,
                                        const GrOpsRenderPass::StencilLoadAndStoreInfo& stencilInfo)
         : INHERITED(rt, origin)
-        , fGpu(gpu) {
+        , fGpu(gpu)
+        , fFramebuffer(std::move(framebuffer)) {
     this->setupRenderPass(colorInfo, stencilInfo);
 }
 
@@ -43,7 +45,7 @@ void GrMtlOpsRenderPass::precreateCmdEncoder() {
 }
 
 void GrMtlOpsRenderPass::submit() {
-    if (!fRenderTarget) {
+    if (!fFramebuffer) {
         return;
     }
     SkIRect iBounds;
@@ -85,15 +87,19 @@ bool GrMtlOpsRenderPass::onBindPipeline(const GrProgramInfo& programInfo,
         return false;
     }
 
-    fActivePipelineState->setData(fRenderTarget, programInfo);
+    fActivePipelineState->setData(fFramebuffer.get(), programInfo);
     fCurrentVertexStride = programInfo.geomProc().vertexStride();
 
     if (!fActiveRenderCmdEncoder) {
         fActiveRenderCmdEncoder =
-                fGpu->commandBuffer()->getRenderCommandEncoder(fRenderPassDesc, nullptr, this);
+                fGpu->commandBuffer()->getRenderCommandEncoder(fRenderPassDesc,
+                                                               fActivePipelineState, this);
+        fGpu->commandBuffer()->addGrSurface(
+                sk_ref_sp<GrMtlAttachment>(fFramebuffer->colorAttachment()));
     }
 
-    fActiveRenderCmdEncoder->setRenderPipelineState(fActivePipelineState->mtlPipelineState());
+    fActiveRenderCmdEncoder->setRenderPipelineState(
+            fActivePipelineState->pipeline()->mtlPipelineState());
 #ifdef SK_ENABLE_MTL_DEBUG_INFO
     if (!fDebugGroupActive) {
         fActiveRenderCmdEncoder->pushDebugGroup(@"bindAndDraw");
@@ -111,10 +117,11 @@ bool GrMtlOpsRenderPass::onBindPipeline(const GrProgramInfo& programInfo,
 
     if (!programInfo.pipeline().isScissorTestEnabled()) {
         // "Disable" scissor by setting it to the full pipeline bounds.
+        SkISize dimensions = fFramebuffer->colorAttachment()->dimensions();
         GrMtlPipelineState::SetDynamicScissorRectState(fActiveRenderCmdEncoder,
-                                                       fRenderTarget, fOrigin,
-                                                       SkIRect::MakeWH(fRenderTarget->width(),
-                                                                       fRenderTarget->height()));
+                                                       dimensions, fOrigin,
+                                                       SkIRect::MakeWH(dimensions.width(),
+                                                                       dimensions.height()));
     }
 
     fActivePrimitiveType = gr_to_mtl_primitive(programInfo.primitiveType());
@@ -125,7 +132,8 @@ bool GrMtlOpsRenderPass::onBindPipeline(const GrProgramInfo& programInfo,
 void GrMtlOpsRenderPass::onSetScissorRect(const SkIRect& scissor) {
     SkASSERT(fActivePipelineState);
     SkASSERT(fActiveRenderCmdEncoder);
-    GrMtlPipelineState::SetDynamicScissorRectState(fActiveRenderCmdEncoder, fRenderTarget,
+    GrMtlPipelineState::SetDynamicScissorRectState(fActiveRenderCmdEncoder,
+                                                   fFramebuffer->colorAttachment()->dimensions(),
                                                    fOrigin, scissor);
 }
 
@@ -164,7 +172,7 @@ void GrMtlOpsRenderPass::onClearStencilClip(const GrScissorState& scissor, bool 
     // Partial clears are not supported
     SkASSERT(!scissor.enabled());
 
-    GrAttachment* sb = fRenderTarget->getStencilAttachment();
+    GrAttachment* sb = fFramebuffer->stencilAttachment();
     // this should only be called internally when we know we have a
     // stencil buffer.
     SkASSERT(sb);
@@ -199,10 +207,12 @@ void GrMtlOpsRenderPass::initRenderState(GrMtlRenderCommandEncoder* encoder) {
     encoder->pushDebugGroup(@"initRenderState");
 #endif
     encoder->setFrontFacingWinding(MTLWindingCounterClockwise);
+    SkISize colorAttachmentDimensions = fFramebuffer->colorAttachment()->dimensions();
     // Strictly speaking we shouldn't have to set this, as the default viewport is the size of
     // the drawable used to generate the renderCommandEncoder -- but just in case.
     MTLViewport viewport = { 0.0, 0.0,
-                             (double) fRenderTarget->width(), (double) fRenderTarget->height(),
+                             (double) colorAttachmentDimensions.width(),
+                             (double) colorAttachmentDimensions.height(),
                              0.0, 1.0 };
     encoder->setViewport(viewport);
 #ifdef SK_ENABLE_MTL_DEBUG_INFO
@@ -235,15 +245,15 @@ void GrMtlOpsRenderPass::setupRenderPass(
 
     fRenderPassDesc = [MTLRenderPassDescriptor new];
     auto colorAttachment = fRenderPassDesc.colorAttachments[0];
-    colorAttachment.texture =
-            static_cast<GrMtlRenderTarget*>(fRenderTarget)->colorMTLTexture();
+    auto* color = fFramebuffer->colorAttachment();
+    colorAttachment.texture = color->mtlTexture();
     const std::array<float, 4>& clearColor = colorInfo.fClearColor;
     colorAttachment.clearColor =
             MTLClearColorMake(clearColor[0], clearColor[1], clearColor[2], clearColor[3]);
     colorAttachment.loadAction = mtlLoadAction[static_cast<int>(colorInfo.fLoadOp)];
     colorAttachment.storeAction = mtlStoreAction[static_cast<int>(colorInfo.fStoreOp)];
 
-    auto* stencil = static_cast<GrMtlAttachment*>(fRenderTarget->getStencilAttachment());
+    auto* stencil = fFramebuffer->stencilAttachment();
     auto mtlStencil = fRenderPassDesc.stencilAttachment;
     if (stencil) {
         mtlStencil.texture = stencil->mtlTexture();
@@ -254,8 +264,8 @@ void GrMtlOpsRenderPass::setupRenderPass(
 
     // Manage initial clears
     if (colorInfo.fLoadOp == GrLoadOp::kClear || stencilInfo.fLoadOp == GrLoadOp::kClear)  {
-        fBounds = SkRect::MakeWH(fRenderTarget->width(),
-                                 fRenderTarget->height());
+        fBounds = SkRect::MakeWH(color->dimensions().width(),
+                                 color->dimensions().height());
         this->precreateCmdEncoder();
         if (colorInfo.fLoadOp == GrLoadOp::kClear) {
             colorAttachment.loadAction = MTLLoadActionLoad;
@@ -343,7 +353,7 @@ void GrMtlOpsRenderPass::onDrawIndexed(int indexCount, int baseIndex, uint16_t m
                           fCurrentVertexStride * baseVertex, 0);
 
     auto mtlIndexBuffer = static_cast<const GrMtlBuffer*>(fActiveIndexBuffer.get());
-    size_t indexOffset = mtlIndexBuffer->offset() + sizeof(uint16_t) * baseIndex;
+    size_t indexOffset = sizeof(uint16_t) * baseIndex;
     id<MTLBuffer> indexBuffer = mtlIndexBuffer->mtlBuffer();
     fActiveRenderCmdEncoder->drawIndexedPrimitives(fActivePrimitiveType, indexCount,
                                                    MTLIndexTypeUInt16, indexBuffer, indexOffset);
@@ -395,7 +405,7 @@ void GrMtlOpsRenderPass::onDrawIndexedInstanced(
     this->setVertexBuffer(fActiveRenderCmdEncoder, fActiveVertexBuffer.get(), 0, 0);
 
     auto mtlIndexBuffer = static_cast<const GrMtlBuffer*>(fActiveIndexBuffer.get());
-    size_t indexOffset = mtlIndexBuffer->offset() + sizeof(uint16_t) * baseIndex;
+    size_t indexOffset = sizeof(uint16_t) * baseIndex;
     if (@available(macOS 10.11, iOS 9.0, *)) {
         fActiveRenderCmdEncoder->drawIndexedPrimitives(fActivePrimitiveType, indexCount,
                                                        MTLIndexTypeUInt16,
@@ -463,7 +473,7 @@ void GrMtlOpsRenderPass::onDrawIndexedIndirect(const GrBuffer* drawIndirectBuffe
 
     auto mtlIndexBuffer = static_cast<const GrMtlBuffer*>(fActiveIndexBuffer.get());
     auto mtlIndirectBuffer = static_cast<const GrMtlBuffer*>(drawIndirectBuffer);
-    size_t indexOffset = mtlIndexBuffer->offset();
+    size_t indexOffset = 0;
 
     const size_t stride = sizeof(GrDrawIndexedIndirectCommand);
     while (drawCount >= 1) {
@@ -502,7 +512,7 @@ void GrMtlOpsRenderPass::setVertexBuffer(GrMtlRenderCommandEncoder* encoder,
     auto mtlBuffer = static_cast<const GrMtlBuffer*>(buffer);
     id<MTLBuffer> mtlVertexBuffer = mtlBuffer->mtlBuffer();
     SkASSERT(mtlVertexBuffer);
-    size_t offset = mtlBuffer->offset() + vertexOffset;
+    size_t offset = vertexOffset;
     encoder->setVertexBuffer(mtlVertexBuffer, offset, index);
 }
 

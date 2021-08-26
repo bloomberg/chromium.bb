@@ -9,10 +9,14 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
-#include "base/time/time.h"
 #include "content/browser/conversions/storable_impression.h"
 #include "content/common/content_export.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+
+namespace base {
+class Time;
+class TimeDelta;
+}  // namespace base
 
 namespace content {
 
@@ -59,6 +63,8 @@ class CONTENT_EXPORT ConversionPolicy {
   explicit ConversionPolicy(bool debug_mode = false);
   ConversionPolicy(const ConversionPolicy& other) = delete;
   ConversionPolicy& operator=(const ConversionPolicy& other) = delete;
+  ConversionPolicy(ConversionPolicy&& other) = delete;
+  ConversionPolicy& operator=(ConversionPolicy&& other) = delete;
   virtual ~ConversionPolicy();
 
   // Gets the sanitized conversion data for a conversion. This strips entropy
@@ -81,11 +87,15 @@ class CONTENT_EXPORT ConversionPolicy {
       base::Time impression_time,
       StorableImpression::SourceType source_type) const WARN_UNUSED_RESULT;
 
-  // Delays reports that should have been sent while the browser was not open by
-  // given them a noisy report time to help disassociate them from other
-  // reports.
-  virtual base::Time GetReportTimeForExpiredReportAtStartup(
-      base::Time now) const WARN_UNUSED_RESULT;
+  // Delays reports that missed their report time, such as the browser not being
+  // open, or internet being disconnected. This given them a noisy report time
+  // to help disassociate them from other reports.
+  virtual base::Time GetReportTimeForReportPastSendTime(base::Time now) const
+      WARN_UNUSED_RESULT;
+
+  // Gets the maximum time a report can be held in storage after its report
+  // time.
+  virtual base::TimeDelta GetMaxReportAge() const WARN_UNUSED_RESULT;
 
  private:
   // For testing only.

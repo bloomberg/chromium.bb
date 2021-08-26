@@ -12,6 +12,7 @@
 
 #include "cast/streaming/remoting.pb.h"
 #include "util/flat_map.h"
+#include "util/weak_ptr.h"
 
 namespace openscreen {
 namespace cast {
@@ -61,12 +62,18 @@ class RpcMessenger {
   // deserialization by protobuf.
   void ProcessMessageFromRemote(const uint8_t* message,
                                 std::size_t message_len);
+  // This overload distributes an already-deserialized message to the
+  // registered component.
+  void ProcessMessageFromRemote(std::unique_ptr<RpcMessage> message);
 
   // Executes the |send_message_cb_| using |rpc|.
   void SendMessageToRemote(const RpcMessage& rpc);
 
   // Checks if the handle is registered for receiving messages. Test-only.
   bool IsRegisteredForTesting(Handle handle);
+
+  // Weak pointer creator.
+  WeakPtr<RpcMessenger> GetWeakPtr();
 
   // Consumers of RPCMessenger may set the send message callback post-hoc
   // in order to simulate different scenarios.
@@ -94,6 +101,8 @@ class RpcMessenger {
 
   // Callback that is ran to send a serialized message.
   SendMessageCallback send_message_cb_;
+
+  WeakPtrFactory<RpcMessenger> weak_factory_{this};
 };
 
 }  // namespace cast

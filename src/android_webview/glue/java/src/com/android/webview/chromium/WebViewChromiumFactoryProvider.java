@@ -330,7 +330,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                     multiProcess, packageId);
 
             // Enable modern SameSite cookie behavior if the app targets at least S.
-            if (BuildInfo.targetsAtLeastS()) {
+            if (ctx.getApplicationInfo().targetSdkVersion >= Build.VERSION_CODES.S) {
                 CommandLine cl = CommandLine.getInstance();
                 cl.appendSwitch(AwSwitches.WEBVIEW_ENABLE_MODERN_COOKIE_SAME_SITE);
             }
@@ -448,7 +448,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                 SystemClock.uptimeMillis() - startTime);
 
         /* TODO(torne): re-enable this once the API change is sorted out
-        if (BuildInfo.isAtLeastS()) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             // TODO: Use the framework constants as indices in timestamps array.
             startTime = mWebViewDelegate.getTimestamps()[0];
             RecordHistogram.recordTimesHistogram(
@@ -790,5 +790,10 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
     @Override
     public PacProcessor getPacProcessor() {
         return GlueApiHelperForR.getPacProcessor();
+    }
+
+    @Override
+    public PacProcessor createPacProcessor() {
+        return GlueApiHelperForR.createPacProcessor();
     }
 }

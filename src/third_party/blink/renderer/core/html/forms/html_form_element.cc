@@ -75,8 +75,10 @@ namespace blink {
 namespace {
 
 bool HasFormInBetween(const Node* root, const Node* descendant) {
-  DCHECK(descendant->IsDescendantOf(root));
   DCHECK(!IsA<HTMLFormElement>(descendant));
+  // |descendant| might not actually be a descendant of |root|.
+  if (!descendant->IsDescendantOf(root))
+    return false;
   for (ContainerNode* parent = descendant->parentNode();
        parent && parent != root; parent = parent->parentNode()) {
     if (DynamicTo<HTMLFormElement>(parent)) {
@@ -869,7 +871,7 @@ Element* HTMLFormElement::ElementFromPastNamesMap(
     const AtomicString& past_name) {
   if (past_name.IsEmpty() || !past_names_map_)
     return nullptr;
-  Element* element = past_names_map_->at(past_name);
+  Element* element = past_names_map_->DeprecatedAtOrEmptyValue(past_name);
 #if DCHECK_IS_ON()
   if (!element)
     return nullptr;

@@ -11,6 +11,7 @@
 #include "base/check.h"
 #include "base/notreached.h"
 #include "components/sync/engine/polling_constants.h"
+#include "components/sync/protocol/data_type_progress_marker.pb.h"
 
 namespace syncer {
 
@@ -78,9 +79,9 @@ base::TimeDelta GetDefaultLocalChangeNudgeDelay(ModelType model_type) {
     case WEB_APPS:
     case OS_PREFERENCES:
     case OS_PRIORITY_PREFERENCES:
-    case PROXY_TABS:
     case WORKSPACE_DESK:
     case NIGORI:
+    case PROXY_TABS:
       return kMediumLocalChangeNudgeDelay;
     case UNSPECIFIED:
       NOTREACHED();

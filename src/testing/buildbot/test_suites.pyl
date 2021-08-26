@@ -69,6 +69,52 @@
         'test': 'chrome_public_test_vr_apk',
       },
     },
+
+    'android_emulator_specific_chrome_public_tests': {
+      'chrome_public_test_apk': {
+        'args': [
+            # These tests launch external intent thus require playstore to be
+            # present. See crbug.com/1056330 for more details.
+            # Exclude them here since this test suite will run on emulator
+            # on images that do not have playstore.
+            # They will be ran in chrome_public_test_apk_with_playstore below.
+            '--gtest_filter=-'
+            'org.chromium.chrome.browser.contextualsearch.ContextualSearchManagerTest.test*ExternalNavigationWithUserGesture*:'
+            'org.chromium.chrome.browser.externalnav.UrlOverridingTest.test*UserGesture*:'
+            'org.chromium.chrome.browser.externalnav.UrlOverridingTest.testNavigationFromXHRCallback:'
+            'org.chromium.chrome.browser.externalnav.UrlOverridingTest.testNavigationFromXHRCallbackAndShortTimeout:'
+            'org.chromium.chrome.browser.externalnav.UrlOverridingTest.testNavigationFromXHRCallbackInSubFrame:'
+            'org.chromium.chrome.browser.externalnav.UrlOverridingTest.testRedirectionFromIntent*'
+        ],
+        'swarming': {
+          'shards': 20,
+        },
+        'mixins': [
+          'chrome-gold-service-account',
+          'skia_gold_test',
+        ],
+      },
+      'chrome_public_test_apk_with_playstore': {
+        'args': [
+            # These tests launch external intent thus require playstore to be
+            # present. See crbug.com/1056330 for more details.
+            # They should be ran in emulator on images that have playstore.
+            '--gtest_filter='
+            'org.chromium.chrome.browser.contextualsearch.ContextualSearchManagerTest.test*ExternalNavigationWithUserGesture*:'
+            'org.chromium.chrome.browser.externalnav.UrlOverridingTest.test*UserGesture*:'
+            'org.chromium.chrome.browser.externalnav.UrlOverridingTest.testNavigationFromXHRCallback:'
+            'org.chromium.chrome.browser.externalnav.UrlOverridingTest.testNavigationFromXHRCallbackAndShortTimeout:'
+            'org.chromium.chrome.browser.externalnav.UrlOverridingTest.testNavigationFromXHRCallbackInSubFrame:'
+            'org.chromium.chrome.browser.externalnav.UrlOverridingTest.testRedirectionFromIntent*'
+        ],
+        'mixins': [
+          'chrome-gold-service-account',
+          'skia_gold_test',
+        ],
+        'test': 'chrome_public_test_apk',
+      }
+    },
+
     'android_incremental_tests': {
       'base_unittests': {
         'args': [
@@ -82,7 +128,6 @@
         'mixins': [
           'chrome-gold-service-account',
           'skia_gold_test',
-          'has_native_resultdb_integration',
         ],
       },
       'content_browsertests': {
@@ -108,25 +153,6 @@
     # MM emulator CQ builder currently has limited capacity so some composition
     # test suites cannot be fullly enabled at once.
     'android_marshmallow_emulator_limited_capacity_gtests': {
-      # Tests from android_specific_chromium_gtests
-      'chrome_public_test_apk': {
-        'swarming': {
-          'shards': 20,
-        },
-        'mixins': [
-          'chrome-gold-service-account',
-          'skia_gold_test',
-          'has_native_resultdb_integration',
-        ],
-      },
-
-      # Tests from chromium_gtests_for_devices_with_graphical_output
-      'unit_tests': {
-        'android_swarming': {
-          'shards': 2,
-        },
-      },
-
       # Tests from chromium_gtests
       'webkit_unit_tests':{
         'test': 'blink_unittests',
@@ -155,7 +181,6 @@
         'mixins': [
           'chrome-gold-service-account',
           'skia_gold_test',
-          'has_native_resultdb_integration',
         ],
       },
       'webview_instrumentation_test_apk': {
@@ -171,21 +196,10 @@
     },
 
     # TODO(crbug.com/1111436): Deprecate this group in favor of
-    # android_pie_rel_non_skia_renderer_gtests if/when android Pie capacity
-    # is fully restored.
+    # android_pie_rel_gtests if/when android Pie capacity is fully restored.
     'android_pie_rel_reduced_capacity_gtests': {
       'android_browsertests': {},
       'blink_platform_unittests': {},
-      'chrome_public_test_apk': {
-        'swarming': {
-          'shards': 20,
-        },
-        'mixins': [
-          'chrome-gold-service-account',
-          'skia_gold_test',
-          'has_native_resultdb_integration',
-        ],
-      },
       'content_browsertests': {
         'swarming': {
           'shards': 15,
@@ -220,25 +234,6 @@
       },
       'android_webview_unittests': {},
       'breakpad_unittests': {},
-      'chrome_public_test_apk': {
-        'swarming': {
-          'shards': 20,
-        },
-        'mixins': [
-          'chrome-gold-service-account',
-          'skia_gold_test',
-          'has_native_resultdb_integration',
-        ],
-      },
-      'chrome_public_test_vr_apk': {
-        'args': [
-          '--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json',
-          '--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk',
-        ],
-        'swarming': {
-          'shards': 2,
-        },
-      },
       'content_shell_test_apk': {
         'swarming': {
           'shards': 3,
@@ -262,7 +257,6 @@
       },
       'mojo_test_apk': {},
       'ui_android_unittests': {},
-      'vr_android_unittests': {},
       'webview_instrumentation_test_apk': {
         'swarming': {
           'shards': 7,
@@ -314,13 +308,13 @@
     'bfcache_android_specific_gtests': {
       'bf_cache_android_browsertests': {
         'args': [
-          '--enable-features=BackForwardCache,BackForwardCacheNoTimeEviction,ProactivelySwapBrowsingInstance',
+          '--enable-features=BackForwardCache,BackForwardCacheSameSiteForBots,BackForwardCacheNoTimeEviction,ProactivelySwapBrowsingInstance',
         ],
         'test': 'android_browsertests',
       },
       'bf_cache_chrome_public_test_apk': {
         'args': [
-          '--enable-features=BackForwardCache,BackForwardCacheNoTimeEviction,ProactivelySwapBrowsingInstance',
+          '--enable-features=BackForwardCache,BackForwardCacheSameSiteForBots,BackForwardCacheNoTimeEviction,ProactivelySwapBrowsingInstance',
         ],
         'swarming': {
           'shards': 20,
@@ -328,13 +322,12 @@
         'mixins': [
           'chrome-gold-service-account',
           'skia_gold_test',
-          'has_native_resultdb_integration',
         ],
         'test': 'chrome_public_test_apk',
       },
       'bf_cache_content_shell_test_apk': {
         'args': [
-          '--enable-features=BackForwardCache,BackForwardCacheNoTimeEviction,ProactivelySwapBrowsingInstance',
+          '--enable-features=BackForwardCache,BackForwardCacheSameSiteForBots,BackForwardCacheNoTimeEviction,ProactivelySwapBrowsingInstance',
         ],
         'swarming': {
           'shards': 5,
@@ -346,7 +339,7 @@
     'bfcache_generic_gtests': {
       'bf_cache_content_browsertests': {
         'args': [
-          '--enable-features=BackForwardCache,BackForwardCacheNoTimeEviction,ProactivelySwapBrowsingInstance',
+          '--enable-features=BackForwardCache,BackForwardCacheSameSiteForBots,BackForwardCacheNoTimeEviction,ProactivelySwapBrowsingInstance',
         ],
         'swarming': {
           'shards': 20,
@@ -355,7 +348,7 @@
       },
       'bf_cache_content_unittests': {
         'args': [
-          '--enable-features=BackForwardCache,BackForwardCacheNoTimeEviction,ProactivelySwapBrowsingInstance',
+          '--enable-features=BackForwardCache,BackForwardCacheSameSiteForBots,BackForwardCacheNoTimeEviction,ProactivelySwapBrowsingInstance',
         ],
         'swarming': {
           'shards': 10,
@@ -364,7 +357,7 @@
       },
       'bf_cache_unit_tests': {
         'args': [
-          '--enable-features=BackForwardCache,BackForwardCacheNoTimeEviction,ProactivelySwapBrowsingInstance',
+          '--enable-features=BackForwardCache,BackForwardCacheSameSiteForBots,BackForwardCacheNoTimeEviction,ProactivelySwapBrowsingInstance',
           '--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.unit_tests.filter'
         ],
         'swarming': {
@@ -377,7 +370,7 @@
     'bfcache_linux_specific_gtests': {
       'bf_cache_browser_tests': {
         'args': [
-          '--enable-features=BackForwardCache,BackForwardCacheNoTimeEviction,ProactivelySwapBrowsingInstance',
+          '--enable-features=BackForwardCache,BackForwardCacheSameSiteForBots,BackForwardCacheNoTimeEviction,ProactivelySwapBrowsingInstance',
         ],
         'swarming': {
           'shards': 10,
@@ -431,6 +424,18 @@
       'exo_unittests': {},
       'views_unittests': {
         'experiment_percentage': 100,
+      },
+    },
+
+    'chrome_public_tests': {
+      'chrome_public_test_apk': {
+        'swarming': {
+          'shards': 20,
+        },
+        'mixins': [
+          'chrome-gold-service-account',
+          'skia_gold_test',
+        ],
       },
     },
 
@@ -552,6 +557,42 @@
     },
 
     'chromeos_isolated_scripts': {
+      # TODO(crbug.com/1202958): Remove these SkiaRenderer variants when
+      # SkiaRenderer is shipped by default on Chrome OS.
+      'skia_renderer_telemetry_perf_unittests': {
+        'isolate_name': 'telemetry_perf_unittests',
+        'args': [
+          '--browser=cros-chrome',
+          '--extra-browser-args=--enable-features=UseSkiaRenderer',
+          '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
+          '--xvfb',
+          # 3 is arbitrary, but if we're having more than 3 of these tests
+          # fail in a single shard, then something is probably wrong, so fail
+          # fast.
+          '--typ-max-failures=3',
+        ],
+        'swarming': {
+          'idempotent': False,  # https://crbug.com/549140
+          'shards': 6,
+        },
+      },
+      'skia_renderer_telemetry_unittests': {
+        'isolate_name': 'telemetry_unittests',
+        'args': [
+          '--jobs=1',
+          '--browser=cros-chrome',
+          '--extra-browser-args=--enable-features=UseSkiaRenderer',
+          '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
+          # 3 is arbitrary, but if we're having more than 3 of these tests
+          # fail in a single shard, then something is probably wrong, so fail
+          # fast.
+          '--typ-max-failures=3',
+        ],
+        'swarming': {
+          'idempotent': False,  # https://crbug.com/549140
+          'shards': 24,
+        },
+      },
       'telemetry_perf_unittests': {
         'args': [
           '--browser=cros-chrome',
@@ -1429,6 +1470,12 @@
       }
     },
 
+    'finch_smoke_tests': {
+      # TODO(crbug.com/1227222): Change this to the actual finch smoke test
+      # once it exists.
+      'base_unittests': {},
+    },
+
     'fuchsia_common_gtests': {
       'absl_hardening_tests': {},
       'accessibility_unittests': {
@@ -1473,11 +1520,8 @@
         },
         'mixins': ['fuchsia_runner_logs'],
       },
-      'components_unittests': {
+      'color_unittests': {
         'mixins': ['fuchsia_runner_logs'],
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.components_unittests.filter',
-        ],
       },
       'compositor_unittests': {
         'mixins': ['fuchsia_runner_logs'],
@@ -1487,6 +1531,9 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.content_unittests.filter',
         ],
+      },
+      'courgette_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
       },
       'cronet_tests': {
         'mixins': ['fuchsia_runner_logs'],
@@ -1503,6 +1550,12 @@
       'events_unittests': {
         'mixins': ['fuchsia_runner_logs'],
       },
+      'fuchsia_mojo_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
+      'gcm_unit_tests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
       'gfx_unittests': {
         'mixins': ['fuchsia_runner_logs'],
       },
@@ -1512,7 +1565,12 @@
       'google_apis_unittests': {
         'mixins': ['fuchsia_runner_logs'],
       },
-      'gpu_unittests': {},
+      'gpu_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
+      'gwp_asan_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
       'headless_browsertests': {
         'mixins': ['fuchsia_runner_logs'],
         'args': [
@@ -1534,6 +1592,9 @@
       'media_unittests': {
         'mixins': ['fuchsia_runner_logs'],
       },
+      'midi_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
       'mojo_unittests': {
         'mixins': ['fuchsia_runner_logs'],
       },
@@ -1548,6 +1609,15 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.net_unittests.filter',
         ],
+      },
+      'ozone_gl_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
+        'args': [
+          '--child-arg=--ozone-platform=headless',
+        ],
+      },
+      'ozone_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
       },
       'perfetto_unittests': {
         'mixins': ['fuchsia_runner_logs'],
@@ -1585,8 +1655,17 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.ui_base_unittests.filter',
         ],
       },
+      'ui_touch_selection_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
       'url_unittests': {
         'mixins': ['fuchsia_runner_logs'],
+      },
+      'views_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.views_unittests.filter',
+        ],
       },
       'viz_unittests': {
         'mixins': ['fuchsia_runner_logs'],
@@ -1600,25 +1679,16 @@
     },
 
     'fuchsia_experimental_gtests': {
-      'color_unittests': {
-        'mixins': ['fuchsia_runner_logs'],
-      },
       'components_browsertests': {
         'mixins': ['fuchsia_runner_logs'],
       },
+      'components_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.components_unittests.filter',
+        ],
+      },
       'content_browsertests': {
-        'mixins': ['fuchsia_runner_logs'],
-      },
-      'courgette_unittests': {
-        'mixins': ['fuchsia_runner_logs'],
-      },
-      'fuchsia_mojo_unittests': {
-        'mixins': ['fuchsia_runner_logs'],
-      },
-      'gcm_unit_tests': {
-        'mixins': ['fuchsia_runner_logs'],
-      },
-      'gwp_asan_unittests': {
         'mixins': ['fuchsia_runner_logs'],
       },
       'jingle_unittests': {
@@ -1627,25 +1697,7 @@
       'message_center_unittests': {
         'mixins': ['fuchsia_runner_logs'],
       },
-      'midi_unittests': {
-        'mixins': ['fuchsia_runner_logs'],
-      },
-      'ozone_gl_unittests': {
-        'mixins': ['fuchsia_runner_logs'],
-        'args': [
-          '--child-arg=--ozone-platform=headless',
-        ],
-      },
-      'ozone_unittests': {
-        'mixins': ['fuchsia_runner_logs'],
-      },
-      'ui_touch_selection_unittests': {
-        'mixins': ['fuchsia_runner_logs'],
-      },
       'views_examples_unittests': {
-        'mixins': ['fuchsia_runner_logs'],
-      },
-      'views_unittests': {
         'mixins': ['fuchsia_runner_logs'],
       },
       'wm_unittests': {
@@ -2485,9 +2537,7 @@
           '--fuzzy-diff',
           '--skipped=always',
           '--test-list=../../testing/buildbot/filters/gpu.skiarenderer_vulkan_blink_web_tests.filter',
-          '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-features=UseSkiaRenderer',
           '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-gpu-rasterization',
-          '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/use-gl=any',
           '--flag-specific=skia-gl',
         ],
         'isolate_name': 'blink_web_tests',
@@ -2516,9 +2566,7 @@
           '--skipped=always',
           '--driver-logging',
           '--test-list=../../testing/buildbot/filters/gpu.skiarenderer_vulkan_blink_web_tests.filter',
-          '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-features=UseSkiaRenderer',
           '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-gpu-rasterization',
-          '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/use-vulkan=native',
           '--flag-specific=skia-vulkan-native',
         ],
         'isolate_name': 'blink_web_tests',
@@ -2645,12 +2693,6 @@
         'linux_args': [ '--no-xvfb' ],
         'test': 'dawn_end2end_tests',
       },
-      'dawn_end2end_spirv_cross_tests': {
-        'mixins': ['dawn_end2end_gpu_test'],
-        'linux_args': [ '--no-xvfb' ],
-        'args': [ '--disable-toggles=use_tint_generator' ],
-        'test': 'dawn_end2end_tests',
-      },
       'dawn_end2end_tests': {
         'mixins': ['dawn_end2end_gpu_test'],
         'linux_args': [ '--no-xvfb' ],
@@ -2672,15 +2714,6 @@
     # For Windows. Use the D3D12 backend validation layers but without GPU-based
     # validation and shader patching. This avoids hangs on less powerful systems.
     'gpu_dawn_gtests_with_partial_validation': {
-      'dawn_end2end_validation_layers_spirv_cross_tests': {
-        'mixins': ['dawn_end2end_gpu_test'],
-        'args': [
-          '--enable-backend-validation=partial',
-          '--disable-toggles=use_tint_generator',
-        ],
-        'linux_args': [ '--no-xvfb' ],
-        'test': 'dawn_end2end_tests',
-      },
       'dawn_end2end_validation_layers_tests': {
         'mixins': ['dawn_end2end_gpu_test'],
         'args': [
@@ -2694,15 +2727,6 @@
 
     # GPU gtests that test only Dawn with backend validation layers
     'gpu_dawn_gtests_with_validation': {
-      'dawn_end2end_validation_layers_spirv_cross_tests': {
-        'mixins': ['dawn_end2end_gpu_test'],
-        'args': [
-          '--enable-backend-validation',
-          '--disable-toggles=use_tint_generator',
-        ],
-        'linux_args': [ '--no-xvfb' ],
-        'test': 'dawn_end2end_tests',
-      },
       'dawn_end2end_validation_layers_tests': {
         'mixins': ['dawn_end2end_gpu_test'],
         'args': [
@@ -2846,12 +2870,16 @@
       },
     },
 
-    # TODO(crbug.com/894929): remove it when SkiaRenderer is shipped on macOS.
+    # TODO(crbug.com/1202958): Remove all gpu_gl_renderer_* targets when
+    # SkiaRenderer is shipped on all platforms.
     'gpu_gl_renderer_full_telemetry_tests': {
       'gl_renderer_context_lost_tests': {
         'telemetry_test_name': 'context_lost',
         'args': [
           '--extra-browser-args=--disable-features=UseSkiaRenderer',
+        ],
+        'chromeos_args': [
+          '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
         ],
         'mixins': [
           'has_native_resultdb_integration',
@@ -2862,6 +2890,9 @@
         'args': [
           '--extra-browser-args=--disable-features=UseSkiaRenderer',
         ],
+        'chromeos_args': [
+          '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
+        ],
         'mixins': [
           'has_native_resultdb_integration',
         ],
@@ -2871,6 +2902,9 @@
         'args': [
           '--extra-browser-args=--disable-features=UseSkiaRenderer',
         ],
+        'chromeos_args': [
+          '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
+        ],
         'mixins': [
           'has_native_resultdb_integration',
         ],
@@ -2879,6 +2913,9 @@
         'telemetry_test_name': 'hardware_accelerated_feature',
         'args': [
           '--extra-browser-args=--disable-features=UseSkiaRenderer',
+        ],
+        'chromeos_args': [
+          '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
         ],
         'mixins': [
           'has_native_resultdb_integration',
@@ -2891,6 +2928,9 @@
           '--test-machine-name',
           '${buildername}',
           '--extra-browser-args=--disable-features=UseSkiaRenderer',
+        ],
+        'chromeos_args': [
+          '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
         ],
         'mixins': [
           'chrome-gpu-gold-service-account',
@@ -2906,6 +2946,9 @@
           '${buildername}',
           '--extra-browser-args=--disable-features=UseSkiaRenderer',
         ],
+        'chromeos_args': [
+          '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
+        ],
         'mixins': [
           'chrome-gpu-gold-service-account',
           'has_native_resultdb_integration',
@@ -2917,6 +2960,9 @@
         'args': [
           '--dont-restore-color-profile-after-test',
           '--extra-browser-args=--disable-features=UseSkiaRenderer',
+        ],
+        'chromeos_args': [
+          '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
         ],
         'mixins': [
           'has_native_resultdb_integration',
@@ -3957,12 +4003,8 @@
         # TODO(crbug.com/816629) - Move these args into //BUILD.gn.
         'name': 'webgpu_blink_web_tests_with_backend_validation',
         'args': [
-          # Disable parallel jobs to work around consistent test timeout flakes.
-          # Also, the first test is always flaky due to startup time, so force
-          # the order so we can suppress it.
-          # TODO(crbug.com/953991): Solve this and remove the workaround.
-          '--jobs=1',
-          '--order=natural',
+          # crbug.com/953991 Ensure WebGPU is ready before running tests
+          '--initialize-webgpu-adapter-at-startup-timeout-ms=60000',
           '--additional-driver-flag=--enable-dawn-backend-validation',
           # Make Dawn allow "Unsafe APIs" so they can be tested with the WebGPU CTS.
           '--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis',
@@ -3971,6 +4013,8 @@
           # usage to be the same as the browser.
           '--additional-driver-flag=--use-gpu-in-tests',
           '--additional-driver-flag=--enable-dawn-features=use_tint_generator',
+          # Increase the timeout when using backend validation layers (crbug.com/1208253)
+          '--time-out-ms=30000',
         ],
         'win64_args': [ '--target=Release_x64' ],
         'mac_args': [
@@ -3991,6 +4035,9 @@
         'isolate_name': 'webgpu_blink_web_tests',
         'resultdb': {
           'enable': True,
+        },
+        'swarming': {
+          'shards': 4,
         },
       },
     },
@@ -4000,12 +4047,8 @@
         # TODO(crbug.com/816629) - Move these args into //BUILD.gn.
         'name': 'webgpu_blink_web_tests',
         'args': [
-          # Disable parallel jobs to work around consistent test timeout flakes.
-          # Also, the first test is always flaky due to startup time, so force
-          # the order so we can suppress it.
-          # TODO(crbug.com/953991): Solve this and remove the workaround.
-          '--jobs=1',
-          '--order=natural',
+          # crbug.com/953991 Ensure WebGPU is ready before running tests
+          '--initialize-webgpu-adapter-at-startup-timeout-ms=60000',
           # Make Dawn allow "Unsafe APIs" so they can be tested with the WebGPU CTS.
           '--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis',
           # We need this flag to initialize ANGLE so that we can explicitly tell
@@ -4033,6 +4076,9 @@
         'isolate_name': 'webgpu_blink_web_tests',
         'resultdb': {
           'enable': True,
+        },
+        'swarming': {
+          'shards': 4,
         },
       },
     },
@@ -4044,12 +4090,8 @@
         # TODO(crbug.com/816629) - Move these args into //BUILD.gn.
         'name': 'webgpu_blink_web_tests_with_backend_validation',
         'args': [
-          # Disable parallel jobs to work around consistent test timeout flakes.
-          # Also, the first test is always flaky due to startup time, so force
-          # the order so we can suppress it.
-          # TODO(crbug.com/953991): Solve this and remove the workaround.
-          '--jobs=1',
-          '--order=natural',
+          # crbug.com/953991 Ensure WebGPU is ready before running tests
+          '--initialize-webgpu-adapter-at-startup-timeout-ms=60000',
           '--additional-driver-flag=--enable-dawn-backend-validation=partial',
           # Make Dawn allow "Unsafe APIs" so they can be tested with the WebGPU CTS.
           '--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis',
@@ -4058,6 +4100,8 @@
           # usage to be the same as the browser.
           '--additional-driver-flag=--use-gpu-in-tests',
           '--additional-driver-flag=--enable-dawn-features=use_tint_generator',
+          # Increase the timeout when using backend validation layers (crbug.com/1208253)
+          '--time-out-ms=30000',
         ],
         'win64_args': [ '--target=Release_x64' ],
         'mac_args': [
@@ -4078,6 +4122,9 @@
         'isolate_name': 'webgpu_blink_web_tests',
         'resultdb': {
           'enable': True,
+        },
+        'swarming': {
+          'shards': 4,
         },
       },
     },
@@ -4224,7 +4271,7 @@
 
     'lacros_skylab_poc': {
       'lacros_fyi_tast_tests': {
-        'tast_expr': '("group:mainline" && "dep:lacros")',
+        'tast_expr': '("group:mainline" && "dep:lacros" && !informational)',
         'timeout_sec': 10800,
       },
       'ozone_unittests': {
@@ -4297,6 +4344,24 @@
       },
     },
 
+    # TODO(crbug.com/1202958): Remove this when SkiaRenderer is fully shipped
+    # on Chrome OS.
+    'linux_chromeos_skia_renderer_specific_gtests': {
+      # TODO(b/195938162): Re-enable this when animation tests are deflaked.
+      # 'skia_renderer_ash_unittests': {
+      #   'test': 'ash_unittests',
+      #   'args': [
+      #     '--enable-features=UseSkiaRenderer',
+      #   ],
+      # },
+      'skia_renderer_aura_unittests': {
+        'test': 'aura_unittests',
+        'args': [
+          '--enable-features=UseSkiaRenderer',
+        ],
+      },
+    },
+
     'linux_chromeos_specific_gtests': {
       # Chrome OS only.
       'ash_unittests': {},
@@ -4339,28 +4404,6 @@
     'linux_lacros_chrome_browsertests_version_skew': {
       'lacros_chrome_browsertests': { },
       'lacros_chrome_browsertests_run_in_series': { },
-    },
-
-    'linux_lacros_cq_gtests': {
-      'browser_tests': {
-        'swarming': {
-          'shards': 10,
-        },
-      },
-      'chromeos_unittests': {},
-      'components_unittests': {},
-      'extensions_browsertests': {},
-      'interactive_ui_tests': {
-        'swarming': {
-          'shards': 3,
-        },
-      },
-      'lacros_chrome_browsertests': {},
-      'lacros_chrome_browsertests_run_in_series': {},
-      'lacros_chrome_unittests': {},
-      'sync_integration_tests': {},
-      'ui_base_unittests': {},
-      'unit_tests': {},
     },
 
     'linux_lacros_specific_gtests': {
@@ -4464,7 +4507,14 @@
 
     'mac_specific_chromium_gtests': {
       'sandbox_mac_unittests': {},
-      'updater_tests': {},
+      'updater_tests': {
+        'args': [
+          # Timeouts based on empirical observations of test runtimes, 2021-07.
+          '--test-launcher-timeout=90000',
+          '--ui-test-action-max-timeout=45000',
+          '--ui-test-action-timeout=40000',
+        ],
+      },
       'xr_browser_tests': {
         'test': 'xr_browser_tests',
       },
@@ -5120,11 +5170,24 @@
     },
 
     'updater_gtests': {
-      'updater_tests': {},
+      'updater_tests': {
+        'args': [
+          # Timeouts based on empirical observations of test runtimes, 2021-07.
+          '--test-launcher-timeout=90000',
+          '--ui-test-action-max-timeout=45000',
+          '--ui-test-action-timeout=40000',
+        ],
+      },
     },
 
     'updater_system_gtests': {
       'updater_tests_system': {
+        'args': [
+          # Timeouts based on empirical observations of test runtimes, 2021-07.
+          '--test-launcher-timeout=90000',
+          '--ui-test-action-max-timeout=45000',
+          '--ui-test-action-timeout=40000',
+        ],
         'swarming': {
           'dimension_sets': [
             {
@@ -5137,6 +5200,35 @@
 
     'upload_perfetto': {
       'upload_trace_processor': {},
+    },
+
+    'variations_smoke_tests': {
+      'variations_smoke_tests': {
+        'isolate_name': 'variations_smoke_tests',
+        'resultdb': {
+          'enable': True,
+          'result_format': 'single'
+        },
+      },
+    },
+
+    # Not applicable for android x86 & x64 since the targets here assert
+    # "enable_vr" in GN which is only true for android arm & arm64.
+    # For details, see the following files:
+    #  * //chrome/android/BUILD.gn
+    #  * //chrome/browser/android/vr/BUILD.gn
+    #  * //device/vr/buildflags/buildflags.gni
+    'vr_android_specific_chromium_tests': {
+      'chrome_public_test_vr_apk': {
+        'args': [
+          '--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json',
+          '--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk',
+        ],
+        'swarming': {
+          'shards': 2,
+        },
+      },
+      'vr_android_unittests': {},
     },
 
     'vr_platform_specific_chromium_gtests': {
@@ -5156,9 +5248,7 @@
           '--fuzzy-diff',
           '--skipped=always',
           '--test-list=../../testing/buildbot/filters/gpu.skiarenderer_vulkan_blink_web_tests.filter',
-          '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-features=UseSkiaRenderer',
           '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-gpu-rasterization',
-          '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/use-vulkan=swiftshader',
           '--flag-specific=skia-vulkan-swiftshader',
         ],
         'isolate_name': 'blink_web_tests',
@@ -5344,6 +5434,21 @@
       },
     },
 
+    'webview_64_cts_tests_gtest': {
+      'webview_64_cts_tests': {
+        'swarming': {
+          'shards': 2,
+          'cipd_packages': [
+            {
+              "cipd_package": 'chromium/android_webview/tools/cts_archive',
+              'location': 'android_webview/tools/cts_archive',
+              'revision': 'ai8Ig4HlO0vG6aP_JP2uhyruE2yPzze8PFP1g8Z4_hgC',
+            }
+          ]
+        },
+      },
+    },
+
     'webview_bot_instrumentation_test_apk_gtest': {
       'webview_instrumentation_test_apk': {
         'swarming': {
@@ -5473,7 +5578,14 @@
           ],
         },
       },
-      'updater_tests': {},
+      'updater_tests': {
+        'args': [
+          # Timeouts based on empirical observations of test runtimes, 2021-07.
+          '--test-launcher-timeout=90000',
+          '--ui-test-action-max-timeout=45000',
+          '--ui-test-action-timeout=40000',
+        ],
+      },
       'zucchini_unittests': {},
     },
 
@@ -5585,6 +5697,7 @@
     ],
 
     'android_11_emulator_gtests': [
+      'android_emulator_specific_chrome_public_tests',
       'android_monochrome_smoke_tests',
       'android_smoke_tests',
       'android_specific_chromium_gtests',  # Already includes gl_gtests.
@@ -5599,6 +5712,7 @@
     ],
 
     'android_12_emulator_gtests': [
+      'android_emulator_specific_chrome_public_tests',
       'android_monochrome_smoke_tests',
       'android_smoke_tests',
       'android_specific_chromium_gtests',  # Already includes gl_gtests.
@@ -5621,7 +5735,9 @@
       'android_specific_chromium_gtests',  # Already includes gl_gtests.
       'chromium_gtests',
       'chromium_gtests_for_devices_with_graphical_output',
+      'chrome_public_tests',
       'linux_flavor_specific_chromium_gtests',
+      'vr_android_specific_chromium_tests',
       'vr_platform_specific_chromium_gtests',
       'weblayer_android_gtests',
       'weblayer_gtests',
@@ -5635,27 +5751,31 @@
       'android_specific_chromium_gtests',  # Already includes gl_gtests.
       'chromium_gtests',
       'chromium_gtests_for_devices_with_graphical_output',
+      'chrome_public_tests',
       'linux_flavor_specific_chromium_gtests',
+      'vr_android_specific_chromium_tests',
       'vr_platform_specific_chromium_gtests',
       'weblayer_android_gtests',
       'weblayer_gtests',
     ],
 
     # List gtests that run on android-marshmallow-x86-rel builder.
-    # Test suites will be gradually moved from android_marshmallow_wpr_gtests
+    # Test suites will be gradually moved from
+    # android_marshmallow_emulator_non_cq_gtests
     # to this one, when there are more GCE capacity.
     'android_marshmallow_emulator_gtests': [
+      'android_emulator_specific_chrome_public_tests',
       # TODO(crbug.com/1127110): Deprecate this when all the test suites below
       # it are re-enabled.
       'android_marshmallow_emulator_limited_capacity_gtests',
 
       'android_modern_smoke_tests',
       'android_smoke_tests',
-      #'android_specific_chromium_gtests',  # Already includes gl_gtests.
+      'android_specific_chromium_gtests',  # Already includes gl_gtests.
       'android_wpr_record_replay_tests',
       #'chromium_gtests',
-      #'chromium_gtests_for_devices_with_graphical_output',
-      #'linux_flavor_specific_chromium_gtests',
+      'chromium_gtests_for_devices_with_graphical_output',
+      'linux_flavor_specific_chromium_gtests',
       #'weblayer_android_gtests',
       #'weblayer_gtests',
     ],
@@ -5663,14 +5783,12 @@
     # Note that tests here are gradually moved to
     # android_marshmallow_emulator_gtests (crbug.com/1127110)
     #
-    # The diff between android_lollipop_marshmallow_gtests and (
-    # android_marshmallow_wpr_gtests + android_marshmallow_emulator_gtests)
+    # The diff between android_lollipop_marshmallow_gtests and
+    # (android_marshmallow_emulator_non_cq_gtests +
+    # android_marshmallow_emulator_gtests)
     # is android_wpr_record_replay_tests
-    'android_marshmallow_wpr_gtests': [
-      'android_specific_chromium_gtests',  # Already includes gl_gtests.
+    'android_marshmallow_emulator_non_cq_gtests': [
       'chromium_gtests',
-      'chromium_gtests_for_devices_with_graphical_output',
-      'linux_flavor_specific_chromium_gtests',
       'weblayer_android_gtests',
       'weblayer_gtests',
     ],
@@ -5692,8 +5810,10 @@
       'android_webapk_launch_tests',
       'chromium_gtests',
       'chromium_gtests_for_devices_with_graphical_output',
+      'chrome_public_tests',
       'linux_flavor_specific_chromium_gtests',
       'system_webview_shell_instrumentation_tests', # Not an experimental test
+      'vr_android_specific_chromium_tests',
       'vr_platform_specific_chromium_gtests',
       'weblayer_android_gtests',
       'weblayer_gtests',
@@ -5719,32 +5839,27 @@
       # O only.
     ],
 
-     # Keep in sync with android_pie_rel_non_skia_renderer_gtests below.
-    'android_pie_rel_gtests': [
+     # Keep in sync with android_pie_rel_gtests below, except for
+     # vr_{android,platform}_specific_chromium_gtests which are not applicable
+     # to android emulators on x86 & x64.
+    'android_pie_rel_emulator_gtests': [
+      'android_emulator_specific_chrome_public_tests',
       'android_monochrome_smoke_tests',
       'android_pagecontroller_self_tests',
       'android_smoke_tests',
       'android_webapk_launch_tests',
-      # TODO: Following tests are experimental (crbug/1010211).
       'android_specific_chromium_gtests',  # Already includes gl_gtests.
       'chromium_gtests',
       'chromium_gtests_for_devices_with_graphical_output',
       'linux_flavor_specific_chromium_gtests',
       'system_webview_shell_instrumentation_tests', # Not an experimental test
-      'vr_platform_specific_chromium_gtests',
       'weblayer_android_gtests',
       'weblayer_gtests',
-      # Experimental tests end here.
       'webview_cts_tests_gtest',
       'webview_ui_instrumentation_tests',
     ],
 
-    # Temporary test suite to minimize impact of non_skia_renderer_gtests.
-    # Keep in sync with android_pie_rel_gtests above.
-    #
-    # TODO(https://crbug.com/1058067): Remove this once SkiaRenderer goes
-    # stable on Android.
-    'android_pie_rel_non_skia_renderer_gtests': [
+    'android_pie_rel_gtests': [
       # TODO(crbug.com/1111436): Deprecate this when all the test suites below
       # it are re-enabled.
       'android_pie_rel_reduced_capacity_gtests',
@@ -5753,17 +5868,17 @@
       'android_pagecontroller_self_tests',
       'android_smoke_tests',
       'android_webapk_launch_tests',
-      # TODO: Following tests are experimental (crbug/1010211).
     #   'android_specific_chromium_gtests',  # Already includes gl_gtests.
     #   'chromium_gtests',
     #   'chromium_gtests_for_devices_with_graphical_output',
+      'chrome_public_tests',
     #   'linux_flavor_specific_chromium_gtests',
     #   'system_webview_shell_instrumentation_tests', # Not an experimental test
+    #   'vr_android_specific_chromium_tests',
     #   'vr_platform_specific_chromium_gtests',
     #   'weblayer_android_gtests',
       'weblayer_gtests',
-      # Experimental tests end here.
-      'webview_cts_tests_gtest',
+      'webview_64_cts_tests_gtest',
       'webview_ui_instrumentation_tests',
     ],
 
@@ -5797,7 +5912,9 @@
       'android_specific_chromium_gtests',  # Already includes gl_gtests.
       'chromium_gtests',
       'chromium_gtests_for_devices_with_graphical_output',
+      'chrome_public_tests',
       'linux_flavor_specific_chromium_gtests',
+      'vr_android_specific_chromium_tests',
       'vr_platform_specific_chromium_gtests',
     ],
 
@@ -6253,7 +6370,7 @@
       'gpu_webgpu_integration_backend_validation_isolated_scripts',
     ],
 
-    'gpu_dawn_isolated_scripts_win_intel': [
+    'gpu_dawn_isolated_scripts_win': [
       'gpu_dawn_perf_smoke_isolated_scripts',
       'gpu_webgpu_integration_isolated_scripts',
       'gpu_webgpu_integration_partial_backend_validation_isolated_scripts',
@@ -6326,6 +6443,7 @@
       'gpu_validating_telemetry_tests',
       'gpu_webcodecs_telemetry_test',
       'gpu_webgl_conformance_validating_telemetry_tests',
+      'gpu_gl_renderer_full_telemetry_tests',
       # Large amounts of WebGL/WebGL2 tests are failing due to issues that are
       # possibly related to other CrOS issues that are already reported.
       # TODO(crbug.com/1080424): Try enabling these again once some of the
@@ -6564,7 +6682,6 @@
 
     'gpu_fyi_win_optional_gtests': [
       'gpu_angle_end2end_gtests',
-      'gpu_angle_gles1_conformance_gtests',
       'gpu_angle_white_box_gtests',
       'gpu_default_and_optional_win_specific_gtests',
       'gpu_fyi_and_optional_non_linux_gtests',
@@ -6701,6 +6818,7 @@
       'chromium_gtests_for_linux_and_chromeos_only',
       'chromium_gtests_for_win_and_linux_only',
       'linux_chromeos_lacros_gtests',
+      'linux_chromeos_skia_renderer_specific_gtests',
       'linux_chromeos_specific_gtests',
       'linux_flavor_specific_chromium_gtests',
       'non_android_chromium_gtests',
@@ -6714,25 +6832,9 @@
       'chromium_gtests_for_win_and_linux_only',
       'linux_chromeos_lacros_gtests',
       'linux_chromeos_oobe_specific_tests',
+      'linux_chromeos_skia_renderer_specific_gtests',
       'linux_chromeos_specific_gtests',
       'linux_flavor_specific_chromium_gtests',
-      'non_android_chromium_gtests',
-    ],
-
-    'linux_lacros_gtests': [
-      # This is:
-      #   linux_chromeos_gtests
-      #   - linux_chromeos_specific_gtests
-      #   + linux_chromeos_lacros_gtests
-      #   + linux_lacros_specific_gtests
-      'aura_gtests',
-      'chromium_gtests',
-      'chromium_gtests_for_devices_with_graphical_output',
-      'chromium_gtests_for_linux_and_chromeos_only',
-      'chromium_gtests_for_win_and_linux_only',
-      'linux_chromeos_lacros_gtests',
-      'linux_flavor_specific_chromium_gtests',
-      'linux_lacros_specific_gtests',
       'non_android_chromium_gtests',
     ],
 
@@ -6889,12 +6991,12 @@
     'gpu_angle_ios_gtests': {
       'gpu_angle_end2end_gtests': {
         'variants': [
-          'SIM_IPHONE_X_14_0',
+          'SIM_IPHONE_X_14_4',
         ],
       },
       'gpu_angle_white_box_gtests': {
         'variants': [
-          'SIM_IPHONE_X_14_0',
+          'SIM_IPHONE_X_14_4',
         ],
       },
     },
@@ -6937,7 +7039,6 @@
         'variants': [
           # Latest beta iOS version Sims
           'SIM_IPHONE_6S_14_5',
-          'SIM_IPHONE_6S_13_6',
         ],
       },
       'ios_eg2_tests': {
@@ -6947,9 +7048,6 @@
           'SIM_IPHONE_7_14_5',
           'SIM_IPAD_AIR_2_14_5',
           'SIM_IPHONE_X_14_5',
-          'SIM_IPHONE_7_13_6',
-          'SIM_IPAD_AIR_2_13_6',
-          'SIM_IPHONE_X_13_6',
         ]
       },
       'ios_eg2_cq_tests': {
@@ -6959,9 +7057,6 @@
           'SIM_IPHONE_X_14_5',
           'SIM_IPAD_AIR_2_14_5',
           'SIM_IPAD_PRO_2ND_GEN_14_5',
-          'SIM_IPHONE_7_13_6',
-          'SIM_IPAD_AIR_2_13_6',
-          'SIM_IPHONE_6S_13_6',
         ]
       },
       'ios_screen_size_dependent_tests': {
@@ -6971,10 +7066,6 @@
           'SIM_IPHONE_6S_14_5',
           'SIM_IPHONE_SE_1ST_GEN_14_5',
           'SIM_IPAD_AIR_2_14_5',
-          'SIM_IPHONE_6S_PLUS_13_6',
-          'SIM_IPHONE_6S_13_6',
-          'SIM_IPHONE_SE_1ST_GEN_13_6',
-          'SIM_IPAD_AIR_2_13_6',
         ],
       },
     },
@@ -7068,14 +7159,14 @@
     'ios_asan_tests': {
       'ios_common_tests': {
         'variants': [
-          'SIM_IPHONE_X_13_6',
-          'SIM_IPAD_AIR_2_13_6',
+          'SIM_IPHONE_X_15_0',
+          'SIM_IPAD_AIR_2_15_0',
         ]
       },
       'ios_screen_size_dependent_tests': {
         'variants': [
-          'SIM_IPHONE_X_13_6',
-          'SIM_IPAD_AIR_2_13_6',
+          'SIM_IPHONE_X_15_0',
+          'SIM_IPAD_AIR_2_15_0',
         ]
       }
     },
@@ -7091,7 +7182,7 @@
     'ios_clang_tot_sim_tests': {
       'ios_clang_tests': {
         'variants': [
-          'SIM_IPHONE_6S_13_6',
+          'SIM_IPHONE_6S_15_0',
         ]
       }
     },
@@ -7101,16 +7192,16 @@
     'ios_code_coverage_tests': {
       'ios_common_tests': {
         'variants': [
-          'SIM_IPHONE_6S_13_6',
+          'SIM_IPHONE_6S_15_0',
           'SIM_IPHONE_6S_14_4',
         ],
       },
       'ios_eg2_cq_tests': {
         'mixins': ['xcode_parallelization'],
         'variants': [
-          'SIM_IPHONE_6S_13_6',
-          'SIM_IPHONE_7_13_6',
-          'SIM_IPAD_AIR_2_13_6',
+          'SIM_IPHONE_6S_15_0',
+          'SIM_IPHONE_7_15_0',
+          'SIM_IPAD_AIR_2_15_0',
           'SIM_IPHONE_6S_14_4',
           'SIM_IPHONE_7_14_4',
           'SIM_IPAD_AIR_2_14_4',
@@ -7119,9 +7210,9 @@
       'ios_eg2_tests': {
         'mixins': ['xcode_parallelization'],
         'variants': [
-          'SIM_IPHONE_7_13_6',
-          'SIM_IPAD_AIR_2_13_6',
-          'SIM_IPHONE_X_13_6',
+          'SIM_IPHONE_7_15_0',
+          'SIM_IPAD_AIR_2_15_0',
+          'SIM_IPHONE_X_15_0',
           'SIM_IPHONE_7_14_4',
           'SIM_IPAD_AIR_2_14_4',
           'SIM_IPHONE_X_14_4',
@@ -7129,10 +7220,10 @@
       },
       'ios_screen_size_dependent_tests': {
         'variants': [
-          'SIM_IPHONE_6S_PLUS_13_6',
-          'SIM_IPHONE_6S_13_6',
-          'SIM_IPHONE_SE_1ST_GEN_13_6',
-          'SIM_IPAD_AIR_2_13_6',
+          'SIM_IPHONE_6S_PLUS_15_0',
+          'SIM_IPHONE_6S_15_0',
+          'SIM_IPHONE_SE_1ST_GEN_15_0',
+          'SIM_IPAD_AIR_2_15_0',
           'SIM_IPHONE_6S_PLUS_14_4',
           'SIM_IPHONE_6S_14_4',
           'SIM_IPHONE_SE_1ST_GEN_14_4',
@@ -7144,7 +7235,7 @@
     'ios_simulator_cronet_tests': {
       'ios_cronet_tests': {
         'variants': [
-          'SIM_IPHONE_X_13_6',
+          'SIM_IPHONE_X_15_0',
         ]
       }
     },
@@ -7154,9 +7245,9 @@
       'ios_eg2_tests': {
         'mixins': ['xcode_parallelization'],
         'variants': [
-          'SIM_IPHONE_7_13_6',
-          'SIM_IPAD_AIR_2_13_6',
-          'SIM_IPHONE_X_13_6',
+          'SIM_IPHONE_7_15_0',
+          'SIM_IPAD_AIR_2_15_0',
+          'SIM_IPHONE_X_15_0',
           'SIM_IPHONE_7_14_4',
           'SIM_IPAD_AIR_2_14_4',
           'SIM_IPHONE_X_14_4',
@@ -7165,8 +7256,8 @@
       'ios_eg2_cq_tests': {
         'mixins': ['xcode_parallelization'],
         'variants': [
-          'SIM_IPHONE_7_13_6',
-          'SIM_IPAD_AIR_2_13_6',
+          'SIM_IPHONE_7_15_0',
+          'SIM_IPAD_AIR_2_15_0',
           'SIM_IPHONE_7_14_4',
           'SIM_IPAD_AIR_2_14_4',
         ]
@@ -7176,24 +7267,24 @@
     'ios_simulator_multi_window_tests': {
       'ios_common_tests': {
         'variants': [
-          'SIM_IPAD_AIR_2_13_6',
+          'SIM_IPAD_AIR_2_15_0',
         ]
       },
       'ios_eg2_cq_tests': {
         'mixins': ['xcode_parallelization'],
         'variants': [
-          'SIM_IPAD_AIR_2_13_6',
+          'SIM_IPAD_AIR_2_15_0',
         ]
       },
       'ios_eg2_tests': {
         'mixins': ['xcode_parallelization'],
         'variants': [
-          'SIM_IPAD_AIR_2_13_6',
+          'SIM_IPAD_AIR_2_15_0',
         ]
       },
       'ios_screen_size_dependent_tests': {
         'variants': [
-          'SIM_IPAD_AIR_2_13_6',
+          'SIM_IPAD_AIR_2_15_0',
         ]
       }
     },
@@ -7201,22 +7292,22 @@
     'ios_simulator_noncq_tests': {
       'ios_common_tests': {
         'variants': [
-          'SIM_IPHONE_6S_15_0',
+          'SIM_IPHONE_6S_14_4',
         ]
       },
       'ios_eg2_tests': {
         'mixins': ['xcode_parallelization'],
         'variants': [
-          'SIM_IPHONE_6S_15_0',
+          'SIM_IPHONE_6S_14_4',
         ]
       },
       'ios_eg2_cq_tests': {
         'mixins': ['xcode_parallelization'],
         'variants': [
-          'SIM_IPHONE_6S_PLUS_15_0',
-          'SIM_IPHONE_6S_15_0',
-          'SIM_IPHONE_SE_1ST_GEN_15_0',
-          'SIM_IPAD_AIR_2_15_0',
+          'SIM_IPHONE_6S_PLUS_14_4',
+          'SIM_IPHONE_6S_14_4',
+          'SIM_IPHONE_SE_1ST_GEN_14_4',
+          'SIM_IPAD_AIR_2_14_4',
         ]
       },
     },
@@ -7226,22 +7317,22 @@
       'ios_common_tests': {
         'variants': [
           'SIM_IPHONE_6S_14_4',
-          'SIM_IPHONE_6S_13_6',
+          'SIM_IPHONE_6S_15_0',
         ]
       },
       'ios_eg2_cq_tests': {
         'mixins': ['xcode_parallelization'],
         'variants': [
           'SIM_IPHONE_6S_14_4',
-          'SIM_IPHONE_6S_13_6',
+          'SIM_IPHONE_6S_15_0',
         ]
       },
       'ios_screen_size_dependent_tests': {
         'variants': [
-          'SIM_IPHONE_6S_PLUS_13_6',
-          'SIM_IPHONE_6S_13_6',
-          'SIM_IPHONE_SE_1ST_GEN_13_6',
-          'SIM_IPAD_AIR_2_13_6',
+          'SIM_IPHONE_6S_PLUS_15_0',
+          'SIM_IPHONE_6S_15_0',
+          'SIM_IPHONE_SE_1ST_GEN_15_0',
+          'SIM_IPAD_AIR_2_15_0',
           'SIM_IPHONE_6S_PLUS_14_4',
           'SIM_IPHONE_6S_14_4',
           'SIM_IPHONE_SE_1ST_GEN_14_4',
@@ -7287,7 +7378,6 @@
       },
     },
 
-    # TODO(crbug.com/1195415): Add EVE variant once HW arrives and is deployed.
     'lacros_device_or_vm_tests': {
       'lacros_all_tast_tests': {
         'variants': [
@@ -7303,7 +7393,6 @@
       },
     },
 
-    # TODO(crbug.com/1195415): Add EVE variant once HW arrives and is deployed.
     'lacros_device_or_vm_tests_fyi': {
       'lacros_device_or_vm_gtests': {
         'variants': [
@@ -7332,18 +7421,43 @@
     'lacros_skylab_x86_64': {
       'lacros_skylab_poc': {
         'variants': [
-          # TODO(crbug.com/1218582): Due to crbug.com/1204195, TOT Lacros
-          # doens't work with images version below 13930.0.0. Add TOT-2 back
-          # once TOT-2 is at least 13930.0.0.
           'CROS_ATLAS_TOT',
           'CROS_ATLAS_TOT-1',
+          'CROS_ATLAS_TOT-2',
           'CROS_EVE_TOT',
           'CROS_EVE_TOT-1',
+          'CROS_EVE_TOT-2',
         ]
       },
     },
 
-    'linux-lacros-version-skew-tests': {
+    'linux_lacros_gtests': {
+      # This is:
+      #   linux_chromeos_gtests
+      #   - linux_chromeos_specific_gtests
+      #   + linux_chromeos_lacros_gtests
+      #   + linux_lacros_chrome_browsertests_version_skew
+      #   + linux_lacros_specific_gtests
+      'aura_gtests': {},
+      'chromium_gtests': {},
+      'chromium_gtests_for_devices_with_graphical_output': {},
+      'chromium_gtests_for_linux_and_chromeos_only': {},
+      'chromium_gtests_for_win_and_linux_only': {},
+      'linux_chromeos_lacros_gtests': { },
+      'linux_flavor_specific_chromium_gtests': {  },
+      'linux_lacros_specific_gtests': {  },
+      'non_android_chromium_gtests': {
+      },
+      'linux_lacros_chrome_browsertests_version_skew': {
+        'variants': [
+          # TODO(crbug.com/1236127) Adds beta and stable.
+          'LACROS_VERSION_SKEW_CANARY',
+          'LACROS_VERSION_SKEW_DEV',
+        ]
+      },
+    },
+
+    'linux_lacros_version_skew_tests': {
       'linux_lacros_chrome_browsertests_version_skew': {
         'variants': [
           'LACROS_VERSION_SKEW_CANARY',

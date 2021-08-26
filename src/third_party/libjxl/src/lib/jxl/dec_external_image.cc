@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #include "lib/jxl/dec_external_image.h"
 
@@ -33,6 +24,7 @@
 #include "lib/jxl/base/compiler_specific.h"
 #include "lib/jxl/color_management.h"
 #include "lib/jxl/common.h"
+#include "lib/jxl/sanitizers.h"
 #include "lib/jxl/transfer_functions-inl.h"
 
 HWY_BEFORE_NAMESPACE();
@@ -41,59 +33,66 @@ namespace HWY_NAMESPACE {
 
 void FloatToU32(const float* in, uint32_t* out, size_t num, float mul,
                 size_t bits_per_sample) {
-  const HWY_FULL(float) d;
-  const hwy::HWY_NAMESPACE::Rebind<uint32_t, decltype(d)> du;
-  size_t vec_num = num;
+  // TODO(eustas): investigate 24..31 bpp cases.
   if (bits_per_sample == 32) {
     // Conversion to real 32-bit *unsigned* integers requires more intermediate
     // precision that what is given by the usual f32 -> i32 conversion
     // instructions, so we run the non-SIMD path for those.
-    vec_num = 0;
+    const uint32_t cap = (1ull << bits_per_sample) - 1;
+    for (size_t x = 0; x < num; x++) {
+      float v = in[x];
+      if (v >= 1.0f) {
+        out[x] = cap;
+      } else if (v >= 0.0f) {  // Inverted condition => NaN -> 0.
+        out[x] = static_cast<uint32_t>(v * mul + 0.5f);
+      } else {
+        out[x] = 0;
+      }
+    }
+    return;
   }
-#if JXL_IS_DEBUG_BUILD
-  // Avoid accessing partially-uninitialized vectors with memory sanitizer.
-  vec_num &= ~(Lanes(d) - 1);
-#endif  // JXL_IS_DEBUG_BUILD
+
+  // General SIMD case for less than 32 bits output.
+  const HWY_FULL(float) d;
+  const hwy::HWY_NAMESPACE::Rebind<uint32_t, decltype(d)> du;
+
+  // Unpoison accessing partially-uninitialized vectors with memory sanitizer.
+  // This is because we run NearestInt() on the vector, which triggers msan even
+  // it it safe to do so since the values are not mixed between lanes.
+  const size_t num_round_up = RoundUpTo(num, Lanes(d));
+  msan::UnpoisonMemory(in + num, sizeof(in[0]) * (num_round_up - num));
 
   const auto one = Set(d, 1.0f);
   const auto scale = Set(d, mul);
-  for (size_t x = 0; x < vec_num; x += Lanes(d)) {
+  for (size_t x = 0; x < num; x += Lanes(d)) {
     auto v = Load(d, in + x);
     // Clamp turns NaN to 'min'.
     v = Clamp(v, Zero(d), one);
     auto i = NearestInt(v * scale);
     Store(BitCast(du, i), du, out + x);
   }
-  for (size_t x = vec_num; x < num; x++) {
-    float v = in[x];
-    // Inverted condition grants that NaN is mapped to 0.0f.
-    v = (v >= 0.0f) ? (v > 1.0f ? mul : (v * mul)) : 0.0f;
-    out[x] = static_cast<uint32_t>(v + 0.5f);
-  }
+
+  // Poison back the output.
+  msan::PoisonMemory(out + num, sizeof(out[0]) * (num_round_up - num));
 }
 
 void FloatToF16(const float* in, hwy::float16_t* out, size_t num) {
   const HWY_FULL(float) d;
   const hwy::HWY_NAMESPACE::Rebind<hwy::float16_t, decltype(d)> du;
-  size_t vec_num = num;
-#if JXL_IS_DEBUG_BUILD
-  // Avoid accessing partially-uninitialized vectors with memory sanitizer.
-  vec_num &= ~(Lanes(d) - 1);
-#endif  // JXL_IS_DEBUG_BUILD
-  for (size_t x = 0; x < vec_num; x += Lanes(d)) {
+
+  // Unpoison accessing partially-uninitialized vectors with memory sanitizer.
+  // This is because we run DemoteTo() on the vector which triggers msan.
+  const size_t num_round_up = RoundUpTo(num, Lanes(d));
+  msan::UnpoisonMemory(in + num, sizeof(in[0]) * (num_round_up - num));
+
+  for (size_t x = 0; x < num; x += Lanes(d)) {
     auto v = Load(d, in + x);
     auto v16 = DemoteTo(du, v);
     Store(v16, du, out + x);
   }
-  if (num != vec_num) {
-    const HWY_CAPPED(float, 1) d1;
-    const hwy::HWY_NAMESPACE::Rebind<hwy::float16_t, HWY_CAPPED(float, 1)> du1;
-    for (size_t x = vec_num; x < num; x++) {
-      auto v = Load(d1, in + x);
-      auto v16 = DemoteTo(du1, v);
-      Store(v16, du1, out + x);
-    }
-  }
+
+  // Poison back the output.
+  msan::PoisonMemory(out + num, sizeof(out[0]) * (num_round_up - num));
 }
 
 // NOLINTNEXTLINE(google-readability-namespace-comments)
@@ -279,7 +278,7 @@ Status ConvertToExternal(const jxl::ImageBundle& ib, size_t bits_per_sample,
   const size_t bytes_per_pixel = num_channels * bytes_per_channel;
 
   const Image3F* color = &ib.color();
-  Image3F temp_color;
+  Image3F temp_color, unpremul;
   const ImageF* alpha = ib.HasAlpha() ? &ib.alpha() : nullptr;
   ImageF temp_alpha;
 
@@ -293,6 +292,16 @@ Status ConvertToExternal(const jxl::ImageBundle& ib, size_t bits_per_sample,
     }
   };
 
+  if (ib.AlphaIsPremultiplied() && ib.HasAlpha()) {
+    unpremul = Image3F(color->xsize(), color->ysize());
+    CopyImageTo(*color, &unpremul);
+    for (size_t y = 0; y < unpremul.ysize(); y++) {
+      UnpremultiplyAlpha(unpremul.PlaneRow(0, y), unpremul.PlaneRow(1, y),
+                         unpremul.PlaneRow(2, y), alpha->Row(y),
+                         unpremul.xsize());
+    }
+    color = &unpremul;
+  }
   if (undo_orientation != Orientation::kIdentity) {
     Image3F transformed;
     for (size_t c = 0; c < color_channels; ++c) {
@@ -443,6 +452,9 @@ Status ConvertToExternal(const jxl::ImageBundle& ib, size_t bits_per_sample,
           uint32_t* JXL_RESTRICT row_u32[4];
           for (size_t r = 0; r < c; r++) {
             row_u32[r] = u32_cache.Row(r + thread * num_channels);
+            // row_u32[] is a per-thread temporary row storage, this isn't
+            // intended to be initialized on a previous run.
+            msan::PoisonMemory(row_u32[r], xsize * sizeof(row_u32[r][0]));
             HWY_DYNAMIC_DISPATCH(FloatToU32)
             (row_in[r], row_u32[r], xsize, mul, bits_per_sample);
           }

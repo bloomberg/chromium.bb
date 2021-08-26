@@ -1232,12 +1232,21 @@ StatusCode DecoderImpl::DecodeTiles(
     LIBGAV1_DLOG(ERROR, "Failed to allocate memory for the decoder buffer.");
     return kStatusOutOfMemory;
   }
-  if (sequence_header.enable_cdef) {
+  if (frame_header.cdef.bits > 0) {
     if (!frame_scratch_buffer->cdef_index.Reset(
             DivideBy16(frame_header.rows4x4 + kMaxBlockHeight4x4),
             DivideBy16(frame_header.columns4x4 + kMaxBlockWidth4x4),
             /*zero_initialize=*/false)) {
       LIBGAV1_DLOG(ERROR, "Failed to allocate memory for cdef index.");
+      return kStatusOutOfMemory;
+    }
+  }
+  if (do_cdef) {
+    if (!frame_scratch_buffer->cdef_skip.Reset(
+            DivideBy2(frame_header.rows4x4 + kMaxBlockHeight4x4),
+            DivideBy16(frame_header.columns4x4 + kMaxBlockWidth4x4),
+            /*zero_initialize=*/true)) {
+      LIBGAV1_DLOG(ERROR, "Failed to allocate memory for cdef skip.");
       return kStatusOutOfMemory;
     }
   }
@@ -1405,10 +1414,6 @@ StatusCode DecoderImpl::DecodeTiles(
     }
   }
 
-  PostFilter post_filter(frame_header, sequence_header, frame_scratch_buffer,
-                         current_frame->buffer(), dsp,
-                         settings_.post_filter_mask);
-
   if (is_frame_parallel_ && !IsIntraFrame(frame_header.frame_type)) {
     // We can parse the current frame if all the reference frames have been
     // parsed.
@@ -1477,6 +1482,9 @@ StatusCode DecoderImpl::DecodeTiles(
     }
   }
 
+  PostFilter post_filter(frame_header, sequence_header, frame_scratch_buffer,
+                         current_frame->buffer(), dsp,
+                         settings_.post_filter_mask);
   SymbolDecoderContext saved_symbol_decoder_context;
   BlockingCounterWithStatus pending_tiles(tile_count);
   for (int tile_number = 0; tile_number < tile_count; ++tile_number) {

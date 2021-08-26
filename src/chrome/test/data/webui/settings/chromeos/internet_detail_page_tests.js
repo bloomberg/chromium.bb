@@ -33,6 +33,15 @@ suite('InternetDetailPage', function() {
       type: chrome.settingsPrivate.PrefType.BOOLEAN,
       value: true,
     },
+    'cros': {
+      'signed': {
+        'data_roaming_enabled': {
+          key: 'data_roaming_enabled',
+          value: true,
+          controlledBy: chrome.settingsPrivate.ControlledBy.DEVICE_POLICY,
+        },
+      },
+    },
     // Added use_shared_proxies because triggering a change in prefs_ without
     // it will fail a "Pref is missing" assertion in the network-proxy-section
     'settings': {
@@ -135,7 +144,6 @@ suite('InternetDetailPage', function() {
       internetAddWiFi: 'internetAddWiFi',
       internetDetailPageTitle: 'internetDetailPageTitle',
       internetKnownNetworksPageTitle: 'internetKnownNetworksPageTitle',
-      updatedCellularActivationUi: false,
       showMeteredToggle: true,
     });
 
@@ -509,17 +517,25 @@ suite('InternetDetailPage', function() {
         });
 
     test('Cellular Scanning', function() {
+      const test_iccid = '11111111111111111';
+
       init();
       const mojom = chromeos.networkConfig.mojom;
       mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kCellular, true);
       const cellularNetwork =
           getManagedProperties(mojom.NetworkType.kCellular, 'cellular');
+      cellularNetwork.typeProperties.cellular.iccid = test_iccid;
       mojoApi_.setManagedPropertiesForTest(cellularNetwork);
 
       mojoApi_.setDeviceStateForTest({
         type: mojom.NetworkType.kCellular,
         deviceState: chromeos.networkConfig.mojom.DeviceStateType.kEnabled,
         scanning: true,
+        inhibitReason: mojom.InhibitReason.kNotInhibited,
+        simInfos: [{
+          iccid: test_iccid,
+          isPrimary: true,
+        }],
       });
 
       internetDetailPage.init('cellular_guid', 'Cellular', 'cellular');
@@ -598,14 +614,31 @@ suite('InternetDetailPage', function() {
     });
 
     test('Deep link to cellular roaming toggle button', async () => {
+      const test_iccid = '11111111111111111';
+
       init();
       const mojom = chromeos.networkConfig.mojom;
       mojoApi_.resetForTest();
       mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kCellular, true);
       const cellularNetwork =
           getManagedProperties(mojom.NetworkType.kCellular, 'cellular');
+      cellularNetwork.typeProperties.cellular.iccid = test_iccid;
       cellularNetwork.connectable = false;
+      // Required for allowDataRoamingButton to be rendered.
+      cellularNetwork.typeProperties.cellular.allowRoaming =
+          OncMojo.createManagedBool(false);
       mojoApi_.setManagedPropertiesForTest(cellularNetwork);
+
+      // Set SIM as active so that configurable sections are displayed.
+      mojoApi_.setDeviceStateForTest({
+        type: mojom.NetworkType.kCellular,
+        deviceState: mojom.DeviceStateType.kEnabled,
+        inhibitReason: mojom.InhibitReason.kNotInhibited,
+        simInfos: [{
+          iccid: test_iccid,
+          isPrimary: true,
+        }],
+      });
 
       const params = new URLSearchParams;
       params.append('guid', 'cellular_guid');
@@ -619,32 +652,14 @@ suite('InternetDetailPage', function() {
 
       const deepLinkElement =
           internetDetailPage.$$('cellular-roaming-toggle-button')
-              .getCellularRoamingToggle()
-              .$$('cr-toggle');
+              .getCellularRoamingToggle();
       await test_util.waitAfterNextRender(deepLinkElement);
       assertEquals(
           deepLinkElement, getDeepActiveElement(),
           'Cellular roaming toggle button should be focused for settingId=15.');
     });
 
-    test('Deep link to sim lock toggle with cellular flag off', async () => {
-      await deepLinkToSimLockElement(/*isSimLocked=*/ false);
-
-      const simInfo = internetDetailPage.$$('#cellularSimInfo');
-
-      // In this rare case, wait after next render twice due to focus behavior
-      // of the siminfo component.
-      await test_util.waitAfterNextRender(simInfo);
-      await test_util.waitAfterNextRender(simInfo);
-      assertEquals(
-          simInfo.$$('#simLockButton'), getDeepActiveElement(),
-          'Sim lock toggle should be focused for settingId=14.');
-    });
-
-    test('Deep link to sim lock toggle with cellular flag on', async () => {
-      loadTimeData.overrideValues({
-        updatedCellularActivationUi: true,
-      });
+    test('Deep link to sim lock toggle', async () => {
       await deepLinkToSimLockElement(/*isSimLocked=*/ false);
 
       const simInfo = internetDetailPage.$$('#cellularSimInfoAdvanced');
@@ -658,10 +673,7 @@ suite('InternetDetailPage', function() {
           'Sim lock toggle should be focused for settingId=14.');
     });
 
-    test('Deep link to sim unlock button with cellular flag on', async () => {
-      loadTimeData.overrideValues({
-        updatedCellularActivationUi: true,
-      });
+    test('Deep link to sim unlock button', async () => {
       await deepLinkToSimLockElement(/*isSimLocked=*/ true);
 
       const simInfo = internetDetailPage.$$('#cellularSimInfoAdvanced');
@@ -694,9 +706,6 @@ suite('InternetDetailPage', function() {
     test(
         'Cellular network on active sim slot, show config sections',
         async () => {
-          loadTimeData.overrideValues({
-            updatedCellularActivationUi: true,
-          });
           init();
           const test_iccid = '11111111111111111';
 
@@ -706,6 +715,9 @@ suite('InternetDetailPage', function() {
           const cellularNetwork = getManagedProperties(
               mojom.NetworkType.kCellular, 'cellular', mojom.OncSource.kDevice);
           cellularNetwork.typeProperties.cellular.iccid = test_iccid;
+          // Required for allowDataRoamingButton to be rendered.
+          cellularNetwork.typeProperties.cellular.allowRoaming =
+              OncMojo.createManagedBool(false);
 
           mojoApi_.setManagedPropertiesForTest(cellularNetwork);
           internetDetailPage.init('cellular_guid', 'Cellular', 'cellular');
@@ -728,9 +740,6 @@ suite('InternetDetailPage', function() {
     test(
         'Cellular network on non-active sim slot, hide config sections',
         async () => {
-          loadTimeData.overrideValues({
-            updatedCellularActivationUi: true,
-          });
           init();
           const test_iccid = '11111111111111111';
 
@@ -765,9 +774,6 @@ suite('InternetDetailPage', function() {
         'Hide config section and Cellular Device object fields when' +
             'sim becomes non-active',
         async () => {
-          loadTimeData.overrideValues({
-            updatedCellularActivationUi: true,
-          });
           init();
           const test_iccid = '11111111111111111';
 
@@ -833,9 +839,6 @@ suite('InternetDetailPage', function() {
       const TEST_MAC_ADDRESS = '01:23:45:67:89:AB';
       const MISSING_MAC_ADDRESS = '00:00:00:00:00:00';
 
-      loadTimeData.overrideValues({
-        updatedCellularActivationUi: true,
-      });
       init();
       const mojom = chromeos.networkConfig.mojom;
       mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kCellular, true);
@@ -887,9 +890,6 @@ suite('InternetDetailPage', function() {
     });
 
     test('Page disabled when inhibited', async () => {
-      loadTimeData.overrideValues({
-        updatedCellularActivationUi: true,
-      });
       init();
 
       const mojom = chromeos.networkConfig.mojom;
@@ -898,6 +898,9 @@ suite('InternetDetailPage', function() {
           mojom.NetworkType.kCellular, 'cellular', mojom.OncSource.kDevice);
       // Required for connectDisconnectButton to be rendered.
       cellularNetwork.connectionState = mojom.ConnectionStateType.kConnected;
+      // Required for allowDataRoamingButton to be rendered.
+      cellularNetwork.typeProperties.cellular.allowRoaming =
+          OncMojo.createManagedBool(false);
       // Required for advancedFields to be rendered.
       cellularNetwork.typeProperties.cellular.networkTechnology = 'LTE';
       // Required for infoFields to be rendered.

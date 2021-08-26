@@ -73,8 +73,6 @@ source_set("popup_ui") {
     "omnibox_popup_row_cell.mm",
     "omnibox_popup_view_controller.h",
     "omnibox_popup_view_controller.mm",
-    "self_sizing_table_view.h",
-    "self_sizing_table_view.mm",
     "simple_omnibox_icon.h",
     "simple_omnibox_icon.mm",
   ]
@@ -102,7 +100,7 @@ source_set("popup_ui") {
     "//ios/chrome/common/ui/colors",
     "//ios/chrome/common/ui/util",
     "//ios/public/provider/chrome/browser",
-    "//ios/public/provider/chrome/browser/images",
+    "//ios/public/provider/chrome/browser/branded_images:branded_images_api",
     "//ui/base",
     "//url",
   ]

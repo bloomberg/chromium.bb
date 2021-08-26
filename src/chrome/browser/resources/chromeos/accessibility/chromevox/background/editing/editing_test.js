@@ -512,7 +512,7 @@ TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacterEndOfLine', function() {
               .expectSpeech('t')
               .expectBraille(lineText, {startIndex: 3, endIndex: 3})
               .call(moveByChar)
-              .expectSpeech('\n')
+              .expectSpeech('End of text')
               .expectBraille(lineText, {startIndex: 4, endIndex: 4})
 
               .replay();
@@ -1768,11 +1768,13 @@ TEST_F('ChromeVoxEditingTest', 'Separator', function() {
       mockFeedback.call(this.press(KeyCode.DOWN))
           .expectSpeech('Hello')
           .call(this.press(KeyCode.DOWN))
-          .expectSpeech('Separator content should be read')
+          .expectSpeech('Separator content should be read', 'Separator')
           .call(this.press(KeyCode.DOWN))
-          .expectSpeech('World')
+          .expectSpeech('World', 'Exited Separator.')
           .call(this.press(KeyCode.LEFT))
-          .expectSpeech('\n')
+          .expectNextSpeechUtteranceIsNot('\n')
+          .expectSpeech('Separator content should be read', 'Separator')
+
           .replay();
     });
     input.focus();

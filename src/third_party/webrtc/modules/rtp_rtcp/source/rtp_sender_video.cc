@@ -476,6 +476,9 @@ bool RTPSenderVideo::SendVideo(
 
   if (payload.empty())
     return false;
+  if (!rtp_sender_->SendingMedia()) {
+    return false;
+  }
 
   int32_t retransmission_settings = retransmission_settings_;
   if (codec_type == VideoCodecType::kVideoCodecH264) {
@@ -539,6 +542,18 @@ bool RTPSenderVideo::SendVideo(
   AddRtpHeaderExtensions(video_header, absolute_capture_time,
                          /*first_packet=*/true, /*last_packet=*/true,
                          single_packet.get());
+  if (video_structure_ != nullptr &&
+      single_packet->IsRegistered<RtpDependencyDescriptorExtension>() &&
+      !single_packet->HasExtension<RtpDependencyDescriptorExtension>()) {
+    RTC_DCHECK_EQ(video_header.frame_type, VideoFrameType::kVideoFrameKey);
+    // Disable attaching dependency descriptor to delta packets (including
+    // non-first packet of a key frame) when it wasn't attached to a key frame,
+    // as dependency descriptor can't be usable in such case.
+    RTC_LOG(LS_WARNING) << "Disable dependency descriptor because failed to "
+                           "attach it to a key frame.";
+    video_structure_ = nullptr;
+  }
+
   AddRtpHeaderExtensions(video_header, absolute_capture_time,
                          /*first_packet=*/true, /*last_packet=*/false,
                          first_packet.get());
@@ -573,7 +588,7 @@ bool RTPSenderVideo::SendVideo(
       first_packet->HasExtension<RtpDependencyDescriptorExtension>();
 
   // Minimization of the vp8 descriptor may erase temporal_id, so use
-  // |temporal_id| rather than reference |video_header| beyond this point.
+  // `temporal_id` rather than reference `video_header` beyond this point.
   if (has_generic_descriptor) {
     MinimizeDescriptor(&video_header);
   }
@@ -581,10 +596,6 @@ bool RTPSenderVideo::SendVideo(
   // TODO(benwright@webrtc.org) - Allocate enough to always encrypt inline.
   rtc::Buffer encrypted_video_payload;
   if (frame_encryptor_ != nullptr) {
-    if (!has_generic_descriptor) {
-      return false;
-    }
-
     const size_t max_ciphertext_size =
         frame_encryptor_->GetMaxCiphertextByteSize(cricket::MEDIA_TYPE_VIDEO,
                                                    payload.size());
@@ -676,7 +687,7 @@ bool RTPSenderVideo::SendVideo(
       red_packet->SetPayloadType(*red_payload_type_);
       red_packet->set_is_red(true);
 
-      // Append |red_packet| instead of |packet| to output.
+      // Append `red_packet` instead of `packet` to output.
       red_packet->set_packet_type(RtpPacketMediaType::kVideo);
       red_packet->set_allow_retransmission(packet->allow_retransmission());
       rtp_packets.emplace_back(std::move(red_packet));
@@ -697,7 +708,8 @@ bool RTPSenderVideo::SendVideo(
     }
   }
 
-  if (!rtp_sender_->AssignSequenceNumbersAndStoreLastPacketState(rtp_packets)) {
+  if (!rtp_sender_->deferred_sequence_numbering() &&
+      !rtp_sender_->AssignSequenceNumbersAndStoreLastPacketState(rtp_packets)) {
     // Media not being sent.
     return false;
   }

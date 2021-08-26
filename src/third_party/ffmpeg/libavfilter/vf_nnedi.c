@@ -21,7 +21,6 @@
 
 #include <float.h>
 
-#include "libavutil/avassert.h"
 #include "libavutil/common.h"
 #include "libavutil/float_dsp.h"
 #include "libavutil/imgutils.h"
@@ -168,8 +167,7 @@ static int config_output(AVFilterLink *outlink)
 {
     AVFilterContext *ctx = outlink->src;
 
-    outlink->time_base.num = ctx->inputs[0]->time_base.num;
-    outlink->time_base.den = ctx->inputs[0]->time_base.den * 2;
+    outlink->time_base     = av_mul_q(ctx->inputs[0]->time_base, (AVRational){1, 2});
     outlink->w             = ctx->inputs[0]->w;
     outlink->h             = ctx->inputs[0]->h;
 
@@ -695,7 +693,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
         return 0;
     }
 
-    if ((s->deint && !in->interlaced_frame) || ctx->is_disabled) {
+    if ((s->deint && !s->prev->interlaced_frame) || ctx->is_disabled) {
         s->prev->pts *= 2;
         ret = ff_filter_frame(ctx->outputs[0], s->prev);
         s->prev = in;

@@ -39,6 +39,8 @@ namespace {
 
 const int kInitialItems = 2;
 
+}  // namespace
+
 class AppListMainViewTest : public views::ViewsTestBase,
                             public testing::WithParamInterface<bool> {
  public:
@@ -118,7 +120,7 @@ class AppListMainViewTest : public views::ViewsTestBase,
     gfx::Point root_window_point = point;
     views::View::ConvertPointToWidget(grid_view, &root_window_point);
 
-    grid_view->InitiateDrag(view, root_window_point, point);
+    view->InitiateDrag(point, root_window_point);
     return view;
   }
 
@@ -134,7 +136,7 @@ class AppListMainViewTest : public views::ViewsTestBase,
     gfx::Point root_window_point = point;
     views::View::ConvertPointToWidget(grid_view, &root_window_point);
 
-    ui::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED, root_window_point, point,
+    ui::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED, point, root_window_point,
                               ui::EventTimeForNow(), 0, 0);
 
     grid_view->UpdateDragFromItem(pointer, drag_event);
@@ -248,8 +250,6 @@ class AppListMainViewTest : public views::ViewsTestBase,
 
 INSTANTIATE_TEST_SUITE_P(All, AppListMainViewTest, testing::Bool());
 
-}  // namespace
-
 // Tests that the close button becomes invisible after close button is clicked.
 TEST_F(AppListMainViewTest, CloseButtonInvisibleAfterCloseButtonClicked) {
   PressKeyInSearchBox(ui::VKEY_A);
@@ -299,9 +299,13 @@ TEST_P(AppListMainViewTest, DragLastItemFromFolderAndDropAtLastSlot) {
   AppListItemView* dragged = StartDragForReparent(0);
 
   // Drop it to the slot on the right of first slot.
-  gfx::Rect drop_target_tile(first_slot_tile);
-  drop_target_tile.Offset(first_slot_tile.width() * 2, 0);
-  gfx::Point point = drop_target_tile.CenterPoint();
+  AppsGridViewTestApi root_grid_view_test_api(GetRootGridView());
+  gfx::Point point =
+      root_grid_view_test_api.GetItemTileRectAtVisualIndex(0, 1).CenterPoint();
+  // Convert `point` to the folder's grid coordinates.
+  views::View::ConvertPointToTarget(GetRootGridView(), GetFolderGridView(),
+                                    &point);
+
   SimulateUpdateDrag(GetFolderGridView(), AppsGridView::MOUSE, dragged, point);
 
   // Drop it.
@@ -314,7 +318,6 @@ TEST_P(AppListMainViewTest, DragLastItemFromFolderAndDropAtLastSlot) {
                 ->GetClassName());
 
   // The item view should be in slot 1 instead of slot 2 where it is dropped.
-  AppsGridViewTestApi root_grid_view_test_api(GetRootGridView());
   root_grid_view_test_api.LayoutToIdealBounds();
   EXPECT_EQ(first_slot_tile, GetRootViewModel()->view_at(0)->bounds());
 
@@ -338,9 +341,6 @@ TEST_P(AppListMainViewTest, DragLastItemFromFolderAndDropAtLastSlot) {
 // Tests dragging an item out of a single item folder and dropping it onto the
 // page switcher. Regression test for http://crbug.com/415530/.
 TEST_P(AppListMainViewTest, DragReparentItemOntoPageSwitcher) {
-  // TODO(anasalazar): Fix for cardified state
-  if (IsPaginationPreviewActive())
-    return;
   AppListItemView* folder_item_view = CreateAndOpenSingleItemFolder();
   ASSERT_TRUE(folder_item_view);
 
@@ -377,19 +377,19 @@ TEST_P(AppListMainViewTest, MouseDragItemOutOfFolderWithCancel) {
   AppListItemView* dragged = StartDragForReparent(0);
 
   // Now add an item to the model, not in any folder, e.g., as if by Sync.
-  EXPECT_TRUE(GetRootGridView()->has_dragged_view());
-  EXPECT_TRUE(GetFolderGridView()->has_dragged_view());
+  EXPECT_TRUE(GetRootGridView()->has_dragged_item());
+  EXPECT_TRUE(GetFolderGridView()->has_dragged_item());
   delegate_->GetTestModel()->CreateAndAddItem("Extra");
 
   // The drag operation should get canceled.
-  EXPECT_FALSE(GetRootGridView()->has_dragged_view());
-  EXPECT_FALSE(GetFolderGridView()->has_dragged_view());
+  EXPECT_FALSE(GetRootGridView()->has_dragged_item());
+  EXPECT_FALSE(GetFolderGridView()->has_dragged_item());
 
   // Additional mouse move operations should be ignored.
   gfx::Point point(1, 1);
   SimulateUpdateDrag(GetFolderGridView(), AppsGridView::MOUSE, dragged, point);
-  EXPECT_FALSE(GetRootGridView()->has_dragged_view());
-  EXPECT_FALSE(GetFolderGridView()->has_dragged_view());
+  EXPECT_FALSE(GetRootGridView()->has_dragged_item());
+  EXPECT_FALSE(GetFolderGridView()->has_dragged_item());
 }
 
 // Test that dragging an app out of a single item folder and reparenting it

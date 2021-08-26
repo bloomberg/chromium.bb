@@ -9,7 +9,6 @@
 #include "cc/raster/playback_image_provider.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource.h"
-#include "third_party/blink/renderer/platform/graphics/identifiability_paint_op_digest.h"
 #include "third_party/blink/renderer/platform/graphics/image_orientation.h"
 #include "third_party/blink/renderer/platform/graphics/memory_managed_paint_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_recorder.h"
@@ -82,7 +81,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
   using RestoreMatrixClipStackCb =
       base::RepeatingCallback<void(cc::PaintCanvas*)>;
 
-  // TODO(juanmihd@ bug/1078518) Check whether SkFilterQuality is needed in all
+  // TODO(juanmihd@ bug/1078518) Check whether FilterQuality is needed in all
   // these Create methods below, or just call setFilterQuality explicitly.
 
   // Used to determine if the provider is going to be initialized or not,
@@ -91,20 +90,20 @@ class PLATFORM_EXPORT CanvasResourceProvider
 
   static std::unique_ptr<CanvasResourceProvider> CreateBitmapProvider(
       const IntSize& size,
-      SkFilterQuality filter_quality,
+      cc::PaintFlags::FilterQuality filter_quality,
       const CanvasResourceParams& params,
       ShouldInitialize initialize_provider);
 
   static std::unique_ptr<CanvasResourceProvider> CreateSharedBitmapProvider(
       const IntSize& size,
-      SkFilterQuality filter_quality,
+      cc::PaintFlags::FilterQuality filter_quality,
       const CanvasResourceParams& params,
       ShouldInitialize initialize_provider,
       base::WeakPtr<CanvasResourceDispatcher>);
 
   static std::unique_ptr<CanvasResourceProvider> CreateSharedImageProvider(
       const IntSize& size,
-      SkFilterQuality filter_quality,
+      cc::PaintFlags::FilterQuality filter_quality,
       const CanvasResourceParams& params,
       ShouldInitialize initialize_provider,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
@@ -119,7 +118,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
 
   static std::unique_ptr<CanvasResourceProvider> CreatePassThroughProvider(
       const IntSize& size,
-      SkFilterQuality filter_quality,
+      cc::PaintFlags::FilterQuality filter_quality,
       const CanvasResourceParams& params,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
       base::WeakPtr<CanvasResourceDispatcher>,
@@ -127,7 +126,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
 
   static std::unique_ptr<CanvasResourceProvider> CreateSwapChainProvider(
       const IntSize& size,
-      SkFilterQuality filter_quality,
+      cc::PaintFlags::FilterQuality filter_quality,
       const CanvasResourceParams& params,
       ShouldInitialize initialize_provider,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
@@ -150,7 +149,9 @@ class PLATFORM_EXPORT CanvasResourceProvider
   void ReleaseLockedImages();
   sk_sp<cc::PaintRecord> FlushCanvas();
   const CanvasResourceParams& ColorParams() const { return params_; }
-  void SetFilterQuality(SkFilterQuality quality) { filter_quality_ = quality; }
+  void SetFilterQuality(cc::PaintFlags::FilterQuality quality) {
+    filter_quality_ = quality;
+  }
   const IntSize& Size() const { return size_; }
   bool IsOriginTopLeft() const { return is_origin_top_left_; }
   virtual bool IsValid() const = 0;
@@ -234,14 +235,6 @@ class PLATFORM_EXPORT CanvasResourceProvider
 
   void OnDestroyResource();
 
-  // Gets an immutable reference to the IdentifiabilityPaintOpDigest, which
-  // contains the current PaintOp digest, and taint bits (encountered
-  // partially-digested images, encountered skipped ops).
-  //
-  // The digest is updated based on the results of every FlushCanvas(); this
-  // method also calls FlushCanvas() to ensure that all operations are accounted
-  // for in the digest.
-  const IdentifiabilityPaintOpDigest& GetIdentifiablityPaintOpDigest();
   virtual void OnAcquireRecyclableCanvasResource() {}
   virtual void OnDestroyRecyclableCanvasResource(
       const gpu::SyncToken& sync_token) {}
@@ -259,13 +252,15 @@ class PLATFORM_EXPORT CanvasResourceProvider
     return is_origin_top_left_ ? kTopLeft_GrSurfaceOrigin
                                : kBottomLeft_GrSurfaceOrigin;
   }
-  SkFilterQuality FilterQuality() const { return filter_quality_; }
+  cc::PaintFlags::FilterQuality FilterQuality() const {
+    return filter_quality_;
+  }
   scoped_refptr<StaticBitmapImage> SnapshotInternal(const ImageOrientation&);
   scoped_refptr<CanvasResource> GetImportedResource() const;
 
   CanvasResourceProvider(const ResourceProviderType&,
                          const IntSize&,
-                         SkFilterQuality,
+                         cc::PaintFlags::FilterQuality,
                          const CanvasResourceParams&,
                          bool is_origin_top_left,
                          base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
@@ -321,7 +316,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper_;
   base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher_;
   const IntSize size_;
-  SkFilterQuality filter_quality_;
+  cc::PaintFlags::FilterQuality filter_quality_;
   const CanvasResourceParams params_;
   const bool is_origin_top_left_;
   std::unique_ptr<CanvasImageProvider> canvas_image_provider_;
@@ -347,14 +342,10 @@ class PLATFORM_EXPORT CanvasResourceProvider
   // underlying GrContext is flushed.
   static constexpr int kMaxDrawsBeforeContextFlush = 50;
 
-  size_t num_inflight_resources_ = 0;
-  size_t max_inflight_resources_ = 0;
+  int num_inflight_resources_ = 0;
+  int max_inflight_resources_ = 0;
 
   RestoreMatrixClipStackCb restore_clip_stack_callback_;
-
-  // For identifiability metrics -- PaintOps are serialized so that digests can
-  // be calculated using hashes of the serialized output.
-  IdentifiabilityPaintOpDigest identifiability_paint_op_digest_;
 
   base::WeakPtrFactory<CanvasResourceProvider> weak_ptr_factory_{this};
 };

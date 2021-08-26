@@ -195,9 +195,6 @@ component("protobuf_lite") {
 
   public_configs = [
     ":protobuf_config",
-
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    "//build/config/compiler:no_size_t_to_int_warning",
   ]
 
   if (is_android) {
@@ -265,6 +262,11 @@ static_library("protobuf_full") {
     "//third_party/vulkan-deps/spirv-tools/src:spirv-fuzz",
     "//third_party/vulkan-deps/spirv-tools/src:spvtools_fuzz",
     "//third_party/vulkan-deps/spirv-tools/src:spvtools_fuzz_proto",
+
+    # Some fuzzers for tint need protobuf_full and are not included in Chrome.
+    "//third_party/dawn/third_party/tint/fuzzers/tint_ast_fuzzer:tint_ast_fuzzer",
+    "//third_party/dawn/third_party/tint/fuzzers/tint_ast_fuzzer:tint_ast_fuzzer_proto",
+    "//third_party/dawn/third_party/tint/fuzzers/tint_spirv_tools_fuzzer:tint_spirv_tools_fuzzer",
   ]
 
   sources = protobuf_lite_sources + [
@@ -409,9 +411,6 @@ static_library("protobuf_full") {
   }
   public_configs = [
     ":protobuf_config",
-
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    "//build/config/compiler:no_size_t_to_int_warning",
   ]
 
   cflags = protobuf_lite_cflags

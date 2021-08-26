@@ -11,6 +11,7 @@
 <translation id="1546934824884762070">Kutilmagan xatolik yuz berdi. Bu muammo haqida dasturchilarga xabar bering.</translation>
 <translation id="1697532407822776718">Tayyor!</translation>
 <translation id="1742469581923031760">Aloqa o‘rnatilmoqda...</translation>
+<translation id="177040763384871009">Masofaviy qurilmada bosilgan mijoz brauzerida ochilishi kerak boʻlgan havolalar uchun <ph name="URL_FORWARDER_NAME" /> ilovasi sozlanishi kerak.</translation>
 <translation id="177096447311351977">Mijoz uchun kanal IP manzili: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1897488610212723051">O‘chirish</translation>
 <translation id="2009755455353575666">Ulanishda xatolik yuz berdi</translation>
@@ -129,6 +130,7 @@ Agar “<ph name="SERVICE_SCRIPT_NAME" />” allaqachon yoniq boʻlsa, uning tan
 <translation id="6963936880795878952">Masofaviy kompyuterga ulanishlar vaqtincha taqiqlangan, chunki kimdir unga noto‘g‘ri PIN kod orqali ulanib ko‘rgan. Keyinroq qayta urinib ko‘ring.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942"><ph name="HOSTNAME" /> hostiga ulanish bloklansinmi? Qaytadan ulanmoqchi bo‘lsangiz, o‘sha kompyuterda qaytadan ulanishingiz kerak bo‘ladi.</translation>
+<translation id="6998890551706945177"><ph name="CLIENT_USERNAME" /> kompyuteringizni koʻrish va boshqarishga ruxsat soʻradi. Bu odamni tanimasangiz yoki ulashuvdan oldin oʻzgartirish kiritish uchun “<ph name="IDS_SHARE_CONFIRM_DIALOG_DECLINE" />” tugmasini bosing.  Ulanishga ruxsat berish uchun “<ph name="IDS_SHARE_CONFIRM_DIALOG_CONFIRM" />“ tugmasini bosing.</translation>
 <translation id="7019153418965365059">Noma’lum host xatoligi: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Masofaviy yordam</translation>
 <translation id="7026930240735156896">Masofadan kirish uchun kompyuteringizni ko‘rsatmalar asosida sozlang</translation>
@@ -142,6 +144,7 @@ Agar “<ph name="SERVICE_SCRIPT_NAME" />” allaqachon yoniq boʻlsa, uning tan
 <translation id="7434397035092923453">Bu mijoz uchun ruxsat taqiqlangan: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">Mijoz ulandi: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7526139040829362392">Hisobni almashtirish</translation>
+<translation id="7535110896613603182">Standart ilovalar sozlamalarini ochish</translation>
 <translation id="7628469622942688817">Bu qurilma PIN kodimni eslab qolsin.</translation>
 <translation id="7649070708921625228">Yordam</translation>
 <translation id="7658239707568436148">Bekor qilish</translation>

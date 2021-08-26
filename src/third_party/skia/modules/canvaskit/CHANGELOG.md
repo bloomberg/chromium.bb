@@ -6,9 +6,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.29.0] - 2021-08-06
+
+### Added
+ - `Path.makeAsWinding` has been added to convert paths with an EvenOdd FillType to the
+   equivalent area using the Winding FillType.
+
 ### Breaking
- - Paint.getBlendMode() has been removed.
- - Canvas.drawImageAtCurrentFrame() has been removed.
+ - `Paint.getBlendMode()` has been removed.
+ - `Canvas.drawImageAtCurrentFrame()` has been removed.
+ - FilterQuality enum removed -- pass `FilterOptions` | `CubicResampler` instead.
+
+### Type Changes (index.d.ts)
+ - Replaced all `object` with actual types, including `AnimationMarker`.
 
 ## [0.28.1] - 2021-06-28
 

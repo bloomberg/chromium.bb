@@ -11,6 +11,7 @@
       "fuchsia.media.ProfileProvider",
       "fuchsia.net.NameLookup",
       "fuchsia.net.interfaces.State",
+      "fuchsia.net.name.Lookup",
       "fuchsia.posix.socket.Provider"
     ]
   }

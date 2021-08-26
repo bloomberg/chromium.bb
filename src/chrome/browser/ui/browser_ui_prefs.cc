@@ -77,7 +77,7 @@ void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kWebAppCreateInAppsMenu, true);
   registry->RegisterBooleanPref(prefs::kWebAppCreateInQuickLaunchBar, true);
   registry->RegisterBooleanPref(
-      prefs::kOfferTranslateEnabled, true,
+      translate::prefs::kOfferTranslateEnabled, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterStringPref(prefs::kCloudPrintEmail, std::string());
   registry->RegisterBooleanPref(prefs::kCloudPrintProxyEnabled, true);
@@ -144,11 +144,13 @@ void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(
       prefs::kExternalProtocolDialogShowAlwaysOpenCheckbox, true);
   registry->RegisterBooleanPref(prefs::kScreenCaptureAllowed, true);
+  registry->RegisterListPref(prefs::kScreenCaptureAllowedByOrigins);
+  registry->RegisterListPref(prefs::kWindowCaptureAllowedByOrigins);
+  registry->RegisterListPref(prefs::kTabCaptureAllowedByOrigins);
+  registry->RegisterListPref(prefs::kSameOriginTabCaptureAllowedByOrigins);
 
 #if !defined(OS_ANDROID)
   registry->RegisterBooleanPref(prefs::kCaretBrowsingEnabled, false);
-  registry->RegisterBooleanPref(prefs::kCloudPrintDeprecationWarningsSuppressed,
-                                false);
   registry->RegisterBooleanPref(prefs::kShowCaretBrowsingDialog, true);
 #endif
 

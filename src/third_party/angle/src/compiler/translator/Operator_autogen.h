@@ -29,7 +29,9 @@ enum TOperator : uint16_t
     // with AST traversers:
     // * They should not return arrays.
     // * They should not have out parameters.
-    // TODO: remove this.  http://anglebug.com/6059
+    //
+    // DEPRECATED; DO NOT USE.  TODO: remove this.  http://anglebug.com/6059
+    //
     EOpCallInternalRawFunction,
 
     //
@@ -510,9 +512,17 @@ static inline bool IsTexture(TOperator op)
 {
     return op >= EOpTexture2D && op <= EOpTextureGatherOffsetsComp;
 }
+static inline bool IsDerivativesFS(TOperator op)
+{
+    return op >= EOpDFdx && op <= EOpFwidthCoarse;
+}
 static inline bool IsInterpolationFS(TOperator op)
 {
     return op >= EOpInterpolateAtCentroid && op <= EOpInterpolateAtOffset;
+}
+static inline bool IsAtomicCounter(TOperator op)
+{
+    return op >= EOpAtomicCounter && op <= EOpAtomicCounterCompSwap;
 }
 static inline bool IsAtomicMemory(TOperator op)
 {

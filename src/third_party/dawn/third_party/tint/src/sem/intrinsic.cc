@@ -14,15 +14,14 @@
 
 #include "src/sem/intrinsic.h"
 
+#include <vector>
+
+#include "src/utils/to_const_ptr_vec.h"
+
 TINT_INSTANTIATE_TYPEINFO(tint::sem::Intrinsic);
 
 namespace tint {
 namespace sem {
-
-std::ostream& operator<<(std::ostream& out, IntrinsicType i) {
-  out << str(i);
-  return out;
-}
 
 const char* Intrinsic::str() const {
   return sem::str(type_);
@@ -103,13 +102,17 @@ bool IsAtomicIntrinsic(IntrinsicType i) {
 
 Intrinsic::Intrinsic(IntrinsicType type,
                      sem::Type* return_type,
-                     const ParameterList& parameters,
+                     std::vector<Parameter*> parameters,
                      PipelineStageSet supported_stages,
                      bool is_deprecated)
-    : Base(return_type, parameters),
+    : Base(return_type, utils::ToConstPtrVec(parameters)),
       type_(type),
       supported_stages_(supported_stages),
-      is_deprecated_(is_deprecated) {}
+      is_deprecated_(is_deprecated) {
+  for (auto* parameter : parameters) {
+    parameter->SetOwner(this);
+  }
+}
 
 Intrinsic::~Intrinsic() = default;
 

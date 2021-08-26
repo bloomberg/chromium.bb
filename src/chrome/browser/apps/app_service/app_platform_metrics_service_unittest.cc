@@ -7,11 +7,11 @@
 #include <memory>
 #include <utility>
 
+#include "base/json/values_util.h"
 #include "base/metrics/histogram_base.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
-#include "base/util/values/values_util.h"
 #include "chrome/browser/apps/app_service/app_platform_metrics.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -341,7 +341,7 @@ class AppPlatformMetricsServiceTest : public testing::Test {
                       aura::Window* window,
                       apps::InstanceState state) {
     std::unique_ptr<apps::Instance> instance = std::make_unique<apps::Instance>(
-        app_id, std::make_unique<apps::Instance::InstanceKey>(window));
+        app_id, apps::Instance::InstanceKey(window));
     instance->UpdateState(state, base::Time::Now());
 
     std::vector<std::unique_ptr<apps::Instance>> deltas;
@@ -384,7 +384,7 @@ class AppPlatformMetricsServiceTest : public testing::Test {
     std::string key = GetAppTypeHistogramName(app_type_name);
 
     absl::optional<base::TimeDelta> unreported_duration =
-        util::ValueToTimeDelta(update->FindPath(key));
+        base::ValueToTimeDelta(update->FindPath(key));
     if (time_delta.is_zero()) {
       EXPECT_FALSE(unreported_duration.has_value());
       return;
@@ -468,6 +468,13 @@ class AppPlatformMetricsServiceTest : public testing::Test {
         count);
   }
 
+  void VerifyAppUsageTimeCountHistogram(base::HistogramBase::Count count,
+                                        AppTypeNameV2 app_type_name) {
+    histogram_tester_.ExpectTotalCount(
+        AppPlatformMetrics::GetAppsUsageTimeHistogramNameForTest(app_type_name),
+        count);
+  }
+
   void VerifyAppUsageTimeHistogram(base::TimeDelta time_delta,
                                    base::HistogramBase::Count count,
                                    AppTypeName app_type_name) {
@@ -539,6 +546,27 @@ class AppPlatformMetricsServiceTest : public testing::Test {
                                              (int)app_type_name);
       test_ukm_recorder()->ExpectEntryMetric(entry, "LaunchSource",
                                              (int)launch_source);
+    }
+    ASSERT_EQ(1, count);
+  }
+
+  void VerifyAppsUninstallUkm(const std::string& app_info,
+                              AppTypeName app_type_name,
+                              apps::mojom::UninstallSource uninstall_source) {
+    const auto entries =
+        test_ukm_recorder()->GetEntriesByName("ChromeOSApp.UninstallApp");
+    int count = 0;
+    for (const auto* entry : entries) {
+      const ukm::UkmSource* src =
+          test_ukm_recorder()->GetSourceForSourceId(entry->source_id);
+      if (src == nullptr || src->url() != GURL(app_info)) {
+        continue;
+      }
+      ++count;
+      test_ukm_recorder()->ExpectEntryMetric(entry, "AppType",
+                                             (int)app_type_name);
+      test_ukm_recorder()->ExpectEntryMetric(entry, "UninstallSource",
+                                             (int)uninstall_source);
     }
     ASSERT_EQ(1, count);
   }
@@ -944,6 +972,7 @@ TEST_F(AppPlatformMetricsServiceTest, UsageTime) {
 
   task_environment_.FastForwardBy(base::TimeDelta::FromMinutes(5));
   VerifyAppUsageTimeCountHistogram(/*expected_count=*/1, AppTypeName::kArc);
+  VerifyAppUsageTimeCountHistogram(/*expected_count=*/1, AppTypeNameV2::kArc);
   VerifyAppUsageTimeHistogram(base::TimeDelta::FromMinutes(5),
                               /*expected_count=*/1, AppTypeName::kArc);
 
@@ -962,10 +991,13 @@ TEST_F(AppPlatformMetricsServiceTest, UsageTime) {
 
   task_environment_.FastForwardBy(base::TimeDelta::FromMinutes(3));
   VerifyAppUsageTimeCountHistogram(/*expected_count=*/2, AppTypeName::kArc);
+  VerifyAppUsageTimeCountHistogram(/*expected_count=*/2, AppTypeNameV2::kArc);
   VerifyAppUsageTimeHistogram(base::TimeDelta::FromMinutes(2),
                               /*expected_count=*/1, AppTypeName::kArc);
   VerifyAppUsageTimeCountHistogram(/*expected_count=*/1,
                                    AppTypeName::kChromeBrowser);
+  VerifyAppUsageTimeCountHistogram(/*expected_count=*/1,
+                                   AppTypeNameV2::kChromeBrowser);
   VerifyAppUsageTimeHistogram(base::TimeDelta::FromMinutes(3),
                               /*expected_count=*/1,
                               AppTypeName::kChromeBrowser);
@@ -974,8 +1006,11 @@ TEST_F(AppPlatformMetricsServiceTest, UsageTime) {
 
   task_environment_.FastForwardBy(base::TimeDelta::FromMinutes(15));
   VerifyAppUsageTimeCountHistogram(/*expected_count=*/2, AppTypeName::kArc);
+  VerifyAppUsageTimeCountHistogram(/*expected_count=*/2, AppTypeNameV2::kArc);
   VerifyAppUsageTimeCountHistogram(/*expected_count=*/4,
                                    AppTypeName::kChromeBrowser);
+  VerifyAppUsageTimeCountHistogram(/*expected_count=*/4,
+                                   AppTypeNameV2::kChromeBrowser);
   VerifyAppUsageTimeHistogram(base::TimeDelta::FromMinutes(5),
                               /*expected_count=*/3,
                               AppTypeName::kChromeBrowser);
@@ -1063,6 +1098,23 @@ TEST_F(AppPlatformMetricsServiceTest, LaunchAppsUkm) {
       apps::mojom::AppLaunchSource::kSourceTest));
   VerifyAppsLaunchUkm("https://os-settings", AppTypeName::kChromeBrowser,
                       apps::mojom::LaunchSource::kFromTest);
+}
+
+TEST_F(AppPlatformMetricsServiceTest, UninstallAppUkm) {
+  auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile());
+  proxy->SetAppPlatformMetricsServiceForTesting(GetAppPlatformMetricsService());
+
+  proxy->UninstallSilently(
+      /*app_id=*/"c", apps::mojom::UninstallSource::kAppList);
+  // Verify UKM is not reported for the Crostini app.
+  const auto entries =
+      test_ukm_recorder()->GetEntriesByName("ChromeOSApp.UninstallApp");
+  ASSERT_EQ(0U, entries.size());
+
+  proxy->UninstallSilently(
+      /*app_id=*/"a", apps::mojom::UninstallSource::kAppList);
+  VerifyAppsUninstallUkm("app://com.google.A", AppTypeName::kArc,
+                         apps::mojom::UninstallSource::kAppList);
 }
 
 }  // namespace apps

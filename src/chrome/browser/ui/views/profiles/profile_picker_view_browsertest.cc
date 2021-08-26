@@ -5,12 +5,12 @@
 #include "chrome/browser/ui/views/profiles/profile_picker_view.h"
 
 #include "base/callback_helpers.h"
+#include "base/json/values_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
-#include "base/util/values/values_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
@@ -236,12 +236,8 @@ std::unique_ptr<KeyedService> CreateTestTracker(content::BrowserContext*) {
 
 class ProfilePickerCreationFlowBrowserTest : public ProfilePickerTestBase {
  public:
-  ProfilePickerCreationFlowBrowserTest() {
-    feature_list_.InitWithFeatures(
-        {features::kSignInProfileCreation,
-         feature_engagement::kIPHProfileSwitchFeature},
-        /*disabled_features=*/{});
-  }
+  ProfilePickerCreationFlowBrowserTest()
+      : feature_list_(feature_engagement::kIPHProfileSwitchFeature) {}
 
   void SetUpInProcessBrowserTestFixture() override {
     ProfilePickerTestBase::SetUpInProcessBrowserTestFixture();
@@ -328,7 +324,7 @@ class ProfilePickerCreationFlowBrowserTest : public ProfilePickerTestBase {
                              bool open_settings) {
     base::ListValue args;
     args.Append(
-        base::Value::ToUniquePtrValue(util::FilePathToValue(profile_path)));
+        base::Value::ToUniquePtrValue(base::FilePathToValue(profile_path)));
     profile_picker_handler()->HandleLaunchSelectedProfile(open_settings, &args);
   }
 
@@ -930,238 +926,12 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
 class ProfilePickerEnterpriseCreationFlowBrowserTest
     : public ProfilePickerCreationFlowBrowserTest {
  public:
-  explicit ProfilePickerEnterpriseCreationFlowBrowserTest(bool enable_feature) {
-    feature_list_.InitWithFeatureState(
-        features::kSignInProfileCreationEnterprise, enable_feature);
-  }
-
   void OnWillCreateBrowserContextServices(
       content::BrowserContext* context) override {
     policy::UserPolicySigninServiceFactory::GetInstance()->SetTestingFactory(
         context,
         base::BindRepeating(&FakeUserPolicySigninService::BuildForEnterprise));
   }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-class ProfilePickerSeparateEnterpriseCreationFlowBrowserTest
-    : public ProfilePickerEnterpriseCreationFlowBrowserTest {
- public:
-  ProfilePickerSeparateEnterpriseCreationFlowBrowserTest()
-      : ProfilePickerEnterpriseCreationFlowBrowserTest(
-            /*enable_feature=*/false) {}
-};
-
-IN_PROC_BROWSER_TEST_F(ProfilePickerSeparateEnterpriseCreationFlowBrowserTest,
-                       CreateSignedInProfile) {
-  ASSERT_EQ(1u, BrowserList::GetInstance()->size());
-  Profile* profile_being_created = StartSigninFlow();
-
-  // Consumer-looking gmail address avoids code that forces the sync service to
-  // actually start which would add overhead in mocking further stuff.
-  // Enterprise domain needed for this profile being detected as Work.
-  SignIn(profile_being_created, "joe.enterprise@gmail.com", "Joe",
-         "enterprise.com");
-
-  // Wait for the sign-in to propagate to the flow, resulting in new browser
-  // getting opened.
-  Browser* new_browser = BrowserAddedWaiter(2u).Wait();
-  // Inject a fake tab helper that confirms the enterprise dialog right away.
-  base::RunLoop loop_until_enterprise_confirmed;
-  TestTabDialogs::OverwriteForWebContents(
-      new_browser->tab_strip_model()->GetActiveWebContents(),
-      &loop_until_enterprise_confirmed);
-  // Wait until the enterprise dialog in shown and confirmed.
-  loop_until_enterprise_confirmed.Run();
-
-  // The picker should be closed even before the enterprise confirmation but it
-  // is closed asynchronously after opening the browser so after the NTP
-  // renders, it is safe to check.
-  WaitForLoadStop(new_browser->tab_strip_model()->GetActiveWebContents(),
-                  GURL("chrome://newtab/"));
-  WaitForPickerClosed();
-
-  // Now the sync consent screen is shown, simulate closing the UI with "No,
-  // thanks".
-  // Note: this test is using login_ui_test_utils, which is better than what
-  // other tests are doing. However, other tests cannot be converted because:
-  // - login_ui_test_utils only supports the modal dialog (not the picker)
-  // - login_ui_test_utils requires the dialog to actually be opened when it is
-  //   called (and not some enterprise confirmation or error dialog).
-  login_ui_test_utils::CancelSyncConfirmationDialog(new_browser);
-
-  // Check expectations when the profile creation flow is done.
-  ProfileAttributesEntry* entry =
-      g_browser_process->profile_manager()
-          ->GetProfileAttributesStorage()
-          .GetProfileAttributesWithPath(profile_being_created->GetPath());
-  ASSERT_NE(entry, nullptr);
-  EXPECT_FALSE(entry->IsEphemeral());
-  EXPECT_EQ(entry->GetLocalProfileName(), u"enterprise.com");
-
-  // The color is not applied for enterprise users.
-  EXPECT_FALSE(ThemeServiceFactory::GetForProfile(profile_being_created)
-                   ->UsingAutogeneratedTheme());
-}
-
-IN_PROC_BROWSER_TEST_F(ProfilePickerSeparateEnterpriseCreationFlowBrowserTest,
-                       CreateSignedInProfileWithSyncDisabledBefore) {
-  ASSERT_EQ(1u, BrowserList::GetInstance()->size());
-  Profile* profile_being_created = StartSigninFlow();
-
-  // Disable sync by setting the device as managed in prefs.
-  syncer::SyncPrefs prefs(profile_being_created->GetPrefs());
-  prefs.SetManagedForTest(true);
-  syncer::SyncService* sync_service =
-      SyncServiceFactory::GetForProfile(profile_being_created);
-
-  // Consumer-looking gmail address avoids code that forces the sync service to
-  // actually start which would add overhead in mocking further stuff.
-  // Enterprise domain needed for this profile being detected as Work.
-  SignIn(profile_being_created, "joe.enterprise@gmail.com", "Joe",
-         "enterprise.com");
-
-  // Wait for the sign-in to propagate to the flow, resulting in new browser
-  // getting opened.
-  Browser* new_browser = BrowserAddedWaiter(2u).Wait();
-  WaitForLoadStop(new_browser->tab_strip_model()->GetActiveWebContents(),
-                  GURL("chrome://newtab/"));
-
-  WaitForPickerClosed();
-
-  // Now the sync disabled screen is shown, simulate closing the UI with "Stay
-  // signed in"
-  LoginUIServiceFactory::GetForProfile(profile_being_created)
-      ->SyncConfirmationUIClosed(LoginUIService::SYNC_WITH_DEFAULT_SETTINGS);
-
-  // Check expectations when the profile creation flow is done.
-  ProfileAttributesEntry* entry =
-      g_browser_process->profile_manager()
-          ->GetProfileAttributesStorage()
-          .GetProfileAttributesWithPath(profile_being_created->GetPath());
-  ASSERT_NE(entry, nullptr);
-  EXPECT_FALSE(entry->IsEphemeral());
-  EXPECT_EQ(entry->GetLocalProfileName(), u"enterprise.com");
-
-  // The color is not applied for enterprise users.
-  EXPECT_FALSE(ThemeServiceFactory::GetForProfile(profile_being_created)
-                   ->UsingAutogeneratedTheme());
-  // Sync is disabled.
-  EXPECT_FALSE(sync_service->GetUserSettings()->IsSyncRequested());
-}
-
-// Regression test for https://crbug.com/1184746.
-IN_PROC_BROWSER_TEST_F(ProfilePickerSeparateEnterpriseCreationFlowBrowserTest,
-                       CreateSignedInProfileWithSyncDisabledAfter) {
-  ASSERT_EQ(1u, BrowserList::GetInstance()->size());
-  Profile* profile_being_created = StartSigninFlow();
-
-  // Consumer-looking gmail address avoids code that forces the sync service to
-  // actually start which would add overhead in mocking further stuff.
-  // Enterprise domain needed for this profile being detected as Work.
-  SignIn(profile_being_created, "joe.enterprise@gmail.com", "Joe",
-         "enterprise.com");
-
-  // Wait for the sign-in to propagate to the flow, resulting in new browser
-  // getting opened and the enterprise dialog displayed.
-  Browser* new_browser = BrowserAddedWaiter(2u).Wait();
-
-  // Now disable sync by setting the device as managed in prefs. This simulates
-  // that it is disabled after showing the enterprise dialog through policies
-  // that are fetched.
-  syncer::SyncPrefs prefs(profile_being_created->GetPrefs());
-  prefs.SetManagedForTest(true);
-  syncer::SyncService* sync_service =
-      SyncServiceFactory::GetForProfile(profile_being_created);
-
-  // Inject a fake tab helper that confirms the enterprise dialog right away.
-  base::RunLoop loop_until_enterprise_confirmed;
-  TestTabDialogs::OverwriteForWebContents(
-      new_browser->tab_strip_model()->GetActiveWebContents(),
-      &loop_until_enterprise_confirmed);
-  // Wait until the enterprise dialog in shown and confirmed.
-  loop_until_enterprise_confirmed.Run();
-
-  // The picker should be closed even before the enterprise confirmation but it
-  // is closed asynchronously after opening the browser so after the NTP
-  // renders, it is safe to check.
-  WaitForLoadStop(new_browser->tab_strip_model()->GetActiveWebContents(),
-                  GURL("chrome://newtab/"));
-  WaitForPickerClosed();
-
-  // Now the sync disabled screen is shown, simulate closing the UI with "Stay
-  // signed in"
-  LoginUIServiceFactory::GetForProfile(profile_being_created)
-      ->SyncConfirmationUIClosed(LoginUIService::SYNC_WITH_DEFAULT_SETTINGS);
-
-  // Check expectations when the profile creation flow is done.
-  ProfileAttributesEntry* entry =
-      g_browser_process->profile_manager()
-          ->GetProfileAttributesStorage()
-          .GetProfileAttributesWithPath(profile_being_created->GetPath());
-  ASSERT_NE(entry, nullptr);
-  EXPECT_FALSE(entry->IsEphemeral());
-  EXPECT_EQ(entry->GetLocalProfileName(), u"enterprise.com");
-
-  // The color is not applied for enterprise users.
-  EXPECT_FALSE(ThemeServiceFactory::GetForProfile(profile_being_created)
-                   ->UsingAutogeneratedTheme());
-  // Sync is disabled.
-  EXPECT_FALSE(sync_service->GetUserSettings()->IsSyncRequested());
-}
-
-IN_PROC_BROWSER_TEST_F(ProfilePickerSeparateEnterpriseCreationFlowBrowserTest,
-                       CreateSignedInProfileSettings) {
-  ASSERT_EQ(1u, BrowserList::GetInstance()->size());
-  Profile* profile_being_created = StartSigninFlow();
-
-  // Consumer-looking gmail address avoids code that forces the sync service to
-  // actually start which would add overhead in mocking further stuff.
-  // Enterprise domain needed for this profile being detected as Work.
-  SignIn(profile_being_created, "joe.enterprise@gmail.com", "Joe",
-         "enterprise.com");
-
-  // Wait for the sign-in to propagate to the flow, resulting in new browser
-  // getting opened.
-  Browser* new_browser = BrowserAddedWaiter(2u).Wait();
-  // Inject a fake tab helper that confirms the enterprise dialog right away.
-  base::RunLoop loop_until_enterprise_confirmed;
-  TestTabDialogs::OverwriteForWebContents(
-      new_browser->tab_strip_model()->GetActiveWebContents(),
-      &loop_until_enterprise_confirmed);
-  // Wait until the enterprise dialog in shown and confirmed.
-  loop_until_enterprise_confirmed.Run();
-
-  // Now the sync consent screen is shown, simulate closing the UI with
-  // "Configure sync".
-  LoginUIServiceFactory::GetForProfile(profile_being_created)
-      ->SyncConfirmationUIClosed(LoginUIService::CONFIGURE_SYNC_FIRST);
-  WaitForLoadStop(new_browser->tab_strip_model()->GetActiveWebContents(),
-                  GURL("chrome://settings/syncSetup"));
-
-  // Check expectations when the profile creation flow is done.
-  WaitForPickerClosed();
-
-  ProfileAttributesEntry* entry =
-      g_browser_process->profile_manager()
-          ->GetProfileAttributesStorage()
-          .GetProfileAttributesWithPath(profile_being_created->GetPath());
-  ASSERT_NE(entry, nullptr);
-  EXPECT_FALSE(entry->IsEphemeral());
-  EXPECT_EQ(entry->GetLocalProfileName(), u"enterprise.com");
-  // The color is not applied if the user enters settings.
-  EXPECT_FALSE(ThemeServiceFactory::GetForProfile(profile_being_created)
-                   ->UsingAutogeneratedTheme());
-}
-
-class ProfilePickerIntegratedEnterpriseCreationFlowBrowserTest
-    : public ProfilePickerEnterpriseCreationFlowBrowserTest {
- public:
-  ProfilePickerIntegratedEnterpriseCreationFlowBrowserTest()
-      : ProfilePickerEnterpriseCreationFlowBrowserTest(
-            /*enable_feature=*/true) {}
 
   void ExpectEnterpriseScreenTypeAndProceed(
       EnterpriseProfileWelcomeUI::ScreenType expected_type,
@@ -1179,7 +949,7 @@ class ProfilePickerIntegratedEnterpriseCreationFlowBrowserTest
   }
 };
 
-IN_PROC_BROWSER_TEST_F(ProfilePickerIntegratedEnterpriseCreationFlowBrowserTest,
+IN_PROC_BROWSER_TEST_F(ProfilePickerEnterpriseCreationFlowBrowserTest,
                        CreateSignedInProfile) {
   ASSERT_EQ(1u, BrowserList::GetInstance()->size());
   Profile* profile_being_created = StartSigninFlow();
@@ -1225,7 +995,7 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerIntegratedEnterpriseCreationFlowBrowserTest,
             kProfileColor);
 }
 
-IN_PROC_BROWSER_TEST_F(ProfilePickerIntegratedEnterpriseCreationFlowBrowserTest,
+IN_PROC_BROWSER_TEST_F(ProfilePickerEnterpriseCreationFlowBrowserTest,
                        CreateSignedInProfileWithSyncDisabled) {
   ASSERT_EQ(1u, BrowserList::GetInstance()->size());
   Profile* profile_being_created = StartSigninFlow();
@@ -1275,7 +1045,7 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerIntegratedEnterpriseCreationFlowBrowserTest,
             kProfileColor);
 }
 
-IN_PROC_BROWSER_TEST_F(ProfilePickerIntegratedEnterpriseCreationFlowBrowserTest,
+IN_PROC_BROWSER_TEST_F(ProfilePickerEnterpriseCreationFlowBrowserTest,
                        CreateSignedInProfileSettings) {
   ASSERT_EQ(1u, BrowserList::GetInstance()->size());
   Profile* profile_being_created = StartSigninFlow();
@@ -1324,8 +1094,7 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerIntegratedEnterpriseCreationFlowBrowserTest,
                    ->UsingAutogeneratedTheme());
 }
 
-IN_PROC_BROWSER_TEST_F(ProfilePickerIntegratedEnterpriseCreationFlowBrowserTest,
-                       Cancel) {
+IN_PROC_BROWSER_TEST_F(ProfilePickerEnterpriseCreationFlowBrowserTest, Cancel) {
   ASSERT_EQ(1u, BrowserList::GetInstance()->size());
   Profile* profile_being_created = StartSigninFlow();
   base::FilePath profile_path = profile_being_created->GetPath();
@@ -1360,7 +1129,7 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerIntegratedEnterpriseCreationFlowBrowserTest,
 
 // The switch screen tests are not related to enterprise but the functionality
 // is bundled in the same feature flag.
-IN_PROC_BROWSER_TEST_F(ProfilePickerIntegratedEnterpriseCreationFlowBrowserTest,
+IN_PROC_BROWSER_TEST_F(ProfilePickerEnterpriseCreationFlowBrowserTest,
                        CreateSignedInProfileSigninAlreadyExists_ConfirmSwitch) {
   ASSERT_EQ(1u, BrowserList::GetInstance()->size());
 
@@ -1391,7 +1160,7 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerIntegratedEnterpriseCreationFlowBrowserTest,
   // Simulate clicking on the confirm switch button.
   ProfilePickerHandler* handler = profile_picker_handler();
   base::ListValue args;
-  args.Append(base::Value::ToUniquePtrValue(util::FilePathToValue(other_path)));
+  args.Append(base::Value::ToUniquePtrValue(base::FilePathToValue(other_path)));
   handler->HandleConfirmProfileSwitch(&args);
 
   // Browser for a pre-existing profile is displayed.
@@ -1409,7 +1178,7 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerIntegratedEnterpriseCreationFlowBrowserTest,
   EXPECT_EQ(entry, nullptr);
 }
 
-IN_PROC_BROWSER_TEST_F(ProfilePickerIntegratedEnterpriseCreationFlowBrowserTest,
+IN_PROC_BROWSER_TEST_F(ProfilePickerEnterpriseCreationFlowBrowserTest,
                        CreateSignedInProfileSigninAlreadyExists_CancelSwitch) {
   ASSERT_EQ(1u, BrowserList::GetInstance()->size());
 
@@ -1507,10 +1276,9 @@ class ProfilePickerCreationFlowEphemeralProfileBrowserTest
           nullptr);
       policy_provider_.UpdateChromePolicy(policy_map);
 
-      ON_CALL(policy_provider_, IsInitializationComplete(testing::_))
-          .WillByDefault(testing::Return(true));
-      ON_CALL(policy_provider_, IsFirstPolicyLoadComplete(testing::_))
-          .WillByDefault(testing::Return(true));
+      policy_provider_.SetDefaultReturns(
+          /*is_initialization_complete_return=*/true,
+          /*is_first_policy_load_complete_return=*/true);
       policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
           &policy_provider_);
     }

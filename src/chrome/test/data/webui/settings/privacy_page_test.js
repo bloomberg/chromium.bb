@@ -69,7 +69,6 @@ suite('PrivacyPage', function() {
   /** @type {!SettingsPrivacyPageElement} */
   let page;
 
-  /** @type {!TestClearBrowsingDataBrowserProxy} */
   let testClearBrowsingDataBrowserProxy;
 
   /** @type {!TestSiteSettingsPrefsBrowserProxy}*/
@@ -88,8 +87,8 @@ suite('PrivacyPage', function() {
 
   setup(function() {
     testClearBrowsingDataBrowserProxy = new TestClearBrowsingDataBrowserProxy();
-    ClearBrowsingDataBrowserProxyImpl.instance_ =
-        testClearBrowsingDataBrowserProxy;
+    ClearBrowsingDataBrowserProxyImpl.setInstance(
+        testClearBrowsingDataBrowserProxy);
     const testBrowserProxy = new TestPrivacyPageBrowserProxy();
     PrivacyPageBrowserProxyImpl.instance_ = testBrowserProxy;
     siteSettingsBrowserProxy = new TestSiteSettingsPrefsBrowserProxy();
@@ -246,12 +245,6 @@ suite('PrivacyReviewEnabled', function() {
   /** @type {!SettingsPrivacyPageElement} */
   let page;
 
-  suiteSetup(function() {
-    loadTimeData.overrideValues({
-      privacyReviewEnabled: true,
-    });
-  });
-
   setup(function() {
     document.body.innerHTML = '';
     page = /** @type {!SettingsPrivacyPageElement} */
@@ -262,6 +255,12 @@ suite('PrivacyReviewEnabled', function() {
 
   test('privacyReviewRowVisible', function() {
     assertTrue(isChildVisible(page, '#privacyReviewLinkRow'));
+  });
+
+  test('privacyReviewRowClick', function() {
+    page.shadowRoot.querySelector('#privacyReviewLinkRow').click();
+    // Ensure the correct Settings page is shown.
+    assertEquals(routes.PRIVACY_REVIEW, Router.getInstance().getCurrentRoute());
   });
 
   test('clearBrowsingDataClass', function() {

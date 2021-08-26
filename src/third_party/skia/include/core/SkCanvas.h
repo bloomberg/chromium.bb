@@ -39,7 +39,6 @@
 
 class GrBackendRenderTarget;
 class GrRecordingContext;
-class GrSurfaceDrawContext;
 class SkBaseDevice;
 class SkBitmap;
 class SkData;
@@ -58,17 +57,11 @@ class SkPixmap;
 class SkRegion;
 class SkRRect;
 struct SkRSXform;
+class SkSpecialImage;
 class SkSurface;
 class SkSurface_Base;
 class SkTextBlob;
 class SkVertices;
-
-// This declaration must match the one in SkDeferredDisplayList.h
-#if SK_SUPPORT_GPU
-class GrRenderTargetProxy;
-#else
-using GrRenderTargetProxy = SkRefCnt;
-#endif
 
 /** \class SkCanvas
     SkCanvas provides an interface for drawing, and how the drawing is clipped and transformed.
@@ -2268,6 +2261,7 @@ protected:
     virtual void onClipPath(const SkPath& path, SkClipOp op, ClipEdgeStyle edgeStyle);
     virtual void onClipShader(sk_sp<SkShader>, SkClipOp);
     virtual void onClipRegion(const SkRegion& deviceRgn, SkClipOp op);
+    virtual void onResetClip();
 
     virtual void onDiscard();
 
@@ -2294,10 +2288,49 @@ private:
     // The top-most device in the stack, will change within saveLayer()'s. All drawing and clipping
     // operations should route to this device.
     SkBaseDevice* topDevice() const;
-    virtual GrSurfaceDrawContext* topDeviceSurfaceDrawContext();
-    virtual GrRenderTargetProxy* topDeviceTargetProxy();
 
-    class MCRec;
+    // Canvases maintain a sparse stack of layers, where the top-most layer receives the drawing,
+    // clip, and matrix commands. There is a layer per call to saveLayer() using the
+    // kFullLayer_SaveLayerStrategy.
+    struct Layer {
+        sk_sp<SkBaseDevice>  fDevice;
+        sk_sp<SkImageFilter> fImageFilter; // applied to layer *before* being drawn by paint
+        SkPaint              fPaint;
+
+        Layer(sk_sp<SkBaseDevice> device, sk_sp<SkImageFilter> imageFilter, const SkPaint& paint);
+    };
+
+    // Encapsulate state needed to restore from saveBehind()
+    struct BackImage {
+        sk_sp<SkSpecialImage> fImage;
+        SkIPoint              fLoc;
+    };
+
+    class MCRec {
+    public:
+        // If not null, this MCRec corresponds with the saveLayer() record that made the layer.
+        // The base "layer" is not stored here, since it is stored inline in SkCanvas and has no
+        // restoration behavior.
+        std::unique_ptr<Layer> fLayer;
+
+        // This points to the device of the top-most layer (which may be lower in the stack), or
+        // to the canvas's fBaseDevice. The MCRec does not own the device.
+        SkBaseDevice* fDevice;
+
+        std::unique_ptr<BackImage> fBackImage;
+        SkM44 fMatrix;
+        int fDeferredSaveCount = 0;
+
+        MCRec(SkBaseDevice* device);
+        MCRec(const MCRec* prev);
+        ~MCRec();
+
+        void newLayer(sk_sp<SkBaseDevice> layerDevice,
+                      sk_sp<SkImageFilter> filter,
+                      const SkPaint& restorePaint);
+
+        void reset(SkBaseDevice* device);
+    };
 
     SkDeque     fMCStack;
     // points to top of stack
@@ -2328,6 +2361,7 @@ private:
     friend class SkSurface_Gpu;
 
     SkIRect fClipRestrictionRect = SkIRect::MakeEmpty();
+    int fClipRestrictionSaveCount = -1;
 
     void doSave();
     void checkForDeferredSave();
@@ -2430,11 +2464,11 @@ private:
     bool androidFramework_isClipAA() const;
 
     /**
-     * Reset the clip to be just the intersection with the global-space 'rect'. This operates within
-     * the save/restore stack of the canvas, so restore() will bring back any saved clip. However,
-     * since 'rect' is already in global space, it is not modified by the canvas matrix.
+     * Reset the clip to be wide-open (modulo any separately specified device clip restriction).
+     * This operate within the save/restore clip stack so it can be undone by restoring to an
+     * earlier save point.
      */
-    void androidFramework_replaceClip(const SkIRect& rect);
+    void internal_private_resetClip();
 
     virtual SkPaintFilterCanvas* internal_private_asPaintFilterCanvas() const { return nullptr; }
 

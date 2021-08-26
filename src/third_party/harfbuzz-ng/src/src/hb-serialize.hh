@@ -254,7 +254,7 @@ struct hb_serialize_context_t
     current = current->next;
     revert (obj->head, obj->tail);
     obj->fini ();
-    object_pool.free (obj);
+    object_pool.release (obj);
   }
 
   /* Set share to false when an object is unlikely sharable with others
@@ -449,16 +449,16 @@ struct hb_serialize_context_t
   }
 
   template <typename Type>
-  Type *allocate_size (unsigned int size)
+  Type *allocate_size (size_t size)
   {
     if (unlikely (in_error ())) return nullptr;
 
-    if (this->tail - this->head < ptrdiff_t (size))
+    if (unlikely (size > INT_MAX || this->tail - this->head < ptrdiff_t (size)))
     {
       err (HB_SERIALIZE_ERROR_OUT_OF_ROOM);
       return nullptr;
     }
-    memset (this->head, 0, size);
+    hb_memset (this->head, 0, size);
     char *ret = this->head;
     this->head += size;
     return reinterpret_cast<Type *> (ret);
@@ -513,18 +513,19 @@ struct hb_serialize_context_t
   hb_serialize_context_t& operator << (const Type &obj) & { embed (obj); return *this; }
 
   template <typename Type>
-  Type *extend_size (Type *obj, unsigned int size)
+  Type *extend_size (Type *obj, size_t size)
   {
     if (unlikely (in_error ())) return nullptr;
 
     assert (this->start <= (char *) obj);
     assert ((char *) obj <= this->head);
-    assert ((char *) obj + size >= this->head);
-    if (unlikely (!this->allocate_size<Type> (((char *) obj) + size - this->head))) return nullptr;
+    assert ((size_t) (this->head - (char *) obj) <= size);
+    if (unlikely (((char *) obj + size < (char *) obj) ||
+		  !this->allocate_size<Type> (((char *) obj) + size - this->head))) return nullptr;
     return reinterpret_cast<Type *> (obj);
   }
   template <typename Type>
-  Type *extend_size (Type &obj, unsigned int size)
+  Type *extend_size (Type &obj, size_t size)
   { return extend_size (hb_addressof (obj), size); }
 
   template <typename Type>
@@ -547,11 +548,11 @@ struct hb_serialize_context_t
     unsigned int len = (this->head - this->start)
 		     + (this->end  - this->tail);
 
-    // If len is zero don't malloc as the memory won't get properly
+    // If len is zero don't hb_malloc as the memory won't get properly
     // cleaned up later.
     if (!len) return hb_bytes_t ();
 
-    char *p = (char *) malloc (len);
+    char *p = (char *) hb_malloc (len);
     if (unlikely (!p)) return hb_bytes_t ();
 
     memcpy (p, this->start, this->head - this->start);
@@ -566,7 +567,7 @@ struct hb_serialize_context_t
     hb_bytes_t b = copy_bytes ();
     return hb_blob_create (b.arrayZ, b.length,
 			   HB_MEMORY_MODE_WRITABLE,
-			   (char *) b.arrayZ, free);
+			   (char *) b.arrayZ, hb_free);
   }
 
   const hb_vector_t<object_t *>& object_graph() const

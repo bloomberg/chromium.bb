@@ -14,6 +14,7 @@
 <translation id="1204296502688602597">Độ trễ DNS</translation>
 <translation id="123124571410524056">Nghi là có cổng</translation>
 <translation id="1238612778414822719">Độ trễ HTTPS</translation>
+<translation id="1264369926465113395">Hãy xem tạp chí kỹ thuật số mới của Chromebook dành cho nhà sáng tạo</translation>
 <translation id="1270369111467284986">Tin là có trang xác thực</translation>
 <translation id="1290331692326790741">Tín hiệu yếu</translation>
 <translation id="1314565355471455267">Android VPN</translation>
@@ -34,7 +35,9 @@
 <translation id="1510238584712386396">Trình chạy</translation>
 <translation id="1600964289716072707">Đặt một trang khác lên máy quét và chọn Quét để thêm trang.</translation>
 <translation id="1621067168122174824">Chạy quá trình Kiểm tra sạc</translation>
+<translation id="1639239467298939599">Đang tải</translation>
 <translation id="1641857168437328880">Khay nạp tài liệu (1 mặt)</translation>
+<translation id="1643449475550628585">Thay đổi hình nền hàng ngày</translation>
 <translation id="1644574205037202324">Nhật ký</translation>
 <translation id="1662989795263954667">Đã dừng – Hết mực</translation>
 <translation id="1703835215927279855">Letter</translation>
@@ -65,7 +68,6 @@
 <translation id="2224337661447660594">Không có Internet</translation>
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="225692081236532131">Trạng thái kích hoạt</translation>
-<translation id="2294675138977897428">Không có kết nối Ethernet</translation>
 <translation id="2326139988748364651"><ph name="RESOLUTION_VALUE" /> dpi</translation>
 <translation id="2338501278241028356">Bật Bluetooth để khám phá các thiết bị lân cận</translation>
 <translation id="2364498172489649528">Đã đạt</translation>
@@ -75,9 +77,11 @@
 <translation id="2448312741937722512">Loại</translation>
 <translation id="2461822463642141190">Hiện tại</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
+<translation id="2505327257735685095">Làm mới hình nền hiện tại</translation>
 <translation id="2517472476991765520">Quét</translation>
 <translation id="2570743873672969996">Đang chạy kiểm tra <ph name="TEST_NAME" />...</translation>
 <translation id="2585245331261708204">Chrome OS có gì mới</translation>
+<translation id="2619761439309613843">Làm mới hàng ngày</translation>
 <translation id="2620436844016719705">Hệ thống</translation>
 <translation id="2740531572673183784">Ok</translation>
 <translation id="2751739896257479635">Xác thực EAP giai đoạn 2</translation>
@@ -87,7 +91,6 @@
 <translation id="2862104018715411648">Đặt tài liệu lên máy quét rồi chọn Quét để bắt đầu</translation>
 <translation id="2872961005593481000">Tắt</translation>
 <translation id="2878387241690264070">Đã xả <ph name="RATE" /> pin sau <ph name="NUM_SECONDS" /> giây.</translation>
-<translation id="2983662233540284543">Học hỏi từ người sáng tạo nội dung trò chơi, tải các ứng dụng thiết kế trò chơi và nhiều nội dung khác</translation>
 <translation id="3008341117444806826">LÀM MỚI</translation>
 <translation id="3009958530611748826">Chọn một thư mục để lưu</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" /> mA</translation>
@@ -101,6 +104,7 @@
 <translation id="3188257591659621405">Tệp của tôi</translation>
 <translation id="3199982728237701504">Khay nạp tài liệu (2 mặt)</translation>
 <translation id="3226405216343213872">Đang tìm máy quét</translation>
+<translation id="3228433892370472777">Kết nối mặc định</translation>
 <translation id="3246869037381808805">Các lệnh in quá 1 ngày sẽ bị xóa</translation>
 <translation id="3268178239013324452">Không thành công – Cửa máy in đang mở</translation>
 <translation id="3283504360622356314">{0,plural, =1{Chỉnh sửa tệp}other{Chỉnh sửa các tệp}}</translation>
@@ -117,10 +121,13 @@
 <translation id="3488065109653206955">Được kích hoạt một phần</translation>
 <translation id="3527036260304016759">Không thành công – Lỗi không xác định</translation>
 <translation id="3532980081107202182">Còn khoảng <ph name="MIN_REMAINING" /> phút nữa</translation>
+<translation id="3540383942695635079">Địa chỉ MAC</translation>
 <translation id="357889014807611375">mạng Wi‑Fi có giới hạn dữ liệu</translation>
+<translation id="3582041541988388905">Không phát hiện thấy kết nối <ph name="NETWORK_NAME" /></translation>
 <translation id="3595596368722241419">Pin đầy</translation>
 <translation id="360565022852130722">Mạng Wi-Fi được bảo mật bằng giao thức yếu WEP 802.1x</translation>
 <translation id="3689839747745352263">Kiểm tra <ph name="TEST_NAME" /></translation>
+<translation id="3708186454126126312">Từng được kết nối</translation>
 <translation id="373232531963562220">{PAGE_NUMBER,plural, =0{Quét lại trang}=1{Quét lại trang {PAGE_NUMBER}}other{Quét lại trang {PAGE_NUMBER}}}</translation>
 <translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★ (<ph name="AGGREGATED_COUNT" /> bài đánh giá)</translation>
 <translation id="3748026146096797577">Chưa được kết nối</translation>
@@ -163,6 +170,7 @@
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4483049906298469269">Không ping được cổng của mạng không phải mạng mặc định</translation>
 <translation id="4511264077854731334">Cổng</translation>
+<translation id="4536864596629708641">Cấu hình IP</translation>
 <translation id="4548483925627140043">Không tìm thấy tín hiệu</translation>
 <translation id="455835558791489930">Pin <ph name="CHARGE_VALUE" /> mAh</translation>
 <translation id="4562494484721939086">Không có dịch vụ</translation>
@@ -171,6 +179,7 @@
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" />/<ph name="TOTAL_PAGE_NUMBER" />. Hãy nhấn để hủy lệnh in.</translation>
 <translation id="4646949265910132906">Kết nối Wi-Fi an toàn</translation>
 <translation id="4652335678334611408">Lưu nhật ký phiên</translation>
+<translation id="4654549501020883054">Thay đổi hàng ngày</translation>
 <translation id="4665014895760275686">Nhà sản xuất</translation>
 <translation id="467510802200863975">Mật khẩu không khớp</translation>
 <translation id="467715984478005772">Tin là có tường lửa</translation>
@@ -194,6 +203,7 @@
 <translation id="4891842000192098784">Độ ổn định</translation>
 <translation id="4917385247580444890">Mạnh</translation>
 <translation id="4917889632206600977">Đã dừng – Hết giấy</translation>
+<translation id="491836528011451486">Đặt tài liệu của bạn lên máy quét và chọn Quét lại để quét và thay thế trang <ph name="CURRENT_PAGE" />.</translation>
 <translation id="4921665434385737356">Đã sạc <ph name="RATE" /> trong <ph name="NUM_SECONDS" /> giây.</translation>
 <translation id="4932733599132424254">Ngày Tháng</translation>
 <translation id="498186245079027698">Hãy kiểm tra trình quét rồi thử lại. Đảm bảo máy có đủ dung lượng để lưu các tệp đã quét.</translation>
@@ -209,10 +219,10 @@
 <translation id="5154917547274118687">Bộ nhớ</translation>
 <translation id="5168185087976003268">Tình trạng pin</translation>
 <translation id="5170568018924773124">Hiển thị trong thư mục</translation>
-<translation id="519607504553633437">Thiết kế và xây dựng các trò chơi của riêng bạn</translation>
 <translation id="5212543919916444558">Tôi không tìm thấy nội dung nào trên màn hình để có thể trợ giúp cho bạn.
 Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translation>
 <translation id="5222676887888702881">Đăng xuất</translation>
+<translation id="5234764350956374838">Bỏ qua</translation>
 <translation id="5252456968953390977">Đang chuyển vùng</translation>
 <translation id="5264277876637023664">Chạy quá trình Kiểm tra CPU</translation>
 <translation id="5267975978099728568"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="ERROR_STATUS" /></translation>
@@ -243,7 +253,6 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="5691511426247308406">Gia đình</translation>
 <translation id="5701381305118179107">Giữa</translation>
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" />/<ph name="TOTAL_PAGES" /></translation>
-<translation id="5752751666635965375">Tạo trò chơi của bạn</translation>
 <translation id="5760715441271661976">Trạng thái trang xác thực</translation>
 <translation id="5832805196449965646">Thêm người</translation>
 <translation id="583281660410589416">Không xác định</translation>
@@ -266,6 +275,7 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="6106186594183574873">Để hoàn tất, hãy nhập mật khẩu cũ của bạn</translation>
 <translation id="6108689792487843350">Không thể kết nối với cổng</translation>
 <translation id="6122191549521593678">Trực tuyến</translation>
+<translation id="6125438912510167220">Tốc độ liên kết</translation>
 <translation id="6137767437444130246">Chứng chỉ người dùng</translation>
 <translation id="6146993107019042706">Để hoàn tất, hãy nhập mật khẩu mới của bạn</translation>
 <translation id="6147514244879357420">PNG</translation>
@@ -292,6 +302,8 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="65587193855025101">Mặt phẳng</translation>
 <translation id="6564646048574748301">Không thành công – Không thể kết nối với máy in</translation>
 <translation id="6574762126505704998">Toàn bộ ảnh</translation>
+<translation id="6575134580692778371">Chưa được định cấu hình</translation>
+<translation id="6596816719288285829">Địa chỉ IP</translation>
 <translation id="6603230386432466813">Bạn đang gặp sự cố khi kết nối?</translation>
 <translation id="6618744767048954150">Đang chạy</translation>
 <translation id="6620487321149975369">Lệnh in sẽ xuất hiện trong lịch sử in trừ phi bạn tự xóa</translation>
@@ -314,13 +326,16 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="7059230779847288458">Đang sạc, còn <ph name="TIME_VALUE" /> nữa là pin đầy</translation>
 <translation id="708426984172631313">ĐÃ DỪNG</translation>
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
+<translation id="7134436342991564651">{0,plural, =1{Máy chủ định danh}other{Các máy chủ định danh}}</translation>
 <translation id="7143207342074048698">Đang kết nối</translation>
 <translation id="7144878232160441200">Thử lại</translation>
 <translation id="714876143603641390">Khả năng kết nối với mạng LAN</translation>
 <translation id="7162487448488904999">Thư viện</translation>
 <translation id="7172721935181587524">1 hình ảnh</translation>
 <translation id="7177485034254901881"><ph name="DEVICE_TYPE" /> này do <ph name="MANAGER" /> quản lý. Quản trị viên có thể định cấu hình từ xa thiết bị này.</translation>
+<translation id="7180611975245234373">Làm mới</translation>
 <translation id="7216409898977639127">Nhà cung cấp dịch vụ di động</translation>
+<translation id="7257889006063274246">Bạn có chắc chắn muốn xóa trang <ph name="CURRENT_PAGE" /> không?</translation>
 <translation id="7271040990581020067">Máy quét đang được sử dụng. Hãy thử lại sau.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7287310195820267359">Bộ sưu tập hình nền</translation>
@@ -354,9 +369,11 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="7835501727204647447">Cài đặt CloudReady</translation>
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7882358943899516840">Loại nhà mạng</translation>
+<translation id="7895471513946376273">Khám phá các công cụ vẽ và thiết kế</translation>
 <translation id="7936303884198020182">Không tìm thấy máy chủ định danh</translation>
 <translation id="7960831585769876809">Nhiệt độ</translation>
 <translation id="7994702968232966508">Phương pháp EAP</translation>
+<translation id="8020238979854764615">Đã xảy ra lỗi. Vui lòng thử lại bằng cách chọn các hình ảnh khác.</translation>
 <translation id="802154636333426148">Tải xuống không thành công</translation>
 <translation id="8041089156583427627">Gửi ý kiến phản hồi</translation>
 <translation id="8075838845814659848">Mức pin còn lại</translation>
@@ -368,7 +385,9 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="8214184102975786227">Quét nhiều trang thành một tệp PDF</translation>
 <translation id="8230672074305416752">Không ping được cổng của mạng mặc định</translation>
 <translation id="8246209727385807362">Nhà cung cấp dịch vụ không xác định</translation>
+<translation id="8286154143153872371">Vui lòng kết nối mạng và tải lại trang để xem hình nền.</translation>
 <translation id="8291967909914612644">Quốc gia của nhà cung cấp Home</translation>
+<translation id="829270796093605079">Khám phá các công cụ thiết kế</translation>
 <translation id="8294431847097064396">Nguồn</translation>
 <translation id="8297006494302853456">Yếu</translation>
 <translation id="8302368968391049045">Tường lửa HTTPS</translation>
@@ -392,6 +411,7 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="8575298406870537639">Nhà mạng của bạn có thể yêu cầu bạn bật tùy chọn này để kết nối với mạng của họ. Hãy liên hệ với nhà mạng để biết thông tin chi tiết.</translation>
 <translation id="8576249514688522074">Chưa khởi chạy</translation>
 <translation id="8620617069779373398">Trạng thái chuyển vùng</translation>
+<translation id="8655295600908251630">Kênh</translation>
 <translation id="8660881923941176839">pao</translation>
 <translation id="8675354002693747642">Khóa được chia sẻ trước</translation>
 <translation id="871560550817059752">Không thành công – Hết mực</translation>
@@ -404,6 +424,7 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="8798441408945964110">Tên nhà mạng</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8818152010000655963">Hình nền</translation>
+<translation id="8834539327799336565">Hiện đang kết nối</translation>
 <translation id="8845001906332463065">Nhận trợ giúp</translation>
 <translation id="8868741746785112895">GUID</translation>
 <translation id="8881098542468797602">Đã kiểm tra thành công</translation>

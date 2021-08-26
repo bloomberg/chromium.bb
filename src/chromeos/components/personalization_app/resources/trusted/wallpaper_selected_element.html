@@ -1,16 +1,40 @@
 <style include="common-style">
   #container {
+    border-bottom: 1px solid var(--cros-separator-color);
     box-sizing: border-box;
-    display: flex;
-    flex-flow: row nowrap;
+    display: grid;
+    grid-template-columns: 224px 20px minmax(0, 1fr);
+    grid-template-rows: 1fr 16px 34px 20px;
+    grid-template-areas: "image . text"
+                         "image . ."
+                         "image . buttons"
+                         ".     . .";
     height: 100%;
-    padding: 0 8px 20px 8px;
+    margin: 0 8px;
+  }
+
+  #imageContainer,
+  #imagePlaceholder {
+    grid-area: image;
+  }
+
+  #textContainer,
+  #textPlaceholder {
+    grid-area: text;
+  }
+
+  #buttonContainer,
+  #buttonPlaceholder {
+    grid-area: buttons;
+  }
+
+  .placeholder {
+    border-radius: 12px;
   }
 
   #imageContainer {
-    height: 100%;
-    flex: 0 0 auto;
-    width: 224px;
+    border-radius: 12px;
+    overflow: hidden;
   }
 
   img {
@@ -23,9 +47,8 @@
     align-items: flex-start;
     display: flex;
     flex-flow: column nowrap;
-    justify-content: center;
-    margin: 0 8px 0 20px;
-    min-width: 0;
+    justify-content: flex-end;
+    margin: 0;
   }
 
   #textContainer > * {
@@ -40,17 +63,17 @@
     margin-top: 4px;
   }
 
-  #textContainer > p:first-child {
-    @apply --personalization-app-typeface-body-2;
+  #textContainer > span:first-child {
     color: var(--cros-text-color-secondary);
+    font: var(--cros-body-2-font);
   }
 
-  #textContainer > p:nth-child(2) {
-    @apply --personalization-app-typeface-display-6;
+  #textContainer > span:nth-child(2) {
     color: var(--cros-text-color-primary);
+    font: var(--cros-display-6-font);
   }
 
-  #textContainer > p:nth-child(n+3) {
+  #textContainer > span:nth-child(n+3) {
     color: var(--cros-text-color-secondary);
     font-family: var(--personalization-app-font-google-sans);
     font-size: 14px;
@@ -58,57 +81,82 @@
     line-height: 20px;
   }
 
-  #currentWallpaperMoreOptions {
-    display: flex;
+  #wallpaperOptions .text,
+  #collectionOptions .text {
+    margin-inline-start: 8px;
   }
 
-  #currentWallpaperMoreOptions > div {
-    display: flex;
-    padding: 8px;
-    margin-right: 8px;
-    border: 1px solid var(--google-grey-refresh-300);
+  #wallpaperOptions > cr-button,
+  #collectionOptions > cr-button {
+    border-color: var(--cros-button-stroke-color-secondary);
     border-radius: 16px;
+    box-shadow: none;
+    margin-inline-end: 8px;
   }
 
-  #currentWallpaperMoreOptions #center.selected,
-  #currentWallpaperMoreOptions #fill.selected {
-    color: var(--cros-toggle-color);
-    pointer-events: none;
+  #wallpaperOptions > cr-button[aria-selected='true'],
+  #collectionOptions > cr-button[aria-pressed='true'] {
+    background-color: var(--cros-highlight-color);
+    border: 0;
   }
 </style>
-<header id="container" tabindex="0" aria-label="[[getAriaLabel_(image_)]]"
-  role="heading" aria-level="1">
+<header id="container">
+  <template is="dom-if"
+      if="[[showPlaceholders_(isLoading_, showImage_)]]">
+    <div id="imagePlaceholder" class="placeholder"></div>
+    <div id="textPlaceholder" class="placeholder"></div>
+    <div id="buttonPlaceholder" class="placeholder"></div>
+  </template>
   <template is="dom-if" if="[[showImage_]]">
     <div id="imageContainer">
-      <img aria-labelledby="imageLabel" src="[[getImageSrc_(image_)]]">
+      <img src="[[getImageSrc_(image_)]]" aria-hidden="true">
     </div>
-    <div id="textContainer">
-      <p id="currentlySet">[[i18n('currentlySet')]]</p>
-      <dom-repeat items="[[image_.attribution]]">
+    <h2 id="textContainer" aria-live="polite" aria-label$="[[getAriaLabel_(image_)]]">
+      <span id="currentlySet" aria-hidden="true">[[i18n('currentlySet')]]</span>
+      <span id="imageTitle" title$="[[imageTitle_]]" aria-hidden="true">
+        [[imageTitle_]]
+      </span>
+      <dom-repeat items="[[imageOtherAttribution_]]">
         <template>
-          <p title="[[item]]">[[item]]</p>
+          <span title$="[[item]]" aria-hidden="true">[[item]]</span>
         </template>
       </dom-repeat>
-      <template is="dom-if" if="[[showMoreOptions_]]">
-        <div id="currentWallpaperMoreOptions">
-          <div id="fill" data-layout="FILL" on-click="onClickLayoutIcon_"
-              class$="[[computeFillOptionClass_(image_)]]">
-            <!-- TODO(b/178105894) add icon -->
+    </h2>
+    <div id="buttonContainer">
+      <template is="dom-if" if="[[showWallpaperOptions_]]">
+        <div id="wallpaperOptions">
+          <cr-button id="fill" data-layout="FILL" on-click="onClickLayoutIcon_"
+              aria-selected$="[[getFillAriaSelected_(image_)]]">
+            <iron-icon icon="[[fillIcon_]]"></iron-icon>
             <div class="text">[[i18n('fill')]]</div>
-          </div>
-          <div id="center" data-layout="CENTER" on-click="onClickLayoutIcon_"
-              class$="[[computeCenterOptionClass_(image_)]]">
-            <!-- TODO(b/178105894) add icon -->
+          </cr-button>
+          <cr-button id="center" data-layout="CENTER"
+              on-click="onClickLayoutIcon_"
+              aria-selected$="[[getCenterAriaSelected_(image_)]]">
+            <iron-icon icon="[[centerIcon_]]"></iron-icon>
             <div class="text">[[i18n('center')]]</div>
-          </div>
+          </cr-button>
+        </div>
+      </template>
+      <template is="dom-if" if="[[showCollectionOptions_]]">
+        <div id="collectionOptions">
+          <cr-button id="dailyRefresh" data-collection-id$="[[collectionId]]"
+              aria-label$="[[i18n('ariaLabelChangeDaily')]]"
+              data-daily-refresh-collection-id$="[[dailyRefreshCollectionId_]]"
+              aria-pressed$="[[ariaPressed_]]"
+              on-click="onClickDailyRefreshToggle_">
+            <iron-icon icon="[[dailyRefreshIcon_]]"></iron-icon>
+            <div class="text">[[i18n('changeDaily')]]</div>
+          </cr-button>
+          <cr-button id="refreshWallpaper"
+              aria-label$="[[i18n('ariaLabelRefresh')]]"
+              on-click="onClickUpdateDailyRefreshWallpaper_"
+              hidden$="[[!showRefreshButton_]]">
+            <iron-icon icon="personalization:refresh"></iron-icon>
+            <div class="text">[[i18n('refresh')]]</div>
+          </cr-button>
         </div>
       </template>
     </div>
-
   </template>
-  <template is="dom-if" if="[[hasError_]]">
-    <!-- TODO(b/186668250) real error state -->
-    <p id="error">There was an error</p>
-  </template>
-  <paper-spinner-lite active="[[isLoading_]]"></paper-spinner-lite>
 </header>

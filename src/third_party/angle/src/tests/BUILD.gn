@@ -187,6 +187,18 @@ angle_test("angle_unittests") {
     "$angle_root/util:angle_util_static",
   ]
 
+  if (angle_enable_vulkan) {
+    if (angle_enable_direct_spirv_gen) {
+      sources += [ "compiler_tests/Precise_test.cpp" ]
+    }
+    deps += [
+      "$angle_root/src/common/spirv:angle_spirv_base",
+      "$angle_root/src/common/spirv:angle_spirv_headers",
+      "$angle_root/src/common/spirv:angle_spirv_parser",
+      "${angle_spirv_headers_dir}:spv_headers",
+    ]
+  }
+
   if (!is_android && !is_fuchsia) {
     # SystemUtils.RunApp, the only unittest using a helper binary, is not supported on these
     # platforms yet.
@@ -372,6 +384,9 @@ if (is_win || is_linux || is_chromeos || is_android || is_apple) {
       "$angle_root:libGLESv2_static",
     ]
 
+    data = [ "$angle_root/src/tests/run_perf_tests.py" ]
+    data_deps = [ "//testing:run_perf_test" ]
+
     # These tests depend on vulkan_command_buffer_utils, which is
     # not yet compatible with mac and vulkan display/headless backend.
     if (angle_enable_vulkan && !angle_use_vulkan_display && !is_apple) {
@@ -429,12 +444,13 @@ if (build_angle_perftests) {
       "$angle_spirv_tools_dir:spvtools_val",
     ]
 
+    data = [ "$angle_root/src/tests/run_perf_tests.py" ]
+
     data_deps = [
       "${angle_root}:libEGL",
       "${angle_root}:libGLESv2",
+      "//testing:run_perf_test",
     ]
-
-    data_deps += [ "//testing:run_perf_test" ]
 
     if (is_win || is_linux || is_chromeos) {
       data_deps += [ "${angle_root}/third_party/glmark2:glmark2_angle" ]
@@ -540,6 +556,10 @@ if (build_angle_gles1_conform_tests) {
       "$angle_root:angle_static",
       "$angle_root:gl_prototypes",
     ]
+
+    if (is_clang) {
+      cflags_c = [ "-Wno-implicit-fallthrough" ]
+    }
 
     testonly = true
 

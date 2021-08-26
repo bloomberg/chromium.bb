@@ -15,7 +15,12 @@ namespace scheduler {
 class SchedulerHelper;
 
 // A time domain that runs tasks sequentially in time order but doesn't sleep
-// between delayed tasks.
+// between delayed tasks. Because AutoAdvancingVirtualTimeDomain may override
+// Time/TimeTicks in a multi-threaded context, it must outlive any thread that
+// may call Time::Now() or TimeTicks::Now(). In practice, this means
+// AutoAdvancingVirtualTimeDomain can never be destroyed in production and acts
+// as a one-way switch. In tests, it should only be destroyed after all threads
+// have been joined.
 //
 // KEY: A-E are delayed tasks
 // |    A   B C  D           E  (Execution with RealTimeDomain)
@@ -27,12 +32,9 @@ class PLATFORM_EXPORT AutoAdvancingVirtualTimeDomain
     : public base::sequence_manager::TimeDomain,
       public base::TaskObserver {
  public:
-  enum class BaseTimeOverridePolicy { OVERRIDE, DO_NOT_OVERRIDE };
-
   AutoAdvancingVirtualTimeDomain(base::Time initial_time,
                                  base::TimeTicks initial_time_ticks,
-                                 SchedulerHelper* helper,
-                                 BaseTimeOverridePolicy policy);
+                                 SchedulerHelper* helper);
   AutoAdvancingVirtualTimeDomain(const AutoAdvancingVirtualTimeDomain&) =
       delete;
   AutoAdvancingVirtualTimeDomain& operator=(
@@ -46,10 +48,10 @@ class PLATFORM_EXPORT AutoAdvancingVirtualTimeDomain
   // If non-null, virtual time may not advance past |virtual_time_fence|.
   void SetVirtualTimeFence(base::TimeTicks virtual_time_fence);
 
-  // The maximum number amount of delayed task starvation we will allow.
-  // NB a value of 0 allows infinite starvation. A reasonable value for this in
-  // practice is around 1000 tasks, which should only affect rendering of the
-  // heaviest pages.
+  // The maximum number of tasks we will run before advancing virtual time in
+  // order to avoid starving delayed tasks. NB a value of 0 allows infinite
+  // starvation. A reasonable value for this in practice is around 1000 tasks,
+  // which should only affect rendering of the heaviest pages.
   void SetMaxVirtualTimeTaskStarvationCount(int max_task_starvation_count);
 
   // Updates to min(NextDelayedTaskTime, |new_virtual_time|) if thats ahead of

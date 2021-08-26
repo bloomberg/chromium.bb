@@ -11,7 +11,6 @@
 #include "base/memory/weak_ptr.h"
 #include "components/media_message_center/media_notification_view.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
@@ -19,6 +18,7 @@
 
 namespace views {
 class Button;
+class ToggleImageButton;
 }  // namespace views
 
 namespace media_message_center {
@@ -32,6 +32,7 @@ class MediaControlsProgressView;
 class MediaNotificationBackground;
 class MediaNotificationContainer;
 class MediaNotificationItem;
+class MediaNotificationVolumeSliderView;
 
 class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationViewModernImpl
     : public MediaNotificationView {
@@ -61,6 +62,7 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationViewModernImpl
       MediaNotificationContainer* container,
       base::WeakPtr<MediaNotificationItem> item,
       std::unique_ptr<views::View> notification_controls_view,
+      std::unique_ptr<views::View> notification_footer_view,
       int notification_width);
   MediaNotificationViewModernImpl(const MediaNotificationViewModernImpl&) =
       delete;
@@ -89,6 +91,8 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationViewModernImpl
   void UpdateWithFavicon(const gfx::ImageSkia& icon) override;
   void UpdateWithVectorIcon(const gfx::VectorIcon& vector_icon) override {}
   void UpdateDeviceSelectorAvailability(bool availability) override;
+  void UpdateWithMuteStatus(bool mute) override;
+  void UpdateWithVolume(float volume) override;
 
   // Testing methods
   const views::Label* title_label_for_testing() const { return title_label_; }
@@ -123,6 +127,10 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationViewModernImpl
 
   void SeekTo(double seek_progress);
 
+  void OnMuteButtonClicked();
+
+  void SetVolume(float volume);
+
   // Container that receives events.
   MediaNotificationContainer* const container_;
 
@@ -153,6 +161,8 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationViewModernImpl
   views::View* media_controls_container_ = nullptr;
   MediaButton* play_pause_button_ = nullptr;
   MediaControlsProgressView* progress_ = nullptr;
+  views::ToggleImageButton* mute_button_ = nullptr;
+  MediaNotificationVolumeSliderView* volume_slider_ = nullptr;
 };
 
 }  // namespace media_message_center

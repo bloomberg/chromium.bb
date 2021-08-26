@@ -2,8 +2,8 @@
 <manifest
     xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.chromium.chrome.stable"
-    platformBuildVersionCode="30"
-    platformBuildVersionName="11"
+    platformBuildVersionCode="31"
+    platformBuildVersionName="12"
     android:isolatedSplits="true">
   <permission android:name="$PACKAGE.TOS_ACKED" android:protectionLevel="signatureOrSystem"/>
   <permission android:name="$PACKAGE.permission.C2D_MESSAGE" android:protectionLevel="signature"/>
@@ -60,13 +60,16 @@
   <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE"/>
   <uses-permission-sdk-23 android:name="android.permission.ACCESS_WIFI_STATE"/>
   <uses-permission-sdk-23 android:name="android.permission.BLUETOOTH"/>
-  <uses-permission-sdk-23 android:name="android.permission.BLUETOOTH_ADMIN"/>
+  <uses-permission-sdk-23 android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30"/>
+  <uses-permission-sdk-23 android:name="android.permission.BLUETOOTH_ADVERTISE"/>
+  <uses-permission-sdk-23 android:name="android.permission.BLUETOOTH_CONNECT"/>
+  <uses-permission-sdk-23 android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation"/>
   <uses-permission-sdk-23 android:name="android.permission.READ_CONTACTS"/>
   <uses-permission-sdk-23 android:name="android.permission.REORDER_TASKS"/>
   <uses-permission-sdk-23 android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
   <uses-permission-sdk-23 android:name="android.permission.USE_BIOMETRIC"/>
   <uses-permission-sdk-23 android:name="android.permission.USE_FINGERPRINT"/>
-  <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="30"/>
+  <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="31"/>
   <application
       android:name="org.chromium.chrome.browser.base.SplitMonochromeApplication"
       android:allowAudioPlaybackCapture="false"
@@ -92,7 +95,6 @@
         android:name="com.google.android.play.core.common.PlayCoreDialogWrapperActivity"
         android:enabled="false"
         android:exported="false"
-        android:process=":playcore_dialog_wrapper_activity"
         android:stateNotNeeded="true"
         android:theme="@style/Theme.PlayCore.Transparent">
     </activity>  # DIFF-ANCHOR: a2bae37c
@@ -162,6 +164,7 @@
         <category android:name="com.google.intent.category.CARDBOARD"/>
         <category android:name="com.google.intent.category.DAYDREAM"/>
       </intent-filter>  # DIFF-ANCHOR: dea53031
+      <meta-data android:name="android.activity.launch_mode" android:value="singleInstancePerTask"/>
     </activity>  # DIFF-ANCHOR: 61b2c776
     <activity  # DIFF-ANCHOR: 610e8ccf
         android:name="org.chromium.chrome.browser.ChromeTabbedActivity2"
@@ -1048,15 +1051,6 @@
       <intent-filter>  # DIFF-ANCHOR: 4ed161a4
         <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
       </intent-filter>  # DIFF-ANCHOR: 4ed161a4
-      <intent-filter>  # DIFF-ANCHOR: 92485a5d
-        <action android:name="org.chromium.chrome.browser.searchwidget.START_TEXT_QUERY"/>
-      </intent-filter>  # DIFF-ANCHOR: 92485a5d
-      <intent-filter>  # DIFF-ANCHOR: 444cf2a4
-        <action android:name="org.chromium.chrome.browser.searchwidget.START_VOICE_QUERY"/>
-      </intent-filter>  # DIFF-ANCHOR: 444cf2a4
-      <intent-filter>  # DIFF-ANCHOR: fc048873
-        <action android:name="org.chromium.chrome.browser.searchwidget.UPDATE_ALL_WIDGETS"/>
-      </intent-filter>  # DIFF-ANCHOR: fc048873
       <meta-data android:name="android.appwidget.provider" android:resource="@xml/search_widget_info"/>
     </receiver>  # DIFF-ANCHOR: a0d83ae5
     <receiver  # DIFF-ANCHOR: 2f1fe689

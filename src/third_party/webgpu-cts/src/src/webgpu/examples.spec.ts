@@ -212,16 +212,11 @@ g.test('gpu,async').fn(async t => {
 
 g.test('gpu,buffers').fn(async t => {
   const data = new Uint32Array([0, 1234, 0]);
-  const src = t.device.createBuffer({
-    mappedAtCreation: true,
-    size: 12,
-    usage: GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST,
-  });
-  new Uint32Array(src.getMappedRange()).set(data);
-  src.unmap();
+  const src = t.makeBufferWithContents(data, GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST);
 
-  // Use the expectContents helper to check the actual contents of a GPUBuffer.
-  // Like shouldReject, it must be awaited.
+  // Use the expectGPUBufferValuesEqual helper to check the actual contents of a GPUBuffer.
+  // This makes a copy and then asynchronously checks the contents. The test fixture will
+  // wait on that result before reporting whether the test passed or failed.
   t.expectGPUBufferValuesEqual(src, data);
 });
 

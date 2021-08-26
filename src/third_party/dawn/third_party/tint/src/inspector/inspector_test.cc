@@ -20,6 +20,7 @@
 #include "src/ast/struct_block_decoration.h"
 #include "src/ast/workgroup_decoration.h"
 #include "src/inspector/test_inspector_builder.h"
+#include "src/inspector/test_inspector_runner.h"
 #include "src/program_builder.h"
 #include "src/sem/depth_texture_type.h"
 #include "src/sem/external_texture_type.h"
@@ -34,8 +35,15 @@ namespace {
 
 // All the tests that descend from InspectorBuilder are expected to define their
 // test state via building up the AST through InspectorBuilder and then generate
-// the program with ::Build().
-// The returned Inspector from ::Build() can then be used to test expecations.
+// the program with ::Build.
+// The returned Inspector from ::Build can then be used to test expecations.
+//
+// All the tests that descend from InspectorRunner are expected to define their
+// test state via a WGSL shader, which will be parsed to generate a Program and
+// Inspector in ::Initialize.
+// The returned Inspector from ::Initialize can then be used to test
+// expecations.
+
 class InspectorGetEntryPointTest : public InspectorBuilder,
                                    public testing::Test {};
 
@@ -116,6 +124,10 @@ class InspectorGetDepthTextureResourceBindingsTestWithParam
     : public InspectorBuilder,
       public testing::TestWithParam<GetDepthTextureTestParams> {};
 
+class InspectorGetDepthMultisampledTextureResourceBindingsTest
+    : public InspectorBuilder,
+      public testing::Test {};
+
 typedef std::tuple<ast::TextureDimension, ResourceBinding::TextureDimension>
     DimensionParams;
 typedef std::tuple<ast::ImageFormat,
@@ -131,8 +143,15 @@ class InspectorGetStorageTextureResourceBindingsTestWithParam
 class InspectorGetExternalTextureResourceBindingsTest : public InspectorBuilder,
                                                         public testing::Test {};
 
-class InspectorGetSamplerTextureUsesTest : public InspectorBuilder,
+class InspectorGetSamplerTextureUsesTest : public InspectorRunner,
                                            public testing::Test {};
+
+class InspectorGetWorkgroupStorageSizeTest : public InspectorBuilder,
+                                             public testing::Test {};
+
+// This is a catch all for shaders that have demonstrated regressions/crashes in
+// the wild.
+class InspectorRegressionTest : public InspectorRunner, public testing::Test {};
 
 TEST_F(InspectorGetEntryPointTest, NoFunctions) {
   Inspector& inspector = Build();
@@ -549,7 +568,7 @@ TEST_F(InspectorGetEntryPointTest, OverridableConstantUnreferenced) {
 
 TEST_F(InspectorGetEntryPointTest, OverridableConstantReferencedByEntryPoint) {
   AddOverridableConstantWithoutID<float>("foo", ty.f32(), nullptr);
-  MakeConstReferenceBodyFunction(
+  MakePlainGlobalReferenceBodyFunction(
       "ep_func", "foo", ty.f32(),
       {Stage(ast::PipelineStage::kCompute), WorkgroupSize(1)});
 
@@ -564,7 +583,7 @@ TEST_F(InspectorGetEntryPointTest, OverridableConstantReferencedByEntryPoint) {
 
 TEST_F(InspectorGetEntryPointTest, OverridableConstantReferencedByCallee) {
   AddOverridableConstantWithoutID<float>("foo", ty.f32(), nullptr);
-  MakeConstReferenceBodyFunction("callee_func", "foo", ty.f32(), {});
+  MakePlainGlobalReferenceBodyFunction("callee_func", "foo", ty.f32(), {});
   MakeCallerBodyFunction(
       "ep_func", {"callee_func"},
       {Stage(ast::PipelineStage::kCompute), WorkgroupSize(1)});
@@ -581,7 +600,7 @@ TEST_F(InspectorGetEntryPointTest, OverridableConstantReferencedByCallee) {
 TEST_F(InspectorGetEntryPointTest, OverridableConstantSomeReferenced) {
   AddOverridableConstantWithID<float>("foo", 1, ty.f32(), nullptr);
   AddOverridableConstantWithID<float>("bar", 2, ty.f32(), nullptr);
-  MakeConstReferenceBodyFunction("callee_func", "foo", ty.f32(), {});
+  MakePlainGlobalReferenceBodyFunction("callee_func", "foo", ty.f32(), {});
   MakeCallerBodyFunction(
       "ep_func", {"callee_func"},
       {Stage(ast::PipelineStage::kCompute), WorkgroupSize(1)});
@@ -610,7 +629,7 @@ TEST_F(InspectorGetEntryPointTest, NonOverridableConstantSkipped) {
   EXPECT_EQ(0u, result[0].overridable_constants.size());
 }
 
-TEST_F(InspectorGetEntryPointTest, SampleMaskNotReferenced) {
+TEST_F(InspectorGetEntryPointTest, BuiltinNotReferenced) {
   MakeEmptyBodyFunction("ep_func", {Stage(ast::PipelineStage::kFragment)});
 
   Inspector& inspector = Build();
@@ -618,10 +637,46 @@ TEST_F(InspectorGetEntryPointTest, SampleMaskNotReferenced) {
   auto result = inspector.GetEntryPoints();
 
   ASSERT_EQ(1u, result.size());
-  EXPECT_FALSE(result[0].sample_mask_used);
+  EXPECT_FALSE(result[0].input_sample_mask_used);
+  EXPECT_FALSE(result[0].output_sample_mask_used);
+  EXPECT_FALSE(result[0].input_position_used);
+  EXPECT_FALSE(result[0].front_facing_used);
+  EXPECT_FALSE(result[0].sample_index_used);
 }
 
-TEST_F(InspectorGetEntryPointTest, SampleMaskSimpleReferenced) {
+TEST_F(InspectorGetEntryPointTest, InputSampleMaskSimpleReferenced) {
+  auto* in_var =
+      Param("in_var", ty.u32(), {Builtin(ast::Builtin::kSampleMask)});
+  Func("ep_func", {in_var}, ty.void_(), {Return()},
+       {Stage(ast::PipelineStage::kFragment)}, {});
+
+  Inspector& inspector = Build();
+
+  auto result = inspector.GetEntryPoints();
+
+  ASSERT_EQ(1u, result.size());
+  EXPECT_TRUE(result[0].input_sample_mask_used);
+}
+
+TEST_F(InspectorGetEntryPointTest, InputSampleMaskStructReferenced) {
+  ast::StructMemberList members;
+  members.push_back(
+      Member("inner_position", ty.u32(), {Builtin(ast::Builtin::kSampleMask)}));
+  Structure("in_struct", members, {});
+  auto* in_var = Param("in_var", ty.type_name("in_struct"), {});
+
+  Func("ep_func", {in_var}, ty.void_(), {Return()},
+       {Stage(ast::PipelineStage::kFragment)}, {});
+
+  Inspector& inspector = Build();
+
+  auto result = inspector.GetEntryPoints();
+
+  ASSERT_EQ(1u, result.size());
+  EXPECT_TRUE(result[0].input_sample_mask_used);
+}
+
+TEST_F(InspectorGetEntryPointTest, OutputSampleMaskSimpleReferenced) {
   auto* in_var =
       Param("in_var", ty.u32(), {Builtin(ast::Builtin::kSampleMask)});
   Func("ep_func", {in_var}, ty.u32(), {Return("in_var")},
@@ -633,10 +688,10 @@ TEST_F(InspectorGetEntryPointTest, SampleMaskSimpleReferenced) {
   auto result = inspector.GetEntryPoints();
 
   ASSERT_EQ(1u, result.size());
-  EXPECT_TRUE(result[0].sample_mask_used);
+  EXPECT_TRUE(result[0].output_sample_mask_used);
 }
 
-TEST_F(InspectorGetEntryPointTest, SampleMaskStructReferenced) {
+TEST_F(InspectorGetEntryPointTest, OutputSampleMaskStructReferenced) {
   ast::StructMemberList members;
   members.push_back(Member("inner_sample_mask", ty.u32(),
                            {Builtin(ast::Builtin::kSampleMask)}));
@@ -651,7 +706,103 @@ TEST_F(InspectorGetEntryPointTest, SampleMaskStructReferenced) {
   auto result = inspector.GetEntryPoints();
 
   ASSERT_EQ(1u, result.size());
-  EXPECT_TRUE(result[0].sample_mask_used);
+  EXPECT_TRUE(result[0].output_sample_mask_used);
+}
+
+TEST_F(InspectorGetEntryPointTest, InputPositionSimpleReferenced) {
+  auto* in_var =
+      Param("in_var", ty.vec4<f32>(), {Builtin(ast::Builtin::kPosition)});
+  Func("ep_func", {in_var}, ty.void_(), {Return()},
+       {Stage(ast::PipelineStage::kFragment)}, {});
+
+  Inspector& inspector = Build();
+
+  auto result = inspector.GetEntryPoints();
+
+  ASSERT_EQ(1u, result.size());
+  EXPECT_TRUE(result[0].input_position_used);
+}
+
+TEST_F(InspectorGetEntryPointTest, InputPositionStructReferenced) {
+  ast::StructMemberList members;
+  members.push_back(Member("inner_position", ty.vec4<f32>(),
+                           {Builtin(ast::Builtin::kPosition)}));
+  Structure("in_struct", members, {});
+  auto* in_var = Param("in_var", ty.type_name("in_struct"), {});
+
+  Func("ep_func", {in_var}, ty.void_(), {Return()},
+       {Stage(ast::PipelineStage::kFragment)}, {});
+
+  Inspector& inspector = Build();
+
+  auto result = inspector.GetEntryPoints();
+
+  ASSERT_EQ(1u, result.size());
+  EXPECT_TRUE(result[0].input_position_used);
+}
+
+TEST_F(InspectorGetEntryPointTest, FrontFacingSimpleReferenced) {
+  auto* in_var =
+      Param("in_var", ty.bool_(), {Builtin(ast::Builtin::kFrontFacing)});
+  Func("ep_func", {in_var}, ty.void_(), {Return()},
+       {Stage(ast::PipelineStage::kFragment)}, {});
+
+  Inspector& inspector = Build();
+
+  auto result = inspector.GetEntryPoints();
+
+  ASSERT_EQ(1u, result.size());
+  EXPECT_TRUE(result[0].front_facing_used);
+}
+
+TEST_F(InspectorGetEntryPointTest, FrontFacingStructReferenced) {
+  ast::StructMemberList members;
+  members.push_back(Member("inner_position", ty.bool_(),
+                           {Builtin(ast::Builtin::kFrontFacing)}));
+  Structure("in_struct", members, {});
+  auto* in_var = Param("in_var", ty.type_name("in_struct"), {});
+
+  Func("ep_func", {in_var}, ty.void_(), {Return()},
+       {Stage(ast::PipelineStage::kFragment)}, {});
+
+  Inspector& inspector = Build();
+
+  auto result = inspector.GetEntryPoints();
+
+  ASSERT_EQ(1u, result.size());
+  EXPECT_TRUE(result[0].front_facing_used);
+}
+
+TEST_F(InspectorGetEntryPointTest, SampleIndexSimpleReferenced) {
+  auto* in_var =
+      Param("in_var", ty.u32(), {Builtin(ast::Builtin::kSampleIndex)});
+  Func("ep_func", {in_var}, ty.void_(), {Return()},
+       {Stage(ast::PipelineStage::kFragment)}, {});
+
+  Inspector& inspector = Build();
+
+  auto result = inspector.GetEntryPoints();
+
+  ASSERT_EQ(1u, result.size());
+  EXPECT_TRUE(result[0].sample_index_used);
+}
+
+TEST_F(InspectorGetEntryPointTest, SampleIndexStructReferenced) {
+  ast::StructMemberList members;
+  members.push_back(Member("inner_position", ty.u32(),
+                           {Builtin(ast::Builtin::kSampleIndex)}));
+  Structure("in_struct", members, {});
+  auto* in_var = Param("in_var", ty.type_name("in_struct"), {});
+
+  Func("ep_func", {in_var}, ty.void_(), {Return()},
+       {Stage(ast::PipelineStage::kFragment)}, {});
+
+  Inspector& inspector = Build();
+
+  auto result = inspector.GetEntryPoints();
+
+  ASSERT_EQ(1u, result.size());
+  EXPECT_TRUE(result[0].sample_index_used);
 }
 
 TEST_F(InspectorGetEntryPointTest, ImplicitInterpolate) {
@@ -925,16 +1076,19 @@ TEST_F(InspectorGetConstantNameToIdMapTest, WithAndWithoutIds) {
   EXPECT_EQ(result["v300"], 300u);
 
   ASSERT_TRUE(result.count("a"));
-  ASSERT_TRUE(program_->Sem().Get(a));
-  EXPECT_EQ(result["a"], program_->Sem().Get(a)->ConstantId());
+  ASSERT_TRUE(program_->Sem().Get<sem::GlobalVariable>(a));
+  EXPECT_EQ(result["a"],
+            program_->Sem().Get<sem::GlobalVariable>(a)->ConstantId());
 
   ASSERT_TRUE(result.count("b"));
-  ASSERT_TRUE(program_->Sem().Get(b));
-  EXPECT_EQ(result["b"], program_->Sem().Get(b)->ConstantId());
+  ASSERT_TRUE(program_->Sem().Get<sem::GlobalVariable>(b));
+  EXPECT_EQ(result["b"],
+            program_->Sem().Get<sem::GlobalVariable>(b)->ConstantId());
 
   ASSERT_TRUE(result.count("c"));
-  ASSERT_TRUE(program_->Sem().Get(c));
-  EXPECT_EQ(result["c"], program_->Sem().Get(c)->ConstantId());
+  ASSERT_TRUE(program_->Sem().Get<sem::GlobalVariable>(c));
+  EXPECT_EQ(result["c"],
+            program_->Sem().Get<sem::GlobalVariable>(c)->ConstantId());
 }
 
 TEST_F(InspectorGetStorageSizeTest, Empty) {
@@ -999,21 +1153,25 @@ TEST_F(InspectorGetResourceBindingsTest, Simple) {
                                           {{0, ty.i32()}});
 
   auto* s_texture_type =
-      MakeSampledTextureType(ast::TextureDimension::k1d, ty.f32());
-  AddSampledTexture("s_texture", s_texture_type, 2, 0);
+      ty.sampled_texture(ast::TextureDimension::k1d, ty.f32());
+  AddResource("s_texture", s_texture_type, 2, 0);
   AddSampler("s_var", 3, 0);
   AddGlobalVariable("s_coords", ty.f32());
   MakeSamplerReferenceBodyFunction("s_func", "s_texture", "s_var", "s_coords",
                                    ty.f32(), {});
 
-  auto* cs_depth_texture_type =
-      MakeDepthTextureType(ast::TextureDimension::k2d);
-  AddDepthTexture("cs_texture", cs_depth_texture_type, 3, 1);
+  auto* cs_depth_texture_type = ty.depth_texture(ast::TextureDimension::k2d);
+  AddResource("cs_texture", cs_depth_texture_type, 3, 1);
   AddComparisonSampler("cs_var", 3, 2);
   AddGlobalVariable("cs_coords", ty.vec2<f32>());
   AddGlobalVariable("cs_depth", ty.f32());
   MakeComparisonSamplerReferenceBodyFunction(
       "cs_func", "cs_texture", "cs_var", "cs_coords", "cs_depth", ty.f32(), {});
+
+  auto* depth_ms_texture_type =
+      ty.depth_multisampled_texture(ast::TextureDimension::k2d);
+  AddResource("depth_ms_texture", depth_ms_texture_type, 3, 3);
+  Func("depth_ms_func", {}, ty.void_(), {Ignore("depth_ms_texture")});
 
   auto* st_type = MakeStorageTextureTypes(ast::TextureDimension::k2d,
                                           ast::ImageFormat::kR32Uint, false);
@@ -1027,7 +1185,7 @@ TEST_F(InspectorGetResourceBindingsTest, Simple) {
 
   MakeCallerBodyFunction("ep_func",
                          {"ub_func", "sb_func", "rosb_func", "s_func",
-                          "cs_func", "st_func", "rost_func"},
+                          "cs_func", "depth_ms_func", "st_func", "rost_func"},
                          ast::DecorationList{
                              Stage(ast::PipelineStage::kFragment),
                          });
@@ -1036,7 +1194,7 @@ TEST_F(InspectorGetResourceBindingsTest, Simple) {
 
   auto result = inspector.GetResourceBindings("ep_func");
   ASSERT_FALSE(inspector.has_error()) << inspector.error();
-  ASSERT_EQ(9u, result.size());
+  ASSERT_EQ(10u, result.size());
 
   EXPECT_EQ(ResourceBinding::ResourceType::kUniformBuffer,
             result[0].resource_type);
@@ -1081,6 +1239,11 @@ TEST_F(InspectorGetResourceBindingsTest, Simple) {
             result[8].resource_type);
   EXPECT_EQ(3u, result[8].bind_group);
   EXPECT_EQ(1u, result[8].binding);
+
+  EXPECT_EQ(ResourceBinding::ResourceType::kDepthMultisampledTexture,
+            result[9].resource_type);
+  EXPECT_EQ(3u, result[9].bind_group);
+  EXPECT_EQ(3u, result[9].binding);
 }
 
 TEST_F(InspectorGetUniformBufferResourceBindingsTest, MissingEntryPoint) {
@@ -1245,11 +1408,14 @@ TEST_F(InspectorGetUniformBufferResourceBindingsTest, MultipleUniformBuffers) {
 }
 
 TEST_F(InspectorGetUniformBufferResourceBindingsTest, ContainingArray) {
-  // TODO(bclayton) - This is not a legal structure layout for uniform buffer
-  // usage. Once crbug.com/tint/628 is implemented, this will fail validation
-  // and will need to be fixed.
-  ast::Struct* foo_struct_type =
-      MakeUniformBufferType("foo_type", {ty.i32(), ty.array<u32, 4>()});
+  // Manually create uniform buffer to make sure it had a valid layout (array
+  // with elem stride of 16, and that is 16-byte aligned within the struct)
+  ast::Struct* foo_struct_type = Structure(
+      "foo_type",
+      {Member("0__i32", ty.i32()),
+       Member("b", ty.array(ty.u32(), 4, /*stride*/ 16), {MemberAlign(16)})},
+      {create<ast::StructBlockDecoration>()});
+
   AddUniformBuffer("foo_ub", ty.Of(foo_struct_type), 0, 0);
 
   MakeStructVariableReferenceBodyFunction("ub_func", "foo_ub", {{0, ty.i32()}});
@@ -1269,8 +1435,8 @@ TEST_F(InspectorGetUniformBufferResourceBindingsTest, ContainingArray) {
             result[0].resource_type);
   EXPECT_EQ(0u, result[0].bind_group);
   EXPECT_EQ(0u, result[0].binding);
-  EXPECT_EQ(20u, result[0].size);
-  EXPECT_EQ(20u, result[0].size_no_padding);
+  EXPECT_EQ(80u, result[0].size);
+  EXPECT_EQ(80u, result[0].size_no_padding);
 }
 
 TEST_F(InspectorGetStorageBufferResourceBindingsTest, Simple) {
@@ -1654,8 +1820,8 @@ TEST_F(InspectorGetReadOnlyStorageBufferResourceBindingsTest, SkipNonReadOnly) {
 
 TEST_F(InspectorGetSamplerResourceBindingsTest, Simple) {
   auto* sampled_texture_type =
-      MakeSampledTextureType(ast::TextureDimension::k1d, ty.f32());
-  AddSampledTexture("foo_texture", sampled_texture_type, 0, 0);
+      ty.sampled_texture(ast::TextureDimension::k1d, ty.f32());
+  AddResource("foo_texture", sampled_texture_type, 0, 0);
   AddSampler("foo_sampler", 0, 1);
   AddGlobalVariable("foo_coords", ty.f32());
 
@@ -1691,8 +1857,8 @@ TEST_F(InspectorGetSamplerResourceBindingsTest, NoSampler) {
 
 TEST_F(InspectorGetSamplerResourceBindingsTest, InFunction) {
   auto* sampled_texture_type =
-      MakeSampledTextureType(ast::TextureDimension::k1d, ty.f32());
-  AddSampledTexture("foo_texture", sampled_texture_type, 0, 0);
+      ty.sampled_texture(ast::TextureDimension::k1d, ty.f32());
+  AddResource("foo_texture", sampled_texture_type, 0, 0);
   AddSampler("foo_sampler", 0, 1);
   AddGlobalVariable("foo_coords", ty.f32());
 
@@ -1717,8 +1883,8 @@ TEST_F(InspectorGetSamplerResourceBindingsTest, InFunction) {
 
 TEST_F(InspectorGetSamplerResourceBindingsTest, UnknownEntryPoint) {
   auto* sampled_texture_type =
-      MakeSampledTextureType(ast::TextureDimension::k1d, ty.f32());
-  AddSampledTexture("foo_texture", sampled_texture_type, 0, 0);
+      ty.sampled_texture(ast::TextureDimension::k1d, ty.f32());
+  AddResource("foo_texture", sampled_texture_type, 0, 0);
   AddSampler("foo_sampler", 0, 1);
   AddGlobalVariable("foo_coords", ty.f32());
 
@@ -1735,8 +1901,8 @@ TEST_F(InspectorGetSamplerResourceBindingsTest, UnknownEntryPoint) {
 }
 
 TEST_F(InspectorGetSamplerResourceBindingsTest, SkipsComparisonSamplers) {
-  auto* depth_texture_type = MakeDepthTextureType(ast::TextureDimension::k2d);
-  AddDepthTexture("foo_texture", depth_texture_type, 0, 0);
+  auto* depth_texture_type = ty.depth_texture(ast::TextureDimension::k2d);
+  AddResource("foo_texture", depth_texture_type, 0, 0);
   AddComparisonSampler("foo_sampler", 0, 1);
   AddGlobalVariable("foo_coords", ty.vec2<f32>());
   AddGlobalVariable("foo_depth", ty.f32());
@@ -1756,8 +1922,8 @@ TEST_F(InspectorGetSamplerResourceBindingsTest, SkipsComparisonSamplers) {
 }
 
 TEST_F(InspectorGetComparisonSamplerResourceBindingsTest, Simple) {
-  auto* depth_texture_type = MakeDepthTextureType(ast::TextureDimension::k2d);
-  AddDepthTexture("foo_texture", depth_texture_type, 0, 0);
+  auto* depth_texture_type = ty.depth_texture(ast::TextureDimension::k2d);
+  AddResource("foo_texture", depth_texture_type, 0, 0);
   AddComparisonSampler("foo_sampler", 0, 1);
   AddGlobalVariable("foo_coords", ty.vec2<f32>());
   AddGlobalVariable("foo_depth", ty.f32());
@@ -1794,8 +1960,8 @@ TEST_F(InspectorGetComparisonSamplerResourceBindingsTest, NoSampler) {
 }
 
 TEST_F(InspectorGetComparisonSamplerResourceBindingsTest, InFunction) {
-  auto* depth_texture_type = MakeDepthTextureType(ast::TextureDimension::k2d);
-  AddDepthTexture("foo_texture", depth_texture_type, 0, 0);
+  auto* depth_texture_type = ty.depth_texture(ast::TextureDimension::k2d);
+  AddResource("foo_texture", depth_texture_type, 0, 0);
   AddComparisonSampler("foo_sampler", 0, 1);
   AddGlobalVariable("foo_coords", ty.vec2<f32>());
   AddGlobalVariable("foo_depth", ty.f32());
@@ -1822,8 +1988,8 @@ TEST_F(InspectorGetComparisonSamplerResourceBindingsTest, InFunction) {
 }
 
 TEST_F(InspectorGetComparisonSamplerResourceBindingsTest, UnknownEntryPoint) {
-  auto* depth_texture_type = MakeDepthTextureType(ast::TextureDimension::k2d);
-  AddDepthTexture("foo_texture", depth_texture_type, 0, 0);
+  auto* depth_texture_type = ty.depth_texture(ast::TextureDimension::k2d);
+  AddResource("foo_texture", depth_texture_type, 0, 0);
   AddComparisonSampler("foo_sampler", 0, 1);
   AddGlobalVariable("foo_coords", ty.vec2<f32>());
   AddGlobalVariable("foo_depth", ty.f32());
@@ -1842,8 +2008,8 @@ TEST_F(InspectorGetComparisonSamplerResourceBindingsTest, UnknownEntryPoint) {
 
 TEST_F(InspectorGetComparisonSamplerResourceBindingsTest, SkipsSamplers) {
   auto* sampled_texture_type =
-      MakeSampledTextureType(ast::TextureDimension::k1d, ty.f32());
-  AddSampledTexture("foo_texture", sampled_texture_type, 0, 0);
+      ty.sampled_texture(ast::TextureDimension::k1d, ty.f32());
+  AddResource("foo_texture", sampled_texture_type, 0, 0);
   AddSampler("foo_sampler", 0, 1);
   AddGlobalVariable("foo_coords", ty.f32());
 
@@ -1875,9 +2041,9 @@ TEST_F(InspectorGetSampledTextureResourceBindingsTest, Empty) {
 }
 
 TEST_P(InspectorGetSampledTextureResourceBindingsTestWithParam, textureSample) {
-  auto* sampled_texture_type = MakeSampledTextureType(
+  auto* sampled_texture_type = ty.sampled_texture(
       GetParam().type_dim, GetBaseType(GetParam().sampled_kind));
-  AddSampledTexture("foo_texture", sampled_texture_type, 0, 0);
+  AddResource("foo_texture", sampled_texture_type, 0, 0);
   AddSampler("foo_sampler", 0, 1);
   auto* coord_type = GetCoordsType(GetParam().type_dim, ty.f32());
   AddGlobalVariable("foo_coords", coord_type);
@@ -1933,9 +2099,9 @@ INSTANTIATE_TEST_SUITE_P(
 
 TEST_P(InspectorGetSampledArrayTextureResourceBindingsTestWithParam,
        textureSample) {
-  auto* sampled_texture_type = MakeSampledTextureType(
+  auto* sampled_texture_type = ty.sampled_texture(
       GetParam().type_dim, GetBaseType(GetParam().sampled_kind));
-  AddSampledTexture("foo_texture", sampled_texture_type, 0, 0);
+  AddResource("foo_texture", sampled_texture_type, 0, 0);
   AddSampler("foo_sampler", 0, 1);
   auto* coord_type = GetCoordsType(GetParam().type_dim, ty.f32());
   AddGlobalVariable("foo_coords", coord_type);
@@ -1977,9 +2143,9 @@ INSTANTIATE_TEST_SUITE_P(
 
 TEST_P(InspectorGetMultisampledTextureResourceBindingsTestWithParam,
        textureLoad) {
-  auto* multisampled_texture_type = MakeMultisampledTextureType(
+  auto* multisampled_texture_type = ty.multisampled_texture(
       GetParam().type_dim, GetBaseType(GetParam().sampled_kind));
-  AddMultisampledTexture("foo_texture", multisampled_texture_type, 0, 0);
+  AddResource("foo_texture", multisampled_texture_type, 0, 0);
   auto* coord_type = GetCoordsType(GetParam().type_dim, ty.i32());
   AddGlobalVariable("foo_coords", coord_type);
   AddGlobalVariable("foo_sample_index", ty.i32());
@@ -2046,9 +2212,9 @@ TEST_F(InspectorGetMultisampledArrayTextureResourceBindingsTest, Empty) {
 
 TEST_P(InspectorGetMultisampledArrayTextureResourceBindingsTestWithParam,
        DISABLED_textureSample) {
-  auto* multisampled_texture_type = MakeMultisampledTextureType(
+  auto* multisampled_texture_type = ty.multisampled_texture(
       GetParam().type_dim, GetBaseType(GetParam().sampled_kind));
-  AddMultisampledTexture("foo_texture", multisampled_texture_type, 0, 0);
+  AddResource("foo_texture", multisampled_texture_type, 0, 0);
   AddSampler("foo_sampler", 0, 1);
   auto* coord_type = GetCoordsType(GetParam().type_dim, ty.f32());
   AddGlobalVariable("foo_coords", coord_type);
@@ -2238,13 +2404,12 @@ INSTANTIATE_TEST_SUITE_P(
 
 TEST_P(InspectorGetDepthTextureResourceBindingsTestWithParam,
        textureDimensions) {
-  auto* depth_texture_type = MakeDepthTextureType(GetParam().type_dim);
-  AddDepthTexture("dt", depth_texture_type, 0, 0);
-  AddGlobalVariable("dt_level", ty.i32());
+  auto* depth_texture_type = ty.depth_texture(GetParam().type_dim);
+  AddResource("dt", depth_texture_type, 0, 0);
 
   Func("ep", ast::VariableList(), ty.void_(),
        ast::StatementList{
-           Ignore(Call("textureDimensions", "dt", "dt_level")),
+           Ignore(Call("textureDimensions", "dt")),
        },
        ast::DecorationList{
            Stage(ast::PipelineStage::kFragment),
@@ -2280,9 +2445,36 @@ INSTANTIATE_TEST_SUITE_P(
             ast::TextureDimension::kCubeArray,
             inspector::ResourceBinding::TextureDimension::kCubeArray}));
 
+TEST_F(InspectorGetDepthMultisampledTextureResourceBindingsTest,
+       textureDimensions) {
+  auto* depth_ms_texture_type =
+      ty.depth_multisampled_texture(ast::TextureDimension::k2d);
+  AddResource("tex", depth_ms_texture_type, 0, 0);
+
+  Func("ep", ast::VariableList(), ty.void_(),
+       ast::StatementList{
+           Ignore(Call("textureDimensions", "tex")),
+       },
+       ast::DecorationList{
+           Stage(ast::PipelineStage::kFragment),
+       });
+
+  Inspector& inspector = Build();
+
+  auto result = inspector.GetDepthMultisampledTextureResourceBindings("ep");
+  ASSERT_FALSE(inspector.has_error()) << inspector.error();
+
+  EXPECT_EQ(ResourceBinding::ResourceType::kDepthMultisampledTexture,
+            result[0].resource_type);
+  ASSERT_EQ(1u, result.size());
+  EXPECT_EQ(0u, result[0].bind_group);
+  EXPECT_EQ(0u, result[0].binding);
+  EXPECT_EQ(ResourceBinding::TextureDimension::k2d, result[0].dim);
+}
+
 TEST_F(InspectorGetExternalTextureResourceBindingsTest, Simple) {
-  auto* external_texture_type = MakeExternalTextureType();
-  AddExternalTexture("et", external_texture_type, 0, 0);
+  auto* external_texture_type = ty.external_texture();
+  AddResource("et", external_texture_type, 0, 0);
 
   Func("ep", ast::VariableList(), ty.void_(),
        ast::StatementList{
@@ -2305,34 +2497,31 @@ TEST_F(InspectorGetExternalTextureResourceBindingsTest, Simple) {
 }
 
 TEST_F(InspectorGetSamplerTextureUsesTest, None) {
-  MakeEmptyBodyFunction("ep_func", ast::DecorationList{
-                                       Stage(ast::PipelineStage::kFragment),
-                                   });
+  std::string shader = R"(
+[[stage(fragment)]]
+fn main() {
+})";
 
-  Inspector& inspector = Build();
-
-  auto result = inspector.GetSamplerTextureUses("ep_func");
+  Inspector& inspector = Initialize(shader);
+  auto result = inspector.GetSamplerTextureUses("main");
   ASSERT_FALSE(inspector.has_error()) << inspector.error();
 
   ASSERT_EQ(0u, result.size());
 }
 
 TEST_F(InspectorGetSamplerTextureUsesTest, Simple) {
-  auto* sampled_texture_type =
-      MakeSampledTextureType(ast::TextureDimension::k1d, ty.f32());
-  AddSampledTexture("foo_texture", sampled_texture_type, 0, 10);
-  AddSampler("foo_sampler", 0, 1);
-  AddGlobalVariable("foo_coords", ty.f32());
+  std::string shader = R"(
+[[group(0), binding(1)]] var mySampler: sampler;
+[[group(0), binding(2)]] var myTexture: texture_2d<f32>;
 
-  MakeSamplerReferenceBodyFunction("ep_func", "foo_texture", "foo_sampler",
-                                   "foo_coords", ty.f32(),
-                                   ast::DecorationList{
-                                       Stage(ast::PipelineStage::kFragment),
-                                   });
+[[stage(fragment)]]
+fn main([[location(0)]] fragUV: vec2<f32>,
+        [[location(1)]] fragPosition: vec4<f32>) -> [[location(0)]] vec4<f32> {
+  return textureSample(myTexture, mySampler, fragUV) * fragPosition;
+})";
 
-  Inspector& inspector = Build();
-
-  auto result = inspector.GetSamplerTextureUses("ep_func");
+  Inspector& inspector = Initialize(shader);
+  auto result = inspector.GetSamplerTextureUses("main");
   ASSERT_FALSE(inspector.has_error()) << inspector.error();
 
   ASSERT_EQ(1u, result.size());
@@ -2340,58 +2529,339 @@ TEST_F(InspectorGetSamplerTextureUsesTest, Simple) {
   EXPECT_EQ(0u, result[0].sampler_binding_point.group);
   EXPECT_EQ(1u, result[0].sampler_binding_point.binding);
   EXPECT_EQ(0u, result[0].texture_binding_point.group);
-  EXPECT_EQ(10u, result[0].texture_binding_point.binding);
+  EXPECT_EQ(2u, result[0].texture_binding_point.binding);
+}
+
+TEST_F(InspectorGetSamplerTextureUsesTest, UnknownEntryPoint) {
+  std::string shader = R"(
+[[group(0), binding(1)]] var mySampler: sampler;
+[[group(0), binding(2)]] var myTexture: texture_2d<f32>;
+
+[[stage(fragment)]]
+fn main([[location(0)]] fragUV: vec2<f32>,
+        [[location(1)]] fragPosition: vec4<f32>) -> [[location(0)]] vec4<f32> {
+  return textureSample(myTexture, mySampler, fragUV) * fragPosition;
+})";
+
+  Inspector& inspector = Initialize(shader);
+  auto result = inspector.GetSamplerTextureUses("foo");
+  ASSERT_TRUE(inspector.has_error()) << inspector.error();
 }
 
 TEST_F(InspectorGetSamplerTextureUsesTest, MultipleCalls) {
-  auto* sampled_texture_type =
-      MakeSampledTextureType(ast::TextureDimension::k1d, ty.f32());
-  AddSampledTexture("foo_texture", sampled_texture_type, 0, 10);
-  AddSampler("foo_sampler", 0, 1);
-  AddGlobalVariable("foo_coords", ty.f32());
+  std::string shader = R"(
+[[group(0), binding(1)]] var mySampler: sampler;
+[[group(0), binding(2)]] var myTexture: texture_2d<f32>;
 
-  MakeSamplerReferenceBodyFunction("ep_func", "foo_texture", "foo_sampler",
-                                   "foo_coords", ty.f32(),
-                                   ast::DecorationList{
-                                       Stage(ast::PipelineStage::kFragment),
-                                   });
+[[stage(fragment)]]
+fn main([[location(0)]] fragUV: vec2<f32>,
+        [[location(1)]] fragPosition: vec4<f32>) -> [[location(0)]] vec4<f32> {
+  return textureSample(myTexture, mySampler, fragUV) * fragPosition;
+})";
 
-  Inspector& inspector = Build();
-
-  auto result_0 = inspector.GetSamplerTextureUses("ep_func");
+  Inspector& inspector = Initialize(shader);
+  auto result_0 = inspector.GetSamplerTextureUses("main");
   ASSERT_FALSE(inspector.has_error()) << inspector.error();
 
-  auto result_1 = inspector.GetSamplerTextureUses("ep_func");
+  auto result_1 = inspector.GetSamplerTextureUses("main");
   ASSERT_FALSE(inspector.has_error()) << inspector.error();
 
   EXPECT_EQ(result_0, result_1);
 }
 
-TEST_F(InspectorGetSamplerTextureUsesTest, InFunction) {
-  auto* sampled_texture_type =
-      MakeSampledTextureType(ast::TextureDimension::k1d, ty.f32());
-  AddSampledTexture("foo_texture", sampled_texture_type, 0, 0);
-  AddSampler("foo_sampler", 0, 1);
-  AddGlobalVariable("foo_coords", ty.f32());
+TEST_F(InspectorGetSamplerTextureUsesTest, BothIndirect) {
+  std::string shader = R"(
+[[group(0), binding(1)]] var mySampler: sampler;
+[[group(0), binding(2)]] var myTexture: texture_2d<f32>;
 
-  MakeSamplerReferenceBodyFunction("foo_func", "foo_texture", "foo_sampler",
-                                   "foo_coords", ty.f32(), {});
+fn doSample(t: texture_2d<f32>, s: sampler, uv: vec2<f32>) -> vec4<f32> {
+  return textureSample(t, s, uv);
+}
 
-  MakeCallerBodyFunction("ep_func", {"foo_func"},
-                         ast::DecorationList{
-                             Stage(ast::PipelineStage::kFragment),
-                         });
+[[stage(fragment)]]
+fn main([[location(0)]] fragUV: vec2<f32>,
+        [[location(1)]] fragPosition: vec4<f32>) -> [[location(0)]] vec4<f32> {
+  return doSample(myTexture, mySampler, fragUV) * fragPosition;
+})";
 
-  Inspector& inspector = Build();
-
-  auto result = inspector.GetSamplerTextureUses("ep_func");
+  Inspector& inspector = Initialize(shader);
+  auto result = inspector.GetSamplerTextureUses("main");
   ASSERT_FALSE(inspector.has_error()) << inspector.error();
 
   ASSERT_EQ(1u, result.size());
+
   EXPECT_EQ(0u, result[0].sampler_binding_point.group);
   EXPECT_EQ(1u, result[0].sampler_binding_point.binding);
   EXPECT_EQ(0u, result[0].texture_binding_point.group);
-  EXPECT_EQ(0u, result[0].texture_binding_point.binding);
+  EXPECT_EQ(2u, result[0].texture_binding_point.binding);
+}
+
+TEST_F(InspectorGetSamplerTextureUsesTest, SamplerIndirect) {
+  std::string shader = R"(
+[[group(0), binding(1)]] var mySampler: sampler;
+[[group(0), binding(2)]] var myTexture: texture_2d<f32>;
+
+fn doSample(s: sampler, uv: vec2<f32>) -> vec4<f32> {
+  return textureSample(myTexture, s, uv);
+}
+
+[[stage(fragment)]]
+fn main([[location(0)]] fragUV: vec2<f32>,
+        [[location(1)]] fragPosition: vec4<f32>) -> [[location(0)]] vec4<f32> {
+  return doSample(mySampler, fragUV) * fragPosition;
+})";
+
+  Inspector& inspector = Initialize(shader);
+  auto result = inspector.GetSamplerTextureUses("main");
+  ASSERT_FALSE(inspector.has_error()) << inspector.error();
+
+  ASSERT_EQ(1u, result.size());
+
+  EXPECT_EQ(0u, result[0].sampler_binding_point.group);
+  EXPECT_EQ(1u, result[0].sampler_binding_point.binding);
+  EXPECT_EQ(0u, result[0].texture_binding_point.group);
+  EXPECT_EQ(2u, result[0].texture_binding_point.binding);
+}
+
+TEST_F(InspectorGetSamplerTextureUsesTest, TextureIndirect) {
+  std::string shader = R"(
+[[group(0), binding(1)]] var mySampler: sampler;
+[[group(0), binding(2)]] var myTexture: texture_2d<f32>;
+
+fn doSample(t: texture_2d<f32>, uv: vec2<f32>) -> vec4<f32> {
+  return textureSample(t, mySampler, uv);
+}
+
+[[stage(fragment)]]
+fn main([[location(0)]] fragUV: vec2<f32>,
+        [[location(1)]] fragPosition: vec4<f32>) -> [[location(0)]] vec4<f32> {
+  return doSample(myTexture, fragUV) * fragPosition;
+})";
+
+  Inspector& inspector = Initialize(shader);
+  auto result = inspector.GetSamplerTextureUses("main");
+  ASSERT_FALSE(inspector.has_error()) << inspector.error();
+
+  ASSERT_EQ(1u, result.size());
+
+  EXPECT_EQ(0u, result[0].sampler_binding_point.group);
+  EXPECT_EQ(1u, result[0].sampler_binding_point.binding);
+  EXPECT_EQ(0u, result[0].texture_binding_point.group);
+  EXPECT_EQ(2u, result[0].texture_binding_point.binding);
+}
+
+TEST_F(InspectorGetSamplerTextureUsesTest, NeitherIndirect) {
+  std::string shader = R"(
+[[group(0), binding(1)]] var mySampler: sampler;
+[[group(0), binding(2)]] var myTexture: texture_2d<f32>;
+
+fn doSample(uv: vec2<f32>) -> vec4<f32> {
+  return textureSample(myTexture, mySampler, uv);
+}
+
+[[stage(fragment)]]
+fn main([[location(0)]] fragUV: vec2<f32>,
+        [[location(1)]] fragPosition: vec4<f32>) -> [[location(0)]] vec4<f32> {
+  return doSample(fragUV) * fragPosition;
+})";
+
+  Inspector& inspector = Initialize(shader);
+  auto result = inspector.GetSamplerTextureUses("main");
+  ASSERT_FALSE(inspector.has_error()) << inspector.error();
+
+  ASSERT_EQ(1u, result.size());
+
+  EXPECT_EQ(0u, result[0].sampler_binding_point.group);
+  EXPECT_EQ(1u, result[0].sampler_binding_point.binding);
+  EXPECT_EQ(0u, result[0].texture_binding_point.group);
+  EXPECT_EQ(2u, result[0].texture_binding_point.binding);
+}
+
+TEST_F(InspectorGetSamplerTextureUsesTest, Complex) {
+  std::string shader = R"(
+[[group(0), binding(1)]] var mySampler: sampler;
+[[group(0), binding(2)]] var myTexture: texture_2d<f32>;
+
+
+fn doSample(t: texture_2d<f32>, s: sampler, uv: vec2<f32>) -> vec4<f32> {
+  return textureSample(t, s, uv);
+}
+
+fn X(t: texture_2d<f32>, s: sampler, uv: vec2<f32>) -> vec4<f32> {
+  return doSample(t, s, uv);
+}
+
+fn Y(t: texture_2d<f32>, s: sampler, uv: vec2<f32>) -> vec4<f32> {
+  return doSample(t, s, uv);
+}
+
+fn Z(t: texture_2d<f32>, s: sampler, uv: vec2<f32>) -> vec4<f32> {
+  return X(t, s, uv) + Y(t, s, uv);
+}
+
+[[stage(fragment)]]
+fn via_call([[location(0)]] fragUV: vec2<f32>,
+        [[location(1)]] fragPosition: vec4<f32>) -> [[location(0)]] vec4<f32> {
+  return Z(myTexture, mySampler, fragUV) * fragPosition;
+}
+
+[[stage(fragment)]]
+fn via_ptr([[location(0)]] fragUV: vec2<f32>,
+        [[location(1)]] fragPosition: vec4<f32>) -> [[location(0)]] vec4<f32> {
+  return textureSample(myTexture, mySampler, fragUV) + fragPosition;
+}
+
+[[stage(fragment)]]
+fn direct([[location(0)]] fragUV: vec2<f32>,
+        [[location(1)]] fragPosition: vec4<f32>) -> [[location(0)]] vec4<f32> {
+  return textureSample(myTexture, mySampler, fragUV) + fragPosition;
+})";
+
+  Inspector& inspector = Initialize(shader);
+
+  {
+    auto result = inspector.GetSamplerTextureUses("via_call");
+    ASSERT_FALSE(inspector.has_error()) << inspector.error();
+
+    ASSERT_EQ(1u, result.size());
+
+    EXPECT_EQ(0u, result[0].sampler_binding_point.group);
+    EXPECT_EQ(1u, result[0].sampler_binding_point.binding);
+    EXPECT_EQ(0u, result[0].texture_binding_point.group);
+    EXPECT_EQ(2u, result[0].texture_binding_point.binding);
+  }
+
+  {
+    auto result = inspector.GetSamplerTextureUses("via_ptr");
+    ASSERT_FALSE(inspector.has_error()) << inspector.error();
+
+    ASSERT_EQ(1u, result.size());
+
+    EXPECT_EQ(0u, result[0].sampler_binding_point.group);
+    EXPECT_EQ(1u, result[0].sampler_binding_point.binding);
+    EXPECT_EQ(0u, result[0].texture_binding_point.group);
+    EXPECT_EQ(2u, result[0].texture_binding_point.binding);
+  }
+
+  {
+    auto result = inspector.GetSamplerTextureUses("direct");
+    ASSERT_FALSE(inspector.has_error()) << inspector.error();
+
+    ASSERT_EQ(1u, result.size());
+
+    EXPECT_EQ(0u, result[0].sampler_binding_point.group);
+    EXPECT_EQ(1u, result[0].sampler_binding_point.binding);
+    EXPECT_EQ(0u, result[0].texture_binding_point.group);
+    EXPECT_EQ(2u, result[0].texture_binding_point.binding);
+  }
+}
+
+TEST_F(InspectorGetWorkgroupStorageSizeTest, Empty) {
+  MakeEmptyBodyFunction("ep_func",
+                        ast::DecorationList{Stage(ast::PipelineStage::kCompute),
+                                            WorkgroupSize(1)});
+  Inspector& inspector = Build();
+  EXPECT_EQ(0u, inspector.GetWorkgroupStorageSize("ep_func"));
+}
+
+TEST_F(InspectorGetWorkgroupStorageSizeTest, Simple) {
+  AddWorkgroupStorage("wg_f32", ty.f32());
+  MakePlainGlobalReferenceBodyFunction("f32_func", "wg_f32", ty.f32(), {});
+
+  MakeCallerBodyFunction("ep_func", {"f32_func"},
+                         ast::DecorationList{
+                             Stage(ast::PipelineStage::kCompute),
+                             WorkgroupSize(1),
+                         });
+
+  Inspector& inspector = Build();
+  EXPECT_EQ(4u, inspector.GetWorkgroupStorageSize("ep_func"));
+}
+
+TEST_F(InspectorGetWorkgroupStorageSizeTest, CompoundTypes) {
+  // This struct should occupy 68 bytes. 4 from the i32 field, and another 64
+  // from the 4-element array with 16-byte stride.
+  ast::Struct* wg_struct_type = MakeStructType(
+      "WgStruct", {ty.i32(), ty.array(ty.i32(), 4, /*stride=*/16)},
+      /*is_block=*/false);
+  AddWorkgroupStorage("wg_struct_var", ty.Of(wg_struct_type));
+  MakeStructVariableReferenceBodyFunction("wg_struct_func", "wg_struct_var",
+                                          {{0, ty.i32()}});
+
+  // Plus another 4 bytes from this other workgroup-class f32.
+  AddWorkgroupStorage("wg_f32", ty.f32());
+  MakePlainGlobalReferenceBodyFunction("f32_func", "wg_f32", ty.f32(), {});
+
+  MakeCallerBodyFunction("ep_func", {"wg_struct_func", "f32_func"},
+                         ast::DecorationList{
+                             Stage(ast::PipelineStage::kCompute),
+                             WorkgroupSize(1),
+                         });
+
+  Inspector& inspector = Build();
+  EXPECT_EQ(72u, inspector.GetWorkgroupStorageSize("ep_func"));
+}
+
+TEST_F(InspectorGetWorkgroupStorageSizeTest, AlignmentPadding) {
+  // vec3<f32> has an alignment of 16 but a size of 12. We leverage this to test
+  // that our padded size calculation for workgroup storage is accurate.
+  AddWorkgroupStorage("wg_vec3", ty.vec3<f32>());
+  MakePlainGlobalReferenceBodyFunction("wg_func", "wg_vec3", ty.vec3<f32>(),
+                                       {});
+
+  MakeCallerBodyFunction("ep_func", {"wg_func"},
+                         ast::DecorationList{
+                             Stage(ast::PipelineStage::kCompute),
+                             WorkgroupSize(1),
+                         });
+
+  Inspector& inspector = Build();
+  EXPECT_EQ(16u, inspector.GetWorkgroupStorageSize("ep_func"));
+}
+
+TEST_F(InspectorGetWorkgroupStorageSizeTest, StructAlignment) {
+  // Per WGSL spec, a struct's size is the offset its last member plus the size
+  // of its last member, rounded up to the alignment of its largest member. So
+  // here the struct is expected to occupy 1024 bytes of workgroup storage.
+  ast::Struct* wg_struct_type = MakeStructTypeFromMembers(
+      "WgStruct",
+      {MakeStructMember(0, ty.f32(),
+                        {create<ast::StructMemberAlignDecoration>(1024)})},
+      /*is_block=*/false);
+
+  AddWorkgroupStorage("wg_struct_var", ty.Of(wg_struct_type));
+  MakeStructVariableReferenceBodyFunction("wg_struct_func", "wg_struct_var",
+                                          {{0, ty.f32()}});
+
+  MakeCallerBodyFunction("ep_func", {"wg_struct_func"},
+                         ast::DecorationList{
+                             Stage(ast::PipelineStage::kCompute),
+                             WorkgroupSize(1),
+                         });
+
+  Inspector& inspector = Build();
+  EXPECT_EQ(1024u, inspector.GetWorkgroupStorageSize("ep_func"));
+}
+
+// Crash was occuring in ::GenerateSamplerTargets, when
+// ::GetSamplerTextureUses was called.
+TEST_F(InspectorRegressionTest, tint967) {
+  std::string shader = R"(
+[[group(0), binding(1)]] var mySampler: sampler;
+[[group(0), binding(2)]] var myTexture: texture_2d<f32>;
+
+fn doSample(t: texture_2d<f32>, s: sampler, uv: vec2<f32>) -> vec4<f32> {
+  return textureSample(t, s, uv);
+}
+
+[[stage(fragment)]]
+fn main([[location(0)]] fragUV: vec2<f32>,
+        [[location(1)]] fragPosition: vec4<f32>) -> [[location(0)]] vec4<f32> {
+  return doSample(myTexture, mySampler, fragUV) * fragPosition;
+})";
+
+  Inspector& inspector = Initialize(shader);
+  auto result = inspector.GetSamplerTextureUses("main");
 }
 
 }  // namespace

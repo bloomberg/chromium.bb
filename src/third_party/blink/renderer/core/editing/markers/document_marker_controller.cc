@@ -372,7 +372,7 @@ void DocumentMarkerController::MoveMarkers(const Text& src_node,
     return;
   DCHECK(!markers_.IsEmpty());
 
-  MarkerLists* const src_markers = markers_.at(&src_node);
+  MarkerLists* const src_markers = markers_.DeprecatedAtOrEmptyValue(&src_node);
   if (!src_markers)
     return;
 
@@ -416,7 +416,7 @@ void DocumentMarkerController::RemoveMarkersInternal(
     return;
   DCHECK(!(markers_.IsEmpty()));
 
-  MarkerLists* const markers = markers_.at(&text);
+  MarkerLists* const markers = markers_.DeprecatedAtOrEmptyValue(&text);
   if (!markers)
     return;
 
@@ -542,7 +542,7 @@ DocumentMarker* DocumentMarkerController::FirstMarkerIntersectingOffsetRange(
   if (start_offset == node_length && end_offset == node_length)
     return nullptr;
 
-  MarkerLists* const markers = markers_.at(&node);
+  MarkerLists* const markers = markers_.DeprecatedAtOrEmptyValue(&node);
   if (!markers)
     return nullptr;
 
@@ -592,7 +592,8 @@ DocumentMarkerController::MarkersAroundPosition(
     if (!text_node)
       continue;
 
-    MarkerLists* const marker_lists = markers_.at(text_node);
+    MarkerLists* const marker_lists =
+        markers_.DeprecatedAtOrEmptyValue(text_node);
     if (!marker_lists)
       continue;
 
@@ -645,7 +646,7 @@ DocumentMarkerController::MarkersIntersectingRange(
     auto* text_node = DynamicTo<Text>(node);
     if (!text_node)
       continue;
-    MarkerLists* const markers = markers_.at(text_node);
+    MarkerLists* const markers = markers_.DeprecatedAtOrEmptyValue(text_node);
     if (!markers)
       continue;
 
@@ -684,7 +685,7 @@ DocumentMarkerVector DocumentMarkerController::MarkersFor(
   if (!PossiblyHasMarkers(marker_types))
     return result;
 
-  MarkerLists* markers = markers_.at(&text);
+  MarkerLists* markers = markers_.DeprecatedAtOrEmptyValue(&text);
   if (!markers)
     return result;
 
@@ -901,7 +902,7 @@ static void InvalidatePaintForTickmarks(const Node& node) {
 
 void DocumentMarkerController::InvalidateRectsForTextMatchMarkersInNode(
     const Text& node) {
-  MarkerLists* markers = markers_.at(&node);
+  MarkerLists* markers = markers_.DeprecatedAtOrEmptyValue(&node);
 
   const DocumentMarkerList* const marker_list =
       ListForType(markers, DocumentMarker::kTextMatch);
@@ -1164,7 +1165,7 @@ bool DocumentMarkerController::SetTextMatchMarkersActive(const Text& text,
                                                          unsigned start_offset,
                                                          unsigned end_offset,
                                                          bool active) {
-  MarkerLists* markers = markers_.at(&text);
+  MarkerLists* markers = markers_.DeprecatedAtOrEmptyValue(&text);
   if (!markers)
     return false;
 
@@ -1224,7 +1225,7 @@ void DocumentMarkerController::DidUpdateCharacterData(CharacterData* node,
   auto* text_node = DynamicTo<Text>(node);
   if (!text_node)
     return;
-  MarkerLists* markers = markers_.at(text_node);
+  MarkerLists* markers = markers_.DeprecatedAtOrEmptyValue(text_node);
   if (!markers)
     return;
 

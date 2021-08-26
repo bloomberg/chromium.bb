@@ -22,6 +22,7 @@
 
 @class NSURLRequest;
 @class NSURLResponse;
+class SessionCertificatePolicyCache;
 
 namespace web {
 
@@ -118,18 +119,20 @@ class FakeWebState : public WebState {
   void SetCanTakeSnapshot(bool can_take_snapshot);
 
   // Getters for test data.
-  // Uses |policy_deciders| to return whether the navigation corresponding to
-  // |request| should be allowed. Defaults to PolicyDecision::Allow().
-  WebStatePolicyDecider::PolicyDecision ShouldAllowRequest(
+  // Uses |policy_deciders| to determine whether the navigation corresponding to
+  // |request| should be allowed. Calls |callback| with the decision. Defaults
+  // to PolicyDecision::Allow().
+  void ShouldAllowRequest(
       NSURLRequest* request,
-      const WebStatePolicyDecider::RequestInfo& request_info);
+      const WebStatePolicyDecider::RequestInfo& request_info,
+      WebStatePolicyDecider::PolicyDecisionCallback callback);
   // Uses |policy_deciders| to determine whether the navigation corresponding to
   // |response| should be allowed. Calls |callback| with the decision. Defaults
   // to PolicyDecision::Allow().
   void ShouldAllowResponse(
       NSURLResponse* response,
       bool for_main_frame,
-      base::OnceCallback<void(WebStatePolicyDecider::PolicyDecision)> callback);
+      WebStatePolicyDecider::PolicyDecisionCallback callback);
   std::u16string GetLastExecutedJavascript() const;
   // Returns a copy of the last added callback, if one has been added.
   absl::optional<ScriptCommandCallback> GetLastAddedCallback() const;
@@ -181,6 +184,22 @@ class FakeWebState : public WebState {
   base::ObserverList<WebStatePolicyDecider, true>::Unchecked policy_deciders_;
 
   base::WeakPtrFactory<FakeWebState> weak_factory_{this};
+};
+
+// FakeWebState doesn't provide a policy cache; this variant subclass adds one.
+class FakeWebStateWithPolicyCache : public FakeWebState {
+ public:
+  explicit FakeWebStateWithPolicyCache(BrowserState* browser_state);
+
+  ~FakeWebStateWithPolicyCache() override;
+
+  const SessionCertificatePolicyCache* GetSessionCertificatePolicyCache()
+      const override;
+
+  SessionCertificatePolicyCache* GetSessionCertificatePolicyCache() override;
+
+ private:
+  std::unique_ptr<web::SessionCertificatePolicyCache> certificate_policy_cache_;
 };
 
 }  // namespace web

@@ -170,7 +170,7 @@ void UserTriggeredManualGenerationFromContextMenu(
 // created.
 void RemoveUselessCredentials(
     password_manager::CredentialsCleanerRunner* cleaning_tasks_runner,
-    scoped_refptr<password_manager::PasswordStore> store,
+    scoped_refptr<password_manager::PasswordStoreInterface> store,
     PrefService* prefs,
     base::TimeDelta delay,
     base::RepeatingCallback<network::mojom::NetworkContext*()>
@@ -336,11 +336,10 @@ PasswordForm MakeNormalizedBlocklistedForm(
   return result;
 }
 
-bool CanUseBiometricAuth(
-    password_manager::BiometricAuthenticator* authenticator) {
+bool CanUseBiometricAuth(device_reauth::BiometricAuthenticator* authenticator) {
   return authenticator &&
          authenticator->CanAuthenticate() ==
-             password_manager::BiometricsAvailability::kAvailable &&
+             device_reauth::BiometricsAvailability::kAvailable &&
          base::FeatureList::IsEnabled(
              password_manager::features::kBiometricTouchToFill);
 }

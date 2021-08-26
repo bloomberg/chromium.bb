@@ -16,15 +16,15 @@
 
 #include <memory>
 
+#include "gmock/gmock.h"
+#include "gtest/gtest.h"
+#include "absl/time/time.h"
 #include "core/internal/bwu_manager.h"
 #include "core/internal/injected_bluetooth_device_store.h"
 #include "core/options.h"
 #include "platform/base/medium_environment.h"
 #include "platform/public/count_down_latch.h"
 #include "platform/public/logging.h"
-#include "gmock/gmock.h"
-#include "gtest/gtest.h"
-#include "absl/time/time.h"
 
 namespace location {
 namespace nearby {
@@ -54,7 +54,7 @@ class P2pClusterPcpHandlerTest
       NEARBY_LOG(INFO, "SetUp: BT enabled");
     }
     if (options_.allowed.wifi_lan) {
-      NEARBY_LOG(INFO, "SetUp: Wifi LAN enabled");
+      NEARBY_LOG(INFO, "SetUp: WifiLan enabled");
     }
     if (options_.allowed.web_rtc) {
       NEARBY_LOG(INFO, "SetUp: WebRTC enabled");

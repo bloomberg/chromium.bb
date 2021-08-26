@@ -28,6 +28,9 @@ VideoCodec ParseProtoCodec(VideoDecoderConfig::Codec value) {
     case VideoDecoderConfig_Codec_kCodecVP9:
       return VideoCodec::kVp9;
 
+    case VideoDecoderConfig_Codec_kCodecAV1:
+      return VideoCodec::kAv1;
+
     default:
       return VideoCodec::kNotSpecified;
   }
@@ -73,6 +76,14 @@ void SimpleRemotingReceiver::SendInitializeMessage(
   // The initialize message contains the handle to be used for sending the
   // initialization callback message.
   rpc.set_integer_value(RpcMessenger::kFirstHandle);
+  messenger_->SendMessageToRemote(rpc);
+}
+
+void SimpleRemotingReceiver::SendPlaybackRateMessage(double playback_rate) {
+  openscreen::cast::RpcMessage rpc;
+  rpc.set_handle(RpcMessenger::kAcquireRendererHandle);
+  rpc.set_proc(openscreen::cast::RpcMessage::RPC_R_SETPLAYBACKRATE);
+  rpc.set_double_value(playback_rate);
   messenger_->SendMessageToRemote(rpc);
 }
 

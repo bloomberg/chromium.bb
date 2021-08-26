@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -27,15 +28,16 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
-#include "chrome/browser/web_applications/components/app_icon_manager.h"
 #include "chrome/browser/web_applications/components/external_install_options.h"
-#include "chrome/browser/web_applications/components/externally_managed_app_manager.h"
-#include "chrome/browser/web_applications/components/install_finalizer.h"
-#include "chrome/browser/web_applications/components/install_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/externally_managed_app_manager.h"
 #include "chrome/browser/web_applications/test/service_worker_registration_waiter.h"
+#include "chrome/browser/web_applications/web_app_icon_manager.h"
+#include "chrome/browser/web_applications/web_app_install_finalizer.h"
+#include "chrome/browser/web_applications/web_app_install_manager.h"
+#include "chrome/browser/web_applications/web_app_install_params.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_tab_helper.h"
@@ -49,6 +51,16 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/base/page_transition_types.h"
+
+#if defined(OS_MAC)
+#include <ImageIO/ImageIO.h>
+#import "skia/ext/skia_utils_mac.h"
+#endif
+
+#if defined(OS_WIN)
+#include <shellapi.h>
+#include "ui/gfx/icon_util.h"
+#endif
 
 using ui_test_utils::BrowserChangeObserver;
 
@@ -97,7 +109,7 @@ void AutoAcceptDialogCallback(
     content::WebContents* initiator_web_contents,
     std::unique_ptr<WebApplicationInfo> web_app_info,
     ForInstallableSite for_installable_site,
-    InstallManager::WebAppInstallationAcceptanceCallback acceptance_callback) {
+    WebAppInstallationAcceptanceCallback acceptance_callback) {
   web_app_info->open_as_window = true;
   std::move(acceptance_callback)
       .Run(
@@ -105,6 +117,33 @@ void AutoAcceptDialogCallback(
 }
 
 }  // namespace
+
+SkColor GetIconTopLeftColor(const base::FilePath& shortcut_path) {
+#if defined(OS_MAC)
+  base::FilePath icon_path =
+      shortcut_path.AppendASCII("Contents/Resources/app.icns");
+  base::ScopedCFTypeRef<CFDictionaryRef> empty_dict(
+      CFDictionaryCreate(NULL, NULL, NULL, 0, NULL, NULL));
+  base::ScopedCFTypeRef<CFURLRef> url(CFURLCreateFromFileSystemRepresentation(
+      NULL, (const UInt8*)icon_path.value().c_str(), icon_path.value().length(),
+      false));
+  CGImageSourceRef source = CGImageSourceCreateWithURL(url, NULL);
+  // Get the first icon in the .icns file (index 0)
+  base::ScopedCFTypeRef<CGImageRef> cg_image(
+      CGImageSourceCreateImageAtIndex(source, 0, empty_dict));
+  SkBitmap bitmap = skia::CGImageToSkBitmap(cg_image);
+  return bitmap.getColor(0, 0);
+#elif defined(OS_WIN)
+  SHFILEINFO file_info = {0};
+  if (SHGetFileInfo(shortcut_path.value().c_str(), FILE_ATTRIBUTE_NORMAL,
+                    &file_info, sizeof(file_info),
+                    SHGFI_ICON | 0 | SHGFI_USEFILEATTRIBUTES)) {
+    const SkBitmap bitmap = IconUtil::CreateSkBitmapFromHICON(file_info.hIcon);
+    return bitmap.getColor(0, 0);
+  }
+#endif
+  return 0;
+}
 
 AppId InstallWebAppFromPage(Browser* browser, const GURL& app_url) {
   NavigateToURLAndWait(browser, app_url);

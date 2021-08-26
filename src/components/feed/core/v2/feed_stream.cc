@@ -89,6 +89,21 @@ void PopulateDebugStreamData(
   ::feed::prefs::SetDebugStreamData(debug_data, profile_prefs);
 }
 
+// Will check all sources of ordering setting and always return a valid result.
+ContentOrder GetValidWebFeedContentOrder(const PrefService& pref_service) {
+  // First priority is the prefs stored order choice.
+  ContentOrder pref_order = prefs::GetWebFeedContentOrder(pref_service);
+  if (pref_order != ContentOrder::kUnspecified)
+    return pref_order;
+  // Fallback to Finch determined order.
+  std::string finch_order = base::GetFieldTrialParamValueByFeature(
+      kWebFeed, "following_feed_content_order");
+  if (finch_order == "reverse_chron")
+    return ContentOrder::kReverseChron;
+  // Defaults to grouped, encompassing finch_order == "grouped".
+  return ContentOrder::kGrouped;
+}
+
 }  // namespace
 
 FeedStream::Stream::Stream() = default;
@@ -124,6 +139,7 @@ FeedStream::FeedStream(RefreshTaskScheduler* refresh_task_scheduler,
 
   static WireResponseTranslator default_translator;
   wire_response_translator_ = &default_translator;
+  metrics_reporter_->Initialize(this);
 
   base::RepeatingClosure preference_change_callback =
       base::BindRepeating(&FeedStream::EnabledPreferencesChanged, GetWeakPtr());
@@ -255,15 +271,15 @@ void FeedStream::StreamLoadComplete(LoadStreamTask::Result result) {
   if (result.request_schedule)
     SetRequestSchedule(stream.type, *result.request_schedule);
 
-  int content_count = 0;
-  if (stream.model) {
-    content_count = stream.model->GetContentList().size();
-  }
+  ContentStats content_stats;
+  if (stream.model)
+    content_stats = stream.model->GetContentStats();
+
   metrics_reporter_->OnLoadStream(
       stream.type, result.load_from_store_status, result.final_status,
       result.load_type == LoadType::kInitialLoad,
       result.loaded_new_content_from_network, result.stored_content_age,
-      content_count, std::move(result.latencies));
+      content_stats, std::move(result.latencies));
 
   UpdateIsActivityLoggingEnabled(result.stream_type);
   stream.model_loading_in_progress = false;
@@ -274,7 +290,8 @@ void FeedStream::StreamLoadComplete(LoadStreamTask::Result result) {
 
   // When done loading the for-you feed, try to refresh the web-feed if there's
   // no unread content.
-  if (base::FeatureList::IsEnabled(kWebFeed)) {
+  if (base::FeatureList::IsEnabled(kWebFeed) &&
+      result.load_type != LoadType::kManualRefresh) {
     if (result.stream_type.IsForYou()) {
       if (!HasUnreadContent(kWebFeedStream)) {
         LoadStreamTask::Options options;
@@ -507,7 +524,9 @@ void FeedStream::LoadMoreComplete(LoadMoreTask::Result result) {
     SetRequestSchedule(stream.type, *result.request_schedule);
 
   UpdateIsActivityLoggingEnabled(stream.type);
-  metrics_reporter_->OnLoadMore(result.final_status);
+  metrics_reporter_->OnLoadMore(
+      result.stream_type, result.final_status,
+      stream.model ? stream.model->GetContentStats() : ContentStats());
   stream.surface_updater->SetLoadingMore(false);
   std::vector<base::OnceCallback<void(bool)>> moved_callbacks =
       std::move(stream.load_more_complete_callbacks);
@@ -517,9 +536,9 @@ void FeedStream::LoadMoreComplete(LoadMoreTask::Result result) {
   }
 }
 
-void FeedStream::ManualRefresh(const FeedStreamSurface& surface,
+void FeedStream::ManualRefresh(const StreamType& stream_type,
                                base::OnceCallback<void(bool)> callback) {
-  Stream& stream = GetStream(surface.GetStreamType());
+  Stream& stream = GetStream(stream_type);
 
   // Bail out immediately if loading in progress.
   if (stream.model_loading_in_progress) {
@@ -533,7 +552,7 @@ void FeedStream::ManualRefresh(const FeedStreamSurface& surface,
   stream.refresh_complete_callbacks.push_back(std::move(callback));
   if (stream.refresh_complete_callbacks.size() == 1) {
     LoadStreamTask::Options options;
-    options.stream_type = surface.GetStreamType();
+    options.stream_type = stream_type;
     options.load_type = LoadType::kManualRefresh;
     task_queue_.AddTask(std::make_unique<LoadStreamTask>(
         options, this,
@@ -642,6 +661,17 @@ void FeedStream::ForceRefreshForDebugging() {
           &FeedStream::ForceRefreshForDebuggingTask, base::Unretained(this))));
 }
 
+void FeedStream::ForceRefreshTask(const StreamType& stream_type) {
+  UnloadModel(stream_type);
+  store_->ClearStreamData(stream_type, base::DoNothing());
+  GetStream(stream_type)
+      .surface_updater->launch_reliability_logger()
+      .LogFeedLaunchOtherStart();
+  if (GetStream(stream_type).surface_updater->HasSurfaceAttached()) {
+    TriggerStreamLoad(stream_type);
+  }
+}
+
 void FeedStream::ForceRefreshForDebuggingTask() {
   UnloadModel(kForYouStream);
   store_->ClearStreamData(kForYouStream, base::DoNothing());
@@ -715,6 +745,11 @@ void FeedStream::OnTaskQueueIsIdle() {
     idle_callback_.Run();
 }
 
+void FeedStream::SubscribedWebFeedCount(
+    base::OnceCallback<void(int)> callback) {
+  subscriptions().SubscribedWebFeedCount(std::move(callback));
+}
+
 void FeedStream::SetIdleCallbackForTesting(
     base::RepeatingClosure idle_callback) {
   idle_callback_ = idle_callback;
@@ -751,7 +786,6 @@ LaunchResult FeedStream::ShouldAttemptLoad(const StreamType& stream_type,
     // both before and during the load process, we need to ignore this check
     // when |model_loading| is true.
     if (stream.model || (!model_loading && stream.model_loading_in_progress)) {
-      // TODO(iwells): log the end of the launch flow if stream.model exists
       return {LoadStreamStatus::kModelAlreadyLoaded,
               feedwire::DiscoverLaunchResult::CARDS_UNSPECIFIED};
     }
@@ -855,6 +889,9 @@ RequestMetadata FeedStream::GetRequestMetadata(const StreamType& stream_type,
   result.notice_card_acknowledged =
       notice_card_tracker_.HasAcknowledgedNoticeCard();
   result.autoplay_enabled = delegate_->IsAutoplayEnabled();
+  if (stream_type.IsWebFeed()) {
+    result.content_order = GetValidWebFeedContentOrder(*profile_prefs_);
+  }
 
   if (is_for_next_page) {
     // If we are continuing an existing feed, use whatever session continuity
@@ -1227,6 +1264,45 @@ void FeedStream::ReportStreamScrollStart() {
 void FeedStream::ReportOtherUserAction(const StreamType& stream_type,
                                        FeedUserActionType action_type) {
   metrics_reporter_->OtherUserAction(stream_type, action_type);
+}
+
+void FeedStream::SetContentOrder(const StreamType& stream_type,
+                                 ContentOrder content_order) {
+  if (!stream_type.IsWebFeed()) {
+    DLOG(ERROR) << "SetContentOrder is not supported for this stream_type "
+                << stream_type;
+    return;
+  }
+
+  ContentOrder current_order = GetValidWebFeedContentOrder(*profile_prefs_);
+  prefs::SetWebFeedContentOrder(*profile_prefs_, content_order);
+  if (current_order == content_order)
+    return;
+
+  // Note that ForceRefreshTask clears stored content and forces a network
+  // refresh. It is possible to instead cache each ordering of the Feed
+  // separately, so that users who switch back and forth can do so more quickly
+  // and efficiently. However, there are some reasons to avoid this
+  // optimization:
+  // * we want content to be fresh, so this optimization would have limited
+  //   effect.
+  // * interactions with the feed can modify content; in these cases we would
+  //   want a full refresh.
+  // * it will add quite a bit of complexity to do it right
+  task_queue_.AddTask(
+      std::make_unique<offline_pages::ClosureTask>(base::BindOnce(
+          &FeedStream::ForceRefreshTask, base::Unretained(this), stream_type)));
+}
+
+ContentOrder FeedStream::GetContentOrderFromPrefs(
+    const StreamType& stream_type) {
+  if (!stream_type.IsWebFeed()) {
+    NOTREACHED()
+        << "GetContentOrderFromPrefs is not supported for this stream_type "
+        << stream_type;
+    return ContentOrder::kUnspecified;
+  }
+  return prefs::GetWebFeedContentOrder(*profile_prefs_);
 }
 
 }  // namespace feed

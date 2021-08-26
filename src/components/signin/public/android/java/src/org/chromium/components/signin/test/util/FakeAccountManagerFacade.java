@@ -20,7 +20,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.components.signin.AccessTokenData;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountsChangeObserver;
-import org.chromium.components.signin.ProfileDataSource;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -37,24 +36,12 @@ public class FakeAccountManagerFacade implements AccountManagerFacade {
 
     @GuardedBy("mLock")
     private final Set<AccountHolder> mAccountHolders = new LinkedHashSet<>();
-
     private final List<AccountsChangeObserver> mObservers = new ArrayList<>();
-
-    private final @Nullable FakeProfileDataSource mFakeProfileDataSource;
 
     /**
      * Creates an object of FakeAccountManagerFacade.
-     * @param fakeProfileDataSource A FakeProfileDataSource instance if needed.
      */
-    public FakeAccountManagerFacade(@Nullable FakeProfileDataSource fakeProfileDataSource) {
-        mFakeProfileDataSource = fakeProfileDataSource;
-    }
-
-    @Override
-    @Nullable
-    public ProfileDataSource getProfileDataSource() {
-        return mFakeProfileDataSource;
-    }
+    public FakeAccountManagerFacade() {}
 
     @MainThread
     @Override
@@ -153,14 +140,6 @@ public class FakeAccountManagerFacade implements AccountManagerFacade {
             }
         }
         ThreadUtils.runOnUiThreadBlocking(this::fireOnAccountsChangedNotification);
-    }
-
-    /**
-     * Adds a {@link ProfileDataSource.ProfileData} to the FakeProfileDataSource.
-     */
-    public void addProfileData(ProfileDataSource.ProfileData profileData) {
-        assert mFakeProfileDataSource != null : "ProfileDataSource was disabled!";
-        mFakeProfileDataSource.addProfileData(profileData);
     }
 
     /**

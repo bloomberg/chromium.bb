@@ -25,7 +25,6 @@
 
 #include "libavutil/opt.h"
 #include "libavutil/eval.h"
-#include "libavutil/avassert.h"
 #include "libavutil/pixdesc.h"
 #include "libavutil/mathematics.h"
 
@@ -303,7 +302,7 @@ static int config_output(AVFilterLink *outlink)
     outlink->w          = vpp->out_width;
     outlink->h          = vpp->out_height;
     outlink->frame_rate = vpp->framerate;
-    outlink->time_base  = av_inv_q(vpp->framerate);
+    outlink->time_base  = inlink->time_base;
 
     param.filter_frame  = NULL;
     param.num_ext_buf   = 0;

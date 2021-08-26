@@ -36,7 +36,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Root from '../../core/root/root.js';
 
 import type {Action} from './ActionRegistration.js';
-import {Events as ActionEvents} from './ActionRegistration.js';  // eslint-disable-line no-unused-vars
+import {Events as ActionEvents} from './ActionRegistration.js';
 import {ActionRegistry} from './ActionRegistry.js';
 import * as ARIAUtils from './ARIAUtils.js';
 import {ContextMenu} from './ContextMenu.js';
@@ -69,6 +69,7 @@ export class Toolbar {
   _shadowRoot: ShadowRoot;
   _contentElement: Element;
   _insertionPoint: Element;
+  private compactLayout = false;
 
   constructor(className: string, parentElement?: Element) {
     this._items = [];
@@ -80,6 +81,20 @@ export class Toolbar {
         createShadowRootWithCoreStyles(this.element, {cssFile: 'ui/legacy/toolbar.css', delegatesFocus: undefined});
     this._contentElement = this._shadowRoot.createChild('div', 'toolbar-shadow');
     this._insertionPoint = this._contentElement.createChild('slot');
+  }
+
+  hasCompactLayout(): boolean {
+    return this.compactLayout;
+  }
+
+  setCompactLayout(enable: boolean): void {
+    if (this.compactLayout === enable) {
+      return;
+    }
+    this.compactLayout = enable;
+    for (const item of this._items) {
+      item.setCompactLayout(enable);
+    }
   }
 
   static createLongPressActionButton(
@@ -225,9 +240,7 @@ export class Toolbar {
     function makeButton(): ToolbarButton {
       const button = new ToolbarButton(action.title(), action.icon());
       if (action.title()) {
-        Tooltip.install(button.element, action.title(), action.id(), {
-          anchorTooltipAtElement: true,
-        });
+        Tooltip.installWithActionBinding(button.element, action.title(), action.id());
       }
       return button;
     }
@@ -243,9 +256,7 @@ export class Toolbar {
         toggleButton.setToggled(action.toggled());
         if (action.title()) {
           toggleButton.setTitle(action.title());
-          Tooltip.install(toggleButton.element, action.title(), action.id(), {
-            anchorTooltipAtElement: true,
-          });
+          Tooltip.install(toggleButton.element, action.title());
         }
       }
     }
@@ -302,6 +313,7 @@ export class Toolbar {
   appendToolbarItem(item: ToolbarItem): void {
     this._items.push(item);
     item.toolbar = this;
+    item.setCompactLayout(this.hasCompactLayout());
     if (!this._enabled) {
       item._applyEnabledState(false);
     }
@@ -415,12 +427,15 @@ const TOOLBAR_BUTTON_DEFAULT_OPTIONS: ToolbarButtonOptions = {
   userActionCode: undefined,
 };
 
-export class ToolbarItem extends Common.ObjectWrapper.ObjectWrapper {
+// We need any here because Common.ObjectWrapper.ObjectWrapper is invariant in T.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export class ToolbarItem<T = any> extends Common.ObjectWrapper.ObjectWrapper<T> {
   element: HTMLElement;
   _visible: boolean;
   _enabled: boolean;
   toolbar: Toolbar|null;
   _title?: string;
+
   constructor(element: Element) {
     super();
     this.element = (element as HTMLElement);
@@ -440,9 +455,11 @@ export class ToolbarItem extends Common.ObjectWrapper.ObjectWrapper {
     }
     this._title = title;
     ARIAUtils.setAccessibleName(this.element, title);
-    Tooltip.install(this.element, title, actionId, {
-      anchorTooltipAtElement: true,
-    });
+    if (actionId === undefined) {
+      Tooltip.install(this.element, title);
+    } else {
+      Tooltip.installWithActionBinding(this.element, title, actionId);
+    }
   }
 
   setEnabled(value: boolean): void {
@@ -459,8 +476,6 @@ export class ToolbarItem extends Common.ObjectWrapper.ObjectWrapper {
     this.element.disabled = !enabled;
   }
 
-  /** x
-     */
   visible(): boolean {
     return this._visible;
   }
@@ -479,9 +494,30 @@ export class ToolbarItem extends Common.ObjectWrapper.ObjectWrapper {
   setRightAligned(alignRight: boolean): void {
     this.element.classList.toggle('toolbar-item-right-aligned', alignRight);
   }
+
+  setCompactLayout(_enable: boolean): void {
+  }
 }
 
-export class ToolbarText extends ToolbarItem {
+export const enum ToolbarItemWithCompactLayoutEvents {
+  CompactLayoutUpdated = 'CompactLayoutUpdated',
+}
+
+type ToolbarItemWithCompactLayoutEventTypes = {
+  [ToolbarItemWithCompactLayoutEvents.CompactLayoutUpdated]: boolean,
+};
+
+export class ToolbarItemWithCompactLayout extends ToolbarItem<ToolbarItemWithCompactLayoutEventTypes> {
+  constructor(element: Element) {
+    super(element);
+  }
+
+  override setCompactLayout(enable: boolean): void {
+    this.dispatchEventToListeners(ToolbarItemWithCompactLayoutEvents.CompactLayoutUpdated, enable);
+  }
+}
+
+export class ToolbarText extends ToolbarItem<void> {
   constructor(text?: string) {
     const element = document.createElement('div');
     element.classList.add('toolbar-text');
@@ -499,7 +535,7 @@ export class ToolbarText extends ToolbarItem {
   }
 }
 
-export class ToolbarButton extends ToolbarItem {
+export class ToolbarButton extends ToolbarItem<ToolbarButton.EventTypes> {
   _glyphElement: Icon;
   _textElement: HTMLElement;
   _title: string;
@@ -582,7 +618,7 @@ export class ToolbarButton extends ToolbarItem {
     event.consume();
   }
 
-  _mouseDown(event: Event): void {
+  _mouseDown(event: MouseEvent): void {
     if (!this._enabled) {
       return;
     }
@@ -597,9 +633,14 @@ export namespace ToolbarButton {
     Click = 'Click',
     MouseDown = 'MouseDown',
   }
+
+  export type EventTypes = {
+    [Events.Click]: Event,
+    [Events.MouseDown]: MouseEvent,
+  };
 }
 
-export class ToolbarInput extends ToolbarItem {
+export class ToolbarInput extends ToolbarItem<ToolbarInput.EventTypes> {
   _prompt: TextPrompt;
   _proxyElement: Element;
 
@@ -635,7 +676,7 @@ export class ToolbarInput extends ToolbarItem {
     }
 
     const clearButton = this.element.createChild('div', 'toolbar-input-clear-button');
-    clearButton.appendChild(Icon.create('mediumicon-gray-cross-hover', 'search-cancel-button'));
+    clearButton.appendChild(Icon.create('mediumicon-gray-cross-active', 'search-cancel-button'));
     clearButton.addEventListener('click', () => {
       this.setValue('', true);
       this._prompt.focus();
@@ -687,6 +728,11 @@ export namespace ToolbarInput {
   export enum Event {
     TextChanged = 'TextChanged',
     EnterPressed = 'EnterPressed',
+  }
+
+  export interface EventTypes {
+    [Event.TextChanged]: string;
+    [Event.EnterPressed]: string;
   }
 }
 
@@ -742,8 +788,8 @@ export class ToolbarMenuButton extends ToolbarButton {
     ARIAUtils.markAsMenuButton(this.element);
   }
 
-  _mouseDown(event: Event): void {
-    if ((event as MouseEvent).buttons !== 1) {
+  _mouseDown(event: MouseEvent): void {
+    if (event.buttons !== 1) {
       super._mouseDown(event);
       return;
     }
@@ -811,7 +857,7 @@ export class ToolbarSettingToggle extends ToolbarToggle {
   }
 }
 
-export class ToolbarSeparator extends ToolbarItem {
+export class ToolbarSeparator extends ToolbarItem<void> {
   constructor(spacer?: boolean) {
     const element = document.createElement('div');
     element.classList.add(spacer ? 'toolbar-spacer' : 'toolbar-divider');
@@ -827,7 +873,7 @@ export interface ItemsProvider {
   toolbarItems(): ToolbarItem[];
 }
 
-export class ToolbarComboBox extends ToolbarItem {
+export class ToolbarComboBox extends ToolbarItem<void> {
   _selectElement: HTMLSelectElement;
 
   constructor(changeHandler: ((arg0: Event) => void)|null, title: string, className?: string) {
@@ -972,7 +1018,7 @@ export class ToolbarSettingComboBox extends ToolbarComboBox {
   }
 }
 
-export class ToolbarCheckbox extends ToolbarItem {
+export class ToolbarCheckbox extends ToolbarItem<void> {
   inputElement: HTMLInputElement;
 
   constructor(text: string, tooltip?: string, listener?: ((arg0: MouseEvent) => void)) {
@@ -981,12 +1027,8 @@ export class ToolbarCheckbox extends ToolbarItem {
     this.inputElement = (this.element as CheckboxLabel).checkboxElement;
     if (tooltip) {
       // install on the checkbox
-      Tooltip.install(this.inputElement, tooltip, undefined, {
-        anchorTooltipAtElement: true,
-      });
-      Tooltip.install((this.element as CheckboxLabel).textElement, tooltip, undefined, {
-        anchorTooltipAtElement: true,
-      });
+      Tooltip.install(this.inputElement, tooltip);
+      Tooltip.install((this.element as CheckboxLabel).textElement, tooltip);
     }
     if (listener) {
       this.inputElement.addEventListener('click', listener, false);

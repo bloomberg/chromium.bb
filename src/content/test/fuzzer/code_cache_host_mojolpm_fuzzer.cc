@@ -17,6 +17,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"  // [nogncheck]
+#include "content/browser/cache_storage/cache_storage_control_wrapper.h"  // [nogncheck]
 #include "content/browser/code_cache/generated_code_cache_context.h"  // [nogncheck]
 #include "content/browser/network_service_instance_impl.h"       // [nogncheck]
 #include "content/browser/renderer_host/code_cache_host_impl.h"  // [nogncheck]
@@ -38,7 +39,7 @@
 
 using url::Origin;
 
-const char* cmdline[] = {"code_cache_host_mojolpm_fuzzer", nullptr};
+const char* const kCmdline[] = {"code_cache_host_mojolpm_fuzzer", nullptr};
 
 // Global environment needed to run the interface being tested.
 //
@@ -58,7 +59,7 @@ class ContentFuzzerEnvironment {
   ContentFuzzerEnvironment()
       : fuzzer_thread_("fuzzer_thread"),
         task_environment_(
-            (base::CommandLine::Init(1, cmdline),
+            (base::CommandLine::Init(1, kCmdline),
              TestTimeouts::Initialize(),
              base::test::TaskEnvironment::MainThreadType::DEFAULT),
             base::test::TaskEnvironment::ThreadPoolExecutionMode::ASYNC,
@@ -140,6 +141,7 @@ class CodeCacheHostTestcase {
       uint32_t id,
       int renderer_id,
       const Origin& origin,
+      const net::NetworkIsolationKey& key,
       mojo::PendingReceiver<::blink::mojom::CodeCacheHost>&& receiver);
 
   // Create and bind a new instance for fuzzing. This needs to  make sure that
@@ -308,9 +310,10 @@ void CodeCacheHostTestcase::AddCodeCacheHostImpl(
     uint32_t id,
     int renderer_id,
     const Origin& origin,
+    const net::NetworkIsolationKey& nik,
     mojo::PendingReceiver<::blink::mojom::CodeCacheHost>&& receiver) {
   auto code_cache_host = std::make_unique<content::CodeCacheHostImpl>(
-      renderer_id, generated_code_cache_context_);
+      renderer_id, generated_code_cache_context_, nik);
   code_cache_host->SetCacheStorageControlForTesting(
       cache_storage_control_wrapper_.get());
   auto receivers =
@@ -342,7 +345,7 @@ void CodeCacheHostTestcase::AddCodeCacheHost(
       FROM_HERE,
       base::BindOnce(&CodeCacheHostTestcase::AddCodeCacheHostImpl,
                      base::Unretained(this), id, renderer_id, *origin,
-                     std::move(receiver)),
+                     net::NetworkIsolationKey(), std::move(receiver)),
       run_loop.QuitClosure());
   run_loop.Run();
 

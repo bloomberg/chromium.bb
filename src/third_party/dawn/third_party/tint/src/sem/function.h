@@ -68,7 +68,7 @@ class Function : public Castable<Function, CallTarget> {
   /// @param workgroup_size the workgroup size
   Function(ast::Function* declaration,
            Type* return_type,
-           std::vector<const Variable*> parameters,
+           std::vector<Parameter*> parameters,
            std::vector<const Variable*> referenced_module_vars,
            std::vector<const Variable*> local_referenced_module_vars,
            std::vector<const ast::ReturnStatement*> return_statements,
@@ -81,9 +81,6 @@ class Function : public Castable<Function, CallTarget> {
 
   /// @returns the ast::Function declaration
   ast::Function* Declaration() const { return declaration_; }
-
-  /// @return the parameters to the function
-  const std::vector<const Variable*> Parameters() const { return parameters_; }
 
   /// Note: If this function calls other functions, the return will also include
   /// all of the referenced variables from the callees.
@@ -147,20 +144,20 @@ class Function : public Castable<Function, CallTarget> {
   /// @returns the referenced sampled textures
   VariableBindings ReferencedMultisampledTextureVariables() const;
 
-  /// Retrieves any referenced storage texture variables. Note, the variables
+  /// Retrieves any referenced variables of the given type. Note, the variables
   /// must be decorated with both binding and group decorations.
-  /// @returns the referenced storage textures
-  VariableBindings ReferencedStorageTextureVariables() const;
+  /// @param type_info the type of the variables to find
+  /// @returns the referenced variables
+  VariableBindings ReferencedVariablesOfType(
+      const tint::TypeInfo& type_info) const;
 
-  /// Retrieves any referenced depth texture variables. Note, the variables
+  /// Retrieves any referenced variables of the given type. Note, the variables
   /// must be decorated with both binding and group decorations.
-  /// @returns the referenced depth textures
-  VariableBindings ReferencedDepthTextureVariables() const;
-
-  /// Retrieves any referenced external texture variables. Note, the variables
-  /// must be decorated with both binding and group decorations.
-  /// @returns the referenced external textures
-  VariableBindings ReferencedExternalTextureVariables() const;
+  /// @returns the referenced variables
+  template <typename T>
+  VariableBindings ReferencedVariablesOfType() const {
+    return ReferencedVariablesOfType(TypeInfo::Of<T>());
+  }
 
   /// Checks if the given entry point is an ancestor
   /// @param sym the entry point symbol
@@ -178,7 +175,6 @@ class Function : public Castable<Function, CallTarget> {
       bool multisampled) const;
 
   ast::Function* const declaration_;
-  std::vector<const Variable*> const parameters_;
   std::vector<const Variable*> const referenced_module_vars_;
   std::vector<const Variable*> const local_referenced_module_vars_;
   std::vector<const ast::ReturnStatement*> const return_statements_;

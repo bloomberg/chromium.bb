@@ -118,6 +118,7 @@ static_library("test_support") {
     "test_discardable_memory_allocator.h",
     "test_file_util.cc",
     "test_file_util.h",
+    "test_future.h",
     "test_io_thread.cc",
     "test_io_thread.h",
     "test_message_loop.cc",
@@ -425,7 +426,7 @@ if (is_linux || is_chromeos) {
 
   copy("fonts_conf") {
     sources = [ "fonts.conf" ]
-    outputs = [ "${root_build_dir}/etc/fonts/{{source_file_part}}" ]
+    outputs = [ "$root_out_dir/etc/fonts/{{source_file_part}}" ]
   }
 
   if (current_toolchain == host_toolchain) {

@@ -32,7 +32,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CLIPBOARD_DATA_OBJECT_ITEM_H_
 
 #include "mojo/public/cpp/bindings/remote.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/file_system_access/file_system_access_data_transfer_token.mojom-blink.h"
 #include "third_party/blink/public/platform/web_drag_data.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -69,14 +68,15 @@ class CORE_EXPORT DataObjectItem final
       const KURL&,
       const String& file_extension,
       const AtomicString& content_disposition);
-  static DataObjectItem* CreateFromClipboard(SystemClipboard* system_clipboard,
-                                             const String& type,
-                                             uint64_t sequence_number);
+  static DataObjectItem* CreateFromClipboard(
+      SystemClipboard* system_clipboard,
+      const String& type,
+      const ClipboardSequenceNumberToken& sequence_number);
 
   DataObjectItem(ItemKind kind, const String& type);
   DataObjectItem(ItemKind,
                  const String& type,
-                 uint64_t sequence_number,
+                 const ClipboardSequenceNumberToken& sequence_number,
                  SystemClipboard* system_clipboard);
 
   ItemKind Kind() const { return kind_; }
@@ -120,9 +120,9 @@ class CORE_EXPORT DataObjectItem final
   String title_;
   KURL base_url_;
 
-  uint64_t sequence_number_;  // Only valid when |source_| ==
-                              // DataSource::kClipboardSource.
-  String file_system_id_;     // Only valid when |file_| is backed by FileEntry.
+  ClipboardSequenceNumberToken  // Only valid when |source_| ==
+      sequence_number_;         // DataSource::kClipboardSource.
+  String file_system_id_;  // Only valid when |file_| is backed by FileEntry.
 
   // Access to the global system clipboard.
   Member<SystemClipboard> system_clipboard_;

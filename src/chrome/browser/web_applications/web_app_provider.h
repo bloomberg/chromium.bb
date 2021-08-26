@@ -10,8 +10,9 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/one_shot_event.h"
-#include "chrome/browser/web_applications/components/externally_managed_app_manager.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
+#include "chrome/browser/web_applications/externally_managed_app_manager.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "components/keyed_service/core/keyed_service.h"
 
@@ -29,9 +30,9 @@ namespace web_app {
 
 // Forward declarations of generalized interfaces.
 class AppRegistryController;
-class AppIconManager;
+class WebAppIconManager;
 class PreinstalledWebAppManager;
-class InstallFinalizer;
+class WebAppInstallFinalizer;
 class ManifestUpdateManager;
 class SystemWebAppManager;
 class WebAppAudioFocusIdMap;
@@ -70,6 +71,13 @@ class WebAppProvider : public KeyedService {
   // On other platforms, always returns a WebAppProvider.
   static WebAppProvider* GetForSystemWebApps(Profile* profile);
 
+  // Always returns a WebAppProvider.
+  // In Ash: Returns the WebAppProvider that hosts System Web Apps.
+  // In Lacros: Returns the WebAppProvider that hosts non-system Web Apps.
+  // This function should only be used in code that is shared between system and
+  // non-system Web Apps.
+  static WebAppProvider* GetForLocalApps(Profile* profile);
+
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   // Enables System Web Apps WebAppProvider so we can test SWA features in
   // Lacros, even we don't have actual SWAs in Lacros. After calling this,
@@ -96,10 +104,10 @@ class WebAppProvider : public KeyedService {
   WebAppRegistrar& registrar();
   // The app registry controller.
   AppRegistryController& registry_controller();
-  // UIs can use InstallManager for user-initiated Web Apps install.
-  InstallManager& install_manager();
+  // UIs can use WebAppInstallManager for user-initiated Web Apps install.
+  WebAppInstallManager& install_manager();
   // Implements persistence for Web Apps install.
-  InstallFinalizer& install_finalizer();
+  WebAppInstallFinalizer& install_finalizer();
   // Keeps app metadata up to date with site manifests.
   ManifestUpdateManager& manifest_update_manager();
   // Clients can use ExternallyManagedAppManager to install, uninstall, and
@@ -114,7 +122,7 @@ class WebAppProvider : public KeyedService {
   WebAppAudioFocusIdMap& audio_focus_id_map();
 
   // Implements fetching of app icons.
-  AppIconManager& icon_manager();
+  WebAppIconManager& icon_manager();
 
   SystemWebAppManager& system_web_app_manager();
 
@@ -162,8 +170,8 @@ class WebAppProvider : public KeyedService {
   std::unique_ptr<WebAppRegistrar> registrar_;
   std::unique_ptr<AppRegistryController> registry_controller_;
   std::unique_ptr<PreinstalledWebAppManager> preinstalled_web_app_manager_;
-  std::unique_ptr<AppIconManager> icon_manager_;
-  std::unique_ptr<InstallFinalizer> install_finalizer_;
+  std::unique_ptr<WebAppIconManager> icon_manager_;
+  std::unique_ptr<WebAppInstallFinalizer> install_finalizer_;
   std::unique_ptr<ManifestUpdateManager> manifest_update_manager_;
   std::unique_ptr<ExternallyManagedAppManager> externally_managed_app_manager_;
   std::unique_ptr<SystemWebAppManager> system_web_app_manager_;

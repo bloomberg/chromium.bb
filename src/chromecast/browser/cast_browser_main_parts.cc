@@ -44,6 +44,7 @@
 #include "chromecast/browser/devtools/remote_debugging_server.h"
 #include "chromecast/browser/media/media_caps_impl.h"
 #include "chromecast/browser/metrics/cast_browser_metrics.h"
+#include "chromecast/browser/metrics/metrics_helper_impl.h"
 #include "chromecast/browser/service_connector.h"
 #include "chromecast/browser/service_manager_connection.h"
 #include "chromecast/browser/service_manager_context.h"
@@ -144,8 +145,8 @@
 #include "base/callback_helpers.h"
 #include "chromecast/base/cast_sys_info_util.h"
 #include "chromecast/public/cast_sys_info.h"
-#include "components/heap_profiling/multi_process/client_connection_manager.h"
-#include "components/heap_profiling/multi_process/supervisor.h"
+#include "components/heap_profiling/multi_process/client_connection_manager.h"  // nogncheck
+#include "components/heap_profiling/multi_process/supervisor.h"  // nogncheck
 #endif  // !defined(OS_FUCHSIA)
 
 namespace {
@@ -402,7 +403,8 @@ CastBrowserMainParts::CastBrowserMainParts(
       parameters_(parameters),
       cast_content_browser_client_(cast_content_browser_client),
 
-      media_caps_(new media::MediaCapsImpl()),
+      media_caps_(std::make_unique<media::MediaCapsImpl>()),
+      metrics_helper_(std::make_unique<metrics::MetricsHelperImpl>()),
       cast_system_memory_pressure_evaluator_adjuster_(nullptr) {
   DCHECK(cast_content_browser_client);
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -448,6 +450,10 @@ CastBrowserMainParts::media_pipeline_backend_manager() {
 
 media::MediaCapsImpl* CastBrowserMainParts::media_caps() {
   return media_caps_.get();
+}
+
+metrics::MetricsHelperImpl* CastBrowserMainParts::metrics_helper() {
+  return metrics_helper_.get();
 }
 
 content::BrowserContext* CastBrowserMainParts::browser_context() {
@@ -799,6 +805,7 @@ void CastBrowserMainParts::PostMainMessageLoopRun() {
 }
 
 void CastBrowserMainParts::PostCreateThreads() {
+  cast_content_browser_client_->InitializeExternalConnector();
 #if !defined(OS_FUCHSIA)
   heap_profiling::Supervisor* supervisor =
       heap_profiling::Supervisor::GetInstance();

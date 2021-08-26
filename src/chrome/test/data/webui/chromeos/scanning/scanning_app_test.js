@@ -7,7 +7,7 @@ import 'chrome://scanning/scanning_app.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
 import {setScanServiceForTesting} from 'chrome://scanning/mojo_interface_provider.js';
-import {MAX_NUM_SAVED_SCANNERS, ScannerArr, ScannerSetting, ScanSettings} from 'chrome://scanning/scanning_app_types.js';
+import {MAX_NUM_SAVED_SCANNERS, ScannerArr, ScannerSetting, ScanSettings, StartMultiPageScanResponse} from 'chrome://scanning/scanning_app_types.js';
 import {tokenToString} from 'chrome://scanning/scanning_app_util.js';
 import {ScanningBrowserProxyImpl} from 'chrome://scanning/scanning_browser_proxy.js';
 
@@ -87,6 +87,9 @@ class FakeScanService {
     /** @private {!Map<string, !PromiseResolver>} */
     this.resolverMap_ = new Map();
 
+    /** @private {?ash.scanning.mojom.MultiPageScanControllerInterface} */
+    this.multiPageScanController_ = null;
+
     /** @private {!ScannerArr} */
     this.scanners_ = [];
 
@@ -113,6 +116,7 @@ class FakeScanService {
     this.resolverMap_.set('getScanners', new PromiseResolver());
     this.resolverMap_.set('getScannerCapabilities', new PromiseResolver());
     this.resolverMap_.set('startScan', new PromiseResolver());
+    this.resolverMap_.set('startMultiPageScan', new PromiseResolver());
     this.resolverMap_.set('cancelScan', new PromiseResolver());
   }
 
@@ -144,6 +148,13 @@ class FakeScanService {
       // Support sequential calls to whenCalled() by replacing the promise.
       this.resolverMap_.set(methodName, new PromiseResolver());
     });
+  }
+
+  /**
+   * @param {?ash.scanning.mojom.MultiPageScanControllerInterface} controller
+   */
+  setMultiPageScanController(controller) {
+    this.multiPageScanController_ = controller;
   }
 
   /** @param {!ScannerArr} scanners */
@@ -245,8 +256,92 @@ class FakeScanService {
     });
   }
 
+  /**
+   * @param {!mojoBase.mojom.UnguessableToken} scanner_id
+   * @param {!ash.scanning.mojom.ScanSettings} settings
+   * @param {!ash.scanning.mojom.ScanJobObserverRemote} remote
+   * @return {!Promise<StartMultiPageScanResponse>}
+   */
+  startMultiPageScan(scanner_id, settings, remote) {
+    return new Promise(resolve => {
+      this.scanJobObserverRemote_ = remote;
+      this.methodCalled('startMultiPageScan');
+      resolve({
+        controller: this.failStartScan_ ? null : this.multiPageScanController_
+      });
+    });
+  }
+
   cancelScan() {
     this.methodCalled('cancelScan');
+  }
+}
+
+/** @implements {ash.scanning.mojom.MultiPageScanControllerInterface} */
+class FakeMultiPageScanController {
+  constructor() {
+    /** @private {!Map<string, !PromiseResolver>} */
+    this.resolverMap_ = new Map();
+
+    /** @private {Object} */
+    this.$ = {
+      close() {},
+    };
+
+    this.resetForTest();
+  }
+
+  resetForTest() {
+    this.resolverMap_.set('scanNextPage', new PromiseResolver());
+    this.resolverMap_.set('completeMultiPageScan', new PromiseResolver());
+  }
+
+  /**
+   * @param {string} methodName
+   * @return {!PromiseResolver}
+   * @private
+   */
+  getResolver_(methodName) {
+    let method = this.resolverMap_.get(methodName);
+    assertTrue(!!method, `Method '${methodName}' not found.`);
+    return method;
+  }
+
+  /**
+   * @param {string} methodName
+   * @protected
+   */
+  methodCalled(methodName) {
+    this.getResolver_(methodName).resolve();
+  }
+
+  /**
+   * @param {string} methodName
+   * @return {!Promise}
+   */
+  whenCalled(methodName) {
+    return this.getResolver_(methodName).promise.then(() => {
+      // Support sequential calls to whenCalled() by replacing the promise.
+      this.resolverMap_.set(methodName, new PromiseResolver());
+    });
+  }
+
+  /**
+   * @param {!mojoBase.mojom.UnguessableToken} scanner_id
+   * @param {!ash.scanning.mojom.ScanSettings} settings
+   * @return {!Promise<{success: boolean}>}
+   */
+  scanNextPage(scanner_id, settings) {
+    return new Promise(resolve => {
+      this.methodCalled('scanNextPage');
+      resolve({success: true});
+    });
+  }
+
+  removePage() {}
+
+  completeMultiPageScan() {
+    this.methodCalled('completeMultiPageScan');
   }
 }
 
@@ -256,6 +351,9 @@ export function scanningAppTest() {
 
   /** @type {?FakeScanService} */
   let fakeScanService_ = null;
+
+  /** @type {?FakeMultiPageScanController} */
+  let fakeMultiPageScanController_ = null;
 
   /** @type {?TestScanningBrowserProxy} */
   let testBrowserProxy = null;
@@ -319,6 +417,7 @@ export function scanningAppTest() {
   suiteSetup(() => {
     fakeScanService_ = new FakeScanService();
     setScanServiceForTesting(fakeScanService_);
+    fakeMultiPageScanController_ = new FakeMultiPageScanController();
     testBrowserProxy = new TestScanningBrowserProxy();
     ScanningBrowserProxyImpl.instance_ = testBrowserProxy;
     testBrowserProxy.setMyFilesPath(MY_FILES_PATH);
@@ -358,6 +457,7 @@ export function scanningAppTest() {
    * @return {!Promise}
    */
   function initializeScanningApp(scanners, capabilities) {
+    fakeScanService_.setMultiPageScanController(fakeMultiPageScanController_);
     fakeScanService_.setScanners(scanners);
     fakeScanService_.setCapabilities(capabilities);
     scanningApp = /** @type {!ScanningAppElement} */ (
@@ -404,7 +504,7 @@ export function scanningAppTest() {
    * Clicks the "Ok" button to close the scan failed dialog.
    * @return {!Promise}
    */
-  function clickOkButton() {
+  function clickScanFailedDialogOkButton() {
     const button = scanningApp.$$('#okButton');
     assertTrue(!!button);
     button.click();
@@ -640,7 +740,7 @@ export function scanningAppTest() {
           // The scan failed dialog should open.
           assertTrue(scanningApp.$$('#scanFailedDialog').open);
           // Click the dialog's Ok button to return to READY state.
-          return clickOkButton();
+          return clickScanFailedDialogOkButton();
         })
         .then(() => {
           // After the dialog closes, the scan button should be enabled and
@@ -651,8 +751,50 @@ export function scanningAppTest() {
         });
   });
 
+  // Verify the scan failed dialog closes and resets the scan app state when the
+  // user clicks ESC.
+  test('EscClosesScanFailedDialog', () => {
+    return initializeScanningApp(expectedScanners, capabilities)
+        .then(() => {
+          scanButton =
+              /** @type {!CrButtonElement} */ (scanningApp.$$('#scanButton'));
+          return getScannerCapabilities();
+        })
+        .then(() => {
+          // Click the Scan button and wait till the scan is started.
+          scanButton.click();
+          return fakeScanService_.whenCalled('startScan');
+        })
+        .then(() => {
+          // Simulate a progress update.
+          return fakeScanService_.simulateProgress(
+              /*pageNumber=*/ 1, /*progressPercent=*/ 17);
+        })
+        .then(() => {
+          // Simulate the scan failing.
+          return fakeScanService_.simulateScanComplete(
+              ash.scanning.mojom.ScanResult.kIoError, []);
+        })
+        .then(() => {
+          const scanFailedDialog = scanningApp.$$('#scanFailedDialog');
+
+          // The scan failed dialog should open.
+          assertTrue(scanFailedDialog.open);
+
+          // Simulate the ESC key by sending the `cancel` event to the native
+          // dialog.
+          scanFailedDialog.$$('dialog').dispatchEvent(new Event('cancel'));
+          assertFalse(scanningApp.$$('#scanFailedDialog').open);
+          assertFalse(scanButton.disabled);
+          assertTrue(isVisible(/** @type {!CrButtonElement} */ (scanButton)));
+        });
+  });
+
   // Verify a multi-page scan job can be initiated.
   test('MultiPageScan', () => {
+    /** @type {!Array<!mojoBase.mojom.FilePath>} */
+    const scannedFilePaths = [{'path': '/test/path/scan1.pdf'}];
+
     return initializeScanningApp(expectedScanners, capabilities)
         .then(() => {
           return getScannerCapabilities();
@@ -669,16 +811,56 @@ export function scanningAppTest() {
           const scanButton = scanningApp.$$('#scanButton');
           assertEquals('Scan page 1', scanButton.textContent.trim());
           scanButton.click();
-          return fakeScanService_.whenCalled('startScan');
+          return fakeScanService_.whenCalled('startMultiPageScan');
         })
         .then(() => {
           return fakeScanService_.simulatePageComplete(1);
         })
         .then(() => {
+          // The scanned images and multi-page scan page should be visible.
           assertTrue(isVisible(/** @type {!HTMLElement} */ (
               scanningApp.$$('#scanPreview').$$('#scannedImages'))));
           assertTrue(isVisible(
               /** @type {!HTMLElement} */ (scanningApp.$$('multi-page-scan'))));
+
+          const scanNextPageButton =
+              scanningApp.$$('multi-page-scan').$$('#scanButton');
+          assertEquals('Scan page 2', scanNextPageButton.textContent.trim());
+          scanNextPageButton.click();
+          return fakeMultiPageScanController_.whenCalled('scanNextPage');
+        })
+        .then(() => {
+          return fakeScanService_.simulatePageComplete(1);
+        })
+        .then(() => {
+          // The scanned images and multi-page scan page should still be visible
+          // after scanning the next page.
+          assertTrue(isVisible(/** @type {!HTMLElement} */ (
+              scanningApp.$$('#scanPreview').$$('#scannedImages'))));
+          assertTrue(isVisible(
+              /** @type {!HTMLElement} */ (scanningApp.$$('multi-page-scan'))));
+
+          const scanNextPageButton =
+              scanningApp.$$('multi-page-scan').$$('#scanButton');
+          assertEquals('Scan page 3', scanNextPageButton.textContent.trim());
+
+          scanningApp.$$('multi-page-scan').$$('#saveButton').click();
+          return fakeMultiPageScanController_.whenCalled(
+              'completeMultiPageScan');
+        })
+        .then(() => {
+          return fakeScanService_.simulateScanComplete(
+              ash.scanning.mojom.ScanResult.kSuccess, scannedFilePaths);
+        })
+        .then(() => {
+          scannedImages = scanningApp.$$('#scanPreview').$$('#scannedImages');
+          assertTrue(isVisible(/** @type {!HTMLElement} */ (scannedImages)));
+          assertTrue(isVisible(
+              /** @type {!HTMLElement} */ (
+                  scanningApp.$$('scan-done-section'))));
+          assertArrayEquals(
+              scannedFilePaths,
+              scanningApp.$$('scan-done-section').scannedFilePaths);
         });
   });
 
@@ -703,7 +885,7 @@ export function scanningAppTest() {
           assertEquals(
               loadTimeData.getString('scanFailedDialogUnknownErrorText'),
               scanningApp.$$('#scanFailedDialogText').textContent.trim());
-          return clickOkButton();
+          return clickScanFailedDialogOkButton();
         })
         .then(() => {
           scanButton.click();
@@ -717,7 +899,7 @@ export function scanningAppTest() {
           assertEquals(
               loadTimeData.getString('scanFailedDialogDeviceBusyText'),
               scanningApp.$$('#scanFailedDialogText').textContent.trim());
-          return clickOkButton();
+          return clickScanFailedDialogOkButton();
         })
         .then(() => {
           scanButton.click();
@@ -731,7 +913,7 @@ export function scanningAppTest() {
           assertEquals(
               loadTimeData.getString('scanFailedDialogAdfJammedText'),
               scanningApp.$$('#scanFailedDialogText').textContent.trim());
-          return clickOkButton();
+          return clickScanFailedDialogOkButton();
         })
         .then(() => {
           scanButton.click();
@@ -745,7 +927,7 @@ export function scanningAppTest() {
           assertEquals(
               loadTimeData.getString('scanFailedDialogAdfEmptyText'),
               scanningApp.$$('#scanFailedDialogText').textContent.trim());
-          return clickOkButton();
+          return clickScanFailedDialogOkButton();
         })
         .then(() => {
           scanButton.click();
@@ -759,7 +941,7 @@ export function scanningAppTest() {
           assertEquals(
               loadTimeData.getString('scanFailedDialogFlatbedOpenText'),
               scanningApp.$$('#scanFailedDialogText').textContent.trim());
-          return clickOkButton();
+          return clickScanFailedDialogOkButton();
         })
         .then(() => {
           scanButton.click();
@@ -773,7 +955,7 @@ export function scanningAppTest() {
           assertEquals(
               loadTimeData.getString('scanFailedDialogIoErrorText'),
               scanningApp.$$('#scanFailedDialogText').textContent.trim());
-          return clickOkButton();
+          return clickScanFailedDialogOkButton();
         });
   });
 

@@ -9,4 +9,4 @@ setlocal
 set PATH=%PATH%;%~dp0
 
 :: Defer control.
-python "%~dp0\clang_format.py" %*
+python3 "%~dp0\clang_format.py" %*

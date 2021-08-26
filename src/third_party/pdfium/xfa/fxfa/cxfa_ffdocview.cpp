@@ -43,7 +43,7 @@
 #include "xfa/fxfa/parser/cxfa_validate.h"
 #include "xfa/fxfa/parser/xfa_utils.h"
 
-const XFA_AttributeValue gs_EventActivity[] = {
+const XFA_AttributeValue kXFAEventActivity[] = {
     XFA_AttributeValue::Click,      XFA_AttributeValue::Change,
     XFA_AttributeValue::DocClose,   XFA_AttributeValue::DocReady,
     XFA_AttributeValue::Enter,      XFA_AttributeValue::Exit,
@@ -250,7 +250,7 @@ bool CXFA_FFDocView::ResetSingleNodeData(CXFA_Node* pNode) {
     return true;
 
   AddValidateNode(pNode);
-  validate->SetFlag(XFA_NodeFlag_NeedsInitApp);
+  validate->SetFlag(XFA_NodeFlag::kNeedsInitApp);
   return true;
 }
 
@@ -299,8 +299,8 @@ bool CXFA_FFDocView::SetFocus(CXFA_FFWidget* pNewFocus) {
 
   if (m_pFocusWidget) {
     CXFA_ContentLayoutItem* pItem = m_pFocusWidget->GetLayoutItem();
-    if (pItem->TestStatusBits(XFA_WidgetStatus_Visible) &&
-        !pItem->TestStatusBits(XFA_WidgetStatus_Focused)) {
+    if (pItem->TestStatusBits(XFA_WidgetStatus::kVisible) &&
+        !pItem->TestStatusBits(XFA_WidgetStatus::kFocused)) {
       if (!m_pFocusWidget->IsLoaded())
         m_pFocusWidget->LoadWidget();
       if (!m_pFocusWidget->OnSetFocus(m_pFocusWidget))
@@ -313,7 +313,8 @@ bool CXFA_FFDocView::SetFocus(CXFA_FFWidget* pNewFocus) {
   }
 
   if (pNewFocus) {
-    if (pNewFocus->GetLayoutItem()->TestStatusBits(XFA_WidgetStatus_Visible)) {
+    if (pNewFocus->GetLayoutItem()->TestStatusBits(
+            XFA_WidgetStatus::kVisible)) {
       if (!pNewFocus->IsLoaded())
         pNewFocus->LoadWidget();
       if (!pNewFocus->OnSetFocus(m_pFocusWidget))
@@ -375,7 +376,7 @@ static XFA_EventError XFA_ProcessEvent(CXFA_FFDocView* pDocView,
       return pNode->ExecuteScript(pDocView, calc->GetScriptIfExists(), pParam);
     }
     default:
-      return pNode->ProcessEvent(pDocView, gs_EventActivity[pParam->m_eType],
+      return pNode->ProcessEvent(pDocView, kXFAEventActivity[pParam->m_eType],
                                  pParam);
   }
 }
@@ -437,12 +438,12 @@ CXFA_FFWidget* CXFA_FFDocView::GetWidgetByName(const WideString& wsName,
     pRefNode = node->IsWidgetReady() ? node : nullptr;
   }
   WideString wsExpression = (!pRefNode ? L"$form." : L"") + wsName;
-  constexpr XFA_ResolveNodeMask kFlags =
-      XFA_RESOLVENODE_Children | XFA_RESOLVENODE_Properties |
-      XFA_RESOLVENODE_Siblings | XFA_RESOLVENODE_Parent;
   Optional<CFXJSE_Engine::ResolveResult> maybeResult =
-      pScriptContext->ResolveObjects(pRefNode, wsExpression.AsStringView(),
-                                     kFlags);
+      pScriptContext->ResolveObjects(
+          pRefNode, wsExpression.AsStringView(),
+          Mask<XFA_ResolveFlag>{
+              XFA_ResolveFlag::kChildren, XFA_ResolveFlag::kProperties,
+              XFA_ResolveFlag::kSiblings, XFA_ResolveFlag::kParent});
   if (!maybeResult.has_value())
     return nullptr;
 
@@ -634,12 +635,13 @@ void CXFA_FFDocView::RunBindItems() {
     CFXJSE_Engine* pScriptContext =
         pWidgetNode->GetDocument()->GetScriptContext();
     WideString wsRef = item->GetRef();
-    constexpr XFA_ResolveNodeMask kFlags =
-        XFA_RESOLVENODE_Children | XFA_RESOLVENODE_Properties |
-        XFA_RESOLVENODE_Siblings | XFA_RESOLVENODE_Parent | XFA_RESOLVENODE_ALL;
     Optional<CFXJSE_Engine::ResolveResult> maybeRS =
-        pScriptContext->ResolveObjects(pWidgetNode, wsRef.AsStringView(),
-                                       kFlags);
+        pScriptContext->ResolveObjects(
+            pWidgetNode, wsRef.AsStringView(),
+            Mask<XFA_ResolveFlag>{
+                XFA_ResolveFlag::kChildren, XFA_ResolveFlag::kProperties,
+                XFA_ResolveFlag::kSiblings, XFA_ResolveFlag::kParent,
+                XFA_ResolveFlag::kALL});
     pWidgetNode->DeleteItem(-1, false, false);
     if (!maybeRS.has_value() ||
         maybeRS.value().type != CFXJSE_Engine::ResolveResult::Type::kNodes ||

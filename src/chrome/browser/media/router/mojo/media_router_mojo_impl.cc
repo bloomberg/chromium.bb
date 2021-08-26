@@ -274,6 +274,7 @@ void MediaRouterMojoImpl::CreateRoute(const MediaSource::Id& source_id,
     desktop_picker_.Show(
         MakeDesktopPickerParams(web_contents),
         {DesktopMediaList::Type::kScreen},
+        base::BindRepeating([](content::WebContents* wc) { return true; }),
         base::BindOnce(&MediaRouterMojoImpl::CreateRouteWithSelectedDesktop,
                        weak_factory_.GetWeakPtr(), provider_id, sink_id,
                        presentation_id, origin, web_contents, timeout,
@@ -935,7 +936,7 @@ void MediaRouterMojoImpl::GetMirroringServiceHostForDesktop(
     int32_t initiator_tab_id,
     const std::string& desktop_stream_id,
     mojo::PendingReceiver<mirroring::mojom::MirroringServiceHost> receiver) {
-  if (!CastMediaRouteProviderEnabled() || !pending_stream_request_ ||
+  if (!pending_stream_request_ ||
       pending_stream_request_->stream_id != desktop_stream_id) {
     return;
   }

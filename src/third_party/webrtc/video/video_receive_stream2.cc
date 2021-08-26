@@ -211,14 +211,16 @@ int DetermineMaxWaitForFrame(const VideoReceiveStream::Config& config,
                      : kMaxWaitForFrameMs;
 }
 
-VideoReceiveStream2::VideoReceiveStream2(TaskQueueFactory* task_queue_factory,
-                                         Call* call,
-                                         int num_cpu_cores,
-                                         PacketRouter* packet_router,
-                                         VideoReceiveStream::Config config,
-                                         CallStats* call_stats,
-                                         Clock* clock,
-                                         VCMTiming* timing)
+VideoReceiveStream2::VideoReceiveStream2(
+    TaskQueueFactory* task_queue_factory,
+    Call* call,
+    int num_cpu_cores,
+    PacketRouter* packet_router,
+    VideoReceiveStream::Config config,
+    CallStats* call_stats,
+    Clock* clock,
+    VCMTiming* timing,
+    NackPeriodicProcessor* nack_periodic_processor)
     : task_queue_factory_(task_queue_factory),
       transport_adapter_(config.rtcp_send_transport),
       config_(std::move(config)),
@@ -240,6 +242,7 @@ VideoReceiveStream2::VideoReceiveStream2(TaskQueueFactory* task_queue_factory,
                                  rtp_receive_statistics_.get(),
                                  &stats_proxy_,
                                  &stats_proxy_,
+                                 nack_periodic_processor,
                                  this,     // NackSender
                                  nullptr,  // Use default KeyFrameRequestSender
                                  this,     // OnCompleteFrameCallback
@@ -385,8 +388,8 @@ void VideoReceiveStream2::Start() {
       // TODO(bugs.webrtc.org/11993): Make this call on the network thread.
       RTC_DCHECK_RUN_ON(&packet_sequence_checker_);
       rtp_video_stream_receiver_.AddReceiveCodec(
-          decoder.payload_type, codec, decoder.video_format.parameters,
-          raw_payload);
+          decoder.payload_type, codec.codecType,
+          decoder.video_format.parameters, raw_payload);
     }
     RTC_CHECK_EQ(VCM_OK, video_receiver_.RegisterReceiveCodec(
                              decoder.payload_type, &codec, num_cpu_cores_));
@@ -397,7 +400,7 @@ void VideoReceiveStream2::Start() {
       new VideoStreamDecoder(&video_receiver_, &stats_proxy_, renderer));
 
   // Make sure we register as a stats observer *after* we've prepared the
-  // |video_stream_decoder_|.
+  // `video_stream_decoder_`.
   call_stats_->RegisterStatsObserver(this);
 
   // Start decoding on task queue.
@@ -560,7 +563,7 @@ void VideoReceiveStream2::OnFrame(const VideoFrame& video_frame) {
   VideoFrameMetaData frame_meta(video_frame, clock_->CurrentTime());
 
   // TODO(bugs.webrtc.org/10739): we should set local capture clock offset for
-  // |video_frame.packet_infos|. But VideoFrame is const qualified here.
+  // `video_frame.packet_infos`. But VideoFrame is const qualified here.
 
   call_->worker_thread()->PostTask(
       ToQueuedTask(task_safety_, [frame_meta, this]() {
@@ -736,7 +739,7 @@ void VideoReceiveStream2::StartNextDecode() {
 
 void VideoReceiveStream2::HandleEncodedFrame(
     std::unique_ptr<EncodedFrame> frame) {
-  // Running on |decode_queue_|.
+  // Running on `decode_queue_`.
   int64_t now_ms = clock_->TimeInMilliseconds();
 
   // Current OnPreDecode only cares about QP for VP8.
@@ -807,7 +810,7 @@ int VideoReceiveStream2::DecodeAndMaybeDispatchEncodedFrame(
     std::unique_ptr<EncodedFrame> frame) {
   // Running on decode_queue_.
 
-  // If |buffered_encoded_frames_| grows out of control (=60 queued frames),
+  // If `buffered_encoded_frames_` grows out of control (=60 queued frames),
   // maybe due to a stuck decoder, we just halt the process here and log the
   // error.
   const bool encoded_frame_output_enabled =
@@ -838,7 +841,7 @@ int VideoReceiveStream2::DecodeAndMaybeDispatchEncodedFrame(
     absl::optional<RecordableEncodedFrame::EncodedResolution>
         pending_resolution;
     {
-      // Fish out |pending_resolution_| to avoid taking the mutex on every lap
+      // Fish out `pending_resolution_` to avoid taking the mutex on every lap
       // or dispatching under the mutex in the flush loop.
       webrtc::MutexLock lock(&pending_resolution_mutex_);
       if (pending_resolution_.has_value())

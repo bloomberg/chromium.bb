@@ -69,6 +69,9 @@ typedef const gfx::VectorIcon& IconId;
 RequestType ContentSettingsTypeToRequestType(
     ContentSettingsType content_settings_type);
 
+absl::optional<ContentSettingsType> RequestTypeToContentSettingsType(
+    RequestType request_type);
+
 // Returns the icon to display.
 IconId GetIconId(RequestType type);
 

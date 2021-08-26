@@ -16,7 +16,6 @@
 #include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
 #include "ash/public/cpp/session/session_observer.h"
 #include "base/macros.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class PrefChangeRegistrar;
 class PrefRegistrySimple;
@@ -128,6 +127,8 @@ class ASH_EXPORT KeyboardControllerImpl
   void ObservePrefs(PrefService* prefs);
   void SendKeyRepeatUpdate();
   void SendKeyboardConfigUpdate();
+
+  void SetEnableFlagFromCommandLine();
 
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
   SessionControllerImpl* session_controller_;  // unowned

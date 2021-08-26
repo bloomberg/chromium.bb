@@ -166,7 +166,8 @@ AppsNavigationThrottle::CaptureWebAppScopeNavigations(
 
   Profile* const profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  web_app::WebAppProvider* provider = web_app::WebAppProvider::Get(profile);
+  web_app::WebAppProvider* provider =
+      web_app::WebAppProvider::GetForWebApps(profile);
   if (!provider)
     return absl::nullopt;
 
@@ -200,10 +201,8 @@ AppsNavigationThrottle::CaptureWebAppScopeNavigations(
     return absl::nullopt;
   }
 
-  blink::mojom::CaptureLinks capture_links = provider->registrar()
-                                                 .AsWebAppRegistrar()
-                                                 ->GetAppById(*app_id)
-                                                 ->capture_links();
+  blink::mojom::CaptureLinks capture_links =
+      provider->registrar().GetAppById(*app_id)->capture_links();
 
   if (capture_links == blink::mojom::CaptureLinks::kUndefined &&
       app_in_tabbed_mode && tabbed_link_capturing) {

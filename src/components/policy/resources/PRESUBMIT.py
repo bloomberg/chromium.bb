@@ -48,31 +48,34 @@ def _CheckPolicyTemplatesSyntax(input_api, output_api):
 
     root = input_api.change.RepositoryRoot()
 
+    # Get the current version from the VERSION file so that we can check
+    # which policies are un-released and thus can be changed at will.
     current_version = None
+    try:
+      version_path = input_api.os_path.join(root, 'chrome', 'VERSION')
+      with open(version_path, "rb") as f:
+        current_version = int(f.readline().split(b"=")[1])
+        print('Checking policies against current version: ' +
+              current_version)
+    except:
+      pass
+
+    # Get the original file contents of the policy file so that we can check
+    # the compatibility of template changes in it
     original_file_contents = None
+    if template_affected_file is not None:
+      original_file_contents = '\n'.join(template_affected_file.OldContents())
 
     # Check if there is a tag that allows us to bypass compatibility checks.
     # This can be used in situations where there is a bug in the validation
     # code or if a policy change needs to urgently be submitted.
-    if not input_api.change.tags.get('BYPASS_POLICY_COMPATIBILITY_CHECK'):
-      # Get the current version from the VERSION file so that we can check
-      # which policies are un-released and thus can be changed at will.
-      try:
-        version_path = input_api.os_path.join(root, 'chrome', 'VERSION')
-        with open(version_path, "rb") as f:
-          current_version = int(f.readline().split(b"=")[1])
-          print ('Checking policies against current version: ' +
-            current_version)
-      except:
-        pass
-
-      # Get the original file contents of the policy file so that we can check
-      # the compatibility of template changes in it
-      if template_affected_file is not None:
-        original_file_contents = '\n'.join(template_affected_file.OldContents())
+    skip_compatibility_check = \
+      'BYPASS_POLICY_COMPATIBILITY_CHECK' in input_api.change.tags
 
     checker = syntax_check_policy_template_json.PolicyTemplateChecker()
-    if checker.Run(args, filepath, original_file_contents, current_version) > 0:
+    checker_result = checker.Run(args, filepath, original_file_contents,
+                                 current_version, skip_compatibility_check)
+    if checker_result > 0:
       return [output_api.PresubmitError('Syntax error(s) in file:', [filepath])]
   finally:
     sys.path = old_sys_path
@@ -232,6 +235,8 @@ def _CommonChecks(input_api, output_api):
   root = input_api.change.RepositoryRoot()
   template_path = input_api.os_path.join(
       root, 'components', 'policy', 'resources', 'policy_templates.json')
+  device_policy_proto_path = input_api.os_path.join(
+      root, 'components', 'policy', 'proto', 'chrome_device_policy.proto')
   # policies in chrome/test/data/policy/policy_test_cases.json.
   test_cases_path = input_api.os_path.join(
       root, 'chrome', 'test', 'data', 'policy', 'policy_test_cases.json')
@@ -244,12 +249,16 @@ def _CommonChecks(input_api, output_api):
       template_path))
   template_changed = any(f.AbsoluteLocalPath() == template_path \
     for f in affected_files)
+  device_policy_proto_changed = \
+      any(f.AbsoluteLocalPath() == device_policy_proto_path \
+          for f in affected_files)
   tests_changed = any(f.AbsoluteLocalPath() == test_cases_path \
     for f in affected_files)
   syntax_check_changed = any(f.AbsoluteLocalPath() == syntax_check_path \
     for f in affected_files)
 
-  if template_changed or tests_changed or syntax_check_changed:
+  if (template_changed or device_policy_proto_changed or tests_changed or
+      syntax_check_changed):
     try:
       policies = _GetPolicyTemplates(template_path)
     except:
@@ -259,7 +268,9 @@ def _CommonChecks(input_api, output_api):
       results.extend(_CheckPolicyTestCases(input_api, output_api, policies))
     if template_changed:
       results.extend(_CheckPolicyHistograms(input_api, output_api, policies))
-    if template_changed or syntax_check_changed:
+    # chrome_device_policy.proto is hand crafted. When it is changed, we need
+    # to check if it still corresponds to policy_templates.json.
+    if template_changed or device_policy_proto_changed or syntax_check_changed:
       results.extend(_CheckPolicyTemplatesSyntax(input_api, output_api))
 
   return results

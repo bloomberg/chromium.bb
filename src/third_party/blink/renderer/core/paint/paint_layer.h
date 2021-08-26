@@ -6,7 +6,7 @@
  *
  * Other contributors:
  *   Robert O'Callahan <roc+@cs.cmu.edu>
- *   David Baron <dbaron@fas.harvard.edu>
+ *   David Baron <dbaron@dbaron.org>
  *   Christian Biesinger <cbiesinger@web.de>
  *   Randall Jesup <rjesup@wgate.com>
  *   Roland Mainz <roland.mainz@informatik.med.uni-giessen.de>
@@ -686,7 +686,9 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // Calls the above, rounding outwards.
   PhysicalRect MapRectForFilter(const PhysicalRect&) const;
 
-  bool HasFilterThatMovesPixels() const;
+  bool HasFilterThatMovesPixels() const {
+    return has_filter_that_moves_pixels_;
+  }
 
   PaintLayerResourceInfo* ResourceInfo() const {
     return rare_data_ ? rare_data_->resource_info.Get() : nullptr;
@@ -1158,6 +1160,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     needs_paint_offset_translation_for_compositing_ = b;
   }
 
+  bool KnownToClipSubtree() const;
+
  private:
   PhysicalRect LocalBoundingBoxForCompositingOverlapTest() const;
   bool PaintsWithDirectReasonIntoOwnBacking(GlobalPaintFlags) const;
@@ -1333,6 +1337,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     needs_reorder_overlay_overflow_controls_ = b;
   }
 
+  bool ComputeHasFilterThatMovesPixels() const;
+
   // Self-painting layer is an optimization where we avoid the heavy Layer
   // painting machinery for a Layer allocated only to handle the overflow clip
   // case.
@@ -1403,6 +1409,9 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // property node is updated.
   unsigned filter_on_effect_node_dirty_ : 1;
   unsigned backdrop_filter_on_effect_node_dirty_ : 1;
+
+  // Caches |ComputeHasFilterThatMovesPixels()|, updated on style changes.
+  unsigned has_filter_that_moves_pixels_ : 1;
 
   // True if the current subtree is underneath a LayoutSVGHiddenContainer
   // ancestor.

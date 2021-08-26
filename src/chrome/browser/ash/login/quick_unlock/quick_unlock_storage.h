@@ -12,16 +12,11 @@
 
 class Profile;
 
-namespace chromeos {
-
-class QuickUnlockStorageTestApi;
-class QuickUnlockStorageUnitTest;
-
+namespace ash {
 namespace quick_unlock {
-
+class AuthToken;
 class FingerprintStorage;
 class PinStoragePrefs;
-class AuthToken;
 
 // Helper class for managing state for quick unlock services (pin and
 // fingerprint), and general lock screen management (tokens for extension API
@@ -85,8 +80,8 @@ class QuickUnlockStorage : public KeyedService {
   PinStoragePrefs* pin_storage_prefs() { return pin_storage_prefs_.get(); }
 
  private:
-  friend class chromeos::QuickUnlockStorageTestApi;
-  friend class chromeos::QuickUnlockStorageUnitTest;
+  friend class QuickUnlockStorageTestApi;
+  friend class QuickUnlockStorageUnitTest;
 
   // KeyedService:
   void Shutdown() override;
@@ -102,14 +97,14 @@ class QuickUnlockStorage : public KeyedService {
 };
 
 }  // namespace quick_unlock
-}  // namespace chromeos
+}  // namespace ash
 
 // TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
 // source migration is finished.
-namespace ash {
+namespace chromeos {
 namespace quick_unlock {
-using ::chromeos::quick_unlock::QuickUnlockStorage;
+using ::ash::quick_unlock::QuickUnlockStorage;
 }
-}  // namespace ash
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_QUICK_UNLOCK_QUICK_UNLOCK_STORAGE_H_

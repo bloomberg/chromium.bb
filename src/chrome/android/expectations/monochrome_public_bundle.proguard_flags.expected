@@ -157,7 +157,6 @@
 -keep @interface org.chromium.base.annotations.CalledByNative
 -keep @interface org.chromium.base.annotations.CalledByNativeUnchecked
 -keep @interface org.chromium.base.annotations.DoNotInline
--keep @interface org.chromium.base.annotations.RemovableInRelease
 -keep @interface org.chromium.base.annotations.UsedByReflection
 -keep @interface org.chromium.base.annotations.IdentifierNameString
 
@@ -200,14 +199,10 @@
   native <methods>;
 }
 
--assumenosideeffects class ** {
-  # Remove @RemovableInRelease methods so long as return values are unused.
-  @org.chromium.base.annotations.RemovableInRelease <methods>;
-  # Remove object @RemovableInRelease methods even when return value is used.
-  # Note: * in return type does not match primitives.
-  @org.chromium.base.annotations.RemovableInRelease * *(...) return null;
-  # Remove boolean @RemovableInRelease methods even when return value is used.
-  @org.chromium.base.annotations.RemovableInRelease boolean *(...) return false;
+# Use assumevalues block instead of assumenosideeffects block because Google3 proguard cannot parse
+# assumenosideeffects blocks which overwrite return value.
+-assumevalues class org.chromium.base.Log {
+  static boolean isDebug() return false;
 }
 
 # Never inline classes, methods, or fields  with this annotation, but allow
@@ -262,11 +257,6 @@
 }
 -checkdiscard class ** {
   @org.chromium.base.annotations.CheckDiscard *;
-}
-
-# Ensure @RemovableInRelease actually works.
--checkdiscard class ** {
-  @org.chromium.base.annotations.RemovableInRelease *;
 }
 
 # File: ../../chrome/android/proguard/main.flags
@@ -741,6 +731,9 @@
 -keepclassmembers class * {
     @com.google.vr.dynamite.client.UsedByReflection *;
 }
+
+# File: obj/third_party/android_deps/com_google_android_play_core_java/proguard.txt
+-keepnames class com.google.android.play.core.review.ReviewInfo
 
 # File: obj/third_party/android_deps/google_android_datatransport_transport_api_java/proguard.txt
 -dontwarn com.google.auto.value.AutoValue

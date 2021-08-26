@@ -86,6 +86,7 @@
 #include "chrome/child/v8_crashpad_support_win.h"
 #include "chrome/chrome_elf/chrome_elf_main.h"
 #include "chrome/common/child_process_logging.h"
+#include "chrome/common/protobuf_init.h"
 #include "chrome/install_static/install_util.h"
 #include "components/browser_watcher/extended_crash_reporting.h"
 #include "sandbox/win/src/sandbox.h"
@@ -182,8 +183,9 @@
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chrome/common/chrome_paths_lacros.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"  // nogncheck
-#include "chromeos/lacros/lacros_chrome_service_impl.h"
 #include "chromeos/lacros/lacros_dbus_helper.h"
+#include "chromeos/lacros/lacros_service.h"
+#include "media/base/media_switches.h"
 #endif
 
 base::LazyInstance<ChromeContentGpuClient>::DestructorAtExit
@@ -534,7 +536,7 @@ void ChromeMainDelegate::PostEarlyInitialization(bool is_running_tests) {
   // which depends on policy from an OS service. So, initialize it at this
   // timing.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  // The feature list depends on BrowserPolicyConnectorChromeOS which depends
+  // The feature list depends on BrowserPolicyConnectorAsh which depends
   // on DBus, so initialize it here. Some D-Bus clients may depend on feature
   // list, so initialize them separately later at the end of this function.
   ash::InitializeDBus();
@@ -544,16 +546,15 @@ void ChromeMainDelegate::PostEarlyInitialization(bool is_running_tests) {
   // Initialize D-Bus for Lacros.
   chromeos::LacrosInitializeDBus();
 
-  // LacrosChromeServiceImpl instance needs the sequence of the main thread,
+  // LacrosService instance needs the sequence of the main thread,
   // and needs to be created earlier than incoming Mojo invitation handling.
   // This also needs ThreadPool sequences to post some tasks internally.
   // However, the tasks can be suspended until actual start of the ThreadPool
   // sequences later.
-  lacros_chrome_service_ =
-      std::make_unique<chromeos::LacrosChromeServiceImpl>();
+  lacros_service_ = std::make_unique<chromeos::LacrosService>();
   {
     const crosapi::mojom::BrowserInitParams* init_params =
-        lacros_chrome_service_->init_params();
+        lacros_service_->init_params();
     // default_paths may null on browser_tests.
     if (init_params->default_paths) {
       base::FilePath drivefs;
@@ -562,6 +563,29 @@ void ChromeMainDelegate::PostEarlyInitialization(bool is_running_tests) {
       chrome::SetLacrosDefaultPaths(init_params->default_paths->documents,
                                     init_params->default_paths->downloads,
                                     drivefs);
+    }
+    // This lives here rather than in ChromeBrowserMainExtraPartsLacros due to
+    // timing constraints. If we relocate it, then the flags aren't propagated
+    // to the GPU process.
+    if (init_params->build_flags.has_value()) {
+      for (auto flag : init_params->build_flags.value()) {
+        switch (flag) {
+          case crosapi::mojom::BuildFlag::kUnknown:
+            break;
+          case crosapi::mojom::BuildFlag::kEnablePlatformEncryptedHevc:
+            base::CommandLine::ForCurrentProcess()->AppendSwitch(
+                switches::kLacrosEnablePlatformEncryptedHevc);
+            break;
+          case crosapi::mojom::BuildFlag::kEnablePlatformHevc:
+            base::CommandLine::ForCurrentProcess()->AppendSwitch(
+                switches::kLacrosEnablePlatformHevc);
+            break;
+          case crosapi::mojom::BuildFlag::kUseChromeosProtectedMedia:
+            base::CommandLine::ForCurrentProcess()->AppendSwitch(
+                switches::kLacrosUseChromeosProtectedMedia);
+            break;
+        }
+      }
     }
   }
 #endif
@@ -607,6 +631,10 @@ void ChromeMainDelegate::PostEarlyInitialization(bool is_running_tests) {
 #if defined(OS_MAC)
   chrome::CacheChannelInfo();
 #endif
+
+#if defined(OS_WIN)
+  chrome::InitializeProtobuf();
+#endif
 }
 
 bool ChromeMainDelegate::ShouldCreateFeatureList() {
@@ -638,25 +666,30 @@ void ChromeMainDelegate::PostFieldTrialInitialization() {
   base::PlatformThread::InitThreadPostFieldTrial();
 #endif
 
-#if BUILDFLAG(ENABLE_GWP_ASAN_MALLOC)
-  {
-    version_info::Channel channel = chrome::GetChannel();
-    bool is_canary_dev = (channel == version_info::Channel::CANARY ||
-                          channel == version_info::Channel::DEV);
-    gwp_asan::EnableForMalloc(is_canary_dev || is_browser_process,
-                              process_type.c_str());
-  }
+  version_info::Channel channel = chrome::GetChannel();
+  bool is_canary_dev = (channel == version_info::Channel::CANARY ||
+                        channel == version_info::Channel::DEV);
+  // GWP-ASAN requires crashpad to gather alloc/dealloc stack traces, which is
+  // not always enabled on Linux/ChromeOS.
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+  bool enable_gwp_asan = crash_reporter::IsCrashpadEnabled();
+#else
+  bool enable_gwp_asan = true;
 #endif
 
+  if (enable_gwp_asan) {
+#if BUILDFLAG(ENABLE_GWP_ASAN_MALLOC)
+    gwp_asan::EnableForMalloc(is_canary_dev || is_browser_process,
+                              process_type.c_str());
+#endif
 #if BUILDFLAG(ENABLE_GWP_ASAN_PARTITIONALLOC)
-  {
-    version_info::Channel channel = chrome::GetChannel();
-    bool is_canary_dev = (channel == version_info::Channel::CANARY ||
-                          channel == version_info::Channel::DEV);
     gwp_asan::EnableForPartitionAlloc(is_canary_dev || is_browser_process,
                                       process_type.c_str());
-  }
 #endif
+  }
+
+  ALLOW_UNUSED_LOCAL(channel);
+  ALLOW_UNUSED_LOCAL(is_canary_dev);
 
   // Start heap profiling as early as possible so it can start recording
   // memory allocations.

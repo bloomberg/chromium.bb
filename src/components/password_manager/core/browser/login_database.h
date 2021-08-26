@@ -47,12 +47,6 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
   LoginDatabase(const base::FilePath& db_path, IsAccountStore is_account_store);
   ~LoginDatabase() override;
 
-  // Deletes any database files for the given |db_path| from the disk. Must not
-  // be called while a LoginDatabase instance for this path exists!
-  // This does blocking I/O, so must only be called from a thread that allows
-  // this (in particular, *not* from the UI thread).
-  static void DeleteDatabaseFile(const base::FilePath& db_path);
-
   // Returns whether this is the profile-scoped or the account-scoped storage:
   // true:  Gaia-account-scoped store, which is used for signed-in but not
   //        syncing users.
@@ -116,13 +110,11 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
 
   // Gets a list of credentials matching |form|, including blocklisted matches
   // and federated credentials.
+  // |should_PSL_matching_apply| controls if the PSL matches are included or
+  // only the exact matches.
   bool GetLogins(const PasswordFormDigest& form,
+                 bool should_PSL_matching_apply,
                  std::vector<std::unique_ptr<PasswordForm>>* forms)
-      WARN_UNUSED_RESULT;
-
-  // Gets a list of credentials with password_value=|plain_text_password|.
-  bool GetLoginsByPassword(const std::u16string& plain_text_password,
-                           std::vector<std::unique_ptr<PasswordForm>>* forms)
       WARN_UNUSED_RESULT;
 
   // Gets all logins created from |begin| onwards (inclusive) and before |end|.
@@ -213,6 +205,10 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
 
  private:
   struct PrimaryKeyAndPassword;
+  FRIEND_TEST_ALL_PREFIXES(LoginDatabaseTest, AddLoginWithEncryptedPassword);
+  FRIEND_TEST_ALL_PREFIXES(LoginDatabaseTest,
+                           AddLoginWithEncryptedPasswordAndValue);
+
 #if defined(OS_IOS)
   friend class LoginDatabaseIOSTest;
   FRIEND_TEST_ALL_PREFIXES(LoginDatabaseIOSTest, KeychainStorage);
@@ -309,10 +305,10 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
 
   // Overwrites |key_to_form_map| with credentials retrieved from |statement|.
   // If |matched_form| is not null, filters out all results but those
-  // PSL-matching
-  // |*matched_form| or federated credentials for it. If feature for recovering
-  // passwords is enabled, it removes all passwords that couldn't be decrypted
-  // when encryption was available from the database. On success returns true.
+  // PSL-matching |*matched_form| or federated credentials for it. If feature
+  // for recovering passwords is enabled, it removes all passwords that couldn't
+  // be decrypted when encryption was available from the database. On success
+  // returns true.
   // |key_to_form_map| must not be null and will be used to return the results.
   // The key of the map is the DB primary key.
   FormRetrievalResult StatementToForms(sql::Statement* statement,

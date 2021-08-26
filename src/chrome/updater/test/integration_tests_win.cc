@@ -11,6 +11,8 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
+#include "base/process/launch.h"
+#include "base/process/process.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
@@ -33,6 +35,7 @@
 #include "chrome/updater/util.h"
 #include "chrome/updater/win/setup/setup_util.h"
 #include "chrome/updater/win/win_constants.h"
+#include "chrome/updater/win/win_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
@@ -47,7 +50,7 @@ base::FilePath GetInstallerPath() {
   base::FilePath test_executable;
   if (!base::PathService::Get(base::FILE_EXE, &test_executable))
     return base::FilePath();
-  return test_executable.DirName().AppendASCII("UpdaterSetup.exe");
+  return test_executable.DirName().AppendASCII("UpdaterSetup_test.exe");
 }
 
 base::FilePath GetTestAppExecutablePath() {
@@ -57,10 +60,14 @@ base::FilePath GetTestAppExecutablePath() {
   return test_executable.DirName().AppendASCII(TEST_APP_FULLNAME_STRING ".exe");
 }
 
-absl::optional<base::FilePath> GetProductPath() {
+absl::optional<base::FilePath> GetProductPath(UpdaterScope scope) {
   base::FilePath app_data_dir;
-  if (!base::PathService::Get(base::DIR_LOCAL_APP_DATA, &app_data_dir))
+  if (!base::PathService::Get(scope == UpdaterScope::kSystem
+                                  ? base::DIR_PROGRAM_FILES
+                                  : base::DIR_LOCAL_APP_DATA,
+                              &app_data_dir)) {
     return absl::nullopt;
+  }
   return app_data_dir.AppendASCII(COMPANY_SHORTNAME_STRING)
       .AppendASCII(PRODUCT_FULLNAME_STRING)
       .AppendASCII(kUpdaterVersion);
@@ -84,7 +91,7 @@ bool DeleteRegKey(HKEY root, REGSAM regsam, const std::wstring& path) {
 }  // namespace
 
 absl::optional<base::FilePath> GetInstalledExecutablePath(UpdaterScope scope) {
-  absl::optional<base::FilePath> path = GetProductPath();
+  absl::optional<base::FilePath> path = GetProductPath(scope);
   if (!path)
     return absl::nullopt;
   return path->AppendASCII("updater.exe");
@@ -93,7 +100,7 @@ absl::optional<base::FilePath> GetInstalledExecutablePath(UpdaterScope scope) {
 absl::optional<base::FilePath> GetFakeUpdaterInstallFolderPath(
     UpdaterScope scope,
     const base::Version& version) {
-  absl::optional<base::FilePath> path = GetProductPath();
+  absl::optional<base::FilePath> path = GetProductPath(scope);
   if (!path)
     return absl::nullopt;
   return path->AppendASCII(version.GetString());
@@ -107,13 +114,13 @@ absl::optional<base::FilePath> GetDataDirPath(UpdaterScope scope) {
       .AppendASCII(PRODUCT_FULLNAME_STRING);
 }
 
-bool DeleteService() {
+bool DeleteService(const wchar_t* const service_name) {
   SC_HANDLE scm = ::OpenSCManager(
       nullptr, nullptr, SC_MANAGER_CONNECT | SC_MANAGER_CREATE_SERVICE);
   if (!scm)
     return false;
 
-  SC_HANDLE service = ::OpenService(scm, kWindowsServiceName, DELETE);
+  SC_HANDLE service = ::OpenService(scm, service_name, DELETE);
   bool is_service_deleted = !service;
   if (!is_service_deleted) {
     is_service_deleted =
@@ -123,12 +130,11 @@ bool DeleteService() {
 
     ::CloseServiceHandle(service);
   }
-
-  ::CloseServiceHandle(scm);
-
   base::win::RegKey(HKEY_LOCAL_MACHINE, base::ASCIIToWide(UPDATER_KEY).c_str(),
                     KEY_WRITE)
-      .DeleteValue(kWindowsServiceName);
+      .DeleteValue(service_name);
+
+  ::CloseServiceHandle(scm);
 
   return is_service_deleted;
 }
@@ -158,11 +164,13 @@ void Clean(UpdaterScope scope) {
   }
 
   if (scope == UpdaterScope::kSystem) {
-    EXPECT_TRUE(DeleteService());
+    for (const bool is_internal_service : {true, false}) {
+      EXPECT_TRUE(DeleteService(GetServiceName(is_internal_service).c_str()));
+    }
   }
 
   // TODO(crbug.com/1062288): Delete the Wake task.
-  absl::optional<base::FilePath> path = GetProductPath();
+  absl::optional<base::FilePath> path = GetProductPath(scope);
   EXPECT_TRUE(path);
   if (path)
     EXPECT_TRUE(base::DeletePathRecursively(*path));
@@ -172,14 +180,14 @@ void Clean(UpdaterScope scope) {
     EXPECT_TRUE(base::DeletePathRecursively(*path));
 }
 
-bool IsServiceGone() {
+bool IsServiceGone(const wchar_t* const service_name) {
   SC_HANDLE scm = ::OpenSCManager(
       nullptr, nullptr, SC_MANAGER_CONNECT | SC_MANAGER_CREATE_SERVICE);
   if (!scm)
     return false;
 
   SC_HANDLE service = ::OpenService(
-      scm, kWindowsServiceName, SERVICE_QUERY_CONFIG | SERVICE_CHANGE_CONFIG);
+      scm, service_name, SERVICE_QUERY_CONFIG | SERVICE_CHANGE_CONFIG);
   bool is_service_gone = !service;
   if (!is_service_gone) {
     if (!::ChangeServiceConfig(service, SERVICE_NO_CHANGE, SERVICE_NO_CHANGE,
@@ -197,7 +205,7 @@ bool IsServiceGone() {
   return is_service_gone &&
          !base::win::RegKey(HKEY_LOCAL_MACHINE,
                             base::ASCIIToWide(UPDATER_KEY).c_str(), KEY_READ)
-              .HasValue(kWindowsServiceName);
+              .HasValue(service_name);
 }
 
 void ExpectClean(UpdaterScope scope) {
@@ -224,13 +232,16 @@ void ExpectClean(UpdaterScope scope) {
     EXPECT_FALSE(RegKeyExists(root, 0, GetComTypeLibRegistryPath(iid)));
   }
 
-  if (scope == UpdaterScope::kSystem)
-    EXPECT_TRUE(IsServiceGone());
+  if (scope == UpdaterScope::kSystem) {
+    for (const bool is_internal_service : {true, false}) {
+      EXPECT_TRUE(IsServiceGone(GetServiceName(is_internal_service).c_str()));
+    }
+  }
 
   // TODO(crbug.com/1062288): Assert there are no Wake tasks.
 
   // Files must not exist on the file system.
-  absl::optional<base::FilePath> path = GetProductPath();
+  absl::optional<base::FilePath> path = GetProductPath(scope);
   EXPECT_TRUE(path);
   if (path)
     EXPECT_FALSE(base::PathExists(*path));
@@ -257,7 +268,7 @@ void ExpectInstalled(UpdaterScope scope) {
   // TODO(crbug.com/1062288): Assert there are Wake tasks.
 
   // Files must exist on the file system.
-  absl::optional<base::FilePath> path = GetProductPath();
+  absl::optional<base::FilePath> path = GetProductPath(scope);
   EXPECT_TRUE(path);
   if (path)
     EXPECT_TRUE(base::PathExists(*path));
@@ -268,7 +279,7 @@ void ExpectCandidateUninstalled(UpdaterScope scope) {
   // TODO(crbug.com/1062288): Assert there are no Wake tasks.
 
   // Files must not exist on the file system.
-  absl::optional<base::FilePath> path = GetProductPath();
+  absl::optional<base::FilePath> path = GetProductPath(scope);
   EXPECT_TRUE(path);
   if (path)
     EXPECT_FALSE(base::PathExists(*path));
@@ -278,7 +289,7 @@ void ExpectActiveUpdater(UpdaterScope scope) {
   // TODO(crbug.com/1062288): Assert that COM interfaces point to this version.
 
   // Files must exist on the file system.
-  absl::optional<base::FilePath> path = GetProductPath();
+  absl::optional<base::FilePath> path = GetProductPath(scope);
   EXPECT_TRUE(path);
   if (path)
     EXPECT_TRUE(base::PathExists(*path));
@@ -305,11 +316,12 @@ void Install(UpdaterScope scope) {
 }
 
 void Uninstall(UpdaterScope scope) {
-  // Note: updater.exe --uninstall is run from the build dir, not the install
-  // dir, because it is useful for tests to be able to run it to clean the
-  // system even if installation has failed or the installed binaries have
+  // Note: updater_test.exe --uninstall is run from the build dir, not the
+  // install dir, because it is useful for tests to be able to run it to clean
+  // the system even if installation has failed or the installed binaries have
   // already been removed.
-  base::FilePath path = GetInstallerPath().DirName().AppendASCII("updater.exe");
+  base::FilePath path =
+      GetInstallerPath().DirName().AppendASCII("updater_test.exe");
   ASSERT_FALSE(path.empty());
   base::CommandLine command_line(path);
   command_line.AppendSwitch("uninstall");
@@ -322,8 +334,8 @@ void Uninstall(UpdaterScope scope) {
   SleepFor(5);
 }
 
-void SetActive(UpdaterScope scope, const std::string& id) {
-  // TODO(crbug/1159498): Standardize registry access.
+void SetActive(UpdaterScope /*scope*/, const std::string& id) {
+  // TODO(crbug.com/1159498): Standardize registry access.
   base::win::RegKey key;
   ASSERT_EQ(key.Create(HKEY_CURRENT_USER, GetAppClientStateKey(id).c_str(),
                        KEY_WRITE | KEY_WOW64_32KEY),
@@ -331,8 +343,8 @@ void SetActive(UpdaterScope scope, const std::string& id) {
   EXPECT_EQ(key.WriteValue(kDidRun, L"1"), ERROR_SUCCESS);
 }
 
-void ExpectActive(UpdaterScope scope, const std::string& id) {
-  // TODO(crbug/1159498): Standardize registry access.
+void ExpectActive(UpdaterScope /*scope*/, const std::string& id) {
+  // TODO(crbug.com/1159498): Standardize registry access.
   base::win::RegKey key;
   ASSERT_EQ(key.Open(HKEY_CURRENT_USER, GetAppClientStateKey(id).c_str(),
                      KEY_READ | KEY_WOW64_32KEY),
@@ -342,8 +354,8 @@ void ExpectActive(UpdaterScope scope, const std::string& id) {
   EXPECT_EQ(value, L"1");
 }
 
-void ExpectNotActive(UpdaterScope scope, const std::string& id) {
-  // TODO(crbug/1159498): Standardize registry access.
+void ExpectNotActive(UpdaterScope /*scope*/, const std::string& id) {
+  // TODO(crbug.com/1159498): Standardize registry access.
   base::win::RegKey key;
   if (key.Open(HKEY_CURRENT_USER, GetAppClientStateKey(id).c_str(),
                KEY_READ | KEY_WOW64_32KEY) == ERROR_SUCCESS) {
@@ -395,6 +407,32 @@ void ExpectInterfacesRegistered(UpdaterScope scope) {
       nullptr, CLSCTX_LOCAL_SERVER, IID_PPV_ARGS(&updater_internal_server)));
   Microsoft::WRL::ComPtr<IUpdaterInternal> updater_internal;
   EXPECT_HRESULT_SUCCEEDED(updater_internal_server.As(&updater_internal));
+}
+
+int RunVPythonCommand(const base::CommandLine& command_line) {
+  base::CommandLine python_command = command_line;
+  python_command.PrependWrapper(FILE_PATH_LITERAL("vpython.bat"));
+
+  int exit_code = -1;
+  base::Process process = base::LaunchProcess(python_command, {});
+  EXPECT_TRUE(process.IsValid());
+  EXPECT_TRUE(process.WaitForExitWithTimeout(base::TimeDelta::FromSeconds(60),
+                                             &exit_code));
+  return exit_code;
+}
+
+void RunTestServiceCommand(const std::string& sub_command) {
+  base::FilePath path(base::CommandLine::ForCurrentProcess()->GetProgram());
+  path = path.DirName();
+  path = MakeAbsoluteFilePath(path);
+  path = path.Append(FILE_PATH_LITERAL("test_service"))
+             .Append(FILE_PATH_LITERAL("updater_test_service_control.py"));
+  EXPECT_TRUE(base::PathExists(path));
+
+  base::CommandLine command(path);
+  command.AppendArg(sub_command);
+
+  EXPECT_EQ(RunVPythonCommand(command), 0);
 }
 
 }  // namespace test

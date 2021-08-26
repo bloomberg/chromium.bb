@@ -160,7 +160,7 @@ class PostFilter {
             frame_header.cdef.uv_secondary_strength[0] > 0) &&
            (do_post_filter_mask & 0x02) != 0;
   }
-  bool DoCdef() const { return DoCdef(frame_header_, do_post_filter_mask_); }
+  bool DoCdef() const { return do_cdef_; }
   // If filter levels for Y plane (0 for vertical, 1 for horizontal),
   // are all zero, deblock filter will not be applied.
   static bool DoDeblock(const ObuFrameHeader& frame_header,
@@ -169,9 +169,7 @@ class PostFilter {
             frame_header.loop_filter.level[1] > 0) &&
            (do_post_filter_mask & 0x01) != 0;
   }
-  bool DoDeblock() const {
-    return DoDeblock(frame_header_, do_post_filter_mask_);
-  }
+  bool DoDeblock() const { return do_deblock_; }
 
   uint8_t GetZeroDeltaDeblockFilterLevel(int segment_id, int level_index,
                                          ReferenceFrameType type,
@@ -197,9 +195,7 @@ class PostFilter {
             loop_restoration.type[kPlaneV] != kLoopRestorationTypeNone) &&
            (do_post_filter_mask & 0x08) != 0;
   }
-  bool DoRestoration() const {
-    return DoRestoration(loop_restoration_, do_post_filter_mask_, planes_);
-  }
+  bool DoRestoration() const { return do_restoration_; }
 
   // Returns a pointer to the unfiltered buffer. This is used by the Tile class
   // to determine where to write the output of the tile decoding process taking
@@ -214,9 +210,7 @@ class PostFilter {
     return frame_header.width != frame_header.upscaled_width &&
            (do_post_filter_mask & 0x04) != 0;
   }
-  bool DoSuperRes() const {
-    return DoSuperRes(frame_header_, do_post_filter_mask_);
-  }
+  bool DoSuperRes() const { return do_superres_; }
   LoopRestorationInfo* restoration_info() const { return restoration_info_; }
   uint8_t* GetBufferOffset(uint8_t* base_buffer, int stride, Plane plane,
                            int row, int column) const {
@@ -244,13 +238,9 @@ class PostFilter {
  private:
   // The type of the HorizontalDeblockFilter and VerticalDeblockFilter member
   // functions.
-  using DeblockFilter = void (PostFilter::*)(int row4x4_start,
-                                             int column4x4_start);
-  // The lookup table for picking the deblock filter, according to deblock
-  // filter type.
-  const DeblockFilter deblock_filter_func_[2] = {
-      &PostFilter::VerticalDeblockFilter, &PostFilter::HorizontalDeblockFilter};
-
+  using DeblockFilter = void (PostFilter::*)(int row4x4_start, int row4x4_end,
+                                             int column4x4_start,
+                                             int column4x4_end);
   // Functions common to all post filters.
 
   // Extends the frame by setting the border pixel values to the one from its
@@ -308,13 +298,6 @@ class PostFilter {
 
   // Functions for the Deblocking filter.
 
-  static int GetIndex(int row4x4) { return DivideBy4(row4x4); }
-  static int GetShift(int row4x4, int column4x4) {
-    return ((row4x4 & 3) << 4) | column4x4;
-  }
-  int GetDeblockUnitId(int row_unit, int column_unit) const {
-    return row_unit * num_64x64_blocks_per_row_ + column_unit;
-  }
   bool GetHorizontalDeblockFilterEdgeInfo(int row4x4, int column4x4,
                                           uint8_t* level, int* step,
                                           int* filter_length) const;
@@ -330,8 +313,10 @@ class PostFilter {
                                           BlockParameters* const* bp_ptr,
                                           uint8_t* level_u, uint8_t* level_v,
                                           int* step, int* filter_length) const;
-  void HorizontalDeblockFilter(int row4x4_start, int column4x4_start);
-  void VerticalDeblockFilter(int row4x4_start, int column4x4_start);
+  void HorizontalDeblockFilter(int row4x4_start, int row4x4_end,
+                               int column4x4_start, int column4x4_end);
+  void VerticalDeblockFilter(int row4x4_start, int row4x4_end,
+                             int column4x4_start, int column4x4_end);
   // HorizontalDeblockFilter and VerticalDeblockFilter must have the correct
   // signature.
   static_assert(std::is_same<decltype(&PostFilter::HorizontalDeblockFilter),
@@ -340,9 +325,6 @@ class PostFilter {
   static_assert(std::is_same<decltype(&PostFilter::VerticalDeblockFilter),
                              DeblockFilter>::value,
                 "");
-  // Applies deblock filtering for the superblock row starting at |row4x4| with
-  // a height of 4*|sb4x4|.
-  void ApplyDeblockFilterForOneSuperBlockRow(int row4x4, int sb4x4);
   // Worker function used for multi-threaded deblocking.
   template <LoopFilterType loop_filter_type>
   void DeblockFilterWorker(std::atomic<int>* row4x4_atomic);
@@ -465,13 +447,13 @@ class PostFilter {
                              WorkerFunction>::value,
                 "");
 
+  // The lookup table for picking the deblock filter, according to deblock
+  // filter type.
+  const DeblockFilter deblock_filter_func_[2] = {
+      &PostFilter::VerticalDeblockFilter, &PostFilter::HorizontalDeblockFilter};
   const ObuFrameHeader& frame_header_;
   const LoopRestoration& loop_restoration_;
   const dsp::Dsp& dsp_;
-  const int num_64x64_blocks_per_row_;
-  const int upscaled_width_;
-  const int width_;
-  const int height_;
   const int8_t bitdepth_;
   const int8_t subsampling_x_[kMaxPlanes];
   const int8_t subsampling_y_[kMaxPlanes];
@@ -480,6 +462,10 @@ class PostFilter {
   const uint8_t* const inner_thresh_;
   const uint8_t* const outer_thresh_;
   const bool needs_chroma_deblock_;
+  const bool do_cdef_;
+  const bool do_deblock_;
+  const bool do_restoration_;
+  const bool do_superres_;
   // This stores the deblocking filter levels assuming that the delta is zero.
   // This will be used by all superblocks whose delta is zero (without having to
   // recompute them). The dimensions (in order) are: segment_id, level_index
@@ -492,7 +478,8 @@ class PostFilter {
     int initial_subpixel_x;
     int step;
   } super_res_info_[kMaxPlanes];
-  const Array2D<int16_t>& cdef_index_;
+  const Array2D<int8_t>& cdef_index_;
+  const Array2D<uint8_t>& cdef_skip_;
   const Array2D<TransformSize>& inter_transform_sizes_;
   LoopRestorationInfo* const restoration_info_;
   uint8_t* const superres_coefficients_[kNumPlaneTypes];
@@ -528,7 +515,6 @@ class PostFilter {
   //   (1). Loop Restoration is on.
   //   (2). Cdef is on, or multi-threading is enabled for post filter.
   YuvBuffer& loop_restoration_border_;
-  const uint8_t do_post_filter_mask_;
   ThreadPool* const thread_pool_;
 
   // Tracks the progress of the post filters.

@@ -252,7 +252,7 @@ class GitWrapper(SCMWrapper):
   def diff(self, options, _args, _file_list):
     _, revision = gclient_utils.SplitUrlRevision(self.url)
     if not revision:
-      revision = 'refs/remotes/%s/master' % self.remote
+      revision = 'refs/remotes/%s/main' % self.remote
     self._Run(['-c', 'core.quotePath=false', 'diff', revision], options)
 
   def pack(self, _options, _args, _file_list):
@@ -866,7 +866,7 @@ class GitWrapper(SCMWrapper):
       # Don't reuse the args.
       return self.update(options, [], file_list)
 
-    default_rev = "refs/heads/master"
+    default_rev = "refs/heads/main"
     if options.upstream:
       if self._GetCurrentBranch():
         upstream_branch = scm.GIT.GetUpstreamBranch(self.checkout_path)

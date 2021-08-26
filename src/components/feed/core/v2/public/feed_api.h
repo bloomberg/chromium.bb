@@ -72,6 +72,15 @@ class FeedApi {
   // events).
   virtual std::string GetSessionId() const = 0;
 
+  // Sets the requested content order of the feed, and triggers a refresh if
+  // necessary. Note that currently, only Web Feed can change the content order.
+  virtual void SetContentOrder(const StreamType& stream_type,
+                               ContentOrder content_order) = 0;
+
+  // Gets the "raw" content order value stored in prefs.
+  virtual ContentOrder GetContentOrderFromPrefs(
+      const StreamType& stream_type) = 0;
+
   // Invoked by RefreshTaskScheduler's scheduled task.
   virtual void ExecuteRefreshTask(RefreshTaskId task_id) = 0;
 
@@ -84,7 +93,7 @@ class FeedApi {
 
   // Refresh the feed content by fetching the fresh content from the server.
   // Calls |callback| when complete. If the fetch fails, the parameter is false.
-  virtual void ManualRefresh(const FeedStreamSurface& surface,
+  virtual void ManualRefresh(const StreamType& stream_type,
                              base::OnceCallback<void(bool)> callback) = 0;
 
   // Request to fetch and image for use in the feed. Calls |callback|

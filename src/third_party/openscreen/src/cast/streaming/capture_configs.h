@@ -35,6 +35,11 @@ struct AudioCaptureConfig {
 
   // Target playout delay in milliseconds.
   std::chrono::milliseconds target_playout_delay = kDefaultTargetPlayoutDelay;
+
+  // The codec parameter for this configuration. Honors the format laid out
+  // in RFC 6381: https://datatracker.ietf.org/doc/html/rfc6381
+  // NOTE: the "profiles" parameter is not supported in our implementation.
+  std::string codec_parameter;
 };
 
 // A configuration set that can be used by the sender to capture video, as
@@ -62,6 +67,14 @@ struct VideoCaptureConfig {
 
   // Target playout delay in milliseconds.
   std::chrono::milliseconds target_playout_delay = kDefaultTargetPlayoutDelay;
+
+  // The codec parameter for this configuration. Honors the format laid out
+  // in RFC 6381: https://datatracker.ietf.org/doc/html/rfc6381.
+  // VP8 and VP9 codec parameter versions are defined here:
+  // https://developer.mozilla.org/en-US/docs/Web/Media/Formats/codecs_parameter#webm
+  // https://www.webmproject.org/vp9/mp4/#codecs-parameter-string
+  // NOTE: the "profiles" parameter is not supported in our implementation.
+  std::string codec_parameter;
 };
 
 }  // namespace cast

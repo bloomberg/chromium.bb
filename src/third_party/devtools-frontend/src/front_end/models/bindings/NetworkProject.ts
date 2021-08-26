@@ -28,11 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import type * as Workspace from '../workspace/workspace.js'; // eslint-disable-line no-unused-vars
+import type * as Workspace from '../workspace/workspace.js';
 
 const uiSourceCodeToAttributionMap = new WeakMap<Workspace.UISourceCode.UISourceCode, Map<string, {
                                                    frame: SDK.ResourceTreeModel.ResourceTreeFrame,
@@ -64,7 +62,7 @@ export const Events = {
 };
 
 export class NetworkProject {
-  static _resolveFrame(uiSourceCode: Workspace.UISourceCode.UISourceCode, frameId: string):
+  static resolveFrame(uiSourceCode: Workspace.UISourceCode.UISourceCode, frameId: string):
       SDK.ResourceTreeModel.ResourceTreeFrame|null {
     const target = NetworkProject.targetForUISourceCode(uiSourceCode);
     const resourceTreeModel = target && target.model(SDK.ResourceTreeModel.ResourceTreeModel);
@@ -72,7 +70,7 @@ export class NetworkProject {
   }
 
   static setInitialFrameAttribution(uiSourceCode: Workspace.UISourceCode.UISourceCode, frameId: string): void {
-    const frame = NetworkProject._resolveFrame(uiSourceCode, frameId);
+    const frame = NetworkProject.resolveFrame(uiSourceCode, frameId);
     if (!frame) {
       return;
     }
@@ -105,7 +103,7 @@ export class NetworkProject {
   }
 
   static addFrameAttribution(uiSourceCode: Workspace.UISourceCode.UISourceCode, frameId: string): void {
-    const frame = NetworkProject._resolveFrame(uiSourceCode, frameId);
+    const frame = NetworkProject.resolveFrame(uiSourceCode, frameId);
     if (!frame) {
       return;
     }

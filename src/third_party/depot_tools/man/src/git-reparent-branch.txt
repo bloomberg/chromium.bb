@@ -40,7 +40,7 @@ OPTIONS
   Reparent to track lkgr.
 
 --root::
-  Reparent to track the 'root' branch. Defaults to 'origin/master'. See
+  Reparent to track the 'root' branch. Defaults to 'origin/main'. See
   linkgit:git-new-branch[1]'s CONFIGURATION VARIABLES section..
 
 

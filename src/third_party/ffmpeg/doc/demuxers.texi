@@ -37,12 +37,15 @@ between the last fcTL and IEND chunks.
 
 @table @option
 @item -ignore_loop @var{bool}
-Ignore the loop variable in the file if set.
+Ignore the loop variable in the file if set. Default is enabled.
+
 @item -max_fps @var{int}
-Maximum framerate in frames per second (0 for no limit).
+Maximum framerate in frames per second. Default of 0 imposes no limit.
+
 @item -default_fps @var{int}
 Default framerate in frames per second when none is specified in the file
-(0 meaning as fast as possible).
+(0 meaning as fast as possible). Default is 15.
+
 @end table
 
 @section asf
@@ -347,6 +350,9 @@ Enabled by default for HTTP/1.1 servers.
 @item http_seekable
 Use HTTP partial requests for downloading HTTP segments.
 0 = disable, 1 = enable, -1 = auto, Default is auto.
+
+@item seg_format_options
+Set options for the demuxer of media segments using a list of key=value pairs separated by @code{:}.
 @end table
 
 @section image2
@@ -661,6 +667,12 @@ Set mfra timestamps as PTS
 @item 0
 Don't use mfra box to set timestamps
 @end table
+
+@item use_tfdt
+For fragmented input, set fragment's starting timestamp to @code{baseMediaDecodeTime} from the @code{tfdt} box.
+Default is disabled, which will preferentially use the @code{earliest_presentation_time} from the @code{sidx} box.
+In either case, the timestamp from the @code{mfra} box will be used if it's available and @code{use_mfra_for} is
+set to pts or dts.
 
 @item export_all
 Export unrecognized boxes within the @var{udta} box as metadata entries. The first four

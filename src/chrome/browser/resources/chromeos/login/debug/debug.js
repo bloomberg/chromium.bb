@@ -71,9 +71,6 @@ cr.define('cr.ui.login.debug', function() {
   const RECOMMENDED_APPS_CONTENT = `
 // <include src="../../arc_support/recommend_app_list_view.html">
   `;
-  const RECOMMENDED_APPS_CONTENT_NEW = `
-// <include src="../../arc_support/recommend_app_list_view_new.html">
-  `;
   /**
    * Indicates if screen is present in usual user flow, represents some error
    * state or is shown in some other cases. See KNOWN_SCREENS for more details.
@@ -113,7 +110,9 @@ cr.define('cr.ui.login.debug', function() {
             screen.setKeyboardDeviceName('Some Keyboard');
             screen.setPointingDeviceName('Some Mouse');
             screen.setKeyboardState('searching');
-            screen.setMouseState('usb');
+            screen.setMouseState('searching');
+            screen.setTouchscreenDetectedState(false);
+            screen.setContinueButtonEnabled(false);
             screen.setPinDialogVisible(false);
           },
         },
@@ -124,6 +123,8 @@ cr.define('cr.ui.login.debug', function() {
             screen.setPointingDeviceName('Some Mouse');
             screen.setKeyboardState('connected');
             screen.setMouseState('paired');
+            screen.setTouchscreenDetectedState(false);
+            screen.setContinueButtonEnabled(true);
             screen.setPinDialogVisible(false);
           },
         },
@@ -134,10 +135,25 @@ cr.define('cr.ui.login.debug', function() {
             screen.setPointingDeviceName('Some Mouse');
             screen.setKeyboardState('pairing');
             screen.setMouseState('pairing');
+            screen.setTouchscreenDetectedState(false);
+            screen.setContinueButtonEnabled(false);
             screen.setPinDialogVisible(true);
             screen.setNumKeysEnteredPinCode(1);
           },
         },
+        {
+          id: 'touchscreen-detected',
+          trigger: (screen) => {
+            screen.setKeyboardDeviceName('Some Keyboard');
+            screen.setPointingDeviceName('Some Mouse');
+            screen.setKeyboardState('searching');
+            screen.setMouseState('searching');
+            screen.setTouchscreenDetectedState(true);
+            screen.setContinueButtonEnabled(true);
+            screen.setPinDialogVisible(false);
+          },
+        },
+
       ],
     },
     {
@@ -578,12 +594,12 @@ cr.define('cr.ui.login.debug', function() {
           },
         },
         {
-          // Retry after incorrect password attempt, user name is already known.
-          id: 'offline-gaia-user',
+          // Password and email mismatch error message.
+          id: 'offline-login-password-mismatch',
           trigger: (screen) => {
-            screen.loadParams({
-              email: 'someone@example.com',
-            });
+            screen.setEmailForTest('someuser@gmail.com');
+            screen.proceedToPasswordPage();
+            screen.showPasswordMismatchMessage();
           },
         },
       ],
@@ -821,14 +837,14 @@ cr.define('cr.ui.login.debug', function() {
         {
           id: 'loading',
           trigger: (screen) => {
-            screen.setManager('TestCompany');
+            screen.onBeforeShow({manager: 'TestCompany'});
             screen.setUIStep('loading');
           },
         },
         {
           id: 'loaded',
           trigger: (screen) => {
-            screen.setManager('TestCompany');
+            screen.onBeforeShow({manager: 'TestCompany'});
             screen.setTermsOfService('TOS BEGIN\nThese are the terms\nTOS END');
           },
         },
@@ -847,7 +863,7 @@ cr.define('cr.ui.login.debug', function() {
       states: [{
         id: 'minor-mode',
         data: {
-          splitSettingsSyncEnabled: false,
+          syncConsentOptionalEnabled: false,
           isMinorMode: true,
         },
       }]
@@ -921,12 +937,8 @@ cr.define('cr.ui.login.debug', function() {
         {
           id: '2-apps',
           trigger: (screen) => {
-            let newLayout = loadTimeData.valueExists('newLayoutEnabled') &&
-                loadTimeData.getBoolean('newLayoutEnabled');
             screen.reset();
-            screen.setWebview(
-                newLayout ? RECOMMENDED_APPS_CONTENT_NEW :
-                            RECOMMENDED_APPS_CONTENT);
+            screen.setWebview(RECOMMENDED_APPS_CONTENT);
             screen.loadAppList([
               {
                 name: 'Test app 1',
@@ -942,13 +954,9 @@ cr.define('cr.ui.login.debug', function() {
         {
           id: '21-apps',
           trigger: (screen) => {
-            let newLayout = loadTimeData.valueExists('newLayoutEnabled') &&
-                loadTimeData.getBoolean('newLayoutEnabled');
             // There can be up to 21 apps: see recommend_apps_fetcher_impl
             screen.reset();
-            screen.setWebview(
-                newLayout ? RECOMMENDED_APPS_CONTENT_NEW :
-                            RECOMMENDED_APPS_CONTENT);
+            screen.setWebview(RECOMMENDED_APPS_CONTENT);
             let apps = [];
             for (i = 1; i <= 21; i++) {
               apps.push({

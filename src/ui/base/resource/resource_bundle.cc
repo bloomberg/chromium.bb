@@ -532,10 +532,10 @@ gfx::Image& ResourceBundle::GetImageNamed(int resource_id) {
     DCHECK(!data_packs_.empty()) << "Missing call to SetResourcesDataDLL?";
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    ResourceScaleFactor scale_factor_to_load = GetMaxScaleFactor();
+    ResourceScaleFactor scale_factor_to_load = GetMaxResourceScaleFactor();
 #elif defined(OS_WIN)
     ResourceScaleFactor scale_factor_to_load =
-        display::win::GetDPIScale() > 1.25 ? GetMaxScaleFactor()
+        display::win::GetDPIScale() > 1.25 ? GetMaxResourceScaleFactor()
                                            : ui::SCALE_FACTOR_100P;
 #else
     ResourceScaleFactor scale_factor_to_load = ui::SCALE_FACTOR_100P;
@@ -813,7 +813,7 @@ void ResourceBundle::ReloadFonts() {
   font_cache_.clear();
 }
 
-ResourceScaleFactor ResourceBundle::GetMaxScaleFactor() const {
+ResourceScaleFactor ResourceBundle::GetMaxResourceScaleFactor() const {
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
   return max_scale_factor_;
 #else
@@ -1060,15 +1060,7 @@ std::u16string ResourceBundle::GetLocalizedStringImpl(int resource_id) const {
       // Fall back on the main data pack (shouldn't be any strings here except
       // in unittests).
       data = GetRawDataResource(resource_id);
-#if defined(OS_FUCHSIA)
-      CHECK(!data.empty());
-#else   // !defined(OS_FUCHSIA)
-      if (data.empty()) {
-        LOG(WARNING) << "unable to find resource: " << resource_id;
-        NOTREACHED();
-        return std::u16string();
-      }
-#endif  // !defined(OS_FUCHSIA)
+      CHECK(!data.empty()) << "Unable to find resource: " << resource_id;
     }
   }
 

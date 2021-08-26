@@ -19,11 +19,13 @@ ch-ua-mobile
 ch-ua-model
 ch-ua-platform
 ch-ua-platform-version
+ch-ua-reduced
 ch-viewport-width
 ch-width
 clipboard-read
 clipboard-write
 cross-origin-isolated
+display-capture
 document-domain
 encrypted-media
 fullscreen

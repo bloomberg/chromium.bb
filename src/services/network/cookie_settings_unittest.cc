@@ -390,60 +390,13 @@ TEST_F(CookieSettingsTest, LegacyCookieAccessDefault) {
   CookieSettings settings;
   ContentSetting setting;
 
-  // Test SameSite-by-default enabled (default semantics is NONLEGACY)
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(net::features::kSameSiteByDefaultCookies);
-    settings.GetSettingForLegacyCookieAccess(kDomain, &setting);
-    EXPECT_EQ(setting, CONTENT_SETTING_BLOCK);
-    EXPECT_EQ(net::CookieAccessSemantics::NONLEGACY,
-              settings.GetCookieAccessSemanticsForDomain(kDomain));
-  }
-
-  // Test SameSite-by-default disabled (default semantics is LEGACY)
-  // TODO(crbug.com/953306): Remove this when legacy code path is removed.
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndDisableFeature(
-        net::features::kSameSiteByDefaultCookies);
-    settings.GetSettingForLegacyCookieAccess(kDomain, &setting);
-    EXPECT_EQ(setting, CONTENT_SETTING_ALLOW);
-    EXPECT_EQ(net::CookieAccessSemantics::LEGACY,
-              settings.GetCookieAccessSemanticsForDomain(kDomain));
-  }
+  settings.GetSettingForLegacyCookieAccess(kDomain, &setting);
+  EXPECT_EQ(setting, CONTENT_SETTING_BLOCK);
+  EXPECT_EQ(net::CookieAccessSemantics::NONLEGACY,
+            settings.GetCookieAccessSemanticsForDomain(kDomain));
 }
 
-// Test SameSite-by-default disabled (default semantics is LEGACY)
-// TODO(crbug.com/953306): Remove this when legacy code path is removed.
-TEST_F(CookieSettingsTest,
-       CookieAccessSemanticsForDomain_SameSiteByDefaultDisabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(net::features::kSameSiteByDefaultCookies);
-  CookieSettings settings;
-  settings.set_content_settings_for_legacy_cookie_access(
-      {CreateSetting(kDomain, "*", CONTENT_SETTING_BLOCK)});
-  const struct {
-    net::CookieAccessSemantics status;
-    std::string cookie_domain;
-  } kTestCases[] = {
-      // These two test cases are NONLEGACY because they match the setting.
-      {net::CookieAccessSemantics::NONLEGACY, kDomain},
-      {net::CookieAccessSemantics::NONLEGACY, kDotDomain},
-      // These two test cases default into LEGACY.
-      // Subdomain does not match pattern.
-      {net::CookieAccessSemantics::LEGACY, kSubDomain},
-      {net::CookieAccessSemantics::LEGACY, kOtherDomain}};
-  for (const auto& test : kTestCases) {
-    EXPECT_EQ(test.status,
-              settings.GetCookieAccessSemanticsForDomain(test.cookie_domain));
-  }
-}
-
-// Test SameSite-by-default enabled (default semantics is NONLEGACY)
-TEST_F(CookieSettingsTest,
-       CookieAccessSemanticsForDomain_SameSiteByDefaultEnabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(net::features::kSameSiteByDefaultCookies);
+TEST_F(CookieSettingsTest, CookieAccessSemanticsForDomain) {
   CookieSettings settings;
   settings.set_content_settings_for_legacy_cookie_access(
       {CreateSetting(kDomain, "*", CONTENT_SETTING_ALLOW)});
@@ -464,37 +417,7 @@ TEST_F(CookieSettingsTest,
   }
 }
 
-// Test SameSite-by-default disabled (default semantics is LEGACY)
-// TODO(crbug.com/953306): Remove this when legacy code path is removed.
-TEST_F(CookieSettingsTest,
-       CookieAccessSemanticsForDomainWithWildcard_SameSiteByDefaultDisabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(net::features::kSameSiteByDefaultCookies);
-  CookieSettings settings;
-  settings.set_content_settings_for_legacy_cookie_access(
-      {CreateSetting(kDomainWildcardPattern, "*", CONTENT_SETTING_BLOCK)});
-  const struct {
-    net::CookieAccessSemantics status;
-    std::string cookie_domain;
-  } kTestCases[] = {
-      // These three test cases are NONLEGACY because they match the setting.
-      {net::CookieAccessSemantics::NONLEGACY, kDomain},
-      {net::CookieAccessSemantics::NONLEGACY, kDotDomain},
-      // Subdomain also matches pattern.
-      {net::CookieAccessSemantics::NONLEGACY, kSubDomain},
-      // This test case defaults into LEGACY.
-      {net::CookieAccessSemantics::LEGACY, kOtherDomain}};
-  for (const auto& test : kTestCases) {
-    EXPECT_EQ(test.status,
-              settings.GetCookieAccessSemanticsForDomain(test.cookie_domain));
-  }
-}
-
-// Test SameSite-by-default enabled (default semantics is NONLEGACY)
-TEST_F(CookieSettingsTest,
-       CookieAccessSemanticsForDomainWithWildcard_SameSiteByDefaultEnabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(net::features::kSameSiteByDefaultCookies);
+TEST_F(CookieSettingsTest, CookieAccessSemanticsForDomainWithWildcard) {
   CookieSettings settings;
   settings.set_content_settings_for_legacy_cookie_access(
       {CreateSetting(kDomainWildcardPattern, "*", CONTENT_SETTING_ALLOW)});
@@ -683,21 +606,15 @@ TEST_F(CookieSettingsTest, AnnotateAndMoveUserBlockedCookies) {
   settings.set_block_third_party_cookies(true);
 
   net::CookieAccessResultList maybe_included_cookies = {
-      (net::CookieWithAccessResult){
-          *MakeCanonicalCookie("third_party", kOtherURL, false /* sameparty */),
-          {}},
-      (net::CookieWithAccessResult){
-          *MakeCanonicalCookie("first_party", kURL, true /* sameparty */), {}},
-  };
+      {*MakeCanonicalCookie("third_party", kOtherURL, false /* sameparty */),
+       {}},
+      {*MakeCanonicalCookie("first_party", kURL, true /* sameparty */), {}}};
   net::CookieAccessResultList excluded_cookies = {
-      (net::CookieWithAccessResult){
-          *MakeCanonicalCookie("excluded_other", kURL, false /* sameparty */),
-          // The ExclusionReason below is irrelevant, as long as there is
-          // one.
-          net::CookieAccessResult(net::CookieInclusionStatus(
-              net::CookieInclusionStatus::ExclusionReason::
-                  EXCLUDE_SECURE_ONLY))},
-  };
+      {*MakeCanonicalCookie("excluded_other", kURL, false /* sameparty */),
+       // The ExclusionReason below is irrelevant, as long as there is
+       // one.
+       net::CookieAccessResult(net::CookieInclusionStatus(
+           net::CookieInclusionStatus::ExclusionReason::EXCLUDE_SECURE_ONLY))}};
   url::Origin origin = url::Origin::Create(GURL(kURL));
 
   EXPECT_FALSE(settings.AnnotateAndMoveUserBlockedCookies(
@@ -750,38 +667,29 @@ TEST_F(CookieSettingsTest,
   settings.set_block_third_party_cookies(true);
 
   net::CookieAccessResultList maybe_included_cookies = {
-      (net::CookieWithAccessResult){
-          *MakeCanonicalCookie("included_third_party", kFPSMemberURL,
-                               false /* sameparty */),
-          {}},
-      (net::CookieWithAccessResult){
-          *MakeCanonicalCookie("included_sameparty", kFPSMemberURL,
-                               true /* sameparty */),
-          {}},
-  };
+      {*MakeCanonicalCookie("included_third_party", kFPSMemberURL,
+                            false /* sameparty */),
+       {}},
+      {*MakeCanonicalCookie("included_sameparty", kFPSMemberURL,
+                            true /* sameparty */),
+       {}}};
 
   // The following exclusion reasons don't make sense when taken together;
   // they're just to exercise the SUT.
   net::CookieAccessResultList excluded_cookies = {
-      (net::CookieWithAccessResult){
-          *MakeCanonicalCookie("excluded_other", kFPSMemberURL,
-                               false /* sameparty */),
-          net::CookieAccessResult(net::CookieInclusionStatus(
-              net::CookieInclusionStatus::ExclusionReason::
-                  EXCLUDE_SECURE_ONLY))},
-      (net::CookieWithAccessResult){
-          *MakeCanonicalCookie("excluded_invalid_sameparty", kFPSMemberURL,
-                               true /* sameparty */),
-          net::CookieAccessResult(net::CookieInclusionStatus(
-              net::CookieInclusionStatus::ExclusionReason::
-                  EXCLUDE_SAMEPARTY_CROSS_PARTY_CONTEXT))},
-      (net::CookieWithAccessResult){
-          *MakeCanonicalCookie("excluded_valid_sameparty", kFPSMemberURL,
-                               true /* sameparty */),
-          net::CookieAccessResult(net::CookieInclusionStatus(
-              net::CookieInclusionStatus::ExclusionReason::
-                  EXCLUDE_SECURE_ONLY))},
-  };
+      {*MakeCanonicalCookie("excluded_other", kFPSMemberURL,
+                            false /* sameparty */),
+       net::CookieAccessResult(net::CookieInclusionStatus(
+           net::CookieInclusionStatus::ExclusionReason::EXCLUDE_SECURE_ONLY))},
+      {*MakeCanonicalCookie("excluded_invalid_sameparty", kFPSMemberURL,
+                            true /* sameparty */),
+       net::CookieAccessResult(net::CookieInclusionStatus(
+           net::CookieInclusionStatus::ExclusionReason::
+               EXCLUDE_SAMEPARTY_CROSS_PARTY_CONTEXT))},
+      {*MakeCanonicalCookie("excluded_valid_sameparty", kFPSMemberURL,
+                            true /* sameparty */),
+       net::CookieAccessResult(net::CookieInclusionStatus(
+           net::CookieInclusionStatus::ExclusionReason::EXCLUDE_SECURE_ONLY))}};
 
   const url::Origin fps_owner_origin = url::Origin::Create(GURL(kFPSOwnerURL));
   EXPECT_TRUE(settings.AnnotateAndMoveUserBlockedCookies(

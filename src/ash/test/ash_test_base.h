@@ -28,6 +28,7 @@
 #include "ui/aura/client/window_types.h"
 #include "ui/aura/env.h"
 #include "ui/display/display.h"
+#include "ui/events/event_constants.h"
 #include "ui/events/test/event_generator.h"
 
 namespace aura {
@@ -70,7 +71,6 @@ class AmbientAshTestHelper;
 class AppListTestHelper;
 class AshTestHelper;
 class Shelf;
-class TestScreenshotDelegate;
 class TestShellDelegate;
 class TestSystemTrayClient;
 class UnifiedSystemTray;
@@ -189,6 +189,9 @@ class AshTestBase : public testing::Test {
   bool TestIfMouseWarpsAt(ui::test::EventGenerator* event_generator,
                           const gfx::Point& point_in_screen);
 
+  // Presses and releases a key to simulate typing one character.
+  void PressAndReleaseKey(ui::KeyboardCode key_code, int flags = ui::EF_NONE);
+
   // Moves the mouse to the center of the view and generates a left button click
   // event.
   void SimulateMouseClickAt(ui::test::EventGenerator* event_generator,
@@ -226,8 +229,6 @@ class AshTestBase : public testing::Test {
   void SetUserPref(const std::string& user_email,
                    const std::string& path,
                    const base::Value& value);
-
-  TestScreenshotDelegate* GetScreenshotDelegate();
 
   TestSessionControllerClient* GetSessionControllerClient();
 

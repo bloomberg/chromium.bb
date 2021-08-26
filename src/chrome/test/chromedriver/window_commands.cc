@@ -107,8 +107,9 @@ Status GetUrl(WebView* web_view, const std::string& frame, std::string* url) {
       frame, "function() { return document.URL; }", args, &value);
   if (status.IsError())
     return status;
-  if (!value->GetAsString(url))
+  if (!value->is_string())
     return Status(kUnknownError, "javascript failed to return the url");
+  *url = value->GetString();
   return Status(kOk);
 }
 
@@ -604,7 +605,6 @@ Status ParsePageRanges(const base::DictionaryValue& params,
   }
 
   std::vector<std::string> ranges;
-  std::string pages_str;
   for (const base::Value& page_range : page_range_list->GetList()) {
     if (page_range.is_int()) {
       if (page_range.GetInt() < 0) {
@@ -612,8 +612,8 @@ Status ParsePageRanges(const base::DictionaryValue& params,
                       "a Number entry in 'pageRanges' must not be less than 0");
       }
       ranges.push_back(base::NumberToString(page_range.GetInt()));
-    } else if (page_range.GetAsString(&pages_str)) {
-      ranges.push_back(pages_str);
+    } else if (page_range.is_string()) {
+      ranges.push_back(page_range.GetString());
     } else {
       return Status(kInvalidArgument,
                     "an entry in 'pageRanges' must be a Number or String");
@@ -1709,7 +1709,6 @@ Status ExecutePerformActions(Session* session,
               }
             }
           } else if (type == "pointer" || type == "wheel") {
-            OriginType origin = kViewPort;
             std::string element_id;
             if (action_type == "pointerMove" || action_type == "scroll") {
               double x = action->FindDoubleKey("x").value_or(0);
@@ -1717,7 +1716,6 @@ Status ExecutePerformActions(Session* session,
               const base::DictionaryValue* origin_dict;
               if (action->FindKey("origin")) {
                 if (action->GetDictionary("origin", &origin_dict)) {
-                  origin = kElement;
                   origin_dict->GetString(GetElementKey(), &element_id);
                   if (!element_id.empty()) {
                     int center_x = 0, center_y = 0;
@@ -1732,7 +1730,6 @@ Status ExecutePerformActions(Session* session,
                   std::string origin_str;
                   action->GetString("origin", &origin_str);
                   if (origin_str == "pointer") {
-                    origin = kPointer;
                     x += action_locations[id].x();
                     y += action_locations[id].y();
                   }

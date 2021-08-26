@@ -74,6 +74,7 @@ class FrameSchedulerImpl;
 class PageSchedulerImpl;
 class TaskQueueThrottler;
 class WebRenderWidgetSchedulingState;
+class CPUTimeBudgetPool;
 
 class PLATFORM_EXPORT MainThreadSchedulerImpl
     : public ThreadSchedulerImpl,
@@ -231,7 +232,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   std::unique_ptr<ThreadScheduler::RendererPauseHandle> PauseScheduler()
       override;
   base::TimeTicks MonotonicallyIncreasingVirtualTime() override;
-  WebThreadScheduler* GetWebMainThreadSchedulerForTest() override;
   NonMainThreadSchedulerImpl* AsNonMainThreadScheduler() override {
     return nullptr;
   }
@@ -295,16 +295,9 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   using VirtualTimePolicy = PageScheduler::VirtualTimePolicy;
 
-  using BaseTimeOverridePolicy =
-      AutoAdvancingVirtualTimeDomain::BaseTimeOverridePolicy;
-
-  // Tells the scheduler that all TaskQueues should use virtual time. Depending
-  // on the initial time, picks the policy to be either overriding or not.
-  base::TimeTicks EnableVirtualTime();
-
   // Tells the scheduler that all TaskQueues should use virtual time. Returns
   // the base::TimeTicks that virtual time offsets will be relative to.
-  base::TimeTicks EnableVirtualTime(BaseTimeOverridePolicy policy);
+  base::TimeTicks EnableVirtualTime();
   bool IsVirtualTimeEnabled() const;
 
   // Migrates all task queues to real time.
@@ -369,9 +362,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   AutoAdvancingVirtualTimeDomain* GetVirtualTimeDomain();
 
-  TaskQueueThrottler* task_queue_throttler() const {
-    return task_queue_throttler_.get();
-  }
+  std::unique_ptr<CPUTimeBudgetPool> CreateCPUTimeBudgetPoolForTesting(
+      const char* name);
 
   // Virtual for test.
   virtual void OnMainFramePaint();
@@ -483,6 +475,9 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     kVirtual,
   };
 
+  // WebThreadScheduler private implementation:
+  WebThreadScheduler* GetWebMainThreadScheduler() override;
+
   static const char* TimeDomainTypeToString(TimeDomainType domain_type);
 
   void AddAgentGroupScheduler(AgentGroupSchedulerImpl*);
@@ -514,11 +509,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
     RAILMode& rail_mode() { return rail_mode_; }
     RAILMode rail_mode() const { return rail_mode_; }
-
-    bool& should_disable_throttling() { return should_disable_throttling_; }
-    bool should_disable_throttling() const {
-      return should_disable_throttling_;
-    }
 
     bool& frozen_when_backgrounded() { return frozen_when_backgrounded_; }
     bool frozen_when_backgrounded() const { return frozen_when_backgrounded_; }
@@ -566,7 +556,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
     bool operator==(const Policy& other) const {
       return rail_mode_ == other.rail_mode_ &&
-             should_disable_throttling_ == other.should_disable_throttling_ &&
              frozen_when_backgrounded_ == other.frozen_when_backgrounded_ &&
              should_prioritize_loading_with_compositing_ ==
                  other.should_prioritize_loading_with_compositing_ &&
@@ -589,7 +578,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
    private:
     RAILMode rail_mode_{RAILMode::kAnimation};
-    bool should_disable_throttling_{false};
     bool frozen_when_backgrounded_{false};
     bool should_prioritize_loading_with_compositing_{false};
     bool should_freeze_compositor_task_queue_{false};
@@ -623,8 +611,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   void OnIdlePeriodStarted() override;
   void OnIdlePeriodEnded() override;
   void OnPendingTasksChanged(bool has_tasks) override;
-  void OnSafepointEntered() override;
-  void OnSafepointExited() override;
 
   void DispatchRequestBeginMainFrameNotExpected(bool has_tasks);
 
@@ -803,7 +789,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   MainThreadSchedulerHelper helper_;
   scoped_refptr<MainThreadTaskQueue> idle_helper_queue_;
   IdleHelper idle_helper_;
-  std::unique_ptr<TaskQueueThrottler> task_queue_throttler_;
   RenderWidgetSignals render_widget_scheduler_signals_;
 
   std::unique_ptr<FindInPageBudgetPoolController>

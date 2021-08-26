@@ -6,18 +6,22 @@
 
 #include <memory>
 
+#include "ash/constants/ash_features.h"
 #include "base/strings/strcat.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_chromeos.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/app_service_test.h"
 #include "chrome/browser/apps/app_service/webapk/webapk_install_queue.h"
 #include "chrome/browser/apps/app_service/webapk/webapk_install_task.h"
 #include "chrome/browser/apps/app_service/webapk/webapk_prefs.h"
+#include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/browser/web_applications/test/test_web_app_provider.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/test/fake_app_instance.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -56,6 +60,11 @@ class WebApkManagerTest : public testing::Test {
 
   void SetUp() override {
     testing::Test::SetUp();
+    // Disable the WebAPKs feature so that App Service does not start a
+    // WebApkManager which interferes with the test.
+    // TODO(crbug.com/1234279): Reuse the WebApkManager from App Service
+    // instead.
+    scoped_feature_list_.InitAndDisableFeature(ash::features::kWebApkGenerator);
 
     arc_test_.SetUp(&profile_);
 
@@ -94,6 +103,7 @@ class WebApkManagerTest : public testing::Test {
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
   content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
   ArcAppTest arc_test_;
@@ -259,4 +269,42 @@ TEST_F(WebApkManagerTest, QueuesPendingUpdateOnStartup) {
   ASSERT_TRUE(install_task);
   ASSERT_EQ(install_task->app_id(), app_id_1);
   AssertNoPendingInstalls();
+}
+
+TEST_F(WebApkManagerTest, IgnoresInstallsWhilePlayStoreDisabled) {
+  StartWebApkManager();
+
+  arc::SetArcPlayStoreEnabledForProfile(profile(), /*enabled=*/false);
+
+  auto app_id =
+      web_app::test::InstallWebApp(profile(), BuildDefaultWebAppInfo());
+  app_service_test()->FlushMojoCalls();
+
+  AssertNoPendingInstalls();
+}
+
+TEST_F(WebApkManagerTest, IgnoresInstallsWhilePolicyDisabled) {
+  StartWebApkManager();
+  profile()->GetPrefs()->SetBoolean(
+      apps::webapk_prefs::kGeneratedWebApksEnabled, false);
+
+  auto app_id =
+      web_app::test::InstallWebApp(profile(), BuildDefaultWebAppInfo());
+  app_service_test()->FlushMojoCalls();
+
+  AssertNoPendingInstalls();
+}
+
+TEST_F(WebApkManagerTest, RemovesWebApksWhenPolicyDisabled) {
+  auto app_id =
+      web_app::test::InstallWebApp(profile(), BuildDefaultWebAppInfo());
+  apps::webapk_prefs::AddWebApk(profile(), app_id, kTestWebApkPackageName);
+  arc_test()->app_instance()->SendRefreshPackageList({});
+
+  StartWebApkManager();
+  profile()->GetPrefs()->SetBoolean(
+      apps::webapk_prefs::kGeneratedWebApksEnabled, false);
+
+  ASSERT_THAT(apps::webapk_prefs::GetWebApkAppIds(profile()),
+              testing::IsEmpty());
 }

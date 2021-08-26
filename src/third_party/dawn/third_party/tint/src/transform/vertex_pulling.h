@@ -63,7 +63,7 @@ enum class VertexFormat {
 
 /// Describes if a vertex attributes increments with vertex index or instance
 /// index
-enum class InputStepMode { kVertex, kInstance, kLastEntry = kInstance };
+enum class VertexStepMode { kVertex, kInstance, kLastEntry = kInstance };
 
 /// Describes a vertex attribute within a buffer
 struct VertexAttributeDescriptor {
@@ -85,7 +85,7 @@ struct VertexBufferLayoutDescriptor {
   /// @param in_attributes the in attributes
   VertexBufferLayoutDescriptor(
       uint32_t in_array_stride,
-      InputStepMode in_step_mode,
+      VertexStepMode in_step_mode,
       std::vector<VertexAttributeDescriptor> in_attributes);
   /// Copy constructor
   /// @param other the struct to copy
@@ -102,7 +102,7 @@ struct VertexBufferLayoutDescriptor {
   /// The array stride used in the in buffer
   uint32_t array_stride = 0u;
   /// The input step mode used
-  InputStepMode step_mode = InputStepMode::kVertex;
+  VertexStepMode step_mode = VertexStepMode::kVertex;
   /// The vertex attributes
   std::vector<VertexAttributeDescriptor> attributes;
 };

@@ -83,8 +83,8 @@ namespace SK_OPTS_NS {
         for ( ; n > 0; start = loop, n -= stride, step_args(stride)) {
             stride = n >= K ? K : 1;
 
-            for (int i = start; i < ninsts; i++) {
-                InterpreterInstruction inst = insts[i];
+            for (int instIdx = start; instIdx < ninsts; instIdx++) {
+                InterpreterInstruction inst = insts[instIdx];
 
                 // d = op(x,y,z,w, immA,immB)
                 Reg   d = inst.d,
@@ -93,7 +93,8 @@ namespace SK_OPTS_NS {
                       z = inst.z,
                       w = inst.w;
                 int immA = inst.immA,
-                    immB = inst.immB;
+                    immB = inst.immB,
+                    immC = inst.immC;
 
                 // Ops that interact with memory need to know whether we're stride=1 or K,
                 // but all non-memory ops can run the same code no matter the stride.
@@ -193,9 +194,10 @@ namespace SK_OPTS_NS {
                     CASE(Op::assert_true):
                     #ifdef SK_DEBUG
                         if (!all(r[x].i32)) {
-                            SkDebugf("inst %d, register %d\n", i, y);
+                            SkDebugf("inst %d, register %d\n", instIdx, y);
                             for (int i = 0; i < K; i++) {
-                                SkDebugf("\t%2d: %08x (%g)\n", i, r[y].i32[i], r[y].f32[i]);
+                                SkDebugf("\t%2d: %08x (%g)\n",
+                                         instIdx, r[y].i32[instIdx], r[y].f32[instIdx]);
                             }
                             SkASSERT(false);
                         }
@@ -214,6 +216,12 @@ namespace SK_OPTS_NS {
 
                     CASE(Op::uniform32):
                         r[d].i32 = *(const int*)( (const char*)args[immA] + immB );
+                        break;
+
+                    CASE(Op::array32):
+                        const int* ptr;
+                        memcpy(&ptr, (const uint8_t*)args[immA] + immB, sizeof(ptr));
+                        r[d].i32 = ptr[immC/sizeof(int)];
                         break;
 
                     CASE(Op::splat): r[d].i32 = immA; break;

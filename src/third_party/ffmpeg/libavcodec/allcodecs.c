@@ -24,9 +24,13 @@
  * Provide registration of all codecs, parsers and bitstream filters for libavcodec.
  */
 
+#include <stdint.h>
+#include <string.h>
+
 #include "config.h"
 #include "libavutil/thread.h"
-#include "avcodec.h"
+#include "codec.h"
+#include "codec_id.h"
 
 extern const AVCodec ff_a64multi_encoder;
 extern const AVCodec ff_a64multi5_encoder;
@@ -766,10 +770,11 @@ extern const AVCodec ff_libx262_encoder;
 #if CONFIG_LIBX264_ENCODER
 #include <x264.h>
 #if X264_BUILD < 153
-extern AVCodec ff_libx264_encoder;
+#define LIBX264_CONST
 #else
-extern const AVCodec ff_libx264_encoder;
+#define LIBX264_CONST const
 #endif
+extern LIBX264_CONST AVCodec ff_libx264_encoder;
 #endif
 extern const AVCodec ff_libx264rgb_encoder;
 extern AVCodec ff_libx265_encoder;

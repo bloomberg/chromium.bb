@@ -26,8 +26,10 @@
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace optimization_guide {
 
@@ -151,7 +153,7 @@ void HintsFetcher::ClearSingleFetchedHost(PrefService* pref_service,
                                           const std::string& host) {
   DictionaryPrefUpdate hosts_fetched_list(
       pref_service, prefs::kHintsFetcherHostsSuccessfullyFetched);
-  hosts_fetched_list->Remove(HashHostForDictionary(host), nullptr);
+  hosts_fetched_list->RemovePath(HashHostForDictionary(host));
 }
 
 // static
@@ -375,7 +377,7 @@ void HintsFetcher::UpdateHostsSuccessfullyFetched(
     }
   }
   for (const auto& host : entries_to_remove) {
-    hosts_fetched_list->Remove(host, nullptr);
+    hosts_fetched_list->RemovePath(host);
   }
 
   if (hosts_fetched_.empty())
@@ -395,7 +397,7 @@ void HintsFetcher::UpdateHostsSuccessfullyFetched(
       entries_to_remove.emplace_back(it.first);
     }
     for (const auto& host : entries_to_remove) {
-      hosts_fetched_list->Remove(host, nullptr);
+      hosts_fetched_list->RemovePath(host);
     }
   }
 

@@ -18,7 +18,6 @@
 #include "api/transport/network_types.h"
 #include "modules/audio_mixer/audio_mixer_impl.h"
 #include "modules/rtp_rtcp/source/rtp_util.h"
-#include "test/rtp_header_parser.h"
 
 namespace webrtc {
 namespace test {
@@ -259,7 +258,7 @@ ColumnPrinter CallClient::StatsPrinter() {
 }
 
 Call::Stats CallClient::GetStats() {
-  // This call needs to be made on the thread that |call_| was constructed on.
+  // This call needs to be made on the thread that `call_` was constructed on.
   Call::Stats stats;
   SendTask([this, &stats] { stats = call_->GetStats(); });
   return stats;
@@ -295,9 +294,7 @@ void CallClient::UpdateBitrateConstraints(
 void CallClient::OnPacketReceived(EmulatedIpPacket packet) {
   MediaType media_type = MediaType::ANY;
   if (IsRtpPacket(packet.data)) {
-    auto ssrc = RtpHeaderParser::GetSsrc(packet.cdata(), packet.data.size());
-    RTC_CHECK(ssrc.has_value());
-    media_type = ssrc_media_types_[*ssrc];
+    media_type = ssrc_media_types_[ParseRtpSsrc(packet.data)];
   }
   task_queue_.PostTask(
       [call = call_.get(), media_type, packet = std::move(packet)]() mutable {

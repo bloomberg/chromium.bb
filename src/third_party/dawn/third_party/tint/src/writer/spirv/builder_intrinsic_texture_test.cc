@@ -473,6 +473,26 @@ OpCapability ImageQuery
 OpCapability SampledCubeArray
 OpCapability ImageQuery
 )"};
+    case ValidTextureOverload::kDimensionsDepthMultisampled2d:
+      return {
+          R"(
+%4 = OpTypeFloat 32
+%3 = OpTypeImage %4 2D 1 0 1 1 Unknown
+%2 = OpTypePointer UniformConstant %3
+%1 = OpVariable %2 UniformConstant
+%7 = OpTypeSampler
+%6 = OpTypePointer UniformConstant %7
+%5 = OpVariable %6 UniformConstant
+%10 = OpTypeInt 32 1
+%9 = OpTypeVector %10 2
+)",
+          R"(
+%11 = OpLoad %3 %1
+%8 = OpImageQuerySize %9 %11
+)",
+          R"(
+OpCapability ImageQuery
+)"};
     case ValidTextureOverload::kDimensionsStorageRO1d:
       return {
           R"(
@@ -911,6 +931,24 @@ OpCapability ImageQuery
       return {R"(
 %4 = OpTypeFloat 32
 %3 = OpTypeImage %4 2D 0 0 1 1 Unknown
+%2 = OpTypePointer UniformConstant %3
+%1 = OpVariable %2 UniformConstant
+%7 = OpTypeSampler
+%6 = OpTypePointer UniformConstant %7
+%5 = OpVariable %6 UniformConstant
+%9 = OpTypeInt 32 1
+)",
+              R"(
+%10 = OpLoad %3 %1
+%8 = OpImageQuerySamples %9 %10
+)",
+              R"(
+OpCapability ImageQuery
+)"};
+    case ValidTextureOverload::kNumSamplesDepthMultisampled2d:
+      return {R"(
+%4 = OpTypeFloat 32
+%3 = OpTypeImage %4 2D 1 0 1 1 Unknown
 %2 = OpTypePointer UniformConstant %3
 %1 = OpVariable %2 UniformConstant
 %7 = OpTypeSampler
@@ -2070,14 +2108,13 @@ OpCapability SampledCubeArray
 %25 = OpTypeInt 32 1
 %24 = OpTypeVector %25 2
 %26 = OpConstant %25 7
-%27 = OpConstant %25 8
-%28 = OpConstantComposite %24 %26 %27
+%27 = OpConstantComposite %24 %26 %26
 )",
           R"(
 %10 = OpLoad %7 %5
 %11 = OpLoad %3 %1
 %13 = OpSampledImage %12 %11 %10
-%8 = OpImageSampleExplicitLod %9 %13 %17 Grad|ConstOffset %20 %23 %28
+%8 = OpImageSampleExplicitLod %9 %13 %17 Grad|ConstOffset %20 %23 %27
 )",
           R"(
 )"};
@@ -2141,8 +2178,8 @@ OpCapability SampledCubeArray
 %26 = OpConstant %4 7
 %27 = OpConstantComposite %21 %25 %26
 %28 = OpTypeVector %18 2
-%29 = OpConstant %18 8
-%30 = OpConstant %18 9
+%29 = OpConstant %18 6
+%30 = OpConstant %18 7
 %31 = OpConstantComposite %28 %29 %30
 )",
           R"(
@@ -2216,9 +2253,9 @@ OpCapability SampledCubeArray
 %26 = OpConstantComposite %14 %23 %24 %25
 %28 = OpTypeInt 32 1
 %27 = OpTypeVector %28 3
-%29 = OpConstant %28 10
-%30 = OpConstant %28 11
-%31 = OpConstant %28 12
+%29 = OpConstant %28 0
+%30 = OpConstant %28 1
+%31 = OpConstant %28 2
 %32 = OpConstantComposite %27 %29 %30 %31
 )",
           R"(
@@ -3055,6 +3092,32 @@ OpCapability Sampled1D
 )",
           R"(
 )"};
+    case ValidTextureOverload::kLoadDepthMultisampled2dF32:
+      return {
+          R"(
+%4 = OpTypeFloat 32
+%3 = OpTypeImage %4 2D 1 1 0 1 Unknown
+%2 = OpTypePointer UniformConstant %3
+%1 = OpVariable %2 UniformConstant
+%7 = OpTypeSampler
+%6 = OpTypePointer UniformConstant %7
+%5 = OpVariable %6 UniformConstant
+%10 = OpTypeVector %4 4
+%13 = OpTypeInt 32 1
+%12 = OpTypeVector %13 3
+%14 = OpConstant %13 1
+%15 = OpConstant %13 2
+%16 = OpConstant %13 3
+%17 = OpConstantComposite %12 %14 %15 %16
+%18 = OpConstant %13 4
+)",
+          R"(
+%11 = OpLoad %3 %1
+%9 = OpImageFetch %10 %11 %17 Sample %18
+%8 = OpCompositeExtract %4 %9 0
+)",
+          R"(
+)"};
     case ValidTextureOverload::kLoadStorageRO1dRgba32float:
       return {
           R"(
@@ -3628,9 +3691,10 @@ TEST_P(IntrinsicTextureTest, Call) {
   auto* sampler = param.buildSamplerVariable(this);
 
   auto* call = Call(param.function, param.args(this));
-
-  Func("func", {}, ty.void_(), {Ignore(call)},
-       {create<ast::StageDecoration>(ast::PipelineStage::kFragment)});
+  auto* stmt = ast::intrinsic::test::ReturnsVoid(param.overload)
+                   ? create<ast::CallStatement>(call)
+                   : Ignore(call);
+  Func("func", {}, ty.void_(), {stmt}, {Stage(ast::PipelineStage::kFragment)});
 
   spirv::Builder& b = Build();
 
@@ -3656,13 +3720,10 @@ TEST_P(IntrinsicTextureTest, ValidateSPIRV) {
 
   auto* call = Call(param.function, param.args(this));
 
-  Func("main", ast::VariableList{}, ty.void_(),
-       ast::StatementList{
-           Ignore(call),
-       },
-       ast::DecorationList{
-           Stage(ast::PipelineStage::kFragment),
-       });
+  auto* stmt = ast::intrinsic::test::ReturnsVoid(param.overload)
+                   ? create<ast::CallStatement>(call)
+                   : Ignore(call);
+  Func("main", {}, ty.void_(), {stmt}, {Stage(ast::PipelineStage::kFragment)});
 
   spirv::Builder& b = Build();
 
@@ -3681,7 +3742,10 @@ TEST_P(IntrinsicTextureTest, OutsideFunction_IsError) {
   auto* sampler = param.buildSamplerVariable(this);
 
   auto* call = Call(param.function, param.args(this));
-  Func("func", {}, ty.void_(), {Ignore(call)},
+  auto* stmt = ast::intrinsic::test::ReturnsVoid(param.overload)
+                   ? create<ast::CallStatement>(call)
+                   : Ignore(call);
+  Func("func", {}, ty.void_(), {stmt},
        {create<ast::StageDecoration>(ast::PipelineStage::kFragment)});
 
   spirv::Builder& b = Build();

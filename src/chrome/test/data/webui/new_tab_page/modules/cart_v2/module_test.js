@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {$$, chromeCartV2Descriptor, ChromeCartProxy} from 'chrome://new-tab-page/new_tab_page.js';
+import {$$, ChromeCartProxy, chromeCartV2Descriptor} from 'chrome://new-tab-page/new_tab_page.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {fakeMetricsPrivate, MetricsTracker} from 'chrome://test/new_tab_page/metrics_test_support.js';
 import {assertNotStyle} from 'chrome://test/new_tab_page/test_support.js';
-import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.js';
 import {eventToPromise, flushTasks, isVisible} from 'chrome://test/test_util.m.js';
 
 suite('NewTabPageModulesChromeCartModuleTest', () => {
@@ -83,9 +83,18 @@ suite('NewTabPageModulesChromeCartModuleTest', () => {
             {url: 'https://image8.com'}, {url: 'https://image9.com'}
           ],
         },
+        {
+          merchant: 'Nike',
+          cartUrl: {url: 'https://nike.com'},
+          productImageUrls: [{url: 'https://image10.com'}],
+        },
       ];
       testProxy.handler.setResultFor(
           'getMerchantCarts', Promise.resolve({carts}));
+      loadTimeData.overrideValues({
+        modulesCartItemCountSingular: '$1 item',
+        modulesCartItemCountMultiple: '$1 items',
+      });
 
       // Act.
       const moduleElement = await chromeCartV2Descriptor.initialize();
@@ -94,14 +103,14 @@ suite('NewTabPageModulesChromeCartModuleTest', () => {
 
       // Assert.
       const cartItems = moduleElement.shadowRoot.querySelectorAll('.cart-item');
-      assertEquals(4, cartItems.length);
+      assertEquals(5, cartItems.length);
       assertEquals(446, moduleElement.offsetHeight);
-      assertEquals(1, metrics.count('NewTabPage.Carts.CartCount', 4));
+      assertEquals(1, metrics.count('NewTabPage.Carts.CartCount', 5));
 
       assertEquals('https://amazon.com/', cartItems[0].href);
       assertEquals('Amazon', cartItems[0].querySelector('.merchant').innerText);
       let itemCount = cartItems[0].querySelector('.item-count').innerText;
-      assertEquals('3', itemCount.slice(-1));
+      assertEquals('3 items', itemCount);
       let thumbnailList =
           cartItems[0].querySelector('.thumbnail-list').querySelectorAll('img');
       assertEquals(3, thumbnailList.length);
@@ -113,7 +122,7 @@ suite('NewTabPageModulesChromeCartModuleTest', () => {
       assertEquals('https://ebay.com/', cartItems[1].href);
       assertEquals('eBay', cartItems[1].querySelector('.merchant').innerText);
       itemCount = cartItems[1].querySelector('.item-count').innerText;
-      assertEquals('2', itemCount.slice(-1));
+      assertEquals('2 items', itemCount);
       thumbnailList =
           cartItems[1].querySelector('.thumbnail-list').querySelectorAll('img');
       assertEquals(2, thumbnailList.length);
@@ -134,7 +143,7 @@ suite('NewTabPageModulesChromeCartModuleTest', () => {
       assertEquals(
           'Walmart', cartItems[3].querySelector('.merchant').innerText);
       itemCount = cartItems[3].querySelector('.item-count').innerText;
-      assertEquals('4', itemCount.slice(-1));
+      assertEquals('4 items', itemCount);
       thumbnailList =
           cartItems[3].querySelector('.thumbnail-list').querySelectorAll('img');
       assertEquals(3, thumbnailList.length);
@@ -142,40 +151,16 @@ suite('NewTabPageModulesChromeCartModuleTest', () => {
       assertEquals('https://image7.com', thumbnailList[1].autoSrc);
       assertEquals('https://image8.com', thumbnailList[2].autoSrc);
       assertEquals(null, cartItems[1].querySelector('.thumbnail-fallback'));
-    });
 
-    // TODO: Add warm welcome and enable test.
-    test.skip('shows welcome surface in cart module', async () => {
-      const carts = [
-        {
-          merchant: 'Foo',
-          cartUrl: {url: 'https://foo.com'},
-          productImageUrls: [],
-        },
-      ];
-      testProxy.handler.setResultFor(
-          'getMerchantCarts', Promise.resolve({carts}));
-      testProxy.handler.setResultFor(
-          'getWarmWelcomeVisible', Promise.resolve({welcomeVisible: true}));
-
-      // Arrange.
-      const moduleElement = await chromeCartV2Descriptor.initialize();
-      document.body.append(moduleElement);
-      moduleElement.$.cartItemRepeat.render();
-
-      // Assert.
-      const headerChip =
-          moduleElement.shadowRoot.querySelector('ntp-module-header')
-              .shadowRoot.querySelector('#chip');
-      const headerDescription =
-          moduleElement.shadowRoot.querySelector('ntp-module-header')
-              .shadowRoot.querySelector('#description');
-      assertEquals(
-          loadTimeData.getString('modulesCartHeaderNew'), headerChip.innerText);
-      assertEquals(
-          loadTimeData.getString('modulesCartWarmWelcome'),
-          headerDescription.innerText);
-      assertEquals(227, moduleElement.offsetHeight);
+      assertEquals('https://nike.com/', cartItems[4].href);
+      assertEquals('Nike', cartItems[4].querySelector('.merchant').innerText);
+      itemCount = cartItems[4].querySelector('.item-count').innerText;
+      assertEquals('1 item', itemCount);
+      thumbnailList =
+          cartItems[4].querySelector('.thumbnail-list').querySelectorAll('img');
+      assertEquals(1, thumbnailList.length);
+      assertEquals('https://image10.com', thumbnailList[0].autoSrc);
+      assertEquals(null, cartItems[4].querySelector('.thumbnail-fallback'));
     });
 
     test(
@@ -410,15 +395,14 @@ suite('NewTabPageModulesChromeCartModuleTest', () => {
           1, metrics.count('NewTabPage.Carts.RestoreLastCartRestoresModule'));
     });
 
-    // TODO(crbug.com/1227093): Fix cart module carousel and enable test.
-    test.skip('scroll with full width module', async () => {
+    test('scroll through module with full columns of 3 carts', async () => {
       // Arrange.
       const dummyMerchant = {
         merchant: 'Dummy',
         cartUrl: {url: 'https://dummy.com'},
         productImageUrls: [],
       };
-      const carts = Array.from({length: 10}, () => dummyMerchant);
+      const carts = Array.from({length: 9}, () => dummyMerchant);
       testProxy.handler.setResultFor(
           'getMerchantCarts', Promise.resolve({carts}));
 
@@ -436,87 +420,85 @@ suite('NewTabPageModulesChromeCartModuleTest', () => {
 
       // Assert.
       const cartItems = moduleElement.shadowRoot.querySelectorAll('.cart-item');
-      assertEquals(10, cartItems.length);
+      assertEquals(9, cartItems.length);
 
       // Act.
-      let waitForLeftScrollVisibilityChange =
+      let waitForLeftScrollEnableChange =
           eventToPromise('left-scroll-hide', moduleElement);
-      let waitForRightScrollVisibilityChange =
+      let waitForRightScrollEnableChange =
           eventToPromise('right-scroll-show', moduleElement);
-      moduleElement.style.width = '560px';
-      await waitForLeftScrollVisibilityChange;
-      await waitForRightScrollVisibilityChange;
+      await waitForLeftScrollEnableChange;
+      await waitForRightScrollEnableChange;
 
       // Assert.
-      checkScrollButtonVisibility(moduleElement, false, true);
-      checkVisibleRange(moduleElement, 0, 3);
+      checkScrollButtonDisabled(moduleElement, true, false);
+      checkVisibleRange(moduleElement, 0, 2);
 
       // Act.
-      waitForLeftScrollVisibilityChange =
+      waitForLeftScrollEnableChange =
           eventToPromise('left-scroll-show', moduleElement);
       let waitForScrollFinished =
           eventToPromise('scroll-finish', moduleElement);
       moduleElement.shadowRoot.querySelector('#rightScrollButton').click();
       await waitForScrollFinished;
-      await waitForLeftScrollVisibilityChange;
+      await waitForLeftScrollEnableChange;
 
       // Assert.
-      checkScrollButtonVisibility(moduleElement, true, true);
-      checkVisibleRange(moduleElement, 4, 7);
+      checkScrollButtonDisabled(moduleElement, false, false);
+      checkVisibleRange(moduleElement, 3, 5);
       assertEquals(1, metrics.count('NewTabPage.Carts.RightScrollClick'));
 
       // Act.
-      waitForRightScrollVisibilityChange =
+      waitForRightScrollEnableChange =
           eventToPromise('right-scroll-hide', moduleElement);
       waitForScrollFinished = eventToPromise('scroll-finish', moduleElement);
       moduleElement.shadowRoot.querySelector('#rightScrollButton').click();
       await waitForScrollFinished;
-      await waitForRightScrollVisibilityChange;
+      await waitForRightScrollEnableChange;
 
       // Assert.
-      checkScrollButtonVisibility(moduleElement, true, false);
-      checkVisibleRange(moduleElement, 6, 9);
+      checkScrollButtonDisabled(moduleElement, false, true);
+      checkVisibleRange(moduleElement, 6, 8);
       assertEquals(2, metrics.count('NewTabPage.Carts.RightScrollClick'));
 
       // Act.
-      waitForRightScrollVisibilityChange =
+      waitForRightScrollEnableChange =
           eventToPromise('right-scroll-show', moduleElement);
       waitForScrollFinished = eventToPromise('scroll-finish', moduleElement);
       moduleElement.shadowRoot.querySelector('#leftScrollButton').click();
       await waitForScrollFinished;
-      await waitForRightScrollVisibilityChange;
+      await waitForRightScrollEnableChange;
 
       // Assert.
-      checkScrollButtonVisibility(moduleElement, true, true);
-      checkVisibleRange(moduleElement, 2, 5);
+      checkScrollButtonDisabled(moduleElement, false, false);
+      checkVisibleRange(moduleElement, 3, 5);
       assertEquals(1, metrics.count('NewTabPage.Carts.LeftScrollClick'));
 
       // Act.
-      waitForLeftScrollVisibilityChange =
+      waitForLeftScrollEnableChange =
           eventToPromise('left-scroll-hide', moduleElement);
       waitForScrollFinished = eventToPromise('scroll-finish', moduleElement);
       moduleElement.shadowRoot.querySelector('#leftScrollButton').click();
       await waitForScrollFinished;
-      await waitForLeftScrollVisibilityChange;
+      await waitForLeftScrollEnableChange;
 
       // Assert.
-      checkScrollButtonVisibility(moduleElement, false, true);
-      checkVisibleRange(moduleElement, 0, 3);
+      checkScrollButtonDisabled(moduleElement, true, false);
+      checkVisibleRange(moduleElement, 0, 2);
       assertEquals(2, metrics.count('NewTabPage.Carts.LeftScrollClick'));
 
       // Remove the observer.
       cartCarousel.removeEventListener('scroll', onScroll);
     });
 
-    // TODO(crbug.com/1227093): Fix cart module carousel and enable test.
-    test.skip('scroll with cutted width module', async () => {
+    test('scroll through module ending with a column of 2 carts', async () => {
       // Arrange.
       const dummyMerchant = {
         merchant: 'Dummy',
         cartUrl: {url: 'https://dummy.com'},
         productImageUrls: [],
       };
-      const carts = Array.from({length: 10}, () => dummyMerchant);
+      const carts = Array.from({length: 5}, () => dummyMerchant);
       testProxy.handler.setResultFor(
           'getMerchantCarts', Promise.resolve({carts}));
 
@@ -534,110 +516,116 @@ suite('NewTabPageModulesChromeCartModuleTest', () => {
 
       // Assert.
       const cartItems = moduleElement.shadowRoot.querySelectorAll('.cart-item');
-      assertEquals(10, cartItems.length);
+      assertEquals(5, cartItems.length);
 
       // Act.
-      let waitForLeftScrollVisibilityChange =
+      let waitForLeftScrollEnableChange =
           eventToPromise('left-scroll-hide', moduleElement);
-      let waitForRightScrollVisibilityChange =
+      let waitForRightScrollEnableChange =
           eventToPromise('right-scroll-show', moduleElement);
-      moduleElement.style.width = '480px';
-      await waitForLeftScrollVisibilityChange;
-      await waitForRightScrollVisibilityChange;
+      await waitForLeftScrollEnableChange;
+      await waitForRightScrollEnableChange;
 
       // Assert.
-      checkScrollButtonVisibility(moduleElement, false, true);
+      checkScrollButtonDisabled(moduleElement, true, false);
       checkVisibleRange(moduleElement, 0, 2);
 
       // Act.
-      waitForLeftScrollVisibilityChange =
+      waitForLeftScrollEnableChange =
           eventToPromise('left-scroll-show', moduleElement);
       let waitForScrollFinished =
           eventToPromise('scroll-finish', moduleElement);
       moduleElement.shadowRoot.querySelector('#rightScrollButton').click();
-      await waitForLeftScrollVisibilityChange;
+      await waitForLeftScrollEnableChange;
       await waitForScrollFinished;
 
       // Assert.
-      checkScrollButtonVisibility(moduleElement, true, true);
-      checkVisibleRange(moduleElement, 3, 5);
+      checkScrollButtonDisabled(moduleElement, false, true);
+      checkVisibleRange(moduleElement, 3, 4);
 
       // Act.
-      moduleElement.style.width = '220px';
-
-      // Assert.
-      checkScrollButtonVisibility(moduleElement, true, true);
-      checkVisibleRange(moduleElement, 3, 3);
-
-      // Act.
+      waitForRightScrollEnableChange =
+          eventToPromise('right-scroll-show', moduleElement);
       waitForScrollFinished = eventToPromise('scroll-finish', moduleElement);
-      moduleElement.shadowRoot.querySelector('#rightScrollButton').click();
+      moduleElement.shadowRoot.querySelector('#leftScrollButton').click();
       await waitForScrollFinished;
+      await waitForRightScrollEnableChange;
 
       // Assert.
-      checkScrollButtonVisibility(moduleElement, true, true);
-      checkVisibleRange(moduleElement, 4, 4);
+      checkScrollButtonDisabled(moduleElement, true, false);
+      checkVisibleRange(moduleElement, 0, 2);
 
       // Remove the observer.
       cartCarousel.removeEventListener('scroll', onScroll);
     });
 
-    // TODO(crbug.com/1227093): Fix cart module carousel and enable test.
-    test.skip(
-        'scroll button visibility changes with module width', async () => {
-          // Arrange.
-          const dummyMerchant = {
-            merchant: 'Dummy',
-            cartUrl: {url: 'https://dummy.com'},
-            productImageUrls: [],
-          };
-          const carts = Array.from({length: 4}, () => dummyMerchant);
-          testProxy.handler.setResultFor(
-              'getMerchantCarts', Promise.resolve({carts}));
+    test('scroll through module ending with a column of 1 cart', async () => {
+      // Arrange.
+      const dummyMerchant = {
+        merchant: 'Dummy',
+        cartUrl: {url: 'https://dummy.com'},
+        productImageUrls: [],
+      };
+      const carts = Array.from({length: 4}, () => dummyMerchant);
+      testProxy.handler.setResultFor(
+          'getMerchantCarts', Promise.resolve({carts}));
 
-          // Arrange.
-          const moduleElement = await chromeCartV2Descriptor.initialize();
-          document.body.append(moduleElement);
-          moduleElement.$.cartItemRepeat.render();
+      // Arrange.
+      const moduleElement = await chromeCartV2Descriptor.initialize();
+      document.body.append(moduleElement);
+      moduleElement.$.cartItemRepeat.render();
+      const cartCarousel =
+          moduleElement.shadowRoot.querySelector('#cartCarousel');
+      moduleElement.scrollBehavior = 'auto';
+      const onScroll = () => {
+        moduleElement.dispatchEvent(new Event('scroll-finish'));
+      };
+      cartCarousel.addEventListener('scroll', onScroll, false);
 
-          // Assert.
-          const cartItems =
-              moduleElement.shadowRoot.querySelectorAll('.cart-item');
-          assertEquals(4, cartItems.length);
+      // Assert.
+      const cartItems = moduleElement.shadowRoot.querySelectorAll('.cart-item');
+      assertEquals(4, cartItems.length);
 
-          // Act.
-          let waitForLeftScrollVisibilityChange =
-              eventToPromise('left-scroll-hide', moduleElement);
-          let waitForRightScrollVisibilityChange =
-              eventToPromise('right-scroll-hide', moduleElement);
-          moduleElement.style.width = '560px';
-          await waitForLeftScrollVisibilityChange;
-          await waitForRightScrollVisibilityChange;
+      // Act.
+      let waitForLeftScrollEnableChange =
+          eventToPromise('left-scroll-hide', moduleElement);
+      let waitForRightScrollEnableChange =
+          eventToPromise('right-scroll-show', moduleElement);
+      await waitForLeftScrollEnableChange;
+      await waitForRightScrollEnableChange;
 
-          // Assert.
-          checkScrollButtonVisibility(moduleElement, false, false);
-          checkVisibleRange(moduleElement, 0, 3);
+      // Assert.
+      checkScrollButtonDisabled(moduleElement, true, false);
+      checkVisibleRange(moduleElement, 0, 2);
 
-          // Act.
-          waitForRightScrollVisibilityChange =
-              eventToPromise('right-scroll-show', moduleElement);
-          moduleElement.style.width = '480px';
-          await waitForRightScrollVisibilityChange;
+      // Act.
+      waitForLeftScrollEnableChange =
+          eventToPromise('left-scroll-show', moduleElement);
+      let waitForScrollFinished =
+          eventToPromise('scroll-finish', moduleElement);
+      moduleElement.shadowRoot.querySelector('#rightScrollButton').click();
+      await waitForLeftScrollEnableChange;
+      await waitForScrollFinished;
 
-          // Assert.
-          checkScrollButtonVisibility(moduleElement, false, true);
-          checkVisibleRange(moduleElement, 0, 2);
+      // Assert.
+      checkScrollButtonDisabled(moduleElement, false, true);
+      checkVisibleRange(moduleElement, 3, 3);
 
-          // Act.
-          waitForRightScrollVisibilityChange =
-              eventToPromise('right-scroll-hide', moduleElement);
-          moduleElement.style.width = '560px';
-          await waitForRightScrollVisibilityChange;
+      // Act.
+      waitForRightScrollEnableChange =
+          eventToPromise('right-scroll-show', moduleElement);
+      waitForScrollFinished = eventToPromise('scroll-finish', moduleElement);
+      moduleElement.shadowRoot.querySelector('#leftScrollButton').click();
+      await waitForScrollFinished;
+      await waitForRightScrollEnableChange;
 
-          // Assert.
-          checkScrollButtonVisibility(moduleElement, false, false);
-          checkVisibleRange(moduleElement, 0, 3);
-        });
+      // Assert.
+      checkScrollButtonDisabled(moduleElement, true, false);
+      checkVisibleRange(moduleElement, 0, 2);
+
+      // Remove the observer.
+      cartCarousel.removeEventListener('scroll', onScroll);
+    });
 
     test('shows discount chip', async () => {
       const carts = [
@@ -767,8 +755,7 @@ suite('NewTabPageModulesChromeCartModuleTest', () => {
       assertEquals(false, isVisible(consentCard));
     });
 
-    // TODO(crbug.com/1227093): Fix cart module carousel and enable test.
-    test.skip('scroll with consent card', async () => {
+    test('scroll with consent card', async () => {
       // Arrange.
       const dummyMerchant = {
         merchant: 'Dummy',
@@ -799,42 +786,44 @@ suite('NewTabPageModulesChromeCartModuleTest', () => {
       assertEquals(10, cartItems.length);
 
       // Act.
-      let waitForLeftScrollVisibilityChange =
+      let waitForLeftScrollEnableChange =
           eventToPromise('left-scroll-hide', moduleElement);
-      let waitForRightScrollVisibilityChange =
+      let waitForRightScrollEnableChange =
           eventToPromise('right-scroll-show', moduleElement);
-      moduleElement.style.width = '560px';
-      await waitForLeftScrollVisibilityChange;
-      await waitForRightScrollVisibilityChange;
+      await waitForLeftScrollEnableChange;
+      await waitForRightScrollEnableChange;
 
       // Assert.
-      checkScrollButtonVisibility(moduleElement, false, true);
+      checkScrollButtonDisabled(moduleElement, true, false);
       checkVisibleRange(moduleElement, 0, 1);
 
       // Act.
-      waitForLeftScrollVisibilityChange =
+      waitForLeftScrollEnableChange =
           eventToPromise('left-scroll-show', moduleElement);
       let waitForScrollFinished =
           eventToPromise('scroll-finish', moduleElement);
       moduleElement.shadowRoot.querySelector('#rightScrollButton').click();
+      await waitForLeftScrollEnableChange;
       await waitForScrollFinished;
-      await waitForLeftScrollVisibilityChange;
 
       // Assert.
-      checkScrollButtonVisibility(moduleElement, true, true);
-      checkVisibleRange(moduleElement, 2, 5);
+      checkScrollButtonDisabled(moduleElement, false, false);
+      checkVisibleRange(moduleElement, 2, 4);
 
       // Act.
-      waitForLeftScrollVisibilityChange =
+      waitForLeftScrollEnableChange =
           eventToPromise('left-scroll-hide', moduleElement);
       waitForScrollFinished = eventToPromise('scroll-finish', moduleElement);
       moduleElement.shadowRoot.querySelector('#leftScrollButton').click();
       await waitForScrollFinished;
-      await waitForLeftScrollVisibilityChange;
+      await waitForLeftScrollEnableChange;
 
       // Assert.
-      checkScrollButtonVisibility(moduleElement, false, true);
+      checkScrollButtonDisabled(moduleElement, true, false);
       checkVisibleRange(moduleElement, 0, 1);
+
+      // Remove the observer.
+      cartCarousel.removeEventListener('scroll', onScroll);
     });
 
     test('click on cart item', async () => {
@@ -890,24 +879,15 @@ suite('NewTabPageModulesChromeCartModuleTest', () => {
       assertEquals(0, testProxy.handler.getCallCount('getDiscountURL'));
     });
 
-    function checkScrollButtonVisibility(
-        moduleElement, isLeftVisible, isRightVisible) {
+    function checkScrollButtonDisabled(
+        moduleElement, isLeftDisabled, isRightDisabled) {
       assertEquals(
-          isLeftVisible,
-          isVisible(
-              moduleElement.shadowRoot.querySelector('#leftScrollShadow')));
+          isLeftDisabled,
+          moduleElement.shadowRoot.querySelector('#leftScrollButton').disabled);
       assertEquals(
-          isLeftVisible,
-          isVisible(
-              moduleElement.shadowRoot.querySelector('#leftScrollButton')));
-      assertEquals(
-          isRightVisible,
-          isVisible(
-              moduleElement.shadowRoot.querySelector('#rightScrollShadow')));
-      assertEquals(
-          isRightVisible,
-          isVisible(
-              moduleElement.shadowRoot.querySelector('#rightScrollButton')));
+          isRightDisabled,
+          moduleElement.shadowRoot.querySelector('#rightScrollButton')
+              .disabled);
     }
 
     function checkVisibleRange(moduleElement, startIndex, endIndex) {
@@ -928,9 +908,8 @@ suite('NewTabPageModulesChromeCartModuleTest', () => {
       const cartCarousel =
           moduleElement.shadowRoot.querySelector('#cartCarousel');
       const cart = cartCarousel.querySelectorAll('.cart-item')[index];
-      return (cart.offsetLeft > cartCarousel.scrollLeft) &&
-          (cartCarousel.scrollLeft + cartCarousel.clientWidth) >
-          (cart.offsetLeft + cart.offsetWidth);
+      return cart && (cart.offsetLeft === cartCarousel.scrollLeft) &&
+          (cartCarousel.clientWidth <= cart.offsetWidth);
     }
   });
 

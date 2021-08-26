@@ -2,14 +2,29 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
+import logging
 try:
   # Note: from tracing.proto import histogram_pb2 would make more sense here,
   # but unfortunately protoc does not generate __init__.py files if you specify
   # an out package (at least for the gn proto_library rule).
   import histogram_pb2  # pylint:disable=relative-import
   HAS_PROTO = True
-except ImportError:
-  HAS_PROTO = False
+except ImportError as e:
+  try:
+    # crbug/1234919
+    # Catapult put the generated histogram_pb2.py in the same source folder,
+    # while the others (e.g., webrtc) put it in output path. By default we
+    # try to import from the sys.path. Here allows to try import from the
+    # source folder as well.
+    logging.warning(
+        'Failed to import histogram_pb2: %s', repr(e))
+    from . import histogram_pb2 # pylint:disable=relative-import
+    logging.warning(
+        'Retried and successfully imported histogram_pb2: %s', histogram_pb2)
+    HAS_PROTO = True
+  except ImportError:
+    HAS_PROTO = False
 
 
 def _EnsureProto():
@@ -51,14 +66,14 @@ if HAS_PROTO:
       histogram_pb2.COUNT: 'count',
       histogram_pb2.SIGMA: 'sigma',
   }
-  UNIT_PROTO_MAP = {v: k for k, v in PROTO_UNIT_MAP.iteritems()}
+  UNIT_PROTO_MAP = {v: k for k, v in PROTO_UNIT_MAP.items()}
 
   PROTO_IMPROVEMENT_DIRECTION_MAP = {
       histogram_pb2.BIGGER_IS_BETTER: 'biggerIsBetter',
       histogram_pb2.SMALLER_IS_BETTER: 'smallerIsBetter',
   }
   IMPROVEMENT_DIRECTION_PROTO_MAP = {
-      v: k for k, v in PROTO_IMPROVEMENT_DIRECTION_MAP.iteritems()
+      v: k for k, v in PROTO_IMPROVEMENT_DIRECTION_MAP.items()
   }
 
 

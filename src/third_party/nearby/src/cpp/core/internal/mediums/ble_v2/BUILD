@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+licenses(["notice"])
 
 cc_library(
     name = "ble_v2",
@@ -28,19 +29,20 @@ cc_library(
         "ble_peripheral.h",
         "discovered_peripheral_callback.h",
     ],
+    compatible_with = ["//buildenv/target:non_prod"],
     visibility = [
         "//core/internal:__subpackages__",
     ],
     deps = [
+        "//absl/container:flat_hash_map",
+        "//absl/container:flat_hash_set",
+        "//absl/strings",
+        "//absl/time",
         "//core:core_types",
         "//platform/base",
         "//platform/base:util",
         "//platform/public:logging",
         "//platform/public:types",
-        "//absl/container:flat_hash_map",
-        "//absl/container:flat_hash_set",
-        "//absl/strings",
-        "//absl/time",
     ],
 )
 
@@ -55,9 +57,9 @@ cc_test(
     ],
     deps = [
         ":ble_v2",
-        "//platform/base",
-        "//platform/impl/g3",  # buildcleaner: keep
         "//testing/base/public:gunit_main",
         "//absl/time",
+        "//platform/base",
+        "//platform/impl/g3",  # buildcleaner: keep
     ],
 )

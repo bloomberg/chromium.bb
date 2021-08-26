@@ -29,8 +29,9 @@ namespace dsp {
 namespace {
 
 template <int width, int height, int bitdepth, bool mask_is_inverse>
-void WeightMask_C(const void* prediction_0, const void* prediction_1,
-                  uint8_t* mask, ptrdiff_t mask_stride) {
+void WeightMask_C(const void* LIBGAV1_RESTRICT prediction_0,
+                  const void* LIBGAV1_RESTRICT prediction_1,
+                  uint8_t* LIBGAV1_RESTRICT mask, ptrdiff_t mask_stride) {
   using PredType =
       typename std::conditional<bitdepth == 8, int16_t, uint16_t>::type;
   const auto* pred_0 = static_cast<const PredType*>(prediction_0);

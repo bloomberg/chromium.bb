@@ -1,7 +1,7 @@
 export const description = 'Operation tests for GPUQueue.writeBuffer()';
 
 import { makeTestGroup } from '../../../../common/framework/test_group.js';
-import { range } from '../../../../common/util/util.js';
+import { memcpy, range } from '../../../../common/util/util.js';
 import { GPUTest } from '../../../gpu_test.js';
 import { align } from '../../../util/math.js';
 
@@ -59,35 +59,23 @@ class F extends GPUTest {
 
   testWriteBuffer(...writes: WriteBufferSignature[]) {
     const bufferSize = this.calculateRequiredBufferSize(writes);
-    const buffer = this.device.createBuffer({
-      size: bufferSize,
-      usage: GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST,
-      mappedAtCreation: true,
-    });
 
     // Initialize buffer to non-zero data (0xff) for easier debug.
     const expectedData = new Uint8Array(bufferSize).fill(0xff);
-    const bufferData = buffer.getMappedRange();
-    new Uint8Array(bufferData).set(expectedData);
-    buffer.unmap();
+
+    const buffer = this.makeBufferWithContents(
+      expectedData,
+      GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST
+    );
 
     for (const { bufferOffset, data, arrayType, useArrayBuffer, dataOffset, dataSize } of writes) {
       const TypedArrayConstructor = globalThis[arrayType];
       const writeData = new TypedArrayConstructor(data);
-      this.queue.writeBuffer(
-        buffer,
-        bufferOffset,
-        useArrayBuffer ? writeData.buffer : writeData,
-        dataOffset,
-        dataSize
-      );
-      const bytesPerElement = useArrayBuffer ? 1 : TypedArrayConstructor.BYTES_PER_ELEMENT;
-      const begin = dataOffset ? dataOffset * bytesPerElement : 0;
-      expectedData.set(
-        new Uint8Array(
-          writeData.buffer.slice(begin, dataSize ? begin + dataSize * bytesPerElement : undefined)
-        ),
-        bufferOffset
+      const writeSrc = useArrayBuffer ? writeData.buffer : writeData;
+      this.queue.writeBuffer(buffer, bufferOffset, writeSrc, dataOffset, dataSize);
+      memcpy(
+        { src: writeSrc, start: dataOffset, length: dataSize },
+        { dst: expectedData, start: bufferOffset }
       );
     }
 

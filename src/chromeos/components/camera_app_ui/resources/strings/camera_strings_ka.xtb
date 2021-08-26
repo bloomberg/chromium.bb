@@ -3,6 +3,8 @@
 <translationbundle lang="ka">
 <translation id="1175958423215084756">აღმოჩენილია ბმული. <ph name="HOSTNAME" /></translation>
 <translation id="1276998909102132017">გალერეის სურათები</translation>
+<translation id="1300209025925956156">დაასკანირეთ თქვენი დოკუმენტი</translation>
+<translation id="137991641490787891"><ph name="ASPECT_RATIO_WIDTH" />. წვდომისთვის გამოიყენეთ კლავიშთა კომბინაცია Search + მარცხნივ მიმართული ისარი.</translation>
 <translation id="1430915738399379752">ბეჭდვა</translation>
 <translation id="1467231725790366244"><ph name="CAMERA" /> გამოერთებულია.</translation>
 <translation id="1473110567575736769">3-წამიანი ტაიმერი</translation>
@@ -31,7 +33,6 @@
 <translation id="2549985041256363841">ჩაწერის დაწყება</translation>
 <translation id="2599796128805996109">უკანა კამერა</translation>
 <translation id="2879583609344924966"><ph name="CAMERA" /> მიერთებულია.</translation>
-<translation id="2912439424121107408">ექსპერტთა რეჟიმი მხარდაუჭერელია ამ მოწყობილობაზე</translation>
 <translation id="2968794441791257519">კამერით გადაღებული ფოტოები და ვიდეოები გადატანილი იქნება „ჩამოტვირთვების“ საქაღალდეში. მათზე წვდომა შეგიძლიათ ფაილების აპიდან.
 
         აპები, რომლებსაც მინიჭებული აქვს მეხსიერებაზე წვდომის ნებართვა, შეძლებს თქვენს ფოტოებსა და ვიდეოებზე წვდომას.</translation>
@@ -42,15 +43,16 @@
 <translation id="3227137524299004712">მიკროფონი</translation>
 <translation id="3240426699337459095">ბმული დაკოპირდა</translation>
 <translation id="3259149966178251584">კამერის გარჩევადობა</translation>
+<translation id="3260401663013584785">დოკუმენტის აღმოჩენა ვერ მოხერხდა</translation>
 <translation id="3448774564454087943">ვიდეო არ შეინახა, რადგან ის ზედმეტად მოკლეა</translation>
 <translation id="3517926952904427380">პორტრეტის რეჟიმში ფოტოს გადაღება ვერ მოხერხდა</translation>
 <translation id="3569311554794739032">ნამდვილად გსურთ, ამოშალოთ <ph name="FILE" />?</translation>
-<translation id="3733597664308256288">ხელმისაწვდომია კამერის მართვის დამატებითი საშუალებები. წვდომისთვის გამოიყენეთ კლავიშთა კომბინაცია Search + მარჯვნივ მიმართული ისარი.</translation>
 <translation id="3810838688059735925">ვიდეო</translation>
 <translation id="3838931309141338733">შტრიხკოდის სკანირება</translation>
 <translation id="3892148308691398805">ტექსტის კოპირება</translation>
 <translation id="4000398125663085899">ახალი ფოტოები და ვიდეოები ამიერიდან შეინახება ფაილების აპის საქაღალდეში: ჩემი ფაილები &gt; კამერა</translation>
 <translation id="4118525110028899586">ჩაწერის დაპაუზება</translation>
+<translation id="4121305183798804752">დოკუმენტი აღმოჩენილია</translation>
 <translation id="4269820728363426813">ბმულის მისამართის კოპირება</translation>
 <translation id="4279490309300973883">არეკვლა</translation>
 <translation id="4329152592498422850">კვადრატული ფოტოს გადაღებაზე გადართვა</translation>
@@ -65,10 +67,13 @@
 <translation id="5057360777601936059">თქვენი კამერა ამჟამად მიუწვდომელია.
         შეამოწმეთ, რომ კამერა სწორად არის დაკავშირებული.</translation>
 <translation id="5152121255775685072">გალერეაზე გადასვლა</translation>
+<translation id="520537883758714667">ამიერიდან ხელმისაწვდომია დოკუმენტების სკანირების ფუნქცია</translation>
 <translation id="5268823927180092501">დოკუმენტის რეჟიმის ჩართვა ყველა კამერაზე</translation>
 <translation id="5422455049771430511">თქვენმა ფოტოებმა და ვიდეოებმა ახალ სივრცეში გადაინაცვლა</translation>
+<translation id="5444515100983837161">მოათავსეთ დოკუმენტის ყველა კიდე ჩარჩოში. საუკეთესო შედეგების მისაღებად დოკუმენტისა და ფონის ფერები განსხვავებული უნდა იყოს.</translation>
 <translation id="5671277269877808209">კვადრატი</translation>
 <translation id="5753488212459587150">ექსპერტის რეჟიმის ჩართვა</translation>
+<translation id="5759254179196327752">დოკუმენტის სკანირება</translation>
 <translation id="5775960006311140197">ექსპერტთა რეჟიმი</translation>
 <translation id="5869546221129391014">ბადე</translation>
 <translation id="5975083100439434680">დაშორება</translation>
@@ -82,6 +87,7 @@
 
 თუ თქვენი გამოხმაურება გამოსახულების ან ვიდეოს ხარისხს ეხება, მაგალითის სახით დაურთეთ ფოტო ან ვიდეო და აღწერეთ პრობლემა (მაგალითად, ფოტო ზედმეტად მუქია ან ობიექტი არ არის მოქცეული ფოკუსში).</translation>
 <translation id="6420689864531458495">(<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" /> — <ph name="WIDTH" />x<ph name="HEIGHT" />) <ph name="MEGAPIXEL" /> მეგაპიქსელი</translation>
+<translation id="667999046851023355">დოკუმენტი</translation>
 <translation id="6681668084120808868">ფოტოს გადაღება</translation>
 <translation id="6778482348691154169">ფოტოს გადაღება შეუძლებელია</translation>
 <translation id="695140971690006676">ყველას გადაყენება</translation>
@@ -108,11 +114,13 @@
 <translation id="8425673304802773841">ქვემოთკენ დახრა</translation>
 <translation id="8428213095426709021">პარამეტრები</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" />p (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
+<translation id="8712637175834984815">კარგი</translation>
 <translation id="8732462232047530626">მეტამონაცემების გადახედვა</translation>
 <translation id="8815966864175525708">ფოტოს პორტრეტის რეჟიმში გადაღებაზე გადართვა</translation>
 <translation id="8828441885228359828">ჩაწერის გაგრძელება</translation>
 <translation id="8870695351537079478">ჩაწერის დაწყება ვერ მოხერხდა</translation>
 <translation id="8903921497873541725">მასშტაბის გადიდება</translation>
+<translation id="9045010116236796332">მოათავსეთ დოკუმენტის ყველა კიდე ჩარჩოში</translation>
 <translation id="9045155556724273246">10 წამი</translation>
 <translation id="945522503751344254">შეფასების გაგზავნა</translation>
 </translationbundle>

@@ -61,7 +61,7 @@ HoldingSpaceItemScreenCaptureView::HoldingSpaceItemScreenCaptureView(
                                                   kHoldingSpaceIconSize))));
   }
 
-  builder
+  std::move(builder)
       .AddChild(
           views::Builder<views::FlexLayoutView>()
               .SetOrientation(views::LayoutOrientation::kHorizontal)
@@ -77,7 +77,7 @@ HoldingSpaceItemScreenCaptureView::HoldingSpaceItemScreenCaptureView(
       .BuildChildren();
 
   // Subscribe to be notified of changes to `item`'s image.
-  image_subscription_ = item->image().AddImageSkiaChangedCallback(
+  image_skia_changed_subscription_ = item->image().AddImageSkiaChangedCallback(
       base::BindRepeating(&HoldingSpaceItemScreenCaptureView::UpdateImage,
                           base::Unretained(this)));
 
@@ -99,8 +99,9 @@ std::u16string HoldingSpaceItemScreenCaptureView::GetTooltipText(
 }
 
 void HoldingSpaceItemScreenCaptureView::OnHoldingSpaceItemUpdated(
-    const HoldingSpaceItem* item) {
-  HoldingSpaceItemView::OnHoldingSpaceItemUpdated(item);
+    const HoldingSpaceItem* item,
+    uint32_t updated_fields) {
+  HoldingSpaceItemView::OnHoldingSpaceItemUpdated(item, updated_fields);
   if (this->item() == item)
     TooltipTextChanged();
 }

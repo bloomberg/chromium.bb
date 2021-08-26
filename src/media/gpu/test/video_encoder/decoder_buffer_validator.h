@@ -47,6 +47,7 @@ class H264Validator : public DecoderBufferValidator {
  public:
   H264Validator(VideoCodecProfile profile,
                 const gfx::Rect& visible_rect,
+                const size_t num_temporal_layers,
                 absl::optional<uint8_t> level = absl::nullopt);
   ~H264Validator() override;
 
@@ -79,6 +80,8 @@ class H264Validator : public DecoderBufferValidator {
   // The expected h264 level of |decoder_buffer|. Check if it is not
   // absl::nullopt.
   absl::optional<uint8_t> level_;
+
+  size_t num_temporal_layers_;
 };
 
 class VP8Validator : public DecoderBufferValidator {
@@ -99,7 +102,7 @@ class VP9Validator : public DecoderBufferValidator {
  public:
   VP9Validator(VideoCodecProfile profile,
                const gfx::Rect& visible_rect,
-               size_t num_spatial_layers,
+               size_t max_num_spatial_layers,
                size_t num_temporal_layers);
   ~VP9Validator() override;
 
@@ -118,7 +121,9 @@ class VP9Validator : public DecoderBufferValidator {
 
   // The expected VP9 profile of |decoder_buffer|.
   const int profile_;
-  const size_t num_spatial_layers_;
+  const size_t max_num_spatial_layers_;
+  size_t cur_num_spatial_layers_;
+  std::vector<gfx::Size> spatial_layer_resolutions_;
   const size_t num_temporal_layers_;
   int next_picture_id_;
 

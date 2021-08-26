@@ -355,9 +355,11 @@ void MaybeReportDangerousDownloadBlocked(
   // dangerous file has already been reported.
   auto* scan_result = static_cast<enterprise_connectors::ScanResult*>(
       download->GetUserData(enterprise_connectors::ScanResult::kKey));
-  if (scan_result &&
-      enterprise_connectors::ContainsMalwareVerdict(scan_result->response)) {
-    return;
+  if (scan_result) {
+    for (const auto& metadata : scan_result->file_metadata) {
+      if (enterprise_connectors::ContainsMalwareVerdict(metadata.scan_response))
+        return;
+    }
   }
 
   auto* router =
@@ -1325,6 +1327,13 @@ void ChromeDownloadManagerDelegate::CheckClientDownloadDone(
       if (danger_type != download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS) {
         item->OnAsyncScanningCompleted(
             download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_OPENED_DANGEROUS);
+
+        // Because the file has been opened before the verdict was available,
+        // the reporter must be manually notified that it needs to record the
+        // bypass. This is because the bypass wasn't reported on open to avoid
+        // sending a bypass event for a non-dangerous/sensitive file.
+        GetDownloadProtectionService()->ReportDelayedBypassEvent(item,
+                                                                 danger_type);
       } else {
         item->OnAsyncScanningCompleted(danger_type);
       }

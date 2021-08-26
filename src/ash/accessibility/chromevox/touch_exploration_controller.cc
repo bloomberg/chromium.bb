@@ -27,6 +27,8 @@
 #include "ui/events/event.h"
 #include "ui/events/event_processor.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/gesture_detection/gesture_configuration.h"
+#include "ui/events/gesture_detection/gesture_provider_config_helper.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
@@ -52,6 +54,18 @@ void SetTouchAccessibilityFlag(ui::Event* event) {
   event->set_flags(event->flags() | ui::EF_TOUCH_ACCESSIBILITY);
 }
 
+std::unique_ptr<ui::GestureProviderAura> BuildGestureProviderAura(
+    TouchExplorationController* owner) {
+  // Tune some aspects of gesture detection for ChromeVox.
+  ui::GestureProvider::Config config =
+      GetGestureProviderConfig(ui::GestureProviderConfigType::CURRENT_PLATFORM);
+  config.gesture_detector_config.maximum_swipe_deviation_angle = 45;
+  auto gesture_provider =
+      std::make_unique<ui::GestureProviderAura>(owner, owner);
+  gesture_provider->filtered_gesture_provider().UpdateConfig(config);
+  return gesture_provider;
+}
+
 }  // namespace
 
 TouchExplorationController::TouchExplorationController(
@@ -62,7 +76,7 @@ TouchExplorationController::TouchExplorationController(
       delegate_(delegate),
       state_(NO_FINGERS_DOWN),
       anchor_point_state_(ANCHOR_POINT_NONE),
-      gesture_provider_(new ui::GestureProviderAura(this, this)),
+      gesture_provider_(BuildGestureProviderAura(this)),
       prev_state_(NO_FINGERS_DOWN),
       VLOG_on_(true),
       touch_accessibility_enabler_(touch_accessibility_enabler) {
@@ -1100,7 +1114,7 @@ void TouchExplorationController::SetState(State new_state,
       max_gesture_touch_points_ = 0;
       break;
     case NO_FINGERS_DOWN:
-      gesture_provider_ = std::make_unique<ui::GestureProviderAura>(this, this);
+      gesture_provider_ = BuildGestureProviderAura(this);
       if (sound_timer_.IsRunning())
         sound_timer_.Stop();
       tap_timer_.Stop();

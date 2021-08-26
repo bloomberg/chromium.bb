@@ -586,6 +586,11 @@ ImageBitmap* WebGLRenderingContextBase::TransferToImageBitmapBase(
     ScriptState* script_state) {
   WebFeature feature = WebFeature::kOffscreenCanvasTransferToImageBitmapWebGL;
   UseCounter::Count(ExecutionContext::From(script_state), feature);
+  if (!GetDrawingBuffer()) {
+    // Context is lost.
+    return nullptr;
+  }
+
   return MakeGarbageCollected<ImageBitmap>(
       GetDrawingBuffer()->TransferToStaticBitmapImage());
 }
@@ -622,16 +627,17 @@ scoped_refptr<StaticBitmapImage> WebGLRenderingContextBase::GetImage() {
   // the drawing buffer being smaller than the canvas size.
   // See https://crbug.com/845742.
   IntSize size = GetDrawingBuffer()->Size();
-  // Since we are grabbing a snapshot that is not for compositing, we use a
+  // We are grabbing a snapshot that is generally not for compositing, so use a
   // custom resource provider. This avoids consuming compositing-specific
-  // resources (e.g. GpuMemoryBuffer)
+  // resources (e.g. GpuMemoryBuffer). We tag the SharedImage with display usage
+  // since there are uncommon paths which may use this snapshot for compositing.
   auto color_params = CanvasRenderingContextColorParams().GetAsResourceParams();
   std::unique_ptr<CanvasResourceProvider> resource_provider =
       CanvasResourceProvider::CreateSharedImageProvider(
           size, GetDrawingBuffer()->FilterQuality(), color_params,
           CanvasResourceProvider::ShouldInitialize::kNo,
           SharedGpuContext::ContextProviderWrapper(), RasterMode::kGPU,
-          is_origin_top_left_, 0u /*shared_image_usage_flags*/);
+          is_origin_top_left_, gpu::SHARED_IMAGE_USAGE_DISPLAY);
   if (!resource_provider || !resource_provider->IsValid()) {
     resource_provider = CanvasResourceProvider::CreateBitmapProvider(
         size, GetDrawingBuffer()->FilterQuality(), color_params,
@@ -1724,10 +1730,11 @@ bool WebGLRenderingContextBase::CopyRenderingResultsFromDrawingBuffer(
   flags.setBlendMode(SkBlendMode::kSrc);
   // We use this draw helper as we need to take into account the
   // ImageOrientation of the UnacceleratedStaticBitmapImage.
+  ImageDrawOptions draw_options;
+  draw_options.sampling_options = SkSamplingOptions();
   image->Draw(resource_provider->Canvas(), flags, FloatRect(dest_rect),
-              FloatRect(src_rect), SkSamplingOptions(),
-              kRespectImageOrientation, Image::kDoNotClampImageToSourceRect,
-              Image::kSyncDecode);
+              FloatRect(src_rect), draw_options,
+              Image::kDoNotClampImageToSourceRect, Image::kSyncDecode);
   return true;
 }
 
@@ -4702,6 +4709,12 @@ void WebGLRenderingContextBase::ReadPixelsHelper(GLint x,
     buffer.emplace(32);
     data = buffer->data();
   }
+
+  // Last-chance early-out, in case somehow the context was lost during
+  // the above ClearIfComposited operation.
+  if (isContextLost() || !GetDrawingBuffer())
+    return;
+
   {
     ScopedDrawingBufferBinder binder(GetDrawingBuffer(), framebuffer);
     ContextGL()->ReadPixels(x, y, width, height, format, type, data);
@@ -5126,10 +5139,11 @@ scoped_refptr<Image> WebGLRenderingContextBase::DrawImageIntoBuffer(
   PaintFlags flags;
   // TODO(ccameron): WebGL should produce sRGB images.
   // https://crbug.com/672299
+  ImageDrawOptions draw_options;
+  draw_options.sampling_options = SkSamplingOptions();
   image->Draw(resource_provider->Canvas(), flags, FloatRect(dest_rect),
-              FloatRect(src_rect), SkSamplingOptions(),
-              kRespectImageOrientation, Image::kDoNotClampImageToSourceRect,
-              Image::kSyncDecode);
+              FloatRect(src_rect), draw_options,
+              Image::kDoNotClampImageToSourceRect, Image::kSyncDecode);
   return resource_provider->Snapshot();
 }
 
@@ -5555,10 +5569,6 @@ void WebGLRenderingContextBase::TexImageViaGPU(
     possible_direct_copy = Extensions3DUtil::CanUseCopyTextureCHROMIUM(target);
   }
 
-  GLint copy_x_offset = xoffset;
-  GLint copy_y_offset = yoffset;
-  GLenum copy_target = target;
-
   // if direct copy is not possible, create a temporary texture and then copy
   // from canvas to temporary texture to target texture.
   if (!possible_direct_copy) {
@@ -5574,9 +5584,6 @@ void WebGLRenderingContextBase::TexImageViaGPU(
                                GL_CLAMP_TO_EDGE);
     ContextGL()->TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0,
                             GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-    copy_x_offset = 0;
-    copy_y_offset = 0;
-    copy_target = GL_TEXTURE_2D;
   }
 
   {
@@ -5874,8 +5881,11 @@ void WebGLRenderingContextBase::TexImageHelperVideoFrame(
     function_type = kTexSubImage;
 
   auto local_handle = frame->handle()->CloneForInternalUse();
-  if (!local_handle)
+  if (!local_handle) {
+    SynthesizeGLError(GL_INVALID_OPERATION, func_name,
+                      "can't texture a closed VideoFrame.");
     return;
+  }
 
   const auto natural_size = local_handle->frame()->natural_size();
   if (!ValidateTexFunc(func_name, function_type, kSourceVideoFrame, target,
@@ -5950,12 +5960,6 @@ void WebGLRenderingContextBase::TexImageHelperMediaVideoFrame(
     texture->UpdateLastUploadedFrame(metadata);
     return;
   }
-
-  TexImageFunctionType function_type;
-  if (function_id == kTexImage2D || function_id == kTexImage3D)
-    function_type = kTexImage;
-  else
-    function_type = kTexSubImage;
 
   // The CopyTexImage fast paths can't handle orientation, so if a non-default
   // orientation is provided, we must disable them.
@@ -7258,7 +7262,7 @@ cc::Layer* WebGLRenderingContextBase::CcLayer() const {
 }
 
 void WebGLRenderingContextBase::SetFilterQuality(
-    SkFilterQuality filter_quality) {
+    cc::PaintFlags::FilterQuality filter_quality) {
   if (!isContextLost() && GetDrawingBuffer()) {
     GetDrawingBuffer()->SetFilterQuality(filter_quality);
   }
@@ -8695,7 +8699,7 @@ CanvasResourceProvider* WebGLRenderingContextBase::
   } else {
     // TODO(fserb): why is this a BITMAP?
     temp = CanvasResourceProvider::CreateBitmapProvider(
-        size, kLow_SkFilterQuality, CanvasResourceParams(),
+        size, cc::PaintFlags::FilterQuality::kLow, CanvasResourceParams(),
         CanvasResourceProvider::ShouldInitialize::kNo);  // TODO: should this
                                                          // use the canvas's
   }

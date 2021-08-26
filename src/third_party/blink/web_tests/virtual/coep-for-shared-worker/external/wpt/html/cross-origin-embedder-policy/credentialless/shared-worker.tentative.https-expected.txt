@@ -3,6 +3,6 @@ PASS shared-worker
 PASS fetch same-origin
 PASS fetch same-origin + credentialless worker
 PASS fetch cross-origin
-FAIL fetch cross-origin + credentialless worker assert_equals: coep:none =>  expected (undefined) undefined but got (string) "cross_origin"
+PASS fetch cross-origin + credentialless worker
 Harness: the test ran to completion.
 

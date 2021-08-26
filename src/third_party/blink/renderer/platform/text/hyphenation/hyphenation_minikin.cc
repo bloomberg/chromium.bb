@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/platform/text/character.h"
 #include "third_party/blink/renderer/platform/text/hyphenation/hyphenator_aosp.h"
 #include "third_party/blink/renderer/platform/text/layout_locale.h"
+#include "third_party/blink/renderer/platform/wtf/text/case_folding_hash.h"
 
 namespace blink {
 
@@ -92,9 +93,9 @@ StringView HyphenationMinikin::WordToHyphenate(
       ++begin;
     while (begin != end && ShouldSkipTrailingChar(end[-1]))
       --end;
-    *num_leading_chars_out = begin - text.Characters8();
+    *num_leading_chars_out = static_cast<unsigned>(begin - text.Characters8());
     CHECK_GE(end, begin);
-    return StringView(begin, end - begin);
+    return StringView(begin, static_cast<unsigned>(end - begin));
   }
   const UChar* begin = text.Characters16();
   int index = 0;

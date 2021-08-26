@@ -14,7 +14,6 @@
 #include "ash/public/cpp/app_list/app_list_color_provider.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "base/bind.h"
-#include "base/numerics/ranges.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
@@ -196,7 +195,7 @@ void SearchResultActionsView::SetActions(const SearchResult::Actions& actions) {
   if (selected_action_.has_value())
     selected_action_.reset();
   subscriptions_.clear();
-  RemoveAllChildViews(true);
+  RemoveAllChildViews();
 
   for (size_t i = 0; i < actions.size(); ++i)
     CreateImageButton(actions[i], i);

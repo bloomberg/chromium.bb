@@ -38,6 +38,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/enterprise/connectors/connectors_service.h"
+#include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/password_manager/account_password_store_factory.h"
@@ -51,6 +52,7 @@
 #include "chrome/browser/safe_browsing/cloud_content_scanning/test_binary_upload_service.h"
 #include "chrome/browser/safe_browsing/download_protection/check_file_system_access_write_request.h"
 #include "chrome/browser/safe_browsing/download_protection/download_feedback_service.h"
+#include "chrome/browser/safe_browsing/download_protection/download_protection_unittest_util.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
 #include "chrome/browser/safe_browsing/download_protection/ppapi_download_request.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_reporting_service.h"
@@ -76,6 +78,8 @@
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/common/password_manager_features.h"
+#include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
+#include "components/policy/core/common/cloud/realtime_reporting_job_configuration.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/safe_browsing/content/browser/safe_browsing_navigation_observer.h"
@@ -191,9 +195,10 @@ class FakeSafeBrowsingService : public TestSafeBrowsingService {
   }
 
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory(
-      Profile* profile) override {
+      content::BrowserContext* browser_context) override {
     if (!base::FeatureList::IsEnabled(kSafeBrowsingSeparateNetworkContexts))
       return GetURLLoaderFactory();
+    auto* profile = Profile::FromBrowserContext(browser_context);
     auto it = test_shared_loader_factory_map_.find(profile);
     if (it == test_shared_loader_factory_map_.end())
       return nullptr;
@@ -314,9 +319,12 @@ class DownloadProtectionServiceTestBase
     if (base::FeatureList::IsEnabled(
             password_manager::features::kEnablePasswordsAccountStorage)) {
       AccountPasswordStoreFactory::GetInstance()->SetTestingFactory(
-          profile(), base::BindRepeating(&password_manager::BuildPasswordStore<
-                                         content::BrowserContext,
-                                         password_manager::TestPasswordStore>));
+          profile(),
+          base::BindRepeating(
+              &password_manager::BuildPasswordStoreWithArgs<
+                  content::BrowserContext, password_manager::TestPasswordStore,
+                  password_manager::IsAccountStore>,
+              password_manager::IsAccountStore(true)));
     }
 
     // Start real threads for the IO and File threads so that the DCHECKs
@@ -373,6 +381,7 @@ class DownloadProtectionServiceTestBase
         ->SetTestingFactory(
             profile(),
             base::BindRepeating(&BuildSafeBrowsingPrivateEventRouter));
+    client_ = std::make_unique<policy::MockCloudPolicyClient>();
 
     SetDMTokenForTesting(
         policy::DMToken::CreateValidTokenForTesting("dm_token"));
@@ -474,22 +483,6 @@ class DownloadProtectionServiceTestBase
     base::ThreadPoolInstance::Get()->FlushForTesting();
     FlushMessageLoop(BrowserThread::IO);
     RunLoop().RunUntilIdle();
-  }
-
-  // Reads a single PEM-encoded certificate from the testdata directory.
-  // Returns nullptr on failure.
-  scoped_refptr<net::X509Certificate> ReadTestCertificate(
-      const std::string& filename) {
-    std::string cert_data;
-    if (!base::ReadFileToString(testdata_path_.AppendASCII(filename),
-                                &cert_data)) {
-      return nullptr;
-    }
-    net::CertificateList certs =
-        net::X509Certificate::CreateCertificateListFromBytes(
-            base::as_bytes(base::make_span(cert_data)),
-            net::X509Certificate::FORMAT_PEM_CERT_SEQUENCE);
-    return certs.empty() ? nullptr : certs[0];
   }
 
   const ClientDownloadRequest* GetClientDownloadRequest() const {
@@ -750,6 +743,7 @@ class DownloadProtectionServiceTestBase
   TestingProfileManager testing_profile_manager_;
   std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>
       identity_test_env_adaptor_;
+  std::unique_ptr<policy::MockCloudPolicyClient> client_;
 };
 
 using DownloadProtectionServiceTest = DownloadProtectionServiceTestBase;
@@ -775,8 +769,7 @@ class DeepScanningDownloadTest : public DownloadProtectionServiceTestBase,
 class EnhancedProtectionDownloadTest
     : public DownloadProtectionServiceTestBase {
  public:
-  EnhancedProtectionDownloadTest() {
-  }
+  EnhancedProtectionDownloadTest() {}
 };
 
 void DownloadProtectionServiceTestBase::CheckClientDownloadReportCorruptArchive(
@@ -1072,7 +1065,7 @@ TEST_F(DownloadProtectionServiceTest,
 
   // Setup trusted and allowlisted certificates for test cases (5) and (6).
   scoped_refptr<net::X509Certificate> test_cert(
-      ReadTestCertificate("test_cn.pem"));
+      ReadTestCertificate(testdata_path_, "test_cn.pem"));
   ASSERT_TRUE(test_cert.get());
   std::string test_cert_der(
       net::x509_util::CryptoBufferAsStringPiece(test_cert->cert_buffer()));
@@ -2816,6 +2809,262 @@ TEST_F(DownloadProtectionServiceTest,
   EXPECT_EQ(1, sb_service_->download_report_count());
   download_service_->MaybeSendDangerousDownloadOpenedReport(&item, true);
   EXPECT_EQ(2, sb_service_->download_report_count());
+}
+
+TEST_F(DownloadProtectionServiceTest,
+       VerifyBypassReportSentImmediatelyIfVerdictDangerous) {
+  extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile())
+      ->SetBrowserCloudPolicyClientForTesting(client_.get());
+
+  safe_browsing::SetOnSecurityEventReporting(profile()->GetPrefs(), true);
+
+  NiceMockDownloadItem item;
+  PrepareBasicDownloadItem(&item,
+                           std::vector<std::string>(),   // empty url_chain
+                           "http://www.google.com/",     // referrer
+                           FILE_PATH_LITERAL("a.tmp"),   // tmp_path
+                           FILE_PATH_LITERAL("a.exe"));  // final_path
+
+  // This test sets the mimetype to the empty string, so pass a valid set
+  // pointer, but only put the empty string in it.
+  std::set<std::string> expected_mimetypes{""};
+  EventReportValidator validator(client_.get());
+  validator.ExpectDangerousDownloadEvent(
+      "",                          // URL, not set in this test
+      final_path_.AsUTF8Unsafe(),  // Full path, including the directory
+      "68617368",                  // SHA256 of the fake download
+      "DANGEROUS_FILE_TYPE",       // expected_threat_type
+      extensions::SafeBrowsingPrivateEventRouter::
+          kTriggerFileDownload,  // expected_trigger
+      &expected_mimetypes,
+      0,  // expected_content_size
+      safe_browsing::EventResultToString(
+          safe_browsing::EventResult::BYPASSED),  // expected_result
+      "",                                         // expected_username
+      {} /* expected_scan_id */);
+
+  content::DownloadItemUtils::AttachInfo(&item, profile(), nullptr);
+  DownloadProtectionService::SetDownloadPingToken(&item, "token");
+  SetExtendedReportingPreference(true);
+  EXPECT_CALL(item, IsDangerous()).WillRepeatedly(Return(true));
+  EXPECT_CALL(item, GetDangerType())
+      .WillRepeatedly(Return(download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE));
+
+  download_service_->MaybeSendDangerousDownloadOpenedReport(&item, false);
+  EXPECT_EQ(1, sb_service_->download_report_count());
+}
+
+TEST_F(DownloadProtectionServiceTest,
+       VerifyBypassReportSentImmediatelyIfVerdictSensitive) {
+  extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile())
+      ->SetBrowserCloudPolicyClientForTesting(client_.get());
+
+  safe_browsing::SetOnSecurityEventReporting(profile()->GetPrefs(), true);
+
+  NiceMockDownloadItem item;
+  PrepareBasicDownloadItem(&item,
+                           std::vector<std::string>(),   // empty url_chain
+                           "http://www.google.com/",     // referrer
+                           FILE_PATH_LITERAL("a.tmp"),   // tmp_path
+                           FILE_PATH_LITERAL("a.exe"));  // final_path
+
+  content::DownloadItemUtils::AttachInfo(&item, profile(), nullptr);
+  DownloadProtectionService::SetDownloadPingToken(&item, "token");
+  SetExtendedReportingPreference(true);
+  enterprise_connectors::ContentAnalysisResponse response;
+  auto* result = response.add_results();
+  result->add_triggered_rules()->set_action(
+      enterprise_connectors::
+          ContentAnalysisResponse_Result_TriggeredRule_Action_WARN);
+  result->set_tag("dlp");
+  enterprise_connectors::FileMetadata file_metadata(
+      final_path_.AsUTF8Unsafe(), "68617368", "fake/mimetype", 1234, response);
+  auto scan_result = std::make_unique<enterprise_connectors::ScanResult>(
+      std::move(file_metadata));
+  item.SetUserData(enterprise_connectors::ScanResult::kKey,
+                   std::move(scan_result));
+  EXPECT_CALL(item, IsDangerous()).WillRepeatedly(Return(true));
+  EXPECT_CALL(item, GetDangerType())
+      .WillRepeatedly(
+          Return(download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_WARNING));
+
+  std::set<std::string> expected_mimetypes{"fake/mimetype"};
+  EventReportValidator validator(client_.get());
+  validator.ExpectSensitiveDataEvent(
+      "",                          // URL, not set in this test
+      final_path_.AsUTF8Unsafe(),  // Full path, including the directory
+      "68617368",                  // SHA256 of the fake download
+      extensions::SafeBrowsingPrivateEventRouter::
+          kTriggerFileDownload,  // expected_trigger
+      response.results()[0], &expected_mimetypes,
+      1234,  // expected_content_size
+      safe_browsing::EventResultToString(
+          safe_browsing::EventResult::BYPASSED),  // expected_result
+      "",                                         // expected_username
+      {} /* expected_scan_id */);
+
+  download_service_->MaybeSendDangerousDownloadOpenedReport(&item, false);
+  EXPECT_EQ(1, sb_service_->download_report_count());
+}
+
+TEST_F(DownloadProtectionServiceTest,
+       VerifyBypassReportSentAfterDangerousVerdictReceived) {
+  extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile())
+      ->SetBrowserCloudPolicyClientForTesting(client_.get());
+
+  safe_browsing::SetOnSecurityEventReporting(profile()->GetPrefs(), true);
+
+  NiceMockDownloadItem item;
+  PrepareBasicDownloadItem(&item,
+                           std::vector<std::string>(),   // empty url_chain
+                           "http://www.google.com/",     // referrer
+                           FILE_PATH_LITERAL("a.tmp"),   // tmp_path
+                           FILE_PATH_LITERAL("a.exe"));  // final_path
+  content::DownloadItemUtils::AttachInfo(&item, profile(), nullptr);
+  DownloadProtectionService::SetDownloadPingToken(&item, "token");
+  SetExtendedReportingPreference(true);
+  EXPECT_CALL(item, IsDangerous()).WillRepeatedly(Return(false));
+  EXPECT_CALL(item, GetDangerType())
+      .WillRepeatedly(Return(download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING));
+
+  download_service_->MaybeSendDangerousDownloadOpenedReport(&item, false);
+  EXPECT_EQ(0, sb_service_->download_report_count());
+
+  EXPECT_CALL(item, GetDangerType())
+      .WillRepeatedly(Return(download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE));
+
+  // This test sets the mimetype to the empty string, so pass a valid set
+  // pointer, but only put the empty string in it.
+  std::set<std::string> expected_mimetypes{""};
+  EventReportValidator validator(client_.get());
+  validator.ExpectDangerousDownloadEvent(
+      "",                          // URL, not set in this test
+      final_path_.AsUTF8Unsafe(),  // Full path, including the directory
+      "68617368",                  // SHA256 of the fake download
+      "DANGEROUS_FILE_TYPE",       // expected_threat_type
+      extensions::SafeBrowsingPrivateEventRouter::
+          kTriggerFileDownload,  // expected_trigger
+      &expected_mimetypes,
+      0,  // expected_content_size
+      safe_browsing::EventResultToString(
+          safe_browsing::EventResult::BYPASSED),  // expected_result
+      "",                                         // expected_username
+      {} /* expected_scan_id */);
+
+  download_service_->ReportDelayedBypassEvent(
+      &item, download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE);
+}
+
+TEST_F(DownloadProtectionServiceTest,
+       VerifyBypassReportSentAfterDlpVerdictReceived) {
+  extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile())
+      ->SetBrowserCloudPolicyClientForTesting(client_.get());
+
+  safe_browsing::SetOnSecurityEventReporting(profile()->GetPrefs(), true);
+
+  NiceMockDownloadItem item;
+  PrepareBasicDownloadItem(&item,
+                           std::vector<std::string>(),   // empty url_chain
+                           "http://www.google.com/",     // referrer
+                           FILE_PATH_LITERAL("a.tmp"),   // tmp_path
+                           FILE_PATH_LITERAL("a.exe"));  // final_path
+  content::DownloadItemUtils::AttachInfo(&item, profile(), nullptr);
+  DownloadProtectionService::SetDownloadPingToken(&item, "token");
+  SetExtendedReportingPreference(true);
+  EXPECT_CALL(item, IsDangerous()).WillRepeatedly(Return(false));
+  EXPECT_CALL(item, GetDangerType())
+      .WillRepeatedly(Return(download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING));
+
+  download_service_->MaybeSendDangerousDownloadOpenedReport(&item, false);
+  EXPECT_EQ(0, sb_service_->download_report_count());
+
+  enterprise_connectors::ContentAnalysisResponse response;
+  response.add_results()->add_triggered_rules()->set_action(
+      enterprise_connectors::
+          ContentAnalysisResponse_Result_TriggeredRule_Action_WARN);
+  enterprise_connectors::FileMetadata file_metadata(
+      final_path_.AsUTF8Unsafe(), "68617368", "fake/mimetype", 1234, response);
+  auto scan_result = std::make_unique<enterprise_connectors::ScanResult>(
+      std::move(file_metadata));
+  item.SetUserData(enterprise_connectors::ScanResult::kKey,
+                   std::move(scan_result));
+  EXPECT_CALL(item, GetDangerType())
+      .WillRepeatedly(
+          Return(download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_WARNING));
+
+  std::set<std::string> expected_mimetypes{"fake/mimetype"};
+  EventReportValidator validator(client_.get());
+  validator.ExpectSensitiveDataEvent(
+      "",                          // URL, not set in this test
+      final_path_.AsUTF8Unsafe(),  // Full path, including the directory
+      "68617368",                  // SHA256 of the fake download
+      extensions::SafeBrowsingPrivateEventRouter::
+          kTriggerFileDownload,  // expected_trigger
+      response.results()[0], &expected_mimetypes,
+      1234,  // expected_content_size
+      safe_browsing::EventResultToString(
+          safe_browsing::EventResult::BYPASSED),  // expected_result
+      "",                                         // expected_username
+      {} /* expected_scan_id */);
+
+  download_service_->ReportDelayedBypassEvent(
+      &item, download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_WARNING);
+}
+
+TEST_F(DownloadProtectionServiceTest,
+       VerifyBypassReportSentAfterDlpBlockVerdictReceived) {
+  extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile())
+      ->SetBrowserCloudPolicyClientForTesting(client_.get());
+
+  safe_browsing::SetOnSecurityEventReporting(profile()->GetPrefs(), true);
+
+  NiceMockDownloadItem item;
+  PrepareBasicDownloadItem(&item,
+                           std::vector<std::string>(),   // empty url_chain
+                           "http://www.google.com/",     // referrer
+                           FILE_PATH_LITERAL("a.tmp"),   // tmp_path
+                           FILE_PATH_LITERAL("a.exe"));  // final_path
+  content::DownloadItemUtils::AttachInfo(&item, profile(), nullptr);
+  DownloadProtectionService::SetDownloadPingToken(&item, "token");
+  SetExtendedReportingPreference(true);
+  EXPECT_CALL(item, IsDangerous()).WillRepeatedly(Return(false));
+  EXPECT_CALL(item, GetDangerType())
+      .WillRepeatedly(Return(download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING));
+
+  download_service_->MaybeSendDangerousDownloadOpenedReport(&item, false);
+  EXPECT_EQ(0, sb_service_->download_report_count());
+
+  enterprise_connectors::ContentAnalysisResponse response;
+  response.add_results()->add_triggered_rules()->set_action(
+      enterprise_connectors::
+          ContentAnalysisResponse_Result_TriggeredRule_Action_BLOCK);
+  enterprise_connectors::FileMetadata file_metadata(
+      final_path_.AsUTF8Unsafe(), "68617368", "fake/mimetype", 1234, response);
+  auto scan_result = std::make_unique<enterprise_connectors::ScanResult>(
+      std::move(file_metadata));
+  item.SetUserData(enterprise_connectors::ScanResult::kKey,
+                   std::move(scan_result));
+  EXPECT_CALL(item, GetDangerType())
+      .WillRepeatedly(
+          Return(download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_BLOCK));
+
+  std::set<std::string> expected_mimetypes{"fake/mimetype"};
+  EventReportValidator validator(client_.get());
+  validator.ExpectSensitiveDataEvent(
+      "",                          // URL, not set in this test
+      final_path_.AsUTF8Unsafe(),  // Full path, including the directory
+      "68617368",                  // SHA256 of the fake download
+      extensions::SafeBrowsingPrivateEventRouter::
+          kTriggerFileDownload,  // expected_trigger
+      response.results()[0], &expected_mimetypes,
+      1234,  // expected_content_size
+      safe_browsing::EventResultToString(
+          safe_browsing::EventResult::BYPASSED),  // expected_result
+      "",                                         // expected_username
+      {} /* expected_scan_id */);
+
+  download_service_->ReportDelayedBypassEvent(
+      &item, download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_BLOCK);
 }
 
 TEST_F(DownloadProtectionServiceTest, VerifyDangerousDownloadOpenedAPICall) {

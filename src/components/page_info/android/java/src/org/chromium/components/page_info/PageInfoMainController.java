@@ -8,7 +8,8 @@ import android.app.Activity;
 
 import androidx.annotation.Nullable;
 
-import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
+import org.chromium.content_public.browser.BrowserContextHandle;
+import org.chromium.url.GURL;
 
 /**
  * Interface for a page info main page controller.
@@ -41,4 +42,7 @@ public interface PageInfoMainController {
     /** @return The Activity associated with the controller. */
     @Nullable
     Activity getActivity();
+
+    /** @return The GURL of the page associated with the controller. */
+    GURL getURL();
 }

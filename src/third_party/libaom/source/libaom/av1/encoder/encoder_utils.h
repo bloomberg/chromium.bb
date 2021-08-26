@@ -854,7 +854,7 @@ static AOM_INLINE void highbd_set_var_fns(AV1_PRIMARY *const ppi) {
 #endif  // CONFIG_AV1_HIGHBITDEPTH
 
 static AOM_INLINE void copy_frame_prob_info(AV1_COMP *cpi) {
-  FrameProbInfo *const frame_probs = &cpi->frame_probs;
+  FrameProbInfo *const frame_probs = &cpi->ppi->frame_probs;
   if (cpi->sf.tx_sf.tx_type_search.prune_tx_type_using_stats) {
     av1_copy(frame_probs->tx_type_probs, default_tx_type_probs);
   }
@@ -869,24 +869,6 @@ static AOM_INLINE void copy_frame_prob_info(AV1_COMP *cpi) {
     av1_copy(frame_probs->switchable_interp_probs,
              default_switchable_interp_probs);
   }
-
-#if CONFIG_FRAME_PARALLEL_ENCODE
-  FrameProbInfo *const temp_frame_probs = &cpi->ppi->temp_frame_probs;
-  if (cpi->sf.tx_sf.tx_type_search.prune_tx_type_using_stats) {
-    av1_copy(temp_frame_probs->tx_type_probs, default_tx_type_probs);
-  }
-  if (cpi->sf.inter_sf.prune_obmc_prob_thresh > 0 &&
-      cpi->sf.inter_sf.prune_obmc_prob_thresh < INT_MAX) {
-    av1_copy(temp_frame_probs->obmc_probs, default_obmc_probs);
-  }
-  if (cpi->sf.inter_sf.prune_warped_prob_thresh > 0) {
-    av1_copy(temp_frame_probs->warped_probs, default_warped_probs);
-  }
-  if (cpi->sf.interp_sf.adaptive_interp_filter_search == 2) {
-    av1_copy(temp_frame_probs->switchable_interp_probs,
-             default_switchable_interp_probs);
-  }
-#endif
 }
 
 static AOM_INLINE void restore_cdef_coding_context(CdefInfo *const dst,

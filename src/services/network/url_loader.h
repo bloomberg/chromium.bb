@@ -35,6 +35,7 @@
 #include "services/network/public/mojom/accept_ch_frame_observer.mojom.h"
 #include "services/network/public/mojom/cookie_access_observer.mojom.h"
 #include "services/network/public/mojom/cross_origin_embedder_policy.mojom-forward.h"
+#include "services/network/public/mojom/devtools_observer.mojom.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/ip_address_space.mojom-forward.h"
 #include "services/network/public/mojom/ip_address_space.mojom-shared.h"
@@ -232,7 +233,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
     return url_loader_factory_;
   }
 
-  void SetAllowReportingRawHeaders(bool allow);
+  void SetEnableReportingRawHeaders(bool enable);
 
   mojom::LoadInfoPtr CreateLoadInfo();
 
@@ -465,10 +466,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   std::unique_ptr<ResourceScheduler::ScheduledResourceRequest>
       resource_scheduler_request_handle_;
 
-  // Whether client requested raw headers.
-  const bool want_raw_headers_;
-  // Whether we actually should report them.
-  bool report_raw_headers_ = false;
+  bool enable_reporting_raw_headers_ = false;
   net::HttpRawRequestHeaders raw_request_headers_;
   scoped_refptr<const net::HttpResponseHeaders> raw_response_headers_;
 

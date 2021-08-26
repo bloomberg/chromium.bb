@@ -338,7 +338,14 @@ void OmniboxPedalProvider::LoadPedalConcepts() {
     if (!url->empty()) {
       pedal->SetNavigationUrl(GURL(*url));
     }
-    if (!OmniboxFieldTrial::IsPedalsTranslationConsoleEnabled()) {
+
+    std::vector<OmniboxPedal::SynonymGroupSpec> specs =
+        pedal->SpecifySynonymGroups();
+    // `specs` will be empty for any pedals not yet processed by l10n because
+    // the appropriate string names won't be defined. In such cases, we fall
+    // back to loading from JSON to robustly handle partial presence of data.
+    if (specs.empty() ||
+        !OmniboxFieldTrial::IsPedalsTranslationConsoleEnabled()) {
       for (const auto& group_value : pedal_value.FindKey("groups")->GetList()) {
         // Note, group JSON values are preprocessed by the data generation tool.
         pedal->AddSynonymGroup(LoadSynonymGroupValue(group_value));
@@ -376,6 +383,8 @@ OmniboxPedal::SynonymGroup OmniboxPedalProvider::LoadSynonymGroupValue(
     }
     synonym_group.AddSynonym(std::move(synonym_all_tokens));
   }
+  // Note: Here would be the place to call `SortSynonyms`, but it isn't
+  // needed when loading from a Value because such values are preprocessed.
   return synonym_group;
 }
 
@@ -384,11 +393,13 @@ OmniboxPedal::SynonymGroup OmniboxPedalProvider::LoadSynonymGroupString(
     bool match_once,
     std::u16string synonyms_csv) {
   OmniboxPedal::SynonymGroup group(required, match_once, 0);
-  StringTokenizer16 tokenizer(synonyms_csv, u",");
+  // Note, 'ar' language uses '،' instead of ',' to delimit synonyms.
+  StringTokenizer16 tokenizer(synonyms_csv, u",،");
   while (tokenizer.GetNext()) {
     OmniboxPedal::TokenSequence sequence(0);
     TokenizeAndExpandDictionary(sequence, tokenizer.token());
     group.AddSynonym(std::move(sequence));
   }
+  group.SortSynonyms();
   return group;
 }
