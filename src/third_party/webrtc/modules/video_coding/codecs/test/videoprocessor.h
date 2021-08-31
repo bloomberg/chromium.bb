@@ -20,6 +20,7 @@
 #include <vector>
 
 #include "absl/types/optional.h"
+#include "api/sequence_checker.h"
 #include "api/task_queue/queued_task.h"
 #include "api/task_queue/task_queue_base.h"
 #include "api/test/videocodec_test_fixture.h"
@@ -37,9 +38,8 @@
 #include "rtc_base/buffer.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/constructor_magic.h"
-#include "rtc_base/synchronization/sequence_checker.h"
+#include "rtc_base/system/no_unique_address.h"
 #include "rtc_base/thread_annotations.h"
-#include "rtc_base/thread_checker.h"
 #include "test/testsupport/frame_reader.h"
 #include "test/testsupport/frame_writer.h"
 
@@ -121,7 +121,6 @@ class VideoProcessor {
           : video_processor_(video_processor),
             encoded_image_(encoded_image),
             codec_specific_info_(*codec_specific_info) {
-        encoded_image_.Retain();
       }
 
       bool Run() override {
@@ -270,7 +269,7 @@ class VideoProcessor {
   bool is_finalized_ RTC_GUARDED_BY(sequence_checker_);
 
   // This class must be operated on a TaskQueue.
-  SequenceChecker sequence_checker_;
+  RTC_NO_UNIQUE_ADDRESS SequenceChecker sequence_checker_;
 
   RTC_DISALLOW_COPY_AND_ASSIGN(VideoProcessor);
 };

@@ -21,7 +21,7 @@ namespace {
 constexpr int kCacheTimeoutInMinutes = 5;
 constexpr int kFetchTimeoutInSeconds = 3;
 
-constexpr int kMaxDownloadSizeInBytes = 10 * 1024;
+constexpr int kMaxDownloadSizeInBytes = 512 * 1024;
 
 using ParsingResult =
     password_manager::PasswordScriptsFetcherImpl::ParsingResult;
@@ -247,7 +247,7 @@ base::flat_set<ParsingResult> PasswordScriptsFetcherImpl::ParseResponse(
   base::JSONReader::ValueWithError data =
       base::JSONReader::ReadAndReturnValueWithError(*response_body);
 
-  if (data.value == base::nullopt) {
+  if (data.value == absl::nullopt) {
     DVLOG(1) << "Parse error: " << data.error_message;
     return {ParsingResult::kInvalidJson};
   }

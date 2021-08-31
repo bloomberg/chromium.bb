@@ -4,7 +4,7 @@
 
 const {assert} = chai;
 
-import * as ClientVariations from '../../../../front_end/client_variations/client_variations.js';
+import * as ClientVariations from '../../../../front_end/third_party/chromium/client-variations/client-variations.js';
 
 describe('formatClientVariations', () => {
   it('formats input containing both types of variation IDs', () => {
@@ -68,6 +68,15 @@ describe('parseClientVariations', () => {
     assert.deepEqual(result, {
       variationIds: [111, 222, 333],
       triggerVariationIds: [444, 555],
+    });
+  });
+
+  // Please refer crbug.com/1160346 for more details.
+  it('returns empty lists for invalid encoded data', () => {
+    const result = ClientVariations.parseClientVariations('Z2liYmVyaXNo');
+    assert.deepEqual(result, {
+      variationIds: [],
+      triggerVariationIds: [],
     });
   });
 });

@@ -18,8 +18,9 @@
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/password_manager/core/browser/login_database.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
-#include "components/password_manager/core/browser/password_store_default.h"
 #include "components/password_manager/core/browser/password_store_factory_util.h"
+#include "components/password_manager/core/browser/password_store_impl.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/sync/driver/sync_service.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
@@ -92,17 +93,31 @@ IOSChromePasswordStoreFactory::BuildServiceInstanceFor(
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE}));
 
   scoped_refptr<password_manager::PasswordStore> store =
-      new password_manager::PasswordStoreDefault(std::move(login_db));
+      new password_manager::PasswordStoreImpl(std::move(login_db));
   if (!store->Init(nullptr)) {
     // TODO(crbug.com/479725): Remove the LOG once this error is visible in the
     // UI.
     LOG(WARNING) << "Could not initialize password store.";
     return nullptr;
   }
+
   password_manager_util::RemoveUselessCredentials(
       CredentialsCleanerRunnerFactory::GetForBrowserState(context), store,
       ChromeBrowserState::FromBrowserState(context)->GetPrefs(),
       base::TimeDelta::FromSeconds(60), base::NullCallback());
+
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kFillingAcrossAffiliatedWebsites)) {
+    // Try to create affiliation service without awaiting synced state changes.
+    // TODO(crbug.com/1202699): Remove sync service completely after
+    // launching HashAffiliationLookup.
+    password_manager::ToggleAffiliationBasedMatchingBasedOnPasswordSyncedState(
+        store.get(), /*sync_service=*/nullptr,
+        context->GetSharedURLLoaderFactory(),
+        GetApplicationContext()->GetNetworkConnectionTracker(),
+        context->GetStatePath());
+  }
+
   return store;
 }
 

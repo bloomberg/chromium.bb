@@ -9,6 +9,7 @@
 #   chrome/renderer/extensions/OWNERS
 #   chrome/renderer/resources/extensions/OWNERS
 
+set noparent
 rdevlin.cronin@chromium.org
 lazyboy@chromium.org
 karandeepb@chromium.org
@@ -18,4 +19,4 @@ finnur@chromium.org
 reillyg@chromium.org
 
 # Translation artifacts:
-per-file *.xtb=file://tools/translation/TRANSLATION_OWNERS
+per-file ....xtb=file://tools/translation/TRANSLATION_OWNERS

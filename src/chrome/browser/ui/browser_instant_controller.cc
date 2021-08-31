@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/browser_instant_controller.h"
 
 #include "base/bind.h"
-#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
@@ -15,6 +14,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
+#include "components/infobars/content/content_infobar_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
@@ -54,10 +54,11 @@ class TabReloader : public content::WebContentsUserData<TabReloader> {
     web_contents_->GetController().Reload(content::ReloadType::NORMAL, false);
 
     // As the reload was not triggered by the user we don't want to close any
-    // infobars. We have to tell the InfoBarService after the reload,
-    // otherwise it would ignore this call when
+    // infobars. We have to tell the infobars::ContentInfoBarManager after the
+    // reload, otherwise it would ignore this call when
     // WebContentsObserver::DidStartNavigationToPendingEntry is invoked.
-    InfoBarService::FromWebContents(web_contents_)->set_ignore_next_reload();
+    infobars::ContentInfoBarManager::FromWebContents(web_contents_)
+        ->set_ignore_next_reload();
 
     web_contents_->RemoveUserData(UserDataKey());
   }
@@ -82,8 +83,9 @@ BrowserInstantController::BrowserInstantController(Browser* browser)
     search_engine_base_url_tracker_ =
         std::make_unique<SearchEngineBaseURLTracker>(
             template_url_service, std::make_unique<UIThreadSearchTermsData>(),
-            base::Bind(&BrowserInstantController::OnSearchEngineBaseURLChanged,
-                       base::Unretained(this)));
+            base::BindRepeating(
+                &BrowserInstantController::OnSearchEngineBaseURLChanged,
+                base::Unretained(this)));
   }
 }
 
@@ -98,8 +100,9 @@ void BrowserInstantController::OnSearchEngineBaseURLChanged(
     if (!contents)
       continue;
 
-    bool is_ntp = contents->GetMainFrame()->GetSiteInstance()->GetSiteURL() ==
-                  GURL(chrome::kChromeUINewTabPageURL);
+    GURL site_url = contents->GetMainFrame()->GetSiteInstance()->GetSiteURL();
+    bool is_ntp = site_url == GURL(chrome::kChromeUINewTabPageURL) ||
+                  site_url == GURL(chrome::kChromeUINewTabPageThirdPartyURL);
 
     if (!is_ntp) {
       InstantService* instant_service =

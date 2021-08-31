@@ -45,7 +45,7 @@ OAuthLoginDetector::OAuthLoginDetector()
 
 OAuthLoginDetector::~OAuthLoginDetector() = default;
 
-base::Optional<GURL> OAuthLoginDetector::GetSuccessfulLoginFlowSite(
+absl::optional<GURL> OAuthLoginDetector::GetSuccessfulLoginFlowSite(
     const GURL& prev_navigation_url,
     const std::vector<GURL>& redirect_chain) {
   for (size_t i = 0; i < redirect_chain.size(); i++) {
@@ -53,7 +53,7 @@ base::Optional<GURL> OAuthLoginDetector::GetSuccessfulLoginFlowSite(
     // Allow login flows to be detected only on HTTPS pages.
     if (!navigation_url.SchemeIs(url::kHttpsScheme)) {
       login_flow_info_.reset();
-      return base::nullopt;
+      return absl::nullopt;
     }
 
     // Check for OAuth login completion.
@@ -84,7 +84,9 @@ base::Optional<GURL> OAuthLoginDetector::GetSuccessfulLoginFlowSite(
       }
     }
   }
-  return base::nullopt;
+  if (login_flow_info_)
+    login_flow_info_->count_navigations_since_login_flow_start++;
+  return absl::nullopt;
 }
 
 void OAuthLoginDetector::DidOpenAsPopUp(const GURL& opener_navigation_url) {
@@ -94,14 +96,14 @@ void OAuthLoginDetector::DidOpenAsPopUp(const GURL& opener_navigation_url) {
   }
 }
 
-base::Optional<GURL> OAuthLoginDetector::GetPopUpLoginFlowSite() const {
+absl::optional<GURL> OAuthLoginDetector::GetPopUpLoginFlowSite() const {
   // OAuth has never started.
   if (!login_flow_info_)
-    return base::nullopt;
+    return absl::nullopt;
 
   // Only consider OAuth completion when this is a popup window.
   if (!popup_opener_navigation_site_)
-    return base::nullopt;
+    return absl::nullopt;
 
   return login_flow_info_->oauth_requestor_site;
 }
@@ -125,7 +127,6 @@ bool OAuthLoginDetector::CheckSuccessfulLoginCompletion(
   // site.
   if (GetSiteNameForURL(navigation_url) ==
       GetSiteNameForURL(login_flow_info_->oauth_provider_site)) {
-    login_flow_info_->count_navigations_since_login_flow_start++;
     return false;
   }
 
@@ -139,12 +140,9 @@ bool OAuthLoginDetector::CheckSuccessfulLoginCompletion(
 
   // PopUp based login completion flow should only navigate within the OAuth
   // provider site.
-  if (popup_opener_navigation_site_) {
+  if (popup_opener_navigation_site_)
     login_flow_info_.reset();
-    return false;
-  }
 
-  login_flow_info_->count_navigations_since_login_flow_start++;
   return false;
 }
 

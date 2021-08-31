@@ -26,29 +26,29 @@ class RenderPassTest : public DawnTest {
         DawnTest::SetUp();
 
         // Shaders to draw a bottom-left triangle in blue.
-        mVSModule = utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
-                #version 450
-                void main() {
-                    const vec2 pos[3] = vec2[3](
-                        vec2(-1.f, 1.f), vec2(1.f, -1.f), vec2(-1.f, -1.f));
-                    gl_Position = vec4(pos[gl_VertexIndex], 0.f, 1.f);
-                 })");
+        mVSModule = utils::CreateShaderModule(device, R"(
+            [[stage(vertex)]]
+            fn main([[builtin(vertex_index)]] VertexIndex : u32) -> [[builtin(position)]] vec4<f32> {
+                let pos : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
+                    vec2<f32>(-1.0,  1.0),
+                    vec2<f32>( 1.0, -1.0),
+                    vec2<f32>(-1.0, -1.0));
 
-        wgpu::ShaderModule fsModule =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
-                #version 450
-                layout(location = 0) out vec4 fragColor;
-                void main() {
-                    fragColor = vec4(0.0, 0.0, 1.0, 1.0);
-                })");
+                return vec4<f32>(pos[VertexIndex], 0.0, 1.0);
+            })");
 
-        utils::ComboRenderPipelineDescriptor descriptor(device);
-        descriptor.vertexStage.module = mVSModule;
-        descriptor.cFragmentStage.module = fsModule;
-        descriptor.primitiveTopology = wgpu::PrimitiveTopology::TriangleList;
-        descriptor.cColorStates[0].format = kFormat;
+        wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
+            [[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
+                return vec4<f32>(0.0, 0.0, 1.0, 1.0);
+            })");
 
-        pipeline = device.CreateRenderPipeline(&descriptor);
+        utils::ComboRenderPipelineDescriptor2 descriptor;
+        descriptor.vertex.module = mVSModule;
+        descriptor.cFragment.module = fsModule;
+        descriptor.primitive.topology = wgpu::PrimitiveTopology::TriangleList;
+        descriptor.cTargets[0].format = kFormat;
+
+        pipeline = device.CreateRenderPipeline2(&descriptor);
     }
 
     wgpu::Texture CreateDefault2DTexture() {
@@ -56,7 +56,7 @@ class RenderPassTest : public DawnTest {
         descriptor.dimension = wgpu::TextureDimension::e2D;
         descriptor.size.width = kRTSize;
         descriptor.size.height = kRTSize;
-        descriptor.size.depth = 1;
+        descriptor.size.depthOrArrayLayers = 1;
         descriptor.sampleCount = 1;
         descriptor.format = kFormat;
         descriptor.mipLevelCount = 1;
@@ -137,19 +137,17 @@ TEST_P(RenderPassTest, NoCorrespondingFragmentShaderOutputs) {
 
     {
         // Next we use a pipeline whose fragment shader has no outputs.
-        wgpu::ShaderModule fsModule =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
-                #version 450
-                void main() {
-                })");
-        utils::ComboRenderPipelineDescriptor descriptor(device);
-        descriptor.vertexStage.module = mVSModule;
-        descriptor.cFragmentStage.module = fsModule;
-        descriptor.primitiveTopology = wgpu::PrimitiveTopology::TriangleList;
-        descriptor.cColorStates[0].format = kFormat;
+        wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
+            [[stage(fragment)]] fn main() {
+            })");
+        utils::ComboRenderPipelineDescriptor2 descriptor;
+        descriptor.vertex.module = mVSModule;
+        descriptor.cFragment.module = fsModule;
+        descriptor.primitive.topology = wgpu::PrimitiveTopology::TriangleList;
+        descriptor.cTargets[0].format = kFormat;
 
         wgpu::RenderPipeline pipelineWithNoFragmentOutput =
-            device.CreateRenderPipeline(&descriptor);
+            device.CreateRenderPipeline2(&descriptor);
 
         pass.SetPipeline(pipelineWithNoFragmentOutput);
         pass.Draw(3);
@@ -169,4 +167,5 @@ DAWN_INSTANTIATE_TEST(RenderPassTest,
                       D3D12Backend({}, {"use_d3d12_render_pass"}),
                       MetalBackend(),
                       OpenGLBackend(),
+                      OpenGLESBackend(),
                       VulkanBackend());

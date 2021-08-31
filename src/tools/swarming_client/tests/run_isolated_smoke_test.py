@@ -270,6 +270,7 @@ class RunIsolatedTest(unittest.TestCase):
     # Use the dev instance for testing for now.
     self._cas_instance = 'chromium-swarm-dev'
     self._cas_cache_dir = os.path.join(self.tempdir, 'c')
+    self._cas_kvs = os.path.join(self.tempdir, 'cas_kvs')
 
   def tearDown(self):
     try:
@@ -353,6 +354,8 @@ class RunIsolatedTest(unittest.TestCase):
           self._cas_cache_dir,
           '-dir',
           dest,
+          '-kvs-file',
+          self._cas_kvs,
       ]
       _, err, returncode = self._run_cas(cmd)
       self.assertEqual('', err)
@@ -561,6 +564,7 @@ class RunIsolatedTest(unittest.TestCase):
     return cached_file_path
 
   @unittest.skipIf(less_than_mac_10_15(), 'crbug.com/1099655')
+  @unittest.skipIf(sys.platform == 'win32', 'crbug.com/1148174')
   def test_isolated_corrupted_cache_entry_different_size(self):
     # Test that an entry with an invalid file size properly gets removed and
     # fetched again. This test case also check for file modes.
@@ -569,6 +573,7 @@ class RunIsolatedTest(unittest.TestCase):
     self.assertEqual(CONTENTS['file1.txt'], read_content(cached_file_path))
 
   @unittest.skipIf(less_than_mac_10_15(), 'crbug.com/1099655')
+  @unittest.skipIf(sys.platform == 'win32', 'crbug.com/1148174')
   def test_isolated_corrupted_cache_entry_same_size(self):
     # Test that an entry with an invalid file content but same size is NOT
     # detected property.
@@ -576,6 +581,7 @@ class RunIsolatedTest(unittest.TestCase):
                                                     b' ')
     self.assertEqual(CONTENTS['file1.txt'], read_content(cached_file_path))
 
+  @unittest.skipIf(sys.platform == 'win32', 'crbug.com/1148174')
   def test_minimal_lower_priority(self):
     cmd = [
         '--cache', self._isolated_cache_dir, '--lower-priority', '--',

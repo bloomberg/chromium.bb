@@ -5,7 +5,6 @@
 import("//third_party/closure_compiler/compile_js.gni")
 
 js_type_check("closure_compile") {
-  uses_js_modules = true
   closure_flags = default_closure_args + mojom_js_args + [
                     "js_module_root=" + rebase_path(".", root_build_dir),
                     "js_module_root=" + rebase_path(
@@ -18,7 +17,7 @@ js_type_check("closure_compile") {
 js_library("site_engagement") {
   deps = [
     "//components/site_engagement/core/mojom:mojo_bindings_webui_js",
-    "//ui/webui/resources/js:assert",
-    "//ui/webui/resources/js:util",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:util.m",
   ]
 }

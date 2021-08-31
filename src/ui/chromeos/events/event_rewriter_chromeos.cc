@@ -7,6 +7,7 @@
 #include <fcntl.h>
 #include <stddef.h>
 
+#include "ash/constants/ash_features.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
@@ -17,8 +18,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
-#include "chromeos/constants/chromeos_features.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "device/udev_linux/scoped_udev.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
@@ -263,6 +262,23 @@ bool RewriteWithKeyboardRemappings(
     }
   }
   return false;
+}
+
+// Given a set of KeyboardRemapping structs, finds a matching struct
+// if possible, then returns the KeyboardCode that would have been the
+// result of the remapping. If there is no match then VKEY_UNKNOWN
+// is returned. No remapping actually occurs in either case.
+ui::KeyboardCode MatchedDeprecatedRemapping(
+    const KeyboardRemapping* mappings,
+    size_t num_mappings,
+    const EventRewriterChromeOS::MutableKeyState& input_state) {
+  for (size_t i = 0; i < num_mappings; ++i) {
+    const KeyboardRemapping& map = mappings[i];
+    if (MatchKeyboardRemapping(input_state, map.condition, /*strict=*/false)) {
+      return map.result.key_code;
+    }
+  }
+  return VKEY_UNKNOWN;
 }
 
 void SetMeaningForLayout(EventType type,
@@ -547,6 +563,127 @@ bool IdentifyKeyboard(const InputDevice& keyboard_device,
   return true;
 }
 
+// Records a user action when the user press search plus a digit to
+// generate an F-key.
+void RecordSearchPlusDigitFKeyRewrite(ui::EventType event_type,
+                                      ui::KeyboardCode key_code) {
+  if (event_type != ET_KEY_PRESSED) {
+    return;
+  }
+
+  switch (key_code) {
+    case ui::VKEY_F1:
+      base::RecordAction(base::UserMetricsAction("SearchPlusDigitRewrite_F1"));
+      break;
+    case ui::VKEY_F2:
+      base::RecordAction(base::UserMetricsAction("SearchPlusDigitRewrite_F2"));
+      break;
+    case ui::VKEY_F3:
+      base::RecordAction(base::UserMetricsAction("SearchPlusDigitRewrite_F3"));
+      break;
+    case ui::VKEY_F4:
+      base::RecordAction(base::UserMetricsAction("SearchPlusDigitRewrite_F4"));
+      break;
+    case ui::VKEY_F5:
+      base::RecordAction(base::UserMetricsAction("SearchPlusDigitRewrite_F5"));
+      break;
+    case ui::VKEY_F6:
+      base::RecordAction(base::UserMetricsAction("SearchPlusDigitRewrite_F6"));
+      break;
+    case ui::VKEY_F7:
+      base::RecordAction(base::UserMetricsAction("SearchPlusDigitRewrite_F7"));
+      break;
+    case ui::VKEY_F8:
+      base::RecordAction(base::UserMetricsAction("SearchPlusDigitRewrite_F8"));
+      break;
+    case ui::VKEY_F9:
+      base::RecordAction(base::UserMetricsAction("SearchPlusDigitRewrite_F9"));
+      break;
+    case ui::VKEY_F10:
+      base::RecordAction(base::UserMetricsAction("SearchPlusDigitRewrite_F10"));
+      break;
+    case ui::VKEY_F11:
+      base::RecordAction(base::UserMetricsAction("SearchPlusDigitRewrite_F11"));
+      break;
+    case ui::VKEY_F12:
+      base::RecordAction(base::UserMetricsAction("SearchPlusDigitRewrite_F12"));
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+}
+
+// Records metrics for the Alt and Search based variants of keys in the
+// "six pack" eg. Home, End, PageUp, PageDown, Delete, Insert.
+void RecordSixPackEventRewrites(ui::EventType event_type,
+                                ui::KeyboardCode key_code,
+                                bool legacy_variant) {
+  if (event_type != ET_KEY_PRESSED) {
+    return;
+  }
+
+  if (!legacy_variant) {
+    switch (key_code) {
+      case ui::VKEY_DELETE:
+        base::RecordAction(
+            base::UserMetricsAction("SearchBasedKeyRewrite_Delete"));
+        break;
+      case ui::VKEY_INSERT:
+        base::RecordAction(base::UserMetricsAction(
+            "SearchBasedKeyRewrite_Insert_ViaSearchShiftBackspace"));
+        break;
+      case ui::VKEY_HOME:
+        base::RecordAction(
+            base::UserMetricsAction("SearchBasedKeyRewrite_Home"));
+        break;
+      case ui::VKEY_END:
+        base::RecordAction(
+            base::UserMetricsAction("SearchBasedKeyRewrite_End"));
+        break;
+      case ui::VKEY_PRIOR:
+        base::RecordAction(
+            base::UserMetricsAction("SearchBasedKeyRewrite_PageUp"));
+        break;
+      case ui::VKEY_NEXT:
+        base::RecordAction(
+            base::UserMetricsAction("SearchBasedKeyRewrite_PageDown"));
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  } else {
+    switch (key_code) {
+      case ui::VKEY_DELETE:
+        base::RecordAction(
+            base::UserMetricsAction("AltBasedKeyRewrite_Delete"));
+        break;
+      case ui::VKEY_INSERT:
+        base::RecordAction(
+            base::UserMetricsAction("SearchBasedKeyRewrite_Insert"));
+        break;
+      case ui::VKEY_HOME:
+        base::RecordAction(base::UserMetricsAction("AltBasedKeyRewrite_Home"));
+        break;
+      case ui::VKEY_END:
+        base::RecordAction(base::UserMetricsAction("AltBasedKeyRewrite_End"));
+        break;
+      case ui::VKEY_PRIOR:
+        base::RecordAction(
+            base::UserMetricsAction("AltBasedKeyRewrite_PageUp"));
+        break;
+      case ui::VKEY_NEXT:
+        base::RecordAction(
+            base::UserMetricsAction("AltBasedKeyRewrite_PageDown"));
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
+}
+
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -577,14 +714,25 @@ EventRewriterChromeOS::EventRewriterChromeOS(
     Delegate* delegate,
     EventRewriter* sticky_keys_controller,
     bool privacy_screen_supported)
+    : EventRewriterChromeOS(delegate,
+                            sticky_keys_controller,
+                            privacy_screen_supported,
+                            ::chromeos::input_method::InputMethodManager::Get()
+                                ->GetImeKeyboard()) {}
+
+EventRewriterChromeOS::EventRewriterChromeOS(
+    Delegate* delegate,
+    EventRewriter* sticky_keys_controller,
+    bool privacy_screen_supported,
+    ::chromeos::input_method::ImeKeyboard* ime_keyboard)
     : last_keyboard_device_id_(ED_UNKNOWN_DEVICE),
-      ime_keyboard_for_testing_(nullptr),
       delegate_(delegate),
       sticky_keys_controller_(sticky_keys_controller),
       privacy_screen_supported_(privacy_screen_supported),
       pressed_modifier_latches_(EF_NONE),
       latched_modifier_latches_(EF_NONE),
-      used_modifier_latches_(EF_NONE) {}
+      used_modifier_latches_(EF_NONE),
+      ime_keyboard_(ime_keyboard) {}
 
 EventRewriterChromeOS::~EventRewriterChromeOS() {}
 
@@ -819,10 +967,17 @@ bool EventRewriterChromeOS::RewriteModifierKeys(const KeyEvent& key_event,
     state->key = remapped_key->result.key;
     incoming.flags |= characteristic_flag;
     characteristic_flag = remapped_key->flag;
-    if (incoming.key_code == VKEY_CAPITAL) {
-      // Caps Lock is rewritten to another key event, remove EF_CAPS_LOCK_ON
-      // flag to prevent the keyboard's Caps Lock state being synced to the
-      // rewritten key event's flag in InputMethodChromeOS.
+
+    // If the internal state of CapLocks is enabled, we should not remove
+    // the modifier flag. This is important for the case in which the user
+    // remaps the CapsLock key to another key (e.g. Search) and CapsLock is
+    // enabled. If the user were to press the CapsLock key (remapped to Search),
+    // we risk removing the CapsLock modifier and accidentally disabling
+    // CapsLocks.
+    if (incoming.key_code == VKEY_CAPITAL &&
+        !ime_keyboard_->CapsLockIsEnabled()) {
+      // We remove the CapsLock modifier here because we do not want to
+      // turn on the Capslock modifier when the key has been remapped.
       incoming.flags &= ~EF_CAPS_LOCK_ON;
     }
     if (remapped_key->remap_to == chromeos::ModifierKey::kCapsLockKey)
@@ -860,12 +1015,7 @@ bool EventRewriterChromeOS::RewriteModifierKeys(const KeyEvent& key_event,
   // AcceleratorController, so that the event is visible to apps (see
   // crbug.com/775743).
   if (key_event.type() == ET_KEY_RELEASED && state->key_code == VKEY_CAPITAL) {
-    ::chromeos::input_method::ImeKeyboard* ime_keyboard =
-        ime_keyboard_for_testing_
-            ? ime_keyboard_for_testing_
-            : ::chromeos::input_method::InputMethodManager::Get()
-                  ->GetImeKeyboard();
-    ime_keyboard->SetCapsLockEnabled(!ime_keyboard->CapsLockIsEnabled());
+    ime_keyboard_->SetCapsLockEnabled(!ime_keyboard_->CapsLockIsEnabled());
   }
   return exact_event;
 }
@@ -957,18 +1107,38 @@ int EventRewriterChromeOS::GetRemappedModifierMasks(const Event& event,
 bool EventRewriterChromeOS::ShouldRemapToRightClick(
     const MouseEvent& mouse_event,
     int flags,
-    int* matched_mask) const {
+    int* matched_mask,
+    bool* matched_alt_deprecation) const {
   *matched_mask = 0;
-  if (base::FeatureList::IsEnabled(
-          ::chromeos::features::kUseSearchClickForRightClick)) {
+  *matched_alt_deprecation = false;
+
+  // TODO(crbug.com/1179893): When enabling the deprecate alt click flag by
+  // default, decide whether kUseSearchClickForRightClick being disabled
+  // should be able to override it.
+  const bool use_search_key =
+      base::FeatureList::IsEnabled(
+          ::chromeos::features::kUseSearchClickForRightClick) ||
+      ::features::IsDeprecateAltClickEnabled();
+  if (use_search_key) {
     if (AreFlagsSet(flags, kSearchLeftButton)) {
       *matched_mask = kSearchLeftButton;
+    } else if (AreFlagsSet(flags, kAltLeftButton) &&
+               is_alt_down_remapping_enabled_) {
+      // When the alt variant is deprecated, report when it would have matched.
+      *matched_alt_deprecation =
+          ((mouse_event.type() == ET_MOUSE_PRESSED) ||
+           pressed_device_ids_.count(mouse_event.source_device_id())) &&
+          IsFromTouchpadDevice(mouse_event);
     }
   } else {
-    if (AreFlagsSet(flags, kAltLeftButton)) {
+    if (AreFlagsSet(flags, kAltLeftButton) && is_alt_down_remapping_enabled_) {
       *matched_mask = kAltLeftButton;
     }
   }
+
+  // If the event rewrite matched (ie. matched_mask != 0) then
+  // |matched_alt_deprecation| must be false.
+  DCHECK(*matched_mask == 0 || !*matched_alt_deprecation);
 
   return (*matched_mask != 0) &&
          ((mouse_event.type() == ET_MOUSE_PRESSED) ||
@@ -979,9 +1149,6 @@ bool EventRewriterChromeOS::ShouldRemapToRightClick(
 EventRewriteStatus EventRewriterChromeOS::RewriteKeyEvent(
     const KeyEvent& key_event,
     std::unique_ptr<Event>* rewritten_event) {
-  if (delegate_ && delegate_->IsExtensionCommandRegistered(key_event.key_code(),
-                                                           key_event.flags()))
-    return EVENT_REWRITE_CONTINUE;
   if (key_event.source_device_id() != ED_UNKNOWN_DEVICE)
     DeviceKeyPressedOrReleased(key_event.source_device_id());
 
@@ -998,12 +1165,27 @@ EventRewriteStatus EventRewriterChromeOS::RewriteKeyEvent(
   // Do not rewrite an event sent by ui_controls::SendKeyPress(). See
   // crbug.com/136465.
   if (!(key_event.flags() & EF_FINAL)) {
+    // If RewriteModifierKeys() returns true there should be no more processing
+    // done to the key event. It will only return true if the key event is
+    // rewritten to ALTGR. A false return is not an error.
     if (RewriteModifierKeys(key_event, &state)) {
       // Early exit with completed event.
       BuildRewrittenKeyEvent(key_event, state, rewritten_event);
       return EVENT_REWRITE_REWRITTEN;
     }
     RewriteNumPadKeys(key_event, &state);
+  }
+
+  if (delegate_ &&
+      delegate_->IsExtensionCommandRegistered(state.key_code, state.flags)) {
+    // If |state| and |key_event| have any different fields, a rewrite has
+    // occurred. Build the rewritten key event and return early.
+    if (MutableKeyState(&key_event) != state) {
+      BuildRewrittenKeyEvent(key_event, state, rewritten_event);
+      return EVENT_REWRITE_REWRITTEN;
+    }
+    // The key event was not modified, forward the event downstream.
+    return EVENT_REWRITE_CONTINUE;
   }
 
   EventRewriteStatus status = EVENT_REWRITE_CONTINUE;
@@ -1184,8 +1366,12 @@ void EventRewriterChromeOS::RewriteExtendedKeys(const KeyEvent& key_event,
          key_event.type() == ET_KEY_RELEASED);
   MutableKeyState incoming = *state;
 
-  if ((incoming.flags & (EF_COMMAND_DOWN | EF_ALT_DOWN)) ==
-      (EF_COMMAND_DOWN | EF_ALT_DOWN)) {
+  // TODO(crbug.com/1179893): This workaround isn't needed once Alt rewrites
+  // are deprecated.
+  if ((!::features::IsImprovedKeyboardShortcutsEnabled() ||
+       !::features::IsDeprecateAltBasedSixPackEnabled()) &&
+      ((incoming.flags & (EF_COMMAND_DOWN | EF_ALT_DOWN)) ==
+       (EF_COMMAND_DOWN | EF_ALT_DOWN))) {
     // Allow Search to avoid rewriting extended keys.
     // For these, we only remove the EF_COMMAND_DOWN flag.
     static const KeyboardRemapping::Condition kAvoidRemappings[] = {
@@ -1204,27 +1390,81 @@ void EventRewriterChromeOS::RewriteExtendedKeys(const KeyEvent& key_event,
   }
 
   if (incoming.flags & EF_COMMAND_DOWN) {
-    bool strict = ::features::IsNewShortcutMappingEnabled();
+    bool strict = false;
     bool skip_search_key_remapping =
         delegate_ && delegate_->IsSearchKeyAcceleratorReserved();
-    if (strict) {
-      // These two keys are used to select to Home/End.
-      static const KeyboardRemapping kNewSearchRemappings[] = {
-          {// Search+Shift+Left -> select to home.
-           {EF_COMMAND_DOWN | EF_SHIFT_DOWN, VKEY_LEFT},
-           {EF_SHIFT_DOWN, DomCode::HOME, DomKey::HOME, VKEY_HOME}},
-          {// Search+Shift+Right -> select to end.
-           {EF_COMMAND_DOWN | EF_SHIFT_DOWN, VKEY_RIGHT},
-           {EF_SHIFT_DOWN, DomCode::END, DomKey::END, VKEY_END}},
+
+    if (!::features::IsImprovedKeyboardShortcutsEnabled()) {
+      // TODO(crbug.com/1179893): This workaround isn't needed once Alt rewrites
+      // are deprecated.
+      strict = ::features::IsNewShortcutMappingEnabled();
+      if (strict) {
+        DCHECK(!::features::IsImprovedKeyboardShortcutsEnabled());
+
+        // These two keys are used to select to Home/End.
+        static const KeyboardRemapping kNewSearchRemappings[] = {
+            {// Search+Shift+Left -> select to home.
+             {EF_COMMAND_DOWN | EF_SHIFT_DOWN, VKEY_LEFT},
+             {EF_SHIFT_DOWN, DomCode::HOME, DomKey::HOME, VKEY_HOME}},
+            {// Search+Shift+Right -> select to end.
+             {EF_COMMAND_DOWN | EF_SHIFT_DOWN, VKEY_RIGHT},
+             {EF_SHIFT_DOWN, DomCode::END, DomKey::END, VKEY_END}},
+        };
+        if (!skip_search_key_remapping &&
+            RewriteWithKeyboardRemappings(kNewSearchRemappings,
+                                          base::size(kNewSearchRemappings),
+                                          incoming, state, /*strict=*/true)) {
+          return;
+        }
+      }
+    }
+
+    // The new Search+Shift+Backspace rewrite is only active when
+    // IsImprovedKeyboardShortcutsEnabled() is true.
+    // TODO(crbug.com/1179893): Merge this entry into kSixPackRemappings
+    // once the flag is removed.
+    static const KeyboardRemapping kOldInsertRemapping[] = {
+        {// Search+Period -> Insert
+         {EF_COMMAND_DOWN, VKEY_OEM_PERIOD},
+         {EF_NONE, DomCode::INSERT, DomKey::INSERT, VKEY_INSERT}},
+    };
+
+    if (::features::IsImprovedKeyboardShortcutsEnabled()) {
+      static const KeyboardRemapping kNewInsertRemapping[] = {
+          {// Search+Shift+BackSpace -> Insert
+           {EF_COMMAND_DOWN | EF_SHIFT_DOWN, VKEY_BACK},
+           {EF_NONE, DomCode::INSERT, DomKey::INSERT, VKEY_INSERT}},
       };
+
       if (!skip_search_key_remapping &&
-          RewriteWithKeyboardRemappings(kNewSearchRemappings,
-                                        base::size(kNewSearchRemappings),
-                                        incoming, state, /*strict=*/true)) {
+          RewriteWithKeyboardRemappings(kNewInsertRemapping,
+                                        base::size(kNewInsertRemapping),
+                                        incoming, state, strict)) {
+        RecordSixPackEventRewrites(key_event.type(), state->key_code,
+                                   /*legacy_variant=*/false);
+        return;
+      }
+
+      // Test for the deprecated insert rewrite in order to show a notification.
+      const ui::KeyboardCode deprecated_key = MatchedDeprecatedRemapping(
+          kOldInsertRemapping, base::size(kOldInsertRemapping), incoming);
+      if (deprecated_key != VKEY_UNKNOWN) {
+        // If the key would have matched prior to being deprecated then notify
+        // the delegate to show a notification.
+        delegate_->NotifyDeprecatedSixPackKeyRewrite(deprecated_key);
+      }
+    } else {
+      if (!skip_search_key_remapping &&
+          RewriteWithKeyboardRemappings(kOldInsertRemapping,
+                                        base::size(kOldInsertRemapping),
+                                        incoming, state, strict)) {
+        RecordSixPackEventRewrites(key_event.type(), state->key_code,
+                                   /*legacy_variant=*/true);
         return;
       }
     }
-    static const KeyboardRemapping kSearchRemappings[] = {
+
+    static const KeyboardRemapping kSixPackRemappings[] = {
         {// Search+BackSpace -> Delete
          {EF_COMMAND_DOWN, VKEY_BACK},
          {EF_NONE, DomCode::DEL, DomKey::DEL, VKEY_DELETE}},
@@ -1239,20 +1479,21 @@ void EventRewriterChromeOS::RewriteExtendedKeys(const KeyEvent& key_event,
          {EF_NONE, DomCode::END, DomKey::END, VKEY_END}},
         {// Search+Down -> Next (aka PageDown)
          {EF_COMMAND_DOWN, VKEY_DOWN},
-         {EF_NONE, DomCode::PAGE_DOWN, DomKey::PAGE_DOWN, VKEY_NEXT}},
-        {// Search+Period -> Insert
-         {EF_COMMAND_DOWN, VKEY_OEM_PERIOD},
-         {EF_NONE, DomCode::INSERT, DomKey::INSERT, VKEY_INSERT}}};
+         {EF_NONE, DomCode::PAGE_DOWN, DomKey::PAGE_DOWN, VKEY_NEXT}}};
+
     if (!skip_search_key_remapping &&
-        RewriteWithKeyboardRemappings(kSearchRemappings,
-                                      base::size(kSearchRemappings), incoming,
+        RewriteWithKeyboardRemappings(kSixPackRemappings,
+                                      base::size(kSixPackRemappings), incoming,
                                       state, strict)) {
+      RecordSixPackEventRewrites(key_event.type(), state->key_code,
+                                 /*legacy_variant=*/false);
       return;
     }
   }
 
-  if (incoming.flags & EF_ALT_DOWN) {
-    static const KeyboardRemapping kNonSearchRemappings[] = {
+  // TODO(crbug.com/1179893): Remove block once Alt rewrites are deprecated.
+  if ((incoming.flags & EF_ALT_DOWN) && is_alt_down_remapping_enabled_) {
+    static const KeyboardRemapping kLegacySixPackRemappings[] = {
         {// Alt+BackSpace -> Delete
          {EF_ALT_DOWN, VKEY_BACK},
          {EF_NONE, DomCode::DEL, DomKey::DEL, VKEY_DELETE}},
@@ -1268,10 +1509,24 @@ void EventRewriterChromeOS::RewriteExtendedKeys(const KeyEvent& key_event,
         {// Alt+Down -> Next (aka PageDown)
          {EF_ALT_DOWN, VKEY_DOWN},
          {EF_NONE, DomCode::PAGE_DOWN, DomKey::PAGE_DOWN, VKEY_NEXT}}};
-    if (RewriteWithKeyboardRemappings(kNonSearchRemappings,
-                                      base::size(kNonSearchRemappings),
-                                      incoming, state)) {
-      return;
+    if (!::features::IsImprovedKeyboardShortcutsEnabled() ||
+        !::features::IsDeprecateAltBasedSixPackEnabled()) {
+      if (RewriteWithKeyboardRemappings(kLegacySixPackRemappings,
+                                        base::size(kLegacySixPackRemappings),
+                                        incoming, state)) {
+        RecordSixPackEventRewrites(key_event.type(), state->key_code,
+                                   /*legacy_variant=*/true);
+        return;
+      }
+    } else {
+      const ui::KeyboardCode deprecated_key = MatchedDeprecatedRemapping(
+          kLegacySixPackRemappings, base::size(kLegacySixPackRemappings),
+          incoming);
+      if (deprecated_key != VKEY_UNKNOWN) {
+        // If the key would have matched prior to being deprecated then notify
+        // the delegate to show a notification.
+        delegate_->NotifyDeprecatedSixPackKeyRewrite(deprecated_key);
+      }
     }
   }
 }
@@ -1281,23 +1536,6 @@ void EventRewriterChromeOS::RewriteFunctionKeys(const KeyEvent& key_event,
   CHECK(key_event.type() == ET_KEY_PRESSED ||
         key_event.type() == ET_KEY_RELEASED);
 
-  // Some action key codes are mapped to standard VKEY and DomCode values
-  // during event to KeyEvent translation. However, in Chrome, different VKEY
-  // combinations trigger those actions. This table maps event VKEYs to the
-  // right action VKEYs.
-  // TODO(dtor): Either add proper accelerators for VKEY_ZOOM or move
-  // from VKEY_MEDIA_LAUNCH_APP2 to VKEY_ZOOM.
-  static const KeyboardRemapping kActionToActionKeys[] = {
-      // Zoom toggle is actually through VKEY_MEDIA_LAUNCH_APP2.
-      {{EF_NONE, VKEY_ZOOM},
-       {EF_NONE, DomCode::ZOOM_TOGGLE, DomKey::ZOOM_TOGGLE,
-        VKEY_MEDIA_LAUNCH_APP2}},
-  };
-
-  // Map certain action keys to the right VKey and modifier.
-  RewriteWithKeyboardRemappings(kActionToActionKeys,
-                                base::size(kActionToActionKeys), *state, state);
-
   // Some key codes have a Dom code but no VKEY value assigned. They're mapped
   // to VKEY values here.
   if (state->key_code == VKEY_UNKNOWN) {
@@ -1306,9 +1544,9 @@ void EventRewriterChromeOS::RewriteFunctionKeys(const KeyEvent& key_event,
       state->key_code = VKEY_MEDIA_LAUNCH_APP1;
       state->key = DomKey::F4;
     } else if (state->code == DomCode::DISPLAY_TOGGLE_INT_EXT) {
-      // Display toggle is through control + VKEY_MEDIA_LAUNCH_APP2.
+      // Display toggle is through control + VKEY_ZOOM.
       state->flags |= EF_CONTROL_DOWN;
-      state->key_code = VKEY_MEDIA_LAUNCH_APP2;
+      state->key_code = VKEY_ZOOM;
       state->key = DomKey::F12;
     }
   }
@@ -1352,8 +1590,7 @@ void EventRewriterChromeOS::RewriteFunctionKeys(const KeyEvent& key_event,
            {EF_NONE, DomCode::BROWSER_REFRESH, DomKey::BROWSER_REFRESH,
             VKEY_BROWSER_REFRESH}},
           {{EF_NONE, VKEY_F4},
-           {EF_NONE, DomCode::ZOOM_TOGGLE, DomKey::ZOOM_TOGGLE,
-            VKEY_MEDIA_LAUNCH_APP2}},
+           {EF_NONE, DomCode::ZOOM_TOGGLE, DomKey::ZOOM_TOGGLE, VKEY_ZOOM}},
           {{EF_NONE, VKEY_F5},
            {EF_NONE, DomCode::SELECT_TASK, DomKey::LAUNCH_MY_COMPUTER,
             VKEY_MEDIA_LAUNCH_APP1}},
@@ -1382,8 +1619,7 @@ void EventRewriterChromeOS::RewriteFunctionKeys(const KeyEvent& key_event,
            {EF_NONE, DomCode::BROWSER_REFRESH, DomKey::BROWSER_REFRESH,
             VKEY_BROWSER_REFRESH}},
           {{EF_NONE, VKEY_F3},
-           {EF_NONE, DomCode::ZOOM_TOGGLE, DomKey::ZOOM_TOGGLE,
-            VKEY_MEDIA_LAUNCH_APP2}},
+           {EF_NONE, DomCode::ZOOM_TOGGLE, DomKey::ZOOM_TOGGLE, VKEY_ZOOM}},
           {{EF_NONE, VKEY_F4},
            {EF_NONE, DomCode::SELECT_TASK, DomKey::LAUNCH_MY_COMPUTER,
             VKEY_MEDIA_LAUNCH_APP1}},
@@ -1434,6 +1670,8 @@ void EventRewriterChromeOS::RewriteFunctionKeys(const KeyEvent& key_event,
     }
   }
 
+  // TODO(crbug.com/1179893): Remove this entire block when
+  // IsImprovedKeyboardShortcutsEnabled is always on.
   if (state->flags & EF_COMMAND_DOWN) {
     const bool strict = ::features::IsNewShortcutMappingEnabled();
     struct SearchToFunctionMap {
@@ -1445,6 +1683,7 @@ void EventRewriterChromeOS::RewriteFunctionKeys(const KeyEvent& key_event,
     // have different |KeyboardCode|s when modifiers are pressed, such as
     // shift.
     if (strict) {
+      DCHECK(!::features::IsImprovedKeyboardShortcutsEnabled());
       // Remap Search + 1/2 to F11/12.
       static const SearchToFunctionMap kNumberKeysToFkeys[] = {
           {DomCode::DIGIT1, {EF_NONE, DomCode::F11, DomKey::F12, VKEY_F11}},
@@ -1458,7 +1697,7 @@ void EventRewriterChromeOS::RewriteFunctionKeys(const KeyEvent& key_event,
         }
       }
     } else {
-      // Remap Search + top row to F1~F12.
+      // Remap Search + digit row to F1~F12.
       static const SearchToFunctionMap kNumberKeysToFkeys[] = {
           {DomCode::DIGIT1, {EF_NONE, DomCode::F1, DomKey::F1, VKEY_F1}},
           {DomCode::DIGIT2, {EF_NONE, DomCode::F2, DomKey::F2, VKEY_F2}},
@@ -1474,8 +1713,24 @@ void EventRewriterChromeOS::RewriteFunctionKeys(const KeyEvent& key_event,
           {DomCode::EQUAL, {EF_NONE, DomCode::F12, DomKey::F12, VKEY_F12}}};
       for (const auto& map : kNumberKeysToFkeys) {
         if (state->code == map.input_dom_code) {
-          state->flags &= ~EF_COMMAND_DOWN;
-          ApplyRemapping(map.result, state);
+          if (!::features::IsImprovedKeyboardShortcutsEnabled()) {
+            state->flags &= ~EF_COMMAND_DOWN;
+            ApplyRemapping(map.result, state);
+            RecordSearchPlusDigitFKeyRewrite(key_event.type(), state->key_code);
+          } else {
+            // Only trigger the notification for F1-F10.
+            //
+            // Because of this legacy remapping 2 virtual desk shortcuts
+            // implicitly used F11 and F12 because the shortcut included
+            // Search and either minus or equal. Do not trigger a
+            // notification for this case because it wasn't the users intent.
+            if (static_cast<int>(map.result.code) <=
+                static_cast<int>(DomCode::F10)) {
+              DCHECK_GE(static_cast<int>(map.result.code),
+                        static_cast<int>(DomCode::F1));
+              delegate_->NotifyDeprecatedFKeyRewrite();
+            }
+          }
           return;
         }
       }
@@ -1497,7 +1752,12 @@ int EventRewriterChromeOS::RewriteModifierClick(const MouseEvent& mouse_event,
   // Remap either Alt+Button1 or Search+Button1 to Button3 based on
   // flag/setting.
   int matched_mask;
-  if (ShouldRemapToRightClick(mouse_event, *flags, &matched_mask)) {
+  bool matched_alt_deprecation;
+  if (ShouldRemapToRightClick(mouse_event, *flags, &matched_mask,
+                              &matched_alt_deprecation)) {
+    // If the rewrite matched the deprecation message should also not occur.
+    DCHECK(!matched_alt_deprecation);
+
     *flags &= ~matched_mask;
     *flags |= EF_RIGHT_MOUSE_BUTTON;
     if (mouse_event.type() == ET_MOUSE_PRESSED) {
@@ -1514,6 +1774,8 @@ int EventRewriterChromeOS::RewriteModifierClick(const MouseEvent& mouse_event,
       pressed_device_ids_.erase(mouse_event.source_device_id());
     }
     return EF_RIGHT_MOUSE_BUTTON;
+  } else if (matched_alt_deprecation) {
+    delegate_->NotifyDeprecatedRightClickRewrite();
   }
   return EF_NONE;
 }
@@ -1753,10 +2015,9 @@ bool EventRewriterChromeOS::RewriteTopRowKeysForLayoutWilco(
       {{EF_NONE, VKEY_F2},
        {EF_NONE, DomCode::BROWSER_REFRESH, DomKey::BROWSER_REFRESH,
         VKEY_BROWSER_REFRESH}},
-      // Map F3 to VKEY_MEDIA_LAUNCH_APP2 + EF_NONE == toggle full screen:
+      // Map F3 to VKEY_ZOOM + EF_NONE == toggle full screen:
       {{EF_NONE, VKEY_F3},
-       {EF_NONE, DomCode::ZOOM_TOGGLE, DomKey::ZOOM_TOGGLE,
-        VKEY_MEDIA_LAUNCH_APP2}},
+       {EF_NONE, DomCode::ZOOM_TOGGLE, DomKey::ZOOM_TOGGLE, VKEY_ZOOM}},
       // Map F4 to VKEY_MEDIA_LAUNCH_APP1 + EF_NONE == overview:
       {{EF_NONE, VKEY_F4},
        {EF_NONE, DomCode::F4, DomKey::F4, VKEY_MEDIA_LAUNCH_APP1}},
@@ -1779,9 +2040,9 @@ bool EventRewriterChromeOS::RewriteTopRowKeysForLayoutWilco(
       {{EF_NONE, VKEY_F10}, {EF_NONE, DomCode::F10, DomKey::F10, VKEY_F10}},
       {{EF_NONE, VKEY_F11}, {EF_NONE, DomCode::F11, DomKey::F11, VKEY_F11}},
       {{EF_NONE, VKEY_F12},
-       // Map F12 to VKEY_MEDIA_LAUNCH_APP2 + EF_CONTROL_DOWN == toggle mirror
+       // Map F12 to VKEY_ZOOM + EF_CONTROL_DOWN == toggle mirror
        // mode:
-       {EF_CONTROL_DOWN, DomCode::F12, DomKey::F12, VKEY_MEDIA_LAUNCH_APP2}},
+       {EF_CONTROL_DOWN, DomCode::F12, DomKey::F12, VKEY_ZOOM}},
   };
 
   // When the kernel issues an action key (default mode) and the search key is
@@ -1805,12 +2066,11 @@ bool EventRewriterChromeOS::RewriteTopRowKeysForLayoutWilco(
        {EF_NONE, DomCode::F8, DomKey::F8, VKEY_F8}},
       {{EF_NONE, VKEY_VOLUME_UP}, {EF_NONE, DomCode::F9, DomKey::F9, VKEY_F9}},
       // Do not change the order of the next two entries. The remapping of
-      // VKEY_MEDIA_LAUNCH_APP2 with Control held down must appear before
-      // VKEY_MEDIA_LAUNCH_APP2 by itself to be considered.
-      {{EF_CONTROL_DOWN, VKEY_MEDIA_LAUNCH_APP2},
+      // VKEY_ZOOM with Control held down must appear before
+      // VKEY_ZOOM by itself to be considered.
+      {{EF_CONTROL_DOWN, VKEY_ZOOM},
        {EF_NONE, DomCode::F12, DomKey::F12, VKEY_F12}},
-      {{EF_NONE, VKEY_MEDIA_LAUNCH_APP2},
-       {EF_NONE, DomCode::F3, DomKey::F3, VKEY_F3}},
+      {{EF_NONE, VKEY_ZOOM}, {EF_NONE, DomCode::F3, DomKey::F3, VKEY_F3}},
       // VKEY_PRIVACY_SCREEN_TOGGLE shares a key with F12 on Drallion.
       {{EF_NONE, VKEY_PRIVACY_SCREEN_TOGGLE},
        {EF_NONE, DomCode::F12, DomKey::F12, VKEY_F12}},
@@ -1846,8 +2106,7 @@ bool EventRewriterChromeOS::RewriteTopRowKeysForLayoutWilco(
     if (search_is_pressed != ForceTopRowAsFunctionKeys()) {
       // On Drallion, mirror mode toggle is on its own key so don't remap it.
       if (layout == kKbdTopRowLayoutDrallion &&
-          MatchKeyboardRemapping(*state,
-                                 {EF_CONTROL_DOWN, VKEY_MEDIA_LAUNCH_APP2})) {
+          MatchKeyboardRemapping(*state, {EF_CONTROL_DOWN, VKEY_ZOOM})) {
         // Clear command flag before returning
         state->flags = (state->flags & ~EF_COMMAND_DOWN);
         return true;

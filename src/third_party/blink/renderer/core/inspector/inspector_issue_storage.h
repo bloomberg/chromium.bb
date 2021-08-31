@@ -13,12 +13,18 @@
 
 namespace blink {
 
+class AuditsIssue;
 class CoreProbeSink;
 class InspectorIssue;
 class ExecutionContext;
 
-class CORE_EXPORT InspectorIssueStorage
-    : public GarbageCollected<InspectorIssueStorage> {
+namespace protocol {
+namespace Audits {
+class InspectorIssue;
+}  // namespace Audits
+}  // namespace protocol
+
+class CORE_EXPORT InspectorIssueStorage {
  public:
   InspectorIssueStorage();
 
@@ -26,14 +32,19 @@ class CORE_EXPORT InspectorIssueStorage
   void AddInspectorIssue(CoreProbeSink*, mojom::blink::InspectorIssueInfoPtr);
   void AddInspectorIssue(ExecutionContext*,
                          mojom::blink::InspectorIssueInfoPtr);
-  void Clear();
-  wtf_size_t size() const;
-  InspectorIssue* at(wtf_size_t index) const;
+  void AddInspectorIssue(ExecutionContext*, AuditsIssue);
+  void AddInspectorIssue(CoreProbeSink*, AuditsIssue);
 
-  void Trace(Visitor*) const;
+  void Clear();
+  size_t size() const;
+  protocol::Audits::InspectorIssue* at(size_t index) const;
+
+  virtual ~InspectorIssueStorage();
 
  private:
-  HeapDeque<Member<InspectorIssue>> issues_;
+  void AddInspectorIssue(CoreProbeSink*,
+                         std::unique_ptr<protocol::Audits::InspectorIssue>);
+  Deque<std::unique_ptr<protocol::Audits::InspectorIssue>> issues_;
 
   DISALLOW_COPY_AND_ASSIGN(InspectorIssueStorage);
 };

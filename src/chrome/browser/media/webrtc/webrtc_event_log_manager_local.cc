@@ -40,7 +40,7 @@ WebRtcLocalEventLogManager::~WebRtcLocalEventLogManager() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
-bool WebRtcLocalEventLogManager::PeerConnectionAdded(
+bool WebRtcLocalEventLogManager::OnPeerConnectionAdded(
     const PeerConnectionKey& key) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
 
@@ -59,7 +59,7 @@ bool WebRtcLocalEventLogManager::PeerConnectionAdded(
   return true;
 }
 
-bool WebRtcLocalEventLogManager::PeerConnectionRemoved(
+bool WebRtcLocalEventLogManager::OnPeerConnectionRemoved(
     const PeerConnectionKey& key) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
 
@@ -96,8 +96,8 @@ bool WebRtcLocalEventLogManager::EnableLogging(const base::FilePath& base_path,
 
   max_log_file_size_bytes_ =
       (max_file_size_bytes == kWebRtcEventLogManagerUnlimitedFileSize)
-          ? base::Optional<size_t>()
-          : base::Optional<size_t>(max_file_size_bytes);
+          ? absl::optional<size_t>()
+          : absl::optional<size_t>(max_file_size_bytes);
 
   for (const PeerConnectionKey& peer_connection : active_peer_connections_) {
     if (log_files_.size() >= kMaxNumberLocalWebRtcEventLogFiles) {

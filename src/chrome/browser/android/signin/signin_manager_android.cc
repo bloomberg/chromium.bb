@@ -11,7 +11,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/feature_list.h"
-#include "chrome/android/chrome_jni_headers/SigninManager_jni.h"
+#include "chrome/android/chrome_jni_headers/SigninManagerImpl_jni.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_pref_names.h"
@@ -20,7 +20,7 @@
 #include "base/android/callback_android.h"
 #include "base/android/jni_string.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
+#include "chrome/browser/browsing_data/chrome_browsing_data_remover_constants.h"
 #include "chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
 #include "chrome/browser/policy/cloud/user_policy_signin_service_mobile.h"
 #include "chrome/browser/profiles/profile.h"
@@ -55,14 +55,14 @@ class ProfileDataRemover : public content::BrowsingDataRemover::Observer {
         all_data_(all_data),
         callback_(std::move(callback)),
         origin_runner_(base::ThreadTaskRunnerHandle::Get()),
-        remover_(content::BrowserContext::GetBrowsingDataRemover(profile)) {
+        remover_(profile->GetBrowsingDataRemover()) {
     remover_->AddObserver(this);
 
     if (all_data) {
-      remover_->RemoveAndReply(
-          base::Time(), base::Time::Max(),
-          ChromeBrowsingDataRemoverDelegate::ALL_DATA_TYPES,
-          ChromeBrowsingDataRemoverDelegate::ALL_ORIGIN_TYPES, this);
+      remover_->RemoveAndReply(base::Time(), base::Time::Max(),
+                               chrome_browsing_data_remover::ALL_DATA_TYPES,
+                               chrome_browsing_data_remover::ALL_ORIGIN_TYPES,
+                               this);
     } else {
       std::unique_ptr<content::BrowsingDataFilterBuilder> google_tld_filter =
           content::BrowsingDataFilterBuilder::Create(
@@ -78,7 +78,7 @@ class ProfileDataRemover : public content::BrowsingDataRemover::Observer {
       remover_->RemoveWithFilterAndReply(
           base::Time(), base::Time::Max(),
           content::BrowsingDataRemover::DATA_TYPE_CACHE_STORAGE,
-          ChromeBrowsingDataRemoverDelegate::ALL_ORIGIN_TYPES,
+          chrome_browsing_data_remover::ALL_ORIGIN_TYPES,
           std::move(google_tld_filter), this);
     }
   }
@@ -139,7 +139,7 @@ SigninManagerAndroid::SigninManagerAndroid(
   force_browser_signin_.Init(prefs::kForceBrowserSignin,
                              g_browser_process->local_state());
 
-  java_signin_manager_ = Java_SigninManager_create(
+  java_signin_manager_ = Java_SigninManagerImpl_create(
       base::android::AttachCurrentThread(), reinterpret_cast<intptr_t>(this),
       identity_manager_->LegacyGetAccountTrackerServiceJavaObject(),
       identity_manager_->GetJavaObject(),
@@ -154,8 +154,8 @@ SigninManagerAndroid::GetJavaObject() {
 SigninManagerAndroid::~SigninManagerAndroid() {}
 
 void SigninManagerAndroid::Shutdown() {
-  Java_SigninManager_destroy(base::android::AttachCurrentThread(),
-                             java_signin_manager_);
+  Java_SigninManagerImpl_destroy(base::android::AttachCurrentThread(),
+                                 java_signin_manager_);
 }
 
 bool SigninManagerAndroid::IsSigninAllowed() const {
@@ -171,7 +171,7 @@ jboolean SigninManagerAndroid::IsForceSigninEnabled(JNIEnv* env) {
 }
 
 void SigninManagerAndroid::OnSigninAllowedPrefChanged() const {
-  Java_SigninManager_onSigninAllowedByPolicyChanged(
+  Java_SigninManagerImpl_onSigninAllowedByPolicyChanged(
       base::android::AttachCurrentThread(), java_signin_manager_,
       IsSigninAllowed());
 }
@@ -184,7 +184,7 @@ void SigninManagerAndroid::RegisterPolicyWithAccount(
     const CoreAccountInfo& account,
     RegisterPolicyWithAccountCallback callback) {
   if (!ShouldLoadPolicyForUser(account.email)) {
-    std::move(callback).Run(base::nullopt);
+    std::move(callback).Run(absl::nullopt);
     return;
   }
 
@@ -193,7 +193,7 @@ void SigninManagerAndroid::RegisterPolicyWithAccount(
       base::BindOnce(
           [](RegisterPolicyWithAccountCallback callback,
              const std::string& dm_token, const std::string& client_id) {
-            base::Optional<ManagementCredentials> credentials;
+            absl::optional<ManagementCredentials> credentials;
             if (!dm_token.empty()) {
               credentials.emplace(dm_token, client_id);
             }
@@ -220,7 +220,7 @@ void SigninManagerAndroid::FetchAndApplyCloudPolicy(
 void SigninManagerAndroid::OnPolicyRegisterDone(
     const CoreAccountInfo& account,
     base::OnceCallback<void()> policy_callback,
-    const base::Optional<ManagementCredentials>& credentials) {
+    const absl::optional<ManagementCredentials>& credentials) {
   if (credentials) {
     FetchPolicyBeforeSignIn(account, std::move(policy_callback),
                             credentials.value());
@@ -235,15 +235,14 @@ void SigninManagerAndroid::FetchPolicyBeforeSignIn(
     base::OnceCallback<void()> policy_callback,
     const ManagementCredentials& credentials) {
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
-      content::BrowserContext::GetDefaultStoragePartition(profile_)
+      profile_->GetDefaultStoragePartition()
           ->GetURLLoaderFactoryForBrowserProcess();
   user_policy_signin_service_->FetchPolicyForSignedInUser(
       AccountIdFromAccountInfo(account), credentials.dm_token,
       credentials.client_id, url_loader_factory,
-      base::AdaptCallbackForRepeating(
-          base::BindOnce([](base::OnceCallback<void()> callback,
-                            bool success) { std::move(callback).Run(); },
-                         std::move(policy_callback))));
+      base::BindOnce([](base::OnceCallback<void()> callback,
+                        bool success) { std::move(callback).Run(); },
+                     std::move(policy_callback)));
 }
 
 void SigninManagerAndroid::IsAccountManaged(
@@ -257,7 +256,7 @@ void SigninManagerAndroid::IsAccountManaged(
       account,
       base::BindOnce(
           [](base::android::ScopedJavaGlobalRef<jobject> callback,
-             const base::Optional<ManagementCredentials>& credentials) {
+             const absl::optional<ManagementCredentials>& credentials) {
             base::android::RunBooleanCallbackAndroid(callback,
                                                      credentials.has_value());
           },
@@ -276,13 +275,6 @@ SigninManagerAndroid::GetManagementDomain(JNIEnv* env) {
   }
 
   return domain;
-}
-
-void SigninManagerAndroid::
-    LogOutAllAccountsForMobileIdentityConsistencyRollback(JNIEnv* env) {
-  identity_manager_->GetAccountsCookieMutator()->LogOutAllAccounts(
-      gaia::GaiaSource::kAccountReconcilorMirror,
-      signin::AccountsCookieMutator::LogOutFromCookieCompletedCallback());
 }
 
 void SigninManagerAndroid::WipeProfileData(
@@ -311,9 +303,9 @@ void SigninManagerAndroid::WipeData(Profile* profile,
   new ProfileDataRemover(profile, all_data, std::move(callback));
 }
 
-base::android::ScopedJavaLocalRef<jstring> JNI_SigninManager_ExtractDomainName(
-    JNIEnv* env,
-    const JavaParamRef<jstring>& j_email) {
+base::android::ScopedJavaLocalRef<jstring>
+JNI_SigninManagerImpl_ExtractDomainName(JNIEnv* env,
+                                        const JavaParamRef<jstring>& j_email) {
   std::string email = base::android::ConvertJavaStringToUTF8(env, j_email);
   std::string domain = gaia::ExtractDomainName(email);
   return base::android::ConvertUTF8ToJavaString(env, domain);

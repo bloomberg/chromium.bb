@@ -8,8 +8,9 @@
 #include <windows.h>
 #include <wrl/client.h>
 
+#include <string>
+
 #include "base/i18n/rtl.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
@@ -46,7 +47,7 @@ std::unique_ptr<base::ListValue> GetFontList_SlowBlocking() {
 
     // Retrieve the native font family name. Try the "en-us" locale and if it's
     // not present, used the first available localized name.
-    base::Optional<std::string> native_name =
+    absl::optional<std::string> native_name =
         gfx::win::RetrieveLocalizedString(family_names.Get(), "en-us");
     if (!native_name) {
       native_name = gfx::win::RetrieveLocalizedString(family_names.Get(), "");
@@ -54,7 +55,7 @@ std::unique_ptr<base::ListValue> GetFontList_SlowBlocking() {
         continue;
     }
 
-    base::Optional<std::string> localized_name =
+    absl::optional<std::string> localized_name =
         gfx::win::RetrieveLocalizedString(family_names.Get(), locale);
     if (!localized_name)
       localized_name = native_name;

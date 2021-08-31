@@ -18,14 +18,6 @@ const EduLoginTest = class extends PolymerTest {
     throw 'this is abstract and should be overridden by subclasses';
   }
 
-  /** @override */
-  get extraLibraries() {
-    return [
-      '//third_party/mocha/mocha.js',
-      '//chrome/test/data/webui/mocha_adapter.js',
-    ];
-  }
-
   /** @param {string} testName The name of the test to run. */
   runMochaTest(testName) {
     runMochaTest(this.suiteName, testName);

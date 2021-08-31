@@ -8,8 +8,9 @@
 
 #include "components/security_interstitials/core/unsafe_resource.h"
 #import "ios/chrome/browser/safe_browsing/fake_safe_browsing_service.h"
-#import "ios/web/public/test/fakes/test_web_state.h"
+#import "ios/web/public/test/fakes/fake_web_state.h"
 #include "ios/web/public/test/web_task_environment.h"
+#include "services/network/public/mojom/fetch_api.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -72,14 +73,15 @@ ACTION_P4(VerifyQueryFinished,
 }  // namespace
 
 class SafeBrowsingQueryManagerTest
-    : public testing::TestWithParam<safe_browsing::ResourceType> {
+    : public testing::TestWithParam<network::mojom::RequestDestination> {
  protected:
   SafeBrowsingQueryManagerTest()
       : task_environment_(web::WebTaskEnvironment::IO_MAINLOOP),
-        web_state_(std::make_unique<web::TestWebState>()),
+        web_state_(std::make_unique<web::FakeWebState>()),
         http_method_("GET"),
         navigation_item_id_(
-            GetParam() == safe_browsing::ResourceType::kMainFrame ? -1 : 0) {
+            GetParam() == network::mojom::RequestDestination::kDocument ? -1
+                                                                        : 0) {
     SafeBrowsingQueryManager::CreateForWebState(web_state_.get());
     manager()->AddObserver(&observer_);
   }
@@ -125,7 +127,34 @@ TEST_P(SafeBrowsingQueryManagerTest, UnsafeURLQuery) {
   UnsafeResource resource;
   resource.url = url;
   resource.threat_type = safe_browsing::SB_THREAT_TYPE_URL_PHISHING;
-  resource.resource_type = GetParam();
+  resource.request_destination = GetParam();
+  manager()->StoreUnsafeResource(resource);
+  base::RunLoop().RunUntilIdle();
+}
+
+// Tests that back-to-back queries for the same unsafe URL correctly sets an
+// UnsafeResource on both queries.
+TEST_P(SafeBrowsingQueryManagerTest, MultipleUnsafeURLQueries) {
+  GURL url("http://" + FakeSafeBrowsingService::kUnsafeHost);
+  EXPECT_CALL(observer_, SafeBrowsingQueryFinished(manager(), _, _))
+      .Times(2)
+      .WillRepeatedly(VerifyQueryFinished(url, http_method_,
+                                          navigation_item_id_,
+                                          /*is_url_safe=*/false));
+
+  // Start a URL check query for the unsafe URL and run the runloop until the
+  // result is received.  An UnsafeResource is stored before the query finishes
+  // to simulate the production behavior that adds a resource that will be used
+  // to populate the error page.
+  manager()->StartQuery(
+      SafeBrowsingQueryManager::Query(url, http_method_, navigation_item_id_));
+  manager()->StartQuery(
+      SafeBrowsingQueryManager::Query(url, http_method_, navigation_item_id_));
+  UnsafeResource resource;
+  resource.url = url;
+  resource.threat_type = safe_browsing::SB_THREAT_TYPE_URL_PHISHING;
+  resource.request_destination = GetParam();
+  manager()->StoreUnsafeResource(resource);
   manager()->StoreUnsafeResource(resource);
   base::RunLoop().RunUntilIdle();
 }
@@ -139,8 +168,8 @@ TEST_P(SafeBrowsingQueryManagerTest, ManagerDestruction) {
 INSTANTIATE_TEST_SUITE_P(
     /* No InstantiationName */,
     SafeBrowsingQueryManagerTest,
-    testing::Values(safe_browsing::ResourceType::kMainFrame,
-                    safe_browsing::ResourceType::kSubFrame));
+    testing::Values(network::mojom::RequestDestination::kDocument,
+                    network::mojom::RequestDestination::kIframe));
 
 namespace {
 // An observer that owns a WebState and destroys it when it gets a
@@ -149,7 +178,7 @@ class WebStateDestroyingQueryManagerObserver
     : public SafeBrowsingQueryManager::Observer {
  public:
   WebStateDestroyingQueryManagerObserver()
-      : web_state_(std::make_unique<web::TestWebState>()) {}
+      : web_state_(std::make_unique<web::FakeWebState>()) {}
   ~WebStateDestroyingQueryManagerObserver() override {}
 
   void SafeBrowsingQueryFinished(
@@ -174,13 +203,14 @@ class WebStateDestroyingQueryManagerObserver
 // Test fixture for testing WebState destruction during a
 // SafeBrowsingQueryManager::Observer callback.
 class SafeBrowsingQueryManagerWebStateDestructionTest
-    : public testing::TestWithParam<safe_browsing::ResourceType> {
+    : public testing::TestWithParam<network::mojom::RequestDestination> {
  protected:
   SafeBrowsingQueryManagerWebStateDestructionTest()
       : task_environment_(web::WebTaskEnvironment::IO_MAINLOOP),
         http_method_("GET"),
         navigation_item_id_(
-            GetParam() == safe_browsing::ResourceType::kMainFrame ? -1 : 0) {
+            GetParam() == network::mojom::RequestDestination::kDocument ? -1
+                                                                        : 0) {
     SafeBrowsingQueryManager::CreateForWebState(observer_.web_state());
     manager()->AddObserver(&observer_);
   }
@@ -218,7 +248,7 @@ TEST_P(SafeBrowsingQueryManagerWebStateDestructionTest, UnsafeURLQuery) {
   UnsafeResource resource;
   resource.url = url;
   resource.threat_type = safe_browsing::SB_THREAT_TYPE_URL_PHISHING;
-  resource.resource_type = GetParam();
+  resource.request_destination = GetParam();
   manager()->StoreUnsafeResource(resource);
   base::RunLoop().RunUntilIdle();
 }
@@ -226,5 +256,5 @@ TEST_P(SafeBrowsingQueryManagerWebStateDestructionTest, UnsafeURLQuery) {
 INSTANTIATE_TEST_SUITE_P(
     /* No InstantiationName */,
     SafeBrowsingQueryManagerWebStateDestructionTest,
-    testing::Values(safe_browsing::ResourceType::kMainFrame,
-                    safe_browsing::ResourceType::kSubFrame));
+    testing::Values(network::mojom::RequestDestination::kDocument,
+                    network::mojom::RequestDestination::kIframe));

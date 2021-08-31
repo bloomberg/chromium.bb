@@ -38,8 +38,7 @@
 #include "src/gpu/GrProcessorSet.h"
 #include "src/gpu/GrProgramInfo.h"
 #include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/GrRenderTargetContext.h"
-#include "src/gpu/GrRenderTargetContextPriv.h"
+#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/GrUserStencilSettings.h"
 #include "src/gpu/effects/GrBezierEffect.h"
 #include "src/gpu/effects/GrPorterDuffXferProcessor.h"
@@ -61,11 +60,10 @@ public:
     FixedFunctionFlags fixedFunctionFlags() const override { return FixedFunctionFlags::kNone; }
 
     GrProcessorSet::Analysis finalize(
-            const GrCaps& caps, const GrAppliedClip* clip, bool hasMixedSampledCoverage,
-            GrClampType clampType) override {
+            const GrCaps& caps, const GrAppliedClip* clip, GrClampType clampType) override {
         return fProcessorSet.finalize(
                 fColor, GrProcessorAnalysisCoverage::kSingleChannel, clip,
-                &GrUserStencilSettings::kUnused, hasMixedSampledCoverage, caps, clampType, &fColor);
+                &GrUserStencilSettings::kUnused, caps, clampType, &fColor);
     }
 
     void visitProxies(const VisitProxyFunc& func) const override {
@@ -91,10 +89,11 @@ protected:
 
     void onCreateProgramInfo(const GrCaps* caps,
                              SkArenaAlloc* arena,
-                             const GrSurfaceProxyView* writeView,
+                             const GrSurfaceProxyView& writeView,
                              GrAppliedClip&& appliedClip,
                              const GrXferProcessor::DstProxyView& dstProxyView,
-                             GrXferBarrierFlags renderPassXferBarriers) override {
+                             GrXferBarrierFlags renderPassXferBarriers,
+                             GrLoadOp colorLoadOp) override {
         auto gp = this->makeGP(*caps, arena);
         if (!gp) {
             return;
@@ -108,6 +107,7 @@ protected:
                                                                    std::move(fProcessorSet),
                                                                    GrPrimitiveType::kTriangles,
                                                                    renderPassXferBarriers,
+                                                                   colorLoadOp,
                                                                    flags);
     }
 
@@ -121,7 +121,7 @@ protected:
         }
 
         flushState->bindPipelineAndScissorClip(*fProgramInfo, chainBounds);
-        flushState->bindTextures(fProgramInfo->primProc(), nullptr, fProgramInfo->pipeline());
+        flushState->bindTextures(fProgramInfo->geomProc(), nullptr, fProgramInfo->pipeline());
         flushState->drawMesh(*fMesh);
     }
 
@@ -225,7 +225,7 @@ protected:
         return SkISize::Make(kCellWidth, kNumConics*kCellHeight);
     }
 
-    void onDraw(GrRecordingContext* context, GrRenderTargetContext* renderTargetContext,
+    void onDraw(GrRecordingContext* context, GrSurfaceDrawContext* surfaceDrawContext,
                 SkCanvas* canvas) override {
 
         const SkScalar w = kCellWidth, h = kCellHeight;
@@ -296,7 +296,7 @@ protected:
 
                 GrOp::Owner op = BezierConicTestOp::Make(context, bounds,
                                                          kOpaqueBlack, klm);
-                renderTargetContext->priv().testingOnly_addDrawOp(std::move(op));
+                surfaceDrawContext->addDrawOp(std::move(op));
             }
         }
     }
@@ -425,7 +425,7 @@ protected:
         return SkISize::Make(kCellWidth, kNumQuads*kCellHeight);
     }
 
-    void onDraw(GrRecordingContext* context, GrRenderTargetContext* renderTargetContext,
+    void onDraw(GrRecordingContext* context, GrSurfaceDrawContext* surfaceDrawContext,
                 SkCanvas* canvas) override {
 
         const SkScalar w = kCellWidth, h = kCellHeight;
@@ -489,7 +489,7 @@ protected:
 
                 GrOp::Owner op = BezierQuadTestOp::Make(context, bounds,
                                                         kOpaqueBlack, DevToUV);
-                renderTargetContext->priv().testingOnly_addDrawOp(std::move(op));
+                surfaceDrawContext->addDrawOp(std::move(op));
             }
         }
     }

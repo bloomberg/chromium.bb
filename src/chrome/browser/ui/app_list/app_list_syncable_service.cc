@@ -9,20 +9,21 @@
 #include <utility>
 #include <vector>
 
+#include "ash/constants/ash_switches.h"
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/one_shot_event.h"
-#include "base/stl_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
-#include "chrome/browser/chromeos/arc/arc_util.h"
-#include "chrome/browser/chromeos/crostini/crostini_features.h"
-#include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/ash/arc/arc_util.h"
+#include "chrome/browser/ash/crostini/crostini_features.h"
+#include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
-#include "chrome/browser/chromeos/web_applications/default_web_app_ids.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -35,11 +36,13 @@
 #include "chrome/browser/ui/app_list/chrome_app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/page_break_app_item.h"
 #include "chrome/browser/ui/app_list/page_break_constants.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
+#include "chrome/browser/web_applications/components/web_app_id_constants.h"
+#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/model/sync_change_processor.h"
@@ -113,7 +116,8 @@ void SetAppIsDefaultForTest(Profile* profile, const std::string& id) {
 
   apps::AppServiceProxyFactory::GetForProfile(profile)
       ->AppRegistryCache()
-      .OnApps(std::move(deltas));
+      .OnApps(std::move(deltas), apps::mojom::AppType::kExtension,
+              false /* should_notify_initialized */);
 }
 
 bool IsUnRemovableDefaultApp(const std::string& id) {
@@ -189,14 +193,14 @@ bool IsPageBreakItem(const AppListSyncableService::SyncItem& sync_item) {
 
 // Returns true if the app is Settings app
 bool IsOsSettingsApp(const std::string& app_id) {
-  return app_id == chromeos::default_web_apps::kOsSettingsAppId;
+  return app_id == web_app::kOsSettingsAppId;
 }
 
 bool IsSystemCreatedSyncFolder(AppListSyncableService::SyncItem* folder_item) {
   if (folder_item->item_type != sync_pb::AppListSpecifics::TYPE_FOLDER)
     return false;
   return (folder_item->item_id == ash::kOemFolderId ||
-          folder_item->item_id == crostini::kCrostiniFolderId);
+          folder_item->item_id == ash::kCrostiniFolderId);
 }
 
 }  // namespace
@@ -204,10 +208,9 @@ bool IsSystemCreatedSyncFolder(AppListSyncableService::SyncItem* folder_item) {
 // AppListSyncableService::ScopedModelUpdaterFactoryForTest
 
 AppListSyncableService::ScopedModelUpdaterFactoryForTest::
-    ScopedModelUpdaterFactoryForTest(
-        const ModelUpdaterFactoryCallback& factory) {
+    ScopedModelUpdaterFactoryForTest(ModelUpdaterFactoryCallback factory) {
   DCHECK(factory);
-  factory_ = factory;
+  factory_ = std::move(factory);
   g_model_updater_factory_callback_for_test_ = &factory_;
 }
 
@@ -226,6 +229,12 @@ AppListSyncableService::SyncItem::SyncItem(
 
 AppListSyncableService::SyncItem::~SyncItem() = default;
 
+// AppListSyncableService::Observer
+
+AppListSyncableService::Observer::~Observer() {
+  CHECK(!IsInObserverList());
+}
+
 // AppListSyncableService::ModelUpdaterObserver
 
 class AppListSyncableService::ModelUpdaterObserver
@@ -242,9 +251,14 @@ class AppListSyncableService::ModelUpdaterObserver
     DVLOG(2) << owner_ << ": ModelUpdaterObserver Removed";
   }
 
+  void set_active(bool active) { active_ = active; }
+
  private:
   // ChromeAppListModelUpdaterObserver
   void OnAppListItemAdded(ChromeAppListItem* item) override {
+    if (!active_)
+      return;
+
     // Only sync folders and page breaks which are added from Ash.
     if (!item->is_folder() && !item->is_page_break())
       return;
@@ -262,6 +276,9 @@ class AppListSyncableService::ModelUpdaterObserver
   }
 
   void OnAppListItemWillBeDeleted(ChromeAppListItem* item) override {
+    if (!active_)
+      return;
+
     DCHECK(adding_item_id_.empty());
     VLOG(2) << owner_ << " OnAppListItemDeleted: " << item->ToDebugString();
     // Don't sync folder removal in case the folder still exists on another
@@ -274,6 +291,9 @@ class AppListSyncableService::ModelUpdaterObserver
   }
 
   void OnAppListItemUpdated(ChromeAppListItem* item) override {
+    if (!active_)
+      return;
+
     if (!adding_item_id_.empty()) {
       // Adding an item may trigger update notifications which should be
       // ignored.
@@ -284,8 +304,13 @@ class AppListSyncableService::ModelUpdaterObserver
     owner_->UpdateSyncItem(item);
   }
 
-  AppListSyncableService* owner_;
+  AppListSyncableService* const owner_;
   std::string adding_item_id_;
+
+  // Whether the observer should handle model updated updates. The value is
+  // managed by the owning `AppListSyncableService`, which will make sure the
+  // observer is inactive while the model is being updated from the service.
+  bool active_ = false;
 };
 
 // AppListSyncableService
@@ -316,6 +341,8 @@ AppListSyncableService::AppListSyncableService(Profile* profile)
     model_updater_ = g_model_updater_factory_callback_for_test_->Run();
   else
     model_updater_ = std::make_unique<ChromeAppListModelUpdater>(profile);
+
+  model_updater_observer_ = std::make_unique<ModelUpdaterObserver>(this);
 
   if (!extension_system_) {
     LOG(ERROR) << "AppListSyncableService created with no ExtensionSystem";
@@ -522,7 +549,7 @@ AppListModelUpdater* AppListSyncableService::GetModelUpdater() {
 
 void AppListSyncableService::HandleUpdateStarted() {
   // Don't observe the model while processing update changes.
-  model_updater_observer_.reset();
+  model_updater_observer_->set_active(false);
 }
 
 void AppListSyncableService::HandleUpdateFinished(
@@ -537,7 +564,7 @@ void AppListSyncableService::HandleUpdateFinished(
   }
 
   // Resume or start observing app list model changes.
-  model_updater_observer_ = std::make_unique<ModelUpdaterObserver>(this);
+  model_updater_observer_->set_active(true);
 
   NotifyObserversSyncUpdated();
 }
@@ -888,6 +915,15 @@ void AppListSyncableService::PruneEmptySyncFolders() {
     SyncItem* sync_item = (iter++)->second.get();
     if (sync_item->item_type != sync_pb::AppListSpecifics::TYPE_FOLDER)
       continue;
+
+    // Do not prune OEM folder - OEM app sync items will not have the parent ID
+    // set to OEM folder, so OEM folder will not be listed in `parent_ids`.
+    // Additionally, even if the folder is empty / not needed on this device, it
+    // may exist on another user's device. Deleting it from sync would
+    // invalidate the folder position on other devices.
+    if (sync_item->item_id == ash::kOemFolderId)
+      continue;
+
     if (!base::Contains(parent_ids, sync_item->item_id))
       DeleteSyncItem(sync_item->item_id);
   }
@@ -910,7 +946,7 @@ void AppListSyncableService::WaitUntilReadyToSync(base::OnceClosure done) {
   }
 }
 
-base::Optional<syncer::ModelError>
+absl::optional<syncer::ModelError>
 AppListSyncableService::MergeDataAndStartSyncing(
     syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,
@@ -1020,7 +1056,7 @@ AppListSyncableService::MergeDataAndStartSyncing(
     on_initialized_.Signal();
   }
 
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 void AppListSyncableService::StopSyncing(syncer::ModelType type) {
@@ -1040,7 +1076,7 @@ syncer::SyncDataList AppListSyncableService::GetAllSyncDataForTesting() const {
   return list;
 }
 
-base::Optional<syncer::ModelError> AppListSyncableService::ProcessSyncChanges(
+absl::optional<syncer::ModelError> AppListSyncableService::ProcessSyncChanges(
     const base::Location& from_here,
     const syncer::SyncChangeList& change_list) {
   if (!sync_processor_.get()) {
@@ -1071,7 +1107,7 @@ base::Optional<syncer::ModelError> AppListSyncableService::ProcessSyncChanges(
 
   GetModelUpdater()->NotifyProcessSyncChangesFinished();
 
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 void AppListSyncableService::Shutdown() {
@@ -1289,6 +1325,10 @@ syncer::StringOrdinal AppListSyncableService::GetPreferredOemFolderPos() {
 bool AppListSyncableService::AppIsOem(const std::string& id) {
   const ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile_);
   if (arc_prefs && arc_prefs->IsOem(id))
+    return true;
+
+  auto* provider = web_app::WebAppProviderBase::GetProviderBase(profile_);
+  if (provider && provider->registrar().WasInstalledByOem(id))
     return true;
 
   if (!extension_system_->extension_service())

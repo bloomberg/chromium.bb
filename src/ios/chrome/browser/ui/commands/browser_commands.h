@@ -32,22 +32,10 @@ class GURL;
                            PopupMenuCommands,
                            QRScannerCommands,
                            SnackbarCommands,
-                           WhatsNewCommands>
+                           DefaultPromoCommands>
 
 // Closes the current tab.
 - (void)closeCurrentTab;
-
-// Navigates backwards in the current tab's history.
-- (void)goBack;
-
-// Navigates forwards in the current tab's history.
-- (void)goForward;
-
-// Stops loading the current web page.
-- (void)stopLoading;
-
-// Reloads the current web page
-- (void)reload;
 
 // Bookmarks the current page.
 // TODO(crbug.com/1134586): Reuse BookmarksCommands' bookmarkPage instead.

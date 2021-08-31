@@ -13,7 +13,6 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "cc/benchmarks/rasterize_and_record_benchmark_impl.h"
 #include "cc/layers/content_layer_client.h"
@@ -85,6 +84,8 @@ void RasterizeAndRecordBenchmark::DidUpdateLayers(
   results_->SetDouble(
       "record_time_partial_invalidation_ms",
       paint_benchmark_result.record_time_partial_invalidation_ms);
+  results_->SetDouble("record_time_small_invalidation_ms",
+                      paint_benchmark_result.record_time_small_invalidation_ms);
   results_->SetDouble(
       "raster_invalidation_and_convert_time_ms",
       paint_benchmark_result.raster_invalidation_and_convert_time_ms);

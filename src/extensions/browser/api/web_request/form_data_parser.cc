@@ -12,6 +12,7 @@
 #include "base/lazy_instance.h"
 #include "base/notreached.h"
 #include "base/stl_util.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "net/base/escape.h"
@@ -343,7 +344,7 @@ std::unique_ptr<FormDataParser> FormDataParser::CreateFromContentTypeHeader(
       size_t offset = content_type_header->find(kBoundaryString);
       if (offset == std::string::npos) {
         // Malformed header.
-        return std::unique_ptr<FormDataParser>();
+        return nullptr;
       }
       offset += sizeof(kBoundaryString) - 1;
       boundary = content_type_header->substr(
@@ -361,10 +362,10 @@ std::unique_ptr<FormDataParser> FormDataParser::CreateFromContentTypeHeader(
       return std::unique_ptr<FormDataParser>(
           new FormDataParserMultipart(boundary));
     case ERROR_CHOICE:
-      return std::unique_ptr<FormDataParser>();
+      return nullptr;
   }
   NOTREACHED();  // Some compilers do not believe this is unreachable.
-  return std::unique_ptr<FormDataParser>();
+  return nullptr;
 }
 
 FormDataParser::FormDataParser() {}
@@ -552,11 +553,11 @@ bool FormDataParserMultipart::GetNextNameValue(Result* result) {
   result->set_name(net::UnescapeBinaryURLComponent(name));
   if (value_assigned) {
     // Hold filename as value.
-    result->SetStringValue(value.as_string());
+    result->SetStringValue(std::string(value));
   } else if (value_is_binary) {
     result->SetBinaryValue(value);
   } else {
-    result->SetStringValue(value.as_string());
+    result->SetStringValue(std::string(value));
   }
 
   return return_value;

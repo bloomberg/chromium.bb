@@ -56,7 +56,7 @@
 
       if ( error == 0 )
       {
-        for ( auto i = 0; i < master.num_axis; i++ )
+        for ( FT_UInt i = 0; i < master.num_axis; i++ )
           coords_mm_design.push_back( ( master.axis[i].minimum +
                                         master.axis[i].maximum ) / 2 );
 
@@ -79,7 +79,7 @@
     }
 
     // Select arbitrary coordinates:
-    for ( auto  i = 0;
+    for ( FT_UInt  i = 0;
           i < var->num_axis &&
             i < AXIS_INDEX_MAX;
           i++ )
@@ -125,7 +125,7 @@
                         "FT_Get_Var_Blend_Coordinates",
                         FT_Get_Var_Blend_Coordinates );
 
-    for ( auto  i = 0; i < var->num_axis; i++ )
+    for ( FT_UInt  i = 0; i < var->num_axis; i++ )
     {
       FT_UInt flags;
 
@@ -137,7 +137,7 @@
         << "flags of axis " << ( i + 1 ) << ": " << std::hex << "0x" << flags;
     }
 
-    for ( auto  i = 0; i < var->num_namedstyles; i++ )
+    for ( FT_UInt  i = 0; i < var->num_namedstyles; i++ )
     {
       // TODO: extract the name (strid + psid).
       LOG( INFO ) << "setting named instance " << ( i + 1 );

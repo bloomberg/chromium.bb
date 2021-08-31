@@ -21,7 +21,7 @@
 class GrDDLContext final : public GrRecordingContext {
 public:
     GrDDLContext(sk_sp<GrContextThreadSafeProxy> proxy)
-        : INHERITED(std::move(proxy)) {
+        : INHERITED(std::move(proxy), true) {
     }
 
     ~GrDDLContext() override {}
@@ -45,11 +45,6 @@ private:
             this->backend() == GrBackendApi::kDawn) {
             // Currently Metal, Direct3D, and Dawn require a live renderTarget to
             // compute the key
-            return;
-        }
-
-        if (programInfo->requestedFeatures() & GrProcessor::CustomFeatures::kSampleLocations) {
-            // Sample locations require a live renderTarget to compute the key
             return;
         }
 

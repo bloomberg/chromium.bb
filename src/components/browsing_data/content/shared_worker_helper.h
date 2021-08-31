@@ -14,12 +14,12 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "components/services/storage/public/cpp/storage_key.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
 namespace content {
 class StoragePartition;
-class ResourceContext;
 }  // namespace content
 
 namespace browsing_data {
@@ -34,7 +34,7 @@ class SharedWorkerHelper
   struct SharedWorkerInfo {
     SharedWorkerInfo(const GURL& worker,
                      const std::string& name,
-                     const url::Origin& constructor_origin);
+                     const storage::StorageKey& storage_key);
     SharedWorkerInfo(const SharedWorkerInfo& other);
     ~SharedWorkerInfo();
 
@@ -42,14 +42,13 @@ class SharedWorkerHelper
 
     GURL worker;
     std::string name;
-    url::Origin constructor_origin;
+    storage::StorageKey storage_key;
   };
 
   using FetchCallback =
       base::OnceCallback<void(const std::list<SharedWorkerInfo>&)>;
 
-  SharedWorkerHelper(content::StoragePartition* storage_partition,
-                     content::ResourceContext* resource_context);
+  explicit SharedWorkerHelper(content::StoragePartition* storage_partition);
 
   // Starts the fetching process returning the list of shared workers, which
   // will notify its completion via |callback|. This must be called only in the
@@ -59,7 +58,7 @@ class SharedWorkerHelper
   // Requests the given Shared Worker to be deleted.
   virtual void DeleteSharedWorker(const GURL& worker,
                                   const std::string& name,
-                                  const url::Origin& constructor_origin);
+                                  const storage::StorageKey& storage_key);
 
  protected:
   virtual ~SharedWorkerHelper();
@@ -68,7 +67,6 @@ class SharedWorkerHelper
   friend class base::RefCountedThreadSafe<SharedWorkerHelper>;
 
   content::StoragePartition* storage_partition_;
-  content::ResourceContext* resource_context_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedWorkerHelper);
 };
@@ -78,14 +76,14 @@ class SharedWorkerHelper
 // info as a parameter.
 class CannedSharedWorkerHelper : public SharedWorkerHelper {
  public:
-  CannedSharedWorkerHelper(content::StoragePartition* storage_partition,
-                           content::ResourceContext* resource_context);
+  explicit CannedSharedWorkerHelper(
+      content::StoragePartition* storage_partition);
 
   // Adds Shared Worker to the set of canned Shared Workers that is returned by
   // this helper.
   void AddSharedWorker(const GURL& worker,
                        const std::string& name,
-                       const url::Origin& constructor_origin);
+                       const storage::StorageKey& storage_key);
 
   // Clears the list of canned Shared Workers.
   void Reset();
@@ -104,7 +102,7 @@ class CannedSharedWorkerHelper : public SharedWorkerHelper {
   void StartFetching(FetchCallback callback) override;
   void DeleteSharedWorker(const GURL& worker,
                           const std::string& name,
-                          const url::Origin& constructor_origin) override;
+                          const storage::StorageKey& storage_key) override;
 
  private:
   ~CannedSharedWorkerHelper() override;

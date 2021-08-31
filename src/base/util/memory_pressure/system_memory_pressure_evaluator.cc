@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 
 #if defined(OS_FUCHSIA)
 #include "base/util/memory_pressure/system_memory_pressure_evaluator_fuchsia.h"
@@ -14,7 +15,7 @@
 #elif defined(OS_WIN)
 #include "base/util/memory_pressure/system_memory_pressure_evaluator_win.h"
 #include "base/win/windows_version.h"
-#elif defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "base/util/memory_pressure/system_memory_pressure_evaluator_linux.h"
 #endif
 
@@ -45,7 +46,7 @@ SystemMemoryPressureEvaluator::CreateDefaultSystemEvaluator(
     evaluator->CreateOSSignalPressureEvaluator(monitor->CreateVoter());
   }
   return evaluator;
-#elif defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
   return std::make_unique<util::os_linux::SystemMemoryPressureEvaluator>(
       monitor->CreateVoter());
 #endif

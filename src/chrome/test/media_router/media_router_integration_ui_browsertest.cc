@@ -5,7 +5,6 @@
 #include "chrome/test/media_router/media_router_integration_browsertest.h"
 
 #include "base/files/file_util.h"
-#include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
@@ -40,7 +39,9 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_Dialog_Basic) {
 // TODO(https://crbug.com/822231): Flaky in Chromium waterfall.
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
                        MANUAL_Dialog_RouteCreationTimedOut) {
-  SetTestData(FILE_PATH_LITERAL("route_creation_timed_out.json"));
+  // The hardcoded timeout route creation timeout for the UI.
+  // See kCreateRouteTimeoutSeconds in media_router_ui.cc.
+  test_provider_->set_delay(base::TimeDelta::FromSeconds(20));
   OpenTestPage(FILE_PATH_LITERAL("basic_test.html"));
   test_ui_->ShowDialog();
   test_ui_->WaitForSinkAvailable(receiver_);
@@ -50,8 +51,6 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
   test_ui_->WaitForAnyIssue();
 
   base::TimeDelta elapsed(base::TimeTicks::Now() - start_time);
-  // The hardcoded timeout route creation timeout for the UI.
-  // See kCreateRouteTimeoutSeconds in media_router_ui.cc.
   base::TimeDelta expected_timeout(base::TimeDelta::FromSeconds(20));
 
   EXPECT_GE(elapsed, expected_timeout);
@@ -59,13 +58,11 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
 
   std::string issue_title = test_ui_->GetIssueTextForSink(receiver_);
   // TODO(imcheng): Fix host name for file schemes (crbug.com/560576).
-  ASSERT_EQ(
-      l10n_util::GetStringFUTF8(IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT,
-                                base::UTF8ToUTF16("file:///")),
-      issue_title);
+  ASSERT_EQ(l10n_util::GetStringFUTF8(
+                IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT, u"file:///"),
+            issue_title);
 
-  // Route will still get created, it just takes longer than usual.
-  test_ui_->WaitForAnyRoute();
+  ASSERT_EQ(test_ui_->GetRouteIdForSink(receiver_), "");
   test_ui_->HideDialog();
 }
 

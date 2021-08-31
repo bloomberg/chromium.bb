@@ -26,7 +26,6 @@
 #include "chrome/renderer/net/available_offline_content_helper.h"
 #include "components/error_page/common/error.h"
 #include "components/error_page/common/net_error_info.h"
-#include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/mock_render_thread.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -60,12 +59,13 @@ error_page::Error ProbeError(error_page::DnsProbeStatus status) {
 }
 
 error_page::Error NetErrorForURL(net::Error net_error, const GURL& url) {
-  return error_page::Error::NetError(url, net_error,
+  return error_page::Error::NetError(url, net_error, 0 /* extended_reason */,
                                      net::ResolveErrorInfo(net::OK), false);
 }
 
 error_page::Error NetError(net::Error net_error) {
   return error_page::Error::NetError(GURL(kFailedUrl), net_error,
+                                     0 /* extended_reason */,
                                      net::ResolveErrorInfo(net::OK), false);
 }
 
@@ -149,7 +149,7 @@ class NetErrorHelperCoreTest : public testing::Test,
 #if defined(OS_ANDROID)
   // State of auto fetch, as reported to Delegate. Unset if SetAutoFetchState
   // was not called.
-  base::Optional<chrome::mojom::OfflinePageAutoFetcherScheduleResult>
+  absl::optional<chrome::mojom::OfflinePageAutoFetcherScheduleResult>
   auto_fetch_state() const {
     return auto_fetch_state_;
   }
@@ -280,7 +280,7 @@ class NetErrorHelperCoreTest : public testing::Test,
   std::string offline_content_json_;
   std::string offline_content_summary_json_;
 #if defined(OS_ANDROID)
-  base::Optional<chrome::mojom::OfflinePageAutoFetcherScheduleResult>
+  absl::optional<chrome::mojom::OfflinePageAutoFetcherScheduleResult>
       auto_fetch_state_;
 #endif
   bool offline_content_feature_enabled_ = false;

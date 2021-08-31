@@ -26,7 +26,8 @@
 namespace content {
 class BrowserContext;
 class WebContents;
-}
+struct OpenURLParams;
+}  // namespace content
 
 namespace weblayer {
 class BrowserContextImpl;
@@ -84,6 +85,9 @@ class ProfileImpl : public Profile {
   const base::FilePath& data_path() const { return info_.data_path; }
   const std::string& name() const { return info_.name; }
   DownloadDelegate* download_delegate() { return download_delegate_; }
+  GoogleAccountAccessTokenFetchDelegate* access_token_fetch_delegate() {
+    return access_token_fetch_delegate_;
+  }
 
   void MarkAsDeleted();
 
@@ -94,6 +98,8 @@ class ProfileImpl : public Profile {
                          base::OnceClosure callback) override;
   void SetDownloadDirectory(const base::FilePath& directory) override;
   void SetDownloadDelegate(DownloadDelegate* delegate) override;
+  void SetGoogleAccountAccessTokenFetchDelegate(
+      GoogleAccountAccessTokenFetchDelegate* delegate) override;
   CookieManager* GetCookieManager() override;
   PrerenderController* GetPrerenderController() override;
   void GetBrowserPersistenceIds(
@@ -146,6 +152,9 @@ class ProfileImpl : public Profile {
       const base::android::JavaRef<jstring>& j_page_url,
       const base::android::JavaRef<jobject>& j_callback);
   void MarkAsDeleted(JNIEnv* env) { MarkAsDeleted(); }
+  base::android::ScopedJavaGlobalRef<jobject> GetJavaProfile() {
+    return java_profile_;
+  }
 #endif
 
   const base::FilePath& download_directory() { return download_directory_; }
@@ -153,6 +162,12 @@ class ProfileImpl : public Profile {
   // Get the directory where BrowserPersister stores tab state data. This will
   // be a real file path even for the off-the-record profile.
   base::FilePath GetBrowserPersisterDataBaseDir() const;
+
+  // Creates a new web contents and navigates it according to `params`, but only
+  // if an OpenUrlCallback has been set by the embedder. This is used for
+  // navigations originating from service workers, which don't necessarily have
+  // an associated tab. It may return null if the operation fails.
+  content::WebContents* OpenUrl(const content::OpenURLParams& params);
 
  private:
   class DataClearer;
@@ -180,8 +195,9 @@ class ProfileImpl : public Profile {
   base::FilePath download_directory_;
 
   DownloadDelegate* download_delegate_ = nullptr;
+  GoogleAccountAccessTokenFetchDelegate* access_token_fetch_delegate_ = nullptr;
 
-  std::unique_ptr<i18n::LocaleChangeSubscription> locale_change_subscription_;
+  base::CallbackListSubscription locale_change_subscription_;
 
   std::unique_ptr<CookieManagerImpl> cookie_manager_;
   std::unique_ptr<PrerenderControllerImpl> prerender_controller_;

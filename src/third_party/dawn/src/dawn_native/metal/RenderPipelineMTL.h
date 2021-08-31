@@ -17,6 +17,8 @@
 
 #include "dawn_native/RenderPipeline.h"
 
+#include "common/NSRef.h"
+
 #import <Metal/Metal.h>
 
 namespace dawn_native { namespace metal {
@@ -25,8 +27,9 @@ namespace dawn_native { namespace metal {
 
     class RenderPipeline final : public RenderPipelineBase {
       public:
-        static ResultOrError<RenderPipeline*> Create(Device* device,
-                                                     const RenderPipelineDescriptor* descriptor);
+        static ResultOrError<Ref<RenderPipeline>> Create(
+            Device* device,
+            const RenderPipelineDescriptor2* descriptor);
 
         MTLPrimitiveType GetMTLPrimitiveTopology() const;
         MTLWinding GetMTLFrontFace() const;
@@ -43,17 +46,16 @@ namespace dawn_native { namespace metal {
         wgpu::ShaderStage GetStagesRequiringStorageBufferLength() const;
 
       private:
-        ~RenderPipeline() override;
         using RenderPipelineBase::RenderPipelineBase;
-        MaybeError Initialize(const RenderPipelineDescriptor* descriptor);
+        MaybeError Initialize(const RenderPipelineDescriptor2* descriptor);
 
         MTLVertexDescriptor* MakeVertexDesc();
 
         MTLPrimitiveType mMtlPrimitiveTopology;
         MTLWinding mMtlFrontFace;
         MTLCullMode mMtlCullMode;
-        id<MTLRenderPipelineState> mMtlRenderPipelineState = nil;
-        id<MTLDepthStencilState> mMtlDepthStencilState = nil;
+        NSPRef<id<MTLRenderPipelineState>> mMtlRenderPipelineState;
+        NSPRef<id<MTLDepthStencilState>> mMtlDepthStencilState;
         ityp::array<VertexBufferSlot, uint32_t, kMaxVertexBuffers> mMtlVertexBufferIndices;
 
         wgpu::ShaderStage mStagesRequiringStorageBufferLength = wgpu::ShaderStage::None;

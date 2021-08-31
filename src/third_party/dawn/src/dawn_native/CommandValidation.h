@@ -19,32 +19,17 @@
 #include "dawn_native/Error.h"
 #include "dawn_native/Texture.h"
 
-#include <map>
 #include <vector>
 
 namespace dawn_native {
 
-    class AttachmentState;
     class QuerySetBase;
-    struct BeginRenderPassCmd;
-    struct PassResourceUsage;
+    struct SyncScopeResourceUsage;
     struct TexelBlockInfo;
 
-    using UsedQueryMap = std::map<QuerySetBase*, std::vector<bool>>;
+    MaybeError ValidateSyncScopeResourceUsage(const SyncScopeResourceUsage& usage);
 
-    MaybeError ValidateCanPopDebugGroup(uint64_t debugGroupStackSize);
-    MaybeError ValidateFinalDebugGroupStackSize(uint64_t debugGroupStackSize);
-
-    MaybeError ValidateRenderBundle(CommandIterator* commands,
-                                    const AttachmentState* attachmentState);
-    MaybeError ValidateRenderPass(CommandIterator* commands, const BeginRenderPassCmd* renderPass);
-    MaybeError ValidateComputePass(CommandIterator* commands);
-
-    MaybeError ValidatePassResourceUsage(const PassResourceUsage& usage);
-
-    MaybeError ValidateTimestampQuery(QuerySetBase* querySet,
-                                      uint32_t queryIndex,
-                                      const UsedQueryMap& usedQueryIndices);
+    MaybeError ValidateTimestampQuery(QuerySetBase* querySet, uint32_t queryIndex);
 
     ResultOrError<uint64_t> ComputeRequiredBytesInCopy(const TexelBlockInfo& blockInfo,
                                                        const Extent3D& copySize,
@@ -63,16 +48,17 @@ namespace dawn_native {
                                          uint64_t byteSize,
                                          const TexelBlockInfo& blockInfo,
                                          const Extent3D& copyExtent);
-    MaybeError ValidateTextureCopyRange(const TextureCopyView& textureCopyView,
+    MaybeError ValidateTextureCopyRange(DeviceBase const* device,
+                                        const ImageCopyTexture& imageCopyTexture,
                                         const Extent3D& copySize);
-    ResultOrError<Aspect> SingleAspectUsedByTextureCopyView(const TextureCopyView& view);
-    MaybeError ValidateLinearToDepthStencilCopyRestrictions(const TextureCopyView& dst);
+    ResultOrError<Aspect> SingleAspectUsedByImageCopyTexture(const ImageCopyTexture& view);
+    MaybeError ValidateLinearToDepthStencilCopyRestrictions(const ImageCopyTexture& dst);
 
-    MaybeError ValidateBufferCopyView(DeviceBase const* device,
-                                      const BufferCopyView& bufferCopyView);
-    MaybeError ValidateTextureCopyView(DeviceBase const* device,
-                                       const TextureCopyView& textureCopyView,
-                                       const Extent3D& copySize);
+    MaybeError ValidateImageCopyBuffer(DeviceBase const* device,
+                                       const ImageCopyBuffer& imageCopyBuffer);
+    MaybeError ValidateImageCopyTexture(DeviceBase const* device,
+                                        const ImageCopyTexture& imageCopyTexture,
+                                        const Extent3D& copySize);
 
     MaybeError ValidateRowsPerImage(const Format& format,
                                     uint32_t rowsPerImage,
@@ -86,9 +72,13 @@ namespace dawn_native {
 
     bool IsRangeOverlapped(uint32_t startA, uint32_t startB, uint32_t length);
 
-    MaybeError ValidateTextureToTextureCopyRestrictions(const TextureCopyView& src,
-                                                        const TextureCopyView& dst,
+    MaybeError ValidateTextureToTextureCopyRestrictions(const ImageCopyTexture& src,
+                                                        const ImageCopyTexture& dst,
                                                         const Extent3D& copySize);
+
+    MaybeError ValidateCopyTextureForBrowserRestrictions(const ImageCopyTexture& src,
+                                                         const ImageCopyTexture& dst,
+                                                         const Extent3D& copySize);
 
     MaybeError ValidateCanUseAs(const TextureBase* texture, wgpu::TextureUsage usage);
 

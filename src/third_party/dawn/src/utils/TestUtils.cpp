@@ -39,12 +39,13 @@ namespace utils {
 
         TextureDataCopyLayout layout;
 
-        layout.mipSize = {textureSizeAtLevel0.width >> mipmapLevel,
-                          textureSizeAtLevel0.height >> mipmapLevel, textureSizeAtLevel0.depth};
+        layout.mipSize = {std::max(textureSizeAtLevel0.width >> mipmapLevel, 1u),
+                          std::max(textureSizeAtLevel0.height >> mipmapLevel, 1u),
+                          textureSizeAtLevel0.depthOrArrayLayers};
 
         layout.bytesPerRow = GetMinimumBytesPerRow(format, layout.mipSize.width);
 
-        if (rowsPerImage == wgpu::kStrideUndefined) {
+        if (rowsPerImage == wgpu::kCopyStrideUndefined) {
             rowsPerImage = layout.mipSize.height;
         }
         layout.rowsPerImage = rowsPerImage;
@@ -83,7 +84,7 @@ namespace utils {
         ASSERT(copyExtent.height % blockHeight == 0);
         uint32_t heightInBlocks = copyExtent.height / blockHeight;
         return RequiredBytesInCopy(bytesPerRow, rowsPerImage, widthInBlocks, heightInBlocks,
-                                   copyExtent.depth, blockSize);
+                                   copyExtent.depthOrArrayLayers, blockSize);
     }
 
     uint64_t RequiredBytesInCopy(uint64_t bytesPerRow,
@@ -123,13 +124,14 @@ namespace utils {
         descriptor.usage = wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::CopySrc;
         wgpu::Texture texture = device.CreateTexture(&descriptor);
 
-        wgpu::TextureCopyView textureCopyView = utils::CreateTextureCopyView(texture, 0, {0, 0, 0});
+        wgpu::ImageCopyTexture imageCopyTexture =
+            utils::CreateImageCopyTexture(texture, 0, {0, 0, 0});
         wgpu::TextureDataLayout textureDataLayout =
-            utils::CreateTextureDataLayout(0, wgpu::kStrideUndefined);
+            utils::CreateTextureDataLayout(0, wgpu::kCopyStrideUndefined);
         wgpu::Extent3D copyExtent = {1, 1, 1};
 
         // WriteTexture with exactly 1 byte of data.
-        device.GetDefaultQueue().WriteTexture(&textureCopyView, data.data(), 1, &textureDataLayout,
-                                              &copyExtent);
+        device.GetQueue().WriteTexture(&imageCopyTexture, data.data(), 1, &textureDataLayout,
+                                       &copyExtent);
     }
 }  // namespace utils

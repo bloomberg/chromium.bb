@@ -8,7 +8,6 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/optional.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/background/ntp_background_service.h"
@@ -16,6 +15,7 @@
 #include "components/search/ntp_features.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 // static
 NtpBackgroundService* NtpBackgroundServiceFactory::GetForProfile(
@@ -41,8 +41,7 @@ KeyedService* NtpBackgroundServiceFactory::BuildServiceInstanceFor(
   // TODO(crbug.com/914898): Background service URLs should be
   // configurable server-side, so they can be changed mid-release.
 
-  auto url_loader_factory =
-      content::BrowserContext::GetDefaultStoragePartition(context)
-          ->GetURLLoaderFactoryForBrowserProcess();
+  auto url_loader_factory = context->GetDefaultStoragePartition()
+                                ->GetURLLoaderFactoryForBrowserProcess();
   return new NtpBackgroundService(url_loader_factory);
 }

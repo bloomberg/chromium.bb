@@ -8,8 +8,8 @@
 #include <string>
 
 #include "build/build_config.h"
-#include "components/printing/common/printing_param_traits_macros.h"
 #include "ipc/ipc_message_macros.h"
+#include "ipc/ipc_message_start.h"
 #include "ipc/ipc_param_traits.h"
 #include "printing/backend/print_backend.h"
 #include "printing/buildflags/buildflags.h"
@@ -34,6 +34,10 @@ IPC_STRUCT_TRAITS_BEGIN(printing::PrinterSemanticCapsAndDefaults::Paper)
   IPC_STRUCT_TRAITS_MEMBER(vendor_id)
   IPC_STRUCT_TRAITS_MEMBER(size_um)
 IPC_STRUCT_TRAITS_END()
+
+IPC_ENUM_TRAITS_MIN_MAX_VALUE(printing::mojom::DuplexMode,
+                              printing::mojom::DuplexMode::kUnknownDuplexMode,
+                              printing::mojom::DuplexMode::kShortEdge)
 
 IPC_STRUCT_TRAITS_BEGIN(printing::PrinterSemanticCapsAndDefaults)
   IPC_STRUCT_TRAITS_MEMBER(collate_capable)

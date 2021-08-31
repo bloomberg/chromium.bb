@@ -5,8 +5,8 @@ option('gobject', type: 'feature', value: 'auto',
   description: 'Enable GObject bindings')
 option('cairo', type: 'feature', value: 'auto',
   description: 'Use Cairo graphics library')
-option('fontconfig', type: 'feature', value: 'auto',
-  description: 'Use fontconfig')
+option('chafa', type: 'feature', value: 'auto',
+  description: 'Use Chafa terminal graphics library')
 option('icu', type: 'feature', value: 'auto',
   description: 'Enable ICU library unicode functions')
 option('graphite', type: 'feature', value: 'disabled',
@@ -28,7 +28,7 @@ option('introspection', type: 'feature', value: 'auto', yield: true,
 option('docs', type: 'feature', value: 'auto', yield: true,
   description: 'Generate documentation with gtk-doc')
 
-option('benchmark', type: 'feature', value: 'auto',
+option('benchmark', type: 'feature', value: 'disabled',
   description: 'Enable benchmark tests')
 option('icu_builtin', type: 'boolean', value: false,
   description: 'Don\'t separate ICU support as harfbuzz-icu module')

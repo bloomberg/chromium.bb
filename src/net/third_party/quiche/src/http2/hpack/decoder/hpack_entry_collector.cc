@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/http2/hpack/decoder/hpack_entry_collector.h"
+#include "http2/hpack/decoder/hpack_entry_collector.h"
 
-#include "net/third_party/quiche/src/http2/hpack/decoder/hpack_string_collector.h"
-#include "net/third_party/quiche/src/http2/hpack/http2_hpack_constants.h"
-#include "net/third_party/quiche/src/http2/platform/api/http2_logging.h"
-#include "net/third_party/quiche/src/http2/platform/api/http2_string_utils.h"
-#include "net/third_party/quiche/src/http2/platform/api/http2_test_helpers.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_test.h"
+#include "absl/strings/str_cat.h"
+#include "http2/hpack/decoder/hpack_string_collector.h"
+#include "http2/hpack/http2_hpack_constants.h"
+#include "http2/platform/api/http2_logging.h"
+#include "http2/platform/api/http2_test_helpers.h"
+#include "common/platform/api/quiche_test.h"
 
 using ::testing::AssertionResult;
 
@@ -216,11 +216,11 @@ void HpackEntryCollector::AppendToHpackBlockBuilder(
     case HpackEntryType::kNeverIndexedLiteralHeader:
       ASSERT_TRUE(value_.HasEnded()) << *this;
       if (index_ != 0) {
-        CHECK(name_.IsClear());
+        QUICHE_CHECK(name_.IsClear());
         hbb->AppendNameIndexAndLiteralValue(header_type_, index_,
                                             value_.huffman_encoded, value_.s);
       } else {
-        CHECK(name_.HasEnded()) << *this;
+        QUICHE_CHECK(name_.HasEnded()) << *this;
         hbb->AppendLiteralNameAndValue(header_type_, name_.huffman_encoded,
                                        name_.s, value_.huffman_encoded,
                                        value_.s);
@@ -254,25 +254,25 @@ std::string HpackEntryCollector::ToString() const {
       if (header_type_ == kInvalidHeaderType) {
         result += "<unset>";
       } else {
-        Http2StrAppend(&result, header_type_);
+        absl::StrAppend(&result, header_type_);
       }
   }
   if (index_ != 0) {
-    Http2StrAppend(&result, " Index=", index_);
+    absl::StrAppend(&result, " Index=", index_);
   }
   if (!name_.IsClear()) {
-    Http2StrAppend(&result, " Name", name_.ToString());
+    absl::StrAppend(&result, " Name", name_.ToString());
   }
   if (!value_.IsClear()) {
-    Http2StrAppend(&result, " Value", value_.ToString());
+    absl::StrAppend(&result, " Value", value_.ToString());
   }
   if (!started_) {
     EXPECT_FALSE(ended_);
-    Http2StrAppend(&result, " !started");
+    absl::StrAppend(&result, " !started");
   } else if (!ended_) {
-    Http2StrAppend(&result, " !ended");
+    absl::StrAppend(&result, " !ended");
   } else {
-    Http2StrAppend(&result, " Complete");
+    absl::StrAppend(&result, " Complete");
   }
   return result;
 }

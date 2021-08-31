@@ -5,10 +5,13 @@
 #ifndef QUICHE_QUIC_MASQUE_MASQUE_DISPATCHER_H_
 #define QUICHE_QUIC_MASQUE_MASQUE_DISPATCHER_H_
 
-#include "net/third_party/quiche/src/quic/masque/masque_server_backend.h"
-#include "net/third_party/quiche/src/quic/masque/masque_server_session.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
-#include "net/third_party/quiche/src/quic/tools/quic_simple_dispatcher.h"
+#include "absl/container/flat_hash_map.h"
+#include "quic/masque/masque_server_backend.h"
+#include "quic/masque/masque_server_session.h"
+#include "quic/masque/masque_utils.h"
+#include "quic/platform/api/quic_epoll.h"
+#include "quic/platform/api/quic_export.h"
+#include "quic/tools/quic_simple_dispatcher.h"
 
 namespace quic {
 
@@ -18,9 +21,11 @@ class QUIC_NO_EXPORT MasqueDispatcher : public QuicSimpleDispatcher,
                                         public MasqueServerSession::Visitor {
  public:
   explicit MasqueDispatcher(
+      MasqueMode masque_mode,
       const QuicConfig* config,
       const QuicCryptoServerConfig* crypto_config,
       QuicVersionManager* version_manager,
+      QuicEpollServer* epoll_server,
       std::unique_ptr<QuicConnectionHelperInterface> helper,
       std::unique_ptr<QuicCryptoServerStreamBase::Helper> session_helper,
       std::unique_ptr<QuicAlarmFactory> alarm_factory,
@@ -37,7 +42,8 @@ class QUIC_NO_EXPORT MasqueDispatcher : public QuicSimpleDispatcher,
       const QuicSocketAddress& self_address,
       const QuicSocketAddress& peer_address,
       absl::string_view alpn,
-      const ParsedQuicVersion& version) override;
+      const ParsedQuicVersion& version,
+      absl::string_view sni) override;
 
   bool OnFailedToDispatchPacket(const ReceivedPacketInfo& packet_info) override;
 
@@ -50,10 +56,14 @@ class QUIC_NO_EXPORT MasqueDispatcher : public QuicSimpleDispatcher,
       QuicConnectionId client_connection_id) override;
 
  private:
+  MasqueMode masque_mode_;
+  QuicEpollServer* epoll_server_;               // Unowned.
   MasqueServerBackend* masque_server_backend_;  // Unowned.
   // Mapping from client connection IDs to server sessions, allows routing
   // incoming packets to the right MASQUE connection.
-  QuicHashMap<QuicConnectionId, MasqueServerSession*, QuicConnectionIdHash>
+  absl::flat_hash_map<QuicConnectionId,
+                      MasqueServerSession*,
+                      QuicConnectionIdHash>
       client_connection_id_registrations_;
 };
 

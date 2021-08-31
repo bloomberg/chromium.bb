@@ -202,10 +202,41 @@ aomenc_encode_test_fast_params() {
         --test-decode=fatal"
 }
 
+# Echoes realtime encode params for use with aomenc.
+aomenc_encode_test_rt_params() {
+  echo "--limit=${AV1_ENCODE_TEST_FRAME_LIMIT}
+        --test-decode=fatal
+        --enable-tpl-model=0
+        --deltaq-mode=0
+        --enable-order-hint=0
+        --profile=0
+        --static-thresh=0
+        --end-usage=cbr
+        --cpu-used=7
+        --passes=1
+        --usage=1
+        --lag-in-frames=0
+        --aq-mode=3
+        --enable-obmc=0
+        --enable-warped-motion=0
+        --enable-ref-frame-mvs=0
+        --enable-cdef=1
+        --enable-order-hint=0
+        --coeff-cost-upd-freq=3
+        --mode-cost-upd-freq=3
+        --mv-cost-upd-freq=3"
+}
+
 # Echoes yes to stdout when aom_config_option_enabled() reports yes for
 # CONFIG_WEBM_IO.
 webm_io_available() {
   [ "$(aom_config_option_enabled CONFIG_WEBM_IO)" = "yes" ] && echo yes
+}
+
+# Echoes yes to stdout when aom_config_option_enabled() reports yes for
+# CONFIG_REALTIME_ONLY.
+realtime_only_build() {
+  [ "$(aom_config_option_enabled CONFIG_REALTIME_ONLY)" = "yes" ] && echo yes
 }
 
 # Filters strings from $1 using the filter specified by $2. Filter behavior

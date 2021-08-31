@@ -52,10 +52,10 @@ std::ostream &operator<<(std::ostream &os, const TestVideoParam &test_arg) {
 }
 
 const TestVideoParam kTestVideoVectors[] = {
-  { "park_joy_90p_8_420.y4m", AOM_IMG_FMT_I420, AOM_BITS_8, 0, 5, 0, 26.0,
+  { "park_joy_90p_8_420.y4m", AOM_IMG_FMT_I420, AOM_BITS_8, 0, 5, 0, 25.5,
     45.0 },
 #if CONFIG_AV1_HIGHBITDEPTH
-  { "park_joy_90p_10_444.y4m", AOM_IMG_FMT_I44416, AOM_BITS_10, 1, 5, 0, 28.0,
+  { "park_joy_90p_10_444.y4m", AOM_IMG_FMT_I44416, AOM_BITS_10, 1, 5, 0, 27.0,
     48.0 },
 #endif
   { "screendata.y4m", AOM_IMG_FMT_I420, AOM_BITS_8, 0, 4, 1, 23.0, 56.0 },
@@ -103,8 +103,7 @@ class HorzSuperresEndToEndTest
   virtual ~HorzSuperresEndToEndTest() {}
 
   virtual void SetUp() {
-    InitializeConfig();
-    SetMode(::libaom_test::kTwoPassGood);
+    InitializeConfig(::libaom_test::kTwoPassGood);
     cfg_.g_lag_in_frames = 5;
     cfg_.rc_end_usage = AOM_Q;
     cfg_.rc_target_bitrate = kBitrate;
@@ -207,8 +206,7 @@ class HorzSuperresFixedEndToEndTest
   virtual ~HorzSuperresFixedEndToEndTest() {}
 
   virtual void SetUp() {
-    InitializeConfig();
-    SetMode(::libaom_test::kTwoPassGood);
+    InitializeConfig(::libaom_test::kTwoPassGood);
     cfg_.g_lag_in_frames = 5;
     cfg_.rc_end_usage = AOM_VBR;
     cfg_.rc_target_bitrate = kBitrate;
@@ -318,8 +316,7 @@ class HorzSuperresQThreshEndToEndTest
   virtual ~HorzSuperresQThreshEndToEndTest() {}
 
   virtual void SetUp() {
-    InitializeConfig();
-    SetMode(::libaom_test::kTwoPassGood);
+    InitializeConfig(::libaom_test::kTwoPassGood);
     cfg_.g_lag_in_frames = 5;
     cfg_.rc_end_usage = AOM_VBR;
     cfg_.rc_target_bitrate = kBitrate;

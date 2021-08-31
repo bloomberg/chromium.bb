@@ -1,5 +1,5 @@
 /*
- * Copyright © 2018, VideoLAN and dav1d authors
+ * Copyright © 2018-2021, VideoLAN and dav1d authors
  * Copyright © 2018, Two Orioles, LLC
  * All rights reserved.
  *
@@ -31,11 +31,6 @@
 #include "dav1d/data.h"
 
 void dav1d_data_ref(Dav1dData *dst, const Dav1dData *src);
-
-/**
- * Move a data reference.
- */
-void dav1d_data_move_ref(Dav1dData *dst, Dav1dData *src);
 
 /**
  * Copy the source properties to the destitionatin and increase the

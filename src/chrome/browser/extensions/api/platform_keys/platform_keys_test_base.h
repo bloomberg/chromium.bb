@@ -8,9 +8,9 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "chrome/browser/chromeos/login/test/https_forwarder.h"
+#include "chrome/browser/ash/login/test/https_forwarder.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
-#include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/extensions/mixin_based_extension_apitest.h"
 #include "chromeos/tpm/stub_install_attributes.h"
 #include "components/account_id/account_id.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
@@ -24,7 +24,7 @@ class ScopedTestSystemNSSKeySlot;
 // availability, device enrollment status, user affiliation and user policy.
 // Every test case is supposed to have a PRE_ test case which must call
 // PlatformKeysTestBase::RunPreTest.
-class PlatformKeysTestBase : public extensions::ExtensionApiTest {
+class PlatformKeysTestBase : public extensions::MixinBasedExtensionApiTest {
  public:
   enum class SystemTokenStatus { EXISTS, DOES_NOT_EXIST };
 
@@ -42,7 +42,7 @@ class PlatformKeysTestBase : public extensions::ExtensionApiTest {
   ~PlatformKeysTestBase() override;
 
  protected:
-  // ExtensionApiTest:
+  // MixinBasedExtensionApiTest:
   void SetUp() override;
   void SetUpCommandLine(base::CommandLine* command_line) override;
   void SetUpInProcessBrowserTestFixture() override;
@@ -72,13 +72,13 @@ class PlatformKeysTestBase : public extensions::ExtensionApiTest {
 
   // Load |page_url| in a new browser in the current profile and wait for PASSED
   // or FAILED notification. The functionality of this function is reduced
-  // functionality of RunExtensionSubtest(), but we don't use it here because it
+  // functionality of RunExtensionTest(), but we don't use it here because it
   // requires function InProcessBrowserTest::browser() to return non-NULL
   // pointer. Unfortunately it returns the value which is set in constructor and
   // can't be modified. Because on login flow there is no browser, the function
   // InProcessBrowserTest::browser() always returns NULL. Besides this we need
-  // only very little functionality from RunExtensionSubtest(). Thus so that
-  // don't make RunExtensionSubtest() too complex we just introduce a new
+  // only very little functionality from RunExtensionTest(). Thus so that
+  // don't make RunExtensionTest() too complex we just introduce a new
   // function.
   bool TestExtension(const std::string& page_url);
 

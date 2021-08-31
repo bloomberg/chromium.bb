@@ -98,12 +98,11 @@ class ModuleSystem : public ObjectBackedNativeHandler {
                             const std::string& method_name,
                             int argc,
                             v8::Local<v8::Value> argv[]);
-  void CallModuleMethodSafe(
-      const std::string& module_name,
-      const std::string& method_name,
-      int argc,
-      v8::Local<v8::Value> argv[],
-      const ScriptInjectionCallback::CompleteCallback& callback);
+  void CallModuleMethodSafe(const std::string& module_name,
+                            const std::string& method_name,
+                            int argc,
+                            v8::Local<v8::Value> argv[],
+                            ScriptInjectionCallback::CompleteCallback callback);
 
   // Register |native_handler| as a potential target for requireNative(), so
   // calls to requireNative(|name|) from JS will return a new object created by
@@ -156,7 +155,8 @@ class ModuleSystem : public ObjectBackedNativeHandler {
   void SetGetInternalAPIHook(v8::Local<v8::FunctionTemplate> get_internal_api);
 
   using JSBindingUtilGetter =
-      base::Callback<void(v8::Local<v8::Context>, v8::Local<v8::Value>*)>;
+      base::RepeatingCallback<void(v8::Local<v8::Context>,
+                                   v8::Local<v8::Value>*)>;
   void SetJSBindingUtilGetter(const JSBindingUtilGetter& getter);
 
  protected:

@@ -8,6 +8,8 @@
 #ifndef SKIASL_MEMORYLAYOUT
 #define SKIASL_MEMORYLAYOUT
 
+#include <algorithm>
+
 #include "src/sksl/ir/SkSLType.h"
 
 namespace SkSL {
@@ -38,7 +40,7 @@ public:
             case k430_Standard: return raw;
             case kMetal_Standard: return raw;
         }
-        ABORT("unreachable");
+        SkUNREACHABLE;
     }
 
     /**
@@ -48,6 +50,7 @@ public:
         // See OpenGL Spec 7.6.2.2 Standard Uniform Block Layout
         switch (type.typeKind()) {
             case Type::TypeKind::kScalar:
+            case Type::TypeKind::kEnum:
                 return this->size(type);
             case Type::TypeKind::kVector:
                 return vector_alignment(this->size(type.componentType()), type.columns());
@@ -67,7 +70,7 @@ public:
                 return this->roundUpIfNeeded(result);
             }
             default:
-                ABORT("cannot determine size of type %s", String(type.name()).c_str());
+                SK_ABORT("cannot determine size of type %s", String(type.name()).c_str());
         }
     }
 
@@ -92,7 +95,7 @@ public:
                 return stride;
             }
             default:
-                ABORT("type does not have a stride");
+                SK_ABORT("type does not have a stride");
         }
     }
 
@@ -102,11 +105,13 @@ public:
     size_t size(const Type& type) const {
         switch (type.typeKind()) {
             case Type::TypeKind::kScalar:
-                if (type.name() == "bool") {
+                if (type.isBoolean()) {
                     return 1;
                 }
                 // FIXME need to take precision into account, once we figure out how we want to
                 // handle it...
+                return 4;
+            case Type::TypeKind::kEnum:
                 return 4;
             case Type::TypeKind::kVector:
                 if (fStd == kMetal_Standard && type.columns() == 3) {
@@ -132,7 +137,31 @@ public:
                 return (total + alignment - 1) & ~(alignment - 1);
             }
             default:
-                ABORT("cannot determine size of type %s", String(type.name()).c_str());
+                SK_ABORT("cannot determine size of type %s", String(type.name()).c_str());
+        }
+    }
+
+    /**
+     * Not all types are compatible with memory layout.
+     */
+    static size_t LayoutIsSupported(const Type& type) {
+        switch (type.typeKind()) {
+            case Type::TypeKind::kScalar:
+            case Type::TypeKind::kEnum:
+            case Type::TypeKind::kVector:
+            case Type::TypeKind::kMatrix:
+                return true;
+
+            case Type::TypeKind::kArray:
+                return LayoutIsSupported(type.componentType());
+
+            case Type::TypeKind::kStruct:
+                return std::all_of(
+                        type.fields().begin(), type.fields().end(),
+                        [](const Type::Field& f) { return LayoutIsSupported(*f.fType); });
+
+            default:
+                return false;
         }
     }
 

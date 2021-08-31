@@ -88,6 +88,8 @@ class TestingLocationArbitrator : public LocationArbitrator {
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       bool should_use_system_location_provider = false)
       : LocationArbitrator(provider_getter,
+                           /*geolocation_system_permission_manager=*/nullptr,
+                           /*main_task_runner=*/nullptr,
                            std::move(url_loader_factory),
                            std::string() /* api_key */,
                            std::make_unique<FakePositionCache>()),
@@ -134,9 +136,9 @@ class GeolocationLocationArbitratorTest : public testing::Test {
     const LocationProvider::LocationProviderUpdateCallback callback =
         base::BindRepeating(&MockLocationObserver::OnLocationUpdate,
                             base::Unretained(observer_.get()));
-    arbitrator_.reset(new TestingLocationArbitrator(
+    arbitrator_ = std::make_unique<TestingLocationArbitrator>(
         callback, provider_getter, std::move(url_loader_factory),
-        should_use_system_location_provider));
+        should_use_system_location_provider);
   }
 
   // testing::Test

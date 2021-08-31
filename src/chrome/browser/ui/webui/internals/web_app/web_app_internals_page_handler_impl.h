@@ -27,8 +27,9 @@ class WebAppInternalsPageHandlerImpl
   static void AddPageResources(content::WebUIDataSource* source);
 
   // mojom::web_app_internals::WebAppInternalsPageHandler:
-  void IsBmoEnabled(IsBmoEnabledCallback callback) override;
   void GetWebApps(GetWebAppsCallback callback) override;
+  void GetPreinstalledWebAppDebugInfo(
+      GetPreinstalledWebAppDebugInfoCallback callback) override;
   void GetExternallyInstalledWebAppPrefs(
       GetExternallyInstalledWebAppPrefsCallback callback) override;
 

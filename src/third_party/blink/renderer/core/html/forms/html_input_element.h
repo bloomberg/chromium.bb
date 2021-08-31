@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_regexp.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/create_element_flags.h"
+#include "third_party/blink/renderer/core/dom/events/simulated_click_options.h"
 #include "third_party/blink/renderer/core/html/forms/file_chooser.h"
 #include "third_party/blink/renderer/core/html/forms/step_range.h"
 #include "third_party/blink/renderer/core/html/forms/text_control_element.h"
@@ -112,6 +113,7 @@ class CORE_EXPORT HTMLInputElement
   // its value can be protected from memorization by autofill or keyboards.
   bool HasBeenPasswordField() const;
 
+  bool IsCheckable() const;
   bool checked() const;
   void setChecked(
       bool,
@@ -186,11 +188,11 @@ class CORE_EXPORT HTMLInputElement
   // delay the 'input' event with EventQueueScope.
   void SetValueFromRenderer(const String&);
 
-  base::Optional<uint32_t> selectionStartForBinding(ExceptionState&) const;
-  base::Optional<uint32_t> selectionEndForBinding(ExceptionState&) const;
+  absl::optional<uint32_t> selectionStartForBinding(ExceptionState&) const;
+  absl::optional<uint32_t> selectionEndForBinding(ExceptionState&) const;
   String selectionDirectionForBinding(ExceptionState&) const;
-  void setSelectionStartForBinding(base::Optional<uint32_t>, ExceptionState&);
-  void setSelectionEndForBinding(base::Optional<uint32_t>, ExceptionState&);
+  void setSelectionStartForBinding(absl::optional<uint32_t>, ExceptionState&);
+  void setSelectionEndForBinding(absl::optional<uint32_t>, ExceptionState&);
   void setSelectionDirectionForBinding(const String&, ExceptionState&);
   void setSelectionRangeForBinding(unsigned start,
                                    unsigned end,
@@ -388,7 +390,7 @@ class CORE_EXPORT HTMLInputElement
 
   bool CanStartSelection() const final;
 
-  void AccessKeyAction(bool send_mouse_events) final;
+  void AccessKeyAction(SimulatedClickCreationScope creation_scope) final;
 
   void ParseAttribute(const AttributeModificationParams&) override;
   bool IsPresentationAttribute(const QualifiedName&) const final;
@@ -446,8 +448,8 @@ class CORE_EXPORT HTMLInputElement
 
   void AddToRadioButtonGroup();
   void RemoveFromRadioButtonGroup();
-  scoped_refptr<ComputedStyle> CustomStyleForLayoutObject() override;
-  void DidRecalcStyle(const StyleRecalcChange) override;
+  scoped_refptr<ComputedStyle> CustomStyleForLayoutObject(
+      const StyleRecalcContext&) override;
 
   void MaybeReportPiiMetrics();
 
