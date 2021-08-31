@@ -12,12 +12,12 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/time/time.h"
 #include "chrome/browser/permissions/abusive_origin_permission_revocation_request.h"
 #include "chrome/browser/push_messaging/push_messaging_notification_manager.h"
@@ -35,6 +35,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/push_messaging_service.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging.mojom-forward.h"
 
 class GURL;
@@ -42,6 +43,7 @@ class Profile;
 class PushMessagingAppIdentifier;
 class PushMessagingServiceTest;
 class ScopedKeepAlive;
+class ScopedProfileKeepAlive;
 
 namespace blink {
 namespace mojom {
@@ -174,8 +176,8 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   void OnRefreshFinished(
       const PushMessagingAppIdentifier& app_identifier) override;
 
-  void SetMessageCallbackForTesting(const base::Closure& callback);
-  void SetUnsubscribeCallbackForTesting(const base::Closure& callback);
+  void SetMessageCallbackForTesting(const base::RepeatingClosure& callback);
+  void SetUnsubscribeCallbackForTesting(base::OnceClosure callback);
   void SetInvalidationCallbackForTesting(base::OnceClosure callback);
   void SetContentSettingChangedCallbackForTesting(
       base::RepeatingClosure callback);
@@ -234,7 +236,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   void SubscribeEnd(RegisterCallback callback,
                     const std::string& subscription_id,
                     const GURL& endpoint,
-                    const base::Optional<base::Time>& expiration_time,
+                    const absl::optional<base::Time>& expiration_time,
                     const std::vector<uint8_t>& p256dh,
                     const std::vector<uint8_t>& auth,
                     blink::mojom::PushRegistrationStatus status);
@@ -262,12 +264,12 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       const std::string& app_id,
       const std::string& sender_id,
       const GURL& endpoint,
-      const base::Optional<base::Time>& expiration_time,
+      const absl::optional<base::Time>& expiration_time,
       SubscriptionInfoCallback callback,
       bool is_valid);
 
   void DidGetEncryptionInfo(const GURL& endpoint,
-                            const base::Optional<base::Time>& expiration_time,
+                            const absl::optional<base::Time>& expiration_time,
                             SubscriptionInfoCallback callback,
                             std::string p256dh,
                             std::string auth_secret) const;
@@ -314,7 +316,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       const std::string& sender_id,
       bool is_valid,
       const GURL& endpoint,
-      const base::Optional<base::Time>& expiration_time,
+      const absl::optional<base::Time>& expiration_time,
       const std::vector<uint8_t>& p256dh,
       const std::vector<uint8_t>& auth);
 
@@ -343,7 +345,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
                              const std::string& sender_id,
                              const std::string& registration_id,
                              const GURL& endpoint,
-                             const base::Optional<base::Time>& expiration_time,
+                             const absl::optional<base::Time>& expiration_time,
                              const std::vector<uint8_t>& p256dh,
                              const std::vector<uint8_t>& auth,
                              blink::mojom::PushRegistrationStatus status);
@@ -391,10 +393,10 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   // Callback to be invoked when a message has been dispatched. Enables tests to
   // observe message delivery before it's dispatched to the Service Worker.
   using MessageDispatchedCallback =
-      base::Callback<void(const std::string& app_id,
-                          const GURL& origin,
-                          int64_t service_worker_registration_id,
-                          base::Optional<std::string> payload)>;
+      base::RepeatingCallback<void(const std::string& app_id,
+                                   const GURL& origin,
+                                   int64_t service_worker_registration_id,
+                                   absl::optional<std::string> payload)>;
 
   void SetMessageDispatchedCallbackForTesting(
       const MessageDispatchedCallback& callback) {
@@ -409,11 +411,11 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   int push_subscription_count_;
   int pending_push_subscription_count_;
 
-  base::Closure message_callback_for_testing_;
-  base::Closure unsubscribe_callback_for_testing_;
-  base::Closure content_setting_changed_callback_for_testing_;
-  base::Closure service_worker_unregistered_callback_for_testing_;
-  base::Closure service_worker_database_wiped_callback_for_testing_;
+  base::RepeatingClosure message_callback_for_testing_;
+  base::OnceClosure unsubscribe_callback_for_testing_;
+  base::RepeatingClosure content_setting_changed_callback_for_testing_;
+  base::RepeatingClosure service_worker_unregistered_callback_for_testing_;
+  base::RepeatingClosure service_worker_database_wiped_callback_for_testing_;
   base::OnceClosure remove_expired_subscriptions_callback_for_testing_;
   base::OnceClosure invalidation_callback_for_testing_;
 
@@ -421,8 +423,9 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
 
   PushMessagingRefresher refresher_;
 
-  ScopedObserver<PushMessagingRefresher, PushMessagingRefresher::Observer>
-      refresh_observer_{this};
+  base::ScopedObservation<PushMessagingRefresher,
+                          PushMessagingRefresher::Observer>
+      refresh_observation_{this};
   // A multiset containing one entry for each in-flight push message delivery,
   // keyed by the receiver's app id.
   std::multiset<std::string> in_flight_message_deliveries_;
@@ -431,8 +434,12 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
 
 #if BUILDFLAG(ENABLE_BACKGROUND_MODE)
   // KeepAlive registered while we have in-flight push messages, to make sure
-  // we can finish processing them without being interrupted.
+  // we can finish processing them without being interrupted by BrowserProcess
+  // teardown.
   std::unique_ptr<ScopedKeepAlive> in_flight_keep_alive_;
+
+  // Same as ScopedKeepAlive, but prevents |profile_| from getting deleted.
+  std::unique_ptr<ScopedProfileKeepAlive> in_flight_profile_keep_alive_;
 #endif
 
   content::NotificationRegistrar registrar_;

@@ -323,7 +323,7 @@ bool ResourceResponse::HasCacheValidatorFields() const {
          !http_header_fields_.Get(kETagHeader).IsEmpty();
 }
 
-base::Optional<base::TimeDelta> ResourceResponse::CacheControlMaxAge() const {
+absl::optional<base::TimeDelta> ResourceResponse::CacheControlMaxAge() const {
   if (!cache_control_header_.parsed) {
     cache_control_header_ = ParseCacheControlDirectives(
         http_header_fields_.Get(kCacheControlHeader),
@@ -346,23 +346,23 @@ base::TimeDelta ResourceResponse::CacheControlStaleWhileRevalidate() const {
   return cache_control_header_.stale_while_revalidate.value();
 }
 
-static base::Optional<base::Time> ParseDateValueInHeader(
+static absl::optional<base::Time> ParseDateValueInHeader(
     const HTTPHeaderMap& headers,
     const AtomicString& header_name) {
   const AtomicString& header_value = headers.Get(header_name);
   if (header_value.IsEmpty())
-    return base::nullopt;
+    return absl::nullopt;
   // This handles all date formats required by RFC2616:
   // Sun, 06 Nov 1994 08:49:37 GMT  ; RFC 822, updated by RFC 1123
   // Sunday, 06-Nov-94 08:49:37 GMT ; RFC 850, obsoleted by RFC 1036
   // Sun Nov  6 08:49:37 1994       ; ANSI C's asctime() format
-  base::Optional<base::Time> date = ParseDate(header_value);
+  absl::optional<base::Time> date = ParseDate(header_value);
   if (date && date.value().is_max())
-    return base::nullopt;
+    return absl::nullopt;
   return date;
 }
 
-base::Optional<base::Time> ResourceResponse::Date() const {
+absl::optional<base::Time> ResourceResponse::Date() const {
   if (!have_parsed_date_header_) {
     static const char kHeaderName[] = "date";
     date_ = ParseDateValueInHeader(http_header_fields_, kHeaderName);
@@ -371,14 +371,14 @@ base::Optional<base::Time> ResourceResponse::Date() const {
   return date_;
 }
 
-base::Optional<base::TimeDelta> ResourceResponse::Age() const {
+absl::optional<base::TimeDelta> ResourceResponse::Age() const {
   if (!have_parsed_age_header_) {
     static const char kHeaderName[] = "age";
     const AtomicString& header_value = http_header_fields_.Get(kHeaderName);
     bool ok;
     double seconds = header_value.ToDouble(&ok);
     if (!ok) {
-      age_ = base::nullopt;
+      age_ = absl::nullopt;
     } else {
       age_ = base::TimeDelta::FromSecondsD(seconds);
     }
@@ -387,7 +387,7 @@ base::Optional<base::TimeDelta> ResourceResponse::Age() const {
   return age_;
 }
 
-base::Optional<base::Time> ResourceResponse::Expires() const {
+absl::optional<base::Time> ResourceResponse::Expires() const {
   if (!have_parsed_expires_header_) {
     static const char kHeaderName[] = "expires";
     expires_ = ParseDateValueInHeader(http_header_fields_, kHeaderName);
@@ -396,7 +396,7 @@ base::Optional<base::Time> ResourceResponse::Expires() const {
   return expires_;
 }
 
-base::Optional<base::Time> ResourceResponse::LastModified() const {
+absl::optional<base::Time> ResourceResponse::LastModified() const {
   if (!have_parsed_last_modified_header_) {
     static const char kHeaderName[] = "last-modified";
     last_modified_ = ParseDateValueInHeader(http_header_fields_, kHeaderName);
@@ -474,6 +474,17 @@ AtomicString ResourceResponse::ConnectionInfoString() const {
       connection_info_string.length());
 }
 
+mojom::blink::CacheState ResourceResponse::CacheState() const {
+  return is_validated_
+             ? mojom::blink::CacheState::kValidated
+             : (!encoded_data_length_ ? mojom::blink::CacheState::kLocal
+                                      : mojom::blink::CacheState::kNone);
+}
+
+void ResourceResponse::SetIsValidated(bool is_validated) {
+  is_validated_ = is_validated;
+}
+
 void ResourceResponse::SetEncodedDataLength(int64_t value) {
   encoded_data_length_ = value;
 }
@@ -492,11 +503,16 @@ ResourceResponse::GetCrossOriginEmbedderPolicy() const {
   const std::string value = HttpHeaderField(kHeaderName).Utf8();
   using Item = net::structured_headers::Item;
   const auto item = net::structured_headers::ParseItem(value);
-  if (!item || item->item.Type() != Item::kTokenType ||
-      item->item.GetString() != "require-corp") {
+  if (!item || item->item.Type() != Item::kTokenType) {
     return network::mojom::CrossOriginEmbedderPolicyValue::kNone;
   }
-  return network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp;
+  if (item->item.GetString() == "require-corp") {
+    return network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp;
+  } else if (item->item.GetString() == "credentialless") {
+    return network::mojom::CrossOriginEmbedderPolicyValue::kCredentialless;
+  } else {
+    return network::mojom::CrossOriginEmbedderPolicyValue::kNone;
+  }
 }
 
 STATIC_ASSERT_ENUM(WebURLResponse::kHTTPVersionUnknown,

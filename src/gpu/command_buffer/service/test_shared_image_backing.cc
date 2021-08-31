@@ -77,6 +77,17 @@ class TestSharedImageRepresentationSkia : public SharedImageRepresentationSkia {
     return SkSurface::MakeRasterN32Premul(size().width(), size().height(),
                                           &props);
   }
+  sk_sp<SkPromiseImageTexture> BeginWriteAccess(
+      std::vector<GrBackendSemaphore>* begin_semaphores,
+      std::vector<GrBackendSemaphore>* end_semaphores,
+      std::unique_ptr<GrBackendSurfaceMutableState>* end_state) override {
+    if (!static_cast<TestSharedImageBacking*>(backing())->can_access()) {
+      return nullptr;
+    }
+    GrBackendTexture backend_tex(size().width(), size().height(),
+                                 GrMipMapped::kNo, GrMockTextureInfo());
+    return SkPromiseImageTexture::Make(backend_tex);
+  }
   void EndWriteAccess(sk_sp<SkSurface> surface) override {}
   sk_sp<SkPromiseImageTexture> BeginReadAccess(
       std::vector<GrBackendSemaphore>* begin_semaphores,
@@ -118,11 +129,10 @@ class TestSharedImageRepresentationOverlay
                                        MemoryTypeTracker* tracker)
       : SharedImageRepresentationOverlay(manager, backing, tracker) {}
 
-  bool BeginReadAccess(std::vector<gfx::GpuFence>* acquire_fences,
-                       std::vector<gfx::GpuFence>* release_fences) override {
+  bool BeginReadAccess(std::vector<gfx::GpuFence>* acquire_fences) override {
     return true;
   }
-  void EndReadAccess() override {}
+  void EndReadAccess(gfx::GpuFenceHandle release_fence) override {}
   gl::GLImage* GetGLImage() override { return nullptr; }
 
 #if defined(OS_ANDROID)

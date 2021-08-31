@@ -19,7 +19,6 @@
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/strings/string_number_conversions.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
@@ -44,7 +43,7 @@ class OverviewGridTest : public AshTestBase {
       const std::vector<gfx::RectF>& target_bounds,
       const std::vector<bool>& expected_start_animations,
       const std::vector<bool>& expected_end_animations,
-      base::Optional<size_t> selected_window_index = base::nullopt) {
+      absl::optional<size_t> selected_window_index = absl::nullopt) {
     ASSERT_EQ(windows.size(), target_bounds.size());
     ASSERT_EQ(windows.size(), expected_start_animations.size());
     ASSERT_EQ(windows.size(), expected_end_animations.size());
@@ -194,7 +193,7 @@ TEST_F(OverviewGridTest, SelectedWindow) {
                                            gfx::RectF(100.f, 100.f)};
   CheckAnimationStates({window1.get(), window2.get(), window3.get()},
                        target_bounds, {true, true, true}, {false, false, true},
-                       base::make_optional(2u));
+                       absl::make_optional(2u));
 }
 
 TEST_F(OverviewGridTest, WindowWithBackdrop) {
@@ -293,46 +292,45 @@ TEST_F(OverviewGridTest, SnappedWindow) {
 }
 
 TEST_F(OverviewGridTest, FrameThrottling) {
-  testing::NiceMock<MockFrameThrottlingObserver> observer;
   FrameThrottlingController* frame_throttling_controller =
       Shell::Get()->frame_throttling_controller();
-  uint8_t throttled_fps = frame_throttling_controller->throttled_fps();
-  frame_throttling_controller->AddObserver(&observer);
   const int window_count = 5;
+  std::vector<viz::FrameSinkId> ids{
+      {1u, 1u}, {2u, 2u}, {3u, 3u}, {4u, 4u}, {5u, 5u}};
   std::unique_ptr<aura::Window> created_windows[window_count];
   std::vector<aura::Window*> windows(window_count, nullptr);
   for (int i = 0; i < window_count; ++i) {
     created_windows[i] = CreateAppWindow(gfx::Rect(), AppType::BROWSER);
     windows[i] = created_windows[i].get();
+    windows[i]->SetEmbedFrameSinkId(ids[i]);
   }
   InitializeGrid(windows);
   frame_throttling_controller->StartThrottling(windows);
+  EXPECT_THAT(frame_throttling_controller->GetFrameSinkIdsToThrottle(),
+              testing::UnorderedElementsAreArray(ids));
 
   // Add a new window to overview.
   std::unique_ptr<aura::Window> new_window(
       CreateAppWindow(gfx::Rect(), AppType::BROWSER));
+  constexpr viz::FrameSinkId new_window_id{6u, 6u};
+  new_window->SetEmbedFrameSinkId(new_window_id);
   windows.push_back(new_window.get());
-  EXPECT_CALL(observer, OnThrottlingEnded());
-  EXPECT_CALL(observer,
-              OnThrottlingStarted(testing::UnorderedElementsAreArray(windows),
-                                  throttled_fps));
+
   grid()->AppendItem(new_window.get(), /*reposition=*/false, /*animate=*/false,
                      /*use_spawn_animation=*/false);
+  ids.push_back(new_window_id);
+  EXPECT_THAT(frame_throttling_controller->GetFrameSinkIdsToThrottle(),
+              testing::UnorderedElementsAreArray(ids));
 
   // Remove windows one by one.
   for (int i = 0; i < window_count + 1; ++i) {
-    aura::Window* window = windows[0];
-    windows.erase(windows.begin());
-    EXPECT_CALL(observer, OnThrottlingEnded());
-    if (!windows.empty()) {
-      EXPECT_CALL(observer, OnThrottlingStarted(
-                                testing::UnorderedElementsAreArray(windows),
-                                throttled_fps));
-    }
+    aura::Window* window = windows[i];
+    ids.erase(ids.begin());
     OverviewItem* item = grid()->GetOverviewItemContaining(window);
     grid()->RemoveItem(item, /*item_destroying=*/false, /*reposition=*/false);
+    EXPECT_THAT(frame_throttling_controller->GetFrameSinkIdsToThrottle(),
+                testing::UnorderedElementsAreArray(ids));
   }
-  frame_throttling_controller->RemoveObserver(&observer);
 }
 
 TEST_F(OverviewGridTest, FrameThrottlingArc) {
@@ -340,7 +338,7 @@ TEST_F(OverviewGridTest, FrameThrottlingArc) {
   FrameThrottlingController* frame_throttling_controller =
       Shell::Get()->frame_throttling_controller();
   uint8_t throttled_fps = frame_throttling_controller->throttled_fps();
-  frame_throttling_controller->AddObserver(&observer);
+  frame_throttling_controller->AddArcObserver(&observer);
   const int window_count = 5;
   std::unique_ptr<aura::Window> created_windows[window_count];
   std::vector<aura::Window*> windows(window_count, nullptr);
@@ -373,6 +371,6 @@ TEST_F(OverviewGridTest, FrameThrottlingArc) {
     OverviewItem* item = grid()->GetOverviewItemContaining(window);
     grid()->RemoveItem(item, /*item_destroying=*/false, /*reposition=*/false);
   }
-  frame_throttling_controller->RemoveObserver(&observer);
+  frame_throttling_controller->RemoveArcObserver(&observer);
 }
 }  // namespace ash

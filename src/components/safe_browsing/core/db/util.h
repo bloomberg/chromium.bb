@@ -16,7 +16,6 @@
 
 #include "base/containers/flat_map.h"
 #include "base/strings/string_piece.h"
-#include "base/time/time.h"
 #include "base/trace_event/traced_value.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
@@ -59,7 +58,7 @@ struct ThreatMetadata {
   // Returns the metadata in a format tracing can support.
   std::unique_ptr<base::trace_event::TracedValue> ToTracedValue() const;
 
-  // Type of blacklisted page. Used on malware and UwS lists.
+  // Type of blocklisted page. Used on malware and UwS lists.
   // This will be NONE if it wasn't present in the reponse.
   ThreatPatternType threat_pattern_type;
 

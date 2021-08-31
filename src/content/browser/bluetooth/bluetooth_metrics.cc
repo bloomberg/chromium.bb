@@ -37,12 +37,9 @@ int HashUUID(const std::string& canonical_uuid) {
   return static_cast<int>(data & 0x7fffffff);
 }
 
-int HashUUID(const base::Optional<BluetoothUUID>& uuid) {
+int HashUUID(const absl::optional<BluetoothUUID>& uuid) {
   return uuid ? HashUUID(uuid->canonical_value()) : 0;
 }
-
-// The maximum number of devices that needs to be recorded.
-const size_t kMaxNumOfDevices = 100;
 
 }  // namespace
 
@@ -52,45 +49,7 @@ namespace content {
 
 // requestDevice()
 
-void RecordRequestDeviceOutcome(UMARequestDeviceOutcome outcome) {
-  UMA_HISTOGRAM_ENUMERATION("Bluetooth.Web.RequestDevice.Outcome",
-                            static_cast<int>(outcome),
-                            static_cast<int>(UMARequestDeviceOutcome::COUNT));
-}
-
-static void RecordRequestDeviceFilters(
-    const std::vector<blink::mojom::WebBluetoothLeScanFilterPtr>& filters) {
-  UMA_HISTOGRAM_COUNTS_100("Bluetooth.Web.RequestDevice.Filters.Count",
-                           filters.size());
-  for (const auto& filter : filters) {
-    if (!filter->services) {
-      continue;
-    }
-    UMA_HISTOGRAM_COUNTS_100("Bluetooth.Web.RequestDevice.FilterSize",
-                             filter->services->size());
-    for (const BluetoothUUID& service : filter->services.value()) {
-      // TODO(ortuno): Use a macro to histogram strings.
-      // http://crbug.com/520284
-      base::UmaHistogramSparse("Bluetooth.Web.RequestDevice.Filters.Services",
-                               HashUUID(service));
-    }
-  }
-}
-
-static void RecordRequestDeviceOptionalServices(
-    const std::vector<BluetoothUUID>& optional_services) {
-  UMA_HISTOGRAM_COUNTS_100("Bluetooth.Web.RequestDevice.OptionalServices.Count",
-                           optional_services.size());
-  for (const BluetoothUUID& service : optional_services) {
-    // TODO(ortuno): Use a macro to histogram strings.
-    // http://crbug.com/520284
-    base::UmaHistogramSparse(
-        "Bluetooth.Web.RequestDevice.OptionalServices.Services",
-        HashUUID(service));
-  }
-}
-
-static void RecordUnionOfServices(
+void RecordRequestDeviceOptions(
     const blink::mojom::WebBluetoothRequestDeviceOptionsPtr& options) {
   std::unordered_set<std::string> union_of_services;
   for (const BluetoothUUID& service : options->optional_services) {
@@ -108,9 +67,6 @@ static void RecordUnionOfServices(
     }
   }
 
-  UMA_HISTOGRAM_COUNTS_100("Bluetooth.Web.RequestDevice.UnionOfServices.Count",
-                           union_of_services.size());
-
   for (const std::string& service : union_of_services) {
     // TODO(ortuno): Use a macro to histogram strings.
     // http://crbug.com/520284
@@ -118,19 +74,6 @@ static void RecordUnionOfServices(
         "Bluetooth.Web.RequestDevice.UnionOfServices.Services",
         HashUUID(service));
   }
-}
-
-void RecordRequestDeviceOptions(
-    const blink::mojom::WebBluetoothRequestDeviceOptionsPtr& options) {
-  UMA_HISTOGRAM_BOOLEAN("Bluetooth.Web.RequestDevice.Options.AcceptAllDevices",
-                        options->accept_all_devices);
-
-  if (options->filters) {
-    RecordRequestDeviceFilters(options->filters.value());
-  }
-
-  RecordRequestDeviceOptionalServices(options->optional_services);
-  RecordUnionOfServices(options);
 }
 
 // GATTServer.Connect
@@ -183,7 +126,7 @@ void RecordGetPrimaryServicesOutcome(
 
 void RecordGetPrimaryServicesServices(
     blink::mojom::WebBluetoothGATTQueryQuantity quantity,
-    const base::Optional<BluetoothUUID>& service) {
+    const absl::optional<BluetoothUUID>& service) {
   // TODO(ortuno): Use a macro to histogram strings.
   // http://crbug.com/520284
   switch (quantity) {
@@ -200,7 +143,7 @@ void RecordGetPrimaryServicesServices(
 
 void RecordGetCharacteristicsCharacteristic(
     blink::mojom::WebBluetoothGATTQueryQuantity quantity,
-    const base::Optional<BluetoothUUID>& characteristic) {
+    const absl::optional<BluetoothUUID>& characteristic) {
   switch (quantity) {
     case blink::mojom::WebBluetoothGATTQueryQuantity::SINGLE:
       base::UmaHistogramSparse("Bluetooth.Web.GetCharacteristic.Characteristic",
@@ -214,90 +157,6 @@ void RecordGetCharacteristicsCharacteristic(
   }
 }
 
-// GATT Operations
-
-void RecordGATTOperationOutcome(UMAGATTOperation operation,
-                                UMAGATTOperationOutcome outcome) {
-  switch (operation) {
-    case UMAGATTOperation::CHARACTERISTIC_READ:
-      RecordCharacteristicReadValueOutcome(outcome);
-      return;
-    case UMAGATTOperation::CHARACTERISTIC_WRITE:
-      RecordCharacteristicWriteValueOutcome(outcome);
-      return;
-    case UMAGATTOperation::START_NOTIFICATIONS:
-      RecordStartNotificationsOutcome(outcome);
-      return;
-    case UMAGATTOperation::DESCRIPTOR_READ:
-    case UMAGATTOperation::DESCRIPTOR_WRITE:
-      return;
-    case UMAGATTOperation::COUNT:
-      NOTREACHED();
-      return;
-  }
-  NOTREACHED();
-}
-
-static UMAGATTOperationOutcome TranslateCacheQueryOutcomeToGATTOperationOutcome(
-    CacheQueryOutcome outcome) {
-  switch (outcome) {
-    case CacheQueryOutcome::SUCCESS:
-    case CacheQueryOutcome::BAD_RENDERER:
-      // No need to record a success or renderer crash.
-      NOTREACHED();
-      return UMAGATTOperationOutcome::NOT_SUPPORTED;
-    case CacheQueryOutcome::NO_DEVICE:
-      return UMAGATTOperationOutcome::NO_DEVICE;
-    case CacheQueryOutcome::NO_SERVICE:
-      return UMAGATTOperationOutcome::NO_SERVICE;
-    case CacheQueryOutcome::NO_CHARACTERISTIC:
-      return UMAGATTOperationOutcome::NO_CHARACTERISTIC;
-    case CacheQueryOutcome::NO_DESCRIPTOR:
-      return UMAGATTOperationOutcome::NO_DESCRIPTOR;
-  }
-  NOTREACHED() << "No need to record success or renderer crash";
-  return UMAGATTOperationOutcome::NOT_SUPPORTED;
-}
-
-// Characteristic.readValue
-
-void RecordCharacteristicReadValueOutcome(UMAGATTOperationOutcome outcome) {
-  UMA_HISTOGRAM_ENUMERATION("Bluetooth.Web.Characteristic.ReadValue.Outcome",
-                            static_cast<int>(outcome),
-                            static_cast<int>(UMAGATTOperationOutcome::COUNT));
-}
-
-void RecordCharacteristicReadValueOutcome(CacheQueryOutcome outcome) {
-  RecordCharacteristicReadValueOutcome(
-      TranslateCacheQueryOutcomeToGATTOperationOutcome(outcome));
-}
-
-// Characteristic.writeValue
-
-void RecordCharacteristicWriteValueOutcome(UMAGATTOperationOutcome outcome) {
-  UMA_HISTOGRAM_ENUMERATION("Bluetooth.Web.Characteristic.WriteValue.Outcome",
-                            static_cast<int>(outcome),
-                            static_cast<int>(UMAGATTOperationOutcome::COUNT));
-}
-
-void RecordCharacteristicWriteValueOutcome(CacheQueryOutcome outcome) {
-  RecordCharacteristicWriteValueOutcome(
-      TranslateCacheQueryOutcomeToGATTOperationOutcome(outcome));
-}
-
-// Characteristic.startNotifications
-void RecordStartNotificationsOutcome(UMAGATTOperationOutcome outcome) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "Bluetooth.Web.Characteristic.StartNotifications.Outcome",
-      static_cast<int>(outcome),
-      static_cast<int>(UMAGATTOperationOutcome::COUNT));
-}
-
-void RecordStartNotificationsOutcome(CacheQueryOutcome outcome) {
-  RecordStartNotificationsOutcome(
-      TranslateCacheQueryOutcomeToGATTOperationOutcome(outcome));
-}
-
 void RecordRSSISignalStrength(int rssi) {
   base::UmaHistogramSparse("Bluetooth.Web.RequestDevice.RSSISignalStrength",
                            rssi);
@@ -308,15 +167,6 @@ void RecordRSSISignalStrengthLevel(UMARSSISignalStrengthLevel level) {
       "Bluetooth.Web.RequestDevice.RSSISignalStrengthLevel",
       static_cast<int>(level),
       static_cast<int>(UMARSSISignalStrengthLevel::COUNT));
-}
-
-void RecordNumOfDevices(bool accept_all_devices, size_t num_of_devices) {
-  if (!accept_all_devices) {
-    base::UmaHistogramSparse(
-        "Bluetooth.Web.RequestDevice."
-        "NumOfDevicesInChooserWhenNotAcceptingAllDevices",
-        std::min(num_of_devices, kMaxNumOfDevices));
-  }
 }
 
 }  // namespace content

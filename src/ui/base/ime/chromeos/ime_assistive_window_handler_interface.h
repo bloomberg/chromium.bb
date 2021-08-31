@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <string>
+
 #include "base/component_export.h"
-#include "base/strings/string16.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace ui {
@@ -34,7 +35,7 @@ struct Bounds {
 class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS)
     IMEAssistiveWindowHandlerInterface {
  public:
-  virtual ~IMEAssistiveWindowHandlerInterface() {}
+  virtual ~IMEAssistiveWindowHandlerInterface() = default;
 
   // Called when showing/hiding assistive window.
   virtual void SetAssistiveWindowProperties(
@@ -48,12 +49,12 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS)
       const ui::ime::AssistiveWindowButton& button,
       bool highlighted) {}
 
-  virtual void AcceptSuggestion(const base::string16& suggestion) {}
+  virtual void AcceptSuggestion(const std::u16string& suggestion) {}
 
   virtual void HideSuggestion() {}
 
   // Called to get the current suggestion text.
-  virtual base::string16 GetSuggestionText() const = 0;
+  virtual std::u16string GetSuggestionText() const = 0;
 
   // Called to get length of the confirmed part of suggestion text.
   virtual size_t GetConfirmedLength() const = 0;
@@ -65,7 +66,7 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS)
   virtual void FocusStateChanged() {}
 
  protected:
-  IMEAssistiveWindowHandlerInterface() {}
+  IMEAssistiveWindowHandlerInterface() = default;
 };
 
 }  // namespace chromeos

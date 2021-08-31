@@ -8,9 +8,9 @@
 
 #include "base/bind.h"
 #include "base/check_op.h"
+#include "base/containers/contains.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/memory_pressure_monitor.h"
-#include "base/stl_util.h"
 #include "base/system/sys_info.h"
 #include "build/build_config.h"
 
@@ -127,7 +127,8 @@ void FrameEvictionManager::CullUnlockedFrames(size_t saved_frame_limit) {
     size_t old_size = unlocked_frames_.size();
     // Should remove self from list.
     unlocked_frames_.back()->EvictCurrentFrame();
-    DCHECK_EQ(unlocked_frames_.size() + 1, old_size);
+    if (unlocked_frames_.size() == old_size)
+      break;
   }
 }
 

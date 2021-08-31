@@ -8,7 +8,6 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/optional.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -18,6 +17,7 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 // static
 PromoService* PromoServiceFactory::GetForProfile(Profile* profile) {
@@ -41,9 +41,8 @@ PromoServiceFactory::~PromoServiceFactory() = default;
 
 KeyedService* PromoServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  auto url_loader_factory =
-      content::BrowserContext::GetDefaultStoragePartition(context)
-          ->GetURLLoaderFactoryForBrowserProcess();
+  auto url_loader_factory = context->GetDefaultStoragePartition()
+                                ->GetURLLoaderFactoryForBrowserProcess();
   return new PromoService(url_loader_factory,
                           Profile::FromBrowserContext(context));
 }

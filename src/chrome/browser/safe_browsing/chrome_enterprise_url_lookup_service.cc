@@ -6,10 +6,12 @@
 
 #include "base/callback.h"
 #include "base/task/post_task.h"
+#include "chrome/browser/enterprise/connectors/connectors_service.h"
 #include "chrome/browser/policy/dm_token_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/policy/core/common/cloud/dm_token.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/core/browser/referrer_chain_provider.h"
 #include "components/safe_browsing/core/common/thread_utils.h"
 #include "components/safe_browsing/core/features.h"
 #include "components/safe_browsing/core/proto/csd.pb.h"
@@ -17,7 +19,6 @@
 #include "components/safe_browsing/core/realtime/policy_engine.h"
 #include "components/safe_browsing/core/realtime/url_lookup_service_base.h"
 #include "components/safe_browsing/core/verdict_cache_manager.h"
-#include "components/sync/driver/sync_service.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
@@ -29,27 +30,24 @@ ChromeEnterpriseRealTimeUrlLookupService::
         scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
         VerdictCacheManager* cache_manager,
         Profile* profile,
-        syncer::SyncService* sync_service,
-        PrefService* pref_service,
-        const ChromeUserPopulation::ProfileManagementStatus&
-            profile_management_status,
-        bool is_under_advanced_protection,
-        bool is_off_the_record)
+        base::RepeatingCallback<ChromeUserPopulation()>
+            get_user_population_callback,
+        enterprise_connectors::ConnectorsService* connectors_service,
+        ReferrerChainProvider* referrer_chain_provider)
     : RealTimeUrlLookupServiceBase(url_loader_factory,
                                    cache_manager,
-                                   sync_service,
-                                   pref_service,
-                                   profile_management_status,
-                                   is_under_advanced_protection,
-                                   is_off_the_record),
-      profile_(profile) {}
+                                   get_user_population_callback,
+                                   referrer_chain_provider),
+      profile_(profile),
+      connectors_service_(connectors_service) {}
 
 ChromeEnterpriseRealTimeUrlLookupService::
     ~ChromeEnterpriseRealTimeUrlLookupService() = default;
 
 bool ChromeEnterpriseRealTimeUrlLookupService::CanPerformFullURLLookup() const {
   return RealTimePolicyEngine::CanPerformEnterpriseFullURLLookup(
-      profile_->GetPrefs(), GetDMToken().is_valid(),
+      profile_->GetPrefs(),
+      connectors_service_->GetDMTokenForRealTimeUrlCheck().has_value(),
       profile_->IsOffTheRecord());
 }
 
@@ -57,6 +55,18 @@ bool ChromeEnterpriseRealTimeUrlLookupService::
     CanPerformFullURLLookupWithToken() const {
   // URL lookup with token is disabled for enterprise users.
   return false;
+}
+
+bool ChromeEnterpriseRealTimeUrlLookupService::CanAttachReferrerChain() const {
+  // Referrer chain is currently not supported for enterprise users.
+  return false;
+}
+
+int ChromeEnterpriseRealTimeUrlLookupService::GetReferrerUserGestureLimit()
+    const {
+  NOTREACHED()
+      << "Referrer chain is currently not supported for enterprise users.";
+  return 0;
 }
 
 bool ChromeEnterpriseRealTimeUrlLookupService::CanCheckSubresourceURL() const {
@@ -74,15 +84,17 @@ void ChromeEnterpriseRealTimeUrlLookupService::GetAccessToken(
   NOTREACHED() << "URL lookup with token is disabled for enterprise users.";
 }
 
-policy::DMToken ChromeEnterpriseRealTimeUrlLookupService::GetDMToken() const {
-  return policy::GetDMToken(profile_);
+absl::optional<std::string>
+ChromeEnterpriseRealTimeUrlLookupService::GetDMTokenString() const {
+  DCHECK(connectors_service_);
+  return connectors_service_->GetDMTokenForRealTimeUrlCheck();
 }
 
-base::Optional<std::string>
-ChromeEnterpriseRealTimeUrlLookupService::GetDMTokenString() const {
-  DCHECK(GetDMToken().is_valid())
-      << "Get a dm token string only if the dm token is valid.";
-  return GetDMToken().value();
+GURL ChromeEnterpriseRealTimeUrlLookupService::GetRealTimeLookupUrl() const {
+  std::string endpoint =
+      "https://enterprise-safebrowsing.googleapis.com/"
+      "safebrowsing/clientreport/realtime";
+  return GURL(endpoint);
 }
 
 net::NetworkTrafficAnnotationTag

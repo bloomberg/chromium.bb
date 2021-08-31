@@ -72,7 +72,7 @@
 <translation id="2586657967955657006">클립보드</translation>
 <translation id="2666092431469916601">맨 위</translation>
 <translation id="2701330563083355633"><ph name="DEVICE_NAME" />에서 공유함</translation>
-<translation id="271033894570825754">새 파일</translation>
+<translation id="271033894570825754">New</translation>
 <translation id="2743387203779672305">클립보드로 복사</translation>
 <translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">폴더 열기</translation>
@@ -94,6 +94,7 @@
 <translation id="3306688585798492231">내장 디스플레이</translation>
 <translation id="335581015389089642">음성</translation>
 <translation id="3389286852084373014">텍스트가 너무 큼</translation>
+<translation id="3406306243914553062">HTML 콘텐츠</translation>
 <translation id="348799646910989694">실행기 자동 숨김</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> 고정됨</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1일 남음}other{#일 남음}}</translation>
@@ -106,6 +107,7 @@
 <translation id="3670030362669914947">번호</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" />GB/s</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" />GB</translation>
+<translation id="3804247818991980532"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="3842239759367498783">휴대기기에서 <ph name="TITLE" /> 계속 읽기</translation>
 <translation id="385051799172605136">뒤로</translation>
 <translation id="3889424535448813030">오른쪽 화살표</translation>
@@ -118,6 +120,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{1개월 전}other{#개월 전}}</translation>
 <translation id="4289300219472526559">말하기 시작</translation>
 <translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> 앱이 <ph name="FOLDER_NAME" /> 폴더로 이동했습니다.</translation>
+<translation id="4306392492252714209">클립보드에서 삭제합니다.</translation>
 <translation id="4316910396681052118">모든 앱</translation>
 <translation id="4491109536499578614">이미지</translation>
 <translation id="4588090240171750605">오른쪽 스크롤</translation>
@@ -212,6 +215,7 @@
 <translation id="7430878839542012341">기록에서 검색어를 삭제하시겠습니까?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" />TB</translation>
 <translation id="7507604095951736240">그림 이모티콘</translation>
+<translation id="7620655452534002301">삭제되었습니다.</translation>
 <translation id="7658239707568436148">취소</translation>
 <translation id="7781829728241885113">어제</translation>
 <translation id="7814458197256864873">복사(&amp;C)</translation>
@@ -227,11 +231,11 @@
 <translation id="8106081041558092062">{HOURS,plural, =1{1시간 전}other{#시간 전}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1초 남음}other{#초 남음}}</translation>
 <translation id="8134065097954893699">페이지 새로고침</translation>
-<translation id="8144660977431427332">Google 어시스턴트가 지원되는 검색입니다. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, 자동 완성</translation>
 <translation id="815598010540052116">아래로 스크롤</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">페이지 아래로</translation>
+<translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8245914219290430011">탭</translation>
 <translation id="8247998213073982446"><ph name="APP_NAME" />, 앱</translation>
 <translation id="8259556432390118667">16진수 색상 값</translation>

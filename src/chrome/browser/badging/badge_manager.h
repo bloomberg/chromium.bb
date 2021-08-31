@@ -11,14 +11,19 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/optional.h"
+#include "base/time/time.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/badging/badging.mojom.h"
 #include "url/gurl.h"
 
 class Profile;
+
+namespace base {
+class Clock;
+}  // namespace base
 
 namespace content {
 class RenderFrameHost;
@@ -48,14 +53,25 @@ enum UpdateBadgeType {
 // The maximum value of badge contents before saturation occurs.
 constexpr uint64_t kMaxBadgeContent = 99u;
 
+// With kDesktopPWAsAttentionBadgingCrOSApiOverridesNotifications,
+// we don't show a badge in response to notifications if the
+// Badging API has been used recently.
+constexpr base::TimeDelta kBadgingOverrideLifetime =
+    base::TimeDelta::FromDays(14);
+
+// We record when the Badging API was last used, but rate limit
+// our updates to minimize load on the Web App database,
+constexpr base::TimeDelta kBadgingMinimumUpdateInterval =
+    base::TimeDelta::FromHours(2);
+
 // Maintains a record of badge contents and dispatches badge changes to a
 // delegate.
 class BadgeManager : public KeyedService, public blink::mojom::BadgeService {
  public:
   // The badge being applied to a document URL or service worker scope. If the
-  // optional is |base::nullopt| then the badge is "flag". Otherwise the badge
+  // optional is |absl::nullopt| then the badge is "flag". Otherwise the badge
   // is a non-zero integer.
-  using BadgeValue = base::Optional<uint64_t>;
+  using BadgeValue = absl::optional<uint64_t>;
 
   explicit BadgeManager(Profile* profile);
   ~BadgeManager() override;
@@ -66,20 +82,27 @@ class BadgeManager : public KeyedService, public blink::mojom::BadgeService {
   static void BindFrameReceiver(
       content::RenderFrameHost* frame,
       mojo::PendingReceiver<blink::mojom::BadgeService> receiver);
+
+  // Binds a remote ServiceWorkerGlobalScope to a badge service.  After
+  // receiving a badge update from a ServiceWorkerGlobalScope, the badge
+  // service must update the badge for each app under `service_worker_scope`.
   static void BindServiceWorkerReceiver(
       content::RenderProcessHost* service_worker_process_host,
       const GURL& service_worker_scope,
       mojo::PendingReceiver<blink::mojom::BadgeService> receiver);
 
-  // Gets the badge for |app_id|. This will be base::nullopt if the app is not
+  // Gets the badge for |app_id|. This will be absl::nullopt if the app is not
   // badged.
-  base::Optional<BadgeValue> GetBadgeValue(const web_app::AppId& app_id);
+  absl::optional<BadgeValue> GetBadgeValue(const web_app::AppId& app_id);
+
+  bool HasRecentApiUsage(const web_app::AppId& app_id) const;
 
   void SetBadgeForTesting(const web_app::AppId& app_id,
                           BadgeValue value,
                           ukm::UkmRecorder* test_recorder);
   void ClearBadgeForTesting(const web_app::AppId& app_id,
                             ukm::UkmRecorder* test_recorder);
+  const base::Clock* SetClockForTesting(const base::Clock* clock);
 
  private:
   // The BindingContext of a mojo request. Allows mojo calls to be tied back
@@ -131,16 +154,20 @@ class BadgeManager : public KeyedService, public blink::mojom::BadgeService {
     GURL scope_;
   };
 
-  // Updates the badge for |app_id| to be |value|, if it is not base::nullopt.
-  // If value is |base::nullopt| then this clears the badge.
+  // Updates the badge for |app_id| to be |value|, if it is not absl::nullopt.
+  // If value is |absl::nullopt| then this clears the badge.
   void UpdateBadge(const web_app::AppId& app_id,
-                   base::Optional<BadgeValue> value);
+                   absl::optional<BadgeValue> value);
 
   // blink::mojom::BadgeService:
   // Note: These are private to stop them being called outside of mojo as they
   // require a mojo binding context.
   void SetBadge(blink::mojom::BadgeValuePtr value) override;
   void ClearBadge() override;
+
+  Profile* const profile_;
+
+  const base::Clock* clock_;
 
   // All the mojo receivers for the BadgeManager. Keeps track of the
   // render_frame the binding is associated with, so as to not have to rely
@@ -149,7 +176,7 @@ class BadgeManager : public KeyedService, public blink::mojom::BadgeService {
       receivers_;
 
   // Delegate which handles actual setting and clearing of the badge.
-  // Note: This is currently only set on Windows and MacOS.
+  // Note: This is currently set on Windows, MacOS and Chrome OS.
   std::unique_ptr<BadgeManagerDelegate> delegate_;
 
   // Maps app_id to badge contents.

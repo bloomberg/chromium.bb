@@ -9,7 +9,7 @@ from recipe_engine import recipe_test_api
 
 class BotUpdateTestApi(recipe_test_api.RecipeTestApi):
   def output_json(self, root, first_sln, revision_mapping, fail_patch=False,
-                  fixed_revisions=None):
+                  fixed_revisions=None, commit_positions=True):
     """Deterministically synthesize json.output test data for gclient's
     --output-json option.
     """
@@ -34,11 +34,12 @@ class BotUpdateTestApi(recipe_test_api.RecipeTestApi):
         property_name: revisions[project_name]
         for property_name, project_name in revision_mapping.items()
     }
-    properties.update({
-        '%s_cp' % property_name: ('refs/heads/master@{#%s}' %
-                                  self.gen_commit_position(project_name))
-        for property_name, project_name in revision_mapping.items()
-    })
+    if commit_positions:
+      properties.update({
+          '%s_cp' % property_name: ('refs/heads/master@{#%s}' %
+                                    self.gen_commit_position(project_name))
+          for property_name, project_name in revision_mapping.items()
+      })
 
     output.update({
         'patch_root': root or first_sln,

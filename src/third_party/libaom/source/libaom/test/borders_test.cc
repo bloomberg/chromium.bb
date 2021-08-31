@@ -26,10 +26,7 @@ class BordersTestLarge
   BordersTestLarge() : EncoderTest(GET_PARAM(0)) {}
   virtual ~BordersTestLarge() {}
 
-  virtual void SetUp() {
-    InitializeConfig();
-    SetMode(GET_PARAM(1));
-  }
+  virtual void SetUp() { InitializeConfig(GET_PARAM(1)); }
 
   virtual void PreEncodeFrameHook(::libaom_test::VideoSource *video,
                                   ::libaom_test::Encoder *encoder) {

@@ -581,11 +581,11 @@ InputEvent::InputType DeletionInputTypeFromTextGranularity(
 void DispatchEditableContentChangedEvents(Element* start_root,
                                           Element* end_root) {
   if (start_root) {
-    start_root->DispatchEvent(
+    start_root->DefaultEventHandler(
         *Event::Create(event_type_names::kWebkitEditableContentChanged));
   }
   if (end_root && end_root != start_root) {
-    end_root->DispatchEvent(
+    end_root->DefaultEventHandler(
         *Event::Create(event_type_names::kWebkitEditableContentChanged));
   }
 }
@@ -655,7 +655,8 @@ void ChangeSelectionAfterCommand(LocalFrame* frame,
   if (!selection_did_not_change_dom_position)
     return;
   frame->Client()->DidChangeSelection(
-      frame->Selection().GetSelectionInDOMTree().Type() != kRangeSelection);
+      !frame->Selection().GetSelectionInDOMTree().IsRange(),
+      blink::SyncCondition::kNotForced);
 }
 
 InputEvent::EventIsComposing IsComposingFromCommand(

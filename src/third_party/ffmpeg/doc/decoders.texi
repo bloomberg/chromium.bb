@@ -25,6 +25,19 @@ enabled decoders.
 A description of some of the currently available video decoders
 follows.
 
+@section av1
+
+AOMedia Video 1 (AV1) decoder.
+
+@subsection Options
+
+@table @option
+
+@item operating_point
+Select an operating point of a scalable AV1 bitstream (0 - 31). Default is 0.
+
+@end table
+
 @section rawvideo
 
 Raw video decoder.
@@ -85,6 +98,27 @@ Output all spatial layers of a scalable AV1 bitstream. The default value is fals
 AVS2-P2/IEEE1857.4 video decoder wrapper.
 
 This decoder allows libavcodec to decode AVS2 streams with davs2 library.
+
+@c man end VIDEO DECODERS
+
+@section libuavs3d
+
+AVS3-P2/IEEE1857.10 video decoder.
+
+libuavs3d allows libavcodec to decode AVS3 streams.
+Requires the presence of the libuavs3d headers and library during configuration.
+You need to explicitly configure the build with @code{--enable-libuavs3d}.
+
+@subsection Options
+
+The following option is supported by the libuavs3d wrapper.
+
+@table @option
+
+@item frame_threads
+Set amount of frame threads to use during decoding. The default value is 0 (autodetect).
+
+@end table
 
 @c man end VIDEO DECODERS
 

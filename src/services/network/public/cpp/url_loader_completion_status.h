@@ -9,7 +9,6 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/time/time.h"
 #include "net/base/proxy_server.h"
 #include "net/dns/public/resolve_error_info.h"
@@ -18,11 +17,13 @@
 #include "services/network/public/mojom/blocked_by_response_reason.mojom-shared.h"
 #include "services/network/public/mojom/cors.mojom-shared.h"
 #include "services/network/public/mojom/trust_tokens.mojom-shared.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace network {
 
-// NOTE: When adding/removing fields to this struct, don't forget to
-// update services/network/public/cpp/network_ipc_param_traits.h.
+// NOTE: When adding/removing fields to this struct, don't forget to update
+// services/network/public/cpp/network_ipc_param_traits.h and the equals (==)
+// operator below.
 
 struct COMPONENT_EXPORT(NETWORK_CPP_BASE) URLLoaderCompletionStatus {
   URLLoaderCompletionStatus();
@@ -68,7 +69,7 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) URLLoaderCompletionStatus {
   int64_t decoded_body_length = 0;
 
   // Optional CORS error details.
-  base::Optional<CorsErrorStatus> cors_error_status;
+  absl::optional<CorsErrorStatus> cors_error_status;
 
   // Optional Trust Tokens (https://github.com/wicg/trust-token-api) error
   // details.
@@ -84,11 +85,11 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) URLLoaderCompletionStatus {
       mojom::TrustTokenOperationStatus::kOk;
 
   // Optional SSL certificate info.
-  base::Optional<net::SSLInfo> ssl_info;
+  absl::optional<net::SSLInfo> ssl_info;
 
   // More detailed reason for failing the response with
-  // ERR_net::ERR_BLOCKED_BY_RESPONSE |error_code|.
-  base::Optional<mojom::BlockedByResponseReason> blocked_by_response_reason;
+  // net::ERR_BLOCKED_BY_RESPONSE |error_code|.
+  absl::optional<mojom::BlockedByResponseReason> blocked_by_response_reason;
 
   // Set when response blocked by CORB needs to be reported to the DevTools
   // console.
@@ -99,6 +100,9 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) URLLoaderCompletionStatus {
 
   // Host resolution error info for this request.
   net::ResolveErrorInfo resolve_error_info;
+
+  // Whether the initiator of this request should be collapsed.
+  bool should_collapse_initiator = false;
 };
 
 }  // namespace network

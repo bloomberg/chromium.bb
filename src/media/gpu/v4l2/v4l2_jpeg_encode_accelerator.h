@@ -24,7 +24,6 @@
 #include "media/base/video_frame.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/v4l2/v4l2_device.h"
-#include "media/gpu/v4l2/v4l2_jpeg_encode_accelerator.h"
 #include "media/parsers/jpeg_parser.h"
 
 namespace {
@@ -330,7 +329,7 @@ class MEDIA_GPU_EXPORT V4L2JpegEncodeAccelerator
     V4L2JpegEncodeAccelerator* parent_;
 
     // Layout that represents the input data.
-    base::Optional<VideoFrameLayout> device_input_layout_;
+    absl::optional<VideoFrameLayout> device_input_layout_;
 
     // The V4L2Device this class is operating upon.
     scoped_refptr<V4L2Device> device_;

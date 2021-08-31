@@ -38,6 +38,7 @@ libdav1d_sources = files(
     'itx_1d.c',
     'lf_mask.c',
     'log.c',
+    'mem.c',
     'msac.c',
     'obu.c',
     'picture.c',
@@ -94,6 +95,7 @@ if is_asm_enabled
         )
         libdav1d_tmpl_sources += files(
             'arm/cdef_init_tmpl.c',
+            'arm/film_grain_init_tmpl.c',
             'arm/ipred_init_tmpl.c',
             'arm/itx_init_tmpl.c',
             'arm/loopfilter_init_tmpl.c',
@@ -112,6 +114,7 @@ if is_asm_enabled
             if dav1d_bitdepths.contains('8')
                 libdav1d_sources_asm += files(
                     'arm/64/cdef.S',
+                    'arm/64/film_grain.S',
                     'arm/64/ipred.S',
                     'arm/64/loopfilter.S',
                     'arm/64/looprestoration.S',
@@ -122,6 +125,7 @@ if is_asm_enabled
             if dav1d_bitdepths.contains('16')
                 libdav1d_sources_asm += files(
                     'arm/64/cdef16.S',
+                    'arm/64/film_grain16.S',
                     'arm/64/ipred16.S',
                     'arm/64/itx16.S',
                     'arm/64/loopfilter16.S',
@@ -131,6 +135,9 @@ if is_asm_enabled
             endif
         elif host_machine.cpu_family().startswith('arm')
             libdav1d_sources_asm = files(
+                # itx.S is used for both 8 and 16 bpc.
+                'arm/32/itx.S',
+                'arm/32/looprestoration_common.S',
                 'arm/32/msac.S',
             )
 
@@ -138,7 +145,6 @@ if is_asm_enabled
                 libdav1d_sources_asm += files(
                     'arm/32/cdef.S',
                     'arm/32/ipred.S',
-                    'arm/32/itx.S',
                     'arm/32/loopfilter.S',
                     'arm/32/looprestoration.S',
                     'arm/32/mc.S',
@@ -147,6 +153,11 @@ if is_asm_enabled
 
             if dav1d_bitdepths.contains('16')
                 libdav1d_sources_asm += files(
+                    'arm/32/cdef16.S',
+                    'arm/32/ipred16.S',
+                    'arm/32/itx16.S',
+                    'arm/32/loopfilter16.S',
+                    'arm/32/looprestoration16.S',
                     'arm/32/mc16.S',
                 )
             endif
@@ -178,31 +189,39 @@ if is_asm_enabled
         libdav1d_sources_asm = files(
             'x86/cpuid.asm',
             'x86/msac.asm',
+            'x86/cdef_avx2.asm',
+            'x86/itx_avx2.asm',
+            'x86/looprestoration_avx2.asm',
+            'x86/cdef_sse.asm',
         )
 
         if dav1d_bitdepths.contains('8')
             libdav1d_sources_asm += files(
                 'x86/cdef_avx512.asm',
                 'x86/mc_avx512.asm',
-                'x86/cdef_avx2.asm',
                 'x86/mc_avx2.asm',
-                'x86/film_grain.asm',
-                'x86/ipred.asm',
-                'x86/itx.asm',
-                'x86/loopfilter.asm',
-                'x86/looprestoration.asm',
-                'x86/cdef_sse.asm',
-                'x86/film_grain_ssse3.asm',
-                'x86/ipred_ssse3.asm',
-                'x86/itx_ssse3.asm',
-                'x86/loopfilter_ssse3.asm',
-                'x86/looprestoration_ssse3.asm',
+                'x86/film_grain_avx2.asm',
+                'x86/ipred_avx2.asm',
+                'x86/loopfilter_avx2.asm',
+                'x86/film_grain_sse.asm',
+                'x86/ipred_sse.asm',
+                'x86/itx_sse.asm',
+                'x86/loopfilter_sse.asm',
+                'x86/looprestoration_sse.asm',
                 'x86/mc_sse.asm',
             )
         endif
 
         if dav1d_bitdepths.contains('16')
             libdav1d_sources_asm += files(
+                'x86/cdef16_avx2.asm',
+                'x86/film_grain16_avx2.asm',
+                'x86/ipred16_avx2.asm',
+                'x86/itx16_avx2.asm',
+                'x86/loopfilter16_avx2.asm',
+                'x86/looprestoration16_avx2.asm',
+                'x86/mc16_avx2.asm',
+                'x86/cdef16_sse.asm',
             )
         endif
 

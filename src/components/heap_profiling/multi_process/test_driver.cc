@@ -5,17 +5,18 @@
 #include "components/heap_profiling/multi_process/test_driver.h"
 
 #include <algorithm>
+#include <memory>
 #include <string>
 
 #include "base/allocator/partition_allocator/partition_root.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/process/process_handle.h"
 #include "base/run_loop.h"
 #include "base/sampling_heap_profiler/poisson_allocation_sampler.h"
-#include "base/stl_util.h"
 #include "base/test/bind.h"
 #include "base/threading/platform_thread.h"
 #include "base/trace_event/heap_profiler.h"
@@ -343,9 +344,11 @@ TestDriver::TestDriver()
     : wait_for_ui_thread_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                           base::WaitableEvent::InitialState::NOT_SIGNALED) {
   base::PartitionAllocGlobalInit(HandleOOM);
-  partition_allocator_.init({base::PartitionOptions::Alignment::kRegular,
+  partition_allocator_.init({base::PartitionOptions::AlignedAlloc::kDisallowed,
                              base::PartitionOptions::ThreadCache::kDisabled,
-                             base::PartitionOptions::PCScan::kAlwaysDisabled});
+                             base::PartitionOptions::Quarantine::kDisallowed,
+                             base::PartitionOptions::Cookies::kAllowed,
+                             base::PartitionOptions::RefCount::kDisallowed});
 }
 TestDriver::~TestDriver() {
   base::PartitionAllocGlobalUninitForTesting();
@@ -586,7 +589,7 @@ void TestDriver::CollectResults(bool synchronous) {
   std::unique_ptr<base::RunLoop> run_loop;
 
   if (synchronous) {
-    run_loop.reset(new base::RunLoop);
+    run_loop = std::make_unique<base::RunLoop>();
     finish_tracing_closure = run_loop->QuitClosure();
   } else {
     finish_tracing_closure = base::BindOnce(

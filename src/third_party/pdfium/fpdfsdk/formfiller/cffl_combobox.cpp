@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "constants/form_flags.h"
-#include "core/fpdfdoc/cba_fontmap.h"
+#include "core/fpdfdoc/cpdf_bafontmap.h"
 #include "fpdfsdk/cpdfsdk_formfillenvironment.h"
 #include "fpdfsdk/cpdfsdk_widget.h"
 #include "fpdfsdk/formfiller/cffl_interactiveformfiller.h"
@@ -99,11 +99,10 @@ void CFFL_ComboBox::SaveData(CPDFSDK_PageView* pPageView) {
     bSetValue = (nCurSel < 0) || (swText != m_pWidget->GetOptionLabel(nCurSel));
 
   if (bSetValue) {
-    m_pWidget->SetValue(swText, NotificationOption::kDoNotNotify);
+    m_pWidget->SetValue(swText);
   } else {
     m_pWidget->GetSelectedIndex(0);
-    m_pWidget->SetOptionSelection(nCurSel, true,
-                                  NotificationOption::kDoNotNotify);
+    m_pWidget->SetOptionSelection(nCurSel);
   }
   ObservedPtr<CPDFSDK_Widget> observed_widget(m_pWidget.Get());
   ObservedPtr<CFFL_ComboBox> observed_this(this);

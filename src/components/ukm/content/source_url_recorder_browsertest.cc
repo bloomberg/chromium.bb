@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "base/files/scoped_temp_dir.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "components/ukm/test_ukm_recorder.h"
@@ -242,10 +243,8 @@ IN_PROC_BROWSER_TEST_F(SourceUrlRecorderWebContentsObserverBrowserTest,
         window.domAutomationController.send(true);
     }, 10);
   )";
-  // EvalJsWithManualReply returns an EvalJsResult, whose docs say to use
-  // EXPECT_EQ(true, ...) rather than EXPECT_TRUE(), as the latter does not
-  // compile.
-  EXPECT_EQ(true, EvalJsWithManualReply(portal_contents, activated_poll));
+  EXPECT_EQ(true, EvalJs(portal_contents, activated_poll,
+                         content::EXECUTE_SCRIPT_USE_MANUAL_REPLY));
 
   // The activated portal contents should be the currently active contents.
   EXPECT_EQ(portal_contents, shell()->web_contents());

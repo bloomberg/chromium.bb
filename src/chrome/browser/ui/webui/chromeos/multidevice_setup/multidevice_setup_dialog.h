@@ -47,6 +47,7 @@ class MultiDeviceSetupDialog : public SystemWebDialogDelegate {
 
  private:
   static MultiDeviceSetupDialog* current_instance_;
+  static gfx::NativeWindow containing_window_;
 
   // List of callbacks that have registered themselves to be invoked once this
   // dialog is closed.
@@ -75,5 +76,13 @@ class MultiDeviceSetupDialogUI : public ui::MojoWebDialogUI {
 }  // namespace multidevice_setup
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace ash {
+namespace multidevice_setup {
+using ::chromeos::multidevice_setup::MultiDeviceSetupDialog;
+}
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_UI_WEBUI_CHROMEOS_MULTIDEVICE_SETUP_MULTIDEVICE_SETUP_DIALOG_H_

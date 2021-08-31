@@ -25,7 +25,6 @@ __author__ = 'scherkus@chromium.org (Andrew Scherkus)'
 import collections
 import copy
 import datetime
-from enum import enum
 import fnmatch
 import credits_updater
 import itertools
@@ -33,7 +32,6 @@ import optparse
 import os
 import re
 import shutil
-import string
 import subprocess
 import sys
 
@@ -74,7 +72,8 @@ GN_SOURCE_END = """]
 """
 
 # Controls conditional stanza generation.
-Attr = enum('ARCHITECTURE', 'TARGET', 'PLATFORM')
+_Attrs = ('ARCHITECTURE', 'TARGET', 'PLATFORM')
+Attr = collections.namedtuple('Attr', _Attrs)(*_Attrs)
 SUPPORT_MATRIX = {
     Attr.ARCHITECTURE:
         set(['ia32', 'x64', 'arm', 'arm64', 'arm-neon', 'mipsel', 'mips64el']),
@@ -87,7 +86,7 @@ SUPPORT_MATRIX = {
 
 def NormalizeFilename(name):
   """Removes leading path separators in an attempt to normalize paths."""
-  return string.lstrip(name, os.sep)
+  return name.lstrip(os.sep)
 
 
 def CleanObjectFiles(object_files):
@@ -96,7 +95,7 @@ def CleanObjectFiles(object_files):
   Args:
     object_files: List of object files that needs cleaning.
   """
-  blacklist = [
+  cleaning_list = [
       'libavcodec/inverse.o',  # Includes libavutil/inverse.c
       'libavcodec/file_open.o',  # Includes libavutil/file_open.c
       'libavcodec/log2_tab.o',  # Includes libavutil/log2_tab.c
@@ -137,7 +136,7 @@ def CleanObjectFiles(object_files):
       'libavutil/xtea.o',
       'libavutil/xga_font_data.o',
   ]
-  for name in blacklist:
+  for name in cleaning_list:
     name = name.replace('/', os.sep)
     if name in object_files:
       object_files.remove(name)
@@ -649,6 +648,7 @@ IGNORED_INCLUDE_FILES = [
     os.path.join('libavcodec', 'cbrt_tables.h'),
     os.path.join('libavcodec', 'cbrt_fixed_tables.h'),
     os.path.join('libavcodec', 'mpegaudio_tables.h'),
+    os.path.join('libavcodec', 'mpegaudiodec_common_tables.h'),
     os.path.join('libavcodec', 'pcm_tables.h'),
     os.path.join('libavcodec', 'sinewin_tables.h'),
     os.path.join('libavcodec', 'sinewin_fixed_tables.h'),
@@ -657,7 +657,7 @@ IGNORED_INCLUDE_FILES = [
 # Known licenses that are acceptable for static linking
 # DO NOT ADD TO THIS LIST without first confirming with lawyers that the
 # licenses are okay to add.
-LICENSE_WHITELIST = [
+ALLOWED_LICENSES = [
     'BSD (3 clause) LGPL (v2.1 or later)',
     'BSL (v1) LGPL (v2.1 or later)',
     'ISC GENERATED FILE',
@@ -671,7 +671,7 @@ LICENSE_WHITELIST = [
 # give the full path from the source_dir to avoid ambiguity.
 # DO NOT ADD TO THIS LIST without first confirming with lawyers that the files
 # you're adding have acceptable licenses.
-UNKNOWN_WHITELIST = [
+LICENSE_EXCEPTIONS = [
     # From of Independent JPEG group. No named license, but usage is allowed.
     os.path.join('libavcodec', 'jrevdct.c'),
     os.path.join('libavcodec', 'jfdctfst.c'),
@@ -735,7 +735,7 @@ def GetIncludedSources(file_path, source_dir, include_set):
 
     if not include_match:
       if EXOTIC_INCLUDE_REGEX.search(line):
-        print 'WARNING: Investigate whacky include line:', line
+        print(f'WARNING: Investigate whacky include line: {line}')
       continue
 
     include_file_path = include_match.group(1)
@@ -761,8 +761,8 @@ def GetIncludedSources(file_path, source_dir, include_set):
     # At this point we've found the file. Check if its in our ignore list which
     # means that the list should be updated to no longer mention this file.
     if include_file_path in IGNORED_INCLUDE_FILES:
-      print('Found %s in IGNORED_INCLUDE_FILES. Consider updating the list '
-            'to remove this file.' % str(include_file_path))
+      print(f'Found {include_file_path} in IGNORED_INCLUDE_FILES. '
+             'Consider updating the list to remove this file.')
 
     GetIncludedSources(resolved_include_path, source_dir, include_set)
 
@@ -783,6 +783,7 @@ def CheckLicensesForSources(sources, source_dir, print_licenses):
       stdout=subprocess.PIPE,
       stderr=subprocess.PIPE)
   stdout, _ = check_process.communicate()
+  stdout = stdout.decode(sys.stdout.encoding)
 
   # Get the filename and license out of the stdout. stdout is expected to be
   # "/abspath/to/file: *No copyright* SOME LICENSE".
@@ -791,20 +792,20 @@ def CheckLicensesForSources(sources, source_dir, print_licenses):
     licensename = licensename.replace('*No copyright*', '').strip()
     rel_file_path = os.path.relpath(filename, os.path.abspath(source_dir))
 
-    if (licensename in LICENSE_WHITELIST or
-        (licensename == 'UNKNOWN' and rel_file_path in UNKNOWN_WHITELIST)):
+    if (licensename in ALLOWED_LICENSES or
+        (licensename == 'UNKNOWN' and rel_file_path in LICENSE_EXCEPTIONS)):
       if print_licenses:
-        print filename, ':', licensename
+        print(f'{filename}: {licensename}')
       continue
 
-    print 'UNEXPECTED LICENSE: %s: %s' % (filename, licensename)
+    print(f'UNEXPECTED LICENSE: {filename}: {licensename}')
     return False
 
   return True
 
 
 def CheckLicensesForStaticLinking(sources_to_check, source_dir, print_licenses):
-  print 'Checking licenses...'
+  print('Checking licenses...')
   return CheckLicensesForSources(sources_to_check, source_dir, print_licenses)
 
 
@@ -827,7 +828,7 @@ def FixObjectBasenameCollisions(disjoint_sets,
   If upstream changes the name such that the collision no longer exists, we
   detect the presence of a renamed file in all_sources which is overridden and
   warn that it should be removed.
-  
+
   This will return a tuple of two sets.  The first is a list of all currently
   renamed files, in their renamed form.  The second is a list of renamed files
   that we have in the working directory, but no longer need."""
@@ -866,8 +867,8 @@ def FixObjectBasenameCollisions(disjoint_sets,
 
     for rename in renames:
       if log_renames:
-        print 'Fixing basename collision: %s -> %s' % (rename.old_path,
-                                                       rename.new_path)
+        print(
+          f'Fixing basename collision: {rename.old_path} -> {rename.new_path}')
       _, old_filename = os.path.split(rename.old_path)
       _, file_extension = os.path.splitext(old_filename)
       include_prefix = '%' if (file_extension == '.asm') else '#'
@@ -887,12 +888,12 @@ def FixObjectBasenameCollisions(disjoint_sets,
   for source_path in all_sources:
     if RENAME_PREFIX in source_path and source_path not in all_renames:
       old_renames_to_delete.add(source_path)
-      print 'WARNING: %s no longer collides. DELETE ME!' % source_path
+      print(f'WARNING: {source_path} no longer collides. DELETE ME!')
 
   return all_renames, old_renames_to_delete
 
 def UpdateCredits(sources_to_check, source_dir):
-  print 'Updating ffmpeg credits...'
+  print('Updating ffmpeg credits...')
   updater = credits_updater.CreditsUpdater(source_dir)
   for source_name in sources_to_check:
     updater.ProcessFile(source_name)
@@ -928,7 +929,7 @@ def main():
         build_dir = os.path.join(options.build_dir, name, target)
         if not os.path.exists(build_dir):
           continue
-        print 'Processing build directory: %s' % name
+        print(f'Processing build directory: {name}')
 
         object_files = GetObjectFiles(build_dir)
 
@@ -972,11 +973,11 @@ def main():
   if not CheckLicensesForStaticLinking(sources_to_check, source_dir,
                                        options.print_licenses):
     exit('GENERATE FAILED: invalid licenses detected.')
-  print 'License checks passed.'
+  print('License checks passed.')
   UpdateCredits(sources_to_check, source_dir)
 
   gn_file_name = os.path.join(options.source_dir, 'ffmpeg_generated.gni')
-  print 'Writing:', gn_file_name
+  print(f'Writing: {gn_file_name}')
   with open(gn_file_name, 'w') as fd:
     WriteGn(fd, sets)
 

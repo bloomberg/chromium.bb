@@ -4,6 +4,7 @@
 
 #include "ash/system/phonehub/phone_hub_notification_controller.h"
 
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/test/test_system_tray_client.h"
 #include "ash/shell.h"
 #include "ash/system/message_center/message_center_controller.h"
@@ -16,7 +17,6 @@
 #include "chromeos/components/phonehub/fake_phone_hub_manager.h"
 #include "chromeos/components/phonehub/mutable_phone_model.h"
 #include "chromeos/components/phonehub/notification.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/events/event.h"
 #include "ui/gfx/image/image_skia.h"
@@ -33,11 +33,11 @@ const char kCrOSNotificationId0[] = "chrome://phonehub-0";
 const char kCrOSNotificationId1[] = "chrome://phonehub-1";
 const char kCrOSNotificationId2[] = "chrome://phonehub-2";
 
-const char kAppName[] = "Test App";
+const char16_t kAppName[] = u"Test App";
 const char kPackageName[] = "com.google.testapp";
 
-const char kTitle[] = "Test notification";
-const char kTextContent[] = "This is a test notification";
+const char16_t kTitle[] = u"Test notification";
+const char16_t kTextContent[] = u"This is a test notification";
 
 const char kNotificationCustomViewType[] = "phonehub";
 
@@ -48,12 +48,12 @@ constexpr base::TimeDelta kWaitForEnableButton =
 chromeos::phonehub::Notification CreateNotification(int64_t id) {
   return chromeos::phonehub::Notification(
       id,
-      chromeos::phonehub::Notification::AppMetadata(base::UTF8ToUTF16(kAppName),
-                                                    kPackageName,
+      chromeos::phonehub::Notification::AppMetadata(kAppName, kPackageName,
                                                     /*icon=*/gfx::Image()),
       base::Time::Now(), chromeos::phonehub::Notification::Importance::kDefault,
-      /*inline_reply_id=*/0, base::UTF8ToUTF16(kTitle),
-      base::UTF8ToUTF16(kTextContent));
+      /*inline_reply_id=*/0,
+      chromeos::phonehub::Notification::InteractionBehavior::kOpenable, kTitle,
+      kTextContent);
 }
 
 class PhoneHubNotificationControllerTest : public AshTestBase {
@@ -64,7 +64,8 @@ class PhoneHubNotificationControllerTest : public AshTestBase {
 
   // AshTestBase:
   void SetUp() override {
-    feature_list_.InitAndEnableFeature(chromeos::features::kPhoneHub);
+    feature_list_.InitWithFeatures(
+        {chromeos::features::kPhoneHub, chromeos::features::kEcheSWA}, {});
     AshTestBase::SetUp();
 
     feature_status_provider_ =
@@ -109,8 +110,8 @@ TEST_F(PhoneHubNotificationControllerTest, AddNotifications) {
   ASSERT_TRUE(FindNotification(kCrOSNotificationId2));
 
   auto* sample_notification = FindNotification(kCrOSNotificationId1);
-  EXPECT_EQ(base::UTF8ToUTF16(kTitle), sample_notification->title());
-  EXPECT_EQ(base::UTF8ToUTF16(kTextContent), sample_notification->message());
+  EXPECT_EQ(kTitle, sample_notification->title());
+  EXPECT_EQ(kTextContent, sample_notification->message());
 }
 
 TEST_F(PhoneHubNotificationControllerTest, UpdateNotifications) {
@@ -119,25 +120,25 @@ TEST_F(PhoneHubNotificationControllerTest, UpdateNotifications) {
   EXPECT_EQ(3u, message_center_->NotificationCount());
 
   auto* notification = FindNotification(kCrOSNotificationId1);
-  EXPECT_EQ(base::UTF8ToUTF16(kTitle), notification->title());
-  EXPECT_EQ(base::UTF8ToUTF16(kTextContent), notification->message());
+  EXPECT_EQ(kTitle, notification->title());
+  EXPECT_EQ(kTextContent, notification->message());
 
-  std::string kNewTitle = "New title";
-  std::string kNewTextContent = "New text content";
+  std::u16string kNewTitle = u"New title";
+  std::u16string kNewTextContent = u"New text content";
   chromeos::phonehub::Notification updated_notification(
       kPhoneHubNotificationId1,
-      chromeos::phonehub::Notification::AppMetadata(base::UTF8ToUTF16(kAppName),
-                                                    kPackageName,
+      chromeos::phonehub::Notification::AppMetadata(kAppName, kPackageName,
                                                     /*icon=*/gfx::Image()),
       base::Time::Now(), chromeos::phonehub::Notification::Importance::kDefault,
-      /*inline_reply_id=*/0, base::UTF8ToUTF16(kNewTitle),
-      base::UTF8ToUTF16(kNewTextContent));
+      /*inline_reply_id=*/0,
+      chromeos::phonehub::Notification::InteractionBehavior::kNone, kNewTitle,
+      kNewTextContent);
 
   notification_manager_->SetNotification(updated_notification);
 
   notification = FindNotification(kCrOSNotificationId1);
-  EXPECT_EQ(base::UTF8ToUTF16(kNewTitle), notification->title());
-  EXPECT_EQ(base::UTF8ToUTF16(kNewTextContent), notification->message());
+  EXPECT_EQ(kNewTitle, notification->title());
+  EXPECT_EQ(kNewTextContent, notification->message());
 }
 
 TEST_F(PhoneHubNotificationControllerTest, RemoveNotifications) {
@@ -176,8 +177,8 @@ TEST_F(PhoneHubNotificationControllerTest, CloseByUser) {
 TEST_F(PhoneHubNotificationControllerTest, InlineReply) {
   notification_manager_->SetNotificationsInternal(fake_notifications_);
 
-  const base::string16 kInlineReply0 = base::UTF8ToUTF16("inline reply 0");
-  const base::string16 kInlineReply1 = base::UTF8ToUTF16("inline reply 1");
+  const std::u16string kInlineReply0 = u"inline reply 0";
+  const std::u16string kInlineReply1 = u"inline reply 1";
   message_center_->ClickOnNotificationButtonWithReply(kCrOSNotificationId0, 0,
                                                       kInlineReply0);
   message_center_->ClickOnNotificationButtonWithReply(kCrOSNotificationId1, 0,
@@ -188,6 +189,16 @@ TEST_F(PhoneHubNotificationControllerTest, InlineReply) {
   EXPECT_EQ(kInlineReply0, inline_replies[0].inline_reply_text);
   EXPECT_EQ(kPhoneHubNotificationId1, inline_replies[1].notification_id);
   EXPECT_EQ(kInlineReply1, inline_replies[1].inline_reply_text);
+}
+
+TEST_F(PhoneHubNotificationControllerTest, HandleNotificationClick) {
+  chromeos::phonehub::FakeNotificationInteractionHandler* handler =
+      phone_hub_manager_.fake_notification_interaction_handler();
+  notification_manager_->SetNotificationsInternal(fake_notifications_);
+  message_center_->ClickOnNotification(kCrOSNotificationId0);
+  EXPECT_EQ(1u, handler->handled_notification_count());
+  message_center_->ClickOnNotification(kCrOSNotificationId1);
+  EXPECT_EQ(2u, handler->handled_notification_count());
 }
 
 TEST_F(PhoneHubNotificationControllerTest, ClickSettings) {
@@ -218,11 +229,12 @@ TEST_F(PhoneHubNotificationControllerTest, NotificationDataAndImages) {
 
   chromeos::phonehub::Notification fake_notification(
       kPhoneHubNotificationId0,
-      chromeos::phonehub::Notification::AppMetadata(base::UTF8ToUTF16(kAppName),
-                                                    kPackageName, icon),
+      chromeos::phonehub::Notification::AppMetadata(kAppName, kPackageName,
+                                                    icon),
       timestamp, chromeos::phonehub::Notification::Importance::kHigh,
-      /*inline_reply_id=*/0, base::UTF8ToUTF16(kTitle),
-      base::UTF8ToUTF16(kTextContent), shared_image, contact_image);
+      /*inline_reply_id=*/0,
+      chromeos::phonehub::Notification::InteractionBehavior::kNone, kTitle,
+      kTextContent, shared_image, contact_image);
 
   notification_manager_->SetNotification(fake_notification);
 
@@ -230,8 +242,8 @@ TEST_F(PhoneHubNotificationControllerTest, NotificationDataAndImages) {
   ASSERT_TRUE(cros_notification);
   EXPECT_EQ(timestamp, cros_notification->timestamp());
   EXPECT_EQ(message_center::MAX_PRIORITY, cros_notification->priority());
-  EXPECT_EQ(kTitle, base::UTF16ToUTF8(cros_notification->title()));
-  EXPECT_EQ(kAppName, base::UTF16ToUTF8(cros_notification->display_source()));
+  EXPECT_EQ(kTitle, cros_notification->title());
+  EXPECT_EQ(kAppName, cros_notification->display_source());
 
   // Note that there's a slight discrepancy between the PhoneHub and
   // notification image naming.
@@ -252,7 +264,7 @@ TEST_F(PhoneHubNotificationControllerTest, NotificationHasPhoneName) {
   notification_manager_->SetNotificationsInternal(fake_notifications_);
   auto* notification = FindNotification(kCrOSNotificationId0);
 
-  const base::string16 expected_phone_name = base::UTF8ToUTF16("Phone name");
+  const std::u16string expected_phone_name = u"Phone name";
   phone_hub_manager_.mutable_phone_model()->SetPhoneName(expected_phone_name);
 
   auto notification_view =
@@ -282,7 +294,7 @@ TEST_F(PhoneHubNotificationControllerTest, ReplyBrieflyDisabled) {
   views::View* reply_button = action_buttons_row->children()[0];
 
   // Initially, reply button should be disabled after replied.
-  const base::string16 kInlineReply0 = base::UTF8ToUTF16("inline reply 0");
+  const std::u16string kInlineReply0 = u"inline reply 0";
   notification_view_md->OnNotificationInputSubmit(0, kInlineReply0);
   EXPECT_FALSE(reply_button->GetEnabled());
 
@@ -294,12 +306,12 @@ TEST_F(PhoneHubNotificationControllerTest, ReplyBrieflyDisabled) {
 TEST_F(PhoneHubNotificationControllerTest, DoNotReshowPopupNotification) {
   chromeos::phonehub::Notification fake_notification(
       kPhoneHubNotificationId0,
-      chromeos::phonehub::Notification::AppMetadata(base::UTF8ToUTF16(kAppName),
-                                                    kPackageName,
+      chromeos::phonehub::Notification::AppMetadata(kAppName, kPackageName,
                                                     /*icon=*/gfx::Image()),
       base::Time::Now(), chromeos::phonehub::Notification::Importance::kHigh,
-      /*inline_reply_id=*/0, base::UTF8ToUTF16(kTitle),
-      base::UTF8ToUTF16(kTextContent));
+      /*inline_reply_id=*/0,
+      chromeos::phonehub::Notification::InteractionBehavior::kNone, kTitle,
+      kTextContent);
 
   // Adding the notification for the first time shows a pop-up (MAX_PRIORITY).
   notification_manager_->SetNotification(fake_notification);
@@ -327,7 +339,7 @@ TEST_F(PhoneHubNotificationControllerTest, DoNotReshowPopupNotification) {
   ASSERT_TRUE(cros_notification);
   EXPECT_EQ(message_center::LOW_PRIORITY, cros_notification->priority());
 
-  // Disable the feature..
+  // Disable the feature.
   feature_status_provider_->SetStatus(
       chromeos::phonehub::FeatureStatus::kDisabled);
   notification_manager_->RemoveNotification(kPhoneHubNotificationId0);
@@ -338,6 +350,44 @@ TEST_F(PhoneHubNotificationControllerTest, DoNotReshowPopupNotification) {
       chromeos::phonehub::FeatureStatus::kEnabledAndConnected);
   notification_manager_->SetNotification(fake_notification);
   cros_notification = FindNotification(kCrOSNotificationId0);
+  ASSERT_TRUE(cros_notification);
+  EXPECT_EQ(message_center::MAX_PRIORITY, cros_notification->priority());
+
+  // Update the notification with some new text, but keep the notification ID
+  // the same.
+  chromeos::phonehub::Notification modified_fake_notification(
+      kPhoneHubNotificationId0,
+      chromeos::phonehub::Notification::AppMetadata(kAppName, kPackageName,
+                                                    /*icon=*/gfx::Image()),
+      base::Time::Now(), chromeos::phonehub::Notification::Importance::kHigh,
+      /*inline_reply_id=*/0,
+      chromeos::phonehub::Notification::InteractionBehavior::kNone, kTitle,
+      u"New text");
+
+  // Update the existingt notification; the priority should be MAX_PRIORITY, and
+  // renotify should be true.
+  notification_manager_->SetNotification(modified_fake_notification);
+  cros_notification = FindNotification(kCrOSNotificationId0);
+  ASSERT_TRUE(cros_notification);
+  EXPECT_EQ(message_center::MAX_PRIORITY, cros_notification->priority());
+  EXPECT_TRUE(cros_notification->renotify());
+}
+
+// Regression test for https://crbug.com/1165646.
+TEST_F(PhoneHubNotificationControllerTest, MinPriorityNotification) {
+  chromeos::phonehub::Notification fake_notification(
+      kPhoneHubNotificationId0,
+      chromeos::phonehub::Notification::AppMetadata(kAppName, kPackageName,
+                                                    /*icon=*/gfx::Image()),
+      base::Time::Now(), chromeos::phonehub::Notification::Importance::kMin,
+      /*inline_reply_id=*/0,
+      chromeos::phonehub::Notification::InteractionBehavior::kNone, kTitle,
+      kTextContent);
+
+  // Adding the notification for the first time shows a pop-up (MAX_PRIORITY),
+  // even though the notification itself is Importance::kMin.
+  notification_manager_->SetNotification(fake_notification);
+  auto* cros_notification = FindNotification(kCrOSNotificationId0);
   ASSERT_TRUE(cros_notification);
   EXPECT_EQ(message_center::MAX_PRIORITY, cros_notification->priority());
 }

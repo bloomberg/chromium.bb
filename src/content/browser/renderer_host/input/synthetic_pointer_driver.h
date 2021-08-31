@@ -22,7 +22,7 @@ class CONTENT_EXPORT SyntheticPointerDriver {
   virtual ~SyntheticPointerDriver();
 
   static std::unique_ptr<SyntheticPointerDriver> Create(
-      SyntheticGestureParams::GestureSourceType gesture_source_type);
+      content::mojom::GestureSourceType gesture_source_type);
 
   virtual void DispatchEvent(SyntheticGestureTarget* target,
                              const base::TimeTicks& timestamp) = 0;
@@ -38,6 +38,9 @@ class CONTENT_EXPORT SyntheticPointerDriver {
       float height = 1.f,
       float rotation_angle = 0.f,
       float force = 1.f,
+      float tangential_pressure = 0.f,
+      int tilt_x = 0,
+      int tilt_y = 0,
       const base::TimeTicks& timestamp = base::TimeTicks::Now()) = 0;
   virtual void Move(float x,
                     float y,
@@ -46,7 +49,10 @@ class CONTENT_EXPORT SyntheticPointerDriver {
                     float width = 1.f,
                     float height = 1.f,
                     float rotation_angle = 0.f,
-                    float force = 1.f) = 0;
+                    float force = 1.f,
+                    float tangential_pressure = 0.f,
+                    int tilt_x = 0,
+                    int tilt_y = 0) = 0;
   virtual void Release(int index = 0,
                        SyntheticPointerActionParams::Button button =
                            SyntheticPointerActionParams::Button::LEFT,

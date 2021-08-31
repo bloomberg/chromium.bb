@@ -47,11 +47,13 @@ class URLLoaderFactoryParamsHelper {
   CreateForFrame(
       RenderFrameHostImpl* frame,
       const url::Origin& origin,
+      const net::IsolationInfo& isolation_info,
       network::mojom::ClientSecurityStatePtr client_security_state,
       mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
           coep_reporter,
       RenderProcessHost* process,
-      network::mojom::TrustTokenRedemptionPolicy trust_token_redemption_policy);
+      network::mojom::TrustTokenRedemptionPolicy trust_token_redemption_policy,
+      base::StringPiece debug_tag);
 
   // Creates URLLoaderFactoryParams to be used by |isolated_world_origin| hosted
   // within the |frame|.
@@ -59,6 +61,7 @@ class URLLoaderFactoryParamsHelper {
       RenderFrameHostImpl* frame,
       const url::Origin& isolated_world_origin,
       const url::Origin& main_world_origin,
+      const net::IsolationInfo& isolation_info,
       network::mojom::ClientSecurityStatePtr client_security_state,
       network::mojom::TrustTokenRedemptionPolicy trust_token_redemption_policy);
 
@@ -73,14 +76,11 @@ class URLLoaderFactoryParamsHelper {
       const url::Origin& request_initiator,
       const net::IsolationInfo& isolation_info,
       mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
-          coep_reporter);
-
-  // TODO(kinuko, lukasza): https://crbug.com/1114822: Remove, once all
-  // URLLoaderFactories vended to a renderer process are associated with a
-  // specific origin and an execution context (e.g. a frame, a service worker or
-  // any other kind of worker).
-  static network::mojom::URLLoaderFactoryParamsPtr CreateForRendererProcess(
-      RenderProcessHost* process);
+          coep_reporter,
+      mojo::PendingRemote<network::mojom::URLLoaderNetworkServiceObserver>
+          url_loader_network_observer,
+      mojo::PendingRemote<network::mojom::DevToolsObserver> devtools_observer,
+      base::StringPiece debug_tag);
 
  private:
   // Only static methods.

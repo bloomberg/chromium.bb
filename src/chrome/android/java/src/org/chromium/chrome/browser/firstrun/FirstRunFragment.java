@@ -16,13 +16,6 @@ public interface FirstRunFragment {
     default void onNativeInitialized() {}
 
     /**
-     * @return Whether the back button press was handled by this page.
-     */
-    default boolean interceptBackPressed() {
-        return false;
-    }
-
-    /**
      * @see Fragment#getActivity().
      */
     Activity getActivity();
@@ -45,4 +38,9 @@ public interface FirstRunFragment {
     default FirstRunPageDelegate getPageDelegate() {
         return (FirstRunPageDelegate) getActivity();
     }
+
+    /**
+     * Reset the fragment state. This can be used when the fragment is revisited with back button.
+     */
+    default void reset() {}
 }

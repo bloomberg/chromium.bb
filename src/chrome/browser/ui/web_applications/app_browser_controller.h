@@ -9,15 +9,16 @@
 #include <string>
 
 #include "base/callback_forward.h"
-#include "base/optional.h"
-#include "base/strings/string16.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/page_action/page_action_icon_type.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "components/url_formatter/url_formatter.h"
+#include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkRegion.h"
 
 class Browser;
 class BrowserThemePack;
@@ -52,14 +53,13 @@ class AppBrowserController : public TabStripModelObserver,
   static std::unique_ptr<AppBrowserController> MaybeCreateWebAppController(
       Browser* browser);
 
-  // Returns whether |browser| uses the experimental hosted app experience.
-  // Convenience wrapper for checking IsForExperimentalWebAppBrowser() on
-  // |browser|'s HostedAppBrowserController if it exists.
-  static bool IsForWebAppBrowser(const Browser* browser);
-  static bool IsForWebAppBrowser(const Browser* browser, const AppId& app_id);
+  // Returns whether |browser| is a web app window/pop-up.
+  static bool IsWebApp(const Browser* browser);
+  // Returns whether |browser| is a web app window/pop-up for |app_id|.
+  static bool IsForWebApp(const Browser* browser, const AppId& app_id);
 
   // Renders |url|'s origin as Unicode.
-  static base::string16 FormatUrlOrigin(
+  static std::u16string FormatUrlOrigin(
       const GURL& url,
       url_formatter::FormatUrlTypes format_types =
           url_formatter::kFormatUrlOmitUsernamePassword |
@@ -73,6 +73,9 @@ class AppBrowserController : public TabStripModelObserver,
 
   // Returns a theme built from the current page or app's theme color.
   const ui::ThemeProvider* GetThemeProvider() const;
+
+  // Returns the text to flash in the title bar on app launch.
+  std::u16string GetLaunchFlashText() const;
 
   // Returns whether this controller was created for an installed PWA.
   virtual bool IsHostedApp() const;
@@ -105,20 +108,20 @@ class AppBrowserController : public TabStripModelObserver,
   virtual gfx::ImageSkia GetWindowIcon() const = 0;
 
   // Returns the color of the title bar.
-  virtual base::Optional<SkColor> GetThemeColor() const;
+  virtual absl::optional<SkColor> GetThemeColor() const;
 
   // Returns the background color of the page.
-  virtual base::Optional<SkColor> GetBackgroundColor() const;
+  virtual absl::optional<SkColor> GetBackgroundColor() const;
 
   // Returns the title to be displayed in the window title bar.
-  virtual base::string16 GetTitle() const;
+  virtual std::u16string GetTitle() const;
 
   // Gets the short name of the app.
-  virtual base::string16 GetAppShortName() const = 0;
+  virtual std::u16string GetAppShortName() const = 0;
 
   // Gets the origin of the app start url suitable for display (e.g
   // example.com.au).
-  virtual base::string16 GetFormattedUrlOrigin() const = 0;
+  virtual std::u16string GetFormattedUrlOrigin() const = 0;
 
   // Gets the start_url for the app.
   virtual GURL GetAppStartUrl() const = 0;
@@ -129,9 +132,10 @@ class AppBrowserController : public TabStripModelObserver,
   // Safe downcast:
   virtual WebAppBrowserController* AsWebAppBrowserController();
 
-  virtual bool CanUninstall() const;
+  virtual bool CanUserUninstall() const;
 
-  virtual void Uninstall();
+  virtual void Uninstall(
+      webapps::WebappUninstallSource webapp_uninstall_source);
 
   // Returns whether the app is installed (uninstallation may complete within
   // the lifetime of HostedAppBrowserController).
@@ -140,6 +144,9 @@ class AppBrowserController : public TabStripModelObserver,
   virtual std::unique_ptr<TabMenuModelFactory> GetTabMenuModelFactory() const;
 
   virtual bool IsWindowControlsOverlayEnabled() const;
+
+  // Whether the browser should show the reload button in the toolbar.
+  virtual bool HasReloadButton() const;
 
   // Updates the custom tab bar's visibility based on whether it should be
   // currently visible or not. If |animate| is set, the change will be
@@ -150,7 +157,7 @@ class AppBrowserController : public TabStripModelObserver,
   bool is_for_system_web_app() const { return system_app_type_.has_value(); }
 
   // Returns the SystemAppType for this controller.
-  const base::Optional<SystemAppType>& system_app_type() const {
+  const absl::optional<SystemAppType>& system_app_type() const {
     return system_app_type_;
   }
 
@@ -188,9 +195,16 @@ class AppBrowserController : public TabStripModelObserver,
   // BrowserThemeProviderDelegate:
   CustomThemeSupplier* GetThemeSupplier() const override;
 
+  void UpdateDraggableRegion(const SkRegion& region);
+  const absl::optional<SkRegion>& draggable_region() const {
+    return draggable_region_;
+  }
+
+  void SetOnUpdateDraggableRegionForTesting(base::OnceClosure done);
+
  protected:
   explicit AppBrowserController(Browser* browser,
-                                base::Optional<web_app::AppId> app_id);
+                                absl::optional<web_app::AppId> app_id);
 
   // Called once the app browser controller has determined its initial url.
   virtual void OnReceivedInitialURL();
@@ -208,19 +222,22 @@ class AppBrowserController : public TabStripModelObserver,
 
   void UpdateThemePack();
 
-  const base::Optional<AppId> app_id_;
+  const absl::optional<AppId> app_id_;
   Browser* const browser_;
   GURL initial_url_;
 
   scoped_refptr<BrowserThemePack> theme_pack_;
   std::unique_ptr<ui::ThemeProvider> theme_provider_;
-  base::Optional<SkColor> last_theme_color_;
-  base::Optional<SkColor> last_background_color_;
+  absl::optional<SkColor> last_theme_color_;
+  absl::optional<SkColor> last_background_color_;
 
-  base::Optional<SystemAppType> system_app_type_;
+  absl::optional<SystemAppType> system_app_type_;
 
   const bool has_tab_strip_;
 
+  absl::optional<SkRegion> draggable_region_ = absl::nullopt;
+
+  base::OnceClosure on_draggable_region_set_for_testing_;
 };
 
 }  // namespace web_app

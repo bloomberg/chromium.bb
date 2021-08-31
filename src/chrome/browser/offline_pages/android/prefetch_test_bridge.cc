@@ -58,7 +58,7 @@ JNI_EXPORT void JNI_PrefetchTestBridge_InsertIntoCachedImageFetcher(
   base::android::JavaByteArrayToString(env, j_image_data, &image_data);
 
   cache->SaveImage(url, image_data, false /* needs_transcoding */,
-                   base::nullopt /* expiration_interval */);
+                   absl::nullopt /* expiration_interval */);
 }
 
 JNI_EXPORT void JNI_PrefetchTestBridge_AddCandidatePrefetchURL(
@@ -70,7 +70,7 @@ JNI_EXPORT void JNI_PrefetchTestBridge_AddCandidatePrefetchURL(
     const JavaParamRef<jstring>& j_snippet,
     const JavaParamRef<jstring>& j_attribution) {
   GURL url = GURL(base::android::ConvertJavaStringToUTF8(env, j_url));
-  base::string16 title = base::android::ConvertJavaStringToUTF16(env, j_title);
+  std::u16string title = base::android::ConvertJavaStringToUTF16(env, j_title);
   std::string thumbnail_url =
       base::android::ConvertJavaStringToUTF8(env, j_thumbnail_url);
   std::string favicon_url =

@@ -139,11 +139,11 @@ VkImageViewType textureTypeToImageViewType (TextureBinding::Type type)
 		case TextureBinding::TYPE_2D_ARRAY:		return VK_IMAGE_VIEW_TYPE_2D_ARRAY;
 		case TextureBinding::TYPE_CUBE_MAP:		return VK_IMAGE_VIEW_TYPE_CUBE;
 		case TextureBinding::TYPE_3D:			return VK_IMAGE_VIEW_TYPE_3D;
-		default:
-			DE_ASSERT(false);
+		case TextureBinding::TYPE_1D:			return VK_IMAGE_VIEW_TYPE_1D;
+		case TextureBinding::TYPE_1D_ARRAY:		return VK_IMAGE_VIEW_TYPE_1D_ARRAY;
+		case TextureBinding::TYPE_CUBE_ARRAY:	return VK_IMAGE_VIEW_TYPE_CUBE_ARRAY;
+		default:								TCU_THROW(InternalError, "Unhandled TextureBinding");
 	}
-
-	return VK_IMAGE_VIEW_TYPE_2D;
 }
 
 VkImageType imageViewTypeToImageType (VkImageViewType type)
@@ -154,14 +154,14 @@ VkImageType imageViewTypeToImageType (VkImageViewType type)
 		case VK_IMAGE_VIEW_TYPE_2D_ARRAY:
 		case VK_IMAGE_VIEW_TYPE_CUBE:			return VK_IMAGE_TYPE_2D;
 		case VK_IMAGE_VIEW_TYPE_3D:				return VK_IMAGE_TYPE_3D;
-		default:
-			DE_ASSERT(false);
+		case VK_IMAGE_VIEW_TYPE_1D:
+		case VK_IMAGE_VIEW_TYPE_1D_ARRAY:		return VK_IMAGE_TYPE_1D;
+		case VK_IMAGE_VIEW_TYPE_CUBE_ARRAY:		return VK_IMAGE_TYPE_2D;
+		default:								TCU_THROW(InternalError, "Unhandled ImageViewType");
 	}
-
-	return VK_IMAGE_TYPE_2D;
 }
 
-void initializePrograms (vk::SourceCollections& programCollection, glu::Precision texCoordPrecision, const std::vector<Program>& programs, const char* texCoordSwizzle)
+void initializePrograms (vk::SourceCollections& programCollection, glu::Precision texCoordPrecision, const std::vector<Program>& programs, const char* texCoordSwizzle, glu::Precision fragOutputPrecision)
 {
 	static const char* vertShaderTemplate =
 		"${VTX_HEADER}"
@@ -179,7 +179,7 @@ void initializePrograms (vk::SourceCollections& programCollection, glu::Precisio
 	static const char* fragShaderTemplate =
 		"${FRAG_HEADER}"
 		"layout(location = 0) ${FRAG_IN} ${PRECISION} ${TEXCOORD_TYPE} v_texCoord;\n"
-		"layout(location = 0) out mediump vec4 ${FRAG_COLOR};\n"
+		"layout(location = 0) out ${FRAG_PRECISION} vec4 ${FRAG_COLOR};\n"
 		"layout (set=0, binding=0, std140) uniform Block \n"
 		"{\n"
 		"  ${PRECISION} float u_bias;\n"
@@ -218,14 +218,15 @@ void initializePrograms (vk::SourceCollections& programCollection, glu::Precisio
 
 		const std::string	version	= glu::getGLSLVersionDeclaration(glu::GLSL_VERSION_450);
 
-		params["FRAG_HEADER"]	= version + "\n";
-		params["VTX_HEADER"]	= version + "\n";
-		params["VTX_IN"]		= "in";
-		params["VTX_OUT"]		= "out";
-		params["FRAG_IN"]		= "in";
-		params["FRAG_COLOR"]	= "dEQP_FragColor";
+		params["FRAG_HEADER"]		= version + "\n";
+		params["VTX_HEADER"]		= version + "\n";
+		params["VTX_IN"]			= "in";
+		params["VTX_OUT"]			= "out";
+		params["FRAG_IN"]			= "in";
+		params["FRAG_COLOR"]		= "dEQP_FragColor";
 
-		params["PRECISION"]		= glu::getPrecisionName(texCoordPrecision);
+		params["PRECISION"]			= glu::getPrecisionName(texCoordPrecision);
+		params["FRAG_PRECISION"]	= glu::getPrecisionName(fragOutputPrecision);
 
 		if (isCubeArray)
 			params["TEXCOORD_TYPE"]	= "vec4";
@@ -337,7 +338,7 @@ void TextureBinding::updateTextureData (const TestTextureSp& textureData, const 
 	m_type			= textureType;
 	m_textureData	= textureData;
 
-	const bool									isCube					= m_type == TYPE_CUBE_MAP;
+	const bool									isCube					= (m_type == TYPE_CUBE_MAP) || (m_type == TYPE_CUBE_ARRAY);
 	VkImageCreateFlags							imageCreateFlags		= (isCube ? VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT : 0) | (sparse ? (VK_IMAGE_CREATE_SPARSE_BINDING_BIT | VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT) : 0);
 	const VkImageViewType						imageViewType			= textureTypeToImageViewType(textureType);
 	const VkImageType							imageType				= imageViewTypeToImageType(imageViewType);
@@ -469,14 +470,20 @@ void TextureBinding::updateTextureViewMipLevels (deUint32 baseLevel, deUint32 ma
 const deUint16		TextureRenderer::s_vertexIndices[6] = { 0, 1, 2, 2, 1, 3 };
 const VkDeviceSize	TextureRenderer::s_vertexIndexBufferSize = sizeof(TextureRenderer::s_vertexIndices);
 
-TextureRenderer::TextureRenderer (Context& context, VkSampleCountFlagBits sampleCount, deUint32 renderWidth, deUint32 renderHeight, VkComponentMapping componentMapping)
+TextureRenderer::TextureRenderer(Context& context, vk::VkSampleCountFlagBits sampleCount, deUint32 renderWidth, deUint32 renderHeight, vk::VkComponentMapping componentMapping)
+	: TextureRenderer(context, sampleCount, renderWidth, renderHeight, 1u, componentMapping)
+{
+}
+
+TextureRenderer::TextureRenderer (Context& context, VkSampleCountFlagBits sampleCount, deUint32 renderWidth, deUint32 renderHeight, deUint32 renderDepth, VkComponentMapping componentMapping, VkImageType imageType, VkImageViewType imageViewType, vk::VkFormat imageFormat)
 	: m_context					(context)
 	, m_log						(context.getTestContext().getLog())
 	, m_renderWidth				(renderWidth)
 	, m_renderHeight			(renderHeight)
+	, m_renderDepth				(renderDepth)
 	, m_sampleCount				(sampleCount)
 	, m_multisampling			(m_sampleCount != VK_SAMPLE_COUNT_1_BIT)
-	, m_imageFormat				(VK_FORMAT_R8G8B8A8_UNORM)
+	, m_imageFormat				(imageFormat)
 	, m_textureFormat			(vk::mapVkFormat(m_imageFormat))
 	, m_uniformBufferSize		(sizeof(ShaderParameters))
 	, m_resultBufferSize		(renderWidth * renderHeight * m_textureFormat.getPixelSize())
@@ -501,7 +508,7 @@ TextureRenderer::TextureRenderer (Context& context, VkSampleCountFlagBits sample
 
 		if ((m_context.getInstanceInterface().getPhysicalDeviceImageFormatProperties(m_context.getPhysicalDevice(),
 																					 m_imageFormat,
-																					 VK_IMAGE_TYPE_2D,
+																					 imageType,
 																					 VK_IMAGE_TILING_OPTIMAL,
 																					 imageUsage,
 																					 0,
@@ -517,21 +524,21 @@ TextureRenderer::TextureRenderer (Context& context, VkSampleCountFlagBits sample
 
 		const VkImageCreateInfo					imageCreateInfo			=
 		{
-			VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,		// VkStructureType			sType;
-			DE_NULL,									// const void*				pNext;
-			0u,											// VkImageCreateFlags		flags;
-			VK_IMAGE_TYPE_2D,							// VkImageType				imageType;
-			m_imageFormat,								// VkFormat					format;
-			{ m_renderWidth, m_renderHeight, 1u },		// VkExtent3D				extent;
-			1u,											// deUint32					mipLevels;
-			1u,											// deUint32					arrayLayers;
-			m_sampleCount,								// VkSampleCountFlagBits	samples;
-			VK_IMAGE_TILING_OPTIMAL,					// VkImageTiling			tiling;
-			imageUsage,									// VkImageUsageFlags		usage;
-			VK_SHARING_MODE_EXCLUSIVE,					// VkSharingMode			sharingMode;
-			1u,											// deUint32					queueFamilyIndexCount;
-			&queueFamilyIndex,							// const deUint32*			pQueueFamilyIndices;
-			VK_IMAGE_LAYOUT_UNDEFINED					// VkImageLayout			initialLayout;
+			VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,				// VkStructureType			sType;
+			DE_NULL,											// const void*				pNext;
+			0u,													// VkImageCreateFlags		flags;
+			imageType,											// VkImageType				imageType;
+			m_imageFormat,										// VkFormat					format;
+			{ m_renderWidth, m_renderHeight, m_renderDepth },	// VkExtent3D				extent;
+			1u,													// deUint32					mipLevels;
+			1u,													// deUint32					arrayLayers;
+			m_sampleCount,										// VkSampleCountFlagBits	samples;
+			VK_IMAGE_TILING_OPTIMAL,							// VkImageTiling			tiling;
+			imageUsage,											// VkImageUsageFlags		usage;
+			VK_SHARING_MODE_EXCLUSIVE,							// VkSharingMode			sharingMode;
+			1u,													// deUint32					queueFamilyIndexCount;
+			&queueFamilyIndex,									// const deUint32*			pQueueFamilyIndices;
+			VK_IMAGE_LAYOUT_UNDEFINED							// VkImageLayout			initialLayout;
 		};
 
 		m_image = vk::createImage(vkd, vkDevice, &imageCreateInfo, DE_NULL);
@@ -548,7 +555,7 @@ TextureRenderer::TextureRenderer (Context& context, VkSampleCountFlagBits sample
 			DE_NULL,									// const void*					pNext;
 			0u,											// VkImageViewCreateFlags		flags;
 			*m_image,									// VkImage						image;
-			VK_IMAGE_VIEW_TYPE_2D,						// VkImageViewType				viewType;
+			imageViewType,								// VkImageViewType				viewType;
 			m_imageFormat,								// VkFormat						format;
 			makeComponentMappingRGBA(),					// VkComponentMapping			components;
 			{
@@ -572,7 +579,7 @@ TextureRenderer::TextureRenderer (Context& context, VkSampleCountFlagBits sample
 
 			if ((m_context.getInstanceInterface().getPhysicalDeviceImageFormatProperties(m_context.getPhysicalDevice(),
 																						 m_imageFormat,
-																						 VK_IMAGE_TYPE_2D,
+																						 imageType,
 																						 VK_IMAGE_TILING_OPTIMAL,
 																						 imageUsage,
 																						 0,
@@ -583,21 +590,21 @@ TextureRenderer::TextureRenderer (Context& context, VkSampleCountFlagBits sample
 
 			const VkImageCreateInfo					imageCreateInfo			=
 			{
-				VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,		// VkStructureType			sType;
-				DE_NULL,									// const void*				pNext;
-				0u,											// VkImageCreateFlags		flags;
-				VK_IMAGE_TYPE_2D,							// VkImageType				imageType;
-				m_imageFormat,								// VkFormat					format;
-				{ m_renderWidth, m_renderHeight, 1u },		// VkExtent3D				extent;
-				1u,											// deUint32					mipLevels;
-				1u,											// deUint32					arrayLayers;
-				VK_SAMPLE_COUNT_1_BIT,						// VkSampleCountFlagBits	samples;
-				VK_IMAGE_TILING_OPTIMAL,					// VkImageTiling			tiling;
-				imageUsage,									// VkImageUsageFlags		usage;
-				VK_SHARING_MODE_EXCLUSIVE,					// VkSharingMode			sharingMode;
-				1u,											// deUint32					queueFamilyIndexCount;
-				&queueFamilyIndex,							// const deUint32*			pQueueFamilyIndices;
-				VK_IMAGE_LAYOUT_UNDEFINED					// VkImageLayout			initialLayout;
+				VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,				// VkStructureType			sType;
+				DE_NULL,											// const void*				pNext;
+				0u,													// VkImageCreateFlags		flags;
+				imageType,											// VkImageType				imageType;
+				m_imageFormat,										// VkFormat					format;
+				{ m_renderWidth, m_renderHeight, m_renderDepth },	// VkExtent3D				extent;
+				1u,													// deUint32					mipLevels;
+				1u,													// deUint32					arrayLayers;
+				VK_SAMPLE_COUNT_1_BIT,								// VkSampleCountFlagBits	samples;
+				VK_IMAGE_TILING_OPTIMAL,							// VkImageTiling			tiling;
+				imageUsage,											// VkImageUsageFlags		usage;
+				VK_SHARING_MODE_EXCLUSIVE,							// VkSharingMode			sharingMode;
+				1u,													// deUint32					queueFamilyIndexCount;
+				&queueFamilyIndex,									// const deUint32*			pQueueFamilyIndices;
+				VK_IMAGE_LAYOUT_UNDEFINED							// VkImageLayout			initialLayout;
 			};
 
 			m_resolvedImage			= vk::createImage(vkd, vkDevice, &imageCreateInfo, DE_NULL);
@@ -613,7 +620,7 @@ TextureRenderer::TextureRenderer (Context& context, VkSampleCountFlagBits sample
 				DE_NULL,									// const void*					pNext;
 				0u,											// VkImageViewCreateFlags		flags;
 				*m_resolvedImage,							// VkImage						image;
-				VK_IMAGE_VIEW_TYPE_2D,						// VkImageViewType				viewType;
+				imageViewType,								// VkImageViewType				viewType;
 				m_imageFormat,								// VkFormat						format;
 				makeComponentMappingRGBA(),					// VkComponentMapping			components;
 				{
@@ -870,6 +877,21 @@ void TextureRenderer::add3DTexture (const TestTexture3DSp& texture, const vk::Vk
 	m_textureBindings.push_back(TextureBindingSp(new TextureBinding(m_context, texture, TextureBinding::TYPE_3D, aspectMask, backingMode, m_componentMapping)));
 }
 
+void TextureRenderer::add1DTexture (const TestTexture1DSp& texture, const vk::VkImageAspectFlags& aspectMask, TextureBinding::ImageBackingMode backingMode)
+{
+	m_textureBindings.push_back(TextureBindingSp(new TextureBinding(m_context, texture, TextureBinding::TYPE_1D, aspectMask, backingMode, m_componentMapping)));
+}
+
+void TextureRenderer::add1DArrayTexture (const TestTexture1DArraySp& texture, const vk::VkImageAspectFlags& aspectMask, TextureBinding::ImageBackingMode backingMode)
+{
+	m_textureBindings.push_back(TextureBindingSp(new TextureBinding(m_context, texture, TextureBinding::TYPE_1D_ARRAY, aspectMask, backingMode, m_componentMapping)));
+}
+
+void TextureRenderer::addCubeArrayTexture (const TestTextureCubeArraySp& texture, const vk::VkImageAspectFlags& aspectMask, TextureBinding::ImageBackingMode backingMode)
+{
+	m_textureBindings.push_back(TextureBindingSp(new TextureBinding(m_context, texture, TextureBinding::TYPE_CUBE_ARRAY, aspectMask, backingMode, m_componentMapping)));
+}
+
 const pipeline::TestTexture2D& TextureRenderer::get2DTexture (int textureIndex) const
 {
 	DE_ASSERT(m_textureBindings.size() > (size_t)textureIndex);
@@ -900,6 +922,30 @@ const pipeline::TestTexture3D& TextureRenderer::get3DTexture (int textureIndex) 
 	DE_ASSERT(m_textureBindings[textureIndex]->getType() == TextureBinding::TYPE_3D);
 
 	return dynamic_cast<const pipeline::TestTexture3D&>(m_textureBindings[textureIndex]->getTestTexture());
+}
+
+const pipeline::TestTexture1D& TextureRenderer::get1DTexture (int textureIndex) const
+{
+	DE_ASSERT(m_textureBindings.size() > (size_t)textureIndex);
+	DE_ASSERT(m_textureBindings[textureIndex]->getType() == TextureBinding::TYPE_1D);
+
+	return dynamic_cast<const pipeline::TestTexture1D&>(m_textureBindings[textureIndex]->getTestTexture());
+}
+
+const pipeline::TestTexture1DArray& TextureRenderer::get1DArrayTexture (int textureIndex) const
+{
+	DE_ASSERT(m_textureBindings.size() > (size_t)textureIndex);
+	DE_ASSERT(m_textureBindings[textureIndex]->getType() == TextureBinding::TYPE_1D_ARRAY);
+
+	return dynamic_cast<const pipeline::TestTexture1DArray&>(m_textureBindings[textureIndex]->getTestTexture());
+}
+
+const pipeline::TestTextureCubeArray& TextureRenderer::getCubeArrayTexture (int textureIndex) const
+{
+	DE_ASSERT(m_textureBindings.size() > (size_t)textureIndex);
+	DE_ASSERT(m_textureBindings[textureIndex]->getType() == TextureBinding::TYPE_CUBE_ARRAY);
+
+	return dynamic_cast<const pipeline::TestTextureCubeArray&>(m_textureBindings[textureIndex]->getTestTexture());
 }
 
 void TextureRenderer::setViewport (float viewportX, float viewportY, float viewportW, float viewportH)
@@ -979,6 +1025,11 @@ void TextureRenderer::renderQuad (tcu::Surface& result, int texUnit, const float
 
 void TextureRenderer::renderQuad (tcu::Surface& result, int texUnit, const float* texCoord, const ReferenceParams& params)
 {
+	renderQuad(result.getAccess(), texUnit, texCoord, params);
+}
+
+void TextureRenderer::renderQuad (const tcu::PixelBufferAccess& result, int texUnit, const float* texCoord, const ReferenceParams& params)
+{
 	const float	maxAnisotropy = 1.0f;
 	float		positions[]	=
 	{
@@ -991,6 +1042,16 @@ void TextureRenderer::renderQuad (tcu::Surface& result, int texUnit, const float
 }
 
 void TextureRenderer::renderQuad (tcu::Surface&									result,
+								  const float*									positions,
+								  int											texUnit,
+								  const float*									texCoord,
+								  const glu::TextureTestUtil::ReferenceParams&	params,
+								  const float									maxAnisotropy)
+{
+	renderQuad(result.getAccess(), positions, texUnit, texCoord, params, maxAnisotropy);
+}
+
+void TextureRenderer::renderQuad (const tcu::PixelBufferAccess&					result,
 								  const float*									positions,
 								  int											texUnit,
 								  const float*									texCoord,
@@ -1245,7 +1306,8 @@ void TextureRenderer::renderQuad (tcu::Surface&									result,
 			samplerCreateInfo.maxAnisotropy = maxAnisotropy;
 		}
 
-		if (samplerCreateInfo.magFilter == VK_FILTER_LINEAR || samplerCreateInfo.minFilter == VK_FILTER_LINEAR || samplerCreateInfo.mipmapMode == VK_SAMPLER_MIPMAP_MODE_LINEAR)
+		bool linFilt = (samplerCreateInfo.magFilter == VK_FILTER_LINEAR || samplerCreateInfo.minFilter == VK_FILTER_LINEAR || samplerCreateInfo.mipmapMode == VK_SAMPLER_MIPMAP_MODE_LINEAR);
+		if (linFilt && samplerCreateInfo.compareEnable == VK_FALSE)
 		{
 			const pipeline::TestTexture&	testTexture			= m_textureBindings[texUnit]->getTestTexture();
 			const VkFormat					textureFormat		= testTexture.isCompressed() ? mapCompressedTextureFormat(testTexture.getCompressedLevel(0, 0).getFormat())
@@ -1440,7 +1502,7 @@ void TextureRenderer::renderQuad (tcu::Surface&									result,
 
 	invalidateMappedMemoryRange(vkd, vkDevice, m_resultBufferMemory->getMemory(), m_resultBufferMemory->getOffset(), VK_WHOLE_SIZE);
 
-	tcu::copy(result.getAccess(), tcu::ConstPixelBufferAccess(m_textureFormat, tcu::IVec3(m_renderWidth, m_renderHeight, 1u), m_resultBufferMemory->getHostPtr()));
+	tcu::copy(result, tcu::ConstPixelBufferAccess(m_textureFormat, tcu::IVec3(m_renderWidth, m_renderHeight, 1u), m_resultBufferMemory->getHostPtr()));
 }
 
 /*--------------------------------------------------------------------*//*!
@@ -1625,31 +1687,50 @@ TextureCommonTestCaseParameters::TextureCommonTestCaseParameters (void)
 	, minFilter				(tcu::Sampler::LINEAR)
 	, magFilter				(tcu::Sampler::LINEAR)
 	, wrapS					(tcu::Sampler::REPEAT_GL)
-	, wrapT					(tcu::Sampler::REPEAT_GL)
 	, format				(VK_FORMAT_R8G8B8A8_UNORM)
 	, unnormal				(false)
+	, aspectMask			(VK_IMAGE_ASPECT_FLAG_BITS_MAX_ENUM)
 {
 }
 
 Texture2DTestCaseParameters::Texture2DTestCaseParameters (void)
-	: width					(64)
+	: wrapT					(tcu::Sampler::REPEAT_GL)
+	, width					(64)
 	, height				(64)
+	, mipmaps				(false)
 {
 }
 
 TextureCubeTestCaseParameters::TextureCubeTestCaseParameters (void)
-	: size					(64)
+	: wrapT					(tcu::Sampler::REPEAT_GL)
+	, size					(64)
 {
 }
 
 Texture2DArrayTestCaseParameters::Texture2DArrayTestCaseParameters (void)
-	: numLayers				(8)
+	: wrapT					(tcu::Sampler::REPEAT_GL)
+	, numLayers				(8)
 {
 }
 
 Texture3DTestCaseParameters::Texture3DTestCaseParameters (void)
 	: wrapR					(tcu::Sampler::REPEAT_GL)
 	, depth					(64)
+{
+}
+
+Texture1DTestCaseParameters::Texture1DTestCaseParameters (void)
+	: width					(64)
+{
+}
+
+Texture1DArrayTestCaseParameters::Texture1DArrayTestCaseParameters (void)
+	: numLayers				(8)
+{
+}
+
+TextureCubeArrayTestCaseParameters::TextureCubeArrayTestCaseParameters (void)
+	: numLayers				(8)
 {
 }
 

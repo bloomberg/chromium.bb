@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/metrics/field_trial.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
@@ -34,7 +33,7 @@
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/shared_remote.h"
-#include "services/service_manager/public/mojom/service.mojom.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 #include "services/tracing/public/mojom/background_tracing_agent.mojom.h"
 #include "third_party/blink/public/mojom/associated_interfaces/associated_interfaces.mojom.h"
 
@@ -65,8 +64,7 @@ class InProcessChildThreadParams;
 
 // The main thread of a child process derives from this class.
 class CONTENT_EXPORT ChildThreadImpl : public IPC::Listener,
-                                       virtual public ChildThread,
-                                       private base::FieldTrialList::Observer {
+                                       virtual public ChildThread {
  public:
   struct CONTENT_EXPORT Options;
 
@@ -100,10 +98,6 @@ class CONTENT_EXPORT ChildThreadImpl : public IPC::Listener,
   void SetFieldTrialGroup(const std::string& trial_name,
                           const std::string& group_name) override;
 
-  // base::FieldTrialList::Observer:
-  void OnFieldTrialGroupFinalized(const std::string& trial_name,
-                                  const std::string& group_name) override;
-
   IPC::SyncChannel* channel() { return channel_.get(); }
 
   IPC::MessageRouter* GetRouter();
@@ -130,9 +124,8 @@ class CONTENT_EXPORT ChildThreadImpl : public IPC::Listener,
     return child_process_host_;
   }
 
-  virtual void RunService(
-      const std::string& service_name,
-      mojo::PendingReceiver<service_manager::mojom::Service> receiver);
+  virtual void RunServiceDeprecated(const std::string& service_name,
+                                    mojo::ScopedMessagePipeHandle service_pipe);
 
   virtual void BindServiceInterface(mojo::GenericPendingReceiver receiver);
 
@@ -224,7 +217,8 @@ class CONTENT_EXPORT ChildThreadImpl : public IPC::Listener,
 
   scoped_refptr<base::SingleThreadTaskRunner> browser_process_io_runner_;
 
-  std::unique_ptr<variations::ChildProcessFieldTrialSyncer> field_trial_syncer_;
+  // Pointer to a global object which is never deleted.
+  variations::ChildProcessFieldTrialSyncer* field_trial_syncer_ = nullptr;
 
   std::unique_ptr<base::WeakPtrFactory<ChildThreadImpl>>
       channel_connected_factory_;

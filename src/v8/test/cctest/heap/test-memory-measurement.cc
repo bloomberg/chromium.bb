@@ -57,8 +57,6 @@ TEST(NativeContextInferrerJSObject) {
   Handle<HeapObject> function = Handle<HeapObject>::cast(object);
   NativeContextInferrer inferrer;
   Address inferred_context = 0;
-  // TODO(ulan): Enable this test once we have more precise native
-  // context inference.
   CHECK(inferrer.Infer(isolate, function->map(), *function, &inferred_context));
   CHECK_EQ(native_context->ptr(), inferred_context);
 }
@@ -233,8 +231,8 @@ TEST(PartiallyInitializedJSFunction) {
   Isolate* isolate = CcTest::i_isolate();
   Factory* factory = isolate->factory();
   HandleScope scope(isolate);
-  Handle<JSFunction> js_function =
-      factory->NewFunctionForTest(factory->NewStringFromAsciiChecked("test"));
+  Handle<JSFunction> js_function = factory->NewFunctionForTesting(
+      factory->NewStringFromAsciiChecked("test"));
   Handle<Context> context = handle(js_function->context(), isolate);
 
   // 1. Start simulating deserializaiton.

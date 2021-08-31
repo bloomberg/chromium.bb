@@ -8,7 +8,7 @@
 #include <cstddef>
 #include <cstdint>
 
-#include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
+#include "quic/platform/api/quic_export.h"
 
 namespace quic {
 
@@ -26,6 +26,14 @@ class QUIC_EXPORT_PRIVATE QuicRandom {
 
   // Returns a random number in the range [0, kuint64max].
   virtual uint64_t RandUint64() = 0;
+
+  // Generates |len| random bytes in the |data| buffer. This MUST NOT be used
+  // for any application that requires cryptographically-secure randomness.
+  virtual void InsecureRandBytes(void* data, size_t len) = 0;
+
+  // Returns a random number in the range [0, kuint64max]. This MUST NOT be used
+  // for any application that requires cryptographically-secure randomness.
+  virtual uint64_t InsecureRandUint64() = 0;
 };
 
 }  // namespace quic

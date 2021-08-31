@@ -4,6 +4,7 @@
 
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
+#include "build/chromeos_buildflags.h"
 #include "net/disk_cache/blockfile/block_files.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/disk_cache/disk_cache_test_base.h"
@@ -30,7 +31,7 @@ int NumberOfFiles(const base::FilePath& path) {
 namespace disk_cache {
 
 // Flaky on ChromeOS: https://crbug.com/1156795
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #define MAYBE_BlockFiles_Grow DISABLED_BlockFiles_Grow
 #else
 #define MAYBE_BlockFiles_Grow BlockFiles_Grow
@@ -282,27 +283,6 @@ TEST_F(DiskCacheTest, BlockFiles_InvalidFile) {
 
   // The file should not have been changed (it is still invalid).
   EXPECT_TRUE(nullptr == files.GetFile(addr));
-}
-
-// Tests that we generate the correct file stats.
-TEST_F(DiskCacheTest, BlockFiles_Stats) {
-  ASSERT_TRUE(CopyTestCache("remove_load1"));
-
-  BlockFiles files(cache_path_);
-  ASSERT_TRUE(files.Init(false));
-  int used, load;
-
-  files.GetFileStats(0, &used, &load);
-  EXPECT_EQ(101, used);
-  EXPECT_EQ(9, load);
-
-  files.GetFileStats(1, &used, &load);
-  EXPECT_EQ(203, used);
-  EXPECT_EQ(19, load);
-
-  files.GetFileStats(2, &used, &load);
-  EXPECT_EQ(0, used);
-  EXPECT_EQ(0, load);
 }
 
 // Tests that we add and remove blocks correctly.

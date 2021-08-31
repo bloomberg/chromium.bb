@@ -5,9 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_FETCH_CLIENT_SETTINGS_OBJECT_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_FETCH_CLIENT_SETTINGS_OBJECT_H_
 
-#include "base/optional.h"
 #include "services/network/public/mojom/ip_address_space.mojom-blink-forward.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink-forward.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -64,18 +64,6 @@ class PLATFORM_EXPORT FetchClientSettingsObject
   // settings object as a request client."
   // https://html.spec.whatwg.org/C/#concept-settings-object-referrer-policy
   virtual network::mojom::ReferrerPolicy GetReferrerPolicy() const = 0;
-
-  // |GetReferrerPolicyDisregardingMetaTagsContainingLists|
-  // returns the policy that would have been set had we been ignoring all <meta
-  // name=referrer> tags with values comma-separated lists of policies. This
-  // allows histogramming the proportion of requests that would end up with
-  // different referrers were these tags ignored, helping interpret the impact
-  // of removing support for them (which is inconsistent with the spec and other
-  // engines).
-  virtual base::Optional<network::mojom::ReferrerPolicy>
-  GetReferrerPolicyDisregardingMetaTagsContainingLists() const {
-    return base::nullopt;
-  }
 
   // "referrerURL" used in the "Determine request's Referrer" algorithm:
   // https://w3c.github.io/webappsec-referrer-policy/#determine-requests-referrer

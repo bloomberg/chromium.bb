@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media/cast_mirroring_service_host.h"
 
+#include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/run_loop.h"
 #include "base/test/test_timeouts.h"
@@ -60,8 +61,8 @@ content::DesktopMediaID BuildMediaIdForTabMirroring(
   const int process_id = main_frame->GetProcess()->GetID();
   const int frame_id = main_frame->GetRoutingID();
   media_id.type = content::DesktopMediaID::TYPE_WEB_CONTENTS;
-  media_id.web_contents_id =
-      content::WebContentsMediaCaptureId(process_id, frame_id, true, true);
+  media_id.web_contents_id = content::WebContentsMediaCaptureId(
+      process_id, frame_id, true /* disable_local_echo */);
   return media_id;
 }
 
@@ -85,12 +86,13 @@ class MockVideoCaptureObserver final
     OnBufferCreatedCall(buffer_id);
   }
 
-  void OnBufferReady(int32_t buffer_id,
-                     media::mojom::VideoFrameInfoPtr info) override {
-    EXPECT_TRUE(buffers_.find(buffer_id) != buffers_.end());
-    EXPECT_EQ(frame_infos_.find(buffer_id), frame_infos_.end());
-    frame_infos_[buffer_id] = std::move(info);
-    OnBufferReadyCall(buffer_id);
+  void OnBufferReady(
+      media::mojom::ReadyBufferPtr buffer,
+      std::vector<media::mojom::ReadyBufferPtr> scaled_buffer) override {
+    EXPECT_TRUE(buffers_.find(buffer->buffer_id) != buffers_.end());
+    EXPECT_EQ(frame_infos_.find(buffer->buffer_id), frame_infos_.end());
+    frame_infos_[buffer->buffer_id] = std::move(buffer->info);
+    OnBufferReadyCall(buffer->buffer_id);
   }
 
   void OnBufferDestroyed(int32_t buffer_id) override {
@@ -213,6 +215,8 @@ class CastMirroringServiceHostBrowserTest
   MOCK_METHOD1(OnError, void(mojom::SessionError));
   MOCK_METHOD0(DidStart, void());
   MOCK_METHOD0(DidStop, void());
+  MOCK_METHOD1(LogInfoMessage, void(const std::string&));
+  MOCK_METHOD1(LogErrorMessage, void(const std::string&));
 
   // mojom::CastMessageChannel mocks.
   MOCK_METHOD1(Send, void(mojom::CastMessagePtr));

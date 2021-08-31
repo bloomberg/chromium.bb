@@ -44,7 +44,7 @@ class EmailInputType final : public BaseTextInputType {
                                                        const String&);
   CORE_EXPORT static bool IsValidEmailAddress(const ScriptRegexp&,
                                               const String&);
-  CORE_EXPORT static std::unique_ptr<ScriptRegexp> CreateEmailRegexp();
+  CORE_EXPORT static ScriptRegexp* CreateEmailRegexp();
 
  private:
   void CountUsage() override;
@@ -63,4 +63,4 @@ class EmailInputType final : public BaseTextInputType {
 
 }  // namespace blink
 
-#endif  // ButtonInputType_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_EMAIL_INPUT_TYPE_H_

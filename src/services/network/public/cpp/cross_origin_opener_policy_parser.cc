@@ -8,7 +8,10 @@
 #include "base/strings/string_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/structured_headers.h"
+#include "services/network/public/cpp/cross_origin_embedder_policy.h"
+#include "services/network/public/cpp/cross_origin_opener_policy.h"
 #include "services/network/public/cpp/features.h"
+
 namespace network {
 
 namespace {
@@ -21,13 +24,13 @@ constexpr char kSameOrigin[] = "same-origin";
 constexpr char kSameOriginAllowPopups[] = "same-origin-allow-popups";
 constexpr char kReportTo[] = "report-to";
 
-std::pair<mojom::CrossOriginOpenerPolicyValue, base::Optional<std::string>>
+std::pair<mojom::CrossOriginOpenerPolicyValue, absl::optional<std::string>>
 ParseHeader(base::StringPiece header_value) {
   using Item = net::structured_headers::Item;
   // Default to kUnsafeNone for all malformed values and "unsafe-none"
   mojom::CrossOriginOpenerPolicyValue coop_value =
       mojom::CrossOriginOpenerPolicyValue::kUnsafeNone;
-  base::Optional<std::string> endpoint;
+  absl::optional<std::string> endpoint;
   const auto item = net::structured_headers::ParseItem(header_value);
   if (item && item->item.is_token()) {
     const auto& policy_item = item->item.GetString();
@@ -58,29 +61,34 @@ CrossOriginOpenerPolicy ParseCrossOriginOpenerPolicy(
     return coop;
 
   std::string header_value;
+
+  // Parse Cross-Orign-Opener-Policy:
   if (headers.GetNormalizedHeader(kCrossOriginOpenerPolicyHeader,
                                   &header_value)) {
     std::tie(coop.value, coop.reporting_endpoint) = ParseHeader(header_value);
     if (coop.value == mojom::CrossOriginOpenerPolicyValue::kSameOrigin &&
-        coep.value == mojom::CrossOriginEmbedderPolicyValue::kRequireCorp)
+        CompatibleWithCrossOriginIsolated(coep.value)) {
       coop.value = mojom::CrossOriginOpenerPolicyValue::kSameOriginPlusCoep;
+    }
   } else if (base::FeatureList::IsEnabled(
                  features::kCrossOriginOpenerPolicyByDefault)) {
     coop.value = mojom::CrossOriginOpenerPolicyValue::kSameOriginAllowPopups;
   }
+
+  // Parse Cross-Orign-Opener-Policy-Report-Only:
   if (headers.GetNormalizedHeader(kCrossOriginOpenerPolicyHeaderReportOnly,
                                   &header_value)) {
     std::tie(coop.report_only_value, coop.report_only_reporting_endpoint) =
-      ParseHeader(header_value);
+        ParseHeader(header_value);
     if (coop.report_only_value ==
             mojom::CrossOriginOpenerPolicyValue::kSameOrigin &&
-        (coep.value == mojom::CrossOriginEmbedderPolicyValue::kRequireCorp ||
-         coep.report_only_value ==
-             mojom::CrossOriginEmbedderPolicyValue::kRequireCorp)) {
+        (CompatibleWithCrossOriginIsolated(coep.value) ||
+         CompatibleWithCrossOriginIsolated(coep.report_only_value))) {
       coop.report_only_value =
           mojom::CrossOriginOpenerPolicyValue::kSameOriginPlusCoep;
     }
   }
+
   return coop;
 }
 

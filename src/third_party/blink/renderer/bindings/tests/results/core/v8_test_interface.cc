@@ -921,6 +921,342 @@ static void SecureContextWorkerExposedRuntimeEnabledAttributeAttributeSetter(
   impl->setSecureContextWorkerExposedRuntimeEnabledAttribute(cpp_value);
 }
 
+static void CrossOriginIsolatedAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
+
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(holder);
+
+  V8SetReturnValueBool(info, impl->crossOriginIsolatedAttribute());
+}
+
+static void CrossOriginIsolatedAttributeAttributeSetter(
+    v8::Local<v8::Value> v8_value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
+  v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(holder);
+
+  ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestInterface", "crossOriginIsolatedAttribute");
+
+  // Prepare the value to be set.
+  bool cpp_value{ NativeValueTraits<IDLBoolean>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
+  if (exception_state.HadException())
+    return;
+
+  impl->setCrossOriginIsolatedAttribute(cpp_value);
+}
+
+static void CrossOriginIsolatedRuntimeEnabledAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
+
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(holder);
+
+  V8SetReturnValueBool(info, impl->crossOriginIsolatedRuntimeEnabledAttribute());
+}
+
+static void CrossOriginIsolatedRuntimeEnabledAttributeAttributeSetter(
+    v8::Local<v8::Value> v8_value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
+  v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(holder);
+
+  ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestInterface", "crossOriginIsolatedRuntimeEnabledAttribute");
+
+  // Prepare the value to be set.
+  bool cpp_value{ NativeValueTraits<IDLBoolean>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
+  if (exception_state.HadException())
+    return;
+
+  impl->setCrossOriginIsolatedRuntimeEnabledAttribute(cpp_value);
+}
+
+static void CrossOriginIsolatedWindowExposedAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
+
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(holder);
+
+  V8SetReturnValueBool(info, impl->crossOriginIsolatedWindowExposedAttribute());
+}
+
+static void CrossOriginIsolatedWindowExposedAttributeAttributeSetter(
+    v8::Local<v8::Value> v8_value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
+  v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(holder);
+
+  ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestInterface", "crossOriginIsolatedWindowExposedAttribute");
+
+  // Prepare the value to be set.
+  bool cpp_value{ NativeValueTraits<IDLBoolean>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
+  if (exception_state.HadException())
+    return;
+
+  impl->setCrossOriginIsolatedWindowExposedAttribute(cpp_value);
+}
+
+static void CrossOriginIsolatedWorkerExposedAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
+
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(holder);
+
+  V8SetReturnValueBool(info, impl->crossOriginIsolatedWorkerExposedAttribute());
+}
+
+static void CrossOriginIsolatedWorkerExposedAttributeAttributeSetter(
+    v8::Local<v8::Value> v8_value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
+  v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(holder);
+
+  ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestInterface", "crossOriginIsolatedWorkerExposedAttribute");
+
+  // Prepare the value to be set.
+  bool cpp_value{ NativeValueTraits<IDLBoolean>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
+  if (exception_state.HadException())
+    return;
+
+  impl->setCrossOriginIsolatedWorkerExposedAttribute(cpp_value);
+}
+
+static void CrossOriginIsolatedWindowExposedRuntimeEnabledAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
+
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(holder);
+
+  V8SetReturnValueBool(info, impl->crossOriginIsolatedWindowExposedRuntimeEnabledAttribute());
+}
+
+static void CrossOriginIsolatedWindowExposedRuntimeEnabledAttributeAttributeSetter(
+    v8::Local<v8::Value> v8_value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
+  v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(holder);
+
+  ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestInterface", "crossOriginIsolatedWindowExposedRuntimeEnabledAttribute");
+
+  // Prepare the value to be set.
+  bool cpp_value{ NativeValueTraits<IDLBoolean>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
+  if (exception_state.HadException())
+    return;
+
+  impl->setCrossOriginIsolatedWindowExposedRuntimeEnabledAttribute(cpp_value);
+}
+
+static void CrossOriginIsolatedWorkerExposedRuntimeEnabledAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
+
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(holder);
+
+  V8SetReturnValueBool(info, impl->crossOriginIsolatedWorkerExposedRuntimeEnabledAttribute());
+}
+
+static void CrossOriginIsolatedWorkerExposedRuntimeEnabledAttributeAttributeSetter(
+    v8::Local<v8::Value> v8_value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
+  v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(holder);
+
+  ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestInterface", "crossOriginIsolatedWorkerExposedRuntimeEnabledAttribute");
+
+  // Prepare the value to be set.
+  bool cpp_value{ NativeValueTraits<IDLBoolean>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
+  if (exception_state.HadException())
+    return;
+
+  impl->setCrossOriginIsolatedWorkerExposedRuntimeEnabledAttribute(cpp_value);
+}
+
+static void DirectSocketEnabledAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
+
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(holder);
+
+  V8SetReturnValueBool(info, impl->directSocketEnabledAttribute());
+}
+
+static void DirectSocketEnabledAttributeAttributeSetter(
+    v8::Local<v8::Value> v8_value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
+  v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(holder);
+
+  ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestInterface", "directSocketEnabledAttribute");
+
+  // Prepare the value to be set.
+  bool cpp_value{ NativeValueTraits<IDLBoolean>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
+  if (exception_state.HadException())
+    return;
+
+  impl->setDirectSocketEnabledAttribute(cpp_value);
+}
+
+static void DirectSocketEnabledRuntimeEnabledAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
+
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(holder);
+
+  V8SetReturnValueBool(info, impl->directSocketEnabledRuntimeEnabledAttribute());
+}
+
+static void DirectSocketEnabledRuntimeEnabledAttributeAttributeSetter(
+    v8::Local<v8::Value> v8_value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
+  v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(holder);
+
+  ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestInterface", "directSocketEnabledRuntimeEnabledAttribute");
+
+  // Prepare the value to be set.
+  bool cpp_value{ NativeValueTraits<IDLBoolean>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
+  if (exception_state.HadException())
+    return;
+
+  impl->setDirectSocketEnabledRuntimeEnabledAttribute(cpp_value);
+}
+
+static void DirectSocketEnabledWindowExposedAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
+
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(holder);
+
+  V8SetReturnValueBool(info, impl->directSocketEnabledWindowExposedAttribute());
+}
+
+static void DirectSocketEnabledWindowExposedAttributeAttributeSetter(
+    v8::Local<v8::Value> v8_value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
+  v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(holder);
+
+  ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestInterface", "directSocketEnabledWindowExposedAttribute");
+
+  // Prepare the value to be set.
+  bool cpp_value{ NativeValueTraits<IDLBoolean>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
+  if (exception_state.HadException())
+    return;
+
+  impl->setDirectSocketEnabledWindowExposedAttribute(cpp_value);
+}
+
+static void DirectSocketEnabledWorkerExposedAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
+
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(holder);
+
+  V8SetReturnValueBool(info, impl->directSocketEnabledWorkerExposedAttribute());
+}
+
+static void DirectSocketEnabledWorkerExposedAttributeAttributeSetter(
+    v8::Local<v8::Value> v8_value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
+  v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(holder);
+
+  ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestInterface", "directSocketEnabledWorkerExposedAttribute");
+
+  // Prepare the value to be set.
+  bool cpp_value{ NativeValueTraits<IDLBoolean>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
+  if (exception_state.HadException())
+    return;
+
+  impl->setDirectSocketEnabledWorkerExposedAttribute(cpp_value);
+}
+
+static void DirectSocketEnabledWindowExposedRuntimeEnabledAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
+
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(holder);
+
+  V8SetReturnValueBool(info, impl->directSocketEnabledWindowExposedRuntimeEnabledAttribute());
+}
+
+static void DirectSocketEnabledWindowExposedRuntimeEnabledAttributeAttributeSetter(
+    v8::Local<v8::Value> v8_value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
+  v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(holder);
+
+  ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestInterface", "directSocketEnabledWindowExposedRuntimeEnabledAttribute");
+
+  // Prepare the value to be set.
+  bool cpp_value{ NativeValueTraits<IDLBoolean>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
+  if (exception_state.HadException())
+    return;
+
+  impl->setDirectSocketEnabledWindowExposedRuntimeEnabledAttribute(cpp_value);
+}
+
+static void DirectSocketEnabledWorkerExposedRuntimeEnabledAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
+
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(holder);
+
+  V8SetReturnValueBool(info, impl->directSocketEnabledWorkerExposedRuntimeEnabledAttribute());
+}
+
+static void DirectSocketEnabledWorkerExposedRuntimeEnabledAttributeAttributeSetter(
+    v8::Local<v8::Value> v8_value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
+  v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(holder);
+
+  ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestInterface", "directSocketEnabledWorkerExposedRuntimeEnabledAttribute");
+
+  // Prepare the value to be set.
+  bool cpp_value{ NativeValueTraits<IDLBoolean>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
+  if (exception_state.HadException())
+    return;
+
+  impl->setDirectSocketEnabledWorkerExposedRuntimeEnabledAttribute(cpp_value);
+}
+
 static void ScriptStringAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
@@ -1400,6 +1736,62 @@ static void PartialSecureContextLongAttributeAttributeSetter(
   TestInterfacePartial::setPartialSecureContextLongAttribute(*impl, cpp_value);
 }
 
+static void PartialCrossOriginIsolatedLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
+
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(holder);
+
+  V8SetReturnValueInt(info, TestInterfacePartial::partialCrossOriginIsolatedLongAttribute(*impl));
+}
+
+static void PartialCrossOriginIsolatedLongAttributeAttributeSetter(
+    v8::Local<v8::Value> v8_value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
+  v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(holder);
+
+  ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestInterface", "partialCrossOriginIsolatedLongAttribute");
+
+  // Prepare the value to be set.
+  int32_t cpp_value{ NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
+  if (exception_state.HadException())
+    return;
+
+  TestInterfacePartial::setPartialCrossOriginIsolatedLongAttribute(*impl, cpp_value);
+}
+
+static void PartialDirectSocketEnabledLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
+
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(holder);
+
+  V8SetReturnValueInt(info, TestInterfacePartial::partialDirectSocketEnabledLongAttribute(*impl));
+}
+
+static void PartialDirectSocketEnabledLongAttributeAttributeSetter(
+    v8::Local<v8::Value> v8_value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
+  v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(holder);
+
+  ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestInterface", "partialDirectSocketEnabledLongAttribute");
+
+  // Prepare the value to be set.
+  int32_t cpp_value{ NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
+  if (exception_state.HadException())
+    return;
+
+  TestInterfacePartial::setPartialDirectSocketEnabledLongAttribute(*impl, cpp_value);
+}
+
 static void Dec45DashedDec45AttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
@@ -1554,6 +1946,62 @@ static void Partial2SecureContextAttributeAttributeSetter(
     return;
 
   TestInterfacePartial2Implementation::setPartial2SecureContextAttribute(*impl, cpp_value);
+}
+
+static void Partial2CrossOriginIsolatedAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
+
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(holder);
+
+  V8SetReturnValueBool(info, TestInterfacePartial2Implementation::partial2CrossOriginIsolatedAttribute(*impl));
+}
+
+static void Partial2CrossOriginIsolatedAttributeAttributeSetter(
+    v8::Local<v8::Value> v8_value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
+  v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(holder);
+
+  ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestInterface", "partial2CrossOriginIsolatedAttribute");
+
+  // Prepare the value to be set.
+  bool cpp_value{ NativeValueTraits<IDLBoolean>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
+  if (exception_state.HadException())
+    return;
+
+  TestInterfacePartial2Implementation::setPartial2CrossOriginIsolatedAttribute(*impl, cpp_value);
+}
+
+static void Partial2DIrectSocketEnabledAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
+
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(holder);
+
+  V8SetReturnValueBool(info, TestInterfacePartial2Implementation::partial2DirectSocketEnabledAttribute(*impl));
+}
+
+static void Partial2DIrectSocketEnabledAttributeAttributeSetter(
+    v8::Local<v8::Value> v8_value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
+  v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(holder);
+
+  ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestInterface", "partial2DirectSocketEnabledAttribute");
+
+  // Prepare the value to be set.
+  bool cpp_value{ NativeValueTraits<IDLBoolean>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
+  if (exception_state.HadException())
+    return;
+
+  TestInterfacePartial2Implementation::setPartial2DirectSocketEnabledAttribute(*impl, cpp_value);
 }
 
 static void PartialSecureContextAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -2208,6 +2656,78 @@ static void SecureContextWorkerExposedRuntimeEnabledMethodMethod(const v8::Funct
   impl->secureContextWorkerExposedRuntimeEnabledMethod();
 }
 
+static void CrossOriginIsolatedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(info.Holder());
+
+  impl->crossOriginIsolatedMethod();
+}
+
+static void CrossOriginIsolatedRuntimeEnabledMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(info.Holder());
+
+  impl->crossOriginIsolatedRuntimeEnabledMethod();
+}
+
+static void CrossOriginIsolatedWindowExposedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(info.Holder());
+
+  impl->crossOriginIsolatedWindowExposedMethod();
+}
+
+static void CrossOriginIsolatedWorkerExposedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(info.Holder());
+
+  impl->crossOriginIsolatedWorkerExposedMethod();
+}
+
+static void CrossOriginIsolatedWindowExposedRuntimeEnabledMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(info.Holder());
+
+  impl->crossOriginIsolatedWindowExposedRuntimeEnabledMethod();
+}
+
+static void CrossOriginIsolatedWorkerExposedRuntimeEnabledMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(info.Holder());
+
+  impl->crossOriginIsolatedWorkerExposedRuntimeEnabledMethod();
+}
+
+static void DirectSocketEnabledMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(info.Holder());
+
+  impl->directSocketEnabledMethod();
+}
+
+static void DirectSocketEnabledRuntimeEnabledMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(info.Holder());
+
+  impl->directSocketEnabledRuntimeEnabledMethod();
+}
+
+static void DirectSocketEnabledWindowExposedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(info.Holder());
+
+  impl->directSocketEnabledWindowExposedMethod();
+}
+
+static void DirectSocketEnabledWorkerExposedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(info.Holder());
+
+  impl->directSocketEnabledWorkerExposedMethod();
+}
+
+static void DirectSocketEnabledWindowExposedRuntimeEnabledMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(info.Holder());
+
+  impl->directSocketEnabledWindowExposedRuntimeEnabledMethod();
+}
+
+static void DirectSocketEnabledWorkerExposedRuntimeEnabledMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(info.Holder());
+
+  impl->directSocketEnabledWorkerExposedRuntimeEnabledMethod();
+}
+
 static void MethodWithNullableSequencesMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exception_state(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterface", "methodWithNullableSequences");
 
@@ -2218,7 +2738,7 @@ static void MethodWithNullableSequencesMethod(const v8::FunctionCallbackInfo<v8:
     return;
   }
 
-  Vector<base::Optional<double>> numbers;
+  Vector<absl::optional<double>> numbers;
   Vector<String> strings;
   HeapVector<Member<Element>> elements;
   HeapVector<DoubleOrString> unions;
@@ -2251,7 +2771,7 @@ static void MethodWithNullableRecordsMethod(const v8::FunctionCallbackInfo<v8::V
     return;
   }
 
-  Vector<std::pair<String, base::Optional<double>>> numbers;
+  Vector<std::pair<String, absl::optional<double>>> numbers;
   Vector<std::pair<String, String>> strings;
   HeapVector<std::pair<String, Member<Element>>> elements;
   HeapVector<std::pair<String, DoubleOrString>> unions;
@@ -2467,6 +2987,18 @@ static void Partial2SecureContextMethodMethod(const v8::FunctionCallbackInfo<v8:
   TestInterfaceImplementation* impl = V8TestInterface::ToImpl(info.Holder());
 
   TestInterfacePartial2Implementation::partial2SecureContextMethod(*impl);
+}
+
+static void Partial2CrossOriginIsolatedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(info.Holder());
+
+  TestInterfacePartial2Implementation::partial2CrossOriginIsolatedMethod(*impl);
+}
+
+static void Partial2DIrectSocketEnabledMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(info.Holder());
+
+  TestInterfacePartial2Implementation::partial2DirectSocketEnabledMethod(*impl);
 }
 
 static void PartialSecureContextMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -3296,6 +3828,186 @@ void V8TestInterface::SecureContextWorkerExposedRuntimeEnabledAttributeAttribute
   test_interface_implementation_v8_internal::SecureContextWorkerExposedRuntimeEnabledAttributeAttributeSetter(v8_value, info);
 }
 
+void V8TestInterface::CrossOriginIsolatedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_crossOriginIsolatedAttribute_Getter");
+
+  test_interface_implementation_v8_internal::CrossOriginIsolatedAttributeAttributeGetter(info);
+}
+
+void V8TestInterface::CrossOriginIsolatedAttributeAttributeSetterCallback(
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_crossOriginIsolatedAttribute_Setter");
+
+  v8::Local<v8::Value> v8_value = info[0];
+
+  test_interface_implementation_v8_internal::CrossOriginIsolatedAttributeAttributeSetter(v8_value, info);
+}
+
+void V8TestInterface::CrossOriginIsolatedRuntimeEnabledAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_crossOriginIsolatedRuntimeEnabledAttribute_Getter");
+
+  test_interface_implementation_v8_internal::CrossOriginIsolatedRuntimeEnabledAttributeAttributeGetter(info);
+}
+
+void V8TestInterface::CrossOriginIsolatedRuntimeEnabledAttributeAttributeSetterCallback(
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_crossOriginIsolatedRuntimeEnabledAttribute_Setter");
+
+  v8::Local<v8::Value> v8_value = info[0];
+
+  test_interface_implementation_v8_internal::CrossOriginIsolatedRuntimeEnabledAttributeAttributeSetter(v8_value, info);
+}
+
+void V8TestInterface::CrossOriginIsolatedWindowExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_crossOriginIsolatedWindowExposedAttribute_Getter");
+
+  test_interface_implementation_v8_internal::CrossOriginIsolatedWindowExposedAttributeAttributeGetter(info);
+}
+
+void V8TestInterface::CrossOriginIsolatedWindowExposedAttributeAttributeSetterCallback(
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_crossOriginIsolatedWindowExposedAttribute_Setter");
+
+  v8::Local<v8::Value> v8_value = info[0];
+
+  test_interface_implementation_v8_internal::CrossOriginIsolatedWindowExposedAttributeAttributeSetter(v8_value, info);
+}
+
+void V8TestInterface::CrossOriginIsolatedWorkerExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_crossOriginIsolatedWorkerExposedAttribute_Getter");
+
+  test_interface_implementation_v8_internal::CrossOriginIsolatedWorkerExposedAttributeAttributeGetter(info);
+}
+
+void V8TestInterface::CrossOriginIsolatedWorkerExposedAttributeAttributeSetterCallback(
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_crossOriginIsolatedWorkerExposedAttribute_Setter");
+
+  v8::Local<v8::Value> v8_value = info[0];
+
+  test_interface_implementation_v8_internal::CrossOriginIsolatedWorkerExposedAttributeAttributeSetter(v8_value, info);
+}
+
+void V8TestInterface::CrossOriginIsolatedWindowExposedRuntimeEnabledAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_crossOriginIsolatedWindowExposedRuntimeEnabledAttribute_Getter");
+
+  test_interface_implementation_v8_internal::CrossOriginIsolatedWindowExposedRuntimeEnabledAttributeAttributeGetter(info);
+}
+
+void V8TestInterface::CrossOriginIsolatedWindowExposedRuntimeEnabledAttributeAttributeSetterCallback(
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_crossOriginIsolatedWindowExposedRuntimeEnabledAttribute_Setter");
+
+  v8::Local<v8::Value> v8_value = info[0];
+
+  test_interface_implementation_v8_internal::CrossOriginIsolatedWindowExposedRuntimeEnabledAttributeAttributeSetter(v8_value, info);
+}
+
+void V8TestInterface::CrossOriginIsolatedWorkerExposedRuntimeEnabledAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_crossOriginIsolatedWorkerExposedRuntimeEnabledAttribute_Getter");
+
+  test_interface_implementation_v8_internal::CrossOriginIsolatedWorkerExposedRuntimeEnabledAttributeAttributeGetter(info);
+}
+
+void V8TestInterface::CrossOriginIsolatedWorkerExposedRuntimeEnabledAttributeAttributeSetterCallback(
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_crossOriginIsolatedWorkerExposedRuntimeEnabledAttribute_Setter");
+
+  v8::Local<v8::Value> v8_value = info[0];
+
+  test_interface_implementation_v8_internal::CrossOriginIsolatedWorkerExposedRuntimeEnabledAttributeAttributeSetter(v8_value, info);
+}
+
+void V8TestInterface::DirectSocketEnabledAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_directSocketEnabledAttribute_Getter");
+
+  test_interface_implementation_v8_internal::DirectSocketEnabledAttributeAttributeGetter(info);
+}
+
+void V8TestInterface::DirectSocketEnabledAttributeAttributeSetterCallback(
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_directSocketEnabledAttribute_Setter");
+
+  v8::Local<v8::Value> v8_value = info[0];
+
+  test_interface_implementation_v8_internal::DirectSocketEnabledAttributeAttributeSetter(v8_value, info);
+}
+
+void V8TestInterface::DirectSocketEnabledRuntimeEnabledAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_directSocketEnabledRuntimeEnabledAttribute_Getter");
+
+  test_interface_implementation_v8_internal::DirectSocketEnabledRuntimeEnabledAttributeAttributeGetter(info);
+}
+
+void V8TestInterface::DirectSocketEnabledRuntimeEnabledAttributeAttributeSetterCallback(
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_directSocketEnabledRuntimeEnabledAttribute_Setter");
+
+  v8::Local<v8::Value> v8_value = info[0];
+
+  test_interface_implementation_v8_internal::DirectSocketEnabledRuntimeEnabledAttributeAttributeSetter(v8_value, info);
+}
+
+void V8TestInterface::DirectSocketEnabledWindowExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_directSocketEnabledWindowExposedAttribute_Getter");
+
+  test_interface_implementation_v8_internal::DirectSocketEnabledWindowExposedAttributeAttributeGetter(info);
+}
+
+void V8TestInterface::DirectSocketEnabledWindowExposedAttributeAttributeSetterCallback(
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_directSocketEnabledWindowExposedAttribute_Setter");
+
+  v8::Local<v8::Value> v8_value = info[0];
+
+  test_interface_implementation_v8_internal::DirectSocketEnabledWindowExposedAttributeAttributeSetter(v8_value, info);
+}
+
+void V8TestInterface::DirectSocketEnabledWorkerExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_directSocketEnabledWorkerExposedAttribute_Getter");
+
+  test_interface_implementation_v8_internal::DirectSocketEnabledWorkerExposedAttributeAttributeGetter(info);
+}
+
+void V8TestInterface::DirectSocketEnabledWorkerExposedAttributeAttributeSetterCallback(
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_directSocketEnabledWorkerExposedAttribute_Setter");
+
+  v8::Local<v8::Value> v8_value = info[0];
+
+  test_interface_implementation_v8_internal::DirectSocketEnabledWorkerExposedAttributeAttributeSetter(v8_value, info);
+}
+
+void V8TestInterface::DirectSocketEnabledWindowExposedRuntimeEnabledAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_directSocketEnabledWindowExposedRuntimeEnabledAttribute_Getter");
+
+  test_interface_implementation_v8_internal::DirectSocketEnabledWindowExposedRuntimeEnabledAttributeAttributeGetter(info);
+}
+
+void V8TestInterface::DirectSocketEnabledWindowExposedRuntimeEnabledAttributeAttributeSetterCallback(
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_directSocketEnabledWindowExposedRuntimeEnabledAttribute_Setter");
+
+  v8::Local<v8::Value> v8_value = info[0];
+
+  test_interface_implementation_v8_internal::DirectSocketEnabledWindowExposedRuntimeEnabledAttributeAttributeSetter(v8_value, info);
+}
+
+void V8TestInterface::DirectSocketEnabledWorkerExposedRuntimeEnabledAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_directSocketEnabledWorkerExposedRuntimeEnabledAttribute_Getter");
+
+  test_interface_implementation_v8_internal::DirectSocketEnabledWorkerExposedRuntimeEnabledAttributeAttributeGetter(info);
+}
+
+void V8TestInterface::DirectSocketEnabledWorkerExposedRuntimeEnabledAttributeAttributeSetterCallback(
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_directSocketEnabledWorkerExposedRuntimeEnabledAttribute_Setter");
+
+  v8::Local<v8::Value> v8_value = info[0];
+
+  test_interface_implementation_v8_internal::DirectSocketEnabledWorkerExposedRuntimeEnabledAttributeAttributeSetter(v8_value, info);
+}
+
 void V8TestInterface::ScriptStringAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_scriptString_Getter");
 
@@ -3542,6 +4254,36 @@ void V8TestInterface::PartialSecureContextLongAttributeAttributeSetterCallback(
   test_interface_implementation_v8_internal::PartialSecureContextLongAttributeAttributeSetter(v8_value, info);
 }
 
+void V8TestInterface::PartialCrossOriginIsolatedLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partialCrossOriginIsolatedLongAttribute_Getter");
+
+  test_interface_implementation_v8_internal::PartialCrossOriginIsolatedLongAttributeAttributeGetter(info);
+}
+
+void V8TestInterface::PartialCrossOriginIsolatedLongAttributeAttributeSetterCallback(
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partialCrossOriginIsolatedLongAttribute_Setter");
+
+  v8::Local<v8::Value> v8_value = info[0];
+
+  test_interface_implementation_v8_internal::PartialCrossOriginIsolatedLongAttributeAttributeSetter(v8_value, info);
+}
+
+void V8TestInterface::PartialDirectSocketEnabledLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partialDirectSocketEnabledLongAttribute_Getter");
+
+  test_interface_implementation_v8_internal::PartialDirectSocketEnabledLongAttributeAttributeGetter(info);
+}
+
+void V8TestInterface::PartialDirectSocketEnabledLongAttributeAttributeSetterCallback(
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partialDirectSocketEnabledLongAttribute_Setter");
+
+  v8::Local<v8::Value> v8_value = info[0];
+
+  test_interface_implementation_v8_internal::PartialDirectSocketEnabledLongAttributeAttributeSetter(v8_value, info);
+}
+
 void V8TestInterface::Dec45DashedDec45AttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_-dashed-attribute_Getter");
 
@@ -3630,6 +4372,36 @@ void V8TestInterface::Partial2SecureContextAttributeAttributeSetterCallback(
   v8::Local<v8::Value> v8_value = info[0];
 
   test_interface_implementation_v8_internal::Partial2SecureContextAttributeAttributeSetter(v8_value, info);
+}
+
+void V8TestInterface::Partial2CrossOriginIsolatedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partial2CrossOriginIsolatedAttribute_Getter");
+
+  test_interface_implementation_v8_internal::Partial2CrossOriginIsolatedAttributeAttributeGetter(info);
+}
+
+void V8TestInterface::Partial2CrossOriginIsolatedAttributeAttributeSetterCallback(
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partial2CrossOriginIsolatedAttribute_Setter");
+
+  v8::Local<v8::Value> v8_value = info[0];
+
+  test_interface_implementation_v8_internal::Partial2CrossOriginIsolatedAttributeAttributeSetter(v8_value, info);
+}
+
+void V8TestInterface::Partial2DIrectSocketEnabledAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partial2DirectSocketEnabledAttribute_Getter");
+
+  test_interface_implementation_v8_internal::Partial2DIrectSocketEnabledAttributeAttributeGetter(info);
+}
+
+void V8TestInterface::Partial2DIrectSocketEnabledAttributeAttributeSetterCallback(
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partial2DirectSocketEnabledAttribute_Setter");
+
+  v8::Local<v8::Value> v8_value = info[0];
+
+  test_interface_implementation_v8_internal::Partial2DIrectSocketEnabledAttributeAttributeSetter(v8_value, info);
 }
 
 void V8TestInterface::PartialSecureContextAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -3932,6 +4704,90 @@ void V8TestInterface::SecureContextWorkerExposedRuntimeEnabledMethodMethodCallba
   test_interface_implementation_v8_internal::SecureContextWorkerExposedRuntimeEnabledMethodMethod(info);
 }
 
+void V8TestInterface::CrossOriginIsolatedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestInterface.crossOriginIsolatedMethod");
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_crossOriginIsolatedMethod");
+
+  test_interface_implementation_v8_internal::CrossOriginIsolatedMethodMethod(info);
+}
+
+void V8TestInterface::CrossOriginIsolatedRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestInterface.crossOriginIsolatedRuntimeEnabledMethod");
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_crossOriginIsolatedRuntimeEnabledMethod");
+
+  test_interface_implementation_v8_internal::CrossOriginIsolatedRuntimeEnabledMethodMethod(info);
+}
+
+void V8TestInterface::CrossOriginIsolatedWindowExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestInterface.crossOriginIsolatedWindowExposedMethod");
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_crossOriginIsolatedWindowExposedMethod");
+
+  test_interface_implementation_v8_internal::CrossOriginIsolatedWindowExposedMethodMethod(info);
+}
+
+void V8TestInterface::CrossOriginIsolatedWorkerExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestInterface.crossOriginIsolatedWorkerExposedMethod");
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_crossOriginIsolatedWorkerExposedMethod");
+
+  test_interface_implementation_v8_internal::CrossOriginIsolatedWorkerExposedMethodMethod(info);
+}
+
+void V8TestInterface::CrossOriginIsolatedWindowExposedRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestInterface.crossOriginIsolatedWindowExposedRuntimeEnabledMethod");
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_crossOriginIsolatedWindowExposedRuntimeEnabledMethod");
+
+  test_interface_implementation_v8_internal::CrossOriginIsolatedWindowExposedRuntimeEnabledMethodMethod(info);
+}
+
+void V8TestInterface::CrossOriginIsolatedWorkerExposedRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestInterface.crossOriginIsolatedWorkerExposedRuntimeEnabledMethod");
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_crossOriginIsolatedWorkerExposedRuntimeEnabledMethod");
+
+  test_interface_implementation_v8_internal::CrossOriginIsolatedWorkerExposedRuntimeEnabledMethodMethod(info);
+}
+
+void V8TestInterface::DirectSocketEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestInterface.directSocketEnabledMethod");
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_directSocketEnabledMethod");
+
+  test_interface_implementation_v8_internal::DirectSocketEnabledMethodMethod(info);
+}
+
+void V8TestInterface::DirectSocketEnabledRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestInterface.directSocketEnabledRuntimeEnabledMethod");
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_directSocketEnabledRuntimeEnabledMethod");
+
+  test_interface_implementation_v8_internal::DirectSocketEnabledRuntimeEnabledMethodMethod(info);
+}
+
+void V8TestInterface::DirectSocketEnabledWindowExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestInterface.directSocketEnabledWindowExposedMethod");
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_directSocketEnabledWindowExposedMethod");
+
+  test_interface_implementation_v8_internal::DirectSocketEnabledWindowExposedMethodMethod(info);
+}
+
+void V8TestInterface::DirectSocketEnabledWorkerExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestInterface.directSocketEnabledWorkerExposedMethod");
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_directSocketEnabledWorkerExposedMethod");
+
+  test_interface_implementation_v8_internal::DirectSocketEnabledWorkerExposedMethodMethod(info);
+}
+
+void V8TestInterface::DirectSocketEnabledWindowExposedRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestInterface.directSocketEnabledWindowExposedRuntimeEnabledMethod");
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_directSocketEnabledWindowExposedRuntimeEnabledMethod");
+
+  test_interface_implementation_v8_internal::DirectSocketEnabledWindowExposedRuntimeEnabledMethodMethod(info);
+}
+
+void V8TestInterface::DirectSocketEnabledWorkerExposedRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestInterface.directSocketEnabledWorkerExposedRuntimeEnabledMethod");
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_directSocketEnabledWorkerExposedRuntimeEnabledMethod");
+
+  test_interface_implementation_v8_internal::DirectSocketEnabledWorkerExposedRuntimeEnabledMethodMethod(info);
+}
+
 void V8TestInterface::MethodWithNullableSequencesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   BLINK_BINDINGS_TRACE_EVENT("TestInterface.methodWithNullableSequences");
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_methodWithNullableSequences");
@@ -4042,6 +4898,20 @@ void V8TestInterface::Partial2SecureContextMethodMethodCallback(const v8::Functi
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partial2SecureContextMethod");
 
   test_interface_implementation_v8_internal::Partial2SecureContextMethodMethod(info);
+}
+
+void V8TestInterface::Partial2CrossOriginIsolatedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestInterface.partial2CrossOriginIsolatedMethod");
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partial2CrossOriginIsolatedMethod");
+
+  test_interface_implementation_v8_internal::Partial2CrossOriginIsolatedMethodMethod(info);
+}
+
+void V8TestInterface::Partial2DIrectSocketEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestInterface.partial2DirectSocketEnabledMethod");
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partial2DirectSocketEnabledMethod");
+
+  test_interface_implementation_v8_internal::Partial2DIrectSocketEnabledMethodMethod(info);
 }
 
 void V8TestInterface::PartialSecureContextMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -4639,118 +5509,24 @@ void V8TestInterface::InstallConditionalFeatures(
   ExecutionContext* execution_context = ToExecutionContext(context);
   DCHECK(execution_context);
   bool is_secure_context = (execution_context && execution_context->IsSecureContext());
+  bool is_cross_origin_isolated = (execution_context && execution_context->CrossOriginIsolatedCapability());
+  bool is_direct_socket_enabled = (execution_context && execution_context->DirectSocketCapability());
 
   if (!prototype_object.IsEmpty() || !interface_object.IsEmpty()) {
-    if (is_secure_context) {
-      static constexpr V8DOMConfiguration::AccessorConfiguration
-      kAccessorConfigurations[] = {
-          { "partial2SecureContextAttribute", V8TestInterface::Partial2SecureContextAttributeAttributeGetterCallback, V8TestInterface::Partial2SecureContextAttributeAttributeSetterCallback, static_cast<unsigned>(V8PrivateProperty::CachedAccessor::kNone), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kCheckAccess, V8DOMConfiguration::kCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds },
-          { "partialSecureContextAttribute", V8TestInterface::PartialSecureContextAttributeAttributeGetterCallback, V8TestInterface::PartialSecureContextAttributeAttributeSetterCallback, static_cast<unsigned>(V8PrivateProperty::CachedAccessor::kNone), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kCheckAccess, V8DOMConfiguration::kCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds },
-          { "secureContextAttribute", V8TestInterface::SecureContextAttributeAttributeGetterCallback, V8TestInterface::SecureContextAttributeAttributeSetterCallback, static_cast<unsigned>(V8PrivateProperty::CachedAccessor::kNone), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kCheckAccess, V8DOMConfiguration::kCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds },
-      };
-      V8DOMConfiguration::InstallAccessors(
-          isolate, world, instance_object, prototype_object, interface_object,
-          signature, kAccessorConfigurations,
-          base::size(kAccessorConfigurations));
-
-      if (RuntimeEnabledFeatures::PartialRuntimeFeatureEnabled()) {
-        static constexpr V8DOMConfiguration::AccessorConfiguration
-        kAccessorConfigurations[] = {
-            { "partialSecureContextLongAttribute", V8TestInterface::PartialSecureContextLongAttributeAttributeGetterCallback, V8TestInterface::PartialSecureContextLongAttributeAttributeSetterCallback, static_cast<unsigned>(V8PrivateProperty::CachedAccessor::kNone), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kCheckAccess, V8DOMConfiguration::kCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds },
-        };
-        V8DOMConfiguration::InstallAccessors(
-            isolate, world, instance_object, prototype_object, interface_object,
-            signature, kAccessorConfigurations,
-            base::size(kAccessorConfigurations));
-      }
-      if (RuntimeEnabledFeatures::SecureFeatureEnabled()) {
-        static constexpr V8DOMConfiguration::AccessorConfiguration
-        kAccessorConfigurations[] = {
-            { "partialSecureContextRuntimeEnabledAttribute", V8TestInterface::PartialSecureContextRuntimeEnabledAttributeAttributeGetterCallback, V8TestInterface::PartialSecureContextRuntimeEnabledAttributeAttributeSetterCallback, static_cast<unsigned>(V8PrivateProperty::CachedAccessor::kNone), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kCheckAccess, V8DOMConfiguration::kCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds },
-            { "secureContextRuntimeEnabledAttribute", V8TestInterface::SecureContextRuntimeEnabledAttributeAttributeGetterCallback, V8TestInterface::SecureContextRuntimeEnabledAttributeAttributeSetterCallback, static_cast<unsigned>(V8PrivateProperty::CachedAccessor::kNone), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kCheckAccess, V8DOMConfiguration::kCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds },
-        };
-        V8DOMConfiguration::InstallAccessors(
-            isolate, world, instance_object, prototype_object, interface_object,
-            signature, kAccessorConfigurations,
-            base::size(kAccessorConfigurations));
-      }
+    if (execution_context && (is_direct_socket_enabled)) {
     }
-    if (is_secure_context || !RuntimeEnabledFeatures::SecureContextnessFeatureEnabled()) {
-      static constexpr V8DOMConfiguration::AccessorConfiguration
-      kAccessorConfigurations[] = {
-          { "secureContextnessRuntimeEnabledAttribute", V8TestInterface::SecureContextnessRuntimeEnabledAttributeAttributeGetterCallback, V8TestInterface::SecureContextnessRuntimeEnabledAttributeAttributeSetterCallback, static_cast<unsigned>(V8PrivateProperty::CachedAccessor::kNone), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kCheckAccess, V8DOMConfiguration::kCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds },
-      };
-      V8DOMConfiguration::InstallAccessors(
-          isolate, world, instance_object, prototype_object, interface_object,
-          signature, kAccessorConfigurations,
-          base::size(kAccessorConfigurations));
+    if (execution_context && (is_cross_origin_isolated)) {
     }
     if (execution_context && (execution_context->IsWindow())) {
-      static constexpr V8DOMConfiguration::AccessorConfiguration
-      kAccessorConfigurations[] = {
-          { "windowExposedAttribute", V8TestInterface::WindowExposedAttributeAttributeGetterCallback, V8TestInterface::WindowExposedAttributeAttributeSetterCallback, static_cast<unsigned>(V8PrivateProperty::CachedAccessor::kNone), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kCheckAccess, V8DOMConfiguration::kCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds },
-      };
-      V8DOMConfiguration::InstallAccessors(
-          isolate, world, instance_object, prototype_object, interface_object,
-          signature, kAccessorConfigurations,
-          base::size(kAccessorConfigurations));
-
-      if (is_secure_context) {
-        static constexpr V8DOMConfiguration::AccessorConfiguration
-        kAccessorConfigurations[] = {
-            { "partialSecureContextWindowExposedAttribute", V8TestInterface::PartialSecureContextWindowExposedAttributeAttributeGetterCallback, V8TestInterface::PartialSecureContextWindowExposedAttributeAttributeSetterCallback, static_cast<unsigned>(V8PrivateProperty::CachedAccessor::kNone), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kCheckAccess, V8DOMConfiguration::kCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds },
-            { "secureContextWindowExposedAttribute", V8TestInterface::SecureContextWindowExposedAttributeAttributeGetterCallback, V8TestInterface::SecureContextWindowExposedAttributeAttributeSetterCallback, static_cast<unsigned>(V8PrivateProperty::CachedAccessor::kNone), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kCheckAccess, V8DOMConfiguration::kCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds },
-        };
-        V8DOMConfiguration::InstallAccessors(
-            isolate, world, instance_object, prototype_object, interface_object,
-            signature, kAccessorConfigurations,
-            base::size(kAccessorConfigurations));
-
-        if (RuntimeEnabledFeatures::SecureFeatureEnabled()) {
-          static constexpr V8DOMConfiguration::AccessorConfiguration
-          kAccessorConfigurations[] = {
-              { "partialSecureContextWindowExposedRuntimeEnabledAttribute", V8TestInterface::PartialSecureContextWindowExposedRuntimeEnabledAttributeAttributeGetterCallback, V8TestInterface::PartialSecureContextWindowExposedRuntimeEnabledAttributeAttributeSetterCallback, static_cast<unsigned>(V8PrivateProperty::CachedAccessor::kNone), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kCheckAccess, V8DOMConfiguration::kCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds },
-              { "secureContextWindowExposedRuntimeEnabledAttribute", V8TestInterface::SecureContextWindowExposedRuntimeEnabledAttributeAttributeGetterCallback, V8TestInterface::SecureContextWindowExposedRuntimeEnabledAttributeAttributeSetterCallback, static_cast<unsigned>(V8PrivateProperty::CachedAccessor::kNone), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kCheckAccess, V8DOMConfiguration::kCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds },
-          };
-          V8DOMConfiguration::InstallAccessors(
-              isolate, world, instance_object, prototype_object, interface_object,
-              signature, kAccessorConfigurations,
-              base::size(kAccessorConfigurations));
-        }
+      if (execution_context && (is_direct_socket_enabled)) {
+      }
+      if (execution_context && (is_cross_origin_isolated)) {
       }
     }
     if (execution_context && (execution_context->IsWorkerGlobalScope())) {
-      static constexpr V8DOMConfiguration::AccessorConfiguration
-      kAccessorConfigurations[] = {
-          { "workerExposedAttribute", V8TestInterface::WorkerExposedAttributeAttributeGetterCallback, V8TestInterface::WorkerExposedAttributeAttributeSetterCallback, static_cast<unsigned>(V8PrivateProperty::CachedAccessor::kNone), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kCheckAccess, V8DOMConfiguration::kCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds },
-      };
-      V8DOMConfiguration::InstallAccessors(
-          isolate, world, instance_object, prototype_object, interface_object,
-          signature, kAccessorConfigurations,
-          base::size(kAccessorConfigurations));
-
-      if (is_secure_context) {
-        static constexpr V8DOMConfiguration::AccessorConfiguration
-        kAccessorConfigurations[] = {
-            { "partialSecureContextWorkerExposedAttribute", V8TestInterface::PartialSecureContextWorkerExposedAttributeAttributeGetterCallback, V8TestInterface::PartialSecureContextWorkerExposedAttributeAttributeSetterCallback, static_cast<unsigned>(V8PrivateProperty::CachedAccessor::kNone), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kCheckAccess, V8DOMConfiguration::kCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds },
-            { "secureContextWorkerExposedAttribute", V8TestInterface::SecureContextWorkerExposedAttributeAttributeGetterCallback, V8TestInterface::SecureContextWorkerExposedAttributeAttributeSetterCallback, static_cast<unsigned>(V8PrivateProperty::CachedAccessor::kNone), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kCheckAccess, V8DOMConfiguration::kCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds },
-        };
-        V8DOMConfiguration::InstallAccessors(
-            isolate, world, instance_object, prototype_object, interface_object,
-            signature, kAccessorConfigurations,
-            base::size(kAccessorConfigurations));
-
-        if (RuntimeEnabledFeatures::SecureFeatureEnabled()) {
-          static constexpr V8DOMConfiguration::AccessorConfiguration
-          kAccessorConfigurations[] = {
-              { "partialSecureContextWorkerExposedRuntimeEnabledAttribute", V8TestInterface::PartialSecureContextWorkerExposedRuntimeEnabledAttributeAttributeGetterCallback, V8TestInterface::PartialSecureContextWorkerExposedRuntimeEnabledAttributeAttributeSetterCallback, static_cast<unsigned>(V8PrivateProperty::CachedAccessor::kNone), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kCheckAccess, V8DOMConfiguration::kCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds },
-              { "secureContextWorkerExposedRuntimeEnabledAttribute", V8TestInterface::SecureContextWorkerExposedRuntimeEnabledAttributeAttributeGetterCallback, V8TestInterface::SecureContextWorkerExposedRuntimeEnabledAttributeAttributeSetterCallback, static_cast<unsigned>(V8PrivateProperty::CachedAccessor::kNone), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kCheckAccess, V8DOMConfiguration::kCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds },
-          };
-          V8DOMConfiguration::InstallAccessors(
-              isolate, world, instance_object, prototype_object, interface_object,
-              signature, kAccessorConfigurations,
-              base::size(kAccessorConfigurations));
-        }
+      if (execution_context && (is_direct_socket_enabled)) {
+      }
+      if (execution_context && (is_cross_origin_isolated)) {
       }
     }
     if (execution_context && (execution_context->IsWorkerGlobalScope())) {
@@ -4938,11 +5714,221 @@ void V8TestInterface::InstallConditionalFeatures(
         }
       }
     }
+    if (execution_context && (is_cross_origin_isolated)) {
+      {
+        // Install crossOriginIsolatedMethod configuration
+        const V8DOMConfiguration::MethodConfiguration kConfigurations[] = {
+            {"crossOriginIsolatedMethod", V8TestInterface::CrossOriginIsolatedMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds}
+        };
+        for (const auto& config : kConfigurations) {
+          V8DOMConfiguration::InstallMethod(
+              isolate, world, instance_object, prototype_object,
+              interface_object, signature, config);
+        }
+      }
+    }
+    if (execution_context && (is_cross_origin_isolated)) {
+      if (RuntimeEnabledFeatures::RuntimeFeature2Enabled()) {
+        {
+          // Install crossOriginIsolatedRuntimeEnabledMethod configuration
+          const V8DOMConfiguration::MethodConfiguration kConfigurations[] = {
+              {"crossOriginIsolatedRuntimeEnabledMethod", V8TestInterface::CrossOriginIsolatedRuntimeEnabledMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds}
+          };
+          for (const auto& config : kConfigurations) {
+            V8DOMConfiguration::InstallMethod(
+                isolate, world, instance_object, prototype_object,
+                interface_object, signature, config);
+          }
+        }
+      }
+    }
+    if (execution_context && (is_cross_origin_isolated)) {
+      if (execution_context && (execution_context->IsWindow())) {
+        {
+          // Install crossOriginIsolatedWindowExposedMethod configuration
+          const V8DOMConfiguration::MethodConfiguration kConfigurations[] = {
+              {"crossOriginIsolatedWindowExposedMethod", V8TestInterface::CrossOriginIsolatedWindowExposedMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds}
+          };
+          for (const auto& config : kConfigurations) {
+            V8DOMConfiguration::InstallMethod(
+                isolate, world, instance_object, prototype_object,
+                interface_object, signature, config);
+          }
+        }
+      }
+    }
+    if (execution_context && (is_cross_origin_isolated)) {
+      if (execution_context && (execution_context->IsWorkerGlobalScope())) {
+        {
+          // Install crossOriginIsolatedWorkerExposedMethod configuration
+          const V8DOMConfiguration::MethodConfiguration kConfigurations[] = {
+              {"crossOriginIsolatedWorkerExposedMethod", V8TestInterface::CrossOriginIsolatedWorkerExposedMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds}
+          };
+          for (const auto& config : kConfigurations) {
+            V8DOMConfiguration::InstallMethod(
+                isolate, world, instance_object, prototype_object,
+                interface_object, signature, config);
+          }
+        }
+      }
+    }
+    if (execution_context && (is_cross_origin_isolated)) {
+      if (execution_context && (execution_context->IsWindow())) {
+        if (RuntimeEnabledFeatures::RuntimeFeature2Enabled()) {
+          {
+            // Install crossOriginIsolatedWindowExposedRuntimeEnabledMethod configuration
+            const V8DOMConfiguration::MethodConfiguration kConfigurations[] = {
+                {"crossOriginIsolatedWindowExposedRuntimeEnabledMethod", V8TestInterface::CrossOriginIsolatedWindowExposedRuntimeEnabledMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds}
+            };
+            for (const auto& config : kConfigurations) {
+              V8DOMConfiguration::InstallMethod(
+                  isolate, world, instance_object, prototype_object,
+                  interface_object, signature, config);
+            }
+          }
+        }
+      }
+    }
+    if (execution_context && (is_cross_origin_isolated)) {
+      if (execution_context && (execution_context->IsWorkerGlobalScope())) {
+        if (RuntimeEnabledFeatures::RuntimeFeature2Enabled()) {
+          {
+            // Install crossOriginIsolatedWorkerExposedRuntimeEnabledMethod configuration
+            const V8DOMConfiguration::MethodConfiguration kConfigurations[] = {
+                {"crossOriginIsolatedWorkerExposedRuntimeEnabledMethod", V8TestInterface::CrossOriginIsolatedWorkerExposedRuntimeEnabledMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds}
+            };
+            for (const auto& config : kConfigurations) {
+              V8DOMConfiguration::InstallMethod(
+                  isolate, world, instance_object, prototype_object,
+                  interface_object, signature, config);
+            }
+          }
+        }
+      }
+    }
+    if (execution_context && (is_direct_socket_enabled)) {
+      {
+        // Install directSocketEnabledMethod configuration
+        const V8DOMConfiguration::MethodConfiguration kConfigurations[] = {
+            {"directSocketEnabledMethod", V8TestInterface::DirectSocketEnabledMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds}
+        };
+        for (const auto& config : kConfigurations) {
+          V8DOMConfiguration::InstallMethod(
+              isolate, world, instance_object, prototype_object,
+              interface_object, signature, config);
+        }
+      }
+    }
+    if (execution_context && (is_direct_socket_enabled)) {
+      if (RuntimeEnabledFeatures::RuntimeFeature2Enabled()) {
+        {
+          // Install directSocketEnabledRuntimeEnabledMethod configuration
+          const V8DOMConfiguration::MethodConfiguration kConfigurations[] = {
+              {"directSocketEnabledRuntimeEnabledMethod", V8TestInterface::DirectSocketEnabledRuntimeEnabledMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds}
+          };
+          for (const auto& config : kConfigurations) {
+            V8DOMConfiguration::InstallMethod(
+                isolate, world, instance_object, prototype_object,
+                interface_object, signature, config);
+          }
+        }
+      }
+    }
+    if (execution_context && (is_direct_socket_enabled)) {
+      if (execution_context && (execution_context->IsWindow())) {
+        {
+          // Install directSocketEnabledWindowExposedMethod configuration
+          const V8DOMConfiguration::MethodConfiguration kConfigurations[] = {
+              {"directSocketEnabledWindowExposedMethod", V8TestInterface::DirectSocketEnabledWindowExposedMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds}
+          };
+          for (const auto& config : kConfigurations) {
+            V8DOMConfiguration::InstallMethod(
+                isolate, world, instance_object, prototype_object,
+                interface_object, signature, config);
+          }
+        }
+      }
+    }
+    if (execution_context && (is_direct_socket_enabled)) {
+      if (execution_context && (execution_context->IsWorkerGlobalScope())) {
+        {
+          // Install directSocketEnabledWorkerExposedMethod configuration
+          const V8DOMConfiguration::MethodConfiguration kConfigurations[] = {
+              {"directSocketEnabledWorkerExposedMethod", V8TestInterface::DirectSocketEnabledWorkerExposedMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds}
+          };
+          for (const auto& config : kConfigurations) {
+            V8DOMConfiguration::InstallMethod(
+                isolate, world, instance_object, prototype_object,
+                interface_object, signature, config);
+          }
+        }
+      }
+    }
+    if (execution_context && (is_direct_socket_enabled)) {
+      if (execution_context && (execution_context->IsWindow())) {
+        if (RuntimeEnabledFeatures::RuntimeFeature2Enabled()) {
+          {
+            // Install directSocketEnabledWindowExposedRuntimeEnabledMethod configuration
+            const V8DOMConfiguration::MethodConfiguration kConfigurations[] = {
+                {"directSocketEnabledWindowExposedRuntimeEnabledMethod", V8TestInterface::DirectSocketEnabledWindowExposedRuntimeEnabledMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds}
+            };
+            for (const auto& config : kConfigurations) {
+              V8DOMConfiguration::InstallMethod(
+                  isolate, world, instance_object, prototype_object,
+                  interface_object, signature, config);
+            }
+          }
+        }
+      }
+    }
+    if (execution_context && (is_direct_socket_enabled)) {
+      if (execution_context && (execution_context->IsWorkerGlobalScope())) {
+        if (RuntimeEnabledFeatures::RuntimeFeature2Enabled()) {
+          {
+            // Install directSocketEnabledWorkerExposedRuntimeEnabledMethod configuration
+            const V8DOMConfiguration::MethodConfiguration kConfigurations[] = {
+                {"directSocketEnabledWorkerExposedRuntimeEnabledMethod", V8TestInterface::DirectSocketEnabledWorkerExposedRuntimeEnabledMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds}
+            };
+            for (const auto& config : kConfigurations) {
+              V8DOMConfiguration::InstallMethod(
+                  isolate, world, instance_object, prototype_object,
+                  interface_object, signature, config);
+            }
+          }
+        }
+      }
+    }
     if (is_secure_context) {
       {
         // Install partial2SecureContextMethod configuration
         const V8DOMConfiguration::MethodConfiguration kConfigurations[] = {
             {"partial2SecureContextMethod", V8TestInterface::Partial2SecureContextMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds}
+        };
+        for (const auto& config : kConfigurations) {
+          V8DOMConfiguration::InstallMethod(
+              isolate, world, instance_object, prototype_object,
+              interface_object, signature, config);
+        }
+      }
+    }
+    if (execution_context && (is_cross_origin_isolated)) {
+      {
+        // Install partial2CrossOriginIsolatedMethod configuration
+        const V8DOMConfiguration::MethodConfiguration kConfigurations[] = {
+            {"partial2CrossOriginIsolatedMethod", V8TestInterface::Partial2CrossOriginIsolatedMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds}
+        };
+        for (const auto& config : kConfigurations) {
+          V8DOMConfiguration::InstallMethod(
+              isolate, world, instance_object, prototype_object,
+              interface_object, signature, config);
+        }
+      }
+    }
+    if (execution_context && (is_direct_socket_enabled)) {
+      {
+        // Install partial2DirectSocketEnabledMethod configuration
+        const V8DOMConfiguration::MethodConfiguration kConfigurations[] = {
+            {"partial2DirectSocketEnabledMethod", V8TestInterface::Partial2DIrectSocketEnabledMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds}
         };
         for (const auto& config : kConfigurations) {
           V8DOMConfiguration::InstallMethod(

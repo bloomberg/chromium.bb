@@ -10,7 +10,6 @@
 
 #include "base/feature_list.h"
 #include "base/macros.h"
-#include "base/time/time.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/ssl_host_state_delegate.h"
 
@@ -20,6 +19,7 @@ class PrefService;
 namespace base {
 class Clock;
 class DictionaryValue;
+class FilePath;
 }  //  namespace base
 
 namespace content {

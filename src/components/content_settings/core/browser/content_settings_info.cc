@@ -4,7 +4,8 @@
 
 #include "components/content_settings/core/browser/content_settings_info.h"
 
-#include "base/stl_util.h"
+#include "base/containers/contains.h"
+#include "build/chromeos_buildflags.h"
 #include "components/content_settings/core/browser/website_settings_info.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
 
@@ -41,14 +42,6 @@ bool ContentSettingsInfo::IsSettingValid(ContentSetting setting) const {
 // IsDefaultSettingValid.
 bool ContentSettingsInfo::IsDefaultSettingValid(ContentSetting setting) const {
   ContentSettingsType type = website_settings_info_->type();
-#if defined(OS_CHROMEOS)
-  // Don't support ALLOW for protected media default setting until migration.
-  if (type == ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER &&
-      setting == CONTENT_SETTING_ALLOW) {
-    return false;
-  }
-#endif
-
   // Don't support ALLOW for the default media settings.
   if ((type == ContentSettingsType::MEDIASTREAM_CAMERA ||
        type == ContentSettingsType::MEDIASTREAM_MIC) &&

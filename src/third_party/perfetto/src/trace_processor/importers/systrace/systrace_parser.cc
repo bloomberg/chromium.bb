@@ -55,12 +55,20 @@ void SystraceParser::ParseZeroEvent(int64_t ts,
                                     uint32_t pid,
                                     int32_t flag,
                                     base::StringView name,
-                                    uint32_t tgid,
+                                    uint32_t /* tgid */,
                                     int64_t value) {
   systrace_utils::SystraceTracePoint point{};
   point.name = name;
-  point.tgid = tgid;
   point.value = static_cast<double>(value);
+
+  // Hardcode the tgid to 0 (i.e. no tgid available) because zero events can
+  // come from kernel threads and as we group kernel threads into the kthreadd
+  // process, we would want |point.tgid == kKthreaddPid|. However, we don't have
+  // acces to the ppid of this process so we have to not associate to any
+  // process and leave the resolution of process to other events.
+  // TODO(lalitm): remove this hack once we move kernel thread grouping to
+  // the UI.
+  point.tgid = 0;
 
   // The value of these constants can be found in the msm-google kernel.
   constexpr int32_t kSystraceEventBegin = 1 << 0;
@@ -180,10 +188,8 @@ void SystraceParser::ParseSystracePoint(
         // issues. No other code should ever use this method.
         tables::SliceTable::Row row;
         row.ts = ts;
-        row.track_id = context_->async_track_set_tracker->Begin(
-            track_set_id, cookie,
-            AsyncTrackSetTracker::NestingBehaviour::
-                kLegacySaturatingUnnestable);
+        row.track_id =
+            context_->async_track_set_tracker->Begin(track_set_id, cookie);
         row.name = name_id;
         context_->slice_tracker->BeginLegacyUnnestable(
             row, [this, cookie](ArgsTracker::BoundInserter* inserter) {
@@ -220,14 +226,24 @@ void SystraceParser::ParseSystracePoint(
         context_->event_tracker->PushCounter(ts, point.value, track);
         return;
       }
-      // This is per upid on purpose. Some counters are pushed from arbitrary
-      // threads but are really per process.
-      UniquePid upid =
-          context_->process_tracker->GetOrCreateProcess(point.tgid);
+
       StringId name_id = context_->storage->InternString(point.name);
-      TrackId track =
-          context_->track_tracker->InternProcessCounterTrack(name_id, upid);
-      context_->event_tracker->PushCounter(ts, point.value, track);
+      TrackId track_id;
+      if (point.tgid == 0) {
+        // If tgid is 0 (likely because this is a kernel thread), we can do no
+        // better than using a thread track with the pid of the process.
+        UniqueTid utid = context_->process_tracker->GetOrCreateThread(pid);
+        track_id =
+            context_->track_tracker->InternThreadCounterTrack(name_id, utid);
+      } else {
+        // This is per upid on purpose. Some counters are pushed from arbitrary
+        // threads but are really per process.
+        UniquePid upid =
+            context_->process_tracker->GetOrCreateProcess(point.tgid);
+        track_id =
+            context_->track_tracker->InternProcessCounterTrack(name_id, upid);
+      }
+      context_->event_tracker->PushCounter(ts, point.value, track_id);
     }
   }
 }

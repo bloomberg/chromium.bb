@@ -9,11 +9,10 @@
 #include <unordered_set>
 
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
-#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/bluetooth_chooser.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
 
 namespace device {
@@ -34,11 +33,10 @@ class WebBluetoothServiceImpl;
 // GetDevice() twice for the same instance will DCHECK.
 class CONTENT_EXPORT BluetoothDeviceChooserController final {
  public:
-  using SuccessCallback =
-      base::OnceCallback<void(blink::mojom::WebBluetoothRequestDeviceOptionsPtr,
+  using Callback =
+      base::OnceCallback<void(blink::mojom::WebBluetoothResult result,
+                              blink::mojom::WebBluetoothRequestDeviceOptionsPtr,
                               const std::string& device_address)>;
-  using ErrorCallback =
-      base::OnceCallback<void(blink::mojom::WebBluetoothResult result)>;
 
   enum class TestScanDurationSetting { IMMEDIATE_TIMEOUT, NEVER_TIMEOUT };
 
@@ -62,17 +60,17 @@ class CONTENT_EXPORT BluetoothDeviceChooserController final {
   //   - Checks if the adapter is present.
   //   - Checks if the Web Bluetooth API has been disabled.
   //   - Checks if we are allowed to ask for scanning permission.
-  // If any of the previous checks failed then this function runs
-  // |error_callback| with the corresponding error. Otherwise this function
-  // populates the embedder provided BluetoothChooser with existing devices and
-  // starts a new discovery session.
+  // If any of the previous checks failed then this function runs |callback|
+  // with the corresponding error. Otherwise this function populates the
+  // embedder provided BluetoothChooser with existing devices and starts a new
+  // discovery session.
+  //
   // This function should only be called once per
   // BluetoothDeviceChooserController instance. Calling this function more than
   // once will DCHECK.
   void GetDevice(
       blink::mojom::WebBluetoothRequestDeviceOptionsPtr request_device_options,
-      SuccessCallback success_callback,
-      ErrorCallback error_callback);
+      Callback callback);
 
   // Adds a device to the chooser. Should only be called after GetDevice and
   // before either of the callbacks are run.
@@ -96,7 +94,7 @@ class CONTENT_EXPORT BluetoothDeviceChooserController final {
           TestScanDurationSetting::IMMEDIATE_TIMEOUT);
 
   static std::unique_ptr<device::BluetoothDiscoveryFilter> ComputeScanFilter(
-      const base::Optional<
+      const absl::optional<
           std::vector<blink::mojom::WebBluetoothLeScanFilterPtr>>& filters);
 
  private:
@@ -143,9 +141,8 @@ class CONTENT_EXPORT BluetoothDeviceChooserController final {
   // Contains the filters and optional services used when scanning.
   blink::mojom::WebBluetoothRequestDeviceOptionsPtr options_;
 
-  // Callbacks to be called with the result of the chooser.
-  SuccessCallback success_callback_;
-  ErrorCallback error_callback_;
+  // Callback to be called with the result of the chooser.
+  Callback callback_;
 
   // The currently opened BluetoothChooser.
   std::unique_ptr<BluetoothChooser> chooser_;
@@ -159,9 +156,6 @@ class CONTENT_EXPORT BluetoothDeviceChooserController final {
   // session. We need to null it when the platform stops discovery.
   // http://crbug.com/611852
   std::unique_ptr<device::BluetoothDiscoverySession> discovery_session_;
-
-  // The time when scanning starts.
-  base::Optional<base::TimeTicks> scanning_start_time_;
 
   // The device ids that are currently shown in the chooser.
   std::unordered_set<std::string> device_ids_;
