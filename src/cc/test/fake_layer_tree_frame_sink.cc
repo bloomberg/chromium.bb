@@ -5,6 +5,7 @@
 #include "cc/test/fake_layer_tree_frame_sink.h"
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/trees/layer_tree_frame_sink_client.h"
@@ -80,8 +81,8 @@ void FakeLayerTreeFrameSink::SubmitCompositorFrame(
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void FakeLayerTreeFrameSink::DidNotProduceFrame(const viz::BeginFrameAck& ack) {
-}
+void FakeLayerTreeFrameSink::DidNotProduceFrame(const viz::BeginFrameAck& ack,
+                                                FrameSkippedReason reason) {}
 
 void FakeLayerTreeFrameSink::DidAllocateSharedBitmap(
     base::ReadOnlySharedMemoryRegion region,
@@ -107,7 +108,7 @@ void FakeLayerTreeFrameSink::ReturnResourcesHeldByParent() {
     for (const auto& resource : resources_held_by_parent_)
       resources.push_back(resource.ToReturnedResource());
     resources_held_by_parent_.clear();
-    client_->ReclaimResources(resources);
+    client_->ReclaimResources(std::move(resources));
   }
 }
 

@@ -9,6 +9,7 @@
 #include "core/fpdfapi/parser/cpdf_reference.h"
 #include "core/fpdfapi/parser/cpdf_syntax_parser.h"
 #include "core/fpdfapi/parser/fpdf_parser_utility.h"
+#include "third_party/base/check.h"
 #include "third_party/base/notreached.h"
 #include "third_party/base/numerics/safe_conversions.h"
 #include "third_party/base/stl_util.h"
@@ -28,17 +29,17 @@ constexpr char kEncryptKey[] = "Encrypt";
 CPDF_CrossRefAvail::CPDF_CrossRefAvail(CPDF_SyntaxParser* parser,
                                        FX_FILESIZE last_crossref_offset)
     : parser_(parser), last_crossref_offset_(last_crossref_offset) {
-  ASSERT(parser_);
+  DCHECK(parser_);
   AddCrossRefForCheck(last_crossref_offset);
 }
 
 CPDF_CrossRefAvail::~CPDF_CrossRefAvail() = default;
 
 CPDF_DataAvail::DocAvailStatus CPDF_CrossRefAvail::CheckAvail() {
-  if (status_ == CPDF_DataAvail::DataAvailable)
-    return CPDF_DataAvail::DataAvailable;
+  if (status_ == CPDF_DataAvail::kDataAvailable)
+    return CPDF_DataAvail::kDataAvailable;
 
-  const CPDF_ReadValidator::Session read_session(GetValidator());
+  CPDF_ReadValidator::ScopedSession read_session(GetValidator());
   while (true) {
     bool check_result = false;
     switch (state_) {
@@ -54,7 +55,7 @@ CPDF_DataAvail::DocAvailStatus CPDF_CrossRefAvail::CheckAvail() {
       case State::kDone:
         break;
       default: {
-        status_ = CPDF_DataAvail::DataError;
+        status_ = CPDF_DataAvail::kDataError;
         NOTREACHED();
         break;
       }
@@ -62,14 +63,14 @@ CPDF_DataAvail::DocAvailStatus CPDF_CrossRefAvail::CheckAvail() {
     if (!check_result)
       break;
 
-    ASSERT(!GetValidator()->has_read_problems());
+    DCHECK(!GetValidator()->has_read_problems());
   }
   return status_;
 }
 
 bool CPDF_CrossRefAvail::CheckReadProblems() {
   if (GetValidator()->read_error()) {
-    status_ = CPDF_DataAvail::DataError;
+    status_ = CPDF_DataAvail::kDataError;
     return true;
   }
   return GetValidator()->has_unavailable_data();
@@ -79,7 +80,7 @@ bool CPDF_CrossRefAvail::CheckCrossRef() {
   if (cross_refs_for_check_.empty()) {
     // All cross refs were checked.
     state_ = State::kDone;
-    status_ = CPDF_DataAvail::DataAvailable;
+    status_ = CPDF_DataAvail::kDataAvailable;
     return true;
   }
   parser_->SetPos(cross_refs_for_check_.front());
@@ -103,7 +104,7 @@ bool CPDF_CrossRefAvail::CheckCrossRefV4() {
     return false;
 
   if (keyword != kCrossRefKeyword) {
-    status_ = CPDF_DataAvail::DataError;
+    status_ = CPDF_DataAvail::kDataError;
     return false;
   }
 
@@ -119,7 +120,7 @@ bool CPDF_CrossRefAvail::CheckCrossRefV4Item() {
     return false;
 
   if (keyword.IsEmpty()) {
-    status_ = CPDF_DataAvail::DataError;
+    status_ = CPDF_DataAvail::kDataError;
     return false;
   }
 
@@ -140,12 +141,12 @@ bool CPDF_CrossRefAvail::CheckCrossRefV4Trailer() {
     return false;
 
   if (!trailer) {
-    status_ = CPDF_DataAvail::DataError;
+    status_ = CPDF_DataAvail::kDataError;
     return false;
   }
 
   if (ToReference(trailer->GetObjectFor(kEncryptKey))) {
-    status_ = CPDF_DataAvail::DataError;
+    status_ = CPDF_DataAvail::kDataError;
     return false;
   }
 
@@ -176,12 +177,12 @@ bool CPDF_CrossRefAvail::CheckCrossRefStream() {
   const CPDF_Dictionary* trailer =
       cross_ref && cross_ref->IsStream() ? cross_ref->GetDict() : nullptr;
   if (!trailer) {
-    status_ = CPDF_DataAvail::DataError;
+    status_ = CPDF_DataAvail::kDataError;
     return false;
   }
 
   if (ToReference(trailer->GetObjectFor(kEncryptKey))) {
-    status_ = CPDF_DataAvail::DataError;
+    status_ = CPDF_DataAvail::kDataError;
     return false;
   }
 

@@ -29,6 +29,7 @@ cr.define('cr.ui.login.debug', function() {
       z-index: 10000;
       padding: 20px;
       display: flex;
+      overflow: scroll;
       flex-direction: column;`;
 
   const TOOL_PANEL_STYLE = `
@@ -69,6 +70,9 @@ cr.define('cr.ui.login.debug', function() {
 
   const RECOMMENDED_APPS_CONTENT = `
 // <include src="../../arc_support/recommend_app_list_view.html">
+  `;
+  const RECOMMENDED_APPS_CONTENT_NEW = `
+// <include src="../../arc_support/recommend_app_list_view_new.html">
   `;
   /**
    * Indicates if screen is present in usual user flow, represents some error
@@ -179,6 +183,10 @@ cr.define('cr.ui.login.debug', function() {
       ],
     },
     {
+      id: 'os-install',
+      kind: ScreenKind.OTHER,
+    },
+    {
       id: 'debugging',
       kind: ScreenKind.OTHER,
     },
@@ -190,6 +198,19 @@ cr.define('cr.ui.login.debug', function() {
     {
       id: 'network-selection',
       kind: ScreenKind.NORMAL,
+      states: [
+        {
+          id: 'no-error',
+        },
+        {
+          id: 'error',
+          trigger: (screen) => {
+            screen.setError(
+                'Chrome OS was unable to connect to Public Wifi. ' +
+                'Please select another network or try again.');
+          }
+        },
+      ],
     },
     {
       id: 'oobe-eula-md',
@@ -292,6 +313,10 @@ cr.define('cr.ui.login.debug', function() {
     {
       id: 'offline-ad-login',
       kind: ScreenKind.NORMAL,
+      // Remove this step from preview here, because it can only occur during
+      // enterprise enrollment step and it is already available there in debug
+      // overlay.
+      handledSteps: 'unlock',
       suffix: 'E',
     },
     {
@@ -442,6 +467,17 @@ cr.define('cr.ui.login.debug', function() {
             errorState: 3,
           },
         },
+        {
+          id: 'CRYPTOHOME_ERROR',
+          data: {
+            errorState: 4,
+            errorText:
+                'Sorry, your password could not be verified. Please try again',
+            keyboardHint: 'Check your keyboard layout and try again',
+            details: 'Could not mount cryptohome.',
+            helpLinkText: 'Learn more',
+          },
+        },
       ]
     },
     {
@@ -479,6 +515,13 @@ cr.define('cr.ui.login.debug', function() {
             screen.setIsTpmFirmwareUpdateAvailable(true);
           },
         },
+        {
+          id: 'powerwash-confirmation',
+          trigger: (screen) => {
+            screen.reset();
+            screen.setShouldShowConfirmationDialog(true);
+          },
+        },
       ],
     },
     {
@@ -492,29 +535,35 @@ cr.define('cr.ui.login.debug', function() {
       kind: ScreenKind.OTHER,
     },
     {
-      id: 'account-picker',
-      kind: ScreenKind.OTHER,
-      suffix: 'multiuser',
+      id: 'gaia-signin',
+      kind: ScreenKind.NORMAL,
+      handledSteps: 'allowlist-error',
+      states: [
+        {
+          id: 'allowlist-customer',
+          trigger: (screen) => {
+            screen.showAllowlistCheckFailedError(true, {
+              enterpriseManaged: false,
+            });
+          },
+        },
+      ],
     },
     {
-      id: 'gaia-signin',
+      id: 'offline-login',
       kind: ScreenKind.NORMAL,
       states: [
         {
-          // Generic offline GAIA
-          id: 'offline-gaia',
+          id: 'default',
           trigger: (screen) => {
-            screen.loadAuthExtension({
-              screenMode: 1,  // Offline
-            });
+            screen.loadParams({});
           },
         },
         {
           // kAccountsPrefLoginScreenDomainAutoComplete value is set
           id: 'offline-gaia-domain',
           trigger: (screen) => {
-            screen.loadAuthExtension({
-              screenMode: 1,  // Offline
+            screen.loadParams({
               emailDomain: 'somedomain.com',
             });
           },
@@ -523,8 +572,7 @@ cr.define('cr.ui.login.debug', function() {
           // Device is enterprise-managed.
           id: 'offline-gaia-enterprise',
           trigger: (screen) => {
-            screen.loadAuthExtension({
-              screenMode: 1,  // Offline
+            screen.loadParams({
               enterpriseDomainManager: 'example.com',
             });
           },
@@ -533,17 +581,8 @@ cr.define('cr.ui.login.debug', function() {
           // Retry after incorrect password attempt, user name is already known.
           id: 'offline-gaia-user',
           trigger: (screen) => {
-            screen.loadAuthExtension({
-              screenMode: 1,  // Offline
+            screen.loadParams({
               email: 'someone@example.com',
-            });
-          },
-        },
-        {
-          id: 'allowlist-customer',
-          trigger: (screen) => {
-            screen.showAllowlistCheckFailedError(true, {
-              enterpriseManaged: false,
             });
           },
         },
@@ -603,24 +642,18 @@ cr.define('cr.ui.login.debug', function() {
     {
       id: 'ad-password-change',
       kind: ScreenKind.OTHER,
+      handledSteps: 'password',
       states: [
         {
           // No error
           id: 'no-error',
           data: {
             username: 'username',
-          },
-        },
-        {
-          // First error
-          id: 'error-0',
-          data: {
-            username: 'username',
             error: 0,
           },
         },
         {
-          // Second error
+          // First error
           id: 'error-1',
           data: {
             username: 'username',
@@ -628,15 +661,20 @@ cr.define('cr.ui.login.debug', function() {
           },
         },
         {
-          // Error bubble
-          id: 'error-bubble',
-          trigger: (screen) => {
-            let errorElement = document.createElement('div');
-            errorElement.textContent = 'Some error text';
-            screen.showErrorBubble(
-                1,  // Login attempts
-                errorElement);
+          // Second error
+          id: 'error-2',
+          data: {
+            username: 'username',
+            error: 2,
           },
+        },
+        {
+          // Error dialog
+          id: 'error-dialog',
+          trigger: (screen) => {
+            let error = 'Some error text';
+            screen.showErrorDialog(error);
+          }
         },
       ],
     },
@@ -721,26 +759,82 @@ cr.define('cr.ui.login.debug', function() {
       ],
     },
     {
-      id: 'supervision-transition',
+      id: 'management-transition',
       kind: ScreenKind.OTHER,
+      handledSteps: 'progress,error',
       states: [
         {
-          id: 'adding',
-          data: {
-            isRemovingSupervision: false,
+          id: 'add-supervision',
+          trigger: (screen) => {
+            screen.setArcTransition(2);
+            screen.setUIStep('progress');
           },
         },
         {
-          id: 'removing',
-          data: {
-            isRemovingSupervision: true,
+          id: 'remove-supervision',
+          trigger: (screen) => {
+            screen.setArcTransition(1);
+            screen.setUIStep('progress');
           },
+        },
+        {
+          id: 'add-management',
+          trigger: (screen) => {
+            screen.setArcTransition(3);
+            screen.setManagementEntity('example.com');
+            screen.setUIStep('progress');
+          }
+        },
+        {
+          id: 'add-management-unknown-admin',
+          trigger: (screen) => {
+            screen.setArcTransition(3);
+            screen.setManagementEntity('');
+            screen.setUIStep('progress');
+          }
+        },
+        {
+          id: 'error-supervision',
+          trigger: (screen) => {
+            screen.setArcTransition(1);
+            screen.setUIStep('error');
+          }
+        },
+        {
+          id: 'error-management',
+          trigger: (screen) => {
+            screen.setArcTransition(3);
+            screen.setUIStep('error');
+          }
         },
       ],
     },
     {
       id: 'terms-of-service',
       kind: ScreenKind.NORMAL,
+      handledSteps: 'loading,loaded,error',
+      states: [
+        {
+          id: 'loading',
+          trigger: (screen) => {
+            screen.setManager('TestCompany');
+            screen.setUIStep('loading');
+          },
+        },
+        {
+          id: 'loaded',
+          trigger: (screen) => {
+            screen.setManager('TestCompany');
+            screen.setTermsOfService('TOS BEGIN\nThese are the terms\nTOS END');
+          },
+        },
+        {
+          id: 'error',
+          trigger: (screen) => {
+            screen.setTermsOfServiceLoadError();
+          },
+        },
+      ],
     },
     {
       id: 'sync-consent',
@@ -783,9 +877,7 @@ cr.define('cr.ui.login.debug', function() {
       ],
     },
     {
-      id: 'discover',
-      // TODO: remove once screen stops crashing
-      skipScreenshots: true,
+      id: 'pin-setup',
       kind: ScreenKind.NORMAL,
     },
     {
@@ -793,14 +885,16 @@ cr.define('cr.ui.login.debug', function() {
       kind: ScreenKind.NORMAL,
       states: [
         {
-          id: 'loading',
+          id: 'us-terms-loaded',
           trigger: (screen) => {
-            screen.showLoadingScreenForTesting();
+            screen.clearDemoMode();
+            screen.reloadPlayStoreToS();
           },
         },
         {
-          id: 'us-terms-loaded',
+          id: 'demo-mode',
           trigger: (screen) => {
+            screen.setupForDemoMode();
             screen.reloadPlayStoreToS();
           },
         },
@@ -816,8 +910,12 @@ cr.define('cr.ui.login.debug', function() {
         {
           id: '2-apps',
           trigger: (screen) => {
+            let newLayout = loadTimeData.valueExists('newLayoutEnabled') &&
+                loadTimeData.getBoolean('newLayoutEnabled');
             screen.reset();
-            screen.setWebview(RECOMMENDED_APPS_CONTENT);
+            screen.setWebview(
+                newLayout ? RECOMMENDED_APPS_CONTENT_NEW :
+                            RECOMMENDED_APPS_CONTENT);
             screen.loadAppList([
               {
                 name: 'Test app 1',
@@ -833,9 +931,13 @@ cr.define('cr.ui.login.debug', function() {
         {
           id: '21-apps',
           trigger: (screen) => {
+            let newLayout = loadTimeData.valueExists('newLayoutEnabled') &&
+                loadTimeData.getBoolean('newLayoutEnabled');
             // There can be up to 21 apps: see recommend_apps_fetcher_impl
             screen.reset();
-            screen.setWebview(RECOMMENDED_APPS_CONTENT);
+            screen.setWebview(
+                newLayout ? RECOMMENDED_APPS_CONTENT_NEW :
+                            RECOMMENDED_APPS_CONTENT);
             let apps = [];
             for (i = 1; i <= 21; i++) {
               apps.push({
@@ -874,17 +976,14 @@ cr.define('cr.ui.login.debug', function() {
       id: 'parental-handoff',
       kind: ScreenKind.NORMAL,
       states: [{
-        id: 'parental-handoff',
+        id: 'default',
         data: {
-          title: 'Now it\'s Child 1\'s turn',
-          subtitle:
-              'You can hand this Chromebook to Child 1. Setup is almost done,' +
-              ' then it\'s time to explore.'
+          username: 'TestUsername',
         },
       }],
     },
     {
-      id: 'multidevice-setup',
+      id: 'multidevice-setup-screen',
       kind: ScreenKind.NORMAL,
     },
     {
@@ -897,14 +996,46 @@ cr.define('cr.ui.login.debug', function() {
       states: [
         {
           id: 'WithOptionToSubscribe',
+          data: {
+            optInVisibility: true,
+            optInDefaultState: true,
+            legalFooterVisibility: false,
+          },
           trigger: (screen) => {
-            screen.setOptInVisibility(true);
+            screen.updateA11ySettingsButtonVisibility(false);
           },
         },
         {
           id: 'NoOptionToSubscribe',
+          data: {
+            optInVisibility: false,
+            optInDefaultState: false,
+            legalFooterVisibility: false,
+          },
           trigger: (screen) => {
-            screen.setOptInVisibility(false);
+            screen.updateA11ySettingsButtonVisibility(false);
+          },
+        },
+        {
+          id: 'WithLegalFooter',
+          data: {
+            optInVisibility: true,
+            optInDefaultState: true,
+            legalFooterVisibility: true,
+          },
+          trigger: (screen) => {
+            screen.updateA11ySettingsButtonVisibility(false);
+          },
+        },
+        {
+          id: 'WithAceessibilityButton',
+          data: {
+            optInVisibility: true,
+            optInDefaultState: true,
+            legalFooterVisibility: true,
+          },
+          trigger: (screen) => {
+            screen.updateA11ySettingsButtonVisibility(true);
           },
         },
       ],

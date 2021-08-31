@@ -5,10 +5,8 @@
 #ifndef COMPONENTS_SYNC_TRUSTED_VAULT_TRUSTED_VAULT_ACCESS_TOKEN_FETCHER_H_
 #define COMPONENTS_SYNC_TRUSTED_VAULT_TRUSTED_VAULT_ACCESS_TOKEN_FETCHER_H_
 
-#include <string>
-
 #include "base/callback.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 struct CoreAccountId;
 
@@ -23,7 +21,7 @@ namespace syncer {
 class TrustedVaultAccessTokenFetcher {
  public:
   using TokenCallback = base::OnceCallback<void(
-      base::Optional<signin::AccessTokenInfo> access_token_info)>;
+      absl::optional<signin::AccessTokenInfo> access_token_info)>;
 
   TrustedVaultAccessTokenFetcher() = default;
   TrustedVaultAccessTokenFetcher(const TrustedVaultAccessTokenFetcher& other) =

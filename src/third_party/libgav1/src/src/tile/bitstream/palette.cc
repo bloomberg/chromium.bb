@@ -130,10 +130,10 @@ void Tile::ReadPaletteColors(const Block& block, Plane plane) {
 
 void Tile::ReadPaletteModeInfo(const Block& block) {
   BlockParameters& bp = *block.bp;
+  bp.palette_mode_info.size[kPlaneTypeY] = 0;
+  bp.palette_mode_info.size[kPlaneTypeUV] = 0;
   if (IsBlockSmallerThan8x8(block.size) || block.size > kBlock64x64 ||
       !frame_header_.allow_screen_content_tools) {
-    bp.palette_mode_info.size[kPlaneTypeY] = 0;
-    bp.palette_mode_info.size[kPlaneTypeUV] = 0;
     return;
   }
   const int block_size_context =
@@ -156,7 +156,7 @@ void Tile::ReadPaletteModeInfo(const Block& block) {
       ReadPaletteColors(block, kPlaneY);
     }
   }
-  if (bp.uv_mode == kPredictionModeDc && block.HasChroma()) {
+  if (block.HasChroma() && bp.uv_mode == kPredictionModeDc) {
     const int context =
         static_cast<int>(bp.palette_mode_info.size[kPlaneTypeY] > 0);
     const bool has_palette_uv =

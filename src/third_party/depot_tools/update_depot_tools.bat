@@ -51,8 +51,13 @@ for /F %%x in ('git config --get remote.origin.url') DO (
     )
   )
 )
+:: depot_tools.zip archives generated before 2021-03-12 have instruction to
+:: fetch  only from old default git branch. Such branch won't be available
+:: evenutally, so fetch config needs to be updated.
+call git config --unset-all remote.origin.fetch
+call git config --add remote.origin.fetch +refs/heads/*:refs/remotes/origin/*
 call git fetch -q origin > NUL
-call git checkout -q origin/master > NUL
+call git checkout -q origin/main > NUL
 if errorlevel 1 (
   echo Failed to update depot_tools.
   goto :EOF

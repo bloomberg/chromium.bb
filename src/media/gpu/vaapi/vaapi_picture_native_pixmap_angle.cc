@@ -8,6 +8,7 @@
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/x/connection.h"
+#include "ui/gfx/x/future.h"
 #include "ui/gfx/x/xproto.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_image_egl_pixmap.h"
@@ -25,7 +26,7 @@ x11::Pixmap CreatePixmap(const gfx::Size& size) {
   auto root = connection->default_root();
 
   uint8_t depth = 0;
-  if (auto reply = connection->GetGeometry({root}).Sync())
+  if (auto reply = connection->GetGeometry(root).Sync())
     depth = reply->depth;
   else
     return x11::Pixmap::None;

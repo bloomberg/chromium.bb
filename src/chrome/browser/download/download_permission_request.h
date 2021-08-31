@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "build/build_config.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "components/permissions/permission_request.h"
 #include "url/origin.h"
@@ -24,17 +25,17 @@ class DownloadPermissionRequest : public permissions::PermissionRequest {
 
  private:
   // permissions::PermissionRequest:
-  IconId GetIconId() const override;
+  permissions::RequestType GetRequestType() const override;
 #if defined(OS_ANDROID)
-  base::string16 GetMessageText() const override;
+  std::u16string GetMessageText() const override;
+#else
+  std::u16string GetMessageTextFragment() const override;
 #endif
-  base::string16 GetMessageTextFragment() const override;
   GURL GetOrigin() const override;
   void PermissionGranted(bool is_one_time) override;
   void PermissionDenied() override;
   void Cancelled() override;
   void RequestFinished() override;
-  permissions::PermissionRequestType GetPermissionRequestType() const override;
 
   base::WeakPtr<DownloadRequestLimiter::TabDownloadState> host_;
   url::Origin request_origin_;

@@ -8,7 +8,7 @@
 #include "ash/public/cpp/notifier_settings_observer.h"
 #include "base/i18n/string_compare.h"
 #include "base/stl_util.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/notifications/arc_application_notifier_controller.h"
 #include "chrome/browser/notifications/extension_notifier_controller.h"
 #include "chrome/browser/notifications/web_page_notifier_controller.h"
@@ -73,8 +73,8 @@ class ForwardingNotificationDelegate
     delegate_->HandleNotificationClosed(notification_id_, by_user);
   }
 
-  void Click(const base::Optional<int>& button_index,
-             const base::Optional<base::string16>& reply) override {
+  void Click(const absl::optional<int>& button_index,
+             const absl::optional<std::u16string>& reply) override {
     if (button_index) {
       delegate_->HandleNotificationButtonClicked(notification_id_,
                                                  *button_index, reply);
@@ -136,7 +136,13 @@ void ChromeAshMessageCenterClient::Display(
           base::WrapRefCounted(
               new ForwardingNotificationDelegate(notification.id(), delegate_)),
           notification);
-  MessageCenter::Get()->AddNotification(std::move(message_center_notification));
+
+  // During shutdown, Ash is destroyed before |this|, taking the MessageCenter
+  // with it.
+  if (MessageCenter::Get()) {
+    MessageCenter::Get()->AddNotification(
+        std::move(message_center_notification));
+  }
 }
 
 void ChromeAshMessageCenterClient::Close(Profile* profile,
@@ -169,7 +175,7 @@ void ChromeAshMessageCenterClient::SetReadyCallback(
 }
 
 void ChromeAshMessageCenterClient::GetNotifiers() {
-  if (!notifier_observers_.might_have_observers())
+  if (notifier_observers_.empty())
     return;
 
   Profile* profile = GetProfileForNotifiers();

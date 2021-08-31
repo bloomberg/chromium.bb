@@ -17,6 +17,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "net/base/url_util.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace network {
@@ -53,7 +54,7 @@ class NtpBackgroundService : public KeyedService {
   // dropped until the currently active loader completes.
   void FetchNextCollectionImage(
       const std::string& collection_id,
-      const base::Optional<std::string>& resume_token);
+      const absl::optional<std::string>& resume_token);
 
   // Add/remove observers. All observers must unregister themselves before the
   // NtpBackgroundService is destroyed.

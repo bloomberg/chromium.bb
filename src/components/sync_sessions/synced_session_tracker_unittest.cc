@@ -243,6 +243,7 @@ TEST_F(SyncedSessionTrackerTest, LookupAllForeignSessions) {
   tab->navigations.push_back(
       sessions::SerializedNavigationEntryTestHelper::CreateNavigationForTest());
   tab->navigations.back().set_virtual_url(GURL(kInvalidUrl));
+
   // Only the session with a valid window and tab gets returned.
   EXPECT_THAT(
       tracker_.LookupAllForeignSessions(SyncedSessionTracker::PRESENTABLE),
@@ -250,6 +251,15 @@ TEST_F(SyncedSessionTrackerTest, LookupAllForeignSessions) {
   EXPECT_THAT(tracker_.LookupAllForeignSessions(SyncedSessionTracker::RAW),
               ElementsAre(HasSessionTag(kTag), HasSessionTag(kTag2),
                           HasSessionTag(kTag3)));
+
+  // Annotate kTag as local session.
+  ON_CALL(sessions_client_, IsRecentLocalCacheGuid(kTag))
+      .WillByDefault(Return(true));
+  EXPECT_THAT(
+      tracker_.LookupAllForeignSessions(SyncedSessionTracker::PRESENTABLE),
+      IsEmpty());
+  EXPECT_THAT(tracker_.LookupAllForeignSessions(SyncedSessionTracker::RAW),
+              ElementsAre(HasSessionTag(kTag2), HasSessionTag(kTag3)));
 }
 
 TEST_F(SyncedSessionTrackerTest, LookupSessionWindows) {
@@ -1085,7 +1095,7 @@ TEST_F(SyncedSessionTrackerTest, SerializeTrackerToSpecifics) {
   EXPECT_TRUE(testing::Mock::VerifyAndClearExpectations(&callback));
 
   // Attempt to serialize unknown entities.
-  EXPECT_CALL(callback, Run(_, _)).Times(0);
+  EXPECT_CALL(callback, Run).Times(0);
   SerializePartialTrackerToSpecifics(tracker_, {{kTag, {kTabNode5}}},
                                      callback.Get());
   SerializePartialTrackerToSpecifics(

@@ -8,7 +8,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/command_line.h"
-#include "base/stl_util.h"
+#include "base/containers/contains.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -148,7 +148,7 @@ void PageInfoControllerAndroid::SetPermissionInfo(
 
   for (const auto& permission : permission_info_list) {
     if (base::Contains(permissions_to_display, permission.type)) {
-      base::Optional<ContentSetting> setting_to_display =
+      absl::optional<ContentSetting> setting_to_display =
           GetSettingToDisplay(permission);
       if (setting_to_display) {
         user_specified_settings_to_display[permission.type] =
@@ -159,7 +159,7 @@ void PageInfoControllerAndroid::SetPermissionInfo(
 
   for (const auto& permission : permissions_to_display) {
     if (base::Contains(user_specified_settings_to_display, permission)) {
-      base::string16 setting_title =
+      std::u16string setting_title =
           PageInfoUI::PermissionTypeToUIString(permission);
 
       Java_PageInfoController_addPermissionSection(
@@ -171,7 +171,7 @@ void PageInfoControllerAndroid::SetPermissionInfo(
   }
 
   for (const auto& chosen_object : chosen_object_info_list) {
-    base::string16 object_title =
+    std::u16string object_title =
         presenter_->GetChooserContextFromUIInfo(chosen_object->ui_info)
             ->GetObjectDisplayName(chosen_object->chooser_object->value);
 
@@ -184,7 +184,7 @@ void PageInfoControllerAndroid::SetPermissionInfo(
   Java_PageInfoController_updatePermissionDisplay(env, controller_jobject_);
 }
 
-base::Optional<ContentSetting> PageInfoControllerAndroid::GetSettingToDisplay(
+absl::optional<ContentSetting> PageInfoControllerAndroid::GetSettingToDisplay(
     const PageInfo::PermissionInfo& permission) {
   // All permissions should be displayed if they are non-default.
   if (permission.setting != CONTENT_SETTING_DEFAULT &&
@@ -200,8 +200,7 @@ base::Optional<ContentSetting> PageInfoControllerAndroid::GetSettingToDisplay(
     // setting should show up in Page Info is in ShouldShowPermission in
     // page_info.cc.
     return permission.default_setting;
-  } else if (permission.type == ContentSettingsType::JAVASCRIPT &&
-             base::FeatureList::IsEnabled(page_info::kPageInfoV2)) {
+  } else if (permission.type == ContentSettingsType::JAVASCRIPT) {
     // The javascript content setting should show up if it is blocked globally
     // to give users an easy way to create exceptions.
     return permission.default_setting;
@@ -216,5 +215,5 @@ base::Optional<ContentSetting> PageInfoControllerAndroid::GetSettingToDisplay(
   // factory-default after we add the functionality to populate the permissions
   // subpage directly from the permissions returned from this controller.
 
-  return base::Optional<ContentSetting>();
+  return absl::optional<ContentSetting>();
 }

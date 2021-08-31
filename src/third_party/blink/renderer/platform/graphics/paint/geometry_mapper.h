@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_GEOMETRY_MAPPER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_GEOMETRY_MAPPER_H_
 
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/platform/graphics/overlay_scrollbar_clip_behavior.h"
 #include "third_party/blink/renderer/platform/graphics/paint/float_clip_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
@@ -106,6 +106,8 @@ class PLATFORM_EXPORT GeometryMapper {
         matrix_->PostTranslate(x, y);
     }
 
+    SkM44 ToSkM44() const { return TransformationMatrix::ToSkM44(Matrix()); }
+
     SkMatrix ToSkMatrix() const {
       if (LIKELY(IsIdentityOr2DTranslation())) {
         return SkMatrix::Translate(Translation2D().Width(),
@@ -125,7 +127,7 @@ class PLATFORM_EXPORT GeometryMapper {
 
    private:
     FloatSize translation_2d_;
-    base::Optional<TransformationMatrix> matrix_;
+    absl::optional<TransformationMatrix> matrix_;
   };
 
   // Returns the matrix that is suitable to map geometries on the source plane

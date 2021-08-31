@@ -14,12 +14,11 @@
 #include "src/gpu/GrPathRenderer.h"
 #include "src/gpu/GrRecordingContextPriv.h"
 #include "src/gpu/GrReducedClip.h"
-#include "src/gpu/GrRenderTargetContext.h"
-#include "src/gpu/GrRenderTargetContextPriv.h"
 #include "src/gpu/GrStencilClip.h"
 #include "src/gpu/GrStencilMaskHelper.h"
 #include "src/gpu/GrStencilSettings.h"
 #include "src/gpu/GrStyle.h"
+#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/GrUserStencilSettings.h"
 #include "src/gpu/ccpr/GrCoverageCountingPathRenderer.h"
 #include "src/gpu/effects/GrConvexPolyEffect.h"
@@ -698,13 +697,16 @@ GrReducedClip::ClipResult GrReducedClip::addAnalyticPath(const SkPath& deviceSpa
     }
 
     if (fCCPRClipPaths.count() < fMaxCCPRClipPaths && GrAA::kYes == aa) {
-        // Set aside CCPR paths for later. We will create their clip FPs once we know the ID of the
-        // opsTask they will operate in.
-        SkPath& ccprClipPath = fCCPRClipPaths.push_back(deviceSpacePath);
-        if (Invert::kYes == invert) {
-            ccprClipPath.toggleInverseFillType();
+        const SkRect& bounds = deviceSpacePath.getBounds();
+        if (bounds.height() * bounds.width() <= GrCoverageCountingPathRenderer::kMaxClipPathArea) {
+            // Set aside CCPR paths for later. We will create their clip FPs once we know the ID of
+            // the opsTask they will operate in.
+            SkPath& ccprClipPath = fCCPRClipPaths.push_back(deviceSpacePath);
+            if (Invert::kYes == invert) {
+                ccprClipPath.toggleInverseFillType();
+            }
+            return ClipResult::kClipped;
         }
-        return ClipResult::kClipped;
     }
 
     return ClipResult::kNotClipped;
@@ -725,7 +727,7 @@ void GrReducedClip::makeEmpty() {
 ////////////////////////////////////////////////////////////////////////////////
 // Create a 8-bit clip mask in alpha
 
-static bool stencil_element(GrRenderTargetContext* rtc,
+static bool stencil_element(GrSurfaceDrawContext* rtc,
                             const GrFixedClip& clip,
                             const GrUserStencilSettings* ss,
                             const SkMatrix& viewMatrix,
@@ -739,8 +741,8 @@ static bool stencil_element(GrRenderTargetContext* rtc,
             GrPaint paint;
             paint.setCoverageSetOpXPFactory((SkRegion::Op)element->getOp(),
                                             element->isInverseFilled());
-            rtc->priv().stencilRect(&clip, ss, std::move(paint), aa, viewMatrix,
-                                    element->getDeviceSpaceRect());
+            rtc->stencilRect(&clip, ss, std::move(paint), aa, viewMatrix,
+                             element->getDeviceSpaceRect());
             return true;
         }
         default: {
@@ -750,15 +752,15 @@ static bool stencil_element(GrRenderTargetContext* rtc,
                 path.toggleInverseFillType();
             }
 
-            return rtc->priv().drawAndStencilPath(&clip, ss, (SkRegion::Op)element->getOp(),
-                                                  element->isInverseFilled(), aa, viewMatrix, path);
+            return rtc->drawAndStencilPath(&clip, ss, (SkRegion::Op)element->getOp(),
+                                           element->isInverseFilled(), aa, viewMatrix, path);
         }
     }
 
     return false;
 }
 
-static void draw_element(GrRenderTargetContext* rtc,
+static void draw_element(GrSurfaceDrawContext* rtc,
                          const GrClip& clip,  // TODO: can this just always be WideOpen?
                          GrPaint&& paint,
                          GrAA aa,
@@ -785,7 +787,7 @@ static void draw_element(GrRenderTargetContext* rtc,
     }
 }
 
-bool GrReducedClip::drawAlphaClipMask(GrRenderTargetContext* rtc) const {
+bool GrReducedClip::drawAlphaClipMask(GrSurfaceDrawContext* rtc) const {
     // The texture may be larger than necessary, this rect represents the part of the texture
     // we populate with a rasterization of the clip.
     GrFixedClip clip(rtc->dimensions(), SkIRect::MakeWH(fScissor.width(), fScissor.height()));
@@ -806,7 +808,7 @@ bool GrReducedClip::drawAlphaClipMask(GrRenderTargetContext* rtc) const {
         rtc->drawRect(&clip, std::move(paint), GrAA::kNo, SkMatrix::I(),
                       SkRect::Make(clip.scissorRect()));
     } else {
-        rtc->priv().clearAtLeast(clip.scissorRect(), initialCoverage);
+        rtc->clearAtLeast(clip.scissorRect(), initialCoverage);
     }
 
     // Set the matrix so that rendered clip elements are transformed to mask space from clip space.
@@ -848,8 +850,8 @@ bool GrReducedClip::drawAlphaClipMask(GrRenderTargetContext* rtc) const {
 
             GrPaint paint;
             paint.setCoverageSetOpXPFactory(op, !invert);
-            rtc->priv().stencilRect(&clip, &kDrawOutsideElement, std::move(paint), GrAA::kNo,
-                                    translate, SkRect::Make(fScissor));
+            rtc->stencilRect(&clip, &kDrawOutsideElement, std::move(paint), GrAA::kNo, translate,
+                             SkRect::Make(fScissor));
         } else {
             // all the remaining ops can just be directly draw into the accumulation buffer
             GrPaint paint;
@@ -866,8 +868,8 @@ bool GrReducedClip::drawAlphaClipMask(GrRenderTargetContext* rtc) const {
 // Create a 1-bit clip mask in the stencil buffer.
 
 bool GrReducedClip::drawStencilClipMask(GrRecordingContext* context,
-                                        GrRenderTargetContext* renderTargetContext) const {
-    GrStencilMaskHelper helper(context, renderTargetContext);
+                                        GrSurfaceDrawContext* surfaceDrawContext) const {
+    GrStencilMaskHelper helper(context, surfaceDrawContext);
     if (!helper.init(fScissor, this->maskGenID(), fWindowRects, this->numAnalyticElements())) {
         // The stencil mask doesn't need updating
         return true;
@@ -900,9 +902,10 @@ int GrReducedClip::numAnalyticElements() const {
     return fCCPRClipPaths.size() + fNumAnalyticElements;
 }
 
-std::unique_ptr<GrFragmentProcessor> GrReducedClip::finishAndDetachAnalyticElements(
-        GrRecordingContext* context, const SkMatrixProvider& matrixProvider,
-        GrCoverageCountingPathRenderer* ccpr, uint32_t opsTaskID) {
+GrFPResult GrReducedClip::finishAndDetachAnalyticElements(GrRecordingContext* context,
+                                                          const SkMatrixProvider& matrixProvider,
+                                                          GrCoverageCountingPathRenderer* ccpr,
+                                                          uint32_t opsTaskID) {
     // Combine the analytic FP with any CCPR clip processors.
     std::unique_ptr<GrFragmentProcessor> clipFP = std::move(fAnalyticFP);
     fNumAnalyticElements = 0;
@@ -910,8 +913,12 @@ std::unique_ptr<GrFragmentProcessor> GrReducedClip::finishAndDetachAnalyticEleme
     for (const SkPath& ccprClipPath : fCCPRClipPaths) {
         SkASSERT(ccpr);
         SkASSERT(fHasScissor);
-        clipFP = ccpr->makeClipProcessor(std::move(clipFP), opsTaskID, ccprClipPath,
-                                         fScissor, *fCaps);
+        bool success;
+        std::tie(success, clipFP) = ccpr->makeClipProcessor(std::move(clipFP), opsTaskID,
+                                                            ccprClipPath, fScissor, *fCaps);
+        if (!success) {
+            return GrFPFailure(nullptr);
+        }
     }
     fCCPRClipPaths.reset();
 
@@ -920,7 +927,7 @@ std::unique_ptr<GrFragmentProcessor> GrReducedClip::finishAndDetachAnalyticEleme
     if (fShader != nullptr) {
         static const GrColorInfo kCoverageColorInfo{GrColorType::kUnknown, kPremul_SkAlphaType,
                                                     nullptr};
-        GrFPArgs args(context, matrixProvider, kNone_SkFilterQuality, &kCoverageColorInfo);
+        GrFPArgs args(context, matrixProvider, &kCoverageColorInfo);
         shaderFP = as_SB(fShader)->asFragmentProcessor(args);
         if (shaderFP != nullptr) {
             shaderFP = GrFragmentProcessor::MulInputByChildAlpha(std::move(shaderFP));
@@ -928,5 +935,5 @@ std::unique_ptr<GrFragmentProcessor> GrReducedClip::finishAndDetachAnalyticEleme
     }
 
     // Compose the clip and shader FPs.
-    return GrFragmentProcessor::Compose(std::move(clipFP), std::move(shaderFP));
+    return GrFPSuccess(GrFragmentProcessor::Compose(std::move(shaderFP), std::move(clipFP)));
 }

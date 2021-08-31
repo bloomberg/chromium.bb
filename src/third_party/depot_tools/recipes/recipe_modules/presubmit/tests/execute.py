@@ -41,7 +41,8 @@ def GenTests(api):
          api.post_process(post_process.DropExpectation))
 
   yield (api.test('cq_dry_run') + api.runtime(is_experimental=False) +
-         api.buildbucket.try_build(project='infra') + api.cq(dry_run=True) +
+         api.buildbucket.try_build(project='infra') +
+         api.cq(run_mode=api.cq.DRY_RUN) +
          api.post_process(post_process.StatusSuccess) + api.post_process(
              post_process.StepCommandContains, 'presubmit', ['--dry_run']) +
          api.post_process(post_process.DropExpectation))

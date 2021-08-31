@@ -13,21 +13,26 @@
 
 #include <cstddef>
 #include <list>
+#include <memory>
 #include <string>
 
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/http/http_decoder.h"
-#include "net/third_party/quiche/src/quic/core/http/http_encoder.h"
-#include "net/third_party/quiche/src/quic/core/http/quic_header_list.h"
-#include "net/third_party/quiche/src/quic/core/http/quic_spdy_stream_body_manager.h"
-#include "net/third_party/quiche/src/quic/core/qpack/qpack_decoded_headers_accumulator.h"
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/core/quic_stream.h"
-#include "net/third_party/quiche/src/quic/core/quic_stream_sequencer.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_socket_address.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_framer.h"
+#include "quic/core/http/http_decoder.h"
+#include "quic/core/http/http_encoder.h"
+#include "quic/core/http/quic_header_list.h"
+#include "quic/core/http/quic_spdy_stream_body_manager.h"
+#include "quic/core/qpack/qpack_decoded_headers_accumulator.h"
+#include "quic/core/quic_packets.h"
+#include "quic/core/quic_stream.h"
+#include "quic/core/quic_stream_sequencer.h"
+#include "quic/core/quic_types.h"
+#include "quic/core/web_transport_interface.h"
+#include "quic/core/web_transport_stream_adapter.h"
+#include "quic/platform/api/quic_export.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_socket_address.h"
+#include "spdy/core/spdy_framer.h"
+#include "spdy/core/spdy_header_block.h"
 
 namespace quic {
 
@@ -37,6 +42,7 @@ class QuicStreamPeer;
 }  // namespace test
 
 class QuicSpdySession;
+class WebTransportHttp3;
 
 // A QUIC stream that can send and receive HTTP2 (SPDY) headers.
 class QUIC_EXPORT_PRIVATE QuicSpdyStream
@@ -132,9 +138,6 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream
       spdy::SpdyHeaderBlock trailer_block,
       QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
 
-  // Serializes |frame| and writes the encoded push promise data.
-  void WritePushPromise(const PushPromiseFrame& frame);
-
   // Override to report newly acked bytes via ack_listener_.
   bool OnStreamFrameAcked(QuicStreamOffset offset,
                           QuicByteCount data_length,
@@ -164,8 +167,6 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream
 
   // Clears |header_list_|.
   void ConsumeHeaderList();
-
-  void SetUnblocked() { sequencer()->SetUnblocked(); }
 
   // This block of functions wraps the sequencer's functions of the same
   // name.  These methods return uncompressed data until that has
@@ -207,12 +208,6 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream
   // read and consumed or there are no trailers.
   bool FinishedReadingTrailers() const;
 
-  // Called when owning session is getting deleted to avoid subsequent
-  // use of the spdy_session_ member.
-  // TODO(b/136274541): Remove this method once
-  // flag_quic_clean_up_spdy_session_destructor is deprecated.
-  void ClearSession();
-
   // Returns true if the sequencer has delivered the FIN, and no more body bytes
   // will be available.
   bool IsSequencerClosed() { return sequencer()->IsClosed(); }
@@ -227,6 +222,27 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream
   // Send PRIORITY_UPDATE frame and update |last_sent_urgency_| if
   // |last_sent_urgency_| is different from current priority.
   void MaybeSendPriorityUpdateFrame() override;
+
+  // Returns the WebTransport session owned by this stream, if one exists.
+  WebTransportHttp3* web_transport() { return web_transport_.get(); }
+
+  // Returns the WebTransport data stream associated with this QUIC stream, or
+  // null if this is not a WebTransport data stream.
+  WebTransportStream* web_transport_stream() {
+    if (web_transport_data_ == nullptr) {
+      return nullptr;
+    }
+    return &web_transport_data_->adapter;
+  }
+
+  // Sends a WEBTRANSPORT_STREAM frame and sets up the appropriate metadata.
+  void ConvertToWebTransportDataStream(WebTransportSessionId session_id);
+
+  void OnCanWriteNewData() override;
+
+  // If this stream is a WebTransport data stream, closes the connection with an
+  // error, and returns false.
+  bool AssertNotWebTransportDataStream(absl::string_view operation);
 
  protected:
   // Called when the received headers are too large. By default this will
@@ -259,6 +275,14 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream
   friend class QuicStreamUtils;
   class HttpDecoderVisitor;
 
+  struct QUIC_EXPORT_PRIVATE WebTransportDataStream {
+    WebTransportDataStream(QuicSpdyStream* stream,
+                           WebTransportSessionId session_id);
+
+    WebTransportSessionId session_id;
+    WebTransportStreamAdapter adapter;
+  };
+
   // Called by HttpDecoderVisitor.
   bool OnDataFrameStart(QuicByteCount header_length,
                         QuicByteCount payload_length);
@@ -274,6 +298,8 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream
                                 QuicByteCount header_block_length);
   bool OnPushPromiseFramePayload(absl::string_view payload);
   bool OnPushPromiseFrameEnd();
+  void OnWebTransportStreamFrameType(QuicByteCount header_length,
+                                     WebTransportSessionId session_id);
   bool OnUnknownFrameStart(uint64_t frame_type,
                            QuicByteCount header_length,
                            QuicByteCount payload_length);
@@ -284,6 +310,9 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream
   // the number of frame header bytes contained in it.
   QuicByteCount GetNumFrameHeadersInInterval(QuicStreamOffset offset,
                                              QuicByteCount data_length) const;
+
+  void MaybeProcessSentWebTransportHeaders(spdy::SpdyHeaderBlock& headers);
+  void MaybeProcessReceivedWebTransportHeaders();
 
   QuicSpdySession* spdy_session_;
 
@@ -345,6 +374,14 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream
   // Urgency value sent in the last PRIORITY_UPDATE frame, or default urgency
   // defined by the spec if no PRIORITY_UPDATE frame has been sent.
   int last_sent_urgency_;
+
+  // If this stream is a WebTransport extended CONNECT stream, contains the
+  // WebTransport session associated with this stream.
+  std::unique_ptr<WebTransportHttp3> web_transport_;
+
+  // If this stream is a WebTransport data stream, |web_transport_data_|
+  // contains all of the associated metadata.
+  std::unique_ptr<WebTransportDataStream> web_transport_data_;
 };
 
 }  // namespace quic

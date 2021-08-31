@@ -76,7 +76,7 @@ TEST(PixelBufferPoolTest, CannotExceedMaxBuffersWhenIOSurfaceIsInUse) {
 
 TEST(PixelBufferPoolTest, CanCreateBuffersIfMaxIsNull) {
   std::unique_ptr<PixelBufferPool> pool = PixelBufferPool::Create(
-      kPixelFormatNv12, kVgaWidth, kVgaHeight, base::nullopt);
+      kPixelFormatNv12, kVgaWidth, kVgaHeight, absl::nullopt);
   base::ScopedCFTypeRef<CVPixelBufferRef> first_buffer = pool->CreateBuffer();
   EXPECT_TRUE(first_buffer);
   base::ScopedCFTypeRef<CVPixelBufferRef> second_buffer = pool->CreateBuffer();
@@ -137,6 +137,36 @@ TEST(PixelBufferPoolTest,
             IOSurfaceGetID(second_buffer_io_surface));
 }
 
+TEST(PixelBufferPoolTest, RecreatePoolAndObserveRecycledIOSurfaceID) {
+  constexpr size_t kPoolMaxBuffers = 1;
+  std::unique_ptr<PixelBufferPool> pool = PixelBufferPool::Create(
+      kPixelFormatNv12, kVgaWidth, kVgaHeight, kPoolMaxBuffers);
+  base::ScopedCFTypeRef<CVPixelBufferRef> first_buffer = pool->CreateBuffer();
+  EXPECT_TRUE(first_buffer);
+  IOSurfaceID first_buffer_id =
+      IOSurfaceGetID(CVPixelBufferGetIOSurface(first_buffer));
+
+  // Free references and recreate the pool. There is nothing preventing the
+  // IOSurfaceID from being recycled, even by a different CVPixelBufferPool with
+  // a different resolution!
+  first_buffer.reset();
+  pool = PixelBufferPool::Create(kPixelFormatNv12, kVgaWidth / 2,
+                                 kVgaHeight / 2, kPoolMaxBuffers);
+
+  base::ScopedCFTypeRef<CVPixelBufferRef> second_buffer = pool->CreateBuffer();
+  EXPECT_TRUE(second_buffer);
+  IOSurfaceID second_buffer_id =
+      IOSurfaceGetID(CVPixelBufferGetIOSurface(second_buffer));
+
+  // The new pool is allowed to recycle the old IOSurface ID.
+  //
+  // This test documents "foot gun" behavior that is not documented by Apple
+  // anywhere. If the test starts failing, it may be because this behavior is
+  // specific to version or hardware. In such cases, feel free to disable the
+  // test.
+  EXPECT_EQ(first_buffer_id, second_buffer_id);
+}
+
 TEST(PixelBufferPoolTest, BuffersCanOutliveThePool) {
   std::unique_ptr<PixelBufferPool> pool =
       PixelBufferPool::Create(kPixelFormatNv12, kVgaWidth, kVgaHeight, 1);
@@ -150,7 +180,7 @@ TEST(PixelBufferPoolTest, BuffersCanOutliveThePool) {
 
 TEST(PixelBufferPoolTest, CanFlushWhileBufferIsInUse) {
   std::unique_ptr<PixelBufferPool> pool = PixelBufferPool::Create(
-      kPixelFormatNv12, kVgaWidth, kVgaHeight, base::nullopt);
+      kPixelFormatNv12, kVgaWidth, kVgaHeight, absl::nullopt);
   base::ScopedCFTypeRef<CVPixelBufferRef> retained_buffer =
       pool->CreateBuffer();
   base::ScopedCFTypeRef<CVPixelBufferRef> released_buffer =

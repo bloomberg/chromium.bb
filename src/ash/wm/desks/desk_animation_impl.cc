@@ -6,6 +6,7 @@
 
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/presentation_time_recorder.h"
+#include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desks_controller.h"
@@ -38,9 +39,14 @@ constexpr char kDeskUpdateGestureMaxLatencyHistogramName[] =
 constexpr char kDeskEndGestureSmoothnessHistogramName[] =
     "Ash.Desks.AnimationSmoothness.DeskEndGesture";
 
+// Swipes which are below this threshold are considered fast, and
+// RootWindowDeskSwitchAnimator will determine a different ending desk for these
+// swipes.
+constexpr base::TimeDelta kFastSwipeThresholdDuration =
+    base::TimeDelta::FromMilliseconds(500);
+
 bool IsForContinuousGestures(DesksSwitchSource source) {
-  return source == DesksSwitchSource::kDeskSwitchTouchpad &&
-         features::IsEnhancedDeskAnimations();
+  return source == DesksSwitchSource::kDeskSwitchTouchpad;
 }
 
 }  // namespace
@@ -58,6 +64,8 @@ DeskActivationAnimation::DeskActivationAnimation(DesksController* controller,
                         IsForContinuousGestures(source)),
       switch_source_(source),
       update_window_activation_(update_window_activation),
+      visible_desk_index_(starting_desk_index),
+      last_start_or_replace_time_(base::TimeTicks::Now()),
       presentation_time_recorder_(CreatePresentationTimeHistogramRecorder(
           desks_util::GetSelectedCompositorForPerformanceMetrics(),
           kDeskUpdateGestureHistogramName,
@@ -106,6 +114,8 @@ bool DeskActivationAnimation::Replace(bool moving_left,
 
   ending_desk_index_ = new_ending_desk_index;
 
+  last_start_or_replace_time_ = base::TimeTicks::Now();
+
   // Similar to on starting, for touchpad, the user can replace the animation
   // without switching visible desks.
   if (switch_source_ != DesksSwitchSource::kDeskSwitchTouchpad)
@@ -114,7 +124,6 @@ bool DeskActivationAnimation::Replace(bool moving_left,
   // List of animators that need a screenshot. It should be either empty or
   // match the size of |desk_switch_animators_| as all the animations should be
   // in sync.
-  // TODO(sammiequon): Verify all the animations are in sync.
   std::vector<RootWindowDeskSwitchAnimator*> pending_animators;
   for (const auto& animator : desk_switch_animators_) {
     if (animator->ReplaceAnimation(new_ending_desk_index))
@@ -129,8 +138,7 @@ bool DeskActivationAnimation::Replace(bool moving_left,
   }
 
   // Activate the target desk and take a screenshot.
-  // TODO(crbug.com/1134390): Convert back to DCHECK when the issue is fixed.
-  CHECK_EQ(pending_animators.size(), desk_switch_animators_.size());
+  DCHECK_EQ(pending_animators.size(), desk_switch_animators_.size());
   PrepareDeskForScreenshot(new_ending_desk_index);
   for (auto* animator : pending_animators)
     animator->TakeEndingDeskScreenshot();
@@ -145,12 +153,24 @@ bool DeskActivationAnimation::UpdateSwipeAnimation(float scroll_delta_x) {
 
   // If any of the displays need a new screenshot while scrolling, take the
   // ending desk screenshot for all of them to keep them in sync.
-  base::Optional<int> ending_desk_index;
+  absl::optional<int> ending_desk_index;
   for (const auto& animator : desk_switch_animators_) {
     if (!ending_desk_index)
       ending_desk_index = animator->UpdateSwipeAnimation(scroll_delta_x);
     else
       animator->UpdateSwipeAnimation(scroll_delta_x);
+  }
+
+  // See if the animator of the first display has visibly changed desks. If so,
+  // update |visible_desk_changes_| for metrics collection purposes.
+  auto* first_animator = desk_switch_animators_.front().get();
+  DCHECK(first_animator);
+  if (first_animator->starting_desk_screenshot_taken() &&
+      first_animator->ending_desk_screenshot_taken()) {
+    const int old_visible_desk_index = visible_desk_index_;
+    visible_desk_index_ = first_animator->GetIndexOfMostVisibleDeskScreenshot();
+    if (visible_desk_index_ != old_visible_desk_index)
+      ++visible_desk_changes_;
   }
 
   // No screenshot needed.
@@ -182,8 +202,11 @@ bool DeskActivationAnimation::EndSwipeAnimation() {
   // End the animation. The animator will determine which desk to animate to,
   // and update their ending desk index. When the animation is finished we will
   // activate that desk.
+  const bool is_fast_swipe =
+      base::TimeTicks::Now() - last_start_or_replace_time_ <
+      kFastSwipeThresholdDuration;
   for (const auto& animator : desk_switch_animators_)
-    ending_desk_index_ = animator->EndSwipeAnimation();
+    ending_desk_index_ = animator->EndSwipeAnimation(is_fast_swipe);
 
   return true;
 }
@@ -212,6 +235,9 @@ metrics_util::ReportCallback DeskActivationAnimation::GetReportCallback()
 }
 
 void DeskActivationAnimation::PrepareDeskForScreenshot(int index) {
+  for (auto* root_window_controller : Shell::GetAllRootWindowControllers())
+    root_window_controller->HideContextMenuNoAnimation();
+
   // The order here matters. Overview must end before ending tablet split view
   // before switching desks. (If clamshell split view is active on one or more
   // displays, then it simply will end when we end overview.) That's because
@@ -281,6 +307,9 @@ void DeskRemovalAnimation::OnStartingDeskScreenshotTakenInternal(
       SplitViewController::Get(Shell::GetPrimaryRootWindow());
   split_view_controller->EndSplitView(
       SplitViewController::EndReason::kDesksChange);
+
+  for (auto* root_window_controller : Shell::GetAllRootWindowControllers())
+    root_window_controller->HideContextMenuNoAnimation();
 
   // At the end of phase (1), we activate the target desk (i.e. the desk that
   // will be activated after the active desk `desk_to_remove_index_` is

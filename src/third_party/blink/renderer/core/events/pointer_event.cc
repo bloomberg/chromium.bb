@@ -4,14 +4,18 @@
 
 #include "third_party/blink/renderer/core/events/pointer_event.h"
 
+#include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_pointer_event_init.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatcher.h"
 #include "third_party/blink/renderer/core/dom/events/event_path.h"
 #include "third_party/blink/renderer/core/events/pointer_event_util.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
+
 PointerEvent::PointerEvent(const AtomicString& type,
                            const PointerEventInit* initializer,
                            base::TimeTicks platform_time_stamp,
@@ -63,29 +67,27 @@ PointerEvent::PointerEvent(const AtomicString& type,
     for (auto predicted_event : initializer->predictedEvents())
       predicted_events_.push_back(predicted_event);
   }
-  if (RuntimeEnabledFeatures::AzimuthAltitudeEnabled()) {
-    if (initializer->hasAzimuthAngle())
-      azimuth_angle_ = initializer->azimuthAngle();
-    if (initializer->hasAltitudeAngle())
-      altitude_angle_ = initializer->altitudeAngle();
-    if ((initializer->hasTiltX() || initializer->hasTiltY()) &&
-        !initializer->hasAzimuthAngle() && !initializer->hasAltitudeAngle()) {
-      azimuth_angle_ = PointerEventUtil::AzimuthFromTilt(
-          PointerEventUtil::TransformToTiltInValidRange(tilt_x_),
-          PointerEventUtil::TransformToTiltInValidRange(tilt_y_));
-      altitude_angle_ = PointerEventUtil::AltitudeFromTilt(
-          PointerEventUtil::TransformToTiltInValidRange(tilt_x_),
-          PointerEventUtil::TransformToTiltInValidRange(tilt_y_));
-    }
-    if ((initializer->hasAzimuthAngle() || initializer->hasAltitudeAngle()) &&
-        !initializer->hasTiltX() && !initializer->hasTiltY()) {
-      tilt_x_ = PointerEventUtil::TiltXFromSpherical(
-          PointerEventUtil::TransformToAzimuthInValidRange(azimuth_angle_),
-          PointerEventUtil::TransformToAltitudeInValidRange(altitude_angle_));
-      tilt_y_ = PointerEventUtil::TiltYFromSpherical(
-          PointerEventUtil::TransformToAzimuthInValidRange(azimuth_angle_),
-          PointerEventUtil::TransformToAltitudeInValidRange(altitude_angle_));
-    }
+  if (initializer->hasAzimuthAngle())
+    azimuth_angle_ = initializer->azimuthAngle();
+  if (initializer->hasAltitudeAngle())
+    altitude_angle_ = initializer->altitudeAngle();
+  if ((initializer->hasTiltX() || initializer->hasTiltY()) &&
+      !initializer->hasAzimuthAngle() && !initializer->hasAltitudeAngle()) {
+    azimuth_angle_ = PointerEventUtil::AzimuthFromTilt(
+        PointerEventUtil::TransformToTiltInValidRange(tilt_x_),
+        PointerEventUtil::TransformToTiltInValidRange(tilt_y_));
+    altitude_angle_ = PointerEventUtil::AltitudeFromTilt(
+        PointerEventUtil::TransformToTiltInValidRange(tilt_x_),
+        PointerEventUtil::TransformToTiltInValidRange(tilt_y_));
+  }
+  if ((initializer->hasAzimuthAngle() || initializer->hasAltitudeAngle()) &&
+      !initializer->hasTiltX() && !initializer->hasTiltY()) {
+    tilt_x_ = PointerEventUtil::TiltXFromSpherical(
+        PointerEventUtil::TransformToAzimuthInValidRange(azimuth_angle_),
+        PointerEventUtil::TransformToAltitudeInValidRange(altitude_angle_));
+    tilt_y_ = PointerEventUtil::TiltYFromSpherical(
+        PointerEventUtil::TransformToAzimuthInValidRange(azimuth_angle_),
+        PointerEventUtil::TransformToAltitudeInValidRange(altitude_angle_));
   }
 }
 
@@ -100,11 +102,22 @@ bool PointerEvent::IsMouseEvent() const {
   return false;
 }
 
+bool PointerEvent::ShouldHaveIntegerCoordinates() const {
+  if (type() == event_type_names::kClick ||
+      type() == event_type_names::kContextmenu ||
+      type() == event_type_names::kAuxclick) {
+    return true;
+  }
+  return false;
+}
+
 bool PointerEvent::IsPointerEvent() const {
   return true;
 }
 
 double PointerEvent::offsetX() const {
+  if (ShouldHaveIntegerCoordinates())
+    return MouseEvent::offsetX();
   if (!HasPosition())
     return 0;
   if (!has_cached_relative_position_)
@@ -113,6 +126,8 @@ double PointerEvent::offsetX() const {
 }
 
 double PointerEvent::offsetY() const {
+  if (ShouldHaveIntegerCoordinates())
+    return MouseEvent::offsetY();
   if (!HasPosition())
     return 0;
   if (!has_cached_relative_position_)
@@ -157,7 +172,7 @@ base::TimeTicks PointerEvent::OldestPlatformTimeStamp() const {
     // Assume that time stamps of coalesced events are in ascending order.
     return coalesced_events_[0]->PlatformTimeStamp();
   }
-  return this->PlatformTimeStamp();
+  return PlatformTimeStamp();
 }
 
 void PointerEvent::Trace(Visitor* visitor) const {
@@ -182,6 +197,12 @@ DispatchEventResult PointerEvent::DispatchEvent(EventDispatcher& dispatcher) {
   GetEventPath().AdjustForRelatedTarget(dispatcher.GetNode(), relatedTarget());
 
   return dispatcher.Dispatch();
+}
+
+PointerId PointerEvent::pointerIdForBindings() const {
+  if (auto* local_dom_window = DynamicTo<LocalDOMWindow>(view()))
+    UseCounter::Count(local_dom_window->document(), WebFeature::kPointerId);
+  return pointerId();
 }
 
 }  // namespace blink

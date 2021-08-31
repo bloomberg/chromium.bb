@@ -287,6 +287,9 @@ Polymer({
 
           case DangerType.SENSITIVE_CONTENT_WARNING:
             return loadTimeData.getString('sensitiveContentWarningDesc');
+
+          case DangerType.DANGEROUS_ACCOUNT_COMPROMISE:
+            return loadTimeData.getString('accountCompromiseDownloadDesc');
         }
         break;
 
@@ -417,7 +420,8 @@ Polymer({
         (this.data.dangerType === DangerType.DANGEROUS_CONTENT ||
          this.data.dangerType === DangerType.DANGEROUS_HOST ||
          this.data.dangerType === DangerType.DANGEROUS_URL ||
-         this.data.dangerType === DangerType.POTENTIALLY_UNWANTED);
+         this.data.dangerType === DangerType.POTENTIALLY_UNWANTED || 
+         this.data.dangerType === DangerType.DANGEROUS_ACCOUNT_COMPROMISE);
   },
 
   /** @private */
@@ -617,8 +621,11 @@ Polymer({
     }
   },
 
-  /** @private */
-  onRemoveTap_() {
+  /**
+   * @private
+   * @param {Event} e
+   */
+  onRemoveTap_(e) {
     this.mojoHandler_.remove(this.data.id);
     const pieces = loadTimeData.getSubstitutedStringPieces(
         loadTimeData.getString('toastRemovedFromList'), this.data.fileName);
@@ -634,6 +641,10 @@ Polymer({
          *                 arg: (string|null)}>}
          */
         (pieces), /* hideSlotted= */ !canUndo);
+
+    // Stop propagating a click to the document to remove toast.
+    e.stopPropagation();
+    e.preventDefault();
   },
 
   /** @private */

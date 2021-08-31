@@ -4,6 +4,7 @@
 
 #include "chromecast/browser/ui/aura/accessibility/ax_tree_source_aura.h"
 
+#include "base/logging.h"
 #include "chromecast/browser/accessibility/accessibility_manager.h"
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/ui/aura/accessibility/automation_manager_aura.h"
@@ -68,7 +69,7 @@ bool AXTreeSourceAura::GetTreeData(ui::AXTreeData* tree_data) const {
           for (aura::Window* child : top->children())
             stack.push(child);
         }
-        if (tree_data->focus_id == ui::AXNode::kInvalidAXID) {
+        if (tree_data->focus_id == ui::kInvalidAXNodeID) {
           LOG(ERROR) << "Could not find node to focus in desktop tree.";
         }
       }

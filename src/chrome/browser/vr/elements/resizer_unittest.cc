@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/strings/stringprintf.h"
 #include "cc/test/geometry_test_utils.h"
 #include "chrome/browser/vr/test/animation_utils.h"
 #include "chrome/browser/vr/test/constants.h"
@@ -35,9 +34,9 @@ class ResizerTest : public testing::Test {
   void Move(const gfx::PointF& from, const gfx::PointF& to) {
     resizer_->set_touch_position(from);
     resizer_->SetTouchingTouchpad(true);
-    scene_.OnBeginFrame(MsToTicks(1), gfx::Transform());
+    scene_.OnBeginFrame(gfx::MsToTicks(1), gfx::Transform());
     resizer_->set_touch_position(to);
-    scene_.OnBeginFrame(MsToTicks(1), gfx::Transform());
+    scene_.OnBeginFrame(gfx::MsToTicks(1), gfx::Transform());
     resizer_->SetTouchingTouchpad(false);
   }
 

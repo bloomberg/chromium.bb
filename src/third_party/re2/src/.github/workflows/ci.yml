@@ -21,7 +21,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        tag: [9, 10, 11]
+        tag: [9, 10, 11, 12]
     env:
       CC: clang-${{ matrix.tag }}
       CXX: clang++-${{ matrix.tag }}
@@ -41,7 +41,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        tag: [4, 5, 6, 7, 8, 9, 10]
+        tag: [4, 5, 6, 7, 8, 9, 10, 11]
     env:
       CC: gcc
       CXX: g++

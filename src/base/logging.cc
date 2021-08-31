@@ -22,6 +22,7 @@
 
 #include "base/pending_task.h"
 #include "base/stl_util.h"
+#include "base/strings/string_piece.h"
 #include "base/task/common/task_annotator.h"
 #include "base/trace_event/base_tracing.h"
 #include "build/build_config.h"
@@ -121,6 +122,7 @@ typedef FILE* FileHandle;
 #include "base/test/scoped_logging_settings.h"
 #include "base/threading/platform_thread.h"
 #include "base/vlog.h"
+#include "build/chromeos_buildflags.h"
 
 #if defined(OS_WIN)
 #include "base/win/win_util.h"
@@ -130,7 +132,7 @@ typedef FILE* FileHandle;
 #include "base/posix/safe_strerror.h"
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "base/files/scoped_file.h"
 #endif
 
@@ -157,7 +159,7 @@ int g_min_log_level = 0;
 // LoggingDestination values joined by bitwise OR.
 int g_logging_destination = LOG_DEFAULT;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Specifies the format of log header for chrome os.
 LogFormat g_log_format = LogFormat::LOG_FORMAT_SYSLOG;
 #endif
@@ -193,7 +195,7 @@ base::stack<LogAssertHandlerFunction>& GetLogAssertHandlerStack() {
 }
 
 // A log message handler that gets notified of every log message we process.
-LogMessageHandlerFunction log_message_handler = nullptr;
+LogMessageHandlerFunction g_log_message_handler = nullptr;
 
 uint64_t TickCount() {
 #if defined(OS_WIN)
@@ -344,6 +346,30 @@ void CloseLogFileUnlocked() {
     g_logging_destination &= ~LOG_TO_FILE;
 }
 
+#if defined(OS_FUCHSIA)
+
+inline fx_log_severity_t LogSeverityToFuchsiaLogSeverity(LogSeverity severity) {
+  switch (severity) {
+    case LOGGING_INFO:
+      return FX_LOG_INFO;
+    case LOGGING_WARNING:
+      return FX_LOG_WARNING;
+    case LOGGING_ERROR:
+      return FX_LOG_ERROR;
+    case LOGGING_FATAL:
+      // Don't use FX_LOG_FATAL, otherwise fx_logger_log() will abort().
+      return FX_LOG_ERROR;
+  }
+  if (severity > -3) {
+    // LOGGING_VERBOSE levels 1 and 2.
+    return FX_LOG_DEBUG;
+  }
+  // LOGGING_VERBOSE levels 3 and higher, or incorrect levels.
+  return FX_LOG_TRACE;
+}
+
+#endif  // defined (OS_FUCHSIA)
+
 }  // namespace
 
 #if defined(DCHECK_IS_CONFIGURABLE)
@@ -365,7 +391,7 @@ bool BaseInitLoggingImpl(const LoggingSettings& settings) {
            0u);
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   g_log_format = settings.log_format;
 #endif
 
@@ -399,9 +425,8 @@ bool BaseInitLoggingImpl(const LoggingSettings& settings) {
     const char* log_tag_data = log_tag.data();
 
     fx_logger_config_t config = {
-        .min_severity = FX_LOG_INFO,
+        .min_severity = g_vlog_info ? FX_LOG_TRACE : FX_LOG_INFO,
         .console_fd = -1,
-        .log_service_channel = ZX_HANDLE_INVALID,
         .tags = &log_tag_data,
         .num_tags = 1,
     };
@@ -421,7 +446,7 @@ bool BaseInitLoggingImpl(const LoggingSettings& settings) {
   // default log file will re-initialize to the new options.
   CloseLogFileUnlocked();
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (settings.log_file) {
     DCHECK(!settings.log_file_path);
     g_log_file = settings.log_file;
@@ -453,7 +478,7 @@ bool ShouldCreateLogMessage(int severity) {
     return false;
 
   // Return true here unless we know ~LogMessage won't do anything.
-  return g_logging_destination != LOG_NONE || log_message_handler ||
+  return g_logging_destination != LOG_NONE || g_log_message_handler ||
          severity >= kAlwaysPrintErrorLevel;
 }
 
@@ -511,11 +536,11 @@ ScopedLogAssertHandler::~ScopedLogAssertHandler() {
 }
 
 void SetLogMessageHandler(LogMessageHandlerFunction handler) {
-  log_message_handler = handler;
+  g_log_message_handler = handler;
 }
 
 LogMessageHandlerFunction GetLogMessageHandler() {
-  return log_message_handler;
+  return g_log_message_handler;
 }
 
 #if !defined(NDEBUG)
@@ -583,9 +608,9 @@ LogMessage::~LogMessage() {
       file_, base::StringPiece(str_newline).substr(message_start_), line_);
 
   // Give any log message handler first dibs on the message.
-  if (log_message_handler &&
-      log_message_handler(severity_, file_, line_,
-                          message_start_, str_newline)) {
+  if (g_log_message_handler &&
+      g_log_message_handler(severity_, file_, line_, message_start_,
+                            str_newline)) {
     // The handler took care of it, no further processing.
     return;
   }
@@ -777,30 +802,14 @@ LogMessage::~LogMessage() {
     __android_log_write(priority, kAndroidLogTag, str_newline.c_str());
 #endif
 #elif defined(OS_FUCHSIA)
-    fx_log_severity_t severity = FX_LOG_INFO;
-    switch (severity_) {
-      case LOGGING_INFO:
-        severity = FX_LOG_INFO;
-        break;
-      case LOGGING_WARNING:
-        severity = FX_LOG_WARNING;
-        break;
-      case LOGGING_ERROR:
-        severity = FX_LOG_ERROR;
-        break;
-      case LOGGING_FATAL:
-        // Don't use FX_LOG_FATAL, otherwise fx_logger_log() will abort().
-        severity = FX_LOG_ERROR;
-        break;
-    }
-
     fx_logger_t* logger = fx_log_get_logger();
     if (logger) {
       // Temporarily remove the trailing newline from |str_newline|'s C-string
       // representation, since fx_logger will add a newline of its own.
       str_newline.pop_back();
-      fx_logger_log_with_source(logger, severity, nullptr, file_, line_,
-                                str_newline.c_str() + message_start_);
+      fx_logger_log_with_source(
+          logger, LogSeverityToFuchsiaLogSeverity(severity_), nullptr, file_,
+          line_, str_newline.c_str() + message_start_);
       str_newline.push_back('\n');
     }
 #endif  // OS_FUCHSIA
@@ -892,16 +901,13 @@ void LogMessage::Init(const char* file, int line) {
   if (last_slash_pos != base::StringPiece::npos)
     filename.remove_prefix(last_slash_pos + 1);
 
-  // Stores the base name as the null-terminated suffix substring of |filename|.
-  file_basename_ = filename.data();
-
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (g_log_format == LogFormat::LOG_FORMAT_SYSLOG) {
     InitWithSyslogPrefix(
         filename, line, TickCount(), log_severity_name(severity_), g_log_prefix,
         g_log_process_id, g_log_thread_id, g_log_timestamp, g_log_tickcount);
   } else
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   {
     // TODO(darin): It might be nice if the columns were fixed width.
     stream_ << '[';
@@ -1031,7 +1037,7 @@ void CloseLogFile() {
   CloseLogFileUnlocked();
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 FILE* DuplicateLogFILE() {
   if ((g_logging_destination & LOG_TO_FILE) == 0 || !InitializeLogFileHandle())
     return nullptr;
@@ -1052,35 +1058,52 @@ FILE* DuplicateLogFILE() {
 
 // Used for testing. Declared in test/scoped_logging_settings.h.
 ScopedLoggingSettings::ScopedLoggingSettings()
-    : enable_process_id_(g_log_process_id),
+    : min_log_level_(g_min_log_level),
+      logging_destination_(g_logging_destination),
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+      log_format_(g_log_format),
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+      enable_process_id_(g_log_process_id),
       enable_thread_id_(g_log_thread_id),
       enable_timestamp_(g_log_timestamp),
       enable_tickcount_(g_log_tickcount),
-      min_log_level_(GetMinLogLevel()),
-      message_handler_(GetLogMessageHandler()) {
-#if defined(OS_CHROMEOS)
-  log_format_ = g_log_format;
-#endif  // defined(OS_CHROMEOS)
+      log_prefix_(g_log_prefix),
+      message_handler_(g_log_message_handler) {
+  if (g_log_file_name)
+    log_file_name_ = std::make_unique<PathString>(*g_log_file_name);
+  // Duplicating |g_log_file| is complex & unnecessary for this test helpers'
+  // use-cases, and so long as |g_log_file_name| is set, it will be re-opened
+  // automatically anyway, when required, so just close the existing one.
+  if (g_log_file) {
+    CHECK(g_log_file_name) << "Un-named |log_file| is not supported.";
+    CloseLogFileUnlocked();
+  }
 }
 
 ScopedLoggingSettings::~ScopedLoggingSettings() {
-  g_log_process_id = enable_process_id_;
-  g_log_thread_id = enable_thread_id_;
-  g_log_timestamp = enable_timestamp_;
-  g_log_tickcount = enable_tickcount_;
-  SetMinLogLevel(min_log_level_);
-  SetLogMessageHandler(message_handler_);
+  // Re-initialize logging via the normal path. This will clean up old file
+  // name and handle state, including re-initializing the VLOG internal state.
+  CHECK(InitLogging({
+    .logging_dest = logging_destination_,
+    .log_file_path = log_file_name_ ? log_file_name_->data() : nullptr,
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    .log_format = log_format_
+#endif
+  })) << "~ScopedLoggingSettings() failed to restore settings.";
 
-#if defined(OS_CHROMEOS)
-  g_log_format = log_format_;
-#endif  // defined(OS_CHROMEOS)
+  // Restore plain data settings.
+  SetMinLogLevel(min_log_level_);
+  SetLogItems(enable_process_id_, enable_thread_id_, enable_timestamp_,
+              enable_tickcount_);
+  SetLogPrefix(log_prefix_);
+  SetLogMessageHandler(message_handler_);
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 void ScopedLoggingSettings::SetLogFormat(LogFormat log_format) const {
   g_log_format = log_format;
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 void RawLog(int level, const char* message) {
   if (level >= g_min_log_level && message) {
@@ -1131,5 +1154,17 @@ std::wstring GetLogFileFullPath() {
 }  // namespace logging
 
 std::ostream& std::operator<<(std::ostream& out, const wchar_t* wstr) {
-  return out << (wstr ? base::WideToUTF8(wstr) : std::string());
+  return out << (wstr ? base::WStringPiece(wstr) : base::WStringPiece());
+}
+
+std::ostream& std::operator<<(std::ostream& out, const std::wstring& wstr) {
+  return out << base::WStringPiece(wstr);
+}
+
+std::ostream& std::operator<<(std::ostream& out, const char16_t* str16) {
+  return out << (str16 ? base::StringPiece16(str16) : base::StringPiece16());
+}
+
+std::ostream& std::operator<<(std::ostream& out, const std::u16string& str16) {
+  return out << base::StringPiece16(str16);
 }

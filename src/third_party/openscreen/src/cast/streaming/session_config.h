@@ -24,7 +24,8 @@ struct SessionConfig final {
                 int channels,
                 std::chrono::milliseconds target_playout_delay,
                 std::array<uint8_t, 16> aes_secret_key,
-                std::array<uint8_t, 16> aes_iv_mask);
+                std::array<uint8_t, 16> aes_iv_mask,
+                bool is_pli_enabled);
   SessionConfig(const SessionConfig& other);
   SessionConfig(SessionConfig&& other) noexcept;
   SessionConfig& operator=(const SessionConfig& other);
@@ -50,6 +51,9 @@ struct SessionConfig final {
   // The AES-128 crypto key and initialization vector.
   std::array<uint8_t, 16> aes_secret_key{};
   std::array<uint8_t, 16> aes_iv_mask{};
+
+  // Whether picture loss indication (PLI) should be used for this session.
+  bool is_pli_enabled = false;
 };
 
 }  // namespace cast

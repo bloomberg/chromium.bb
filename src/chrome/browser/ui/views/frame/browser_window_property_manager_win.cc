@@ -36,8 +36,9 @@ BrowserWindowPropertyManager::BrowserWindowPropertyManager(
   // relaunch icon when the version changes (e.g on initial icon creation).
   profile_pref_registrar_.Add(
       prefs::kProfileIconVersion,
-      base::Bind(&BrowserWindowPropertyManager::OnProfileIconVersionChange,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &BrowserWindowPropertyManager::OnProfileIconVersionChange,
+          base::Unretained(this)));
 }
 
 BrowserWindowPropertyManager::~BrowserWindowPropertyManager() {
@@ -50,7 +51,7 @@ void BrowserWindowPropertyManager::UpdateWindowProperties() {
 
   // Set the app user model id for this application to that of the application
   // name. See http://crbug.com/7028.
-  base::string16 app_id =
+  std::wstring app_id =
       browser->is_type_app() || browser->is_type_app_popup() ||
               browser->is_type_devtools()
           ? shell_integration::win::GetAppUserModelIdForApp(
@@ -76,8 +77,8 @@ void BrowserWindowPropertyManager::UpdateWindowProperties() {
   // The profile manager may be null in testing.
 
   base::FilePath icon_path;
-  base::string16 command_line_string;
-  base::string16 pinned_name;
+  std::wstring command_line_string;
+  std::wstring pinned_name;
   if ((browser->is_type_normal() || browser->is_type_popup()) &&
       shortcut_manager &&
       profile->GetPrefs()->HasPrefPath(prefs::kProfileIconVersion)) {

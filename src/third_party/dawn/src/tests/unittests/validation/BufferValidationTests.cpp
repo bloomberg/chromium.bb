@@ -71,7 +71,7 @@ class BufferValidationTest : public ValidationTest {
         ValidationTest::SetUp();
 
         mockBufferMapAsyncCallback = std::make_unique<MockBufferMapAsyncCallback>();
-        queue = device.GetDefaultQueue();
+        queue = device.GetQueue();
     }
 
     void TearDown() override {
@@ -812,6 +812,7 @@ TEST_F(BufferValidationTest, GetMappedRange_OffsetSizeOOB) {
     {
         wgpu::Buffer buffer = CreateMapWriteBuffer(8);
         buffer.MapAsync(wgpu::MapMode::Write, 0, 8, nullptr, nullptr);
+        WaitForAllOperations(device);
         EXPECT_NE(buffer.GetMappedRange(0, 8), nullptr);
     }
 
@@ -819,6 +820,7 @@ TEST_F(BufferValidationTest, GetMappedRange_OffsetSizeOOB) {
     {
         wgpu::Buffer buffer = CreateMapWriteBuffer(8);
         buffer.MapAsync(wgpu::MapMode::Write, 0, 0, nullptr, nullptr);
+        WaitForAllOperations(device);
         EXPECT_NE(buffer.GetMappedRange(0, 8), nullptr);
     }
 
@@ -826,6 +828,7 @@ TEST_F(BufferValidationTest, GetMappedRange_OffsetSizeOOB) {
     {
         wgpu::Buffer buffer = CreateMapWriteBuffer(8);
         buffer.MapAsync(wgpu::MapMode::Write, 0, 8, nullptr, nullptr);
+        WaitForAllOperations(device);
         EXPECT_NE(buffer.GetMappedRange(8, 0), nullptr);
     }
 
@@ -833,6 +836,7 @@ TEST_F(BufferValidationTest, GetMappedRange_OffsetSizeOOB) {
     {
         wgpu::Buffer buffer = CreateMapWriteBuffer(16);
         buffer.MapAsync(wgpu::MapMode::Write, 0, 16, nullptr, nullptr);
+        WaitForAllOperations(device);
         EXPECT_NE(buffer.GetMappedRange(8, 4), nullptr);
     }
 
@@ -840,6 +844,7 @@ TEST_F(BufferValidationTest, GetMappedRange_OffsetSizeOOB) {
     {
         wgpu::Buffer buffer = CreateMapWriteBuffer(8);
         buffer.MapAsync(wgpu::MapMode::Write, 0, 8, nullptr, nullptr);
+        WaitForAllOperations(device);
         EXPECT_EQ(buffer.GetMappedRange(9, 0), nullptr);
         EXPECT_EQ(buffer.GetMappedRange(16, 0), nullptr);
     }
@@ -848,6 +853,7 @@ TEST_F(BufferValidationTest, GetMappedRange_OffsetSizeOOB) {
     {
         wgpu::Buffer buffer = CreateMapWriteBuffer(12);
         buffer.MapAsync(wgpu::MapMode::Write, 0, 12, nullptr, nullptr);
+        WaitForAllOperations(device);
         EXPECT_EQ(buffer.GetMappedRange(8, 5), nullptr);
         EXPECT_EQ(buffer.GetMappedRange(8, 8), nullptr);
     }
@@ -856,6 +862,7 @@ TEST_F(BufferValidationTest, GetMappedRange_OffsetSizeOOB) {
     {
         wgpu::Buffer buffer = CreateMapWriteBuffer(12);
         buffer.MapAsync(wgpu::MapMode::Write, 0, 12, nullptr, nullptr);
+        WaitForAllOperations(device);
         EXPECT_EQ(buffer.GetMappedRange(8, std::numeric_limits<size_t>::max()), nullptr);
     }
 
@@ -863,6 +870,7 @@ TEST_F(BufferValidationTest, GetMappedRange_OffsetSizeOOB) {
     {
         wgpu::Buffer buffer = CreateMapWriteBuffer(12);
         buffer.MapAsync(wgpu::MapMode::Write, 8, 4, nullptr, nullptr);
+        WaitForAllOperations(device);
         EXPECT_EQ(buffer.GetMappedRange(7, 4), nullptr);
         EXPECT_EQ(buffer.GetMappedRange(0, 4), nullptr);
     }

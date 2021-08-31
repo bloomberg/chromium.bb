@@ -63,7 +63,8 @@ class MODULES_EXPORT CachedStorageArea
   CachedStorageArea(AreaType type,
                     scoped_refptr<const SecurityOrigin> origin,
                     scoped_refptr<base::SingleThreadTaskRunner> ipc_runner,
-                    StorageNamespace* storage_namespace);
+                    StorageNamespace* storage_namespace,
+                    bool is_session_storage_for_prerendering);
 
   // These correspond to blink::Storage.
   unsigned GetLength();
@@ -97,6 +98,10 @@ class MODULES_EXPORT CachedStorageArea
   void ResetConnection(
       mojo::PendingRemote<mojom::blink::StorageArea> new_area = {});
 
+  bool is_session_storage_for_prerendering() const {
+    return is_session_storage_for_prerendering_;
+  }
+
   void SetRemoteAreaForTesting(
       mojo::PendingRemote<mojom::blink::StorageArea> area) {
     remote_area_.Bind(std::move(area));
@@ -126,12 +131,12 @@ class MODULES_EXPORT CachedStorageArea
   // mojom::blink::StorageAreaObserver:
   void KeyChanged(const Vector<uint8_t>& key,
                   const Vector<uint8_t>& new_value,
-                  const base::Optional<Vector<uint8_t>>& old_value,
+                  const absl::optional<Vector<uint8_t>>& old_value,
                   const String& source) override;
   void KeyChangeFailed(const Vector<uint8_t>& key,
                        const String& source) override;
   void KeyDeleted(const Vector<uint8_t>& key,
-                  const base::Optional<Vector<uint8_t>>& old_value,
+                  const absl::optional<Vector<uint8_t>>& old_value,
                   const String& source) override;
   void AllDeleted(bool was_nonempty, const String& source) override;
   void ShouldSendOldValueOnMutations(bool value) override;
@@ -177,6 +182,12 @@ class MODULES_EXPORT CachedStorageArea
   const AreaType type_;
   const scoped_refptr<const SecurityOrigin> origin_;
   const WeakPersistent<StorageNamespace> storage_namespace_;
+  // Session storage state for prerendering is initialized by cloning the
+  // primary session storage state. It is used locally by the prerendering
+  // context, and does not get propagated back to the primary state (i.e., via
+  // remote_area_). For more details:
+  // https://docs.google.com/document/d/1I5Hr8I20-C1GBr4tAXdm0U8a1RDUKHt4n7WcH4fxiSE/edit?usp=sharing
+  const bool is_session_storage_for_prerendering_;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   std::unique_ptr<StorageAreaMap> map_;

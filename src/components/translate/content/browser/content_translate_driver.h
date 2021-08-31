@@ -24,7 +24,7 @@
 namespace content {
 class NavigationController;
 class WebContents;
-}
+}  // namespace content
 
 namespace language {
 class UrlLanguageHistogram;
@@ -34,14 +34,14 @@ namespace translate {
 
 struct LanguageDetectionDetails;
 class TranslateManager;
+class TranslateModelService;
 
 // Content implementation of TranslateDriver.
 class ContentTranslateDriver : public TranslateDriver,
                                public translate::mojom::ContentTranslateDriver,
                                public content::WebContentsObserver {
  public:
-  // The observer for the ContentTranslateDriver.
-  class Observer {
+  class TranslationObserver : public base::CheckedObserver {
    public:
     // Handles when the value of IsPageTranslated is changed.
     virtual void OnIsPageTranslatedChanged(content::WebContents* source) {}
@@ -49,28 +49,21 @@ class ContentTranslateDriver : public TranslateDriver,
     // Handles when the value of translate_enabled is changed.
     virtual void OnTranslateEnabledChanged(content::WebContents* source) {}
 
-    // Called when the page language has been determined.
-    virtual void OnLanguageDetermined(
-        const translate::LanguageDetectionDetails& details) {}
-
     // Called when the page has been translated.
-    virtual void OnPageTranslated(const std::string& original_lang,
+    virtual void OnPageTranslated(const std::string& source_lang,
                                   const std::string& translated_lang,
                                   translate::TranslateErrors::Type error_type) {
     }
-
-   protected:
-    virtual ~Observer() {}
   };
 
-  ContentTranslateDriver(
-      content::NavigationController* nav_controller,
-      language::UrlLanguageHistogram* url_language_histogram);
+  ContentTranslateDriver(content::NavigationController* nav_controller,
+                         language::UrlLanguageHistogram* url_language_histogram,
+                         TranslateModelService* translate_model_service);
   ~ContentTranslateDriver() override;
 
-  // Adds or Removes observers.
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
+  // Adds or removes observers.
+  void AddTranslationObserver(TranslationObserver* observer);
+  void RemoveTranslationObserver(TranslationObserver* observer);
 
   // Number of attempts before waiting for a page to be fully reloaded.
   void set_translate_max_reload_attempts(int attempts) {
@@ -103,28 +96,32 @@ class ContentTranslateDriver : public TranslateDriver,
   void OpenUrlInNewTab(const GURL& url) override;
 
   // content::WebContentsObserver implementation.
-  void NavigationEntryCommitted(
-      const content::LoadCommittedDetails& load_details) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
 
   void OnPageTranslated(bool cancelled,
-                        const std::string& original_lang,
+                        const std::string& source_lang,
                         const std::string& translated_lang,
                         TranslateErrors::Type error_type);
 
   // Adds a receiver in |receivers_| for the passed |receiver|.
   void AddReceiver(
       mojo::PendingReceiver<translate::mojom::ContentTranslateDriver> receiver);
+
   // Called when a page has been loaded and can be potentially translated.
   void RegisterPage(
       mojo::PendingRemote<translate::mojom::TranslateAgent> translate_agent,
       const translate::LanguageDetectionDetails& details,
-      bool page_needs_translation) override;
+      bool page_level_translation_critiera_met) override;
+
+  // translate::mojom::ContentTranslateDriver implementation:
+  void GetLanguageDetectionModel(
+      GetLanguageDetectionModelCallback callback) override;
 
  protected:
-  const base::ObserverList<Observer, true>::Unchecked& observer_list() const {
-    return observer_list_;
+  const base::ObserverList<TranslationObserver, true>& translation_observers()
+      const {
+    return translation_observers_;
   }
 
   TranslateManager* translate_manager() const { return translate_manager_; }
@@ -138,12 +135,20 @@ class ContentTranslateDriver : public TranslateDriver,
  private:
   void OnPageAway(int page_seq_no);
 
+  void InitiateTranslationIfReload(
+      content::NavigationHandle* navigation_handle);
+
+  // Runs the provided callback with the loaded model file
+  // to pass it to the connected translate agent.
+  void OnLanguageDetectionModelFile(GetLanguageDetectionModelCallback callback,
+                                    base::File model_file);
+
   // The navigation controller of the tab we are associated with.
   content::NavigationController* navigation_controller_;
 
   TranslateManager* translate_manager_;
 
-  base::ObserverList<Observer, true>::Unchecked observer_list_;
+  base::ObserverList<TranslationObserver, true> translation_observers_;
 
   // Max number of attempts before checking if a page has been reloaded.
   int max_reload_check_attempts_;
@@ -168,6 +173,10 @@ class ContentTranslateDriver : public TranslateDriver,
   // in the main frame). This is used to know a duration time to when the
   // page language is determined.
   base::TimeTicks finish_navigation_time_;
+
+  // The service that provides the model files needed for translate. Not owned
+  // but guaranteed to outlive |this|.
+  TranslateModelService* const translate_model_service_;
 
   base::WeakPtrFactory<ContentTranslateDriver> weak_pointer_factory_{this};
 

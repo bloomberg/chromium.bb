@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-const FilesQuickView = Polymer({
+/* #export */ const FilesQuickView = Polymer({
   is: 'files-quick-view',
 
   properties: {
@@ -139,10 +139,10 @@ const FilesQuickView = Polymer({
   },
 
   /**
-   * @return {!FilesMetadataBox}
+   * @return {!FilesMetadataBoxElement}
    */
   getFilesMetadataBox: function() {
-    return this.$['metadata-box'];
+    return /** @type {!FilesMetadataBoxElement} */ (this.$['metadata-box']);
   },
 
   /**

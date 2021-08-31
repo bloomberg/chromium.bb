@@ -53,9 +53,18 @@ class InstanceUpdate {
   // Equivalently, there are no previous deltas for the window.
   bool StateIsNull() const;
 
+  // Returns true if this update represents the creation of an instance, which
+  // will now be visible to the user.
+  bool IsCreation() const;
+
+  // Returns true if this update represents the destruction of an instance.
+  bool IsDestruction() const;
+
   const std::string& AppId() const;
 
   aura::Window* Window() const;
+
+  const Instance::InstanceKey& InstanceKey() const;
 
   const std::string& LaunchId() const;
   bool LaunchIdChanged() const;

@@ -53,6 +53,8 @@ static const AVCodecTag codec_au_tags[] = {
     { AV_CODEC_ID_NONE,       0 },
 };
 
+static const AVCodecTag *const au_codec_tags[] = { codec_au_tags, NULL };
+
 #if CONFIG_AU_DEMUXER
 
 static int au_probe(const AVProbeData *p)
@@ -84,6 +86,11 @@ static int au_read_annotation(AVFormatContext *s, int size)
     av_bprint_init(&bprint, 64, AV_BPRINT_SIZE_UNLIMITED);
 
     while (size-- > 0) {
+        if (avio_feof(pb)) {
+            av_bprint_finalize(&bprint, NULL);
+            av_freep(&key);
+            return AVERROR_EOF;
+        }
         c = avio_r8(pb);
         switch(state) {
         case PARSE_KEY:
@@ -226,7 +233,7 @@ AVInputFormat ff_au_demuxer = {
     .read_header = au_read_header,
     .read_packet = ff_pcm_read_packet,
     .read_seek   = ff_pcm_read_seek,
-    .codec_tag   = (const AVCodecTag* const []) { codec_au_tags, 0 },
+    .codec_tag   = au_codec_tags,
 };
 
 #endif /* CONFIG_AU_DEMUXER */
@@ -332,7 +339,7 @@ AVOutputFormat ff_au_muxer = {
     .write_header  = au_write_header,
     .write_packet  = ff_raw_write_packet,
     .write_trailer = au_write_trailer,
-    .codec_tag     = (const AVCodecTag* const []) { codec_au_tags, 0 },
+    .codec_tag     = au_codec_tags,
     .flags         = AVFMT_NOTIMESTAMPS,
 };
 

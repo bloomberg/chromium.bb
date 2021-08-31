@@ -6,15 +6,18 @@
 #define CHROMEOS_SERVICES_IME_DECODER_SYSTEM_ENGINE_H_
 
 #include "base/scoped_native_library.h"
+#include "chromeos/services/ime/ime_decoder.h"
 #include "chromeos/services/ime/input_engine.h"
 #include "chromeos/services/ime/public/cpp/shared_lib/interfaces.h"
 #include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {
 namespace ime {
 
-// Only used in tests to set a fake `ImeEngineMainEntry`.
-void FakeEngineMainEntryForTesting(ImeEngineMainEntry* main_entry);
+// Only used in tests to set a fake `ImeDecoder::EntryPoints`.
+void FakeDecoderEntryPointsForTesting(
+    const ImeDecoder::EntryPoints& decoder_entry_points);
 
 // An enhanced implementation of the basic InputEngine that uses a built-in
 // shared library for handling key events.
@@ -44,6 +47,10 @@ class SystemEngine : public InputEngine {
       mojom::SelectionRangePtr selection_range) override;
   void OnCompositionCanceled() override;
 
+  // Handle the suggestion response returned from a call to
+  // remote->RequestSuggestions().
+  void OnSuggestionsReturned(mojom::SuggestionsResponsePtr response);
+
  private:
   // Try to load the decoding functions from some decoder shared library.
   // Returns whether loading decoder is successful.
@@ -57,11 +64,14 @@ class SystemEngine : public InputEngine {
   void OnReply(const std::vector<uint8_t>& message,
                mojo::Remote<mojom::InputChannel>& remote);
 
-  ImeEngineMainEntry* engine_main_entry_ = nullptr;
-
   ImeCrosPlatform* platform_ = nullptr;
 
-  mojo::ReceiverSet<mojom::InputChannel> decoder_channel_receivers_;
+  absl::optional<ImeDecoder::EntryPoints> decoder_entry_points_;
+
+  mojo::Receiver<mojom::InputChannel> decoder_channel_receiver_;
+
+  // Whether `decoder_channel_receiver_` is connected.
+  bool is_decoder_receiver_connected_ = false;
 
   // Sequence ID for protobuf messages sent from the engine.
   uint64_t current_seq_id_ = 0;

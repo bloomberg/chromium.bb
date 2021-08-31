@@ -20,10 +20,10 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/memory.h"
 #include "base/process/process_metrics.h"
-#include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "build/chromecast_buildflags.h"
+#include "build/chromeos_buildflags.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/switches.h"
 
@@ -93,30 +93,6 @@ ClientNativePixmapDmaBuf::PlaneInfo::~PlaneInfo() {
 bool ClientNativePixmapDmaBuf::IsConfigurationSupported(
     gfx::BufferFormat format,
     gfx::BufferUsage usage) {
-#if BUILDFLAG(IS_CHROMECAST)
-  switch (usage) {
-    case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
-      // TODO(spang): Fix b/121148905 and turn these back on.
-      return false;
-    default:
-      break;
-  }
-#endif
-
-  bool disable_yuv_biplanar = true;
-#if defined(OS_CHROMEOS) || BUILDFLAG(IS_CHROMECAST)
-  // IsConfigurationSupported(SCANOUT_CPU_READ_WRITE) is used by the renderer
-  // to tell whether the platform supports sampling a given format. Zero-copy
-  // video capture and encoding requires gfx::BufferFormat::YUV_420_BIPLANAR to
-  // be supported by the renderer. Most of Chrome OS platforms support it, so
-  // enable it by default, with a switch that allows an explicit disable on
-  // platforms known to have problems, e.g. the Tegra-based nyan."
-  // TODO(crbug.com/982201): move gfx::BufferFormat::YUV_420_BIPLANAR out
-  // of if defined(ARCH_CPU_X86_FAMLIY) when Tegra is no longer supported.
-  disable_yuv_biplanar = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableYuv420Biplanar);
-#endif
-
   switch (usage) {
     case gfx::BufferUsage::GPU_READ:
       return format == gfx::BufferFormat::BGR_565 ||
@@ -132,6 +108,7 @@ bool ClientNativePixmapDmaBuf::IsConfigurationSupported(
              format == gfx::BufferFormat::BGRA_8888 ||
              format == gfx::BufferFormat::RGBA_1010102 ||
              format == gfx::BufferFormat::BGRA_1010102;
+    case gfx::BufferUsage::SCANOUT_FRONT_RENDERING:
     case gfx::BufferUsage::SCANOUT_CPU_READ_WRITE:
       // TODO(crbug.com/954233): RG_88 is enabled only with
       // --enable-native-gpu-memory-buffers . Otherwise it breaks some telemetry
@@ -139,10 +116,8 @@ bool ClientNativePixmapDmaBuf::IsConfigurationSupported(
       if (format == gfx::BufferFormat::RG_88 && !AllowCpuMappableBuffers())
         return false;
 
-      if (!disable_yuv_biplanar &&
-          format == gfx::BufferFormat::YUV_420_BIPLANAR) {
+      if (format == gfx::BufferFormat::YUV_420_BIPLANAR)
         return true;
-      }
 
       return
 #if defined(ARCH_CPU_X86_FAMILY)
@@ -167,10 +142,8 @@ bool ClientNativePixmapDmaBuf::IsConfigurationSupported(
       if (!AllowCpuMappableBuffers())
         return false;
 
-      if (!disable_yuv_biplanar &&
-          format == gfx::BufferFormat::YUV_420_BIPLANAR) {
+      if (format == gfx::BufferFormat::YUV_420_BIPLANAR)
         return true;
-      }
 
       return
 #if defined(ARCH_CPU_X86_FAMILY)
@@ -193,7 +166,7 @@ bool ClientNativePixmapDmaBuf::IsConfigurationSupported(
       // R_8 is used as the underlying pixel format for BLOB buffers.
       return format == gfx::BufferFormat::R_8;
     case gfx::BufferUsage::SCANOUT_VEA_CPU_READ:
-    case gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE:
+    case gfx::BufferUsage::VEA_READ_CAMERA_AND_CPU_READ_WRITE:
       return format == gfx::BufferFormat::YVU_420 ||
              format == gfx::BufferFormat::YUV_420_BIPLANAR;
   }

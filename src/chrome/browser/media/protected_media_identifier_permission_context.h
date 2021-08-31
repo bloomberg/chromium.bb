@@ -7,15 +7,16 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/permissions/permission_context_base.h"
 #include "components/permissions/permission_request_id.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include <map>
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/attestation/platform_verification_dialog.h"
-#include "chrome/browser/chromeos/attestation/platform_verification_flow.h"
+#include "chrome/browser/ash/attestation/platform_verification_dialog.h"
+#include "chrome/browser/ash/attestation/platform_verification_flow.h"
 #endif
 
 namespace views {
@@ -36,7 +37,7 @@ class ProtectedMediaIdentifierPermissionContext
   ~ProtectedMediaIdentifierPermissionContext() override;
 
   // PermissionContextBase implementation.
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   void DecidePermission(
       content::WebContents* web_contents,
       const permissions::PermissionRequestID& id,
@@ -44,7 +45,7 @@ class ProtectedMediaIdentifierPermissionContext
       const GURL& embedding_origin,
       bool user_gesture,
       permissions::BrowserPermissionCallback callback) override;
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   ContentSetting GetPermissionStatusInternal(
       content::RenderFrameHost* render_frame_host,
       const GURL& requesting_origin,
@@ -65,16 +66,16 @@ class ProtectedMediaIdentifierPermissionContext
   // guest mode, or by the device policy.
   bool IsProtectedMediaIdentifierEnabled() const;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   void OnPlatformVerificationConsentResponse(
       content::WebContents* web_contents,
       const permissions::PermissionRequestID& id,
       const GURL& requesting_origin,
       const GURL& embedding_origin,
       bool user_gesture,
+      base::Time dialog_show_time,
       permissions::BrowserPermissionCallback callback,
-      chromeos::attestation::PlatformVerificationDialog::ConsentResponse
-          response);
+      ash::attestation::PlatformVerificationDialog::ConsentResponse response);
 
   // |this| is shared among multiple WebContents, so we could receive multiple
   // permission requests. This map tracks all pending requests. Note that we

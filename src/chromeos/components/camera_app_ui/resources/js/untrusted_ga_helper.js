@@ -19,26 +19,18 @@ const gaLibraryURL = (() => {
  * Initializes GA for sending metrics.
  * @param {string} id The GA tracker ID to send metrics.
  * @param {string} clientId The GA client ID representing the current client.
- * @param {boolean} shouldAddFakeHistory True for platform app and false for
- *     SWA.
  * @param {function(string): void} setClientIdCallback Callback to store
  *     client id.
  * @return {!Promise}
  */
-async function initGA(id, clientId, shouldAddFakeHistory, setClientIdCallback) {
-  if (shouldAddFakeHistory) {
-    // Since GA will use history.length to generate hash but it is not
-    // available in platform apps, set it to 1 manually.
-    window.history.length = 1;
-  }
-
+async function initGA(id, clientId, setClientIdCallback) {
   // GA initialization function which is mostly copied from
   // https://developers.google.com/analytics/devguides/collection/analyticsjs.
   (function(i, s, o, g, r) {
     i['GoogleAnalyticsObject'] = r;
     i[r] = i[r] || function(...args) {
       (i[r].q = i[r].q || []).push(args);
-    }, i[r].l = new Date().getTime();
+    }, i[r].l = Date.now();
     const a = s.createElement(o);
     const m = s.getElementsByTagName(o)[0];
     a['async'] = 1;

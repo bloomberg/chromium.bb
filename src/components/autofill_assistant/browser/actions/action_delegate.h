@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/callback_helpers.h"
 #include "base/time/time.h"
 #include "components/autofill_assistant/browser/batch_element_checker.h"
 #include "components/autofill_assistant/browser/details.h"
@@ -19,8 +20,8 @@
 #include "components/autofill_assistant/browser/top_padding.h"
 #include "components/autofill_assistant/browser/user_data.h"
 #include "components/autofill_assistant/browser/viewport_mode.h"
+#include "components/autofill_assistant/browser/wait_for_dom_observer.h"
 #include "components/autofill_assistant/browser/web/element_finder.h"
-#include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
 #include "third_party/icu/source/common/unicode/umachine.h"
 
 class GURL;
@@ -41,7 +42,9 @@ namespace autofill_assistant {
 class ClientStatus;
 struct ClientSettings;
 struct CollectUserDataOptions;
+class ElementStore;
 class UserAction;
+class WebController;
 class WebsiteLoginManager;
 
 // Action delegate called when processing actions.
@@ -82,6 +85,13 @@ class ActionDelegate {
       base::OnceCallback<void(const ClientStatus&, base::TimeDelta)>
           callback) = 0;
 
+  // Same as the above, but will show a warning to the user if the website
+  // causes the checks to take longer than a given timeout.
+  virtual void ShortWaitForElementWithSlowWarning(
+      const Selector& selector,
+      base::OnceCallback<void(const ClientStatus&, base::TimeDelta)>
+          callback) = 0;
+
   // Wait for up to |max_wait_time| for element conditions to match on the page,
   // then call |callback| with the last status.
   //
@@ -93,6 +103,19 @@ class ActionDelegate {
   virtual void WaitForDom(
       base::TimeDelta max_wait_time,
       bool allow_interrupt,
+      WaitForDomObserver* observer,
+      base::RepeatingCallback<
+          void(BatchElementChecker*,
+               base::OnceCallback<void(const ClientStatus&)>)> check_elements,
+      base::OnceCallback<void(const ClientStatus&, base::TimeDelta)>
+          callback) = 0;
+
+  // Same as the above, but will show a warning to the user if the website
+  // causes the checks to take longer than a given timeout.
+  virtual void WaitForDomWithSlowWarning(
+      base::TimeDelta max_wait_time,
+      bool allow_interrupt,
+      WaitForDomObserver* observer,
       base::RepeatingCallback<
           void(BatchElementChecker*,
                base::OnceCallback<void(const ClientStatus&)>)> check_elements,
@@ -107,31 +130,6 @@ class ActionDelegate {
   // will be ELEMENT_RESOLUTION_FAILED.
   virtual void FindAllElements(const Selector& selector,
                                ElementFinder::Callback callback) const = 0;
-
-  // Click or tap the |element|.
-  virtual void ClickOrTapElement(
-      ClickType click_type,
-      const ElementFinder::Result& element,
-      base::OnceCallback<void(const ClientStatus&)> callback) = 0;
-
-  // Scroll the |element| into view.
-  virtual void ScrollIntoView(
-      const ElementFinder::Result& element,
-      base::OnceCallback<void(const ClientStatus&)> callback) = 0;
-
-  // Wait for the |element| to stop moving on the page. Fails with
-  // ELEMENT_UNSTABLE.
-  virtual void WaitUntilElementIsStable(
-      int max_rounds,
-      base::TimeDelta check_interval,
-      const ElementFinder::Result& element,
-      base::OnceCallback<void(const ClientStatus&)> callback) = 0;
-
-  // Make sure that |element| is the topmost element at its center. Fails with
-  // ELEMENT_NOT_ON_TOP.
-  virtual void CheckOnTop(
-      const ElementFinder::Result& element,
-      base::OnceCallback<void(const ClientStatus&)> callback) = 0;
 
   // Have the UI enter the prompt mode and make the given actions available.
   //
@@ -178,8 +176,9 @@ class ActionDelegate {
           write_callback) = 0;
 
   using GetFullCardCallback =
-      base::OnceCallback<void(std::unique_ptr<autofill::CreditCard> card,
-                              const base::string16& cvc)>;
+      base::OnceCallback<void(const ClientStatus& status,
+                              std::unique_ptr<autofill::CreditCard> card,
+                              const std::u16string& cvc)>;
 
   // Asks for the full card information for |credit_card|. Might require the
   // user entering CVC.
@@ -197,7 +196,7 @@ class ActionDelegate {
   // |cvc|. Return result asynchronously through |callback|.
   virtual void FillCardForm(
       std::unique_ptr<autofill::CreditCard> card,
-      const base::string16& cvc,
+      const std::u16string& cvc,
       const Selector& selector,
       base::OnceCallback<void(const ClientStatus&)> callback) = 0;
 
@@ -209,15 +208,10 @@ class ActionDelegate {
                               const autofill::FormData&,
                               const autofill::FormFieldData&)> callback) = 0;
 
-  // Select the option to be picked given by the |value| in the |element|.
-  virtual void SelectOption(
-      const std::string& value,
-      DropdownSelectStrategy select_strategy,
-      const ElementFinder::Result& element,
-      base::OnceCallback<void(const ClientStatus&)> callback) = 0;
-
   // Scroll to an |element|'s position. |top_padding| specifies the padding
   // between the focused element and the top.
+  // If |container| is specified, that container will be scrolled, if
+  // it's null the window will be scrolled.
   // TODO(b/168107066): The selector is only used for storing the previously
   // selected element and is not being used to resolve it. This is required for
   // the current implementation of |ScriptExecutor| that repeats the focus
@@ -225,6 +219,7 @@ class ActionDelegate {
   virtual void ScrollToElementPosition(
       const Selector& selector,
       const TopPadding& top_padding,
+      std::unique_ptr<ElementFinder::Result> container,
       const ElementFinder::Result& element,
       base::OnceCallback<void(const ClientStatus&)> callback) = 0;
 
@@ -234,80 +229,6 @@ class ActionDelegate {
   // whichever comes first.
   virtual void SetTouchableElementArea(
       const ElementAreaProto& touchable_element_area) = 0;
-
-  // Highlight the |element|.
-  virtual void HighlightElement(
-      const ElementFinder::Result& element,
-      base::OnceCallback<void(const ClientStatus&)> callback) = 0;
-
-  // Get the value attribute of an |element| and return the result through
-  // |callback|. If the lookup fails, the value will be empty. An empty result
-  // does not mean an error.
-  virtual void GetFieldValue(
-      const ElementFinder::Result& element,
-      base::OnceCallback<void(const ClientStatus&, const std::string&)>
-          callback) = 0;
-
-  // Get the value of a nested |attribute| from an |element| and return the
-  // result through |callback|. If the lookup fails, the value will be empty.
-  // An empty result does not mean an error.
-  virtual void GetStringAttribute(
-      const std::vector<std::string>& attributes,
-      const ElementFinder::Result& element,
-      base::OnceCallback<void(const ClientStatus&, const std::string&)>
-          callback) = 0;
-
-  // Set the value attribute of an |element| to the specified |value| and
-  // trigger an onchange event.
-  virtual void SetValueAttribute(
-      const std::string& value,
-      const ElementFinder::Result& element,
-      base::OnceCallback<void(const ClientStatus&)> callback) = 0;
-
-  // Set the nested |attributes| of an |element| to the specified |value|.
-  virtual void SetAttribute(
-      const std::vector<std::string>& attributes,
-      const std::string& value,
-      const ElementFinder::Result& element,
-      base::OnceCallback<void(const ClientStatus&)> callback) = 0;
-
-  // Select the current value in a text |element|.
-  virtual void SelectFieldValue(
-      const ElementFinder::Result& element,
-      base::OnceCallback<void(const ClientStatus&)> callback) = 0;
-
-  // Focus the current |element|.
-  virtual void FocusField(
-      const ElementFinder::Result& element,
-      base::OnceCallback<void(const ClientStatus&)> callback) = 0;
-
-  // Sets the keyboard focus to |element| and inputs the specified codepoints.
-  // Returns the result through |callback|.
-  virtual void SendKeyboardInput(
-      const std::vector<UChar32>& codepoints,
-      int key_press_delay_in_millisecond,
-      const ElementFinder::Result& element,
-      base::OnceCallback<void(const ClientStatus&)> callback) = 0;
-
-  // Return the outerHTML of an |element|.
-  virtual void GetOuterHtml(
-      const ElementFinder::Result& element,
-      base::OnceCallback<void(const ClientStatus&, const std::string&)>
-          callback) = 0;
-
-  // Return the outerHTML of each element in |elements|. |elements| must contain
-  // the object ID of a JS array containing the elements.
-  virtual void GetOuterHtmls(
-      const ElementFinder::Result& elements,
-      base::OnceCallback<void(const ClientStatus&,
-                              const std::vector<std::string>&)> callback) = 0;
-
-  // Return the tag of the |element|. In case of an error, returns an empty
-  // string.
-  virtual void GetElementTag(
-      const ElementFinder::Result& element,
-      base::OnceCallback<void(const ClientStatus&, const std::string&)>
-          callback) = 0;
 
   // Make the next call to WaitForNavigation to expect a navigation event that
   // started after this call.
@@ -346,13 +267,7 @@ class ActionDelegate {
       base::TimeDelta max_wait_time,
       DocumentReadyState min_ready_state,
       const ElementFinder::Result& optional_frame_element,
-      base::OnceCallback<void(const ClientStatus&)> callback) = 0;
-
-  // Gets the value of Document.readyState in |optional_frame_element| or, if
-  // it is empty, in the main document.
-  virtual void GetDocumentReadyState(
-      const ElementFinder::Result& optional_frame_element,
-      base::OnceCallback<void(const ClientStatus&, DocumentReadyState)>
+      base::OnceCallback<void(const ClientStatus&, base::TimeDelta)>
           callback) = 0;
 
   // Load |url| in the current tab. Returns immediately, before the new page has
@@ -369,10 +284,16 @@ class ActionDelegate {
   virtual autofill::PersonalDataManager* GetPersonalDataManager() = 0;
 
   // Get current login fetcher.
-  virtual WebsiteLoginManager* GetWebsiteLoginManager() = 0;
+  virtual WebsiteLoginManager* GetWebsiteLoginManager() const = 0;
 
   // Get associated web contents.
   virtual content::WebContents* GetWebContents() = 0;
+
+  // Get the ElementStore.
+  virtual ElementStore* GetElementStore() const = 0;
+
+  // Get the WebController.
+  virtual WebController* GetWebController() const = 0;
 
   // Returns the e-mail address that corresponds to the access token or an empty
   // string.
@@ -383,7 +304,13 @@ class ActionDelegate {
 
   // Sets or updates contextual information.
   // Passing nullptr clears the contextual information.
-  virtual void SetDetails(std::unique_ptr<Details> details) = 0;
+  virtual void SetDetails(std::unique_ptr<Details> details,
+                          base::TimeDelta delay) = 0;
+
+  // Append |details| to the current contextual information.
+  // Passing nullptr does nothing.
+  virtual void AppendDetails(std::unique_ptr<Details> details,
+                             base::TimeDelta delay) = 0;
 
   // Clears the info box.
   virtual void ClearInfoBox() = 0;
@@ -463,11 +390,19 @@ class ActionDelegate {
   // Show |generic_ui| to the user and call |end_action_callback| when done.
   // Note that this callback needs to be tied to one or multiple interactions
   // specified in |generic_ui|, as otherwise it will never be called.
-  // |view_inflation_finished_callback| should be called immediately after
+  // |view_inflation_finished_callback| will be called immediately after
   // view inflation, with a status indicating whether view inflation succeeded.
   virtual void SetGenericUi(
       std::unique_ptr<GenericUserInterfaceProto> generic_ui,
       base::OnceCallback<void(const ClientStatus&)> end_action_callback,
+      base::OnceCallback<void(const ClientStatus&)>
+          view_inflation_finished_callback) = 0;
+
+  // Show |generic_ui| to the user.
+  // |view_inflation_finished_callback| will be called immediately after
+  // view inflation, with a status indicating whether view inflation succeeded.
+  virtual void SetPersistentGenericUi(
+      std::unique_ptr<GenericUserInterfaceProto> generic_ui,
       base::OnceCallback<void(const ClientStatus&)>
           view_inflation_finished_callback) = 0;
 
@@ -476,14 +411,34 @@ class ActionDelegate {
   // |user_model| will persist and will not be affected by this call.
   virtual void ClearGenericUi() = 0;
 
+  // Clears the persistent generic UI. This will remove all corresponding views
+  // from the view hierarchy and remove all corresponding interactions. Note
+  // that |user_model| will persist and will not be affected by this call.
+  virtual void ClearPersistentGenericUi() = 0;
+
   // Sets the OverlayBehavior.
   virtual void SetOverlayBehavior(
       ConfigureUiStateProto::OverlayBehavior overlay_behavior) = 0;
+
+  // Maybe shows a warning letting the user know that the website is unusually
+  // slow, depending on the current settings.
+  virtual void MaybeShowSlowWebsiteWarning(
+      base::OnceCallback<void(bool)> callback) = 0;
+
+  // Maybe shows a warning letting the user know that a slow connection was
+  // detected, depending on the current settings.
+  virtual void MaybeShowSlowConnectionWarning() = 0;
+
+  // Dispatches a custom JS event 'duplexweb' on document.
+  virtual void DispatchJsEvent(
+      base::OnceCallback<void(const ClientStatus&)> callback) const = 0;
 
   virtual base::WeakPtr<ActionDelegate> GetWeakPtr() const = 0;
 
  protected:
   ActionDelegate() = default;
 };
+
 }  // namespace autofill_assistant
+
 #endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_ACTION_DELEGATE_H_

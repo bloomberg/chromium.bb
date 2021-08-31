@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/svg/svg_content_container.h"
 
+#include "third_party/blink/renderer/core/layout/ng/svg/layout_ng_svg_text.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_container.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_foreign_object.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_image.h"
@@ -12,20 +13,22 @@
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_text.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
-#include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
 
 namespace blink {
 
 static void LayoutMarkerResourcesIfNeeded(LayoutObject& layout_object) {
-  SVGResources* resources =
-      SVGResourcesCache::CachedResourcesForLayoutObject(layout_object);
-  if (!resources)
+  SVGElementResourceClient* client = SVGResources::GetClient(layout_object);
+  if (!client)
     return;
-  if (LayoutSVGResourceMarker* marker = resources->MarkerStart())
+  const ComputedStyle& style = layout_object.StyleRef();
+  if (auto* marker = GetSVGResourceAsType<LayoutSVGResourceMarker>(
+          *client, style.MarkerStartResource()))
     marker->LayoutIfNeeded();
-  if (LayoutSVGResourceMarker* marker = resources->MarkerMid())
+  if (auto* marker = GetSVGResourceAsType<LayoutSVGResourceMarker>(
+          *client, style.MarkerMidResource()))
     marker->LayoutIfNeeded();
-  if (LayoutSVGResourceMarker* marker = resources->MarkerEnd())
+  if (auto* marker = GetSVGResourceAsType<LayoutSVGResourceMarker>(
+          *client, style.MarkerEndResource()))
     marker->LayoutIfNeeded();
 }
 
@@ -37,8 +40,10 @@ void SVGContentContainer::Layout(const SVGContainerLayoutInfo& layout_info) {
     if (layout_info.scale_factor_changed) {
       // If the screen scaling factor changed we need to update the text
       // metrics (note: this also happens for layoutSizeChanged=true).
-      if (child->IsSVGText())
-        To<LayoutSVGText>(child)->SetNeedsTextMetricsUpdate();
+      if (auto* text = DynamicTo<LayoutSVGText>(child))
+        text->SetNeedsTextMetricsUpdate();
+      else if (auto* ng_text = DynamicTo<LayoutNGSVGText>(child))
+        ng_text->SetNeedsTextMetricsUpdate();
       force_child_layout = true;
     }
 
@@ -50,11 +55,13 @@ void SVGContentContainer::Layout(const SVGContainerLayoutInfo& layout_info) {
           // FIXME: this should be done on invalidation, not during layout.
           // When the layout size changed and when using relative values tell
           // the LayoutSVGShape to update its shape object
-          if (child->IsSVGShape()) {
-            To<LayoutSVGShape>(child)->SetNeedsShapeUpdate();
-          } else if (child->IsSVGText()) {
-            To<LayoutSVGText>(child)->SetNeedsTextMetricsUpdate();
-            To<LayoutSVGText>(child)->SetNeedsPositioningValuesUpdate();
+          if (auto* shape = DynamicTo<LayoutSVGShape>(child)) {
+            shape->SetNeedsShapeUpdate();
+          } else if (auto* text = DynamicTo<LayoutSVGText>(child)) {
+            text->SetNeedsTextMetricsUpdate();
+            text->SetNeedsPositioningValuesUpdate();
+          } else if (auto* ng_text = DynamicTo<LayoutNGSVGText>(child)) {
+            ng_text->SetNeedsTextMetricsUpdate();
           }
 
           force_child_layout = true;
@@ -126,6 +133,8 @@ static bool HasValidBoundingBoxForContainer(const LayoutObject& object) {
 
   if (object.IsSVGText())
     return To<LayoutSVGText>(object).IsObjectBoundingBoxValid();
+  if (const auto* ng_text = DynamicTo<LayoutNGSVGText>(object))
+    return ng_text->IsObjectBoundingBoxValid();
 
   if (auto* svg_container = DynamicTo<LayoutSVGContainer>(object)) {
     return svg_container->IsObjectBoundingBoxValid() &&
@@ -141,6 +150,16 @@ static bool HasValidBoundingBoxForContainer(const LayoutObject& object) {
   return false;
 }
 
+static FloatRect ObjectBoundsForPropagation(const LayoutObject& object) {
+  FloatRect bounds = object.ObjectBoundingBox();
+  // The local-to-parent transform for <foreignObject> contains a zoom inverse,
+  // so we need to apply zoom to the bounding box that we use for propagation to
+  // be in the correct coordinate space.
+  if (IsA<LayoutSVGForeignObject>(object))
+    bounds.Scale(object.StyleRef().EffectiveZoom());
+  return bounds;
+}
+
 bool SVGContentContainer::UpdateBoundingBoxes(bool& object_bounding_box_valid) {
   object_bounding_box_valid = false;
 
@@ -152,8 +171,9 @@ bool SVGContentContainer::UpdateBoundingBoxes(bool& object_bounding_box_valid) {
     if (!HasValidBoundingBoxForContainer(*current))
       continue;
     const AffineTransform& transform = current->LocalToSVGParentTransform();
-    UpdateObjectBoundingBox(object_bounding_box, object_bounding_box_valid,
-                            transform.MapRect(current->ObjectBoundingBox()));
+    UpdateObjectBoundingBox(
+        object_bounding_box, object_bounding_box_valid,
+        transform.MapRect(ObjectBoundsForPropagation(*current)));
     stroke_bounding_box.Unite(transform.MapRect(current->StrokeBoundingBox()));
   }
 

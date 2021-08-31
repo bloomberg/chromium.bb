@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/qbone/qbone_packet_processor.h"
+#include "quic/qbone/qbone_packet_processor.h"
 
 #include <cstring>
 
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/qbone/platform/icmp_packet.h"
-#include "net/third_party/quiche/src/quic/qbone/platform/internet_checksum.h"
-#include "net/third_party/quiche/src/quic/qbone/platform/tcp_packet.h"
-#include "net/third_party/quiche/src/common/quiche_endian.h"
+#include "quic/platform/api/quic_bug_tracker.h"
+#include "quic/platform/api/quic_logging.h"
+#include "quic/qbone/platform/icmp_packet.h"
+#include "quic/qbone/platform/internet_checksum.h"
+#include "quic/qbone/platform/tcp_packet.h"
+#include "common/quiche_endian.h"
 
 namespace {
 
@@ -38,12 +38,12 @@ QbonePacketProcessor::QbonePacketProcessor(QuicIpAddress self_ip,
       stats_(stats),
       filter_(new Filter) {
   memcpy(self_ip_.s6_addr, self_ip.ToPackedString().data(), kIPv6AddressSize);
-  DCHECK_LE(client_ip_subnet_length, kIPv6AddressSize * 8);
+  QUICHE_DCHECK_LE(client_ip_subnet_length, kIPv6AddressSize * 8);
   client_ip_subnet_length_ = client_ip_subnet_length;
 
-  DCHECK(IpAddressFamily::IP_V6 == self_ip.address_family());
-  DCHECK(IpAddressFamily::IP_V6 == client_ip.address_family());
-  DCHECK(self_ip != kInvalidIpAddress);
+  QUICHE_DCHECK(IpAddressFamily::IP_V6 == self_ip.address_family());
+  QUICHE_DCHECK(IpAddressFamily::IP_V6 == client_ip.address_family());
+  QUICHE_DCHECK(self_ip != kInvalidIpAddress);
 }
 
 QbonePacketProcessor::OutputInterface::~OutputInterface() {}
@@ -62,7 +62,8 @@ QbonePacketProcessor::Filter::FilterPacket(Direction direction,
 void QbonePacketProcessor::ProcessPacket(std::string* packet,
                                          Direction direction) {
   if (QUIC_PREDICT_FALSE(!IsValid())) {
-    QUIC_BUG << "QuicPacketProcessor is invoked in an invalid state.";
+    QUIC_BUG(quic_bug_11024_1)
+        << "QuicPacketProcessor is invoked in an invalid state.";
     stats_->OnPacketDroppedSilently(direction);
     return;
   }
@@ -120,8 +121,9 @@ QbonePacketProcessor::ProcessIPv6HeaderAndFilter(std::string* packet,
     // Sanity-check the bounds.
     if (packet_data >= *transport_data || header_size > packet->size() ||
         header_size < kIPv6HeaderSize) {
-      QUIC_BUG << "Invalid pointers encountered in "
-                  "QbonePacketProcessor::ProcessPacket.  Dropping the packet";
+      QUIC_BUG(quic_bug_11024_2)
+          << "Invalid pointers encountered in "
+             "QbonePacketProcessor::ProcessPacket.  Dropping the packet";
       return ProcessingResult::SILENT_DROP;
     }
 
@@ -201,7 +203,7 @@ QbonePacketProcessor::ProcessingResult QbonePacketProcessor::ProcessIPv6Header(
       address_reject_code = ICMP6_DST_UNREACH_NOROUTE;
       break;
   }
-  DCHECK(ip_parse_result);
+  QUICHE_DCHECK(ip_parse_result);
   if (!client_ip_.InSameSubnet(address_to_check, client_ip_subnet_length_)) {
     QUIC_DVLOG(1)
         << "Dropped packet: source/destination address is not client's";

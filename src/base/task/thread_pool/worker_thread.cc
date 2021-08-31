@@ -6,8 +6,12 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <utility>
 
+#include "base/allocator/buildflags.h"
+#include "base/allocator/partition_allocator/partition_alloc_config.h"
+#include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
@@ -17,24 +21,59 @@
 #include "base/threading/hang_watcher.h"
 #include "base/time/time_override.h"
 #include "base/trace_event/base_tracing.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if defined(OS_APPLE)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
 
+#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && \
+    defined(PA_THREAD_CACHE_SUPPORTED)
+#include "base/allocator/partition_allocator/thread_cache.h"
+#endif
+
 namespace base {
 namespace internal {
+
+constexpr TimeDelta WorkerThread::Delegate::kPurgeThreadCacheIdleDelay;
 
 void WorkerThread::Delegate::WaitForWork(WaitableEvent* wake_up_event) {
   DCHECK(wake_up_event);
   const TimeDelta sleep_time = GetSleepTimeout();
-  if (sleep_time.is_max()) {
-    // Calling TimedWait with TimeDelta::Max is not recommended per
-    // http://crbug.com/465948.
-    wake_up_event->Wait();
-  } else {
-    wake_up_event->TimedWait(sleep_time);
+
+  // When a thread goes to sleep, the memory retained by its thread cache is
+  // trapped there for as long as the thread sleeps. To prevent that, we can
+  // either purge the thread cache right before going to sleep, or after some
+  // delay.
+  //
+  // Purging the thread cache incurs a cost on the next task, since its thread
+  // cache will be empty and allocation performance initially lower. As a lot of
+  // sleeps are very short, do not purge all the time (this would also make
+  // sleep / wakeups cycles more costly).
+  //
+  // Instead, sleep for min(timeout, 1s). If the wait times out then purge at
+  // that point, and go to sleep for the remaining of the time. This ensures
+  // that we do no work for short sleeps, and that threads do not get awaken
+  // many times.
+#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && \
+    defined(PA_THREAD_CACHE_SUPPORTED)
+  bool was_signaled = wake_up_event->TimedWait(
+      std::min(sleep_time, kPurgeThreadCacheIdleDelay));
+
+  // Timed out.
+  if (!was_signaled) {
+    ThreadCache::PurgeCurrentThread();
+
+    if (sleep_time > kPurgeThreadCacheIdleDelay) {
+      wake_up_event->TimedWait(sleep_time.is_max()
+                                   ? base::TimeDelta::Max()
+                                   : sleep_time - kPurgeThreadCacheIdleDelay);
+    }
   }
+#else
+  wake_up_event->TimedWait(sleep_time);
+#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) &&
+        // defined(PA_THREAD_CACHE_SUPPORTED)
 }
 
 WorkerThread::WorkerThread(ThreadPriority priority_hint,
@@ -221,73 +260,53 @@ void WorkerThread::ThreadMain() {
 
 NOINLINE void WorkerThread::RunPooledWorker() {
   RunWorker();
-  // Inhibit tail calls of RunWorker and inhibit code folding.
-  const int line_number = __LINE__;
-  base::debug::Alias(&line_number);
+  NO_CODE_FOLDING();
 }
 
 NOINLINE void WorkerThread::RunBackgroundPooledWorker() {
   RunWorker();
-  // Inhibit tail calls of RunWorker and inhibit code folding.
-  const int line_number = __LINE__;
-  base::debug::Alias(&line_number);
+  NO_CODE_FOLDING();
 }
 
 NOINLINE void WorkerThread::RunSharedWorker() {
   RunWorker();
-  // Inhibit tail calls of RunWorker and inhibit code folding.
-  const int line_number = __LINE__;
-  base::debug::Alias(&line_number);
+  NO_CODE_FOLDING();
 }
 
 NOINLINE void WorkerThread::RunBackgroundSharedWorker() {
   RunWorker();
-  // Inhibit tail calls of RunWorker and inhibit code folding.
-  const int line_number = __LINE__;
-  base::debug::Alias(&line_number);
+  NO_CODE_FOLDING();
 }
 
 NOINLINE void WorkerThread::RunDedicatedWorker() {
   RunWorker();
-  // Inhibit tail calls of RunWorker and inhibit code folding.
-  const int line_number = __LINE__;
-  base::debug::Alias(&line_number);
+  NO_CODE_FOLDING();
 }
 
 NOINLINE void WorkerThread::RunBackgroundDedicatedWorker() {
   RunWorker();
-  // Inhibit tail calls of RunWorker and inhibit code folding.
-  const int line_number = __LINE__;
-  base::debug::Alias(&line_number);
+  NO_CODE_FOLDING();
 }
 
 #if defined(OS_WIN)
 NOINLINE void WorkerThread::RunSharedCOMWorker() {
   RunWorker();
-  // Inhibit tail calls of RunWorker and inhibit code folding.
-  const int line_number = __LINE__;
-  base::debug::Alias(&line_number);
+  NO_CODE_FOLDING();
 }
 
 NOINLINE void WorkerThread::RunBackgroundSharedCOMWorker() {
   RunWorker();
-  // Inhibit tail calls of RunWorker and inhibit code folding.
-  const int line_number = __LINE__;
-  base::debug::Alias(&line_number);
+  NO_CODE_FOLDING();
 }
 
 NOINLINE void WorkerThread::RunDedicatedCOMWorker() {
   RunWorker();
-  // Inhibit tail calls of RunWorker and inhibit code folding.
-  const int line_number = __LINE__;
-  base::debug::Alias(&line_number);
+  NO_CODE_FOLDING();
 }
 
 NOINLINE void WorkerThread::RunBackgroundDedicatedCOMWorker() {
   RunWorker();
-  // Inhibit tail calls of RunWorker and inhibit code folding.
-  const int line_number = __LINE__;
-  base::debug::Alias(&line_number);
+  NO_CODE_FOLDING();
 }
 #endif  // defined(OS_WIN)
 
@@ -310,9 +329,8 @@ void WorkerThread::RunWorker() {
   // If this process has a HangWatcher register this thread for watching.
   base::ScopedClosureRunner unregister_for_hang_watching;
   if (watch_for_hangs) {
-    unregister_for_hang_watching =
-        base::HangWatcher::GetInstance()->RegisterThread(
-            base::HangWatcher::ThreadType::kThreadPoolThread);
+    unregister_for_hang_watching = base::HangWatcher::RegisterThread(
+        base::HangWatcher::ThreadType::kThreadPoolThread);
   }
 
   // A WorkerThread starts out waiting for work.
@@ -326,10 +344,9 @@ void WorkerThread::RunWorker() {
 #if defined(OS_APPLE)
     mac::ScopedNSAutoreleasePool autorelease_pool;
 #endif
-    base::Optional<HangWatchScopeEnabled> hang_watch_scope;
+    absl::optional<WatchHangsInScope> hang_watch_scope;
     if (watch_for_hangs)
-      hang_watch_scope.emplace(
-          base::HangWatchScopeEnabled::kDefaultHangWatchTime);
+      hang_watch_scope.emplace(base::WatchHangsInScope::kDefaultHangWatchTime);
 
     UpdateThreadPriority(GetDesiredThreadPriority());
 

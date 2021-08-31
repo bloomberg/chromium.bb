@@ -5,6 +5,7 @@
 #include "fxjs/gc/heap.h"
 
 #include "core/fxcrt/fx_system.h"
+#include "third_party/base/check.h"
 #include "third_party/base/ptr_util.h"
 
 namespace {
@@ -47,16 +48,14 @@ class CFXGC_Platform final : public cppgc::Platform {
 
 void FXGC_Initialize(v8::Platform* platform, v8::Isolate* isolate) {
   if (platform) {
-    ASSERT(!g_platform);
+    DCHECK(!g_platform);
     g_platform = platform;
     g_isolate = isolate;
-    cppgc::InitializeProcess(platform->GetPageAllocator());
   }
 }
 
 void FXGC_Release() {
   if (g_platform && g_platform_ref_count == 0) {
-    cppgc::ShutdownProcess();
     g_platform = nullptr;
     g_isolate = nullptr;
   }
@@ -73,8 +72,12 @@ FXGCScopedHeap FXGC_CreateHeap() {
   ++g_platform_ref_count;
   auto heap = cppgc::Heap::Create(
       std::make_shared<CFXGC_Platform>(),
-      {{}, cppgc::Heap::StackSupport::kNoConservativeStackScan, {}});
-
+      cppgc::Heap::HeapOptions{
+          {},
+          cppgc::Heap::StackSupport::kNoConservativeStackScan,
+          cppgc::Heap::MarkingType::kAtomic,
+          cppgc::Heap::SweepingType::kIncrementalAndConcurrent,
+          {}});
   return FXGCScopedHeap(heap.release());
 }
 
@@ -84,8 +87,8 @@ void FXGC_ForceGarbageCollection(cppgc::Heap* heap) {
 }
 
 void FXGCHeapDeleter::operator()(cppgc::Heap* heap) {
-  ASSERT(heap);
-  ASSERT(g_platform_ref_count > 0);
+  DCHECK(heap);
+  DCHECK(g_platform_ref_count > 0);
   --g_platform_ref_count;
 
   FXGC_ForceGarbageCollection(heap);

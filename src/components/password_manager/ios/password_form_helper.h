@@ -8,14 +8,13 @@
 #import <Foundation/Foundation.h>
 
 #include "base/memory/ref_counted_memory.h"
-#include "components/autofill/core/common/renderer_id.h"
+#include "components/autofill/core/common/unique_ids.h"
 #import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
 #import "ios/web/public/web_state_observer_bridge.h"
 #include "url/gurl.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class JsPasswordManager;
 @class PasswordFormHelper;
 
 namespace autofill {
@@ -50,9 +49,6 @@ class WebState;
 // SharedPasswordController.
 @interface PasswordFormHelper
     : NSObject<FormActivityObserver, CRWWebStateObserver>
-
-// The JsPasswordManager processing password form via javascript.
-@property(nonatomic, readonly) JsPasswordManager* jsPasswordManager;
 
 // Last committed URL of current web state.
 // Returns empty URL if current web state is not available.
@@ -94,10 +90,12 @@ class WebState;
             generatedPassword:(NSString*)generatedPassword
             completionHandler:(nullable void (^)(BOOL))completionHandler;
 
-// Autofills credentials into the page. Credentials and input fields are
-// specified by |fillData|. Invokes |completionHandler| when finished with YES
-// if successful and NO otherwise.
+// Autofills credentials into the page on credential suggestion selection.
+// Credentials and input fields are specified by |fillData|. |uniqueFieldID|
+// specifies the unput on which the suggestion was accepted. Invokes
+// |completionHandler| when finished with YES if successful and NO otherwise.
 - (void)fillPasswordFormWithFillData:(const password_manager::FillData&)fillData
+                    triggeredOnField:(autofill::FieldRendererId)uniqueFieldID
                    completionHandler:(nullable void (^)(BOOL))completionHandler;
 
 // Finds the password form with unique ID |formIdentifier| and calls

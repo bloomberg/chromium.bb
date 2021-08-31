@@ -131,12 +131,12 @@ void TlsConnectionFactoryPosix::Listen(const IPEndpoint& local_address,
   auto socket = std::make_unique<StreamSocketPosix>(local_address);
   socket->Bind();
   socket->Listen(options.backlog_size);
-  if (socket->state() == SocketState::kClosed) {
+  if (socket->state() == TcpSocketState::kClosed) {
     DispatchError(Error::Code::kSocketListenFailure);
     TRACE_SET_RESULT(Error::Code::kSocketListenFailure);
     return;
   }
-  OSP_DCHECK(socket->state() == SocketState::kListening);
+  OSP_DCHECK(socket->state() == TcpSocketState::kListening);
 
   OSP_DCHECK(platform_client_);
   if (platform_client_) {
@@ -238,7 +238,10 @@ void TlsConnectionFactoryPosix::Initialize() {
 
 void TlsConnectionFactoryPosix::Connect(
     std::unique_ptr<TlsConnectionPosix> connection) {
-  OSP_DCHECK(connection->socket_->state() == SocketState::kConnected);
+  if (connection->socket_->state() == TcpSocketState::kClosed) {
+    return;
+  }
+  OSP_DCHECK(connection->socket_->state() == TcpSocketState::kConnected);
   ClearOpenSSLERRStack(CURRENT_LOCATION);
   const int connection_status = SSL_connect(connection->ssl_.get());
   if (connection_status != 1) {
@@ -280,7 +283,11 @@ void TlsConnectionFactoryPosix::Connect(
 
 void TlsConnectionFactoryPosix::Accept(
     std::unique_ptr<TlsConnectionPosix> connection) {
-  OSP_DCHECK(connection->socket_->state() == SocketState::kConnected);
+  if (connection->socket_->state() == TcpSocketState::kClosed) {
+    return;
+  }
+  OSP_DCHECK(connection->socket_->state() == TcpSocketState::kConnected);
+
   ClearOpenSSLERRStack(CURRENT_LOCATION);
   const int connection_status = SSL_accept(connection->ssl_.get());
   if (connection_status != 1) {

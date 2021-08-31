@@ -2,16 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/qbone/qbone_stream.h"
+#include "quic/qbone/qbone_stream.h"
 
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/quic_data_reader.h"
-#include "net/third_party/quiche/src/quic/core/quic_data_writer.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/qbone/qbone_constants.h"
-#include "net/third_party/quiche/src/quic/qbone/qbone_session_base.h"
+#include "quic/core/quic_data_reader.h"
+#include "quic/core/quic_data_writer.h"
+#include "quic/core/quic_types.h"
+#include "quic/qbone/qbone_constants.h"
+#include "quic/qbone/qbone_session_base.h"
 
-ABSL_FLAG(int, qbone_stream_ttl_secs, 3, "The QBONE Stream TTL in seconds.");
+DEFINE_QUIC_COMMAND_LINE_FLAG(int,
+                              qbone_stream_ttl_secs,
+                              3,
+                              "The QBONE Stream TTL in seconds.");
 
 namespace quic {
 

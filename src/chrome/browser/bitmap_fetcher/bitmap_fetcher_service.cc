@@ -5,6 +5,8 @@
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/macros.h"
@@ -83,7 +85,8 @@ std::unique_ptr<data_decoder::DataDecoder> CreateSharedDataDecoder() {
 
   int idle_timeout = base::GetFieldTrialParamByFeatureAsInt(
       omnibox::kEntitySuggestionsReduceLatency,
-      OmniboxFieldTrial::kEntitySuggestionsReduceLatencyDecoderTimeoutParam, 0);
+      OmniboxFieldTrial::kEntitySuggestionsReduceLatencyDecoderTimeoutParam,
+      405);
 
   return idle_timeout > 0 ? std::make_unique<data_decoder::DataDecoder>(
                                 base::TimeDelta::FromSeconds(idle_timeout))
@@ -235,10 +238,9 @@ std::unique_ptr<BitmapFetcher> BitmapFetcherService::CreateFetcher(
       std::string(),
       net::ReferrerPolicy::REDUCE_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN,
       network::mojom::CredentialsMode::kInclude);
-  new_fetcher->Start(
-      content::BrowserContext::GetDefaultStoragePartition(context_)
-          ->GetURLLoaderFactoryForBrowserProcess()
-          .get());
+  new_fetcher->Start(context_->GetDefaultStoragePartition()
+                         ->GetURLLoaderFactoryForBrowserProcess()
+                         .get());
   return new_fetcher;
 }
 
@@ -298,7 +300,7 @@ void BitmapFetcherService::OnFetchComplete(const GURL& url,
 
   if (bitmap && !bitmap->isNull()) {
     std::unique_ptr<CacheEntry> entry(new CacheEntry);
-    entry->bitmap.reset(new SkBitmap(*bitmap));
+    entry->bitmap = std::make_unique<SkBitmap>(*bitmap);
     cache_.Put(fetcher->url(), std::move(entry));
   }
 

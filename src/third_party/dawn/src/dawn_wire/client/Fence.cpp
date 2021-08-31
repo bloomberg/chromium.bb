@@ -15,7 +15,6 @@
 #include "dawn_wire/client/Fence.h"
 
 #include "dawn_wire/client/Client.h"
-#include "dawn_wire/client/Device.h"
 
 namespace dawn_wire { namespace client {
 
@@ -39,17 +38,16 @@ namespace dawn_wire { namespace client {
         mOnCompletionRequests.clear();
     }
 
-    void Fence::Initialize(Queue* queue, const WGPUFenceDescriptor* descriptor) {
-        mQueue = queue;
-
+    void Fence::Initialize(const WGPUFenceDescriptor* descriptor) {
         mCompletedValue = descriptor != nullptr ? descriptor->initialValue : 0u;
     }
 
     void Fence::OnCompletion(uint64_t value,
                              WGPUFenceOnCompletionCallback callback,
                              void* userdata) {
-        if (device->GetClient()->IsDisconnected()) {
-            return callback(WGPUFenceCompletionStatus_DeviceLost, userdata);
+        if (client->IsDisconnected()) {
+            callback(WGPUFenceCompletionStatus_DeviceLost, userdata);
+            return;
         }
 
         uint32_t serial = mOnCompletionRequestSerial++;
@@ -62,7 +60,7 @@ namespace dawn_wire { namespace client {
 
         mOnCompletionRequests[serial] = {callback, userdata};
 
-        this->device->GetClient()->SerializeCommand(cmd);
+        client->SerializeCommand(cmd);
     }
 
     void Fence::OnUpdateCompletedValueCallback(uint64_t value) {
@@ -86,10 +84,6 @@ namespace dawn_wire { namespace client {
 
     uint64_t Fence::GetCompletedValue() const {
         return mCompletedValue;
-    }
-
-    Queue* Fence::GetQueue() const {
-        return mQueue;
     }
 
 }}  // namespace dawn_wire::client

@@ -10,7 +10,7 @@
 namespace network {
 namespace internal {
 
-base::Optional<base::Time> StringToTime(base::StringPiece my_string) {
+absl::optional<base::Time> StringToTime(base::StringPiece my_string) {
   return util::ValueToTime(base::Value(my_string));
 }
 
@@ -36,10 +36,10 @@ base::StringPiece TrustTokenOperationTypeToString(
 std::string ProtocolVersionToString(
     mojom::TrustTokenProtocolVersion my_version) {
   switch (my_version) {
-    case mojom::TrustTokenProtocolVersion::kTrustTokenV2Pmb:
-      return "TrustTokenV2PMB";
-    case mojom::TrustTokenProtocolVersion::kTrustTokenV2Voprf:
-      return "TrustTokenV2VOPRF";
+    case mojom::TrustTokenProtocolVersion::kTrustTokenV3Pmb:
+      return "TrustTokenV3PMB";
+    case mojom::TrustTokenProtocolVersion::kTrustTokenV3Voprf:
+      return "TrustTokenV3VOPRF";
   }
 }
 

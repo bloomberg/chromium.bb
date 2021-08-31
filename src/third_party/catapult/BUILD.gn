@@ -16,6 +16,7 @@ group("telemetry_chrome_test_support") {
   data += [
     "AUTHORS",
     "CONTRIBUTING.md",
+    "DIR_METADATA",
     "LICENSE",
     "OWNERS",
     "PRESUBMIT.py",
@@ -44,7 +45,6 @@ group("telemetry_chrome_test_support") {
 
   data += [
     "common/bin/",
-    "common/eslint/",
     "common/lab/",
     "common/py_trace_event/",
     "common/py_utils/",
@@ -73,6 +73,7 @@ group("telemetry_chrome_test_support") {
     "third_party/idna/",
     "third_party/ijson/",
     "third_party/jquery/",
+    "third_party/jszip/",
     "third_party/mapreduce/",
     "third_party/mocha/",
     "third_party/mock/",
@@ -99,7 +100,6 @@ group("telemetry_chrome_test_support") {
     "third_party/urllib3/",
     "third_party/webapp2/",
     "third_party/webtest/",
-    "third_party/zipfile/",
   ]
 
   data_deps += [
@@ -110,6 +110,7 @@ group("telemetry_chrome_test_support") {
 
   data += [
     "tracing/BUILD.gn",
+    "tracing/DIR_METADATA",
     "tracing/LICENSE",
     "tracing/OWNERS",
     "tracing/PRESUBMIT.py",

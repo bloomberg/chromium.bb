@@ -5,7 +5,7 @@ Polymer({
   is: 'app-management-arc-detail-view',
 
   behaviors: [
-    app_management.StoreClient,
+    app_management.AppManagementStoreClient,
   ],
 
   properties: {
@@ -21,18 +21,10 @@ Polymer({
       type: Boolean,
       value: false,
     },
-
-    /**
-     * @private {boolean}
-     */
-    isArcSupported_: {
-      type: Boolean,
-    }
   },
 
   attached() {
     this.watch('app_', state => app_management.util.getSelectedApp(state));
-    this.watch('isArcSupported_', state => state.arcSupported);
     this.updateFromStore();
 
     this.listExpanded_ = false;

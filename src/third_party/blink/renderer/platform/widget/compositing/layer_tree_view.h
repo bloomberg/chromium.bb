@@ -29,8 +29,11 @@ class LayerTreeHost;
 class LayerTreeSettings;
 class RenderFrameMetadataObserver;
 class TaskGraphRunner;
-class UkmRecorderFactory;
 }  // namespace cc
+
+namespace gfx {
+class RenderingPipeline;
+}  // namespace gfx
 
 namespace blink {
 
@@ -57,7 +60,8 @@ class PLATFORM_EXPORT LayerTreeView
                   scoped_refptr<base::SingleThreadTaskRunner> main_thread,
                   scoped_refptr<base::SingleThreadTaskRunner> compositor_thread,
                   cc::TaskGraphRunner* task_graph_runner,
-                  std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory);
+                  gfx::RenderingPipeline* main_thread_pipeline,
+                  gfx::RenderingPipeline* compositor_thread_pipeline);
 
   // Drops any references back to the delegate in preparation for being
   // destroyed.
@@ -79,12 +83,8 @@ class PLATFORM_EXPORT LayerTreeView
   void BeginMainFrameNotExpectedUntil(base::TimeTicks time) override;
   void UpdateLayerTreeHost() override;
   void ApplyViewportChanges(const cc::ApplyViewportChangesArgs& args) override;
-  void RecordManipulationTypeCounts(cc::ManipulationInfo info) override;
-  void SendOverscrollEventFromImplSide(
-      const gfx::Vector2dF& overscroll_delta,
-      cc::ElementId scroll_latched_element_id) override;
-  void SendScrollEndEventFromImplSide(
-      cc::ElementId scroll_latched_element_id) override;
+  void UpdateCompositorScrollState(
+      const cc::CompositorCommitData& commit_data) override;
   void RequestNewLayerTreeFrameSink() override;
   void DidInitializeLayerTreeFrameSink() override;
   void DidFailToInitializeLayerTreeFrameSink() override;
@@ -102,6 +102,7 @@ class PLATFORM_EXPORT LayerTreeView
       cc::ActiveFrameSequenceTrackers trackers) override;
   std::unique_ptr<cc::BeginMainFrameMetrics> GetBeginMainFrameMetrics()
       override;
+  std::unique_ptr<cc::WebVitalMetrics> GetWebVitalMetrics() override;
   void NotifyThroughputTrackerResults(
       cc::CustomTrackerResults results) override;
   void DidObserveFirstScrollDelay(
@@ -113,6 +114,7 @@ class PLATFORM_EXPORT LayerTreeView
   // cc::LayerTreeHostSingleThreadClient implementation.
   void DidSubmitCompositorFrame() override;
   void DidLoseLayerTreeFrameSink() override;
+  void ScheduleAnimationForWebTests() override;
 
   // cc::LayerTreeHostSchedulingClient implementation.
   void DidScheduleBeginMainFrame() override;

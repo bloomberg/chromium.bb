@@ -42,7 +42,7 @@ AudioWorkletHandler::AudioWorkletHandler(
   for (const auto& param_name : param_handler_map_.Keys()) {
     param_value_map_.Set(param_name,
                          std::make_unique<AudioFloatArray>(
-                             audio_utilities::kRenderQuantumFrames));
+                             GetDeferredTaskHandler().RenderQuantumFrames()));
   }
 
   for (unsigned i = 0; i < options->numberOfInputs(); ++i)
@@ -147,7 +147,7 @@ void AudioWorkletHandler::CheckNumberOfChannelsForInput(AudioNodeInput* input) {
   // not be dynamically changed.
   if (NumberOfInputs() == 1 && NumberOfOutputs() == 1 &&
       !is_output_channel_count_given_) {
-    DCHECK_EQ(input, &this->Input(0));
+    DCHECK_EQ(input, &Input(0));
     unsigned number_of_input_channels = Input(0).NumberOfChannels();
     if (number_of_input_channels != Output(0).NumberOfChannels()) {
       // This will propagate the channel count to any nodes connected further

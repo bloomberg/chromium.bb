@@ -596,7 +596,7 @@ void EmbeddedTestServer::StartAcceptingConnections() {
   base::Thread::Options thread_options;
   thread_options.message_pump_type = base::MessagePumpType::IO;
   io_thread_ = std::make_unique<base::Thread>("EmbeddedTestServer IO Thread");
-  CHECK(io_thread_->StartWithOptions(thread_options));
+  CHECK(io_thread_->StartWithOptions(std::move(thread_options)));
   CHECK(io_thread_->WaitUntilThreadStarted());
 
   io_thread_->task_runner()->PostTask(
@@ -639,9 +639,10 @@ void EmbeddedTestServer::HandleRequest(HttpConnection* connection,
   request->base_url = base_url_;
 
   SSLInfo ssl_info;
-  if (connection->socket_->GetSSLInfo(&ssl_info) &&
-      ssl_info.early_data_received) {
-    request->headers["Early-Data"] = "1";
+  if (connection->socket_->GetSSLInfo(&ssl_info)) {
+    request->ssl_info = ssl_info;
+    if (ssl_info.early_data_received)
+      request->headers["Early-Data"] = "1";
   }
 
   for (const auto& monitor : request_monitors_)
@@ -671,7 +672,8 @@ void EmbeddedTestServer::HandleRequest(HttpConnection* connection,
     response = std::move(not_found_response);
   }
 
-  response->SendResponse(
+  HttpResponse* const response_ptr = response.get();
+  response_ptr->SendResponse(
       base::BindRepeating(&HttpConnection::SendResponseBytes,
                           connection->GetWeakPtr()),
       base::BindOnce(&EmbeddedTestServer::OnResponseCompleted,

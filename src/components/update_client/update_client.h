@@ -14,9 +14,9 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
-#include "base/optional.h"
 #include "base/version.h"
 #include "components/update_client/update_client_errors.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 // The UpdateClient class is a facade with a simple interface. The interface
 // exposes a few APIs to install a CRX or update a group of CRXs.
@@ -170,12 +170,21 @@ class CrxInstaller : public base::RefCountedThreadSafe<CrxInstaller> {
  public:
   // Contains the result of the Install operation.
   struct Result {
+    Result() = default;
     explicit Result(int error, int extended_error = 0)
         : error(error), extended_error(extended_error) {}
     explicit Result(InstallError error, int extended_error = 0)
         : error(static_cast<int>(error)), extended_error(extended_error) {}
+
     int error = 0;  // 0 indicates that install has been successful.
     int extended_error = 0;
+
+    // Localized text displayed to the user, if applicable.
+    std::string installer_text;
+
+    // Shell command run at the end of the install, if applicable. This string
+    // must be escaped to be a command line.
+    std::string installer_cmd_line;
   };
 
   struct InstallParams {
@@ -276,7 +285,6 @@ struct CrxComponent {
 
   std::string fingerprint;  // Optional.
   std::string name;         // Optional.
-  std::vector<std::string> handled_mime_types;
 
   // Optional.
   // Valid values for the name part of an attribute match
@@ -338,7 +346,7 @@ class UpdateClient : public base::RefCountedThreadSafe<UpdateClient> {
   // skip the component, and instead, they must insert a `nullopt` value in
   // the output vector.
   using CrxDataCallback =
-      base::OnceCallback<std::vector<base::Optional<CrxComponent>>(
+      base::OnceCallback<std::vector<absl::optional<CrxComponent>>(
           const std::vector<std::string>& ids)>;
 
   // Called when state changes occur during an Install or Update call.

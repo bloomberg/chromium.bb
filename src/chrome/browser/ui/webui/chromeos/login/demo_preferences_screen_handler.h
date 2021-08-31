@@ -9,9 +9,11 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 
-namespace chromeos {
-
+namespace ash {
 class DemoPreferencesScreen;
+}
+
+namespace chromeos {
 
 // Interface of the demo mode preferences screen view.
 class DemoPreferencesScreenView {
@@ -27,7 +29,7 @@ class DemoPreferencesScreenView {
   virtual void Hide() = 0;
 
   // Sets view and screen.
-  virtual void Bind(DemoPreferencesScreen* screen) = 0;
+  virtual void Bind(ash::DemoPreferencesScreen* screen) = 0;
 
   // Called to set the input method id on JS side.
   virtual void SetInputMethodId(const std::string& input_method) = 0;
@@ -45,7 +47,7 @@ class DemoPreferencesScreenHandler : public BaseScreenHandler,
   // DemoPreferencesScreenView:
   void Show() override;
   void Hide() override;
-  void Bind(DemoPreferencesScreen* screen) override;
+  void Bind(ash::DemoPreferencesScreen* screen) override;
   void SetInputMethodId(const std::string& input_method) override;
 
   // BaseScreenHandler:
@@ -61,11 +63,17 @@ class DemoPreferencesScreenHandler : public BaseScreenHandler,
   void HandleSetInputMethodId(const std::string& language_id);
   void HandleSetDemoModeCountry(const std::string& country_id);
 
-  DemoPreferencesScreen* screen_ = nullptr;
+  ash::DemoPreferencesScreen* screen_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(DemoPreferencesScreenHandler);
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace ash {
+using ::chromeos::DemoPreferencesScreenView;
+}
 
 #endif  // CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_DEMO_PREFERENCES_SCREEN_HANDLER_H_

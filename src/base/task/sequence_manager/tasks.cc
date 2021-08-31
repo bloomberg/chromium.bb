@@ -14,8 +14,9 @@ Task::Task(internal::PostedTask posted_task,
            internal::WakeUpResolution resolution)
     : PendingTask(posted_task.location,
                   std::move(posted_task.callback),
-                  delayed_run_time,
-                  posted_task.nestable),
+                  posted_task.queue_time,
+                  delayed_run_time),
+      nestable(posted_task.nestable),
       task_type(posted_task.task_type),
       task_runner(std::move(posted_task.task_runner)),
       enqueue_order_(enqueue_order) {
@@ -26,7 +27,6 @@ Task::Task(internal::PostedTask posted_task,
   static_assert(std::is_same<decltype(sequence_num), int>::value, "");
   sequence_num = static_cast<int>(sequence_order);
   this->is_high_res = resolution == internal::WakeUpResolution::kHigh;
-  queue_time = posted_task.queue_time;
 }
 
 Task::Task(Task&& move_from) = default;
